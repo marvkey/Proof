@@ -3,4 +3,4 @@
 bin/
 bin-int/
 .vs/
-/vendor/premake/premake5.exe
+vendor/premake/premake5.exe
