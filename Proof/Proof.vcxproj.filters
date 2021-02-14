@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{2AC788B4-1694-E3BF-3FAD-D1672BD9184E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Proof">
+      <UniqueIdentifier>{8B12E70D-F726-0FBF-C0A8-B21E2C7C0BF0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Proof\Core">
+      <UniqueIdentifier>{C385D81A-AF3D-1A68-1845-F3C3041CB558}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Proof\Events">
+      <UniqueIdentifier>{0F143338-FB76-C2DC-A4FC-FA92903E8E5F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Proof\Input">
+      <UniqueIdentifier>{CA3E5576-36F4-CD6B-BFE8-C7422B9DC46F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Platform\WindowsWindow.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Application.h">
+      <Filter>Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Core.h">
+      <Filter>Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\GUI.h">
+      <Filter>Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Log.h">
+      <Filter>Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Proof.h">
+      <Filter>Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\ProofConnect.h">
+      <Filter>Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Window.h">
+      <Filter>Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Events\Event.h">
+      <Filter>Proof\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\Mouse.h">
+      <Filter>Proof\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proofprch.h" />
+    <ClInclude Include="vendor\ImGUI\ImGUIOpenGL\imconfig.h" />
+    <ClInclude Include="vendor\ImGUI\ImGUIOpenGL\imgui.h" />
+    <ClInclude Include="vendor\ImGUI\ImGUIOpenGL\imgui_impl_glfw.h" />
+    <ClInclude Include="vendor\ImGUI\ImGUIOpenGL\imgui_impl_opengl3.h" />
+    <ClInclude Include="vendor\ImGUI\ImGUIOpenGL\imgui_internal.h" />
+    <ClInclude Include="vendor\ImGUI\ImGUIOpenGL\imstb_rectpack.h" />
+    <ClInclude Include="vendor\ImGUI\ImGUIOpenGL\imstb_textedit.h" />
+    <ClInclude Include="vendor\ImGUI\ImGUIOpenGL\imstb_truetype.h" />
+    <ClInclude Include="src\Proof\Input\KeyBoard.h" />
+    <ClInclude Include="src\Proof\Input\GamePad.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Platform\WindowsWindow.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\Application.cpp">
+      <Filter>Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\GUI.cpp">
+      <Filter>Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\Log.cpp">
+      <Filter>Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proofprch.cpp" />
+    <ClCompile Include="vendor\ImGUI\ImGUIOpenGL\imgui.cpp" />
+    <ClCompile Include="vendor\ImGUI\ImGUIOpenGL\imgui_demo.cpp" />
+    <ClCompile Include="vendor\ImGUI\ImGUIOpenGL\imgui_draw.cpp" />
+    <ClCompile Include="vendor\ImGUI\ImGUIOpenGL\imgui_impl_glfw.cpp" />
+    <ClCompile Include="vendor\ImGUI\ImGUIOpenGL\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="vendor\ImGUI\ImGUIOpenGL\imgui_tables.cpp" />
+    <ClCompile Include="vendor\ImGUI\ImGUIOpenGL\imgui_widgets.cpp" />
+  </ItemGroup>
+</Project>
