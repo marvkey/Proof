@@ -1,6 +1,5 @@
-
 #Directories
 bin/
 bin-int/
 .vs/
-vendor/premake/premake5.exe
+.gitignore
