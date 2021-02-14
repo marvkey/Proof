@@ -2,5 +2,4 @@
 bin/
 bin-int/
 .vs/
-#.gitignore
 Proof.sln
