@@ -7,7 +7,7 @@ namespace Proof {
 
 	 	class Proof_API Application {
 			public:
-						virtual ~Application(); // main app
+						virtual ~Application(); // main app//
 						void Run();
 
 						void* GetWindow() {
