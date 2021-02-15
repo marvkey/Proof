@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/ProofConnect.h"
-#include "Platform/WindowsWindow.h"
+
 
 class Sandbox :public Proof::Application {
 
