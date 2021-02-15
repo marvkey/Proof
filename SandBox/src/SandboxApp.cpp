@@ -15,6 +15,6 @@ public:
 };
 
 Proof::Application* Proof::CreateApplication() {
-		return new Sandbox();
+	return new Sandbox();
 }
 
