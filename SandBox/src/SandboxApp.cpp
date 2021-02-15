@@ -5,13 +5,13 @@
 class Sandbox :public Proof::Application {
 
 public:
-			~Sandbox() {
+	~Sandbox() {
 
-			}
+	}
 
-			Sandbox() {
+	Sandbox() {
 
-			}
+	}
 };
 
 Proof::Application* Proof::CreateApplication() {
