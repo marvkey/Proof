@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "Proof/Core/Application.h"
 namespace Proof{
 			struct Proof_API MouseKey {
 						enum Mouse {
@@ -17,6 +18,19 @@ namespace Proof{
 									ButtonRight = Button1,
 									ButtonMiddle = Button2
 						};
+			};
+
+			class Mouse{
+			public:
+
+				static	float GetMouseX(){
+								return Application::GetMousePosition().first;
+					}
+				static float GetMouseY(){
+							return Application::GetMousePosition().second;
+				}
+			private:
+
 			};
 }
 
