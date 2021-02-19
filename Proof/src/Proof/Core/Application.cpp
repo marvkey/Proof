@@ -23,12 +23,15 @@ namespace Proof {
 				MainWindow->createWindow();
 				bool newWindow = false;
 				float Num1 = 5;
+				if (glfwGetKey(MainWindow->GetWindow(), KeyBoard::B) == KeyBoard::KeyPressed) {
+							PF_ENGINE_ERROR("noasdfas");
+				}
 				while ((glfwGetKey( MainWindow->GetWindow(), KeyBoard::Escape) != KeyBoard::KeyPressed) && (glfwWindowShouldClose( MainWindow->GetWindow()) == false)) {
 
-							 MainWindow->WindowLoop();
-
+							 MainWindow->WindowBegin();
 								
-							 MainWindow->windowPollEvents(true);
+								
+							 MainWindow->windowPollEvents(false);
 				};
 
 		 MainWindow->WindowEnd();

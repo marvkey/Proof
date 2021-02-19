@@ -2,7 +2,7 @@
 bin/
 bin-int/
 .vs/
-Proof.sln
+#Proof.sln
 
 
 # Visual Studio files and folder

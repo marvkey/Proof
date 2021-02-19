@@ -102,12 +102,10 @@ namespace Proof {
 
 		}
 
-		void WindowsWindow::WindowLoop() {
+		void WindowsWindow::WindowBegin() {
 				 bool newWindow = false;
 					glClear(GL_COLOR_BUFFER_BIT);
 					glDrawArrays(GL_TRIANGLES, 0, 3);
-					
-					
 					ImGui_ImplOpenGL3_NewFrame();
 					ImGui_ImplGlfw_NewFrame();
 			

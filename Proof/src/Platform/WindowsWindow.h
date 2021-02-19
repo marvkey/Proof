@@ -38,7 +38,7 @@ namespace Proof {
 		protected:
 				virtual void OnNewFrame();
 		private:
-			void  WindowLoop();
+			void  WindowBegin();
 
 			virtual	int createWindow()override;
 
