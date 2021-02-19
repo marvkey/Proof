@@ -16,19 +16,20 @@ namespace Proof{
 									ButtonLast = Button7,
 									ButtonLeft = Button0,
 									ButtonRight = Button1,
-									ButtonMiddle = Button2
+								  ButtonMiddle = Button2
 						};
 			};
 
 			class Mouse{
 			public:
 
-				static	float GetMouseX(){
-							return Application::GetMousePosition().first;
-					}
-				static float GetMouseY(){
-							return Application::GetMousePosition().second;
-				}
+			 static	float GetMouseX() {
+					return Application::GetMousePosition().first;
+			 }
+			 static float GetMouseY() {
+				 return Application::GetMousePosition().second;
+			 }
+		
 			private:
 
 			};
