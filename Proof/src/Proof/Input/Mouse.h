@@ -24,7 +24,7 @@ namespace Proof{
 			public:
 
 				static	float GetMouseX(){
-								return Application::GetMousePosition().first;
+							return Application::GetMousePosition().first;
 					}
 				static float GetMouseY(){
 							return Application::GetMousePosition().second;

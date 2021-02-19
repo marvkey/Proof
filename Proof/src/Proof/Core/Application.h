@@ -15,6 +15,9 @@ namespace Proof {
 									return MainWindow->GetWindow();
 						}
 
+						static std::pair<float, float>GetMousePosition(){
+									return MainWindow->GetPlatformMouseLocation();
+						}
 			protected:
 						
 						Application();
