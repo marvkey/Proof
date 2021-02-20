@@ -16,7 +16,7 @@ namespace Proof{
 									ButtonLast = Button7,
 									ButtonLeft = Button0,
 									ButtonRight = Button1,
-								  ButtonMiddle = Button2
+								 ButtonMiddle = Button2
 						};
 			};
 
@@ -24,6 +24,8 @@ namespace Proof{
 			public:
 
 			 static	float GetMouseX() {
+
+
 					return Application::GetMousePosition().first;
 			 }
 			 static float GetMouseY() {
