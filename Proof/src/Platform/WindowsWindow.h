@@ -6,50 +6,46 @@
 
 
 namespace Proof {
-	
 
-		class Proof_API WindowsWindow : public Window {
-		public:
-			friend class
-						Application;
-			virtual GLFWwindow* GetWindow();
-			virtual unsigned int GetWidth();
-			virtual unsigned int GetHeight();
-			WindowsWindow(unsigned int Width, unsigned int Height) {
-				this->Width = Width;
-				this->Height = Height;
-			}
+    class Proof_API WindowsWindow : public Window {
+    public:
+        friend class Application;
 
-			float GetMouseX() {
+        virtual GLFWwindow* GetWindow();
+        virtual unsigned int GetWidth();
+        virtual unsigned int GetHeight();
 
-				auto [X, Y] = GetPlatformMouseLocation();
-				return X;
-			}
+        WindowsWindow(unsigned int Width, unsigned int Height) {
+            this->Width = Width;
+            this->Height = Height;
+        }
 
-			float GetMouseY() {
-
-				auto [X, Y] = GetPlatformMouseLocation();
-				return Y;
-			}
+        float GetMouseX() {
+            auto [X, Y] = GetPlatformMouseLocation();
+            return X;
+        }
+        float GetMouseY() {
+            auto [X, Y] = GetPlatformMouseLocation();
+            return Y;
+        }
 
 
-				
-		
-		protected:
-				virtual void OnNewFrame();
-		private:
-			void  WindowBegin();
 
-			virtual	int createWindow()override;
 
-			int WindowEnd();
+    protected:
+        virtual void OnNewFrame();
+    private:
+        virtual	int createWindow()override;
 
-			void windowPollEvents(bool UsingGui);
-			unsigned int Width, Height;
-			GLFWwindow* MainWindow;
-			std::pair<float, float> GetPlatformMouseLocation();
-			static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-		};
+        void  WindowBegin();
+        void windowPollEvents(bool UsingGui);
+        int WindowEnd();
+
+        unsigned int Width, Height;
+        GLFWwindow* MainWindow;
+        std::pair<float, float> GetPlatformMouseLocation();
+        static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    };
 }
 
 
