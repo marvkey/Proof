@@ -5,10 +5,10 @@
 #include "ImGUIOpenGL/imgui_impl_opengl3.h"
 #include "Core.h"
 #include <iostream>
-
+#include<stdio.h> 
+#include<stdarg.h>				
 namespace Proof {
     class Proof_API GUI {
-
     public:
         static	enum ProofFlags_{
             ProofFlags_None = 0,
@@ -55,9 +55,13 @@ namespace Proof {
         std::string GetFrameName(); // get the frame name 
         void AddCheckBox(const char* CheckBoxName, bool* Variable);
         void AddSliderfloat(const char* Name, float* Variable, float MinValue, float MaxValue);
-        void GUI::AddText(const char* Text, ...) {
-            ImGui::Text(Text);
-        }
+        void GUI::AddText( char* format, ...) {
+			va_list arg;
+			va_start(arg, format);
+			va_end(arg);
+            ImGui::Text(format,arg);
+		}
+        
 
         void AddSameLine();
         bool CreateButton(const char* ButtonName, float width, float height); // use this in an if statement never works on its own

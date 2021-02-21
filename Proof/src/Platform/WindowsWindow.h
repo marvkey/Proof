@@ -20,18 +20,7 @@ namespace Proof {
             this->Height = Height;
         }
 
-        float GetMouseX() {
-            auto [X, Y] = GetPlatformMouseLocation();
-            return X;
-        }
-        float GetMouseY() {
-            auto [X, Y] = GetPlatformMouseLocation();
-            return Y;
-        }
-
-
-
-
+        void SetWindowSize(int width, int height);
     protected:
         virtual void OnNewFrame();
     private:
@@ -44,6 +33,7 @@ namespace Proof {
         unsigned int Width, Height;
         GLFWwindow* MainWindow;
         std::pair<float, float> GetPlatformMouseLocation();
+        std::pair<int, int> GetWindowSize();
         static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
     };
 }

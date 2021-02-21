@@ -25,7 +25,6 @@ namespace Proof {
             Num7 = 55, /* 7 */
             Num8 = 56, /* 8 */
             Num9 = 57, /* 9 */
-
             Semicolon = 59, /* ; */
             Equal = 61, /* = */
 
@@ -109,8 +108,6 @@ namespace Proof {
             F23 = 312,
             F24 = 313,
             F25 = 314,
-
-
 
             LeftShift = 340,
             LeftControl = 341,

@@ -9,7 +9,6 @@ namespace Proof{
 		class Proof_API Log {
 			
 		public:
-			
 				static void Init();
 				static	std::shared_ptr <spdlog::logger>& GetEngineLogger() {
 						return EngineLogger;
@@ -17,15 +16,11 @@ namespace Proof{
 				static	std::shared_ptr <spdlog::logger>& GetClientLogger() {
 						return ClientLogger;
 				}
-
-
 		private:
 				static std::shared_ptr<spdlog::logger>EngineLogger;
 				static std::shared_ptr<spdlog::logger>ClientLogger;
-
 		};
 }
-
 
 // Engine Logging
 #define  PF_ENGINE_ERROR(...) ::Proof::Log::GetEngineLogger()->error(__VA_ARGS__)

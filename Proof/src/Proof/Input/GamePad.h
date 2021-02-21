@@ -1,32 +1,8 @@
 #pragma once
 #include "Proof/Core/Core.h"
 namespace Proof {
-    struct Proof_API Joystick {
-
-        static enum JoystickKey {
-            Joystick1 = 0,
-            Joystick2 = 1,
-            Joystick3 = 2,
-            Joystick4 = 3,
-            Joystick5 = 4,
-            Joystick6 = 5,
-            Joystick7 = 6,
-            Joystick8 = 7,
-            Joystick9 = 8,
-            Joystick10 = 9,
-            Joystick11 = 10,
-            Joystick12 = 11,
-            Joystick13 = 12,
-            Joystick14 = 13,
-            Joystick15 = 14,
-            Joystick16 = 15,
-            JoystickLast = Joystick16
-        };
-    };
-
     struct Proof_API GamePad {
-        static enum GamePadKeys {
-
+        static enum  GamePadKeys {
             Gampad_Button_A = 0,
             Gampad_Button_B = 1,
             Gampad_Button_X = 2,

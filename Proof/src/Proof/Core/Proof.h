@@ -1,8 +1,5 @@
 #pragma once
 
-
-
-
 #if defined(_WIN64)
 extern Proof::Application* Proof::CreateApplication();
 int  main(int argc, char** argv){
@@ -12,5 +9,4 @@ int  main(int argc, char** argv){
 		app->Run();
 		delete app;
 }
-
 #endif

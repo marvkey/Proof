@@ -3,16 +3,13 @@
 
 
 namespace Proof {
-
     GLFWwindow* WindowsWindow::GetWindow() {
         return MainWindow;
     }
-
     unsigned int WindowsWindow::GetWidth() {
         return 0;
     }
     unsigned int WindowsWindow::GetHeight() {
-
         return 0;
     }
     void WindowsWindow::windowPollEvents(bool UsingGui) {
@@ -30,45 +27,39 @@ namespace Proof {
 
         return { (float)X, (float)Y };
     }
+    std::pair<int, int> WindowsWindow::GetWindowSize(){
+        
+        int* WinWdth, * WinHeight;
+        glfwGetWindowSize(MainWindow, WinWdth,WinHeight);
+        return { (int)WinWdth, (int)WinHeight };
+    }
     void WindowsWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-
         if (action == GLFW_PRESS) {
             PF_ENGINE_INFO("MAYBE");
         }
-
+    }
+    void WindowsWindow::SetWindowSize(int width, int height){
+        glfwSetWindowSize(MainWindow, width, height);
     }
     void WindowsWindow::OnNewFrame() {
-
-
     }
-
     int WindowsWindow::createWindow() {
-
-
-
         if (!glfwInit()) {
             PF_ENGINE_ERROR("GlFW Not initilised");
             return -1;
         }
-
-
         MainWindow = glfwCreateWindow(Width, Height, "Proof Engine", NULL, NULL);
-
         if (MainWindow == nullptr) {
             PF_ENGINE_ERROR("Main Window nOt work");
             glfwTerminate();
             return -1;
         }
-
-
         glfwMakeContextCurrent(MainWindow);
         glfwSetKeyCallback(MainWindow, key_callback);
         if (glewInit() != GLEW_OK) {
             PF_ENGINE_ERROR("Glew Init Not defined");
             return -1;
         }
-
-
         float Position[6] = {
             -0.1f, -0.1f,
         0.0f,  0.1f,
