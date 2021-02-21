@@ -8,14 +8,9 @@ namespace Proof {
 		static int GetWindowWidth();
 		static void SetWindowSize(int width, int height);
 	private:
-		
+
 	};
 }
 #endif
 
-namespace Proof {
 
-	class CurrentWindow {
-
-	};
-}
