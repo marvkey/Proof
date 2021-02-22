@@ -1,7 +1,8 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "Input.h"
 namespace Proof {
-    struct Proof_API GamePad {
+    class Proof_API GamePad: public Input {
         static enum  GamePadKeys {
             Gampad_Button_A = 0,
             Gampad_Button_B = 1,

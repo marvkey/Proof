@@ -12,6 +12,7 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Core/GUI.h"
 #include "Proof/Input/KeyBoard.h"
+#include "Proof/Input/Mouse.h"
 
 // DSA
 #include <vector>

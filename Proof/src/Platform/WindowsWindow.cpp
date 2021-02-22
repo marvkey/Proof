@@ -3,16 +3,22 @@
 
 
 namespace Proof {
+	WindowsWindow::WindowsWindow(unsigned int Width, unsigned int Height) {
+		this->Width = Width;
+		this->Height = Height;
+	}
     GLFWwindow* WindowsWindow::GetWindow() {
         return MainWindow;
     }
     unsigned int WindowsWindow::GetWidth() {
-        return 0;
+        return this->Width;
     }
     unsigned int WindowsWindow::GetHeight() {
-        return 0;
+        return this->Width;
     }
-    void WindowsWindow::windowPollEvents(bool UsingGui) {
+
+
+	void WindowsWindow::windowPollEvents(bool UsingGui) {
         if (UsingGui == true) {
 
             ImGui::Render();
@@ -29,7 +35,7 @@ namespace Proof {
     }
     std::pair<int, int> WindowsWindow::GetWindowSize(){
         
-        int* WinWdth, * WinHeight;
+        int* WinWdth =nullptr , *WinHeight=nullptr;
         glfwGetWindowSize(MainWindow, WinWdth,WinHeight);
         return { (int)WinWdth, (int)WinHeight };
     }
@@ -38,8 +44,10 @@ namespace Proof {
             PF_ENGINE_INFO("MAYBE");
         }
     }
-    void WindowsWindow::SetWindowSize(int width, int height){
-        glfwSetWindowSize(MainWindow, width, height);
+    void WindowsWindow::SetWindowSize(unsigned int width, unsigned int height){
+		this->Width = Width;
+		this->Height = Height;
+        glfwSetWindowSize(MainWindow, this->Width, this->Height);
     }
     void WindowsWindow::OnNewFrame() {
     }
@@ -94,9 +102,6 @@ namespace Proof {
     }
 
     void WindowsWindow::WindowBegin() {
-        bool newWindow = false;
-        glClear(GL_COLOR_BUFFER_BIT);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
 

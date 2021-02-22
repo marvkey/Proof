@@ -9,7 +9,7 @@ namespace Proof {
 
         virtual ~Application(); // main app//
         void Run();
-        void* GetWindow();
+        static void* GetWindow();
         static std::pair<float, float>GetMousePosition();
         static std::pair<int, int>GetWindowSize();
         static void SetWindowSize(int width, int height);
