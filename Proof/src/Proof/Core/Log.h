@@ -5,21 +5,21 @@
 #include <memory>
 #include "Application.h"
 
-namespace Proof{
-		class Proof_API Log {
-			
-		public:
-				static void Init();
-				static	std::shared_ptr <spdlog::logger>& GetEngineLogger() {
-						return EngineLogger;
-				}
-				static	std::shared_ptr <spdlog::logger>& GetClientLogger() {
-						return ClientLogger;
-				}
-		private:
-				static std::shared_ptr<spdlog::logger>EngineLogger;
-				static std::shared_ptr<spdlog::logger>ClientLogger;
-		};
+namespace Proof {
+	class Proof_API Log{
+
+	public:
+		static void Init();
+		static	std::shared_ptr <spdlog::logger>& GetEngineLogger() {
+			return EngineLogger;
+		}
+		static	std::shared_ptr <spdlog::logger>& GetClientLogger() {
+			return ClientLogger;
+		}
+	private:
+		static std::shared_ptr<spdlog::logger>EngineLogger;
+		static std::shared_ptr<spdlog::logger>ClientLogger;
+	};
 }
 
 // Engine Logging

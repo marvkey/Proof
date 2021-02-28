@@ -1,56 +1,98 @@
 #include "Proofprch.h"
 #include "WindowsWindow.h"
-
-
+#include "Proof/Input/KeyCodes.h"
 namespace Proof {
-	WindowsWindow::WindowsWindow(unsigned int Width, unsigned int Height) {
-		this->Width = Width;
-		this->Height = Height;
-	}
-    GLFWwindow* WindowsWindow::GetWindow() {
-        return MainWindow;
-    }
-    unsigned int WindowsWindow::GetWidth() {
-        return this->Width;
-    }
-    unsigned int WindowsWindow::GetHeight() {
-        return this->Width;
+    std::vector<KeyBoardKey> WindowsWindow::KeyboardPressed;
+    std::vector<KeyBoardKey> WindowsWindow::KeyboardReleased;
+    std::vector<KeyBoardKey> WindowsWindow::KeyboardKeyDoubleClicked;
+    std::vector<KeyBoardKey> WindowsWindow::KeyboardKeyRepeat;
+
+    double WindowsWindow::time;
+    int WindowsWindow::CountClicks;
+
+    std::vector<MouseButton> WindowsWindow::MouseButtonPressed;
+    std::vector<MouseButton> WindowsWindow::MouseButtonReleased;
+
+    std::vector<MouseButton> WindowsWindow::MouseButtonDoubleClicked;
+    std::vector<MouseButton> WindowsWindow::MouseButtonRepeat;
+    WindowsWindow::WindowsWindow(unsigned int Width, unsigned int Height) {
+        this->Width = Width;
+        this->Height = Height;
     }
 
-
-	void WindowsWindow::windowPollEvents(bool UsingGui) {
+    void WindowsWindow::NextFrame(bool UsingGui) {
         if (UsingGui == true) {
-
-            ImGui::Render();
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+           // ImGui::Render();
+            //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
+        glfwGetWindowSize(MainWindow, (int*)&Width, (int*)&Height);
+        KeyboardPressed.clear();
+        KeyboardReleased.clear();
+        KeyboardKeyDoubleClicked.clear();
+        KeyboardKeyRepeat.clear();
+
+        MouseButtonPressed.clear();
+        MouseButtonReleased.clear();
+        MouseButtonDoubleClicked.clear();
+        MouseButtonReleased.clear();
         glfwSwapBuffers(MainWindow);
         glfwPollEvents();
     }
-    std::pair<float, float> WindowsWindow::GetPlatformMouseLocation() {
-        double X, Y;
-        glfwGetCursorPos(MainWindow, &X, &Y);
-
-        return { (float)X, (float)Y };
-    }
-    std::pair<int, int> WindowsWindow::GetWindowSize(){
-        
-        int* WinWdth =nullptr , *WinHeight=nullptr;
-        glfwGetWindowSize(MainWindow, WinWdth,WinHeight);
-        return { (int)WinWdth, (int)WinHeight };
-    }
     void WindowsWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-        if (action == GLFW_PRESS) {
-            PF_ENGINE_INFO("MAYBE");
+        /* This is for when a key is pressed 2 */
+        if (action == GLFW_RELEASE) {
+            static auto before = std::chrono::system_clock::now();
+            auto now = std::chrono::system_clock::now();
+            double diff_ms = std::chrono::duration <double, std::milli>(now - before).count();
+            before = now;
+            if (diff_ms > 10 && diff_ms < 200) {
+                action = (int)InputEvent::KeyDouble;
+            }
+        }
+
+        switch (action) {
+        case GLFW_PRESS:
+            KeyboardPressed.push_back((KeyBoardKey)key);
+            break;
+        case GLFW_RELEASE:
+            KeyboardReleased.push_back((KeyBoardKey)key);
+            break;
+        case (int)InputEvent::KeyDouble:
+           
+            KeyboardKeyDoubleClicked.push_back((KeyBoardKey)key);
+            break;
+        case (int) InputEvent::KeyRepeat:
+            KeyboardKeyRepeat.push_back((KeyBoardKey)key);
         }
     }
-    void WindowsWindow::SetWindowSize(unsigned int width, unsigned int height){
-		this->Width = Width;
-		this->Height = Height;
-        glfwSetWindowSize(MainWindow, this->Width, this->Height);
+
+    void WindowsWindow::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+        if (action == GLFW_RELEASE) {
+            static auto before = std::chrono::system_clock::now();
+            auto now = std::chrono::system_clock::now();
+            double diff_ms = std::chrono::duration <double, std::milli>(now - before).count();
+            before = now;
+            if (diff_ms > 10 && diff_ms < 200) {
+                action = (int)InputEvent::KeyDouble;
+            }
+        }
+
+        switch (action) {
+        case GLFW_PRESS:
+            MouseButtonPressed.push_back((MouseButton)button);
+            break;
+        case GLFW_RELEASE:
+            MouseButtonReleased.push_back((MouseButton)button);
+            break;
+        case (int)InputEvent::KeyDouble:
+            MouseButtonDoubleClicked.push_back((MouseButton)button);
+            break;
+        case (int)InputEvent::KeyRepeat:
+            MouseButtonRepeat.push_back((MouseButton)button);
+            break;
+        }
     }
-    void WindowsWindow::OnNewFrame() {
-    }
+
     int WindowsWindow::createWindow() {
         if (!glfwInit()) {
             PF_ENGINE_ERROR("GlFW Not initilised");
@@ -64,32 +106,15 @@ namespace Proof {
         }
         glfwMakeContextCurrent(MainWindow);
         glfwSetKeyCallback(MainWindow, key_callback);
+        glfwSetMouseButtonCallback(MainWindow, mouse_button_callback);
+
         if (glewInit() != GLEW_OK) {
             PF_ENGINE_ERROR("Glew Init Not defined");
             return -1;
         }
-        float Position[6] = {
-            -0.1f, -0.1f,
-        0.0f,  0.1f,
-        0.5f, -0.5f
-        };
-
-        unsigned int buffer;
-        glGenBuffers(1, &buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), Position, GL_STATIC_DRAW);
-
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
         ImGui::CreateContext();
         ImGui_ImplGlfw_InitForOpenGL(MainWindow, true);
         ImGui::StyleColorsDark();
-
-
-
         return 0;
     }
 
@@ -98,13 +123,13 @@ namespace Proof {
         ImGui::DestroyContext();
         glfwTerminate();
         return 0;
-
     }
 
-    void WindowsWindow::WindowBegin() {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-
+    void WindowsWindow::NewFrame() {
+        glClear(GL_COLOR_BUFFER_BIT);
+        time = glfwGetTime();
+        //ImGui_ImplOpenGL3_NewFrame();
+        //ImGui_ImplGlfw_NewFrame();
     }
 
 }

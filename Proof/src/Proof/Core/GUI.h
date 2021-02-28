@@ -10,7 +10,7 @@
 namespace Proof {
     class Proof_API GUI {
     public:
-        static	enum ProofFlags_{
+        static	enum  ProofFlags_{
             ProofFlags_None = 0,
             ProofFlags_NoTitleBar = 1 << 0,   // Disable title-bar
             ProofFlags_NoResize = 1 << 1,   // Disable user resizing with the lower-right grip
@@ -49,17 +49,18 @@ namespace Proof {
         };
 
         GUI(const char* Frame, bool CreateNewFrame); // create A new frame
-        void Starup(const char* AddNewFrame, bool* RefToVariable = nullptr, ProofFlags_ Flag = ProofFlags_None);
+        void Starup(const char* AddNewFrame, bool* RefToVariable = nullptr, int Flag = ProofFlags_None);
         void End();
 
         std::string GetFrameName(); // get the frame name 
         void AddCheckBox(const char* CheckBoxName, bool* Variable);
         void AddSliderfloat(const char* Name, float* Variable, float MinValue, float MaxValue);
-        void GUI::AddText( char* format, ...) {
+        void GUI::AddText( const char* format, ...) {
 			va_list arg;
 			va_start(arg, format);
-			va_end(arg);
-            ImGui::Text(format,arg);
+            va_end(arg);
+            ImGui::Text(format);
+          
 		}
         
 
@@ -71,6 +72,15 @@ namespace Proof {
         bool BeginMenu(const char* MenuName);
         void EndMenu();
         bool AddMenuItem(const char* Item);
+        void ButtonHoverColor(float R = 0.2f, float G = 0.995f, float B = 0.49f, float A = 1.0f) {
+            auto& colors = ImGui::GetStyle().Colors;
+            colors[ImGuiCol_Button] = ImVec4{R, G, B, A };
+        };
+
+        void ButtonColor(float R = 0.15f, float G = 0.1505f, float B = 0.151f, float A = 1.0f) {
+        };
+        void ButtonActiveColor(float R = 0.15f, float G = 0.1505f, float B = 0.151f, float A = 1.0f) {
+        };
 
     private:
         std::string FrameName;

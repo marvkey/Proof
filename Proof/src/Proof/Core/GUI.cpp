@@ -5,11 +5,16 @@
 namespace Proof {
     GUI::GUI(const char* Frame, bool CreateNewFrame) {
         this->FrameName = Frame;
+        ButtonHoverColor();
+        
         if (CreateNewFrame == true) {
             ImGui::NewFrame();
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            
         }
     }
-    void GUI::Starup(const char* AddNewFrame, bool* RefToVariable, ProofFlags_ Flag) {
+    void GUI::Starup(const char* AddNewFrame, bool* RefToVariable, int Flag) {
         ImGui::Begin(AddNewFrame, RefToVariable, (ImGuiWindowFlags_)Flag);
     }
     std::string GUI::GetFrameName() {
@@ -29,7 +34,11 @@ namespace Proof {
     }
 
     void GUI::End() {
+       
         ImGui::End();
+        ImGui::EndFrame();
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
     bool GUI::CreateButton(const char* ButtonName, float width, float height) {
@@ -54,6 +63,7 @@ namespace Proof {
     }
 
     void GUI::EndMenu() {
+
         ImGui::EndMenu();
     }
 

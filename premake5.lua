@@ -119,7 +119,8 @@ project "SandBox"
 	libdirs 
 	{
 		"%{wks.location}/Proof/vendor/glfw-3.3.2.bin.WIN64/lib-vc2019",
-		"%{wks.location}/Proof/vendor/glew-2.1.0/lib/Release/x64"
+		"%{wks.location}/Proof/vendor/glew-2.1.0/lib/Release/x64",
+	
 
 	}
 	
