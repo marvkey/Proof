@@ -1,5 +1,6 @@
 #include "Proofprch.h"
 #include "Input.h"
+#include "Platform/CurrentWindow.h"
 namespace Proof {
 
 	bool Input::IsKeyPressed(KeyBoardKey Key) {
@@ -15,15 +16,11 @@ namespace Proof {
 		return false;
 	}
 
-	bool Proof_API Input::IsKeyHold(KeyBoardKey Key) {
+	bool Input::IsKeyHold(KeyBoardKey Key) {
 		for (int i = 0; i < WindowsWindow::KeyboardKeyRepeat.size(); i++) {
 			if (Key == WindowsWindow::KeyboardKeyRepeat[i])return true;
 		}
-		return false;
-		/*
-		if (glfwGetKey(static_cast<GLFWwindow*>(CurrentWindow::GetWindow()), (int)Key) == GLFW_PRESS) return true;
-		return false;
-		*/
+		return false;                                                                         
 	}
 
 	bool Input::IsKeyDoubleClick(KeyBoardKey Key) {
@@ -32,6 +29,7 @@ namespace Proof {
 		}
 		return false;
 	}
+
 
 	bool Input::IsMouseButtonPressed(MouseButton Button) {
 		for (int i = 0; i < WindowsWindow::MouseButtonPressed.size(); i++) {
@@ -47,9 +45,7 @@ namespace Proof {
 	}
 	bool Input::IsMouseButtonHold(MouseButton Button) {
 		if (glfwGetMouseButton(static_cast<GLFWwindow*>(CurrentWindow::GetWindow()), (int)Button) == (int)InputEvent::KeyPressed) return true;
-		
 		return false;
-		
 	}
 	bool Input::IsMouseButtonDoubleClicked(MouseButton Button){
 

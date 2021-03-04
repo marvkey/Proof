@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "Proof/Core/Application.h"
 #if defined(_WIN64)
 namespace Proof {
 

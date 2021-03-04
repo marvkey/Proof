@@ -2,6 +2,7 @@
 #include "Core.h"
 #include "Platform/WindowsWindow.h"
 #include "Platform/CurrentWindow.h"
+int main(int argc, char** argv);
 
 namespace Proof {
     class Proof_API Application {
@@ -13,6 +14,8 @@ namespace Proof {
     private:
         static WindowsWindow* MainWindow;
         friend class CurrentWindow;
+        friend int ::main(int argc, char** argv);
+
     };
     Application* CreateApplication();
 }

@@ -1,8 +1,10 @@
 #include "Proofprch.h"
 #include "Application.h"
-#include "Proof/Events/Event.h"
 #include "Platform/WindowsWindow.h"
 #include "Proof/Input/Mouse.h"
+#include "Proof/Events/MouseEvent.h"
+#include "Proof/Events/KeyEvent.h"
+#include "Proof/Events/WindowEvent.h"
 
 namespace Proof {
     WindowsWindow* Application::MainWindow = nullptr;
@@ -12,17 +14,15 @@ namespace Proof {
     Application::~Application() {}
 
     void Application::Run() {
-        MainWindow = new WindowsWindow(200, 300);
+        MainWindow = new WindowsWindow(800, 500);
+      
         MainWindow->createWindow();
         while ((glfwWindowShouldClose(CurrentWindow::GetWindow()) == false)) {
-            MainWindow->NewFrame();
-            if (Input::IsMouseButtonHold(MouseButton::ButtonLeft)) {
-                PF_ENGINE_INFO("PLES");
-            }
-
-            MainWindow->NextFrame(false); // false because we are not rendering a new Imgui;
+          
+            MainWindow->WindowUpdate(false); // false because we are not rendering a new Imgui;
         };
         MainWindow->WindowEnd();
         delete MainWindow;
     }
+   
 }

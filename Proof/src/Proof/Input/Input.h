@@ -10,9 +10,7 @@ namespace Proof {
 		SHIFT = 0x0001,
 		CONTROL = 0x0002,
 		ALT = 0x0004
-
 	};
-
 	class Proof_API Input  {
 	public:
 		static bool  IsKeyPressed(KeyBoardKey Key);
@@ -21,7 +19,7 @@ namespace Proof {
 		static bool  IsKeyDoubleClick(KeyBoardKey Key);
 		static bool  IsMouseButtonPressed(MouseButton Button);
 		static bool  IsMouseButtonReleased(MouseButton Button);
-		static bool  IsMouseButtonHold(MouseButton Button);
+		static bool  IsMouseButtonHold(MouseButton Button); // Needs to be rendered in a different way;
 		static bool  IsMouseButtonDoubleClicked(MouseButton Button);
 	};
 	

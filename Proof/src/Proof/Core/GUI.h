@@ -81,7 +81,6 @@ namespace Proof {
         };
         void ButtonActiveColor(float R = 0.15f, float G = 0.1505f, float B = 0.151f, float A = 1.0f) {
         };
-
     private:
         std::string FrameName;
         void Colors();
