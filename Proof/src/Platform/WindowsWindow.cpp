@@ -67,7 +67,6 @@ namespace Proof {
             if (diff_ms > 10 && diff_ms < 200) {
                 action = (int)InputEvent::KeyDouble;
             }
-            
         }
         switch (action) {
         case GLFW_PRESS:
@@ -171,14 +170,7 @@ namespace Proof {
     }
 
     void WindowsWindow::Mouse_Hover_Window(GLFWwindow* window, int entered){
-        /*
-        if (entered) {
-            PF_ENGINE_INFO("Mouse Entered content area");
-        }
-        else {
-            PF_ENGINE_INFO("Mouse left the content are");
-        }
-        */
+    
     }
 
     void WindowsWindow::Mouse_ScrollWhell_Callback(GLFWwindow* window, double xoffset, double yoffset){
