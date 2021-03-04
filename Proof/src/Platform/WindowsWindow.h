@@ -5,7 +5,6 @@
 #include "Proof/Input/KeyCodes.h"
 #include <vector>
 int main(int argc, char** argv);
-
 namespace Proof {
     
     class Proof_API WindowsWindow : public Window {
