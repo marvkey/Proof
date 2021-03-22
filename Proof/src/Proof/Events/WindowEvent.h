@@ -2,14 +2,20 @@
 #include "Platform/WindowsWindow.h"
 #include "Proof/Core/Core.h"
 #include <memory>
+#include "Event.h"
 int main(int argc, char** argv);
 namespace Proof {
     /* The initilization of the these will need to run on a sperate thread */
-    class Proof_API WindowResizeEvent {
+    class Proof_API WindowResizeEvent:public Event {
     public:
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
         inline uint8_t GetWhidt() {return Instance->Whidt;}
         inline uint8_t GetHeight() { return Instance->Height;}
+        std::string ToString()override {
+            std::stringstream ss;
+            ss << "Window Resize Event " << Instance->Whidt << ", " << Instance->Height;
+            return ss.str();
+        }
     private:
         uint8_t Whidt, Height;
         static std::shared_ptr<WindowResizeEvent>Instance;
@@ -18,11 +24,16 @@ namespace Proof {
         friend WindowsWindow;
     };
 
-    class Proof_API WindowMoveEvent {
+    class Proof_API WindowMoveEvent:public Event {
     public:
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
         inline uint8_t GetPosX()const { return Instance->PosX; }
         inline uint8_t GetPosY()const { return Instance->PosY; }
+        std::string ToString()override {
+            std::stringstream ss;
+            ss << "Window Move Event " << Instance->PosX << ", " << Instance->PosY;
+            return ss.str();
+        }
     private:
         uint8_t PosX, PosY;
         static std::shared_ptr<WindowMoveEvent> Instance;
@@ -31,9 +42,14 @@ namespace Proof {
         friend WindowsWindow;
     };
 
-    class Proof_API WindowCloseEvent {
+    class Proof_API WindowCloseEvent: public Event {
     public:
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
+        std::string ToString()override {
+            std::stringstream ss;
+            ss << "Window Has Been Closed ";
+            return ss.str();
+        }
     private:
         static std::shared_ptr<WindowCloseEvent>Instance;
         bool EventHandled = false;
@@ -41,9 +57,14 @@ namespace Proof {
         friend WindowsWindow;
     };
 
-    class Proof_API WindowFocusEvent {
+    class Proof_API WindowFocusEvent:public Event {
     public:
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
+        std::string ToString()override {
+            std::stringstream ss;
+            ss << "Window is Focus ";
+            return ss.str();
+        }
     private:
         static std::shared_ptr<WindowFocusEvent>Instance;
         bool EventHandled = false;

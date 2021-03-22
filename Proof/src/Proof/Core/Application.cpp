@@ -42,10 +42,7 @@ namespace Proof {
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
             ImGui::Begin("Hello, world!");
-            Event Event1;
-            
-             PF_ENGINE_INFO("THERE IT IS {} ",Event1);
-            
+           
           
             ImGui::End();
             ImGui::Render();
