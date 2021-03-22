@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include "Proof/Core/Window.h"
 #include "Proof/Input/KeyCodes.h"
+#include "Proof/Core/FrameTime.h"
 #include <vector>
 int main(int argc, char** argv);
 namespace Proof {
@@ -28,7 +29,7 @@ namespace Proof {
         friend int ::main(int argc, char** argv);
         virtual	int  createWindow()override;
         
-        void WindowUpdate(bool UsingGui);
+        void WindowUpdate(const FrameTime DeltaTime);
         int WindowEnd();
         unsigned int Width =0, Height=0;
         GLFWwindow* MainWindow;

@@ -6,11 +6,7 @@
 
 
 namespace Proof {
-	enum  KeyTypes {
-		SHIFT = 0x0001,
-		CONTROL = 0x0002,
-		ALT = 0x0004
-	};
+	
 	class Proof_API Input  {
 	public:
 		static bool  IsKeyPressed(KeyBoardKey Key);

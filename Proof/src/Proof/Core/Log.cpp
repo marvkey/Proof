@@ -10,10 +10,8 @@ namespace Proof {
 		spdlog::set_pattern("%^[%T] %n: %v%$");
 		EngineLogger = spdlog::stdout_color_mt("Proof");
 		EngineLogger->set_level(spdlog::level::trace);
-
+		
 		ClientLogger = spdlog::stdout_color_mt("User");
 		ClientLogger->set_level(spdlog::level::trace);
 	}
 }
-
-

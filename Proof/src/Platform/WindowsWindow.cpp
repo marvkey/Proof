@@ -21,8 +21,8 @@ namespace Proof {
         this->Height = Height;
     }
 
-    void WindowsWindow::WindowUpdate(bool UsingGui) {
-       
+    void WindowsWindow::WindowUpdate(const FrameTime DeltaTime) {
+        
        /* Event Handle over hear may change in the future */
         KeyboardPressed.clear();
         KeyboardReleased.clear();
@@ -42,20 +42,18 @@ namespace Proof {
         MousePressedEvent::Instance->EventHandled = false;
         MouseDoubleClickEvent::Instance->EventHandled = false;
         MouseMoveEvent::Instance->EventHandled = false;
+        MouseScrollEvent::Instance->EventHandled = false;
 
         /* ----------------------------------------------*/
         /* This are not working like inteded */
         WindowMoveEvent::Instance->EventHandled = false;
         WindowResizeEvent::Instance->EventHandled = false;
         /* -------------------------------------------- */
-        
-        if (UsingGui == true) {
-             ImGui::Render();
-             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        }
+       
 
         glfwSwapBuffers(MainWindow);
         glfwPollEvents();
+        glClear(GL_COLOR_BUFFER_BIT);
     }
     void WindowsWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
         /* This is for when a key is pressed 2 */
@@ -148,8 +146,6 @@ namespace Proof {
     }
 
     void WindowsWindow::Window_Refresh_callback(GLFWwindow* window){
-        //glfwSwapBuffers(window);
-       
     }
 
     void WindowsWindow::Window_Input_Focus_callback(GLFWwindow* window, int focused){
@@ -162,11 +158,9 @@ namespace Proof {
     }
     
     void WindowsWindow::Mouse_Moved_Callback(GLFWwindow* window, double xpos, double ypos){
-        
         MouseMoveEvent::Instance->EventHandled = true;
         MouseMoveEvent::Instance->PosX = xpos;
         MouseMoveEvent::Instance->PosY = ypos;
-        
     }
 
     void WindowsWindow::Mouse_Hover_Window(GLFWwindow* window, int entered){
@@ -174,8 +168,9 @@ namespace Proof {
     }
 
     void WindowsWindow::Mouse_ScrollWhell_Callback(GLFWwindow* window, double xoffset, double yoffset){
-      
-        
+        MouseScrollEvent::Instance->EventHandled = true;
+        MouseScrollEvent::Instance->PosX = xoffset;
+        MouseScrollEvent::Instance->PosY = yoffset;
     }
 
     int WindowsWindow::createWindow() {
@@ -190,7 +185,6 @@ namespace Proof {
             glfwTerminate();
             return -1;
         }
-        
         glfwMakeContextCurrent(MainWindow);
         glfwSetKeyCallback(MainWindow, key_callback);
         glfwSetMouseButtonCallback(MainWindow, mouse_button_callback);
@@ -198,37 +192,23 @@ namespace Proof {
         glfwSetCursorPosCallback(MainWindow, Mouse_Moved_Callback);
         glfwSetCursorEnterCallback(MainWindow, Mouse_Hover_Window);
         glfwSetScrollCallback(MainWindow, Mouse_ScrollWhell_Callback);
-        //glfwSetJoystickCallback(Controller_Callback);
-        
+      
         glfwSetWindowSizeCallback(MainWindow, Window_Resize_Callback);
         glfwSetWindowPosCallback(MainWindow, Window_Position_Callback);
         glfwSetWindowCloseCallback(MainWindow, Window_Close_Callback);
         glfwSetWindowRefreshCallback(MainWindow, Window_Refresh_callback);
         glfwSetWindowFocusCallback(MainWindow, Window_Input_Focus_callback);
-        
-        
 
         if (glewInit() != GLEW_OK) {
             PF_ENGINE_ERROR("Could Not Initilize Glew");
             return -1;
         }
-
-        
-        //ImGui::CreateContext();
-        //ImGui_ImplGlfw_InitForOpenGL(MainWindow, true);
-        //ImGui::StyleColorsDark();
         return 0;
     }
 
     int WindowsWindow::WindowEnd() {
-
-        //ImGui_ImplOpenGL3_Shutdown();
-        //ImGui::DestroyContext();
         glfwDestroyWindow(MainWindow);
         glfwTerminate();
         return 0;
     }
-
-    
-
 }

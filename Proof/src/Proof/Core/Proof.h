@@ -19,11 +19,13 @@ int  main(int argc, char** argv){
 		Proof::MouseReleasedEvent::Instance = std::make_shared<Proof::MouseReleasedEvent>();
 		Proof::MouseDoubleClickEvent::Instance = std::make_shared<Proof::MouseDoubleClickEvent>();
 		Proof::MouseMoveEvent::Instance = std::make_shared<Proof::MouseMoveEvent>();
+		Proof::MouseScrollEvent::Instance = std::make_shared<Proof::MouseScrollEvent>();
 
 		Proof::WindowResizeEvent::Instance = std::make_shared<Proof::WindowResizeEvent>();
 		Proof::WindowMoveEvent::Instance = std::make_shared<Proof::WindowMoveEvent>();
 		Proof::WindowCloseEvent::Instance = std::make_shared<Proof::WindowCloseEvent>();
 		Proof::WindowFocusEvent::Instance = std::make_shared<Proof::WindowFocusEvent>();
+		
 		
 		
 		Proof::Log::Init();

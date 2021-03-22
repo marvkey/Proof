@@ -1,15 +1,21 @@
 #pragma once
-
-
 #include "Platform/WindowsWindow.h"
 #include "Proof/Core/Core.h"
 #include <memory>
+#include "Event.h"
+#include <sstream>
+#include <functional>
 int main(int argc, char** argv);
 namespace Proof {
-    class Proof_API KeyPressedEvent {
+    class Proof_API KeyPressedEvent: public Event{
     public:
         inline KeyBoardKey GetKeyPressed() { return Instance->EventHandled == true ? Instance->KeyPressed : (KeyBoardKey)-1; }
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
+        std::string ToString() override {
+            std::stringstream ss;
+            ss << "Key Pressed Event " << (char)Instance->KeyPressed;
+            return ss.str();
+        }
     private:
         static std::shared_ptr<KeyPressedEvent>Instance;
         KeyBoardKey KeyPressed;
@@ -18,10 +24,15 @@ namespace Proof {
         friend WindowsWindow;
     };
 
-    class Proof_API KeyReleasedEvent {
+    class Proof_API KeyReleasedEvent:public Event {
     public:
         inline KeyBoardKey GetKeyReleased() { return Instance->EventHandled == true ? Instance->KeyReleased : (KeyBoardKey)-1; }
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
+        std::string ToString() override {
+            std::stringstream ss;
+            ss << "Key Released Event " << (char)Instance->KeyReleased;
+            return ss.str();
+        }
     private:
         static std::shared_ptr<KeyReleasedEvent>Instance;
         KeyBoardKey KeyReleased;
@@ -30,10 +41,15 @@ namespace Proof {
         friend WindowsWindow;
     };
 
-    class Proof_API KeyDoubleClickEvent {
+    class Proof_API KeyDoubleClickEvent :public Event {
     public:
         inline KeyBoardKey GetKeyDoubleClick() { return Instance->EventHandled == true ? Instance->KeyDoubleClick : (KeyBoardKey)-1; }
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
+        std::string ToString()override {
+            std::stringstream ss;
+            ss << "Key Double Click Event " <<(char) Instance->KeyDoubleClick;
+            return ss.str();
+        }
     private:
         static std::shared_ptr<KeyDoubleClickEvent>Instance;
         KeyBoardKey KeyDoubleClick;
@@ -42,10 +58,15 @@ namespace Proof {
         friend WindowsWindow;
     };
 
-    class Proof_API KeyRepeatEvent {
+    class Proof_API KeyRepeatEvent:public Event {
     public:
         inline KeyBoardKey GetKeyRepeat() { return Instance->EventHandled == true ? Instance->KeyRepeat : (KeyBoardKey)-1; }
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
+        std::string ToString() override {
+            std::stringstream ss;
+            ss << "Key Repeat Event " << (char) Instance->KeyRepeat;
+            return ss.str();
+        }
     private:
         static std::shared_ptr<KeyRepeatEvent>Instance;
         KeyBoardKey KeyRepeat;
@@ -53,5 +74,4 @@ namespace Proof {
         friend int ::main(int argc, char** argv);
         friend WindowsWindow;
     };
-
 }

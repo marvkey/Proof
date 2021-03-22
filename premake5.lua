@@ -1,7 +1,7 @@
 
 workspace "Proof"
 	architecture "x64"
-	--startproject "SandBox"
+	startproject "SandBox"
 	configurations
 	{
 
@@ -9,8 +9,11 @@ workspace "Proof"
 		"Release",
 		"Dist"
 	}
-
-
+	
+	flags
+	{
+		"MultiProcessorCompile"
+	}
 
 
 OutputDirectory ="%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -22,9 +25,9 @@ IncludeDir["ImGui"]="%{wks.location}/Proof/vendor/ImGUI"
 
 project "Proof"
 	location "Proof"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
-	
+	cppdialect "C++17"
 
 	targetdir ("bin/".. OutputDirectory .. "/%{prj.name}")
 	objdir ("bin-int/".. OutputDirectory .. "/%{prj.name}")
@@ -49,15 +52,12 @@ project "Proof"
 	{
 		"Proof/vendor/glfw-3.3.2.bin.WIN64/lib-vc2019",
 		"Proof/vendor/glew-2.1.0/lib/Release/x64"
-	
 	}
 	links
 	{
-		
 		"glew32s.lib",
 		"glfw3.lib",
 		"opengl32.lib"
-
 	}
     defines 
 	{
@@ -66,36 +66,35 @@ project "Proof"
 		"PF_PLATFORM_WINDOW64"
 	}
 	filter "system:windows"
-		cppdialect "C++17"
-		staticruntime "On"
 		systemversion "latest"
 		buildoptions "/MDd"
 		
 		postbuildcommands 
 		{
 			
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" ..OutputDirectory.."/SandBox") -- This copies dll file from Proof Into Sandbox
+			--("{COPY} %{cfg.buildtarget.relpath} ../bin/" ..OutputDirectory.."/SandBox") -- This copies dll file from Proof Into Sandbox
 		}
 
 	filter "configurations:Debug"
 		defines "PF_DEBUG"
-		optimize "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "PF_RELEASE"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "PF_DIST"
-		optimize "On"		
+		optimize "on"
+			
 
         
-
     
 project "SandBox"
 	location "SandBox"
 	kind "ConsoleApp"
 	language "C++"
+	cppdialect "C++17"
 
 	targetdir ("bin/".. OutputDirectory .. "/%{prj.name}")
 	objdir ("bin-int/".. OutputDirectory .. "/%{prj.name}")
@@ -112,7 +111,7 @@ project "SandBox"
 		"%{wks.location}/Proof/vendor/spdlog/include",
 		"%{IncludeDir.GLEW}",
 		"%{IncludeDir.GLFW}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
 
 	}
 
@@ -121,7 +120,6 @@ project "SandBox"
 		"%{wks.location}/Proof/vendor/glfw-3.3.2.bin.WIN64/lib-vc2019",
 		"%{wks.location}/Proof/vendor/glew-2.1.0/lib/Release/x64",
 	
-
 	}
 	
 	links
@@ -134,28 +132,24 @@ project "SandBox"
 	}
 	defines 
 	{
-			
 		"GLEW_STATIC",
 		"PF_PLATFORM_WINDOW64"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
-		staticruntime "On"
 		systemversion "latest"
-		
+		buildoptions "/MDd"
+
 	filter "configurations:Debug"
 		defines "PF_DEBUG"
-		optimize "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "PF_RELEASE"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "PF_DIST"
-		optimize "On"		
-
-
+		optimize "on"		
 
 

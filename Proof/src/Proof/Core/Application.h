@@ -2,6 +2,10 @@
 #include "Core.h"
 #include "Platform/WindowsWindow.h"
 #include "Platform/CurrentWindow.h"
+
+#include "ImGUIOpenGL/imgui.h"
+#include "ImGUIOpenGL/imgui_impl_glfw.h"
+#include "ImGUIOpenGL/imgui_impl_opengl3.h"
 int main(int argc, char** argv);
 
 namespace Proof {
@@ -14,6 +18,7 @@ namespace Proof {
     private:
         static WindowsWindow* MainWindow;
         friend class CurrentWindow;
+        float LastFrameTime;
         friend int ::main(int argc, char** argv);
 
     };

@@ -7,4 +7,12 @@ namespace Proof {
     std::shared_ptr<MouseReleasedEvent> MouseReleasedEvent::Instance;
     std::shared_ptr<MouseDoubleClickEvent> MouseDoubleClickEvent::Instance;
     std::shared_ptr<MouseMoveEvent>MouseMoveEvent::Instance;
+    std::shared_ptr<MouseScrollEvent>MouseScrollEvent::Instance;
+
+    std::ostream& operator<<(std::ostream& os, const MouseScrollEvent& dt)
+    {
+        return os << "MouseScrolled Event " << dt.Instance->PosX << ", " << Proof::MouseScrollEvent::Instance->PosY;
+
+    }
+
 }

@@ -2,6 +2,8 @@
 #include "Platform/WindowsWindow.h"
 #include "Proof/Core/Core.h"
 #include <memory>
+#include <sstream>
+#include <functional>
 int main(int argc, char** argv);
 namespace Proof {
     class Proof_API MousePressedEvent {
@@ -50,6 +52,31 @@ namespace Proof {
         bool EventHandled =false;
         unsigned int PosX;
         unsigned int PosY;
+        friend int ::main(int argc, char** argv);
+        friend WindowsWindow;
+        
+    };
+
+    class Proof_API MouseScrollEvent {
+    public:
+        inline float GetPosX() { return Instance->PosX; }
+        inline float GetPosY() { return Instance->PosY; }
+        inline bool OnEvent() { return  Instance->EventHandled == true ? true : false; }
+        /*
+        std::string ToString() {
+            std::stringstream ss;
+            ss << "MouseScrolled Event " << Instance->PosX << ", " << Instance->PosY;
+            return ss.str();
+        }
+        */
+        friend std::ostream& operator<<(std::ostream& os, const MouseScrollEvent& dt); 
+        
+       
+    private:
+        static std::shared_ptr<MouseScrollEvent>Instance;
+        bool EventHandled = false;
+        float PosX;
+        float PosY;
         friend int ::main(int argc, char** argv);
         friend WindowsWindow;
     };
