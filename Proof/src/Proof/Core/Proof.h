@@ -10,12 +10,12 @@ extern Proof::Application* Proof::CreateApplication();
 int  main(int argc, char** argv){
 
 		
-		Proof::KeyPressedEvent::Instance = std::make_shared<Proof::KeyPressedEvent>();
+		Proof::KeyClickedEvent::Instance = std::make_shared<Proof::KeyClickedEvent>();
 		Proof::KeyReleasedEvent::Instance = std::make_shared<Proof::KeyReleasedEvent>();
 		Proof::KeyRepeatEvent::Instance = std::make_shared<Proof::KeyRepeatEvent>();
 		Proof::KeyDoubleClickEvent::Instance = std::make_shared<Proof::KeyDoubleClickEvent>();
 
-		Proof::MousePressedEvent::Instance = std::make_shared<Proof::MousePressedEvent>();
+		Proof::MouseClickedEvent::Instance = std::make_shared<Proof::MouseClickedEvent>();
 		Proof::MouseReleasedEvent::Instance = std::make_shared<Proof::MouseReleasedEvent>();
 		Proof::MouseDoubleClickEvent::Instance = std::make_shared<Proof::MouseDoubleClickEvent>();
 		Proof::MouseMoveEvent::Instance = std::make_shared<Proof::MouseMoveEvent>();
@@ -25,8 +25,6 @@ int  main(int argc, char** argv){
 		Proof::WindowMoveEvent::Instance = std::make_shared<Proof::WindowMoveEvent>();
 		Proof::WindowCloseEvent::Instance = std::make_shared<Proof::WindowCloseEvent>();
 		Proof::WindowFocusEvent::Instance = std::make_shared<Proof::WindowFocusEvent>();
-		
-		
 		
 		Proof::Log::Init();
 		

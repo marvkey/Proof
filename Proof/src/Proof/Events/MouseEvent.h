@@ -7,18 +7,18 @@
 #include "Event.h"
 int main(int argc, char** argv);
 namespace Proof {
-    class Proof_API MousePressedEvent:public Event{
+    class Proof_API MouseClickedEvent:public Event{
     public:
-        inline MouseButton GetButtonPressed() { return Instance->EventHandled == true ? Instance->ButtonPressed : (MouseButton)-1; }
+        inline MouseButton GetButtonClicked() { return Instance->EventHandled == true ? Instance->ButtonClicked : (MouseButton)-1; }
         inline bool OnEvent() { return Instance->EventHandled == true ? true : false; }
         std::string ToString() override {
             std::stringstream ss;
-            ss << "Mouse Pressed Event " << (int)Instance->ButtonPressed;
+            ss << "Mouse Clicked Event " << (int)Instance->ButtonClicked;
             return ss.str();
         }
     private:
-        static std::shared_ptr<MousePressedEvent>Instance;
-        MouseButton ButtonPressed;
+        static std::shared_ptr<MouseClickedEvent>Instance;
+        MouseButton ButtonClicked;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
         friend WindowsWindow;

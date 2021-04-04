@@ -6,7 +6,6 @@
 
 namespace Proof {
 	class Proof_API Log{
-
 	public:
 		static void Init();
 		static std::shared_ptr <spdlog::logger>& GetEngineLogger() {

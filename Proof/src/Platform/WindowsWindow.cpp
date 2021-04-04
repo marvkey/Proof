@@ -5,41 +5,40 @@
 #include  "Proof/Events/KeyEvent.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Platform/CurrentWindow.h"
+
 namespace Proof {
-    std::vector<KeyBoardKey> WindowsWindow::KeyboardPressed;
+    std::vector<KeyBoardKey> WindowsWindow::KeyboardClicked;
     std::vector<KeyBoardKey> WindowsWindow::KeyboardReleased;
     std::vector<KeyBoardKey> WindowsWindow::KeyboardKeyDoubleClicked;
     std::vector<KeyBoardKey> WindowsWindow::KeyboardKeyRepeat;
 
-    std::vector<MouseButton> WindowsWindow::MouseButtonPressed;
+    std::vector<MouseButton> WindowsWindow::MouseButtonClicked;
     std::vector<MouseButton> WindowsWindow::MouseButtonReleased;
-
     std::vector<MouseButton> WindowsWindow::MouseButtonDoubleClicked;
     std::vector<MouseButton> WindowsWindow::MouseButtonRepeat;
+
     WindowsWindow::WindowsWindow(unsigned int Width, unsigned int Height) {
         this->Width = Width;
         this->Height = Height;
     }
-
     void WindowsWindow::WindowUpdate(const FrameTime DeltaTime) {
-        
+
        /* Event Handle over hear may change in the future */
-        KeyboardPressed.clear();
+        KeyboardClicked.clear();
         KeyboardReleased.clear();
         KeyboardKeyDoubleClicked.clear();
         KeyboardKeyRepeat.clear();
-        
-        KeyPressedEvent::Instance->EventHandled = false;
+        KeyClickedEvent::Instance->EventHandled = false;
         KeyReleasedEvent::Instance->EventHandled = false;
         KeyDoubleClickEvent::Instance->EventHandled = false;
         KeyRepeatEvent::Instance->EventHandled = false;
        
-        MouseButtonPressed.clear();
+        MouseButtonClicked.clear();
         MouseButtonReleased.clear();
         MouseButtonDoubleClicked.clear();
         MouseButtonReleased.clear();
         MouseReleasedEvent::Instance->EventHandled = false;
-        MousePressedEvent::Instance->EventHandled = false;
+        MouseClickedEvent::Instance->EventHandled = false;
         MouseDoubleClickEvent::Instance->EventHandled = false;
         MouseMoveEvent::Instance->EventHandled = false;
         MouseScrollEvent::Instance->EventHandled = false;
@@ -50,13 +49,13 @@ namespace Proof {
         WindowResizeEvent::Instance->EventHandled = false;
         /* -------------------------------------------- */
        
-
         glfwSwapBuffers(MainWindow);
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     }
     void WindowsWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-        /* This is for when a key is pressed 2 */
+        /* This is for when a key is Clicked 2 */
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
             auto now = std::chrono::system_clock::now();
@@ -66,11 +65,13 @@ namespace Proof {
                 action = (int)InputEvent::KeyDouble;
             }
         }
+       
         switch (action) {
         case GLFW_PRESS:
-            KeyboardPressed.push_back((KeyBoardKey)key);
-            KeyPressedEvent::Instance->KeyPressed = (KeyBoardKey)key;
-            KeyPressedEvent::Instance->EventHandled = true;
+            KeyboardClicked.push_back((KeyBoardKey)key);
+            KeyClickedEvent::Instance->KeyClicked = (KeyBoardKey)key;
+            KeyClickedEvent::Instance->EventHandled = true;
+            
             break;
         case GLFW_RELEASE:
             KeyboardReleased.push_back((KeyBoardKey)key);
@@ -102,9 +103,9 @@ namespace Proof {
         }
         switch (action) {
         case GLFW_PRESS:
-            MouseButtonPressed.push_back((MouseButton)button);
-            MousePressedEvent::Instance->ButtonPressed = (MouseButton)button;
-            MousePressedEvent::Instance->EventHandled = true;
+            MouseButtonClicked.push_back((MouseButton)button);
+            MouseClickedEvent::Instance->ButtonClicked = (MouseButton)button;
+            MouseClickedEvent::Instance->EventHandled = true;
             break;
         case GLFW_RELEASE:
             MouseButtonReleased.push_back((MouseButton)button);
@@ -174,7 +175,6 @@ namespace Proof {
     }
 
     int WindowsWindow::createWindow() {
-        
         if (!glfwInit()) {
             PF_ENGINE_ERROR("Could Not Initilize GLFW");
             return -1;

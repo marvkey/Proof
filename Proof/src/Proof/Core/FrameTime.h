@@ -9,10 +9,9 @@ namespace Proof {
         }
         float GetDeltaTimeSeconds() const { return DeltaTime; }
         float GetDeltaTimeMilliseconds() const { return DeltaTime * 1000.0f; }
+        float GetWindowOpenTime()const {return glfwGetTime();}
         operator float() const {return DeltaTime;} 
     private:
         float DeltaTime;
     };
 }
-
-

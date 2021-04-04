@@ -21,6 +21,7 @@ IncludeDir={}
 IncludeDir["GLFW"]="%{wks.location}/Proof/vendor/glfw-3.3.2.bin.WIN64/include"
 IncludeDir["GLEW"]="%{wks.location}/Proof/vendor/glew-2.1.0/include"
 IncludeDir["ImGui"]="%{wks.location}/Proof/vendor/ImGUI"
+IncludeDir["glm"]="%{wks.location}/Proof/vendor/glm"
 
 
 project "Proof"
@@ -46,7 +47,8 @@ project "Proof"
 		"%{wks.location}/Proof/vendor/spdlog/include",
 		"%{IncludeDir.GLEW}",
 		"%{IncludeDir.GLFW}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}"
     }
 	libdirs
 	{
@@ -112,6 +114,7 @@ project "SandBox"
 		"%{IncludeDir.GLEW}",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}"
 
 	}
 

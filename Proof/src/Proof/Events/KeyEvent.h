@@ -7,18 +7,18 @@
 #include <functional>
 int main(int argc, char** argv);
 namespace Proof {
-    class Proof_API KeyPressedEvent: public Event{
+    class Proof_API KeyClickedEvent: public Event{
     public:
-        inline KeyBoardKey GetKeyPressed() { return Instance->EventHandled == true ? Instance->KeyPressed : (KeyBoardKey)-1; }
+        inline KeyBoardKey GetKeyClicked() { return Instance->EventHandled == true ? Instance->KeyClicked : (KeyBoardKey)-1; }
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
         std::string ToString() override {
             std::stringstream ss;
-            ss << "Key Pressed Event " << (char)Instance->KeyPressed;
+            ss << "Key Clicked Event " << (char)Instance->KeyClicked;
             return ss.str();
         }
     private:
-        static std::shared_ptr<KeyPressedEvent>Instance;
-        KeyBoardKey KeyPressed;
+        static std::shared_ptr<KeyClickedEvent>Instance;
+        KeyBoardKey KeyClicked;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
         friend WindowsWindow;

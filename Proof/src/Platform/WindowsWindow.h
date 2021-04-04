@@ -13,12 +13,12 @@ namespace Proof {
         WindowsWindow(unsigned int Width, unsigned int Height);
         friend class Application; 
         /* This is temporary the way the key input works but it wil still use std::vector but maybe i will make the window have a friend class with the Input the class so i can make this private*/
-        static std::vector<KeyBoardKey> KeyboardPressed;
+        static std::vector<KeyBoardKey> KeyboardClicked;
         static std::vector<KeyBoardKey> KeyboardReleased;
         static std::vector<KeyBoardKey> KeyboardKeyDoubleClicked;
         static std::vector<KeyBoardKey> KeyboardKeyRepeat;
 
-        static std::vector<MouseButton> MouseButtonPressed;
+        static std::vector<MouseButton> MouseButtonClicked;
         static std::vector<MouseButton> MouseButtonReleased;
         static std::vector<MouseButton> MouseButtonDoubleClicked;
         static std::vector<MouseButton> MouseButtonRepeat;

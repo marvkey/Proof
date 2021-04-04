@@ -1,5 +1,6 @@
 #pragma once
 #include "ImGUIOpenGL/imgui.h"
+#include <iostream>
 #ifdef PF_PLATFORM_WINDOW64
     #ifdef PF_CHANGEBUILD_STATIC
         #ifdef  PF_BUILD_DLL
@@ -13,4 +14,5 @@
 #else We Only support winodws 64 Bit
 #endif
 
+#define FolderOfProofCurrentDirectory ="../Proof/";
 
