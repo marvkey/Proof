@@ -2,6 +2,10 @@
 #include "Core.h"
 #include "Platform/WindowsWindow.h"
 #include "Platform/CurrentWindow.h"
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include "ImGUIOpenGL/imgui.h"
 #include "ImGUIOpenGL/imgui_impl_glfw.h"
 #include "ImGUIOpenGL/imgui_impl_opengl3.h"

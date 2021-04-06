@@ -1,6 +1,8 @@
 #include "Proofprch.h"
 #include "Input.h"
 #include "Platform/CurrentWindow.h"
+#include "Proof/Events/MouseEvent.h"
+#include "Proof/Input/Mouse.h"
 namespace Proof {
 
 	bool Input::IsKeyClicked(KeyBoardKey Key) {
@@ -56,8 +58,23 @@ namespace Proof {
 		}
 		return false;
 	}
+	
 	bool Input::IsMouseButtonPressed(MouseButton Button){
-		if (glfwGetKey(CurrentWindow::GetWindow(), (int)Button))return true;
+		if (glfwGetMouseButton(CurrentWindow::GetWindow(), (int)Button))return true;
 		return false;
+	}
+	float Input::GetScrollWheelX(){
+		MouseScrollEvent ScrollWheel;
+		return ScrollWheel.GetPosX();
+	}
+	float Input::GetScrollWheelY(){
+		MouseScrollEvent ScrollWheel;
+		return ScrollWheel.GetPosY();
+	}
+	float Input::GetMousePosX(){
+		return Mouse::GetMouseX();
+	}
+	float Input::GetMouswPosY(){
+		return Mouse::GetMouseY();
 	}
 }

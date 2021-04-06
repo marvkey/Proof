@@ -25,7 +25,6 @@ namespace Proof {
 		 
 		 
 		 if (VertexShaderFile.is_open() == true && FragmentShaderFile.is_open() == true) {
-			 PF_ENGINE_INFO("Shader File is Open");
 			 std::stringstream vShaderStream, fShaderStream;
 			 vShaderStream << VertexShaderFile.rdbuf();//put to stream
 			 fShaderStream << FragmentShaderFile.rdbuf();

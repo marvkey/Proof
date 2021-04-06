@@ -9,7 +9,7 @@
 #include <array>
 
 
-//user defined
+//Proof defined
 #include "Proof/Core/Log.h"
 #include "Proof/Core/Core.h"
 #include "Proof/Input/Input.h"

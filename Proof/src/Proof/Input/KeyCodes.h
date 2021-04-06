@@ -187,5 +187,4 @@ namespace Proof {
 		KeyRepeat = 2,
 		KeyDouble =3
 	};
-
 }

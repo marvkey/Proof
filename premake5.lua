@@ -40,6 +40,8 @@ project "Proof"
 	{
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/ImGui/ImGUIOpenGL/**.h",
+        "%{prj.name}/vendor/ImGui/ImGUIOpenGL/**.cpp",
     }
     includedirs 
 	{
@@ -105,6 +107,7 @@ project "SandBox"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
+		
 	}
 
 	includedirs

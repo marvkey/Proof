@@ -31,7 +31,7 @@ namespace Proof {
         
         void WindowUpdate(const FrameTime DeltaTime);
         int WindowEnd();
-        unsigned int Width =0, Height=0;
+        int Width =0, Height=0;
         GLFWwindow* MainWindow;
         static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
         static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
@@ -40,6 +40,7 @@ namespace Proof {
         static void Mouse_ScrollWhell_Callback(GLFWwindow* window, double xoffset, double yoffset);
         static void Window_Close_Callback(GLFWwindow* window);
         static void Controller_Callback(int jid, int event);
+        static void Framebuffer_size_callback(GLFWwindow* window, int width, int height);
         /* ----------------------------------------------------------- */
         /*      This functions will have to run on a seperate thread */
         static void Window_Resize_Callback(GLFWwindow* window, int width, int height);

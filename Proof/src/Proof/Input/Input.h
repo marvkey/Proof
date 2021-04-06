@@ -19,5 +19,9 @@ namespace Proof {
 		static bool	 IsMouseButtonPressed(MouseButton Button); // checks if key is pressed 
 		static bool  IsMouseButtonReleased(MouseButton Button); // chekcs if the key was pressed the chekcs if release does this every frame
 		static bool  IsMouseButtonDoubleClicked(MouseButton Button);// chekcs if the key has been clicked 2 times
+		static float GetScrollWheelX();
+		static float GetScrollWheelY();
+		static float GetMousePosX();
+		static float GetMouswPosY();
 	};
 }

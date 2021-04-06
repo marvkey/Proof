@@ -6,8 +6,9 @@ out vec3 OurColor;
 uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
+uniform mat4 Scale;
 void main(){
-	gl_Position = Projection * View * Model * vec4(apos,1.0);
+	gl_Position = Projection * View * Model * Scale * vec4(apos,1.0);
 	OurColor =	aColor;
 }
 

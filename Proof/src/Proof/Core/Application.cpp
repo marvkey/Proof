@@ -4,6 +4,7 @@
 #include "Proof/Core/FrameTime.h"
 #include "Proof/OpenGL/Shader.h"
 #include "Proof/Events/KeyEvent.h"
+#include "Proof/Renderer/Camera/EditorCamera.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -61,51 +62,68 @@ namespace Proof {
        glEnableVertexAttribArray(1);
         
        float PosX =0.0f, PosY =0.0f, PosZ= -3.0f;
+       float ScaleX = 1.0f, ScaleY = 1.0f, ScaleZ = 1.0f;
+       ImGui::CreateContext();
+       ImGui_ImplGlfw_InitForOpenGL(MainWindow->MainWindow, true);
+       ImGui::StyleColorsDark();
         Shader.UseShader();
+        EditorCamera3D Camera;
         while ((glfwWindowShouldClose(CurrentWindow::GetWindow()) == false) && !(Input::IsKeyPressed(KeyBoardKey::Escape) ==true)) {
 
             float time = (float)glfwGetTime();
+            Shader.UseShader();
             const FrameTime DeltaTime = time - LastFrameTime;
             LastFrameTime = time;
-
-            Shader.UseShader();
-
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            ImGui::Begin("Hello world");
+            ImGui::SliderFloat("Scale X", &ScaleX, 0.0f, 10000.f);
+            ImGui::SameLine();
+            ImGui::InputFloat("Scale", &ScaleX,2);
+            glfwGetWindowSize(MainWindow->MainWindow, &MainWindow->Width, &MainWindow->Height); // this would be removed
             glm::mat4 Model= glm::mat4(1.0f);
             glm::mat4 View = glm::mat4(1.0f);
             glm::mat4 Projection = glm::mat4(1.0f);
-
-            Model = glm::rotate(Model, glm::radians(-45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-            View = glm::translate(View, glm::vec3(PosX, PosY, PosZ));
-            Projection = glm::perspective(glm::radians(45.0f), (float)CurrentWindow::GetWindowWidth()/ (float)CurrentWindow::GetWindowHeight(), 0.1f, 100.0f);
+            glm::mat4 Scale = glm::mat4(1.0f);
             
 
+            Model = glm::rotate(Model, glm::radians(-45.0f), glm::vec3(1.0f, 0, 0.0f));
+            View = glm::translate(View, glm::vec3(PosX, PosY, PosZ));
+            Projection = glm::perspective(glm::radians(Camera.GetFieldOfView()), (float)CurrentWindow::GetWindowWidth()/ (float)CurrentWindow::GetWindowHeight(), 0.1f, 100.0f);
+            Scale = glm::scale(Scale, glm::vec3(ScaleX, ScaleY, ScaleZ));
             Shader.SetMat4("Model", Model);
             Shader.SetMat4("Projection", Projection);
             Shader.SetMat4("View", View);
-           
-            PF_ENGINE_INFO("{}", MainWindow->Width);
+            Shader.SetMat4("Scale", Scale);
+            Camera.OnUpdate(DeltaTime);
+           /*
             if (Input::IsKeyPressed(KeyBoardKey::A)) {
-                PosX -= 0.0001;
+                PosX -= 2 * DeltaTime;
             }
             
             if (Input::IsKeyPressed(KeyBoardKey::D)) {
-                PosX += 0.0001;
+                PosX += 2*DeltaTime;
             }
-
             if (Input::IsKeyPressed(KeyBoardKey::W)) {
-                PosY += 0.0001;
+                PosY += 2 * DeltaTime;
             }
 
             if (Input::IsKeyPressed(KeyBoardKey::S)) {
-                PosY -= 0.0001;
+                PosY -= 2 * DeltaTime;
             }
             
+            if (Input::GetScrollWheelY() == 1) {
+                PF_ENGINE_INFO("KJSAFDIHAIJD");
+            }
+            */
+            ImGui::End();
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             glBindVertexArray(VAO);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
             MainWindow->WindowUpdate(DeltaTime); 
         };
-      
-        
         MainWindow->WindowEnd();
         delete MainWindow;
     }

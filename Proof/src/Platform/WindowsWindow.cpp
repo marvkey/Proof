@@ -42,6 +42,8 @@ namespace Proof {
         MouseDoubleClickEvent::Instance->EventHandled = false;
         MouseMoveEvent::Instance->EventHandled = false;
         MouseScrollEvent::Instance->EventHandled = false;
+        MouseScrollEvent::Instance->PosX = 0;
+        MouseScrollEvent::Instance->PosY = 0;
 
         /* ----------------------------------------------*/
         /* This are not working like inteded */
@@ -51,7 +53,7 @@ namespace Proof {
        
         glfwSwapBuffers(MainWindow);
         glfwPollEvents();
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     }
     void WindowsWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -120,7 +122,7 @@ namespace Proof {
             break;
         }
     }
-    
+      
     void WindowsWindow::Window_Resize_Callback(GLFWwindow* window, int width, int height){
         WindowResizeEvent::Instance->EventHandled = true;
         WindowResizeEvent::Instance->Whidt = width;
@@ -146,15 +148,21 @@ namespace Proof {
         }
     }
 
+    void WindowsWindow::Framebuffer_size_callback(GLFWwindow* window, int width, int height){
+        glViewport(0, 0, width, height);
+    }
+
     void WindowsWindow::Window_Refresh_callback(GLFWwindow* window){
     }
 
     void WindowsWindow::Window_Input_Focus_callback(GLFWwindow* window, int focused){
         if (focused) {
             WindowFocusEvent::Instance->EventHandled = true;
+            PF_ENGINE_INFO("GAFADA");
         }
         else{
             WindowFocusEvent::Instance->EventHandled = false;
+            PF_ENGINE_INFO("GAFADFDAASFFASFADFA");
         }
     }
     
@@ -165,6 +173,7 @@ namespace Proof {
     }
 
     void WindowsWindow::Mouse_Hover_Window(GLFWwindow* window, int entered){
+        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
     }
 
@@ -198,6 +207,7 @@ namespace Proof {
         glfwSetWindowCloseCallback(MainWindow, Window_Close_Callback);
         glfwSetWindowRefreshCallback(MainWindow, Window_Refresh_callback);
         glfwSetWindowFocusCallback(MainWindow, Window_Input_Focus_callback);
+        glfwSetFramebufferSizeCallback(MainWindow, Framebuffer_size_callback);
 
         if (glewInit() != GLEW_OK) {
             PF_ENGINE_ERROR("Could Not Initilize Glew");

@@ -7,6 +7,9 @@ namespace Proof {
     public:
         unsigned int ID;
         Shader(std::string VertexPath, std::string FragmentPath );
+        ~Shader() {
+            glDeleteProgram(ID);
+        }
        
         void UseShader();
 
