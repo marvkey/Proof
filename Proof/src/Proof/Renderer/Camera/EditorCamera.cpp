@@ -79,7 +79,6 @@ namespace Proof {
 			Pitch += Yoffset;
 			UpdateCameraVector();
 		}
-		
 	}
 
 	void  EditorCamera3D::ScrollInput() {
@@ -90,16 +89,13 @@ namespace Proof {
 				FieldOfView -= (float)ScrollEvent.GetPosY();
 				return;
 			}
-			if (ScrollEvent.GetPosY() == 1) {
+			if (ScrollEvent.GetPosY() == 1)
 				MoveSpeed += 1.5;
-			}
 			else if (ScrollEvent.GetPosY() == -1) {
-				if (MoveSpeed < 3) {
+				if (MoveSpeed < 3) 
 					MoveSpeed -= 0.25;
-				}
-				else {
+				else 
 					MoveSpeed -= 1.5;
-				}
 			}
 		}
 	}

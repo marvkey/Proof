@@ -5,11 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d987ffea-4494-43b4-b39d-93e1a736dafd" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Proof/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Proof/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Proof/src/Platform/WindowsWindow.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Proof/src/Platform/WindowsWindow.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Proof/src/Proof/Core/Application.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Proof/src/Proof/Core/Application.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Proof/src/Proof/Core/Application.h" beforeDir="false" afterPath="$PROJECT_DIR$/Proof/src/Proof/Core/Application.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Proof/src/Proof/Core/Log.h" beforeDir="false" afterPath="$PROJECT_DIR$/Proof/src/Proof/Core/Log.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SandBox/imgui.ini" beforeDir="false" afterPath="$PROJECT_DIR$/SandBox/imgui.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Proof/src/Proof/Renderer/Camera/Camera.h" beforeDir="false" afterPath="$PROJECT_DIR$/Proof/src/Proof/Renderer/Camera/Camera.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Proof/src/Proof/Renderer/Camera/EditorCamera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Proof/src/Proof/Renderer/Camera/EditorCamera.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Proof/src/Proof/Renderer/Camera/EditorCamera.h" beforeDir="false" afterPath="$PROJECT_DIR$/Proof/src/Proof/Renderer/Camera/EditorCamera.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -115,6 +116,7 @@
       <option name="presentableId" value="Default" />
       <updated>1617017555641</updated>
       <workItem from="1617017592973" duration="1152000" />
+      <workItem from="1617874235821" duration="53000" />
     </task>
     <servers />
   </component>
@@ -127,21 +129,25 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state width="1323" height="192" key="GridCell.Tab.0.bottom" timestamp="1617029955935">
+    <state width="1323" height="192" key="GridCell.Tab.0.bottom" timestamp="1617874288503">
       <screen x="0" y="0" width="1366" height="768" />
     </state>
+    <state width="1323" height="192" key="GridCell.Tab.0.bottom/0.0.1366.768/1366.0.1920.1080@0.0.1366.768" timestamp="1617874288503" />
     <state width="1323" height="192" key="GridCell.Tab.0.bottom/0.0.1366.768@0.0.1366.768" timestamp="1617029955935" />
-    <state width="1323" height="192" key="GridCell.Tab.0.center" timestamp="1617029955935">
+    <state width="1323" height="192" key="GridCell.Tab.0.center" timestamp="1617874288502">
       <screen x="0" y="0" width="1366" height="768" />
     </state>
+    <state width="1323" height="192" key="GridCell.Tab.0.center/0.0.1366.768/1366.0.1920.1080@0.0.1366.768" timestamp="1617874288502" />
     <state width="1323" height="192" key="GridCell.Tab.0.center/0.0.1366.768@0.0.1366.768" timestamp="1617029955935" />
-    <state width="1323" height="192" key="GridCell.Tab.0.left" timestamp="1617029955935">
+    <state width="1323" height="192" key="GridCell.Tab.0.left" timestamp="1617874288501">
       <screen x="0" y="0" width="1366" height="768" />
     </state>
+    <state width="1323" height="192" key="GridCell.Tab.0.left/0.0.1366.768/1366.0.1920.1080@0.0.1366.768" timestamp="1617874288501" />
     <state width="1323" height="192" key="GridCell.Tab.0.left/0.0.1366.768@0.0.1366.768" timestamp="1617029955935" />
-    <state width="1323" height="192" key="GridCell.Tab.0.right" timestamp="1617029955935">
+    <state width="1323" height="192" key="GridCell.Tab.0.right" timestamp="1617874288502">
       <screen x="0" y="0" width="1366" height="768" />
     </state>
+    <state width="1323" height="192" key="GridCell.Tab.0.right/0.0.1366.768/1366.0.1920.1080@0.0.1366.768" timestamp="1617874288502" />
     <state width="1323" height="192" key="GridCell.Tab.0.right/0.0.1366.768@0.0.1366.768" timestamp="1617029955935" />
   </component>
 </project>

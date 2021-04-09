@@ -22,11 +22,13 @@
               <e p="Application.cpp" t="Include" />
               <e p="Application.h" t="Include" />
               <e p="Core.h" t="Include" />
+              <e p="fragment.fs1" t="Include" />
               <e p="FrameTime.h" t="Include" />
               <e p="Log.cpp" t="Include" />
               <e p="Log.h" t="Include" />
               <e p="Proof.h" t="Include" />
               <e p="ProofConnect.h" t="Include" />
+              <e p="vertex.vs" t="Include" />
               <e p="Window.h" t="Include" />
             </e>
             <e p="Events" t="Include">
@@ -46,6 +48,28 @@
               <e p="KeyBoard.h" t="Include" />
               <e p="KeyCodes.h" t="Include" />
               <e p="Mouse.h" t="Include" />
+            </e>
+            <e p="OpenGL" t="Include">
+              <e p="Buffer.cpp" t="Include" />
+              <e p="Buffer.h" t="Include" />
+              <e p="Shader.cpp" t="Include" />
+              <e p="Shader.h" t="Include" />
+              <e p="VertexArray.cpp" t="Include" />
+              <e p="VertexArray.h" t="Include" />
+            </e>
+            <e p="Renderer" t="Include">
+              <e p="Camera" t="Include">
+                <e p="Camera.cpp" t="Include" />
+                <e p="Camera.h" t="Include" />
+                <e p="EditorCamera.cpp" t="Include" />
+                <e p="EditorCamera.h" t="Include" />
+              </e>
+              <e p="Renderer3D.cpp" t="Include" />
+              <e p="Renderer3D.h" t="Include" />
+            </e>
+            <e p="Scene3D" t="Include">
+              <e p="Scene3D.cpp" t="Include" />
+              <e p="Scene3D.h" t="Include" />
             </e>
           </e>
           <e p="Proofprch.cpp" t="Include" />

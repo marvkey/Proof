@@ -67,13 +67,14 @@ namespace Proof {
                 action = (int)InputEvent::KeyDouble;
             }
         }
-       
+        if (action) {
+            PF_ENGINE_INFO("FADFADAF");
+        }
         switch (action) {
         case GLFW_PRESS:
             KeyboardClicked.push_back((KeyBoardKey)key);
             KeyClickedEvent::Instance->KeyClicked = (KeyBoardKey)key;
             KeyClickedEvent::Instance->EventHandled = true;
-            
             break;
         case GLFW_RELEASE:
             KeyboardReleased.push_back((KeyBoardKey)key);
@@ -103,6 +104,7 @@ namespace Proof {
                 action = (int)InputEvent::KeyDouble;
             }
         }
+       
         switch (action) {
         case GLFW_PRESS:
             MouseButtonClicked.push_back((MouseButton)button);
@@ -113,7 +115,6 @@ namespace Proof {
             MouseButtonReleased.push_back((MouseButton)button);
             MouseReleasedEvent::Instance->ButtonReleased = (MouseButton)button;
             MouseReleasedEvent::Instance->EventHandled = true;
-
             break;
         case (int)InputEvent::KeyDouble:
             MouseButtonDoubleClicked.push_back((MouseButton)button);
@@ -158,11 +159,11 @@ namespace Proof {
     void WindowsWindow::Window_Input_Focus_callback(GLFWwindow* window, int focused){
         if (focused) {
             WindowFocusEvent::Instance->EventHandled = true;
-            PF_ENGINE_INFO("GAFADA");
+            PF_ENGINE_INFO("Window Has Input focus");
         }
         else{
             WindowFocusEvent::Instance->EventHandled = false;
-            PF_ENGINE_INFO("GAFADFDAASFFASFADFA");
+            PF_ENGINE_INFO("Window Lost Input Focus");
         }
     }
     
@@ -174,7 +175,6 @@ namespace Proof {
 
     void WindowsWindow::Mouse_Hover_Window(GLFWwindow* window, int entered){
         //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    
     }
 
     void WindowsWindow::Mouse_ScrollWhell_Callback(GLFWwindow* window, double xoffset, double yoffset){

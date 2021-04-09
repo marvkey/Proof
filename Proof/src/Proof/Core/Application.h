@@ -9,7 +9,7 @@
 #include "ImGUIOpenGL/imgui.h"
 #include "ImGUIOpenGL/imgui_impl_glfw.h"
 #include "ImGUIOpenGL/imgui_impl_opengl3.h"
-int main(int argc, char** argv);
+
 
 namespace Proof {
     class Proof_API Application {
@@ -26,5 +26,3 @@ namespace Proof {
     };
     Application* CreateApplication();
 }
-
-
