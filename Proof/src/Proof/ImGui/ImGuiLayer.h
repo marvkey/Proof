@@ -6,13 +6,14 @@ namespace Proof {
     public:
         ImGuiLayer();
         ~ImGuiLayer() = default;
-        virtual void OnUpdate(FrameTime DeltaTime)override;
         virtual void OnAttach()override;
         virtual void OnDetach()override;
         virtual void OnImGuiDraw() override;
         void Begin();
         void End();
         void SetDarkTheme();
+    private:
+        ImGuiIO& io = ImGui::GetIO();
     };
 }
 
