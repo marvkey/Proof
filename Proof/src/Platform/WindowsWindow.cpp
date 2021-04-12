@@ -67,9 +67,7 @@ namespace Proof {
                 action = (int)InputEvent::KeyDouble;
             }
         }
-        if (action) {
-            PF_ENGINE_INFO("FADFADAF");
-        }
+
         switch (action) {
         case GLFW_PRESS:
             KeyboardClicked.push_back((KeyBoardKey)key);

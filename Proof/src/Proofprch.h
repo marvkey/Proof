@@ -7,7 +7,7 @@
 #include <thread>
 #include <stdio.h>
 #include <array>
-
+#include <iterator> 
 
 //Proof defined
 #include "Proof/Core/Log.h"
