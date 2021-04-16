@@ -15,10 +15,9 @@ namespace Proof {
 		std::vector<Layer*>::iterator end() { return V_LayerStack.end(); };
 		std::vector<Layer*>::reverse_iterator rbegin() { return V_LayerStack.rbegin(); }
 		std::vector<Layer*>::reverse_iterator rend() { return V_LayerStack.rend(); }
-
 	private:
 		std::vector<Layer*>V_LayerStack;
 		unsigned int LayerStackIndex = 0;
+		friend Application;
 	};
 }
-

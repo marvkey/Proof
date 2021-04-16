@@ -111,7 +111,7 @@ namespace Proof {
 		RightControl = 345,
 		RightAlt = 346,
 		RightSuper = 347,
-		Menu = 348
+		Menu = 348,
 	};
 	enum class MouseButton {
 		ButtonLeft = 0,
@@ -128,7 +128,7 @@ namespace Proof {
 		Button1 = ButtonRight,
 		Button2 = ButtonMiddle,
 	};
-
+	
 	enum class JoystickKey {
 		Joystick1 = 0,
 		Joystick2 = 1,
@@ -180,11 +180,11 @@ namespace Proof {
 		GamePad_Axis_LAST = GamePad_Axis_RIGHT_TRIGGER
 	};
 
-	enum class InputEvent{
+	enum class InputEvent {
 		UnknownKey = -1,
 		KeyReleased = 0,
 		KeyPressed = 1,
 		KeyRepeat = 2,
-		KeyDouble =3
+		KeyDouble = 3
 	};
 }

@@ -26,6 +26,8 @@ namespace Proof {
 	}
 
 	bool Input::IsKeyPressed(KeyBoardKey Key) {
+		if (ImGui::IsAnyWindowHovered()) return false;
+		if (ImGui::IsAnyItemHovered())return false;
 		if (glfwGetKey(CurrentWindow::GetWindow(), (int)Key))return  true;
 		return false;
 	}
@@ -36,7 +38,6 @@ namespace Proof {
 		}
 		return false;
 	}
-
 
 	bool Input::IsMouseButtonClicked(MouseButton Button) {
 		for (int i = 0; i < WindowsWindow::MouseButtonClicked.size(); i++) {
@@ -52,7 +53,6 @@ namespace Proof {
 	}
 
 	bool Input::IsMouseButtonDoubleClicked(MouseButton Button){
-
 		for (int i = 0; i < WindowsWindow::MouseButtonDoubleClicked.size(); i++) {
 			if (Button == WindowsWindow::MouseButtonDoubleClicked[i])return true;
 		}
@@ -60,6 +60,8 @@ namespace Proof {
 	}
 	
 	bool Input::IsMouseButtonPressed(MouseButton Button){
+		if (ImGui::IsAnyWindowHovered()) return false;
+		if (ImGui::IsAnyItemHovered())return false;
 		if (glfwGetMouseButton(CurrentWindow::GetWindow(), (int)Button))return true;
 		return false;
 	}

@@ -7,6 +7,7 @@
 #include "Platform/WindowsWindow.h"
 #if defined(_WIN64)
 extern Proof::Application* Proof::CreateApplication();
+/*#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup") */ // makes the current terminal not work
 int  main(int argc, char** argv){
 
 		

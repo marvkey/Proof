@@ -2,8 +2,14 @@
 #include "Buffer.h"
 
 namespace Proof {
-	VertexBuffer::VertexBuffer(int Size) {
-		glGenBuffers(Size, &VertexBufferObject);
+	VertexBuffer::VertexBuffer(uint16_t Size) :
+		VertexBufferSize(Size)
+	{
+		glGenBuffers(VertexBufferSize, &VertexBufferObject);
+	}
+
+	VertexBuffer::~VertexBuffer(){
+		glDeleteBuffers(VertexBufferSize, &VertexBufferObject);
 	}
 
 	void VertexBuffer::BindVertexBuffer(){
@@ -14,9 +20,14 @@ namespace Proof {
 		glBufferData(GL_ARRAY_BUFFER, Size, Data, GL_STATIC_DRAW);
 	}
 
-	IndexBuffer::IndexBuffer(int Size){
-		glGenBuffers(Size, &IndexBufferObject);
+	IndexBuffer::IndexBuffer(uint16_t Size):
+		IndexBufferSize(Size)
+	{
+		glGenBuffers(IndexBufferSize, &IndexBufferObject);
 		glBindBuffer(GL_ARRAY_BUFFER, IndexBufferObject);
+	}
+	IndexBuffer::~IndexBuffer(){
+		glDeleteBuffers(IndexBufferSize, &IndexBufferObject);
 	}
 	void IndexBuffer::AddIndexBufferData(void* Data,unsigned int Size){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,IndexBufferObject);

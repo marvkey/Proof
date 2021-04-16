@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
 #include "FrameTime.h"
+#include "ImGUIOpenGL/imgui.h"
+#include "Proof/Core/Log.h"
 namespace Proof {
 	class Proof_API Layer {
 	public:
@@ -11,11 +13,10 @@ namespace Proof {
 		}
 		virtual ~Layer() {};
 		virtual void OnUpdate(FrameTime DeltaTime) {}
-		virtual void Start() {}
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnImGuiDraw(){}
-		const std::string& GetName() const { return DebugName; }
+		virtual void OnImGuiDraw() {}
+		virtual const std::string& GetName() const { return DebugName; }
 	private:
 		std::string DebugName;
 	};

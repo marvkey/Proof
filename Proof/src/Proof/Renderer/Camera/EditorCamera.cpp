@@ -17,7 +17,17 @@ namespace Proof {
 		KeyBoardInput(DeltaTime);
 		MouseInput(DeltaTime);
 		ScrollInput();
-		if (MoveSpeed < 0 || MoveSpeed==0.25)
+		
+		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight))
+			glfwSetInputMode(CurrentWindow::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			
+		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight)) {
+			glfwSetInputMode(CurrentWindow::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			MouseMoveEvent Event;
+			MouseLastPosX = Event.GetPosX();
+			MouseLastPosY = Event.GetPosY();
+		}
+		if (MoveSpeed < 0 || MoveSpeed == 0.25)
 			MoveSpeed = 0.5;
 
 		if (Pitch > 89.0f)
@@ -29,15 +39,6 @@ namespace Proof {
 			FieldOfView = 1.0f;
 		if (FieldOfView > 45.0f)
 			FieldOfView = 45.0f;
-
-		if (Input::IsMouseButtonPressed(MouseButton::ButtonLeft) || Input::IsMouseButtonPressed(MouseButton::ButtonRight)) 
-			glfwSetInputMode(CurrentWindow::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		else {
-			glfwSetInputMode(CurrentWindow::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			MouseMoveEvent Event;
-			MouseLastPosX = Event.GetPosX();
-			MouseLastPosY = Event.GetPosY();
-		}
 	}
 
 	void EditorCamera3D::KeyBoardInput(float DeltaTime) {
@@ -54,12 +55,11 @@ namespace Proof {
 			CameraPos += CameraUp*DeltaTime*MoveSpeed;
 		if (Input::IsKeyPressed(KeyBoardKey::Q))
 			CameraPos -= CameraUp * DeltaTime*MoveSpeed;
-
 	}
 
-	void  EditorCamera3D::MouseInput(float DeltaTime) {
+	void EditorCamera3D::MouseInput(float DeltaTime) {
 		MouseMoveEvent Event;
-		bool ButttonPressed = Input::IsMouseButtonPressed(MouseButton::ButtonLeft) || Input::IsMouseButtonPressed(MouseButton::ButtonRight);
+		bool ButttonPressed = Input::IsMouseButtonPressed(MouseButton::ButtonRight);
 		if (Event.OnEvent()&&ButttonPressed) {
 			if (FirstMouseEnteredScreen) {
 				MouseLastPosX =Event.GetPosX();

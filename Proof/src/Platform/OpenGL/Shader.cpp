@@ -11,7 +11,7 @@
 #include <sstream>
 #include <conio.h>
 namespace Proof {
-	 Shader::Shader(std::string VertexPath, std::string FragmentPath){
+	 Shader::Shader(const std::string VertexPath, const std::string FragmentPath){
 		 
 		 std::string VertexShaderSource;
 		 std::string FragmentShaderSource;
@@ -83,13 +83,13 @@ namespace Proof {
 	void Shader::UseShader() {
 		glUseProgram(ID);
 	}
-	void Shader::SetBool(std::string& Name, bool& Value){
+	void Shader::SetBool(const std::string& Name, bool Value){
 		glUniform1i(glGetUniformLocation(ID, Name.c_str()), (int)Value);
 	}
-	void Shader::SetInt(std::string& Name, int& Value){
+	void Shader::SetInt(const std::string& Name, const int Value){
 		glUniform1i(glGetUniformLocation(ID, Name.c_str()), Value);
 	}
-	void Shader::SetFloat(std::string& Name, float& Value){
+	void Shader::SetFloat(const std::string& Name, float Value){
 		glUniform1f(glGetUniformLocation(ID, Name.c_str()), Value);
 	}
 	void Shader::SetVec2(const std::string& Name, glm::vec2& Value){
@@ -110,13 +110,13 @@ namespace Proof {
 	void Shader::SetVec4(const std::string& Name, float X, float Y, float Z, float W){
 		glUniform4f(glGetUniformLocation(ID, Name.c_str()), X, Y, Z,W);
 	}
-	void Shader::SetMat2(const std::string& Name, glm::mat2& Value){
+	void Shader::SetMat2(const std::string& Name, const glm::mat2& Value){
 		glUniformMatrix2fv(glGetUniformLocation(ID, Name.c_str()), 1, GL_FALSE, glm::value_ptr(Value));
 	}
-	void Shader::SetMat3(const std::string& Name, glm::mat3& Value){
+	void Shader::SetMat3(const std::string& Name, const glm::mat3& Value){
 		glUniformMatrix4fv(glGetUniformLocation(ID, Name.c_str()), 1,GL_FALSE, glm::value_ptr(Value));
 	}
-	void Shader::SetMat4(const std::string& Name, glm::mat4& Value){
+	void Shader::SetMat4(const std::string& Name, const glm::mat4& Value){
 		glUniformMatrix4fv(glGetUniformLocation(ID, Name.c_str()), 1, GL_FALSE, glm::value_ptr(Value));
 	}
 }

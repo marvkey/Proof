@@ -5,10 +5,13 @@
 namespace Proof {
 	
 	GLFWwindow* CurrentWindow::GetWindow(){
-		return Application::MainWindow->MainWindow;
+		if (Application::MainWindow->MainWindow != nullptr)
+			return Application::MainWindow->MainWindow;
+		else
+			return nullptr;
 	}
-	void* CurrentWindow::GetWindowClass(){
-		return Application::MainWindow;
+	WindowsWindow& CurrentWindow::GetWindowClass(){
+		return *Application::MainWindow;
 	}
 	int CurrentWindow::GetWindowPosX(){
 		return GetWindowLocation().first;

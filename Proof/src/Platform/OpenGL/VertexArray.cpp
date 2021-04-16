@@ -2,9 +2,14 @@
 #include "VertexArray.h"
 
 namespace Proof {
-	VertexArray::VertexArray(int Size){
-		glGenVertexArrays(Size, &VertexArrayObject);
+	VertexArray::VertexArray(uint16_t Size):
+		VertexArraySize(Size)
+	{
+		glGenVertexArrays(VertexArraySize, &VertexArrayObject);
 		glBindVertexArray(VertexArrayObject);
+	}
+	VertexArray::~VertexArray(){
+		glDeleteVertexArrays(1, &VertexArrayObject);
 	}
 	void VertexArray::BindVertexArray(){
 		glBindVertexArray(VertexArrayObject);

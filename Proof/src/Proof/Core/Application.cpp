@@ -1,10 +1,13 @@
 
 #include "Proofprch.h"
 #include "Application.h"
+
+
 #include "Platform/WindowsWindow.h"
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Renderer/Camera/EditorCamera.h"
+
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -14,19 +17,26 @@
 #include <ImGUIOpenGL/imgui_impl_glfw.h>
 #include <ImGUIOpenGL/imgui_impl_opengl3.h>
 
-#include "Proof/OpenGL/Shader.h"
-#include "Proof/OpenGL/Buffer.h"
-#include "Proof/OpenGL/VertexArray.h"
+#include "Platform/OpenGL/Shader.h"
+#include "Platform/OpenGL/Buffer.h"
+#include "Platform/OpenGL/vertexArray.h"
+#include "Platform/OpenGL/Texture.h"
 namespace Proof {
     WindowsWindow* Application::MainWindow = nullptr;
 
-    Application::Application() {}
+    Application::Application() {
+        MainWindow = new WindowsWindow(700, 700);
+        MainWindow->createWindow();
+
+        ImGuiMainLayer = new ImGuiLayer();
+        MainEditor3D = new Editore3D();
+        MainLayerStack.PushOverlay(MainEditor3D);
+        MainLayerStack.PushLayer(ImGuiMainLayer);
+    }
 
     Application::~Application() {}
 
     void Application::Run() {
-        MainWindow = new WindowsWindow(700, 700);
-        MainWindow->createWindow();
         
         /*
         char full[_MAX_PATH];
@@ -37,118 +47,131 @@ namespace Proof {
             */
         glEnable(GL_DEPTH_TEST);
        Shader Shader("Proof/Core/vertex.vs", "Proof/Core/fragment.fs1");
-
-       float vertices[] = {
-        0.5f,  0.5f, 0.0f,   0.5,0.0,0.0,
-        0.5f, -0.5f, 0.0f,   0.0,.2,0.0,
-       -0.5f, -0.5f, 0.0f,   0.0,0.0,.3,
-       -0.5f,  0.5f, 0.0f,   0.0,0.0,.3,
+     
+       float vertices[] = {                       //Texture coords
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.3f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.3f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.3f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.3f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.3f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.3f,  0.0f, 0.0f,
+                                          
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.3f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.3f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.3f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.3f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.3f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.3f,  0.0f, 0.0f,
+                                          
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.3f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.3f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.3f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.3f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.3f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.3f,  1.0f, 0.0f,
+                                          
+         0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.3f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.3f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.3f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.3f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.3f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.3f,  1.0f, 0.0f,
+                                          
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.3f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.3f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.3f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 1.0f, 0.3f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 0.3f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.3f,  0.0f, 1.0f,
+                                          
+        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.3f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.3f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.3f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.3f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.3f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 0.3f,  0.0f, 1.0f
        };
-      
 
-       unsigned int indices[] = {
-           0, 1, 3, // first triangle
-           1, 2, 3  // second triangle
+       glm::vec3 cubePositions[] = {
+       glm::vec3(0.0f,  0.0f,  0.0f),
+       glm::vec3(2.0f,  5.0f, -15.0f),
+       glm::vec3(-1.5f, -2.2f, -2.5f),
+       glm::vec3(-3.8f, -2.0f, -12.3f),
+       glm::vec3(2.4f, -0.4f, -3.5f),
+       glm::vec3(-1.7f,  3.0f, -7.5f),
+       glm::vec3(1.3f, -2.0f, -2.5f),
+       glm::vec3(1.5f,  2.0f, -2.5f),
+       glm::vec3(1.5f,  0.2f, -1.5f),
+       glm::vec3(-1.3f,  1.0f, -1.5f)
        };
 
-       VertexArray VertexArrayobj(1);
-       VertexBuffer BufferObj(1);
-       IndexBuffer BufferobjIndences(1);
 
+       VertexArray VertexArrayobj;
+       VertexBuffer BufferObj;
        BufferObj.AddVertexBufferData(vertices,sizeof(vertices));
-       BufferobjIndences.AddIndexBufferData(indices,sizeof(indices));
 
-       VertexArrayobj.AddAtributePointer(0, 3, 6, 0);
-       VertexArrayobj.AddAtributePointer(1, 3, 6, 3); 
+       VertexArrayobj.AddAtributePointer(0, 3, 8, 0);
+       VertexArrayobj.AddAtributePointer(1, 3, 8, 3); 
+       VertexArrayobj.AddAtributePointer(2, 2, 8, 6);
       
-       float PosX =0.0f, PosY =0.0f, PosZ= -2.0f;
-       ImGui::CreateContext();
-       ImGuiIO& io = ImGui::GetIO(); (void)io;
-       io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-       //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-       io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-       io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-       //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
-       //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+       Texture Contatiner("vendor/container.jpg");
+       Texture HappyFace("vendor/awesomeface.png",true);
 
-       ImGui::StyleColorsDark();
-       ImGui_ImplGlfw_InitForOpenGL(MainWindow->MainWindow, true);
-       ImGui_ImplOpenGL3_Init("#version 410");
        Shader.UseShader();
-       //EditorCamera3D Camera;
+       Shader.SetInt("texture1", 0);
+       Shader.SetInt("texture2", 1);
+       Shader.SetFloat("Transperance", 0.2);
+       float PosX =0.0f, PosY =0.0f, PosZ= -2.0f;
+       EditorCamera3D Camera;
        static bool Show = true;
         while ((glfwWindowShouldClose(CurrentWindow::GetWindow()) == false) && !(Input::IsKeyPressed(KeyBoardKey::Escape) ==true)) {
             float time = (float)glfwGetTime();
-            Shader.UseShader();
             const FrameTime DeltaTime = time - LastFrameTime;
             LastFrameTime = time;
+            Contatiner.BindTexture(0);
+            HappyFace.BindTexture(1);
 
-            glfwGetWindowSize(MainWindow->MainWindow, &MainWindow->Width, &MainWindow->Height); // this would be removed
-            glm::mat4 Model= glm::mat4(1.0f);
+            Shader.UseShader();
             glm::mat4 View = glm::mat4(1.0f);
             glm::mat4 Projection = glm::mat4(1.0f);
             glm::mat4 Scale = glm::mat4(1.0f);
-            /*
-            Model = glm::rotate(Model, glm::radians(55.0f), glm::vec3(1.0f, 0, 0.0f));
-            Model = glm::translate(Model, glm::vec3(PosX, PosY, PosZ));
+
             Projection = glm::perspective(glm::radians(45.f), (float)CurrentWindow::GetWindowWidth()/ (float)CurrentWindow::GetWindowHeight(), 0.1f, 100.0f);
-            Scale = glm::scale(Scale, glm::vec3(5, 5, 3.4));
-            Shader.SetMat4("Model", Model);
+            Scale = glm::scale(Scale, glm::vec3(1.0,1.0,1.0));
             Shader.SetMat4("Projection", Projection);
             Shader.SetMat4("View", View);
             Shader.SetMat4("Scale", Scale);
-            */
-            //Camera.OnUpdate(DeltaTime);
-
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-
-            ImGui::NewFrame();
-            ImGui::Begin("Demo");
-      
-            ImGui::ShowDemoWindow(&Show);
-
-            ImGui::End();
-            io.DisplaySize = ImVec2((float)CurrentWindow::GetWindowWidth(), (float)CurrentWindow::GetWindowHeight());
-            ImGui::Render();
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-            {
-                GLFWwindow* backup_current_context = glfwGetCurrentContext();
-                ImGui::UpdatePlatformWindows();
-                ImGui::RenderPlatformWindowsDefault();
-                glfwMakeContextCurrent(backup_current_context);
-            }
-
-           /*
-           * 
-            if (Input::IsKeyPressed(KeyBoardKey::A)) {
-                PosX -= 2 * DeltaTime;
-            }
-            
-            if (Input::IsKeyPressed(KeyBoardKey::D)) {
-                PosX += 2*DeltaTime;
-            }
-            if (Input::IsKeyPressed(KeyBoardKey::W)) {
-                PosZ += 2 * DeltaTime;
-            }
-
-            if (Input::IsKeyPressed(KeyBoardKey::S)) {
-                PosZ -= 2 * DeltaTime;
-            }
-            */
-            
+            Camera.OnUpdate(DeltaTime);
             VertexArrayobj.BindVertexArray();
+
+            for (glm::vec3& CubePositonarray : cubePositions) {
+                glm::mat4 Model = glm::mat4(1.0f);
+                float angle = 20.0f * CubePositonarray.x;
+                Model = glm::rotate(Model, angle * glm::radians(55.0f), glm::vec3(1.0f, 0.3f, 0.5f));
+                Model = glm::translate(Model, CubePositonarray);
+                Shader.SetMat4("Model", Model);
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+            }
            
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-            //glDrawArrays(GL_TRIANGLES, 0, 36);
+            for (Layer* layer : MainLayerStack.V_LayerStack)
+                layer->OnUpdate(DeltaTime);
+
+            ImGuiMainLayer->Begin();
+            for (Layer* layer : MainLayerStack.V_LayerStack)
+                layer->OnImGuiDraw();
+            ImGuiMainLayer->End();
+
             MainWindow->WindowUpdate(DeltaTime); 
         };
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
         MainWindow->WindowEnd();
         delete MainWindow;
     }
-   
+
+    void Application::PushLayer(Layer* Layer){
+        MainLayerStack.PushLayer(Layer);
+    }
+
+    void Application::PushOverlay(Layer* Layer){
+        MainLayerStack.PushOverlay(Layer);
+    }
 }

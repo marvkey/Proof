@@ -5,7 +5,7 @@
 
 #include "Proof/Core/Core.h"
 #include "Proof/Renderer/Camera/Camera.h"
-#include "Proof/OpenGL/Shader.h"
+#include "Platform/OpenGL/Shader.h"
 #include "Platform/CurrentWindow.h"
 namespace Proof {
 	class Proof_API EditorCamera3D : public Camera3D {

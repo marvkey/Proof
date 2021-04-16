@@ -2,7 +2,7 @@
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "Proof/OpenGL/Shader.h"
+#include "Platform/OpenGL/Shader.h"
 namespace Proof {
 	class Proof_API Camera3D {
 	public:

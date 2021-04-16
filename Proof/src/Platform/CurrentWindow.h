@@ -11,7 +11,7 @@ namespace Proof {
 		static unsigned int GetWindowWidth();
 		static void SetWindowSize(int width, int height);
 		static GLFWwindow* GetWindow();
-		static void* GetWindowClass();
+		static WindowsWindow& GetWindowClass();
 		static int GetWindowPosX();
 		static int GetWindowPosY();
 	protected:

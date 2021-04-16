@@ -54,10 +54,13 @@ namespace Proof {
         glfwSwapBuffers(MainWindow);
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     }
     void WindowsWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
         /* This is for when a key is Clicked 2 */
+        if (ImGui::IsAnyWindowHovered()) return;
+        if (ImGui::IsAnyItemHovered())return;
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
             auto now = std::chrono::system_clock::now();
@@ -84,7 +87,7 @@ namespace Proof {
             KeyDoubleClickEvent::Instance->KeyDoubleClick = (KeyBoardKey)key;
             KeyDoubleClickEvent::Instance->EventHandled = true;
             break;
-        case (int) InputEvent::KeyRepeat:
+        case (int)InputEvent::KeyRepeat:
             KeyboardKeyRepeat.push_back((KeyBoardKey)key);
             KeyRepeatEvent::Instance->KeyRepeat = (KeyBoardKey)key;
             KeyRepeatEvent::Instance->EventHandled = true;
@@ -93,6 +96,8 @@ namespace Proof {
     }
 
     void WindowsWindow::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+        if (ImGui::IsAnyWindowHovered()) return;
+        if (ImGui::IsAnyItemHovered())return;
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
             auto now = std::chrono::system_clock::now();
@@ -102,7 +107,7 @@ namespace Proof {
                 action = (int)InputEvent::KeyDouble;
             }
         }
-       
+      
         switch (action) {
         case GLFW_PRESS:
             MouseButtonClicked.push_back((MouseButton)button);
@@ -120,12 +125,16 @@ namespace Proof {
             MouseDoubleClickEvent::Instance->EventHandled = true;
             break;
         }
+
+
     }
       
     void WindowsWindow::Window_Resize_Callback(GLFWwindow* window, int width, int height){
         WindowResizeEvent::Instance->EventHandled = true;
         WindowResizeEvent::Instance->Whidt = width;
         WindowResizeEvent::Instance->Height = height;
+        CurrentWindow().GetWindowClass().Width = width;
+        CurrentWindow().GetWindowClass().Height = height;
     }
 
     void WindowsWindow::Window_Position_Callback(GLFWwindow* window, int xpos, int ypos){
@@ -172,7 +181,6 @@ namespace Proof {
     }
 
     void WindowsWindow::Mouse_Hover_Window(GLFWwindow* window, int entered){
-        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
     void WindowsWindow::Mouse_ScrollWhell_Callback(GLFWwindow* window, double xoffset, double yoffset){
@@ -211,6 +219,8 @@ namespace Proof {
             PF_ENGINE_ERROR("Could Not Initilize Glew");
             return -1;
         }
+        PF_ENGINE_TRACE("Open GL window has been created Width {}  Height {} ", Width, Height);
+        PF_ENGINE_INFO("{}", glGetString(GL_RENDERER));
         return 0;
     }
 

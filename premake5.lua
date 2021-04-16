@@ -42,6 +42,7 @@ project "Proof"
         "%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/ImGui/ImGUIOpenGL/**.h",
         "%{prj.name}/vendor/ImGui/ImGUIOpenGL/**.cpp",
+		"%{prj.name}/vendor/stb_image.h"
     }
     includedirs 
 	{
@@ -67,7 +68,8 @@ project "Proof"
 	{
 		"PF_BUILD_DLL", -- checks if it is Dll
 		"GLEW_STATIC",-- to use Glew
-		"PF_PLATFORM_WINDOW64"
+		"PF_PLATFORM_WINDOW64",
+		"STB_IMAGE_IMPLEMENTATION"
 	}
 	filter "system:windows"
 		systemversion "latest"
@@ -139,7 +141,7 @@ project "SandBox"
 	defines 
 	{
 		"GLEW_STATIC",
-		"PF_PLATFORM_WINDOW64"
+		"PF_PLATFORM_WINDOW64",
 	}
 
 	filter "system:windows"
