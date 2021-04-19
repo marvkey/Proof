@@ -6,10 +6,7 @@ namespace Proof {
 		Editore3D();
 		~Editore3D() = default;
 		virtual void OnUpdate(FrameTime DeltaTime) override;
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
 		virtual void OnImGuiDraw() override;
-		
 	private:
 		bool OpneLogConsole = true;
 		void LogConsole();

@@ -8,7 +8,7 @@ namespace Proof {
 		~VertexBuffer();
 		void BindVertexBuffer();
 		void AddVertexBufferData(void* Data, unsigned int Size);
-
+		void UnBind();
 	private:
 		unsigned int VertexBufferObject;
 		uint16_t VertexBufferSize;
@@ -20,6 +20,7 @@ namespace Proof {
 		~IndexBuffer();
 		void AddIndexBufferData(void *Data,unsigned int Size);
 		void BindIndexBuffer();
+		void UnBind();
 	private:
 		unsigned int IndexBufferObject;
 		uint16_t IndexBufferSize;

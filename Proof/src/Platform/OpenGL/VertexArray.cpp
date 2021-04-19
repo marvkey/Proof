@@ -9,19 +9,22 @@ namespace Proof {
 		glBindVertexArray(VertexArrayObject);
 	}
 	VertexArray::~VertexArray(){
-		glDeleteVertexArrays(1, &VertexArrayObject);
+		glDeleteVertexArrays(VertexArraySize, &VertexArrayObject);
 	}
 	void VertexArray::BindVertexArray(){
 		glBindVertexArray(VertexArrayObject);
 	}
-	void VertexArray::AddAtributePointer(int Position, int Size, int SizeOfOneVertex,int Offset){
+	void VertexArray::AddAtributePointer(int Position, int Count, int SizeOfOneVertex,int Offset){
 		if (Offset == 0) {
-			glVertexAttribPointer(Position, Size, GL_FLOAT, GL_FALSE, SizeOfOneVertex * sizeof(float), (void*)(Offset * sizeof(float)));
+			glVertexAttribPointer(Position, Count, GL_FLOAT, GL_FALSE, SizeOfOneVertex * sizeof(float), (void*)(Offset * sizeof(float)));
 			glEnableVertexAttribArray(Position);
 		}	
 		else {
-			glVertexAttribPointer(Position, Size, GL_FLOAT, GL_FALSE, SizeOfOneVertex * sizeof(float), (void*)(Offset * sizeof(float)));
+			glVertexAttribPointer(Position, Count, GL_FLOAT, GL_FALSE, SizeOfOneVertex * sizeof(float), (void*)(Offset * sizeof(float)));
 			glEnableVertexAttribArray(Position);
 		}
+	}
+	void VertexArray::UnBind(){
+		glDeleteVertexArrays(VertexArraySize, &VertexArrayObject);
 	}
 }

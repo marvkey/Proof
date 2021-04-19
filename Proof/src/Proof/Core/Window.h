@@ -1,14 +1,12 @@
 #pragma once
 #include "Core.h"
-namespace Proof{
-		class Proof_API Window {
-		public:
-				//virtual void* GetWindow() = 0;
-				//virtual unsigned int GetWidth() = 0;
-				//virtual unsigned int GetHeight() = 0;
-		protected:
-				//virtual void WindowNewFrame() = 0;
-		private:
-				virtual int createWindow() = 0;
-		};
+#include "Proof/Core/FrameTime.h"
+namespace Proof {
+	class Proof_API Window {
+	public:
+		virtual void WindowUpdate(FrameTime DeltaTime) = 0;
+		virtual int createWindow() = 0;
+	private:
+		virtual int WindowEnd() = 0;
+	};
 }

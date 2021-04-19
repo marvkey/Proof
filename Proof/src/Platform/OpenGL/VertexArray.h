@@ -7,7 +7,8 @@ namespace Proof {
 		VertexArray(uint16_t Size =1);
 		~VertexArray();
 		void BindVertexArray();
-		void AddAtributePointer(int Position, int Size, int SizeOfOneVertex,int Offset);
+		void AddAtributePointer(int Position, int Count, int SizeOfOneVertex,int Offset);
+		void UnBind(); // Not Nedable gets called by destroctor;
 	private:
 		unsigned int VertexArrayObject;
 		uint16_t VertexArraySize;

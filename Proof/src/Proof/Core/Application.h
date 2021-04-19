@@ -12,7 +12,6 @@
 #include "Proof/Core/Layer.h"
 #include "Proof/Core/LayerStack.h"
 #include "Proof/ImGui/ImGuiLayer.h"
-#include "Proof3D/Editor/Editor3D.h"
 namespace Proof {
     class Proof_API Application {
     public:
@@ -25,7 +24,6 @@ namespace Proof {
     private:
         LayerStack MainLayerStack;
         ImGuiLayer* ImGuiMainLayer;
-        Editore3D* MainEditor3D;
         static WindowsWindow* MainWindow;
         friend class CurrentWindow;
         float LastFrameTime;

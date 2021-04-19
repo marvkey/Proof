@@ -11,7 +11,8 @@ namespace Proof {
 		EngineLogger = spdlog::stdout_color_mt("Proof");
 		EngineLogger->set_level(spdlog::level::trace);
 		
-		ClientLogger = spdlog::stdout_color_mt("User");
+		ClientLogger = spdlog::stdout_color_mt("SandBox");
 		ClientLogger->set_level(spdlog::level::trace);
+		PF_ENGINE_TRACE("Log initilized");
 	}
 }

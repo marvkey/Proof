@@ -20,6 +20,10 @@ namespace Proof {
 		glBufferData(GL_ARRAY_BUFFER, Size, Data, GL_STATIC_DRAW);
 	}
 
+	void VertexBuffer::UnBind(){
+		glBindBuffer(GL_ARRAY_BUFFER, VertexBufferObject);
+	}
+
 	IndexBuffer::IndexBuffer(uint16_t Size):
 		IndexBufferSize(Size)
 	{
@@ -35,5 +39,8 @@ namespace Proof {
 	}
 	void IndexBuffer::BindIndexBuffer(){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,IndexBufferObject);
+	}
+	void IndexBuffer::UnBind(){
+		glDeleteBuffers(IndexBufferSize, &IndexBufferObject);
 	}
 }

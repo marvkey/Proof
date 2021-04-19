@@ -10,7 +10,6 @@ extern Proof::Application* Proof::CreateApplication();
 /*#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup") */ // makes the current terminal not work
 int  main(int argc, char** argv){
 
-		
 		Proof::KeyClickedEvent::Instance = std::make_shared<Proof::KeyClickedEvent>();
 		Proof::KeyReleasedEvent::Instance = std::make_shared<Proof::KeyReleasedEvent>();
 		Proof::KeyRepeatEvent::Instance = std::make_shared<Proof::KeyRepeatEvent>();
@@ -34,3 +33,4 @@ int  main(int argc, char** argv){
 		delete app;
 }
 #endif
+

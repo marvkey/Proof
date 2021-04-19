@@ -8,17 +8,16 @@
 static bool Docking = false;
 namespace Proof {
 	Editore3D::Editore3D() :
-		Layer("Editor 3D")
+		Layer("Editor3D Layer")
 	{
 
 	}
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
+		if (Input::IsKeyClicked(KeyBoardKey::A)) {
+			PF_ENGINE_INFO("HANDLED BY ON UPDATE");
+		}
 	}
-	void Editore3D::OnAttach() {
-
-	}
-	void Editore3D::OnDetach() {
-	}
+	
 	void Editore3D::OnImGuiDraw() {
 		Layer::OnImGuiDraw();
 
@@ -56,12 +55,12 @@ namespace Proof {
 			}
 
 			if (ImGui::BeginChild("Tab Bar")) {
-				if (ImGui::Button("Save Current")) {
+				if (ImGui::Button("Save Current")== true && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Source Control")) {
-
+					 
 				}
 				ImGui::SameLine();
 
@@ -76,7 +75,9 @@ namespace Proof {
 			}
 		}
 		ImGui::End();
-		//LogConsole();
+		if (Input::IsKeyClicked(KeyBoardKey::A)) {
+			PF_ENGINE_INFO("HANDLED BY On Imgui");
+		}
 		//ImGui::ShowDemoWindow();
 	}
 
@@ -105,6 +106,7 @@ namespace Proof {
 
 	void Editore3D::SetDocking(bool* p_open)
 	{
+		
 		static bool opt_fullscreen = true;
 		static bool opt_padding = false;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
@@ -131,25 +133,31 @@ namespace Proof {
 
 		if (!opt_padding)
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-		ImGui::Begin("DockSpace", p_open, window_flags);
+		ImGui::Begin("DockSpace Demo", p_open, window_flags);
 		if (!opt_padding)
 			ImGui::PopStyleVar();
 
 		if (opt_fullscreen)
 			ImGui::PopStyleVar(2);
 
-		// DockSpace
+		
 		ImGuiIO& io = ImGui::GetIO();
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
+		else
+		{
 
-
-		if (ImGui::BeginMenuBar()) {
-			if (ImGui::BeginMenu("Options")) {
+		}
+		
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("Options"))
+			{
+				// Disabling fullscreen would allow the window to be moved to the front of other windows,
+				// which we can't undo at the moment without finer window depth/z control.
 				ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
 				ImGui::MenuItem("Padding", NULL, &opt_padding);
 				ImGui::Separator();
@@ -167,7 +175,6 @@ namespace Proof {
 			}
 			ImGui::EndMenuBar();
 		}
-
 		ImGui::End();
 	}
 }

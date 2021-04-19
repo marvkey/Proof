@@ -8,12 +8,10 @@ namespace Proof {
 
 	}
 	void EditorCamera3D::OnUpdate(FrameTime DeltaTime){
-		glm::mat4 CameraView = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
 		float radius = 5.0f;
 		float camX = sin(glfwGetTime()) * radius;
 		float camZ = cos(glfwGetTime()) * radius;
 		CameraView = glm::lookAt(CameraPos, CameraPos + CameraFront, CameraUp);
-		EditorCameraShader.SetMat4("View", CameraView);
 		KeyBoardInput(DeltaTime);
 		MouseInput(DeltaTime);
 		ScrollInput();
@@ -98,6 +96,9 @@ namespace Proof {
 					MoveSpeed -= 1.5;
 			}
 		}
+	}
+	glm::mat4 EditorCamera3D::GetCameraView(){
+		return CameraView;
 	}
 	void EditorCamera3D::UpdateCameraVector(){
 		glm::vec3 CameraDirection;

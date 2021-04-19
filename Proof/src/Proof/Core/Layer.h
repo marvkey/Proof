@@ -21,5 +21,3 @@ namespace Proof {
 		std::string DebugName;
 	};
 }
-
-

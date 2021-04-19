@@ -41,5 +41,4 @@ namespace Proof {
 		glfwGetWindowPos(GetWindow(), &X, &Y);
 		return { X,Y };
 	}
-	
 }

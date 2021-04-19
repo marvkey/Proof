@@ -21,7 +21,7 @@ namespace Proof {
         this->Width = Width;
         this->Height = Height;
     }
-    void WindowsWindow::WindowUpdate(const FrameTime DeltaTime) {
+    void WindowsWindow::WindowUpdate(FrameTime DeltaTime) {
 
        /* Event Handle over hear may change in the future */
         KeyboardClicked.clear();
@@ -51,16 +51,13 @@ namespace Proof {
         WindowResizeEvent::Instance->EventHandled = false;
         /* -------------------------------------------- */
        
-        glfwSwapBuffers(MainWindow);
         glfwPollEvents();
+        glfwSwapBuffers(MainWindow);
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     }
     void WindowsWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
         /* This is for when a key is Clicked 2 */
-        if (ImGui::IsAnyWindowHovered()) return;
-        if (ImGui::IsAnyItemHovered())return;
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
             auto now = std::chrono::system_clock::now();
@@ -73,22 +70,22 @@ namespace Proof {
 
         switch (action) {
         case GLFW_PRESS:
-            KeyboardClicked.push_back((KeyBoardKey)key);
+            KeyboardClicked.emplace_back((KeyBoardKey)key);
             KeyClickedEvent::Instance->KeyClicked = (KeyBoardKey)key;
             KeyClickedEvent::Instance->EventHandled = true;
             break;
         case GLFW_RELEASE:
-            KeyboardReleased.push_back((KeyBoardKey)key);
+            KeyboardReleased.emplace_back((KeyBoardKey)key);
             KeyReleasedEvent::Instance->KeyReleased = (KeyBoardKey)key;
             KeyReleasedEvent::Instance->EventHandled = true;
             break;
         case (int)InputEvent::KeyDouble:
-            KeyboardKeyDoubleClicked.push_back((KeyBoardKey)key);
+            KeyboardKeyDoubleClicked.emplace_back((KeyBoardKey)key);
             KeyDoubleClickEvent::Instance->KeyDoubleClick = (KeyBoardKey)key;
             KeyDoubleClickEvent::Instance->EventHandled = true;
             break;
         case (int)InputEvent::KeyRepeat:
-            KeyboardKeyRepeat.push_back((KeyBoardKey)key);
+            KeyboardKeyRepeat.emplace_back((KeyBoardKey)key);
             KeyRepeatEvent::Instance->KeyRepeat = (KeyBoardKey)key;
             KeyRepeatEvent::Instance->EventHandled = true;
             break;
@@ -96,8 +93,6 @@ namespace Proof {
     }
 
     void WindowsWindow::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-        if (ImGui::IsAnyWindowHovered()) return;
-        if (ImGui::IsAnyItemHovered())return;
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
             auto now = std::chrono::system_clock::now();
@@ -110,23 +105,21 @@ namespace Proof {
       
         switch (action) {
         case GLFW_PRESS:
-            MouseButtonClicked.push_back((MouseButton)button);
+            MouseButtonClicked.emplace_back((MouseButton)button);
             MouseClickedEvent::Instance->ButtonClicked = (MouseButton)button;
             MouseClickedEvent::Instance->EventHandled = true;
             break;
         case GLFW_RELEASE:
-            MouseButtonReleased.push_back((MouseButton)button);
+            MouseButtonReleased.emplace_back((MouseButton)button);
             MouseReleasedEvent::Instance->ButtonReleased = (MouseButton)button;
             MouseReleasedEvent::Instance->EventHandled = true;
             break;
         case (int)InputEvent::KeyDouble:
-            MouseButtonDoubleClicked.push_back((MouseButton)button);
+            MouseButtonDoubleClicked.emplace_back((MouseButton)button);
             MouseDoubleClickEvent::Instance->ButtonDoubleClick = (MouseButton)button;
             MouseDoubleClickEvent::Instance->EventHandled = true;
             break;
         }
-
-
     }
       
     void WindowsWindow::Window_Resize_Callback(GLFWwindow* window, int width, int height){
@@ -161,6 +154,7 @@ namespace Proof {
     }
 
     void WindowsWindow::Window_Refresh_callback(GLFWwindow* window){
+      
     }
 
     void WindowsWindow::Window_Input_Focus_callback(GLFWwindow* window, int focused){
@@ -200,6 +194,7 @@ namespace Proof {
             glfwTerminate();
             return -1;
         }
+     
         glfwMakeContextCurrent(MainWindow);
         glfwSetKeyCallback(MainWindow, key_callback);
         glfwSetMouseButtonCallback(MainWindow, mouse_button_callback);

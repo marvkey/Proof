@@ -1,6 +1,5 @@
 #pragma once
-#include "ImGUIOpenGL/imgui.h"
-#include <iostream>
+#include <memory>
 #ifdef PF_PLATFORM_WINDOW64
     #ifdef PF_CHANGEBUILD_STATIC
         #ifdef  PF_BUILD_DLL
@@ -14,5 +13,7 @@
 #else We Only support winodws 64 Bit
 #endif
 
-#define FolderOfProofCurrentDirectory ="../Proof/";
-
+// Add this when locating a file, but not fore built in functions it is already automatically added
+constexpr auto FolderOfProofCurrentDirectory = "../Proof/";;
+template<typename T>
+using Ref = std::shared_ptr<T>;

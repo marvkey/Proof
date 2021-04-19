@@ -1,7 +1,6 @@
 #include "Proofprch.h"
 #include "Texture.h"
 #include "GL/glew.h"
-#define STB_IMAGE_IMPLEMENTATION
 #include"../vendor/stb_image.h"
 namespace Proof {
 	Texture::Texture(const std::string& Path,bool IsImageTransperant,uint16_t Size):

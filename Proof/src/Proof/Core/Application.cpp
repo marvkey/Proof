@@ -6,7 +6,8 @@
 #include "Platform/WindowsWindow.h"
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Events/KeyEvent.h"
-#include "Proof/Renderer/Camera/EditorCamera.h"
+#include "Proof/Events/WindowEvent.h"
+#include "Proof3D/Renderer/Camera/EditorCamera.h"
 
 
 #include "glm/glm.hpp"
@@ -29,12 +30,13 @@ namespace Proof {
         MainWindow->createWindow();
 
         ImGuiMainLayer = new ImGuiLayer();
-        MainEditor3D = new Editore3D();
-        MainLayerStack.PushOverlay(MainEditor3D);
         MainLayerStack.PushLayer(ImGuiMainLayer);
     }
 
-    Application::~Application() {}
+    Application::~Application() {
+        delete MainWindow;
+        PF_ENGINE_TRACE("window is deleted");
+    }
 
     void Application::Run() {
         
@@ -105,7 +107,7 @@ namespace Proof {
        glm::vec3(-1.3f,  1.0f, -1.5f)
        };
 
-
+       
        VertexArray VertexArrayobj;
        VertexBuffer BufferObj;
        BufferObj.AddVertexBufferData(vertices,sizeof(vertices));
@@ -123,7 +125,7 @@ namespace Proof {
        Shader.SetFloat("Transperance", 0.2);
        float PosX =0.0f, PosY =0.0f, PosZ= -2.0f;
        EditorCamera3D Camera;
-       static bool Show = true;
+
         while ((glfwWindowShouldClose(CurrentWindow::GetWindow()) == false) && !(Input::IsKeyPressed(KeyBoardKey::Escape) ==true)) {
             float time = (float)glfwGetTime();
             const FrameTime DeltaTime = time - LastFrameTime;
@@ -131,16 +133,26 @@ namespace Proof {
             Contatiner.BindTexture(0);
             HappyFace.BindTexture(1);
 
+            ImGuiMainLayer->Begin(); 
+                for (Layer* layer : MainLayerStack.V_LayerStack)
+                    layer->OnImGuiDraw();
+            ImGuiMainLayer->End();
+
+            for (Layer* layer : MainLayerStack.V_LayerStack)
+                layer->OnUpdate(DeltaTime);
+
+
             Shader.UseShader();
             glm::mat4 View = glm::mat4(1.0f);
             glm::mat4 Projection = glm::mat4(1.0f);
             glm::mat4 Scale = glm::mat4(1.0f);
 
+            if (Input::IsKeyClicked(KeyBoardKey::F));
             Projection = glm::perspective(glm::radians(45.f), (float)CurrentWindow::GetWindowWidth()/ (float)CurrentWindow::GetWindowHeight(), 0.1f, 100.0f);
             Scale = glm::scale(Scale, glm::vec3(1.0,1.0,1.0));
             Shader.SetMat4("Projection", Projection);
-            Shader.SetMat4("View", View);
             Shader.SetMat4("Scale", Scale);
+            Shader.SetMat4("View", Camera.GetCameraView());
             Camera.OnUpdate(DeltaTime);
             VertexArrayobj.BindVertexArray();
 
@@ -152,15 +164,6 @@ namespace Proof {
                 Shader.SetMat4("Model", Model);
                 glDrawArrays(GL_TRIANGLES, 0, 36);
             }
-           
-            for (Layer* layer : MainLayerStack.V_LayerStack)
-                layer->OnUpdate(DeltaTime);
-
-            ImGuiMainLayer->Begin();
-            for (Layer* layer : MainLayerStack.V_LayerStack)
-                layer->OnImGuiDraw();
-            ImGuiMainLayer->End();
-
             MainWindow->WindowUpdate(DeltaTime); 
         };
         MainWindow->WindowEnd();

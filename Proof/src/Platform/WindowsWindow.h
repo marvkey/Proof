@@ -23,14 +23,11 @@ namespace Proof {
         static std::vector<MouseButton> MouseButtonDoubleClicked;
         static std::vector<MouseButton> MouseButtonRepeat;
         
-    protected:
-
+        virtual void WindowUpdate(FrameTime DeltaTime)override;
+        virtual	int  createWindow()override;
+        virtual int WindowEnd()override;
     private:
         friend int ::main(int argc, char** argv);
-        virtual	int  createWindow()override;
-        
-        void WindowUpdate(const FrameTime DeltaTime);
-        int WindowEnd();
         int Width =0, Height=0;
         GLFWwindow* MainWindow;
         static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

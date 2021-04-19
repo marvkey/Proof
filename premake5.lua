@@ -1,7 +1,7 @@
 
 workspace "Proof"
 	architecture "x64"
-	startproject "SandBox"
+	startproject "Proof-Editor"
 	configurations
 	{
 
@@ -119,8 +119,8 @@ project "SandBox"
 		"%{IncludeDir.GLEW}",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}"
-
+		"%{IncludeDir.glm}",
+		"%{wks.location}/SandBox/src",
 	}
 
 	libdirs 
@@ -161,3 +161,67 @@ project "SandBox"
 		optimize "on"		
 
 
+
+project "Proof-Editor"
+	location "Proof-Editor"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++17"
+
+	targetdir ("bin/".. OutputDirectory .. "/%{prj.name}")
+	objdir ("bin-int/".. OutputDirectory .. "/%{prj.name}")
+
+	files 
+	{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp",
+		
+	}
+
+	includedirs
+	{
+		"%{wks.location}/Proof/src",
+		"%{wks.location}/Proof/vendor/spdlog/include",
+		"%{IncludeDir.GLEW}",
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}",
+		"%{wks.location}/SandBox/src",
+	}
+
+	libdirs 
+	{
+		"%{wks.location}/Proof/vendor/glfw-3.3.2.bin.WIN64/lib-vc2019",
+		"%{wks.location}/Proof/vendor/glew-2.1.0/lib/Release/x64",
+	
+	}
+	
+	links
+	{
+
+		"Proof",
+		"glew32s.lib",
+		"glfw3.lib",
+		"opengl32.lib"
+	}
+	defines 
+	{
+		"GLEW_STATIC",
+		"PF_PLATFORM_WINDOW64",
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+		buildoptions "/MDd"
+
+	filter "configurations:Debug"
+		defines "PF_DEBUG"
+		symbols "on"
+
+	filter "configurations:Release"
+		defines "PF_RELEASE"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "PF_DIST"
+		optimize "on"		
