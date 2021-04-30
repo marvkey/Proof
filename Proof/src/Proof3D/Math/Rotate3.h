@@ -5,7 +5,7 @@ namespace Proof {
         Rotate3(float X, float Y, float Z);
         Rotate3() {}
         operator const  glm::vec3()const  { return glm::vec3(X, Y, Z);}
-        bool operator ==(Rotate3 Rotate) {
+        bool operator ==(const Rotate3& Rotate) {
             if (Rotate.X == this->X && Rotate.Y == this->Y && Rotate.Z == this->Z)
                 return true;
             return false;

@@ -26,6 +26,9 @@
 
 #include "Platform/OpenGL/OpenGLGraphicsContext.h"
 #include "Proof/Renderer/RendererCommand.h"
+
+#include <thread>
+
 namespace Proof {
     WindowsWindow* Application::MainWindow = nullptr;
 
@@ -118,7 +121,6 @@ namespace Proof {
         LevelShader.UseShader();
         float PosX = 0.0f, PosY = 0.0f, PosZ = -2.0f;
         EditorCamera3D Camera;
-
         while ((glfwWindowShouldClose(CurrentWindow::GetWindow()) == false) && !(Input::IsKeyPressed(KeyBoardKey::Escape) == true)) {
             RendererCommand::Clear();
             RendererCommand::SetClearColor(0.2, 0.3, 0.3, 1.);
@@ -162,8 +164,6 @@ namespace Proof {
                     VertexArrayobj.BindVertexArray();
                     glDrawArrays(GL_TRIANGLES, 0, 36);
                 }
-              
-
                 MainWindow->WindowUpdate(DeltaTime);
             }
             RendererCommand::SwapBuffer(CurrentWindow::GetWindow());

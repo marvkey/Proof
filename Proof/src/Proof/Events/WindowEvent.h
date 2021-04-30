@@ -13,7 +13,7 @@ namespace Proof {
         inline uint8_t GetHeight() { return Instance->Height;}
         std::string ToString()override {
             std::stringstream ss;
-            ss << "Window Resize Event " << Instance->Whidt << ", " << Instance->Height;
+            ss << "Window Resize Event " <<(int) GetWhidt() << ", " << (int)GetHeight ();
             return ss.str();
         }
     private:

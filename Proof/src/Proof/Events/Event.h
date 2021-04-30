@@ -7,7 +7,7 @@
 namespace Proof {
 	class Proof_API Event {
 	public:
-		virtual std::string ToString() { return "Empty"; };
+				virtual std::string ToString () = 0;
 	};
 }
 

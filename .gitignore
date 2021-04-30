@@ -2,9 +2,8 @@
 bin/
 bin-int/
 .vs/
+.idea/
 #Proof.sln
-
-
 # Visual Studio files and folder
 .vs/
 **.sln
