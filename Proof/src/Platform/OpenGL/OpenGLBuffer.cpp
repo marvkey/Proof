@@ -1,46 +1,46 @@
 #include "Proofprch.h"
-#include "Buffer.h"
+#include "OpenGLBuffer.h"
 
 namespace Proof {
-	VertexBuffer::VertexBuffer(uint16_t Size) :
+	OpenGLVertexBuffer::OpenGLVertexBuffer(uint16_t Size) :
 		VertexBufferSize(Size)
 	{
 		glGenBuffers(VertexBufferSize, &VertexBufferObject);
 	}
 
-	VertexBuffer::~VertexBuffer(){
+	OpenGLVertexBuffer::~OpenGLVertexBuffer(){
 		glDeleteBuffers(VertexBufferSize, &VertexBufferObject);
 	}
 
-	void VertexBuffer::BindVertexBuffer(){
+	void OpenGLVertexBuffer::BindVertexBuffer(){
 		glBindBuffer(GL_ARRAY_BUFFER, VertexBufferObject);
 	}
-	void VertexBuffer::AddVertexBufferData(void* Data, unsigned int Size){
+	void OpenGLVertexBuffer::AddVertexBufferData(void* Data, unsigned int Size){
 		glBindBuffer(GL_ARRAY_BUFFER, VertexBufferObject);
 		glBufferData(GL_ARRAY_BUFFER, Size, Data, GL_STATIC_DRAW);
 	}
 
-	void VertexBuffer::UnBind(){
+	void OpenGLVertexBuffer::UnBind(){
 		glBindBuffer(GL_ARRAY_BUFFER, VertexBufferObject);
 	}
 
-	IndexBuffer::IndexBuffer(uint16_t Size):
+	OpenGLIndexBuffer::OpenGLIndexBuffer(uint16_t Size):
 		IndexBufferSize(Size)
 	{
 		glGenBuffers(IndexBufferSize, &IndexBufferObject);
 		glBindBuffer(GL_ARRAY_BUFFER, IndexBufferObject);
 	}
-	IndexBuffer::~IndexBuffer(){
+	OpenGLIndexBuffer::~OpenGLIndexBuffer(){
 		glDeleteBuffers(IndexBufferSize, &IndexBufferObject);
 	}
-	void IndexBuffer::AddIndexBufferData(void* Data,unsigned int Size){
+	void OpenGLIndexBuffer::AddIndexBufferData(void* Data,unsigned int Size){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,IndexBufferObject);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,Size, Data, GL_STATIC_DRAW);
 	}
-	void IndexBuffer::BindIndexBuffer(){
+	void OpenGLIndexBuffer::BindIndexBuffer(){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,IndexBufferObject);
 	}
-	void IndexBuffer::UnBind(){
+	void OpenGLIndexBuffer::UnBind(){
 		glDeleteBuffers(IndexBufferSize, &IndexBufferObject);
 	}
 }

@@ -16,13 +16,14 @@ namespace Proof {
     std::vector<MouseButton> WindowsWindow::MouseButtonReleased;
     std::vector<MouseButton> WindowsWindow::MouseButtonDoubleClicked;
     std::vector<MouseButton> WindowsWindow::MouseButtonRepeat;
+    std::vector<float>WindowsWindow::MouseScrollX;
+    std::vector<float>WindowsWindow::MouseScrollY;
 
     WindowsWindow::WindowsWindow(unsigned int Width, unsigned int Height) {
         this->Width = Width;
         this->Height = Height;
     }
     void WindowsWindow::WindowUpdate(FrameTime DeltaTime) {
-
        /* Event Handle over hear may change in the future */
         KeyboardClicked.clear();
         KeyboardReleased.clear();
@@ -44,20 +45,19 @@ namespace Proof {
         MouseScrollEvent::Instance->EventHandled = false;
         MouseScrollEvent::Instance->PosX = 0;
         MouseScrollEvent::Instance->PosY = 0;
-
+        MouseScrollX.clear();
+        MouseScrollY.clear();
+        ProcessInput();
         /* ----------------------------------------------*/
         /* This are not working like inteded */
         WindowMoveEvent::Instance->EventHandled = false;
         WindowResizeEvent::Instance->EventHandled = false;
         /* -------------------------------------------- */
-       
-        glfwPollEvents();
-        glfwSwapBuffers(MainWindow);
-        glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     }
     void WindowsWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
         /* This is for when a key is Clicked 2 */
+        if (ImGui::IsAnyWindowHovered())return;
+        if (ImGui::IsAnyItemActive())return;
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
             auto now = std::chrono::system_clock::now();
@@ -66,8 +66,7 @@ namespace Proof {
             if (diff_ms > 10 && diff_ms < 200) {
                 action = (int)InputEvent::KeyDouble;
             }
-        }
-
+        }     
         switch (action) {
         case GLFW_PRESS:
             KeyboardClicked.emplace_back((KeyBoardKey)key);
@@ -93,6 +92,8 @@ namespace Proof {
     }
 
     void WindowsWindow::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+        if (ImGui::IsAnyWindowHovered())return;
+        if (ImGui::IsAnyItemHovered())return;
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
             auto now = std::chrono::system_clock::now();
@@ -138,6 +139,7 @@ namespace Proof {
 
     void WindowsWindow::Window_Close_Callback(GLFWwindow* window){
         WindowCloseEvent::Instance->EventHandled = true;
+        PF_ENGINE_INFO("WINDOW HAS BEEN CLOSSED");
     }
 
     void WindowsWindow::Controller_Callback(int jid, int event){
@@ -167,6 +169,11 @@ namespace Proof {
             PF_ENGINE_INFO("Window Lost Input Focus");
         }
     }
+
+    void WindowsWindow::ProcessInput(){
+        for (int i = 0; i < 300; i++)
+            if (glfwGetKey(MainWindow, i));
+    }
     
     void WindowsWindow::Mouse_Moved_Callback(GLFWwindow* window, double xpos, double ypos){
         MouseMoveEvent::Instance->EventHandled = true;
@@ -181,6 +188,8 @@ namespace Proof {
         MouseScrollEvent::Instance->EventHandled = true;
         MouseScrollEvent::Instance->PosX = xoffset;
         MouseScrollEvent::Instance->PosY = yoffset;
+        MouseScrollX.push_back(xoffset);
+        MouseScrollY.push_back(yoffset);
     }
 
     int WindowsWindow::createWindow() {
@@ -194,7 +203,6 @@ namespace Proof {
             glfwTerminate();
             return -1;
         }
-     
         glfwMakeContextCurrent(MainWindow);
         glfwSetKeyCallback(MainWindow, key_callback);
         glfwSetMouseButtonCallback(MainWindow, mouse_button_callback);
@@ -209,7 +217,7 @@ namespace Proof {
         glfwSetWindowRefreshCallback(MainWindow, Window_Refresh_callback);
         glfwSetWindowFocusCallback(MainWindow, Window_Input_Focus_callback);
         glfwSetFramebufferSizeCallback(MainWindow, Framebuffer_size_callback);
-
+      
         if (glewInit() != GLEW_OK) {
             PF_ENGINE_ERROR("Could Not Initilize Glew");
             return -1;

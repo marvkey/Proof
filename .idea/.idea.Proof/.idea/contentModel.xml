@@ -6,6 +6,7 @@
     <e p="C:\Users\marvn\OneDrive\Documents\Proof" t="IncludeFlat">
       <e p="bin" t="ExcludeRecursive" />
       <e p="bin-int\Debug-windows-x86_64\Proof" t="ExcludeRecursive" />
+      <e p="bin-int\Debug-windows-x86_64\Proof-Editor" t="ExcludeRecursive" />
       <e p="bin-int\Debug-windows-x86_64\SandBox" t="ExcludeRecursive" />
       <e p="packages" t="ExcludeRecursive" />
       <e p="Proof" t="IncludeRecursive">
@@ -14,6 +15,18 @@
           <e p="Platform" t="Include">
             <e p="CurrentWindow.cpp" t="Include" />
             <e p="CurrentWindow.h" t="Include" />
+            <e p="OpenGL" t="Include">
+              <e p="Buffer.cpp" t="Include" />
+              <e p="Buffer.h" t="Include" />
+              <e p="OpenGLGraphicsContext.cpp" t="Include" />
+              <e p="OpenGLGraphicsContext.h" t="Include" />
+              <e p="Shader.cpp" t="Include" />
+              <e p="Shader.h" t="Include" />
+              <e p="Texture.cpp" t="Include" />
+              <e p="Texture.h" t="Include" />
+              <e p="VertexArray.cpp" t="Include" />
+              <e p="VertexArray.h" t="Include" />
+            </e>
             <e p="WindowsWindow.cpp" t="Include" />
             <e p="WindowsWindow.h" t="Include" />
           </e>
@@ -22,13 +35,15 @@
               <e p="Application.cpp" t="Include" />
               <e p="Application.h" t="Include" />
               <e p="Core.h" t="Include" />
-              <e p="fragment.fs1" t="Include" />
               <e p="FrameTime.h" t="Include" />
+              <e p="Layer.cpp" t="Include" />
+              <e p="Layer.h" t="Include" />
+              <e p="LayerStack.cpp" t="Include" />
+              <e p="LayerStack.h" t="Include" />
               <e p="Log.cpp" t="Include" />
               <e p="Log.h" t="Include" />
               <e p="Proof.h" t="Include" />
               <e p="ProofConnect.h" t="Include" />
-              <e p="vertex.vs" t="Include" />
               <e p="Window.h" t="Include" />
             </e>
             <e p="Events" t="Include">
@@ -40,6 +55,10 @@
               <e p="WindowEvent.cpp" t="Include" />
               <e p="WindowEvent.h" t="Include" />
             </e>
+            <e p="ImGUI" t="Include">
+              <e p="ImGuiLayer.cpp" t="Include" />
+              <e p="ImGuiLayer.h" t="Include" />
+            </e>
             <e p="Input" t="Include">
               <e p="GamePad.h" t="Include" />
               <e p="Input.cpp" t="Include" />
@@ -49,13 +68,25 @@
               <e p="KeyCodes.h" t="Include" />
               <e p="Mouse.h" t="Include" />
             </e>
-            <e p="OpenGL" t="Include">
-              <e p="Buffer.cpp" t="Include" />
-              <e p="Buffer.h" t="Include" />
-              <e p="Shader.cpp" t="Include" />
-              <e p="Shader.h" t="Include" />
-              <e p="VertexArray.cpp" t="Include" />
-              <e p="VertexArray.h" t="Include" />
+            <e p="Renderer" t="Include">
+              <e p="GraphicsContext.cpp" t="Include" />
+              <e p="GraphicsContext.h" t="Include" />
+              <e p="RenderCommands.cpp" t="Include" />
+              <e p="RenderCommands.h" t="Include" />
+            </e>
+          </e>
+          <e p="Proof3D" t="Include">
+            <e p="Components" t="Include">
+              <e p="Mesh.cpp" t="Include" />
+              <e p="Mesh.h" t="Include" />
+            </e>
+            <e p="Math" t="Include">
+              <e p="Rotate3.cpp" t="Include" />
+              <e p="Rotate3.h" t="Include" />
+              <e p="Scale3.cpp" t="Include" />
+              <e p="Scale3.h" t="Include" />
+              <e p="Vector3.cpp" t="Include" />
+              <e p="Vector3.h" t="Include" />
             </e>
             <e p="Renderer" t="Include">
               <e p="Camera" t="Include">
@@ -66,10 +97,6 @@
               </e>
               <e p="Renderer3D.cpp" t="Include" />
               <e p="Renderer3D.h" t="Include" />
-            </e>
-            <e p="Scene3D" t="Include">
-              <e p="Scene3D.cpp" t="Include" />
-              <e p="Scene3D.h" t="Include" />
             </e>
           </e>
           <e p="Proofprch.cpp" t="Include" />
@@ -87,20 +114,34 @@
               <e p="imgui_impl_glfw.h" t="Include" />
               <e p="imgui_impl_opengl3.cpp" t="Include" />
               <e p="imgui_impl_opengl3.h" t="Include" />
+              <e p="imgui_impl_win32.cpp" t="Include" />
+              <e p="imgui_impl_win32.h" t="Include" />
               <e p="imgui_internal.h" t="Include" />
-              <e p="imgui_tables.cpp" t="Include" />
               <e p="imgui_widgets.cpp" t="Include" />
               <e p="imstb_rectpack.h" t="Include" />
               <e p="imstb_textedit.h" t="Include" />
               <e p="imstb_truetype.h" t="Include" />
             </e>
           </e>
+          <e p="stb_image.h" t="Include" />
+        </e>
+      </e>
+      <e p="Proof-Editor" t="IncludeRecursive">
+        <e p="Proof-Editor.vcxproj" t="IncludeRecursive" />
+        <e p="src" t="Include">
+          <e p="Editor3D" t="Include">
+            <e p="Editor3D.cpp" t="Include" />
+            <e p="Editor3D.h" t="Include" />
+          </e>
+          <e p="ProofEditorApp.cpp" t="Include" />
         </e>
       </e>
       <e p="Proof.sln" t="IncludeFlat" />
       <e p="SandBox" t="IncludeRecursive">
         <e p="SandBox.vcxproj" t="IncludeRecursive" />
         <e p="src" t="Include">
+          <e p="SandBox3D.cpp" t="Include" />
+          <e p="SandBox3D.h" t="Include" />
           <e p="SandboxApp.cpp" t="Include" />
         </e>
       </e>

@@ -17,7 +17,7 @@ namespace Proof {
             return ss.str();
         }
     private:
-        static std::shared_ptr<KeyClickedEvent>Instance;
+        static std::unique_ptr<KeyClickedEvent>Instance;
         KeyBoardKey KeyClicked;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
@@ -34,7 +34,7 @@ namespace Proof {
             return ss.str();
         }
     private:
-        static std::shared_ptr<KeyReleasedEvent>Instance;
+        static std::unique_ptr<KeyReleasedEvent>Instance;
         KeyBoardKey KeyReleased;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
@@ -51,7 +51,7 @@ namespace Proof {
             return ss.str();
         }
     private:
-        static std::shared_ptr<KeyDoubleClickEvent>Instance;
+        static std::unique_ptr<KeyDoubleClickEvent>Instance;
         KeyBoardKey KeyDoubleClick;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
@@ -68,7 +68,7 @@ namespace Proof {
             return ss.str();
         }
     private:
-        static std::shared_ptr<KeyRepeatEvent>Instance;
+        static std::unique_ptr<KeyRepeatEvent>Instance;
         KeyBoardKey KeyRepeat;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);

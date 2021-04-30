@@ -18,7 +18,7 @@ namespace Proof {
         }
     private:
         uint8_t Whidt, Height;
-        static std::shared_ptr<WindowResizeEvent>Instance;
+        static std::unique_ptr<WindowResizeEvent>Instance;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
         friend WindowsWindow;
@@ -36,7 +36,7 @@ namespace Proof {
         }
     private:
         uint8_t PosX, PosY;
-        static std::shared_ptr<WindowMoveEvent> Instance;
+        static std::unique_ptr<WindowMoveEvent> Instance;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
         friend WindowsWindow;
@@ -51,7 +51,7 @@ namespace Proof {
             return ss.str();
         }
     private:
-        static std::shared_ptr<WindowCloseEvent>Instance;
+        static std::unique_ptr<WindowCloseEvent>Instance;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
         friend WindowsWindow;
@@ -66,7 +66,7 @@ namespace Proof {
             return ss.str();
         }
     private:
-        static std::shared_ptr<WindowFocusEvent>Instance;
+        static std::unique_ptr<WindowFocusEvent>Instance;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
         friend WindowsWindow;

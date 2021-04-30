@@ -8,7 +8,7 @@ namespace Proof {
 		virtual void OnUpdate(FrameTime DeltaTime) override;
 		virtual void OnImGuiDraw() override;
 	private:
-		bool OpneLogConsole = true;
+		bool Docking = false;
 		void LogConsole();
 		void ContentBrowser();
 		void WorldObjects();

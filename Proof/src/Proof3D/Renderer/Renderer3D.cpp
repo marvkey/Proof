@@ -3,12 +3,14 @@
 #include "Platform/OpenGL/Shader.h"
 namespace Proof {
 	Renderer3D::Renderer3D(){
-		Shader3D = std::make_unique<Shader>("Proof/Core/vertex.vs", "Proof/Core/fragment.fs1");
 	}
 	void Renderer3D::OnWindowResize(unsigned int Width, unsigned int Height) {
 	}
+	void Renderer3D::BeginScene(EditorCamera3D& Camera, Shader& Render_Shader, glm::mat4& Projection){
+		Projection = glm::perspective(glm::radians(Camera.GetFieldOfView()), (float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(), 0.1f, 100.0f);
+		Render_Shader.SetMat4("Projection", Projection);
+	}
 	void Renderer3D::BeginScene(EditorCamera3D& Camera) {
-		Shader3D->SetMat4("View", Camera.GetCameraView());
 	}
 	void Renderer3D::EndScene() {
 	}

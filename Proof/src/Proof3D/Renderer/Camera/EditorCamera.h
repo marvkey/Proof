@@ -11,7 +11,6 @@ namespace Proof {
 	class Proof_API EditorCamera3D : public Camera3D {
 	public:
 		EditorCamera3D() = default;
-
 		virtual void OnUpdate(FrameTime DeltaTime) override;
 		float GetFieldOfView() { return FieldOfView; }
 		glm::mat4 GetCameraView();
@@ -21,11 +20,11 @@ namespace Proof {
 		virtual void MouseInput(float DeltaTime);
 		virtual void ScrollInput();
 	private:
+		glm::mat4 CameraView = glm::mat4(1.0f);
 		glm::vec3 CameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 		glm::vec3 CameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 		glm::vec3 CameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 		glm::vec3 CameraSide = glm::vec3(-1.0f, 0.0f, 0.0f);
-		glm::mat4 CameraView = glm::mat4(1.0f);
 		float MouseLastPosX;
 		float MouseLastPosY;
 		float Xoffset;

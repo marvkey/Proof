@@ -1,7 +1,6 @@
 #include "Proofprch.h"
 #include "LayerStack.h"
 namespace Proof {
-
 	LayerStack::~LayerStack() {
 		
 		for (Layer* layer : V_LayerStack) {

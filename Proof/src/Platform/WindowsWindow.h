@@ -22,6 +22,8 @@ namespace Proof {
         static std::vector<MouseButton> MouseButtonReleased;
         static std::vector<MouseButton> MouseButtonDoubleClicked;
         static std::vector<MouseButton> MouseButtonRepeat;
+        static std::vector<float> MouseScrollX;
+        static std::vector<float> MouseScrollY;
         
         virtual void WindowUpdate(FrameTime DeltaTime)override;
         virtual	int  createWindow()override;
@@ -44,9 +46,8 @@ namespace Proof {
         static void Window_Position_Callback(GLFWwindow* window, int xpos, int ypos);
         static void Window_Refresh_callback(GLFWwindow* window);
         static void Window_Input_Focus_callback(GLFWwindow* window, int focused);
+        void ProcessInput();
         /* --------------------------------------------------------------*/
         friend class CurrentWindow;
     };
 }
-
-

@@ -64,4 +64,7 @@ namespace Proof {
 	void Texture::BindTexture(uint16_t Slot)const {
 		glBindTextureUnit(Slot, TextureObject);
 	}
+	void Texture::BindTexture() const{
+		glBindTexture(GL_TEXTURE_2D, TextureObject);
+	}
 }

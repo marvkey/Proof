@@ -84,6 +84,9 @@ project "Proof"
 	filter "configurations:Debug"
 		defines "PF_DEBUG"
 		symbols "on"
+		defines {
+			"PF_ENABLE_ASSERT"
+		}
 
 	filter "configurations:Release"
 		defines "PF_RELEASE"
@@ -92,6 +95,9 @@ project "Proof"
 	filter "configurations:Dist"
 		defines "PF_DIST"
 		optimize "on"
+		defines {
+			"PF_ENABLE_ASSERT"
+		}
 			
 
         
@@ -151,6 +157,9 @@ project "SandBox"
 	filter "configurations:Debug"
 		defines "PF_DEBUG"
 		symbols "on"
+		defines {
+			"PF_ENABLE_ASSERT"
+		}
 
 	filter "configurations:Release"
 		defines "PF_RELEASE"
@@ -159,6 +168,9 @@ project "SandBox"
 	filter "configurations:Dist"
 		defines "PF_DIST"
 		optimize "on"		
+		defines {
+			"PF_ENABLE_ASSERT"
+		}
 
 
 

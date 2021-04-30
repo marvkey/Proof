@@ -5,10 +5,10 @@ namespace Proof {
 	public:
 		Renderer3D();
 		static void OnWindowResize(unsigned int Width, unsigned int Height);
+		static void BeginScene(EditorCamera3D& Camera,Shader& Render_Shader,glm::mat4& Projection);
 		static void BeginScene(EditorCamera3D& Camera);
 		static void EndScene();
 	private:
-		static std::unique_ptr<Shader> Shader3D;
 	};
 
 }

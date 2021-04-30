@@ -17,7 +17,7 @@ namespace Proof {
             return ss.str();
         }
     private:
-        static std::shared_ptr<MouseClickedEvent>Instance;
+        static std::unique_ptr<MouseClickedEvent>Instance;
         MouseButton ButtonClicked;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
@@ -34,7 +34,7 @@ namespace Proof {
             return ss.str();
         }
     private:
-        static std::shared_ptr<MouseReleasedEvent>Instance;
+        static std::unique_ptr<MouseReleasedEvent>Instance;
         MouseButton ButtonReleased;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
@@ -51,7 +51,7 @@ namespace Proof {
             return ss.str();
         }
     private:
-        static std::shared_ptr<MouseDoubleClickEvent> Instance;
+        static std::unique_ptr<MouseDoubleClickEvent> Instance;
         MouseButton ButtonDoubleClick;
         bool EventHandled;
         friend int ::main(int argc, char** argv);
@@ -69,7 +69,7 @@ namespace Proof {
             return ss.str();
         }
     private:
-        static std::shared_ptr<MouseMoveEvent>Instance;
+        static std::unique_ptr<MouseMoveEvent>Instance;
         bool EventHandled =false;
         unsigned int PosX;
         unsigned int PosY;
@@ -91,7 +91,7 @@ namespace Proof {
         }
 
     private:
-        static std::shared_ptr<MouseScrollEvent>Instance;
+        static std::unique_ptr<MouseScrollEvent>Instance;
         bool EventHandled = false;
         float PosX;
         float PosY;

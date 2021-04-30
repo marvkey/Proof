@@ -1,21 +1,18 @@
-#include "Proofprch.h"
 #include "Editor3D.h"
 #include "ImGUIOpenGL/imgui.h"
 #include "ImGUIOpenGL/imgui_impl_glfw.h"
 #include "ImGUIOpenGL/imgui_impl_opengl3.h"
 #include "Platform/CurrentWindow.h"
+#include "Proof/Input/Input.h"
 
-static bool Docking = false;
 namespace Proof {
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer")
 	{
-
 	}
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
-		if (Input::IsKeyClicked(KeyBoardKey::A)) {
-			PF_ENGINE_INFO("HANDLED BY ON UPDATE");
-		}
+		Layer::OnUpdate(DeltaTime);
+
 	}
 	
 	void Editore3D::OnImGuiDraw() {
@@ -49,9 +46,7 @@ namespace Proof {
 					if (ImGui::MenuItem("Docking", "Ctrl", &Docking)) { PF_ENGINE_INFO("Docking Enabled"); }
 					ImGui::EndMenu();
 				}
-
 				ImGui::EndMenuBar();
-
 			}
 
 			if (ImGui::BeginChild("Tab Bar")) {
@@ -75,9 +70,7 @@ namespace Proof {
 			}
 		}
 		ImGui::End();
-		if (Input::IsKeyClicked(KeyBoardKey::A)) {
-			PF_ENGINE_INFO("HANDLED BY On Imgui");
-		}
+	
 		//ImGui::ShowDemoWindow();
 	}
 
@@ -104,9 +97,7 @@ namespace Proof {
 		ImGui::End();
 	}
 
-	void Editore3D::SetDocking(bool* p_open)
-	{
-		
+	void Editore3D::SetDocking(bool* p_open){
 		static bool opt_fullscreen = true;
 		static bool opt_padding = false;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
@@ -147,17 +138,12 @@ namespace Proof {
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
-		else
-		{
 
-		}
-		
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("Options"))
 			{
-				// Disabling fullscreen would allow the window to be moved to the front of other windows,
-				// which we can't undo at the moment without finer window depth/z control.
+				
 				ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
 				ImGui::MenuItem("Padding", NULL, &opt_padding);
 				ImGui::Separator();

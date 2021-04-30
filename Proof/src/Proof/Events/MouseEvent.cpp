@@ -3,9 +3,9 @@
 #include "MouseEvent.h"
 
 namespace Proof {
-    std::shared_ptr<MouseClickedEvent> MouseClickedEvent::Instance;
-    std::shared_ptr<MouseReleasedEvent> MouseReleasedEvent::Instance;
-    std::shared_ptr<MouseDoubleClickEvent> MouseDoubleClickEvent::Instance;
-    std::shared_ptr<MouseMoveEvent>MouseMoveEvent::Instance;
-    std::shared_ptr<MouseScrollEvent>MouseScrollEvent::Instance;
+    std::unique_ptr<MouseClickedEvent> MouseClickedEvent::Instance;
+    std::unique_ptr<MouseReleasedEvent> MouseReleasedEvent::Instance;
+    std::unique_ptr<MouseDoubleClickEvent> MouseDoubleClickEvent::Instance;
+    std::unique_ptr<MouseMoveEvent>MouseMoveEvent::Instance;
+    std::unique_ptr<MouseScrollEvent>MouseScrollEvent::Instance;
 }

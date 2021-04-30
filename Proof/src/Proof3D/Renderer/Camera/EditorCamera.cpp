@@ -8,14 +8,11 @@ namespace Proof {
 
 	}
 	void EditorCamera3D::OnUpdate(FrameTime DeltaTime){
-		float radius = 5.0f;
-		float camX = sin(glfwGetTime()) * radius;
-		float camZ = cos(glfwGetTime()) * radius;
 		CameraView = glm::lookAt(CameraPos, CameraPos + CameraFront, CameraUp);
-		KeyBoardInput(DeltaTime);
-		MouseInput(DeltaTime);
-		ScrollInput();
 		
+		MouseInput(DeltaTime);
+		KeyBoardInput(DeltaTime);
+		ScrollInput();
 		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight))
 			glfwSetInputMode(CurrentWindow::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			
@@ -25,6 +22,7 @@ namespace Proof {
 			MouseLastPosX = Event.GetPosX();
 			MouseLastPosY = Event.GetPosY();
 		}
+		
 		if (MoveSpeed < 0 || MoveSpeed == 0.25)
 			MoveSpeed = 0.5;
 
@@ -40,7 +38,6 @@ namespace Proof {
 	}
 
 	void EditorCamera3D::KeyBoardInput(float DeltaTime) {
-
 		if (Input::IsKeyPressed(KeyBoardKey::W)) 
 			CameraPos += MoveSpeed * CameraFront * DeltaTime;
 		if (Input::IsKeyPressed(KeyBoardKey::S)) 
@@ -82,7 +79,6 @@ namespace Proof {
 	void  EditorCamera3D::ScrollInput() {
 		MouseScrollEvent ScrollEvent;
 		if (ScrollEvent.OnEvent()) {
-
 			if (Input::IsKeyPressed(KeyBoardKey::LeftControl) || Input::IsKeyPressed(KeyBoardKey::RightControl)) {
 				FieldOfView -= (float)ScrollEvent.GetPosY();
 				return;

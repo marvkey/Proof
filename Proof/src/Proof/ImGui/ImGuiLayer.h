@@ -14,6 +14,7 @@ namespace Proof {
         virtual void OnDetach()override;
         void Begin();
         void End();
+    private:
         void SetDarkTheme();
     };
 }

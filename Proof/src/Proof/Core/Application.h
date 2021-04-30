@@ -28,6 +28,7 @@ namespace Proof {
         friend class CurrentWindow;
         float LastFrameTime;
         friend int ::main(int argc, char** argv);
+        bool WindowMinimized = false;
     };
     Application* CreateApplication();
 }

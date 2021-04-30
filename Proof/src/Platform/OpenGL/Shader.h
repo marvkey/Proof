@@ -6,31 +6,31 @@ namespace Proof {
     class Proof_API Shader {
     public:
         unsigned int ID;
-        Shader(const std::string VertexPath, const std::string FragmentPath );
+        Shader(const std::string VertexPath, const std::string FragmentPath); // CODE NEEDS TO BE NEATEN UP
+        Shader(const std::string ShaderPath);
         ~Shader() {
             glDeleteProgram(ID);
         }
-       
         void UseShader();
+        void SetBool(const std::string Name, bool Value);
+        void SetInt(const std::string Name, int Value);
+        void SetFloat(const std::string Name,float Value);
 
-        void SetBool(const std::string &Name, bool Value);
-        void SetInt(const std::string& Name, int Value);
-        void SetFloat(const std::string& Name,float Value);
+        void SetVec2(const std::string Name, const glm::vec2& Value);
+        void SetVec2(const std::string Name, float X, float Y);
 
-        void SetVec2(const std::string& Name, glm::vec2& Value);
-        void SetVec2(const std::string& Name, float X, float Y);
+        void SetVec3(const std::string Name, const glm::vec3& Value);
+        void SetVec3(const std::string Name, float X, float Y, float Z);
 
-        void SetVec3(const std::string& Name, glm::vec3& Value);
-        void SetVec3(const std::string& Name, float X, float Y, float Z);
+        void SetVec4(const std::string Name, const glm::vec4& Value);
+        void SetVec4(const std::string Name, float X, float Y, float Z, float W);
 
-        void SetVec4(const std::string& Name, glm::vec4& Value);
-        void SetVec4(const std::string& Name, float X, float Y, float Z, float W);
-
-        void SetMat2(const std::string& Name, const glm::mat2& Value);
-        void SetMat3(const std::string& Name, const glm::mat3& Value);
-        void SetMat4(const std::string& Name, const glm::mat4& Value);
+        void SetMat2(const std::string Name, const glm::mat2& Value);
+        void SetMat3(const std::string Name, const glm::mat3& Value);
+        void SetMat4(const std::string Name, const glm::mat4& Value);
     private:
         std::string FolderOfCurrentDirectory = "../Proof/src/";
     };
+  
 }
 

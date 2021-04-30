@@ -3,7 +3,6 @@
 #include "Proof/Core/Application.h"
 #if defined(_WIN64)
 namespace Proof {
-
 	class Proof_API CurrentWindow {
 	public:
 		//virtual void Abstract() = 0;
@@ -21,5 +20,3 @@ namespace Proof {
 	};
 }
 #endif
-
-

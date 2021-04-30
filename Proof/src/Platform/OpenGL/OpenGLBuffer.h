@@ -1,11 +1,10 @@
 #pragma once
-#include<GL/glew.h>
-#include<GLFW/glfw3.h>
+#include "Proof/Renderer/Buffer.h"
 namespace Proof {
-	class Proof_API VertexBuffer{
+	class Proof_API OpenGLVertexBuffer : public VertexBuffer{
 	public:
-		VertexBuffer(uint16_t Size = 1);
-		~VertexBuffer();
+		OpenGLVertexBuffer(uint16_t Size = 1);
+		~OpenGLVertexBuffer();
 		void BindVertexBuffer();
 		void AddVertexBufferData(void* Data, unsigned int Size);
 		void UnBind();
@@ -14,10 +13,10 @@ namespace Proof {
 		uint16_t VertexBufferSize;
 	};
 
-	class Proof_API IndexBuffer {
+	class Proof_API OpenGLIndexBuffer: public IndexBuffer {
 	public:
-		IndexBuffer(uint16_t Size = 1);
-		~IndexBuffer();
+		OpenGLIndexBuffer(uint16_t Size = 1);
+		~OpenGLIndexBuffer();
 		void AddIndexBufferData(void *Data,unsigned int Size);
 		void BindIndexBuffer();
 		void UnBind();
