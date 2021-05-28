@@ -7,11 +7,9 @@ namespace Proof {
 		~Editore3D() = default;
 		virtual void OnUpdate(FrameTime DeltaTime) override;
 		virtual void OnImGuiDraw() override;
+		virtual void OnAttach() override;
 	private:
 		bool Docking = false;
-		void LogConsole();
-		void ContentBrowser();
-		void WorldObjects();
 		void SetDocking(bool* p_open);
 	};
 }

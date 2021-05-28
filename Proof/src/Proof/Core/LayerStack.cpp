@@ -2,7 +2,6 @@
 #include "LayerStack.h"
 namespace Proof {
 	LayerStack::~LayerStack() {
-		
 		for (Layer* layer : V_LayerStack) {
 			layer->OnDetach();
 			PF_ENGINE_TRACE("{} Detach and Delete",layer->GetName());

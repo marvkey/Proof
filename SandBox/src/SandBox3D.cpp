@@ -5,7 +5,7 @@ SandBox3D::SandBox3D():
 {
 }
 
-void SandBox3D::OnUpdate(Proof::FrameTime DeltaTime){
+void SandBox3D::OnUpdate(FrameTime DeltaTime){
 
 }
 

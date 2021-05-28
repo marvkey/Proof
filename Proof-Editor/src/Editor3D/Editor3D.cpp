@@ -5,16 +5,32 @@
 #include "Platform/CurrentWindow.h"
 #include "Proof/Input/Input.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
+#include <ImGUIOpenGL/imgui.h>
+#include <ImGUIOpenGL/imgui_impl_glfw.h>
+#include <ImGUIOpenGL/imgui_impl_opengl3.h>
+
+#include "Platform/OpenGL/Shader.h"
+#include "Platform/OpenGL/OpenGLBuffer.h"
+#include "Platform/OpenGL/OpenGLvertexArray.h"
+#include "Platform/OpenGL/Texture.h"
+
 namespace Proof {
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer")
 	{
 	}
+	void Editore3D::OnAttach() {
+	}
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
-
+		
 	}
-	
+
+
 	void Editore3D::OnImGuiDraw() {
 		Layer::OnImGuiDraw();
 
@@ -55,17 +71,16 @@ namespace Proof {
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Source Control")) {
-					 
 				}
 				ImGui::SameLine();
 
 				if (ImGui::Button("Setting")) {
-
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Play")) {
-
 				}
+				ImGui::SameLine();
+				ImGui::Text("%.1f FPS",ImGui::GetIO().Framerate);
 				ImGui::EndChild();
 			}
 		}
@@ -74,28 +89,7 @@ namespace Proof {
 		//ImGui::ShowDemoWindow();
 	}
 
-	void Editore3D::LogConsole() {
-		if (ImGui::Begin("Log")) {
-			ImGui::Text("Welcome to the file");
-			ImGui::TextColored(ImVec4{ 0.4,0.3,0.7,0.9 }, "THAT IS A GG");
-		}
-		ImGui::End();
-	}
 
-	void Editore3D::ContentBrowser() {
-		if (ImGui::Begin("Content Browser")) {
-			ImGui::Text("There is a football and boots");
-		}
-		ImGui::End();
-	}
-
-	void Editore3D::WorldObjects() {
-		if (ImGui::Begin("Scene Object")) {
-			ImGui::Text("Goal post");
-			ImGui::Text("Boots");
-		}
-		ImGui::End();
-	}
 
 	void Editore3D::SetDocking(bool* p_open){
 		static bool opt_fullscreen = true;
@@ -139,11 +133,9 @@ namespace Proof {
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
 
-		if (ImGui::BeginMenuBar())
-		{
+		if (ImGui::BeginMenuBar()){
 			if (ImGui::BeginMenu("Options"))
 			{
-				
 				ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
 				ImGui::MenuItem("Padding", NULL, &opt_padding);
 				ImGui::Separator();

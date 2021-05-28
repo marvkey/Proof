@@ -20,10 +20,13 @@ template<typename T>
 using Ref = std::shared_ptr<T>;
 #ifdef PF_PLATFORM_WINDOW64
     #ifdef PF_ENABLE_ASSERT
-        #define PF_ASSERT(X,...){ if(!(X)) {PF_ERROR("Assertion Failed {} ",__VA_ARGS__); __debugbreak();  } }
-        #define PF_CORE_ASSERT(X,...){ if(!(X)) {PF_ENGINE_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak(); } } 
+        #define PF_ASSERT(X,...){ if((X)) {PF_ERROR("Assertion Failed {} ",__VA_ARGS__); __debugbreak();  } }
+        #define PF_CORE_ASSERT(X,...){ if((X)) {PF_ENGINE_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak(); } } 
     #else
     #define PF_ASSERT(X,...)
     #define PF_CORE_ASSERT(X,...)
     #endif
 #endif
+
+#define GetVariableName(x)(#x)
+

@@ -14,6 +14,9 @@ namespace Proof {
 		virtual void OnUpdate(FrameTime DeltaTime) override;
 		float GetFieldOfView() { return FieldOfView; }
 		glm::mat4 GetCameraView();
+		glm::vec3 GetCameraPosition() {
+			return CameraPos;
+		}
 	protected:
 		virtual void BeginPlay()override;
 		virtual void KeyBoardInput(float DeltaTime);

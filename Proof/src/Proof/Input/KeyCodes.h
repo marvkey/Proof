@@ -1,6 +1,5 @@
 #pragma once
 
-namespace Proof {
 	enum class KeyBoardKey {
 		Space = 32,
 		Apostrophe = 39, /* ' */
@@ -187,4 +186,3 @@ namespace Proof {
 		KeyRepeat = 2,
 		KeyDouble = 3
 	};
-}
