@@ -1,0 +1,15 @@
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/CMakeFiles/uninstall.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/CMakeFiles/UpdateAssimpLibsDebugSymbolsAndDLLs.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/CMakeFiles/INSTALL.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/CMakeFiles/ALL_BUILD.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/CMakeFiles/ZERO_CHECK.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/contrib/zlib/CMakeFiles/zlibstatic.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/contrib/zlib/CMakeFiles/INSTALL.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/contrib/zlib/CMakeFiles/ALL_BUILD.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/code/CMakeFiles/assimp.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/code/CMakeFiles/INSTALL.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/tools/assimp_cmd/CMakeFiles/assimp_cmd.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/tools/assimp_cmd/CMakeFiles/INSTALL.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/test/CMakeFiles/unit.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/test/CMakeFiles/INSTALL.dir
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/test/headercheck/CMakeFiles/INSTALL.dir

@@ -1,0 +1,10 @@
+^C:\USERS\ADMIN\ONEDRIVE\DOCUMENTS\PROOF\PROOF\VENDOR\ASSIMP-MASTER\CMAKELISTS.TXT
+setlocal
+C:\Users\Admin\OneDrive\Documents\C++\Libraries\cmake-3.20.1-windows-x86_64\bin\cmake.exe -SC:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master -BC:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master --check-stamp-file C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

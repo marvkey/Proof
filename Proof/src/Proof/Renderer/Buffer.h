@@ -1,19 +1,62 @@
 #pragma once
-#include<GL/glew.h>
-#include<GLFW/glfw3.h>
-#include "Proof/Core/Core.h"
 namespace Proof {
 	class Proof_API VertexBuffer {
 	public:
-		virtual void BindVertexBuffer() = 0;
-		virtual void AddVertexBufferData(void* Data, unsigned int Size)=0;
+		/*
+		*creates vertex buffer
+		* sets as current vertex Buffer
+		*/
+		virtual void Bind() = 0;
+		/**
+		* sets the data for the vertex buffer
+		* @param Data the location of the first element in the array or vector
+		* @parm Size the size of element in vertex buffer
+		*/
+		virtual void AddData(const void* Data,uint32_t Size) = 0;
+		/**
+		*removes as Current vertex Buffer
+		*/
 		virtual void UnBind() = 0;
+		/**
+		* creates static vertex Buffer
+		* @param Data, the data to be supplied to vertex buffer
+		* @parm Size the size of the vertex Buffer
+		*/
+		static Count<VertexBuffer>Create(const void* Data,uint32_t Size);
+		/**
+		* creates Dynamic vertex Buffer
+		* @parm Size the size of the vertex Buffer
+		*/
+		static Count<VertexBuffer>Create(uint32_t Size);
+		/**
+		* deletes the vertex buffer
+		*/
+		virtual ~VertexBuffer() = default;
 	};
 
 	class Proof_API IndexBuffer {
 	public:
-		virtual void AddIndexBufferData(void* Data, unsigned int Size) = 0;
-		virtual void BindIndexBuffer()= 0;
+		/**
+		*set as Current Index Buffer
+		*/
+		virtual void Bind() = 0;
+		/**
+		*removes as Current Index Buffer
+		*/
 		virtual void UnBind() = 0;
+		/**
+		* creats Index Buffer
+		* @parm Data, dat to be sent
+		* @param Count in uint32_t,the vertecices to be drawn by index buffer
+		*/
+		static Count<IndexBuffer>Create(const void* Data,uint32_t Count);
+		/**
+		* deletes the Index Buffer
+		*/
+		virtual ~IndexBuffer() = default;
+		/*
+		* returns the count of the IndexBuffer
+		*/
+		virtual uint32_t GetCount() = 0;
 	};
 }

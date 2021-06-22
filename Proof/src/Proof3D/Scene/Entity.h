@@ -4,13 +4,10 @@
 #include <type_traits>
 class Proof_API Entity {
 public:
-	
 	Entity::Entity(entt::entity Handle,World* _World,const std::string&_Name):
 		EntityHandle(Handle),CurrentWorld(_World),Name(_Name)
 	{
 	}
-	
-
 	Entity::Entity(entt::entity Handle,World* _World):
 	EntityHandle(Handle),CurrentWorld(_World) 	
 	{	
@@ -56,9 +53,13 @@ public:
 		return CurrentWorld;
 	}
 	operator bool() const { return (bool)EntityHandle; };
+	bool GetIsSpawned() {
+		return IsSpawned;
+	}
 private:
 	World* CurrentWorld = nullptr;
 	entt::entity EntityHandle{entt::null};
 	std::string Name;
 	friend class World;
+	bool IsSpawned = false;
 };

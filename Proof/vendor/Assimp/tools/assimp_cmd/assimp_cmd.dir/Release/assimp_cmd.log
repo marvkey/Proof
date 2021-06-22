@@ -1,0 +1,8 @@
+﻿  Building Custom Rule C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/tools/assimp_cmd/CMakeLists.txt
+  CompareDump.cpp
+  ImageExtractor.cpp
+  Main.cpp
+  WriteDump.cpp
+  Info.cpp
+  Export.cpp
+  assimp_cmd.vcxproj -> C:\Users\Admin\OneDrive\Documents\Proof\Proof\vendor\assimp-master\bin\Release\assimp.exe

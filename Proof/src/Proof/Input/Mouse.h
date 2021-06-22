@@ -1,8 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Platform/CurrentWindow.h"
+#include "Proof/Core/CurrentWindow.h"
 #include <utility>
-
 
 namespace Proof {
     class Proof_API Mouse :private CurrentWindow {
@@ -19,4 +18,3 @@ namespace Proof {
         float MouseX = GetMouseLocation().first, MouseY = GetMouseLocation().second;
     };
 }
-

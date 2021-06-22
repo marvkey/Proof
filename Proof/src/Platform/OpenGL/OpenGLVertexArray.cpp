@@ -1,27 +1,31 @@
 #include "Proofprch.h"
+#include "Glad/glad.h"
 #include "OpenGLVertexArray.h"
 namespace Proof {
-   OpenGLVertexArray::OpenGLVertexArray(uint16_t Size):
-	  VertexArraySize(Size)
+   OpenGLVertexArray::OpenGLVertexArray(uint32_t Size):
+	  m_Size(Size)
    {
-	  glGenVertexArrays(VertexArraySize,&VertexArrayObject);
-	  glBindVertexArray(VertexArrayObject);
+	  glGenVertexArrays(m_Size,&m_ID);
+	  glBindVertexArray(m_ID);
    }
    OpenGLVertexArray::~OpenGLVertexArray() {
-	  glDeleteVertexArrays(VertexArraySize,&VertexArrayObject);
+	  glDeleteVertexArrays(m_Size,&m_ID);
    }
-   void OpenGLVertexArray::BindVertexArray() {
-	  glBindVertexArray(VertexArrayObject);
+   void OpenGLVertexArray::Bind() {
+	  glBindVertexArray(m_ID);
    }
-   void OpenGLVertexArray::AddAtributePointerInt(int Position,int Count,int SizeOfOneVertex,int Offset) {
-	  glVertexAttribPointer(Position,Count,GL_FLOAT,GL_FALSE,SizeOfOneVertex * sizeof(float),(void*)(Offset * sizeof(float)));
-	  glEnableVertexAttribArray(Position);
-   }
-   void OpenGLVertexArray::AddAtributePointervoid(int Position,int Count,int SizeOfOneVertex,const void* Offset) {
-	  glVertexAttribPointer(Position,Count,GL_FLOAT,GL_FALSE,SizeOfOneVertex * sizeof(float),Offset);
-	  glEnableVertexAttribArray(Position);
+   void OpenGLVertexArray::AddData(uint32_t Position,uint32_t Count,uint32_t SizeofVertex,const void* Offset) {
+	   glEnableVertexAttribArray(Position);
+	   glVertexAttribPointer(Position,Count,GL_FLOAT,GL_FALSE,SizeofVertex,Offset);
    }
    void OpenGLVertexArray::UnBind() {
-	  glDeleteVertexArrays(VertexArraySize,&VertexArrayObject);
+	   glBindVertexArray(0);
+   }
+   void OpenGLVertexArray::AttachIndexBuffer(Count<IndexBuffer>& indexBuffer) {
+	   if (m_IndexBufferAttach == true) {
+		   PF_ENGINE_WARN("Vertex Array already has a Index Buffer attached");
+	   }
+	   m_IndexBuffer = indexBuffer;
+	   m_IndexBufferAttach = true;
    }
 }

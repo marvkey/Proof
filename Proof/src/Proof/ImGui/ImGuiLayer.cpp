@@ -1,10 +1,9 @@
 #include "Proofprch.h"
 #include "ImGuiLayer.h"
-#include "ImGUIOpenGL/imgui.h"
-#include "ImGUIOpenGL/imgui_impl_glfw.h"
-#include "ImGUIOpenGL/imgui_impl_opengl3.h"
-#include "Platform/CurrentWindow.h"
-static bool Docking = false;
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_glfw.h"
+#include "ImGui/imgui_impl_opengl3.h"
+#include "Proof/Core/CurrentWindow.h"
 namespace Proof {
 	ImGuiLayer::ImGuiLayer() :
 		Layer("ImGUI Layer")
@@ -18,7 +17,7 @@ namespace Proof {
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
@@ -40,6 +39,7 @@ namespace Proof {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 	}
+	
 	void ImGuiLayer::End() {
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2((float)CurrentWindow::GetWindowWidth(), (float)CurrentWindow::GetWindowHeight());

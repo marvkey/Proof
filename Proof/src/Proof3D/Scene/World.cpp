@@ -3,6 +3,10 @@
 #include "Component.h"
 #include "Entity.h"
 #include "ScriptableEntity.h"
+#include "Proof/Renderer/Renderer.h"
+#include "Model.h"
+#include "Mesh.h"
+#include "Proof/Core/FrameTime.h"
 void World::OnUpdateEditor(FrameTime DeltaTime) {}
 
 void World::OnUpdateRuntime(FrameTime DeltaTime) {
@@ -14,6 +18,10 @@ void World::OnUpdateRuntime(FrameTime DeltaTime) {
 			Nsc.Instance->OnlyOnCreate();
 		}
 		Nsc.Instance->OnUpdate(DeltaTime);
+	});
+	/* This will go into Render THread */
+	Registry.view<StaticMeshComponent>().each([=](auto _Entity,auto& Nsc) {
+		//Nsc.Object->Draw(*Proof::Renderer::GetShaderLibrary().GetShader("ModelShader"));
 	});
 }
 
@@ -50,4 +58,8 @@ void World::OnComponentAdded(Entity* _Entity,TransformComponent&Component) {
 template<>
 void World::OnComponentAdded(Entity* _Entity,TagComponent&Component) {
 
+}
+template<>
+void World::OnComponentAdded(Entity* _Entity,StaticMeshComponent& Component) {
+	Component.m_EntityOwner = _Entity;
 }

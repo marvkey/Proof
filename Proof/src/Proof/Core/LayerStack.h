@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
-#include "Layer.h"
 namespace Proof {
+	class Layer;
 	class Proof_API LayerStack{
 	public:
 		LayerStack() = default;
@@ -18,6 +18,6 @@ namespace Proof {
 	private:
 		std::vector<Layer*>V_LayerStack;
 		unsigned int LayerStackIndex = 0;
-		friend Application;
+		friend class Application;
 	};
 }

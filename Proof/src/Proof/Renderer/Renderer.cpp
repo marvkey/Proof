@@ -1,12 +1,16 @@
 #include "Proofprch.h"
 #include "Renderer.h"
+#include "Renderer2D.h"
+#include "Renderer3D.h"
 
 namespace Proof {
-	void Renderer::BeginScene(){
+	ShaderLibrary* Renderer::AllShaders = new ShaderLibrary;
+	void Renderer::Init() {
+		Renderer2D::Init();
+		Renderer3D::Init();
 	}
-	void Renderer::EndScene(){
-	}
-	void Renderer::Submit(const std::shared_ptr<VertexArray> _VertexArray){
-		RendererCommand::DrawIndexed(_VertexArray);
+	void Renderer::Reset() {
+		Renderer2D::EndContext();
+		Renderer3D::EndContext();
 	}
 }

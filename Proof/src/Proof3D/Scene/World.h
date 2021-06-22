@@ -1,5 +1,7 @@
 #pragma once
 #include "entt/entt.hpp"
+class FrameTime;
+
 class World {
 public:
 	virtual void OnUpdateEditor(FrameTime DeltaTime);

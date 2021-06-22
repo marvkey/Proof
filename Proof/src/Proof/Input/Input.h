@@ -1,7 +1,8 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Platform/WindowsWindow.h"
 #include "KeyCodes.h"
+#include <vector>
+
 class Proof_API Input {
 public:
 	static bool IsKeyClicked(KeyBoardKey Key); // checks if key has been pressed on only render once until key is pressed again
@@ -21,9 +22,6 @@ public:
 	static float GetScrollWheelY();
 	static float GetMousePosX();
 	static float GetMouswPosY();
-private:
-	static std::vector<KeyBoardKey> KeyPressed;
-	static int KeyPressedIndex;
-	static std::vector<MouseButton> MouseButtonPressed;
-	static int MousePressedIndex;
+	static bool ViewPoartHovered;  // This Should Be Temporary;
 };
+ 

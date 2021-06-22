@@ -11,11 +11,15 @@ namespace Proof {
 		static void SetClearColor(glm::vec4 Color);
 		static void SetClearColor(float R, float G, float B, float A);
 		static void SwapBuffer(GLFWwindow* window);
-		static void EnableDepth();
-		inline static void DrawIndexed(const std::shared_ptr<VertexArray> _VertexArray) {
-			_RendererAPI->DrawIndexed(_VertexArray);
+		static void EnableDepth(bool TrueOrFalse);
+		static void SetViewPort(int Width,int Height);
+		inline static void DrawIndexed(const Count<VertexArray>& ArrayObject) {
+			s_RendererAPI->DrawIndexed(ArrayObject);
+		}
+		inline static void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count){
+			s_RendererAPI->DrawIndexed(ArrayObject,Count);
 		}
 	private:
-		static RendererAPI* _RendererAPI;
+		static RendererAPI* s_RendererAPI;
 	};
 }

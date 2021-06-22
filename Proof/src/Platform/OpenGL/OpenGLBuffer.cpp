@@ -1,44 +1,52 @@
 #include "Proofprch.h"
 #include "OpenGLBuffer.h"
+#include "Glad/glad.h"
 
 namespace Proof {
-   OpenGLVertexBuffer::OpenGLVertexBuffer(uint16_t Size):
-	  VertexBufferSize(Size)    {
-	  glGenBuffers(VertexBufferSize,&VertexBufferObject);
-   }
-
-   OpenGLVertexBuffer::~OpenGLVertexBuffer() {
-	  glDeleteBuffers(VertexBufferSize,&VertexBufferObject);
-   }
-
-   void OpenGLVertexBuffer::BindVertexBuffer() {
-	  glBindBuffer(GL_ARRAY_BUFFER,VertexBufferObject);
-   }
-   void OpenGLVertexBuffer::AddVertexBufferData(void* Data,unsigned int Size) {
-	  glBindBuffer(GL_ARRAY_BUFFER,VertexBufferObject);
+   OpenGLVertexBuffer::OpenGLVertexBuffer(const void* Data,uint32_t Size)
+	{
+	  glGenBuffers(1,&m_ID);
+	  glBindBuffer(GL_ARRAY_BUFFER,m_ID);
 	  glBufferData(GL_ARRAY_BUFFER,Size,Data,GL_STATIC_DRAW);
    }
 
-   void OpenGLVertexBuffer::UnBind() {
-	  glBindBuffer(GL_ARRAY_BUFFER,VertexBufferObject);
+   OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t Size) {
+	   glCreateBuffers(1,&m_ID);
+	   glBindBuffer(GL_ARRAY_BUFFER,m_ID);
+	   glBufferData(GL_ARRAY_BUFFER,Size,nullptr,GL_DYNAMIC_DRAW);
    }
 
-   OpenGLIndexBuffer::OpenGLIndexBuffer(uint16_t Size):
-	  IndexBufferSize(Size)    {
-	  glGenBuffers(IndexBufferSize,&IndexBufferObject);
-	  glBindBuffer(GL_ARRAY_BUFFER,IndexBufferObject);
+   OpenGLVertexBuffer::~OpenGLVertexBuffer() {
+	  glDeleteBuffers(1,&m_ID);
+   }
+
+   void OpenGLVertexBuffer::Bind() {
+	  glBindBuffer(GL_ARRAY_BUFFER,m_ID);
+   }
+   void OpenGLVertexBuffer::AddData(const void* Data,uint32_t Size) {
+	  glBindBuffer(GL_ARRAY_BUFFER,m_ID);
+	  glBufferSubData(GL_ARRAY_BUFFER,0,Size,Data);
+   }
+
+   void OpenGLVertexBuffer::UnBind() {
+	  glBindBuffer(GL_ARRAY_BUFFER,m_ID);
+   }
+
+   OpenGLIndexBuffer::OpenGLIndexBuffer(const void* Data,uint32_t Count):
+	  m_Count(Count)    
+   {
+	   // GL_ELEMENT_ARRAY_BUFFER not used in case a Vertex buffer is not set
+	  glGenBuffers(1,&m_ID);
+	  glBindBuffer(GL_ARRAY_BUFFER,m_ID);
+	  glBufferData(GL_ARRAY_BUFFER,Count * sizeof(uint32_t),Data,GL_STATIC_DRAW);
    }
    OpenGLIndexBuffer::~OpenGLIndexBuffer() {
-	  glDeleteBuffers(IndexBufferSize,&IndexBufferObject);
+	  glDeleteBuffers(1,&m_ID);
    }
-   void OpenGLIndexBuffer::AddIndexBufferData(void* Data,unsigned int Size) {
-	  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,IndexBufferObject);
-	  glBufferData(GL_ELEMENT_ARRAY_BUFFER,Size,Data,GL_STATIC_DRAW);
-   }
-   void OpenGLIndexBuffer::BindIndexBuffer() {
-	  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,IndexBufferObject);
+   void OpenGLIndexBuffer::Bind() {
+	  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_ID);
    }
    void OpenGLIndexBuffer::UnBind() {
-	  glDeleteBuffers(IndexBufferSize,&IndexBufferObject);
+	  glDeleteBuffers(1,&m_ID);
    }
 }

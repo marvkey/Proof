@@ -1,0 +1,14 @@
+# CMake generation dependency list for this directory.
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/CheckCSourceCompiles.cmake
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/CheckFunctionExists.c
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/CheckFunctionExists.cmake
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/CheckIncludeFile.c.in
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/CheckIncludeFile.cmake
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/CheckIncludeFileCXX.cmake
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/CheckTypeSize.c.in
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/CheckTypeSize.cmake
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/Internal/CheckSourceCompiles.cmake
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/CMakeFiles/CheckTypeSize/OFF64_T.c
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/contrib/zlib/CMakeLists.txt
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/contrib/zlib/zconf.h.cmakein
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/contrib/zlib/zlib.pc.cmakein

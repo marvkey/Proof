@@ -1,10 +1,9 @@
 #pragma once
-#include "Platform/WindowsWindow.h"
 #include "Proof/Core/Core.h"
 #include <memory>
 #include <sstream>
-#include <functional>
 #include "Event.h"
+#include "Proof/Input/KeyCodes.h"
 int main(int argc, char** argv);
 namespace Proof {
     class Proof_API MouseClickedEvent:public Event{
@@ -21,7 +20,7 @@ namespace Proof {
         MouseButton ButtonClicked;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
-        friend WindowsWindow;
+        friend class WindowsWindow;
     };
     
     class Proof_API MouseReleasedEvent: public Event {
@@ -38,7 +37,7 @@ namespace Proof {
         MouseButton ButtonReleased;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
-        friend WindowsWindow;
+        friend class WindowsWindow;
     };
 
     class Proof_API MouseDoubleClickEvent: public Event {
@@ -55,7 +54,7 @@ namespace Proof {
         MouseButton ButtonDoubleClick;
         bool EventHandled;
         friend int ::main(int argc, char** argv);
-        friend WindowsWindow;
+        friend class WindowsWindow;
     };
 
     class Proof_API MouseMoveEvent: public Event {
@@ -74,7 +73,7 @@ namespace Proof {
         unsigned int PosX;
         unsigned int PosY;
         friend int ::main(int argc, char** argv);
-        friend WindowsWindow;
+        friend class WindowsWindow;
         
     };
 
@@ -96,8 +95,6 @@ namespace Proof {
         float PosX;
         float PosY;
         friend int ::main(int argc, char** argv);
-        friend WindowsWindow;
+        friend class WindowsWindow;
     };
 }
-
-

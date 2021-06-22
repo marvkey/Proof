@@ -1,14 +1,12 @@
 #include "Proofprch.h"
 #include "Input.h"
-#include "Platform/CurrentWindow.h"
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Input/Mouse.h"
-std::vector<KeyBoardKey> Input::KeyPressed;
-int Input::KeyPressedIndex;
-std::vector<MouseButton> Input::MouseButtonPressed;
-int Input::MousePressedIndex;
-
+#include "Platform/Window/WindowsWindow.h"
+#include "ImGui/imgui.h"
+bool Input::ViewPoartHovered = false;
 bool Input::IsKeyClicked(KeyBoardKey Key) {
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	for (int i = 0; i < Proof::WindowsWindow::KeyboardClicked.size(); i++) {
 		if (Key == Proof::WindowsWindow::KeyboardClicked[i]) {
 			return true;
@@ -18,6 +16,7 @@ bool Input::IsKeyClicked(KeyBoardKey Key) {
 }
 
 bool Input::IsKeyReleased(KeyBoardKey Key) {
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	for (int i = 0; i < Proof::WindowsWindow::KeyboardReleased.size(); i++) {
 		if (Key == Proof::WindowsWindow::KeyboardReleased[i]) {
 			return true;
@@ -27,6 +26,7 @@ bool Input::IsKeyReleased(KeyBoardKey Key) {
 }
 
 bool Input::IsKeyHold(KeyBoardKey Key) {
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	for (int i = 0; i < Proof::WindowsWindow::KeyboardKeyRepeat.size(); i++) {
 		if (Key == Proof::WindowsWindow::KeyboardKeyRepeat[i]) {
 			return true;
@@ -36,6 +36,7 @@ bool Input::IsKeyHold(KeyBoardKey Key) {
 }
 
 bool Input::IsKeyPressed(KeyBoardKey Key) {
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	if (glfwGetKey(Proof::CurrentWindow::GetWindow(),(int)Key)) {
 		return  true;
 	}
@@ -43,6 +44,7 @@ bool Input::IsKeyPressed(KeyBoardKey Key) {
 }
 
 bool Input::IsKeyDoubleClick(KeyBoardKey Key) {
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	for (int i = 0; i < Proof::WindowsWindow::KeyboardKeyDoubleClicked.size(); i++) {
 		if (Key == Proof::WindowsWindow::KeyboardKeyDoubleClicked[i]) {
 			return true;
@@ -52,6 +54,7 @@ bool Input::IsKeyDoubleClick(KeyBoardKey Key) {
 }
 
 bool Input::IsMouseButtonClicked(MouseButton Button) {
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	for (int i = 0; i < Proof::WindowsWindow::MouseButtonClicked.size(); i++) {
 		if (Button == Proof::WindowsWindow::MouseButtonClicked[i]) {
 			return true;
@@ -60,6 +63,7 @@ bool Input::IsMouseButtonClicked(MouseButton Button) {
 	return false;
 }
 bool Input::IsMouseButtonReleased(MouseButton Button) {
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	for (int i = 0; i < Proof::WindowsWindow::MouseButtonReleased.size(); i++) {
 		if (Button == Proof::WindowsWindow::MouseButtonReleased[i]) {
 			return true;
@@ -69,6 +73,7 @@ bool Input::IsMouseButtonReleased(MouseButton Button) {
 }
 
 bool Input::IsMouseButtonDoubleClicked(MouseButton Button) {
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	for (int i = 0; i < Proof::WindowsWindow::MouseButtonDoubleClicked.size(); i++) {
 		if (Button == Proof::WindowsWindow::MouseButtonDoubleClicked[i]) {
 			return true;
@@ -78,6 +83,7 @@ bool Input::IsMouseButtonDoubleClicked(MouseButton Button) {
 }
 
 bool Input::IsMouseScrollWheelUp() {
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	float ScrollUp = 1.0f;
 	for (int i = 0; i < Proof::WindowsWindow::MouseScrollY.size(); i++) {
 		if (ScrollUp == Proof::WindowsWindow::MouseScrollY[i]) {
@@ -88,6 +94,7 @@ bool Input::IsMouseScrollWheelUp() {
 }
 
 bool Input::IsMouseScrollWheelDown() {
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	float ScrollDown = -1.0f;
 	for (int i = 0; i < Proof::WindowsWindow::MouseScrollX.size(); i++) {
 		if (ScrollDown == Proof::WindowsWindow::MouseScrollX[i]) {
@@ -98,24 +105,27 @@ bool Input::IsMouseScrollWheelDown() {
 }
 
 bool Input::IsMouseButtonPressed(MouseButton Button) {
-	if (ImGui::IsAnyWindowHovered())return false;
-	if (ImGui::IsAnyItemHovered())return false;
+	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	if (glfwGetMouseButton(Proof::CurrentWindow::GetWindow(),(int)Button)) {
 		return true;
 	}
 	return false;
 }
 float Input::GetScrollWheelX() {
+	if (ViewPoartHovered == false)return 0.0f; // This Temprory will not be released like this
 	Proof::MouseScrollEvent ScrollWheel;
 	return ScrollWheel.GetPosX();
 }
 float Input::GetScrollWheelY() {
+	if (ViewPoartHovered == false)return 0.0f; // This Temprory will not be released like this
 	Proof::MouseScrollEvent ScrollWheel;
 	return ScrollWheel.GetPosY();
 }
 float Input::GetMousePosX() {
+	if (ViewPoartHovered == false)return 0.0f; // This Temprory will not be released like this
 	return Proof::Mouse::GetMouseX();
 }
 float Input::GetMouswPosY() {
+	if (ViewPoartHovered == false)return 0.0f; // This Temprory will not be released like this
 	return Proof::Mouse::GetMouseY();
 }

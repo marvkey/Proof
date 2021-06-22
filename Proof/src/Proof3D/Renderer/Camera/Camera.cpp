@@ -5,11 +5,11 @@
 
 namespace Proof {
 
-	void Camera3D::OnUpdate(FrameTime DeltaTime) {
+	void Camera::OnUpdate(FrameTime DeltaTime) {
 
 	}
 
-	void Camera3D::BeginPlay() {
+	void Camera::BeginPlay() {
 
 	} 
 }

@@ -1,8 +1,9 @@
 #pragma once
 #include <memory>
 #include <iostream>
+#include<chrono>
 #ifdef PF_PLATFORM_WINDOW64
-    #ifdef PF_CHANGEBUILD_STATIC
+    #ifdef LINK_DLL
         #ifdef  PF_BUILD_DLL
             #define Proof_API __declspec(dllexport)
         #else
@@ -15,18 +16,50 @@
 #endif
 
 // Add this when locating a file, but not fore built in functions it is already automatically added
-constexpr auto FolderOfProofCurrentDirectory = "../Proof/";;
+inline const std::string ProofCurrentDirectorySrc = "../Proof/src/";
+
 template<typename T>
 using Ref = std::shared_ptr<T>;
 #ifdef PF_PLATFORM_WINDOW64
     #ifdef PF_ENABLE_ASSERT
-        #define PF_ASSERT(X,...){ if((X)) {PF_ERROR("Assertion Failed {} ",__VA_ARGS__); __debugbreak();  } }
-        #define PF_CORE_ASSERT(X,...){ if((X)) {PF_ENGINE_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak(); } } 
+        #define PF_ASSERT(X,...){ if((!X)) {PF_ERROR("Assertion Failed %s",__VA_ARGS__); __debugbreak();  } }
+        #define PF_CORE_ASSERT(X,...){ if((!X)) {PF_ENGINE_ERROR("Assertion Failed %s",__VA_ARGS__); __debugbreak(); } } 
     #else
-    #define PF_ASSERT(X,...)
-    #define PF_CORE_ASSERT(X,...)
+        #define PF_ASSERT(X,...)
+        #define PF_CORE_ASSERT(X,...)
     #endif
 #endif
 
 #define GetVariableName(x)(#x)
 
+namespace Proof {
+    template<typename T>
+    using Count = std::shared_ptr<T>;
+
+    template<typename T, typename ... Args>
+    constexpr Count<T> CreateCount(Args&&... args) {
+        return std::make_shared<T>(std::forward<Args>(args)...);
+    }
+    
+    template<typename T>
+    using Special = std::unique_ptr<T>;
+
+    template<typename T,typename ... Args>
+    constexpr Special<T> CreateSpecial(Args&&... args) {
+        return std::make_shared<T>(std::forward<Args>(args)...);
+    }
+    struct Proof_API Timer {
+        std::chrono::time_point<std::chrono::steady_clock>Start,End;
+        void StartTimer() {
+            Start = std::chrono::high_resolution_clock::now();
+        }
+        void TimerEnd() {
+            End = std::chrono::high_resolution_clock::now();
+            Duration = End - Start;
+            Milliseconds = Duration.count() * 1000.0f;
+        }
+        float Milliseconds;
+    private:
+        std::chrono::duration <float>Duration;
+    };
+}

@@ -1,0 +1,5 @@
+# CMake generation dependency list for this directory.
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/FindPackageHandleStandardArgs.cmake
+C:/Users/Admin/OneDrive/Documents/C++/Libraries/cmake-3.20.1-windows-x86_64/share/cmake-3.20/Modules/FindPackageMessage.cmake
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/cmake-modules/FindRT.cmake
+C:/Users/Admin/OneDrive/Documents/Proof/Proof/vendor/assimp-master/code/CMakeLists.txt

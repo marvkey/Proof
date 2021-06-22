@@ -1,10 +1,11 @@
 #pragma once
-#include "Platform/WindowsWindow.h"
+#include "Event.h"
 #include "Proof/Core/Core.h"
 #include <memory>
-#include "Event.h"
 #include <sstream>
 #include <functional>
+#include "Proof/Input/KeyCodes.h"
+
 int main(int argc, char** argv);
 namespace Proof {
     class Proof_API KeyClickedEvent: public Event{
@@ -21,7 +22,7 @@ namespace Proof {
         KeyBoardKey KeyClicked;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
-        friend WindowsWindow;
+        friend class WindowsWindow;
     };
 
     class Proof_API KeyReleasedEvent:public Event {
@@ -38,7 +39,7 @@ namespace Proof {
         KeyBoardKey KeyReleased;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
-        friend WindowsWindow;
+        friend class WindowsWindow;
     };
 
     class Proof_API KeyDoubleClickEvent :public Event {
@@ -55,7 +56,7 @@ namespace Proof {
         KeyBoardKey KeyDoubleClick;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
-        friend WindowsWindow;
+        friend class WindowsWindow;
     };
 
     class Proof_API KeyRepeatEvent:public Event {
@@ -72,6 +73,6 @@ namespace Proof {
         KeyBoardKey KeyRepeat;
         bool EventHandled = false;
         friend int ::main(int argc, char** argv);
-        friend WindowsWindow;
+        friend class WindowsWindow;
     };
 }

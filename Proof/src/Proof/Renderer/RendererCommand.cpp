@@ -2,23 +2,26 @@
 #include "RendererCommand.h"
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 namespace Proof {
-	RendererAPI* RendererCommand::_RendererAPI = new OpenGLRendererAPI;
+	RendererAPI* RendererCommand::s_RendererAPI = new OpenGLRendererAPI;
 	void RendererCommand::PollEvents(){
-		_RendererAPI->PollEvents();
+		s_RendererAPI->PollEvents();
 	}
 	void RendererCommand::Clear(){
-		_RendererAPI->Clear();
+		s_RendererAPI->Clear();
 	}
 	void RendererCommand::SetClearColor(glm::vec4 Color){
-		_RendererAPI->SetClearColor(Color);
+		s_RendererAPI->SetClearColor(Color);
 	}
 	void RendererCommand::SetClearColor(float R, float G, float B, float A){
-		_RendererAPI->SetClearColor(R, G, B, A);
+		s_RendererAPI->SetClearColor(R, G, B, A);
 	}
 	void RendererCommand::SwapBuffer(GLFWwindow* Window){
-		_RendererAPI->SwapBuffer(Window);
+		s_RendererAPI->SwapBuffer(Window);
 	}
-	void RendererCommand::EnableDepth(){
-		_RendererAPI->EnableDepth();
+	void RendererCommand::EnableDepth(bool TrueOrFalse){
+		s_RendererAPI->EnableDepth(TrueOrFalse);
+	}
+	void RendererCommand::SetViewPort(int Width,int Height) {
+		s_RendererAPI->SetViewPort(0,0,Width,Height);
 	}
 }

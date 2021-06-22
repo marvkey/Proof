@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "EditorCamera.h"
 #include "Proof/Events/MouseEvent.h"
-#include "Platform/CurrentWindow.h"
+#include "Proof/Core/CurrentWindow.h"
 namespace Proof {
 
 	void EditorCamera3D::BeginPlay() {
@@ -10,14 +10,14 @@ namespace Proof {
 	void EditorCamera3D::OnUpdate(FrameTime DeltaTime){
 		CameraView = glm::lookAt(CameraPos, CameraPos + CameraFront, CameraUp);
 		
-		MouseInput(DeltaTime);
-		KeyBoardInput(DeltaTime);
-		ScrollInput();
 		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight))
-			glfwSetInputMode(CurrentWindow::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			glfwSetInputMode(CurrentWindow::GetWindow(),GLFW_CURSOR,GLFW_CURSOR_NORMAL);
 			
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight)) {
 			glfwSetInputMode(CurrentWindow::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			MouseInput(DeltaTime);
+			KeyBoardInput(DeltaTime);
+			ScrollInput();
 			MouseMoveEvent Event;
 			MouseLastPosX = Event.GetPosX();
 			MouseLastPosY = Event.GetPosY();
@@ -50,6 +50,7 @@ namespace Proof {
 			CameraPos += CameraUp*DeltaTime*MoveSpeed;
 		if (Input::IsKeyPressed(KeyBoardKey::Q))
 			CameraPos -= CameraUp * DeltaTime*MoveSpeed;
+
 	}
 
 	void EditorCamera3D::MouseInput(float DeltaTime) {
@@ -91,9 +92,10 @@ namespace Proof {
 				else 
 					MoveSpeed -= 1.5;
 			}
+			PF_ENGINE_INFO("Mouse Speed %f",MoveSpeed);
 		}
 	}
-	glm::mat4 EditorCamera3D::GetCameraView(){
+	glm::mat4 EditorCamera3D::GetCameraView()const{
 		return CameraView;
 	}
 	void EditorCamera3D::UpdateCameraVector(){
