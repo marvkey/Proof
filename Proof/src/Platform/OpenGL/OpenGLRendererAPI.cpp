@@ -18,7 +18,7 @@ namespace Proof {
 	   glBindTexture(GL_TEXTURE_2D,0);
    }
 
-   void OpenGLRendererAPI::DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count){
+   void OpenGLRendererAPI::DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count){ /* COuld Be Removed */
 	   ArrayObject->Bind();
 	   glDrawElements(GL_TRIANGLES,Count,GL_UNSIGNED_INT,0);
 	   glBindTexture(GL_TEXTURE_2D,0);
