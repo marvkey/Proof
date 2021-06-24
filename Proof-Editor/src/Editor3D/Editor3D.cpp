@@ -12,7 +12,7 @@ namespace Proof {
 	}
 	void Editore3D::OnAttach() {
 		NewWorld();
-		WoodenTexture = Texture2D::Create("WoodTexture.jpg");
+		WoodenTexture = Texture2D::Create("PlayerSprite.png");
 	}
 	void Editore3D::NewWorld() {
 		ActiveWorld = new World();
@@ -22,7 +22,10 @@ namespace Proof {
 		Application::ViewPortWidth = _ViewPortSize.x;
 		Application::ViewPortHeight = _ViewPortSize.y;
 		Renderer2D::BeginContext(SceneCamera);
-		Renderer2D::DrawQuad(Square1Pos,SquareScale,Square1Color,WoodenTexture);
+		Renderer2D::DrawQuad(Square1Pos,Rotation,SquareScale,Square1Color,WoodenTexture);
+		Renderer2D::DrawQuad({0,0,0},{0.2,0.6,1,0});
+		Renderer2D::DrawQuad({0,0,0},{1,0.6,1,1});
+
 		if(Input::IsKeyPressed(KeyBoardKey::A)){
 			SceneCamera.SetPosition({SceneCamera.GetPosition().x-0.05,SceneCamera.GetPosition().y,SceneCamera.GetPosition().z});
 		}
@@ -73,6 +76,10 @@ namespace Proof {
 			ImGui::DragFloat("x",&SquareScale.x,0.1f,0.0f,0.0f,"%.3f");
 			ImGui::DragFloat("y",&SquareScale.y,0.1f,0.0f,0.0f,"%.3f");
 
+			ImGui::DragFloat("RotatationX",&Rotation.x,0.3f,0.0f,0.0f,"%.3f");
+			ImGui::DragFloat("RotatationY",&Rotation.y,0.3f,0.0f,0.0f,"%.3f");
+			ImGui::DragFloat("RotatationZ",&Rotation.z,0.3f,0.0f,0.0f,"%.3f");
+
 			ImGui::ColorEdit4("SquareColor",glm::value_ptr(Square1Color));
 		}
 		ImGui::End();
@@ -107,8 +114,6 @@ namespace Proof {
 		ImGui::End();
 		ImGui::PopStyleVar();
 	}
-
-
 
 	void Editore3D::SetDocking(bool * p_open) {
 		static bool opt_fullscreen = true;

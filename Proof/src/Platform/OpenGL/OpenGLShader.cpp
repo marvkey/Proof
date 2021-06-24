@@ -155,6 +155,10 @@ namespace Proof {
 	void OpenGLShader::SetFloat(const std::string& Name,float Value) {
 		glUniform1f(glGetUniformLocation(ID,Name.c_str()),Value);
 	}
+	void OpenGLShader::SetIntArray(const std::string& Name,int* Value,uint32_t Size) {
+		GLuint Location = glGetUniformLocation(ID,Name.c_str());
+		glUniform1iv(Location,Size,Value);
+	}
 	void OpenGLShader::SetVec2(const std::string& Name,const glm::vec2& Value) {
 		glUniform2fv(glGetUniformLocation(ID,Name.c_str()),1,glm::value_ptr(Value));
 	}

@@ -24,9 +24,10 @@ namespace Proof {
 		bool ViewPortResize = false;
 		class World* ActiveWorld;
 		class OrthagraphicCamera SceneCamera{-1.0f,1.0f,-1.0f,1.0f};
-		glm::vec2 Square1Pos={0,0};
-		glm::vec2 SquareScale ={1.0f,1.0f};
-		glm::vec4 Square1Color = {1.0f,1.0f,1.0f,1.0f};
+		glm::vec3 Square1Pos={0,0,0};
+		glm::vec3 SquareScale ={1.0f,1.0f,1.0f};
+		glm::vec4 Square1Color = {1.0f,1.0f,1.0f,1.f};
+		glm::vec3 Rotation = {0,0,0};
 		Count<Texture2D> WoodenTexture;
 	};
 }

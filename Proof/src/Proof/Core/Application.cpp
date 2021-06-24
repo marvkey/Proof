@@ -34,12 +34,16 @@ namespace Proof {
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
+        RendererCommand::EnableDepth(true);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+        //glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
+        
         while (glfwWindowShouldClose(CurrentWindow::GetWindow()) == false && _KeyClickedEvent.GetKeyClicked() != KeyBoardKey::Escape) {
             float FrameStart = glfwGetTime();
             float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
             FrameCount++;
-            RendererCommand::EnableDepth(true);
             const FrameTime DeltaTime = time - LastFrameTime;
             if (CurrentWindow::GetWindowHeight() == 0 || CurrentWindow::GetWindowWidth() == 0)
                 WindowMinimized = true;

@@ -7,6 +7,8 @@ namespace Proof {
         virtual void UseShader() = 0;
         virtual void SetBool(const std::string& Name,bool Value) = 0;
         virtual void SetInt(const std::string& Name,int Value) = 0;
+
+        virtual void SetIntArray(const std::string& Name,int* Value,uint32_t Size) = 0;
         virtual void SetFloat(const std::string& Name,float Value) = 0;
 
         virtual void SetVec2(const std::string& Name,const glm::vec2& Value) = 0;

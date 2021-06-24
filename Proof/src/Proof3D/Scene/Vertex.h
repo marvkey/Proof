@@ -11,4 +11,5 @@ struct Vertex2D {
     Vector Position;
     glm::vec4 Color;
     glm::vec2 TexCoords;
+    float TexSlot;
 };
