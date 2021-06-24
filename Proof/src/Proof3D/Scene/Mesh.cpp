@@ -18,7 +18,7 @@ Mesh::Mesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,std::vec
     this->m_Indices = Indices;
     this->m_Textures = Textures;
     //SetupMesh();
-    VertexBufferObject = Proof::VertexBuffer::Create(1000*sizeof(Vertex));
+    //VertexBufferObject = Proof::VertexBuffer::Create(1000*sizeof(Vertex));
     VertexBufferObject->AddData(&Vertices[0],Vertices.size());
     InitilizeMapTextures();
 }
@@ -70,7 +70,7 @@ void Mesh::Draw(const Proof::Count<Proof::Shader>& shader) {
 
 void Mesh::SetupMesh() {
     VertexArrayObject = Proof::VertexArray::Create();
-    //VertexBufferObject = Proof::VertexBuffer::Create(&m_Vertices[0],m_Vertices.size() * sizeof(Vertex));
+    VertexBufferObject = Proof::VertexBuffer::Create(&m_Vertices[0],m_Vertices.size() * sizeof(Vertex));
     IndexBufferObject = Proof::IndexBuffer::Create(&m_Indices[0],m_Indices.size());
     IndexBufferObject->Bind();
     

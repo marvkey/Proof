@@ -29,5 +29,7 @@ namespace Proof {
 		glm::vec4 Square1Color = {1.0f,1.0f,1.0f,1.f};
 		glm::vec3 Rotation = {0,0,0};
 		Count<Texture2D> WoodenTexture;
+		int YCount = 0;
+		int XCount = 0;
 	};
 }

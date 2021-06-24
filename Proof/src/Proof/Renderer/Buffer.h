@@ -11,8 +11,9 @@ namespace Proof {
 		* sets the data for the vertex buffer
 		* @param Data the location of the first element in the array or vector
 		* @parm Size the size of element in vertex buffer
+		* @parm SizeOfVertexBuffer the size of the vertex buffer at given time
 		*/
-		virtual void AddData(const void* Data,uint32_t Size) = 0;
+		virtual void AddData(const void* Data,uint32_t Size,uint32_t SizeOfVertexBuffer=0) = 0;
 		/**
 		*removes as Current vertex Buffer
 		*/

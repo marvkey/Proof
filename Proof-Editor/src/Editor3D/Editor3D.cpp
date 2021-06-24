@@ -22,9 +22,10 @@ namespace Proof {
 		Application::ViewPortWidth = _ViewPortSize.x;
 		Application::ViewPortHeight = _ViewPortSize.y;
 		Renderer2D::BeginContext(SceneCamera);
-		Renderer2D::DrawQuad(Square1Pos,Rotation,SquareScale,Square1Color,WoodenTexture);
-		Renderer2D::DrawQuad({0,0,0},{0.2,0.6,1,0});
-		Renderer2D::DrawQuad({0,0,0},{1,0.6,1,1});
+		Renderer2D::DrawQuad({Square1Pos.x+ XCount,Square1Pos.y,Square1Pos.z},Rotation,SquareScale,Square1Color,WoodenTexture);
+		Renderer2D::DrawQuad({0.0,0.4,0},{0.2,0.6,0.3,1});
+		Renderer2D::DrawQuad({0,0,0},{1,1,1,1});
+
 
 		if(Input::IsKeyPressed(KeyBoardKey::A)){
 			SceneCamera.SetPosition({SceneCamera.GetPosition().x-0.05,SceneCamera.GetPosition().y,SceneCamera.GetPosition().z});

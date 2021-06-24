@@ -201,7 +201,6 @@ namespace Proof {
         }
         _Graphicontext =GraphicsContext::Create(MainWindow);
         _Graphicontext->Init();
-        CurrentWindow::SetSwapInterval(true);
         glfwSetKeyCallback(MainWindow,key_callback);
         glfwSetMouseButtonCallback(MainWindow,mouse_button_callback);
 
