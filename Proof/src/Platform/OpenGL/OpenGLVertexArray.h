@@ -37,6 +37,13 @@ namespace Proof {
 		* returns the index buffer
 		*/
 		virtual Count<IndexBuffer>GetIndexBuffer() { return m_IndexBuffer; };
+		/*
+		* tells the currently bind buffer how to read data when using instance rendering
+		* @param Index, the index we want to modify
+		* @param Divisor, do we want to read data every new isntance rendered which will be set to one or every 2 instnaces whihc will be set to 2 and so on
+		*/
+		virtual void AttributeDivisor(uint32_t Index,uint32_t Divisor);
+
 	private:
 		uint32_t m_ID;
 		uint32_t m_Size;

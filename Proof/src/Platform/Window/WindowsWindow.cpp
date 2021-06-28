@@ -199,8 +199,7 @@ namespace Proof {
             glfwTerminate();
             return -1;
         }
-        _Graphicontext =GraphicsContext::Create(MainWindow);
-        _Graphicontext->Init();
+       
         glfwSetKeyCallback(MainWindow,key_callback);
         glfwSetMouseButtonCallback(MainWindow,mouse_button_callback);
 
@@ -218,7 +217,6 @@ namespace Proof {
     }
 
     int WindowsWindow::WindowEnd() {
-        _Graphicontext->CleanUp();
         glfwDestroyWindow(MainWindow);
         glfwTerminate();
         return 0;

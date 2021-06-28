@@ -10,6 +10,9 @@ namespace Proof {
 	  virtual void DrawIndexed(const Count<VertexArray>& ArrayObject)override;
 	  virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count) override;
 
+	  virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement)override;
+	  virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement)override;
+
 	  virtual void SetViewPort(int num,int num2,int Width,int Height) override;
 	  virtual void SwapBuffer(GLFWwindow* Window);
 	  virtual void EnableDepth(bool Depth);

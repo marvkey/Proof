@@ -2,43 +2,45 @@
 #include "Proof/Core/Core.h"
 #include "Entity.h"
 #include "Proof/Core/FrameTime.h"
-class Proof_API ScriptableEntity{
-public:
-	virtual ~ScriptableEntity() {};
-protected:
-	virtual void OnCreate() {}; // called when placed or spawned in world
-	virtual void OnUpdate(FrameTime DeltaTime) {}; // called every frame
-	virtual void OnlyOnCreate() {};// called when only placed in world
-	virtual void OnSpawn() {}; // called only when spawned into the world
-	virtual void OnDestroy() {}; // called when destoryed
-	/*
-	template<class T,typename... Args>
-	void AddComponent() {
-		if (OwnerEntity == nullptr) {
-			PF_ENGINE_INFO("cannot add Entity, pointer to owner entity is null");
-		};
-		if (OwnerEntity->HasComponent<T>() == true) {
-			return;
+namespace Proof{
+	class Proof_API ScriptableEntity {
+	public:
+		virtual ~ScriptableEntity() {};
+	protected:
+		virtual void OnCreate() {}; // called when placed or spawned in world
+		virtual void OnUpdate(FrameTime DeltaTime) {}; // called every frame
+		virtual void OnlyOnCreate() {};// called when only placed in world
+		virtual void OnSpawn() {}; // called only when spawned into the world
+		virtual void OnDestroy() {}; // called when destoryed
+		/*
+		template<class T,typename... Args>
+		void AddComponent() {
+			if (OwnerEntity == nullptr) {
+				PF_ENGINE_INFO("cannot add Entity, pointer to owner entity is null");
+			};
+			if (OwnerEntity->HasComponent<T>() == true) {
+				return;
+			}
+			OwnerEntity->AddComponent<T>(Args&&...args);
 		}
-		OwnerEntity->AddComponent<T>(Args&&...args);
-	}
-	*/
-	template<class T>
-	T* GetComponent() {
-		if (OwnerEntity == nullptr)return nullptr;
-		return OwnerEntity->GetComponent<T>();
-	}
-	template<class T>
-	bool HasComponent() {
-		if (OwnerEntity == nullptr) {
-			PF_ENGINE_INFO("owner entity is nullptr");
-			return false;
+		*/
+		template<class T>
+		T* GetComponent() {
+			if (OwnerEntity == nullptr)return nullptr;
+			return OwnerEntity->GetComponent<T>();
 		}
-		return OwnerEntity->HasComponent<T>();
-	}
-private:
-	friend class World;
-	friend class Entity;
-	friend struct NativeScriptComponent;
-	Entity* OwnerEntity =nullptr;
-};
+		template<class T>
+		bool HasComponent() {
+			if (OwnerEntity == nullptr) {
+				PF_ENGINE_INFO("owner entity is nullptr");
+				return false;
+			}
+			return OwnerEntity->HasComponent<T>();
+		}
+	private:
+		friend class World;
+		friend class Entity;
+		friend struct NativeScriptComponent;
+		Entity* OwnerEntity = nullptr;
+	};
+}

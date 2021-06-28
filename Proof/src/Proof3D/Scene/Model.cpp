@@ -1,10 +1,9 @@
 #include "Proofprch.h"
 #include "Model.h"
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <vector>
-#include "Mesh.h"
+#include "Component.h"
+
 namespace Proof {
     void Model::Draw(const Count<Shader>& shader) {
         for (Mesh& Mesh:meshes)

@@ -25,6 +25,7 @@ project "Proof-Editor"
         --"%{IncludeDir.Vulkan}",
         "%{IncludeDir.Glad}",
 		"%{IncludeDir.Log}",
+		"%{IncludeDir.Assimp}",
     }
 
     libdirs 

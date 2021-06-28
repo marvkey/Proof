@@ -11,6 +11,6 @@ namespace Proof {
 	}
 	void Renderer::Reset() {
 		Renderer2D::EndContext();
-		Renderer3D::EndContext();
+		//Renderer3D::EndContext();
 	}
 }

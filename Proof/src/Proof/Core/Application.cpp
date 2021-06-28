@@ -16,12 +16,16 @@ namespace Proof {
     float Application::FrameMS = 2.0f;
     Application::Application() {
         MainWindow = new WindowsWindow(800,600);
+
         MainWindow->createWindow();
-        ScreenFrameBuffer = FrameBuffer::Create(800,600);
-        ScreenFrameBuffer->UnBind();
+        m_GraphicsContext =GraphicsContext::Create(CurrentWindow::GetWindow());
+        m_GraphicsContext->Init();
+        Renderer::Init();
         ImGuiMainLayer = new ImGuiLayer();
         MainLayerStack.PushLayer(ImGuiMainLayer);
-        Renderer::Init();
+
+        ScreenFrameBuffer = FrameBuffer::Create(800,600);
+        ScreenFrameBuffer->UnBind();
     }
 
     Application::~Application() {
@@ -77,6 +81,7 @@ namespace Proof {
             
             LastFrameTime = time;
         };
+        m_GraphicsContext->CleanUp();
         MainWindow->WindowEnd();
         IsRunning = false;
         delete MainWindow;

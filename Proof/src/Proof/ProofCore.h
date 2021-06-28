@@ -18,3 +18,11 @@
 // Camera
 #include "Proof3D/Renderer/Camera/OrthagraphicCamera.h"
 #include "Proof3D/Scene/World.h"
+#include "Proof3D/Renderer/Camera/PerspectiveCamera.h"
+#include "Proof3D/Renderer/Camera/EditorCamera.h"
+// scene
+#include "Proof3D/Scene/Component.h"
+#include "Proof3D/Scene/Entity.h"
+#include "Proof3D/Scene/Model.h"
+// c++ default
+#include <vector>

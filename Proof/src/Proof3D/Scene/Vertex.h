@@ -13,4 +13,3 @@ struct Vertex2D {
     glm::vec2 TexCoords;
     float TexSlot;
 };
-

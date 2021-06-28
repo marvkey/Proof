@@ -24,6 +24,17 @@ namespace Proof {
 	   glBindTexture(GL_TEXTURE_2D,0);
    }
 
+   void OpenGLRendererAPI::DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement) {
+	    ArrayObject->Bind();
+		glDrawElementsInstanced(GL_TRIANGLES,Count,GL_UNSIGNED_INT,0,AmountElement);
+   }
+
+   void OpenGLRendererAPI::DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement) {
+	   ArrayObject->Bind();
+	   ArrayObject->GetIndexBuffer()->Bind();
+	   glDrawElementsInstanced(GL_TRIANGLES,ArrayObject->GetIndexBuffer()->GetCount(),GL_UNSIGNED_INT,0,AmountElement);
+   }
+
    void OpenGLRendererAPI::SetViewPort(int num,int num2,int Width,int Height) {
 	   glViewport(0,0,Width,Height);
    }

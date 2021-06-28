@@ -12,6 +12,9 @@ namespace Proof {
 		virtual void Clear() = 0;
 		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject) = 0;
 		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count) = 0;
+		virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement) =0;
+		virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement) = 0;
+		
 		inline static API GetAPI() { return ActiveAPI; }
 		virtual void SwapBuffer(GLFWwindow* Window) = 0;
 		virtual void EnableDepth(bool Depth) = 0;
@@ -21,5 +24,3 @@ namespace Proof {
 		static API ActiveAPI;
 	};
 }
-
-

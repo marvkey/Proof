@@ -28,4 +28,8 @@ namespace Proof {
 	   m_IndexBuffer = indexBuffer;
 	   m_IndexBufferAttach = true;
    }
+   void OpenGLVertexArray::AttributeDivisor(uint32_t Index,uint32_t Divisor) {
+	   glBindVertexArray(m_ID);
+	   glVertexAttribDivisor(Index,Divisor);
+   }
 }

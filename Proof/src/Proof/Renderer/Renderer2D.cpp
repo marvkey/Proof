@@ -85,7 +85,6 @@ namespace Proof {
 		DrawQuad(Location,Rotation,{1.0f,1.0f,1.0f},Color,s_Storage2DData->m_WhiteTexture);
 	}
 
-
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec4& Color) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1.0f,1.0f,1.0f},Color,s_Storage2DData->m_WhiteTexture);
 	}
@@ -145,12 +144,17 @@ namespace Proof {
 		Vertex4.Color = Color;
 		Vertex4.TexCoords = {0.0f,1.0f};
 		Vertex4.TexSlot = TextureIndex;
-
+		/* Gonna test wich is faster this meathod or the second one*/
+		s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize] = Vertex1;
+		s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize+1] = Vertex2;
+		s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize+2] = Vertex3;
+		s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize+3] = Vertex4;
+		/*
 		memcpy(&s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize],&Vertex1,sizeof(Vertex1));
 		memcpy(&s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize +1],&Vertex2,sizeof(Vertex1));
 		memcpy(&s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize +2],&Vertex3,sizeof(Vertex3));
 		memcpy(&s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize +3],&Vertex4,sizeof(Vertex4));
-
+		*/
 		s_Storage2DData->m_IndexCount+=6; 
 		s_Storage2DData->m_QuadArraySize += 4;
 		s_Renderer2DStats->m_QuadCount+=1;
@@ -169,7 +173,7 @@ namespace Proof {
 		s_Storage2DData->m_IndexBuffer->Bind();
 		for(uint32_t i =0; i<s_Storage2DData->m_TextureSlotIndex;i++){
 			s_Storage2DData->m_Textures[i]->BindTexture(i);
-		}
+		} 
 		s_Storage2DData->m_VertexBuffer->AddData(s_Storage2DData->m_QuadArray,s_Storage2DData->m_QuadArraySize *sizeof(Vertex2D));
 		RendererCommand::DrawIndexed(s_Storage2DData->m_VertexArray,s_Storage2DData->m_IndexCount);
 		s_Renderer2DStats->m_DrawCalls+=1;

@@ -3,9 +3,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "Proof/Renderer/Texture.h"
-class Mesh;
+#include <vector>
+#include "Mesh.h"
 namespace Proof {
-    class Texture2D;
     class Shader;
     class Model {
     public:
@@ -14,9 +14,9 @@ namespace Proof {
             LoadModel(path);
         }
         void Draw(const Count<Shader>& shader);
-        std::vector<Mesh> GetMesh()const { return meshes; }
+        std::vector<class Mesh> GetMesh()const { return meshes; }
     private:
-        std::vector<Mesh> meshes;
+        std::vector<class Mesh> meshes;
         std::vector<Count<Texture2D>> textures_loaded;
         void LoadModel(std::string const& path);
         void ProcessNode(aiNode* node,const aiScene* scene);

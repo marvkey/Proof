@@ -24,7 +24,7 @@ namespace Proof {
         static std::vector<float> MouseScrollX;
         static std::vector<float> MouseScrollY;
         
-        virtual void WindowUpdate(class ::FrameTime DeltaTime)override;
+        virtual void WindowUpdate(class FrameTime DeltaTime)override;
         virtual	int  createWindow()override;
         virtual int WindowEnd()override;
     private:
@@ -48,7 +48,6 @@ namespace Proof {
         void ProcessInput();
         /* --------------------------------------------------------------*/
         friend class CurrentWindow;
-        Count<class GraphicsContext> _Graphicontext;
         bool Vsync = 0;
     };
 }

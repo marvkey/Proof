@@ -39,6 +39,7 @@ namespace Proof {
         friend int ::main(int argc,char** argv);
         static float FPS;
         static float FrameMS;
+        Count<class GraphicsContext>m_GraphicsContext;
     };
     Application* CreateApplication();
 }

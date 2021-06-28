@@ -5,18 +5,19 @@
 
 #include "Proof/Core/Core.h"
 #include "Proof3D/Renderer/Camera/Camera.h"
+#include "Proof/Core/FrameTime.h"
 namespace Proof {
-	class Proof_API EditorCamera3D : public Camera {
+	class Proof_API EditorCamera3D {
 	public:
-		EditorCamera3D() = default;
-		virtual void OnUpdate(FrameTime DeltaTime) override;
+		
+		void OnUpdate(FrameTime DeltaTime);
 		float GetFieldOfView() { return FieldOfView; }
-		virtual glm::mat4 GetCameraView()const override;
+		virtual glm::mat4 GetCameraView()const;
 		glm::vec3 GetCameraPosition() {
 			return CameraPos;
 		}
 	protected:
-		virtual void BeginPlay()override;
+		virtual void BeginPlay();
 		virtual void KeyBoardInput(float DeltaTime);
 		virtual void MouseInput(float DeltaTime);
 		virtual void ScrollInput();
@@ -36,6 +37,9 @@ namespace Proof {
 		bool FirstMouseEnteredScreen;
 		float FieldOfView = 45.f;
 		void UpdateCameraVector();
+		float MoveSpeed = 2.5f;
+		float RotationSpeed = 3.5f;
+		float PanSpeed = 2.0f;
 	};
 }
 

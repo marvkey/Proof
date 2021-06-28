@@ -21,9 +21,11 @@ namespace Proof {
 	int CurrentWindow::GetWindowPosY(){
 		return GetWindowLocation().second;
 	}
+	/*
 	Count<GraphicsContext> CurrentWindow::GetGraphicsContext() {
 		return Application::MainWindow->_Graphicontext;
 	}
+	*/
 	void CurrentWindow::SetSwapInterval(bool Vsync) {
 		Application::MainWindow->Vsync = Vsync;
 	}
