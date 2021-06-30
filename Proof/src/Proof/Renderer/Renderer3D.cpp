@@ -1,4 +1,5 @@
 #include "Proofprch.h"
+
 #include "Renderer3D.h"
 #include "Shader.h"
 //#include "Platform/Window/CurrentWindow.h"
@@ -13,17 +14,18 @@
 
 #include "Proof3D/Scene/Model.h"
 #include "Proof/Core/FrameTime.h"
-namespace Proof
-{
-    InstancedRenderer3D* Renderer3DInstance;
+#include "Proof3D/Scene/Mesh.h"
+namespace Proof{
+    static InstancedRenderer3D* Renderer3DInstance;
     Renderer3D::Data* Render3DData;
     static std::vector<glm::mat4> m_Transforms;
+    static std::vector<uint32_t> s_DifferentID;
+    static uint32_t DifferentMeshes = 0;
     void Renderer3D::Init() {
         Renderer3DInstance = new InstancedRenderer3D();
         Render3DData = new Renderer3D::Data;
         Renderer3DInstance->m_Shader = Shader::Create("InstanceMeshRenderer",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/MeshShader.shader");
         Renderer3DInstance->m_VertexBuffer = VertexBuffer::Create(Render3DData->MaxMeshes * sizeof(glm::mat4));
-        //Renderer3DInstance->m_VertexArray = VertexArray::Create();
     }
     void Renderer3D::BeginContext(const PerspectiveCamera& Camera) {
         Renderer3DInstance->m_Shader->UseShader();
@@ -43,73 +45,87 @@ namespace Proof
         if (Renderer3DInstance->SceneHasAmountMeshes(meshComponent.GetID()) == true) {
             auto Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetID());
             Map->second += 1;
-            for (unsigned int i = 0; i < meshComponent.GetModel()->GetMesh().size(); i++) {
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->Bind();
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AddData(3,4,sizeof(glm::mat4),(void*)0);
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AddData(4,4,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
 
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AddData(5,4,sizeof(glm::mat4),(void*)(2 * sizeof(glm::vec4)));
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AddData(6,4,sizeof(glm::mat4),(void*)(3 * sizeof(glm::vec4)));
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->Bind();
-                glVertexAttribDivisor(3,1);
-                glVertexAttribDivisor(4,1);
-                glVertexAttribDivisor(5,1);
-                glVertexAttribDivisor(6,1);
-                glm::mat4 ModelMatrix = glm::mat4(1.0f);
-                ModelMatrix = glm::translate(ModelMatrix,{meshComponent.Transform.Location});
-                ModelMatrix = glm::scale(ModelMatrix,{meshComponent.Transform.Scale});
-                m_Transforms.emplace_back(ModelMatrix);
+            meshComponent.GetModel()->m_VertexArrayObject->Bind();
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(glm::mat4),(void*)0);
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
 
-                if (meshComponent.GetModel()->GetMesh().size() == 1)
-                    break;
-            }
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(glm::mat4),(void*)(2 * sizeof(glm::vec4)));
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(glm::mat4),(void*)(3 * sizeof(glm::vec4)));
+
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(3,1);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(4,1);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(5,1);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
+
+            glm::mat4 ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix,{meshComponent.Transform.Location});
+            ModelMatrix = glm::scale(ModelMatrix,{meshComponent.Transform.Scale});
+            m_Transforms.emplace_back(ModelMatrix);
         }
         else {
 
-            PF_ENGINE_INFO("New Created");
+            // PF_ENGINE_INFO("New Created");
             Renderer3DInstance->m_AmountMeshes.insert({meshComponent.GetID(),1});
             Renderer3DInstance->m_Meshes.insert({meshComponent.GetID(),meshComponent});
+            s_DifferentID.emplace_back(meshComponent.GetID());
+            DifferentMeshes++;
 
-            for (unsigned int i = 0; i < meshComponent.GetModel()->GetMesh().size(); i++) {
+            meshComponent.GetModel()->m_VertexArrayObject->Bind();
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(glm::mat4),(void*)0);
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
 
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->Bind();
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AddData(3,4,sizeof(glm::mat4),(void*)0);
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AddData(4,4,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(glm::mat4),(void*)(2 * sizeof(glm::vec4)));
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(glm::mat4),(void*)(3 * sizeof(glm::vec4)));
 
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AddData(5,4,sizeof(glm::mat4),(void*)(2 * sizeof(glm::vec4)));
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AddData(6,4,sizeof(glm::mat4),(void*)(3 * sizeof(glm::vec4)));
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(3,1);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(4,1);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(5,1);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
 
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AttributeDivisor(3,1);
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AttributeDivisor(4,1);
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AttributeDivisor(5,1);
-                meshComponent.GetModel()->GetMesh()[i].VertexArrayObject->AttributeDivisor(6,1);
-
-              
-                glm::mat4 ModelMatrix = glm::mat4(1.0f);
-                ModelMatrix = glm::translate(ModelMatrix,{meshComponent.Transform.Location});
-                ModelMatrix = glm::scale(ModelMatrix,{meshComponent.Transform.Scale});
-                m_Transforms.emplace_back(ModelMatrix);
-
-                if(meshComponent.GetModel()->GetMesh().size() ==1)
-                    break;
-            }
+            glm::mat4 ModelMatrix = glm::mat4(1.0f);
+            ModelMatrix = glm::translate(ModelMatrix,{meshComponent.Transform.Location});
+            ModelMatrix = glm::scale(ModelMatrix,{meshComponent.Transform.Scale});
+            m_Transforms.emplace_back(ModelMatrix);
+            //PF_ENGINE_INFO("DONE  Setting Up New Created");
         }
 
-        PF_ENGINE_INFO("DONE  Setting Up New Created");
     }
     void Renderer3D::EndContext() {
-        Renderer3DInstance->m_Shader->UseShader();
-        PF_ENGINE_INFO("Start Render");
+        //PF_ENGINE_INFO("Start Render");
         Renderer3DInstance->m_VertexBuffer->Bind();
         Renderer3DInstance->m_VertexBuffer->AddData(&m_Transforms[0],m_Transforms.size() * sizeof(glm::mat4));
-        for (unsigned int i = 0; i < Renderer3DInstance->m_Meshes.find(1)->second.GetModel()->GetMesh().size(); i++) {
-            Renderer3DInstance->m_Meshes.find(1)->second.GetModel()->GetMesh()[i].Draw(Renderer3DInstance->m_Shader);
-            Renderer3DInstance->m_Meshes.find(1)->second.GetModel()->GetMesh()[i].VertexArrayObject->Bind();
-            glDrawElementsInstanced(GL_TRIANGLES,Renderer3DInstance->m_Meshes.find(1)->second.GetModel()->GetMesh()[i].m_Indices.size(),GL_UNSIGNED_INT,0,1);
-        }
+        /*
+        //Renderer3DInstance->m_Meshes.find(1)->second.GetModel().Draw(Renderer3DInstance->m_Shader);
+
+        //Renderer3DInstance->m_Shader->UseShader();
+        Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
+        Renderer3DInstance->m_Meshes.find(1)->second.GetModel()->textures_loaded[0]->BindTexture(0);
+        Renderer3DInstance->m_Meshes.find(1)->second.GetModel()->m_VertexArrayObject->Bind();
+        Renderer3DInstance->m_Meshes.find(1)->second.GetModel()->m_IndexBufferObject->Bind();
+        glDrawElementsInstanced(GL_TRIANGLES,Renderer3DInstance->m_Meshes.find(1)->second.GetModel()->m_IndexBufferObject->GetCount(),GL_UNSIGNED_INT,0,1);
         PF_ENGINE_INFO("Done Render");
+        */
+
+        for(uint32_t AmountDifferentMeshes =0; AmountDifferentMeshes <= DifferentMeshes;AmountDifferentMeshes++){
+            for(uint32_t Size=0; Size <= s_DifferentID.size(); Size++){
+
+                uint32_t TempID = s_DifferentID[Size];
+
+                Renderer3DInstance->m_Shader->UseShader();
+                Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
+                Renderer3DInstance->m_Meshes.find(TempID)->second.GetModel()->textures_loaded[0]->BindTexture(0);
+                Renderer3DInstance->m_Meshes.find(TempID)->second.GetModel()->m_VertexArrayObject->Bind();
+                Renderer3DInstance->m_Meshes.find(TempID)->second.GetModel()->m_IndexBufferObject->Bind();
+                RendererCommand::DrawElementIndexed(Renderer3DInstance->m_Meshes.find(TempID)->second.GetModel()->m_VertexArrayObject,Renderer3DInstance->m_AmountMeshes.find(TempID)->second);
+                if (s_DifferentID.size() == 1)break;
+            }
+        }
+        //PF_ENGINE_INFO("Done Render");
         Renderer3DInstance->m_AmountMeshes.clear();
         Renderer3DInstance->m_Meshes.clear();
         m_Transforms.clear();
+        s_DifferentID.clear();
+        DifferentMeshes =0;
     }
 }

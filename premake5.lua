@@ -26,6 +26,7 @@ IncludeDir["entt"]="%{wks.location}/Proof/vendor/entt"
 IncludeDir["Glad"] = "%{wks.location}/Proof/vendor/Glad/include"
 IncludeDir["Log"]= "%{wks.location}/Proof/vendor/Log/include"
 IncludeDir["Assimp"]= "%{wks.location}/Proof/vendor/Assimp/include"
+IncludeDir["ProofEditor"] = "%{wks.location}"
 
 group "Dependencies"
 	include "Proof/vendor/ImGUI"

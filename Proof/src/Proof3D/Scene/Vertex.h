@@ -1,10 +1,14 @@
 #pragma once
+#include "Proof3D/Math/Math.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 struct Vertex {
-    Vector Vertices;
-    Vector Normal;
-    glm::vec2 TexCoords;
-    Vector Tangent;
-    Vector Bitangent;
+    Vector Vertices{0,0,0};
+    Vector Normal{0,0,0};
+    glm::vec2 TexCoords{0,0};
+    Vector Tangent{0,0,0};
+    Vector Bitangent{0,0,0};
 };
 
 struct Vertex2D {

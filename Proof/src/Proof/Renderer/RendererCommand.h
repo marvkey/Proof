@@ -19,6 +19,13 @@ namespace Proof {
 		inline static void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count){
 			s_RendererAPI->DrawIndexed(ArrayObject,Count);
 		}
+
+		static void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement){
+			s_RendererAPI->DrawElementIndexed(ArrayObject,Count,AmountElement);
+		}
+		static void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement){
+			s_RendererAPI->DrawElementIndexed(ArrayObject,AmountElement);
+		}
 	private:
 		static RendererAPI* s_RendererAPI;
 	};

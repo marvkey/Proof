@@ -49,17 +49,17 @@ namespace Proof{
 	struct Proof_API MeshComponent {
 		TransformComponent Transform;
 		TagComponent Tags;
-		MeshComponent() { m_ID = 1; }
+		MeshComponent() {}
 		class Model* GetModel() {
 			return m_Mesh;
 		}
 		class Model* m_Mesh = nullptr;
-		uint32_t GetID() { return m_ID; }
+		uint32_t GetID();
 	private:
 		Entity* m_EntityOwner;
 		friend class Entity;
 		friend class World;
 		std::string Name = "Static Mesh";
-		uint32_t m_ID =1;
+		
 	};
 }

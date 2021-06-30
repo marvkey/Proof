@@ -3,11 +3,22 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Component.h"
+#include "Proof/Renderer/Texture.h"
+#include "Proof/Renderer/Shader.h"
+#include "Proof/Renderer/RendererCommand.h"
 
-namespace Proof {
+#include <string>
+#include <fstream>
+#include <sstream>
+#include "Mesh.h"
+
+namespace Proof{
     void Model::Draw(const Count<Shader>& shader) {
-        for (Mesh& Mesh:meshes)
+        for (Mesh& Mesh : meshes)
             Mesh.Draw(shader);
+    }
+    std::vector<Mesh> Model::GetMesh() const {
+        return meshes;
     }
     void Model::LoadModel(std::string const& path) {
         Assimp::Importer importer;
@@ -45,11 +56,14 @@ namespace Proof {
             else
                 vertex.TexCoords = glm::vec2(0.0f,0.0f);
             vertices.emplace_back(vertex);
+            m_Vertices.emplace_back(vertex);
         }
         for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
-            aiFace face = mesh->mFaces[i];
-            for (unsigned int j = 0; j < face.mNumIndices; j++)
+            aiFace& face = mesh->mFaces[i];
+            for (unsigned int j = 0; j < face.mNumIndices; j++) {
                 indices.emplace_back(face.mIndices[j]);
+                m_Indices.emplace_back(face.mIndices[j]);
+            }
         }
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
@@ -88,5 +102,99 @@ namespace Proof {
             }
         }
         return Textures;
+    }
+    void Model::SetUpModel() {
+        m_VertexArrayObject = VertexArray::Create();
+        m_VertexBufferObject = VertexBuffer::Create(&m_Vertices[0],m_Vertices.size() * sizeof(Vertex));
+        m_IndexBufferObject = IndexBuffer::Create(&m_Indices[0],m_Indices.size());
+        m_VertexBufferObject->Bind();
+        m_IndexBufferObject->Bind();
+        m_VertexArrayObject->AttachIndexBuffer(m_IndexBufferObject);
+        m_VertexArrayObject->AddData(0,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertices));
+        m_VertexArrayObject->AddData(1,3,sizeof(Vertex),(void*)offsetof(Vertex,Normal));
+        m_VertexArrayObject->AddData(2,2,sizeof(Vertex),(void*)offsetof(Vertex,TexCoords));
+        m_VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)offsetof(Vertex,Tangent));
+        m_VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)offsetof(Vertex,Bitangent));
+        m_VertexArrayObject->UnBind();
+    }
+    void Model::load_obj(const std::string& filename,std::vector<Vertex>& vertices,std::vector<uint32_t>& Indices,std::vector<Count<Texture2D>> Textures) {
+        std::string Line;
+        std::ifstream OBJFile(filename);
+        std::stringstream ss;
+        std::vector<Vector> v_Vertices;
+        std::vector<Vector> Normals;
+        std::vector<glm::vec2> TexCoords;
+        std::vector<uint32_t>v_Indices;
+
+        if (OBJFile.is_open() == true) {
+            while (std::getline(OBJFile,Line)) {
+                ss.clear();
+                ss.str(Line);
+                ss >> Line[0];
+                Vector TempVertices{0,0,0};
+                Vector TempNormals{0,0,0};
+                glm::vec2 TempTexCoords{0,0};
+                if (Line[0] == 'v') {
+                    ss >> TempVertices.X >> TempVertices.Y >> TempVertices.Z;
+                    v_Vertices.emplace_back(TempVertices);
+                }
+                if (Line[0] == 'v' && Line[1] == 't') {
+                    ss.clear();
+                    ss.str(Line);
+                    ss >> Line[0];
+                    ss >> Line[1];
+                    ss >> TempTexCoords.x >> TempTexCoords.y;
+                    TexCoords.emplace_back(TempTexCoords);
+                }
+
+                if (Line[0] == 'v' && Line[1] == 'n') {
+                    ss.clear();
+                    ss.str(Line);
+                    ss >> Line[0];
+                    ss >> Line[1];
+                    ss >> TempNormals.X >> TempNormals.Y >> TempNormals.Z;
+                    Normals.emplace_back(TempNormals);
+                }
+
+                if(Line[0] =='f'){
+                    std::istringstream s(Line.substr(2));
+                    char Temp;
+                    uint32_t Element1 = 0;
+                    uint32_t Element2 = 0;
+                    uint32_t Element3 = 0;
+
+                    uint32_t Element4 = 0;
+                    uint32_t Element5 = 0;
+                    uint32_t Element6 = 0;
+
+                    uint32_t Element7 = 0;
+                    uint32_t Element8 = 0;
+                    uint32_t Element9 = 0;
+                    // THIS CODE DOES NOT MAKE SENSE BUT IT WORKS LEAVE IT 
+                    s>>Element1>>Temp>>Element2>>Temp>>Element3>>Element4>>Temp>>Element5>>Temp>>Element6>>Element7>>Temp>>Element8>>Temp>>Element9;
+
+                    Indices.emplace_back(Element1);
+                    Indices.emplace_back(Element2);
+                    Indices.emplace_back(Element3);
+
+                    Indices.emplace_back(Element4);
+                    Indices.emplace_back(Element5);
+                    Indices.emplace_back(Element6);
+
+                    Indices.emplace_back(Element7);
+                    Indices.emplace_back(Element8);
+                    Indices.emplace_back(Element9);
+
+                }
+            }
+        }
+    }
+    void Model::ProcessVertex(uint32_t Element1,uint32_t Element2,uint32_t Element3,std::vector<uint32_t>& Indices,std::vector<glm::vec2>& textureCoords,std::vector<Vector> Normals,std::vector<Vertex> vertex) {
+        int CurrenteVertexPointer =Element1-1;
+        Indices.emplace_back(CurrenteVertexPointer);
+        glm::vec2 CurrentTex =textureCoords[Element2-1];
+
+        //vertex[CurrenteVertexPointer*2].TexCoords = CurrentTex.x;
+        //vertex[CurrenteVertexPointer * 2] = CurrentTex.x;
     }
 }

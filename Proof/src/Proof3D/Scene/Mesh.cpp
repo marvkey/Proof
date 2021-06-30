@@ -5,9 +5,7 @@
 #include "Proof/Renderer/RendererCommand.h"
 #include <unordered_map>
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include "Component.h"
 
 
 namespace Proof{
@@ -73,7 +71,6 @@ namespace Proof{
     }
 
     void Mesh::SetUpTransform() {
-      
         
     }
 
@@ -89,17 +86,17 @@ namespace Proof{
         VertexArrayObject->AddData(2,2,sizeof(Vertex),(void*)offsetof(Vertex,TexCoords));
         //VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)offsetof(Vertex,Tangent));
         //VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)offsetof(Vertex,Bitangent));
-
         VertexArrayObject->UnBind();
     }
 
     void Mesh::InitMatrix() {
+        /*
         ModelMatrix = glm::mat4(1.0f);
         ModelMatrix = glm::translate(ModelMatrix,{MeshTransform.Location});
         ModelMatrix = glm::rotate(ModelMatrix,glm::radians(MeshTransform.Rotation.X),{MeshTransform.Rotation});
         ModelMatrix = glm::rotate(ModelMatrix,glm::radians(MeshTransform.Rotation.Y),{MeshTransform.Rotation});
         ModelMatrix = glm::rotate(ModelMatrix,glm::radians(MeshTransform.Rotation.Z),{MeshTransform.Rotation});
         ModelMatrix = glm::scale(ModelMatrix,{MeshTransform.Scale});
-
+        */
     }
 }

@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 namespace Proof {
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer")
@@ -12,8 +13,9 @@ namespace Proof {
 	}
 	void Editore3D::OnAttach() {
 		NewWorld();
-		WoodenTexture = Texture2D::Create("PlayerSprite.png");
+		//WoodenTexture = Texture2D::Create("PlayerSprite.png");
 		PlayerMeshComponent.m_Mesh = &PlayerModel;
+		SecondMeshComponent.m_Mesh =&PlayerModel;
 	}
 	void Editore3D::NewWorld() {
 		ActiveWorld = new World();
@@ -26,7 +28,7 @@ namespace Proof {
 		//Renderer2D::DrawQuad({Square1Pos.x,Square1Pos.y,Square1Pos.z},Rotation,SquareScale,Square1Color,WoodenTexture);
 		//Renderer2D::DrawQuad({0.0,0.4,0},{0.2,0.6,0.3,1});
 		//Renderer2D::DrawQuad({0,0,0},{1,1,1,1});
-	
+		SecondMeshComponent.Transform.Scale.Y=3;
 
 		if(Input::IsKeyPressed(KeyBoardKey::LeftArrow)){
 			PlayerMeshComponent.Transform.Scale.X+=0.5;
@@ -46,6 +48,8 @@ namespace Proof {
 		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
 		Renderer3D::BeginContext(Projection,EditorCamera);
 		Renderer3D::Draw(PlayerMeshComponent);
+		Renderer3D::Draw(SecondMeshComponent);
+
 		Renderer3D::EndContext();
 		
 		/*

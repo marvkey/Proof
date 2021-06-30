@@ -16,7 +16,7 @@ namespace Proof {
 
 		static void BeginContext(const class OrthagraphicCamera& Camera);
 
-		static void Draw(MeshComponent& meshComponent);
+		static void Draw(class MeshComponent& meshComponent);
 		static void EndContext();
 		struct Data{
 			static const uint32_t MaxMeshes =1000;
@@ -24,11 +24,10 @@ namespace Proof {
 	};
 
 	struct Proof_API InstancedRenderer3D {
-		Count<class VertexArray> m_VertexArray;
 		Count<class VertexBuffer> m_VertexBuffer;
 		Count<class Shader>m_Shader;
 		std::unordered_map<uint32_t,uint32_t> m_AmountMeshes;
-		std::unordered_map<uint32_t,MeshComponent> m_Meshes;
+		std::unordered_map<uint32_t,class MeshComponent> m_Meshes;
 		bool SceneHasAmountMeshes(uint32_t ID) { return m_AmountMeshes.find(ID) != m_AmountMeshes.end(); };
 	};
 }

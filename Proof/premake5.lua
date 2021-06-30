@@ -30,6 +30,7 @@ project "Proof"
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.Log}",
 		"%{IncludeDir.Assimp}",
+		"%{IncludeDir.ProofEditor}"
     }
 	libdirs{
 		"vendor/Assimp/Proof-Assimp-lib"
