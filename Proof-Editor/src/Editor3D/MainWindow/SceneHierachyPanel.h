@@ -13,6 +13,7 @@ namespace Proof{
 		Entity m_SelectedEntity;
 		void DrawEntityNode(class Entity& entity);
 		void DrawComponent(class Entity& entity);
+		static void DrawVectorControl(const std::string& UniqeLabel,Vector& Vec,float ResetValue =0.0f,float columnWidth =100.0f);
 	};
 }
 

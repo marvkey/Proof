@@ -2,30 +2,27 @@
 #include"entt/entt.hpp"
 #include "World.h"
 #include <type_traits>
-namespace Proof
-{
+namespace Proof{
 	class Proof_API Entity {
 	public:
-		Entity::Entity(entt::entity Handle,World* world,const std::string& name):
-			m_EntityHandle(Handle),CurrentWorld(world),Name(name) {}
-		Entity::Entity(entt::entity Handle,World* _World) :
-			m_EntityHandle(Handle),CurrentWorld(_World) {}
+		Entity::Entity(uint32_t EntityID,class World* world):
+			m_EntityID(EntityID),CurrentWorld(world){}
 		Entity(const Entity& Other) = default;
 		Entity() = default;
 
 		template<class T>
 		T* GetComponent() {
 			if (HasComponent<T>() == false) return nullptr;
-			return &CurrentWorld->Registry.get<T>(m_EntityHandle);
+			return CurrentWorld->Registry.GetComponent<T>(m_EntityID);
 		}
 		template<class T>
 		bool HasComponent() {
-			return CurrentWorld->Registry.has<T>(m_EntityHandle);
+			return CurrentWorld->Registry.HasComponent<T>(m_EntityID);
 		}
 
 		template<class T,typename... Args>
 		T* AddComponent(Args&&... args) {
-			bool  HasTransfrom = std::is_same<T,TransformComponent>::value;
+			bool HasTransfrom = std::is_same<T,TransformComponent>::value;
 			if (HasTransfrom == true) {
 				if (HasComponent<TransformComponent>() == true) {
 					PF_ENGINE_INFO("Entity already has a transform ");
@@ -39,41 +36,41 @@ namespace Proof
 					return nullptr;
 				}
 			}
-			T* Component = &CurrentWorld->Registry.emplace<T>(m_EntityHandle,std::forward<Args>(args)...);
-			CurrentWorld->OnComponentAdded<T>(this,*Component);
+			T* Component = CurrentWorld->Registry.AddComponent<T>(m_EntityID,std::forward<Args>(args)...);
+			CurrentWorld->OnComponentAdded<T>(this,Component);
 			return Component;
 		}
 		template<typename T>
 		void RemoveComponent() {
 			if (HasComponent<T>() == false)return;
-			CurrentWorld->Registry.remove<T>(EntityHandle);
+			CurrentWorld->Registry.RemoveComponent<T>(m_EntityID);
 		}
 		World* GetCurrentWorld() {
 			return CurrentWorld;
 		}
-		operator bool() const { return m_EntityHandle != entt::null; }
-		operator entt::entity() const { return m_EntityHandle; }
-		uint32_t GetID() { return (uint32_t)m_EntityHandle; }
-		/*Temporary */
+		operator bool() const { return m_EntityID != 0; }
+		uint32_t GetID() { return m_EntityID;}
+
 		bool operator==(const Entity& other) const {
-			return m_EntityHandle == other.m_EntityHandle && CurrentWorld == other.CurrentWorld;
-			//return *this ==other;																																																																																																																																																																																																																																																																																																																																																																																																																																																											
+			return m_EntityID == other.m_EntityID /* && CurrentWorld == other.CurrentWorld*/;
 		}
 
 		bool operator!=(const Entity& other) const {
 			return !(*this == other);
 		}
-		bool GetIsSpawned() {
-			return IsSpawned;
-		}
 
-		const std::string& GetName() { return Name; }
-		std::string Name = "Entity";
+		std::string GetName(){
+			return GetComponent<TagComponent>()!=nullptr ? GetComponent<TagComponent>()->GetName() : "DefaultEntity";
+		}
+		
+		void SetName(const std::string& Name){
+			auto* Tag = GetComponent<TagComponent>();
+			if(Tag!= nullptr)
+				Tag->SetName(Name);
+		}
 	private:
 		World* CurrentWorld = nullptr;
-
-		entt::entity m_EntityHandle{entt::null};
+		uint32_t m_EntityID{0};
 		friend class World;
-		bool IsSpawned = false;
 	};
 }

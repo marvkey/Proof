@@ -15,7 +15,7 @@ namespace Proof {
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
     Application::Application() {
-        MainWindow = new WindowsWindow(800,600);
+        MainWindow = new WindowsWindow(1200,600);
 
         MainWindow->createWindow();
         m_GraphicsContext =GraphicsContext::Create(CurrentWindow::GetWindow());

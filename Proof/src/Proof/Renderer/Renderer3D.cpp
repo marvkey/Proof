@@ -15,6 +15,7 @@
 #include "Proof3D/Scene/Model.h"
 #include "Proof/Core/FrameTime.h"
 #include "Proof3D/Scene/Mesh.h"
+#include "Proof3D/Scene/Entity.h"
 namespace Proof{
     static InstancedRenderer3D* Renderer3DInstance;
     Renderer3D::Data* Render3DData;
@@ -59,8 +60,9 @@ namespace Proof{
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
 
             glm::mat4 ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix,{meshComponent.Transform.Location});
-            ModelMatrix = glm::scale(ModelMatrix,{meshComponent.Transform.Scale});
+            
+            ModelMatrix = glm::translate(ModelMatrix,{meshComponent.GetOwner()->GetComponent<TransformComponent>()->Location});
+            ModelMatrix = glm::scale(ModelMatrix,{meshComponent.GetOwner()->GetComponent<TransformComponent>()->Scale});
             m_Transforms.emplace_back(ModelMatrix);
         }
         else {
@@ -84,12 +86,15 @@ namespace Proof{
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
 
             glm::mat4 ModelMatrix = glm::mat4(1.0f);
-            ModelMatrix = glm::translate(ModelMatrix,{meshComponent.Transform.Location});
-            ModelMatrix = glm::scale(ModelMatrix,{meshComponent.Transform.Scale});
+            auto Transform = meshComponent.GetOwner()->GetComponent<TransformComponent>();
+            ModelMatrix = glm::translate(ModelMatrix,{Transform->Location});
+            ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.X),{1,0,0});
+            ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Y),{0,1,0});
+            ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Z),{0,0,1});
+            ModelMatrix = glm::scale(ModelMatrix,{Transform->Scale});
             m_Transforms.emplace_back(ModelMatrix);
             //PF_ENGINE_INFO("DONE  Setting Up New Created");
         }
-
     }
     void Renderer3D::EndContext() {
         //PF_ENGINE_INFO("Start Render");

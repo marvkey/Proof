@@ -37,11 +37,9 @@ namespace Proof {
 		//class MeshComponent PlayerMeshComponent;
 		//class MeshComponent SecondMeshComponent;
 
-		//class Model PlayerModel{"rock.obj"};
-		//Entity Player;
+		class Model PlayerModel{"rock.obj"};
+		Entity Player;
 		class SceneHierachyPanel m_WorldHierachy;
 		friend class Renderer3D;
-		ECS ECSTEST;
-		uint32_t TestID;
 	};
 }

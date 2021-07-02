@@ -4,8 +4,11 @@
 #include<vector>
 #include "Proof3D/Scene/Component.h"
 namespace Proof{
-	class ECS {
+	class Proof_API ECS {
 	public:
+		ECS()= default;
+		ECS(const ECS&) = default;
+
 		uint32_t Create();
 		void Delete(uint32_t ID);
 		template<typename T, typename... Args>
@@ -61,12 +64,17 @@ namespace Proof{
 			}
 			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
 		}
+		std::unordered_map<uint32_t,std::vector<class Component*>*>& GetEntities(){
+			return EntityHolder;
+		}
+		
 	private:
-		std::unordered_map<uint32_t,std::vector<Component*>*>EntityHolder;
-		//std::unordered_map<uint32_t, std::vector<void*>*>EntityComponent; 
+		std::unordered_map<uint32_t,std::vector<class Component*>*>EntityHolder;
 		bool HasEntity(uint32_t ID){
 			return EntityHolder.find(ID) != EntityHolder.end();
 		}
+
+		friend class World;
 	};
 	
 }

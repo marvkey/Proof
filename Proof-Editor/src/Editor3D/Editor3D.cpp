@@ -17,35 +17,23 @@ namespace Proof {
 	}
 	void Editore3D::NewWorld() {
 		ActiveWorld = new World();
-		//Player  =ActiveWorld->CreateEntity("Base-Entity");
-		//Player.AddComponent<MeshComponent>();
-		//Player.GetComponent<MeshComponent>()->m_Mesh =&PlayerModel;
+		Player  =ActiveWorld->CreateEntity("Base-Entity");
+		Player.AddComponent<MeshComponent>();
+		Player.GetComponent<MeshComponent>()->m_Mesh =&PlayerModel;
+
 		m_WorldHierachy.SetContext(ActiveWorld);
-		TestID = ECSTEST.Create();
-		PF_ENGINE_INFO("%i",TestID);
-		ECSTEST.AddComponent<TransformComponent>(TestID);
-		if(ECSTEST.HasComponent<TransformComponent>(TestID)){
-			PF_ENGINE_INFO("yeye");
-		}
-		if(ECSTEST.GetComponent<TransformComponent>(TestID) == nullptr){
-			PF_ENGINE_INFO("Nullptr");
-		}
-		ECSTEST.RemoveComponent<TransformComponent>(TestID);
-		
-		//ECSTEST.Delete(TestID);
 	}
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
 		Application::ViewPortWidth = _ViewPortSize.x;
 		Application::ViewPortHeight = _ViewPortSize.y;
-
-
+		
 		EditorCamera.OnUpdate(DeltaTime);
 		glm::mat4 Projection =glm::mat4(1.0f);
 		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
-		//Renderer3D::BeginContext(Projection,EditorCamera);
-		//Renderer3D::Draw(*Player.GetComponent<MeshComponent>());
-		//Renderer3D::EndContext();
+		Renderer3D::BeginContext(Projection,EditorCamera);
+		Renderer3D::Draw(*Player.GetComponent<MeshComponent>());
+		Renderer3D::EndContext();
 	}
 
 	void Editore3D::OnImGuiDraw() {
@@ -86,25 +74,24 @@ namespace Proof {
 	void Editore3D::ViewPort() {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		static bool Open = true;
-		if (ImGui::Begin("ViewPort "),&Open,ImGuiWindowFlags_NoMove) {
-			ImVec2 ViewPortPanelSize = ImGui::GetContentRegionAvail();
-			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
-				_ViewPortSize = {ViewPortPanelSize.x,ViewPortPanelSize.y};
-				Window_ViewPortResize::Instance->EventHandled = true;
-				Window_ViewPortResize::Instance->X = ViewPortPanelSize.x;
-				Window_ViewPortResize::Instance->Y = ViewPortPanelSize.y;
-			}
-			
-			if (ImGui::IsWindowFocused()) {
-				Input::ViewPoartHovered = true;
-			}
-			else {
-				Input::ViewPoartHovered = false;
-			}
-
-			uint32_t Text = Application::GetScreenBuffer()->GetTexture();
-			ImGui::Image((void*)Text,ImVec2{_ViewPortSize.x,_ViewPortSize.y},ImVec2{0,1},ImVec2{1,0});
+		ImGui::Begin("ViewPort",&Open,ImGuiWindowFlags_NoMove);
+		ImVec2 ViewPortPanelSize = ImGui::GetContentRegionAvail();
+		if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
+			_ViewPortSize = {ViewPortPanelSize.x,ViewPortPanelSize.y};
+			Window_ViewPortResize::Instance->EventHandled = true;
+			Window_ViewPortResize::Instance->X = ViewPortPanelSize.x;
+			Window_ViewPortResize::Instance->Y = ViewPortPanelSize.y;
 		}
+			
+		if (ImGui::IsWindowFocused()) {
+			Input::ViewPoartHovered = true;
+		}
+		else {
+			Input::ViewPoartHovered = false;
+		}
+
+		uint32_t Text = Application::GetScreenBuffer()->GetTexture();
+		ImGui::Image((void*)Text,ImVec2{_ViewPortSize.x,_ViewPortSize.y},ImVec2{0,1},ImVec2{1,0});
 		ImGui::End();
 		ImGui::PopStyleVar();
 	}

@@ -1,17 +1,22 @@
 #pragma once
 #include "Proof3D/Math/Vector.h"
 #include "Proof3D/Math/Rotate.h"
-#include "ScriptableEntity.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 namespace Proof{
 	struct Proof_API Component{
 	public:
 		virtual ~Component(){}
-	private:
+		std::string GetName(){return Name;}
+		class Entity* GetOwner(){return m_EntityOwner;};
+	protected:
 		std::string Name;
+		class Entity* m_EntityOwner = nullptr;
+	private:
+		friend class Entity;
+		friend class World;
 	};
-	struct Proof_API TagComponent {
+	struct Proof_API TagComponent :Component {
 		TagComponent() = default;
 		void AddTag(const std::string& Tag) {
 			Tags.emplace_back(Tag);
@@ -24,26 +29,25 @@ namespace Proof{
 			}
 			return false;
 		}
-		void SetName(const std::string& Name){tag = Name; if(m_EntityOwner != nullptr)m_EntityOwner->Name =Name; }
-		std::string GetName(){return tag;}
+		void SetName(const std::string& name){
+			Name = name;
+		}
 	private:
-		std::string tag ="null";
 		std::vector<std::string> Tags;
 		friend class Entity;
 		friend class World;
-		Entity* m_EntityOwner = nullptr;
+		friend class SceneHierachyPanel;
 	};
 
 	struct Proof_API TransformComponent : Component{
 		Vector Location = {0.0f,0.0f,0.0f};
-		Rotate Rotation = {1.0f,1.0f,1.0f};
+		Vector Rotation = {0.0f,0.0f,0.0f};
 		Vector Scale = {1.0f,1.0f,1.0f};
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
-		virtual ~TransformComponent(){PF_ENGINE_INFO("DELETE TRANSFORM");};
 	};
 
-	struct Proof_API NativeScriptComponent {
+	struct Proof_API NativeScriptComponent : Component {
 		class ScriptableEntity* Instance = nullptr;
 		class ScriptableEntity* (*InstantiateScript)();
 		void (*DestroyScript)(NativeScriptComponent*);
@@ -53,14 +57,11 @@ namespace Proof{
 			DestroyScript = [](NativeScriptComponent* NSC) {delete NSC->Instance; NSC->Instance = nullptr; };
 		}
 	private:
-		Entity* EntityOwner = nullptr;
 		friend class Entity;
 		friend class World;
 	};
 
-	struct Proof_API MeshComponent {
-		TransformComponent Transform;
-		TagComponent Tags;
+	struct Proof_API MeshComponent : Component {
 		MeshComponent() {}
 		class Model* GetModel() {
 			return m_Mesh;
@@ -68,9 +69,7 @@ namespace Proof{
 		class Model* m_Mesh = nullptr;
 		uint32_t GetID();
 	private:
-		Entity* m_EntityOwner;
 		friend class Entity;
 		friend class World;
-		std::string Name = "Static Mesh";
 	};
 }

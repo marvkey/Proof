@@ -13,6 +13,7 @@ namespace Proof{
         EntityHolder.insert({ID,New});
         return ID;
     }
+    
     void ECS::Delete(uint32_t ID) {
         if(HasEntity(ID) == true){
             auto* a = EntityHolder.find(ID)->second;
