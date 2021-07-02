@@ -9,7 +9,7 @@
 extern Proof::Application* Proof::CreateApplication();
 /*#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup") */ // makes the current terminal not work
 int main(int argc, char** argv){
-
+		
 		Proof::KeyClickedEvent::Instance = std::make_unique<Proof::KeyClickedEvent>();
 		Proof::KeyReleasedEvent::Instance = std::make_unique<Proof::KeyReleasedEvent>();
 		Proof::KeyRepeatEvent::Instance = std::make_unique<Proof::KeyRepeatEvent>();
@@ -26,7 +26,7 @@ int main(int argc, char** argv){
 		Proof::WindowCloseEvent::Instance = std::make_unique<Proof::WindowCloseEvent>();
 		Proof::WindowFocusEvent::Instance = std::make_unique<Proof::WindowFocusEvent>();
 		Proof::Window_ViewPortResize::Instance = std::make_unique<Proof::Window_ViewPortResize>();
-
+		srand(time(NULL));
 		Proof::Log::Init();
 		auto app = Proof::CreateApplication();
 		app->Run();

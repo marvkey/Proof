@@ -14,61 +14,38 @@ namespace Proof {
 	void Editore3D::OnAttach() {
 		NewWorld();
 		//WoodenTexture = Texture2D::Create("PlayerSprite.png");
-		PlayerMeshComponent.m_Mesh = &PlayerModel;
-		SecondMeshComponent.m_Mesh =&PlayerModel;
 	}
 	void Editore3D::NewWorld() {
 		ActiveWorld = new World();
+		//Player  =ActiveWorld->CreateEntity("Base-Entity");
+		//Player.AddComponent<MeshComponent>();
+		//Player.GetComponent<MeshComponent>()->m_Mesh =&PlayerModel;
+		m_WorldHierachy.SetContext(ActiveWorld);
+		TestID = ECSTEST.Create();
+		PF_ENGINE_INFO("%i",TestID);
+		ECSTEST.AddComponent<TransformComponent>(TestID);
+		if(ECSTEST.HasComponent<TransformComponent>(TestID)){
+			PF_ENGINE_INFO("yeye");
+		}
+		if(ECSTEST.GetComponent<TransformComponent>(TestID) == nullptr){
+			PF_ENGINE_INFO("Nullptr");
+		}
+		ECSTEST.RemoveComponent<TransformComponent>(TestID);
+		
+		//ECSTEST.Delete(TestID);
 	}
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
 		Application::ViewPortWidth = _ViewPortSize.x;
 		Application::ViewPortHeight = _ViewPortSize.y;
-		//Renderer2D::BeginContext(SceneCamera);
-		//Renderer2D::DrawQuad({Square1Pos.x,Square1Pos.y,Square1Pos.z},Rotation,SquareScale,Square1Color,WoodenTexture);
-		//Renderer2D::DrawQuad({0.0,0.4,0},{0.2,0.6,0.3,1});
-		//Renderer2D::DrawQuad({0,0,0},{1,1,1,1});
-		SecondMeshComponent.Transform.Scale.Y=3;
 
-		if(Input::IsKeyPressed(KeyBoardKey::LeftArrow)){
-			PlayerMeshComponent.Transform.Scale.X+=0.5;
-		}
-		if (Input::IsKeyPressed(KeyBoardKey::RightArrow)) {
-			PlayerMeshComponent.Transform.Location.X -=0.5;
-		}
-		if (Input::IsKeyPressed(KeyBoardKey::UpArrow)) {
-			PlayerMeshComponent.Transform.Location.Y += 0.5;
-		}
-		if (Input::IsKeyPressed(KeyBoardKey::DownArrow)) {
-			PlayerMeshComponent.Transform.Location.Y -= 0.5;
-		}
 
 		EditorCamera.OnUpdate(DeltaTime);
 		glm::mat4 Projection =glm::mat4(1.0f);
 		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
-		Renderer3D::BeginContext(Projection,EditorCamera);
-		Renderer3D::Draw(PlayerMeshComponent);
-		Renderer3D::Draw(SecondMeshComponent);
-
-		Renderer3D::EndContext();
-		
-		/*
-		if(Input::IsKeyPressed(KeyBoardKey::A)){
-			SceneCamera.SetPosition({SceneCamera.GetPosition().x-0.05,SceneCamera.GetPosition().y,SceneCamera.GetPosition().z});
-		}
-
-		if (Input::IsKeyPressed(KeyBoardKey::D)) {
-			SceneCamera.SetPosition({SceneCamera.GetPosition().x+0.05,SceneCamera.GetPosition().y,SceneCamera.GetPosition().z});
-		}
-
-		if (Input::IsKeyPressed(KeyBoardKey::W)) {
-			SceneCamera.SetPosition({SceneCamera.GetPosition().x,SceneCamera.GetPosition().y-0.05,SceneCamera.GetPosition().z});
-		}
-
-		if (Input::IsKeyPressed(KeyBoardKey::S)) {
-			SceneCamera.SetPosition({SceneCamera.GetPosition().x,SceneCamera.GetPosition().y+0.05,SceneCamera.GetPosition().z});
-		}
-		*/
+		//Renderer3D::BeginContext(Projection,EditorCamera);
+		//Renderer3D::Draw(*Player.GetComponent<MeshComponent>());
+		//Renderer3D::EndContext();
 	}
 
 	void Editore3D::OnImGuiDraw() {
@@ -77,6 +54,7 @@ namespace Proof {
 		
 		SetDocking(&EnableDocking);
 		ViewPort();
+		m_WorldHierachy.ImGuiOnUpdate();
 		if (ImGui::Begin("Proof")) {
 			if (ImGui::BeginChild("Tab Bar")) {
 				ImGui::SameLine();
@@ -97,26 +75,6 @@ namespace Proof {
 
 		if (ImGui::Begin("Console")) {
 			ImGui::TextColored({1.0f,1.0f,1.0f,0.3f},"This is the Console");
-		}
-		ImGui::End();
-		if (ImGui::Begin("SceneHeirachy")) {
-			ImGui::Text("One Entity");
-		}
-		ImGui::End();
-		if (ImGui::Begin("Properties")) {
-			ImGui::TextColored({1.0f,1.0f,1.0f,0.3f},"Properties");
-			ImGui::Text("Location");
-			ImGui::DragFloat("X",&Square1Pos.x,0.1f,0.0f,0.0f,"%.3f");
-			ImGui::DragFloat("Y",&Square1Pos.y,0.1f,0.0f,0.0f,"%.3f");
-			ImGui::Text("Scale");
-			ImGui::DragFloat("x",&SquareScale.x,0.1f,0.0f,0.0f,"%.3f");
-			ImGui::DragFloat("y",&SquareScale.y,0.1f,0.0f,0.0f,"%.3f");
-
-			ImGui::DragFloat("RotatationX",&Rotation.x,0.3f,0.0f,0.0f,"%.3f");
-			ImGui::DragFloat("RotatationY",&Rotation.y,0.3f,0.0f,0.0f,"%.3f");
-			ImGui::DragFloat("RotatationZ",&Rotation.z,0.3f,0.0f,0.0f,"%.3f");
-
-			ImGui::ColorEdit4("SquareColor",glm::value_ptr(Square1Color));
 		}
 		ImGui::End();
 

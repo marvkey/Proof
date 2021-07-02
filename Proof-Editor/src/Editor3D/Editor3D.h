@@ -2,6 +2,8 @@
 #include "Proof/Core/Layer.h"
 #include "glm/glm.hpp"
 #include "Proof/ProofCore.h"
+#include "MainWindow/SceneHierachyPanel.h"
+#include "Proof3D/EntitiyComponentSystem/ECS.h"
 
 namespace Proof {
 	class Proof_API Editore3D : public Layer {
@@ -32,11 +34,14 @@ namespace Proof {
 		glm::vec3 Rotation = {0,0,0};
 		//Count<Texture2D> WoodenTexture;
 
-		class MeshComponent PlayerMeshComponent;
-		class MeshComponent SecondMeshComponent;
+		//class MeshComponent PlayerMeshComponent;
+		//class MeshComponent SecondMeshComponent;
 
-		class Model PlayerModel{"rock.obj"};
-		
+		//class Model PlayerModel{"rock.obj"};
+		//Entity Player;
+		class SceneHierachyPanel m_WorldHierachy;
 		friend class Renderer3D;
+		ECS ECSTEST;
+		uint32_t TestID;
 	};
 }

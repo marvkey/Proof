@@ -91,4 +91,15 @@ struct Proof_API Math {
 	inline static float GetPIE() {
 		return 3.141592654;
 	}
+
+	/*
+	* generates a random number
+	* @param Min: minimum number generated
+	* @ max: maximum number gnerated
+	*/
+	inline static uint32_t RandUINT(uint32_t Min,uint32_t Max){
+		if(Min ==0)
+			return rand() % (Max+1);
+		return Min+(rand()%Max);
+	}
 };

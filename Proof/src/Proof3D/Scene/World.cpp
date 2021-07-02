@@ -8,7 +8,7 @@
 #include "Mesh.h"
 #include "Proof/Core/FrameTime.h"
 #include "Component.h"
-
+#include <iostream>
 namespace Proof{
 	void World::OnUpdateEditor(FrameTime DeltaTime) {}
 
@@ -22,16 +22,12 @@ namespace Proof{
 			}
 			Nsc.Instance->OnUpdate(DeltaTime);
 		});
-		/* This will go into Render THread */
-		Registry.view<MeshComponent>().each([=](auto _Entity,auto& Nsc) {
-			//Nsc.Object->Draw(*Proof::Renderer::GetShaderLibrary().GetShader("ModelShader"));
-		});
 	}
 
-	Entity World::CreateEntity() {
+	Entity World::CreateEntity(const std::string& EntName) {
 		Entity entity = {Registry.create(),this};
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<TagComponent>();
+		entity.AddComponent<TagComponent>()->SetName(EntName);
 		return entity;
 	}
 
@@ -56,10 +52,13 @@ namespace Proof{
 		Component.EntityOwner = _Entity;
 	}
 	template<>
-	void World::OnComponentAdded(Entity* _Entity,TransformComponent& Component) {}
+	void World::OnComponentAdded(Entity* _Entity,TransformComponent& Component) {
+	
+
+	}
 	template<>
 	void World::OnComponentAdded(Entity* _Entity,TagComponent& Component) {
-
+		Component.m_EntityOwner = _Entity;
 	}
 	template<>
 	void World::OnComponentAdded(Entity* _Entity,MeshComponent& Component) {
