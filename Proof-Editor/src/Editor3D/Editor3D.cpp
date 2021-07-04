@@ -18,10 +18,18 @@ namespace Proof {
 	void Editore3D::NewWorld() {
 		ActiveWorld = new World();
 		Player  =ActiveWorld->CreateEntity("Base-Entity");
-		Player.AddComponent<MeshComponent>();
+		m_WorldHierachy.SetContext(ActiveWorld);
+		Player.AddComponent<MeshComponent>()->SetName("hallo Guys");
 		Player.GetComponent<MeshComponent>()->m_Mesh =&PlayerModel;
 
-		m_WorldHierachy.SetContext(ActiveWorld);
+		RealPlayer = ActiveWorld->CreateEntity("Real-Player");
+		RealPlayer.AddComponent<MeshComponent>();
+		RealPlayer.GetComponent<MeshComponent>()->m_Mesh = &CubeModel;
+		/*
+		Temp =RealPlayer.AddComponent<MeshComponent>();
+		Temp->m_Mesh =&PlayerModel;
+		Temp->SetName("Yoh");
+		*/
 	}
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
@@ -32,8 +40,17 @@ namespace Proof {
 		glm::mat4 Projection =glm::mat4(1.0f);
 		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
 		Renderer3D::BeginContext(Projection,EditorCamera);
-		Renderer3D::Draw(*Player.GetComponent<MeshComponent>());
-		Renderer3D::EndContext();
+		if(Player.GetComponent<MeshComponent>() != nullptr)
+			Renderer3D::Draw(*Player.GetComponent<MeshComponent>());
+				
+		if(RealPlayer.GetComponent<MeshComponent>() != nullptr)
+			Renderer3D::Draw(*RealPlayer.GetComponent<MeshComponent>());
+
+		//Renderer3D::Draw(*Temp);
+		/* THIS CODE IS HELFUL WHEN WE START MAKING GUI 
+		Renderer2D::BeginContext(SceneCamera);
+		Renderer2D::DrawQuad({0,0,0},{0,0,0},{1,1,1},{1.0f,0,0,0});
+		*/
 	}
 
 	void Editore3D::OnImGuiDraw() {
@@ -43,33 +60,21 @@ namespace Proof {
 		SetDocking(&EnableDocking);
 		ViewPort();
 		m_WorldHierachy.ImGuiOnUpdate();
-		if (ImGui::Begin("Proof")) {
-			if (ImGui::BeginChild("Tab Bar")) {
-				ImGui::SameLine();
-				if (ImGui::Button("Source Control")) {
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Setting")) {
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Play")) {
-				}
-				ImGui::SameLine();
-				ImGui::Text("%.3f ms/frame %.1f FPS",FrameTime::GetFrameMS(),FrameTime::GetFrameFPS());
-			}
-			ImGui::EndChild();
-		}
-		ImGui::End();
 
-		if (ImGui::Begin("Console")) {
-			ImGui::TextColored({1.0f,1.0f,1.0f,0.3f},"This is the Console");
+		if(ImGui::Begin("Renderer 3D Stastitics")){
+			ImGui::Text("DrawCalls %i",Renderer3D::Render3DStats::DrawCalls);
+			ImGui::Text("Number Of MeshInstances %i",Renderer3D::Render3DStats::NumberOfInstances);
+			ImGui::Text("Amount Of Meshes Drawn %i",Renderer3D::Render3DStats::AmountDrawn);
+			ImGui::Text("%.3f ms/frame %.1f FPS",FrameTime::GetFrameMS(),FrameTime::GetFrameFPS());
+			ImGui::End();
 		}
-		ImGui::End();
 
-		if (ImGui::Begin("Content")) {
-			ImGui::TextColored({1.0f,1.0f,1.0f,0.3f},"Player");
+		if (ImGui::Begin("Renderer 2D Stastitics")) {
+			ImGui::Text("DrawCalls %i",Renderer2D::Renderer2DStats::m_DrawCalls);
+			ImGui::Text("Number of Quads %i",Renderer2D::Renderer2DStats::m_QuadCount);
+			ImGui::Text("%.3f ms/frame %.1f FPS",FrameTime::GetFrameMS(),FrameTime::GetFrameFPS());
+			ImGui::End();
 		}
-		ImGui::End();
 	}
 	void Editore3D::ViewPort() {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
@@ -126,10 +131,14 @@ namespace Proof {
 		if (opt_fullscreen)
 			ImGui::PopStyleVar(2);
 		ImGuiIO& io = ImGui::GetIO();
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.WindowMinSize.x = 250.0f; // sets teh minimum width of everything
+
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable){
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id,ImVec2(0.0f,0.0f),dockspace_flags);
 		}
+
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem(" Save")) {

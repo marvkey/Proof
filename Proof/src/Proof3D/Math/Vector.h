@@ -44,12 +44,14 @@ struct Proof_API Vector {
         this->Z = obj.z;
         return *this;
     }
+
     Vector operator =(const Vector& Other) {
         this->X = Other.X;
         this->Y = Other.Y;
         this->Z = Other.Z;
         return *this;
     }
+
     Vector operator +=(glm::vec3& Other) {
         this->X += Other.x;
         this->Y += Other.y;
@@ -70,10 +72,8 @@ struct Proof_API Vector {
         return *this;
     }
     Vector operator +(const glm::vec3& Other) {
-        this->X += Other.x;
-        this->Y += Other.y;
-        this->Z += Other.z;
-        return *this;
+        Vector Temp(this->X+Other.x,this->Y + Other.y,this->Z + Other.z);
+        return Temp;
     }
 };
 

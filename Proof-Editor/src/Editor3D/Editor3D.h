@@ -38,8 +38,11 @@ namespace Proof {
 		//class MeshComponent SecondMeshComponent;
 
 		class Model PlayerModel{"rock.obj"};
+		class Model CubeModel { "cube.obj" };
 		Entity Player;
+		Entity RealPlayer;
 		class SceneHierachyPanel m_WorldHierachy;
 		friend class Renderer3D;
+		MeshComponent* Temp;
 	};
 }

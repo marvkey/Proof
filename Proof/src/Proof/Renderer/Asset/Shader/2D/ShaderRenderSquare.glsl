@@ -26,8 +26,8 @@ in float v_TexIndex;
 uniform sampler2D u_TextureSlot[32];
 void main(){
 vec4 temp =texture(u_TextureSlot[int(v_TexIndex)], v_TexCoord)* vec4(m_Color);
-if(temp.a <0.005)
-discard;
+//if(temp.a <0.005)
+//discard;
 			FragColor =temp;
 }
 

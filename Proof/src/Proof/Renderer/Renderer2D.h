@@ -30,6 +30,8 @@ namespace Proof {
 	public:
 		static void Init();
 		static void BeginContext(const glm::mat4& Projection,const Camera& camera);
+		static void BeginContext(glm::mat4 Projection,class EditorCamera3D& EditorCamera);
+
 		static void BeginContext(const class OrthagraphicCamera& Camera);
 		static void DrawQuad(const glm::vec3& Location);
 
@@ -47,15 +49,14 @@ namespace Proof {
 		static void EndContext();
 
 		struct Renderer2DStats{
-			uint32_t m_QuadCount;
-			uint32_t m_DrawCalls;
+			static uint32_t m_QuadCount;
+			static uint32_t m_DrawCalls;
 		};
+		static void Reset();
 	private:
 		/* Not using as default rendeer cause it allocates to the heap and we dont need taht waste in performance */
 		static std::vector<Vertex2D> CreateQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Scale,const glm::vec4& Color,float TexIndex);
-		static void Reset();
 		static void Render();
-		static void Start();
 	};
 }
 

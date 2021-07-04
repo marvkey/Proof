@@ -8,6 +8,7 @@
 #include "Proof3D/Renderer/Camera/Camera.h"
 #include "Proof3D/Renderer/Camera/OrthagraphicCamera.h"
 #include "Proof/Renderer/Buffer.h"
+#include "Proof3D/Renderer/Camera/EditorCamera.h"
 
 namespace Proof {
 	std::array<uint32_t,Renderer2DStorage::s_MaxIndexCount>Renderer2DStorage::QuadIndices = {};
@@ -18,6 +19,9 @@ namespace Proof {
 
 	static Renderer2DStorage* s_Storage2DData;
 	static Renderer2D::Renderer2DStats* s_Renderer2DStats;
+
+	uint32_t Renderer2D::Renderer2DStats::m_QuadCount=0;
+	uint32_t Renderer2D::Renderer2DStats::m_DrawCalls=0;
 	void Renderer2D::Init() {
 		s_Renderer2DStats = new Renderer2DStats;
 		for (uint32_t i = 0; i < Renderer2DStorage::s_MaxIndexCount; i += 6) {
@@ -63,7 +67,6 @@ namespace Proof {
 		s_Storage2DData->m_Shader->SetMat4("u_View",camera.GetCameraView());
 		s_Renderer2DStats->m_DrawCalls=0;
 		s_Renderer2DStats->m_QuadCount =0;
-		Start();
 	}
 	void Renderer2D::BeginContext(const OrthagraphicCamera& Camera) {
 		s_Storage2DData->m_Shader->UseShader();
@@ -71,7 +74,10 @@ namespace Proof {
 		s_Storage2DData->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
 		s_Renderer2DStats->m_DrawCalls = 0;
 		s_Renderer2DStats->m_QuadCount = 0;
-		Start();
+	}
+	void Renderer2D::BeginContext(glm::mat4 Projection,EditorCamera3D& EditorCamera) {
+		s_Storage2DData->m_Shader->SetMat4("u_ViewProjection",Projection);
+		s_Storage2DData->m_Shader->SetMat4("u_View",EditorCamera.GetCameraView());
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1,1,1},{1.0f,1.0f,1.0f,1.0f},s_Storage2DData->m_WhiteTexture);
@@ -103,8 +109,10 @@ namespace Proof {
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D> texture2D) {
-		if (s_Storage2DData->m_IndexCount >=Renderer2DStorage::s_MaxIndexCount) // reached maxed index size
+		if (s_Storage2DData->m_IndexCount >=Renderer2DStorage::s_MaxIndexCount){ // reached maxed index size
+			Render();
 			Reset();
+		}
 		float TextureIndex =-1.0f; // no texture index
 		for(uint32_t i =0; i<s_Storage2DData->m_TextureSlotIndex;i++){
 			if(s_Storage2DData->m_Textures[i]->GetID() == texture2D->GetID()){
@@ -163,8 +171,9 @@ namespace Proof {
 		Render();
 	}
 	void Renderer2D::Reset() {
-		Render();
-		Start();
+		s_Storage2DData->m_IndexCount = 0;
+		s_Storage2DData->m_TextureSlotIndex = 1;
+		s_Storage2DData->m_QuadArraySize = 0;
 	}
 	void Renderer2D::Render() {
 		if(s_Storage2DData->m_IndexCount ==0)return; // nothing to draw
@@ -178,11 +187,7 @@ namespace Proof {
 		RendererCommand::DrawIndexed(s_Storage2DData->m_VertexArray,s_Storage2DData->m_IndexCount);
 		s_Renderer2DStats->m_DrawCalls+=1;
 	}
-	void Renderer2D::Start() {
-		s_Storage2DData->m_IndexCount = 0;
-		s_Storage2DData->m_TextureSlotIndex = 1;
-		s_Storage2DData->m_QuadArraySize =0;
-	}
+	
 	
 	std::vector<Vertex2D> Renderer2D::CreateQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Scale,const glm::vec4& Color,float TexIndex) {
 		float Depth =0.0f;

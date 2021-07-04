@@ -10,6 +10,7 @@ namespace Proof {
 		};
 		static void Init();
 		static void Reset();
+		static void Draw();
 	private:
 		static ShaderLibrary* AllShaders;
 	};

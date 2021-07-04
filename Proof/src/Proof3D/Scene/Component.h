@@ -8,18 +8,22 @@ namespace Proof{
 	public:
 		virtual ~Component(){}
 		std::string GetName(){return Name;}
+		virtual void SetName(const std::string& name){
+			Name = name;
+		}
 		class Entity* GetOwner(){return m_EntityOwner;};
 	protected:
-		std::string Name;
+		std::string Name ="Default";
 		class Entity* m_EntityOwner = nullptr;
 	private:
 		friend class Entity;
 		friend class World;
 	};
-	struct Proof_API TagComponent :Component {
+	struct Proof_API TagComponent : public Component {
 		TagComponent() = default;
 		void AddTag(const std::string& Tag) {
 			Tags.emplace_back(Tag);
+			Name ="Empty Entity";
 		}
 		bool HasTag(const std::string& Tag) {
 			for (const std::string& TagName : Tags) {
@@ -29,9 +33,6 @@ namespace Proof{
 			}
 			return false;
 		}
-		void SetName(const std::string& name){
-			Name = name;
-		}
 	private:
 		std::vector<std::string> Tags;
 		friend class Entity;
@@ -39,7 +40,7 @@ namespace Proof{
 		friend class SceneHierachyPanel;
 	};
 
-	struct Proof_API TransformComponent : Component{
+	struct Proof_API TransformComponent :public Component{
 		Vector Location = {0.0f,0.0f,0.0f};
 		Vector Rotation = {0.0f,0.0f,0.0f};
 		Vector Scale = {1.0f,1.0f,1.0f};
@@ -47,7 +48,7 @@ namespace Proof{
 		TransformComponent(const TransformComponent&) = default;
 	};
 
-	struct Proof_API NativeScriptComponent : Component {
+	struct Proof_API NativeScriptComponent :public Component {
 		class ScriptableEntity* Instance = nullptr;
 		class ScriptableEntity* (*InstantiateScript)();
 		void (*DestroyScript)(NativeScriptComponent*);
@@ -61,13 +62,16 @@ namespace Proof{
 		friend class World;
 	};
 
-	struct Proof_API MeshComponent : Component {
-		MeshComponent() {}
+	struct Proof_API MeshComponent :public Component {
+		MeshComponent() {
+			MeshLocalTransform.Scale = Vector{0.0f,0.0f,0.0f};
+		}
 		class Model* GetModel() {
 			return m_Mesh;
 		}
 		class Model* m_Mesh = nullptr;
 		uint32_t GetID();
+		TransformComponent MeshLocalTransform;
 	private:
 		friend class Entity;
 		friend class World;

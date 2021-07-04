@@ -28,8 +28,8 @@ namespace Proof{
 
 	Entity World::CreateEntity(const std::string& EntName) {
 		Entity entity = {Registry.Create(),this};
-		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<TagComponent>()->Name =EntName;
+		entity.AddComponent<TransformComponent>();
 		return entity;
 	}
 

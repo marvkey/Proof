@@ -23,6 +23,10 @@ namespace Proof {
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 		
+		/* for fonts got to cherno video from 8 mINute on making editor look GOOd*/
+
+		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Bold.ttf",18.0f);
+		io.FontDefault =io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Regular.ttf",17.0f);
 		SetDarkTheme();
 		ImGui_ImplGlfw_InitForOpenGL(CurrentWindow::GetWindow(), true);
 		ImGui_ImplOpenGL3_Init("#version 410");
@@ -53,6 +57,37 @@ namespace Proof {
 		}		
 	}
 	void ImGuiLayer::SetDarkTheme() {
-		ImGui::StyleColorsDark();
+		//ImGui::StyleColorsDark();
+
+		auto& colors = ImGui::GetStyle().Colors;
+		colors[ImGuiCol_WindowBg] = ImVec4{0.1f,0.1f,0.1f,1.0f};
+
+		// Headers
+		colors[ImGuiCol_Header] = ImVec4{0.15f,0.15f,0.15f,1.0f};
+		colors[ImGuiCol_HeaderHovered] = ImVec4{0.2f,0.2f,0.5f,1.0f};
+		colors[ImGuiCol_HeaderActive] = ImVec4{0.2f,0.2f,0.5f,1.0f};
+
+		// Buttons Done
+		colors[ImGuiCol_Button] = ImVec4{0.15f,0.15f,0.15f,1.0f};
+		colors[ImGuiCol_ButtonHovered] = ImVec4{0.2f,0.2f,0.5f,1.0f};
+		colors[ImGuiCol_ButtonActive] = ImVec4{0.2f,0.2f,0.5f,1.0f};
+
+		// Frame BG
+		colors[ImGuiCol_FrameBg] = ImVec4{0.2f,0.2f,0.21f,1.0f};
+		colors[ImGuiCol_FrameBgHovered] = ImVec4{0.3f,0.305f,0.31f,1.0f};
+		colors[ImGuiCol_FrameBgActive] = ImVec4{0.1f,0.1505f,0.151f,1.0f};
+
+
+		// Tabs Done
+		colors[ImGuiCol_Tab] = ImVec4{0.15f,0.1505f,0.151f,1.0f};
+		colors[ImGuiCol_TabHovered] = ImVec4{0.2f,0.2f,0.5f,1.0f};
+		colors[ImGuiCol_TabActive] = ImVec4{0.2f,0.2f,0.2f,1.0f};
+		colors[ImGuiCol_TabUnfocused] = ImVec4{0.1f,0.1f,0.1f,1.0f};
+		colors[ImGuiCol_TabUnfocusedActive] = ImVec4{0.1305f,0.12f,0.12f,1.0f};
+
+		// Title Done
+		colors[ImGuiCol_TitleBg] = ImVec4{0.1f,0.1f,0.121f,1.0f};
+		colors[ImGuiCol_TitleBgActive] = ImVec4{0.10f,0.12f,0.2f,1.0f};
+		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.1095f,0.10f,0.1f,1.0f};
 	}
 }

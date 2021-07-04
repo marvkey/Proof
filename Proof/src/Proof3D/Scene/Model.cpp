@@ -13,6 +13,7 @@
 #include "Mesh.h"
 
 namespace Proof{
+    std::vector<uint32_t> Model::AllID;
     void Model::Draw(const Count<Shader>& shader) {
         for (Mesh& Mesh : meshes)
             Mesh.Draw(shader);

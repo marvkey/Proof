@@ -18,8 +18,12 @@ namespace Proof {
 
 		static void Draw(class MeshComponent& meshComponent);
 		static void EndContext();
-		struct Data{
+		static void Reset();
+		struct Render3DStats{
 			static const uint32_t MaxMeshes =1000;
+			static uint32_t DrawCalls;
+			static uint32_t NumberOfInstances;
+			static uint32_t AmountDrawn;
 		};
 	};
 
@@ -29,5 +33,6 @@ namespace Proof {
 		std::unordered_map<uint32_t,uint32_t> m_AmountMeshes;
 		std::unordered_map<uint32_t,class MeshComponent> m_Meshes;
 		bool SceneHasAmountMeshes(uint32_t ID) { return m_AmountMeshes.find(ID) != m_AmountMeshes.end(); };
+		Count<class Texture2D>m_WhiteTexture;
 	};
 }

@@ -15,7 +15,7 @@ namespace Proof {
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
     Application::Application() {
-        MainWindow = new WindowsWindow(1200,600);
+        MainWindow = new WindowsWindow(1300,600);
 
         MainWindow->createWindow();
         m_GraphicsContext =GraphicsContext::Create(CurrentWindow::GetWindow());
@@ -39,8 +39,8 @@ namespace Proof {
         float PreviousTime = glfwGetTime();
         float CurrentTime;
         RendererCommand::EnableDepth(true);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
         //glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
         CurrentWindow::SetSwapInterval(true);
         while (glfwWindowShouldClose(CurrentWindow::GetWindow()) == false && _KeyClickedEvent.GetKeyClicked() != KeyBoardKey::Escape) {
@@ -53,10 +53,6 @@ namespace Proof {
                 WindowMinimized = true;
             else
                 WindowMinimized = false;
-            ImGuiMainLayer->Begin();
-            for (Layer* layer : MainLayerStack.V_LayerStack)
-                layer->OnImGuiDraw();
-            ImGuiMainLayer->End();
 
             if (WindowMinimized == false) {
                 ScreenFrameBuffer->Bind();
@@ -65,11 +61,17 @@ namespace Proof {
 
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
-                Renderer::Reset();
+                Renderer::Draw();
 
                 ScreenFrameBuffer->UnBind();
                 MainWindow->WindowUpdate(DeltaTime);
             }
+            ImGuiMainLayer->Begin();
+            for (Layer* layer : MainLayerStack.V_LayerStack)
+                layer->OnImGuiDraw();
+            ImGuiMainLayer->End();
+
+            Renderer::Reset();
             RendererCommand::SwapBuffer(CurrentWindow::GetWindow());
             RendererCommand::PollEvents();
             if (CurrentTime - PreviousTime >= 1.0) {
@@ -78,7 +80,7 @@ namespace Proof {
             }
             FPS = (1.0 / (CurrentTime - PreviousTime)) * FrameCount;
             FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
-            
+
             LastFrameTime = time;
         };
         m_GraphicsContext->CleanUp();

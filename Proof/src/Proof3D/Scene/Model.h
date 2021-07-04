@@ -24,6 +24,18 @@ namespace Proof
             //PF_ENGINE_INFO("Number of Indices %i",m_Indices.size());
 
             SetUpModel();
+           a:
+           ID = Math::RandUINT(1,100000);
+           std::vector<uint32_t>::iterator it;
+           it = std::find(AllID.begin(),AllID.end(),ID);
+           if(it ==AllID.end()){
+               AllID.emplace_back(ID);
+               return;
+           }
+           else{
+               goto a;
+           }
+              
         }
 
         /*
@@ -63,6 +75,7 @@ namespace Proof
         uint32_t GetID(){return ID;};
     private:
         std::vector<class Mesh> meshes;
+        static std::vector<uint32_t> AllID;
         void LoadModel(std::string const& path);
         void ProcessNode(aiNode* node,const aiScene* scene);
         Mesh ProcessMesh(aiMesh* mesh,const aiScene* scene);
@@ -73,6 +86,6 @@ namespace Proof
         void ProcessVertex(uint32_t Element1,uint32_t Element2,uint32_t Element3,std::vector<uint32_t>& Indices,
             std::vector<glm::vec2>& textureCoords, std::vector<Vector> Normals,std::vector<Vertex>vertex);
 
-        uint32_t ID =1;
+        uint32_t ID =0;
     };
 }

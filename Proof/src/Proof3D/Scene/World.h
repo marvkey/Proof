@@ -12,9 +12,8 @@ namespace Proof
 		class Entity CreateEntity(const std::string& EntName);
 		virtual void EndRuntime();
 	private:
-		std::string Name = "DefaultWorld";
-		//entt::registry Registry;
 		ECS Registry;
+		std::string Name = "DefaultWorld";
 		template<class T>
 		void OnComponentAdded(Entity* Entity,T* component);
 		friend class SceneHierachyPanel;
