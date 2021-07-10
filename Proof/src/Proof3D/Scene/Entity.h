@@ -2,13 +2,17 @@
 #include"entt/entt.hpp"
 #include "World.h"
 #include <type_traits>
+
 namespace Proof{
+	struct TagComponent;
+	struct Component;
+	struct TransformComponent;
 	class Proof_API Entity {
 	public:
 		Entity::Entity(uint32_t EntityID,class World* world):
 			m_EntityID(EntityID),CurrentWorld(world){}
 		Entity(const Entity& Other) = default;
-		Entity() = default;
+		Entity(){}
 
 		template<class T>
 		T* GetComponent() {
@@ -48,7 +52,7 @@ namespace Proof{
 				}
 			}
 			T* Component = CurrentWorld->Registry.AddComponent<T>(m_EntityID,std::forward<Args>(args)...);
-			CurrentWorld->OnComponentAdded<T>(this,Component);
+			CurrentWorld->OnComponentAdded<T>(*this,Component);
 			return Component;
 		}
 		template<typename T>
@@ -66,6 +70,7 @@ namespace Proof{
 			if (HasComponent<T>() == false)return;
 			CurrentWorld->Registry.RemoveComponent<T>(m_EntityID);
 		}
+		/*
 		template<typename T>
 		void RemoveComponent(Component* Comp){
 			bool isHasTransfrom = std::is_same<T,TransformComponent>::value;
@@ -81,7 +86,8 @@ namespace Proof{
 			if (HasComponent<T>() == false)return;
 			CurrentWorld->Registry.RemoveComponent(m_EntityID,Comp);
 		}
-
+		*/
+		template<typename T>
 		void RemoveComponent(uint64_t IndexSlot){
 			if(IndexSlot ==0) {
 				PF_ENGINE_WARN("Cannot remove TagComponent");
@@ -92,7 +98,7 @@ namespace Proof{
 				PF_ENGINE_WARN("Cannot remove Transform Component");
 				return;
 			}
-			CurrentWorld->Registry.RemoveComponent(m_EntityID,IndexSlot);
+			CurrentWorld->Registry.RemoveComponent<T>(m_EntityID,IndexSlot);
 		}
 		World* GetCurrentWorld() {
 			return CurrentWorld;
@@ -101,22 +107,16 @@ namespace Proof{
 		uint32_t GetID() { return m_EntityID;}
 
 		bool operator==(const Entity& other) const {
-			return m_EntityID == other.m_EntityID /* && CurrentWorld == other.CurrentWorld*/;
+			return m_EntityID == other.m_EntityID && CurrentWorld == other.CurrentWorld;
 		}
 
 		bool operator!=(const Entity& other) const {
 			return !(*this == other);
 		}
 
-		std::string GetName(){
-			return GetComponent<TagComponent>()!=nullptr ? GetComponent<TagComponent>()->GetName() : "DefaultEntity";
-		}
+		std::string GetName();
 		
-		void SetName(const std::string& Name){
-			auto* Tag = GetComponent<TagComponent>();
-			if(Tag!= nullptr)
-				Tag->SetName(Name);
-		}
+		void SetName(const std::string& Name);
 	private:
 		World* CurrentWorld = nullptr;
 		uint32_t m_EntityID{0};

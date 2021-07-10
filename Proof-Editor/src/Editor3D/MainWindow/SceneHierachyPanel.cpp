@@ -5,15 +5,17 @@
 #include "Proof3D/Scene/Component.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-namespace Proof
-{
-
+#include "Proof3D/EntitiyComponentSystem/ECS.h"
+#include "Proof3D/EntitiyComponentSystem/ECS.cpp" // THIS IS VERY TEMPORARY //
+namespace Proof{
 	void SceneHierachyPanel::ImGuiOnUpdate() {
 		ImGui::Begin("Herieachy");
-		for (uint32_t i = 0; i <= m_CurrentWorld->Registry.GetAllID().size() - 1; i++) {
-			Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
-			DrawEntityNode(entity);
-			if (m_CurrentWorld->Registry.GetAllID().size() == 1)break;
+		if(m_CurrentWorld->Registry.GetAllID().size() >0){
+			for (uint32_t i = 0; i <= m_CurrentWorld->Registry.GetAllID().size() - 1; i++) {
+				Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
+				DrawEntityNode(entity);
+				if (m_CurrentWorld->Registry.GetAllID().size() == 1)break;
+			}
 		}
 
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) {
@@ -25,7 +27,6 @@ namespace Proof
 			ImGui::EndPopup();
 		}
 		ImGui::End();
-
 		ImGui::Begin("Properties");
 		if (m_SelectedEntity)
 			DrawComponent(m_SelectedEntity);
@@ -47,6 +48,7 @@ namespace Proof
 
 	template<typename T,typename UIFunction>
 	void SceneHierachyPanel::DrawComponents(const std::string& name,Entity& entity,T* Comp,uint32_t IndexValue,UIFunction Uifunction) {
+		ImGui::PushID(&(*Comp));
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 		auto& component = *Comp;
 		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
@@ -58,7 +60,7 @@ namespace Proof
 		open = ImGui::TreeNodeEx((void*)&(*Comp),treeNodeFlags,name.c_str());
 		ImGui::PopStyleVar();
 		ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-		if (ImGui::Button("+",ImVec2{lineHeight,lineHeight})) {
+		if (ImGui::Button("+",ImVec2{lineHeight+3,lineHeight})) {
 			ImGui::OpenPopup("ComponentSettings");
 		}
 
@@ -77,8 +79,9 @@ namespace Proof
 		}
 
 		if (removeComponent) {
-			entity.RemoveComponent(IndexValue);
+			entity.RemoveComponent<T>(IndexValue);
 		}
+		ImGui::PopID();
 	}
 
 	void SceneHierachyPanel::DrawComponent(Entity& entity) {
@@ -98,12 +101,12 @@ namespace Proof
 		if(ImGui::BeginPopup("AddComponent")){
 			
 			if(ImGui::MenuItem("Mesh Component")){
-				
+				entity.AddComponent<MeshComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 
 			if(ImGui::MenuItem("Sprite Renderer")){
-				
+				entity.AddComponent<SpriteComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
@@ -146,26 +149,29 @@ namespace Proof
 				IndexValue += 1;
 				continue;
 			}
-		}
-	}
-	void SceneHierachyPanel::DrawMeshComponent(MeshComponent* Meshes) {
-		if (Meshes != nullptr) {
-			if (ImGui::TreeNodeEx((void*)&(*Meshes),ImGuiTreeNodeFlags_None,Meshes->GetName().c_str())) {// &(*Meshes) is the unique ID wich is the element its pointing to in memory
-				ImGui::Text("Name");
-				char buffer[256];
-				memset(buffer,0,sizeof(buffer));
-				strcpy_s(buffer,sizeof(buffer),Meshes->GetName().c_str());
-				ImGui::SameLine();
-				if (ImGui::InputText("##Name",buffer,sizeof(buffer))) {
-					Meshes->SetName(buffer);
-				}
-				DrawVectorControl("Local Location",Meshes->MeshLocalTransform.Location);
-				DrawVectorControl("Local Rotation",Meshes->MeshLocalTransform.Rotation);
-				DrawVectorControl("Local Scale",Meshes->MeshLocalTransform.Scale,0.0f);
-				ImGui::TreePop();
+
+			SpriteComponent* Sprite = dynamic_cast<SpriteComponent*>(Comp);
+			if(Sprite != nullptr){
+				DrawComponents<SpriteComponent>({"Sprite: "+Sprite->GetName()},entity,Sprite,IndexValue,[](auto& component){
+					char buffer[256];
+					memset(buffer,0,sizeof(buffer));
+					strcpy_s(buffer,sizeof(buffer),component.GetName().c_str());
+					if (ImGui::InputText("##N",buffer,sizeof(buffer))) {
+						component.SetName(buffer);
+					}
+					DrawVectorControl("Location",component.SpriteTransfrom.Location,0.0,125);
+					DrawVectorControl("Rotation",component.SpriteTransfrom.Rotation,0.0,125);
+					DrawVectorControl("Scale",component.SpriteTransfrom.Scale,0.0,125);
+					ImGui::NewLine();
+					ImGui::ColorEdit4("##Colour",glm::value_ptr( component.Colour));
+				});
+				
+				IndexValue += 1;
+				continue;
 			}
 		}
 	}
+
 
 	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel,Vector& Vec,float ResetValue,float columnWidth) {
 		ImGuiIO& io = ImGui::GetIO();
@@ -191,7 +197,7 @@ namespace Proof
 		}
 		ImGui::PopFont();
 		ImGui::SameLine();
-		ImGui::DragFloat("##x",&Vec.X,0.1f,0,0,"%.2f"); // does not show ## as label
+		ImGui::DragFloat("##x",&Vec.X,0.1f,0,0,"%.3f"); // does not show ## as label
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ImGui::PopStyleColor(3);
@@ -207,7 +213,7 @@ namespace Proof
 		ImGui::PopFont();
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Y",&Vec.Y,0.1f,0,0,"%.2f"); // does not show ## as label
+		ImGui::DragFloat("##Y",&Vec.Y,0.1f,0,0,"%.3f"); // does not show ## as label
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ImGui::PopStyleColor(3);
@@ -223,10 +229,88 @@ namespace Proof
 		ImGui::PopFont();
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Z",&Vec.Z,0.1f,0,0,"%.2f"); // does not show ## as label
+		ImGui::DragFloat("##Z",&Vec.Z,0.1f,0,0,"%.3f"); // does not show ## as label
 		ImGui::PopItemWidth();
 		ImGui::PopStyleColor(3);
 
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
+	}
+	void SceneHierachyPanel::DrawVector4Control(const std::string& UniqeLabel,glm::vec4& Vec,float ResetValue,float columnWidth) {
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		ImGui::PushID(UniqeLabel.c_str());// this id is for everything here so imgui does not assign something to the value that we have here
+		ImGui::Columns(2); // distance between label and edits
+		ImGui::SetColumnWidth(0,columnWidth);
+		ImGui::Text(UniqeLabel.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(3,ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,ImVec2{0,0});
+
+		float LineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // comes from IMGUI
+		ImVec2 buttonSize = {LineHeight + 3.0f,LineHeight};
+
+		ImGui::PushStyleColor(ImGuiCol_Button,ImVec4{1.0f,0.0f,0.0f,1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4{1.0f,0.5f,0.0f,1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive,ImVec4{1.0f,0.0f,0.0f,1.0f});
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("X",buttonSize)) {
+			Vec.r = ResetValue;
+		}
+		ImGui::PopFont();
+		ImGui::SameLine();
+		ImGui::DragFloat("##x",&Vec.r,0.1f,0,0,"%.3f"); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
+
+		ImGui::PushStyleColor(ImGuiCol_Button,ImVec4{0.0f,.5f,0.0f,1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4{1.0f,0.5f,0.0f,1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive,ImVec4{0.0f,.5f,0.0f,1.0f});
+
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Y",buttonSize)) {
+			Vec.y = ResetValue;
+		}
+		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::DragFloat("##Y",&Vec.y,0.1f,0,0,"%.3f"); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
+
+		ImGui::PushStyleColor(ImGuiCol_Button,ImVec4{0.0f,0.0f,1.0f,1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4{1.0f,0.5f,0.0f,1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive,ImVec4{0.0f,0.0f,1.0f,1.0f});
+
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Z",buttonSize)) {
+			Vec.z = ResetValue;
+		}
+		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::DragFloat("##Z",&Vec.z,0.1f,0,0,"%.3f"); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::PopStyleColor(3);
+
+		ImGui::PushStyleColor(ImGuiCol_Button,ImVec4{1.0f,1.0f,1.0f,1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4{1.0f,1.0f,1.0f,1.0f});
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive,ImVec4{1.0f,1.0f,1.0f,1.0f});
+
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("A",buttonSize)) {
+			Vec.a = ResetValue;
+		}
+		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::DragFloat("##A",&Vec.a,0.1f,0,0,"%.3f"); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::PopStyleColor(3);
 		ImGui::PopStyleVar();
 		ImGui::Columns(1);
 		ImGui::PopID();

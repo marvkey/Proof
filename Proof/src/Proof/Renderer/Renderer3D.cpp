@@ -69,7 +69,7 @@ namespace Proof
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
             ModelMatrix = glm::mat4(1.0f);
 
-            auto Transform = meshComponent.GetOwner()->GetComponent<TransformComponent>();
+            auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
             ModelMatrix = glm::translate(ModelMatrix,{Transform->Location + meshComponent.MeshLocalTransform.Location});
             ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0});
             ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0});
@@ -97,7 +97,7 @@ namespace Proof
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
 
             ModelMatrix = glm::mat4(1.0f);
-            auto Transform = meshComponent.GetOwner()->GetComponent<TransformComponent>();
+            auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
             ModelMatrix = glm::translate(ModelMatrix,{Transform->Location + meshComponent.MeshLocalTransform.Location});
             ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0});
             ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0});
@@ -110,6 +110,7 @@ namespace Proof
     }
     void Renderer3D::EndContext() {
         if (DifferentMeshes == 0)return;
+        PF_PROFILE_FUNCTION();
         uint32_t SizeofOffset = 0;
         for (uint32_t Size = 0; Size <= s_DifferentID.size()-1; Size++) {
             Renderer3DInstance->m_VertexBuffer->Bind();

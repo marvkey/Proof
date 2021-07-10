@@ -26,6 +26,8 @@ project "Proof-Editor"
         "%{IncludeDir.Glad}",
 		"%{IncludeDir.Log}",
 		"%{IncludeDir.Assimp}",
+        "%{IncludeDir.ImGuizmo}",
+
     }
 
     libdirs 

@@ -9,6 +9,8 @@
 #include "Proof3D/Renderer/Camera/OrthagraphicCamera.h"
 #include "Proof/Renderer/Buffer.h"
 #include "Proof3D/Renderer/Camera/EditorCamera.h"
+#include "Proof3D/Scene/Component.h"
+#include "Proof3D/Scene/Entity.h"
 
 namespace Proof {
 	std::array<uint32_t,Renderer2DStorage::s_MaxIndexCount>Renderer2DStorage::QuadIndices = {};
@@ -78,6 +80,8 @@ namespace Proof {
 	void Renderer2D::BeginContext(glm::mat4 Projection,EditorCamera3D& EditorCamera) {
 		s_Storage2DData->m_Shader->SetMat4("u_ViewProjection",Projection);
 		s_Storage2DData->m_Shader->SetMat4("u_View",EditorCamera.GetCameraView());
+		s_Renderer2DStats->m_DrawCalls = 0;
+		s_Renderer2DStats->m_QuadCount = 0;
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1,1,1},{1.0f,1.0f,1.0f,1.0f},s_Storage2DData->m_WhiteTexture);
@@ -107,7 +111,11 @@ namespace Proof {
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Size,const glm::vec4& Color){
 		DrawQuad(Location,Rotation,Size,Color,s_Storage2DData->m_WhiteTexture);
 	}
-
+	void Renderer2D::DrawQuad(SpriteComponent& Sprite){
+		PF_ENGINE_INFO("%i",Sprite.GetOwner().GetID());
+		auto Transform = Sprite.GetOwner().GetComponent<TransformComponent>();
+		Renderer2D::DrawQuad({Sprite.SpriteTransfrom.Location + Transform->Location},Sprite.SpriteTransfrom.Rotation + Transform->Rotation,Sprite.SpriteTransfrom.Scale + Transform->Scale,Sprite.Colour,s_Storage2DData->m_WhiteTexture);
+	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D> texture2D) {
 		if (s_Storage2DData->m_IndexCount >=Renderer2DStorage::s_MaxIndexCount){ // reached maxed index size
 			Render();

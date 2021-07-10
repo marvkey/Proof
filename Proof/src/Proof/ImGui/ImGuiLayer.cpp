@@ -4,6 +4,8 @@
 #include "ImGui/imgui_impl_glfw.h"
 #include "ImGui/imgui_impl_opengl3.h"
 #include "Proof/Core/CurrentWindow.h"
+
+#include "ImGuizmo.h"
 namespace Proof {
 	ImGuiLayer::ImGuiLayer() :
 		Layer("ImGUI Layer")
@@ -42,6 +44,7 @@ namespace Proof {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 	}
 	
 	void ImGuiLayer::End() {

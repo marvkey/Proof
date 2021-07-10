@@ -10,9 +10,8 @@ int main(int argc, char** argv);
 namespace Proof {
     class Proof_API KeyClickedEvent: public Event{
     public:
-        inline KeyBoardKey GetKeyClicked() { return Instance->EventHandled == true ? Instance->KeyClicked : (KeyBoardKey)-1; }
-        inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
-        std::string ToString() override {
+        inline KeyBoardKey GetKeyClicked()const { return Instance->EventHandled == true ? Instance->KeyClicked : (KeyBoardKey)-1; }
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Key Clicked Event " << (char)Instance->KeyClicked;
             return ss.str();
@@ -29,7 +28,7 @@ namespace Proof {
     public:
         inline KeyBoardKey GetKeyReleased() { return Instance->EventHandled == true ? Instance->KeyReleased : (KeyBoardKey)-1; }
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
-        std::string ToString() override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Key Released Event " << (char)Instance->KeyReleased;
             return ss.str();
@@ -46,7 +45,7 @@ namespace Proof {
     public:
         inline KeyBoardKey GetKeyDoubleClick() { return Instance->EventHandled == true ? Instance->KeyDoubleClick : (KeyBoardKey)-1; }
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
-        std::string ToString()override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Key Double Click Event " <<(char) Instance->KeyDoubleClick;
             return ss.str();
@@ -63,7 +62,7 @@ namespace Proof {
     public:
         inline KeyBoardKey GetKeyRepeat() { return Instance->EventHandled == true ? Instance->KeyRepeat : (KeyBoardKey)-1; }
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
-        std::string ToString() override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Key Repeat Event " << (char) Instance->KeyRepeat;
             return ss.str();

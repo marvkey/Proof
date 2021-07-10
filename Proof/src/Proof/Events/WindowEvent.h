@@ -10,9 +10,9 @@ namespace Proof {
     class Proof_API WindowResizeEvent:public Event {
     public:
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
-        inline uint8_t GetWhidt() {return Instance->Whidt;}
-        inline uint8_t GetHeight() { return Instance->Height;}
-        std::string ToString()override {
+        inline uint8_t GetWhidt()const {return Instance->Whidt;}
+        inline uint8_t GetHeight()const { return Instance->Height;}
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Window Resize Event " <<(int) GetWhidt() << ", " << (int)GetHeight ();
             return ss.str();
@@ -30,7 +30,7 @@ namespace Proof {
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
         inline uint8_t GetPosX()const { return Instance->PosX; }
         inline uint8_t GetPosY()const { return Instance->PosY; }
-        std::string ToString()override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Window Move Event " << Instance->PosX << ", " << Instance->PosY;
             return ss.str();
@@ -46,7 +46,7 @@ namespace Proof {
     class Proof_API WindowCloseEvent: public Event {
     public:
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
-        std::string ToString()override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Window Has Been Closed ";
             return ss.str();
@@ -61,7 +61,7 @@ namespace Proof {
     class Proof_API WindowFocusEvent:public Event {
     public:
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
-        std::string ToString()override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Window is Focus ";
             return ss.str();
@@ -76,7 +76,7 @@ namespace Proof {
     class Proof_API Window_ViewPortResize: public Event {
     public:
         inline bool OnEvent() { return (Instance->EventHandled == true) ? true : false; }
-        std::string ToString()override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Window is Focus ";
             return ss.str();

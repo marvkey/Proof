@@ -5,6 +5,7 @@
 #include "Platform/Window/WindowsWindow.h"
 #include "Proof/Core/Application.h"
 #include "Proof/Core/Log.h"
+#include "Debug/Instrumentor.h"
 #if defined(_WIN64)
 extern Proof::Application* Proof::CreateApplication();
 /*#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup") */ // makes the current terminal not work
@@ -28,8 +29,16 @@ int main(int argc, char** argv){
 		Proof::Window_ViewPortResize::Instance = std::make_unique<Proof::Window_ViewPortResize>();
 		srand(time(NULL));
 		Proof::Log::Init();
+		PF_PROFILE_BEGIN_SESSION("Startup","ProofProfile-Startup.json");
 		auto app = Proof::CreateApplication();
+		PF_PROFILE_END_SESSION();
+
+		//PF_PROFILE_BEGIN_SESSION("Runtime","ProofProfile-Runtime.json");
 		app->Run();
+		//PF_PROFILE_END_SESSION();
+
+		PF_PROFILE_BEGIN_SESSION("Shutdonw","ProofProfile-Shotdown.json");
 		delete app;
+		PF_PROFILE_END_SESSION();
 }
 #endif

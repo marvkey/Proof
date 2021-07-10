@@ -17,6 +17,7 @@ namespace Proof
     class Model {
     public:
         bool gammaCorrection;
+        Model() =default;
         Model(std::string const& path,bool gamma = false): gammaCorrection(gamma) {
             LoadModel(path);
             //load_obj(path,m_Vertices,m_Indices,textures_loaded);

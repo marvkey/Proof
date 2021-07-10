@@ -6,15 +6,21 @@
 #include "Proof/Input/KeyCodes.h"
 int main(int argc, char** argv);
 namespace Proof {
+
     class Proof_API MouseClickedEvent:public Event{
     public:
+       // MouseClickedEvent(MouseButton ){
+         //   m_EventType = EventType::MouseClickedEvent;
+           // m_Button =Button;
+       // }
         inline MouseButton GetButtonClicked() { return Instance->EventHandled == true ? Instance->ButtonClicked : (MouseButton)-1; }
         inline bool OnEvent() { return Instance->EventHandled == true ? true : false; }
-        std::string ToString() override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Mouse Clicked Event " << (int)Instance->ButtonClicked;
             return ss.str();
         }
+        MouseButton m_Button;
     private:
         static std::unique_ptr<MouseClickedEvent>Instance;
         MouseButton ButtonClicked;
@@ -27,7 +33,7 @@ namespace Proof {
     public:
         inline MouseButton GetButtonReleased() { return Instance->EventHandled == true ? Instance->ButtonReleased : (MouseButton)-1; }
         inline bool OnEvent() { return Instance->EventHandled == true ? true : false; }
-        std::string ToString() override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Mouse Button Released Event " << (int) Instance-> ButtonReleased;
             return ss.str();
@@ -44,7 +50,7 @@ namespace Proof {
     public:
         inline  MouseButton GetButtonDoubleClick() { return Instance->EventHandled == true ? Instance->ButtonDoubleClick : (MouseButton)-1; }
         inline  bool OnEvent() { return Instance->EventHandled == true ? true : false; }
-        std::string ToString() override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Mouse Button Double Click " <<(int) Instance->ButtonDoubleClick;
             return ss.str();
@@ -62,7 +68,7 @@ namespace Proof {
         inline unsigned int GetPosX() { return Instance->PosX; }
         inline unsigned int GetPosY() { return Instance->PosY; }
         inline bool OnEvent() {return  Instance->EventHandled == true ? true : false; }
-        std::string ToString() override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "Mouse Move Event " << Instance->PosX << ", " << Instance->PosY;
             return ss.str();
@@ -83,7 +89,7 @@ namespace Proof {
         inline float GetPosY() { return Instance->PosY; }
         inline bool OnEvent() { return  Instance->EventHandled == true ? true : false; }
         
-        std::string ToString() override {
+        std::string ToString()const override {
             std::stringstream ss;
             ss << "MouseScrolled Event " << Instance->PosX << ", " << Instance->PosY;
             return ss.str();

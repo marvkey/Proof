@@ -9,8 +9,39 @@
 #include "Proof/Core/FrameTime.h"
 #include "Component.h"
 #include <iostream>
+#include "Proof/Renderer/Renderer3D.h"
+#include "Proof/Renderer/Renderer2D.h"
+#include "Proof3D/Scene/Component.h"
+
 namespace Proof{
-	void World::OnUpdateEditor(FrameTime DeltaTime) {}
+	static Model DefaultModel;
+	
+	World::World()
+	{
+		DefaultModel = {"cube.obj",false};
+	}
+	void World::OnUpdateEditor(FrameTime DeltaTime) {
+		
+		glm::mat4 Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
+		Renderer3D::BeginContext(Projection,EditorCamera);
+		
+		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
+			if (Comp->GetModel() != nullptr)
+				Renderer3D::Draw(*Comp);
+			else 	{
+				Comp->m_Mesh = &DefaultModel;
+				Renderer3D::Draw(*Comp);
+			}
+		}
+
+		Renderer2D::BeginContext(Projection,EditorCamera);
+		for (SpriteComponent* Comp : Registry.SpriteComponents) {
+			Renderer2D::DrawQuad(*Comp);
+		}
+		
+		EditorCamera.OnUpdate(DeltaTime);
+		
+	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime) {
 		/*
@@ -24,47 +55,43 @@ namespace Proof{
 			Nsc.Instance->OnUpdate(DeltaTime);
 		});
 		*/
+	
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {
 		Entity entity = {Registry.Create(),this};
 		entity.AddComponent<TagComponent>()->Name =EntName;
 		entity.AddComponent<TransformComponent>();
+
 		return entity;
 	}
 
 	void World::EndRuntime() {
-		/*
-		Registry.view<NativeScriptComponent>().each([=](auto _Entity,auto& Nsc) {
-			if (!Nsc.Instance) {
-				Nsc.Instance = Nsc.InstantiateScript();
-				Nsc.Instance->OwnerEntity = Nsc.GetOwner();
-				Nsc.Instance->OnCreate();
-				Nsc.Instance->OnlyOnCreate();
-			}
-			Nsc.Instance->OnDestroy();
-		});
-		*/
 	}
 
 	template<class T>
-	void World::OnComponentAdded(Entity* _Entity,T* component) {
+	void World::OnComponentAdded(Entity _Entity,T* component) {
+		PF_CORE_ASSERT(false,"Component Not Identified");
+	}
+	template<>
+	void World::OnComponentAdded(Entity _Entity,NativeScriptComponent* component) {
+		static_cast<Component*>(component)->m_EntityOwner = _Entity;
+	}
+	template<>
+	void World::OnComponentAdded(Entity _Entity,TransformComponent* component) {
+		static_cast<Component*>(component)->m_EntityOwner = _Entity;
+	}
+	template<>
+	void World::OnComponentAdded(Entity _Entity,TagComponent* component) {
+		static_cast<Component*>(component)->m_EntityOwner = _Entity;
+	}
+	template<>
+	void World::OnComponentAdded(Entity _Entity,MeshComponent* component) {
+		static_cast<Component*>(component)->m_EntityOwner = _Entity;
+	}
 
-	}
 	template<>
-	void World::OnComponentAdded(Entity* _Entity,NativeScriptComponent* component) {
-		static_cast<Component*>(component)->m_EntityOwner = _Entity;
-	}
-	template<>
-	void World::OnComponentAdded(Entity* _Entity,TransformComponent* component) {
-		static_cast<Component*>(component)->m_EntityOwner = _Entity;
-	}
-	template<>
-	void World::OnComponentAdded(Entity* _Entity,TagComponent* component) {
-		static_cast<Component*>(component)->m_EntityOwner = _Entity;
-	}
-	template<>
-	void World::OnComponentAdded(Entity* _Entity,MeshComponent* component) {
+	void World::OnComponentAdded(Entity _Entity,SpriteComponent* component) {
 		static_cast<Component*>(component)->m_EntityOwner = _Entity;
 	}
 }

@@ -3,15 +3,12 @@
 #include "glm/glm.hpp"
 #include "Proof/ProofCore.h"
 #include "MainWindow/SceneHierachyPanel.h"
-#include "Proof3D/EntitiyComponentSystem/ECS.h"
 
 namespace Proof {
 	class Proof_API Editore3D : public Layer {
 	public:
 		Editore3D();
-		~Editore3D() {
-			delete ActiveWorld;
-		}
+		~Editore3D();
 		virtual void OnUpdate(FrameTime DeltaTime) override;
 		virtual void OnImGuiDraw() override;
 		virtual void OnAttach() override;
@@ -37,12 +34,10 @@ namespace Proof {
 		//class MeshComponent PlayerMeshComponent;
 		//class MeshComponent SecondMeshComponent;
 
-		class Model PlayerModel{"rock.obj"};
-		class Model CubeModel { "cube.obj" };
 		Entity Player;
 		Entity RealPlayer;
 		class SceneHierachyPanel m_WorldHierachy;
 		friend class Renderer3D;
-		MeshComponent* Temp;
+
 	};
 }

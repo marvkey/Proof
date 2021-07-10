@@ -24,6 +24,7 @@ namespace Proof {
     std::vector<float>WindowsWindow::MouseScrollX;
     std::vector<float>WindowsWindow::MouseScrollY;
 
+
     WindowsWindow::WindowsWindow(unsigned int Width, unsigned int Height) {
         this->Width = Width;
         this->Height = Height;
@@ -104,10 +105,12 @@ namespace Proof {
         }
         switch (action) {
         case GLFW_PRESS:
+        {
             MouseButtonClicked.emplace_back((MouseButton)button);
             MouseClickedEvent::Instance->ButtonClicked = (MouseButton)button;
             MouseClickedEvent::Instance->EventHandled = true;
             break;
+        }
         case GLFW_RELEASE:
             MouseButtonReleased.emplace_back((MouseButton)button);
             MouseReleasedEvent::Instance->ButtonReleased = (MouseButton)button;

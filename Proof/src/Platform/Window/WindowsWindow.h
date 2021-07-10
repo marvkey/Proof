@@ -4,7 +4,7 @@
 #include <vector>
 #include "Proof/Core/Window.h"
 #include "Proof/Input/KeyCodes.h"
-
+#include "Proof/Events/Event.h"
 int main(int argc, char** argv);
 namespace Proof {
     class Proof_API WindowsWindow : public Window {

@@ -3,24 +3,31 @@
 #include "Proof3D/Math/Rotate.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "Entity.h"
+
+/* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof{
+	class Entity;
 	struct Proof_API Component{
 	public:
-		virtual ~Component(){}
+		virtual ~Component(){
+
+		}
 		std::string GetName(){return Name;}
 		virtual void SetName(const std::string& name){
 			Name = name;
 		}
-		class Entity* GetOwner(){return m_EntityOwner;};
+		Entity GetOwner();
 	protected:
 		std::string Name ="Default";
-		class Entity* m_EntityOwner = nullptr;
+		Entity m_EntityOwner;
 	private:
 		friend class Entity;
 		friend class World;
 	};
 	struct Proof_API TagComponent : public Component {
 		TagComponent() = default;
+
 		void AddTag(const std::string& Tag) {
 			Tags.emplace_back(Tag);
 			Name ="Empty Entity";
@@ -60,10 +67,13 @@ namespace Proof{
 	private:
 		friend class Entity;
 		friend class World;
+		friend class ECS;
+		uint32_t StartIndexSlot;
 	};
 
 	struct Proof_API MeshComponent :public Component {
 		MeshComponent() {
+			PF_ENGINE_INFO("create Mesh");
 			MeshLocalTransform.Scale = Vector{0.0f,0.0f,0.0f};
 		}
 		class Model* GetModel() {
@@ -75,5 +85,18 @@ namespace Proof{
 	private:
 		friend class Entity;
 		friend class World;
+		friend class ECS;
+		uint32_t StartIndexSlot;
+	};
+
+	/* THIS IS TEMPORARY THIS IS GONNA GO INTO THE 2D SECTION */
+	struct Proof_API SpriteComponent:public Component {
+		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
+		TransformComponent SpriteTransfrom;
+	private:
+		friend class Entity;
+		friend class World;
+		friend class ECS;
+		uint32_t StartIndexSlot =0;
 	};
 }

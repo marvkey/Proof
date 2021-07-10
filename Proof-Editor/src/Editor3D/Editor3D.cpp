@@ -5,48 +5,28 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include "ImGuizmo.h"
 namespace Proof {
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer")
 	{
 	}
+	Editore3D::~Editore3D() {
+		delete ActiveWorld;
+	}
 	void Editore3D::OnAttach() {
 		NewWorld();
-		//WoodenTexture = Texture2D::Create("PlayerSprite.png");
+
 	}
 	void Editore3D::NewWorld() {
 		ActiveWorld = new World();
-		Player  =ActiveWorld->CreateEntity("Base-Entity");
 		m_WorldHierachy.SetContext(ActiveWorld);
-		Player.AddComponent<MeshComponent>()->SetName("hallo Guys");
-		Player.GetComponent<MeshComponent>()->m_Mesh =&PlayerModel;
-
-		RealPlayer = ActiveWorld->CreateEntity("Real-Player");
-		RealPlayer.AddComponent<MeshComponent>();
-		RealPlayer.GetComponent<MeshComponent>()->m_Mesh = &CubeModel;
-		/*
-		Temp =RealPlayer.AddComponent<MeshComponent>();
-		Temp->m_Mesh =&PlayerModel;
-		Temp->SetName("Yoh");
-		*/
 	}
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
 		Application::ViewPortWidth = _ViewPortSize.x;
 		Application::ViewPortHeight = _ViewPortSize.y;
-		
-		EditorCamera.OnUpdate(DeltaTime);
-		glm::mat4 Projection =glm::mat4(1.0f);
-		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
-		Renderer3D::BeginContext(Projection,EditorCamera);
-		if(Player.GetComponent<MeshComponent>() != nullptr)
-			Renderer3D::Draw(*Player.GetComponent<MeshComponent>());
-				
-		if(RealPlayer.GetComponent<MeshComponent>() != nullptr)
-			Renderer3D::Draw(*RealPlayer.GetComponent<MeshComponent>());
-
-		//Renderer3D::Draw(*Temp);
+		ActiveWorld->OnUpdateEditor(DeltaTime);
 		/* THIS CODE IS HELFUL WHEN WE START MAKING GUI 
 		Renderer2D::BeginContext(SceneCamera);
 		Renderer2D::DrawQuad({0,0,0},{0,0,0},{1,1,1},{1.0f,0,0,0});
@@ -75,6 +55,15 @@ namespace Proof {
 			ImGui::Text("%.3f ms/frame %.1f FPS",FrameTime::GetFrameMS(),FrameTime::GetFrameFPS());
 			ImGui::End();
 		}
+		/*
+		Entity selectedEntity = m_WorldHierachy.GetSelectedEntity();
+		if(selectedEntity){
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(ImGui::GetWindowPos().x,ImGui::GetWindowPos().y,ImGui::GetWindowWidth(),ImGui::GetWindowHeight());
+
+		}
+		*/
 	}
 	void Editore3D::ViewPort() {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});

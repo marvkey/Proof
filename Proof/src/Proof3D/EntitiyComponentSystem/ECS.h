@@ -1,10 +1,8 @@
 #pragma once
 #include <unordered_map>
 #include <type_traits>
-#include<vector>
-#include "Proof3D/Scene/Component.h"
-namespace Proof
-{
+#include <vector>
+namespace Proof{
 	class Proof_API ECS {
 	public:
 		ECS() = default;
@@ -12,17 +10,34 @@ namespace Proof
 
 		uint32_t Create();
 		void Delete(uint32_t ID);
-		template<typename T,typename... Args>
+
+		template<typename T>
 		T* AddComponent(uint32_t ID) {
 			if (HasEntity(ID) == true) {
-				Component* Temp = new T();
+				T* Temp = new T();
 				auto& a = EntityHolder.find(ID);
 				a->second->emplace_back(Temp);
-				return dynamic_cast<T*>(Temp);
+				return Temp;
 			}
 			PF_CORE_ASSERT(false,"Entity Id Was Not FOund");
 			return nullptr;
 		}
+		/*
+		template<>
+		NativeScriptComponent* AddComponent(uint32_t ID) {
+			if (HasEntity(ID) == true) {
+				NativeScriptComponent* Temp = new NativeScriptComponent;
+				auto& a = EntityHolder.find(ID);
+				a->second->emplace_back(Temp);
+				Temp->StartIndexSlot = NativeScripts.size();
+				NativeScripts.emplace_back(Temp);
+				return Temp;
+			}
+			return nullptr;
+
+		};
+		*/
+		
 
 		template<typename T>
 		T* GetComponent(uint32_t ID) {
@@ -54,11 +69,11 @@ namespace Proof
 			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
 		}
 
-		Component* GetComponent(uint32_t ID,uint32_t Index){
+		class Component* GetComponent(uint32_t ID,uint32_t Index){
 			if (HasEntity(ID) == true) {
 				if (EntityHolder.size() >= Index) {
 					auto& TempVec = EntityHolder.at(ID);
-					Component* TempComp = TempVec->at(Index);
+					class Component* TempComp = TempVec->at(Index);
 					return TempComp;
 				}
 				PF_ENGINE_WARN("ID Is Not Valid");
@@ -97,7 +112,7 @@ namespace Proof
 			}
 			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
 		}
-
+		/*
 		void RemoveComponent(uint32_t ID,Component* Comp) {
 			if (HasEntity(ID) == true) {
 				auto& TempVec = EntityHolder.at(ID);
@@ -112,19 +127,21 @@ namespace Proof
 			}
 			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
 		}
-
+*/		template<typename T>
 		void RemoveComponent(uint32_t ID,uint32_t Index){
 			if (HasEntity(ID) == true) {
-				if(EntityHolder.size() >= Index){
-					auto& TempVec = EntityHolder.at(ID);
-					Component* TempComp = TempVec->at(Index);
+				auto& TempVec= EntityHolder.at(ID);
+				if(TempVec->size() >= Index){
 					TempVec->erase(TempVec->begin()+Index);
+					return;
 				}
-				PF_ENGINE_WARN("Remove component Entitiy does not have component or ID Is Not Valid");
+				PF_ENGINE_WARN("Remove component Entitiy does not have component or ID Is Not Valid Size of Holder is %i",TempVec->size());
 				return;
 			}
 			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
 		}
+	
+		
 		const std::unordered_map<uint32_t,std::vector<class Component*>*>& GetEntities() {
 			return EntityHolder;
 		}
@@ -133,13 +150,17 @@ namespace Proof
 		}
 
 
+		std::vector<class MeshComponent*> SceneMeshComponents;
+		std::vector<class SpriteComponent*> SpriteComponents;
+
 	private:
 		std::unordered_map<uint32_t,std::vector<class Component*>*>EntityHolder;
 		std::vector<uint32_t> AllEntityID; // Temporary
+
+		std::vector<class NativeScriptComponent*> NativeScripts;
 		bool HasEntity(uint32_t ID) {
 			return EntityHolder.find(ID) != EntityHolder.end();
 		}
-
 		friend class World;
 	};
 

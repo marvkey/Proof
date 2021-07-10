@@ -17,7 +17,10 @@ project "Proof"
         "src/**.cpp",
 		"vendor/ImGui/ImGui/**.h",
         "vendor/ImGui/ImGui/**.cpp",
-		"vendor/stb_image.h"
+		"vendor/stb_image.h",
+		"vendor/ImGuizmo/ImGuizmo.h",
+		"vendor/ImGuizmo/ImGuizmo.cpp"
+
     }
     includedirs 
 	{
@@ -30,7 +33,8 @@ project "Proof"
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.Log}",
 		"%{IncludeDir.Assimp}",
-		"%{IncludeDir.ProofEditor}"
+        "%{IncludeDir.ImGuizmo}",
+
     }
 	libdirs{
 		"vendor/Assimp/Proof-Assimp-lib"
@@ -52,6 +56,9 @@ project "Proof"
 	}
 	filter "files:vendor/ImGui/**.cpp"
 	flags { "NoPCH" }
+	filter "files:vendor/ImGuizmo/**.cpp"
+	flags { "NoPCH" }
+
 	filter "system:windows"
 		systemversion "latest"
 		buildoptions "/MDd"

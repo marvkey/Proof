@@ -14,6 +14,7 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Input/Input.h"
 #include "Proof/Core/FrameTime.h"
+#include "Proof/Core/Debug/Instrumentor.h"
 
 #if defined(_WIN64)  // if platform is windows
 	#include <windows.h>

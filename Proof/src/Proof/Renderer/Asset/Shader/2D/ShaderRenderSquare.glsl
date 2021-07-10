@@ -30,4 +30,3 @@ vec4 temp =texture(u_TextureSlot[int(v_TexIndex)], v_TexCoord)* vec4(m_Color);
 //discard;
 			FragColor =temp;
 }
-
