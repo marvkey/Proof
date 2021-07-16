@@ -30,9 +30,14 @@ namespace Proof {
 		*/
 		static Count<FrameBuffer> Create(uint32_t Width,uint32_t Height);
 		/**
-		* returns the Texture
+		* returns the Texture ID
 		*/
 		virtual uint32_t GetTexture() = 0;
+
+		/**
+		* returns the FrameBuffer ID
+		*/
+		virtual uint32_t GetFrameBufferID() = 0;
 	};
 }
 

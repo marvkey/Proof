@@ -12,35 +12,30 @@
 #include "Proof/Renderer/Renderer3D.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof3D/Scene/Component.h"
-
+#include "Proof/Resources/Asset/MeshAsset.h"
 namespace Proof{
-	static Model DefaultModel;
-	
+	//Model DefaultModel;
 	World::World()
 	{
-		DefaultModel = {"cube.obj",false};
+		//DefaultModel = {"cube.obj",false};
 	}
 	void World::OnUpdateEditor(FrameTime DeltaTime) {
 		
 		glm::mat4 Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
 		Renderer3D::BeginContext(Projection,EditorCamera);
-		
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetModel() != nullptr)
-				Renderer3D::Draw(*Comp);
-			else 	{
-				Comp->m_Mesh = &DefaultModel;
-				Renderer3D::Draw(*Comp);
+			if (Comp->m_Asset != nullptr){
+				if(Comp->m_Asset->m_Model != nullptr){
+					Renderer3D::Draw(*Comp);
+				}
 			}
 		}
-
+		
 		Renderer2D::BeginContext(Projection,EditorCamera);
 		for (SpriteComponent* Comp : Registry.SpriteComponents) {
-			Renderer2D::DrawQuad(*Comp);
+			Renderer2D::DrawQuad(*Comp); 
 		}
-		
 		EditorCamera.OnUpdate(DeltaTime);
-		
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime) {

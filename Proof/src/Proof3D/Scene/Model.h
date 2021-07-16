@@ -19,6 +19,7 @@ namespace Proof
         bool gammaCorrection;
         Model() =default;
         Model(std::string const& path,bool gamma = false): gammaCorrection(gamma) {
+            PF_ENGINE_INFO("MODEL CREATED");
             LoadModel(path);
             //load_obj(path,m_Vertices,m_Indices,textures_loaded);
             //PF_ENGINE_INFO("Number of Vertices %i",m_Vertices.size());
@@ -36,9 +37,10 @@ namespace Proof
            else{
                goto a;
            }
-              
         }
-
+        ~Model(){
+            PF_ENGINE_INFO("DELETE");
+        }
         /*
         void load_obje(const char* filename,std::vector<Vertex>& vertices,std::vector<uint32_t>& elements) {
             std::ifstream in(filename,std::ios::in);
@@ -73,7 +75,7 @@ namespace Proof
         Count<class IndexBuffer> m_IndexBufferObject;
         std::vector<Count<Texture2D>> textures_loaded;
 
-        uint32_t GetID(){return ID;};
+        uint32_t GetID(){return 0;};
     private:
         std::vector<class Mesh> meshes;
         static std::vector<uint32_t> AllID;

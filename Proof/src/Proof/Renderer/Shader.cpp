@@ -4,6 +4,7 @@
 #include "RendererAPI.h"
 #include "Renderer.h"
 namespace Proof {
+    Shader* Shader::s_CurrentBindShader;
     Count<Shader> Shader::Create(const std::string& _ShaderName,const std::string& VertexPath,const std::string& FragmentPath) {
         switch (RendererAPI::GetAPI()) {
             case RendererAPI::API::None:  PF_CORE_ASSERT(false,"Shader None it needs an api"); return nullptr;

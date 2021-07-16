@@ -30,7 +30,8 @@ using Ref = std::shared_ptr<T>;
     #endif
 #endif
 
-#define GetVariableName(x)(#x)
+
+#define GetVariableName(X)type_info(X).name
 
 namespace Proof {
     template<typename T>

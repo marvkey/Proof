@@ -5,6 +5,7 @@
 class FrameTime;
 
 namespace Proof{
+
 	class World {
 	public:
 		World();

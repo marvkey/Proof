@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include "Proof/ProofCore.h"
 #include "MainWindow/SceneHierachyPanel.h"
-
+#include "MainWindow/ContentBrowserPanel.h"
 namespace Proof {
 	class Proof_API Editore3D : public Layer {
 	public:
@@ -37,7 +37,7 @@ namespace Proof {
 		Entity Player;
 		Entity RealPlayer;
 		class SceneHierachyPanel m_WorldHierachy;
+		ContentBrowserPanel m_CurrentContentBrowserPanel;
 		friend class Renderer3D;
-
 	};
 }

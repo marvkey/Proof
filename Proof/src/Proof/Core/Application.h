@@ -4,6 +4,7 @@
 #include "CurrentWindow.h"
 #include "Proof/Renderer/FrameBuffer.h"
 #include "Proof/Core/LayerStack.h"
+#include "EditorMousePicking.h"
 
 namespace Proof {
     class Layer;
@@ -40,6 +41,7 @@ namespace Proof {
         static float FPS;
         static float FrameMS;
         Count<class GraphicsContext>m_GraphicsContext;
+       EditorMousePicking m_MousePickingEditor;
     };
     Application* CreateApplication();
 }

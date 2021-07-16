@@ -4,7 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Entity.h"
-
+#include "Proof/Resources/Asset/MeshAsset.h"
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof{
 	class Entity;
@@ -73,15 +73,16 @@ namespace Proof{
 
 	struct Proof_API MeshComponent :public Component {
 		MeshComponent() {
-			PF_ENGINE_INFO("create Mesh");
 			MeshLocalTransform.Scale = Vector{0.0f,0.0f,0.0f};
 		}
 		class Model* GetModel() {
-			return m_Mesh;
+			return m_Asset != nullptr ? m_Asset->m_Model : nullptr;
 		}
-		class Model* m_Mesh = nullptr;
+		
+		//class Model* m_Mesh = nullptr;
 		uint32_t GetID();
 		TransformComponent MeshLocalTransform;
+		MeshAsset* m_Asset =nullptr;
 	private:
 		friend class Entity;
 		friend class World;
@@ -93,6 +94,7 @@ namespace Proof{
 	struct Proof_API SpriteComponent:public Component {
 		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
 		TransformComponent SpriteTransfrom;
+		Count<Texture2D>* m_Texture =nullptr;
 	private:
 		friend class Entity;
 		friend class World;

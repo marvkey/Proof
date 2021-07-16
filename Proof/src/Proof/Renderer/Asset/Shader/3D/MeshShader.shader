@@ -17,7 +17,12 @@ void main() {
 out vec4 FragColor;
 uniform sampler2D texture_diffuse;
 in vec2 TexCoord;
+out int color;
 void main() {
 	FragColor = texture(texture_diffuse,TexCoord);
-	//FragColor = vec4(1.0f,1.0f,1.0f,1.0f);
+	if(FragColor.a <0.5)
+		discard;
+	// THIS IS BASICALLY SAYING LIKE IF WE HAVE A DONUT WE CAN CLICK IN HTE MIDDLE BUT
+	// WILL STILL OUTPUT OUR ENTITY ID
+	color = 12;
 }

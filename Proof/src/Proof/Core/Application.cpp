@@ -6,7 +6,7 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/WindowEvent.h"
-
+#include "Proof/Core/EditorMousePicking.h"
 namespace Proof {
     WindowsWindow* Application::MainWindow = nullptr;
     Count<FrameBuffer> Application::ScreenFrameBuffer = nullptr;
@@ -14,8 +14,9 @@ namespace Proof {
     uint32_t Application::ViewPortHeight;
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
-    Application::Application() {
+    Application::Application(){
         MainWindow = new WindowsWindow(1300,600);
+        
 
         MainWindow->createWindow();
         m_GraphicsContext =GraphicsContext::Create(CurrentWindow::GetWindow());
@@ -24,8 +25,9 @@ namespace Proof {
         ImGuiMainLayer = new ImGuiLayer();
         MainLayerStack.PushLayer(ImGuiMainLayer);
 
-        ScreenFrameBuffer = FrameBuffer::Create(800,600);
+        ScreenFrameBuffer = FrameBuffer::Create(1300,600);
         ScreenFrameBuffer->UnBind();
+       // m_MousePickingEditor= {1300,600};
     }
 
     Application::~Application() {
@@ -38,10 +40,9 @@ namespace Proof {
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
-        RendererCommand::EnableDepth(true);
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-        //glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
         CurrentWindow::SetSwapInterval(true);
         while (glfwWindowShouldClose(CurrentWindow::GetWindow()) == false && _KeyClickedEvent.GetKeyClicked() != KeyBoardKey::Escape) {
             float FrameStart = glfwGetTime();
@@ -49,16 +50,41 @@ namespace Proof {
             CurrentTime = glfwGetTime();
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
+            
+            RendererCommand::EnableDepth(false);
+            /*
+            m_MousePickingEditor.EnableWriting();
+            RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
+            RendererCommand::Clear();
+            if(Input::IsMouseButtonPressed(MouseButton::ButtonLeft)){
+                PF_ENGINE_INFO("%i",m_MousePickingEditor.ReadPixel(Input::GetMousePosX(),Input::GetMouswPosY()));
+            }
+            m_MousePickingEditor.DisbleWriting();
+            RendererCommand::EnableDepth(true);
+            */
+            //Pick
             if (CurrentWindow::GetWindowHeight() == 0 || CurrentWindow::GetWindowWidth() == 0)
                 WindowMinimized = true;
             else
                 WindowMinimized = false;
-
+            ImGuiMainLayer->Begin();
+            for (Layer* layer : MainLayerStack.V_LayerStack)
+                layer->OnImGuiDraw();
+            ImGuiMainLayer->End();
             if (WindowMinimized == false) {
                 ScreenFrameBuffer->Bind();
                 RendererCommand::Clear();
                 RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
-
+                
+                /*
+                if(Input::IsMouseButtonPressed(MouseButton::ButtonLeft)){
+                    glBindFramebuffer(GL_READ_FRAMEBUFFER,ScreenFrameBuffer->GetFrameBufferID());
+                    glReadBuffer(GL_COLOR_ATTACHMENT0); // reading from zero colour attachment
+                    float Pixels[3];
+                    glReadPixels(Input::GetMousePosX(),Input::GetMousePosX(),1,1,GL_RGB,GL_FLOAT,Pixels);
+                    PF_ENGINE_INFO("%i",(int)Pixels[2]);
+                }
+                */
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
                 Renderer::Draw();
@@ -66,10 +92,7 @@ namespace Proof {
                 ScreenFrameBuffer->UnBind();
                 MainWindow->WindowUpdate(DeltaTime);
             }
-            ImGuiMainLayer->Begin();
-            for (Layer* layer : MainLayerStack.V_LayerStack)
-                layer->OnImGuiDraw();
-            ImGuiMainLayer->End();
+
 
             Renderer::Reset();
             RendererCommand::SwapBuffer(CurrentWindow::GetWindow());

@@ -122,7 +122,7 @@ namespace Proof{
 				if(SpriteComponents.size() ==1){
 					SpriteComponents.erase(SpriteComponents.begin());
 				}
-				if (SpriteComponents.size() == TempComp->StartIndexSlot) {
+				else if (SpriteComponents.size() == TempComp->StartIndexSlot) {
 					SpriteComponents.erase(SpriteComponents.end());
 				}
 				else if (SpriteComponents.size() > TempComp->StartIndexSlot) {

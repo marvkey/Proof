@@ -7,8 +7,19 @@
 #include <imgui/imgui_internal.h>
 #include "Proof3D/EntitiyComponentSystem/ECS.h"
 #include "Proof3D/EntitiyComponentSystem/ECS.cpp" // THIS IS VERY TEMPORARY //
+#include "Proof/Renderer/Renderer3D.h" // TEMPORARY
+
+#include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
+#include "Proof/Resources/Asset/MeshAsset.h"
+#include "Proof/Resources/Asset/Asset.h"
+#include "Proof3D/Scene/World.cpp"
+#include "ContentBrowserPanel.h"
+#include <vector>
 namespace Proof{
-	void SceneHierachyPanel::ImGuiOnUpdate() {
+	static MeshAsset* TempAsset =nullptr;
+	static MeshAsset* TempLocation0Asset = nullptr;
+	static std::vector<Asset*>* s_PointerToAsset;
+	void SceneHierachyPanel::ImGuiRender(){
 		ImGui::Begin("Herieachy");
 		if(m_CurrentWorld->Registry.GetAllID().size() >0){
 			for (uint32_t i = 0; i <= m_CurrentWorld->Registry.GetAllID().size() - 1; i++) {
@@ -50,7 +61,7 @@ namespace Proof{
 	void SceneHierachyPanel::DrawComponents(const std::string& name,Entity& entity,T* Comp,uint32_t IndexValue,UIFunction Uifunction) {
 		ImGui::PushID(&(*Comp));
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-		auto& component = *Comp;
+		T& component = *Comp;
 		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,ImVec2{1.5,1.5});
@@ -111,9 +122,12 @@ namespace Proof{
 			}
 			ImGui::EndPopup();
 		}
-
+		if(m_BrowserPanel->s_ContentBrowserAssets->size() >0){
+			TempLocation0Asset = (MeshAsset*)m_BrowserPanel->s_ContentBrowserAssets->at(0);
+		}
+		s_PointerToAsset = m_BrowserPanel->s_ContentBrowserAssets;
 		uint32_t IndexValue= 0;
-		for(Component* Comp: (*m_CurrentWorld->Registry.GetEntities().at(entity.GetID()))){
+		for(Component* Comp: *m_CurrentWorld->Registry.GetEntities().at(entity.GetID())){
 			TagComponent*Tag= dynamic_cast<TagComponent*>(Comp);
 			if(Tag != nullptr){
 				DrawComponents<TagComponent>("Tag",entity,Tag,IndexValue,[](auto& component) {
@@ -128,6 +142,7 @@ namespace Proof{
 					DrawVectorControl("Location",component.Location);
 					DrawVectorControl("Rotation",component.Rotation);
 					DrawVectorControl("Scale",component.Scale,1.0f);
+
 				});
 				IndexValue += 1;
 				continue;
@@ -135,7 +150,7 @@ namespace Proof{
 
 			MeshComponent* Meshes = dynamic_cast<MeshComponent*>(Comp);
 			if (Meshes != nullptr) {
-				DrawComponents<MeshComponent>({"Mesh: " + Meshes->GetName()},entity,Meshes,IndexValue,[](auto& component) {
+				DrawComponents<MeshComponent>({"Mesh: " + Meshes->GetName()},entity,Meshes,IndexValue,[](MeshComponent& component) {
 					char buffer[256];
 					memset(buffer,0,sizeof(buffer));
 					strcpy_s(buffer,sizeof(buffer),component.GetName().c_str());
@@ -145,6 +160,15 @@ namespace Proof{
 					DrawVectorControl("Local Location",component.MeshLocalTransform.Location,0.0,125);
 					DrawVectorControl("Local Rotation",component.MeshLocalTransform.Rotation,0.0,125);
 					DrawVectorControl("Local Scale",component.MeshLocalTransform.Scale,0.0,125);
+					ImGui::Text("Mesh");
+
+					if (ImGui::BeginDragDropTarget()) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetName().c_str())) {
+							uint32_t Pos = *(const uint32_t*)payload->Data;
+							component.m_Asset =(MeshAsset*) s_PointerToAsset->at(Pos);
+						}
+						ImGui::EndDragDropTarget();
+					}
 				});
 				IndexValue += 1;
 				continue;
@@ -152,7 +176,7 @@ namespace Proof{
 
 			SpriteComponent* Sprite = dynamic_cast<SpriteComponent*>(Comp);
 			if(Sprite != nullptr){
-				DrawComponents<SpriteComponent>({"Sprite: "+Sprite->GetName()},entity,Sprite,IndexValue,[](auto& component){
+				DrawComponents<SpriteComponent>({"Sprite: "+Sprite->GetName()},entity,Sprite,IndexValue,[](SpriteComponent& component){
 					char buffer[256];
 					memset(buffer,0,sizeof(buffer));
 					strcpy_s(buffer,sizeof(buffer),component.GetName().c_str());
@@ -162,7 +186,27 @@ namespace Proof{
 					DrawVectorControl("Location",component.SpriteTransfrom.Location,0.0,125);
 					DrawVectorControl("Rotation",component.SpriteTransfrom.Rotation,0.0,125);
 					DrawVectorControl("Scale",component.SpriteTransfrom.Scale,0.0,125);
-					ImGui::NewLine();
+					if(component.m_Texture != nullptr){
+						ImGui::Image((ImTextureID)component.m_Texture->get()->GetID(),{30,30});
+					}else{
+						ImGui::Image((ImTextureID)InstancedRenderer3D::m_WhiteTexture->GetID(),{30,30});
+						
+					}
+					if(ImGui::BeginPopupContextItem("RemoveTexture")){
+						ImGui::EndPopup();
+					}
+					if (ImGui::BeginPopup("RemoveTexture")) {
+						if (ImGui::MenuItem("Remove Texture")) {
+							component.m_Texture = nullptr;
+						}
+						ImGui::EndPopup();
+					}
+					if (ImGui::BeginDragDropTarget()) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(Texture2DAsset::GetName().c_str())) {
+							component.m_Texture  = (Count<Texture2D>*)payload->Data;
+						}
+						ImGui::EndDragDropTarget();
+					}
 					ImGui::ColorEdit4("##Colour",glm::value_ptr( component.Colour));
 				});
 				
@@ -171,6 +215,7 @@ namespace Proof{
 			}
 		}
 	}
+
 
 
 	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel,Vector& Vec,float ResetValue,float columnWidth) {

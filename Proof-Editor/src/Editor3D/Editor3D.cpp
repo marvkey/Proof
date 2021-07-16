@@ -21,12 +21,15 @@ namespace Proof {
 	void Editore3D::NewWorld() {
 		ActiveWorld = new World();
 		m_WorldHierachy.SetContext(ActiveWorld);
+		m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
 	}
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
 		Application::ViewPortWidth = _ViewPortSize.x;
 		Application::ViewPortHeight = _ViewPortSize.y;
 		ActiveWorld->OnUpdateEditor(DeltaTime);
+
+		//printf("%u %u %u %u\n",pixel[0],pixel[1],pixel[2],pixel[3]);
 		/* THIS CODE IS HELFUL WHEN WE START MAKING GUI 
 		Renderer2D::BeginContext(SceneCamera);
 		Renderer2D::DrawQuad({0,0,0},{0,0,0},{1,1,1},{1.0f,0,0,0});
@@ -39,8 +42,8 @@ namespace Proof {
 		
 		SetDocking(&EnableDocking);
 		ViewPort();
-		m_WorldHierachy.ImGuiOnUpdate();
-
+		m_WorldHierachy.ImGuiRender();
+		m_CurrentContentBrowserPanel.ImGuiRender();
 		if(ImGui::Begin("Renderer 3D Stastitics")){
 			ImGui::Text("DrawCalls %i",Renderer3D::Render3DStats::DrawCalls);
 			ImGui::Text("Number Of MeshInstances %i",Renderer3D::Render3DStats::NumberOfInstances);

@@ -33,6 +33,6 @@ namespace Proof {
 		std::unordered_map<uint32_t,uint32_t> m_AmountMeshes;
 		std::unordered_map<uint32_t,class MeshComponent> m_Meshes;
 		bool SceneHasAmountMeshes(uint32_t ID) { return m_AmountMeshes.find(ID) != m_AmountMeshes.end(); };
-		Count<class Texture2D>m_WhiteTexture;
+		static  Count<class Texture2D>m_WhiteTexture;
 	};
 }

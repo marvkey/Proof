@@ -102,7 +102,7 @@ namespace Proof {
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const Count<Texture2D> texture) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1.f,1.f,1.f},{1.0f,1.0f,1.0f,1.0f},texture);
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Size,const glm::vec4& TintColor,Count<Texture2D> texture) {
+	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Size,const glm::vec4& TintColor,Count<Texture2D>& texture) {
 		DrawQuad(Location,{0.0,0.0,0.0},Size,TintColor,texture);
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec4& TintColor,Count<Texture2D> texture) {
@@ -112,11 +112,11 @@ namespace Proof {
 		DrawQuad(Location,Rotation,Size,Color,s_Storage2DData->m_WhiteTexture);
 	}
 	void Renderer2D::DrawQuad(SpriteComponent& Sprite){
-		PF_ENGINE_INFO("%i",Sprite.GetOwner().GetID());
 		auto Transform = Sprite.GetOwner().GetComponent<TransformComponent>();
-		Renderer2D::DrawQuad({Sprite.SpriteTransfrom.Location + Transform->Location},Sprite.SpriteTransfrom.Rotation + Transform->Rotation,Sprite.SpriteTransfrom.Scale + Transform->Scale,Sprite.Colour,s_Storage2DData->m_WhiteTexture);
+		
+		Renderer2D::DrawQuad({Sprite.SpriteTransfrom.Location + Transform->Location},Sprite.SpriteTransfrom.Rotation + Transform->Rotation,Sprite.SpriteTransfrom.Scale + Transform->Scale,Sprite.Colour,Sprite.m_Texture!= nullptr ? *Sprite.m_Texture : s_Storage2DData->m_WhiteTexture);
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D> texture2D) {
+	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D) {
 		if (s_Storage2DData->m_IndexCount >=Renderer2DStorage::s_MaxIndexCount){ // reached maxed index size
 			Render();
 			Reset();

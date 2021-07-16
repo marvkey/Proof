@@ -29,10 +29,12 @@ namespace Proof {
         static Count<Shader>Create(const std::string& _ShaderName,const std::string& ShaderPath);
         std::string GetName() { return ShaderName; };
         std::string GetPath() { return c_Path; };
-
+        static Shader* GetBindShader(){return s_CurrentBindShader;};
     protected:
         std::string ShaderName;
         std::string c_Path;
+        friend class Application;
+        static Shader* s_CurrentBindShader;
     };
 
     class ShaderLibrary {
