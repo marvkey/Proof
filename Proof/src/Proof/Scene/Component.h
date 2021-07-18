@@ -1,10 +1,12 @@
 #pragma once
-#include "Proof3D/Math/Vector.h"
-#include "Proof3D/Math/Rotate.h"
+#include "Proof/Resources/Math/Math.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Entity.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
+#include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
+
+/* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof{
 	class Entity;
@@ -21,9 +23,11 @@ namespace Proof{
 	protected:
 		std::string Name ="Default";
 		Entity m_EntityOwner;
+		uint32_t AssetID;
 	private:
 		friend class Entity;
 		friend class World;
+		friend class SceneHierachyPanel;
 	};
 	struct Proof_API TagComponent : public Component {
 		TagComponent() = default;
@@ -76,13 +80,20 @@ namespace Proof{
 			MeshLocalTransform.Scale = Vector{0.0f,0.0f,0.0f};
 		}
 		class Model* GetModel() {
-			return m_Asset != nullptr ? m_Asset->m_Model : nullptr;
+			return GetAsset() != nullptr ? GetAsset()->m_Model : nullptr;
 		}
-		
-		//class Model* m_Mesh = nullptr;
+		MeshAsset* GetAsset() {
+			if(AssetID ==0){
+				return nullptr;
+			}
+			auto* a =(MeshAsset*)AssetManager::GetAsset(AssetID);
+			if(a ==nullptr){
+				AssetID =0;
+			}
+			return a;
+		}
 		uint32_t GetID();
 		TransformComponent MeshLocalTransform;
-		MeshAsset* m_Asset =nullptr;
 	private:
 		friend class Entity;
 		friend class World;
@@ -94,7 +105,15 @@ namespace Proof{
 	struct Proof_API SpriteComponent:public Component {
 		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
 		TransformComponent SpriteTransfrom;
-		Count<Texture2D>* m_Texture =nullptr;
+		Count<Texture2D> GetTexture(){
+			if(GetAsset() != nullptr){
+				return GetAsset()->m_Texture;
+			}
+			return nullptr;
+		}
+		Texture2DAsset* GetAsset(){
+			return (Texture2DAsset*)AssetManager::GetAsset(AssetID);
+		}
 	private:
 		friend class Entity;
 		friend class World;

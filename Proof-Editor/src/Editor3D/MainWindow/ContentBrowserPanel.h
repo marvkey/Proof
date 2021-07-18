@@ -3,17 +3,22 @@
 #include "Proof/Core/Core.h"
 #include <vector>
 #include "Proof/Resources/Asset/Asset.h"
+#include <fstream>
+#include <string>
 namespace Proof{
 	/* THIS CLASS WILL NEED TO BE HANDLED BY CURRENT PROJECT */
 	class Proof_API ContentBrowserPanel {
 	public:
 		ContentBrowserPanel();
 		void ImGuiRender();
-		std::vector<Proof::Asset*>* s_ContentBrowserAssets;
 	private:
 		 std::filesystem::path m_CurrentDirectory;
 		 Count<Texture2D> m_FolderIcon;
 		 Count<Texture2D> m_FileIcon;
 		 Count<Texture2D> m_MeshIcon;
+		 Count<Texture2D> m_ArrowIcon;
+		 void NewAsset(const std::string&NewFilePath);
+		 void NewMeshAsset(const std::string& NewFilePath);
+		 uint32_t GetAllIDCurrentDirectory(const std::string& Path);
 	};
 }

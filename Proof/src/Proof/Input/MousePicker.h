@@ -1,9 +1,9 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof3D/Math/Math.h"
+#include "Proof/Resources/Math/Math.h"
 #include "Mouse.h"
 #include "Proof/Events/WindowEvent.h"
-#include "Proof3D/Renderer/Camera/EditorCamera.h"
+#include "Proof/Scene/Camera/EditorCamera.h"
 namespace Proof{
 	class Proof_API MousePicker {
 	public:

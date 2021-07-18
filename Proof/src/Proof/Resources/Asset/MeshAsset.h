@@ -9,7 +9,11 @@ namespace Proof
 		virtual void SaveAsset() override;
 		virtual void CreateAsset(const std::string& FilePath)override;
 		
-		static std::string GetName() {
+		virtual std::string GetName() {
+			return "AssetType::MeshAsset";
+		}
+
+		static std::string GetStaticName(){
 			return "AssetType::MeshAsset";
 		}
 		MeshAsset() {
@@ -22,6 +26,11 @@ namespace Proof
 		virtual ~MeshAsset(){
 			PF_ENGINE_INFO("Mesh Asset Deleted ");
 		}
+
+		virtual bool IsImageIDNUll(){
+			return true;
+		}
+		virtual uint32_t GetImageID();
 		class Model* m_Model =nullptr;
 	private:
 	};

@@ -17,13 +17,13 @@
 #include "Proof/Renderer/Texture.h"
 
 // Camera
-#include "Proof3D/Renderer/Camera/OrthagraphicCamera.h"
-#include "Proof3D/Scene/World.h"
-#include "Proof3D/Renderer/Camera/PerspectiveCamera.h"
-#include "Proof3D/Renderer/Camera/EditorCamera.h"
+#include "Proof/Scene//Camera/OrthagraphicCamera.h"
+#include "Proof/Scene//World.h"
+#include "Proof/Scene/Camera/PerspectiveCamera.h"
+#include "Proof/Scene/Camera/EditorCamera.h"
 // scene
-#include "Proof3D/Scene/Component.h"
-#include "Proof3D/Scene/Entity.h"
-#include "Proof3D/Scene/Model.h"
+#include "Proof/Scene/Component.h"
+#include "Proof/Scene/Entity.h"
+#include "Proof/Scene/Model.h"
 // c++ default
 #include <vector>

@@ -1,9 +1,9 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof3D/Math/Vector.h"
+#include "Proof/Resources/Math/Math.h"
 #include <vector>
 #include <unordered_map>
-#include "Vertex.h"
+#include "Proof/Renderer/Vertex.h"
 #include "Component.h"
 
 #include "glm/glm.hpp"

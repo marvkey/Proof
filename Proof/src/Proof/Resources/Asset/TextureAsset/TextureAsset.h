@@ -11,9 +11,21 @@ namespace Proof{
 			m_AssetType = AssetType::Texture2DAsset;
 		};
 		
-		static std::string GetName(){
+		virtual ~Texture2DAsset(){
+			m_Texture = nullptr;
+			m_Texture.reset();
+		}
+		virtual std::string GetName(){
 			return "AssetType::Texture2DAsset";
 		}
+		virtual bool IsImageIDNUll(){
+			return m_Texture == nullptr;
+		}
+
+		static std::string GetStaticName() {
+			return "AssetType::Texture2DAsset";
+		}
+		virtual uint32_t GetImageID();
 		Count<Texture2D> m_Texture;
 	};
 }

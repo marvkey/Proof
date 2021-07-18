@@ -1,5 +1,5 @@
 #pragma once
-#include "Proof3D/Math/Math.h"
+#include "Proof/Resources/Math/Math.h"
 namespace Proof {
 	class Proof_API OrthagraphicCamera {
 	public:

@@ -1,8 +1,8 @@
 #pragma once
-#include "Proof3D/Math/Math.h"
+#include "Proof/Resources/Math/Math.h"
 #include "glm/glm.hpp"
 #include <array>
-#include "Proof3D/Scene/Vertex.h"
+#include "vertex.h"
 
 namespace Proof {
 	struct SpriteComponent;

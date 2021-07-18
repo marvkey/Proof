@@ -1,24 +1,23 @@
 #include "SceneHierachyPanel.h"
 #include "Proof/ImGui/ImGuiLayer.h"
 #include "entt/entt.hpp"
-#include "Proof3D/Scene/Entity.h"
-#include "Proof3D/Scene/Component.h"
+#include "Proof/Scene/Entity.h"
+#include "Proof/Scene/Component.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-#include "Proof3D/EntitiyComponentSystem/ECS.h"
-#include "Proof3D/EntitiyComponentSystem/ECS.cpp" // THIS IS VERY TEMPORARY //
+#include "Proof/Scene/EntitiyComponentSystem/ECS.h"
+#include "Proof/Scene/EntitiyComponentSystem/ECS.cpp" // THIS IS VERY TEMPORARY //
 #include "Proof/Renderer/Renderer3D.h" // TEMPORARY
 
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/Asset.h"
-#include "Proof3D/Scene/World.cpp"
+#include "Proof/Scene/World.cpp"
 #include "ContentBrowserPanel.h"
 #include <vector>
 namespace Proof{
 	static MeshAsset* TempAsset =nullptr;
 	static MeshAsset* TempLocation0Asset = nullptr;
-	static std::vector<Asset*>* s_PointerToAsset;
 	void SceneHierachyPanel::ImGuiRender(){
 		ImGui::Begin("Herieachy");
 		if(m_CurrentWorld->Registry.GetAllID().size() >0){
@@ -122,10 +121,7 @@ namespace Proof{
 			}
 			ImGui::EndPopup();
 		}
-		if(m_BrowserPanel->s_ContentBrowserAssets->size() >0){
-			TempLocation0Asset = (MeshAsset*)m_BrowserPanel->s_ContentBrowserAssets->at(0);
-		}
-		s_PointerToAsset = m_BrowserPanel->s_ContentBrowserAssets;
+		
 		uint32_t IndexValue= 0;
 		for(Component* Comp: *m_CurrentWorld->Registry.GetEntities().at(entity.GetID())){
 			TagComponent*Tag= dynamic_cast<TagComponent*>(Comp);
@@ -163,15 +159,15 @@ namespace Proof{
 					ImGui::Text("Mesh");
 
 					if (ImGui::BeginDragDropTarget()) {
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetName().c_str())) {
-							uint32_t Pos = *(const uint32_t*)payload->Data;
-							component.m_Asset =(MeshAsset*) s_PointerToAsset->at(Pos);
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetStaticName().c_str())) {
+							uint32_t Data = *(const uint32_t*)payload->Data;
+							component.AssetID = Data;
 						}
 						ImGui::EndDragDropTarget();
 					}
 				});
 				IndexValue += 1;
-				continue;
+				continue; 
 			}
 
 			SpriteComponent* Sprite = dynamic_cast<SpriteComponent*>(Comp);
@@ -186,27 +182,30 @@ namespace Proof{
 					DrawVectorControl("Location",component.SpriteTransfrom.Location,0.0,125);
 					DrawVectorControl("Rotation",component.SpriteTransfrom.Rotation,0.0,125);
 					DrawVectorControl("Scale",component.SpriteTransfrom.Scale,0.0,125);
-					if(component.m_Texture != nullptr){
-						ImGui::Image((ImTextureID)component.m_Texture->get()->GetID(),{30,30});
+					if(component.GetTexture() != nullptr){
+							ImGui::Image((ImTextureID)component.GetTexture()->GetID(),{30,30});
 					}else{
 						ImGui::Image((ImTextureID)InstancedRenderer3D::m_WhiteTexture->GetID(),{30,30});
-						
 					}
 					if(ImGui::BeginPopupContextItem("RemoveTexture")){
 						ImGui::EndPopup();
 					}
 					if (ImGui::BeginPopup("RemoveTexture")) {
 						if (ImGui::MenuItem("Remove Texture")) {
-							component.m_Texture = nullptr;
+							component.AssetID = 0;
 						}
+
 						ImGui::EndPopup();
 					}
+					
 					if (ImGui::BeginDragDropTarget()) {
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(Texture2DAsset::GetName().c_str())) {
-							component.m_Texture  = (Count<Texture2D>*)payload->Data;
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(Texture2DAsset::GetStaticName().c_str())) {
+							uint32_t Data = *(const uint32_t*)payload->Data;
+							component.AssetID =Data;
 						}
 						ImGui::EndDragDropTarget();
 					}
+					
 					ImGui::ColorEdit4("##Colour",glm::value_ptr( component.Colour));
 				});
 				

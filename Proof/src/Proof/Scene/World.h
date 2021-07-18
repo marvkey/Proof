@@ -1,11 +1,10 @@
 #pragma once
-#include "Proof3D/EntitiyComponentSystem/ECS.h"
-#include "Proof3D/Renderer/Camera/EditorCamera.h"
-#include "Proof3D/Renderer/Camera/OrthagraphicCamera.h"
+#include "EntitiyComponentSystem/ECS.h"
+#include "Camera/EditorCamera.h"
+#include "Camera/OrthagraphicCamera.h"
 class FrameTime;
 
 namespace Proof{
-
 	class World {
 	public:
 		World();
@@ -24,7 +23,6 @@ namespace Proof{
 		friend class WorldScerelizer;
 		friend class Editor3D;
 		class EditorCamera3D EditorCamera;
-
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 	};
 }

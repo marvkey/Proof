@@ -4,7 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Proof/Core/Core.h"
-#include "Proof3D/Renderer/Camera/Camera.h"
+#include "Proof/Scene/Camera/Camera.h"
 #include "Proof/Core/FrameTime.h"
 namespace Proof {
 	class Proof_API EditorCamera3D {

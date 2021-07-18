@@ -1,8 +1,8 @@
 #include "Proofprch.h"
 #include "ECS.h"
-#include "Proof3D/Scene/Entity.h"
-#include "Proof3D/Math/Math.h"
-#include "Proof3D/Scene/Component.h"
+#include "Proof/Scene/Entity.h"
+#include "Proof/Resources/Math/Math.h"
+#include "Proof/Scene/Component.h"
 namespace Proof{
     uint32_t ECS::Create() {
         uint32_t ID = Math::RandUINT(1,1000000);

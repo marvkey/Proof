@@ -5,12 +5,12 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "Proof3D/Renderer/Camera/Camera.h"
-#include "Proof3D/Renderer/Camera/OrthagraphicCamera.h"
+#include "Proof/Scene/Camera/Camera.h"
+#include "Proof/Scene/Camera/OrthagraphicCamera.h"
 #include "Proof/Renderer/Buffer.h"
-#include "Proof3D/Renderer/Camera/EditorCamera.h"
-#include "Proof3D/Scene/Component.h"
-#include "Proof3D/Scene/Entity.h"
+#include "Proof/Scene/Camera/EditorCamera.h"
+#include "Proof/Scene/Component.h"
+#include "Proof/Scene/Entity.h"
 
 namespace Proof {
 	std::array<uint32_t,Renderer2DStorage::s_MaxIndexCount>Renderer2DStorage::QuadIndices = {};
@@ -114,7 +114,7 @@ namespace Proof {
 	void Renderer2D::DrawQuad(SpriteComponent& Sprite){
 		auto Transform = Sprite.GetOwner().GetComponent<TransformComponent>();
 		
-		Renderer2D::DrawQuad({Sprite.SpriteTransfrom.Location + Transform->Location},Sprite.SpriteTransfrom.Rotation + Transform->Rotation,Sprite.SpriteTransfrom.Scale + Transform->Scale,Sprite.Colour,Sprite.m_Texture!= nullptr ? *Sprite.m_Texture : s_Storage2DData->m_WhiteTexture);
+		Renderer2D::DrawQuad({Sprite.SpriteTransfrom.Location + Transform->Location},Sprite.SpriteTransfrom.Rotation + Transform->Rotation,Sprite.SpriteTransfrom.Scale + Transform->Scale,Sprite.Colour,Sprite.GetTexture()!= nullptr ? Sprite.GetTexture() : s_Storage2DData->m_WhiteTexture);
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D) {
 		if (s_Storage2DData->m_IndexCount >=Renderer2DStorage::s_MaxIndexCount){ // reached maxed index size
@@ -122,6 +122,7 @@ namespace Proof {
 			Reset();
 		}
 		float TextureIndex =-1.0f; // no texture index
+		
 		for(uint32_t i =0; i<s_Storage2DData->m_TextureSlotIndex;i++){
 			if(s_Storage2DData->m_Textures[i]->GetID() == texture2D->GetID()){
 				TextureIndex =(float)i;
@@ -160,6 +161,7 @@ namespace Proof {
 		Vertex4.Color = Color;
 		Vertex4.TexCoords = {0.0f,1.0f};
 		Vertex4.TexSlot = TextureIndex;
+
 		/* Gonna test wich is faster this meathod or the second one*/
 		s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize] = Vertex1;
 		s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize+1] = Vertex2;
@@ -174,6 +176,7 @@ namespace Proof {
 		s_Storage2DData->m_IndexCount+=6; 
 		s_Storage2DData->m_QuadArraySize += 4;
 		s_Renderer2DStats->m_QuadCount+=1;
+		
 	}
 	void Renderer2D::EndContext() {
 		Render();

@@ -85,16 +85,16 @@ namespace Proof
             s_DifferentID.emplace_back(meshComponent.GetID());
             DifferentMeshes++;
 
-            meshComponent.m_Asset->m_Model->m_VertexArrayObject->Bind();
-            meshComponent.m_Asset->m_Model->m_VertexArrayObject->AddData(3,4,sizeof(glm::mat4),(void*)0);
-            meshComponent.m_Asset->m_Model->m_VertexArrayObject->AddData(4,4,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
-            meshComponent.m_Asset->m_Model->m_VertexArrayObject->AddData(5,4,sizeof(glm::mat4),(void*)(2 * sizeof(glm::vec4)));
-            meshComponent.m_Asset->m_Model->m_VertexArrayObject->AddData(6,4,sizeof(glm::mat4),(void*)(3 * sizeof(glm::vec4)));
+            meshComponent.GetModel()->m_VertexArrayObject->Bind();
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(glm::mat4),(void*)0);
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(glm::mat4),(void*)(2 * sizeof(glm::vec4)));
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(glm::mat4),(void*)(3 * sizeof(glm::vec4)));
 
-            meshComponent.m_Asset->m_Model->m_VertexArrayObject->AttributeDivisor(3,1);
-            meshComponent.m_Asset->m_Model->m_VertexArrayObject->AttributeDivisor(4,1);
-            meshComponent.m_Asset->m_Model->m_VertexArrayObject->AttributeDivisor(5,1);
-            meshComponent.m_Asset->m_Model->m_VertexArrayObject->AttributeDivisor(6,1);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(3,1);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(4,1);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(5,1);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
 
             ModelMatrix = glm::mat4(1.0f);
             auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();

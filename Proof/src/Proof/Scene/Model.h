@@ -3,9 +3,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <vector>
-#include "Vertex.h"
+#include "Proof/Renderer/Vertex.h"
 #include "Proof/Renderer/Texture.h"
-#include "Proof3D/Math/Math.h"
+#include "Proof/Resources/Math/Math.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"

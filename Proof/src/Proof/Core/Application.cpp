@@ -51,7 +51,7 @@ namespace Proof {
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
             
-            RendererCommand::EnableDepth(false);
+            RendererCommand::EnableDepth(true);
             /*
             m_MousePickingEditor.EnableWriting();
             RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);

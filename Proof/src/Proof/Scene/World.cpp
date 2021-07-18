@@ -11,7 +11,7 @@
 #include <iostream>
 #include "Proof/Renderer/Renderer3D.h"
 #include "Proof/Renderer/Renderer2D.h"
-#include "Proof3D/Scene/Component.h"
+#include "Proof/Scene/Component.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
 namespace Proof{
 	//Model DefaultModel;
@@ -22,20 +22,17 @@ namespace Proof{
 	void World::OnUpdateEditor(FrameTime DeltaTime) {
 		
 		glm::mat4 Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
+		EditorCamera.OnUpdate(DeltaTime);
 		Renderer3D::BeginContext(Projection,EditorCamera);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->m_Asset != nullptr){
-				if(Comp->m_Asset->m_Model != nullptr){
-					Renderer3D::Draw(*Comp);
-				}
+			if (Comp->GetModel()!= nullptr){
+				Renderer3D::Draw(*Comp);
 			}
 		}
-		
 		Renderer2D::BeginContext(Projection,EditorCamera);
 		for (SpriteComponent* Comp : Registry.SpriteComponents) {
 			Renderer2D::DrawQuad(*Comp); 
 		}
-		EditorCamera.OnUpdate(DeltaTime);
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime) {
