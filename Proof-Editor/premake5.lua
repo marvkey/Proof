@@ -27,7 +27,7 @@ project "Proof-Editor"
 		"%{IncludeDir.Log}",
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
-
+		"%{IncludeDir.yaml_cpp}"
     }
 
     libdirs 
@@ -43,6 +43,7 @@ project "Proof-Editor"
         "opengl32.lib",
         "Glad",
         "assimp-vc142-mt.lib",
+        "yaml-cpp"
     }
    
     postbuildcommands{

@@ -11,6 +11,8 @@ namespace Proof{
 		virtual void OnUpdateEditor(FrameTime DeltaTime);
 		virtual void OnUpdateRuntime(FrameTime DeltaTime);
 		class Entity CreateEntity(const std::string& EntName);
+		class Entity CreateEntity(const std::string& EntName,uint32_t ID);
+
 		virtual void EndRuntime();
 		std::string GetName(){return Name;};
 		class ECS Registry;
@@ -20,9 +22,10 @@ namespace Proof{
 		void OnComponentAdded(Entity Entity,T* component);
 		friend class SceneHierachyPanel;
 		friend class Entity;
-		friend class WorldScerelizer;
 		friend class Editor3D;
 		class EditorCamera3D EditorCamera;
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
+		friend class SceneSerializer;
+		friend class Component;
 	};
 }

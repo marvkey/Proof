@@ -14,6 +14,12 @@ namespace Proof{
 	private:
 		static AssetManager* s_AssetManager;
 		std::unordered_map<uint32_t, class Asset*> m_AllAssets;
-		AssetManager() {}
+		AssetManager() {};
+		static void InitilizeAssets(const std::string& Path);
+		
+		static bool IsFileValid(const std::string& Path);
+		static std::string GetAssetType(const std::string& Path);
+		friend class Application;
+
 	};
 }

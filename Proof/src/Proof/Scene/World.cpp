@@ -13,11 +13,12 @@
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Scene/Component.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
+#include "EntitiyComponentSystem/ECS.h"
+
 namespace Proof{
-	//Model DefaultModel;
 	World::World()
 	{
-		//DefaultModel = {"cube.obj",false};
+
 	}
 	void World::OnUpdateEditor(FrameTime DeltaTime) {
 		
@@ -58,6 +59,13 @@ namespace Proof{
 		return entity;
 	}
 
+	Entity World::CreateEntity(const std::string& EntName,uint32_t ID) {
+		Entity entity = {Registry.Create(ID),this};
+		entity.AddComponent<TagComponent>()->Name = EntName;
+		entity.AddComponent<TransformComponent>();
+		return entity;
+	}
+
 	void World::EndRuntime() {
 	}
 
@@ -67,23 +75,36 @@ namespace Proof{
 	}
 	template<>
 	void World::OnComponentAdded(Entity _Entity,NativeScriptComponent* component) {
-		static_cast<Component*>(component)->m_EntityOwner = _Entity;
+		Component* a = static_cast<Component*>(component);
+		a->m_EntityOwner = _Entity.GetID();
+		a->CurrentWorld = this;
+
 	}
 	template<>
 	void World::OnComponentAdded(Entity _Entity,TransformComponent* component) {
-		static_cast<Component*>(component)->m_EntityOwner = _Entity;
+		Component* a = static_cast<Component*>(component);
+		a->m_EntityOwner = _Entity.GetID();
+		a->CurrentWorld = this;
+
 	}
 	template<>
 	void World::OnComponentAdded(Entity _Entity,TagComponent* component) {
-		static_cast<Component*>(component)->m_EntityOwner = _Entity;
+		Component* a = static_cast<Component*>(component);
+		a->m_EntityOwner = _Entity.GetID();
+		a->CurrentWorld = this;
+
 	}
 	template<>
 	void World::OnComponentAdded(Entity _Entity,MeshComponent* component) {
-		static_cast<Component*>(component)->m_EntityOwner = _Entity;
+		Component* a = static_cast<Component*>(component);
+		a->m_EntityOwner = _Entity.GetID();
+		a->CurrentWorld = this;
 	}
 
 	template<>
 	void World::OnComponentAdded(Entity _Entity,SpriteComponent* component) {
-		static_cast<Component*>(component)->m_EntityOwner = _Entity;
+		Component* a = static_cast<Component*>(component);
+		a->m_EntityOwner = _Entity.GetID();
+		a->CurrentWorld = this;
 	}
 }

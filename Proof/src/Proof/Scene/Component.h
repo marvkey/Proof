@@ -2,7 +2,6 @@
 #include "Proof/Resources/Math/Math.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "Entity.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 
@@ -19,15 +18,20 @@ namespace Proof{
 		virtual void SetName(const std::string& name){
 			Name = name;
 		}
-		Entity GetOwner();
+		class Entity GetOwner();
+		uint32_t GetAssetID() {
+			return AssetID;
+		}
 	protected:
 		std::string Name ="Default";
-		Entity m_EntityOwner;
+		uint32_t m_EntityOwner;
+		class World* CurrentWorld =nullptr;
 		uint32_t AssetID;
 	private:
 		friend class Entity;
 		friend class World;
 		friend class SceneHierachyPanel;
+		friend class SceneSerializer;
 	};
 	struct Proof_API TagComponent : public Component {
 		TagComponent() = default;
@@ -80,7 +84,7 @@ namespace Proof{
 			MeshLocalTransform.Scale = Vector{0.0f,0.0f,0.0f};
 		}
 		class Model* GetModel() {
-			return GetAsset() != nullptr ? GetAsset()->m_Model : nullptr;
+			return GetAsset() != nullptr ? GetAsset()->GetModel() : nullptr;
 		}
 		MeshAsset* GetAsset() {
 			if(AssetID ==0){
@@ -92,7 +96,8 @@ namespace Proof{
 			}
 			return a;
 		}
-		uint32_t GetID();
+		
+		uint32_t GetMeshPointerID();
 		TransformComponent MeshLocalTransform;
 	private:
 		friend class Entity;

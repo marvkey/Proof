@@ -34,6 +34,7 @@ project "Proof"
 		"%{IncludeDir.Log}",
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.yaml_cpp}"
 
     }
 	libdirs{
@@ -46,6 +47,7 @@ project "Proof"
 		"ImGui",
 		"Glad",
         "assimp-vc142-mt.lib",
+		"yaml-cpp"
 	
 	}
     defines {

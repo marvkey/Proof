@@ -15,13 +15,21 @@ namespace Proof {
 		delete ActiveWorld;
 	}
 	void Editore3D::OnAttach() {
-		NewWorld();
-
-	}
-	void Editore3D::NewWorld() {
 		ActiveWorld = new World();
+		SceneSerializer scerelizer(ActiveWorld);
+		if(scerelizer.DeSerilizeText("content/ProofScene.ProofAsset")==true){
+			PF_ENGINE_INFO("world was open no Error");
+		}
 		m_WorldHierachy.SetContext(ActiveWorld);
 		m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
+		//NewWorld();
+	}
+	void Editore3D::OnDetach() {
+		SceneSerializer scerelizer(ActiveWorld);
+		scerelizer.SerilizeText("content/ProofScene.ProofAsset");
+	}
+	void Editore3D::NewWorld() {
+;
 	}
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
@@ -124,7 +132,7 @@ namespace Proof {
 			ImGui::PopStyleVar(2);
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
-		style.WindowMinSize.x = 250.0f; // sets teh minimum width of everything
+		style.WindowMinSize.x = 250.0f; // sets the minimum width of everything
 
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable){
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
@@ -134,7 +142,9 @@ namespace Proof {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::MenuItem(" Save")) {
-
+					SceneSerializer scerelizer(ActiveWorld);
+					scerelizer.SerilizeText("content/ProofScene.ProofAsset");
+						PF_ENGINE_INFO("Scene saved");
 				}
 				ImGui::EndMenu();
 			}

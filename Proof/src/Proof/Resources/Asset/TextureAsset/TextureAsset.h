@@ -4,16 +4,14 @@
 namespace Proof{
 	class Proof_API Texture2DAsset: public Asset {
 	public:
-		Texture2DAsset(const std::string& FilePath);
+		Texture2DAsset(const std::string& FilePath,const std::string& AssetSavePath);
 		virtual void SaveAsset() override;
-		virtual void CreateAsset(const std::string& FilePath)override;
+		virtual bool LoadAsset(const std::string& FilePath)override;
 		Texture2DAsset(){
 			m_AssetType = AssetType::Texture2DAsset;
 		};
 		
 		virtual ~Texture2DAsset(){
-			m_Texture = nullptr;
-			m_Texture.reset();
 		}
 		virtual std::string GetName(){
 			return "AssetType::Texture2DAsset";

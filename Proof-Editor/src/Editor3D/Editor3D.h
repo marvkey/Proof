@@ -4,6 +4,7 @@
 #include "Proof/ProofCore.h"
 #include "MainWindow/SceneHierachyPanel.h"
 #include "MainWindow/ContentBrowserPanel.h"
+#include "Proof/Scene/SceneSerializer.h"
 namespace Proof {
 	class Proof_API Editore3D : public Layer {
 	public:
@@ -12,6 +13,7 @@ namespace Proof {
 		virtual void OnUpdate(FrameTime DeltaTime) override;
 		virtual void OnImGuiDraw() override;
 		virtual void OnAttach() override;
+		virtual void OnDetach() override;
 	private:
 		void NewWorld();
 		bool Docking = false;
@@ -39,5 +41,6 @@ namespace Proof {
 		class SceneHierachyPanel m_WorldHierachy;
 		ContentBrowserPanel m_CurrentContentBrowserPanel;
 		friend class Renderer3D;
+
 	};
 }

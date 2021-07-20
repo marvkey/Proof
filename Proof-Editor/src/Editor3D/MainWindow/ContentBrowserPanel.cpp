@@ -8,16 +8,22 @@
 #include "Platform/Window/WindowPlatformUtils.cpp"
 #include "Proof/Utils/PlatformUtils.h"
 #include <vector>
-#include "Proof3D/Scene/Model.h"
+#include "Proof/Scene/Model.h"
 #include "Proof/Resources/Asset/AssetManager.h"
+#include "Proof/Resources/Asset/Asset.h"
+
+#include <yaml-cpp/yaml.h>
+
 namespace Proof
 {
 	static const std::filesystem::path s_AssetsPath = "content";
 	static float padding = 16.0f; // space between 
-	static float thumbnailSize = 128;
+	static   float thumbnailSize = 128;
 	static uint32_t IterPosition = 0;
 	static std::string NewFolderName;
 	static std::string NewFileName;
+	static std::string FileDragSource;
+
 	ContentBrowserPanel::ContentBrowserPanel():
 		m_CurrentDirectory(s_AssetsPath) {
 		m_FolderIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FolderIcon.png");
@@ -26,7 +32,6 @@ namespace Proof
 		m_ArrowIcon = Texture2D::Create("Resources/Icons/ContentBrowser/ArrowIcon.png");
 	}
 	void ContentBrowserPanel::ImGuiRender() {
-		ImGui::ShowDemoWindow();
 		ImGui::Begin("Content Browser");
 		ImGui::BeginChild("Folders",{100,ImGui::GetContentRegionAvail().y});
 		if (ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(),{60,60})) {
@@ -63,7 +68,7 @@ namespace Proof
 				}
 				if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFolderName) == true && NewFolderName.empty() == false) {
 					ImGui::BeginTooltip();
-					ImGui::TextColored({1.0,0.0,0.0,1},"Folder already exisst");
+					ImGui::TextColored({1.0,0.0,0.0,1},"Folder already exist");
 					ImGui::EndTooltip();
 				}
 				ImGui::SameLine();
@@ -130,7 +135,6 @@ namespace Proof
 				ImGui::SameLine();
 				if (ImGui::Button("Done") || ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
 					if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName) == false) {
-						std::ofstream({m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset"});
 						ImGui::CloseCurrentPopup();
 						NewMeshAsset(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset");
 						NewFileName = "";
@@ -155,7 +159,6 @@ namespace Proof
 		ImGui::Columns(columnCount,0,false);
 		for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
 			static std::string RenameVariable;
-			uint32_t ID;
 			/* We are not passing just as string cause life time of object is lost */
 			/* we need to understand what is wrong */
 			/* THIS IS THE PIECE OF CODE
@@ -169,27 +172,26 @@ namespace Proof
 			Count<Texture2D> Icon = It.is_directory() ? m_FolderIcon : m_FileIcon;
 			if(It.is_directory()){
 				if (ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(),{thumbnailSize,thumbnailSize})) {} // there are more paremter to flip image and to add a tint colour
-				if (ImGui::BeginDragDropTarget()) {
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FileToFolder")) {
-					}
-					ImGui::EndDragDropTarget();
-				}
-
 			}else{
-				ID = GetAllIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + filenameNoStem);
+				uint32_t ID = 0;
+				ID = GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + filenameNoStem);
 
 				Asset* Temp =nullptr;
 				Temp = AssetManager::GetAsset(ID);
 				if(Temp != nullptr){
 					if (ImGui::ImageButton((ImTextureID)(Temp->IsImageIDNUll() ==false? Temp->GetImageID(): m_FileIcon->GetID()),{thumbnailSize,thumbnailSize})) {
-					
+					}
+					if(ImGui::IsItemHovered()&& ImGui::IsMouseDown(0)==false){
+						FileDragSource = m_CurrentDirectory.string() + "\\" + filenameNoStem;
 					}
 					if(ImGui::BeginDragDropSource()){
-						ImGui::SetDragDropPayload(Temp->GetName().c_str(),&ID,sizeof(uint32_t));
+						uint32_t staticID =GetIDCurrentDirectory(FileDragSource);
+						ImGui::SetDragDropPayload(Temp->GetName().c_str(),&staticID,sizeof(uint32_t));
 
 						ImGui::Image((ImTextureID)(Temp->IsImageIDNUll() == false ? Temp->GetImageID() : m_FileIcon->GetID()),{60,60}); 
 						ImGui::EndDragDropSource();
 					}
+
 				}
 			}
 			 
@@ -201,10 +203,10 @@ namespace Proof
 			}
 			if (ImGui::BeginPopupContextItem(filename.c_str())) {
 				if (ImGui::MenuItem("Delete")) {
-					std::filesystem::remove_all(m_CurrentDirectory.string() + "\\" + (It.is_directory() ? filename : filenameNoStem));
 					if(It.is_directory() ==false){
-						AssetManager::Remove(ID);
+						AssetManager::Remove(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + (It.is_directory() ? filename : filenameNoStem)));
 					}
+					std::filesystem::remove_all(m_CurrentDirectory.string() + "\\" + (It.is_directory() ? filename : filenameNoStem));
 				}
 
 				if (ImGui::BeginMenu("Rename")) {
@@ -218,7 +220,7 @@ namespace Proof
 					if(RenameVariable != filename){
 						if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + RenameVariable) == true && RenameVariable.empty() == false) {
 							ImGui::BeginTooltip();
-							ImGui::TextColored({1.0,0.0,0.0,1},"File already exisst");
+							ImGui::TextColored({1.0,0.0,0.0,1},"File already exist");
 							ImGui::EndTooltip();
 						}
 					}
@@ -231,6 +233,12 @@ namespace Proof
 						}else{
 							if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + RenameVariable + (It.is_directory() ? " " : ".ProofAsset")) == false) {
 								std::filesystem::rename(m_CurrentDirectory.string() + "\\" + filenameNoStem,m_CurrentDirectory.string() + "\\"+ RenameVariable + (It.is_directory() ? " ":".ProofAsset"));
+								if(It.is_directory() == false){
+									auto* asset = AssetManager::GetAsset(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset"));
+									asset->SetPath(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset");
+									asset->SaveAsset();
+
+								}
 								RenameVariable = "";
 								ImGui::CloseCurrentPopup();
 							}
@@ -256,33 +264,26 @@ namespace Proof
 	void ContentBrowserPanel::NewAsset(const std::string& NewFilePath) {
 		std::string FIle = Utils::FileDialogs::OpenFile("Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0");
 		if (FIle.empty() == false) {
-			Texture2DAsset* TempAsset = new Texture2DAsset(FIle);
+			Texture2DAsset* TempAsset = new Texture2DAsset(FIle,NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
-			std::ofstream NewFIle(NewFilePath);
-			NewFIle << TempAsset->GetID();
-			NewFIle.close();
-		}else{
-			std::filesystem::remove_all(NewFilePath); // BECAUSE WWE CREATED A PATH AND WE ARE GONNA WRITE TO IT
+			//std::ofstream NewFIle(NewFilePath);
 		}
 	}
 	void ContentBrowserPanel::NewMeshAsset(const std::string& NewFilePath) {
 		std::string FIle = Utils::FileDialogs::OpenFile("Texture (*.png)\0 *.obj\0 ");
 		if (FIle.empty() == false) {
-			MeshAsset* TempAsset = new MeshAsset(FIle);
+			MeshAsset* TempAsset = new MeshAsset(FIle,NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
-			std::ofstream NewFIle(NewFilePath);
-			NewFIle << TempAsset->GetID();
-			NewFIle.close();
-		}
-		else {
-			std::filesystem::remove_all(NewFilePath); // BECAUSE WWE CREATED A PATH AND WE ARE GONNA WRITE TO IT
 		}
 	}
-	uint32_t ContentBrowserPanel::GetAllIDCurrentDirectory(const std::string& Path) {
-		std::ifstream MyReadFile(Path);
-		uint32_t ID;
-		while (MyReadFile>>ID);
-		MyReadFile.close();
-		return ID;
+	uint32_t ContentBrowserPanel::GetIDCurrentDirectory(const std::string& Path) {
+		YAML::Node data = YAML::LoadFile(Path);
+		if (!data["AssetTypeString"]) // if there is no scene no
+			return 0;
+		auto ID = data["ID"];
+		if(ID){
+			return ID.as<uint32_t>();
+		}
+		return 0;
 	}
 }

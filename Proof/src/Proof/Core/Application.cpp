@@ -7,6 +7,7 @@
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Core/EditorMousePicking.h"
+#include "Proof/Resources/Asset/AssetManager.h"
 namespace Proof {
     WindowsWindow* Application::MainWindow = nullptr;
     Count<FrameBuffer> Application::ScreenFrameBuffer = nullptr;
@@ -16,7 +17,6 @@ namespace Proof {
     float Application::FrameMS = 2.0f;
     Application::Application(){
         MainWindow = new WindowsWindow(1300,600);
-        
 
         MainWindow->createWindow();
         m_GraphicsContext =GraphicsContext::Create(CurrentWindow::GetWindow());
@@ -27,6 +27,7 @@ namespace Proof {
 
         ScreenFrameBuffer = FrameBuffer::Create(1300,600);
         ScreenFrameBuffer->UnBind();
+        AssetManager::InitilizeAssets("content");
        // m_MousePickingEditor= {1300,600};
     }
 

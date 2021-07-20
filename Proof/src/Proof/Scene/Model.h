@@ -19,7 +19,6 @@ namespace Proof
         bool gammaCorrection;
         Model() =default;
         Model(std::string const& path,bool gamma = false): gammaCorrection(gamma) {
-            PF_ENGINE_INFO("MODEL CREATED");
             LoadModel(path);
             //load_obj(path,m_Vertices,m_Indices,textures_loaded);
             //PF_ENGINE_INFO("Number of Vertices %i",m_Vertices.size());

@@ -1,12 +1,10 @@
 #include "SceneHierachyPanel.h"
 #include "Proof/ImGui/ImGuiLayer.h"
-#include "entt/entt.hpp"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Component.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 #include "Proof/Scene/EntitiyComponentSystem/ECS.h"
-#include "Proof/Scene/EntitiyComponentSystem/ECS.cpp" // THIS IS VERY TEMPORARY //
 #include "Proof/Renderer/Renderer3D.h" // TEMPORARY
 
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
@@ -21,7 +19,7 @@ namespace Proof{
 	void SceneHierachyPanel::ImGuiRender(){
 		ImGui::Begin("Herieachy");
 		if(m_CurrentWorld->Registry.GetAllID().size() >0){
-			for (uint32_t i = 0; i <= m_CurrentWorld->Registry.GetAllID().size() - 1; i++) {
+			for (uint32_t i = 0; i < m_CurrentWorld->Registry.GetAllID().size(); i++) {
 				Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
 				DrawEntityNode(entity);
 				if (m_CurrentWorld->Registry.GetAllID().size() == 1)break;
@@ -162,6 +160,7 @@ namespace Proof{
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetStaticName().c_str())) {
 							uint32_t Data = *(const uint32_t*)payload->Data;
 							component.AssetID = Data;
+							PF_ENGINE_INFO("Data to mesh component %i ", component.AssetID);
 						}
 						ImGui::EndDragDropTarget();
 					}
@@ -169,7 +168,6 @@ namespace Proof{
 				IndexValue += 1;
 				continue; 
 			}
-
 			SpriteComponent* Sprite = dynamic_cast<SpriteComponent*>(Comp);
 			if(Sprite != nullptr){
 				DrawComponents<SpriteComponent>({"Sprite: "+Sprite->GetName()},entity,Sprite,IndexValue,[](SpriteComponent& component){
@@ -212,7 +210,7 @@ namespace Proof{
 				IndexValue += 1;
 				continue;
 			}
-		}
+		} 
 	}
 
 

@@ -6,16 +6,16 @@
 #include "VertexArray.h"
 #include "Renderer.h"
 
-#include "Proof3D/Scene/Mesh.h"
-#include "Proof3D/Scene/Component.h"
-#include "Proof3D/Renderer/Camera/PerspectiveCamera.h"
-#include "Proof3D/Renderer/Camera/OrthagraphicCamera.h"
-#include "Proof3D/Renderer/Camera/EditorCamera.h"
+#include "Proof/Scene/Mesh.h"
+#include "Proof/Scene/Component.h"
+#include "Proof/Scene/Camera/PerspectiveCamera.h"
+#include "Proof/Scene/Camera/OrthagraphicCamera.h"
+#include "Proof/Scene/Camera/EditorCamera.h"
 
-#include "Proof3D/Scene/Model.h"
+#include "Proof/Scene/Model.h"
 #include "Proof/Core/FrameTime.h"
-#include "Proof3D/Scene/Mesh.h"
-#include "Proof3D/Scene/Entity.h"
+#include "Proof/Scene/Mesh.h"
+#include "Proof/Scene/Entity.h"
 namespace Proof
 {
     static InstancedRenderer3D* Renderer3DInstance;
@@ -23,7 +23,7 @@ namespace Proof
     static std::vector<glm::mat4> m_Transforms;
     static std::vector<uint32_t> s_DifferentID;
     static uint32_t DifferentMeshes = 0;
-    static glm::mat4 ModelMatrix;
+    static glm::mat4 ModelMatrix; 
 
     uint32_t Renderer3D::Render3DStats::DrawCalls = 0;
     uint32_t Renderer3D::Render3DStats::NumberOfInstances = 0;
@@ -53,8 +53,8 @@ namespace Proof
         Renderer3DInstance->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
     }
     void Renderer3D::Draw(MeshComponent& meshComponent) {
-        if (Renderer3DInstance->SceneHasAmountMeshes(meshComponent.GetID()) == true) {
-            auto Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetID());
+        if (Renderer3DInstance->SceneHasAmountMeshes(meshComponent.GetMeshPointerID()) == true) {
+            auto Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
             Map->second += 1;
 
             meshComponent.GetModel()->m_VertexArrayObject->Bind();
@@ -80,9 +80,9 @@ namespace Proof
             Renderer3DStats->AmountDrawn += 1;
         }
         else {
-            Renderer3DInstance->m_AmountMeshes.insert({meshComponent.GetID(),1});
-            Renderer3DInstance->m_Meshes.insert({meshComponent.GetID(),meshComponent});
-            s_DifferentID.emplace_back(meshComponent.GetID());
+            Renderer3DInstance->m_AmountMeshes.insert({meshComponent.GetMeshPointerID(),1});
+            Renderer3DInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
+            s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
             DifferentMeshes++;
 
             meshComponent.GetModel()->m_VertexArrayObject->Bind();
