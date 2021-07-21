@@ -40,12 +40,12 @@ namespace Proof
 		ImGui::Text("Content");
 		for (auto& It : std::filesystem::directory_iterator(s_AssetsPath)) {
 			if (It.is_directory()) {
-				Count<Texture2D> Icon = m_FolderIcon;
-				if (ImGui::ImageButton((ImTextureID)Icon->GetID(),{80,50})) {
-				}
 				std::string Path = It.path().filename().string();
-				ImGui::Text("%s",Path.c_str());
-				ImGui::NewLine();
+				if(ImGui::TreeNode(Path.c_str())){
+					
+					ImGui::TreePop();
+				}
+				//ImGui::NewLine();
 			}
 		}
 		ImGui::EndChild();
@@ -165,16 +165,15 @@ namespace Proof
 			std::string Path = It.path().string();
 			ImGui::Text("%s",Path.c_str());
 			*/
-			std::filesystem::relative(It.path(),s_AssetsPath);
 			std::string Path = It.path().string();
 			std::string filename = It.is_directory() ? It.path().filename().string() : It.path().filename().stem().string(); // returns the file name with ending like hallo.txt, stem removes the .txt
 			std::string filenameNoStem = It.path().filename().string();
-			Count<Texture2D> Icon = It.is_directory() ? m_FolderIcon : m_FileIcon;
 			if(It.is_directory()){
 				if (ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(),{thumbnailSize,thumbnailSize})) {} // there are more paremter to flip image and to add a tint colour
 			}else{
-				uint32_t ID = 0;
-				ID = GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + filenameNoStem);
+				/* Pice of Code taht is taking long */
+				
+				uint32_t ID =GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + filenameNoStem);
 
 				Asset* Temp =nullptr;
 				Temp = AssetManager::GetAsset(ID);
@@ -191,8 +190,8 @@ namespace Proof
 						ImGui::Image((ImTextureID)(Temp->IsImageIDNUll() == false ? Temp->GetImageID() : m_FileIcon->GetID()),{60,60}); 
 						ImGui::EndDragDropSource();
 					}
-
 				}
+				
 			}
 			 
 
@@ -266,7 +265,6 @@ namespace Proof
 		if (FIle.empty() == false) {
 			Texture2DAsset* TempAsset = new Texture2DAsset(FIle,NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
-			//std::ofstream NewFIle(NewFilePath);
 		}
 	}
 	void ContentBrowserPanel::NewMeshAsset(const std::string& NewFilePath) {
@@ -277,12 +275,24 @@ namespace Proof
 		}
 	}
 	uint32_t ContentBrowserPanel::GetIDCurrentDirectory(const std::string& Path) {
-		YAML::Node data = YAML::LoadFile(Path);
-		if (!data["AssetTypeString"]) // if there is no scene no
-			return 0;
-		auto ID = data["ID"];
-		if(ID){
-			return ID.as<uint32_t>();
+
+		std::ifstream testFile(Path);
+		std::string line;
+		uint32_t ID;
+
+		while (std::getline(testFile,line)) {
+			if (line.empty() ==false) { // first line
+				if(line.substr(0,16) == "AssetTypeString:"){
+				}
+				break;
+			}
+		}
+		while (std::getline(testFile,line)) {
+			if(line.substr(0,3) =="ID:"){
+				std::stringstream ss(line.substr(3,line.size()));
+				ss>>ID;
+				return ID;
+			}
 		}
 		return 0;
 	}

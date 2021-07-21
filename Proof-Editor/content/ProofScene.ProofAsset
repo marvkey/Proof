@@ -31,13 +31,12 @@ Entities:
     TagComponent:
       Tag: Empty player
     TransformComponent:
-      Location: [-5.5, 3.5999999, 1]
-      Rotation: [0, -5.19999981, -3.29999995]
-      Scale: [3.20000005, 1, 1]
-    SpriteComponent:
-      Name: defaultsprite
-      AssetID: 0
-      Colour: [0.532258034, 0.399193525, 0.399193525, 1]
-      LocalLocation: [-4.30000019, 5.4000001, 0]
-      LocalRotation: [-3, -5.30000019, 6.5]
-      LocalScale: [-3, 1, 1]
+      Location: [1.39999998, 0, 1]
+      Rotation: [0, 0, -3.29999995]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 32683
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]

@@ -46,6 +46,9 @@ namespace Proof{
 	void AssetManager::InitilizeAssets(const std::string& Path) {
 		PF_ENGINE_TRACE("starting Loading All Assets %s",Path.c_str());
 		for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(Path)){
+			if(dirEntry.is_directory()){
+				continue;
+			}
 			if(IsFileValid(dirEntry.path().string())){
 
 				if(GetAssetType(dirEntry.path().string()) =="AssetType::Texture2DAsset"){

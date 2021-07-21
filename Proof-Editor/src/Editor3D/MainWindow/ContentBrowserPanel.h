@@ -19,6 +19,6 @@ namespace Proof{
 		 Count<Texture2D> m_ArrowIcon;
 		 void NewAsset(const std::string&NewFilePath);
 		 void NewMeshAsset(const std::string& NewFilePath);
-		 uint32_t GetIDCurrentDirectory(const std::string& Path);
+		__forceinline uint32_t GetIDCurrentDirectory(const std::string& Path);
 	};
 }
