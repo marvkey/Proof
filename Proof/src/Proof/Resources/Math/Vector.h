@@ -20,6 +20,12 @@ namespace Proof
             Y = Other.Y;
             Z = Other.Z;
         }
+
+        Vector(const glm::vec3& Other) {
+            X = Other.x;
+            Y = Other.y;
+            Z = Other.z;
+        }
         std::string ToString();
         static std::string ToString(const Vector& Vec);
 
@@ -67,13 +73,27 @@ namespace Proof
             return *this;
         }
         Vector operator -(const glm::vec3& Other) {
-            this->X -= Other.x;
-            this->Y -= Other.y;
-            this->Z -= Other.z;
-            return *this;
+            Vector Temp(this->X - Other.x,this->Y - Other.y,this->Z - Other.z);
+            return Temp;
         }
         Vector operator +(const glm::vec3& Other) {
             Vector Temp(this->X + Other.x,this->Y + Other.y,this->Z + Other.z);
+            return Temp;
+        }
+
+        Vector operator -(const Vector& Other) {
+            Vector Temp(this->X - Other.X,this->Y - Other.Y,this->Z - Other.Z);
+            return Temp;
+        }
+
+        Vector operator *(const glm::vec3& Other) {
+            Vector Temp(this->X * Other.x,this->Y * Other.y,this->Z * Other.z);
+            return Temp;
+        }
+
+
+        Vector operator *(const Vector& Other) {
+            Vector Temp(this->X * Other.X,this->Y * Other.Y,this->Z * Other.Z);
             return Temp;
         }
     };

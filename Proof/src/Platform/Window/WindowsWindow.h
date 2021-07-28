@@ -39,15 +39,13 @@ namespace Proof {
         static void Window_Close_Callback(GLFWwindow* window);
         static void Controller_Callback(int jid, int event);
         static void Framebuffer_size_callback(GLFWwindow* window, int width, int height);
-        /* ----------------------------------------------------------- */
-        /*      This functions will have to run on a seperate thread */
+
         static void Window_Resize_Callback(GLFWwindow* window, int width, int height);
         static void Window_Position_Callback(GLFWwindow* window, int xpos, int ypos);
         static void Window_Refresh_callback(GLFWwindow* window);
         static void Window_Input_Focus_callback(GLFWwindow* window, int focused);
         void ProcessInput();
-        /* --------------------------------------------------------------*/
         friend class CurrentWindow;
-        bool Vsync = 0;
+        bool Vsync = false;
     };
 }

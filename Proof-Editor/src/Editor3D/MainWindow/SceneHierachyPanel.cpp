@@ -13,17 +13,27 @@
 #include "Proof/Scene/World.cpp"
 #include "ContentBrowserPanel.h"
 #include <vector>
+#include "Proof/Resources/Asset/MaterialAsset.h"
 namespace Proof{
 	static MeshAsset* TempAsset =nullptr;
 	static MeshAsset* TempLocation0Asset = nullptr;
 	void SceneHierachyPanel::ImGuiRender(){
-		ImGui::Begin("Herieachy");
-		if(m_CurrentWorld->Registry.GetAllID().size() >0){
-			for (uint32_t i = 0; i < m_CurrentWorld->Registry.GetAllID().size(); i++) {
-				Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
-				DrawEntityNode(entity);
-				if (m_CurrentWorld->Registry.GetAllID().size() == 1)break;
+		if(ImGui::Begin("Active World")){
+			char buffer[256];
+			memset(buffer,0,sizeof(buffer));
+			strcpy_s(buffer,sizeof(buffer),m_CurrentWorld->GetName().c_str());
+			if (ImGui::InputTextWithHint("##WorldName","WorldName",buffer,sizeof(buffer))) {
+				m_CurrentWorld->Name = buffer;
 			}
+
+			ImGui::End();
+		}
+
+		ImGui::Begin("Herieachy");
+		for (uint32_t i = 0; i < m_CurrentWorld->Registry.GetAllID().size(); i++) {
+			Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
+			DrawEntityNode(entity);
+			if (m_CurrentWorld->Registry.GetAllID().size() == 1)break;
 		}
 
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) {
@@ -45,10 +55,20 @@ namespace Proof{
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity.GetID(),flags,tc.c_str());
-		if (ImGui::IsItemClicked()) {
+		if (ImGui::IsItemClicked() || ImGui::IsItemClicked(1)) {
 			m_SelectedEntity = entity;
 		}
-
+		if(ImGui::BeginPopupContextItem()){
+			if(ImGui::MenuItem("Delete")){
+				m_CurrentWorld->Registry.Delete(m_SelectedEntity.GetID());
+				m_SelectedEntity ={};
+			}
+			ImGui::EndPopup();
+		}
+		if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity){
+			
+			m_CurrentWorld->EditorCamera.CameraPos = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
+		}
 		if (opened) {
 			ImGui::TreePop();
 		}
@@ -97,7 +117,6 @@ namespace Proof{
 		char buffer[256];
 		memset(buffer,0,sizeof(buffer));
 		strcpy_s(buffer,sizeof(buffer),Tag.GetName().c_str());
-		ImGui::SameLine();
 		if (ImGui::InputText("##Tag",buffer,sizeof(buffer))) {
 			Tag.SetName(buffer);
 		}
@@ -155,12 +174,39 @@ namespace Proof{
 					DrawVectorControl("Local Rotation",component.MeshLocalTransform.Rotation,0.0,125);
 					DrawVectorControl("Local Scale",component.MeshLocalTransform.Scale,0.0,125);
 					ImGui::Text("Mesh");
+					if (ImGui::BeginPopupContextItem("RemoveMesh")) {
+						ImGui::EndPopup();
+					}
+					if (ImGui::BeginPopup("RemoveMesh")) {
+						if (ImGui::MenuItem("Remove Mesh")) {
+							component.AssetID = 0;
+						}
 
+						ImGui::EndPopup();
+					}
 					if (ImGui::BeginDragDropTarget()) {
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetStaticName().c_str())) {
 							uint32_t Data = *(const uint32_t*)payload->Data;
 							component.AssetID = Data;
-							PF_ENGINE_INFO("Data to mesh component %i ", component.AssetID);
+						}
+						ImGui::EndDragDropTarget();
+					}
+
+					ImGui::Text("Material");
+					if (ImGui::BeginPopupContextItem("RemoveMaterial")) {
+						ImGui::EndPopup();
+					}
+					if (ImGui::BeginPopup("RemoveMaterial")) {
+						if (ImGui::MenuItem("Remove Material")) {
+							component.m_MeshMaterialID = 0;
+						}
+
+						ImGui::EndPopup();
+					}
+					if (ImGui::BeginDragDropTarget()) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MaterialAsset::GetStaticName().c_str())) {
+							uint32_t Data = *(const uint32_t*)payload->Data;
+							component.m_MeshMaterialID = Data;
 						}
 						ImGui::EndDragDropTarget();
 					}
@@ -226,6 +272,7 @@ namespace Proof{
 
 		ImGui::PushMultiItemsWidths(3,ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,ImVec2{0,0});
+		ImGui::GetStyle().FrameRounding = 0; 
 
 		float LineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // comes from IMGUI
 		ImVec2 buttonSize = {LineHeight + 3.0f,LineHeight};
@@ -275,7 +322,9 @@ namespace Proof{
 		ImGui::PopItemWidth();
 		ImGui::PopStyleColor(3);
 
-		ImGui::PopStyleVar();
+		ImGui::GetStyle().FrameRounding = 6;
+
+		ImGui::PopStyleVar(1);
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}

@@ -4,7 +4,11 @@
 #include "Renderer3D.h"
 
 namespace Proof {
+
 	ShaderLibrary* Renderer::AllShaders = new ShaderLibrary;
+	std::string Renderer::s_RenderCompany;
+	std::string Renderer::s_GraphicsCard;
+	std::string Renderer::s_GraphicsCardVersion;
 	void Renderer::Init() {
 		Renderer2D::Init();
 		Renderer3D::Init();

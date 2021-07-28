@@ -6,7 +6,9 @@
 
 namespace Proof
 {
+
 	MeshAsset::MeshAsset(const std::string& FilePath,const std::string& AssetSavePath) {
+		m_ID = AssetManager::CreateID();
 		m_Model = new Model(FilePath);
 		m_AssetType = AssetType::MeshAsset;
 		m_Path = AssetSavePath;
@@ -19,7 +21,8 @@ namespace Proof
 		out<<YAML::Key<<"AssetTypeString"<<YAML::Value<<"AssetType::MeshAsset";
 		out << YAML::Key << "AssetType" << YAML::Value << (int)m_AssetType;
 		out << YAML::Key << "ID" << YAML::Value << m_ID;
-		out << YAML::Key << "Model" << YAML::Value << m_PathOfPointerToFile;
+		if(m_Model != nullptr)
+			out << YAML::Key << "Model" << YAML::Value << m_PathOfPointerToFile;
 		out << YAML::EndMap;
 
 		std::ofstream found(m_Path);

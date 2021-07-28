@@ -6,10 +6,13 @@ namespace Proof {
 	  glfwPollEvents();
    }
    void OpenGLRendererAPI::Clear() {
-	   if (IsDepthEnabled == true)
+	   if (m_IsDepthEnabled == true)
 		   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	   else
 		   glClear(GL_COLOR_BUFFER_BIT);
+   }
+   void OpenGLRendererAPI::DrawArrays(uint32_t Count) {
+	   glDrawArrays(GL_TRIANGLES,0,Count);
    }
    void OpenGLRendererAPI::DrawIndexed(const Count<VertexArray>&ArrayObject) {
 	   PF_CORE_ASSERT(ArrayObject->GetIndexBuffer(),"No Index Buffer attached to VertexAray")
@@ -34,6 +37,7 @@ namespace Proof {
 	   ArrayObject->Bind();
 	   ArrayObject->GetIndexBuffer()->Bind();
 	   glDrawElementsInstanced(GL_TRIANGLES,ArrayObject->GetIndexBuffer()->GetCount(),GL_UNSIGNED_INT,0,AmountElement);
+	  // glDrawElementsInstanced(GL_LINE_STRIP,ArrayObject->GetIndexBuffer()->GetCount(),GL_UNSIGNED_INT,0,AmountElement); // very cool effect to view all veritces
 	   glBindTexture(GL_TEXTURE_2D,0);
    }
 
@@ -51,12 +55,12 @@ namespace Proof {
    }
    void OpenGLRendererAPI::EnableDepth(bool Depth) {
 	   if (Depth == true) {
-		   IsDepthEnabled = true;
+		   m_IsDepthEnabled = true;
 		   glEnable(GL_DEPTH_TEST);
 	   }
 	   else {
 		   glDisable(GL_DEPTH_TEST);
-			IsDepthEnabled = false;
+		   m_IsDepthEnabled = false;
 	   }
    }
 }

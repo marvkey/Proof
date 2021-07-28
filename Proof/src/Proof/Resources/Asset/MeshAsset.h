@@ -23,9 +23,7 @@ namespace Proof
 		class Model* GetModel()const{
 			return m_Model;
 		}
-		virtual ~MeshAsset(){
-			PF_ENGINE_INFO("Mesh Asset Deleted ");
-		}
+		virtual ~MeshAsset(){}
 
 		virtual bool IsImageIDNUll(){
 			return true;

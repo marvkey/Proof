@@ -22,18 +22,20 @@ namespace Proof{
 	}
 	void World::OnUpdateEditor(FrameTime DeltaTime) {
 		
-		glm::mat4 Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
-		EditorCamera.OnUpdate(DeltaTime);
+		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
+		Renderer2D::BeginContext(Projection,EditorCamera.GetCameraView());
+		for (SpriteComponent* Comp : Registry.SpriteComponents) {
+			Renderer2D::DrawQuad(*Comp);
+		}
+
 		Renderer3D::BeginContext(Projection,EditorCamera);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
 			if (Comp->GetModel()!= nullptr){
 				Renderer3D::Draw(*Comp);
 			}
 		}
-		Renderer2D::BeginContext(Projection,EditorCamera);
-		for (SpriteComponent* Comp : Registry.SpriteComponents) {
-			Renderer2D::DrawQuad(*Comp); 
-		}
+		
+		EditorCamera.OnUpdate(DeltaTime);
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime) {

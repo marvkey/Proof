@@ -23,10 +23,11 @@ namespace Proof{
         void SetupMesh();
         TransformComponent MeshTransform;
         TagComponent MeshTags;
+        Count<class VertexArray> m_VertexArrayObject;
+        Count<class VertexBuffer>m_VertexBufferObject;
+        Count<class IndexBuffer> m_IndexBufferObject;
+        uint32_t StartIndex =0;
     private:
-        Count<class VertexArray> VertexArrayObject;
-        Count<class VertexBuffer> VertexBufferObject;
-        Count<class IndexBuffer> IndexBufferObject;
         glm::mat4 ModelMatrix = glm::mat4(1.0f);
         void InitMatrix();
         std::vector<Count<class Texture2D>>m_Textures;

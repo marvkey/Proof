@@ -140,7 +140,6 @@ namespace Proof {
 
     void WindowsWindow::Window_Close_Callback(GLFWwindow* window){
         WindowCloseEvent::Instance->EventHandled = true;
-        PF_ENGINE_INFO("WINDOW HAS BEEN CLOSSED");
     }
 
     void WindowsWindow::Controller_Callback(int jid, int event){
@@ -153,7 +152,6 @@ namespace Proof {
     }
 
     void WindowsWindow::Framebuffer_size_callback(GLFWwindow* window, int width, int height){
-            
     }
 
     void WindowsWindow::Window_Refresh_callback(GLFWwindow* window){
@@ -163,11 +161,11 @@ namespace Proof {
     void WindowsWindow::Window_Input_Focus_callback(GLFWwindow* window, int focused){
         if (focused) {
             WindowFocusEvent::Instance->EventHandled = true;
-            PF_ENGINE_INFO("Window Has Input focus");
+            //PF_ENGINE_INFO("Window Has Input focus");
         }
         else{
             WindowFocusEvent::Instance->EventHandled = false;
-            PF_ENGINE_INFO("Window Lost Input Focus");
+            //PF_ENGINE_INFO("Window Lost Input Focus");
         }
     }
 
@@ -187,22 +185,24 @@ namespace Proof {
         MouseScrollEvent::Instance->EventHandled = true;
         MouseScrollEvent::Instance->PosX = xoffset;
         MouseScrollEvent::Instance->PosY = yoffset;
-        MouseScrollX.push_back(xoffset);
-        MouseScrollY.push_back(yoffset);
+        MouseScrollX.emplace_back(xoffset);
+        MouseScrollY.emplace_back(yoffset);
     }
 
     int WindowsWindow::createWindow() {
         if (!glfwInit()) {
-            PF_ENGINE_ERROR("Could Not Initilize GLFW");
+            PF_CORE_ASSERT(false,"Could Not Initilize GLFW");
             return -1;
         }
-        MainWindow = glfwCreateWindow(Width, Height, "Proof Engine", NULL, NULL);
+        //glfwWindowHint(GLFW_MAXIMIZED,GLFW_FALSE);
+        MainWindow = glfwCreateWindow(Width,Height, "Proof Engine", NULL, NULL);
+        
         if (MainWindow == nullptr) {
-            PF_ENGINE_ERROR("Window Is Nullptr");
+            PF_CORE_ASSERT(false,"Window Is Nullptr");
             glfwTerminate();
             return -1;
         }
-       
+        glfwMakeContextCurrent(MainWindow);
         glfwSetKeyCallback(MainWindow,key_callback);
         glfwSetMouseButtonCallback(MainWindow,mouse_button_callback);
 

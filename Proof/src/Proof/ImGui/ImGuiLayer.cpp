@@ -17,13 +17,14 @@ namespace Proof {
 		Layer::OnAttach();
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiIO& io = ImGui::GetIO();;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+		io.ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
 		
 		/* for fonts got to cherno video from 8 mINute on making editor look GOOd*/
 
@@ -60,8 +61,8 @@ namespace Proof {
 		}		
 	}
 	void ImGuiLayer::SetDarkTheme() {
-		//ImGui::StyleColorsDark();
 
+		auto& style = ImGui::GetStyle();
 		auto& colors = ImGui::GetStyle().Colors;
 		colors[ImGuiCol_WindowBg] = ImVec4{0.1f,0.1f,0.1f,1.0f};
 
@@ -92,5 +93,12 @@ namespace Proof {
 		colors[ImGuiCol_TitleBg] = ImVec4{0.1f,0.1f,0.121f,1.0f};
 		colors[ImGuiCol_TitleBgActive] = ImVec4{0.10f,0.12f,0.2f,1.0f};
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.1095f,0.10f,0.1f,1.0f};
+		style.FrameRounding = 12;
+		style.PopupRounding =12;
+		style.TabBorderSize =1;
+		style.PopupRounding =12;
+		style.GrabRounding =12;
+		style.PopupBorderSize =0;
+		style.ScrollbarSize =15;
 	}
 }

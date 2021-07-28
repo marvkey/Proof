@@ -16,7 +16,7 @@ namespace Proof {
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
     Application::Application(){
-        MainWindow = new WindowsWindow(1300,600);
+        MainWindow = new WindowsWindow(1920,1057); // this is the size of our current second monitor
 
         MainWindow->createWindow();
         m_GraphicsContext =GraphicsContext::Create(CurrentWindow::GetWindow());
@@ -68,33 +68,22 @@ namespace Proof {
                 WindowMinimized = true;
             else
                 WindowMinimized = false;
-            ImGuiMainLayer->Begin();
-            for (Layer* layer : MainLayerStack.V_LayerStack)
-                layer->OnImGuiDraw();
-            ImGuiMainLayer->End();
             if (WindowMinimized == false) {
                 ScreenFrameBuffer->Bind();
                 RendererCommand::Clear();
                 RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
-                
-                /*
-                if(Input::IsMouseButtonPressed(MouseButton::ButtonLeft)){
-                    glBindFramebuffer(GL_READ_FRAMEBUFFER,ScreenFrameBuffer->GetFrameBufferID());
-                    glReadBuffer(GL_COLOR_ATTACHMENT0); // reading from zero colour attachment
-                    float Pixels[3];
-                    glReadPixels(Input::GetMousePosX(),Input::GetMousePosX(),1,1,GL_RGB,GL_FLOAT,Pixels);
-                    PF_ENGINE_INFO("%i",(int)Pixels[2]);
-                }
-                */
+
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
                 Renderer::Draw();
-
                 ScreenFrameBuffer->UnBind();
-                MainWindow->WindowUpdate(DeltaTime);
             }
+            ImGuiMainLayer->Begin();
+            for (Layer* layer : MainLayerStack.V_LayerStack)
+                layer->OnImGuiDraw();
+            ImGuiMainLayer->End();
 
-
+            MainWindow->WindowUpdate(DeltaTime);
             Renderer::Reset();
             RendererCommand::SwapBuffer(CurrentWindow::GetWindow());
             RendererCommand::PollEvents();

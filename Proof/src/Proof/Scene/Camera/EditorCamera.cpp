@@ -2,6 +2,7 @@
 #include "EditorCamera.h"
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Core/CurrentWindow.h"
+#include <ImGui/imgui.h>
 namespace Proof {
 
 	void EditorCamera3D::BeginPlay() {
@@ -10,11 +11,16 @@ namespace Proof {
 	void EditorCamera3D::OnUpdate(FrameTime DeltaTime){
 		CameraView = glm::lookAt(CameraPos, CameraPos + CameraFront, CameraUp);
 		
-		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight))
+		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight)){
 			glfwSetInputMode(CurrentWindow::GetWindow(),GLFW_CURSOR,GLFW_CURSOR_NORMAL);
+			ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse; // alllows mouse capture
+
+		}
 			
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight)) {
 			glfwSetInputMode(CurrentWindow::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse; // no mouse capture
+
 			MouseInput(DeltaTime);
 			KeyBoardInput(DeltaTime);
 			ScrollInput();

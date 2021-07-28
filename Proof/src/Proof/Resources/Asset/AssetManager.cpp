@@ -6,12 +6,13 @@
 #include <yaml-cpp/yaml.h>
 #include "TextureAsset/TextureAsset.h"
 #include "MeshAsset.h"
-
+#include "MaterialAsset.h"
 namespace Proof{
 	AssetManager* AssetManager::s_AssetManager = new AssetManager();
 	void AssetManager::NewAsset(uint32_t ID,Asset* asset) {
 		if (ID == 0) {
-			PF_CORE_ASSERT(false,"Id cannot be 0");
+			PF_CORE_ASSERT(false,"ID cannot be 0");
+			ID =AssetManager::CreateID();
 		}
 		if(HasID(ID) ==false){
 			s_AssetManager->m_AllAssets.insert({ID,asset});
@@ -23,6 +24,7 @@ namespace Proof{
 		return s_AssetManager->m_AllAssets.find(ID) != s_AssetManager->m_AllAssets.end();
 	}
 	Asset* AssetManager::GetAsset(uint32_t ID) {
+
 		if (HasID(ID) == true) {
 			return s_AssetManager->m_AllAssets.find(ID)->second;
 		}
@@ -64,8 +66,15 @@ namespace Proof{
 					AssetManager::NewAsset(asset->GetID(),asset);
 					continue;
 				}
+
+				if(GetAssetType(dirEntry.path().string()) == MaterialAsset::GetStaticName()){
+					MaterialAsset* asset = new MaterialAsset;
+					asset->LoadAsset(dirEntry.path().string());
+					AssetManager::NewAsset(asset->GetID(),asset);
+				}
 			}
 		}
+
 	}
 	bool AssetManager::IsFileValid(const std::string& Path) {
 		YAML::Node data = YAML::LoadFile(Path);

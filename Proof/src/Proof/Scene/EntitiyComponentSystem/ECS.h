@@ -21,7 +21,7 @@ namespace Proof{
 				a->second->emplace_back(Temp);
 				return Temp;
 			}
-			PF_CORE_ASSERT(false,"Entity Id Was Not FOund");
+			PF_ENGINE_ERROR("Entity Id Was Not FOund");
 			return nullptr;
 		}
 		template<>
@@ -34,7 +34,7 @@ namespace Proof{
 				SceneMeshComponents.emplace_back(Temp);
 				return Temp;
 			}
-			PF_CORE_ASSERT(false,"Entity Id Was Not FOund");
+			PF_ENGINE_ERROR("Entity Id Was Not FOund");
 			return nullptr;
 		};
 
@@ -80,7 +80,7 @@ namespace Proof{
 				}
 				return nullptr;
 			}
-			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
+			PF_ENGINE_ERROR(false,"Entity ID Was Not FOund");
 		}
 		template<typename T>
 		T* GetComponent(uint32_t ID,const std::string& CompName) {
@@ -96,7 +96,7 @@ namespace Proof{
 				}
 				return nullptr;
 			}
-			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
+			PF_ENGINE_ERROR("Entity ID Was Not FOund");
 		}
 
 		class Component* GetComponent(uint32_t ID,uint32_t Index){
@@ -109,7 +109,7 @@ namespace Proof{
 				PF_ENGINE_WARN("ID Is Not Valid");
 				return nullptr;
 			}
-			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
+			PF_ENGINE_ERROR(false,"Entity ID Was Not FOund");
 		}
 		template<typename T>
 		bool HasComponent(uint32_t ID) {
@@ -123,7 +123,7 @@ namespace Proof{
 				}
 				return false;
 			}
-			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
+			PF_ENGINE_ERROR("Entity ID Was Not FOund");
 		}
 
 		template<typename T>
@@ -154,7 +154,7 @@ namespace Proof{
 				PF_ENGINE_WARN("Remove component Entitiy does not have component or ID Is Not Valid Size of Holder is %i",TempVec->size());
 				return;
 			}
-			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
+			PF_ENGINE_ERROR("Entity ID Was Not FOund");
 		}
 
 		template<>

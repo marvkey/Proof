@@ -21,7 +21,7 @@ public:
 	static float GetScrollWheelX();
 	static float GetScrollWheelY();
 	static float GetMousePosX();
-	static float GetMouswPosY();
+	static float GetMousePosY();
 	static bool ViewPoartHovered;  // This Should Be Temporary;
 };
  

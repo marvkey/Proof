@@ -43,7 +43,7 @@ namespace Proof
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t ImageWidth,uint32_t ImageHeight,TextureType _TextureType):
 		Width(ImageWidth),
 		Height(ImageHeight),
-		m_TextureType(_TextureType) 	{
+		m_TextureType(_TextureType){
 		m_Path = "Null";
 		m_InternalFormat = GL_RGBA8;
 		m_DataFormat = GL_RGBA;
@@ -72,5 +72,55 @@ namespace Proof
 	}
 	void OpenGLTexture2D::unBind() {
 		glDisable(GL_TEXTURE_2D);
+	}
+
+
+	OpenGLCubeMap::OpenGLCubeMap(const std::vector<std::string>& Paths) {
+		glGenTextures(1,&m_ID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP,m_ID);
+		for (unsigned int i = 0; i < 6; i++) {
+			
+			m_Data = stbi_load(Paths[i].c_str(),&m_Width,&m_Height,&m_NrChannels,0);
+			if (m_Data) {
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,0,GL_RGB,m_Width,m_Height,0,GL_RGB,GL_UNSIGNED_BYTE,m_Data);
+				stbi_image_free(m_Data);
+			}
+			else {
+				PF_ENGINE_ERROR("Cube map is empty load path: %s",Paths[i].c_str());
+			}
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE);
+	}
+	OpenGLCubeMap::OpenGLCubeMap(const std::string& Path) {
+		glGenTextures(1,&m_ID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP,m_ID);
+		for (unsigned int i = 0; i < 6; i++) {
+
+			m_Data = stbi_load(Path.c_str(),&m_Width,&m_Height,&m_NrChannels,0);
+			if (m_Data) {
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,0,GL_RGB,m_Width,m_Height,0,GL_RGB,GL_UNSIGNED_BYTE,m_Data);
+				stbi_image_free(m_Data);
+			}
+			else {
+				PF_ENGINE_ERROR("Texture passed in cube map is empty %s",Path.c_str());
+				return;
+			}
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE);
+	}
+	void OpenGLCubeMap::Bind() {
+		glBindTexture(GL_TEXTURE_CUBE_MAP,m_ID);
+	}
+
+	void OpenGLCubeMap::unBind() {
+		glBindTexture(GL_TEXTURE_CUBE_MAP,0);
 	}
 }

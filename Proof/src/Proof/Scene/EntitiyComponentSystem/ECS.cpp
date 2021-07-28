@@ -39,8 +39,10 @@ namespace Proof{
                 delete a->at(i);
                 if(a->size() ==1)break;
             }
+
             EntityHolder.erase(ID);
             AllEntityID.erase(it);
+
             return;
         }
         PF_ENGINE_ERROR("Entity does not exist with ID No Delete");

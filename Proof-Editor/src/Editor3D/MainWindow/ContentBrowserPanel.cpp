@@ -13,7 +13,8 @@
 #include "Proof/Resources/Asset/Asset.h"
 
 #include <yaml-cpp/yaml.h>
-
+#include "Proof/Resources/Asset/MaterialAsset.h"
+#include "../Proof-Editor/src/Editor3D/Editor3D.h"
 namespace Proof
 {
 	static const std::filesystem::path s_AssetsPath = "content";
@@ -23,9 +24,13 @@ namespace Proof
 	static std::string NewFolderName;
 	static std::string NewFileName;
 	static std::string FileDragSource;
+	static std::string FileDragSourceName;
 
-	ContentBrowserPanel::ContentBrowserPanel():
-		m_CurrentDirectory(s_AssetsPath) {
+
+	ContentBrowserPanel::ContentBrowserPanel(class Editore3D* owner):
+		m_CurrentDirectory(s_AssetsPath), 
+		m_owner(owner)
+	{
 		m_FolderIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FolderIcon.png");
 		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
 		m_MeshIcon = Texture2D::Create("Resources/Icons/ContentBrowser/MeshComponentIcon.png");
@@ -33,7 +38,7 @@ namespace Proof
 	}
 	void ContentBrowserPanel::ImGuiRender() {
 		ImGui::Begin("Content Browser");
-		ImGui::BeginChild("Folders",{100,ImGui::GetContentRegionAvail().y});
+		ImGui::BeginChild("Folders",{200,ImGui::GetContentRegionAvail().y});
 		if (ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(),{60,60})) {
 			m_CurrentDirectory = {s_AssetsPath};
 		}
@@ -42,10 +47,12 @@ namespace Proof
 			if (It.is_directory()) {
 				std::string Path = It.path().filename().string();
 				if(ImGui::TreeNode(Path.c_str())){
-					
+					for(auto& It : std::filesystem::directory_iterator(It.path())){
+						std::string temp = It.path().stem().string();
+						ImGui::Text((It.is_directory() ? "(Folder)"+temp: temp).c_str());
+					}
 					ImGui::TreePop();
 				}
-				//ImGui::NewLine();
 			}
 		}
 		ImGui::EndChild();
@@ -78,12 +85,6 @@ namespace Proof
 						NewFolderName = "";
 						ImGui::CloseCurrentPopup();
 					}
-					else {
-
-						ImGui::BeginTooltip();
-						ImGui::TextColored({1.0,0.0,0.0,1},"Folder already exisst");
-						ImGui::EndTooltip();
-					}
 				}
 				ImGui::EndMenu();
 			}
@@ -103,17 +104,11 @@ namespace Proof
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Done") || ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
-					if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName) == false) {
+					if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset") == false) {
 						std::ofstream({m_CurrentDirectory.string() + "\\" + NewFileName+".ProofAsset"});
 						ImGui::CloseCurrentPopup();
 						NewAsset(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset");
 						NewFileName = "";
-					}
-					else {
-
-						ImGui::BeginTooltip();
-						ImGui::TextColored({1.0,0.0,0.0,1},"File already exist");
-						ImGui::EndTooltip();
 					}
 				}
 				ImGui::EndMenu();
@@ -139,16 +134,37 @@ namespace Proof
 						NewMeshAsset(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset");
 						NewFileName = "";
 					}
-					else {
-						ImGui::BeginTooltip();
-						ImGui::TextColored({1.0,0.0,0.0,1},"File already exist");
-						ImGui::EndTooltip();
+				}
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("New Material")) {
+				char buffer[256];
+				memset(buffer,0,sizeof(buffer));
+				strcpy_s(buffer,sizeof(buffer),NewFolderName.c_str());
+				if (ImGui::InputTextWithHint("##Name","Name of Material",buffer,sizeof(buffer))) {
+					NewFileName = buffer;
+				}
+
+				if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset") == true && NewFileName.empty() == false) {
+					ImGui::BeginTooltip();
+					ImGui::TextColored({1.0,0.0,0.0,1},"File already exist");
+					ImGui::EndTooltip();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Done") || ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
+					if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName) == false) {
+						ImGui::CloseCurrentPopup();
+						NewMaterialAsset(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset");
+						NewFileName = "";
 					}
 				}
 				ImGui::EndMenu();
 			}
+
 			ImGui::EndPopup();
 		}
+
 
 		float cellSize = thumbnailSize + padding;
 
@@ -165,29 +181,62 @@ namespace Proof
 			std::string Path = It.path().string();
 			ImGui::Text("%s",Path.c_str());
 			*/
+			bool isScene = IsScene(It.path().string());
+			uint32_t ID = 0;
 			std::string Path = It.path().string();
 			std::string filename = It.is_directory() ? It.path().filename().string() : It.path().filename().stem().string(); // returns the file name with ending like hallo.txt, stem removes the .txt
 			std::string filenameNoStem = It.path().filename().string();
 			if(It.is_directory()){
 				if (ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(),{thumbnailSize,thumbnailSize})) {} // there are more paremter to flip image and to add a tint colour
-			}else{
-				/* Pice of Code taht is taking long */
 				
-				uint32_t ID =GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + filenameNoStem);
+			}else{
+				
+				if(isScene ==false){
 
-				Asset* Temp =nullptr;
-				Temp = AssetManager::GetAsset(ID);
-				if(Temp != nullptr){
-					if (ImGui::ImageButton((ImTextureID)(Temp->IsImageIDNUll() ==false? Temp->GetImageID(): m_FileIcon->GetID()),{thumbnailSize,thumbnailSize})) {
+					ID = GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + filenameNoStem);
+					Asset* Temp =nullptr;
+					Temp = AssetManager::GetAsset(ID);
+					if(Temp != nullptr){
+						if (ImGui::ImageButton((ImTextureID)(Temp->IsImageIDNUll() ==false? Temp->GetImageID(): m_FileIcon->GetID()),{thumbnailSize,thumbnailSize})) {
+						}
+						if(ImGui::IsItemHovered()&& ImGui::IsMouseDown(0)==false){
+							FileDragSource = m_CurrentDirectory.string() + "\\" + filenameNoStem;
+							FileDragSourceName = filename;
+						}
+						if(ImGui::BeginDragDropSource()){
+							uint32_t staticID =GetIDCurrentDirectory(FileDragSource);
+							ImGui::SetDragDropPayload(AssetManager::GetAsset(staticID)->GetName().c_str(),&staticID,sizeof(uint32_t));
+
+							ImGui::Image((ImTextureID)(Temp->IsImageIDNUll() == false ? Temp->GetImageID() : m_FileIcon->GetID()),{60,60}); 
+							ImGui::Text(FileDragSourceName.c_str());
+							ImGui::EndDragDropSource();
+						}
+
+						
+						if(Temp->GetName() == MaterialAsset::GetStaticName()&& ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)){
+							MaterialAsset * TempMaterial = dynamic_cast<MaterialAsset*>(Temp);
+							m_owner->SetMaterialEditor(*TempMaterial);
+							//ImGui::Begin("Material Editor");
+							//MaterialAsset* TempMaterial = dynamic_cast<MaterialAsset*>(Temp);
+							//ImGui::ColorEdit4("##Colour",glm::value_ptr(TempMaterial->m_Material.Colour));
+							//
+							//ImGui::End();
+						}
+						
 					}
-					if(ImGui::IsItemHovered()&& ImGui::IsMouseDown(0)==false){
+				}else{
+					if (ImGui::ImageButton((ImTextureID)m_FileIcon->GetID() ,{thumbnailSize,thumbnailSize})){
+						
+					}
+					if (ImGui::IsItemHovered() && ImGui::IsMouseDown(0) == false) {
 						FileDragSource = m_CurrentDirectory.string() + "\\" + filenameNoStem;
+						FileDragSourceName = filename;
 					}
-					if(ImGui::BeginDragDropSource()){
-						uint32_t staticID =GetIDCurrentDirectory(FileDragSource);
-						ImGui::SetDragDropPayload(Temp->GetName().c_str(),&staticID,sizeof(uint32_t));
 
-						ImGui::Image((ImTextureID)(Temp->IsImageIDNUll() == false ? Temp->GetImageID() : m_FileIcon->GetID()),{60,60}); 
+					if (ImGui::BeginDragDropSource()) {
+						ImGui::SetDragDropPayload("World",FileDragSource.c_str(),sizeof(FileDragSource));
+						ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(),{60,60});
+						ImGui::Text(FileDragSourceName.c_str());
 						ImGui::EndDragDropSource();
 					}
 				}
@@ -200,9 +249,10 @@ namespace Proof
 					m_CurrentDirectory /= filename; // /= is the operator overloaded
 				}
 			}
+			
 			if (ImGui::BeginPopupContextItem(filename.c_str())) {
 				if (ImGui::MenuItem("Delete")) {
-					if(It.is_directory() ==false){
+					if(It.is_directory() ==false && isScene==false){
 						AssetManager::Remove(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + (It.is_directory() ? filename : filenameNoStem)));
 					}
 					std::filesystem::remove_all(m_CurrentDirectory.string() + "\\" + (It.is_directory() ? filename : filenameNoStem));
@@ -216,11 +266,12 @@ namespace Proof
 						RenameVariable = buffer;
 					}
 
-					if(RenameVariable != filename){
-						if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + RenameVariable) == true && RenameVariable.empty() == false) {
+					if(RenameVariable != filename && RenameVariable.empty() ==false){
+						if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + RenameVariable + (It.is_directory() ? " " : ".ProofAsset")) == true) {
 							ImGui::BeginTooltip();
 							ImGui::TextColored({1.0,0.0,0.0,1},"File already exist");
 							ImGui::EndTooltip();
+							ImGui::SetMouseCursor(8); // this is set to not allowed
 						}
 					}
 					
@@ -232,11 +283,10 @@ namespace Proof
 						}else{
 							if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + RenameVariable + (It.is_directory() ? " " : ".ProofAsset")) == false) {
 								std::filesystem::rename(m_CurrentDirectory.string() + "\\" + filenameNoStem,m_CurrentDirectory.string() + "\\"+ RenameVariable + (It.is_directory() ? " ":".ProofAsset"));
-								if(It.is_directory() == false){
+								if(It.is_directory() == false && isScene ==false){
 									auto* asset = AssetManager::GetAsset(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset"));
 									asset->SetPath(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset");
 									asset->SaveAsset();
-
 								}
 								RenameVariable = "";
 								ImGui::CloseCurrentPopup();
@@ -249,9 +299,15 @@ namespace Proof
 				ImGui::EndPopup();
 
 			}
-			ImGui::Text(filename.c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
+			if(ID !=0 || It.is_directory()){
+				ImGui::Text(filename.c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
+				ImGui::NextColumn();
+			}
 
-			ImGui::NextColumn();
+			if(isScene ==true){
+				ImGui::Text(filename.c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
+				ImGui::NextColumn();
+			}
 		}
 		ImGui::Columns(1);
 		ImGui::SliderFloat("Thumbnail Size",&thumbnailSize,16,512);
@@ -268,11 +324,15 @@ namespace Proof
 		}
 	}
 	void ContentBrowserPanel::NewMeshAsset(const std::string& NewFilePath) {
-		std::string FIle = Utils::FileDialogs::OpenFile("Texture (*.png)\0 *.obj\0 ");
+		std::string FIle = Utils::FileDialogs::OpenFile("Texture (*.obj)\0 *.obj\0 ");
 		if (FIle.empty() == false) {
 			MeshAsset* TempAsset = new MeshAsset(FIle,NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
 		}
+	}
+	void ContentBrowserPanel::NewMaterialAsset(const std::string& NewFilePath) {
+			MaterialAsset* TempAsset = new MaterialAsset("null",NewFilePath);
+			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
 	}
 	uint32_t ContentBrowserPanel::GetIDCurrentDirectory(const std::string& Path) {
 
@@ -283,8 +343,9 @@ namespace Proof
 		while (std::getline(testFile,line)) {
 			if (line.empty() ==false) { // first line
 				if(line.substr(0,16) == "AssetTypeString:"){
+					break;
 				}
-				break;
+				return 0;
 			}
 		}
 		while (std::getline(testFile,line)) {
@@ -295,5 +356,17 @@ namespace Proof
 			}
 		}
 		return 0;
+	}
+	bool ContentBrowserPanel::IsScene(const std::string& Path) {
+		std::ifstream testFile(Path);
+		std::string line;
+		while (std::getline(testFile,line)) {
+			if (line.empty() == false) { // first line
+				if (line.substr(0,6) == "World:") {
+					return true;
+				}
+				return false;
+			}
+		}
 	}
 }

@@ -2,6 +2,7 @@
 #include "Texture.h"
 #include "RendererAPI.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
+//#include "Platform/OpenGL/OpenGLCubeMap.h"
 namespace Proof {
 	Count<Texture2D> Texture2D::Create(const std::string& Path,TextureType _TextureType) {
 		switch (RendererAPI::GetAPI()) {
@@ -15,6 +16,18 @@ namespace Proof {
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
 			case RendererAPI::API::OpenGL: return CreateCount<OpenGLTexture2D>(ImageWidth,ImageHeight,_TextureType);
+		}
+	}
+	Count<CubeMap> CubeMap::Create(const std::vector<std::string>& Paths) {
+		switch (RendererAPI::GetAPI()) {
+		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
+		case RendererAPI::API::OpenGL: return CreateCount<OpenGLCubeMap>(Paths);
+		}
+	}
+	Count<CubeMap> CubeMap::Create(const std::string& Path) {
+		switch (RendererAPI::GetAPI()) {
+		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
+		case RendererAPI::API::OpenGL: return CreateCount<OpenGLCubeMap>(Path);
 		}
 	}
 }

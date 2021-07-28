@@ -14,15 +14,16 @@ namespace Proof {
 		virtual void OnImGuiDraw() override;
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
+		void SetMaterialEditor(class MaterialAsset& material);
+
 	private:
-		void NewWorld();
 		bool Docking = false;
 		void ViewPort();
 		glm::vec2 _ViewPortSize;
 		void SetDocking(bool *p_open);
 		glm::vec2 _ViewPortLocation;
 		bool ViewPortResize = false;
-		class World* ActiveWorld;
+		class World* ActiveWorld =nullptr;
 
 		class OrthagraphicCamera SceneCamera{-1.0f,1.0f,-1.0f,1.0f};
 		class PerspectiveCamera SceneCamera3D{45.f,_ViewPortSize.x/ _ViewPortSize.y,0.1f,100.f};
@@ -31,16 +32,28 @@ namespace Proof {
 		glm::vec3 SquareScale ={1.0f,1.0f,1.0f};
 		glm::vec4 Square1Color = {1.0f,1.0f,1.0f,1.f};
 		glm::vec3 Rotation = {0,0,0};
-		//Count<Texture2D> WoodenTexture;
 
-		//class MeshComponent PlayerMeshComponent;
-		//class MeshComponent SecondMeshComponent;
-
+		int GuizmoType =-1;
 		Entity Player;
 		Entity RealPlayer;
 		class SceneHierachyPanel m_WorldHierachy;
-		ContentBrowserPanel m_CurrentContentBrowserPanel;
+		class ContentBrowserPanel m_CurrentContentBrowserPanel ={this};
 		friend class Renderer3D;
 
+		void NewWorld(bool Save);
+		void OpenWorld();
+		void Save();
+		void Editore3D::Save(const std::string& Path);
+
+		std::vector<std::string>CubeMapPaths; 
+		Count<Shader> m_SkyBoxShader;
+		Count<VertexBuffer> m_SkyBoxBuffer;
+		Count<VertexArray> m_SkyBoxVertexArray;
+		Count<CubeMap> m_CubeMap;
+
+		void MaterialEditor();
+
+		MaterialAsset* mat;
+		uint32_t TempID;
 	};
 }

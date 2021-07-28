@@ -1,7 +1,8 @@
 #include "Proofprch.h"
 #include "OpenGLGraphicsContext.h"
-#include <Glad/glad.h>
+//#include <Glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
     OpenGLGraphicsContext::OpenGLGraphicsContext(GLFWwindow* _WindowHandle)
@@ -12,6 +13,10 @@ namespace Proof
         glfwMakeContextCurrent(WindowHandle);
         int Status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
         PF_CORE_ASSERT(Status,"GLew is not initilized");
+        Renderer::s_RenderCompany = (const char*)glGetString(GL_VENDOR);
+        Renderer::s_GraphicsCard = (const char*)glGetString(GL_RENDERER);
+        Renderer::s_GraphicsCardVersion = (const char*)glGetString(GL_VERSION);
+
         PF_ENGINE_INFO("Vendor: %s",glGetString(GL_VENDOR));
         PF_ENGINE_INFO("Renderer: %s",glGetString(GL_RENDERER));
         PF_ENGINE_INFO("Version: %s",glGetString(GL_VERSION));

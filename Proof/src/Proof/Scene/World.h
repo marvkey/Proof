@@ -16,6 +16,9 @@ namespace Proof{
 		virtual void EndRuntime();
 		std::string GetName(){return Name;};
 		class ECS Registry;
+		std::string GetPath(){
+			return m_Path;
+		}
 	private:
 		std::string Name = "DefaultWorld";
 		template<class T>
@@ -27,5 +30,8 @@ namespace Proof{
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		friend class SceneSerializer;
 		friend class Component;
+		friend class Editore3D;
+		std::string m_Path;
+		glm::mat4 Projection;
 	};
 }

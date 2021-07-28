@@ -22,7 +22,7 @@ namespace Proof{
 
 		template<typename T,typename UIFunction>
 		void DrawComponents(const std::string&name, Entity& entity, T* Comp,uint32_t IndexValue,UIFunction Uifunction);
-
+		friend class Editore3D;
 	};
 }
 

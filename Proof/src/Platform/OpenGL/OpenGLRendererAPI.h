@@ -7,6 +7,8 @@ namespace Proof {
 	  virtual void SetClearColor(const glm::vec4& Color) override;
 	  virtual void SetClearColor(float R,float G,float B,float A) override;
 	  virtual void Clear()  override;
+
+	  virtual void DrawArrays(uint32_t Count) override;
 	  virtual void DrawIndexed(const Count<VertexArray>& ArrayObject)override;
 	  virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count) override;
 
@@ -18,7 +20,7 @@ namespace Proof {
 	  virtual void EnableDepth(bool Depth);
 	  virtual void PollEvents();
    private:
-	   bool IsDepthEnabled;
+	   bool m_IsDepthEnabled;
    };
 }
 

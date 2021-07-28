@@ -1,0 +1,30 @@
+World: rock and cube
+Entities:
+  - Entity: 17951
+    TagComponent:
+      Tag: rock
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 22660
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 10747
+  - Entity: 28267
+    TagComponent:
+      Tag: cube
+    TransformComponent:
+      Location: [1.70000005, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 7722
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 19404

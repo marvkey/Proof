@@ -77,9 +77,9 @@ namespace Proof {
 		s_Renderer2DStats->m_DrawCalls = 0;
 		s_Renderer2DStats->m_QuadCount = 0;
 	}
-	void Renderer2D::BeginContext(glm::mat4 Projection,EditorCamera3D& EditorCamera) {
+	void Renderer2D::BeginContext(glm::mat4 Projection,glm::mat4& ViewMatrix) {
 		s_Storage2DData->m_Shader->SetMat4("u_ViewProjection",Projection);
-		s_Storage2DData->m_Shader->SetMat4("u_View",EditorCamera.GetCameraView());
+		s_Storage2DData->m_Shader->SetMat4("u_View",ViewMatrix);
 		s_Renderer2DStats->m_DrawCalls = 0;
 		s_Renderer2DStats->m_QuadCount = 0;
 	}

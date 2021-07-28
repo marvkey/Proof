@@ -5,6 +5,8 @@
 
 namespace Proof{
 	Texture2DAsset::Texture2DAsset(const std::string& FilePath,const std::string& AssetSavePath) {
+		m_ID = AssetManager::CreateID();
+
 		m_Texture =Texture2D::Create(FilePath);
 		m_AssetType = AssetType::Texture2DAsset;
 		m_Path = AssetSavePath;

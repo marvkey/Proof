@@ -16,14 +16,33 @@
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Entity.h"
+#include "Proof/Scene/Material.h"
 namespace Proof
 {
+
+    static uint32_t Temp2 = (sizeof(glm::vec4));
+    static uint32_t Temp3 = (sizeof(glm::vec4) * 2);
+    static uint32_t Temp4 = (sizeof(glm::vec4) * 3);
+    static uint32_t Temp5 = (sizeof(glm::vec4) * 4);
+    struct InstanceRendererVertex{
+        InstanceRendererVertex(const glm::mat4& Transform,const glm::vec4& Colour)
+            :
+            m_Transform(Transform),
+            m_Colour(Colour)
+        {
+        }
+        glm::mat4 m_Transform;
+        glm::vec4 m_Colour;
+    };
     static InstancedRenderer3D* Renderer3DInstance;
     Renderer3D::Render3DStats* Renderer3DStats;
     static std::vector<glm::mat4> m_Transforms;
+    static std::vector<glm::vec4> m_Material;
     static std::vector<uint32_t> s_DifferentID;
     static uint32_t DifferentMeshes = 0;
     static glm::mat4 ModelMatrix; 
+
+    static std::vector<InstanceRendererVertex> m_InstanceTransforms;
 
     uint32_t Renderer3D::Render3DStats::DrawCalls = 0;
     uint32_t Renderer3D::Render3DStats::NumberOfInstances = 0;
@@ -53,49 +72,62 @@ namespace Proof
         Renderer3DInstance->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
     }
     void Renderer3D::Draw(MeshComponent& meshComponent) {
+
         if (Renderer3DInstance->SceneHasAmountMeshes(meshComponent.GetMeshPointerID()) == true) {
             auto Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
+
             Map->second += 1;
 
             meshComponent.GetModel()->m_VertexArrayObject->Bind();
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(glm::mat4),(void*)0);
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
 
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(glm::mat4),(void*)(2 * sizeof(glm::vec4)));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(glm::mat4),(void*)(3 * sizeof(glm::vec4)));
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,m_Transform));
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(InstanceRendererVertex),(void*)Temp2);
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(InstanceRendererVertex),(void*)Temp3);
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(InstanceRendererVertex),(void*)Temp4);
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(7,4,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,m_Colour));
+
 
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(3,1);
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(4,1);
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(5,1);
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
-            ModelMatrix = glm::mat4(1.0f);
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(7,1);// Material
 
+
+            ModelMatrix = glm::mat4(1.0f);
             auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
             ModelMatrix = glm::translate(ModelMatrix,{Transform->Location + meshComponent.MeshLocalTransform.Location});
             ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0});
             ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0});
             ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1});
             ModelMatrix = glm::scale(ModelMatrix,{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
-            m_Transforms.emplace_back(ModelMatrix);
+            
+            InstanceRendererVertex temp(ModelMatrix,meshComponent.GetMaterial()->Colour);
+            m_InstanceTransforms.emplace_back(temp);
             Renderer3DStats->AmountDrawn += 1;
         }
         else {
-            Renderer3DInstance->m_AmountMeshes.insert({meshComponent.GetMeshPointerID(),1});
-            Renderer3DInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
-            s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
-            DifferentMeshes++;
+                Renderer3DInstance->m_AmountMeshes.insert({meshComponent.GetMeshPointerID(),1});
+                Renderer3DInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
+                s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
+                DifferentMeshes++;
+
 
             meshComponent.GetModel()->m_VertexArrayObject->Bind();
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(glm::mat4),(void*)0);
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(glm::mat4),(void*)(2 * sizeof(glm::vec4)));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(glm::mat4),(void*)(3 * sizeof(glm::vec4)));
+
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,m_Transform));
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(InstanceRendererVertex),(void*)Temp2);
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(InstanceRendererVertex),(void*)Temp3);
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(InstanceRendererVertex),(void*)Temp4);
+            meshComponent.GetModel()->m_VertexArrayObject->AddData(7,4,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,m_Colour));
+              
 
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(3,1);
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(4,1);
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(5,1);
             meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
-
+            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(7,1);// Material
+              
             ModelMatrix = glm::mat4(1.0f);
             auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
             ModelMatrix = glm::translate(ModelMatrix,{Transform->Location + meshComponent.MeshLocalTransform.Location});
@@ -103,18 +135,21 @@ namespace Proof
             ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0});
             ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1});
             ModelMatrix = glm::scale(ModelMatrix,{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
-            m_Transforms.emplace_back(ModelMatrix);
+
+            InstanceRendererVertex temp(ModelMatrix,meshComponent.GetMaterial()->Colour);
+
+            m_InstanceTransforms.emplace_back(temp);
             Renderer3DStats->AmountDrawn += 1;
             Renderer3DStats->NumberOfInstances += 1;
         }
     }
     void Renderer3D::EndContext() {
         if (DifferentMeshes == 0)return;
-        PF_PROFILE_FUNCTION();
         uint32_t SizeofOffset = 0;
-        for (uint32_t Size = 0; Size <= s_DifferentID.size()-1; Size++) {
+        for (uint32_t Size = 0; Size < s_DifferentID.size(); Size++) {
             Renderer3DInstance->m_VertexBuffer->Bind();
-            Renderer3DInstance->m_VertexBuffer->AddData(&m_Transforms[SizeofOffset],m_Transforms.size() * sizeof(glm::mat4));/* THIS CODE COULD BE TEMPORARY*/
+           //Renderer3DInstance->m_VertexBuffer->AddData(&m_Material[SizeofOffset],m_Material.size() * sizeof(glm::vec4));/* THIS CODE COULD BE TEMPORARY*/
+            Renderer3DInstance->m_VertexBuffer->AddData(&m_InstanceTransforms[SizeofOffset],m_InstanceTransforms.size() * sizeof(InstanceRendererVertex));/* THIS CODE COULD BE TEMPORARY*/
             uint32_t TempID = s_DifferentID[Size];
             auto& TempMesh = Renderer3DInstance->m_Meshes.find(TempID);
             auto& TempAmountMeshes = Renderer3DInstance->m_AmountMeshes.find(TempID);
@@ -131,6 +166,7 @@ namespace Proof
             TempMesh->second.GetModel()->m_VertexArrayObject->Bind();
             TempMesh->second.GetModel()->m_IndexBufferObject->Bind();
             RendererCommand::DrawElementIndexed(TempMesh->second.GetModel()->m_VertexArrayObject,TempAmountMeshes->second);
+           
             Renderer3DStats->DrawCalls++;
             SizeofOffset+= TempAmountMeshes->second;
         }
@@ -141,6 +177,8 @@ namespace Proof
         Renderer3DInstance->m_Meshes.clear();
         m_Transforms.clear();
         s_DifferentID.clear();
+        m_Material.clear();
+        m_InstanceTransforms.clear();
         DifferentMeshes = 0;
         Renderer3DStats->DrawCalls = 0;
         Renderer3DStats->AmountDrawn = 0;

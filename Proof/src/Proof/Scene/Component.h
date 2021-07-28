@@ -5,6 +5,8 @@
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof{
@@ -23,10 +25,10 @@ namespace Proof{
 			return AssetID;
 		}
 	protected:
+		uint32_t AssetID = 0;
 		std::string Name ="Default";
 		uint32_t m_EntityOwner;
 		class World* CurrentWorld =nullptr;
-		uint32_t AssetID;
 	private:
 		friend class Entity;
 		friend class World;
@@ -61,6 +63,14 @@ namespace Proof{
 		Vector Scale = {1.0f,1.0f,1.0f};
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
+
+		glm::mat4 GetTransform() const 		{
+			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+
+			return glm::translate(glm::mat4(1.0f),{Location})
+				* rotation
+				* glm::scale(glm::mat4(1.0f),{Scale});
+		}
 	};
 
 	struct Proof_API NativeScriptComponent :public Component {
@@ -87,23 +97,31 @@ namespace Proof{
 			return GetAsset() != nullptr ? GetAsset()->GetModel() : nullptr;
 		}
 		MeshAsset* GetAsset() {
-			if(AssetID ==0){
-				return nullptr;
-			}
-			auto* a =(MeshAsset*)AssetManager::GetAsset(AssetID);
-			if(a ==nullptr){
+			MeshAsset* a =(MeshAsset*)AssetManager::GetAsset(AssetID);
+
+			if(a ==nullptr)
 				AssetID =0;
-			}
 			return a;
 		}
 		
+		class Material* GetMaterial();
+
+		uint32_t GetMaterialPointerID(){
+			return m_MeshMaterialID;
+		}
+		bool HasMaterial(){
+			return m_MeshMaterialID;
+		}
 		uint32_t GetMeshPointerID();
 		TransformComponent MeshLocalTransform;
 	private:
 		friend class Entity;
 		friend class World;
 		friend class ECS;
-		uint32_t StartIndexSlot;
+		friend class SceneHierachyPanel;
+		friend class SceneSerializer;
+		uint32_t StartIndexSlot = 0;
+		uint32_t m_MeshMaterialID= 0;
 	};
 
 	/* THIS IS TEMPORARY THIS IS GONNA GO INTO THE 2D SECTION */
@@ -117,7 +135,12 @@ namespace Proof{
 			return nullptr;
 		}
 		Texture2DAsset* GetAsset(){
-			return (Texture2DAsset*)AssetManager::GetAsset(AssetID);
+			Texture2DAsset* a = (Texture2DAsset*)AssetManager::GetAsset(AssetID);
+			if (a == nullptr) {
+				AssetID = 0;
+				return nullptr;
+			}
+			return a;
 		}
 	private:
 		friend class Entity;

@@ -75,18 +75,18 @@ namespace Proof{
     }
 
     void Mesh::SetupMesh() {
-        VertexArrayObject = Proof::VertexArray::Create();
-        VertexBufferObject = Proof::VertexBuffer::Create(&m_Vertices[0],m_Vertices.size() * sizeof(Vertex));
-        IndexBufferObject = Proof::IndexBuffer::Create(&m_Indices[0],m_Indices.size());
-        VertexBufferObject->Bind();
-        IndexBufferObject->Bind();
-        VertexArrayObject->AttachIndexBuffer(IndexBufferObject);
-        VertexArrayObject->AddData(0,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertices));
-        VertexArrayObject->AddData(1,3,sizeof(Vertex),(void*)offsetof(Vertex,Normal));
-        VertexArrayObject->AddData(2,2,sizeof(Vertex),(void*)offsetof(Vertex,TexCoords));
-        //VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)offsetof(Vertex,Tangent));
-        //VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)offsetof(Vertex,Bitangent));
-        VertexArrayObject->UnBind();
+        m_VertexArrayObject = Proof::VertexArray::Create();
+        m_VertexBufferObject = Proof::VertexBuffer::Create(&m_Vertices[0],m_Vertices.size() * sizeof(Vertex));
+        m_IndexBufferObject = Proof::IndexBuffer::Create(&m_Indices[0],m_Indices.size());
+        m_VertexBufferObject->Bind();
+        m_IndexBufferObject->Bind();
+        m_VertexArrayObject->AttachIndexBuffer(m_IndexBufferObject);
+        m_VertexArrayObject->AddData(0,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertices));
+        m_VertexArrayObject->AddData(1,3,sizeof(Vertex),(void*)offsetof(Vertex,Normal));
+        m_VertexArrayObject->AddData(2,2,sizeof(Vertex),(void*)offsetof(Vertex,TexCoords));
+        m_VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)offsetof(Vertex,Tangent));
+        m_VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)offsetof(Vertex,Bitangent));
+        m_VertexArrayObject->UnBind();
     }
 
     void Mesh::InitMatrix() {

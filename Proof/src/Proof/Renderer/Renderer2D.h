@@ -31,7 +31,7 @@ namespace Proof {
 	public:
 		static void Init();
 		static void BeginContext(const glm::mat4& Projection,const Camera& camera);
-		static void BeginContext(glm::mat4 Projection,class EditorCamera3D& EditorCamera);
+		static void BeginContext(glm::mat4 Projection,glm::mat4& ViewMatrix);
 
 		static void BeginContext(const class OrthagraphicCamera& Camera);
 		static void DrawQuad(const glm::vec3& Location);

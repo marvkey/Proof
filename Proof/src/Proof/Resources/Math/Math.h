@@ -3,6 +3,9 @@
 #include <cmath>
 #include "Vector.h"
 #include "Rotate.h"
+#include "glm/glm.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 namespace Proof
 {
 	struct Proof_API Math {

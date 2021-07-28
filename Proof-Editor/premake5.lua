@@ -3,6 +3,7 @@ project "Proof-Editor"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
+    staticruntime "off"
 
     targetdir ("bin/".. OutputDirectory .. "/%{prj.name}")
     objdir ("bin-int/".. OutputDirectory .. "/%{prj.name}")
@@ -53,7 +54,7 @@ project "Proof-Editor"
 
     filter "system:windows"
         systemversion "latest"
-        buildoptions "/MDd"
+        --buildoptions "/MDd"
         defines {
             "PF_PLATFORM_WINDOW64"
         }

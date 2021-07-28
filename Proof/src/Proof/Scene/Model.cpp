@@ -21,6 +21,9 @@ namespace Proof{
     std::vector<Mesh> Model::GetMesh() const {
         return meshes;
     }
+    void Model::LoadModelOneMesh() {
+        
+    }
     void Model::LoadModel(std::string const& path) {
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
@@ -44,6 +47,9 @@ namespace Proof{
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
         std::vector<Count<Texture2D>> textures;
+        uint32_t StartINdexMesh = m_Vertices.size();
+        Offset += 1;
+
         for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
             Vertex vertex;
             vertex.Vertices = Vector(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z);
@@ -80,7 +86,9 @@ namespace Proof{
         std::vector<Count<Texture2D>>  heightMaps = LoadMaterialTextures(material,aiTextureType_HEIGHT,Texture2D::TextureType::Height);
         textures.insert(textures.end(),heightMaps.begin(),heightMaps.end());
 
-        return Mesh(vertices,indices,textures);
+        Mesh temp(vertices,indices,textures);
+        temp.StartIndex = StartINdexMesh;
+        return temp;
     }
 
     std::vector<Count<Texture2D>> Model::LoadMaterialTextures(aiMaterial* mat,aiTextureType type,Texture2D::TextureType _TextureType) {
@@ -111,91 +119,21 @@ namespace Proof{
         m_VertexBufferObject->Bind();
         m_IndexBufferObject->Bind();
         m_VertexArrayObject->AttachIndexBuffer(m_IndexBufferObject);
-        m_VertexArrayObject->AddData(0,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertices));
-        m_VertexArrayObject->AddData(1,3,sizeof(Vertex),(void*)offsetof(Vertex,Normal));
-        m_VertexArrayObject->AddData(2,2,sizeof(Vertex),(void*)offsetof(Vertex,TexCoords));
-        m_VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)offsetof(Vertex,Tangent));
-        m_VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)offsetof(Vertex,Bitangent));
+
+
+        uint32_t Vertices1= offsetof(Vertex,Vertices);
+        uint32_t Vertices2= offsetof(Vertex,TexCoords);
+        uint32_t Vertices3= offsetof(Vertex,Normal);
+        uint32_t Vertices4= offsetof(Vertex,Tangent);
+        uint32_t Vertices5= offsetof(Vertex,Bitangent);
+
+        m_VertexArrayObject->AddData(0,3,sizeof(Vertex),(void*)Vertices1);
+        m_VertexArrayObject->AddData(1,2,sizeof(Vertex),(void*)Vertices2);
+        m_VertexArrayObject->AddData(2,3,sizeof(Vertex),(void*)Vertices3);
+        m_VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)Vertices4);
+        m_VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)Vertices5);
+
         m_VertexArrayObject->UnBind();
     }
-    void Model::load_obj(const std::string& filename,std::vector<Vertex>& vertices,std::vector<uint32_t>& Indices,std::vector<Count<Texture2D>> Textures) {
-        std::string Line;
-        std::ifstream OBJFile(filename);
-        std::stringstream ss;
-        std::vector<Vector> v_Vertices;
-        std::vector<Vector> Normals;
-        std::vector<glm::vec2> TexCoords;
-        std::vector<uint32_t>v_Indices;
-
-        if (OBJFile.is_open() == true) {
-            while (std::getline(OBJFile,Line)) {
-                ss.clear();
-                ss.str(Line);
-                ss >> Line[0];
-                Vector TempVertices{0,0,0};
-                Vector TempNormals{0,0,0};
-                glm::vec2 TempTexCoords{0,0};
-                if (Line[0] == 'v') {
-                    ss >> TempVertices.X >> TempVertices.Y >> TempVertices.Z;
-                    v_Vertices.emplace_back(TempVertices);
-                }
-                if (Line[0] == 'v' && Line[1] == 't') {
-                    ss.clear();
-                    ss.str(Line);
-                    ss >> Line[0];
-                    ss >> Line[1];
-                    ss >> TempTexCoords.x >> TempTexCoords.y;
-                    TexCoords.emplace_back(TempTexCoords);
-                }
-
-                if (Line[0] == 'v' && Line[1] == 'n') {
-                    ss.clear();
-                    ss.str(Line);
-                    ss >> Line[0];
-                    ss >> Line[1];
-                    ss >> TempNormals.X >> TempNormals.Y >> TempNormals.Z;
-                    Normals.emplace_back(TempNormals);
-                }
-
-                if(Line[0] =='f'){
-                    std::istringstream s(Line.substr(2));
-                    char Temp;
-                    uint32_t Element1 = 0;
-                    uint32_t Element2 = 0;
-                    uint32_t Element3 = 0;
-
-                    uint32_t Element4 = 0;
-                    uint32_t Element5 = 0;
-                    uint32_t Element6 = 0;
-
-                    uint32_t Element7 = 0;
-                    uint32_t Element8 = 0;
-                    uint32_t Element9 = 0;
-                    // THIS CODE DOES NOT MAKE SENSE BUT IT WORKS LEAVE IT 
-                    s>>Element1>>Temp>>Element2>>Temp>>Element3>>Element4>>Temp>>Element5>>Temp>>Element6>>Element7>>Temp>>Element8>>Temp>>Element9;
-
-                    Indices.emplace_back(Element1);
-                    Indices.emplace_back(Element2);
-                    Indices.emplace_back(Element3);
-
-                    Indices.emplace_back(Element4);
-                    Indices.emplace_back(Element5);
-                    Indices.emplace_back(Element6);
-
-                    Indices.emplace_back(Element7);
-                    Indices.emplace_back(Element8);
-                    Indices.emplace_back(Element9);
-
-                }
-            }
-        }
-    }
-    void Model::ProcessVertex(uint32_t Element1,uint32_t Element2,uint32_t Element3,std::vector<uint32_t>& Indices,std::vector<glm::vec2>& textureCoords,std::vector<Vector> Normals,std::vector<Vertex> vertex) {
-        int CurrenteVertexPointer =Element1-1;
-        Indices.emplace_back(CurrenteVertexPointer);
-        glm::vec2 CurrentTex =textureCoords[Element2-1];
-
-        //vertex[CurrenteVertexPointer*2].TexCoords = CurrentTex.x;
-        //vertex[CurrenteVertexPointer * 2] = CurrentTex.x;
-    }
+   
 }

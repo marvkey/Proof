@@ -4,7 +4,7 @@
 #include "Proof/Input/Mouse.h"
 #include "Platform/Window/WindowsWindow.h"
 #include "ImGui/imgui.h"
-bool Input::ViewPoartHovered = false;
+bool Input::ViewPoartHovered = true;
 bool Input::IsKeyClicked(KeyBoardKey Key) {
 	if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
 	for (int i = 0; i < Proof::WindowsWindow::KeyboardClicked.size(); i++) {
@@ -125,7 +125,7 @@ float Input::GetMousePosX() {
 	if (ViewPoartHovered == false)return 0.0f; // This Temprory will not be released like this
 	return Proof::Mouse::GetMouseX();
 }
-float Input::GetMouswPosY() {
+float Input::GetMousePosY() {
 	if (ViewPoartHovered == false)return 0.0f; // This Temprory will not be released like this
 	return Proof::Mouse::GetMouseY();
 }

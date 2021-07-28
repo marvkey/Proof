@@ -42,8 +42,8 @@ namespace Proof {
         Count<Shader>* GetShader(const std::string& Name);
         void AddShader(const std::string& Name,const Count<Shader>&_Shader);
         bool HasShader(const std::string& Name);
-    private:
         std::unordered_map<std::string, Count<Shader>> ShaderMap;
+    private:
         Count<Shader>AddShader(const Count<Shader>&_Shader) {
             if (HasShader(_Shader->GetName()) == false) {
                 ShaderMap.insert({_Shader->GetName(),_Shader});

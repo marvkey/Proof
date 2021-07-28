@@ -28,7 +28,7 @@ namespace Proof {
     void ShaderLibrary::AddShader(const std::string& Name,const Count<Shader>& _Shader) {
         if (HasShader(Name) == false) {
             ShaderMap.insert({Name,_Shader});
-            return;
+            return; 
         }
         PF_ENGINE_ERROR("shader library already has a shader called %s",Name.c_str());
     }

@@ -10,6 +10,8 @@ namespace Proof {
 		virtual void SetClearColor(const glm::vec4&Color) = 0;
 		virtual void SetClearColor(float R, float G, float B, float A)= 0;
 		virtual void Clear() = 0;
+
+		virtual void DrawArrays(uint32_t Count)=0;
 		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject) = 0;
 		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count) = 0;
 		virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement) =0;

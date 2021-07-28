@@ -32,20 +32,20 @@ namespace Proof {
 		/**
 		* returns the Texture
 		*/
-		virtual uint32_t GetTexture() { return Texture_ID; }
+		virtual uint32_t GetTexture() { return m_TextureID; }
 		/**
 		* returns the FrameBuffer ID
 		*/
 		virtual uint32_t GetFrameBufferID(){return m_ID;}
 	private:
-		uint32_t Texture_ID;
+		uint32_t m_TextureID;
 		uint32_t m_ID;
-		uint32_t Render_ID;
+		uint32_t m_RenderID;
 		/**
 		* creates a new Frame Buffer
 		*/
 		void Instaniate();
-		uint32_t FrameWidth,FrameHeight;
+		uint32_t m_FrameWidth,m_FrameHeight;
 	};
 }
 
