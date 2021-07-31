@@ -52,6 +52,13 @@ namespace Proof
             return *this;
         }
 
+        Vector operator&(glm::vec3 const& obj) {
+            this->X = obj.x;
+            this->Y = obj.y;
+            this->Z = obj.z;
+            return *this;
+        }
+
         Vector operator =(const Vector& Other) {
             this->X = Other.X;
             this->Y = Other.Y;

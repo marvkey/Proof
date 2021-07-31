@@ -88,7 +88,6 @@ namespace Proof
         Mesh ProcessMesh(aiMesh* mesh,const aiScene* scene);
         std::vector<Count<Texture2D>> LoadMaterialTextures(aiMaterial* mat,aiTextureType type,Texture2D::TextureType _TextureType);
         void SetUpModel();
-
         uint32_t ID =0;
     };
 }

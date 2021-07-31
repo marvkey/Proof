@@ -5,7 +5,7 @@
 class FrameTime;
 
 namespace Proof{
-	class World {
+	class Proof_API World {
 	public:
 		World();
 		virtual void OnUpdateEditor(FrameTime DeltaTime);

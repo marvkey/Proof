@@ -12,7 +12,6 @@ namespace Proof{
 		m_Path = AssetSavePath;
 		m_PathOfPointerToFile = FilePath;
 		SaveAsset();
-		m_Material = {{1.0f,1.0f,1.0f,1.0f}};
 	}
 	void MaterialAsset::SaveAsset() {
 		YAML::Emitter out;
@@ -20,7 +19,9 @@ namespace Proof{
 		out << YAML::Key << "AssetTypeString" << YAML::Value << "AssetType::MaterialAsset";
 		out << YAML::Key << "AssetType" << YAML::Value << (int)m_AssetType;
 		out << YAML::Key << "ID" << YAML::Value << m_ID;
-		out << YAML::Key << "Colour"<<YAML::Value << m_Material.Colour;
+		out << YAML::Key << "Ambient"<<YAML::Value << m_Material.m_Ambient;
+		out << YAML::Key << "Diffuse"<<YAML::Value << m_Material.m_Diuffuse;
+		out << YAML::Key << "Specular"<<YAML::Value << m_Material.m_Specular;
 		out << YAML::EndMap;
 		std::ofstream found(m_Path);
 		found << out.c_str();
@@ -34,7 +35,9 @@ namespace Proof{
 
 		m_AssetType = (AssetType)data["AssetType"].as<uint32_t>();
 		m_ID = data["ID"].as<uint32_t>();
-		m_Material.Colour= data["Colour"].as<glm::vec4>();
+		m_Material.m_Ambient= data["Ambient"].as<glm::vec3>();
+		m_Material.m_Diuffuse= data["Diffuse"].as<glm::vec3>();
+		m_Material.m_Specular= data["Specular"].as<glm::vec3>();
 		return true;
 	}
 	uint32_t MaterialAsset::GetImageID() {

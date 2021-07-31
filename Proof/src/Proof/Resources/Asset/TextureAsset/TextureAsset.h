@@ -24,6 +24,6 @@ namespace Proof{
 			return "AssetType::Texture2DAsset";
 		}
 		virtual uint32_t GetImageID();
-		Count<Texture2D> m_Texture;
+		Count<class Texture2D> m_Texture;
 	};
 }

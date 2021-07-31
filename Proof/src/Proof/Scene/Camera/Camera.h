@@ -1,9 +1,10 @@
 #pragma once
 #include "glm/glm.hpp"
+
 namespace Proof {
 	class Proof_API Camera {
 	public:
-		virtual void OnUpdate(FrameTime DeltaTime);
+		virtual void OnUpdate(class FrameTime DeltaTime);
 		virtual glm::mat4 GetCameraView()const {
 			return glm::mat4(1.0f);
 		}

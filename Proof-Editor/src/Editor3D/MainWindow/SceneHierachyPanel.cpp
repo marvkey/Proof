@@ -136,6 +136,16 @@ namespace Proof{
 				entity.AddComponent<SpriteComponent>();
 				ImGui::CloseCurrentPopup();
 			}
+
+			if (ImGui::MenuItem("Native Script Component")) {
+				entity.AddComponent<NativeScriptComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::MenuItem("Light Componet")) {
+				entity.AddComponent<LightComponent>();
+				ImGui::CloseCurrentPopup();
+			}
 			ImGui::EndPopup();
 		}
 		
@@ -207,6 +217,7 @@ namespace Proof{
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MaterialAsset::GetStaticName().c_str())) {
 							uint32_t Data = *(const uint32_t*)payload->Data;
 							component.m_MeshMaterialID = Data;
+							PF_ENGINE_INFO("DROPPED %i",Data);
 						}
 						ImGui::EndDragDropTarget();
 					}
@@ -252,7 +263,48 @@ namespace Proof{
 					
 					ImGui::ColorEdit4("##Colour",glm::value_ptr( component.Colour));
 				});
-				
+				IndexValue += 1;
+				continue;
+			}
+
+			NativeScriptComponent* Script = dynamic_cast<NativeScriptComponent*>(Comp);
+			if(Script !=nullptr){
+				DrawComponents<NativeScriptComponent>("Native Script: ",entity,Script,IndexValue,[](NativeScriptComponent& NativeScriptComp){
+					ImGui::Text("Script");
+					ImGui::SameLine();
+					char buffer[256];
+					memset(buffer,0,sizeof(buffer));
+					strcpy_s(buffer,sizeof(buffer),NativeScriptComp.GetScriptName().c_str());
+					if (ImGui::InputText("##N",buffer,sizeof(buffer),ImGuiInputTextFlags_ReadOnly)) {
+							
+					}
+					
+				});
+				IndexValue += 1;
+				continue;
+			}
+			LightComponent* Light = dynamic_cast<LightComponent*>(Comp);
+			if (Light != nullptr) {
+				DrawComponents<LightComponent>("Light Component: ",entity,Light,IndexValue,[](LightComponent& LightComp) {
+					DrawVectorControl("Position",LightComp.m_Position);
+					DrawVectorControl("Direction",LightComp.m_Direction);
+					ImGui::NewLine();
+					ImGui::DragFloat("Cut-off",&LightComp.m_CutOff);
+					ImGui::DragFloat("Outer-off",&LightComp.m_OuterCutOff);
+
+					ImGui::DragFloat("Constant",&LightComp.m_Constant);
+					ImGui::DragFloat("Linear",&LightComp.m_Linear);
+					ImGui::DragFloat("Quadratic",&LightComp.m_Quadratic);
+
+					ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
+					ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
+					ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
+					
+					int elementCount = 2;
+					const char* elementNames[] = {"Direction","Point","Spot"};
+					const char* elementName =(LightComp.m_LightType >=0 && LightComp.m_LightType <elementCount+1) ?elementNames[LightComp.m_LightType]:"Unknown";
+					ImGui::SliderInt("Type",&LightComp.m_LightType,0,elementCount,elementName);
+				});
 				IndexValue += 1;
 				continue;
 			}

@@ -25,12 +25,12 @@ namespace Proof {
 		ActiveWorld =new World();
 		m_WorldHierachy.SetContext(ActiveWorld);
 		m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
-		CubeMapPaths.emplace_back("Assets/Textures/nx.png");
-		CubeMapPaths.emplace_back("Assets/Textures/ny.png");
-		CubeMapPaths.emplace_back("Assets/Textures/nz.png");
-		CubeMapPaths.emplace_back("Assets/Textures/py.png");
-		CubeMapPaths.emplace_back("Assets/Textures/px.png");
-		CubeMapPaths.emplace_back("Assets/Textures/pz.png");
+		CubeMapPaths.emplace_back("Assets/Textures/skybox/right.jpg");
+		CubeMapPaths.emplace_back("Assets/Textures/skybox/left.jpg");
+		CubeMapPaths.emplace_back("Assets/Textures/skybox/bottom.jpg");
+		CubeMapPaths.emplace_back("Assets/Textures/skybox/top.jpg");
+		CubeMapPaths.emplace_back("Assets/Textures/skybox/front.jpg");
+		CubeMapPaths.emplace_back("Assets/Textures/skybox/back.jpg");
 
 
    float skyboxVertices[] = {
@@ -113,9 +113,9 @@ namespace Proof {
 		}
 		ActiveWorld->OnUpdateEditor(DeltaTime);
 
-		//glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
+		glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
 
-		/*
+		
 		glDepthFunc(GL_LEQUAL);
 		m_SkyBoxShader->UseShader();
 		m_SkyBoxShader->SetMat4("view",view);
@@ -127,13 +127,14 @@ namespace Proof {
 		glDrawArrays(GL_TRIANGLES,0,36);
 		m_SkyBoxVertexArray->UnBind();
 		glDepthFunc(GL_LESS);
-		*/
+		
 	}
 
 	void Editore3D::OnImGuiDraw() {
 		Layer::OnImGuiDraw();
 		static bool EnableDocking = true;
-		
+		ImGui::ShowDemoWindow();
+
 		SetDocking(&EnableDocking);
 		ViewPort();
 		m_WorldHierachy.ImGuiRender();
@@ -380,7 +381,11 @@ namespace Proof {
 				ImGui::End();
 				return;
 			}
-			ImGui::ColorEdit4("##MaterialColour",glm::value_ptr(mat->m_Material.Colour));
+
+			ImGui::ColorEdit3("Ambient",glm::value_ptr(mat->m_Material.m_Ambient));
+			ImGui::ColorEdit3("Diffuse",glm::value_ptr(mat->m_Material.m_Diuffuse));
+			ImGui::ColorEdit3("Specular",glm::value_ptr(mat->m_Material.m_Specular));
+			ImGui::DragFloat("Metallines",&mat->m_Material.m_Metallness);
 			mat->SaveAsset();
 			ImGui::End();
 		}

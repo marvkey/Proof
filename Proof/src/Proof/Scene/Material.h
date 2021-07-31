@@ -10,18 +10,9 @@
 #include <glm/gtx/quaternion.hpp>
 namespace Proof{
 	struct Proof_API Material {
-		
-		Material()
-			:Colour(1.0f)
-		{
-		};
-		Material(const glm::vec4& color){
-			this->Colour = color;
-		}
-
-		glm::vec4 Colour;
-		glm::vec4 CaluclateMaterial(){
-			return Colour;
-		}
+		glm::vec3 m_Ambient = {1.0,1.0f,1.0f};
+		glm::vec3 m_Diuffuse ={1.0,1.0f,1.0f};
+		glm::vec3 m_Specular ={1.0,1.0f,1.0f};
+		float m_Metallness =1.0f;
 	};
 }

@@ -2,6 +2,7 @@
 #include <memory>
 #include <iostream>
 #include<chrono>
+/*
 #ifdef PF_PLATFORM_WINDOW64
     #ifdef LINK_DLL
         #ifdef  PF_BUILD_DLL
@@ -14,13 +15,14 @@
 #endif
 #else We Only support winodws 64 Bit
 #endif
-
+*/
+#define Proof_API
 // Add this when locating a file, but not fore built in functions it is already automatically added
 inline const std::string ProofCurrentDirectorySrc = "../Proof/src/";
 
 template<typename T>
 using Ref = std::shared_ptr<T>;
-#ifdef PF_PLATFORM_WINDOW64
+#ifdef _WIN64
     #ifdef PF_ENABLE_ASSERT
         #define PF_ASSERT(X,...){ if((!X)) {PF_ERROR("Assertion Failed %s",__VA_ARGS__); __debugbreak();  } }
         #define PF_CORE_ASSERT(X,...){ if((!X)) {PF_ENGINE_ERROR("Assertion Failed %s",__VA_ARGS__); __debugbreak(); } } 

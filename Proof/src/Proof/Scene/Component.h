@@ -1,10 +1,11 @@
 #pragma once
+#include "Proof/Core/Core.h"
 #include "Proof/Resources/Math/Math.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
-
+#include "Proof/Renderer/Texture.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
@@ -24,6 +25,8 @@ namespace Proof{
 		uint32_t GetAssetID() {
 			return AssetID;
 		}
+
+		void Componet(){};
 	protected:
 		uint32_t AssetID = 0;
 		std::string Name ="Default";
@@ -74,19 +77,28 @@ namespace Proof{
 	};
 
 	struct Proof_API NativeScriptComponent :public Component {
-		class ScriptableEntity* Instance = nullptr;
-		class ScriptableEntity* (*InstantiateScript)();
+		NativeScriptComponent(){
+			Name = "NativeScriptComponent";
+		}
+		class Script* Instance = nullptr;
+		class Script* (*InstantiateScript)();
 		void (*DestroyScript)(NativeScriptComponent*);
 		template<class T,typename... Args>
 		void Bind(Args... arg) {
-			InstantiateScript = []() {return static_cast<ScriptableEntity*>(new T(arg...)); };
-			DestroyScript = [](NativeScriptComponent* NSC) {delete NSC->Instance; NSC->Instance = nullptr; };
+			InstantiateScript = []() {return static_cast<Script*>(new T(arg...)); m_HasbeenInstanciated =true; };
+			DestroyScript = [](NativeScriptComponent* NSC) {delete NSC->Instance; NSC->Instance = nullptr; m_HasbeenInstanciated =false;};
+		}
+		const std::string GetScriptName(){
+			return m_ScriptPointerName;
 		}
 	private:
+		std::string m_ScriptPointerName ="null";
 		friend class Entity;
 		friend class World;
 		friend class ECS;
+		friend class SceneHierachyPanel;
 		uint32_t StartIndexSlot;
+		bool m_HasbeenInstanciated=false;
 	};
 
 	struct Proof_API MeshComponent :public Component {
@@ -110,10 +122,11 @@ namespace Proof{
 			return m_MeshMaterialID;
 		}
 		bool HasMaterial(){
-			return m_MeshMaterialID;
+			return GetMaterial() ==nullptr? false: true;
 		}
 		uint32_t GetMeshPointerID();
 		TransformComponent MeshLocalTransform;
+		
 	private:
 		friend class Entity;
 		friend class World;
@@ -147,5 +160,30 @@ namespace Proof{
 		friend class World;
 		friend class ECS;
 		uint32_t StartIndexSlot =0;
+	};
+
+	struct Proof_API LightComponent: public Component{
+		enum LightType:int{
+			Direction=0,
+			Point=1,
+			Spot=2
+		};
+		Vector m_Position;
+		Vector m_Direction;
+		float m_CutOff;
+		float m_OuterCutOff;
+
+		float m_Constant;
+		float m_Linear;
+		float m_Quadratic;
+
+		glm::vec3 m_Ambient;
+		glm::vec3 m_Diffuse;
+		glm::vec3 m_Specular;
+		int m_LightType = 0;
+	private:
+		uint32_t StartIndexSlot = 0;
+		friend class ECS;
+
 	};
 }

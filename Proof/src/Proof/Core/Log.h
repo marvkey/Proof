@@ -18,7 +18,7 @@ namespace Proof {
 		static Count<Logger::Log>ClientLogger;
 	};
 }
-#ifdef PF_ENABLE_DEBUG
+#ifdef PF_ENABLE_DEBUG 
 	// Engine Logging
 	#define  PF_ENGINE_ERROR(...) ::Proof::Log::GetEngineLogger()->LogError(__VA_ARGS__)
 	#define  PF_ENGINE_WARN(...)  ::Proof::Log::GetEngineLogger()->LogWarn(__VA_ARGS__)

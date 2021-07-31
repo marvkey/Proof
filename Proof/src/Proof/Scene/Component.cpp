@@ -16,12 +16,12 @@ namespace Proof{
 	}
 	Material* MeshComponent::GetMaterial() {
 		if(m_MeshMaterialID == 0){
-			return &Empty;
+			return nullptr;
 		}
 		MaterialAsset* a = dynamic_cast<MaterialAsset*>(AssetManager::GetAsset(m_MeshMaterialID));
 		if (a == nullptr){
 			m_MeshMaterialID = 0;
-			return &Empty;
+			return nullptr;
 		}
 		return &a->m_Material;
 	}

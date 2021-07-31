@@ -10,15 +10,15 @@ Entities:
     MeshComponent:
       Name: Default
       AssetID: 22660
-      LocalLocation: [0, 0, 0]
+      LocalLocation: [-1, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
-      MaterialPointerID: 10747
+      MaterialPointerID: 6280
   - Entity: 28267
     TagComponent:
       Tag: cube
     TransformComponent:
-      Location: [1.70000005, 0, 0]
+      Location: [0.800000012, -0.5, 3.70000005]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
@@ -27,4 +27,25 @@ Entities:
       LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
-      MaterialPointerID: 19404
+      MaterialPointerID: 7631
+  - Entity: 11561
+    TagComponent:
+      Tag: RocketShip
+    TransformComponent:
+      Location: [-5.5, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.100000001, 0.100000001, 0.100000001]
+    MeshComponent:
+      Name: rocket
+      AssetID: 11432
+      LocalLocation: [0, 0, -0.100000001]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 13099
+  - Entity: 4543
+    TagComponent:
+      Tag: testentity
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]

@@ -2,6 +2,8 @@
 #include <unordered_map>
 #include <vector>
 #include "Proof/Scene/Component.h"
+#include "Proof/Core/Core.h"
+#include "Proof/Core/Log.h"
 namespace Proof{
 	class MeshComponent;
 	class Proof_API ECS {
@@ -28,8 +30,8 @@ namespace Proof{
 		MeshComponent* AddComponent(uint32_t ID) {
 			if (HasEntity(ID) == true) {
 				MeshComponent* Temp = new MeshComponent();
-				auto& a = EntityHolder.find(ID);
-				a->second->emplace_back(Temp);
+				auto& a = *EntityHolder.find(ID);
+				a.second->emplace_back(Temp);
 				Temp->StartIndexSlot = SceneMeshComponents.size();
 				SceneMeshComponents.emplace_back(Temp);
 				return Temp;
@@ -42,8 +44,8 @@ namespace Proof{
 		SpriteComponent* AddComponent(uint32_t ID) {
 			if (HasEntity(ID) == true) {
 				SpriteComponent* Temp = new SpriteComponent();
-				auto& a = EntityHolder.find(ID);
-				a->second->emplace_back(Temp);
+				auto& a = *EntityHolder.find(ID);
+				a.second->emplace_back(Temp);
 				Temp->StartIndexSlot = SpriteComponents.size();
 				SpriteComponents.emplace_back(Temp);
 				return Temp;
@@ -52,21 +54,36 @@ namespace Proof{
 			return nullptr;
 		}
 
-		/*
+		template<>
+		LightComponent* AddComponent(uint32_t ID) {
+			if (HasEntity(ID) == true) {
+				LightComponent* Temp = new LightComponent();
+				auto& a = *EntityHolder.find(ID);
+				a.second->emplace_back(Temp);
+				Temp->StartIndexSlot = LightComponents.size();
+				LightComponents.emplace_back(Temp);
+				return Temp;
+			}
+			PF_CORE_ASSERT(false,"Entity Id Was Not FOund");
+			return nullptr;
+		}
+
+		
 		template<>
 		NativeScriptComponent* AddComponent(uint32_t ID) {
 			if (HasEntity(ID) == true) {
-				NativeScriptComponent* Temp = new NativeScriptComponent;
-				auto& a = EntityHolder.find(ID);
-				a->second->emplace_back(Temp);
+				NativeScriptComponent* Temp = new NativeScriptComponent();
+				auto& a = *EntityHolder.find(ID);
+				a.second->emplace_back(Temp);
 				Temp->StartIndexSlot = NativeScripts.size();
 				NativeScripts.emplace_back(Temp);
 				return Temp;
 			}
+			PF_CORE_ASSERT(false,"Entity Id Was Not FOund");
 			return nullptr;
 
 		};
-		*/
+		
 		
 
 		template<typename T>
@@ -89,7 +106,7 @@ namespace Proof{
 				for (int i = 0; i < Temp->size(); i++) {
 					T* tempComp = dynamic_cast<T*>(Temp->at(i));
 					if (tempComp != nullptr) {
-						return tempComp ? tempComp->GetName() ==CompName : continue;
+						return tempComp ? tempComp->GetName() ==CompName : nullptr;
 					}
 
 					if (Temp->size() == 1)break;
@@ -125,7 +142,7 @@ namespace Proof{
 			}
 			PF_ENGINE_ERROR("Entity ID Was Not FOund");
 		}
-
+		/*
 		template<typename T>
 		void RemoveComponent(uint32_t ID) {
 			if (HasEntity(ID) == true) {
@@ -142,7 +159,7 @@ namespace Proof{
 			}
 			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
 		}
-
+		*/
 		template<typename T>
 		inline void RemoveComponent(uint32_t ID,uint32_t Index){
 			if (HasEntity(ID) == true) {
@@ -215,7 +232,59 @@ namespace Proof{
 				return;
 			}
 		}
+		template<>
+		inline void RemoveComponent<NativeScriptComponent>(uint32_t ID,uint32_t Index) {
+			auto& TempVec = EntityHolder.at(ID);
+			if (TempVec->size() >= Index) {
+				NativeScriptComponent* TempComp = static_cast<NativeScriptComponent*>(TempVec->at(Index));
+				if (NativeScripts.size() == 1) {
+					NativeScripts.erase(NativeScripts.begin());
+				}
+				else if (NativeScripts.size() == TempComp->StartIndexSlot) {
+					NativeScripts.erase(NativeScripts.end());
+				}
+				else if (NativeScripts.size() > TempComp->StartIndexSlot) {
+					int TempLocation = NativeScripts.size() - TempComp->StartIndexSlot;
+					NativeScripts.erase(NativeScripts.end() - TempLocation);
+				}
+				else if (NativeScripts.size() < TempComp->StartIndexSlot) {
+					int TempLocation = NativeScripts.size() - TempComp->StartIndexSlot;
+					NativeScripts.erase(NativeScripts.end() - TempLocation);
+				}
+				TempVec->erase(TempVec->begin() + Index);
+				delete TempComp;
+				return;
+			}
+			PF_ENGINE_WARN("Remove component Entitiy does not have component or ID Is Not Valid Size of Holder is %i",TempVec->size());
+			return;
+		}
 		
+		template<>
+		inline void RemoveComponent<LightComponent>(uint32_t ID,uint32_t Index) {
+			auto& TempVec = EntityHolder.at(ID);
+			if (TempVec->size() >= Index) {
+				LightComponent* TempComp = static_cast<LightComponent*>(TempVec->at(Index));
+				if (LightComponents.size() == 1) {
+					LightComponents.erase(LightComponents.begin());
+				}
+				else if (LightComponents.size() == TempComp->StartIndexSlot) {
+					LightComponents.erase(LightComponents.end());
+				}
+				else if (LightComponents.size() > TempComp->StartIndexSlot) {
+					int TempLocation = LightComponents.size() - TempComp->StartIndexSlot;
+					LightComponents.erase(LightComponents.end() - TempLocation);
+				}
+				else if (LightComponents.size() < TempComp->StartIndexSlot) {
+					int TempLocation = LightComponents.size() - TempComp->StartIndexSlot;
+					LightComponents.erase(LightComponents.end() - TempLocation);
+				}
+				TempVec->erase(TempVec->begin() + Index);
+				delete TempComp;
+				return;
+			}
+			PF_ENGINE_WARN("Remove component Entitiy does not have component or ID Is Not Valid Size of Holder is %i",TempVec->size());
+			return;
+		}
 		const std::unordered_map<uint32_t,std::vector<class Component*>*>& GetEntities() {
 			return EntityHolder;
 		}
@@ -223,15 +292,15 @@ namespace Proof{
 			return AllEntityID;
 		}
 
-
-		std::vector<class MeshComponent*> SceneMeshComponents;
 		std::vector<class SpriteComponent*> SpriteComponents;
+		std::vector<class MeshComponent*> SceneMeshComponents;
+		std::vector<class NativeScriptComponent*> NativeScripts;
+		std::vector<class LightComponent*> LightComponents;
 
 	private:
 		std::unordered_map<uint32_t,std::vector<class Component*>*>EntityHolder;
 		std::vector<uint32_t> AllEntityID; // Temporary
 
-		std::vector<class NativeScriptComponent*> NativeScripts;
 		bool HasEntity(uint32_t ID) {
 			return EntityHolder.find(ID) != EntityHolder.end();
 		}

@@ -2,18 +2,16 @@
 #include "World.h"
 #include "Component.h"
 #include "Entity.h"
-#include "ScriptableEntity.h"
+#include "Script.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Model.h"
 #include "Mesh.h"
 #include "Proof/Core/FrameTime.h"
 #include "Component.h"
-#include <iostream>
 #include "Proof/Renderer/Renderer3D.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Scene/Component.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
-#include "EntitiyComponentSystem/ECS.h"
 
 namespace Proof{
 	World::World()
@@ -34,6 +32,19 @@ namespace Proof{
 				Renderer3D::Draw(*Comp);
 			}
 		}
+
+		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
+			if(Scripts->m_HasbeenInstanciated == false)
+				continue;
+			if (Scripts->Instance) {
+				Scripts->Instance = Scripts->InstantiateScript();
+				Scripts->Instance->OwnerEntity = Scripts->GetOwner();
+				Scripts->Instance->OnCreate();
+				Scripts->Instance->OnlyOnCreate();
+			}
+			Scripts->Instance->OnUpdate(DeltaTime);
+		}
+
 		
 		EditorCamera.OnUpdate(DeltaTime);
 	}
@@ -50,7 +61,7 @@ namespace Proof{
 			Nsc.Instance->OnUpdate(DeltaTime);
 		});
 		*/
-	
+
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {
@@ -80,7 +91,6 @@ namespace Proof{
 		Component* a = static_cast<Component*>(component);
 		a->m_EntityOwner = _Entity.GetID();
 		a->CurrentWorld = this;
-
 	}
 	template<>
 	void World::OnComponentAdded(Entity _Entity,TransformComponent* component) {
@@ -105,6 +115,13 @@ namespace Proof{
 
 	template<>
 	void World::OnComponentAdded(Entity _Entity,SpriteComponent* component) {
+		Component* a = static_cast<Component*>(component);
+		a->m_EntityOwner = _Entity.GetID();
+		a->CurrentWorld = this;
+	}
+
+	template<>
+	void World::OnComponentAdded(Entity _Entity,LightComponent* component) {
 		Component* a = static_cast<Component*>(component);
 		a->m_EntityOwner = _Entity.GetID();
 		a->CurrentWorld = this;

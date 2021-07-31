@@ -1,14 +1,14 @@
 #pragma once
 #include "World.h"
 #include <type_traits>
-
+#include "Proof/Core/Core.h"
 namespace Proof{
 	struct TagComponent;
 	struct Component;
 	struct TransformComponent;
 	class Proof_API Entity {
 	public:
-		Entity::Entity(uint32_t EntityID,class World* world):
+		Entity(uint32_t EntityID,class World* world):
 			m_EntityID(EntityID),CurrentWorld(world){}
 		Entity(const Entity& Other) = default;
 		Entity(){}

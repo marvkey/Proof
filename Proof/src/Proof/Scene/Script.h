@@ -3,11 +3,11 @@
 #include "Entity.h"
 #include "Proof/Core/FrameTime.h"
 namespace Proof{
-	class Proof_API ScriptableEntity {
+	class Proof_API Script{
 	public:
-		virtual ~ScriptableEntity() {};
+		virtual ~Script() {};
 	protected:
-		virtual void OnCreate() {}; // called when placed or spawned in world
+		virtual void OnCreate(); // called when placed or spawned in world
 		virtual void OnUpdate(FrameTime DeltaTime) {}; // called every frame
 		virtual void OnlyOnCreate() {};// called when only placed in world
 		virtual void OnSpawn() {}; // called only when spawned into the world
@@ -26,21 +26,22 @@ namespace Proof{
 		*/
 		template<class T>
 		T* GetComponent() {
-			if (OwnerEntity == nullptr)return nullptr;
-			return OwnerEntity->GetComponent<T>();
+			return OwnerEntity.GetComponent<T>();
 		}
 		template<class T>
 		bool HasComponent() {
-			if (OwnerEntity == nullptr) {
-				PF_ENGINE_INFO("owner entity is nullptr");
-				return false;
-			}
-			return OwnerEntity->HasComponent<T>();
+			return OwnerEntity.HasComponent<T>();
 		}
+
+		template<class T> 
+		T* GetComponent(uint32_t IndexSlot){
+			OwnerEntity.GetComponent<T>(IndexSlot);
+		}
+		bool b_CallPerframe = true;
 	private:
 		friend class World;
 		friend class Entity;
 		friend struct NativeScriptComponent;
-		Entity* OwnerEntity = nullptr;
+		Entity OwnerEntity;
 	};
 }

@@ -4,7 +4,6 @@
 #include "Component.h"
 #include <string>
 #include <filesystem>
-#include <yaml-cpp/yaml.h>
 #include "Proof/Resources/ExternalCreations.h"
 namespace Proof{
 
