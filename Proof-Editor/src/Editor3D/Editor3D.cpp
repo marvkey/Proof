@@ -78,7 +78,7 @@ namespace Proof {
          1.0f, -1.0f,  1.0f
     };
 
-
+   
 	
 	m_SkyBoxShader = Shader::Create("SkyBox Shader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/CubeMapShader.shader");
 	m_SkyBoxBuffer = VertexBuffer::Create(&skyboxVertices,sizeof(skyboxVertices));
@@ -90,6 +90,7 @@ namespace Proof {
 	
 
 	m_CubeMap = CubeMap::Create(CubeMapPaths);
+	
 	}
 	void Editore3D::OnDetach() {
 		if(ActiveWorld != nullptr){
@@ -127,7 +128,7 @@ namespace Proof {
 		glDrawArrays(GL_TRIANGLES,0,36);
 		m_SkyBoxVertexArray->UnBind();
 		glDepthFunc(GL_LESS);
-		
+	
 	}
 
 	void Editore3D::OnImGuiDraw() {

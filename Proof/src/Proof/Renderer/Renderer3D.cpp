@@ -17,8 +17,20 @@
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Material.h"
+
+/* RIGHT NOW ONLY SUPPORT 150 directional Light*/
+/* RIGHT NOW ONLY SUPPORT 150 Diffuse Light*/
+/* RIGHT NOW ONLY SUPPORT 150 Specular Light*/
 namespace Proof
 {
+    static uint32_t NumberDirectionalLight=0;
+    static uint32_t NumberPointLight =0;
+    static uint32_t NumberSpotLight=0;
+
+    std::string NumberDirectionalLightstring;
+    std::string NumberPointLightstring;
+    std::string NumberSpotLightstring;
+
     static Material EmptyMaterial;
     static uint32_t Temp2 = (sizeof(glm::vec4));
     static uint32_t Temp3 = (sizeof(glm::vec4) * 2);
@@ -51,10 +63,13 @@ namespace Proof
 
     static std::vector<InstanceRendererVertex> m_InstanceTransforms;
 
+
     uint32_t Renderer3D::Render3DStats::DrawCalls = 0;
     uint32_t Renderer3D::Render3DStats::NumberOfInstances = 0;
     uint32_t Renderer3D::Render3DStats::AmountDrawn = 0;
     Count<Texture2D>InstancedRenderer3D::m_WhiteTexture;
+
+
     void Renderer3D::Init() {
         Renderer3DInstance = new InstancedRenderer3D();
         Renderer3DStats = new Renderer3D::Render3DStats;
@@ -75,6 +90,7 @@ namespace Proof
         Renderer3DInstance->m_Shader->SetMat4("u_Projection",Projection);
         Renderer3DInstance->m_Shader->SetMat4("u_View",EditorCamera.GetCameraView());
         Position = EditorCamera.GetCameraPosition();
+
     }
     void Renderer3D::BeginContext(const OrthagraphicCamera& Camera) {
         Renderer3DInstance->m_Shader->UseShader();
@@ -165,17 +181,103 @@ namespace Proof
             Renderer3DStats->NumberOfInstances += 1;
         }
     }
+    void Renderer3D::RenderLight(LightComponent& lightComponent) {
+        if(lightComponent.m_LightType == lightComponent.Direction&& NumberDirectionalLight<150){
+            NumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumberDirectionalLight) + "]";
+            Renderer3DInstance->m_Shader->UseShader();
+            Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".direction",lightComponent.m_Direction);
+            Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".ambient",lightComponent.m_Ambient);
+            Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".diffuse",lightComponent.m_Diffuse);
+            Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".specular",lightComponent.m_Specular);
+            NumberDirectionalLight++;
+            Renderer3DInstance->m_Shader->SetInt("v_NrDirectionalLight",NumberDirectionalLight);
+            
+            return;
+        }
+
+        if(lightComponent.m_LightType ==lightComponent.Point&& NumberPointLight<150){
+            NumberPointLightstring = "v_PointLight[" + std::to_string(NumberPointLight) + "]";
+            Renderer3DInstance->m_Shader->UseShader();
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".position",lightComponent.m_Position+lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".ambient",lightComponent.m_Ambient);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".diffuse",lightComponent.m_Diffuse);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".specular",lightComponent.m_Specular);
+            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".constant",lightComponent.m_Constant);
+            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".linear",lightComponent.m_Linear);
+            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".quadratic",lightComponent.m_Quadratic);
+            NumberPointLight++;
+            Renderer3DInstance->m_Shader->SetInt("v_NrPointLight",NumberPointLight);
+            return;
+        }
+
+        if(lightComponent.m_LightType ==lightComponent.Spot && NumberPointLight<150){
+            NumberSpotLightstring = "v_SpotLight[" + std::to_string(NumberSpotLight) + "]";
+            Renderer3DInstance->m_Shader->UseShader();
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",lightComponent.m_Direction);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".position",lightComponent.m_Position + lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".ambient",lightComponent.m_Ambient);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".diffuse",lightComponent.m_Diffuse);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".specular",lightComponent.m_Specular);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".constant",lightComponent.m_Constant);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".linear",lightComponent.m_Linear);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".quadratic",lightComponent.m_Quadratic);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".cutOff",Math::Cos(Math::Radian(lightComponent.m_CutOff)));
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".outerCutOff",Math::Cos(Math::Radian(lightComponent.m_OuterCutOff)));
+            NumberSpotLight++;
+            Renderer3DInstance->m_Shader->SetInt("v_NrSpotLight",NumberSpotLight);
+            return;
+
+        }
+    }
     void Renderer3D::EndContext() {
         if (DifferentMeshes == 0)return;
         uint32_t SizeofOffset = 0;
         Renderer3DInstance->m_Shader->UseShader();
-        Renderer3DInstance->m_Shader->SetVec3("light.ambient",0.2f,0.2f,0.2f);
-        Renderer3DInstance->m_Shader->SetVec3("light.diffuse",0.5f,0.5f,0.5f);
-        Renderer3DInstance->m_Shader->SetVec3("light.specular",1.0f,1.0f,1.0f);
+        /*
+        Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].direction",-0.2f,-1.0f,-0.3f);
+        Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].ambient",1.0f,1.0f,1.0f);
+        Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].diffuse",1.0f,1.0f,1.0f);
+        Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].specular",1.0f,1.0f,1.0f);
+        */
+        if(NumberDirectionalLight ==0){
+            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].direction",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].ambient",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].diffuse",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].specular",0,0,0);
+            Renderer3DInstance->m_Shader->SetInt("v_NrDirectionalLight",1);
+        }
+        
+        if(NumberPointLight ==0){
+            NumberPointLightstring = "v_PointLight[" + std::to_string(NumberPointLight) + "]";
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".direction",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".ambient",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".diffuse",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".specular",0,0,0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".constant",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".linear",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".quadratic",0);
+            Renderer3DInstance->m_Shader->SetInt("v_NrPointLight",0);
+        }
+
+        if(NumberSpotLight ==0){
+            NumberSpotLightstring = "v_SpotLight[" + std::to_string(NumberSpotLight) + "]";
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".ambient",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".diffuse",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".specular",0,0,0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".constant",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".linear",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".quadratic",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".cutOff",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".outerCutOff",0);
+            Renderer3DInstance->m_Shader->SetInt("v_NrSpotLight",0);
+        }
+
+        
         Renderer3DInstance->m_Shader->SetVec3("viewPos",Position);
+
         for (uint32_t Size = 0; Size < s_DifferentID.size(); Size++) {
             Renderer3DInstance->m_VertexBuffer->Bind();
-           //Renderer3DInstance->m_VertexBuffer->AddData(&m_Material[SizeofOffset],m_Material.size() * sizeof(glm::vec4));/* THIS CODE COULD BE TEMPORARY*/
             Renderer3DInstance->m_VertexBuffer->AddData(&m_InstanceTransforms[SizeofOffset],m_InstanceTransforms.size() * sizeof(InstanceRendererVertex));/* THIS CODE COULD BE TEMPORARY*/
             uint32_t TempID = s_DifferentID[Size];
             auto& TempMesh = Renderer3DInstance->m_Meshes.find(TempID);
@@ -210,5 +312,15 @@ namespace Proof
         Renderer3DStats->DrawCalls = 0;
         Renderer3DStats->AmountDrawn = 0;
         Renderer3DStats->NumberOfInstances = 0;
+
+        NumberDirectionalLight =0;
+        NumberPointLight=0;
+        NumberSpotLight =0;
+
+        /*
+        NumberDirectionalLightstring = " ";
+        NumberPointLightstring =" ";
+        NumberSpotLightstring =" ";
+        */
     }
 }

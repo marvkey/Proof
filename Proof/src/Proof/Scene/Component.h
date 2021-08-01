@@ -169,9 +169,9 @@ namespace Proof{
 			Spot=2
 		};
 		Vector m_Position;
-		Vector m_Direction;
-		float m_CutOff;
-		float m_OuterCutOff;
+		Vector m_Direction = {1.0,1.0,1.0};
+		float m_CutOff; // gets put in cos and radias before use
+		float m_OuterCutOff; // gets put in cos and radias before use
 
 		float m_Constant;
 		float m_Linear;
@@ -184,6 +184,5 @@ namespace Proof{
 	private:
 		uint32_t StartIndexSlot = 0;
 		friend class ECS;
-
 	};
 }

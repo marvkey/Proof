@@ -144,7 +144,6 @@ namespace Proof {
 		glDeleteShader(FragmentShader);
 	}
 	void OpenGLShader::UseShader() {
-		s_CurrentBindShader = this;
 		glUseProgram(ID);
 	}
 	void OpenGLShader::SetBool(const std::string& Name,bool Value) {

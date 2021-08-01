@@ -65,6 +65,28 @@ namespace Proof{
 				out << YAML::EndMap; // Sprite component
 				continue;
 			}
+			LightComponent* Light = dynamic_cast<LightComponent*>(Comp);
+			if(Light != nullptr){
+				out<<YAML::Key<<"LightComponent";
+				out<<YAML::BeginMap; // LightComponent;
+				out<<YAML::Key<<"Position"<< Light->m_Position;
+				out<<YAML::Key<<"Direction"<< Light->m_Direction;
+
+				out<<YAML::Key<<"CutOff"<< Light->m_CutOff;
+				out<<YAML::Key<<"OuterCutOff"<< Light->m_OuterCutOff;
+
+				out << YAML::Key << "Constant" << Light->m_Constant;
+				out << YAML::Key << "Linear" << Light->m_Linear;
+				out << YAML::Key << "Quadratic" << Light->m_Quadratic;
+
+				out << YAML::Key << "Ambient" << Light->m_Ambient;
+				out << YAML::Key << "Diffuse" << Light->m_Diffuse;
+				out << YAML::Key << "Specular" << Light->m_Specular;
+
+				out << YAML::Key << "LightType" << Light->m_LightType;
+				out << YAML::EndMap; // LightComponent
+				continue;
+			}
 		}
 		out << YAML::EndMap; // entity
 	}
@@ -137,6 +159,26 @@ namespace Proof{
 					src.SpriteTransfrom.Location = spriteRendererComponent["LocalLocation"].as<glm::vec3>();
 					src.SpriteTransfrom.Rotation = spriteRendererComponent["LocalRotation"].as<glm::vec3>();
 					src.SpriteTransfrom.Scale = spriteRendererComponent["LocalScale"].as<glm::vec3>();
+				}
+
+				auto lightComponent = entity["LightComponent"];
+				if(lightComponent){
+					auto& src = *NewEntity.AddComponent<LightComponent>();
+					src.m_Position = lightComponent["Position"].as<Vector>();
+					src.m_Direction = lightComponent["Direction"].as<Vector>();
+
+					src.m_CutOff = lightComponent["CutOff"].as<float>();
+					src.m_OuterCutOff = lightComponent["OuterCutOff"].as<float>();
+
+					src.m_Constant = lightComponent["Constant"].as<float>();
+					src.m_Linear = lightComponent["Linear"].as<float>();
+					src.m_Quadratic = lightComponent["Quadratic"].as<float>();
+
+					src.m_Ambient = lightComponent["Ambient"].as<glm::vec3>();
+					src.m_Diffuse = lightComponent["Diffuse"].as<glm::vec3>();
+					src.m_Specular = lightComponent["Specular"].as<glm::vec3>();
+
+					src.m_LightType = lightComponent["LightType"].as<int>();
 				}
 			}
 		}

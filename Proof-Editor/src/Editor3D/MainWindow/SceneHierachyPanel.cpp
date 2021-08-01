@@ -286,20 +286,41 @@ namespace Proof{
 			LightComponent* Light = dynamic_cast<LightComponent*>(Comp);
 			if (Light != nullptr) {
 				DrawComponents<LightComponent>("Light Component: ",entity,Light,IndexValue,[](LightComponent& LightComp) {
-					DrawVectorControl("Position",LightComp.m_Position);
-					DrawVectorControl("Direction",LightComp.m_Direction);
-					ImGui::NewLine();
-					ImGui::DragFloat("Cut-off",&LightComp.m_CutOff);
-					ImGui::DragFloat("Outer-off",&LightComp.m_OuterCutOff);
+					if(LightComp.m_LightType == LightComp.Direction){
+						DrawVectorControl("Direction",LightComp.m_Direction);
+						ImGui::NewLine();
+						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
+						ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
+						ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
+					}
+					else if(LightComp.m_LightType == LightComp.Point){
+						DrawVectorControl("Position",LightComp.m_Position);
+						ImGui::NewLine();
 
-					ImGui::DragFloat("Constant",&LightComp.m_Constant);
-					ImGui::DragFloat("Linear",&LightComp.m_Linear);
-					ImGui::DragFloat("Quadratic",&LightComp.m_Quadratic);
+						ImGui::DragFloat("Constant",&LightComp.m_Constant,0.05);
+						ImGui::DragFloat("Linear",&LightComp.m_Linear,0.05);
+						ImGui::DragFloat("Quadratic",&LightComp.m_Quadratic,0.05);
 
-					ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
-					ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
-					ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
-					
+
+						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
+						ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
+						ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
+						
+					}else if(LightComp.m_LightType == LightComp.Spot){
+						DrawVectorControl("Position",LightComp.m_Position);
+						DrawVectorControl("Direction",LightComp.m_Direction);
+						ImGui::NewLine();
+						ImGui::DragFloat("Constant",&LightComp.m_Constant,0.05);
+						ImGui::DragFloat("Linear",&LightComp.m_Linear,0.05);
+						ImGui::DragFloat("Quadratic",&LightComp.m_Quadratic,0.05);
+						ImGui::DragFloat("CutOff",&LightComp.m_CutOff,0.05);
+						ImGui::DragFloat("Outer-Cutoff",&LightComp.m_OuterCutOff,0.05);
+
+						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
+						ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
+						ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
+					}
+				
 					int elementCount = 2;
 					const char* elementNames[] = {"Direction","Point","Spot"};
 					const char* elementName =(LightComp.m_LightType >=0 && LightComp.m_LightType <elementCount+1) ?elementNames[LightComp.m_LightType]:"Unknown";

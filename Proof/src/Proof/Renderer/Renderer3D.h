@@ -17,6 +17,7 @@ namespace Proof {
 		static void BeginContext(const class OrthagraphicCamera& Camera);
 
 		static void Draw(class MeshComponent& meshComponent);
+		static void RenderLight(class LightComponent& lightComponent);
 		static void EndContext();
 		static void Reset();
 		struct Render3DStats{

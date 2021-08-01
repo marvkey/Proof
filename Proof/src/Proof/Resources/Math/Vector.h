@@ -6,13 +6,6 @@ namespace Proof
         float X = 0,Y = 0,Z = 0;
 
         Vector(float X,float Y,float Z);
-        Vector(int X,int Y,int Z)     {
-            this->X = (float)X;
-            this->Y = Y;
-            this->Z = Z;
-
-        }
-
         Vector() {};
 
         Vector(const Vector& Other) {
@@ -20,12 +13,13 @@ namespace Proof
             Y = Other.Y;
             Z = Other.Z;
         }
-
+        
         Vector(const glm::vec3& Other) {
             X = Other.x;
             Y = Other.y;
             Z = Other.z;
         }
+        
         std::string ToString();
         static std::string ToString(const Vector& Vec);
 

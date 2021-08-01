@@ -32,7 +32,13 @@ namespace Proof{
 				Renderer3D::Draw(*Comp);
 			}
 		}
+		
+		for(LightComponent* Comp :Registry.LightComponents){
+			Renderer3D::RenderLight(*Comp);
+		}
+		
 
+		/*
 		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
 			if(Scripts->m_HasbeenInstanciated == false)
 				continue;
@@ -45,7 +51,7 @@ namespace Proof{
 			Scripts->Instance->OnUpdate(DeltaTime);
 		}
 
-		
+		*/
 		EditorCamera.OnUpdate(DeltaTime);
 	}
 

@@ -1,8 +1,27 @@
 World: rock and cube
 Entities:
-  - Entity: 17951
+  - Entity: 4890
     TagComponent:
-      Tag: rock
+      Tag: DirectionalLight
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightComponent:
+      Position: [0, 0, 0]
+      Direction: [1, 1, 1]
+      CutOff: 0
+      OuterCutOff: 0
+      Constant: 0
+      Linear: 0
+      Quadratic: 0
+      Ambient: [0.842741966, 0.842733502, 0.842733502]
+      Diffuse: [0, 0, 0]
+      Specular: [0, 0, 0]
+      LightType: 0
+  - Entity: 9292
+    TagComponent:
+      Tag: Rock
     TransformComponent:
       Location: [0, 0, 0]
       Rotation: [0, 0, 0]
@@ -10,42 +29,73 @@ Entities:
     MeshComponent:
       Name: Default
       AssetID: 22660
-      LocalLocation: [-1, 0, 0]
+      LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
-      MaterialPointerID: 6280
-  - Entity: 28267
+      MaterialPointerID: 0
+  - Entity: 16230
     TagComponent:
-      Tag: cube
+      Tag: SpotLight
     TransformComponent:
-      Location: [0.800000012, -0.5, 3.70000005]
+      Location: [7.69999981, -1.60000002, 7.69999981]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
-      Name: Default
+      Name: LightSource
       AssetID: 7722
       LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
-      MaterialPointerID: 7631
-  - Entity: 11561
+      MaterialPointerID: 0
+    LightComponent:
+      Position: [0, 0, 0]
+      Direction: [0, 0, 2.70000005]
+      CutOff: 16.75
+      OuterCutOff: 2.3499999
+      Constant: 2.9000001
+      Linear: 2.4000001
+      Quadratic: 0
+      Ambient: [0.0564516187, 1, 0.109716415]
+      Diffuse: [0.0663371459, 0.271211535, 0.967741966]
+      Specular: [0, 0.274205685, 1]
+      LightType: 2
+  - Entity: 21562
     TagComponent:
-      Tag: RocketShip
+      Tag: PointLight
     TransformComponent:
-      Location: [-5.5, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.100000001, 0.100000001, 0.100000001]
-    MeshComponent:
-      Name: rocket
-      AssetID: 11432
-      LocalLocation: [0, 0, -0.100000001]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [0, 0, 0]
-      MaterialPointerID: 13099
-  - Entity: 4543
-    TagComponent:
-      Tag: testentity
-    TransformComponent:
-      Location: [0, 0, 0]
+      Location: [-1.60000002, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+    MeshComponent:
+      Name: LightSoruce
+      AssetID: 7722
+      LocalLocation: [-4.0999999, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
+    LightComponent:
+      Position: [-0.400000006, 0, 0]
+      Direction: [1, 1, 1]
+      CutOff: 0
+      OuterCutOff: 0
+      Constant: -0.200000003
+      Linear: 0.300000012
+      Quadratic: 0.349999994
+      Ambient: [1, 0, 0]
+      Diffuse: [1, 0.0645161271, 0.0645161271]
+      Specular: [1, 0, 0]
+      LightType: 1
+  - Entity: 11460
+    TagComponent:
+      Tag: Plane
+    TransformComponent:
+      Location: [-9.10000038, -2.5, -11.6999998]
+      Rotation: [0, 0, 0]
+      Scale: [19.6000004, -0.100000001, 24.6000004]
+    MeshComponent:
+      Name: FlatPlane
+      AssetID: 7722
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
