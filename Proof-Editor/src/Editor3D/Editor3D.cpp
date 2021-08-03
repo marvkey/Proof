@@ -13,6 +13,7 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Resources/Asset/MaterialAsset.h"
 namespace Proof {
+	glm::vec4 ClearColour;
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer")
 	{
@@ -90,6 +91,7 @@ namespace Proof {
 	
 
 	m_CubeMap = CubeMap::Create(CubeMapPaths);
+
 	
 	}
 	void Editore3D::OnDetach() {
@@ -115,7 +117,7 @@ namespace Proof {
 		ActiveWorld->OnUpdateEditor(DeltaTime);
 
 		glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
-
+		
 		
 		glDepthFunc(GL_LEQUAL);
 		m_SkyBoxShader->UseShader();
@@ -128,15 +130,25 @@ namespace Proof {
 		glDrawArrays(GL_TRIANGLES,0,36);
 		m_SkyBoxVertexArray->UnBind();
 		glDepthFunc(GL_LESS);
+		
+		RendererCommand::SetClearColor(ClearColour);
 	
 	}
 
 	void Editore3D::OnImGuiDraw() {
 		Layer::OnImGuiDraw();
 		static bool EnableDocking = true;
-		ImGui::ShowDemoWindow();
-
 		SetDocking(&EnableDocking);
+		if (ImGui::Begin("Active World")) {
+			char buffer[256];
+			memset(buffer,0,sizeof(buffer));
+			strcpy_s(buffer,sizeof(buffer),ActiveWorld->GetName().c_str());
+			if (ImGui::InputTextWithHint("##WorldName","WorldName",buffer,sizeof(buffer))) {
+				ActiveWorld->Name = buffer;
+			}
+			ImGui::ColorEdit4("World colour",glm::value_ptr(ClearColour));
+			ImGui::End();
+		}
 		ViewPort();
 		m_WorldHierachy.ImGuiRender();
 		m_CurrentContentBrowserPanel.ImGuiRender();
@@ -355,7 +367,6 @@ namespace Proof {
 		if (ActiveWorld != nullptr) {
 			SceneSerializer scerelizer(ActiveWorld);
 			scerelizer.SerilizeText(Path);
-
 			PF_ENGINE_TRACE("World Saved");
 			return;
 		}
@@ -386,7 +397,7 @@ namespace Proof {
 			ImGui::ColorEdit3("Ambient",glm::value_ptr(mat->m_Material.m_Ambient));
 			ImGui::ColorEdit3("Diffuse",glm::value_ptr(mat->m_Material.m_Diuffuse));
 			ImGui::ColorEdit3("Specular",glm::value_ptr(mat->m_Material.m_Specular));
-			ImGui::DragFloat("Metallines",&mat->m_Material.m_Metallness);
+			ImGui::DragFloat("Metallnes",&mat->m_Material.m_Metallness,0.001);
 			mat->SaveAsset();
 			ImGui::End();
 		}

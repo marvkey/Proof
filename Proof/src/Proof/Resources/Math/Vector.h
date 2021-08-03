@@ -97,6 +97,11 @@ namespace Proof
             Vector Temp(this->X * Other.X,this->Y * Other.Y,this->Z * Other.Z);
             return Temp;
         }
+
+        Vector operator +(const Vector& Other) {
+            Vector Temp(this->X + Other.X,this->Y + Other.Y,this->Z + Other.Z);
+            return Temp;
+        }
     };
 
 }

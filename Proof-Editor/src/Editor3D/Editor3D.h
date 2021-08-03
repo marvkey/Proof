@@ -25,17 +25,7 @@ namespace Proof {
 		bool ViewPortResize = false;
 		class World* ActiveWorld =nullptr;
 
-		class OrthagraphicCamera SceneCamera{-1.0f,1.0f,-1.0f,1.0f};
-		class PerspectiveCamera SceneCamera3D{45.f,_ViewPortSize.x/ _ViewPortSize.y,0.1f,100.f};
-		class EditorCamera3D EditorCamera;
-		glm::vec3 Square1Pos={0,0,0};
-		glm::vec3 SquareScale ={1.0f,1.0f,1.0f};
-		glm::vec4 Square1Color = {1.0f,1.0f,1.0f,1.f};
-		glm::vec3 Rotation = {0,0,0};
-
-		int GuizmoType =-1;
-		Entity Player;
-		Entity RealPlayer;
+		int GuizmoType =0;
 		class SceneHierachyPanel m_WorldHierachy;
 		class ContentBrowserPanel m_CurrentContentBrowserPanel ={this};
 		friend class Renderer3D;

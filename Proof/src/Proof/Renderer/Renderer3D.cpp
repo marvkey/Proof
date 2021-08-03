@@ -83,8 +83,6 @@ namespace Proof
         Renderer3DInstance->m_Shader->UseShader();
         Renderer3DInstance->m_Shader->SetMat4("u_Projection",Camera.GetProjectionMatrix());
         Renderer3DInstance->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
-        //Renderer3DInstance->m_Shader->SetVec3("viewPos",Camera.Pos);
-
     }
     void Renderer3D::BeginContext(glm::mat4 Projection,EditorCamera3D& EditorCamera) {
         Renderer3DInstance->m_Shader->SetMat4("u_Projection",Projection);
@@ -98,84 +96,30 @@ namespace Proof
         Renderer3DInstance->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
     }
     void Renderer3D::Draw(MeshComponent& meshComponent) {
-
         if (Renderer3DInstance->SceneHasAmountMeshes(meshComponent.GetMeshPointerID()) == true) {
-            auto Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
+            auto& Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
             Map->second += 1;
-
+            auto InstanceSize = Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.find(meshComponent.GetMeshPointerID());
             meshComponent.GetModel()->m_VertexArrayObject->Bind();
 
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,m_Transform));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(InstanceRendererVertex),(void*)Temp2);
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(InstanceRendererVertex),(void*)Temp3);
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(InstanceRendererVertex),(void*)Temp4);
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(7,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialAmbient));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(8,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialDiffuse));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(9,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialSpecular));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(10,1,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_Matallness));
-
-
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(3,1);
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(4,1);
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(5,1);
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(7,1);// Material
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(8,1);// Material
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(9,1);// Material
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(10,1);// Material
-
-            ModelMatrix = glm::mat4(1.0f);
-            auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-            ModelMatrix = glm::translate(ModelMatrix,{Transform->Location + meshComponent.MeshLocalTransform.Location});
-            ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0});
-            ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0});
-            ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1});
-            ModelMatrix = glm::scale(ModelMatrix,{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
+            SetMeshComponentData(meshComponent);
 
             InstanceRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : EmptyMaterial);
-            m_InstanceTransforms.emplace_back(temp);
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(10,1,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_Matallness));
+            m_InstanceTransforms.insert(m_InstanceTransforms.begin()+ InstanceSize->second,temp);
+            InstanceSize->second += 1;
             Renderer3DStats->AmountDrawn += 1;
         }
-        else {
-                Renderer3DInstance->m_AmountMeshes.insert({meshComponent.GetMeshPointerID(),1});
-                Renderer3DInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
-                s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
-                DifferentMeshes++;
+        else 
+        {
+            Renderer3DInstance->m_AmountMeshes.insert({meshComponent.GetMeshPointerID(),1});
+            Renderer3DInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
+            Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),m_InstanceTransforms.size()+1});
+            s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
+            DifferentMeshes++;
 
-
-            meshComponent.GetModel()->m_VertexArrayObject->Bind();
-
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,m_Transform));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(InstanceRendererVertex),(void*)Temp2);
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(InstanceRendererVertex),(void*)Temp3);
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(InstanceRendererVertex),(void*)Temp4);
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(7,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialAmbient));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(8,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialDiffuse));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(9,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialSpecular));
-            meshComponent.GetModel()->m_VertexArrayObject->AddData(10,1,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_Matallness));
-              
-
-
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(3,1);
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(4,1);
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(5,1);
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(7,1);// Material
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(8,1);// Material
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(9,1);// MaterialMaterial
-            meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(10,1);// MaterialMaterial
-              
-            ModelMatrix = glm::mat4(1.0f);
-            auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-            ModelMatrix = glm::translate(ModelMatrix,{Transform->Location + meshComponent.MeshLocalTransform.Location});
-            ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0});
-            ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0});
-            ModelMatrix = glm::rotate(ModelMatrix,glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1});
-            ModelMatrix = glm::scale(ModelMatrix,{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
+            SetMeshComponentData(meshComponent);
 
             InstanceRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() ==true ? *meshComponent.GetMaterial(): EmptyMaterial);
-
             m_InstanceTransforms.emplace_back(temp);
             Renderer3DStats->AmountDrawn += 1;
             Renderer3DStats->NumberOfInstances += 1;
@@ -214,7 +158,7 @@ namespace Proof
             NumberSpotLightstring = "v_SpotLight[" + std::to_string(NumberSpotLight) + "]";
             Renderer3DInstance->m_Shader->UseShader();
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",lightComponent.m_Direction);
-            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".position",lightComponent.m_Position + lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".position",{lightComponent.m_Position + lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".ambient",lightComponent.m_Ambient);
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".diffuse",lightComponent.m_Diffuse);
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".specular",lightComponent.m_Specular);
@@ -233,49 +177,8 @@ namespace Proof
         if (DifferentMeshes == 0)return;
         uint32_t SizeofOffset = 0;
         Renderer3DInstance->m_Shader->UseShader();
-        /*
-        Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].direction",-0.2f,-1.0f,-0.3f);
-        Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].ambient",1.0f,1.0f,1.0f);
-        Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].diffuse",1.0f,1.0f,1.0f);
-        Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].specular",1.0f,1.0f,1.0f);
-        */
-        if(NumberDirectionalLight ==0){
-            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].direction",0,0,0);
-            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].ambient",0,0,0);
-            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].diffuse",0,0,0);
-            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].specular",0,0,0);
-            Renderer3DInstance->m_Shader->SetInt("v_NrDirectionalLight",1);
-        }
-        
-        if(NumberPointLight ==0){
-            NumberPointLightstring = "v_PointLight[" + std::to_string(NumberPointLight) + "]";
-            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".direction",0,0,0);
-            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".ambient",0,0,0);
-            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".diffuse",0,0,0);
-            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".specular",0,0,0);
-            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".constant",0);
-            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".linear",0);
-            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".quadratic",0);
-            Renderer3DInstance->m_Shader->SetInt("v_NrPointLight",0);
-        }
-
-        if(NumberSpotLight ==0){
-            NumberSpotLightstring = "v_SpotLight[" + std::to_string(NumberSpotLight) + "]";
-            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",0,0,0);
-            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".ambient",0,0,0);
-            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".diffuse",0,0,0);
-            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".specular",0,0,0);
-            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".constant",0);
-            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".linear",0);
-            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".quadratic",0);
-            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".cutOff",0);
-            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".outerCutOff",0);
-            Renderer3DInstance->m_Shader->SetInt("v_NrSpotLight",0);
-        }
-
-        
+        LightingErrorChecks();
         Renderer3DInstance->m_Shader->SetVec3("viewPos",Position);
-
         for (uint32_t Size = 0; Size < s_DifferentID.size(); Size++) {
             Renderer3DInstance->m_VertexBuffer->Bind();
             Renderer3DInstance->m_VertexBuffer->AddData(&m_InstanceTransforms[SizeofOffset],m_InstanceTransforms.size() * sizeof(InstanceRendererVertex));/* THIS CODE COULD BE TEMPORARY*/
@@ -289,13 +192,12 @@ namespace Proof
             }
             else {
                 Renderer3DInstance->m_Shader->UseShader();
-                Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
+                Renderer3DInstance->m_Shader->SetInt( "texture_diffuse",0);
                 Renderer3DInstance->m_WhiteTexture->BindTexture(0);
             }
             TempMesh->second.GetModel()->m_VertexArrayObject->Bind();
             TempMesh->second.GetModel()->m_IndexBufferObject->Bind();
             RendererCommand::DrawElementIndexed(TempMesh->second.GetModel()->m_VertexArrayObject,TempAmountMeshes->second);
-           
             Renderer3DStats->DrawCalls++;
             SizeofOffset+= TempAmountMeshes->second;
         }
@@ -304,6 +206,7 @@ namespace Proof
     void Renderer3D::Reset() {
         Renderer3DInstance->m_AmountMeshes.clear();
         Renderer3DInstance->m_Meshes.clear();
+        Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.clear();
         m_Transforms.clear();
         s_DifferentID.clear();
         m_Material.clear();
@@ -316,11 +219,75 @@ namespace Proof
         NumberDirectionalLight =0;
         NumberPointLight=0;
         NumberSpotLight =0;
-
         /*
         NumberDirectionalLightstring = " ";
         NumberPointLightstring =" ";
         NumberSpotLightstring =" ";
         */
+    }
+    void Renderer3D::SetMeshComponentData(MeshComponent& meshComponent) {
+        meshComponent.GetModel()->m_VertexArrayObject->Bind();
+
+        meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,m_Transform));
+        meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(InstanceRendererVertex),(void*)Temp2);
+        meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(InstanceRendererVertex),(void*)Temp3);
+        meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(InstanceRendererVertex),(void*)Temp4);
+        meshComponent.GetModel()->m_VertexArrayObject->AddData(7,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialAmbient));
+        meshComponent.GetModel()->m_VertexArrayObject->AddData(8,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialDiffuse));
+        meshComponent.GetModel()->m_VertexArrayObject->AddData(9,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialSpecular));
+        meshComponent.GetModel()->m_VertexArrayObject->AddData(10,1,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_Matallness));
+
+        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(3,1);
+        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(4,1);
+        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(5,1);
+        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
+        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(7,1);// Material
+        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(8,1);// Material
+        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(9,1);// MaterialMaterial
+        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(10,1);// MaterialMaterial
+
+        auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
+        ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
+            glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})
+            * glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0})
+            * glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1})
+            * glm::scale(glm::mat4(1.0f),{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
+    
+    }
+    void Renderer3D::LightingErrorChecks() {
+        Renderer3DInstance->m_Shader->UseShader();
+        if (NumberDirectionalLight == 0) {
+            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].direction",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].ambient",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].diffuse",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].specular",0,0,0);
+            Renderer3DInstance->m_Shader->SetInt("v_NrDirectionalLight",1);
+        }
+
+        if (NumberPointLight == 0) {
+            NumberPointLightstring = "v_PointLight[" + std::to_string(NumberPointLight) + "]";
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".direction",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".ambient",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".diffuse",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".specular",0,0,0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".constant",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".linear",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".quadratic",0);
+            Renderer3DInstance->m_Shader->SetInt("v_NrPointLight",0);
+        }
+
+        if (NumberSpotLight == 0) {
+            NumberSpotLightstring = "v_SpotLight[" + std::to_string(NumberSpotLight) + "]";
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".ambient",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".diffuse",0,0,0);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".specular",0,0,0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".constant",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".linear",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".quadratic",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".cutOff",0);
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".outerCutOff",0);
+            Renderer3DInstance->m_Shader->SetInt("v_NrSpotLight",0);
+        }
     }
 }

@@ -26,6 +26,9 @@ namespace Proof {
 			static uint32_t NumberOfInstances;
 			static uint32_t AmountDrawn;
 		};
+	private:
+		static void SetMeshComponentData(class MeshComponent& meshComponent);
+		static void LightingErrorChecks();
 	};
 
 	struct Proof_API InstancedRenderer3D {
@@ -33,6 +36,7 @@ namespace Proof {
 		Count<class Shader>m_Shader;
 		std::unordered_map<uint32_t,uint32_t> m_AmountMeshes;
 		std::unordered_map<uint32_t,class MeshComponent> m_Meshes;
+		std::unordered_map<uint32_t,uint32_t > m_MeshesEndingPositionIndexTransforms;
 		bool SceneHasAmountMeshes(uint32_t ID) { return m_AmountMeshes.find(ID) != m_AmountMeshes.end(); };
 		static  Count<class Texture2D>m_WhiteTexture;
 	};

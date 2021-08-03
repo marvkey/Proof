@@ -18,16 +18,7 @@ namespace Proof{
 	static MeshAsset* TempAsset =nullptr;
 	static MeshAsset* TempLocation0Asset = nullptr;
 	void SceneHierachyPanel::ImGuiRender(){
-		if(ImGui::Begin("Active World")){
-			char buffer[256];
-			memset(buffer,0,sizeof(buffer));
-			strcpy_s(buffer,sizeof(buffer),m_CurrentWorld->GetName().c_str());
-			if (ImGui::InputTextWithHint("##WorldName","WorldName",buffer,sizeof(buffer))) {
-				m_CurrentWorld->Name = buffer;
-			}
-
-			ImGui::End();
-		}
+	
 
 		ImGui::Begin("Herieachy");
 		for (uint32_t i = 0; i < m_CurrentWorld->Registry.GetAllID().size(); i++) {
@@ -286,6 +277,12 @@ namespace Proof{
 			LightComponent* Light = dynamic_cast<LightComponent*>(Comp);
 			if (Light != nullptr) {
 				DrawComponents<LightComponent>("Light Component: ",entity,Light,IndexValue,[](LightComponent& LightComp) {
+					char buffer[256];
+					memset(buffer,0,sizeof(buffer));
+					strcpy_s(buffer,sizeof(buffer),LightComp.GetName().c_str());
+					if (ImGui::InputText("##N",buffer,sizeof(buffer))) {
+						LightComp.SetName(buffer);
+					}
 					if(LightComp.m_LightType == LightComp.Direction){
 						DrawVectorControl("Direction",LightComp.m_Direction);
 						ImGui::NewLine();
@@ -297,9 +294,11 @@ namespace Proof{
 						DrawVectorControl("Position",LightComp.m_Position);
 						ImGui::NewLine();
 
-						ImGui::DragFloat("Constant",&LightComp.m_Constant,0.05);
-						ImGui::DragFloat("Linear",&LightComp.m_Linear,0.05);
-						ImGui::DragFloat("Quadratic",&LightComp.m_Quadratic,0.05);
+						ImGui::Text("Constant");
+						ImGui::SameLine();
+						ImGui::DragFloat("##Constant",&LightComp.m_Constant,0.001);
+						ImGui::DragFloat("Linear",&LightComp.m_Linear,0.001);
+						ImGui::DragFloat("Quadratic",&LightComp.m_Quadratic,0.001);
 
 
 						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
@@ -310,11 +309,11 @@ namespace Proof{
 						DrawVectorControl("Position",LightComp.m_Position);
 						DrawVectorControl("Direction",LightComp.m_Direction);
 						ImGui::NewLine();
-						ImGui::DragFloat("Constant",&LightComp.m_Constant,0.05);
-						ImGui::DragFloat("Linear",&LightComp.m_Linear,0.05);
-						ImGui::DragFloat("Quadratic",&LightComp.m_Quadratic,0.05);
-						ImGui::DragFloat("CutOff",&LightComp.m_CutOff,0.05);
-						ImGui::DragFloat("Outer-Cutoff",&LightComp.m_OuterCutOff,0.05);
+						ImGui::DragFloat("Constant",&LightComp.m_Constant,0.001);
+						ImGui::DragFloat("Linear",&LightComp.m_Linear,0.001);
+						ImGui::DragFloat("Quadratic",&LightComp.m_Quadratic,0.001);
+						ImGui::DragFloat("CutOff",&LightComp.m_CutOff,0.001);
+						ImGui::DragFloat("Outer-Cutoff",&LightComp.m_OuterCutOff,0.001);
 
 						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
 						ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
@@ -334,7 +333,7 @@ namespace Proof{
 
 
 
-	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel,Vector& Vec,float ResetValue,float columnWidth) {
+	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel,Vector& Vec,float ResetValue,float columnWidth,float Speed) {
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		ImGui::PushID(UniqeLabel.c_str());// this id is for everything here so imgui does not assign something to the value that we have here
@@ -359,7 +358,7 @@ namespace Proof{
 		}
 		ImGui::PopFont();
 		ImGui::SameLine();
-		ImGui::DragFloat("##x",&Vec.X,0.1f,0,0,"%.3f"); // does not show ## as label
+		ImGui::DragFloat("##x",&Vec.X,Speed,0,0,"%.3f"); // does not show ## as label
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ImGui::PopStyleColor(3);
@@ -375,7 +374,7 @@ namespace Proof{
 		ImGui::PopFont();
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Y",&Vec.Y,0.1f,0,0,"%.3f"); // does not show ## as label
+		ImGui::DragFloat("##Y",&Vec.Y,Speed,0,0,"%.3f"); // does not show ## as label
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ImGui::PopStyleColor(3);
@@ -391,7 +390,7 @@ namespace Proof{
 		ImGui::PopFont();
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Z",&Vec.Z,0.1f,0,0,"%.3f"); // does not show ## as label
+		ImGui::DragFloat("##Z",&Vec.Z,Speed,0,0,"%.3f"); // does not show ## as label
 		ImGui::PopItemWidth();
 		ImGui::PopStyleColor(3);
 

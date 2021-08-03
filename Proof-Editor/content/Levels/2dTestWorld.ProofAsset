@@ -80,7 +80,7 @@ Entities:
     SpriteComponent:
       Name: Default
       AssetID: 28388
-      Colour: [0.245967746, 0.981757283, 1, 1]
+      Colour: [0.546012402, 1, 0, 1]
       LocalLocation: [-0.300000012, -0.800000012, -3.29999995]
       LocalRotation: [0, 0, 0]
       LocalScale: [-0.100000001, -0.200000003, -0.300000012]

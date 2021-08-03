@@ -6,7 +6,6 @@
 #include <filesystem>
 #include "Proof/Resources/ExternalCreations.h"
 namespace Proof{
-
 	SceneSerializer::SceneSerializer(World* Scene) {
 		PF_CORE_ASSERT(Scene,"Scene cannot be nulltptr");
 		m_Scene = Scene;
@@ -136,7 +135,6 @@ namespace Proof{
 					tc->Rotation = transformComponet["Rotation"].as<Vector>();
 					tc->Scale = transformComponet["Scale"].as<Vector>();
 				}
-				
 				
 				auto meshComponent = entity["MeshComponent"];
 				if(meshComponent){

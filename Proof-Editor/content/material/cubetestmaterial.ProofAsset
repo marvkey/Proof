@@ -1,0 +1,6 @@
+AssetTypeString: AssetType::MaterialAsset
+AssetType: 3
+ID: 27537
+Ambient: [1, 0, 0]
+Diffuse: [0.712185383, 0.386804104, 0.786290288]
+Specular: [0.5, 0.5, 0.5]

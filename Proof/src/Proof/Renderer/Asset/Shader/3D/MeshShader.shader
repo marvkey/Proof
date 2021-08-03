@@ -25,7 +25,9 @@ void main() {
 	v_MaterialSpecular = aMaterialSpecular;
     v_MaterialShininess = aMaterialShinniness;
 	FragPos = vec3(aTransform * vec4(aPos,1.0));
-	Normal = mat3(transpose(inverse(aTransform))) * aNormal;
+	Normal = mat3(transpose(inverse(aTransform))) * aNormal; // for a normal application this is not good for the shadeer
+    // inversing a matrix takes time we are gonna have to send this through this as a uniform or a 
+    // as a layout
 	gl_Position = u_Projection * u_View * vec4(FragPos,1.0);
 }
 
@@ -97,7 +99,7 @@ void main() {
     vec3 viewDir= normalize(viewPos - FragPos);
 
     for(int i=0; i< v_NrDirectionalLight;i++)
-        result+= CalcDirLight(v_DirectionalLight[i],Normal,viewPos);
+        result+= CalcDirLight(v_DirectionalLight[i],norm,viewDir);
 
     for(int i=0; i< v_NrPointLight;i++)
         result += CalcPointLight(v_PointLight[i],norm,FragPos,viewDir);
@@ -117,7 +119,7 @@ vec3 CalcDirLight(DirLight light,vec3 normal,vec3 viewDir) {
     vec3 reflectDir = reflect(-lightDir,normal);
     float spec = pow(max(dot(viewDir,reflectDir),0.0),v_MaterialShininess);
     // combine results
-    vec3 ambient = light.ambient * v_MaterialAmbient;
+    vec3 ambient = light.ambient * v_MaterialDiffuse;
     vec3 diffuse = light.diffuse * diff * v_MaterialDiffuse;
     vec3 specular = light.specular * spec * v_MaterialSpecular;
     return (ambient + diffuse + specular);

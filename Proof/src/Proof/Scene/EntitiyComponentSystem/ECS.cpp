@@ -24,7 +24,6 @@ namespace Proof{
 			PF_ENGINE_INFO("Cannot pass entity ID by argument that already exist");
 			return 0;
 		}
-
 		std::vector<Component*>* New = new std::vector<Component*>;
 		EntityHolder.insert({ID,New});
 		AllEntityID.emplace_back(ID);
@@ -42,7 +41,6 @@ namespace Proof{
 
             EntityHolder.erase(ID);
             AllEntityID.erase(it);
-
             return;
         }
         PF_ENGINE_ERROR("Entity does not exist with ID No Delete");

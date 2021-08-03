@@ -1,0 +1,199 @@
+World: rock and cube
+Entities:
+  - Entity: 96
+    TagComponent:
+      Tag: DirectionalLight
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightComponent:
+      Position: [0, 0, 0]
+      Direction: [-3.9000001, -90.1999969, 62]
+      CutOff: 0
+      OuterCutOff: 0
+      Constant: 0
+      Linear: 0
+      Quadratic: 0
+      Ambient: [0.299353689, 0.318548381, 0.178541228]
+      Diffuse: [0.32661289, 0.243642688, 0.243642688]
+      Specular: [0, 0.0564668179, 1]
+      LightType: 0
+  - Entity: 27594
+    TagComponent:
+      Tag: rocket
+    TransformComponent:
+      Location: [-5.30000019, -2.79999995, 4.5999999]
+      Rotation: [0, 0, 0]
+      Scale: [0.200000003, 0.200000003, 0.200000003]
+    MeshComponent:
+      Name: Default
+      AssetID: 20980
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 9679
+  - Entity: 4539
+    TagComponent:
+      Tag: cube
+    TransformComponent:
+      Location: [-8.80000019, 3.5, 2.4000001]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 9679
+  - Entity: 19210
+    TagComponent:
+      Tag: Floor
+    TransformComponent:
+      Location: [-12.6000004, -2.79999995, 0]
+      Rotation: [0, 0, 0]
+      Scale: [15.8000002, -1.20000005, 16.7999992]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
+  - Entity: 26539
+    TagComponent:
+      Tag: wall
+    TransformComponent:
+      Location: [-12.3000002, -3.5, 0.5]
+      Rotation: [0, 0, 0]
+      Scale: [16.1000004, 10.8999996, -0.400000006]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
+  - Entity: 6847
+    TagComponent:
+      Tag: RedLight
+    TransformComponent:
+      Location: [-6.4000001, 1, 4.19999981]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
+    LightComponent:
+      Position: [0.899999976, 0, 0]
+      Direction: [1, 1, 1]
+      CutOff: 0
+      OuterCutOff: 0
+      Constant: 0.241999999
+      Linear: 0.200000003
+      Quadratic: 0.0469999984
+      Ambient: [0.911290348, 0, 0]
+      Diffuse: [0.931451619, 0.435678959, 0.435678959]
+      Specular: [1, 0, 0]
+      LightType: 1
+  - Entity: 7372
+    TagComponent:
+      Tag: spotLight
+    TransformComponent:
+      Location: [-3.9000001, -1.60000002, 9]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
+    LightComponent:
+      Position: [0, 0, 0]
+      Direction: [0, 3.70000005, 0]
+      CutOff: 0.620000005
+      OuterCutOff: 0.0399999991
+      Constant: 1.76199996
+      Linear: -0.180000007
+      Quadratic: 0.0450000018
+      Ambient: [0.0317378007, 0.108585306, 0.983870983]
+      Diffuse: [4.99999999e-07, 6.02291323e-07, 9.99999997e-07]
+      Specular: [7.71429484e-07, 9.99999997e-07, 6.00806459e-07]
+      LightType: 2
+  - Entity: 25145
+    TagComponent:
+      Tag: Rock
+    TransformComponent:
+      Location: [0.5, -0.600000024, 8.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 29460
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
+  - Entity: 26309
+    TagComponent:
+      Tag: secondwal
+    TransformComponent:
+      Location: [4, 8.89999962, 16.5]
+      Rotation: [0, 0, 0]
+      Scale: [-16.7999992, -11.6999998, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
+  - Entity: 5525
+    TagComponent:
+      Tag: 3rd Wal
+    TransformComponent:
+      Location: [-12.5, -3.79999995, -2.0999999]
+      Rotation: [0, 90, 0]
+      Scale: [-27.1000004, 11.8000002, -0.400000006]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
+  - Entity: 4447
+    TagComponent:
+      Tag: 4th wall
+    TransformComponent:
+      Location: [3.5999999, -3.5999999, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.699999988, 12.3999996, 17.1000004]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
+  - Entity: 23098
+    TagComponent:
+      Tag: roof
+    TransformComponent:
+      Location: [5.0999999, 7.0999999, 21.6000004]
+      Rotation: [0, 0, 0]
+      Scale: [-20.2000008, -0.800000012, -30.6000004]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0

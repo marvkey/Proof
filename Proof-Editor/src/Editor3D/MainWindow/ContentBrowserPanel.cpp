@@ -19,7 +19,7 @@ namespace Proof
 {
 	static const std::filesystem::path s_AssetsPath = "content";
 	static float padding = 16.0f; // space between 
-	static   float thumbnailSize = 128;
+	static float thumbnailSize = 128;
 	static uint32_t IterPosition = 0;
 	static std::string NewFolderName;
 	static std::string NewFileName;
