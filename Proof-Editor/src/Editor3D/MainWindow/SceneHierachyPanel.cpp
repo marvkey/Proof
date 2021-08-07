@@ -14,6 +14,7 @@
 #include "ContentBrowserPanel.h"
 #include <vector>
 #include "Proof/Resources/Asset/MaterialAsset.h"
+#include "../ImGUIAPI.h"
 namespace Proof{
 	static MeshAsset* TempAsset =nullptr;
 	static MeshAsset* TempLocation0Asset = nullptr;
@@ -156,7 +157,6 @@ namespace Proof{
 					DrawVectorControl("Location",component.Location);
 					DrawVectorControl("Rotation",component.Rotation);
 					DrawVectorControl("Scale",component.Scale,1.0f);
-
 				});
 				IndexValue += 1;
 				continue;
@@ -283,6 +283,7 @@ namespace Proof{
 					if (ImGui::InputText("##N",buffer,sizeof(buffer))) {
 						LightComp.SetName(buffer);
 					}
+
 					if(LightComp.m_LightType == LightComp.Direction){
 						DrawVectorControl("Direction",LightComp.m_Direction);
 						ImGui::NewLine();
@@ -318,8 +319,7 @@ namespace Proof{
 						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
 						ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
 						ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
-					}
-				
+					}		
 					int elementCount = 2;
 					const char* elementNames[] = {"Direction","Point","Spot"};
 					const char* elementName =(LightComp.m_LightType >=0 && LightComp.m_LightType <elementCount+1) ?elementNames[LightComp.m_LightType]:"Unknown";
@@ -357,6 +357,7 @@ namespace Proof{
 			Vec.X = ResetValue;
 		}
 		ImGui::PopFont();
+
 		ImGui::SameLine();
 		ImGui::DragFloat("##x",&Vec.X,Speed,0,0,"%.3f"); // does not show ## as label
 		ImGui::PopItemWidth();

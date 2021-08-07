@@ -212,7 +212,7 @@ namespace Proof
         m_Material.clear();
         m_InstanceTransforms.clear();
         DifferentMeshes = 0;
-        Renderer3DStats->DrawCalls = 0;
+        Renderer3DStats->DrawCalls = 0;          
         Renderer3DStats->AmountDrawn = 0;
         Renderer3DStats->NumberOfInstances = 0;
 

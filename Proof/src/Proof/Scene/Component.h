@@ -173,7 +173,7 @@ namespace Proof{
 		float m_CutOff; // gets put in cos and radias before use
 		float m_OuterCutOff; // gets put in cos and radias before use
 
-		float m_Constant;
+		float m_Constant=1.0f;
 		float m_Linear;
 		float m_Quadratic;
 

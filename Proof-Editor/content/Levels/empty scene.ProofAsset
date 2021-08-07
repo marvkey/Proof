@@ -9,15 +9,15 @@ Entities:
       Scale: [1, 1, 1]
     LightComponent:
       Position: [0, 0, 0]
-      Direction: [-3.9000001, -90.1999969, 62]
+      Direction: [-45.0999985, -30.7000008, -19.3999996]
       CutOff: 0
       OuterCutOff: 0
       Constant: 0
       Linear: 0
       Quadratic: 0
-      Ambient: [0.299353689, 0.318548381, 0.178541228]
-      Diffuse: [0.32661289, 0.243642688, 0.243642688]
-      Specular: [0, 0.0564668179, 1]
+      Ambient: [9.88635861e-07, 9.99999997e-07, 0]
+      Diffuse: [9.99999997e-07, 8.50806487e-07, 8.50806487e-07]
+      Specular: [3.87096748e-07, 4.23583515e-07, 9.99999997e-07]
       LightType: 0
   - Entity: 27594
     TagComponent:
@@ -197,3 +197,36 @@ Entities:
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
       MaterialPointerID: 0
+  - Entity: 6054
+    TagComponent:
+      Tag: flashlight
+    TransformComponent:
+      Location: [5.0999999, 7.5999999, 36.2000008]
+      Rotation: [0, 0, 0]
+      Scale: [-16.2000008, -9.89999962, 26.6000004]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 13094
+    LightComponent:
+      Position: [0, 0, 0]
+      Direction: [-1.39999998, -1.10000002, -3.70000005]
+      CutOff: 12
+      OuterCutOff: 16
+      Constant: 15
+      Linear: 0.899999976
+      Quadratic: 0
+      Ambient: [0.59676826, 0.59677422, 0.596768558]
+      Diffuse: [0.379013538, 0, 1]
+      Specular: [0, 1, 0.422619343]
+      LightType: 2
+  - Entity: 25678
+    TagComponent:
+      Tag: sponza
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]

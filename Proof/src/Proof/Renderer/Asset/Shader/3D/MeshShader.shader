@@ -77,7 +77,7 @@ struct SpotLight {
 
 in vec3 FragPos;
 in vec3 Normal;
-uniform vec3 viewPos;
+uniform vec3 viewPos;  
 
 uniform int v_NrDirectionalLight;
 uniform DirLight v_DirectionalLight[150];
@@ -107,7 +107,7 @@ void main() {
     for(int i=0; i<v_NrSpotLight;i++)
         result += CalcSpotLight(v_SpotLight[i],norm,FragPos,viewDir);
 
-    FragColor = texture(texture_diffuse,TexCoord)*vec4(result,1.0);
+    FragColor = texture(texture_diffuse,TexCoord).rgba*vec4(result,1.0);
 }
 
 // calculates the color when using a directional light.
@@ -119,7 +119,7 @@ vec3 CalcDirLight(DirLight light,vec3 normal,vec3 viewDir) {
     vec3 reflectDir = reflect(-lightDir,normal);
     float spec = pow(max(dot(viewDir,reflectDir),0.0),v_MaterialShininess);
     // combine results
-    vec3 ambient = light.ambient * v_MaterialDiffuse;
+    vec3 ambient = light.ambient * v_MaterialAmbient;
     vec3 diffuse = light.diffuse * diff * v_MaterialDiffuse;
     vec3 specular = light.specular * spec * v_MaterialSpecular;
     return (ambient + diffuse + specular);
@@ -147,7 +147,7 @@ vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir) {
     return (ambient + diffuse + specular);
 }
 
-// calculates the color when using a spot light.
+// calculastes the color when using a spot light.
 vec3 CalcSpotLight(SpotLight light,vec3 normal,vec3 fragPos,vec3 viewDir) {
     vec3 lightDir = normalize(light.position - fragPos);
     // diffuse shading
