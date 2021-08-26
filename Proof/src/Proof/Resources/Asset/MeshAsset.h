@@ -9,11 +9,11 @@ namespace Proof
 		virtual void SaveAsset() override;
 		virtual bool LoadAsset(const std::string& FilePath)override;
 		
-		virtual std::string GetName() {
+		virtual std::string GetAssetTypeName() {
 			return "AssetType::MeshAsset";
 		}
 
-		static std::string GetStaticName(){
+		static std::string GetAssetTypeStaticName(){
 			return "AssetType::MeshAsset";
 		}
 		MeshAsset() {
@@ -32,6 +32,8 @@ namespace Proof
 		class Model* GetModel();
 	private:
 		class Model* m_Model =nullptr;
+		friend class AssetManager;
+
 	};
 }
 

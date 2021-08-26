@@ -16,12 +16,12 @@
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "../Proof-Editor/src/Editor3D/Editor3D.h"
 namespace Proof
-{
+{ 
 	static const std::filesystem::path s_AssetsPath = "content";
 	static float padding = 16.0f; // space between 
-	static float thumbnailSize = 128;
+	static float thumbnailSize = 60;
 	static uint32_t IterPosition = 0;
-	static std::string NewFolderName;
+	static std::string NewFolderName; 
 	static std::string NewFileName;
 	static std::string FileDragSource;
 	static std::string FileDragSourceName;
@@ -188,7 +188,6 @@ namespace Proof
 			std::string filenameNoStem = It.path().filename().string();
 			if(It.is_directory()){
 				if (ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(),{thumbnailSize,thumbnailSize})) {} // there are more paremter to flip image and to add a tint colour
-				
 			}else{
 				
 				if(isScene ==false){
@@ -205,7 +204,7 @@ namespace Proof
 						}
 						if(ImGui::BeginDragDropSource()){
 							uint32_t staticID =GetIDCurrentDirectory(FileDragSource);
-							ImGui::SetDragDropPayload(AssetManager::GetAsset(staticID)->GetName().c_str(),&staticID,sizeof(uint32_t));
+							ImGui::SetDragDropPayload(AssetManager::GetAsset(staticID)->GetAssetTypeName().c_str(),&staticID,sizeof(uint32_t));
 
 							ImGui::Image((ImTextureID)(Temp->IsImageIDNUll() == false ? Temp->GetImageID() : m_FileIcon->GetID()),{60,60}); 
 							ImGui::Text(FileDragSourceName.c_str());
@@ -213,7 +212,7 @@ namespace Proof
 						}
 
 						
-						if(Temp->GetName() == MaterialAsset::GetStaticName()&& ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)){
+						if(Temp->GetAssetTypeName() == MaterialAsset::GetAssetTypeStaticName()&& ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)){
 							MaterialAsset * TempMaterial = dynamic_cast<MaterialAsset*>(Temp);
 							m_owner->SetMaterialEditor(*TempMaterial);
 							//ImGui::Begin("Material Editor");
@@ -285,6 +284,7 @@ namespace Proof
 								std::filesystem::rename(m_CurrentDirectory.string() + "\\" + filenameNoStem,m_CurrentDirectory.string() + "\\"+ RenameVariable + (It.is_directory() ? " ":".ProofAsset"));
 								if(It.is_directory() == false && isScene ==false){
 									auto* asset = AssetManager::GetAsset(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset"));
+									asset->m_AssetName = RenameVariable;
 									asset->SetPath(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset");
 									asset->SaveAsset();
 								}

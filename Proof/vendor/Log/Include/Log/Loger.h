@@ -41,7 +41,9 @@ namespace Logger {
 	template<typename ...Args>
 	inline void Log::LogInfo(const char* Msg,Args&& ...args) {
 		LocalTime = localtime(&CurrentTime);
-		printf("\x1b[32m[%i:%i:%i]",LocalTime->tm_hour,LocalTime->tm_min,LocalTime->tm_sec);
+		if(LocalTime !=nullptr){
+			printf("\x1b[32m[%i:%i:%i]",LocalTime->tm_hour,LocalTime->tm_min,LocalTime->tm_sec);
+		}
 		ColorOutput = "\x1b[32m";
 		ColorOutput += Msg;
 		printf("\x1b[32m %s: ",LoggerName.c_str());

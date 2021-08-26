@@ -77,29 +77,34 @@ namespace Proof{
 	};
 
 	struct Proof_API NativeScriptComponent :public Component {
-		NativeScriptComponent(){
+		NativeScriptComponent() {
 			Name = "NativeScriptComponent";
 		}
 		class Script* Instance = nullptr;
 		class Script* (*InstantiateScript)();
 		void (*DestroyScript)(NativeScriptComponent*);
+		
 		template<class T,typename... Args>
 		void Bind(Args... arg) {
-			InstantiateScript = []() {return static_cast<Script*>(new T(arg...)); m_HasbeenInstanciated =true; };
-			DestroyScript = [](NativeScriptComponent* NSC) {delete NSC->Instance; NSC->Instance = nullptr; m_HasbeenInstanciated =false;};
+			m_HasScriptAttached = true;
+			InstantiateScript = []() { return static_cast<Script*>(new T(arg...));};
+			DestroyScript = [](NativeScriptComponent* NSC) {delete NSC->Instance; NSC->Instance = nullptr;};
 		}
-		const std::string GetScriptName(){
+
+		const std::string GetScriptName() {
 			return m_ScriptPointerName;
 		}
 	private:
-		std::string m_ScriptPointerName ="null";
+		std::string m_ScriptPointerName = "null";
 		friend class Entity;
 		friend class World;
 		friend class ECS;
 		friend class SceneHierachyPanel;
 		uint32_t StartIndexSlot;
-		bool m_HasbeenInstanciated=false;
+		bool m_HasScriptAttached = false;
+
 	};
+
 
 	struct Proof_API MeshComponent :public Component {
 		MeshComponent() {

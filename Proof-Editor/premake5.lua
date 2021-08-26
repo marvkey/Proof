@@ -23,17 +23,23 @@ project "Proof-Editor"
         "%{IncludeDir.glm}",
         "%{wks.location}/SandBox/src",
         "%{IncludeDir.entt}",
-        --"%{IncludeDir.Vulkan}",
         "%{IncludeDir.Glad}",
 		"%{IncludeDir.Log}",
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.yaml_cpp}"
+		"%{IncludeDir.yaml_cpp}",
     }
 
+    --filter { "system:windows", "configurations:Debug" }
+      --  buildoptions "/MDd"        
+
+    --filter { "system:windows", "configurations:Release" }
+        --buildoptions "/MD"
     libdirs 
     {
-        "%{wks.location}/Proof/vendor/Assimp/Proof-Assimp-lib"
+        --"%{wks.location}/Game/Proof-Game/x64/Debug",
+        "%{wks.location}/Proof/vendor/Assimp/Proof-Assimp-lib",
+
     }
 
     links
@@ -44,7 +50,8 @@ project "Proof-Editor"
         "opengl32.lib",
         "Glad",
         "assimp-vc142-mt.lib",
-        "yaml-cpp"
+        --"ScriptModule.lib",
+        "yaml-cpp",
     }
    
     postbuildcommands{

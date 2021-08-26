@@ -6,6 +6,7 @@
 #include "World.h"
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "Material.h"
+#include "script.h"
 namespace Proof{
 	static struct Material Empty;
 	Entity Component::GetOwner() {

@@ -23,15 +23,17 @@ namespace Proof{
 
 		virtual uint32_t GetImageID();
 
-		virtual std::string GetName() {
+		virtual std::string GetAssetTypeName() {
 			return "AssetType::MaterialAsset";
 		}
 
-		static std::string GetStaticName() {
+		static std::string GetAssetTypeStaticName() {
 			return "AssetType::MaterialAsset";
 		}
 		Material GetMaterial();
 		Material m_Material;
 	private:
+		friend class AssetManager;
+
 	};
 }

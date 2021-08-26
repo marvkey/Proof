@@ -98,6 +98,7 @@ namespace Proof{
 				return nullptr;
 			}
 			PF_ENGINE_ERROR(false,"Entity ID Was Not FOund");
+			return nullptr;
 		}
 		template<typename T>
 		T* GetComponent(uint32_t ID,const std::string& CompName) {
@@ -141,6 +142,7 @@ namespace Proof{
 				return false;
 			}
 			PF_ENGINE_ERROR("Entity ID Was Not FOund");
+			return false;
 		}
 		/*
 		template<typename T>

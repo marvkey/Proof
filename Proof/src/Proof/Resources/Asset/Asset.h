@@ -28,7 +28,7 @@ namespace Proof
 			MaterialAsset
 		};
 		AssetType GetAssetType(){return m_AssetType;}
-		virtual std::string GetName(){
+		virtual std::string GetAssetTypeName(){
 			return "AssetType::None";
 		}
 		uint32_t GetID(){
@@ -37,16 +37,23 @@ namespace Proof
 
 		virtual uint32_t GetImageID() = 0;// FOR BROWSER PURPOSES
 		virtual bool IsImageIDNUll() = 0;
+
+		const std::string GetAssetName(){
+			return m_AssetName;
+		}
 	protected:
 		AssetType m_AssetType  = AssetType::None;
 		uint32_t m_ID = 0;
 		std::string m_Path;
 		std::string m_PathOfPointerToFile;
+		std::string m_AssetName;
+
 	private:
 		void SetPath(const std::string& NewFilePath){
 			m_Path = NewFilePath;
 		}
 		friend class ContentBrowserPanel;
+		friend class AssetManager;
 	};
 }
 

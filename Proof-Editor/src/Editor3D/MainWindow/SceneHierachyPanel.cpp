@@ -15,12 +15,17 @@
 #include <vector>
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "../ImGUIAPI.h"
+#include "Proof/Scene/ExampleSccripts.h"
+#include "Proof/Scene/Script.h"
+#include "../Game/Proof-Game/Proof-Game/src/generated/AllFiles.h"
 namespace Proof{
+#define InitilizeScript(InstanceNativeScriptComponent,Class)\
+	InstanceNativeScriptComponent.Bind<Class>();\
+	InstanceNativeScriptComponent.SetName(#Class)
+
 	static MeshAsset* TempAsset =nullptr;
 	static MeshAsset* TempLocation0Asset = nullptr;
 	void SceneHierachyPanel::ImGuiRender(){
-	
-
 		ImGui::Begin("Herieachy");
 		for (uint32_t i = 0; i < m_CurrentWorld->Registry.GetAllID().size(); i++) {
 			Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
@@ -69,7 +74,7 @@ namespace Proof{
 	template<typename T,typename UIFunction>
 	void SceneHierachyPanel::DrawComponents(const std::string& name,Entity& entity,T* Comp,uint32_t IndexValue,UIFunction Uifunction) {
 		ImGui::PushID(&(*Comp));
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+		const ImGuiTreeNodeFlags treeNodeFlags =ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 		T& component = *Comp;
 		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
@@ -128,7 +133,7 @@ namespace Proof{
 				entity.AddComponent<SpriteComponent>();
 				ImGui::CloseCurrentPopup();
 			}
-
+			 
 			if (ImGui::MenuItem("Native Script Component")) {
 				entity.AddComponent<NativeScriptComponent>();
 				ImGui::CloseCurrentPopup();
@@ -171,10 +176,10 @@ namespace Proof{
 					if (ImGui::InputText("##Name",buffer,sizeof(buffer))) {
 						component.SetName(buffer);
 					}
-					DrawVectorControl("Local Location",component.MeshLocalTransform.Location,0.0,125);
-					DrawVectorControl("Local Rotation",component.MeshLocalTransform.Rotation,0.0,125);
-					DrawVectorControl("Local Scale",component.MeshLocalTransform.Scale,0.0,125);
-					ImGui::Text("Mesh");
+					DrawVectorControl("Local Location",component.MeshLocalTransform.Location,0.0);
+					DrawVectorControl("Local Rotation",component.MeshLocalTransform.Rotation,0.0);
+					DrawVectorControl("Local Scale",component.MeshLocalTransform.Scale,0.0);
+					ExternalAPI::ImGUIAPI::TextBar("Mesh",AssetManager::HasID(component.AssetID) ? AssetManager::GetAsset(component.AssetID)->GetAssetName():"null");
 					if (ImGui::BeginPopupContextItem("RemoveMesh")) {
 						ImGui::EndPopup();
 					}
@@ -186,14 +191,14 @@ namespace Proof{
 						ImGui::EndPopup();
 					}
 					if (ImGui::BeginDragDropTarget()) {
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetStaticName().c_str())) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetAssetTypeStaticName().c_str())) {
 							uint32_t Data = *(const uint32_t*)payload->Data;
 							component.AssetID = Data;
 						}
 						ImGui::EndDragDropTarget();
 					}
 
-					ImGui::Text("Material");
+					ExternalAPI::ImGUIAPI::TextBar("Material",component.HasMaterial()? AssetManager::GetAsset(component.GetMaterialPointerID())->GetAssetName() : "null");
 					if (ImGui::BeginPopupContextItem("RemoveMaterial")) {
 						ImGui::EndPopup();
 					}
@@ -205,7 +210,7 @@ namespace Proof{
 						ImGui::EndPopup();
 					}
 					if (ImGui::BeginDragDropTarget()) {
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MaterialAsset::GetStaticName().c_str())) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MaterialAsset::GetAssetTypeStaticName().c_str())) {
 							uint32_t Data = *(const uint32_t*)payload->Data;
 							component.m_MeshMaterialID = Data;
 							PF_ENGINE_INFO("DROPPED %i",Data);
@@ -240,12 +245,11 @@ namespace Proof{
 						if (ImGui::MenuItem("Remove Texture")) {
 							component.AssetID = 0;
 						}
-
 						ImGui::EndPopup();
 					}
 					
 					if (ImGui::BeginDragDropTarget()) {
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(Texture2DAsset::GetStaticName().c_str())) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(Texture2DAsset::GetAssetTypeStaticName().c_str())) {
 							uint32_t Data = *(const uint32_t*)payload->Data;
 							component.AssetID =Data;
 						}
@@ -261,15 +265,38 @@ namespace Proof{
 			NativeScriptComponent* Script = dynamic_cast<NativeScriptComponent*>(Comp);
 			if(Script !=nullptr){
 				DrawComponents<NativeScriptComponent>("Native Script: ",entity,Script,IndexValue,[](NativeScriptComponent& NativeScriptComp){
-					ImGui::Text("Script");
-					ImGui::SameLine();
-					char buffer[256];
-					memset(buffer,0,sizeof(buffer));
-					strcpy_s(buffer,sizeof(buffer),NativeScriptComp.GetScriptName().c_str());
-					if (ImGui::InputText("##N",buffer,sizeof(buffer),ImGuiInputTextFlags_ReadOnly)) {
+					ExternalAPI::ImGUIAPI::TextBar("Sript",NativeScriptComp.GetName());
+					if(ImGui::IsItemClicked()){
+						ImGui::OpenPopup("Scripts");
+						
+					}
+					if (ImGui::BeginPopup("Scripts")) {
+						/*
+						if (ImGui::MenuItem("Movement")) {
+							/*
+							NativeScriptComp.Bind<MovementScript>();
+							NativeScriptComp.Name="MovementScript";
 							
+							InitilizeScript(NativeScriptComp,MovementScript);
+						}
+					*/
+						for(auto&it: ScriptDetail::GetScriptRegisry()){
+							const std::string& temp = it.second.first;
+							if(ImGui::MenuItem(temp.c_str())){								
+								InitilizeScript(NativeScriptComp,Player);
+							}
+						}
+						ImGui::EndPopup();
 					}
 					
+					if(NativeScriptComp.GetName() =="MovementScript"){
+						if(NativeScriptComp.Instance!=nullptr){
+							/*
+							MovementScript* temp =dynamic_cast<MovementScript*>(NativeScriptComp.Instance);
+							*/
+							//ImGui::DragFloat("Speed",&temp->Speed);
+						}
+					} 
 				});
 				IndexValue += 1;
 				continue;

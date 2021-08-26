@@ -37,21 +37,20 @@ namespace Proof{
 			Renderer3D::RenderLight(*Comp);
 		}
 		
-
-		/*
 		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
-			if(Scripts->m_HasbeenInstanciated == false)
+			if(Scripts->m_HasScriptAttached == false){
 				continue;
-			if (Scripts->Instance) {
+			}
+			if (Scripts->Instance==nullptr) {
 				Scripts->Instance = Scripts->InstantiateScript();
 				Scripts->Instance->OwnerEntity = Scripts->GetOwner();
 				Scripts->Instance->OnCreate();
 				Scripts->Instance->OnlyOnCreate();
 			}
-			Scripts->Instance->OnUpdate(DeltaTime);
+			if(Scripts->Instance->b_CallPerframe==true)
+				Scripts->Instance->OnUpdate(DeltaTime);
 		}
-
-		*/
+		
 		EditorCamera.OnUpdate(DeltaTime);
 	}
 

@@ -8,6 +8,7 @@
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Core/EditorMousePicking.h"
 #include "Proof/Resources/Asset/AssetManager.h"
+
 namespace Proof {
     WindowsWindow* Application::MainWindow = nullptr;
     Count<FrameBuffer> Application::ScreenFrameBuffer = nullptr;

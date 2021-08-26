@@ -1,10 +1,10 @@
 #pragma once
 #include "Core.h"
 #include "Platform/Window/WindowsWindow.h"
-#include "CurrentWindow.h"
 #include "Proof/Renderer/FrameBuffer.h"
 #include "Proof/Core/LayerStack.h"
 #include "EditorMousePicking.h"
+#include "CurrentWindow.h"
 
 namespace Proof {
     class Layer;

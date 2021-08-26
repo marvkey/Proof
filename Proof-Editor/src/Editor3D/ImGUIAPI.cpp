@@ -1,30 +1,29 @@
 #include "ImGUIAPI.h"
 #include <ImGui/imgui.h>
 #include <imgui/imgui_internal.h>
-
+#include <vector>
+#include<iostream>
+#include <array>
+#
 namespace Proof
 {
 	namespace ExternalAPI
 	{
-		void ImGUIAPI::TextBar(const std::string& Name,const std::string& Text,float ColumnWidth,float TextWidth) {
-			ImGui::GetStyle().FrameRounding = 0;
+		void ImGUIAPI::TextBar(const std::string& Name,const std::string& Text,float ColumnWidth) {
+			ImGui::GetStyle().FrameRounding = 3.5;
 			ImGui::PushID(Name.c_str());
-			ImGui::Columns(2); // distance between label and edits
+			ImGui::Columns(2); 
 			ImGui::SetColumnWidth(0,ColumnWidth);
 			ImGui::Text(Name.c_str());
 			ImGui::NextColumn();
+
 			char buffer[1024];
 			memset(buffer,0,sizeof(buffer));
 			strcpy_s(buffer,sizeof(buffer),Text.c_str());
-			ImGui::PushMultiItemsWidths(1,ImGui::CalcItemWidth());
-
-			ImGui::SetNextItemWidth(TextWidth);
 			if (ImGui::InputText("##N",buffer,sizeof(buffer),ImGuiInputTextFlags_ReadOnly));
-			ImGui::PopItemWidth();
 			ImGui::PopID();
 			ImGui::Columns(1);
 			ImGui::GetStyle().FrameRounding = 6;
-
 		}
 		void ImGUIAPI::AcceptPayLoad(const std::string& name,uint32_t& Variable) {
 			if (ImGui::BeginDragDropTarget()) {
@@ -46,6 +45,44 @@ namespace Proof
 				}
 				ImGui::EndDragDropSource();
 			}
+		}
+		void ImGUIAPI::InputText(const std::string& label,std::string& Variable,int MaxNumberChar,int ImGuiTextFlags,bool changeVariable ) {
+			/*
+			char buffer[MaxNumberChar];
+			memset(buffer,0,sizeof(buffer));
+			strcpy_s(buffer,sizeof(buffer),Variable.c_str());
+			if(ImGui::InputText(label.c_str(),buffer,sizeof(buffer))){
+				if(changeVariable==true)
+					Variable = buffer;
+			}
+			*/
+			std::vector<char> buffer;
+
+			memset(&buffer[0],0,buffer.size()*sizeof(char));
+			strcpy_s(&buffer[0],buffer.size() * sizeof(char),Variable.c_str());
+			if (ImGui::InputText(label.c_str(),&buffer[0],buffer.size() * sizeof(char))) {
+				if (changeVariable == true&& Variable.size()>=MaxNumberChar)
+					Variable = buffer[0];
+			}
+		}
+		void ImGUIAPI::InputTextBar(const std::string& Name,std::string& Variable,int MaxNumberChar,int ImGuiTextFlags,bool changeVariable,float ColumnWidth) {
+			ImGui::GetStyle().FrameRounding = 3.5;
+			ImGui::PushID(Name.c_str());
+			ImGui::Columns(2);
+			ImGui::SetColumnWidth(0,ColumnWidth);
+			ImGui::Text(Name.c_str());
+			ImGui::NextColumn();
+			std::vector<char> buffer;
+
+			memset(&buffer[0],0,buffer.size() * sizeof(char));
+			strcpy_s(&buffer[0],buffer.size() * sizeof(char),Variable.c_str());
+			if (ImGui::InputText(Name.c_str(),&buffer[0],buffer.size() * sizeof(char))) {
+				if (changeVariable == true && Variable.size() >= MaxNumberChar)
+					Variable = buffer[0];
+			}
+			ImGui::PopID();
+			ImGui::Columns(1);
+			ImGui::GetStyle().FrameRounding = 6;
 		}
 	}
 }

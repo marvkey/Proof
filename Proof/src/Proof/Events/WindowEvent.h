@@ -3,7 +3,7 @@
 #include <memory>
 #include "Event.h"
 #include "Proof/Input/KeyCodes.h"
-
+#include <sstream>
 int main(int argc, char** argv);
 namespace Proof {
     /* The initilization of the these will need to run on a sperate thread */

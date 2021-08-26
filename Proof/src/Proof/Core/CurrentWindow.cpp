@@ -7,6 +7,10 @@
 namespace Proof {
 	
 	GLFWwindow* CurrentWindow::GetWindow(){
+		/*
+		if(Application::MainWindow ==nullptr)
+			return nullptr;
+			*/
 		if (Application::MainWindow->MainWindow != nullptr)
 			return Application::MainWindow->MainWindow;
 		else
@@ -18,7 +22,7 @@ namespace Proof {
 	int CurrentWindow::GetWindowPosX(){
 		return GetWindowLocation().first;
 	}
-	int CurrentWindow::GetWindowPosY(){
+	int CurrentWindow::GetWindowPosY(){ 
 		return GetWindowLocation().second;
 	}
 	/*

@@ -1,1 +1,58 @@
-﻿
+﻿  Player.cpp
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Resources\Math\Math.h(97,1): warning C4305: 'return': truncation from 'double' to 'float'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Resources\Asset\Asset.h(29): warning C4091: 'static ': ignored on left of 'Proof::Asset::AssetType' when no variable is declared
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Renderer\Texture.h(18): warning C4091: 'static ': ignored on left of 'Proof::Texture2D::TextureType' when no variable is declared
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Core\Log.h(22): warning C4091: 'static ': ignored on left of 'Proof::Log::LogType' when no variable is declared
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(8,21): warning C4099: 'Proof::MeshComponent': type name first seen using 'struct' now seen using 'class'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Component.h(109): message : see declaration of 'Proof::MeshComponent'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(120,18): warning C4099: 'Proof::Component': type name first seen using 'struct' now seen using 'class'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Component.h(15): message : see declaration of 'Proof::Component'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(290,64): warning C4099: 'Proof::Component': type name first seen using 'struct' now seen using 'class'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Component.h(15): message : see declaration of 'Proof::Component'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(297,36): warning C4099: 'Proof::SpriteComponent': type name first seen using 'struct' now seen using 'class'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Component.h(146): message : see declaration of 'Proof::SpriteComponent'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(298,34): warning C4099: 'Proof::MeshComponent': type name first seen using 'struct' now seen using 'class'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(8): message : see declaration of 'Proof::MeshComponent'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(299,42): warning C4099: 'Proof::NativeScriptComponent': type name first seen using 'struct' now seen using 'class'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Component.h(79): message : see declaration of 'Proof::NativeScriptComponent'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(300,35): warning C4099: 'Proof::LightComponent': type name first seen using 'struct' now seen using 'class'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Component.h(170): message : see declaration of 'Proof::LightComponent'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(303,58): warning C4099: 'Proof::Component': type name first seen using 'struct' now seen using 'class'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Component.h(15): message : see declaration of 'Proof::Component'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(35,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(49,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(63,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(78,1): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(124,1): warning C4099: 'Proof::Component': type name first seen using 'struct' now seen using 'class'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Component.h(15): message : see declaration of 'Proof::Component'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(192,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(196,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(222,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(226,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(249,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(253,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(276,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(280,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\vendor\Glad\include\Glad\glad.h(326,1): warning C4005: 'GL_ALL_ATTRIB_BITS': macro redefinition
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\GL\gl.h(107): message : see previous definition of 'GL_ALL_ATTRIB_BITS'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\vendor\Glad\include\Glad\glad.h(414,1): warning C4005: 'GL_LOGIC_OP': macro redefinition
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\GL\gl.h(1152): message : see previous definition of 'GL_LOGIC_OP'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\vendor\Glad\include\Glad\glad.h(498,1): warning C4005: 'GL_TEXTURE_COMPONENTS': macro redefinition
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\GL\gl.h(1153): message : see previous definition of 'GL_TEXTURE_COMPONENTS'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\vendor\Glad\include\Glad\glad.h(592,1): warning C4005: 'GL_CLIENT_ALL_ATTRIB_BITS': macro redefinition
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\um\GL\gl.h(973): message : see previous definition of 'GL_CLIENT_ALL_ATTRIB_BITS'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Core\FrameTime.h(12,52): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\World.h(32,25): warning C4099: 'Proof::Component': type name first seen using 'struct' now seen using 'class'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Component.h(15): message : see declaration of 'Proof::Component'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Material.h(12,28): warning C4099: 'Proof::Material': type name first seen using 'class' now seen using 'struct'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Material.h(12): message : see declaration of 'Proof::Material'
+C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\Proof-Game\src\Player.h(16,43): warning C4275: non dll-interface class 'Proof::Script' used as base for dll-interface class 'Proof::Player'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Script.h(11): message : see declaration of 'Proof::Script'
+C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\Proof-Game\src\Player.h(16): message : see declaration of 'Proof::Player'
+C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\Proof-Game\src\Player.h(18,15): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\Proof-Game\src\Player.h(50,53): warning C4275: non dll-interface class 'Proof::Script' used as base for dll-interface class 'Proof::PlayerController'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Script.h(11): message : see declaration of 'Proof::Script'
+C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\Proof-Game\src\Player.h(50): message : see declaration of 'Proof::PlayerController'
+  Proof-Game.vcxproj -> C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\x64\Debug\ScriptModule.dll
+          1 file(s) copied.
+          1 file(s) copied.

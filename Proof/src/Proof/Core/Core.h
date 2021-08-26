@@ -33,7 +33,7 @@ using Ref = std::shared_ptr<T>;
 #endif
 
 
-#define GetVariableName(X)type_info(X).name
+#define GetVariableName(X)#X
 
 namespace Proof {
     template<typename T>
@@ -65,4 +65,4 @@ namespace Proof {
     private:
         std::chrono::duration <float>Duration;
     };
-}
+} 

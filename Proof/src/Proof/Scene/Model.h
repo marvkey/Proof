@@ -76,10 +76,10 @@ namespace Proof
         Count<class IndexBuffer> m_IndexBufferObject;
         std::vector<Count<Texture2D>> textures_loaded;
 
-        uint32_t Offset =0;
         uint32_t GetID(){return ID;};
-
+        
         void LoadModelOneMesh();
+        uint32_t Offset =0;
     private:
         std::vector<class Mesh> meshes;
         static std::vector<uint32_t> AllID;

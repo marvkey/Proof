@@ -38,7 +38,8 @@ project "Proof"
 
     }
 	libdirs{
-		"vendor/Assimp/Proof-Assimp-lib"
+		"vendor/Assimp/Proof-Assimp-lib",
+
 	}
 	links
 	{	
@@ -48,6 +49,7 @@ project "Proof"
 		"Glad",
         "assimp-vc142-mt.lib",
 		"yaml-cpp"
+
 	
 	}
     defines {

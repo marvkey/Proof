@@ -52,11 +52,12 @@ namespace Proof{
 				continue;
 			}
 			if(IsFileValid(dirEntry.path().string())){
-
+				
 				if(GetAssetType(dirEntry.path().string()) =="AssetType::Texture2DAsset"){
 					Texture2DAsset* asset = new Texture2DAsset;
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
+					asset->m_AssetName = dirEntry.path().stem().string();
 					continue;
 				}
 
@@ -64,13 +65,15 @@ namespace Proof{
 					MeshAsset* asset = new MeshAsset;
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
+					asset->m_AssetName = dirEntry.path().stem().string();
 					continue;
 				}
 
-				if(GetAssetType(dirEntry.path().string()) == MaterialAsset::GetStaticName()){
+				if(GetAssetType(dirEntry.path().string()) == MaterialAsset::GetAssetTypeStaticName()){
 					MaterialAsset* asset = new MaterialAsset;
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
+					asset->m_AssetName = dirEntry.path().stem().string();
 				}
 			}
 		}

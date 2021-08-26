@@ -6,9 +6,11 @@ namespace Proof
 	{
 		class Proof_API ImGUIAPI {
 		public:
-			static void TextBar(const std::string& Name,const std::string& Text ="null",float ColumnWidth=100.f,float TextWidth=100.f);
+			static void TextBar(const std::string& Name,const std::string& Text ="null",float ColumnWidth=210.f);
 			static void AcceptPayLoad(const std::string& name, uint32_t& Variable);
 			static void SendPayLoad(uint32_t& Data,const std::string&DataName,uint32_t* TextureID=nullptr,const char* name=nullptr);
+			static void InputText(const std::string& label,std::string& Variable,int MaxNumberChar=1000,int ImGuiTextFlags=0,bool changeVariable=true);
+			static void InputTextBar(const std::string& Name,std::string& Variable,int MaxNumberChar = 1000,int ImGuiTextFlags = 0,bool changeVariable = true,float ColumnWidth = 210.f);
 		};
 	}
 }

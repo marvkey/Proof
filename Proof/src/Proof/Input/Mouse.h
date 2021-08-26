@@ -15,6 +15,5 @@ namespace Proof {
             return  Y;
         }
     private:
-        float MouseX = GetMouseLocation().first, MouseY = GetMouseLocation().second;
     };
 }

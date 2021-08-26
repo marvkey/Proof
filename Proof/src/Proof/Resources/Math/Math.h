@@ -9,7 +9,7 @@
 namespace Proof
 {
 	struct Proof_API Math {
-		Math(Math&) = delete;
+		Math(const Math&) = delete;
 		/**
 		* @param Number
 		* @return the square root of the param Number

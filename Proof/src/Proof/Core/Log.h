@@ -2,7 +2,7 @@
 #include "Core.h"
 #include <memory>
 #include <Log/Loger.h>
-
+#include <unordered_map>
 namespace Proof {
 	class Proof_API Log {
 	public:
@@ -13,9 +13,17 @@ namespace Proof {
 		static	Count<Logger::Log>& GetClientLogger() {
 			return ClientLogger;
 		}
+		static enum LogType{
+			ERROR,
+			WARN,
+			INFO,
+			TRACE,
+			CRITICAL
+		};
 	private:
 		static Count<Logger::Log>EngineLogger;
 		static Count<Logger::Log>ClientLogger;
+		static std::unordered_map<LogType,const std::string&> Logs;
 	};
 }
 #ifdef PF_ENABLE_DEBUG 
