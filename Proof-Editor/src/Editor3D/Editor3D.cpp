@@ -100,6 +100,8 @@ namespace Proof
 		m_CubeMap = CubeMap::Create(CubeMapPaths);
 
 		PF_ENGINE_INFO("number ofscript is %i",ScriptDetail::GetScriptRegisry().size());
+		PF_ENGINE_CRITICAL("wcritical");
+		PF_ENGINE_WARN("Warn");
 	}
 	void Editore3D::OnDetach() {
 		if (ActiveWorld != nullptr) {
@@ -112,7 +114,6 @@ namespace Proof
 		Layer::OnUpdate(DeltaTime);
 		Application::ViewPortWidth = _ViewPortSize.x;
 		Application::ViewPortHeight = _ViewPortSize.y;
-
 		if (Input::IsKeyClicked(KeyBoardKey::L)) {
 			GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 		}
@@ -147,12 +148,12 @@ namespace Proof
 		Layer::OnImGuiDraw();
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
-
+		//ImGui::ShowDemoWindow();
 		ViewPort();
 		m_WorldHierachy.ImGuiRender();
 		m_CurrentContentBrowserPanel.ImGuiRender();
 		MaterialEditor();
-
+		Logger();
 		if (ImGui::Begin("Renderer Stastitics")) {
 			ImGui::TextColored({1.0,0,0,1},"RENDERER SPECS");
 			ImGui::Text("Renderer Company: %s",Renderer::GetRenderCompany().c_str());
@@ -174,6 +175,33 @@ namespace Proof
 			ImGui::Text("this a world");
 			ImGui::End();
 		}
+	}
+	void Editore3D::Logger() {
+		if(ImGui::Begin("Log")){
+			for (auto& it : Log::Logs) {
+				if(it.second.first== 0){// ERROR
+					ImGui::TextColored({1.0,0.0,0.0,1.0},it.second.second.c_str());
+					ImGui::SetScrollHere();
+				}else if (it.second.first ==1){// warn
+					ImGui::TextColored({1.0,0.635,0.0,1.0},it.second.second.c_str());
+					ImGui::SetScrollHere();
+				}
+				else if( it.second.first ==2){// INFO
+					ImGui::TextColored({0.0,1.0,0.0,1.0},it.second.second.c_str());
+					ImGui::SetScrollHere();
+				}
+				else if( it.second.first ==3){ // trace
+					ImGui::TextColored({1.0,1.0,1.0,1.0},it.second.second.c_str());
+					ImGui::SetScrollHere();
+				}else{ // CRITITCAL
+					ImGui::TextColored({1,1,0,1},it.second.second.c_str());
+					ImGui::SetScrollHere();
+				}
+			}
+
+
+		}
+		ImGui::End();
 	}
 	void Editore3D::ViewPort() {
 
@@ -318,7 +346,7 @@ namespace Proof
 			scerelizer.SerilizeText(ActiveWorld->GetPath());
 			delete ActiveWorld;
 			ActiveWorld = new World();
-			m_WorldHierachy.SetContext(ActiveWorld);
+			m_WorldHierachy.SetContext(ActiveWorld); 
 		}
 		else {
 			if (ActiveWorld != nullptr) {

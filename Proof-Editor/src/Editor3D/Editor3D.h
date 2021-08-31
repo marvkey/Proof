@@ -17,6 +17,7 @@ namespace Proof {
 		void SetMaterialEditor(class MaterialAsset& material);
 
 	private:
+		void Logger();
 		bool Docking = false;
 		void ViewPort();
 		glm::vec2 _ViewPortSize;
