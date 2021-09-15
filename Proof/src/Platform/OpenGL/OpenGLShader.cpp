@@ -139,7 +139,6 @@ namespace Proof {
 			glGetProgramInfoLog(ID,512,NULL,InfoLog);
 			PF_ENGINE_ERROR("%s ERROR::SHADER::PROGRAM::LINKING_FAILED %s",ShaderName.c_str(),InfoLog);
 		}
-
 		glDeleteShader(VertexShader);
 		glDeleteShader(FragmentShader);
 	}

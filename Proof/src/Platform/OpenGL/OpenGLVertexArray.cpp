@@ -5,16 +5,16 @@ namespace Proof {
    OpenGLVertexArray::OpenGLVertexArray(uint32_t Size):
 	  m_Size(Size)
    {
-	  glGenVertexArrays(m_Size,&m_ID);
-	  glBindVertexArray(m_ID);
+	  glCreateVertexArrays(1,&m_ID);
    }
    OpenGLVertexArray::~OpenGLVertexArray() {
-	  glDeleteVertexArrays(m_Size,&m_ID);
+	  glDeleteVertexArrays(1,&m_ID);
    }
    void OpenGLVertexArray::Bind() {
 	  glBindVertexArray(m_ID);
    }
    void OpenGLVertexArray::AddData(uint32_t Position,uint32_t Count,uint32_t SizeofVertex,const void* Offset) {
+	   glBindVertexArray(m_ID);
 	   glEnableVertexAttribArray(Position);
 	   glVertexAttribPointer(Position,Count,GL_FLOAT,GL_FALSE,SizeofVertex,Offset);
    }

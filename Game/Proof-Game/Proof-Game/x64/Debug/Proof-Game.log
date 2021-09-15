@@ -1,8 +1,11 @@
 ﻿  Player.cpp
-C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Resources\Math\Math.h(97,1): warning C4305: 'return': truncation from 'double' to 'float'
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Resources\Math\Math.h(105,1): warning C4305: 'return': truncation from 'double' to 'float'
 C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Resources\Asset\Asset.h(29): warning C4091: 'static ': ignored on left of 'Proof::Asset::AssetType' when no variable is declared
 C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Renderer\Texture.h(18): warning C4091: 'static ': ignored on left of 'Proof::Texture2D::TextureType' when no variable is declared
-C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Core\Log.h(22): warning C4091: 'static ': ignored on left of 'Proof::Log::LogType' when no variable is declared
+  The contents of <format> are available only in c++latest mode with concepts support;
+  see https://github.com/microsoft/STL/issues/1814 for details.
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Core\Log.h(24): warning C4091: 'static ': ignored on left of 'Proof::Log::LogType' when no variable is declared
+C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Core\Log.h(37,1): warning C4267: 'return': conversion from 'size_t' to 'uint16_t', possible loss of data
 C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(8,21): warning C4099: 'Proof::MeshComponent': type name first seen using 'struct' now seen using 'class'
 C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Component.h(109): message : see declaration of 'Proof::MeshComponent'
 C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\EntitiyComponentSystem\ECS.h(120,18): warning C4099: 'Proof::Component': type name first seen using 'struct' now seen using 'class'
@@ -53,6 +56,8 @@ C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\Proof-Game\src\Player.h(
 C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\Proof-Game\src\Player.h(50,53): warning C4275: non dll-interface class 'Proof::Script' used as base for dll-interface class 'Proof::PlayerController'
 C:\Users\Admin\OneDrive\Documents\Proof\Proof\src\Proof\Scene\Script.h(11): message : see declaration of 'Proof::Script'
 C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\Proof-Game\src\Player.h(50): message : see declaration of 'Proof::PlayerController'
+     Creating library C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\x64\Debug\ScriptModule.lib and object C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\x64\Debug\ScriptModule.exp
+LINK : warning LNK4098: defaultlib 'LIBCMTD' conflicts with use of other libs; use /NODEFAULTLIB:library
   Proof-Game.vcxproj -> C:\Users\Admin\OneDrive\Documents\Proof\Game\Proof-Game\x64\Debug\ScriptModule.dll
           1 file(s) copied.
           1 file(s) copied.

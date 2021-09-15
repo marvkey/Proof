@@ -57,22 +57,20 @@ namespace Proof
     }
 
     float Vector::GetLength() {
-        return Math::SquareRoot(X * X + Y * Y + Z * Z);
+        return Math::SquareRoot<float>(X * X + Y * Y + Z * Z);
     }
 
     float Vector::GetLength(const Vector& Vec) {
-        return  Math::SquareRoot(Vec.X * Vec.X + Vec.Y * Vec.Y + Vec.Z * Vec.Z);
+        return  Math::SquareRoot<float>(Vec.X * Vec.X + Vec.Y * Vec.Y + Vec.Z * Vec.Z);
     }
 
     float Vector::GetAngle(const Vector& Vec) {
-        float Angle = Vector::Dot(*this,Vec);
-        Angle = Angle / (GetLength(*this) * GetLength(Vec));
-        return Math::InverseCos(Angle);
+        float Angle = Vector::Dot(*this,Vec) / (GetLength(*this) * GetLength(Vec));
+        return Math::InverseCos<float>(Angle);
     }
 
     float Vector::GetAngle(const Vector& Vec1,const Vector& Vec2) {
-        float Angle = Vector::Dot(Vec1,Vec2);
-        Angle = Angle / (GetLength(Vec1) * GetLength(Vec2));
-        return Math::InverseCos(Angle);
+        float Angle = Vector::Dot(Vec1,Vec2) / (GetLength(Vec1) * GetLength(Vec2));
+        return Math::InverseCos<float>(Angle);
     }
 }

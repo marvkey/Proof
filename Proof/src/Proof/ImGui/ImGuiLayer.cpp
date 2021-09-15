@@ -81,7 +81,7 @@ namespace Proof {
 		colors[ImGuiCol_FrameBgHovered] = ImVec4{0.3f,0.305f,0.31f,1.0f};
 		colors[ImGuiCol_FrameBgActive] = ImVec4{0.1f,0.1505f,0.151f,1.0f};
 
-
+			
 		// Tabs Done
 		colors[ImGuiCol_Tab] = ImVec4{0.15f,0.1505f,0.151f,1.0f};
 		colors[ImGuiCol_TabHovered] = ImVec4{0.2f,0.2f,0.5f,1.0f};

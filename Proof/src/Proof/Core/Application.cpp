@@ -17,7 +17,7 @@ namespace Proof {
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
     Application::Application(){
-        MainWindow = new WindowsWindow(1920,1057); // this is the size of our current second monitor
+        MainWindow = new WindowsWindow(1500,600); // this is the size of our current second monitor
 
         MainWindow->createWindow();
         m_GraphicsContext =GraphicsContext::Create(CurrentWindow::GetWindow());
@@ -44,8 +44,8 @@ namespace Proof {
         float CurrentTime;
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-        glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
-        CurrentWindow::SetSwapInterval(true);
+     //   glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
+       // CurrentWindow::SetSwapInterval(true);
         while (glfwWindowShouldClose(CurrentWindow::GetWindow()) == false && _KeyClickedEvent.GetKeyClicked() != KeyBoardKey::Escape) {
             float FrameStart = glfwGetTime();
             float time = (float)glfwGetTime();
@@ -54,7 +54,7 @@ namespace Proof {
             const FrameTime DeltaTime = time - LastFrameTime;
             
             RendererCommand::EnableDepth(true);
-            /*
+            /* 
             m_MousePickingEditor.EnableWriting();
             RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
             RendererCommand::Clear();

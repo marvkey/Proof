@@ -14,11 +14,11 @@
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "windows.h"
 #include "Proof/Scene/Script.h"
-#include "../Game/Proof-Game/Proof-Game/src/generated/AllFiles.h"
-#include "../Game/Proof-Game/Proof-Game/src/generated/Init.h"
+//#include "../Game/Proof-Game/Proof-Game/src/generated/AllFiles.h"
+//#include "../Game/Proof-Game/Proof-Game/src/generated/Init.h"
 #include <Windows.h>
 #include <stdio.h> 
-
+#include "ImGUIAPI.h"
 typedef int(__cdecl* MYPROC)(LPWSTR);
 namespace Proof
 {
@@ -100,8 +100,6 @@ namespace Proof
 		m_CubeMap = CubeMap::Create(CubeMapPaths);
 
 		PF_ENGINE_INFO("number ofscript is %i",ScriptDetail::GetScriptRegisry().size());
-		PF_ENGINE_CRITICAL("wcritical");
-		PF_ENGINE_WARN("Warn");
 	}
 	void Editore3D::OnDetach() {
 		if (ActiveWorld != nullptr) {
@@ -123,8 +121,11 @@ namespace Proof
 		if (Input::IsKeyClicked(KeyBoardKey::S)) {
 			GuizmoType = ImGuizmo::OPERATION::SCALE;
 		}
+
+		if(Input::IsKeyPressed(KeyBoardKey::L)){
+			PF_ENGINE_TRACE("THE LETTER  IS PRESSED ");
+		}
 		ActiveWorld->OnUpdateEditor(DeltaTime);
-		//temp->OnUpdate(DeltaTime);
 		glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
 
 		/*
@@ -169,37 +170,95 @@ namespace Proof
 			ImGui::TextColored({1.0,0,0,1},"RENDERER 2D");
 			ImGui::Text("DrawCalls %i",Renderer2D::Renderer2DStats::m_DrawCalls);
 			ImGui::Text("Number of Quads %i",Renderer2D::Renderer2DStats::m_QuadCount);
-			ImGui::End();
 		}
+		ImGui::End();
+
 		if (ImGui::Begin("Active World")) {
 			ImGui::Text("this a world");
-			ImGui::End();
 		}
+		ImGui::End();
 	}
 	void Editore3D::Logger() {
-		if(ImGui::Begin("Log")){
-			for (auto& it : Log::Logs) {
-				if(it.second.first== 0){// ERROR
-					ImGui::TextColored({1.0,0.0,0.0,1.0},it.second.second.c_str());
-					ImGui::SetScrollHere();
-				}else if (it.second.first ==1){// warn
-					ImGui::TextColored({1.0,0.635,0.0,1.0},it.second.second.c_str());
-					ImGui::SetScrollHere();
-				}
-				else if( it.second.first ==2){// INFO
-					ImGui::TextColored({0.0,1.0,0.0,1.0},it.second.second.c_str());
-					ImGui::SetScrollHere();
-				}
-				else if( it.second.first ==3){ // trace
-					ImGui::TextColored({1.0,1.0,1.0,1.0},it.second.second.c_str());
-					ImGui::SetScrollHere();
-				}else{ // CRITITCAL
-					ImGui::TextColored({1,1,0,1},it.second.second.c_str());
+		if(ImGui::Begin("Log",(bool*)0,ImGuiWindowFlags_MenuBar| ImGuiWindowFlags_AlwaysHorizontalScrollbar|ImGuiWindowFlags_AlwaysVerticalScrollbar)){
+			ImGui::BeginMenuBar();
+			{
+				ExternalAPI::ImGUIAPI::CheckBox("pause logging",&Log::m_PauseLog);
+				ImGui::SameLine();
+				if(ImGui::Button("Clear log")){
+					Log::Logs.clear();
 					ImGui::SetScrollHere();
 				}
 			}
+			ImGui::EndMenuBar();
+			int pos=0;
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding,1);
+			for (auto& it : Log::Logs) {
+				if(it.second.first== 0){// ERROR
+					ImGui::PushID(pos);
+					if (pos % 2 == 0)
+						ImGui::PushStyleColor(ImGuiCol_FrameBg,{0.15f,0.15f,0.15f,1.0f});
+					ImGui::BeginChildFrame(pos+1,{ImGui::GetWindowWidth(),27});
+					ImGui::TextColored({1.0,0.0,0.0,1.0},it.second.second.c_str()); 
+					ImGui::EndChildFrame();
+					if (pos % 2 == 0)
+						ImGui::PopStyleColor();
 
+					ImGui::PopID();
 
+				}else if (it.second.first ==1){// warn
+					ImGui::PushID(pos);
+					if (pos % 2 == 0)
+						ImGui::PushStyleColor(ImGuiCol_FrameBg,{0.15f,0.15f,0.15f,1.0f});
+					ImGui::BeginChildFrame(pos+1,{ImGui::GetWindowWidth(),27});
+					ImGui::TextColored({1.0,0.635,0.0,1.0},it.second.second.c_str());
+					ImGui::EndChildFrame();
+					if (pos % 2 == 0)
+						ImGui::PopStyleColor();
+
+					ImGui::PopID();
+				}
+				else if( it.second.first ==2){// INFO
+					ImGui::PushID(pos);
+					if (pos % 2 == 0)
+						ImGui::PushStyleColor(ImGuiCol_FrameBg,{0.15f,0.15f,0.15f,1.0f});
+					ImGui::BeginChildFrame(pos+1,{ImGui::GetWindowWidth(),27});
+					ImGui::TextColored({0.0,1.0,0.0,1.0},it.second.second.c_str());
+					ImGui::EndChildFrame();
+					if (pos % 2 == 0)
+						ImGui::PopStyleColor();
+
+					ImGui::PopID();
+				}
+				else if( it.second.first ==3){ // trace
+					ImGui::PushID(pos);
+					if (pos % 2 == 0)
+						ImGui::PushStyleColor(ImGuiCol_FrameBg,{0.15f,0.15f,0.15f,1.0f});
+					ImGui::BeginChildFrame(pos+1,{ImGui::GetWindowWidth(),27});
+					ImGui::TextColored({1.0,1.0,1.0,1.0},it.second.second.c_str());
+					ImGui::EndChildFrame();
+					if (pos % 2 == 0)
+						ImGui::PopStyleColor();
+
+					ImGui::PopID();
+				}else{ // CRITITCAL
+					ImGui::PushID(pos);
+
+					ImGui::PushStyleColor(ImGuiCol_FrameBg,{1,1,0,1});
+					ImGui::BeginChildFrame(pos+1,{ImGui::GetWindowWidth(),27});
+					ImGui::TextColored({1,0,0,1},it.second.second.c_str());
+					ImGui::EndChildFrame();
+
+					ImGui::PopStyleColor();
+					ImGui::PopID();
+				}
+				pos+=1;
+			}
+			ImGui::PopStyleVar();
+			if (Log::NewLog == true&& ImGui::IsWindowFocused()==false) {
+				ImGui::SetScrollHere();
+				Log::NewLog =false;
+			}
+		
 		}
 		ImGui::End();
 	}
@@ -279,8 +338,8 @@ namespace Proof
 				ImGui::EndDragDropTarget();
 			}
 			/*----------------------------------------------------------------------------------------------------------------------------*/
-			ImGui::End();
 		}
+		ImGui::End();
 		ImGui::PopStyleVar();
 	}
 
@@ -366,7 +425,7 @@ namespace Proof
 			ActiveWorld = new World();
 			SceneSerializer scerelizer(ActiveWorld);
 			if (scerelizer.DeSerilizeText(FIle) == true) {
-				PF_ENGINE_INFO("World Deserilize perfectly");
+				PF_ENGINE_INFO("%s Deserilize perfectly",ActiveWorld->GetName().c_str());
 				m_WorldHierachy.SetContext(ActiveWorld);
 				return;
 			}
@@ -392,7 +451,7 @@ namespace Proof
 			SceneSerializer scerelizer(ActiveWorld);
 			scerelizer.SerilizeText(ActiveWorld->GetPath());
 
-			PF_ENGINE_TRACE("World Saved");
+			PF_ENGINE_TRACE("%s Saved",ActiveWorld->GetName().c_str());
 			return;
 		}
 		PF_ENGINE_ERROR("World is NULL");
@@ -415,7 +474,8 @@ namespace Proof
 	}
 
 	void Editore3D::MaterialEditor() {
-		if (ImGui::Begin("Material Editor")) {
+		ImGui::Begin("Material Editor");
+		{
 			if (TempID == 0 || AssetManager::HasID(TempID) == false) {
 				mat = nullptr;
 				TempID = 0;
@@ -427,7 +487,7 @@ namespace Proof
 				ImGui::DragFloat("Metallnes",&mat->m_Material.m_Metallness,0.001);
 				mat->SaveAsset();
 			}
-			ImGui::End();
 		}
+		ImGui::End();
 	}
 }

@@ -1,5 +1,5 @@
 #Vertex Shader
-#version 330 core
+#version 450 core
 layout(location = 0) in vec3 aPos;
 
 out vec3 TexCoords;
@@ -13,7 +13,7 @@ void main() {
     gl_Position = pos.xyww;
 }
 #Fragment Shader
-#version 330 core
+#version 450 core
 out vec4 FragColor;
 
 in vec3 TexCoords;

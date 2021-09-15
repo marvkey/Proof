@@ -2,7 +2,6 @@
 #include "Proof/Core/Core.h"
 #include <cmath>
 #include "Vector.h"
-#include "Rotate.h"
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -14,7 +13,8 @@ namespace Proof
 		* @param Number
 		* @return the square root of the param Number
 		*/
-		static float SquareRoot(float Number) {
+		template<typename T>
+		static T SquareRoot(T Number) {
 			return sqrtf(Number);
 		}
 		/**
@@ -39,21 +39,24 @@ namespace Proof
 		* @param Value
 		* @return changes value to a cos
 		*/
-		inline static float Cos(float Value) {
+		template<typename T>
+		inline static T Cos(T Value) {
 			return cos(Value);
 		}
 		/**
 		* @param Value
 		* @return convert value to a sin
 		*/
-		inline static float Sin(float Value) {
+		template<typename T>
+		inline static T Sin(T Value) {
 			return sin(Value);
 		}
 		/**
 		* @param Value
 		* @return convert value to a Tan
 		*/
-		inline static float Tan(float Value) {
+		template<typename T>
+		inline static T Tan(T Value) {
 			return tan(Value);
 		}
 
@@ -61,35 +64,40 @@ namespace Proof
 		* @param Value
 		* @return convert value to a inverse sin and returns in degrees
 		*/
-		inline static float InverseSine(float Value) {
+		template<typename T>
+		inline static T InverseSine(T Value) {
 			return Degrees(asin(Value));
 		}
 		/**
 		* @param Value
 		* @return convert value to a inverse cos and returns in degrees
 		*/
-		inline static float InverseCos(float Value) {
-			return Degrees(acos(Value));
+		template<typename T>
+		inline static T InverseCos(T Value) {
+			return Degrees<T>(acos(Value));
 		}
 		/**
 		* @param Value
 		* @return convert value to a inverse Tan and returns in degrees
 		*/
-		inline static float InverseTan(float Value) {
-			return Degrees(atan(Value));
+		template<typename T>
+		inline static T InverseTan(T Value) {
+			return Degrees<T>(atan(Value));
 		}
 		/**
 		* @param Radian: value to be changed
 		* @return The paremeter Radius inot converted Degrees
 		*/
-		inline static float Degrees(float Radian) {
+		template<typename T>
+		inline static T Degrees(T Radian) {
 			return Radian * (180 / GetPIE());
 		}
 		/**
 		* @param Degree: value to be changed
 		* @return The paremeter Degree inot converted Radian
 		*/
-		inline static float Radian(float Degree) {
+		template<typename T>
+		inline static T Radian(T Degree) {
 			return Degree * (GetPIE() / 180);
 		}
 		// @return the numerical value PIE

@@ -23,9 +23,13 @@ namespace Proof
 			CRITICAL
 		};
 		static void AppendString(uint32_t type,const std::string& temp) {
+			if(m_PauseLog)return; 
 			Logs.insert({Inputposition(),{(LogType)type,temp}});
+			NewLog = true;
 		}
 		static std::unordered_map<uint16_t,std::pair<LogType,std::string>> Logs;
+		static bool NewLog;
+		static bool m_PauseLog;
 	private:
 		static Count<Logger::Log>EngineLogger;
 		static Count<Logger::Log>ClientLogger;

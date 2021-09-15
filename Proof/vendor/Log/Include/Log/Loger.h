@@ -16,7 +16,6 @@ namespace Logger {
 		//char * bufferbasee;
 		Log(const std::string& _LoggerName = "Log")
 			:LoggerName(_LoggerName) 		{
-			CurrentTime = time(NULL);
 			buffer=new char;
 			//bufferbasee = new char;
 		}
@@ -42,6 +41,7 @@ namespace Logger {
 	};
 	template<typename ...Args>
 	inline void Log::LogError(const char* Msg,Args&& ...args) {
+		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		printf("\x1b[31m[%i:%i:%i]",LocalTime->tm_hour,LocalTime->tm_min,LocalTime->tm_sec);
 		ColorOutput = "\x1b[31m";
@@ -52,10 +52,9 @@ namespace Logger {
 	}
 	template<typename ...Args>
 	inline void Log::LogInfo(const char* Msg,Args&& ...args) {
+		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
-		if(LocalTime !=nullptr){
-			printf("\x1b[32m[%i:%i:%i]",LocalTime->tm_hour,LocalTime->tm_min,LocalTime->tm_sec);
-		}
+		printf("\x1b[32m[%i:%i:%i]",LocalTime->tm_hour,LocalTime->tm_min,LocalTime->tm_sec);
 		ColorOutput = "\x1b[32m";
 		ColorOutput += Msg;
 		printf("\x1b[32m %s: ",LoggerName.c_str());
@@ -64,6 +63,7 @@ namespace Logger {
 	}
 	template<typename ...Args>
 	inline void Log::LogTrace(const char* Msg,Args&& ...args) {
+		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		printf("\x1b[37m[%i:%i:%i]",LocalTime->tm_hour,LocalTime->tm_min,LocalTime->tm_sec);
 		ColorOutput = "\x1b[37m";
@@ -74,6 +74,7 @@ namespace Logger {
 	}
 	template<typename ...Args>
 	inline void Log::LogCritical(const char* Msg,Args&& ...args) {
+		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		printf("\x1b[31;43m[%i:%i:%i]",LocalTime->tm_hour,LocalTime->tm_min,LocalTime->tm_sec);
 		ColorOutput = "\x1b[31;43m ";
@@ -95,6 +96,7 @@ namespace Logger {
 
 	template<typename ...Args>
 	inline std::string Log::GetLogString(const char* Msg,Args && ...args) {
+		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		std::string temp ="[" +std::to_string(LocalTime->tm_hour)+":"+ std::to_string(LocalTime->tm_min)+":"+std::to_string(LocalTime->tm_sec)+"]"+ LoggerName+": ";
 		sprintf(buffer,Msg,args...);

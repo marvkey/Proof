@@ -114,8 +114,8 @@ namespace Proof{
     }
     void Model::SetUpModel() {
         m_VertexArrayObject = VertexArray::Create();
-        m_VertexBufferObject = VertexBuffer::Create(&m_Vertices[0],m_Vertices.size() * sizeof(Vertex));
-        m_IndexBufferObject = IndexBuffer::Create(&m_Indices[0],m_Indices.size());
+        m_VertexBufferObject = VertexBuffer::Create(m_Vertices.data(),m_Vertices.size() * sizeof(Vertex));
+        m_IndexBufferObject = IndexBuffer::Create(m_Indices.data(),m_Indices.size());
         m_VertexBufferObject->Bind();
         m_IndexBufferObject->Bind();
         m_VertexArrayObject->AttachIndexBuffer(m_IndexBufferObject);

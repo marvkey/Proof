@@ -77,8 +77,6 @@ namespace Proof
 			return true;
 		}
 	}
-
-
 }
 #define REGISTER_SCRIPT(TYPE)\
 	class TYPE;\

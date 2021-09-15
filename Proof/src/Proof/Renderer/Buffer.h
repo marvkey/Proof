@@ -3,7 +3,6 @@ namespace Proof {
 	class Proof_API VertexBuffer {
 	public:
 		/*
-		*creates vertex buffer
 		* sets as current vertex Buffer
 		*/
 		virtual void Bind() = 0;

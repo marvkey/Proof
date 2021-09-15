@@ -15,7 +15,7 @@ namespace Proof{
 			m_ViewMatrix = m_Camera->GetCameraView();
 			m_CurrentRay = CalculateMouseArray();
 		}
-	private:
+	private: 
 		EditorCamera3D* m_Camera;
 		Vector m_CurrentRay;
 		glm::mat4 m_ProjectionMatrix;

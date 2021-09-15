@@ -17,7 +17,7 @@
 #include "../ImGUIAPI.h"
 #include "Proof/Scene/ExampleSccripts.h"
 #include "Proof/Scene/Script.h"
-#include "../Game/Proof-Game/Proof-Game/src/generated/AllFiles.h"
+//#include "../Game/Proof-Game/Proof-Game/src/generated/AllFiles.h"
 namespace Proof{
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
 	InstanceNativeScriptComponent.Bind<Class>();\
@@ -27,24 +27,28 @@ namespace Proof{
 	static MeshAsset* TempLocation0Asset = nullptr;
 	void SceneHierachyPanel::ImGuiRender(){
 		ImGui::Begin("Herieachy");
-		for (uint32_t i = 0; i < m_CurrentWorld->Registry.GetAllID().size(); i++) {
-			Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
-			DrawEntityNode(entity);
-			if (m_CurrentWorld->Registry.GetAllID().size() == 1)break;
-		}
+		{
+			for (uint32_t i = 0; i < m_CurrentWorld->Registry.GetAllID().size(); i++) {
+				Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
+				DrawEntityNode(entity);
+				if (m_CurrentWorld->Registry.GetAllID().size() == 1)break;
+			}
 
-		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) {
-			m_SelectedEntity = {};
-		}
-		if (ImGui::BeginPopupContextWindow(0,1,false)){ // right click adn open a new entitiy
-			if (ImGui::MenuItem("Create Entity"))
-				m_CurrentWorld->CreateEntity("Empty Entity");
-			ImGui::EndPopup();
+			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) {
+				m_SelectedEntity = {};
+			}
+			if (ImGui::BeginPopupContextWindow(0,1,false)){ // right click adn open a new entitiy
+				if (ImGui::MenuItem("Create Entity"))
+					m_CurrentWorld->CreateEntity("Empty Entity");
+				ImGui::EndPopup();
+			}
 		}
 		ImGui::End();
 		ImGui::Begin("Properties");
-		if (m_SelectedEntity)
-			DrawComponent(m_SelectedEntity);
+		{
+			if (m_SelectedEntity)
+				DrawComponent(m_SelectedEntity);
+		}
 		ImGui::End();
 	}
 	void SceneHierachyPanel::DrawEntityNode(Entity& entity) {
@@ -280,12 +284,14 @@ namespace Proof{
 							InitilizeScript(NativeScriptComp,MovementScript);
 						}
 					*/
+						/*
 						for(auto&it: ScriptDetail::GetScriptRegisry()){
 							const std::string& temp = it.second.first;
 							if(ImGui::MenuItem(temp.c_str())){								
 								InitilizeScript(NativeScriptComp,Player);
 							}
 						}
+						*/
 						ImGui::EndPopup();
 					}
 					

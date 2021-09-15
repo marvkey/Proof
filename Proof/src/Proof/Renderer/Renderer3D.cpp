@@ -17,15 +17,16 @@
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Material.h"
-
+#include "UniformBuffer.h"
+#include "ImGui/imgui.h"
 /* RIGHT NOW ONLY SUPPORT 150 directional Light*/
 /* RIGHT NOW ONLY SUPPORT 150 Diffuse Light*/
 /* RIGHT NOW ONLY SUPPORT 150 Specular Light*/
 namespace Proof
 {
-    static uint32_t NumberDirectionalLight=0;
-    static uint32_t NumberPointLight =0;
-    static uint32_t NumberSpotLight=0;
+    static uint32_t NumberDirectionalLight = 0;
+    static uint32_t NumberPointLight = 0;
+    static uint32_t NumberSpotLight = 0;
 
     std::string NumberDirectionalLightstring;
     std::string NumberPointLightstring;
@@ -37,21 +38,27 @@ namespace Proof
     static uint32_t Temp4 = (sizeof(glm::vec4) * 3);
     static uint32_t Temp5 = (sizeof(glm::vec4) * 4);
     static glm::vec3 Position;
-    struct InstanceRendererVertex{
+    struct InstanceRendererVertex {
         InstanceRendererVertex(const glm::mat4& Transform,const Material& mat)
             :
-            m_Transform(Transform)
-        {
+            m_Transform(Transform) {
             m_MaterialAmbient = mat.m_Ambient;
             m_MaterialDiffuse = mat.m_Diuffuse;
             m_MaterialSpecular = mat.m_Specular;
-            m_Matallness= mat.m_Metallness;
+            m_Matallness = mat.m_Metallness;
         }
         glm::mat4 m_Transform;
         Vector m_MaterialAmbient;
         Vector m_MaterialDiffuse;
         Vector m_MaterialSpecular;
-        float m_Matallness =1.f; // default is one
+        float m_Matallness = 1.f; // default is one
+    };
+    struct CameraData{
+        glm::mat4 m_Projection;
+       glm::mat4 m_View;
+        CameraData(const glm::mat4& projection,const glm::mat4& view):
+            m_Projection(projection),m_View(view)
+        {};
     };
     static InstancedRenderer3D* Renderer3DInstance;
     Renderer3D::Render3DStats* Renderer3DStats;
@@ -59,25 +66,30 @@ namespace Proof
     static std::vector<glm::vec4> m_Material;
     static std::vector<uint32_t> s_DifferentID;
     static uint32_t DifferentMeshes = 0;
-    static glm::mat4 ModelMatrix; 
+    static glm::mat4 ModelMatrix;
 
     static std::vector<InstanceRendererVertex> m_InstanceTransforms;
-
-
+    uint32_t M_UniformBufferID;
+    
     uint32_t Renderer3D::Render3DStats::DrawCalls = 0;
     uint32_t Renderer3D::Render3DStats::NumberOfInstances = 0;
     uint32_t Renderer3D::Render3DStats::AmountDrawn = 0;
     Count<Texture2D>InstancedRenderer3D::m_WhiteTexture;
-
-
+    static Count<UniformBuffer> s_CameraBuffer;
     void Renderer3D::Init() {
+        //glGenBuffers(1,&M_UniformBufferID);
+        //glBindBuffer(GL_UNIFORM_BUFFER,M_UniformBufferID);
+        //glBufferData(GL_UNIFORM_BUFFER,sizeof(CameraData),NULL,GL_STATIC_DRAW);
+        //glBindBufferBase(GL_UNIFORM_BUFFER,0,M_UniformBufferID);
         Renderer3DInstance = new InstancedRenderer3D();
         Renderer3DStats = new Renderer3D::Render3DStats;
-        Renderer3DInstance->m_Shader = Shader::Create("InstanceMeshRenderer",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/MeshShader.shader");
-        Renderer3DInstance->m_VertexBuffer = VertexBuffer::Create(Renderer3DStats->MaxMeshes * sizeof(glm::mat4));
+      s_CameraBuffer = UniformBuffer::Create(sizeof(CameraData),0);
+        Renderer3DInstance->m_Shader = Shader::Create("InstanceMeshRenderer",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/MeshShader.glsl");
+        Renderer3DInstance->m_VertexBuffer = VertexBuffer::Create(Renderer3DStats->MaxMeshes * sizeof(InstanceRendererVertex));// can only store that amount of transforms
         Renderer3DInstance->m_WhiteTexture = Texture2D::Create(1,1);
         uint32_t WhiteTextureImage = 0xffffffff;
         Renderer3DInstance->m_WhiteTexture->SetData(&WhiteTextureImage,sizeof(uint32_t));
+
     }
     void Renderer3D::BeginContext(const PerspectiveCamera& Camera) {
         Renderer3DInstance->m_Shader->UseShader();
@@ -88,7 +100,11 @@ namespace Proof
         Renderer3DInstance->m_Shader->SetMat4("u_Projection",Projection);
         Renderer3DInstance->m_Shader->SetMat4("u_View",EditorCamera.GetCameraView());
         Position = EditorCamera.GetCameraPosition();
-
+        CameraData temp(Projection,EditorCamera.GetCameraView());
+       s_CameraBuffer->SetData(&temp,sizeof(CameraData));
+        //glBindBuffer(GL_UNIFORM_BUFFER,M_UniformBufferID);
+        //glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(CameraData),&temp);
+        
     }
     void Renderer3D::BeginContext(const OrthagraphicCamera& Camera) {
         Renderer3DInstance->m_Shader->UseShader();
@@ -96,37 +112,42 @@ namespace Proof
         Renderer3DInstance->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
     }
     void Renderer3D::Draw(MeshComponent& meshComponent) {
+        
         if (Renderer3DInstance->SceneHasAmountMeshes(meshComponent.GetMeshPointerID()) == true) {
             auto& Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
             Map->second += 1;
             auto InstanceSize = Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.find(meshComponent.GetMeshPointerID());
             meshComponent.GetModel()->m_VertexArrayObject->Bind();
 
-            SetMeshComponentData(meshComponent);
-
+            //SetMeshComponentData(meshComponent);
+            auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
+            ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
+                glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})
+                * glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0})
+                * glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1})
+                * glm::scale(glm::mat4(1.0f),{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
             InstanceRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : EmptyMaterial);
-            m_InstanceTransforms.insert(m_InstanceTransforms.begin()+ InstanceSize->second,temp);
+            m_InstanceTransforms.insert(m_InstanceTransforms.begin() + InstanceSize->second,temp);
             InstanceSize->second += 1;
             Renderer3DStats->AmountDrawn += 1;
         }
-        else 
-        {
+        else {
             Renderer3DInstance->m_AmountMeshes.insert({meshComponent.GetMeshPointerID(),1});
             Renderer3DInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
-            Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),m_InstanceTransforms.size()+1});
+            Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),m_InstanceTransforms.size() + 1});
             s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
             DifferentMeshes++;
 
             SetMeshComponentData(meshComponent);
 
-            InstanceRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() ==true ? *meshComponent.GetMaterial(): EmptyMaterial);
+            InstanceRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : EmptyMaterial);
             m_InstanceTransforms.emplace_back(temp);
             Renderer3DStats->AmountDrawn += 1;
             Renderer3DStats->NumberOfInstances += 1;
-        }
+        } 
     }
     void Renderer3D::RenderLight(LightComponent& lightComponent) {
-        if(lightComponent.m_LightType == lightComponent.Direction&& NumberDirectionalLight<150){
+        if (lightComponent.m_LightType == lightComponent.Direction && NumberDirectionalLight < 150) {
             NumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumberDirectionalLight) + "]";
             Renderer3DInstance->m_Shader->UseShader();
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".direction",lightComponent.m_Direction);
@@ -135,14 +156,14 @@ namespace Proof
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".specular",lightComponent.m_Specular);
             NumberDirectionalLight++;
             Renderer3DInstance->m_Shader->SetInt("v_NrDirectionalLight",NumberDirectionalLight);
-            
+
             return;
         }
 
-        if(lightComponent.m_LightType ==lightComponent.Point&& NumberPointLight<150){
+        if (lightComponent.m_LightType == lightComponent.Point && NumberPointLight < 150) {
             NumberPointLightstring = "v_PointLight[" + std::to_string(NumberPointLight) + "]";
             Renderer3DInstance->m_Shader->UseShader();
-            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".position",lightComponent.m_Position+lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".position",lightComponent.m_Position + lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".ambient",lightComponent.m_Ambient);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".diffuse",lightComponent.m_Diffuse);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".specular",lightComponent.m_Specular);
@@ -154,7 +175,7 @@ namespace Proof
             return;
         }
 
-        if(lightComponent.m_LightType ==lightComponent.Spot && NumberPointLight<150){
+        if (lightComponent.m_LightType == lightComponent.Spot && NumberPointLight < 150) {
             NumberSpotLightstring = "v_SpotLight[" + std::to_string(NumberSpotLight) + "]";
             Renderer3DInstance->m_Shader->UseShader();
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",lightComponent.m_Direction);
@@ -181,7 +202,7 @@ namespace Proof
         Renderer3DInstance->m_Shader->SetVec3("viewPos",Position);
         for (uint32_t Size = 0; Size < s_DifferentID.size(); Size++) {
             Renderer3DInstance->m_VertexBuffer->Bind();
-            Renderer3DInstance->m_VertexBuffer->AddData(&m_InstanceTransforms[SizeofOffset],m_InstanceTransforms.size() * sizeof(InstanceRendererVertex));/* THIS CODE COULD BE TEMPORARY*/
+            Renderer3DInstance->m_VertexBuffer->AddData(&m_InstanceTransforms[SizeofOffset],m_InstanceTransforms.size() * sizeof(InstanceRendererVertex));
             uint32_t TempID = s_DifferentID[Size];
             auto& TempMesh = Renderer3DInstance->m_Meshes.find(TempID);
             auto& TempAmountMeshes = Renderer3DInstance->m_AmountMeshes.find(TempID);
@@ -192,14 +213,14 @@ namespace Proof
             }
             else {
                 Renderer3DInstance->m_Shader->UseShader();
-                Renderer3DInstance->m_Shader->SetInt( "texture_diffuse",0);
-                Renderer3DInstance->m_WhiteTexture->BindTexture(0);
+                Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
+                Renderer3DInstance->m_WhiteTexture->BindTexture(0); 
             }
             TempMesh->second.GetModel()->m_VertexArrayObject->Bind();
             TempMesh->second.GetModel()->m_IndexBufferObject->Bind();
             RendererCommand::DrawElementIndexed(TempMesh->second.GetModel()->m_VertexArrayObject,TempAmountMeshes->second);
             Renderer3DStats->DrawCalls++;
-            SizeofOffset+= TempAmountMeshes->second;
+            SizeofOffset += TempAmountMeshes->second;
         }
     }
 
@@ -212,13 +233,13 @@ namespace Proof
         m_Material.clear();
         m_InstanceTransforms.clear();
         DifferentMeshes = 0;
-        Renderer3DStats->DrawCalls = 0;          
+        Renderer3DStats->DrawCalls = 0;
         Renderer3DStats->AmountDrawn = 0;
         Renderer3DStats->NumberOfInstances = 0;
 
-        NumberDirectionalLight =0;
-        NumberPointLight=0;
-        NumberSpotLight =0;
+        NumberDirectionalLight = 0;
+        NumberPointLight = 0;
+        NumberSpotLight = 0;
         /*
         NumberDirectionalLightstring = " ";
         NumberPointLightstring =" ";
@@ -226,6 +247,7 @@ namespace Proof
         */
     }
     void Renderer3D::SetMeshComponentData(MeshComponent& meshComponent) {
+        
         meshComponent.GetModel()->m_VertexArrayObject->Bind();
 
         meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,m_Transform));
@@ -252,7 +274,6 @@ namespace Proof
             * glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0})
             * glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1})
             * glm::scale(glm::mat4(1.0f),{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
-    
     }
     void Renderer3D::LightingErrorChecks() {
         Renderer3DInstance->m_Shader->UseShader();

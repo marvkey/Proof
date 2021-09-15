@@ -27,10 +27,10 @@ namespace Proof{
         Count<class VertexBuffer>m_VertexBufferObject;
         Count<class IndexBuffer> m_IndexBufferObject;
         uint32_t StartIndex =0;
+        std::vector<Count<class Texture2D>>m_Textures;
     private:
         glm::mat4 ModelMatrix = glm::mat4(1.0f);
         void InitMatrix();
-        std::vector<Count<class Texture2D>>m_Textures;
         std::unordered_map<std::string,uint8_t>m_MapTextures;
         void InitilizeMapTextures();
         friend class Renderer3D;
