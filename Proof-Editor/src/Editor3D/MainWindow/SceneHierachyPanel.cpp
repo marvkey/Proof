@@ -5,7 +5,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 #include "Proof/Scene/EntitiyComponentSystem/ECS.h"
-#include "Proof/Renderer/Renderer3D.h" // TEMPORARY
+#include "Proof/Renderer/3DRenderer/Renderer3D.h" // TEMPORARY
 
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Resources/Asset/MeshAsset.h"

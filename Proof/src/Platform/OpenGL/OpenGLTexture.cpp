@@ -116,11 +116,52 @@ namespace Proof
 		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE);
 	}
+	OpenGLCubeMap::OpenGLCubeMap(uint32_t textureWidht,uint32_t textureHeight,bool generateMipMap) {
+		glGenTextures(1,&m_ID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP,m_ID);
+		for (int i = 0; i < 6; ++i) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,0,GL_RGB16F,textureWidht,textureHeight,0,GL_RGB,GL_FLOAT,nullptr);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		if(generateMipMap==true)
+			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	}
 	void OpenGLCubeMap::Bind() {
 		glBindTexture(GL_TEXTURE_CUBE_MAP,m_ID);
 	}
 
 	void OpenGLCubeMap::unBind() {
 		glBindTexture(GL_TEXTURE_CUBE_MAP,0);
+	}
+	OpenGLHDRTexture::OpenGLHDRTexture(const std::string& path): 
+		m_Path(path)
+	{
+		stbi_set_flip_vertically_on_load(true);
+		m_Data = stbi_loadf(m_Path.c_str(),&m_Width,&m_Height,&m_Components,0);
+		if (m_Data) {
+			glGenTextures(1,&m_ID);
+			glBindTexture(GL_TEXTURE_2D,m_ID);
+			glTexImage2D(GL_TEXTURE_2D,0,GL_RGB16F,m_Width,m_Height,0,GL_RGB,GL_FLOAT,m_Data);
+
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+
+			stbi_image_free(m_Data);
+		}
+		else {
+			PF_ENGINE_ERROR("Failed to load HDR Texture %s",m_Path.c_str());
+		}
+	}
+	void OpenGLHDRTexture::BindTexture(uint32_t Slot) {
+		glBindTextureUnit(Slot,m_ID);
+	}
+	void OpenGLHDRTexture::unBind() {
+		glDisable(GL_TEXTURE_2D);
 	}
 }

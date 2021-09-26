@@ -29,6 +29,7 @@ namespace Proof {
         static Count<Shader>Create(const std::string& _ShaderName,const std::string& ShaderPath);
         std::string GetName() { return ShaderName; };
         std::string GetPath() { return c_Path; };
+        virtual ~Shader();
     protected:
         std::string ShaderName;
         std::string c_Path;

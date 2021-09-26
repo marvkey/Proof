@@ -33,6 +33,7 @@ namespace Proof
 	public:
 		OpenGLCubeMap(const std::vector<std::string>& Paths);
 		OpenGLCubeMap(const std::string& Path);
+		OpenGLCubeMap(uint32_t textureWidht=512,uint32_t textureHeight=512,bool generateMipMap=false);
 		virtual void Bind()override;
 		virtual uint32_t GetID() {
 			return m_ID;
@@ -42,6 +43,22 @@ namespace Proof
 		uint32_t m_ID;
 		int m_Width,m_Height,m_NrChannels;
 		unsigned char* m_Data;
+	};
+
+	class Proof_API OpenGLHDRTexture: public HDRTexture{
+	public:
+		OpenGLHDRTexture(const std::string& path);
+		virtual uint32_t GetID(){
+			return m_ID;
+		}
+		virtual void BindTexture(uint32_t Slot = 0);
+		virtual void unBind();
+
+	private:
+		uint32_t m_ID;
+		float* m_Data;
+		std::string m_Path;
+		int m_Width,m_Height,m_Components;
 	};
 }
 

@@ -27,6 +27,7 @@ int main(int argc, char** argv){
 		Proof::WindowFocusEvent::Instance = std::make_unique<Proof::WindowFocusEvent>();
 		Proof::Window_ViewPortResize::Instance = std::make_unique<Proof::Window_ViewPortResize>();
 		srand(time(NULL));
+
 		Proof::Log::Init();
 		//PF_PROFILE_BEGIN_SESSION("Startup","ProofProfile-Startup.json");
 		auto app = Proof::CreateApplication();

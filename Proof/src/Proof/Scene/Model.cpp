@@ -11,6 +11,8 @@
 #include <fstream>
 #include <sstream>
 #include "Mesh.h"
+#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
+
 
 namespace Proof{
     std::vector<uint32_t> Model::AllID;
@@ -88,6 +90,18 @@ namespace Proof{
 
         Mesh temp(vertices,indices,textures);
         temp.StartIndex = StartINdexMesh;
+        //aiTextureType_METALNESS
+        //aiTextureType_DIFFUSE_ROUGHNESS
+        //aiTextureType_AMBIENT_OCCLUSION AO
+        //aiTextureType_NORMALS
+
+        //aiTextureType_DIFFUSE
+        //aiTextureType_SPECULAR
+
+        // What we are gonna support
+        //aiTextureType_DIFFUSE
+        //aiTextureType_NORMALS
+        //aiTextureType_SPECULAR
         return temp;
     }
 
@@ -112,6 +126,10 @@ namespace Proof{
         }
         return Textures;
     }
+    static uint32_t Temp2 = (sizeof(glm::vec4));
+    static uint32_t Temp3 = (sizeof(glm::vec4) * 2);
+    static uint32_t Temp4 = (sizeof(glm::vec4) * 3);
+    static uint32_t Temp5 = (sizeof(glm::vec4) * 4);
     void Model::SetUpModel() {
         m_VertexArrayObject = VertexArray::Create();
         m_VertexBufferObject = VertexBuffer::Create(m_Vertices.data(),m_Vertices.size() * sizeof(Vertex));
@@ -119,21 +137,10 @@ namespace Proof{
         m_VertexBufferObject->Bind();
         m_IndexBufferObject->Bind();
         m_VertexArrayObject->AttachIndexBuffer(m_IndexBufferObject);
-
-
-        uint32_t Vertices1= offsetof(Vertex,Vertices);
-        uint32_t Vertices2= offsetof(Vertex,TexCoords);
-        uint32_t Vertices3= offsetof(Vertex,Normal);
-        uint32_t Vertices4= offsetof(Vertex,Tangent);
-        uint32_t Vertices5= offsetof(Vertex,Bitangent);
-
-        m_VertexArrayObject->AddData(0,3,sizeof(Vertex),(void*)Vertices1);
-        m_VertexArrayObject->AddData(1,2,sizeof(Vertex),(void*)Vertices2);
-        m_VertexArrayObject->AddData(2,3,sizeof(Vertex),(void*)Vertices3);
-        m_VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)Vertices4);
-        m_VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)Vertices5);
-
-        m_VertexArrayObject->UnBind();
+        m_VertexArrayObject->AddData(0,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertices));
+        m_VertexArrayObject->AddData(1,3,sizeof(Vertex),(void*)offsetof(Vertex,Normal));
+        m_VertexArrayObject->AddData(2,2,sizeof(Vertex),(void*)offsetof(Vertex,TexCoords));
+        m_VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)offsetof(Vertex,Tangent));
+        m_VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)offsetof(Vertex,Bitangent));
     }
-   
 }

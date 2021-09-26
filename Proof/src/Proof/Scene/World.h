@@ -2,6 +2,8 @@
 #include "EntitiyComponentSystem/ECS.h"
 #include "Camera/EditorCamera.h"
 #include "Camera/OrthagraphicCamera.h"
+#include "Proof/Renderer/Shader.h"
+#include "Proof/Renderer/VertexArray.h"
 class FrameTime;
 
 namespace Proof{
@@ -20,18 +22,37 @@ namespace Proof{
 			return m_Path;
 		}
 	private:
+		void RenderIBLImage();
+
+
 		std::string Name = "DefaultWorld";
 		template<class T>
 		void OnComponentAdded(Entity Entity,T* component);
+		std::string m_Path;
+		glm::mat4 Projection;
+		class EditorCamera3D EditorCamera;
+		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
+		Count<CubeMap> m_WorldCubeMap;
+		Count<CubeMap> m_WorldCubeMapIrradiance;
+		Count<CubeMap> PrefelterMap;
+		unsigned int brdfLUTTexture;	
+		Count<HDRTexture>m_WorldIBLTexture;
+		Count<VertexBuffer> m_IBLSkyBoxBuffer;
+		Count<VertexArray>m_IBLSkyBoxVertexArray;
+		unsigned int captureFBO,captureRBO;
+		Count<Shader>equirectangularToCubemapShader;
+
+		Count<Shader> backgroundShader;
+		Count<Shader> IrradianceShader;
+		Count<Shader>prefilterShader;
+		Count<Shader>brdfShader;
+
 		friend class SceneHierachyPanel;
 		friend class Entity;
 		friend class Editor3D;
-		class EditorCamera3D EditorCamera;
-		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		friend class SceneSerializer;
 		friend class Component;
 		friend class Editore3D;
-		std::string m_Path;
-		glm::mat4 Projection;
+		friend class Renderer;
 	};
 }

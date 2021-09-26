@@ -19,7 +19,8 @@
 #include <Windows.h>
 #include <stdio.h> 
 #include "ImGUIAPI.h"
-typedef int(__cdecl* MYPROC)(LPWSTR);
+#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
+#include "Proof/Utils/PlatformUtils.h"
 namespace Proof
 {
 	glm::vec4 ClearColour;
@@ -329,10 +330,10 @@ namespace Proof
 					scerilize.SerilizeText(ActiveWorld->GetPath());
 					m_WorldHierachy.m_SelectedEntity = {};
 					delete ActiveWorld;
+
 					ActiveWorld = new World();
 					SceneSerializer ScerilizerNewWorld(ActiveWorld);
 					ScerilizerNewWorld.DeSerilizeText(Data);
-
 					m_WorldHierachy.SetContext(ActiveWorld);
 				}
 				ImGui::EndDragDropTarget();
@@ -481,10 +482,54 @@ namespace Proof
 				TempID = 0;
 			}
 			else {
-				ImGui::ColorEdit3("Ambient",glm::value_ptr(mat->m_Material.m_Ambient));
-				ImGui::ColorEdit3("Diffuse",glm::value_ptr(mat->m_Material.m_Diuffuse));
-				ImGui::ColorEdit3("Specular",glm::value_ptr(mat->m_Material.m_Specular));
+				//ImGui::ColorEdit3("Ambient",glm::value_ptr(mat->m_Material.m_Ambient));
+				//ImGui::ColorEdit3("Diffuse",glm::value_ptr(mat->m_Material.m_Diuffuse));
+				//ImGui::ColorEdit3("Specular",glm::value_ptr(mat->m_Material.m_Specular));
+				ImGui::ColorEdit3("Colour",glm::value_ptr(mat->m_Material.m_Colour));
+				uint32_t whiteColourId= PhysicalBasedRenderer::m_WhiteTexture->GetID();
+				
+				ImGui::Image((ImTextureID)(mat->m_Material.AlbedoTexture == nullptr ? whiteColourId : mat->m_Material.AlbedoTexture->GetID()),{50,50});
+				if (ImGui::Button("Albedo",{100,50})) {
+					std::string file = Utils::FileDialogs::OpenFile("Texture(*.png)\0 * .png\0 (*.jpg)\0 * .jpg\0");
+					if (file.empty() == false) {
+						mat->m_Material.AlbedoTexture = Texture2D::Create(file);
+					}
+				}
+				ImGui::NewLine();
+
+
+				ImGui::Image((ImTextureID) (mat->m_Material.MetallicTexture == nullptr ? whiteColourId: mat->m_Material.MetallicTexture->GetID()),{50,50});
+				if(ImGui::Button("Metallness",{100,50})){
+					std::string file = Utils::FileDialogs::OpenFile("Texture(*.png)\0 * .png\0 (*.jpg)\0 * .jpg\0");
+					if(file.empty()==false){
+						mat->m_Material.MetallicTexture = Texture2D::Create(file);
+					}
+				}
+				ImGui::NewLine();
 				ImGui::DragFloat("Metallnes",&mat->m_Material.m_Metallness,0.001);
+
+				ImGui::Image((ImTextureID)(mat->m_Material.RoughnessTexture == nullptr ? whiteColourId : mat->m_Material.RoughnessTexture->GetID()),{50,50});
+				if (ImGui::Button("RoughnessTexture",{100,50})) {
+					std::string file = Utils::FileDialogs::OpenFile("Texture(*.png)\0 * .png\0 (*.jpg)\0 * .jpg\0");
+					if (file.empty() == false) {
+						mat->m_Material.RoughnessTexture = Texture2D::Create(file);
+					}
+				}
+				ImGui::NewLine();
+				ImGui::DragFloat("Roughness",&mat->m_Material.m_Roughness,0.001);
+
+
+				if (ImGui::Button("Normal",{100,50})) {
+					std::string file = Utils::FileDialogs::OpenFile("Texture(*.png)\0 * .png\0 (*.jpg)\0 * .jpg\0");
+					if (file.empty() == false) {
+						mat->m_Material.NormalTexture = Texture2D::Create(file);
+					}
+				}
+				ImGui::Image((ImTextureID)(mat->m_Material.NormalTexture == nullptr ? whiteColourId : mat->m_Material.NormalTexture->GetID()),{50,50});
+
+				ImGui::NewLine();
+				ImGui::DragFloat("AO",&mat->m_Material.m_AO,0.001);
+
 				mat->SaveAsset();
 			}
 		}

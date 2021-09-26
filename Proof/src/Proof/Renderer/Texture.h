@@ -31,5 +31,12 @@ namespace Proof {
 		virtual void Bind()=0;
 		static Count<CubeMap> Create(const std::vector<std::string>& Paths);
 		static Count<CubeMap> Create(const std::string& Path);
+		static Count<CubeMap> Create(uint32_t textureWidht = 512,uint32_t textureHeight = 512,bool generateMipMap=false);
+	};
+
+	class Proof_API HDRTexture: public Texture{
+	public:
+		virtual void BindTexture(uint32_t Slot = 0) = 0;
+		static Count<HDRTexture> Create(const std::string& path);
 	};
 }

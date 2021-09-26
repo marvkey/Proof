@@ -1,0 +1,101 @@
+World: PBR Test Scene
+Entities:
+  - Entity: 8008
+    TagComponent:
+      Tag: sphere
+    TransformComponent:
+      Location: [7, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 12574
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 27537
+  - Entity: 22824
+    TagComponent:
+      Tag: Rocket
+    TransformComponent:
+      Location: [-2.5999999, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    MeshComponent:
+      Name: Default
+      AssetID: 20980
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0.200000003, 0, 0]
+      MaterialPointerID: 0
+    LightComponent:
+      Position: [0, 0, 0]
+      Direction: [0, 1, 1]
+      CutOff: 0
+      OuterCutOff: 0
+      Constant: 1
+      Linear: 0
+      Quadratic: 0
+      Ambient: [1, 0.999989986, 0.999989986]
+      Diffuse: [0, 0, 0]
+      Specular: [0, 0, 0]
+      LightType: 2
+  - Entity: 31751
+    TagComponent:
+      Tag: cube
+    TransformComponent:
+      Location: [-2.20000005, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [5.5, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 12014
+  - Entity: 30124
+    TagComponent:
+      Tag: second sphere
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 4778
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 11991
+    LightComponent:
+      Position: [0, 0, 0]
+      Direction: [1, 1, 1]
+      CutOff: 0
+      OuterCutOff: 0
+      Constant: 1
+      Linear: 0
+      Quadratic: 0
+      Ambient: [1, 0.999989986, 0.999989986]
+      Diffuse: [0, 0, 0]
+      Specular: [0, 0, 0]
+      LightType: 2
+  - Entity: 19289
+    TagComponent:
+      Tag: Empty Entity
+    TransformComponent:
+      Location: [3.70000005, 1.10000002, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightComponent:
+      Position: [0, 0, 0]
+      Direction: [1, 1, 1]
+      CutOff: 0
+      OuterCutOff: 0
+      Constant: 1
+      Linear: 0
+      Quadratic: 0
+      Ambient: [1, 0.999989986, 0.999989986]
+      Diffuse: [0, 0, 0]
+      Specular: [0, 0, 0]
+      LightType: 0

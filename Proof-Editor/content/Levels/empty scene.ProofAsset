@@ -23,7 +23,7 @@ Entities:
     TagComponent:
       Tag: rocket
     TransformComponent:
-      Location: [-4.9000001, 0.400000006, 4.5999999]
+      Location: [-1.29999995, 0.400000006, 4.5999999]
       Rotation: [0, 0, 0]
       Scale: [0.200000003, 0.200000003, 0.200000003]
     MeshComponent:
@@ -97,8 +97,8 @@ Entities:
       Constant: 0.241999999
       Linear: 0.200000003
       Quadratic: 0.0469999984
-      Ambient: [0.911290348, 0, 0]
-      Diffuse: [0.931451619, 0.435678959, 0.435678959]
+      Ambient: [1, 0, 0]
+      Diffuse: [0.0622236021, 0.172270179, 0.358870983]
       Specular: [1, 0, 0]
       LightType: 1
   - Entity: 7372
@@ -239,7 +239,7 @@ Entities:
     TagComponent:
       Tag: movingentity
     TransformComponent:
-      Location: [13.6000004, 0, 0]
+      Location: [37.0999985, 4.69999981, 3.29999995]
       Rotation: [0, 0, 0]
       Scale: [14.8000002, 18.2000008, 3.20000005]
     MeshComponent:
@@ -253,9 +253,9 @@ Entities:
     TagComponent:
       Tag: rock
     TransformComponent:
-      Location: [0, 10.5, 49.7999992]
+      Location: [-4.5, 0.400000006, 8.5]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 0.400000006]
+      Scale: [1, 1, 1]
     MeshComponent:
       Name: Default
       AssetID: 29460
@@ -271,7 +271,7 @@ Entities:
       Constant: 0.324999988
       Linear: 0.58099997
       Quadratic: 0.00100000005
-      Ambient: [1, 0.999989986, 0.999989986]
-      Diffuse: [1, 0.999989986, 0.999989986]
-      Specular: [1, 0.999989986, 0.999989986]
+      Ambient: [1, 0, 0]
+      Diffuse: [1, 0, 0]
+      Specular: [0.379032254, 0.360691965, 0.360691965]
       LightType: 2

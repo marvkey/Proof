@@ -1,0 +1,11 @@
+AssetTypeString: AssetType::MaterialAsset
+AssetType: 3
+ID: 27537
+AlbedoColour: [1, 0.999989986, 0.999989986]
+Roughness: 0
+Metallness: 0
+AO: 0
+MetallicTexturePath: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\mesh\rustediron1-alt2-Unreal-Engine\rustediron2_metallic.png
+AlbedoTexturePath: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\mesh\rustediron1-alt2-Unreal-Engine\rustediron2_basecolor.png
+NormalTexturePath: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\mesh\rustediron1-alt2-Unreal-Engine\rustediron2_normal.png
+RoughnessTexturePath: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\mesh\rustediron1-alt2-Unreal-Engine\rustediron2_roughness.png

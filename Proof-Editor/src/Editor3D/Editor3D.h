@@ -30,6 +30,7 @@ namespace Proof {
 		class SceneHierachyPanel m_WorldHierachy;
 		class ContentBrowserPanel m_CurrentContentBrowserPanel ={this};
 		friend class Renderer3D;
+		friend class Renderer;
 
 		void NewWorld(bool Save);
 		void OpenWorld();

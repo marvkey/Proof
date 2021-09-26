@@ -41,7 +41,7 @@ namespace Proof
 
 #ifdef PF_ENABLE_DEBUG 
 
-#define USING_PROOF_LOGGER
+//#define USING_PROOF_LOGGER
 #ifdef USING_PROOF_LOGGER
 #define  PF_ENGINE_ERROR(...) ::Proof::Log::AppendString(0,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
 #define  PF_ENGINE_WARN(...)  ::Proof::Log::AppendString(1,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))

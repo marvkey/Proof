@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 #include "Component.h"
-
+#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 
 namespace Proof{
 
@@ -73,19 +73,42 @@ namespace Proof{
     void Mesh::SetUpTransform() {
         
     }
-
+    static uint32_t Temp2 = (sizeof(glm::vec4));
+    static uint32_t Temp3 = (sizeof(glm::vec4) * 2);
+    static uint32_t Temp4 = (sizeof(glm::vec4) * 3);
+    static uint32_t Temp5 = (sizeof(glm::vec4) * 4);
     void Mesh::SetupMesh() {
         m_VertexArrayObject = Proof::VertexArray::Create();
         m_VertexBufferObject = Proof::VertexBuffer::Create(&m_Vertices[0],m_Vertices.size() * sizeof(Vertex));
         m_IndexBufferObject = Proof::IndexBuffer::Create(&m_Indices[0],m_Indices.size());
         m_VertexBufferObject->Bind();
         m_IndexBufferObject->Bind();
+
         m_VertexArrayObject->AttachIndexBuffer(m_IndexBufferObject);
         m_VertexArrayObject->AddData(0,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertices));
         m_VertexArrayObject->AddData(1,3,sizeof(Vertex),(void*)offsetof(Vertex,Normal));
         m_VertexArrayObject->AddData(2,2,sizeof(Vertex),(void*)offsetof(Vertex,TexCoords));
         m_VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)offsetof(Vertex,Tangent));
         m_VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)offsetof(Vertex,Bitangent));
+
+        /* Used For Rendering */
+        m_VertexArrayObject->AddData(5,4,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_Transform));
+        m_VertexArrayObject->AddData(6,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp2);
+        m_VertexArrayObject->AddData(7,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp3);
+        m_VertexArrayObject->AddData(8,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp4);
+        m_VertexArrayObject->AddData(9,3,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_AlbedoColour));
+        m_VertexArrayObject->AddData(10,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_Matallness));
+        m_VertexArrayObject->AddData(11,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_Roughnes));
+        m_VertexArrayObject->AddData(12,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_AO));
+        
+        m_VertexArrayObject->AttributeDivisor(5,1);
+        m_VertexArrayObject->AttributeDivisor(6,1);
+        m_VertexArrayObject->AttributeDivisor(7,1);
+        m_VertexArrayObject->AttributeDivisor(8,1);
+        m_VertexArrayObject->AttributeDivisor(9,1);// Material
+        m_VertexArrayObject->AttributeDivisor(10,1);// Material
+        m_VertexArrayObject->AttributeDivisor(11,1);// MaterialMaterial
+        m_VertexArrayObject->AttributeDivisor(12,1);// MaterialMaterial
         m_VertexArrayObject->UnBind();
     }
 

@@ -1,6 +1,11 @@
 AssetTypeString: AssetType::MaterialAsset
 AssetType: 3
 ID: 13094
-Ambient: [0.22177422, 1, 0.752382576]
-Diffuse: [0.751640022, 0.606480002, 0.226480007]
-Specular: [0.620999992, 0.555801988, 0.366064996]
+AlbedoColour: [1, 1, 1]
+Roughness: 0
+Metallness: 1
+AO: 0
+MetallicTexturePath: ""
+AlbedoTexturePath: ""
+NormalTexturePath: ""
+RoughnessTexturePath: ""

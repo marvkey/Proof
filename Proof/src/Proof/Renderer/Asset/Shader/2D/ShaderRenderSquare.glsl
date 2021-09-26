@@ -10,10 +10,11 @@ uniform mat4 u_View;
 out vec4 m_Color;
 out vec2 v_TexCoord;
 out float v_TexIndex;
-layout(std140,binding=0) uniform CameraData
+layout(std140,binding=1) uniform CameraData
 {
     mat4 ProjectionMatrix;
     mat4 ViewMatrix;
+    vec3 Position;
 
 }Camera;
 void main(){

@@ -74,16 +74,16 @@ Entities:
     TagComponent:
       Tag: second player
     TransformComponent:
-      Location: [-1.43051147e-06, 0, 0]
+      Location: [-0.600000024, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1.27031314, 1.04255342, 1]
     SpriteComponent:
       Name: Default
       AssetID: 28388
-      Colour: [0.546012402, 1, 0, 1]
-      LocalLocation: [-0.300000012, -0.800000012, -3.29999995]
+      Colour: [0.99999547, 1, 0.999989986, 1]
+      LocalLocation: [-0.100000001, -0.699999988, -0.200000003]
       LocalRotation: [0, 0, 0]
-      LocalScale: [-0.100000001, -0.200000003, -0.300000012]
+      LocalScale: [-0.100000001, 0, -0.300000012]
   - Entity: 28492
     TagComponent:
       Tag: red

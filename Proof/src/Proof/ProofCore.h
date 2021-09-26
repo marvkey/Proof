@@ -12,7 +12,7 @@
 
 // Render
 #include "Proof/Renderer/Renderer2D.h"
-#include "Proof/Renderer/Renderer3D.h"
+#include "Proof/Renderer/3DRenderer/Renderer3D.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/Texture.h"
 

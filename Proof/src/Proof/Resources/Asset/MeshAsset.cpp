@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "MeshAsset.h"
 #include "Proof/Scene/Model.h"
-#include "Proof/Renderer/Renderer3D.h"
+#include "Proof/Renderer/3DRenderer/Renderer3D.h"
 #include <yaml-cpp/yaml.h>
 
 namespace Proof

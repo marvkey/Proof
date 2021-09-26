@@ -52,19 +52,7 @@ namespace Proof {
             CurrentTime = glfwGetTime();
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
-            
             RendererCommand::EnableDepth(true);
-            /* 
-            m_MousePickingEditor.EnableWriting();
-            RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
-            RendererCommand::Clear();
-            if(Input::IsMouseButtonPressed(MouseButton::ButtonLeft)){
-                PF_ENGINE_INFO("%i",m_MousePickingEditor.ReadPixel(Input::GetMousePosX(),Input::GetMouswPosY()));
-            }
-            m_MousePickingEditor.DisbleWriting();
-            RendererCommand::EnableDepth(true);
-            */
-            //Pick
             if (CurrentWindow::GetWindowHeight() == 0 || CurrentWindow::GetWindowWidth() == 0)
                 WindowMinimized = true;
             else

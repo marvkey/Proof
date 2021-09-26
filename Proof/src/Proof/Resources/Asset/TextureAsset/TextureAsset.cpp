@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "TextureAsset.h"
-#include "Proof/Renderer/Renderer3D.h"
+#include "Proof/Renderer/3DRenderer/Renderer3D.h"
 #include <yaml-cpp/yaml.h>
 
 namespace Proof{

@@ -18,12 +18,11 @@ out float v_MaterialShininess;
 out vec3 FragPos;
 out vec3 Normal;
 
-uniform mat4 u_View;
-uniform mat4 u_Projection;
-layout(std140,binding=0) uniform CameraData
+layout(std140,binding=1) uniform CameraData
 {
     mat4 ProjectionMatrix;
     mat4 ViewMatrix;
+    vec3 pos;
 }Camera;
 mat4 temp;
 void main() {

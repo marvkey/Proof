@@ -20,11 +20,6 @@ namespace Proof
         Model() =default;
         Model(std::string const& path,bool gamma = false): gammaCorrection(gamma) {
             LoadModel(path);
-            //load_obj(path,m_Vertices,m_Indices,textures_loaded);
-            //PF_ENGINE_INFO("Number of Vertices %i",m_Vertices.size());
-            //PF_ENGINE_INFO("Number of Indices %i",m_Indices.size());
-
-
            std::vector<uint32_t>::iterator it;
            it = std::find(AllID.begin(),AllID.end(),ID);
            a:
@@ -42,30 +37,6 @@ namespace Proof
         ~Model(){
             PF_ENGINE_INFO("DELETE");
         }
-        /*
-        void load_obje(const char* filename,std::vector<Vertex>& vertices,std::vector<uint32_t>& elements) {
-            std::ifstream in(filename,std::ios::in);
-            if (!in)     {
-                std::cerr << "Cannot open " << filename << std::endl; exit(1);
-            }
-
-            std::string line;
-            while (std::getline(in,line))     {
-                if (line.substr(0,2) == "v ")         {
-                    std::istringstream s(line.substr(2));
-                    Vertex v; s >> v.Vertices.X; s >> v.Vertices.Y; s >> v.Vertices.Z;
-                    vertices.push_back(v);
-                }
-                else if (line.substr(0,2) == "f ")         {
-                    std::istringstream s(line.substr(2));
-                    GLushort a,b,c;
-                    s >> a; s >> b; s >> c;
-                    a--; b--; c--;
-                    elements.push_back(a); elements.push_back(b); elements.push_back(c);
-                }
-            }
-        }
-        */
         void Draw(const Count<Shader>& shader);
         std::vector<class Mesh> GetMesh()const;
         std::vector<Vertex> m_Vertices;

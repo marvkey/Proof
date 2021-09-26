@@ -102,7 +102,7 @@ namespace Proof
 		}
 		// @return the numerical value PIE
 		inline static float GetPIE() {
-			return 3.141592654;
+			return 3.14159265359;
 		}
 
 		/*
