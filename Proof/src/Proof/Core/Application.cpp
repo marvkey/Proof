@@ -11,7 +11,7 @@
 
 namespace Proof {
     WindowsWindow* Application::MainWindow = nullptr;
-    Count<FrameBuffer> Application::ScreenFrameBuffer = nullptr;
+    Count<ScreenFrameBuffer> Application::ScreenFrameBuffer = nullptr;
     uint32_t Application::ViewPortWidth;
     uint32_t Application::ViewPortHeight;
     float Application::FPS = 60.0f;
@@ -26,7 +26,7 @@ namespace Proof {
         ImGuiMainLayer = new ImGuiLayer();
         MainLayerStack.PushLayer(ImGuiMainLayer);
 
-        ScreenFrameBuffer = FrameBuffer::Create(1300,600);
+        ScreenFrameBuffer = ScreenFrameBuffer::Create(1300,600);
         ScreenFrameBuffer->UnBind();
         AssetManager::InitilizeAssets("content");
        // m_MousePickingEditor= {1300,600};
@@ -52,14 +52,14 @@ namespace Proof {
             CurrentTime = glfwGetTime();
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
-            RendererCommand::EnableDepth(true);
+            RendererCommand::Enable(ProofRenderTest::DepthTest);
             if (CurrentWindow::GetWindowHeight() == 0 || CurrentWindow::GetWindowWidth() == 0)
                 WindowMinimized = true;
             else
                 WindowMinimized = false;
             if (WindowMinimized == false) {
                 ScreenFrameBuffer->Bind();
-                RendererCommand::Clear();
+                RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
                 RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
 
                 for (Layer* layer : MainLayerStack.V_LayerStack)

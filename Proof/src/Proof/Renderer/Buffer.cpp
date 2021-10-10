@@ -22,4 +22,10 @@ namespace Proof {
 		case RendererAPI::API::OpenGL: return CreateCount< OpenGLIndexBuffer>(Data,Count);
 		}
 	}
+	Count<RenderBuffer> RenderBuffer::Create(RenderBufferAttachment type,uint32_t width,uint32_t height) {
+		switch (RendererAPI::GetAPI()) {
+			case RendererAPI::API::None:  PF_CORE_ASSERT(false,"RenderBuffer None it needs an api "); return nullptr;
+			case RendererAPI::API::OpenGL: return CreateCount<OpenGLRenderBuffer>(type,width,height);
+		}
+	}
 }

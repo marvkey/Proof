@@ -67,4 +67,30 @@ namespace Proof {
 		uint32_t m_ID;
 		uint32_t m_Count;
 	};
+
+	class Proof_API OpenGLRenderBuffer:public RenderBuffer
+	{
+	public:
+		OpenGLRenderBuffer(RenderBufferAttachment type,uint32_t widht,uint32_t height);
+		//OpenGLRenderBuffer(RenderBufferAttachment type,uint32t_t samples,uint32_t widht,uint32_t height);
+		/**
+		* set as the current RenderBuffer
+		*/
+		virtual void Bind();
+		/**
+		* unset as the current renderBuffer
+		*/
+		virtual void UnBind();
+
+		/*
+		* get the unique id of the render buffer
+		*/
+		virtual uint32_t GetID();
+
+		void Remap(uint32_t width,uint32_t height,RenderBufferAttachment type);
+	private:
+		uint32_t m_ID;
+		uint32_t m_Widht;
+		uint32_t m_Height;
+	};
 }

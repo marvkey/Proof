@@ -7,7 +7,7 @@ namespace Proof
 
         Vector(float X,float Y,float Z);
         Vector() {};
-
+        
         Vector(const Vector& Other) {
             X = Other.X;
             Y = Other.Y;
@@ -84,17 +84,6 @@ namespace Proof
 
         Vector operator -(const Vector& Other) {
             Vector Temp(this->X - Other.X,this->Y - Other.Y,this->Z - Other.Z);
-            return Temp;
-        }
-
-        Vector operator *(const glm::vec3& Other) {
-            Vector Temp(this->X * Other.x,this->Y * Other.y,this->Z * Other.z);
-            return Temp;
-        }
-
-
-        Vector operator *(const Vector& Other) {
-            Vector Temp(this->X * Other.X,this->Y * Other.Y,this->Z * Other.Z);
             return Temp;
         }
 

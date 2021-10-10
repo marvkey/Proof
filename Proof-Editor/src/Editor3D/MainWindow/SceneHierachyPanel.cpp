@@ -442,10 +442,8 @@ namespace Proof{
 		ImGui::SetColumnWidth(0,columnWidth);
 		ImGui::Text(UniqeLabel.c_str());
 		ImGui::NextColumn();
-
 		ImGui::PushMultiItemsWidths(3,ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,ImVec2{0,0});
-
 		float LineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // comes from IMGUI
 		ImVec2 buttonSize = {LineHeight + 3.0f,LineHeight};
 
@@ -482,7 +480,6 @@ namespace Proof{
 		ImGui::PushStyleColor(ImGuiCol_Button,ImVec4{0.0f,0.0f,1.0f,1.0f});
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4{1.0f,0.5f,0.0f,1.0f});
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive,ImVec4{0.0f,0.0f,1.0f,1.0f});
-
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("Z",buttonSize)) {
 			Vec.z = ResetValue;

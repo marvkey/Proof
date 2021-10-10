@@ -90,7 +90,7 @@ namespace Proof
 
     }
     void Renderer3D::BeginContext(const PerspectiveCamera& Camera) {
-        Renderer3DInstance->m_Shader->UseShader();
+        Renderer3DInstance->m_Shader->Bind();
         Renderer3DInstance->m_Shader->SetMat4("u_Projection",Camera.GetProjectionMatrix());
         Renderer3DInstance->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
     }
@@ -105,7 +105,7 @@ namespace Proof
         
     }
     void Renderer3D::BeginContext(const OrthagraphicCamera& Camera) {
-        Renderer3DInstance->m_Shader->UseShader();
+        Renderer3DInstance->m_Shader->Bind();
         Renderer3DInstance->m_Shader->SetMat4("u_Projection",Camera.GetProjectionMatrix());
         Renderer3DInstance->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
     }
@@ -147,7 +147,7 @@ namespace Proof
     void Renderer3D::RenderLight(LightComponent& lightComponent) {
         if (lightComponent.m_LightType == lightComponent.Direction && NumberDirectionalLight < 150) {
             NumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumberDirectionalLight) + "]";
-            Renderer3DInstance->m_Shader->UseShader();
+            Renderer3DInstance->m_Shader->Bind();
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".direction",lightComponent.m_Direction);
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".ambient",lightComponent.m_Ambient);
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".diffuse",lightComponent.m_Diffuse);
@@ -160,7 +160,7 @@ namespace Proof
 
         if (lightComponent.m_LightType == lightComponent.Point && NumberPointLight < 150) {
             NumberPointLightstring = "v_PointLight[" + std::to_string(NumberPointLight) + "]";
-            Renderer3DInstance->m_Shader->UseShader();
+            Renderer3DInstance->m_Shader->Bind();
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".position",lightComponent.m_Position + lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".ambient",lightComponent.m_Ambient);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".diffuse",lightComponent.m_Diffuse);
@@ -175,7 +175,7 @@ namespace Proof
 
         if (lightComponent.m_LightType == lightComponent.Spot && NumberPointLight < 150) {
             NumberSpotLightstring = "v_SpotLight[" + std::to_string(NumberSpotLight) + "]";
-            Renderer3DInstance->m_Shader->UseShader();
+            Renderer3DInstance->m_Shader->Bind();
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",lightComponent.m_Direction);
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".position",{lightComponent.m_Position + lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".ambient",lightComponent.m_Ambient);
@@ -195,7 +195,7 @@ namespace Proof
     void Renderer3D::EndContext() {
         if (DifferentMeshes == 0)return;
         uint32_t SizeofOffset = 0;
-        Renderer3DInstance->m_Shader->UseShader();
+        Renderer3DInstance->m_Shader->Bind();
         LightingErrorChecks();
         Renderer3DInstance->m_Shader->SetVec3("viewPos",Position);
         for (uint32_t Size = 0; Size < s_DifferentID.size(); Size++) {
@@ -205,14 +205,14 @@ namespace Proof
             auto& TempMesh = Renderer3DInstance->m_Meshes.find(TempID);
             auto& TempAmountMeshes = Renderer3DInstance->m_AmountMeshes.find(TempID);
             if (TempMesh->second.GetModel()->textures_loaded.size() > 0) {
-                Renderer3DInstance->m_Shader->UseShader();
+                Renderer3DInstance->m_Shader->Bind();
                 Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
-                TempMesh->second.GetModel()->textures_loaded[0]->BindTexture(0);
+                TempMesh->second.GetModel()->textures_loaded[0]->Bind(0);
             }
             else {
-                Renderer3DInstance->m_Shader->UseShader();
+                Renderer3DInstance->m_Shader->Bind();
                 Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
-                Renderer3DInstance->m_WhiteTexture->BindTexture(0); 
+                Renderer3DInstance->m_WhiteTexture->Bind(0);
             }
             TempMesh->second.GetModel()->m_VertexArrayObject->Bind();
             TempMesh->second.GetModel()->m_IndexBufferObject->Bind();
@@ -273,7 +273,7 @@ namespace Proof
             * glm::scale(glm::mat4(1.0f),{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
     }
     void Renderer3D::LightingErrorChecks() {
-        Renderer3DInstance->m_Shader->UseShader();
+        Renderer3DInstance->m_Shader->Bind();
         if (NumberDirectionalLight == 0) {
             Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].direction",0,0,0);
             Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].ambient",0,0,0);

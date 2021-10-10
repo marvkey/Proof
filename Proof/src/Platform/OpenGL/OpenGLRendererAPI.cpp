@@ -2,15 +2,16 @@
 #include "OpenGLRendererAPI.h"
 #include <glad/glad.h>
 namespace Proof {
+	static void tempClear(uint32_t temp){
+		glClear((uint32_t)temp);
+	}
    void OpenGLRendererAPI::PollEvents() {
 	  glfwPollEvents();
    }
-   void OpenGLRendererAPI::Clear() {
-	   if (m_IsDepthEnabled == true)
-		   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	   else
-		   glClear(GL_COLOR_BUFFER_BIT);
+   void OpenGLRendererAPI::Clear(uint32_t bitField) {
+		glClear(bitField);
    }
+ 
    void OpenGLRendererAPI::DrawArrays(uint32_t Count) {
 	   glDrawArrays(GL_TRIANGLES,0,Count);
    }
@@ -41,8 +42,8 @@ namespace Proof {
 	   glBindTexture(GL_TEXTURE_2D,0);
    }
 
-   void OpenGLRendererAPI::SetViewPort(int num,int num2,int Width,int Height) {
-	   glViewport(0,0,Width,Height);
+   void OpenGLRendererAPI::SetViewPort(uint32_t width,uint32_t height) {
+	   glViewport(0,0,width,height);
    }
    void OpenGLRendererAPI::SetClearColor(const glm::vec4& Color) {
 	  glClearColor(Color.r,Color.g,Color.b,Color.a);
@@ -53,14 +54,13 @@ namespace Proof {
    void OpenGLRendererAPI::SwapBuffer(GLFWwindow* Window) {
 	  glfwSwapBuffers(Window);
    }
-   void OpenGLRendererAPI::EnableDepth(bool Depth) {
-	   if (Depth == true) {
-		   m_IsDepthEnabled = true;
-		   glEnable(GL_DEPTH_TEST);
-	   }
-	   else {
-		   glDisable(GL_DEPTH_TEST);
-		   m_IsDepthEnabled = false;
-	   }
+   void OpenGLRendererAPI::Enable(uint32_t bitField) {
+		glEnable(bitField);
+   }
+   void OpenGLRendererAPI::Disable(uint32_t bitField) {
+	   glDisable(bitField);
+   }
+   void OpenGLRendererAPI::DepthFunc(DepthType type) {
+	   glDepthFunc((uint32_t)type);
    }
 }

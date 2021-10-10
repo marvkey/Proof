@@ -7,7 +7,8 @@ namespace Proof
     public:
         OpenGLShader(const std::string& _NameShader,const std::string& VertexPath,const std::string& FragmentPath); // CODE NEEDS TO BE NEATEN UP
         OpenGLShader(const std::string& _NameShader,const std::string& ShaderPath);
-        virtual void UseShader() override;
+        virtual void Bind() override;
+        virtual void UnBind() override;
         virtual void SetBool(const std::string& Name,bool Value)override;
         virtual void SetInt(const std::string& Name,int Value)override;
         virtual void SetFloat(const std::string& Name,float Value)override;
@@ -25,8 +26,13 @@ namespace Proof
         virtual void SetMat2(const std::string& Name,const glm::mat2& Value)override;
         virtual void SetMat3(const std::string& Name,const glm::mat3& Value)override;
         virtual void SetMat4(const std::string& Name,const glm::mat4& Value)override;
-        virtual unsigned int GetID()override;
+        virtual uint32_t GetID()override;
+        virtual std::string GetPath() { return m_Path;}
+        virtual std::string GetName(){return m_Name;}
+
     private:
-        unsigned int ID;
+        uint32_t m_ID;
+        std::string m_Path;
+        std::string m_Name;
     };
 }

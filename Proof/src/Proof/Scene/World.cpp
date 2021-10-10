@@ -15,10 +15,12 @@
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/VertexArray.h"
+#include "Proof/Renderer/FrameBuffer.h"
 #include<glad/glad.h>
 namespace Proof{
 	unsigned int quadVAO = 0;
 	unsigned int quadVBO;
+	
 	void renderQuad() {
 		if (quadVAO == 0) {
 			float quadVertices[] = {
@@ -43,6 +45,7 @@ namespace Proof{
 		glDrawArrays(GL_TRIANGLE_STRIP,0,4);
 		glBindVertexArray(0);
 	}
+	
 	World::World()
 	{
 		backgroundShader = Shader::Create("IBL_Background",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/BackgroundShader.glsl");
@@ -101,17 +104,13 @@ namespace Proof{
 		m_IBLSkyBoxVertexArray->AddData(0,3,8 * sizeof(float),(void*)0);
 		m_IBLSkyBoxVertexArray->AddData(1,3,8 * sizeof(float),(void*)(3 * sizeof(float)));
 		m_IBLSkyBoxVertexArray->AddData(2,2,8 * sizeof(float),(void*)(6 * sizeof(float)));
-		backgroundShader->UseShader();
+		backgroundShader->Bind();
 		backgroundShader->SetInt("environmentMap",0);
+		m_CaptureFBO = FrameBuffer::Create();
+		m_CaptureFBO->Bind();
+		m_CaptureRBO =RenderBuffer::Create(RenderBufferAttachment::DepthComponent24,512,512);
+		m_CaptureFBO->AttachRenderBuffer(FrameBufferAttachmentType::DepthAttachment,m_CaptureRBO->GetID());
 
-		glGenFramebuffers(1,&captureFBO);
-		glGenRenderbuffers(1,&captureRBO);
-
-		glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
-		glBindRenderbuffer(GL_RENDERBUFFER,captureRBO);
-		glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,512,512);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,captureRBO);
-		
 		m_WorldCubeMap = CubeMap::Create();
 		
 		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f),1.0f,0.1f,10.0f);
@@ -125,117 +124,102 @@ namespace Proof{
 			glm::lookAt(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f,-1.0f,0.0f))
 		};
 		
-		equirectangularToCubemapShader->UseShader();
+		equirectangularToCubemapShader->Bind();
 		equirectangularToCubemapShader->SetInt("equirectangularMap",0);
 		equirectangularToCubemapShader->SetMat4("projection",captureProjection);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D,m_WorldIBLTexture->GetID());
-		glViewport(0,0,512,512);
-		for (unsigned int i = 0; i < 6; ++i) {
+		m_WorldIBLTexture->Bind(0);
+		RendererCommand::SetViewPort(512,512);
+		for (uint32_t i = 0; i < 6; ++i) {
 			equirectangularToCubemapShader->SetMat4("view",captureViews[i]);
-			glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,m_WorldCubeMap->GetID(),0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			
-			glDepthFunc(GL_LEQUAL);
+			uint32_t temp = (uint32_t)FrameBufferTextureType::CubeMapPosX;
+			temp+=i;
+			m_CaptureFBO->AttachColourTexture((FrameBufferTextureType)temp,0,m_WorldCubeMap->GetID());
+
+			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+			RendererCommand::DepthFunc(DepthType::Equal);
 			m_IBLSkyBoxVertexArray->Bind();
-			glDrawArrays(GL_TRIANGLES,0,36);
+			RendererCommand::DrawArray(36);
 			m_IBLSkyBoxVertexArray->UnBind();
-			glDepthFunc(GL_LESS);
+			RendererCommand::DepthFunc(DepthType::Less);
 		}
-		glBindFramebuffer(GL_FRAMEBUFFER,0);
-
-		glBindTexture(GL_TEXTURE_CUBE_MAP,m_WorldCubeMap->GetID());
-		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-
+		m_CaptureFBO->UnBind();
+		m_WorldCubeMap->GenerateMipMap();
 		m_WorldCubeMapIrradiance = CubeMap::Create(32,32);
-		glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
-		glBindRenderbuffer(GL_RENDERBUFFER,captureRBO);
-		glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,32,32);
+		m_CaptureFBO->Bind();
+		m_CaptureRBO->Bind();
+		m_CaptureRBO->Remap(32,32,RenderBufferAttachment::DepthComponent24);
 
-		IrradianceShader->UseShader();
+		IrradianceShader->Bind();
 		IrradianceShader->SetInt("environmentMap",0);
 		IrradianceShader->SetMat4("projection",captureProjection);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP,m_WorldCubeMap->GetID());
 
-		glViewport(0,0,32,32); // don't forget to configure the viewport to the capture dimensions.
-		glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
+		m_WorldCubeMap->Bind(0);
+		RendererCommand::SetViewPort(32,32);
+		m_CaptureFBO->Bind();
+
 		for (unsigned int i = 0; i < 6; ++i) {
 			IrradianceShader->SetMat4("view",captureViews[i]);
-			glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,m_WorldCubeMapIrradiance->GetID(),0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			uint32_t temp = (uint32_t)FrameBufferTextureType::CubeMapPosX;
+			temp += i;
+			m_CaptureFBO->AttachColourTexture((FrameBufferTextureType)temp,0,m_WorldCubeMapIrradiance->GetID());
 
-			glDepthFunc(GL_LEQUAL);
+			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+
+			RendererCommand::DepthFunc(DepthType::Equal);
 			m_IBLSkyBoxVertexArray->Bind();
-			glDrawArrays(GL_TRIANGLES,0,36);
+			RendererCommand::DrawArray(36);
 			m_IBLSkyBoxVertexArray->UnBind();
-			glDepthFunc(GL_LESS);
-
+			RendererCommand::DepthFunc(DepthType::Less);
 		}
-		glBindFramebuffer(GL_FRAMEBUFFER,0);
+		m_CaptureFBO->UnBind();
 		PrefelterMap = CubeMap::Create(128,128,true);
-		prefilterShader->UseShader();
+		prefilterShader->Bind();
 		prefilterShader->SetInt("environmentMap",0);
 		prefilterShader->SetMat4("projection",captureProjection);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP,m_WorldCubeMap->GetID());
-		glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
 
+		m_WorldCubeMap->Bind(0);
+		m_CaptureFBO->Bind();
 		unsigned int maxMipLevels = 5;
 		for (unsigned int mip = 0; mip < maxMipLevels; ++mip) {
-	   // reisze framebuffer according to mip-level size.
 			unsigned int mipWidth = 128 * std::pow(0.5,mip);
 			unsigned int mipHeight = 128 * std::pow(0.5,mip);
-			glBindRenderbuffer(GL_RENDERBUFFER,captureRBO);
-			glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,mipWidth,mipHeight);
-			glViewport(0,0,mipWidth,mipHeight);
+			m_CaptureRBO->Bind();
+			m_CaptureRBO->Remap(mipWidth,mipHeight,RenderBufferAttachment::DepthComponent24);
+			RendererCommand::SetViewPort(mipWidth,mipHeight);
 
 			float roughness = (float)mip / (float)(maxMipLevels - 1);
 			prefilterShader->SetFloat("roughness",roughness);
 			for (unsigned int i = 0; i < 6; ++i) {
 				prefilterShader->SetMat4("view",captureViews[i]);
-				glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,PrefelterMap->GetID(),mip);
+				uint32_t temp = (uint32_t)FrameBufferTextureType::CubeMapPosX;
+				temp += i;
+				m_CaptureFBO->AttachColourTexture((FrameBufferTextureType)temp,0,PrefelterMap->GetID(),mip);
+				RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				glDepthFunc(GL_LEQUAL);
+				RendererCommand::DepthFunc(DepthType::Equal);
 				m_IBLSkyBoxVertexArray->Bind();
-				glDrawArrays(GL_TRIANGLES,0,36);
+				RendererCommand::DrawArray(36);
 				m_IBLSkyBoxVertexArray->UnBind();
-				glDepthFunc(GL_LESS);
+				RendererCommand::DepthFunc(DepthType::Less);
 			}
 		}
-		glGenTextures(1,&brdfLUTTexture);
 
-   // pre-allocate enough memory for the LUT texture.
-		glBindTexture(GL_TEXTURE_2D,brdfLUTTexture);
-		glTexImage2D(GL_TEXTURE_2D,0,GL_RG16F,512,512,0,GL_RG,GL_FLOAT,0);
-		// be sure to set wrapping mode to GL_CLAMP_TO_EDGE
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		m_brdflTexture =Texture2D::Create(512,512,DataFormat::RG,InternalFormat::R16F,TextureBaseTypes::ClampToEdge,TextureBaseTypes::ClampToEdge,TextureBaseTypes::Linear,TextureBaseTypes::Linear,type::Float);
+		m_CaptureFBO->Bind();
+		m_CaptureRBO->Bind();
+		m_CaptureRBO->Remap(512,512,RenderBufferAttachment::DepthComponent24);
+		m_CaptureFBO->AttachColourTexture(FrameBufferTextureType::Texture2D,0,m_brdflTexture->GetID());
+		RendererCommand::SetViewPort(512,512);
 
-		// then re-configure capture framebuffer object and render screen-space quad with BRDF shader.
-		glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
-		glBindRenderbuffer(GL_RENDERBUFFER,captureRBO);
-		glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,512,512);
-		glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,brdfLUTTexture,0);
+		brdfShader->Bind();
 
-		glViewport(0,0,512,512);
-		brdfShader->UseShader();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDepthFunc(GL_LEQUAL);
-
+		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		RendererCommand::DepthFunc(DepthType::Equal);
 		renderQuad();
-		glDepthFunc(GL_LESS);
+		RendererCommand::DepthFunc(DepthType::Less);
+		m_CaptureFBO->UnBind();
 
-		glBindFramebuffer(GL_FRAMEBUFFER,0);
-
-		int scrWidth,scrHeight;
-		glfwGetFramebufferSize(CurrentWindow::GetWindow(),&scrWidth,&scrHeight);
-		glViewport(0,0,scrWidth,scrHeight);
-		//glDepthFunc(GL_LESS);
-
+		RendererCommand::SetViewPort(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 	}
 	void World::OnUpdateEditor(FrameTime DeltaTime) {
 		
@@ -266,28 +250,27 @@ namespace Proof{
 		for (LightComponent* Comp : Registry.LightComponents) {
 			Renderer3DPBR::Draw(*Comp);
 		}
-		Renderer3DPBR::GetRenderer()->m_Shader->UseShader();
+		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
 		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
 		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
 		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT",6);
-		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_CUBE_MAP,m_WorldCubeMapIrradiance->GetID());
-		glActiveTexture(GL_TEXTURE5);
-		glBindTexture(GL_TEXTURE_CUBE_MAP,PrefelterMap->GetID());
-		glActiveTexture(GL_TEXTURE6);
-		glBindTexture(GL_TEXTURE_2D,brdfLUTTexture);
+
+		m_WorldCubeMap->Bind(4);
+		PrefelterMap->Bind(5);
+
+		m_brdflTexture->Bind(6);
 		Renderer3DPBR::EndContext();
 		Renderer3DPBR::Reset();
 
-		glDepthFunc(GL_LEQUAL);
-		backgroundShader->UseShader();
+
+		RendererCommand::DepthFunc(DepthType::Equal);
+		backgroundShader->Bind();
 		backgroundShader->SetInt("environmentMap",0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP,m_WorldCubeMap->GetID());
+		m_WorldCubeMap->Bind(0);
 		m_IBLSkyBoxVertexArray->Bind();
-		glDrawArrays(GL_TRIANGLES,0,36);
+		RendererCommand::DrawArray(36);
 		m_IBLSkyBoxVertexArray->UnBind();
-		glDepthFunc(GL_LESS);
+		RendererCommand::DepthFunc(DepthType::Less);
 		
 		EditorCamera.OnUpdate(DeltaTime);
 		/*

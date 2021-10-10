@@ -94,7 +94,7 @@ namespace Proof
 		m_SkyBoxVertexArray = VertexArray::Create();
 		m_SkyBoxVertexArray->AddData(0,3,3 * sizeof(float),(void*)0);
 
-		m_SkyBoxShader->UseShader();
+		m_SkyBoxShader->Bind();
 		m_SkyBoxShader->SetInt("skybox",0);
 
 

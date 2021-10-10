@@ -4,6 +4,7 @@
 #include "Camera/OrthagraphicCamera.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/VertexArray.h"
+#include "Proof/Renderer/FrameBuffer.h"
 class FrameTime;
 
 namespace Proof{
@@ -35,12 +36,17 @@ namespace Proof{
 		Count<CubeMap> m_WorldCubeMap;
 		Count<CubeMap> m_WorldCubeMapIrradiance;
 		Count<CubeMap> PrefelterMap;
+
 		unsigned int brdfLUTTexture;	
 		Count<HDRTexture>m_WorldIBLTexture;
 		Count<VertexBuffer> m_IBLSkyBoxBuffer;
 		Count<VertexArray>m_IBLSkyBoxVertexArray;
 		unsigned int captureFBO,captureRBO;
+
+		Count<FrameBuffer> m_CaptureFBO;
+		Count<RenderBuffer> m_CaptureRBO;
 		Count<Shader>equirectangularToCubemapShader;
+		Count<Texture2D> m_brdflTexture;
 
 		Count<Shader> backgroundShader;
 		Count<Shader> IrradianceShader;

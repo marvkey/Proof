@@ -95,7 +95,7 @@ namespace Proof{
 		}
 	}
 	void Renderer3DPBR::Draw(LightComponent& lightComponent) {
-		s_PBRInstance->m_Shader->UseShader();
+		s_PBRInstance->m_Shader->Bind();
 		std::string LightPos= "lightPositions[" + std::to_string(NumLights) + "]";
 		std::string LightColour= "lightColors[" + std::to_string(NumLights) + "]";
 		s_PBRInstance->m_Shader->SetVec3(LightPos,{lightComponent.m_Position + lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
@@ -108,7 +108,7 @@ namespace Proof{
 	void Renderer3DPBR::EndContext() {
 		if(s_DifferentID.size() ==0)return;
 		uint32_t sizeOffset=0;
-		s_PBRInstance->m_Shader->UseShader();
+		s_PBRInstance->m_Shader->Bind();
 		s_PBRInstance->m_Shader->SetInt("AmountLight",NumLights);
 		for (uint32_t i= 0; i< s_DifferentID.size(); i++) {
 			s_PBRInstance->m_VertexBuffer->Bind();
@@ -118,41 +118,41 @@ namespace Proof{
 			auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
 
 			if(TempMesh->second.GetMaterial()!=nullptr){
-				s_PBRInstance->m_Shader->UseShader();
+				s_PBRInstance->m_Shader->Bind();
 				s_PBRInstance->m_Shader->SetInt("albedoMap",0);
 				if(TempMesh->second.GetMaterial()->AlbedoTexture !=nullptr)
-					TempMesh->second.GetMaterial()->AlbedoTexture->BindTexture(0);
+					TempMesh->second.GetMaterial()->AlbedoTexture->Bind(0);
 				else
-					s_PBRInstance->m_WhiteTexture->BindTexture(0);
+					s_PBRInstance->m_WhiteTexture->Bind(0);
 
 				s_PBRInstance->m_Shader->SetInt("normalMap",1);
 				if (TempMesh->second.GetMaterial()->NormalTexture != nullptr)
-					TempMesh->second.GetMaterial()->NormalTexture->BindTexture(1);
+					TempMesh->second.GetMaterial()->NormalTexture->Bind(1);
 				else
-					s_PBRInstance->m_WhiteTexture->BindTexture(1);
+					s_PBRInstance->m_WhiteTexture->Bind(1);
 
 				s_PBRInstance->m_Shader->SetInt("metallicMap",2);
 				if (TempMesh->second.GetMaterial()->MetallicTexture != nullptr)
-					TempMesh->second.GetMaterial()->MetallicTexture->BindTexture(2);
+					TempMesh->second.GetMaterial()->MetallicTexture->Bind(2);
 				else
-					s_PBRInstance->m_WhiteTexture->BindTexture(2);
+					s_PBRInstance->m_WhiteTexture->Bind(2);
 
 				s_PBRInstance->m_Shader->SetInt("roughnessMap",3);
 				if (TempMesh->second.GetMaterial()->RoughnessTexture != nullptr)
-					TempMesh->second.GetMaterial()->RoughnessTexture->BindTexture(3);
+					TempMesh->second.GetMaterial()->RoughnessTexture->Bind(3);
 				else
-					s_PBRInstance->m_WhiteTexture->BindTexture(3);
+					s_PBRInstance->m_WhiteTexture->Bind(3);
 
 			}else{
-				s_PBRInstance->m_Shader->UseShader();
+				s_PBRInstance->m_Shader->Bind();
 				s_PBRInstance->m_Shader->SetInt("albedoMap",0);
 				s_PBRInstance->m_Shader->SetInt("normalMap",1);
 				s_PBRInstance->m_Shader->SetInt("metallicMap",2);
 				s_PBRInstance->m_Shader->SetInt("roughnessMap",3);
-				s_PBRInstance->m_WhiteTexture->BindTexture(0);
-				s_PBRInstance->m_WhiteTexture->BindTexture(1);
-				s_PBRInstance->m_WhiteTexture->BindTexture(2);
-				s_PBRInstance->m_WhiteTexture->BindTexture(3);
+				s_PBRInstance->m_WhiteTexture->Bind(0);
+				s_PBRInstance->m_WhiteTexture->Bind(1);
+				s_PBRInstance->m_WhiteTexture->Bind(2);
+				s_PBRInstance->m_WhiteTexture->Bind(3);
 			}
 			TempMesh->second.GetModel()->m_VertexArrayObject->Bind();
 			TempMesh->second.GetModel()->m_IndexBufferObject->Bind();

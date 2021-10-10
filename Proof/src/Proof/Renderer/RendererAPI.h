@@ -2,15 +2,33 @@
 #include <glm/glm.hpp>
 #include"VertexArray.h"
 namespace Proof {
+	struct ProofClear{
+		enum Clear:uint32_t {
+			DepthBuffer = GL_DEPTH_BUFFER_BIT,
+			StencilBuffer = GL_STENCIL_BUFFER_BIT,
+			ColourBuffer = GL_COLOR_BUFFER_BIT
+		};
+	};
+
+	struct ProofRenderTest{
+		enum RenderTest:uint32_t {
+			Blend = GL_BLEND,
+			DepthTest =GL_DEPTH_TEST
+		};
+	};
+
+	enum class DepthType:uint32_t{
+		Equal = GL_LEQUAL,
+		Less = GL_LESS
+	};
 	class Proof_API RendererAPI {
 	public:
 		enum class API {
 			None =0, OpenGL =1, Vulkan=2
 		};
+		
 		virtual void SetClearColor(const glm::vec4&Color) = 0;
 		virtual void SetClearColor(float R, float G, float B, float A)= 0;
-		virtual void Clear() = 0;
-
 		virtual void DrawArrays(uint32_t Count)=0;
 		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject) = 0;
 		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count) = 0;
@@ -19,9 +37,23 @@ namespace Proof {
 		
 		inline static API GetAPI() { return ActiveAPI; }
 		virtual void SwapBuffer(GLFWwindow* Window) = 0;
-		virtual void EnableDepth(bool Depth) = 0;
+
+		/**
+		* @param bitfield use the enum form the struct Proof Clear
+		*/ 
+		virtual void Clear(uint32_t bitField) = 0;
+		/**
+		* @param bitfield use the enum form the struct ProofRenderTest
+		*/
+		virtual void Enable(uint32_t bitField) =0;
+		/**
+		* @param bitfield use the enum form the struct ProofRenderTest
+		*/
+		virtual void Disable(uint32_t bitField) =0;
+
 		virtual void PollEvents()=0;
-		virtual void SetViewPort(int num ,int num2 ,int Width,int Height) = 0;
+		virtual void SetViewPort(uint32_t width,uint32_t height) = 0;
+		virtual void DepthFunc(DepthType type) =0;
 	private:
 		static API ActiveAPI;
 	};

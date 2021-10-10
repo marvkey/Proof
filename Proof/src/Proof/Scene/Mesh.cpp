@@ -51,9 +51,9 @@ namespace Proof{
     }
 
     void Mesh::Draw(const Proof::Count<Proof::Shader>& shader) {
-        shader->UseShader();
+        shader->Bind();
         shader->SetInt("texture_diffuse",0);
-        m_Textures[0]->BindTexture(0);
+        m_Textures[0]->Bind(0);
 
         //uint8_t iterator = 0;
         /*

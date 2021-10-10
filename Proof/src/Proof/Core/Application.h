@@ -1,7 +1,7 @@
 #pragma once
 #include "Core.h"
 #include "Platform/Window/WindowsWindow.h"
-#include "Proof/Renderer/FrameBuffer.h"
+#include "Proof/Renderer/ScreenFrameBuffer.h"
 #include "Proof/Core/LayerStack.h"
 #include "EditorMousePicking.h"
 #include "CurrentWindow.h"
@@ -17,7 +17,7 @@ namespace Proof {
         void Run();
         void PushLayer(Layer* Layer);
         void PushOverlay(Layer* Layer);
-        static Count<FrameBuffer>& GetScreenBuffer() {
+        static Count<ScreenFrameBuffer>& GetScreenBuffer() {
             return ScreenFrameBuffer;
         }
 
@@ -30,7 +30,7 @@ namespace Proof {
         bool WindowMinimized = false;
         bool IsRunning = true;
     private:
-        static Count<FrameBuffer> ScreenFrameBuffer;
+        static Count<ScreenFrameBuffer> ScreenFrameBuffer;
         LayerStack MainLayerStack;
         ImGuiLayer* ImGuiMainLayer;
         static WindowsWindow* MainWindow;

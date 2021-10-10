@@ -59,4 +59,35 @@ namespace Proof {
 		*/
 		virtual uint32_t GetCount() = 0;
 	};
+
+	enum class RenderBufferAttachment:uint32_t {
+		DepthComponent16 = GL_DEPTH_COMPONENT16,
+		DepthComponent24 = GL_DEPTH_COMPONENT24,
+		DepthComponent32F = GL_DEPTH_COMPONENT32F,
+		Depth24Stencil8 = GL_DEPTH24_STENCIL8,
+		Depth32FStencil8 = GL_DEPTH32F_STENCIL8,
+		DepthStencil8 = GL_STENCIL_INDEX8
+	};
+	class Proof_API RenderBuffer
+	{
+	public:
+		/**
+		* set as the current RenderBuffer
+		*/
+		virtual void Bind() =0;
+		/**
+		* unset as the current renderBuffer
+		*/
+		virtual void UnBind()=0;
+
+		/*
+		* get the unique id of the render buffer
+		*/
+		virtual uint32_t GetID()=0;
+
+		virtual void Remap(uint32_t width,uint32_t height,RenderBufferAttachment type)=0;
+		static Count<RenderBuffer>Create(RenderBufferAttachment type,uint32_t width,uint32_t height);
+		//static Count<RenderBuffer>Create(RenderBufferAttachment type,uint32_t samples,uint32_t widht,uint32_t height);
+
+	};
 }

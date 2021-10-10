@@ -4,7 +4,8 @@
 namespace Proof {
     class Proof_API Shader {
     public:   
-        virtual void UseShader() = 0;
+        virtual void Bind() = 0;
+        virtual void UnBind() =0;
         virtual void SetBool(const std::string& Name,bool Value) = 0;
         virtual void SetInt(const std::string& Name,int Value) = 0;
 
@@ -24,15 +25,13 @@ namespace Proof {
         virtual void SetMat3(const std::string& Name,const glm::mat3& Value) = 0;
         virtual void SetMat4(const std::string& Name,const glm::mat4& Value) = 0;
 
-        virtual unsigned int GetID() = 0;
+        virtual uint32_t GetID() = 0;
         static Count<Shader>Create(const std::string& _ShaderName,const std::string& VertexPath,const std::string& FragmentPath);
         static Count<Shader>Create(const std::string& _ShaderName,const std::string& ShaderPath);
-        std::string GetName() { return ShaderName; };
-        std::string GetPath() { return c_Path; };
+        virtual std::string GetName()=0;
+        virtual std::string GetPath()=0;
         virtual ~Shader();
     protected:
-        std::string ShaderName;
-        std::string c_Path;
         friend class Application;
     };
 

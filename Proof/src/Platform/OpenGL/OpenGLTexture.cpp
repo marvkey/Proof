@@ -28,7 +28,7 @@ namespace Proof
 			glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,Width,Height,0,Format,GL_UNSIGNED_BYTE,Data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 			stbi_image_free(Data);
@@ -57,22 +57,37 @@ namespace Proof
 		glTextureParameteri(TextureObject,GL_TEXTURE_WRAP_S,GL_REPEAT);
 		glTextureParameteri(TextureObject,GL_TEXTURE_WRAP_T,GL_REPEAT);
 	}
-	void OpenGLTexture2D::SetData(void* data,uint32_t size) {
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType) {
+		glGenTextures(1,&TextureObject);
+		glBindTexture(GL_TEXTURE_2D,TextureObject);
 
+		glTexImage2D(GL_TEXTURE_2D,0,(uint32_t)internalFormat,width,height,0,(uint32_t)dataFormat,(uint32_t)baseType,nullptr);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,(uint32_t)WrapS);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,(uint32_t)WrapT);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,(uint32_t)MinFilter);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,(uint32_t)MagFilter);
+	}
+	void OpenGLTexture2D::SetData(void* data,uint32_t size) {
 		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
 		PF_CORE_ASSERT(size == Width * Height * bpp,"Data must be entire texture!");
 		glTextureSubImage2D(TextureObject,0,0,0,Height,Height,m_DataFormat,GL_UNSIGNED_BYTE,data);
 	}
 
+	void OpenGLTexture2D::GenerateMipMap() {
+		glBindTexture(GL_TEXTURE_2D,TextureObject);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+
 	OpenGLTexture2D::~OpenGLTexture2D() {
 		glDeleteTextures(1,&TextureObject);
 	}
-	void OpenGLTexture2D::BindTexture(uint32_t Slot) {
+	void OpenGLTexture2D::Bind(uint32_t Slot) {
 		glBindTextureUnit(Slot,TextureObject);
 	}
 	void OpenGLTexture2D::unBind() {
 		glDisable(GL_TEXTURE_2D);
 	}
+	 
 
 
 	OpenGLCubeMap::OpenGLCubeMap(const std::vector<std::string>& Paths) {
@@ -130,13 +145,20 @@ namespace Proof
 		if(generateMipMap==true)
 			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 	}
-	void OpenGLCubeMap::Bind() {
-		glBindTexture(GL_TEXTURE_CUBE_MAP,m_ID);
+	void OpenGLCubeMap::Bind(uint32_t Slot) {
+		glBindTextureUnit(Slot,m_ID);
 	}
 
 	void OpenGLCubeMap::unBind() {
 		glBindTexture(GL_TEXTURE_CUBE_MAP,0);
 	}
+
+	void OpenGLCubeMap::GenerateMipMap() {
+		glBindTexture(GL_TEXTURE_CUBE_MAP,m_ID);
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	}
+
+
 	OpenGLHDRTexture::OpenGLHDRTexture(const std::string& path): 
 		m_Path(path)
 	{
@@ -158,10 +180,14 @@ namespace Proof
 			PF_ENGINE_ERROR("Failed to load HDR Texture %s",m_Path.c_str());
 		}
 	}
-	void OpenGLHDRTexture::BindTexture(uint32_t Slot) {
+	void OpenGLHDRTexture::Bind(uint32_t Slot) {
 		glBindTextureUnit(Slot,m_ID);
 	}
 	void OpenGLHDRTexture::unBind() {
 		glDisable(GL_TEXTURE_2D);
+	}
+	void OpenGLHDRTexture::GenerateMipMap() {
+		glBindTexture(GL_TEXTURE_2D,m_ID);
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 }

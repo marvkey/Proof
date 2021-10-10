@@ -49,4 +49,32 @@ namespace Proof {
    void OpenGLIndexBuffer::UnBind() {
 	  glDeleteBuffers(1,&m_ID);
    }
+
+   OpenGLRenderBuffer::OpenGLRenderBuffer(RenderBufferAttachment type,uint32_t widht,uint32_t height)
+	   :m_Widht(widht),m_Height(height)
+   {
+	   glGenRenderbuffers(1,&m_ID);
+	   glBindRenderbuffer(GL_RENDERBUFFER,m_ID);
+	   glRenderbufferStorage(GL_RENDERBUFFER,(GLenum)type,widht,height);
+   }
+
+   void OpenGLRenderBuffer::Bind() {
+	   glBindRenderbuffer(GL_RENDERBUFFER,m_ID);
+   }
+
+   void OpenGLRenderBuffer::UnBind() {
+	   glBindRenderbuffer(GL_RENDERBUFFER,0);
+   }
+
+   uint32_t OpenGLRenderBuffer::GetID() {
+	   return m_ID;
+   }
+
+   void OpenGLRenderBuffer::Remap(uint32_t width,uint32_t height,RenderBufferAttachment type) {
+	   m_Widht=width;
+	   m_Height=height;
+	   glBindRenderbuffer(GL_RENDERBUFFER,m_ID);
+	   glRenderbufferStorage(GL_RENDERBUFFER,(GLenum)type,width,height);
+   }
+
 }

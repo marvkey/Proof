@@ -58,20 +58,20 @@ namespace Proof {
 		int32_t Samplers[32];
 		for(uint32_t i=0; i< Renderer2DStorage::MaxTextureSlot;i++)
 			Samplers[i] =i;
-		s_Storage2DData->m_Shader->UseShader();
+		s_Storage2DData->m_Shader->Bind();
 		s_Storage2DData->m_Shader->SetIntArray("u_TextureSlot",Samplers,Renderer2DStorage::MaxTextureSlot);
 
 	    s_Storage2DData->m_Textures[0]= s_Storage2DData->m_WhiteTexture;
 	}
 	void Renderer2D::BeginContext(const glm::mat4& Projection,const Camera& camera) {
-		s_Storage2DData->m_Shader->UseShader();
+		s_Storage2DData->m_Shader->Bind();
 		s_Storage2DData->m_Shader->SetMat4("u_ViewProjection",Projection);
 		s_Storage2DData->m_Shader->SetMat4("u_View",camera.GetCameraView());
 		s_Renderer2DStats->m_DrawCalls=0;
 		s_Renderer2DStats->m_QuadCount =0;
 	}
 	void Renderer2D::BeginContext(const OrthagraphicCamera& Camera) {
-		s_Storage2DData->m_Shader->UseShader();
+		s_Storage2DData->m_Shader->Bind();
 		s_Storage2DData->m_Shader->SetMat4("u_ViewProjection",Camera.GetProjectionMatrix());
 		s_Storage2DData->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
 		s_Renderer2DStats->m_DrawCalls = 0;
@@ -188,11 +188,11 @@ namespace Proof {
 	}
 	void Renderer2D::Render() {
 		if(s_Storage2DData->m_IndexCount ==0)return; // nothing to draw
-		s_Storage2DData->m_Shader->UseShader();
+		s_Storage2DData->m_Shader->Bind();
 		s_Storage2DData->m_VertexBuffer->Bind();
 		s_Storage2DData->m_IndexBuffer->Bind();
 		for(uint32_t i =0; i<s_Storage2DData->m_TextureSlotIndex;i++){
-			s_Storage2DData->m_Textures[i]->BindTexture(i);
+			s_Storage2DData->m_Textures[i]->Bind(i);
 		} 
 		s_Storage2DData->m_VertexBuffer->AddData(s_Storage2DData->m_QuadArray,s_Storage2DData->m_QuadArraySize *sizeof(Vertex2D));
 		RendererCommand::DrawIndexed(s_Storage2DData->m_VertexArray,s_Storage2DData->m_IndexCount);
