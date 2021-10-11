@@ -58,7 +58,7 @@ Entities:
     TagComponent:
       Tag: second sphere
     TransformComponent:
-      Location: [0, 0, 0]
+      Location: [1.5, 7.0999999, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
@@ -84,7 +84,7 @@ Entities:
     TagComponent:
       Tag: Empty Entity
     TransformComponent:
-      Location: [3.70000005, 1.10000002, 0]
+      Location: [2.9000001, 1.10000002, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     LightComponent:

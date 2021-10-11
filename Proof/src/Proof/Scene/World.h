@@ -8,11 +8,19 @@
 class FrameTime;
 
 namespace Proof{
+	enum class WorldState 
+	{
+		Play,
+		Pause,
+		Simulate,
+		Edit
+	};
 	class Proof_API World {
 	public:
 		World();
-		virtual void OnUpdateEditor(FrameTime DeltaTime);
-		virtual void OnUpdateRuntime(FrameTime DeltaTime);
+		void OnUpdateEditor(FrameTime DeltaTime);
+		void OnUpdateRuntime(FrameTime DeltaTime);
+		void OnSimulatePhysics(FrameTime DeltaTime);
 		class Entity CreateEntity(const std::string& EntName);
 		class Entity CreateEntity(const std::string& EntName,uint32_t ID);
 
@@ -23,9 +31,9 @@ namespace Proof{
 			return m_Path;
 		}
 	private:
-		void RenderIBLImage();
+		WorldState m_CurrentState=WorldState::Edit;
 
-
+		void CreateIBlTexture(const std::string& filePath);
 		std::string Name = "DefaultWorld";
 		template<class T>
 		void OnComponentAdded(Entity Entity,T* component);

@@ -100,7 +100,12 @@ namespace Proof
 
 		m_CubeMap = CubeMap::Create(CubeMapPaths);
 
-		PF_ENGINE_INFO("number ofscript is %i",ScriptDetail::GetScriptRegisry().size());
+		m_PlayButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PlayButton.png");
+		m_PauseButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PauseButton .png");
+		m_SimulateButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/SimulateButton.png");
+		m_StopButtonTexture =Texture2D::Create("Resources/Icons/MainPanel/StopButton.png");
+
+		//PF_ENGINE_INFO("number ofscript is %i",ScriptDetail::GetScriptRegisry().size());
 	}
 	void Editore3D::OnDetach() {
 		if (ActiveWorld != nullptr) {
@@ -126,7 +131,12 @@ namespace Proof
 		if(Input::IsKeyPressed(KeyBoardKey::L)){
 			PF_ENGINE_TRACE("THE LETTER  IS PRESSED ");
 		}
-		ActiveWorld->OnUpdateEditor(DeltaTime);
+		if(ActiveWorld->m_CurrentState == WorldState::Edit)
+			ActiveWorld->OnUpdateEditor(DeltaTime);
+		else if(ActiveWorld->m_CurrentState == WorldState::Play)
+			ActiveWorld->OnUpdateRuntime(DeltaTime);
+		else if(ActiveWorld->m_CurrentState== WorldState::Simulate)
+			ActiveWorld->OnSimulatePhysics(DeltaTime);
 		glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
 
 		/*
@@ -152,6 +162,7 @@ namespace Proof
 		SetDocking(&EnableDocking);
 		//ImGui::ShowDemoWindow();
 		ViewPort();
+		MainToolBar();
 		m_WorldHierachy.ImGuiRender();
 		m_CurrentContentBrowserPanel.ImGuiRender();
 		MaterialEditor();
@@ -175,7 +186,12 @@ namespace Proof
 		ImGui::End();
 
 		if (ImGui::Begin("Active World")) {
-			ImGui::Text("this a world");
+			if(ImGui::Button("Choose Hdr")){
+				std::string file= Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
+				if(file.empty()==false){
+					ActiveWorld->CreateIBlTexture(file);
+				}
+			}
 		}
 		ImGui::End();
 	}
@@ -264,11 +280,10 @@ namespace Proof
 		ImGui::End();
 	}
 	void Editore3D::ViewPort() {
-
+		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		static bool Open = true;
-		if (ImGui::Begin("ViewPort",&Open,ImGuiWindowFlags_NoMove)) {
-
+		if (ImGui::Begin("ViewPort",&Open/*,ImGuiWindowFlags_NoMove*/)) {
 			ImVec2 ViewPortPanelSize = ImGui::GetContentRegionAvail();
 			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
 				_ViewPortSize = {ViewPortPanelSize.x,ViewPortPanelSize.y};
@@ -342,6 +357,46 @@ namespace Proof
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
+	}
+
+	void Editore3D::MainToolBar() {
+		
+		ImGui::Begin("##MainToolBar",nullptr,ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		Count<Texture2D> icon;
+		if( ActiveWorld->m_CurrentState == WorldState::Edit)
+			icon = m_PlayButtonTexture;
+		else if (ActiveWorld->m_CurrentState==WorldState::Play)
+			icon = m_StopButtonTexture;
+		else
+			icon = m_PlayButtonTexture;
+
+		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.3f);
+		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
+		if (ImGui::ImageButton((ImTextureID)icon->GetID(),ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})){
+				if(ActiveWorld->m_CurrentState==WorldState::Edit)
+					PlayWorld();
+				else if(ActiveWorld->m_CurrentState == WorldState::Play)
+					StopWorld();
+		}
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.6f);
+		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
+		
+		if (ImGui::ImageButton((ImTextureID)m_PauseButtonTexture->GetID(),ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
+			if(ActiveWorld->m_CurrentState == WorldState::Play)
+				PauseWorld();
+		}
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.9f);
+		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
+
+		if (ImGui::ImageButton((ImTextureID)m_SimulateButtonTexture->GetID(),ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
+			if (ActiveWorld->m_CurrentState == WorldState::Edit)
+				SimulateWorld();
+		}
+		//ImGui::PopStyleVar(1);
+		//ImGui::PopStyleColor(3);
+		ImGui::End();
 	}
 
 	void Editore3D::SetDocking(bool* p_open) {
@@ -456,6 +511,18 @@ namespace Proof
 			return;
 		}
 		PF_ENGINE_ERROR("World is NULL");
+	}
+	void Editore3D::PlayWorld() {
+		ActiveWorld->m_CurrentState = WorldState::Play;
+	}
+	void Editore3D::SimulateWorld() {
+		ActiveWorld->m_CurrentState = WorldState::Simulate;
+	}
+	void Editore3D::StopWorld() {
+		ActiveWorld->m_CurrentState = WorldState::Edit;
+	}
+	void Editore3D::PauseWorld() {
+		ActiveWorld->m_CurrentState = WorldState::Pause;
 	}
 	void Editore3D::Save(const std::string& Path) {
 		if (ActiveWorld != nullptr) {

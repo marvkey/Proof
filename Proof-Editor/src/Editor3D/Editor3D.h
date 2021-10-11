@@ -6,6 +6,7 @@
 #include "MainWindow/ContentBrowserPanel.h"
 #include "Proof/Scene/SceneSerializer.h"
 namespace Proof {
+	
 	class Proof_API Editore3D : public Layer {
 	public:
 		Editore3D();
@@ -20,6 +21,11 @@ namespace Proof {
 		void Logger();
 		bool Docking = false;
 		void ViewPort();
+		void MainToolBar();
+		Count<Texture2D>m_PlayButtonTexture;
+		Count<Texture2D>m_PauseButtonTexture;
+		Count<Texture2D>m_SimulateButtonTexture;
+		Count<Texture2D>m_StopButtonTexture;
 		glm::vec2 _ViewPortSize;
 		void SetDocking(bool *p_open);
 		glm::vec2 _ViewPortLocation;
@@ -35,6 +41,11 @@ namespace Proof {
 		void NewWorld(bool Save);
 		void OpenWorld();
 		void Save();
+
+		void PlayWorld();
+		void SimulateWorld();
+		void StopWorld();
+		void PauseWorld();
 		void Editore3D::Save(const std::string& Path);
 
 		std::vector<std::string>CubeMapPaths; 

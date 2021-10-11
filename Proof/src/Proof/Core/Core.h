@@ -20,8 +20,6 @@
 // Add this when locating a file, but not fore built in functions it is already automatically added
 inline const std::string ProofCurrentDirectorySrc = "../Proof/src/";
 
-template<typename T>
-using Ref = std::shared_ptr<T>;
 #ifdef _WIN64
     #ifdef PF_ENABLE_ASSERT
         #define PF_ASSERT(X,...){ if((!X)) {PF_ERROR("Assertion Failed %s",__VA_ARGS__); __debugbreak();  } }

@@ -48,56 +48,204 @@ namespace Proof{
 	
 	World::World()
 	{
+		CreateIBlTexture("Assets/Textures/hdr/Arches_E_PineTree_3k.hdr");
+	}
+	void World::OnUpdateEditor(FrameTime DeltaTime) {
+		PF_ENGINE_INFO("Update Edit mode");
+		
+		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
+		Renderer2D::BeginContext(Projection,EditorCamera.GetCameraView());
+		for (SpriteComponent* Comp : Registry.SpriteComponents) {
+			Renderer2D::DrawQuad(*Comp);
+		}
+/*
+		Renderer3D::BeginContext(Projection,EditorCamera);
+		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
+			if (Comp->GetModel()!= nullptr){
+				Renderer3D::Draw(*Comp);
+			}
+		}
+		
+		for(LightComponent* Comp :Registry.LightComponents){
+			Renderer3D::RenderLight(*Comp);
+		}
+		*/
+		Renderer3DPBR::BeginContext(Projection,EditorCamera);
+		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
+			if (Comp->GetModel() != nullptr) {
+				Renderer3DPBR::Draw(*Comp);
+			}
+		}
+		for (LightComponent* Comp : Registry.LightComponents) {
+			Renderer3DPBR::Draw(*Comp);
+		}
+		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT",6);
+
+		m_WorldCubeMap->Bind(4);
+		PrefelterMap->Bind(5);
+
+		m_brdflTexture->Bind(6);
+		Renderer3DPBR::EndContext();
+		Renderer3DPBR::Reset();
+
+
+		RendererCommand::DepthFunc(DepthType::Equal);
+		backgroundShader->Bind();
+		backgroundShader->SetInt("environmentMap",0);
+		m_WorldCubeMap->Bind(0);
+		m_IBLSkyBoxVertexArray->Bind();
+		RendererCommand::DrawArray(36);
+		m_IBLSkyBoxVertexArray->UnBind();
+		RendererCommand::DepthFunc(DepthType::Less);
+		
+		EditorCamera.OnUpdate(DeltaTime);
+		
+	}
+
+	void World::OnUpdateRuntime(FrameTime DeltaTime) {
+		PF_ENGINE_INFO("Update Edit RUntime");
+		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
+		Renderer2D::BeginContext(Projection,EditorCamera.GetCameraView());
+		for (SpriteComponent* Comp : Registry.SpriteComponents) {
+			Renderer2D::DrawQuad(*Comp);
+		}
+/*
+		Renderer3D::BeginContext(Projection,EditorCamera);
+		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
+			if (Comp->GetModel()!= nullptr){
+				Renderer3D::Draw(*Comp);
+			}
+		}
+
+		for(LightComponent* Comp :Registry.LightComponents){
+			Renderer3D::RenderLight(*Comp);
+		}
+		*/
+		Renderer3DPBR::BeginContext(Projection,EditorCamera);
+		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
+			if (Comp->GetModel() != nullptr) {
+				Renderer3DPBR::Draw(*Comp);
+			}
+		}
+		for (LightComponent* Comp : Registry.LightComponents) {
+			Renderer3DPBR::Draw(*Comp);
+		}
+		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT",6);
+
+		m_WorldCubeMap->Bind(4);
+		PrefelterMap->Bind(5);
+
+		m_brdflTexture->Bind(6);
+		Renderer3DPBR::EndContext();
+		Renderer3DPBR::Reset();
+
+
+		RendererCommand::DepthFunc(DepthType::Equal);
+		backgroundShader->Bind();
+		backgroundShader->SetInt("environmentMap",0);
+		m_WorldCubeMap->Bind(0);
+		m_IBLSkyBoxVertexArray->Bind();
+		RendererCommand::DrawArray(36);
+		m_IBLSkyBoxVertexArray->UnBind();
+		RendererCommand::DepthFunc(DepthType::Less);
+
+		EditorCamera.OnUpdate(DeltaTime);
+
+		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
+			if (Scripts->m_HasScriptAttached == false) {
+				continue;
+			}
+			if (Scripts->Instance == nullptr) {
+				Scripts->Instance = Scripts->InstantiateScript();
+				Scripts->Instance->OwnerEntity = Scripts->GetOwner();
+				Scripts->Instance->OnCreate();
+				Scripts->Instance->OnlyOnCreate();
+			}
+			if (Scripts->Instance->b_CallPerframe == true)
+				Scripts->Instance->OnUpdate(DeltaTime);
+		}
+
+	}
+
+	void World::OnSimulatePhysics(FrameTime DeltaTime) {
+		PF_ENGINE_INFO("SImulating physics");
+	}
+
+	Entity World::CreateEntity(const std::string& EntName) {
+		Entity entity = {Registry.Create(),this};
+		entity.AddComponent<TagComponent>()->Name =EntName;
+		entity.AddComponent<TransformComponent>();
+
+		return entity;
+	}
+
+	Entity World::CreateEntity(const std::string& EntName,uint32_t ID) {
+		Entity entity = {Registry.Create(ID),this};
+		entity.AddComponent<TagComponent>()->Name = EntName;
+		entity.AddComponent<TransformComponent>();
+		return entity;
+	}
+
+	void World::EndRuntime() {
+	}
+
+	void World::CreateIBlTexture(const std::string& filePath) {
 		backgroundShader = Shader::Create("IBL_Background",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/BackgroundShader.glsl");
-		equirectangularToCubemapShader = Shader::Create("IBL_CUBEMAPSHADER",ProofCurrentDirectorySrc+"Proof/Renderer/Asset/Shader/3D/equirectangularToCubemapShader.glsl");
+		equirectangularToCubemapShader = Shader::Create("IBL_CUBEMAPSHADER",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/equirectangularToCubemapShader.glsl");
 		IrradianceShader = Shader::Create("IBL_IRRADIANCESHader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/IradianceShader.glsl");
-		m_WorldIBLTexture= HDRTexture::Create("Assets/Textures/hdr/Arches_E_PineTree_3k.hdr");
-		prefilterShader = Shader::Create("IBL_PrefeliterShader",ProofCurrentDirectorySrc +"Proof/Renderer/Asset/Shader/3D/prefilterShader.glsl");
+		m_WorldIBLTexture = HDRTexture::Create(filePath);
+		prefilterShader = Shader::Create("IBL_PrefeliterShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/prefilterShader.glsl");
 		brdfShader = Shader::Create("IBL_brdfShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/brdfShader.glsl");
 		//Assets\Textures\hdr
 		float skyboxVertices[] = {
 		// back face
-				-1.0f,-1.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f, // bottom-left
-				1.0f,1.0f,-1.0f,0.0f,0.0f,-1.0f,1.0f,1.0f, // top-right
-				1.0f,-1.0f,-1.0f,0.0f,0.0f,-1.0f,1.0f,0.0f, // bottom-right         
-				1.0f,1.0f,-1.0f,0.0f,0.0f,-1.0f,1.0f,1.0f, // top-right
-				-1.0f,-1.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f, // bottom-left
-				-1.0f,1.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,1.0f, // top-left
-				// front face
-				-1.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f, // bottom-left
-				1.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,1.0f,0.0f, // bottom-right
-				1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,1.0f,1.0f, // top-right
-				1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,1.0f,1.0f, // top-right
-				-1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,1.0f, // top-left
-				-1.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f, // bottom-left
-				// left face
-				-1.0f,1.0f,1.0f,-1.0f,0.0f,0.0f,1.0f,0.0f, // top-right
-				-1.0f,1.0f,-1.0f,-1.0f,0.0f,0.0f,1.0f,1.0f, // top-left
-				-1.0f,-1.0f,-1.0f,-1.0f,0.0f,0.0f,0.0f,1.0f, // bottom-left
-				-1.0f,-1.0f,-1.0f,-1.0f,0.0f,0.0f,0.0f,1.0f, // bottom-left
-				-1.0f,-1.0f,1.0f,-1.0f,0.0f,0.0f,0.0f,0.0f, // bottom-right
-				-1.0f,1.0f,1.0f,-1.0f,0.0f,0.0f,1.0f,0.0f, // top-right
-				// right face
-				1.0f,1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f, // top-left
-				1.0f,-1.0f,-1.0f,1.0f,0.0f,0.0f,0.0f,1.0f, // bottom-right
-				1.0f,1.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,1.0f, // top-right         
-				1.0f,-1.0f,-1.0f,1.0f,0.0f,0.0f,0.0f,1.0f, // bottom-right
-				1.0f,1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f, // top-left
-				1.0f,-1.0f,1.0f,1.0f,0.0f,0.0f,0.0f,0.0f, // bottom-left     
-			   // bottom face
-			   -1.0f,-1.0f,-1.0f,0.0f,-1.0f,0.0f,0.0f,1.0f, // top-right
-			   1.0f,-1.0f,-1.0f,0.0f,-1.0f,0.0f,1.0f,1.0f, // top-left
-			   1.0f,-1.0f,1.0f,0.0f,-1.0f,0.0f,1.0f,0.0f, // bottom-left
-			   1.0f,-1.0f,1.0f,0.0f,-1.0f,0.0f,1.0f,0.0f, // bottom-left
-			   -1.0f,-1.0f,1.0f,0.0f,-1.0f,0.0f,0.0f,0.0f, // bottom-right
-			   -1.0f,-1.0f,-1.0f,0.0f,-1.0f,0.0f,0.0f,1.0f, // top-right
-			   // top face
-			   -1.0f,1.0f,-1.0f,0.0f,1.0f,0.0f,0.0f,1.0f, // top-left
-			   1.0f,1.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f, // bottom-right
-			   1.0f,1.0f,-1.0f,0.0f,1.0f,0.0f,1.0f,1.0f, // top-right     
-			   1.0f,1.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f, // bottom-right
-			   -1.0f,1.0f,-1.0f,0.0f,1.0f,0.0f,0.0f,1.0f, // top-left
-			   -1.0f,1.0f,1.0f,0.0f,1.0f,0.0f,0.0f,0.0f  // bottom-left        
+			-1.0f,-1.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f, // bottom-left
+			1.0f,1.0f,-1.0f,0.0f,0.0f,-1.0f,1.0f,1.0f, // top-right
+			1.0f,-1.0f,-1.0f,0.0f,0.0f,-1.0f,1.0f,0.0f, // bottom-right         
+			1.0f,1.0f,-1.0f,0.0f,0.0f,-1.0f,1.0f,1.0f, // top-right
+			-1.0f,-1.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,0.0f, // bottom-left
+			-1.0f,1.0f,-1.0f,0.0f,0.0f,-1.0f,0.0f,1.0f, // top-left
+			// front face
+			-1.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f, // bottom-left
+			1.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,1.0f,0.0f, // bottom-right
+			1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,1.0f,1.0f, // top-right
+			1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,1.0f,1.0f, // top-right
+			-1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,1.0f, // top-left
+			-1.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,0.0f,0.0f, // bottom-left
+			// left face
+			-1.0f,1.0f,1.0f,-1.0f,0.0f,0.0f,1.0f,0.0f, // top-right
+			-1.0f,1.0f,-1.0f,-1.0f,0.0f,0.0f,1.0f,1.0f, // top-left
+			-1.0f,-1.0f,-1.0f,-1.0f,0.0f,0.0f,0.0f,1.0f, // bottom-left
+			-1.0f,-1.0f,-1.0f,-1.0f,0.0f,0.0f,0.0f,1.0f, // bottom-left
+			-1.0f,-1.0f,1.0f,-1.0f,0.0f,0.0f,0.0f,0.0f, // bottom-right
+			-1.0f,1.0f,1.0f,-1.0f,0.0f,0.0f,1.0f,0.0f, // top-right
+			// right face
+			1.0f,1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f, // top-left
+			1.0f,-1.0f,-1.0f,1.0f,0.0f,0.0f,0.0f,1.0f, // bottom-right
+			1.0f,1.0f,-1.0f,1.0f,0.0f,0.0f,1.0f,1.0f, // top-right         
+			1.0f,-1.0f,-1.0f,1.0f,0.0f,0.0f,0.0f,1.0f, // bottom-right
+			1.0f,1.0f,1.0f,1.0f,0.0f,0.0f,1.0f,0.0f, // top-left
+			1.0f,-1.0f,1.0f,1.0f,0.0f,0.0f,0.0f,0.0f, // bottom-left     
+		   // bottom face
+		   -1.0f,-1.0f,-1.0f,0.0f,-1.0f,0.0f,0.0f,1.0f, // top-right
+		   1.0f,-1.0f,-1.0f,0.0f,-1.0f,0.0f,1.0f,1.0f, // top-left
+		   1.0f,-1.0f,1.0f,0.0f,-1.0f,0.0f,1.0f,0.0f, // bottom-left
+		   1.0f,-1.0f,1.0f,0.0f,-1.0f,0.0f,1.0f,0.0f, // bottom-left
+		   -1.0f,-1.0f,1.0f,0.0f,-1.0f,0.0f,0.0f,0.0f, // bottom-right
+		   -1.0f,-1.0f,-1.0f,0.0f,-1.0f,0.0f,0.0f,1.0f, // top-right
+		   // top face
+		   -1.0f,1.0f,-1.0f,0.0f,1.0f,0.0f,0.0f,1.0f, // top-left
+		   1.0f,1.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f, // bottom-right
+		   1.0f,1.0f,-1.0f,0.0f,1.0f,0.0f,1.0f,1.0f, // top-right     
+		   1.0f,1.0f,1.0f,0.0f,1.0f,0.0f,1.0f,0.0f, // bottom-right
+		   -1.0f,1.0f,-1.0f,0.0f,1.0f,0.0f,0.0f,1.0f, // top-left
+		   -1.0f,1.0f,1.0f,0.0f,1.0f,0.0f,0.0f,0.0f  // bottom-left        
 		};
 		m_IBLSkyBoxBuffer = VertexBuffer::Create(&skyboxVertices,sizeof(skyboxVertices));
 		m_IBLSkyBoxVertexArray = VertexArray::Create();
@@ -108,11 +256,11 @@ namespace Proof{
 		backgroundShader->SetInt("environmentMap",0);
 		m_CaptureFBO = FrameBuffer::Create();
 		m_CaptureFBO->Bind();
-		m_CaptureRBO =RenderBuffer::Create(RenderBufferAttachment::DepthComponent24,512,512);
+		m_CaptureRBO = RenderBuffer::Create(RenderBufferAttachment::DepthComponent24,512,512);
 		m_CaptureFBO->AttachRenderBuffer(FrameBufferAttachmentType::DepthAttachment,m_CaptureRBO->GetID());
 
 		m_WorldCubeMap = CubeMap::Create();
-		
+
 		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f),1.0f,0.1f,10.0f);
 		glm::mat4 captureViews[] =
 		{
@@ -123,7 +271,7 @@ namespace Proof{
 			glm::lookAt(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,0.0f,1.0f),glm::vec3(0.0f,-1.0f,0.0f)),
 			glm::lookAt(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,0.0f,-1.0f),glm::vec3(0.0f,-1.0f,0.0f))
 		};
-		
+
 		equirectangularToCubemapShader->Bind();
 		equirectangularToCubemapShader->SetInt("equirectangularMap",0);
 		equirectangularToCubemapShader->SetMat4("projection",captureProjection);
@@ -132,7 +280,7 @@ namespace Proof{
 		for (uint32_t i = 0; i < 6; ++i) {
 			equirectangularToCubemapShader->SetMat4("view",captureViews[i]);
 			uint32_t temp = (uint32_t)FrameBufferTextureType::CubeMapPosX;
-			temp+=i;
+			temp += i;
 			m_CaptureFBO->AttachColourTexture((FrameBufferTextureType)temp,0,m_WorldCubeMap->GetID());
 
 			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
@@ -204,7 +352,7 @@ namespace Proof{
 			}
 		}
 
-		m_brdflTexture =Texture2D::Create(512,512,DataFormat::RG,InternalFormat::R16F,TextureBaseTypes::ClampToEdge,TextureBaseTypes::ClampToEdge,TextureBaseTypes::Linear,TextureBaseTypes::Linear,type::Float);
+		m_brdflTexture = Texture2D::Create(512,512,DataFormat::RG,InternalFormat::R16F,TextureBaseTypes::ClampToEdge,TextureBaseTypes::ClampToEdge,TextureBaseTypes::Linear,TextureBaseTypes::Linear,type::Float);
 		m_CaptureFBO->Bind();
 		m_CaptureRBO->Bind();
 		m_CaptureRBO->Remap(512,512,RenderBufferAttachment::DepthComponent24);
@@ -218,134 +366,7 @@ namespace Proof{
 		renderQuad();
 		RendererCommand::DepthFunc(DepthType::Less);
 		m_CaptureFBO->UnBind();
-
 		RendererCommand::SetViewPort(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
-	}
-	void World::OnUpdateEditor(FrameTime DeltaTime) {
-		
-		
-		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
-		Renderer2D::BeginContext(Projection,EditorCamera.GetCameraView());
-		for (SpriteComponent* Comp : Registry.SpriteComponents) {
-			Renderer2D::DrawQuad(*Comp);
-		}
-/*
-		Renderer3D::BeginContext(Projection,EditorCamera);
-		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetModel()!= nullptr){
-				Renderer3D::Draw(*Comp);
-			}
-		}
-		
-		for(LightComponent* Comp :Registry.LightComponents){
-			Renderer3D::RenderLight(*Comp);
-		}
-		*/
-		Renderer3DPBR::BeginContext(Projection,EditorCamera);
-		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetModel() != nullptr) {
-				Renderer3DPBR::Draw(*Comp);
-			}
-		}
-		for (LightComponent* Comp : Registry.LightComponents) {
-			Renderer3DPBR::Draw(*Comp);
-		}
-		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT",6);
-
-		m_WorldCubeMap->Bind(4);
-		PrefelterMap->Bind(5);
-
-		m_brdflTexture->Bind(6);
-		Renderer3DPBR::EndContext();
-		Renderer3DPBR::Reset();
-
-
-		RendererCommand::DepthFunc(DepthType::Equal);
-		backgroundShader->Bind();
-		backgroundShader->SetInt("environmentMap",0);
-		m_WorldCubeMap->Bind(0);
-		m_IBLSkyBoxVertexArray->Bind();
-		RendererCommand::DrawArray(36);
-		m_IBLSkyBoxVertexArray->UnBind();
-		RendererCommand::DepthFunc(DepthType::Less);
-		
-		EditorCamera.OnUpdate(DeltaTime);
-		/*
-		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
-			if (Scripts->m_HasScriptAttached == false) {
-				continue;
-			}
-			if (Scripts->Instance == nullptr) {
-				Scripts->Instance = Scripts->InstantiateScript();
-				Scripts->Instance->OwnerEntity = Scripts->GetOwner();
-				Scripts->Instance->OnCreate();
-				Scripts->Instance->OnlyOnCreate();
-			}
-			if (Scripts->Instance->b_CallPerframe == true)
-				Scripts->Instance->OnUpdate(DeltaTime);
-		}
-		*/
-	}
-
-	void World::OnUpdateRuntime(FrameTime DeltaTime) {
-		/*
-		Registry.view<NativeScriptComponent>().each([=](auto _Entity,auto& Nsc) {
-			if (!Nsc.Instance) {
-				Nsc.Instance = Nsc.InstantiateScript();
-				Nsc.Instance->OwnerEntity = Nsc.GetOwner();
-				Nsc.Instance->OnCreate();
-				Nsc.Instance->OnlyOnCreate();
-			}
-			Nsc.Instance->OnUpdate(DeltaTime);
-		});
-		*/
-
-	}
-
-	Entity World::CreateEntity(const std::string& EntName) {
-		Entity entity = {Registry.Create(),this};
-		entity.AddComponent<TagComponent>()->Name =EntName;
-		entity.AddComponent<TransformComponent>();
-
-		return entity;
-	}
-
-	Entity World::CreateEntity(const std::string& EntName,uint32_t ID) {
-		Entity entity = {Registry.Create(ID),this};
-		entity.AddComponent<TagComponent>()->Name = EntName;
-		entity.AddComponent<TransformComponent>();
-		return entity;
-	}
-
-	void World::EndRuntime() {
-	}
-
-	void World::RenderIBLImage() {
-		unsigned int captureFBO,captureRBO;
-		glGenFramebuffers(1,&captureFBO);
-		glGenRenderbuffers(1,&captureRBO);
-
-		glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
-		glBindRenderbuffer(GL_RENDERBUFFER,captureRBO);
-		glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,512,512);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,captureRBO);
-
-		unsigned int envCubemap;
-		glGenTextures(1,&envCubemap);
-		glBindTexture(GL_TEXTURE_CUBE_MAP,envCubemap);
-		for (unsigned int i = 0; i < 6; ++i) {
-			// note that we store each face with 16 bit floating point values
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,0,GL_RGB16F,
-						 512,512,0,GL_RGB,GL_FLOAT,nullptr);
-		}
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	}
 
 	template<class T>
