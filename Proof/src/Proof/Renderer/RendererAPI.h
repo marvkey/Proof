@@ -21,6 +21,11 @@ namespace Proof {
 		Equal = GL_LEQUAL,
 		Less = GL_LESS
 	};
+	enum class DrawType: uint32_t {
+		Triangles = GL_TRIANGLES,
+		Points = GL_POINTS,
+		Lines= GL_QUADS
+	};
 	class Proof_API RendererAPI {
 	public:
 		enum class API {
@@ -29,11 +34,11 @@ namespace Proof {
 		
 		virtual void SetClearColor(const glm::vec4&Color) = 0;
 		virtual void SetClearColor(float R, float G, float B, float A)= 0;
-		virtual void DrawArrays(uint32_t Count)=0;
-		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject) = 0;
-		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count) = 0;
-		virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement) =0;
-		virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement) = 0;
+		virtual void DrawArrays(uint32_t Count,DrawType drawType = DrawType::Triangles)=0;
+		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,DrawType drawType =DrawType::Triangles) = 0;
+		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,DrawType drawType = DrawType::Triangles) = 0;
+		virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement,DrawType drawType = DrawType::Triangles) =0;
+		virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement,DrawType drawType = DrawType::Triangles) = 0;
 		
 		inline static API GetAPI() { return ActiveAPI; }
 		virtual void SwapBuffer(GLFWwindow* Window) = 0;

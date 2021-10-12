@@ -30,6 +30,7 @@ namespace Proof{
 	static std::vector<uint32_t> s_DifferentID;
 	uint32_t NumLights=0;
 	static CameraData s_CurrentCamera;
+	static DrawType s_WorldDrawType = DrawType::Triangles;
 	void Renderer3DPBR::Init() {
 		s_PBRInstance = new PhysicalBasedRenderer();
 		s_PBRInstance->m_Shader = Shader::Create("NewPBRSHADER",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/PhysicalBasedRenderer.glsl");
@@ -156,7 +157,7 @@ namespace Proof{
 			}
 			TempMesh->second.GetModel()->m_VertexArrayObject->Bind();
 			TempMesh->second.GetModel()->m_IndexBufferObject->Bind();
-			RendererCommand::DrawElementIndexed(TempMesh->second.GetModel()->m_VertexArrayObject,TempAmountMeshes->second);
+			RendererCommand::DrawElementIndexed(TempMesh->second.GetModel()->m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
 			sizeOffset += TempAmountMeshes->second;
 		}
 	}

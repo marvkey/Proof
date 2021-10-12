@@ -46,12 +46,13 @@ project "Proof-Editor"
     {
         "Proof",
         "GLFW",
-       "ImGui",
+        "ImGui",
         "opengl32.lib",
         "Glad",
         "assimp-vc142-mt.lib",
         --"ScriptModule.lib",
         "yaml-cpp",
+		--"ProofPhysics"
     }
    
     postbuildcommands{

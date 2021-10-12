@@ -6,12 +6,13 @@ namespace Proof {
    public:
 	  virtual void SetClearColor(const glm::vec4& Color) override;
 	  virtual void SetClearColor(float R,float G,float B,float A) override;
-	  virtual void DrawArrays(uint32_t Count) override;
-	  virtual void DrawIndexed(const Count<VertexArray>& ArrayObject)override;
-	  virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count) override;
 
-	  virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement)override;
-	  virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement)override;
+	  virtual void DrawArrays(uint32_t Count,DrawType drawType = DrawType::Triangles) override;
+	  virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,DrawType drawType = DrawType::Triangles)override;
+	  virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,DrawType drawType = DrawType::Triangles) override;
+
+	  virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement,DrawType drawType = DrawType::Triangles)override;
+	  virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement,DrawType drawType = DrawType::Triangles)override;
 
 	  virtual void SetViewPort(uint32_t width,uint32_t height) override;
 	  virtual void SwapBuffer(GLFWwindow* Window);

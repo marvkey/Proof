@@ -12,33 +12,31 @@ namespace Proof {
 		glClear(bitField);
    }
  
-   void OpenGLRendererAPI::DrawArrays(uint32_t Count) {
-	   glDrawArrays(GL_TRIANGLES,0,Count);
+   void OpenGLRendererAPI::DrawArrays(uint32_t Count,DrawType drawType) {
+	   glDrawArrays((uint32_t)drawType,0,Count);
    }
-   void OpenGLRendererAPI::DrawIndexed(const Count<VertexArray>&ArrayObject) {
-	   PF_CORE_ASSERT(ArrayObject->GetIndexBuffer(),"No Index Buffer attached to VertexAray")
+   void OpenGLRendererAPI::DrawIndexed(const Count<VertexArray>&ArrayObject,DrawType drawType) {
 	   ArrayObject->Bind();
-	   glDrawElements(GL_TRIANGLES,ArrayObject->GetIndexBuffer()->GetCount(),GL_UNSIGNED_INT,0);
+	   glDrawElements((uint32_t)drawType,ArrayObject->GetIndexBuffer()->GetCount(),GL_UNSIGNED_INT,0);
 	   glBindTexture(GL_TEXTURE_2D,0);
    }
 
-   void OpenGLRendererAPI::DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count){ /* COuld Be Removed */
+   void OpenGLRendererAPI::DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,DrawType drawType){
 	   ArrayObject->Bind();
-	   glDrawElements(GL_TRIANGLES,Count,GL_UNSIGNED_INT,0);
+	   glDrawElements((uint32_t)drawType,Count,GL_UNSIGNED_INT,0);
 	   glBindTexture(GL_TEXTURE_2D,0);
    }
 
-   void OpenGLRendererAPI::DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement) {
+   void OpenGLRendererAPI::DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement,DrawType drawType) {
 	    ArrayObject->Bind();
-		glDrawElementsInstanced(GL_TRIANGLES,Count,GL_UNSIGNED_INT,0,AmountElement);
+		glDrawElementsInstanced((uint32_t)drawType,Count,GL_UNSIGNED_INT,0,AmountElement);
 		glBindTexture(GL_TEXTURE_2D,0);
    }
 
-   void OpenGLRendererAPI::DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement) {
+   void OpenGLRendererAPI::DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement,DrawType drawType) {
 	   ArrayObject->Bind();
 	   ArrayObject->GetIndexBuffer()->Bind();
-	   glDrawElementsInstanced(GL_TRIANGLES,ArrayObject->GetIndexBuffer()->GetCount(),GL_UNSIGNED_INT,0,AmountElement);
-	  // glDrawElementsInstanced(GL_LINE_STRIP,ArrayObject->GetIndexBuffer()->GetCount(),GL_UNSIGNED_INT,0,AmountElement); // very cool effect to view all veritces
+	   glDrawElementsInstanced((uint32_t)drawType,ArrayObject->GetIndexBuffer()->GetCount(),GL_UNSIGNED_INT,0,AmountElement);
 	   glBindTexture(GL_TEXTURE_2D,0);
    }
 

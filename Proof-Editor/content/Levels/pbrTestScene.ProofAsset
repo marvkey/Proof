@@ -87,15 +87,29 @@ Entities:
       Location: [2.9000001, 1.10000002, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+  - Entity: 19918
+    TagComponent:
+      Tag: LightCube
+    TransformComponent:
+      Location: [5.30000019, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
     LightComponent:
       Position: [0, 0, 0]
-      Direction: [1, 1, 1]
+      Direction: [0, 1, 1]
       CutOff: 0
       OuterCutOff: 0
       Constant: 1
       Linear: 0
       Quadratic: 0
-      Ambient: [1, 0.999989986, 0.999989986]
+      Ambient: [1, 0, 0]
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
-      LightType: 0
+      LightType: 2

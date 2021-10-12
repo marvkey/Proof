@@ -27,15 +27,20 @@ IncludeDir["Assimp"]= "%{wks.location}/Proof/vendor/Assimp/include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/Proof/vendor/ImGuizmo"
 IncludeDir["yaml_cpp"] = "%{wks.location}/Proof/vendor/yaml-cpp/include"
 
-group "Dependencies"
+group "ExternalDependencies"
 	include "Proof/vendor/ImGUI"
 	include "Proof/vendor/glfw-3.3.2.bin.WIN64"
 	include "Proof/vendor/Glad"
 	include "Proof/vendor/yaml-cpp"
 group ""
+
+group "Dependencies"
+	include "ProofPhysics"  
+group ""
+
 include "Proof-Editor"
 include "Proof"
 include "SandBox"
-  
+include "ProofPhysics"  
 
 

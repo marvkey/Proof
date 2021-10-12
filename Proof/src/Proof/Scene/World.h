@@ -31,6 +31,7 @@ namespace Proof{
 			return m_Path;
 		}
 	private:
+		void OnUpdate(FrameTime DeltaTime);
 		WorldState m_CurrentState=WorldState::Edit;
 
 		void CreateIBlTexture(const std::string& filePath);

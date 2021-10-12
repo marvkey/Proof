@@ -137,19 +137,13 @@ void main() {
     vec2 brdf = texture(brdfLUT,vec2(max(dot(N,V),0.0),NewMaterialroughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
-    vec3 ambient = (kD * diffuse + specular) * MaterialAO;
+    vec3 ambient = (kD * diffuse + specular) * NewMaterialmetallic;
 
     vec3 color = ambient + Lo;
 
-    // HDR tonemapping
     color = color / (color + vec3(1.0));
-    // gamma correct
     color = pow(color,vec3(1.0 / 2.2));
-    /*
-    vec3 ambient = vec3(0.03)*NewMaterialColour * MaterialAO;
-    vec3 color = Lo* NewMaterialColour;
-    */
-    
+ 
     FragColor = vec4(color,1.0);
 }
 

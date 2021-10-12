@@ -51,112 +51,11 @@ namespace Proof{
 		CreateIBlTexture("Assets/Textures/hdr/Arches_E_PineTree_3k.hdr");
 	}
 	void World::OnUpdateEditor(FrameTime DeltaTime) {
-		PF_ENGINE_INFO("Update Edit mode");
-		
-		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
-		Renderer2D::BeginContext(Projection,EditorCamera.GetCameraView());
-		for (SpriteComponent* Comp : Registry.SpriteComponents) {
-			Renderer2D::DrawQuad(*Comp);
-		}
-/*
-		Renderer3D::BeginContext(Projection,EditorCamera);
-		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetModel()!= nullptr){
-				Renderer3D::Draw(*Comp);
-			}
-		}
-		
-		for(LightComponent* Comp :Registry.LightComponents){
-			Renderer3D::RenderLight(*Comp);
-		}
-		*/
-		Renderer3DPBR::BeginContext(Projection,EditorCamera);
-		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetModel() != nullptr) {
-				Renderer3DPBR::Draw(*Comp);
-			}
-		}
-		for (LightComponent* Comp : Registry.LightComponents) {
-			Renderer3DPBR::Draw(*Comp);
-		}
-		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT",6);
-
-		m_WorldCubeMap->Bind(4);
-		PrefelterMap->Bind(5);
-
-		m_brdflTexture->Bind(6);
-		Renderer3DPBR::EndContext();
-		Renderer3DPBR::Reset();
-
-
-		RendererCommand::DepthFunc(DepthType::Equal);
-		backgroundShader->Bind();
-		backgroundShader->SetInt("environmentMap",0);
-		m_WorldCubeMap->Bind(0);
-		m_IBLSkyBoxVertexArray->Bind();
-		RendererCommand::DrawArray(36);
-		m_IBLSkyBoxVertexArray->UnBind();
-		RendererCommand::DepthFunc(DepthType::Less);
-		
-		EditorCamera.OnUpdate(DeltaTime);
-		
+		OnUpdate(DeltaTime);
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime) {
-		PF_ENGINE_INFO("Update Edit RUntime");
-		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
-		Renderer2D::BeginContext(Projection,EditorCamera.GetCameraView());
-		for (SpriteComponent* Comp : Registry.SpriteComponents) {
-			Renderer2D::DrawQuad(*Comp);
-		}
-/*
-		Renderer3D::BeginContext(Projection,EditorCamera);
-		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetModel()!= nullptr){
-				Renderer3D::Draw(*Comp);
-			}
-		}
-
-		for(LightComponent* Comp :Registry.LightComponents){
-			Renderer3D::RenderLight(*Comp);
-		}
-		*/
-		Renderer3DPBR::BeginContext(Projection,EditorCamera);
-		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetModel() != nullptr) {
-				Renderer3DPBR::Draw(*Comp);
-			}
-		}
-		for (LightComponent* Comp : Registry.LightComponents) {
-			Renderer3DPBR::Draw(*Comp);
-		}
-		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT",6);
-
-		m_WorldCubeMap->Bind(4);
-		PrefelterMap->Bind(5);
-
-		m_brdflTexture->Bind(6);
-		Renderer3DPBR::EndContext();
-		Renderer3DPBR::Reset();
-
-
-		RendererCommand::DepthFunc(DepthType::Equal);
-		backgroundShader->Bind();
-		backgroundShader->SetInt("environmentMap",0);
-		m_WorldCubeMap->Bind(0);
-		m_IBLSkyBoxVertexArray->Bind();
-		RendererCommand::DrawArray(36);
-		m_IBLSkyBoxVertexArray->UnBind();
-		RendererCommand::DepthFunc(DepthType::Less);
-
-		EditorCamera.OnUpdate(DeltaTime);
-
+		OnUpdate(DeltaTime);
 		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
 			if (Scripts->m_HasScriptAttached == false) {
 				continue;
@@ -174,7 +73,7 @@ namespace Proof{
 	}
 
 	void World::OnSimulatePhysics(FrameTime DeltaTime) {
-		PF_ENGINE_INFO("SImulating physics");
+		OnUpdate(DeltaTime);
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {
@@ -193,6 +92,57 @@ namespace Proof{
 	}
 
 	void World::EndRuntime() {
+	}
+
+	void World::OnUpdate(FrameTime DeltaTime) {
+		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
+		Renderer2D::BeginContext(Projection,EditorCamera.GetCameraView());
+		for (SpriteComponent* Comp : Registry.SpriteComponents) {
+			Renderer2D::DrawQuad(*Comp);
+		}
+/*
+		Renderer3D::BeginContext(Projection,EditorCamera);
+		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
+			if (Comp->GetModel()!= nullptr){
+				Renderer3D::Draw(*Comp);
+			}
+		}
+
+		for(LightComponent* Comp :Registry.LightComponents){
+			Renderer3D::RenderLight(*Comp);
+		}
+		*/
+		Renderer3DPBR::BeginContext(Projection,EditorCamera);
+		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
+			if (Comp->GetModel() != nullptr) {
+				Renderer3DPBR::Draw(*Comp);
+			}
+		}
+		for (LightComponent* Comp : Registry.LightComponents) {
+			Renderer3DPBR::Draw(*Comp);
+		}
+		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT",6);
+
+		m_WorldCubeMap->Bind(4);
+		PrefelterMap->Bind(5);
+
+		m_brdflTexture->Bind(6);
+		Renderer3DPBR::EndContext();
+		Renderer3DPBR::Reset();
+
+
+		RendererCommand::DepthFunc(DepthType::Equal);
+		backgroundShader->Bind();
+		backgroundShader->SetInt("environmentMap",0);
+		m_WorldCubeMap->Bind(0);
+		m_IBLSkyBoxVertexArray->Bind();
+		RendererCommand::DrawArray(36);
+		m_IBLSkyBoxVertexArray->UnBind();
+		RendererCommand::DepthFunc(DepthType::Less);
+		EditorCamera.OnUpdate(DeltaTime);
 	}
 
 	void World::CreateIBlTexture(const std::string& filePath) {

@@ -283,7 +283,7 @@ namespace Proof
 		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		static bool Open = true;
-		if (ImGui::Begin("ViewPort",&Open/*,ImGuiWindowFlags_NoMove*/)) {
+		if (ImGui::Begin("ViewPort",&Open,ImGuiWindowFlags_NoMove)) {
 			ImVec2 ViewPortPanelSize = ImGui::GetContentRegionAvail();
 			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
 				_ViewPortSize = {ViewPortPanelSize.x,ViewPortPanelSize.y};
@@ -359,9 +359,9 @@ namespace Proof
 		ImGui::PopStyleVar();
 	}
 
-	void Editore3D::MainToolBar() {
-		
-		ImGui::Begin("##MainToolBar",nullptr,ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+	void Editore3D::MainToolBar()
+	{
+		ImGui::Begin("##MainToolBar",nullptr,ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse| ImGuiWindowFlags_NoMove);
 		Count<Texture2D> icon;
 		if( ActiveWorld->m_CurrentState == WorldState::Edit)
 			icon = m_PlayButtonTexture;
@@ -370,7 +370,7 @@ namespace Proof
 		else
 			icon = m_PlayButtonTexture;
 
-		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.3f);
+		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.4f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 		if (ImGui::ImageButton((ImTextureID)icon->GetID(),ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})){
 				if(ActiveWorld->m_CurrentState==WorldState::Edit)
@@ -379,7 +379,7 @@ namespace Proof
 					StopWorld();
 		}
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.6f);
+		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 		
 		if (ImGui::ImageButton((ImTextureID)m_PauseButtonTexture->GetID(),ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
@@ -387,7 +387,7 @@ namespace Proof
 				PauseWorld();
 		}
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.9f);
+		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.6f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 
 		if (ImGui::ImageButton((ImTextureID)m_SimulateButtonTexture->GetID(),ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {

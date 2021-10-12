@@ -48,9 +48,8 @@ project "Proof"
 		"ImGui",
 		"Glad",
         "assimp-vc142-mt.lib",
-		"yaml-cpp"
-
-	
+		"yaml-cpp",
+		--"ProofPhysics"
 	}
     defines {
 		"STB_IMAGE_IMPLEMENTATION",
