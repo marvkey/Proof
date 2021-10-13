@@ -15,11 +15,9 @@ namespace Proof {
 	  virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement,DrawType drawType = DrawType::Triangles)override;
 
 	  virtual void SetViewPort(uint32_t width,uint32_t height) override;
-	  virtual void SwapBuffer(GLFWwindow* Window);
 	  virtual void Enable(uint32_t bitField);
 	  virtual void Disable(uint32_t bitField);
 	  virtual void DepthFunc(DepthType type);
-	  virtual void PollEvents();
 	  virtual void Clear(uint32_t bitField);
    };
 }

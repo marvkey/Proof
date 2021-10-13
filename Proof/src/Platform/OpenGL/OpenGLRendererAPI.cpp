@@ -5,9 +5,7 @@ namespace Proof {
 	static void tempClear(uint32_t temp){
 		glClear((uint32_t)temp);
 	}
-   void OpenGLRendererAPI::PollEvents() {
-	  glfwPollEvents();
-   }
+  
    void OpenGLRendererAPI::Clear(uint32_t bitField) {
 		glClear(bitField);
    }
@@ -49,9 +47,7 @@ namespace Proof {
    void OpenGLRendererAPI::SetClearColor(float R,float G,float B,float A) {
 	  glClearColor(R,G,B,A);
    }
-   void OpenGLRendererAPI::SwapBuffer(GLFWwindow* Window) {
-	  glfwSwapBuffers(Window);
-   }
+  
    void OpenGLRendererAPI::Enable(uint32_t bitField) {
 		glEnable(bitField);
    }

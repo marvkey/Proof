@@ -20,7 +20,7 @@ namespace Proof{
 		 void NewAsset(const std::string&NewFilePath);
 		 void NewMeshAsset(const std::string& NewFilePath);
 		 void NewMaterialAsset(const std::string& NewFilePath);
-		__forceinline uint32_t GetIDCurrentDirectory(const std::string& Path);
+		__forceinline AssetID GetIDCurrentDirectory(const std::string& Path);
 		__forceinline  bool IsScene (const std::string& Path);
 		Editore3D* m_owner =nullptr;
 	};

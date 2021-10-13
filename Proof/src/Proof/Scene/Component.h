@@ -114,7 +114,7 @@ namespace Proof{
 			return GetAsset() != nullptr ? GetAsset()->GetModel() : nullptr;
 		}
 		MeshAsset* GetAsset() {
-			MeshAsset* a =(MeshAsset*)AssetManager::GetAsset(AssetID);
+			MeshAsset* a =AssetManager::GetAsset<MeshAsset>(AssetID);
 
 			if(a ==nullptr)
 				AssetID =0;
@@ -153,7 +153,7 @@ namespace Proof{
 			return nullptr;
 		}
 		Texture2DAsset* GetAsset(){
-			Texture2DAsset* a = (Texture2DAsset*)AssetManager::GetAsset(AssetID);
+			Texture2DAsset* a = AssetManager::GetAsset<Texture2DAsset>(AssetID);
 			if (a == nullptr) {
 				AssetID = 0;
 				return nullptr;

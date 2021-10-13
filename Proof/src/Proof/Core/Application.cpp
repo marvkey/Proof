@@ -17,10 +17,12 @@ namespace Proof {
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
     Application::Application(){
+        srand(time(NULL));
+        Proof::Log::Init();
         MainWindow = new WindowsWindow(1500,600); // this is the size of our current second monitor
 
         MainWindow->createWindow();
-        m_GraphicsContext =GraphicsContext::Create(CurrentWindow::GetWindow());
+        m_GraphicsContext =GraphicsContext::Create(static_cast<Window*>(MainWindow));
         m_GraphicsContext->Init();
         Renderer::Init();
         ImGuiMainLayer = new ImGuiLayer();
@@ -29,7 +31,26 @@ namespace Proof {
         ScreenFrameBuffer = ScreenFrameBuffer::Create(1300,600);
         ScreenFrameBuffer->UnBind();
         AssetManager::InitilizeAssets("content");
+        
+        MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
        // m_MousePickingEditor= {1300,600};
+    }
+
+    void Application::OnEvent(Event& e) {
+        EventDispatcher dispatcher(e);
+        dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
+          for (Layer* layer : MainLayerStack.V_LayerStack)
+            layer->OnEvent(e);
+    }
+
+    void Application::OnWindowMinimizeEvent(WindowMinimizeEvent& e) {
+        if(e.IsWIndowMinimized())
+            WindowMinimized = true;
+        else
+            WindowMinimized = false;
+    }
+
+    void Application::OnKeyClicked(KeyClickedEvent& e) {
     }
 
     Application::~Application() {
@@ -37,8 +58,6 @@ namespace Proof {
     }
 
     void Application::Run() {
-        KeyClickedEvent _KeyClickedEvent;
-        Window_ViewPortResize _WIndow_ViewPortResizeEvent;
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
@@ -46,17 +65,13 @@ namespace Proof {
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
      //   glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
        // CurrentWindow::SetSwapInterval(true);
-        while (glfwWindowShouldClose(CurrentWindow::GetWindow()) == false && _KeyClickedEvent.GetKeyClicked() != KeyBoardKey::Escape) {
+        while (glfwWindowShouldClose(CurrentWindow::GetWindow()) == false && Input::IsKeyClicked(KeyBoardKey::Escape)==false) {
             float FrameStart = glfwGetTime();
             float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
             RendererCommand::Enable(ProofRenderTest::DepthTest);
-            if (CurrentWindow::GetWindowHeight() == 0 || CurrentWindow::GetWindowWidth() == 0)
-                WindowMinimized = true;
-            else
-                WindowMinimized = false;
             if (WindowMinimized == false) {
                 ScreenFrameBuffer->Bind();
                 RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
@@ -72,10 +87,8 @@ namespace Proof {
                 layer->OnImGuiDraw();
             ImGuiMainLayer->End();
 
-            MainWindow->WindowUpdate(DeltaTime);
             Renderer::Reset();
-            RendererCommand::SwapBuffer(CurrentWindow::GetWindow());
-            RendererCommand::PollEvents();
+            MainWindow->WindowUpdate();
             if (CurrentTime - PreviousTime >= 1.0) {
                 PreviousTime = CurrentTime;
                 FrameCount = 0;

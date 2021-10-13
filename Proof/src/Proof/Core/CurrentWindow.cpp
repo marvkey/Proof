@@ -2,11 +2,13 @@
 #include "CurrentWindow.h"
 #include "Glad/glad.h"
 #include "GLFW/glfw3.h"
+#define GLFW_EXPOSE_NATIVE_WIN32 // lets us get win 32 stuff
+#include "GLFW/glfw3native.h"
 #include "Proof/Core/Core.h"
 #include "Proof/Core/Application.h"
 namespace Proof {
 	
-	GLFWwindow* CurrentWindow::GetWindow(){
+	::GLFWwindow* CurrentWindow::GetWindow(){
 		/*
 		if(Application::MainWindow ==nullptr)
 			return nullptr;
@@ -35,9 +37,7 @@ namespace Proof {
 	}
 	void CurrentWindow::SetWindowSize(int width, int height){
 		glfwSetWindowSize(GetWindow(),width, height);
-		Application::MainWindow->Width = width;
-		Application::MainWindow->Height = height;
-		
+	
 	}
 	unsigned int CurrentWindow::GetWindowWidth() {
 		return Application::MainWindow->Width;
@@ -49,6 +49,12 @@ namespace Proof {
 		double X, Y;
 		glfwGetCursorPos(GetWindow(), &X, &Y);
 		return { (float)X,(float)Y };
+	}
+	std::pair<float,float> CurrentWindow::GetMouseScrollWheel() {
+		float x,y;
+		//PF_CORE_ASSERT(false,"funciton not created");
+		y= GetScrollPos(glfwGetWin32Window(CurrentWindow::GetWindow()),SB_CTL);//we are calling a windows dependent function here
+		return {x,y};
 	}
 	std::pair<int, int> CurrentWindow::GetWindowLocation(){
 		int X, Y;

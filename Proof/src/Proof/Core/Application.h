@@ -3,9 +3,10 @@
 #include "Platform/Window/WindowsWindow.h"
 #include "Proof/Renderer/ScreenFrameBuffer.h"
 #include "Proof/Core/LayerStack.h"
-#include "EditorMousePicking.h"
 #include "CurrentWindow.h"
-
+#include "Proof/Events/KeyEvent.h"
+#include "Proof/Renderer/GraphicsContext.h"
+#include "Proof/Events/WindowEvent.h"
 namespace Proof {
     class Layer;
     class ImGuiLayer;
@@ -30,6 +31,10 @@ namespace Proof {
         bool WindowMinimized = false;
         bool IsRunning = true;
     private:
+        void OnEvent(Event& e);
+        void OnWindowMinimizeEvent(WindowMinimizeEvent& e);
+
+        void OnKeyClicked(KeyClickedEvent& e);
         static Count<ScreenFrameBuffer> ScreenFrameBuffer;
         LayerStack MainLayerStack;
         ImGuiLayer* ImGuiMainLayer;
@@ -37,11 +42,9 @@ namespace Proof {
         friend class CurrentWindow;
         friend class FrameBuffer;
         float LastFrameTime;
-        friend int ::main(int argc,char** argv);
         static float FPS;
         static float FrameMS;
         Count<class GraphicsContext>m_GraphicsContext;
-       EditorMousePicking m_MousePickingEditor;
     };
     Application* CreateApplication();
 }

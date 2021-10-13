@@ -10,7 +10,6 @@ namespace Proof {
 		static void PollEvents();
 		static void SetClearColor(glm::vec4 Color);
 		static void SetClearColor(float R, float G, float B, float A);
-		static void SwapBuffer(GLFWwindow* window);
 		static void SetViewPort(uint32_t width,uint32_t height);
 
 		inline static void DrawIndexed(const Count<VertexArray>& ArrayObject,DrawType drawType = DrawType::Triangles) {

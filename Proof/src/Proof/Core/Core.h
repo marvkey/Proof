@@ -2,6 +2,7 @@
 #include <memory>
 #include <iostream>
 #include<chrono>
+#define PF_BIND_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 /*
 #ifdef PF_PLATFORM_WINDOW64
     #ifdef LINK_DLL
@@ -19,7 +20,7 @@
 #define Proof_API
 // Add this when locating a file, but not fore built in functions it is already automatically added
 inline const std::string ProofCurrentDirectorySrc = "../Proof/src/";
-
+#define BIT(x) (1 << x)
 #ifdef _WIN64
     #ifdef PF_ENABLE_ASSERT
         #define PF_ASSERT(X,...){ if((!X)) {PF_ERROR("Assertion Failed %s",__VA_ARGS__); __debugbreak();  } }

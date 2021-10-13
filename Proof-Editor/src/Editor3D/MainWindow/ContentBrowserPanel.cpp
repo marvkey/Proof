@@ -186,7 +186,7 @@ namespace Proof
 					ImGui::Text("%s",Path.c_str());
 					*/
 					bool isScene = IsScene(It.path().string());
-					uint32_t ID = 0;
+					AssetID ID = 0;
 					std::string Path = It.path().string();
 					std::string filename = It.is_directory() ? It.path().filename().string() : It.path().filename().stem().string(); // returns the file name with ending like hallo.txt, stem removes the .txt
 					std::string filenameNoStem = It.path().filename().string();
@@ -198,7 +198,7 @@ namespace Proof
 
 							ID = GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + filenameNoStem);
 							Asset* Temp =nullptr;
-							Temp = AssetManager::GetAsset(ID);
+							Temp = AssetManager::GetAsset<Asset>(ID);
 							if(Temp != nullptr){
 								if (ImGui::ImageButton((ImTextureID)(Temp->IsImageIDNUll() ==false? Temp->GetImageID(): m_FileIcon->GetID()),{thumbnailSize,thumbnailSize})) {
 								}
@@ -207,8 +207,8 @@ namespace Proof
 									FileDragSourceName = filename;
 								}
 								if(ImGui::BeginDragDropSource()){
-									uint32_t staticID =GetIDCurrentDirectory(FileDragSource);
-									ImGui::SetDragDropPayload(AssetManager::GetAsset(staticID)->GetAssetTypeName().c_str(),&staticID,sizeof(uint32_t));
+									AssetID staticID =GetIDCurrentDirectory(FileDragSource);
+									ImGui::SetDragDropPayload(AssetManager::GetAsset<Asset>(staticID)->GetAssetTypeName().c_str(),&staticID,sizeof(AssetID));
 
 									ImGui::Image((ImTextureID)(Temp->IsImageIDNUll() == false ? Temp->GetImageID() : m_FileIcon->GetID()),{60,60}); 
 									ImGui::Text(FileDragSourceName.c_str());
@@ -287,7 +287,7 @@ namespace Proof
 									if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + RenameVariable + (It.is_directory() ? " " : ".ProofAsset")) == false) {
 										std::filesystem::rename(m_CurrentDirectory.string() + "\\" + filenameNoStem,m_CurrentDirectory.string() + "\\"+ RenameVariable + (It.is_directory() ? " ":".ProofAsset"));
 										if(It.is_directory() == false && isScene ==false){
-											auto* asset = AssetManager::GetAsset(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset"));
+											auto* asset = AssetManager::GetAsset<Asset>(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset"));
 											asset->m_AssetName = RenameVariable;
 											asset->SetPath(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset");
 											asset->SaveAsset();
@@ -339,11 +339,10 @@ namespace Proof
 			MaterialAsset* TempAsset = new MaterialAsset("null",NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
 	}
-	uint32_t ContentBrowserPanel::GetIDCurrentDirectory(const std::string& Path) {
-
+	AssetID ContentBrowserPanel::GetIDCurrentDirectory(const std::string& Path) {
 		std::ifstream testFile(Path);
 		std::string line;
-		uint32_t ID;
+		AssetID ID;
 
 		while (std::getline(testFile,line)) {
 			if (line.empty() ==false) { // first line

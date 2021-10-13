@@ -1,15 +1,14 @@
 #include "Proof/Renderer/GraphicsContext.h"
-struct GLFWwindow;
 namespace Proof
 {
 	class Proof_API OpenGLGraphicsContext: public GraphicsContext {
 	public:
-		OpenGLGraphicsContext(GLFWwindow* _WindowHandle);
+		OpenGLGraphicsContext(Window* windowHandle);
 		virtual void Init()override;
 		virtual void SwapBuffer() override;
 		virtual void CleanUp() override;
 	private:
-		GLFWwindow* WindowHandle;
+		Window* WindowHandle;
 		static void OpenGLMessageCallback(
 		  unsigned source,
 		  unsigned type,

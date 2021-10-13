@@ -6,9 +6,11 @@ namespace Proof{
 	struct TagComponent;
 	struct Component;
 	struct TransformComponent;
+	using EntityID = uint64_t;
+
 	class Proof_API Entity {
 	public:
-		Entity(uint32_t EntityID,class World* world):
+		Entity(EntityID EntityID,class World* world):
 			m_EntityID(EntityID),CurrentWorld(world){}
 		Entity(const Entity& Other) = default;
 		Entity(){}
@@ -103,7 +105,7 @@ namespace Proof{
 			return CurrentWorld;
 		}
 		operator bool() const { return m_EntityID != 0; }
-		uint32_t GetID() { return m_EntityID;}
+		EntityID GetID() { return m_EntityID;}
 
 		bool operator==(const Entity& other) const {
 			return m_EntityID == other.m_EntityID && CurrentWorld == other.CurrentWorld;
@@ -118,7 +120,7 @@ namespace Proof{
 		void SetName(const std::string& Name);
 	private:
 		World* CurrentWorld = nullptr;
-		uint32_t m_EntityID{0};
+		EntityID m_EntityID{0};
 		friend class World;
 	};
 }

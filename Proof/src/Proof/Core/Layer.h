@@ -13,6 +13,7 @@ namespace Proof {
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnImGuiDraw() {}
+		virtual void OnEvent(Event&e) {}
 		virtual const std::string& GetName() const { return DebugName; }
 	private:
 		std::string DebugName;

@@ -2,6 +2,7 @@
 #include "Proof/Core/Core.h"
 #include "KeyCodes.h"
 #include <vector>
+#include "Mouse.h"
 namespace Proof
 {
 	class Proof_API Input {
@@ -18,7 +19,7 @@ namespace Proof
 		static bool IsMouseButtonDoubleClicked(MouseButton Button);// chekcs if the key has been clicked 2 times
 		static bool	IsMouseScrollWheelUp();
 		static bool	IsMouseScrollWheelDown();
-
+		static bool IsMouseScrolled();
 		static float GetScrollWheelX();
 		static float GetScrollWheelY();
 		static float GetMousePosX();

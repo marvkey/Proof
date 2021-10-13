@@ -11,6 +11,7 @@
 #include "Proof/Renderer/GraphicsContext.h"
 #include "Proof/Core/Core.h"
 #include "ImGui/imgui.h"
+    
 namespace Proof {
     std::vector<KeyBoardKey> WindowsWindow::KeyboardClicked;
     std::vector<KeyBoardKey> WindowsWindow::KeyboardReleased;
@@ -29,36 +30,24 @@ namespace Proof {
         this->Width = Width;
         this->Height = Height;
     }
-    void WindowsWindow::WindowUpdate(FrameTime DeltaTime) {
+    void WindowsWindow::WindowUpdate() {
         glfwSwapInterval(Vsync);
         KeyboardClicked.clear();
         KeyboardReleased.clear();
         KeyboardKeyDoubleClicked.clear();
         KeyboardKeyRepeat.clear();
-        KeyClickedEvent::Instance->EventHandled = false;
-        KeyReleasedEvent::Instance->EventHandled = false;
-        KeyDoubleClickEvent::Instance->EventHandled = false;
-        KeyRepeatEvent::Instance->EventHandled = false;
        
         MouseButtonClicked.clear();
         MouseButtonReleased.clear();
         MouseButtonDoubleClicked.clear();
         MouseButtonReleased.clear();
 
-        MouseReleasedEvent::Instance->EventHandled = false;
-        MouseClickedEvent::Instance->EventHandled = false;
-        MouseDoubleClickEvent::Instance->EventHandled = false;
-        MouseMoveEvent::Instance->EventHandled = false;
-        MouseScrollEvent::Instance->EventHandled = false;
-        MouseScrollEvent::Instance->PosX = 0;
-        MouseScrollEvent::Instance->PosY = 0;
-
         MouseScrollX.clear();
         MouseScrollY.clear();
-        WindowMoveEvent::Instance->EventHandled = false;
-        WindowResizeEvent::Instance->EventHandled = false;
+        glfwSwapBuffers(MainWindow);
+        glfwPollEvents();
     }
-    void WindowsWindow::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    void WindowsWindow::key_callback(::GLFWwindow* window, int key, int scancode, int action, int mods) {
         /* This is for when a key is Clicked 2 */
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
@@ -69,31 +58,40 @@ namespace Proof {
                 action = (int)InputEvent::KeyDouble;
             }
         }     
+
         switch (action) {
         case GLFW_PRESS:
             KeyboardClicked.emplace_back((KeyBoardKey)key);
-            KeyClickedEvent::Instance->KeyClicked = (KeyBoardKey)key;
-            KeyClickedEvent::Instance->EventHandled = true;
+            {
+                KeyClickedEvent keyevent((KeyBoardKey)key);
+                CurrentWindow::GetWindowClass().EventCallback(keyevent);
+            }
             break;
         case GLFW_RELEASE:
             KeyboardReleased.emplace_back((KeyBoardKey)key);
-            KeyReleasedEvent::Instance->KeyReleased = (KeyBoardKey)key;
-            KeyReleasedEvent::Instance->EventHandled = true;
+            {
+                KeyReleasedEvent keyevent((KeyBoardKey)key);
+                CurrentWindow::GetWindowClass().EventCallback(keyevent);
+            }
             break;
         case (int)InputEvent::KeyDouble:
             KeyboardKeyDoubleClicked.emplace_back((KeyBoardKey)key);
-            KeyDoubleClickEvent::Instance->KeyDoubleClick = (KeyBoardKey)key;
-            KeyDoubleClickEvent::Instance->EventHandled = true;
+            {
+                KeyDoubleClickEvent keyevent((KeyBoardKey)key);
+                CurrentWindow::GetWindowClass().EventCallback(keyevent);
+            }
             break;
         case (int)InputEvent::KeyRepeat:
             KeyboardKeyRepeat.emplace_back((KeyBoardKey)key);
-            KeyRepeatEvent::Instance->KeyRepeat = (KeyBoardKey)key;
-            KeyRepeatEvent::Instance->EventHandled = true;
+            {
+                KeyPressedEvent keyevent((KeyBoardKey)key);
+                CurrentWindow::GetWindowClass().EventCallback(keyevent);
+            }
             break;
         }
     }
 
-    void WindowsWindow::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    void WindowsWindow::mouse_button_callback(::GLFWwindow* window, int button, int action, int mods) {
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
             auto now = std::chrono::system_clock::now();
@@ -107,39 +105,52 @@ namespace Proof {
         case GLFW_PRESS:
         {
             MouseButtonClicked.emplace_back((MouseButton)button);
-            MouseClickedEvent::Instance->ButtonClicked = (MouseButton)button;
-            MouseClickedEvent::Instance->EventHandled = true;
+            {
+                MouseButtonClickedEvent mouseEvent((MouseButton)button);
+                CurrentWindow::GetWindowClass().EventCallback(mouseEvent);
+            }
             break;
         }
         case GLFW_RELEASE:
             MouseButtonReleased.emplace_back((MouseButton)button);
-            MouseReleasedEvent::Instance->ButtonReleased = (MouseButton)button;
-            MouseReleasedEvent::Instance->EventHandled = true;
+            {
+                MouseButtonReleasedEvent mouseEvent((MouseButton)button);
+                CurrentWindow::GetWindowClass().EventCallback(mouseEvent);
+            }
             break;
         case (int)InputEvent::KeyDouble:
             MouseButtonDoubleClicked.emplace_back((MouseButton)button);
-            MouseDoubleClickEvent::Instance->ButtonDoubleClick = (MouseButton)button;
-            MouseDoubleClickEvent::Instance->EventHandled = true;
+            {
+                MouseButtonDoubleClickEvent mouseEvent((MouseButton)button);
+                CurrentWindow::GetWindowClass().EventCallback(mouseEvent);
+            }
             break;
         }
     }
       
-    void WindowsWindow::Window_Resize_Callback(GLFWwindow* window, int width, int height){
-        WindowResizeEvent::Instance->EventHandled = true;
-        WindowResizeEvent::Instance->Whidt = width;
-        WindowResizeEvent::Instance->Height = height;
+    void WindowsWindow::Window_Resize_Callback(::GLFWwindow* window, int width, int height){
+        WindowResizeEvent windowEvent(width,height);
+        CurrentWindow::GetWindowClass().EventCallback(windowEvent);
+        if(width==0 || height==0){
+            WindowMinimizeEvent Minimizedevent(true);
+            CurrentWindow::GetWindowClass().EventCallback(Minimizedevent);
+
+        }else if (CurrentWindow().GetWindowClass().Width==0 || CurrentWindow().GetWindowClass().Height==0){
+            WindowMinimizeEvent Minimizedevent(false);
+            CurrentWindow::GetWindowClass().EventCallback(Minimizedevent);
+        }
         CurrentWindow().GetWindowClass().Width = width;
         CurrentWindow().GetWindowClass().Height = height;
     }
 
-    void WindowsWindow::Window_Position_Callback(GLFWwindow* window, int xpos, int ypos){
-        WindowMoveEvent::Instance->EventHandled = true;
-        WindowMoveEvent::Instance->PosX = xpos;
-        WindowMoveEvent::Instance->PosY = ypos;
+    void WindowsWindow::Window_Position_Callback(::GLFWwindow* window, int xpos, int ypos){
+        WindowMoveEvent windowEvent(xpos,ypos);
+        CurrentWindow::GetWindowClass().EventCallback(windowEvent);
     }
 
-    void WindowsWindow::Window_Close_Callback(GLFWwindow* window){
-        WindowCloseEvent::Instance->EventHandled = true;
+    void WindowsWindow::Window_Close_Callback(::GLFWwindow* window){
+        WindowCloseEvent windowEvent(true);
+        CurrentWindow::GetWindowClass().EventCallback(windowEvent);
     }
 
     void WindowsWindow::Controller_Callback(int jid, int event){
@@ -151,40 +162,33 @@ namespace Proof {
         }
     }
 
-    void WindowsWindow::Framebuffer_size_callback(GLFWwindow* window, int width, int height){
+    void WindowsWindow::Framebuffer_size_callback(::GLFWwindow* window, int width, int height){
     }
 
-    void WindowsWindow::Window_Refresh_callback(GLFWwindow* window){
+    void WindowsWindow::Window_Refresh_callback(::GLFWwindow* window){
       
     }
 
-    void WindowsWindow::Window_Input_Focus_callback(GLFWwindow* window, int focused){
-        if (focused) {
-            WindowFocusEvent::Instance->EventHandled = true;
-            //PF_ENGINE_INFO("Window Has Input focus");
-        }
-        else{
-            WindowFocusEvent::Instance->EventHandled = false;
-            //PF_ENGINE_INFO("Window Lost Input Focus");
-        }
+    void WindowsWindow::Window_Input_Focus_callback(::GLFWwindow* window, int focused){
+        WindowFocusEvent windowEvent(true);
+        CurrentWindow::GetWindowClass().EventCallback(windowEvent);
     }
 
     void WindowsWindow::ProcessInput(){
+       
     }
     
-    void WindowsWindow::Mouse_Moved_Callback(GLFWwindow* window, double xpos, double ypos){
-        MouseMoveEvent::Instance->EventHandled = true;
-        MouseMoveEvent::Instance->PosX = xpos;
-        MouseMoveEvent::Instance->PosY = ypos;
+    void WindowsWindow::Mouse_Moved_Callback(::GLFWwindow* window, double xpos, double ypos){
+        MouseMoveEvent mouseEvent(xpos,ypos);
+        CurrentWindow::GetWindowClass().EventCallback(mouseEvent);
     }
 
-    void WindowsWindow::Mouse_Hover_Window(GLFWwindow* window, int entered){
+    void WindowsWindow::Mouse_Hover_Window(::GLFWwindow* window, int entered){
     }
 
-    void WindowsWindow::Mouse_ScrollWhell_Callback(GLFWwindow* window, double xoffset, double yoffset){
-        MouseScrollEvent::Instance->EventHandled = true;
-        MouseScrollEvent::Instance->PosX = xoffset;
-        MouseScrollEvent::Instance->PosY = yoffset;
+    void WindowsWindow::Mouse_ScrollWhell_Callback(::GLFWwindow* window, double xoffset, double yoffset){
+        MouseScrollEvent mouseEvent(xoffset,yoffset);
+        CurrentWindow::GetWindowClass().EventCallback(mouseEvent);
         MouseScrollX.emplace_back(xoffset);
         MouseScrollY.emplace_back(yoffset);
     }

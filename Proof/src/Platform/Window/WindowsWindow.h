@@ -4,8 +4,9 @@
 #include <vector>
 #include "Proof/Core/Window.h"
 #include "Proof/Input/KeyCodes.h"
+#include <functional>
 #include "Proof/Events/Event.h"
-int main(int argc, char** argv);
+
 namespace Proof {
     class Proof_API WindowsWindow : public Window {
     public:
@@ -24,28 +25,38 @@ namespace Proof {
         static std::vector<float> MouseScrollX;
         static std::vector<float> MouseScrollY;
         
-        virtual void WindowUpdate(class FrameTime DeltaTime)override;
-        virtual	int  createWindow()override;
+        virtual void WindowUpdate()override;
+        virtual	int createWindow()override;
         virtual int WindowEnd()override;
-    private:
-        friend int ::main(int argc, char** argv);
-        int Width =0, Height=0;
-        GLFWwindow* MainWindow;
-        static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-        static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
-        static void Mouse_Moved_Callback(GLFWwindow* window, double xpos, double ypos);
-        static void Mouse_Hover_Window(GLFWwindow* window, int entered);
-        static void Mouse_ScrollWhell_Callback(GLFWwindow* window, double xoffset, double yoffset);
-        static void Window_Close_Callback(GLFWwindow* window);
-        static void Controller_Callback(int jid, int event);
-        static void Framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-        static void Window_Resize_Callback(GLFWwindow* window, int width, int height);
-        static void Window_Position_Callback(GLFWwindow* window, int xpos, int ypos);
-        static void Window_Refresh_callback(GLFWwindow* window);
-        static void Window_Input_Focus_callback(GLFWwindow* window, int focused);
+        void* GetWindow(){
+            return MainWindow;
+        }
+        inline void SetEventCallback(const std::function<void(Event&)>& callback) { EventCallback = callback; }
+    private:
+        int Width =0, Height=0;
+        ::GLFWwindow* MainWindow;
+        static void key_callback(::GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void mouse_button_callback(::GLFWwindow* window, int button, int action, int mods);
+        static void Mouse_Moved_Callback(::GLFWwindow* window, double xpos, double ypos);
+        static void Mouse_Hover_Window(::GLFWwindow* window, int entered);
+        static void Mouse_ScrollWhell_Callback(::GLFWwindow* window, double xoffset, double yoffset);
+        static void Window_Close_Callback(::GLFWwindow* window);
+        static void Controller_Callback(int jid, int event);
+        static void Framebuffer_size_callback(::GLFWwindow* window, int width, int height);
+
+        static void Window_Resize_Callback(::GLFWwindow* window, int width, int height);
+        static void Window_Position_Callback(::GLFWwindow* window, int xpos, int ypos);
+        static void Window_Refresh_callback(::GLFWwindow* window);
+        static void Window_Input_Focus_callback(::GLFWwindow* window, int focused);
         void ProcessInput();
         friend class CurrentWindow;
         bool Vsync = false;
+        std::function<void(Event&)>EventCallback;
+        // EVENT CALLback is a pointer to a function
+        // set event callback is the function we will call whenever we create 
+        // a new evvent with calling the object constructor it 
+        // will automatically call that function
+        // std::bind lets us use the function with std::function
     };
 }

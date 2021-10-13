@@ -10,10 +10,11 @@ namespace Proof{
 	public:
 		ECS() = default;
 		ECS(const ECS&) = default;
+		using EntityID = uint64_t;
 
-		uint32_t Create();
-		uint32_t Create(uint32_t ID);
-		void Delete(uint32_t ID);
+		EntityID Create();
+		EntityID Create(EntityID ID);
+		void Delete(EntityID ID);
 
 		template<typename T>
 		T* AddComponent(uint32_t ID) {

@@ -9,7 +9,7 @@
 #include "MaterialAsset.h"
 namespace Proof{
 	AssetManager* AssetManager::s_AssetManager = new AssetManager();
-	void AssetManager::NewAsset(uint32_t ID,Asset* asset) {
+	void AssetManager::NewAsset(AssetID ID,Asset* asset) {
 		if (ID == 0) {
 			PF_CORE_ASSERT(false,"ID cannot be 0");
 			ID =AssetManager::CreateID();
@@ -20,23 +20,17 @@ namespace Proof{
 		}
 		PF_ASSERT(false,"Asset Maneger Has ID");
 	}
-	bool AssetManager::HasID(uint32_t ID) {
+	bool AssetManager::HasID(AssetID ID) {
 		return s_AssetManager->m_AllAssets.find(ID) != s_AssetManager->m_AllAssets.end();
 	}
-	Asset* AssetManager::GetAsset(uint32_t ID) {
-
-		if (HasID(ID) == true) {
-			return s_AssetManager->m_AllAssets.find(ID)->second;
-		}
-	}
-	uint32_t AssetManager::CreateID() {
-		uint32_t ID = Math::RandUINT(1,1000000);
+	AssetID AssetManager::CreateID() {
+		AssetID ID = Math::RandUINT(1,18000000000000000000);
 		while (HasID(ID)== true) {
-			uint32_t ID = Math::RandUINT(1,1000000);
+			AssetID ID = Math::RandUINT(1,18000000000000000000);
 		}
 		return ID;
 	}
-	void AssetManager::Remove(uint32_t ID) {
+	void AssetManager::Remove(AssetID ID) {
 		if (HasID(ID) == true) {
 			delete s_AssetManager->m_AllAssets.find(ID)->second;
 

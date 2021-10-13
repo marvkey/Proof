@@ -1,7 +1,7 @@
 #pragma once
 namespace Proof
 {
-	enum class KeyBoardKey {
+	enum class KeyBoardKey:int32_t {
 		Space = 32,
 		Apostrophe = 39, /* ' */
 		Comma = 44, /* , */

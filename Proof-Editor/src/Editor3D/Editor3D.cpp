@@ -21,6 +21,8 @@
 #include "ImGUIAPI.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Utils/PlatformUtils.h"
+
+
 namespace Proof
 {
 	glm::vec4 ClearColour;
@@ -287,9 +289,6 @@ namespace Proof
 			ImVec2 ViewPortPanelSize = ImGui::GetContentRegionAvail();
 			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
 				_ViewPortSize = {ViewPortPanelSize.x,ViewPortPanelSize.y};
-				Window_ViewPortResize::Instance->EventHandled = true;
-				Window_ViewPortResize::Instance->X = ViewPortPanelSize.x;
-				Window_ViewPortResize::Instance->Y = ViewPortPanelSize.y;
 			}
 
 			if (ImGui::IsWindowFocused()) {

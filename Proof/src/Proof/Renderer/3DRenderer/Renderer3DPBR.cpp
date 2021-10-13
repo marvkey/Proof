@@ -143,7 +143,6 @@ namespace Proof{
 					TempMesh->second.GetMaterial()->RoughnessTexture->Bind(3);
 				else
 					s_PBRInstance->m_WhiteTexture->Bind(3);
-
 			}else{
 				s_PBRInstance->m_Shader->Bind();
 				s_PBRInstance->m_Shader->SetInt("albedoMap",0);

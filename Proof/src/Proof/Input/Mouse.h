@@ -6,14 +6,34 @@
 namespace Proof {
     class Proof_API Mouse :private CurrentWindow {
     public:
-        static float GetMouseX() {
+        static float GetPosX() {
             auto [X, Y] = GetMouseLocation();
             return X;
         }
-        static float GetMouseY() {
+        static float GetPosY() {
             auto [X, Y] = GetMouseLocation();
             return  Y;
         }
-    private:
+
+        static float GetScrollX(){
+            auto [X,Y] = GetMouseScrollWheel();
+            return  X;
+        }
+
+        static float GetScrollY() {
+            auto [X,Y] = GetMouseScrollWheel();
+            return  Y;
+        }
+
+        static bool IsScroll(){
+            return (bool)GetScrollY();
+        };
+
+        static bool IsScrollDown(){
+            return GetScrollY()<0;
+        }
+        static bool IsScrollUp() {
+            return GetScrollY() > 0;
+        }
     };
 }

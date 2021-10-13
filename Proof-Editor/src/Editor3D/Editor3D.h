@@ -46,7 +46,7 @@ namespace Proof {
 		void SimulateWorld();
 		void StopWorld();
 		void PauseWorld();
-		void Editore3D::Save(const std::string& Path);
+		void Save(const std::string& Path);
 
 		std::vector<std::string>CubeMapPaths; 
 		Count<Shader> m_SkyBoxShader;

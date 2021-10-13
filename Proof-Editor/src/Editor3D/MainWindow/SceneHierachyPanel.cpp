@@ -55,7 +55,7 @@ namespace Proof{
 		auto& tc = entity.GetComponent<TagComponent>()->GetName();
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity.GetID(),flags,tc.c_str());
+		bool opened = ImGui::TreeNodeEx((void*)(EntityID)(uint32_t)entity.GetID(),flags,tc.c_str());
 		if (ImGui::IsItemClicked() || ImGui::IsItemClicked(1)) {
 			m_SelectedEntity = entity;
 		}
@@ -183,7 +183,7 @@ namespace Proof{
 					DrawVectorControl("Local Location",component.MeshLocalTransform.Location,0.0);
 					DrawVectorControl("Local Rotation",component.MeshLocalTransform.Rotation,0.0);
 					DrawVectorControl("Local Scale",component.MeshLocalTransform.Scale,0.0);
-					ExternalAPI::ImGUIAPI::TextBar("Mesh",AssetManager::HasID(component.AssetID) ? AssetManager::GetAsset(component.AssetID)->GetAssetName():"null");
+					ExternalAPI::ImGUIAPI::TextBar("Mesh",AssetManager::HasID(component.AssetID) ? AssetManager::GetAsset<Asset>(component.AssetID)->GetAssetName():"null");
 					if (ImGui::BeginPopupContextItem("RemoveMesh")) {
 						ImGui::EndPopup();
 					}
@@ -202,7 +202,7 @@ namespace Proof{
 						ImGui::EndDragDropTarget();
 					}
 
-					ExternalAPI::ImGUIAPI::TextBar("Material",component.HasMaterial()? AssetManager::GetAsset(component.GetMaterialPointerID())->GetAssetName() : "null");
+					ExternalAPI::ImGUIAPI::TextBar("Material",component.HasMaterial()? AssetManager::GetAsset<Asset>(component.GetMaterialPointerID())->GetAssetName() : "null");
 					if (ImGui::BeginPopupContextItem("RemoveMaterial")) {
 						ImGui::EndPopup();
 					}

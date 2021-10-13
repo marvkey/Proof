@@ -81,6 +81,14 @@ namespace Proof
 		return false;
 	}
 
+	bool Input::IsMouseButtonPressed(MouseButton Button) {
+		if (CurrentWindow::GetWindow() == nullptr)return false;
+		if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
+		if (glfwGetMouseButton(Proof::CurrentWindow::GetWindow(),(int)Button)) {
+			return true;
+		}
+		return false;
+	}
 	bool Input::IsMouseButtonDoubleClicked(MouseButton Button) {
 		if (CurrentWindow::GetWindow() == nullptr)return false;
 		if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
@@ -116,30 +124,23 @@ namespace Proof
 		return false;
 	}
 
-	bool Input::IsMouseButtonPressed(MouseButton Button) {
-		if (CurrentWindow::GetWindow() == nullptr)return false;
-		if (ViewPoartHovered == false)return false; // This Temprory will not be released like this
-		if (glfwGetMouseButton(Proof::CurrentWindow::GetWindow(),(int)Button)) {
-			return true;
-		}
-		return false;
+	bool Input::IsMouseScrolled() {
+		return Mouse::IsScroll();
 	}
 	float Input::GetScrollWheelX() {
 		if (ViewPoartHovered == false)return 0.0f; // This Temprory will not be released like this
-		Proof::MouseScrollEvent ScrollWheel;
-		return ScrollWheel.GetPosX();
+		return Mouse::GetScrollX();
 	}
 	float Input::GetScrollWheelY() {
 		if (ViewPoartHovered == false)return 0.0f; // This Temprory will not be released like this
-		Proof::MouseScrollEvent ScrollWheel;
-		return ScrollWheel.GetPosY();
+		return Mouse::GetScrollY();
 	}
 	float Input::GetMousePosX() {
 		if (ViewPoartHovered == false)return 0.0f; // This Temprory will not be released like this
-		return Proof::Mouse::GetMouseX();
+		return Mouse::GetPosX();
 	}
 	float Input::GetMousePosY() {
 		if (ViewPoartHovered == false)return 0.0f; // This Temprory will not be released like this
-		return Proof::Mouse::GetMouseY();
+		return Mouse::GetPosX();
 	}
 }

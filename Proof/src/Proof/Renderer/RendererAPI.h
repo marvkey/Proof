@@ -24,7 +24,8 @@ namespace Proof {
 	enum class DrawType: uint32_t {
 		Triangles = GL_TRIANGLES,
 		Points = GL_POINTS,
-		Lines= GL_QUADS
+		Lines= GL_LINES,
+		Quads = GL_QUADS
 	};
 	class Proof_API RendererAPI {
 	public:
@@ -41,7 +42,6 @@ namespace Proof {
 		virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement,DrawType drawType = DrawType::Triangles) = 0;
 		
 		inline static API GetAPI() { return ActiveAPI; }
-		virtual void SwapBuffer(GLFWwindow* Window) = 0;
 
 		/**
 		* @param bitfield use the enum form the struct Proof Clear
@@ -56,7 +56,6 @@ namespace Proof {
 		*/
 		virtual void Disable(uint32_t bitField) =0;
 
-		virtual void PollEvents()=0;
 		virtual void SetViewPort(uint32_t width,uint32_t height) = 0;
 		virtual void DepthFunc(DepthType type) =0;
 	private:

@@ -24,9 +24,8 @@ namespace Proof {
 			MouseInput(DeltaTime);
 			KeyBoardInput(DeltaTime);
 			ScrollInput();
-			MouseMoveEvent Event;
-			MouseLastPosX = Event.GetPosX();
-			MouseLastPosY = Event.GetPosY();
+			MouseLastPosX = Input::GetMousePosX();
+			MouseLastPosY = Input::GetMousePosY();
 		}
 		
 		if (MoveSpeed < 0 || MoveSpeed == 0.25)
@@ -60,19 +59,18 @@ namespace Proof {
 	}
 
 	void EditorCamera3D::MouseInput(float DeltaTime) {
-		MouseMoveEvent Event;
 		bool ButttonPressed = Input::IsMouseButtonPressed(MouseButton::ButtonRight);
-		if (Event.OnEvent()&&ButttonPressed) {
+		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight)) {
 			if (FirstMouseEnteredScreen) {
-				MouseLastPosX =Event.GetPosX();
-				MouseLastPosY = Event.GetPosY();
+				MouseLastPosX =Mouse::GetPosX();
+				MouseLastPosY = Mouse::GetPosY();
 				FirstMouseEnteredScreen = false;
 			}
 			
-			Xoffset = Event.GetPosX() - MouseLastPosX;
-			Yoffset = MouseLastPosY - Event.GetPosY();
-			MouseLastPosX = Event.GetPosX();
-			MouseLastPosY = Event.GetPosY();
+			Xoffset = Mouse::GetPosX() - MouseLastPosX;
+			Yoffset = MouseLastPosY - Mouse::GetPosY();
+			MouseLastPosX = Mouse::GetPosX();
+			MouseLastPosY = Mouse::GetPosY();
 
 			Xoffset *= Sensitivity;
 			Yoffset *= Sensitivity;
@@ -84,15 +82,14 @@ namespace Proof {
 	}
 
 	void  EditorCamera3D::ScrollInput() {
-		MouseScrollEvent ScrollEvent;
-		if (ScrollEvent.OnEvent()) {
+		if (Input::IsMouseScrolled()) {
 			if (Input::IsKeyPressed(KeyBoardKey::LeftControl) || Input::IsKeyPressed(KeyBoardKey::RightControl)) {
-				FieldOfView -= (float)ScrollEvent.GetPosY();
+				FieldOfView -= (float)Input::GetMousePosX();
 				return;
 			}
-			if (ScrollEvent.GetPosY() == 1)
+			if (Input::GetMousePosY() == 1)
 				MoveSpeed += 1.5;
-			else if (ScrollEvent.GetPosY() == -1) {
+			else if (Input::GetMousePosY() == -1) {
 				if (MoveSpeed < 3) 
 					MoveSpeed -= 0.25;
 				else 

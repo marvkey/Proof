@@ -4,10 +4,10 @@
 #include "Proof/Resources/Math/Math.h"
 #include "Proof/Scene/Component.h"
 namespace Proof{
-    uint32_t ECS::Create() {
-        uint32_t ID = Math::RandUINT(1,1000000);
+    EntityID ECS::Create() {
+        EntityID ID = Math::RandUINT(1,18000000000000000000);
         while(HasEntity(ID) == true){
-            uint32_t ID = Math::RandUINT(1,10000000); // between 1 and 10 million
+            ID = Math::RandUINT(1,18000000000000000000);
             PF_ENGINE_INFO("Conflict creating ID");
         }
         std::vector<Component*>* New = new std::vector<Component*>;
@@ -16,9 +16,10 @@ namespace Proof{
         return ID;
     }
 
-	uint32_t ECS::Create(uint32_t ID) {
+    EntityID ECS::Create(EntityID ID) {
         if(ID ==0){
             PF_CORE_ASSERT(false,"Id cannot be 0");
+            ID = Math::RandUINT(1,18000000000000000000);
         }
 		if(HasEntity(ID) == true){
 			PF_ENGINE_INFO("Cannot pass entity ID by argument that already exist");
@@ -30,7 +31,7 @@ namespace Proof{
 		return ID;
 	}
     
-    void ECS::Delete(uint32_t ID) {
+    void ECS::Delete(EntityID ID) {
         if(HasEntity(ID) == true){
             auto* a = EntityHolder.find(ID)->second;
             auto it = std::find(AllEntityID.begin(),AllEntityID.end(),ID);

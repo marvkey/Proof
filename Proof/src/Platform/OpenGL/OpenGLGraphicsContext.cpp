@@ -1,16 +1,16 @@
 #include "Proofprch.h"
 #include "OpenGLGraphicsContext.h"
-//#include <Glad/glad.h>
+#include <Glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
-    OpenGLGraphicsContext::OpenGLGraphicsContext(GLFWwindow* _WindowHandle)
+    OpenGLGraphicsContext::OpenGLGraphicsContext(Window* _WindowHandle)
         :WindowHandle(_WindowHandle)    {
         PF_CORE_ASSERT(_WindowHandle,"Window Handle is Null");
     }
     void OpenGLGraphicsContext::Init() {
-        glfwMakeContextCurrent(WindowHandle);
+        glfwMakeContextCurrent(static_cast<::GLFWwindow*>(WindowHandle->GetWindow()));
         int Status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
         PF_CORE_ASSERT(Status,"GLew is not initilized");
         Renderer::s_RenderCompany = (const char*)glGetString(GL_VENDOR);
@@ -34,7 +34,7 @@ namespace Proof
     #endif
     }
     void OpenGLGraphicsContext::SwapBuffer() {
-        glfwSwapBuffers(WindowHandle);
+        glfwSwapBuffers(static_cast<::GLFWwindow*>(WindowHandle->GetWindow()));
     }
     void OpenGLGraphicsContext::CleanUp() {}
     void OpenGLGraphicsContext::OpenGLMessageCallback(unsigned source,unsigned type,unsigned id,unsigned severity,int length,const char* message,const void* userParam) {

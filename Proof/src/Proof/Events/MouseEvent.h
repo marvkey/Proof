@@ -4,103 +4,111 @@
 #include <sstream>
 #include "Event.h"
 #include "Proof/Input/KeyCodes.h"
-int main(int argc, char** argv);
 namespace Proof {
-
-    class Proof_API MouseClickedEvent:public Event{
+    class Proof_API MouseButtonEvent: public Event{
     public:
-       // MouseClickedEvent(MouseButton ){
-         //   m_EventType = EventType::MouseClickedEvent;
-           // m_Button =Button;
-       // }
-        inline MouseButton GetButtonClicked() { return Instance->EventHandled == true ? Instance->ButtonClicked : (MouseButton)-1; }
-        inline bool OnEvent() { return Instance->EventHandled == true ? true : false; }
-        std::string ToString()const override {
-            std::stringstream ss;
-            ss << "Mouse Clicked Event " << (int)Instance->ButtonClicked;
-            return ss.str();
+        EVENT_CLASS_CATEGORY(EventCategoryMouseButton | EventCategoryInput)
+        MouseButtonEvent(MouseButton button):
+            m_Button(button)
+        {
+
         }
+        MouseButton GetButton() const { return m_Button; }
+    protected:
         MouseButton m_Button;
-    private:
-        static std::unique_ptr<MouseClickedEvent>Instance;
-        MouseButton ButtonClicked;
-        bool EventHandled = false;
-        friend int ::main(int argc, char** argv);
-        friend class WindowsWindow;
     };
-    
-    class Proof_API MouseReleasedEvent: public Event {
+    class Proof_API MouseButtonClickedEvent:public MouseButtonEvent {
     public:
-        inline MouseButton GetButtonReleased() { return Instance->EventHandled == true ? Instance->ButtonReleased : (MouseButton)-1; }
-        inline bool OnEvent() { return Instance->EventHandled == true ? true : false; }
-        std::string ToString()const override {
+        EVENT_CLASS_TYPE(MouseButtonClicked)
+            MouseButtonClickedEvent(MouseButton button)
+            : MouseButtonEvent(button) {}
+
+        std::string ToString() const override {
             std::stringstream ss;
-            ss << "Mouse Button Released Event " << (int) Instance-> ButtonReleased;
+            ss << "MouseClickedEvent: " << (int)m_Button;
             return ss.str();
         }
-    private:
-        static std::unique_ptr<MouseReleasedEvent>Instance;
-        MouseButton ButtonReleased;
-        bool EventHandled = false;
-        friend int ::main(int argc, char** argv);
-        friend class WindowsWindow;
+    };
+    /*
+    class Proof_API MouseButtonPressedEvent:public MouseButtonEvent {
+    public:
+        EVENT_CLASS_TYPE(MouseButtonPressed)
+            MouseButtonPressedEvent(MouseButton button)
+            : MouseButtonEvent(button) {}
+
+        std::string ToString() const override {
+            std::stringstream ss;
+            ss << "MouseButtonPressedEvent: " << (int)m_Button;
+            return ss.str();
+        }
+    };
+    */
+    class Proof_API MouseButtonReleasedEvent: public MouseButtonEvent {
+    public:
+        EVENT_CLASS_TYPE(MouseButtonReleased)
+        MouseButtonReleasedEvent(MouseButton button)
+            : MouseButtonEvent(button) {}
+
+        std::string ToString() const override {
+            std::stringstream ss;
+            ss << "MouseReleasedEvent: " << (int)m_Button;
+            return ss.str();
+        }
     };
 
-    class Proof_API MouseDoubleClickEvent: public Event {
+    class Proof_API MouseButtonDoubleClickEvent: public MouseButtonEvent {
     public:
-        inline  MouseButton GetButtonDoubleClick() { return Instance->EventHandled == true ? Instance->ButtonDoubleClick : (MouseButton)-1; }
-        inline  bool OnEvent() { return Instance->EventHandled == true ? true : false; }
-        std::string ToString()const override {
-            std::stringstream ss;
-            ss << "Mouse Button Double Click " <<(int) Instance->ButtonDoubleClick;
-            return ss.str();
-        }
-    private:
-        static std::unique_ptr<MouseDoubleClickEvent> Instance;
-        MouseButton ButtonDoubleClick;
-        bool EventHandled;
-        friend int ::main(int argc, char** argv);
-        friend class WindowsWindow;
-    };
+        EVENT_CLASS_TYPE(MouseButtonDoubleClick)
+        MouseButtonDoubleClickEvent(MouseButton button)
+            : MouseButtonEvent(button) {}
 
-    class Proof_API MouseMoveEvent: public Event {
-    public:
-        inline unsigned int GetPosX() { return Instance->PosX; }
-        inline unsigned int GetPosY() { return Instance->PosY; }
-        inline bool OnEvent() {return  Instance->EventHandled == true ? true : false; }
-        std::string ToString()const override {
+        std::string ToString() const override {
             std::stringstream ss;
-            ss << "Mouse Move Event " << Instance->PosX << ", " << Instance->PosY;
+            ss << "MouseDoubleClickEvent: " << (int)m_Button;
             return ss.str();
         }
-    private:
-        static std::unique_ptr<MouseMoveEvent>Instance;
-        bool EventHandled =false;
-        unsigned int PosX;
-        unsigned int PosY;
-        friend int ::main(int argc, char** argv);
-        friend class WindowsWindow;
+    };
+    class Proof_API MouseMovementEvent: public Event{
+    public:
+        EVENT_CLASS_CATEGORY(EventCategoryMouseMovement | EventCategoryInput)
+    };
+    class Proof_API MouseMoveEvent: public MouseMovementEvent {
+    public:
+        EVENT_CLASS_TYPE(MouseMoved)
+        MouseMoveEvent(float x,float y):
+            m_X(x),m_Y(y)
+        {
         
-    };
-
-    class Proof_API MouseScrollEvent:public Event {
-    public:
-        inline float GetPosX() { return Instance->PosX; }
-        inline float GetPosY() { return Instance->PosY; }
-        inline bool OnEvent() { return  Instance->EventHandled == true ? true : false; }
-        
+        }
+        float GetX(){return m_X;}
+        float GetY(){return m_Y;}
         std::string ToString()const override {
             std::stringstream ss;
-            ss << "MouseScrolled Event " << Instance->PosX << ", " << Instance->PosY;
+            ss << "MouseMoveEvent X: " << m_X << ", Y: " << m_Y;
             return ss.str();
         }
-
     private:
-        static std::unique_ptr<MouseScrollEvent>Instance;
-        bool EventHandled = false;
-        float PosX;
-        float PosY;
-        friend int ::main(int argc, char** argv);
-        friend class WindowsWindow;
+        float m_X=0;
+        float m_Y=0;
+    };
+
+    class Proof_API MouseScrollEvent:public MouseMovementEvent {
+    public:
+        EVENT_CLASS_TYPE(MouseScrolled)
+        MouseScrollEvent(float scrollx,float scrolly):
+            m_X(scrollx),m_Y(scrolly) 
+        {
+
+        }
+        float GetScrollX() { return m_X; }
+        float GetScrollY() { return m_Y; }
+        std::string ToString()const override {
+            std::stringstream ss;
+            ss << "MouseScrollEvent X: " << m_X << ", Y: " << m_Y;
+            return ss.str();
+        }
+    private:
+        float m_X = 0;
+        float m_Y = 0;
     };
 }

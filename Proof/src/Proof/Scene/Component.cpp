@@ -19,7 +19,7 @@ namespace Proof{
 		if(m_MeshMaterialID == 0){
 			return nullptr;
 		}
-		MaterialAsset* a = dynamic_cast<MaterialAsset*>(AssetManager::GetAsset(m_MeshMaterialID));
+		MaterialAsset* a = AssetManager::GetAsset<MaterialAsset>(m_MeshMaterialID);
 		if (a == nullptr){
 			m_MeshMaterialID = 0;
 			return nullptr;

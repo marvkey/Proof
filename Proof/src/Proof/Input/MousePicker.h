@@ -21,7 +21,7 @@ namespace Proof{
 		glm::mat4 m_ProjectionMatrix;
 		glm::mat4 m_ViewMatrix;
 		glm::vec3 CalculateMouseArray(){
-			glm::vec2 NormalizedDeviceCoords = GetNormalizedDeviceCoords(Mouse::GetMouseX(),Mouse::GetMouseY());
+			glm::vec2 NormalizedDeviceCoords = GetNormalizedDeviceCoords(Mouse::GetPosX(),Mouse::GetPosY());
 			glm::vec4 RayClip(NormalizedDeviceCoords.x,NormalizedDeviceCoords.y,-1.0f,1.0f);
 			glm::vec4 RayEye = glm::inverse(m_ProjectionMatrix)* RayClip;
 			RayEye ={RayEye.x,RayEye.y,-1.0f,0.0f};
