@@ -84,12 +84,12 @@ namespace Proof {
 	void  EditorCamera3D::ScrollInput() {
 		if (Input::IsMouseScrolled()) {
 			if (Input::IsKeyPressed(KeyBoardKey::LeftControl) || Input::IsKeyPressed(KeyBoardKey::RightControl)) {
-				FieldOfView -= (float)Input::GetMousePosX();
+				FieldOfView -= (float)Input::GetScrollWheelY();
 				return;
 			}
-			if (Input::GetMousePosY() == 1)
+			if (Input::IsMouseScrollUp())
 				MoveSpeed += 1.5;
-			else if (Input::GetMousePosY() == -1) {
+			else if (Input::IsMouseScrollDown()) {
 				if (MoveSpeed < 3) 
 					MoveSpeed -= 0.25;
 				else 

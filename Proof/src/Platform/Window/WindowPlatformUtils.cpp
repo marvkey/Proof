@@ -49,5 +49,20 @@ namespace Proof{
 			}
 			return std::string();
 		};
+
+		void ShortCutDialogs::Copy(const std::string& text){
+			OpenClipboard(glfwGetWin32Window(CurrentWindow::GetWindow()));
+			EmptyClipboard();
+			HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE,text.size());
+			if (!hg) {
+				CloseClipboard();
+				return;
+			}
+			memcpy(GlobalLock(hg),text.c_str(),text.size());
+			GlobalUnlock(hg);
+			SetClipboardData(CF_TEXT,hg);
+			CloseClipboard();
+			GlobalFree(hg);
+		}
 	};
 }

@@ -5,6 +5,7 @@
 #include "Proof/Core/LayerStack.h"
 #include "CurrentWindow.h"
 #include "Proof/Events/KeyEvent.h"
+#include "Proof/Events/MouseEvent.h"
 #include "Proof/Renderer/GraphicsContext.h"
 #include "Proof/Events/WindowEvent.h"
 namespace Proof {
@@ -33,8 +34,9 @@ namespace Proof {
     private:
         void OnEvent(Event& e);
         void OnWindowMinimizeEvent(WindowMinimizeEvent& e);
-
+        void OnMouseScrollEVent(MouseScrollEvent& e);
         void OnKeyClicked(KeyClickedEvent& e);
+
         static Count<ScreenFrameBuffer> ScreenFrameBuffer;
         LayerStack MainLayerStack;
         ImGuiLayer* ImGuiMainLayer;

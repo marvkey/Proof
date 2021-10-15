@@ -39,17 +39,18 @@ namespace Proof {
     using Count = std::shared_ptr<T>;
 
     template<typename T, typename ... Args>
-    constexpr Count<T> CreateCount(Args&&... args) {
+    inline constexpr Count<T> CreateCount(Args&&... args) {
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
-    
+
     template<typename T>
     using Special = std::unique_ptr<T>;
-
     template<typename T,typename ... Args>
-    constexpr Special<T> CreateSpecial(Args&&... args) {
-        return std::make_shared<T>(std::forward<Args>(args)...);
+    inline constexpr Special<T> CreateSpecial(Args&&... args) {
+        return std::make_unique<T>(std::forward<Args>(args)...);
     }
+
+    
     struct Proof_API Timer {
         std::chrono::time_point<std::chrono::steady_clock>Start,End;
         void StartTimer() {

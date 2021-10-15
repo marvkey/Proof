@@ -8,12 +8,15 @@
 #include "Proof/Renderer/Texture.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
+#include "Proof/Scene/Camera/PerspectiveCamera.h"
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof{
 	class Entity;
 	struct Proof_API Component{
 	public:
+		Component(const Component&) = default;
+		Component()=default;
 		virtual ~Component(){
 
 		}
@@ -40,6 +43,7 @@ namespace Proof{
 	};
 	struct Proof_API TagComponent : public Component {
 		TagComponent() = default;
+		TagComponent(const TagComponent&) = default;
 
 		void AddTag(const std::string& Tag) {
 			Tags.emplace_back(Tag);
@@ -80,6 +84,7 @@ namespace Proof{
 		NativeScriptComponent() {
 			Name = "NativeScriptComponent";
 		}
+		NativeScriptComponent(const NativeScriptComponent&)=default;
 		class Script* Instance = nullptr;
 		class Script* (*InstantiateScript)();
 		void (*DestroyScript)(NativeScriptComponent*);
@@ -113,6 +118,7 @@ namespace Proof{
 		class Model* GetModel() {
 			return GetAsset() != nullptr ? GetAsset()->GetModel() : nullptr;
 		}
+		MeshComponent(const MeshComponent&)=default;
 		MeshAsset* GetAsset() {
 			MeshAsset* a =AssetManager::GetAsset<MeshAsset>(AssetID);
 
@@ -144,6 +150,9 @@ namespace Proof{
 
 	/* THIS IS TEMPORARY THIS IS GONNA GO INTO THE 2D SECTION */
 	struct Proof_API SpriteComponent:public Component {
+		SpriteComponent(const SpriteComponent&) = default;
+		SpriteComponent() = default;
+
 		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
 		TransformComponent SpriteTransfrom;
 		Count<Texture2D> GetTexture(){
@@ -168,6 +177,8 @@ namespace Proof{
 	};
 
 	struct Proof_API LightComponent: public Component{
+		LightComponent(const LightComponent&) = default;
+		LightComponent() = default;
 		enum LightType:int{
 			Direction=0,
 			Point=1,
@@ -189,5 +200,19 @@ namespace Proof{
 	private:
 		uint32_t StartIndexSlot = 0;
 		friend class ECS;
+	};
+
+
+	struct Proof_API CameraComponent{
+		enum class CameraType{
+			Perspective,Orthographic	
+		};
+		Vector m_LocalLocation = {0,0,0};
+		Vector m_LocalRotation={0,0,0};
+	private:
+		uint32_t StartIndexSlot = 0;
+		friend class ECS;
+		class OrthagraphicCamera m_OrhoCam ={-1.0f,1.0f,-1.0f,1.0f};
+		class PerspectiveCamera  m_PerspCam ={45.0f,(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f,m_LocalLocation};
 	};
 }

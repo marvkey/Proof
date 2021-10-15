@@ -48,6 +48,8 @@ namespace Proof {
         glfwPollEvents();
     }
     void WindowsWindow::key_callback(::GLFWwindow* window, int key, int scancode, int action, int mods) {
+        if (CurrentWindow::GetWindowClass().m_InputEventEnabled == false)
+            return;
         /* This is for when a key is Clicked 2 */
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
@@ -58,7 +60,7 @@ namespace Proof {
                 action = (int)InputEvent::KeyDouble;
             }
         }     
-
+       
         switch (action) {
         case GLFW_PRESS:
             KeyboardClicked.emplace_back((KeyBoardKey)key);
@@ -92,6 +94,8 @@ namespace Proof {
     }
 
     void WindowsWindow::mouse_button_callback(::GLFWwindow* window, int button, int action, int mods) {
+        if (CurrentWindow::GetWindowClass().m_InputEventEnabled == false)
+            return;
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
             auto now = std::chrono::system_clock::now();
@@ -179,6 +183,8 @@ namespace Proof {
     }
     
     void WindowsWindow::Mouse_Moved_Callback(::GLFWwindow* window, double xpos, double ypos){
+        if (CurrentWindow::GetWindowClass().m_InputEventEnabled == false)
+            return;
         MouseMoveEvent mouseEvent(xpos,ypos);
         CurrentWindow::GetWindowClass().EventCallback(mouseEvent);
     }
@@ -187,6 +193,8 @@ namespace Proof {
     }
 
     void WindowsWindow::Mouse_ScrollWhell_Callback(::GLFWwindow* window, double xoffset, double yoffset){
+        if (CurrentWindow::GetWindowClass().m_InputEventEnabled == false)
+            return;
         MouseScrollEvent mouseEvent(xoffset,yoffset);
         CurrentWindow::GetWindowClass().EventCallback(mouseEvent);
         MouseScrollX.emplace_back(xoffset);

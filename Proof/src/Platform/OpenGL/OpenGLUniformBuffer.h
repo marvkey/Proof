@@ -20,25 +20,7 @@ namespace Proof{
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset=0)override;
 
 		virtual ~OpenGLUniformBuffer();
-		/*
-		const uint32_t GetBindingPoint(){
-			return m_BindingPoint;
-		}
-
-		const uint32_t GetID(){
-			return m_ID;
-		}
-		std::string GetName(){
-			return m_Name;
-		}
-		const uint32_t GetMaxSize(){
-			return m_MaxSize;
-		}
-		*/
 	private:
-		//uint32_t m_BindingPoint=0;
 		uint32_t m_ID=0;
-		//std::string m_Name;
-		//const uint32_t m_MaxSize=0;
 	};
 }

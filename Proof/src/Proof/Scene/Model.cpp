@@ -39,6 +39,7 @@ namespace Proof{
     void Model::ProcessNode(aiNode* node,const aiScene* scene) {
         for (unsigned int i = 0; i < node->mNumMeshes; i++) {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+            //PF_ENGINE_INFO("%s",mesh->mName.C_Str()); // works
             meshes.emplace_back(ProcessMesh(mesh,scene));
         }
         for (unsigned int i = 0; i < node->mNumChildren; i++) {
@@ -87,7 +88,7 @@ namespace Proof{
 
         std::vector<Count<Texture2D>>  heightMaps = LoadMaterialTextures(material,aiTextureType_HEIGHT,Texture2D::TextureType::Height);
         textures.insert(textures.end(),heightMaps.begin(),heightMaps.end());
-
+       
         Mesh temp(vertices,indices,textures);
         temp.StartIndex = StartINdexMesh;
         //aiTextureType_METALNESS

@@ -90,6 +90,27 @@ namespace Proof{
 		entity.AddComponent<TransformComponent>();
 		return entity;
 	}
+	//static void CopyComponent
+	Count<World> World::Copy(Count<World> world) {
+		Count<World> newWorld = CreateCount<World>("Assets/Textures/hdr/Arches_E_PineTree_3k.hdr");
+		newWorld->Name = world->Name;
+		newWorld->Registry = world->Registry;
+		newWorld->m_Path = world->m_Path;
+		/*
+		newWorld->m_WorldCubeMap = m_WorldCubeMap;
+		newWorld->m_WorldCubeMapIrradiance = m_WorldCubeMapIrradiance;
+		newWorld->PrefelterMap = PrefelterMap;
+
+		newWorld->m_WorldIBLTexture = m_WorldIBLTexture;
+		newWorld->m_IBLSkyBoxBuffer= m_IBLSkyBoxBuffer;
+		newWorld->m_IBLSkyBoxVertexArray = m_IBLSkyBoxVertexArray;
+
+		newWorld->m_CaptureFBO = m_CaptureFBO;
+		newWorld->m_CaptureRBO = m_CaptureRBO;
+		newWorld
+		*/
+		return newWorld;
+		}
 
 	void World::EndRuntime() {
 	}

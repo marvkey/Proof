@@ -9,10 +9,10 @@
 namespace Proof {
 	
 	::GLFWwindow* CurrentWindow::GetWindow(){
-		/*
+		
 		if(Application::MainWindow ==nullptr)
 			return nullptr;
-			*/
+			
 		if (Application::MainWindow->MainWindow != nullptr)
 			return Application::MainWindow->MainWindow;
 		else
@@ -27,11 +27,6 @@ namespace Proof {
 	int CurrentWindow::GetWindowPosY(){ 
 		return GetWindowLocation().second;
 	}
-	/*
-	Count<GraphicsContext> CurrentWindow::GetGraphicsContext() {
-		return Application::MainWindow->_Graphicontext;
-	}
-	*/
 	void CurrentWindow::SetSwapInterval(bool Vsync) {
 		Application::MainWindow->Vsync = Vsync;
 	}
@@ -51,14 +46,22 @@ namespace Proof {
 		return { (float)X,(float)Y };
 	}
 	std::pair<float,float> CurrentWindow::GetMouseScrollWheel() {
-		float x,y;
-		//PF_CORE_ASSERT(false,"funciton not created");
-		y= GetScrollPos(glfwGetWin32Window(CurrentWindow::GetWindow()),SB_CTL);//we are calling a windows dependent function here
+		float x=0,y=0;
+		if(Application::MainWindow->MouseScrollX.size()>0){
+			x=Application::MainWindow->MouseScrollX[0];
+		}
+		if (Application::MainWindow->MouseScrollY.size()>0) {
+			y = Application::MainWindow->MouseScrollY[0];
+		}
 		return {x,y};
 	}
 	std::pair<int, int> CurrentWindow::GetWindowLocation(){
 		int X, Y;
 		glfwGetWindowPos(GetWindow(), &X, &Y);
 		return { X,Y };
+	}
+
+	void CurrentWindow::SetWindowInputEvent(bool var){
+		CurrentWindow::GetWindowClass().m_InputEventEnabled=var;
 	}
 }

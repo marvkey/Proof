@@ -33,6 +33,9 @@ namespace Proof {
             return MainWindow;
         }
         inline void SetEventCallback(const std::function<void(Event&)>& callback) { EventCallback = callback; }
+        bool IsInputEventEnabled(){
+            return m_InputEventEnabled;
+        }
     private:
         int Width =0, Height=0;
         ::GLFWwindow* MainWindow;
@@ -53,6 +56,7 @@ namespace Proof {
         friend class CurrentWindow;
         bool Vsync = false;
         std::function<void(Event&)>EventCallback;
+        bool m_InputEventEnabled =true;
         // EVENT CALLback is a pointer to a function
         // set event callback is the function we will call whenever we create 
         // a new evvent with calling the object constructor it 

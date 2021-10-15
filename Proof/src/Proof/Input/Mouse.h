@@ -22,18 +22,18 @@ namespace Proof {
 
         static float GetScrollY() {
             auto [X,Y] = GetMouseScrollWheel();
-            return  Y;
+            return Y;
         }
 
         static bool IsScroll(){
-            return (bool)GetScrollY();
+            return { (IsScrollDown()==true) || (IsScrollUp()==true) };
         };
 
         static bool IsScrollDown(){
-            return GetScrollY()<0;
+            return {GetScrollY() < 0};
         }
         static bool IsScrollUp() {
-            return GetScrollY() > 0;
+            return {GetScrollY() > 0};
         }
     };
 }

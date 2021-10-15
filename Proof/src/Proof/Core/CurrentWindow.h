@@ -17,6 +17,8 @@ namespace Proof {
 		static std::pair<double, double>GetMouseLocation();
 		static std::pair<float, float>GetMouseScrollWheel();
 	private:
+		static void SetWindowInputEvent(bool var);
 		static std::pair<int, int>GetWindowLocation();
+		friend class Editore3D;
 	};
 }

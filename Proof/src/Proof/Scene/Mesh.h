@@ -13,7 +13,6 @@ namespace Proof{
 
     class Mesh {
     public:
-        
         Mesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,std::vector<Proof::Count<class Texture2D>>& Textures);
         Mesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices);
         void Draw(const Count<class Shader>& shader);

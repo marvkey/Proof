@@ -30,7 +30,8 @@ namespace Proof {
 		void SetDocking(bool *p_open);
 		glm::vec2 _ViewPortLocation;
 		bool ViewPortResize = false;
-		class World* ActiveWorld =nullptr;
+		Count<class World>ActiveWorld =nullptr;
+		Count<class World>m_PlayWorld =nullptr;
 
 		int GuizmoType =0;
 		class SceneHierachyPanel m_WorldHierachy;
@@ -44,7 +45,7 @@ namespace Proof {
 
 		void PlayWorld();
 		void SimulateWorld();
-		void StopWorld();
+		void SetWorldEdit();
 		void PauseWorld();
 		void Save(const std::string& Path);
 

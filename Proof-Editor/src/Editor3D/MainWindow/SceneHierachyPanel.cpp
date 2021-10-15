@@ -17,7 +17,6 @@
 #include "../ImGUIAPI.h"
 #include "Proof/Scene/ExampleSccripts.h"
 #include "Proof/Scene/Script.h"
-//#include "../Game/Proof-Game/Proof-Game/src/generated/AllFiles.h"
 namespace Proof{
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
 	InstanceNativeScriptComponent.Bind<Class>();\
@@ -145,6 +144,11 @@ namespace Proof{
 
 			if (ImGui::MenuItem("Light Componet")) {
 				entity.AddComponent<LightComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::MenuItem("Movement Script")) {
+				entity.AddComponent<NativeScriptComponent>()->Bind<MovementScript>();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();

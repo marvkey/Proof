@@ -30,13 +30,11 @@ namespace Proof
 	Editore3D::Editore3D():
 		Layer("Editor3D Layer") 	{	}
 	Editore3D::~Editore3D() {
-		if (ActiveWorld != nullptr)
-			delete ActiveWorld;
 	}
 	void Editore3D::OnAttach() {
 
-		ActiveWorld = new World();
-		m_WorldHierachy.SetContext(ActiveWorld);
+		ActiveWorld = CreateSpecial<World>();
+		m_WorldHierachy.SetContext(ActiveWorld.get());
 		m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/right.jpg");
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/left.jpg");
@@ -111,7 +109,7 @@ namespace Proof
 	}
 	void Editore3D::OnDetach() {
 		if (ActiveWorld != nullptr) {
-			SceneSerializer scerelizer(ActiveWorld);
+			SceneSerializer scerelizer(ActiveWorld.get());
 			scerelizer.SerilizeText(ActiveWorld->GetPath());
 		}
 	}
@@ -218,6 +216,11 @@ namespace Proof
 						ImGui::PushStyleColor(ImGuiCol_FrameBg,{0.15f,0.15f,0.15f,1.0f});
 					ImGui::BeginChildFrame(pos+1,{ImGui::GetWindowWidth(),27});
 					ImGui::TextColored({1.0,0.0,0.0,1.0},it.second.second.c_str()); 
+					if (ImGui::BeginPopupContextWindow(0,1,false)) {
+						if (ImGui::MenuItem("Copy"))
+							Utils::ShortCutDialogs::Copy(it.second.second);
+						ImGui::EndPopup();
+					}
 					ImGui::EndChildFrame();
 					if (pos % 2 == 0)
 						ImGui::PopStyleColor();
@@ -230,6 +233,11 @@ namespace Proof
 						ImGui::PushStyleColor(ImGuiCol_FrameBg,{0.15f,0.15f,0.15f,1.0f});
 					ImGui::BeginChildFrame(pos+1,{ImGui::GetWindowWidth(),27});
 					ImGui::TextColored({1.0,0.635,0.0,1.0},it.second.second.c_str());
+					if (ImGui::BeginPopupContextWindow(0,1,false)) {
+						if (ImGui::MenuItem("Copy"))
+							Utils::ShortCutDialogs::Copy(it.second.second);
+						ImGui::EndPopup();
+					}
 					ImGui::EndChildFrame();
 					if (pos % 2 == 0)
 						ImGui::PopStyleColor();
@@ -241,6 +249,11 @@ namespace Proof
 					if (pos % 2 == 0)
 						ImGui::PushStyleColor(ImGuiCol_FrameBg,{0.15f,0.15f,0.15f,1.0f});
 					ImGui::BeginChildFrame(pos+1,{ImGui::GetWindowWidth(),27});
+					if(ImGui::BeginPopupContextWindow(0,1,false)) { 
+						if (ImGui::MenuItem("Copy"))
+							Utils::ShortCutDialogs::Copy(it.second.second);
+						ImGui::EndPopup();
+					}
 					ImGui::TextColored({0.0,1.0,0.0,1.0},it.second.second.c_str());
 					ImGui::EndChildFrame();
 					if (pos % 2 == 0)
@@ -253,6 +266,11 @@ namespace Proof
 					if (pos % 2 == 0)
 						ImGui::PushStyleColor(ImGuiCol_FrameBg,{0.15f,0.15f,0.15f,1.0f});
 					ImGui::BeginChildFrame(pos+1,{ImGui::GetWindowWidth(),27});
+					if (ImGui::BeginPopupContextWindow(0,1,false)) {
+						if (ImGui::MenuItem("Copy"))
+							Utils::ShortCutDialogs::Copy(it.second.second);
+						ImGui::EndPopup();
+					}
 					ImGui::TextColored({1.0,1.0,1.0,1.0},it.second.second.c_str());
 					ImGui::EndChildFrame();
 					if (pos % 2 == 0)
@@ -264,6 +282,11 @@ namespace Proof
 
 					ImGui::PushStyleColor(ImGuiCol_FrameBg,{1,1,0,1});
 					ImGui::BeginChildFrame(pos+1,{ImGui::GetWindowWidth(),27});
+					if (ImGui::BeginPopupContextWindow(0,1,false)) {
+						if (ImGui::MenuItem("Copy"))
+							Utils::ShortCutDialogs::Copy(it.second.second);
+						ImGui::EndPopup();
+					}
 					ImGui::TextColored({1,0,0,1},it.second.second.c_str());
 					ImGui::EndChildFrame();
 
@@ -292,10 +315,10 @@ namespace Proof
 			}
 
 			if (ImGui::IsWindowFocused()) {
-				Input::ViewPoartHovered = true;
+				CurrentWindow::SetWindowInputEvent(true);
 			}
 			else {
-				Input::ViewPoartHovered = false;
+				CurrentWindow::SetWindowInputEvent(false);
 			}
 
 			uint32_t Text = Application::GetScreenBuffer()->GetTexture();
@@ -340,15 +363,14 @@ namespace Proof
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("World")) {
 					std::string Data = (const char*)payload->Data;
-					SceneSerializer scerilize(ActiveWorld);
+					SceneSerializer scerilize(ActiveWorld.get());
 					scerilize.SerilizeText(ActiveWorld->GetPath());
 					m_WorldHierachy.m_SelectedEntity = {};
-					delete ActiveWorld;
 
-					ActiveWorld = new World();
-					SceneSerializer ScerilizerNewWorld(ActiveWorld);
+					ActiveWorld = CreateSpecial<World>();
+					SceneSerializer ScerilizerNewWorld(ActiveWorld.get());
 					ScerilizerNewWorld.DeSerilizeText(Data);
-					m_WorldHierachy.SetContext(ActiveWorld);
+					m_WorldHierachy.SetContext(ActiveWorld.get());
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -375,7 +397,7 @@ namespace Proof
 				if(ActiveWorld->m_CurrentState==WorldState::Edit)
 					PlayWorld();
 				else if(ActiveWorld->m_CurrentState == WorldState::Play)
-					StopWorld();
+					SetWorldEdit();
 		}
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f);
@@ -456,37 +478,33 @@ namespace Proof
 
 	void Editore3D::NewWorld(bool Save) {
 		if (Save == true && ActiveWorld != nullptr) {
-			SceneSerializer scerelizer(ActiveWorld);
+			SceneSerializer scerelizer(ActiveWorld.get());
 			scerelizer.SerilizeText(ActiveWorld->GetPath());
-			delete ActiveWorld;
-			ActiveWorld = new World();
-			m_WorldHierachy.SetContext(ActiveWorld); 
+			ActiveWorld = CreateSpecial<World>();
+			m_WorldHierachy.SetContext(ActiveWorld.get()); 
 		}
 		else {
-			if (ActiveWorld != nullptr) {
-				delete ActiveWorld;
-			}
-			ActiveWorld = new World();
-			m_WorldHierachy.SetContext(ActiveWorld);
+			ActiveWorld = CreateSpecial<World>();
+			m_WorldHierachy.SetContext(ActiveWorld.get());
 			return;
 		}
-		ActiveWorld = new World();
-		m_WorldHierachy.SetContext(ActiveWorld);
+		m_WorldHierachy.SetContext(ActiveWorld.get());
 	}
 
 	void Editore3D::OpenWorld() {
 		std::string FIle = Utils::FileDialogs::OpenFile("Texture (*.ProofAsset)\0 *.ProofAsset\0 ");
 		if (FIle.empty() == false) {
-			ActiveWorld = new World();
-			SceneSerializer scerelizer(ActiveWorld);
+			ActiveWorld = CreateSpecial<World>();
+			SceneSerializer scerelizer(ActiveWorld.get());
 			if (scerelizer.DeSerilizeText(FIle) == true) {
 				PF_ENGINE_INFO("%s Deserilize perfectly",ActiveWorld->GetName().c_str());
-				m_WorldHierachy.SetContext(ActiveWorld);
+				m_WorldHierachy.SetContext(ActiveWorld.get());
 				return;
 			}
 			else {
-				ActiveWorld = new World();
-				m_WorldHierachy.SetContext(ActiveWorld);
+
+				ActiveWorld = CreateSpecial<World>();
+				m_WorldHierachy.SetContext(ActiveWorld.get());
 				PF_ENGINE_ERROR("Deceerilize was created default world");
 				return;
 			}
@@ -494,8 +512,8 @@ namespace Proof
 		PF_ENGINE_TRACE("No File Selected");
 		if (ActiveWorld == nullptr) {
 			PF_ENGINE_INFO("New World Created cause level was originally nullptr");
-			ActiveWorld = new World();
-			m_WorldHierachy.SetContext(ActiveWorld);
+			ActiveWorld = CreateSpecial<World>();
+			m_WorldHierachy.SetContext(ActiveWorld.get());
 			return;
 		}
 		PF_ENGINE_INFO("Back to Default WOrld");
@@ -503,7 +521,7 @@ namespace Proof
 
 	void Editore3D::Save() {
 		if (ActiveWorld != nullptr) {
-			SceneSerializer scerelizer(ActiveWorld);
+			SceneSerializer scerelizer(ActiveWorld.get());
 			scerelizer.SerilizeText(ActiveWorld->GetPath());
 
 			PF_ENGINE_TRACE("%s Saved",ActiveWorld->GetName().c_str());
@@ -512,12 +530,16 @@ namespace Proof
 		PF_ENGINE_ERROR("World is NULL");
 	}
 	void Editore3D::PlayWorld() {
+		//m_PlayWorld = ActiveWorld->Copy(ActiveWorld);
 		ActiveWorld->m_CurrentState = WorldState::Play;
+
 	}
 	void Editore3D::SimulateWorld() {
 		ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
-	void Editore3D::StopWorld() {
+	void Editore3D::SetWorldEdit() {
+		//ActiveWorld = m_PlayWorld;
+		//m_PlayWorld.~shared_ptr();
 		ActiveWorld->m_CurrentState = WorldState::Edit;
 	}
 	void Editore3D::PauseWorld() {
@@ -525,7 +547,7 @@ namespace Proof
 	}
 	void Editore3D::Save(const std::string& Path) {
 		if (ActiveWorld != nullptr) {
-			SceneSerializer scerelizer(ActiveWorld);
+			SceneSerializer scerelizer(ActiveWorld.get());
 			scerelizer.SerilizeText(Path);
 			PF_ENGINE_TRACE("World Saved");
 			return;

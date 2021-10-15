@@ -2,7 +2,6 @@
 #include "Proof/Scene/Script.h"
 #include "Proof/Input/Input.h"
 namespace Proof{
-	//REGISTER_SCRIPT(MovementScript)
 	class Proof_API MovementScript:public Script{
 	public:
 		float Speed =0.2;

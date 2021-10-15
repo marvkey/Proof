@@ -39,6 +39,11 @@ namespace Proof {
     void Application::OnEvent(Event& e) {
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
+        dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent));
+        
+        if(e.GetCategoryFlags()==EventCategoryInput){
+            PF_ENGINE_INFO("that is a gg");
+        }
           for (Layer* layer : MainLayerStack.V_LayerStack)
             layer->OnEvent(e);
     }
@@ -48,6 +53,9 @@ namespace Proof {
             WindowMinimized = true;
         else
             WindowMinimized = false;
+    }
+
+    void Application::OnMouseScrollEVent(MouseScrollEvent& e) {
     }
 
     void Application::OnKeyClicked(KeyClickedEvent& e) {
@@ -72,7 +80,8 @@ namespace Proof {
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
             RendererCommand::Enable(ProofRenderTest::DepthTest);
-            if (WindowMinimized == false) {
+            if (WindowMinimized == false) 
+            {
                 ScreenFrameBuffer->Bind();
                 RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
                 RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);

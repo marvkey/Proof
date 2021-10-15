@@ -4,9 +4,9 @@ Entities:
     TagComponent:
       Tag: sphere
     TransformComponent:
-      Location: [7, 0, 0]
+      Location: [12.6999998, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [4, 4, 4]
     MeshComponent:
       Name: Default
       AssetID: 12574
@@ -18,7 +18,7 @@ Entities:
     TagComponent:
       Tag: Rocket
     TransformComponent:
-      Location: [-2.5999999, 0, 0]
+      Location: [-6.59999657, 0, 4.20000267]
       Rotation: [0, 0, 0]
       Scale: [0.5, 0.5, 0.5]
     MeshComponent:
@@ -46,7 +46,7 @@ Entities:
     TransformComponent:
       Location: [-2.20000005, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [4, 4, 4]
     MeshComponent:
       Name: Default
       AssetID: 12067
@@ -60,7 +60,7 @@ Entities:
     TransformComponent:
       Location: [1.5, 7.0999999, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [4, 4, 4]
     MeshComponent:
       Name: Default
       AssetID: 4778

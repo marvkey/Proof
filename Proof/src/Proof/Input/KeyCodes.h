@@ -123,7 +123,6 @@ namespace Proof
 		Button6 = 6,
 		Button7 = 7,
 
-		ButtonLast = Button7,
 		Button0 = ButtonLeft,
 		Button1 = ButtonRight,
 		Button2 = ButtonMiddle,

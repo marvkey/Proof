@@ -18,12 +18,17 @@ namespace Proof{
 	class Proof_API World {
 	public:
 		World();
+		World(const std::string& path){
+			CreateIBlTexture(path);
+		}
+		World(World&)=default;
 		void OnUpdateEditor(FrameTime DeltaTime);
 		void OnUpdateRuntime(FrameTime DeltaTime);
 		void OnSimulatePhysics(FrameTime DeltaTime);
 		class Entity CreateEntity(const std::string& EntName);
 		class Entity CreateEntity(const std::string& EntName,uint32_t ID);
 
+		Count<World> Copy(Count<World> world);
 		virtual void EndRuntime();
 		std::string GetName(){return Name;};
 		class ECS Registry;
@@ -46,11 +51,9 @@ namespace Proof{
 		Count<CubeMap> m_WorldCubeMapIrradiance;
 		Count<CubeMap> PrefelterMap;
 
-		unsigned int brdfLUTTexture;	
 		Count<HDRTexture>m_WorldIBLTexture;
 		Count<VertexBuffer> m_IBLSkyBoxBuffer;
 		Count<VertexArray>m_IBLSkyBoxVertexArray;
-		unsigned int captureFBO,captureRBO;
 
 		Count<FrameBuffer> m_CaptureFBO;
 		Count<RenderBuffer> m_CaptureRBO;

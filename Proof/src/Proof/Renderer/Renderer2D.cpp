@@ -66,7 +66,7 @@ namespace Proof {
 	void Renderer2D::BeginContext(const glm::mat4& Projection,const Camera& camera) {
 		s_Storage2DData->m_Shader->Bind();
 		s_Storage2DData->m_Shader->SetMat4("u_ViewProjection",Projection);
-		s_Storage2DData->m_Shader->SetMat4("u_View",camera.GetCameraView());
+		//s_Storage2DData->m_Shader->SetMat4("u_View",camera.GetCameraView());
 		s_Renderer2DStats->m_DrawCalls=0;
 		s_Renderer2DStats->m_QuadCount =0;
 	}
