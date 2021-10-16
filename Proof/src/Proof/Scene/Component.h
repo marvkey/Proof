@@ -115,8 +115,8 @@ namespace Proof{
 		MeshComponent() {
 			MeshLocalTransform.Scale = Vector{0.0f,0.0f,0.0f};
 		}
-		class Model* GetModel() {
-			return GetAsset() != nullptr ? GetAsset()->GetModel() : nullptr;
+		class Mesh* GetMesh() {
+			return GetAsset() != nullptr ? GetAsset()->GetMesh() : nullptr;
 		}
 		MeshComponent(const MeshComponent&)=default;
 		MeshAsset* GetAsset() {
@@ -202,17 +202,21 @@ namespace Proof{
 		friend class ECS;
 	};
 
-
+	/*
 	struct Proof_API CameraComponent{
 		enum class CameraType{
 			Perspective,Orthographic	
 		};
 		Vector m_LocalLocation = {0,0,0};
 		Vector m_LocalRotation={0,0,0};
+		float m_OrthoRotation =0;
+		float m_FieldOfView;
+		CameraType m_CameraType = CameraType::Perspective;
 	private:
 		uint32_t StartIndexSlot = 0;
 		friend class ECS;
 		class OrthagraphicCamera m_OrhoCam ={-1.0f,1.0f,-1.0f,1.0f};
 		class PerspectiveCamera  m_PerspCam ={45.0f,(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f,m_LocalLocation};
 	};
+	*/
 }

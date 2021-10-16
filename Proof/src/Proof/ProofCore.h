@@ -24,6 +24,6 @@
 // scene
 #include "Proof/Scene/Component.h"
 #include "Proof/Scene/Entity.h"
-#include "Proof/Scene/Model.h"
+#include "Proof/Scene/Mesh.h"
 // c++ default
 #include <vector>

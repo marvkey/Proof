@@ -5,13 +5,13 @@
 namespace Proof {
    OpenGLVertexBuffer::OpenGLVertexBuffer(const void* Data,uint32_t Size)
 	{
-	  glCreateBuffers(1,&m_ID);
+	  glGenBuffers(1,&m_ID);
 	  glBindBuffer(GL_ARRAY_BUFFER,m_ID);
 	  glBufferData(GL_ARRAY_BUFFER,Size,Data,GL_STATIC_DRAW);
    }
 
    OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t Size) {
-	   glCreateBuffers(1,&m_ID);
+	   glGenBuffers(1,&m_ID);
 	   glBindBuffer(GL_ARRAY_BUFFER,m_ID);
 	   glBufferData(GL_ARRAY_BUFFER,Size,nullptr,GL_DYNAMIC_DRAW);
    }

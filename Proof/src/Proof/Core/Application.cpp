@@ -19,9 +19,9 @@ namespace Proof {
     Application::Application(){
         srand(time(NULL));
         Proof::Log::Init();
-        MainWindow = new WindowsWindow(1500,600); // this is the size of our current second monitor
-
+        MainWindow = new WindowsWindow(); // this is the size of our current second monitor
         MainWindow->createWindow();
+
         m_GraphicsContext =GraphicsContext::Create(static_cast<Window*>(MainWindow));
         m_GraphicsContext->Init();
         Renderer::Init();
@@ -33,7 +33,6 @@ namespace Proof {
         AssetManager::InitilizeAssets("content");
         
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
-       // m_MousePickingEditor= {1300,600};
     }
 
     void Application::OnEvent(Event& e) {

@@ -16,7 +16,7 @@ namespace Proof {
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		void SetMaterialEditor(class MaterialAsset& material);
-
+		void SetMeshEditor(class MeshAsset& mesh);
 	private:
 		void Logger();
 		bool Docking = false;
@@ -56,6 +56,8 @@ namespace Proof {
 		Count<CubeMap> m_CubeMap;
 
 		void MaterialEditor();
+		void MeshEditor();
+		MeshAsset* m_MeshAsset=nullptr;
 
 		MaterialAsset* mat;
 		uint32_t TempID;

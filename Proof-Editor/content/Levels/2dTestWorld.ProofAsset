@@ -74,9 +74,9 @@ Entities:
     TagComponent:
       Tag: second player
     TransformComponent:
-      Location: [-0.600000024, 0, 0]
+      Location: [0, -0.400000006, 0]
       Rotation: [0, 0, 0]
-      Scale: [1.27031314, 1.04255342, 1]
+      Scale: [2.56999993, 1.04255342, 1]
     SpriteComponent:
       Name: Default
       AssetID: 28388

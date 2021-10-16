@@ -4,7 +4,6 @@
 #include "Entity.h"
 #include "Script.h"
 #include "Proof/Renderer/Renderer.h"
-#include "Model.h"
 #include "Mesh.h"
 #include "Proof/Core/FrameTime.h"
 #include "Component.h"
@@ -135,7 +134,7 @@ namespace Proof{
 		*/
 		Renderer3DPBR::BeginContext(Projection,EditorCamera);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetModel() != nullptr) {
+			if (Comp->GetMesh() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
 			}
 		}

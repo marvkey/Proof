@@ -12,7 +12,7 @@
 #include "Proof/Scene/Camera/OrthagraphicCamera.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
 
-#include "Proof/Scene/Model.h"
+#include "Proof/Scene/Mesh.h"
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Entity.h"
@@ -115,9 +115,7 @@ namespace Proof
             auto& Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
             Map->second += 1;
             auto InstanceSize = Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.find(meshComponent.GetMeshPointerID());
-            meshComponent.GetModel()->m_VertexArrayObject->Bind();
 
-            //SetMeshComponentData(meshComponent);
             auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
             ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
                 glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})
@@ -204,21 +202,23 @@ namespace Proof
             uint32_t TempID = s_DifferentID[Size];
             auto& TempMesh = Renderer3DInstance->m_Meshes.find(TempID);
             auto& TempAmountMeshes = Renderer3DInstance->m_AmountMeshes.find(TempID);
-            if (TempMesh->second.GetModel()->textures_loaded.size() > 0) {
+            if (TempMesh->second.GetMesh()->textures_loaded.size() > 0) {
                 Renderer3DInstance->m_Shader->Bind();
                 Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
-                TempMesh->second.GetModel()->textures_loaded[0]->Bind(0);
+                TempMesh->second.GetMesh()->textures_loaded[0]->Bind(0);
             }
             else {
                 Renderer3DInstance->m_Shader->Bind();
                 Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
                 Renderer3DInstance->m_WhiteTexture->Bind(0);
             }
-            TempMesh->second.GetModel()->m_VertexArrayObject->Bind();
-            TempMesh->second.GetModel()->m_IndexBufferObject->Bind();
+            /*
+            TempMesh->second.GetMesh()->m_VertexArrayObject->Bind();
+            TempMesh->second.GetMesh()->m_IndexBufferObject->Bind();
             RendererCommand::DrawElementIndexed(TempMesh->second.GetModel()->m_VertexArrayObject,TempAmountMeshes->second);
             Renderer3DStats->DrawCalls++;
             SizeofOffset += TempAmountMeshes->second;
+            */
         }
     }
 
@@ -244,7 +244,7 @@ namespace Proof
         */
     }
     void Renderer3D::SetMeshComponentData(MeshComponent& meshComponent) {
-        
+        /*
         meshComponent.GetModel()->m_VertexArrayObject->Bind();
 
         meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,m_Transform));
@@ -264,7 +264,7 @@ namespace Proof
         meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(8,1);// Material
         meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(9,1);// MaterialMaterial
         meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(10,1);// MaterialMaterial
-
+        */
         auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
         ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
             glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})

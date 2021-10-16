@@ -8,7 +8,7 @@
 #include "Platform/Window/WindowPlatformUtils.cpp"
 #include "Proof/Utils/PlatformUtils.h"
 #include <vector>
-#include "Proof/Scene/Model.h"
+#include "Proof/Scene/Mesh.h"
 #include "Proof/Resources/Asset/AssetManager.h"
 #include "Proof/Resources/Asset/Asset.h"
 
@@ -224,6 +224,12 @@ namespace Proof
 									//ImGui::ColorEdit4("##Colour",glm::value_ptr(TempMaterial->m_Material.Colour));
 									//
 									//ImGui::End();
+								}
+
+								if (Temp->GetAssetTypeName() == MeshAsset::GetAssetTypeStaticName() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+									MeshAsset* tempAsset= dynamic_cast<MeshAsset*>(Temp);
+									m_owner->SetMeshEditor(*tempAsset);
+									
 								}
 						
 							}

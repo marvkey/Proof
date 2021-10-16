@@ -20,8 +20,8 @@ namespace Proof
 			m_AssetType = AssetType::MeshAsset;
 		};
 		
-		class Model* GetModel()const{
-			return m_Model;
+		class Mesh* GetMesh()const{
+			return m_Mesh;
 		}
 		virtual ~MeshAsset(){}
 
@@ -29,9 +29,9 @@ namespace Proof
 			return true;
 		}
 		virtual uint32_t GetImageID();
-		class Model* GetModel();
+		class Mesh* GetModel();
 	private:
-		class Model* m_Model =nullptr;
+		class Mesh* m_Mesh =nullptr;
 		friend class AssetManager;
 
 	};

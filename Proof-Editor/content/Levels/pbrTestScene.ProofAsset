@@ -4,7 +4,7 @@ Entities:
     TagComponent:
       Tag: sphere
     TransformComponent:
-      Location: [12.6999998, 0, 0]
+      Location: [14.5999985, 0, 12.9999933]
       Rotation: [0, 0, 0]
       Scale: [4, 4, 4]
     MeshComponent:
@@ -18,9 +18,9 @@ Entities:
     TagComponent:
       Tag: Rocket
     TransformComponent:
-      Location: [-6.59999657, 0, 4.20000267]
+      Location: [-10.3000002, -18.2000008, 4.20000267]
       Rotation: [0, 0, 0]
-      Scale: [0.5, 0.5, 0.5]
+      Scale: [1, 1, 1]
     MeshComponent:
       Name: Default
       AssetID: 20980
@@ -58,7 +58,7 @@ Entities:
     TagComponent:
       Tag: second sphere
     TransformComponent:
-      Location: [1.5, 7.0999999, 0]
+      Location: [0, 7.0999999, 0]
       Rotation: [0, 0, 0]
       Scale: [4, 4, 4]
     MeshComponent:
@@ -91,7 +91,7 @@ Entities:
     TagComponent:
       Tag: LightCube
     TransformComponent:
-      Location: [5.30000019, 0, 0]
+      Location: [4.80000019, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
@@ -113,3 +113,45 @@ Entities:
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
       LightType: 2
+  - Entity: 31439
+    TagComponent:
+      Tag: backpack
+    TransformComponent:
+      Location: [-3.20000005, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 9099
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [1, 1.29999995, 2.4000001]
+      MaterialPointerID: 0
+  - Entity: 31570
+    TagComponent:
+      Tag: backpack2
+    TransformComponent:
+      Location: [-1.39999998, -4.5999999, -3.9000001]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 9099
+      LocalLocation: [5.5999999, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 12014
+  - Entity: 21616
+    TagComponent:
+      Tag: chest
+    TransformComponent:
+      Location: [19.2999992, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Name: Default
+      AssetID: 13219
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0

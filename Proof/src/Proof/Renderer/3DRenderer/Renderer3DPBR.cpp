@@ -11,7 +11,6 @@
 #include "Proof/Scene/Camera/OrthagraphicCamera.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
 
-#include "Proof/Scene/Model.h"
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Entity.h"
@@ -65,7 +64,7 @@ namespace Proof{
 			s_PBRInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
 			s_PBRInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),s_PBRInstance->m_Transforms.size() + 1});
 			s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
-			/* Used For Rendering */
+		#if 0
 			meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,m_Transform));
 			meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp2);
 			meshComponent.GetModel()->m_VertexArrayObject->AddData(7,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp3);
@@ -84,6 +83,8 @@ namespace Proof{
 			meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(11,1);// MaterialMaterial
 			meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(12,1);// MaterialMaterial
 			meshComponent.GetModel()->m_VertexArrayObject->UnBind();
+		#endif
+		
 			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
 			ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
 				glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})
@@ -153,11 +154,20 @@ namespace Proof{
 				s_PBRInstance->m_WhiteTexture->Bind(1);
 				s_PBRInstance->m_WhiteTexture->Bind(2);
 				s_PBRInstance->m_WhiteTexture->Bind(3);
+			
 			}
-			TempMesh->second.GetModel()->m_VertexArrayObject->Bind();
-			TempMesh->second.GetModel()->m_IndexBufferObject->Bind();
-			RendererCommand::DrawElementIndexed(TempMesh->second.GetModel()->m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
+			s_PBRInstance->m_Shader->Bind();
+			if(TempMesh->second.GetMesh()->m_Enabled==true){
+				for(SubMesh& mesh: TempMesh->second.GetMesh()->GetSubMeshes()){
+					if(mesh.m_Enabled==false)
+						continue;
+					mesh.m_VertexArrayObject->Bind();
+					mesh.m_IndexBufferObject->Bind();
+					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
+				}
+			}
 			sizeOffset += TempAmountMeshes->second;
+			s_PBRInstance->m_Shader->UnBind();
 		}
 	}
 	void Renderer3DPBR::Reset() {

@@ -5,7 +5,7 @@ namespace Proof {
    OpenGLVertexArray::OpenGLVertexArray(uint32_t Size):
 	  m_Size(Size)
    {
-	  glCreateVertexArrays(1,&m_ID);
+	  glGenVertexArrays(1,&m_ID);
    }
    OpenGLVertexArray::~OpenGLVertexArray() {
 	  glDeleteVertexArrays(1,&m_ID);

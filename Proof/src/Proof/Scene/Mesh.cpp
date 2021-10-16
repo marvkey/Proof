@@ -1,106 +1,163 @@
 #include "Proofprch.h"
-#include "Mesh.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include "Component.h"
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/RendererCommand.h"
-#include <unordered_map>
 
-#include "Component.h"
+#include <string>
+#include <fstream>
+#include <sstream>
+#include "Mesh.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 
-namespace Proof{
 
-    Mesh::Mesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,std::vector<Proof::Count<Proof::Texture2D>>& Textures) {
+namespace Proof{
+    std::vector<uint32_t> Mesh::AllID;
+    std::vector<SubMesh> Mesh::GetSubMeshes()  {
+        return meshes;
+    }
+
+    void Mesh::LoadModel(std::string const& path) {
+        Assimp::Importer importer;
+        const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
+        {
+            std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+            return;
+        }
+        ProcessNode(scene->mRootNode,scene);
+    }
+    void Mesh::ProcessNode(aiNode* node,const aiScene* scene) {
+        for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+            //PF_ENGINE_INFO("%s",mesh->mName.C_Str()); // works
+            meshes.emplace_back(ProcessMesh(mesh,scene));
+        }
+        for (unsigned int i = 0; i < node->mNumChildren; i++) {
+            ProcessNode(node->mChildren[i],scene);
+        }
+    }
+    SubMesh Mesh::ProcessMesh(aiMesh* mesh,const aiScene* scene) {
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+        std::vector<Count<Texture2D>> textures;
+
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+            Vertex vertex;
+            vertex.Vertices = Vector(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z);
+            if (mesh->HasNormals())
+                vertex.Normal = Vector(mesh->mNormals[i].x,mesh->mNormals[i].y,mesh->mNormals[i].z);
+            if (mesh->mTextureCoords[0]) {
+                vertex.TexCoords = glm::vec2(mesh->mTextureCoords[0][i].x,mesh->mTextureCoords[0][i].y);
+                vertex.Tangent = Vector(mesh->mTangents[i].x,mesh->mTangents[i].y,mesh->mTangents[i].z);
+                vertex.Bitangent = Vector(mesh->mBitangents[i].x,mesh->mBitangents[i].y,mesh->mBitangents[i].z);
+            }
+            else
+                vertex.TexCoords = glm::vec2(0.0f,0.0f);
+            vertices.emplace_back(vertex);
+        }
+        for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+            aiFace& face = mesh->mFaces[i];
+            for (unsigned int j = 0; j < face.mNumIndices; j++) {
+                indices.emplace_back(face.mIndices[j]);
+            }
+        }
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+        std::vector<Count<Texture2D>>  diffuseMaps = LoadMaterialTextures(material,aiTextureType_DIFFUSE,Texture2D::TextureType::Diffuse);
+        textures.insert(textures.end(),diffuseMaps.begin(),diffuseMaps.end());
+
+        std::vector<Count<Texture2D>>  specularMaps = LoadMaterialTextures(material,aiTextureType_SPECULAR,Texture2D::TextureType::Specular);
+        textures.insert(textures.end(),specularMaps.begin(),specularMaps.end());
+
+        std::vector<Count<Texture2D>> normalMaps = LoadMaterialTextures(material,aiTextureType_NORMALS,Texture2D::TextureType::Normal);
+        textures.insert(textures.end(),normalMaps.begin(),normalMaps.end());
+
+        std::vector<Count<Texture2D>>  heightMaps = LoadMaterialTextures(material,aiTextureType_HEIGHT,Texture2D::TextureType::Height);
+        textures.insert(textures.end(),heightMaps.begin(),heightMaps.end());
+       
+        SubMesh temp(vertices,indices,mesh->mName.C_Str(),textures);
+        return temp;
+        //aiTextureType_METALNESS
+        //aiTextureType_DIFFUSE_ROUGHNESS
+        //aiTextureType_AMBIENT_OCCLUSION AO
+        //aiTextureType_NORMALS
+
+        //aiTextureType_DIFFUSE
+        //aiTextureType_SPECULAR
+
+        // What we are gonna support
+        //aiTextureType_DIFFUSE
+        //aiTextureType_NORMALS
+        //aiTextureType_SPECULAR
+    }
+
+    std::vector<Count<Texture2D>> Mesh::LoadMaterialTextures(aiMaterial* mat,aiTextureType type,Texture2D::TextureType _TextureType) {
+        std::vector<Count<Texture2D>>  Textures;
+        for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+            aiString str;
+            mat->GetTexture(type,i,&str);
+            bool skip = false;
+            for (unsigned int j = 0; j < textures_loaded.size(); j++) {
+                if (std::strcmp(textures_loaded[j]->GetPath().data(),str.C_Str()) == 0) {
+                    Textures.emplace_back(textures_loaded[j]);
+                    skip = true;
+                    break;
+                }
+            }
+            if (!skip) {
+                Count<Texture2D> NewTexture = Texture2D::Create(str.C_Str(),_TextureType);
+                Textures.emplace_back(NewTexture);
+                textures_loaded.emplace_back(NewTexture);
+            }
+        }
+        return Textures;
+    }
+
+
+    SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name,std::vector<Proof::Count<Proof::Texture2D>>& Textures) {
         this->m_Vertices = Vertices;
         this->m_Indices = Indices;
         this->m_Textures = Textures;
-        SetupMesh();
-        InitilizeMapTextures();
+        m_Name = name;
+        SetUp();
     }
 
-    Mesh::Mesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices) {
+    SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name) {
         this->m_Vertices = Vertices;
         this->m_Indices = Indices;
-        SetupMesh();
+        m_Name = name;
+        SetUp();
     }
 
-    void Mesh::InitilizeMapTextures() {
-        unsigned int diffuseNr = 1;
-        unsigned int specularNr = 1;
-        unsigned int normalNr = 1;
-        unsigned int heightNr = 1;
-        for (unsigned int i = 0; i < m_Textures.size(); i++) {
-            Proof::Texture2D::TextureType Texture_Type = m_Textures[i]->GetTextureType();
-            if (Texture_Type == Proof::Texture2D::TextureType::Diffuse) {
-                diffuseNr++;
-                m_MapTextures.insert({"texture_diffuse",diffuseNr});
-            }
-            else if (Texture_Type == Proof::Texture2D::TextureType::Specular) {
-                specularNr++;
-                m_MapTextures.insert({"texture_specular",specularNr});
-            }
-            else if (Texture_Type == Proof::Texture2D::TextureType::Normal) {
-                normalNr++;
-                m_MapTextures.insert({"texture_normal",normalNr});
-            }
-            else if (Texture_Type == Proof::Texture2D::TextureType::Height) {
-                heightNr++;
-                m_MapTextures.insert({"texture_height",heightNr});
-            }
-        }
-    }
 
-    void Mesh::Draw(const Proof::Count<Proof::Shader>& shader) {
-        shader->Bind();
-        shader->SetInt("texture_diffuse",0);
-        m_Textures[0]->Bind(0);
-
-        //uint8_t iterator = 0;
-        /*
-        for (const auto& element : m_MapTextures) {
-            shader->SetInt(element.first,element.second);
-            m_Textures[iterator]->BindTexture(iterator);
-            iterator++;
-        }
-        */
-
-        //InitMatrix();
-        //shader->SetMat4("Model",ModelMatrix);
-        //Proof::RendererCommand::DrawIndexed(VertexArrayObject);
-        //VertexArrayObject->UnBind();
-    }
-
-    void Mesh::SetUpTransform() {
-        
-    }
-    static uint32_t Temp2 = (sizeof(glm::vec4));
-    static uint32_t Temp3 = (sizeof(glm::vec4) * 2);
-    static uint32_t Temp4 = (sizeof(glm::vec4) * 3);
-    static uint32_t Temp5 = (sizeof(glm::vec4) * 4);
-    void Mesh::SetupMesh() {
-        m_VertexArrayObject = Proof::VertexArray::Create();
-        m_VertexBufferObject = Proof::VertexBuffer::Create(&m_Vertices[0],m_Vertices.size() * sizeof(Vertex));
-        m_IndexBufferObject = Proof::IndexBuffer::Create(&m_Indices[0],m_Indices.size());
+    void SubMesh::SetUp() {
+        m_VertexArrayObject = VertexArray::Create();
+        m_VertexBufferObject = VertexBuffer::Create(m_Vertices.data(),m_Vertices.size() * sizeof(Vertex));
+        m_IndexBufferObject = IndexBuffer::Create(m_Indices.data(),m_Indices.size());
         m_VertexBufferObject->Bind();
         m_IndexBufferObject->Bind();
-
         m_VertexArrayObject->AttachIndexBuffer(m_IndexBufferObject);
-        m_VertexArrayObject->AddData(0,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertices));
-        m_VertexArrayObject->AddData(1,3,sizeof(Vertex),(void*)offsetof(Vertex,Normal));
-        m_VertexArrayObject->AddData(2,2,sizeof(Vertex),(void*)offsetof(Vertex,TexCoords));
-        m_VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)offsetof(Vertex,Tangent));
-        m_VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)offsetof(Vertex,Bitangent));
+        m_VertexArrayObject->Bind();
 
-        /* Used For Rendering */
-        m_VertexArrayObject->AddData(5,4,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_Transform));
-        m_VertexArrayObject->AddData(6,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp2);
-        m_VertexArrayObject->AddData(7,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp3);
-        m_VertexArrayObject->AddData(8,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp4);
+        m_VertexArrayObject->AddData(0,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertex::Vertices));
+        m_VertexArrayObject->AddData(1,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertex::Normal));
+        m_VertexArrayObject->AddData(2,2,sizeof(Vertex),(void*)offsetof(Vertex,Vertex::TexCoords));
+        m_VertexArrayObject->AddData(3,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertex::Tangent));
+        m_VertexArrayObject->AddData(4,3,sizeof(Vertex),(void*)offsetof(Vertex,Vertex::Bitangent));
+        m_VertexArrayObject->UnBind();
+
+        Renderer3DPBR::GetRenderer()->m_VertexBuffer->Bind(); // we are gonna have to find a way to deal with this 
+        m_VertexArrayObject->AddData(5,4,sizeof(PhysicalBasedRendererVertex),(void*)0);
+        m_VertexArrayObject->AddData(6,4,sizeof(PhysicalBasedRendererVertex),(void*)(sizeof(glm::vec4) * 1));
+        m_VertexArrayObject->AddData(7,4,sizeof(PhysicalBasedRendererVertex),(void*)(sizeof(glm::vec4) * 2));
+        m_VertexArrayObject->AddData(8,4,sizeof(PhysicalBasedRendererVertex),(void*)(sizeof(glm::vec4) * 3));
         m_VertexArrayObject->AddData(9,3,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_AlbedoColour));
         m_VertexArrayObject->AddData(10,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_Matallness));
         m_VertexArrayObject->AddData(11,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_Roughnes));
         m_VertexArrayObject->AddData(12,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_AO));
-        
         m_VertexArrayObject->AttributeDivisor(5,1);
         m_VertexArrayObject->AttributeDivisor(6,1);
         m_VertexArrayObject->AttributeDivisor(7,1);
@@ -110,16 +167,5 @@ namespace Proof{
         m_VertexArrayObject->AttributeDivisor(11,1);// MaterialMaterial
         m_VertexArrayObject->AttributeDivisor(12,1);// MaterialMaterial
         m_VertexArrayObject->UnBind();
-    }
-
-    void Mesh::InitMatrix() {
-        /*
-        ModelMatrix = glm::mat4(1.0f);
-        ModelMatrix = glm::translate(ModelMatrix,{MeshTransform.Location});
-        ModelMatrix = glm::rotate(ModelMatrix,glm::radians(MeshTransform.Rotation.X),{MeshTransform.Rotation});
-        ModelMatrix = glm::rotate(ModelMatrix,glm::radians(MeshTransform.Rotation.Y),{MeshTransform.Rotation});
-        ModelMatrix = glm::rotate(ModelMatrix,glm::radians(MeshTransform.Rotation.Z),{MeshTransform.Rotation});
-        ModelMatrix = glm::scale(ModelMatrix,{MeshTransform.Scale});
-        */
     }
 }

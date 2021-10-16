@@ -163,6 +163,7 @@ namespace Proof
 		//ImGui::ShowDemoWindow();
 		ViewPort();
 		MainToolBar();
+		MeshEditor();
 		m_WorldHierachy.ImGuiRender();
 		m_CurrentContentBrowserPanel.ImGuiRender();
 		MaterialEditor();
@@ -562,6 +563,10 @@ namespace Proof
 		PF_ENGINE_INFO("material ID %i",TempID);
 	}
 
+	void Editore3D::SetMeshEditor(MeshAsset& mesh) {
+		m_MeshAsset =&mesh;
+	}
+
 	void Editore3D::MaterialEditor() {
 		ImGui::Begin("Material Editor");
 		{
@@ -619,6 +624,19 @@ namespace Proof
 				ImGui::DragFloat("AO",&mat->m_Material.m_AO,0.001);
 
 				mat->SaveAsset();
+			}
+		}
+		ImGui::End();
+	}
+	void Editore3D::MeshEditor() {
+		ImGui::Begin("Mesh Editor");
+		{
+			if(m_MeshAsset !=nullptr){
+				ExternalAPI::ImGUIAPI::CheckBox(m_MeshAsset->GetAssetName(),&m_MeshAsset->GetMesh()->m_Enabled);
+				ImGui::NewLine();
+				for(SubMesh& mesh: m_MeshAsset->GetMesh()->meshes){
+					ExternalAPI::ImGUIAPI::CheckBox(mesh.GetName(),&mesh.m_Enabled);
+				}
 			}
 		}
 		ImGui::End();

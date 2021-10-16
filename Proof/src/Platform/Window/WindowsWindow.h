@@ -11,6 +11,7 @@ namespace Proof {
     class Proof_API WindowsWindow : public Window {
     public:
         WindowsWindow(unsigned int Width, unsigned int Height);
+        WindowsWindow()=default;
         friend class Application; 
         /* This is temporary the way the key input works but it wil still use std::vector but maybe i will make the window have a friend class with the Input the class so i can make this private*/
         static std::vector<KeyBoardKey> KeyboardClicked;
@@ -37,7 +38,7 @@ namespace Proof {
             return m_InputEventEnabled;
         }
     private:
-        int Width =0, Height=0;
+        int Width =100, Height=100;
         ::GLFWwindow* MainWindow;
         static void key_callback(::GLFWwindow* window, int key, int scancode, int action, int mods);
         static void mouse_button_callback(::GLFWwindow* window, int button, int action, int mods);

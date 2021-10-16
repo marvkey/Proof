@@ -17,6 +17,6 @@ namespace Proof{
 			Transform = glm::rotate(glm::mat4(1.0f),glm::radians(m_Rotation.z),{0,0,1});
 
 		m_ViewMatrix = glm::inverse(Transform);
-		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+		//m_ViewMatrix = glm::lookAt(m_Position,m_Position + CameraFront,CameraUp);
 	}
 }

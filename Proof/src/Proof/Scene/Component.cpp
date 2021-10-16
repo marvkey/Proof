@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "Component.h"
-#include "Model.h"
+#include "Mesh.h"
 #include "Entity.h"
 #include "EntitiyComponentSystem/ECS.h"
 #include "World.h"
@@ -13,7 +13,7 @@ namespace Proof{
 		return Entity{m_EntityOwner,CurrentWorld};
 	}
 	uint32_t MeshComponent::GetMeshPointerID() {
-		return GetModel()!= nullptr ? GetModel()->GetID(): 0;
+		return GetMesh()!= nullptr ? GetMesh()->GetID(): 0;
 	}
 	Material* MeshComponent::GetMaterial() {
 		if(m_MeshMaterialID == 0){

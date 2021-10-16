@@ -206,14 +206,17 @@ namespace Proof {
             PF_CORE_ASSERT(false,"Could Not Initilize GLFW");
             return -1;
         }
-        //glfwWindowHint(GLFW_MAXIMIZED,GLFW_FALSE);
-        MainWindow = glfwCreateWindow(Width,Height, "Proof Engine", NULL, NULL);
-        
+       // glfwWindowHint(GLFW_MAXIMIZED,GLFW_TRUE); // when using this meathod teh window will have some glithy meathod
+
+        MainWindow = glfwCreateWindow(Width,Height, "Proof", nullptr,NULL);
         if (MainWindow == nullptr) {
             PF_CORE_ASSERT(false,"Window Is Nullptr");
             glfwTerminate();
             return -1;
         }
+        glfwMaximizeWindow(MainWindow);
+        glfwGetWindowSize(MainWindow,&Width,&Height);
+       
         glfwMakeContextCurrent(MainWindow);
         glfwSetKeyCallback(MainWindow,key_callback);
         glfwSetMouseButtonCallback(MainWindow,mouse_button_callback);
@@ -228,6 +231,7 @@ namespace Proof {
         glfwSetWindowRefreshCallback(MainWindow,Window_Refresh_callback);
         glfwSetWindowFocusCallback(MainWindow,Window_Input_Focus_callback);
         glfwSetFramebufferSizeCallback(MainWindow,Framebuffer_size_callback);
+        PF_ENGINE_TRACE("Window created widht %i height %i",Width,Height);
         return 0;
     }
 
