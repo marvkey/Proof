@@ -34,12 +34,12 @@ project "Proof"
 		"%{IncludeDir.Log}",
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.yaml_cpp}"
-
+		"%{IncludeDir.yaml_cpp}",
+		"C:/ProgramFiles/Mono/include/mono-2.0"
     }
 	libdirs{
 		"vendor/Assimp/Proof-Assimp-lib",
-
+		"C:/ProgramFiles/Mono/lib"
 	}
 	links
 	{	
@@ -49,6 +49,8 @@ project "Proof"
 		"Glad",
         "assimp-vc142-mt.lib",
 		"yaml-cpp",
+		"mono-2.0-sgen.lib",
+
 		--"ProofPhysics"
 	}
     defines {
@@ -64,7 +66,7 @@ project "Proof"
 
 	filter "system:windows"
 		systemversion "latest"
-		buildoptions "/MDd"
+		--buildoptions "/MDd"
 		defines {
 			"PF_PLATFORM_WINDOW64"
 		}

@@ -28,6 +28,7 @@ project "Proof-Editor"
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.yaml_cpp}",
+		"C:/ProgramFiles/Mono/include/mono-2.0"
     }
 
     --filter { "system:windows", "configurations:Debug" }
@@ -39,6 +40,7 @@ project "Proof-Editor"
     {
         --"%{wks.location}/Game/Proof-Game/x64/Debug",
         "%{wks.location}/Proof/vendor/Assimp/Proof-Assimp-lib",
+		"C:/ProgramFiles/Mono/lib"
 
     }
 
@@ -50,8 +52,9 @@ project "Proof-Editor"
         "opengl32.lib",
         "Glad",
         "assimp-vc142-mt.lib",
-        --"ScriptModule.lib",
         "yaml-cpp",
+		"mono-2.0-sgen.lib",
+        --"ScriptModule.lib",
 		--"ProofPhysics"
     }
    

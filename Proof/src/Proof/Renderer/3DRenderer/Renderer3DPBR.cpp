@@ -64,27 +64,7 @@ namespace Proof{
 			s_PBRInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
 			s_PBRInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),s_PBRInstance->m_Transforms.size() + 1});
 			s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
-		#if 0
-			meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,m_Transform));
-			meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp2);
-			meshComponent.GetModel()->m_VertexArrayObject->AddData(7,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp3);
-			meshComponent.GetModel()->m_VertexArrayObject->AddData(8,4,sizeof(PhysicalBasedRendererVertex),(void*)Temp4);
-			meshComponent.GetModel()->m_VertexArrayObject->AddData(9,3,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_AlbedoColour));
-			meshComponent.GetModel()->m_VertexArrayObject->AddData(10,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_Matallness));
-			meshComponent.GetModel()->m_VertexArrayObject->AddData(11,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_Roughnes));
-			meshComponent.GetModel()->m_VertexArrayObject->AddData(12,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_AO));
-
-			meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(5,1);
-			meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
-			meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(7,1);
-			meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(8,1);
-			meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(9,1);// Material
-			meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(10,1);// Material
-			meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(11,1);// MaterialMaterial
-			meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(12,1);// MaterialMaterial
-			meshComponent.GetModel()->m_VertexArrayObject->UnBind();
-		#endif
-		
+			
 			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
 			ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
 				glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})
@@ -158,11 +138,13 @@ namespace Proof{
 			}
 			s_PBRInstance->m_Shader->Bind();
 			if(TempMesh->second.GetMesh()->m_Enabled==true){
-				for(SubMesh& mesh: TempMesh->second.GetMesh()->GetSubMeshes()){
+				//for (SubMesh& mesh : TempMesh->second.GetMesh()->GetSubMeshes()) { // this pic of code is so much slower than just looping through the raw mesh in the bottom
+				for(SubMesh& mesh: TempMesh->second.GetMesh()->meshes){
 					if(mesh.m_Enabled==false)
 						continue;
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
+					
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
 				}
 			}

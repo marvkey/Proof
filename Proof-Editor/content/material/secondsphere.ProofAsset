@@ -3,7 +3,7 @@ AssetType: 3
 ID: 11991
 AlbedoColour: [1, 0.999989986, 0.999989986]
 Roughness: 1
-Metallness: 1
+Metallness: 2
 AO: 1
 MetallicTexturePath: ""
 AlbedoTexturePath: ""

@@ -35,6 +35,7 @@ namespace Proof{
 		std::string GetPath(){
 			return m_Path;
 		}
+		friend class WorldRenderer;
 	private:
 		void OnUpdate(FrameTime DeltaTime);
 		WorldState m_CurrentState=WorldState::Edit;

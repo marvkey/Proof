@@ -21,8 +21,6 @@
 #include "ImGUIAPI.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Utils/PlatformUtils.h"
-
-
 namespace Proof
 {
 	glm::vec4 ClearColour;

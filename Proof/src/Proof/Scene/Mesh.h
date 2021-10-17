@@ -68,6 +68,7 @@ a:
         std::vector<Count<Texture2D>> LoadMaterialTextures(aiMaterial* mat,aiTextureType type,Texture2D::TextureType _TextureType);
         friend class Renderer3D;
         friend class Editore3D;
+        friend class Renderer3DPBR;
     };
 
 

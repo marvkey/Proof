@@ -1,0 +1,11 @@
+AssetTypeString: AssetType::MaterialAsset
+AssetType: 3
+ID: 26003
+AlbedoColour: [1, 1, 1]
+Roughness: 0
+Metallness: 12
+AO: 0
+MetallicTexturePath: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\mesh\source\sponza_zip\glTF\8006627369776289000.png
+AlbedoTexturePath: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\mesh\source\sponza_zip\glTF\16275776544635328252.png
+NormalTexturePath: ""
+RoughnessTexturePath: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\mesh\source\sponza_zip\glTF\5061699253647017043.png

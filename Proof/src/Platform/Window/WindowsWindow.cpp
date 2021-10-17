@@ -215,6 +215,7 @@ namespace Proof {
             return -1;
         }
         glfwMaximizeWindow(MainWindow);
+
         glfwGetWindowSize(MainWindow,&Width,&Height);
        
         glfwMakeContextCurrent(MainWindow);
