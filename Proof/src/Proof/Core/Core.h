@@ -20,6 +20,7 @@
 #define Proof_API
 // Add this when locating a file, but not fore built in functions it is already automatically added
 inline const std::string ProofCurrentDirectorySrc = "../Proof/src/";
+inline const std::string ProofCurrentDirectory = "../Proof/";
 #define BIT(x) (1 << x)
 #ifdef _WIN64
     #ifdef PF_ENABLE_ASSERT

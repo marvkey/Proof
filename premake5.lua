@@ -41,6 +41,7 @@ group ""
 include "Proof-Editor"
 include "Proof"
 include "SandBox"
-include "ProofPhysics"  
+include "ProofPhysics" 
+include "ProofGame"  
 
 

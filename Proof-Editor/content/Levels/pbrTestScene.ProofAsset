@@ -58,7 +58,7 @@ Entities:
     TagComponent:
       Tag: second sphere
     TransformComponent:
-      Location: [0, 7.0999999, 0]
+      Location: [-0.600000024, 7.0999999, 0]
       Rotation: [0, 0, 0]
       Scale: [4, 4, 4]
     MeshComponent:
@@ -91,7 +91,7 @@ Entities:
     TagComponent:
       Tag: LightCube
     TransformComponent:
-      Location: [4.80000019, 0, 0]
+      Location: [0.400000006, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
@@ -117,7 +117,7 @@ Entities:
     TagComponent:
       Tag: backpack
     TransformComponent:
-      Location: [-3.20000005, 0, 0]
+      Location: [-4.80000019, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
@@ -147,10 +147,24 @@ Entities:
     TransformComponent:
       Location: [19.2999992, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [1, 0.00999999978, 0.00999999978]
     MeshComponent:
       Name: Default
-      AssetID: 13219
+      AssetID: 0
+      LocalLocation: [0, 0, 0]
+      LocalRotation: [0, 0, 0]
+      LocalScale: [0, 0, 0]
+      MaterialPointerID: 0
+  - Entity: 28039
+    TagComponent:
+      Tag: sponza
+    TransformComponent:
+      Location: [0.599999726, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.00100000005, 0.00100000005, 0.00100000005]
+    MeshComponent:
+      Name: Default
+      AssetID: 32113
       LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]

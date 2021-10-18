@@ -335,7 +335,7 @@ namespace Proof
 		}
 	}
 	void ContentBrowserPanel::NewMeshAsset(const std::string& NewFilePath) {
-		std::string FIle = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0");
+		std::string FIle = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
 		if (FIle.empty() == false) {
 			MeshAsset* TempAsset = new MeshAsset(FIle,NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);

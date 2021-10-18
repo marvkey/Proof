@@ -43,6 +43,8 @@ namespace Proof{
 		Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera,sizeof(CameraData));
 	}
 	void Renderer3DPBR::Draw(MeshComponent& meshComponent) {
+		int usingMaterial = meshComponent.HasMaterial();
+
 		if (s_PBRInstance->SceneHasAmountMeshes(meshComponent.GetMeshPointerID()) == true) {
 			auto& Map = s_PBRInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
 			Map->second+=1;
@@ -55,16 +57,16 @@ namespace Proof{
 				* glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1})
 				* glm::scale(glm::mat4(1.0f),{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
 
-			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial);
+			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
 			s_PBRInstance->m_Transforms.insert(s_PBRInstance->m_Transforms.begin() + InstanceSize->second,temp);
 			InstanceSize->second ++;
 
 		}else{
+
 			s_PBRInstance->m_AmountMeshes.insert({meshComponent.GetMeshPointerID(),1});
 			s_PBRInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
 			s_PBRInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),s_PBRInstance->m_Transforms.size() + 1});
 			s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
-			
 			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
 			ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
 				glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})
@@ -72,7 +74,7 @@ namespace Proof{
 				* glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1})
 				* glm::scale(glm::mat4(1.0f),{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
 		
-			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial);
+			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
 			s_PBRInstance->m_Transforms.emplace_back(temp);
 		}
 	}
@@ -138,13 +140,19 @@ namespace Proof{
 			}
 			s_PBRInstance->m_Shader->Bind();
 			if(TempMesh->second.GetMesh()->m_Enabled==true){
-				//for (SubMesh& mesh : TempMesh->second.GetMesh()->GetSubMeshes()) { // this pic of code is so much slower than just looping through the raw mesh in the bottom
+				if(TempMesh->second.HasMaterial()==false){
+					s_PBRInstance->m_Shader->SetInt("DiffuseShader",7);
+					if (TempMesh->second.GetMesh()->textures_loaded.size() > 0)
+						TempMesh->second.GetMesh()->textures_loaded[0]->Bind(7);
+					else
+						s_PBRInstance->m_WhiteTexture->Bind(7);
+				}
 				for(SubMesh& mesh: TempMesh->second.GetMesh()->meshes){
 					if(mesh.m_Enabled==false)
 						continue;
+				
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
-					
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
 				}
 			}

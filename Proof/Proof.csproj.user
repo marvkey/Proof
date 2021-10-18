@@ -1,0 +1,5 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ReferencePath>vendor\Assimp\Proof-Assimp-lib;C:\Program Files\Mono\lib</ReferencePath>
+  </PropertyGroup>
+</Project>

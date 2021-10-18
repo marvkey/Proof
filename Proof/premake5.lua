@@ -35,11 +35,11 @@ project "Proof"
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.yaml_cpp}",
-		"C:/ProgramFiles/Mono/include/mono-2.0"
+		"C:/Program Files/Mono/include/mono-2.0"
     }
 	libdirs{
 		"vendor/Assimp/Proof-Assimp-lib",
-		"C:/ProgramFiles/Mono/lib"
+		"C:/Program Files/Mono/lib"
 	}
 	links
 	{	

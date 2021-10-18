@@ -17,12 +17,12 @@ namespace Proof
     public:
         SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name,std::vector<Proof::Count<class Texture2D>>& Textures);
         SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name);
-        void SetUp();
         bool m_Enabled = true;
         std::string GetName() {
             return m_Name;
         }
     private:
+        void SetUp();
         std::vector<Vertex> m_Vertices;
         std::vector<uint32_t> m_Indices;
         std::string m_Name;

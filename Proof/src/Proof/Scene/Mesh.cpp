@@ -24,7 +24,7 @@ namespace Proof{
         const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
         {
-            std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+            PF_ENGINE_ERROR("ERROR::ASSIMP %s",importer.GetErrorString());
             return;
         }
         ProcessNode(scene->mRootNode,scene);
@@ -158,6 +158,7 @@ namespace Proof{
         m_VertexArrayObject->AddData(10,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_Matallness));
         m_VertexArrayObject->AddData(11,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_Roughnes));
         m_VertexArrayObject->AddData(12,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_AO));
+        m_VertexArrayObject->AddData(13,1,sizeof(PhysicalBasedRendererVertex),(void*)offsetof(PhysicalBasedRendererVertex,PhysicalBasedRendererVertex::m_UsingMaterial));
         m_VertexArrayObject->AttributeDivisor(5,1);
         m_VertexArrayObject->AttributeDivisor(6,1);
         m_VertexArrayObject->AttributeDivisor(7,1);
@@ -166,6 +167,7 @@ namespace Proof{
         m_VertexArrayObject->AttributeDivisor(10,1);// Material
         m_VertexArrayObject->AttributeDivisor(11,1);// MaterialMaterial
         m_VertexArrayObject->AttributeDivisor(12,1);// MaterialMaterial
+        m_VertexArrayObject->AttributeDivisor(13,1);// MaterialMaterial
         m_VertexArrayObject->UnBind();
     }
 }

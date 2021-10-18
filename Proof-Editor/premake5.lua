@@ -28,7 +28,7 @@ project "Proof-Editor"
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.yaml_cpp}",
-		"C:/ProgramFiles/Mono/include/mono-2.0"
+		"C:/Program Files/Mono/include/mono-2.0"
     }
 
     --filter { "system:windows", "configurations:Debug" }
@@ -40,7 +40,7 @@ project "Proof-Editor"
     {
         --"%{wks.location}/Game/Proof-Game/x64/Debug",
         "%{wks.location}/Proof/vendor/Assimp/Proof-Assimp-lib",
-		"C:/ProgramFiles/Mono/lib"
+		"C:/Program Files/Mono/lib"
 
     }
 

@@ -1,0 +1,6 @@
+C:\Users\Admin\OneDrive\Documents\Proof\ProofGame\bin\Debug\ProofGame.dll
+C:\Users\Admin\OneDrive\Documents\Proof\ProofGame\bin\Debug\ProofGame.pdb
+C:\Users\Admin\OneDrive\Documents\Proof\ProofGame\obj\Debug\ProofGame.csproj.AssemblyReference.cache
+C:\Users\Admin\OneDrive\Documents\Proof\ProofGame\obj\Debug\ProofGame.csproj.CoreCompileInputs.cache
+C:\Users\Admin\OneDrive\Documents\Proof\ProofGame\obj\Debug\ProofGame.dll
+C:\Users\Admin\OneDrive\Documents\Proof\ProofGame\obj\Debug\ProofGame.pdb

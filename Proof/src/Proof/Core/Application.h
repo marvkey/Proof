@@ -8,7 +8,8 @@
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Renderer/GraphicsContext.h"
 #include "Proof/Events/WindowEvent.h"
-namespace Proof {
+#include "Proof/Scene/CSharpScripting/CSharpInitilize.h"
+    namespace Proof {
     class Layer;
     class ImGuiLayer;
     class LayerStack;
@@ -32,6 +33,7 @@ namespace Proof {
         bool WindowMinimized = false;
         bool IsRunning = true;
     private:
+        InitlizeCSharp ScriptingCharp;
         void OnEvent(Event& e);
         void OnWindowMinimizeEvent(WindowMinimizeEvent& e);
         void OnMouseScrollEVent(MouseScrollEvent& e);

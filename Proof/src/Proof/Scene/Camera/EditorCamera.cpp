@@ -9,7 +9,8 @@ namespace Proof {
 
 	}
 	void EditorCamera3D::OnUpdate(FrameTime DeltaTime){
-		CameraView = glm::lookAt(CameraPos, CameraPos + CameraFront, CameraUp);
+		//glm::vec3 temp{CameraPos.x*3,CameraPos.y * 3,CameraPos.z * 3};
+		CameraView = glm::lookAt(CameraPos,CameraPos + CameraFront, CameraUp);
 		
 		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight)){
 			glfwSetInputMode(CurrentWindow::GetWindow(),GLFW_CURSOR,GLFW_CURSOR_NORMAL);

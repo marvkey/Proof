@@ -12,6 +12,7 @@ layout(location = 9) in vec3 aAlbedoColour;
 layout(location = 10) in float aMetallness;
 layout(location = 11) in float aRoughness;
 layout(location = 12) in float aAO;
+layout(location = 13) in int aMaterialEnabled;
 
 out vec3 FragPos;
 out vec3 Normal;
@@ -22,6 +23,7 @@ out vec3  MaterialColour;
 out float Materialmetallic;
 out float Materialroughness;
 out float MaterialAO;
+flat out int MaterialEnabled;
 layout(std140,binding = 1) uniform CameraData
 {
     mat4 ProjectionMatrix;
@@ -34,7 +36,7 @@ void main() {
     Materialmetallic = aMetallness;
     Materialroughness = aRoughness;
     MaterialAO = aAO;
-
+    MaterialEnabled =aMaterialEnabled;
     TexCoords = aTexCoords;
     FragPos = vec3(aTransform * vec4(aPos,1.0));
     Normal = mat3(aTransform) * aNormal;
@@ -58,6 +60,7 @@ in vec3  MaterialColour;
 in float Materialmetallic;
 in float Materialroughness;
 in float MaterialAO;
+flat in int MaterialEnabled;
 
 const float PI = 3.14159265359;
 // lights
@@ -69,6 +72,7 @@ uniform sampler2D albedoMap;
 uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
+uniform sampler2D DiffuseShader;
 // IBL
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
@@ -82,11 +86,11 @@ vec3 fresnelSchlickRoughness(float cosTheta,vec3 F0,float roughness) {
     return F0 + (max(vec3(1.0 - roughness),F0) - F0) * pow(clamp(1.0 - cosTheta,0.0,1.0),5.0);
 }
 void main() {
-   
-    vec3 NewMaterialColour = texture(albedoMap,TexCoords).rgb* MaterialColour;
-    float NewMaterialmetallic = texture(metallicMap,TexCoords).r* Materialmetallic;
-    float NewMaterialroughness= texture(roughnessMap,TexCoords).r* Materialroughness;
 
+    vec3 NewMaterialColour = texture(albedoMap,TexCoords).rgb * MaterialColour;
+    float NewMaterialmetallic = texture(metallicMap,TexCoords).r * Materialmetallic;
+    float NewMaterialroughness = texture(roughnessMap,TexCoords).r * Materialroughness;
+    int NewMaterialEnabled = MaterialEnabled;
     vec3 N = texture(normalMap,TexCoords).rgb;
     N = normalize(Normal * 2.0 - 1.0);
     vec3 V = normalize(CameraPosition - FragPos);
@@ -143,8 +147,11 @@ void main() {
 
     color = color / (color + vec3(1.0));
     color = pow(color,vec3(1.0 / 2.2));
- 
-    FragColor = vec4(color,1.0);
+    if(NewMaterialEnabled==1)// has material
+        FragColor = vec4(color,1.0);
+    else
+        FragColor = texture(DiffuseShader,TexCoords);
+
 }
 
 float DistributionGGX(vec3 N,vec3 H,float roughness) {

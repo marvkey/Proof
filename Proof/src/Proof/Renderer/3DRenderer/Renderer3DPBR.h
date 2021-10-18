@@ -40,19 +40,21 @@ namespace Proof
 	struct Proof_API PhysicalBasedRendererVertex{
 	
 		//PhysicalBasedRendererVertex()=default;
-		PhysicalBasedRendererVertex(const glm::mat4& transform, const Material& temp):
+		PhysicalBasedRendererVertex(const glm::mat4& transform, const Material& temp,int usingMaterial):
 		m_Transform(transform)
 		{
 			m_AlbedoColour =temp.m_Colour;
 			m_AO= temp.m_AO;
 			m_Roughnes =temp.m_Roughness;
 			m_Matallness = temp.m_Metallness;
+			m_UsingMaterial =usingMaterial;
 		}
 		glm::mat4 m_Transform;
 		Vector m_AlbedoColour;
 		float m_Matallness = 0.f;
 		float m_Roughnes = 0.f;
 		float m_AO = 0.f;
+		int m_UsingMaterial =false;
 	};
 
 }

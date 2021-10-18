@@ -38,7 +38,7 @@ namespace Proof {
             return m_InputEventEnabled;
         }
     private:
-        int Width =100, Height=100;
+        int Width =800, Height=500;
         ::GLFWwindow* MainWindow;
         static void key_callback(::GLFWwindow* window, int key, int scancode, int action, int mods);
         static void mouse_button_callback(::GLFWwindow* window, int button, int action, int mods);
