@@ -9,7 +9,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-
+#include "Material.h"
 #include "Mesh.h"
 namespace Proof
 {
@@ -51,6 +51,7 @@ a:
         static std::vector<uint32_t> AllID;
         std::vector<class SubMesh> GetSubMeshes();
         std::vector<Count<Texture2D>> textures_loaded;
+        std::vector<Material> Materials_loaded;
         uint32_t GetID(){
             return m_ID;
         }
@@ -66,6 +67,7 @@ a:
         void ProcessNode(aiNode* node,const aiScene* scene);
         SubMesh ProcessMesh(aiMesh* mesh,const aiScene* scene);
         std::vector<Count<Texture2D>> LoadMaterialTextures(aiMaterial* mat,aiTextureType type,Texture2D::TextureType _TextureType);
+        std::vector<Count<Texture2D>> LoadMaterial(aiMaterial* mat);
         friend class Renderer3D;
         friend class Editore3D;
         friend class Renderer3DPBR;

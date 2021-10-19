@@ -12,6 +12,7 @@ namespace Proof
         static float GetTime() { return glfwGetTime(); }
         static float GetFrameFPS() { return Application::GetFPS(); };
         static float GetFrameMS() { return Application::GetFrameMS(); };
+        float Get() { return DeltaTime; };
         operator float() const { return DeltaTime; }
     private:
         float DeltaTime;

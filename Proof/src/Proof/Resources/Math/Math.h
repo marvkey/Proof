@@ -2,9 +2,11 @@
 #include "Proof/Core/Core.h"
 #include <cmath>
 #include "Vector.h"
-#include "glm/glm.hpp"
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include<glm/glm.hpp>
+#include<glm/gtc/matrix_transform.hpp>
+#include<glm/gtc/type_ptr.hpp>
+#include<glm/gtx/rotate_vector.hpp>
+#include<glm/gtx/vector_angle.hpp>
 namespace Proof
 {
 	struct Proof_API Math {

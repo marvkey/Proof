@@ -130,11 +130,11 @@ namespace Proof
 			PF_ENGINE_TRACE("THE LETTER  IS PRESSED ");
 		}
 		if(ActiveWorld->m_CurrentState == WorldState::Edit)
-			ActiveWorld->OnUpdateEditor(DeltaTime);
+			ActiveWorld->OnUpdateEditor(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		else if(ActiveWorld->m_CurrentState == WorldState::Play)
-			ActiveWorld->OnUpdateRuntime(DeltaTime);
+			ActiveWorld->OnUpdateRuntime(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		else if(ActiveWorld->m_CurrentState== WorldState::Simulate)
-			ActiveWorld->OnSimulatePhysics(DeltaTime);
+			ActiveWorld->OnSimulatePhysics(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
 
 		/*

@@ -1,6 +1,7 @@
 #pragma once
 #include "EntitiyComponentSystem/ECS.h"
 #include "Camera/EditorCamera.h"
+#include "Camera/NewEditorCamera.h"
 #include "Camera/OrthagraphicCamera.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/VertexArray.h"
@@ -22,9 +23,9 @@ namespace Proof{
 			CreateIBlTexture(path);
 		}
 		World(World&)=default;
-		void OnUpdateEditor(FrameTime DeltaTime);
-		void OnUpdateRuntime(FrameTime DeltaTime);
-		void OnSimulatePhysics(FrameTime DeltaTime);
+		void OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height);
+		void OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height);
+		void OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		class Entity CreateEntity(const std::string& EntName);
 		class Entity CreateEntity(const std::string& EntName,uint32_t ID);
 
@@ -37,7 +38,7 @@ namespace Proof{
 		}
 		friend class WorldRenderer;
 	private:
-		void OnUpdate(FrameTime DeltaTime);
+		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height);
 		WorldState m_CurrentState=WorldState::Edit;
 
 		void CreateIBlTexture(const std::string& filePath);
@@ -47,6 +48,7 @@ namespace Proof{
 		std::string m_Path;
 		glm::mat4 Projection;
 		class EditorCamera3D EditorCamera;
+		NewEditorCamera m_NewEditorCamera ={CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight()};
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		Count<CubeMap> m_WorldCubeMap;
 		Count<CubeMap> m_WorldCubeMapIrradiance;

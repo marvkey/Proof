@@ -7,14 +7,15 @@
 #include "TextureAsset/TextureAsset.h"
 #include "MeshAsset.h"
 #include "MaterialAsset.h"
-namespace Proof{
+namespace Proof
+{
 	AssetManager* AssetManager::s_AssetManager = new AssetManager();
 	void AssetManager::NewAsset(AssetID ID,Asset* asset) {
 		if (ID == 0) {
 			PF_CORE_ASSERT(false,"ID cannot be 0");
-			ID =AssetManager::CreateID();
+			ID = AssetManager::CreateID();
 		}
-		if(HasID(ID) ==false){
+		if (HasID(ID) == false) {
 			s_AssetManager->m_AllAssets.insert({ID,asset});
 			return;
 		}
@@ -25,7 +26,7 @@ namespace Proof{
 	}
 	AssetID AssetManager::CreateID() {
 		AssetID ID = Math::RandUINT(1,18000000000000000000);
-		while (HasID(ID)== true) {
+		while (HasID(ID) == true) {
 			AssetID ID = Math::RandUINT(1,18000000000000000000);
 		}
 		return ID;
@@ -41,13 +42,13 @@ namespace Proof{
 	}
 	void AssetManager::InitilizeAssets(const std::string& Path) {
 		PF_ENGINE_TRACE("starting Loading All Assets %s",Path.c_str());
-		for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(Path)){
-			if(dirEntry.is_directory()){
+		for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(Path)) {
+			if (dirEntry.is_directory()) {
 				continue;
 			}
-			if(IsFileValid(dirEntry.path().string())){
-				
-				if(GetAssetType(dirEntry.path().string()) =="AssetType::Texture2DAsset"){
+			if (IsFileValid(dirEntry.path().string())) {
+
+				if (GetAssetType(dirEntry.path().string()) == "AssetType::Texture2DAsset") {
 					Texture2DAsset* asset = new Texture2DAsset;
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
@@ -55,7 +56,7 @@ namespace Proof{
 					continue;
 				}
 
-				if(GetAssetType(dirEntry.path().string()) == "AssetType::MeshAsset"){
+				if (GetAssetType(dirEntry.path().string()) == "AssetType::MeshAsset") {
 					MeshAsset* asset = new MeshAsset;
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
@@ -63,7 +64,7 @@ namespace Proof{
 					continue;
 				}
 
-				if(GetAssetType(dirEntry.path().string()) == MaterialAsset::GetAssetTypeStaticName()){
+				if (GetAssetType(dirEntry.path().string()) == MaterialAsset::GetAssetTypeStaticName()) {
 					MaterialAsset* asset = new MaterialAsset;
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);

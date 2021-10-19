@@ -116,6 +116,30 @@ namespace Proof{
         return Textures;
     }
 
+    std::vector<Count<Texture2D>> Mesh::LoadMaterial(aiMaterial* mat) {
+        Material material;
+        aiColor3D color(0.f,0.f,0.f);
+        float shininess;
+
+        mat->Get(AI_MATKEY_COLOR_AMBIENT,color);
+        material.m_Colour = glm::vec3(color.r,color.b,color.g);
+
+        mat->Get(AI_MATKEY_SHININESS,shininess);
+        material.m_Metallness = shininess;
+
+        /*
+        mat->Get(AI_MATKEY_COLOR_AMBIENT,color);
+        material.Ambient = glm::vec3(color.r,color.b,color.g);
+
+        mat->Get(AI_MATKEY_COLOR_SPECULAR,color);
+        material.Specular = glm::vec3(color.r,color.b,color.g);
+
+        mat->Get(AI_MATKEY_SHININESS,shininess);
+        material.Shininess = shininess;
+        */
+        return std::vector<Count<Texture2D>>();
+    }
+
 
     SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name,std::vector<Proof::Count<Proof::Texture2D>>& Textures) {
         this->m_Vertices = Vertices;

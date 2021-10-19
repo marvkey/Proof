@@ -12,6 +12,7 @@
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof{
+	using EntityID = uint64_t;
 	class Entity;
 	struct Proof_API Component{
 	public:
@@ -33,7 +34,7 @@ namespace Proof{
 	protected:
 		uint32_t AssetID = 0;
 		std::string Name ="Default";
-		uint32_t m_EntityOwner;
+		EntityID m_EntityOwner;
 		class World* CurrentWorld =nullptr;
 	private:
 		friend class Entity;

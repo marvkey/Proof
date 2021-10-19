@@ -49,12 +49,12 @@ namespace Proof{
 	{
 		CreateIBlTexture("Assets/Textures/hdr/Arches_E_PineTree_3k.hdr");
 	}
-	void World::OnUpdateEditor(FrameTime DeltaTime) {
-		OnUpdate(DeltaTime);
+	void World::OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height) {
+		OnUpdate(DeltaTime,width,height);
 	}
 
-	void World::OnUpdateRuntime(FrameTime DeltaTime) {
-		OnUpdate(DeltaTime);
+	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
+		OnUpdate(DeltaTime,width,height);
 		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
 			if (Scripts->m_HasScriptAttached == false) {
 				continue;
@@ -71,8 +71,8 @@ namespace Proof{
 
 	}
 
-	void World::OnSimulatePhysics(FrameTime DeltaTime) {
-		OnUpdate(DeltaTime);
+	void World::OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height) {
+		OnUpdate(DeltaTime,width,height);
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {
@@ -114,8 +114,10 @@ namespace Proof{
 	void World::EndRuntime() {
 	}
 
-	void World::OnUpdate(FrameTime DeltaTime) {
-		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f);
+	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height){
+		m_NewEditorCamera.m_FarPlane =2000;
+		m_NewEditorCamera.m_Sensitivity =25;
+		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,10000.0f);
 		Renderer2D::BeginContext(Projection,EditorCamera.GetCameraView());
 		for (SpriteComponent* Comp : Registry.SpriteComponents) {
 			Renderer2D::DrawQuad(*Comp);
@@ -132,7 +134,7 @@ namespace Proof{
 			Renderer3D::RenderLight(*Comp);
 		}
 		*/
-		Renderer3DPBR::BeginContext(Projection,EditorCamera);
+		Renderer3DPBR::BeginContext(m_NewEditorCamera.m_Projection,m_NewEditorCamera.m_View,m_NewEditorCamera.m_Positon);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
 			if (Comp->GetMesh() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
@@ -151,7 +153,6 @@ namespace Proof{
 
 		m_brdflTexture->Bind(6);
 		Renderer3DPBR::EndContext();
-		Renderer3DPBR::Reset();
 
 
 		RendererCommand::DepthFunc(DepthType::Equal);
@@ -162,7 +163,9 @@ namespace Proof{
 		RendererCommand::DrawArray(36);
 		m_IBLSkyBoxVertexArray->UnBind();
 		RendererCommand::DepthFunc(DepthType::Less);
-		EditorCamera.OnUpdate(DeltaTime);
+		m_NewEditorCamera.OnUpdate(DeltaTime,width,height);
+
+		//EditorCamera.OnUpdate(DeltaTime);
 	}
 
 	void World::CreateIBlTexture(const std::string& filePath) {

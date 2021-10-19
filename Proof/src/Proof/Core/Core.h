@@ -51,6 +51,15 @@ namespace Proof {
         return std::make_unique<T>(std::forward<Args>(args)...);
     }
 
+    /*
+    template<typename T>
+    using Weak = std::weak_ptr<T>;
+
+    template <class _Ty>
+    _NODISCARD bool operator==(std::nullptr_t,const Weak<_Ty>& _Right) noexcept {
+        return _Right.expired();
+    };
+    */
     
     struct Proof_API Timer {
         std::chrono::time_point<std::chrono::steady_clock>Start,End;

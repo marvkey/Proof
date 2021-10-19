@@ -42,6 +42,10 @@ namespace Proof{
 		s_CurrentCamera= {Projection,EditorCamera.GetCameraView(),EditorCamera.GetCameraPosition()};
 		Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera,sizeof(CameraData));
 	}
+	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position) {
+		s_CurrentCamera = {projection,view,Position};
+		Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera,sizeof(CameraData));
+	}
 	void Renderer3DPBR::Draw(MeshComponent& meshComponent) {
 		int usingMaterial = meshComponent.HasMaterial();
 
@@ -159,6 +163,7 @@ namespace Proof{
 			sizeOffset += TempAmountMeshes->second;
 			s_PBRInstance->m_Shader->UnBind();
 		}
+		Reset();
 	}
 	void Renderer3DPBR::Reset() {
 		s_PBRInstance->m_AmountMeshes.clear();

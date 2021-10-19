@@ -14,6 +14,7 @@ namespace Proof
 	public:
 		static void Init();
 		static void BeginContext(glm::mat4 Projection,class EditorCamera3D& EditorCamera);
+		static void BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position);
 		static void Draw(class MeshComponent& meshComponent);
 		static void Draw(class LightComponent& lightComponent);
 		static PhysicalBasedRenderer* GetRenderer();

@@ -9,7 +9,7 @@ Entities:
       Scale: [1, 0.200000003, 1]
     SpriteComponent:
       Name: Default
-      AssetID: 25048
+      AssetID: 0
       Colour: [1, 1, 1, 1]
       LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
@@ -23,7 +23,7 @@ Entities:
       Scale: [0.976465583, 0.122622386, 0.800000012]
     SpriteComponent:
       Name: Default
-      AssetID: 19511
+      AssetID: 0
       Colour: [0, 1, 0.419607848, 1]
       LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
@@ -37,7 +37,7 @@ Entities:
       Scale: [0.300000012, 0.134223908, 1.20000005]
     SpriteComponent:
       Name: Default
-      AssetID: 14986
+      AssetID: 0
       Colour: [0.295008749, 0.23120448, 0.637096763, 0.309803933]
       LocalLocation: [0, 0, 0.400000006]
       LocalRotation: [0, 0, 0]
@@ -51,7 +51,7 @@ Entities:
       Scale: [0.479817629, 0.000156900423, 2.11651325]
     SpriteComponent:
       Name: Default
-      AssetID: 24855
+      AssetID: 0
       Colour: [0.10301768, 0.399193525, 0.129461929, 1]
       LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
@@ -65,7 +65,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteComponent:
       Name: Default
-      AssetID: 27120
+      AssetID: 0
       Colour: [0.85132122, 0.959677398, 0, 1]
       LocalLocation: [1.10000002, -0.800000012, 0]
       LocalRotation: [0, 0, 0]
@@ -79,7 +79,7 @@ Entities:
       Scale: [2.56999993, 1.04255342, 1]
     SpriteComponent:
       Name: Default
-      AssetID: 28388
+      AssetID: 0
       Colour: [0.99999547, 1, 0.999989986, 1]
       LocalLocation: [-0.100000001, -0.699999988, -0.200000003]
       LocalRotation: [0, 0, 0]

@@ -67,7 +67,7 @@ Entities:
       LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
-      MaterialPointerID: 11991
+      MaterialPointerID: 0
     LightComponent:
       Position: [0, 0, 0]
       Direction: [1, 1, 1]
@@ -80,13 +80,6 @@ Entities:
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
       LightType: 2
-  - Entity: 19289
-    TagComponent:
-      Tag: Empty Entity
-    TransformComponent:
-      Location: [2.9000001, 1.10000002, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
   - Entity: 19918
     TagComponent:
       Tag: LightCube
@@ -131,16 +124,16 @@ Entities:
     TagComponent:
       Tag: backpack2
     TransformComponent:
-      Location: [-1.39999998, -4.5999999, -3.9000001]
+      Location: [-1.39999998, 34.2999992, -3.9000001]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [10, 10, 10]
     MeshComponent:
       Name: Default
       AssetID: 9099
       LocalLocation: [5.5999999, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
-      MaterialPointerID: 12014
+      MaterialPointerID: 0
   - Entity: 21616
     TagComponent:
       Tag: chest
@@ -150,7 +143,7 @@ Entities:
       Scale: [1, 0.00999999978, 0.00999999978]
     MeshComponent:
       Name: Default
-      AssetID: 0
+      AssetID: 13219
       LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
@@ -161,7 +154,7 @@ Entities:
     TransformComponent:
       Location: [0.599999726, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.00100000005, 0.00100000005, 0.00100000005]
+      Scale: [0.5, 0.5, 0.5]
     MeshComponent:
       Name: Default
       AssetID: 32113
