@@ -15,7 +15,7 @@
 
 namespace Proof{
     std::vector<uint32_t> Mesh::AllID;
-    std::vector<SubMesh> Mesh::GetSubMeshes()  {
+    const std::vector<SubMesh>& Mesh::GetSubMeshes()const  {
         return meshes;
     }
 

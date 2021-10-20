@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include <array>
 #include "vertex.h"
-
+#include "Proof/Scene/Camera/EditorCamera.h"
 namespace Proof {
 	struct SpriteComponent;
 	struct Proof_API Renderer2DStorage {
@@ -30,7 +30,7 @@ namespace Proof {
 		friend class Camera;
 	public:
 		static void Init();
-		static void BeginContext(const glm::mat4& Projection,const Camera& camera);
+		static void BeginContext(const EditorCamera& editorCamera);
 		static void BeginContext(glm::mat4 Projection,glm::mat4& ViewMatrix);
 
 		static void BeginContext(const class OrthagraphicCamera& Camera);

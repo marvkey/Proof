@@ -12,7 +12,7 @@ namespace Proof {
 		static int GetWindowPosX();
 		static int GetWindowPosY();
 		static Count<GraphicsContext> GetGraphicsContext();
-		static void SetSwapInterval(bool Vsync);
+		static void SetvSync(bool Vsync);
 	protected:
 		static std::pair<double, double>GetMouseLocation();
 		static std::pair<float, float>GetMouseScrollWheel();

@@ -94,14 +94,12 @@ namespace Proof
         Renderer3DInstance->m_Shader->SetMat4("u_Projection",Camera.GetProjectionMatrix());
         Renderer3DInstance->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
     }
-    void Renderer3D::BeginContext(glm::mat4 Projection,EditorCamera3D& EditorCamera) {
+    void Renderer3D::BeginContext(glm::mat4 Projection,EditorCamera& EditorCamera) {
         Renderer3DInstance->m_Shader->SetMat4("u_Projection",Projection);
-        Renderer3DInstance->m_Shader->SetMat4("u_View",EditorCamera.GetCameraView());
-        Position = EditorCamera.GetCameraPosition();
-        OldCmaerData temp(Projection,EditorCamera.GetCameraView());
+        Renderer3DInstance->m_Shader->SetMat4("u_View",EditorCamera.m_View);
+        Position = EditorCamera.m_Positon;
+        OldCmaerData temp(Projection,EditorCamera.m_View);
         s_CameraBuffer->SetData(&temp,sizeof(OldCmaerData));
-        //glBindBuffer(GL_UNIFORM_BUFFER,M_UniformBufferID);
-        //glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(CameraData),&temp);
         
     }
     void Renderer3D::BeginContext(const OrthagraphicCamera& Camera) {

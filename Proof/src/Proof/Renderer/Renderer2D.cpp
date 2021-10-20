@@ -5,7 +5,6 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "Proof/Scene/Camera/Camera.h"
 #include "Proof/Scene/Camera/OrthagraphicCamera.h"
 #include "Proof/Renderer/Buffer.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
@@ -63,10 +62,10 @@ namespace Proof {
 
 	    s_Storage2DData->m_Textures[0]= s_Storage2DData->m_WhiteTexture;
 	}
-	void Renderer2D::BeginContext(const glm::mat4& Projection,const Camera& camera) {
+	void Renderer2D::BeginContext(const EditorCamera& editorCamera) {
 		s_Storage2DData->m_Shader->Bind();
-		s_Storage2DData->m_Shader->SetMat4("u_ViewProjection",Projection);
-		//s_Storage2DData->m_Shader->SetMat4("u_View",camera.GetCameraView());
+		s_Storage2DData->m_Shader->SetMat4("u_ViewProjection",editorCamera.m_Projection);
+		s_Storage2DData->m_Shader->SetMat4("u_View",editorCamera.m_View);
 		s_Renderer2DStats->m_DrawCalls=0;
 		s_Renderer2DStats->m_QuadCount =0;
 	}

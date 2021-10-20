@@ -6,7 +6,6 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/WindowEvent.h"
-#include "Proof/Core/EditorMousePicking.h"
 #include "Proof/Resources/Asset/AssetManager.h"
 
 namespace Proof {
@@ -72,6 +71,7 @@ namespace Proof {
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
      //   glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
        // CurrentWindow::SetSwapInterval(true);
+        CurrentWindow::SetvSync(false);
         while (glfwWindowShouldClose(CurrentWindow::GetWindow()) == false && Input::IsKeyClicked(KeyBoardKey::Escape)==false) {
             float FrameStart = glfwGetTime();
             float time = (float)glfwGetTime();

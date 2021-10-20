@@ -12,7 +12,7 @@ namespace Proof {
 	public:
 		static void Init();
 		static void BeginContext(const class PerspectiveCamera& Camera);
-		static void BeginContext(glm::mat4 Projection,class EditorCamera3D& EditorCamera);
+		static void BeginContext(glm::mat4 Projection,class EditorCamera& EditorCamera);
 
 		static void BeginContext(const class OrthagraphicCamera& Camera);
 

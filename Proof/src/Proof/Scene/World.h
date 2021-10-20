@@ -1,7 +1,6 @@
 #pragma once
 #include "EntitiyComponentSystem/ECS.h"
 #include "Camera/EditorCamera.h"
-#include "Camera/NewEditorCamera.h"
 #include "Camera/OrthagraphicCamera.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/VertexArray.h"
@@ -47,8 +46,7 @@ namespace Proof{
 		void OnComponentAdded(Entity Entity,T* component);
 		std::string m_Path;
 		glm::mat4 Projection;
-		class EditorCamera3D EditorCamera;
-		NewEditorCamera m_NewEditorCamera ={CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight()};
+		EditorCamera m_EditorCamera ={200,200};
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		Count<CubeMap> m_WorldCubeMap;
 		Count<CubeMap> m_WorldCubeMapIrradiance;

@@ -23,7 +23,7 @@ namespace Proof::MathResource
 		if (
 			epsilonNotEqual(LocalMatrix[0][3],static_cast<T>(0),epsilon<T>()) ||
 			epsilonNotEqual(LocalMatrix[1][3],static_cast<T>(0),epsilon<T>()) ||
-			epsilonNotEqual(LocalMatrix[2][3],static_cast<T>(0),epsilon<T>())) 		{
+			epsilonNotEqual(LocalMatrix[2][3],static_cast<T>(0),epsilon<T>())) {
 			// Clear the perspective partition
 			LocalMatrix[0][3] = LocalMatrix[1][3] = LocalMatrix[2][3] = static_cast<T>(0);
 			LocalMatrix[3][3] = static_cast<T>(1);
@@ -53,8 +53,8 @@ namespace Proof::MathResource
 		// is -1, then negate the matrix and the scaling factors.
 	#if 0
 		Pdum3 = cross(Row[1],Row[2]); // v3Cross(row[1], row[2], Pdum3);
-		if (dot(Row[0],Pdum3) < 0) 		{
-			for (length_t i = 0; i < 3; i++) 			{
+		if (dot(Row[0],Pdum3) < 0) {
+			for (length_t i = 0; i < 3; i++) {
 				scale[i] *= static_cast<T>(-1);
 				Row[i] *= static_cast<T>(-1);
 			}

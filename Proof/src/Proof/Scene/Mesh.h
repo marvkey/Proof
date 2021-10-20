@@ -49,7 +49,7 @@ a:
             LoadModel(path);
         }
         static std::vector<uint32_t> AllID;
-        std::vector<class SubMesh> GetSubMeshes();
+        const std::vector<class SubMesh>& GetSubMeshes()const;
         std::vector<Count<Texture2D>> textures_loaded;
         std::vector<Material> Materials_loaded;
         uint32_t GetID(){

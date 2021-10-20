@@ -38,8 +38,8 @@ namespace Proof{
 		uint32_t WhiteTextureImage = 0xffffffff;
 		s_PBRInstance->m_WhiteTexture->SetData(&WhiteTextureImage,sizeof(uint32_t));
 	}
-	void Renderer3DPBR::BeginContext(glm::mat4 Projection,EditorCamera3D& EditorCamera) {
-		s_CurrentCamera= {Projection,EditorCamera.GetCameraView(),EditorCamera.GetCameraPosition()};
+	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera) {
+		s_CurrentCamera= {editorCamera.m_Projection,editorCamera.m_View,editorCamera.m_Positon};
 		Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera,sizeof(CameraData));
 	}
 	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position) {
@@ -99,12 +99,12 @@ namespace Proof{
 		s_PBRInstance->m_Shader->Bind();
 		s_PBRInstance->m_Shader->SetInt("AmountLight",NumLights);
 		for (uint32_t i= 0; i< s_DifferentID.size(); i++) {
-			s_PBRInstance->m_VertexBuffer->Bind();
-			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset],s_PBRInstance->m_Transforms.size() * sizeof(PhysicalBasedRendererVertex));
 			uint32_t TempID = s_DifferentID[i];
 			auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
 			auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
 
+			s_PBRInstance->m_VertexBuffer->Bind();
+			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset],TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
 			if(TempMesh->second.GetMaterial()!=nullptr){
 				s_PBRInstance->m_Shader->Bind();
 				s_PBRInstance->m_Shader->SetInt("albedoMap",0);
@@ -143,23 +143,25 @@ namespace Proof{
 			
 			}
 			s_PBRInstance->m_Shader->Bind();
+			if(TempMesh->second.GetMesh()->GetSubMeshes().size()>5)
+				glEnable(GL_CULL_FACE);
 			if(TempMesh->second.GetMesh()->m_Enabled==true){
-				if(TempMesh->second.HasMaterial()==false){
-					s_PBRInstance->m_Shader->SetInt("DiffuseShader",7);
-					if (TempMesh->second.GetMesh()->textures_loaded.size() > 0)
-						TempMesh->second.GetMesh()->textures_loaded[0]->Bind(7);
-					else
-						s_PBRInstance->m_WhiteTexture->Bind(7);
-				}
 				for(SubMesh& mesh: TempMesh->second.GetMesh()->meshes){
 					if(mesh.m_Enabled==false)
 						continue;
-				
+					if (TempMesh->second.HasMaterial() == false) {
+						s_PBRInstance->m_Shader->SetInt("DiffuseShader",7);
+						if (mesh.m_Textures.size() > 0)
+							mesh.m_Textures[0]->Bind(7);
+						else
+							s_PBRInstance->m_WhiteTexture->Bind(7);
+					}
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
 				}
 			}
+			glDisable(GL_CULL_FACE);
 			sizeOffset += TempAmountMeshes->second;
 			s_PBRInstance->m_Shader->UnBind();
 		}

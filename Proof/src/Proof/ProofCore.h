@@ -7,7 +7,6 @@
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Core/CurrentWindow.h"
-#include "Proof/Input/MousePicker.h"
 
 
 // Render

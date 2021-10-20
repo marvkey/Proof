@@ -27,7 +27,7 @@ namespace Proof {
 	int CurrentWindow::GetWindowPosY(){ 
 		return GetWindowLocation().second;
 	}
-	void CurrentWindow::SetSwapInterval(bool Vsync) {
+	void CurrentWindow::SetvSync(bool Vsync) {
 		Application::MainWindow->Vsync = Vsync;
 	}
 	void CurrentWindow::SetWindowSize(int width, int height){

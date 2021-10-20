@@ -5,20 +5,18 @@
 #include "Proof/Scene/World.h"
 #include "Proof/Renderer/RendererCommand.h"
 namespace Proof{
-	static glm::mat4 Projection;
 	void WorldRenderer::Renderer() {
 		m_ScreenFrameBuffer->Bind();
 
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
 
-		Projection = glm::perspective(glm::radians(45.f),(float)m_Width / (float)m_Height,0.1f,100.0f);
-		Renderer2D::BeginContext(Projection,m_World->EditorCamera.GetCameraView());
+		Renderer2D::BeginContext(m_World->m_EditorCamera);
 		for (SpriteComponent* Comp : m_World->Registry.SpriteComponents) {
 			Renderer2D::DrawQuad(*Comp);
 		}
 
-		Renderer3DPBR::BeginContext(Projection,m_World->EditorCamera);
+		Renderer3DPBR::BeginContext(m_World->m_EditorCamera);
 		for (MeshComponent* Comp : m_World->Registry.SceneMeshComponents) {
 			if (Comp->GetMesh() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);

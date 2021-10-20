@@ -115,10 +115,10 @@ namespace Proof{
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height){
-		m_NewEditorCamera.m_FarPlane =2000;
-		m_NewEditorCamera.m_Sensitivity =25;
+		m_EditorCamera.m_FarPlane =2000;
+		m_EditorCamera.m_Sensitivity =25;
 		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,10000.0f);
-		Renderer2D::BeginContext(Projection,EditorCamera.GetCameraView());
+		Renderer2D::BeginContext(m_EditorCamera);
 		for (SpriteComponent* Comp : Registry.SpriteComponents) {
 			Renderer2D::DrawQuad(*Comp);
 		}
@@ -134,7 +134,7 @@ namespace Proof{
 			Renderer3D::RenderLight(*Comp);
 		}
 		*/
-		Renderer3DPBR::BeginContext(m_NewEditorCamera.m_Projection,m_NewEditorCamera.m_View,m_NewEditorCamera.m_Positon);
+		Renderer3DPBR::BeginContext(m_EditorCamera.m_Projection,m_EditorCamera.m_View,m_EditorCamera.m_Positon);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
 			if (Comp->GetMesh() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
@@ -163,7 +163,7 @@ namespace Proof{
 		RendererCommand::DrawArray(36);
 		m_IBLSkyBoxVertexArray->UnBind();
 		RendererCommand::DepthFunc(DepthType::Less);
-		m_NewEditorCamera.OnUpdate(DeltaTime,width,height);
+		m_EditorCamera.OnUpdate(DeltaTime,width,height);
 
 		//EditorCamera.OnUpdate(DeltaTime);
 	}
