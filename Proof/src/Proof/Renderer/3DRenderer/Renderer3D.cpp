@@ -89,10 +89,10 @@ namespace Proof
         Renderer3DInstance->m_WhiteTexture->SetData(&WhiteTextureImage,sizeof(uint32_t));
 
     }
-    void Renderer3D::BeginContext(const PerspectiveCamera& Camera) {
+    void Renderer3D::BeginContext(const PerspectiveCamera& camera) {
         Renderer3DInstance->m_Shader->Bind();
-        Renderer3DInstance->m_Shader->SetMat4("u_Projection",Camera.GetProjectionMatrix());
-        Renderer3DInstance->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
+       // Renderer3DInstance->m_Shader->SetMat4("u_Projection",camera.GetProjectionMatrix());
+        //Renderer3DInstance->m_Shader->SetMat4("u_View",camera.GetViewMatrix());
     }
     void Renderer3D::BeginContext(glm::mat4 Projection,EditorCamera& EditorCamera) {
         Renderer3DInstance->m_Shader->SetMat4("u_Projection",Projection);
@@ -102,10 +102,10 @@ namespace Proof
         s_CameraBuffer->SetData(&temp,sizeof(OldCmaerData));
         
     }
-    void Renderer3D::BeginContext(const OrthagraphicCamera& Camera) {
+    void Renderer3D::BeginContext(const OrthagraphicCamera& camera) {
         Renderer3DInstance->m_Shader->Bind();
-        Renderer3DInstance->m_Shader->SetMat4("u_Projection",Camera.GetProjectionMatrix());
-        Renderer3DInstance->m_Shader->SetMat4("u_View",Camera.GetViewMatrix());
+        Renderer3DInstance->m_Shader->SetMat4("u_Projection",camera.GetProjectionMatrix());
+        Renderer3DInstance->m_Shader->SetMat4("u_View",camera.GetViewMatrix());
     }
     void Renderer3D::Draw(MeshComponent& meshComponent) {
         

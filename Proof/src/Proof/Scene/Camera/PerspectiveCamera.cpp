@@ -4,6 +4,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 namespace Proof{
+	/*
 	PerspectiveCamera::PerspectiveCamera(float FOV_Degrees,float Aspect,float Near,float Far,const glm::vec3& Position)
 		:m_ProjectionMatrix(glm::mat4(1.0f)),
 		m_ViewMatrix(1.0f),m_Position(Position)
@@ -19,4 +20,5 @@ namespace Proof{
 		m_ViewMatrix = glm::inverse(Transform);
 		//m_ViewMatrix = glm::lookAt(m_Position,m_Position + CameraFront,CameraUp);
 	}
+	*/
 }

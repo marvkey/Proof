@@ -16,6 +16,7 @@
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "../ImGUIAPI.h"
 #include "Proof/Scene/ExampleSccripts.h"
+#include "Proof/Scene/Camera/Camera.h"
 #include "Proof/Scene/Script.h"
 namespace Proof{
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
@@ -67,7 +68,7 @@ namespace Proof{
 		}
 		if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity){
 			
-			m_CurrentWorld->EditorCamera.CameraPos = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
+			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
 		}
 		if (opened) {
 			ImGui::TreePop();
@@ -149,6 +150,10 @@ namespace Proof{
 
 			if (ImGui::MenuItem("Movement Script")) {
 				entity.AddComponent<NativeScriptComponent>()->Bind<MovementScript>();
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::MenuItem("Camera Component")) {
+				entity.AddComponent<CameraComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
@@ -364,6 +369,34 @@ namespace Proof{
 				});
 				IndexValue += 1;
 				continue;
+			}
+			CameraComponent* cameraComp = dynamic_cast<CameraComponent*>(Comp);
+
+			if(Comp !=nullptr){
+				DrawComponents<CameraComponent>("Camera Component: ",entity,cameraComp,IndexValue,[](CameraComponent& CameraComp){
+					char buffer[256];
+					memset(buffer,0,sizeof(buffer));
+					strcpy_s(buffer,sizeof(buffer),CameraComp.GetName().c_str());
+					if (ImGui::InputText("##N",buffer,sizeof(buffer))) {
+						CameraComp.SetName(buffer);
+					}
+
+					ImGui::NewLine();
+					
+					ImGui::SliderFloat("Field ov fiew",&CameraComp.m_Camera.m_FovDeg,0,90);
+					ImGui::DragFloat("Near plane",&CameraComp.m_Camera.m_NearPlane,0,100000);
+					ImGui::DragFloat("Far plane",&CameraComp.m_Camera.m_FarPlane,0,100000);
+
+					ExternalAPI::ImGUIAPI::CheckBox("set Automatic resize",&CameraComp.m_Camera.m_AutoSetDimension);
+					if(CameraComp.m_Camera.m_AutoSetDimension ==false){
+						int tempWidth =(int)CameraComp.m_Camera.m_Width;
+						int tempHeight =(int)CameraComp.m_Camera.m_Height;
+						ImGui::DragInt("view width",&tempWidth,1,0);
+						ImGui::DragInt("view height",&tempHeight,1,0);
+						CameraComp.m_Camera.m_Width = tempWidth;
+						CameraComp.m_Camera.m_Height= tempHeight;
+					}
+				});
 			}
 		} 
 	}

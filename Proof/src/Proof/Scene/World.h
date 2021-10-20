@@ -25,6 +25,7 @@ namespace Proof{
 		void OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height);
+
 		class Entity CreateEntity(const std::string& EntName);
 		class Entity CreateEntity(const std::string& EntName,uint32_t ID);
 
@@ -37,6 +38,7 @@ namespace Proof{
 		}
 		friend class WorldRenderer;
 	private:
+		uint32_t m_LastFrameWidth,m_LastFrameHeight;
 		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height);
 		WorldState m_CurrentState=WorldState::Edit;
 
@@ -45,7 +47,6 @@ namespace Proof{
 		template<class T>
 		void OnComponentAdded(Entity Entity,T* component);
 		std::string m_Path;
-		glm::mat4 Projection;
 		EditorCamera m_EditorCamera ={200,200};
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		Count<CubeMap> m_WorldCubeMap;

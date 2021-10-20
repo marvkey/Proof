@@ -84,7 +84,19 @@ namespace Proof{
 			return nullptr;
 
 		};
-		
+		template<>
+		CameraComponent* AddComponent(EntityID ID) {
+			auto it = EntityHolder.find(ID);
+			if (it != EntityHolder.end()) {
+				CameraComponent* Temp = new CameraComponent();
+				it->second->emplace_back(Temp);
+				Temp->StartIndexSlot = m_CameraComponent.size();
+				m_CameraComponent.emplace_back(Temp);
+				return Temp;
+			}
+			PF_CORE_ASSERT(false,"Entity Id Was Not FOund");
+			return nullptr;
+		};
 		
 
 		template<typename T>
@@ -301,6 +313,36 @@ namespace Proof{
 			}
 			return;
 		}
+
+		template<>
+		inline void RemoveComponent<CameraComponent>(EntityID ID,uint32_t Index) {
+			auto it = EntityHolder.find(ID);
+			if (it != EntityHolder.end()) {
+				auto TempVec = it->second;
+				if (TempVec->size() >= Index) {
+					CameraComponent* TempComp = static_cast<CameraComponent*>(TempVec->at(Index));
+					if (m_CameraComponent.size() == 1) {
+						m_CameraComponent.erase(m_CameraComponent.begin());
+					}
+					else if (m_CameraComponent.size() == TempComp->StartIndexSlot) {
+						m_CameraComponent.erase(m_CameraComponent.end());
+					}
+					else if (m_CameraComponent.size() > TempComp->StartIndexSlot) {
+						int TempLocation = m_CameraComponent.size() - TempComp->StartIndexSlot;
+						m_CameraComponent.erase(m_CameraComponent.end() - TempLocation);
+					}
+					else if (m_CameraComponent.size() < TempComp->StartIndexSlot) {
+						int TempLocation = m_CameraComponent.size() - TempComp->StartIndexSlot;
+						m_CameraComponent.erase(m_CameraComponent.end() - TempLocation);
+					}
+					TempVec->erase(TempVec->begin() + Index);
+					delete TempComp;
+					return;
+				}
+				PF_ENGINE_WARN("Remove component Entitiy does not have component or ID Is Not Valid Size of Holder is %i",TempVec->size());
+			}
+			return;
+		}
 		const std::unordered_map<EntityID,std::vector<class Component*>*>& GetEntities() {
 			return EntityHolder;
 		}
@@ -312,6 +354,7 @@ namespace Proof{
 		std::vector<class MeshComponent*> SceneMeshComponents;
 		std::vector<class NativeScriptComponent*> NativeScripts;
 		std::vector<class LightComponent*> LightComponents;
+		std::vector<class CameraComponent*> m_CameraComponent;
 
 	private:
 		std::unordered_map<EntityID,std::vector<class Component*>*>EntityHolder;

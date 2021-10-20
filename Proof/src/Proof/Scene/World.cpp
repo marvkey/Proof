@@ -16,6 +16,7 @@
 #include "Proof/Renderer/VertexArray.h"
 #include "Proof/Renderer/FrameBuffer.h"
 #include<glad/glad.h>
+#include "Camera/Camera.h"
 namespace Proof{
 	unsigned int quadVAO = 0;
 	unsigned int quadVBO;
@@ -54,21 +55,68 @@ namespace Proof{
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
-		OnUpdate(DeltaTime,width,height);
-		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
-			if (Scripts->m_HasScriptAttached == false) {
-				continue;
-			}
-			if (Scripts->Instance == nullptr) {
-				Scripts->Instance = Scripts->InstantiateScript();
-				Scripts->Instance->OwnerEntity = Scripts->GetOwner();
-				Scripts->Instance->OnCreate();
-				Scripts->Instance->OnlyOnCreate();
-			}
-			if (Scripts->Instance->b_CallPerframe == true)
-				Scripts->Instance->OnUpdate(DeltaTime);
+		CameraComponent* cameraComp =nullptr;
+		for(int i=0;i<Registry.m_CameraComponent.size();i++){
+			cameraComp= Registry.m_CameraComponent[i];
+			break;
 		}
+		if(cameraComp == nullptr){
+			OnUpdate(DeltaTime,width,height);
+			for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
+				if (Scripts->m_HasScriptAttached == false) {
+					continue;
+				}
+				if (Scripts->Instance == nullptr) {
+					Scripts->Instance = Scripts->InstantiateScript();
+					Scripts->Instance->OwnerEntity = Scripts->GetOwner();
+					Scripts->Instance->OnCreate();
+					Scripts->Instance->OnlyOnCreate();
+				}
+				if (Scripts->Instance->b_CallPerframe == true)
+					Scripts->Instance->OnUpdate(DeltaTime);
+			}
+			return;
+		}
+		
+		Renderer3DPBR::BeginContext(cameraComp->m_Camera.m_Projection,cameraComp->m_Camera.m_View,*cameraComp->m_Camera.m_Positon);
+		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
+			if (Comp->GetMesh() != nullptr) {
+				Renderer3DPBR::Draw(*Comp);
+			}
+		}
+		for (LightComponent* Comp : Registry.LightComponents) {
+			Renderer3DPBR::Draw(*Comp);
+		}
+		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
+		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT",6);
 
+		m_WorldCubeMap->Bind(4);
+		PrefelterMap->Bind(5);
+
+		m_brdflTexture->Bind(6);
+		Renderer3DPBR::EndContext();
+
+
+		RendererCommand::DepthFunc(DepthType::Equal);
+		backgroundShader->Bind();
+		backgroundShader->SetInt("environmentMap",0);
+		m_WorldCubeMap->Bind(0);
+		m_IBLSkyBoxVertexArray->Bind();
+		RendererCommand::DrawArray(36);
+		m_IBLSkyBoxVertexArray->UnBind();
+		RendererCommand::DepthFunc(DepthType::Less);
+		cameraComp->m_Camera.CalculateProjection();
+
+		if(cameraComp->m_Camera.m_AutoSetDimension ==true){
+			if(m_LastFrameWidth != width || m_LastFrameHeight != height){
+				cameraComp->m_Camera.SetDimensions(width,height);
+				m_LastFrameWidth =width;
+				m_LastFrameHeight=height;
+				cameraComp->m_Camera.CalculateProjection();
+			}
+		}
 	}
 
 	void World::OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height) {
@@ -117,7 +165,6 @@ namespace Proof{
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height){
 		m_EditorCamera.m_FarPlane =2000;
 		m_EditorCamera.m_Sensitivity =25;
-		Projection = glm::perspective(glm::radians(45.f),(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,10000.0f);
 		Renderer2D::BeginContext(m_EditorCamera);
 		for (SpriteComponent* Comp : Registry.SpriteComponents) {
 			Renderer2D::DrawQuad(*Comp);
@@ -164,8 +211,6 @@ namespace Proof{
 		m_IBLSkyBoxVertexArray->UnBind();
 		RendererCommand::DepthFunc(DepthType::Less);
 		m_EditorCamera.OnUpdate(DeltaTime,width,height);
-
-		//EditorCamera.OnUpdate(DeltaTime);
 	}
 
 	void World::CreateIBlTexture(const std::string& filePath) {
@@ -385,5 +430,13 @@ namespace Proof{
 		Component* a = static_cast<Component*>(component);
 		a->m_EntityOwner = _Entity.GetID();
 		a->CurrentWorld = this;
+	}
+
+	template<>
+	void World::OnComponentAdded(Entity _Entity,CameraComponent* component) {
+		Component* a = static_cast<Component*>(component);
+		a->m_EntityOwner = _Entity.GetID();
+		a->CurrentWorld = this;
+		component->m_Camera ={component->GetOwner().GetComponent<TransformComponent>()->Location};
 	}
 }

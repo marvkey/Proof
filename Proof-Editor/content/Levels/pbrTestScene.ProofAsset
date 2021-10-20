@@ -84,9 +84,9 @@ Entities:
     TagComponent:
       Tag: LightCube
     TransformComponent:
-      Location: [0.400000006, 0, 0]
+      Location: [-14.5, 62.5999985, 15.8999996]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [22.6000004, 24.1000004, 21.1000004]
     MeshComponent:
       Name: Default
       AssetID: 12067
@@ -96,21 +96,21 @@ Entities:
       MaterialPointerID: 0
     LightComponent:
       Position: [0, 0, 0]
-      Direction: [0, 1, 1]
+      Direction: [0, 0, 1]
       CutOff: 0
       OuterCutOff: 0
-      Constant: 1
+      Constant: 1.05599999
       Linear: 0
       Quadratic: 0
       Ambient: [1, 0, 0]
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
-      LightType: 2
+      LightType: 1
   - Entity: 31439
     TagComponent:
       Tag: backpack
     TransformComponent:
-      Location: [-4.80000019, 0, 0]
+      Location: [-3.5, 21.1000004, 10.1999998]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
@@ -124,7 +124,7 @@ Entities:
     TagComponent:
       Tag: backpack2
     TransformComponent:
-      Location: [-1.39999998, 34.2999992, -3.9000001]
+      Location: [-6.50099993, 34.2999992, -3.9000001]
       Rotation: [0, 0, 0]
       Scale: [10, 10, 10]
     MeshComponent:
@@ -138,12 +138,12 @@ Entities:
     TagComponent:
       Tag: chest
     TransformComponent:
-      Location: [19.2999992, 0, 0]
+      Location: [20.2000008, 4.80000019, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 0.00999999978, 0.00999999978]
     MeshComponent:
       Name: Default
-      AssetID: 13219
+      AssetID: 2122
       LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
@@ -154,10 +154,10 @@ Entities:
     TransformComponent:
       Location: [0.599999726, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.5, 0.5, 0.5]
+      Scale: [0.19631055, 0.200000003, 0.200000003]
     MeshComponent:
       Name: Default
-      AssetID: 32113
+      AssetID: 27354
       LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]

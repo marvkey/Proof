@@ -1,10 +1,10 @@
 AssetTypeString: AssetType::MaterialAsset
 AssetType: 3
 ID: 9679
-AlbedoColour: [1, 1, 1]
-Roughness: 0
-Metallness: 0
-AO: 0
+AlbedoColour: [0.830645144, 0, 4.99063899e-05]
+Roughness: 4
+Metallness: 2
+AO: 2
 MetallicTexturePath: ""
 AlbedoTexturePath: ""
 NormalTexturePath: ""

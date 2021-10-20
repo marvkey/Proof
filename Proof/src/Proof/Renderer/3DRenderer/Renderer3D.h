@@ -11,10 +11,10 @@ namespace Proof {
 	class Proof_API Renderer3D {
 	public:
 		static void Init();
-		static void BeginContext(const class PerspectiveCamera& Camera);
+		static void BeginContext(const class PerspectiveCamera& camera);
 		static void BeginContext(glm::mat4 Projection,class EditorCamera& EditorCamera);
 
-		static void BeginContext(const class OrthagraphicCamera& Camera);
+		static void BeginContext(const class OrthagraphicCamera& camera);
 
 		static void Draw(class MeshComponent& meshComponent);
 		static void RenderLight(class LightComponent& lightComponent);

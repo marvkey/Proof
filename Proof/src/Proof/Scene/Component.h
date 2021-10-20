@@ -9,6 +9,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include "Proof/Scene/Camera/PerspectiveCamera.h"
+#include "Proof/Scene/Camera/Camera.h"
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof{
@@ -203,21 +204,12 @@ namespace Proof{
 		friend class ECS;
 	};
 
-	/*
-	struct Proof_API CameraComponent{
-		enum class CameraType{
-			Perspective,Orthographic	
-		};
-		Vector m_LocalLocation = {0,0,0};
-		Vector m_LocalRotation={0,0,0};
-		float m_OrthoRotation =0;
-		float m_FieldOfView;
-		CameraType m_CameraType = CameraType::Perspective;
+	
+	struct Proof_API CameraComponent:Component{
+		Camera m_Camera;
 	private:
 		uint32_t StartIndexSlot = 0;
 		friend class ECS;
-		class OrthagraphicCamera m_OrhoCam ={-1.0f,1.0f,-1.0f,1.0f};
-		class PerspectiveCamera  m_PerspCam ={45.0f,(float)CurrentWindow::GetWindowWidth() / (float)CurrentWindow::GetWindowHeight(),0.1f,100.0f,m_LocalLocation};
 	};
-	*/
+	
 }

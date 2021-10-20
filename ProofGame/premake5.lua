@@ -5,18 +5,18 @@ project "ProofGame"
 	objdir ("bin-int/".. OutputDirectory .. "/%{prj.name}")
     files
 	{
-        "**.cs",
+        "*src/**.cs"
     }
     postbuildcommands 
     {
 			
-        --("{COPY} %{cfg.buildtarget.relpath} ../bin/" ..OutputDirectory.."/Proof") -- This copies dll file from Proof Into Sandbox
+       -- ("{COPY} %{cfg.buildtarget.relpath} ../bin/" ..OutputDirectory.."/Proof") -- This copies dll file from Proof Into Sandbox
 			
     }
 
     filter "configurations:Debug"
-    defines "PF_DEBUG"
-    symbols "on"
+        defines "PF_DEBUG"
+        symbols "on"
 
     filter "configurations:Release"
         defines "PF_RELEASE"

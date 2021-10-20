@@ -126,16 +126,14 @@ namespace Proof
 			GuizmoType = ImGuizmo::OPERATION::SCALE;
 		}
 
-		if(Input::IsKeyPressed(KeyBoardKey::L)){
-			PF_ENGINE_TRACE("THE LETTER  IS PRESSED ");
-		}
+		
 		if(ActiveWorld->m_CurrentState == WorldState::Edit)
 			ActiveWorld->OnUpdateEditor(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		else if(ActiveWorld->m_CurrentState == WorldState::Play)
 			ActiveWorld->OnUpdateRuntime(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		else if(ActiveWorld->m_CurrentState== WorldState::Simulate)
 			ActiveWorld->OnSimulatePhysics(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
-		glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
+		//glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
 
 		/*
 		glDepthFunc(GL_LEQUAL);
@@ -308,7 +306,13 @@ namespace Proof
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		static bool Open = true;
 		if (ImGui::Begin("ViewPort",&Open,ImGuiWindowFlags_NoMove)) {
+
+			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+			auto viewportOffset = ImGui::GetWindowPos();
 			ImVec2 ViewPortPanelSize = ImGui::GetContentRegionAvail();
+			m_ViewportBounds[0] = {viewportMinRegion.x + viewportOffset.x,viewportMinRegion.y + viewportOffset.y};
+			m_ViewportBounds[1] = {viewportMaxRegion.x + viewportOffset.x,viewportMaxRegion.y + viewportOffset.y};
 			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
 				_ViewPortSize = {ViewPortPanelSize.x,ViewPortPanelSize.y};
 			}
@@ -333,27 +337,33 @@ namespace Proof
 
 				float windowWidth  =(float) ImGui::GetWindowWidth();
 				float windowHeight = (float) ImGui::GetWindowHeight();
-				ImGuizmo::SetRect(ImGui::GetWindowPos().x,ImGui::GetWindowPos().y,windowWidth,windowHeight);
+				ImGuizmo::SetRect(m_ViewportBounds[0].x,m_ViewportBounds[0].y,m_ViewportBounds[1].x - m_ViewportBounds[0].x,m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
-				const glm::mat4& cameraProjection = ActiveWorld->Projection;
-				glm::mat4 cameraView = glm::inverse(ActiveWorld->EditorCamera.GetTransform());
+				const glm::mat4& cameraProjection = ActiveWorld->m_NewEditorCamera.m_Projection;
+				glm::mat4 cameraView = glm::inverse(ActiveWorld->m_NewEditorCamera.m_CameraMatrix);
+				const auto& tc = *selectedEntity.GetComponent<TransformComponent>();
+				glm::mat4& transform = tc.GetTransform();
 
+				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
+				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
+				// Snap to 45 degrees for rotation
+				if (GuizmoType == ImGuizmo::OPERATION::ROTATE)
+					snapValue = 45.0f;
 
-				auto& tc = *selectedEntity.GetComponent<TransformComponent>();
-				glm::mat4 transform = tc.GetTransform();
+				float snapValues[3] = {snapValue,snapValue,snapValue};
 
 				ImGuizmo::Manipulate(glm::value_ptr(cameraView),glm::value_ptr(cameraProjection),
-					ImGuizmo::OPERATION(GuizmoType),ImGuizmo::LOCAL,glm::value_ptr(transform));
+					(ImGuizmo::OPERATION)GuizmoType,ImGuizmo::LOCAL,glm::value_ptr(transform),
+					nullptr,snap ? snapValues : nullptr);
 
-				if(ImGuizmo::IsUsing()&& GuizmoType != -1){
-					glm::vec3  translation,rotation,scale;
+				if (ImGuizmo::IsUsing()) {
+					glm::vec3 translation,rotation,scale;
 					MathResource::DecomposeTransform(transform,translation,rotation,scale);
 
-					glm::vec3 deltaRotaiton = Vector(rotation) -tc.Rotation; // prevent gimble
-
-					tc.Location = translation;
-					tc.Rotation+=deltaRotaiton;
-					tc.Scale =scale;
+					glm::vec3 deltaRotation = rotation - glm::vec3{tc.Rotation};
+					glm::vec3{tc.Location}= translation;
+					glm::vec3{tc.Rotation} += deltaRotation;
+					glm::vec3{tc.Scale} = scale;
 				}
 				*/
 			}

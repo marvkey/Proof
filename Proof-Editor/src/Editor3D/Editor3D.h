@@ -22,6 +22,7 @@ namespace Proof {
 		bool Docking = false;
 		void ViewPort();
 		void MainToolBar();
+		glm::vec2 m_ViewportBounds[2];
 		Count<Texture2D>m_PlayButtonTexture;
 		Count<Texture2D>m_PauseButtonTexture;
 		Count<Texture2D>m_SimulateButtonTexture;
