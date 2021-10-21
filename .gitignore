@@ -10,3 +10,10 @@ bin-int/
 **.vcxproj
 **.vcxproj.filters
 **.vcxproj.user
+**.obj
+**.mtl 
+**.fbx 
+**.png 
+**.jpg 
+**.dll 
+

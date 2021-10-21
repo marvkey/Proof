@@ -16,7 +16,6 @@
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "../ImGUIAPI.h"
 #include "Proof/Scene/ExampleSccripts.h"
-#include "Proof/Scene/Camera/Camera.h"
 #include "Proof/Scene/Script.h"
 namespace Proof{
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
@@ -76,7 +75,7 @@ namespace Proof{
 	}
 
 	template<typename T,typename UIFunction>
-	void SceneHierachyPanel::DrawComponents(const std::string& name,Entity& entity,T* Comp,uint32_t IndexValue,UIFunction Uifunction) {
+	void SceneHierachyPanel::DrawComponents(const std::string& name,Entity& entity,T* Comp,uint32_t IndexValue,UIFunction Uifunction,const std::string& toolTip) {
 		ImGui::PushID(&(*Comp));
 		const ImGuiTreeNodeFlags treeNodeFlags =ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 		T& component = *Comp;
@@ -87,6 +86,13 @@ namespace Proof{
 		ImGui::Separator();
 		bool open = false;
 		open = ImGui::TreeNodeEx((void*)&(*Comp),treeNodeFlags,name.c_str());
+		if(ImGui::IsItemHovered()&& toolTip.empty()==false){
+			ImGui::BeginTooltip();
+			{
+				ImGui::SetTooltip(toolTip.c_str());
+			}
+			ImGui::EndTooltip();
+		}
 		ImGui::PopStyleVar();
 		ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
 		if (ImGui::Button("+",ImVec2{lineHeight+3,lineHeight})) {
@@ -101,6 +107,7 @@ namespace Proof{
 		}
 
 		if (open) {
+			
 			Uifunction(component);
 			ImGui::Text("Index Value: %i ",IndexValue);
 
@@ -371,7 +378,6 @@ namespace Proof{
 				continue;
 			}
 			CameraComponent* cameraComp = dynamic_cast<CameraComponent*>(Comp);
-
 			if(Comp !=nullptr){
 				DrawComponents<CameraComponent>("Camera Component: ",entity,cameraComp,IndexValue,[](CameraComponent& CameraComp){
 					char buffer[256];
@@ -383,20 +389,22 @@ namespace Proof{
 
 					ImGui::NewLine();
 					
-					ImGui::SliderFloat("Field ov fiew",&CameraComp.m_Camera.m_FovDeg,0,90);
-					ImGui::DragFloat("Near plane",&CameraComp.m_Camera.m_NearPlane,0,100000);
-					ImGui::DragFloat("Far plane",&CameraComp.m_Camera.m_FarPlane,0,100000);
+					ImGui::SliderFloat("Field ov fiew",&CameraComp.m_FovDeg,0,360);
+					ImGui::SliderFloat("Near plane",&CameraComp.m_NearPlane,-1,1);
+					ImGui::SliderFloat("Far plane",&CameraComp.m_FarPlane,0,10000);
 
-					ExternalAPI::ImGUIAPI::CheckBox("set Automatic resize",&CameraComp.m_Camera.m_AutoSetDimension);
-					if(CameraComp.m_Camera.m_AutoSetDimension ==false){
-						int tempWidth =(int)CameraComp.m_Camera.m_Width;
-						int tempHeight =(int)CameraComp.m_Camera.m_Height;
+					ExternalAPI::ImGUIAPI::CheckBox("set Automatic resize",&CameraComp.m_AutoSetDimension);
+					if(CameraComp.m_AutoSetDimension ==false){
+						int tempWidth =(int)CameraComp.m_Width;
+						int tempHeight =(int)CameraComp.m_Height;
 						ImGui::DragInt("view width",&tempWidth,1,0);
 						ImGui::DragInt("view height",&tempHeight,1,0);
-						CameraComp.m_Camera.m_Width = tempWidth;
-						CameraComp.m_Camera.m_Height= tempHeight;
+						CameraComp.m_Width = tempWidth;
+						CameraComp.m_Height= tempHeight;
 					}
-				});
+				},"if nothing visible set roation of z axis to 1");
+				IndexValue += 1;
+				continue;
 			}
 		} 
 	}

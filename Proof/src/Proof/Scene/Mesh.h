@@ -21,6 +21,9 @@ namespace Proof
         std::string GetName() {
             return m_Name;
         }
+        const std::vector<Count<class Texture2D>>&GetTextures()const{
+            return m_Textures;
+        }
     private:
         void SetUp();
         std::vector<Vertex> m_Vertices;
@@ -49,13 +52,15 @@ a:
             LoadModel(path);
         }
         static std::vector<uint32_t> AllID;
-        const std::vector<class SubMesh>& GetSubMeshes()const;
+        const std::vector<class SubMesh>& GetSubMeshes()const{
+            return meshes;
+        }
         std::vector<Count<Texture2D>> textures_loaded;
         std::vector<Material> Materials_loaded;
         uint32_t GetID(){
             return m_ID;
         }
-        std::string GetName(){
+        const std::string& GetName()const{
             return m_Name;
         }
         bool m_Enabled=true;

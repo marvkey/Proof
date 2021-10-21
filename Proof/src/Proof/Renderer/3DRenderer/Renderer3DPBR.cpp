@@ -55,12 +55,7 @@ namespace Proof{
 			auto InstanceSize = s_PBRInstance->m_MeshesEndingPositionIndexTransforms.find(meshComponent.GetMeshPointerID());
 			
 			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-			ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
-				glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})
-				* glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0})
-				* glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1})
-				* glm::scale(glm::mat4(1.0f),{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
-
+			ModelMatrix = Transform->GetTransform() + meshComponent.MeshLocalTransform.GetTransform();
 			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
 			s_PBRInstance->m_Transforms.insert(s_PBRInstance->m_Transforms.begin() + InstanceSize->second,temp);
 			InstanceSize->second ++;
@@ -72,11 +67,7 @@ namespace Proof{
 			s_PBRInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),s_PBRInstance->m_Transforms.size() + 1});
 			s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
 			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-			ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
-				glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})
-				* glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0})
-				* glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1})
-				* glm::scale(glm::mat4(1.0f),{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
+			ModelMatrix = Transform->GetTransform()+meshComponent.MeshLocalTransform.GetTransform();
 		
 			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
 			s_PBRInstance->m_Transforms.emplace_back(temp);

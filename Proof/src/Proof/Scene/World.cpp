@@ -16,10 +16,9 @@
 #include "Proof/Renderer/VertexArray.h"
 #include "Proof/Renderer/FrameBuffer.h"
 #include<glad/glad.h>
-#include "Camera/Camera.h"
 namespace Proof{
 	unsigned int quadVAO = 0;
-	unsigned int quadVBO;
+	unsigned int quadVBO=0;
 	
 	void renderQuad() {
 		if (quadVAO == 0) {
@@ -78,7 +77,7 @@ namespace Proof{
 			return;
 		}
 		
-		Renderer3DPBR::BeginContext(cameraComp->m_Camera.m_Projection,cameraComp->m_Camera.m_View,*cameraComp->m_Camera.m_Positon);
+		Renderer3DPBR::BeginContext(cameraComp->m_Projection,cameraComp->m_View,*cameraComp->m_Positon);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
 			if (Comp->GetMesh() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
@@ -107,15 +106,28 @@ namespace Proof{
 		RendererCommand::DrawArray(36);
 		m_IBLSkyBoxVertexArray->UnBind();
 		RendererCommand::DepthFunc(DepthType::Less);
-		cameraComp->m_Camera.CalculateProjection();
+		cameraComp->CalculateProjection();
 
-		if(cameraComp->m_Camera.m_AutoSetDimension ==true){
+		if(cameraComp->m_AutoSetDimension ==true){
 			if(m_LastFrameWidth != width || m_LastFrameHeight != height){
-				cameraComp->m_Camera.SetDimensions(width,height);
+				cameraComp->SetDimensions(width,height);
 				m_LastFrameWidth =width;
 				m_LastFrameHeight=height;
-				cameraComp->m_Camera.CalculateProjection();
+				cameraComp->CalculateProjection();
 			}
+		}
+		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
+			if (Scripts->m_HasScriptAttached == false) {
+				continue;
+			}
+			if (Scripts->Instance == nullptr) {
+				Scripts->Instance = Scripts->InstantiateScript();
+				Scripts->Instance->OwnerEntity = Scripts->GetOwner();
+				Scripts->Instance->OnCreate();
+				Scripts->Instance->OnlyOnCreate();
+			}
+			if (Scripts->Instance->b_CallPerframe == true)
+				Scripts->Instance->OnUpdate(DeltaTime);
 		}
 	}
 
@@ -437,6 +449,7 @@ namespace Proof{
 		Component* a = static_cast<Component*>(component);
 		a->m_EntityOwner = _Entity.GetID();
 		a->CurrentWorld = this;
-		component->m_Camera ={component->GetOwner().GetComponent<TransformComponent>()->Location};
+		component->m_Positon=&component->GetOwner().GetComponent<TransformComponent>()->Location;
+		component->m_Roatation = &component->GetOwner().GetComponent<TransformComponent>()->Rotation;
 	}
 }

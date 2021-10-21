@@ -15,10 +15,6 @@
 
 namespace Proof{
     std::vector<uint32_t> Mesh::AllID;
-    const std::vector<SubMesh>& Mesh::GetSubMeshes()const  {
-        return meshes;
-    }
-
     void Mesh::LoadModel(std::string const& path) {
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);

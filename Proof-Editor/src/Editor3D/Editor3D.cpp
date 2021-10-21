@@ -331,18 +331,16 @@ namespace Proof
 			Entity selectedEntity = this->m_WorldHierachy.GetSelectedEntity();
 
 			if (selectedEntity.GetID() != 0) {
-				/*
 				ImGuizmo::SetOrthographic(false);
 				ImGuizmo::SetDrawlist();
 
-				float windowWidth  =(float) ImGui::GetWindowWidth();
-				float windowHeight = (float) ImGui::GetWindowHeight();
 				ImGuizmo::SetRect(m_ViewportBounds[0].x,m_ViewportBounds[0].y,m_ViewportBounds[1].x - m_ViewportBounds[0].x,m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
-				const glm::mat4& cameraProjection = ActiveWorld->m_NewEditorCamera.m_Projection;
-				glm::mat4 cameraView = glm::inverse(ActiveWorld->m_NewEditorCamera.m_CameraMatrix);
-				const auto& tc = *selectedEntity.GetComponent<TransformComponent>();
-				glm::mat4& transform = tc.GetTransform();
+				const glm::mat4& cameraProjection = ActiveWorld->m_EditorCamera.m_Projection;
+				glm::mat4 cameraView = ActiveWorld->m_EditorCamera.m_View;
+
+				auto& tc = *selectedEntity.GetComponent<TransformComponent>();
+				glm::mat4 transform = tc.GetTransform();
 
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
@@ -361,11 +359,11 @@ namespace Proof
 					MathResource::DecomposeTransform(transform,translation,rotation,scale);
 
 					glm::vec3 deltaRotation = rotation - glm::vec3{tc.Rotation};
-					glm::vec3{tc.Location}= translation;
-					glm::vec3{tc.Rotation} += deltaRotation;
-					glm::vec3{tc.Scale} = scale;
+					tc.Location = translation;
+					tc.Rotation += deltaRotation;
+					tc.Scale = scale;
 				}
-				*/
+				
 			}
 
 			/* putting this underneath image because a window only accpet drop target to when item is bound so and image has been bound */

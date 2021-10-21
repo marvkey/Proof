@@ -44,13 +44,13 @@ Entities:
     TagComponent:
       Tag: cube
     TransformComponent:
-      Location: [-2.20000005, 0, 0]
+      Location: [-2.20000005, 0, 4.73614502]
       Rotation: [0, 0, 0]
       Scale: [4, 4, 4]
     MeshComponent:
       Name: Default
       AssetID: 12067
-      LocalLocation: [5.5, 0, 0]
+      LocalLocation: [0, 0, 0]
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
       MaterialPointerID: 12014
@@ -126,7 +126,7 @@ Entities:
     TransformComponent:
       Location: [-6.50099993, 34.2999992, -3.9000001]
       Rotation: [0, 0, 0]
-      Scale: [10, 10, 10]
+      Scale: [20.7086525, 10.8639984, 10.3689957]
     MeshComponent:
       Name: Default
       AssetID: 9099
@@ -136,23 +136,24 @@ Entities:
       MaterialPointerID: 0
   - Entity: 21616
     TagComponent:
-      Tag: chest
+      Tag: Camera
     TransformComponent:
-      Location: [20.2000008, 4.80000019, 0]
+      Location: [-58.8999405, 18.5, 9.39999008]
       Rotation: [0, 0, 0]
-      Scale: [1, 0.00999999978, 0.00999999978]
-    MeshComponent:
-      Name: Default
-      AssetID: 2122
-      LocalLocation: [0, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [0, 0, 0]
-      MaterialPointerID: 0
+      Scale: [1, 1, 0.00999999978]
+    CameraComponent:
+      AutoSetDimension: true
+      NearPlane: 0.0520000011
+      FarPlane: 1000
+      FOV: 61.3639984
+      Width: 250
+      Height: 250
+      UpVector: [0, 1, 0]
   - Entity: 28039
     TagComponent:
       Tag: sponza
     TransformComponent:
-      Location: [0.599999726, 0, 0]
+      Location: [19.2000046, 0, 5.39999819]
       Rotation: [0, 0, 0]
       Scale: [0.19631055, 0.200000003, 0.200000003]
     MeshComponent:

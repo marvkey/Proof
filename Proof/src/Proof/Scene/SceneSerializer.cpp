@@ -86,6 +86,20 @@ namespace Proof{
 				out << YAML::EndMap; // LightComponent
 				continue;
 			}
+
+			CameraComponent* cameraComponent = dynamic_cast<CameraComponent*>(Comp);
+			if(cameraComponent != nullptr){
+				out<<YAML::Key<<"CameraComponent";
+				out<<YAML::BeginMap; // Camera Componet
+				out<<YAML::Key<<"AutoSetDimension"<<cameraComponent->m_AutoSetDimension;
+				out<<YAML::Key<<"NearPlane"<<cameraComponent->m_NearPlane;
+				out<<YAML::Key<<"FarPlane"<<cameraComponent->m_FarPlane;
+				out<<YAML::Key<<"FOV"<<cameraComponent->m_FovDeg;
+				out<<YAML::Key<<"Width"<<cameraComponent->m_Width;
+				out<<YAML::Key<<"Height"<<cameraComponent->m_Height;
+				out<<YAML::Key<<"UpVector"<<cameraComponent->m_Up;
+				out << YAML::EndMap; // CameraComponet
+			}
 		}
 		out << YAML::EndMap; // entity
 	}
@@ -177,6 +191,19 @@ namespace Proof{
 					src.m_Specular = lightComponent["Specular"].as<glm::vec3>();
 
 					src.m_LightType = lightComponent["LightType"].as<int>();
+				}
+
+				auto cameraComponent = entity["CameraComponent"];
+				if(cameraComponent){
+					auto& src = *NewEntity.AddComponent<CameraComponent>();
+					src.m_AutoSetDimension = cameraComponent["AutoSetDimension"].as<bool>();
+					src.m_NearPlane = cameraComponent["NearPlane"].as<float>();
+					src.m_FarPlane= cameraComponent["FarPlane"].as<float>();
+					src.m_FovDeg= cameraComponent["FOV"].as<float>();
+					if(src.m_AutoSetDimension ==false){
+						src.m_Width = cameraComponent["Width"].as<uint32_t>();
+						src.m_Height= cameraComponent["Height"].as<uint32_t>();
+					}
 				}
 			}
 		}

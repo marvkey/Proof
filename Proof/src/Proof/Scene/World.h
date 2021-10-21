@@ -31,11 +31,9 @@ namespace Proof{
 
 		Count<World> Copy(Count<World> world);
 		virtual void EndRuntime();
-		std::string GetName(){return Name;};
 		class ECS Registry;
-		std::string GetPath(){
-			return m_Path;
-		}
+		const std::string& GetName()const{return Name;};
+		const std::string& GetPath()const{return m_Path;}
 		friend class WorldRenderer;
 	private:
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;

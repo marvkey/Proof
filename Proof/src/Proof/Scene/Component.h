@@ -9,7 +9,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include "Proof/Scene/Camera/PerspectiveCamera.h"
-#include "Proof/Scene/Camera/Camera.h"
+
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof{
@@ -22,12 +22,12 @@ namespace Proof{
 		virtual ~Component(){
 
 		}
-		std::string GetName(){return Name;}
+		const std::string& GetName()const{return Name;}
 		virtual void SetName(const std::string& name){
 			Name = name;
 		}
 		class Entity GetOwner();
-		uint32_t GetAssetID() {
+		uint32_t GetAssetID()const {
 			return AssetID;
 		}
 
@@ -51,7 +51,7 @@ namespace Proof{
 			Tags.emplace_back(Tag);
 			Name ="Empty Entity";
 		}
-		bool HasTag(const std::string& Tag) {
+		bool HasTag(const std::string& Tag)const {
 			for (const std::string& TagName : Tags) {
 				if (Tag == TagName) {
 					return true;
@@ -73,7 +73,7 @@ namespace Proof{
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 
-		glm::mat4 GetTransform() const 		{
+		glm::mat4 GetTransform() const {
 			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 
 			return glm::translate(glm::mat4(1.0f),{Location})
@@ -205,8 +205,48 @@ namespace Proof{
 	};
 
 	
-	struct Proof_API CameraComponent:Component{
-		Camera m_Camera;
+	struct Proof_API CameraComponent: Component {
+	public:
+		CameraComponent(const CameraComponent&) = default;
+		CameraComponent()=default;
+		enum class CameraType { Orthographic = 0,Perspective = 1 };
+
+		void SetDimensions(uint32_t width,uint32_t Height) {
+			m_Width = width;
+			m_Height = Height;
+			CalculateProjection();
+		}
+		bool AutoSetDimension(bool value) {
+			value = m_AutoSetDimension;
+		}
+		const glm::mat4& GetView()const{return m_View;}
+		const glm::mat4& GetProjection()const{return m_Projection;}
+		//Vector m_Direction = {0,0,-1};
+		Vector m_Up = {0,1,0};
+	private:
+		void CalculateProjection() {
+			if (m_Positon == nullptr|| m_Roatation==nullptr)
+				return;
+			m_View = glm::lookAt(glm::vec3{*m_Positon},glm::vec3{*m_Positon} + glm::vec3{*m_Roatation},glm::vec3{m_Up});
+			m_Projection = glm::perspective(glm::radians(m_FovDeg),(float)m_Width / (float)m_Height,m_NearPlane,m_FarPlane);
+			m_CameraMatrix = m_View * m_Projection;
+		}
+		CameraType m_CameraType = CameraType::Perspective;
+
+		bool m_AutoSetDimension = true;
+		float m_NearPlane = 0.1;
+		float m_FarPlane = 1000;
+		float m_FovDeg = 45;
+		uint32_t m_Width = 250,m_Height = 250;
+		Vector* m_Positon = nullptr;
+		Vector* m_Roatation = nullptr;
+
+		glm::mat4 m_View = glm::mat4(1.0f);
+		glm::mat4 m_Projection = glm::mat4(1.0f);
+		glm::mat4 m_CameraMatrix = glm::mat4(1.0f);
+		friend class World;
+		friend class SceneSerializer;
+		friend class SceneHierachyPanel;
 	private:
 		uint32_t StartIndexSlot = 0;
 		friend class ECS;

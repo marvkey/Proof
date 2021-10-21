@@ -3,7 +3,7 @@
 #include "Component.h"
 namespace Proof
 {
-	std::string Entity::GetName() {
+	std::string Entity::GetName(){
 		return GetComponent<TagComponent>() != nullptr ? GetComponent<TagComponent>()->GetName() : "DefaultEntity";
 	}
 	void Entity::SetName(const std::string& Name) {

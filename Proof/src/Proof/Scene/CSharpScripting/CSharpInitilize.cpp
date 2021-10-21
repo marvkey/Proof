@@ -13,7 +13,7 @@ namespace Proof
 			if(m_Assembly){
 				m_Image=mono_assembly_get_image(m_Assembly);
 				if(m_Image){
-					MonoClass* Script = mono_class_from_name(m_Image,"Movement","Script");
+				//	MonoClass* Script = mono_class_from_name(m_Image,"Movement","Script");
 				}
 			};
 		}

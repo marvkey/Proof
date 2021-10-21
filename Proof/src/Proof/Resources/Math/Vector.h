@@ -66,7 +66,12 @@ namespace Proof
             this->Z += Other.z;
             return *this;
         }
-
+        Vector operator +=(Vector& Other) {
+            this->X += Other.X;
+            this->Y += Other.Y;
+            this->Z += Other.Z;
+            return *this;
+        }
         Vector operator -=(const glm::vec3& Other) {
             this->X -= Other.x;
             this->Y -= Other.y;
