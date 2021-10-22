@@ -28,8 +28,8 @@ namespace Proof {
         virtual uint32_t GetID() = 0;
         static Count<Shader>Create(const std::string& _ShaderName,const std::string& VertexPath,const std::string& FragmentPath);
         static Count<Shader>Create(const std::string& _ShaderName,const std::string& ShaderPath);
-        virtual std::string GetName()=0;
-        virtual std::string GetPath()=0;
+        virtual const std::string& GetName()const=0;
+        virtual const std::string& GetPath()const =0;
         virtual ~Shader();
     protected:
         friend class Application;

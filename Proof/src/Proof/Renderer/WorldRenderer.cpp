@@ -45,7 +45,6 @@ namespace Proof{
 		RendererCommand::DrawArray(36);
 		m_World->m_IBLSkyBoxVertexArray->UnBind();
 		RendererCommand::DepthFunc(DepthType::Less);
-
 		m_ScreenFrameBuffer->UnBind();
 	}
 }

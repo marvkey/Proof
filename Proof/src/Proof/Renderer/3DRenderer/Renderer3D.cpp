@@ -8,7 +8,6 @@
 
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Component.h"
-#include "Proof/Scene/Camera/PerspectiveCamera.h"
 #include "Proof/Scene/Camera/OrthagraphicCamera.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
 

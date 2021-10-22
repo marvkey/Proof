@@ -8,7 +8,6 @@
 #include "Proof/Renderer/Texture.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
-#include "Proof/Scene/Camera/PerspectiveCamera.h"
 
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
@@ -109,9 +108,7 @@ namespace Proof{
 		friend class SceneHierachyPanel;
 		uint32_t StartIndexSlot;
 		bool m_HasScriptAttached = false;
-
 	};
-
 
 	struct Proof_API MeshComponent :public Component {
 		MeshComponent() {
@@ -203,9 +200,15 @@ namespace Proof{
 		uint32_t StartIndexSlot = 0;
 		friend class ECS;
 	};
+	struct Proof_API SkyLightComponent: public Component{
+		SkyLightComponent(const SkyLightComponent&) = default;
+		SkyLightComponent() = default;
+	private:
+		//void SetHDRIPath(const std::string& path):
+	};
 
 	
-	struct Proof_API CameraComponent: Component {
+	struct Proof_API CameraComponent: public Component {
 	public:
 		CameraComponent(const CameraComponent&) = default;
 		CameraComponent()=default;
@@ -221,7 +224,6 @@ namespace Proof{
 		}
 		const glm::mat4& GetView()const{return m_View;}
 		const glm::mat4& GetProjection()const{return m_Projection;}
-		//Vector m_Direction = {0,0,-1};
 		Vector m_Up = {0,1,0};
 	private:
 		void CalculateProjection() {

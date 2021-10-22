@@ -29,7 +29,7 @@ namespace Proof {
 
         ScreenFrameBuffer = ScreenFrameBuffer::Create(1300,600);
         ScreenFrameBuffer->UnBind();
-        AssetManager::InitilizeAssets("content");
+        //AssetManager::InitilizeAssets("content");
         
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
     }

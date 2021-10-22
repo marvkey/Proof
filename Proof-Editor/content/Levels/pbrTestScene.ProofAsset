@@ -84,9 +84,9 @@ Entities:
     TagComponent:
       Tag: LightCube
     TransformComponent:
-      Location: [-14.5, 62.5999985, 15.8999996]
-      Rotation: [0, 0, 0]
-      Scale: [22.6000004, 24.1000004, 21.1000004]
+      Location: [-14.5, 62.5999985, -8.41290665]
+      Rotation: [0, -3.29999995, 0]
+      Scale: [22.6000004, 24.1000004, 20.2000008]
     MeshComponent:
       Name: Default
       AssetID: 12067
@@ -138,16 +138,16 @@ Entities:
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Location: [-58.8999405, 18.5, 9.39999008]
-      Rotation: [0, 0, 0]
+      Location: [150.951569, 93.0081635, 65.1460342]
+      Rotation: [-0.993717134, -0.00874863844, 0.111578308]
       Scale: [1, 1, 0.00999999978]
     CameraComponent:
       AutoSetDimension: true
       NearPlane: 0.0520000011
       FarPlane: 1000
       FOV: 61.3639984
-      Width: 250
-      Height: 250
+      Width: 535
+      Height: 497
       UpVector: [0, 1, 0]
   - Entity: 28039
     TagComponent:

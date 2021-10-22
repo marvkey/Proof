@@ -7,7 +7,6 @@
 
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Component.h"
-#include "Proof/Scene/Camera/PerspectiveCamera.h"
 #include "Proof/Scene/Camera/OrthagraphicCamera.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
 
@@ -135,7 +134,7 @@ namespace Proof{
 			}
 			s_PBRInstance->m_Shader->Bind();
 			if(TempMesh->second.GetMesh()->GetSubMeshes().size()>5)
-				glEnable(GL_CULL_FACE);
+				RendererCommand::Enable(ProofRenderTest::CullFace);
 			if(TempMesh->second.GetMesh()->m_Enabled==true){
 				for(SubMesh& mesh: TempMesh->second.GetMesh()->meshes){
 					if(mesh.m_Enabled==false)
@@ -152,7 +151,8 @@ namespace Proof{
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
 				}
 			}
-			glDisable(GL_CULL_FACE);
+
+			RendererCommand::Disable(GL_CULL_FACE);
 			sizeOffset += TempAmountMeshes->second;
 			s_PBRInstance->m_Shader->UnBind();
 		}

@@ -27,8 +27,8 @@ namespace Proof
         virtual void SetMat3(const std::string& Name,const glm::mat3& Value)override;
         virtual void SetMat4(const std::string& Name,const glm::mat4& Value)override;
         virtual uint32_t GetID()override;
-        virtual std::string GetPath() { return m_Path;}
-        virtual std::string GetName(){return m_Name;}
+        virtual const std::string& GetPath()const { return m_Path;}
+        virtual const std::string& GetName()const{return m_Name;}
 
     private:
         uint32_t m_ID;

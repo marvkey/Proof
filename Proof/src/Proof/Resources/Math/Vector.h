@@ -96,6 +96,27 @@ namespace Proof
             Vector Temp(this->X + Other.X,this->Y + Other.Y,this->Z + Other.Z);
             return Temp;
         }
-    };
 
+        Vector operator-()const{
+            Vector temp(-this->X,-this->Y,-this->Z);
+            return temp;
+        }
+
+        Vector operator +=(float other) {
+            this->X+=other;
+            this->Y+=other;
+            this->Z+=other;
+            return *this;
+        }
+    };
+    /*
+    Vector operator*(const Vector& other,float temp) {
+        Vector tempVec(other.X * temp,other.Y * temp,other.Z * temp);
+        return tempVec;
+    }
+    */
+    inline Vector operator*(float temp,const Vector& other) {
+        Vector tempVec(other.X * temp,other.Y * temp,other.Z * temp);
+        return tempVec;
+    }
 }

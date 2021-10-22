@@ -13,7 +13,8 @@ namespace Proof {
 	struct ProofRenderTest{
 		enum RenderTest:uint32_t {
 			Blend = GL_BLEND,
-			DepthTest =GL_DEPTH_TEST
+			DepthTest =GL_DEPTH_TEST,
+			CullFace = GL_CULL_FACE
 		};
 	};
 

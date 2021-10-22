@@ -17,7 +17,6 @@ namespace Proof{
 
 		template<class T>
 		T* GetComponent() {
-			if (HasComponent<T>() == false) return nullptr;
 			return CurrentWorld->Registry.GetComponent<T>(m_EntityID);
 		}
 		template<typename T>

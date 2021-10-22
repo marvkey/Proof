@@ -18,7 +18,6 @@
 // Camera
 #include "Proof/Scene//Camera/OrthagraphicCamera.h"
 #include "Proof/Scene//World.h"
-#include "Proof/Scene/Camera/PerspectiveCamera.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
 // scene
 #include "Proof/Scene/Component.h"
