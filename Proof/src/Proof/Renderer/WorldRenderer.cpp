@@ -6,6 +6,8 @@
 #include "Proof/Renderer/RendererCommand.h"
 namespace Proof{
 	void WorldRenderer::Renderer() {
+		if(m_RendererPaused==true)
+			return;
 		m_ScreenFrameBuffer->Bind();
 
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
@@ -45,6 +47,7 @@ namespace Proof{
 		RendererCommand::DrawArray(36);
 		m_World->m_IBLSkyBoxVertexArray->UnBind();
 		RendererCommand::DepthFunc(DepthType::Less);
+
 		m_ScreenFrameBuffer->UnBind();
 	}
 }

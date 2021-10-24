@@ -7,7 +7,6 @@
 #include <iostream>
 namespace Proof
 {
-#define CreateNew() new this;
 	class Proof_API Script {
 	public:
 		virtual ~Script() {};
@@ -50,6 +49,7 @@ namespace Proof
 		Entity OwnerEntity;
 
 	};
+	
 	namespace ScriptDetail{	
 		template<class T>
 		Script* CreateScript() {

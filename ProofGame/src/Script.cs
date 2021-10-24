@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace ProofGame
 {
-			public interface Script
+			public class Script
 			{
-						void OnUpdate(float deltaTime);
-						void OnCreate();
-						void OnlyOnCreate();
-						void OnSpawn();
-						void OnDestroy();
+						void OnUpdate(float deltaTime) { }
+						void OnCreate() { }
+						void OnlyOnCreate() { }
+						void OnSpawn() { }
+						void OnDestroy() { }
 
 			}
 			

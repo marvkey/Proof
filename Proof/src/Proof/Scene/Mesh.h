@@ -76,6 +76,7 @@ a:
         friend class Renderer3D;
         friend class Editore3D;
         friend class Renderer3DPBR;
+        friend class SceneRendererUI;
     };
 
 

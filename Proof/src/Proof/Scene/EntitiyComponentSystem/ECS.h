@@ -355,9 +355,11 @@ namespace Proof{
 		std::vector<class NativeScriptComponent*> NativeScripts;
 		std::vector<class LightComponent*> LightComponents;
 		std::vector<class CameraComponent*> m_CameraComponent;
-
-	private:
+		const std::unordered_map<EntityID,std::vector<class Component*>*>&ALlEntityCOmp()const{
+			return EntityHolder;
+		}
 		std::unordered_map<EntityID,std::vector<class Component*>*>EntityHolder;
+	private:
 		std::vector<EntityID> AllEntityID; // Temporary
 
 		bool HasEntity(EntityID ID) {

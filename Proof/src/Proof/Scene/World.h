@@ -23,18 +23,21 @@ namespace Proof{
 		}
 		World(World&)=default;
 		void OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height);
+		void OnUpdateEditorNoDraw(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height);
 
 		class Entity CreateEntity(const std::string& EntName);
 		class Entity CreateEntity(const std::string& EntName,uint32_t ID);
 
-		Count<World> Copy(Count<World> world);
+		static Count<World> Copy(Count<World> other);
 		virtual void EndRuntime();
 		class ECS Registry;
 		const std::string& GetName()const{return Name;};
 		const std::string& GetPath()const{return m_Path;}
 		friend class WorldRenderer;
+		void HandleInput();
+
 	private:
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
 		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height);

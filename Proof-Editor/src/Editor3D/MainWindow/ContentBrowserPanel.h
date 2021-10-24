@@ -5,6 +5,7 @@
 #include "Proof/Resources/Asset/Asset.h"
 #include <fstream>
 #include <string>
+#include "Panel.h"
 namespace Proof{
 	/* THIS CLASS WILL NEED TO BE HANDLED BY CURRENT PROJECT */
 	class Proof_API ContentBrowserPanel {

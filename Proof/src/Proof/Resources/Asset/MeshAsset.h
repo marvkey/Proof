@@ -29,7 +29,6 @@ namespace Proof
 			return true;
 		}
 		virtual uint32_t GetImageID();
-		class Mesh* GetModel();
 	private:
 		class Mesh* m_Mesh =nullptr;
 		friend class AssetManager;

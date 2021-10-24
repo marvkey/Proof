@@ -21,6 +21,7 @@
 #include "ImGUIAPI.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Utils/PlatformUtils.h"
+#include "MainWindow/SceneRendererUI.h"
 namespace Proof
 {
 	glm::vec4 ClearColour;
@@ -92,11 +93,11 @@ namespace Proof
 		m_SkyBoxVertexArray = VertexArray::Create();
 		m_SkyBoxVertexArray->AddData(0,3,3 * sizeof(float),(void*)0);
 
-		m_SkyBoxShader->Bind();
-		m_SkyBoxShader->SetInt("skybox",0);
-
-
-		m_CubeMap = CubeMap::Create(CubeMapPaths);
+		//m_SkyBoxShader->Bind();
+		//m_SkyBoxShader->SetInt("skybox",0);
+		//
+		//
+		//m_CubeMap = CubeMap::Create(CubeMapPaths);
 
 		m_PlayButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PlayButton.png");
 		m_PauseButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PauseButton .png");
@@ -152,8 +153,8 @@ namespace Proof
 
 	}
 
-	void Editore3D::OnImGuiDraw() {
-		Layer::OnImGuiDraw();
+	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
+		Layer::OnImGuiDraw(DeltaTime);
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
 		//ImGui::ShowDemoWindow();
@@ -164,6 +165,10 @@ namespace Proof
 		m_CurrentContentBrowserPanel.ImGuiRender();
 		MaterialEditor();
 		Logger();
+
+		for(auto& a: m_AllPanels){
+			a.second->ImGuiRender(DeltaTime);
+		}
 		if (ImGui::Begin("Renderer Stastitics")) {
 			ImGui::TextColored({1.0,0,0,1},"RENDERER SPECS");
 			ImGui::Text("Renderer Company: %s",Renderer::GetRenderCompany().c_str());
@@ -316,14 +321,16 @@ namespace Proof
 			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
 				_ViewPortSize = {ViewPortPanelSize.x,ViewPortPanelSize.y};
 			}
+			CurrentWindow::SetWindowInputEvent(true);
 
-			if (ImGui::IsWindowFocused()) {
+			
+			//if (ImGui::IsWindowFocused()) {
 				CurrentWindow::SetWindowInputEvent(true);
-			}
-			else {
-				CurrentWindow::SetWindowInputEvent(false);
-			}
-
+			//}
+			//else {
+			//	CurrentWindow::SetWindowInputEvent(false);
+			//}
+			
 			uint32_t Text = Application::GetScreenBuffer()->GetTexture();
 			ImGui::Image((ImTextureID)Text,ImVec2{_ViewPortSize.x,_ViewPortSize.y},ImVec2{0,1},ImVec2{1,0});
 			// GUIZMOS
@@ -538,6 +545,7 @@ namespace Proof
 	}
 	void Editore3D::PlayWorld() {
 		//m_PlayWorld = ActiveWorld->Copy(ActiveWorld);
+		SceneSerializer::SceneSerializer(ActiveWorld.get());
 		ActiveWorld->m_CurrentState = WorldState::Play;
 
 	}
@@ -571,7 +579,15 @@ namespace Proof
 
 	void Editore3D::SetMeshEditor(MeshAsset& mesh) {
 		m_MeshAsset =&mesh;
+		auto it =m_AllPanels.find(mesh.GetID());
+		if(it!= m_AllPanels.end()){
+			it->second->SetWindowVisibile(true);
+			return;
+		}
+		SceneRendererUI* temp = new SceneRendererUI(&mesh);
+		m_AllPanels.insert({m_MeshAsset->GetID(),temp});
 	}
+
 
 	void Editore3D::MaterialEditor() {
 		ImGui::Begin("Material Editor");

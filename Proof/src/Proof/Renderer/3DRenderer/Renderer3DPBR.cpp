@@ -133,8 +133,8 @@ namespace Proof{
 			
 			}
 			s_PBRInstance->m_Shader->Bind();
-			if(TempMesh->second.GetMesh()->GetSubMeshes().size()>5)
-				RendererCommand::Enable(ProofRenderTest::CullFace);
+			//if(TempMesh->second.GetMesh()->GetSubMeshes().size()>5)
+				//RendererCommand::Enable(ProofRenderTest::CullFace);
 			if(TempMesh->second.GetMesh()->m_Enabled==true){
 				for(SubMesh& mesh: TempMesh->second.GetMesh()->meshes){
 					if(mesh.m_Enabled==false)
@@ -152,7 +152,7 @@ namespace Proof{
 				}
 			}
 
-			RendererCommand::Disable(GL_CULL_FACE);
+			//RendererCommand::Disable(GL_CULL_FACE);
 			sizeOffset += TempAmountMeshes->second;
 			s_PBRInstance->m_Shader->UnBind();
 		}

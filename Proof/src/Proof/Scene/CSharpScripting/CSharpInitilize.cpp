@@ -25,5 +25,4 @@ namespace Proof
 			mono_jit_cleanup(m_Domain);
 	}
 
-	void InitlizeCSharp::OnUpdate(float deltaTime) {}
 }

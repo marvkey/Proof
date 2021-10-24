@@ -8,7 +8,7 @@ namespace Proof
 	public:
 		InitlizeCSharp();
 		virtual ~InitlizeCSharp();
-		void OnUpdate(float deltaTime);
+
 	private:
 		MonoDomain*m_Domain =nullptr;
 		MonoAssembly* m_Assembly =nullptr;

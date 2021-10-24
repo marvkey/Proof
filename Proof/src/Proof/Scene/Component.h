@@ -143,6 +143,7 @@ namespace Proof{
 		friend class ECS;
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
+		friend class SceneRendererUI;
 		uint32_t StartIndexSlot = 0;
 		uint32_t m_MeshMaterialID= 0;
 	};

@@ -53,6 +53,12 @@ namespace Proof{
 		OnUpdate(DeltaTime,width,height);
 	}
 
+	void World::OnUpdateEditorNoDraw(FrameTime DeltaTime,uint32_t width,uint32_t height) {
+		m_EditorCamera.m_FarPlane = 2000;
+		m_EditorCamera.m_Sensitivity = 25;
+		m_EditorCamera.OnUpdate(DeltaTime,width,height);
+	}
+
 	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
 		CameraComponent* cameraComp =nullptr;
 		for(int i=0;i<Registry.m_CameraComponent.size();i++){
@@ -149,29 +155,45 @@ namespace Proof{
 		entity.AddComponent<TransformComponent>();
 		return entity;
 	}
+	template<class TypeComponent>
+	static void CopyCOmponent(std::unordered_map<EntityID,std::vector<class Component*>*>&map){
+	}
 	//static void CopyComponent
-	Count<World> World::Copy(Count<World> world) {
-		Count<World> newWorld = CreateCount<World>("Assets/Textures/hdr/Arches_E_PineTree_3k.hdr");
-		newWorld->Name = world->Name;
-		newWorld->Registry = world->Registry;
-		newWorld->m_Path = world->m_Path;
-		/*
-		newWorld->m_WorldCubeMap = m_WorldCubeMap;
-		newWorld->m_WorldCubeMapIrradiance = m_WorldCubeMapIrradiance;
-		newWorld->PrefelterMap = PrefelterMap;
+	Count<World> World::Copy(Count<World> other) {
+		Count<World> newWorld = CreateCount<World>();
+		newWorld->Name = other->Name;
+		newWorld->m_Path = other->m_Path;
+		newWorld->Name = other->Name;
+		newWorld->m_EditorCamera = other->m_EditorCamera;
 
-		newWorld->m_WorldIBLTexture = m_WorldIBLTexture;
-		newWorld->m_IBLSkyBoxBuffer= m_IBLSkyBoxBuffer;
-		newWorld->m_IBLSkyBoxVertexArray = m_IBLSkyBoxVertexArray;
+		newWorld->m_LastFrameHeight = other->m_LastFrameHeight;
+		newWorld->m_LastFrameWidth = other->m_LastFrameWidth;
 
-		newWorld->m_CaptureFBO = m_CaptureFBO;
-		newWorld->m_CaptureRBO = m_CaptureRBO;
-		newWorld
-		*/
-		return newWorld;
+		newWorld->m_WorldCubeMap = other->m_WorldCubeMap;
+		newWorld->m_WorldCubeMapIrradiance = other->m_WorldCubeMapIrradiance;
+		newWorld->PrefelterMap = other->PrefelterMap;
+
+		newWorld->m_WorldIBLTexture = other->m_WorldIBLTexture;
+		newWorld->m_IBLSkyBoxBuffer= other->m_IBLSkyBoxBuffer;
+		newWorld->m_IBLSkyBoxVertexArray = other->m_IBLSkyBoxVertexArray;
+
+		newWorld->m_CaptureFBO = other->m_CaptureFBO;
+		newWorld->m_CaptureRBO = other->m_CaptureRBO;
+		for(auto& comp: other->Registry.EntityHolder){
+			std::vector<Component*>* New = new std::vector<Component*>;
+			newWorld->Registry.EntityHolder.insert({comp.first,New});
+			for(int i=0;i<comp.second->size();i++){
+			}
 		}
+		return newWorld;
+	}
 
 	void World::EndRuntime() {
+	}
+
+	void World::HandleInput() {
+	
+		
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height){
@@ -218,6 +240,8 @@ namespace Proof{
 		backgroundShader->Bind();
 		backgroundShader->SetInt("environmentMap",0);
 		m_WorldCubeMap->Bind(0);
+		//PrefelterMap->Bind(0);
+		//m_WorldCubeMapIrradiance->Bind();
 		m_IBLSkyBoxVertexArray->Bind();
 		RendererCommand::DrawArray(36);
 		m_IBLSkyBoxVertexArray->UnBind();
@@ -311,8 +335,8 @@ namespace Proof{
 			equirectangularToCubemapShader->SetMat4("view",captureViews[i]);
 			uint32_t temp = (uint32_t)FrameBufferTextureType::CubeMapPosX;
 			temp += i;
-			m_CaptureFBO->AttachColourTexture((FrameBufferTextureType)temp,0,m_WorldCubeMap->GetID());
-
+			m_CaptureFBO->AttachColourTexture((FrameBufferTextureType)temp,0,m_WorldCubeMap->GetID(),0);
+			
 			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 			RendererCommand::DepthFunc(DepthType::Equal);
 			m_IBLSkyBoxVertexArray->Bind();
@@ -342,12 +366,13 @@ namespace Proof{
 			m_CaptureFBO->AttachColourTexture((FrameBufferTextureType)temp,0,m_WorldCubeMapIrradiance->GetID());
 
 			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-
+			
 			RendererCommand::DepthFunc(DepthType::Equal);
 			m_IBLSkyBoxVertexArray->Bind();
 			RendererCommand::DrawArray(36);
 			m_IBLSkyBoxVertexArray->UnBind();
 			RendererCommand::DepthFunc(DepthType::Less);
+			
 		}
 		m_CaptureFBO->UnBind();
 		PrefelterMap = CubeMap::Create(128,128,true);

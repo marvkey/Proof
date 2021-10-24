@@ -5,6 +5,7 @@
 #include "MainWindow/SceneHierachyPanel.h"
 #include "MainWindow/ContentBrowserPanel.h"
 #include "Proof/Scene/SceneSerializer.h"
+#include "MainWindow/Panel.h"
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {
@@ -12,7 +13,7 @@ namespace Proof {
 		Editore3D();
 		~Editore3D();
 		virtual void OnUpdate(FrameTime DeltaTime) override;
-		virtual void OnImGuiDraw() override;
+		virtual void OnImGuiDraw(FrameTime DeltaTime) override;
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		void SetMaterialEditor(class MaterialAsset& material);
@@ -43,7 +44,7 @@ namespace Proof {
 		void NewWorld(bool Save);
 		void OpenWorld();
 		void Save();
-
+		std::unordered_map<AssetID,Panel*>m_AllPanels;
 		void PlayWorld();
 		void SimulateWorld();
 		void SetWorldEdit();

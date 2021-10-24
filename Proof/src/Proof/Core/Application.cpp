@@ -29,7 +29,6 @@ namespace Proof {
 
         ScreenFrameBuffer = ScreenFrameBuffer::Create(1300,600);
         ScreenFrameBuffer->UnBind();
-        //AssetManager::InitilizeAssets("content");
         
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
     }
@@ -64,6 +63,7 @@ namespace Proof {
     }
 
     void Application::Run() {
+       AssetManager::InitilizeAssets("content");
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
@@ -92,7 +92,7 @@ namespace Proof {
             }
             ImGuiMainLayer->Begin();
             for (Layer* layer : MainLayerStack.V_LayerStack)
-                layer->OnImGuiDraw();
+                layer->OnImGuiDraw(DeltaTime);
             ImGuiMainLayer->End();
 
             Renderer::Reset();

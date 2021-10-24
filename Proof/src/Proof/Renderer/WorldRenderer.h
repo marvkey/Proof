@@ -4,6 +4,8 @@ namespace Proof
 {
 	class WorldRenderer {
 	public:
+		WorldRenderer()=default;
+
 		WorldRenderer(class World* world,uint32_t textureWidth,uint32_t textureHeight):
 			m_World(world),m_Width(textureHeight),m_Height(textureHeight)
 		{
@@ -16,9 +18,14 @@ namespace Proof
 		}
 		void Renderer();
 		uint32_t GetWorldTexture(){
-			m_ScreenFrameBuffer->GetFrameBufferID();
+			return m_ScreenFrameBuffer->GetFrameBufferID();
 		}
+		void SetRendererPause(bool value){
+			m_RendererPaused =value;
+		}
+		bool GetRendererPaused(){return m_RendererPaused;};
 	private:
+		bool  m_RendererPaused =false;
 		uint32_t m_Width,m_Height;
 		class World* m_World=nullptr;
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;

@@ -31,7 +31,7 @@ namespace Proof
 		virtual std::string GetAssetTypeName(){
 			return "AssetType::None";
 		}
-		uint32_t GetID(){
+		uint64_t GetID(){
 			return m_ID;
 		}
 
@@ -43,7 +43,7 @@ namespace Proof
 		}
 	protected:
 		AssetType m_AssetType  = AssetType::None;
-		uint32_t m_ID = 0;
+		uint64_t m_ID = 0;
 		std::string m_Path;
 		std::string m_PathOfPointerToFile;
 		std::string m_AssetName;
