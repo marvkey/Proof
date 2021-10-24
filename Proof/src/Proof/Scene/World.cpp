@@ -47,7 +47,7 @@ namespace Proof{
 	
 	World::World()
 	{
-		CreateIBlTexture("Assets/Textures/hdr/Arches_E_PineTree_3k.hdr");
+		CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
 	}
 	void World::OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height) {
 		OnUpdate(DeltaTime,width,height);

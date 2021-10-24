@@ -87,13 +87,11 @@ namespace Proof
 		void ImGUIAPI::CheckBox(const std::string& name,bool* variable) {
 			ImGui::GetStyle().FrameRounding = 3.5;
 			ImGui::PushID(name.c_str());
-			{
-				ImGui::Text(name.c_str());
-				ImGui::SameLine();
-				ImGui::Checkbox("##N",variable);
-			}
-			ImGui::PopID();
+			ImGui::Text(name.c_str());
+			ImGui::SameLine();
+			ImGui::Checkbox("##N",variable);
 			ImGui::GetStyle().FrameRounding = 6;
+			ImGui::PopID();
 		}
 	}
 }

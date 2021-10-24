@@ -54,7 +54,7 @@ namespace Proof{
 			auto InstanceSize = s_PBRInstance->m_MeshesEndingPositionIndexTransforms.find(meshComponent.GetMeshPointerID());
 			
 			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-			ModelMatrix = Transform->GetTransform() + meshComponent.MeshLocalTransform.GetTransform();
+			ModelMatrix = Transform->GetTransform();
 			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
 			s_PBRInstance->m_Transforms.insert(s_PBRInstance->m_Transforms.begin() + InstanceSize->second,temp);
 			InstanceSize->second ++;
@@ -66,7 +66,7 @@ namespace Proof{
 			s_PBRInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),s_PBRInstance->m_Transforms.size() + 1});
 			s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
 			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-			ModelMatrix = Transform->GetTransform()+meshComponent.MeshLocalTransform.GetTransform();
+			ModelMatrix = Transform->GetTransform();
 		
 			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
 			s_PBRInstance->m_Transforms.emplace_back(temp);
@@ -133,8 +133,8 @@ namespace Proof{
 			
 			}
 			s_PBRInstance->m_Shader->Bind();
-			//if(TempMesh->second.GetMesh()->GetSubMeshes().size()>5)
-				//RendererCommand::Enable(ProofRenderTest::CullFace);
+			if(TempMesh->second.GetMesh()->m_FaceCulling=true)
+				RendererCommand::Enable(ProofRenderTest::CullFace);
 			if(TempMesh->second.GetMesh()->m_Enabled==true){
 				for(SubMesh& mesh: TempMesh->second.GetMesh()->meshes){
 					if(mesh.m_Enabled==false)
@@ -151,8 +151,8 @@ namespace Proof{
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
 				}
 			}
-
-			//RendererCommand::Disable(GL_CULL_FACE);
+			if (TempMesh->second.GetMesh()->m_FaceCulling = true)
+				RendererCommand::Disable(ProofRenderTest::CullFace);
 			sizeOffset += TempAmountMeshes->second;
 			s_PBRInstance->m_Shader->UnBind();
 		}

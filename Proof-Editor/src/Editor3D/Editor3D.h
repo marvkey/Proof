@@ -16,8 +16,10 @@ namespace Proof {
 		virtual void OnImGuiDraw(FrameTime DeltaTime) override;
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		void SetMaterialEditor(class MaterialAsset& material);
-		void SetMeshEditor(class MeshAsset& mesh);
+		void CreateMaterialEdtior(class MaterialAsset* material);
+		void CreateMeshEditor(class MeshAsset* mesh);
+		
+		Count<Texture2D>m_CheckeboardTexture;
 	private:
 		void Logger();
 		bool Docking = false;
@@ -56,12 +58,5 @@ namespace Proof {
 		Count<VertexBuffer> m_SkyBoxBuffer;
 		Count<VertexArray> m_SkyBoxVertexArray;
 		Count<CubeMap> m_CubeMap;
-
-		void MaterialEditor();
-		void MeshEditor();
-		MeshAsset* m_MeshAsset=nullptr;
-
-		MaterialAsset* mat;
-		uint32_t TempID;
 	};
 }

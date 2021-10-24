@@ -22,16 +22,16 @@
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "MainWindow/SceneRendererUI.h"
+#include "MainWindow/MaterialEditorPanel.h"
 namespace Proof
 {
 	glm::vec4 ClearColour;
-
 	Editore3D::Editore3D():
 		Layer("Editor3D Layer") 	{	}
 	Editore3D::~Editore3D() {
 	}
 	void Editore3D::OnAttach() {
-
+		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 		ActiveWorld = CreateSpecial<World>();
 		m_WorldHierachy.SetContext(ActiveWorld.get());
 		m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
@@ -160,10 +160,8 @@ namespace Proof
 		//ImGui::ShowDemoWindow();
 		ViewPort();
 		MainToolBar();
-		MeshEditor();
 		m_WorldHierachy.ImGuiRender();
 		m_CurrentContentBrowserPanel.ImGuiRender();
-		MaterialEditor();
 		Logger();
 
 		for(auto& a: m_AllPanels){
@@ -571,96 +569,23 @@ namespace Proof
 	}
 
 
-	void Editore3D::SetMaterialEditor(MaterialAsset& material) {
-		mat = &material;
-		TempID = material.GetID();
-		PF_ENGINE_INFO("material ID %i",TempID);
+	void Editore3D::CreateMaterialEdtior(MaterialAsset* material) {
+		auto it = m_AllPanels.find(material->GetID());
+		if (it != m_AllPanels.end()) {
+			it->second->SetWindowVisibile(true);
+			return;
+		}
+		MaterialEditorPanel* temp = new MaterialEditorPanel(material);
+		m_AllPanels.insert({material->GetID(),temp});
 	}
 
-	void Editore3D::SetMeshEditor(MeshAsset& mesh) {
-		m_MeshAsset =&mesh;
-		auto it =m_AllPanels.find(mesh.GetID());
+	void Editore3D::CreateMeshEditor(MeshAsset* mesh) {
+		auto it =m_AllPanels.find(mesh->GetID());
 		if(it!= m_AllPanels.end()){
 			it->second->SetWindowVisibile(true);
 			return;
 		}
-		SceneRendererUI* temp = new SceneRendererUI(&mesh);
-		m_AllPanels.insert({m_MeshAsset->GetID(),temp});
-	}
-
-
-	void Editore3D::MaterialEditor() {
-		ImGui::Begin("Material Editor");
-		{
-			if (TempID == 0 || AssetManager::HasID(TempID) == false) {
-				mat = nullptr;
-				TempID = 0;
-			}
-			else {
-				//ImGui::ColorEdit3("Ambient",glm::value_ptr(mat->m_Material.m_Ambient));
-				//ImGui::ColorEdit3("Diffuse",glm::value_ptr(mat->m_Material.m_Diuffuse));
-				//ImGui::ColorEdit3("Specular",glm::value_ptr(mat->m_Material.m_Specular));
-				ImGui::ColorEdit3("Colour",glm::value_ptr(mat->m_Material.m_Colour));
-				uint32_t whiteColourId= PhysicalBasedRenderer::m_WhiteTexture->GetID();
-				
-				ImGui::Image((ImTextureID)(mat->m_Material.AlbedoTexture == nullptr ? whiteColourId : mat->m_Material.AlbedoTexture->GetID()),{50,50});
-				if (ImGui::Button("Albedo",{100,50})) {
-					std::string file = Utils::FileDialogs::OpenFile("Texture(*.png)\0 * .png\0 (*.jpg)\0 * .jpg\0");
-					if (file.empty() == false) {
-						mat->m_Material.AlbedoTexture = Texture2D::Create(file);
-					}
-				}
-				ImGui::NewLine();
-
-
-				ImGui::Image((ImTextureID) (mat->m_Material.MetallicTexture == nullptr ? whiteColourId: mat->m_Material.MetallicTexture->GetID()),{50,50});
-				if(ImGui::Button("Metallness",{100,50})){
-					std::string file = Utils::FileDialogs::OpenFile("Texture(*.png)\0 * .png\0 (*.jpg)\0 * .jpg\0");
-					if(file.empty()==false){
-						mat->m_Material.MetallicTexture = Texture2D::Create(file);
-					}
-				}
-				ImGui::NewLine();
-				ImGui::DragFloat("Metallnes",&mat->m_Material.m_Metallness,0.001);
-
-				ImGui::Image((ImTextureID)(mat->m_Material.RoughnessTexture == nullptr ? whiteColourId : mat->m_Material.RoughnessTexture->GetID()),{50,50});
-				if (ImGui::Button("RoughnessTexture",{100,50})) {
-					std::string file = Utils::FileDialogs::OpenFile("Texture(*.png)\0 * .png\0 (*.jpg)\0 * .jpg\0");
-					if (file.empty() == false) {
-						mat->m_Material.RoughnessTexture = Texture2D::Create(file);
-					}
-				}
-				ImGui::NewLine();
-				ImGui::DragFloat("Roughness",&mat->m_Material.m_Roughness,0.001);
-
-
-				if (ImGui::Button("Normal",{100,50})) {
-					std::string file = Utils::FileDialogs::OpenFile("Texture(*.png)\0 * .png\0 (*.jpg)\0 * .jpg\0");
-					if (file.empty() == false) {
-						mat->m_Material.NormalTexture = Texture2D::Create(file);
-					}
-				}
-				ImGui::Image((ImTextureID)(mat->m_Material.NormalTexture == nullptr ? whiteColourId : mat->m_Material.NormalTexture->GetID()),{50,50});
-
-				ImGui::NewLine();
-				ImGui::DragFloat("AO",&mat->m_Material.m_AO,0.001);
-
-				mat->SaveAsset();
-			}
-		}
-		ImGui::End();
-	}
-	void Editore3D::MeshEditor() {
-		ImGui::Begin("Mesh Editor");
-		{
-			if(m_MeshAsset !=nullptr){
-				ExternalAPI::ImGUIAPI::CheckBox(m_MeshAsset->GetAssetName(),&m_MeshAsset->GetMesh()->m_Enabled);
-				ImGui::NewLine();
-				for(SubMesh& mesh: m_MeshAsset->GetMesh()->meshes){
-					ExternalAPI::ImGUIAPI::CheckBox(mesh.GetName(),&mesh.m_Enabled);
-				}
-			}
-		}
-		ImGui::End();
+		SceneRendererUI* temp = new SceneRendererUI(mesh);
+		m_AllPanels.insert({mesh->GetID(),temp});
 	}
 }

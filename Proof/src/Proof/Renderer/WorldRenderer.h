@@ -26,7 +26,7 @@ namespace Proof
 		bool GetRendererPaused(){return m_RendererPaused;};
 	private:
 		bool  m_RendererPaused =false;
-		uint32_t m_Width,m_Height;
+		uint32_t m_Width=200,m_Height=200;
 		class World* m_World=nullptr;
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
 	};

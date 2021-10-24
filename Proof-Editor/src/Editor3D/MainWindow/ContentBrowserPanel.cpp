@@ -218,7 +218,7 @@ namespace Proof
 						
 								if(Temp->GetAssetTypeName() == MaterialAsset::GetAssetTypeStaticName()&& ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)){
 									MaterialAsset * TempMaterial = dynamic_cast<MaterialAsset*>(Temp);
-									m_owner->SetMaterialEditor(*TempMaterial);
+									m_owner->CreateMaterialEdtior(TempMaterial);
 									//ImGui::Begin("Material Editor");
 									//MaterialAsset* TempMaterial = dynamic_cast<MaterialAsset*>(Temp);
 									//ImGui::ColorEdit4("##Colour",glm::value_ptr(TempMaterial->m_Material.Colour));
@@ -228,7 +228,7 @@ namespace Proof
 
 								if (Temp->GetAssetTypeName() == MeshAsset::GetAssetTypeStaticName() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 									MeshAsset* tempAsset= dynamic_cast<MeshAsset*>(Temp);
-									m_owner->SetMeshEditor(*tempAsset);
+									m_owner->CreateMeshEditor(tempAsset);
 									
 								}
 						

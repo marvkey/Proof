@@ -37,6 +37,7 @@ namespace Proof
     };
     class Mesh {
     public:
+        bool m_FaceCulling =false;
         Mesh() =default;
         Mesh(std::string const& path){
             std::vector<uint32_t>::iterator it;
