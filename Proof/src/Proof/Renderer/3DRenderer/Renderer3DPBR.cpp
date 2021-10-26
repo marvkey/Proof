@@ -54,7 +54,7 @@ namespace Proof{
 			auto InstanceSize = s_PBRInstance->m_MeshesEndingPositionIndexTransforms.find(meshComponent.GetMeshPointerID());
 			
 			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-			ModelMatrix = Transform->GetTransform();
+			ModelMatrix = Transform->GetWorldTransform();
 			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
 			s_PBRInstance->m_Transforms.insert(s_PBRInstance->m_Transforms.begin() + InstanceSize->second,temp);
 			InstanceSize->second ++;
@@ -66,7 +66,7 @@ namespace Proof{
 			s_PBRInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),s_PBRInstance->m_Transforms.size() + 1});
 			s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
 			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-			ModelMatrix = Transform->GetTransform();
+			ModelMatrix = Transform->GetWorldTransform();
 		
 			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
 			s_PBRInstance->m_Transforms.emplace_back(temp);

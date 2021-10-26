@@ -161,7 +161,7 @@ Entities:
     TransformComponent:
       Location: [3.5999999, -3.5999999, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.699999988, 12, 17.1000004]
+      Scale: [0.699999928, 12, 17.1000004]
     MeshComponent:
       Name: Default
       AssetID: 12067
@@ -239,9 +239,9 @@ Entities:
     TagComponent:
       Tag: movingentity
     TransformComponent:
-      Location: [37.0999985, 4.69999981, 3.29999995]
+      Location: [38.2921371, 16.5261421, 18.8051682]
       Rotation: [0, 0, 0]
-      Scale: [14.8000002, 18.2000008, 3.20000005]
+      Scale: [36.8802872, 26.7539997, 4.704]
     MeshComponent:
       Name: Default
       AssetID: 12067

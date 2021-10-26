@@ -46,7 +46,7 @@ Entities:
     TransformComponent:
       Location: [-2.20000005, 0, 4.73614502]
       Rotation: [0, 0, 0]
-      Scale: [4, 4, 4]
+      Scale: [4.50075197, 3.86673355, 3.00702739]
     MeshComponent:
       Name: Default
       AssetID: 12067
@@ -58,7 +58,7 @@ Entities:
     TagComponent:
       Tag: second sphere
     TransformComponent:
-      Location: [-0.600000024, 7.0999999, 0]
+      Location: [-0.600000024, 3.39542484, -30.7288246]
       Rotation: [0, 0, 0]
       Scale: [4, 8.677104, 9.91956329]
     MeshComponent:
@@ -138,21 +138,9 @@ Entities:
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Location: [9.71351624, 33.3561325, -8.81736565]
-      Rotation: [-0.982795537, -0.174042612, -0.0618230179]
+      Location: [134.179092, 13.126976, 17.7990685]
+      Rotation: [-0.842343926, 0.507726073, -0.180751607]
       Scale: [1, 1, 0.00999999978]
-    LightComponent:
-      Position: [0, 0, 0]
-      Direction: [1, 1, 1]
-      CutOff: 0
-      OuterCutOff: 0
-      Constant: 1
-      Linear: 0
-      Quadratic: 0
-      Ambient: [0, 0, 0]
-      Diffuse: [0, 0, 0]
-      Specular: [0, 0, 0]
-      LightType: 0
     CameraComponent:
       AutoSetDimension: true
       NearPlane: 0.0520000011
@@ -181,7 +169,7 @@ Entities:
     TransformComponent:
       Location: [23.0742855, 0, 328.94104]
       Rotation: [0, 0, 0]
-      Scale: [60.0000114, 60.0000114, 59.9999962]
+      Scale: [24.4961281, 72.2561874, 76.6786041]
     MeshComponent:
       Name: Default
       AssetID: 2122
@@ -189,3 +177,10 @@ Entities:
       LocalRotation: [0, 0, 0]
       LocalScale: [0, 0, 0]
       MaterialPointerID: 0
+  - Entity: 24179
+    TagComponent:
+      Tag: Empty Entity
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]

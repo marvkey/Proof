@@ -37,7 +37,7 @@ namespace Proof{
 		const std::string& GetPath()const{return m_Path;}
 		friend class WorldRenderer;
 		void HandleInput();
-
+		void DeleteEntity(class Entity& ent);
 	private:
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
 		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height);

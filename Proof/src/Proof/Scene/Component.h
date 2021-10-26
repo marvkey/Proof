@@ -8,47 +8,50 @@
 #include "Proof/Renderer/Texture.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
-
+#include<vector>
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
-namespace Proof{
+namespace Proof
+{
 	using EntityID = uint64_t;
 	class Entity;
-	struct Proof_API Component{
+	struct Proof_API Component {
 	public:
 		Component(const Component&) = default;
-		Component()=default;
-		virtual ~Component(){
+		Component() = default;
+		virtual ~Component() {
 
 		}
-		const std::string& GetName()const{return Name;}
-		virtual void SetName(const std::string& name){
+		const std::string& GetName()const { return Name; }
+		virtual void SetName(const std::string& name) {
 			Name = name;
 		}
-		class Entity GetOwner();
+		class Entity GetOwner()const;
 		uint32_t GetAssetID()const {
 			return AssetID;
 		}
 
-		void Componet(){};
+		void Componet() {};
 	protected:
 		uint32_t AssetID = 0;
-		std::string Name ="Default";
+		std::string Name = "Default";
 		EntityID m_EntityOwner;
-		class World* CurrentWorld =nullptr;
+		class World* CurrentWorld = nullptr;
 	private:
 		friend class Entity;
 		friend class World;
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 	};
-	struct Proof_API TagComponent : public Component {
+
+
+	struct Proof_API TagComponent: public Component {
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
 
 		void AddTag(const std::string& Tag) {
 			Tags.emplace_back(Tag);
-			Name ="Empty Entity";
+			Name = "Empty Entity";
 		}
 		bool HasTag(const std::string& Tag)const {
 			for (const std::string& TagName : Tags) {
@@ -65,36 +68,40 @@ namespace Proof{
 		friend class SceneHierachyPanel;
 	};
 
-	struct Proof_API TransformComponent :public Component{
-		Vector Location = {0.0f,0.0f,0.0f};
-		Vector Rotation = {0.0f,0.0f,0.0f};
-		Vector Scale = {1.0f,1.0f,1.0f};
+	struct Proof_API TransformComponent:public Component {
+		mutable Vector Location = {0.0f,0.0f,0.0f};
+		mutable Vector Rotation = {0.0f,0.0f,0.0f};
+		mutable Vector Scale = {1.0f,1.0f,1.0f};
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
-
-		glm::mat4 GetTransform() const {
+		Vector GetWorldLocation()const;
+		Vector GetWorldRotation()const;
+		Vector GetWorldScale()const;
+		glm::mat4 GetLocalTransform() const {
 			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 
 			return glm::translate(glm::mat4(1.0f),{Location})
 				* rotation
 				* glm::scale(glm::mat4(1.0f),{Scale});
 		}
+
+		glm::mat4 GetWorldTransform() const;
 	};
 
-	struct Proof_API NativeScriptComponent :public Component {
+	struct Proof_API NativeScriptComponent:public Component {
 		NativeScriptComponent() {
 			Name = "NativeScriptComponent";
 		}
-		NativeScriptComponent(const NativeScriptComponent&)=default;
+		NativeScriptComponent(const NativeScriptComponent&) = default;
 		class Script* Instance = nullptr;
 		class Script* (*InstantiateScript)();
 		void (*DestroyScript)(NativeScriptComponent*);
-		
+
 		template<class T,typename... Args>
 		void Bind(Args... arg) {
 			m_HasScriptAttached = true;
-			InstantiateScript = []() { return static_cast<Script*>(new T(arg...));};
-			DestroyScript = [](NativeScriptComponent* NSC) {delete NSC->Instance; NSC->Instance = nullptr;};
+			InstantiateScript = []() { return static_cast<Script*>(new T(arg...)); };
+			DestroyScript = [](NativeScriptComponent* NSC) {delete NSC->Instance; NSC->Instance = nullptr; };
 		}
 
 		const std::string GetScriptName() {
@@ -110,33 +117,33 @@ namespace Proof{
 		bool m_HasScriptAttached = false;
 	};
 
-	struct Proof_API MeshComponent :public Component {
+	struct Proof_API MeshComponent:public Component {
 		MeshComponent() {
 			MeshLocalTransform.Scale = Vector{0.0f,0.0f,0.0f};
 		}
 		class Mesh* GetMesh() {
 			return GetAsset() != nullptr ? GetAsset()->GetMesh() : nullptr;
 		}
-		MeshComponent(const MeshComponent&)=default;
+		MeshComponent(const MeshComponent&) = default;
 		MeshAsset* GetAsset() {
-			MeshAsset* a =AssetManager::GetAsset<MeshAsset>(AssetID);
+			MeshAsset* a = AssetManager::GetAsset<MeshAsset>(AssetID);
 
-			if(a ==nullptr)
-				AssetID =0;
+			if (a == nullptr)
+				AssetID = 0;
 			return a;
 		}
-		
+
 		class Material* GetMaterial();
 
-		uint32_t GetMaterialPointerID(){
+		uint32_t GetMaterialPointerID() {
 			return m_MeshMaterialID;
 		}
-		bool HasMaterial(){
-			return GetMaterial() ==nullptr? false: true;
+		bool HasMaterial() {
+			return GetMaterial() == nullptr ? false : true;
 		}
 		uint32_t GetMeshPointerID();
 		TransformComponent MeshLocalTransform;
-		
+
 	private:
 		friend class Entity;
 		friend class World;
@@ -145,7 +152,7 @@ namespace Proof{
 		friend class SceneSerializer;
 		friend class SceneRendererUI;
 		uint32_t StartIndexSlot = 0;
-		uint32_t m_MeshMaterialID= 0;
+		uint32_t m_MeshMaterialID = 0;
 	};
 
 	/* THIS IS TEMPORARY THIS IS GONNA GO INTO THE 2D SECTION */
@@ -155,13 +162,13 @@ namespace Proof{
 
 		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
 		TransformComponent SpriteTransfrom;
-		Count<Texture2D> GetTexture(){
-			if(GetAsset() != nullptr){
+		Count<Texture2D> GetTexture() {
+			if (GetAsset() != nullptr) {
 				return GetAsset()->m_Texture;
 			}
 			return nullptr;
 		}
-		Texture2DAsset* GetAsset(){
+		Texture2DAsset* GetAsset() {
 			Texture2DAsset* a = AssetManager::GetAsset<Texture2DAsset>(AssetID);
 			if (a == nullptr) {
 				AssetID = 0;
@@ -173,23 +180,23 @@ namespace Proof{
 		friend class Entity;
 		friend class World;
 		friend class ECS;
-		uint32_t StartIndexSlot =0;
+		uint32_t StartIndexSlot = 0;
 	};
 
-	struct Proof_API LightComponent: public Component{
+	struct Proof_API LightComponent: public Component {
 		LightComponent(const LightComponent&) = default;
 		LightComponent() = default;
-		enum LightType:int{
-			Direction=0,
-			Point=1,
-			Spot=2
+		enum LightType:int {
+			Direction = 0,
+			Point = 1,
+			Spot = 2
 		};
 		Vector m_Position;
 		Vector m_Direction = {1.0,1.0,1.0};
 		float m_CutOff; // gets put in cos and radias before use
 		float m_OuterCutOff; // gets put in cos and radias before use
 
-		float m_Constant=1.0f;
+		float m_Constant = 1.0f;
 		float m_Linear;
 		float m_Quadratic;
 
@@ -201,18 +208,18 @@ namespace Proof{
 		uint32_t StartIndexSlot = 0;
 		friend class ECS;
 	};
-	struct Proof_API SkyLightComponent: public Component{
+	struct Proof_API SkyLightComponent: public Component {
 		SkyLightComponent(const SkyLightComponent&) = default;
 		SkyLightComponent() = default;
 	private:
 		//void SetHDRIPath(const std::string& path):
 	};
 
-	
+
 	struct Proof_API CameraComponent: public Component {
 	public:
 		CameraComponent(const CameraComponent&) = default;
-		CameraComponent()=default;
+		CameraComponent() = default;
 		enum class CameraType { Orthographic = 0,Perspective = 1 };
 
 		void SetDimensions(uint32_t width,uint32_t Height) {
@@ -223,12 +230,12 @@ namespace Proof{
 		bool AutoSetDimension(bool value) {
 			value = m_AutoSetDimension;
 		}
-		const glm::mat4& GetView()const{return m_View;}
-		const glm::mat4& GetProjection()const{return m_Projection;}
+		const glm::mat4& GetView()const { return m_View; }
+		const glm::mat4& GetProjection()const { return m_Projection; }
 		Vector m_Up = {0,1,0};
 	private:
 		void CalculateProjection() {
-			if (m_Positon == nullptr|| m_Roatation==nullptr)
+			if (m_Positon == nullptr || m_Roatation == nullptr)
 				return;
 			m_View = glm::lookAt(glm::vec3{*m_Positon},glm::vec3{*m_Positon} + glm::vec3{*m_Roatation},glm::vec3{m_Up});
 			m_Projection = glm::perspective(glm::radians(m_FovDeg),(float)m_Width / (float)m_Height,m_NearPlane,m_FarPlane);
@@ -254,5 +261,5 @@ namespace Proof{
 		uint32_t StartIndexSlot = 0;
 		friend class ECS;
 	};
-	
+
 }

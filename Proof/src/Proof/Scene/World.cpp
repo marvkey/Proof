@@ -16,6 +16,7 @@
 #include "Proof/Renderer/VertexArray.h"
 #include "Proof/Renderer/FrameBuffer.h"
 #include<glad/glad.h>
+#include "ComponentUnOptimized.h"
 namespace Proof{
 	unsigned int quadVAO = 0;
 	unsigned int quadVBO=0;
@@ -145,7 +146,7 @@ namespace Proof{
 		Entity entity = {Registry.Create(),this};
 		entity.AddComponent<TagComponent>()->Name =EntName;
 		entity.AddComponent<TransformComponent>();
-
+		entity.AddComponent<SubEntityComponet>();
 		return entity;
 	}
 
@@ -153,6 +154,7 @@ namespace Proof{
 		Entity entity = {Registry.Create(ID),this};
 		entity.AddComponent<TagComponent>()->Name = EntName;
 		entity.AddComponent<TransformComponent>();
+		entity.AddComponent<SubEntityComponet>();
 		return entity;
 	}
 	template<class TypeComponent>
@@ -194,6 +196,11 @@ namespace Proof{
 	void World::HandleInput() {
 	
 		
+	}
+
+	void World::DeleteEntity(Entity& ent) {
+		ent.OnDelete();
+		Registry.Delete(ent.GetID());
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height){
@@ -477,4 +484,12 @@ namespace Proof{
 		component->m_Positon=&component->GetOwner().GetComponent<TransformComponent>()->Location;
 		component->m_Roatation = &component->GetOwner().GetComponent<TransformComponent>()->Rotation;
 	}
+
+	template<>
+	void World::OnComponentAdded(Entity _Entity,SubEntityComponet* component) {
+		Component* a = static_cast<Component*>(component);
+		a->m_EntityOwner = _Entity.GetID();
+		a->CurrentWorld = this;
+	}
+	
 }

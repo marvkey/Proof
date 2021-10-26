@@ -17,6 +17,7 @@
 #include "../ImGUIAPI.h"
 #include "Proof/Scene/ExampleSccripts.h"
 #include "Proof/Scene/Script.h"
+#include "Proof/Scene/ComponentUnOptimized.h"
 namespace Proof{
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
 	InstanceNativeScriptComponent.Bind<Class>();\
@@ -29,24 +30,25 @@ namespace Proof{
 		{
 			for (uint32_t i = 0; i < m_CurrentWorld->Registry.GetAllID().size(); i++) {
 				Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
-				DrawEntityNode(entity);
-				if (m_CurrentWorld->Registry.GetAllID().size() == 1)break;
+				if(entity.GetComponent<SubEntityComponet>()->HasEntityOwner()==false)
+					DrawEntityNode(entity);
 			}
 
 			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) {
-				m_SelectedEntity = {};
+				//_SelectedEntity = {};
 			}
 			if (ImGui::BeginPopupContextWindow(0,1,false)){ // right click adn open a new entitiy
 				if (ImGui::MenuItem("Create Entity"))
-					m_CurrentWorld->CreateEntity("Empty Entity");
+					m_SelectedEntity=m_CurrentWorld->CreateEntity("Empty Entity");
 				ImGui::EndPopup();
 			}
 		}
 		ImGui::End();
 		ImGui::Begin("Properties");
 		{
-			if (m_SelectedEntity)
+			if (m_SelectedEntity){
 				DrawComponent(m_SelectedEntity);
+			}
 		}
 		ImGui::End();
 	}
@@ -59,17 +61,26 @@ namespace Proof{
 			m_SelectedEntity = entity;
 		}
 		if(ImGui::BeginPopupContextItem()){
+			if(ImGui::MenuItem("Create Child entity")){
+				Entity childEntity = m_CurrentWorld->CreateEntity("Empty Child Entity");
+				childEntity.GetComponent<SubEntityComponet>()->m_EntitySubOwner = m_SelectedEntity;
+				m_SelectedEntity.GetComponent<SubEntityComponet>()->m_AllSubEntity.emplace_back((childEntity));
+				ImGui::CloseCurrentPopup();
+			}
 			if(ImGui::MenuItem("Delete")){
-				m_CurrentWorld->Registry.Delete(m_SelectedEntity.GetID());
+				m_CurrentWorld->DeleteEntity(m_SelectedEntity);
 				m_SelectedEntity ={};
+				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
 		}
 		if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity){
-			
 			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
 		}
 		if (opened) {
+			for (Entity i: entity.GetComponent<SubEntityComponet>()->m_AllSubEntity) {
+				DrawEntityNode(i);
+			}
 			ImGui::TreePop();
 		}
 	}
@@ -107,10 +118,8 @@ namespace Proof{
 		}
 
 		if (open) {
-			
 			Uifunction(component);
 			ImGui::Text("Index Value: %i ",IndexValue);
-
 			ImGui::TreePop();
 		}
 
@@ -130,6 +139,8 @@ namespace Proof{
 		}
 		ImGui::SameLine();
 		ImGui::PushItemWidth(-1);
+		//ImGui::Text(std::to_string(std<uint32_t>()((uint32_t)entity.GetID())).c_str());
+		//ImGui::SameLine();
 		if(ImGui::Button("Add Component"))
 			ImGui::OpenPopup("AddComponent");
 		ImGui::PopItemWidth();
@@ -187,6 +198,14 @@ namespace Proof{
 				continue;
 			}
 
+			SubEntityComponet* subComponet = dynamic_cast<SubEntityComponet*>(Comp);
+			if(subComponet!=nullptr){
+				DrawComponents<TagComponent>("SubEntityComponet",entity,Tag,IndexValue,[](auto& component) {
+
+				});
+				IndexValue += 1;
+				continue;
+			}
 			MeshComponent* Meshes = dynamic_cast<MeshComponent*>(Comp);
 			if (Meshes != nullptr) {
 				DrawComponents<MeshComponent>({"Mesh: " + Meshes->GetName()},entity,Meshes,IndexValue,[](MeshComponent& component) {

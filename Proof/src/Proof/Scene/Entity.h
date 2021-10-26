@@ -7,13 +7,12 @@ namespace Proof{
 	struct Component;
 	struct TransformComponent;
 	using EntityID = uint64_t;
-
 	class Proof_API Entity {
 	public:
 		Entity(EntityID EntityID,class World* world):
 			m_EntityID(EntityID),CurrentWorld(world){}
-		Entity(const Entity& Other) = default;
-		Entity(){}
+		Entity(const Entity& Other) =default;
+		Entity()=default;
 
 		template<class T>
 		T* GetComponent() {
@@ -51,6 +50,15 @@ namespace Proof{
 					return nullptr;
 				}
 			}
+			/*
+			bool  HasSubEntityComp = std::is_same<T,SubEntityComponet>::value;
+			if (HasSubEntityComp == true) {
+				if (HasComponent<SubEntityComponet>() == true) {
+					PF_ENGINE_WARN("Entity already has a SubEntityComponet");
+					return nullptr;
+				}
+			}
+			*/
 			T* Component = CurrentWorld->Registry.AddComponent<T>(m_EntityID,std::forward<Args>(args)...);
 			CurrentWorld->OnComponentAdded<T>(*this,Component);
 			return Component;
@@ -67,6 +75,13 @@ namespace Proof{
 				PF_ENGINE_WARN("Cannot remove TagComponent");
 				return;
 			}
+			/*
+			bool  HasSubEntityComp = std::is_same<T,SubEntityComponet>::value;
+			if (HasSubEntityComp == true) {
+				PF_ENGINE_WARN("Entity already has a SubEntityComponet");
+				return nullptr;
+			}
+			*/
 			if (HasComponent<T>() == false)return;
 			CurrentWorld->Registry.RemoveComponent<T>(m_EntityID);
 		}
@@ -100,11 +115,11 @@ namespace Proof{
 			}
 			CurrentWorld->Registry.RemoveComponent<T>(m_EntityID,IndexSlot);
 		}
-		World* GetCurrentWorld() {
+		World* GetCurrentWorld()const {
 			return CurrentWorld;
 		}
-		operator bool() const { return m_EntityID != 0; }
-		EntityID GetID() { return m_EntityID;}
+		operator bool() const { return m_EntityID != 0 &&CurrentWorld!=nullptr; }
+		EntityID GetID()const { return m_EntityID;}
 
 		bool operator==(const Entity& other) const {
 			return m_EntityID == other.m_EntityID && CurrentWorld == other.CurrentWorld;
@@ -118,8 +133,12 @@ namespace Proof{
 		
 		void SetName(const std::string& Name);
 	private:
+		
 		World* CurrentWorld = nullptr;
 		EntityID m_EntityID{0};
+		void OnSubEntityDelete(const Entity& tempEntity);
+		void OnDelete();
+		void SwapEntityOwner(const Entity& newOwner);
 		friend class World;
 	};
 }

@@ -21,7 +21,7 @@ namespace Proof
 	}
 
 	InitlizeCSharp::~InitlizeCSharp() {
-		if(m_Domain)
+		if(m_Domain!=nullptr)
 			mono_jit_cleanup(m_Domain);
 	}
 
