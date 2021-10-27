@@ -34,14 +34,18 @@ namespace Proof{
     void ECS::Delete(EntityID ID) {
         auto it = EntityHolder.find(ID);
         if (it != EntityHolder.end()) {
-            auto* entityVector = it->second;
-            auto it = std::find(AllEntityID.begin(),AllEntityID.end(),ID);
-            for(int i=0; i< entityVector->size(); i++){
-                delete entityVector->at(i);
+            auto itVec = std::find(AllEntityID.begin(),AllEntityID.end(),ID);
+            if(it->second){
+                for(int i=0; i< it->second->size(); i++){
+                    delete it->second->at(i);
+                }
             }
+            delete it->second;
             EntityHolder.erase(ID);
-            AllEntityID.erase(it);
-            delete entityVector;
+            if(itVec != AllEntityID.end())
+                AllEntityID.erase(itVec);
+
+            PF_ENGINE_ERROR("Done deleting");
             return;
         }
         PF_ENGINE_ERROR("Entity does not exist with ID No Delete");

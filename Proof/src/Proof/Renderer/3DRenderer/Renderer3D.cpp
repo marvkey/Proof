@@ -114,11 +114,7 @@ namespace Proof
             auto InstanceSize = Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.find(meshComponent.GetMeshPointerID());
 
             auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-            ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
-                glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})
-                * glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0})
-                * glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1})
-                * glm::scale(glm::mat4(1.0f),{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
+            
             InstanceRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : EmptyMaterial);
             m_InstanceTransforms.insert(m_InstanceTransforms.begin() + InstanceSize->second,temp);
             InstanceSize->second += 1;
@@ -143,7 +139,7 @@ namespace Proof
         if (lightComponent.m_LightType == lightComponent.Direction && NumberDirectionalLight < 150) {
             NumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumberDirectionalLight) + "]";
             Renderer3DInstance->m_Shader->Bind();
-            Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".direction",lightComponent.m_Direction);
+            Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->Rotation);
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".ambient",lightComponent.m_Ambient);
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".diffuse",lightComponent.m_Diffuse);
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".specular",lightComponent.m_Specular);
@@ -156,7 +152,7 @@ namespace Proof
         if (lightComponent.m_LightType == lightComponent.Point && NumberPointLight < 150) {
             NumberPointLightstring = "v_PointLight[" + std::to_string(NumberPointLight) + "]";
             Renderer3DInstance->m_Shader->Bind();
-            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".position",lightComponent.m_Position + lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".position",lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".ambient",lightComponent.m_Ambient);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".diffuse",lightComponent.m_Diffuse);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".specular",lightComponent.m_Specular);
@@ -171,8 +167,8 @@ namespace Proof
         if (lightComponent.m_LightType == lightComponent.Spot && NumberPointLight < 150) {
             NumberSpotLightstring = "v_SpotLight[" + std::to_string(NumberSpotLight) + "]";
             Renderer3DInstance->m_Shader->Bind();
-            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",lightComponent.m_Direction);
-            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".position",{lightComponent.m_Position + lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->Rotation);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".position",{lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".ambient",lightComponent.m_Ambient);
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".diffuse",lightComponent.m_Diffuse);
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".specular",lightComponent.m_Specular);
@@ -241,33 +237,8 @@ namespace Proof
         */
     }
     void Renderer3D::SetMeshComponentData(MeshComponent& meshComponent) {
-        /*
-        meshComponent.GetModel()->m_VertexArrayObject->Bind();
+   
 
-        meshComponent.GetModel()->m_VertexArrayObject->AddData(3,4,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,m_Transform));
-        meshComponent.GetModel()->m_VertexArrayObject->AddData(4,4,sizeof(InstanceRendererVertex),(void*)Temp2);
-        meshComponent.GetModel()->m_VertexArrayObject->AddData(5,4,sizeof(InstanceRendererVertex),(void*)Temp3);
-        meshComponent.GetModel()->m_VertexArrayObject->AddData(6,4,sizeof(InstanceRendererVertex),(void*)Temp4);
-        meshComponent.GetModel()->m_VertexArrayObject->AddData(7,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialAmbient));
-        meshComponent.GetModel()->m_VertexArrayObject->AddData(8,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialDiffuse));
-        meshComponent.GetModel()->m_VertexArrayObject->AddData(9,3,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_MaterialSpecular));
-        meshComponent.GetModel()->m_VertexArrayObject->AddData(10,1,sizeof(InstanceRendererVertex),(void*)offsetof(InstanceRendererVertex,InstanceRendererVertex::m_Matallness));
-
-        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(3,1);
-        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(4,1);
-        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(5,1);
-        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(6,1);
-        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(7,1);// Material
-        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(8,1);// Material
-        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(9,1);// MaterialMaterial
-        meshComponent.GetModel()->m_VertexArrayObject->AttributeDivisor(10,1);// MaterialMaterial
-        */
-        auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-        ModelMatrix = glm::translate(glm::mat4(1.0f),{Transform->Location + meshComponent.MeshLocalTransform.Location}) *
-            glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.X + meshComponent.MeshLocalTransform.Rotation.X),{1,0,0})
-            * glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Y + meshComponent.MeshLocalTransform.Rotation.Y),{0,1,0})
-            * glm::rotate(glm::mat4(1.0f),glm::radians(Transform->Rotation.Z + meshComponent.MeshLocalTransform.Rotation.Z),{0,0,1})
-            * glm::scale(glm::mat4(1.0f),{Transform->Scale + meshComponent.MeshLocalTransform.Scale});
     }
     void Renderer3D::LightingErrorChecks() {
         Renderer3DInstance->m_Shader->Bind();

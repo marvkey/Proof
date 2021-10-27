@@ -5,7 +5,7 @@
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
-#include "Platform/Window/WindowPlatformUtils.cpp"
+
 #include "Proof/Utils/PlatformUtils.h"
 #include <vector>
 #include "Proof/Scene/Mesh.h"

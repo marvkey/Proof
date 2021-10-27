@@ -359,12 +359,13 @@ namespace Proof{
 			return EntityHolder;
 		}
 		std::unordered_map<EntityID,std::vector<class Component*>*>EntityHolder;
-	private:
-		std::vector<EntityID> AllEntityID; // Temporary
 
 		bool HasEntity(EntityID ID) {
 			return EntityHolder.find(ID) != EntityHolder.end();
 		}
+	private:
+		std::vector<EntityID> AllEntityID; // Temporary
+
 		friend class World;
 	};
 

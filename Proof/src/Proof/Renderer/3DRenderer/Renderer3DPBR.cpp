@@ -76,7 +76,7 @@ namespace Proof{
 		s_PBRInstance->m_Shader->Bind();
 		std::string LightPos= "lightPositions[" + std::to_string(NumLights) + "]";
 		std::string LightColour= "lightColors[" + std::to_string(NumLights) + "]";
-		s_PBRInstance->m_Shader->SetVec3(LightPos,{lightComponent.m_Position + lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
+		s_PBRInstance->m_Shader->SetVec3(LightPos,{lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
 		s_PBRInstance->m_Shader->SetVec3(LightColour,lightComponent.m_Ambient);
 		NumLights++;
 	}

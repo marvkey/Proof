@@ -46,6 +46,11 @@ namespace Proof
 		}
 		return true;
 	}
+	void MeshAsset::Reinstate(const std::string& path){
+		m_PathOfPointerToFile = path;
+		delete m_Mesh;
+		m_Mesh = new Mesh(path);
+	}
 	uint32_t MeshAsset::GetImageID() {
 		return InstancedRenderer3D::m_WhiteTexture->GetID();
 	}

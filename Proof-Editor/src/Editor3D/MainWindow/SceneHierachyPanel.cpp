@@ -18,6 +18,7 @@
 #include "Proof/Scene/ExampleSccripts.h"
 #include "Proof/Scene/Script.h"
 #include "Proof/Scene/ComponentUnOptimized.h"
+#include "Proof/Input/KeyCodes.h"
 namespace Proof{
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
 	InstanceNativeScriptComponent.Bind<Class>();\
@@ -28,14 +29,21 @@ namespace Proof{
 	void SceneHierachyPanel::ImGuiRender(){
 		ImGui::Begin("Herieachy");
 		{
+			//ImGui::Image(0,{ImGui::GetWindowContentRegionWidth(),ImGui::GetWindowHeight()});
+			if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
+
+				}
+			}
+
 			for (uint32_t i = 0; i < m_CurrentWorld->Registry.GetAllID().size(); i++) {
 				Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
 				if(entity.GetComponent<SubEntityComponet>()->HasEntityOwner()==false)
 					DrawEntityNode(entity);
 			}
-
+			
 			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) {
-				//_SelectedEntity = {};
+				m_SelectedEntity = {};
 			}
 			if (ImGui::BeginPopupContextWindow(0,1,false)){ // right click adn open a new entitiy
 				if (ImGui::MenuItem("Create Entity"))
@@ -53,10 +61,28 @@ namespace Proof{
 		ImGui::End();
 	}
 	void SceneHierachyPanel::DrawEntityNode(Entity& entity) {
+		if(m_CurrentWorld->Registry.HasEntity(entity.GetID())==false)
+			return;
 		auto& tc = entity.GetComponent<TagComponent>()->GetName();
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(EntityID)(uint32_t)entity.GetID(),flags,tc.c_str());
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
+				Entity Data = *(const Entity*)payload->Data;
+				if(entity.GetID() != Data.GetID()){
+					Data.GetComponent<SubEntityComponet>()->m_EntitySubOwner = entity;
+					entity.GetComponent<SubEntityComponet>()->AddSubEntity(Data);
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+		if (ImGui::BeginDragDropSource()) {
+			ImGui::SetDragDropPayload("EntityNewOwner",&m_SelectedEntity,sizeof(Entity));
+
+			ImGui::TreeNodeEx((void*)&(m_SelectedEntity),flags,tc.c_str());
+			ImGui::EndDragDropSource();
+		}
 		if (ImGui::IsItemClicked() || ImGui::IsItemClicked(1)) {
 			m_SelectedEntity = entity;
 		}
@@ -64,23 +90,39 @@ namespace Proof{
 			if(ImGui::MenuItem("Create Child entity")){
 				Entity childEntity = m_CurrentWorld->CreateEntity("Empty Child Entity");
 				childEntity.GetComponent<SubEntityComponet>()->m_EntitySubOwner = m_SelectedEntity;
-				m_SelectedEntity.GetComponent<SubEntityComponet>()->m_AllSubEntity.emplace_back((childEntity));
+				m_SelectedEntity.GetComponent<SubEntityComponet>()->AddSubEntity(childEntity);
 				ImGui::CloseCurrentPopup();
 			}
 			if(ImGui::MenuItem("Delete")){
 				m_CurrentWorld->DeleteEntity(m_SelectedEntity);
 				m_SelectedEntity ={};
 				ImGui::CloseCurrentPopup();
+				if(opened){
+					ImGui::EndPopup();
+					ImGui::TreePop();
+					return;
+				}
 			}
 			ImGui::EndPopup();
 		}
 		if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity){
 			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
 		}
+		if(m_SelectedEntity && ImGui::IsKeyPressed((int)KeyBoardKey::F)){
+			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
+		}
 		if (opened) {
-			for (Entity i: entity.GetComponent<SubEntityComponet>()->m_AllSubEntity) {
-				DrawEntityNode(i);
+			
+			if (entity) {
+				if (entity.HasComponent<SubEntityComponet>()) {
+					if (entity.GetComponent<SubEntityComponet>()->m_AllSubEntity.size() > 0) {
+						for (Entity& i : entity.GetComponent<SubEntityComponet>()->m_AllSubEntity) {
+							DrawEntityNode(i);
+						}
+					}
+				}
 			}
+			
 			ImGui::TreePop();
 		}
 	}
@@ -215,9 +257,6 @@ namespace Proof{
 					if (ImGui::InputText("##Name",buffer,sizeof(buffer))) {
 						component.SetName(buffer);
 					}
-					DrawVectorControl("Local Location",component.MeshLocalTransform.Location,0.0);
-					DrawVectorControl("Local Rotation",component.MeshLocalTransform.Rotation,0.0);
-					DrawVectorControl("Local Scale",component.MeshLocalTransform.Scale,0.0);
 					ExternalAPI::ImGUIAPI::TextBar("Mesh",AssetManager::HasID(component.AssetID) ? AssetManager::GetAsset<Asset>(component.AssetID)->GetAssetName():"null");
 					if (ImGui::BeginPopupContextItem("RemoveMesh")) {
 						ImGui::EndPopup();
@@ -353,16 +392,11 @@ namespace Proof{
 					}
 
 					if(LightComp.m_LightType == LightComp.Direction){
-						DrawVectorControl("Direction",LightComp.m_Direction);
-						ImGui::NewLine();
 						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
 						ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
 						ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
 					}
 					else if(LightComp.m_LightType == LightComp.Point){
-						DrawVectorControl("Position",LightComp.m_Position);
-						ImGui::NewLine();
-
 						ImGui::Text("Constant");
 						ImGui::SameLine();
 						ImGui::DragFloat("##Constant",&LightComp.m_Constant,0.001);
@@ -375,8 +409,6 @@ namespace Proof{
 						ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
 						
 					}else if(LightComp.m_LightType == LightComp.Spot){
-						DrawVectorControl("Position",LightComp.m_Position);
-						DrawVectorControl("Direction",LightComp.m_Direction);
 						ImGui::NewLine();
 						ImGui::DragFloat("Constant",&LightComp.m_Constant,0.001);
 						ImGui::DragFloat("Linear",&LightComp.m_Linear,0.001);

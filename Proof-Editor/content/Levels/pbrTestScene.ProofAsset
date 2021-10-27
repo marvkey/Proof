@@ -7,12 +7,12 @@ Entities:
       Location: [14.5999985, 0, 12.9999933]
       Rotation: [0, 0, 0]
       Scale: [4, 4, 4]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
     MeshComponent:
       Name: Default
       AssetID: 12574
-      LocalLocation: [0, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [0, 0, 0]
       MaterialPointerID: 27537
   - Entity: 22824
     TagComponent:
@@ -21,16 +21,14 @@ Entities:
       Location: [-10.7511721, -5.07921839, 5.0334239]
       Rotation: [0, 0, 0]
       Scale: [6.72999954, 6.5440321, 7.78527546]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
     MeshComponent:
       Name: Default
       AssetID: 20980
-      LocalLocation: [0, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [0.200000003, 0, 0]
       MaterialPointerID: 7493
     LightComponent:
-      Position: [0, 0, 0]
-      Direction: [0, 1, 1]
       CutOff: 0
       OuterCutOff: 0
       Constant: 1
@@ -47,12 +45,12 @@ Entities:
       Location: [-2.20000005, 0, 4.73614502]
       Rotation: [0, 0, 0]
       Scale: [4.50075197, 3.86673355, 3.00702739]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
     MeshComponent:
       Name: Default
       AssetID: 12067
-      LocalLocation: [0, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [0, 0, 0]
       MaterialPointerID: 12014
   - Entity: 30124
     TagComponent:
@@ -61,16 +59,14 @@ Entities:
       Location: [-0.600000024, 3.39542484, -30.7288246]
       Rotation: [0, 0, 0]
       Scale: [4, 8.677104, 9.91956329]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
     MeshComponent:
       Name: Default
       AssetID: 4778
-      LocalLocation: [0, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [0, 0, 0]
       MaterialPointerID: 7493
     LightComponent:
-      Position: [0, 0, 0]
-      Direction: [1, 1, 1]
       CutOff: 0
       OuterCutOff: 0
       Constant: 1
@@ -87,16 +83,14 @@ Entities:
       Location: [-14.5, 62.5999985, -8.41290665]
       Rotation: [0, -3.29999995, 0]
       Scale: [22.6000004, 24.1000004, 20.2000008]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
     MeshComponent:
       Name: Default
       AssetID: 12067
-      LocalLocation: [0, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [0, 0, 0]
       MaterialPointerID: 0
     LightComponent:
-      Position: [0, 0, 0]
-      Direction: [0, 0, 1]
       CutOff: 0
       OuterCutOff: 0
       Constant: 1.05599999
@@ -113,12 +107,12 @@ Entities:
       Location: [-3.5, 21.1000004, 10.1999998]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
     MeshComponent:
       Name: Default
       AssetID: 9099
-      LocalLocation: [0, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [1, 1.29999995, 2.4000001]
       MaterialPointerID: 0
   - Entity: 31570
     TagComponent:
@@ -127,12 +121,12 @@ Entities:
       Location: [-6.50099993, 34.2999992, -3.9000001]
       Rotation: [0, 0, 0]
       Scale: [13.2535362, 6.95295906, 13.0249252]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
     MeshComponent:
       Name: Default
       AssetID: 9099
-      LocalLocation: [5.5999999, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [0, 0, 0]
       MaterialPointerID: 0
   - Entity: 21616
     TagComponent:
@@ -141,6 +135,9 @@ Entities:
       Location: [134.179092, 13.126976, 17.7990685]
       Rotation: [-0.842343926, 0.507726073, -0.180751607]
       Scale: [1, 1, 0.00999999978]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
     CameraComponent:
       AutoSetDimension: true
       NearPlane: 0.0520000011
@@ -156,12 +153,12 @@ Entities:
       Location: [19.2000046, 0, 5.39999819]
       Rotation: [0, 0, 0]
       Scale: [0.200000003, 0.200000003, 0.206681684]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
     MeshComponent:
       Name: Default
       AssetID: 19748
-      LocalLocation: [0, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [0, 0, 0]
       MaterialPointerID: 0
   - Entity: 14270
     TagComponent:
@@ -169,18 +166,21 @@ Entities:
     TransformComponent:
       Location: [23.0742855, 0, 328.94104]
       Rotation: [0, 0, 0]
-      Scale: [24.4961281, 72.2561874, 76.6786041]
+      Scale: [24.4961281, 72.2561874, 102.920502]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
     MeshComponent:
       Name: Default
       AssetID: 2122
-      LocalLocation: [0, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [0, 0, 0]
       MaterialPointerID: 0
   - Entity: 24179
     TagComponent:
       Tag: Empty Entity
     TransformComponent:
-      Location: [0, 0, 0]
+      Location: [0, -1.22654533, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []

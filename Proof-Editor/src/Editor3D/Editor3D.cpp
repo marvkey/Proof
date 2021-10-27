@@ -345,7 +345,7 @@ namespace Proof
 				glm::mat4 cameraView = ActiveWorld->m_EditorCamera.m_View;
 
 				auto& tc = *selectedEntity.GetComponent<TransformComponent>();
-				glm::mat4 transform = tc.GetWorldTransform();
+				glm::mat4 transform = tc.GetLocalTransform();
 
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale

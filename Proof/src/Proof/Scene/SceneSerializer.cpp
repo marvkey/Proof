@@ -5,6 +5,7 @@
 #include <string>
 #include <filesystem>
 #include "Proof/Resources/ExternalCreations.h"
+#include "ComponentUnOptimized.h"
 namespace Proof{
 	SceneSerializer::SceneSerializer(World* Scene) {
 		PF_CORE_ASSERT(Scene,"Scene cannot be nulltptr");
@@ -17,7 +18,6 @@ namespace Proof{
 		for (Component* Comp : *m_Scene->Registry.GetEntities().at(entity.GetID())) {
 
 			TagComponent* Tag = dynamic_cast<TagComponent*>(Comp);
-
 			if(Tag != nullptr){
 				auto& tag = Tag->GetName();
 				out<<YAML::Key<<"TagComponent";
@@ -37,15 +37,29 @@ namespace Proof{
 				out << YAML::EndMap; // transform component
 				continue;
 			}
+			SubEntityComponet* subEntityComponet = dynamic_cast<SubEntityComponet*>(Comp);
+			if(subEntityComponet != nullptr){
+				out << YAML::Key << "SubEntityComponet";
+				out << YAML::BeginMap; // SubEntityComponet
+				out << YAML::Key << "OwnerEntityID" << YAML::Value << subEntityComponet->GetEntityOwner().GetID();
+				
+				out << YAML::Key << "SubEntities";
+				out << YAML::Flow;
+				out<<YAML::BeginSeq; 
+				for(Entity simpleEnitty: subEntityComponet->GetAllSubEntity()){
+					out<<simpleEnitty.GetID();
+				}
+				out<<YAML::EndSeq;
+				
+				out << YAML::EndMap; // Mesh component
+				continue;
+			}
 			MeshComponent* Meshes = dynamic_cast<MeshComponent*>(Comp);
 			if (Meshes != nullptr) {
 				out<<YAML::Key<<"MeshComponent";
 				out << YAML::BeginMap; // Mesh component
 				out<<YAML::Key<<"Name"<<YAML::Value<<Meshes->GetName();
 				out<<YAML::Key<<"AssetID"<<YAML::Value<<Meshes->GetAssetID();
-				out<<YAML::Key<<"LocalLocation"<<Meshes->MeshLocalTransform.Location;
-				out<<YAML::Key<<"LocalRotation"<<Meshes->MeshLocalTransform.Rotation;
-				out<<YAML::Key<<"LocalScale"<<Meshes->MeshLocalTransform.Scale;
 				out<<YAML::Key<<"MaterialPointerID"<<Meshes->GetMaterialPointerID();
 				out << YAML::EndMap; // Mesh component
 				continue;
@@ -68,9 +82,6 @@ namespace Proof{
 			if(Light != nullptr){
 				out<<YAML::Key<<"LightComponent";
 				out<<YAML::BeginMap; // LightComponent;
-				out<<YAML::Key<<"Position"<< Light->m_Position;
-				out<<YAML::Key<<"Direction"<< Light->m_Direction;
-
 				out<<YAML::Key<<"CutOff"<< Light->m_CutOff;
 				out<<YAML::Key<<"OuterCutOff"<< Light->m_OuterCutOff;
 
@@ -149,16 +160,28 @@ namespace Proof{
 					tc->Rotation = transformComponet["Rotation"].as<Vector>();
 					tc->Scale = transformComponet["Scale"].as<Vector>();
 				}
-				
+
+				auto subEntityComponent = entity["SubEntityComponet"];
+				if(subEntityComponent){
+					auto* tc = NewEntity.GetComponent<SubEntityComponet>();
+					if(subEntityComponent["OwnerEntityID"].as<uint64_t>()!=0){
+						Entity temp = {subEntityComponent["OwnerEntityID"].as<uint64_t>(),m_Scene};
+						tc->m_EntitySubOwner = temp;
+					}
+					if(subEntityComponent["SubEntities"]){
+						for(auto entityID:subEntityComponent["SubEntities"]){
+							uint64_t ID = entityID.as<uint64_t>();
+							Entity temp={ID,m_Scene};
+							tc->AddSubEntity(temp);
+						}
+					}
+				}
 				auto meshComponent = entity["MeshComponent"];
 				if(meshComponent){
 					auto& src = *NewEntity.AddComponent<MeshComponent>();
 					src.SetName(meshComponent["Name"].as<std::string>());
 					src.AssetID = meshComponent["AssetID"].as<uint32_t>();
 
-					src.MeshLocalTransform.Location = meshComponent["LocalLocation"].as<glm::vec3>();
-					src.MeshLocalTransform.Rotation = meshComponent["LocalRotation"].as<glm::vec3>();
-					src.MeshLocalTransform.Scale = meshComponent["LocalScale"].as<glm::vec3>();
 					src.m_MeshMaterialID = meshComponent["MaterialPointerID"].as<uint32_t>();
 				}
 				
@@ -176,9 +199,6 @@ namespace Proof{
 				auto lightComponent = entity["LightComponent"];
 				if(lightComponent){
 					auto& src = *NewEntity.AddComponent<LightComponent>();
-					src.m_Position = lightComponent["Position"].as<Vector>();
-					src.m_Direction = lightComponent["Direction"].as<Vector>();
-
 					src.m_CutOff = lightComponent["CutOff"].as<float>();
 					src.m_OuterCutOff = lightComponent["OuterCutOff"].as<float>();
 

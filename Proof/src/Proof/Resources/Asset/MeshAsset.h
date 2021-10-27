@@ -12,7 +12,7 @@ namespace Proof
 		virtual std::string GetAssetTypeName() {
 			return "AssetType::MeshAsset";
 		}
-
+		void Reinstate(const std::string& path);
 		static std::string GetAssetTypeStaticName(){
 			return "AssetType::MeshAsset";
 		}

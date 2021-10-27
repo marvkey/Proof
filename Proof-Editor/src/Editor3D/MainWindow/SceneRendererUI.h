@@ -27,6 +27,7 @@ namespace Proof
 		uint64_t m_ID = Math::RandUINT(1,18000000000000000000);
 		class MeshComponent* mesh;
 		class World* m_World;
+		class MeshAsset* m_MeshAsset;
 		WorldRenderer m_WorldRenderer;
 		SceneRendererType m_Type;
 	};

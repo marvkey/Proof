@@ -3,9 +3,12 @@
 #include <imgui/imgui_internal.h>
 #include "../ImGUIAPI.h"
 #include "SceneHierachyPanel.h"
+#include "Proof/Utils/PlatformUtils.h"
+
 namespace Proof{
 	SceneRendererUI::SceneRendererUI(MeshAsset* asset) {
 		m_World = new World();
+		m_MeshAsset = asset;
 		tempEntity =m_World->CreateEntity(asset->GetAssetName());
 		mesh =tempEntity.AddComponent<MeshComponent>();
 		tempEntity.GetComponent<TransformComponent>()->Location.Z-=10;
@@ -27,11 +30,17 @@ namespace Proof{
 		width *= 0.3;
 		ImGui::BeginChild(m_ID,{width,ImGui::GetContentRegionAvail().y});
 		{
+			if(ImGui::Button("Renstate mesh")){
+				std::string filePath = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
+				if (filePath.empty() == false) {
+					m_MeshAsset->Reinstate(filePath);
+				}
+			}
 			ExternalAPI::ImGUIAPI::CheckBox("FaceCulling",&mesh->GetAsset()->GetMesh()->m_FaceCulling);
 			SceneHierachyPanel::DrawVectorControl("Location",tempEntity.GetComponent<TransformComponent>()->Location,0,width * 0.25);
 			SceneHierachyPanel::DrawVectorControl("Rotation",tempEntity.GetComponent<TransformComponent>()->Rotation,0,width * 0.25);
 			SceneHierachyPanel::DrawVectorControl("Scale",tempEntity.GetComponent<TransformComponent>()->Scale,1,width * 0.25);
-			if (mesh != nullptr) {
+			if (m_MeshAsset != nullptr) {
 				ExternalAPI::ImGUIAPI::CheckBox(mesh->GetAsset()->GetAssetName(),&mesh->GetAsset()->GetMesh()->m_Enabled);
 				ImGui::NewLine();
 				for (SubMesh& subMesh : mesh->GetMesh()->meshes) {

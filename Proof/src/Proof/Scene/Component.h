@@ -118,9 +118,7 @@ namespace Proof
 	};
 
 	struct Proof_API MeshComponent:public Component {
-		MeshComponent() {
-			MeshLocalTransform.Scale = Vector{0.0f,0.0f,0.0f};
-		}
+		MeshComponent()=default;
 		class Mesh* GetMesh() {
 			return GetAsset() != nullptr ? GetAsset()->GetMesh() : nullptr;
 		}
@@ -142,8 +140,6 @@ namespace Proof
 			return GetMaterial() == nullptr ? false : true;
 		}
 		uint32_t GetMeshPointerID();
-		TransformComponent MeshLocalTransform;
-
 	private:
 		friend class Entity;
 		friend class World;
@@ -191,8 +187,6 @@ namespace Proof
 			Point = 1,
 			Spot = 2
 		};
-		Vector m_Position;
-		Vector m_Direction = {1.0,1.0,1.0};
 		float m_CutOff; // gets put in cos and radias before use
 		float m_OuterCutOff; // gets put in cos and radias before use
 

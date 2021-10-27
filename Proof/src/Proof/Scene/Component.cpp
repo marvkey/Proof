@@ -38,23 +38,21 @@ namespace Proof
 	}
 	Vector TransformComponent::GetWorldLocation()const {
 		if(GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()){
-			return Location /*+GetOwner().GetComponent<TransformComponent>()->GetWorldLocation()*/;
+			return Location + GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldLocation();
 		}
 		
 		return Location;
 	}
 	Vector TransformComponent::GetWorldRotation()const {
 		if (GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()) {
-			return Rotation /*+ GetOwner().GetComponent<TransformComponent>()->GetWorldRotation()*/;
+			return Rotation + GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldRotation();
 		}
-		
 		return Rotation;
 	}
 	Vector TransformComponent::GetWorldScale()const {
 		if (GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()) {
-			return Scale /*+ GetOwner().GetComponent<TransformComponent>()->GetWorldScale()*/;
+			return Scale +GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldScale();;
 		}
-		
 		return Scale;
 	}
 	glm::mat4 TransformComponent::GetWorldTransform() const {
