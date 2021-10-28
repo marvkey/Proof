@@ -1,7 +1,7 @@
 AssetTypeString: AssetType::MaterialAsset
 AssetType: 3
 ID: 12014
-AlbedoColour: [0, 1, 0.491935253]
+AlbedoColour: [0.999989986, 1, 0.999994934]
 Roughness: 0
 Metallness: 25.1760006
 AO: 1

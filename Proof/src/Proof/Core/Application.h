@@ -33,7 +33,7 @@
         bool WindowMinimized = false;
         bool IsRunning = true;
     private:
-        InitlizeCSharp ScriptingCharp;
+        //InitlizeCSharp ScriptingCharp;
         void OnEvent(Event& e);
         void OnWindowMinimizeEvent(WindowMinimizeEvent& e);
         void OnMouseScrollEVent(MouseScrollEvent& e);

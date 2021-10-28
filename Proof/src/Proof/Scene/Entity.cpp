@@ -17,14 +17,15 @@ namespace Proof
 		GetComponent<SubEntityComponet>()->RemoveSubEnity(tempEntity);
 	}
 	void Entity::OnDelete() {
-		for (Entity& m_SubEntity : GetComponent<SubEntityComponet>()->m_AllSubEntity) {
-			CurrentWorld->DeleteEntity(m_SubEntity);
+		for (Entity m_SubEntity : GetComponent<SubEntityComponet>()->m_AllSubEntity) {
+			if(m_SubEntity != *this){
+				CurrentWorld->Registry.Delete(m_SubEntity.GetID());
+			}
 		}
 		
-		if (GetComponent<SubEntityComponet>()->HasEntityOwner() == true){
-			GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<SubEntityComponet>()->RemoveSubEnity({m_EntityID,CurrentWorld});
+		if (GetComponent<SubEntityComponet>()->HasEntityOwner() == true) {
+			GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<SubEntityComponet>()->RemoveSubEnity(*this);
 		}
-		
 	};
 
 	void Entity::SwapEntityOwner(const Entity& newOwner) {

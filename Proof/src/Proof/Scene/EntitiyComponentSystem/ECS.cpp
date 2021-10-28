@@ -44,8 +44,6 @@ namespace Proof{
             EntityHolder.erase(ID);
             if(itVec != AllEntityID.end())
                 AllEntityID.erase(itVec);
-
-            PF_ENGINE_ERROR("Done deleting");
             return;
         }
         PF_ENGINE_ERROR("Entity does not exist with ID No Delete");

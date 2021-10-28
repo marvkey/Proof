@@ -174,13 +174,31 @@ Entities:
       Name: Default
       AssetID: 2122
       MaterialPointerID: 0
-  - Entity: 24179
+  - Entity: 80
     TagComponent:
       Tag: Empty Entity
     TransformComponent:
-      Location: [0, -1.22654533, 0]
-      Rotation: [0, 0, 0]
+      Location: [0.931858897, 4.89320707, -1.21949315]
+      Rotation: [0, 0, -0.134123921]
       Scale: [1, 1, 1]
     SubEntityComponet:
       OwnerEntityID: 0
+      SubEntities: [28650]
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      MaterialPointerID: 0
+  - Entity: 28650
+    TagComponent:
+      Tag: Empty Child Entity
+    TransformComponent:
+      Location: [-1.52582455, -3.36680484, 2.65812755]
+      Rotation: [-6.31416988e-05, 0.000210433616, -0.425632358]
+      Scale: [0.999999881, 1, 1]
+    SubEntityComponet:
+      OwnerEntityID: 80
       SubEntities: []
+    MeshComponent:
+      Name: Default
+      AssetID: 29460
+      MaterialPointerID: 0

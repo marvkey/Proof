@@ -19,6 +19,8 @@
 #include "Proof/Scene/Script.h"
 #include "Proof/Scene/ComponentUnOptimized.h"
 #include "Proof/Input/KeyCodes.h"
+#include "ImGui/imgui_internal.h"
+
 namespace Proof{
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
 	InstanceNativeScriptComponent.Bind<Class>();\
@@ -29,12 +31,6 @@ namespace Proof{
 	void SceneHierachyPanel::ImGuiRender(){
 		ImGui::Begin("Herieachy");
 		{
-			//ImGui::Image(0,{ImGui::GetWindowContentRegionWidth(),ImGui::GetWindowHeight()});
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
-
-				}
-			}
 
 			for (uint32_t i = 0; i < m_CurrentWorld->Registry.GetAllID().size(); i++) {
 				Entity entity = {m_CurrentWorld->Registry.GetAllID().at(i),m_CurrentWorld};
@@ -42,7 +38,7 @@ namespace Proof{
 					DrawEntityNode(entity);
 			}
 			
-			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) {
+			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()&& ImGui::IsAnyItemHovered()==false) {
 				m_SelectedEntity = {};
 			}
 			if (ImGui::BeginPopupContextWindow(0,1,false)){ // right click adn open a new entitiy
@@ -52,6 +48,7 @@ namespace Proof{
 			}
 		}
 		ImGui::End();
+
 		ImGui::Begin("Properties");
 		{
 			if (m_SelectedEntity){
@@ -70,10 +67,10 @@ namespace Proof{
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
 				Entity Data = *(const Entity*)payload->Data;
-				if(entity.GetID() != Data.GetID()){
-					Data.GetComponent<SubEntityComponet>()->m_EntitySubOwner = entity;
+				if(Data.GetComponent<SubEntityComponet>()->HasEntityOwner())
+					Data.GetComponent<SubEntityComponet>()->SwapEntityOwner(entity);
+				else
 					entity.GetComponent<SubEntityComponet>()->AddSubEntity(Data);
-				}
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -87,6 +84,13 @@ namespace Proof{
 			m_SelectedEntity = entity;
 		}
 		if(ImGui::BeginPopupContextItem()){
+			if(m_SelectedEntity.GetComponent<SubEntityComponet>()->HasEntityOwner()){
+				if(ImGui::MenuItem("Single entity")){
+					m_SelectedEntity.GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<SubEntityComponet>()->RemoveSubEnity(m_SelectedEntity);
+					m_SelectedEntity.GetComponent<SubEntityComponet>()->m_EntitySubOwner={};
+					ImGui::CloseCurrentPopup();
+				}
+			}
 			if(ImGui::MenuItem("Create Child entity")){
 				Entity childEntity = m_CurrentWorld->CreateEntity("Empty Child Entity");
 				childEntity.GetComponent<SubEntityComponet>()->m_EntitySubOwner = m_SelectedEntity;
@@ -95,6 +99,7 @@ namespace Proof{
 			}
 			if(ImGui::MenuItem("Delete")){
 				m_CurrentWorld->DeleteEntity(m_SelectedEntity);
+
 				m_SelectedEntity ={};
 				ImGui::CloseCurrentPopup();
 				if(opened){

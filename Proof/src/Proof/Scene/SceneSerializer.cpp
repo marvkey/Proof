@@ -172,7 +172,7 @@ namespace Proof{
 						for(auto entityID:subEntityComponent["SubEntities"]){
 							uint64_t ID = entityID.as<uint64_t>();
 							Entity temp={ID,m_Scene};
-							tc->AddSubEntity(temp);
+							tc->m_AllSubEntity.emplace_back(temp);
 						}
 					}
 				}

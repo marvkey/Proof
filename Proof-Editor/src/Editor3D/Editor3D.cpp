@@ -23,6 +23,7 @@
 #include "Proof/Utils/PlatformUtils.h"
 #include "MainWindow/SceneRendererUI.h"
 #include "MainWindow/MaterialEditorPanel.h"
+#include "Proof/Scene/ComponentUnOptimized.h"
 namespace Proof
 {
 	glm::vec4 ClearColour;
@@ -346,7 +347,7 @@ namespace Proof
 
 				auto& tc = *selectedEntity.GetComponent<TransformComponent>();
 				glm::mat4 transform = tc.GetLocalTransform();
-
+				glm::mat4 worldTransform = tc.GetWorldTransform();
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
 				// Snap to 45 degrees for rotation
@@ -354,20 +355,37 @@ namespace Proof
 					snapValue = 45.0f;
 
 				float snapValues[3] = {snapValue,snapValue,snapValue};
+				if(selectedEntity.GetComponent<SubEntityComponet>()->HasEntityOwner()==false){
 
-				ImGuizmo::Manipulate(glm::value_ptr(cameraView),glm::value_ptr(cameraProjection),
+					ImGuizmo::Manipulate(glm::value_ptr(cameraView),glm::value_ptr(cameraProjection),
 					(ImGuizmo::OPERATION)GuizmoType,ImGuizmo::LOCAL,glm::value_ptr(transform),
 					nullptr,snap ? snapValues : nullptr);
 
-				if (ImGuizmo::IsUsing()) {
-					glm::vec3 translation,rotation,scale;
-					MathResource::DecomposeTransform(transform,translation,rotation,scale);
+					if (ImGuizmo::IsUsing()) {
+						glm::vec3 translation,rotation,scale;
+						MathResource::DecomposeTransform(transform,translation,rotation,scale);
 
-					glm::vec3 deltaRotation = rotation - glm::vec3{tc.Rotation};
-					tc.Location = translation;
-					tc.Rotation += deltaRotation;
-					tc.Scale = scale;
+						glm::vec3 deltaRotation = rotation - glm::vec3{tc.Rotation};
+						tc.Location = translation;
+						tc.Rotation += deltaRotation;
+						tc.Scale = scale;
+					}
+				}else{
+					ImGuizmo::Manipulate(glm::value_ptr(cameraView),glm::value_ptr(cameraProjection),
+						(ImGuizmo::OPERATION)GuizmoType,ImGuizmo::LOCAL,glm::value_ptr(worldTransform),
+							nullptr,snap ? snapValues : nullptr);
+
+					if (ImGuizmo::IsUsing()) {
+						glm::vec3 translation,rotation,scale;
+						MathResource::DecomposeTransform(worldTransform,translation,rotation,scale);
+
+						glm::vec3 deltaRotation = rotation - glm::vec3{tc.Rotation};
+						tc.Location += translation;
+						tc.Rotation += deltaRotation;
+						tc.Scale += scale;
+					}
 				}
+				
 				
 			}
 

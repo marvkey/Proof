@@ -63,7 +63,7 @@ namespace Proof {
     }
 
     void Application::Run() {
-       //AssetManager::InitilizeAssets("content");
+        AssetManager::InitilizeAssets("content");
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
