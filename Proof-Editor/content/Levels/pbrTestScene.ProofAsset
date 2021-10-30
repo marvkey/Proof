@@ -12,7 +12,7 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      AssetID: 12574
+      MeshAssetPointerID: 12574
       MaterialPointerID: 27537
   - Entity: 22824
     TagComponent:
@@ -26,7 +26,7 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      AssetID: 20980
+      MeshAssetPointerID: 20980
       MaterialPointerID: 7493
     LightComponent:
       CutOff: 0
@@ -50,7 +50,7 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      AssetID: 12067
+      MeshAssetPointerID: 12067
       MaterialPointerID: 12014
   - Entity: 30124
     TagComponent:
@@ -64,7 +64,7 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      AssetID: 4778
+      MeshAssetPointerID: 4778
       MaterialPointerID: 7493
     LightComponent:
       CutOff: 0
@@ -88,7 +88,7 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      AssetID: 12067
+      MeshAssetPointerID: 12067
       MaterialPointerID: 0
     LightComponent:
       CutOff: 0
@@ -112,7 +112,7 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      AssetID: 9099
+      MeshAssetPointerID: 9099
       MaterialPointerID: 0
   - Entity: 31570
     TagComponent:
@@ -126,7 +126,7 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      AssetID: 9099
+      MeshAssetPointerID: 9099
       MaterialPointerID: 0
   - Entity: 21616
     TagComponent:
@@ -158,7 +158,7 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      AssetID: 19748
+      MeshAssetPointerID: 19748
       MaterialPointerID: 0
   - Entity: 14270
     TagComponent:
@@ -172,11 +172,11 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      AssetID: 2122
+      MeshAssetPointerID: 2122
       MaterialPointerID: 0
   - Entity: 80
     TagComponent:
-      Tag: Empty Entity
+      Tag: rock and cube
     TransformComponent:
       Location: [0.931858897, 4.89320707, -1.21949315]
       Rotation: [0, 0, -0.134123921]
@@ -186,11 +186,11 @@ Entities:
       SubEntities: [28650]
     MeshComponent:
       Name: Default
-      AssetID: 12067
+      MeshAssetPointerID: 0
       MaterialPointerID: 0
   - Entity: 28650
     TagComponent:
-      Tag: Empty Child Entity
+      Tag: rock
     TransformComponent:
       Location: [-1.52582455, -3.36680484, 2.65812755]
       Rotation: [-6.31416988e-05, 0.000210433616, -0.425632358]
@@ -200,5 +200,5 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      AssetID: 29460
+      MeshAssetPointerID: 0
       MaterialPointerID: 0

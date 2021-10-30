@@ -7,7 +7,7 @@ namespace Proof
     Vector::Vector(float X,float Y,float Z) {
         this->X = X,this->Y = Y,this->Z = Z;
     }
-    std::string Vector::ToString() {
+    std::string Vector::ToString()const {
         std::stringstream VecStream;
         VecStream << "X = " << X << " Y = " << Y << " Z = " << Z;
         return VecStream.str();
@@ -17,7 +17,7 @@ namespace Proof
         VecStream << "X = " << Vec.X << " Y = " << Vec.Y << " Z = " << Vec.Z;
         return VecStream.str();
     }
-    Vector Vector::Normalize() {
+    Vector Vector::Normalize(){
         float Length = GetLength();
         X = X / Length;
         Y = Y / Length;
@@ -56,7 +56,7 @@ namespace Proof
         return this->X * Vec.X + this->Y * Vec.Y + this->Z * Vec.Z;
     }
 
-    float Vector::GetLength() {
+    float Vector::GetLength()const {
         return Math::SquareRoot<float>(X * X + Y * Y + Z * Z);
     }
 
@@ -64,7 +64,7 @@ namespace Proof
         return  Math::SquareRoot<float>(Vec.X * Vec.X + Vec.Y * Vec.Y + Vec.Z * Vec.Z);
     }
 
-    float Vector::GetAngle(const Vector& Vec) {
+    float Vector::GetAngle(const Vector& Vec)const {
         float Angle = Vector::Dot(*this,Vec) / (GetLength(*this) * GetLength(Vec));
         return Math::InverseCos<float>(Angle);
     }

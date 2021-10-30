@@ -78,6 +78,7 @@ a:
         friend class Editore3D;
         friend class Renderer3DPBR;
         friend class SceneRendererUI;
+        friend class MeshAsset;
     };
 
 

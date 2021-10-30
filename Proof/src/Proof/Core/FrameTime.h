@@ -11,8 +11,8 @@ namespace Proof
         float GetDeltaTimeMilliseconds() const { return DeltaTime * 1000.0f; }
         static float GetTime() { return glfwGetTime(); }
         static float GetFrameFPS() { return Application::GetFPS(); };
-        static float GetFrameMS() { return Application::GetFrameMS(); };
-        float Get() { return DeltaTime; };
+        static float GetFrameMS(){ return Application::GetFrameMS(); };
+        float Get()const { return DeltaTime; };
         operator float() const { return DeltaTime; }
     private:
         float DeltaTime;

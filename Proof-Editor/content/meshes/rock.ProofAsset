@@ -2,3 +2,6 @@ AssetTypeString: AssetType::MeshAsset
 AssetType: 2
 ID: 29460
 Model: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\rock.obj
+SubMeshes: []
+Enabled: true
+FaceCulling: true

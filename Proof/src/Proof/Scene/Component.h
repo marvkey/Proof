@@ -13,6 +13,7 @@
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
 {
+	using AssetID =uint64_t;
 	using EntityID = uint64_t;
 	class Entity;
 	struct Proof_API Component {
@@ -27,13 +28,9 @@ namespace Proof
 			Name = name;
 		}
 		class Entity GetOwner()const;
-		uint32_t GetAssetID()const {
-			return AssetID;
-		}
 
 		void Componet() {};
 	protected:
-		uint32_t AssetID = 0;
 		std::string Name = "Default";
 		EntityID m_EntityOwner;
 		class World* CurrentWorld = nullptr;
@@ -124,11 +121,19 @@ namespace Proof
 		}
 		MeshComponent(const MeshComponent&) = default;
 		MeshAsset* GetAsset() {
-			MeshAsset* a = AssetManager::GetAsset<MeshAsset>(AssetID);
+			if(m_MeshAssetPointerID==0)
+				return nullptr;
+			if(m_MeshAssetPointer ==nullptr)
+				m_MeshAssetPointer = AssetManager::GetAssetShared<MeshAsset>(m_MeshAssetPointerID);
 
-			if (a == nullptr)
-				AssetID = 0;
-			return a;
+			if(m_MeshAssetPointer==nullptr)// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
+				return nullptr;
+			if(AssetManager::HasID(m_MeshAssetPointerID)){
+				return m_MeshAssetPointer.get();
+			}
+			m_MeshAssetPointerID=0;
+			m_MeshAssetPointer =nullptr;
+			return nullptr;
 		}
 
 		class Material* GetMaterial();
@@ -149,6 +154,8 @@ namespace Proof
 		friend class SceneRendererUI;
 		uint32_t StartIndexSlot = 0;
 		uint32_t m_MeshMaterialID = 0;
+		AssetID m_MeshAssetPointerID=0;
+		Count<MeshAsset>m_MeshAssetPointer=nullptr;
 	};
 
 	/* THIS IS TEMPORARY THIS IS GONNA GO INTO THE 2D SECTION */
@@ -165,18 +172,29 @@ namespace Proof
 			return nullptr;
 		}
 		Texture2DAsset* GetAsset() {
-			Texture2DAsset* a = AssetManager::GetAsset<Texture2DAsset>(AssetID);
-			if (a == nullptr) {
-				AssetID = 0;
+			if (m_TextureAssetPointerID == 0)
 				return nullptr;
+			if (m_TextureAssetPointer == nullptr)
+				m_TextureAssetPointer = AssetManager::GetAssetShared<Texture2DAsset>(m_TextureAssetPointerID);
+
+			if (m_TextureAssetPointer == nullptr)// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
+				return nullptr;
+			if (AssetManager::HasID(m_TextureAssetPointerID)) {
+				return m_TextureAssetPointer.get();
 			}
-			return a;
+			m_TextureAssetPointerID = 0;
+			m_TextureAssetPointer = nullptr;
+			return nullptr;
 		}
 	private:
 		friend class Entity;
 		friend class World;
 		friend class ECS;
+		friend class SceneHierachyPanel;
+		friend class SceneSerializer;
 		uint32_t StartIndexSlot = 0;
+		AssetID m_TextureAssetPointerID;
+		Count<Texture2DAsset> m_TextureAssetPointer;
 	};
 
 	struct Proof_API LightComponent: public Component {

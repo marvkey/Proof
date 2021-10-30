@@ -262,21 +262,21 @@ namespace Proof{
 					if (ImGui::InputText("##Name",buffer,sizeof(buffer))) {
 						component.SetName(buffer);
 					}
-					ExternalAPI::ImGUIAPI::TextBar("Mesh",AssetManager::HasID(component.AssetID) ? AssetManager::GetAsset<Asset>(component.AssetID)->GetAssetName():"null");
+					ExternalAPI::ImGUIAPI::TextBar("Mesh",component.GetAsset()!=nullptr ? component.GetAsset()->GetAssetName():"null");
 					if (ImGui::BeginPopupContextItem("RemoveMesh")) {
 						ImGui::EndPopup();
 					}
 					if (ImGui::BeginPopup("RemoveMesh")) {
 						if (ImGui::MenuItem("Remove Mesh")) {
-							component.AssetID = 0;
+							component.m_MeshAssetPointerID = 0;
 						}
 
 						ImGui::EndPopup();
 					}
 					if (ImGui::BeginDragDropTarget()) {
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetAssetTypeStaticName().c_str())) {
-							uint32_t Data = *(const uint32_t*)payload->Data;
-							component.AssetID = Data;
+							AssetID Data = *(const AssetID*)payload->Data;
+							component.m_MeshAssetPointerID = Data;
 						}
 						ImGui::EndDragDropTarget();
 					}
@@ -326,15 +326,15 @@ namespace Proof{
 					}
 					if (ImGui::BeginPopup("RemoveTexture")) {
 						if (ImGui::MenuItem("Remove Texture")) {
-							component.AssetID = 0;
+							component.m_TextureAssetPointerID = 0;
 						}
 						ImGui::EndPopup();
 					}
 					
 					if (ImGui::BeginDragDropTarget()) {
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(Texture2DAsset::GetAssetTypeStaticName().c_str())) {
-							uint32_t Data = *(const uint32_t*)payload->Data;
-							component.AssetID =Data;
+							AssetID Data = *(const AssetID*)payload->Data;
+							component.m_TextureAssetPointerID =Data;
 						}
 						ImGui::EndDragDropTarget();
 					}

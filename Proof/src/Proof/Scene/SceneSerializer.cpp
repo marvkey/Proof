@@ -59,7 +59,7 @@ namespace Proof{
 				out<<YAML::Key<<"MeshComponent";
 				out << YAML::BeginMap; // Mesh component
 				out<<YAML::Key<<"Name"<<YAML::Value<<Meshes->GetName();
-				out<<YAML::Key<<"AssetID"<<YAML::Value<<Meshes->GetAssetID();
+				out<<YAML::Key<<"MeshAssetPointerID"<<YAML::Value<<Meshes->m_MeshAssetPointerID;
 				out<<YAML::Key<<"MaterialPointerID"<<Meshes->GetMaterialPointerID();
 				out << YAML::EndMap; // Mesh component
 				continue;
@@ -70,7 +70,7 @@ namespace Proof{
 				out << YAML::Key << "SpriteComponent";
 				out << YAML::BeginMap; // Sprite component
 				out<<YAML::Key<<"Name"<<YAML::Value<<Sprite->GetName();
-				out<<YAML::Key<<"AssetID"<<YAML::Value<<Sprite->GetAssetID();
+				out<<YAML::Key<<"TextureAssetPointerID"<<YAML::Value<<Sprite->m_TextureAssetPointerID;
 				out<<YAML::Key<<"Colour"<<YAML::Value<<Sprite->Colour;
 				out << YAML::Key << "LocalLocation" << Sprite->SpriteTransfrom.Location;
 				out << YAML::Key << "LocalRotation" << Sprite->SpriteTransfrom.Rotation;
@@ -159,6 +159,7 @@ namespace Proof{
 
 					tc->Rotation = transformComponet["Rotation"].as<Vector>();
 					tc->Scale = transformComponet["Scale"].as<Vector>();
+					
 				}
 
 				auto subEntityComponent = entity["SubEntityComponet"];
@@ -175,25 +176,27 @@ namespace Proof{
 							tc->m_AllSubEntity.emplace_back(temp);
 						}
 					}
+					
 				}
 				auto meshComponent = entity["MeshComponent"];
 				if(meshComponent){
 					auto& src = *NewEntity.AddComponent<MeshComponent>();
 					src.SetName(meshComponent["Name"].as<std::string>());
-					src.AssetID = meshComponent["AssetID"].as<uint32_t>();
-
+					src.m_MeshAssetPointerID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
 					src.m_MeshMaterialID = meshComponent["MaterialPointerID"].as<uint32_t>();
+					
 				}
 				
 				auto spriteRendererComponent = entity["SpriteComponent"];
 				if (spriteRendererComponent) 				{
 					auto& src = *NewEntity.AddComponent<SpriteComponent>();
 					src.SetName(spriteRendererComponent["Name"].as<std::string>());
-					src.AssetID = spriteRendererComponent["AssetID"].as<uint32_t>();
+					src.m_TextureAssetPointerID = spriteRendererComponent["TextureAssetPointerID"].as<uint64_t>();
 					src.Colour= spriteRendererComponent["Colour"].as<glm::vec4>();
 					src.SpriteTransfrom.Location = spriteRendererComponent["LocalLocation"].as<glm::vec3>();
 					src.SpriteTransfrom.Rotation = spriteRendererComponent["LocalRotation"].as<glm::vec3>();
 					src.SpriteTransfrom.Scale = spriteRendererComponent["LocalScale"].as<glm::vec3>();
+					
 				}
 
 				auto lightComponent = entity["LightComponent"];
@@ -211,6 +214,7 @@ namespace Proof{
 					src.m_Specular = lightComponent["Specular"].as<glm::vec3>();
 
 					src.m_LightType = lightComponent["LightType"].as<int>();
+					
 				}
 
 				auto cameraComponent = entity["CameraComponent"];
@@ -224,6 +228,7 @@ namespace Proof{
 						src.m_Width = cameraComponent["Width"].as<uint32_t>();
 						src.m_Height= cameraComponent["Height"].as<uint32_t>();
 					}
+					
 				}
 			}
 		}

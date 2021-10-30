@@ -106,6 +106,7 @@ namespace Proof {
 
             LastFrameTime = time;
         };
+        AssetManager::SaveAllAsset();
         m_GraphicsContext->CleanUp();
         MainWindow->WindowEnd();
         IsRunning = false;

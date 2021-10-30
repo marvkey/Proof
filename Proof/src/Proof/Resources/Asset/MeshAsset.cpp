@@ -21,10 +21,23 @@ namespace Proof
 		out<<YAML::Key<<"AssetTypeString"<<YAML::Value<<"AssetType::MeshAsset";
 		out << YAML::Key << "AssetType" << YAML::Value << (int)m_AssetType;
 		out << YAML::Key << "ID" << YAML::Value << m_ID;
-		if(m_Mesh  != nullptr)
-			out << YAML::Key << "Model" << YAML::Value << m_PathOfPointerToFile;
+		out << YAML::Key << "Model" << YAML::Value << m_PathOfPointerToFile;
+		out << YAML::Key << "SubMeshes";
+		out << YAML::Flow;
+		out << YAML::BeginSeq;
+		if(m_Mesh != nullptr){
+			int i=0;
+			for (SubMesh subMesh: m_Mesh->GetSubMeshes()) {
+				if(subMesh.m_Enabled==false){
+					out<<i;
+				}
+				i++;
+			}
+		}
+		out << YAML::EndSeq;
+		out<<YAML::Key<<"Enabled"<<m_Mesh->m_Enabled;
+		out<<YAML::Key<<"FaceCulling"<<m_Mesh->m_FaceCulling;
 		out << YAML::EndMap;
-
 		std::ofstream found(m_Path);
 		found<<out.c_str();
 		found.close();
@@ -40,9 +53,29 @@ namespace Proof
 
 		if(m_Mesh == nullptr){
 			m_Mesh = new Mesh{m_PathOfPointerToFile};
+			if (data["SubMeshes"]) {
+				for (auto& subMesh : data["SubMeshes"]) {
+					uint32_t index = subMesh.as<uint32_t>();
+					if (m_Mesh->GetSubMeshes().size() > index) {
+						m_Mesh->meshes[index].m_Enabled = false;
+					}
+				}
+			}
+			m_Mesh->m_Enabled = data["Enabled"].as<bool>();
+			m_Mesh->m_FaceCulling = data["FaceCulling"].as<bool>();
 		}else{
 			delete m_Mesh;
 			m_Mesh = new Mesh{m_PathOfPointerToFile};
+			if (data["SubMeshes"]) {
+				for (auto& subMesh : data["SubMeshes"]) {
+					uint32_t index = subMesh.as<uint32_t>();
+					if (m_Mesh->GetSubMeshes().size() > index) {
+						m_Mesh->meshes[index].m_Enabled = false;
+					}
+				}
+			}
+			m_Mesh->m_Enabled= data["Enabled"].as<bool>();
+			m_Mesh->m_FaceCulling= data["FaceCulling"].as<bool>();
 		}
 		return true;
 	}

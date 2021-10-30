@@ -9,7 +9,7 @@ Entities:
       Scale: [1, 1, 1]
     SubEntityComponet:
       OwnerEntityID: 0
-      SubEntities: [13103, 3559, 17125]
+      SubEntities: []
   - Entity: 13103
     TagComponent:
       Tag: Empty Child Entity
@@ -18,8 +18,8 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SubEntityComponet:
-      OwnerEntityID: 12486
-      SubEntities: [32166]
+      OwnerEntityID: 0
+      SubEntities: []
   - Entity: 32166
     TagComponent:
       Tag: Empty Child Entity
@@ -28,7 +28,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SubEntityComponet:
-      OwnerEntityID: 13103
+      OwnerEntityID: 0
       SubEntities: []
   - Entity: 3559
     TagComponent:
@@ -38,7 +38,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SubEntityComponet:
-      OwnerEntityID: 12486
+      OwnerEntityID: 0
       SubEntities: []
   - Entity: 17125
     TagComponent:
@@ -48,5 +48,9 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SubEntityComponet:
-      OwnerEntityID: 12486
+      OwnerEntityID: 0
       SubEntities: []
+    MeshComponent:
+      Name: Default
+      AssetID: 12067
+      MaterialPointerID: 0

@@ -2,3 +2,6 @@ AssetTypeString: AssetType::MeshAsset
 AssetType: 2
 ID: 2122
 Model: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\Chest.obj
+SubMeshes: []
+Enabled: true
+FaceCulling: true

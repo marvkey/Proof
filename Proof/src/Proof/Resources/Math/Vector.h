@@ -20,7 +20,7 @@ namespace Proof
             Z = Other.z;
         }
         
-        std::string ToString();
+        std::string ToString()const;
         static std::string ToString(const Vector& Vec);
 
         Vector Normalize();
@@ -32,10 +32,10 @@ namespace Proof
         Vector Cross(const Vector& Vec);
         static Vector Cross(const Vector& Vec1,const Vector& Vec2);
 
-        float GetLength();
+        float GetLength()const;
         static float GetLength(const Vector& Vec);
 
-        float GetAngle(const Vector& Vec);
+        float GetAngle(const Vector& Vec)const;
         static float GetAngle(const Vector& Vec1,const Vector& Vec2);
 
         operator const glm::vec3()const { return glm::vec3(X,Y,Z); }

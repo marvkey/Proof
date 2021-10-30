@@ -330,19 +330,19 @@ namespace Proof
 	void ContentBrowserPanel::NewAsset(const std::string& NewFilePath) {
 		std::string FIle = Utils::FileDialogs::OpenFile("Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0");
 		if (FIle.empty() == false) {
-			Texture2DAsset* TempAsset = new Texture2DAsset(FIle,NewFilePath);
+			Count<Texture2DAsset> TempAsset = CreateCount<Texture2DAsset>(FIle,NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
 		}
 	}
 	void ContentBrowserPanel::NewMeshAsset(const std::string& NewFilePath) {
 		std::string FIle = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
 		if (FIle.empty() == false) {
-			MeshAsset* TempAsset = new MeshAsset(FIle,NewFilePath);
+			Count<MeshAsset> TempAsset = CreateCount<MeshAsset>(FIle,NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
 		}
 	}
 	void ContentBrowserPanel::NewMaterialAsset(const std::string& NewFilePath) {
-			MaterialAsset* TempAsset = new MaterialAsset("null",NewFilePath);
+			Count<MaterialAsset> TempAsset = CreateCount<MaterialAsset>("null",NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
 	}
 	AssetID ContentBrowserPanel::GetIDCurrentDirectory(const std::string& Path) {

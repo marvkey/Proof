@@ -2,3 +2,6 @@ AssetTypeString: AssetType::MeshAsset
 AssetType: 2
 ID: 5715
 Model: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\Treasure_Trunk.obj
+SubMeshes: []
+Enabled: true
+FaceCulling: false

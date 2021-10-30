@@ -10,7 +10,7 @@
 namespace Proof
 {
 	AssetManager* AssetManager::s_AssetManager = new AssetManager();
-	void AssetManager::NewAsset(AssetID ID,Asset* asset) {
+	void AssetManager::NewAsset(AssetID ID,const Count<Asset>& asset) {
 		if (ID == 0) {
 			PF_CORE_ASSERT(false,"ID cannot be 0");
 			ID = AssetManager::CreateID();
@@ -33,12 +33,15 @@ namespace Proof
 	}
 	void AssetManager::Remove(AssetID ID) {
 		if (HasID(ID) == true) {
-			delete s_AssetManager->m_AllAssets.find(ID)->second;
-
 			s_AssetManager->m_AllAssets.erase(ID);
 			return;
 		}
 		PF_ASSERT(false,"Asset Manager Has ID");
+	}
+	void AssetManager::SaveAllAsset() {
+		for(auto& asset: s_AssetManager->m_AllAssets){
+			asset.second->SaveAsset();
+		};
 	}
 	void AssetManager::InitilizeAssets(const std::string& Path) {
 		PF_ENGINE_TRACE("starting Loading All Assets %s",Path.c_str());
@@ -49,7 +52,7 @@ namespace Proof
 			if (IsFileValid(dirEntry.path().string())) {
 
 				if (GetAssetType(dirEntry.path().string()) == "AssetType::Texture2DAsset") {
-					Texture2DAsset* asset = new Texture2DAsset;
+					Count<Texture2DAsset> asset = CreateCount<Texture2DAsset>();
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
 					asset->m_AssetName = dirEntry.path().stem().string();
@@ -57,7 +60,7 @@ namespace Proof
 				}
 
 				if (GetAssetType(dirEntry.path().string()) == "AssetType::MeshAsset") {
-					MeshAsset* asset = new MeshAsset;
+					Count<MeshAsset> asset = CreateCount<MeshAsset>();
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
 					asset->m_AssetName = dirEntry.path().stem().string();
@@ -65,7 +68,7 @@ namespace Proof
 				}
 
 				if (GetAssetType(dirEntry.path().string()) == MaterialAsset::GetAssetTypeStaticName()) {
-					MaterialAsset* asset = new MaterialAsset;
+					Count<MaterialAsset> asset = CreateCount<MaterialAsset>();
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
 					asset->m_AssetName = dirEntry.path().stem().string();

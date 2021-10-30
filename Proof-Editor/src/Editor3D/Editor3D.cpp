@@ -366,6 +366,7 @@ namespace Proof
 						MathResource::DecomposeTransform(transform,translation,rotation,scale);
 
 						glm::vec3 deltaRotation = rotation - glm::vec3{tc.Rotation};
+						deltaRotation*=0.5;
 						tc.Location = translation;
 						tc.Rotation += deltaRotation;
 						tc.Scale = scale;
@@ -380,9 +381,9 @@ namespace Proof
 						MathResource::DecomposeTransform(worldTransform,translation,rotation,scale);
 
 						glm::vec3 deltaRotation = rotation - glm::vec3{tc.Rotation};
-						tc.Location += translation;
-						tc.Rotation += deltaRotation;
-						tc.Scale += scale;
+						tc.Location = translation;
+						tc.Rotation = deltaRotation;
+						tc.Scale = scale;
 					}
 				}
 				

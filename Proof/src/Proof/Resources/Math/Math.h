@@ -16,7 +16,7 @@ namespace Proof
 		* @return the square root of the param Number
 		*/
 		template<typename T>
-		static T SquareRoot(T Number) {
+		inline static T SquareRoot(T Number) {
 			return sqrtf(Number);
 		}
 		/**

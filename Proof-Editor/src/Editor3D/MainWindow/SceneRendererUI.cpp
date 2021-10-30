@@ -4,7 +4,7 @@
 #include "../ImGUIAPI.h"
 #include "SceneHierachyPanel.h"
 #include "Proof/Utils/PlatformUtils.h"
-
+#include "Proof/Scene/Component.h"
 namespace Proof{
 	SceneRendererUI::SceneRendererUI(MeshAsset* asset) {
 		m_World = new World();
@@ -12,7 +12,7 @@ namespace Proof{
 		tempEntity =m_World->CreateEntity(asset->GetAssetName());
 		mesh =tempEntity.AddComponent<MeshComponent>();
 		tempEntity.GetComponent<TransformComponent>()->Location.Z-=10;
-		mesh->AssetID = asset->GetID();
+		mesh->m_MeshAssetPointerID = asset->GetID();
 		m_WorldRenderer = {m_World,1300,800};
 		m_Type= SceneRendererType::MeshAsset;
 	}

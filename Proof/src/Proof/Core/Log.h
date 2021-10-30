@@ -9,10 +9,10 @@ namespace Proof
 	class Proof_API Log {
 	public:
 		static void Init();
-		static Count<Logger::Log>& GetEngineLogger() {
+		static const Count<Logger::Log>& GetEngineLogger() {
 			return EngineLogger;
 		}
-		static	Count<Logger::Log>& GetClientLogger() {
+		static const Count<Logger::Log>& GetClientLogger() {
 			return ClientLogger;
 		}
 		static enum LogType {
