@@ -6,22 +6,20 @@
 
 namespace Proof
 {
-
-	MeshAsset::MeshAsset(const std::string& FilePath,const std::string& AssetSavePath) {
+	using AssetID =uint64_t;
+	MeshAsset::MeshAsset(const std::string& meshFilePath,const std::string& savePath) {
 		m_ID = AssetManager::CreateID();
-		m_Mesh = new Mesh(FilePath);
-		m_AssetType = AssetType::MeshAsset;
-		m_Path = AssetSavePath;
-		m_PathOfPointerToFile = FilePath;
+		m_Mesh = CreateSpecial<Mesh>(meshFilePath);
+		m_SavePath = savePath;
+		m_MeshFilePath = meshFilePath;
 		SaveAsset();
 	}
 	void MeshAsset::SaveAsset() {
 		YAML::Emitter out;
 		out<<YAML::BeginMap;
-		out<<YAML::Key<<"AssetTypeString"<<YAML::Value<<"AssetType::MeshAsset";
-		out << YAML::Key << "AssetType" << YAML::Value << (int)m_AssetType;
+		out<<YAML::Key<<"AssetType"<<YAML::Value<<GetAssetType();
 		out << YAML::Key << "ID" << YAML::Value << m_ID;
-		out << YAML::Key << "Model" << YAML::Value << m_PathOfPointerToFile;
+		out << YAML::Key << "Model" << YAML::Value << m_MeshFilePath;
 		out << YAML::Key << "SubMeshes";
 		out << YAML::Flow;
 		out << YAML::BeginSeq;
@@ -38,51 +36,34 @@ namespace Proof
 		out<<YAML::Key<<"Enabled"<<m_Mesh->m_Enabled;
 		out<<YAML::Key<<"FaceCulling"<<m_Mesh->m_FaceCulling;
 		out << YAML::EndMap;
-		std::ofstream found(m_Path);
+		std::ofstream found(m_SavePath);
 		found<<out.c_str();
 		found.close();
 	}
 	bool MeshAsset::LoadAsset(const std::string& FilePath){
-		m_Path = FilePath;
+		m_SavePath = FilePath;
 		YAML::Node data = YAML::LoadFile(FilePath);
-		if (!data["AssetTypeString"]) // if there is no scene no
+		if (!data["AssetType"]) // if there is no scene no
 			return false;
-		m_AssetType =(AssetType) data["AssetType"].as<uint32_t>();
-		m_ID= data["ID"].as<uint32_t>();
-		m_PathOfPointerToFile = data["Model"].as<std::string>();
+		m_ID= data["ID"].as<AssetID>();
+		m_MeshFilePath = data["Model"].as<std::string>();
 
-		if(m_Mesh == nullptr){
-			m_Mesh = new Mesh{m_PathOfPointerToFile};
-			if (data["SubMeshes"]) {
-				for (auto& subMesh : data["SubMeshes"]) {
-					uint32_t index = subMesh.as<uint32_t>();
-					if (m_Mesh->GetSubMeshes().size() > index) {
-						m_Mesh->meshes[index].m_Enabled = false;
-					}
+		m_Mesh = CreateSpecial<Mesh>(m_MeshFilePath);
+		if (data["SubMeshes"]) {
+			for (auto& subMesh : data["SubMeshes"]) {
+				uint32_t index = subMesh.as<uint32_t>();
+				if (m_Mesh->GetSubMeshes().size() > index) {
+					m_Mesh->meshes[index].m_Enabled = false;
 				}
 			}
-			m_Mesh->m_Enabled = data["Enabled"].as<bool>();
-			m_Mesh->m_FaceCulling = data["FaceCulling"].as<bool>();
-		}else{
-			delete m_Mesh;
-			m_Mesh = new Mesh{m_PathOfPointerToFile};
-			if (data["SubMeshes"]) {
-				for (auto& subMesh : data["SubMeshes"]) {
-					uint32_t index = subMesh.as<uint32_t>();
-					if (m_Mesh->GetSubMeshes().size() > index) {
-						m_Mesh->meshes[index].m_Enabled = false;
-					}
-				}
-			}
-			m_Mesh->m_Enabled= data["Enabled"].as<bool>();
-			m_Mesh->m_FaceCulling= data["FaceCulling"].as<bool>();
 		}
+		m_Mesh->m_Enabled = data["Enabled"].as<bool>();
+		m_Mesh->m_FaceCulling = data["FaceCulling"].as<bool>();
 		return true;
 	}
-	void MeshAsset::Reinstate(const std::string& path){
-		m_PathOfPointerToFile = path;
-		delete m_Mesh;
-		m_Mesh = new Mesh(path);
+	void MeshAsset::Reinstate(const std::string& meshFilepath){
+		m_MeshFilePath = meshFilepath;
+		m_Mesh = CreateSpecial<Mesh>(m_MeshFilePath);
 	}
 	uint32_t MeshAsset::GetImageID() {
 		return InstancedRenderer3D::m_WhiteTexture->GetID();

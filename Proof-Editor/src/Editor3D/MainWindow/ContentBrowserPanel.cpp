@@ -200,7 +200,7 @@ namespace Proof
 							Asset* Temp =nullptr;
 							Temp = AssetManager::GetAsset<Asset>(ID);
 							if(Temp != nullptr){
-								if (ImGui::ImageButton((ImTextureID)(Temp->IsImageIDNUll() ==false? Temp->GetImageID(): m_FileIcon->GetID()),{thumbnailSize,thumbnailSize})) {
+								if (ImGui::ImageButton((ImTextureID)(Temp->IsEditorImageNull() ==false? Temp->GetIamgeEdtorID(): m_FileIcon->GetID()),{thumbnailSize,thumbnailSize})) {
 								}
 								if(ImGui::IsItemHovered()&& ImGui::IsMouseDown(0)==false){
 									FileDragSource = m_CurrentDirectory.string() + "\\" + filenameNoStem;
@@ -208,15 +208,15 @@ namespace Proof
 								}
 								if(ImGui::BeginDragDropSource()){
 									AssetID staticID =GetIDCurrentDirectory(FileDragSource);
-									ImGui::SetDragDropPayload(AssetManager::GetAsset<Asset>(staticID)->GetAssetTypeName().c_str(),&staticID,sizeof(AssetID));
+									ImGui::SetDragDropPayload(AssetManager::GetAsset<Asset>(staticID)->GetAssetType().c_str(),&staticID,sizeof(AssetID));
 
-									ImGui::Image((ImTextureID)(Temp->IsImageIDNUll() == false ? Temp->GetImageID() : m_FileIcon->GetID()),{60,60}); 
+									ImGui::Image((ImTextureID)(Temp->IsEditorImageNull() == false ? Temp->GetIamgeEdtorID() : m_FileIcon->GetID()),{60,60});
 									ImGui::Text(FileDragSourceName.c_str());
 									ImGui::EndDragDropSource();
 								}
 
 						
-								if(Temp->GetAssetTypeName() == MaterialAsset::GetAssetTypeStaticName()&& ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)){
+								if(Temp->GetAssetType() == MaterialAsset::GetAssetType()&& ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)){
 									MaterialAsset * TempMaterial = dynamic_cast<MaterialAsset*>(Temp);
 									m_owner->CreateMaterialEdtior(TempMaterial);
 									//ImGui::Begin("Material Editor");
@@ -226,7 +226,7 @@ namespace Proof
 									//ImGui::End();
 								}
 
-								if (Temp->GetAssetTypeName() == MeshAsset::GetAssetTypeStaticName() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+								if (Temp->GetAssetType() == MeshAsset::GetAssetType() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 									MeshAsset* tempAsset= dynamic_cast<MeshAsset*>(Temp);
 									m_owner->CreateMeshEditor(tempAsset);
 									
@@ -342,7 +342,7 @@ namespace Proof
 		}
 	}
 	void ContentBrowserPanel::NewMaterialAsset(const std::string& NewFilePath) {
-			Count<MaterialAsset> TempAsset = CreateCount<MaterialAsset>("null",NewFilePath);
+			Count<MaterialAsset> TempAsset = CreateCount<MaterialAsset>(NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
 	}
 	AssetID ContentBrowserPanel::GetIDCurrentDirectory(const std::string& Path) {

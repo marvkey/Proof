@@ -1,27 +1,24 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Resources/Asset/Asset.h"
+#include "Proof/Scene/Mesh.h"
 namespace Proof
 {
 	class Proof_API MeshAsset: public Asset {
 	public:
-		MeshAsset(const std::string& FilePath,const std::string& AssetSavePath);
+		MeshAsset(const std::string& meshFilePath,const std::string& savePath);
 		virtual void SaveAsset() override;
 		virtual bool LoadAsset(const std::string& FilePath)override;
 		
-		virtual std::string GetAssetTypeName() {
-			return "AssetType::MeshAsset";
+		void Reinstate(const std::string& meshFilepath);
+		const static std::string& GetAssetType() {
+			static std::string assetType = "AssetType::MeshAsset";
+			return assetType;
 		}
-		void Reinstate(const std::string& path);
-		static std::string GetAssetTypeStaticName(){
-			return "AssetType::MeshAsset";
-		}
-		MeshAsset() {
-			m_AssetType = AssetType::MeshAsset;
-		};
+		MeshAsset(){}
 		
 		class Mesh* GetMesh()const{
-			return m_Mesh;
+			return m_Mesh.get();
 		}
 		virtual ~MeshAsset(){}
 
@@ -30,9 +27,9 @@ namespace Proof
 		}
 		virtual uint32_t GetImageID();
 	private:
-		class Mesh* m_Mesh =nullptr;
+		Special<class Mesh> m_Mesh =nullptr;
 		friend class AssetManager;
-
+		std::string m_MeshFilePath;
 	};
 }
 

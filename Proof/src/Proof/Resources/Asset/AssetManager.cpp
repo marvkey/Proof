@@ -51,15 +51,15 @@ namespace Proof
 			}
 			if (IsFileValid(dirEntry.path().string())) {
 
-				if (GetAssetType(dirEntry.path().string()) == "AssetType::Texture2DAsset") {
+				if (GetAssetType(dirEntry.path().string()) == Texture2DAsset::GetAssetType()) {
 					Count<Texture2DAsset> asset = CreateCount<Texture2DAsset>();
 					asset->LoadAsset(dirEntry.path().string());
-					AssetManager::NewAsset(asset->GetID(),asset);
 					asset->m_AssetName = dirEntry.path().stem().string();
+					AssetManager::NewAsset(asset->GetID(),asset);
 					continue;
 				}
 
-				if (GetAssetType(dirEntry.path().string()) == "AssetType::MeshAsset") {
+				if (GetAssetType(dirEntry.path().string()) == MeshAsset::GetAssetType()) {
 					Count<MeshAsset> asset = CreateCount<MeshAsset>();
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
@@ -67,11 +67,12 @@ namespace Proof
 					continue;
 				}
 
-				if (GetAssetType(dirEntry.path().string()) == MaterialAsset::GetAssetTypeStaticName()) {
+				if (GetAssetType(dirEntry.path().string()) == MaterialAsset::GetAssetType()) {
 					Count<MaterialAsset> asset = CreateCount<MaterialAsset>();
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
 					asset->m_AssetName = dirEntry.path().stem().string();
+					continue;
 				}
 			}
 		}

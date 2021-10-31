@@ -62,6 +62,11 @@ namespace Proof{
 			return;
 		auto& tc = entity.GetComponent<TagComponent>()->GetName();
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		
+		if(entity.GetComponent<SubEntityComponet>()->m_AllSubEntity.size()==0){
+			flags |=ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
+		}
+		
 		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(EntityID)(uint32_t)entity.GetID(),flags,tc.c_str());
 		if (ImGui::BeginDragDropTarget()) {
@@ -77,7 +82,7 @@ namespace Proof{
 		if (ImGui::BeginDragDropSource()) {
 			ImGui::SetDragDropPayload("EntityNewOwner",&m_SelectedEntity,sizeof(Entity));
 
-			ImGui::TreeNodeEx((void*)&(m_SelectedEntity),flags,tc.c_str());
+			ImGui::TreeNodeEx((void*)&(m_SelectedEntity),ImGuiTreeNodeFlags_SpanFullWidth,tc.c_str());
 			ImGui::EndDragDropSource();
 		}
 		if (ImGui::IsItemClicked() || ImGui::IsItemClicked(1)) {
@@ -118,13 +123,9 @@ namespace Proof{
 		}
 		if (opened) {
 			
-			if (entity) {
-				if (entity.HasComponent<SubEntityComponet>()) {
-					if (entity.GetComponent<SubEntityComponet>()->m_AllSubEntity.size() > 0) {
-						for (Entity& i : entity.GetComponent<SubEntityComponet>()->m_AllSubEntity) {
-							DrawEntityNode(i);
-						}
-					}
+			if (entity.GetComponent<SubEntityComponet>()->m_AllSubEntity.size() > 0) {
+				for (Entity& i : entity.GetComponent<SubEntityComponet>()->m_AllSubEntity) {
+					DrawEntityNode(i);
 				}
 			}
 			
@@ -262,7 +263,7 @@ namespace Proof{
 					if (ImGui::InputText("##Name",buffer,sizeof(buffer))) {
 						component.SetName(buffer);
 					}
-					ExternalAPI::ImGUIAPI::TextBar("Mesh",component.GetAsset()!=nullptr ? component.GetAsset()->GetAssetName():"null");
+					ExternalAPI::ImGUIAPI::TextBar("Mesh",component.GetAsset()!=nullptr ? component.GetAsset()->GetName():"null");
 					if (ImGui::BeginPopupContextItem("RemoveMesh")) {
 						ImGui::EndPopup();
 					}
@@ -274,14 +275,14 @@ namespace Proof{
 						ImGui::EndPopup();
 					}
 					if (ImGui::BeginDragDropTarget()) {
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetAssetTypeStaticName().c_str())) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetAssetType().c_str())) {
 							AssetID Data = *(const AssetID*)payload->Data;
 							component.m_MeshAssetPointerID = Data;
 						}
 						ImGui::EndDragDropTarget();
 					}
 
-					ExternalAPI::ImGUIAPI::TextBar("Material",component.HasMaterial()? AssetManager::GetAsset<Asset>(component.GetMaterialPointerID())->GetAssetName() : "null");
+					ExternalAPI::ImGUIAPI::TextBar("Material",component.HasMaterial()? AssetManager::GetAsset<Asset>(component.GetMaterialPointerID())->GetName(): "null");
 					if (ImGui::BeginPopupContextItem("RemoveMaterial")) {
 						ImGui::EndPopup();
 					}
@@ -293,7 +294,7 @@ namespace Proof{
 						ImGui::EndPopup();
 					}
 					if (ImGui::BeginDragDropTarget()) {
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MaterialAsset::GetAssetTypeStaticName().c_str())) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MaterialAsset::GetAssetType().c_str())) {
 							uint32_t Data = *(const uint32_t*)payload->Data;
 							component.m_MeshMaterialID = Data;
 							PF_ENGINE_INFO("DROPPED %i",Data);
@@ -332,7 +333,7 @@ namespace Proof{
 					}
 					
 					if (ImGui::BeginDragDropTarget()) {
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(Texture2DAsset::GetAssetTypeStaticName().c_str())) {
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(Texture2DAsset::GetAssetType().c_str())) {
 							AssetID Data = *(const AssetID*)payload->Data;
 							component.m_TextureAssetPointerID =Data;
 						}

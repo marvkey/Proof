@@ -16,7 +16,7 @@ namespace Proof
 	void MaterialEditorPanel::ImGuiRender(FrameTime deltaTime) {
 		if(m_ShowWindow==false)
 			return;
-		ImGui::Begin(m_MaterialAsset->GetAssetName().c_str(),&m_ShowWindow);
+		ImGui::Begin(m_MaterialAsset->GetName().c_str(),&m_ShowWindow);
 		{
 			ImGui::ColorEdit3("Colour",glm::value_ptr(m_MaterialAsset->m_Material.m_Colour));
 			ImGui::Image((ImTextureID)(m_MaterialAsset->m_Material.AlbedoTexture == nullptr ? whiteColourId : m_MaterialAsset->m_Material.AlbedoTexture->GetID()),{50,50});

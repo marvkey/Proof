@@ -7,33 +7,21 @@
 namespace Proof{
 	class Proof_API MaterialAsset:public Asset {
 	public:
-		MaterialAsset(const std::string& FilePath,const std::string& AssetSavePath);
+		MaterialAsset(const std::string& assetPath);
+		MaterialAsset()=default;
 		virtual void SaveAsset() override;
-		virtual bool LoadAsset(const std::string& FilePath)override;
-
-		MaterialAsset() {
-			m_AssetType = AssetType::MaterialAsset;
-		};
-
-		virtual ~MaterialAsset() {}
-
+		virtual bool LoadAsset(const std::string& filePath)override;
 		virtual bool IsImageIDNUll() {
 			return true;
 		}
-
 		virtual uint32_t GetImageID();
-
-		virtual std::string GetAssetTypeName() {
-			return "AssetType::MaterialAsset";
+		const static std::string& GetAssetType(){
+			static std::string assetType ="AssetType::MaterialAsset";
+			return assetType;
 		}
-
-		static std::string GetAssetTypeStaticName() {
-			return "AssetType::MaterialAsset";
-		}
-		Material GetMaterial();
+		const Material& GetMaterial()const;
 		Material m_Material;
 	private:
 		friend class AssetManager;
-
 	};
 }

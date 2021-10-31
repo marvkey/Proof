@@ -9,7 +9,7 @@ namespace Proof{
 	SceneRendererUI::SceneRendererUI(MeshAsset* asset) {
 		m_World = new World();
 		m_MeshAsset = asset;
-		tempEntity =m_World->CreateEntity(asset->GetAssetName());
+		tempEntity =m_World->CreateEntity(asset->GetName());
 		mesh =tempEntity.AddComponent<MeshComponent>();
 		tempEntity.GetComponent<TransformComponent>()->Location.Z-=10;
 		mesh->m_MeshAssetPointerID = asset->GetID();
@@ -41,7 +41,7 @@ namespace Proof{
 			SceneHierachyPanel::DrawVectorControl("Rotation",tempEntity.GetComponent<TransformComponent>()->Rotation,0,width * 0.25);
 			SceneHierachyPanel::DrawVectorControl("Scale",tempEntity.GetComponent<TransformComponent>()->Scale,1,width * 0.25);
 			if (m_MeshAsset != nullptr) {
-				ExternalAPI::ImGUIAPI::CheckBox(mesh->GetAsset()->GetAssetName(),&mesh->GetAsset()->GetMesh()->m_Enabled);
+				ExternalAPI::ImGUIAPI::CheckBox(mesh->GetAsset()->GetName(),&mesh->GetAsset()->GetMesh()->m_Enabled);
 				ImGui::NewLine();
 				for (SubMesh& subMesh : mesh->GetMesh()->meshes) {
 					ExternalAPI::ImGUIAPI::CheckBox(subMesh.GetName(),&subMesh.m_Enabled);
@@ -54,7 +54,7 @@ namespace Proof{
 	void SceneRendererUI::RenderAsset(FrameTime deltaTime){
 		ImGui::PushID(m_ID);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
-		if (ImGui::Begin(mesh->GetAsset()->GetAssetName().c_str(),&m_ShowWindow)) {
+		if (ImGui::Begin(mesh->GetAsset()->GetName().c_str(),&m_ShowWindow)) {
 			if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
 				m_WorldRenderer.SetRendererPause(false);
 			}
@@ -64,7 +64,7 @@ namespace Proof{
 			if (m_Type == SceneRendererType::MeshAsset)
 				MeshUI();
 			ImGui::SameLine();
-			ImGui::BeginChild(mesh->GetAsset()->GetAssetName().c_str());
+			ImGui::BeginChild(mesh->GetAsset()->GetName().c_str());
 			m_WorldRenderer.Renderer();
 			if (m_LastWidht != ImGui::GetWindowSize().x || m_LastHeight != ImGui::GetWindowSize().y) {
 				m_WorldRenderer.Resize(ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);

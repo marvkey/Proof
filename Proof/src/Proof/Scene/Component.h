@@ -165,13 +165,13 @@ namespace Proof
 
 		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
 		TransformComponent SpriteTransfrom;
-		Count<Texture2D> GetTexture() {
+		const Count<Texture2D>& GetTexture(){
 			if (GetAsset() != nullptr) {
-				return GetAsset()->m_Texture;
+				return m_TextureAssetPointer->GetTexture();
 			}
 			return nullptr;
 		}
-		Texture2DAsset* GetAsset() {
+		 Texture2DAsset* GetAsset(){
 			if (m_TextureAssetPointerID == 0)
 				return nullptr;
 			if (m_TextureAssetPointer == nullptr)

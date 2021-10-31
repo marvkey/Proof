@@ -4,41 +4,38 @@
 #include <yaml-cpp/yaml.h>
 
 namespace Proof{
-	Texture2DAsset::Texture2DAsset(const std::string& FilePath,const std::string& AssetSavePath) {
+	Texture2DAsset::Texture2DAsset(const std::string& texturePath,const std::string& savePath) {
 		m_ID = AssetManager::CreateID();
 
-		m_Texture =Texture2D::Create(FilePath);
-		m_AssetType = AssetType::Texture2DAsset;
-		m_Path = AssetSavePath;
-		m_PathOfPointerToFile = FilePath;
+		m_Texture =Texture2D::Create(texturePath);
+		m_SavePath = savePath;
+		m_TexturePath = texturePath;
 		SaveAsset();
 	}
 	void Texture2DAsset::SaveAsset() {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "AssetTypeString" << YAML::Value << "AssetType::Texture2DAsset";
-		out << YAML::Key << "AssetType" << YAML::Value << (int)m_AssetType;
+		out << YAML::Key << "AssetType" << YAML::Value << GetAssetType();
 		out << YAML::Key << "ID" << YAML::Value << m_ID;
-		out << YAML::Key << "Texture2D" << YAML::Value << m_PathOfPointerToFile;
+		out << YAML::Key << "Texture2D" << YAML::Value << m_TexturePath;
 		out << YAML::EndMap;
 
-		std::ofstream found(m_Path);
+		std::ofstream found(m_SavePath);
 		found << out.c_str();
 		found.close();
 	}
 	
-	bool Texture2DAsset::LoadAsset(const std::string& FilePath) {
-		m_Path = FilePath;
-		YAML::Node data = YAML::LoadFile(FilePath);
+	bool Texture2DAsset::LoadAsset(const std::string& filePath) {
+		m_SavePath = filePath;
+		YAML::Node data = YAML::LoadFile(m_SavePath);
 
-		if (!data["AssetTypeString"]) // if there is no scene no
+		if (!data["AssetType"]) // if there is no scene no
 			return false;
 
-		m_AssetType = (AssetType)data["AssetType"].as<uint32_t>();
-		m_ID = data["ID"].as<uint32_t>();
-		m_PathOfPointerToFile = data["Texture2D"].as<std::string>();
+		m_ID = data["ID"].as<AssetID>();
+		m_TexturePath = data["Texture2D"].as<std::string>();
 
-		m_Texture = Texture2D::Create(m_PathOfPointerToFile);
+		m_Texture = Texture2D::Create(m_TexturePath);
 		return true;
 	}
 	uint32_t Texture2DAsset::GetImageID() {

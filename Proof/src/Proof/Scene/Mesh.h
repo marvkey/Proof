@@ -10,7 +10,6 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "Material.h"
-#include "Mesh.h"
 namespace Proof
 {
     class SubMesh {

@@ -1,5 +1,4 @@
-AssetTypeString: AssetType::MeshAsset
-AssetType: 2
+AssetType: AssetType::MeshAsset
 ID: 2122
 Model: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\Chest.obj
 SubMeshes: []

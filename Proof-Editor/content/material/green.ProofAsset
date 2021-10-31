@@ -1,5 +1,4 @@
-AssetTypeString: AssetType::MaterialAsset
-AssetType: 3
+AssetType: AssetType::MaterialAsset
 ID: 7493
 AlbedoColour: [0.282258153, 1, 0]
 Roughness: 1

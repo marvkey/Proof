@@ -6,22 +6,17 @@
 #include "Proof/Resources/ExternalCreations.h"
 
 namespace Proof{
-	MaterialAsset::MaterialAsset(const std::string& FilePath,const std::string& AssetSavePath) {
+	MaterialAsset::MaterialAsset(const std::string& assetSavePath) {
 		m_ID = AssetManager::CreateID();
-		m_AssetType = AssetType::MaterialAsset;
-		m_Path = AssetSavePath;
-		m_PathOfPointerToFile = FilePath;
+		m_SavePath = assetSavePath;
 		SaveAsset();
 	}
 	void MaterialAsset::SaveAsset() {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "AssetTypeString" << YAML::Value << "AssetType::MaterialAsset";
-		out << YAML::Key << "AssetType" << YAML::Value << (int)m_AssetType;
+		out << YAML::Key << "AssetType" << YAML::Value << GetAssetType();
 		out << YAML::Key << "ID" << YAML::Value << m_ID;
-		//out << YAML::Key << "Ambient"<<YAML::Value << m_Material.m_Ambient;
-		//out << YAML::Key << "Diffuse"<<YAML::Value << m_Material.m_Diuffuse;
-		//out << YAML::Key << "Specular"<<YAML::Value << m_Material.m_Specular;
+
 		out << YAML::Key << "AlbedoColour"<<YAML::Value << m_Material.m_Colour;
 		out << YAML::Key << "Roughness"<<YAML::Value << m_Material.m_Roughness;
 		out << YAML::Key << "Metallness"<<YAML::Value << m_Material.m_Metallness;
@@ -33,22 +28,16 @@ namespace Proof{
 		out << YAML::Key << "RoughnessTexturePath" << YAML::Value << (m_Material.RoughnessTexture!= nullptr ? m_Material.RoughnessTexture->GetPath() : temp);
 
 		out << YAML::EndMap;
-		std::ofstream found(m_Path);
+		std::ofstream found(m_SavePath);
 		found << out.c_str();
 		found.close();
 	}
-	bool MaterialAsset::LoadAsset(const std::string& FilePath) {
-		m_Path = FilePath;
-		YAML::Node data = YAML::LoadFile(FilePath);
-		if (!data["AssetTypeString"]) // if there is no scene no
+	bool MaterialAsset::LoadAsset(const std::string& filePath) {
+		m_SavePath = filePath;
+		YAML::Node data = YAML::LoadFile(m_SavePath);
+		if (!data["AssetType"]) // if there is no scene no
 			return false;
-		
-		m_AssetType = (AssetType)data["AssetType"].as<uint32_t>();
-		m_ID = data["ID"].as<uint32_t>();
-		
-		//m_Material.m_Ambient= data["Ambient"].as<glm::vec3>();
-		//m_Material.m_Diuffuse= data["Diffuse"].as<glm::vec3>();
-		//m_Material.m_Specular= data["Specular"].as<glm::vec3>();
+		m_ID = data["ID"].as<AssetID>();
 		
 		m_Material.m_Colour= data["AlbedoColour"].as<glm::vec3>();
 		m_Material.m_Metallness = data["Metallness"].as<float>();
@@ -71,13 +60,12 @@ namespace Proof{
 		if (RoughnessTexture.empty() == false) {
 			m_Material.RoughnessTexture = Texture2D::Create(RoughnessTexture);
 		}
-		
 		return true;
 	}
 	uint32_t MaterialAsset::GetImageID() {
 		return InstancedRenderer3D::m_WhiteTexture->GetID();
 	}
-	Material MaterialAsset::GetMaterial() {
+	const Material& MaterialAsset::GetMaterial()const {
 		return m_Material;
 	}
 }
