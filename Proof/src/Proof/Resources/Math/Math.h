@@ -112,7 +112,21 @@ namespace Proof
 		* @param Min: minimum number generated
 		* @ max: maximum number gnerated
 		*/
+		template<typename T>
+		static T RandUINT(T Min,T Max) {
+			if (Min == 0)
+				return rand() % (Max + 1);
+			return Min + (rand() % Max);
+		}
+		template<>
 		inline static uint32_t RandUINT(uint32_t Min,uint32_t Max) {
+			if (Min == 0)
+				return rand() % (Max + 1);
+			return Min + (rand() % Max);
+		}
+
+		template<>
+		inline static uint64_t RandUINT(uint64_t Min,uint64_t Max) {
 			if (Min == 0)
 				return rand() % (Max + 1);
 			return Min + (rand() % Max);

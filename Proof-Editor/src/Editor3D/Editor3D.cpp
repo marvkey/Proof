@@ -24,6 +24,7 @@
 #include "MainWindow/SceneRendererUI.h"
 #include "MainWindow/MaterialEditorPanel.h"
 #include "Proof/Scene/ComponentUnOptimized.h"
+#include "Proof/Resources/Math/Random.h"
 namespace Proof
 {
 	glm::vec4 ClearColour;
@@ -128,7 +129,6 @@ namespace Proof
 			GuizmoType = ImGuizmo::OPERATION::SCALE;
 		}
 
-		
 		if(ActiveWorld->m_CurrentState == WorldState::Edit)
 			ActiveWorld->OnUpdateEditor(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		else if(ActiveWorld->m_CurrentState == WorldState::Play)

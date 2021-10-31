@@ -25,9 +25,9 @@ namespace Proof
 		return s_AssetManager->m_AllAssets.find(ID) != s_AssetManager->m_AllAssets.end();
 	}
 	AssetID AssetManager::CreateID() {
-		AssetID ID = Math::RandUINT(1,18000000000000000000);
+		AssetID ID = Math::RandUINT<uint64_t>(1,18000000000000000000);
 		while (HasID(ID) == true) {
-			AssetID ID = Math::RandUINT(1,18000000000000000000);
+			AssetID ID = Math::RandUINT<uint64_t>(1,18000000000000000000);
 		}
 		return ID;
 	}

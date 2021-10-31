@@ -7,7 +7,7 @@
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Resources/Asset/AssetManager.h"
-
+#include "Proof/Resources/Math/Random.h"
 namespace Proof {
     WindowsWindow* Application::MainWindow = nullptr;
     Count<ScreenFrameBuffer> Application::ScreenFrameBuffer = nullptr;
@@ -31,6 +31,8 @@ namespace Proof {
         ScreenFrameBuffer->UnBind();
         
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
+        Random::RandomInit();
+
     }
 
     void Application::OnEvent(Event& e) {

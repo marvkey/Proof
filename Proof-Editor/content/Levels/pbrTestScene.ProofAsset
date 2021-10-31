@@ -13,7 +13,7 @@ Entities:
     MeshComponent:
       Name: Default
       MeshAssetPointerID: 12574
-      MaterialPointerID: 27537
+      MaterialPointerID: 0
   - Entity: 22824
     TagComponent:
       Tag: Rocket
@@ -51,7 +51,7 @@ Entities:
     MeshComponent:
       Name: Default
       MeshAssetPointerID: 12067
-      MaterialPointerID: 12014
+      MaterialPointerID: 0
   - Entity: 30124
     TagComponent:
       Tag: second sphere
@@ -120,7 +120,7 @@ Entities:
     TransformComponent:
       Location: [-6.50099993, 34.2999992, -3.9000001]
       Rotation: [0, 0, 0]
-      Scale: [13.2535362, 6.95295906, 13.0249252]
+      Scale: [13.2535362, 6.95295906, 15.9240847]
     SubEntityComponet:
       OwnerEntityID: 0
       SubEntities: []
