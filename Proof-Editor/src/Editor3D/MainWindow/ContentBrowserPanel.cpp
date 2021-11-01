@@ -208,7 +208,7 @@ namespace Proof
 								}
 								if(ImGui::BeginDragDropSource()){
 									AssetID staticID =GetIDCurrentDirectory(FileDragSource);
-									ImGui::SetDragDropPayload(AssetManager::GetAsset<Asset>(staticID)->GetAssetType().c_str(),&staticID,sizeof(AssetID));
+									ImGui::SetDragDropPayload(AssetManager::GetAsset<Asset>(staticID)->GetAssetTypeVirtual().c_str(),&staticID,sizeof(AssetID));
 
 									ImGui::Image((ImTextureID)(Temp->IsEditorImageNull() == false ? Temp->GetIamgeEdtorID() : m_FileIcon->GetID()),{60,60});
 									ImGui::Text(FileDragSourceName.c_str());
@@ -216,7 +216,7 @@ namespace Proof
 								}
 
 						
-								if(Temp->GetAssetType() == MaterialAsset::GetAssetType()&& ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)){
+								if(Temp->GetAssetTypeVirtual() == MaterialAsset::GetAssetType()&& ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)){
 									MaterialAsset * TempMaterial = dynamic_cast<MaterialAsset*>(Temp);
 									m_owner->CreateMaterialEdtior(TempMaterial);
 									//ImGui::Begin("Material Editor");
@@ -226,7 +226,7 @@ namespace Proof
 									//ImGui::End();
 								}
 
-								if (Temp->GetAssetType() == MeshAsset::GetAssetType() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+								if (Temp->GetAssetTypeVirtual() == MeshAsset::GetAssetType() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 									MeshAsset* tempAsset= dynamic_cast<MeshAsset*>(Temp);
 									m_owner->CreateMeshEditor(tempAsset);
 									
@@ -352,7 +352,7 @@ namespace Proof
 
 		while (std::getline(testFile,line)) {
 			if (line.empty() ==false) { // first line
-				if(line.substr(0,16) == "AssetTypeString:"){
+				if(line.substr(0,10) == "AssetType:"){
 					break;
 				}
 				return 0;

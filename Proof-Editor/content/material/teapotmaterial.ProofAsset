@@ -1,0 +1,10 @@
+AssetType: AssetType::MaterialAsset
+ID: 24531
+AlbedoColour: [0.782258034, 0.0946279913, 0.510533333]
+Roughness: 1
+Metallness: 12
+AO: 1
+MetallicTexturePath: ""
+AlbedoTexturePath: ""
+NormalTexturePath: ""
+RoughnessTexturePath: ""

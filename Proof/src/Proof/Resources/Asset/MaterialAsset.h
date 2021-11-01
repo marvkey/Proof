@@ -19,6 +19,9 @@ namespace Proof{
 			static std::string assetType ="AssetType::MaterialAsset";
 			return assetType;
 		}
+		virtual const std::string& GetAssetTypeVirtual()const {
+			return GetAssetType();
+		};
 		const Material& GetMaterial()const;
 		Material m_Material;
 	private:

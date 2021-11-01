@@ -4,10 +4,10 @@
 #include "Platform/OpenGL/OpenGLTexture.h"
 //#include "Platform/OpenGL/OpenGLCubeMap.h"
 namespace Proof {
-	Count<Texture2D> Texture2D::Create(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType) {
+	Count<Texture2D> Texture2D::Create(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType,bool usWrap ) {
 		switch (RendererAPI::GetAPI()) {
 		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
-		case RendererAPI::API::OpenGL: return CreateCount<OpenGLTexture2D>(width,height,dataFormat,internalFormat,WrapS,WrapT,MinFilter,MagFilter,baseType);
+		case RendererAPI::API::OpenGL: return CreateCount<OpenGLTexture2D>(width,height,dataFormat,internalFormat,WrapS,WrapT,MinFilter,MagFilter,baseType,usWrap );
 
 		}
 	}

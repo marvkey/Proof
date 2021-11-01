@@ -12,7 +12,9 @@ namespace Proof{
 		
 		virtual ~Texture2DAsset(){
 		}
-		
+		virtual const std::string& GetAssetTypeVirtual()const {
+			return GetAssetType();
+		};
 		const static std::string& GetAssetType() {
 			static std::string assetType = "AssetType::Texture2DAsset";
 			return assetType;

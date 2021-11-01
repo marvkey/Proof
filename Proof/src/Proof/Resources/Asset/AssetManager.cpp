@@ -44,7 +44,6 @@ namespace Proof
 		};
 	}
 	void AssetManager::InitilizeAssets(const std::string& Path) {
-		PF_ENGINE_TRACE("starting Loading All Assets %s",Path.c_str());
 		for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(Path)) {
 			if (dirEntry.is_directory()) {
 				continue;
@@ -80,12 +79,12 @@ namespace Proof
 	}
 	bool AssetManager::IsFileValid(const std::string& Path) {
 		YAML::Node data = YAML::LoadFile(Path);
-		if (!data["AssetTypeString"]) // if there is no scene no
+		if (!data["AssetType"]) // if there is no scene no
 			return false;
 		return true;
 	}
 	std::string AssetManager::GetAssetType(const std::string& Path) {
 		YAML::Node data = YAML::LoadFile(Path);
-		return data["AssetTypeString"].as<std::string>();
+		return data["AssetType"].as<std::string>();
 	}
 }

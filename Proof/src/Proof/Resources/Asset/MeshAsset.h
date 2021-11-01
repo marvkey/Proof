@@ -20,6 +20,9 @@ namespace Proof
 		class Mesh* GetMesh()const{
 			return m_Mesh.get();
 		}
+		virtual const std::string& GetAssetTypeVirtual()const {
+			return GetAssetType();
+		};
 		virtual ~MeshAsset(){}
 
 		virtual bool IsImageIDNUll(){

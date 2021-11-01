@@ -20,9 +20,18 @@ namespace Proof
 		static PhysicalBasedRenderer* GetRenderer();
 		static void EndContext();
 		static void Reset();
+	private:
+		static void RenderLight();
 	};
 	struct PhysicalBasedRendererVertex;
-
+	struct Proof_API DeferedRendering {
+		Count<class FrameBuffer> m_Gbuffer;
+		Count<class Texture2D>m_GPosition;
+		Count<class Texture2D>m_GNormal;
+		Count<class Texture2D>m_GAlbedo;
+		Count<class RenderBuffer>m_RenderBuffer;
+		DeferedRendering();
+	};
 	struct Proof_API PhysicalBasedRenderer {
 		Count<class VertexBuffer> m_VertexBuffer;
 		Count<class Shader> m_Shader;
@@ -32,7 +41,9 @@ namespace Proof
 		std::vector<PhysicalBasedRendererVertex>m_Transforms;
 		bool SceneHasAmountMeshes(uint32_t ID) { return m_AmountMeshes.find(ID) != m_AmountMeshes.end(); };
 		static Count<class Texture2D>m_WhiteTexture;
+		DeferedRendering m_DeferedRendering;
 	};
+	
 	struct Proof_API PhysicalBaseRendererGuide{
 	public:
 		static const uint32_t s_MaxMesh = 1000;

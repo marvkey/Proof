@@ -68,7 +68,6 @@ namespace Proof{
 			m_WorldRenderer.Renderer();
 			if (m_LastWidht != ImGui::GetWindowSize().x || m_LastHeight != ImGui::GetWindowSize().y) {
 				m_WorldRenderer.Resize(ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);
-
 				m_LastWidht = ImGui::GetWindowSize().x; m_LastHeight = ImGui::GetWindowSize().y;
 				if (m_WorldRenderer.GetRendererPaused() == true) {
 					m_WorldRenderer.SetRendererPause(false);

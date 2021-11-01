@@ -132,8 +132,8 @@ Entities:
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Location: [134.179092, 13.126976, 17.7990685]
-      Rotation: [-0.842343926, 0.507726073, -0.180751607]
+      Location: [102.369415, 7.60340595, 8.45261669]
+      Rotation: [-0.998784363, 0.0441781096, -0.0218659434]
       Scale: [1, 1, 0.00999999978]
     SubEntityComponet:
       OwnerEntityID: 0
@@ -143,8 +143,8 @@ Entities:
       NearPlane: 0.0520000011
       FarPlane: 1000
       FOV: 61.3639984
-      Width: 250
-      Height: 250
+      Width: 639
+      Height: 402
       UpVector: [0, 1, 0]
   - Entity: 28039
     TagComponent:
@@ -202,3 +202,17 @@ Entities:
       Name: Default
       MeshAssetPointerID: 0
       MaterialPointerID: 0
+  - Entity: 17650
+    TagComponent:
+      Tag: teapot
+    TransformComponent:
+      Location: [51.2370338, 4.20880413, -9.16333008]
+      Rotation: [0, 0, 0]
+      Scale: [0.461967021, 0.461967021, 0.461967021]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
+    MeshComponent:
+      Name: Default
+      MeshAssetPointerID: 10608
+      MaterialPointerID: 24531

@@ -61,6 +61,7 @@ namespace Proof {
 	};
 
 	enum class RenderBufferAttachment:uint32_t {
+		DepthComponent = GL_DEPTH_COMPONENT,
 		DepthComponent16 = GL_DEPTH_COMPONENT16,
 		DepthComponent24 = GL_DEPTH_COMPONENT24,
 		DepthComponent32F = GL_DEPTH_COMPONENT32F,

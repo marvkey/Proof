@@ -6,7 +6,7 @@ namespace Proof
 	public:
 		OpenGLTexture2D(const std::string& Path,TextureType _TextureType); // Transperant if the image is Png IT has an alpha channel
 		OpenGLTexture2D(uint32_t ImageWidth,uint32_t ImageHeight,TextureType _TextureType);
-		OpenGLTexture2D(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType);
+		OpenGLTexture2D(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType,bool usWrap=true);
 		virtual ~OpenGLTexture2D();
 		virtual void Bind(uint32_t Slot = 0)override;
 		virtual uint32_t GetID() { return TextureObject; }

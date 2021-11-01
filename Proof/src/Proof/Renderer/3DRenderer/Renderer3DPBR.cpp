@@ -133,7 +133,9 @@ namespace Proof{
 			
 			}
 			s_PBRInstance->m_Shader->Bind();
-			if(TempMesh->second.GetMesh()->m_FaceCulling=true)
+			// draw in wireframe
+			//glPolygonMode(GL_FRONT_AND_BACK,(int)GL_LINES); // keeps this need to put into our game
+			if(TempMesh->second.GetMesh()->m_FaceCulling==true)
 				RendererCommand::Enable(ProofRenderTest::CullFace);
 			if(TempMesh->second.GetMesh()->m_Enabled==true){
 				for(SubMesh& mesh: TempMesh->second.GetMesh()->meshes){
@@ -148,11 +150,12 @@ namespace Proof{
 					}
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
+					s_WorldDrawType= DrawType::Triangles;
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
 				}
 			}
-			if (TempMesh->second.GetMesh()->m_FaceCulling = true)
-				RendererCommand::Disable(ProofRenderTest::CullFace);
+			if (TempMesh->second.GetMesh()->m_FaceCulling == true)
+				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render settings
 			sizeOffset += TempAmountMeshes->second;
 			s_PBRInstance->m_Shader->UnBind();
 		}
@@ -165,5 +168,21 @@ namespace Proof{
 		s_DifferentID.clear();
 		s_PBRInstance->m_Transforms.clear();
 		NumLights=0;
+	}
+	void Renderer3DPBR::RenderLight() {}
+	DeferedRendering::DeferedRendering() {
+		m_Gbuffer = FrameBuffer::Create();
+		m_GPosition = Texture2D::Create(800,600,DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);
+		m_Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,0,m_GPosition->GetID());
+
+		m_GNormal = Texture2D::Create(800,600,DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);
+		m_Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,1,m_GNormal->GetID());
+
+		m_GAlbedo = Texture2D::Create(800,600,DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::UnsignedByte,false);
+		m_Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,2,m_GAlbedo->GetID());
+		unsigned int attachments[3] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2};
+		glDrawBuffers(3,attachments);
+		m_RenderBuffer = RenderBuffer::Create(RenderBufferAttachment::DepthComponent,800,600);
+		m_Gbuffer->AttachRenderBuffer(FrameBufferAttachmentType::DepthAttachment,m_RenderBuffer->GetID());
 	}
 }

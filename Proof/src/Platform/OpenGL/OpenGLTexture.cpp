@@ -57,13 +57,15 @@ namespace Proof
 		glTextureParameteri(TextureObject,GL_TEXTURE_WRAP_S,GL_REPEAT);
 		glTextureParameteri(TextureObject,GL_TEXTURE_WRAP_T,GL_REPEAT);
 	}
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType) {
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType,bool usWrap) {
 		glGenTextures(1,&TextureObject);
 		glBindTexture(GL_TEXTURE_2D,TextureObject);
 
 		glTexImage2D(GL_TEXTURE_2D,0,(uint32_t)internalFormat,width,height,0,(uint32_t)dataFormat,(uint32_t)baseType,nullptr);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,(uint32_t)WrapS);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,(uint32_t)WrapT);
+		if(usWrap){
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,(uint32_t)WrapS);
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,(uint32_t)WrapT);
+		}
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,(uint32_t)MinFilter);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,(uint32_t)MagFilter);
 	}

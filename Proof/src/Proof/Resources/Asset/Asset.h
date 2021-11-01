@@ -14,6 +14,10 @@ namespace Proof
 			static std::string assetType = "AssetType::None";
 			return assetType;
 		}
+
+		virtual const std::string& GetAssetTypeVirtual()const {
+			return GetAssetType();
+		};
 		virtual AssetID GetID() {
 			return m_ID;
 		}

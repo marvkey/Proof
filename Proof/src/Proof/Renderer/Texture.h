@@ -10,7 +10,8 @@ namespace Proof {
 	};
 	enum class type:uint32_t{
 		UnsignedInt =GL_UNSIGNED_INT,
-		Float =GL_FLOAT
+		Float =GL_FLOAT,
+		UnsignedByte = GL_UNSIGNED_BYTE
 	};
 	enum class InternalFormat:uint32_t {
 		R8 = GL_R8,
@@ -33,6 +34,7 @@ namespace Proof {
 		RG16U = GL_RG16UI,
 		RG32I = GL_RG32I,
 		RG32U = GL_RG32UI,
+		RGBA16F =GL_RGBA16F
 	};
 
 	enum class DataFormat:uint32_t {
@@ -45,7 +47,8 @@ namespace Proof {
 
 	enum class TextureBaseTypes:uint32_t{
 		ClampToEdge = GL_CLAMP_TO_EDGE,
-		Linear = GL_LINEAR
+		Linear = GL_LINEAR,
+		Nearest = GL_NEAREST
 	};
 	class Proof_API Texture2D: public Texture {
 	public:
@@ -60,7 +63,7 @@ namespace Proof {
 		virtual std::string GetPath() = 0;
 
 		virtual TextureType GetTextureType() = 0;
-		static Count<Texture2D> Create(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType);
+		static Count<Texture2D> Create(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType,bool usWrap = true);
 		static Count<Texture2D> Create(const std::string& Path,TextureType _TextureType = TextureType::None);
 		static Count<Texture2D>	Create(uint32_t ImageWidth,uint32_t ImageHeight,TextureType _TextureType= TextureType::None);
 	};
