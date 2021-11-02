@@ -31,6 +31,14 @@ namespace Proof {
 		Instaniate();
 	}
 
+	void OpenGLScreenFrameBuffer::ReadBuffer() {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER,m_ID);
+	}
+
+	void OpenGLScreenFrameBuffer::WriteBuffer(const uint32_t m_FrameBufferID) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER,m_FrameBufferID);
+	}
+
 	void OpenGLScreenFrameBuffer::Instaniate() {
 		glGenFramebuffers(1,&m_ID);
 		glBindFramebuffer(GL_FRAMEBUFFER,m_ID);

@@ -25,6 +25,8 @@ namespace Proof{
 		virtual void UnBind()=0;
 		
 		virtual uint32_t GetID()=0;
+		virtual void ReadBuffer() =0;
+		virtual void WriteBuffer(const uint32_t m_FrameBufferID)=0;
 		virtual void AttachColourTexture(FrameBufferTextureType type,uint32_t colourAttachPosition,uint32_t id,uint32_t level=0) =0;
 		virtual void AttachOtherTexture(FrameBufferAttachmentType type,FrameBufferTextureType textureType,uint32_t id,uint32_t level = 0)=0;
 

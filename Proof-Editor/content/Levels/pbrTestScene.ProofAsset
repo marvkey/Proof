@@ -143,8 +143,8 @@ Entities:
       NearPlane: 0.0520000011
       FarPlane: 1000
       FOV: 61.3639984
-      Width: 639
-      Height: 402
+      Width: 250
+      Height: 250
       UpVector: [0, 1, 0]
   - Entity: 28039
     TagComponent:
