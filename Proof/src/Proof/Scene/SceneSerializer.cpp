@@ -23,6 +23,13 @@ namespace Proof{
 				out<<YAML::Key<<"TagComponent";
 				out<<YAML::BeginMap; // tag component
 				out<<YAML::Key<<"Tag"<<YAML::Value<<tag;
+				out << YAML::Key << "tags";
+				out << YAML::Flow;
+				out << YAML::BeginSeq;
+				for (std::string& tag : Tag->m_Tags) {
+					out << tag;
+				}
+				out << YAML::EndSeq;
 				out << YAML::EndMap; // tag component
 				continue;
 			}
@@ -149,9 +156,20 @@ namespace Proof{
 
 				std::string name;
 				auto tagcomponent = entity["TagComponent"];
-				if(tagcomponent)
+				if(tagcomponent){
 					name =tagcomponent["Tag"].as<std::string>();
+					
+				}
 				Entity NewEntity = m_Scene->CreateEntity(name,EntID);
+				if(tagcomponent){
+					if (tagcomponent["tags"]) {
+						auto* tc = NewEntity.GetComponent<TagComponent>();
+
+						for (auto tag : tagcomponent["tags"]) {
+							tc->AddTag(tag.as<std::string>());
+						}
+					}
+				}
 				auto transformComponet = entity["TransformComponent"];
 				if(transformComponet){
 					auto* tc = NewEntity.GetComponent<TransformComponent>();

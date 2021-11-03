@@ -229,8 +229,31 @@ namespace Proof{
 		for(Component* Comp: *m_CurrentWorld->Registry.GetEntities().at(entity.GetID())){
 			TagComponent*Tag= dynamic_cast<TagComponent*>(Comp);
 			if(Tag != nullptr){
-				DrawComponents<TagComponent>("Tag",entity,Tag,IndexValue,[](auto& component) {
-					
+				DrawComponents<TagComponent>("Tag",entity,Tag,IndexValue,[](TagComponent& component) {
+					uint32_t iterate = 0;
+					if (ImGui::Button("Add tag")) {
+						component.AddTag(" ");
+					}
+					for (std::string& tag : component.m_Tags) {
+						char buffer[256];
+						memset(buffer,0,sizeof(buffer));
+						strcpy_s(buffer,sizeof(buffer),tag.c_str());
+						const std::string name = std::to_string(iterate);
+						ImGui::Text(name.c_str());
+						ImGui::SameLine();
+						ImGui::PushID(name.c_str());
+						if (ImGui::InputTextWithHint("##temp","tag",buffer,sizeof(buffer))) {
+							tag = buffer;
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("-",{20,20})) {
+							component.RemoveTag(iterate);
+						}
+						ImGui::PopID();
+
+						iterate++;
+
+					}
 				});
 				IndexValue += 1;
 				continue;
@@ -248,7 +271,7 @@ namespace Proof{
 
 			SubEntityComponet* subComponet = dynamic_cast<SubEntityComponet*>(Comp);
 			if(subComponet!=nullptr){
-				DrawComponents<TagComponent>("SubEntityComponet",entity,Tag,IndexValue,[](auto& component) {
+				DrawComponents<SubEntityComponet>("SubEntityComponet",entity,subComponet,IndexValue,[](SubEntityComponet& component) {
 
 				});
 				IndexValue += 1;

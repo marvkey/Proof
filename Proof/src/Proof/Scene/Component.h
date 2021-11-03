@@ -9,6 +9,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
+#include <string>
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
@@ -47,22 +48,31 @@ namespace Proof
 		TagComponent(const TagComponent&) = default;
 
 		void AddTag(const std::string& Tag) {
-			Tags.emplace_back(Tag);
-			Name = "Empty Entity";
+			m_Tags.emplace_back(Tag);
+			//Name = "Empty Entity";
 		}
 		bool HasTag(const std::string& Tag)const {
-			for (const std::string& TagName : Tags) {
+			for (const std::string& TagName : m_Tags) {
 				if (Tag == TagName) {
 					return true;
 				}
 			}
 			return false;
 		}
+
+		bool RemoveTag(uint32_t index){
+			if(index <=m_Tags.size()){
+				m_Tags.erase(m_Tags.begin()+ index);
+				return true;
+			}
+			return false;
+		};
 	private:
-		std::vector<std::string> Tags;
+		std::vector<std::string> m_Tags;
 		friend class Entity;
 		friend class World;
 		friend class SceneHierachyPanel;
+		friend class SceneSerializer;
 	};
 
 	struct Proof_API TransformComponent:public Component {
