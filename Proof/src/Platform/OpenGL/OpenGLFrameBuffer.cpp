@@ -17,10 +17,10 @@ namespace Proof
 		return m_ID;
 	}
 	void OpenGLFrameBuffer::ReadBuffer() {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER,m_ID);
 	}
 	void OpenGLFrameBuffer::WriteBuffer(const uint32_t m_FrameBufferID) {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER,m_FrameBufferID);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER,m_ID);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER,m_FrameBufferID);
 	}
 	void OpenGLFrameBuffer::AttachColourTexture(FrameBufferTextureType type,uint32_t colourAttachPosition,uint32_t id,uint32_t level) {
 		glBindFramebuffer(GL_FRAMEBUFFER,m_ID);

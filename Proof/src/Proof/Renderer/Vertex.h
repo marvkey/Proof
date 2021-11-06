@@ -3,6 +3,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "Proof/Resources/Math/Vector.h"
+
 namespace Proof
 {
     struct Vertex {

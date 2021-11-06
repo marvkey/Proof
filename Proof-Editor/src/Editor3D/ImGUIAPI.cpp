@@ -93,5 +93,10 @@ namespace Proof
 			ImGui::GetStyle().FrameRounding = 6;
 			ImGui::PopID();
 		}
+
+		static void InputText(const std::string& Name,const std::string& Text,float ColumnWidth){
+		
+			
+		}
 	}
 }

@@ -343,14 +343,14 @@ namespace Proof{
 					if(component.GetTexture() != nullptr){
 							ImGui::Image((ImTextureID)component.GetTexture()->GetID(),{30,30});
 					}else{
-						ImGui::Image((ImTextureID)InstancedRenderer3D::m_WhiteTexture->GetID(),{30,30});
+						ImGui::Image((ImTextureID)PhysicalBasedRenderer::m_WhiteTexture->GetID(),{30,30});
 					}
 					if(ImGui::BeginPopupContextItem("RemoveTexture")){
 						ImGui::EndPopup();
 					}
 					if (ImGui::BeginPopup("RemoveTexture")) {
 						if (ImGui::MenuItem("Remove Texture")) {
-							component.m_TextureAssetPointerID = 0;
+							component.RemoveTexture();
 						}
 						ImGui::EndPopup();
 					}
@@ -470,9 +470,13 @@ namespace Proof{
 					ImGui::NewLine();
 					
 					ImGui::SliderFloat("Field ov fiew",&CameraComp.m_FovDeg,0,360);
-					ImGui::SliderFloat("Near plane",&CameraComp.m_NearPlane,-1,1);
+								ImGui::SliderFloat("Near plane",&CameraComp.m_NearPlane,-1,1);
 					ImGui::SliderFloat("Far plane",&CameraComp.m_FarPlane,0,10000);
-
+					if(ImGui::IsItemHovered()){
+						ImGui::BeginTooltip();
+						ImGui::Text("Setting to 0 means you can see any object no matter how far away it is");
+						ImGui::EndTooltip();
+					}
 					ExternalAPI::ImGUIAPI::CheckBox("set Automatic resize",&CameraComp.m_AutoSetDimension);
 					if(CameraComp.m_AutoSetDimension ==false){
 						int tempWidth =(int)CameraComp.m_Width;

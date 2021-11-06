@@ -196,6 +196,11 @@ namespace Proof
 			m_TextureAssetPointer = nullptr;
 			return nullptr;
 		}
+
+		void RemoveTexture(){
+			m_TextureAssetPointerID = 0;
+			m_TextureAssetPointer = nullptr;
+		}
 	private:
 		friend class Entity;
 		friend class World;

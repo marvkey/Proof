@@ -18,8 +18,7 @@ namespace Proof {
     Application::Application(){
         srand(time(NULL));
         Proof::Log::Init();
-        MainWindow = new WindowsWindow(); // this is the size of our current second monitor
-        MainWindow->createWindow();
+        MainWindow = new WindowsWindow(); 
 
         m_GraphicsContext =GraphicsContext::Create(static_cast<Window*>(MainWindow));
         m_GraphicsContext->Init();
@@ -108,10 +107,9 @@ namespace Proof {
 
             LastFrameTime = time;
         };
+        IsRunning = false;
         AssetManager::SaveAllAsset();
         m_GraphicsContext->CleanUp();
-        MainWindow->WindowEnd();
-        IsRunning = false;
         delete MainWindow;
     }
 

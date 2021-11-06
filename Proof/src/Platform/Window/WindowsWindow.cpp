@@ -29,6 +29,7 @@ namespace Proof {
     WindowsWindow::WindowsWindow(unsigned int Width, unsigned int Height) {
         this->Width = Width;
         this->Height = Height;
+        this->createWindow();
     }
     void WindowsWindow::WindowUpdate() {
         glfwSwapInterval(Vsync);

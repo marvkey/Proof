@@ -33,8 +33,8 @@ namespace Proof{
 				return m_Texture->GetID();
 			return 0;
 		}
-		virtual uint32_t GetImageEdtorID(){
-			return m_ID;
+		virtual uint32_t GetIamgeEdtorID() {
+			return GetTextureID();
 		}
 		const Count<class Texture2D>& GetTexture()const{
 			return m_Texture;

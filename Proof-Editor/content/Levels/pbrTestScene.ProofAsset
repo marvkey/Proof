@@ -22,7 +22,7 @@ Entities:
     TransformComponent:
       Location: [-10.7511721, -5.07921839, 5.0334239]
       Rotation: [0, 0, 0]
-      Scale: [6.72999954, 6.5440321, 7.78527546]
+      Scale: [2.55739975, 2.48673224, 2.95840454]
     SubEntityComponet:
       OwnerEntityID: 0
       SubEntities: []
@@ -85,9 +85,9 @@ Entities:
       Tag: LightCube
       tags: [" hasLight"]
     TransformComponent:
-      Location: [-14.5, 62.5999985, -8.41290665]
-      Rotation: [0, -3.29999995, 0]
-      Scale: [22.6000004, 24.1000004, 20.2000008]
+      Location: [-5.58694172, 96.8679581, -24.3724022]
+      Rotation: [0.407012939, -0.014576802, -1.52782369]
+      Scale: [34.3429031, 36.6222153, 36.9128532]
     SubEntityComponet:
       OwnerEntityID: 0
       SubEntities: []
@@ -125,7 +125,7 @@ Entities:
       Tag: backpack2
       tags: []
     TransformComponent:
-      Location: [-6.50099993, 34.2999992, -3.9000001]
+      Location: [21.0275955, 31.4016228, -27.9339352]
       Rotation: [0, 0, 0]
       Scale: [13.2535362, 6.95295906, 15.9240847]
     SubEntityComponet:
@@ -140,8 +140,8 @@ Entities:
       Tag: Camera
       tags: []
     TransformComponent:
-      Location: [193.80632, 5.72802782, -4.53034258]
-      Rotation: [-0.990858436, 0.132000417, 0.0278480425]
+      Location: [225.380753, 7.59403515, -45.0494461]
+      Rotation: [-0.991955519, 0.05509739, -0.113967597]
       Scale: [1.20000005, 1.20000005, 0.0120000001]
     SubEntityComponet:
       OwnerEntityID: 0
@@ -149,10 +149,10 @@ Entities:
     CameraComponent:
       AutoSetDimension: true
       NearPlane: 0.0900000036
-      FarPlane: 2441.47095
+      FarPlane: 0
       FOV: 45
-      Width: 578
-      Height: 476
+      Width: 250
+      Height: 250
       UpVector: [0, 1, 0]
   - Entity: 28039
     TagComponent:
@@ -161,7 +161,7 @@ Entities:
     TransformComponent:
       Location: [19.2000046, 0, 5.39999819]
       Rotation: [0, 0, 0]
-      Scale: [0.200000003, 0.200000003, 0.206681684]
+      Scale: [0.200000003, 0.200000003, 0.200000003]
     SubEntityComponet:
       OwnerEntityID: 0
       SubEntities: []
@@ -217,7 +217,7 @@ Entities:
   - Entity: 17650
     TagComponent:
       Tag: teapot
-      tags: [" Teapot", " jump"]
+      tags: [" Teapot"]
     TransformComponent:
       Location: [51.2370338, 4.20880413, -9.16333008]
       Rotation: [0.0391393416, -0.0903670639, 0.065059945]

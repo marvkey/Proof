@@ -1,11 +1,13 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <sstream>
+#include "Math.h"
+
 namespace Proof
 {
     struct Proof_API Vector {
         float X = 0,Y = 0,Z = 0;
 
-        Vector(float X,float Y,float Z);
         Vector() {};
         
         Vector(const Vector& Other) {
@@ -20,23 +22,75 @@ namespace Proof
             Z = Other.z;
         }
         
-        std::string ToString()const;
-        static std::string ToString(const Vector& Vec);
+        Vector(float X,float Y,float Z) {
+            this->X = X,this->Y = Y,this->Z = Z;
+        }
+        std::string ToString()const {
+            std::stringstream VecStream;
+            VecStream << "X = " << X << " Y = " << Y << " Z = " << Z;
+            return VecStream.str();
+        }
+        std::string ToString(const Vector& Vec) {
+            std::stringstream VecStream;
+            VecStream << "X = " << Vec.X << " Y = " << Vec.Y << " Z = " << Vec.Z;
+            return VecStream.str();
+        }
+        Vector Normalize() {
+            float Length = GetLength();
+            X = X / Length;
+            Y = Y / Length;
+            Z = Z / Length;
+            return *this;
+        }
 
-        Vector Normalize();
-        static Vector Normalize(Vector& Vec);
+        static Vector Normalize(Vector& Vec) {
+            float Length = Vec.GetLength();
+            Vec.X = Vec.X / Length;
+            Vec.Y = Vec.Y / Length;
+            Vec.Z = Vec.Z / Length;
+            return Vec;
+        }
 
-        float Dot(const Vector& Vec);
-        static float Dot(const Vector& Vec1,const Vector& Vec2);
+        Vector Cross(const Vector& Vec) {
+            Vector NewVec;
+            NewVec.X = {this->Y * Vec.Z - this->Z * Vec.Y};
+            NewVec.Y = {this->Z * Vec.X - this->X * Vec.Z};
+            NewVec.Z = {this->X * Vec.Y - this->Y * Vec.X};
+            return NewVec;
+        }
 
-        Vector Cross(const Vector& Vec);
-        static Vector Cross(const Vector& Vec1,const Vector& Vec2);
+        static Vector Cross(const Vector& Vec1,const Vector& Vec2) {
+            Vector NewVec;
+            NewVec.X = {Vec1.Y * Vec2.Z - Vec1.Z * Vec2.Y};
+            NewVec.Y = {Vec1.Z * Vec2.X - Vec1.X * Vec2.Z};
+            NewVec.Z = {Vec1.X * Vec2.Y - Vec1.Y * Vec2.X};
+            return NewVec;
+        }
+        static float Dot(const Vector& Vec1,const Vector& Vec2) {
+            return Vec1.X * Vec2.X + Vec1.Y * Vec2.Y + Vec1.Z * Vec2.Z;
+        }
 
-        float GetLength()const;
-        static float GetLength(const Vector& Vec);
+        float Dot(const Vector& Vec) {
+            return this->X * Vec.X + this->Y * Vec.Y + this->Z * Vec.Z;
+        }
 
-        float GetAngle(const Vector& Vec)const;
-        static float GetAngle(const Vector& Vec1,const Vector& Vec2);
+        float GetLength()const {
+            return Math::SquareRoot<float>(X * X + Y * Y + Z * Z);
+        }
+
+        static float GetLength(const Vector& Vec) {
+            return  Math::SquareRoot<float>(Vec.X * Vec.X + Vec.Y * Vec.Y + Vec.Z * Vec.Z);
+        }
+
+        float GetAngle(const Vector& Vec)const {
+            float Angle = Dot(*this,Vec) / (GetLength(*this) * GetLength(Vec));
+            return Math::InverseCos<float>(Angle);
+        }
+
+        static float GetAngle(const Vector& Vec1,const Vector& Vec2) {
+            float Angle = Dot(Vec1,Vec2) / (GetLength(Vec1) * GetLength(Vec2));
+            return Math::InverseCos<float>(Angle);
+        }
 
         operator const glm::vec3()const { return glm::vec3(X,Y,Z); }
         Vector operator=(glm::vec3 const& obj) {

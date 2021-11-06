@@ -11,6 +11,7 @@
 #include <sstream>
 #include "Mesh.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
+#include "Proof/Resources/Math/Vector.h"
 
 
 namespace Proof{

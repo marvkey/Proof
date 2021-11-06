@@ -1,7 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include <cmath>
-#include "Vector.h"
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
@@ -18,6 +17,18 @@ namespace Proof
 		template<typename T>
 		inline static T SquareRoot(T Number) {
 			return sqrtf(Number);
+		}
+
+		/*
+		* swaps the 2 variables
+		* @param variable1: varible assign to 2
+		* @param variable2: variable assign to 1
+		*/
+		template<class T>
+		inline static void Swap(T& Variable1,T& Variable2){
+			T temp= Variable1;
+			Variable1 = Variable2;
+			Variable2 =temp;
 		}
 		/**
 		* @param Num1
@@ -118,6 +129,12 @@ namespace Proof
 				return rand() % (Max + 1);
 			return Min + (rand() % Max);
 		}
+
+		/*
+		* generates a random number
+		* @param Min: minimum number generated
+		* @ max: maximum number gnerated
+		*/
 		template<>
 		inline static uint32_t RandUINT(uint32_t Min,uint32_t Max) {
 			if (Min == 0)
@@ -125,11 +142,17 @@ namespace Proof
 			return Min + (rand() % Max);
 		}
 
+		/*
+		* generates a random number
+		* @param Min: minimum number generated
+		* @ max: maximum number gnerated
+		*/
 		template<>
 		inline static uint64_t RandUINT(uint64_t Min,uint64_t Max) {
 			if (Min == 0)
 				return rand() % (Max + 1);
 			return Min + (rand() % Max);
 		}
+
 	};
 }

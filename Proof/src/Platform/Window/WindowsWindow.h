@@ -11,7 +11,12 @@ namespace Proof {
     class Proof_API WindowsWindow : public Window {
     public:
         WindowsWindow(unsigned int Width, unsigned int Height);
-        WindowsWindow()=default;
+        WindowsWindow(){
+            this->createWindow();
+        }
+        ~WindowsWindow(){
+            this->WindowEnd();
+        }
         friend class Application; 
         /* This is temporary the way the key input works but it wil still use std::vector but maybe i will make the window have a friend class with the Input the class so i can make this private*/
         static std::vector<KeyBoardKey> KeyboardClicked;
@@ -27,8 +32,6 @@ namespace Proof {
         static std::vector<float> MouseScrollY;
         
         virtual void WindowUpdate()override;
-        virtual	int createWindow()override;
-        virtual int WindowEnd()override;
 
         void* GetWindow(){
             return MainWindow;
@@ -38,6 +41,8 @@ namespace Proof {
             return m_InputEventEnabled;
         }
     private:
+        virtual int WindowEnd()override;
+        virtual	int createWindow()override;
         int Width =800, Height=500;
         ::GLFWwindow* MainWindow;
         static void key_callback(::GLFWwindow* window, int key, int scancode, int action, int mods);
