@@ -51,7 +51,6 @@ namespace Proof
 
 	struct Proof_API PhysicalBasedRendererVertex{
 	
-		//PhysicalBasedRendererVertex()=default;
 		PhysicalBasedRendererVertex(const glm::mat4& transform, const Material& temp,int usingMaterial):
 		m_Transform(transform)
 		{
