@@ -93,6 +93,7 @@ namespace Proof{
 		for (LightComponent* Comp : Registry.LightComponents) {
 			Renderer3DPBR::Draw(*Comp);
 		}
+		/*
 		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
 		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
 		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
@@ -113,6 +114,7 @@ namespace Proof{
 		RendererCommand::DrawArray(36);
 		m_IBLSkyBoxVertexArray->UnBind();
 		RendererCommand::DepthFunc(DepthType::Less);
+		*/
 		cameraComp->CalculateProjection();
 
 		if(cameraComp->m_AutoSetDimension ==true){
@@ -231,6 +233,7 @@ namespace Proof{
 		for (LightComponent* Comp : Registry.LightComponents) {
 			Renderer3DPBR::Draw(*Comp);
 		}
+		/*
 		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
 		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
 		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
@@ -253,6 +256,7 @@ namespace Proof{
 		RendererCommand::DrawArray(36);
 		m_IBLSkyBoxVertexArray->UnBind();
 		RendererCommand::DepthFunc(DepthType::Less);
+		*/
 		m_EditorCamera.OnUpdate(DeltaTime,width,height);
 	}
 

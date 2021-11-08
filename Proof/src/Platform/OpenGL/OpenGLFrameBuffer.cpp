@@ -16,8 +16,7 @@ namespace Proof
 	uint32_t OpenGLFrameBuffer::GetID() {
 		return m_ID;
 	}
-	void OpenGLFrameBuffer::ReadBuffer() {
-	}
+	
 	void OpenGLFrameBuffer::WriteBuffer(const uint32_t m_FrameBufferID) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER,m_ID);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER,m_FrameBufferID);

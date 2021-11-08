@@ -22,14 +22,18 @@ namespace Proof
 		static void Reset();
 	private:
 		static void RenderLight();
+		static void RenderMesh();
+		static void Render();
 	};
 	struct PhysicalBasedRendererVertex;
 	struct Proof_API DeferedRendering {
-		Count<class FrameBuffer> m_Gbuffer;
-		Count<class Texture2D>m_GPosition;
-		Count<class Texture2D>m_GNormal;
-		Count<class Texture2D>m_GAlbedo;
-		Count<class RenderBuffer>m_RenderBuffer;
+		Count<class FrameBuffer> Gbuffer;
+		Count<class Texture2D>GPosition;
+		Count<class Texture2D>GNormal;
+		Count<class Texture2D>GAlbedo;
+		Count<class RenderBuffer>RenderBuffer;
+		Count<class Shader>MeshShader;
+		Count<class Shader>LightShader;
 		DeferedRendering();
 	};
 	struct Proof_API PhysicalBasedRenderer {
