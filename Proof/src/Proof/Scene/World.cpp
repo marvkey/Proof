@@ -93,6 +93,8 @@ namespace Proof{
 		for (LightComponent* Comp : Registry.LightComponents) {
 			Renderer3DPBR::Draw(*Comp);
 		}
+		Renderer3DPBR::EndContext();
+
 		/*
 		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
 		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
@@ -233,6 +235,8 @@ namespace Proof{
 		for (LightComponent* Comp : Registry.LightComponents) {
 			Renderer3DPBR::Draw(*Comp);
 		}
+		Renderer3DPBR::EndContext();
+
 		/*
 		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
 		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);

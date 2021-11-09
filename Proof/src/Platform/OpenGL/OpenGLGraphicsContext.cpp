@@ -8,6 +8,7 @@ namespace Proof
     OpenGLGraphicsContext::OpenGLGraphicsContext(Window* _WindowHandle)
         :WindowHandle(_WindowHandle)    {
         PF_CORE_ASSERT(_WindowHandle,"Window Handle is Null");
+        Init();
     }
     void OpenGLGraphicsContext::Init() {
         glfwMakeContextCurrent(static_cast<::GLFWwindow*>(WindowHandle->GetWindow()));
@@ -17,6 +18,7 @@ namespace Proof
         Renderer::s_GraphicsCard = (const char*)glGetString(GL_RENDERER);
         Renderer::s_GraphicsCardVersion = (const char*)glGetString(GL_VERSION);
 
+        PF_ENGINE_INFO("Graphics Context Initiated");
         PF_ENGINE_INFO("Vendor: %s",glGetString(GL_VENDOR));
         PF_ENGINE_INFO("Renderer: %s",glGetString(GL_RENDERER));
         PF_ENGINE_INFO("Version: %s",glGetString(GL_VERSION));

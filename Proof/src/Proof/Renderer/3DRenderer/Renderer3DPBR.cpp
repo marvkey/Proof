@@ -123,11 +123,18 @@ namespace Proof{
 	}
 	void Renderer3DPBR::RenderLight() {
 		if (s_DifferentID.size() == 0)return;
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
+
 		s_PBRInstance->m_DeferedRendering.LightShader->Bind();
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gPosition",0);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gNormal",1);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gAlbedoSpec",2);
 		s_PBRInstance->m_DeferedRendering.GPosition->Bind(0);
 		s_PBRInstance->m_DeferedRendering.GNormal->Bind(1);
 		s_PBRInstance->m_DeferedRendering.GAlbedo->Bind(2);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NumberLights",NumLights);
 		renderQuad11();
 	}
 	void Renderer3DPBR::Render() {
@@ -135,14 +142,12 @@ namespace Proof{
 		RenderLight();
 		if (s_DifferentID.size() >0)
 			s_PBRInstance->m_DeferedRendering.Gbuffer->WriteBuffer(Application::GetScreenBuffer()->GetFrameBufferID());
-	//	glBlitFramebuffer(0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),GL_DEPTH_BUFFER_BIT,GL_NEAREST);
-		//glBindFramebuffer(GL_FRAMEBUFFER,(Application::GetScreenBuffer()->GetFrameBufferID()));
+		glBlitFramebuffer(0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),GL_DEPTH_BUFFER_BIT,GL_NEAREST);
+		glBindFramebuffer(GL_FRAMEBUFFER,(Application::GetScreenBuffer()->GetFrameBufferID()));
 	}
 	void Renderer3DPBR::RenderMesh() {
 		if (s_DifferentID.size() == 0)return;
-		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-		RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
-		s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
+
 		uint32_t sizeOffset = 0;
 		for (uint32_t i = 0; i < s_DifferentID.size(); i++) {
 			uint32_t TempID = s_DifferentID[i];
@@ -151,8 +156,10 @@ namespace Proof{
 			s_PBRInstance->m_DeferedRendering.MeshShader->Bind();
 			s_PBRInstance->m_VertexBuffer->Bind();
 			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset],TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
+			/*
 			if (TempMesh->second.GetMaterial() != nullptr) {
 				s_PBRInstance->m_DeferedRendering.MeshShader->Bind();
+				
 				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("albedoMap",0);
 				if (TempMesh->second.GetMaterial()->AlbedoTexture != nullptr)
 					TempMesh->second.GetMaterial()->AlbedoTexture->Bind(0);
@@ -189,12 +196,18 @@ namespace Proof{
 				s_PBRInstance->m_WhiteTexture->Bind(3);
 
 			}
+			*/
+			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+			RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
+			s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
+			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 			if (TempMesh->second.GetMesh()->m_FaceCulling == true)
 				RendererCommand::Enable(ProofRenderTest::CullFace);
 			if (TempMesh->second.GetMesh()->m_Enabled == true) {
 				for (SubMesh& mesh : TempMesh->second.GetMesh()->meshes) {
 					if (mesh.m_Enabled == false)
 						continue;
+					/*
 					if (TempMesh->second.HasMaterial() == false) {
 						s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("DiffuseShader",7);
 						if (mesh.m_Textures.size() > 0)
@@ -202,6 +215,7 @@ namespace Proof{
 						else
 							s_PBRInstance->m_WhiteTexture->Bind(7);
 					}
+					*/
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
 					s_WorldDrawType = DrawType::Triangles;
@@ -210,7 +224,7 @@ namespace Proof{
 			}
 			RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render settings
 			sizeOffset += TempAmountMeshes->second;
-			s_PBRInstance->m_Shader->UnBind();
+			s_PBRInstance->m_DeferedRendering.MeshShader->UnBind();
 		}
 		s_PBRInstance->m_DeferedRendering.Gbuffer->UnBind();
 	}
@@ -218,17 +232,19 @@ namespace Proof{
 		MeshShader = Shader::Create("MeshShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/MeshGeometry.glsl");
 		LightShader = Shader::Create("LightShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/LighteningPass.glsl");
 		Gbuffer = FrameBuffer::Create();
-		GPosition = Texture2D::Create(800,600,DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);
+		Gbuffer->Bind();
+		GPosition = Texture2D::Create(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);
 		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,0,GPosition->GetID());
 
-		GNormal = Texture2D::Create(800,600,DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);
+		GNormal = Texture2D::Create(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);
 		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,1,GNormal->GetID());
 
-		GAlbedo = Texture2D::Create(800,600,DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::UnsignedByte,false);
+		GAlbedo = Texture2D::Create(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),DataFormat::RGBA,InternalFormat::RGBA,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::UnsignedByte,false);
 		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,2,GAlbedo->GetID());
 		unsigned int attachments[3] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2};
 		glDrawBuffers(3,attachments);
 		RenderBuffer = RenderBuffer::Create(RenderBufferAttachment::DepthComponent,800,600);
 		Gbuffer->AttachRenderBuffer(FrameBufferAttachmentType::DepthAttachment,RenderBuffer->GetID());
+		Gbuffer->UnBind();
 	}
 }

@@ -9,7 +9,7 @@
 #include "Proof/Resources/Asset/AssetManager.h"
 #include "Proof/Resources/Math/Random.h"
 namespace Proof {
-    WindowsWindow* Application::MainWindow = nullptr;
+    Special <WindowsWindow> Application::MainWindow = nullptr;
     Count<ScreenFrameBuffer> Application::ScreenFrameBuffer = nullptr;
     uint32_t Application::ViewPortWidth;
     uint32_t Application::ViewPortHeight;
@@ -18,10 +18,9 @@ namespace Proof {
     Application::Application(){
         srand(time(NULL));
         Proof::Log::Init();
-        MainWindow = new WindowsWindow(); 
+        MainWindow = CreateSpecial<WindowsWindow>(); 
 
-        m_GraphicsContext =GraphicsContext::Create(static_cast<Window*>(MainWindow));
-        m_GraphicsContext->Init();
+        m_GraphicsContext =GraphicsContext::Create(static_cast<Window*>(MainWindow.get()));
         Renderer::Init();
         ImGuiMainLayer = new ImGuiLayer();
         MainLayerStack.PushLayer(ImGuiMainLayer);
@@ -39,10 +38,7 @@ namespace Proof {
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
         dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent));
         
-        if(e.GetCategoryFlags()==EventCategoryInput){
-            PF_ENGINE_INFO("that is a gg");
-        }
-          for (Layer* layer : MainLayerStack.V_LayerStack)
+         for (Layer* layer : MainLayerStack.V_LayerStack)
             layer->OnEvent(e);
     }
 
@@ -69,7 +65,7 @@ namespace Proof {
         float PreviousTime = glfwGetTime();
         float CurrentTime;
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+     //   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
      //   glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
        // CurrentWindow::SetSwapInterval(true);
         CurrentWindow::SetvSync(false);
@@ -88,7 +84,7 @@ namespace Proof {
 
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
-                Renderer::Draw();
+              //  Renderer::Draw();
                 ScreenFrameBuffer->UnBind();
             }
             ImGuiMainLayer->Begin();
@@ -109,8 +105,6 @@ namespace Proof {
         };
         IsRunning = false;
         AssetManager::SaveAllAsset();
-        m_GraphicsContext->CleanUp();
-        delete MainWindow;
     }
 
     void Application::PushLayer(Layer* Layer) {

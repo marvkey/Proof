@@ -25,17 +25,15 @@ uniform int v_NumberLights;
 out vec4 FragColor;
 
 in vec2 TexCoords;
-
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
-layout(std140,binding = 1) uniform CameraData
-{
+layout(std140,binding = 1) uniform CameraData{
     mat4 ProjectionMatrix;
-    mat4 ViewMatrix;
-    vec3 Position;
+mat4 ViewMatrix;
+vec3 Position;
 }Camera;
-void main(){
+void main() {
  // retrieve data from gbuffer
     vec3 FragPos = texture(gPosition,TexCoords).rgb;
     vec3 Normal = texture(gNormal,TexCoords).rgb;
@@ -60,5 +58,5 @@ void main(){
         specular *= attenuation;
         lighting += diffuse + specular;
     }
-    FragColor = vec4(lighting,1.0);
+    FragColor = vec4(1.0,1.0,1.0,1.0);
 }

@@ -19,7 +19,7 @@ namespace Proof {
 			return nullptr;
 	}
 	WindowsWindow& CurrentWindow::GetWindowClass(){
-		return *Application::MainWindow;
+		return *Application::MainWindow.get();
 	}
 	int CurrentWindow::GetWindowPosX(){
 		return GetWindowLocation().first;

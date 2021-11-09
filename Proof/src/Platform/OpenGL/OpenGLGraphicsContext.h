@@ -4,10 +4,13 @@ namespace Proof
 	class Proof_API OpenGLGraphicsContext: public GraphicsContext {
 	public:
 		OpenGLGraphicsContext(Window* windowHandle);
-		virtual void Init()override;
+		~OpenGLGraphicsContext(){
+			CleanUp() ;
+		}
 		virtual void SwapBuffer() override;
-		virtual void CleanUp() override;
 	private:
+		virtual void CleanUp() override;
+		virtual void Init()override;
 		Window* WindowHandle;
 		static void OpenGLMessageCallback(
 		  unsigned source,

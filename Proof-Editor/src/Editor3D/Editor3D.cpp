@@ -331,7 +331,8 @@ namespace Proof
 			//}
 			
 			uint32_t Text = Application::GetScreenBuffer()->GetTexture();
-			ImGui::Image((ImTextureID)Text,ImVec2{_ViewPortSize.x,_ViewPortSize.y},ImVec2{0,1},ImVec2{1,0});
+			uint32_t tempTexture = Renderer3DPBR::GetRenderer()->m_DeferedRendering.Gbuffer->GetID();
+			ImGui::Image((ImTextureID)tempTexture,ImVec2{_ViewPortSize.x,_ViewPortSize.y},ImVec2{0,1},ImVec2{1,0});
 			// GUIZMOS
 
 			Entity selectedEntity = this->m_WorldHierachy.GetSelectedEntity();
@@ -406,6 +407,27 @@ namespace Proof
 				ImGui::EndDragDropTarget();
 			}
 			/*----------------------------------------------------------------------------------------------------------------------------*/
+		}
+		ImGui::End();
+		ImGui::PopStyleVar();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
+		if (ImGui::Begin("Position")) {
+			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GPosition->GetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y});
+		}
+		ImGui::End();
+		ImGui::PopStyleVar();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
+		if (ImGui::Begin("Colour")) {
+			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GAlbedo->GetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y});
+		}
+		ImGui::End();
+		ImGui::PopStyleVar();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
+		if (ImGui::Begin("Normal")) {
+			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GNormal->GetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y});
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();

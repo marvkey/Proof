@@ -34,7 +34,8 @@ namespace Proof {
 		RG16U = GL_RG16UI,
 		RG32I = GL_RG32I,
 		RG32U = GL_RG32UI,
-		RGBA16F =GL_RGBA16F
+		RGBA16F =GL_RGBA16F,
+		RGBA = GL_RGBA,
 	};
 
 	enum class DataFormat:uint32_t {

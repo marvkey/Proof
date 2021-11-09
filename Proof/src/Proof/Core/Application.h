@@ -42,7 +42,7 @@
         static Count<ScreenFrameBuffer> ScreenFrameBuffer;
         LayerStack MainLayerStack;
         ImGuiLayer* ImGuiMainLayer;
-        static WindowsWindow* MainWindow;
+        static Special<WindowsWindow>MainWindow;
         friend class CurrentWindow;
         friend class FrameBuffer;
         float LastFrameTime;
