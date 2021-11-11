@@ -26,7 +26,9 @@ namespace Proof{
 	static glm::mat4 ModelMatrix;
 	static Material s_DefaultMaterial;
 	static std::vector<uint32_t> s_DifferentID;
-	uint32_t NumLights=0;
+	uint32_t NumDirLights=0;
+	uint32_t NumPointLights=0;
+	uint32_t NumSpotLights=0;
 	static CameraData s_CurrentCamera;
 	static DrawType s_WorldDrawType = DrawType::Triangles;
 	void Renderer3DPBR::Init() {
@@ -73,12 +75,44 @@ namespace Proof{
 		}
 	}
 	void Renderer3DPBR::Draw(LightComponent& lightComponent) {
-		s_PBRInstance->m_Shader->Bind();
-		std::string LightPos= "lightPositions[" + std::to_string(NumLights) + "]";
-		std::string LightColour= "lightColors[" + std::to_string(NumLights) + "]";
-		s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(LightPos,{lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
-		s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(LightColour,lightComponent.m_Ambient);
-		NumLights++;
+		s_PBRInstance->m_DeferedRendering.LightShader->Bind();
+	
+		if (lightComponent.m_LightType == lightComponent.Direction && NumDirLights < 150) {
+			std::string mumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumDirLights) + "]";
+			s_PBRInstance->m_DeferedRendering.LightShader->Bind();
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(mumberDirectionalLightstring + ".Direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->Rotation);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(mumberDirectionalLightstring + ".Ambient",lightComponent.m_Ambient);
+			NumDirLights++;
+			return;
+		}
+
+		if (lightComponent.m_LightType == lightComponent.Point && NumPointLights < 150) {
+			std::string numberPointLightstring = "v_PointLight[" + std::to_string(NumPointLights) + "]";
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberPointLightstring + ".Position",lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberPointLightstring + ".Ambient",lightComponent.m_Ambient);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Constant",lightComponent.m_Constant);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Linear",lightComponent.m_Linear);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Quadratic",lightComponent.m_Quadratic);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Radius",lightComponent.Radius);
+			NumPointLights++;
+			return;
+		}
+
+		if (lightComponent.m_LightType == lightComponent.Spot && NumSpotLights< 150) {
+			std::string numberSpotLightstring = "v_SpotLight[" + std::to_string(NumSpotLights) + "]";
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->Rotation);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Position",{lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Ambient",lightComponent.m_Ambient);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Constant",lightComponent.m_Constant);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Linear",lightComponent.m_Linear);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Quadratic",lightComponent.m_Quadratic);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Radius",lightComponent.Radius);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring + ".CutOff",Math::Cos(Math::Radian(lightComponent.m_CutOff)));
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring + ".OuterCutOff",Math::Cos(Math::Radian(lightComponent.m_OuterCutOff)));
+			NumSpotLights++;
+			return;
+
+		}
 	}
 	PhysicalBasedRenderer* Renderer3DPBR::GetRenderer(){
 		return s_PBRInstance;
@@ -93,7 +127,9 @@ namespace Proof{
 		s_PBRInstance->m_MeshesEndingPositionIndexTransforms.clear();
 		s_DifferentID.clear();
 		s_PBRInstance->m_Transforms.clear();
-		NumLights=0;
+		NumDirLights = 0;
+		NumPointLights = 0;
+		NumSpotLights = 0;
 	}
 	unsigned int quadVAO1 = 0;
 	unsigned int quadVBO1;
@@ -122,32 +158,38 @@ namespace Proof{
 		glBindVertexArray(0);
 	}
 	void Renderer3DPBR::RenderLight() {
-		if (s_DifferentID.size() == 0)return;
-		glBindFramebuffer(GL_FRAMEBUFFER,0);
+		Application::GetScreenBuffer()->Bind();
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-		s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
-
 		s_PBRInstance->m_DeferedRendering.LightShader->Bind();
+		
 		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gPosition",0);
 		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gNormal",1);
 		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gAlbedoSpec",2);
 		s_PBRInstance->m_DeferedRendering.GPosition->Bind(0);
 		s_PBRInstance->m_DeferedRendering.GNormal->Bind(1);
 		s_PBRInstance->m_DeferedRendering.GAlbedo->Bind(2);
-		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NumberLights",NumLights);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NrDirectionalLight",NumDirLights);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NrPointLight",NumPointLights);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NrSpotLight",NumSpotLights);
 		renderQuad11();
+		Application::GetScreenBuffer()->UnBind();
 	}
 	void Renderer3DPBR::Render() {
 		RenderMesh();
 		RenderLight();
-		if (s_DifferentID.size() >0)
-			s_PBRInstance->m_DeferedRendering.Gbuffer->WriteBuffer(Application::GetScreenBuffer()->GetFrameBufferID());
+		if(s_DifferentID.size()==0)
+			return;
+		s_PBRInstance->m_DeferedRendering.Gbuffer->WriteBuffer(Application::GetScreenBuffer()->GetFrameBufferID());
+		Application::GetScreenBuffer()->Bind();
 		glBlitFramebuffer(0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),GL_DEPTH_BUFFER_BIT,GL_NEAREST);
 		glBindFramebuffer(GL_FRAMEBUFFER,(Application::GetScreenBuffer()->GetFrameBufferID()));
 	}
 	void Renderer3DPBR::RenderMesh() {
 		if (s_DifferentID.size() == 0)return;
-
+		RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
+		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
+		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		uint32_t sizeOffset = 0;
 		for (uint32_t i = 0; i < s_DifferentID.size(); i++) {
 			uint32_t TempID = s_DifferentID[i];
@@ -156,9 +198,9 @@ namespace Proof{
 			s_PBRInstance->m_DeferedRendering.MeshShader->Bind();
 			s_PBRInstance->m_VertexBuffer->Bind();
 			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset],TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
-			/*
+			s_PBRInstance->m_DeferedRendering.MeshShader->Bind();
+
 			if (TempMesh->second.GetMaterial() != nullptr) {
-				s_PBRInstance->m_DeferedRendering.MeshShader->Bind();
 				
 				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("albedoMap",0);
 				if (TempMesh->second.GetMaterial()->AlbedoTexture != nullptr)
@@ -185,29 +227,25 @@ namespace Proof{
 					s_PBRInstance->m_WhiteTexture->Bind(3);
 			}
 			else {
-				s_PBRInstance->m_Shader->Bind();
-				s_PBRInstance->m_Shader->SetInt("albedoMap",0);
-				s_PBRInstance->m_Shader->SetInt("normalMap",1);
-				s_PBRInstance->m_Shader->SetInt("metallicMap",2);
-				s_PBRInstance->m_Shader->SetInt("roughnessMap",3);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("albedoMap",0);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("normalMap",1);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("metallicMap",2);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("roughnessMap",3);
 				s_PBRInstance->m_WhiteTexture->Bind(0);
 				s_PBRInstance->m_WhiteTexture->Bind(1);
 				s_PBRInstance->m_WhiteTexture->Bind(2);
 				s_PBRInstance->m_WhiteTexture->Bind(3);
 
 			}
-			*/
-			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-			RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
-			s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
-			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+			
+			
 			if (TempMesh->second.GetMesh()->m_FaceCulling == true)
 				RendererCommand::Enable(ProofRenderTest::CullFace);
 			if (TempMesh->second.GetMesh()->m_Enabled == true) {
 				for (SubMesh& mesh : TempMesh->second.GetMesh()->meshes) {
 					if (mesh.m_Enabled == false)
 						continue;
-					/*
+					
 					if (TempMesh->second.HasMaterial() == false) {
 						s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("DiffuseShader",7);
 						if (mesh.m_Textures.size() > 0)
@@ -215,7 +253,7 @@ namespace Proof{
 						else
 							s_PBRInstance->m_WhiteTexture->Bind(7);
 					}
-					*/
+					
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
 					s_WorldDrawType = DrawType::Triangles;
@@ -226,7 +264,45 @@ namespace Proof{
 			sizeOffset += TempAmountMeshes->second;
 			s_PBRInstance->m_DeferedRendering.MeshShader->UnBind();
 		}
-		s_PBRInstance->m_DeferedRendering.Gbuffer->UnBind();
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
+	}
+	void Renderer3DPBR::LightErrorChecks() {
+		s_PBRInstance->m_DeferedRendering.LightShader->Bind();
+		/*
+		if (NumberDirectionalLight == 0) {
+			Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].direction",0,0,0);
+			Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].ambient",0,0,0);
+			Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].diffuse",0,0,0);
+			Renderer3DInstance->m_Shader->SetVec3("v_DirectionalLight[0].specular",0,0,0);
+			Renderer3DInstance->m_Shader->SetInt("v_NrDirectionalLight",1);
+		}
+
+		if (NumberPointLight == 0) {
+			NumberPointLightstring = "v_PointLight[" + std::to_string(NumberPointLight) + "]";
+			Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".direction",0,0,0);
+			Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".ambient",0,0,0);
+			Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".diffuse",0,0,0);
+			Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".specular",0,0,0);
+			Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".constant",0);
+			Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".linear",0);
+			Renderer3DInstance->m_Shader->SetFloat(NumberPointLightstring + ".quadratic",0);
+			Renderer3DInstance->m_Shader->SetInt("v_NrPointLight",0);
+		}
+
+		if (NumberSpotLight == 0) {
+			NumberSpotLightstring = "v_SpotLight[" + std::to_string(NumberSpotLight) + "]";
+			Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",0,0,0);
+			Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".ambient",0,0,0);
+			Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".diffuse",0,0,0);
+			Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".specular",0,0,0);
+			Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".constant",0);
+			Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".linear",0);
+			Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".quadratic",0);
+			Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".cutOff",0);
+			Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".outerCutOff",0);
+			Renderer3DInstance->m_Shader->SetInt("v_NrSpotLight",0);
+		}
+		*/
 	}
 	DeferedRendering::DeferedRendering() {
 		MeshShader = Shader::Create("MeshShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/MeshGeometry.glsl");
@@ -243,7 +319,7 @@ namespace Proof{
 		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,2,GAlbedo->GetID());
 		unsigned int attachments[3] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2};
 		glDrawBuffers(3,attachments);
-		RenderBuffer = RenderBuffer::Create(RenderBufferAttachment::DepthComponent,800,600);
+		RenderBuffer = RenderBuffer::Create(RenderBufferAttachment::DepthComponent,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 		Gbuffer->AttachRenderBuffer(FrameBufferAttachmentType::DepthAttachment,RenderBuffer->GetID());
 		Gbuffer->UnBind();
 	}

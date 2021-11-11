@@ -220,13 +220,14 @@ namespace Proof
 			Point = 1,
 			Spot = 2
 		};
-		float m_CutOff; // gets put in cos and radias before use
-		float m_OuterCutOff; // gets put in cos and radias before use
+		float m_CutOff=1; // gets put in cos and radias before use
+		float m_OuterCutOff=2; // gets put in cos and radias before use
 
 		float m_Constant = 1.0f;
-		float m_Linear;
-		float m_Quadratic;
+		float m_Linear=1;
+		float m_Quadratic=1;
 
+		float Radius=10;
 		glm::vec3 m_Ambient;
 		glm::vec3 m_Diffuse;
 		glm::vec3 m_Specular;

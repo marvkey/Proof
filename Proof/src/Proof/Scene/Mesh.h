@@ -12,7 +12,7 @@
 #include "Material.h"
 namespace Proof
 {
-    class SubMesh {
+    struct SubMesh {
     public:
         SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name,std::vector<Proof::Count<class Texture2D>>& Textures);
         SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name);

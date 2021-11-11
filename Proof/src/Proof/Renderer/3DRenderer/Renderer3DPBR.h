@@ -23,6 +23,7 @@ namespace Proof
 	private:
 		static void RenderLight();
 		static void RenderMesh();
+		static void LightErrorChecks();
 		static void Render();
 	};
 	struct PhysicalBasedRendererVertex;
