@@ -25,7 +25,7 @@ namespace Proof {
         ImGuiMainLayer = new ImGuiLayer();
         MainLayerStack.PushLayer(ImGuiMainLayer);
 
-        ScreenFrameBuffer = ScreenFrameBuffer::Create(1300,600);
+        ScreenFrameBuffer = ScreenFrameBuffer::Create(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
         ScreenFrameBuffer->UnBind();
         
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
@@ -80,7 +80,8 @@ namespace Proof {
             {
                 ScreenFrameBuffer->Bind();
                 RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-                RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
+
+                RendererCommand::SetClearColor(0,0,0,1.0f);
 
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
@@ -88,6 +89,7 @@ namespace Proof {
                 ScreenFrameBuffer->UnBind();
             }
             ImGuiMainLayer->Begin();
+
             for (Layer* layer : MainLayerStack.V_LayerStack)
                 layer->OnImGuiDraw(DeltaTime);
             ImGuiMainLayer->End();

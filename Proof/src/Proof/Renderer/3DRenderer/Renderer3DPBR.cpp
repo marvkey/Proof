@@ -80,36 +80,39 @@ namespace Proof{
 		if (lightComponent.m_LightType == lightComponent.Direction && NumDirLights < 150) {
 			std::string mumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumDirLights) + "]";
 			s_PBRInstance->m_DeferedRendering.LightShader->Bind();
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(mumberDirectionalLightstring + ".Direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->Rotation);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(mumberDirectionalLightstring + ".Direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation());
 			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(mumberDirectionalLightstring + ".Ambient",lightComponent.m_Ambient);
 			NumDirLights++;
+			s_PBRInstance->m_DeferedRendering.LightShader->UnBind();
 			return;
 		}
 
 		if (lightComponent.m_LightType == lightComponent.Point && NumPointLights < 150) {
 			std::string numberPointLightstring = "v_PointLight[" + std::to_string(NumPointLights) + "]";
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberPointLightstring + ".Position",lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberPointLightstring + ".Position",lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation());
 			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberPointLightstring + ".Ambient",lightComponent.m_Ambient);
 			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Constant",lightComponent.m_Constant);
 			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Linear",lightComponent.m_Linear);
 			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Quadratic",lightComponent.m_Quadratic);
 			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Radius",lightComponent.Radius);
 			NumPointLights++;
+			s_PBRInstance->m_DeferedRendering.LightShader->UnBind();
 			return;
 		}
 
 		if (lightComponent.m_LightType == lightComponent.Spot && NumSpotLights< 150) {
 			std::string numberSpotLightstring = "v_SpotLight[" + std::to_string(NumSpotLights) + "]";
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->Rotation);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Position",{lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Direction",{lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation()});
+			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Position",{lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation()});
 			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Ambient",lightComponent.m_Ambient);
 			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Constant",lightComponent.m_Constant);
 			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Linear",lightComponent.m_Linear);
 			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Quadratic",lightComponent.m_Quadratic);
 			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Radius",lightComponent.Radius);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring + ".CutOff",Math::Cos(Math::Radian(lightComponent.m_CutOff)));
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring + ".OuterCutOff",Math::Cos(Math::Radian(lightComponent.m_OuterCutOff)));
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring + ".CutOff",glm::cos(glm::radians(lightComponent.m_CutOff)));
+			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring + ".OuterCutOff",glm::cos(glm::radians(lightComponent.m_OuterCutOff)));
 			NumSpotLights++;
+			s_PBRInstance->m_DeferedRendering.LightShader->UnBind();
 			return;
 
 		}
@@ -158,6 +161,7 @@ namespace Proof{
 		glBindVertexArray(0);
 	}
 	void Renderer3DPBR::RenderLight() {
+		if(NumDirLights==0 && NumSpotLights==0 && NumPointLights==0)return;
 		Application::GetScreenBuffer()->Bind();
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		s_PBRInstance->m_DeferedRendering.LightShader->Bind();
@@ -179,6 +183,7 @@ namespace Proof{
 		RenderLight();
 		if(s_DifferentID.size()==0)
 			return;
+		Application::GetScreenBuffer()->Bind();
 		s_PBRInstance->m_DeferedRendering.Gbuffer->WriteBuffer(Application::GetScreenBuffer()->GetFrameBufferID());
 		Application::GetScreenBuffer()->Bind();
 		glBlitFramebuffer(0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),GL_DEPTH_BUFFER_BIT,GL_NEAREST);
@@ -186,7 +191,7 @@ namespace Proof{
 	}
 	void Renderer3DPBR::RenderMesh() {
 		if (s_DifferentID.size() == 0)return;
-		RendererCommand::SetClearColor(0.1f,0.1f,0.1f,1.0f);
+		RendererCommand::SetClearColor(0,0,0,1.0f);
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);

@@ -2,19 +2,25 @@ World: PBR Test Scene
 Entities:
   - Entity: 8008
     TagComponent:
-      Tag: sphere
+      Tag: Light
       tags: []
     TransformComponent:
-      Location: [14.5999985, 0, 12.9999933]
-      Rotation: [0, 0, 0]
-      Scale: [4, 4, 4]
+      Location: [12.3999996, 0, 12.9999933]
+      Rotation: [0.0277166031, 0.0133904368, 0.155444145]
+      Scale: [1, 0.99999845, 1]
     SubEntityComponet:
       OwnerEntityID: 0
       SubEntities: []
-    MeshComponent:
-      Name: Default
-      MeshAssetPointerID: 12574
-      MaterialPointerID: 0
+    LightComponent:
+      CutOff: 1
+      OuterCutOff: 2
+      Constant: 1
+      Linear: 1
+      Quadratic: 1
+      Ambient: [5.52419351e-07, 7.15281544e-07, 9.99999997e-07]
+      Diffuse: [0, 0, 0]
+      Specular: [0, 0, 0]
+      LightType: 0
   - Entity: 22824
     TagComponent:
       Tag: Rocket
@@ -30,16 +36,6 @@ Entities:
       Name: Default
       MeshAssetPointerID: 20980
       MaterialPointerID: 7493
-    LightComponent:
-      CutOff: 0
-      OuterCutOff: 0
-      Constant: 1
-      Linear: 0
-      Quadratic: 0
-      Ambient: [1, 0.999989986, 0.999989986]
-      Diffuse: [0, 0, 0]
-      Specular: [0, 0, 0]
-      LightType: 2
   - Entity: 31751
     TagComponent:
       Tag: cube
@@ -70,24 +66,14 @@ Entities:
       Name: Default
       MeshAssetPointerID: 4778
       MaterialPointerID: 7493
-    LightComponent:
-      CutOff: 0
-      OuterCutOff: 0
-      Constant: 1
-      Linear: 0
-      Quadratic: 0
-      Ambient: [1, 0.999989986, 0.999989986]
-      Diffuse: [0, 0, 0]
-      Specular: [0, 0, 0]
-      LightType: 2
   - Entity: 19918
     TagComponent:
       Tag: LightCube
       tags: [" hasLight"]
     TransformComponent:
-      Location: [-5.58694172, 96.8679581, -24.3724022]
-      Rotation: [0.407012939, -0.014576802, -1.52782369]
-      Scale: [34.3429031, 36.6222153, 36.9128532]
+      Location: [6.76191473, 4.90139675, -3.92931557]
+      Rotation: [1.40129846e-45, 1.40129846e-45, 1.40129846e-45]
+      Scale: [0.999999702, 36.6222191, 36.9128532]
     SubEntityComponet:
       OwnerEntityID: 0
       SubEntities: []
@@ -96,12 +82,12 @@ Entities:
       MeshAssetPointerID: 12067
       MaterialPointerID: 0
     LightComponent:
-      CutOff: 0
-      OuterCutOff: 0
-      Constant: 1.05599999
-      Linear: 0
+      CutOff: 1
+      OuterCutOff: 2
+      Constant: 1
+      Linear: 1
       Quadratic: 0
-      Ambient: [1, 0, 0]
+      Ambient: [1, 0.999989986, 0.999989986]
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
       LightType: 1

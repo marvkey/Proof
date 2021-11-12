@@ -1,6 +1,6 @@
 AssetType: AssetType::MaterialAsset
 ID: 7493
-AlbedoColour: [1, 0, 0]
+AlbedoColour: [0, 0.4654212, 1]
 Roughness: 3
 Metallness: 1
 AO: 1

@@ -10,6 +10,10 @@ namespace Proof {
 	void RendererCommand::SetClearColor(float R, float G, float B, float A){
 		s_RendererAPI->SetClearColor(R, G, B, A);
 	}
+
+	void RendererCommand::SetClearColor() {
+		s_RendererAPI->SetClearColor(0,0,0,1.0f);
+	}
 	
 	void RendererCommand::SetViewPort(uint32_t width,uint32_t height) {
 		s_RendererAPI->SetViewPort(width,height);

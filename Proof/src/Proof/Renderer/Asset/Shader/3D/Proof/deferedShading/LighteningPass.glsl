@@ -77,22 +77,17 @@ void main() {
     vec3 result;
     vec3 norm = normalize(Normal);
     for (int i = 0; i < v_NrDirectionalLight; i++)
-            result += CalcDirLight(v_DirectionalLight[i],norm,viewDir,Diffuse,Metalliness);
+        result += CalcDirLight(v_DirectionalLight[i],norm,viewDir,Diffuse,Metalliness);
 
     for (int i = 0; i < v_NrPointLight; i++){
-        float distance = length(v_PointLight[i].Position - FragPos);
-        if (distance < v_PointLight[i].Radius)
         result += CalcPointLight(v_PointLight[i],norm,FragPos,viewDir,Diffuse,Metalliness);
     }
 
     for (int i = 0; i < v_NrSpotLight; i++){
-        float distance = length(v_SpotLight[i].Position - FragPos);
-        if (distance < v_SpotLight[i].Radius){
-            result += CalcSpotLight(v_SpotLight[i],norm,FragPos,viewDir,Diffuse,Metalliness);
-        }
+        result += CalcSpotLight(v_SpotLight[i],norm,FragPos,viewDir,Diffuse,Metalliness);
     }
-    result *=0.1;
     FragColor = vec4(result,1.0);
+
 }
 
 vec3 CalcDirLight(DirectionalLight light,vec3 normal,vec3 viewDir,vec3 matcolour,float shininess) {
@@ -101,8 +96,8 @@ vec3 CalcDirLight(DirectionalLight light,vec3 normal,vec3 viewDir,vec3 matcolour
     vec3 reflectDir = reflect(-lightDir,normal);
     float spec = pow(max(dot(viewDir,reflectDir),0.0),shininess);
     vec3 ambient = light.Ambient * matcolour;                 // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    vec3 diffuse = diff * matcolour;         // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    vec3 specular = spec * matcolour;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 diffuse = diff * light.Ambient* matcolour;         // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 specular = spec * light.Ambient* matcolour;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
     return (ambient + diffuse + specular);
 }
 
@@ -116,8 +111,8 @@ vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 
     float attenuation = 1.0 / (light.Constant + light.Linear * distance + light.Quadratic * (distance * distance));
 
     vec3 ambient = light.Ambient * matcolour;               // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    vec3 diffuse = diff * matcolour;        // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    vec3 specular =spec * matcolour;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 diffuse = diff * light.Ambient * matcolour;        // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 specular =spec * light.Ambient * matcolour;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
 
     ambient *= attenuation;
     diffuse *= attenuation;
@@ -139,8 +134,8 @@ vec3 CalcSpotLight(SpotLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 ma
     float epsilon = (light.CutOff - light.OuterCutOff);
     float intensity = clamp((theta - light.OuterCutOff) / epsilon,0.0,1.0);
     vec3 ambient = light.Ambient * matcolour;
-    vec3 diffuse = diff * matcolour;
-    vec3 specular = spec * matcolour;
+    vec3 diffuse = diff * light.Ambient * matcolour;
+    vec3 specular = spec *  light.Ambient* matcolour;
     ambient *= attenuation * intensity;
     diffuse *= attenuation * intensity;
     specular *= attenuation * intensity;

@@ -85,10 +85,10 @@ namespace Proof
 		Vector GetWorldRotation()const;
 		Vector GetWorldScale()const;
 		glm::mat4 GetLocalTransform() const {
-			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
-
-			return glm::translate(glm::mat4(1.0f),{Location})
-				* rotation
+			return glm::translate(glm::mat4(1.0f),{Location}) *
+				glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.X),{1,0,0})
+				* glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.Y),{0,1,0})
+				* glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.Z),{0,0,1})
 				* glm::scale(glm::mat4(1.0f),{Scale});
 		}
 

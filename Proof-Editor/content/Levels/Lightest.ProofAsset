@@ -1,0 +1,140 @@
+World: LightTest
+Entities:
+  - Entity: 12000
+    TagComponent:
+      Tag: directioal light
+      tags: []
+    TransformComponent:
+      Location: [0, 105.800003, 0]
+      Rotation: [-18, 25.7000008, -38.4000015]
+      Scale: [1, 1, 1]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
+    LightComponent:
+      CutOff: 1
+      OuterCutOff: 2
+      Constant: 1
+      Linear: 1
+      Quadratic: 1
+      Ambient: [0.11535351, 0.096286431, 0.169354856]
+      Diffuse: [0, 0, 0]
+      Specular: [0, 0, 0]
+      LightType: 0
+  - Entity: 7168
+    TagComponent:
+      Tag: cube
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
+    MeshComponent:
+      Name: Default
+      MeshAssetPointerID: 12067
+      MaterialPointerID: 7493
+  - Entity: 4552
+    TagComponent:
+      Tag: spot light
+      tags: []
+    TransformComponent:
+      Location: [-0.100000001, 1.20000005, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 0.300000012, 1]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
+    LightComponent:
+      CutOff: 1
+      OuterCutOff: 2
+      Constant: 1
+      Linear: 0
+      Quadratic: 1
+      Ambient: [0, 0.940485716, 1]
+      Diffuse: [0, 0, 0]
+      Specular: [0, 0, 0]
+      LightType: 1
+  - Entity: 8420
+    TagComponent:
+      Tag: sponza
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.100000001, 0.100000001, 0.100000001]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
+    MeshComponent:
+      Name: Default
+      MeshAssetPointerID: 19748
+      MaterialPointerID: 0
+  - Entity: 14114
+    TagComponent:
+      Tag: wall
+      tags: []
+    TransformComponent:
+      Location: [-1.41400003, 1.91100001, -0.859000027]
+      Rotation: [0, 0, 0]
+      Scale: [13, 6.19999981, 15.8999996]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
+    MeshComponent:
+      Name: Default
+      MeshAssetPointerID: 12067
+      MaterialPointerID: 0
+  - Entity: 13284
+    TagComponent:
+      Tag: point light
+      tags: []
+    TransformComponent:
+      Location: [0, -1, -0.100000001]
+      Rotation: [-6.5999999, 2.20000005, -34.7999992]
+      Scale: [1, 1, 1.29999995]
+    SubEntityComponet:
+      OwnerEntityID: 14000
+      SubEntities: []
+    LightComponent:
+      CutOff: 2
+      OuterCutOff: 29
+      Constant: 1
+      Linear: 0.0900000036
+      Quadratic: 0
+      Ambient: [0.100000001, 0.100000001, 0.740999997]
+      Diffuse: [0, 0, 0]
+      Specular: [0, 0, 0]
+      LightType: 2
+  - Entity: 18002
+    TagComponent:
+      Tag: wall2
+      tags: []
+    TransformComponent:
+      Location: [3.89767742, 6.95828676, -1.49769664]
+      Rotation: [0, 0, 0]
+      Scale: [10.1280012, 8.66750431, 1.26999986]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: []
+    MeshComponent:
+      Name: Default
+      MeshAssetPointerID: 12067
+      MaterialPointerID: 0
+  - Entity: 14000
+    TagComponent:
+      Tag: flashlight
+      tags: []
+    TransformComponent:
+      Location: [6.5630002, 12.6999998, 8.2510004]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 1, 1.39999998]
+    SubEntityComponet:
+      OwnerEntityID: 0
+      SubEntities: [13284]
+    MeshComponent:
+      Name: Default
+      MeshAssetPointerID: 12067
+      MaterialPointerID: 0

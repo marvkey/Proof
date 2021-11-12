@@ -33,17 +33,25 @@ namespace Proof
 	Editore3D::~Editore3D() {
 	}
 	void Editore3D::OnAttach() {
+	
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 		ActiveWorld = CreateSpecial<World>();
 		m_WorldHierachy.SetContext(ActiveWorld.get());
 		m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
+
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/right.jpg");
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/left.jpg");
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/bottom.jpg");
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/top.jpg");
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/front.jpg");
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/back.jpg");
-		
+
+		ActiveWorld = CreateSpecial<World>();
+		SceneSerializer scerelizer(ActiveWorld.get());
+		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofAsset") == true) {
+			PF_ENGINE_INFO("%s Deserilize perfectly",ActiveWorld->GetName().c_str());
+			m_WorldHierachy.SetContext(ActiveWorld.get());
+		}
 		
 		float skyboxVertices[] = {
 					 // positions          
@@ -409,7 +417,7 @@ namespace Proof
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
-		
+		/*
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		if (ImGui::Begin("Position")) {
 			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GPosition->GetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
@@ -430,7 +438,7 @@ namespace Proof
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
-		
+		*/		
 	}
 
 	void Editore3D::MainToolBar()
