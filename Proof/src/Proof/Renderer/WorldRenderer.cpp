@@ -18,7 +18,7 @@ namespace Proof{
 			Renderer2D::DrawQuad(*Comp);
 		}
 
-		Renderer3DPBR::BeginContext(m_World->m_EditorCamera);
+		//Renderer3DPBR::BeginContext(m_World->m_EditorCamera);
 		for (MeshComponent* Comp : m_World->Registry.SceneMeshComponents) {
 			if (Comp->GetMesh() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);

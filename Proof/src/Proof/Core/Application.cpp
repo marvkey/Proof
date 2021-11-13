@@ -78,18 +78,16 @@ namespace Proof {
             RendererCommand::Enable(ProofRenderTest::DepthTest);
             if (WindowMinimized == false) 
             {
-                ScreenFrameBuffer->Bind();
+               ScreenFrameBuffer->Bind();
                 RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-
                 RendererCommand::SetClearColor(0,0,0,1.0f);
 
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
               //  Renderer::Draw();
-                ScreenFrameBuffer->UnBind();
+               ScreenFrameBuffer->UnBind();
             }
             ImGuiMainLayer->Begin();
-
             for (Layer* layer : MainLayerStack.V_LayerStack)
                 layer->OnImGuiDraw(DeltaTime);
             ImGuiMainLayer->End();

@@ -10,21 +10,32 @@
 namespace Proof
 {
 	class PhysicalBasedRenderer;
+	enum class RendererForm{
+		None=0,
+		DeferedRendering,
+		FowardPlusRendering
+	};
 	class Renderer3DPBR {
 	public:
 		static void Init();
-		static void BeginContext(class EditorCamera& editorCamera);
-		static void BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position);
+		static void BeginContext(class EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer);
+		static void BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer);
 		static void Draw(class MeshComponent& meshComponent);
 		static void Draw(class LightComponent& lightComponent);
 		static PhysicalBasedRenderer* GetRenderer();
 		static void EndContext();
 		static void Reset();
 	private:
-		static void RenderLight();
-		static void RenderMesh();
-		static void LightErrorChecks();
+		static Count<ScreenFrameBuffer> s_RenderFrameBuffer;
+		static bool s_InsideContext;
+		static RendererForm s_RendererForm;
 		static void Render();
+
+		/* Defered Rendering */
+		static void DeferedRender();
+		static void DeferedRendererRenderLight();
+		static void DeferedRendererRenderMesh();
+		/*---------------------------*/
 	};
 	struct PhysicalBasedRendererVertex;
 	struct Proof_API DeferedRendering {
@@ -37,7 +48,7 @@ namespace Proof
 		Count<class Shader>LightShader;
 		DeferedRendering();
 	};
-	struct Proof_API PhysicalBasedRenderer {
+	struct Proof_API PhysicalBasedRenderer { /// Needs to be Renaimed
 		Count<class VertexBuffer> m_VertexBuffer;
 		Count<class Shader> m_Shader;
 		std::unordered_map<uint32_t,uint32_t> m_AmountMeshes;
@@ -48,6 +59,7 @@ namespace Proof
 		static Count<class Texture2D>m_WhiteTexture;
 		DeferedRendering m_DeferedRendering;
 	};
+	
 	
 	struct Proof_API PhysicalBaseRendererGuide{
 	public:

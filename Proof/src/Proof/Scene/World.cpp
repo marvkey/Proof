@@ -84,7 +84,7 @@ namespace Proof{
 			return;
 		}
 		
-		Renderer3DPBR::BeginContext(cameraComp->m_Projection,cameraComp->m_View,*cameraComp->m_Positon);
+		Renderer3DPBR::BeginContext(cameraComp->m_Projection,cameraComp->m_View,*cameraComp->m_Positon,Application::GetScreenBuffer());
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
 			if (Comp->GetMesh() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
@@ -226,7 +226,7 @@ namespace Proof{
 			Renderer3D::RenderLight(*Comp);
 		}
 		*/
-		Renderer3DPBR::BeginContext(m_EditorCamera.m_Projection,m_EditorCamera.m_View,m_EditorCamera.m_Positon);
+		Renderer3DPBR::BeginContext(m_EditorCamera.m_Projection,m_EditorCamera.m_View,m_EditorCamera.m_Positon,Application::GetScreenBuffer());
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
 			if (Comp->GetMesh() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
