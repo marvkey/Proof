@@ -33,7 +33,8 @@ namespace Proof
 	Editore3D::~Editore3D() {
 	}
 	void Editore3D::OnAttach() {
-	
+	//	std::string name =std::format("{} {}","wagwan");
+
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 		ActiveWorld = CreateSpecial<World>();
 		m_WorldHierachy.SetContext(ActiveWorld.get());
@@ -137,12 +138,6 @@ namespace Proof
 			GuizmoType = ImGuizmo::OPERATION::SCALE;
 		}
 
-		if(ActiveWorld->m_CurrentState == WorldState::Edit)
-			ActiveWorld->OnUpdateEditor(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
-		else if(ActiveWorld->m_CurrentState == WorldState::Play)
-			ActiveWorld->OnUpdateRuntime(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
-		else if(ActiveWorld->m_CurrentState== WorldState::Simulate)
-			ActiveWorld->OnSimulatePhysics(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		//glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
 
 		/*
@@ -167,6 +162,12 @@ namespace Proof
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
 		//ImGui::ShowDemoWindow();
+		if (ActiveWorld->m_CurrentState == WorldState::Edit)
+			ActiveWorld->OnUpdateEditor(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
+		else if (ActiveWorld->m_CurrentState == WorldState::Play)
+			ActiveWorld->OnUpdateRuntime(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
+		else if (ActiveWorld->m_CurrentState == WorldState::Simulate)
+			ActiveWorld->OnSimulatePhysics(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		ViewPort();
 		MainToolBar();
 		m_WorldHierachy.ImGuiRender();
@@ -184,13 +185,13 @@ namespace Proof
 			ImGui::Text("%.3f ms/frame %.1f FPS",FrameTime::GetFrameMS(),FrameTime::GetFrameFPS());
 
 			ImGui::TextColored({1.0,0,0,1},"RENDERER 3D");
-			ImGui::Text("DrawCalls %i",Renderer3D::Render3DStats::DrawCalls);
-			ImGui::Text("Number Of MeshInstances %i",Renderer3D::Render3DStats::NumberOfInstances);
-			ImGui::Text("Amount Of Meshes Drawn %i",Renderer3D::Render3DStats::AmountDrawn);
+			ImGui::Text("DrawCalls %i",ActiveWorld->RenderSpecs.RenderStats.DrawCalls);
+			ImGui::Text("Number Of MeshInstances %i",ActiveWorld->RenderSpecs.RenderStats.Instances);
 
-			ImGui::TextColored({1.0,0,0,1},"RENDERER 2D");
-			ImGui::Text("DrawCalls %i",Renderer2D::Renderer2DStats::m_DrawCalls);
-			ImGui::Text("Number of Quads %i",Renderer2D::Renderer2DStats::m_QuadCount);
+			ImGui::Text("Amount Of Directional Light %i",ActiveWorld->RenderSpecs.RenderStats.AmountDirectionalLight);
+			ImGui::Text("Amount Of Point Light%i",ActiveWorld->RenderSpecs.RenderStats.AmountPointLight);
+			ImGui::Text("Amount Of Spot Light %i",ActiveWorld->RenderSpecs.RenderStats.AmountSpotLight);
+
 		}
 		ImGui::End();
 
@@ -314,6 +315,7 @@ namespace Proof
 		ImGui::End();
 	}
 	void Editore3D::ViewPort() {
+
 		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		static bool Open = true;
@@ -417,7 +419,7 @@ namespace Proof
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
-		/*
+		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		if (ImGui::Begin("Position")) {
 			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GPosition->GetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
@@ -438,7 +440,7 @@ namespace Proof
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
-		*/		
+			
 	}
 
 	void Editore3D::MainToolBar()

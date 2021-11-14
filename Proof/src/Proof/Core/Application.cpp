@@ -37,7 +37,6 @@ namespace Proof {
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
         dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent));
-        
          for (Layer* layer : MainLayerStack.V_LayerStack)
             layer->OnEvent(e);
     }
@@ -78,14 +77,12 @@ namespace Proof {
             RendererCommand::Enable(ProofRenderTest::DepthTest);
             if (WindowMinimized == false) 
             {
-               ScreenFrameBuffer->Bind();
-                RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-                RendererCommand::SetClearColor(0,0,0,1.0f);
-
+              // ScreenFrameBuffer->Bind();
+             //   RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+            //    RendererCommand::SetClearColor();
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
-              //  Renderer::Draw();
-               ScreenFrameBuffer->UnBind();
+            //    ScreenFrameBuffer->UnBind();
             }
             ImGuiMainLayer->Begin();
             for (Layer* layer : MainLayerStack.V_LayerStack)

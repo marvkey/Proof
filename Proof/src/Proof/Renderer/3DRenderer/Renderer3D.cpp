@@ -109,8 +109,9 @@ namespace Proof
     void Renderer3D::Draw(MeshComponent& meshComponent) {
         
         if (Renderer3DInstance->SceneHasAmountMeshes(meshComponent.GetMeshPointerID()) == true) {
-            auto& Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
-            Map->second += 1;
+           // auto Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
+            //Map->second += 1;
+            Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID())->second++;
             auto InstanceSize = Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.find(meshComponent.GetMeshPointerID());
 
             auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
@@ -193,8 +194,8 @@ namespace Proof
             Renderer3DInstance->m_VertexBuffer->Bind();
             Renderer3DInstance->m_VertexBuffer->AddData(&m_InstanceTransforms[SizeofOffset],m_InstanceTransforms.size() * sizeof(InstanceRendererVertex));
             uint32_t TempID = s_DifferentID[Size];
-            auto& TempMesh = Renderer3DInstance->m_Meshes.find(TempID);
-            auto& TempAmountMeshes = Renderer3DInstance->m_AmountMeshes.find(TempID);
+            auto TempMesh = Renderer3DInstance->m_Meshes.find(TempID);
+            auto TempAmountMeshes = Renderer3DInstance->m_AmountMeshes.find(TempID);
             if (TempMesh->second.GetMesh()->textures_loaded.size() > 0) {
                 Renderer3DInstance->m_Shader->Bind();
                 Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);

@@ -220,6 +220,7 @@ namespace Proof
 			Point = 1,
 			Spot = 2
 		};
+		float Intensity =1;
 		float m_CutOff=1; // gets put in cos and radias before use
 		float m_OuterCutOff=2; // gets put in cos and radias before use
 

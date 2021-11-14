@@ -2,7 +2,7 @@
 #include "Proof/ProofCore.h"
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
-
+#include "Proof/Scene/World.h"
 #include "Panel.h"
 
 namespace Proof
@@ -26,7 +26,7 @@ namespace Proof
 		uint32_t m_LastWidht=0,m_LastHeight=0;
 		uint64_t m_ID = Math::RandUINT<uint64_t>(1,18000000000000000000);
 		class MeshComponent* mesh;
-		class World* m_World;
+		Special<World> m_World;
 		class MeshAsset* m_MeshAsset;
 		WorldRenderer m_WorldRenderer;
 		SceneRendererType m_Type;

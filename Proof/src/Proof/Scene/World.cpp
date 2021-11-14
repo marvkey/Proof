@@ -48,7 +48,9 @@ namespace Proof{
 	
 	World::World()
 	{
-		CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
+		//CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
+		m_EditorCamera.m_FarPlane = 2000;
+		m_EditorCamera.m_Sensitivity = 25;
 	}
 	void World::OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height) {
 		OnUpdate(DeltaTime,width,height);
@@ -84,7 +86,7 @@ namespace Proof{
 			return;
 		}
 		
-		Renderer3DPBR::BeginContext(cameraComp->m_Projection,cameraComp->m_View,*cameraComp->m_Positon,Application::GetScreenBuffer());
+		Renderer3DPBR::BeginContext(cameraComp->m_Projection,cameraComp->m_View,*cameraComp->m_Positon,Application::GetScreenBuffer(),&RenderSpecs);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
 			if (Comp->GetMesh() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
@@ -208,25 +210,8 @@ namespace Proof{
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height){
-		m_EditorCamera.m_FarPlane =2000;
-		m_EditorCamera.m_Sensitivity =25;
-		Renderer2D::BeginContext(m_EditorCamera);
-		for (SpriteComponent* Comp : Registry.SpriteComponents) {
-			Renderer2D::DrawQuad(*Comp);
-		}
-/*
-		Renderer3D::BeginContext(Projection,EditorCamera);
-		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetModel()!= nullptr){
-				Renderer3D::Draw(*Comp);
-			}
-		}
-
-		for(LightComponent* Comp :Registry.LightComponents){
-			Renderer3D::RenderLight(*Comp);
-		}
-		*/
-		Renderer3DPBR::BeginContext(m_EditorCamera.m_Projection,m_EditorCamera.m_View,m_EditorCamera.m_Positon,Application::GetScreenBuffer());
+		
+		Renderer3DPBR::BeginContext(m_EditorCamera.m_Projection,m_EditorCamera.m_View,m_EditorCamera.m_Positon,Application::GetScreenBuffer(),&RenderSpecs);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
 			if (Comp->GetMesh() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
@@ -236,31 +221,6 @@ namespace Proof{
 			Renderer3DPBR::Draw(*Comp);
 		}
 		Renderer3DPBR::EndContext();
-
-		/*
-		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT",6);
-
-		m_WorldCubeMap->Bind(4);
-		PrefelterMap->Bind(5);
-
-		m_brdflTexture->Bind(6);
-		Renderer3DPBR::EndContext();
-
-
-		RendererCommand::DepthFunc(DepthType::Equal);
-		backgroundShader->Bind();
-		backgroundShader->SetInt("environmentMap",0);
-		m_WorldCubeMap->Bind(0);
-		//PrefelterMap->Bind(0);
-		//m_WorldCubeMapIrradiance->Bind();
-		m_IBLSkyBoxVertexArray->Bind();
-		RendererCommand::DrawArray(36);
-		m_IBLSkyBoxVertexArray->UnBind();
-		RendererCommand::DepthFunc(DepthType::Less);
-		*/
 		m_EditorCamera.OnUpdate(DeltaTime,width,height);
 	}
 

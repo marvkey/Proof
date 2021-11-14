@@ -18,7 +18,7 @@ namespace Proof
 		}
 		void Renderer();
 		uint32_t GetWorldTexture(){
-			return m_ScreenFrameBuffer->GetFrameBufferID();
+			return m_ScreenFrameBuffer->GetTexture();
 		}
 		void SetRendererPause(bool value){
 			m_RendererPaused =value;
@@ -28,6 +28,6 @@ namespace Proof
 		bool  m_RendererPaused =false;
 		uint32_t m_Width=200,m_Height=200;
 		class World* m_World=nullptr;
-		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
+		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;	
 	};
 }

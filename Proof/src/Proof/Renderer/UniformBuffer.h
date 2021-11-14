@@ -12,8 +12,6 @@ namespace Proof
 		*/
 		static Count<UniformBuffer>Create(uint32_t size,uint32_t binding);
 
-	
-
 		/**
 		* changes the data of a set data in the uniform buffer
 		* @param Data the location of the variable or variables given an array

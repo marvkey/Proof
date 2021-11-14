@@ -4,8 +4,8 @@
 namespace Proof {
 	class Proof_API CurrentWindow {
 	public:
-		static unsigned int GetWindowHeight();
-		static unsigned int GetWindowWidth();
+		static uint32_t GetWindowHeight();
+		static uint32_t GetWindowWidth();
 		static void SetWindowSize(int width, int height);
 		static ::GLFWwindow* GetWindow();
 		static class WindowsWindow& GetWindowClass();

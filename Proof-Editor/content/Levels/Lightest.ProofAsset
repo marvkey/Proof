@@ -17,7 +17,7 @@ Entities:
       Constant: 1
       Linear: 1
       Quadratic: 1
-      Ambient: [6.99775114e-07, 5.92741969e-07, 9.99999997e-07]
+      Ambient: [0.999993205, 0.999989986, 1]
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
       LightType: 0
@@ -38,10 +38,10 @@ Entities:
       MaterialPointerID: 7493
   - Entity: 4552
     TagComponent:
-      Tag: spot light
+      Tag: point light
       tags: []
     TransformComponent:
-      Location: [1.39999998, 0.5, -4.19999981]
+      Location: [1.39999998, 1.39999998, -4.19999981]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SubEntityComponet:
@@ -89,19 +89,19 @@ Entities:
       MaterialPointerID: 0
   - Entity: 13284
     TagComponent:
-      Tag: point light
+      Tag: spot light
       tags: []
     TransformComponent:
-      Location: [-429.817749, 87.0704651, -68.3773422]
-      Rotation: [0.0163687654, -0.000147625338, -0.00267486507]
-      Scale: [3.17473364, 1.99999988, 2.40000033]
+      Location: [0, 0, 0]
+      Rotation: [0.00880039483, 8.56704864e-05, -0.000147102081]
+      Scale: [251.172562, 497.998535, 696.805298]
     SubEntityComponet:
       OwnerEntityID: 14000
       SubEntities: []
     LightComponent:
-      CutOff: 0.229000002
+      CutOff: 0.261000007
       OuterCutOff: 11.9230003
-      Constant: 2
+      Constant: 0.899999976
       Linear: 0
       Quadratic: 0
       Ambient: [0.368626446, 0.385130316, 0.879032254]
@@ -128,8 +128,8 @@ Entities:
       Tag: flashlight
       tags: []
     TransformComponent:
-      Location: [-61.4025421, 12.4386377, -9.76819134]
-      Rotation: [0.50204736, -0.00577495527, -0.0819639638]
+      Location: [65.8635101, 17.9529133, -2.07397795]
+      Rotation: [-0.998015702, -0.0525162704, 0.0347377285]
       Scale: [0.5, 1, 1.39999998]
     SubEntityComponet:
       OwnerEntityID: 0
@@ -139,6 +139,6 @@ Entities:
       NearPlane: 0.100000001
       FarPlane: 1000
       FOV: 45
-      Width: 773
-      Height: 418
+      Width: 250
+      Height: 250
       UpVector: [0, 1, 0]

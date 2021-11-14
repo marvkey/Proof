@@ -422,10 +422,11 @@ namespace Proof{
 
 					if(LightComp.m_LightType == LightComp.Direction){
 						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
-						ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
-						ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
+						ImGui::DragFloat("Intensity",&LightComp.Intensity,0.01,0.0f,100);
 					}
 					else if(LightComp.m_LightType == LightComp.Point){
+						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
+						ImGui::DragFloat("Intensity",&LightComp.Intensity,0.01,0.0f,100);
 						ImGui::Text("Constant");
 						ImGui::SameLine();
 						ImGui::DragFloat("##Constant",&LightComp.m_Constant,0.001);
@@ -433,11 +434,12 @@ namespace Proof{
 						ImGui::DragFloat("Quadratic",&LightComp.m_Quadratic,0.001);
 
 
-						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
-						ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
-						ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
 						
 					}else if(LightComp.m_LightType == LightComp.Spot){
+						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
+						ImGui::DragFloat("Intensity",&LightComp.Intensity,0.01,0.0f,100);
+
+
 						ImGui::NewLine();
 						ImGui::DragFloat("Constant",&LightComp.m_Constant,0.001);
 						ImGui::DragFloat("Linear",&LightComp.m_Linear,0.001);
@@ -445,9 +447,6 @@ namespace Proof{
 						ImGui::DragFloat("CutOff",&LightComp.m_CutOff,0.001);
 						ImGui::DragFloat("Outer-Cutoff",&LightComp.m_OuterCutOff,0.001);
 
-						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
-						ImGui::ColorEdit3("Diffuse",glm::value_ptr(LightComp.m_Diffuse));
-						ImGui::ColorEdit3("Specular",glm::value_ptr(LightComp.m_Specular));
 					}		
 					int elementCount = 2;
 					const char* elementNames[] = {"Direction","Point","Spot"};

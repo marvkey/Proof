@@ -53,6 +53,7 @@ void main() {
 layout(location = 0) out vec4 gPosition;
 layout(location = 1) out vec4 gNormal;
 layout(location = 2) out vec4 gAlbedoSpec;
+layout(location = 3) out vec4 gMaterialSpec;
 in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normal;
@@ -64,24 +65,26 @@ uniform sampler2D roughnessMap;
 uniform sampler2D DiffuseShader;
 
 in vec3  MaterialColour;
-in float Materialmetallic;
-in float Materialroughness;
-in float MaterialAO;
+flat in float Materialmetallic;
+flat in float Materialroughness;
+flat in float MaterialAO;
 flat in int MaterialEnabled;
 
 void main() {
-    // store the fragment position vector in the first gbuffer texture
+ // store the fragment position vector in the first gbuffer texture
     gPosition.rgb = FragPos;
-    gPosition.a =1;
+    gPosition.a = 1;
     // also store the per-fragment normals into the gbuffer
     gNormal.rgb = normalize(Normal);
-    gNormal.a =1;
-    // and the diffuse per-fragment color
-    if(MaterialEnabled==1){
-        gAlbedoSpec.rgb = texture(albedoMap,TexCoords).rgb*MaterialColour;
+    gNormal.a = 1;
+    // and the diffuse per-fragment color   
+    if (MaterialEnabled == 1) {
+        gAlbedoSpec.rgb = texture(albedoMap,TexCoords).rgb * MaterialColour;
    // // store specular intensity in gAlbedoSpec's alpha component
-        gAlbedoSpec.a = texture(metallicMap,TexCoords).r*Materialmetallic;
-    }else{
+        gAlbedoSpec.a = texture(metallicMap,TexCoords).r * Materialmetallic;
+    }
+    else {
         gAlbedoSpec = texture(DiffuseShader,TexCoords);
     }
+  
 }

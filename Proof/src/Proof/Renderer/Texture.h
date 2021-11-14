@@ -55,6 +55,7 @@ namespace Proof {
 	public:
 		static enum class TextureType {
 			None=0,
+			Ambient,
 			Diffuse,
 			Specular,
 			Normal,

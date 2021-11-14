@@ -145,40 +145,39 @@ namespace Proof
 		Joystick14 = 13,
 		Joystick15 = 14,
 		Joystick16 = 15,
-		JoystickLast = Joystick16
 	};
 	enum class GamePadButton {
-		Gampad_Button_A = 0,
-		Gampad_Button_B = 1,
-		Gampad_Button_X = 2,
-		Gampad_Button_Y = 3,
-		Gampad_Button_Left_Bumper = 4,
-		Gampad_Button_Right_Bumper = 5,
-		Gampad_Button_Back = 6,
-		Gampad_Button_Start = 7,
-		Gampad_Button_Guide = 8,
-		Gampad_Button_Left_Thumb = 9,
-		Gampad_Button_Right_Thumb = 10,
-		Gampad_Button_DPAD_UP = 11,
-		Gampad_Button_DPAD_RIGHT = 12,
-		Gampad_Button_DPAD_DOWN = 13,
-		Gampad_Button_DPAD_LEFT = 14,
-		Gampad_Button_LAST = Gampad_Button_DPAD_LEFT,
+		ButtonA = 0,
+		ButtonB = 1,
+		ButtonX = 2,
+		ButtonY = 3,
+		ButtonLeftBumper = 4,
+		ButtonRightBumper = 5,
+		ButtonBack = 6,
+		ButtonStart = 7,
+		ButtonGuide = 8,
+		ButtonLeftThumb = 9,
+		ButtonRightThumb = 10,
+		ButtonDPADUP = 11,
+		ButtonDPADRIGHT = 12,
+		ButtonDPADDOWN = 13,
+		ButtonDPADLEFT = 14,
 
-		Gampad_Button_CROSS = Gampad_Button_A,
-		Gampad_Button_CIRCLE = Gampad_Button_B,
-		Gampad_Button_SQUARE = Gampad_Button_X,
-		Gampad_Button_TRIANGLE = Gampad_Button_Y,
+		ButtonCROSS = ButtonA,
+		ButtonCIRCLE = ButtonB,
+		ButtonSQUARE = ButtonX,
+		ButtonTRIANGLE = ButtonY,
 
-		GamePad_Axis_LEFT_X = 0,
-		GamePad_Axis_LEFT_Y = 1,
-		GamePad_Axis_RIGHT_X = 2,
-		GamePad_Axis_RIGHT_Y = 3,
-		GamePad_Axis_LEFT_TRIGGER = 4,
-		GamePad_Axis_RIGHT_TRIGGER = 5,
-		GamePad_Axis_LAST = GamePad_Axis_RIGHT_TRIGGER
+	
 	};
-
+	enum class GamePadAxis{
+		AxisLEFTX = 0,
+		AxisLEFTY = 1,
+		AxisRIGHTX = 2,
+		AxisRIGHTY = 3,
+		AxisLEFtTRIGGER = 4,
+		AxisRIGHTTRIGGER = 5,
+	};
 	enum class InputEvent {
 		UnknownKey = -1,
 		KeyReleased = 0,

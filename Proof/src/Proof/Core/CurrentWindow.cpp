@@ -34,10 +34,10 @@ namespace Proof {
 		glfwSetWindowSize(GetWindow(),width, height);
 	
 	}
-	unsigned int CurrentWindow::GetWindowWidth() {
+	uint32_t CurrentWindow::GetWindowWidth() {
 		return Application::MainWindow->Width;
 	}
-	unsigned int CurrentWindow::GetWindowHeight() {
+	uint32_t CurrentWindow::GetWindowHeight() {
 		return Application::MainWindow->Height;
 	}
 	std::pair<double, double> CurrentWindow::GetMouseLocation(){

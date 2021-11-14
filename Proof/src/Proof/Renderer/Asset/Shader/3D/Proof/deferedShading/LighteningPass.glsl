@@ -16,6 +16,7 @@ void main() {
 struct DirectionalLight {
     vec3 Direction;
     vec3 Ambient;
+    float Intensity;
 };
 
 struct PointLight {
@@ -27,6 +28,7 @@ struct PointLight {
     float Quadratic;
 
     float Radius;
+    float  Intensity;
 };
 
 struct SpotLight {
@@ -42,6 +44,7 @@ struct SpotLight {
     float Quadratic;
 
     float Radius;
+    float Intensity;
 };
 
 uniform int v_NrDirectionalLight;
@@ -58,6 +61,7 @@ in vec2 TexCoords;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
+uniform sampler2D gMaterialSpec;
 layout(std140,binding = 1) uniform CameraData{
     mat4 ProjectionMatrix;
     mat4 ViewMatrix;
@@ -98,7 +102,7 @@ vec3 CalcDirLight(DirectionalLight light,vec3 normal,vec3 viewDir,vec3 matcolour
     vec3 ambient = light.Ambient * matcolour;                 // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
     vec3 diffuse = diff * light.Ambient* matcolour;         // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
     vec3 specular = spec * light.Ambient* matcolour;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    return (ambient + diffuse + specular);
+    return (ambient + diffuse + specular)*light.Intensity;
 }
 
 vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 matcolour,float shininess) {
@@ -117,7 +121,7 @@ vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
-    return (ambient + diffuse + specular);
+    return (ambient + diffuse + specular)*light.Intensity;
 
 }
 
@@ -139,5 +143,5 @@ vec3 CalcSpotLight(SpotLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 ma
     ambient *= attenuation * intensity;
     diffuse *= attenuation * intensity;
     specular *= attenuation * intensity;
-    return (ambient + diffuse + specular);
+    return (ambient + diffuse + specular)*light.Intensity;
 }

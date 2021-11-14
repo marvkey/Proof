@@ -9,8 +9,7 @@ namespace Proof {
 	public:
 		virtual void SetEventCallback(const std::function<void(Event&)>& callback) = 0;
 		virtual void WindowUpdate() = 0;
-		virtual int createWindow() = 0;
 		virtual  void* GetWindow()=0;
-		virtual int WindowEnd() = 0;
+		virtual ~Window(){};
 	};
 }

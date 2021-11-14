@@ -41,8 +41,8 @@ namespace Proof {
             return m_InputEventEnabled;
         }
     private:
-        virtual int WindowEnd()override;
-        virtual	int createWindow()override;
+        virtual int WindowEnd();
+        virtual	int createWindow();
         int Width =800, Height=500;
         ::GLFWwindow* MainWindow;
         static void key_callback(::GLFWwindow* window, int key, int scancode, int action, int mods);

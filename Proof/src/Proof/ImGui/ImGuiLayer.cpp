@@ -32,7 +32,7 @@ namespace Proof {
 		io.FontDefault =io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Regular.ttf",17.0f);
 		SetDarkTheme();
 		ImGui_ImplGlfw_InitForOpenGL(CurrentWindow::GetWindow(), true);
-		ImGui_ImplOpenGL3_Init("#version 410");
+		ImGui_ImplOpenGL3_Init("#version 450");
 	}
 	void ImGuiLayer::OnDetach() {
 		Layer::OnDetach();

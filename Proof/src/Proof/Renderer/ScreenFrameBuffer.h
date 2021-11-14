@@ -39,7 +39,6 @@ namespace Proof {
 		*/
 		virtual uint32_t GetFrameBufferID() = 0;
 
-		virtual void ReadBuffer() = 0;
 		virtual void WriteBuffer(const uint32_t m_FrameBufferID) = 0;
 	};
 }

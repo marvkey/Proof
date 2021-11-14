@@ -13,7 +13,7 @@ namespace Proof {
 	void Renderer::Init() {
 		Renderer3DCore::Init();
 		Renderer3DPBR::Init();
-		Renderer3DPBR::Reset();
+		//Renderer3DPBR::Reset();
 		Renderer2D::Init();
 		Renderer2D::Reset();
 	}

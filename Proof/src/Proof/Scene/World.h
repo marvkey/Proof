@@ -5,6 +5,7 @@
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/VertexArray.h"
 #include "Proof/Renderer/FrameBuffer.h"
+#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 class FrameTime;
 
 namespace Proof{
@@ -38,6 +39,9 @@ namespace Proof{
 		friend class WorldRenderer;
 		void HandleInput();
 		void DeleteEntity(class Entity& ent);
+		struct DeferedRenderer RenderSpecs;
+
+		EditorCamera m_EditorCamera ={200,200};
 	private:
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
 		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height);
@@ -48,7 +52,6 @@ namespace Proof{
 		template<class T>
 		void OnComponentAdded(Entity Entity,T* component);
 		std::string m_Path;
-		EditorCamera m_EditorCamera ={200,200};
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		Count<CubeMap> m_WorldCubeMap;
 		Count<CubeMap> m_WorldCubeMapIrradiance;

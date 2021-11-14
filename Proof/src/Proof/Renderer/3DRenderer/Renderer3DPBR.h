@@ -15,11 +15,12 @@ namespace Proof
 		DeferedRendering,
 		FowardPlusRendering
 	};
+	struct DeferedRenderer;
 	class Renderer3DPBR {
 	public:
 		static void Init();
-		static void BeginContext(class EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer);
-		static void BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer);
+		static void BeginContext(class EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,DeferedRenderer* renderSpec =nullptr);
+		static void BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer,DeferedRenderer* renderSpec = nullptr);
 		static void Draw(class MeshComponent& meshComponent);
 		static void Draw(class LightComponent& lightComponent);
 		static PhysicalBasedRenderer* GetRenderer();
@@ -35,18 +36,57 @@ namespace Proof
 		static void DeferedRender();
 		static void DeferedRendererRenderLight();
 		static void DeferedRendererRenderMesh();
+		static DeferedRenderer* s_DeferedRenderer; 
 		/*---------------------------*/
 	};
 	struct PhysicalBasedRendererVertex;
-	struct Proof_API DeferedRendering {
+	struct Proof_API DeferedRenderingData {
 		Count<class FrameBuffer> Gbuffer;
 		Count<class Texture2D>GPosition;
-		Count<class Texture2D>GNormal;
 		Count<class Texture2D>GAlbedo;
+		Count<class Texture2D>GNormal;
+		Count<class Texture2D>GMaterial;
 		Count<class RenderBuffer>RenderBuffer;
 		Count<class Shader>MeshShader;
 		Count<class Shader>LightShader;
-		DeferedRendering();
+		DeferedRenderingData();
+	};
+	struct DeferedRenderer{
+	public:
+		DeferedRenderer() =default;
+		struct Stats{
+		public:
+			Stats()=default;
+			uint32_t DrawCalls =0;
+			uint32_t Instances =0;
+			uint32_t AmountLight =0;
+			uint32_t AmountDirectionalLight=0;
+			uint32_t AmountPointLight =0;
+			uint32_t AmountSpotLight =0;
+		private:
+			void Reset(){
+				Stats();
+			}
+		};
+		Stats RenderStats;
+		uint32_t GetPositionTextureID(){
+			return m_PositionTexture;
+		}
+		uint32_t GetNormalTextureID(){
+			return m_NormalTexture;
+		}
+		uint32_t GetAlbedoTexture(){
+			return m_AlbedoTexture;
+		}
+		friend class Renderer3DPBR;
+	private:
+		void Reset(){
+			DeferedRenderer();
+			RenderStats = Stats();
+		}
+		uint32_t m_PositionTexture=0;
+		uint32_t m_NormalTexture=0;
+		uint32_t m_AlbedoTexture=0;
 	};
 	struct Proof_API PhysicalBasedRenderer { /// Needs to be Renaimed
 		Count<class VertexBuffer> m_VertexBuffer;
@@ -57,7 +97,7 @@ namespace Proof
 		std::vector<PhysicalBasedRendererVertex>m_Transforms;
 		bool SceneHasAmountMeshes(uint32_t ID) { return m_AmountMeshes.find(ID) != m_AmountMeshes.end(); };
 		static Count<class Texture2D>m_WhiteTexture;
-		DeferedRendering m_DeferedRendering;
+		DeferedRenderingData m_DeferedRendering;
 	};
 	
 	

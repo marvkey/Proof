@@ -37,8 +37,9 @@ namespace Proof {
 		* returns the FrameBuffer ID
 		*/
 		virtual uint32_t GetFrameBufferID(){return m_ID;}
-
-		virtual void ReadBuffer();
+		/**
+		* Reads the data from this frame buffer and puts in the next buffer
+		*/
 		virtual void WriteBuffer(const uint32_t m_FrameBufferID);
 	private:
 		uint32_t m_TextureID;
