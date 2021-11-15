@@ -21,14 +21,18 @@ namespace Proof {
 	void OpenGLScreenFrameBuffer::UnBind() {
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 	}
-
 	void OpenGLScreenFrameBuffer::Resize(uint32_t Width,uint32_t Height){
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glDeleteFramebuffers(1,&m_ID);
 		glDeleteTextures(1,&m_ID);
 		glDeleteRenderbuffers(1,&m_ID);
 		m_FrameWidth = Width;
 		m_FrameHeight = Height;
 		Instaniate();
+	}
+
+	uint32_t OpenGLScreenFrameBuffer::GetTexture() {
+		return m_TextureID;
 	}
 
 	
@@ -54,7 +58,7 @@ namespace Proof {
 		glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH24_STENCIL8,m_FrameWidth,m_FrameHeight); 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_STENCIL_ATTACHMENT,GL_RENDERBUFFER,m_RenderID);
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-			PF_ENGINE_ERROR("Frame Buffer is not complete");
+			PF_ENGINE_ERROR("Screen Frame Buffer is not complete");
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 	}
 }

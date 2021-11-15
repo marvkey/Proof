@@ -48,12 +48,12 @@ namespace Proof{
 	
 	World::World()
 	{
-		//CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
+		CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
 		m_EditorCamera.m_FarPlane = 2000;
 		m_EditorCamera.m_Sensitivity = 25;
 	}
-	void World::OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height) {
-		OnUpdate(DeltaTime,width,height);
+	void World::OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR) {
+		OnUpdate(DeltaTime,width,height,usePBR);
 	}
 
 	void World::OnUpdateEditorNoDraw(FrameTime DeltaTime,uint32_t width,uint32_t height) {
@@ -209,8 +209,8 @@ namespace Proof{
 		Registry.Delete(ent.GetID());
 	}
 
-	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height){
-		
+	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){
+		RenderSpecs.RendererTechnique = RenderTechnique::DeferedRendering;
 		Renderer3DPBR::BeginContext(m_EditorCamera.m_Projection,m_EditorCamera.m_View,m_EditorCamera.m_Positon,Application::GetScreenBuffer(),&RenderSpecs);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
 			if (Comp->GetMesh() != nullptr) {
@@ -397,7 +397,7 @@ namespace Proof{
 		RendererCommand::DepthFunc(DepthType::Less);
 		m_CaptureFBO->UnBind();
 		RendererCommand::SetViewPort(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
-	}
+	}	
 
 	template<class T>
 	void World::OnComponentAdded(Entity _Entity,T* component) {

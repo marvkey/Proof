@@ -162,21 +162,23 @@ namespace Proof
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
 		//ImGui::ShowDemoWindow();
+		for (auto& a : m_AllPanels) {
+			a.second->ImGuiRender(DeltaTime);
+		}
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
 			ActiveWorld->OnUpdateEditor(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		else if (ActiveWorld->m_CurrentState == WorldState::Play)
 			ActiveWorld->OnUpdateRuntime(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		else if (ActiveWorld->m_CurrentState == WorldState::Simulate)
 			ActiveWorld->OnSimulatePhysics(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
+		
 		ViewPort();
+		
 		MainToolBar();
+		
 		m_WorldHierachy.ImGuiRender();
 		m_CurrentContentBrowserPanel.ImGuiRender();
 		Logger();
-
-		for(auto& a: m_AllPanels){
-			a.second->ImGuiRender(DeltaTime);
-		}
 		if (ImGui::Begin("Renderer Stastitics")) {
 			ImGui::TextColored({1.0,0,0,1},"RENDERER SPECS");
 			ImGui::Text("Renderer Company: %s",Renderer::GetRenderCompany().c_str());
@@ -339,7 +341,7 @@ namespace Proof
 			//else {
 			//	CurrentWindow::SetWindowInputEvent(false);
 			//}
-			
+			RendererCommand::SetViewPort(ViewPortPanelSize.x,ViewPortPanelSize.y);
 			uint32_t Text = Application::GetScreenBuffer()->GetTexture();
 			ImGui::Image((ImTextureID)Text,ImVec2{_ViewPortSize.x,_ViewPortSize.y},ImVec2{0,1},ImVec2{1,0});
 			// GUIZMOS

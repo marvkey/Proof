@@ -32,7 +32,7 @@ namespace Proof {
 		/**
 		* returns the Texture
 		*/
-		virtual uint32_t GetTexture() { return m_TextureID; }
+		virtual uint32_t GetTexture();
 		/**
 		* returns the FrameBuffer ID
 		*/
@@ -41,6 +41,9 @@ namespace Proof {
 		* Reads the data from this frame buffer and puts in the next buffer
 		*/
 		virtual void WriteBuffer(const uint32_t m_FrameBufferID);
+
+		virtual uint32_t GetFrameWidth(){return m_FrameWidth;}
+		virtual uint32_t GetFrameHeight(){return m_FrameHeight;}
 	private:
 		uint32_t m_TextureID;
 		uint32_t m_ID;

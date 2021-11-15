@@ -20,8 +20,7 @@ namespace Proof{
 	Count<class Texture2D>PhysicalBasedRenderer::m_WhiteTexture;
 	bool Renderer3DPBR::s_InsideContext=false;
 	Count<ScreenFrameBuffer> Renderer3DPBR::s_RenderFrameBuffer =nullptr;
-	DeferedRenderer* Renderer3DPBR::s_DeferedRenderer =nullptr;
-	RendererForm Renderer3DPBR::s_RendererForm = RendererForm::None;
+	RendererData* Renderer3DPBR::s_RendererData =nullptr;
 	static uint32_t Temp2 = (sizeof(glm::vec4));
 	static uint32_t Temp3 = (sizeof(glm::vec4) * 2);
 	static uint32_t Temp4 = (sizeof(glm::vec4) * 3);
@@ -34,6 +33,7 @@ namespace Proof{
 	uint32_t NumDirLights=0;
 	uint32_t NumPointLights=0;
 	uint32_t NumSpotLights=0;
+	uint32_t NumLights = 0;
 	static CameraData s_CurrentCamera;
 	static DrawType s_WorldDrawType = DrawType::Triangles;
 	void Renderer3DPBR::Init() {
@@ -44,24 +44,18 @@ namespace Proof{
 		uint32_t WhiteTextureImage = 0xffffffff;
 		s_PBRInstance->m_WhiteTexture->SetData(&WhiteTextureImage,sizeof(uint32_t));
 	}
-	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,DeferedRenderer* renderSpec) {
+	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,RendererData* renderSpec) {
 		BeginContext(editorCamera.m_Projection,editorCamera.m_View,editorCamera.m_Positon,frameBuffer,renderSpec);
 	}
-	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer,DeferedRenderer* renderSpec ) {
+	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer,RendererData* renderSpec ) {
 		s_CurrentCamera = {projection,view,Position};
 		Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera,sizeof(CameraData));
 		PF_CORE_ASSERT(s_InsideContext == false,"Cannot start a new Render COntext if Previous Render COntext is not closed");
 		s_InsideContext = true;
 		s_RenderFrameBuffer = frameBuffer;
-		s_DeferedRenderer = renderSpec;
+		s_RendererData = renderSpec;
 		if (renderSpec != nullptr)
 			renderSpec->Reset();
-		/*
-		frameBuffer->Bind();
-		RendererCommand::SetClearColor();
-		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-		frameBuffer->UnBind();
-		*/
 	}
 	void Renderer3DPBR::Draw(MeshComponent& meshComponent) {
 		int usingMaterial = meshComponent.HasMaterial();
@@ -91,6 +85,15 @@ namespace Proof{
 		}
 	}
 	void Renderer3DPBR::Draw(LightComponent& lightComponent) {
+		if(s_RendererData->RendererTechnique == RenderTechnique::FowardRendering){
+			s_PBRInstance->m_Shader->Bind();
+			std::string LightPos = "lightPositions[" + std::to_string(NumLights) + "]";
+			std::string LightColour = "lightColors[" + std::to_string(NumLights) + "]";
+			s_PBRInstance->m_Shader->SetVec3(LightPos,{lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
+			s_PBRInstance->m_Shader->SetVec3(LightColour,lightComponent.m_Ambient);
+			NumLights++;
+			return;
+		}
 		s_PBRInstance->m_DeferedRendering.LightShader->Bind();
 	
 		if (lightComponent.m_LightType == lightComponent.Direction && NumDirLights < 150) {
@@ -145,6 +148,8 @@ namespace Proof{
 		s_RenderFrameBuffer->UnBind();
 		s_RenderFrameBuffer = nullptr;
 		s_InsideContext = false;
+		s_RendererData = nullptr;
+		s_PBRInstance->m_Shader->UnBind();
 	}
 	void Renderer3DPBR::Reset() {
 		s_PBRInstance->m_AmountMeshes.clear();
@@ -155,6 +160,7 @@ namespace Proof{
 		NumDirLights = 0;
 		NumPointLights = 0;
 		NumSpotLights = 0;
+		NumLights =0;
 	}
 	unsigned int quadVAO1 = 0;
 	unsigned int quadVBO1;
@@ -184,29 +190,33 @@ namespace Proof{
 	}
 	
 	void Renderer3DPBR::Render() {
-		DeferedRender();
+		if (s_RendererData->RendererTechnique == RenderTechnique::DeferedRendering) 
+			DeferedRender();
+		else
+			FowardRender();
 	}
 	
 	void Renderer3DPBR::DeferedRender(){
 		DeferedRendererRenderMesh();
 		DeferedRendererRenderLight();
-		if (s_DifferentID.size() == 0)
-			return;
+		//if (s_DifferentID.size() == 0)
+		//	return;
 		s_RenderFrameBuffer->Bind();
 		s_PBRInstance->m_DeferedRendering.Gbuffer->WriteBuffer(s_RenderFrameBuffer->GetFrameBufferID());
 		s_RenderFrameBuffer->Bind();
 		glBlitFramebuffer(0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),GL_DEPTH_BUFFER_BIT,GL_NEAREST);
-		if (s_DeferedRenderer != nullptr) {
-			s_DeferedRenderer->RenderStats.AmountDirectionalLight += NumDirLights;
-			s_DeferedRenderer->RenderStats.AmountPointLight += NumPointLights;
-			s_DeferedRenderer->RenderStats.AmountSpotLight += NumSpotLights;
-			s_DeferedRenderer->RenderStats.AmountLight = s_DeferedRenderer->RenderStats.AmountDirectionalLight+ s_DeferedRenderer->RenderStats.AmountPointLight+ s_DeferedRenderer->RenderStats.AmountSpotLight;
-			s_DeferedRenderer->RenderStats.Instances+= s_DifferentID.size();
-			s_DeferedRenderer->m_PositionTexture = GetRenderer()->m_DeferedRendering.GPosition->GetID();
-			s_DeferedRenderer->m_NormalTexture = GetRenderer()->m_DeferedRendering.GNormal->GetID();
-			s_DeferedRenderer->m_AlbedoTexture = GetRenderer()->m_DeferedRendering.GAlbedo->GetID();
-		}
 		s_RenderFrameBuffer->UnBind();
+
+		if (s_RendererData != nullptr) {
+			s_RendererData->RenderStats.AmountDirectionalLight += NumDirLights;
+			s_RendererData->RenderStats.AmountPointLight += NumPointLights;
+			s_RendererData->RenderStats.AmountSpotLight += NumSpotLights;
+			s_RendererData->RenderStats.AmountLight = s_RendererData->RenderStats.AmountDirectionalLight+ s_RendererData->RenderStats.AmountPointLight+ s_RendererData->RenderStats.AmountSpotLight;
+			s_RendererData->RenderStats.Instances+= s_DifferentID.size();
+			s_RendererData->DeferedRendererData.m_PositionTexture = GetRenderer()->m_DeferedRendering.GPosition->GetID();
+			s_RendererData->DeferedRendererData.m_NormalTexture = GetRenderer()->m_DeferedRendering.GNormal->GetID();
+			s_RendererData->DeferedRendererData.m_AlbedoTexture = GetRenderer()->m_DeferedRendering.GAlbedo->GetID();
+		}
 	}
 	void Renderer3DPBR::DeferedRendererRenderLight(){
 		if (NumDirLights == 0 && NumSpotLights == 0 && NumPointLights == 0)return;
@@ -235,6 +245,7 @@ namespace Proof{
 		RendererCommand::SetClearColor();
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
+		RendererCommand::SetViewPort(s_RenderFrameBuffer->GetFrameWidth(),s_RenderFrameBuffer->GetFrameHeight());
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		uint32_t sizeOffset = 0;
 		s_PBRInstance->m_DeferedRendering.MeshShader->Bind();
@@ -299,8 +310,8 @@ namespace Proof{
 							s_PBRInstance->m_WhiteTexture->Bind(7);
 					}
 
-					if(s_DeferedRenderer !=nullptr){
-						s_DeferedRenderer->RenderStats.DrawCalls++;
+					if(s_RendererData !=nullptr){
+						s_RendererData->RenderStats.DrawCalls++;
 					}
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
@@ -316,6 +327,89 @@ namespace Proof{
 		s_PBRInstance->m_DeferedRendering.Gbuffer->UnBind();
 	}
 
+	void Renderer3DPBR::FowardRender() {
+		if (s_DifferentID.size() == 0)return;
+		s_RenderFrameBuffer->Bind();
+		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		RendererCommand::SetClearColor();
+		uint32_t sizeOffset = 0;
+		s_PBRInstance->m_Shader->Bind();
+		s_PBRInstance->m_Shader->SetInt("AmountLight",NumLights);
+		for (uint32_t i = 0; i < s_DifferentID.size(); i++) {
+			uint32_t TempID = s_DifferentID[i];
+			auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
+			auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
+
+			s_PBRInstance->m_VertexBuffer->Bind();
+			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset],TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
+			if (TempMesh->second.GetMaterial() != nullptr) {
+				s_PBRInstance->m_Shader->Bind();
+				s_PBRInstance->m_Shader->SetInt("albedoMap",0);
+				if (TempMesh->second.GetMaterial()->AlbedoTexture != nullptr)
+					TempMesh->second.GetMaterial()->AlbedoTexture->Bind(0);
+				else
+					s_PBRInstance->m_WhiteTexture->Bind(0);
+
+				s_PBRInstance->m_Shader->SetInt("normalMap",1);
+				if (TempMesh->second.GetMaterial()->NormalTexture != nullptr)
+					TempMesh->second.GetMaterial()->NormalTexture->Bind(1);
+				else
+					s_PBRInstance->m_WhiteTexture->Bind(1);
+
+				s_PBRInstance->m_Shader->SetInt("metallicMap",2);
+				if (TempMesh->second.GetMaterial()->MetallicTexture != nullptr)
+					TempMesh->second.GetMaterial()->MetallicTexture->Bind(2);
+				else
+					s_PBRInstance->m_WhiteTexture->Bind(2);
+
+				s_PBRInstance->m_Shader->SetInt("roughnessMap",3);
+				if (TempMesh->second.GetMaterial()->RoughnessTexture != nullptr)
+					TempMesh->second.GetMaterial()->RoughnessTexture->Bind(3);
+				else
+					s_PBRInstance->m_WhiteTexture->Bind(3);
+			}
+			else {
+				s_PBRInstance->m_Shader->Bind();
+				s_PBRInstance->m_Shader->SetInt("albedoMap",0);
+				s_PBRInstance->m_Shader->SetInt("normalMap",1);
+				s_PBRInstance->m_Shader->SetInt("metallicMap",2);
+				s_PBRInstance->m_Shader->SetInt("roughnessMap",3);
+				s_PBRInstance->m_WhiteTexture->Bind(0);
+				s_PBRInstance->m_WhiteTexture->Bind(1);
+				s_PBRInstance->m_WhiteTexture->Bind(2);
+				s_PBRInstance->m_WhiteTexture->Bind(3);
+
+			}
+			s_PBRInstance->m_Shader->Bind();
+			// draw in wireframe
+			//glPolygonMode(GL_FRONT_AND_BACK,(int)GL_LINES); // keeps this need to put into our game
+			//if (TempMesh->second.GetMesh()->m_FaceCulling == true)
+			//	RendererCommand::Enable(ProofRenderTest::CullFace);
+			if (TempMesh->second.GetMesh()->m_Enabled == true) {
+				for (SubMesh& mesh : TempMesh->second.GetMesh()->meshes) {
+					if (mesh.m_Enabled == false)
+						continue;
+					if (TempMesh->second.HasMaterial() == false) {
+						s_PBRInstance->m_Shader->SetInt("DiffuseShader",7);
+						if (mesh.m_Textures.size() > 0)
+							mesh.m_Textures[0]->Bind(7);
+						else
+							s_PBRInstance->m_WhiteTexture->Bind(7);
+					}
+					mesh.m_VertexArrayObject->Bind();
+					mesh.m_IndexBufferObject->Bind();
+					s_WorldDrawType = DrawType::Triangles;
+					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
+				}
+			}
+			if (TempMesh->second.GetMesh()->m_FaceCulling == true)
+				//RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render settings
+			sizeOffset += TempAmountMeshes->second;
+			s_PBRInstance->m_Shader->UnBind();
+		}
+		s_RenderFrameBuffer->UnBind();
+	}
+		
 	DeferedRenderingData::DeferedRenderingData() {
 		MeshShader = Shader::Create("MeshShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/MeshGeometry.glsl");
 		LightShader = Shader::Create("LightShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/LighteningPass.glsl");

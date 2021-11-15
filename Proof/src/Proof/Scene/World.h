@@ -23,7 +23,7 @@ namespace Proof{
 			CreateIBlTexture(path);
 		}
 		World(World&)=default;
-		void OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height);
+		void OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR = false);
 		void OnUpdateEditorNoDraw(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height);
@@ -39,12 +39,12 @@ namespace Proof{
 		friend class WorldRenderer;
 		void HandleInput();
 		void DeleteEntity(class Entity& ent);
-		struct DeferedRenderer RenderSpecs;
+		struct RendererData RenderSpecs;
 
 		EditorCamera m_EditorCamera ={200,200};
 	private:
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
-		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height);
+		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height,bool usePBR =false);
 		WorldState m_CurrentState=WorldState::Edit;
 
 		void CreateIBlTexture(const std::string& filePath);

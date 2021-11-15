@@ -1,5 +1,6 @@
 #pragma once
 #include "ScreenFrameBuffer.h"
+#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 namespace Proof
 {
 	class WorldRenderer {
@@ -24,10 +25,11 @@ namespace Proof
 			m_RendererPaused =value;
 		}
 		bool GetRendererPaused(){return m_RendererPaused;};
+		RendererData RenderData;
 	private:
 		bool  m_RendererPaused =false;
 		uint32_t m_Width=200,m_Height=200;
 		class World* m_World=nullptr;
-		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;	
+		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
 	};
 }

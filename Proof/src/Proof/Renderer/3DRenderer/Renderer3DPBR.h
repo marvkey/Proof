@@ -10,17 +10,18 @@
 namespace Proof
 {
 	class PhysicalBasedRenderer;
-	enum class RendererForm{
+	enum class RenderTechnique{
 		None=0,
 		DeferedRendering,
-		FowardPlusRendering
+		FowardRendering,
+		FowardPlusRendering,
 	};
-	struct DeferedRenderer;
+	struct RendererData;
 	class Renderer3DPBR {
 	public:
 		static void Init();
-		static void BeginContext(class EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,DeferedRenderer* renderSpec =nullptr);
-		static void BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer,DeferedRenderer* renderSpec = nullptr);
+		static void BeginContext(class EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,RendererData* renderSpec =nullptr);
+		static void BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer,RendererData* renderSpec = nullptr);
 		static void Draw(class MeshComponent& meshComponent);
 		static void Draw(class LightComponent& lightComponent);
 		static PhysicalBasedRenderer* GetRenderer();
@@ -29,15 +30,18 @@ namespace Proof
 	private:
 		static Count<ScreenFrameBuffer> s_RenderFrameBuffer;
 		static bool s_InsideContext;
-		static RendererForm s_RendererForm;
 		static void Render();
 
 		/* Defered Rendering */
 		static void DeferedRender();
 		static void DeferedRendererRenderLight();
 		static void DeferedRendererRenderMesh();
-		static DeferedRenderer* s_DeferedRenderer; 
+		static RendererData* s_RendererData;
 		/*---------------------------*/
+
+		/* Foward Renderer */
+		static void FowardRender();
+		/* ------------------------- */
 	};
 	struct PhysicalBasedRendererVertex;
 	struct Proof_API DeferedRenderingData {
@@ -51,9 +55,9 @@ namespace Proof
 		Count<class Shader>LightShader;
 		DeferedRenderingData();
 	};
-	struct DeferedRenderer{
+	struct RendererData{
 	public:
-		DeferedRenderer() =default;
+		RendererData() =default;
 		struct Stats{
 		public:
 			Stats()=default;
@@ -63,30 +67,44 @@ namespace Proof
 			uint32_t AmountDirectionalLight=0;
 			uint32_t AmountPointLight =0;
 			uint32_t AmountSpotLight =0;
-		private:
-			void Reset(){
-				Stats();
+		};
+		struct DeferedData{
+		public:
+			uint32_t GetPositionTextureID() {
+				return m_PositionTexture;
 			}
+			uint32_t GetNormalTextureID() {
+				return m_NormalTexture;
+			}
+			uint32_t GetAlbedoTexture() {
+				return m_AlbedoTexture;
+			}
+			DeferedData() =default;
+		private:
+			friend class Renderer3DPBR;
+			uint32_t m_PositionTexture = 0;
+			uint32_t m_NormalTexture = 0;
+			uint32_t m_AlbedoTexture = 0;
+		};
+		struct FowardData{
+			
+		};
+
+		struct FowardPlusData{
+			
 		};
 		Stats RenderStats;
-		uint32_t GetPositionTextureID(){
-			return m_PositionTexture;
-		}
-		uint32_t GetNormalTextureID(){
-			return m_NormalTexture;
-		}
-		uint32_t GetAlbedoTexture(){
-			return m_AlbedoTexture;
-		}
+		DeferedData DeferedRendererData;
+		FowardData FowardRenderData;
+		RenderTechnique RendererTechnique= RenderTechnique::DeferedRendering;
 		friend class Renderer3DPBR;
 	private:
 		void Reset(){
-			DeferedRenderer();
+			RendererData();
 			RenderStats = Stats();
+			DeferedRendererData = DeferedData();
 		}
-		uint32_t m_PositionTexture=0;
-		uint32_t m_NormalTexture=0;
-		uint32_t m_AlbedoTexture=0;
+		
 	};
 	struct Proof_API PhysicalBasedRenderer { /// Needs to be Renaimed
 		Count<class VertexBuffer> m_VertexBuffer;

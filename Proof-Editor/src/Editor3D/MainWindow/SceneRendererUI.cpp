@@ -55,10 +55,10 @@ namespace Proof{
 		ImGui::PushID(m_ID);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		if (ImGui::Begin(mesh->GetAsset()->GetName().c_str(),&m_ShowWindow)) {
-			//if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
-			//	m_WorldRenderer.SetRendererPause(false);
-			//else
-			//	m_WorldRenderer.SetRendererPause(true);
+			if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
+				m_WorldRenderer.SetRendererPause(false);
+			else
+				m_WorldRenderer.SetRendererPause(true);
 
 			MeshUI();
 			ImGui::SameLine();
@@ -67,11 +67,11 @@ namespace Proof{
 			if (m_LastWidht != ImGui::GetWindowSize().x || m_LastHeight != ImGui::GetWindowSize().y) {
 				m_WorldRenderer.Resize(ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);
 				m_LastWidht = ImGui::GetWindowSize().x; m_LastHeight = ImGui::GetWindowSize().y;
-				//if (m_WorldRenderer.GetRendererPaused() == true) {
-				//	m_WorldRenderer.SetRendererPause(false);
-				//	m_WorldRenderer.Renderer();
-				//	m_WorldRenderer.SetRendererPause(true);
-			//	}
+				if (m_WorldRenderer.GetRendererPaused() == true) {
+					m_WorldRenderer.SetRendererPause(false);
+					m_WorldRenderer.Renderer();
+					m_WorldRenderer.SetRendererPause(true);
+				}
 			}
 			uint32_t Text = m_WorldRenderer.GetWorldTexture();
 			ImGui::Image((ImTextureID)Text,ImVec2{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
