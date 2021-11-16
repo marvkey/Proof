@@ -38,7 +38,7 @@ namespace Proof{
 	static DrawType s_WorldDrawType = DrawType::Triangles;
 	void Renderer3DPBR::Init() {
 		s_PBRInstance = new PhysicalBasedRenderer();
-		s_PBRInstance->m_Shader = Shader::Create("NewPBRSHADER",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/PhysicalBasedRenderer.glsl");
+		s_PBRInstance->m_Shader = Shader::GetOrCreate("NewPBRSHADER",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/PhysicalBasedRenderer.glsl");
 		s_PBRInstance->m_VertexBuffer = VertexBuffer::Create(PhysicalBaseRendererGuide::s_MaxMesh * sizeof(PhysicalBasedRendererVertex));// can only store that amount of transforms
 		s_PBRInstance->m_WhiteTexture = Texture2D::Create(1,1);
 		uint32_t WhiteTextureImage = 0xffffffff;
@@ -295,8 +295,8 @@ namespace Proof{
 			}
 
 
-			//if (TempMesh->second.GetMesh()->m_FaceCulling == true)
-				//RendererCommand::Enable(ProofRenderTest::CullFace);
+			if (TempMesh->second.GetMesh()->m_FaceCulling == true)
+				RendererCommand::Enable(ProofRenderTest::CullFace);
 			if (TempMesh->second.GetMesh()->m_Enabled == true) {
 				for (SubMesh& mesh : TempMesh->second.GetMesh()->meshes) {
 					if (mesh.m_Enabled == false)
@@ -319,8 +319,8 @@ namespace Proof{
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
 				}
 			}
-			//if (TempMesh->second.GetMesh()->m_FaceCulling == true)
-			//	RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render settings
+			if (TempMesh->second.GetMesh()->m_FaceCulling == true)
+				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render settings
 			sizeOffset += TempAmountMeshes->second;
 		}
 		s_PBRInstance->m_DeferedRendering.MeshShader->UnBind();
@@ -411,8 +411,8 @@ namespace Proof{
 	}
 		
 	DeferedRenderingData::DeferedRenderingData() {
-		MeshShader = Shader::Create("MeshShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/MeshGeometry.glsl");
-		LightShader = Shader::Create("LightShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/LighteningPass.glsl");
+		MeshShader = Shader::GetOrCreate("MeshShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/MeshGeometry.glsl");
+		LightShader = Shader::GetOrCreate("LightShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/LighteningPass.glsl");
 		Gbuffer = FrameBuffer::Create();
 		Gbuffer->Bind();
 		GPosition = Texture2D::Create(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);

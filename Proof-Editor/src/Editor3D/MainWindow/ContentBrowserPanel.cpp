@@ -293,7 +293,7 @@ namespace Proof
 									if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + RenameVariable + (It.is_directory() ? " " : ".ProofAsset")) == false) {
 										std::filesystem::rename(m_CurrentDirectory.string() + "\\" + filenameNoStem,m_CurrentDirectory.string() + "\\"+ RenameVariable + (It.is_directory() ? " ":".ProofAsset"));
 										if(It.is_directory() == false && isScene ==false){
-											auto* asset = AssetManager::GetAsset<Asset>(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset"));
+											Asset* asset = AssetManager::GetAsset<Asset>(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset"));
 											asset->m_AssetName = RenameVariable;
 											asset->SetPath(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset");
 											asset->SaveAsset();

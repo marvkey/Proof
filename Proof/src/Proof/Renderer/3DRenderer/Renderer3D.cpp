@@ -81,7 +81,7 @@ namespace Proof
         Renderer3DInstance = new InstancedRenderer3D();
         Renderer3DStats = new Renderer3D::Render3DStats;
         s_CameraBuffer = UniformBuffer::Create(sizeof(OldCmaerData),7);
-        Renderer3DInstance->m_Shader = Shader::Create("InstanceMeshRenderer",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/MeshShader.glsl");
+        Renderer3DInstance->m_Shader = Shader::GetOrCreate("InstanceMeshRenderer",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/MeshShader.glsl");
         Renderer3DInstance->m_VertexBuffer = VertexBuffer::Create(Renderer3DStats->MaxMeshes * sizeof(InstanceRendererVertex));// can only store that amount of transforms
         Renderer3DInstance->m_WhiteTexture = Texture2D::Create(1,1);
         uint32_t WhiteTextureImage = 0xffffffff;

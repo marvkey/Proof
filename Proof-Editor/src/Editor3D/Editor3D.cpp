@@ -99,7 +99,7 @@ namespace Proof
 			1.0f,-1.0f,1.0f
 		};
 
-		m_SkyBoxShader = Shader::Create("SkyBox Shader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/CubeMapShader.shader");
+		m_SkyBoxShader = Shader::GetOrCreate("SkyBox Shader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/CubeMapShader.shader");
 		m_SkyBoxBuffer = VertexBuffer::Create(&skyboxVertices,sizeof(skyboxVertices));
 		m_SkyBoxVertexArray = VertexArray::Create();
 		m_SkyBoxVertexArray->AddData(0,3,3 * sizeof(float),(void*)0);
@@ -137,7 +137,11 @@ namespace Proof
 		if (Input::IsKeyClicked(KeyBoardKey::S)) {
 			GuizmoType = ImGuizmo::OPERATION::SCALE;
 		}
-
+		if (Input::IsKeyPressed(KeyBoardKey::H)) {
+			uint64_t num = Math::RandUINT<uint64_t>(0,18000000000000000);
+			uint64_t after = std::hash<uint64_t>()((uint64_t)num);
+			PF_ENGINE_INFO("before %i after %i ",num,after);
+		}
 		//glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
 
 		/*
@@ -194,6 +198,9 @@ namespace Proof
 			ImGui::Text("Amount Of Point Light%i",ActiveWorld->RenderSpecs.RenderStats.AmountPointLight);
 			ImGui::Text("Amount Of Spot Light %i",ActiveWorld->RenderSpecs.RenderStats.AmountSpotLight);
 
+			if(ImGui::Button("Reload SHader")){
+				Renderer::GetShaderLibrary().ReloadeShaders();
+			}
 		}
 		ImGui::End();
 
@@ -422,6 +429,7 @@ namespace Proof
 		ImGui::End();
 		ImGui::PopStyleVar();
 		
+		/*
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		if (ImGui::Begin("Position")) {
 			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GPosition->GetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
@@ -442,7 +450,7 @@ namespace Proof
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
-			
+		*/
 	}
 
 	void Editore3D::MainToolBar()

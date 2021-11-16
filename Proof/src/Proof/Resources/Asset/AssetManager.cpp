@@ -75,7 +75,25 @@ namespace Proof
 				}
 			}
 		}
-
+		MakeDirectory("config/AssetManager.ProofAssetManager");
+	}
+	void AssetManager::MakeDirectory(const std::string& path) {
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Project: " << YAML::Value <<"Proof Engine Test";
+		out<<YAML::Key << "Total Asset: "<<YAML::Value<< s_AssetManager->m_AllAssets.size();
+		out << YAML::Key << "ProjectAssets" << YAML::Value << YAML::BeginSeq;
+		for(auto& asset : s_AssetManager->m_AllAssets){
+			out<<YAML::BeginMap;
+			out << YAML::Key << "Asset" << YAML::Value << asset.first;
+			out<<YAML::Key<<"Type"<<asset.second->GetAssetTypeVirtual();
+			out<<YAML::Key<<"Path"<<asset.second->GetPath();
+			out<<YAML::EndMap;
+		}
+		
+		std::ofstream found(path);
+		found << out.c_str();
+		found.close();
 	}
 	bool AssetManager::IsFileValid(const std::string& Path) {
 		YAML::Node data = YAML::LoadFile(Path);

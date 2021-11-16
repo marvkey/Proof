@@ -67,9 +67,13 @@ layout(std140,binding = 1) uniform CameraData{
     mat4 ViewMatrix;
     vec3 Position;
 }Camera;
+vec3 GetDiffuse(vec3 color,vec3 Lightposition,vec3 surfaceNormmal);
+vec3 GetSpecular(vec3 color,float shniness,vec3 viewVector,vec3 lightPosition,vec3 surfaceNormmal);
+float GetAttenuation(float range,float d);
 vec3 CalcDirLight(DirectionalLight light,vec3 normal,vec3 viewDir,vec3 matcolour,float shininess);
 vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 matcolour,float shininess);
 vec3 CalcSpotLight(SpotLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 matcolour,float shininess);
+
 
 void main() {
     vec3 FragPos = texture(gPosition,TexCoords).rgb;
@@ -93,19 +97,38 @@ void main() {
     FragColor = vec4(result,1.0);
 
 }
+float GetAttenuation(float range,float d) {
+    return 1.0f - smoothstep(range * 0.75f,range,d);
+}
+vec3 GetSpecular(vec3 color,float shniness,vec3 viewVector,vec3 lightPosition,vec3 surfaceNormmal){
+    vec3 R = normalize(reflect(-lightPosition,surfaceNormmal));
+    float RdotV = max(dot(R,viewVector),0);
 
-vec3 CalcDirLight(DirectionalLight light,vec3 normal,vec3 viewDir,vec3 matcolour,float shininess) {
-    vec3 lightDir = normalize(-light.Direction);
-    float diff = max(dot(normal,lightDir),0.0);
-    vec3 reflectDir = reflect(-lightDir,normal);
-    float spec = pow(max(dot(viewDir,reflectDir),0.0),shininess);
-    vec3 ambient = light.Ambient * matcolour;                 // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    vec3 diffuse = diff * light.Ambient* matcolour;         // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    vec3 specular = spec * light.Ambient* matcolour;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    return (ambient + diffuse + specular)*light.Intensity;
+    return color * pow(RdotV,shniness);
+}
+vec3 GetDiffuse(vec3 color,vec3 Lightposition,vec3 surfaceNormmal) {
+    float NdotL = max(dot(surfaceNormmal,Lightposition),0.0);
+    return color * NdotL;
 }
 
 vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 matcolour,float shininess) {
+    /*
+    vec3 lightDirection = normalize(light.Position - fragPos);
+    float distance = length(light.Position - fragPos);
+   
+    //float attenuation = GetAttenuation(light.Radius,distance);
+    float attenuation = 1.0 / (light.Radius + light.Radius * distance + light.Radius * (light.Radius * distance));
+
+    vec3 diffuse = GetDiffuse(light.Ambient,lightDirection,normal)* attenuation* matcolour;
+    vec3 specular = GetSpecular(light.Ambient,shininess,viewDir,lightDirection,normal) *
+        attenuation* matcolour;
+
+    vec3 ambient = light.Ambient * matcolour;     
+    return (ambient + diffuse +specular) * light.Intensity;
+    */
+    // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    
+    
     vec3 lightDir = normalize(light.Position - fragPos);
     float diff = max(dot(normal,lightDir),0.0);
     vec3 reflectDir = reflect(-lightDir,normal);
@@ -122,9 +145,18 @@ vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 
     diffuse *= attenuation;
     specular *= attenuation;
     return (ambient + diffuse + specular)*light.Intensity;
-
+    
 }
-
+vec3 CalcDirLight(DirectionalLight light,vec3 normal,vec3 viewDir,vec3 matcolour,float shininess) {
+    vec3 lightDir = normalize(-light.Direction);
+    float diff = max(dot(normal,lightDir),0.0);
+    vec3 reflectDir = reflect(-lightDir,normal);
+    float spec = pow(max(dot(viewDir,reflectDir),0.0),shininess);
+    vec3 ambient = light.Ambient * matcolour;                 // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 diffuse = diff * light.Ambient * matcolour;         // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 specular = spec * light.Ambient * matcolour;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    return (ambient + diffuse + specular) * light.Intensity;
+}
 vec3 CalcSpotLight(SpotLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 matcolour,float shininess) {
     vec3 lightDir = normalize(light.Position - fragPos);
     float diff = max(dot(normal,lightDir),0.0);

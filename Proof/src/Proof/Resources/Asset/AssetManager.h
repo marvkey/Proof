@@ -34,7 +34,7 @@ namespace Proof
 		std::unordered_map<AssetID,Count<class Asset>> m_AllAssets;
 		AssetManager() {};
 		static void InitilizeAssets(const std::string& Path);
-
+		static void MakeDirectory(const std::string& path);
 		static bool IsFileValid(const std::string& Path);
 		static std::string GetAssetType(const std::string& Path);
 		friend class Application;

@@ -26,28 +26,35 @@ namespace Proof {
         virtual void SetMat4(const std::string& Name,const glm::mat4& Value) = 0;
 
         virtual uint32_t GetID() = 0;
-        static Count<Shader>Create(const std::string& _ShaderName,const std::string& VertexPath,const std::string& FragmentPath);
         static Count<Shader>Create(const std::string& _ShaderName,const std::string& ShaderPath);
+        static Count<Shader>GetOrCreate(const std::string& name,const std::string& path);
         virtual const std::string& GetName()const=0;
         virtual const std::string& GetPath()const =0;
         virtual ~Shader();
+        virtual void Reload() =0;
     protected:
         friend class Application;
     };
 
     class ShaderLibrary {
     public:
-        Count<Shader>* GetShader(const std::string& Name);
+        Count<Shader> GetShader(const std::string& Name);
         void AddShader(const std::string& Name,const Count<Shader>&_Shader);
         bool HasShader(const std::string& Name);
         std::unordered_map<std::string, Count<Shader>> ShaderMap;
+        void ReloadeShaders(){
+            for(auto& shader: ShaderMap){
+                shader.second->Reload();
+            }
+        }
     private:
         Count<Shader>AddShader(const Count<Shader>&_Shader) {
-            if (HasShader(_Shader->GetName()) == false) {
+           if (HasShader(_Shader->GetName()) == false) {
                 ShaderMap.insert({_Shader->GetName(),_Shader});
                 return _Shader;
             }
-            PF_ENGINE_ERROR("shader library already has a shader called %s",_Shader->GetName().c_str());
+           PF_ENGINE_ERROR(" shader called %s Already exist",_Shader->GetName().c_str());
+            PF_CORE_ASSERT(false,"shader library cannot add existing shader",_Shader->GetName().c_str());
         }
         friend class Shader;
     };

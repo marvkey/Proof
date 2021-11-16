@@ -29,7 +29,7 @@ namespace Proof
         virtual uint32_t GetID()override;
         virtual const std::string& GetPath()const { return m_Path;}
         virtual const std::string& GetName()const{return m_Name;}
-
+        virtual void Reload();
     private:
         uint32_t m_ID;
         std::string m_Path;

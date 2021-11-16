@@ -427,6 +427,7 @@ namespace Proof{
 					else if(LightComp.m_LightType == LightComp.Point){
 						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
 						ImGui::DragFloat("Intensity",&LightComp.Intensity,0.01,0.0f,100);
+						ImGui::DragFloat("Radius",&LightComp.Radius,0.01,0.0f,100);
 						ImGui::Text("Constant");
 						ImGui::SameLine();
 						ImGui::DragFloat("##Constant",&LightComp.m_Constant,0.001);
@@ -439,6 +440,7 @@ namespace Proof{
 						ImGui::ColorEdit3("Ambient",glm::value_ptr(LightComp.m_Ambient));
 						ImGui::DragFloat("Intensity",&LightComp.Intensity,0.01,0.0f,100);
 
+						ImGui::DragFloat("Radius",&LightComp.Radius,0.01,0.0f,100);
 
 						ImGui::NewLine();
 						ImGui::DragFloat("Constant",&LightComp.m_Constant,0.001);

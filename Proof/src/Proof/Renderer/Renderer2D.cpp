@@ -38,7 +38,7 @@ namespace Proof {
 		s_Storage2DData = new Renderer2DStorage();
 		s_Storage2DData->m_WhiteTexture = Texture2D::Create(1,1);
 
-		s_Storage2DData->m_Shader = Shader::Create("DrawQuad",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/ShaderRenderSquare.glsl");
+		s_Storage2DData->m_Shader = Shader::GetOrCreate("DrawQuad",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/ShaderRenderSquare.glsl");
 		s_Storage2DData->m_VertexArray = VertexArray::Create();
 		s_Storage2DData->m_VertexBuffer = VertexBuffer::Create(s_Storage2DData->s_MaxVertexCount);
 		s_Storage2DData->m_IndexBuffer = IndexBuffer::Create(&s_Storage2DData->QuadIndices[0],s_Storage2DData->QuadIndices.size());

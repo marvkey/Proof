@@ -32,9 +32,12 @@ namespace Proof
 		virtual const std::string& GetName()const{
 			return m_AssetName;
 		}
+		const std::string& GetPath()const{
+			return m_SavePath;
+		}
 	protected:
-		void SetPath(const std::string& NewFilePath) {
-			m_SavePath = NewFilePath;
+		void SetPath(const std::string& newFilePath) {
+			m_SavePath = newFilePath;
 		}
 		std::string m_AssetName;
 		std::string m_SavePath;

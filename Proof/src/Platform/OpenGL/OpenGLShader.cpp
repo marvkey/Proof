@@ -193,4 +193,7 @@ namespace Proof {
 	unsigned int OpenGLShader::GetID() {
 		return m_ID;
 	}
+	void OpenGLShader::Reload() {
+		*this =OpenGLShader(m_Name,m_Path);
+	}
 }
