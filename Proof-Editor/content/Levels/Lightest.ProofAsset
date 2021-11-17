@@ -50,10 +50,10 @@ Entities:
     LightComponent:
       CutOff: 1
       OuterCutOff: 2
-      Constant: 0.100000001
-      Linear: 0.100000001
-      Quadratic: 0.100000001
-      Ambient: [0.00403221371, 0.00403225282, 0.00403225422]
+      Constant: 1.00399995
+      Linear: 1
+      Quadratic: 1
+      Ambient: [0.999989986, 0.999999464, 1]
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
       LightType: 1
@@ -128,8 +128,8 @@ Entities:
       Tag: flashlight
       tags: []
     TransformComponent:
-      Location: [65.8635101, 18.9908676, -2.07389569]
-      Rotation: [-6.63205893e-29, -3.48841547e-30, 2.31051859e-30]
+      Location: [-6.79636097, 15.2442474, -20.1612854]
+      Rotation: [0.983596921, 0.151550591, 0.0978238508]
       Scale: [0.5, 0.99999994, 1.40000021]
     SubEntityComponet:
       OwnerEntityID: 0

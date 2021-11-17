@@ -164,7 +164,7 @@ namespace Proof{
 		return entity;
 	}
 	template<class TypeComponent>
-	static void CopyCOmponent(std::unordered_map<EntityID,std::vector<class Component*>*>&map){
+	static void CopyCOmponent(std::unordered_map<UUID,std::vector<class Component*>*>&map){
 	}
 	//static void CopyComponent
 	Count<World> World::Copy(Count<World> other) {

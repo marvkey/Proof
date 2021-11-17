@@ -10,8 +10,8 @@
 namespace Proof
 {
 	AssetManager* AssetManager::s_AssetManager = new AssetManager();
-	void AssetManager::NewAsset(AssetID ID,const Count<Asset>& asset) {
-		if (ID == 0) {
+	void AssetManager::NewAsset(UUID ID,const Count<Asset>& asset) {
+		while (ID == 0) {
 			PF_CORE_ASSERT(false,"ID cannot be 0");
 			ID = AssetManager::CreateID();
 		}
@@ -21,17 +21,17 @@ namespace Proof
 		}
 		PF_ASSERT(false,"Asset Maneger Has ID");
 	}
-	bool AssetManager::HasID(AssetID ID) {
+	bool AssetManager::HasID(UUID ID) {
 		return s_AssetManager->m_AllAssets.find(ID) != s_AssetManager->m_AllAssets.end();
 	}
-	AssetID AssetManager::CreateID() {
-		AssetID ID = Math::RandUINT<uint64_t>(1,18000000000000000000);
-		while (HasID(ID) == true) {
-			AssetID ID = Math::RandUINT<uint64_t>(1,18000000000000000000);
+	UUID AssetManager::CreateID() {
+		UUID ID = UUID();
+		while (HasID(ID) == true || ID ==0) {
+			ID = UUID();
 		}
 		return ID;
 	}
-	void AssetManager::Remove(AssetID ID) {
+	void AssetManager::Remove(UUID ID) {
 		if (HasID(ID) == true) {
 			s_AssetManager->m_AllAssets.erase(ID);
 			return;

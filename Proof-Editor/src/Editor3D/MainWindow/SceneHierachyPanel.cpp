@@ -68,7 +68,7 @@ namespace Proof{
 		}
 		
 		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(EntityID)(uint32_t)entity.GetID(),flags,tc.c_str());
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity.GetID(),flags,tc.c_str());
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
 				Entity Data = *(const Entity*)payload->Data;
@@ -299,7 +299,7 @@ namespace Proof{
 					}
 					if (ImGui::BeginDragDropTarget()) {
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetAssetType().c_str())) {
-							AssetID Data = *(const AssetID*)payload->Data;
+							uint64_t Data = *(const uint64_t*)payload->Data;
 							component.m_MeshAssetPointerID = Data;
 						}
 						ImGui::EndDragDropTarget();
@@ -357,7 +357,7 @@ namespace Proof{
 					
 					if (ImGui::BeginDragDropTarget()) {
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(Texture2DAsset::GetAssetType().c_str())) {
-							AssetID Data = *(const AssetID*)payload->Data;
+							uint64_t Data = *(const uint64_t*)payload->Data;
 							component.m_TextureAssetPointerID =Data;
 						}
 						ImGui::EndDragDropTarget();

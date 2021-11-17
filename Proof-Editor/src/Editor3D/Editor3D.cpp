@@ -137,11 +137,7 @@ namespace Proof
 		if (Input::IsKeyClicked(KeyBoardKey::S)) {
 			GuizmoType = ImGuizmo::OPERATION::SCALE;
 		}
-		if (Input::IsKeyPressed(KeyBoardKey::H)) {
-			uint64_t num = Math::RandUINT<uint64_t>(0,18000000000000000);
-			uint64_t after = std::hash<uint64_t>()((uint64_t)num);
-			PF_ENGINE_INFO("before %i after %i ",num,after);
-		}
+		
 		//glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
 
 		/*

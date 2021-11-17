@@ -4,20 +4,20 @@
 #include "Proof/Scene/Component.h"
 #include "Proof/Core/Core.h"
 #include "Proof/Core/Log.h"
+#include "Proof/Core/UUID.h"
 namespace Proof{
 	class MeshComponent;
 	class Proof_API ECS {
 	public:
 		ECS() = default;
 		ECS(const ECS&) = default;
-		using EntityID = uint64_t;
 
-		EntityID Create();
-		EntityID Create(EntityID ID);
-		void Delete(EntityID ID);
+		UUID Create();
+		UUID Create(UUID ID);
+		void Delete(UUID ID);
 
 		template<typename T>
-		T* AddComponent(EntityID ID) {
+		T* AddComponent(UUID ID) {
 			auto it= EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				T* Temp = new T();
@@ -28,7 +28,7 @@ namespace Proof{
 			return nullptr;
 		}
 		template<>
-		MeshComponent* AddComponent(EntityID ID) {
+		MeshComponent* AddComponent(UUID ID) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				MeshComponent* Temp = new MeshComponent();
@@ -42,7 +42,7 @@ namespace Proof{
 		};
 
 		template<>
-		SpriteComponent* AddComponent(EntityID ID) {
+		SpriteComponent* AddComponent(UUID ID) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				SpriteComponent* Temp = new SpriteComponent();
@@ -56,7 +56,7 @@ namespace Proof{
 		}
 
 		template<>
-		LightComponent* AddComponent(EntityID ID) {
+		LightComponent* AddComponent(UUID ID) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				LightComponent* Temp = new LightComponent();
@@ -71,7 +71,7 @@ namespace Proof{
 
 		
 		template<>
-		NativeScriptComponent* AddComponent(EntityID ID) {
+		NativeScriptComponent* AddComponent(UUID ID) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				NativeScriptComponent* Temp = new NativeScriptComponent();
@@ -85,7 +85,7 @@ namespace Proof{
 
 		};
 		template<>
-		CameraComponent* AddComponent(EntityID ID) {
+		CameraComponent* AddComponent(UUID ID) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				CameraComponent* Temp = new CameraComponent();
@@ -100,7 +100,7 @@ namespace Proof{
 		
 
 		template<typename T>
-		T* GetComponent(EntityID ID) {
+		T* GetComponent(UUID ID) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				auto Temp = it->second;
@@ -115,7 +115,7 @@ namespace Proof{
 			return nullptr;
 		}
 		template<typename T>
-		T* GetComponent(EntityID ID,const std::string& CompName) {
+		T* GetComponent(UUID ID,const std::string& CompName) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				auto Temp = it->second;
@@ -132,7 +132,7 @@ namespace Proof{
 			PF_ENGINE_ERROR("Entity ID Was Not FOund");
 		}
 
-		class Component* GetComponent(EntityID ID,uint32_t Index){
+		class Component* GetComponent(UUID ID,uint32_t Index){
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				if (EntityHolder.size() >= Index) {
@@ -180,7 +180,7 @@ namespace Proof{
 		}
 		*/
 		template<typename T>
-		inline void RemoveComponent(EntityID ID,uint32_t Index){
+		inline void RemoveComponent(UUID ID,uint32_t Index){
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				auto TempVec= it->second;
@@ -195,7 +195,7 @@ namespace Proof{
 		}
 
 		template<>
-		inline void RemoveComponent<MeshComponent>(EntityID ID,uint32_t Index) {
+		inline void RemoveComponent<MeshComponent>(UUID ID,uint32_t Index) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				auto TempVec = it->second;
@@ -226,7 +226,7 @@ namespace Proof{
 
 
 		template<>
-		inline void RemoveComponent<SpriteComponent>(EntityID ID,uint32_t Index) {
+		inline void RemoveComponent<SpriteComponent>(UUID ID,uint32_t Index) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				auto TempVec = it->second;
@@ -255,7 +255,7 @@ namespace Proof{
 			}
 		}
 		template<>
-		inline void RemoveComponent<NativeScriptComponent>(EntityID ID,uint32_t Index) {
+		inline void RemoveComponent<NativeScriptComponent>(UUID ID,uint32_t Index) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				auto TempVec = it->second;
@@ -285,7 +285,7 @@ namespace Proof{
 		}
 		
 		template<>
-		inline void RemoveComponent<LightComponent>(EntityID ID,uint32_t Index) {
+		inline void RemoveComponent<LightComponent>(UUID ID,uint32_t Index) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				auto TempVec = it->second;
@@ -315,7 +315,7 @@ namespace Proof{
 		}
 
 		template<>
-		inline void RemoveComponent<CameraComponent>(EntityID ID,uint32_t Index) {
+		inline void RemoveComponent<CameraComponent>(UUID ID,uint32_t Index) {
 			auto it = EntityHolder.find(ID);
 			if (it != EntityHolder.end()) {
 				auto TempVec = it->second;
@@ -343,10 +343,10 @@ namespace Proof{
 			}
 			return;
 		}
-		const std::unordered_map<EntityID,std::vector<class Component*>*>& GetEntities() {
+		const std::unordered_map<UUID,std::vector<class Component*>*>& GetEntities() {
 			return EntityHolder;
 		}
-		const std::vector<EntityID>& GetAllID() { // Temporary
+		const std::vector<UUID>& GetAllID() { // Temporary
 			return AllEntityID;
 		}
 
@@ -355,16 +355,16 @@ namespace Proof{
 		std::vector<class NativeScriptComponent*> NativeScripts;
 		std::vector<class LightComponent*> LightComponents;
 		std::vector<class CameraComponent*> m_CameraComponent;
-		const std::unordered_map<EntityID,std::vector<class Component*>*>&ALlEntityCOmp()const{
+		const std::unordered_map<UUID,std::vector<class Component*>*>&ALlEntityCOmp()const{
 			return EntityHolder;
 		}
-		std::unordered_map<EntityID,std::vector<class Component*>*>EntityHolder;
+		std::unordered_map<UUID,std::vector<class Component*>*>EntityHolder;
 
-		bool HasEntity(EntityID ID) {
+		bool HasEntity(UUID ID) {
 			return EntityHolder.find(ID) != EntityHolder.end();
 		}
 	private:
-		std::vector<EntityID> AllEntityID; // Temporary
+		std::vector<UUID> AllEntityID; // Temporary
 
 		friend class World;
 	};

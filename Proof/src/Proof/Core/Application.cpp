@@ -29,7 +29,6 @@ namespace Proof {
         ScreenFrameBuffer->UnBind();
         
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
-        Random::RandomInit();
 
     }
 

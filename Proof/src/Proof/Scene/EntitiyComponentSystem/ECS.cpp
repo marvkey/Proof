@@ -4,34 +4,34 @@
 #include "Proof/Resources/Math/Math.h"
 #include "Proof/Scene/Component.h"
 namespace Proof{
-    EntityID ECS::Create() {
-        EntityID ID = Math::RandUINT<uint64_t>(1,18000000000000000000);
-        while(HasEntity(ID) == true){
-            ID = Math::RandUINT<uint64_t>(1,18000000000000000000);
+    UUID ECS::Create() {
+        UUID id =UUID();
+        while(HasEntity(id) == true|| id==0){
+            id = UUID();
             PF_ENGINE_INFO("Conflict creating ID");
         }
         std::vector<Component*>* New = new std::vector<Component*>;
-        EntityHolder.insert({ID,New});
-        AllEntityID.emplace_back(ID);
-        return ID;
+        EntityHolder.insert({id,New});
+        AllEntityID.emplace_back(id);
+        return id;
     }
 
-    EntityID ECS::Create(EntityID ID) {
-        if(ID ==0){
+    UUID ECS::Create(UUID uuid) {
+        while(uuid ==0){
             PF_CORE_ASSERT(false,"Id cannot be 0");
-            ID = Math::RandUINT<uint64_t>(1,18000000000000000000);
+            uuid = UUID();
         }
-		if(HasEntity(ID) == true){
+		if(HasEntity(uuid) == true){
 			PF_ENGINE_INFO("Cannot pass entity ID by argument that already exist");
 			return 0;
 		}
 		std::vector<Component*>* New = new std::vector<Component*>;
-		EntityHolder.insert({ID,New});
-		AllEntityID.emplace_back(ID);
-		return ID;
+		EntityHolder.insert({uuid,New});
+		AllEntityID.emplace_back(uuid);
+		return uuid;
 	}
     
-    void ECS::Delete(EntityID ID) {
+    void ECS::Delete(UUID ID) {
         auto it = EntityHolder.find(ID);
         if (it != EntityHolder.end()) {
             auto itVec = std::find(AllEntityID.begin(),AllEntityID.end(),ID);

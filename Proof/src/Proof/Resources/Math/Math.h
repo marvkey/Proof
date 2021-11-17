@@ -6,6 +6,7 @@
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtx/rotate_vector.hpp>
 #include<glm/gtx/vector_angle.hpp>
+#include "Random.h"
 namespace Proof
 {
 	struct Proof_API Math {
@@ -50,43 +51,67 @@ namespace Proof
 		}
 		/**
 		* @param Value
-		* @return changes value to a cos
+		* @return changes value to a cos in Radians
 		*/
 		template<typename T>
-		inline static T Cos(T Value) {
+		inline static T RCos(T Value) {
 			return cos(Value);
 		}
 		/**
 		* @param Value
-		* @return convert value to a sin
+		* @return convert value to a sin in Radians
 		*/
 		template<typename T>
-		inline static T Sin(T Value) {
+		inline static T RSin(T Value) {
 			return sin(Value);
 		}
 		/**
 		* @param Value
-		* @return convert value to a Tan
+		* @return convert value to a Tan in Radians
 		*/
 		template<typename T>
-		inline static T Tan(T Value) {
+		inline static T RTan(T Value) {
 			return tan(Value);
 		}
 
 		/**
 		* @param Value
+		* @return changes value to a cos in Degrees
+		*/
+		template<typename T>
+		inline static T DCos(T Value) {
+			return Degrees<T>(cos(Value));
+		}
+		/**
+		* @param Value
+		* @return convert value to a sin in Degrees
+		*/
+		template<typename T>
+		inline static T DSin(T Value) {
+			return Degrees<T>(sin(Value));
+		}
+		/**
+		* @param Value
+		* @return convert value to a Tan in Degrees
+		*/
+		template<typename T>
+		inline static T DTan(T Value) {
+			return Degrees<T>(tan(Value));
+		}
+		/**
+		* @param Value
 		* @return convert value to a inverse sin and returns in degrees
 		*/
 		template<typename T>
-		inline static T InverseSine(T Value) {
-			return Degrees(asin(Value));
+		inline static T DInverseSine(T Value) {
+			return Degrees<T>(asin(Value));
 		}
 		/**
 		* @param Value
 		* @return convert value to a inverse cos and returns in degrees
 		*/
 		template<typename T>
-		inline static T InverseCos(T Value) {
+		inline static T DInverseCos(T Value) {
 			return Degrees<T>(acos(Value));
 		}
 		/**
@@ -94,8 +119,33 @@ namespace Proof
 		* @return convert value to a inverse Tan and returns in degrees
 		*/
 		template<typename T>
-		inline static T InverseTan(T Value) {
+		inline static T DInverseTan(T Value) {
 			return Degrees<T>(atan(Value));
+		}
+
+		/**
+		* @param Value
+		* @return convert value to a inverse sin and returns in Radians
+		*/
+		template<typename T>
+		inline static T RInverseSine(T Value) {
+			return asin(Value);
+		}
+		/**
+		* @param Value
+		* @return convert value to a inverse cos and returns in Radians
+		*/
+		template<typename T>
+		inline static T RInverseCos(T Value) {
+			return acos(Value);
+		}
+		/**
+		* @param Value
+		* @return convert value to a inverse Tan and returns in Radians
+		*/
+		template<typename T>
+		inline static T RInverseTan(T Value) {
+			return atan(Value);
 		}
 		/**
 		* @param Radian: value to be changed
@@ -103,7 +153,7 @@ namespace Proof
 		*/
 		template<typename T>
 		inline static T Degrees(T Radian) {
-			return Radian * (180 / GetPIE());
+			return Radian * (180 / PIE());
 		}
 		/**
 		* @param Degree: value to be changed
@@ -111,48 +161,11 @@ namespace Proof
 		*/
 		template<typename T>
 		inline static T Radian(T Degree) {
-			return Degree * (GetPIE() / 180);
+			return Degree * (PIE() / 180);
 		}
 		// @return the numerical value PIE
-		inline static float GetPIE() {
+		inline static float PIE() {
 			return 3.14159265359;
 		}
-
-		/*
-		* generates a random number
-		* @param Min: minimum number generated
-		* @ max: maximum number gnerated
-		*/
-		template<typename T>
-		static T RandUINT(T Min,T Max) {
-			if (Min == 0)
-				return rand() % (Max + 1);
-			return Min + (rand() % Max);
-		}
-
-		/*
-		* generates a random number
-		* @param Min: minimum number generated
-		* @ max: maximum number gnerated
-		*/
-		template<>
-		inline static uint32_t RandUINT(uint32_t Min,uint32_t Max) {
-			if (Min == 0)
-				return rand() % (Max + 1);
-			return Min + (rand() % Max);
-		}
-
-		/*
-		* generates a random number
-		* @param Min: minimum number generated
-		* @ max: maximum number gnerated
-		*/
-		template<>
-		inline static uint64_t RandUINT(uint64_t Min,uint64_t Max) {
-			if (Min == 0)
-				return rand() % (Max + 1);
-			return Min + (rand() % Max);
-		}
-
 	};
 }

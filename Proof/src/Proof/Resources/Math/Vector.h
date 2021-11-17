@@ -84,12 +84,12 @@ namespace Proof
 
         float GetAngle(const Vector& Vec)const {
             float Angle = Dot(*this,Vec) / (GetLength(*this) * GetLength(Vec));
-            return Math::InverseCos<float>(Angle);
+            return Math::DInverseCos<float>(Angle);
         }
 
         static float GetAngle(const Vector& Vec1,const Vector& Vec2) {
             float Angle = Dot(Vec1,Vec2) / (GetLength(Vec1) * GetLength(Vec2));
-            return Math::InverseCos<float>(Angle);
+            return Math::DInverseCos<float>(Angle);
         }
 
         operator const glm::vec3()const { return glm::vec3(X,Y,Z); }

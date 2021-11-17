@@ -3,7 +3,6 @@
 #include "AssetManager.h"
 namespace Proof
 {
-	using AssetID = uint64_t;
 	class Proof_API Asset {
 	public:
 		Asset() =default;
@@ -18,7 +17,7 @@ namespace Proof
 		virtual const std::string& GetAssetTypeVirtual()const {
 			return GetAssetType();
 		};
-		virtual AssetID GetID() {
+		virtual UUID GetID() {
 			return m_ID;
 		}
 
@@ -41,7 +40,7 @@ namespace Proof
 		}
 		std::string m_AssetName;
 		std::string m_SavePath;
-		AssetID m_ID = 0;
+		UUID m_ID = 0;
 		friend class ContentBrowserPanel;
 		friend class AssetManager;
 	};

@@ -186,7 +186,7 @@ namespace Proof
 					ImGui::Text("%s",Path.c_str());
 					*/
 					bool isScene = IsScene(It.path().string());
-					AssetID ID = 0;
+					uint64_t ID = 0;
 					std::string Path = It.path().string();
 					std::string filename = It.is_directory() ? It.path().filename().string() : It.path().filename().stem().string(); // returns the file name with ending like hallo.txt, stem removes the .txt
 					std::string filenameNoStem = It.path().filename().string();
@@ -207,8 +207,8 @@ namespace Proof
 									FileDragSourceName = filename;
 								}
 								if(ImGui::BeginDragDropSource()){
-									AssetID staticID =GetIDCurrentDirectory(FileDragSource);
-									ImGui::SetDragDropPayload(AssetManager::GetAsset<Asset>(staticID)->GetAssetTypeVirtual().c_str(),&staticID,sizeof(AssetID));
+									uint64_t staticID =GetIDCurrentDirectory(FileDragSource);
+									ImGui::SetDragDropPayload(AssetManager::GetAsset<Asset>(staticID)->GetAssetTypeVirtual().c_str(),&staticID,sizeof(uint64_t));
 
 									ImGui::Image((ImTextureID)(Temp->IsEditorImageNull() == false ? Temp->GetIamgeEdtorID() : m_FileIcon->GetID()),{60,60});
 									ImGui::Text(FileDragSourceName.c_str());
@@ -345,10 +345,10 @@ namespace Proof
 			Count<MaterialAsset> TempAsset = CreateCount<MaterialAsset>(NewFilePath);
 			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
 	}
-	AssetID ContentBrowserPanel::GetIDCurrentDirectory(const std::string& Path) {
+	UUID ContentBrowserPanel::GetIDCurrentDirectory(const std::string& Path) {
 		std::ifstream testFile(Path);
 		std::string line;
-		AssetID ID;
+		uint64_t ID;
 
 		while (std::getline(testFile,line)) {
 			if (line.empty() ==false) { // first line

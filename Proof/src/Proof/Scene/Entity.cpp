@@ -29,7 +29,7 @@ namespace Proof
 	};
 
 	void Entity::SwapEntityOwner(const Entity& newOwner) {
-		GetComponent<SubEntityComponet>()->GetEntityOwner().OnSubEntityDelete({m_EntityID,CurrentWorld});
+		GetComponent<SubEntityComponet>()->GetEntityOwner().OnSubEntityDelete({m_ID,CurrentWorld});
 		GetComponent<SubEntityComponet>()->m_EntitySubOwner = newOwner;
 	}
 }

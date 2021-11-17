@@ -14,8 +14,6 @@
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
 {
-	using AssetID =uint64_t;
-	using EntityID = uint64_t;
 	class Entity;
 	struct Proof_API Component {
 	public:
@@ -33,7 +31,7 @@ namespace Proof
 		void Componet() {};
 	protected:
 		std::string Name = "Default";
-		EntityID m_EntityOwner;
+		uint64_t m_EntityOwner;
 		class World* CurrentWorld = nullptr;
 	private:
 		friend class Entity;
@@ -164,7 +162,7 @@ namespace Proof
 		friend class SceneRendererUI;
 		uint32_t StartIndexSlot = 0;
 		uint32_t m_MeshMaterialID = 0;
-		AssetID m_MeshAssetPointerID=0;
+		uint64_t m_MeshAssetPointerID=0;
 		Count<MeshAsset>m_MeshAssetPointer=nullptr;
 	};
 
@@ -208,7 +206,7 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 		uint32_t StartIndexSlot = 0;
-		AssetID m_TextureAssetPointerID;
+		uint64_t m_TextureAssetPointerID;
 		Count<Texture2DAsset> m_TextureAssetPointer;
 	};
 

@@ -32,7 +32,7 @@ namespace Proof{
 		if (!data["AssetType"]) // if there is no scene no
 			return false;
 
-		m_ID = data["ID"].as<AssetID>();
+		m_ID = data["ID"].as<uint64_t>();
 		m_TexturePath = data["Texture2D"].as<std::string>();
 
 		m_Texture = Texture2D::Create(m_TexturePath);

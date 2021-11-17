@@ -21,7 +21,7 @@ namespace Proof
 		Entity tempEntity;
 		void MeshUI();
 		uint32_t m_LastWidht=0,m_LastHeight=0;
-		uint64_t m_ID = Math::RandUINT<uint64_t>(1,18000000000000000000);
+		uint64_t m_ID = Random::RandUint<uint64_t>(1,18000000000000000000);
 		class MeshComponent* mesh;
 		Special<World> m_World;
 		class MeshAsset* m_MeshAsset;

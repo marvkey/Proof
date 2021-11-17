@@ -176,8 +176,8 @@ namespace Proof
             Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".constant",lightComponent.m_Constant);
             Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".linear",lightComponent.m_Linear);
             Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".quadratic",lightComponent.m_Quadratic);
-            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".cutOff",Math::Cos(Math::Radian(lightComponent.m_CutOff)));
-            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".outerCutOff",Math::Cos(Math::Radian(lightComponent.m_OuterCutOff)));
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".cutOff",Math::RCos(lightComponent.m_CutOff));
+            Renderer3DInstance->m_Shader->SetFloat(NumberSpotLightstring + ".outerCutOff",Math::RCos(lightComponent.m_OuterCutOff));
             NumberSpotLight++;
             Renderer3DInstance->m_Shader->SetInt("v_NrSpotLight",NumberSpotLight);
             return;

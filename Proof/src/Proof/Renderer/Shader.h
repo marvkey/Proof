@@ -52,8 +52,8 @@ namespace Proof {
            if (HasShader(_Shader->GetName()) == false) {
                 ShaderMap.insert({_Shader->GetName(),_Shader});
                 return _Shader;
-            }
-           PF_ENGINE_ERROR(" shader called %s Already exist",_Shader->GetName().c_str());
+           }
+            PF_ENGINE_ERROR(" shader called %s Already exist",_Shader->GetName().c_str());
             PF_CORE_ASSERT(false,"shader library cannot add existing shader",_Shader->GetName().c_str());
         }
         friend class Shader;

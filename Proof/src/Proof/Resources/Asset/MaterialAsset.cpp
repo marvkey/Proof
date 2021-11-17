@@ -37,7 +37,7 @@ namespace Proof{
 		YAML::Node data = YAML::LoadFile(m_SavePath);
 		if (!data["AssetType"]) // if there is no scene no
 			return false;
-		m_ID = data["ID"].as<AssetID>();
+		m_ID = data["ID"].as<uint64_t>();
 		
 		m_Material.m_Colour= data["AlbedoColour"].as<glm::vec3>();
 		m_Material.m_Metallness = data["Metallness"].as<float>();

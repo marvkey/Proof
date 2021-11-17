@@ -46,7 +46,7 @@ namespace Proof {
 		void NewWorld(bool Save);
 		void OpenWorld();
 		void Save();
-		std::unordered_map<AssetID,Panel*>m_AllPanels;
+		std::unordered_map<UUID,Panel*>m_AllPanels;
 		void PlayWorld();
 		void SimulateWorld();
 		void SetWorldEdit();
