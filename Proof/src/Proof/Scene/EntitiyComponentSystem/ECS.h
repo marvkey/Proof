@@ -111,7 +111,7 @@ namespace Proof{
 				}
 				return nullptr;
 			}
-			PF_ENGINE_ERROR(false,"Entity ID Was Not FOund");
+			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
 			return nullptr;
 		}
 		template<typename T>
@@ -143,7 +143,7 @@ namespace Proof{
 				PF_ENGINE_WARN("ID Is Not Valid");
 				return nullptr;
 			}
-			PF_ENGINE_ERROR(false,"Entity ID Was Not FOund");
+			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
 		}
 		template<typename T>
 		bool HasComponent(uint32_t ID) {

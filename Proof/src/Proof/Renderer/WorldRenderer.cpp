@@ -11,7 +11,7 @@ namespace Proof{
 		RenderData.RendererTechnique = RenderTechnique::FowardRendering;
 		Renderer3DPBR::BeginContext(m_World->m_EditorCamera,m_ScreenFrameBuffer,&RenderData);
 		for (MeshComponent* Comp : m_World->Registry.SceneMeshComponents) {
-			if (Comp->GetMesh() != nullptr) {
+			if (Comp->GetMeshSource() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
 			}
 		}

@@ -42,7 +42,7 @@ namespace Proof
             std::vector<uint32_t>::iterator it;
             it = std::find(AllID.begin(),AllID.end(),m_ID);
 a:
-            m_ID = Random::RandUint<uint32_t>(1,10000000000000);
+            m_ID = Random::Uint<uint32_t>(1,10000000000000);
             if (it == AllID.end()) {
                 AllID.emplace_back(m_ID);
             }

@@ -292,15 +292,16 @@ namespace Proof{
 					}
 					if (ImGui::BeginPopup("RemoveMesh")) {
 						if (ImGui::MenuItem("Remove Mesh")) {
-							component.m_MeshAssetPointerID = 0;
+							component.RemoveMeshSource();
 						}
 
 						ImGui::EndPopup();
 					}
 					if (ImGui::BeginDragDropTarget()) {
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetAssetType().c_str())) {
-							uint64_t Data = *(const uint64_t*)payload->Data;
+							UUID Data = *(const UUID*)payload->Data;
 							component.m_MeshAssetPointerID = Data;
+							component.m_MeshAssetPointer = AssetManager::GetAssetShared<MeshAsset>(component.m_MeshAssetPointerID);
 						}
 						ImGui::EndDragDropTarget();
 					}
@@ -320,7 +321,6 @@ namespace Proof{
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MaterialAsset::GetAssetType().c_str())) {
 							uint32_t Data = *(const uint32_t*)payload->Data;
 							component.m_MeshMaterialID = Data;
-							PF_ENGINE_INFO("DROPPED %i",Data);
 						}
 						ImGui::EndDragDropTarget();
 					}

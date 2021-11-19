@@ -26,9 +26,9 @@ Entities:
       Tag: cube
       tags: []
     TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Location: [-0.184447855, 2.65673995, -15.2297153]
+      Rotation: [1.40129846e-45, 1.40129846e-45, -1.40129846e-45]
+      Scale: [5.74663973, 5.74663973, 6.77823782]
     SubEntityComponet:
       OwnerEntityID: 0
       SubEntities: []
@@ -43,7 +43,7 @@ Entities:
     TransformComponent:
       Location: [1.39999998, 1.39999998, -4.19999981]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [1, 0.733645141, 1]
     SubEntityComponet:
       OwnerEntityID: 0
       SubEntities: []
@@ -51,7 +51,7 @@ Entities:
       CutOff: 1
       OuterCutOff: 2
       Constant: 1.00399995
-      Linear: 1
+      Linear: 2.13599992
       Quadratic: 1
       Ambient: [0.999989986, 0.999999464, 1]
       Diffuse: [0, 0, 0]
@@ -110,7 +110,7 @@ Entities:
       LightType: 2
   - Entity: 18002
     TagComponent:
-      Tag: wall2
+      Tag: backpack
       tags: []
     TransformComponent:
       Location: [3.89767742, 6.95828676, -1.49769664]

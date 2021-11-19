@@ -43,7 +43,7 @@ namespace Proof{
 			if (m_MeshAsset != nullptr) {
 				ExternalAPI::ImGUIAPI::CheckBox(mesh->GetAsset()->GetName(),&mesh->GetAsset()->GetMesh()->m_Enabled);
 				ImGui::NewLine();
-				for (SubMesh& subMesh : mesh->GetMesh()->meshes) {
+				for (SubMesh& subMesh : mesh->GetMeshSource()->meshes) {
 					ExternalAPI::ImGUIAPI::CheckBox(subMesh.GetName(),&subMesh.m_Enabled);
 				}
 			}

@@ -137,14 +137,14 @@ vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 
     float distance = length(light.Position - fragPos);
     float attenuation = 1.0 / (light.Constant + light.Linear * distance + light.Quadratic * (distance * distance));
 
-    vec3 ambient = light.Ambient * matcolour;               // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    vec3 diffuse = diff * light.Ambient * matcolour;        // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    vec3 specular =spec * light.Ambient * matcolour;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 ambient = light.Ambient * matcolour*light.Intensity;               // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 diffuse = diff * light.Ambient * matcolour*light.Intensity;        // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 specular =spec * light.Ambient * matcolour*light.Intensity;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
 
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
-    return (ambient + diffuse + specular)*light.Intensity;
+    return (ambient + diffuse + specular);
     
 }
 vec3 CalcDirLight(DirectionalLight light,vec3 normal,vec3 viewDir,vec3 matcolour,float shininess) {
@@ -175,5 +175,5 @@ vec3 CalcSpotLight(SpotLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 ma
     ambient *= attenuation * intensity;
     diffuse *= attenuation * intensity;
     specular *= attenuation * intensity;
-    return (ambient + diffuse + specular)*light.Intensity;
+    return(ambient + diffuse + specular)*light.Intensity;
 }

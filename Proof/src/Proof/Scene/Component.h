@@ -10,6 +10,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
 #include <string>
+#include <format>
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
@@ -20,7 +21,6 @@ namespace Proof
 		Component(const Component&) = default;
 		Component() = default;
 		virtual ~Component() {
-
 		}
 		const std::string& GetName()const { return Name; }
 		virtual void SetName(const std::string& name) {
@@ -124,26 +124,12 @@ namespace Proof
 
 	struct Proof_API MeshComponent:public Component {
 		MeshComponent()=default;
-		class Mesh* GetMesh() {
-			return GetAsset() != nullptr ? GetAsset()->GetMesh() : nullptr;
+		class Mesh* GetMeshSource() {
+			MeshAsset* meshasset= GetAsset();
+			return meshasset != nullptr ? meshasset->GetMesh() : nullptr;
 		}
 		MeshComponent(const MeshComponent&) = default;
-		MeshAsset* GetAsset() {
-			if(m_MeshAssetPointerID==0)
-				return nullptr;
-			if(m_MeshAssetPointer ==nullptr)
-				m_MeshAssetPointer = AssetManager::GetAssetShared<MeshAsset>(m_MeshAssetPointerID);
-
-			if(m_MeshAssetPointer==nullptr)// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
-				return nullptr;
-			if(AssetManager::HasID(m_MeshAssetPointerID)){
-				return m_MeshAssetPointer.get();
-			}
-			m_MeshAssetPointerID=0;
-			m_MeshAssetPointer =nullptr;
-			return nullptr;
-		}
-
+	
 		class Material* GetMaterial();
 
 		uint32_t GetMaterialPointerID() {
@@ -154,6 +140,11 @@ namespace Proof
 		}
 		uint32_t GetMeshPointerID();
 	private:
+		MeshAsset* GetAsset();
+		void RemoveMeshSource() {
+			m_MeshAssetPointerID = 0;
+			m_MeshAssetPointer = nullptr;
+		}
 		friend class Entity;
 		friend class World;
 		friend class ECS;
@@ -162,7 +153,7 @@ namespace Proof
 		friend class SceneRendererUI;
 		uint32_t StartIndexSlot = 0;
 		uint32_t m_MeshMaterialID = 0;
-		uint64_t m_MeshAssetPointerID=0;
+		UUID m_MeshAssetPointerID=0;
 		Count<MeshAsset>m_MeshAssetPointer=nullptr;
 	};
 
@@ -206,7 +197,7 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 		uint32_t StartIndexSlot = 0;
-		uint64_t m_TextureAssetPointerID;
+		UUID m_TextureAssetPointerID = 0;
 		Count<Texture2DAsset> m_TextureAssetPointer;
 	};
 

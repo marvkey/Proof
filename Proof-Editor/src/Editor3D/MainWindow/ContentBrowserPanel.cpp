@@ -207,8 +207,8 @@ namespace Proof
 									FileDragSourceName = filename;
 								}
 								if(ImGui::BeginDragDropSource()){
-									uint64_t staticID =GetIDCurrentDirectory(FileDragSource);
-									ImGui::SetDragDropPayload(AssetManager::GetAsset<Asset>(staticID)->GetAssetTypeVirtual().c_str(),&staticID,sizeof(uint64_t));
+									UUID staticID =GetIDCurrentDirectory(FileDragSource);
+									ImGui::SetDragDropPayload(AssetManager::GetAsset<Asset>(staticID)->GetAssetTypeVirtual().c_str(),&staticID,sizeof(UUID));
 
 									ImGui::Image((ImTextureID)(Temp->IsEditorImageNull() == false ? Temp->GetIamgeEdtorID() : m_FileIcon->GetID()),{60,60});
 									ImGui::Text(FileDragSourceName.c_str());

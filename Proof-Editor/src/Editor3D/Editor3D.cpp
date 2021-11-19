@@ -25,6 +25,7 @@
 #include "MainWindow/MaterialEditorPanel.h"
 #include "Proof/Scene/ComponentUnOptimized.h"
 #include "Proof/Resources/Math/Random.h"
+#include <string>
 namespace Proof
 {
 	glm::vec4 ClearColour;
@@ -136,6 +137,12 @@ namespace Proof
 		}
 		if (Input::IsKeyClicked(KeyBoardKey::S)) {
 			GuizmoType = ImGuizmo::OPERATION::SCALE;
+		}
+		if(Input::IsKeyPressed(KeyBoardKey::H)){
+			//std::stringstream stream;
+			//stream << std::hex << UUID();
+			//std::string result(stream.str());
+			//std::cout<< stream.str() <<std::endl;
 		}
 		
 		//glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
@@ -338,12 +345,12 @@ namespace Proof
 			CurrentWindow::SetWindowInputEvent(true);
 
 			
-			//if (ImGui::IsWindowFocused()) {
+			if (ImGui::IsWindowFocused()) {
 				CurrentWindow::SetWindowInputEvent(true);
-			//}
-			//else {
-			//	CurrentWindow::SetWindowInputEvent(false);
-			//}
+			}
+			else {
+				CurrentWindow::SetWindowInputEvent(false);
+			}
 			RendererCommand::SetViewPort(ViewPortPanelSize.x,ViewPortPanelSize.y);
 			uint32_t Text = Application::GetScreenBuffer()->GetTexture();
 			ImGui::Image((ImTextureID)Text,ImVec2{_ViewPortSize.x,_ViewPortSize.y},ImVec2{0,1},ImVec2{1,0});

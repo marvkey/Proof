@@ -59,30 +59,29 @@ namespace Proof{
 	}
 	void Renderer3DPBR::Draw(MeshComponent& meshComponent) {
 		int usingMaterial = meshComponent.HasMaterial();
+		int meshPointerId = meshComponent.GetMeshPointerID();
+		if (s_PBRInstance->SceneHasAmountMeshes(meshPointerId) == true) {
+			auto& Map = s_PBRInstance->m_AmountMeshes.find(meshPointerId);
+			Map->second += 1;
+			auto InstanceSize = s_PBRInstance->m_MeshesEndingPositionIndexTransforms.find(meshPointerId);
 
-		if (s_PBRInstance->SceneHasAmountMeshes(meshComponent.GetMeshPointerID()) == true) {
-			auto& Map = s_PBRInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
-			Map->second+=1;
-			auto InstanceSize = s_PBRInstance->m_MeshesEndingPositionIndexTransforms.find(meshComponent.GetMeshPointerID());
-			
 			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
 			ModelMatrix = Transform->GetWorldTransform();
-			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
-			s_PBRInstance->m_Transforms.insert(s_PBRInstance->m_Transforms.begin() + InstanceSize->second,temp);
-			InstanceSize->second ++;
-
-		}else{
-
-			s_PBRInstance->m_AmountMeshes.insert({meshComponent.GetMeshPointerID(),1});
-			s_PBRInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
-			s_PBRInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),s_PBRInstance->m_Transforms.size() + 1});
-			s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
-			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-			ModelMatrix = Transform->GetWorldTransform();
-		
-			PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
-			s_PBRInstance->m_Transforms.emplace_back(temp);
+			PhysicalBasedRendererVertex temp(ModelMatrix, meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial, usingMaterial);
+			s_PBRInstance->m_Transforms.insert(s_PBRInstance->m_Transforms.begin() + InstanceSize->second, temp);
+			InstanceSize->second++;
+			return;
 		}
+
+		s_PBRInstance->m_AmountMeshes.insert({ meshPointerId,1});
+		s_PBRInstance->m_Meshes.insert({ meshPointerId,meshComponent});
+		s_PBRInstance->m_MeshesEndingPositionIndexTransforms.insert({ meshPointerId,s_PBRInstance->m_Transforms.size() + 1});
+		s_DifferentID.emplace_back(meshPointerId);
+		auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
+		ModelMatrix = Transform->GetWorldTransform();
+		
+		PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
+		s_PBRInstance->m_Transforms.emplace_back(temp);
 	}
 	void Renderer3DPBR::Draw(LightComponent& lightComponent) {
 		if(s_RendererData->RendererTechnique == RenderTechnique::FowardRendering){
@@ -295,10 +294,10 @@ namespace Proof{
 			}
 
 
-			if (TempMesh->second.GetMesh()->m_FaceCulling == true)
+			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
 				RendererCommand::Enable(ProofRenderTest::CullFace);
-			if (TempMesh->second.GetMesh()->m_Enabled == true) {
-				for (SubMesh& mesh : TempMesh->second.GetMesh()->meshes) {
+			if (TempMesh->second.GetMeshSource()->m_Enabled == true) {
+				for (SubMesh& mesh : TempMesh->second.GetMeshSource()->meshes) {
 					if (mesh.m_Enabled == false)
 						continue;
 
@@ -319,7 +318,7 @@ namespace Proof{
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
 				}
 			}
-			if (TempMesh->second.GetMesh()->m_FaceCulling == true)
+			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
 				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render settings
 			sizeOffset += TempAmountMeshes->second;
 		}
@@ -385,8 +384,8 @@ namespace Proof{
 			//glPolygonMode(GL_FRONT_AND_BACK,(int)GL_LINES); // keeps this need to put into our game
 			//if (TempMesh->second.GetMesh()->m_FaceCulling == true)
 			//	RendererCommand::Enable(ProofRenderTest::CullFace);
-			if (TempMesh->second.GetMesh()->m_Enabled == true) {
-				for (SubMesh& mesh : TempMesh->second.GetMesh()->meshes) {
+			if (TempMesh->second.GetMeshSource()->m_Enabled == true) {
+				for (SubMesh& mesh : TempMesh->second.GetMeshSource()->meshes) {
 					if (mesh.m_Enabled == false)
 						continue;
 					if (TempMesh->second.HasMaterial() == false) {
@@ -402,7 +401,7 @@ namespace Proof{
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
 				}
 			}
-			if (TempMesh->second.GetMesh()->m_FaceCulling == true)
+			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
 				//RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render settings
 			sizeOffset += TempAmountMeshes->second;
 			s_PBRInstance->m_Shader->UnBind();

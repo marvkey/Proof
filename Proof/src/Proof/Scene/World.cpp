@@ -88,7 +88,7 @@ namespace Proof{
 		
 		Renderer3DPBR::BeginContext(cameraComp->m_Projection,cameraComp->m_View,*cameraComp->m_Positon,Application::GetScreenBuffer(),&RenderSpecs);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetMesh() != nullptr) {
+			if (Comp->GetMeshSource() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
 			}
 		}
@@ -213,7 +213,7 @@ namespace Proof{
 		RenderSpecs.RendererTechnique = RenderTechnique::DeferedRendering;
 		Renderer3DPBR::BeginContext(m_EditorCamera.m_Projection,m_EditorCamera.m_View,m_EditorCamera.m_Positon,Application::GetScreenBuffer(),&RenderSpecs);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetMesh() != nullptr) {
+			if (Comp->GetMeshSource() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);
 			}
 		}
