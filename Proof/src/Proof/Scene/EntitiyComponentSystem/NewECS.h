@@ -2,29 +2,20 @@
 #include <vector>
 #include <unordered_map>
 #include <type_traits>
+typedef uint64_t EntityID;
 namespace Proof{
-	//template<typename T>
+	template<typename T>
 	struct ComponentPool {
-	private:
-
-		inline char* get(size_t index) {
-			return static_cast<char*>(m_ComponentPool[index]);
-		}
-	private:
-		std::vector<void*> m_ComponentPool;
-	};
-	using EntityID = uint64_t;
+		
+	};  
 	class NewECS{
 	public:
-		template<typename T> 
-		T* AddComponent(EntityID uniqeid){
-			bool temp= std::is_same<T,m_Pool[0]>::value;
-			return nullptr;
-			m_Pool.resize(1);
+		template<class T>
+		T* AddComponent(EntityID id) {
+			return m_entityHolder.at(id).emplace_back<T>;
 		}
 	private:
-		std::vector<EntityID>m_Pool;
-		std::unordered_map<EntityID,ComponentPool>m_Componet;
+		std::unordered_map<EntityID, std::vector<void*>>m_entityHolder;
 	};
 
 }

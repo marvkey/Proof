@@ -25,6 +25,22 @@ namespace Proof
 			}
 			return nullptr;
 		}
+		/**
+		*  gets an asset without checking if the asset exist, would cause a crash if the asset does not exit
+		* @param UUID:id the uniqe id of teh acces we are getting
+		*/
+		template<class T>
+		static T* ForceGetAsset(UUID ID) { 
+			return dynamic_cast<T*>(s_AssetManager->m_AllAssets.at(ID).get());
+		}
+		/**
+		* gets an asset without checking if the asset exist, would cause a crash if the asset does not exit
+		* @param UUID:id the uniqe id of teh acces we are getting
+		*/
+		template<class T>
+		static Count<T>ForceGetAssetShared(UUID ID) {
+			return std::dynamic_pointer_cast<T>(s_AssetManager->m_AllAssets.at(ID));
+		}
 		static UUID CreateID();
 		static void Remove(UUID ID);
 		AssetManager(const AssetManager&) = delete;

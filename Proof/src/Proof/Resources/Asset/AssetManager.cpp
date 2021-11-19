@@ -105,4 +105,14 @@ namespace Proof
 		YAML::Node data = YAML::LoadFile(Path);
 		return data["AssetType"].as<std::string>();
 	}
+	void AssetManager::NewInitilizeAssets(const std::string& path) {
+		YAML::Node data = YAML::LoadFile(path);
+		auto assets = data["ProjectAssets"];
+		if (!assets)
+			return;
+		for (auto& asset : assets) {
+
+		}
+
+	}
 }

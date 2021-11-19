@@ -143,111 +143,110 @@ namespace Proof{
 		m_Scene->m_Path = filePath;
 
 		YAML::Node data = YAML::LoadFile(filePath);
-		if(!data["World"]) // if there is no scene no
+		if (!data["World"]) // if there is no scene no
 			return false;
 
-		m_Scene->Name= data["World"].as<std::string>();
-		PF_ENGINE_TRACE("Deserilizing World %s",m_Scene->Name.c_str());
+		m_Scene->Name = data["World"].as<std::string>();
+		PF_ENGINE_TRACE("Deserilizing World %s", m_Scene->Name.c_str());
 		auto entities = data["Entities"];
 
-		if(entities){
-			for(auto entity: entities){
-				uint32_t EntID = entity["Entity"].as<uint32_t>();
+		if (!entities)
+			return false;
+		for (auto entity : entities) {
+			uint32_t EntID = entity["Entity"].as<uint32_t>();
 
-				std::string name;
-				auto tagcomponent = entity["TagComponent"];
-				if(tagcomponent){
-					name =tagcomponent["Tag"].as<std::string>();
-					
-				}
-				Entity NewEntity = m_Scene->CreateEntity(name,EntID);
-				if(tagcomponent){
-					if (tagcomponent["tags"]) {
-						auto* tc = NewEntity.GetComponent<TagComponent>();
+			std::string name;
+			auto tagcomponent = entity["TagComponent"];
+			if (tagcomponent) {
+				name = tagcomponent["Tag"].as<std::string>();
+			}
+			Entity NewEntity = m_Scene->CreateEntity(name, EntID);
+			if (tagcomponent) {
+				if (tagcomponent["tags"]) {
+					auto* tc = NewEntity.GetComponent<TagComponent>();
 
-						for (auto tag : tagcomponent["tags"]) {
-							tc->AddTag(tag.as<std::string>());
-						}
+					for (auto tag : tagcomponent["tags"]) {
+						tc->AddTag(tag.as<std::string>());
 					}
 				}
-				auto transformComponet = entity["TransformComponent"];
-				if(transformComponet){
-					auto* tc = NewEntity.GetComponent<TransformComponent>();
-					tc->Location = transformComponet["Location"].as<glm::vec3>();
+			}
+			auto transformComponet = entity["TransformComponent"];
+			if (transformComponet) {
+				auto* tc = NewEntity.GetComponent<TransformComponent>();
+				tc->Location = transformComponet["Location"].as<glm::vec3>();
 
-					tc->Rotation = transformComponet["Rotation"].as<Vector>();
-					tc->Scale = transformComponet["Scale"].as<Vector>();
-					
+				tc->Rotation = transformComponet["Rotation"].as<Vector>();
+				tc->Scale = transformComponet["Scale"].as<Vector>();
+
+			}
+
+			auto subEntityComponent = entity["SubEntityComponet"];
+			if (subEntityComponent) {
+				auto* tc = NewEntity.GetComponent<SubEntityComponet>();
+				if (subEntityComponent["OwnerEntityID"].as<uint64_t>() != 0) {
+					Entity temp = { subEntityComponent["OwnerEntityID"].as<uint64_t>(),m_Scene };
+					tc->m_EntitySubOwner = temp;
 				}
-
-				auto subEntityComponent = entity["SubEntityComponet"];
-				if(subEntityComponent){
-					auto* tc = NewEntity.GetComponent<SubEntityComponet>();
-					if(subEntityComponent["OwnerEntityID"].as<uint64_t>()!=0){
-						Entity temp = {subEntityComponent["OwnerEntityID"].as<uint64_t>(),m_Scene};
-						tc->m_EntitySubOwner = temp;
+				if (subEntityComponent["SubEntities"]) {
+					for (auto entityID : subEntityComponent["SubEntities"]) {
+						uint64_t ID = entityID.as<uint64_t>();
+						Entity temp = { ID,m_Scene };
+						tc->m_AllSubEntity.emplace_back(temp);
 					}
-					if(subEntityComponent["SubEntities"]){
-						for(auto entityID:subEntityComponent["SubEntities"]){
-							uint64_t ID = entityID.as<uint64_t>();
-							Entity temp={ID,m_Scene};
-							tc->m_AllSubEntity.emplace_back(temp);
-						}
-					}
-					
-				}
-				auto meshComponent = entity["MeshComponent"];
-				if(meshComponent){
-					auto& src = *NewEntity.AddComponent<MeshComponent>();
-					src.SetName(meshComponent["Name"].as<std::string>());
-					src.m_MeshAssetPointerID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
-					src.m_MeshMaterialID = meshComponent["MaterialPointerID"].as<uint32_t>();
-					
-				}
-				
-				auto spriteRendererComponent = entity["SpriteComponent"];
-				if (spriteRendererComponent) 				{
-					auto& src = *NewEntity.AddComponent<SpriteComponent>();
-					src.SetName(spriteRendererComponent["Name"].as<std::string>());
-					src.m_TextureAssetPointerID = spriteRendererComponent["TextureAssetPointerID"].as<uint64_t>();
-					src.Colour= spriteRendererComponent["Colour"].as<glm::vec4>();
-					src.SpriteTransfrom.Location = spriteRendererComponent["LocalLocation"].as<glm::vec3>();
-					src.SpriteTransfrom.Rotation = spriteRendererComponent["LocalRotation"].as<glm::vec3>();
-					src.SpriteTransfrom.Scale = spriteRendererComponent["LocalScale"].as<glm::vec3>();
-					
 				}
 
-				auto lightComponent = entity["LightComponent"];
-				if(lightComponent){
-					auto& src = *NewEntity.AddComponent<LightComponent>();
-					src.m_CutOff = lightComponent["CutOff"].as<float>();
-					src.m_OuterCutOff = lightComponent["OuterCutOff"].as<float>();
+			}
+			auto meshComponent = entity["MeshComponent"];
+			if (meshComponent) {
+				auto& src = *NewEntity.AddComponent<MeshComponent>();
+				src.SetName(meshComponent["Name"].as<std::string>());
+				src.m_MeshAssetPointerID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
+				src.m_MeshMaterialID = meshComponent["MaterialPointerID"].as<uint32_t>();
 
-					src.m_Constant = lightComponent["Constant"].as<float>();
-					src.m_Linear = lightComponent["Linear"].as<float>();
-					src.m_Quadratic = lightComponent["Quadratic"].as<float>();
+			}
 
-					src.m_Ambient = lightComponent["Ambient"].as<glm::vec3>();
-					src.m_Diffuse = lightComponent["Diffuse"].as<glm::vec3>();
-					src.m_Specular = lightComponent["Specular"].as<glm::vec3>();
+			auto spriteRendererComponent = entity["SpriteComponent"];
+			if (spriteRendererComponent) {
+				auto& src = *NewEntity.AddComponent<SpriteComponent>();
+				src.SetName(spriteRendererComponent["Name"].as<std::string>());
+				src.m_TextureAssetPointerID = spriteRendererComponent["TextureAssetPointerID"].as<uint64_t>();
+				src.Colour = spriteRendererComponent["Colour"].as<glm::vec4>();
+				src.SpriteTransfrom.Location = spriteRendererComponent["LocalLocation"].as<glm::vec3>();
+				src.SpriteTransfrom.Rotation = spriteRendererComponent["LocalRotation"].as<glm::vec3>();
+				src.SpriteTransfrom.Scale = spriteRendererComponent["LocalScale"].as<glm::vec3>();
 
-					src.m_LightType = lightComponent["LightType"].as<int>();
-					
+			}
+
+			auto lightComponent = entity["LightComponent"];
+			if (lightComponent) {
+				auto& src = *NewEntity.AddComponent<LightComponent>();
+				src.m_CutOff = lightComponent["CutOff"].as<float>();
+				src.m_OuterCutOff = lightComponent["OuterCutOff"].as<float>();
+
+				src.m_Constant = lightComponent["Constant"].as<float>();
+				src.m_Linear = lightComponent["Linear"].as<float>();
+				src.m_Quadratic = lightComponent["Quadratic"].as<float>();
+
+				src.m_Ambient = lightComponent["Ambient"].as<glm::vec3>();
+				src.m_Diffuse = lightComponent["Diffuse"].as<glm::vec3>();
+				src.m_Specular = lightComponent["Specular"].as<glm::vec3>();
+
+				src.m_LightType = lightComponent["LightType"].as<int>();
+
+			}
+
+			auto cameraComponent = entity["CameraComponent"];
+			if (cameraComponent) {
+				auto& src = *NewEntity.AddComponent<CameraComponent>();
+				src.m_AutoSetDimension = cameraComponent["AutoSetDimension"].as<bool>();
+				src.m_NearPlane = cameraComponent["NearPlane"].as<float>();
+				src.m_FarPlane = cameraComponent["FarPlane"].as<float>();
+				src.m_FovDeg = cameraComponent["FOV"].as<float>();
+				if (src.m_AutoSetDimension == false) {
+					src.m_Width = cameraComponent["Width"].as<uint32_t>();
+					src.m_Height = cameraComponent["Height"].as<uint32_t>();
 				}
 
-				auto cameraComponent = entity["CameraComponent"];
-				if(cameraComponent){
-					auto& src = *NewEntity.AddComponent<CameraComponent>();
-					src.m_AutoSetDimension = cameraComponent["AutoSetDimension"].as<bool>();
-					src.m_NearPlane = cameraComponent["NearPlane"].as<float>();
-					src.m_FarPlane= cameraComponent["FarPlane"].as<float>();
-					src.m_FovDeg= cameraComponent["FOV"].as<float>();
-					if(src.m_AutoSetDimension ==false){
-						src.m_Width = cameraComponent["Width"].as<uint32_t>();
-						src.m_Height= cameraComponent["Height"].as<uint32_t>();
-					}
-					
-				}
 			}
 		}
 		return true;

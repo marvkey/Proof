@@ -79,7 +79,7 @@ Entities:
     TransformComponent:
       Location: [-1.41400003, 2.31100011, -3.55900002]
       Rotation: [0, 0, 0]
-      Scale: [13, 6.19999981, 15.8999996]
+      Scale: [5.12746, 12.9163399, 11.9759607]
     SubEntityComponet:
       OwnerEntityID: 0
       SubEntities: []
@@ -113,22 +113,22 @@ Entities:
       Tag: backpack
       tags: []
     TransformComponent:
-      Location: [3.89767742, 6.95828676, -1.49769664]
+      Location: [3.94369793, 15.2866411, -5.40273094]
       Rotation: [0, 0, 0]
-      Scale: [10.1280012, 8.66750431, 1.26999986]
+      Scale: [0.173189014, 0.148214489, 0.134473309]
     SubEntityComponet:
       OwnerEntityID: 0
       SubEntities: []
     MeshComponent:
       Name: Default
-      MeshAssetPointerID: 12067
-      MaterialPointerID: 0
+      MeshAssetPointerID: 10608
+      MaterialPointerID: 6594
   - Entity: 14000
     TagComponent:
       Tag: flashlight
       tags: []
     TransformComponent:
-      Location: [-6.79636097, 15.2442474, -20.1612854]
+      Location: [-26.7959995, 17.5440006, 2.53900003]
       Rotation: [0.983596921, 0.151550591, 0.0978238508]
       Scale: [0.5, 0.99999994, 1.40000021]
     SubEntityComponet:

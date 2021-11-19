@@ -1,8 +1,8 @@
 AssetType: AssetType::MaterialAsset
 ID: 7493
-AlbedoColour: [0, 0.482174635, 1]
+AlbedoColour: [0.987903237, 0, 0]
 Roughness: 3
-Metallness: 1
+Metallness: 1.13999999
 AO: 1
 MetallicTexturePath: ""
 AlbedoTexturePath: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\Assets\Textures\nx.png

@@ -99,6 +99,10 @@ namespace Proof
 		if (AssetManager::HasID(m_MeshAssetPointerID)) {
 			if (m_MeshAssetPointer == nullptr)
 				m_MeshAssetPointer = AssetManager::GetAssetShared<MeshAsset>(m_MeshAssetPointerID);
+			
+			if(m_MeshAssetPointer->GetID() != m_MeshAssetPointerID)
+				m_MeshAssetPointer = AssetManager::GetAssetShared<MeshAsset>(m_MeshAssetPointerID);
+
 			return m_MeshAssetPointer.get();
 		}
 		m_MeshAssetPointerID = 0;

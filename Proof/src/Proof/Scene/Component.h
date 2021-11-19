@@ -22,6 +22,7 @@ namespace Proof
 		Component() = default;
 		virtual ~Component() {
 		}
+		
 		const std::string& GetName()const { return Name; }
 		virtual void SetName(const std::string& name) {
 			Name = name;
