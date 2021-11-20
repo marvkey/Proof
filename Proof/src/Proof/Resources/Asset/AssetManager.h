@@ -2,6 +2,11 @@
 #include "Proof/Core/Core.h"
 #include <unordered_map>
 #include "Proof/Core/UUID.h"
+#include <set>
+#include <fstream>
+#include <string>
+#include <filesystem>
+
 namespace Proof
 {
 	class Proof_API AssetManager {
@@ -13,7 +18,7 @@ namespace Proof
 		static T* GetAsset(UUID ID) {
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
-				return dynamic_cast<T*>(it->second.get());
+				return dynamic_cast<T*>(it->second.second.get());
 			}
 			return nullptr;
 		}
@@ -21,9 +26,16 @@ namespace Proof
 		static Count<T>GetAssetShared(UUID ID){
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
-				return std::dynamic_pointer_cast<T>(it->second);
+				return std::dynamic_pointer_cast<T>(it->second.second);
 			}
 			return nullptr;
+		}
+		static const std::string& GetAssetType(UUID ID) {
+			auto it = s_AssetManager->m_AllAssets.find(ID);
+			if (it != s_AssetManager->m_AllAssets.end()) {
+				return it->second.first.Type;
+			}
+			return std::string();
 		}
 		/**
 		*  gets an asset without checking if the asset exist, would cause a crash if the asset does not exit
@@ -31,7 +43,7 @@ namespace Proof
 		*/
 		template<class T>
 		static T* ForceGetAsset(UUID ID) { 
-			return dynamic_cast<T*>(s_AssetManager->m_AllAssets.at(ID).get());
+			return dynamic_cast<T*>(s_AssetManager->m_AllAssets.at(ID).second.get());
 		}
 		/**
 		* gets an asset without checking if the asset exist, would cause a crash if the asset does not exit
@@ -39,21 +51,41 @@ namespace Proof
 		*/
 		template<class T>
 		static Count<T>ForceGetAssetShared(UUID ID) {
-			return std::dynamic_pointer_cast<T>(s_AssetManager->m_AllAssets.at(ID));
+			return std::dynamic_pointer_cast<T>(s_AssetManager->m_AllAssets.at(ID).second);
 		}
 		static UUID CreateID();
 		static void Remove(UUID ID);
 		AssetManager(const AssetManager&) = delete;
+
+		static void NotifyOpenedNewLevel(std::set<UUID> assetLoadIn);
+		static void NotifyOpenedNewAsset(UUID ID);
 	private:
+		struct AssetInfo {
+			std::filesystem::path Path;
+			std::string Type;
+			const std::string& GetName()const {
+				return Name;
+			}
+			AssetInfo(const std::string& path, const std::string& type) :
+				Path(path), Type(type) 
+			{
+				Name = Path.filename().stem().string();
+			}
+		private:
+			void GenerateName() {
+			}
+			std::string Name;
+		};
 		static void SaveAllAsset();
 		static AssetManager* s_AssetManager;
-		std::unordered_map<UUID,Count<class Asset>> m_AllAssets;
+		std::unordered_map<UUID,std::pair<AssetInfo,Count<class Asset>>> m_AllAssets;// path
 		AssetManager() {};
 		static void InitilizeAssets(const std::string& Path);
 		static void MakeDirectory(const std::string& path);
 		static bool IsFileValid(const std::string& Path);
 		static std::string GetAssetType(const std::string& Path);
 		friend class Application;
-
+		static void NewInitilizeAssets(const std::string& Path);
+		static void GenerateAsset(std::set<UUID> assetLoadIn);
 	};
 }	

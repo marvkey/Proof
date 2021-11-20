@@ -202,7 +202,12 @@ namespace Proof{
 				src.SetName(meshComponent["Name"].as<std::string>());
 				src.m_MeshAssetPointerID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
 				src.m_MeshMaterialID = meshComponent["MaterialPointerID"].as<uint32_t>();
-
+				if (src.m_MeshAssetPointerID != 0) {
+					m_AssetLoadID.emplace(src.m_MeshAssetPointerID);
+				}
+				if (src.m_MeshMaterialID != 0) {
+					m_AssetLoadID.emplace(src.m_MeshMaterialID);
+				}
 			}
 
 			auto spriteRendererComponent = entity["SpriteComponent"];
@@ -214,7 +219,9 @@ namespace Proof{
 				src.SpriteTransfrom.Location = spriteRendererComponent["LocalLocation"].as<glm::vec3>();
 				src.SpriteTransfrom.Rotation = spriteRendererComponent["LocalRotation"].as<glm::vec3>();
 				src.SpriteTransfrom.Scale = spriteRendererComponent["LocalScale"].as<glm::vec3>();
-
+				if (src.m_TextureAssetPointerID != 0) {
+					m_AssetLoadID.emplace(src.m_TextureAssetPointerID);
+				}
 			}
 
 			auto lightComponent = entity["LightComponent"];

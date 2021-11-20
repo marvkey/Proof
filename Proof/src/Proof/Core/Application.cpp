@@ -29,6 +29,7 @@ namespace Proof {
         ScreenFrameBuffer->UnBind();
         
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
+        AssetManager::NewInitilizeAssets("config/AssetManager.ProofAssetManager");
 
     }
 
@@ -58,7 +59,6 @@ namespace Proof {
     }
 
     void Application::Run() {
-        AssetManager::InitilizeAssets("content");
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
@@ -76,12 +76,8 @@ namespace Proof {
             RendererCommand::Enable(ProofRenderTest::DepthTest);
             if (WindowMinimized == false) 
             {
-                //ScreenFrameBuffer->Bind();
-              //  RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-              //  RendererCommand::SetClearColor();
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
-               // ScreenFrameBuffer->UnBind();
             }
             ImGuiMainLayer->Begin();
             for (Layer* layer : MainLayerStack.V_LayerStack)

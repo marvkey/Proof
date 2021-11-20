@@ -16,7 +16,7 @@ namespace Proof
 			ID = AssetManager::CreateID();
 		}
 		if (HasID(ID) == false) {
-			s_AssetManager->m_AllAssets.insert({ID,asset});
+			s_AssetManager->m_AllAssets.insert({ ID,{AssetInfo(asset->GetPath(), asset->GetAssetTypeVirtual()),asset} });
 			return;
 		}
 		PF_ASSERT(false,"Asset Maneger Has ID");
@@ -38,9 +38,24 @@ namespace Proof
 		}
 		PF_ASSERT(false,"Asset Manager Has ID");
 	}
+	void AssetManager::NotifyOpenedNewLevel(std::set<UUID> assetLoadIn){
+		std::thread thread_obj(AssetManager::GenerateAsset, assetLoadIn);
+	}
+	void AssetManager::NotifyOpenedNewAsset(UUID ID){
+		/*
+		if (HasID(ID)) {
+			Count<Asset> asset = ForceGetAssetShared<Asset>(ID);
+			if (asset == nullptr) {
+				std::thread thread_obj(AssetManager::GenerateAsset, ID);
+			}
+		}
+		*/
+	}
 	void AssetManager::SaveAllAsset() {
 		for(auto& asset: s_AssetManager->m_AllAssets){
-			asset.second->SaveAsset();
+			if (asset.second.second != nullptr) {
+				asset.second.second->SaveAsset();
+			}
 		};
 	}
 	void AssetManager::InitilizeAssets(const std::string& Path) {
@@ -86,8 +101,8 @@ namespace Proof
 		for(auto& asset : s_AssetManager->m_AllAssets){
 			out<<YAML::BeginMap;
 			out << YAML::Key << "Asset" << YAML::Value << asset.first;
-			out<<YAML::Key<<"Type"<<asset.second->GetAssetTypeVirtual();
-			out<<YAML::Key<<"Path"<<asset.second->GetPath();
+			out<<YAML::Key<<"Type"<<asset.second.second->GetAssetTypeVirtual();
+			out<<YAML::Key<<"Path"<<asset.second.second->GetPath();
 			out<<YAML::EndMap;
 		}
 		
@@ -107,12 +122,47 @@ namespace Proof
 	}
 	void AssetManager::NewInitilizeAssets(const std::string& path) {
 		YAML::Node data = YAML::LoadFile(path);
+
 		auto assets = data["ProjectAssets"];
-		if (!assets)
-			return;
+
+	//	if (!assets)
+		//	return;
+
 		for (auto& asset : assets) {
 
+			UUID assetID = asset["Asset"].as<uint64_t>();
+			std::string path = asset["Path"].as<std::string>();
+			std::string assetType = asset["Type"].as<std::string>();
+			s_AssetManager->m_AllAssets.insert({ assetID,{AssetInfo(path,assetType),nullptr} });// setting the asset as null as we will load it in another thread
 		}
+	}
+	void AssetManager::GenerateAsset(std::set<UUID> assetLoadIn){
+		for (const UUID& assetID : assetLoadIn) {
 
+			if (HasID(assetID) == false)continue;
+
+			auto& asset = s_AssetManager->m_AllAssets.at(assetID);
+			if (asset.second != nullptr)
+				continue;
+
+			if (asset.first.Type == Texture2DAsset::GetAssetType()) {
+				asset.second = CreateCount <Texture2DAsset>();
+				asset.second->LoadAsset(asset.first.Path.string());
+				asset.second->m_AssetName = asset.first.GetName();
+				continue;
+			}
+			if (asset.first.Type == MaterialAsset::GetAssetType()) {
+				asset.second = CreateCount<MaterialAsset>();
+				asset.second->LoadAsset(asset.first.Path.string());
+				asset.second->m_AssetName = asset.first.GetName();
+				continue;
+			}
+			if (asset.first.Type == MeshAsset::GetAssetType()) {
+				asset.second = CreateCount <MeshAsset>();
+				asset.second->LoadAsset(asset.first.Path.string());
+				asset.second->m_AssetName = asset.first.GetName();
+				continue;
+			}
+		}
 	}
 }

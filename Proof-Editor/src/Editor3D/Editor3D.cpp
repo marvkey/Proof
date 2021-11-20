@@ -37,9 +37,10 @@ namespace Proof
 	//	std::string name =std::format("{} {}","wagwan");
 
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
+		
 		ActiveWorld = CreateSpecial<World>();
 		m_WorldHierachy.SetContext(ActiveWorld.get());
-		m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
+		//m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
 
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/right.jpg");
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/left.jpg");
@@ -53,6 +54,8 @@ namespace Proof
 		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofAsset") == true) {
 			PF_ENGINE_INFO("%s Deserilize perfectly",ActiveWorld->GetName().c_str());
 			m_WorldHierachy.SetContext(ActiveWorld.get());
+
+			AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
 		}
 		
 		float skyboxVertices[] = {
@@ -184,7 +187,7 @@ namespace Proof
 		MainToolBar();
 		
 		m_WorldHierachy.ImGuiRender();
-		m_CurrentContentBrowserPanel.ImGuiRender();
+		//m_CurrentContentBrowserPanel.ImGuiRender();
 		Logger();
 		if (ImGui::Begin("Renderer Stastitics")) {
 			ImGui::TextColored({1.0,0,0,1},"RENDERER SPECS");

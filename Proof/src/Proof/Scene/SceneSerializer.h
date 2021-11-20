@@ -1,7 +1,7 @@
 #pragma once
 #include "World.h"
 #include <yaml-cpp/yaml.h>
-
+#include <set>
 namespace Proof
 {
 	class Proof_API SceneSerializer {
@@ -14,9 +14,12 @@ namespace Proof
 		/* Openign the file and creating a scene from data*/
 		bool DeSerilizeText(const std::string& filePath);
 		bool DeSerilizeBinary(const std::string& filepath);
-
+		const std::set<UUID>& GetAssetLoadID()const {
+			return m_AssetLoadID;
+		}
 	private:
 		World* m_Scene;
+		std::set<UUID> m_AssetLoadID;
 		void SerilizeEntity(YAML::Emitter& out,Entity entity);
 	};
 }

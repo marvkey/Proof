@@ -94,6 +94,7 @@ namespace Proof
 		
 		return m_MeshAssetPointer.get();
 		*/
+		/*
 		if (m_MeshAssetPointerID == 0)
 			return nullptr;
 		if (AssetManager::HasID(m_MeshAssetPointerID)) {
@@ -107,6 +108,21 @@ namespace Proof
 		}
 		m_MeshAssetPointerID = 0;
 		return nullptr;
-		
+		*/
+		if (m_MeshAssetPointerID == 0) {
+			return nullptr;
+		}
+		if (AssetManager::HasID(m_MeshAssetPointerID)) {
+			if (AssetManager::ForceGetAssetShared<MeshAsset>(m_MeshAssetPointerID) == nullptr) {
+				AssetManager::NotifyOpenedNewAsset(m_MeshAssetPointerID);
+				return nullptr;
+			}
+			m_MeshAssetPointer = AssetManager::ForceGetAssetShared<MeshAsset>(m_MeshAssetPointerID);
+			return m_MeshAssetPointer.get();
+		}
+
+		m_MeshAssetPointer = nullptr;
+		m_MeshAssetPointerID == 0;
+		return nullptr;
 	}
 }
