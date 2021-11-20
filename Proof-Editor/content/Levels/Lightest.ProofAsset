@@ -35,7 +35,7 @@ Entities:
     MeshComponent:
       Name: Default
       MeshAssetPointerID: 12067
-      MaterialPointerID: 7493
+      MaterialPointerID: 0
   - Entity: 4552
     TagComponent:
       Tag: point light
@@ -121,7 +121,7 @@ Entities:
       SubEntities: []
     MeshComponent:
       Name: Default
-      MeshAssetPointerID: 10608
+      MeshAssetPointerID: 0
       MaterialPointerID: 6594
   - Entity: 14000
     TagComponent:

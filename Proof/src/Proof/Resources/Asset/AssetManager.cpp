@@ -39,7 +39,9 @@ namespace Proof
 		PF_ASSERT(false,"Asset Manager Has ID");
 	}
 	void AssetManager::NotifyOpenedNewLevel(std::set<UUID> assetLoadIn){
-		std::thread thread_obj(AssetManager::GenerateAsset, assetLoadIn);
+		AssetManager::GenerateAsset(assetLoadIn);
+		//std::thread thread_obj(AssetManager::GenerateAsset, assetLoadIn);
+		//thread_obj.join();
 	}
 	void AssetManager::NotifyOpenedNewAsset(UUID ID){
 		/*
@@ -137,11 +139,11 @@ namespace Proof
 		}
 	}
 	void AssetManager::GenerateAsset(std::set<UUID> assetLoadIn){
-		for (const UUID& assetID : assetLoadIn) {
-
+		for (UUID assetID : assetLoadIn) {
 			if (HasID(assetID) == false)continue;
 
 			auto& asset = s_AssetManager->m_AllAssets.at(assetID);
+
 			if (asset.second != nullptr)
 				continue;
 
@@ -149,18 +151,21 @@ namespace Proof
 				asset.second = CreateCount <Texture2DAsset>();
 				asset.second->LoadAsset(asset.first.Path.string());
 				asset.second->m_AssetName = asset.first.GetName();
+
 				continue;
 			}
 			if (asset.first.Type == MaterialAsset::GetAssetType()) {
 				asset.second = CreateCount<MaterialAsset>();
 				asset.second->LoadAsset(asset.first.Path.string());
 				asset.second->m_AssetName = asset.first.GetName();
+
 				continue;
 			}
 			if (asset.first.Type == MeshAsset::GetAssetType()) {
 				asset.second = CreateCount <MeshAsset>();
 				asset.second->LoadAsset(asset.first.Path.string());
 				asset.second->m_AssetName = asset.first.GetName();
+				
 				continue;
 			}
 		}

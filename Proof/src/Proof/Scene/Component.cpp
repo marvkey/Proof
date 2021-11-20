@@ -26,6 +26,7 @@ namespace Proof
 		return GetMeshSource() != nullptr ? GetMeshSource()->GetID() : 0;
 	}
 	Material* MeshComponent::GetMaterial() {
+		/*
 		if (m_MeshMaterialID == 0) {
 			return nullptr;
 		}
@@ -35,6 +36,8 @@ namespace Proof
 			return nullptr;
 		}
 		return &a->m_Material;
+		*/
+		return nullptr;
 	}
 	Vector TransformComponent::GetWorldLocation()const {
 		if(GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()){
@@ -114,7 +117,7 @@ namespace Proof
 		}
 		if (AssetManager::HasID(m_MeshAssetPointerID)) {
 			if (AssetManager::ForceGetAssetShared<MeshAsset>(m_MeshAssetPointerID) == nullptr) {
-				AssetManager::NotifyOpenedNewAsset(m_MeshAssetPointerID);
+				//AssetManager::NotifyOpenedNewAsset(m_MeshAssetPointerID);
 				return nullptr;
 			}
 			m_MeshAssetPointer = AssetManager::ForceGetAssetShared<MeshAsset>(m_MeshAssetPointerID);

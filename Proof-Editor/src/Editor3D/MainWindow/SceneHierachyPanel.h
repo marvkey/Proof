@@ -11,12 +11,12 @@ namespace Proof{
 		Entity GetSelectedEntity(){return m_SelectedEntity;};
 
 		void SetBrowserPanel(class ContentBrowserPanel* Panel){
-			m_BrowserPanel =  Panel;
+			//m_BrowserPanel =  Panel;
 		}
 	private:
 		World* m_CurrentWorld;
 		Entity m_SelectedEntity;
-		class ContentBrowserPanel* m_BrowserPanel =nullptr;
+		//class ContentBrowserPanel* m_BrowserPanel =nullptr;
 		void DrawEntityNode(class Entity& entity);
 		void DrawComponent(class Entity& entity);
 
