@@ -210,7 +210,7 @@ namespace Proof{
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){
-		RenderSpecs.RendererTechnique = RenderTechnique::DeferedRendering;
+	//	RenderSpecs.RendererTechnique = RenderTechnique::DeferedRendering;
 		Renderer3DPBR::BeginContext(m_EditorCamera.m_Projection,m_EditorCamera.m_View,m_EditorCamera.m_Positon,Application::GetScreenBuffer(),&RenderSpecs);
 		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
 			if (Comp->GetMeshSource() != nullptr) {

@@ -39,7 +39,7 @@ namespace Proof {
 
 		int GuizmoType = (1u << 0)| (1u << 1)| (1u << 2);// imgui bit stuff
 		class SceneHierachyPanel m_WorldHierachy;
-		//class ContentBrowserPanel m_CurrentContentBrowserPanel ={this};
+		class ContentBrowserPanel m_CurrentContentBrowserPanel ={this};
 		friend class Renderer3D;
 		friend class Renderer;
 

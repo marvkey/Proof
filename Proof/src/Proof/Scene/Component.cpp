@@ -117,7 +117,7 @@ namespace Proof
 		}
 		if (AssetManager::HasID(m_MeshAssetPointerID)) {
 			if (AssetManager::ForceGetAssetShared<MeshAsset>(m_MeshAssetPointerID) == nullptr) {
-				//AssetManager::NotifyOpenedNewAsset(m_MeshAssetPointerID);
+				AssetManager::NotifyOpenedNewAsset(m_MeshAssetPointerID);
 				return nullptr;
 			}
 			m_MeshAssetPointer = AssetManager::ForceGetAssetShared<MeshAsset>(m_MeshAssetPointerID);

@@ -25,7 +25,7 @@ namespace Proof {
 		static Count<VertexBuffer>Create(const void* Data,uint32_t Size);
 		/**
 		* creates Dynamic vertex Buffer
-		* @parm Size the size of the vertex Buffer
+		* @parm amount the size of the vertex Buffer
 		*/
 		static Count<VertexBuffer>Create(uint32_t Size);
 		/**

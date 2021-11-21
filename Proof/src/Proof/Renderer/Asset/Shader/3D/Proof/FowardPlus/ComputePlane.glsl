@@ -18,6 +18,10 @@ struct Plane{
     vec3 Normal;
     float DistanceToOrigin;
 }Plane;
+struct Frustum
+{
+    Plane planes[4];   // left, right, top, bottom frustum planes.
+}Frustum;
 
 // Four planes of a view frustum (in view space).
 // The planes are:

@@ -100,7 +100,7 @@ namespace Proof
 		friend class Renderer3DPBR;
 	private:
 		void Reset(){
-			RendererData();
+			//RendererData();
 			RenderStats = Stats();
 			DeferedRendererData = DeferedData();
 		}

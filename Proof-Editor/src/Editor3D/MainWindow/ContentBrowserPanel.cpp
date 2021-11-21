@@ -179,12 +179,7 @@ namespace Proof
 				ImGui::Columns(columnCount,0,false);
 				for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
 					static std::string RenameVariable;
-					/* We are not passing just as string cause life time of object is lost */
-					/* we need to understand what is wrong */
-					/* THIS IS THE PIECE OF CODE
-					std::string Path = It.path().string();
-					ImGui::Text("%s",Path.c_str());
-					*/
+					
 					bool isScene = IsScene(It.path().string());
 					uint64_t ID = 0;
 					std::string Path = It.path().string();
@@ -219,17 +214,11 @@ namespace Proof
 								if(Temp->GetAssetTypeVirtual() == MaterialAsset::GetAssetType()&& ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)){
 									MaterialAsset * TempMaterial = dynamic_cast<MaterialAsset*>(Temp);
 									m_owner->CreateMaterialEdtior(TempMaterial);
-									//ImGui::Begin("Material Editor");
-									//MaterialAsset* TempMaterial = dynamic_cast<MaterialAsset*>(Temp);
-									//ImGui::ColorEdit4("##Colour",glm::value_ptr(TempMaterial->m_Material.Colour));
-									//
-									//ImGui::End();
 								}
 
 								if (Temp->GetAssetTypeVirtual() == MeshAsset::GetAssetType() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 									MeshAsset* tempAsset= dynamic_cast<MeshAsset*>(Temp);
 									m_owner->CreateMeshEditor(tempAsset);
-									
 								}
 						
 							}

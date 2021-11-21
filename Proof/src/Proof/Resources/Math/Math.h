@@ -167,5 +167,14 @@ namespace Proof
 		inline static float PIE() {
 			return 3.14159265359;
 		}
+		template<typename T>
+		inline static T GetMax() {
+			return std::numeric_limits<T>::max();
+		}
+
+		template<typename T>
+		inline static T GetMin() {
+			return std::numeric_limits<T>::min();
+		}
 	};
 }

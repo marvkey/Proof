@@ -38,7 +38,7 @@ namespace Proof
 
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 		
-		ActiveWorld = CreateSpecial<World>();
+		ActiveWorld = CreateCount<World>();
 		m_WorldHierachy.SetContext(ActiveWorld.get());
 		//m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
 
@@ -49,12 +49,11 @@ namespace Proof
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/front.jpg");
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/back.jpg");
 
-		ActiveWorld = CreateSpecial<World>();
+		ActiveWorld = CreateCount<World>();
 		SceneSerializer scerelizer(ActiveWorld.get());
 		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofAsset") == true) {
 			PF_ENGINE_INFO("%s Deserilize perfectly",ActiveWorld->GetName().c_str());
 			m_WorldHierachy.SetContext(ActiveWorld.get());
-
 			AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
 		}
 		
@@ -145,8 +144,11 @@ namespace Proof
 			//std::stringstream stream;
 			//stream << std::hex << UUID();
 			//std::string result(stream.str());
-			//std::cout<< stream.str() <<std::endl;
+			uint64_t num= Random::Uint<uint64_t>();
+
+			std::cout<< num <<std::endl;
 		}
+
 		
 		//glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
 
@@ -187,7 +189,7 @@ namespace Proof
 		MainToolBar();
 		
 		m_WorldHierachy.ImGuiRender();
-		//m_CurrentContentBrowserPanel.ImGuiRender();
+		m_CurrentContentBrowserPanel.ImGuiRender();
 		Logger();
 		if (ImGui::Begin("Renderer Stastitics")) {
 			ImGui::TextColored({1.0,0,0,1},"RENDERER SPECS");
@@ -204,8 +206,22 @@ namespace Proof
 			ImGui::Text("Amount Of Point Light%i",ActiveWorld->RenderSpecs.RenderStats.AmountPointLight);
 			ImGui::Text("Amount Of Spot Light %i",ActiveWorld->RenderSpecs.RenderStats.AmountSpotLight);
 
-			if(ImGui::Button("Reload SHader")){
+			if(ImGui::Button("Reload Shader")){
 				Renderer::GetShaderLibrary().ReloadeShaders();
+			}
+
+			if (ActiveWorld->RenderSpecs.RendererTechnique == RenderTechnique::FowardRendering) {
+				ImGui::Text("Renderer techniqe is FowardRendering");
+			}
+			else {
+				ImGui::Text("Renderer techniqe is DeferedRendering");
+
+			}
+			if (ImGui::Button("Change Renderer")) {
+				if (ActiveWorld->RenderSpecs.RendererTechnique == RenderTechnique::FowardRendering) 
+					ActiveWorld->RenderSpecs.RendererTechnique = RenderTechnique::DeferedRendering;
+				else
+					ActiveWorld->RenderSpecs.RendererTechnique = RenderTechnique::FowardRendering;
 			}
 		}
 		ImGui::End();
@@ -423,7 +439,7 @@ namespace Proof
 					scerilize.SerilizeText(ActiveWorld->GetPath());
 					m_WorldHierachy.m_SelectedEntity = {};
 
-					ActiveWorld = CreateSpecial<World>();
+					ActiveWorld = CreateCount<World>();
 					SceneSerializer ScerilizerNewWorld(ActiveWorld.get());
 					ScerilizerNewWorld.DeSerilizeText(Data);
 					m_WorldHierachy.SetContext(ActiveWorld.get());
@@ -559,11 +575,11 @@ namespace Proof
 		if (Save == true && ActiveWorld != nullptr) {
 			SceneSerializer scerelizer(ActiveWorld.get());
 			scerelizer.SerilizeText(ActiveWorld->GetPath());
-			ActiveWorld = CreateSpecial<World>();
+			ActiveWorld = CreateCount<World>();
 			m_WorldHierachy.SetContext(ActiveWorld.get()); 
 		}
 		else {
-			ActiveWorld = CreateSpecial<World>();
+			ActiveWorld = CreateCount<World>();
 			m_WorldHierachy.SetContext(ActiveWorld.get());
 			return;
 		}
@@ -573,7 +589,7 @@ namespace Proof
 	void Editore3D::OpenWorld() {
 		std::string FIle = Utils::FileDialogs::OpenFile("Texture (*.ProofAsset)\0 *.ProofAsset\0 ");
 		if (FIle.empty() == false) {
-			ActiveWorld = CreateSpecial<World>();
+			ActiveWorld = CreateCount<World>();
 			SceneSerializer scerelizer(ActiveWorld.get());
 			if (scerelizer.DeSerilizeText(FIle) == true) {
 				PF_ENGINE_INFO("%s Deserilize perfectly",ActiveWorld->GetName().c_str());
@@ -582,7 +598,7 @@ namespace Proof
 			}
 			else {
 
-				ActiveWorld = CreateSpecial<World>();
+				ActiveWorld = CreateCount<World>();
 				m_WorldHierachy.SetContext(ActiveWorld.get());
 				PF_ENGINE_ERROR("Deceerilize was created default world");
 				return;
@@ -591,7 +607,7 @@ namespace Proof
 		PF_ENGINE_TRACE("No File Selected");
 		if (ActiveWorld == nullptr) {
 			PF_ENGINE_INFO("New World Created cause level was originally nullptr");
-			ActiveWorld = CreateSpecial<World>();
+			ActiveWorld = CreateCount<World>();
 			m_WorldHierachy.SetContext(ActiveWorld.get());
 			return;
 		}
@@ -610,7 +626,7 @@ namespace Proof
 	}
 	void Editore3D::PlayWorld() {
 		//m_PlayWorld = ActiveWorld->Copy(ActiveWorld);
-		SceneSerializer::SceneSerializer(ActiveWorld.get());
+		SceneSerializer::SceneSerializer (ActiveWorld.get());
 		ActiveWorld->m_CurrentState = WorldState::Play;
 
 	}

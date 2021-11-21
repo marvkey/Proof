@@ -17,7 +17,7 @@ Entities:
       Constant: 1
       Linear: 1
       Quadratic: 1
-      Ambient: [0.227496818, 0.206035361, 0.266129017]
+      Ambient: [0.173659414, 0.155892283, 0.205645144]
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
       LightType: 0
