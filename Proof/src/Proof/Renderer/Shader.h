@@ -1,6 +1,7 @@
 #pragma once
 #include "glm/glm.hpp"
 #include <unordered_map>
+#include <iostream>
 namespace Proof {
     class Proof_API Shader {
     public:   

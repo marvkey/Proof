@@ -39,27 +39,14 @@ namespace Proof
         bool m_FaceCulling =false;
         Mesh() =default;
         Mesh(std::string const& path){
-            std::vector<uint32_t>::iterator it;
-            it = std::find(AllID.begin(),AllID.end(),m_ID);
-a:
-            m_ID = Random::Uint<uint32_t>(1,10000000000000);
-            if (it == AllID.end()) {
-                AllID.emplace_back(m_ID);
-            }
-            else {
-                goto a;
-            }
             LoadModel(path);
         }
-        static std::vector<uint32_t> AllID;
         const std::vector<class SubMesh>& GetSubMeshes()const{
             return meshes;
         }
         std::vector<Count<Texture2D>> textures_loaded;
         std::vector<Material> Materials_loaded;
-        uint32_t GetID(){
-            return m_ID;
-        }
+       
         const std::string& GetName()const{
             return m_Name;
         }
@@ -67,7 +54,6 @@ a:
     private:
         std::vector<class SubMesh> meshes;
         std::string m_Name;
-        uint32_t m_ID;
         void LoadModel(std::string const& path);
         void ProcessNode(aiNode* node,const aiScene* scene);
         SubMesh ProcessMesh(aiMesh* mesh,const aiScene* scene);

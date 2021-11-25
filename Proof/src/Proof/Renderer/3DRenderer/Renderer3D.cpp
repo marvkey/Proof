@@ -61,7 +61,7 @@ namespace Proof
     static InstancedRenderer3D* Renderer3DInstance;
     Renderer3D::Render3DStats* Renderer3DStats;
     static std::vector<glm::mat4> m_Transforms;
-    static std::vector<uint32_t> s_DifferentID;
+    static std::vector<uint64_t> s_DifferentID;
     static uint32_t DifferentMeshes = 0;
     static glm::mat4 ModelMatrix;
 
@@ -107,12 +107,12 @@ namespace Proof
         Renderer3DInstance->m_Shader->SetMat4("u_View",camera.GetViewMatrix());
     }
     void Renderer3D::Draw(MeshComponent& meshComponent) {
-        
-        if (Renderer3DInstance->SceneHasAmountMeshes(meshComponent.GetMeshPointerID()) == true) {
-           // auto Map = Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID());
-            //Map->second += 1;
-            Renderer3DInstance->m_AmountMeshes.find(meshComponent.GetMeshPointerID())->second++;
-            auto InstanceSize = Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.find(meshComponent.GetMeshPointerID());
+        UUID meshID = meshComponent.GetMeshAssetID();
+        if (Renderer3DInstance->SceneHasAmountMeshes(meshID) == true) {
+            auto& map = Renderer3DInstance->m_AmountMeshes.find(meshID);
+            map->second += 1;
+            Renderer3DInstance->m_AmountMeshes.find(meshID)->second++;
+            auto InstanceSize = Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.find(meshID);
 
             auto Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
             
@@ -122,10 +122,10 @@ namespace Proof
             Renderer3DStats->AmountDrawn += 1;
         }
         else {
-            Renderer3DInstance->m_AmountMeshes.insert({meshComponent.GetMeshPointerID(),1});
-            Renderer3DInstance->m_Meshes.insert({meshComponent.GetMeshPointerID(),meshComponent});
-            Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.insert({meshComponent.GetMeshPointerID(),m_InstanceTransforms.size() + 1});
-            s_DifferentID.emplace_back(meshComponent.GetMeshPointerID());
+            Renderer3DInstance->m_AmountMeshes.insert({ meshID,1});
+            Renderer3DInstance->m_Meshes.insert({ meshID,meshComponent});
+            Renderer3DInstance->m_MeshesEndingPositionIndexTransforms.insert({ meshID,m_InstanceTransforms.size() + 1});
+            s_DifferentID.emplace_back(meshID);
             DifferentMeshes++;
 
             SetMeshComponentData(meshComponent);

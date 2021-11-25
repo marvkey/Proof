@@ -144,7 +144,8 @@ namespace Proof
 			//std::stringstream stream;
 			//stream << std::hex << UUID();
 			//std::string result(stream.str());
-			uint64_t num= Random::Uint<uint64_t>();
+			//uint64_t num= Random::Uint<uint64_t>();
+			long double num = Random::Int<int>(0,1);
 
 			std::cout<< num <<std::endl;
 		}
@@ -199,18 +200,18 @@ namespace Proof
 			ImGui::Text("%.3f ms/frame %.1f FPS",FrameTime::GetFrameMS(),FrameTime::GetFrameFPS());
 
 			ImGui::TextColored({1.0,0,0,1},"RENDERER 3D");
-			ImGui::Text("DrawCalls %i",ActiveWorld->RenderSpecs.RenderStats.DrawCalls);
-			ImGui::Text("Number Of MeshInstances %i",ActiveWorld->RenderSpecs.RenderStats.Instances);
+			ImGui::Text("DrawCalls %i",ActiveWorld->RenderSpecs.Stats.DrawCalls);
+			ImGui::Text("Number Of MeshInstances %i",ActiveWorld->RenderSpecs.Stats.Instances);
 
-			ImGui::Text("Amount Of Directional Light %i",ActiveWorld->RenderSpecs.RenderStats.AmountDirectionalLight);
-			ImGui::Text("Amount Of Point Light%i",ActiveWorld->RenderSpecs.RenderStats.AmountPointLight);
-			ImGui::Text("Amount Of Spot Light %i",ActiveWorld->RenderSpecs.RenderStats.AmountSpotLight);
+			ImGui::Text("Amount Of Directional Light %i",ActiveWorld->RenderSpecs.Stats.AmountDirectionalLight);
+			ImGui::Text("Amount Of Point Light%i",ActiveWorld->RenderSpecs.Stats.AmountPointLight);
+			ImGui::Text("Amount Of Spot Light %i",ActiveWorld->RenderSpecs.Stats.AmountSpotLight);
 
 			if(ImGui::Button("Reload Shader")){
 				Renderer::GetShaderLibrary().ReloadeShaders();
 			}
 
-			if (ActiveWorld->RenderSpecs.RendererTechnique == RenderTechnique::FowardRendering) {
+			if (ActiveWorld->RenderSpecs.RenderSettings.Technique == RenderTechnique::FowardRendering) {
 				ImGui::Text("Renderer techniqe is FowardRendering");
 			}
 			else {
@@ -218,10 +219,10 @@ namespace Proof
 
 			}
 			if (ImGui::Button("Change Renderer")) {
-				if (ActiveWorld->RenderSpecs.RendererTechnique == RenderTechnique::FowardRendering) 
-					ActiveWorld->RenderSpecs.RendererTechnique = RenderTechnique::DeferedRendering;
+				if (ActiveWorld->RenderSpecs.RenderSettings.Technique == RenderTechnique::FowardRendering)
+					ActiveWorld->RenderSpecs.RenderSettings.Technique = RenderTechnique::DeferedRendering;
 				else
-					ActiveWorld->RenderSpecs.RendererTechnique = RenderTechnique::FowardRendering;
+					ActiveWorld->RenderSpecs.RenderSettings.Technique = RenderTechnique::FowardRendering;
 			}
 		}
 		ImGui::End();
@@ -350,7 +351,7 @@ namespace Proof
 		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		static bool Open = true;
-		if (ImGui::Begin("ViewPort",&Open,ImGuiWindowFlags_NoMove)) {
+		if (ImGui::Begin("ViewPort",&Open)) {
 
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -477,7 +478,7 @@ namespace Proof
 
 	void Editore3D::MainToolBar()
 	{
-		ImGui::Begin("##MainToolBar",nullptr,ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse| ImGuiWindowFlags_NoMove);
+		ImGui::Begin("##MainToolBar",nullptr,ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse/* | ImGuiWindowFlags_NoMove*/);
 		Count<Texture2D> icon;
 		if( ActiveWorld->m_CurrentState == WorldState::Edit)
 			icon = m_PlayButtonTexture;
@@ -625,8 +626,6 @@ namespace Proof
 		PF_ENGINE_ERROR("World is NULL");
 	}
 	void Editore3D::PlayWorld() {
-		//m_PlayWorld = ActiveWorld->Copy(ActiveWorld);
-		SceneSerializer::SceneSerializer (ActiveWorld.get());
 		ActiveWorld->m_CurrentState = WorldState::Play;
 
 	}

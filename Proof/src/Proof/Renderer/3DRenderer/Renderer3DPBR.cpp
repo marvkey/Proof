@@ -29,7 +29,7 @@ namespace Proof{
 	static glm::mat4 ModelMatrix;
 	static Material s_DefaultMaterial;
 	static std::vector<uint32_t> s_DifferentID;
-
+	static Count<Shader> s_CurrentActiveShader;
 	uint32_t NumDirLights=0;
 	uint32_t NumPointLights=0;
 	uint32_t NumSpotLights=0;
@@ -59,7 +59,7 @@ namespace Proof{
 	}
 	void Renderer3DPBR::Draw(MeshComponent& meshComponent) {
 		int usingMaterial = meshComponent.HasMaterial();
-		int meshPointerId = meshComponent.GetMeshPointerID();
+		int meshPointerId = meshComponent.GetMeshAssetID();
 		if (s_PBRInstance->SceneHasAmountMeshes(meshPointerId) == true) {
 			auto& Map = s_PBRInstance->m_AmountMeshes.find(meshPointerId);
 			Map->second += 1;
@@ -84,7 +84,7 @@ namespace Proof{
 		s_PBRInstance->m_Transforms.emplace_back(temp);
 	}
 	void Renderer3DPBR::Draw(LightComponent& lightComponent) {
-		if(s_RendererData->RendererTechnique == RenderTechnique::FowardRendering){
+		if(s_RendererData->RenderSettings.Technique== RenderTechnique::FowardRendering){
 			s_PBRInstance->m_Shader->Bind();
 			std::string LightPos = "lightPositions[" + std::to_string(NumLights) + "]";
 			std::string LightColour = "lightColors[" + std::to_string(NumLights) + "]";
@@ -135,7 +135,6 @@ namespace Proof{
 			NumSpotLights++;
 			s_PBRInstance->m_DeferedRendering.LightShader->UnBind();
 			return;
-
 		}
 	}
 	PhysicalBasedRenderer* Renderer3DPBR::GetRenderer(){
@@ -189,7 +188,7 @@ namespace Proof{
 	}
 	
 	void Renderer3DPBR::Render() {
-		if (s_RendererData->RendererTechnique == RenderTechnique::DeferedRendering) 
+		if (s_RendererData->RenderSettings.Technique== RenderTechnique::DeferedRendering) 
 			DeferedRender();
 		else
 			FowardRender();
@@ -207,14 +206,14 @@ namespace Proof{
 		s_RenderFrameBuffer->UnBind();
 
 		if (s_RendererData != nullptr) {
-			s_RendererData->RenderStats.AmountDirectionalLight += NumDirLights;
-			s_RendererData->RenderStats.AmountPointLight += NumPointLights;
-			s_RendererData->RenderStats.AmountSpotLight += NumSpotLights;
-			s_RendererData->RenderStats.AmountLight = s_RendererData->RenderStats.AmountDirectionalLight+ s_RendererData->RenderStats.AmountPointLight+ s_RendererData->RenderStats.AmountSpotLight;
-			s_RendererData->RenderStats.Instances+= s_DifferentID.size();
-			s_RendererData->DeferedRendererData.m_PositionTexture = GetRenderer()->m_DeferedRendering.GPosition->GetID();
-			s_RendererData->DeferedRendererData.m_NormalTexture = GetRenderer()->m_DeferedRendering.GNormal->GetID();
-			s_RendererData->DeferedRendererData.m_AlbedoTexture = GetRenderer()->m_DeferedRendering.GAlbedo->GetID();
+			s_RendererData->Stats.AmountDirectionalLight += NumDirLights;
+			s_RendererData->Stats.AmountPointLight += NumPointLights;
+			s_RendererData->Stats.AmountSpotLight += NumSpotLights;
+			s_RendererData->Stats.AmountLight = s_RendererData->Stats.AmountDirectionalLight+ s_RendererData->Stats.AmountPointLight+ s_RendererData->Stats.AmountSpotLight;
+			s_RendererData->Stats.Instances+= s_DifferentID.size();
+			s_RendererData->DeferedData.m_PositionTexture = GetRenderer()->m_DeferedRendering.GPosition->GetID();
+			s_RendererData->DeferedData.m_NormalTexture = GetRenderer()->m_DeferedRendering.GNormal->GetID();
+			s_RendererData->DeferedData.m_AlbedoTexture = GetRenderer()->m_DeferedRendering.GAlbedo->GetID();
 		}
 	}
 	void Renderer3DPBR::DeferedRendererRenderLight(){
@@ -310,7 +309,7 @@ namespace Proof{
 					}
 
 					if(s_RendererData !=nullptr){
-						s_RendererData->RenderStats.DrawCalls++;
+						s_RendererData->Stats.DrawCalls++;
 					}
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
@@ -382,8 +381,8 @@ namespace Proof{
 			s_PBRInstance->m_Shader->Bind();
 			// draw in wireframe
 			//glPolygonMode(GL_FRONT_AND_BACK,(int)GL_LINES); // keeps this need to put into our game
-			//if (TempMesh->second.GetMesh()->m_FaceCulling == true)
-			//	RendererCommand::Enable(ProofRenderTest::CullFace);
+			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
+				RendererCommand::Enable(ProofRenderTest::CullFace);
 			if (TempMesh->second.GetMeshSource()->m_Enabled == true) {
 				for (SubMesh& mesh : TempMesh->second.GetMeshSource()->meshes) {
 					if (mesh.m_Enabled == false)
@@ -402,7 +401,7 @@ namespace Proof{
 				}
 			}
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
-				//RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render settings
+				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render stettings
 			sizeOffset += TempAmountMeshes->second;
 			s_PBRInstance->m_Shader->UnBind();
 		}

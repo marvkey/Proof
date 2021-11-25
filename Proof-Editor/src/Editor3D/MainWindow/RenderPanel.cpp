@@ -11,9 +11,9 @@ namespace Proof{
 		if (m_ShowWindow == false)
 			return;
 		if(ImGui::Begin(m_WorldName.c_str(),&m_ShowWindow)){
-			if(m_RenderData->RendererTechnique == RenderTechnique::DeferedRendering)
+			if(m_RenderData->RenderSettings.Technique == RenderTechnique::DeferedRendering)
 				RenderDefered();
-			else if(m_RenderData->RendererTechnique == RenderTechnique::FowardRendering)
+			else if(m_RenderData->RenderSettings.Technique== RenderTechnique::FowardRendering)
 				RenderFoward();
 		};
 		ImGui::End();

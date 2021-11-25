@@ -34,8 +34,8 @@ namespace Proof {
 	struct Proof_API InstancedRenderer3D {
 		Count<class VertexBuffer> m_VertexBuffer;
 		Count<class Shader>m_Shader;
-		std::unordered_map<uint32_t,uint32_t> m_AmountMeshes;
-		std::unordered_map<uint32_t,class MeshComponent> m_Meshes;
+		std::unordered_map<uint64_t,uint32_t> m_AmountMeshes;// ID, Amount
+		std::unordered_map<uint64_t,class MeshComponent> m_Meshes;// ID, pointer to asset 
 		std::unordered_map<uint32_t,uint32_t > m_MeshesEndingPositionIndexTransforms;
 		bool SceneHasAmountMeshes(uint32_t ID) { return m_AmountMeshes.find(ID) != m_AmountMeshes.end(); };
 		static  Count<class Texture2D>m_WhiteTexture;

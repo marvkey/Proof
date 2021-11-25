@@ -75,9 +75,9 @@ namespace Proof
 	};
 
 	struct Proof_API TransformComponent:public Component {
-		mutable Vector Location = {0.0f,0.0f,0.0f};
-		mutable Vector Rotation = {0.0f,0.0f,0.0f};
-		mutable Vector Scale = {1.0f,1.0f,1.0f};
+		Vector Location = {0.0f,0.0f,0.0f};
+		Vector Rotation = {0.0f,0.0f,0.0f};
+		Vector Scale = {1.0f,1.0f,1.0f};
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 		Vector GetWorldLocation()const;
@@ -139,7 +139,7 @@ namespace Proof
 		bool HasMaterial() {
 			return GetMaterial() == nullptr ? false : true;
 		}
-		uint32_t GetMeshPointerID();
+		UUID GetMeshAssetID();
 	private:
 		MeshAsset* GetAsset();
 		void RemoveMeshSource() {

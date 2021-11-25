@@ -17,7 +17,7 @@ Entities:
       Constant: 1
       Linear: 1
       Quadratic: 1
-      Ambient: [0.173659414, 0.155892283, 0.205645144]
+      Ambient: [0.134628788, 0.121748194, 0.157258093]
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
       LightType: 0
@@ -128,8 +128,8 @@ Entities:
       Tag: flashlight
       tags: []
     TransformComponent:
-      Location: [-26.7959995, 17.5440006, 2.53900003]
-      Rotation: [0.983596921, 0.151550591, 0.0978238508]
+      Location: [13.3665962, 8.18197823, 0.787316322]
+      Rotation: [0.986732125, -0.162356257, 0.000330711977]
       Scale: [0.5, 0.99999994, 1.40000021]
     SubEntityComponet:
       OwnerEntityID: 0
@@ -139,6 +139,6 @@ Entities:
       NearPlane: 0.100000001
       FarPlane: 1000
       FOV: 45
-      Width: 250
-      Height: 250
+      Width: 824
+      Height: 492
       UpVector: [0, 1, 0]

@@ -7,6 +7,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "Renderer3DCore.h"
 #include "Proof/Scene/Material.h"
+#include "Proof/Renderer/RendererAPI.h"
 namespace Proof
 {
 	class PhysicalBasedRenderer;
@@ -58,9 +59,9 @@ namespace Proof
 	struct RendererData{
 	public:
 		RendererData() =default;
-		struct Stats{
+		struct RenderStats {
 		public:
-			Stats()=default;
+			RenderStats()=default;
 			uint32_t DrawCalls =0;
 			uint32_t Instances =0;
 			uint32_t AmountLight =0;
@@ -68,7 +69,7 @@ namespace Proof
 			uint32_t AmountPointLight =0;
 			uint32_t AmountSpotLight =0;
 		};
-		struct DeferedData{
+		struct DeferedRendererData {
 		public:
 			uint32_t GetPositionTextureID() {
 				return m_PositionTexture;
@@ -79,32 +80,34 @@ namespace Proof
 			uint32_t GetAlbedoTexture() {
 				return m_AlbedoTexture;
 			}
-			DeferedData() =default;
+			DeferedRendererData() =default;
 		private:
 			friend class Renderer3DPBR;
 			uint32_t m_PositionTexture = 0;
 			uint32_t m_NormalTexture = 0;
 			uint32_t m_AlbedoTexture = 0;
 		};
-		struct FowardData{
+		struct FowardRendererData{
 			
 		};
 
 		struct FowardPlusData{
 			
 		};
-		Stats RenderStats;
-		DeferedData DeferedRendererData;
-		FowardData FowardRenderData;
-		RenderTechnique RendererTechnique= RenderTechnique::DeferedRendering;
+		struct RendererSettings {
+			RenderTechnique Technique= RenderTechnique::DeferedRendering;
+			DrawType Draw= DrawType::Triangles;
+		};
+		RenderStats Stats;
+		DeferedRendererData DeferedData;
+		FowardRendererData FowardData;
+		RendererSettings RenderSettings;
 		friend class Renderer3DPBR;
 	private:
 		void Reset(){
-			//RendererData();
-			RenderStats = Stats();
-			DeferedRendererData = DeferedData();
+			Stats = RenderStats();
+			DeferedData = DeferedRendererData();
 		}
-		
 	};
 	struct Proof_API PhysicalBasedRenderer { /// Needs to be Renaimed
 		Count<class VertexBuffer> m_VertexBuffer;

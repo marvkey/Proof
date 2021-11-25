@@ -22,8 +22,8 @@ namespace Proof
 	Entity Component::GetOwner()const {
 		return Entity{m_EntityOwner,CurrentWorld};
 	}
-	uint32_t MeshComponent::GetMeshPointerID() {
-		return GetMeshSource() != nullptr ? GetMeshSource()->GetID() : 0;
+	UUID MeshComponent::GetMeshAssetID() {
+		return GetMeshSource() != nullptr ? m_MeshAssetPointerID : 0;
 	}
 	Material* MeshComponent::GetMaterial() {
 		/*

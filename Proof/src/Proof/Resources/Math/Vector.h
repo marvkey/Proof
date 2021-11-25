@@ -2,7 +2,8 @@
 #include <glm/glm.hpp>
 #include <sstream>
 #include "Math.h"
-
+#include <string>
+#include<iostream>>
 namespace Proof
 {
     struct Proof_API Vector {
@@ -25,6 +26,7 @@ namespace Proof
         Vector(float X,float Y,float Z) {
             this->X = X,this->Y = Y,this->Z = Z;
         }
+        
         std::string ToString()const {
             std::stringstream VecStream;
             VecStream << "X = " << X << " Y = " << Y << " Z = " << Z;
@@ -35,6 +37,7 @@ namespace Proof
             VecStream << "X = " << Vec.X << " Y = " << Vec.Y << " Z = " << Vec.Z;
             return VecStream.str();
         }
+        
         Vector Normalize() {
             float Length = GetLength();
             X = X / Length;
@@ -132,16 +135,16 @@ namespace Proof
             this->Z -= Other.z;
             return *this;
         }
-        Vector operator -(const glm::vec3& Other) {
+        Vector operator -(const glm::vec3& Other)const {
             Vector Temp(this->X - Other.x,this->Y - Other.y,this->Z - Other.z);
             return Temp;
         }
-        Vector operator +(const glm::vec3& Other) {
+        Vector operator +(const glm::vec3& Other)const {
             Vector Temp(this->X + Other.x,this->Y + Other.y,this->Z + Other.z);
             return Temp;
         }
 
-        Vector operator -(const Vector& Other) {
+        Vector operator -(const Vector& Other)const {
             Vector Temp(this->X - Other.X,this->Y - Other.Y,this->Z - Other.Z);
             return Temp;
         }
