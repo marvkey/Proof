@@ -23,7 +23,7 @@ namespace Proof {
         }
     }
     Shader::~Shader() {
-       // Renderer::GetShaderLibrary().ShaderMap.erase(this->GetName());
+        //Renderer::GetShaderLibrary().ShaderMap.erase(this->GetName());
     }
     Count<Shader> ShaderLibrary::GetShader(const std::string& Name) {
         if (HasShader(Name) == false) {

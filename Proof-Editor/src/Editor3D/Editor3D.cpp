@@ -28,18 +28,16 @@
 #include <string>
 namespace Proof
 {
-	glm::vec4 ClearColour;
 	Editore3D::Editore3D():
 		Layer("Editor3D Layer") 	{	}
 	Editore3D::~Editore3D() {
 	}
 	void Editore3D::OnAttach() {
 	//	std::string name =std::format("{} {}","wagwan");
-
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 		
-		ActiveWorld = CreateCount<World>();
-		m_WorldHierachy.SetContext(ActiveWorld.get());
+	
+
 		//m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
 
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/right.jpg");
@@ -56,7 +54,8 @@ namespace Proof
 			m_WorldHierachy.SetContext(ActiveWorld.get());
 			AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
 		}
-		
+		m_WorldHierachy.SetContext(ActiveWorld.get());
+		m_WorldRenderer = WorldRenderer(ActiveWorld.get(), 00, 70);
 		float skyboxVertices[] = {
 					 // positions          
 			-1.0f,1.0f,-1.0f,
@@ -129,8 +128,6 @@ namespace Proof
 
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
-		Application::ViewPortWidth = _ViewPortSize.x;
-		Application::ViewPortHeight = _ViewPortSize.y;
 		if (Input::IsKeyClicked(KeyBoardKey::L)) {
 			GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 		}
@@ -149,25 +146,7 @@ namespace Proof
 
 			std::cout<< num <<std::endl;
 		}
-
-		
-		//glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->EditorCamera.GetCameraView())); /// makes makes the sky box move around player, makes it seem the sky box is very large
-
-		/*
-		glDepthFunc(GL_LEQUAL);
-		m_SkyBoxShader->UseShader();
-		m_SkyBoxShader->SetMat4("view",view);
-		m_SkyBoxShader->SetMat4("projection",ActiveWorld->Projection);
-
-		m_SkyBoxVertexArray->Bind();
-		glActiveTexture(GL_TEXTURE0);
-		m_CubeMap->Bind();
-		glDrawArrays(GL_TRIANGLES,0,36);
-		m_SkyBoxVertexArray->UnBind();
-		glDepthFunc(GL_LESS);
-		*/
-		//RendererCommand::SetClearColor(ClearColour);
-
+		m_WorldRenderer.Renderer();
 	}
 
 	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
@@ -200,18 +179,18 @@ namespace Proof
 			ImGui::Text("%.3f ms/frame %.1f FPS",FrameTime::GetFrameMS(),FrameTime::GetFrameFPS());
 
 			ImGui::TextColored({1.0,0,0,1},"RENDERER 3D");
-			ImGui::Text("DrawCalls %i",ActiveWorld->RenderSpecs.Stats.DrawCalls);
-			ImGui::Text("Number Of MeshInstances %i",ActiveWorld->RenderSpecs.Stats.Instances);
+			ImGui::Text("DrawCalls %i",m_WorldRenderer.RenderData.Stats.DrawCalls);
+			ImGui::Text("Number Of MeshInstances %i", m_WorldRenderer.RenderData.Stats.Instances);
 
-			ImGui::Text("Amount Of Directional Light %i",ActiveWorld->RenderSpecs.Stats.AmountDirectionalLight);
-			ImGui::Text("Amount Of Point Light%i",ActiveWorld->RenderSpecs.Stats.AmountPointLight);
-			ImGui::Text("Amount Of Spot Light %i",ActiveWorld->RenderSpecs.Stats.AmountSpotLight);
+			ImGui::Text("Amount Of Directional Light %i", m_WorldRenderer.RenderData.Stats.AmountDirectionalLight);
+			ImGui::Text("Amount Of Point Light%i", m_WorldRenderer.RenderData.Stats.AmountPointLight);
+			ImGui::Text("Amount Of Spot Light %i", m_WorldRenderer.RenderData.Stats.AmountSpotLight);
 
 			if(ImGui::Button("Reload Shader")){
 				Renderer::GetShaderLibrary().ReloadeShaders();
 			}
 
-			if (ActiveWorld->RenderSpecs.RenderSettings.Technique == RenderTechnique::FowardRendering) {
+			if (m_WorldRenderer.RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
 				ImGui::Text("Renderer techniqe is FowardRendering");
 			}
 			else {
@@ -219,10 +198,10 @@ namespace Proof
 
 			}
 			if (ImGui::Button("Change Renderer")) {
-				if (ActiveWorld->RenderSpecs.RenderSettings.Technique == RenderTechnique::FowardRendering)
-					ActiveWorld->RenderSpecs.RenderSettings.Technique = RenderTechnique::DeferedRendering;
+				if (m_WorldRenderer.RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering)
+					m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::DeferedRendering;
 				else
-					ActiveWorld->RenderSpecs.RenderSettings.Technique = RenderTechnique::FowardRendering;
+					m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::FowardRendering;
 			}
 		}
 		ImGui::End();
@@ -361,8 +340,8 @@ namespace Proof
 			m_ViewportBounds[1] = {viewportMaxRegion.x + viewportOffset.x,viewportMaxRegion.y + viewportOffset.y};
 			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
 				_ViewPortSize = {ViewPortPanelSize.x,ViewPortPanelSize.y};
+				m_WorldRenderer.m_ScreenFrameBuffer->Resize(_ViewPortSize.x, _ViewPortSize.y);
 			}
-			CurrentWindow::SetWindowInputEvent(true);
 
 			
 			if (ImGui::IsWindowFocused()) {
@@ -371,12 +350,11 @@ namespace Proof
 			else {
 				CurrentWindow::SetWindowInputEvent(false);
 			}
-			RendererCommand::SetViewPort(ViewPortPanelSize.x,ViewPortPanelSize.y);
-			uint32_t Text = Application::GetScreenBuffer()->GetTexture();
+			uint32_t Text = m_WorldRenderer.m_ScreenFrameBuffer->GetTexture();
 			ImGui::Image((ImTextureID)Text,ImVec2{_ViewPortSize.x,_ViewPortSize.y},ImVec2{0,1},ImVec2{1,0});
 			// GUIZMOS
 
-			Entity selectedEntity = this->m_WorldHierachy.GetSelectedEntity();
+			Entity selectedEntity = m_WorldHierachy.GetSelectedEntity();
 
 			if (selectedEntity.GetID() != 0) {
 				ImGuizmo::SetOrthographic(false);

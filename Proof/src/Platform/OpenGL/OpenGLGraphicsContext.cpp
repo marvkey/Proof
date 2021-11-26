@@ -18,10 +18,10 @@ namespace Proof
         Renderer::s_GraphicsCard = (const char*)glGetString(GL_RENDERER);
         Renderer::s_GraphicsCardVersion = (const char*)glGetString(GL_VERSION);
 
-        PF_ENGINE_INFO("Graphics Context Initiated");
-        PF_ENGINE_INFO("Vendor: %s",glGetString(GL_VENDOR));
-        PF_ENGINE_INFO("Renderer: %s",glGetString(GL_RENDERER));
-        PF_ENGINE_INFO("Version: %s",glGetString(GL_VERSION));
+        PF_INFO("Open GL Graphics Initilized");
+        PF_INFO("Vendor: %s",glGetString(GL_VENDOR));
+        PF_INFO("Renderer: %s",glGetString(GL_RENDERER));
+        PF_INFO("Version: %s",glGetString(GL_VERSION));
         PF_CORE_ASSERT((GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5)),"Proof requires at least OpenGL version 4.5!");
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,3);

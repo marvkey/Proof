@@ -6,6 +6,7 @@
 #include "MainWindow/ContentBrowserPanel.h"
 #include "Proof/Scene/SceneSerializer.h"
 #include "MainWindow/Panel.h"
+#include "Proof/Renderer/WorldRenderer.h"
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {
@@ -58,5 +59,6 @@ namespace Proof {
 		Count<VertexBuffer> m_SkyBoxBuffer;
 		Count<VertexArray> m_SkyBoxVertexArray;
 		Count<CubeMap> m_CubeMap;
+		WorldRenderer m_WorldRenderer;
 	};
 }

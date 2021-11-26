@@ -18,32 +18,7 @@ namespace Proof
 		FowardPlusRendering,
 	};
 	struct RendererData;
-	class Renderer3DPBR {
-	public:
-		static void Init();
-		static void BeginContext(class EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,RendererData* renderSpec =nullptr);
-		static void BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer,RendererData* renderSpec = nullptr);
-		static void Draw(class MeshComponent& meshComponent);
-		static void Draw(class LightComponent& lightComponent);
-		static PhysicalBasedRenderer* GetRenderer();
-		static void EndContext();
-		static void Reset();
-	private:
-		static Count<ScreenFrameBuffer> s_RenderFrameBuffer;
-		static bool s_InsideContext;
-		static void Render();
-
-		/* Defered Rendering */
-		static void DeferedRender();
-		static void DeferedRendererRenderLight();
-		static void DeferedRendererRenderMesh();
-		static RendererData* s_RendererData;
-		/*---------------------------*/
-
-		/* Foward Renderer */
-		static void FowardRender();
-		/* ------------------------- */
-	};
+	
 	struct PhysicalBasedRendererVertex;
 	struct Proof_API DeferedRenderingData {
 		Count<class FrameBuffer> Gbuffer;
@@ -145,5 +120,32 @@ namespace Proof
 		float m_AO = 0.f;
 		int m_UsingMaterial =false;
 	};
+	class Renderer3DPBR {
+	public:
+		static void Init();
+		static void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec = RendererData());
+		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec = RendererData());
+		static void Draw(class MeshComponent& meshComponent);
+		static void Draw(class LightComponent& lightComponent);
+		static PhysicalBasedRenderer* GetRenderer();
+		static void EndContext();
+		static void Reset();
+	private:
+		static Count<ScreenFrameBuffer> s_RenderFrameBuffer;
+		static bool s_InsideContext;
+		static void Render();
 
+		/* Defered Rendering */
+		static void InitilizeDeferedRendering();
+		static void DeferedRender();
+		static void DeferedRendererRenderLight();
+		static void DeferedRendererRenderMesh();
+		static RendererData* s_RendererData;
+		/*---------------------------*/
+
+		/* Foward Renderer */
+		static void InitilizeFowardRendering();
+		static void FowardRender();
+		/* ------------------------- */
+	};
 }

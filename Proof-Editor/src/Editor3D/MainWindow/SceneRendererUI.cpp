@@ -16,6 +16,7 @@ namespace Proof{
 		mesh->m_MeshAssetPointerID = asset->GetID();
 		m_WorldRenderer = {m_World.get(),1300,800};
 		m_Type= SceneRendererType::MeshAsset;
+		m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::FowardRendering;
 	}
 
 	void SceneRendererUI::ImGuiRender(FrameTime deltaTime) {
@@ -65,7 +66,7 @@ namespace Proof{
 			ImGui::BeginChild(mesh->GetAsset()->GetName().c_str());
 			m_WorldRenderer.Renderer();
 			if (m_LastWidht != ImGui::GetWindowSize().x || m_LastHeight != ImGui::GetWindowSize().y) {
-				m_WorldRenderer.Resize(ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);
+				m_WorldRenderer.m_ScreenFrameBuffer->Resize(ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);
 				m_LastWidht = ImGui::GetWindowSize().x; m_LastHeight = ImGui::GetWindowSize().y;
 				if (m_WorldRenderer.GetRendererPaused() == true) {
 					m_WorldRenderer.SetRendererPause(false);

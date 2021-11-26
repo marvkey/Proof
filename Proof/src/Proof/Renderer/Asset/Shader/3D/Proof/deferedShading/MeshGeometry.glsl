@@ -64,6 +64,8 @@ uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D DiffuseShader;
 
+
+
 in vec3  MaterialColour;
 flat in float Materialmetallic;
 flat in float Materialroughness;

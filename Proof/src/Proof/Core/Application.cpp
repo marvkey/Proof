@@ -10,9 +10,6 @@
 #include "Proof/Resources/Math/Random.h"
 namespace Proof {
     Special <WindowsWindow> Application::MainWindow = nullptr;
-    Count<ScreenFrameBuffer> Application::ScreenFrameBuffer = nullptr;
-    uint32_t Application::ViewPortWidth;
-    uint32_t Application::ViewPortHeight;
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
     Application::Application(){
@@ -24,10 +21,6 @@ namespace Proof {
         Renderer::Init();
         ImGuiMainLayer = new ImGuiLayer();
         MainLayerStack.PushLayer(ImGuiMainLayer);
-
-        ScreenFrameBuffer = ScreenFrameBuffer::Create(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
-        ScreenFrameBuffer->UnBind();
-        
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
         AssetManager::NewInitilizeAssets("config/AssetManager.ProofAssetManager");
 

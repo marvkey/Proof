@@ -77,7 +77,51 @@ uniform sampler2D DiffuseShader;
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
+struct DirectionalLight {
+    vec3 Direction;
+    vec3 Ambient;
+    float Intensity;
+};
 
+struct PointLight {
+    vec3 Position;
+    vec3 Ambient;
+
+    float Constant;
+    float Linear;
+    float Quadratic;
+
+    float Radius;
+    float  Intensity;
+};
+
+struct SpotLight {
+    vec3 Position;
+    vec3 Direction;
+    vec3 Ambient;
+
+    float CutOff;
+    float OuterCutOff;
+
+    float Constant;
+    float Linear;
+    float Quadratic;
+
+    float Radius;
+    float Intensity;
+};
+uniform int v_NrDirectionalLight;
+uniform DirectionalLight v_DirectionalLight[150];
+
+uniform int v_NrPointLight;
+uniform PointLight v_PointLight[150];
+
+uniform int v_NrSpotLight;
+uniform SpotLight v_SpotLight[150];
+
+vec3 CalcDirLight(DirectionalLight light,vec3 normal,vec3 viewDir,vec3 matcolour,float shininess);
+vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 matcolour,float shininess);
+vec3 CalcSpotLight(SpotLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 matcolour,float shininess);
 float DistributionGGX(vec3 N,vec3 H,float roughness);
 float GeometrySchlickGGX(float NdotV,float roughness);
 float GeometrySmith(vec3 N,vec3 V,vec3 L,float roughness);
@@ -92,7 +136,7 @@ void main() {
     float NewMaterialroughness = texture(roughnessMap,TexCoords).r * Materialroughness;
     int NewMaterialEnabled = MaterialEnabled;
     vec3 N = texture(normalMap,TexCoords).rgb;
-    N = normalize(Normal * 2.0 - 1.0);
+    N = normalize(Normal);
     vec3 V = normalize(CameraPosition - FragPos);
     vec3 R = reflect(-V,N);
     vec3 F0 = vec3(0.04);
@@ -187,4 +231,55 @@ float GeometrySmith(vec3 N,vec3 V,vec3 L,float roughness) {
 
 vec3 fresnelSchlick(float cosTheta,vec3 F0) {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta,0.0,1.0),5.0);
+}
+
+vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 matcolour,float shininess) {
+    
+    vec3 lightDir = normalize(light.Position - fragPos);
+    float diff = max(dot(normal,lightDir),0.0);
+    vec3 reflectDir = reflect(-lightDir,normal);
+    float spec = pow(max(dot(viewDir,reflectDir),0.0),shininess);
+
+    float distance = length(light.Position - fragPos);
+    float attenuation = 1.0 / (light.Constant + light.Linear * distance + light.Quadratic * (distance * distance));
+
+    vec3 ambient = light.Ambient * matcolour*light.Intensity;               // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 diffuse = diff * light.Ambient * matcolour*light.Intensity;        // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 specular =spec * light.Ambient * matcolour*light.Intensity;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
+    return (ambient + diffuse + specular);
+    
+}
+vec3 CalcDirLight(DirectionalLight light,vec3 normal,vec3 viewDir,vec3 matcolour,float shininess) {
+    vec3 lightDir = normalize(-light.Direction);
+    float diff = max(dot(normal,lightDir),0.0);
+    vec3 reflectDir = reflect(-lightDir,normal);
+    float spec = pow(max(dot(viewDir,reflectDir),0.0),shininess);
+    vec3 ambient = light.Ambient * matcolour;                 // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 diffuse = diff * light.Ambient * matcolour;         // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 specular = spec * light.Ambient * matcolour;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    return (ambient + diffuse + specular) * light.Intensity;
+}
+vec3 CalcSpotLight(SpotLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 matcolour,float shininess) {
+    vec3 lightDir = normalize(light.Position - fragPos);
+    float diff = max(dot(normal,lightDir),0.0);
+
+    vec3 reflectDir = reflect(-lightDir,normal);
+    float spec = pow(max(dot(viewDir,reflectDir),0.0),shininess);
+    float distance = length(light.Position - fragPos);
+    float attenuation = 1.0 / (light.Constant + light.Linear * distance + light.Quadratic * (distance * distance));
+    float theta = dot(lightDir,normalize(-light.Direction));
+
+    float epsilon = (light.CutOff - light.OuterCutOff);
+    float intensity = clamp((theta - light.OuterCutOff) / epsilon,0.0,1.0);
+    vec3 ambient = light.Ambient * matcolour;
+    vec3 diffuse = diff * light.Ambient * matcolour;
+    vec3 specular = spec *  light.Ambient* matcolour;
+    ambient *= attenuation * intensity;
+    diffuse *= attenuation * intensity;
+    specular *= attenuation * intensity;
+    return(ambient + diffuse + specular)*light.Intensity;
 }

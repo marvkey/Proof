@@ -7,14 +7,17 @@ namespace Proof {
 	class Proof_API Layer {
 	public:
 		Layer(const std::string& Name = "Debug Layer"):
-			DebugName(Name) 	  {	  }
+			DebugName(Name) 	  
+		{
+
+		}
 		virtual ~Layer() {};
 		virtual void OnUpdate(FrameTime DeltaTime) {}
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnImGuiDraw(FrameTime DeltaTime) {}
 		virtual void OnEvent(Event&e) {}
-		virtual const std::string GetName() const { return DebugName; }
+		virtual const std::string& GetName() const { return DebugName; }
 	private:
 		std::string DebugName;
 	};

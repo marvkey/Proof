@@ -147,7 +147,7 @@ namespace Proof{
 			return false;
 
 		m_Scene->Name = data["World"].as<std::string>();
-		PF_ENGINE_TRACE("Deserilizing World %s", m_Scene->Name.c_str());
+		PF_WARN("Deserilizing World %s", m_Scene->Name.c_str());
 		auto entities = data["Entities"];
 
 		if (!entities)

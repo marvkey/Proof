@@ -8,8 +8,7 @@ namespace Proof{
 	void WorldRenderer::Renderer() {
 		if(m_RendererPaused==true)
 			return;
-		RenderData.RenderSettings.Technique= RenderTechnique::FowardRendering;
-		Renderer3DPBR::BeginContext(m_World->m_EditorCamera,m_ScreenFrameBuffer,&RenderData);
+		Renderer3DPBR::BeginContext(m_World->m_EditorCamera,m_ScreenFrameBuffer,RenderData);
 		for (MeshComponent* Comp : m_World->Registry.SceneMeshComponents) {
 			if (Comp->GetMeshSource() != nullptr) {
 				Renderer3DPBR::Draw(*Comp);

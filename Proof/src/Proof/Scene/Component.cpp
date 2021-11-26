@@ -37,7 +37,15 @@ namespace Proof
 		}
 		return &a->m_Material;
 		*/
-		return nullptr;
+		if (m_MeshMaterialID == 0) {
+			return nullptr;
+		}
+		MaterialAsset* a = AssetManager::GetAsset<MaterialAsset>(m_MeshMaterialID);
+		if (a == nullptr) {
+			m_MeshMaterialID = 0;
+			return nullptr;
+		}
+		return &a->m_Material;
 	}
 	Vector TransformComponent::GetWorldLocation()const {
 		if(GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()){

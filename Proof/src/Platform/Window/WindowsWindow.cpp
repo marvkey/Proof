@@ -160,10 +160,10 @@ namespace Proof {
 
     void WindowsWindow::Controller_Callback(int jid, int event){
         if (event == GLFW_CONNECTED){
-            PF_ENGINE_INFO("Controller Connect");
+            PF_INFO("Controller Connect");
         }
         else if (event == GLFW_DISCONNECTED){
-            PF_ENGINE_INFO("Controller Disconect");
+            PF_INFO("Controller Disconect");
         }
     }
 
@@ -204,14 +204,14 @@ namespace Proof {
 
     int WindowsWindow::createWindow() {
         if (!glfwInit()) {
-            PF_CORE_ASSERT(false,"Could Not Initilize GLFW");
+            PF_INFO(false,"Could Not Initilize GLFW");
             return -1;
         }
        // glfwWindowHint(GLFW_MAXIMIZED,GLFW_TRUE); // when using this meathod teh window will have some glithy meathod
 
         MainWindow = glfwCreateWindow(Width,Height, "Proof", nullptr,NULL);
         if (MainWindow == nullptr) {
-            PF_CORE_ASSERT(false,"Window Is Nullptr");
+            PF_INFO(false,"Window Is Nullptr");
             glfwTerminate();
             return -1;
         }
@@ -233,7 +233,7 @@ namespace Proof {
         glfwSetWindowRefreshCallback(MainWindow,Window_Refresh_callback);
         glfwSetWindowFocusCallback(MainWindow,Window_Input_Focus_callback);
         glfwSetFramebufferSizeCallback(MainWindow,Framebuffer_size_callback);
-        PF_ENGINE_TRACE("Window created widht %i height %i",Width,Height);
+        PF_INFO("Window created widht %i height %i",Width,Height);
         return 0;
     }
 

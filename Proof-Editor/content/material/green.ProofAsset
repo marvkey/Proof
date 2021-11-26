@@ -2,7 +2,7 @@ AssetType: AssetType::MaterialAsset
 ID: 6594
 AlbedoColour: [0.306646675, 0.463709652, 0.349712342]
 Roughness: 11111111
-Metallness: 11
+Metallness: 1
 AO: 1
 MetallicTexturePath: ""
 AlbedoTexturePath: ""

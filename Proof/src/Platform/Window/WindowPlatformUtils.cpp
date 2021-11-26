@@ -8,7 +8,7 @@
 
 namespace Proof{
 	namespace Utils{
-		std::string FileDialogs::OpenFile(const char* Filter){
+		std::string FileDialogs::OpenFile(const char* filter){
 			OPENFILENAMEA ofn;
 			CHAR szFile[260] ={0};
 			CHAR currentDir[256] = {0};
@@ -19,7 +19,7 @@ namespace Proof{
 			ofn.nMaxFile =sizeof(szFile);
 			if (GetCurrentDirectoryA(256,currentDir))
 				ofn.lpstrInitialDir = currentDir;
-			ofn.lpstrFilter =Filter;
+			ofn.lpstrFilter =filter;
 			ofn.nFilterIndex = 1;
 			ofn.Flags = OFN_PATHMUSTEXIST |OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR; // IF WE DO NOT DO THIS IT WILL CHAGNE THE working directory of our application
 			if(GetOpenFileNameA(&ofn) == TRUE){
@@ -27,7 +27,7 @@ namespace Proof{
 			}
 			return std::string(); // empty string
 		}
-		std::string FileDialogs::SaveFile(const char* Filter){
+		std::string FileDialogs::SaveFile(const char* filter){
 			OPENFILENAMEA ofn;
 			CHAR szFile[260] = {0};
 			CHAR currentDir[256] = {0};
@@ -38,12 +38,12 @@ namespace Proof{
 			ofn.nMaxFile = sizeof(szFile);
 			if (GetCurrentDirectoryA(256,currentDir))
 				ofn.lpstrInitialDir = currentDir;
-			ofn.lpstrFilter = Filter;
+			ofn.lpstrFilter = filter;
 			ofn.nFilterIndex = 1;
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR; // IF WE DO NOT DO THIS IT WILL CHAGNE THE working directory of our application
 			
 			// Sets the default extension by extracting it from the filter
-			ofn.lpstrDefExt = strchr(Filter,'\0') + 1;
+			ofn.lpstrDefExt = strchr(filter,'\0') + 1;
 			if (GetSaveFileNameA(&ofn) == TRUE) {
 				return ofn.lpstrFile;
 			}

@@ -29,7 +29,7 @@ namespace Proof{
 	static glm::mat4 ModelMatrix;
 	static Material s_DefaultMaterial;
 	static std::vector<uint32_t> s_DifferentID;
-	static Count<Shader> s_CurrentActiveShader;
+	static Count<Shader> s_CurrentLightShader;
 	uint32_t NumDirLights=0;
 	uint32_t NumPointLights=0;
 	uint32_t NumSpotLights=0;
@@ -44,18 +44,28 @@ namespace Proof{
 		uint32_t WhiteTextureImage = 0xffffffff;
 		s_PBRInstance->m_WhiteTexture->SetData(&WhiteTextureImage,sizeof(uint32_t));
 	}
-	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,RendererData* renderSpec) {
+	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,RendererData& renderSpec) {
 		BeginContext(editorCamera.m_Projection,editorCamera.m_View,editorCamera.m_Positon,frameBuffer,renderSpec);
 	}
-	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer,RendererData* renderSpec ) {
+	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		s_CurrentCamera = {projection,view,Position};
 		Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera,sizeof(CameraData));
-		PF_CORE_ASSERT(s_InsideContext == false,"Cannot start a new Render COntext if Previous Render COntext is not closed");
+		PF_CORE_ASSERT(s_InsideContext == false,"Cannot start a new Render Context if Previous Render COntext is not closed");
 		s_InsideContext = true;
 		s_RenderFrameBuffer = frameBuffer;
-		s_RendererData = renderSpec;
-		if (renderSpec != nullptr)
-			renderSpec->Reset();
+		s_RendererData = &renderSpec;
+		s_RendererData->Reset();
+		if (s_RendererData->RenderSettings.Technique == RenderTechnique::DeferedRendering)
+			InitilizeDeferedRendering();
+		else if (s_RendererData->RenderSettings.Technique == RenderTechnique::FowardRendering)
+			InitilizeFowardRendering();
+	}
+	void Renderer3DPBR::InitilizeDeferedRendering() {
+		s_CurrentLightShader = s_PBRInstance->m_DeferedRendering.LightShader;
+
+	}
+	void Renderer3DPBR::InitilizeFowardRendering() {
+		s_CurrentLightShader = s_PBRInstance->m_Shader;
 	}
 	void Renderer3DPBR::Draw(MeshComponent& meshComponent) {
 		int usingMaterial = meshComponent.HasMaterial();
@@ -159,6 +169,7 @@ namespace Proof{
 		NumPointLights = 0;
 		NumSpotLights = 0;
 		NumLights =0;
+		s_CurrentLightShader = nullptr;
 	}
 	unsigned int quadVAO1 = 0;
 	unsigned int quadVBO1;
@@ -243,7 +254,9 @@ namespace Proof{
 		RendererCommand::SetClearColor();
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
-		RendererCommand::SetViewPort(s_RenderFrameBuffer->GetFrameWidth(),s_RenderFrameBuffer->GetFrameHeight());
+		//RendererCommand::SetViewPort(s_RenderFrameBuffer->GetFrameWidth(),s_RenderFrameBuffer->GetFrameHeight());
+		glViewport(0, 0, s_RenderFrameBuffer->GetFrameWidth(), s_RenderFrameBuffer->GetFrameHeight());
+
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		uint32_t sizeOffset = 0;
 		s_PBRInstance->m_DeferedRendering.MeshShader->Bind();

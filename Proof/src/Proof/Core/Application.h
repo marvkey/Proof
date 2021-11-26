@@ -20,12 +20,7 @@
         void Run();
         void PushLayer(Layer* Layer);
         void PushOverlay(Layer* Layer);
-        static Count<ScreenFrameBuffer>& GetScreenBuffer() {
-            return ScreenFrameBuffer;
-        }
 
-        static uint32_t ViewPortWidth;
-        static uint32_t ViewPortHeight;
         static float GetFPS() {return FPS;}
         static float GetFrameMS() {return FrameMS;};
     protected:
@@ -39,7 +34,6 @@
         void OnMouseScrollEVent(MouseScrollEvent& e);
         void OnKeyClicked(KeyClickedEvent& e);
 
-        static Count<ScreenFrameBuffer> ScreenFrameBuffer;
         LayerStack MainLayerStack;
         ImGuiLayer* ImGuiMainLayer;
         static Special<WindowsWindow>MainWindow;

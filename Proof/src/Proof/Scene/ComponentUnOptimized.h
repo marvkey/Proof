@@ -21,7 +21,7 @@ namespace Proof{
 		}
 		void SwapEntityOwner(Entity& neweOwner){
 			if (neweOwner.GetID() == GetOwner().GetID()) {
-				PF_ENGINE_WARN("cannot add enity as owenr of entity");
+				PF_WARN("cannot add enity as owenr of entity");
 				return;
 			}
 			auto it = std::find(neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.begin(),neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.end(),neweOwner);
@@ -35,7 +35,7 @@ namespace Proof{
 		}
 		void AddSubEntity(Entity& subEntity) {
 			if(subEntity.GetID() == GetOwner().GetID()){
-				PF_ENGINE_WARN("cannot add enity as owenr of entity");
+				PF_WARN("cannot add enity as owenr of entity");
 				return;
 			}
 			subEntity.GetComponent<SubEntityComponet>()->m_EntitySubOwner = this->GetOwner();

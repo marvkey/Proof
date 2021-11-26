@@ -41,21 +41,19 @@ namespace Proof
 
 #ifdef PF_ENABLE_DEBUG 
 
-//#define USING_PROOF_LOGGER
+#define USING_PROOF_LOGGER
 #ifdef USING_PROOF_LOGGER
-#define  PF_ENGINE_ERROR(...) ::Proof::Log::AppendString(0,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
-#define  PF_ENGINE_WARN(...)  ::Proof::Log::AppendString(1,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
-#define  PF_ENGINE_INFO(...)  Proof::Log::AppendString(2,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
-#define  PF_ENGINE_TRACE(...) ::Proof::Log::AppendString(3,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
-#define	 PF_ENGINE_CRITICAL(...)::Proof::Log::AppendString(4,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
-
+#define  PF_ENGINE_ERROR(...) ::Proof::Log::GetEngineLogger()->LogError(__VA_ARGS__)
+#define  PF_ENGINE_WARN(...)  ::Proof::Log::GetEngineLogger()->LogWarn(__VA_ARGS__)
+#define  PF_ENGINE_INFO(...)  ::Proof::Log::GetEngineLogger()->LogInfo(__VA_ARGS__)
+#define  PF_ENGINE_TRACE(...) ::Proof::Log::GetEngineLogger()->LogTrace(__VA_ARGS__)
+#define	 PF_ENGINE_CRITICAL(...)::Proof::Log::GetEngineLogger()->LogCritical(__VA_ARGS__)
 		// Client Logging
 #define  PF_ERROR(...) ::Proof::Log::AppendString(0,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
 #define  PF_WARN(...)  ::Proof::Log::AppendString(1,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
 #define  PF_INFO(...)  ::Proof::Log::AppendString(2,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
 #define  PF_TRACE(...) ::Proof::Log::AppendString(3,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
 #define	 PF_CRITICAL(...)::Proof::Log::AppendString(4,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
-//#define	 PF_ENGINE_TEST(...)::Proof::Log::AppendString(Proof::Log::LogType::CRITICAL,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
 #else
 		// Engine Logging
 #define  PF_ENGINE_ERROR(...) ::Proof::Log::GetEngineLogger()->LogError(__VA_ARGS__)

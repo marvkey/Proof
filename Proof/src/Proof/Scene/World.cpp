@@ -85,40 +85,6 @@ namespace Proof{
 			}
 			return;
 		}
-		
-		Renderer3DPBR::BeginContext(cameraComp->m_Projection,cameraComp->m_View,*cameraComp->m_Positon,Application::GetScreenBuffer(),&RenderSpecs);
-		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetMeshSource() != nullptr) {
-				Renderer3DPBR::Draw(*Comp);
-			}
-		}
-		for (LightComponent* Comp : Registry.LightComponents) {
-			Renderer3DPBR::Draw(*Comp);
-		}
-		Renderer3DPBR::EndContext();
-
-		/*
-		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap",4);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap",5);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT",6);
-
-		m_WorldCubeMap->Bind(4);
-		PrefelterMap->Bind(5);
-
-		m_brdflTexture->Bind(6);
-		Renderer3DPBR::EndContext();
-
-
-		RendererCommand::DepthFunc(DepthType::Equal);
-		backgroundShader->Bind();
-		backgroundShader->SetInt("environmentMap",0);
-		m_WorldCubeMap->Bind(0);
-		m_IBLSkyBoxVertexArray->Bind();
-		RendererCommand::DrawArray(36);
-		m_IBLSkyBoxVertexArray->UnBind();
-		RendererCommand::DepthFunc(DepthType::Less);
-		*/
 		cameraComp->CalculateProjection();
 
 		if(cameraComp->m_AutoSetDimension ==true){
@@ -210,38 +176,6 @@ namespace Proof{
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){
-		Renderer3DPBR::BeginContext(m_EditorCamera.m_Projection,m_EditorCamera.m_View,m_EditorCamera.m_Positon,Application::GetScreenBuffer(),&RenderSpecs);
-		for (MeshComponent* Comp : Registry.SceneMeshComponents) {
-			if (Comp->GetMeshSource() != nullptr) {
-				Renderer3DPBR::Draw(*Comp);
-			}
-		}
-		for (LightComponent* Comp : Registry.LightComponents) {
-			Renderer3DPBR::Draw(*Comp);
-		}
-		/*
-		Renderer3DPBR::GetRenderer()->m_Shader->Bind();
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap", 4);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap", 5);
-		Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT", 6);
-
-		m_WorldCubeMap->Bind(4);
-		PrefelterMap->Bind(5);
-
-		m_brdflTexture->Bind(6);
-		*/
-		Renderer3DPBR::EndContext();
-
-		Application::GetScreenBuffer()->Bind();
-		RendererCommand::DepthFunc(DepthType::Equal);
-		backgroundShader->Bind();
-		backgroundShader->SetInt("environmentMap", 0);
-		m_WorldCubeMap->Bind(0);
-		m_IBLSkyBoxVertexArray->Bind();
-		RendererCommand::DrawArray(36);
-		m_IBLSkyBoxVertexArray->UnBind();
-		RendererCommand::DepthFunc(DepthType::Less);
-		Application::GetScreenBuffer()->UnBind();
 		m_EditorCamera.OnUpdate(DeltaTime,width,height);
 	}
 

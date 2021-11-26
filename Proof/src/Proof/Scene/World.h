@@ -39,7 +39,6 @@ namespace Proof{
 		friend class WorldRenderer;
 		void HandleInput();
 		void DeleteEntity(class Entity& ent);
-		struct RendererData RenderSpecs;
 
 		EditorCamera m_EditorCamera ={200,200};
 	private:

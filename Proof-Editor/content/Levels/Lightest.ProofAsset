@@ -128,8 +128,8 @@ Entities:
       Tag: flashlight
       tags: []
     TransformComponent:
-      Location: [13.3665962, 8.18197823, 0.787316322]
-      Rotation: [0.986732125, -0.162356257, 0.000330711977]
+      Location: [-64.2466812, 34.0316429, -11.910121]
+      Rotation: [0.882915974, -0.469174325, 0.0182989035]
       Scale: [0.5, 0.99999994, 1.40000021]
     SubEntityComponet:
       OwnerEntityID: 0
@@ -139,6 +139,6 @@ Entities:
       NearPlane: 0.100000001
       FarPlane: 1000
       FOV: 45
-      Width: 824
-      Height: 492
+      Width: 250
+      Height: 250
       UpVector: [0, 1, 0]

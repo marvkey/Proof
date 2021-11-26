@@ -21,12 +21,12 @@ namespace Proof{
 		T* GetComponent(uint32_t ID,const std::string& CompName) {
 			if (HasComponent<T>() == false) return nullptr;
 			return CurrentWorld->Registry.GetComponent<T>(m_ID,CompName);
-			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
+			PF_WARN(false,"Entity ID Was Not FOund");
 		}
 
 		Component* GetComponent(uint32_t ID,uint32_t Index) {
 			return CurrentWorld->Registry.GetComponent(m_ID,Index);
-			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
+			PF_WARN(false,"Entity ID Was Not FOund");
 		}
 		template<class T>
 		bool HasComponent() {
@@ -38,14 +38,14 @@ namespace Proof{
 			bool HasTransfrom = std::is_same<T,TransformComponent>::value;
 			if (HasTransfrom == true) {
 				if (HasComponent<TransformComponent>() == true) {
-					PF_ENGINE_WARN("Entity already has a transform ");
+					PF_WARN("Entity already has a transform");
 					return nullptr;
 				}
 			}
 			bool  HasTag = std::is_same<T,TagComponent>::value;
 			if (HasTag == true) {
 				if (HasComponent<TagComponent>() == true) {
-					PF_ENGINE_WARN("Entity already has a TagComponent");
+					PF_WARN("Entity already has a TagComponent");
 					return nullptr;
 				}
 			}
@@ -66,12 +66,12 @@ namespace Proof{
 		void RemoveComponent() {
 			bool isHasTransfrom = std::is_same<T,TransformComponent>::value;
 			if (isHasTransfrom == true){
-				PF_ENGINE_WARN("Cannot remove Transform Component");
+				PF_WARN("Cannot remove Transform Component");
 				return;
 			}
 			bool isHasTag = std::is_same<T,TagComponent>::value;
 			if (isHasTag == true){
-				PF_ENGINE_WARN("Cannot remove TagComponent");
+				PF_WARN("Cannot remove TagComponent");
 				return;
 			}
 			/*
