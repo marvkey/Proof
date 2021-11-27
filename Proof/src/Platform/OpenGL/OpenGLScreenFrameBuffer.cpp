@@ -9,6 +9,7 @@ namespace Proof {
 		m_FrameHeight(Height)
 	{
 		Instaniate();
+		bool m_BufferHasBeenCreated = true;
 	}
 	OpenGLScreenFrameBuffer::~OpenGLScreenFrameBuffer() {
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
@@ -22,27 +23,22 @@ namespace Proof {
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 	}
 	void OpenGLScreenFrameBuffer::Resize(uint32_t Width,uint32_t Height){
-		glBindFramebuffer(GL_FRAMEBUFFER,0);
-		glDeleteFramebuffers(1,&m_ID);
-		glDeleteTextures(1,&m_ID);
-		glDeleteRenderbuffers(1,&m_ID);
 		m_FrameWidth = Width;
 		m_FrameHeight = Height;
 		Instaniate();
 	}
-
-	uint32_t OpenGLScreenFrameBuffer::GetTexture() {
-		return m_TextureID;
-	}
-
-	
-
 	void OpenGLScreenFrameBuffer::WriteBuffer(const uint32_t m_FrameBufferID) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER,m_ID);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER,m_FrameBufferID);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER,m_FrameBufferID);
 	}
 
 	void OpenGLScreenFrameBuffer::Instaniate() {
+		if (m_BufferHasBeenCreated == true) {
+			glBindFramebuffer(GL_FRAMEBUFFER,0);
+			glDeleteFramebuffers(1, &m_ID);
+			glDeleteTextures(1, &m_ID);
+			glDeleteRenderbuffers(1, &m_ID);
+		}
 		glGenFramebuffers(1,&m_ID);
 		glBindFramebuffer(GL_FRAMEBUFFER,m_ID);
 

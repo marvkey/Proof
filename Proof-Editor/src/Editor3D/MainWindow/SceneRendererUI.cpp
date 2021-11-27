@@ -14,7 +14,7 @@ namespace Proof{
 		tempEntity.AddComponent<LightComponent>()->m_Ambient ={1,1,1};
 		tempEntity.GetComponent<TransformComponent>()->Location.Z-=10;
 		mesh->m_MeshAssetPointerID = asset->GetID();
-		m_WorldRenderer = {m_World.get(),1300,800};
+		m_WorldRenderer = { m_World.get(),CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() };
 		m_Type= SceneRendererType::MeshAsset;
 		m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::FowardRendering;
 	}
@@ -66,7 +66,7 @@ namespace Proof{
 			ImGui::BeginChild(mesh->GetAsset()->GetName().c_str());
 			m_WorldRenderer.Renderer();
 			if (m_LastWidht != ImGui::GetWindowSize().x || m_LastHeight != ImGui::GetWindowSize().y) {
-				m_WorldRenderer.m_ScreenFrameBuffer->Resize(ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);
+				//m_WorldRenderer.m_ScreenFrameBuffer->Resize(ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);
 				m_LastWidht = ImGui::GetWindowSize().x; m_LastHeight = ImGui::GetWindowSize().y;
 				if (m_WorldRenderer.GetRendererPaused() == true) {
 					m_WorldRenderer.SetRendererPause(false);

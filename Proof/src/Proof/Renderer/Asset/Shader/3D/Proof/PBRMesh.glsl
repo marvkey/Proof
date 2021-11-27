@@ -22,7 +22,7 @@ layout(std140,binding = 1) uniform CameraData
 out VS_OUT
 {
     vec2 TexCoords;
-    Vec3 Tangent;
+    vec3 Tangent;
     vec3 Bitangent;
     vec3 Normal;
     vec3 FragPos;
@@ -59,7 +59,7 @@ out vec4 FragColor;
 in Material m_Material;
 in VS_OUT{
     vec2 TexCoords;
-    Vec3 Tangent;
+    vec3 Tangent;
     vec3 Bitangent;
     vec3 Normal;
     vec3 FragPos;
@@ -74,10 +74,18 @@ uniform int AmountLight;
 uniform vec3 lightPositions[150];
 uniform vec3 lightColors[150];
 
+
 // IBL
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
-uniform sampler2D b
+uniform sampler2D brdfLUT;
+float NormalDistrubution(float alpha, vec3 normal, vec3 h);
 void main(){
 
+}
+
+float NormalDistrubution(float alpha, vec3 normal, vec3 h){
+    float numerator = pow(alpha,2.0);
+    float 
+    return 0;
 }

@@ -30,6 +30,11 @@ namespace Proof
 		Count<class Shader>MeshShader;
 		Count<class Shader>LightShader;
 		DeferedRenderingData();
+		DeferedRenderingData(uint32_t width, uint32_t height);
+	};
+	struct Proof_API FowardRenderingData {
+		Count<class Shader> m_Shader;
+		FowardRenderingData();
 	};
 	struct RendererData{
 	public:
@@ -70,7 +75,7 @@ namespace Proof
 			
 		};
 		struct RendererSettings {
-			RenderTechnique Technique= RenderTechnique::DeferedRendering;
+			RenderTechnique Technique= RenderTechnique::FowardRendering;
 			DrawType Draw= DrawType::Triangles;
 		};
 		RenderStats Stats;
@@ -94,6 +99,7 @@ namespace Proof
 		bool SceneHasAmountMeshes(uint32_t ID) { return m_AmountMeshes.find(ID) != m_AmountMeshes.end(); };
 		static Count<class Texture2D>m_WhiteTexture;
 		DeferedRenderingData m_DeferedRendering;
+		FowardRenderingData m_FowardRendering;
 	};
 	
 	
@@ -145,7 +151,10 @@ namespace Proof
 
 		/* Foward Renderer */
 		static void InitilizeFowardRendering();
-		static void FowardRender();
+		static void FowardRenderer();
 		/* ------------------------- */
+
+
+		static void PBRWithFowardRender();
 	};
 }

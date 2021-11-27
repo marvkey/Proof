@@ -55,7 +55,8 @@ namespace Proof
 			AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
 		}
 		m_WorldHierachy.SetContext(ActiveWorld.get());
-		m_WorldRenderer = WorldRenderer(ActiveWorld.get(), 00, 70);
+		m_WorldRenderer = WorldRenderer(ActiveWorld.get(), CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
+		// cannot be setting it to window size and stuff innit
 		float skyboxVertices[] = {
 					 // positions          
 			-1.0f,1.0f,-1.0f,
@@ -106,11 +107,11 @@ namespace Proof
 		m_SkyBoxVertexArray = VertexArray::Create();
 		m_SkyBoxVertexArray->AddData(0,3,3 * sizeof(float),(void*)0);
 
-		//m_SkyBoxShader->Bind();
-		//m_SkyBoxShader->SetInt("skybox",0);
+		m_SkyBoxShader->Bind();
+		m_SkyBoxShader->SetInt("skybox",0);
 		//
 		//
-		//m_CubeMap = CubeMap::Create(CubeMapPaths);
+		m_CubeMap = CubeMap::Create(CubeMapPaths);
 
 		m_PlayButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PlayButton.png");
 		m_PauseButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PauseButton .png");
@@ -147,6 +148,22 @@ namespace Proof
 			std::cout<< num <<std::endl;
 		}
 		m_WorldRenderer.Renderer();
+		/*
+		glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->m_EditorCamera.m_View));
+		m_WorldRenderer.m_ScreenFrameBuffer->Bind();
+		glDepthFunc(GL_LEQUAL);
+		m_SkyBoxShader->Bind();
+		m_SkyBoxShader->SetMat4("view",view);
+		m_SkyBoxShader->SetMat4("projection", ActiveWorld->m_EditorCamera.m_Projection);
+		m_SkyBoxVertexArray->Bind();
+		glActiveTexture(GL_TEXTURE0);
+		m_CubeMap->Bind();
+		glDrawArrays(GL_TRIANGLES,0,36);
+		m_SkyBoxVertexArray->UnBind();
+		glDepthFunc(GL_LESS);
+		RendererCommand::SetClearColor();
+		m_WorldRenderer.m_ScreenFrameBuffer->UnBind();
+		*/
 	}
 
 	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
@@ -163,7 +180,7 @@ namespace Proof
 			ActiveWorld->OnUpdateRuntime(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
 		else if (ActiveWorld->m_CurrentState == WorldState::Simulate)
 			ActiveWorld->OnSimulatePhysics(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
-		
+
 		ViewPort();
 		
 		MainToolBar();
@@ -327,7 +344,6 @@ namespace Proof
 	}
 	void Editore3D::ViewPort() {
 
-		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		static bool Open = true;
 		if (ImGui::Begin("ViewPort",&Open)) {
@@ -335,12 +351,13 @@ namespace Proof
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 			auto viewportOffset = ImGui::GetWindowPos();
-			ImVec2 ViewPortPanelSize = ImGui::GetContentRegionAvail();
+			ImVec2 ViewPortPanelSize = ImGui::GetWindowSize();
 			m_ViewportBounds[0] = {viewportMinRegion.x + viewportOffset.x,viewportMinRegion.y + viewportOffset.y};
 			m_ViewportBounds[1] = {viewportMaxRegion.x + viewportOffset.x,viewportMaxRegion.y + viewportOffset.y};
 			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
 				_ViewPortSize = {ViewPortPanelSize.x,ViewPortPanelSize.y};
-				m_WorldRenderer.m_ScreenFrameBuffer->Resize(_ViewPortSize.x, _ViewPortSize.y);
+				//m_WorldRenderer.m_ScreenFrameBuffer->Resize(_ViewPortSize.x, _ViewPortSize.y);
+				// Still neees to be fixed se
 			}
 
 			

@@ -65,7 +65,7 @@ namespace Proof{
 
 	}
 	void Renderer3DPBR::InitilizeFowardRendering() {
-		s_CurrentLightShader = s_PBRInstance->m_Shader;
+		s_CurrentLightShader = s_PBRInstance->m_FowardRendering.m_Shader;
 	}
 	void Renderer3DPBR::Draw(MeshComponent& meshComponent) {
 		int usingMaterial = meshComponent.HasMaterial();
@@ -94,6 +94,7 @@ namespace Proof{
 		s_PBRInstance->m_Transforms.emplace_back(temp);
 	}
 	void Renderer3DPBR::Draw(LightComponent& lightComponent) {
+		/*
 		if(s_RendererData->RenderSettings.Technique== RenderTechnique::FowardRendering){
 			s_PBRInstance->m_Shader->Bind();
 			std::string LightPos = "lightPositions[" + std::to_string(NumLights) + "]";
@@ -103,47 +104,46 @@ namespace Proof{
 			NumLights++;
 			return;
 		}
-		s_PBRInstance->m_DeferedRendering.LightShader->Bind();
-	
-		if (lightComponent.m_LightType == lightComponent.Direction && NumDirLights < 150) {
-			std::string mumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumDirLights) + "]";
-			s_PBRInstance->m_DeferedRendering.LightShader->Bind();
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(mumberDirectionalLightstring + ".Direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation());
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(mumberDirectionalLightstring + ".Ambient",lightComponent.m_Ambient);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(mumberDirectionalLightstring + ".Intensity",lightComponent.Intensity);
-			NumDirLights++;
-			s_PBRInstance->m_DeferedRendering.LightShader->UnBind();
-			return;
-		}
-
+		*/
+		s_CurrentLightShader->Bind();
 		if (lightComponent.m_LightType == lightComponent.Point && NumPointLights < 150) {
 			std::string numberPointLightstring = "v_PointLight[" + std::to_string(NumPointLights) + "]";
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberPointLightstring + ".Position",lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation());
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberPointLightstring + ".Ambient",lightComponent.m_Ambient);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Constant",lightComponent.m_Constant);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Linear",lightComponent.m_Linear);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Quadratic",lightComponent.m_Quadratic);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + + ".Radius",lightComponent.Radius);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberPointLightstring + ".Intensity",lightComponent.Intensity);
+			s_CurrentLightShader->SetVec3(numberPointLightstring + ".Position", lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation());
+			s_CurrentLightShader->SetVec3(numberPointLightstring + ".Ambient", lightComponent.m_Ambient);
+			s_CurrentLightShader->SetFloat(numberPointLightstring + +".Constant", lightComponent.m_Constant);
+			s_CurrentLightShader->SetFloat(numberPointLightstring + +".Linear", lightComponent.m_Linear);
+			s_CurrentLightShader->SetFloat(numberPointLightstring + +".Quadratic", lightComponent.m_Quadratic);
+			s_CurrentLightShader->SetFloat(numberPointLightstring + +".Radius", lightComponent.Radius);
+			s_CurrentLightShader->SetFloat(numberPointLightstring + ".Intensity", lightComponent.Intensity);
 			NumPointLights++;
-			s_PBRInstance->m_DeferedRendering.LightShader->UnBind();
+			s_CurrentLightShader->UnBind();
 			return;
 		}
 
-		if (lightComponent.m_LightType == lightComponent.Spot && NumSpotLights< 150) {
+		if (lightComponent.m_LightType == lightComponent.Spot && NumSpotLights < 150) {
 			std::string numberSpotLightstring = "v_SpotLight[" + std::to_string(NumSpotLights) + "]";
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Direction",{lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation()});
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Position",{lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation()});
-			s_PBRInstance->m_DeferedRendering.LightShader->SetVec3(numberSpotLightstring + ".Ambient",lightComponent.m_Ambient);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Constant",lightComponent.m_Constant);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Linear",lightComponent.m_Linear);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Quadratic",lightComponent.m_Quadratic);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring  +".Radius",lightComponent.Radius);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring + ".Intensity",lightComponent.Intensity);
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring + ".CutOff",glm::cos(glm::radians(lightComponent.m_CutOff)));
-			s_PBRInstance->m_DeferedRendering.LightShader->SetFloat(numberSpotLightstring + ".OuterCutOff",glm::cos(glm::radians(lightComponent.m_OuterCutOff)));
+			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Direction", { lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation() });
+			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Position", { lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation() });
+			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Ambient", lightComponent.m_Ambient);
+			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Constant", lightComponent.m_Constant);
+			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Linear", lightComponent.m_Linear);
+			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Quadratic", lightComponent.m_Quadratic);
+			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Radius", lightComponent.Radius);
+			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Intensity", lightComponent.Intensity);
+			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".CutOff", glm::cos(glm::radians(lightComponent.m_CutOff)));
+			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".OuterCutOff", glm::cos(glm::radians(lightComponent.m_OuterCutOff)));
 			NumSpotLights++;
-			s_PBRInstance->m_DeferedRendering.LightShader->UnBind();
+			s_CurrentLightShader->UnBind();
+			return;
+		}
+
+		if (lightComponent.m_LightType == lightComponent.Direction && NumDirLights < 150) {
+			std::string mumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumDirLights) + "]";
+			s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation());
+			s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Ambient",lightComponent.m_Ambient);
+			s_CurrentLightShader->SetFloat(mumberDirectionalLightstring + ".Intensity",lightComponent.Intensity);
+			NumDirLights++;
+			s_CurrentLightShader->UnBind();
 			return;
 		}
 	}
@@ -160,6 +160,12 @@ namespace Proof{
 		s_PBRInstance->m_Shader->UnBind();
 	}
 	void Renderer3DPBR::Reset() {
+		s_RendererData->Stats.AmountDirectionalLight += NumDirLights;
+		s_RendererData->Stats.AmountPointLight += NumPointLights;
+		s_RendererData->Stats.AmountSpotLight += NumSpotLights;
+		s_RendererData->Stats.AmountLight = s_RendererData->Stats.AmountDirectionalLight + s_RendererData->Stats.AmountPointLight + s_RendererData->Stats.AmountSpotLight;
+		s_RendererData->Stats.Instances += s_DifferentID.size();
+		
 		s_PBRInstance->m_AmountMeshes.clear();
 		s_PBRInstance->m_Meshes.clear();
 		s_PBRInstance->m_MeshesEndingPositionIndexTransforms.clear();
@@ -202,7 +208,7 @@ namespace Proof{
 		if (s_RendererData->RenderSettings.Technique== RenderTechnique::DeferedRendering) 
 			DeferedRender();
 		else
-			FowardRender();
+			FowardRenderer();
 	}
 	
 	void Renderer3DPBR::DeferedRender(){
@@ -210,22 +216,15 @@ namespace Proof{
 		DeferedRendererRenderLight();
 		//if (s_DifferentID.size() == 0)
 		//	return;
-		s_RenderFrameBuffer->Bind();
+		//s_RenderFrameBuffer->Bind();
+		//s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
 		s_PBRInstance->m_DeferedRendering.Gbuffer->WriteBuffer(s_RenderFrameBuffer->GetFrameBufferID());
-		s_RenderFrameBuffer->Bind();
-		glBlitFramebuffer(0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),0,0,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),GL_DEPTH_BUFFER_BIT,GL_NEAREST);
+		//s_RenderFrameBuffer->Bind();
+		glBlitFramebuffer(0, 0, s_RenderFrameBuffer->GetFrameWidth(), s_RenderFrameBuffer->GetFrameHeight(), 0, 0, s_RenderFrameBuffer->GetFrameHeight(), s_RenderFrameBuffer->GetFrameWidth(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 		s_RenderFrameBuffer->UnBind();
-
-		if (s_RendererData != nullptr) {
-			s_RendererData->Stats.AmountDirectionalLight += NumDirLights;
-			s_RendererData->Stats.AmountPointLight += NumPointLights;
-			s_RendererData->Stats.AmountSpotLight += NumSpotLights;
-			s_RendererData->Stats.AmountLight = s_RendererData->Stats.AmountDirectionalLight+ s_RendererData->Stats.AmountPointLight+ s_RendererData->Stats.AmountSpotLight;
-			s_RendererData->Stats.Instances+= s_DifferentID.size();
-			s_RendererData->DeferedData.m_PositionTexture = GetRenderer()->m_DeferedRendering.GPosition->GetID();
-			s_RendererData->DeferedData.m_NormalTexture = GetRenderer()->m_DeferedRendering.GNormal->GetID();
-			s_RendererData->DeferedData.m_AlbedoTexture = GetRenderer()->m_DeferedRendering.GAlbedo->GetID();
-		}
+		s_RendererData->DeferedData.m_PositionTexture = GetRenderer()->m_DeferedRendering.GPosition->GetID();
+		s_RendererData->DeferedData.m_NormalTexture = GetRenderer()->m_DeferedRendering.GNormal->GetID();
+		s_RendererData->DeferedData.m_AlbedoTexture = GetRenderer()->m_DeferedRendering.GAlbedo->GetID();
 	}
 	void Renderer3DPBR::DeferedRendererRenderLight(){
 		if (NumDirLights == 0 && NumSpotLights == 0 && NumPointLights == 0)return;
@@ -233,30 +232,32 @@ namespace Proof{
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		s_PBRInstance->m_DeferedRendering.LightShader->Bind();
 
-		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gPosition",0);
-		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gNormal",1);
-		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gAlbedoSpec",2);
-		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gMaterialSpec",3);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gPosition", 0);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gNormal", 1);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gAlbedoSpec", 2);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gMaterialSpec", 3);
+
 		s_PBRInstance->m_DeferedRendering.GPosition->Bind(0);
 		s_PBRInstance->m_DeferedRendering.GNormal->Bind(1);
 		s_PBRInstance->m_DeferedRendering.GAlbedo->Bind(2);
 		s_PBRInstance->m_DeferedRendering.GMaterial->Bind(3);
-		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NrDirectionalLight",NumDirLights);
-		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NrPointLight",NumPointLights);
-		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NrSpotLight",NumSpotLights);
+
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NrDirectionalLight", NumDirLights);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NrPointLight", NumPointLights);
+		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("v_NrSpotLight", NumSpotLights);
 		renderQuad11();
 		s_RenderFrameBuffer->UnBind();
 	}
 
 	void Renderer3DPBR::DeferedRendererRenderMesh(){
 		if (s_DifferentID.size() == 0)return;
-		s_PBRInstance->m_DeferedRendering.Gbuffer->UnBind();
+		s_RenderFrameBuffer->Bind();
 		RendererCommand::SetClearColor();
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-		s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
-		//RendererCommand::SetViewPort(s_RenderFrameBuffer->GetFrameWidth(),s_RenderFrameBuffer->GetFrameHeight());
-		glViewport(0, 0, s_RenderFrameBuffer->GetFrameWidth(), s_RenderFrameBuffer->GetFrameHeight());
+		s_RenderFrameBuffer->UnBind();
 
+		s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
+		RendererCommand::SetViewPort(s_RenderFrameBuffer->GetFrameWidth(), s_RenderFrameBuffer->GetFrameHeight());
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		uint32_t sizeOffset = 0;
 		s_PBRInstance->m_DeferedRendering.MeshShader->Bind();
@@ -265,39 +266,39 @@ namespace Proof{
 			auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
 			auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
 			s_PBRInstance->m_VertexBuffer->Bind();
-			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset],TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
+			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset], TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
 
 			if (TempMesh->second.GetMaterial() != nullptr) {
 
-				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("albedoMap",0);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("albedoMap", 0);
 				if (TempMesh->second.GetMaterial()->AlbedoTexture != nullptr)
 					TempMesh->second.GetMaterial()->AlbedoTexture->Bind(0);
 				else
 					s_PBRInstance->m_WhiteTexture->Bind(0);
 
-				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("normalMap",1);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("normalMap", 1);
 				if (TempMesh->second.GetMaterial()->NormalTexture != nullptr)
 					TempMesh->second.GetMaterial()->NormalTexture->Bind(1);
 				else
 					s_PBRInstance->m_WhiteTexture->Bind(1);
 
-				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("metallicMap",2);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("metallicMap", 2);
 				if (TempMesh->second.GetMaterial()->MetallicTexture != nullptr)
 					TempMesh->second.GetMaterial()->MetallicTexture->Bind(2);
 				else
 					s_PBRInstance->m_WhiteTexture->Bind(2);
 
-				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("roughnessMap",3);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("roughnessMap", 3);
 				if (TempMesh->second.GetMaterial()->RoughnessTexture != nullptr)
 					TempMesh->second.GetMaterial()->RoughnessTexture->Bind(3);
 				else
 					s_PBRInstance->m_WhiteTexture->Bind(3);
 			}
 			else {
-				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("albedoMap",0);
-				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("normalMap",1);
-				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("metallicMap",2);
-				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("roughnessMap",3);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("albedoMap", 0);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("normalMap", 1);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("metallicMap", 2);
+				s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("roughnessMap", 3);
 				s_PBRInstance->m_WhiteTexture->Bind(0);
 				s_PBRInstance->m_WhiteTexture->Bind(1);
 				s_PBRInstance->m_WhiteTexture->Bind(2);
@@ -314,20 +315,17 @@ namespace Proof{
 						continue;
 
 					if (TempMesh->second.HasMaterial() == false) {
-						s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("DiffuseShader",7);
+						s_PBRInstance->m_DeferedRendering.MeshShader->SetInt("DiffuseShader", 7);
 						if (mesh.m_Textures.size() > 0)
 							mesh.m_Textures[0]->Bind(7);
 						else
 							s_PBRInstance->m_WhiteTexture->Bind(7);
 					}
 
-					if(s_RendererData !=nullptr){
-						s_RendererData->Stats.DrawCalls++;
-					}
+					s_RendererData->Stats.DrawCalls++;
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
-					s_WorldDrawType = DrawType::Triangles;
-					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
+					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second,s_RendererData->RenderSettings.Draw);
 				}
 			}
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
@@ -337,43 +335,127 @@ namespace Proof{
 		s_PBRInstance->m_DeferedRendering.MeshShader->UnBind();
 		s_PBRInstance->m_DeferedRendering.Gbuffer->UnBind();
 	}
-
-	void Renderer3DPBR::FowardRender() {
+	void Renderer3DPBR::FowardRenderer() {
 		if (s_DifferentID.size() == 0)return;
 		s_RenderFrameBuffer->Bind();
 		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		RendererCommand::SetClearColor();
 		uint32_t sizeOffset = 0;
-		s_PBRInstance->m_Shader->Bind();
-		s_PBRInstance->m_Shader->SetInt("AmountLight",NumLights);
+		s_PBRInstance->m_FowardRendering.m_Shader->Bind();
+		s_PBRInstance->m_FowardRendering.m_Shader->SetInt("AmountLight", NumLights);
+		s_PBRInstance->m_FowardRendering.m_Shader->SetInt("v_NrDirectionalLight", NumDirLights);
+		s_PBRInstance->m_FowardRendering.m_Shader->SetInt("v_NrPointLight", NumPointLights);
+		s_PBRInstance->m_FowardRendering.m_Shader->SetInt("v_NrSpotLight", NumSpotLights);
 		for (uint32_t i = 0; i < s_DifferentID.size(); i++) {
 			uint32_t TempID = s_DifferentID[i];
 			auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
 			auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
 
 			s_PBRInstance->m_VertexBuffer->Bind();
-			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset],TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
+			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset], TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
 			if (TempMesh->second.GetMaterial() != nullptr) {
-				s_PBRInstance->m_Shader->Bind();
-				s_PBRInstance->m_Shader->SetInt("albedoMap",0);
+				s_PBRInstance->m_FowardRendering.m_Shader->Bind();
+				s_PBRInstance->m_FowardRendering.m_Shader->SetInt("albedoMap", 0);
 				if (TempMesh->second.GetMaterial()->AlbedoTexture != nullptr)
 					TempMesh->second.GetMaterial()->AlbedoTexture->Bind(0);
 				else
 					s_PBRInstance->m_WhiteTexture->Bind(0);
 
-				s_PBRInstance->m_Shader->SetInt("normalMap",1);
+				s_PBRInstance->m_FowardRendering.m_Shader->SetInt("normalMap", 1);
 				if (TempMesh->second.GetMaterial()->NormalTexture != nullptr)
 					TempMesh->second.GetMaterial()->NormalTexture->Bind(1);
 				else
 					s_PBRInstance->m_WhiteTexture->Bind(1);
 
-				s_PBRInstance->m_Shader->SetInt("metallicMap",2);
+				s_PBRInstance->m_FowardRendering.m_Shader->SetInt("metallicMap", 2);
 				if (TempMesh->second.GetMaterial()->MetallicTexture != nullptr)
 					TempMesh->second.GetMaterial()->MetallicTexture->Bind(2);
 				else
 					s_PBRInstance->m_WhiteTexture->Bind(2);
 
-				s_PBRInstance->m_Shader->SetInt("roughnessMap",3);
+				s_PBRInstance->m_FowardRendering.m_Shader->SetInt("roughnessMap", 3);
+				if (TempMesh->second.GetMaterial()->RoughnessTexture != nullptr)
+					TempMesh->second.GetMaterial()->RoughnessTexture->Bind(3);
+				else
+					s_PBRInstance->m_WhiteTexture->Bind(3);
+			}
+			else {
+				s_PBRInstance->m_FowardRendering.m_Shader->Bind();
+				s_PBRInstance->m_FowardRendering.m_Shader->SetInt("albedoMap", 0);
+				s_PBRInstance->m_FowardRendering.m_Shader->SetInt("normalMap", 1);
+				s_PBRInstance->m_FowardRendering.m_Shader->SetInt("metallicMap", 2);
+				s_PBRInstance->m_FowardRendering.m_Shader->SetInt("roughnessMap", 3);
+				s_PBRInstance->m_WhiteTexture->Bind(0);
+				s_PBRInstance->m_WhiteTexture->Bind(1);
+				s_PBRInstance->m_WhiteTexture->Bind(2);
+				s_PBRInstance->m_WhiteTexture->Bind(3);
+
+			}
+			// draw in wireframe
+			//glPolygonMode(GL_FRONT_AND_BACK,(int)GL_LINES); // keeps this need to put into our game
+			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
+				RendererCommand::Enable(ProofRenderTest::CullFace);
+			if (TempMesh->second.GetMeshSource()->m_Enabled == true) {
+				for (SubMesh& mesh : TempMesh->second.GetMeshSource()->meshes) {
+					if (mesh.m_Enabled == false)
+						continue;
+					if (TempMesh->second.HasMaterial() == false) {
+						s_PBRInstance->m_FowardRendering.m_Shader->SetInt("DiffuseShader", 7);
+						if (mesh.m_Textures.size() > 0)
+							mesh.m_Textures[0]->Bind(7);
+						else
+							s_PBRInstance->m_WhiteTexture->Bind(7);
+					}
+					s_RendererData->Stats.DrawCalls++;
+					mesh.m_VertexArrayObject->Bind();
+					mesh.m_IndexBufferObject->Bind();
+					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second,s_RendererData->RenderSettings.Draw);
+				}
+			}
+			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
+				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render stettings
+			sizeOffset += TempAmountMeshes->second;
+		}
+		s_PBRInstance->m_Shader->UnBind();
+		s_RenderFrameBuffer->UnBind();
+	}
+
+	void Renderer3DPBR::PBRWithFowardRender() {
+		if (s_DifferentID.size() == 0)return;
+		s_RenderFrameBuffer->Bind();
+		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		RendererCommand::SetClearColor();
+		uint32_t sizeOffset = 0;
+		s_PBRInstance->m_Shader->Bind();
+		s_PBRInstance->m_Shader->SetInt("AmountLight", NumLights);
+		for (uint32_t i = 0; i < s_DifferentID.size(); i++) {
+			uint32_t TempID = s_DifferentID[i];
+			auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
+			auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
+
+			s_PBRInstance->m_VertexBuffer->Bind();
+			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset], TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
+			if (TempMesh->second.GetMaterial() != nullptr) {
+				s_PBRInstance->m_Shader->Bind();
+				s_PBRInstance->m_Shader->SetInt("albedoMap", 0);
+				if (TempMesh->second.GetMaterial()->AlbedoTexture != nullptr)
+					TempMesh->second.GetMaterial()->AlbedoTexture->Bind(0);
+				else
+					s_PBRInstance->m_WhiteTexture->Bind(0);
+
+				s_PBRInstance->m_Shader->SetInt("normalMap", 1);
+				if (TempMesh->second.GetMaterial()->NormalTexture != nullptr)
+					TempMesh->second.GetMaterial()->NormalTexture->Bind(1);
+				else
+					s_PBRInstance->m_WhiteTexture->Bind(1);
+
+				s_PBRInstance->m_Shader->SetInt("metallicMap", 2);
+				if (TempMesh->second.GetMaterial()->MetallicTexture != nullptr)
+					TempMesh->second.GetMaterial()->MetallicTexture->Bind(2);
+				else
+					s_PBRInstance->m_WhiteTexture->Bind(2);
+
+				s_PBRInstance->m_Shader->SetInt("roughnessMap", 3);
 				if (TempMesh->second.GetMaterial()->RoughnessTexture != nullptr)
 					TempMesh->second.GetMaterial()->RoughnessTexture->Bind(3);
 				else
@@ -381,10 +463,10 @@ namespace Proof{
 			}
 			else {
 				s_PBRInstance->m_Shader->Bind();
-				s_PBRInstance->m_Shader->SetInt("albedoMap",0);
-				s_PBRInstance->m_Shader->SetInt("normalMap",1);
-				s_PBRInstance->m_Shader->SetInt("metallicMap",2);
-				s_PBRInstance->m_Shader->SetInt("roughnessMap",3);
+				s_PBRInstance->m_Shader->SetInt("albedoMap", 0);
+				s_PBRInstance->m_Shader->SetInt("normalMap", 1);
+				s_PBRInstance->m_Shader->SetInt("metallicMap", 2);
+				s_PBRInstance->m_Shader->SetInt("roughnessMap", 3);
 				s_PBRInstance->m_WhiteTexture->Bind(0);
 				s_PBRInstance->m_WhiteTexture->Bind(1);
 				s_PBRInstance->m_WhiteTexture->Bind(2);
@@ -401,7 +483,7 @@ namespace Proof{
 					if (mesh.m_Enabled == false)
 						continue;
 					if (TempMesh->second.HasMaterial() == false) {
-						s_PBRInstance->m_Shader->SetInt("DiffuseShader",7);
+						s_PBRInstance->m_Shader->SetInt("DiffuseShader", 7);
 						if (mesh.m_Textures.size() > 0)
 							mesh.m_Textures[0]->Bind(7);
 						else
@@ -410,7 +492,7 @@ namespace Proof{
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
 					s_WorldDrawType = DrawType::Triangles;
-					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject,TempAmountMeshes->second,s_WorldDrawType);
+					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second, s_WorldDrawType);
 				}
 			}
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
@@ -444,4 +526,32 @@ namespace Proof{
 		Gbuffer->AttachRenderBuffer(FrameBufferAttachmentType::DepthAttachment,RenderBuffer->GetID());
 		Gbuffer->UnBind();
 	}
+	DeferedRenderingData::DeferedRenderingData(uint32_t width, uint32_t height) {
+		MeshShader = Shader::GetOrCreate("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/MeshGeometry.glsl");
+		LightShader = Shader::GetOrCreate("LightShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/LighteningPass.glsl");
+		Gbuffer = FrameBuffer::Create();
+		Gbuffer->Bind();
+		GPosition = Texture2D::Create(width, height, DataFormat::RGBA, InternalFormat::RGBA16F, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, type::Float, false);
+		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D, 0, GPosition->GetID());
+
+		GNormal = Texture2D::Create(width, height, DataFormat::RGBA, InternalFormat::RGBA16F, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, type::Float, false);
+		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D, 1, GNormal->GetID());
+
+		GAlbedo = Texture2D::Create(width, height, DataFormat::RGBA, InternalFormat::RGBA, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, type::UnsignedByte, false);
+		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D, 2, GAlbedo->GetID());
+
+		GMaterial = Texture2D::Create(width, height, DataFormat::RGBA, InternalFormat::RGBA16F, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, TextureBaseTypes::Nearest, type::UnsignedByte, false);
+		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D, 3, GMaterial->GetID());
+
+		unsigned int attachments[4] = { GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2,GL_COLOR_ATTACHMENT3 };
+		glDrawBuffers(4, attachments);
+		RenderBuffer = RenderBuffer::Create(RenderBufferAttachment::DepthComponent,width, height);
+		Gbuffer->AttachRenderBuffer(FrameBufferAttachmentType::DepthAttachment, RenderBuffer->GetID());
+		Gbuffer->UnBind();
+	}
+
+	FowardRenderingData::FowardRenderingData() {
+		m_Shader = Shader::GetOrCreate("FowardRendererShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/FowardRender/Mesh.glsl");
+	}
+
 }
