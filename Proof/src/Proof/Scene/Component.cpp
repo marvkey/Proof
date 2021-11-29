@@ -47,20 +47,20 @@ namespace Proof
 		}
 		return &a->m_Material;
 	}
-	Vector TransformComponent::GetWorldLocation()const {
+	Vector<float> TransformComponent::GetWorldLocation()const {
 		if(GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()){
 			return Location + GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldLocation();
 		}
 		
 		return Location;
 	}
-	Vector TransformComponent::GetWorldRotation()const {
+	Vector<float> TransformComponent::GetWorldRotation()const {
 		if (GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()) {
 			return Rotation + GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldRotation();
 		}
 		return Rotation;
 	}
-	Vector TransformComponent::GetWorldScale()const {
+	Vector<float> TransformComponent::GetWorldScale()const {
 		if (GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()) {
 			return Scale +GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldScale();;
 		}

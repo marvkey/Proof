@@ -47,7 +47,7 @@ namespace Proof{
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,RendererData& renderSpec) {
 		BeginContext(editorCamera.m_Projection,editorCamera.m_View,editorCamera.m_Positon,frameBuffer,renderSpec);
 	}
-	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
+	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector<float>& Position,Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		s_CurrentCamera = {projection,view,Position};
 		Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera,sizeof(CameraData));
 		PF_CORE_ASSERT(s_InsideContext == false,"Cannot start a new Render Context if Previous Render COntext is not closed");

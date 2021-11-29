@@ -3,7 +3,7 @@
 
 namespace Proof
 {
-	YAML::Emitter& operator<<(YAML::Emitter& out,const Vector& v) {
+	YAML::Emitter& operator<<(YAML::Emitter& out,const Vector<>& v) {
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.X << v.Y << v.Z << YAML::EndSeq;
 		return out;

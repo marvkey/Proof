@@ -8,15 +8,15 @@
 namespace Proof
 {
     struct Vertex {
-        Vector Vertices{0,0,0};
-        Vector Normal{0,0,0};
+        Vector<float> Vertices{0,0,0};
+        Vector<float> Normal{0,0,0};
         glm::vec2 TexCoords{0,0};
-        Vector Tangent{0,0,0};
-        Vector Bitangent{0,0,0};
+        Vector<float> Tangent{0,0,0};
+        Vector<float> Bitangent{0,0,0};
     };
 
     struct Vertex2D {
-        Vector Position;
+        Vector<float> Position;
         glm::vec4 Color;
         glm::vec2 TexCoords;
         float TexSlot;

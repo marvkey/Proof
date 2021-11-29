@@ -496,7 +496,7 @@ namespace Proof{
 
 
 
-	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel,Vector& Vec,float ResetValue,float columnWidth,float Speed) {
+	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel,Vector<>& Vec,float ResetValue,float columnWidth,float Speed) {
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		ImGui::PushID(UniqeLabel.c_str());// this id is for everything here so imgui does not assign something to the value that we have here

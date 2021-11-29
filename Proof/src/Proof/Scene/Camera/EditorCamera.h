@@ -4,9 +4,9 @@ namespace Proof
 {
 	class EditorCamera {
 	public:
-		glm::vec3 m_Positon ={0,0,0};
-		glm::vec3 m_Direction= {0,0,-1};
-		glm::vec3 m_Up = {0,1,0};
+		glm::vec3 m_Positon {0,0,0};
+		glm::vec3 m_Direction{0,0,-1};
+		glm::vec3 m_Up {0,1,0};
 
 		uint32_t m_Width, m_Height;
 		float m_Speed =5;

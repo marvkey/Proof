@@ -150,7 +150,41 @@ void main() {
    // FragColor = texture(DiffuseShader,fs_in.TexCoords);
     FragColor = vec4(result,1.0);
 }
+float GetAttenuation(float range,float d) {
+    return 1.0f - smoothstep(range * 0.75f,range,d);
+}
+vec3 GetSpecular(vec3 color,float shniness,vec3 viewVector,vec3 lightPosition,vec3 surfaceNormmal){
+    vec3 R = normalize(reflect(-lightPosition,surfaceNormmal));
+    float RdotV = max(dot(R,viewVector),0);
 
+    return color * pow(RdotV,shniness);
+}
+vec3 GetDiffuse(vec3 color,vec3 Lightposition,vec3 surfaceNormmal) {
+    float NdotL = max(dot(surfaceNormmal,Lightposition),0.0);
+    return color * NdotL;
+}
+float DoSpotCone( float spotangle, vec3 L,vec3 direction )
+{
+    // If the cosine angle of the light's direction 
+    // vector and the vector from the light source to the point being 
+    // shaded is less than minCos, then the spotlight contribution will be 0.
+    float minCos = cos( radians( spotangle ) );
+    // If the cosine angle of the light's direction vector
+    // and the vector from the light source to the point being shaded
+    // is greater than maxCos, then the spotlight contribution will be 1.
+    float maxCos = mix( minCos, 1, 0.5f );
+    float cosAngle = dot( direction, -L );
+    // Blend between the minimum and maximum cosine angles.
+    return smoothstep( minCos, maxCos, cosAngle );
+}
+float Getattenuate(vec3 lightDirection, float radius) {
+	float cutoff = 0.5;
+	float attenuation = dot(lightDirection, lightDirection) / (100.0 * radius);
+	attenuation = 1.0 / (attenuation * 15.0 + 1.0);
+	attenuation = (attenuation - cutoff) / (1.0 - cutoff);
+
+	return clamp(attenuation, 0.0, 1.0);
+}
 vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 matcolour,float shininess) {
     /*
     vec3 lightDirection = normalize(light.Position - fragPos);
@@ -168,7 +202,6 @@ vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 
     */
     // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
     
-    
     vec3 lightDir = normalize(light.Position - fragPos);
     float diff = max(dot(normal,lightDir),0.0);
     vec3 reflectDir = reflect(-lightDir,normal);
@@ -177,14 +210,15 @@ vec3 CalcPointLight(PointLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 
     float distance = length(light.Position - fragPos);
     float attenuation = 1.0 / (light.Constant + light.Linear * distance + light.Quadratic * (distance * distance));
 
-    vec3 ambient = light.Ambient * matcolour*light.Intensity;               // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    vec3 diffuse = diff * light.Ambient * matcolour*light.Intensity;        // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
-    vec3 specular =spec * light.Ambient * matcolour*light.Intensity;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 ambient = light.Ambient * matcolour;               // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 diffuse = diff * light.Ambient * matcolour;        // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
+    vec3 specular =spec * light.Ambient * matcolour;       // THIS 3 NNED TO BE MULTPLIED DIFFFRENTILY
 
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
-    return (ambient + diffuse + specular);
+    return (ambient + diffuse + specular)*light.Radius;
+
     
 }
 vec3 CalcDirLight(DirectionalLight light,vec3 normal,vec3 viewDir,vec3 matcolour,float shininess) {
@@ -216,4 +250,22 @@ vec3 CalcSpotLight(SpotLight light,vec3 normal,vec3 fragPos,vec3 viewDir,vec3 ma
     diffuse *= attenuation * intensity;
     specular *= attenuation * intensity;
     return(ambient + diffuse + specular)*light.Intensity;
+    /*
+        vec3 result;
+ 
+    vec3 L = light.Position - fragPos;
+    float distance = length( L );
+    L = L / distance;
+ 
+    float attenuation = GetAttenuation( light.Radius, distance );
+    float spotIntensity = DoSpotCone(light.OuterCutOff, L,light.Direction );
+ 
+    vec3 diffuse = GetDiffuse(light.Ambient, light.Position, normal) * 
+                       attenuation * spotIntensity * light.Intensity;
+    vec3 specular = GetSpecular( light.Ambient,shininess, viewDir,light.Position,normal ) * 
+                       attenuation * spotIntensity * light.Intensity;
+ 
+    return (specular+ diffuse)*spotIntensity*attenuation;
+    */
+
 }

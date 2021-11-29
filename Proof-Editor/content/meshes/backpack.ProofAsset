@@ -1,6 +1,6 @@
 AssetType: AssetType::MeshAsset
 ID: 9099
-Model: C:\Users\Admin\OneDrive\Documents\Proof\Proof-Editor\backpack.obj
+Model: C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\backpack.obj
 SubMeshes: [2, 3, 72, 74, 76]
 Enabled: true
 FaceCulling: true

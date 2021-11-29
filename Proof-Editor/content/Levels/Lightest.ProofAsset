@@ -6,7 +6,7 @@ Entities:
       tags: []
     TransformComponent:
       Location: [0, 105.800003, 0]
-      Rotation: [-4.5, 119.800003, 0.699999988]
+      Rotation: [-7.9000001, 98.3000031, -35.2999992]
       Scale: [1, 1, 1]
     SubEntityComponet:
       OwnerEntityID: 0
@@ -17,7 +17,7 @@ Entities:
       Constant: 1
       Linear: 1
       Quadratic: 1
-      Ambient: [0.336380869, 0.286810637, 0.42338711]
+      Ambient: [0.404725552, 0.334400982, 0.52822578]
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
       LightType: 0
@@ -35,13 +35,13 @@ Entities:
     MeshComponent:
       Name: Default
       MeshAssetPointerID: 12067
-      MaterialPointerID: 0
+      MaterialPointerID: 6594
   - Entity: 4552
     TagComponent:
       Tag: point light
       tags: []
     TransformComponent:
-      Location: [1.39999998, 1.39999998, -4.19999981]
+      Location: [53.2999992, 11.6999998, -4.0999999]
       Rotation: [0, 0, 0]
       Scale: [1, 0.733645141, 1]
     SubEntityComponet:
@@ -50,10 +50,10 @@ Entities:
     LightComponent:
       CutOff: 1
       OuterCutOff: 2
-      Constant: 1.00399995
-      Linear: 2.13599992
-      Quadratic: 1
-      Ambient: [0.999989986, 0.999999464, 1]
+      Constant: -0.0599999987
+      Linear: 0.800999999
+      Quadratic: 0.140000001
+      Ambient: [0.156542659, 0.229729459, 0.233870983]
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
       LightType: 1
@@ -93,16 +93,16 @@ Entities:
       tags: []
     TransformComponent:
       Location: [0, 0, 0]
-      Rotation: [0.00880039483, 8.56704864e-05, -0.000147102081]
-      Scale: [251.172562, 497.998535, 696.805298]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
     SubEntityComponet:
       OwnerEntityID: 14000
       SubEntities: []
     LightComponent:
-      CutOff: 0.261000007
-      OuterCutOff: 11.9230003
-      Constant: 0.899999976
-      Linear: 0
+      CutOff: 2
+      OuterCutOff: 3.66300011
+      Constant: 1.08500004
+      Linear: 0.0909999982
       Quadratic: 0
       Ambient: [0.368626446, 0.385130316, 0.879032254]
       Diffuse: [0, 0, 0]
@@ -128,8 +128,8 @@ Entities:
       Tag: flashlight
       tags: []
     TransformComponent:
-      Location: [-64.2466812, 34.0316429, -11.910121]
-      Rotation: [0.882915974, -0.469174325, 0.0182989035]
+      Location: [-73.3795929, 34.0316429, -11.8784428]
+      Rotation: [-0.00792519189, -0.00840270706, -0.999933302]
       Scale: [0.5, 0.99999994, 1.40000021]
     SubEntityComponet:
       OwnerEntityID: 0

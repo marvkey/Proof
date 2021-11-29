@@ -6,8 +6,9 @@
 #include<iostream>>
 namespace Proof
 {
+    template<class T=float>
     struct Proof_API Vector {
-        float X = 0,Y = 0,Z = 0;
+        T X = 0,Y = 0,Z = 0;
 
         Vector() {};
         
@@ -23,8 +24,8 @@ namespace Proof
             Z = Other.z;
         }
         
-        Vector(float X,float Y,float Z) {
-            this->X = X,this->Y = Y,this->Z = Z;
+        Vector(T x, T y,T z) {
+            this->X = x,this->Y = y,this->Z = z;
         }
         
         std::string ToString()const {
@@ -39,7 +40,7 @@ namespace Proof
         }
         
         Vector Normalize() {
-            float Length = GetLength();
+            T Length = GetLength();
             X = X / Length;
             Y = Y / Length;
             Z = Z / Length;
@@ -47,7 +48,7 @@ namespace Proof
         }
 
         static Vector Normalize(Vector& Vec) {
-            float Length = Vec.GetLength();
+            T Length = Vec.GetLength();
             Vec.X = Vec.X / Length;
             Vec.Y = Vec.Y / Length;
             Vec.Z = Vec.Z / Length;
@@ -69,28 +70,28 @@ namespace Proof
             NewVec.Z = {Vec1.X * Vec2.Y - Vec1.Y * Vec2.X};
             return NewVec;
         }
-        static float Dot(const Vector& Vec1,const Vector& Vec2) {
+        static T Dot(const Vector& Vec1,const Vector& Vec2) {
             return Vec1.X * Vec2.X + Vec1.Y * Vec2.Y + Vec1.Z * Vec2.Z;
         }
 
-        float Dot(const Vector& Vec) {
+        T Dot(const Vector& Vec) {
             return this->X * Vec.X + this->Y * Vec.Y + this->Z * Vec.Z;
         }
 
-        float GetLength()const {
+        T GetLength()const {
             return Math::SquareRoot<float>(X * X + Y * Y + Z * Z);
         }
 
-        static float GetLength(const Vector& Vec) {
+        static T GetLength(const Vector& Vec) {
             return  Math::SquareRoot<float>(Vec.X * Vec.X + Vec.Y * Vec.Y + Vec.Z * Vec.Z);
         }
 
-        float GetAngle(const Vector& Vec)const {
+        T GetAngle(const Vector& Vec)const {
             float Angle = Dot(*this,Vec) / (GetLength(*this) * GetLength(Vec));
             return Math::DInverseCos<float>(Angle);
         }
 
-        static float GetAngle(const Vector& Vec1,const Vector& Vec2) {
+        static T GetAngle(const Vector& Vec1,const Vector& Vec2) {
             float Angle = Dot(Vec1,Vec2) / (GetLength(Vec1) * GetLength(Vec2));
             return Math::DInverseCos<float>(Angle);
         }
@@ -165,6 +166,10 @@ namespace Proof
             this->Z+=other;
             return *this;
         }
+        Vector operator*(float temp) {
+            Vector tempVec(X * temp, Y * temp, Z * temp);
+            return tempVec;
+        }
     };
     /*
     Vector operator*(const Vector& other,float temp) {
@@ -172,8 +177,10 @@ namespace Proof
         return tempVec;
     }
     */
-    inline Vector operator*(float temp,const Vector& other) {
-        Vector tempVec(other.X * temp,other.Y * temp,other.Z * temp);
+    
+    inline Vector<> operator*(float temp, const Vector<>& other) {
+        Vector tempVec(other.X * temp, other.Y * temp, other.Z * temp);
         return tempVec;
     }
+    
 }

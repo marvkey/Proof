@@ -120,7 +120,7 @@ namespace Proof
 			m_UsingMaterial =usingMaterial;
 		}
 		glm::mat4 m_Transform;
-		Vector m_AlbedoColour;
+		Vector<float> m_AlbedoColour;
 		float m_Matallness = 0.f;
 		float m_Roughnes = 0.f;
 		float m_AO = 0.f;
@@ -130,7 +130,7 @@ namespace Proof
 	public:
 		static void Init();
 		static void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec = RendererData());
-		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec = RendererData());
+		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec = RendererData());
 		static void Draw(class MeshComponent& meshComponent);
 		static void Draw(class LightComponent& lightComponent);
 		static PhysicalBasedRenderer* GetRenderer();

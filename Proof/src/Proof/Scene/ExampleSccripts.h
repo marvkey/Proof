@@ -52,12 +52,12 @@ namespace Proof{
 			}
 			if (Input::IsKeyPressed(KeyBoardKey::W)) {
 				float tempy = m_Transform->Rotation.Y;
-				m_Transform->Location += DeltaTime*m_Speed * m_Transform->Rotation;
+				m_Transform->Location += DeltaTime* m_Speed * m_Transform->Rotation;
 				m_Transform->Rotation.Y = tempy;
 			}
 			if (Input::IsKeyPressed(KeyBoardKey::A)) {
 				float tempy = m_Transform->Rotation.Y;
-				m_Transform->Location += m_Speed * DeltaTime * -Vector::Normalize(Vector::Cross(m_Transform->Rotation,m_CameraComponent->m_Up));
+				m_Transform->Location += m_Speed * DeltaTime * -Vector<float>::Normalize(Vector<float>::Cross(m_Transform->Rotation, m_CameraComponent->m_Up));
 				m_Transform->Rotation.Y = tempy;
 			}
 			if (Input::IsKeyPressed(KeyBoardKey::S)) {
@@ -67,7 +67,7 @@ namespace Proof{
 			}
 			if (Input::IsKeyPressed(KeyBoardKey::D)) {
 				float tempy = m_Transform->Rotation.Y;
-				m_Transform->Location+= m_Speed * DeltaTime * Vector::Normalize(Vector::Cross(m_Transform->Rotation,m_CameraComponent->m_Up));
+				m_Transform->Location+= m_Speed * DeltaTime * Vector<float>::Normalize(Vector<float>::Cross(m_Transform->Rotation,m_CameraComponent->m_Up));
 				m_Transform->Rotation.Y = tempy;
 			}
 		}

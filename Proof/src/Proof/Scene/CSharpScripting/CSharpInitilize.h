@@ -1,7 +1,8 @@
 #pragma once
-#include <mono/jit/jit.h>
-#include<mono/metadata/assembly.h>
-#include<mono/metadata/debug-helpers.h>
+
+//#include <mono/jit/jit.h>
+//#include<mono/metadata/assembly.h>
+//#include<mono/metadata/debug-helpers.h>
 namespace Proof
 {
 	class InitlizeCSharp{
@@ -10,8 +11,8 @@ namespace Proof
 		virtual ~InitlizeCSharp();
 
 	private:
-		MonoDomain*m_Domain =nullptr;
-		MonoAssembly* m_Assembly =nullptr;
-		MonoImage* m_Image =nullptr;
+		//MonoDomain*m_Domain =nullptr;
+		//MonoAssembly* m_Assembly =nullptr;
+		//MonoImage* m_Image =nullptr;
 	};
 }

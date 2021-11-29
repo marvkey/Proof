@@ -9,11 +9,11 @@
 namespace Proof{
 	struct CameraData{
 		CameraData(){};
-		CameraData(const glm::mat4& projection,const glm::mat4& view,const Vector& pos):
+		CameraData(const glm::mat4& projection,const glm::mat4& view,const Vector<float>& pos):
 			m_Projection(projection),m_View(view),m_Positon(pos) {};
 		glm::mat4 m_Projection;
 		glm::mat4 m_View;
-		Vector m_Positon;
+		Vector<float> m_Positon;
 	};
 	struct Proof_API Renderer3DData{
 		static float GetGammaCorrection(){

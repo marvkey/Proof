@@ -1,0 +1,9 @@
+﻿  Building Custom Rule C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/Assimp/tools/assimp_cmd/CMakeLists.txt
+  CompareDump.cpp
+  ImageExtractor.cpp
+  Main.cpp
+  WriteDump.cpp
+  Info.cpp
+  Export.cpp
+  Generating Code...
+  assimp_cmd.vcxproj -> C:\Users\marvn\OneDrive\Documents\Proof\Proof\vendor\Assimp\build\bin\Debug\assimpd.exe

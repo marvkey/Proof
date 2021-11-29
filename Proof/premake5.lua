@@ -35,11 +35,11 @@ project "Proof"
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.yaml_cpp}",
-		"C:/Program Files/Mono/include/mono-2.0"
+		--"C:/Program Files/Mono/include/mono-2.0"
     }
 	libdirs{
 		"vendor/Assimp/Proof-Assimp-lib",
-		"C:/Program Files/Mono/lib"
+		--"C:/Program Files/Mono/lib"
 	}
 	links
 	{	
@@ -47,9 +47,9 @@ project "Proof"
 		"opengl32.lib",
 		"ImGui",
 		"Glad",
-        "assimp-vc142-mt.lib",
+        "assimp-vc143-mt.lib",
 		"yaml-cpp",
-		"mono-2.0-sgen.lib",
+		--"mono-2.0-sgen.lib",
 
 		--"ProofPhysics"
 	}

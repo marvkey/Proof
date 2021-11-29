@@ -75,14 +75,14 @@ namespace Proof
 	};
 
 	struct Proof_API TransformComponent:public Component {
-		Vector Location = {0.0f,0.0f,0.0f};
-		Vector Rotation = {0.0f,0.0f,0.0f};
-		Vector Scale = {1.0f,1.0f,1.0f};
+		Vector<float> Location = {0.0f,0.0f,0.0f};
+		Vector<float> Rotation = {0.0f,0.0f,0.0f};
+		Vector<float> Scale = {1.0f,1.0f,1.0f};
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
-		Vector GetWorldLocation()const;
-		Vector GetWorldRotation()const;
-		Vector GetWorldScale()const;
+		Vector<float> GetWorldLocation()const;
+		Vector<float> GetWorldRotation()const;
+		Vector<float> GetWorldScale()const;
 		glm::mat4 GetLocalTransform() const {
 			return glm::translate(glm::mat4(1.0f),{Location}) *
 				glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.X),{1,0,0})
@@ -251,7 +251,7 @@ namespace Proof
 		}
 		const glm::mat4& GetView()const { return m_View; }
 		const glm::mat4& GetProjection()const { return m_Projection; }
-		Vector m_Up = {0,1,0};
+		Vector<float> m_Up = {0,1,0};
 	private:
 		void CalculateProjection() {
 			if (m_Positon == nullptr || m_Roatation == nullptr)
@@ -267,8 +267,8 @@ namespace Proof
 		float m_FarPlane = 1000;
 		float m_FovDeg = 45;
 		uint32_t m_Width = 250,m_Height = 250;
-		Vector* m_Positon = nullptr;
-		Vector* m_Roatation = nullptr;
+		Vector<float>* m_Positon = nullptr;
+		Vector<float>* m_Roatation = nullptr;
 
 		glm::mat4 m_View = glm::mat4(1.0f);
 		glm::mat4 m_Projection = glm::mat4(1.0f);

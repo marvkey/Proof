@@ -4,7 +4,7 @@
 namespace Proof
 {
 	InitlizeCSharp::InitlizeCSharp() {
-		
+		/*
 		// set the current directory of the mono to this
 		mono_set_dirs("C:\\Program Files\\Mono\\lib","C:\\Program Files\\Mono\\lib");// vry temprorayy 
 		m_Domain = mono_jit_init("ProofCSHARP");
@@ -17,12 +17,14 @@ namespace Proof
 				}
 			};
 		}
-		
+		*/
 	}
 
 	InitlizeCSharp::~InitlizeCSharp() {
+		/*
 		if(m_Domain!=nullptr)
 			mono_jit_cleanup(m_Domain);
+		*/
 	}
 
 }

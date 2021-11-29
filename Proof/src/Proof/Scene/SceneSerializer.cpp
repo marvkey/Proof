@@ -175,8 +175,8 @@ namespace Proof{
 				auto* tc = NewEntity.GetComponent<TransformComponent>();
 				tc->Location = transformComponet["Location"].as<glm::vec3>();
 
-				tc->Rotation = transformComponet["Rotation"].as<Vector>();
-				tc->Scale = transformComponet["Scale"].as<Vector>();
+				tc->Rotation = transformComponet["Rotation"].as<Vector<>>();
+				tc->Scale = transformComponet["Scale"].as<Vector<>>();
 
 			}
 
