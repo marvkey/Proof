@@ -86,7 +86,7 @@ Entities:
     MeshComponent:
       Name: Default
       MeshAssetPointerID: 12067
-      MaterialPointerID: 7493
+      MaterialPointerID: 0
   - Entity: 13284
     TagComponent:
       Tag: spot light

@@ -33,6 +33,7 @@ namespace Proof
         Count<class IndexBuffer> m_IndexBufferObject;
         std::vector<Count<class Texture2D>>m_Textures;
         friend class Renderer3DPBR;
+        friend class MeshWorkShop;
     };
     class Mesh {
     public:
@@ -64,7 +65,6 @@ namespace Proof
         friend class Renderer3DPBR;
         friend class SceneRendererUI;
         friend class MeshAsset;
+        friend class MeshWorkShop;
     };
-
-
 }

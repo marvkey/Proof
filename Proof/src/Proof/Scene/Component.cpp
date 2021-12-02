@@ -16,6 +16,7 @@
 #include "Material.h"
 #include "script.h"
 #include "Proof/Scene/ComponentUnOptimized.h"
+#include "Proof/Renderer/MeshWorkShop.h"
 namespace Proof
 {
 	static struct Material Empty;
@@ -136,4 +137,5 @@ namespace Proof
 		m_MeshAssetPointerID == 0;
 		return nullptr;
 	}
+	Count<Mesh> MeshColliderComponent::m_CubeMesh = MeshWorkShop::GetCubeMesh();
 }

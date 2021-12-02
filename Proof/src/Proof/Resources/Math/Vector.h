@@ -48,7 +48,7 @@ namespace Proof
         }
 
         static Vector Normalize(Vector& Vec) {
-            T Length = Vec.GetLength();
+            T Length = Vec.GetLength(); 
             Vec.X = Vec.X / Length;
             Vec.Y = Vec.Y / Length;
             Vec.Z = Vec.Z / Length;

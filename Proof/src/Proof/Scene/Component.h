@@ -281,4 +281,12 @@ namespace Proof
 		friend class ECS;
 	};
 
+	struct Proof_API MeshColliderComponent : public Component {
+		MeshColliderComponent(const MeshColliderComponent&) = default;
+		MeshColliderComponent() = default;
+		static class Mesh* GetMeshSource() { return m_CubeMesh.get(); };
+	private:
+		static Count<Mesh> m_CubeMesh;
+	};
+
 }

@@ -133,6 +133,7 @@ namespace Proof
 		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec = RendererData());
 		static void Draw(class MeshComponent& meshComponent);
 		static void Draw(class LightComponent& lightComponent);
+		static void DrawDebugMesh(class Mesh* mesh, class TransformComponet& transform);
 		static PhysicalBasedRenderer* GetRenderer();
 		static void EndContext();
 		static void Reset();

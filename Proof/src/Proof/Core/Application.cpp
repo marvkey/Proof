@@ -23,6 +23,7 @@ namespace Proof {
         MainLayerStack.PushLayer(ImGuiMainLayer);
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
         AssetManager::NewInitilizeAssets("config/AssetManager.ProofAssetManager");
+        //AssetManager::InitilizeAssets("content");
 
     }
 

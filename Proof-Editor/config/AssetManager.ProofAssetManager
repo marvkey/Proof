@@ -1,5 +1,5 @@
 "Project: ": Proof Engine Test
-"Total Asset: ": 8
+"Total Asset: ": 9
 ProjectAssets:
   - Asset: 6594
     Type: AssetType::MaterialAsset
@@ -7,6 +7,12 @@ ProjectAssets:
   - Asset: 12067
     Type: AssetType::MeshAsset
     Path: content\meshes\cube.ProofAsset
+  - Asset: 7493
+    Type: AssetType::MaterialAsset
+    Path: content\material\red.ProofAsset
+  - Asset: 9679275104733381724
+    Type: AssetType::MaterialAsset
+    Path: content\material\white.ProofAsset
   - Asset: 9099
     Type: AssetType::MeshAsset
     Path: content\meshes\backpack.ProofAsset
@@ -16,9 +22,9 @@ ProjectAssets:
   - Asset: 20980
     Type: AssetType::MeshAsset
     Path: content\meshes\rocket.ProofAsset
-  - Asset: 10608
-    Type: AssetType::MeshAsset
-    Path: content\meshes\teapot.ProofAsset
   - Asset: 19748
     Type: AssetType::MeshAsset
     Path: content\meshes\sponza.ProofAsset
+  - Asset: 10608
+    Type: AssetType::MeshAsset
+    Path: content\meshes\teapot.ProofAsset

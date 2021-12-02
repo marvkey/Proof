@@ -4,11 +4,12 @@
 
 namespace Proof
 {
+	template<class T = float>
 	struct Vector4
 	{
-		float X=0,Y=0,Z=0,W=0;
+		T X=0,Y=0,Z=0,W=0;
 		Vector4(){};
-		Vector4(float x, float y,float z,float w)
+		Vector4(T x, T y,T z,T w)
 			:
 			X(x),Y(y),Z(z),W(w)
 		{
@@ -18,21 +19,21 @@ namespace Proof
 		{
 		}
 		
-		float GetLength()const{
-			return Math::SquareRoot<float>(X*X+Y*Y+Z*Z+W*W);
+		T GetLength()const{
+			return Math::SquareRoot<T>(X*X+Y*Y+Z*Z+W*W);
 		}
-		void Normalize(){
-			float length = GetLength();
+		T Normalize(){
+			T length = GetLength();
 			X = X/length;
 			Y = Y/length;
 			Z = Z/length;
 			W= W/length;
 		}
 		
-		float Dot(const Vector4 other)const{
+		T Dot(const Vector4 other)const{
 			return this->X * other.X + this->Y * other.Y + this->Z * other.Z* this->W* other.W;
 		}
-		float GetAngle(const Vector4& other) {
+		T GetAngle(const Vector4& other) {
 			float Angle = Dot(other) / GetLength() * other.GetLength();
 			return Math::InverseCos<float>(Angle);
 		}

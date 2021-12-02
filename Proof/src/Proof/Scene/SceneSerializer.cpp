@@ -201,7 +201,7 @@ namespace Proof{
 				auto& src = *NewEntity.AddComponent<MeshComponent>();
 				src.SetName(meshComponent["Name"].as<std::string>());
 				src.m_MeshAssetPointerID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
-				src.m_MeshMaterialID = meshComponent["MaterialPointerID"].as<uint32_t>();
+				src.m_MeshMaterialID = meshComponent["MaterialPointerID"].as<uint64_t>();
 				if (src.m_MeshAssetPointerID != 0) {
 					m_AssetLoadID.emplace(src.m_MeshAssetPointerID);
 				}

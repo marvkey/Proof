@@ -4,6 +4,7 @@
 #include "3DRenderer/Renderer3D.h"
 #include "3DRenderer/Renderer3DPBR.h"
 #include "Proof/Scene/World.h"
+#include "Proof/Renderer/MeshWorkShop.h"
 namespace Proof {
 
 	ShaderLibrary* Renderer::AllShaders = new ShaderLibrary;
@@ -16,6 +17,7 @@ namespace Proof {
 		//Renderer3DPBR::Reset();
 		Renderer2D::Init();
 		Renderer2D::Reset();
+		MeshWorkShop::Init();
 	}
 	void Renderer::Reset() {
 		Renderer2D::Reset();
