@@ -5,7 +5,7 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Core/Log.h"
 #include "Proof/Core/UUID.h"
-#ifdef 0
+/*
 namespace Proof{
 	class MeshComponent;
 	class Proof_API ECS {
@@ -174,24 +174,7 @@ namespace Proof{
 			PF_ENGINE_ERROR("Entity ID Was Not FOund");
 			return false;
 		}
-		/*
-		template<typename T>
-		void RemoveComponent(uint32_t ID) {
-			if (HasEntity(ID) == true) {
-				auto* tempComp = GetComponent<T>(ID);
-				auto& TempVec = EntityHolder.at(ID);
-				auto it = std::find(TempVec->begin(),TempVec->end(),tempComp);
-				if (it != TempVec->end()) {
-					TempVec->erase(it);
-					delete tempComp;
-					return;
-				}
-				PF_ENGINE_WARN("Remove component Entitiy does not have component or it is already deleted");
-				return;
-			}
-			PF_CORE_ASSERT(false,"Entity ID Was Not FOund");
-		}
-		*/
+
 		template<typename T>
 		inline void RemoveComponent(UUID ID,uint32_t Index){
 			auto it = EntityHolder.find(ID);
@@ -414,4 +397,4 @@ namespace Proof{
 	};
 
 }
-#endif
+#*/

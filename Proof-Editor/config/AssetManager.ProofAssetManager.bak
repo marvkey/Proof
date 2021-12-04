@@ -7,6 +7,9 @@ ProjectAssets:
   - Asset: 12067
     Type: AssetType::MeshAsset
     Path: content\meshes\cube.ProofAsset
+  - Asset: 7493
+    Type: AssetType::MaterialAsset
+    Path: content\material\red.ProofAsset
   - Asset: 9679275104733381724
     Type: AssetType::MaterialAsset
     Path: content\material\white.ProofAsset

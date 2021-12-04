@@ -120,26 +120,23 @@ namespace Proof{
 
 	Entity World::CreateEntity(const std::string& EntName) {
 		UUID ID = UUID();
-		Entity entity = {UUID(),this};
+		Entity entity = { ID,this};
 		m_Registry.create(entt::entity((uint64_t)ID));
-		entity.AddComponent<IDComponent>(ID);
 		entity.AddComponent<TagComponent>()->Tag =EntName;
 		entity.AddComponent<TransformComponent>();
-		//entity.AddComponent<SubEntityComponet>();
+		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
 		return entity;
 	}
 
-	Entity World::CreateEntity(const std::string& EntName,uint32_t ID) {
+	Entity World::CreateEntity(const std::string& EntName,UUID ID) {
 		Entity entity = {ID,this};
 		m_Registry.create(entt::entity((uint64_t)ID));
 		entity.AddComponent<TagComponent>()->Tag = EntName;
 		entity.AddComponent<TransformComponent>();
-		//entity.AddComponent<SubEntityComponet>();
+		entity.AddComponent<ChildComponent>()->m_CurrentID=ID;
 		return entity;
 	}
-	template<class TypeComponent>
-	static void CopyCOmponent(std::unordered_map<UUID,std::vector<class Component*>*>&map){
-	}
+	
 	//static void CopyComponent
 	Count<World> World::Copy(Count<World> other) {
 		Count<World> newWorld = CreateCount<World>();
@@ -365,9 +362,5 @@ namespace Proof{
 		RendererCommand::SetViewPort(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 	}	
 
-	template<>
-	void World::OnComponentAdded(Entity Entity, CameraComponent* component) {
-		component->m_Positon = &Entity.GetComponent<TransformComponent>()->Location;
-		component->m_Roatation = &Entity.GetComponent<TransformComponent>()->Rotation;
-	}
+	
 }

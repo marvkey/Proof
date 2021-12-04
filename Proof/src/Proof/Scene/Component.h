@@ -16,74 +16,6 @@
 namespace Proof
 {
 	
-	struct IDComponent {
-	public:
-		IDComponent(const IDComponent& ) = default;
-		IDComponent(UUID id) :m_ID(id) {};
-	private:
-		UUID m_ID;
-	};
-	/*
-	class Proof_API SubEntityComponet {
-	public:
-		SubEntityComponet(const SubEntityComponet&) = default;
-		SubEntityComponet(Entity entity) :m_CurrentEntity(entity) {};
-		SubEntityComponet() = default;
-		bool HasEntityOwner()const {
-			return (bool)m_Owner.GetID() != 0 && m_Owner.GetCurrentWorld() != nullptr;
-
-		}
-		Entity GetOwner()const {
-			return m_Owner;
-		}
-		const std::vector<Entity>& GetAllSubEntity()const {
-			return m_AllSubEntity;
-		}
-		void SwapEntityOwner(Entity& neweOwner) {
-			if (neweOwner.GetID() == m_Owner) {
-				PF_WARN("cannot add enity as owenr of entity");
-				return;
-			}
-			auto it = std::find(neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.begin(), neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.end(), neweOwner);
-			if (it == neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.end()) {
-				if (HasEntityOwner() == true) {
-					m_Owner.GetComponent<SubEntityComponet>()->RemoveSubEnity(this->GetOwner());
-				}
-				m_Owner = neweOwner;
-				neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.emplace_back(GetOwner());
-			}
-		}
-		void AddSubEntity(Entity& subEntity) {
-			if (subEntity.GetID() == m_CurrentEntity.GetID()) {
-				PF_WARN("cannot add enity as owenr of entity");
-				return;
-			}
-			subEntity.GetComponent<SubEntityComponet>()->m_Owner = m_CurrentEntity;
-			auto it = std::find(m_AllSubEntity.begin(), m_AllSubEntity.end(), subEntity);
-			if (it == m_AllSubEntity.end())
-				m_AllSubEntity.emplace_back(subEntity);
-		}
-	private:
-
-		void RemoveSubEnity(const Entity& ent) {
-			if (m_AllSubEntity.size() == 0)
-				return;
-
-			auto it = std::find(m_AllSubEntity.begin(), m_AllSubEntity.end(), ent.GetID());
-			if (it != m_AllSubEntity.end()) {
-				m_AllSubEntity.erase(it);
-			}
-		}
-
-		std::vector<UUID>m_AllSubEntity;
-		Entity m_Owner = {};
-		Entity m_CurrentEntity = {};
-		friend class Entity;
-		friend class SceneHierachyPanel;
-		friend class World;
-		friend class SceneSerializer;
-	};
-	*/
 	struct Proof_API TagComponent{
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
@@ -136,9 +68,40 @@ namespace Proof
 
 		glm::mat4 GetWorldTransform() const;
 	};
+	class Proof_API ChildComponent { /* THIS CLASS KNOWS AN ENTITY EXIST */
+	public:
+		ChildComponent(const ChildComponent&) = default;
+		ChildComponent() = default;
+		bool HasOwner()const {
+			return m_OwnerID !=0;
+		}
+		bool HasChildren()const {
+			return m_AllSubEntity.size() > 0;
+		}
+		UUID GetOwner()const {
+			return m_OwnerID;
+		}
+		const std::vector<UUID>& GetAllSubEntity()const {
+			return m_AllSubEntity;
+		}
 
+		bool SetOwner(UUID neweOwner);
+	
+		bool AddChild(UUID child);
+		bool RemoveChild(UUID child	);
+	private:
+		UUID m_CurrentID = 0; // entity its attached to ID
+		UUID m_OwnerID = 0; // owner of the entity its attahced to
+		std::vector<UUID>m_AllSubEntity;
+		friend class Entity;
+		friend class SceneHierachyPanel;
+		friend class World;
+		friend class SceneSerializer;
+		class World* m_CurrentWorld = nullptr;
+	};
 	struct Proof_API NativeScriptComponent{
 		NativeScriptComponent(const NativeScriptComponent&) = default;
+		NativeScriptComponent() = default;
 		class Script* Instance = nullptr;
 		class Script* (*InstantiateScript)();
 		void (*DestroyScript)(NativeScriptComponent*);

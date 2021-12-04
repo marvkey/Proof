@@ -6,6 +6,7 @@
 #include "Proof/Renderer/FrameBuffer.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "entt/entt.hpp"
+#include "Component.h"
 class FrameTime;
 
 namespace Proof{
@@ -29,7 +30,7 @@ namespace Proof{
 		void OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height);
 
 		class Entity CreateEntity(const std::string& EntName);
-		class Entity CreateEntity(const std::string& EntName,uint32_t ID);
+		class Entity CreateEntity(const std::string& EntName, UUID ID);
 
 		static Count<World> Copy(Count<World> other);
 		virtual void EndRuntime();
@@ -49,8 +50,13 @@ namespace Proof{
 		void CreateIBlTexture(const std::string& filePath);
 		std::string Name = "DefaultWorld";
 		template<class T>
-		void OnComponentAdded(Entity Entity, T* component) {};
-		
+		void OnComponentAdded(UUID ID, T* component) {};
+		template<>
+		void World::OnComponentAdded(UUID ID, CameraComponent* component) {
+
+			component->m_Positon = &m_Registry.get<TransformComponent>(entt::entity(ID.Get())).Location;
+			component->m_Roatation = &m_Registry.get<TransformComponent>(entt::entity( ID.Get())).Rotation;
+		}
 		std::string m_Path;
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		Count<CubeMap> m_WorldCubeMap;

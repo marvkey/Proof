@@ -70,8 +70,9 @@ namespace Proof{
 		s_CurrentLightShader = s_PBRInstance->m_FowardRendering.m_Shader;
 	}
 	void Renderer3DPBR::Draw(class MeshComponent& meshComponent, const glm::mat4& positionMatrix) {
-		int usingMaterial = meshComponent.HasMaterial();
 		int meshPointerId = meshComponent.GetMeshAssetID();
+		if (meshPointerId == 0)return; // means that therer is no mesh attahced
+		int usingMaterial = meshComponent.HasMaterial();
 		if (s_PBRInstance->SceneHasAmountMeshes(meshPointerId) == true) {
 			auto& Map = s_PBRInstance->m_AmountMeshes.find(meshPointerId);
 			Map->second += 1;

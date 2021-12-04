@@ -391,7 +391,7 @@ namespace Proof
 					snapValue = 45.0f;
 
 				float snapValues[3] = {snapValue,snapValue,snapValue};
-				if(selectedEntity.GetComponent<SubEntityComponet>()->HasEntityOwner()==false){
+				if(selectedEntity.GetComponent<ChildComponent>()->HasOwner()==false){
 
 					ImGuizmo::Manipulate(glm::value_ptr(cameraView),glm::value_ptr(cameraProjection),
 					(ImGuizmo::OPERATION)GuizmoType,ImGuizmo::LOCAL,glm::value_ptr(transform),

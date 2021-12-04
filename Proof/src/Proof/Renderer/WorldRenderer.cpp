@@ -11,17 +11,17 @@ namespace Proof{
 		if(m_RendererPaused==true)
 			return;
 		Renderer3DPBR::BeginContext(m_World->m_EditorCamera,m_ScreenFrameBuffer,RenderData);
-		auto& meshView =m_World->m_Registry.view<MeshComponent, TransformComponent>();
-		for (auto& enity: meshView) {
-			auto& [mesh, transform] = meshView.get<MeshComponent, TransformComponent>(enity);
+		auto& meshGroup =m_World->m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+		for (auto& enity: meshGroup) {
+			auto& [mesh, transform] = meshGroup.get(enity);
 			Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
 		}
-		auto& lightView = m_World->m_Registry.view<LightComponent, TransformComponent>();
-		for (auto& enity : lightView) {
-			auto& [light, transform] = meshView.get<LightComponent, TransformComponent>(enity);
+		auto& lightGroup = m_World->m_Registry.group<LightComponent>(entt::get<TransformComponent>);
+		for (auto& enity : lightGroup) {
+			const auto& [light, transform] = lightGroup.get(enity);
 			Renderer3DPBR::Draw(light,transform);
 		}
-		/*
+		
 		if (RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
 			Renderer3DPBR::GetRenderer()->m_Shader->Bind();
 			Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap", 4);
@@ -33,7 +33,7 @@ namespace Proof{
 			
 			m_World->m_brdflTexture->Bind(6);
 		}
-		*/
+		
 		Renderer3DPBR::EndContext();
 		m_ScreenFrameBuffer->Bind();
 		//for (CubeColliderComponent* collider : m_World->Registry.m_CubeColliderComponent) {

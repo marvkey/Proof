@@ -15,14 +15,12 @@
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "Material.h"
 #include "script.h"
-#include "Proof/Scene/ComponentUnOptimized.h"
 #include "Proof/Renderer/MeshWorkShop.h"
+
 namespace Proof
 {
 	static struct Material Empty;
-	Entity Component::GetOwner()const {
-		return Entity{m_EntityOwner,CurrentWorld};
-	}
+	
 	UUID MeshComponent::GetMeshAssetID() {
 		return GetMeshSource() != nullptr ? m_MeshAssetPointerID : 0;
 	}
@@ -49,22 +47,29 @@ namespace Proof
 		return &a->m_Material;
 	}
 	Vector<float> TransformComponent::GetWorldLocation()const {
+		/*
 		if(GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()){
 			return Location + GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldLocation();
 		}
-		
+		*/
 		return Location;
+		
 	}
 	Vector<float> TransformComponent::GetWorldRotation()const {
+		/*
 		if (GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()) {
 			return Rotation + GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldRotation();
 		}
+		*/
 		return Rotation;
+		
 	}
 	Vector<float> TransformComponent::GetWorldScale()const {
+		/*
 		if (GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()) {
 			return Scale +GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldScale();;
 		}
+		*/
 		return Scale;
 	}
 	glm::mat4 TransformComponent::GetWorldTransform() const {
@@ -138,4 +143,69 @@ namespace Proof
 		return nullptr;
 	}
 	Count<Mesh> CubeColliderComponent::m_CubeMesh = MeshWorkShop::GetCubeMesh();
+	/*
+
+		if (neweOwner == m_CurrentID || neweOwner == m_OwnerID) {
+			PF_WARN("cannot add enity as owenr of entity");
+			return false;
+		}
+		auto it = std::find(neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.begin(), neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.end(), neweOwner);
+		if (it == neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.end()) {
+			if (HasEntityOwner() == true) {
+				m_Owner.GetComponent<SubEntityComponet>()->RemoveSubEnity(this->GetOwner());
+			}
+			m_Owner = neweOwner;
+			neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.emplace_back(GetOwner());
+		}
+		*/
+	bool ChildComponent::SetOwner(UUID newOwner){
+		if (m_CurrentWorld == nullptr)return false;
+		Entity entity = {newOwner,m_CurrentWorld };
+		Entity currentEntity{ m_CurrentID, m_CurrentWorld };
+		Entity ownerEntity{ m_OwnerID, m_CurrentWorld };
+		if (newOwner == m_CurrentID || newOwner == m_OwnerID) {
+			PF_WARN("cannot add enity as owenr of entity");
+			return false;
+		}
+		auto it = std::find(entity.GetComponent<ChildComponent>()->m_AllSubEntity.begin(), entity.GetComponent<ChildComponent>()->m_AllSubEntity.end(), newOwner);
+		if (it == entity.GetComponent<ChildComponent>()->m_AllSubEntity.end()) {
+			if (HasOwner() == true) {
+				ownerEntity.GetComponent<ChildComponent>()->RemoveChild(m_CurrentID);
+			}
+			m_OwnerID = newOwner;
+			ownerEntity.GetComponent<ChildComponent>()->m_AllSubEntity.emplace_back(m_CurrentID);
+			return true;
+		}
+		return false;
+	}
+
+	bool ChildComponent::AddChild(UUID child) {
+		if (m_CurrentWorld == nullptr)return false;
+		Entity childentity = { child,m_CurrentWorld };
+		if (child == m_CurrentID || child == m_OwnerID) {
+			PF_WARN("cannot add enity as owenr of entity");
+			return false;
+		}
+		auto it = std::find(m_AllSubEntity.begin(), m_AllSubEntity.end(), child);
+		if (it == m_AllSubEntity.end()) {
+			m_AllSubEntity.emplace_back(child);
+			childentity.GetComponent<ChildComponent>()->m_OwnerID = m_CurrentID;
+			return true;
+		}
+		return false;
+	}
+
+	bool ChildComponent::RemoveChild(UUID child) {
+		if (m_AllSubEntity.size() == 0)
+			return false;
+		if (m_CurrentWorld == nullptr)return false;
+		Entity childentity = { child,m_CurrentWorld };
+		auto it = std::find(m_AllSubEntity.begin(), m_AllSubEntity.end(), child);
+		if (it != m_AllSubEntity.end()) {
+			m_AllSubEntity.erase(it);
+			childentity.GetComponent<ChildComponent>()->m_OwnerID = 0;
+			return true;
+		}
+		return false;
+	}
 }

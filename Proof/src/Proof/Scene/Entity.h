@@ -6,94 +6,55 @@
 namespace Proof{
 	struct TagComponent;
 	struct TransformComponent;
+	struct SubEntityComponet;
 	class Proof_API Entity {
 	public:
-		Entity(UUID UUID,class World* world):
-			m_ID(UUID),CurrentWorld(world){}
+		Entity(UUID ID,class World* world):
+			m_ID(ID),CurrentWorld(world), m_EnttEntity(entt::entity((uint64_t)ID)) {}
 		Entity(const Entity& other) =default;
 		Entity()=default;
 
 		template<class T>
 		T* GetComponent() {
-			return &CurrentWorld->m_Registry.get<T>(entt::entity(m_ID.Get()));
+			if (HasComponent<T>() == false) return nullptr;
+			return &CurrentWorld->m_Registry.get<T>(m_EnttEntity);
 		}
 		
 		template<class T>
 		bool HasComponent() {
-			return CurrentWorld->m_Registry.has<T>(entt::entity(m_ID.Get()));
+			return CurrentWorld->m_Registry.any_of<T>(m_EnttEntity);
 		}
 
 		template<class T,typename... Args>
 		T* AddComponent(Args&&... args) {
-			bool HasTransfrom = std::is_same<T,TransformComponent>::value;
-			if (HasTransfrom == true) {
-				if (HasComponent<TransformComponent>() == true) {
-					PF_WARN("Entity already has a transform");
-					return nullptr;
-				}
+			if (HasComponent<T>() == true) {
+				PF_WARN("Can not add component Entity already has component");
+				return nullptr;
 			}
-			bool  HasTag = std::is_same<T,TagComponent>::value;
-			if (HasTag == true) {
-				if (HasComponent<TagComponent>() == true) {
-					PF_WARN("Entity already has a TagComponent");
-					return nullptr;
-				}
-			}
-			T* Component = &CurrentWorld->m_Registry.emplace<T>(entt::entity(m_ID.Get()), std::forward<Args>(args)...);
-			CurrentWorld->OnComponentAdded<T>(this, *Component);
+			T* Component = &CurrentWorld->m_Registry.emplace<T>(m_EnttEntity, std::forward<Args>(args)...);
+			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
 			return Component;
 		}
 		template<typename T>
-		void RemoveComponent() {
-			bool isHasTransfrom = std::is_same<T,TransformComponent>::value;
-			if (isHasTransfrom == true){
-				PF_WARN("Cannot remove Transform Component");
-				return;
-			}
-			bool isHasTag = std::is_same<T,TagComponent>::value;
-			if (isHasTag == true){
-				PF_WARN("Cannot remove TagComponent");
-				return;
-			}
-			/*
-			bool  HasSubEntityComp = std::is_same<T,SubEntityComponet>::value;
-			if (HasSubEntityComp == true) {
-				PF_ENGINE_WARN("Entity already has a SubEntityComponet");
-				return nullptr;
-			}
-			*/
-			if (HasComponent<T>() == false)return;
-			CurrentWorld->m_Registry.remove<T>(m_ID);
+		bool RemoveComponent() {
+			if (HasComponent<T>() == false)return false;
+			CurrentWorld->m_Registry.remove<T>(m_EnttEntity);
+			return true;
 		}
-		/*
-		template<typename T>
-		void RemoveComponent(Component* Comp){
-			bool isHasTransfrom = std::is_same<T,TransformComponent>::value;
-			if (isHasTransfrom == true) {
-				PF_ENGINE_WARN("Cannot remove Transform Component");
-				return;
-			}
-			bool isHasTag = std::is_same<T,TagComponent>::value;
-			if (isHasTag == true) {
-				PF_ENGINE_WARN("Cannot remove TagComponent");
-				return;
-			}
-			if (HasComponent<T>() == false)return;
-			CurrentWorld->Registry.RemoveComponent(m_ID,Comp);
+		template<>
+		bool RemoveComponent<TagComponent>() {
+			PF_ERROR("cannot remove component");
+			return false;
 		}
-		*/
-		template<typename T>
-		void RemoveComponent(uint64_t IndexSlot){
-			if(IndexSlot ==0) {
-				PF_ENGINE_WARN("Cannot remove TagComponent");
-				return;
-			}
-			
-			if(IndexSlot == 1){
-				PF_ENGINE_WARN("Cannot remove Transform Component");
-				return;
-			}
-			CurrentWorld->m_Registry.remove<T>(m_ID,IndexSlot);
+		template<>
+		bool RemoveComponent<TransformComponent	>() {
+			PF_ERROR("cannot remove Transform Component");
+			return false;
+		}
+		template<>
+		bool RemoveComponent<SubEntityComponet>() {
+			PF_ERROR("cannot remove SubEntity Componet");
+			return false;
 		}
 		World* GetCurrentWorld()const {
 			return CurrentWorld;
@@ -116,6 +77,7 @@ namespace Proof{
 		
 		World* CurrentWorld = nullptr;
 		UUID m_ID{0};
+		entt::entity m_EnttEntity{ entt::null };
 		void OnSubEntityDelete(const Entity& tempEntity);
 		void OnDelete();
 		void SwapEntityOwner(const Entity& newOwner);
