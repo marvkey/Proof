@@ -2,35 +2,25 @@
 #include "World.h"
 #include <type_traits>
 #include "Proof/Core/Core.h"
+#include "Proof/Scene/Component.h"
 namespace Proof{
 	struct TagComponent;
-	struct Component;
 	struct TransformComponent;
 	class Proof_API Entity {
 	public:
 		Entity(UUID UUID,class World* world):
 			m_ID(UUID),CurrentWorld(world){}
-		Entity(const Entity& Other) =default;
+		Entity(const Entity& other) =default;
 		Entity()=default;
 
 		template<class T>
 		T* GetComponent() {
-			return CurrentWorld->Registry.GetComponent<T>(m_ID);
+			return &CurrentWorld->m_Registry.get<T>(entt::entity(m_ID.Get()));
 		}
-		template<typename T>
-		T* GetComponent(uint32_t ID,const std::string& CompName) {
-			if (HasComponent<T>() == false) return nullptr;
-			return CurrentWorld->Registry.GetComponent<T>(m_ID,CompName);
-			PF_WARN(false,"Entity ID Was Not FOund");
-		}
-
-		Component* GetComponent(uint32_t ID,uint32_t Index) {
-			return CurrentWorld->Registry.GetComponent(m_ID,Index);
-			PF_WARN(false,"Entity ID Was Not FOund");
-		}
+		
 		template<class T>
 		bool HasComponent() {
-			return CurrentWorld->Registry.HasComponent<T>(m_ID);
+			return CurrentWorld->m_Registry.has<T>(entt::entity(m_ID.Get()));
 		}
 
 		template<class T,typename... Args>
@@ -49,17 +39,8 @@ namespace Proof{
 					return nullptr;
 				}
 			}
-			/*
-			bool  HasSubEntityComp = std::is_same<T,SubEntityComponet>::value;
-			if (HasSubEntityComp == true) {
-				if (HasComponent<SubEntityComponet>() == true) {
-					PF_ENGINE_WARN("Entity already has a SubEntityComponet");
-					return nullptr;
-				}
-			}
-			*/
-			T* Component = CurrentWorld->Registry.AddComponent<T>(m_ID,std::forward<Args>(args)...);
-			CurrentWorld->OnComponentAdded<T>(*this,Component);
+			T* Component = &CurrentWorld->m_Registry.emplace<T>(entt::entity(m_ID.Get()), std::forward<Args>(args)...);
+			CurrentWorld->OnComponentAdded<T>(this, *Component);
 			return Component;
 		}
 		template<typename T>
@@ -82,7 +63,7 @@ namespace Proof{
 			}
 			*/
 			if (HasComponent<T>() == false)return;
-			CurrentWorld->Registry.RemoveComponent<T>(m_ID);
+			CurrentWorld->m_Registry.remove<T>(m_ID);
 		}
 		/*
 		template<typename T>
@@ -112,7 +93,7 @@ namespace Proof{
 				PF_ENGINE_WARN("Cannot remove Transform Component");
 				return;
 			}
-			CurrentWorld->Registry.RemoveComponent<T>(m_ID,IndexSlot);
+			CurrentWorld->m_Registry.remove<T>(m_ID,IndexSlot);
 		}
 		World* GetCurrentWorld()const {
 			return CurrentWorld;

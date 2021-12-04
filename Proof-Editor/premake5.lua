@@ -28,6 +28,7 @@ project "Proof-Editor"
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.yaml_cpp}",
+        "%{wks.location}/Proof/vendor/entt"
 		--"C:/Program Files/Mono/include/mono-2.0"
     }
 

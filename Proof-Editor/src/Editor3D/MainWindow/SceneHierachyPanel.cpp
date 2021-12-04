@@ -222,6 +222,10 @@ namespace Proof{
 				entity.AddComponent<CameraComponent>();
 				ImGui::CloseCurrentPopup();
 			}
+			if (ImGui::MenuItem("Cube Collider ")) {
+				entity.AddComponent<CubeColliderComponent>();
+				ImGui::CloseCurrentPopup();
+			}
 			ImGui::EndPopup();
 		}
 		
@@ -459,7 +463,7 @@ namespace Proof{
 				continue;
 			}
 			CameraComponent* cameraComp = dynamic_cast<CameraComponent*>(Comp);
-			if(Comp !=nullptr){
+			if( cameraComp!=nullptr){
 				DrawComponents<CameraComponent>("Camera Component: ",entity,cameraComp,IndexValue,[](CameraComponent& CameraComp){
 					char buffer[256];
 					memset(buffer,0,sizeof(buffer));
@@ -488,6 +492,13 @@ namespace Proof{
 						CameraComp.m_Height= tempHeight;
 					}
 				},"if nothing visible set roation of z axis to 1");
+				IndexValue += 1;
+				continue;
+			}
+			CubeColliderComponent* cubeCollider= dynamic_cast<CubeColliderComponent*>(Comp);
+			if (cubeCollider != nullptr) {
+				DrawComponents<CubeColliderComponent>("CubeColliderComponent: ", entity, cubeCollider, IndexValue, [](CubeColliderComponent& CameraComp) {
+				});
 				IndexValue += 1;
 				continue;
 			}

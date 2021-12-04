@@ -111,9 +111,10 @@ namespace Proof {
 		DrawQuad(Location,Rotation,Size,Color,s_Storage2DData->m_WhiteTexture);
 	}
 	void Renderer2D::DrawQuad(SpriteComponent& Sprite){
-		auto Transform = Sprite.GetOwner().GetComponent<TransformComponent>();
 		
-		Renderer2D::DrawQuad({Sprite.SpriteTransfrom.Location + Transform->Location},Sprite.SpriteTransfrom.Rotation + Transform->Rotation,Sprite.SpriteTransfrom.Scale + Transform->Scale,Sprite.Colour,Sprite.GetTexture()!= nullptr ? Sprite.GetTexture() : s_Storage2DData->m_WhiteTexture);
+		//auto Transform = Sprite.GetOwner().GetComponent<TransformComponent>();
+		
+		//Renderer2D::DrawQuad({Sprite.SpriteTransfrom.Location + Transform->Location},Sprite.SpriteTransfrom.Rotation + Transform->Rotation,Sprite.SpriteTransfrom.Scale + Transform->Scale,Sprite.Colour,Sprite.GetTexture()!= nullptr ? Sprite.GetTexture() : s_Storage2DData->m_WhiteTexture);
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D) {
 		if (s_Storage2DData->m_IndexCount >=Renderer2DStorage::s_MaxIndexCount){ // reached maxed index size

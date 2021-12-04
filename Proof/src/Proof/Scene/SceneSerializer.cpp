@@ -5,7 +5,6 @@
 #include <string>
 #include <filesystem>
 #include "Proof/Resources/ExternalCreations.h"
-#include "ComponentUnOptimized.h"
 namespace Proof{
 	SceneSerializer::SceneSerializer(World* Scene) {
 		PF_CORE_ASSERT(Scene,"Scene cannot be nulltptr");
@@ -65,7 +64,6 @@ namespace Proof{
 			if (Meshes != nullptr) {
 				out<<YAML::Key<<"MeshComponent";
 				out << YAML::BeginMap; // Mesh component
-				out<<YAML::Key<<"Name"<<YAML::Value<<Meshes->GetName();
 				out<<YAML::Key<<"MeshAssetPointerID"<<YAML::Value<<Meshes->m_MeshAssetPointerID;
 				out<<YAML::Key<<"MaterialPointerID"<<Meshes->GetMaterialPointerID();
 				out << YAML::EndMap; // Mesh component
@@ -76,7 +74,6 @@ namespace Proof{
 			if (Sprite != nullptr) {
 				out << YAML::Key << "SpriteComponent";
 				out << YAML::BeginMap; // Sprite component
-				out<<YAML::Key<<"Name"<<YAML::Value<<Sprite->GetName();
 				out<<YAML::Key<<"TextureAssetPointerID"<<YAML::Value<<Sprite->m_TextureAssetPointerID;
 				out<<YAML::Key<<"Colour"<<YAML::Value<<Sprite->Colour;
 				out << YAML::Key << "LocalLocation" << Sprite->SpriteTransfrom.Location;
@@ -199,7 +196,6 @@ namespace Proof{
 			auto meshComponent = entity["MeshComponent"];
 			if (meshComponent) {
 				auto& src = *NewEntity.AddComponent<MeshComponent>();
-				src.SetName(meshComponent["Name"].as<std::string>());
 				src.m_MeshAssetPointerID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
 				src.m_MeshMaterialID = meshComponent["MaterialPointerID"].as<uint64_t>();
 				if (src.m_MeshAssetPointerID != 0) {
@@ -213,7 +209,6 @@ namespace Proof{
 			auto spriteRendererComponent = entity["SpriteComponent"];
 			if (spriteRendererComponent) {
 				auto& src = *NewEntity.AddComponent<SpriteComponent>();
-				src.SetName(spriteRendererComponent["Name"].as<std::string>());
 				src.m_TextureAssetPointerID = spriteRendererComponent["TextureAssetPointerID"].as<uint64_t>();
 				src.Colour = spriteRendererComponent["Colour"].as<glm::vec4>();
 				src.SpriteTransfrom.Location = spriteRendererComponent["LocalLocation"].as<glm::vec3>();

@@ -23,7 +23,6 @@
 #include "Proof/Utils/PlatformUtils.h"
 #include "MainWindow/SceneRendererUI.h"
 #include "MainWindow/MaterialEditorPanel.h"
-#include "Proof/Scene/ComponentUnOptimized.h"
 #include "Proof/Resources/Math/Random.h"
 #include <string>
 namespace Proof

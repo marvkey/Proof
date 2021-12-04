@@ -5,6 +5,7 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Core/Log.h"
 #include "Proof/Core/UUID.h"
+#ifdef 0
 namespace Proof{
 	class MeshComponent;
 	class Proof_API ECS {
@@ -97,7 +98,19 @@ namespace Proof{
 			PF_CORE_ASSERT(false,"Entity Id Was Not FOund");
 			return nullptr;
 		};
-		
+		template<>
+		CubeColliderComponent* AddComponent(UUID ID) {
+			auto it = EntityHolder.find(ID);
+			if (it != EntityHolder.end()) {
+				CubeColliderComponent* Temp = new CubeColliderComponent();
+				it->second->emplace_back(Temp);
+				Temp->StartIndexSlot = m_CubeColliderComponent.size();
+				m_CubeColliderComponent.emplace_back(Temp);
+				return Temp;
+			}
+			PF_CORE_ASSERT(false, "Entity Id Was Not FOund");
+			return nullptr;
+		};
 
 		template<typename T>
 		T* GetComponent(UUID ID) {
@@ -343,6 +356,36 @@ namespace Proof{
 			}
 			return;
 		}
+
+		template<>
+		inline void RemoveComponent<CubeColliderComponent>(UUID ID, uint32_t Index) {
+			auto it = EntityHolder.find(ID);
+			if (it != EntityHolder.end()) {
+				auto TempVec = it->second;
+				if (TempVec->size() >= Index) {
+					CubeColliderComponent* TempComp = static_cast<CubeColliderComponent*>(TempVec->at(Index));
+					if (m_CubeColliderComponent.size() == 1) {
+						m_CubeColliderComponent.erase(m_CubeColliderComponent.begin());
+					}
+					else if (m_CubeColliderComponent.size() == TempComp->StartIndexSlot) {
+						m_CubeColliderComponent.erase(m_CubeColliderComponent.end());
+					}
+					else if (m_CubeColliderComponent.size() > TempComp->StartIndexSlot) {
+						int TempLocation = m_CubeColliderComponent.size() - TempComp->StartIndexSlot;
+						m_CubeColliderComponent.erase(m_CubeColliderComponent.end() - TempLocation);
+					}
+					else if (m_CubeColliderComponent.size() < TempComp->StartIndexSlot) {
+						int TempLocation = m_CubeColliderComponent.size() - TempComp->StartIndexSlot;
+						m_CubeColliderComponent.erase(m_CubeColliderComponent.end() - TempLocation);
+					}
+					TempVec->erase(TempVec->begin() + Index);
+					delete TempComp;
+					return;
+				}
+				PF_ENGINE_WARN("Remove component Entitiy does not have component or ID Is Not Valid Size of Holder is %i", TempVec->size());
+			}
+			return;
+		}
 		const std::unordered_map<UUID,std::vector<class Component*>*>& GetEntities() {
 			return EntityHolder;
 		}
@@ -355,6 +398,7 @@ namespace Proof{
 		std::vector<class NativeScriptComponent*> NativeScripts;
 		std::vector<class LightComponent*> LightComponents;
 		std::vector<class CameraComponent*> m_CameraComponent;
+		std::vector<class CubeColliderComponent*> m_CubeColliderComponent;
 		const std::unordered_map<UUID,std::vector<class Component*>*>&ALlEntityCOmp()const{
 			return EntityHolder;
 		}
@@ -370,4 +414,4 @@ namespace Proof{
 	};
 
 }
-
+#endif

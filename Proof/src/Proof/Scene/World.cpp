@@ -16,7 +16,6 @@
 #include "Proof/Renderer/VertexArray.h"
 #include "Proof/Renderer/FrameBuffer.h"
 #include<glad/glad.h>
-#include "ComponentUnOptimized.h"
 namespace Proof{
 	unsigned int quadVAO = 0;
 	unsigned int quadVBO=0;
@@ -64,12 +63,14 @@ namespace Proof{
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
 		CameraComponent* cameraComp =nullptr;
-		for(int i=0;i<Registry.m_CameraComponent.size();i++){
-			cameraComp= Registry.m_CameraComponent[i];
+		auto& view = m_Registry.view<CameraComponent>();
+		for (auto entity : view) {
+			cameraComp = &view.get<CameraComponent>(entity);
 			break;
 		}
 		if(cameraComp == nullptr){
 			OnUpdate(DeltaTime,width,height);
+			/*
 			for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
 				if (Scripts->m_HasScriptAttached == false) {
 					continue;
@@ -84,6 +85,7 @@ namespace Proof{
 					Scripts->Instance->OnUpdate(DeltaTime);
 			}
 			return;
+			*/
 		}
 		cameraComp->CalculateProjection();
 
@@ -95,6 +97,7 @@ namespace Proof{
 				cameraComp->CalculateProjection();
 			}
 		}
+		/*
 		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
 			if (Scripts->m_HasScriptAttached == false) {
 				continue;
@@ -108,6 +111,7 @@ namespace Proof{
 			if (Scripts->Instance->b_CallPerframe == true)
 				Scripts->Instance->OnUpdate(DeltaTime);
 		}
+		*/
 	}
 
 	void World::OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height) {
@@ -115,18 +119,22 @@ namespace Proof{
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {
-		Entity entity = {Registry.Create(),this};
-		entity.AddComponent<TagComponent>()->Name =EntName;
+		UUID ID = UUID();
+		Entity entity = {UUID(),this};
+		m_Registry.create(entt::entity((uint64_t)ID));
+		entity.AddComponent<IDComponent>(ID);
+		entity.AddComponent<TagComponent>()->Tag =EntName;
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<SubEntityComponet>();
+		//entity.AddComponent<SubEntityComponet>();
 		return entity;
 	}
 
 	Entity World::CreateEntity(const std::string& EntName,uint32_t ID) {
-		Entity entity = {Registry.Create(ID),this};
-		entity.AddComponent<TagComponent>()->Name = EntName;
+		Entity entity = {ID,this};
+		m_Registry.create(entt::entity((uint64_t)ID));
+		entity.AddComponent<TagComponent>()->Tag = EntName;
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<SubEntityComponet>();
+		//entity.AddComponent<SubEntityComponet>();
 		return entity;
 	}
 	template<class TypeComponent>
@@ -153,12 +161,14 @@ namespace Proof{
 
 		newWorld->m_CaptureFBO = other->m_CaptureFBO;
 		newWorld->m_CaptureRBO = other->m_CaptureRBO;
+		/*
 		for(auto& comp: other->Registry.EntityHolder){
 			std::vector<Component*>* New = new std::vector<Component*>;
 			newWorld->Registry.EntityHolder.insert({comp.first,New});
 			for(int i=0;i<comp.second->size();i++){
 			}
 		}
+		*/
 		return newWorld;
 	}
 
@@ -172,7 +182,8 @@ namespace Proof{
 
 	void World::DeleteEntity(Entity& ent) {
 		ent.OnDelete();
-		Registry.Delete(ent.GetID());
+		entt::entity entity=entt::entity((uint64_t)ent.GetID());
+		m_Registry.destroy(entity);
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){
@@ -354,65 +365,9 @@ namespace Proof{
 		RendererCommand::SetViewPort(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 	}	
 
-	template<class T>
-	void World::OnComponentAdded(Entity _Entity,T* component) {
-		PF_CORE_ASSERT(false,"Component Not Identified");
-	}
 	template<>
-	void World::OnComponentAdded(Entity _Entity,NativeScriptComponent* component) {
-		Component* a = static_cast<Component*>(component);
-		a->m_EntityOwner = _Entity.GetID();
-		a->CurrentWorld = this;
+	void World::OnComponentAdded(Entity Entity, CameraComponent* component) {
+		component->m_Positon = &Entity.GetComponent<TransformComponent>()->Location;
+		component->m_Roatation = &Entity.GetComponent<TransformComponent>()->Rotation;
 	}
-	template<>
-	void World::OnComponentAdded(Entity _Entity,TransformComponent* component) {
-		Component* a = static_cast<Component*>(component);
-		a->m_EntityOwner = _Entity.GetID();
-		a->CurrentWorld = this;
-
-	}
-	template<>
-	void World::OnComponentAdded(Entity _Entity,TagComponent* component) {
-		Component* a = static_cast<Component*>(component);
-		a->m_EntityOwner = _Entity.GetID();
-		a->CurrentWorld = this;
-
-	}
-	template<>
-	void World::OnComponentAdded(Entity _Entity,MeshComponent* component) {
-		Component* a = static_cast<Component*>(component);
-		a->m_EntityOwner = _Entity.GetID();
-		a->CurrentWorld = this;
-	}
-
-	template<>
-	void World::OnComponentAdded(Entity _Entity,SpriteComponent* component) {
-		Component* a = static_cast<Component*>(component);
-		a->m_EntityOwner = _Entity.GetID();
-		a->CurrentWorld = this;
-	}
-
-	template<>
-	void World::OnComponentAdded(Entity _Entity,LightComponent* component) {
-		Component* a = static_cast<Component*>(component);
-		a->m_EntityOwner = _Entity.GetID();
-		a->CurrentWorld = this;
-	}
-
-	template<>
-	void World::OnComponentAdded(Entity _Entity,CameraComponent* component) {
-		Component* a = static_cast<Component*>(component);
-		a->m_EntityOwner = _Entity.GetID();
-		a->CurrentWorld = this;
-		component->m_Positon=&component->GetOwner().GetComponent<TransformComponent>()->Location;
-		component->m_Roatation = &component->GetOwner().GetComponent<TransformComponent>()->Rotation;
-	}
-
-	template<>
-	void World::OnComponentAdded(Entity _Entity,SubEntityComponet* component) {
-		Component* a = static_cast<Component*>(component);
-		a->m_EntityOwner = _Entity.GetID();
-		a->CurrentWorld = this;
-	}
-	
 }

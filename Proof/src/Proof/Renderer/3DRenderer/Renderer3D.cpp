@@ -107,6 +107,7 @@ namespace Proof
         Renderer3DInstance->m_Shader->SetMat4("u_View",camera.GetViewMatrix());
     }
     void Renderer3D::Draw(MeshComponent& meshComponent) {
+        /*
         UUID meshID = meshComponent.GetMeshAssetID();
         if (Renderer3DInstance->SceneHasAmountMeshes(meshID) == true) {
             auto& map = Renderer3DInstance->m_AmountMeshes.find(meshID);
@@ -135,8 +136,10 @@ namespace Proof
             Renderer3DStats->AmountDrawn += 1;
             Renderer3DStats->NumberOfInstances += 1;
         } 
+        */
     }
     void Renderer3D::RenderLight(LightComponent& lightComponent) {
+        /*
         if (lightComponent.m_LightType == lightComponent.Direction && NumberDirectionalLight < 150) {
             NumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumberDirectionalLight) + "]";
             Renderer3DInstance->m_Shader->Bind();
@@ -183,6 +186,7 @@ namespace Proof
             return;
 
         }
+        */
     }
     void Renderer3D::EndContext() {
         if (DifferentMeshes == 0)return;

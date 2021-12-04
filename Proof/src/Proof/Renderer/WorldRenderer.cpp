@@ -4,18 +4,22 @@
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Scene/World.h"
 #include "Proof/Renderer/RendererCommand.h"
+#include "Proof/Scene/Entity.h"
+#include "Proof/Scene/Component.h"
 namespace Proof{
 	void WorldRenderer::Renderer() {
 		if(m_RendererPaused==true)
 			return;
 		Renderer3DPBR::BeginContext(m_World->m_EditorCamera,m_ScreenFrameBuffer,RenderData);
-		for (MeshComponent* Comp : m_World->Registry.SceneMeshComponents) {
-			if (Comp->GetMeshSource() != nullptr) {
-				Renderer3DPBR::Draw(*Comp);
-			}
+		auto& meshView =m_World->m_Registry.view<MeshComponent, TransformComponent>();
+		for (auto& enity: meshView) {
+			auto& [mesh, transform] = meshView.get<MeshComponent, TransformComponent>(enity);
+			Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
 		}
-		for (LightComponent* Comp : m_World->Registry.LightComponents) {
-			Renderer3DPBR::Draw(*Comp);
+		auto& lightView = m_World->m_Registry.view<LightComponent, TransformComponent>();
+		for (auto& enity : lightView) {
+			auto& [light, transform] = meshView.get<LightComponent, TransformComponent>(enity);
+			Renderer3DPBR::Draw(light,transform);
 		}
 		/*
 		if (RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
@@ -31,7 +35,11 @@ namespace Proof{
 		}
 		*/
 		Renderer3DPBR::EndContext();
-	
+		m_ScreenFrameBuffer->Bind();
+		//for (CubeColliderComponent* collider : m_World->Registry.m_CubeColliderComponent) {
+		//	Renderer3DPBR::DrawDebugMesh(collider->GetMeshSource(), *collider->GetOwner().GetComponent<TransformComponent>());
+		//}
+		m_ScreenFrameBuffer->UnBind();
 		if (RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
 			m_ScreenFrameBuffer->Bind();
 			RendererCommand::DepthFunc(DepthType::Equal);

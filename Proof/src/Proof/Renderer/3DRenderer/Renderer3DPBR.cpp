@@ -15,8 +15,9 @@
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Material.h"
 #include "../UniformBuffer.h"
-
+#include "Proof/Scene/Component.h"
 namespace Proof{
+	static Count<Shader>s_DebugShader;
 	Count<class Texture2D>PhysicalBasedRenderer::m_WhiteTexture;
 	bool Renderer3DPBR::s_InsideContext=false;
 	Count<ScreenFrameBuffer> Renderer3DPBR::s_RenderFrameBuffer =nullptr;
@@ -43,6 +44,7 @@ namespace Proof{
 		s_PBRInstance->m_WhiteTexture = Texture2D::Create(1,1);
 		uint32_t WhiteTextureImage = 0xffffffff;
 		s_PBRInstance->m_WhiteTexture->SetData(&WhiteTextureImage,sizeof(uint32_t));
+		s_DebugShader = Shader::GetOrCreate("DebugShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/DebugMesh.glsl");
 	}
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,RendererData& renderSpec) {
 		BeginContext(editorCamera.m_Projection,editorCamera.m_View,editorCamera.m_Positon,frameBuffer,renderSpec);
@@ -67,7 +69,7 @@ namespace Proof{
 	void Renderer3DPBR::InitilizeFowardRendering() {
 		s_CurrentLightShader = s_PBRInstance->m_FowardRendering.m_Shader;
 	}
-	void Renderer3DPBR::Draw(MeshComponent& meshComponent) {
+	void Renderer3DPBR::Draw(class MeshComponent& meshComponent, const glm::mat4& positionMatrix) {
 		int usingMaterial = meshComponent.HasMaterial();
 		int meshPointerId = meshComponent.GetMeshAssetID();
 		if (s_PBRInstance->SceneHasAmountMeshes(meshPointerId) == true) {
@@ -75,8 +77,7 @@ namespace Proof{
 			Map->second += 1;
 			auto InstanceSize = s_PBRInstance->m_MeshesEndingPositionIndexTransforms.find(meshPointerId);
 
-			auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-			ModelMatrix = Transform->GetWorldTransform();
+			ModelMatrix = positionMatrix;
 			PhysicalBasedRendererVertex temp(ModelMatrix, meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial, usingMaterial);
 			s_PBRInstance->m_Transforms.insert(s_PBRInstance->m_Transforms.begin() + InstanceSize->second, temp);
 			InstanceSize->second++;
@@ -87,13 +88,12 @@ namespace Proof{
 		s_PBRInstance->m_Meshes.insert({ meshPointerId,meshComponent});
 		s_PBRInstance->m_MeshesEndingPositionIndexTransforms.insert({ meshPointerId,s_PBRInstance->m_Transforms.size() + 1});
 		s_DifferentID.emplace_back(meshPointerId);
-		auto* Transform = meshComponent.GetOwner().GetComponent<TransformComponent>();
-		ModelMatrix = Transform->GetWorldTransform();
+		ModelMatrix = positionMatrix;
 		
 		PhysicalBasedRendererVertex temp(ModelMatrix,meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial,usingMaterial);
 		s_PBRInstance->m_Transforms.emplace_back(temp);
 	}
-	void Renderer3DPBR::Draw(LightComponent& lightComponent) {
+	void Renderer3DPBR::Draw(class LightComponent& lightComponent, class TransformComponent& transform) {
 		/*
 		if(s_RendererData->RenderSettings.Technique== RenderTechnique::FowardRendering){
 			s_PBRInstance->m_Shader->Bind();
@@ -108,7 +108,7 @@ namespace Proof{
 		s_CurrentLightShader->Bind();
 		if (lightComponent.m_LightType == lightComponent.Point && NumPointLights < 150) {
 			std::string numberPointLightstring = "v_PointLight[" + std::to_string(NumPointLights) + "]";
-			s_CurrentLightShader->SetVec3(numberPointLightstring + ".Position", lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation());
+			s_CurrentLightShader->SetVec3(numberPointLightstring + ".Position", transform.GetWorldLocation());
 			s_CurrentLightShader->SetVec3(numberPointLightstring + ".Ambient", lightComponent.m_Ambient);
 			s_CurrentLightShader->SetFloat(numberPointLightstring + +".Constant", lightComponent.m_Constant);
 			s_CurrentLightShader->SetFloat(numberPointLightstring + +".Linear", lightComponent.m_Linear);
@@ -122,8 +122,8 @@ namespace Proof{
 
 		if (lightComponent.m_LightType == lightComponent.Spot && NumSpotLights < 150) {
 			std::string numberSpotLightstring = "v_SpotLight[" + std::to_string(NumSpotLights) + "]";
-			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Direction", { lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation() });
-			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Position", { lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation() });
+			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Direction", { transform.GetWorldRotation() });
+			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Position", { transform.GetWorldLocation() });
 			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Ambient", lightComponent.m_Ambient);
 			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Constant", lightComponent.m_Constant);
 			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Linear", lightComponent.m_Linear);
@@ -139,13 +139,19 @@ namespace Proof{
 
 		if (lightComponent.m_LightType == lightComponent.Direction && NumDirLights < 150) {
 			std::string mumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumDirLights) + "]";
-			s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation());
+			s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Direction", transform.GetWorldRotation());
 			s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Ambient",lightComponent.m_Ambient);
 			s_CurrentLightShader->SetFloat(mumberDirectionalLightstring + ".Intensity",lightComponent.Intensity);
 			NumDirLights++;
 			s_CurrentLightShader->UnBind();
 			return;
 		}
+	}
+	void Renderer3DPBR::DrawDebugMesh(Mesh* mesh, TransformComponent& transform){
+		s_DebugShader->Bind();
+		s_DebugShader->SetMat4("model", transform.GetWorldTransform());
+		for(SubMesh& meshes: mesh->meshes)
+			RendererCommand::DrawElementIndexed(meshes.m_VertexArrayObject,1,DrawType::Lines);
 	}
 	PhysicalBasedRenderer* Renderer3DPBR::GetRenderer(){
 		return s_PBRInstance;

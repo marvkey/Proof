@@ -8,6 +8,7 @@
 #include "Renderer3DCore.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Renderer/RendererAPI.h"
+
 namespace Proof
 {
 	class PhysicalBasedRenderer;
@@ -131,9 +132,9 @@ namespace Proof
 		static void Init();
 		static void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec = RendererData());
 		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec = RendererData());
-		static void Draw(class MeshComponent& meshComponent);
-		static void Draw(class LightComponent& lightComponent);
-		static void DrawDebugMesh(class Mesh* mesh, class TransformComponet& transform);
+		static void Draw(class MeshComponent& meshComponent, const glm::mat4& positionMatrix);
+		static void Draw(class LightComponent& lightComponent, class TransformComponent& transform);
+		static void DrawDebugMesh(class Mesh* mesh, class TransformComponent& transform);
 		static PhysicalBasedRenderer* GetRenderer();
 		static void EndContext();
 		static void Reset();

@@ -15,40 +15,82 @@
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
 {
-	class Entity;
-	struct Proof_API Component {
+	
+	struct IDComponent {
 	public:
-		Component(const Component&) = default;
-		Component() = default;
-		virtual ~Component() {
-		}
-		
-		const std::string& GetName()const { return Name; }
-		virtual void SetName(const std::string& name) {
-			Name = name;
-		}
-		class Entity GetOwner()const;
-
-		void Componet() {};
-	protected:
-		std::string Name = "Default";
-		uint64_t m_EntityOwner;
-		class World* CurrentWorld = nullptr;
+		IDComponent(const IDComponent& ) = default;
+		IDComponent(UUID id) :m_ID(id) {};
 	private:
+		UUID m_ID;
+	};
+	/*
+	class Proof_API SubEntityComponet {
+	public:
+		SubEntityComponet(const SubEntityComponet&) = default;
+		SubEntityComponet(Entity entity) :m_CurrentEntity(entity) {};
+		SubEntityComponet() = default;
+		bool HasEntityOwner()const {
+			return (bool)m_Owner.GetID() != 0 && m_Owner.GetCurrentWorld() != nullptr;
+
+		}
+		Entity GetOwner()const {
+			return m_Owner;
+		}
+		const std::vector<Entity>& GetAllSubEntity()const {
+			return m_AllSubEntity;
+		}
+		void SwapEntityOwner(Entity& neweOwner) {
+			if (neweOwner.GetID() == m_Owner) {
+				PF_WARN("cannot add enity as owenr of entity");
+				return;
+			}
+			auto it = std::find(neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.begin(), neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.end(), neweOwner);
+			if (it == neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.end()) {
+				if (HasEntityOwner() == true) {
+					m_Owner.GetComponent<SubEntityComponet>()->RemoveSubEnity(this->GetOwner());
+				}
+				m_Owner = neweOwner;
+				neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.emplace_back(GetOwner());
+			}
+		}
+		void AddSubEntity(Entity& subEntity) {
+			if (subEntity.GetID() == m_CurrentEntity.GetID()) {
+				PF_WARN("cannot add enity as owenr of entity");
+				return;
+			}
+			subEntity.GetComponent<SubEntityComponet>()->m_Owner = m_CurrentEntity;
+			auto it = std::find(m_AllSubEntity.begin(), m_AllSubEntity.end(), subEntity);
+			if (it == m_AllSubEntity.end())
+				m_AllSubEntity.emplace_back(subEntity);
+		}
+	private:
+
+		void RemoveSubEnity(const Entity& ent) {
+			if (m_AllSubEntity.size() == 0)
+				return;
+
+			auto it = std::find(m_AllSubEntity.begin(), m_AllSubEntity.end(), ent.GetID());
+			if (it != m_AllSubEntity.end()) {
+				m_AllSubEntity.erase(it);
+			}
+		}
+
+		std::vector<UUID>m_AllSubEntity;
+		Entity m_Owner = {};
+		Entity m_CurrentEntity = {};
 		friend class Entity;
-		friend class World;
 		friend class SceneHierachyPanel;
+		friend class World;
 		friend class SceneSerializer;
 	};
-
-
-	struct Proof_API TagComponent: public Component {
+	*/
+	struct Proof_API TagComponent{
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
 
 		void AddTag(const std::string& Tag) {
 			m_Tags.emplace_back(Tag);
-			//Name = "Empty Entity";
+			m_Tags.size();
 		}
 		bool HasTag(const std::string& Tag)const {
 			for (const std::string& TagName : m_Tags) {
@@ -66,6 +108,7 @@ namespace Proof
 			}
 			return false;
 		};
+		std::string Tag;
 	private:
 		std::vector<std::string> m_Tags;
 		friend class Entity;
@@ -74,7 +117,7 @@ namespace Proof
 		friend class SceneSerializer;
 	};
 
-	struct Proof_API TransformComponent:public Component {
+	struct Proof_API TransformComponent {
 		Vector<float> Location = {0.0f,0.0f,0.0f};
 		Vector<float> Rotation = {0.0f,0.0f,0.0f};
 		Vector<float> Scale = {1.0f,1.0f,1.0f};
@@ -94,10 +137,7 @@ namespace Proof
 		glm::mat4 GetWorldTransform() const;
 	};
 
-	struct Proof_API NativeScriptComponent:public Component {
-		NativeScriptComponent() {
-			Name = "NativeScriptComponent";
-		}
+	struct Proof_API NativeScriptComponent{
 		NativeScriptComponent(const NativeScriptComponent&) = default;
 		class Script* Instance = nullptr;
 		class Script* (*InstantiateScript)();
@@ -123,7 +163,7 @@ namespace Proof
 		bool m_HasScriptAttached = false;
 	};
 
-	struct Proof_API MeshComponent:public Component {
+	struct Proof_API MeshComponent{
 		MeshComponent()=default;
 		class Mesh* GetMeshSource() {
 			MeshAsset* meshasset= GetAsset();
@@ -159,7 +199,7 @@ namespace Proof
 	};
 
 	/* THIS IS TEMPORARY THIS IS GONNA GO INTO THE 2D SECTION */
-	struct Proof_API SpriteComponent:public Component {
+	struct Proof_API SpriteComponent{
 		SpriteComponent(const SpriteComponent&) = default;
 		SpriteComponent() = default;
 
@@ -202,7 +242,7 @@ namespace Proof
 		Count<Texture2DAsset> m_TextureAssetPointer;
 	};
 
-	struct Proof_API LightComponent: public Component {
+	struct Proof_API LightComponent{
 		LightComponent(const LightComponent&) = default;
 		LightComponent() = default;
 		enum LightType:int {
@@ -227,7 +267,7 @@ namespace Proof
 		uint32_t StartIndexSlot = 0;
 		friend class ECS;
 	};
-	struct Proof_API SkyLightComponent: public Component {
+	struct Proof_API SkyLightComponent{
 		SkyLightComponent(const SkyLightComponent&) = default;
 		SkyLightComponent() = default;
 	private:
@@ -235,7 +275,7 @@ namespace Proof
 	};
 
 
-	struct Proof_API CameraComponent: public Component {
+	struct Proof_API CameraComponent{
 	public:
 		CameraComponent(const CameraComponent&) = default;
 		CameraComponent() = default;
@@ -280,11 +320,12 @@ namespace Proof
 		uint32_t StartIndexSlot = 0;
 		friend class ECS;
 	};
-
-	struct Proof_API MeshColliderComponent : public Component {
-		MeshColliderComponent(const MeshColliderComponent&) = default;
-		MeshColliderComponent() = default;
+		
+	struct Proof_API CubeColliderComponent{
+		CubeColliderComponent(const CubeColliderComponent&) = default;
+		CubeColliderComponent() = default;
 		static class Mesh* GetMeshSource() { return m_CubeMesh.get(); };
+		uint32_t StartIndexSlot;
 	private:
 		static Count<Mesh> m_CubeMesh;
 	};

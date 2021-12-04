@@ -1,11 +1,11 @@
 #pragma once
-#include "EntitiyComponentSystem/ECS.h"
 #include "Camera/EditorCamera.h"
 #include "Camera/OrthagraphicCamera.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/VertexArray.h"
 #include "Proof/Renderer/FrameBuffer.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
+#include "entt/entt.hpp"
 class FrameTime;
 
 namespace Proof{
@@ -33,7 +33,7 @@ namespace Proof{
 
 		static Count<World> Copy(Count<World> other);
 		virtual void EndRuntime();
-		class ECS Registry;
+		entt::registry m_Registry;
 		const std::string& GetName()const{return Name;};
 		const std::string& GetPath()const{return m_Path;}
 		friend class WorldRenderer;
@@ -49,7 +49,8 @@ namespace Proof{
 		void CreateIBlTexture(const std::string& filePath);
 		std::string Name = "DefaultWorld";
 		template<class T>
-		void OnComponentAdded(Entity Entity,T* component);
+		void OnComponentAdded(Entity Entity, T* component) {};
+		
 		std::string m_Path;
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		Count<CubeMap> m_WorldCubeMap;
