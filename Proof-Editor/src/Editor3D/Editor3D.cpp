@@ -47,9 +47,9 @@ namespace Proof
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/back.jpg");
 
 		ActiveWorld = CreateCount<World>();
+
 		SceneSerializer scerelizer(ActiveWorld.get());
 		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofAsset") == true) {
-			PF_ENGINE_INFO("%s Deserilize perfectly",ActiveWorld->GetName().c_str());
 			m_WorldHierachy.SetContext(ActiveWorld.get());
 			AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
 		}
@@ -391,7 +391,7 @@ namespace Proof
 					snapValue = 45.0f;
 
 				float snapValues[3] = {snapValue,snapValue,snapValue};
-				if(selectedEntity.GetComponent<ChildComponent>()->HasOwner()==false){
+				if(selectedEntity.HasOwner()==false){
 
 					ImGuizmo::Manipulate(glm::value_ptr(cameraView),glm::value_ptr(cameraProjection),
 					(ImGuizmo::OPERATION)GuizmoType,ImGuizmo::LOCAL,glm::value_ptr(transform),

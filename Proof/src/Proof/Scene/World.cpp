@@ -121,7 +121,7 @@ namespace Proof{
 	Entity World::CreateEntity(const std::string& EntName) {
 		UUID ID = UUID();
 		Entity entity = { ID,this};
-		m_Registry.create(entt::entity((uint64_t)ID));
+		m_Registry.create(entity.m_EnttEntity);
 		entity.AddComponent<TagComponent>()->Tag =EntName;
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
@@ -129,14 +129,18 @@ namespace Proof{
 	}
 
 	Entity World::CreateEntity(const std::string& EntName,UUID ID) {
-		Entity entity = {ID,this};
-		m_Registry.create(entt::entity((uint64_t)ID));
+		Entity entity = { ID,this};
+
+		m_Registry.create(entity.m_EnttEntity);
+
 		entity.AddComponent<TagComponent>()->Tag = EntName;
 		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<ChildComponent>()->m_CurrentID=ID;
+		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
 		return entity;
 	}
-	
+	template<class TypeComponent>
+	static void CopyCOmponent(std::unordered_map<UUID,std::vector<class Component*>*>&map){
+	}
 	//static void CopyComponent
 	Count<World> World::Copy(Count<World> other) {
 		Count<World> newWorld = CreateCount<World>();
@@ -179,8 +183,7 @@ namespace Proof{
 
 	void World::DeleteEntity(Entity& ent) {
 		ent.OnDelete();
-		entt::entity entity=entt::entity((uint64_t)ent.GetID());
-		m_Registry.destroy(entity);
+		m_Registry.destroy(ent.m_EnttEntity);
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){
@@ -362,5 +365,4 @@ namespace Proof{
 		RendererCommand::SetViewPort(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 	}	
 
-	
 }

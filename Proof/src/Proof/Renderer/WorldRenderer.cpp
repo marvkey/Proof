@@ -13,12 +13,12 @@ namespace Proof{
 		Renderer3DPBR::BeginContext(m_World->m_EditorCamera,m_ScreenFrameBuffer,RenderData);
 		auto& meshGroup =m_World->m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
 		for (auto& enity: meshGroup) {
-			auto& [mesh, transform] = meshGroup.get(enity);
+			auto& [mesh, transform] = meshGroup.get<MeshComponent,TransformComponent>(enity);
 			Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
 		}
 		auto& lightGroup = m_World->m_Registry.group<LightComponent>(entt::get<TransformComponent>);
 		for (auto& enity : lightGroup) {
-			const auto& [light, transform] = lightGroup.get(enity);
+			const auto& [light, transform] = lightGroup.get<LightComponent,TransformComponent>(enity);
 			Renderer3DPBR::Draw(light,transform);
 		}
 		

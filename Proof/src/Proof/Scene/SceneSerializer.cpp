@@ -43,12 +43,12 @@ namespace Proof {
 		if (childComponent != nullptr) {
 			out << YAML::Key << "ChildComponent";
 			out << YAML::BeginMap; // SubEntityComponet
-			out << YAML::Key << "OwnerEntityID" << YAML::Value << childComponent->GetOwner();
+			out << YAML::Key << "OwnerID" << YAML::Value << childComponent->GetOwnerID();
 
-			out << YAML::Key << "SubEntities";
+			out << YAML::Key << "Children";
 			out << YAML::Flow;
 			out << YAML::BeginSeq;
-			for (UUID simpleEnitty : childComponent->GetAllSubEntity()) {
+			for (UUID simpleEnitty : childComponent->m_Children) {
 				out << simpleEnitty;
 			}
 			out << YAML::EndSeq;
@@ -142,14 +142,16 @@ namespace Proof {
 		if (!entities)
 			return false;
 		for (auto entity : entities) {
-			uint32_t EntID = entity["Entity"].as<uint32_t>();
+			uint64_t EntID = entity["Entity"].as<uint64_t>();
 
 			std::string name;
 			auto tagcomponent = entity["TagComponent"];
 			if (tagcomponent) {
 				name = tagcomponent["Tag"].as<std::string>();
 			}
+
 			Entity NewEntity = m_Scene->CreateEntity(name, EntID);
+
 			if (tagcomponent) {
 				if (tagcomponent["tags"]) {
 					auto* tc = NewEntity.GetComponent<TagComponent>();
@@ -172,14 +174,15 @@ namespace Proof {
 			auto subEntityComponent = entity["ChildComponent"];
 			if (subEntityComponent) {
 				auto* tc = NewEntity.GetComponent<ChildComponent>();
-				tc->m_OwnerID = subEntityComponent["OwnerEntityID"].as<uint64_t>();
-				if (subEntityComponent["SubEntities"]) {
-					for (auto entityID : subEntityComponent["SubEntities"]) {
-						uint64_t ID = entityID.as<uint64_t>();
-						tc->m_AllSubEntity.emplace_back(ID);
+				tc->m_OwnerID = subEntityComponent["OwnerID"].as<uint64_t>();
+				
+				if (subEntityComponent["Children"]) {
+					for (auto entityID : subEntityComponent["Children"]) {
+						uint64_t childID = entityID.as<uint64_t>();
+						tc->m_Children.insert(childID);
 					}
 				}
-
+				
 			}
 			auto meshComponent = entity["MeshComponent"];
 			if (meshComponent) {

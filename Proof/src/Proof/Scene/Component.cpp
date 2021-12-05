@@ -143,6 +143,7 @@ namespace Proof
 		return nullptr;
 	}
 	Count<Mesh> CubeColliderComponent::m_CubeMesh = MeshWorkShop::GetCubeMesh();
+	
 	/*
 
 		if (neweOwner == m_CurrentID || neweOwner == m_OwnerID) {
@@ -158,54 +159,5 @@ namespace Proof
 			neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.emplace_back(GetOwner());
 		}
 		*/
-	bool ChildComponent::SetOwner(UUID newOwner){
-		if (m_CurrentWorld == nullptr)return false;
-		Entity entity = {newOwner,m_CurrentWorld };
-		Entity currentEntity{ m_CurrentID, m_CurrentWorld };
-		Entity ownerEntity{ m_OwnerID, m_CurrentWorld };
-		if (newOwner == m_CurrentID || newOwner == m_OwnerID) {
-			PF_WARN("cannot add enity as owenr of entity");
-			return false;
-		}
-		auto it = std::find(entity.GetComponent<ChildComponent>()->m_AllSubEntity.begin(), entity.GetComponent<ChildComponent>()->m_AllSubEntity.end(), newOwner);
-		if (it == entity.GetComponent<ChildComponent>()->m_AllSubEntity.end()) {
-			if (HasOwner() == true) {
-				ownerEntity.GetComponent<ChildComponent>()->RemoveChild(m_CurrentID);
-			}
-			m_OwnerID = newOwner;
-			ownerEntity.GetComponent<ChildComponent>()->m_AllSubEntity.emplace_back(m_CurrentID);
-			return true;
-		}
-		return false;
-	}
-
-	bool ChildComponent::AddChild(UUID child) {
-		if (m_CurrentWorld == nullptr)return false;
-		Entity childentity = { child,m_CurrentWorld };
-		if (child == m_CurrentID || child == m_OwnerID) {
-			PF_WARN("cannot add enity as owenr of entity");
-			return false;
-		}
-		auto it = std::find(m_AllSubEntity.begin(), m_AllSubEntity.end(), child);
-		if (it == m_AllSubEntity.end()) {
-			m_AllSubEntity.emplace_back(child);
-			childentity.GetComponent<ChildComponent>()->m_OwnerID = m_CurrentID;
-			return true;
-		}
-		return false;
-	}
-
-	bool ChildComponent::RemoveChild(UUID child) {
-		if (m_AllSubEntity.size() == 0)
-			return false;
-		if (m_CurrentWorld == nullptr)return false;
-		Entity childentity = { child,m_CurrentWorld };
-		auto it = std::find(m_AllSubEntity.begin(), m_AllSubEntity.end(), child);
-		if (it != m_AllSubEntity.end()) {
-			m_AllSubEntity.erase(it);
-			childentity.GetComponent<ChildComponent>()->m_OwnerID = 0;
-			return true;
-		}
-		return false;
-	}
+	
 }

@@ -22,7 +22,7 @@ Entities:
       Specular: [0, 0, 0]
       LightType: 0
   - Entity: 7168
-    TagComponent:
+    TagComponent:none
       Tag: cube
       tags: []
     TransformComponent:

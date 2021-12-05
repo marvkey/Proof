@@ -35,11 +35,13 @@ namespace Proof {
 
 			}
 			*/
+			//ImGui::begindrag
 			m_CurrentWorld->m_Registry.each([&](auto entityID) {
 				Entity entity = { (uint64_t)entityID,m_CurrentWorld };
-				if (entity.GetComponent<ChildComponent>()->HasOwner() == false)
+				if (entity.HasOwner() == false)
 					DrawEntityNode(entity);
 				});
+				
 
 			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
 				m_SelectedEntity = {};
@@ -74,10 +76,10 @@ namespace Proof {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
 				
 				Entity Data = *(const Entity*)payload->Data;
-				if (Data.GetComponent<ChildComponent>()->HasOwner()==true)
-					Data.GetComponent<ChildComponent>()->SetOwner(entity.GetID());
+				if (Data.HasOwner()==true)
+					Data.SetOwner(entity);
 				else
-					entity.GetComponent<ChildComponent>()->AddChild(Data.GetID());
+					entity.AddChild(Data);
 					
 			}
 			ImGui::EndDragDropTarget();
@@ -93,18 +95,16 @@ namespace Proof {
 		}
 		if (ImGui::BeginPopupContextItem()) {
 			
-			if (m_SelectedEntity.GetComponent<ChildComponent>()->HasOwner()) {
+			if (m_SelectedEntity.HasOwner()) {
 				if (ImGui::MenuItem("Single entity")) {
-					Entity owningEnitty{ m_SelectedEntity.GetComponent<ChildComponent>()->GetOwner(),m_CurrentWorld };
-					owningEnitty.GetComponent<ChildComponent>()->RemoveChild(m_SelectedEntity.GetID());
-					m_SelectedEntity.GetComponent<ChildComponent>()->SetOwner(0);
+					m_SelectedEntity.GetOwner().RemoveChild(m_SelectedEntity);
 					ImGui::CloseCurrentPopup();
 				}
 			}
 			if (ImGui::MenuItem("Create Child entity")) {
 				Entity childEntity = m_CurrentWorld->CreateEntity("Empty Child Entity");
-				childEntity.GetComponent<ChildComponent>()->SetOwner(m_SelectedEntity.GetID());
-				m_SelectedEntity.GetComponent<ChildComponent>()->AddChild(childEntity.GetID());
+				childEntity.SetOwner(m_SelectedEntity);
+				m_SelectedEntity.AddChild(childEntity);
 				ImGui::CloseCurrentPopup();
 			}
 			
@@ -129,12 +129,9 @@ namespace Proof {
 		}
 		if (opened) {
 			
-			if (entity.GetComponent<ChildComponent>()->HasChildren()) {
-				for (UUID& I : entity.GetComponent<ChildComponent>()->m_AllSubEntity) {
-					DrawEntityNode(Entity{ I,m_CurrentWorld });
-				}
+			for (const UUID& I : entity.GetComponent<ChildComponent>()->m_Children) {
+				DrawEntityNode(Entity{ I,m_CurrentWorld });
 			}
-			
 			ImGui::TreePop();
 		}
 	}

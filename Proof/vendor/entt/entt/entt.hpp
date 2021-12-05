@@ -59,7 +59,7 @@
 #   define ENTT_MAYBE_ATOMIC(Type) std::atomic<Type>
 #endif
 
-
+//#define ENTT_ID_TYPE std::uint64_t
 #ifndef ENTT_ID_TYPE
 #   include <cstdint>
 #   define ENTT_ID_TYPE std::uint32_t

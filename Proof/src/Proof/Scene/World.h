@@ -8,15 +8,18 @@
 #include "entt/entt.hpp"
 #include "Component.h"
 class FrameTime;
-
+namespace entt {
+	using registry64 = basic_registry<std::uint64_t>;
+};
 namespace Proof{
 	enum class WorldState 
-	{
+	{	
 		Play,
 		Pause,
 		Simulate,
 		Edit
 	};
+	
 	class Proof_API World {
 	public:
 		World();
@@ -53,9 +56,8 @@ namespace Proof{
 		void OnComponentAdded(UUID ID, T* component) {};
 		template<>
 		void World::OnComponentAdded(UUID ID, CameraComponent* component) {
-
 			component->m_Positon = &m_Registry.get<TransformComponent>(entt::entity(ID.Get())).Location;
-			component->m_Roatation = &m_Registry.get<TransformComponent>(entt::entity( ID.Get())).Rotation;
+			component->m_Roatation = &m_Registry.get<TransformComponent>(entt::entity(ID.Get())).Rotation;
 		}
 		std::string m_Path;
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };

@@ -1,41 +1,5 @@
 World: LightTest
 Entities:
-  - Entity: 1393212057
-    TagComponent:
-      Tag: good
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerEntityID: 0
-      SubEntities: []
-  - Entity: 3887122940
-    TagComponent:
-      Tag: movement
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerEntityID: 0
-      SubEntities: []
-  - Entity: 18002
-    TagComponent:
-      Tag: backpack
-      tags: []
-    TransformComponent:
-      Location: [3.94369793, 17.2870007, -5.40273094]
-      Rotation: [0, 0, 0]
-      Scale: [-10.1269999, 19.948, 17.3339996]
-    ChildComponent:
-      OwnerEntityID: 0
-      SubEntities: []
-    MeshComponent:
-      MeshAssetPointerID: 12067
-      MaterialPointerID: 6594
   - Entity: 14114
     TagComponent:
       Tag: wall
@@ -45,8 +9,8 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [5.12746, 12.9163399, 11.9759607]
     ChildComponent:
-      OwnerEntityID: 0
-      SubEntities: []
+      OwnerID: 0
+      Children: []
     MeshComponent:
       MeshAssetPointerID: 12067
       MaterialPointerID: 0
@@ -59,8 +23,8 @@ Entities:
       Rotation: [-0.00792519189, -0.00840270706, -0.999933302]
       Scale: [0.5, 0.99999994, 1.40000021]
     ChildComponent:
-      OwnerEntityID: 0
-      SubEntities: []
+      OwnerID: 0
+      Children: [13284]
     CameraComponent:
       AutoSetDimension: true
       NearPlane: 0.100000001
@@ -78,8 +42,8 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerEntityID: 0
-      SubEntities: []
+      OwnerID: 14000
+      Children: []
     LightComponent:
       CutOff: 2
       OuterCutOff: 3.66300011
@@ -99,8 +63,8 @@ Entities:
       Rotation: [-7.9000001, 98.3000031, -35.2999992]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerEntityID: 0
-      SubEntities: []
+      OwnerID: 0
+      Children: []
     LightComponent:
       CutOff: 1
       OuterCutOff: 2
@@ -120,8 +84,22 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [0.100000001, 0.100000001, 0.100000001]
     ChildComponent:
-      OwnerEntityID: 0
-      SubEntities: []
+      OwnerID: 0
+      Children: []
     MeshComponent:
       MeshAssetPointerID: 19748
       MaterialPointerID: 0
+  - Entity: 967
+    TagComponent:
+      Tag: backpack
+      tags: []
+    TransformComponent:
+      Location: [3.94369793, 17.2870007, -5.40273094]
+      Rotation: [0, 0, 0]
+      Scale: [-10.1269999, 19.948, 17.3339996]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12067
+      MaterialPointerID: 6594

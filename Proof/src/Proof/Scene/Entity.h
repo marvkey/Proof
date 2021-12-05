@@ -6,11 +6,10 @@
 namespace Proof{
 	struct TagComponent;
 	struct TransformComponent;
-	struct SubEntityComponet;
 	class Proof_API Entity {
 	public:
 		Entity(UUID ID,class World* world):
-			m_ID(ID),CurrentWorld(world), m_EnttEntity(entt::entity((uint64_t)ID)) {}
+			m_ID(ID), CurrentWorld(world), m_EnttEntity(entt::entity(ID.Get())) {}
 		Entity(const Entity& other) =default;
 		Entity()=default;
 
@@ -27,10 +26,13 @@ namespace Proof{
 
 		template<class T,typename... Args>
 		T* AddComponent(Args&&... args) {
+
 			if (HasComponent<T>() == true) {
+
 				PF_WARN("Can not add component Entity already has component");
 				return nullptr;
 			}
+
 			T* Component = &CurrentWorld->m_Registry.emplace<T>(m_EnttEntity, std::forward<Args>(args)...);
 			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
 			return Component;
@@ -52,9 +54,50 @@ namespace Proof{
 			return false;
 		}
 		template<>
-		bool RemoveComponent<SubEntityComponet>() {
-			PF_ERROR("cannot remove SubEntity Componet");
+		bool RemoveComponent<ChildComponent>() {
+			PF_ERROR("cannot remove ChildComponent ");
 			return false;
+		}
+
+		bool HasOwner() {
+			return GetComponent<ChildComponent>()->HasOwner();
+		}
+		
+		Entity GetOwner() {
+			UUID id = GetComponent<ChildComponent>()->GetOwnerID();
+			if (id == 0) return {};
+			return Entity{ id ,CurrentWorld }; // if owner id is 0 entt still cant do anthing
+		}
+		bool RemoveChild(Entity entity) {
+			if (!entity)return false;
+			return GetComponent<ChildComponent>()->RemoveChild(*entity.GetComponent<ChildComponent>());
+		}
+		bool AddChild(Entity entity) {
+			if (entity == Entity{})return false;
+			return GetComponent<ChildComponent>()->AddChild(*entity.GetComponent<ChildComponent>());
+		}
+		bool SetOwner(Entity entity) {
+			if (!entity) {
+				return GetComponent<ChildComponent>()->SetOwnerEmpty();
+			}
+			return GetComponent<ChildComponent>()->SetOwner(*entity.GetComponent<ChildComponent>());
+		}
+		bool HasChild(Entity entity) {
+			if (entity == Entity{})return false;
+			return GetComponent<ChildComponent>()->HasChild(*entity.GetComponent<ChildComponent>());
+		}
+
+		bool HasChildren() {
+			return GetComponent<ChildComponent>()->HasChildren();
+		}
+		template<typename Func>
+		void EachChild(Func func) {
+			ChildComponent* child = GetComponent<ChildComponent>();
+			if (child == nullptr) return;
+			for (const UUID& ID : child->m_Children) {
+				Entity entity{ ID,CurrentWorld };
+				entity(func);
+			}
 		}
 		World* GetCurrentWorld()const {
 			return CurrentWorld;

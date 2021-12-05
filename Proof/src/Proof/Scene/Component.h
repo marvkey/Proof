@@ -11,6 +11,7 @@
 #include<vector>
 #include <string>
 #include <format>
+#include <set>
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
@@ -76,28 +77,91 @@ namespace Proof
 			return m_OwnerID !=0;
 		}
 		bool HasChildren()const {
-			return m_AllSubEntity.size() > 0;
+			return m_Children.size() > 0;
 		}
-		UUID GetOwner()const {
+		UUID GetOwnerID()const {
 			return m_OwnerID;
 		}
-		const std::vector<UUID>& GetAllSubEntity()const {
-			return m_AllSubEntity;
+		const ChildComponent* GetOwner(){
+			if (HasOwner() == false)return nullptr;
+			return m_OwnerPointer;
 		}
+		bool HasChild(UUID ID) {
+			return m_Children.find(ID) != m_Children.end();
+		}
+		bool HasChild(const ChildComponent& other) {
+			return HasChild(other.m_CurrentID);
+		}
+		const std::set<UUID>& GetChildren()const {
+			return m_Children;
+		}
+		bool SetOwnerEmpty() {
+			if (HasOwner()) {
+				m_OwnerPointer->RemoveChild(*this);
+			}
+			m_OwnerID = 0;
+			m_OwnerPointer = nullptr;
+			return true;
+		}
+		bool SetOwner(ChildComponent& newOwner) {
+			if (newOwner == *this) {
+				PF_WARN("cannot add enity as owenr of entity");
+				return false;
+			}
+			if (m_OwnerID == newOwner.m_CurrentID) // if we are already poiting to the new owenr as it already our owner
+				return true;
 
-		bool SetOwner(UUID neweOwner);
+			if (newOwner.GetOwnerID() == m_CurrentID) {// if the owner of the newowenr is htis we have to return fals
+				return false;
+			}
+
+			if (HasOwner()) {
+				m_OwnerPointer->RemoveChild(*this);
+			}
+			m_OwnerID = newOwner.m_CurrentID; // poitn to the enitty of that child
+			newOwner.m_Children.insert(m_CurrentID);
+			m_OwnerPointer = &newOwner;
+			return true;
+		}
 	
-		bool AddChild(UUID child);
-		bool RemoveChild(UUID child	);
+		bool AddChild(ChildComponent& child) {
+			if (child == *this) {
+				PF_WARN("cannot add enity as owenr of entity");
+				return false;
+			}
+			if (HasChild(child) == true)return true;
+
+			m_Children.insert(child.m_CurrentID);
+			child.m_OwnerID = m_CurrentID;
+			return true;
+		}
+		bool RemoveChild(ChildComponent& child) {
+			if (HasChild(child) == false)
+				return false;
+
+			m_Children.erase(child.m_CurrentID);
+
+			child.m_OwnerID = 0;
+			child.m_OwnerPointer = nullptr;// we should not rely on this because an entity can be deleted and the pointer could
+			// still be poiting to that empty memeoory block
+			return true;
+		}
+		bool operator==(const ChildComponent& other)const {
+			return other.m_CurrentID == m_CurrentID && other.m_OwnerID == m_OwnerID;
+		}
+		bool operator!=(const ChildComponent& other) const {
+			return !(*this == other);
+		}
 	private:
+		
 		UUID m_CurrentID = 0; // entity its attached to ID
 		UUID m_OwnerID = 0; // owner of the entity its attahced to
-		std::vector<UUID>m_AllSubEntity;
-		friend class Entity;
-		friend class SceneHierachyPanel;
+		std::set<UUID>m_Children;
+		ChildComponent* m_OwnerPointer;
 		friend class World;
 		friend class SceneSerializer;
-		class World* m_CurrentWorld = nullptr;
+		friend class SceneHierachyPanel;
+		friend class Entity;
 	};
 	struct Proof_API NativeScriptComponent{
 		NativeScriptComponent(const NativeScriptComponent&) = default;
