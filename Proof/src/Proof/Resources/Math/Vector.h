@@ -98,9 +98,9 @@ namespace Proof
 
         operator const glm::vec3()const { return glm::vec3(X,Y,Z); }
         Vector operator=(glm::vec3 const& obj) {
-            this->X = obj.x;
-            this->Y = obj.y;
-            this->Z = obj.z;
+            X = obj.x;
+            Y = obj.y;
+            Z = obj.z;
             return *this;
         }
 

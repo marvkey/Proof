@@ -9,7 +9,7 @@
 #include "Component.h"
 class FrameTime;
 namespace entt {
-	using registry64 = basic_registry<std::uint64_t>;
+	//using registry64 = basic_registry<std::uint64_t>;
 };
 namespace Proof{
 	enum class WorldState 

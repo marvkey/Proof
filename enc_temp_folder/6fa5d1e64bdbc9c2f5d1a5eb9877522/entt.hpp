@@ -19174,7 +19174,7 @@ namespace entt {
          */
         [[nodiscard]] bool valid(const entity_type entity) const {
             const auto pos = size_type(traits_type::to_entity(entity));
-            return (pos < entities.size() && entities[pos] == entity);
+            return true;
         }
 
         /**
