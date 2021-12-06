@@ -36,14 +36,22 @@ namespace Proof {
 			}
 			*/
 			//ImGui::begindrag
-			/*
+			
 			m_CurrentWorld->m_Registry.each([&](auto entityID) {
 				Entity entity = { (uint64_t)entityID,m_CurrentWorld };
+				PF_ENGINE_INFO("HALLO");
 				if (entity.HasOwner() == false)
 					DrawEntityNode(entity);
 				});
-				*/
-			
+				
+			/*
+			for (entt::entity entityID : m_CurrentWorld->m_Registry.entities) {
+				if (m_CurrentWorld->m_Registry.valid(entityID) == false)continue;
+				Entity entity = { (uint64_t)entityID,m_CurrentWorld };
+				if (entity.HasOwner() == false)
+					DrawEntityNode(entity);
+			}
+			*/
 			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
 				m_SelectedEntity = {};
 			}

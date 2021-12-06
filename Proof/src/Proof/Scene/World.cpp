@@ -133,10 +133,9 @@ namespace Proof{
 	Entity World::CreateEntity(const std::string& EntName,UUID ID) {
 		Entity entity = { ID,this};
 
-		m_Registry.create();
+		m_Registry.create(entity.m_EnttEntity);
 
-		m_Registry.entities[m_Registry.entities.size() - 1] = entt::entity((uint64_t)ID);
-
+		//m_Registry.entities[m_Registry.entities.size() - 1] = entt::entity((uint64_t)ID);
 		entity.AddComponent<TagComponent>()->Tag = EntName;
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
