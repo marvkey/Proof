@@ -37,6 +37,8 @@ namespace Proof{
 	uint32_t NumLights = 0;
 	static CameraData s_CurrentCamera;
 	static DrawType s_WorldDrawType = DrawType::Triangles;
+	static glm::mat4 s_Projection;
+	static glm::mat4 s_ViewPosition;
 	void Renderer3DPBR::Init() {
 		s_PBRInstance = new PhysicalBasedRenderer();
 		s_PBRInstance->m_Shader = Shader::GetOrCreate("NewPBRSHADER",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/PhysicalBasedRenderer.glsl");
@@ -61,6 +63,8 @@ namespace Proof{
 			InitilizeDeferedRendering();
 		else if (s_RendererData->RenderSettings.Technique == RenderTechnique::FowardRendering)
 			InitilizeFowardRendering();
+		s_Projection = projection;
+		s_ViewPosition = view;
 	}
 	void Renderer3DPBR::InitilizeDeferedRendering() {
 		s_CurrentLightShader = s_PBRInstance->m_DeferedRendering.LightShader;
@@ -148,11 +152,18 @@ namespace Proof{
 			return;
 		}
 	}
-	void Renderer3DPBR::DrawDebugMesh(Mesh* mesh, TransformComponent& transform){
+	void Renderer3DPBR::DrawDebugMesh(Mesh* mesh, const glm::mat4& transform){
 		s_DebugShader->Bind();
-		s_DebugShader->SetMat4("model", transform.GetWorldTransform());
-		for(SubMesh& meshes: mesh->meshes)
-			RendererCommand::DrawElementIndexed(meshes.m_VertexArrayObject,1,DrawType::Lines);
+		s_DebugShader->SetMat4("model", transform);
+		s_DebugShader->SetMat4("projection", s_Projection);
+		s_DebugShader->SetMat4("view", s_ViewPosition);
+		for (SubMesh& subeMeshes : mesh->meshes) {
+			subeMeshes.m_VertexArrayObject->Bind();
+			subeMeshes.m_IndexBufferObject->Bind();
+			glLineWidth(20);
+			glLineWidth(20);
+			RendererCommand::DrawElementIndexed(subeMeshes.m_VertexArrayObject, 1, DrawType::Lines);
+		}
 	}
 	PhysicalBasedRenderer* Renderer3DPBR::GetRenderer(){
 		return s_PBRInstance;

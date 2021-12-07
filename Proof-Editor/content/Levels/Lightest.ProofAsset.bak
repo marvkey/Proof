@@ -1,6 +1,6 @@
 World: LightTest
 Entities:
-  - Entity: 12000
+  - Entity: 9055691234223281824
     TagComponent:
       Tag: directioal light
       tags: []

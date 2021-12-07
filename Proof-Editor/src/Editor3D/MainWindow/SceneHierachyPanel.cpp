@@ -39,19 +39,10 @@ namespace Proof {
 			
 			m_CurrentWorld->m_Registry.each([&](auto entityID) {
 				Entity entity = { (uint64_t)entityID,m_CurrentWorld };
-				PF_ENGINE_INFO("HALLO");
 				if (entity.HasOwner() == false)
 					DrawEntityNode(entity);
 				});
 				
-			/*
-			for (entt::entity entityID : m_CurrentWorld->m_Registry.entities) {
-				if (m_CurrentWorld->m_Registry.valid(entityID) == false)continue;
-				Entity entity = { (uint64_t)entityID,m_CurrentWorld };
-				if (entity.HasOwner() == false)
-					DrawEntityNode(entity);
-			}
-			*/
 			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
 				m_SelectedEntity = {};
 			}
@@ -442,7 +433,7 @@ namespace Proof {
 				});
 			IndexValue += 1;
 		}
-		CameraComponent* cameraComp = entity.GetComponent<CameraComponent>();
+		CameraComponent* cameraComp = nullptr;
 		if (cameraComp != nullptr) {
 			DrawComponents<CameraComponent>("Camera Component: ", entity, cameraComp, IndexValue, [](CameraComponent& CameraComp) {
 				ImGui::SliderFloat("Field ov fiew", &CameraComp.m_FovDeg, 0, 360);
@@ -467,8 +458,11 @@ namespace Proof {
 		}
 		CubeColliderComponent* cubeCollider = entity.GetComponent<CubeColliderComponent>();
 		if (cubeCollider != nullptr) {
-			DrawComponents<CubeColliderComponent>("CubeColliderComponent: ", entity, cubeCollider, IndexValue, [](CubeColliderComponent& CameraComp) {
-				});
+			DrawComponents<CubeColliderComponent>("CubeColliderComponent: ", entity, cubeCollider, IndexValue, [](CubeColliderComponent& collider) {
+				DrawVectorControl("Offset Location", collider.Offset.Location);
+				DrawVectorControl("Offset Rotation", collider.Offset.Rotation);
+				DrawVectorControl("Offset Scale", collider.Offset.Scale);
+			});
 			IndexValue += 1;
 		}
 	}

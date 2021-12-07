@@ -13,12 +13,12 @@ namespace Proof{
 		Renderer3DPBR::BeginContext(m_World->m_EditorCamera,m_ScreenFrameBuffer,RenderData);
 		auto& meshGroup =m_World->m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
 		for (auto& enity: meshGroup) {
-			auto& [mesh, transform] = meshGroup.get<MeshComponent,TransformComponent>(enity);
+			auto& [mesh, transform] = meshGroup.get(enity);
 			Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
 		}
 		auto& lightGroup = m_World->m_Registry.group<LightComponent>(entt::get<TransformComponent>);
 		for (auto& enity : lightGroup) {
-			const auto& [light, transform] = lightGroup.get<LightComponent,TransformComponent>(enity);
+			const auto& [light, transform] = lightGroup.get(enity);
 			Renderer3DPBR::Draw(light,transform);
 		}
 		
@@ -36,9 +36,13 @@ namespace Proof{
 		
 		Renderer3DPBR::EndContext();
 		m_ScreenFrameBuffer->Bind();
-		//for (CubeColliderComponent* collider : m_World->Registry.m_CubeColliderComponent) {
-		//	Renderer3DPBR::DrawDebugMesh(collider->GetMeshSource(), *collider->GetOwner().GetComponent<TransformComponent>());
-		//}
+		auto& CubeColliderGroup = m_World->m_Registry.group<CubeColliderComponent>(entt::get<TransformComponent>);
+		for (auto& enity : CubeColliderGroup) {
+			const auto& [collider, transform] = CubeColliderGroup.get(enity);
+			TransformComponent temp = transform + collider.Offset;
+			Renderer3DPBR::DrawDebugMesh(collider.GetMeshSource(),temp.GetLocalTransform());
+		}
+		
 		m_ScreenFrameBuffer->UnBind();
 		if (RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
 			m_ScreenFrameBuffer->Bind();

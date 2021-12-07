@@ -9,14 +9,14 @@ namespace Proof {
 	void MeshWorkShop::InitCube(){
         std::vector<Vector<float>> veritces = 
         {
-            Vector<float>(-1, -1, -1),
-            Vector<float>(1, -1, -1),
-            Vector<float>(1, 1, -1),
-            Vector<float>(-1, 1, -1),
-            Vector<float>(-1, -1, 1),
-            Vector<float>(1, -1, 1),
-            Vector<float>(1, 1, 1),
-            Vector<float>(-1, 1, 1)
+            Vector<float>(-0.5, -0.5, -0.5),
+            Vector<float>(0.5, -0.5, -0.5),
+            Vector<float>(0.5, 0.5, -0.5),
+            Vector<float>(-0.5, 0.5, -0.5),
+            Vector<float>(-0.5, -0.5, 0.5),
+            Vector<float>(0.5, -0.5, 0.5),
+            Vector<float>(0.5, 0.5, 0.5),
+            Vector<float>(-0.5, 0.5, 0.5)
         };
 
         std::vector<glm::vec2> texCoords =
@@ -50,15 +50,17 @@ namespace Proof {
         for (unsigned int i = 0; i < veritces.size(); i++) {
             Vertex vertex;
             vertex.Vertices = Vector(veritces[i].X, veritces[i].Y, veritces[i].Z);
-            if (normals.size() >= i)
+            if (normals.size() > i)
                 vertex.Normal = Vector(normals[i].X, normals[i].Y, normals[i].Z);
-            if (texCoords.size() >=i) {
+            if (texCoords.size() >i) {
                 vertex.TexCoords = glm::vec2(texCoords[i].x, texCoords[i].y);
               //  vertex.Tangent = Vector(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
                 //vertex.Bitangent = Vector(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
             }
             cubeVertex.emplace_back(vertex);
         }
-        SubMesh& m_CubeSubmesh = m_Cube->meshes.emplace_back(SubMesh(cubeVertex,indices,"Cube"));
+
+        //m_Cube->meshes.emplace_back(SubMesh(cubeVertex,indices,"cube"));
+        m_Cube = CreateCount<Mesh>("cube.obj");
 	}
 }

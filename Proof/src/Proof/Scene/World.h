@@ -5,11 +5,11 @@
 #include "Proof/Renderer/VertexArray.h"
 #include "Proof/Renderer/FrameBuffer.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
-#include "entt/entt.hpp"
 #include "Component.h"
+#include "entt/entt.hpp"	
 class FrameTime;
 namespace entt {
-	//using registry64 = basic_registry<std::uint64_t>;
+	using registry64 = basic_registry<std::uint64_t>;
 };
 namespace Proof{
 	enum class WorldState 
@@ -37,7 +37,7 @@ namespace Proof{
 
 		static Count<World> Copy(Count<World> other);
 		virtual void EndRuntime();
-		entt::registry m_Registry;
+		entt::registry64 m_Registry;
 		const std::string& GetName()const{return Name;};
 		const std::string& GetPath()const{return m_Path;}
 		friend class WorldRenderer;
@@ -56,8 +56,8 @@ namespace Proof{
 		void OnComponentAdded(UUID ID, T* component) {};
 		template<>
 		void World::OnComponentAdded(UUID ID, CameraComponent* component) {
-			component->m_Positon = &m_Registry.get<TransformComponent>(entt::entity(ID.Get())).Location;
-			component->m_Roatation = &m_Registry.get<TransformComponent>(entt::entity(ID.Get())).Rotation;
+			component->m_Positon = &m_Registry.get<TransformComponent>(ID.Get()).Location;
+			component->m_Roatation = &m_Registry.get<TransformComponent>(ID.Get()).Rotation;
 		}
 		std::string m_Path;
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };

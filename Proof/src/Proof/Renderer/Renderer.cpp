@@ -17,7 +17,7 @@ namespace Proof {
 		//Renderer3DPBR::Reset();
 		Renderer2D::Init();
 		Renderer2D::Reset();
-		//MeshWorkShop::Init();
+		MeshWorkShop::Init();
 	}
 	void Renderer::Reset() {
 		Renderer2D::Reset();

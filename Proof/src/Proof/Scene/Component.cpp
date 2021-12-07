@@ -142,7 +142,6 @@ namespace Proof
 		m_MeshAssetPointerID == 0;
 		return nullptr;
 	}
-	Count<Mesh> CubeColliderComponent::m_CubeMesh = MeshWorkShop::GetCubeMesh();
 	
 	/*
 
@@ -160,4 +159,8 @@ namespace Proof
 		}
 		*/
 	
+	Mesh* CubeColliderComponent::GetMeshSource(){
+		return MeshWorkShop::GetCubeMesh().get();
+	}
+
 }

@@ -107,6 +107,15 @@ namespace Proof {
 			out << YAML::Key << "UpVector" << cameraComponent->m_Up;
 			out << YAML::EndMap; // CameraComponet
 		}
+		CubeColliderComponent* cubeCollider = entity.GetComponent<CubeColliderComponent>();
+		if (cubeCollider != nullptr) {
+			out << YAML::Key << "CubeColliderComponent";
+			out << YAML::BeginMap; // CubeColliderComponent
+			out << YAML::Key << "OffsetLocation" << cubeCollider->Offset.Location;
+			out << YAML::Key << "OffsetRotation" << cubeCollider->Offset.Rotation;
+			out << YAML::Key << "OffsetScale" << cubeCollider->Offset.Scale;
+			out << YAML::EndMap; // CubeColliderComponent
+		}
 		out << YAML::EndMap; // entity
 	}
 
@@ -240,6 +249,13 @@ namespace Proof {
 					src.m_Height = cameraComponent["Height"].as<uint32_t>();
 				}
 
+			}
+			auto cubeColliderComponent = entity["CubeColliderComponent"];
+			if (cubeColliderComponent) {
+				auto& src = *NewEntity.AddComponent<CubeColliderComponent>();
+				src.Offset.Location = cubeColliderComponent["OffsetLocation"].as<Vector<float>>();
+				src.Offset.Rotation = cubeColliderComponent["OffsetRotation"].as<Vector<float>>();
+				src.Offset.Scale = cubeColliderComponent["OffsetScale"].as<Vector<float>>();
 			}
 		}
 		return true;

@@ -16,31 +16,30 @@ namespace Proof{
 		template<class T>
 		T* GetComponent() {
 			if (HasComponent<T>() == false) return nullptr;
-			return &CurrentWorld->m_Registry.get<T>(m_EnttEntity);
+			return &CurrentWorld->m_Registry.get<T>(m_ID.Get());
 		}
 		
 		template<class T>
 		bool HasComponent() {
-			return CurrentWorld->m_Registry.any_of<T>(m_EnttEntity);
+			return CurrentWorld->m_Registry.any_of<T>(m_ID.Get());
 		}
 
 		template<class T,typename... Args>
 		T* AddComponent(Args&&... args) {
 
-			//if (HasComponent<T>() == true) {
+			if (HasComponent<T>() == true) {
+				PF_WARN("Can not add component Entity already has component");
+				return nullptr;
+			}
 
-			//	PF_WARN("Can not add component Entity already has component");
-			//	return nullptr;
-			//}
-
-			T* Component = &CurrentWorld->m_Registry.emplace<T>(m_EnttEntity, std::forward<Args>(args)...);
+			T* Component = &CurrentWorld->m_Registry.emplace<T>(m_ID.Get(), std::forward<Args>(args)...);
 			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
 			return Component;
 		}
 		template<typename T>
 		bool RemoveComponent() {
 			if (HasComponent<T>() == false)return false;
-			CurrentWorld->m_Registry.remove<T>(m_EnttEntity);
+			CurrentWorld->m_Registry.remove<T>(m_ID.Get());
 			return true;
 		}
 		template<>

@@ -56,6 +56,13 @@ namespace Proof
 		Vector<float> Scale = {1.0f,1.0f,1.0f};
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
+		TransformComponent operator+ (const TransformComponent& other)const {
+			TransformComponent temp;
+			temp.Location = this->Location + other.Location;
+			temp.Rotation = this->Rotation + other.Rotation;
+			temp.Scale = this->Scale + other.Scale;
+			return temp;
+		}
 		Vector<float> GetWorldLocation()const;
 		Vector<float> GetWorldRotation()const;
 		Vector<float> GetWorldScale()const;
@@ -344,17 +351,13 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 	private:
-		uint32_t StartIndexSlot = 0;
-		friend class ECS;
 	};
 		
-	struct Proof_API CubeColliderComponent{
+	struct Proof_API CubeColliderComponent {
 		CubeColliderComponent(const CubeColliderComponent&) = default;
-		CubeColliderComponent() = default;
-		static class Mesh* GetMeshSource() { return m_CubeMesh.get(); };
-		uint32_t StartIndexSlot;
-	private:
-		static Count<Mesh> m_CubeMesh;
+		CubeColliderComponent() { Offset.Scale= Vector<float>{ 0, 0, 0 }; }
+		static class Mesh* GetMeshSource();
+		TransformComponent Offset;
 	};
 
 }
