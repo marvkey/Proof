@@ -48,7 +48,7 @@ namespace Proof {
 			}
 			if (ImGui::BeginPopupContextWindow(0, 1, false)) { // right click adn open a new entitiy
 				if (ImGui::MenuItem("Create Entity"))
-					m_SelectedEntity = m_CurrentWorld->CreateEntity("Empty Entity");
+					/*m_SelectedEntity = */m_CurrentWorld->CreateEntity();
 				ImGui::EndPopup();
 			}
 		}
@@ -433,7 +433,7 @@ namespace Proof {
 				});
 			IndexValue += 1;
 		}
-		CameraComponent* cameraComp = nullptr;
+		CameraComponent* cameraComp = entity.GetComponent<CameraComponent>();
 		if (cameraComp != nullptr) {
 			DrawComponents<CameraComponent>("Camera Component: ", entity, cameraComp, IndexValue, [](CameraComponent& CameraComp) {
 				ImGui::SliderFloat("Field ov fiew", &CameraComp.m_FovDeg, 0, 360);

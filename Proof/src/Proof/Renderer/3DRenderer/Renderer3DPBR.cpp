@@ -160,8 +160,7 @@ namespace Proof{
 		for (SubMesh& subeMeshes : mesh->meshes) {
 			subeMeshes.m_VertexArrayObject->Bind();
 			subeMeshes.m_IndexBufferObject->Bind();
-			glLineWidth(20);
-			glLineWidth(20);
+			//glPolygonMode(GL_FRONT_AND_BACK, (int)GL_LINES);
 			RendererCommand::DrawElementIndexed(subeMeshes.m_VertexArrayObject, 1, DrawType::Lines);
 		}
 	}

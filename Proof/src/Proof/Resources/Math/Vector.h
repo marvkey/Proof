@@ -177,9 +177,9 @@ namespace Proof
         return tempVec;
     }
     */
-    
-    inline Vector<> operator*(float temp, const Vector<>& other) {
-        Vector tempVec(other.X * temp, other.Y * temp, other.Z * temp);
+    template<typename T>
+    inline Vector<T> operator*(float temp, const Vector<T>& other) {
+        Vector<T> tempVec(other.X * temp, other.Y * temp, other.Z * temp);
         return tempVec;
     }
     

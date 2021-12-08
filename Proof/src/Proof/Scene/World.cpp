@@ -17,6 +17,7 @@
 #include "Proof/Renderer/FrameBuffer.h"
 #include<glad/glad.h>
 #include "Proof/Scene/Component.h"
+#include "entt/fwd.hpp"
 #include "entt/entt.hpp"	
 namespace Proof{
 	unsigned int quadVAO = 0;
@@ -64,11 +65,12 @@ namespace Proof{
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
+		auto& view  = m_Registry.view<CameraComponent>();
 		CameraComponent* cameraComp =nullptr;
-		//for (auto entity : view) {
-			//cameraComp = &view.get<CameraComponent>(entity);
-		//	break;
-		//}
+		for (auto entity : view) {
+			cameraComp = &view.get<CameraComponent>(entity);
+			break;
+		}
 		if(cameraComp == nullptr){
 			OnUpdate(DeltaTime,width,height);
 			/*
@@ -120,22 +122,15 @@ namespace Proof{
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {
-		UUID ID = UUID();
-		Entity entity = { ID,this};
-
-		m_Registry.create(ID.Get());
-
-		entity.AddComponent<TagComponent>()->Tag =EntName;
-		entity.AddComponent<TransformComponent>();
-		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
-		return entity;
+		return CreateEntity(EntName, UUID());
 	}
 
 	Entity World::CreateEntity(const std::string& EntName,UUID ID) {
-		Entity entity = { ID,this};
+		/* we have to do some custmization of entt because when we pass an ID the entities create a vecot of the size of ID*/
+		Entity entity = { ID,this };
 
-		m_Registry.create(ID.Get());
-
+		//m_Registry.entities.emplace_back(entity.m_EnttEntity);
+		m_Registry.create(entity.m_EnttEntity);
 		entity.AddComponent<TagComponent>()->Tag = EntName;
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
@@ -186,7 +181,7 @@ namespace Proof{
 
 	void World::DeleteEntity(Entity& ent) {
 		ent.OnDelete();
-		m_Registry.destroy(ent.GetID());
+		m_Registry.destroy(ent.m_EnttEntity);
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){

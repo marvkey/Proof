@@ -26,6 +26,7 @@
 #    include <atomic>
 #    define ENTT_MAYBE_ATOMIC(Type) std::atomic<Type>
 #endif
+
 #ifndef ENTT_ID_TYPE
 #    include <cstdint>
 #    define ENTT_ID_TYPE std::uint32_t

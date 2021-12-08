@@ -1,29 +1,16 @@
 World: LightTest
 Entities:
-  - Entity: 14114
+  - Entity: 1948284606
     TagComponent:
-      Tag: wall
+      Tag: Empty Entity
       tags: []
     TransformComponent:
-      Location: [-3.11400008, 8.41100025, -21.059]
+      Location: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [5.12746, 12.9163399, 20.8759995]
+      Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
       Children: []
-    MeshComponent:
-      MeshAssetPointerID: 12067
-      MaterialPointerID: 0
-    SpriteComponent:
-      TextureAssetPointerID: 0
-      Colour: [0.161290169, 1, 0, 1]
-      LocalLocation: [0, 0, 0]
-      LocalRotation: [0, 0, 0]
-      LocalScale: [1, 1, 1]
-    CubeColliderComponent:
-      OffsetLocation: [0, 0, 0]
-      OffsetRotation: [0, 0, 0]
-      OffsetScale: [0, 0, 0]
   - Entity: 14000
     TagComponent:
       Tag: flashlight

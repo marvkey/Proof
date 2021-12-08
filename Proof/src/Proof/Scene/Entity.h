@@ -16,12 +16,12 @@ namespace Proof{
 		template<class T>
 		T* GetComponent() {
 			if (HasComponent<T>() == false) return nullptr;
-			return &CurrentWorld->m_Registry.get<T>(m_ID.Get());
+			return &CurrentWorld->m_Registry.get<T>(m_EnttEntity);
 		}
 		
 		template<class T>
 		bool HasComponent() {
-			return CurrentWorld->m_Registry.any_of<T>(m_ID.Get());
+			return CurrentWorld->m_Registry.any_of<T>(m_EnttEntity);
 		}
 
 		template<class T,typename... Args>
@@ -32,14 +32,14 @@ namespace Proof{
 				return nullptr;
 			}
 
-			T* Component = &CurrentWorld->m_Registry.emplace<T>(m_ID.Get(), std::forward<Args>(args)...);
+			T* Component = &CurrentWorld->m_Registry.emplace<T>(m_EnttEntity, std::forward<Args>(args)...);
 			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
 			return Component;
 		}
 		template<typename T>
 		bool RemoveComponent() {
 			if (HasComponent<T>() == false)return false;
-			CurrentWorld->m_Registry.remove<T>(m_ID.Get());
+			CurrentWorld->m_Registry.remove<T>(m_EnttEntity);
 			return true;
 		}
 		template<>
