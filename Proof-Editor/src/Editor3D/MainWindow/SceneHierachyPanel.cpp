@@ -38,7 +38,9 @@ namespace Proof {
 			//ImGui::begindrag
 			
 			m_CurrentWorld->m_Registry.each([&](auto entityID) {
+
 				Entity entity = { (uint64_t)entityID,m_CurrentWorld };
+
 				if (entity.HasOwner() == false)
 					DrawEntityNode(entity);
 				});

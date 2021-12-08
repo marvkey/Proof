@@ -26,7 +26,7 @@
 #    include <atomic>
 #    define ENTT_MAYBE_ATOMIC(Type) std::atomic<Type>
 #endif
-
+//#define ENTT_ID_TYPE uint64_t
 #ifndef ENTT_ID_TYPE
 #    include <cstdint>
 #    define ENTT_ID_TYPE std::uint32_t
@@ -39,7 +39,7 @@
 #ifndef ENTT_PACKED_PAGE
 #    define ENTT_PACKED_PAGE 1024
 #endif
-
+#define ENTT_DISABLE_ASSERT
 #ifdef ENTT_DISABLE_ASSERT
 #    undef ENTT_ASSERT
 #    define ENTT_ASSERT(...) (void(0))

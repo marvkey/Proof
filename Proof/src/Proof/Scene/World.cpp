@@ -129,8 +129,9 @@ namespace Proof{
 		/* we have to do some custmization of entt because when we pass an ID the entities create a vecot of the size of ID*/
 		Entity entity = { ID,this };
 
-		//m_Registry.entities.emplace_back(entity.m_EnttEntity);
-		m_Registry.create(entity.m_EnttEntity);
+		m_Registry.entities.emplace_back(ID.Get());
+		//m_Registry.each();
+		//m_Registry.create(entity.m_EnttEntity);
 		entity.AddComponent<TagComponent>()->Tag = EntName;
 		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
@@ -180,8 +181,16 @@ namespace Proof{
 	}
 
 	void World::DeleteEntity(Entity& ent) {
+		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ent.m_ID.Get());
+		if (it == m_Registry.entities.end())
+			return;
 		ent.OnDelete();
-		m_Registry.destroy(ent.m_EnttEntity);
+
+		for (auto&& pdata : m_Registry.pools) {
+			pdata.pool&& pdata.pool->remove(ent.m_ID.Get(), &m_Registry);
+		}
+
+		m_Registry.entities.erase(it);
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){

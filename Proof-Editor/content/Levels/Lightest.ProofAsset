@@ -1,16 +1,5 @@
 World: LightTest
 Entities:
-  - Entity: 1948284606
-    TagComponent:
-      Tag: Empty Entity
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 0
-      Children: []
   - Entity: 14000
     TagComponent:
       Tag: flashlight

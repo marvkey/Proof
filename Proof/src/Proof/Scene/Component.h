@@ -63,6 +63,7 @@ namespace Proof
 			temp.Scale = this->Scale + other.Scale;
 			return temp;
 		}
+		
 		Vector<float> GetWorldLocation()const;
 		Vector<float> GetWorldRotation()const;
 		Vector<float> GetWorldScale()const;
