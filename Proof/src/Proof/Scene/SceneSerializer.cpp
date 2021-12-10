@@ -188,7 +188,7 @@ namespace Proof {
 				if (subEntityComponent["Children"]) {
 					for (auto entityID : subEntityComponent["Children"]) {
 						uint64_t childID = entityID.as<uint64_t>();
-						tc->m_Children.insert(childID);
+						tc->m_Children.emplace_back(childID);
 					}
 				}
 				

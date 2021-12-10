@@ -43,7 +43,7 @@ namespace Proof{
 		const std::string& GetPath()const{return m_Path;}
 		friend class WorldRenderer;
 		void HandleInput();
-		void DeleteEntity(class Entity& ent);
+		void DeleteEntity(class Entity& ent,bool deleteChildren =true);
 
 		EditorCamera m_EditorCamera ={200,200};
 	private:

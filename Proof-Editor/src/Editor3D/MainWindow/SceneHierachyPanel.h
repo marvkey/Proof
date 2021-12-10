@@ -17,7 +17,7 @@ namespace Proof{
 		World* m_CurrentWorld;
 		Entity m_SelectedEntity;
 		//class ContentBrowserPanel* m_BrowserPanel =nullptr;
-		void DrawEntityNode(class Entity& entity);
+		void DrawEntityNode(class Entity& entity); 
 		void DrawComponent(class Entity& entity);
 
 		template<typename T,typename UIFunction>

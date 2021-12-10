@@ -95,17 +95,17 @@ namespace Proof
 			return m_OwnerPointer;
 		}
 		bool HasChild(UUID ID) {
-			return m_Children.find(ID) != m_Children.end();
+			return std::find(m_Children.begin(), m_Children.end(), ID.Get()) != m_Children.end();
 		}
 		bool HasChild(const ChildComponent& other) {
 			return HasChild(other.m_CurrentID);
 		}
-		const std::set<UUID>& GetChildren()const {
+		const std::vector<UUID>& GetChildren()const {
 			return m_Children;
 		}
 		bool SetOwnerEmpty() {
 			if (HasOwner()) {
-				m_OwnerPointer->RemoveChild(*this);
+				return m_OwnerPointer->RemoveChild(*this);
 			}
 			m_OwnerID = 0;
 			m_OwnerPointer = nullptr;
@@ -127,8 +127,8 @@ namespace Proof
 				m_OwnerPointer->RemoveChild(*this);
 			}
 			m_OwnerID = newOwner.m_CurrentID; // poitn to the enitty of that child
-			newOwner.m_Children.insert(m_CurrentID);
 			m_OwnerPointer = &newOwner;
+			newOwner.m_Children.emplace_back(m_CurrentID);
 			return true;
 		}
 	
@@ -139,19 +139,19 @@ namespace Proof
 			}
 			if (HasChild(child) == true)return true;
 
-			m_Children.insert(child.m_CurrentID);
+			m_Children.emplace_back(child.m_CurrentID);
 			child.m_OwnerID = m_CurrentID;
+			child.m_OwnerPointer = this;
 			return true;
 		}
 		bool RemoveChild(ChildComponent& child) {
-			if (HasChild(child) == false)
+			auto& it = std::find(m_Children.begin(), m_Children.end(), child.m_CurrentID);
+			if (it == m_Children.end())// checking if we have the child
 				return false;
-
-			m_Children.erase(child.m_CurrentID);
-
 			child.m_OwnerID = 0;
 			child.m_OwnerPointer = nullptr;// we should not rely on this because an entity can be deleted and the pointer could
 			// still be poiting to that empty memeoory block
+			m_Children.erase(it);
 			return true;
 		}
 		bool operator==(const ChildComponent& other)const {
@@ -164,8 +164,8 @@ namespace Proof
 		
 		UUID m_CurrentID = 0; // entity its attached to ID
 		UUID m_OwnerID = 0; // owner of the entity its attahced to
-		std::set<UUID>m_Children;
-		ChildComponent* m_OwnerPointer;
+		std::vector<UUID>m_Children;
+		ChildComponent* m_OwnerPointer=nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;

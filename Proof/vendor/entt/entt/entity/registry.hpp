@@ -944,14 +944,15 @@ public:
      * @param func A valid function object.
      */
     template<typename Func>
-    void each(Func func) const {
+    void each(Func func) const { // EDITED BY PROOF TO LOOP FROM FRONT TO BACK
+        uint64_t size = entities.size();
         if(free_list == null) {
             for(auto pos = entities.size(); pos; --pos) {
-                func(entities[pos - 1]);
+                func(entities[size-pos]);
             }
         } else {
             for(auto pos = entities.size(); pos; --pos) {
-                if(const auto entity = entities[pos - 1]; entity_traits::to_entity(entity) == (pos - 1)) {
+                if(const auto entity = entities[size-pos]; entity_traits::to_entity(entity) == (size-pos)) {
                     func(entity);
                 }
             }

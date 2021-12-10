@@ -77,6 +77,7 @@ namespace Proof{
 		}
 		bool SetOwner(Entity entity) {
 			if (!entity) {
+
 				return GetComponent<ChildComponent>()->SetOwnerEmpty();
 			}
 			return GetComponent<ChildComponent>()->SetOwner(*entity.GetComponent<ChildComponent>());
@@ -93,9 +94,9 @@ namespace Proof{
 		void EachChild(Func func) {
 			ChildComponent* child = GetComponent<ChildComponent>();
 			if (child == nullptr) return;
-			for (const UUID& ID : child->m_Children) {
-				Entity entity{ ID,CurrentWorld };
-				entity(func);
+			for (uint64_t ID = 0; ID < child->m_Children.size();ID++) {
+				Entity entity{ child->m_Children[ID],CurrentWorld};
+				func(entity);
 			}
 		}
 		World* GetCurrentWorld()const {
@@ -120,9 +121,6 @@ namespace Proof{
 		World* CurrentWorld = nullptr;
 		UUID m_ID{0};
 		entt::entity m_EnttEntity{ entt::null };
-		void OnSubEntityDelete(const Entity& tempEntity);
-		void OnDelete();
-		void SwapEntityOwner(const Entity& newOwner);
 		friend class World;
 	};
 }

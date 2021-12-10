@@ -35,36 +35,51 @@ namespace Proof {
 
 			}
 			*/
-			//ImGui::begindrag
-			
-			m_CurrentWorld->m_Registry.each([&](auto entityID) {
+			ImGui::BeginChild("Child Herieachy", { ImGui::GetWindowWidth(),ImGui::GetWindowHeight() / 2 }); 
+			{
+				for (uint64_t i = 0; i < m_CurrentWorld->m_Registry.size(); i++) {
+					Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld };
+					if (entity.HasOwner() == false)
+						DrawEntityNode(entity);
+				}
 
-				Entity entity = { (uint64_t)entityID,m_CurrentWorld };
+				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
+					m_SelectedEntity = {};
+				}
+				if (ImGui::BeginPopupContextWindow(0, 1, false)) { // right click adn open a new entitiy
+					if (ImGui::MenuItem("Create Entity"))
+						m_SelectedEntity = m_CurrentWorld->CreateEntity();
+					ImGui::EndPopup();
+				}
+			}
+			ImGui::EndChild();
 
-				if (entity.HasOwner() == false)
-					DrawEntityNode(entity);
-				});
-				
-			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
-				m_SelectedEntity = {};
+			ImGui::BeginChild("Properties",ImGui::GetContentRegionAvail()); 
+			{
+				{
+					if (m_SelectedEntity) {
+						DrawComponent(m_SelectedEntity);
+					}
+				}
 			}
-			if (ImGui::BeginPopupContextWindow(0, 1, false)) { // right click adn open a new entitiy
-				if (ImGui::MenuItem("Create Entity"))
-					/*m_SelectedEntity = */m_CurrentWorld->CreateEntity();
-				ImGui::EndPopup();
-			}
+			ImGui::EndChild();
 		}
 		ImGui::End();
 
-		ImGui::Begin("Properties");
-		{
-			if (m_SelectedEntity) {
-				DrawComponent(m_SelectedEntity);
-			}
-		}
-		ImGui::End();
 	}
 	void SceneHierachyPanel::DrawEntityNode(Entity& entity) {
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
+
+				Entity Data = *(const Entity*)payload->Data;
+				if (Data.HasOwner() == true)
+					Data.SetOwner(entity);
+				else
+					entity.AddChild(Data);
+
+			}
+			ImGui::EndDragDropTarget();
+		}
 		auto& tc = entity.GetComponent<TagComponent>()->Tag;
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 
@@ -100,20 +115,20 @@ namespace Proof {
 			if (m_SelectedEntity.HasOwner()) {
 				if (ImGui::MenuItem("Single entity")) {
 					m_SelectedEntity.GetOwner().RemoveChild(m_SelectedEntity);
+					m_SelectedEntity = {};
 					ImGui::CloseCurrentPopup();
 				}
 			}
 			if (ImGui::MenuItem("Create Child entity")) {
-				Entity childEntity = m_CurrentWorld->CreateEntity("Empty Child Entity");
-				childEntity.SetOwner(m_SelectedEntity);
-				m_SelectedEntity.AddChild(childEntity);
+				m_SelectedEntity.AddChild(m_CurrentWorld->CreateEntity("Empty Child Entity"));
 				ImGui::CloseCurrentPopup();
 			}
 			
 			if (ImGui::MenuItem("Delete")) {
-				m_CurrentWorld->DeleteEntity(m_SelectedEntity);
+				m_CurrentWorld->DeleteEntity(m_SelectedEntity,true);
 
 				m_SelectedEntity = {};
+
 				ImGui::CloseCurrentPopup();
 				if (opened) {
 					ImGui::EndPopup();
@@ -123,6 +138,7 @@ namespace Proof {
 			}
 			ImGui::EndPopup();
 		}
+		
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
 			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
 		}
@@ -136,6 +152,7 @@ namespace Proof {
 			}
 			ImGui::TreePop();
 		}
+		return ;
 	}
 
 	template<typename T, typename UIFunction>

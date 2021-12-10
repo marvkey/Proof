@@ -180,17 +180,30 @@ namespace Proof{
 		
 	}
 
-	void World::DeleteEntity(Entity& ent) {
+	
+	void World::DeleteEntity(Entity& ent, bool deleteChildren) {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ent.m_ID.Get());
 		if (it == m_Registry.entities.end())
 			return;
-		ent.OnDelete();
-
+		if (deleteChildren == false) {
+			ent.EachChild([&](Entity childEntity) {
+				childEntity.GetComponent<ChildComponent>()->m_OwnerID = 0;
+				childEntity.GetComponent<ChildComponent>()->m_OwnerPointer = nullptr;
+				// we are not using remove because it would change the vector we are looping causing some problems
+			});
+		}
+		else {
+			ent.EachChild([&](Entity childEntity) {
+				World::DeleteEntity(childEntity, true);
+			});
+		}
 		for (auto&& pdata : m_Registry.pools) {
 			pdata.pool&& pdata.pool->remove(ent.m_ID.Get(), &m_Registry);
 		}
-
 		m_Registry.entities.erase(it);
+		ent.m_ID = 0;
+		ent.m_EnttEntity = entt::entity(0);
+		ent.CurrentWorld = nullptr;
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){
