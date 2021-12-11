@@ -7,44 +7,49 @@ namespace Proof {
         InitCube();
 	}
 	void MeshWorkShop::InitCube(){
+
+    
+
+
         std::vector<Vector<float>> veritces = 
         {
-            Vector<float>(-0.5, -0.5, -0.5),
-            Vector<float>(0.5, -0.5, -0.5),
-            Vector<float>(0.5, 0.5, -0.5),
-            Vector<float>(-0.5, 0.5, -0.5),
-            Vector<float>(-0.5, -0.5, 0.5),
-            Vector<float>(0.5, -0.5, 0.5),
-            Vector<float>(0.5, 0.5, 0.5),
-            Vector<float>(-0.5, 0.5, 0.5)
+
+                Vector<float>(0.0, 0.0, 0.0),
+                Vector<float>(0.0, 0.0, 1.0),
+                Vector<float>(0.0, 1.0, 0.0),
+                Vector<float>(0.0, 1.0, 1.0),
+                Vector<float>(1.0, 0.0, 0.0),
+                Vector<float>(1.0, 0.0, 1.0),
+                Vector<float>(1.0, 1.0, 0.0),
+                Vector<float>(1.0, 1.0, 1.0),
         };
 
         std::vector<glm::vec2> texCoords =
         {
-            glm::vec2(0, 0),
-            glm::vec2(1, 0),
-            glm::vec2(1, 1),
-            glm::vec2(0, 1)
+            //glm::vec2(0, 0),
+            //glm::vec2(1, 0),
+            //glm::vec2(1, 1),
+            //glm::vec2(0, 1)
         };
 
         std::vector<Vector<float>> normals =
         {
-            Vector<float>(0, 0, 1),
-            Vector<float>(1, 0, 0),
-            Vector<float>(0, 0, -1),
-            Vector<float>(-1, 0, 0),
-            Vector<float>(0, 1, 0),
-            Vector<float>(0, -1, 0)
+            Vector<float>( 0.0 , 0.0 , 1.0 ),
+            Vector<float>( 0.0 , 0.0 ,- 1.0),
+            Vector<float>( 0.0 , 1.0 , 0.0 ),
+            Vector<float>( 0.0 ,- 1.0,  0.0),
+            Vector<float>( 1.0 , 0.0 , 0.0 ),
+            Vector<float>(- 1.0,  0.0,  0.0),
         };
 
         std::vector<uint32_t> indices =
         {
-            0, 1, 3, 3, 1, 2,
-            1, 5, 2, 2, 5, 6,
-            5, 4, 6, 6, 4, 7,
-            4, 0, 7, 7, 0, 3,
-            3, 2, 7, 7, 2, 6,
-            4, 5, 0, 0, 5, 1
+            0, 2, 3, 1,
+            2, 6, 7, 3,
+            6, 4, 5, 7,
+            4, 0, 1, 5,
+            0, 4, 6, 2,
+            1, 5, 7, 3
         };
         std::vector<Vertex> cubeVertex;
         for (unsigned int i = 0; i < veritces.size(); i++) {
@@ -60,7 +65,8 @@ namespace Proof {
             cubeVertex.emplace_back(vertex);
         }
 
-        //m_Cube->meshes.emplace_back(SubMesh(cubeVertex,indices,"cube"));
         m_Cube = CreateCount<Mesh>("cube.obj");
+
+       // m_Cube->meshes.emplace_back(SubMesh(cubeVertex,indices,"cube"));
 	}
 }

@@ -140,6 +140,7 @@ namespace Proof{
     SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name,std::vector<Proof::Count<Proof::Texture2D>>& Textures) {
         //this->m_Vertices = Vertices;
         //this->m_Indices = Indices;
+
         this->m_Textures = Textures;
         m_Name = name;
         m_VertexArrayObject = VertexArray::Create();

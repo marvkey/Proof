@@ -129,12 +129,11 @@ namespace Proof{
 		/* we have to do some custmization of entt because when we pass an ID the entities create a vecot of the size of ID*/
 		Entity entity = { ID,this };
 
-		m_Registry.entities.emplace_back(ID.Get());
-		//m_Registry.each();
-		//m_Registry.create(entity.m_EnttEntity);
+		m_Registry.entities.emplace_back(ID.Get()); // not the correct way but it works there is some bugs with ent so we have to do this
 		entity.AddComponent<TagComponent>()->Tag = EntName;
-		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
+		entity.AddComponent<TransformComponent>()->entID = ID;
+		entity.GetComponent<TransformComponent>()->m_World = this;
 		return entity;
 	}
 	template<class TypeComponent>

@@ -80,12 +80,34 @@ Entities:
       Tag: backpack
       tags: []
     TransformComponent:
-      Location: [3.94369793, 17.2870007, -5.40273094]
+      Location: [2.04399991, 14.9870005, -5.80299997]
       Rotation: [0, 0, 0]
-      Scale: [-10.1269999, 19.948, 17.3339996]
+      Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
       Children: []
     MeshComponent:
-      MeshAssetPointerID: 0
-      MaterialPointerID: 6594
+      MeshAssetPointerID: 9099
+      MaterialPointerID: 0
+    CubeColliderComponent:
+      OffsetLocation: [1.70000005, 1, -2]
+      OffsetRotation: [0, 0, 0]
+      OffsetScale: [4.19999981, 3.5999999, 3.29999995]
+  - Entity: 99
+    TagComponent:
+      Tag: cube
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [7.19999981, 7.69999981, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12067
+      MaterialPointerID: 0
+    CubeColliderComponent:
+      OffsetLocation: [0, 0, 0]
+      OffsetRotation: [0, 0, 0]
+      OffsetScale: [0, 0, 0]

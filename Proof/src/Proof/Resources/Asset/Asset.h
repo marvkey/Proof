@@ -5,6 +5,7 @@ namespace Proof
 {
 	class Proof_API Asset {
 	public:
+		
 		Asset() =default;
 		virtual void SaveAsset() =0;
 		virtual bool LoadAsset(const std::string& FilePath) =0;

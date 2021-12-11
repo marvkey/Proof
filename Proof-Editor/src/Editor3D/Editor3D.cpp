@@ -184,25 +184,38 @@ namespace Proof
 		
 		MainToolBar();
 		
-		m_WorldHierachy.ImGuiRender();
-		m_CurrentContentBrowserPanel.ImGuiRender();
+		m_WorldHierachy.ImGuiRender(DeltaTime);
+		m_CurrentContentBrowserPanel.ImGuiRender(DeltaTime);
 		Logger();
-		if (ImGui::Begin("Renderer Stastitics")) {
-			ImGui::TextColored({1.0,0,0,1},"RENDERER SPECS");
-			ImGui::Text("Renderer Company: %s",Renderer::GetRenderCompany().c_str());
-			ImGui::Text("Graphics Card: %s",Renderer::GetGraphicsCard().c_str());
-			ImGui::Text("Graphics Card Verison: %s",Renderer::GetGraphicsCardVersion().c_str());
-			ImGui::Text("%.3f ms/frame %.1f FPS",FrameTime::GetFrameMS(),FrameTime::GetFrameFPS());
+	
 
-			ImGui::TextColored({1.0,0,0,1},"RENDERER 3D");
-			ImGui::Text("DrawCalls %i",m_WorldRenderer.RenderData.Stats.DrawCalls);
+		if (ImGui::Begin("Active World")) {
+			if(ImGui::Button("Choose Hdr")){
+				std::string file= Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
+				if(file.empty()==false){
+					ActiveWorld->CreateIBlTexture(file);
+				}
+			}
+		}
+		ImGui::End();
+		if (m_ShowRendererStats == false)
+			return;
+		if (ImGui::Begin("Renderer Stastitics"), &m_ShowRendererStats) {
+			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER SPECS");
+			ImGui::Text("Renderer Company: %s", Renderer::GetRenderCompany().c_str());
+			ImGui::Text("Graphics Card: %s", Renderer::GetGraphicsCard().c_str());
+			ImGui::Text("Graphics Card Verison: %s", Renderer::GetGraphicsCardVersion().c_str());
+			ImGui::Text("%.3f ms/frame %.1f FPS", FrameTime::GetFrameMS(), FrameTime::GetFrameFPS());
+
+			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER 3D");
+			ImGui::Text("DrawCalls %i", m_WorldRenderer.RenderData.Stats.DrawCalls);
 			ImGui::Text("Number Of MeshInstances %i", m_WorldRenderer.RenderData.Stats.Instances);
 
 			ImGui::Text("Amount Of Directional Light %i", m_WorldRenderer.RenderData.Stats.AmountDirectionalLight);
 			ImGui::Text("Amount Of Point Light%i", m_WorldRenderer.RenderData.Stats.AmountPointLight);
 			ImGui::Text("Amount Of Spot Light %i", m_WorldRenderer.RenderData.Stats.AmountSpotLight);
 
-			if(ImGui::Button("Reload Shader")){
+			if (ImGui::Button("Reload Shader")) {
 				Renderer::GetShaderLibrary().ReloadeShaders();
 			}
 
@@ -221,19 +234,12 @@ namespace Proof
 			}
 		}
 		ImGui::End();
-
-		if (ImGui::Begin("Active World")) {
-			if(ImGui::Button("Choose Hdr")){
-				std::string file= Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
-				if(file.empty()==false){
-					ActiveWorld->CreateIBlTexture(file);
-				}
-			}
-		}
-		ImGui::End();
 	}
 	void Editore3D::Logger() {
-		if(ImGui::Begin("Log",(bool*)0,ImGuiWindowFlags_MenuBar| ImGuiWindowFlags_AlwaysHorizontalScrollbar|ImGuiWindowFlags_AlwaysVerticalScrollbar)){
+		if (m_ShowLogger == false)
+			return;
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
+		if(ImGui::Begin("Log", &m_ShowLogger,ImGuiWindowFlags_MenuBar| ImGuiWindowFlags_AlwaysHorizontalScrollbar|ImGuiWindowFlags_AlwaysVerticalScrollbar)){
 			ImGui::BeginMenuBar();
 			{
 				ExternalAPI::ImGUIAPI::CheckBox("pause logging",&Log::m_PauseLog);
@@ -340,6 +346,7 @@ namespace Proof
 		
 		}
 		ImGui::End();
+		ImGui::PopStyleVar();
 	}
 	void Editore3D::ViewPort() {
 
@@ -559,6 +566,17 @@ namespace Proof
 						Save();
 					}
 				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Edit")) {
+
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("View")) {
+				ImGui::MenuItem("Heirachy", nullptr, &m_WorldHierachy.m_ShowWindow);
+				ImGui::MenuItem("Log", nullptr, &m_ShowLogger);
+				ImGui::MenuItem("Content Browser", nullptr, &m_CurrentContentBrowserPanel.m_ShowWindow);
+				ImGui::MenuItem("Render Stats", nullptr, &m_ShowRendererStats);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();

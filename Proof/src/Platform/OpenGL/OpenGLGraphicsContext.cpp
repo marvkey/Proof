@@ -35,16 +35,13 @@ namespace Proof
         glDebugMessageControl(GL_DONT_CARE,GL_DONT_CARE,GL_DEBUG_SEVERITY_NOTIFICATION,0,NULL,GL_FALSE);
     #endif
     }
-    void OpenGLGraphicsContext::SwapBuffer() {
-        glfwSwapBuffers(static_cast<::GLFWwindow*>(WindowHandle->GetWindow()));
-    }
-    void OpenGLGraphicsContext::CleanUp() {}
+   
     void OpenGLGraphicsContext::OpenGLMessageCallback(unsigned source,unsigned type,unsigned id,unsigned severity,int length,const char* message,const void* userParam) {
         switch (severity) {
-        case GL_DEBUG_SEVERITY_HIGH:         PF_ENGINE_CRITICAL(message); return;
-        case GL_DEBUG_SEVERITY_MEDIUM:       PF_ENGINE_INFO(message); return;
-        case GL_DEBUG_SEVERITY_LOW:          PF_ENGINE_WARN(message); return;
-        case GL_DEBUG_SEVERITY_NOTIFICATION: PF_ENGINE_TRACE(message); return;
+            case GL_DEBUG_SEVERITY_HIGH:         PF_ENGINE_CRITICAL(message); return;
+            case GL_DEBUG_SEVERITY_MEDIUM:       PF_ENGINE_INFO(message); return;
+            case GL_DEBUG_SEVERITY_LOW:          PF_ENGINE_WARN(message); return;
+            case GL_DEBUG_SEVERITY_NOTIFICATION: PF_ENGINE_TRACE(message); return;
         }
 
         PF_CORE_ASSERT(false,"Open GL Unknown severity level!");

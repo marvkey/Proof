@@ -59,6 +59,7 @@ namespace Proof
 
 		static void NotifyOpenedNewLevel(std::set<UUID> assetLoadIn);
 		static void NotifyOpenedNewAsset(UUID ID);
+		static std::string IsFileAsset(const std::filesystem::path& path);
 	private:
 		struct AssetInfo {
 			std::filesystem::path Path;

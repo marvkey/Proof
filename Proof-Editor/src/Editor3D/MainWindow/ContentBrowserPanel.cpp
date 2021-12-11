@@ -1,5 +1,6 @@
 #include "Proofprch.h"
 #include "ContentBrowserPanel.h"
+#include "Proof/ImGui/ImGuiLayer.h"
 
 #include <ImGui/imgui.h>
 #include "Proof/Renderer/Texture.h"
@@ -15,6 +16,7 @@
 #include <yaml-cpp/yaml.h>
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "../Proof-Editor/src/Editor3D/Editor3D.h"
+#include "Proof/Core/FrameTime.h"
 namespace Proof
 { 
 	static const std::filesystem::path s_AssetsPath = "content";
@@ -36,8 +38,10 @@ namespace Proof
 		m_MeshIcon = Texture2D::Create("Resources/Icons/ContentBrowser/MeshComponentIcon.png");
 		m_ArrowIcon = Texture2D::Create("Resources/Icons/ContentBrowser/ArrowIcon.png");
 	}
-	void ContentBrowserPanel::ImGuiRender() {
-		ImGui::Begin("Content Browser");
+	void ContentBrowserPanel::ImGuiRender(FrameTime DeltaTime) {
+		if (m_ShowWindow == false)
+			return;
+		ImGui::Begin("Content Browser", &m_ShowWindow);
 		{
 			ImGui::BeginChild("Folders",{200,ImGui::GetContentRegionAvail().y});
 			{
@@ -178,6 +182,7 @@ namespace Proof
 					columnCount = 1;
 				ImGui::Columns(columnCount,0,false);
 				for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
+					AssetManager::IsFileAsset(It.path());
 					static std::string RenameVariable;
 					
 					bool isScene = IsScene(It.path().string());

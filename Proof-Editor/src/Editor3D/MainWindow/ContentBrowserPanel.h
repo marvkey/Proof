@@ -8,10 +8,10 @@
 #include "Panel.h"
 namespace Proof{
 	/* THIS CLASS WILL NEED TO BE HANDLED BY CURRENT PROJECT */
-	class Proof_API ContentBrowserPanel {
+	class Proof_API ContentBrowserPanel:public Panel {
 	public:
 		ContentBrowserPanel(class Editore3D* owner);
-		void ImGuiRender();
+		void ImGuiRender(class FrameTime deltaTime);
 	private:
 		 std::filesystem::path m_CurrentDirectory;
 		 Count<Texture2D> m_FolderIcon;

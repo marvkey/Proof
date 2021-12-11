@@ -47,29 +47,24 @@ namespace Proof
 		return &a->m_Material;
 	}
 	Vector<float> TransformComponent::GetWorldLocation()const {
-		/*
-		if(GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()){
-			return Location + GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldLocation();
-		}
-		*/
+		if (entID ==0 )return Location;
+		Entity enttity(entID, m_World);
+		if(enttity.HasOwner())
+			return Location + enttity.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation();
 		return Location;
-		
 	}
 	Vector<float> TransformComponent::GetWorldRotation()const {
-		/*
-		if (GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()) {
-			return Rotation + GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldRotation();
-		}
-		*/
+		if (entID == 0)return Rotation;
+		Entity enttity(entID, m_World);
+		if (enttity.HasOwner())
+			return Rotation + enttity.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation();
 		return Rotation;
-		
 	}
 	Vector<float> TransformComponent::GetWorldScale()const {
-		/*
-		if (GetOwner().GetComponent<SubEntityComponet>()->HasEntityOwner()) {
-			return Scale +GetOwner().GetComponent<SubEntityComponet>()->GetEntityOwner().GetComponent<TransformComponent>()->GetWorldScale();;
-		}
-		*/
+		if (entID == 0)return Scale;
+		Entity enttity(entID, m_World);
+		if (enttity.HasOwner())
+			return Scale + enttity.GetOwner().GetComponent<TransformComponent>()->GetWorldScale();
 		return Scale;
 	}
 	glm::mat4 TransformComponent::GetWorldTransform() const {

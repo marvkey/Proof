@@ -27,16 +27,21 @@ namespace Proof {
 
 	static MeshAsset* TempAsset = nullptr;
 	static MeshAsset* TempLocation0Asset = nullptr;
-	void SceneHierachyPanel::ImGuiRender() {
-		ImGui::Begin("Herieachy");
+	void SceneHierachyPanel::ImGuiRender(class FrameTime deltaTime) {
+		if (m_ShowWindow == false)
+			return;
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
+		if(ImGui::Begin("Herieachy", &m_ShowWindow));
 		{	/*
 			auto &a =m_CurrentWorld->m_Registry.view<>();
 			for (auto& g : a) {
 
 			}
 			*/
-			ImGui::BeginChild("Child Herieachy", { ImGui::GetWindowWidth(),ImGui::GetWindowHeight() / 2 }); 
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, { 0,0,0,1 });
+			ImGui::BeginChildFrame((ImGuiID)"Child Herieachy", { ImGui::GetContentRegionAvailWidth(),ImGui::GetWindowHeight() / 2});
 			{
+	
 				for (uint64_t i = 0; i < m_CurrentWorld->m_Registry.size(); i++) {
 					Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld };
 					if (entity.HasOwner() == false)
@@ -47,13 +52,20 @@ namespace Proof {
 					m_SelectedEntity = {};
 				}
 				if (ImGui::BeginPopupContextWindow(0, 1, false)) { // right click adn open a new entitiy
-					if (ImGui::MenuItem("Create Entity"))
-						m_SelectedEntity = m_CurrentWorld->CreateEntity();
+					CreateEntityMenu();
 					ImGui::EndPopup();
 				}
 			}
 			ImGui::EndChild();
+			if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
 
+					Entity Data = *(const Entity*)payload->Data;
+					Data.SetOwner(Entity{});
+				}
+				ImGui::EndDragDropTarget();
+			}
+			ImGui::PopStyleColor();
 			ImGui::BeginChild("Properties",ImGui::GetContentRegionAvail()); 
 			{
 				{
@@ -64,22 +76,44 @@ namespace Proof {
 			}
 			ImGui::EndChild();
 		}
+
 		ImGui::End();
+		ImGui::PopStyleVar();
 
 	}
-	void SceneHierachyPanel::DrawEntityNode(Entity& entity) {
-		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
-
-				Entity Data = *(const Entity*)payload->Data;
-				if (Data.HasOwner() == true)
-					Data.SetOwner(entity);
-				else
-					entity.AddChild(Data);
-
+	void SceneHierachyPanel::CreateEntityMenu(Entity owner){
+		uint64_t selectedPreviousEntityID = m_SelectedEntity.GetID();// we are doing this inncase we created a child entity
+		if (ImGui::MenuItem("Entity"))
+			m_SelectedEntity = m_CurrentWorld->CreateEntity();
+		if (ImGui::BeginMenu("Light")) {
+			if (ImGui::MenuItem("Point ")) {
+				m_SelectedEntity = m_CurrentWorld->CreateEntity("Point Light");
+				m_SelectedEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Point;
 			}
-			ImGui::EndDragDropTarget();
+			if (ImGui::MenuItem("Spot")) {
+				m_SelectedEntity = m_CurrentWorld->CreateEntity("Spot Light");
+				m_SelectedEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Spot;
+			}
+			if (ImGui::MenuItem("Directional")) {
+				m_SelectedEntity = m_CurrentWorld->CreateEntity("Directional Light");
+				m_SelectedEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Direction;
+			}
+			ImGui::EndMenu();
 		}
+		if (ImGui::MenuItem("Mesh")) {
+			m_SelectedEntity = m_CurrentWorld->CreateEntity("Mesh");
+			m_SelectedEntity.AddComponent<MeshComponent>();
+		}
+		if (ImGui::MenuItem("Camera")) {
+			m_SelectedEntity = m_CurrentWorld->CreateEntity("Camera");
+			m_SelectedEntity.AddComponent<CameraComponent>();
+		}
+		if (owner && m_SelectedEntity.GetID() != selectedPreviousEntityID) {
+			m_SelectedEntity.SetOwner(owner);
+		}
+	}
+	void SceneHierachyPanel::DrawEntityNode(Entity& entity) {
+		
 		auto& tc = entity.GetComponent<TagComponent>()->Tag;
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 
@@ -93,11 +127,7 @@ namespace Proof {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
 				
 				Entity Data = *(const Entity*)payload->Data;
-				if (Data.HasOwner()==true)
-					Data.SetOwner(entity);
-				else
-					entity.AddChild(Data);
-					
+				entity.AddChild(Data);
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -111,25 +141,16 @@ namespace Proof {
 			m_SelectedEntity = entity;
 		}
 		if (ImGui::BeginPopupContextItem()) {
-			
-			if (m_SelectedEntity.HasOwner()) {
-				if (ImGui::MenuItem("Single entity")) {
-					m_SelectedEntity.GetOwner().RemoveChild(m_SelectedEntity);
-					m_SelectedEntity = {};
-					ImGui::CloseCurrentPopup();
-				}
+			if (ImGui::BeginMenu("Child Entity")) {
+				CreateEntityMenu(m_SelectedEntity);
+				ImGui::EndMenu();
 			}
-			if (ImGui::MenuItem("Create Child entity")) {
-				m_SelectedEntity.AddChild(m_CurrentWorld->CreateEntity("Empty Child Entity"));
-				ImGui::CloseCurrentPopup();
-			}
-			
 			if (ImGui::MenuItem("Delete")) {
 				m_CurrentWorld->DeleteEntity(m_SelectedEntity,true);
 
 				m_SelectedEntity = {};
 
-				ImGui::CloseCurrentPopup();
+				//ImGui::CloseCurrentPopup();
 				if (opened) {
 					ImGui::EndPopup();
 					ImGui::TreePop();

@@ -11,5 +11,6 @@ namespace Proof{
 		};
 	protected:
 		bool m_ShowWindow = true;
+		friend class Editore3D;
 	};
 };

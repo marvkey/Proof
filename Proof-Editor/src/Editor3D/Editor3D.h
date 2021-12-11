@@ -24,6 +24,8 @@ namespace Proof {
 	private:
 		void Logger();
 		bool Docking = false;
+		bool m_ShowLogger = true;
+		bool m_ShowRendererStats = false;
 		void ViewPort();
 		void MainToolBar();
 		glm::vec2 m_ViewportBounds[2];

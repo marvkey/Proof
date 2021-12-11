@@ -1,10 +1,11 @@
 #pragma once
 #include "Proof/ProofCore.h"
+#include "Panel.h"
 
 namespace Proof{
-	class SceneHierachyPanel{
+	class SceneHierachyPanel: public Panel{
 	public:
-		void ImGuiRender();
+		void ImGuiRender(class FrameTime deltaTime);
 		void SetContext(World* CurrentWorld){m_CurrentWorld =CurrentWorld;}
 		static void DrawVectorControl(const std::string& UniqeLabel,Vector<>& Vec,float ResetValue =0.0f,float columnWidth =100.0f,float Speed=0.1f);
 		static void DrawVector4Control(const std::string& UniqeLabel,glm::vec4& Vec,float ResetValue = 0.0f,float columnWidth = 100.0f);
@@ -14,6 +15,8 @@ namespace Proof{
 			//m_BrowserPanel =  Panel;
 		}
 	private:
+
+		void CreateEntityMenu(Entity owner = {});
 		World* m_CurrentWorld;
 		Entity m_SelectedEntity;
 		//class ContentBrowserPanel* m_BrowserPanel =nullptr;

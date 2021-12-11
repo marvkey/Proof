@@ -49,40 +49,12 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 	};
-
-	struct Proof_API TransformComponent {
-		Vector<float> Location = {0.0f,0.0f,0.0f};
-		Vector<float> Rotation = {0.0f,0.0f,0.0f};
-		Vector<float> Scale = {1.0f,1.0f,1.0f};
-		TransformComponent() = default;
-		TransformComponent(const TransformComponent&) = default;
-		TransformComponent operator+ (const TransformComponent& other)const {
-			TransformComponent temp;
-			temp.Location = this->Location + other.Location;
-			temp.Rotation = this->Rotation + other.Rotation;
-			temp.Scale = this->Scale + other.Scale;
-			return temp;
-		}
-		
-		Vector<float> GetWorldLocation()const;
-		Vector<float> GetWorldRotation()const;
-		Vector<float> GetWorldScale()const;
-		glm::mat4 GetLocalTransform() const {
-			return glm::translate(glm::mat4(1.0f),{Location}) *
-				glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.X),{1,0,0})
-				* glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.Y),{0,1,0})
-				* glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.Z),{0,0,1})
-				* glm::scale(glm::mat4(1.0f),{Scale});
-		}
-
-		glm::mat4 GetWorldTransform() const;
-	};
 	class Proof_API ChildComponent { /* THIS CLASS KNOWS AN ENTITY EXIST */
 	public:
 		ChildComponent(const ChildComponent&) = default;
 		ChildComponent() = default;
 		bool HasOwner()const {
-			return m_OwnerID !=0;
+			return m_OwnerID != 0;
 		}
 		bool HasChildren()const {
 			return m_Children.size() > 0;
@@ -90,7 +62,7 @@ namespace Proof
 		UUID GetOwnerID()const {
 			return m_OwnerID;
 		}
-		const ChildComponent* GetOwner(){
+		const ChildComponent* GetOwner() {
 			if (HasOwner() == false)return nullptr;
 			return m_OwnerPointer;
 		}
@@ -131,13 +103,15 @@ namespace Proof
 			newOwner.m_Children.emplace_back(m_CurrentID);
 			return true;
 		}
-	
+
 		bool AddChild(ChildComponent& child) {
 			if (child == *this) {
 				PF_WARN("cannot add enity as owenr of entity");
 				return false;
 			}
 			if (HasChild(child) == true)return true;
+			if (child.HasOwner())
+				child.SetOwnerEmpty();
 
 			m_Children.emplace_back(child.m_CurrentID);
 			child.m_OwnerID = m_CurrentID;
@@ -161,16 +135,51 @@ namespace Proof
 			return !(*this == other);
 		}
 	private:
-		
+
 		UUID m_CurrentID = 0; // entity its attached to ID
 		UUID m_OwnerID = 0; // owner of the entity its attahced to
 		std::vector<UUID>m_Children;
-		ChildComponent* m_OwnerPointer=nullptr;
+		ChildComponent* m_OwnerPointer = nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 		friend class Entity;
 	};
+	struct Proof_API TransformComponent {
+		Vector<float> Location = {0.0f,0.0f,0.0f};
+		Vector<float> Rotation = {0.0f,0.0f,0.0f};
+		Vector<float> Scale = {1.0f,1.0f,1.0f};
+		TransformComponent() = default;
+		TransformComponent(const TransformComponent&) = default;
+		TransformComponent operator+ (const TransformComponent& other)const {
+			TransformComponent temp;
+			temp.Location = this->Location + other.Location;
+			temp.Rotation = this->Rotation + other.Rotation;
+			temp.Scale = this->Scale + other.Scale;
+			return temp;
+		}
+		
+		Vector<float> GetWorldLocation()const;
+		Vector<float> GetWorldRotation()const;
+		Vector<float> GetWorldScale()const;
+		glm::mat4 GetLocalTransform() const {
+			return glm::translate(glm::mat4(1.0f),{Location}) *
+				glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.X),{1,0,0})
+				* glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.Y),{0,1,0})
+				* glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.Z),{0,0,1})
+				* glm::scale(glm::mat4(1.0f),{Scale});
+		}
+
+		glm::mat4 GetWorldTransform() const;
+		friend class World;
+		friend class SceneSerializer;
+		friend class SceneHierachyPanel;
+		friend class Entity;
+	private:
+		uint64_t entID = 0; /// thi is to get the world transform 
+		class World* m_World = nullptr;
+	};
+	
 	struct Proof_API NativeScriptComponent{
 		NativeScriptComponent(const NativeScriptComponent&) = default;
 		NativeScriptComponent() = default;
