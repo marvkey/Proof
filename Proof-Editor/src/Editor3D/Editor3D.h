@@ -7,6 +7,7 @@
 #include "Proof/Scene/SceneSerializer.h"
 #include "MainWindow/Panel.h"
 #include "Proof/Renderer/WorldRenderer.h"
+#include "MainWindow/AssetManagerPanel.h"
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {
@@ -26,6 +27,7 @@ namespace Proof {
 		bool Docking = false;
 		bool m_ShowLogger = true;
 		bool m_ShowRendererStats = false;
+		bool m_ShowWorldEditor= false;
 		void ViewPort();
 		void MainToolBar();
 		glm::vec2 m_ViewportBounds[2];
@@ -43,6 +45,7 @@ namespace Proof {
 		int GuizmoType = (1u << 0)| (1u << 1)| (1u << 2);// imgui bit stuff
 		class SceneHierachyPanel m_WorldHierachy;
 		class ContentBrowserPanel m_CurrentContentBrowserPanel ={this};
+		class AssetManagerPanel m_AssetManagerPanel;
 		friend class Renderer3D;
 		friend class Renderer;
 

@@ -163,11 +163,11 @@ namespace Proof
 		Vector<float> GetWorldRotation()const;
 		Vector<float> GetWorldScale()const;
 		glm::mat4 GetLocalTransform() const {
-			return glm::translate(glm::mat4(1.0f),{Location}) *
-				glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.X),{1,0,0})
-				* glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.Y),{0,1,0})
-				* glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.Z),{0,0,1})
-				* glm::scale(glm::mat4(1.0f),{Scale});
+			glm::mat4 rotation = glm::toMat4(glm::quat(glm::vec3{ Rotation }));
+
+			return glm::translate(glm::mat4(1.0f), { glm::vec3{Location} })
+				* rotation
+				* glm::scale(glm::mat4(1.0f), { glm::vec3{Scale} });
 		}
 
 		glm::mat4 GetWorldTransform() const;
@@ -226,6 +226,7 @@ namespace Proof
 		UUID GetMeshAssetID();
 	private:
 		MeshAsset* GetAsset();
+		void SetMeshSource(UUID ID);
 		void RemoveMeshSource() {
 			m_MeshAssetPointerID = 0;
 			m_MeshAssetPointer = nullptr;
@@ -236,7 +237,7 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 		friend class SceneRendererUI;
-		uint32_t StartIndexSlot = 0;
+		friend class Editore3D;
 		uint32_t m_MeshMaterialID = 0;
 		UUID m_MeshAssetPointerID=0;
 		Count<MeshAsset>m_MeshAssetPointer=nullptr;

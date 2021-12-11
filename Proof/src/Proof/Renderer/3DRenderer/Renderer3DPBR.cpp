@@ -99,17 +99,6 @@ namespace Proof{
 		s_PBRInstance->m_Transforms.emplace_back(temp);
 	}
 	void Renderer3DPBR::Draw(class LightComponent& lightComponent, class TransformComponent& transform) {
-		/*
-		if(s_RendererData->RenderSettings.Technique== RenderTechnique::FowardRendering){
-			s_PBRInstance->m_Shader->Bind();
-			std::string LightPos = "lightPositions[" + std::to_string(NumLights) + "]";
-			std::string LightColour = "lightColors[" + std::to_string(NumLights) + "]";
-			s_PBRInstance->m_Shader->SetVec3(LightPos,{lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
-			s_PBRInstance->m_Shader->SetVec3(LightColour,lightComponent.m_Ambient);
-			NumLights++;
-			return;
-		}
-		*/
 		s_CurrentLightShader->Bind();
 		if (lightComponent.m_LightType == lightComponent.Point && NumPointLights < 150) {
 			std::string numberPointLightstring = "v_PointLight[" + std::to_string(NumPointLights) + "]";

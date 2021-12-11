@@ -49,7 +49,7 @@ namespace Proof
 		ActiveWorld = CreateCount<World>();
 
 		SceneSerializer scerelizer(ActiveWorld.get());
-		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofAsset") == true) {
+		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofWorld") == true) {
 			m_WorldHierachy.SetContext(ActiveWorld.get());
 			AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
 		}
@@ -146,6 +146,12 @@ namespace Proof
 
 			std::cout<< num <<std::endl;
 		}
+		if (ActiveWorld->m_CurrentState == WorldState::Edit)
+			ActiveWorld->OnUpdateEditor(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
+		else if (ActiveWorld->m_CurrentState == WorldState::Play)
+			ActiveWorld->OnUpdateRuntime(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
+		else if (ActiveWorld->m_CurrentState == WorldState::Simulate)
+			ActiveWorld->OnSimulatePhysics(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
 		m_WorldRenderer.Renderer();
 		/*
 		glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->m_EditorCamera.m_View));
@@ -173,12 +179,7 @@ namespace Proof
 		for (auto& a : m_AllPanels) {
 			a.second->ImGuiRender(DeltaTime);
 		}
-		if (ActiveWorld->m_CurrentState == WorldState::Edit)
-			ActiveWorld->OnUpdateEditor(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
-		else if (ActiveWorld->m_CurrentState == WorldState::Play)
-			ActiveWorld->OnUpdateRuntime(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
-		else if (ActiveWorld->m_CurrentState == WorldState::Simulate)
-			ActiveWorld->OnSimulatePhysics(DeltaTime,_ViewPortSize.x,_ViewPortSize.y);
+
 
 		ViewPort();
 		
@@ -186,11 +187,13 @@ namespace Proof
 		
 		m_WorldHierachy.ImGuiRender(DeltaTime);
 		m_CurrentContentBrowserPanel.ImGuiRender(DeltaTime);
+		m_AssetManagerPanel.ImGuiRender(DeltaTime);
 		Logger();
 	
-
-		if (ImGui::Begin("Active World")) {
-			if(ImGui::Button("Choose Hdr")){
+		if (m_ShowWorldEditor == false)
+			goto a;
+		if (ImGui::Begin("Active World", &m_ShowWorldEditor)) {
+			if(ImGui::Button("Choose HDR")){
 				std::string file= Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
 				if(file.empty()==false){
 					ActiveWorld->CreateIBlTexture(file);
@@ -198,6 +201,7 @@ namespace Proof
 			}
 		}
 		ImGui::End();
+		a:
 		if (m_ShowRendererStats == false)
 			return;
 		if (ImGui::Begin("Renderer Stastitics"), &m_ShowRendererStats) {
@@ -352,16 +356,18 @@ namespace Proof
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		static bool Open = true;
-		if (ImGui::Begin("ViewPort",&Open)) {
+		if (ImGui::Begin("ViewPort",&Open,ImGuiWindowFlags_NoScrollWithMouse| ImGuiWindowFlags_NoScrollbar)) {
 
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 			auto viewportOffset = ImGui::GetWindowPos();
-			ImVec2 ViewPortPanelSize = ImGui::GetWindowSize();
-			m_ViewportBounds[0] = {viewportMinRegion.x + viewportOffset.x,viewportMinRegion.y + viewportOffset.y};
-			m_ViewportBounds[1] = {viewportMaxRegion.x + viewportOffset.x,viewportMaxRegion.y + viewportOffset.y};
+			ImVec2 ViewPortPanelSize = ImGui::GetContentRegionAvail();
+			m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x,viewportMinRegion.y + viewportOffset.y };
+			m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x,viewportMaxRegion.y + viewportOffset.y };
+			_ViewPortSize = { ViewPortPanelSize.x,ViewPortPanelSize.y };
+
 			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
-				_ViewPortSize = {ViewPortPanelSize.x,ViewPortPanelSize.y};
+				_ViewPortSize = { ViewPortPanelSize.x,ViewPortPanelSize.y };
 				//m_WorldRenderer.m_ScreenFrameBuffer->Resize(_ViewPortSize.x, _ViewPortSize.y);
 				// Still neees to be fixed se
 			}
@@ -383,54 +389,35 @@ namespace Proof
 				ImGuizmo::SetOrthographic(false);
 				ImGuizmo::SetDrawlist();
 
-				ImGuizmo::SetRect(m_ViewportBounds[0].x,m_ViewportBounds[0].y,m_ViewportBounds[1].x - m_ViewportBounds[0].x,m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+				ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
 				const glm::mat4& cameraProjection = ActiveWorld->m_EditorCamera.m_Projection;
 				glm::mat4 cameraView = ActiveWorld->m_EditorCamera.m_View;
 
 				auto& tc = *selectedEntity.GetComponent<TransformComponent>();
 				glm::mat4 transform = tc.GetLocalTransform();
-				glm::mat4 worldTransform = tc.GetWorldTransform();
+
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
 				// Snap to 45 degrees for rotation
 				if (GuizmoType == ImGuizmo::OPERATION::ROTATE)
 					snapValue = 45.0f;
 
-				float snapValues[3] = {snapValue,snapValue,snapValue};
-				if(selectedEntity.HasOwner()==false){
+				float snapValues[3] = { snapValue,snapValue,snapValue };
 
-					ImGuizmo::Manipulate(glm::value_ptr(cameraView),glm::value_ptr(cameraProjection),
-					(ImGuizmo::OPERATION)GuizmoType,ImGuizmo::LOCAL,glm::value_ptr(transform),
-					nullptr,snap ? snapValues : nullptr);
+				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+					(ImGuizmo::OPERATION)GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+					nullptr, snap ? snapValues : nullptr);
 
-					if (ImGuizmo::IsUsing()) {
-						glm::vec3 translation,rotation,scale;
-						MathResource::DecomposeTransform(transform,translation,rotation,scale);
+				if (ImGuizmo::IsUsing()) {
+					glm::vec3 translation, rotation, scale;
+					MathResource::DecomposeTransform(transform, translation, rotation, scale);
 
-						glm::vec3 deltaRotation = rotation - glm::vec3{tc.Rotation};
-						deltaRotation*=0.5;
-						tc.Location = translation;
-						tc.Rotation += deltaRotation;
-						tc.Scale = scale;
-					}
-				}else{
-					ImGuizmo::Manipulate(glm::value_ptr(cameraView),glm::value_ptr(cameraProjection),
-						(ImGuizmo::OPERATION)GuizmoType,ImGuizmo::LOCAL,glm::value_ptr(worldTransform),
-							nullptr,snap ? snapValues : nullptr);
-
-					if (ImGuizmo::IsUsing()) {
-						glm::vec3 translation,rotation,scale;
-						MathResource::DecomposeTransform(worldTransform,translation,rotation,scale);
-
-						glm::vec3 deltaRotation = rotation - glm::vec3{tc.Rotation};
-						tc.Location = translation;
-						tc.Rotation = deltaRotation;
-						tc.Scale = scale;
-					}
+					glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
+					tc.Location = translation;
+					tc.Rotation += deltaRotation;
+					tc.Scale = scale;
 				}
-				
-				
 			}
 
 			/* putting this underneath image because a window only accpet drop target to when item is bound so and image has been bound */
@@ -446,7 +433,15 @@ namespace Proof
 					ScerilizerNewWorld.DeSerilizeText(Data);
 					m_WorldHierachy.SetContext(ActiveWorld.get());
 				}
+
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetAssetType().c_str())) {
+					UUID meshID = *(UUID*)payload->Data;
+
+					Entity newentt = ActiveWorld->CreateEntity(AssetManager::GetAssetName(meshID));
+					newentt.AddComponent<MeshComponent>()->SetMeshSource(meshID);
+				}
 				ImGui::EndDragDropTarget();
+
 			}
 			/*----------------------------------------------------------------------------------------------------------------------------*/
 		}
@@ -576,7 +571,9 @@ namespace Proof
 				ImGui::MenuItem("Heirachy", nullptr, &m_WorldHierachy.m_ShowWindow);
 				ImGui::MenuItem("Log", nullptr, &m_ShowLogger);
 				ImGui::MenuItem("Content Browser", nullptr, &m_CurrentContentBrowserPanel.m_ShowWindow);
+				ImGui::MenuItem("Asset Manager ", nullptr, &m_AssetManagerPanel.m_ShowWindow);
 				ImGui::MenuItem("Render Stats", nullptr, &m_ShowRendererStats);
+				ImGui::MenuItem("World Editor", nullptr, &m_ShowWorldEditor);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();

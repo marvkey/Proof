@@ -14,10 +14,20 @@ namespace Proof
 		static AssetManager& Get() { return *s_AssetManager; }
 		static void NewAsset(UUID ID,const Count<class Asset>& asset);
 		static bool HasID(UUID ID);
+		static bool IsAssetLoaded(UUID ID) {
+			auto it = s_AssetManager->m_AllAssets.find(ID);
+			if (it != s_AssetManager->m_AllAssets.end()) {
+				return it->second.second != nullptr;
+			}
+			return false;
+		}
+		static bool LoadAsset(UUID ID);
 		template<class T>
 		static T* GetAsset(UUID ID) {
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
+				if (it->second.second.get() == nullptr)
+					LoadAsset(ID);
 				return dynamic_cast<T*>(it->second.second.get());
 			}
 			return nullptr;
@@ -26,6 +36,8 @@ namespace Proof
 		static Count<T>GetAssetShared(UUID ID){
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
+				if(it->second.second == nullptr)
+					LoadAsset(ID);
 				return std::dynamic_pointer_cast<T>(it->second.second);
 			}
 			return nullptr;
@@ -43,6 +55,9 @@ namespace Proof
 		*/
 		template<class T>
 		static T* ForceGetAsset(UUID ID) { 
+			if(s_AssetManager->m_AllAssets.at(ID).second == nullptr)
+				LoadAsset(ID);
+
 			return dynamic_cast<T*>(s_AssetManager->m_AllAssets.at(ID).second.get());
 		}
 		/**
@@ -51,6 +66,8 @@ namespace Proof
 		*/
 		template<class T>
 		static Count<T>ForceGetAssetShared(UUID ID) {
+			if (s_AssetManager->m_AllAssets.at(ID).second == nullptr)
+				LoadAsset(ID);
 			return std::dynamic_pointer_cast<T>(s_AssetManager->m_AllAssets.at(ID).second);
 		}
 		static UUID CreateID();
@@ -60,6 +77,13 @@ namespace Proof
 		static void NotifyOpenedNewLevel(std::set<UUID> assetLoadIn);
 		static void NotifyOpenedNewAsset(UUID ID);
 		static std::string IsFileAsset(const std::filesystem::path& path);
+		static const std::string& GetAssetName(UUID ID) {
+			auto it = s_AssetManager->m_AllAssets.find(ID);
+			if (it != s_AssetManager->m_AllAssets.end()) {
+				return it->second.first.GetName();
+			}
+			return std::string();
+		}
 	private:
 		struct AssetInfo {
 			std::filesystem::path Path;
@@ -68,13 +92,12 @@ namespace Proof
 				return Name;
 			}
 			AssetInfo(const std::string& path, const std::string& type) :
-				Path(path), Type(type) 
+				Path(path), Type(type)
 			{
-				Name = Path.filename().stem().string();
+				Name = Path.filename().stem().filename().stem().string();
 			}
 		private:
-			void GenerateName() {
-			}
+			
 			std::string Name;
 		};
 		static void SaveAllAsset();
@@ -86,6 +109,7 @@ namespace Proof
 		static bool IsFileValid(const std::string& Path);
 		static std::string GetAssetType(const std::string& Path);
 		friend class Application;
+		friend class AssetManagerPanel;
 		static void NewInitilizeAssets(const std::string& Path);
 		static void GenerateAsset(std::set<UUID> assetLoadIn);
 	};

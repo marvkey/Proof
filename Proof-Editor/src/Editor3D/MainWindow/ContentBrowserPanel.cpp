@@ -182,50 +182,47 @@ namespace Proof
 					columnCount = 1;
 				ImGui::Columns(columnCount,0,false);
 				for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
-					AssetManager::IsFileAsset(It.path());
+					std::string fileExtension =AssetManager::IsFileAsset(It.path());
 					static std::string RenameVariable;
 					
 					bool isScene = IsScene(It.path().string());
 					uint64_t ID = 0;
 					std::string Path = It.path().string();
-					std::string filename = It.is_directory() ? It.path().filename().string() : It.path().filename().stem().string(); // returns the file name with ending like hallo.txt, stem removes the .txt
+					std::string filename = It.path().filename().stem().filename().stem().string(); // returns the file name with ending like hallo.txt, stem removes the .txt
 					std::string filenameNoStem = It.path().filename().string();
 					if(It.is_directory()){
 						if (ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(),{thumbnailSize,thumbnailSize})) {} // there are more paremter to flip image and to add a tint colour
 					}else{
 				
-						if(isScene ==false){
+						if(fileExtension != "ProofWorld") {
+							if (fileExtension == "Mesh.ProofAsset")
+								ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
+							else if(fileExtension == "Material.ProofAsset")
+								ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
+							if (ImGui::IsItemHovered() && ImGui::IsMouseDown(0) == false) {
+								FileDragSource = It.path().string();
+								FileDragSourceName = filename;
+							}
+							if (ImGui::BeginDragDropSource()) {
+								UUID staticID = GetIDCurrentDirectory(FileDragSource);
+								std::string assetType;
+								if (fileExtension == "Mesh.ProofAsset")
+									assetType = MeshAsset::GetAssetType();
+								else
+									assetType = MaterialAsset::GetAssetType();
+								ImGui::SetDragDropPayload(assetType.c_str(), &staticID, sizeof(UUID));
 
-							ID = GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + filenameNoStem);
-							Asset* Temp =nullptr;
-							Temp = AssetManager::GetAsset<Asset>(ID);
-							if(Temp != nullptr){
-								if (ImGui::ImageButton((ImTextureID)(Temp->IsEditorImageNull() ==false? Temp->GetIamgeEdtorID(): m_FileIcon->GetID()),{thumbnailSize,thumbnailSize})) {
-								}
-								if(ImGui::IsItemHovered()&& ImGui::IsMouseDown(0)==false){
-									FileDragSource = m_CurrentDirectory.string() + "\\" + filenameNoStem;
-									FileDragSourceName = filename;
-								}
-								if(ImGui::BeginDragDropSource()){
-									UUID staticID =GetIDCurrentDirectory(FileDragSource);
-									ImGui::SetDragDropPayload(AssetManager::GetAsset<Asset>(staticID)->GetAssetTypeVirtual().c_str(),&staticID,sizeof(UUID));
-
-									ImGui::Image((ImTextureID)(Temp->IsEditorImageNull() == false ? Temp->GetIamgeEdtorID() : m_FileIcon->GetID()),{60,60});
-									ImGui::Text(FileDragSourceName.c_str());
-									ImGui::EndDragDropSource();
-								}
-
-						
-								if(Temp->GetAssetTypeVirtual() == MaterialAsset::GetAssetType()&& ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)){
-									MaterialAsset * TempMaterial = dynamic_cast<MaterialAsset*>(Temp);
-									m_owner->CreateMaterialEdtior(TempMaterial);
-								}
-
-								if (Temp->GetAssetTypeVirtual() == MeshAsset::GetAssetType() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
-									MeshAsset* tempAsset= dynamic_cast<MeshAsset*>(Temp);
-									m_owner->CreateMeshEditor(tempAsset);
-								}
-						
+								ImGui::Image((ImTextureID)m_FileIcon->GetID(), { 60,60 });
+								ImGui::Text(FileDragSourceName.c_str());
+								ImGui::EndDragDropSource();
+							}
+							if (fileExtension == "Mesh.ProofAsset" && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+								UUID staticID = GetIDCurrentDirectory(FileDragSource);
+								m_owner->CreateMeshEditor(AssetManager::GetAssetShared<MeshAsset>(staticID).get());
+							}
+							if (fileExtension == "Material.ProofAsset" && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+								UUID staticID = GetIDCurrentDirectory(FileDragSource);
+								m_owner->CreateMaterialEdtior(AssetManager::GetAssetShared<MaterialAsset>(staticID).get());
 							}
 						}else{
 							if (ImGui::ImageButton((ImTextureID)m_FileIcon->GetID() ,{thumbnailSize,thumbnailSize})){
@@ -303,15 +300,9 @@ namespace Proof
 						ImGui::EndPopup();
 
 					}
-					if(ID !=0 || It.is_directory()){
-						ImGui::Text(filename.c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
-						ImGui::NextColumn();
-					}
-
-					if(isScene ==true){
-						ImGui::Text(filename.c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
-						ImGui::NextColumn();
-					}
+					//std::filesystem::path tempPath= It.path().filename();
+					ImGui::Text(It.path().filename().stem().filename().stem().string().c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
+					ImGui::NextColumn();
 				}
 				ImGui::Columns(1);
 				ImGui::SliderFloat("Thumbnail Size",&thumbnailSize,16,512);

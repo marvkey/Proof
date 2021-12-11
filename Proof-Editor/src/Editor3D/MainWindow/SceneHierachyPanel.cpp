@@ -330,8 +330,7 @@ namespace Proof {
 				if (ImGui::BeginDragDropTarget()) {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetAssetType().c_str())) {
 						UUID Data = *(const UUID*)payload->Data;
-						component.m_MeshAssetPointerID = Data;
-						component.m_MeshAssetPointer = AssetManager::GetAssetShared<MeshAsset>(component.m_MeshAssetPointerID);
+						component.SetMeshSource(Data);
 					}
 					ImGui::EndDragDropTarget();
 				}

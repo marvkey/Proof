@@ -46,6 +46,13 @@ namespace Proof
 		}
 		return &a->m_Material;
 	}
+	void MeshComponent::SetMeshSource(UUID ID) {
+		if (ID.Get() == 0)return;
+		if (AssetManager::HasID(ID)) {
+			m_MeshAssetPointer = AssetManager::ForceGetAssetShared<MeshAsset>(ID);
+			m_MeshAssetPointerID = ID;
+		}
+	}
 	Vector<float> TransformComponent::GetWorldLocation()const {
 		if (entID ==0 )return Location;
 		Entity enttity(entID, m_World);
@@ -68,13 +75,11 @@ namespace Proof
 		return Scale;
 	}
 	glm::mat4 TransformComponent::GetWorldTransform() const {
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, { GetWorldLocation() });
-		model = glm::rotate(model, glm::radians(GetWorldRotation().X), { 1,0,0 });
-		model = glm::rotate(model, glm::radians(GetWorldRotation().Y), { 0,1,0 });
-		model = glm::rotate(model, glm::radians(GetWorldRotation().Z), { 0,0,1 });
-		model = glm::scale(model, { GetWorldScale() });
-		return model;
+		glm::mat4 rotation = glm::toMat4(glm::quat(GetWorldRotation()));
+
+		return glm::translate(glm::mat4(1.0f), { GetWorldLocation() })
+			* rotation
+			* glm::scale(glm::mat4(1.0f), { GetWorldScale() });
 	}
 
 	MeshAsset* MeshComponent::GetAsset() {
@@ -126,7 +131,6 @@ namespace Proof
 		}
 		if (AssetManager::HasID(m_MeshAssetPointerID)) {
 			if (AssetManager::ForceGetAssetShared<MeshAsset>(m_MeshAssetPointerID) == nullptr) {
-				AssetManager::NotifyOpenedNewAsset(m_MeshAssetPointerID);
 				return nullptr;
 			}
 			m_MeshAssetPointer = AssetManager::ForceGetAssetShared<MeshAsset>(m_MeshAssetPointerID);

@@ -111,3 +111,17 @@ Entities:
       OffsetLocation: [0, 0, 0]
       OffsetRotation: [0, 0, 0]
       OffsetScale: [0, 0, 0]
+  - Entity: 9244232424387513238
+    TagComponent:
+      Tag: rocket
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 20980
+      MaterialPointerID: 0

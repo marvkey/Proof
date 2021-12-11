@@ -3,25 +3,25 @@
 ProjectAssets:
   - Asset: 6594
     Type: AssetType::MaterialAsset
-    Path: content\material\green.ProofAsset
+    Path: content\material\green.Material.ProofAsset
   - Asset: 12067
     Type: AssetType::MeshAsset
-    Path: content\meshes\cube.ProofAsset
+    Path: content\meshes\cube.Mesh.ProofAsset
   - Asset: 9055691234223281824
     Type: AssetType::MaterialAsset
-    Path: content\material\white.ProofAsset
+    Path: content\material\white.Material.ProofAsset
   - Asset: 9099
     Type: AssetType::MeshAsset
-    Path: content\meshes\backpack.ProofAsset
+    Path: content\meshes\backpack.Mesh.ProofAsset
   - Asset: 29460
     Type: AssetType::MeshAsset
-    Path: content\meshes\rock.ProofAsset
+    Path: content\meshes\rock.Mesh.ProofAsset
   - Asset: 20980
     Type: AssetType::MeshAsset
-    Path: content\meshes\rocket.ProofAsset
+    Path: content\meshes\rocket.Mesh.ProofAsset
   - Asset: 19748
     Type: AssetType::MeshAsset
-    Path: content\meshes\sponza.ProofAsset
+    Path: content\meshes\sponza.Mesh.ProofAsset
   - Asset: 10608
     Type: AssetType::MeshAsset
-    Path: content\meshes\teapot.ProofAsset
+    Path: content\meshes\teapot.Mesh.ProofAsset

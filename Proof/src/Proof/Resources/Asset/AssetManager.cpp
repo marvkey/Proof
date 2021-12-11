@@ -65,6 +65,22 @@ namespace Proof
 			}
 		};
 	}
+	bool AssetManager::LoadAsset(UUID ID) {
+		auto it = s_AssetManager->m_AllAssets.find(ID);
+		if (it != s_AssetManager->m_AllAssets.end()) {
+
+			if (it->second.second == nullptr) {
+				if (it->second.first.Type == MeshAsset::GetAssetType()) {
+					it->second.second = CreateCount<MeshAsset>();
+					it->second.second->LoadAsset(it->second.first.Path.string());
+					it->second.second->m_AssetName = it->second.first.Path.filename().stem().filename().stem().string();
+					return true;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 	void AssetManager::InitilizeAssets(const std::string& Path) {
 		for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(Path)) {
 			if (dirEntry.is_directory()) {
