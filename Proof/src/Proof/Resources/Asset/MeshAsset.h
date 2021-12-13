@@ -10,7 +10,7 @@ namespace Proof
 		virtual void SaveAsset() override;
 		virtual bool LoadAsset(const std::string& FilePath)override;
 		
-		void Reinstate(const std::string& meshFilepath);
+		void ChangeMesh(const std::string& meshFilepath);
 		const static std::string& GetAssetType() {
 			static std::string assetType = "AssetType::MeshAsset";
 			return assetType;
@@ -29,6 +29,7 @@ namespace Proof
 			return true;
 		}
 		virtual uint32_t GetImageID();
+		
 	private:
 		Special<class Mesh> m_Mesh =nullptr;
 		friend class AssetManager;

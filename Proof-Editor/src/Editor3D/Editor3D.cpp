@@ -54,8 +54,9 @@ namespace Proof
 			AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
 		}
 		m_WorldHierachy.SetContext(ActiveWorld.get());
-		m_WorldRenderer = WorldRenderer(ActiveWorld.get(), CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
+		m_WorldRenderer = WorldRenderer(ActiveWorld, CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 		// cannot be setting it to window size and stuff innit
+		m_EditorWorld = ActiveWorld;
 		float skyboxVertices[] = {
 					 // positions          
 			-1.0f,1.0f,-1.0f,
@@ -635,16 +636,18 @@ namespace Proof
 		PF_ENGINE_ERROR("World is NULL");
 	}
 	void Editore3D::PlayWorld() {
+		ActiveWorld = World::Copy(m_EditorWorld);
 		ActiveWorld->m_CurrentState = WorldState::Play;
-
+		m_WorldHierachy.SetContext(ActiveWorld.get());
+		m_WorldRenderer.SetContext(ActiveWorld);
 	}
 	void Editore3D::SimulateWorld() {
 		ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
 	void Editore3D::SetWorldEdit() {
-		//ActiveWorld = m_PlayWorld;
-		//m_PlayWorld.~shared_ptr();
-		ActiveWorld->m_CurrentState = WorldState::Edit;
+		ActiveWorld = m_EditorWorld;
+		m_WorldHierachy.SetContext(ActiveWorld.get());
+		m_WorldRenderer.SetContext(ActiveWorld);
 	}
 	void Editore3D::PauseWorld() {
 		ActiveWorld->m_CurrentState = WorldState::Pause;
@@ -661,6 +664,7 @@ namespace Proof
 
 
 	void Editore3D::CreateMaterialEdtior(MaterialAsset* material) {
+		if (material == nullptr)return;
 		auto it = m_AllPanels.find(material->GetID());
 		if (it != m_AllPanels.end()) {
 			it->second->SetWindowVisibile(true);
@@ -671,6 +675,7 @@ namespace Proof
 	}
 
 	void Editore3D::CreateMeshEditor(MeshAsset* mesh) {
+		if (mesh == nullptr)return;
 		auto it =m_AllPanels.find(mesh->GetID());
 		if(it!= m_AllPanels.end()){
 			it->second->SetWindowVisibile(true);

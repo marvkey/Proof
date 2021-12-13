@@ -65,56 +65,18 @@ namespace Proof{
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
-		auto& view  = m_Registry.view<CameraComponent>();
-		CameraComponent* cameraComp =nullptr;
-		for (auto entity : view) {
-			cameraComp = &view.get<CameraComponent>(entity);
-			break;
-		}
-		if(cameraComp == nullptr){
-			OnUpdate(DeltaTime,width,height);
-			/*
-			for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
-				if (Scripts->m_HasScriptAttached == false) {
-					continue;
-				}
-				if (Scripts->Instance == nullptr) {
-					Scripts->Instance = Scripts->InstantiateScript();
-					Scripts->Instance->OwnerEntity = Scripts->GetOwner();
-					Scripts->Instance->OnCreate();
-					Scripts->Instance->OnlyOnCreate();
-				}
-				if (Scripts->Instance->b_CallPerframe == true)
-					Scripts->Instance->OnUpdate(DeltaTime);
+		auto& scriptView = m_Registry.view<NativeScriptComponent>();
+		for (auto entity : scriptView) {
+			auto& script = scriptView.get<NativeScriptComponent>(entity);
+			if (script.Instance == nullptr)
+			{
+				script.Instance = script.InstantiateScript();
+				script.Instance->OwnerEntity = Entity{ entity, this };
+				script.Instance->OnCreate();
 			}
-			return;
-			*/
-		}
-		cameraComp->CalculateProjection();
 
-		if(cameraComp->m_AutoSetDimension ==true){
-			if(m_LastFrameWidth != width || m_LastFrameHeight != height){
-				cameraComp->SetDimensions(width,height);
-				m_LastFrameWidth =width;
-				m_LastFrameHeight=height;
-				cameraComp->CalculateProjection();
-			}
+			script.Instance->OnUpdate(DeltaTime);
 		}
-		/*
-		for (NativeScriptComponent* Scripts : Registry.NativeScripts) {
-			if (Scripts->m_HasScriptAttached == false) {
-				continue;
-			}
-			if (Scripts->Instance == nullptr) {
-				Scripts->Instance = Scripts->InstantiateScript();
-				Scripts->Instance->OwnerEntity = Scripts->GetOwner();
-				Scripts->Instance->OnCreate();
-				Scripts->Instance->OnlyOnCreate();
-			}
-			if (Scripts->Instance->b_CallPerframe == true)
-				Scripts->Instance->OnUpdate(DeltaTime);
-		}
-		*/
 	}
 
 	void World::OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height) {
@@ -136,8 +98,18 @@ namespace Proof{
 		entity.GetComponent<TransformComponent>()->m_World = this;
 		return entity;
 	}
-	template<class TypeComponent>
-	static void CopyCOmponent(std::unordered_map<UUID,std::vector<class Component*>*>&map){
+	template<class Component>
+	static void CopyComponent(entt::registry64& dst, entt::registry64& src){
+		auto view = src.view<Component>();
+		for (auto e : view) {
+		}
+	}
+	template<typename Component>
+	static Component* CopyComponentIfExists(Entity dst, Entity src)
+	{
+		if(src.HasComponent<Component>())
+			return dst.AddorReplaceComponent<Component>(*src.GetComponent<Component>());
+		return nullptr;
 	}
 	//static void CopyComponent
 	Count<World> World::Copy(Count<World> other) {
@@ -160,14 +132,18 @@ namespace Proof{
 
 		newWorld->m_CaptureFBO = other->m_CaptureFBO;
 		newWorld->m_CaptureRBO = other->m_CaptureRBO;
-		/*
-		for(auto& comp: other->Registry.EntityHolder){
-			std::vector<Component*>* New = new std::vector<Component*>;
-			newWorld->Registry.EntityHolder.insert({comp.first,New});
-			for(int i=0;i<comp.second->size();i++){
-			}
+		for (const uint64_t ID : other->m_Registry.entities) {
+			Entity newEntity(ID, other.get());
+			newWorld->CreateEntity(newEntity.GetName(), newEntity.GetID());
+			CopyComponentIfExists<TagComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
+			CopyComponentIfExists<TransformComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
+			CopyComponentIfExists<ChildComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
+			//CopyComponentIfExists<NativeScriptComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
+			CopyComponentIfExists<MeshComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
+			CopyComponentIfExists<LightComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
+			CopyComponentIfExists<CubeColliderComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
 		}
-		*/
+		//CopyComponent<TagComponent>(newWorld->m_Registry, m_Registry,);
 		return newWorld;
 	}
 
@@ -196,6 +172,8 @@ namespace Proof{
 				World::DeleteEntity(childEntity, true);
 			});
 		}
+		if (ent.HasOwner())
+			ent.SetOwner({}); // removing the owner
 		for (auto&& pdata : m_Registry.pools) {
 			pdata.pool&& pdata.pool->remove(ent.m_ID.Get(), &m_Registry);
 		}

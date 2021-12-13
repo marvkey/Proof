@@ -81,39 +81,43 @@ namespace Proof {
 		ImGui::PopStyleVar();
 
 	}
-	void SceneHierachyPanel::CreateEntityMenu(Entity owner){
+	bool  SceneHierachyPanel::CreateEntityMenu(Entity owner){
 		uint64_t selectedPreviousEntityID = m_SelectedEntity.GetID();// we are doing this inncase we created a child entity
+		Entity newEntity;
 		if (ImGui::MenuItem("Entity"))
-			m_SelectedEntity = m_CurrentWorld->CreateEntity();
+			newEntity = m_CurrentWorld->CreateEntity();
 		if (ImGui::BeginMenu("Light")) {
 			if (ImGui::MenuItem("Point ")) {
-				m_SelectedEntity = m_CurrentWorld->CreateEntity("Point Light");
-				m_SelectedEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Point;
+				newEntity = m_CurrentWorld->CreateEntity("Point Light");
+				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Point;
 			}
 			if (ImGui::MenuItem("Spot")) {
-				m_SelectedEntity = m_CurrentWorld->CreateEntity("Spot Light");
-				m_SelectedEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Spot;
+				newEntity = m_CurrentWorld->CreateEntity("Spot Light");
+				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Spot;
 			}
 			if (ImGui::MenuItem("Directional")) {
-				m_SelectedEntity = m_CurrentWorld->CreateEntity("Directional Light");
-				m_SelectedEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Direction;
+				newEntity = m_CurrentWorld->CreateEntity("Directional Light");
+				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Direction;
 			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::MenuItem("Mesh")) {
-			m_SelectedEntity = m_CurrentWorld->CreateEntity("Mesh");
-			m_SelectedEntity.AddComponent<MeshComponent>();
+			newEntity = m_CurrentWorld->CreateEntity("Mesh");
+			newEntity.AddComponent<MeshComponent>();
 		}
 		if (ImGui::MenuItem("Camera")) {
-			m_SelectedEntity = m_CurrentWorld->CreateEntity("Camera");
-			m_SelectedEntity.AddComponent<CameraComponent>();
+			newEntity = m_CurrentWorld->CreateEntity("Camera");
+			newEntity.AddComponent<CameraComponent>();
 		}
-		if (owner && m_SelectedEntity.GetID() != selectedPreviousEntityID) {
-			m_SelectedEntity.SetOwner(owner);
+		if (owner && newEntity.GetID() != 0) {
+			newEntity.SetOwner(owner);
 		}
+		if (newEntity.GetID() != 0)
+			return true;
+		return false;
 	}
 	void SceneHierachyPanel::DrawEntityNode(Entity& entity) {
-		
+		redraw:
 		auto& tc = entity.GetComponent<TagComponent>()->Tag;
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 
@@ -142,7 +146,12 @@ namespace Proof {
 		}
 		if (ImGui::BeginPopupContextItem()) {
 			if (ImGui::BeginMenu("Child Entity")) {
-				CreateEntityMenu(m_SelectedEntity);
+				bool temp = CreateEntityMenu(m_SelectedEntity); 
+				// not setting to opne because 
+				// if it is already opened what if we
+				// do not actually create and entity we are closing
+				// for no reason
+				
 				ImGui::EndMenu();
 			}
 			if (ImGui::MenuItem("Delete")) {
@@ -173,7 +182,6 @@ namespace Proof {
 			}
 			ImGui::TreePop();
 		}
-		return ;
 	}
 
 	template<typename T, typename UIFunction>

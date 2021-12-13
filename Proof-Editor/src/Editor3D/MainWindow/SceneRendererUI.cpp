@@ -7,14 +7,14 @@
 #include "Proof/Scene/Component.h"
 namespace Proof{
 	SceneRendererUI::SceneRendererUI(MeshAsset* asset) {
-		m_World = CreateSpecial<World>();
+		m_World = CreateCount<World>();
 		m_MeshAsset = asset;
 		tempEntity =m_World->CreateEntity(asset->GetName());
 		mesh =tempEntity.AddComponent<MeshComponent>();
 		tempEntity.AddComponent<LightComponent>()->m_Ambient ={1,1,1};
 		tempEntity.GetComponent<TransformComponent>()->Location.Z-=10;
 		mesh->m_MeshAssetPointerID = asset->GetID();
-		m_WorldRenderer = { m_World.get(),CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() };
+		m_WorldRenderer = { m_World,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() };
 		m_Type= SceneRendererType::MeshAsset;
 		m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::FowardRendering;
 	}
@@ -34,7 +34,7 @@ namespace Proof{
 			if(ImGui::Button("Renstate mesh")){
 				std::string filePath = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
 				if (filePath.empty() == false) {
-					m_MeshAsset->Reinstate(filePath);
+					m_MeshAsset->ChangeMesh(filePath);
 				}
 			}
 			ExternalAPI::ImGUIAPI::CheckBox("FaceCulling",&mesh->GetAsset()->GetMesh()->m_FaceCulling);

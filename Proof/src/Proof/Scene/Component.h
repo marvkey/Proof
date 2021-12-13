@@ -51,7 +51,7 @@ namespace Proof
 	};
 	class Proof_API ChildComponent { /* THIS CLASS KNOWS AN ENTITY EXIST */
 	public:
-		ChildComponent(const ChildComponent&) = default;
+		ChildComponent(const ChildComponent& other) = default;
 		ChildComponent() = default;
 		bool HasOwner()const {
 			return m_OwnerID != 0;
@@ -150,7 +150,11 @@ namespace Proof
 		Vector<float> Rotation = {0.0f,0.0f,0.0f};
 		Vector<float> Scale = {1.0f,1.0f,1.0f};
 		TransformComponent() = default;
-		TransformComponent(const TransformComponent&) = default;
+		TransformComponent(const TransformComponent& other) {
+			Location = other.Location;
+			Rotation = other.Rotation;
+			Scale = other.Scale;
+		}
 		TransformComponent operator+ (const TransformComponent& other)const {
 			TransformComponent temp;
 			temp.Location = this->Location + other.Location;
@@ -308,9 +312,6 @@ namespace Proof
 		glm::vec3 m_Diffuse;
 		glm::vec3 m_Specular;
 		int m_LightType = 0;
-	private:
-		uint32_t StartIndexSlot = 0;
-		friend class ECS;
 	};
 	struct Proof_API SkyLightComponent{
 		SkyLightComponent(const SkyLightComponent&) = default;
@@ -329,7 +330,6 @@ namespace Proof
 		void SetDimensions(uint32_t width,uint32_t Height) {
 			m_Width = width;
 			m_Height = Height;
-			CalculateProjection();
 		}
 		bool AutoSetDimension(bool value) {
 			value = m_AutoSetDimension;
@@ -338,10 +338,8 @@ namespace Proof
 		const glm::mat4& GetProjection()const { return m_Projection; }
 		Vector<float> m_Up = {0,1,0};
 	private:
-		void CalculateProjection() {
-			if (m_Positon == nullptr || m_Roatation == nullptr)
-				return;
-			m_View = glm::lookAt(glm::vec3{*m_Positon},glm::vec3{*m_Positon} + glm::vec3{*m_Roatation},glm::vec3{m_Up});
+		void CalculateProjection(const Vector<float>&position, const Vector<float>& rotation) {
+			m_View = glm::lookAt(glm::vec3{position},glm::vec3{ position } + glm::vec3{rotation},glm::vec3{m_Up});
 			m_Projection = glm::perspective(glm::radians(m_FovDeg),(float)m_Width / (float)m_Height,m_NearPlane,m_FarPlane);
 			m_CameraMatrix = m_View * m_Projection;
 		}
@@ -352,16 +350,13 @@ namespace Proof
 		float m_FarPlane = 1000;
 		float m_FovDeg = 45;
 		uint32_t m_Width = 250,m_Height = 250;
-		Vector<float>* m_Positon = nullptr;
-		Vector<float>* m_Roatation = nullptr;
-
 		glm::mat4 m_View = glm::mat4(1.0f);
 		glm::mat4 m_Projection = glm::mat4(1.0f);
 		glm::mat4 m_CameraMatrix = glm::mat4(1.0f);
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
-	private:
+		friend class WorldRenderer;
 	};
 		
 	struct Proof_API CubeColliderComponent {

@@ -5,7 +5,7 @@ Entities:
       Tag: flashlight
       tags: []
     TransformComponent:
-      Location: [-73.3795929, 34.0316429, -11.8784428]
+      Location: [0, 0, -5.80000019]
       Rotation: [-0.00792519189, -0.00840270706, -0.999933302]
       Scale: [0.5, 0.99999994, 1.40000021]
     ChildComponent:
@@ -13,9 +13,9 @@ Entities:
       Children: [13284]
     CameraComponent:
       AutoSetDimension: true
-      NearPlane: 0.100000001
-      FarPlane: 1000
-      FOV: 45
+      NearPlane: 0.0520000011
+      FarPlane: 1271.47803
+      FOV: 37.112999
       Width: 250
       Height: 250
       UpVector: [0, 1, 0]

@@ -23,7 +23,7 @@ namespace Proof
 		uint32_t m_LastWidht=0,m_LastHeight=0;
 		UUID m_ID = UUID();
 		class MeshComponent* mesh;
-		Special<World> m_World;
+		Count<World> m_World;
 		class MeshAsset* m_MeshAsset;
 		WorldRenderer m_WorldRenderer;
 		SceneRendererType m_Type;

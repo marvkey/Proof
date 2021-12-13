@@ -9,7 +9,7 @@ namespace Proof
 		Asset() =default;
 		virtual void SaveAsset() =0;
 		virtual bool LoadAsset(const std::string& FilePath) =0;
-		
+		bool LoadAsset() { return LoadAsset(m_SavePath); }
 		const static std::string& GetAssetType() {
 			static std::string assetType = "AssetType::None";
 			return assetType;
@@ -35,6 +35,7 @@ namespace Proof
 		const std::string& GetPath()const{
 			return m_SavePath;
 		}
+
 	protected:
 		void SetPath(const std::string& newFilePath) {
 			m_SavePath = newFilePath;

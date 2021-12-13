@@ -61,7 +61,7 @@ namespace Proof
 		m_Mesh->m_FaceCulling = data["FaceCulling"].as<bool>();
 		return true;
 	}
-	void MeshAsset::Reinstate(const std::string& meshFilepath){
+	void MeshAsset::ChangeMesh(const std::string& meshFilepath){
 		m_MeshFilePath = meshFilepath;
 		m_Mesh = CreateSpecial<Mesh>(m_MeshFilePath);
 	}

@@ -40,7 +40,7 @@ namespace Proof {
 		glm::vec2 _ViewPortLocation;
 		bool ViewPortResize = false;
 		Count<class World>ActiveWorld =nullptr;
-		Count<class World>m_PlayWorld =nullptr;
+		Count<class World>m_EditorWorld =nullptr;
 
 		int GuizmoType = (1u << 0)| (1u << 1)| (1u << 2);// imgui bit stuff
 		class SceneHierachyPanel m_WorldHierachy;

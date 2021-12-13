@@ -4,7 +4,6 @@
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/VertexArray.h"
 #include "Proof/Renderer/FrameBuffer.h"
-#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Component.h"
 #define ENTT_ID_TYPE uint64_t
 #include "entt/entt.hpp"	
@@ -36,6 +35,10 @@ namespace Proof{
 		class Entity CreateEntity(const std::string& EntName= "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName, UUID ID);
 
+		template<class...T>
+		auto GetAllEntitiesWith() {
+			return m_Registry.view<T...>;
+		}
 		static Count<World> Copy(Count<World> other);
 		virtual void EndRuntime();
 		entt::registry64 m_Registry;
@@ -47,6 +50,7 @@ namespace Proof{
 
 		EditorCamera m_EditorCamera ={200,200};
 	private:
+		class CameraComponent* m_ActiveCamera = nullptr;
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
 		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height,bool usePBR =false);
 		WorldState m_CurrentState=WorldState::Edit;
@@ -55,11 +59,7 @@ namespace Proof{
 		std::string Name = "DefaultWorld";
 		template<class T>
 		void OnComponentAdded(UUID ID, T* component) {};
-		template<>
-		void World::OnComponentAdded(UUID ID, CameraComponent* component) {
-			component->m_Positon = &m_Registry.get<TransformComponent>(ID.Get()).Location;
-			component->m_Roatation = &m_Registry.get<TransformComponent>(ID.Get()).Rotation;
-		}
+		
 		std::string m_Path;
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		Count<CubeMap> m_WorldCubeMap;

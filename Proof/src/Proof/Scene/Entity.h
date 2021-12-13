@@ -20,10 +20,17 @@ namespace Proof{
 		}
 		
 		template<class T>
-		bool HasComponent() {
+		bool HasComponent()const {
 			return CurrentWorld->m_Registry.any_of<T>(m_ID);
 		}
-
+		template<class... T>
+		bool HasanyComponents()const {
+			return CurrentWorld->m_Registry.any_of<T>(m_ID);
+		}
+		template<class... T>
+		bool HasallComponents()const {
+			return CurrentWorld->m_Registry.all_of<T>(m_ID);
+		}
 		template<class T,typename... Args>
 		T* AddComponent(Args&&... args) {
 
@@ -57,7 +64,18 @@ namespace Proof{
 			PF_ERROR("cannot remove ChildComponent ");
 			return false;
 		}
-
+		template<typename T, typename... Args>
+		T* AddorReplaceComponent(Args&&... args) {
+			T* Component = &CurrentWorld->m_Registry.emplace_or_replace<T>(m_ID, std::forward<Args>(args)...);
+			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
+			return Component;
+		}
+		template<typename T, typename... Args>
+		T* GetorCreateComponent(Args&&... args) {
+			T* Component = &CurrentWorld->m_Registry.get_or_emplace<T>(m_ID, std::forward<Args>(args)...);
+			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
+			return Component;
+		}
 		bool HasOwner() {
 			return GetComponent<ChildComponent>()->HasOwner();
 		}

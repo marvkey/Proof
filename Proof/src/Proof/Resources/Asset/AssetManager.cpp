@@ -76,6 +76,12 @@ namespace Proof
 					it->second.second->m_AssetName = it->second.first.Path.filename().stem().filename().stem().string();
 					return true;
 				}
+				else if (it->second.first.Type == MaterialAsset::GetAssetType()) {
+					it->second.second = CreateCount<MaterialAsset>();
+					it->second.second->LoadAsset(it->second.first.Path.string());
+					it->second.second->m_AssetName = it->second.first.Path.filename().stem().filename().stem().string();
+					return true;
+				}
 			}
 			return true;
 		}

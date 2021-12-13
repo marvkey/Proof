@@ -15,8 +15,8 @@ namespace Proof{
 			//m_BrowserPanel =  Panel;
 		}
 	private:
-
-		void CreateEntityMenu(Entity owner = {});
+		// Retuns True of an entity is created
+		bool CreateEntityMenu(Entity owner = {});
 		World* m_CurrentWorld;
 		Entity m_SelectedEntity;
 		//class ContentBrowserPanel* m_BrowserPanel =nullptr;

@@ -217,11 +217,11 @@ namespace Proof
 								ImGui::EndDragDropSource();
 							}
 							if (fileExtension == "Mesh.ProofAsset" && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
-								UUID staticID = GetIDCurrentDirectory(FileDragSource);
+								UUID staticID = GetIDCurrentDirectory(It.path().string());
 								m_owner->CreateMeshEditor(AssetManager::GetAssetShared<MeshAsset>(staticID).get());
 							}
 							if (fileExtension == "Material.ProofAsset" && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
-								UUID staticID = GetIDCurrentDirectory(FileDragSource);
+								UUID staticID = GetIDCurrentDirectory(It.path().string());
 								m_owner->CreateMaterialEdtior(AssetManager::GetAssetShared<MaterialAsset>(staticID).get());
 							}
 						}else{
@@ -296,6 +296,11 @@ namespace Proof
 
 							}
 							ImGui::EndMenu();
+						}
+						if (ImGui::MenuItem("Reload")) {
+							if (It.is_directory() == false && isScene == false) {
+								AssetManager::ForceGetAssetShared<Asset>(GetIDCurrentDirectory(It.path().string()))->LoadAsset();
+							}
 						}
 						ImGui::EndPopup();
 

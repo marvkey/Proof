@@ -50,6 +50,7 @@ namespace Proof{
 			return std::string();
 		};
 
+	
 		void ShortCutDialogs::Copy(const std::string& text){
 			OpenClipboard(glfwGetWin32Window(CurrentWindow::GetWindow()));
 			EmptyClipboard();
