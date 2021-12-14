@@ -138,10 +138,11 @@ namespace Proof{
 			CopyComponentIfExists<TagComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
 			CopyComponentIfExists<TransformComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
 			CopyComponentIfExists<ChildComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
-			//CopyComponentIfExists<NativeScriptComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
+			CopyComponentIfExists<NativeScriptComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
 			CopyComponentIfExists<MeshComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
 			CopyComponentIfExists<LightComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
 			CopyComponentIfExists<CubeColliderComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
+			CopyComponentIfExists<CameraComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
 		}
 		//CopyComponent<TagComponent>(newWorld->m_Registry, m_Registry,);
 		return newWorld;

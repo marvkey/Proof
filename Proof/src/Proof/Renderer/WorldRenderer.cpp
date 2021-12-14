@@ -13,17 +13,16 @@ namespace Proof{
 		if (m_World->m_CurrentState == WorldState::Play) {
 			auto cameraGroup = m_World->m_Registry.group<TransformComponent>(entt::get<CameraComponent>);
 			if (cameraGroup.size() == 0)
-				goto a;
-			for (auto entity : cameraGroup)
-			{
-				auto [transform, camera] = cameraGroup.get<TransformComponent, CameraComponent>(entity);
-				camera.CalculateProjection(transform.Location, transform.Rotation);
-				Renderer3DPBR::BeginContext(camera.GetProjection(), camera.GetView(),transform.Location,m_ScreenFrameBuffer, RenderData);
-				break;
+				Renderer3DPBR::BeginContext(m_World->m_EditorCamera, m_ScreenFrameBuffer, RenderData);
+			else {
+				for (auto entity : cameraGroup)
+				{
+					auto [transform, camera] = cameraGroup.get<TransformComponent, CameraComponent>(entity);
+					camera.CalculateProjection(transform.Location, transform.Rotation);
+					Renderer3DPBR::BeginContext(camera.GetProjection(), camera.GetView(), transform.Location, m_ScreenFrameBuffer, RenderData);
+					break;
+				}
 			}
-		a:
-			Renderer3DPBR::BeginContext(m_World->m_EditorCamera, m_ScreenFrameBuffer, RenderData);
-
 		}
 		else {
 			Renderer3DPBR::BeginContext(m_World->m_EditorCamera, m_ScreenFrameBuffer, RenderData);

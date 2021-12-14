@@ -15,8 +15,8 @@ namespace Proof{
 
 		template<class T>
 		T* GetComponent() {
-			if (HasComponent<T>() == false) return nullptr;
-			return &CurrentWorld->m_Registry.get<T>(m_ID);
+			//if (HasComponent<T>() == false) return nullptr;
+			return CurrentWorld->m_Registry.try_get<T>(m_ID);
 		}
 		
 		template<class T>
@@ -25,11 +25,11 @@ namespace Proof{
 		}
 		template<class... T>
 		bool HasanyComponents()const {
-			return CurrentWorld->m_Registry.any_of<T>(m_ID);
+			return CurrentWorld->m_Registry.any_of<T...>(m_ID);
 		}
 		template<class... T>
 		bool HasallComponents()const {
-			return CurrentWorld->m_Registry.all_of<T>(m_ID);
+			return CurrentWorld->m_Registry.all_of<T...>(m_ID);
 		}
 		template<class T,typename... Args>
 		T* AddComponent(Args&&... args) {
