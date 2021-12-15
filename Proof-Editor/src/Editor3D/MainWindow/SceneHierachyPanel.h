@@ -14,6 +14,7 @@ namespace Proof{
 		void SetBrowserPanel(class ContentBrowserPanel* Panel){
 			//m_BrowserPanel =  Panel;
 		}
+		bool m_WindowHoveredorFocus = false;
 	private:
 		// Retuns True of an entity is created
 		bool CreateEntityMenu(Entity owner = {});

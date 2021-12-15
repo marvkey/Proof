@@ -34,6 +34,7 @@ namespace Proof{
 
 		class Entity CreateEntity(const std::string& EntName= "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName, UUID ID);
+		class Entity CreateEntity(Entity entity,bool includeChildren=true);
 
 		template<class...T>
 		auto GetAllEntitiesWith() {

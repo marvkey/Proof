@@ -25,11 +25,23 @@
 #include "MainWindow/MaterialEditorPanel.h"
 #include "Proof/Resources/Math/Random.h"
 #include <string>
+#include "Proof/Core/Core.h"
 namespace Proof
 {
 	Editore3D::Editore3D():
 		Layer("Editor3D Layer") 	{	}
 	Editore3D::~Editore3D() {
+	}
+	bool Editore3D::IsKeyPressedEditor(KeyBoardKey Key){
+		if (glfwGetKey(Proof::CurrentWindow::GetWindow(), (int)Key)) {
+			return  true;
+		}
+		return false;
+	}
+	void Editore3D::OnEvent(Event& e) {
+
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 	}
 	void Editore3D::OnAttach() {
 	//	std::string name =std::format("{} {}","wagwan");
@@ -129,15 +141,7 @@ namespace Proof
 
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
-		if (Input::IsKeyClicked(KeyBoardKey::L)) {
-			GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-		}
-		if (Input::IsKeyClicked(KeyBoardKey::R)) {
-			GuizmoType = ImGuizmo::OPERATION::ROTATE;
-		}
-		if (Input::IsKeyClicked(KeyBoardKey::S)) {
-			GuizmoType = ImGuizmo::OPERATION::SCALE;
-		}
+		
 		if(Input::IsKeyPressed(KeyBoardKey::H)){
 			//std::stringstream stream;
 			//stream << std::hex << UUID();
@@ -147,13 +151,13 @@ namespace Proof
 
 			std::cout<< num <<std::endl;
 		}
+		m_WorldRenderer.Renderer();
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
 			ActiveWorld->OnUpdateEditor(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
 		else if (ActiveWorld->m_CurrentState == WorldState::Play)
 			ActiveWorld->OnUpdateRuntime(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
 		else if (ActiveWorld->m_CurrentState == WorldState::Simulate)
 			ActiveWorld->OnSimulatePhysics(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
-		m_WorldRenderer.Renderer();
 		/*
 		glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->m_EditorCamera.m_View));
 		m_WorldRenderer.m_ScreenFrameBuffer->Bind();
@@ -239,6 +243,82 @@ namespace Proof
 			}
 		}
 		ImGui::End();
+	}
+	
+	void Editore3D::OnKeyClicked(KeyClickedEvent& e) {
+		// Shortcuts
+		
+		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
+		bool shift = IsKeyPressedEditor(KeyBoardKey::LeftShift) || IsKeyPressedEditor(KeyBoardKey::RightShift);
+
+		switch (e.GetKey())
+		{
+		
+			case KeyBoardKey::S:
+			{
+				//if (control && shift)
+					//SaveSceneAs();
+
+				break;
+			}
+
+			case KeyBoardKey::D:
+			{
+				if (control && m_WorldHierachy.m_SelectedEntity.GetID()!=0)
+					m_WorldHierachy.m_SelectedEntity = ActiveWorld->CreateEntity(m_WorldHierachy.m_SelectedEntity);
+				break;
+
+			}
+			case KeyBoardKey::Delete:
+			case KeyBoardKey::Backspace:
+			{
+				if (m_WorldHierachy.m_SelectedEntity.GetID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
+					ActiveWorld->DeleteEntity(m_WorldHierachy.m_SelectedEntity);
+					m_WorldHierachy.m_SelectedEntity = {};
+				}
+				break;
+			}
+			// copy entity
+			case KeyBoardKey::C:
+			{
+				if (control && m_WorldHierachy.m_SelectedEntity.GetID() != 0 &&(m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
+					m_CopyEntity = m_WorldHierachy.m_SelectedEntity;
+				}
+				break;
+			}
+			// paste entity 
+			case KeyBoardKey::V:
+			{
+				if (control && m_CopyEntity.GetID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
+					m_WorldHierachy.m_SelectedEntity = ActiveWorld->CreateEntity(m_CopyEntity);
+				}
+				break;
+			}
+
+			// ImGuizmo
+			case KeyBoardKey::Q:
+			{
+				// no right button pressed that means that we are using the editor camera
+				if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+				break;
+			}
+
+			case KeyBoardKey::W:
+			{
+				// no right button pressed that means that we are using the editor camera
+				if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					GuizmoType = ImGuizmo::OPERATION::ROTATE;
+				break;
+			}
+			case KeyBoardKey::E:
+			{
+				// no right button pressed that means that we are using the editor camera
+				if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					GuizmoType = ImGuizmo::OPERATION::SCALE;
+				break;
+			}
+		}
 	}
 	void Editore3D::Logger() {
 		if (m_ShowLogger == false)
@@ -358,6 +438,7 @@ namespace Proof
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		static bool Open = true;
 		if (ImGui::Begin("ViewPort",&Open,ImGuiWindowFlags_NoScrollWithMouse| ImGuiWindowFlags_NoScrollbar)) {
+			m_ViewPoartHoveredorFocused = ImGui::IsWindowHovered() ||ImGui::IsWindowFocused();
 
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -365,12 +446,8 @@ namespace Proof
 			ImVec2 ViewPortPanelSize = ImGui::GetContentRegionAvail();
 			m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x,viewportMinRegion.y + viewportOffset.y };
 			m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x,viewportMaxRegion.y + viewportOffset.y };
-			_ViewPortSize = { ViewPortPanelSize.x,ViewPortPanelSize.y };
-
 			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
 				_ViewPortSize = { ViewPortPanelSize.x,ViewPortPanelSize.y };
-				//m_WorldRenderer.m_ScreenFrameBuffer->Resize(_ViewPortSize.x, _ViewPortSize.y);
-				// Still neees to be fixed se
 			}
 
 			
@@ -387,7 +464,7 @@ namespace Proof
 			Entity selectedEntity = m_WorldHierachy.GetSelectedEntity();
 
 			if (selectedEntity.GetID() != 0) {
-				ImGuizmo::SetOrthographic(false);
+				ImGuizmo::SetOrthographic(true);
 				ImGuizmo::SetDrawlist();
 
 				ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
@@ -396,7 +473,7 @@ namespace Proof
 				glm::mat4 cameraView = ActiveWorld->m_EditorCamera.m_View;
 
 				auto& tc = *selectedEntity.GetComponent<TransformComponent>();
-				glm::mat4 transform = tc.GetLocalTransform();
+				glm::mat4 transform = tc.GetWorldTransform();
 
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
@@ -408,17 +485,27 @@ namespace Proof
 
 				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 					(ImGuizmo::OPERATION)GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
-					nullptr, snap ? snapValues : nullptr);
+					nullptr, snap ? snapValues : nullptr);;
 
 				if (ImGuizmo::IsUsing()) {
 					glm::vec3 translation, rotation, scale;
 					MathResource::DecomposeTransform(transform, translation, rotation, scale);
-
-					glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
-					tc.Location = translation;
-					tc.Rotation += deltaRotation;
-					tc.Scale = scale;
+					if (selectedEntity.HasOwner() == false) {
+						glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
+						tc.Location = translation;
+						tc.Rotation += deltaRotation;
+						tc.Scale = scale;
+					}
+					else {
+						glm::vec3 tempLocation = tc.Location;
+						glm::vec3 tempScale = tc.Scale;
+						//glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
+						//tc.Location = translation - tempLocation;
+						//tc.Rotation += deltaRotation;
+						tc.Scale = glm::vec3{ tc.GetWorldScale() }- scale;
+					}
 				}
+
 			}
 
 			/* putting this underneath image because a window only accpet drop target to when item is bound so and image has been bound */

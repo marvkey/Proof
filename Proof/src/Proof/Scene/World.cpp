@@ -78,7 +78,13 @@ namespace Proof{
 			script.Instance->OnUpdate(DeltaTime);
 		}
 	}
-
+	template<typename Component>
+	static Component* CopyComponentIfExists(Entity dst, Entity src)
+	{
+		if (src.HasComponent<Component>())
+			return dst.AddorReplaceComponent<Component>(*src.GetComponent<Component>());
+		return nullptr;
+	}
 	void World::OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height) {
 		OnUpdate(DeltaTime,width,height);
 	}
@@ -98,19 +104,31 @@ namespace Proof{
 		entity.GetComponent<TransformComponent>()->m_World = this;
 		return entity;
 	}
+	Entity World::CreateEntity(Entity entity, bool includeChildren){
+		Entity newEntity = CreateEntity(entity.GetName());
+		CopyComponentIfExists<TagComponent>(newEntity, entity);
+		CopyComponentIfExists<TransformComponent>(newEntity, entity);
+		//CopyComponentIfExists<ChildComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
+		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
+		CopyComponentIfExists<MeshComponent>(newEntity, entity);
+		CopyComponentIfExists<LightComponent>(newEntity, entity);
+		CopyComponentIfExists<CubeColliderComponent>(newEntity, entity);
+		CopyComponentIfExists<CameraComponent>(newEntity, entity);
+		if (includeChildren == true) {
+			entity.EachChild([&](Entity childEntity){
+				Entity newChild = CreateEntity(childEntity, true);
+				newEntity.AddChild(newChild);
+			});
+		}
+		return newEntity;
+	}
 	template<class Component>
 	static void CopyComponent(entt::registry64& dst, entt::registry64& src){
 		auto view = src.view<Component>();
 		for (auto e : view) {
 		}
 	}
-	template<typename Component>
-	static Component* CopyComponentIfExists(Entity dst, Entity src)
-	{
-		if(src.HasComponent<Component>())
-			return dst.AddorReplaceComponent<Component>(*src.GetComponent<Component>());
-		return nullptr;
-	}
+	
 	//static void CopyComponent
 	Count<World> World::Copy(Count<World> other) {
 		Count<World> newWorld = CreateCount<World>();

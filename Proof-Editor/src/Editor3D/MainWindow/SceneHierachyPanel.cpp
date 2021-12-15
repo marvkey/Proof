@@ -32,16 +32,18 @@ namespace Proof {
 			return;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		if(ImGui::Begin("Herieachy", &m_ShowWindow));
-		{	/*
+		{	
+			/*
 			auto &a =m_CurrentWorld->m_Registry.view<>();
 			for (auto& g : a) {
 
 			}
 			*/
-			ImGui::PushStyleColor(ImGuiCol_FrameBg, { 0,0,0,1 });
-			ImGui::BeginChildFrame((ImGuiID)"Child Herieachy", { ImGui::GetContentRegionAvailWidth(),ImGui::GetWindowHeight() / 2});
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
+			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvailWidth(),ImGui::GetWindowHeight() / 2});
 			{
-	
+				m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
+
 				for (uint64_t i = 0; i < m_CurrentWorld->m_Registry.size(); i++) {
 					Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld };
 					if (entity.HasOwner() == false)
@@ -72,6 +74,15 @@ namespace Proof {
 					if (m_SelectedEntity) {
 						DrawComponent(m_SelectedEntity);
 					}
+				}
+				{
+					/*
+					if (ImGui::IsKeyPressed((int)KeyBoardKey::LeftControl) && ImGui::IsKeyPressed((int)KeyBoardKey::D)) {
+						if (m_SelectedEntity) {
+							m_SelectedEntity = m_CurrentWorld->CreateEntity(m_SelectedEntity);
+						}
+					}
+					*/
 				}
 			}
 			ImGui::EndChild();

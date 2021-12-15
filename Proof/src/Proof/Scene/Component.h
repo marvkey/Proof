@@ -23,7 +23,6 @@ namespace Proof
 
 		void AddTag(const std::string& Tag) {
 			m_Tags.emplace_back(Tag);
-			m_Tags.size();
 		}
 		bool HasTag(const std::string& Tag)const {
 			for (const std::string& TagName : m_Tags) {
@@ -167,11 +166,11 @@ namespace Proof
 		Vector<float> GetWorldRotation()const;
 		Vector<float> GetWorldScale()const;
 		glm::mat4 GetLocalTransform() const {
-			glm::mat4 rotation = glm::toMat4(glm::quat(glm::vec3{ Rotation }));
-
-			return glm::translate(glm::mat4(1.0f), { glm::vec3{Location} })
-				* rotation
-				* glm::scale(glm::mat4(1.0f), { glm::vec3{Scale} });
+			return glm::translate(glm::mat4(1.0f), { Location }) *
+				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.X), { 1,0,0 })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.Y), { 0,1,0 })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.Z), { 0,0,1 })
+				* glm::scale(glm::mat4(1.0f), { Scale });
 		}
 
 		glm::mat4 GetWorldTransform() const;
@@ -207,7 +206,6 @@ namespace Proof
 		friend class World;
 		friend class ECS;
 		friend class SceneHierachyPanel;
-		uint32_t StartIndexSlot;
 		bool m_HasScriptAttached = false;
 	};
 

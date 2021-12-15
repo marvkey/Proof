@@ -23,6 +23,12 @@ namespace Proof {
 		
 		Count<Texture2D>m_CheckeboardTexture;
 	private:
+		static bool IsKeyPressedEditor(KeyBoardKey Key);
+
+		virtual void OnEvent(Event& e);
+		void OnKeyClicked(KeyClickedEvent& e);
+		bool m_ViewPoartHoveredorFocused = false;
+		Entity m_CopyEntity;
 		void Logger();
 		bool Docking = false;
 		bool m_ShowLogger = true;
@@ -42,7 +48,7 @@ namespace Proof {
 		Count<class World>ActiveWorld =nullptr;
 		Count<class World>m_EditorWorld =nullptr;
 
-		int GuizmoType = (1u << 0)| (1u << 1)| (1u << 2);// imgui bit stuff
+		int GuizmoType = (1u << 0)| (1u << 1)| (1u << 2);// imguizmo bit stuff
 		class SceneHierachyPanel m_WorldHierachy;
 		class ContentBrowserPanel m_CurrentContentBrowserPanel ={this};
 		class AssetManagerPanel m_AssetManagerPanel;

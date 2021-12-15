@@ -116,12 +116,26 @@ Entities:
       Tag: rocket
       tags: []
     TransformComponent:
-      Location: [0, 0, 0]
+      Location: [0, 0, 11.2063856]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
-      Children: []
+      Children: [17510744096310862166]
     MeshComponent:
       MeshAssetPointerID: 20980
+      MaterialPointerID: 0
+  - Entity: 17510744096310862166
+    TagComponent:
+      Tag: Empty Entity
+      tags: []
+    TransformComponent:
+      Location: [17.1000004, 10.3000002, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0, 1, 1]
+    ChildComponent:
+      OwnerID: 9244232424387513238
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12067
       MaterialPointerID: 0

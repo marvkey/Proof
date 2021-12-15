@@ -49,8 +49,8 @@ namespace Proof {
         glfwPollEvents();
     }
     void WindowsWindow::key_callback(::GLFWwindow* window, int key, int scancode, int action, int mods) {
-        if (CurrentWindow::GetWindowClass().m_InputEventEnabled == false)
-            return;
+        //if (CurrentWindow::GetWindowClass().m_InputEventEnabled == false)
+           // return;
         /* This is for when a key is Clicked 2 */
         if (action == GLFW_RELEASE) {
             static auto before = std::chrono::system_clock::now();
