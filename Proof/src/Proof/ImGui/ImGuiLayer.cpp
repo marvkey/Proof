@@ -4,7 +4,7 @@
 #include "ImGui/imgui_impl_glfw.h"
 #include "ImGui/imgui_impl_opengl3.h"
 #include "Proof/Core/CurrentWindow.h"
-
+#include<GLFW/glfw3.h>
 #include "ImGuizmo.h"
 namespace Proof {
 	ImGuiLayer::ImGuiLayer() :
@@ -31,7 +31,7 @@ namespace Proof {
 		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Bold.ttf",18.0f);
 		io.FontDefault =io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Regular.ttf",17.0f);
 		SetDarkTheme();
-		ImGui_ImplGlfw_InitForOpenGL(CurrentWindow::GetWindow(), true);
+		ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)CurrentWindow::GetWindowAPI(), true);
 		ImGui_ImplOpenGL3_Init("#version 450");
 	}
 	void ImGuiLayer::OnDetach() {
@@ -54,10 +54,10 @@ namespace Proof {
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());	
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-			::GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			void* backup_current_context = glfwGetCurrentContext();
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
+			glfwMakeContextCurrent((GLFWwindow*)backup_current_context);
 		}		
 	}
 	void ImGuiLayer::SetDarkTheme() {

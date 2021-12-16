@@ -118,7 +118,8 @@ namespace Proof
 			return true;
 		}
 		bool RemoveChild(ChildComponent& child) {
-			auto& it = std::find(m_Children.begin(), m_Children.end(), child.m_CurrentID);
+			if (HasChildren() == false)return false;
+			auto it = std::find(m_Children.begin(), m_Children.end(), child.m_CurrentID);
 			if (it == m_Children.end())// checking if we have the child
 				return false;
 			child.m_OwnerID = 0;

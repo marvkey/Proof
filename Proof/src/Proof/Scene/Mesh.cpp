@@ -5,7 +5,9 @@
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/RendererCommand.h"
-
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -25,42 +27,46 @@ namespace Proof{
         }
         ProcessNode(scene->mRootNode,scene);
     }
-    void Mesh::ProcessNode(aiNode* node,const aiScene* scene) {
-        for (unsigned int i = 0; i < node->mNumMeshes; i++) {
-            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+    void Mesh::ProcessNode(void* node,const void* scene) {
+        aiNode* ainode = (aiNode*)node;
+        aiScene* aiscene = (aiScene*)scene;
+        for (unsigned int i = 0; i < ainode->mNumMeshes; i++) {
+            aiMesh* mesh = aiscene->mMeshes[ainode->mMeshes[i]];
             //PF_ENGINE_INFO("%s",mesh->mName.C_Str()); // works
-            meshes.emplace_back(ProcessMesh(mesh,scene));
+            meshes.emplace_back(ProcessMesh(mesh, aiscene));
         }
-        for (unsigned int i = 0; i < node->mNumChildren; i++) {
-            ProcessNode(node->mChildren[i],scene);
+        for (unsigned int i = 0; i < ainode->mNumChildren; i++) {
+            ProcessNode(ainode->mChildren[i], aiscene);
         }
     }
-    SubMesh Mesh::ProcessMesh(aiMesh* mesh,const aiScene* scene) {
+    SubMesh Mesh::ProcessMesh(void* mesh,const void* scene) {
+        aiMesh* aimesh = (aiMesh*)mesh;
+        aiScene* aiscene = (aiScene*)scene;
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
         std::vector<Count<Texture2D>> textures;
 
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+        for (unsigned int i = 0; i < aimesh->mNumVertices; i++) {
             Vertex vertex;
-            vertex.Vertices = Vector(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z);
-            if (mesh->HasNormals())
-                vertex.Normal = Vector(mesh->mNormals[i].x,mesh->mNormals[i].y,mesh->mNormals[i].z);
-            if (mesh->mTextureCoords[0]) {
-                vertex.TexCoords = glm::vec2(mesh->mTextureCoords[0][i].x,mesh->mTextureCoords[0][i].y);
-                vertex.Tangent = Vector(mesh->mTangents[i].x,mesh->mTangents[i].y,mesh->mTangents[i].z);
-                vertex.Bitangent = Vector(mesh->mBitangents[i].x,mesh->mBitangents[i].y,mesh->mBitangents[i].z);
+            vertex.Vertices = Vector(aimesh->mVertices[i].x, aimesh->mVertices[i].y, aimesh->mVertices[i].z);
+            if (aimesh->HasNormals())
+                vertex.Normal = Vector(aimesh->mNormals[i].x,aimesh->mNormals[i].y,aimesh->mNormals[i].z);
+            if (aimesh->mTextureCoords[0]) {
+                vertex.TexCoords = glm::vec2(aimesh->mTextureCoords[0][i].x,aimesh->mTextureCoords[0][i].y);
+                vertex.Tangent = Vector(aimesh->mTangents[i].x,aimesh->mTangents[i].y,aimesh->mTangents[i].z);
+                vertex.Bitangent = Vector(aimesh->mBitangents[i].x,aimesh->mBitangents[i].y,aimesh->mBitangents[i].z);
             }
             else
                 vertex.TexCoords = glm::vec2(0.0f,0.0f);
             vertices.emplace_back(vertex);
         }
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
-            aiFace& face = mesh->mFaces[i];
+        for (unsigned int i = 0; i <aimesh->mNumFaces; i++) {
+            aiFace& face =aimesh->mFaces[i];
             for (unsigned int j = 0; j < face.mNumIndices; j++) {
                 indices.emplace_back(face.mIndices[j]);
             }
         }
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+        aiMaterial* material = aiscene->mMaterials[aimesh->mMaterialIndex];
 
         std::vector<Count<Texture2D>>  diffuseMaps = LoadMaterialTextures(material,aiTextureType_DIFFUSE,Texture2D::TextureType::Diffuse);
         textures.insert(textures.end(),diffuseMaps.begin(),diffuseMaps.end());
@@ -74,7 +80,7 @@ namespace Proof{
         std::vector<Count<Texture2D>>  heightMaps = LoadMaterialTextures(material,aiTextureType_HEIGHT,Texture2D::TextureType::Height);
         textures.insert(textures.end(),heightMaps.begin(),heightMaps.end());
        
-        SubMesh temp(vertices,indices,mesh->mName.C_Str(),textures);
+        SubMesh temp(vertices,indices,aimesh->mName.C_Str(),textures);
         return temp;
         //aiTextureType_METALNESS
         //aiTextureType_DIFFUSE_ROUGHNESS
@@ -90,11 +96,13 @@ namespace Proof{
         //aiTextureType_SPECULAR
     }
 
-    std::vector<Count<Texture2D>> Mesh::LoadMaterialTextures(aiMaterial* mat,aiTextureType type,Texture2D::TextureType _TextureType) {
+    std::vector<Count<Texture2D>> Mesh::LoadMaterialTextures(void* mat,int type,Texture2D::TextureType _TextureType) {
+        aiMaterial* aimat = (aiMaterial*)mat;
+        aiTextureType aitype = (aiTextureType)type;
         std::vector<Count<Texture2D>>  Textures;
-        for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
+        for (unsigned int i = 0; i < aimat->GetTextureCount(aitype); i++) {
             aiString str;
-            mat->GetTexture(type,i,&str);
+            aimat->GetTexture(aitype,i,&str);
             bool skip = false;
             for (unsigned int j = 0; j < textures_loaded.size(); j++) {
                 if (std::strcmp(textures_loaded[j]->GetPath().data(),str.C_Str()) == 0) {
@@ -112,15 +120,16 @@ namespace Proof{
         return Textures;
     }
 
-    std::vector<Count<Texture2D>> Mesh::LoadMaterial(aiMaterial* mat) {
+    std::vector<Count<Texture2D>> Mesh::LoadMaterial(void* mat) {
+        aiMaterial* aimat = (aiMaterial*)mat;
         Material material;
         aiColor3D color(0.f,0.f,0.f);
         float shininess;
 
-        mat->Get(AI_MATKEY_COLOR_AMBIENT,color);
+        aimat->Get(AI_MATKEY_COLOR_AMBIENT,color);
         material.m_Colour = glm::vec3(color.r,color.b,color.g);
 
-        mat->Get(AI_MATKEY_SHININESS,shininess);
+        aimat->Get(AI_MATKEY_SHININESS,shininess);
         material.m_Metallness = shininess;
 
         /*

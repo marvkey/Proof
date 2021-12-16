@@ -1,13 +1,12 @@
 #pragma once
 #include "Proof/Renderer/GraphicsContext.h"
-#include <GLFW/glfw3.h>
 namespace Proof {
 	class Proof_API CurrentWindow {
 	public:
 		static uint32_t GetWindowHeight();
 		static uint32_t GetWindowWidth();
 		static void SetWindowSize(int width, int height);
-		static ::GLFWwindow* GetWindow();
+		static void* GetWindowAPI();
 		static class WindowsWindow& GetWindowClass();
 		static int GetWindowPosX();
 		static int GetWindowPosY();

@@ -1,5 +1,4 @@
 #pragma once
-#include <GLFW/glfw3.h>
 #include <Glad/glad.h>
 #include <vector>
 #include "Proof/Core/Window.h"
@@ -19,22 +18,22 @@ namespace Proof {
         }
         friend class Application; 
         /* This is temporary the way the key input works but it wil still use std::vector but maybe i will make the window have a friend class with the Input the class so i can make this private*/
-        static std::vector<KeyBoardKey> KeyboardClicked;
-        static std::vector<KeyBoardKey> KeyboardReleased;
-        static std::vector<KeyBoardKey> KeyboardKeyDoubleClicked;
-        static std::vector<KeyBoardKey> KeyboardKeyRepeat;
+        std::vector<KeyBoardKey> KeyboardClicked;
+        std::vector<KeyBoardKey> KeyboardReleased;
+        std::vector<KeyBoardKey> KeyboardKeyDoubleClicked;
+        std::vector<KeyBoardKey> KeyboardKeyRepeat;
 
-        static std::vector<MouseButton> MouseButtonClicked;
-        static std::vector<MouseButton> MouseButtonReleased;
-        static std::vector<MouseButton> MouseButtonDoubleClicked;
-        static std::vector<MouseButton> MouseButtonRepeat;
-        static std::vector<float> MouseScrollX;
-        static std::vector<float> MouseScrollY;
+        std::vector<MouseButton> MouseButtonClicked;
+        std::vector<MouseButton> MouseButtonReleased;
+        std::vector<MouseButton> MouseButtonDoubleClicked;
+        std::vector<MouseButton> MouseButtonRepeat;
+        std::vector<float> MouseScrollX;
+        std::vector<float> MouseScrollY;
         
         virtual void WindowUpdate()override;
 
         void* GetWindow(){
-            return MainWindow;
+            return m_Window;
         }
         inline void SetEventCallback(const std::function<void(Event&)>& callback) { EventCallback = callback; }
         bool IsInputEventEnabled(){
@@ -44,20 +43,17 @@ namespace Proof {
         virtual int WindowEnd();
         virtual	int createWindow();
         int Width =800, Height=500;
-        ::GLFWwindow* MainWindow;
-        static void key_callback(::GLFWwindow* window, int key, int scancode, int action, int mods);
-        static void mouse_button_callback(::GLFWwindow* window, int button, int action, int mods);
-        static void Mouse_Moved_Callback(::GLFWwindow* window, double xpos, double ypos);
-        static void Mouse_Hover_Window(::GLFWwindow* window, int entered);
-        static void Mouse_ScrollWhell_Callback(::GLFWwindow* window, double xoffset, double yoffset);
-        static void Window_Close_Callback(::GLFWwindow* window);
-        static void Controller_Callback(int jid, int event);
-        static void Framebuffer_size_callback(::GLFWwindow* window, int width, int height);
-
-        static void Window_Resize_Callback(::GLFWwindow* window, int width, int height);
-        static void Window_Position_Callback(::GLFWwindow* window, int xpos, int ypos);
-        static void Window_Refresh_callback(::GLFWwindow* window);
-        static void Window_Input_Focus_callback(::GLFWwindow* window, int focused);
+        void* m_Window;
+        void key_callback(int key, int scancode, int action, int mods);
+        void mouse_button_callback(int button, int action, int mods);
+        void Mouse_Moved_Callback(double xpos, double ypos);
+        void Mouse_Hover_Window(int entered);
+        void Mouse_ScrollWhell_Callback(double xoffset, double yoffset);
+        void Window_Close_Callback();
+        void Controller_Callback(int jid, int event);
+        void Window_Resize_Callback(int width, int height);
+        void Window_Position_Callback(int xpos, int ypos);
+        void Window_Input_Focus_callback(int focused);
         void ProcessInput();
         friend class CurrentWindow;
         bool Vsync = false;

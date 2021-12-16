@@ -8,6 +8,7 @@
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Resources/Asset/AssetManager.h"
 #include "Proof/Resources/Math/Random.h"
+#include <GLFW/glfw3.h>
 namespace Proof {
     Special <WindowsWindow> Application::MainWindow = nullptr;
     float Application::FPS = 60.0f;
@@ -59,8 +60,8 @@ namespace Proof {
         glEnable(GL_BLEND);
      //   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
      //   glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
-        CurrentWindow::SetvSync(true);
-        while (glfwWindowShouldClose(CurrentWindow::GetWindow()) == false && Input::IsKeyClicked(KeyBoardKey::Escape)==false) {
+        CurrentWindow::SetvSync(false);
+        while (glfwWindowShouldClose((GLFWwindow*)CurrentWindow::GetWindowAPI()) == false && Input::IsKeyClicked(KeyBoardKey::Escape)==false) {
             float FrameStart = glfwGetTime();
             float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();

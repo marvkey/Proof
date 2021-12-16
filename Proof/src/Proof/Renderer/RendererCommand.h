@@ -2,12 +2,10 @@
 #include <glm/glm.hpp>
 #include "RendererAPI.h"
 
-struct ::GLFWwindow;
 namespace Proof {
 	
 	class Proof_API RendererCommand {
 	public:
-		static void PollEvents();
 		static void SetClearColor(glm::vec4 Color);
 		static void SetClearColor(float R, float G, float B, float A);
 		static void SetClearColor();

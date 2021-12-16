@@ -26,6 +26,7 @@
 #include "Proof/Resources/Math/Random.h"
 #include <string>
 #include "Proof/Core/Core.h"
+#include<GLFW/glfw3.h>
 namespace Proof
 {
 	Editore3D::Editore3D():
@@ -33,7 +34,7 @@ namespace Proof
 	Editore3D::~Editore3D() {
 	}
 	bool Editore3D::IsKeyPressedEditor(KeyBoardKey Key){
-		if (glfwGetKey(Proof::CurrentWindow::GetWindow(), (int)Key)) {
+		if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)Key)) {
 			return  true;
 		}
 		return false;

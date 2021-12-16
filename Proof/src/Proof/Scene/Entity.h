@@ -95,8 +95,9 @@ namespace Proof{
 		}
 		bool SetOwner(Entity entity) {
 			if (!entity) {
-
-				return GetComponent<ChildComponent>()->SetOwnerEmpty();
+				if(HasOwner())
+					return GetOwner().RemoveChild(*this);
+				return true;
 			}
 			return GetComponent<ChildComponent>()->SetOwner(*entity.GetComponent<ChildComponent>());
 		}

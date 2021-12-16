@@ -2,43 +2,35 @@
 #include "Input.h"
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Input/Mouse.h"
-#include "Platform/Window/WindowsWindow.h"
 #include "ImGui/imgui.h"
+#include "Proof/Core/CurrentWindow.h"
+#include <GLFW/glfw3.h>	
 namespace Proof
 {
 	bool Input::IsKeyClicked(KeyBoardKey Key) {
 		if(CurrentWindow::GetWindowClass().IsInputEventEnabled()==false)return false;
-		for (int i = 0; i < Proof::WindowsWindow::KeyboardClicked.size(); i++) {
-			if (Key == Proof::WindowsWindow::KeyboardClicked[i]) {
-				return true;
-			}
-		}
-		return false;
+		return std::find(CurrentWindow::GetWindowClass().KeyboardClicked.begin(), CurrentWindow::GetWindowClass().KeyboardClicked.end(), Key) 
+			!= 
+			CurrentWindow::GetWindowClass().KeyboardClicked.end();
 	}
 
 	bool Input::IsKeyReleased(KeyBoardKey Key) {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		for (int i = 0; i < Proof::WindowsWindow::KeyboardReleased.size(); i++) {
-			if (Key == Proof::WindowsWindow::KeyboardReleased[i]) {
-				return true;
-			}
-		}
-		return false;
+		return std::find(CurrentWindow::GetWindowClass().KeyboardReleased.begin(), CurrentWindow::GetWindowClass().KeyboardReleased.end(), Key)
+			!=
+			CurrentWindow::GetWindowClass().KeyboardReleased.end();
 	}
 
 	bool Input::IsKeyHold(KeyBoardKey Key) {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		for (int i = 0; i < Proof::WindowsWindow::KeyboardKeyRepeat.size(); i++) {
-			if (Key == Proof::WindowsWindow::KeyboardKeyRepeat[i]) {
-				return true;
-			}
-		}
-		return false;
+		return std::find(CurrentWindow::GetWindowClass().KeyboardKeyRepeat.begin(), CurrentWindow::GetWindowClass().KeyboardKeyRepeat.end(), Key)
+			!=
+			CurrentWindow::GetWindowClass().KeyboardKeyRepeat.end();
 	}
 	
 	bool Input::IsKeyPressed(KeyBoardKey Key) {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		if (glfwGetKey(Proof::CurrentWindow::GetWindow(),(int)Key)) {
+		if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindowAPI(),(int)Key)) {
 			return  true;
 		}
 		return false;
@@ -46,48 +38,36 @@ namespace Proof
 	
 	bool Input::IsKeyDoubleClick(KeyBoardKey Key) {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		for (int i = 0; i < Proof::WindowsWindow::KeyboardKeyDoubleClicked.size(); i++) {
-			if (Key == Proof::WindowsWindow::KeyboardKeyDoubleClicked[i]) {
-				return true;
-			}
-		}
-		return false;
+		return std::find(CurrentWindow::GetWindowClass().KeyboardKeyDoubleClicked.begin(), CurrentWindow::GetWindowClass().KeyboardKeyDoubleClicked.end(), Key)
+			!=
+			CurrentWindow::GetWindowClass().KeyboardKeyDoubleClicked.end();
 	}
 
 	bool Input::IsMouseButtonClicked(MouseButton Button) {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		for (int i = 0; i < Proof::WindowsWindow::MouseButtonClicked.size(); i++) {
-			if (Button == Proof::WindowsWindow::MouseButtonClicked[i]) {
-				return true;
-			}
-		}
-		return false;
+		return std::find(CurrentWindow::GetWindowClass().MouseButtonClicked.begin(), CurrentWindow::GetWindowClass().MouseButtonClicked.end(), Button)
+			!=
+			CurrentWindow::GetWindowClass().MouseButtonClicked.end();
 	}
 	bool Input::IsMouseButtonReleased(MouseButton Button) {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		for (int i = 0; i < Proof::WindowsWindow::MouseButtonReleased.size(); i++) {
-			if (Button == Proof::WindowsWindow::MouseButtonReleased[i]) {
-				return true;
-			}
-		}
-		return false;
+		return std::find(CurrentWindow::GetWindowClass().MouseButtonReleased.begin(), CurrentWindow::GetWindowClass().MouseButtonReleased.end(), Button)
+			!=
+			CurrentWindow::GetWindowClass().MouseButtonReleased.end();
 	}
 
 	bool Input::IsMouseButtonPressed(MouseButton Button) {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		if (glfwGetMouseButton(Proof::CurrentWindow::GetWindow(),(int)Button)) {
+		if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindowAPI(),(int)Button)) {
 			return true;
 		}
 		return false;
 	}
 	bool Input::IsMouseButtonDoubleClicked(MouseButton Button) {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		for (int i = 0; i < Proof::WindowsWindow::MouseButtonDoubleClicked.size(); i++) {
-			if (Button == Proof::WindowsWindow::MouseButtonDoubleClicked[i]) {
-				return true;
-			}
-		}
-		return false;
+		return std::find(CurrentWindow::GetWindowClass().MouseButtonDoubleClicked.begin(), CurrentWindow::GetWindowClass().MouseButtonDoubleClicked.end(), Button)
+			!=
+			CurrentWindow::GetWindowClass().MouseButtonDoubleClicked.end();
 	}
 
 	

@@ -6,17 +6,14 @@
 #include "GLFW/glfw3native.h"
 #include "Proof/Core/Core.h"
 #include "Proof/Core/Application.h"
+#include <GLFW/glfw3.h>
 namespace Proof {
 	
-	::GLFWwindow* CurrentWindow::GetWindow(){
+	void* CurrentWindow::GetWindowAPI(){
 		
 		if(Application::MainWindow ==nullptr)
 			return nullptr;
-			
-		if (Application::MainWindow->MainWindow != nullptr)
-			return Application::MainWindow->MainWindow;
-		else
-			return nullptr;
+		return (::GLFWwindow * )Application::MainWindow->m_Window;
 	}
 	WindowsWindow& CurrentWindow::GetWindowClass(){
 		return *Application::MainWindow.get();
@@ -31,7 +28,7 @@ namespace Proof {
 		Application::MainWindow->Vsync = Vsync;
 	}
 	void CurrentWindow::SetWindowSize(int width, int height){
-		glfwSetWindowSize(GetWindow(),width, height);
+		glfwSetWindowSize((GLFWwindow*)CurrentWindow::GetWindowAPI(),width, height);
 	
 	}
 	uint32_t CurrentWindow::GetWindowWidth() {
@@ -42,7 +39,7 @@ namespace Proof {
 	}
 	std::pair<double, double> CurrentWindow::GetMouseLocation(){
 		double X, Y;
-		glfwGetCursorPos(GetWindow(), &X, &Y);
+		glfwGetCursorPos((GLFWwindow*)CurrentWindow::GetWindowAPI(), &X, &Y);
 		return { (float)X,(float)Y };
 	}
 	std::pair<float,float> CurrentWindow::GetMouseScrollWheel() {
@@ -57,7 +54,7 @@ namespace Proof {
 	}
 	std::pair<int, int> CurrentWindow::GetWindowLocation(){
 		int X, Y;
-		glfwGetWindowPos(GetWindow(), &X, &Y);
+		glfwGetWindowPos((GLFWwindow*)GetWindowAPI(), &X, &Y);
 		return { X,Y };
 	}
 

@@ -1,7 +1,4 @@
 #pragma once
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <vector>
 #include "Proof/Renderer/Vertex.h"
 #include "Proof/Renderer/Texture.h"
@@ -56,10 +53,10 @@ namespace Proof
         std::vector<class SubMesh> meshes;
         std::string m_Name;
         void LoadModel(std::string const& path);
-        void ProcessNode(aiNode* node,const aiScene* scene);
-        SubMesh ProcessMesh(aiMesh* mesh,const aiScene* scene);
-        std::vector<Count<Texture2D>> LoadMaterialTextures(aiMaterial* mat,aiTextureType type,Texture2D::TextureType _TextureType);
-        std::vector<Count<Texture2D>> LoadMaterial(aiMaterial* mat);
+        void ProcessNode(void* node,const void* scene);
+        SubMesh ProcessMesh(void* mesh,const void* scene);
+        std::vector<Count<Texture2D>> LoadMaterialTextures(void* mat,int type,Texture2D::TextureType _TextureType);
+        std::vector<Count<Texture2D>> LoadMaterial(void* mat);
         friend class Renderer3D;
         friend class Editore3D;
         friend class Renderer3DPBR;
