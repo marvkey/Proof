@@ -52,6 +52,7 @@ namespace Proof
 	public:
 		ChildComponent(const ChildComponent& other) = default;
 		ChildComponent() = default;
+		uint64_t GetNumChildren()const { return m_Children.size(); }
 		bool HasOwner()const {
 			return m_OwnerID != 0;
 		}
@@ -134,6 +135,13 @@ namespace Proof
 		bool operator!=(const ChildComponent& other) const {
 			return !(*this == other);
 		}
+
+		int GetChildIndex(ChildComponent& child)const {
+			for (int i = 0; i < m_Children.size(); i++) {
+				if (m_Children[i].Get() == child.m_CurrentID.Get())return i;
+			}
+			return -1;
+		}
 	private:
 
 		UUID m_CurrentID = 0; // entity its attached to ID
@@ -144,6 +152,7 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 		friend class Entity;
+		friend class Editore3D;
 	};
 	struct Proof_API TransformComponent {
 		Vector<float> Location = {0.0f,0.0f,0.0f};

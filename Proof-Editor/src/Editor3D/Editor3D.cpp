@@ -39,6 +39,11 @@ namespace Proof
 		}
 		return false;
 	}
+	bool Editore3D::IsKeyClickedEditor(KeyBoardKey Key){
+		return std::find(CurrentWindow::GetWindowClass().KeyboardClicked.begin(), CurrentWindow::GetWindowClass().KeyboardClicked.end(), Key) 
+			!= 
+			CurrentWindow::GetWindowClass().KeyboardClicked.end();
+	}
 	void Editore3D::OnEvent(Event& e) {
 
 		EventDispatcher dispatcher(e);
@@ -319,6 +324,32 @@ namespace Proof
 					GuizmoType = ImGuizmo::OPERATION::SCALE;
 				break;
 			}
+			case KeyBoardKey::Tab:
+			{
+				if (m_WorldHierachy.m_SelectedEntity == false)
+					break;
+				Entity selected = m_WorldHierachy.m_SelectedEntity;
+				if (shift == true) {
+					if (selected.HasChildren()) {
+						m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],ActiveWorld.get()};
+					}
+				}
+				
+				else if (selected.HasOwner()) {
+					int childIndex = selected.GetOwner().GetComponent<ChildComponent>()->GetChildIndex(*selected.GetComponent<ChildComponent>());
+					int numChildren = selected.GetOwner().GetComponent<ChildComponent>()->GetNumChildren() - 1;
+					int childIndexAdd = 0;
+					childIndexAdd += childIndex;
+					if (childIndex >= numChildren)
+						m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[0],ActiveWorld.get() };
+					else if (childIndex <numChildren)						   
+						m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[childIndexAdd],ActiveWorld.get() };
+				}
+				else if (selected.HasChildren()) {
+					m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],ActiveWorld.get() };
+				}
+				break;
+			}
 		}
 	}
 	void Editore3D::Logger() {
@@ -440,7 +471,7 @@ namespace Proof
 		static bool Open = true;
 		if (ImGui::Begin("ViewPort",&Open,ImGuiWindowFlags_NoScrollWithMouse| ImGuiWindowFlags_NoScrollbar)) {
 			m_ViewPoartHoveredorFocused = ImGui::IsWindowHovered() ||ImGui::IsWindowFocused();
-
+			m_ViewPortFocused = ImGui::IsWindowFocused();
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 			auto viewportOffset = ImGui::GetWindowPos();
@@ -489,21 +520,24 @@ namespace Proof
 					nullptr, snap ? snapValues : nullptr);;
 
 				if (ImGuizmo::IsUsing()) {
-					glm::vec3 translation, rotation, scale;
-					MathResource::DecomposeTransform(transform, translation, rotation, scale);
+					
 					if (selectedEntity.HasOwner() == false) {
+						glm::vec3 translation, rotation, scale;
+						MathResource::DecomposeTransform(transform, translation, rotation, scale);
 						glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
 						tc.Location = translation;
 						tc.Rotation += deltaRotation;
 						tc.Scale = scale;
 					}
 					else {
-						glm::vec3 tempLocation = tc.Location;
+						glm::vec3 translation, rotation, scale;
+						MathResource::DecomposeTransform(transform, translation, rotation, scale);
+						tc.Location = tc.GetWorldTransform() * glm::vec4(translation,1.0);
 						glm::vec3 tempScale = tc.Scale;
 						//glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
 						//tc.Location = translation - tempLocation;
 						//tc.Rotation += deltaRotation;
-						tc.Scale = glm::vec3{ tc.GetWorldScale() }- scale;
+						//tc.Scale = glm::vec3{ tc.GetWorldScale() }- scale;
 					}
 				}
 

@@ -35,46 +35,50 @@ Entities:
     MeshComponent:
       MeshAssetPointerID: 19748
       MaterialPointerID: 0
-  - Entity: 14791307750971865161
+  - Entity: 8854396152154798778
     TagComponent:
-      Tag: flashlight
+      Tag: cube
       tags: []
     TransformComponent:
-      Location: [0, 6.30000019, -2.5999999]
-      Rotation: [0, -0.699999988, 0]
+      Location: [0, -0.130253553, -5.82215357]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
-      Children: [27521060239181761]
+      Children: [10884845874370294616, 16827497576274301923, 8517118814105250475]
     MeshComponent:
       MeshAssetPointerID: 12067
       MaterialPointerID: 0
-    CameraComponent:
-      AutoSetDimension: true
-      NearPlane: 0.100000001
-      FarPlane: 1000
-      FOV: 45
-      Width: 250
-      Height: 250
-      UpVector: [0, 1, 0]
-  - Entity: 27521060239181761
+  - Entity: 10884845874370294616
     TagComponent:
-      Tag: Spot Light
+      Tag: Empty Entity
       tags: []
     TransformComponent:
       Location: [0, 0, 0]
-      Rotation: [0, 1.5, 0]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 14791307750971865161
+      OwnerID: 8854396152154798778
       Children: []
-    LightComponent:
-      CutOff: 1
-      OuterCutOff: 4
-      Constant: 0.0340000018
-      Linear: 0.0359999985
-      Quadratic: 0.100000001
-      Ambient: [1, 0, 0]
-      Diffuse: [0, 0, 0]
-      Specular: [0, 0, 0]
-      LightType: 2
+  - Entity: 16827497576274301923
+    TagComponent:
+      Tag: Empty Entity
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 8854396152154798778
+      Children: []
+  - Entity: 8517118814105250475
+    TagComponent:
+      Tag: Empty Entity
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 8854396152154798778
+      Children: []

@@ -22,8 +22,12 @@ namespace Proof {
 		void CreateMeshEditor(class MeshAsset* mesh);
 		
 		Count<Texture2D>m_CheckeboardTexture;
-	private:
 		static bool IsKeyPressedEditor(KeyBoardKey Key);
+		static bool IsKeyClickedEditor(KeyBoardKey Key);
+		bool m_ViewPortFocused = false;
+		
+	private:
+		
 
 		virtual void OnEvent(Event& e);
 		void OnKeyClicked(KeyClickedEvent& e);
@@ -49,7 +53,7 @@ namespace Proof {
 		Count<class World>m_EditorWorld =nullptr;
 
 		int GuizmoType = (1u << 0)| (1u << 1)| (1u << 2);// imguizmo bit stuff
-		class SceneHierachyPanel m_WorldHierachy;
+		class SceneHierachyPanel m_WorldHierachy{this};;
 		class ContentBrowserPanel m_CurrentContentBrowserPanel ={this};
 		class AssetManagerPanel m_AssetManagerPanel;
 		friend class Renderer3D;

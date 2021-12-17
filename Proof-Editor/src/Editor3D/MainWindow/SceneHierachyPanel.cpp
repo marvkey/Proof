@@ -19,6 +19,7 @@
 #include "Proof/Scene/Script.h"
 #include "Proof/Input/KeyCodes.h"
 #include "ImGui/imgui_internal.h"
+#include "../Editor3D.h"
 #include "Proof/Scene/Component.h"
 namespace Proof {
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
@@ -92,6 +93,9 @@ namespace Proof {
 		ImGui::PopStyleVar();
 
 	}
+	void SceneHierachyPanel::OnKeyClicked(KeyClickedEvent& e)
+	{
+	}
 	bool  SceneHierachyPanel::CreateEntityMenu(Entity owner){
 		uint64_t selectedPreviousEntityID = m_SelectedEntity.GetID();// we are doing this inncase we created a child entity
 		Entity newEntity;
@@ -128,7 +132,6 @@ namespace Proof {
 		return false;
 	}
 	void SceneHierachyPanel::DrawEntityNode(Entity& entity) {
-		redraw:
 		auto& tc = entity.GetComponent<TagComponent>()->Tag;
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 
@@ -186,8 +189,8 @@ namespace Proof {
 		if (m_SelectedEntity && ImGui::IsKeyPressed((int)KeyBoardKey::F)) {
 			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
 		}
+		
 		if (opened) {
-			
 			for (const UUID& I : entity.GetComponent<ChildComponent>()->m_Children) {
 				DrawEntityNode(Entity{ I,m_CurrentWorld });
 			}

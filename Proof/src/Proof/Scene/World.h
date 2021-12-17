@@ -83,7 +83,6 @@ namespace Proof{
 
 		friend class SceneHierachyPanel;
 		friend class Entity;
-		friend class Editor3D;
 		friend class SceneSerializer;
 		friend class Component;
 		friend class Editore3D;
