@@ -53,11 +53,6 @@ namespace Proof
 		}
 		*/
 	}
-	std::string AssetManager::IsFileAsset(const std::filesystem::path& path){
-		std::string temp = path.string();
-		temp = temp.substr(temp.find_first_of(".") + 1); // storing all the text after the first .
-		return temp;
-	}
 	void AssetManager::SaveAllAsset() {
 		for(auto& asset: s_AssetManager->m_AllAssets){
 			if (asset.second.second != nullptr) {

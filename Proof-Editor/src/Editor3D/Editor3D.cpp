@@ -324,9 +324,16 @@ namespace Proof
 					GuizmoType = ImGuizmo::OPERATION::SCALE;
 				break;
 			}
+			case KeyBoardKey::R:
+			{
+				// no right button pressed that means that we are using the editor camera
+				if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
+				break;
+			}
 			case KeyBoardKey::Tab:
 			{
-				if (m_WorldHierachy.m_SelectedEntity == false)
+				if(m_ViewPortFocused == false || m_WorldHierachy.m_SelectedEntity == false)
 					break;
 				Entity selected = m_WorldHierachy.m_SelectedEntity;
 				if (shift == true) {
@@ -524,9 +531,12 @@ namespace Proof
 					if (selectedEntity.HasOwner() == false) {
 						glm::vec3 translation, rotation, scale;
 						MathResource::DecomposeTransform(transform, translation, rotation, scale);
-						glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
-						tc.Location = translation;
-						tc.Rotation += deltaRotation;
+						glm::vec3 deltaRotation = glm::vec3{ glm::degrees(rotation.x),glm::degrees(rotation.y),glm::degrees(rotation.z) } - glm::vec3{ tc.Rotation };
+						if(GuizmoType == ImGuizmo::OPERATION::TRANSLATE)
+							tc.Location = translation;
+						else if(GuizmoType == ImGuizmo::OPERATION::ROTATE)
+							tc.Rotation += deltaRotation;
+						else
 						tc.Scale = scale;
 					}
 					else {
@@ -562,6 +572,7 @@ namespace Proof
 
 					Entity newentt = ActiveWorld->CreateEntity(AssetManager::GetAssetName(meshID));
 					newentt.AddComponent<MeshComponent>()->SetMeshSource(meshID);
+					m_WorldHierachy.m_SelectedEntity = newentt;
 				}
 				ImGui::EndDragDropTarget();
 

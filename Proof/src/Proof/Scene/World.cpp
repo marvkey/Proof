@@ -17,7 +17,6 @@
 #include "Proof/Renderer/FrameBuffer.h"
 #include<glad/glad.h>
 #include "Proof/Scene/Component.h"
-#include "entt/fwd.hpp"
 #include "entt/entt.hpp"	
 namespace Proof{
 	unsigned int quadVAO = 0;

@@ -182,7 +182,7 @@ namespace Proof
 					columnCount = 1;
 				ImGui::Columns(columnCount,0,false);
 				for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
-					std::string fileExtension =AssetManager::IsFileAsset(It.path());
+					std::string fileExtension =Utils::FileDialogs::GetFullFileExtension(It.path());
 					static std::string RenameVariable;
 					
 					bool isScene = IsScene(It.path().string());
@@ -306,7 +306,7 @@ namespace Proof
 
 					}
 					//std::filesystem::path tempPath= It.path().filename();
-					ImGui::Text(It.path().filename().stem().filename().stem().string().c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
+					ImGui::Text(Utils::FileDialogs::GetFileName(It.path()).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
 					ImGui::NextColumn();
 				}
 				ImGui::Columns(1);

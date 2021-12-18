@@ -6,7 +6,7 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
-
+#include "Proof/Utils/PlatformUtils.h"
 namespace Proof
 {
 	class Proof_API AssetManager {
@@ -76,7 +76,6 @@ namespace Proof
 
 		static void NotifyOpenedNewLevel(std::set<UUID> assetLoadIn);
 		static void NotifyOpenedNewAsset(UUID ID);
-		static std::string IsFileAsset(const std::filesystem::path& path);
 		static const std::string& GetAssetName(UUID ID) {
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
@@ -94,7 +93,8 @@ namespace Proof
 			AssetInfo(const std::string& path, const std::string& type) :
 				Path(path), Type(type)
 			{
-				Name = Path.filename().stem().filename().stem().string();
+				Name = Utils::FileDialogs::GetFileName(path);
+
 			}
 		private:
 			
