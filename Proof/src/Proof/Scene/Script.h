@@ -47,7 +47,6 @@ namespace Proof
 		friend class Entity;
 		friend struct NativeScriptComponent;
 		Entity OwnerEntity;
-
 	};
 	
 	namespace ScriptDetail{	

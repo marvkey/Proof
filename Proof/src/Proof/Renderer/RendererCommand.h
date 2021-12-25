@@ -31,7 +31,7 @@ namespace Proof {
 		/**
 		* @param bitfield use the enum form the struct Proof Clear
 		*/
-		inline static void Clear(uint32_t bitField){
+		inline static void Clear(int bitField){
 			s_RendererAPI->Clear(bitField);
 		}
 		/**

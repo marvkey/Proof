@@ -15,7 +15,6 @@ namespace Proof{
 
 		template<class T>
 		T* GetComponent() {
-			//if (HasComponent<T>() == false) return nullptr;
 			return CurrentWorld->m_Registry.try_get<T>(m_ID);
 		}
 		

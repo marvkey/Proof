@@ -9,7 +9,7 @@
 #include "entt/entt.hpp"	
 class FrameTime;
 namespace entt {
-	using registry64 = basic_registry<uint64_t>; // does not work
+	using registry64 = basic_registry<uint64_t>; 
 };
 namespace Proof{
 	enum class WorldState 
@@ -42,11 +42,11 @@ namespace Proof{
 		}
 		static Count<World> Copy(Count<World> other);
 		virtual void EndRuntime();
+		virtual void StartPlay();
 		entt::registry64 m_Registry;
 		const std::string& GetName()const{return Name;};
 		const std::string& GetPath()const{return m_Path;}
 		friend class WorldRenderer;
-		void HandleInput();
 		void DeleteEntity(class Entity& ent,bool deleteChildren =true);
 
 		EditorCamera m_EditorCamera ={200,200};

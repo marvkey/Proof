@@ -48,7 +48,7 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 	};
-	class Proof_API ChildComponent { /* THIS CLASS KNOWS AN ENTITY EXIST */
+	class Proof_API ChildComponent { 
 	public:
 		ChildComponent(const ChildComponent& other) = default;
 		ChildComponent() = default;
@@ -194,28 +194,32 @@ namespace Proof
 	};
 	
 	struct Proof_API NativeScriptComponent{
-		NativeScriptComponent(const NativeScriptComponent&) = default;
+		NativeScriptComponent(const NativeScriptComponent& other) {
+			this->Instance = other.Instance;
+			this->InstantiateScript = other.InstantiateScript;
+			this->DestroyScript = other.DestroyScript;
+			this->m_ScriptPointerName = other.m_ScriptPointerName;
+			this->m_HasScriptAttached = other.m_HasScriptAttached;
+		}
 		NativeScriptComponent() = default;
 		class Script* Instance = nullptr;
-		class Script* (*InstantiateScript)();
-		void (*DestroyScript)(NativeScriptComponent*);
+		class Script* (*InstantiateScript)()=nullptr;
+		void (*DestroyScript)(NativeScriptComponent*)=nullptr;
 
 		template<class T,typename... Args>
 		void Bind(Args... arg) {
 			m_HasScriptAttached = true;
 			InstantiateScript = []() { return static_cast<Script*>(new T(arg...)); };
-			DestroyScript = [](NativeScriptComponent* NSC) {delete NSC->Instance; NSC->Instance = nullptr; };
+			DestroyScript = [](NativeScriptComponent* NSC) {delete NSC->Instance; NSC->Instance = nullptr;};
 		}
 
-		const std::string GetScriptName() {
+		const std::string& GetScriptName()const {
 			return m_ScriptPointerName;
 		}
 	private:
 		std::string m_ScriptPointerName = "null";
-		friend class Entity;
-		friend class World;
-		friend class ECS;
 		friend class SceneHierachyPanel;
+		friend class World;
 		bool m_HasScriptAttached = false;
 	};
 

@@ -78,7 +78,6 @@ namespace Proof {
                 layer->OnImGuiDraw(DeltaTime);
             ImGuiMainLayer->End();
 
-            Renderer::Reset();
             MainWindow->WindowUpdate();
             if (CurrentTime - PreviousTime >= 1.0) {
                 PreviousTime = CurrentTime;

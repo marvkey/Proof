@@ -19,13 +19,4 @@ namespace Proof {
 		Renderer2D::Reset();
 		MeshWorkShop::Init();
 	}
-	void Renderer::Reset() {
-		Renderer2D::Reset();
-		//Renderer3DPBR::Reset();
-
-	}
-	void Renderer::Draw() {
-		Renderer2D::EndContext();
-		//Renderer3DPBR::EndContext();
-	}
 }

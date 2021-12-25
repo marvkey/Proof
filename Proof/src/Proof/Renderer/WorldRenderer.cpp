@@ -27,29 +27,36 @@ namespace Proof{
 		else {
 			Renderer3DPBR::BeginContext(m_World->m_EditorCamera, m_ScreenFrameBuffer, RenderData);
 		}
+		// MESHES
+		{
+			auto& meshGroup = m_World->m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+			for (auto& enity : meshGroup) {
+				auto& [mesh, transform] = meshGroup.get(enity);
+				Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
+			}
+		}
+		// LIGHTS
+		{
+			auto& lightGroup = m_World->m_Registry.group<LightComponent>(entt::get<TransformComponent>);
+			for (auto& enity : lightGroup) {
+				const auto& [light, transform] = lightGroup.get(enity);
+				Renderer3DPBR::Draw(light, transform);
+			}
+		}
+		// PBR
+		{
+			if (RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
+				Renderer3DPBR::GetRenderer()->m_Shader->Bind();
+				Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap", 4);
+				Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap", 5);
+				Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT", 6);
 
-		auto& meshGroup =m_World->m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-		for (auto& enity: meshGroup) {
-			auto& [mesh, transform] = meshGroup.get(enity);
-			Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
-		}
-		auto& lightGroup = m_World->m_Registry.group<LightComponent>(entt::get<TransformComponent>);
-		for (auto& enity : lightGroup) {
-			const auto& [light, transform] = lightGroup.get(enity);
-			Renderer3DPBR::Draw(light,transform);
-		}
-		
-		if (RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
-			Renderer3DPBR::GetRenderer()->m_Shader->Bind();
-			Renderer3DPBR::GetRenderer()->m_Shader->SetInt("irradianceMap", 4);
-			Renderer3DPBR::GetRenderer()->m_Shader->SetInt("prefilterMap", 5);
-			Renderer3DPBR::GetRenderer()->m_Shader->SetInt("brdfLUT", 6);
-			
-			m_World->m_WorldCubeMap->Bind(4);
-			m_World->PrefelterMap->Bind(5);
-			
-			m_World->m_brdflTexture->Bind(6);
-		}
+				m_World->m_WorldCubeMap->Bind(4);
+				m_World->PrefelterMap->Bind(5);
+
+				m_World->m_brdflTexture->Bind(6);
+			}
+		}	
 		
 		Renderer3DPBR::EndContext();
 		m_ScreenFrameBuffer->Bind();

@@ -69,6 +69,7 @@ namespace Proof{
 			auto& script = scriptView.get<NativeScriptComponent>(entity);
 			if (script.Instance == nullptr)
 			{
+
 				script.Instance = script.InstantiateScript();
 				script.Instance->OwnerEntity = Entity{ entity, this };
 				script.Instance->OnCreate();
@@ -168,11 +169,11 @@ namespace Proof{
 	void World::EndRuntime() {
 	}
 
-	void World::HandleInput() {
-	
-		
+	void World::StartPlay()
+	{
 	}
 
+	
 	
 	void World::DeleteEntity(Entity& ent, bool deleteChildren) {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ent.m_ID.Get());
@@ -187,7 +188,7 @@ namespace Proof{
 		}
 		else {
 			ent.EachChild([&](Entity childEntity) {
-				World::DeleteEntity(childEntity, true);
+				DeleteEntity(childEntity, true);
 			});
 		}
 		if (ent.HasOwner())
