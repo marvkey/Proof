@@ -98,6 +98,7 @@ namespace Proof{
 		Entity entity = { ID,this };
 
 		m_Registry.entities.emplace_back(ID.Get()); // not the correct way but it works there is some bugs with ent so we have to do this
+		entity.AddComponent<IDComponent>(ID);
 		entity.AddComponent<TagComponent>()->Tag = EntName;
 		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
 		entity.AddComponent<TransformComponent>()->entID = ID;

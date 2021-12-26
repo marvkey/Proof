@@ -6,7 +6,9 @@
 #include "Proof/Renderer/RendererCommand.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Component.h"
+#include <tuple>
 namespace Proof{
+	static void Temper(std::tuple<MeshComponent&, TransformComponent&> temp) {}
 	void WorldRenderer::Renderer() {
 		if(m_RendererPaused==true)
 			return;
@@ -34,6 +36,13 @@ namespace Proof{
 				auto& [mesh, transform] = meshGroup.get(enity);
 				Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
 			}
+			/*
+			m_World->ForEachComponentMultiple<MeshComponent, TransformComponent>(Temper);
+			m_World->ForEachComponentMultiple<MeshComponent, TransformComponent>([](std::tuple<MeshComponent&, TransformComponent&>component)->void {
+				auto& [mesh, transform] = component;
+				Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
+			});
+			*/
 		}
 		// LIGHTS
 		{
@@ -60,6 +69,7 @@ namespace Proof{
 		
 		Renderer3DPBR::EndContext();
 		m_ScreenFrameBuffer->Bind();
+		// cube collider
 		auto& CubeColliderGroup = m_World->m_Registry.group<CubeColliderComponent>(entt::get<TransformComponent>);
 		for (auto& enity : CubeColliderGroup) {
 			const auto& [collider, transform] = CubeColliderGroup.get(enity);

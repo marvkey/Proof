@@ -16,7 +16,29 @@
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
 {
-	
+	struct Proof_API IDComponent {
+		const UUID& GetID() const {
+			return m_ID;
+		}
+		IDComponent(const IDComponent&) 
+		{
+
+		}
+		IDComponent() = default;
+
+		IDComponent(UUID ID) :
+			m_ID(ID)
+		{
+
+		}
+	private:
+
+		UUID m_ID;
+		friend class Entity;
+		friend class World;
+		friend class SceneHierachyPanel;
+		friend class SceneSerializer;
+	};
 	struct Proof_API TagComponent{
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;

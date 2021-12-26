@@ -7,6 +7,7 @@
 #include "Component.h"
 #define ENTT_ID_TYPE uint64_t
 #include "entt/entt.hpp"	
+#include <tuple>
 class FrameTime;
 namespace entt {
 	using registry64 = basic_registry<uint64_t>; 
@@ -35,11 +36,33 @@ namespace Proof{
 		class Entity CreateEntity(const std::string& EntName= "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName, UUID ID);
 		class Entity CreateEntity(Entity entity,bool includeChildren=true);
-
-		template<class...T>
-		auto GetAllEntitiesWith() {
-			return m_Registry.view<T...>;
+		
+		template<class T, class F>
+		void ForEachEntitiesWithSingle(F func) {
+			auto entitiyView = m_Registry.view<T>;
+			for (auto& entity : entitiyView) {
+				func(Entity{ entity,this });
+			}
 		}
+		
+		template<class...T, class F>
+		void ForEachEntitiesWithMultiple(F func) {
+			auto entitiygroup = m_Registry.group<T...>();
+			for (auto& entity : entitiygroup) {
+				func(Entity{ entity,this });
+			}
+		}
+		
+		// WOKR ON THIS
+		template<class ...T>
+		void ForEachComponentMultiple(void (*func)(std::tuple<T&...> temp) ) {
+			auto componentgroup = m_Registry.group<T...>();
+			for (auto& entity : componentgroup) {
+				func(componentgroup.get(entity));
+			}
+		}
+
+		
 		static Count<World> Copy(Count<World> other);
 		virtual void EndRuntime();
 		virtual void StartPlay();

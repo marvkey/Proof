@@ -33,12 +33,10 @@ namespace Proof {
 	}
 
 	void OpenGLScreenFrameBuffer::Instaniate() {
-		if (m_BufferHasBeenCreated == true) {
-			glBindFramebuffer(GL_FRAMEBUFFER,0);
-			glDeleteFramebuffers(1, &m_ID);
-			glDeleteTextures(1, &m_ID);
-			glDeleteRenderbuffers(1, &m_ID);
-		}
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
+		glDeleteFramebuffers(1, &m_ID);
+		glDeleteTextures(1, &m_ID);
+		glDeleteRenderbuffers(1, &m_ID);
 		glGenFramebuffers(1,&m_ID);
 		glBindFramebuffer(GL_FRAMEBUFFER,m_ID);
 

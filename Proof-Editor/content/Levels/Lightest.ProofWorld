@@ -87,7 +87,7 @@ Entities:
       Tag: cube
       tags: []
     TransformComponent:
-      Location: [0, -0.130253553, -5.82215357]
+      Location: [0, -0.130253553, 2.06561804]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
@@ -134,7 +134,7 @@ Entities:
       Tag: cube
       tags: []
     TransformComponent:
-      Location: [0, -0.130253553, -5.82215357]
+      Location: [0, -0.130253553, -19.4295712]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:

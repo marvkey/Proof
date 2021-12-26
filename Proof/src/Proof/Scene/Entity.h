@@ -13,11 +13,15 @@ namespace Proof{
 		Entity(const Entity& other) =default;
 		Entity()=default;
 
-		template<class T>
-		T* GetComponent() {
-			return CurrentWorld->m_Registry.try_get<T>(m_ID);
+		template<class... Component>
+		auto GetComponent() {
+			return CurrentWorld->m_Registry.try_get<Component...>(m_ID);
 		}
 		
+		//template<class... Component>
+		//auto GetMultipleComponent() {
+		//	return CurrentWorld->m_Registry.try_get<Component...>(m_ID);
+		//}
 		template<class T>
 		bool HasComponent()const {
 			return CurrentWorld->m_Registry.any_of<T>(m_ID);
@@ -32,7 +36,6 @@ namespace Proof{
 		}
 		template<class T,typename... Args>
 		T* AddComponent(Args&&... args) {
-
 			if (HasComponent<T>() == true) {
 				PF_WARN("Can not add component Entity already has component");
 				return nullptr;
@@ -49,8 +52,13 @@ namespace Proof{
 			return true;
 		}
 		template<>
+		bool RemoveComponent<IDComponent>() {
+			PF_ERROR("cannot remove ID Component");
+			return false;
+		}
+		template<>
 		bool RemoveComponent<TagComponent>() {
-			PF_ERROR("cannot remove component");
+			PF_ERROR("cannot remove Tag Component");
 			return false;
 		}
 		template<>
@@ -64,7 +72,7 @@ namespace Proof{
 			return false;
 		}
 		template<typename T, typename... Args>
-		T* AddorReplaceComponent(Args&&... args) {
+		T* AddorReplaceComponent(Args&&... args) {// need to specify for child component and tag component
 			T* Component = &CurrentWorld->m_Registry.emplace_or_replace<T>(m_ID, std::forward<Args>(args)...);
 			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
 			return Component;
@@ -134,6 +142,10 @@ namespace Proof{
 		std::string GetName();
 		
 		void SetName(const std::string& Name);
+		template<class... Component>
+		auto ForceGetComponent() {
+			return CurrentWorld->m_Registry.get<Component...>(m_ID);
+		}
 	private:
 		
 		World* CurrentWorld = nullptr;
