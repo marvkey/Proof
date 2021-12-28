@@ -131,7 +131,7 @@ namespace Proof {
 			return true;
 		return false;
 	}
-	void SceneHierachyPanel::DrawEntityNode(Entity& entity) {
+	void SceneHierachyPanel::DrawEntityNode(Entity entity) {
 		auto& tc = entity.GetComponent<TagComponent>()->Tag;
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 

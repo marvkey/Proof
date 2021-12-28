@@ -8,6 +8,8 @@
 #define ENTT_ID_TYPE uint64_t
 #include "entt/entt.hpp"	
 #include <tuple>
+#include <variant>
+
 class FrameTime;
 namespace entt {
 	using registry64 = basic_registry<uint64_t>; 
@@ -37,6 +39,12 @@ namespace Proof{
 		class Entity CreateEntity(const std::string& EntName, UUID ID);
 		class Entity CreateEntity(Entity entity,bool includeChildren=true);
 		
+		template<class F>
+		void ForEachEntity(F func) {
+			for (uint64_t i = 0; i < m_Registry.entities.size(); i++) {
+				func(Entity{ m_Registry[i],this });
+			}
+		}
 		template<class T, class F>
 		void ForEachEntitiesWithSingle(F func) {
 			auto entitiyView = m_Registry.view<T>;
@@ -52,7 +60,8 @@ namespace Proof{
 				func(Entity{ entity,this });
 			}
 		}
-		
+
+		/*
 		// WOKR ON THIS
 		template<class ...T>
 		void ForEachComponentMultiple(void (*func)(std::tuple<T&...> temp) ) {
@@ -61,8 +70,22 @@ namespace Proof{
 				func(componentgroup.get(entity));
 			}
 		}
-
-		
+		// WOKR ON THIS
+		template<class ...T,class F>
+		void ForEachComponentMultipleV2(F func(std::tuple<T&...> temp)) {
+			auto componentgroup = m_Registry.group<T...>();
+			for (auto& entity : componentgroup) {
+				func(componentgroup.get(entity));
+			}
+		}
+		template<class ...T>
+		void ForEachComponentV3(const std::function<void(std::tuple<T...> temp)>& func) {
+			auto componentgroup = m_Registry.group<T...>();
+			for (auto& entity : componentgroup) {
+				func(componentgroup.get(entity));
+			}
+		}
+		*/
 		static Count<World> Copy(Count<World> other);
 		virtual void EndRuntime();
 		virtual void StartPlay();

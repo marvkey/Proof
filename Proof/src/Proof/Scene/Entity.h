@@ -18,10 +18,6 @@ namespace Proof{
 			return CurrentWorld->m_Registry.try_get<Component...>(m_ID);
 		}
 		
-		//template<class... Component>
-		//auto GetMultipleComponent() {
-		//	return CurrentWorld->m_Registry.try_get<Component...>(m_ID);
-		//}
 		template<class T>
 		bool HasComponent()const {
 			return CurrentWorld->m_Registry.any_of<T>(m_ID);
@@ -72,7 +68,7 @@ namespace Proof{
 			return false;
 		}
 		template<typename T, typename... Args>
-		T* AddorReplaceComponent(Args&&... args) {// need to specify for child component and tag component
+		T* AddorReplaceComponent(Args&&... args) {// need to specify for child component and ID component
 			T* Component = &CurrentWorld->m_Registry.emplace_or_replace<T>(m_ID, std::forward<Args>(args)...);
 			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
 			return Component;

@@ -7,8 +7,8 @@
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Component.h"
 #include <tuple>
+#include <variant>
 namespace Proof{
-	static void Temper(std::tuple<MeshComponent&, TransformComponent&> temp) {}
 	void WorldRenderer::Renderer() {
 		if(m_RendererPaused==true)
 			return;
@@ -31,22 +31,16 @@ namespace Proof{
 		}
 		// MESHES
 		{
-			auto& meshGroup = m_World->m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+			const auto& meshGroup = m_World->m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
 			for (auto& enity : meshGroup) {
-				auto& [mesh, transform] = meshGroup.get(enity);
+				const auto& [mesh, transform] = meshGroup.get(enity);
 				Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
 			}
-			/*
-			m_World->ForEachComponentMultiple<MeshComponent, TransformComponent>(Temper);
-			m_World->ForEachComponentMultiple<MeshComponent, TransformComponent>([](std::tuple<MeshComponent&, TransformComponent&>component)->void {
-				auto& [mesh, transform] = component;
-				Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
-			});
-			*/
+			
 		}
 		// LIGHTS
 		{
-			auto& lightGroup = m_World->m_Registry.group<LightComponent>(entt::get<TransformComponent>);
+			const auto& lightGroup = m_World->m_Registry.group<LightComponent>(entt::get<TransformComponent>);
 			for (auto& enity : lightGroup) {
 				const auto& [light, transform] = lightGroup.get(enity);
 				Renderer3DPBR::Draw(light, transform);
@@ -70,7 +64,7 @@ namespace Proof{
 		Renderer3DPBR::EndContext();
 		m_ScreenFrameBuffer->Bind();
 		// cube collider
-		auto& CubeColliderGroup = m_World->m_Registry.group<CubeColliderComponent>(entt::get<TransformComponent>);
+		const auto& CubeColliderGroup = m_World->m_Registry.group<CubeColliderComponent>(entt::get<TransformComponent>);
 		for (auto& enity : CubeColliderGroup) {
 			const auto& [collider, transform] = CubeColliderGroup.get(enity);
 			TransformComponent temp = transform + collider.Offset;

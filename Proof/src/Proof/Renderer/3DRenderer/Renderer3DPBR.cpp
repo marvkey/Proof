@@ -78,7 +78,7 @@ namespace Proof{
 		if (meshPointerId == 0)return; // means that therer is no mesh attahced
 		int usingMaterial = meshComponent.HasMaterial();
 		if (s_PBRInstance->SceneHasAmountMeshes(meshPointerId) == true) {
-			auto& Map = s_PBRInstance->m_AmountMeshes.find(meshPointerId);
+			const auto& Map = s_PBRInstance->m_AmountMeshes.find(meshPointerId);
 			Map->second += 1;
 			auto InstanceSize = s_PBRInstance->m_MeshesEndingPositionIndexTransforms.find(meshPointerId);
 
@@ -269,8 +269,8 @@ namespace Proof{
 		s_PBRInstance->m_DeferedRendering.MeshShader->Bind();
 		for (uint32_t i = 0; i < s_DifferentID.size(); i++) {
 			uint32_t TempID = s_DifferentID[i];
-			auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
-			auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
+			const auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
+			const auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
 			s_PBRInstance->m_VertexBuffer->Bind();
 			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset], TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
 
@@ -354,8 +354,8 @@ namespace Proof{
 		s_PBRInstance->m_FowardRendering.m_Shader->SetInt("v_NrSpotLight", NumSpotLights);
 		for (uint32_t i = 0; i < s_DifferentID.size(); i++) {
 			uint32_t TempID = s_DifferentID[i];
-			auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
-			auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
+			const auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
+			const auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
 
 			s_PBRInstance->m_VertexBuffer->Bind();
 			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset], TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));
@@ -436,8 +436,8 @@ namespace Proof{
 		s_PBRInstance->m_Shader->SetInt("AmountLight", NumLights);
 		for (uint32_t i = 0; i < s_DifferentID.size(); i++) {
 			uint32_t TempID = s_DifferentID[i];
-			auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
-			auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
+			const auto& TempMesh = s_PBRInstance->m_Meshes.find(TempID);
+			const auto& TempAmountMeshes = s_PBRInstance->m_AmountMeshes.find(TempID);
 
 			s_PBRInstance->m_VertexBuffer->Bind();
 			s_PBRInstance->m_VertexBuffer->AddData(&s_PBRInstance->m_Transforms[sizeOffset], TempAmountMeshes->second * sizeof(PhysicalBasedRendererVertex));

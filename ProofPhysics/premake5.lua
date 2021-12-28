@@ -10,7 +10,12 @@ project "ProofPhysics"
         "src/**.h",
         "src/**.cpp",
     }
-	
+    includedirs 
+
+    {
+		"%{IncludeDir.glm}",
+		--"C:/Program Files/Mono/include/mono-2.0"
+    }
     filter "system:windows"
     systemversion "latest"
     cppdialect "C++17"

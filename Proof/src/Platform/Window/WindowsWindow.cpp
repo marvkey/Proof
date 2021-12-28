@@ -182,14 +182,14 @@ namespace Proof {
 
     int WindowsWindow::createWindow() {
         if (!glfwInit()) {
-            PF_INFO(false,"Could Not Initilize GLFW");
+            PF_CORE_ASSERT(false,"Could Not Initilize GLFW");
             return -1;
         }
        // glfwWindowHint(GLFW_MAXIMIZED,GLFW_TRUE); // when using this meathod teh window will have some glithy meathod
 
         m_Window = glfwCreateWindow(Width,Height, "Proof", nullptr,NULL);
         if (m_Window == nullptr) {
-            PF_INFO(false,"Window Is Nullptr");
+            PF_CORE_ASSERT(false,"Window Is Nullptr");
             glfwTerminate();
             return -1;
         }
@@ -204,8 +204,7 @@ namespace Proof {
             proofWindow.key_callback(key, scancode, action, mods);
         });
 
-        glfwSetMouseButtonCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, int button, int action, int mods)
-        {
+        glfwSetMouseButtonCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, int button, int action, int mods){
                 WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
                 proofWindow.mouse_button_callback(button,action, mods);
         });

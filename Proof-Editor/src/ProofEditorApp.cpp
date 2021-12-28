@@ -8,8 +8,7 @@ namespace Proof {
         ProofEditor() {
             PushLayer(new Editore3D());
         }
-        ~ProofEditor() {
-        }
+    private:
     };
     Application* CreateApplication() {
         return new ProofEditor();
