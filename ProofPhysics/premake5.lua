@@ -1,7 +1,6 @@
 project "ProofPhysics"
     kind "StaticLib"
     language "C++"
-
     targetdir ("bin/" .. OutputDirectory .. "/%{prj.name}")
     objdir ("bin-int/" .. OutputDirectory .. "/%{prj.name}")
 
@@ -14,7 +13,6 @@ project "ProofPhysics"
 
     {
 		"%{IncludeDir.glm}",
-		--"C:/Program Files/Mono/include/mono-2.0"
     }
     filter "system:windows"
     systemversion "latest"

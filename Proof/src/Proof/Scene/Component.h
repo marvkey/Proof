@@ -6,6 +6,8 @@
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Renderer/Texture.h"
+#include "../ProofPhysics/src/PhysicsEngine.h"
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
@@ -400,4 +402,15 @@ namespace Proof
 		TransformComponent Offset;
 	};
 
+	struct Proof_API PhysicsComponent {
+		PhysicsComponent(const PhysicsComponent&) = default;
+		PhysicsComponent() =  default;
+		Vector<> Velocity;
+		float Radius = 1;
+		friend class World;
+		friend class SceneSerializer;
+		friend class SceneHierachyPanel;
+		friend class WorldRenderer;
+
+	};
 }

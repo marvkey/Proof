@@ -51,6 +51,7 @@ project "Proof"
 		"Glad",
         "assimp-vc143-mt.lib",
 		"yaml-cpp",
+		"ProofPhysics"
 		--"mono-2.0-sgen.lib",
 
 		--"ProofPhysics"

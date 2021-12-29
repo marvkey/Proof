@@ -7,7 +7,7 @@
 namespace Proof
 {
     template<class T=float>
-    struct Proof_API Vector {
+    struct Vector {
         T X = 0,Y = 0,Z = 0;
 
         Vector() {};
@@ -136,6 +136,12 @@ namespace Proof
             this->Z -= Other.z;
             return *this;
         }
+        Vector operator *=(const float& temp) {
+            this->X *= temp;
+            this->Y *= temp;
+            this->Z *= temp;
+            return *this;
+        }
         Vector operator -(const glm::vec3& Other)const {
             Vector Temp(this->X - Other.x,this->Y - Other.y,this->Z - Other.z);
             return Temp;
@@ -182,5 +188,11 @@ namespace Proof
         Vector<T> tempVec(other.X * temp, other.Y * temp, other.Z * temp);
         return tempVec;
     }
-    
+    template<typename T>
+    inline Vector<T> operator *=(const float& temp, Vector<T>& other) {
+        other.X *= temp;
+        other.Y *= temp;
+        other.Z *= temp;
+        return *other;
+    }
 }

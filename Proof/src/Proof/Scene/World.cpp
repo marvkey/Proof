@@ -77,6 +77,8 @@ namespace Proof{
 
 			script.Instance->OnUpdate(DeltaTime);
 		}
+		m_EditorCamera.OnUpdate(DeltaTime, width, height);
+		m_PhysicsEngine.Update(DeltaTime);
 	}
 	template<typename Component>
 	static Component* CopyComponentIfExists(Entity dst, Entity src)
@@ -174,8 +176,6 @@ namespace Proof{
 	{
 	}
 
-	
-	
 	void World::DeleteEntity(Entity& ent, bool deleteChildren) {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ent.m_ID.Get());
 		if (it == m_Registry.entities.end())
@@ -380,6 +380,8 @@ namespace Proof{
 		RendererCommand::DepthFunc(DepthType::Less);
 		m_CaptureFBO->UnBind();
 		RendererCommand::SetViewPort(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
-	}	
-
+	}
+	void World::SetPhysicsComponent(UUID ID, PhysicsComponent* component){
+		m_PhysicsEngine.m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(&Entity{ ID, this }.GetComponent<TransformComponent>()->Location, &component->Velocity,&component->Radius));
+	}
 }

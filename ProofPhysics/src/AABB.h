@@ -1,7 +1,7 @@
 #pragma once
 #include<glm/vec3.hpp>
 #include "IntersectData.h"
-namespace Proof {
+namespace ProofPhysicsEngine {
 	class AABB{
 	public:
 		AABB(const glm::vec3& minExtents, const glm::vec3& maxExtents) :

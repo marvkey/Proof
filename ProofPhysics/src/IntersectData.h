@@ -1,5 +1,5 @@
 #pragma once
-namespace Proof {
+namespace ProofPhysicsEngine {
 	struct IntersectData
 	{
 	public:
@@ -7,7 +7,7 @@ namespace Proof {
 			m_DoesIntersect(intersects), m_Distance(distance)
 		{
 		}
-		inline bool GetDoesIntersect()const {
+		inline bool DoesIntersect()const {
 			return m_DoesIntersect;
 		}
 		inline float GetDistance()const {

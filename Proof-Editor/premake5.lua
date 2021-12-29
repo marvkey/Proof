@@ -56,7 +56,7 @@ project "Proof-Editor"
         "yaml-cpp",
 		--"mono-2.0-sgen.lib",
         --"ScriptModule.lib",
-		--"ProofPhysics"
+		"ProofPhysics"
     }
    
     postbuildcommands{

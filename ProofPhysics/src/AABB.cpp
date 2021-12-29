@@ -4,7 +4,7 @@
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtx/rotate_vector.hpp>
 #include<glm/gtx/vector_angle.hpp>
-namespace Proof {
+namespace ProofPhysicsEngine {
     IntersectData AABB::IntersectAABB(const AABB& other) const
     {
         // depeind on teh orientation we do it 

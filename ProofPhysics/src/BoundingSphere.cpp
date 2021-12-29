@@ -1,6 +1,6 @@
 #include "BoundingSphere.h"
 
-namespace Proof {
+namespace ProofPhysicsEngine {
 	IntersectData BoundingSphere::IntersectBoundingSphere(const BoundingSphere& other){
 		float radiusDistance = Radius + other.Radius; // how fare away are they from touching
 		float CenterDistance = (other.Center - Center).length();

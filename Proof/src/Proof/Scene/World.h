@@ -9,7 +9,7 @@
 #include "entt/entt.hpp"	
 #include <tuple>
 #include <variant>
-
+#include "PhysicsEngine.h"
 class FrameTime;
 namespace entt {
 	using registry64 = basic_registry<uint64_t>; 
@@ -97,6 +97,7 @@ namespace Proof{
 
 		EditorCamera m_EditorCamera ={200,200};
 	private:
+		PhysicsEngine m_PhysicsEngine;
 		class CameraComponent* m_ActiveCamera = nullptr;
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
 		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height,bool usePBR =false);
@@ -107,6 +108,11 @@ namespace Proof{
 		template<class T>
 		void OnComponentAdded(UUID ID, T* component) {};
 		
+		template<>
+		void OnComponentAdded(UUID ID, PhysicsComponent* component) {
+			SetPhysicsComponent(ID, component);
+		};
+		void SetPhysicsComponent(UUID ID, PhysicsComponent* component);
 		std::string m_Path;
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		Count<CubeMap> m_WorldCubeMap;

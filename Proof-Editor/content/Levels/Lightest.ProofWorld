@@ -35,31 +35,6 @@ Entities:
     MeshComponent:
       MeshAssetPointerID: 19748
       MaterialPointerID: 0
-  - Entity: 8854396152154798778
-    TagComponent:
-      Tag: cube
-      tags: []
-    TransformComponent:
-      Location: [0, -0.130253553, -5.82215357]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 0
-      Children: [10884845874370294616, 16827497576274301923, 8517118814105250475]
-    MeshComponent:
-      MeshAssetPointerID: 12067
-      MaterialPointerID: 0
-  - Entity: 10884845874370294616
-    TagComponent:
-      Tag: Empty Entity
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 8854396152154798778
-      Children: []
   - Entity: 16827497576274301923
     TagComponent:
       Tag: Empty Entity
@@ -70,42 +45,6 @@ Entities:
       Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 8854396152154798778
-      Children: []
-  - Entity: 8517118814105250475
-    TagComponent:
-      Tag: Empty Entity
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 8854396152154798778
-      Children: []
-  - Entity: 1167938253234886891
-    TagComponent:
-      Tag: cube
-      tags: []
-    TransformComponent:
-      Location: [0, -0.130253553, 2.06561804]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 0
-      Children: [1274325063528650715, 15851816075793717139, 14072183339481013365]
-    MeshComponent:
-      MeshAssetPointerID: 12067
-      MaterialPointerID: 0
-  - Entity: 1274325063528650715
-    TagComponent:
-      Tag: Empty Entity
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 1167938253234886891
       Children: []
   - Entity: 15851816075793717139
     TagComponent:
@@ -118,42 +57,6 @@ Entities:
     ChildComponent:
       OwnerID: 1167938253234886891
       Children: []
-  - Entity: 14072183339481013365
-    TagComponent:
-      Tag: Empty Entity
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 1167938253234886891
-      Children: []
-  - Entity: 10246643017857946525
-    TagComponent:
-      Tag: cube
-      tags: []
-    TransformComponent:
-      Location: [0, -0.130253553, -19.4295712]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 0
-      Children: [16944176339643290609, 3274780553881339979, 9192682754192569497]
-    MeshComponent:
-      MeshAssetPointerID: 12067
-      MaterialPointerID: 0
-  - Entity: 16944176339643290609
-    TagComponent:
-      Tag: Empty Entity
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 10246643017857946525
-      Children: []
   - Entity: 3274780553881339979
     TagComponent:
       Tag: Empty Entity
@@ -165,14 +68,31 @@ Entities:
     ChildComponent:
       OwnerID: 10246643017857946525
       Children: []
-  - Entity: 9192682754192569497
+  - Entity: 487351762891527205
     TagComponent:
-      Tag: Empty Entity
+      Tag: Sphere
       tags: []
     TransformComponent:
-      Location: [0, 0, 0]
+      Location: [0, 0, -9.28272629]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 10246643017857946525
+      OwnerID: 0
       Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12508670168373565797
+      MaterialPointerID: 0
+  - Entity: 5834277175308819151
+    TagComponent:
+      Tag: Sphere
+      tags: []
+    TransformComponent:
+      Location: [-0.899999976, 0, -5.82562256]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12508670168373565797
+      MaterialPointerID: 0

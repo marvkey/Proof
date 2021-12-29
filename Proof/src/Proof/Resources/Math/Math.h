@@ -1,5 +1,4 @@
 #pragma once
-#include "Proof/Core/Core.h"
 #include <cmath>
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
@@ -9,7 +8,7 @@
 #include "Random.h"
 namespace Proof
 {
-	struct Proof_API Math {
+	struct  Math {
 		Math(const Math&) = delete;
 		/**
 		* @param Number

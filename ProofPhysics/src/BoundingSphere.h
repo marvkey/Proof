@@ -1,9 +1,10 @@
 #pragma once
 #include<glm/vec3.hpp>
 #include "IntersectData.h"
-namespace Proof {
+namespace ProofPhysicsEngine {
 	class BoundingSphere
 	{
+	public:
 		BoundingSphere(const glm::vec3 center, float radius) :
 			Center(center), Radius(radius)
 		{

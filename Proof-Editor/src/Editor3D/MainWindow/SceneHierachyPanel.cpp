@@ -10,7 +10,6 @@
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/Asset.h"
-#include "Proof/Scene/World.cpp"
 #include "ContentBrowserPanel.h"
 #include <vector>
 #include "Proof/Resources/Asset/MaterialAsset.h"
@@ -291,6 +290,11 @@ namespace Proof {
 				entity.AddComponent<CubeColliderComponent>();
 				ImGui::CloseCurrentPopup();
 			}
+			if (ImGui::MenuItem("Physics component")) {
+				entity.AddComponent<PhysicsComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+
 			ImGui::EndPopup();
 		}
 		uint32_t IndexValue = 0;
@@ -523,6 +527,14 @@ namespace Proof {
 				DrawVectorControl("Offset Location", collider.Offset.Location);
 				DrawVectorControl("Offset Rotation", collider.Offset.Rotation);
 				DrawVectorControl("Offset Scale", collider.Offset.Scale);
+			});
+			IndexValue += 1;
+		}
+		PhysicsComponent* physicsComponent = entity.GetComponent<PhysicsComponent>();
+		if (physicsComponent != nullptr) {
+			DrawComponents<PhysicsComponent>("PhysicsComponent: ", entity, physicsComponent, IndexValue, [](PhysicsComponent& object) {
+				DrawVectorControl("Velocit", object.Velocity);
+				ImGui::DragFloat("Radius", &object.Radius, 0.5);
 			});
 			IndexValue += 1;
 		}

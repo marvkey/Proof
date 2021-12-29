@@ -25,6 +25,6 @@ ProjectAssets:
   - Asset: 10608
     Type: AssetType::MeshAsset
     Path: content\meshes\teapot.Mesh.ProofAsset
-  - Asset: 12508670168373565797
+	- Asset: 12508670168373565797
     Type: AssetType::MeshAsset
     Path: content\meshes\sphere.Mesh.ProofAsset
