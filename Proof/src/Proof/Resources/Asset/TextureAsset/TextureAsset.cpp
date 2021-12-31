@@ -2,6 +2,7 @@
 #include "TextureAsset.h"
 #include "Proof/Renderer/3DRenderer/Renderer3D.h"
 #include <yaml-cpp/yaml.h>
+#include "../AssetManager.h"
 
 namespace Proof{
 	Texture2DAsset::Texture2DAsset(const std::string& texturePath,const std::string& savePath) {

@@ -287,30 +287,14 @@ namespace Proof
 	struct Proof_API SpriteComponent{
 		SpriteComponent(const SpriteComponent&) = default;
 		SpriteComponent() = default;
-
 		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
-		TransformComponent SpriteTransfrom;
 		const Count<Texture2D>& GetTexture(){
 			if (GetAsset() != nullptr) {
 				return m_TextureAssetPointer->GetTexture();
 			}
 			return nullptr;
 		}
-		 Texture2DAsset* GetAsset(){
-			if (m_TextureAssetPointerID == 0)
-				return nullptr;
-			if (m_TextureAssetPointer == nullptr)
-				m_TextureAssetPointer = AssetManager::GetAssetShared<Texture2DAsset>(m_TextureAssetPointerID);
-
-			if (m_TextureAssetPointer == nullptr)// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
-				return nullptr;
-			if (AssetManager::HasID(m_TextureAssetPointerID)) {
-				return m_TextureAssetPointer.get();
-			}
-			m_TextureAssetPointerID = 0;
-			m_TextureAssetPointer = nullptr;
-			return nullptr;
-		}
+		Texture2DAsset* GetAsset();
 
 		void RemoveTexture(){
 			m_TextureAssetPointerID = 0;

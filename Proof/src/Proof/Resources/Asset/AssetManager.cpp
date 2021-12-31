@@ -10,6 +10,7 @@
 namespace Proof
 {
 	AssetManager* AssetManager::s_AssetManager = new AssetManager();
+	std::vector<std::string> AssetManager::s_PermitableMeshSourceFile = { "obj","fbx","blend"};
 	void AssetManager::NewAsset(UUID ID,const Count<Asset>& asset) {
 		while (ID == 0) {
 			PF_CORE_ASSERT(false,"ID cannot be 0");

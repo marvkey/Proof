@@ -6,6 +6,7 @@
 #include "Proof/Scene/Camera/EditorCamera.h"
 namespace Proof {
 	struct SpriteComponent;
+	struct TransformComponent;
 	struct Proof_API Renderer2DStorage {
 		Count<class VertexArray> m_VertexArray;
 		Count<class Shader> m_Shader;
@@ -47,7 +48,7 @@ namespace Proof {
 		static void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Size,const glm::vec4& Color);
 		
 		static void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>&texture2D);
-		static void DrawQuad(SpriteComponent& Sprite);
+		static void DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform);
 		static void EndContext();
 
 		struct Renderer2DStats{

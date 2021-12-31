@@ -7,6 +7,7 @@
 #include <string>
 #include <filesystem>
 #include "Proof/Utils/PlatformUtils.h"
+#include "Asset.h"
 namespace Proof
 {
 	class Proof_API AssetManager {
@@ -83,7 +84,24 @@ namespace Proof
 			}
 			return std::string();
 		}
+		static AssetType GetAssetFromFilePath(const std::filesystem::path& path) {
+			const std::string fileFullExtension = Utils::FileDialogs::GetFullFileExtension(path);
+			if (fileFullExtension == "Mesh.ProofAsset")
+				return AssetType::MeshAsset;
+			if (fileFullExtension == "Material.ProofAsset")
+				return AssetType::Material;
+			if (fileFullExtension == "Texture.ProofAsset")
+				return AssetType::TextureAsset;
+			const std::string fileDirectExtension = Utils::FileDialogs::GetFileExtension(path);
+		
+			for (const std::string& temp : s_PermitableMeshSourceFile) {
+				if (temp == fileDirectExtension)
+					return AssetType::MeshSourceFile;
+			}
+			return AssetType::None;
+		}
 	private:
+		static std::vector<std::string> s_PermitableMeshSourceFile;
 		struct AssetInfo {
 			std::filesystem::path Path;
 			std::string Type;

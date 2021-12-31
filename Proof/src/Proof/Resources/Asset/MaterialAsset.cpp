@@ -4,6 +4,7 @@
 #include "Proof/Resources/Math/Math.h"
 #include <yaml-cpp/yaml.h>
 #include "Proof/Resources/ExternalCreations.h"
+#include "AssetManager.h"
 
 namespace Proof{
 	MaterialAsset::MaterialAsset(const std::string& assetSavePath) {

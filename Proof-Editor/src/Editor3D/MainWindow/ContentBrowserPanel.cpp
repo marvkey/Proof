@@ -173,7 +173,6 @@ namespace Proof
 					ImGui::EndPopup();
 				}
 
-
 				float cellSize = thumbnailSize + padding;
 
 				float panelWidth = ImGui::GetContentRegionAvail().x;
@@ -182,9 +181,10 @@ namespace Proof
 					columnCount = 1;
 				ImGui::Columns(columnCount,0,false);
 				for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
+
 					std::string fileExtension =Utils::FileDialogs::GetFullFileExtension(It.path());
 					static std::string RenameVariable;
-					
+					AssetType assetType= AssetManager::GetAssetFromFilePath(It);
 					bool isScene = IsScene(It.path().string());
 					uint64_t ID = 0;
 					std::string Path = It.path().string();
@@ -195,9 +195,9 @@ namespace Proof
 					}else{
 				
 						if(fileExtension != "ProofWorld") {
-							if (fileExtension == "Mesh.ProofAsset")
+							if (assetType == AssetType::MeshAsset)
 								ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
-							else if(fileExtension == "Material.ProofAsset")
+							else if(assetType == AssetType::Material)
 								ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
 							if (ImGui::IsItemHovered() && ImGui::IsMouseDown(0) == false) {
 								FileDragSource = It.path().string();
@@ -205,22 +205,22 @@ namespace Proof
 							}
 							if (ImGui::BeginDragDropSource()) {
 								UUID staticID = GetIDCurrentDirectory(FileDragSource);
-								std::string assetType;
-								if (fileExtension == "Mesh.ProofAsset")
-									assetType = MeshAsset::GetAssetType();
+								std::string assetTypestring;
+								if (assetType == AssetType::MeshAsset)
+									assetTypestring = MeshAsset::GetAssetType();
 								else
-									assetType = MaterialAsset::GetAssetType();
-								ImGui::SetDragDropPayload(assetType.c_str(), &staticID, sizeof(UUID));
+									assetTypestring = MaterialAsset::GetAssetType();
+								ImGui::SetDragDropPayload(assetTypestring.c_str(), &staticID, sizeof(UUID));
 
 								ImGui::Image((ImTextureID)m_FileIcon->GetID(), { 60,60 });
 								ImGui::Text(FileDragSourceName.c_str());
 								ImGui::EndDragDropSource();
 							}
-							if (fileExtension == "Mesh.ProofAsset" && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+							if (assetType == AssetType::MeshAsset && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 								UUID staticID = GetIDCurrentDirectory(It.path().string());
 								m_owner->CreateMeshEditor(AssetManager::GetAssetShared<MeshAsset>(staticID).get());
 							}
-							if (fileExtension == "Material.ProofAsset" && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+							if (assetType == AssetType::Material && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 								UUID staticID = GetIDCurrentDirectory(It.path().string());
 								m_owner->CreateMaterialEdtior(AssetManager::GetAssetShared<MaterialAsset>(staticID).get());
 							}
@@ -306,7 +306,8 @@ namespace Proof
 
 					}
 					//std::filesystem::path tempPath= It.path().filename();
-					ImGui::Text(Utils::FileDialogs::GetFileName(It.path()).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
+					static char temp[250];
+					ImGui::InputText(Utils::FileDialogs::GetFileName(It.path()).c_str(), temp,120);// HAS TO BE HERE BECAUSE it will mess up item hovered
 					ImGui::NextColumn();
 				}
 				ImGui::Columns(1);

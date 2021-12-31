@@ -1,5 +1,4 @@
 #pragma once
-#include "Proof/Core/Core.h"
 #include "Math.h"
 
 namespace Proof

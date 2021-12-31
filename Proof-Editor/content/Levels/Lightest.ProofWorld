@@ -73,7 +73,7 @@ Entities:
       Tag: Sphere
       tags: []
     TransformComponent:
-      Location: [0, 0, -9.28272629]
+      Location: [-0.83566761, 0.610581636, 1.62709832]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
@@ -87,7 +87,7 @@ Entities:
       Tag: Sphere
       tags: []
     TransformComponent:
-      Location: [-0.899999976, 0, -5.82562256]
+      Location: [-8.20856285, 0.437139988, 1.86077309]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:

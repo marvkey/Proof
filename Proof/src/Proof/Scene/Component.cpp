@@ -16,7 +16,7 @@
 #include "Material.h"
 #include "script.h"
 #include "Proof/Renderer/MeshWorkShop.h"
-
+#include "Proof/Resources/Asset/AssetManager.h"
 namespace Proof
 {
 	static struct Material Empty;
@@ -160,6 +160,23 @@ namespace Proof
 	
 	Mesh* CubeColliderComponent::GetMeshSource(){
 		return MeshWorkShop::GetCubeMesh().get();
+	}
+
+	Texture2DAsset* SpriteComponent::GetAsset()
+	{
+		if (m_TextureAssetPointerID == 0)
+			return nullptr;
+		if (m_TextureAssetPointer == nullptr)
+			m_TextureAssetPointer = AssetManager::GetAssetShared<Texture2DAsset>(m_TextureAssetPointerID);
+
+		if (m_TextureAssetPointer == nullptr)// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
+			return nullptr;
+		if (AssetManager::HasID(m_TextureAssetPointerID)) {
+			return m_TextureAssetPointer.get();
+		}
+		m_TextureAssetPointerID = 0;
+		m_TextureAssetPointer = nullptr;
+		return nullptr;
 	}
 
 }

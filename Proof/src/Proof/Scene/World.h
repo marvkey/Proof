@@ -47,8 +47,8 @@ namespace Proof{
 		}
 		template<class T, class F>
 		void ForEachEntitiesWithSingle(F func) {
-			auto entitiyView = m_Registry.view<T>;
-			for (auto& entity : entitiyView) {
+			auto& entitiyView = m_Registry.view<T>;
+			for (auto entity : entitiyView) {
 				func(Entity{ entity,this });
 			}
 		}

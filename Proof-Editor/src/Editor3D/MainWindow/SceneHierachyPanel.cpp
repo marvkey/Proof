@@ -20,6 +20,9 @@
 #include "ImGui/imgui_internal.h"
 #include "../Editor3D.h"
 #include "Proof/Scene/Component.h"
+#include "Proof/Resources/Asset/AssetManager.h"
+
+
 namespace Proof {
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
 	InstanceNativeScriptComponent.Bind<Class>();\
@@ -385,9 +388,6 @@ namespace Proof {
 		SpriteComponent* Sprite = entity.GetComponent<SpriteComponent>();
 		if (Sprite != nullptr) {
 			DrawComponents<SpriteComponent>({ "Sprite: "}, entity, Sprite, IndexValue, [](SpriteComponent& component) {
-				DrawVectorControl("Location", component.SpriteTransfrom.Location, 0.0, 125);
-				DrawVectorControl("Rotation", component.SpriteTransfrom.Rotation, 0.0, 125);
-				DrawVectorControl("Scale", component.SpriteTransfrom.Scale, 0.0, 125);
 				if (component.GetTexture() != nullptr) {
 					ImGui::Image((ImTextureID)component.GetTexture()->GetID(), { 30,30 });
 				}

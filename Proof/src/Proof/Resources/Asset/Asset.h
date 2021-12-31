@@ -1,8 +1,16 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "AssetManager.h"
 namespace Proof
 {
+	enum class AssetType {
+		None =0,
+		MeshAsset,
+		TextureAsset,
+		MeshSourceFile,
+		Material,
+		TextureSourceFile,
+		WorldAsset,
+	};
 	class Proof_API Asset {
 	public:
 		

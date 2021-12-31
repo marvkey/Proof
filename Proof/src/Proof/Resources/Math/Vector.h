@@ -79,21 +79,21 @@ namespace Proof
         }
 
         T GetLength()const {
-            return Math::SquareRoot<float>(X * X + Y * Y + Z * Z);
+            return Math::SquareRoot<T>(X * X + Y * Y + Z * Z);
         }
 
         static T GetLength(const Vector& Vec) {
-            return  Math::SquareRoot<float>(Vec.X * Vec.X + Vec.Y * Vec.Y + Vec.Z * Vec.Z);
+            return  Math::SquareRoot<T>(Vec.X * Vec.X + Vec.Y * Vec.Y + Vec.Z * Vec.Z);
         }
 
         T GetAngle(const Vector& Vec)const {
-            float Angle = Dot(*this,Vec) / (GetLength(*this) * GetLength(Vec));
-            return Math::DInverseCos<float>(Angle);
+            T Angle = Dot(*this,Vec) / (GetLength(*this) * GetLength(Vec));
+            return Math::DInverseCos<T>(Angle);
         }
 
         static T GetAngle(const Vector& Vec1,const Vector& Vec2) {
-            float Angle = Dot(Vec1,Vec2) / (GetLength(Vec1) * GetLength(Vec2));
-            return Math::DInverseCos<float>(Angle);
+            T Angle = Dot(Vec1,Vec2) / (GetLength(Vec1) * GetLength(Vec2));
+            return Math::DInverseCos<T>(Angle);
         }
 
         operator const glm::vec3()const { return glm::vec3(X,Y,Z); }
@@ -124,7 +124,7 @@ namespace Proof
             this->Z += Other.z;
             return *this;
         }
-        Vector operator +=(Vector& Other) {
+        Vector<T> operator +=(const Vector<T>& Other) {
             this->X += Other.X;
             this->Y += Other.Y;
             this->Z += Other.Z;

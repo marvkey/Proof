@@ -3,7 +3,7 @@
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Renderer/3DRenderer/Renderer3D.h"
 #include <yaml-cpp/yaml.h>
-
+#include "AssetManager.h"
 namespace Proof
 {
 	using AssetID =uint64_t;

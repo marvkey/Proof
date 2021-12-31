@@ -70,9 +70,6 @@ namespace Proof {
 			out << YAML::BeginMap; // Sprite component
 			out << YAML::Key << "TextureAssetPointerID" << YAML::Value << Sprite->m_TextureAssetPointerID;
 			out << YAML::Key << "Colour" << YAML::Value << Sprite->Colour;
-			out << YAML::Key << "LocalLocation" << Sprite->SpriteTransfrom.Location;
-			out << YAML::Key << "LocalRotation" << Sprite->SpriteTransfrom.Rotation;
-			out << YAML::Key << "LocalScale" << Sprite->SpriteTransfrom.Scale;
 			out << YAML::EndMap; // Sprite component
 		}
 		LightComponent* Light = entity.GetComponent<LightComponent>();
@@ -211,9 +208,6 @@ namespace Proof {
 				auto& src = *NewEntity.AddComponent<SpriteComponent>();
 				src.m_TextureAssetPointerID = spriteRendererComponent["TextureAssetPointerID"].as<uint64_t>();
 				src.Colour = spriteRendererComponent["Colour"].as<glm::vec4>();
-				src.SpriteTransfrom.Location = spriteRendererComponent["LocalLocation"].as<glm::vec3>();
-				src.SpriteTransfrom.Rotation = spriteRendererComponent["LocalRotation"].as<glm::vec3>();
-				src.SpriteTransfrom.Scale = spriteRendererComponent["LocalScale"].as<glm::vec3>();
 				if (src.m_TextureAssetPointerID != 0) {
 					m_AssetLoadID.emplace(src.m_TextureAssetPointerID);
 				}
