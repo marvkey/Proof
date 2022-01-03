@@ -306,8 +306,7 @@ namespace Proof
 
 					}
 					//std::filesystem::path tempPath= It.path().filename();
-					static char temp[250];
-					ImGui::InputText(Utils::FileDialogs::GetFileName(It.path()).c_str(), temp,120);// HAS TO BE HERE BECAUSE it will mess up item hovered
+					ImGui::Text(Utils::FileDialogs::GetFileName(It.path()).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
 					ImGui::NextColumn();
 				}
 				ImGui::Columns(1);

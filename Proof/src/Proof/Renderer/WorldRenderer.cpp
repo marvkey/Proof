@@ -67,8 +67,8 @@ namespace Proof{
 		const auto& CubeColliderGroup = m_World->m_Registry.group<CubeColliderComponent>(entt::get<TransformComponent>);
 		for (auto& enity : CubeColliderGroup) {
 			const auto& [collider, transform] = CubeColliderGroup.get(enity);
-			TransformComponent temp = transform + collider.Offset;
-			Renderer3DPBR::DrawDebugMesh(collider.GetMeshSource(),temp.GetLocalTransform());
+			//TransformComponent temp = transform + collider.;
+			//Renderer3DPBR::DrawDebugMesh(collider.GetMeshSource(),temp.GetLocalTransform());
 		}
 		
 		m_ScreenFrameBuffer->UnBind();

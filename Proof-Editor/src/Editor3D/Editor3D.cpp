@@ -28,7 +28,7 @@
 #include "Proof/Core/Core.h"
 #include<GLFW/glfw3.h>
 #include "Proof/Resources/Asset/AssetManager.h"
-
+#include <algorithm>
 namespace Proof
 {
 	Editore3D::Editore3D():
@@ -775,13 +775,16 @@ namespace Proof
 		ActiveWorld->m_CurrentState = WorldState::Play;
 		m_WorldHierachy.SetContext(ActiveWorld.get());
 		m_WorldRenderer.SetContext(ActiveWorld);
+		ActiveWorld->StartRuntime();
 	}
 	void Editore3D::SimulateWorld() {
 		GuizmoType = 0;
 		ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
 	void Editore3D::SetWorldEdit() {
+
 		GuizmoType = 0;
+		ActiveWorld->EndRuntime();
 		ActiveWorld = m_EditorWorld;
 		m_WorldHierachy.SetContext(ActiveWorld.get());
 		m_WorldRenderer.SetContext(ActiveWorld);

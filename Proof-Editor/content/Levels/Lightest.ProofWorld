@@ -73,7 +73,7 @@ Entities:
       Tag: Sphere
       tags: []
     TransformComponent:
-      Location: [-0.83566761, 0.610581636, 1.62709832]
+      Location: [-9.67923355, 0.610581636, 1.62709832]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
@@ -87,12 +87,29 @@ Entities:
       Tag: Sphere
       tags: []
     TransformComponent:
-      Location: [-8.20856285, 0.437139988, 1.86077309]
+      Location: [-0.699433565, 0.437139988, 1.86077309]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.5, 0.5, 0.5]
     ChildComponent:
       OwnerID: 0
       Children: []
     MeshComponent:
       MeshAssetPointerID: 12508670168373565797
       MaterialPointerID: 0
+  - Entity: 1284297369166235127
+    TagComponent:
+      Tag: Cube
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12067
+      MaterialPointerID: 0
+    CubeColliderComponent:
+      OffsetLocation: [0, 0, 0]
+      OffsetScale: [0, 0, 0]

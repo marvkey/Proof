@@ -11,6 +11,4 @@ namespace Proof
 		if (Tag != nullptr)
 			Tag->Tag = Name;
 	}
-
-
 }

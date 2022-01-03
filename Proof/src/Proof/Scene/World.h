@@ -9,7 +9,6 @@
 #include "entt/entt.hpp"	
 #include <tuple>
 #include <variant>
-#include "PhysicsEngine.h"
 class FrameTime;
 namespace entt {
 	using registry64 = basic_registry<uint64_t>; 
@@ -43,6 +42,12 @@ namespace Proof{
 		void ForEachEntity(F func) {
 			for (uint64_t i = 0; i < m_Registry.entities.size(); i++) {
 				func(Entity{ m_Registry[i],this });
+			}
+		}
+		template<class F>
+		void ForEachEntityBackwards(F func) {
+			for (auto it = m_Registry.entities.crbegin(); it != m_Registry.entities.crend(); ++it) {
+				func(class Entity{ *it,this });
 			}
 		}
 		template<class T, class F>
@@ -88,7 +93,7 @@ namespace Proof{
 		*/
 		static Count<World> Copy(Count<World> other);
 		virtual void EndRuntime();
-		virtual void StartPlay();
+		virtual void StartRuntime();
 		entt::registry64 m_Registry;
 		const std::string& GetName()const{return Name;};
 		const std::string& GetPath()const{return m_Path;}
@@ -97,7 +102,7 @@ namespace Proof{
 
 		EditorCamera m_EditorCamera ={200,200};
 	private:
-		PhysicsEngine m_PhysicsEngine;
+		class PhysicsEngine* m_PhysicsEngine =nullptr;
 		class CameraComponent* m_ActiveCamera = nullptr;
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
 		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height,bool usePBR =false);
@@ -108,11 +113,7 @@ namespace Proof{
 		template<class T>
 		void OnComponentAdded(UUID ID, T* component) {};
 		
-		template<>
-		void OnComponentAdded(UUID ID, PhysicsComponent* component) {
-			SetPhysicsComponent(ID, component);
-		};
-		void SetPhysicsComponent(UUID ID, PhysicsComponent* component);
+		
 		std::string m_Path;
 		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
 		Count<CubeMap> m_WorldCubeMap;

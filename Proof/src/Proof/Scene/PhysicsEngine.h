@@ -1,12 +1,12 @@
 #pragma once
-#include "../ProofPhysics/src/PhysicsEngine.h"
+#include "../ProofPhysics/src/PhysicsWorld.h"
 
 namespace Proof {
 	class PhysicsEngine {
 	public:
 		virtual void Update(float delta);
 	private:
-		ProofPhysicsEngine::PhysicsEngine m_PhysicsEngine;
+		ProofPhysicsEngine::PhysicsWorld m_PhysicsEngine;
 		friend class World;
 	};
 }

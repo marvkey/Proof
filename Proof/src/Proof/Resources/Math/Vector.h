@@ -9,7 +9,6 @@ namespace Proof
     template<class T=float>
     struct Vector {
         T X = 0,Y = 0,Z = 0;
-
         Vector() {};
         
         Vector(const Vector& Other) {
@@ -28,6 +27,16 @@ namespace Proof
             this->X = x,this->Y = y,this->Z = z;
         }
         
+        T GetMax() {
+            if (X < Y) {
+                if (X < Z)
+                    return X;
+                return Z;
+            }
+            if (Y < Z)
+                return Y;
+            return Z;
+        }
         std::string ToString()const {
             std::stringstream VecStream;
             VecStream << "X = " << X << " Y = " << Y << " Z = " << Z;

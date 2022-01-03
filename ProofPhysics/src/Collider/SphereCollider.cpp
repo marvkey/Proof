@@ -1,9 +1,7 @@
 #include "SphereCollider.h"
-
+#include "CubeCollider.h"
 namespace ProofPhysicsEngine {
-	void SphereCollider::Transform(const Proof::Vector<> translation){
-		Center += translation;
-	}
+	
 	IntersectData SphereCollider::IntersectSphereCollider(const SphereCollider& other){
 		float radiusDistance = Radius + other.Radius; // how fare away are they from touching
 		float CenterDistance = (other.Center - Center).GetLength();
@@ -11,5 +9,8 @@ namespace ProofPhysicsEngine {
 		return IntersectData( CenterDistance < radiusDistance, distance );
 		//CenterDistance < radiusDistance // if it is equal the spheres are touched  
 	}
-}
+	IntersectData SphereCollider::IntersectCubeCollider(const CubeCollider& other){
+		return other.IntersectSphereCollider(*this);
+	}
+} 
 

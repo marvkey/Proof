@@ -46,11 +46,19 @@ namespace Proof {
 			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvailWidth(),ImGui::GetWindowHeight() / 2});
 			{
 				m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
-
-				for (uint64_t i = 0; i < m_CurrentWorld->m_Registry.size(); i++) {
-					Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld };
-					if (entity.HasOwner() == false)
-						DrawEntityNode(entity);
+				// when copying ot temporayr since copies backwards have to do this
+				if (m_CurrentWorld->m_CurrentState == WorldState::Edit) {
+					for (uint64_t i = 0; i < m_CurrentWorld->m_Registry.size(); i++) {
+						Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld };
+						if (entity.HasOwner() == false)
+							DrawEntityNode(entity);
+					}
+				}
+				else {
+					m_CurrentWorld->ForEachEntityBackwards([&](Entity entity) {
+						if (entity.HasOwner() == false)
+							DrawEntityNode(entity);
+					});
 				}
 
 				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
@@ -285,7 +293,7 @@ namespace Proof {
 				entity.AddComponent<NativeScriptComponent>()->Bind<MovementScript>();
 				ImGui::CloseCurrentPopup();
 			}
-			if (ImGui::MenuItem("Camera Component")) {
+			if (ImGui::MenuItem("Camera ")) {
 				entity.AddComponent<CameraComponent>();
 				ImGui::CloseCurrentPopup();
 			}
@@ -293,8 +301,8 @@ namespace Proof {
 				entity.AddComponent<CubeColliderComponent>();
 				ImGui::CloseCurrentPopup();
 			}
-			if (ImGui::MenuItem("Physics component")) {
-				entity.AddComponent<PhysicsComponent>();
+			if (ImGui::MenuItem("Spher Collider ")) {
+				entity.AddComponent<SphereColliderComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -524,16 +532,15 @@ namespace Proof {
 		CubeColliderComponent* cubeCollider = entity.GetComponent<CubeColliderComponent>();
 		if (cubeCollider != nullptr) {
 			DrawComponents<CubeColliderComponent>("CubeColliderComponent: ", entity, cubeCollider, IndexValue, [](CubeColliderComponent& collider) {
-				DrawVectorControl("Offset Location", collider.Offset.Location);
-				DrawVectorControl("Offset Rotation", collider.Offset.Rotation);
-				DrawVectorControl("Offset Scale", collider.Offset.Scale);
+				DrawVectorControl("Offset Location", collider.OffsetLocation);
+				//DrawVectorControl("Offset Rotation", collider.Offset.Rotation);
+				DrawVectorControl("Offset Scale", collider.OffsetScale);
 			});
 			IndexValue += 1;
 		}
-		PhysicsComponent* physicsComponent = entity.GetComponent<PhysicsComponent>();
-		if (physicsComponent != nullptr) {
-			DrawComponents<PhysicsComponent>("PhysicsComponent: ", entity, physicsComponent, IndexValue, [](PhysicsComponent& object) {
-				DrawVectorControl("Velocit", object.Velocity);
+		SphereColliderComponent* sphereColliderComponent = entity.GetComponent<SphereColliderComponent>();
+		if (sphereColliderComponent != nullptr) {
+			DrawComponents<SphereColliderComponent>("SphereColliderComponent: ", entity, sphereColliderComponent, IndexValue, [](SphereColliderComponent& object) {
 				ImGui::DragFloat("Radius", &object.Radius, 0.5);
 			});
 			IndexValue += 1;

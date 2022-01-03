@@ -5,21 +5,25 @@
 #include "../../../Proof/src/Proof/Resources/Math/Vector.h"
 
 namespace ProofPhysicsEngine {
+	class CubeCollider;
 	class SphereCollider : public Collider
 	{
 	public:
-		SphereCollider() = default;
+		SphereCollider():
+			Collider(ColliderType::Sphere) 
+		{
+			
+		}
 		SphereCollider(const Proof::Vector<>& center, float radius) :
 			Collider(ColliderType::Sphere),	
 			Center(center), 
 			Radius(radius)
 		{
 		}
-		virtual void Transform(const Proof::Vector<> translation)override;
 		IntersectData IntersectSphereCollider(const SphereCollider& other);
-		Proof::Vector<> Center;
-		float Radius;
-		
+		IntersectData IntersectCubeCollider(const CubeCollider& other);
+		Proof::Vector<> Center = {0,0,0};
+		float Radius = 1;
 	};
 }
 

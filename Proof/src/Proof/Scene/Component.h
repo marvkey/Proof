@@ -6,7 +6,6 @@
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Renderer/Texture.h"
-#include "../ProofPhysics/src/PhysicsEngine.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -381,20 +380,27 @@ namespace Proof
 		
 	struct Proof_API CubeColliderComponent {
 		CubeColliderComponent(const CubeColliderComponent&) = default;
-		CubeColliderComponent() { Offset.Scale= Vector<float>{ 0, 0, 0 }; }
+		CubeColliderComponent() = default;
 		static class Mesh* GetMeshSource();
-		TransformComponent Offset;
-	};
-
-	struct Proof_API PhysicsComponent {
-		PhysicsComponent(const PhysicsComponent&) = default;
-		PhysicsComponent() =  default;
-		Vector<> Velocity;
-		float Radius = 1;
+		Vector<float> OffsetLocation = { 0,0,0 };
+		Vector<float> OffsetScale= { 0,0,0 };
+	private:
+		void* RuntimeBody = nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
+	};
 
+
+	struct Proof_API SphereColliderComponent {
+		Vector<float> Offset = { 0,0,0 };
+		float Radius = 1.0f;
+	private:
+		void* RuntimeBody = nullptr;
+		friend class World;
+		friend class SceneSerializer;
+		friend class SceneHierachyPanel;
+		friend class WorldRenderer;
 	};
 }

@@ -17,7 +17,9 @@
 #include "Proof/Renderer/FrameBuffer.h"
 #include<glad/glad.h>
 #include "Proof/Scene/Component.h"
-#include "entt/entt.hpp"	
+#include "entt/entt.hpp"
+#include "PhysicsEngine.h"
+
 namespace Proof{
 	unsigned int quadVAO = 0;
 	unsigned int quadVBO=0;
@@ -64,21 +66,52 @@ namespace Proof{
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
-		auto& scriptView = m_Registry.view<NativeScriptComponent>();
-		for (auto entity : scriptView) {
-			auto& script = scriptView.get<NativeScriptComponent>(entity);
-			if (script.Instance == nullptr)
-			{
-
-				script.Instance = script.InstantiateScript();
-				script.Instance->OwnerEntity = Entity{ entity, this };
-				script.Instance->OnCreate();
-			}
-
-			script.Instance->OnUpdate(DeltaTime);
-		}
 		m_EditorCamera.OnUpdate(DeltaTime, width, height);
-		m_PhysicsEngine.Update(DeltaTime);
+		// PHYSICS
+		{
+			// Sphere Collider
+			{
+				auto& sccV = m_Registry.view<SphereColliderComponent>();
+				for (auto entity : sccV) {
+					Entity currentEntity{ entity, this };
+					auto& sphereCollider = sccV.get<SphereColliderComponent>(entity);
+					auto* collider = (ProofPhysicsEngine::SphereCollider*)sphereCollider.RuntimeBody;
+					collider->Center = sphereCollider.Offset + currentEntity.GetComponent<TransformComponent>()->Location;
+					collider->Radius = sphereCollider.Radius * currentEntity.GetComponent<TransformComponent>()->Scale.GetMax();
+				}
+			}
+			// CuCollider
+			{
+				auto& cccV = m_Registry.view<CubeColliderComponent>();
+				for (auto entity : cccV) {
+					Entity currentEntity{ entity, this };
+					const auto& transform = *currentEntity.GetComponent<TransformComponent>();
+					auto& cubeCollider = cccV.get<CubeColliderComponent>(entity);
+					auto* collider = (ProofPhysicsEngine::CubeCollider*)cubeCollider.RuntimeBody;
+					collider->Center = transform.Location + cubeCollider.OffsetLocation;
+					collider->Rotation = transform.Rotation;
+					collider->Scale = transform.Scale + cubeCollider.OffsetScale;
+				}
+			}
+			m_PhysicsEngine->Update(DeltaTime);
+		}
+		// Scripts
+		{
+			auto& scriptView = m_Registry.view<NativeScriptComponent>();
+			for (auto entity : scriptView) {
+				auto& script = scriptView.get<NativeScriptComponent>(entity);
+				if (script.Instance == nullptr)
+				{
+
+					script.Instance = script.InstantiateScript();
+					script.Instance->OwnerEntity = Entity{ entity, this };
+					script.Instance->OnCreate();
+				}
+
+				script.Instance->OnUpdate(DeltaTime);
+			}
+		}
+
 	}
 	template<typename Component>
 	static Component* CopyComponentIfExists(Entity dst, Entity src)
@@ -117,6 +150,7 @@ namespace Proof{
 		CopyComponentIfExists<LightComponent>(newEntity, entity);
 		CopyComponentIfExists<CubeColliderComponent>(newEntity, entity);
 		CopyComponentIfExists<CameraComponent>(newEntity, entity);
+		CopyComponentIfExists<SphereColliderComponent>(newEntity, entity);
 		if (includeChildren == true) {
 			entity.EachChild([&](Entity childEntity){
 				Entity newChild = CreateEntity(childEntity, true);
@@ -131,7 +165,19 @@ namespace Proof{
 		for (auto e : view) {
 		}
 	}
-	
+	template<typename Component>
+	static void CopyComponentWorld(entt::registry64& dst, entt::registry64& src, const std::unordered_map<UUID, uint64_t>& enttMap)
+	{
+		auto view = src.view<Component>();
+		for (auto e : view)
+		{
+			UUID uuid = src.get<IDComponent>(e).GetID();
+			uint64_t dstEnttID = enttMap.at(uuid);
+
+			auto& component = src.get<Component>(e);
+			dst.emplace_or_replace<Component>(dstEnttID, component);
+		}
+	}
 	//static void CopyComponent
 	Count<World> World::Copy(Count<World> other) {
 		Count<World> newWorld = CreateCount<World>();
@@ -153,27 +199,54 @@ namespace Proof{
 
 		newWorld->m_CaptureFBO = other->m_CaptureFBO;
 		newWorld->m_CaptureRBO = other->m_CaptureRBO;
-		for (const uint64_t ID : other->m_Registry.entities) {
-			Entity newEntity(ID, other.get());
-			newWorld->CreateEntity(newEntity.GetName(), newEntity.GetID());
-			CopyComponentIfExists<TagComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
-			CopyComponentIfExists<TransformComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
-			CopyComponentIfExists<ChildComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
-			CopyComponentIfExists<NativeScriptComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
-			CopyComponentIfExists<MeshComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
-			CopyComponentIfExists<LightComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
-			CopyComponentIfExists<CubeColliderComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
-			CopyComponentIfExists<CameraComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
+
+		auto& srcSceneRegistry = other->m_Registry;
+		auto& dstSceneRegistry = newWorld->m_Registry;
+		std::unordered_map<UUID, uint64_t> enttMap;
+
+		// Create entities in new scene
+		auto idView = srcSceneRegistry.view<IDComponent>();
+		for (auto e : idView)
+		{
+			UUID uuid = srcSceneRegistry.get<IDComponent>(e).GetID();
+			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
+			Entity newEntity = newWorld->CreateEntity(name,uuid);
+			enttMap.insert({ uuid,newEntity.GetID() });
 		}
-		//CopyComponent<TagComponent>(newWorld->m_Registry, m_Registry,);
+
+		// Copy components (except IDComponent and TagComponent)
+		CopyComponentWorld<TagComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<TransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<ChildComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<MeshComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<LightComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<CubeColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<SphereColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		return newWorld;
 	}
 
 	void World::EndRuntime() {
 	}
 
-	void World::StartPlay()
-	{
+	void World::StartRuntime(){
+		m_PhysicsEngine = new PhysicsEngine();
+		auto& spherColliderView = m_Registry.view<SphereColliderComponent>();
+		for (auto entity : spherColliderView) {
+			auto& sphereCollider = spherColliderView.get<SphereColliderComponent>(entity);
+			auto& collider = m_PhysicsEngine->m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::SphereCollider(Entity{entity,this}.GetComponent<TransformComponent>()->Location + sphereCollider.Offset, sphereCollider.Radius)));
+			sphereCollider.RuntimeBody = collider.GetCollider();
+		}
+
+		auto& cubeColliderView = m_Registry.view<CubeColliderComponent>();
+		for (auto entity : cubeColliderView) {
+			auto& cubeCollider = cubeColliderView.get<CubeColliderComponent>(entity);
+			const auto& transform =Entity{ entity,this }.GetComponent<TransformComponent>();
+			
+			auto& collider = m_PhysicsEngine->m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::CubeCollider(transform->Location + cubeCollider.OffsetLocation, transform->Rotation, transform->Scale+ cubeCollider.OffsetLocation)));
+			cubeCollider.RuntimeBody = collider.GetCollider();
+		}
 	}
 
 	void World::DeleteEntity(Entity& ent, bool deleteChildren) {
@@ -381,7 +454,5 @@ namespace Proof{
 		m_CaptureFBO->UnBind();
 		RendererCommand::SetViewPort(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 	}
-	void World::SetPhysicsComponent(UUID ID, PhysicsComponent* component){
-		m_PhysicsEngine.m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(&Entity{ ID, this }.GetComponent<TransformComponent>()->Location, &component->Velocity,&component->Radius));
-	}
+	
 }

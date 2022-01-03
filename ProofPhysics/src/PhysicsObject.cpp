@@ -7,6 +7,5 @@
 #include<iostream>
 namespace ProofPhysicsEngine {
 	void PhysicsObject::Update(float delta){
-		*Position += *Veclocity * delta;
 	}
 }
