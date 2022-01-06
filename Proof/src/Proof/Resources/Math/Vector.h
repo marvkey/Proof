@@ -28,12 +28,12 @@ namespace Proof
         }
         
         T GetMax() {
-            if (X < Y) {
-                if (X < Z)
+            if (X > Y) {
+                if (X > Z)
                     return X;
                 return Z;
             }
-            if (Y < Z)
+            if (Y > Z)
                 return Y;
             return Z;
         }
@@ -151,24 +151,6 @@ namespace Proof
             this->Z *= temp;
             return *this;
         }
-        Vector operator -(const glm::vec3& Other)const {
-            Vector Temp(this->X - Other.x,this->Y - Other.y,this->Z - Other.z);
-            return Temp;
-        }
-        Vector operator +(const glm::vec3& Other)const {
-            Vector Temp(this->X + Other.x,this->Y + Other.y,this->Z + Other.z);
-            return Temp;
-        }
-
-        Vector operator -(const Vector& Other)const {
-            Vector Temp(this->X - Other.X,this->Y - Other.Y,this->Z - Other.Z);
-            return Temp;
-        }
-
-        Vector operator +(const Vector& Other) {
-            Vector Temp(this->X + Other.X,this->Y + Other.Y,this->Z + Other.Z);
-            return Temp;
-        }
 
         Vector operator-()const{
             Vector temp(-this->X,-this->Y,-this->Z);
@@ -181,19 +163,15 @@ namespace Proof
             this->Z+=other;
             return *this;
         }
-        Vector operator*(float temp) {
-            Vector tempVec(X * temp, Y * temp, Z * temp);
-            return tempVec;
-        }
     };
-    /*
-    Vector operator*(const Vector& other,float temp) {
-        Vector tempVec(other.X * temp,other.Y * temp,other.Z * temp);
+    template<typename T>
+    Vector<T> operator*(const Vector<T>& other,float temp) {
+        Vector<T>tempVec(other.X * temp,other.Y * temp,other.Z * temp);
         return tempVec;
     }
-    */
+    
     template<typename T>
-    inline Vector<T> operator*(float temp, const Vector<T>& other) {
+    inline Vector<T> operator*(const float& temp, const Vector<T>& other) {
         Vector<T> tempVec(other.X * temp, other.Y * temp, other.Z * temp);
         return tempVec;
     }
@@ -203,5 +181,15 @@ namespace Proof
         other.Y *= temp;
         other.Z *= temp;
         return *other;
+    }
+    template<typename T>
+    Vector<T> operator +(const Vector<T>& Other1, const Vector<T>& Other2){
+        Vector<T> Temp(Other1.X + Other2.X, Other1.Y + Other2.Y, Other1.Z + Other2.Z);
+        return Temp;
+    }
+    template<typename T>
+    Vector<T> operator -(const Vector<T>& Other1, const Vector<T>& Other2) {
+        Vector<T> Temp(Other1.X - Other2.X, Other1.Y - Other2.Y, Other1.Z - Other2.Z);
+        return Temp;
     }
 }

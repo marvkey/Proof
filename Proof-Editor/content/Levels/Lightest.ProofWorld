@@ -1,41 +1,6 @@
 World: LightTest
 Entities:
-  - Entity: 14539590813903992165
-    TagComponent:
-      Tag: Directional Light
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [-5.9000001, -13.8000002, 2.9000001]
-      Scale: [1, 0.99999994, 0.999999881]
-    ChildComponent:
-      OwnerID: 0
-      Children: []
-    LightComponent:
-      CutOff: 1
-      OuterCutOff: 2
-      Constant: 1
-      Linear: 1
-      Quadratic: 1
-      Ambient: [0.318109393, 0.326828629, 0.366935492]
-      Diffuse: [0, 0, 0]
-      Specular: [0, 0, 0]
-      LightType: 0
-  - Entity: 13057490324293209496
-    TagComponent:
-      Tag: sponza
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.100000001, 0.100000001, 0.100000001]
-    ChildComponent:
-      OwnerID: 0
-      Children: []
-    MeshComponent:
-      MeshAssetPointerID: 19748
-      MaterialPointerID: 0
-  - Entity: 16827497576274301923
+  - Entity: 3274780553881339979
     TagComponent:
       Tag: Empty Entity
       tags: []
@@ -44,7 +9,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 8854396152154798778
+      OwnerID: 10246643017857946525
       Children: []
   - Entity: 15851816075793717139
     TagComponent:
@@ -57,7 +22,7 @@ Entities:
     ChildComponent:
       OwnerID: 1167938253234886891
       Children: []
-  - Entity: 3274780553881339979
+  - Entity: 16827497576274301923
     TagComponent:
       Tag: Empty Entity
       tags: []
@@ -66,14 +31,49 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 10246643017857946525
+      OwnerID: 8854396152154798778
       Children: []
-  - Entity: 487351762891527205
+  - Entity: 1291239417134216629
+    TagComponent:
+      Tag: Directional Light
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    LightComponent:
+      CutOff: 1
+      OuterCutOff: 2
+      Constant: 1
+      Linear: 1
+      Quadratic: 1
+      Ambient: [0.730293989, 0.741660416, 0.794354856]
+      Diffuse: [0, 0, 0]
+      Specular: [0, 0, 0]
+      LightType: 0
+  - Entity: 8760759891831111898
+    TagComponent:
+      Tag: sponza
+      tags: []
+    TransformComponent:
+      Location: [0, -1.04782796, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.100000001, 0.100000001, 0.100000001]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 19748
+      MaterialPointerID: 0
+  - Entity: 1047949078784288998
     TagComponent:
       Tag: Sphere
       tags: []
     TransformComponent:
-      Location: [-9.67923355, 0.610581636, 1.62709832]
+      Location: [-0.277358085, 11.5002222, -4.7042017]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
@@ -82,26 +82,49 @@ Entities:
     MeshComponent:
       MeshAssetPointerID: 12508670168373565797
       MaterialPointerID: 0
-  - Entity: 5834277175308819151
+    SphereColliderComponent:
+      Offset: [0, 0, 0]
+      Radius: 1
+  - Entity: 13564274098992329944
     TagComponent:
-      Tag: Sphere
+      Tag: Sphere2
       tags: []
     TransformComponent:
-      Location: [-0.699433565, 0.437139988, 1.86077309]
+      Location: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.5, 0.5, 0.5]
+      Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
       Children: []
     MeshComponent:
       MeshAssetPointerID: 12508670168373565797
       MaterialPointerID: 0
-  - Entity: 1284297369166235127
+    SphereColliderComponent:
+      Offset: [0, 0, 0]
+      Radius: 1
+  - Entity: 6213697661713988778
     TagComponent:
       Tag: Cube
       tags: []
     TransformComponent:
-      Location: [0, 0, 0]
+      Location: [-1.38771141, 11.4952879, -7.22449827]
+      Rotation: [34.2999992, 0, 0]
+      Scale: [3.13999987, 3.13999987, 4.68593025]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12067
+      MaterialPointerID: 6594
+    CubeColliderComponent:
+      OffsetLocation: [0, 0, 0]
+      OffsetScale: [0, 0, 0]
+  - Entity: 14422208715072623764
+    TagComponent:
+      Tag: Cube2
+      tags: []
+    TransformComponent:
+      Location: [-3.10379958, 10.1861248, 0.118286207]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:

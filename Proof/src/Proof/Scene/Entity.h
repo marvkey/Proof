@@ -148,5 +148,6 @@ namespace Proof{
 		UUID m_ID{0};
 		entt::entity m_EnttEntity{ entt::null };
 		friend class World;
+		friend class PhysicsEngine;
 	};
 }

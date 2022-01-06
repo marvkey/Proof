@@ -52,12 +52,8 @@ namespace Proof
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 	}
 	void Editore3D::OnAttach() {
-	//	std::string name =std::format("{} {}","wagwan");
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
-		
-	
 
-		//m_WorldHierachy.SetBrowserPanel(&m_CurrentContentBrowserPanel);
 
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/right.jpg");
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/left.jpg");
@@ -129,8 +125,6 @@ namespace Proof
 
 		m_SkyBoxShader->Bind();
 		m_SkyBoxShader->SetInt("skybox",0);
-		//
-		//
 		m_CubeMap = CubeMap::Create(CubeMapPaths);
 
 		m_PlayButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PlayButton.png");
@@ -138,27 +132,16 @@ namespace Proof
 		m_SimulateButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/SimulateButton.png");
 		m_StopButtonTexture =Texture2D::Create("Resources/Icons/MainPanel/StopButton.png");
 
-		//PF_ENGINE_INFO("number ofscript is %i",ScriptDetail::GetScriptRegisry().size());
 	}
 	void Editore3D::OnDetach() {
-		if (ActiveWorld != nullptr) {
-			SceneSerializer scerelizer(ActiveWorld.get());
-			scerelizer.SerilizeText(ActiveWorld->GetPath());
+		if (m_EditorWorld != nullptr) { // using editor world in case active world is on play
+			SceneSerializer scerelizer(m_EditorWorld.get());
+			scerelizer.SerilizeText(m_EditorWorld->GetPath());
 		}
 	}
 
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
-		
-		if(Input::IsKeyPressed(KeyBoardKey::H)){
-			//std::stringstream stream;
-			//stream << std::hex << UUID();
-			//std::string result(stream.str());
-			//uint64_t num= Random::Uint<uint64_t>();
-			long double num = Random::Int<int>(0,1);
-
-			std::cout<< num <<std::endl;
-		}
 		m_WorldRenderer.Renderer();
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
 			ActiveWorld->OnUpdateEditor(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
@@ -188,16 +171,12 @@ namespace Proof
 		Layer::OnImGuiDraw(DeltaTime);
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
-		//ImGui::ShowDemoWindow();
 		for (auto& a : m_AllPanels) {
 			a.second->ImGuiRender(DeltaTime);
 		}
 
-
 		ViewPort();
-		
 		MainToolBar();
-		
 		m_WorldHierachy.ImGuiRender(DeltaTime);
 		m_CurrentContentBrowserPanel.ImGuiRender(DeltaTime);
 		m_AssetManagerPanel.ImGuiRender(DeltaTime);
@@ -217,7 +196,8 @@ namespace Proof
 		a:
 		if (m_ShowRendererStats == false)
 			return;
-		if (ImGui::Begin("Renderer Stastitics"), &m_ShowRendererStats) {
+		ImGui::Begin("Renderer Stastitics"), &m_ShowRendererStats);
+		{
 			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER SPECS");
 			ImGui::Text("Renderer Company: %s", Renderer::GetRenderCompany().c_str());
 			ImGui::Text("Graphics Card: %s", Renderer::GetGraphicsCard().c_str());
@@ -264,8 +244,8 @@ namespace Proof
 		
 			case KeyBoardKey::S:
 			{
-				//if (control && shift)
-					//SaveSceneAs();
+				if (control )
+					Save();
 
 				break;
 			}
@@ -369,11 +349,13 @@ namespace Proof
 			ImGui::BeginMenuBar();
 			{
 				ExternalAPI::ImGUIAPI::CheckBox("pause logging",&Log::m_PauseLog);
+				ExternalAPI::ImGUIAPI::CheckBox("Clear On Play", &m_ClearLogOnPlay);
 				ImGui::SameLine();
 				if(ImGui::Button("Clear log")){
 					Log::Logs.clear();
 					ImGui::SetScrollHere();
 				}
+				
 			}
 			ImGui::EndMenuBar();
 			int pos=0;
@@ -503,7 +485,6 @@ namespace Proof
 			// GUIZMOS
 
 			Entity selectedEntity = m_WorldHierachy.GetSelectedEntity();
-
 			if (selectedEntity.GetID() != 0) {
 				ImGuizmo::SetOrthographic(true);
 				ImGuizmo::SetDrawlist();
@@ -529,22 +510,22 @@ namespace Proof
 					nullptr, snap ? snapValues : nullptr);;
 
 				if (ImGuizmo::IsUsing()) {
-					
+
 					if (selectedEntity.HasOwner() == false) {
 						glm::vec3 translation, rotation, scale;
 						MathResource::DecomposeTransform(transform, translation, rotation, scale);
 						glm::vec3 deltaRotation = glm::vec3{ glm::degrees(rotation.x),glm::degrees(rotation.y),glm::degrees(rotation.z) } - glm::vec3{ tc.Rotation };
-						if(GuizmoType == ImGuizmo::OPERATION::TRANSLATE)
+						if (GuizmoType == ImGuizmo::OPERATION::TRANSLATE)
 							tc.Location = translation;
-						else if(GuizmoType == ImGuizmo::OPERATION::ROTATE)
+						else if (GuizmoType == ImGuizmo::OPERATION::ROTATE)
 							tc.Rotation += deltaRotation;
 						else
-						tc.Scale = scale;
+							tc.Scale = scale;
 					}
 					else {
 						glm::vec3 translation, rotation, scale;
 						MathResource::DecomposeTransform(transform, translation, rotation, scale);
-						tc.Location = tc.GetWorldTransform() * glm::vec4(translation,1.0);
+						tc.Location = tc.GetWorldTransform() * glm::vec4(translation, 1.0);
 						glm::vec3 tempScale = tc.Scale;
 						//glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
 						//tc.Location = translation - tempLocation;
@@ -552,7 +533,6 @@ namespace Proof
 						//tc.Scale = glm::vec3{ tc.GetWorldScale() }- scale;
 					}
 				}
-
 			}
 
 			/* putting this underneath image because a window only accpet drop target to when item is bound so and image has been bound */
@@ -643,8 +623,6 @@ namespace Proof
 			if (ActiveWorld->m_CurrentState == WorldState::Edit)
 				SimulateWorld();
 		}
-		//ImGui::PopStyleVar(1);
-		//ImGui::PopStyleColor(3);
 		ImGui::End();
 	}
 
@@ -689,13 +667,15 @@ namespace Proof
 
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
-				if (ImGui::MenuItem("New...")) {
-					NewWorld(true);
+				
+				if (ImGui::MenuItem("New Project")) { // gonna be implemented later
+					// gonna be implemented later
 				}
-				if (ImGui::MenuItem("Save")) {
-					if (ActiveWorld->m_Path.empty() != true) {
+				if (ImGui::MenuItem("Open Project")) {
+					// gonna be implemented later
+				}
+				if (ImGui::MenuItem("Save","ctrl+s")) {
 						Save();
-					}
 				}
 				ImGui::EndMenu();
 			}
@@ -717,68 +697,34 @@ namespace Proof
 		ImGui::End();
 	}
 
-	void Editore3D::NewWorld(bool Save) {
-		if (Save == true && ActiveWorld != nullptr) {
-			SceneSerializer scerelizer(ActiveWorld.get());
-			scerelizer.SerilizeText(ActiveWorld->GetPath());
-			ActiveWorld = CreateCount<World>();
-			m_WorldHierachy.SetContext(ActiveWorld.get()); 
-		}
-		else {
-			ActiveWorld = CreateCount<World>();
-			m_WorldHierachy.SetContext(ActiveWorld.get());
-			return;
-		}
-		m_WorldHierachy.SetContext(ActiveWorld.get());
-	}
-
-	void Editore3D::OpenWorld() {
-		std::string FIle = Utils::FileDialogs::OpenFile("Texture (*.ProofAsset)\0 *.ProofAsset\0 ");
-		if (FIle.empty() == false) {
-			ActiveWorld = CreateCount<World>();
-			SceneSerializer scerelizer(ActiveWorld.get());
-			if (scerelizer.DeSerilizeText(FIle) == true) {
-				PF_ENGINE_INFO("%s Deserilize perfectly",ActiveWorld->GetName().c_str());
-				m_WorldHierachy.SetContext(ActiveWorld.get());
-				return;
-			}
-			else {
-
-				ActiveWorld = CreateCount<World>();
-				m_WorldHierachy.SetContext(ActiveWorld.get());
-				PF_ENGINE_ERROR("Deceerilize was created default world");
-				return;
-			}
-		}
-		PF_ENGINE_TRACE("No File Selected");
-		if (ActiveWorld == nullptr) {
-			PF_ENGINE_INFO("New World Created cause level was originally nullptr");
-			ActiveWorld = CreateCount<World>();
-			m_WorldHierachy.SetContext(ActiveWorld.get());
-			return;
-		}
-		PF_ENGINE_INFO("Back to Default WOrld");
-	}
 
 	void Editore3D::Save() {
-		if (ActiveWorld != nullptr) {
-			SceneSerializer scerelizer(ActiveWorld.get());
-			scerelizer.SerilizeText(ActiveWorld->GetPath());
-
-			PF_ENGINE_TRACE("%s Saved",ActiveWorld->GetName().c_str());
+		if (ActiveWorld == nullptr)
 			return;
-		}
-		PF_ENGINE_ERROR("World is NULL");
+		if(ActiveWorld->m_CurrentState != WorldState::Edit)
+			PF_ERROR("Cannot save when in runtime mode");
+
+		SceneSerializer scerelizer(ActiveWorld.get());
+		scerelizer.SerilizeText(ActiveWorld->GetPath());
+
+		PF_ENGINE_TRACE("%s Saved",ActiveWorld->GetName().c_str());
+
 	}
 	void Editore3D::PlayWorld() {
 		ActiveWorld = World::Copy(m_EditorWorld);
+
 		ActiveWorld->m_CurrentState = WorldState::Play;
 		m_WorldHierachy.SetContext(ActiveWorld.get());
 		m_WorldRenderer.SetContext(ActiveWorld);
+
+		if (m_ClearLogOnPlay)
+			Log::Logs.clear();
+		GuizmoType = 0;
+		m_WorldHierachy.m_SelectedEntity = {};
 		ActiveWorld->StartRuntime();
 	}
 	void Editore3D::SimulateWorld() {
-		GuizmoType = 0;
+	
 		ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
 	void Editore3D::SetWorldEdit() {
@@ -792,16 +738,6 @@ namespace Proof
 	void Editore3D::PauseWorld() {
 		ActiveWorld->m_CurrentState = WorldState::Pause;
 	}
-	void Editore3D::Save(const std::string& Path) {
-		if (ActiveWorld != nullptr) {
-			SceneSerializer scerelizer(ActiveWorld.get());
-			scerelizer.SerilizeText(Path);
-			PF_ENGINE_TRACE("World Saved");
-			return;
-		}
-		PF_ENGINE_ERROR("World is NULL");
-	}
-
 
 	void Editore3D::CreateMaterialEdtior(MaterialAsset* material) {
 		if (material == nullptr)return;

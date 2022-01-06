@@ -195,9 +195,9 @@ namespace Proof
 			return temp;
 		}
 		
-		Vector<float> GetWorldLocation()const;
-		Vector<float> GetWorldRotation()const;
-		Vector<float> GetWorldScale()const;
+		Vector<float> GetWorldLocation() const;
+		Vector<float> GetWorldRotation() const;
+		Vector<float> GetWorldScale() const;
 		glm::mat4 GetLocalTransform() const {
 			return glm::translate(glm::mat4(1.0f), { Location }) *
 				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.X), { 1,0,0 })
@@ -390,10 +390,13 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
+		friend class PhysicsEngine;
 	};
 
 
 	struct Proof_API SphereColliderComponent {
+		SphereColliderComponent(const SphereColliderComponent&) = default;
+		SphereColliderComponent() = default;
 		Vector<float> Offset = { 0,0,0 };
 		float Radius = 1.0f;
 	private:
@@ -402,5 +405,6 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
+		friend class PhysicsEngine;
 	};
 }

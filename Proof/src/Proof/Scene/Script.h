@@ -12,41 +12,26 @@ namespace Proof
 		virtual ~Script() {};
 		virtual void OnCreate() {} // called when placed or spawned in world
 		virtual void OnUpdate(FrameTime DeltaTime) {}; // called every frame
-		virtual void OnlyOnCreate() {};// called when only placed in world
+		virtual void OnPlaced() {};// called when only placed in world
 		virtual void OnSpawn() {}; // called only when spawned into the world
 		virtual void OnDestroy() {}; // called when destoryed
 
-		/*
-		template<class T,typename... Args>
-		void AddComponent() {
-			if (OwnerEntity == nullptrdd Entity, pointer to owner entity is null");
-			};
-			if (OwnerEntity->HasComponent<T>() == true) {
-			) {
-				PF_ENGINE_INFO("cannot a	return;
-			}
-			OwnerEntity->AddComponent<T>(Args&&...args);
-		}
-		*/
 		template<class T>
 		T* GetComponent() {
-			return OwnerEntity.GetComponent<T>();
+			return m_Owner.GetComponent<T>();
 		}
 		template<class T>
 		bool HasComponent() {
-			return OwnerEntity.HasComponent<T>();
+			return m_Owner.HasComponent<T>();
 		}
-
-		template<class T>
-		T* GetComponent(uint32_t IndexSlot) {
-			OwnerEntity.GetComponent<T>(IndexSlot);
-		}
+		World* GetWorld() { return m_World; };
 		bool b_CallPerframe = true;
 	private:
 		friend class World;
 		friend class Entity;
 		friend struct NativeScriptComponent;
-		Entity OwnerEntity;
+		Entity m_Owner = {};
+		World* m_World =nullptr;
 	};
 	
 	namespace ScriptDetail{	

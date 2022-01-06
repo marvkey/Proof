@@ -1,6 +1,6 @@
 AssetType: AssetType::MaterialAsset
 ID: 6594
-AlbedoColour: [0, 1, 0.267857075]
+AlbedoColour: [1, 0, 0]
 Roughness: 1
 Metallness: 1
 AO: 1

@@ -1,5 +1,8 @@
 #pragma once
 namespace ProofPhysicsEngine {
+	struct Interval {
+		float min; float max;
+	};
 	struct IntersectData
 	{
 	public:

@@ -103,7 +103,7 @@ namespace Proof{
 		EditorCamera m_EditorCamera ={200,200};
 	private:
 		class PhysicsEngine* m_PhysicsEngine =nullptr;
-		class CameraComponent* m_ActiveCamera = nullptr;
+		class CameraComponent* m_SceneCamera = nullptr;
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
 		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height,bool usePBR =false);
 		WorldState m_CurrentState=WorldState::Edit;
@@ -137,8 +137,8 @@ namespace Proof{
 		friend class SceneHierachyPanel;
 		friend class Entity;
 		friend class SceneSerializer;
-		friend class Component;
 		friend class Editore3D;
 		friend class Renderer;
+		friend class PhysicsEngine;
 	};
 }

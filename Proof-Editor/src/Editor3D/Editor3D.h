@@ -34,6 +34,7 @@ namespace Proof {
 		bool m_ViewPoartHoveredorFocused = false;
 		Entity m_CopyEntity;
 		void Logger();
+		bool m_ClearLogOnPlay = false;
 		bool Docking = false;
 		bool m_ShowLogger = true;
 		bool m_ShowRendererStats = false;
@@ -59,16 +60,12 @@ namespace Proof {
 		friend class Renderer3D;
 		friend class Renderer;
 
-		void NewWorld(bool Save);
-		void OpenWorld();
 		void Save();
 		std::unordered_map<UUID,Panel*>m_AllPanels;
 		void PlayWorld();
 		void SimulateWorld();
 		void SetWorldEdit();
 		void PauseWorld();
-		void Save(const std::string& Path);
-
 		std::vector<std::string>CubeMapPaths; 
 		Count<Shader> m_SkyBoxShader;
 		Count<VertexBuffer> m_SkyBoxBuffer;

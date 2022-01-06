@@ -66,35 +66,7 @@ namespace Proof{
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
-		m_EditorCamera.OnUpdate(DeltaTime, width, height);
-		// PHYSICS
-		{
-			// Sphere Collider
-			{
-				auto& sccV = m_Registry.view<SphereColliderComponent>();
-				for (auto entity : sccV) {
-					Entity currentEntity{ entity, this };
-					auto& sphereCollider = sccV.get<SphereColliderComponent>(entity);
-					auto* collider = (ProofPhysicsEngine::SphereCollider*)sphereCollider.RuntimeBody;
-					collider->Center = sphereCollider.Offset + currentEntity.GetComponent<TransformComponent>()->Location;
-					collider->Radius = sphereCollider.Radius * currentEntity.GetComponent<TransformComponent>()->Scale.GetMax();
-				}
-			}
-			// CuCollider
-			{
-				auto& cccV = m_Registry.view<CubeColliderComponent>();
-				for (auto entity : cccV) {
-					Entity currentEntity{ entity, this };
-					const auto& transform = *currentEntity.GetComponent<TransformComponent>();
-					auto& cubeCollider = cccV.get<CubeColliderComponent>(entity);
-					auto* collider = (ProofPhysicsEngine::CubeCollider*)cubeCollider.RuntimeBody;
-					collider->Center = transform.Location + cubeCollider.OffsetLocation;
-					collider->Rotation = transform.Rotation;
-					collider->Scale = transform.Scale + cubeCollider.OffsetScale;
-				}
-			}
-			m_PhysicsEngine->Update(DeltaTime);
-		}
+		
 		// Scripts
 		{
 			auto& scriptView = m_Registry.view<NativeScriptComponent>();
@@ -104,14 +76,25 @@ namespace Proof{
 				{
 
 					script.Instance = script.InstantiateScript();
-					script.Instance->OwnerEntity = Entity{ entity, this };
+					script.Instance->m_Owner = Entity{ entity, this };
+					script.Instance->m_World = this;
 					script.Instance->OnCreate();
+					script.Instance->OnSpawn();
 				}
-
-				script.Instance->OnUpdate(DeltaTime);
+				if(script.Instance->b_CallPerframe == true)
+					script.Instance->OnUpdate(DeltaTime);
 			}
 		}
-
+		m_PhysicsEngine->Update(DeltaTime);
+		m_EditorCamera.OnUpdate(DeltaTime, width, height);
+		{
+			auto& cameraView = m_Registry.view<CameraComponent>();
+			for (auto entity : cameraView) {
+				auto& camera = cameraView.get<CameraComponent>(entity);
+				m_SceneCamera = &camera;
+				break;
+			}
+		}
 	}
 	template<typename Component>
 	static Component* CopyComponentIfExists(Entity dst, Entity src)
@@ -224,29 +207,34 @@ namespace Proof{
 		CopyComponentWorld<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<CubeColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<SphereColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
 		return newWorld;
 	}
 
 	void World::EndRuntime() {
+		delete m_PhysicsEngine;
+		m_PhysicsEngine = nullptr;
+		m_SceneCamera = nullptr;
 	}
 
 	void World::StartRuntime(){
-		m_PhysicsEngine = new PhysicsEngine();
-		auto& spherColliderView = m_Registry.view<SphereColliderComponent>();
-		for (auto entity : spherColliderView) {
-			auto& sphereCollider = spherColliderView.get<SphereColliderComponent>(entity);
-			auto& collider = m_PhysicsEngine->m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::SphereCollider(Entity{entity,this}.GetComponent<TransformComponent>()->Location + sphereCollider.Offset, sphereCollider.Radius)));
-			sphereCollider.RuntimeBody = collider.GetCollider();
-		}
+		{
+			auto& scriptView = m_Registry.view<NativeScriptComponent>();
+			for (auto entity : scriptView) {
+				auto& script = scriptView.get<NativeScriptComponent>(entity);
+				if (script.Instance == nullptr)
+				{
 
-		auto& cubeColliderView = m_Registry.view<CubeColliderComponent>();
-		for (auto entity : cubeColliderView) {
-			auto& cubeCollider = cubeColliderView.get<CubeColliderComponent>(entity);
-			const auto& transform =Entity{ entity,this }.GetComponent<TransformComponent>();
-			
-			auto& collider = m_PhysicsEngine->m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::CubeCollider(transform->Location + cubeCollider.OffsetLocation, transform->Rotation, transform->Scale+ cubeCollider.OffsetLocation)));
-			cubeCollider.RuntimeBody = collider.GetCollider();
+					script.Instance = script.InstantiateScript();
+					script.Instance->m_Owner = Entity{ entity, this };
+					script.Instance->m_World = this;
+					script.Instance->OnCreate();
+					script.Instance->OnPlaced();
+				}
+			}
 		}
+		m_PhysicsEngine = new PhysicsEngine(this);
+		m_PhysicsEngine->Start();
 	}
 
 	void World::DeleteEntity(Entity& ent, bool deleteChildren) {
