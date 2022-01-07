@@ -14,6 +14,12 @@ namespace Proof{
 		virtual bool IsImageIDNUll() {
 			return true;
 		}
+		virtual std::string GetExtension()const {
+			return "Material.ProofAsset";
+		}
+		static std::string StaticGetExtension() {
+			return "Material.ProofAsset";
+		}
 		virtual uint32_t GetImageID();
 		const static std::string& GetAssetType(){
 			static std::string assetType ="AssetType::MaterialAsset";

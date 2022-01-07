@@ -18,6 +18,7 @@ namespace Proof
 		}
 		if (HasID(ID) == false) {
 			s_AssetManager->m_AllAssets.insert({ ID,{AssetInfo(asset->GetPath(), asset->GetAssetTypeVirtual()),asset} });
+			
 			return;
 		}
 		PF_ASSERT(false,"Asset Maneger Has ID");
@@ -69,13 +70,13 @@ namespace Proof
 				if (it->second.first.Type == MeshAsset::GetAssetType()) {
 					it->second.second = CreateCount<MeshAsset>();
 					it->second.second->LoadAsset(it->second.first.Path.string());
-					it->second.second->m_AssetName = it->second.first.Path.filename().stem().filename().stem().string();
+					it->second.second->m_AssetName = Utils::FileDialogs::GetFileName(it->second.first.Path);
 					return true;
 				}
 				else if (it->second.first.Type == MaterialAsset::GetAssetType()) {
 					it->second.second = CreateCount<MaterialAsset>();
 					it->second.second->LoadAsset(it->second.first.Path.string());
-					it->second.second->m_AssetName = it->second.first.Path.filename().stem().filename().stem().string();
+					it->second.second->m_AssetName = Utils::FileDialogs::GetFileName(it->second.first.Path);
 					return true;
 				}
 			}

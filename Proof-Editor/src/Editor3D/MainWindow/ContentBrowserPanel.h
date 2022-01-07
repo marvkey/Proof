@@ -18,9 +18,6 @@ namespace Proof{
 		 Count<Texture2D> m_FileIcon;
 		 Count<Texture2D> m_MeshIcon;
 		 Count<Texture2D> m_ArrowIcon;
-		 void NewAsset(const std::string&NewFilePath);
-		 void NewMeshAsset(const std::string& NewFilePath);
-		 void NewMaterialAsset(const std::string& NewFilePath);
 		__forceinline UUID GetIDCurrentDirectory(const std::string& Path);
 		__forceinline  bool IsScene (const std::string& Path);
 		Editore3D* m_owner =nullptr;

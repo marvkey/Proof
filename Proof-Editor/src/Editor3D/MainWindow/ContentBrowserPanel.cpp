@@ -112,10 +112,15 @@ namespace Proof
 						}
 						ImGui::SameLine();
 						if (ImGui::Button("Done") || ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
-							if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset") == false) {
-								std::ofstream({m_CurrentDirectory.string() + "\\" + NewFileName+".ProofAsset"});
+							if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName + "."+Texture2DAsset::StaticGetExtension()) == false) {
+								std::ofstream({m_CurrentDirectory.string() + "\\" + NewFileName+ "." + Texture2DAsset::StaticGetExtension() });
 								ImGui::CloseCurrentPopup();
-								NewAsset(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset");
+
+								std::string file= Utils::FileDialogs::OpenFile("Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0");
+								if (file.empty() == false) {
+									Count<Texture2DAsset> TempAsset = CreateCount<Texture2DAsset>(file, m_CurrentDirectory.string() + "\\" + NewFileName + Texture2DAsset::StaticGetExtension());
+									AssetManager::NewAsset(TempAsset->GetID(), TempAsset);
+								}
 								NewFileName = "";
 							}
 						}
@@ -139,7 +144,11 @@ namespace Proof
 						if (ImGui::Button("Done") || ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
 							if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName) == false) {
 								ImGui::CloseCurrentPopup();
-								NewMeshAsset(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset");
+								std::string FIle = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
+								if (FIle.empty() == false) {
+									Count<MeshAsset> TempAsset = CreateCount<MeshAsset>(FIle, m_CurrentDirectory.string() + "\\" + NewFileName + MeshAsset::StaticGetExtension());
+									AssetManager::NewAsset(TempAsset->GetID(), TempAsset);
+								}
 								NewFileName = "";
 							}
 						}
@@ -163,7 +172,8 @@ namespace Proof
 						if (ImGui::Button("Done") || ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
 							if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName) == false) {
 								ImGui::CloseCurrentPopup();
-								NewMaterialAsset(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset");
+								Count<MaterialAsset> TempAsset = CreateCount<MaterialAsset>(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset");
+								AssetManager::NewAsset(TempAsset->GetID(), TempAsset);
 								NewFileName = "";
 							}
 						}
@@ -305,7 +315,6 @@ namespace Proof
 						ImGui::EndPopup();
 
 					}
-					//std::filesystem::path tempPath= It.path().filename();
 					ImGui::Text(Utils::FileDialogs::GetFileName(It.path()).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
 					ImGui::NextColumn();
 				}
@@ -316,24 +325,6 @@ namespace Proof
 			ImGui::EndChild();
 		}
 		ImGui::End();
-	}
-	void ContentBrowserPanel::NewAsset(const std::string& NewFilePath) {
-		std::string FIle = Utils::FileDialogs::OpenFile("Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0");
-		if (FIle.empty() == false) {
-			Count<Texture2DAsset> TempAsset = CreateCount<Texture2DAsset>(FIle,NewFilePath);
-			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
-		}
-	}
-	void ContentBrowserPanel::NewMeshAsset(const std::string& NewFilePath) {
-		std::string FIle = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
-		if (FIle.empty() == false) {
-			Count<MeshAsset> TempAsset = CreateCount<MeshAsset>(FIle,NewFilePath);
-			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
-		}
-	}
-	void ContentBrowserPanel::NewMaterialAsset(const std::string& NewFilePath) {
-			Count<MaterialAsset> TempAsset = CreateCount<MaterialAsset>(NewFilePath);
-			AssetManager::NewAsset(TempAsset->GetID(),TempAsset);
 	}
 	UUID ContentBrowserPanel::GetIDCurrentDirectory(const std::string& Path) {
 		std::ifstream testFile(Path);
@@ -358,15 +349,8 @@ namespace Proof
 		return 0;
 	}
 	bool ContentBrowserPanel::IsScene(const std::string& Path) {
-		std::ifstream testFile(Path);
-		std::string line;
-		while (std::getline(testFile,line)) {
-			if (line.empty() == false) { // first line
-				if (line.substr(0,6) == "World:") {
-					return true;
-				}
-				return false;
-			}
-		}
+		if (Utils::FileDialogs::GetFileExtension(Path) == "ProofWorld")
+			return true;
+		return false;
 	}
 }

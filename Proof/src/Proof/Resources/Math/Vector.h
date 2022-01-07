@@ -90,7 +90,14 @@ namespace Proof
         T GetLength()const {
             return Math::SquareRoot<T>(X * X + Y * Y + Z * Z);
         }
-
+        // basically the dot product
+        T GetLengthSquared()const { 
+            return X * X + Y * Y + Z * Z;
+        }
+        // basically the dot product
+        static T GetLengthSquared(const Vector& Vec) {
+            return Vec.X * Vec.X + Vec.Y * Vec.Y + Vec.Z * Vec.Z;
+        }
         static T GetLength(const Vector& Vec) {
             return  Math::SquareRoot<T>(Vec.X * Vec.X + Vec.Y * Vec.Y + Vec.Z * Vec.Z);
         }
@@ -174,6 +181,10 @@ namespace Proof
     inline Vector<T> operator*(const float& temp, const Vector<T>& other) {
         Vector<T> tempVec(other.X * temp, other.Y * temp, other.Z * temp);
         return tempVec;
+    }
+    template<typename T>
+    void AddScaledVector(Vector<T>& other, float number) {
+        this += other * number;
     }
     template<typename T>
     inline Vector<T> operator *=(const float& temp, Vector<T>& other) {

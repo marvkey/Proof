@@ -30,6 +30,7 @@ namespace Proof
 			return m_ID;
 		}
 
+		virtual std::string GetExtension()const = 0;
 		virtual uint32_t GetIamgeEdtorID(){
 			return 0;
 		}// FOR BROWSER PURPOSES

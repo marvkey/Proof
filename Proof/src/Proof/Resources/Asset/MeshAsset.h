@@ -16,7 +16,12 @@ namespace Proof
 			return assetType;
 		}
 		MeshAsset(){}
-		
+		static std::string StaticGetExtension() {
+			return "Mesh.ProofAsset";
+		}
+		virtual std::string GetExtension()const {
+			return "Mesh.ProofAsset";
+		}
 		class Mesh* GetMesh()const{
 			return m_Mesh.get();
 		}
