@@ -1,11 +1,11 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <sstream>
-#include "Math.h"
 #include <string>
 #include<iostream>>
 namespace Proof
 {
+    struct Math;
     template<class T=float>
     struct Vector {
         T X = 0,Y = 0,Z = 0;

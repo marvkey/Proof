@@ -4,7 +4,6 @@
 namespace ProofPhysicsEngine {
 	class Particle {
 	public:
-		Proof::Vector<float> GravityForce = { 0,-10,0 };
 		/*
 		* @param deltaTime: interval of each iteration
 		*/
@@ -44,6 +43,10 @@ namespace ProofPhysicsEngine {
 		float GetMass() {
 			return Mass;
 		}
+
+		void AddForce(const Proof::Vector<float> force) {
+			ForceAccum += force;
+		}
 	private:
 		/**
 		* Holds the inverse of the mass of the particle. It
@@ -57,5 +60,17 @@ namespace ProofPhysicsEngine {
 		* we would convert for u 
 		*/
 		float Mass=1.0f;
+
+		/*
+		*Vector accumulator
+		* a vector that combines all the forces acting on an object to get its resultant force
+		*/
+		Proof::Vector<float> ForceAccum = { 0,0,0 };
+		/*
+		*Sets the Vector Acumm to be 0 at teh end of each frame
+		*/
+		void ClearAccum() {
+			ForceAccum = Proof::Vector<float>{ 0,0,0 };
+		}
 	};
 }

@@ -22,9 +22,9 @@ namespace Proof
 		void MeshUI();
 		uint32_t m_LastWidht=0,m_LastHeight=0;
 		UUID m_ID = UUID();
-		class MeshComponent* mesh;
-		Count<World> m_World;
-		class MeshAsset* m_MeshAsset;
+		class MeshComponent* mesh =  nullptr;
+		Count<World> m_World = nullptr;
+		class MeshAsset* m_MeshAsset = nullptr;
 		WorldRenderer m_WorldRenderer;
 		SceneRendererType m_Type;
 	};

@@ -12,7 +12,7 @@ namespace Proof
 		Math(const Math&) = delete;
 		/**
 		* @param Number
-		* @return the square root of the param Number
+		* @return the square root of the Number
 		*/
 		template<typename T>
 		inline static T SquareRoot(T Number) {

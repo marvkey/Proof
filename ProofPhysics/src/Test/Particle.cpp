@@ -13,7 +13,7 @@ namespace ProofPhysicsEngine {
 		// acceleration from the force
 		// using inverse mass we can set objects with 0 mass therfore having infinite masses 
 		Proof::Vector<float> resultingAcc = Acceleration;
-		resultingAcc += GravityForce * (1 / Mass);
+		resultingAcc += ForceAccum* (1 / Mass);
 
 		//updating linear velocity from acceleration
 		Velocity += resultingAcc * deltaTime;
@@ -21,5 +21,8 @@ namespace ProofPhysicsEngine {
 		// adding drag we are pasin it to the power of delta time 
 		// so we are not adding drag every frame 
 		Velocity *= pow(Damping, deltaTime);
+
+		// reseting the force of the ating on the object
+		ForceAccum = Proof::Vector<float>{ 0,0,0 };
 	}
 }

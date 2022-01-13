@@ -187,7 +187,7 @@ namespace Proof
 		if (ImGui::Begin("Active World", &m_ShowWorldEditor)) {
 			if(ImGui::Button("Choose HDR")){
 				std::string file= Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
-				if(file.empty()==false){
+				if(file.empty()	== false){
 					ActiveWorld->CreateIBlTexture(file);
 				}
 			}
@@ -196,8 +196,9 @@ namespace Proof
 		a:
 		if (m_ShowRendererStats == false)
 			return;
-		ImGui::Begin("Renderer Stastitics"), &m_ShowRendererStats);
+		ImGui::Begin("Renderer Stastitics", &m_ShowRendererStats);
 		{
+			
 			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER SPECS");
 			ImGui::Text("Renderer Company: %s", Renderer::GetRenderCompany().c_str());
 			ImGui::Text("Graphics Card: %s", Renderer::GetGraphicsCard().c_str());
