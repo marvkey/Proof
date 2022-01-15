@@ -20,6 +20,8 @@ namespace Proof{
 		 Count<Texture2D> m_ArrowIcon;
 		__forceinline UUID GetIDCurrentDirectory(const std::string& Path);
 		__forceinline  bool IsScene (const std::string& Path);
+
+		void Rename(bool directory);
 		Editore3D* m_owner =nullptr;
 	};
 }

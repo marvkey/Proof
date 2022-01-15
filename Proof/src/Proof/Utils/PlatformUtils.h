@@ -14,7 +14,7 @@ namespace Proof{
 			// get the file name removing any extension
 			static std::string GetFileName(const std::filesystem::path& path) {
 				std::string temp = path.filename().string();
-				temp = temp.substr(0,temp.find_first_of("."));
+				temp = temp.substr(0,temp.find_first_of(".")); // NEED TO DO A CHECK
 				return temp;
 			}
 			// includes the extension

@@ -10,6 +10,7 @@
 #include "Asset.h"
 namespace Proof
 {
+	
 	class Proof_API AssetManager {
 	public:
 		static AssetManager& Get() { return *s_AssetManager; }
@@ -100,8 +101,23 @@ namespace Proof
 			}
 			return AssetType::None;
 		}
+
+		
 	private:
-		static std::vector<std::string> s_PermitableMeshSourceFile;
+		static bool ResetAssetInfo(UUID ID,const std::string& name, const std::string path) {
+			
+			if (HasID(ID) == false)return false;
+			Asset* asset = ForceGetAsset<Asset>(ID);
+			if (IsAssetLoaded(ID)) {
+				asset->m_AssetName = name;
+				asset->SetPath(path);
+				asset->SaveAsset();
+			}
+			auto it = Get().m_AllAssets.at(ID);
+			it.first.Path = path;
+			it.first.Name = name;
+			return true;
+		}
 		struct AssetInfo {
 			std::filesystem::path Path;
 			std::string Type;
@@ -115,9 +131,11 @@ namespace Proof
 
 			}
 		private:
-			
+			friend class AssetManager;
 			std::string Name;
 		};
+		static std::vector<std::string> s_PermitableMeshSourceFile;
+	
 		static void SaveAllAsset();
 		static AssetManager* s_AssetManager;
 		std::unordered_map<UUID,std::pair<AssetInfo,Count<class Asset>>> m_AllAssets;// path
@@ -128,6 +146,7 @@ namespace Proof
 		static std::string GetAssetType(const std::string& Path);
 		friend class Application;
 		friend class AssetManagerPanel;
+		friend class ContentBrowserPanel;
 		static void NewInitilizeAssets(const std::string& Path);
 		static void GenerateAsset(std::set<UUID> assetLoadIn);
 	};

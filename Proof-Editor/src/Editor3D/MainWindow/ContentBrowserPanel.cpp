@@ -27,7 +27,9 @@ namespace Proof
 	static std::string NewFileName;
 	static std::string FileDragSource;
 	static std::string FileDragSourceName;
-
+	static std::string RenameFile;
+	static std::string RenameFileNewName;
+	static std::string RenameFileExtension;
 
 	ContentBrowserPanel::ContentBrowserPanel(class Editore3D* owner):
 		m_CurrentDirectory(s_AssetsPath), 
@@ -45,17 +47,14 @@ namespace Proof
 		{
 			ImGui::BeginChild("Folders",{200,ImGui::GetContentRegionAvail().y});
 			{
-				if (ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(),{60,60})) {
-					m_CurrentDirectory = {s_AssetsPath};
-				}
 				ImGui::Text("Content");
 				for (auto& It : std::filesystem::directory_iterator(s_AssetsPath)) {
 					if (It.is_directory()) {
 						std::string Path = It.path().filename().string();
 						if(ImGui::TreeNode(Path.c_str())){
-							for(auto& It : std::filesystem::directory_iterator(It.path())){
-								std::string temp = It.path().stem().string();
-								ImGui::Text((It.is_directory() ? "(Folder)"+temp: temp).c_str());
+							for(auto& SubIt : std::filesystem::directory_iterator(It.path())){
+								if(SubIt.is_directory()) // TODO(MARV) ADD RECURSION TO THIS FOR SUB FOlders
+									ImGui::Text(SubIt.path().stem().string().c_str());
 							}
 							ImGui::TreePop();
 						}
@@ -193,12 +192,9 @@ namespace Proof
 				for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
 
 					std::string fileExtension =Utils::FileDialogs::GetFullFileExtension(It.path());
-					static std::string RenameVariable;
 					AssetType assetType= AssetManager::GetAssetFromFilePath(It);
 					bool isScene = IsScene(It.path().string());
-					uint64_t ID = 0;
-					std::string Path = It.path().string();
-					std::string filename = It.path().filename().stem().filename().stem().string(); // returns the file name with ending like hallo.txt, stem removes the .txt
+					std::string filename = Utils::FileDialogs::GetFileName(It.path()); // returns the file name with ending like hallo.txt, stem removes the .txt
 					std::string filenameNoStem = It.path().filename().string();
 					if(It.is_directory()){
 						if (ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(),{thumbnailSize,thumbnailSize})) {} // there are more paremter to flip image and to add a tint colour
@@ -268,44 +264,10 @@ namespace Proof
 							std::filesystem::remove_all(m_CurrentDirectory.string() + "\\" + (It.is_directory() ? filename : filenameNoStem));
 						}
 
-						if (ImGui::BeginMenu("Rename")) {
-							char buffer[256];
-							memset(buffer,0,sizeof(buffer));
-							strcpy_s(buffer,sizeof(buffer),RenameVariable.c_str());
-							if (ImGui::InputTextWithHint("##Name",NewFolderName.empty() == false ? "Name of file" : "Name of file",buffer,sizeof(buffer))) {
-								RenameVariable = buffer;
-							}
-
-							if(RenameVariable != filename && RenameVariable.empty() ==false){
-								if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + RenameVariable + (It.is_directory() ? " " : ".ProofAsset")) == true) {
-									ImGui::BeginTooltip();
-									ImGui::TextColored({1.0,0.0,0.0,1},"File already exist");
-									ImGui::EndTooltip();
-									ImGui::SetMouseCursor(8); // this is set to not allowed
-								}
-							}
-					
-							ImGui::SameLine();
-							if (ImGui::Button("Done") || ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
-								if(filenameNoStem == RenameVariable){
-									RenameVariable = "";
-									ImGui::CloseCurrentPopup();
-								}else{
-									if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + RenameVariable + (It.is_directory() ? " " : ".ProofAsset")) == false) {
-										std::filesystem::rename(m_CurrentDirectory.string() + "\\" + filenameNoStem,m_CurrentDirectory.string() + "\\"+ RenameVariable + (It.is_directory() ? " ":".ProofAsset"));
-										if(It.is_directory() == false && isScene ==false){
-											Asset* asset = AssetManager::GetAsset<Asset>(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset"));
-											asset->m_AssetName = RenameVariable;
-											asset->SetPath(m_CurrentDirectory.string() + "\\" + RenameVariable + ".ProofAsset");
-											asset->SaveAsset();
-										}
-										RenameVariable = "";
-										ImGui::CloseCurrentPopup();
-									}
-								}
-
-							}
-							ImGui::EndMenu();
+						if (ImGui::MenuItem("Rename")) {
+							RenameFile = Utils::FileDialogs::GetFullFileName(It.path());
+							RenameFileNewName = Utils::FileDialogs::GetFileName(RenameFile);
+							RenameFileExtension = Utils::FileDialogs::GetFullFileExtension(It.path());
 						}
 						if (ImGui::MenuItem("Reload")) {
 							if (It.is_directory() == false && isScene == false) {
@@ -315,7 +277,10 @@ namespace Proof
 						ImGui::EndPopup();
 
 					}
-					ImGui::Text(Utils::FileDialogs::GetFileName(It.path()).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
+					if (Utils::FileDialogs::GetFileName(RenameFile) == Utils::FileDialogs::GetFileName(It.path()))
+						Rename(It.is_directory());
+					else
+						ImGui::Text(Utils::FileDialogs::GetFileName(It.path()).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
 					ImGui::NextColumn();
 				}
 				ImGui::Columns(1);
@@ -352,5 +317,28 @@ namespace Proof
 		if (Utils::FileDialogs::GetFileExtension(Path) == "ProofWorld")
 			return true;
 		return false;
+	}
+	void ContentBrowserPanel::Rename(bool directory){
+		std::string newName = RenameFileNewName + "." + RenameFileExtension;
+
+		char buffer[256];
+		memset(buffer, 0, sizeof(buffer));
+		strcpy_s(buffer, sizeof(buffer), RenameFileNewName.c_str());
+		if (ImGui::InputTextWithHint("##Name", directory == true ? "New folder name" : "New file Name", buffer, sizeof(buffer)))
+			RenameFileNewName = buffer;
+		ImGui::SetKeyboardFocusHere(-1);
+
+		if (ImGui::IsKeyPressed((int)KeyBoardKey::Enter) || ImGui::IsItemFocused() == true) {
+
+			if (newName != RenameFile) {
+				if (std::filesystem::exists(m_CurrentDirectory.string()+ "\\" +RenameFileNewName+"."+ RenameFileExtension) == false) {
+					std::filesystem::rename(m_CurrentDirectory.string() + "\\" + RenameFile, m_CurrentDirectory.string() + "\\" + newName);
+					AssetManager::ResetAssetInfo(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + newName), RenameFileNewName, m_CurrentDirectory.string() + "\\" + newName);
+				}
+			}
+			RenameFileNewName = "";
+			RenameFileExtension = "";
+			RenameFile = "";
+		}
 	}
 }

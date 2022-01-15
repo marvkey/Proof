@@ -169,6 +169,7 @@ namespace Proof
 
 	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
 		Layer::OnImGuiDraw(DeltaTime);
+		ImGui::ShowDemoWindow();
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
 		for (auto& a : m_AllPanels) {

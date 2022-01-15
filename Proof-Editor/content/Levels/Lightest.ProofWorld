@@ -90,7 +90,7 @@ Entities:
       Tag: Sphere2
       tags: []
     TransformComponent:
-      Location: [0, 0, 0]
+      Location: [6.42451191, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
