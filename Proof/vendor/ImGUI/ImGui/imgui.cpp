@@ -7341,6 +7341,8 @@ void ImGui::SetKeyboardFocusHere(int offset)
     g.FocusRequestNextCounterTabStop = INT_MAX;
 }
 
+
+
 void ImGui::SetItemDefaultFocus()
 {
     ImGuiContext& g = *GImGui;

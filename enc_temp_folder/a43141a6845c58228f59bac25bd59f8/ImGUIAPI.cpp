@@ -88,7 +88,7 @@ namespace Proof
 		{
 			ImGuiContext& g = *GImGui;
 			ImGuiWindow* window = g.CurrentWindow;
-			g.FocusRequestNextWindow = nullptr;
+			g.FocusRequestNextWindow = window;
 			g.FocusRequestNextCounterRegular = window->DC.FocusCounterRegular;
 			g.FocusRequestNextCounterTabStop = INT_MAX;
 		}

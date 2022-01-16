@@ -714,7 +714,6 @@ namespace ImGui
     // - Prefer using "SetItemDefaultFocus()" over "if (IsWindowAppearing()) SetScrollHereY()" when applicable to signify "this is the default item"
     IMGUI_API void          SetItemDefaultFocus();                                              // make last item the default focused item of a window.
     IMGUI_API void          SetKeyboardFocusHere(int offset = 0);                               // focus keyboard on the next widget. Use positive 'offset' to access sub components of a multiple component widget. Use -1 to access previous widget.
-
     // Item/Widgets Utilities
     // - Most of the functions are referring to the last/previous item we submitted.
     // - See Demo Window under "Widgets->Querying Status" for an interactive visualization of most of those functions.

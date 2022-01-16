@@ -17,6 +17,7 @@
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "../Proof-Editor/src/Editor3D/Editor3D.h"
 #include "Proof/Core/FrameTime.h"
+#include "../Proof-Editor/src/Editor3D/ImGUIAPI.h"
 namespace Proof
 { 
 	static const std::filesystem::path s_AssetsPath = "content";
@@ -324,11 +325,12 @@ namespace Proof
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, sizeof(buffer), RenameFileNewName.c_str());
-		if (ImGui::InputTextWithHint("##Name", directory == true ? "New folder name" : "New file Name", buffer, sizeof(buffer)))
+		ImGui::SetKeyboardFocusHere(0);
+		if (ImGui::InputTextWithHint("##Name", directory == true ? "New folder name" : "New file Name", buffer, sizeof(buffer)),0,ImGuiInputTextFlags_CallbackAlways)
 			RenameFileNewName = buffer;
-		ImGui::SetKeyboardFocusHere(-1);
-
-		if (ImGui::IsKeyPressed((int)KeyBoardKey::Enter) || ImGui::IsItemFocused() == true) {
+		
+		
+		if (ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
 
 			if (newName != RenameFile) {
 				if (std::filesystem::exists(m_CurrentDirectory.string()+ "\\" +RenameFileNewName+"."+ RenameFileExtension) == false) {
@@ -339,6 +341,7 @@ namespace Proof
 			RenameFileNewName = "";
 			RenameFileExtension = "";
 			RenameFile = "";
+			ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
 		}
 	}
 }
