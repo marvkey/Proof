@@ -6,6 +6,7 @@
 #include <fstream>
 #include <string>
 #include "Panel.h"
+#include <type_traits>
 namespace Proof{
 	/* THIS CLASS WILL NEED TO BE HANDLED BY CURRENT PROJECT */
 	class Proof_API ContentBrowserPanel:public Panel {
@@ -22,6 +23,40 @@ namespace Proof{
 		__forceinline  bool IsScene (const std::string& Path);
 
 		void Rename(bool directory);
+		/**
+		* Adds an asset and retuns the file path of the asset
+		* assetSourcePath: the source file of the asset
+		*/
+		template<class T>
+		std::string AddAsset(const std::string& assetSourcePath) {
+			std::string fileFullName; // name of the full file including extension
+			std::string fileDefaultName; // name that is what we get when first importaed
+			std::string fileName; // name that we can add a 1 or 2 at the end
+			if (assetSourcePath.empty())return {};
+			
+			fileDefaultName = Utils::FileDialogs::GetFileName(assetSourcePath);
+			fileName = fileDefaultName;
+			fileFullName = fileName + "." + T::StaticGetExtension();
+			
+
+			int endIndex = 0; // the ending index of a file like file(0) or file(1)
+			while (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + fileFullName)) {
+				endIndex++;
+				fileName = fileDefaultName + "(" + std::to_string(endIndex) + ")";
+				fileFullName = fileName + "." + T::StaticGetExtension();
+			}
+			std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
+			
+			Count<T> tempAsset = CreateCount<T>(assetSourcePath, m_CurrentDirectory.string() + "\\" + fileFullName);
+			AssetManager::NewAsset(tempAsset->GetID(), tempAsset);
+			return { m_CurrentDirectory.string() + "\\" + fileFullName };
+		}
+		/**
+		* Adds an asset and retuns the file path of the asset
+		* only for material asset as it does not need a file path
+		* assetSourcePath: the source file of the asset
+		*/
+		std::string AddMaterialAsset();
 		Editore3D* m_owner =nullptr;
 	};
 }

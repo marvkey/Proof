@@ -23,7 +23,6 @@ namespace Proof
 	static const std::filesystem::path s_AssetsPath = "content";
 	static float padding = 16.0f; // space between 
 	static float thumbnailSize = 60;
-	static uint32_t IterPosition = 0;
 	static std::string NewFolderName; 
 	static std::string NewFileName;
 	static std::string FileDragSource;
@@ -97,87 +96,31 @@ namespace Proof
 						ImGui::EndMenu();
 					}
 
-					if (ImGui::BeginMenu("New Texture")) {
-						char buffer[256];
-						memset(buffer,0,sizeof(buffer));
-						strcpy_s(buffer,sizeof(buffer),NewFolderName.c_str());
-						if (ImGui::InputTextWithHint("##Name","Name of Texture",buffer,sizeof(buffer))) {
-							NewFileName = buffer;
+					if (ImGui::MenuItem("New Texture")) {
+						std::string filePath = Utils::FileDialogs::OpenFile("Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0");
+						if (filePath.empty() == false) {
+							auto assetPath = AddAsset<Texture2DAsset>(filePath);
+							RenameFile = Utils::FileDialogs::GetFullFileName(assetPath);
+							RenameFileNewName = Utils::FileDialogs::GetFileName(RenameFile);
+							RenameFileExtension = Utils::FileDialogs::GetFullFileExtension(assetPath);
 						}
-
-						if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName +".ProofAsset") == true && NewFileName.empty() == false) {
-							ImGui::BeginTooltip();
-							ImGui::TextColored({1.0,0.0,0.0,1},"File already exist");
-							ImGui::EndTooltip();
-						}
-						ImGui::SameLine();
-						if (ImGui::Button("Done") || ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
-							if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName + "."+Texture2DAsset::StaticGetExtension()) == false) {
-								std::ofstream({m_CurrentDirectory.string() + "\\" + NewFileName+ "." + Texture2DAsset::StaticGetExtension() });
-								ImGui::CloseCurrentPopup();
-
-								std::string file= Utils::FileDialogs::OpenFile("Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0");
-								if (file.empty() == false) {
-									Count<Texture2DAsset> TempAsset = CreateCount<Texture2DAsset>(file, m_CurrentDirectory.string() + "\\" + NewFileName + Texture2DAsset::StaticGetExtension());
-									AssetManager::NewAsset(TempAsset->GetID(), TempAsset);
-								}
-								NewFileName = "";
-							}
-						}
-						ImGui::EndMenu();
 					}
 
-					if (ImGui::BeginMenu("New Mesh")) {
-						char buffer[256];
-						memset(buffer,0,sizeof(buffer));
-						strcpy_s(buffer,sizeof(buffer),NewFolderName.c_str());
-						if (ImGui::InputTextWithHint("##Name","Name of Mesh",buffer,sizeof(buffer))) {
-							NewFileName = buffer;
+					if (ImGui::MenuItem("New Mesh")) {
+						std::string filePath = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
+						if (filePath.empty() == false) {
+							auto assetPath = AddAsset<MeshAsset>(filePath);
+							RenameFile = Utils::FileDialogs::GetFullFileName(assetPath);
+							RenameFileNewName = Utils::FileDialogs::GetFileName(RenameFile);
+							RenameFileExtension = Utils::FileDialogs::GetFullFileExtension(assetPath);
 						}
-
-						if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset") == true && NewFileName.empty() == false) {
-							ImGui::BeginTooltip();
-							ImGui::TextColored({1.0,0.0,0.0,1},"File already exist");
-							ImGui::EndTooltip();
-						}
-						ImGui::SameLine();
-						if (ImGui::Button("Done") || ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
-							if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName) == false) {
-								ImGui::CloseCurrentPopup();
-								std::string FIle = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
-								if (FIle.empty() == false) {
-									Count<MeshAsset> TempAsset = CreateCount<MeshAsset>(FIle, m_CurrentDirectory.string() + "\\" + NewFileName + MeshAsset::StaticGetExtension());
-									AssetManager::NewAsset(TempAsset->GetID(), TempAsset);
-								}
-								NewFileName = "";
-							}
-						}
-						ImGui::EndMenu();
 					}
 
-					if (ImGui::BeginMenu("New Material")) {
-						char buffer[256];
-						memset(buffer,0,sizeof(buffer));
-						strcpy_s(buffer,sizeof(buffer),NewFolderName.c_str());
-						if (ImGui::InputTextWithHint("##Name","Name of Material",buffer,sizeof(buffer))) {
-							NewFileName = buffer;
-						}
-
-						if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset") == true && NewFileName.empty() == false) {
-							ImGui::BeginTooltip();
-							ImGui::TextColored({1.0,0.0,0.0,1},"File already exist");
-							ImGui::EndTooltip();
-						}
-						ImGui::SameLine();
-						if (ImGui::Button("Done") || ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
-							if (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + NewFileName) == false) {
-								ImGui::CloseCurrentPopup();
-								Count<MaterialAsset> TempAsset = CreateCount<MaterialAsset>(m_CurrentDirectory.string() + "\\" + NewFileName + ".ProofAsset");
-								AssetManager::NewAsset(TempAsset->GetID(), TempAsset);
-								NewFileName = "";
-							}
-						}
-						ImGui::EndMenu();
+					if (ImGui::MenuItem("New Material")) {
+						auto assetPath = AddMaterialAsset();
+						RenameFile = Utils::FileDialogs::GetFullFileName(assetPath);
+						RenameFileNewName = Utils::FileDialogs::GetFileName(RenameFile);
+						RenameFileExtension = Utils::FileDialogs::GetFullFileExtension(assetPath);
 					}
 
 					ImGui::EndPopup();
@@ -206,6 +149,10 @@ namespace Proof
 								ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
 							else if(assetType == AssetType::Material)
 								ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
+							else if (assetType == AssetType::TextureAsset) { // we may show the file id
+								ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
+
+							}
 							if (ImGui::IsItemHovered() && ImGui::IsMouseDown(0) == false) {
 								FileDragSource = It.path().string();
 								FileDragSourceName = filename;
@@ -321,6 +268,11 @@ namespace Proof
 	}
 	void ContentBrowserPanel::Rename(bool directory){
 		std::string newName = RenameFileNewName + "." + RenameFileExtension;
+		bool nameExist = std::filesystem::exists(m_CurrentDirectory.string() + "\\" + RenameFileNewName + "." + RenameFileExtension);
+		if(newName == RenameFile || nameExist == false)
+			ImGui::PushStyleColor(ImGuiCol_Text, {1,1,1,1});
+		else
+			ImGui::PushStyleColor(ImGuiCol_Text, { 1.0,0.0,0.0,1 });
 
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));
@@ -329,19 +281,42 @@ namespace Proof
 		if (ImGui::InputTextWithHint("##Name", directory == true ? "New folder name" : "New file Name", buffer, sizeof(buffer)),0,ImGuiInputTextFlags_CallbackAlways)
 			RenameFileNewName = buffer;
 		
-		
+		ImGui::PopStyleColor();
+		if ((ImGui::IsItemHovered()==false && ImGui::IsAnyMouseDown())) // the text no longer edited
+			goto a;
 		if (ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
-
+			a:
 			if (newName != RenameFile) {
 				if (std::filesystem::exists(m_CurrentDirectory.string()+ "\\" +RenameFileNewName+"."+ RenameFileExtension) == false) {
 					std::filesystem::rename(m_CurrentDirectory.string() + "\\" + RenameFile, m_CurrentDirectory.string() + "\\" + newName);
 					AssetManager::ResetAssetInfo(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + newName), RenameFileNewName, m_CurrentDirectory.string() + "\\" + newName);
 				}
 			}
+			// reseting the rename file settins
 			RenameFileNewName = "";
 			RenameFileExtension = "";
 			RenameFile = "";
 			ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
 		}
 	}
+	std::string Proof::ContentBrowserPanel::AddMaterialAsset(){
+		std::string fileFullName; // name of the full file including extension
+		std::string fileDefaultName; // name that is what we get when first importaed
+		std::string fileName; // name that we can add a 1 or 2 at the end
+		fileDefaultName = "Material";
+		fileName = fileDefaultName;
+		fileFullName = fileName + "." + MaterialAsset::StaticGetExtension();
+
+		int endIndex = 0; // the ending index of a file like file(0) or file(1)
+		while (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + fileFullName)) {
+			endIndex++;
+			fileName = fileDefaultName + "(" + std::to_string(endIndex) + ")";
+			fileFullName = fileName + "." + MaterialAsset::StaticGetExtension();
+		}
+		std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
+		Count<MaterialAsset> tempAsset = CreateCount<MaterialAsset>(m_CurrentDirectory.string() + "\\" + fileFullName);
+		AssetManager::NewAsset(tempAsset->GetID(), tempAsset);
+		return { m_CurrentDirectory.string() + "\\" + fileFullName };
+	}
+	
 }
