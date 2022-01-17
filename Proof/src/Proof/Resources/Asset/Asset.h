@@ -20,7 +20,7 @@ namespace Proof
 		bool LoadAsset() { return LoadAsset(m_SavePath); }
 		const static std::string& GetAssetType() {
 			static std::string assetType = "AssetType::None";
-			return assetType;
+			return assetType;	
 		}
 
 		virtual const std::string& GetAssetTypeVirtual()const {

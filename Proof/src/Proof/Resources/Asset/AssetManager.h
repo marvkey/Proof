@@ -93,6 +93,8 @@ namespace Proof
 				return AssetType::Material;
 			if (fileFullExtension == "Texture.ProofAsset")
 				return AssetType::TextureAsset;
+			if (fileFullExtension == "ProofWorld")
+				return AssetType::WorldAsset;
 			const std::string fileDirectExtension = Utils::FileDialogs::GetFileExtension(path);
 		
 			for (const std::string& temp : s_PermitableMeshSourceFile) {

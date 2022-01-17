@@ -38,7 +38,7 @@ namespace Proof
 			s_AssetManager->m_AllAssets.erase(ID);
 			return;
 		}
-		PF_ASSERT(false,"Asset Manager Has ID");
+		PF_ASSERT(false,"Asset Manager does not have ID");
 	}
 	void AssetManager::NotifyOpenedNewLevel(std::set<UUID> assetLoadIn){
 		AssetManager::GenerateAsset(assetLoadIn);

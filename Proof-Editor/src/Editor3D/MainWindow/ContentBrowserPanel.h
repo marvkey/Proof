@@ -21,11 +21,24 @@ namespace Proof{
 		 Count<Texture2D> m_ArrowIcon;
 		__forceinline UUID GetIDCurrentDirectory(const std::string& Path);
 		__forceinline  bool IsScene (const std::string& Path);
-
-		void Rename(bool directory);
+		void RenameFileName(bool isDirectory);
+		void ChangeFileName();
+		void ChangeFolderName();
+		void AllSubFolders(const std::string& path);
+		/**
+		* Deletes all asset in a folder
+		* Path: path of the folder
+		*/
+		void DeleteFolder(const std::string& path);
+		/**
+		* Creates a new folder
+		* @return the full path of teh folder
+		*/
+		std::string NewFolder();
 		/**
 		* Adds an asset and retuns the file path of the asset
 		* assetSourcePath: the source file of the asset
+		* @return returns the path to the mateiral assest
 		*/
 		template<class T>
 		std::string AddAsset(const std::string& assetSourcePath) {
@@ -39,7 +52,7 @@ namespace Proof{
 			fileFullName = fileName + "." + T::StaticGetExtension();
 			
 
-			int endIndex = 0; // the ending index of a file like file(0) or file(1)
+			uint32_t endIndex = 0; // the ending index of a file like file(0) or file(1)
 			while (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + fileFullName)) {
 				endIndex++;
 				fileName = fileDefaultName + "(" + std::to_string(endIndex) + ")";
@@ -55,6 +68,7 @@ namespace Proof{
 		* Adds an asset and retuns the file path of the asset
 		* only for material asset as it does not need a file path
 		* assetSourcePath: the source file of the asset
+		* @return returns the path to the mateiral assest
 		*/
 		std::string AddMaterialAsset();
 		Editore3D* m_owner =nullptr;

@@ -87,13 +87,7 @@ namespace Proof {
 					}
 				}
 				{
-					/*
-					if (ImGui::IsKeyPressed((int)KeyBoardKey::LeftControl) && ImGui::IsKeyPressed((int)KeyBoardKey::D)) {
-						if (m_SelectedEntity) {
-							m_SelectedEntity = m_CurrentWorld->CreateEntity(m_SelectedEntity);
-						}
-					}
-					*/
+					
 				}
 			}
 			ImGui::EndChild();

@@ -40,7 +40,7 @@ Entities:
     TransformComponent:
       Location: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.600000024, 0.600000024, 0.600000024]
     ChildComponent:
       OwnerID: 0
       Children: []
@@ -107,9 +107,9 @@ Entities:
       Tag: Cube
       tags: []
     TransformComponent:
-      Location: [-1.38771141, 11.4952879, -7.22449827]
+      Location: [0.889144063, 12.1407814, -3.63439178]
       Rotation: [34.2999992, 0, 0]
-      Scale: [3.13999987, 3.13999987, 4.68593025]
+      Scale: [2.51199985, 2.51199985, 3.74874425]
     ChildComponent:
       OwnerID: 0
       Children: []
