@@ -9,8 +9,8 @@ namespace Proof {
 		auto& spherColliderView = m_World->m_Registry.view<SphereColliderComponent>();
 		for (auto entity : spherColliderView) {
 			auto& sphereCollider = spherColliderView.get<SphereColliderComponent>(entity);
-			auto& collider = m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::SphereCollider(Entity{ entity,m_World }.GetComponent<TransformComponent>()->Location + sphereCollider.Offset, sphereCollider.Radius)));
-			sphereCollider.RuntimeBody = collider.GetCollider();
+			//auto& collider = m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::SphereCollider(Entity{ entity,m_World }.GetComponent<TransformComponent>()->Location + sphereCollider.Offset, sphereCollider.Radius)));
+			//sphereCollider.RuntimeBody = collider.GetCollider();
 		}
 
 		auto& cubeColliderView = m_World->m_Registry.view<CubeColliderComponent>();
@@ -18,8 +18,8 @@ namespace Proof {
 			auto& cubeCollider = cubeColliderView.get<CubeColliderComponent>(entity);
 			const auto& transform = Entity{entity,m_World }.GetComponent<TransformComponent>();
 
-			auto& collider = m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::CubeCollider(transform->Location + cubeCollider.OffsetLocation, transform->Rotation, transform->Scale + cubeCollider.OffsetLocation)));
-			cubeCollider.RuntimeBody = collider.GetCollider();
+			//auto& collider = m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::CubeCollider(transform->Location + cubeCollider.OffsetLocation, transform->Rotation, transform->Scale + cubeCollider.OffsetLocation)));
+			//cubeCollider.RuntimeBody = collider.GetCollider();
 		}
 	}
 	void PhysicsEngine::Update(float delta)
@@ -49,8 +49,8 @@ namespace Proof {
 				collider->Scale = transform.Scale + cubeCollider.OffsetScale;
 			}
 		}
-		m_PhysicsEngine.Simulate(delta);
-		m_PhysicsEngine.HandleCollisions();
+		//m_PhysicsEngine.Simulate(delta);
+		//m_PhysicsEngine.HandleCollisions();
 	}
 	void PhysicsEngine::End(){
 		

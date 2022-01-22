@@ -32,7 +32,6 @@ namespace Proof{
         aiScene* aiscene = (aiScene*)scene;
         for (unsigned int i = 0; i < ainode->mNumMeshes; i++) {
             aiMesh* mesh = aiscene->mMeshes[ainode->mMeshes[i]];
-            //PF_ENGINE_INFO("%s",mesh->mName.C_Str()); // works
             meshes.emplace_back(ProcessMesh(mesh, aiscene));
         }
         for (unsigned int i = 0; i < ainode->mNumChildren; i++) {

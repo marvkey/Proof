@@ -24,6 +24,7 @@ namespace Proof {
     }
     void WindowsWindow::WindowUpdate() {
         glfwSwapInterval(Vsync);
+        
         KeyboardClicked.clear();
         KeyboardReleased.clear();
         KeyboardKeyDoubleClicked.clear();
@@ -50,11 +51,12 @@ namespace Proof {
                 action = (int)InputEvent::KeyDouble;
             }
         }     
-       
+        
         switch (action) {
         case GLFW_PRESS:
             KeyboardClicked.emplace_back((KeyBoardKey)key);
             {
+               // PF_INFO(" key is clicked %c", (char)key);
                 KeyClickedEvent keyevent((KeyBoardKey)key);
                 EventCallback(keyevent);
             }
@@ -69,6 +71,7 @@ namespace Proof {
         case (int)InputEvent::KeyDouble:
             KeyboardKeyDoubleClicked.emplace_back((KeyBoardKey)key);
             {
+                //PF_INFO(" key is double %c", (char)key);
                 KeyDoubleClickEvent keyevent((KeyBoardKey)key);
                 EventCallback(keyevent);
             }
@@ -223,7 +226,7 @@ namespace Proof {
 
         glfwSetWindowSizeCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, int width, int height) {
             WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
-            proofWindow.Mouse_ScrollWhell_Callback(width,height);
+            proofWindow.Window_Resize_Callback(width,height);
         });
 
         glfwSetWindowPosCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, int xpos, int ypos) {

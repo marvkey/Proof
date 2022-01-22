@@ -9,6 +9,7 @@
 #include "Proof/Resources/Asset/AssetManager.h"
 #include "Proof/Resources/Math/Random.h"
 #include <GLFW/glfw3.h>
+#include "Proof/Input/InputManager.h"
 namespace Proof {
     Special <WindowsWindow> Application::MainWindow = nullptr;
     float Application::FPS = 60.0f;
@@ -30,6 +31,7 @@ namespace Proof {
 
     void Application::OnEvent(Event& e) {
         EventDispatcher dispatcher(e);
+        InputManager::OnEvent(e);
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
         dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent));
          for (Layer* layer : MainLayerStack.V_LayerStack)
@@ -73,6 +75,7 @@ namespace Proof {
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
             }
+
             ImGuiMainLayer->Begin();
             for (Layer* layer : MainLayerStack.V_LayerStack)
                 layer->OnImGuiDraw(DeltaTime);

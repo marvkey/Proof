@@ -2,6 +2,7 @@
 namespace Proof
 {
 	enum class KeyBoardKey:int32_t {
+		None = 0,
 		Space = 32,
 		Apostrophe = 39, /* ' */
 		Comma = 44, /* , */
@@ -114,6 +115,7 @@ namespace Proof
 		Menu = 348,
 	};
 	enum class MouseButton {
+		None =-1,
 		ButtonLeft = 0,
 		ButtonRight = 1,
 		ButtonMiddle = 2,
@@ -147,6 +149,7 @@ namespace Proof
 		Joystick16 = 15,
 	};
 	enum class GamePadButton {
+		None =-1,
 		ButtonA = 0,
 		ButtonB = 1,
 		ButtonX = 2,
@@ -167,8 +170,6 @@ namespace Proof
 		ButtonCIRCLE = ButtonB,
 		ButtonSQUARE = ButtonX,
 		ButtonTRIANGLE = ButtonY,
-
-	
 	};
 	enum class GamePadAxis{
 		AxisLEFTX = 0,

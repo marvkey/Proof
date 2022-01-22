@@ -357,7 +357,7 @@ namespace Proof
 		const glm::mat4& GetProjection()const { return m_Projection; }
 		Vector<float> m_Up = {0,1,0};
 	private:
-		void CalculateProjection(const Vector<float>&position, const Vector<float>& rotation) {
+		void CalculateProjection(const Proof::Vector<float>&position, const Vector<float>& rotation) {
 			m_View = glm::lookAt(glm::vec3{position},glm::vec3{ position } + glm::vec3{rotation},glm::vec3{m_Up});
 			m_Projection = glm::perspective(glm::radians(m_FovDeg),(float)m_Width / (float)m_Height,m_NearPlane,m_FarPlane);
 			m_CameraMatrix = m_View * m_Projection;

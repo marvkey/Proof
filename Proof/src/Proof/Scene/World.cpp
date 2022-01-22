@@ -233,8 +233,8 @@ namespace Proof{
 				}
 			}
 		}
-		m_PhysicsEngine = new PhysicsEngine(this);
-		m_PhysicsEngine->Start();
+		//m_PhysicsEngine = new PhysicsEngine(this);
+		//m_PhysicsEngine->Start();
 	}
 
 	void World::DeleteEntity(Entity& ent, bool deleteChildren) {
