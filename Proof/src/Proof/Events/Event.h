@@ -5,7 +5,7 @@ namespace Proof{
 	enum class EventType {
 		None = 0,
 		WindowClose,WindowResize,WindowFocus,WindowMoved,WindowMinimize,
-		KeyPressed,KeyReleased,KeyClicked,KeyDoubleClick,
+		KeyPressed,KeyReleased,KeyClicked,KeyDoubleClick,KeyHold,	
 		MouseButtonPressed,MouseButtonReleased,MouseMoved,MouseScrolled,MouseButtonClicked,MouseButtonDoubleClick
 	};
 

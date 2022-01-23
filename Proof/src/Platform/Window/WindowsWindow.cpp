@@ -20,6 +20,13 @@ namespace Proof {
     WindowsWindow::WindowsWindow(unsigned int Width, unsigned int Height) {
         this->Width = Width;
         this->Height = Height;
+        // setting all values to false
+        for (int i = 0; i < KeyPressed.size(); i++) {
+            KeyPressed[i] = false;
+        }
+        for (int i = -0; i < MouseButtonPressed.size(); i++) {
+            MouseButtonPressed[i] = false;
+        }
         this->createWindow();
     }
     void WindowsWindow::WindowUpdate() {
@@ -28,7 +35,7 @@ namespace Proof {
         KeyboardClicked.clear();
         KeyboardReleased.clear();
         KeyboardKeyDoubleClicked.clear();
-        KeyboardKeyRepeat.clear();
+        KeyboardKeyHold.clear();
        
         MouseButtonClicked.clear();
         MouseButtonReleased.clear();
@@ -37,6 +44,37 @@ namespace Proof {
 
         MouseScrollX.clear();
         MouseScrollY.clear();
+        
+        //HAVE TO DO THIS SINCE SOMETIEMS GLFW DOES NOT RECIEVE THE KEY RELEASED DUE TO SO MANY KEYS 
+        // BEING PRESSED AT THE SAME TIME
+        // WE ARE BASICALLY GOING TO DO THIS EVENT FOR THE INPUT MANAGER AXIS
+        
+
+        // Checking to see if every key clicked in the last frame is still clicked 
+        // if teh key is not pressed we remove it from the list, set it false in the key pressed list
+        for (int i = 0; i < m_KeyPressedEventCheck.size(); i++) {
+            KeyBoardKey key = m_KeyPressedEventCheck[i];
+            if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)key)) {
+                KeyPressedEvent pressedEvent(key);
+                EventCallback(pressedEvent);
+            }
+            else {
+                KeyPressed[(int)key] = false;
+                m_KeyPressedEventCheck.erase(m_KeyPressedEventCheck.begin() + i);
+            }
+        }
+
+        for (int i = 0; i < m_MouseButtonPressedEventCheck.size(); i++) {
+            MouseButton key = m_MouseButtonPressedEventCheck[i];
+            if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)key)) {
+                MouseButtonPressedEvent pressedEvent(key);
+                EventCallback(pressedEvent);
+            }
+            else {
+                MouseButtonPressed[(int)key] = false;
+                m_MouseButtonPressedEventCheck.erase(m_MouseButtonPressedEventCheck.begin() + i);
+            }
+        }
         glfwSwapBuffers((GLFWwindow*)m_Window);
         glfwPollEvents();
     }
@@ -56,14 +94,19 @@ namespace Proof {
         case GLFW_PRESS:
             KeyboardClicked.emplace_back((KeyBoardKey)key);
             {
-               // PF_INFO(" key is clicked %c", (char)key);
+                // have to use this because GLFW someties will not send that a key hasb een released
+                KeyPressed[key] = true;
+                m_KeyPressedEventCheck.emplace_back((KeyBoardKey)key);
                 KeyClickedEvent keyevent((KeyBoardKey)key);
                 EventCallback(keyevent);
+                
             }
             break;
         case GLFW_RELEASE:
             KeyboardReleased.emplace_back((KeyBoardKey)key);
             {
+                // have to use this because GLFW someties will not send that a key hasb een released
+                KeyPressed[key] = false;
                 KeyReleasedEvent keyevent((KeyBoardKey)key);
                 EventCallback(keyevent);
             }
@@ -71,15 +114,14 @@ namespace Proof {
         case (int)InputEvent::KeyDouble:
             KeyboardKeyDoubleClicked.emplace_back((KeyBoardKey)key);
             {
-                //PF_INFO(" key is double %c", (char)key);
                 KeyDoubleClickEvent keyevent((KeyBoardKey)key);
                 EventCallback(keyevent);
             }
             break;
-        case (int)InputEvent::KeyRepeat:
-            KeyboardKeyRepeat.emplace_back((KeyBoardKey)key);
+        case (int)InputEvent::KeyHold:
+            KeyboardKeyHold.emplace_back((KeyBoardKey)key);
             {
-                KeyPressedEvent keyevent((KeyBoardKey)key);
+                KeyHoldEvent keyevent((KeyBoardKey)key);
                 EventCallback(keyevent);
             }
             break;
@@ -101,6 +143,8 @@ namespace Proof {
         {
             MouseButtonClicked.emplace_back((MouseButton)button);
             {
+                m_MouseButtonPressedEventCheck.emplace_back((MouseButton)button);
+                MouseButtonPressed[button] = true;
                 MouseButtonClickedEvent mouseEvent((MouseButton)button);
                 EventCallback(mouseEvent);
             }
@@ -111,6 +155,7 @@ namespace Proof {
             {
                 MouseButtonReleasedEvent mouseEvent((MouseButton)button);
                 EventCallback(mouseEvent);
+                MouseButtonPressed[button] = false;
             }
             break;
         case (int)InputEvent::KeyDouble:

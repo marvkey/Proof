@@ -23,14 +23,13 @@ namespace Proof
 
 	bool Input::IsKeyHold(KeyBoardKey Key) {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		return std::find(CurrentWindow::GetWindowClass().KeyboardKeyRepeat.begin(), CurrentWindow::GetWindowClass().KeyboardKeyRepeat.end(), Key)
+		return std::find(CurrentWindow::GetWindowClass().KeyboardKeyHold.begin(), CurrentWindow::GetWindowClass().KeyboardKeyHold.end(), Key)
 			!=
-			CurrentWindow::GetWindowClass().KeyboardKeyRepeat.end();
+			CurrentWindow::GetWindowClass().KeyboardKeyHold.end();
 	}
 	
 	bool Input::IsKeyPressed(KeyBoardKey Key) {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindowAPI(),(int)Key)) {
+		if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)Key)) {
 			return  true;
 		}
 		return false;
@@ -58,7 +57,7 @@ namespace Proof
 
 	bool Input::IsMouseButtonPressed(MouseButton Button) {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindowAPI(),(int)Button)) {
+		if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)Button)) {
 			return true;
 		}
 		return false;
@@ -70,7 +69,7 @@ namespace Proof
 			CurrentWindow::GetWindowClass().MouseButtonDoubleClicked.end();
 	}
 
-	
+
 	bool Input::IsMouseScrollUp() {
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
 		return Mouse::IsScrollUp();

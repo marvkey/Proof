@@ -29,7 +29,6 @@ namespace Proof {
             return ss.str();
         }
     };
-    /*
     class Proof_API MouseButtonPressedEvent:public MouseButtonEvent {
     public:
         EVENT_CLASS_TYPE(MouseButtonPressed)
@@ -42,7 +41,6 @@ namespace Proof {
             return ss.str();
         }
     };
-    */
     class Proof_API MouseButtonReleasedEvent: public MouseButtonEvent {
     public:
         EVENT_CLASS_TYPE(MouseButtonReleased)

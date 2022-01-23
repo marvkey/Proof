@@ -55,6 +55,18 @@ namespace Proof {
             return ss.str();
         }
     };
+    class Proof_API KeyHoldEvent :public KeyEvent {
+    public:
+        EVENT_CLASS_TYPE(KeyHold)
+            KeyHoldEvent(KeyBoardKey keycode)
+            : KeyEvent(keycode) {}
+
+        std::string ToString() const override {
+            std::stringstream ss;
+            ss << "KeyHoldEvent: " << (char)m_Key;
+            return ss.str();
+        }
+    };
 
     class Proof_API KeyPressedEvent:public KeyEvent {
     public:

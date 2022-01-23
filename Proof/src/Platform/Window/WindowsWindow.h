@@ -5,7 +5,7 @@
 #include "Proof/Input/KeyCodes.h"
 #include <functional>
 #include "Proof/Events/Event.h"
-
+#include <array>
 namespace Proof {
     class Proof_API WindowsWindow : public Window {
     public:
@@ -21,7 +21,7 @@ namespace Proof {
         std::vector<KeyBoardKey> KeyboardClicked;
         std::vector<KeyBoardKey> KeyboardReleased;
         std::vector<KeyBoardKey> KeyboardKeyDoubleClicked;
-        std::vector<KeyBoardKey> KeyboardKeyRepeat;
+        std::vector<KeyBoardKey> KeyboardKeyHold;
 
         std::vector<MouseButton> MouseButtonClicked;
         std::vector<MouseButton> MouseButtonReleased;
@@ -29,7 +29,9 @@ namespace Proof {
         std::vector<MouseButton> MouseButtonRepeat;
         std::vector<float> MouseScrollX;
         std::vector<float> MouseScrollY;
-        
+        std::array<bool,360>KeyPressed; // This might need to be in another way, taking 
+        std::array<bool, 10>MouseButtonPressed; // This might need to be in another way, taking 
+
         virtual void WindowUpdate()override;
 
         void* GetWindow(){
@@ -40,6 +42,10 @@ namespace Proof {
             return m_InputEventEnabled;
         }
     private:
+        // have to use this because GLFW someties will not send that a key hasb een released
+        std::vector<KeyBoardKey> m_KeyPressedEventCheck;
+        std::vector<MouseButton> m_MouseButtonPressedEventCheck;
+
         virtual int WindowEnd();
         virtual	int createWindow();
         int Width =800, Height=500;

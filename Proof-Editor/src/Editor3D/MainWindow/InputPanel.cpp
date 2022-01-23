@@ -24,7 +24,7 @@ namespace Proof {
 						iterate++;
 						action = "NewAction(" + std::to_string(iterate) + ")";
 					}
-					InputManager::m_ActionMapping.emplace(action);
+					InputManager::AddAction(action);
 
 					for (auto& [name,action] : InputManager::m_ActionMapping) {
 						ImGui::Text(name.c_str());

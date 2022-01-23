@@ -33,7 +33,7 @@ namespace Proof {
         EventDispatcher dispatcher(e);
         InputManager::OnEvent(e);
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
-        dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent));
+        dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent)); 
          for (Layer* layer : MainLayerStack.V_LayerStack)
             layer->OnEvent(e);
     }

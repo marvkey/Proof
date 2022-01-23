@@ -187,9 +187,10 @@ namespace Proof
 	};
 	enum class InputEvent {
 		UnknownKey = -1,
-		KeyReleased = 0,
-		KeyPressed = 1,
-		KeyRepeat = 2,
-		KeyDouble = 3
+		KeyReleased = 0,	
+		KeyClicked = 1,
+		KeyHold = 2,
+		KeyPressed =3,
+		KeyDouble = 4
 	};
 }

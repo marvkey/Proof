@@ -212,8 +212,7 @@ namespace Proof {
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 1.5,1.5 });
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		ImGui::Separator();
-		bool open = false;
-		open = ImGui::TreeNodeEx((void*)&(*Comp), treeNodeFlags, name.c_str());
+		bool open = ImGui::TreeNodeEx((void*)&(*Comp), treeNodeFlags, name.c_str());
 		if (ImGui::IsItemHovered() && toolTip.empty() == false) {
 			ImGui::BeginTooltip();
 			{
