@@ -1,6 +1,12 @@
 #pragma once
 namespace Proof
 {
+	enum class InputDevice {
+		None =0,
+		KeyBoard =1,
+		Mouse = 2,
+		Controller =3
+	};
 	enum class KeyBoardKey:int32_t {
 		None = 0,
 		Space = 32,
