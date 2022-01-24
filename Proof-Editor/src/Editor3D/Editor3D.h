@@ -8,6 +8,7 @@
 #include "MainWindow/Panel.h"
 #include "Proof/Renderer/WorldRenderer.h"
 #include "MainWindow/AssetManagerPanel.h"
+#include "MainWindow/InputPanel.h"
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {
@@ -59,7 +60,7 @@ namespace Proof {
 		class AssetManagerPanel m_AssetManagerPanel;
 		friend class Renderer3D;
 		friend class Renderer;
-
+		InputPanel m_InputPanel;
 		void Save();
 		std::unordered_map<UUID,Panel*>m_AllPanels;
 		void PlayWorld();

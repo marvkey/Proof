@@ -2,7 +2,7 @@
 #include "InputManager.h"
 #include "Proof/Events/Event.h"
 namespace Proof {
-	std::unordered_map<std::string, Action> InputManager::m_ActionMapping;
+	std::unordered_map<std::string, Action> InputManager::S_ActionMapping;
 	void InputManager::OnEvent(Event& e){
 		EventDispatcher dispatcher(e);
 	}

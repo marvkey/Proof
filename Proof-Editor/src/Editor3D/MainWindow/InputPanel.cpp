@@ -20,18 +20,29 @@ namespace Proof {
 				if(ImGui::Button("+", { 20,20 })) {
 					std::string action = "NewAction";
 					int iterate = 0;
-					while (InputManager::m_ActionMapping.find(action) == InputManager::m_ActionMapping.end()) {
+					while (InputManager::S_ActionMapping.find(action) == InputManager::S_ActionMapping.end()) {
 						iterate++;
 						action = "NewAction(" + std::to_string(iterate) + ")";
 					}
 					InputManager::AddAction(action);
-
-					for (auto& [name,action] : InputManager::m_ActionMapping) {
-						ImGui::Text(name.c_str());
-						for (auto& input : action.m_Inputs) {
+				}
+				
+				for (auto& [name, action] : InputManager::S_ActionMapping) {
+					ImGui::Text(name.c_str());
+					ImGui::SameLine();
+					if (ImGui::Button("+")) {
+						ImGui::OpenPopup("Add Key");
+					}
+					if (ImGui::BeginPopup("AddComponent")) {
+						if (ImGui::MenuItem("R")) {
+							InputManager::ActionAddKey(name, InputType(InputDevice::KeyBoard,(int) KeyBoardKey::R));
 						}
 					}
+					for (InputType& device : action.m_Inputs) {
+						ImGui::Text((char*)device.Key);
+					}
 				}
+				ImGui::TreePop();
 			}
 		}
 		ImGui::End();
