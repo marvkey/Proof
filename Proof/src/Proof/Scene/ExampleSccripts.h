@@ -2,7 +2,7 @@
 #include "Proof/Scene/Script.h"
 #include "Proof/Input/Input.h"
 #include <GLFW/glfw3.h>
-
+#include "Proof/Input/InputManager.h"
 namespace Proof{
 	class Proof_API MovementScript:public Script{
 	public:
@@ -13,6 +13,9 @@ namespace Proof{
 		void OnCreate()override{
 			m_CameraComponent = GetComponent<CameraComponent>();
 			m_Transform = GetComponent<TransformComponent>();
+			InputManager::BindAction("NewAction", InputEvent::KeyClicked, []() {
+				PF_ENGINE_INFO("Lets go key clicked is working");
+			});
 		};
 		void OnUpdate(FrameTime DeltaTime)override{
 			if(m_CameraComponent==nullptr)

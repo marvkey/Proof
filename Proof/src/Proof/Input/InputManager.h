@@ -32,7 +32,7 @@ namespace Proof {
 			return true;
 		}
 		static bool AddAction(const std::string& name) {
-			if (S_ActionMapping.find(name) == S_ActionMapping.end()) {
+			if (S_ActionMapping.find(name) != S_ActionMapping.end()) {
 				PF_ENGINE_INFO("already has action ");
 				return false;
 			}

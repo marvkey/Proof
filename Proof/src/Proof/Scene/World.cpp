@@ -85,7 +85,7 @@ namespace Proof{
 					script.Instance->OnUpdate(DeltaTime);
 			}
 		}
-		m_PhysicsEngine->Update(DeltaTime);
+		//m_PhysicsEngine->Update(DeltaTime);
 		m_EditorCamera.OnUpdate(DeltaTime, width, height);
 		{
 			auto& cameraView = m_Registry.view<CameraComponent>();

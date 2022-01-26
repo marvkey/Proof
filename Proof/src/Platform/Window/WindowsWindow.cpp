@@ -52,27 +52,29 @@ namespace Proof {
 
         // Checking to see if every key clicked in the last frame is still clicked 
         // if teh key is not pressed we remove it from the list, set it false in the key pressed list
-        for (int i = 0; i < m_KeyPressedEventCheck.size(); i++) {
-            KeyBoardKey key = m_KeyPressedEventCheck[i];
-            if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)key)) {
-                KeyPressedEvent pressedEvent(key);
-                EventCallback(pressedEvent);
+        {
+            for (int i = 0; i < m_KeyPressedEventCheck.size(); i++) {
+                KeyBoardKey key = m_KeyPressedEventCheck[i];
+                if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)key)) {
+                    KeyPressedEvent pressedEvent(key);
+                    EventCallback(pressedEvent);
+                }
+                else {
+                    KeyPressed[(int)key] = false;
+                    m_KeyPressedEventCheck.erase(m_KeyPressedEventCheck.begin() + i);
+                }
             }
-            else {
-                KeyPressed[(int)key] = false;
-                m_KeyPressedEventCheck.erase(m_KeyPressedEventCheck.begin() + i);
-            }
-        }
 
-        for (int i = 0; i < m_MouseButtonPressedEventCheck.size(); i++) {
-            MouseButton key = m_MouseButtonPressedEventCheck[i];
-            if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)key)) {
-                MouseButtonPressedEvent pressedEvent(key);
-                EventCallback(pressedEvent);
-            }
-            else {
-                MouseButtonPressed[(int)key] = false;
-                m_MouseButtonPressedEventCheck.erase(m_MouseButtonPressedEventCheck.begin() + i);
+            for (int i = 0; i < m_MouseButtonPressedEventCheck.size(); i++) {
+                MouseButton key = m_MouseButtonPressedEventCheck[i];
+                if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)key)) {
+                    MouseButtonPressedEvent pressedEvent(key);
+                    EventCallback(pressedEvent);
+                }
+                else {
+                    MouseButtonPressed[(int)key] = false;
+                    m_MouseButtonPressedEventCheck.erase(m_MouseButtonPressedEventCheck.begin() + i);
+                }
             }
         }
         glfwSwapBuffers((GLFWwindow*)m_Window);

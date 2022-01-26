@@ -20,27 +20,35 @@ namespace Proof {
 				if(ImGui::Button("+", { 20,20 })) {
 					std::string action = "NewAction";
 					int iterate = 0;
-					while (InputManager::S_ActionMapping.find(action) == InputManager::S_ActionMapping.end()) {
+					while (InputManager::S_ActionMapping.find(action) != InputManager::S_ActionMapping.end()) {
 						iterate++;
 						action = "NewAction(" + std::to_string(iterate) + ")";
 					}
+
+					PF_INFO("action added");
 					InputManager::AddAction(action);
 				}
 				
 				for (auto& [name, action] : InputManager::S_ActionMapping) {
 					ImGui::Text(name.c_str());
-					ImGui::SameLine();
-					if (ImGui::Button("+")) {
-						ImGui::OpenPopup("Add Key");
+					for (InputType& device : action.m_Inputs) {
+
+						ImGui::SameLine();
+						char keyName =(char) device.Key;
+						ImGui::Text(&keyName);
 					}
-					if (ImGui::BeginPopup("AddComponent")) {
+					ImGui::SameLine();
+
+					if (ImGui::Button("New Key"))
+						ImGui::OpenPopup("Add Key");
+					
+					if (ImGui::BeginPopup("Add Key")) {
 						if (ImGui::MenuItem("R")) {
 							InputManager::ActionAddKey(name, InputType(InputDevice::KeyBoard,(int) KeyBoardKey::R));
 						}
+						ImGui::EndPopup();
 					}
-					for (InputType& device : action.m_Inputs) {
-						ImGui::Text((char*)device.Key);
-					}
+					
 				}
 				ImGui::TreePop();
 			}
