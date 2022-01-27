@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 namespace Proof {
+	float FrameTime::WorldDeltaTime = 0.0f;
 	float FrameTime::GetTime(){
 		return glfwGetTime();
 	}
@@ -11,5 +12,8 @@ namespace Proof {
 	}
 	float FrameTime::GetFrameMS(){
 		return Application::GetFrameMS();
+	}
+	float FrameTime::GetWorldDeltaTime(){
+		return WorldDeltaTime;
 	}
 }

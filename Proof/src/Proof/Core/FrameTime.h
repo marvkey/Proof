@@ -12,7 +12,10 @@ namespace Proof
         static float GetFrameMS();
         float Get()const { return DeltaTime; };
         operator float() const { return DeltaTime; }
+        static float GetWorldDeltaTime();
     private:
         float DeltaTime;
+        static float WorldDeltaTime; // same thing as delta time
+        friend class Application;
     };
 }

@@ -16,32 +16,48 @@ namespace Proof {
 	struct Action {
 		std::function<void()> FunctionCallback;
 		std::vector<InputType> m_Inputs;
+		// Layout of the input available
+		// number of input to each layout will be stored in the location of the array
+		// each are set to 0 as of now
+		//KeyReleased = 0,
+		//KeyClicked = 1,
+		//KeyHold = 2,
+		//KeyPressed = 3,
+		//KeyDouble = 4
+		std::array<int, 5>AvalaibleInputEvents = {0,0,0,0,0};
+	};
+	struct MotionInputType {
+		MotionInputType(InputDevice inputDevice, int key) {
+			Device = inputDevice;
+			Key = key;
+		}
+		InputDevice Device = InputDevice::None;
+		int Key = 0; /// value is an enum
+		float MotionValue = 1.0;
+	};
+	struct Motion {
+		std::function<void(float motionValue)> FunctionCallback;// mihgt store a vector of this to bind to
+		std::vector<MotionInputType> Inputs;
 	};
 	class InputManager {
 	public:
 		InputManager() = delete;
-		static void BindAction(const std::string& name, InputEvent inputEvent, const std::function<void()>& func) {
-			auto it = S_ActionMapping.find(name);
-			if (it == S_ActionMapping.end())return;
-			it->second.FunctionCallback = func;
-		}
-		static bool ActionAddKey(const std::string& name, InputType inputype) {
-			auto it = S_ActionMapping.find(name);
-			if (it == S_ActionMapping.end())return false;
-			it->second.m_Inputs.emplace_back(inputype);
-			return true;
-		}
-		static bool AddAction(const std::string& name) {
-			if (S_ActionMapping.find(name) != S_ActionMapping.end()) {
-				PF_ENGINE_INFO("already has action ");
-				return false;
-			}
-			S_ActionMapping.insert({ name,Action() });
-			return true;
-		}
+		static void BindAction(const std::string& name, InputEvent inputEvent, const std::function<void()>& func);
+		static bool ActionAddKey(const std::string& name, InputType inputype);
+		static bool AddAction(const std::string& name);
+
+		// MOTION INPUTS
+		static void BindMotion(const std::string& name, const std::function<void(float MotionValue)>& func);
+		static bool MotionAddKey(const std::string& name, MotionInputType inputType);
+		static bool AddMotion(const std::string& name);
 	private:
 		static void OnKeyClicked(KeyClickedEvent& e);
+		static void OnKeyPressed(KeyPressedEvent& e);
+		static void OnKeyHold(KeyHoldEvent& e);
+		static void OnKeyDoubleClicked(KeyDoubleClickEvent& e);
+		static void OnKeyReleased(KeyReleasedEvent& e);
 		static std::unordered_map<std::string, Action> S_ActionMapping;
+		static std::unordered_map<std::string, Motion> s_MotionMapping;
 		static void OnEvent(Event& e);
 		friend class Application;
 		friend class InputPanel;

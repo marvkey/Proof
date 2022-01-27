@@ -186,7 +186,7 @@ namespace Proof
 		AxisRIGHTTRIGGER = 5,
 	};
 	enum class InputEvent {
-		UnknownKey = -1,
+		None= -1,
 		KeyReleased = 0,	
 		KeyClicked = 1,
 		KeyHold = 2,

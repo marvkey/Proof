@@ -126,13 +126,21 @@ Entities:
     TransformComponent:
       Location: [-3.10379958, 10.1861248, 0.118286207]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.100000001, 0.100000001, 0.100000001]
     ChildComponent:
       OwnerID: 0
       Children: []
     MeshComponent:
       MeshAssetPointerID: 12067
       MaterialPointerID: 0
+    CameraComponent:
+      AutoSetDimension: true
+      NearPlane: 0.100000001
+      FarPlane: 1000
+      FOV: 45
+      Width: 250
+      Height: 250
+      UpVector: [0, 1, 0]
     CubeColliderComponent:
       OffsetLocation: [0, 0, 0]
       OffsetScale: [0, 0, 0]

@@ -5,5 +5,8 @@ namespace Proof {
 	class Proof_API InputPanel :public Panel {
 	public:
 		virtual void ImGuiRender(FrameTime deltaTime)override;
+	private:
+		void Action();
+		void Motion();
 	};
 }

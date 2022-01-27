@@ -69,6 +69,7 @@ namespace Proof {
             CurrentTime = glfwGetTime();
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
+            FrameTime::WorldDeltaTime = DeltaTime;
             RendererCommand::Enable(ProofRenderTest::DepthTest);
             if (WindowMinimized == false) 
             {

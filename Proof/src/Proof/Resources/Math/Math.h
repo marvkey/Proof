@@ -171,7 +171,7 @@ namespace Proof
 		inline static T GetMaxType() {
 			return std::numeric_limits<T>::max();
 		}
-		// @return the mi value of a specific type
+		// @return the min value of a specific type
 		template<typename T>
 		inline static T GetMinType() {
 			return std::numeric_limits<T>::min();
