@@ -2,10 +2,10 @@
 namespace Proof
 {
 	enum class InputDevice {
-		None =0,
-		KeyBoard =1,
-		Mouse = 2,
-		Controller =3
+		KeyBoard =0,
+		Mouse = 1,
+		Controller =2,
+		None = -1
 	};
 	enum class KeyBoardKey:int32_t {
 		None = 0,
@@ -190,7 +190,8 @@ namespace Proof
 		KeyReleased = 0,	
 		KeyClicked = 1,
 		KeyHold = 2,
-		KeyPressed =3,
+		//KEY PRESSED AND KEY HOLD IS THE SMAE FOR MOUSE INPUTS
+		KeyPressed =3, 
 		KeyDouble = 4
 	};
 }

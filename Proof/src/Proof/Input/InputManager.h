@@ -25,12 +25,17 @@ namespace Proof {
 		//KeyPressed = 3,
 		//KeyDouble = 4
 		std::array<int, 5>AvalaibleInputEvents = {0,0,0,0,0};
+
+		//KeyBoard =0,
+		//Mouse = 1,
+		//Controller =2,
+		std::array<int,3> AvalableDevices = {0,0,0}
 	};
 	struct MotionInputType {
 		MotionInputType(InputDevice inputDevice, int key) {
 			Device = inputDevice;
 			Key = key;
-		}
+		}	
 		InputDevice Device = InputDevice::None;
 		int Key = 0; /// value is an enum
 		float MotionValue = 1.0;
@@ -38,6 +43,10 @@ namespace Proof {
 	struct Motion {
 		std::function<void(float motionValue)> FunctionCallback;// mihgt store a vector of this to bind to
 		std::vector<MotionInputType> Inputs;
+		//KeyBoard =0,
+		//Mouse = 1,
+		//Controller =2,
+		std::array<int,3> AvalableDevices = {0,0,0}
 	};
 	class InputManager {
 	public:
@@ -56,6 +65,11 @@ namespace Proof {
 		static void OnKeyHold(KeyHoldEvent& e);
 		static void OnKeyDoubleClicked(KeyDoubleClickEvent& e);
 		static void OnKeyReleased(KeyReleasedEvent& e);
+
+		// MOUSE
+		static void OnMouseClicked(MouseButtonClickedEvent& e);
+		static void OnMousePressed(MouseButtonPressedEvent& e);
+		static void OnMouseReleased(MouseButtonReleasedEvent& e);
 		static std::unordered_map<std::string, Action> S_ActionMapping;
 		static std::unordered_map<std::string, Motion> s_MotionMapping;
 		static void OnEvent(Event& e);
