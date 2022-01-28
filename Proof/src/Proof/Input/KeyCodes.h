@@ -3,8 +3,9 @@ namespace Proof
 {
 	enum class InputDevice {
 		KeyBoard =0,
-		Mouse = 1,
-		Controller =2,
+		MouseButton = 1, // mouse button pressed
+		MouseMovement =2, // moseu scroll to side or up, r wheal up or down
+		Controller =3,
 		None = -1
 	};
 	enum class KeyBoardKey:int32_t {
@@ -135,7 +136,12 @@ namespace Proof
 		Button1 = ButtonRight,
 		Button2 = ButtonMiddle,
 	};
-
+	enum class MouseMovementInput {
+		X =0,
+		Y =1,
+		ScrollUp,
+		ScrolDown
+	};
 	enum class JoystickKey {
 		Joystick1 = 0,
 		Joystick2 = 1,

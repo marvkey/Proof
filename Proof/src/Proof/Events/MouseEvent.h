@@ -73,21 +73,25 @@ namespace Proof {
     class Proof_API MouseMoveEvent: public MouseMovementEvent {
     public:
         EVENT_CLASS_TYPE(MouseMoved)
-        MouseMoveEvent(float x,float y):
-            m_X(x),m_Y(y)
+        MouseMoveEvent(float x,float y,float distanceX, float distanceY):
+            m_X(x),m_Y(y),m_DistanceX(distanceX), m_DistanceY(distanceY)
         {
         
         }
         float GetX(){return m_X;}
         float GetY(){return m_Y;}
+        float GetMovedX() { return m_DistanceX; }
+        float GetMovedY() { return m_DistanceY; }
         std::string ToString()const override {
             std::stringstream ss;
-            ss << "MouseMoveEvent X: " << m_X << ", Y: " << m_Y;
+            ss << "MouseMoveEvent NewLocation X: " << m_X << ", Y: " << m_Y << ", Distance Moved X: " << m_DistanceX << ", Y: " << m_DistanceY;
             return ss.str();
         }
     private:
         float m_X=0;
         float m_Y=0;
+        float m_DistanceX = 0;
+        float m_DistanceY = 0;
     };
 
     class Proof_API MouseScrollEvent:public MouseMovementEvent {

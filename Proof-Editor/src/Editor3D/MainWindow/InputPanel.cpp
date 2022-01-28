@@ -6,6 +6,7 @@
 #include "../Editor3D.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Input/InputManager.h"
+#include <unordered_map>
 namespace Proof {
 	void InputPanel::ImGuiRender(FrameTime deltaTime){
 		if (m_ShowWindow == false)
@@ -22,7 +23,7 @@ namespace Proof {
 			bool openedMotion = ImGui::TreeNodeEx((void*)"Motion Mapping", treeNodeFlags, "Motion Mapping");
 
 			if (openedMotion) {
-				Motion();
+				MotionInput();
 				ImGui::TreePop();
 			}
 		}
@@ -64,7 +65,7 @@ namespace Proof {
 
 		}
 	}
-	void InputPanel::Motion(){
+	void InputPanel::MotionInput(){
 		ImGui::SameLine();
 		if (ImGui::Button("+", { 20,20 })) {
 			std::string action = "NewMotion";
@@ -79,7 +80,17 @@ namespace Proof {
 		}
 		int iterationMotion = 0;
 		for (auto& [name, motion] : InputManager::s_MotionMapping) {
-			ImGui::Text(name.c_str());
+			std::string nameedit = name;
+			char buffer[256];
+			memset(buffer, 0, sizeof(buffer));
+			strcpy_s(buffer, sizeof(buffer), nameedit.c_str());
+			ImGui::SetKeyboardFocusHere(0);
+			if (ImGui::InputTextWithHint("##Name", "Name", buffer, sizeof(buffer)), 0, ImGuiInputTextFlags_CallbackAlways) {
+				nameedit = buffer;
+				Motion temp = motion;
+				InputManager::s_MotionMapping.erase(name);
+				InputManager::s_MotionMapping.insert({ nameedit,temp });
+			}
 			int iteration = 0;
 			for (MotionInputType& device : motion.Inputs) {
 				ImGui::PushID(iteration+iterationMotion);
@@ -94,24 +105,31 @@ namespace Proof {
 			ImGui::SameLine();
 
 			if (ImGui::Button("New Key")) {
+				m_EditedValue = name;
 				ImGui::OpenPopup("Add Key");
 			}
-
+			if (m_EditedValue != name)
+				goto a;
 			if (ImGui::BeginPopup("Add Key")) {
 				if (ImGui::MenuItem("W")) {
+					m_EditedValue = "";
 					InputManager::MotionAddKey(name, MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::W));
 				}
 				if (ImGui::MenuItem("S")) {
+					m_EditedValue = "";
 					InputManager::MotionAddKey(name, MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::S));
 				}
 				if (ImGui::MenuItem("A")) {
+					m_EditedValue = "";
 					InputManager::MotionAddKey(name, MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::A));
 				}
 				if (ImGui::MenuItem("D")) {
+					m_EditedValue = "";
 					InputManager::MotionAddKey(name, MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::D));
 				}
 				ImGui::EndPopup();
 			}
+			a:
 			iterationMotion++;
 		}
 	}

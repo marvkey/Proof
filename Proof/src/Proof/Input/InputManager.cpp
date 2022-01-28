@@ -2,14 +2,15 @@
 #include "InputManager.h"
 #include "Proof/Events/Event.h"
 namespace Proof {
-	std::unordered_map<std::string, Action> InputManager::S_ActionMapping;
-	std::unordered_map<std::string, Motion> InputManager::s_MotionMapping;
+	std::unordered_map<std::string, Action> InputManager::S_ActionMapping = {};
+	std::unordered_map<std::string, Motion> InputManager::s_MotionMapping = {};
 	void InputManager::OnEvent(Event& e){
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch< KeyClickedEvent>(InputManager::OnKeyClicked);
 		dispatcher.Dispatch<KeyHoldEvent>(InputManager::OnKeyHold);
 		dispatcher.Dispatch<KeyDoubleClickEvent>(InputManager::OnKeyDoubleClicked);
 		dispatcher.Dispatch<KeyPressedEvent>(InputManager::OnKeyPressed);
+		dispatcher.Dispatch<MouseMoveEvent>(InputManager::OnMouseMoved);
 	}
 	void InputManager::BindAction(const std::string& name, InputEvent inputEvent, const std::function<void()>& func) {
 		auto it = S_ActionMapping.find(name);
@@ -27,7 +28,7 @@ namespace Proof {
 		auto it = S_ActionMapping.find(name);
 		if (it == S_ActionMapping.end())return false;
 		it->second.m_Inputs.emplace_back(inputype);
-		it->AvalableDevices[(int)inputType.Device] ++; // increasing the amount of input for certain device
+		it->second.AvalableDevices[(int)inputype.Device] ++; // increasing the amount of input for certain device
 		return true;
 	}
 
@@ -50,7 +51,7 @@ namespace Proof {
 		auto it = s_MotionMapping.find(name);
 		if (it == s_MotionMapping.end())return false;
 		it->second.Inputs.emplace_back(inputType);
-		it->AvalableDevices[(int)inputType.Device] ++;  // increasing the amount of input for certain device
+		it->second.AvalableDevices[(int)inputType.Device] ++;  // increasing the amount of input for certain device
 		return true;
 	}
 
@@ -154,9 +155,11 @@ namespace Proof {
 		// checking if key Pressed is an available format
 			if (action.AvalaibleInputEvents[(int)InputEvent::KeyClicked] == 0)
 				continue;
-			if(action.AvalableDevices[(int)InputDevice::Mouse])
+			if(action.AvalableDevices[(int)InputDevice::MouseButton])
 				continue;
 			for (auto& inputs : action.m_Inputs) {
+				if (inputs.Device != InputDevice::MouseButton) // if it is the mouse input
+					continue;
 				if (inputs.Key == (int)e.GetButton()) {
 					action.FunctionCallback();
 				}
@@ -169,9 +172,11 @@ namespace Proof {
 		// checking if key Pressed is an available format
 			if (action.AvalaibleInputEvents[(int)InputEvent::KeyPressed] == 0)
 				continue;
-			if(action.AvalableDevices[(int)InputDevice::Mouse])
+			if(action.AvalableDevices[(int)InputDevice::MouseButton])
 				continue;
 			for (auto& inputs : action.m_Inputs) {
+				if (inputs.Device != InputDevice::MouseButton) // if it is the mouse input
+					continue;
 				if (inputs.Key == (int)e.GetButton()) {
 					action.FunctionCallback();
 				}
@@ -179,15 +184,17 @@ namespace Proof {
 		}
 	}
 
-	void InputManager::OnMouseReleased(MouseButtonReleasedEvent& e){\
+	void InputManager::OnMouseReleased(MouseButtonReleasedEvent& e){
 		{
 			for (const auto& [name, action] : S_ActionMapping) {
 			// checking if key Pressed is an available format
 				if (action.AvalaibleInputEvents[(int)InputEvent::KeyReleased] == 0)
 					continue;
-				if(action.AvalableDevices[(int)InputDevice::Mouse])
+				if(action.AvalableDevices[(int)InputDevice::MouseButton])
 					continue;
 				for (auto& inputs : action.m_Inputs) {
+					if (inputs.Device != InputDevice::MouseButton) // if it is the mouse input
+						continue;
 					if (inputs.Key == (int)e.GetButton()) {
 						action.FunctionCallback();
 					}
@@ -197,11 +204,33 @@ namespace Proof {
 		// Motion movement
 		{
 			for (const auto& [name, motion] : s_MotionMapping) {
-				if(motion.AvalableDevices[(int)InputDevice::Mouse])
+				if(motion.AvalableDevices[(int)InputDevice::MouseButton])
 						continue;
-					for (auto& inputs : motion.Inputs) {
-						if (inputs.Key == (int)e.GetButton()) {
-							motion.FunctionCallback(inputs.MotionValue);
+				for (auto& inputs : motion.Inputs) {
+					if (inputs.Device != InputDevice::MouseButton) // if it is the mouse input
+						continue;
+					if (inputs.Key == (int)e.GetButton())
+						motion.FunctionCallback(inputs.MotionValue);
+				}
+			}
+		}
+	}
+	void InputManager::OnMouseMoved(MouseMoveEvent& e){
+		float movedX = e.GetMovedX();
+		float movedY = e.GetMovedY();
+		// Motion Movement
+		{
+			for (const auto& [name, motion] : s_MotionMapping) {
+				if (motion.AvalableDevices[(int)InputDevice::MouseMovement])
+					continue;
+				for (auto& inputs : motion.Inputs) {
+					if (inputs.Device != InputDevice::MouseMovement)
+						continue;
+					if (inputs.Key == (int)MouseMovementInput::X) {
+						motion.FunctionCallback(inputs.MotionValue * e.GetMovedX()); // mihgt not mutltiply
+					}
+					else if (inputs.Key == (int)MouseMovementInput::Y) {
+						motion.FunctionCallback(inputs.MotionValue * e.GetMovedY()); // mihgt not mutltiply
 					}
 				}
 			}

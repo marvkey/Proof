@@ -1,9 +1,9 @@
 #pragma once
-#include <glm/glm.hpp>
 #include "KeyCodes.h"
 #include "Proof/Events/Event.h"
 #include <unordered_map>
 #include <functional>
+#include <string>
 namespace Proof {
 	struct InputType {
 		InputType(InputDevice inputDevice, int key) {
@@ -26,10 +26,11 @@ namespace Proof {
 		//KeyDouble = 4
 		std::array<int, 5>AvalaibleInputEvents = {0,0,0,0,0};
 
-		//KeyBoard =0,
-		//Mouse = 1,
-		//Controller =2,
-		std::array<int,3> AvalableDevices = {0,0,0}
+		//KeyBoard = 0,
+		//MouseButton = 1, // mouse button pressed
+		//MouseMovement = 2, // moseu scroll to side or up, r wheal up or down
+		//Controller = 3,
+		std::array<int, 4> AvalableDevices = { 0,0,0,0 };
 	};
 	struct MotionInputType {
 		MotionInputType(InputDevice inputDevice, int key) {
@@ -43,10 +44,11 @@ namespace Proof {
 	struct Motion {
 		std::function<void(float motionValue)> FunctionCallback;// mihgt store a vector of this to bind to
 		std::vector<MotionInputType> Inputs;
-		//KeyBoard =0,
-		//Mouse = 1,
-		//Controller =2,
-		std::array<int,3> AvalableDevices = {0,0,0}
+		//KeyBoard = 0,
+		//MouseButton = 1, // mouse button pressed
+		//MouseMovement = 2, // moseu scroll to side or up, r wheal up or down
+		//Controller = 3,
+		std::array<int, 4> AvalableDevices = { 0,0,0,0 };
 	};
 	class InputManager {
 	public:
@@ -70,6 +72,7 @@ namespace Proof {
 		static void OnMouseClicked(MouseButtonClickedEvent& e);
 		static void OnMousePressed(MouseButtonPressedEvent& e);
 		static void OnMouseReleased(MouseButtonReleasedEvent& e);
+		static void OnMouseMoved(MouseMoveEvent& e);
 		static std::unordered_map<std::string, Action> S_ActionMapping;
 		static std::unordered_map<std::string, Motion> s_MotionMapping;
 		static void OnEvent(Event& e);

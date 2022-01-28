@@ -65,6 +65,8 @@ namespace Proof {
         bool Vsync = false;
         std::function<void(Event&)>EventCallback;
         bool m_InputEventEnabled =true;
+        float m_MousePreviousLocationX = 0;
+        float m_MousePreviousLocationY = 0;
         // EVENT CALLback is a pointer to a function
         // set event callback is the function we will call whenever we create 
         // a new evvent with calling the object constructor it 

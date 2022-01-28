@@ -13,13 +13,23 @@ namespace Proof{
 		void OnCreate()override{
 			m_CameraComponent = GetComponent<CameraComponent>();
 			m_Transform = GetComponent<TransformComponent>();
-			InputManager::BindAction("NewAction", InputEvent::KeyClicked, PF_BIND_ACTION(MovementScript::TestKeyClicked));
-			InputManager::BindMotion("NewMotion", PF_Bind_MOTION(MovementScript::MoveX));
-			InputManager::BindMotion("NewMotion(1)", PF_Bind_MOTION(MovementScript::MoveY));
+			if (m_CameraComponent == nullptr)return;
+			InputManager::BindMotion("NewMotion", PF_BIND_MOTION(MovementScript::MoveX));
+			InputManager::BindMotion("NewMotion(1)", PF_BIND_MOTION(MovementScript::MoveY));
+			InputManager::BindAction("ViewCursor", InputEvent::KeyClicked, []() {
+				Mouse::CaptureMouse(true);
+			});
+			InputManager::BindAction("ViewCursorEmpty", InputEvent::KeyReleased, []() {
+				Mouse::CaptureMouse(false);
+			});
+
+			InputManager::BindMotion("RotateX", PF_BIND_MOTION(MovementScript::RotateX));
+			InputManager::BindMotion("RotateY", PF_BIND_MOTION(MovementScript::RotateY));
 		};
 		void OnUpdate(FrameTime DeltaTime)override{
 			if(m_CameraComponent==nullptr)
 				return;
+			/*
 			if (Input::IsMouseButtonPressed(MouseButton::ButtonRight)) {
 				glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindowAPI(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
 				ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse; // no mouse capture
@@ -55,6 +65,7 @@ namespace Proof{
 				glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindowAPI(),GLFW_CURSOR,GLFW_CURSOR_NORMAL);
 				ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse; // alllows mouse capture
 			}
+			*/
 			//if (Input::IsKeyPressed(KeyBoardKey::W)) {
 			//	float tempy = m_Transform->Rotation.Y;
 			//	m_Transform->Location += DeltaTime* m_Speed * m_Transform->Rotation;
@@ -80,11 +91,7 @@ namespace Proof{
 			//}
 		}
 	private:
-		void TestKeyClicked() {
-			PF_ENGINE_INFO("Lets go key clicked is working");
-		}
 		void MoveX(float motionValue) {
-				PF_ENGINE_INFO("Moving X");
 			float tempy = m_Transform->Rotation.Y;
 			m_Transform->Location += m_Speed * FrameTime::GetWorldDeltaTime() * Vector<float>::Normalize(Vector<float>::Cross(m_Transform->Rotation, m_CameraComponent->m_Up)) * motionValue;
 			m_Transform->Rotation.Y = tempy;
@@ -93,6 +100,13 @@ namespace Proof{
 			float tempy = m_Transform->Rotation.Y;
 			m_Transform->Location += FrameTime::GetWorldDeltaTime() * m_Speed * m_Transform->Rotation*motionValue;
 			m_Transform->Rotation.Y = tempy;
+		}
+		void RotateX(float motionValue) {
+			m_Transform->Rotation.X += (motionValue * m_Sensitivity * FrameTime::GetWorldDeltaTime());
+		}
+
+		void RotateY(float motionValue) {
+			m_Transform->Rotation.Y += (motionValue * m_Sensitivity * FrameTime::GetWorldDeltaTime());
 		}
 		bool m_FirstClick=true;
 		float m_MouseLastPosX;

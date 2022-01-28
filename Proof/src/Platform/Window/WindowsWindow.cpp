@@ -28,6 +28,8 @@ namespace Proof {
             MouseButtonPressed[i] = false;
         }
         this->createWindow();
+        m_MousePreviousLocationX = Input::GetMousePosX();
+        m_MousePreviousLocationY = Input::GetMousePosY();
     }
     void WindowsWindow::WindowUpdate() {
         glfwSwapInterval(Vsync);
@@ -214,8 +216,10 @@ namespace Proof {
     }
     
     void WindowsWindow::Mouse_Moved_Callback(double xpos, double ypos){
-        MouseMoveEvent mouseEvent(xpos,ypos);
+        MouseMoveEvent mouseEvent(xpos,ypos, xpos - m_MousePreviousLocationX, ypos - m_MousePreviousLocationY);
         EventCallback(mouseEvent);
+        m_MousePreviousLocationX = xpos;
+        m_MousePreviousLocationY = ypos;
     }
 
     void WindowsWindow::Mouse_Hover_Window(int entered){

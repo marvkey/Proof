@@ -7,6 +7,7 @@ namespace Proof {
 		virtual void ImGuiRender(FrameTime deltaTime)override;
 	private:
 		void Action();
-		void Motion();
+		void MotionInput();
+		std::string m_EditedValue;
 	};
 }
