@@ -26,12 +26,30 @@ namespace Proof {
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
         AssetManager::NewInitilizeAssets("config/AssetManager.ProofAssetManager");
         //AssetManager::InitilizeAssets("content");
+        InputManager::AddMotion("MoveX");
+        InputManager::AddMotion("MoveY");
+        InputManager::MotionAddKey("MoveX", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::A, -1));
+        InputManager::MotionAddKey("MoveX", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::D));
+
+        InputManager::MotionAddKey("MoveY", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::W));
+        InputManager::MotionAddKey("MoveY", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::S, -1));
+
+        InputManager::AddAction("CursorEnabled");
+        InputManager::AddAction("CursorDisabled");
+        InputManager::ActionAddKey("CursorEnabled", InputType(InputDevice::MouseButton, (int)MouseButton::ButtonRight));
+        InputManager::ActionAddKey("CursorDisabled", InputType(InputDevice::MouseButton, (int)MouseButton::ButtonRight));
+
+
+        InputManager::AddMotion("RotateX");
+        InputManager::AddMotion("RotateY");
+        InputManager::MotionAddKey("RotateX", MotionInputType(InputDevice::MouseMovement, (int)MouseMovementInput::X, 1));
+        InputManager::MotionAddKey("RotateY", MotionInputType(InputDevice::MouseMovement, (int)MouseMovementInput::Y, 1));
 
     }
 
     void Application::OnEvent(Event& e) {
         EventDispatcher dispatcher(e);
-        InputManager::OnEvent(e);
+        
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
         dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent)); 
          for (Layer* layer : MainLayerStack.V_LayerStack)

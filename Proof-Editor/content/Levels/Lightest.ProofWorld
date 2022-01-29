@@ -121,7 +121,7 @@ Entities:
       OffsetScale: [0, 0, 0]
   - Entity: 14422208715072623764
     TagComponent:
-      Tag: Cube2
+      Tag: Camera
       tags: []
     TransformComponent:
       Location: [-3.10379958, 10.1861248, 0.118286207]
@@ -130,9 +130,6 @@ Entities:
     ChildComponent:
       OwnerID: 0
       Children: []
-    MeshComponent:
-      MeshAssetPointerID: 12067
-      MaterialPointerID: 0
     CameraComponent:
       AutoSetDimension: true
       NearPlane: 0.100000001

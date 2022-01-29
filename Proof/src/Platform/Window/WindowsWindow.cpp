@@ -216,7 +216,7 @@ namespace Proof {
     }
     
     void WindowsWindow::Mouse_Moved_Callback(double xpos, double ypos){
-        MouseMoveEvent mouseEvent(xpos,ypos, xpos - m_MousePreviousLocationX, ypos - m_MousePreviousLocationY);
+        MouseMoveEvent mouseEvent(xpos,ypos, xpos - m_MousePreviousLocationX, m_MousePreviousLocationY - ypos);
         EventCallback(mouseEvent);
         m_MousePreviousLocationX = xpos;
         m_MousePreviousLocationY = ypos;

@@ -80,17 +80,7 @@ namespace Proof {
 		}
 		int iterationMotion = 0;
 		for (auto& [name, motion] : InputManager::s_MotionMapping) {
-			std::string nameedit = name;
-			char buffer[256];
-			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, sizeof(buffer), nameedit.c_str());
-			ImGui::SetKeyboardFocusHere(0);
-			if (ImGui::InputTextWithHint("##Name", "Name", buffer, sizeof(buffer)), 0, ImGuiInputTextFlags_CallbackAlways) {
-				nameedit = buffer;
-				Motion temp = motion;
-				InputManager::s_MotionMapping.erase(name);
-				InputManager::s_MotionMapping.insert({ nameedit,temp });
-			}
+			ImGui::Text(name.c_str());
 			int iteration = 0;
 			for (MotionInputType& device : motion.Inputs) {
 				ImGui::PushID(iteration+iterationMotion);

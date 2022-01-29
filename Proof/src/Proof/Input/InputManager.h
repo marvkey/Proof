@@ -36,7 +36,12 @@ namespace Proof {
 		MotionInputType(InputDevice inputDevice, int key) {
 			Device = inputDevice;
 			Key = key;
-		}	
+		}
+		MotionInputType(InputDevice inputDevice, int key,float motionValue) {
+			Device = inputDevice;
+			Key = key;
+			MotionValue = motionValue;
+		}
 		InputDevice Device = InputDevice::None;
 		int Key = 0; /// value is an enum
 		float MotionValue = 1.0;
@@ -52,6 +57,8 @@ namespace Proof {
 	};
 	class InputManager {
 	public:
+		static void OnEvent(Event& e);
+
 		InputManager() = delete;
 		static void BindAction(const std::string& name, InputEvent inputEvent, const std::function<void()>& func);
 		static bool ActionAddKey(const std::string& name, InputType inputype);
@@ -75,7 +82,6 @@ namespace Proof {
 		static void OnMouseMoved(MouseMoveEvent& e);
 		static std::unordered_map<std::string, Action> S_ActionMapping;
 		static std::unordered_map<std::string, Motion> s_MotionMapping;
-		static void OnEvent(Event& e);
 		friend class Application;
 		friend class InputPanel;
 	};	

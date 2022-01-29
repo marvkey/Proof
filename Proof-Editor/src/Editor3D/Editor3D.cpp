@@ -29,6 +29,7 @@
 #include<GLFW/glfw3.h>
 #include "Proof/Resources/Asset/AssetManager.h"
 #include <algorithm>
+#include "Proof/Input/InputManager.h"
 namespace Proof
 {
 	Editore3D::Editore3D():
@@ -49,6 +50,9 @@ namespace Proof
 	void Editore3D::OnEvent(Event& e) {
 
 		EventDispatcher dispatcher(e);
+		if(ActiveWorld->m_CurrentState == WorldState::Play)
+			InputManager::OnEvent(e);
+
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 	}
 	void Editore3D::OnAttach() {
