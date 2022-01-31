@@ -4,6 +4,7 @@
 #include "Proof/Events/MouseEvent.h"
 #include  "Proof/Events/KeyEvent.h"
 #include "Proof/Events/WindowEvent.h"
+#include "Proof/Events/ControllerEvent.h"
 #include "Proof/Core/CurrentWindow.h"
 
 #include "Proof/Core/FrameTime.h"
@@ -216,6 +217,8 @@ namespace Proof {
             for (int i = 0; i < newController.Buttons.size(); i++) {
                 newController.Buttons[i] = 0;
             }
+            ControllerConnectEvent ctEvent(jid);
+            CurrentWindow::GetWindowClass().EventCallback(ctEvent);
         }
         else if (event == GLFW_DISCONNECTED) {
             for (int i = 0; i < CurrentWindow::GetWindowClass().m_Controllers.size(); i++) {
@@ -224,6 +227,8 @@ namespace Proof {
                     break;
                 }
             }
+            ControllerDisconnectEvent ctEvent(jid);
+            CurrentWindow::GetWindowClass().EventCallback(ctEvent);
         }
     }
 
@@ -249,12 +254,12 @@ namespace Proof {
             if (state.buttons[buttonCount] == GLFW_PRESS)
             {
                 if (controller.Buttons[buttonCount] == GLFW_PRESS) { // THE KEY WAS ALSO PRESSED last FRAME
-                    // CONTROLLER BUTTON PRESSED CALLBACK
-                    //PF_INFO("CONTROLLER Button Pressed %i", buttons[i]);
+                    ControllerButtonPressedEvent event((ControllerButton)buttonCount);
+                    EventCallback(event);
                 }
                 else if (controller.Buttons[buttonCount] == GLFW_RELEASE) { // THE KEY WAS NOT PRESSED LAST FRAME
-                    // CONTROLLER KEY CLICKDED CALL BACK AND KEY PRESSED CALL BACK TO BEGIN
-                    PF_INFO("CONTROLLER Button Clicked %i", buttonCount);
+                    ControllerButtonClickedEvent event((ControllerButton)buttonCount);
+                    EventCallback(event);
                 }
                 controller.Buttons[buttonCount] = GLFW_PRESS;
                 continue;
@@ -262,8 +267,8 @@ namespace Proof {
                 
             if (state.buttons[buttonCount] == GLFW_RELEASE) {
                 if (controller.Buttons[buttonCount] == GLFW_PRESS) { // THE button WAS ALSO PRESSED last FRAME
-                // CONTROLLER BUTTON Released callback
-                    PF_INFO("CONTROLLER Button Released %i", buttonCount);
+                    ControllerButtonReleasedEvent event((ControllerButton)buttonCount);
+                    EventCallback(event);
                 }
                 controller.Buttons[buttonCount] = GLFW_RELEASE;
                 continue;
@@ -273,16 +278,19 @@ namespace Proof {
         {
             if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0) { // if the key is pressed
                 if (controller.m_ButtonRightTrigger == GLFW_PRESS) {
-                    // PF_INFO("CONTROLLER Button Pressed 20");
+                    ControllerButtonPressedEvent event((ControllerButton)20);
+                    EventCallback(event);
                 }
                 else if (controller.m_ButtonRightTrigger == GLFW_RELEASE) {
-                    PF_INFO("CONTROLLER Button Clicked 20");
+                    ControllerButtonClickedEvent event((ControllerButton)20);
+                    EventCallback(event);
                 }
                 controller.m_ButtonRightTrigger = GLFW_PRESS;
             }
             else if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] < 0) { // key is not clicked
                 if (controller.m_ButtonRightTrigger == GLFW_PRESS) { // released
-                    PF_INFO("CONTROLLER Button Released 20");
+                    ControllerButtonReleasedEvent event((ControllerButton)20);
+                    EventCallback(event);
                 }
                 controller.m_ButtonRightTrigger = GLFW_RELEASE;
             }
@@ -291,16 +299,19 @@ namespace Proof {
         {
             if (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0) { // if the key is pressed
                 if (controller.m_ButtonLeftTriggerr == GLFW_PRESS) {
-                    // PF_INFO("CONTROLLER Button Pressed 21");
+                    ControllerButtonPressedEvent event((ControllerButton)21);
+                    EventCallback(event);
                 }
                 else if (controller.m_ButtonLeftTriggerr == GLFW_RELEASE) {
-                    PF_INFO("CONTROLLER Button Clicked 21");
+                    ControllerButtonClickedEvent event((ControllerButton)21);
+                    EventCallback(event);
                 }
                 controller.m_ButtonLeftTriggerr = GLFW_PRESS;
             }
             else if (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] < 0) { // key is not clicked
                 if (controller.m_ButtonLeftTriggerr == GLFW_PRESS) { // released
-                    PF_INFO("CONTROLLER Button Released 21");
+                    ControllerButtonReleasedEvent event((ControllerButton)21);
+                    EventCallback(event);
                 }
                 controller.m_ButtonLeftTriggerr = GLFW_RELEASE;
             }
@@ -316,36 +327,42 @@ namespace Proof {
             float x  = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X]; 
             float y = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
             if ((x > 0.2 || x < -0.2) || (y > 0.2 || y < -0.2)) { // in the futre 0.2 would be deadzone
-                PF_INFO("CONTROLLER Left JOYSTICK MOVE X: %f Y: %f", x, y);
+                ControllerLeftJoystickAxisEvent event(x, y, x - controller.LeftJoystickX, controller.LeftJoystickY - y);
+                EventCallback(event);
             }
-            controller.Axis[GLFW_GAMEPAD_AXIS_LEFT_X] = x;
-            controller.Axis[GLFW_GAMEPAD_AXIS_LEFT_Y] = y;
+            controller.LeftJoystickX = x;
+            controller.LeftJoystickY = y;
         }
         // RIGHT ANALOUGE STICK
         {
             float x = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
             float y = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
             if ((x > 0.2 || x < -0.2) || (y > 0.2 || y < -0.2)) { // in the futre 0.2 would be deadzone
-                PF_INFO("CONTROLLER RIGHT JOYSTICK MOVE X: %f Y: %f", x, y);
+                ControllerLeftJoystickAxisEvent event(x, y, x - controller.RightJoystickX, controller.RightJoystickY - y);
+                EventCallback(event);
             }
-            controller.Axis[GLFW_GAMEPAD_AXIS_RIGHT_X] = x;
-            controller.Axis[GLFW_GAMEPAD_AXIS_RIGHT_Y] = y;
+            controller.RightJoystickX = x;
+            controller.RightJoystickY= y;
         }
         //LEFT TRIGGER
         {
             float trigger = state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
             if (trigger > -1) { // in the futre any value bigger than -1  would be deadzone
-                PF_INFO("CONTROLLER left joystick: %f", trigger);
+                ControllerTriggerAxisEvent event(trigger, trigger - controller.LeftTriggerAxis, ControllerAxis::LeftTrigger);
+                EventCallback(event);
+
             }
-            controller.Axis[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] = trigger;
+            controller.LeftTriggerAxis = trigger;
         }
         //Right TRIGGER
         {
             float trigger = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER];
             if (trigger > -1) { // in the futre any value bigger than -1  would be deadzone
-                PF_INFO("CONTROLLER right joystick: %f", trigger);
+                ControllerTriggerAxisEvent event(trigger, trigger - controller.LeftTriggerAxis, ControllerAxis::RightTrigger);
+                EventCallback(event);
+
             }
-            controller.Axis[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] = trigger;
+            controller.RightTriggerAxis = trigger;
         }
     }
 

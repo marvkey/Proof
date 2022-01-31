@@ -160,7 +160,7 @@ namespace Proof
 		Joystick15 = 14,
 		Joystick16 = 15,
 	};
-	enum class GamePadButton {
+	enum class ControllerButton {
 		None =-1,
 		ButtonA = 0,
 		ButtonB = 1,
@@ -186,13 +186,7 @@ namespace Proof
 		ButtonRightTrigger =20, // this are proof defined only used in the proof engine as this values
 		ButtonLeftTrigger = 21 // this are proof defined only used in the proof engine as this values
 	};
-	enum class GamePadAxis{
-		AxisLEFTX = 0,
-		AxisLEFTY = 1,
-		AxisRIGHTX = 2,
-		AxisRIGHTY = 3,
-		AxisLEFtTRIGGER = 4,
-		AxisRIGHTTRIGGER = 5,
+	enum class ControllerAxis{
 		LeftX =0,
 		LeftY =1,
 		RightX =2,

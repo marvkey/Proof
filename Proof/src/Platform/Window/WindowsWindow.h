@@ -6,17 +6,9 @@
 #include <functional>
 #include "Proof/Events/Event.h"
 #include <array>
+#include "Proof/Input/Controller.h"
 namespace Proof {
-    struct Controller {
-        std::string Name;
-        std::array<int,15>Buttons; // SIZE is 15 cause that is teh controller we would support
-        std::array<float, 6> Axis; // value of each axis
-        int ID = 0;
-    private:
-        int m_ButtonRightTrigger = (int)InputEvent::KeyReleased;
-        int m_ButtonLeftTriggerr = (int)InputEvent::KeyReleased;
-        friend class WindowsWindow;
-    };
+ 
     class Proof_API WindowsWindow : public Window {
     public:
         WindowsWindow(unsigned int Width, unsigned int Height);

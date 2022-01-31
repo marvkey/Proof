@@ -6,16 +6,15 @@ namespace Proof{
 		None = 0,
 		WindowClose,WindowResize,WindowFocus,WindowMoved,WindowMinimize,
 		KeyPressed,KeyReleased,KeyClicked,KeyDoubleClick,KeyHold,	
-		MouseButtonPressed,MouseButtonReleased,MouseMoved,MouseScrolled,MouseButtonClicked,MouseButtonDoubleClick
+		MouseButtonPressed,MouseButtonReleased,MouseMoved,MouseScrolled,MouseButtonClicked,MouseButtonDoubleClick,
+		ControllerButtonClicked, ControllerButtonPressed, ControllerButtonReleased, ControllerLeftJoystickAxis, ControllerRightJoystickAxis,ControllerTriggerAxis,ControllerConnect, ControllerDisconnect
 	};
 
 	enum EventCategory {
 		None = 0,
 		EventCategoryWindow = BIT(0),
 		EventCategoryInput = BIT(1),
-		EventCategoryKeyboard = BIT(2),
-		EventCategoryMouseMovement = BIT(3),
-		EventCategoryMouseButton = BIT(4)
+		EventCategoryAxis = BIT(2),
 	};
 
 	#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\

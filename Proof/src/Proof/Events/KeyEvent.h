@@ -7,7 +7,7 @@
 namespace Proof {
     class Proof_API KeyEvent:public Event{
     public:
-        EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
+        EVENT_CLASS_CATEGORY(EventCategoryInput)
         KeyEvent(KeyBoardKey keycode):
             m_Key(keycode)
         {
