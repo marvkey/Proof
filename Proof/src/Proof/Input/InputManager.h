@@ -26,19 +26,16 @@ namespace Proof {
 		//KeyPressed = 3,
 		//KeyDouble = 4
 		std::array<int, 5>AvalaibleInputEvents = {0,0,0,0,0};
-
 		//KeyBoard = 0,
 		//MouseButton = 1, // mouse button pressed
 		//MouseMovement = 2, // moseu scroll to side or up, r wheal up or down
-		//Controller = 3,
-		std::array<int, 4> AvalableDevices = { 0,0,0,0 };
+		//ControllerButton = 3,
+		//ControllerAxis = 4,
+		std::array<int, 5> AvalableDevices = { 0,0,0,0 };
 	};
 	struct MotionInputType {
-		MotionInputType(InputDevice inputDevice, int key) {
-			Device = inputDevice;
-			Key = key;
-		}
-		MotionInputType(InputDevice inputDevice, int key,float motionValue) {
+	
+		MotionInputType(InputDevice inputDevice, int key,float motionValue=1) {
 			Device = inputDevice;
 			Key = key;
 			MotionValue = motionValue;
@@ -53,8 +50,9 @@ namespace Proof {
 		//KeyBoard = 0,
 		//MouseButton = 1, // mouse button pressed
 		//MouseMovement = 2, // moseu scroll to side or up, r wheal up or down
-		//Controller = 3,
-		std::array<int, 4> AvalableDevices = { 0,0,0,0 };
+		//ControllerButton = 3,
+		//ControllerAxis = 4,
+		std::array<int, 5> AvalableDevices = { 0,0,0,0 };
 	};
 	class InputManager {
 	public:

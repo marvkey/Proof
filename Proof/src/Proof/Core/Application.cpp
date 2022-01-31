@@ -30,9 +30,11 @@ namespace Proof {
         InputManager::AddMotion("MoveY");
         InputManager::MotionAddKey("MoveX", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::A, -1));
         InputManager::MotionAddKey("MoveX", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::D));
+        InputManager::MotionAddKey("MoveX", MotionInputType(InputDevice::ControllerAxis, (int)ControllerAxis::LeftX));
 
         InputManager::MotionAddKey("MoveY", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::W));
         InputManager::MotionAddKey("MoveY", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::S, -1));
+        InputManager::MotionAddKey("MoveY", MotionInputType(InputDevice::ControllerAxis, (int)ControllerAxis::LeftY));
 
         InputManager::AddAction("CursorEnabled");
         InputManager::AddAction("CursorDisabled");
@@ -44,6 +46,9 @@ namespace Proof {
         InputManager::AddMotion("RotateY");
         InputManager::MotionAddKey("RotateX", MotionInputType(InputDevice::MouseMovement, (int)MouseMovementInput::X, 1));
         InputManager::MotionAddKey("RotateY", MotionInputType(InputDevice::MouseMovement, (int)MouseMovementInput::Y, 1));
+
+        InputManager::MotionAddKey("RotateY", MotionInputType(InputDevice::ControllerAxis, (int)ControllerAxis::RightY, 1));
+        InputManager::MotionAddKey("RotateX", MotionInputType(InputDevice::ControllerAxis, (int)ControllerAxis::RightX, 1));
 
     }
 

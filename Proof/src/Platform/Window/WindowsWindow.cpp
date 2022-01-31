@@ -25,7 +25,7 @@ namespace Proof {
         for (int i = 0; i < KeyPressed.size(); i++) {
             KeyPressed[i] = false;
         }
-        for (int i = -0; i < MouseButtonPressed.size(); i++) {
+        for (int i = 0; i < MouseButtonPressed.size(); i++) {
             MouseButtonPressed[i] = false;
         }
         this->createWindow();

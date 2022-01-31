@@ -6,14 +6,32 @@ namespace Proof {
 	std::unordered_map<std::string, Motion> InputManager::s_MotionMapping = {};
 	void InputManager::OnEvent(Event& e){
 		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch< KeyClickedEvent>(InputManager::OnKeyClicked);
-		dispatcher.Dispatch<KeyHoldEvent>(InputManager::OnKeyHold);
-		dispatcher.Dispatch<KeyDoubleClickEvent>(InputManager::OnKeyDoubleClicked);
-		dispatcher.Dispatch<KeyPressedEvent>(InputManager::OnKeyPressed);
+		// KEYBOARD
+		{
+			dispatcher.Dispatch< KeyClickedEvent>(InputManager::OnKeyClicked);
+			dispatcher.Dispatch<KeyHoldEvent>(InputManager::OnKeyHold);
+			dispatcher.Dispatch<KeyDoubleClickEvent>(InputManager::OnKeyDoubleClicked);
+			dispatcher.Dispatch<KeyPressedEvent>(InputManager::OnKeyPressed);
+		}
+		//MOUSE
+		{
+			dispatcher.Dispatch<MouseMoveEvent>(InputManager::OnMouseMoved);
+			dispatcher.Dispatch<MouseButtonClickedEvent>(InputManager::OnMouseClicked);
+			dispatcher.Dispatch<MouseButtonReleasedEvent>(InputManager::OnMouseReleased);
+		}
+		// CONTROLLER
+		{
+			dispatcher.Dispatch<ControllerButtonClickedEvent>(InputManager::OnControllerClicked);
+			dispatcher.Dispatch<ControllerButtonPressedEvent>(InputManager::OnControllerPressed);
+			dispatcher.Dispatch<ControllerButtonReleasedEvent>(InputManager::OnControllerReleased);
+			// AXIS
+			{
+				dispatcher.Dispatch<ControllerLeftJoystickAxisEvent>(InputManager::ControllerLeftJoystickAxis);
+				dispatcher.Dispatch<ControllerRightJoystickAxisEvent>(InputManager::ControllerRightJoystickAxis);
 
-		dispatcher.Dispatch<MouseMoveEvent>(InputManager::OnMouseMoved);
-		dispatcher.Dispatch<MouseButtonClickedEvent>(InputManager::OnMouseClicked);
-		dispatcher.Dispatch<MouseButtonReleasedEvent>(InputManager::OnMouseReleased);
+				dispatcher.Dispatch<ControllerTriggerAxisEvent>(InputManager::ControllerTriggerAxis);
+			}
+		}
 	}
 	void InputManager::BindAction(const std::string& name, InputEvent inputEvent, const std::function<void()>& func) {
 		auto it = S_ActionMapping.find(name);
@@ -302,23 +320,44 @@ namespace Proof {
 		}
 	}
 	void InputManager::ControllerTriggerAxis(ControllerTriggerAxisEvent& e){
-		{
-			for (const auto& [name, motion] : s_MotionMapping) {
-				if (motion.AvalableDevices[(int)InputDevice::ControllerButton] == 0) // controller button supported
+		for (const auto& [name, motion] : s_MotionMapping) {
+			if (motion.AvalableDevices[(int)InputDevice::ControllerAxis] == 0) // controller button supported
+				continue;
+			for (auto& inputs : motion.Inputs) {
+				if (inputs.Device != InputDevice::ControllerAxis) // if it is the controller button 
 					continue;
-				for (auto& inputs : motion.Inputs) {
-					if (inputs.Device != InputDevice::ControllerButton) // if it is the controller button 
-						continue;
-					if (inputs.Key == (int)e.GetTriggerAxis())
-						motion.FunctionCallback(inputs.MotionValue* e.GetDistance());
-				}
+				if (inputs.Key == (int)e.GetTriggerAxis())
+					motion.FunctionCallback(inputs.MotionValue* e.GetAxis());
 			}
 		}
 	}
-	void InputManager::ControllerLeftJoystickAxis(ControllerLeftJoystickAxisEvent& e)
-	{
+	void InputManager::ControllerLeftJoystickAxis(ControllerLeftJoystickAxisEvent& e){
+		for (const auto& [name, motion] : s_MotionMapping) {
+			if (motion.AvalableDevices[(int)InputDevice::ControllerAxis] == 0) // controller button supported
+				continue;
+			for (auto& inputs : motion.Inputs) {
+				if (inputs.Device != InputDevice::ControllerAxis) // if it is the controller button 
+					continue;
+				if (inputs.Key == (int)ControllerAxis::LeftX)
+					motion.FunctionCallback(inputs.MotionValue * e.GetX());
+				else if(inputs.Key == (int)ControllerAxis::LeftY)
+					motion.FunctionCallback(inputs.MotionValue * e.GetY());
+			}
+		}
 	}
 	void InputManager::ControllerRightJoystickAxis(ControllerRightJoystickAxisEvent& e)
 	{
+		for (const auto& [name, motion] : s_MotionMapping) {
+			if (motion.AvalableDevices[(int)InputDevice::ControllerAxis] == 0) // controller button supported
+				continue;
+			for (auto& inputs : motion.Inputs) {
+				if (inputs.Device != InputDevice::ControllerAxis) // if it is the controller button 
+					continue;
+				if (inputs.Key == (int)ControllerAxis::RightX)
+					motion.FunctionCallback(inputs.MotionValue * e.GetX());
+				else if (inputs.Key == (int)ControllerAxis::RightY)
+					motion.FunctionCallback(inputs.MotionValue * e.GetY());
+			}
+		}
 	}
 }
