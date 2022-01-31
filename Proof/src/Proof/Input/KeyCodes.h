@@ -5,7 +5,8 @@ namespace Proof
 		KeyBoard =0,
 		MouseButton = 1, // mouse button pressed
 		MouseMovement =2, // moseu scroll to side or up, r wheal up or down
-		Controller =3,
+		ControllerButton =3,
+		ControllerAxis=4,
 		None = -1
 	};
 	enum class KeyBoardKey:int32_t {

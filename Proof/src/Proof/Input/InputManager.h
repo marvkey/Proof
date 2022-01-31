@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <functional>
 #include <string>
+#include "Proof/Events/ControllerEvent.h"
 namespace Proof {
 	struct InputType {
 		InputType(InputDevice inputDevice, int key) {
@@ -80,6 +81,15 @@ namespace Proof {
 		static void OnMousePressed(MouseButtonPressedEvent& e);
 		static void OnMouseReleased(MouseButtonReleasedEvent& e);
 		static void OnMouseMoved(MouseMoveEvent& e);
+
+		// CONTROLLER
+		static void OnControllerClicked(ControllerButtonClickedEvent& e);
+		static void OnControllerPressed(ControllerButtonPressedEvent& e);
+		static void OnControllerReleased(ControllerButtonReleasedEvent& e);
+
+		static void ControllerTriggerAxis(ControllerTriggerAxisEvent& e);
+		static void ControllerLeftJoystickAxis(ControllerLeftJoystickAxisEvent& e);
+		static void ControllerRightJoystickAxis(ControllerRightJoystickAxisEvent& e);
 		static std::unordered_map<std::string, Action> S_ActionMapping;
 		static std::unordered_map<std::string, Motion> s_MotionMapping;
 		friend class Application;

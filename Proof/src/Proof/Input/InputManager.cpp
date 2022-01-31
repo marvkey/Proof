@@ -183,6 +183,19 @@ namespace Proof {
 				}
 			}
 		}
+		// Motion movement
+		{
+			for (const auto& [name, motion] : s_MotionMapping) {
+				if (motion.AvalableDevices[(int)InputDevice::MouseButton] == 0)
+					continue;
+				for (auto& inputs : motion.Inputs) {
+					if (inputs.Device != InputDevice::MouseButton) // if it is the mouse input
+						continue;
+					if (inputs.Key == (int)e.GetButton())
+						motion.FunctionCallback(inputs.MotionValue);
+				}
+			}
+		}
 	}
 
 	void InputManager::OnMouseReleased(MouseButtonReleasedEvent& e){
@@ -199,19 +212,6 @@ namespace Proof {
 					if (inputs.Key == (int)e.GetButton()) {
 						action.FunctionCallback();
 					}
-				}
-			}
-		}
-		// Motion movement
-		{
-			for (const auto& [name, motion] : s_MotionMapping) {
-				if(motion.AvalableDevices[(int)InputDevice::MouseButton] == 0)
-						continue;
-				for (auto& inputs : motion.Inputs) {
-					if (inputs.Device != InputDevice::MouseButton) // if it is the mouse input
-						continue;
-					if (inputs.Key == (int)e.GetButton())
-						motion.FunctionCallback(inputs.MotionValue);
 				}
 			}
 		}
@@ -236,5 +236,89 @@ namespace Proof {
 				}
 			}
 		}
+	}
+	void InputManager::OnControllerClicked(ControllerButtonClickedEvent& e){
+		for (const auto& [name, action] : S_ActionMapping) {
+			// checking if key Pressed is an available format
+			if (action.AvalaibleInputEvents[(int)InputEvent::KeyClicked] == 0)
+				continue;
+			if (action.AvalableDevices[(int)InputDevice::ControllerButton] == 0)
+				continue;
+			for (auto& inputs : action.m_Inputs) {
+				if (inputs.Device != InputDevice::ControllerButton) // if it is the mouse input
+					continue;
+				if (inputs.Key == (int)e.GetButton()) {
+					action.FunctionCallback();
+				}
+			}
+		}
+	}
+	void InputManager::OnControllerPressed(ControllerButtonPressedEvent& e){
+		// ACTION
+		{
+			for (const auto& [name, action] : S_ActionMapping) {
+				// checking if key Pressed is an available format
+				if (action.AvalaibleInputEvents[(int)InputEvent::KeyPressed] == 0)
+					continue;
+				if (action.AvalableDevices[(int)InputDevice::ControllerButton] == 0)
+					continue;
+				for (auto& inputs : action.m_Inputs) {
+					if (inputs.Device != InputDevice::ControllerButton) // if it is the mouse input
+						continue;
+					if (inputs.Key == (int)e.GetButton()) {
+						action.FunctionCallback();
+					}
+				}
+			}
+		}
+		// M0TIION
+		{
+			for (const auto& [name, motion] : s_MotionMapping) {
+				if (motion.AvalableDevices[(int)InputDevice::ControllerButton] == 0) // controller button supported
+					continue;
+				for (auto& inputs : motion.Inputs) {
+					if (inputs.Device != InputDevice::ControllerButton) // if it is the controller button 
+						continue;
+					if (inputs.Key == (int)e.GetButton())
+						motion.FunctionCallback(inputs.MotionValue);
+				}
+			}
+		}
+	}
+	void InputManager::OnControllerReleased(ControllerButtonReleasedEvent& e){
+		for (const auto& [name, action] : S_ActionMapping) {
+			// checking if key Pressed is an available format
+			if (action.AvalaibleInputEvents[(int)InputEvent::KeyReleased] == 0)
+				continue;
+			if (action.AvalableDevices[(int)InputDevice::ControllerButton] == 0)
+				continue;
+			for (auto& inputs : action.m_Inputs) {
+				if (inputs.Device != InputDevice::ControllerButton) // if it is the mouse input
+					continue;
+				if (inputs.Key == (int)e.GetButton()) {
+					action.FunctionCallback();
+				}
+			}
+		}
+	}
+	void InputManager::ControllerTriggerAxis(ControllerTriggerAxisEvent& e){
+		{
+			for (const auto& [name, motion] : s_MotionMapping) {
+				if (motion.AvalableDevices[(int)InputDevice::ControllerButton] == 0) // controller button supported
+					continue;
+				for (auto& inputs : motion.Inputs) {
+					if (inputs.Device != InputDevice::ControllerButton) // if it is the controller button 
+						continue;
+					if (inputs.Key == (int)e.GetTriggerAxis())
+						motion.FunctionCallback(inputs.MotionValue* e.GetDistance());
+				}
+			}
+		}
+	}
+	void InputManager::ControllerLeftJoystickAxis(ControllerLeftJoystickAxisEvent& e)
+	{
+	}
+	void InputManager::ControllerRightJoystickAxis(ControllerRightJoystickAxisEvent& e)
+	{
 	}
 }

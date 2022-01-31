@@ -249,16 +249,17 @@ namespace Proof {
 
         if (glfwGetGamepadState(controller.ID, &state) == false)
             return;
+        int ctrlID = controller.ID;
         for (int buttonCount = 0; buttonCount < 15; buttonCount++) {
 
             if (state.buttons[buttonCount] == GLFW_PRESS)
             {
                 if (controller.Buttons[buttonCount] == GLFW_PRESS) { // THE KEY WAS ALSO PRESSED last FRAME
-                    ControllerButtonPressedEvent event((ControllerButton)buttonCount);
+                    ControllerButtonPressedEvent event(ctrlID,(ControllerButton)buttonCount);
                     EventCallback(event);
                 }
                 else if (controller.Buttons[buttonCount] == GLFW_RELEASE) { // THE KEY WAS NOT PRESSED LAST FRAME
-                    ControllerButtonClickedEvent event((ControllerButton)buttonCount);
+                    ControllerButtonClickedEvent event(ctrlID,(ControllerButton)buttonCount);
                     EventCallback(event);
                 }
                 controller.Buttons[buttonCount] = GLFW_PRESS;
@@ -267,7 +268,7 @@ namespace Proof {
                 
             if (state.buttons[buttonCount] == GLFW_RELEASE) {
                 if (controller.Buttons[buttonCount] == GLFW_PRESS) { // THE button WAS ALSO PRESSED last FRAME
-                    ControllerButtonReleasedEvent event((ControllerButton)buttonCount);
+                    ControllerButtonReleasedEvent event(ctrlID,(ControllerButton)buttonCount);
                     EventCallback(event);
                 }
                 controller.Buttons[buttonCount] = GLFW_RELEASE;
@@ -278,18 +279,18 @@ namespace Proof {
         {
             if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0) { // if the key is pressed
                 if (controller.m_ButtonRightTrigger == GLFW_PRESS) {
-                    ControllerButtonPressedEvent event((ControllerButton)20);
+                    ControllerButtonPressedEvent event(ctrlID,(ControllerButton)20);
                     EventCallback(event);
                 }
                 else if (controller.m_ButtonRightTrigger == GLFW_RELEASE) {
-                    ControllerButtonClickedEvent event((ControllerButton)20);
+                    ControllerButtonClickedEvent event(ctrlID,(ControllerButton)20);
                     EventCallback(event);
                 }
                 controller.m_ButtonRightTrigger = GLFW_PRESS;
             }
             else if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] < 0) { // key is not clicked
                 if (controller.m_ButtonRightTrigger == GLFW_PRESS) { // released
-                    ControllerButtonReleasedEvent event((ControllerButton)20);
+                    ControllerButtonReleasedEvent event(ctrlID,(ControllerButton)20);
                     EventCallback(event);
                 }
                 controller.m_ButtonRightTrigger = GLFW_RELEASE;
@@ -299,18 +300,18 @@ namespace Proof {
         {
             if (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0) { // if the key is pressed
                 if (controller.m_ButtonLeftTriggerr == GLFW_PRESS) {
-                    ControllerButtonPressedEvent event((ControllerButton)21);
+                    ControllerButtonPressedEvent event(ctrlID,(ControllerButton)21);
                     EventCallback(event);
                 }
                 else if (controller.m_ButtonLeftTriggerr == GLFW_RELEASE) {
-                    ControllerButtonClickedEvent event((ControllerButton)21);
+                    ControllerButtonClickedEvent event(ctrlID,(ControllerButton)21);
                     EventCallback(event);
                 }
                 controller.m_ButtonLeftTriggerr = GLFW_PRESS;
             }
             else if (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] < 0) { // key is not clicked
                 if (controller.m_ButtonLeftTriggerr == GLFW_PRESS) { // released
-                    ControllerButtonReleasedEvent event((ControllerButton)21);
+                    ControllerButtonReleasedEvent event(ctrlID,(ControllerButton)21);
                     EventCallback(event);
                 }
                 controller.m_ButtonLeftTriggerr = GLFW_RELEASE;
@@ -322,12 +323,13 @@ namespace Proof {
         GLFWgamepadstate state;
         if (glfwGetGamepadState(controller.ID, &state) == false)
             return;
+        int ctrlID = controller.ID;
         // LEFT ANALOUGE STICK
         {
             float x  = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X]; 
             float y = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
             if ((x > 0.2 || x < -0.2) || (y > 0.2 || y < -0.2)) { // in the futre 0.2 would be deadzone
-                ControllerLeftJoystickAxisEvent event(x, y, x - controller.LeftJoystickX, controller.LeftJoystickY - y);
+                ControllerLeftJoystickAxisEvent event(ctrlID,x, y, x - controller.LeftJoystickX, controller.LeftJoystickY - y);
                 EventCallback(event);
             }
             controller.LeftJoystickX = x;
@@ -338,7 +340,7 @@ namespace Proof {
             float x = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
             float y = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
             if ((x > 0.2 || x < -0.2) || (y > 0.2 || y < -0.2)) { // in the futre 0.2 would be deadzone
-                ControllerLeftJoystickAxisEvent event(x, y, x - controller.RightJoystickX, controller.RightJoystickY - y);
+                ControllerLeftJoystickAxisEvent event(ctrlID,x, y, x - controller.RightJoystickX, controller.RightJoystickY - y);
                 EventCallback(event);
             }
             controller.RightJoystickX = x;
@@ -348,7 +350,7 @@ namespace Proof {
         {
             float trigger = state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
             if (trigger > -1) { // in the futre any value bigger than -1  would be deadzone
-                ControllerTriggerAxisEvent event(trigger, trigger - controller.LeftTriggerAxis, ControllerAxis::LeftTrigger);
+                ControllerTriggerAxisEvent event(ctrlID,trigger, trigger - controller.LeftTriggerAxis, ControllerAxis::LeftTrigger);
                 EventCallback(event);
 
             }
@@ -358,7 +360,7 @@ namespace Proof {
         {
             float trigger = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER];
             if (trigger > -1) { // in the futre any value bigger than -1  would be deadzone
-                ControllerTriggerAxisEvent event(trigger, trigger - controller.LeftTriggerAxis, ControllerAxis::RightTrigger);
+                ControllerTriggerAxisEvent event(ctrlID,trigger, trigger - controller.LeftTriggerAxis, ControllerAxis::RightTrigger);
                 EventCallback(event);
 
             }
