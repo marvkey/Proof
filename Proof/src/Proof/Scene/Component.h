@@ -207,6 +207,20 @@ namespace Proof
 		}
 
 		glm::mat4 GetWorldTransform() const;
+		Vector<float> GetFowardVector()const {
+			// NOT IMPLEMENTED
+			return { cos(glm::radians(Rotation.Y)) * sin(glm::radians(Rotation.Z)), sin(glm::radians(-Rotation.Y)), cos(glm::radians(Rotation.Y)) * cos(glm::radians(Rotation.Z)) };
+		}
+		Vector<float> GetRightVector()const {
+			// NOT IMPLEMENTED
+
+			return { cos(Rotation.Z), 0, -sin(Rotation.Z)};
+		}
+		Vector<float> GetUpVector()const {
+			// NOT IMPLEMENTED
+
+			return Vector<float>::Cross(GetFowardVector(), GetRightVector());
+		}
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -358,7 +372,12 @@ namespace Proof
 		Vector<float> m_Up = {0,1,0};
 	private:
 		void CalculateProjection(const Proof::Vector<float>&position, const Vector<float>& rotation) {
-			m_View = glm::lookAt(glm::vec3{position},glm::vec3{ position } + glm::vec3{rotation},glm::vec3{m_Up});
+			glm::vec3 CameraDirection;
+			CameraDirection.x = cos(glm::radians(rotation.Z)) * cos(glm::radians(rotation.Y));
+			CameraDirection.y = sin(glm::radians(rotation.Y));
+			CameraDirection.z = sin(glm::radians(rotation.Z)) * cos(glm::radians(rotation.Y));
+			Vector<float> direction = glm::normalize(CameraDirection);
+			m_View = glm::lookAt(glm::vec3{ position }, glm::vec3{ position } + glm::vec3{direction}, glm::vec3{ m_Up });
 			m_Projection = glm::perspective(glm::radians(m_FovDeg),(float)m_Width / (float)m_Height,m_NearPlane,m_FarPlane);
 			m_CameraMatrix = m_View * m_Projection;
 		}

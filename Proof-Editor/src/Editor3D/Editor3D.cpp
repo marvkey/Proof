@@ -502,8 +502,9 @@ namespace Proof
 				glm::mat4 cameraView = ActiveWorld->m_EditorCamera.m_View;
 
 				auto& tc = *selectedEntity.GetComponent<TransformComponent>();
-				glm::mat4 transform = tc.GetWorldTransform();
 
+
+				glm::mat4 transform = tc.GetWorldTransform();
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
 				// Snap to 45 degrees for rotation
@@ -521,23 +522,11 @@ namespace Proof
 					if (selectedEntity.HasOwner() == false) {
 						glm::vec3 translation, rotation, scale;
 						MathResource::DecomposeTransform(transform, translation, rotation, scale);
-						glm::vec3 deltaRotation = glm::vec3{ glm::degrees(rotation.x),glm::degrees(rotation.y),glm::degrees(rotation.z) } - glm::vec3{ tc.Rotation };
-						if (GuizmoType == ImGuizmo::OPERATION::TRANSLATE)
-							tc.Location = translation;
-						else if (GuizmoType == ImGuizmo::OPERATION::ROTATE)
-							tc.Rotation += deltaRotation;
-						else
-							tc.Scale = scale;
-					}
-					else {
-						glm::vec3 translation, rotation, scale;
-						MathResource::DecomposeTransform(transform, translation, rotation, scale);
-						tc.Location = tc.GetWorldTransform() * glm::vec4(translation, 1.0);
-						glm::vec3 tempScale = tc.Scale;
-						//glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
-						//tc.Location = translation - tempLocation;
-						//tc.Rotation += deltaRotation;
-						//tc.Scale = glm::vec3{ tc.GetWorldScale() }- scale;
+
+						glm::vec3 deltaRotation = rotation - glm::vec3{tc.Rotation};
+						tc.Location= translation;
+						tc.Rotation += {glm::degrees(deltaRotation.x), glm::degrees(deltaRotation.y), glm::degrees(deltaRotation.z)};
+						tc.Scale = scale;
 					}
 				}
 			}

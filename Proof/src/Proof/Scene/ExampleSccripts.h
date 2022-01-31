@@ -3,6 +3,7 @@
 #include "Proof/Input/Input.h"
 #include <GLFW/glfw3.h>
 #include "Proof/Input/InputManager.h"
+#include "Proof/Core/Core.h"
 namespace Proof{
 	class Proof_API MovementScript:public Script{
 	public:
@@ -96,17 +97,17 @@ namespace Proof{
 		void MoveX(float motionValue) {
 			if (Mouse::IsMouseCaptured() == false)return;
 			PF_ENGINE_INFO("moved X");
-			m_Transform->Location += m_Speed * FrameTime::GetWorldDeltaTime() * Vector<float>{ 0, 1, 0 } *motionValue;
+			m_Transform->Location += m_Speed * FrameTime::GetWorldDeltaTime() * m_Transform->GetFowardVector() * motionValue;
 		}
 		void MoveY(float motionValue) {
 			if (Mouse::IsMouseCaptured() == false)return;
 			PF_ENGINE_INFO("moved Y");
-			m_Transform->Location += FrameTime::GetWorldDeltaTime() * m_Speed * Vector<float>{ 1, 0, 0 }*motionValue;
+			m_Transform->Location += FrameTime::GetWorldDeltaTime() * m_Speed * m_Transform->GetRightVector() * motionValue;
 		}
 		void RotateX(float motionValue) {
 			if (Mouse::IsMouseCaptured() == false)return;
 			PF_ENGINE_INFO("Rotate X");
-			m_Transform->Rotation.Y += m_Speed * FrameTime::GetWorldDeltaTime() * motionValue;
+			m_Transform->Rotation.Z += m_Speed * FrameTime::GetWorldDeltaTime() * motionValue;
 			//if (m_Transform->Rotation.Z > 89)
 			//	m_Transform->Rotation.Z = 89;
 			//
@@ -117,12 +118,12 @@ namespace Proof{
 		void RotateY(float motionValue) {
 			if (Mouse::IsMouseCaptured() == false)return;
 			PF_ENGINE_INFO("Rotate Y");
-			m_Transform->Rotation.X += m_Speed * FrameTime::GetWorldDeltaTime() * motionValue;
-			if (m_Transform->Rotation.X > 89)
-				m_Transform->Rotation.X = 89;
-
-			if (m_Transform->Rotation.X < -89.0f)
-				m_Transform->Rotation.X = -89.0f;
+			m_Transform->Rotation.Y += m_Speed * FrameTime::GetWorldDeltaTime() * motionValue;
+			if (m_Transform->Rotation.Y > 89)
+				m_Transform->Rotation.Y = 89;
+			
+			if (m_Transform->Rotation.Y < -89.0f)
+				m_Transform->Rotation.Y = -89.0f;
 		}
 		bool m_FirstClick=true;
 		float m_MouseLastPosX;

@@ -136,7 +136,7 @@ namespace Proof
 		Button1 = ButtonRight,
 		Button2 = ButtonMiddle,
 	};
-	enum class MouseMovementInput {
+	enum class MouseMovementInput { // rname MouseAxis
 		X =0,
 		Y =1,
 		ScrollUp,
@@ -173,15 +173,18 @@ namespace Proof
 		ButtonGuide = 8,
 		ButtonLeftThumb = 9,
 		ButtonRightThumb = 10,
-		ButtonDPADUP = 11,
-		ButtonDPADRIGHT = 12,
-		ButtonDPADDOWN = 13,
-		ButtonDPADLEFT = 14,
+		ButtonDpadUp= 11,
+		ButtonDpadRight = 12,
+		ButtonDpadDown= 13,
+		ButtonDpadLeft = 14,
+
 
 		ButtonCROSS = ButtonA,
 		ButtonCIRCLE = ButtonB,
 		ButtonSQUARE = ButtonX,
 		ButtonTRIANGLE = ButtonY,
+		ButtonRightTrigger =20, // this are proof defined only used in the proof engine as this values
+		ButtonLeftTrigger = 21 // this are proof defined only used in the proof engine as this values
 	};
 	enum class GamePadAxis{
 		AxisLEFTX = 0,
@@ -190,6 +193,12 @@ namespace Proof
 		AxisRIGHTY = 3,
 		AxisLEFtTRIGGER = 4,
 		AxisRIGHTTRIGGER = 5,
+		LeftX =0,
+		LeftY =1,
+		RightX =2,
+		RightY =3,
+		LeftTrigger =4,
+		RightTrigger =5
 	};
 	enum class InputEvent {
 		None= -1,

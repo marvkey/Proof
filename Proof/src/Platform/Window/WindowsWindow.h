@@ -7,6 +7,16 @@
 #include "Proof/Events/Event.h"
 #include <array>
 namespace Proof {
+    struct Controller {
+        std::string Name;
+        std::array<int,15>Buttons; // SIZE is 15 cause that is teh controller we would support
+        std::array<float, 6> Axis; // value of each axis
+        int ID = 0;
+    private:
+        int m_ButtonRightTrigger = (int)InputEvent::KeyReleased;
+        int m_ButtonLeftTriggerr = (int)InputEvent::KeyReleased;
+        friend class WindowsWindow;
+    };
     class Proof_API WindowsWindow : public Window {
     public:
         WindowsWindow(unsigned int Width, unsigned int Height);
@@ -29,7 +39,7 @@ namespace Proof {
         std::vector<MouseButton> MouseButtonRepeat;
         std::vector<float> MouseScrollX;
         std::vector<float> MouseScrollY;
-        std::array<bool,360>KeyPressed; // This might need to be in another way, taking 
+        std::array<bool,1024>KeyPressed; // This might need to be in another way, taking 
         std::array<bool, 10>MouseButtonPressed; // This might need to be in another way, taking 
 
         virtual void WindowUpdate()override;
@@ -56,11 +66,15 @@ namespace Proof {
         void Mouse_Hover_Window(int entered);
         void Mouse_ScrollWhell_Callback(double xoffset, double yoffset);
         void Window_Close_Callback();
-        void Controller_Callback(int jid, int event);
+        static void Controller_Callback(int jid, int event);
         void Window_Resize_Callback(int width, int height);
         void Window_Position_Callback(int xpos, int ypos);
         void Window_Input_Focus_callback(int focused);
-        void ProcessInput();
+        void Controller_Input();
+        void ContollerButtonCallback(Controller& controller);
+        void ContollerAxisCallback(Controller& controller);
+       
+        std::vector<Controller> m_Controllers;
         friend class CurrentWindow;
         bool Vsync = false;
         std::function<void(Event&)>EventCallback;

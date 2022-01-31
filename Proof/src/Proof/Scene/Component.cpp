@@ -75,11 +75,9 @@ namespace Proof
 		return Scale;
 	}
 	glm::mat4 TransformComponent::GetWorldTransform() const {
-		auto rotation = GetWorldRotation();
-		return glm::translate(glm::mat4(1.0f), { GetWorldLocation()}) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(rotation.X), { 1,0,0 })
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Z), { 0,0,1 })
+		glm::mat4 rotation = glm::toMat4(glm::quat(glm::vec3{ glm::radians(Rotation.X), glm::radians(Rotation.Y), glm::radians(Rotation.Z) }));
+		return glm::translate(glm::mat4(1.0f), { GetWorldLocation()}) 
+			*rotation
 			* glm::scale(glm::mat4(1.0f), { GetWorldScale()});
 	}
 

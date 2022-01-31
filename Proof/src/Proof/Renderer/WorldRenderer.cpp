@@ -19,7 +19,7 @@ namespace Proof{
 			else {
 				for (auto entity : cameraGroup)
 				{
-					auto [transform, camera] = cameraGroup.get<TransformComponent, CameraComponent>(entity);
+					auto& [transform, camera] = cameraGroup.get<TransformComponent, CameraComponent>(entity);
 					camera.CalculateProjection(transform.Location, transform.Rotation);
 					Renderer3DPBR::BeginContext(camera.GetProjection(), camera.GetView(), transform.Location, m_ScreenFrameBuffer, RenderData);
 					break;
