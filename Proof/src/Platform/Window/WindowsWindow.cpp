@@ -47,7 +47,7 @@ namespace Proof {
 
         MouseScrollX.clear();
         MouseScrollY.clear();
-        Controller_Input();
+        ControllerEventCallback();
         //HAVE TO DO THIS SINCE SOMETIEMS GLFW DOES NOT RECIEVE THE KEY RELEASED DUE TO SO MANY KEYS 
         // BEING PRESSED AT THE SAME TIME
         // WE ARE BASICALLY GOING TO DO THIS EVENT FOR THE INPUT MANAGER AXIS
@@ -209,11 +209,13 @@ namespace Proof {
         // WE REMOVE CONTROLLER 2 
         // DOES CONTROLLER 3 THEN GET CHANGED TO CONTROLLER 2 
         // AND CONTROLLLER 4 GETS CHANGED TO CONTROLLER 3
+        if(event == GLFW_CONNECTED) // because when we callback when removed it is removed so checking if gamepad to glfw the controller is alreayd removed
+            if (glfwJoystickIsGamepad(jid) == false)return; // if we are using a controller
         if (event == GLFW_CONNECTED) {
             CurrentWindow::GetWindowClass().m_Controllers.emplace_back(Controller());
             Controller& newController = CurrentWindow::GetWindowClass().m_Controllers.back();
             newController.ID = jid;
-            newController.Name = glfwGetJoystickName(jid);
+            newController.Name = glfwGetGamepadName(jid);
             for (int i = 0; i < newController.Buttons.size(); i++) {
                 newController.Buttons[i] = 0;
             }
@@ -237,44 +239,252 @@ namespace Proof {
         EventCallback(windowEvent);
     }
 
-    void WindowsWindow::Controller_Input(){
+    void WindowsWindow::ControllerEventCallback(){
         for (Controller& controller : m_Controllers) {
             ContollerButtonCallback(controller);
             ContollerAxisCallback(controller);
         }
     }
+    static InputEvent ControllerGetState(Controller& controller, GLFWgamepadstate& state, ControllerButton button) {
+        static std::unordered_map<int, int> s_ControllerLastKeyClicked; // the last key for controller register
 
+        if ((button == ControllerButton::ButtonLeftTrigger) || (button == ControllerButton::ButtonRightTrigger))
+            goto trigerCheck;
+        {
+            int buttonIndex = (int)button;
+            auto it = s_ControllerLastKeyClicked.find(controller.ID);
+            if (it == s_ControllerLastKeyClicked.end()) {
+                s_ControllerLastKeyClicked.insert({ controller.ID,-1 });
+            }
+
+            if (state.buttons[buttonIndex] == GLFW_PRESS) {
+                if (controller.Buttons[buttonIndex] == GLFW_PRESS || controller.Buttons[buttonIndex] == (int)InputEvent::KeyClicked) // THE KEY WAS ALSO PRESSED last FRAME
+                    return InputEvent::KeyPressed;
+                if (controller.Buttons[buttonIndex] == (int)InputEvent::None) { // THE KEY WAS NOT PRESSED LAST FRAME
+                    auto it = s_ControllerLastKeyClicked.find(controller.ID);
+                    if (it != s_ControllerLastKeyClicked.end()) {
+                        it->second = buttonIndex;
+                    }
+                    else {
+                        s_ControllerLastKeyClicked.insert({ controller.ID,buttonIndex });
+                    }
+                    return InputEvent::KeyClicked;
+                }
+            }
+            if (state.buttons[buttonIndex] == GLFW_RELEASE) {
+                if (buttonIndex == s_ControllerLastKeyClicked.at(controller.ID)) { // double click checking
+                    if (controller.Buttons[buttonIndex] == (int)InputEvent::KeyClicked || controller.Buttons[buttonIndex] == (int)InputEvent::KeyPressed) {
+                        static auto before = std::chrono::system_clock::now();
+                        auto now = std::chrono::system_clock::now();
+                        double diff_ms = std::chrono::duration <double, std::milli>(now - before).count();
+                        before = now;
+
+                        if (diff_ms > 10 && diff_ms < 400) {
+                            s_ControllerLastKeyClicked.at(controller.ID) = -1;
+                            return InputEvent::KeyDouble;
+                        }
+                    }
+                }
+                // if not double click that means key is released
+                if (controller.Buttons[buttonIndex] == (int)InputEvent::KeyClicked || controller.Buttons[buttonIndex] == (int)InputEvent::KeyPressed) { // THE button WAS ALSO PRESSED last FRAME
+                    return InputEvent::KeyReleased;
+                }
+            }
+            return InputEvent::None;
+        }
+
+    trigerCheck:
+        // TRIGGER INPUT
+        {
+            // LEFTTRIGGER
+            {
+                if (button == ControllerButton::ButtonLeftTrigger) {
+                    if (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0) { // if the key is pressed
+                        if (controller.m_ButtonLeftTriggerr == GLFW_PRESS || controller.m_ButtonLeftTriggerr == (int)InputEvent::KeyClicked)
+                            return InputEvent::KeyPressed;
+                        if (controller.m_ButtonLeftTriggerr == (int)InputEvent::None) { // THE KEY WAS NOT PRESSED LAST FRAME
+                            auto it = s_ControllerLastKeyClicked.find(controller.ID);
+                            if (it != s_ControllerLastKeyClicked.end()) {
+                                it->second = (int)ControllerButton::ButtonLeftTrigger;
+                            }
+                            else {
+                                s_ControllerLastKeyClicked.insert({ controller.ID,(int)ControllerButton::ButtonLeftTrigger });
+                            }
+                            return InputEvent::KeyClicked;
+                        }
+
+                    }
+                    if (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] < 0) { // key is released
+                        if ((int)ControllerButton::ButtonLeftTrigger == s_ControllerLastKeyClicked.at(controller.ID)) { // double click checking
+                            if (controller.m_ButtonLeftTriggerr == (int)InputEvent::KeyClicked || controller.m_ButtonLeftTriggerr == (int)InputEvent::KeyPressed) { // double click checking
+                                static auto before = std::chrono::system_clock::now();
+                                auto now = std::chrono::system_clock::now();
+                                double diff_ms = std::chrono::duration <double, std::milli>(now - before).count();
+                                before = now;
+                                
+                                if (diff_ms > 10 && diff_ms < 400) {
+                                    s_ControllerLastKeyClicked.at(controller.ID) = -1;
+                                    return InputEvent::KeyDouble;
+                                }
+                            }
+                        }
+                        if (controller.m_ButtonLeftTriggerr == (int)InputEvent::KeyClicked || controller.m_ButtonLeftTriggerr == (int)InputEvent::KeyPressed) { // THE button WAS ALSO PRESSED last FRAME
+                            return InputEvent::KeyReleased;
+                        }
+                    }
+                    return InputEvent::None; // left trigger non
+                }
+            }
+            // RIGHT TRIGGER
+            {
+                if (button == ControllerButton::ButtonRightTrigger) {
+                    if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0) { // if the key is pressed
+                        if (controller.m_ButtonRightTrigger== GLFW_PRESS || controller.m_ButtonRightTrigger == (int)InputEvent::KeyClicked)
+                            return InputEvent::KeyPressed;
+                        if (controller.m_ButtonRightTrigger == (int)InputEvent::None) { // THE KEY WAS NOT PRESSED LAST FRAME
+                            auto it = s_ControllerLastKeyClicked.find(controller.ID);
+                            if (it != s_ControllerLastKeyClicked.end()) {
+                                it->second = (int)ControllerButton::ButtonRightTrigger;
+                            }
+                            else {
+                                s_ControllerLastKeyClicked.insert({ controller.ID,(int)ControllerButton::ButtonRightTrigger });
+                            }
+                            return InputEvent::KeyClicked;
+                        }
+
+                    }
+                    if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] < 0) { // key is released
+                        if ((int)ControllerButton::ButtonRightTrigger == s_ControllerLastKeyClicked.at(controller.ID)) { // double click checking
+                            if (controller.m_ButtonRightTrigger == (int)InputEvent::KeyClicked || controller.m_ButtonRightTrigger == (int)InputEvent::KeyPressed) { // double click checking
+                                static auto before = std::chrono::system_clock::now();
+                                auto now = std::chrono::system_clock::now();
+                                double diff_ms = std::chrono::duration <double, std::milli>(now - before).count();
+                                before = now;
+
+                                if (diff_ms > 10 && diff_ms < 400) {
+                                    s_ControllerLastKeyClicked.at(controller.ID) =(int) ControllerButton::None;
+                                    return InputEvent::KeyDouble;
+                                }
+                            }
+                        }
+                        if (controller.m_ButtonRightTrigger == (int)InputEvent::KeyClicked || controller.m_ButtonRightTrigger == (int)InputEvent::KeyPressed) { // THE button WAS ALSO PRESSED last FRAME
+                            return InputEvent::KeyReleased;
+                        }
+                    }
+                    return InputEvent::None; // right trigger non
+                }
+            }
+
+        }
+        return InputEvent::None; // incase
+    }
     void WindowsWindow::ContollerButtonCallback(Controller& controller){
+        static std::unordered_map<int, int> s_ControllerLastKeyClicked; // the last key for controller register
         GLFWgamepadstate state;
 
         if (glfwGetGamepadState(controller.ID, &state) == false)
             return;
         int ctrlID = controller.ID;
-        for (int buttonCount = 0; buttonCount < 15; buttonCount++) {
+        for (int buttonCount = 0; buttonCount < controller.Buttons.size(); buttonCount++) { // +2 for the trigger kerys4
+            InputEvent action = ControllerGetState(controller, state, (ControllerButton)buttonCount);
+            ControllerButton button = (ControllerButton)buttonCount;
+            controller.Buttons[buttonCount] = (int)action;
 
-            if (state.buttons[buttonCount] == GLFW_PRESS)
-            {
-                if (controller.Buttons[buttonCount] == GLFW_PRESS) { // THE KEY WAS ALSO PRESSED last FRAME
-                    ControllerButtonPressedEvent event(ctrlID,(ControllerButton)buttonCount);
+            switch (action) {
+            case InputEvent::KeyPressed:
+                {
+                    ControllerButtonPressedEvent event(ctrlID, button);
                     EventCallback(event);
                 }
-                else if (controller.Buttons[buttonCount] == GLFW_RELEASE) { // THE KEY WAS NOT PRESSED LAST FRAME
-                    ControllerButtonClickedEvent event(ctrlID,(ControllerButton)buttonCount);
+                break;
+            case InputEvent::KeyReleased:
+                {
+                    ControllerButtonReleasedEvent event(ctrlID, button);
                     EventCallback(event);
                 }
-                controller.Buttons[buttonCount] = GLFW_PRESS;
-                continue;
-            }
-                
-            if (state.buttons[buttonCount] == GLFW_RELEASE) {
-                if (controller.Buttons[buttonCount] == GLFW_PRESS) { // THE button WAS ALSO PRESSED last FRAME
-                    ControllerButtonReleasedEvent event(ctrlID,(ControllerButton)buttonCount);
+                break;
+            case InputEvent::KeyDouble:
+                {
+                    ControllerButtonDoubleClickEvent event(ctrlID, button);
                     EventCallback(event);
                 }
-                controller.Buttons[buttonCount] = GLFW_RELEASE;
-                continue;
+                break;
+            case InputEvent::KeyClicked:
+                {
+                    ControllerButtonClickedEvent event(ctrlID, button);
+                    EventCallback(event);
+                }
+                break;
             }
         }
+        // TRiggers
+        {
+            // Left
+            {
+                ControllerButton button = ControllerButton::ButtonLeftTrigger;
+                InputEvent action = ControllerGetState(controller, state, button);
+                controller.m_ButtonLeftTriggerr = (int)action;
+                switch (action) {
+                case InputEvent::KeyPressed:
+                {
+                    ControllerButtonPressedEvent event(ctrlID, button);
+                    EventCallback(event);
+                }
+                break;
+                case InputEvent::KeyReleased:
+                {
+                    ControllerButtonReleasedEvent event(ctrlID, button);
+                    EventCallback(event);
+                }
+                break;
+                case InputEvent::KeyDouble:
+                {
+                    ControllerButtonDoubleClickEvent event(ctrlID, button);
+                    EventCallback(event);
+                }
+                break;
+                case InputEvent::KeyClicked:
+                {
+                    ControllerButtonClickedEvent event(ctrlID, button);
+                    EventCallback(event);
+                }
+                break;
+                }
+            }
+            // RIGHT
+            {
+                ControllerButton button = ControllerButton::ButtonRightTrigger;
+                InputEvent action = ControllerGetState(controller, state, button);
+                controller.m_ButtonRightTrigger = (int)action;
+                switch (action) {
+                case InputEvent::KeyPressed:
+                {
+                    ControllerButtonPressedEvent event(ctrlID, button);
+                    EventCallback(event);
+                }
+                break;
+                case InputEvent::KeyReleased:
+                {
+                    ControllerButtonReleasedEvent event(ctrlID, button);
+                    EventCallback(event);
+                }
+                break;
+                case InputEvent::KeyDouble:
+                {
+                    ControllerButtonDoubleClickEvent event(ctrlID, button);
+                    EventCallback(event);
+                }
+                break;
+                case InputEvent::KeyClicked:
+                {
+                    ControllerButtonClickedEvent event(ctrlID, button);
+                    EventCallback(event);
+                }
+                break;
+                }
+            }
+        }
+        /*
         // RIGHT TRIGGER
         {
             if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0) { // if the key is pressed
@@ -285,15 +495,40 @@ namespace Proof {
                 else if (controller.m_ButtonRightTrigger == GLFW_RELEASE) {
                     ControllerButtonClickedEvent event(ctrlID,(ControllerButton)20);
                     EventCallback(event);
+                    auto it = s_ControllerLastKeyClicked.find(ctrlID);
+                    if (it != s_ControllerLastKeyClicked.end()) {
+                        it->second = 20;
+                    }
+                    else {
+                        s_ControllerLastKeyClicked.insert({ ctrlID,20 });
+                    }
                 }
                 controller.m_ButtonRightTrigger = GLFW_PRESS;
             }
             else if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] < 0) { // key is not clicked
                 if (controller.m_ButtonRightTrigger == GLFW_PRESS) { // released
-                    ControllerButtonReleasedEvent event(ctrlID,(ControllerButton)20);
-                    EventCallback(event);
+                    if (controller.m_ButtonRightTrigger == s_ControllerLastKeyClicked.at(ctrlID)) { // double click checking
+                        int action = GLFW_RELEASE;
+                        static auto before = std::chrono::system_clock::now();
+                        auto now = std::chrono::system_clock::now();
+                        double diff_ms = std::chrono::duration <double, std::milli>(now - before).count();
+                        before = now;
+                        if (diff_ms > 10 && diff_ms < 400) {
+                            action = (int)InputEvent::KeyDouble;
+                        }
+
+                        if (action == (int)InputEvent::KeyDouble) {
+                            ControllerButtonDoubleClickEvent event(ctrlID, (ControllerButton)20);
+                            EventCallback(event);
+                            controller.m_ButtonRightTrigger = (int)InputEvent::KeyDouble;
+                        }
+                    }
+                    else {
+                        ControllerButtonReleasedEvent event(ctrlID, (ControllerButton)20);
+                        EventCallback(event);
+                        controller.m_ButtonRightTrigger = GLFW_RELEASE;
+                    }
                 }
-                controller.m_ButtonRightTrigger = GLFW_RELEASE;
             }
         }
         // LEFT TRIGGER
@@ -303,20 +538,53 @@ namespace Proof {
                     ControllerButtonPressedEvent event(ctrlID,(ControllerButton)21);
                     EventCallback(event);
                 }
-                else if (controller.m_ButtonLeftTriggerr == GLFW_RELEASE) {
+                else if (controller.m_ButtonLeftTriggerr == GLFW_RELEASE) { // clickde
                     ControllerButtonClickedEvent event(ctrlID,(ControllerButton)21);
                     EventCallback(event);
+                    auto it = s_ControllerLastKeyClicked.find(ctrlID);
+                    if (it != s_ControllerLastKeyClicked.end()) {
+                        it->second = (int)ControllerButton::ButtonLeftTrigger;
+                    }
+                    else {
+                        s_ControllerLastKeyClicked.insert({ ctrlID,(int)ControllerButton::ButtonLeftTrigger });
+                    }
                 }
                 controller.m_ButtonLeftTriggerr = GLFW_PRESS;
             }
             else if (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] < 0) { // key is not clicked
                 if (controller.m_ButtonLeftTriggerr == GLFW_PRESS) { // released
-                    ControllerButtonReleasedEvent event(ctrlID,(ControllerButton)21);
-                    EventCallback(event);
+                    if (controller.m_ButtonLeftTriggerr == s_ControllerLastKeyClicked.at(ctrlID)) { // double click checking
+                        int action = GLFW_RELEASE;
+                        static auto before = std::chrono::system_clock::now();
+                        auto now = std::chrono::system_clock::now();
+                        double diff_ms = std::chrono::duration <double, std::milli>(now - before).count();
+                        before = now;
+                        if (diff_ms > 10 && diff_ms < 400) {
+                            action = (int)InputEvent::KeyDouble;
+                        }
+
+                        if (action == (int)InputEvent::KeyDouble) {
+                            ControllerButtonDoubleClickEvent event(ctrlID, (ControllerButton)controller.m_ButtonLeftTriggerr);
+                            EventCallback(event);
+                            controller.m_ButtonLeftTriggerr = (int)InputEvent::KeyDouble;
+                        }
+                    }
+                    else {
+                        ControllerButtonReleasedEvent event(ctrlID, (ControllerButton)21);
+                        EventCallback(event);
+                        controller.m_ButtonLeftTriggerr = GLFW_RELEASE;
+                    }
                 }
-                controller.m_ButtonLeftTriggerr = GLFW_RELEASE;
             }
         }
+        // Playstation ONLY
+        {
+            { 
+                // 13 IS TOUCHPAD CLICK
+                
+            }
+        }
+        */
     }
 
     void WindowsWindow::ContollerAxisCallback(Controller& controller) {

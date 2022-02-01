@@ -95,7 +95,18 @@ namespace Proof {
             return ss.str();
         }
     };
+    class Proof_API ControllerButtonDoubleClickEvent : public ControllerButtonEvent {
+    public:
+        EVENT_CLASS_TYPE(ControllerButtonDoubleClicked)
+            ControllerButtonDoubleClickEvent(int index, ControllerButton button)
+            : ControllerButtonEvent(index, button) {}
 
+        std::string ToString() const override {
+            std::stringstream ss;
+            ss << "Controller " << m_Index << " ButtonDoubleClickEvent: " << (int)m_Button;
+            return ss.str();
+        }
+    };
     class Proof_API ControllerJoystickAxisEvent : public Event {
         EVENT_CLASS_CATEGORY(EventCategoryAxis | EventCategoryInput)
     public:

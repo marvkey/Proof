@@ -187,6 +187,9 @@ namespace Proof
 		ButtonRightTrigger =20, // this are proof defined only used in the proof engine as this values
 		ButtonLeftTrigger = 21 // this are proof defined only used in the proof engine as this values
 	};
+	enum class Ps4ControllerButton {
+
+	};
 	enum class ControllerAxis{
 		LeftX =0,
 		LeftY =1,
@@ -197,11 +200,11 @@ namespace Proof
 	};
 	enum class InputEvent {
 		None= -1,
-		KeyReleased = 0,	
-		KeyClicked = 1,
+		KeyReleased = 0,
+		KeyPressed = 1,
 		KeyHold = 2,
+		KeyClicked = 3,
 		//KEY PRESSED AND KEY HOLD IS THE SMAE FOR MOUSE INPUTS
-		KeyPressed =3, 
 		KeyDouble = 4
 	};
 }

@@ -55,7 +55,25 @@ namespace Proof {
     void Application::OnEvent(Event& e) {
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
-        dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent)); 
+        dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent));
+        dispatcher.Dispatch<ControllerButtonDoubleClickEvent>([](ControllerButtonDoubleClickEvent& e) {
+            PF_INFO(e.ToString().c_str());
+        });
+        dispatcher.Dispatch<ControllerConnectEvent>([](auto& e) {
+            PF_INFO(e.ToString().c_str());
+        });
+        dispatcher.Dispatch<ControllerDisconnectEvent>([](auto& e) {
+            PF_INFO(e.ToString().c_str());
+        });
+        dispatcher.Dispatch<ControllerButtonPressedEvent>([](auto& e) {
+            //PF_INFO(e.ToString().c_str());
+        });
+        dispatcher.Dispatch<ControllerButtonClickedEvent>([](auto& e) {
+            PF_INFO(e.ToString().c_str());
+        });
+        dispatcher.Dispatch<ControllerButtonReleasedEvent>([](auto& e) {
+            PF_INFO(e.ToString().c_str());
+        });
          for (Layer* layer : MainLayerStack.V_LayerStack)
             layer->OnEvent(e);
     }

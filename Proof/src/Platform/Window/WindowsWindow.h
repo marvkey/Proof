@@ -62,7 +62,7 @@ namespace Proof {
         void Window_Resize_Callback(int width, int height);
         void Window_Position_Callback(int xpos, int ypos);
         void Window_Input_Focus_callback(int focused);
-        void Controller_Input();
+        void ControllerEventCallback();
         void ContollerButtonCallback(Controller& controller);
         void ContollerAxisCallback(Controller& controller);
        

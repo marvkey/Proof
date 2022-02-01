@@ -10,11 +10,15 @@ namespace Proof {
         Other =2
     };
     struct Controller {
+        Controller() {
+            for (int& num : Buttons)
+                num = (int)InputEvent::None;
+        }
         std::string Name;
         std::array<int, 15>Buttons; // SIZE is 15 cause that is teh controller we would support
         int ID = 0;
-        int m_ButtonRightTrigger = (int)InputEvent::KeyReleased;            // needs to be seperate since GLFW does not handle this we do it our self
-        int m_ButtonLeftTriggerr = (int)InputEvent::KeyReleased;            // needs to be seperate since GLFW does not handle this we do it our self
+        int m_ButtonRightTrigger = (int)InputEvent::None;            // needs to be seperate since GLFW does not handle this we do it our self
+        int m_ButtonLeftTriggerr = (int)InputEvent::None;            // needs to be seperate since GLFW does not handle this we do it our self
         float LeftJoystickX =0, LeftJoystickY = 0;                             // change to 2d vector
         float DistanceLeftJoystickX = 0, DistanceLeftJoystickY = 0;            // change to 2d vector
 

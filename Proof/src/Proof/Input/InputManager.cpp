@@ -24,6 +24,7 @@ namespace Proof {
 			dispatcher.Dispatch<ControllerButtonClickedEvent>(InputManager::OnControllerClicked);
 			dispatcher.Dispatch<ControllerButtonPressedEvent>(InputManager::OnControllerPressed);
 			dispatcher.Dispatch<ControllerButtonReleasedEvent>(InputManager::OnControllerReleased);
+			
 			// AXIS
 			{
 				dispatcher.Dispatch<ControllerLeftJoystickAxisEvent>(InputManager::ControllerLeftJoystickAxis);

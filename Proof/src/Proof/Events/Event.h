@@ -7,7 +7,7 @@ namespace Proof{
 		WindowClose,WindowResize,WindowFocus,WindowMoved,WindowMinimize,
 		KeyPressed,KeyReleased,KeyClicked,KeyDoubleClick,KeyHold,	
 		MouseButtonPressed,MouseButtonReleased,MouseMoved,MouseScrolled,MouseButtonClicked,MouseButtonDoubleClick,
-		ControllerButtonClicked, ControllerButtonPressed, ControllerButtonReleased, ControllerLeftJoystickAxis, ControllerRightJoystickAxis,ControllerTriggerAxis,ControllerConnect, ControllerDisconnect
+		ControllerButtonClicked,ControllerButtonDoubleClicked, ControllerButtonPressed, ControllerButtonReleased, ControllerLeftJoystickAxis, ControllerRightJoystickAxis,ControllerTriggerAxis,ControllerConnect, ControllerDisconnect
 	};
 
 	enum EventCategory {
