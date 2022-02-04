@@ -44,6 +44,7 @@ namespace Proof {
             return m_InputEventEnabled;
         }
     private:
+        friend class Input;
         // have to use this because GLFW someties will not send that a key hasb een released
         std::vector<KeyBoardKey> m_KeyPressedEventCheck;
         std::vector<MouseButton> m_MouseButtonPressedEventCheck;
@@ -58,7 +59,7 @@ namespace Proof {
         void Mouse_Hover_Window(int entered);
         void Mouse_ScrollWhell_Callback(double xoffset, double yoffset);
         void Window_Close_Callback();
-        static void Controller_Callback(int jid, int event);
+        static void ControllerCallbackConnect(int jid, int event);
         void Window_Resize_Callback(int width, int height);
         void Window_Position_Callback(int xpos, int ypos);
         void Window_Input_Focus_callback(int focused);

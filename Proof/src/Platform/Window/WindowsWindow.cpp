@@ -203,7 +203,7 @@ namespace Proof {
         EventCallback(windowEvent);
     }
 
-    void WindowsWindow::Controller_Callback(int jid, int event){
+    void WindowsWindow::ControllerCallbackConnect(int jid, int event){
         // TODO NEED TO FIGURE IF WE 
         // HAVE 4 CONTROLLERS
         // WE REMOVE CONTROLLER 2 
@@ -484,99 +484,6 @@ namespace Proof {
                 }
             }
         }
-        /*
-        // RIGHT TRIGGER
-        {
-            if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0) { // if the key is pressed
-                if (controller.m_ButtonRightTrigger == GLFW_PRESS) {
-                    ControllerButtonPressedEvent event(ctrlID,(ControllerButton)20);
-                    EventCallback(event);
-                }
-                else if (controller.m_ButtonRightTrigger == GLFW_RELEASE) {
-                    ControllerButtonClickedEvent event(ctrlID,(ControllerButton)20);
-                    EventCallback(event);
-                    auto it = s_ControllerLastKeyClicked.find(ctrlID);
-                    if (it != s_ControllerLastKeyClicked.end()) {
-                        it->second = 20;
-                    }
-                    else {
-                        s_ControllerLastKeyClicked.insert({ ctrlID,20 });
-                    }
-                }
-                controller.m_ButtonRightTrigger = GLFW_PRESS;
-            }
-            else if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] < 0) { // key is not clicked
-                if (controller.m_ButtonRightTrigger == GLFW_PRESS) { // released
-                    if (controller.m_ButtonRightTrigger == s_ControllerLastKeyClicked.at(ctrlID)) { // double click checking
-                        int action = GLFW_RELEASE;
-                        static auto before = std::chrono::system_clock::now();
-                        auto now = std::chrono::system_clock::now();
-                        double diff_ms = std::chrono::duration <double, std::milli>(now - before).count();
-                        before = now;
-                        if (diff_ms > 10 && diff_ms < 400) {
-                            action = (int)InputEvent::KeyDouble;
-                        }
-
-                        if (action == (int)InputEvent::KeyDouble) {
-                            ControllerButtonDoubleClickEvent event(ctrlID, (ControllerButton)20);
-                            EventCallback(event);
-                            controller.m_ButtonRightTrigger = (int)InputEvent::KeyDouble;
-                        }
-                    }
-                    else {
-                        ControllerButtonReleasedEvent event(ctrlID, (ControllerButton)20);
-                        EventCallback(event);
-                        controller.m_ButtonRightTrigger = GLFW_RELEASE;
-                    }
-                }
-            }
-        }
-        // LEFT TRIGGER
-        {
-            if (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0) { // if the key is pressed
-                if (controller.m_ButtonLeftTriggerr == GLFW_PRESS) {
-                    ControllerButtonPressedEvent event(ctrlID,(ControllerButton)21);
-                    EventCallback(event);
-                }
-                else if (controller.m_ButtonLeftTriggerr == GLFW_RELEASE) { // clickde
-                    ControllerButtonClickedEvent event(ctrlID,(ControllerButton)21);
-                    EventCallback(event);
-                    auto it = s_ControllerLastKeyClicked.find(ctrlID);
-                    if (it != s_ControllerLastKeyClicked.end()) {
-                        it->second = (int)ControllerButton::ButtonLeftTrigger;
-                    }
-                    else {
-                        s_ControllerLastKeyClicked.insert({ ctrlID,(int)ControllerButton::ButtonLeftTrigger });
-                    }
-                }
-                controller.m_ButtonLeftTriggerr = GLFW_PRESS;
-            }
-            else if (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] < 0) { // key is not clicked
-                if (controller.m_ButtonLeftTriggerr == GLFW_PRESS) { // released
-                    if (controller.m_ButtonLeftTriggerr == s_ControllerLastKeyClicked.at(ctrlID)) { // double click checking
-                        int action = GLFW_RELEASE;
-                        static auto before = std::chrono::system_clock::now();
-                        auto now = std::chrono::system_clock::now();
-                        double diff_ms = std::chrono::duration <double, std::milli>(now - before).count();
-                        before = now;
-                        if (diff_ms > 10 && diff_ms < 400) {
-                            action = (int)InputEvent::KeyDouble;
-                        }
-
-                        if (action == (int)InputEvent::KeyDouble) {
-                            ControllerButtonDoubleClickEvent event(ctrlID, (ControllerButton)controller.m_ButtonLeftTriggerr);
-                            EventCallback(event);
-                            controller.m_ButtonLeftTriggerr = (int)InputEvent::KeyDouble;
-                        }
-                    }
-                    else {
-                        ControllerButtonReleasedEvent event(ctrlID, (ControllerButton)21);
-                        EventCallback(event);
-                        controller.m_ButtonLeftTriggerr = GLFW_RELEASE;
-                    }
-                }
-            }
-        }
         // Playstation ONLY
         {
             { 
@@ -584,7 +491,6 @@ namespace Proof {
                 
             }
         }
-        */
     }
 
     void WindowsWindow::ContollerAxisCallback(Controller& controller) {
@@ -715,8 +621,7 @@ namespace Proof {
             WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
             proofWindow.Window_Input_Focus_callback(focused);
         });
-
-        glfwSetJoystickCallback(WindowsWindow::Controller_Callback);
+        glfwSetJoystickCallback(WindowsWindow::ControllerCallbackConnect);
         PF_INFO("Window created widht %i height %i",Width,Height);
         return 0;
     }

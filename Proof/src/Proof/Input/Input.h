@@ -24,5 +24,19 @@ namespace Proof
 		static float GetScrollWheelY();
 		static float GetMousePosX();
 		static float GetMousePosY();
+
+		// CONTROLLER
+		static bool IsControllerClicked(int ID,ControllerButton button);
+		static bool IsAnyControllerClicked(ControllerButton button);
+
+		static bool IsControllerDoubleClick(int ID, ControllerButton button);
+		static bool IsAnyControllerDoubleClick(ControllerButton button);
+
+		static bool IsControllerReleased(int ID, ControllerButton button);
+		static bool IsAnyControllerReleased(ControllerButton button);
+
+		static bool IsControllerPressed(int ID, ControllerButton button);
+		static bool IsAnyControllerPressed(ControllerButton button);
+
 	};
 }

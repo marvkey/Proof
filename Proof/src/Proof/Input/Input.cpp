@@ -100,4 +100,64 @@ namespace Proof
 		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
 		return Mouse::GetPosY();
 	}
+	bool Input::IsControllerClicked(int ID, ControllerButton button){
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return controller.Buttons[(int)button] == (int)InputEvent::KeyClicked;
+		}
+		return false;
+	}
+	bool Input::IsAnyControllerClicked(ControllerButton button){
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.Buttons[(int)button] == (int)InputEvent::KeyClicked)
+				return true;
+		}
+		return false;
+	}
+	bool Input::IsControllerDoubleClick(int ID, ControllerButton button){
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return controller.Buttons[(int)button] == (int)InputEvent::KeyDouble;
+		}
+		return false;
+	}
+	bool Input::IsAnyControllerDoubleClick(ControllerButton button) {
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.Buttons[(int)button] == (int)InputEvent::KeyDouble)
+				return true;
+		}
+		return false;
+	}
+	bool Input::IsControllerReleased(int ID, ControllerButton button){
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return controller.Buttons[(int)button] == (int)InputEvent::KeyReleased;
+		}
+		return false;
+	}
+	bool Input::IsAnyControllerReleased(ControllerButton button){
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.Buttons[(int)button] == (int)InputEvent::KeyReleased)
+				return true;
+		}
+		return false;
+	}
+	bool Input::IsControllerPressed(int ID, ControllerButton button){
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return controller.Buttons[(int)button] == (int)InputEvent::KeyPressed;
+		}
+		return false;
+	}
+	bool Input::IsAnyControllerPressed(ControllerButton button){
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.Buttons[(int)button] == (int)InputEvent::KeyPressed)
+				return true;
+		}
+		return false;
+	}
 }
