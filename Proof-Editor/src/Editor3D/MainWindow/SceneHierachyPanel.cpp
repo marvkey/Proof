@@ -294,11 +294,14 @@ namespace Proof {
 				entity.AddComponent<CubeColliderComponent>();
 				ImGui::CloseCurrentPopup();
 			}
-			if (ImGui::MenuItem("Spher Collider ")) {
+			if (ImGui::MenuItem("Sphere Collider ")) {
 				entity.AddComponent<SphereColliderComponent>();
 				ImGui::CloseCurrentPopup();
 			}
-
+			if (ImGui::MenuItem("Rigid Body")) {
+				entity.AddComponent<RigidBodyComponent>();
+				ImGui::CloseCurrentPopup();
+			}
 			ImGui::EndPopup();
 		}
 		uint32_t IndexValue = 0;
@@ -535,6 +538,13 @@ namespace Proof {
 		if (sphereColliderComponent != nullptr) {
 			DrawComponents<SphereColliderComponent>("SphereColliderComponent: ", entity, sphereColliderComponent, IndexValue, [](SphereColliderComponent& object) {
 				ImGui::DragFloat("Radius", &object.Radius, 0.5);
+			});
+			IndexValue += 1;
+		}
+
+		RigidBodyComponent* rigidBodyComponent = entity.GetComponent<RigidBodyComponent>();
+		if (rigidBodyComponent != nullptr) {
+			DrawComponents<RigidBodyComponent>("RigidBodyComponent: ", entity, rigidBodyComponent, IndexValue, [](RigidBodyComponent& object) {
 			});
 			IndexValue += 1;
 		}

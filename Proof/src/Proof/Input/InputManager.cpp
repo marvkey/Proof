@@ -89,6 +89,7 @@ namespace Proof {
 	void InputManager::OnKeyHold(KeyHoldEvent& e){
 		for (const auto& [name, action] : S_ActionMapping) {
 			// checking if key hold is an available format
+			if (action.FunctionCallback == nullptr)continue;
 			if (action.AvalaibleInputEvents[(int)InputEvent::KeyHold] == 0) 
 				continue;
 			for (auto& inputs : action.m_Inputs) {
@@ -101,6 +102,7 @@ namespace Proof {
 	void InputManager::OnKeyDoubleClicked(KeyDoubleClickEvent& e){
 		for (const auto& [name, action] : S_ActionMapping) {
 			// checking if KeyDouble is an available format
+			if (action.FunctionCallback == nullptr)continue;
 			if (action.AvalaibleInputEvents[(int)InputEvent::KeyDouble] == 0)
 				continue;
 			if(action.AvalableDevices[(int)InputDevice::KeyBoard] == 0)
@@ -114,6 +116,7 @@ namespace Proof {
 	}
 	void InputManager::OnKeyReleased(KeyReleasedEvent& e){
 		for (const auto& [name, action] : S_ActionMapping) {
+			if (action.FunctionCallback == nullptr)continue;
 			// checking if key Releaed is an available format
 			if (action.AvalaibleInputEvents[(int)InputEvent::KeyReleased] == 0)
 				continue;
@@ -128,7 +131,9 @@ namespace Proof {
 	}
 	
 	void InputManager::OnKeyClicked(KeyClickedEvent& e){
-;		for (const auto& [name, action] : S_ActionMapping) {
+		for (const auto& [name, action] : S_ActionMapping) {
+			if (action.FunctionCallback == nullptr)continue;
+
 			// checking if key CLicked is an available format
 			if (action.AvalaibleInputEvents[(int)InputEvent::KeyClicked] == 0)
 				continue;
@@ -143,6 +148,8 @@ namespace Proof {
 		// Motion movement
 		{
 			for (const auto& [name, motion] : s_MotionMapping) {
+				if (motion.FunctionCallback == nullptr)continue;
+
 				if (motion.AvalableDevices[(int)InputDevice::KeyBoard] == 0)
 					continue;
 				for (auto& inputs : motion.Inputs) {
@@ -156,7 +163,8 @@ namespace Proof {
 		// Action 
 		{
 			for (const auto& [name, action] : S_ActionMapping) {
-			// checking if key Pressed is an available format
+				if (action.FunctionCallback == nullptr)continue;
+				// checking if key Pressed is an available format
 				if (action.AvalaibleInputEvents[(int)InputEvent::KeyPressed] == 0)
 					continue;
 				if(action.AvalableDevices[(int)InputDevice::KeyBoard] == 0)
@@ -172,7 +180,8 @@ namespace Proof {
 
 	void InputManager::OnMouseClicked(MouseButtonClickedEvent& e){
 		for (const auto& [name, action] : S_ActionMapping) {
-		// checking if key Pressed is an available format
+			if (action.FunctionCallback == nullptr)continue;
+			// checking if key Pressed is an available format
 			if (action.AvalaibleInputEvents[(int)InputEvent::KeyClicked] == 0)
 				continue;
 			if(action.AvalableDevices[(int)InputDevice::MouseButton] == 0)
@@ -189,7 +198,8 @@ namespace Proof {
 
 	void InputManager::OnMousePressed(MouseButtonPressedEvent& e){
 		for (const auto& [name, action] : S_ActionMapping) {
-		// checking if key Pressed is an available format
+			if (action.FunctionCallback == nullptr)continue;
+			// checking if key Pressed is an available format
 			if (action.AvalaibleInputEvents[(int)InputEvent::KeyPressed] == 0)
 				continue;
 			if(action.AvalableDevices[(int)InputDevice::MouseButton] == 0)
@@ -205,6 +215,7 @@ namespace Proof {
 		// Motion movement
 		{
 			for (const auto& [name, motion] : s_MotionMapping) {
+				if (motion.FunctionCallback == nullptr)continue;
 				if (motion.AvalableDevices[(int)InputDevice::MouseButton] == 0)
 					continue;
 				for (auto& inputs : motion.Inputs) {
@@ -220,7 +231,8 @@ namespace Proof {
 	void InputManager::OnMouseReleased(MouseButtonReleasedEvent& e){
 		{
 			for (const auto& [name, action] : S_ActionMapping) {
-			// checking if key Pressed is an available format
+				if (action.FunctionCallback == nullptr)continue;
+				// checking if key Pressed is an available format
 				if (action.AvalaibleInputEvents[(int)InputEvent::KeyReleased] == 0)
 					continue;
 				if(action.AvalableDevices[(int)InputDevice::MouseButton] == 0)
@@ -241,6 +253,7 @@ namespace Proof {
 		// Motion Movement
 		{
 			for (const auto& [name, motion] : s_MotionMapping) {
+				if (motion.FunctionCallback == nullptr)continue;
 				if (motion.AvalableDevices[(int)InputDevice::MouseMovement] == 0)
 					continue;
 				for (auto& inputs : motion.Inputs) {
@@ -258,6 +271,7 @@ namespace Proof {
 	}
 	void InputManager::OnControllerClicked(ControllerButtonClickedEvent& e){
 		for (const auto& [name, action] : S_ActionMapping) {
+			if (action.FunctionCallback == nullptr)continue;
 			// checking if key Pressed is an available format
 			if (action.AvalaibleInputEvents[(int)InputEvent::KeyClicked] == 0)
 				continue;
@@ -276,6 +290,7 @@ namespace Proof {
 		// ACTION
 		{
 			for (const auto& [name, action] : S_ActionMapping) {
+				if (action.FunctionCallback == nullptr)continue;
 				// checking if key Pressed is an available format
 				if (action.AvalaibleInputEvents[(int)InputEvent::KeyPressed] == 0)
 					continue;
@@ -293,6 +308,7 @@ namespace Proof {
 		// M0TIION
 		{
 			for (const auto& [name, motion] : s_MotionMapping) {
+				if (motion.FunctionCallback == nullptr)continue;
 				if (motion.AvalableDevices[(int)InputDevice::ControllerButton] == 0) // controller button supported
 					continue;
 				for (auto& inputs : motion.Inputs) {
@@ -306,6 +322,7 @@ namespace Proof {
 	}
 	void InputManager::OnControllerReleased(ControllerButtonReleasedEvent& e){
 		for (const auto& [name, action] : S_ActionMapping) {
+			if (action.FunctionCallback == nullptr)continue;
 			// checking if key Pressed is an available format
 			if (action.AvalaibleInputEvents[(int)InputEvent::KeyReleased] == 0)
 				continue;
@@ -322,6 +339,7 @@ namespace Proof {
 	}
 	void InputManager::ControllerTriggerAxis(ControllerTriggerAxisEvent& e){
 		for (const auto& [name, motion] : s_MotionMapping) {
+			if (motion.FunctionCallback == nullptr)continue;
 			if (motion.AvalableDevices[(int)InputDevice::ControllerAxis] == 0) // controller button supported
 				continue;
 			for (auto& inputs : motion.Inputs) {
@@ -334,6 +352,7 @@ namespace Proof {
 	}
 	void InputManager::ControllerLeftJoystickAxis(ControllerLeftJoystickAxisEvent& e){
 		for (const auto& [name, motion] : s_MotionMapping) {
+			if (motion.FunctionCallback == nullptr)continue;
 			if (motion.AvalableDevices[(int)InputDevice::ControllerAxis] == 0) // controller button supported
 				continue;
 			for (auto& inputs : motion.Inputs) {
@@ -349,6 +368,7 @@ namespace Proof {
 	void InputManager::ControllerRightJoystickAxis(ControllerRightJoystickAxisEvent& e)
 	{
 		for (const auto& [name, motion] : s_MotionMapping) {
+			if (motion.FunctionCallback == nullptr)continue;
 			if (motion.AvalableDevices[(int)InputDevice::ControllerAxis] == 0) // controller button supported
 				continue;
 			for (auto& inputs : motion.Inputs) {

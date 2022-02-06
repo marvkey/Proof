@@ -135,6 +135,18 @@ namespace Proof {
 				out << YAML::EndMap; // SphereColliderComponent
 			}
 		}
+		{
+			RigidBodyComponent* rigidBody = entity.GetComponent<RigidBodyComponent>();
+			if (rigidBody != nullptr) {
+				out << YAML::Key << "RigidBodyComponent";
+				out << YAML::BeginMap; // RigidBodyComponent
+				out << YAML::Key << "Mass" << rigidBody->Mass;
+				out << YAML::Key << "Drag" << rigidBody->Drag;
+				out << YAML::Key << "AngularDrag" << rigidBody->AngularDrag;
+				out << YAML::Key << "Gravity" << rigidBody->Gravity;
+				out << YAML::EndMap; // RigidBodyComponent
+			}
+		}
 
 		out << YAML::EndMap; // entity
 	}
@@ -299,6 +311,17 @@ namespace Proof {
 					auto& src = *NewEntity.AddComponent<SphereColliderComponent>();
 					src.Offset = spherColliderComponent["Offset"].as<Vector<float>>();
 					src.Radius= spherColliderComponent["Radius"].as<float>();
+				}
+			}
+			// RIGID BODY
+			{
+				auto rigidBodyComponent = entity["RigidBodyComponent"];
+				if (rigidBodyComponent) {
+					auto& rgb = *NewEntity.AddComponent<RigidBodyComponent>();
+					rgb.Mass = rigidBodyComponent["Mass"].as<float>();
+					rgb.Drag = rigidBodyComponent["Drag"].as<float>();
+					rgb.AngularDrag = rigidBodyComponent["AngularDrag"].as<float>();
+					rgb.Gravity = rigidBodyComponent["Gravity"].as<float>();
 				}
 			}
 		}

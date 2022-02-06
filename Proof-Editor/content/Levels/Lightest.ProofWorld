@@ -70,10 +70,10 @@ Entities:
       MaterialPointerID: 0
   - Entity: 1047949078784288998
     TagComponent:
-      Tag: Sphere
+      Tag: SphereRigibBody
       tags: []
     TransformComponent:
-      Location: [-0.277358085, 11.5002222, -4.7042017]
+      Location: [0, 9, -8.30000019]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
@@ -107,9 +107,9 @@ Entities:
       Tag: Cube
       tags: []
     TransformComponent:
-      Location: [0.889144063, 12.1407814, -3.63439178]
+      Location: [0.889144063, 12.1407814, -8]
       Rotation: [34.2999992, 0, 0]
-      Scale: [2.51199985, 2.51199985, 3.74874425]
+      Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
       Children: []
@@ -124,20 +124,12 @@ Entities:
       Tag: Camera
       tags: []
     TransformComponent:
-      Location: [-3.10379958, 10.1861248, 0.118286207]
+      Location: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [0.100000001, 0.100000001, 0.100000001]
     ChildComponent:
       OwnerID: 0
       Children: []
-    CameraComponent:
-      AutoSetDimension: true
-      NearPlane: 0.100000001
-      FarPlane: 1000
-      FOV: 45
-      Width: 250
-      Height: 250
-      UpVector: [0, 1, 0]
     CubeColliderComponent:
       OffsetLocation: [0, 0, 0]
       OffsetScale: [0, 0, 0]

@@ -5,7 +5,7 @@
 #include "Entity.h"
 namespace Proof {
 	void PhysicsEngine::Start(){
-
+		/*
 		auto& spherColliderView = m_World->m_Registry.view<SphereColliderComponent>();
 		for (auto entity : spherColliderView) {
 			auto& sphereCollider = spherColliderView.get<SphereColliderComponent>(entity);
@@ -21,10 +21,23 @@ namespace Proof {
 			//auto& collider = m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::CubeCollider(transform->Location + cubeCollider.OffsetLocation, transform->Rotation, transform->Scale + cubeCollider.OffsetLocation)));
 			//cubeCollider.RuntimeBody = collider.GetCollider();
 		}
+		*/
+		{
+			auto& rigidBodyView = m_World->m_Registry.view<RigidBodyComponent>();
+			for (auto entity : rigidBodyView) {
+				auto& rigidBody = rigidBodyView.get<RigidBodyComponent>(entity);
+				auto& body = m_PhysicsEngine.AddRigidBody(ProofPhysicsEngine::RigidBody());
+				const auto& transform = Entity{ entity,m_World }.GetComponent<TransformComponent>();
+				body.Location = transform->Location;
+				body.Rotation = transform->Rotation;
+				body.Gravity = rigidBody.UseGravity;
+				rigidBody.RuntimeBody = &body;
+			}
+		}
 	}
 	void PhysicsEngine::Update(float delta)
 	{
-		
+		/*
 		// Sphere Collider
 		{
 			auto& sccV = m_World->m_Registry.view<SphereColliderComponent>();
@@ -49,7 +62,23 @@ namespace Proof {
 				collider->Scale = transform.Scale + cubeCollider.OffsetScale;
 			}
 		}
-		//m_PhysicsEngine.Simulate(delta);
+		*/
+
+		m_PhysicsEngine.Simulate(delta);
+		// RIGID BODY
+		{
+			auto& rgView = m_World->m_Registry.view<RigidBodyComponent>();
+			for (auto entity : rgView) {
+				auto& rigidBodyComponent = rgView.get<RigidBodyComponent>(entity);
+
+				Entity currentEntity{ entity, m_World };
+				auto& transform = *currentEntity.GetComponent<TransformComponent>();
+				ProofPhysicsEngine::RigidBody* rigidBody = (ProofPhysicsEngine::RigidBody*) rigidBodyComponent.RuntimeBody;
+				transform.Location = rigidBody->Location;
+				transform.Rotation = rigidBody->Rotation;
+				rigidBody->Gravity = rigidBodyComponent.UseGravity;
+			}
+		}
 		//m_PhysicsEngine.HandleCollisions();
 	}
 	void PhysicsEngine::End(){

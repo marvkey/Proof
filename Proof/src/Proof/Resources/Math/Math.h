@@ -163,7 +163,7 @@ namespace Proof
 			return Degree * (PIE() / 180);
 		}
 		// @return the numerical value PIE
-		inline static float PIE() {
+		constexpr inline static float PIE() {
 			return 3.14159265359;
 		}
 		// @return the max value of a specific type

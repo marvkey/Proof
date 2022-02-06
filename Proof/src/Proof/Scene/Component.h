@@ -426,4 +426,23 @@ namespace Proof
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 	};
+
+	class Proof_API RigidBodyComponent {
+	public:
+		RigidBodyComponent(const RigidBodyComponent&) = default;
+		RigidBodyComponent() = default;
+		float Mass = 1.0f;
+		float Drag = 1.0f;
+		float AngularDrag = 1.0f;
+		bool UseGravity = true;
+		bool MassInfinite = false;
+
+	private:
+		void* RuntimeBody = nullptr;
+		friend class World;
+		friend class SceneSerializer;
+		friend class SceneHierachyPanel;
+		friend class WorldRenderer;
+		friend class PhysicsEngine;
+	};
 }

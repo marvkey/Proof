@@ -13,7 +13,7 @@ namespace ProofPhysicsEngine {
 		void Update(float deltaTime) {
 			// calculate linear acceleration from force inputs
 			m_LastFrameAcceleration = m_Acceleration;
-			m_LastFrameAcceleration += m_ForceAccum * GetInverseMass;
+			m_LastFrameAcceleration += m_ForceAccum * GetMass();
 
 			// angular acceleration
 			Proof::Vector<> angularAcceleration = _transformInertiaTensorWorld(m_Quat, m_InverseInertiaTensor) * m_TorqueAccum; // INVERSE INERTIA TENSOR WORLD SPACE

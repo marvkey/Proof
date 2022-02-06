@@ -85,7 +85,7 @@ namespace Proof{
 					script.Instance->OnUpdate(DeltaTime);
 			}
 		}
-		//m_PhysicsEngine->Update(DeltaTime);
+		m_PhysicsEngine->Update(DeltaTime);
 		//m_EditorCamera.OnUpdate(DeltaTime, width, height);
 		{
 			auto& cameraView = m_Registry.view<CameraComponent>();
@@ -207,6 +207,7 @@ namespace Proof{
 		CopyComponentWorld<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<CubeColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<SphereColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<RigidBodyComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newWorld;
 	}
@@ -233,8 +234,8 @@ namespace Proof{
 				}
 			}
 		}
-		//m_PhysicsEngine = new PhysicsEngine(this);
-		//m_PhysicsEngine->Start();
+		m_PhysicsEngine = new PhysicsEngine(this);
+		m_PhysicsEngine->Start();
 	}
 
 	void World::DeleteEntity(Entity& ent, bool deleteChildren) {

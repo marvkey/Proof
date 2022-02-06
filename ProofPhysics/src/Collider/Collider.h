@@ -22,8 +22,10 @@ namespace ProofPhysicsEngine {
 		void SetCollisionCallback(std::function<void(Collider&)>& callback) { 
 			m_ColliderCallBack = &callback;
 		}
-
-		
+		/**
+		* gets teh volume of the objec
+		*/
+		virtual float GetVolume()const = 0;
 	protected:
 		std::function<void(Collider&)>* m_ColliderCallBack =nullptr;
 

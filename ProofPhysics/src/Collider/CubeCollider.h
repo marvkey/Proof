@@ -40,7 +40,9 @@ namespace ProofPhysicsEngine {
 
 			return model;
 		}
-
+		virtual float GetVolume()const {
+			return Scale.GetLength();
+		}
 	
 		IntersectData IntersectCubeCollider(const CubeCollider& other)const;
 		IntersectData IntersectSphereCollider(const SphereCollider& other)const;
