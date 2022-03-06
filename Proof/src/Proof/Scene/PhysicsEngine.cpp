@@ -30,7 +30,10 @@ namespace Proof {
 				const auto& transform = Entity{ entity,m_World }.GetComponent<TransformComponent>();
 				body.Location = transform->Location;
 				body.Rotation = transform->Rotation;
-				body.Gravity = rigidBody.UseGravity;
+				body.Gravity = rigidBody.Gravity;
+				body.Drag = rigidBody.Drag;
+				body.AngularDrag = rigidBody.AngularDrag;
+				body.SetMass(rigidBody.Mass);
 				rigidBody.RuntimeBody = &body;
 			}
 		}
@@ -76,7 +79,10 @@ namespace Proof {
 				ProofPhysicsEngine::RigidBody* rigidBody = (ProofPhysicsEngine::RigidBody*) rigidBodyComponent.RuntimeBody;
 				transform.Location = rigidBody->Location;
 				transform.Rotation = rigidBody->Rotation;
-				rigidBody->Gravity = rigidBodyComponent.UseGravity;
+				rigidBody->SetMass(rigidBodyComponent.Mass);
+				rigidBody->Gravity = rigidBodyComponent.Gravity;
+				rigidBody->AngularDrag = rigidBodyComponent.AngularDrag;
+				rigidBody->Drag = rigidBodyComponent.Drag;
 			}
 		}
 		//m_PhysicsEngine.HandleCollisions();

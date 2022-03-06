@@ -1,6 +1,5 @@
 #pragma once
 #include "../Body/RigidBody.h"
-#include "Collider.h"
 namespace ProofPhysicsEngine
 {
 	struct PotentialContact {
@@ -20,7 +19,7 @@ namespace ProofPhysicsEngine
 		/*
 		* child node of htis node
 		*/
-		BVHNode* Children[2];
+		BVHNode Children[2];
 		/**
 		* Holds a single bounding volume encompassing all the
 		* descendents of this node.
@@ -66,6 +65,7 @@ namespace ProofPhysicsEngine
 			// Determine which node to descend into. If either is
 			// a leaf, then we descend the other. If both are branches,
 			// then we use the one with the largest size.
+			// A leaf basically has no children
 			if (other->IsLeaf() ||
 				(!IsLeaf() && volume.getSize() >= other->volume.getSize())) {
 				// Recurse into ourself.
@@ -99,6 +99,71 @@ namespace ProofPhysicsEngine
 		bool Overlaps(const BVHNode* other)const {
 			return volume.Intersect(other->volume);
 		}
+
+		void Insert(RigidBody& body, const BoundingVolme& volume) {
+			// if leaf we have to creawte 2 new bounding volume
+			if (IsLeaf()) {
+				Children[0] = BVHNode<BoundingVolme>(this,volume,body); 
+				Children[1] = BVHNode<BoundingVolme>(this, volume, body);
+
+				// we are no longer leaf so we remove th body
+				this->body = nullptr;
+				RecalculateBoundingVolume();
+				return;
+			}
+			// ELSE WE WORK OUT WITWH CHILD TO KEEP
+			if(Children[0]->volume.GetGrowth(volume) < Children[1]->volume.GetGrowth(volume))
+				Children[0]->Insert(body, volume)
+			else
+				Children[1]->Insert(body, volume)
+
+		}
+		/**
+		* Deletes this node, removing it first from the hierarchy, along
+		* with its associated rigid body and child nodes. This method
+		* deletes the node and all its children (but obviously not the
+		* rigid bodies). This also has the effect of deleting the sibling
+		* of this node, and changing the parent node so that it contains
+		* the data currently in that sibling. Finally it forces the
+		* hierarchy above the current node to reconsider its bounding
+		* volume.
+		*/
+		~BVHNode() {
+			// If we don’t have a parent, then we ignore the sibling processing.
+			if (parent) {
+				// Find our sibling.
+				BVHNode<BoundingVolumeClass>* sibling;
+				if (parent->Children[0] == this) sibling = parent->Children[1];
+				else sibling = parent->children[0];
+				// Write its data to our parent.
+				parent->volume = sibling->volume;
+				parent->body = sibling->body;
+				parent->children[0] = sibling->children[0];
+				parent->children[1] = sibling->children[1];
+				// Delete the sibling (we blank its parent and
+				// children to avoid processing/deleting them).
+				sibling->parent = NULL;
+				sibling->body = NULL;
+				sibling->children[0] = NULL;
+				sibling->children[1] = NULL;
+				delete sibling;
+				// Recalculate the parent’s bounding volume.
+				parent->RecalculateBoundingVolume();
+			}
+			
+			// Delete our children (again we remove their parent data so
+			// we don’t try to process their siblings as they are deleted).
+			if (Children[0]) {
+				Children[0]->parent = NULL;
+				//delete Children[0];
+			}
+			if (Children[1]) {
+				Children[1]->parent = NULL;
+				//delete Children	[0];
+			}
+		}
+	private:
+		void RecalculateBoundingVolume() {};
 	};
-	
+
 }

@@ -58,8 +58,6 @@ namespace Proof{
 			MouseLastPosY = Input::GetMousePosY();
 
 
-
-
 			if (Input::IsKeyPressed(KeyBoardKey::W)) {
 				m_Positon += m_Speed * DeltaTime * m_Direction;
 			}

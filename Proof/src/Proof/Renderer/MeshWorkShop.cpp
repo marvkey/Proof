@@ -7,10 +7,6 @@ namespace Proof {
         InitCube();
 	}
 	void MeshWorkShop::InitCube(){
-
-    
-
-
         std::vector<Vector<float>> veritces = 
         {
 

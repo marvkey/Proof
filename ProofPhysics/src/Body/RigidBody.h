@@ -13,31 +13,33 @@ namespace ProofPhysicsEngine {
 		void Update(float deltaTime) {
 			// calculate linear acceleration from force inputs
 			m_LastFrameAcceleration = m_Acceleration;
-			m_LastFrameAcceleration += m_ForceAccum * GetInverseMass;
+			m_LastFrameVelocity = Velocity;
+			m_LastFrameAcceleration += m_ForceAccum * (1 / m_Mass);
 
 			// angular acceleration
 			Proof::Vector<> angularAcceleration = _transformInertiaTensorWorld(m_Quat, m_InverseInertiaTensor) * m_TorqueAccum; // INVERSE INERTIA TENSOR WORLD SPACE
 			
 			// Adjust velocities
 			// Update linear velocity from both acceleration and impulse
-			Velocity += m_LastFrameAcceleration * deltaTime;
-			RotationalVelocity += angularAcceleration * deltaTime;
+			Velocity += (m_LastFrameAcceleration * deltaTime);
+			RotationalVelocity += (angularAcceleration * deltaTime);
 			
 			// IMPOSE DRAG
-			Velocity *= pow(AngularDamping, deltaTime);
-			RotationalVelocity *= pow(LinearDamping, deltaTime);
+			
+			//Velocity *= pow(Drag,deltaTime);
+			//RotationalVelocity *= pow(AngularDrag,deltaTime );
 
 			// Change  position
 			Location += Velocity * deltaTime;
 			Rotation += RotationalVelocity * deltaTime;
-			// IMPOSE DRAG
-
-			Velocity *= pow(AngularDamping, deltaTime);
-			RotationalVelocity *= pow(LinearDamping, deltaTime);
+			
 			// add more drag
 			m_Quat += glm::quat(glm::vec3{ glm::radians(RotationalVelocity.X), glm::radians(RotationalVelocity.Y), glm::radians(RotationalVelocity.Z) }) * deltaTime;
-
+			
 			m_Quat = glm::normalize(m_Quat);
+
+			// FORMULA ACCELRATION( change in veolocity/time)
+			m_Acceleration = glm::vec3(m_LastFrameVelocity - Velocity) / deltaTime;
 			ClearForceAccum();
 		}
 		/**
@@ -45,8 +47,8 @@ namespace ProofPhysicsEngine {
 		* motion. Damping is required to remove energy added
 		* through numerical instability in the integrator.
 		*/
-		float AngularDamping =0.05;
-		float LinearDamping;
+		float AngularDrag =0.05;
+		float Drag =0;
 		bool Gravity = true;
 		/**
 		 * Holds the linear position of the rigid body in
@@ -75,7 +77,7 @@ namespace ProofPhysicsEngine {
 			m_IsAwake = true;
 		}
 		//void AddForceAtBodyPoint(const Proof::Vector<float>& force,const Proof::Vector<float>& point);
-		void SetMass(uint64_t value) {
+		void SetMass(float value) {
 			m_Mass = value;
 		}
 		void SetMassInfinite(bool infinite) {
@@ -83,8 +85,8 @@ namespace ProofPhysicsEngine {
 		}
 
 		float GetMass() {
-			if (m_MassInfinite)
-				return 0/1; // infinite
+			//if (m_MassInfinite)
+			//	return 0; // infinite
 			return m_Mass;
 		}
 
@@ -122,12 +124,12 @@ namespace ProofPhysicsEngine {
 			m_TorqueAccum = Proof::Vector<float>{ 0,0,0 };
 		}
 		float GetInverseMass() {
-			return 1 / GetMass();
+			return 1 / m_Mass;
 		}
 		Proof::Vector<float> m_ForceAccum;
 		Proof::Vector<float> m_Acceleration;
 		Proof::Vector<float> m_TorqueAccum;
-		uint64_t m_Mass = 1;
+		float m_Mass = 1;
 		bool m_MassInfinite =false;
 
 		/**
@@ -136,6 +138,7 @@ namespace ProofPhysicsEngine {
 		 */
 		Proof::Vector<float>Velocity{ 0,0,0 };
 		Proof::Vector<float>RotationalVelocity{ 0,0,0 };
+		Proof::Vector<float> m_LastFrameVelocity;
 		/**
 		* Holds the inverse of the body’s inertia tensor. The inertia
 		* tensor provided must not be degenerate (that would mean

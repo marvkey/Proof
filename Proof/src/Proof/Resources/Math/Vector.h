@@ -140,7 +140,7 @@ namespace Proof
             this->Z += Other.z;
             return *this;
         }
-        Vector<T> operator +=(const Vector<T>& Other) {
+        Vector operator +=(const Vector& Other) {
             this->X += Other.X;
             this->Y += Other.Y;
             this->Z += Other.Z;
@@ -170,6 +170,13 @@ namespace Proof
             this->Z+=other;
             return *this;
         }
+        void AddScaledVector(Vector& other, float number) {
+            this += other * number;
+        }
+
+        T GetDistance(const Vector& other)const {
+            return sqrt(pow(X - other.X,2) + pow(Y - other.Y,2) + pow(Z - other.Z,2));
+        }
     };
     template<typename T>
     Vector<T> operator*(const Vector<T>& other,float temp) {
@@ -182,10 +189,7 @@ namespace Proof
         Vector<T> tempVec(other.X * temp, other.Y * temp, other.Z * temp);
         return tempVec;
     }
-    template<typename T>
-    void AddScaledVector(Vector<T>& other, float number) {
-        this += other * number;
-    }
+   
     template<typename T>
     inline Vector<T> operator *=(const float& temp, Vector<T>& other) {
         other.X *= temp;
@@ -193,6 +197,13 @@ namespace Proof
         other.Z *= temp;
         return *other;
     }
+    template<typename T>
+    inline Vector<T> operator -=(Vector<T>& other,const float& temp) {
+            other.X -= temp;
+            other.Y -= temp;
+            other.Z -= temp;
+            return other;
+        }
     template<typename T>
     Vector<T> operator +(const Vector<T>& Other1, const Vector<T>& Other2){
         Vector<T> Temp(Other1.X + Other2.X, Other1.Y + Other2.Y, Other1.Z + Other2.Z);

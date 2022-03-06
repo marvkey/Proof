@@ -19,14 +19,18 @@ namespace ProofPhysicsEngine {
 		}
 		IntersectData  Intersect(const Collider& other)const;
 
-		void SetCollisionCallback(std::function<void(Collider&)>& callback) { 
+		void SetCollisionCallback(std::	function<void(Collider&)>& callback) { 
 			m_ColliderCallBack = &callback;
 		}
 		/**
 		* gets teh volume of the objec
 		*/
 		virtual float GetVolume()const = 0;
+		RigidBody* GetBody()const {
+			return nullptr;
+		}
 	protected:
+		
 		std::function<void(Collider&)>* m_ColliderCallBack =nullptr;
 
 		Collider(ColliderType type) :m_Type(type) {

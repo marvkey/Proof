@@ -119,6 +119,11 @@ Entities:
     CubeColliderComponent:
       OffsetLocation: [0, 0, 0]
       OffsetScale: [0, 0, 0]
+    RigidBodyComponent:
+      Mass: 1
+      Drag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
   - Entity: 14422208715072623764
     TagComponent:
       Tag: Camera

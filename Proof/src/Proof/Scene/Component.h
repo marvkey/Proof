@@ -433,8 +433,8 @@ namespace Proof
 		RigidBodyComponent() = default;
 		float Mass = 1.0f;
 		float Drag = 1.0f;
-		float AngularDrag = 1.0f;
-		bool UseGravity = true;
+		float AngularDrag = 0.05f;
+		bool Gravity = true;
 		bool MassInfinite = false;
 
 	private:

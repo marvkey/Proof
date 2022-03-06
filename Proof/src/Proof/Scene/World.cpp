@@ -86,7 +86,7 @@ namespace Proof{
 			}
 		}
 		m_PhysicsEngine->Update(DeltaTime);
-		//m_EditorCamera.OnUpdate(DeltaTime, width, height);
+		m_EditorCamera.OnUpdate(DeltaTime, width, height);
 		{
 			auto& cameraView = m_Registry.view<CameraComponent>();
 			for (auto entity : cameraView) {

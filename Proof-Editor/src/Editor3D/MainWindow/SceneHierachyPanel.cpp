@@ -545,6 +545,10 @@ namespace Proof {
 		RigidBodyComponent* rigidBodyComponent = entity.GetComponent<RigidBodyComponent>();
 		if (rigidBodyComponent != nullptr) {
 			DrawComponents<RigidBodyComponent>("RigidBodyComponent: ", entity, rigidBodyComponent, IndexValue, [](RigidBodyComponent& object) {
+				ImGui::DragFloat("Mass", &object.Mass, 0.5);
+				ImGui::DragFloat("Drag", &object.Drag, 0.5);
+				ImGui::DragFloat("AngularDrag", &object.AngularDrag, 0.5);
+				ExternalAPI::ImGUIAPI::CheckBox("Gravity", &object.Gravity);
 			});
 			IndexValue += 1;
 		}

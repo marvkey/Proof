@@ -321,7 +321,7 @@ namespace Proof {
 					rgb.Mass = rigidBodyComponent["Mass"].as<float>();
 					rgb.Drag = rigidBodyComponent["Drag"].as<float>();
 					rgb.AngularDrag = rigidBodyComponent["AngularDrag"].as<float>();
-					rgb.Gravity = rigidBodyComponent["Gravity"].as<float>();
+					rgb.Gravity = rigidBodyComponent["Gravity"].as<bool>();
 				}
 			}
 		}
