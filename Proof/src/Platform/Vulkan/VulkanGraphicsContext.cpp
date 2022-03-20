@@ -424,6 +424,7 @@ namespace Proof
 		VkMemoryPropertyFlags properties,
 		VkBuffer& buffer,
 		VkDeviceMemory& bufferMemory) {
+		// HOw we plan touse this buffer
 		VkBufferCreateInfo bufferInfo{};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		bufferInfo.size = size;
@@ -434,6 +435,7 @@ namespace Proof
 			PF_CORE_ASSERT(false, "failed to create vertex buffer!");
 		}
 
+		// we can allocate memory of the proper size and required properties we set as an argument
 		VkMemoryRequirements memRequirements;
 		vkGetBufferMemoryRequirements(m_Device, buffer, &memRequirements);
 
@@ -446,6 +448,7 @@ namespace Proof
 			PF_CORE_ASSERT(false, "failed to allocate vertex buffer memory!");
 		}
 
+		// we bind buffer to memory just allocated
 		vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
 	}
 

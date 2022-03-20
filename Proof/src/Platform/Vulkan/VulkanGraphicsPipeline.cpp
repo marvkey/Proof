@@ -10,7 +10,7 @@ namespace Proof
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
 		vkDestroyPipeline(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_GraphicsPipeline, nullptr);
 	}
-	VulkanGraphicsPipeline::VulkanGraphicsPipeline(Count<Shader> shader, const PipelineConfigInfo& info) {
+	VulkanGraphicsPipeline::VulkanGraphicsPipeline(Count<Shader> shader, const PipelineConfigInfo& info, uint32_t attributeSize, uint32_t bindingSize, const VkVertexInputAttributeDescription* attributeData, const VkVertexInputBindingDescription* bindingData) {
 		m_Shader = std::dynamic_pointer_cast<VulkanShader>(shader);
 		m_ConfigInfo = info;
 		PF_CORE_ASSERT(m_ConfigInfo.PipelineLayout ,"Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");
@@ -18,11 +18,11 @@ namespace Proof
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		// we are hardcoding values into the vertex data
-		vertexInputInfo.vertexAttributeDescriptionCount = 0;
-		vertexInputInfo.vertexBindingDescriptionCount = 0;
+		vertexInputInfo.vertexAttributeDescriptionCount = attributeSize;
+		vertexInputInfo.vertexBindingDescriptionCount = bindingSize;
 
-		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-		vertexInputInfo.pVertexBindingDescriptions = nullptr;
+		vertexInputInfo.pVertexAttributeDescriptions = attributeData;
+		vertexInputInfo.pVertexBindingDescriptions = bindingData;
 		
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
