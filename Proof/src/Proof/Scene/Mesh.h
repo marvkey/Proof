@@ -31,6 +31,7 @@ namespace Proof
         std::vector<Count<class Texture2D>>m_Textures;
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
+        friend class OpenGLRenderer3DPBR;
     };
     class Mesh {
     public:
@@ -63,5 +64,6 @@ namespace Proof
         friend class SceneRendererUI;
         friend class MeshAsset;
         friend class MeshWorkShop;
+        friend class OpenGLRenderer3DPBR;
     };
 }

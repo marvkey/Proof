@@ -11,6 +11,7 @@ namespace Proof {
 		static int GetWindowPosX();
 		static int GetWindowPosY();
 		static void SetvSync(bool Vsync);
+		static bool GetVSync();
 	protected:
 		static std::pair<double, double>GetMouseLocation();
 		static std::pair<float, float>GetMouseScrollWheel();

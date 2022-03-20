@@ -51,9 +51,11 @@ namespace Proof{
 	
 	World::World()
 	{
-		CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
 		m_EditorCamera.m_FarPlane = 2000;
 		m_EditorCamera.m_Sensitivity = 25;
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
+
+		CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
 	}
 	void World::OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR) {
 		OnUpdate(DeltaTime,width,height,usePBR);
@@ -270,6 +272,8 @@ namespace Proof{
 	}
 
 	void World::CreateIBlTexture(const std::string& filePath) {
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
+
 		backgroundShader = Shader::GetOrCreate("IBL_Background",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/BackgroundShader.glsl");
 		equirectangularToCubemapShader = Shader::GetOrCreate("IBL_CUBEMAPSHADER",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/equirectangularToCubemapShader.glsl");
 		IrradianceShader = Shader::GetOrCreate("IBL_IRRADIANCESHader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/IradianceShader.glsl");

@@ -11,12 +11,17 @@ namespace Proof {
 	std::string Renderer::s_RenderCompany;
 	std::string Renderer::s_GraphicsCard;
 	std::string Renderer::s_GraphicsCardVersion;
-	void Renderer::Init() {
+	Count<class GraphicsContext>Renderer::m_GraphicsContext = nullptr;
+	void Renderer::Init(Window* window) {
+		m_GraphicsContext = GraphicsContext::Create(window);
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		Renderer3DCore::Init();
 		Renderer3DPBR::Init();
-		//Renderer3DPBR::Reset();
+
 		Renderer2D::Init();
 		Renderer2D::Reset();
 		MeshWorkShop::Init();
+
+		PF_ENGINE_TRACE("Renderer Initilized");
 	}
 }

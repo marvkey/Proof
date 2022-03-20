@@ -5,5 +5,10 @@ namespace Proof {
     public:
         static Count<GraphicsContext> Create(Window* WindowHandle);
         virtual ~GraphicsContext(){}
+
+        template<class T>
+        T* As() {
+            return  dynamic_cast<T*>(this);
+        }
     };
 }

@@ -19,13 +19,16 @@ namespace Proof {
         Proof::Log::Init();
         MainWindow = CreateSpecial<WindowsWindow>(); 
 
-        m_GraphicsContext =GraphicsContext::Create(static_cast<Window*>(MainWindow.get()));
-        Renderer::Init();
-        ImGuiMainLayer = new ImGuiLayer();
-        MainLayerStack.PushLayer(ImGuiMainLayer);
+        Renderer::Init(static_cast<Window*>(MainWindow.get()));
+
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
-        AssetManager::NewInitilizeAssets("config/AssetManager.ProofAssetManager");
+        if (Renderer::GetAPI() != RendererAPI::API::Vulkan) {
+            AssetManager::NewInitilizeAssets("config/AssetManager.ProofAssetManager");
+            ImGuiMainLayer = new ImGuiLayer();
+            MainLayerStack.PushLayer(ImGuiMainLayer);
+        }
         //AssetManager::InitilizeAssets("content");
+        /*
         InputManager::AddMotion("MoveX");
         InputManager::AddMotion("MoveY");
         InputManager::MotionAddKey("MoveX", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::A, -1));
@@ -49,7 +52,9 @@ namespace Proof {
 
         InputManager::MotionAddKey("RotateY", MotionInputType(InputDevice::ControllerAxis, (int)ControllerAxis::RightY, 1));
         InputManager::MotionAddKey("RotateX", MotionInputType(InputDevice::ControllerAxis, (int)ControllerAxis::RightX, 1));
+        */
 
+        PF_ENGINE_TRACE("Engine Load Done");
     }
 
     void Application::OnEvent(Event& e) {
@@ -96,13 +101,17 @@ namespace Proof {
     }
 
     void Application::Run() {
+
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
-        glEnable(GL_BLEND);
+        if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
+            glEnable(GL_BLEND);
      //   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
      //   glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
+
         CurrentWindow::SetvSync(false);
+
         while (glfwWindowShouldClose((GLFWwindow*)CurrentWindow::GetWindowAPI()) == false && Input::IsKeyClicked(KeyBoardKey::Escape)==false) {
             float FrameStart = glfwGetTime();
             float time = (float)glfwGetTime();
@@ -110,17 +119,21 @@ namespace Proof {
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
             FrameTime::WorldDeltaTime = DeltaTime;
-            RendererCommand::Enable(ProofRenderTest::DepthTest);
+            if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
+                RendererCommand::Enable(ProofRenderTest::DepthTest);
+
             if (WindowMinimized == false) 
             {
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
             }
+            if (Renderer::GetAPI() != RendererAPI::API::Vulkan) {
 
-            ImGuiMainLayer->Begin();
-            for (Layer* layer : MainLayerStack.V_LayerStack)
-                layer->OnImGuiDraw(DeltaTime);
-            ImGuiMainLayer->End();
+                ImGuiMainLayer->Begin();
+                for (Layer* layer : MainLayerStack.V_LayerStack)
+                    layer->OnImGuiDraw(DeltaTime);
+                ImGuiMainLayer->End();
+            }
 
             MainWindow->WindowUpdate();
             if (CurrentTime - PreviousTime >= 1.0) {
@@ -133,7 +146,8 @@ namespace Proof {
             LastFrameTime = time;
         };
         IsRunning = false;
-        AssetManager::SaveAllAsset();
+        if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
+            AssetManager::SaveAllAsset();
     }
 
     void Application::PushLayer(Layer* Layer) {

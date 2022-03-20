@@ -9,6 +9,10 @@
 #include "Proof/Renderer/WorldRenderer.h"
 #include "MainWindow/AssetManagerPanel.h"
 #include "MainWindow/InputPanel.h"
+#include "Platform/Vulkan/VulkanGraphicsPipeline.h"
+#include "Platform/Vulkan/VulkanSwapChain.h"
+#include<vulkan/vulkan.h>
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {
@@ -73,5 +77,10 @@ namespace Proof {
 		Count<VertexArray> m_SkyBoxVertexArray;
 		Count<CubeMap> m_CubeMap;
 		WorldRenderer m_WorldRenderer;
+		Count<VulkanGraphicsPipeline> m_GraphicsPipeline = nullptr;
+		Count<Shader> m_VulkanShader = nullptr;
+		Count<VulkanSwapChain> m_VulkanSwapChain= nullptr;
+		VkPipelineLayout m_PipelineLayout;
+		Count<VulkanCommandBuffer> m_CommandBuffer = NULL;
 	};
 }

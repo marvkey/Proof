@@ -56,6 +56,41 @@ namespace Proof
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 	}
 	void Editore3D::OnAttach() {
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
+			m_VulkanSwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
+
+			VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+			pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+			// pipeline layout is used to pass data to pipeline other than vertex and fragment data
+			// this includes texture and uniform buffer objects
+			pipelineLayoutInfo.setLayoutCount = 0; // emty layout
+			pipelineLayoutInfo.pSetLayouts = nullptr;
+			// very efficiently send small data to shader proggramm
+			pipelineLayoutInfo.pushConstantRangeCount = 0;
+			pipelineLayoutInfo.pPushConstantRanges = nullptr;
+			if (vkCreatePipelineLayout(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
+				PF_ASSERT(false, "failed to create pipeline layout");
+			PipelineConfigInfo pipelineConfig{};
+			VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig,CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
+			pipelineConfig.RenderPass = m_VulkanSwapChain->GetRenderPass();
+			pipelineConfig.PipelineLayout = m_PipelineLayout;
+			m_VulkanShader = Shader::Create("gg", ProofCurrentDirectory + "vert.spv", ProofCurrentDirectory + "frag.spv");
+			m_GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(m_VulkanShader, pipelineConfig);
+
+			m_CommandBuffer = CreateCount<VulkanCommandBuffer>(*m_VulkanSwapChain.get(), *m_GraphicsPipeline.get(),m_GraphicsPipeline);
+
+			
+
+	
+			// DRAW
+			uint32_t imageIndex;
+			auto result = m_VulkanSwapChain->AcquireNextImage(&imageIndex);
+			if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+				PF_CORE_ASSERT(false, "Failed to acquire swap chain Image!");
+
+			result = m_VulkanSwapChain->SubmitCommandBuffers(&m_CommandBuffer->GetBuffer(imageIndex), &imageIndex);
+		}
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 
 
@@ -71,12 +106,16 @@ namespace Proof
 		SceneSerializer scerelizer(ActiveWorld.get());
 		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofWorld") == true) {
 			m_WorldHierachy.SetContext(ActiveWorld.get());
-			AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
+			if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
+				AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
 		}
+
 		m_WorldHierachy.SetContext(ActiveWorld.get());
 		m_WorldRenderer = WorldRenderer(ActiveWorld, CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 		// cannot be setting it to window size and stuff innit
 		m_EditorWorld = ActiveWorld;
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
+
 		float skyboxVertices[] = {
 					 // positions          
 			-1.0f,1.0f,-1.0f,
@@ -146,7 +185,10 @@ namespace Proof
 
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
-		m_WorldRenderer.Renderer();
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
+			
+		}
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
 			ActiveWorld->OnUpdateEditor(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
 		else if (ActiveWorld->m_CurrentState == WorldState::Play)

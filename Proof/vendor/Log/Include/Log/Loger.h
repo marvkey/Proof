@@ -86,7 +86,8 @@ namespace Logger {
 	template<typename ...Args>
 	inline void Log::LogWarn(const char* Msg,Args&& ...args) {
 		LocalTime = localtime(&CurrentTime);
-		printf("\x1b[33m[%i:%i:%i]",LocalTime->tm_hour,LocalTime->tm_min,LocalTime->tm_sec);
+		if(LocalTime!= nullptr)
+			printf("\x1b[33m[%i:%i:%i]",LocalTime->tm_hour,LocalTime->tm_min,LocalTime->tm_sec);
 		ColorOutput = "\x1b[33m";
 		ColorOutput += Msg;
 		printf("\x1b[33m %s: ",LoggerName.c_str());

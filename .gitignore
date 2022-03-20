@@ -16,4 +16,6 @@ bin-int/
 **.png 
 **.jpg 
 **.dll 
+**.lib
+
 

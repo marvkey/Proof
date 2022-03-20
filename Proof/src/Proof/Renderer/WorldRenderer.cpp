@@ -8,10 +8,13 @@
 #include "Proof/Scene/Component.h"
 #include <tuple>
 #include <variant>
+#include "Renderer.h"
 namespace Proof{
 	void WorldRenderer::Renderer() {
 		if(m_RendererPaused==true)
 			return;
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
+
 		if (m_World->m_CurrentState == WorldState::Play) {
 			auto cameraGroup = m_World->m_Registry.group<TransformComponent>(entt::get<CameraComponent>);
 			if (cameraGroup.size() == 0)

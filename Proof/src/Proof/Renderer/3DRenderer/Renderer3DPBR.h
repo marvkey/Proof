@@ -64,6 +64,7 @@ namespace Proof
 			DeferedRendererData() =default;
 		private:
 			friend class Renderer3DPBR;
+			friend class OpenGLRenderer3DPBR;
 			uint32_t m_PositionTexture = 0;
 			uint32_t m_NormalTexture = 0;
 			uint32_t m_AlbedoTexture = 0;
@@ -84,6 +85,7 @@ namespace Proof
 		FowardRendererData FowardData;
 		RendererSettings RenderSettings;
 		friend class Renderer3DPBR;
+		friend class OpenGLRenderer3DPBR;
 	private:
 		void Reset(){
 			Stats = RenderStats();
@@ -138,25 +140,5 @@ namespace Proof
 		static PhysicalBasedRenderer* GetRenderer();
 		static void EndContext();
 		static void Reset();
-	private:
-		static Count<ScreenFrameBuffer> s_RenderFrameBuffer;
-		static bool s_InsideContext;
-		static void Render();
-
-		/* Defered Rendering */
-		static void InitilizeDeferedRendering();
-		static void DeferedRender();
-		static void DeferedRendererRenderLight();
-		static void DeferedRendererRenderMesh();
-		static RendererData* s_RendererData;
-		/*---------------------------*/
-
-		/* Foward Renderer */
-		static void InitilizeFowardRendering();
-		static void FowardRenderer();
-		/* ------------------------- */
-
-
-		static void PBRWithFowardRender();
 	};
 }

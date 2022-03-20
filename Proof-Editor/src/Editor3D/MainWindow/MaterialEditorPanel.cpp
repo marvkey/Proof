@@ -5,10 +5,13 @@
 #include "Proof/Utils/PlatformUtils.h"
 #include "../Editor3D.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
 	MaterialEditorPanel::MaterialEditorPanel(MaterialAsset* material) {
 		m_MaterialAsset = material;
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
+
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 		whiteColourId  = m_CheckeboardTexture->GetID();
 	}

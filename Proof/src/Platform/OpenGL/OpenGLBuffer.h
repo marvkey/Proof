@@ -14,7 +14,7 @@ namespace Proof {
 		* @parm Size the size of the vertex Buffer
 		*/
 		OpenGLVertexBuffer(uint32_t Size);
-
+		
 		/**
 		* deletes the vertex buffer
 		*/ 

@@ -29,7 +29,7 @@ project "Proof"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
-		--"%{IncludeDir.Vulkan}",
+		"%{IncludeDir.Vulkan}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.Log}",
 		"%{IncludeDir.Assimp}",
@@ -41,6 +41,8 @@ project "Proof"
     }
 	libdirs{
 		"vendor/Assimp/Proof-Assimp-lib",
+        "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib"
+
 		--"C:/Program Files/Mono/lib"
 	}
 	links
@@ -51,7 +53,9 @@ project "Proof"
 		"Glad",
         "assimp-vc143-mt.lib",
 		"yaml-cpp",
-		"ProofPhysics"
+		"ProofPhysics",
+        "vulkan-1.lib"
+
 		--"mono-2.0-sgen.lib",
 
 		--"ProofPhysics"

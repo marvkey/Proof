@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "Shader.h"
 #include "Platform/OpenGL/OpenGLShader.h"
+#include "Platform/Vulkan/VulkanShader.h"
 #include "RendererAPI.h"
 #include "Renderer.h"
 namespace Proof {
@@ -10,6 +11,13 @@ namespace Proof {
             case RendererAPI::API::None:  PF_CORE_ASSERT(false,"Shader None it needs an api"); return nullptr;
             case RendererAPI::API::OpenGL: return Renderer::GetShaderLibrary().AddShader(CreateCount<class OpenGLShader>(_ShaderName,ShaderPath));
            //case RendererAPI::API::OpenGL: return CreateCount<class OpenGLShader>(_ShaderName,ShaderPath);
+        }
+    }
+    Count<Shader> Shader::Create(const std::string& _ShaderName, const std::string& vertPath, const std::string& fragPath) {
+        switch (RendererAPI::GetAPI()) {
+        case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
+        case RendererAPI::API::Vulkan: return Renderer::GetShaderLibrary().AddShader(CreateCount<VulkanShader>(_ShaderName, vertPath,fragPath));
+            //case RendererAPI::API::OpenGL: return CreateCount<class OpenGLShader>(_ShaderName,ShaderPath);
         }
     }
     Count<Shader> Shader::GetOrCreate(const std::string& name,const std::string& path) {

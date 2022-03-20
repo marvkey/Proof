@@ -6,6 +6,7 @@
 #include "Proof/Core/CurrentWindow.h"
 #include<GLFW/glfw3.h>
 #include "ImGuizmo.h"
+#include "Proof/Renderer/Renderer.h"
 namespace Proof {
 	ImGuiLayer::ImGuiLayer() :
 		Layer("ImGUI Layer")
@@ -31,19 +32,28 @@ namespace Proof {
 		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Bold.ttf",18.0f);
 		io.FontDefault =io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Regular.ttf",17.0f);
 		SetDarkTheme();
-		ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)CurrentWindow::GetWindowAPI(), true);
-		ImGui_ImplOpenGL3_Init("#version 450");
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL) {
+
+			ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)CurrentWindow::GetWindowAPI(), true);
+			ImGui_ImplOpenGL3_Init("#version 450");
+		} 
+		
 	}
 	void ImGuiLayer::OnDetach() {
 		Layer::OnDetach();
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL) {
+
+			ImGui_ImplOpenGL3_Shutdown();
+			ImGui_ImplGlfw_Shutdown();
+			ImGui::DestroyContext();
+		}
 	}
 
 	void ImGuiLayer::Begin() {
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL) {
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+		}
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
 	}

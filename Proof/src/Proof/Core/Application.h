@@ -6,7 +6,6 @@
 #include "CurrentWindow.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/MouseEvent.h"
-#include "Proof/Renderer/GraphicsContext.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Scene/CSharpScripting/CSharpInitilize.h"
     namespace Proof {
@@ -42,7 +41,6 @@
         float LastFrameTime;
         static float FPS;
         static float FrameMS;
-        Count<class GraphicsContext>m_GraphicsContext;
     };
     Application* CreateApplication();
 }

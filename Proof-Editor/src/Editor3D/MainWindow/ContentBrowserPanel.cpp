@@ -18,6 +18,7 @@
 #include "../Proof-Editor/src/Editor3D/Editor3D.h"
 #include "Proof/Core/FrameTime.h"
 #include "../Proof-Editor/src/Editor3D/ImGUIAPI.h"
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 { 
 	static const std::filesystem::path s_AssetsPath = "content";
@@ -33,6 +34,8 @@ namespace Proof
 		m_CurrentDirectory(s_AssetsPath), 
 		m_owner(owner)
 	{
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
+
 		m_FolderIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FolderIcon.png");
 		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
 		m_MeshIcon = Texture2D::Create("Resources/Icons/ContentBrowser/MeshComponentIcon.png");

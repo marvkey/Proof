@@ -28,7 +28,9 @@ project "Proof-Editor"
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.yaml_cpp}",
-        "%{wks.location}/Proof/vendor/entt"
+        "%{wks.location}/Proof/vendor/entt",
+		"%{IncludeDir.Vulkan}",
+
 		--"C:/Program Files/Mono/include/mono-2.0"
     }
 
@@ -41,6 +43,7 @@ project "Proof-Editor"
     {
         --"%{wks.location}/Game/Proof-Game/x64/Debug",
         "%{wks.location}/Proof/vendor/Assimp/Proof-Assimp-lib",
+        "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib"
 		--"C:/Program Files/Mono/lib"
 
     }
@@ -56,7 +59,8 @@ project "Proof-Editor"
         "yaml-cpp",
 		--"mono-2.0-sgen.lib",
         --"ScriptModule.lib",
-		"ProofPhysics"
+		"ProofPhysics",
+        "vulkan-1.lib"
     }
    
     postbuildcommands{

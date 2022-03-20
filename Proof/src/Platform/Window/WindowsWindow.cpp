@@ -13,7 +13,7 @@
 #include "Proof/Core/Core.h"
 #include "ImGui/imgui.h"
 #include <GLFW/glfw3.h>
-
+#include "Proof/Renderer/Renderer.h"
 namespace Proof {
 
 
@@ -568,12 +568,18 @@ namespace Proof {
             return -1;
         }
        // glfwWindowHint(GLFW_MAXIMIZED,GLFW_TRUE); // when using this meathod teh window will have some glithy meathod
-
+        if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // so we do not set an api as open gl
+            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        }
         m_Window = glfwCreateWindow(Width,Height, "Proof", nullptr,NULL);
         if (m_Window == nullptr) {
             PF_CORE_ASSERT(false,"Window Is Nullptr");
             glfwTerminate();
             return -1;
+        }
+        if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
+            return 0;
         }
         glfwSetWindowUserPointer((GLFWwindow*)m_Window, this);
         glfwMaximizeWindow((GLFWwindow*)m_Window);

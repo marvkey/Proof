@@ -27,6 +27,9 @@ namespace Proof {
 	void CurrentWindow::SetvSync(bool Vsync) {
 		Application::MainWindow->Vsync = Vsync;
 	}
+	bool CurrentWindow::GetVSync() {
+		return Application::MainWindow->Vsync;
+	}
 	void CurrentWindow::SetWindowSize(int width, int height){
 		glfwSetWindowSize((GLFWwindow*)CurrentWindow::GetWindowAPI(),width, height);
 	

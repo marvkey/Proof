@@ -35,5 +35,6 @@ namespace Proof{
 			s_CameraBuffer = UniformBuffer::Create(sizeof(CameraData),1);
 		}
 		friend class Renderer3DPBR;
+		friend class OpenGLRenderer3DPBR;
 	};
 }
