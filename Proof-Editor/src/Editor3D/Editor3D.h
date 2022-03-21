@@ -13,6 +13,7 @@
 #include "Platform/Vulkan/VulkanSwapChain.h"
 #include<vulkan/vulkan.h>
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
+#include "Platform/Vulkan/VulkanBuffer.h"
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {
@@ -82,5 +83,6 @@ namespace Proof {
 		Count<VulkanSwapChain> m_VulkanSwapChain= nullptr;
 		VkPipelineLayout m_PipelineLayout;
 		Count<VulkanCommandBuffer> m_CommandBuffer = NULL;
+		Count<VulkanVertexBuffer> m_VulkanVertexBuffer;
 	};
 }

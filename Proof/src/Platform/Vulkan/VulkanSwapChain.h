@@ -18,12 +18,12 @@ namespace Proof
         VulkanSwapChain(VkExtent2D windowExtent);
         ~VulkanSwapChain();
 
-        VkFramebuffer GetFrameBuffer(int index) { return m_SwapChainFramebuffers[index]; }
-        VkRenderPass GetRenderPass() { return m_RenderPass; }
+        VkFramebuffer GetFrameBuffer(int index)const { return m_SwapChainFramebuffers[index]; }
+        VkRenderPass GetRenderPass()const { return m_RenderPass; }
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
-        size_t GetImageCount() { return m_SwapChainImages.size(); }
-        VkFormat GetSwapChainImageFormat() { return m_SwapChainImageFormat; }
-        VkExtent2D GetSwapChainExtent() { return m_SwapChainExtent; }
+        size_t GetImageCount()const { return m_SwapChainImages.size(); }
+        VkFormat GetSwapChainImageFormat()const { return m_SwapChainImageFormat; }
+        VkExtent2D GetSwapChainExtent()const { return m_SwapChainExtent; }
         uint32_t GetWidth() { return m_SwapChainExtent.width; }
         uint32_t GetHeight() { return m_SwapChainExtent.height; }
 

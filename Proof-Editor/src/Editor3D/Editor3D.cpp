@@ -70,18 +70,28 @@ namespace Proof
 			pipelineLayoutInfo.pPushConstantRanges = nullptr;
 			if (vkCreatePipelineLayout(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
 				PF_ASSERT(false, "failed to create pipeline layout");
+
+			std::vector<VulkanVertex>vulkanVertices{
+			 {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+			  {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+			  {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}} 
+			};
+			m_VulkanVertexBuffer = CreateCount<VulkanVertexBuffer>(vulkanVertices.data(), vulkanVertices.size() * sizeof(VulkanVertex));
 			PipelineConfigInfo pipelineConfig{};
 			VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig,CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
 			pipelineConfig.RenderPass = m_VulkanSwapChain->GetRenderPass();
 			pipelineConfig.PipelineLayout = m_PipelineLayout;
 			m_VulkanShader = Shader::Create("gg", ProofCurrentDirectory + "vert.spv", ProofCurrentDirectory + "frag.spv");
-			m_GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(m_VulkanShader, pipelineConfig);
+			auto a = VulkanVertex::GetAttributeDescriptions();
+			auto b = VulkanVertex::GetBindingDescriptions();
+			m_GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(m_VulkanShader, pipelineConfig, a.size(),b.size(),a.data(),b.data());
 
 			m_CommandBuffer = CreateCount<VulkanCommandBuffer>(*m_VulkanSwapChain.get(), *m_GraphicsPipeline.get(),m_GraphicsPipeline);
-
-			
-
-	
+		
+			m_CommandBuffer->Draw([&](VkCommandBuffer& buffer) {
+				m_VulkanVertexBuffer->Bind(buffer);
+				vkCmdDraw(buffer, m_VulkanVertexBuffer->GetVertexCount(), 1, 0, 0);
+			});
 			// DRAW
 			uint32_t imageIndex;
 			auto result = m_VulkanSwapChain->AcquireNextImage(&imageIndex);
