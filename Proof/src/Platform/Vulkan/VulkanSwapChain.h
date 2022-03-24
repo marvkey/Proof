@@ -34,6 +34,7 @@ namespace Proof
 
         VkResult AcquireNextImage(uint32_t* imageIndex);
         VkResult SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
+        void Recreate();
 
     private:
         void CreateSwapChain();

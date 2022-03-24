@@ -74,8 +74,7 @@ namespace Proof
         return result;
     }
 
-    VkResult VulkanSwapChain::SubmitCommandBuffers(
-        const VkCommandBuffer* buffers, uint32_t* imageIndex) {
+    VkResult VulkanSwapChain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex) {
         if (m_ImagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
             vkWaitForFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_ImagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
         }
@@ -398,6 +397,8 @@ const std::vector<VkPresentModeKHR>& availablePresentModes) {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
+   
+
     VkExtent2D VulkanSwapChain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
             return capabilities.currentExtent;
@@ -421,5 +422,9 @@ const std::vector<VkPresentModeKHR>& availablePresentModes) {
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     }
-
+    void VulkanSwapChain::Recreate() {
+        // wait while the current swapchain is being used
+        vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
+        *this = VulkanSwapChain({ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
+    }
 }  

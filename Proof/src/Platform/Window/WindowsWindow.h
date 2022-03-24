@@ -52,6 +52,7 @@ namespace Proof {
         virtual int WindowEnd();
         virtual	int createWindow();
         int Width =800, Height=500;
+        bool m_FrameBufferResized = false;
         void* m_Window;
         void key_callback(int key, int scancode, int action, int mods);
         void mouse_button_callback(int button, int action, int mods);
@@ -66,7 +67,7 @@ namespace Proof {
         void ControllerEventCallback();
         void ContollerButtonCallback(Controller& controller);
         void ContollerAxisCallback(Controller& controller);
-       
+        void FrameBufferResizedCallback(int width, int height);
         std::vector<Controller> m_Controllers;
         friend class CurrentWindow;
         bool Vsync = false;

@@ -82,6 +82,7 @@ namespace Proof {
         }
         glfwSwapBuffers((GLFWwindow*)m_Window);
         glfwPollEvents();
+        m_FrameBufferResized = false;
     }
     void WindowsWindow::key_callback(int key, int scancode, int action, int mods) {
         /* This is for when a key is Clicked 2 */
@@ -542,6 +543,10 @@ namespace Proof {
         }
     }
 
+    void WindowsWindow::FrameBufferResizedCallback(int width, int height) {
+        m_FrameBufferResized = true;
+    }
+
    
     void WindowsWindow::Mouse_Moved_Callback(double xpos, double ypos){
         MouseMoveEvent mouseEvent(xpos,ypos, xpos - m_MousePreviousLocationX, m_MousePreviousLocationY - ypos);
@@ -570,7 +575,7 @@ namespace Proof {
        // glfwWindowHint(GLFW_MAXIMIZED,GLFW_TRUE); // when using this meathod teh window will have some glithy meathod
         if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // so we do not set an api as open gl
-            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+            glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         }
         m_Window = glfwCreateWindow(Width,Height, "Proof", nullptr,NULL);
         if (m_Window == nullptr) {
@@ -578,9 +583,7 @@ namespace Proof {
             glfwTerminate();
             return -1;
         }
-        if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
-            return 0;
-        }
+       
         glfwSetWindowUserPointer((GLFWwindow*)m_Window, this);
         glfwMaximizeWindow((GLFWwindow*)m_Window);
 
@@ -626,6 +629,10 @@ namespace Proof {
         glfwSetWindowFocusCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, int focused) {
             WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
             proofWindow.Window_Input_Focus_callback(focused);
+        });
+        glfwSetFramebufferSizeCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, int width, int height) {
+            WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
+            proofWindow.FrameBufferResizedCallback(width,height);
         });
         glfwSetJoystickCallback(WindowsWindow::ControllerCallbackConnect);
         PF_INFO("Window created widht %i height %i",Width,Height);

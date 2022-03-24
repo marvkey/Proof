@@ -27,10 +27,10 @@ namespace Proof
         m_ShaderStages[1].pSpecializationInfo = nullptr;
     }
     VulkanShader::~VulkanShader() {
-        vkDestroyShaderModule(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_VertexShaderModule, nullptr);
-        vkDestroyShaderModule(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_FragmentShaderModule, nullptr);
-        m_VertexShaderModule = VK_NULL_HANDLE;
-        m_FragmentShaderModule = VK_NULL_HANDLE;
+        //vkDestroyShaderModule(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_VertexShaderModule, nullptr);
+        //vkDestroyShaderModule(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_FragmentShaderModule, nullptr);
+        //m_VertexShaderModule = VK_NULL_HANDLE;
+        //m_FragmentShaderModule = VK_NULL_HANDLE;
     }
     std::vector<char> VulkanShader::ReadFile(const std::string& filePath) {
         // ate = when open go to end imediately, helps us get size more convieneinet

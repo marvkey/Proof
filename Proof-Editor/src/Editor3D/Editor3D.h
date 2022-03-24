@@ -84,5 +84,6 @@ namespace Proof {
 		VkPipelineLayout m_PipelineLayout;
 		Count<VulkanCommandBuffer> m_CommandBuffer = NULL;
 		Count<VulkanVertexBuffer> m_VulkanVertexBuffer;
+		void RecreateSwapChain();
 	};
 }

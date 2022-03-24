@@ -12,9 +12,8 @@ namespace Proof
 	}
 	VulkanGraphicsPipeline::VulkanGraphicsPipeline(Count<Shader> shader, const PipelineConfigInfo& info, uint32_t attributeSize, uint32_t bindingSize, const VkVertexInputAttributeDescription* attributeData, const VkVertexInputBindingDescription* bindingData) {
 		m_Shader = std::dynamic_pointer_cast<VulkanShader>(shader);
-		m_ConfigInfo = info;
-		PF_CORE_ASSERT(m_ConfigInfo.PipelineLayout ,"Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");
-		PF_CORE_ASSERT(m_ConfigInfo.RenderPass,"Cannot create Graphics Pipeline:: no renderpass provided in configInfo");
+		PF_CORE_ASSERT(info.PipelineLayout ,"Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");
+		PF_CORE_ASSERT(info.RenderPass,"Cannot create Graphics Pipeline:: no renderpass provided in configInfo");
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		// we are hardcoding values into the vertex data
@@ -38,7 +37,7 @@ namespace Proof
 		pipelineInfo.pColorBlendState = &info.ColorBlendInfo;
 		pipelineInfo.pDepthStencilState = &info.DepthStencilInfo;
 		// some functionality to configure the viewport or line width without restarting the whole pipeline
-		pipelineInfo.pDynamicState = nullptr;
+		pipelineInfo.pDynamicState = &info.DynamicStateInfo;
 
 
 		pipelineInfo.layout = info.PipelineLayout;
@@ -52,27 +51,17 @@ namespace Proof
 		if (vkCreateGraphicsPipelines((Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,&m_GraphicsPipeline) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to Create Graphics Pipeline");
 	}
-	void VulkanGraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height) {
+	void VulkanGraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
 
 		configInfo.InputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		configInfo.InputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		configInfo.InputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 
-		configInfo.Viewport.x = 0.0f;
-		configInfo.Viewport.y = 0.0f;
-		configInfo.Viewport.width = static_cast<float>(width);
-		configInfo.Viewport.height = static_cast<float>(height);
-		configInfo.Viewport.minDepth = 0.0f;
-		configInfo.Viewport.maxDepth = 1.0f;
-
-		configInfo.Scissor.offset = { 0, 0 };
-		configInfo.Scissor.extent = { width, height };
-
 		configInfo.ViewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		configInfo.ViewportInfo.viewportCount = 1;
-		configInfo.ViewportInfo.pViewports = &configInfo.Viewport;
+		configInfo.ViewportInfo.pViewports = nullptr;
 		configInfo.ViewportInfo.scissorCount = 1;
-		configInfo.ViewportInfo.pScissors = &configInfo.Scissor;
+		configInfo.ViewportInfo.pScissors = nullptr;
 
 		configInfo.RasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		configInfo.RasterizationInfo.depthClampEnable = VK_FALSE;
@@ -125,6 +114,21 @@ namespace Proof
 		configInfo.DepthStencilInfo.stencilTestEnable = VK_FALSE;
 		configInfo.DepthStencilInfo.front = {};  // Optional
 		configInfo.DepthStencilInfo.back = {};   // Optional
+
+
+		// DYNAMIC VIEWPORT
+		// expect dynamic sciscor and dynamic viewport to be put in later
+
+		configInfo.DynamicStateEnables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		configInfo.DynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		configInfo.DynamicStateInfo.pDynamicStates = configInfo.DynamicStateEnables.data();
+		configInfo.DynamicStateInfo.dynamicStateCount =
+			static_cast<uint32_t>(configInfo.DynamicStateEnables.size());
+		configInfo.DynamicStateInfo.flags = 0;
+	}
+
+	void VulkanGraphicsPipeline::Recreate(Count<Shader> shader, const PipelineConfigInfo& info, uint32_t attributeSize, uint32_t bindingSize , const VkVertexInputAttributeDescription* attributeData , const VkVertexInputBindingDescription* bindingData ) {
+		*this = VulkanGraphicsPipeline(shader, info, attributeSize, bindingSize, attributeData, bindingData);
 	}
 
 }

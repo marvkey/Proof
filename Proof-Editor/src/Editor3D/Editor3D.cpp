@@ -48,7 +48,7 @@ namespace Proof
 			CurrentWindow::GetWindowClass().KeyboardClicked.end();
 	}
 	void Editore3D::OnEvent(Event& e) {
-
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		EventDispatcher dispatcher(e);
 		if(ActiveWorld->m_CurrentState == WorldState::Play)
 			InputManager::OnEvent(e);
@@ -74,31 +74,22 @@ namespace Proof
 			std::vector<VulkanVertex>vulkanVertices{
 			 {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
 			  {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-			  {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}} 
+			  {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
 			};
 			m_VulkanVertexBuffer = CreateCount<VulkanVertexBuffer>(vulkanVertices.data(), vulkanVertices.size() * sizeof(VulkanVertex));
 			PipelineConfigInfo pipelineConfig{};
-			VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig,CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
+			VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
 			pipelineConfig.RenderPass = m_VulkanSwapChain->GetRenderPass();
 			pipelineConfig.PipelineLayout = m_PipelineLayout;
 			m_VulkanShader = Shader::Create("gg", ProofCurrentDirectory + "vert.spv", ProofCurrentDirectory + "frag.spv");
 			auto a = VulkanVertex::GetAttributeDescriptions();
 			auto b = VulkanVertex::GetBindingDescriptions();
-			m_GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(m_VulkanShader, pipelineConfig, a.size(),b.size(),a.data(),b.data());
+			m_GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(m_VulkanShader, pipelineConfig, a.size(), b.size(), a.data(), b.data());
 
-			m_CommandBuffer = CreateCount<VulkanCommandBuffer>(*m_VulkanSwapChain.get(), *m_GraphicsPipeline.get(),m_GraphicsPipeline);
-		
-			m_CommandBuffer->Draw([&](VkCommandBuffer& buffer) {
-				m_VulkanVertexBuffer->Bind(buffer);
-				vkCmdDraw(buffer, m_VulkanVertexBuffer->GetVertexCount(), 1, 0, 0);
-			});
-			// DRAW
-			uint32_t imageIndex;
-			auto result = m_VulkanSwapChain->AcquireNextImage(&imageIndex);
-			if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-				PF_CORE_ASSERT(false, "Failed to acquire swap chain Image!");
+			m_CommandBuffer = CreateCount<VulkanCommandBuffer>(m_VulkanSwapChain, m_GraphicsPipeline);
 
-			result = m_VulkanSwapChain->SubmitCommandBuffers(&m_CommandBuffer->GetBuffer(imageIndex), &imageIndex);
+			
+			
 		}
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
@@ -196,7 +187,28 @@ namespace Proof
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
-			
+			// DRAW
+			uint32_t imageIndex;
+			auto result = m_VulkanSwapChain->AcquireNextImage(&imageIndex);
+
+			if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+				RecreateSwapChain();
+				return;
+			}
+
+			if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+				PF_CORE_ASSERT(false, "Failed to acquire swap chain Image!");
+
+			m_CommandBuffer->Record(imageIndex, [&](VkCommandBuffer& buffer) {
+				m_VulkanVertexBuffer->Bind(buffer);
+				vkCmdDraw(buffer, m_VulkanVertexBuffer->GetVertexCount(), 1, 0, 0);
+			});
+			result = m_VulkanSwapChain->SubmitCommandBuffers(&m_CommandBuffer->GetBuffer(imageIndex), &imageIndex);
+
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || CurrentWindow::GetWindowClass().IsFrameBufferResized()) {
+				RecreateSwapChain();
+				return;
+			}
 		}
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
@@ -786,6 +798,24 @@ namespace Proof
 	}
 	void Editore3D::PauseWorld() {
 		ActiveWorld->m_CurrentState = WorldState::Pause;
+	}
+
+	void Editore3D::RecreateSwapChain() {
+		vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
+		m_VulkanSwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
+
+		if (m_VulkanSwapChain->GetImageCount() != m_CommandBuffer->GetSize()) {
+			m_CommandBuffer->FreeCommandBuffer();
+			m_CommandBuffer = CreateCount<VulkanCommandBuffer>(m_VulkanSwapChain, m_GraphicsPipeline);
+		}
+
+		PipelineConfigInfo pipelineConfig{};
+		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
+		pipelineConfig.RenderPass = m_VulkanSwapChain->GetRenderPass();
+		pipelineConfig.PipelineLayout = m_PipelineLayout;
+		auto a = VulkanVertex::GetAttributeDescriptions();
+		auto b = VulkanVertex::GetBindingDescriptions();
+		m_GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(m_VulkanShader, pipelineConfig, a.size(), b.size(), a.data(), b.data());
 	}
 
 	void Editore3D::CreateMaterialEdtior(MaterialAsset* material) {
