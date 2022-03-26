@@ -31,17 +31,18 @@ namespace Proof
 	}
 
 	void VulkanCommandBuffer::Recreate() {
-		FreeCommandBuffer();
-		m_CommandBuffer.resize(m_SwapChain->GetImageCount());
+		//m_CommandBuffer.resize(m_SwapChain->GetImageCount());
+		//
+		//VkCommandBufferAllocateInfo allocInfo{};
+		//allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		//allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		//allocInfo.commandPool = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetCommandPool();
+		//allocInfo.commandBufferCount = (uint32_t)m_CommandBuffer.size();
+		//
+		//if (vkAllocateCommandBuffers(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &allocInfo, m_CommandBuffer.data()) != VK_SUCCESS)
+		//	PF_CORE_ASSERT(false, "Failed to allocate command buffer");
 
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetCommandPool();
-		allocInfo.commandBufferCount = (uint32_t)m_CommandBuffer.size();
-
-		if (vkAllocateCommandBuffers(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &allocInfo, m_CommandBuffer.data()) != VK_SUCCESS)
-			PF_CORE_ASSERT(false, "Failed to allocate command buffer");
+		*this = VulkanCommandBuffer(m_SwapChain, m_GraphicsPipeline);
 	}
 
 	void VulkanCommandBuffer::FreeCommandBuffer() {

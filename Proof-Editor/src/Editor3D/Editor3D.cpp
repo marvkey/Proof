@@ -209,6 +209,7 @@ namespace Proof
 				RecreateSwapChain();
 				return;
 			}
+			vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
 		}
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
@@ -801,13 +802,11 @@ namespace Proof
 	}
 
 	void Editore3D::RecreateSwapChain() {
-		vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
+		// we have to recreate everything since we are using smart pointers so they will be pointing to previous data
 		m_VulkanSwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
 
-		if (m_VulkanSwapChain->GetImageCount() != m_CommandBuffer->GetSize()) {
-			m_CommandBuffer->FreeCommandBuffer();
-			m_CommandBuffer = CreateCount<VulkanCommandBuffer>(m_VulkanSwapChain, m_GraphicsPipeline);
-		}
+		
+		m_CommandBuffer = CreateCount<VulkanCommandBuffer>(m_VulkanSwapChain, m_GraphicsPipeline);
 
 		PipelineConfigInfo pipelineConfig{};
 		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);

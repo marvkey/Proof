@@ -128,6 +128,7 @@ namespace Proof
 	}
 
 	void VulkanGraphicsPipeline::Recreate(Count<Shader> shader, const PipelineConfigInfo& info, uint32_t attributeSize, uint32_t bindingSize , const VkVertexInputAttributeDescription* attributeData , const VkVertexInputBindingDescription* bindingData ) {
+		vkDestroyPipeline(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_GraphicsPipeline, nullptr);
 		*this = VulkanGraphicsPipeline(shader, info, attributeSize, bindingSize, attributeData, bindingData);
 	}
 

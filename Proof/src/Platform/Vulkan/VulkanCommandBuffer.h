@@ -10,6 +10,7 @@ namespace Proof
 	public:
 		VulkanCommandBuffer(Count<VulkanSwapChain> swapChain,Count<VulkanGraphicsPipeline> pipeline);
 		void Bind(uint32_t index =0);
+
 		VkCommandBuffer& GetBuffer(uint32_t index=0) {
 			return m_CommandBuffer[index];
 		}
@@ -72,7 +73,11 @@ namespace Proof
 				PF_CORE_ASSERT(false, "Faied to record command Buffers");
 		}
 		void Recreate();
+		~VulkanCommandBuffer() {
+			void FreeCommandBuffer();
+		}
 		void FreeCommandBuffer();
+
 	private:
 		std::vector<VkCommandBuffer> m_CommandBuffer;
 

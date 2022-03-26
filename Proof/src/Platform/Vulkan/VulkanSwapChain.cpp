@@ -16,6 +16,8 @@ namespace Proof
 
     VulkanSwapChain::VulkanSwapChain(VkExtent2D extent)
         : m_WindowExtent{ extent } {
+        vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
+
         CreateSwapChain();
         CreateImageViews();
         CreateRenderPass();
@@ -424,7 +426,7 @@ const std::vector<VkPresentModeKHR>& availablePresentModes) {
     }
     void VulkanSwapChain::Recreate() {
         // wait while the current swapchain is being used
-        vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
-        *this = VulkanSwapChain({ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
+      //  vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
+        *this = VulkanSwapChain(GetSwapChainExtent());
     }
 }  
