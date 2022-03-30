@@ -85,5 +85,6 @@ namespace Proof {
 		Count<VulkanCommandBuffer> m_CommandBuffer = NULL;
 		Count<VulkanVertexBuffer> m_VulkanVertexBuffer;
 		void RecreateSwapChain();
+
 	};
 }

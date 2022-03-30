@@ -17,11 +17,14 @@
 #include "../UniformBuffer.h"
 #include "Proof/Scene/Component.h"
 #include "Platform/OpenGL/OpenGLRenderer/OpenGLRenderer3DPBR.h"
+#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
 namespace Proof{
 
 	void Renderer3DPBR::Init() {
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			OpenGLRenderer3DPBR::Init();
+		else
+			VulkanRenderer::Init();
 	}
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,RendererData& renderSpec) {
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)

@@ -14,9 +14,9 @@ namespace Proof {
 	Count<class GraphicsContext>Renderer::m_GraphicsContext = nullptr;
 	void Renderer::Init(Window* window) {
 		m_GraphicsContext = GraphicsContext::Create(window);
+		Renderer3DPBR::Init();
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		Renderer3DCore::Init();
-		Renderer3DPBR::Init();
 
 		Renderer2D::Init();
 		Renderer2D::Reset();

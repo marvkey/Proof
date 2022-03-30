@@ -30,8 +30,15 @@
 #include "Proof/Resources/Asset/AssetManager.h"
 #include <algorithm>
 #include "Proof/Input/InputManager.h"
+#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
 namespace Proof
 {
+	/*
+	struct VulkanPushData {
+		glm::vec2 offfset;
+		alignas(16) glm::vec3 color;
+	};
+	*/
 	Editore3D::Editore3D():
 		Layer("Editor3D Layer") 	{	}
 	Editore3D::~Editore3D() {
@@ -56,41 +63,7 @@ namespace Proof
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 	}
 	void Editore3D::OnAttach() {
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
-			m_VulkanSwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
-
-			VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-			pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-			// pipeline layout is used to pass data to pipeline other than vertex and fragment data
-			// this includes texture and uniform buffer objects
-			pipelineLayoutInfo.setLayoutCount = 0; // emty layout
-			pipelineLayoutInfo.pSetLayouts = nullptr;
-			// very efficiently send small data to shader proggramm
-			pipelineLayoutInfo.pushConstantRangeCount = 0;
-			pipelineLayoutInfo.pPushConstantRanges = nullptr;
-			if (vkCreatePipelineLayout(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
-				PF_ASSERT(false, "failed to create pipeline layout");
-
-			std::vector<VulkanVertex>vulkanVertices{
-			 {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			  {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-			  {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
-			};
-			m_VulkanVertexBuffer = CreateCount<VulkanVertexBuffer>(vulkanVertices.data(), vulkanVertices.size() * sizeof(VulkanVertex));
-			PipelineConfigInfo pipelineConfig{};
-			VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
-			pipelineConfig.RenderPass = m_VulkanSwapChain->GetRenderPass();
-			pipelineConfig.PipelineLayout = m_PipelineLayout;
-			m_VulkanShader = Shader::Create("gg", ProofCurrentDirectory + "vert.spv", ProofCurrentDirectory + "frag.spv");
-			auto a = VulkanVertex::GetAttributeDescriptions();
-			auto b = VulkanVertex::GetBindingDescriptions();
-			m_GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(m_VulkanShader, pipelineConfig, a.size(), b.size(), a.data(), b.data());
-
-			m_CommandBuffer = CreateCount<VulkanCommandBuffer>(m_VulkanSwapChain, m_GraphicsPipeline);
-
-			
-			
-		}
+		
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 
@@ -187,29 +160,9 @@ namespace Proof
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		Layer::OnUpdate(DeltaTime);
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
-			// DRAW
-			uint32_t imageIndex;
-			auto result = m_VulkanSwapChain->AcquireNextImage(&imageIndex);
-
-			if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-				RecreateSwapChain();
-				return;
-			}
-
-			if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-				PF_CORE_ASSERT(false, "Failed to acquire swap chain Image!");
-
-			m_CommandBuffer->Record(imageIndex, [&](VkCommandBuffer& buffer) {
-				m_VulkanVertexBuffer->Bind(buffer);
-				vkCmdDraw(buffer, m_VulkanVertexBuffer->GetVertexCount(), 1, 0, 0);
-			});
-			result = m_VulkanSwapChain->SubmitCommandBuffers(&m_CommandBuffer->GetBuffer(imageIndex), &imageIndex);
-
-			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || CurrentWindow::GetWindowClass().IsFrameBufferResized()) {
-				RecreateSwapChain();
-				return;
-			}
-			vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
+			Count<ScreenFrameBuffer> bufferl;
+			VulkanRenderer::BeginContext(glm::mat4(1), glm::mat4(1), { 0,0,0 }, bufferl, RendererData());
+			VulkanRenderer::EndContext();
 		}
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)

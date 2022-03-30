@@ -1,10 +1,15 @@
 #pragma once
 #include "Proof/Renderer/Shader.h"
+#include "Proof/Renderer/Renderer.h"
 #include "Proof/Core/Core.h"
 #include <vulkan/vulkan.h>
 #include <vector>
 namespace Proof
 {
+	struct VulkanPipeLineLayout {
+		VkPipelineLayout PipelineLayout =nullptr;
+		VulkanPipeLineLayout(uint32_t pushConstantRngeCount = 0, VkPushConstantRange* pushConstantRange = nullptr, uint32_t layoutCount = 0, VkDescriptorSetLayout layoutDescriptor = nullptr, VkStructureType structureType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
+	};
 	struct PipelineConfigInfo {
 		// this 2prevent pointer problems
 		//PipelineConfigInfo(const PipelineConfigInfo&) = delete;

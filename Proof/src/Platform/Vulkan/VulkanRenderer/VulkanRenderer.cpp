@@ -1,0 +1,115 @@
+#include "Proofprch.h"
+#include "VulkanRenderer.h"
+
+#include "Proof/Renderer/Shader.h"
+
+#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
+#include "Proof/Renderer/3DRenderer/Renderer3DCore.h"
+#include "Proof/Renderer/VertexArray.h"
+#include "Proof/Renderer/Renderer.h"
+
+#include "Proof/Scene/Mesh.h"
+#include "Proof/Scene/Component.h"
+#include "Proof/Scene/Camera/OrthagraphicCamera.h"
+#include "Proof/Scene/Camera/EditorCamera.h"
+
+#include "Proof/Core/FrameTime.h"
+#include "Proof/Scene/Mesh.h"
+#include "Proof/Scene/Entity.h"
+#include "Proof/Scene/Material.h"
+#include "Proof/Renderer/UniformBuffer.h"
+#include "Proof/Scene/Component.h"
+namespace Proof
+{
+	struct VulkanPushData {
+		glm::vec2 offfset;
+		alignas(16) glm::vec3 color;
+	};
+	Special<DrawPipeline> VulkanRenderer::s_Pipeline = nullptr;
+	bool VulkanRenderer::InContext = false;
+	void VulkanRenderer::Init() {
+		s_Pipeline = CreateSpecial<DrawPipeline>();
+		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
+
+		VkPushConstantRange pushConstantRange{};
+		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = sizeof(VulkanPushData);
+		s_Pipeline->PipelineLayout = VulkanPipeLineLayout(1,&pushConstantRange);
+
+		std::vector<VulkanVertex>vulkanVertices{
+		 {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+		  {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+		  {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+		};
+		s_Pipeline->VertexBuffer = CreateCount<VulkanVertexBuffer>(vulkanVertices.data(), vulkanVertices.size() * sizeof(VulkanVertex));
+		PipelineConfigInfo pipelineConfig{};
+		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
+		pipelineConfig.RenderPass = s_Pipeline->SwapChain->GetRenderPass();
+		pipelineConfig.PipelineLayout = s_Pipeline->PipelineLayout.PipelineLayout;
+		s_Pipeline->Shader = Shader::Create("gg", ProofCurrentDirectory + "vert.spv", ProofCurrentDirectory + "frag.spv");
+		auto a = VulkanVertex::GetAttributeDescriptions();
+		auto b = VulkanVertex::GetBindingDescriptions();
+		s_Pipeline->GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(s_Pipeline->Shader, pipelineConfig, a.size(), b.size(), a.data(), b.data());
+
+		s_Pipeline->CommandBuffer = CreateCount<VulkanCommandBuffer>(s_Pipeline->SwapChain, s_Pipeline->GraphicsPipeline);
+	}
+	void VulkanRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
+		InContext = true;
+	}
+	void VulkanRenderer::EndContext() {
+		DrawFrame();
+		InContext = false;
+	}
+	void VulkanRenderer::RecreateSwapChain() {
+		// we have to recreate everything since we are using smart pointers so they will be pointing to previous data
+		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
+
+
+		s_Pipeline->CommandBuffer= CreateCount<VulkanCommandBuffer>(s_Pipeline->SwapChain, s_Pipeline->GraphicsPipeline);
+
+		PipelineConfigInfo pipelineConfig{};
+		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
+		pipelineConfig.RenderPass = s_Pipeline->SwapChain->GetRenderPass();
+		pipelineConfig.PipelineLayout = s_Pipeline->PipelineLayout.PipelineLayout;
+		auto a = VulkanVertex::GetAttributeDescriptions();
+		auto b = VulkanVertex::GetBindingDescriptions();
+		s_Pipeline->GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(s_Pipeline->Shader, pipelineConfig, a.size(), b.size(), a.data(), b.data());
+	}
+	void VulkanRenderer::DrawFrame() {
+		uint32_t imageIndex;
+		auto result = s_Pipeline->SwapChain->AcquireNextImage(&imageIndex);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			RecreateSwapChain();
+			return;
+		}
+
+		if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+			PF_CORE_ASSERT(false, "Failed to acquire swap chain Image!");
+
+		s_Pipeline->CommandBuffer->Record(imageIndex, [&](VkCommandBuffer& buffer) {
+			s_Pipeline->VertexBuffer->Bind(buffer);
+
+			for (int i = 0; i < 4; i++) {
+				VulkanPushData push{};
+				push.offfset = { -0.5f + Random::Real<float>(0,1) * 0.02f, -0.4f + i * 0.25f};
+				push.color = { 0.0f, 0.0f, 0.2f + 0.2f * i };
+				vkCmdPushConstants(buffer, s_Pipeline->PipelineLayout.PipelineLayout,
+					VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+					0,
+					sizeof(VulkanPushData),
+					&push
+				);
+				vkCmdDraw(buffer, s_Pipeline->VertexBuffer->GetVertexCount(), 1, 0, 0);
+			}
+			});
+		result = s_Pipeline->SwapChain->SubmitCommandBuffers(&s_Pipeline->CommandBuffer->GetBuffer(imageIndex), &imageIndex);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || CurrentWindow::GetWindowClass().IsFrameBufferResized()) {
+			RecreateSwapChain();
+			return;
+		}
+		vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
+	}
+}

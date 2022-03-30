@@ -66,7 +66,6 @@ namespace Proof
 			//---------------------//
 			Bind(index);
 			func(m_CommandBuffer[index]);
-			vkCmdDraw(m_CommandBuffer[index], 3, 1, 0, 0);
 
 			vkCmdEndRenderPass(m_CommandBuffer[index]);
 			if (vkEndCommandBuffer(m_CommandBuffer[index]) != VK_SUCCESS)

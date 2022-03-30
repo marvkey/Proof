@@ -7,6 +7,20 @@
 
 namespace Proof
 {
+	VulkanPipeLineLayout::VulkanPipeLineLayout(uint32_t pushConstantRngeCount, VkPushConstantRange* pushConstantRange, uint32_t layoutCount, VkDescriptorSetLayout layoutDescriptor, VkStructureType structureType) {
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		// pipeline layout is used to pass data to pipeline other than vertex and fragment data
+		// this includes texture and uniform buffer objects
+		pipelineLayoutInfo.setLayoutCount = layoutCount; // emty layout
+		pipelineLayoutInfo.pSetLayouts = &layoutDescriptor;
+		// very efficiently send small data to shader proggramm
+		pipelineLayoutInfo.pushConstantRangeCount = pushConstantRngeCount;
+		pipelineLayoutInfo.pPushConstantRanges = pushConstantRange;
+		if (vkCreatePipelineLayout(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS)
+			PF_ASSERT(false, "failed to create pipeline layout");
+	}
+
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
 		vkDestroyPipeline(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_GraphicsPipeline, nullptr);
 	}
@@ -131,5 +145,7 @@ namespace Proof
 		vkDestroyPipeline(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_GraphicsPipeline, nullptr);
 		*this = VulkanGraphicsPipeline(shader, info, attributeSize, bindingSize, attributeData, bindingData);
 	}
+
+	
 
 }
