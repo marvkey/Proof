@@ -33,12 +33,7 @@
 #include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
 namespace Proof
 {
-	/*
-	struct VulkanPushData {
-		glm::vec2 offfset;
-		alignas(16) glm::vec3 color;
-	};
-	*/
+
 	Editore3D::Editore3D():
 		Layer("Editor3D Layer") 	{	}
 	Editore3D::~Editore3D() {
@@ -752,22 +747,6 @@ namespace Proof
 	}
 	void Editore3D::PauseWorld() {
 		ActiveWorld->m_CurrentState = WorldState::Pause;
-	}
-
-	void Editore3D::RecreateSwapChain() {
-		// we have to recreate everything since we are using smart pointers so they will be pointing to previous data
-		m_VulkanSwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
-
-		
-		m_CommandBuffer = CreateCount<VulkanCommandBuffer>(m_VulkanSwapChain, m_GraphicsPipeline);
-
-		PipelineConfigInfo pipelineConfig{};
-		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
-		pipelineConfig.RenderPass = m_VulkanSwapChain->GetRenderPass();
-		pipelineConfig.PipelineLayout = m_PipelineLayout;
-		auto a = VulkanVertex::GetAttributeDescriptions();
-		auto b = VulkanVertex::GetBindingDescriptions();
-		m_GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(m_VulkanShader, pipelineConfig, a.size(), b.size(), a.data(), b.data());
 	}
 
 	void Editore3D::CreateMaterialEdtior(MaterialAsset* material) {

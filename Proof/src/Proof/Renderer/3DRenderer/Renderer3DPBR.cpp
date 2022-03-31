@@ -60,6 +60,11 @@ namespace Proof{
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			OpenGLRenderer3DPBR::Reset();
 	}
+
+	void Renderer3DPBR::Destroy() {
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+			VulkanRenderer::Destroy();
+	}
 		
 	DeferedRenderingData::DeferedRenderingData() {
 		MeshShader = Shader::GetOrCreate("MeshShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/MeshGeometry.glsl");

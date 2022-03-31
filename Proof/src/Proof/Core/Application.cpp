@@ -148,6 +148,8 @@ namespace Proof {
         IsRunning = false;
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
             AssetManager::SaveAllAsset();
+
+        Renderer::Destroy();
     }
 
     void Application::PushLayer(Layer* Layer) {

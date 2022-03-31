@@ -18,7 +18,7 @@ namespace Proof
 		* @param Size of element in bytes
 		* @param the offset in the uniform buffer from the stating point in bytes if it is the last element just use the current size of the uniform buffer
 		*/
-		virtual void SetData(const void* data,uint32_t size,uint32_t offset=0) = 0;
+		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
 
 		virtual ~UniformBuffer(){};
 		/*

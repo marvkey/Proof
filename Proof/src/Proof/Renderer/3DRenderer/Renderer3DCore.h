@@ -27,8 +27,9 @@ namespace Proof{
 	class Proof_API Renderer3DCore {
 	private:
 		//static Renderer3DData m_Renderer3DData;
-		static Count<UniformBuffer> s_CameraBuffer;
 	public:
+		static Count<UniformBuffer> s_CameraBuffer;
+
 		static void Init() {
 			//m_Renderer3DBaseUniform = UniformBuffer::Create(sizeof(Renderer3DData),0);
 			//m_Renderer3DBaseUniform->SetData(&m_Renderer3DData,sizeof(Renderer3DData));

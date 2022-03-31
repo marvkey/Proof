@@ -21,6 +21,10 @@ namespace Proof
 			PF_ASSERT(false, "failed to create pipeline layout");
 	}
 
+	VulkanPipeLineLayout::~VulkanPipeLineLayout() {
+		//vkDestroyPipelineLayout(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), PipelineLayout, nullptr);
+	}
+
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
 		vkDestroyPipeline(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_GraphicsPipeline, nullptr);
 	}

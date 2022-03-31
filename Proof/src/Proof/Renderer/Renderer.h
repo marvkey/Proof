@@ -17,6 +17,7 @@ namespace Proof {
 			return m_GraphicsContext.get();
 		}
 		static void Init(Window* window);
+		static void Destroy();
 	//	static void Reset();
 		//static void Draw();
 

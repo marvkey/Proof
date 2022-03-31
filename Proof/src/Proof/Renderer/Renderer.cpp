@@ -24,4 +24,8 @@ namespace Proof {
 
 		PF_ENGINE_TRACE("Renderer Initilized");
 	}
+	void Renderer::Destroy() {
+		Renderer3DPBR::Destroy();
+
+	}
 }

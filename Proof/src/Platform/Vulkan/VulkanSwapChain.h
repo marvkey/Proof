@@ -36,6 +36,9 @@ namespace Proof
         VkResult SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
         void Recreate();
 
+        bool CompareSwapFormats(const VulkanSwapChain& swapChain) {
+            return swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat && swapChain.m_SwapChainImageFormat == m_SwapChainImageFormat;
+        }
     private:
         void CreateSwapChain();
         void CreateImageViews();
@@ -52,6 +55,7 @@ namespace Proof
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
         VkFormat m_SwapChainImageFormat;
+        VkFormat m_SwapChainDepthFormat;
         VkExtent2D m_SwapChainExtent;
 
         std::vector<VkFramebuffer> m_SwapChainFramebuffers;

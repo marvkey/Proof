@@ -140,5 +140,6 @@ namespace Proof
 		static PhysicalBasedRenderer* GetRenderer();
 		static void EndContext();
 		static void Reset();
+		static void Destroy();
 	};
 }

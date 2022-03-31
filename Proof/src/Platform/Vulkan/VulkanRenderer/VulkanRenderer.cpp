@@ -21,14 +21,16 @@
 #include "Proof/Scene/Component.h"
 namespace Proof
 {
+	static CameraData s_CurrentCamera;
+
 	struct VulkanPushData {
 		glm::vec2 offfset;
 		alignas(16) glm::vec3 color;
 	};
-	Special<DrawPipeline> VulkanRenderer::s_Pipeline = nullptr;
-	bool VulkanRenderer::InContext = false;
+	DrawPipeline* VulkanRenderer::s_Pipeline = nullptr;
+	bool VulkanRenderer::s_InContext = false;
 	void VulkanRenderer::Init() {
-		s_Pipeline = CreateSpecial<DrawPipeline>();
+		s_Pipeline = new DrawPipeline();
 		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
 
 		VkPushConstantRange pushConstantRange{};
@@ -55,11 +57,18 @@ namespace Proof
 		s_Pipeline->CommandBuffer = CreateCount<VulkanCommandBuffer>(s_Pipeline->SwapChain, s_Pipeline->GraphicsPipeline);
 	}
 	void VulkanRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
-		InContext = true;
+		s_CurrentCamera = { projection,view,Position };
+		Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+		PF_CORE_ASSERT(s_InContext == false, "Cannot start a new Render Context if Previous Render COntext is not closed");
+		s_InContext = true;
+
 	}
 	void VulkanRenderer::EndContext() {
 		DrawFrame();
-		InContext = false;
+		s_InContext = false;
+	}
+	void VulkanRenderer::Destroy() {
+		delete s_Pipeline;
 	}
 	void VulkanRenderer::RecreateSwapChain() {
 		// we have to recreate everything since we are using smart pointers so they will be pointing to previous data

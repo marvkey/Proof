@@ -9,6 +9,7 @@ namespace Proof
 	struct VulkanPipeLineLayout {
 		VkPipelineLayout PipelineLayout =nullptr;
 		VulkanPipeLineLayout(uint32_t pushConstantRngeCount = 0, VkPushConstantRange* pushConstantRange = nullptr, uint32_t layoutCount = 0, VkDescriptorSetLayout layoutDescriptor = nullptr, VkStructureType structureType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
+		~VulkanPipeLineLayout();
 	};
 	struct PipelineConfigInfo {
 		// this 2prevent pointer problems

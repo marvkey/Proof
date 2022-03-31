@@ -21,8 +21,9 @@ namespace Proof
 		static void Init();
 		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec);
 		static void EndContext();
+		static void Destroy();
 	private:
-		static Special<DrawPipeline> s_Pipeline;
+		static DrawPipeline* s_Pipeline;
 		static bool InContext;
 		static void RecreateSwapChain();
 		static void DrawFrame();
