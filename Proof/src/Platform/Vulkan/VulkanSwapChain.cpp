@@ -365,6 +365,8 @@ namespace Proof
         }
     }
 
+    
+    
     VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(
         const std::vector<VkSurfaceFormatKHR>& availableFormats) {
         for (const auto& availableFormat : availableFormats) {

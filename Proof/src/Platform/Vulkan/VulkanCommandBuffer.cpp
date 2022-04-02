@@ -9,7 +9,7 @@ namespace Proof
 		m_GraphicsPipeline(pipeline)
 	{
 		m_SwapChain = swapChain;
-		m_CommandBuffer.resize(swapChain->GetImageCount());
+		m_CommandBuffer.resize(VulkanSwapChain::MAX_FRAMES_IN_FLIGHT);
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

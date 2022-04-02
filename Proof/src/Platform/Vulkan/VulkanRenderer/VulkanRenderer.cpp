@@ -28,7 +28,9 @@ namespace Proof
 		alignas(16) glm::vec3 color;
 	};
 	DrawPipeline* VulkanRenderer::s_Pipeline = nullptr;
+	int VulkanRenderer::s_CurrentFrameIndex = 0;
 	bool VulkanRenderer::s_InContext = false;
+	uint32_t VulkanRenderer::s_CurrentImageIndex = 0;
 	void VulkanRenderer::Init() {
 		s_Pipeline = new DrawPipeline();
 		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
@@ -58,24 +60,42 @@ namespace Proof
 	}
 	void VulkanRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		s_CurrentCamera = { projection,view,Position };
-		Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+		//Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 		PF_CORE_ASSERT(s_InContext == false, "Cannot start a new Render Context if Previous Render COntext is not closed");
 		s_InContext = true;
+		a:
+		auto result = s_Pipeline->SwapChain->AcquireNextImage(&s_CurrentImageIndex);
+
+		if (s_CurrentImageIndex == 2) {
+			s_CurrentImageIndex = 0;
+		}
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			RecreateSwapChain();
+			goto a;
+		}
+
+		if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+			PF_CORE_ASSERT(false, "Failed to acquire swap chain Image!");
 
 	}
 	void VulkanRenderer::EndContext() {
 		DrawFrame();
+
 		s_InContext = false;
 	}
 	void VulkanRenderer::Destroy() {
 		delete s_Pipeline;
+	}
+	VkCommandBuffer VulkanRenderer::GetCurrentCommandBuffer() {
+		if (s_Pipeline == nullptr)return nullptr;
+		return s_Pipeline->CommandBuffer->GetBuffer(s_CurrentFrameIndex);
 	}
 	void VulkanRenderer::RecreateSwapChain() {
 		// we have to recreate everything since we are using smart pointers so they will be pointing to previous data
 		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
 
 
-		s_Pipeline->CommandBuffer= CreateCount<VulkanCommandBuffer>(s_Pipeline->SwapChain, s_Pipeline->GraphicsPipeline);
+		s_Pipeline->CommandBuffer = CreateCount<VulkanCommandBuffer>(s_Pipeline->SwapChain, s_Pipeline->GraphicsPipeline);
 
 		PipelineConfigInfo pipelineConfig{};
 		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
@@ -86,20 +106,10 @@ namespace Proof
 		s_Pipeline->GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(s_Pipeline->Shader, pipelineConfig, a.size(), b.size(), a.data(), b.data());
 	}
 	void VulkanRenderer::DrawFrame() {
-		uint32_t imageIndex;
-		auto result = s_Pipeline->SwapChain->AcquireNextImage(&imageIndex);
-
-		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			RecreateSwapChain();
-			return;
-		}
-
-		if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-			PF_CORE_ASSERT(false, "Failed to acquire swap chain Image!");
-
-		s_Pipeline->CommandBuffer->Record(imageIndex, [&](VkCommandBuffer& buffer) {
+	
+		s_Pipeline->CommandBuffer->Record(s_CurrentImageIndex, [&](VkCommandBuffer& buffer) {
 			s_Pipeline->VertexBuffer->Bind(buffer);
-
+		
 			for (int i = 0; i < 4; i++) {
 				VulkanPushData push{};
 				push.offfset = { -0.5f + Random::Real<float>(0,1) * 0.02f, -0.4f + i * 0.25f};
@@ -112,13 +122,15 @@ namespace Proof
 				);
 				vkCmdDraw(buffer, s_Pipeline->VertexBuffer->GetVertexCount(), 1, 0, 0);
 			}
-			});
-		result = s_Pipeline->SwapChain->SubmitCommandBuffers(&s_Pipeline->CommandBuffer->GetBuffer(imageIndex), &imageIndex);
+		});
+		auto commandBuffer = GetCurrentCommandBuffer();
+	
+		auto result = s_Pipeline->SwapChain->SubmitCommandBuffers(&commandBuffer, &s_CurrentImageIndex);
 
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || CurrentWindow::GetWindowClass().IsFrameBufferResized()) {
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || CurrentWindow::GetWindowClass().IsFrameBufferResized())
 			RecreateSwapChain();
-			return;
-		}
 		vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
+		s_CurrentFrameIndex = (s_CurrentFrameIndex + 1) % VulkanSwapChain::MAX_FRAMES_IN_FLIGHT;
+
 	}
 }

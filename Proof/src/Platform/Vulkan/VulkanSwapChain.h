@@ -39,6 +39,7 @@ namespace Proof
         bool CompareSwapFormats(const VulkanSwapChain& swapChain) {
             return swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat && swapChain.m_SwapChainImageFormat == m_SwapChainImageFormat;
         }
+
     private:
         void CreateSwapChain();
         void CreateImageViews();

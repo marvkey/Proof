@@ -15,6 +15,7 @@ namespace Proof
 		VulkanPipeLineLayout PipelineLayout;
 		Count<VulkanCommandBuffer> CommandBuffer = NULL;
 		Count<VulkanVertexBuffer> VertexBuffer;
+		
 	};
 	class VulkanRenderer {
 	public:
@@ -22,10 +23,13 @@ namespace Proof
 		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec);
 		static void EndContext();
 		static void Destroy();
+		static VkCommandBuffer GetCurrentCommandBuffer();
 	private:
 		static DrawPipeline* s_Pipeline;
-		static bool InContext;
+		static bool s_InContext;
 		static void RecreateSwapChain();
 		static void DrawFrame();
+		static int s_CurrentFrameIndex;
+		static uint32_t s_CurrentImageIndex;
 	};
 }

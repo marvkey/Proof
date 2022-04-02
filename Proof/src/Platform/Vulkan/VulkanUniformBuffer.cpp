@@ -7,7 +7,7 @@ namespace Proof
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t binding) {
 
         for (size_t i = 0; i < VulkanSwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
-            Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->CreateBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffers[i], m_UniformBuffersMemory[i]);
+            Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->CreateBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffer, m_UniformBufferMemory);
         }
 	}
     VulkanUniformBuffer::~VulkanUniformBuffer() {
