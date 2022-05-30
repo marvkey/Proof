@@ -19,6 +19,7 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Renderer/UniformBuffer.h"
 #include "Proof/Scene/Component.h"
+#include "../VulkanUniformBuffer.h"
 namespace Proof
 {
 	static CameraData s_CurrentCamera;
@@ -31,15 +32,13 @@ namespace Proof
 	int VulkanRenderer::s_CurrentFrameIndex = 0;
 	bool VulkanRenderer::s_InContext = false;
 	uint32_t VulkanRenderer::s_CurrentImageIndex = 0;
+
 	void VulkanRenderer::Init() {
 		s_Pipeline = new DrawPipeline();
-		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
-
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(VulkanPushData);
-		s_Pipeline->PipelineLayout = VulkanPipeLineLayout(1,&pushConstantRange);
 
 		std::vector<VulkanVertex>vulkanVertices{
 		 {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -60,7 +59,6 @@ namespace Proof
 	}
 	void VulkanRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		s_CurrentCamera = { projection,view,Position };
-		//Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 		PF_CORE_ASSERT(s_InContext == false, "Cannot start a new Render Context if Previous Render COntext is not closed");
 		s_InContext = true;
 		a:
@@ -106,7 +104,7 @@ namespace Proof
 		s_Pipeline->GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(s_Pipeline->Shader, pipelineConfig, a.size(), b.size(), a.data(), b.data());
 	}
 	void VulkanRenderer::DrawFrame() {
-	
+
 		s_Pipeline->CommandBuffer->Record(s_CurrentImageIndex, [&](VkCommandBuffer& buffer) {
 			s_Pipeline->VertexBuffer->Bind(buffer);
 		

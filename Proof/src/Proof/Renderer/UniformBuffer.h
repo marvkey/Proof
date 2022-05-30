@@ -18,8 +18,11 @@ namespace Proof
 		* @param Size of element in bytes
 		* @param the offset in the uniform buffer from the stating point in bytes if it is the last element just use the current size of the uniform buffer
 		*/
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
-
+		virtual void SetData(void* data, uint32_t size, uint32_t offset = 0) = 0;
+		template<typename T>
+		T* As() {
+			return dynamic_cast<T*>(this);
+		}
 		virtual ~UniformBuffer(){};
 		/*
 		virtual const uint32_t GetBindingPoint() = 0;

@@ -7,6 +7,15 @@ layout(push_constant) uniform Push{
 	vec2 offset;
 	vec3 color;
 }push;
+layout(set=0,binding = 1) uniform CameraData
+{
+    mat4 ProjectionMatrix;
+    mat4 ViewMatrix;
+    vec3 Position;
+}Camera;
 void main(){
-	gl_Position = vec4(position+push.offset,0.0,1.0);
+    vec4 worldPos = vec4(position+push.offset,1.0,1.0);
+
+	gl_Position = Camera.ProjectionMatrix * Camera.ViewMatrix * worldPos;
+
 }

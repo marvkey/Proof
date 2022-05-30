@@ -17,7 +17,7 @@ namespace Proof{
 		* @param Size of element in bytes
 		* @param the offset in the uniform buffer from the stating point in bytes
 		*/
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset=0)override;
+		virtual void SetData(void* data, uint32_t size, uint32_t offset=0)override;
 
 		virtual ~OpenGLUniformBuffer();
 	private:

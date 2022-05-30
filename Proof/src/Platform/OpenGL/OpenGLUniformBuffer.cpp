@@ -14,7 +14,7 @@ namespace Proof {
 	}
 
 
-	void OpenGLUniformBuffer::SetData(const void* data,uint32_t size,uint32_t offset) {
+	void OpenGLUniformBuffer::SetData(void* data,uint32_t size,uint32_t offset) {
 		glNamedBufferSubData(m_ID,offset,size,data);
 	}
 }

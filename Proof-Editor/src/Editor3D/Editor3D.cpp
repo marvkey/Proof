@@ -83,7 +83,6 @@ namespace Proof
 		m_WorldRenderer = WorldRenderer(ActiveWorld, CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 		// cannot be setting it to window size and stuff innit
 		m_EditorWorld = ActiveWorld;
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 
 		float skyboxVertices[] = {
 					 // positions          
@@ -160,6 +159,7 @@ namespace Proof
 			VulkanRenderer::EndContext();
 		}
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
+		m_WorldRenderer.Renderer();
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
 			ActiveWorld->OnUpdateEditor(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
 		else if (ActiveWorld->m_CurrentState == WorldState::Play)

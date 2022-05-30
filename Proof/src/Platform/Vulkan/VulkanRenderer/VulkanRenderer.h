@@ -6,6 +6,7 @@
 #include<vulkan/vulkan.h>
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
+#include "../VulkanDescriptorLayout.h"
 namespace Proof
 {
 	struct DrawPipeline {
@@ -31,5 +32,6 @@ namespace Proof
 		static void DrawFrame();
 		static int s_CurrentFrameIndex;
 		static uint32_t s_CurrentImageIndex;
+
 	};
 }
