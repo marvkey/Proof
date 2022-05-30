@@ -34,12 +34,37 @@ namespace Proof {
 		
 	private:
 		
+		bool m_ShowAllControllerEvents = false;
+		struct KeyBoardShowEvent {
+			bool ShowAll = false;
+			bool ShowOne = false;
+			
+			bool Clicked = false;
+			bool Released = false;
+			bool DoubleClicked = false;
+			bool Pressed = false;
+		};
+		struct MouseShowEvent {
+			bool ShowAll = false;
+			bool ShowOne = false;
+
+			bool Clicked = false;
+			bool Released = false;
+			bool DoubleClicked = false;
+			bool Pressed = false;
+
+			bool Movement = false;
+			bool Scroll = false;
+		};
+		KeyBoardShowEvent m_ShowAllKeyBoardEvents;
+		MouseShowEvent m_ShowAllMouseEvents;
 
 		virtual void OnEvent(Event& e);
 		void OnKeyClicked(KeyClickedEvent& e);
 		bool m_ViewPoartHoveredorFocused = false;
 		Entity m_CopyEntity;
 		void Logger();
+		bool m_ShowLogSettings = false;;
 		bool m_ClearLogOnPlay = false;
 		bool Docking = false;
 		bool m_ShowLogger = true;

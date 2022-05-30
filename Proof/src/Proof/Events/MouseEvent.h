@@ -7,7 +7,7 @@
 namespace Proof {
     class Proof_API MouseButtonEvent: public Event{
     public:
-        EVENT_CLASS_CATEGORY(EventCategoryInput)
+        EVENT_CLASS_CATEGORY(EventCategoryInput| EventMouse)
         MouseButtonEvent(MouseButton button):
             m_Button(button)
         {
@@ -68,7 +68,7 @@ namespace Proof {
     };
     class Proof_API MouseMovementEvent: public Event{
     public:
-        EVENT_CLASS_CATEGORY(EventCategoryAxis | EventCategoryInput)
+        EVENT_CLASS_CATEGORY(EventCategoryAxis | EventCategoryInput| EventMouse)
     };
     class Proof_API MouseMoveEvent: public MouseMovementEvent {
     public:

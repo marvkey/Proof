@@ -74,14 +74,15 @@ namespace Proof
 			ImGui::Columns(1);
 			ImGui::GetStyle().FrameRounding = 6;
 		}
-		void ImGUIAPI::CheckBox(const std::string& name,bool* variable) {
+		bool ImGUIAPI::CheckBox(const std::string& name,bool* variable) {
 			ImGui::GetStyle().FrameRounding = 3.5;
 			ImGui::PushID(name.c_str());
 			ImGui::Text(name.c_str());
 			ImGui::SameLine();
-			ImGui::Checkbox("##N",variable);
+			bool val =ImGui::Checkbox("##N",variable);
 			ImGui::GetStyle().FrameRounding = 6;
 			ImGui::PopID();
+			return val;
 		}
 
 		void ImGUIAPI::SetKeyboardFocusOff()

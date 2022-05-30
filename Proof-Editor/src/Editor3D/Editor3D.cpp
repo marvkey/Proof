@@ -56,6 +56,89 @@ namespace Proof
 			InputManager::OnEvent(e);
 
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
+		dispatcher.Dispatch<ControllerConnectEvent>([](auto& e) {
+			PF_INFO(e.ToString().c_str());
+		});
+		dispatcher.Dispatch<ControllerDisconnectEvent>([](auto& e) {
+			PF_INFO(e.ToString().c_str());
+		});
+
+		// KEYBOARD
+		{
+			if (m_ShowAllKeyBoardEvents.ShowOne == true && e.IsInCategory(EventCategory::EventKeyBoard)) {
+				if (m_ShowAllKeyBoardEvents.ShowAll == true) {
+					PF_INFO(e.ToString().c_str());
+				}
+				if (m_ShowAllKeyBoardEvents.Clicked) {
+					dispatcher.Dispatch<KeyClickedEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllKeyBoardEvents.Released) {
+					dispatcher.Dispatch<KeyReleasedEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllKeyBoardEvents.DoubleClicked) {
+					dispatcher.Dispatch<KeyDoubleClickEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllKeyBoardEvents.Pressed) {
+					dispatcher.Dispatch<KeyPressedEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+				return;
+			}
+		}
+		// MOUSE
+		{
+			if (m_ShowAllMouseEvents.ShowOne == true && e.IsInCategory(EventCategory::EventMouse)) {
+				if (m_ShowAllMouseEvents.ShowAll == true) {
+					PF_INFO(e.ToString().c_str());
+					return;
+				}
+				if (m_ShowAllMouseEvents.Movement) {
+					dispatcher.Dispatch<MouseMoveEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+				if (m_ShowAllMouseEvents.Clicked) {
+					dispatcher.Dispatch<MouseButtonClickedEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllMouseEvents.Released) {
+					dispatcher.Dispatch<MouseButtonReleasedEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllMouseEvents.DoubleClicked) {
+					dispatcher.Dispatch<MouseButtonDoubleClickEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllMouseEvents.Pressed) {
+					dispatcher.Dispatch<MouseButtonPressedEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllMouseEvents.Scroll) {
+					dispatcher.Dispatch<MouseScrollEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+				return;
+			}
+		}
 	}
 	void Editore3D::OnAttach() {
 		
@@ -375,7 +458,10 @@ namespace Proof
 					Log::Logs.clear();
 					ImGui::SetScrollHere();
 				}
-				
+				if (ImGui::Button("Settings")) {
+
+					Math::ChangeBool(m_ShowLogSettings);
+				}
 			}
 			ImGui::EndMenuBar();
 			int pos=0;
@@ -475,6 +561,77 @@ namespace Proof
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
+		if (m_ShowLogSettings == false)
+			return;
+
+		if (ImGui::Begin("Log Settings", &m_ShowLogSettings)) {
+			// KEYBOARD
+			{
+				if (ImGui::Button("KeyBoard Log Settings")) {
+					ImGui::OpenPopup("KeyBoard Log");
+				}
+				if (ImGui::BeginPopup("KeyBoard Log")) {
+					ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllKeyBoardEvents.ShowAll);
+					if (m_ShowAllKeyBoardEvents.ShowAll == true) {
+						m_ShowAllKeyBoardEvents.Clicked = true;
+						m_ShowAllKeyBoardEvents.Released = true;
+						m_ShowAllKeyBoardEvents.Pressed = true;
+						m_ShowAllKeyBoardEvents.DoubleClicked = true;
+					}
+					ExternalAPI::ImGUIAPI::CheckBox("Clicked", &m_ShowAllKeyBoardEvents.Clicked);
+					ExternalAPI::ImGUIAPI::CheckBox("Released", &m_ShowAllKeyBoardEvents.Released);
+					ExternalAPI::ImGUIAPI::CheckBox("Pressed", &m_ShowAllKeyBoardEvents.Pressed);
+					ExternalAPI::ImGUIAPI::CheckBox("DoubleClicked", &m_ShowAllKeyBoardEvents.DoubleClicked);
+					if (m_ShowAllKeyBoardEvents.DoubleClicked == false || m_ShowAllKeyBoardEvents.Pressed == false
+						|| m_ShowAllKeyBoardEvents.Released == false || m_ShowAllKeyBoardEvents.Clicked == false)
+						m_ShowAllKeyBoardEvents.ShowAll = false;
+
+					if (m_ShowAllKeyBoardEvents.DoubleClicked == true || m_ShowAllKeyBoardEvents.Pressed == true
+						|| m_ShowAllKeyBoardEvents.Released == true || m_ShowAllKeyBoardEvents.Clicked == true)
+						m_ShowAllKeyBoardEvents.ShowOne = true;
+				
+
+					ImGui::EndPopup();
+				}
+			}
+
+			// Mouse
+			{
+				if (ImGui::Button("Mouse Log Settings")) {
+					ImGui::OpenPopup("Mouse Log");
+				}
+				if (ImGui::BeginPopup("Mouse Log")) {
+					ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllMouseEvents.ShowAll);
+					if (m_ShowAllMouseEvents.ShowAll == true) {
+						m_ShowAllMouseEvents.Clicked = true;
+						m_ShowAllMouseEvents.Released = true;
+						m_ShowAllMouseEvents.Pressed = true;
+						m_ShowAllMouseEvents.DoubleClicked = true;
+						m_ShowAllMouseEvents.Scroll == true;
+						m_ShowAllMouseEvents.Movement == true;
+					}
+					ExternalAPI::ImGUIAPI::CheckBox("Clicked", &m_ShowAllMouseEvents.Clicked);
+					ExternalAPI::ImGUIAPI::CheckBox("Released", &m_ShowAllMouseEvents.Released);
+					ExternalAPI::ImGUIAPI::CheckBox("Pressed", &m_ShowAllMouseEvents.Pressed);
+					ExternalAPI::ImGUIAPI::CheckBox("DoubleClicked", &m_ShowAllMouseEvents.DoubleClicked);
+					ExternalAPI::ImGUIAPI::CheckBox("Move", &m_ShowAllMouseEvents.Movement);
+					ExternalAPI::ImGUIAPI::CheckBox("Scroll", &m_ShowAllMouseEvents.Scroll);
+					if (m_ShowAllMouseEvents.DoubleClicked == false || m_ShowAllMouseEvents.Pressed == false
+						|| m_ShowAllMouseEvents.Released == false || m_ShowAllMouseEvents.Clicked == false ||
+						m_ShowAllMouseEvents.Scroll == false || m_ShowAllMouseEvents.Movement == false)
+										m_ShowAllMouseEvents.ShowAll = false;
+
+					if (m_ShowAllMouseEvents.DoubleClicked == true || m_ShowAllMouseEvents.Pressed == true
+						|| m_ShowAllMouseEvents.Released == true || m_ShowAllMouseEvents.Clicked == true ||
+						m_ShowAllMouseEvents.Scroll == true || m_ShowAllMouseEvents.Movement == true)
+						m_ShowAllMouseEvents.ShowOne = true;
+
+
+					ImGui::EndPopup();
+				}
+			}
+		}
+		ImGui::End();
 	}
 	void Editore3D::ViewPort() {
 

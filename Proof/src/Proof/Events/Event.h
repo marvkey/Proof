@@ -15,6 +15,8 @@ namespace Proof{
 		EventCategoryWindow = BIT(0),
 		EventCategoryInput = BIT(1),
 		EventCategoryAxis = BIT(2),
+		EventMouse = BIT(3),
+		EventKeyBoard = BIT(4)
 	};
 
 	#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\

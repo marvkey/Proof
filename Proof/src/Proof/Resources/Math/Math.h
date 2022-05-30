@@ -9,6 +9,7 @@
 namespace Proof
 {
 	struct  Math {
+
 		Math(const Math&) = delete;
 		/**
 		* @param Number
@@ -19,6 +20,12 @@ namespace Proof
 			return sqrtf(Number);
 		}
 
+		inline static void ChangeBool(bool& val) {
+			if (val == true)
+				val = false;
+			else
+				val = true;
+		}
 		/*
 		* swaps the 2 variables
 		* @param variable1: varible assign to 2
