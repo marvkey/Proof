@@ -34,7 +34,6 @@ namespace Proof {
 		
 	private:
 		
-		bool m_ShowAllControllerEvents = false;
 		struct KeyBoardShowEvent {
 			bool ShowAll = false;
 			bool ShowOne = false;
@@ -56,9 +55,34 @@ namespace Proof {
 			bool Movement = false;
 			bool Scroll = false;
 		};
+
+		struct WindowShowEvent {
+			bool ShowAll = false;
+			bool ShowOne = false;
+
+			bool Resize = false;
+			bool Minimize = false;
+			bool Move = false;
+			bool Close = false;
+
+			bool Focus = false;
+		};
+		struct ControllerEvent {
+			bool ShowAll = false;
+			bool ShowOne = false;
+
+			bool Clicked = false;
+			bool Released = false;
+			bool DoubleClicked = false;
+			bool Pressed = false;
+
+			bool Joystick = false;
+			bool Trigger = false;
+		};
 		KeyBoardShowEvent m_ShowAllKeyBoardEvents;
 		MouseShowEvent m_ShowAllMouseEvents;
-
+		WindowShowEvent m_ShowAllWindowEvents;
+		ControllerEvent m_ShowAllControllerEvents;
 		virtual void OnEvent(Event& e);
 		void OnKeyClicked(KeyClickedEvent& e);
 		bool m_ViewPoartHoveredorFocused = false;

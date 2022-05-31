@@ -95,6 +95,7 @@ namespace Proof
 				return;
 			}
 		}
+
 		// MOUSE
 		{
 			if (m_ShowAllMouseEvents.ShowOne == true && e.IsInCategory(EventCategory::EventMouse)) {
@@ -135,6 +136,93 @@ namespace Proof
 					dispatcher.Dispatch<MouseScrollEvent>([](auto& e) {
 						PF_INFO(e.ToString().c_str());
 						});
+				}
+				return;
+			}
+		}
+
+		// WINDOW
+		{
+			if (m_ShowAllWindowEvents.ShowOne == true && e.IsInCategory(EventCategory::EventCategoryWindow)) {
+				if (m_ShowAllWindowEvents.ShowAll == true) {
+					PF_INFO(e.ToString().c_str());
+					return;
+				}
+				if (m_ShowAllWindowEvents.Resize) {
+					dispatcher.Dispatch<WindowResizeEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+					});
+				}
+				if (m_ShowAllWindowEvents.Minimize) {
+					dispatcher.Dispatch<WindowMinimizeEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+					});
+				}
+
+				if (m_ShowAllWindowEvents.Move) {
+					dispatcher.Dispatch<WindowMoveEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllWindowEvents.Close) {
+					dispatcher.Dispatch<WindowCloseEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+					});
+				}
+
+				if (m_ShowAllWindowEvents.Focus) {
+					dispatcher.Dispatch<WindowFocusEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+					});
+				}
+				return;
+			}
+		}
+
+		// Controller
+		{
+			if (m_ShowAllControllerEvents.ShowOne == true && e.IsInCategory(EventCategory::EventController)) {
+				if (m_ShowAllMouseEvents.ShowAll == true) {
+					PF_INFO(e.ToString().c_str());
+					return;
+				}
+				if (m_ShowAllControllerEvents.Clicked) {
+					dispatcher.Dispatch<ControllerButtonClickedEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+				if (m_ShowAllControllerEvents.Released) {
+					dispatcher.Dispatch<ControllerButtonReleasedEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllControllerEvents.Pressed) {
+					dispatcher.Dispatch<ControllerButtonPressedEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllControllerEvents.DoubleClicked) {
+					dispatcher.Dispatch<ControllerButtonDoubleClickEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+						});
+				}
+
+				if (m_ShowAllControllerEvents.Joystick) {
+					dispatcher.Dispatch<ControllerLeftJoystickAxisEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+					});
+					dispatcher.Dispatch<ControllerRightJoystickAxisEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+					});
+				}
+
+				if (m_ShowAllControllerEvents.Trigger) {
+					dispatcher.Dispatch<ControllerTriggerAxisEvent>([](auto& e) {
+						PF_INFO(e.ToString().c_str());
+					});
 				}
 				return;
 			}
@@ -571,12 +659,19 @@ namespace Proof
 					ImGui::OpenPopup("KeyBoard Log");
 				}
 				if (ImGui::BeginPopup("KeyBoard Log")) {
-					ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllKeyBoardEvents.ShowAll);
-					if (m_ShowAllKeyBoardEvents.ShowAll == true) {
-						m_ShowAllKeyBoardEvents.Clicked = true;
-						m_ShowAllKeyBoardEvents.Released = true;
-						m_ShowAllKeyBoardEvents.Pressed = true;
-						m_ShowAllKeyBoardEvents.DoubleClicked = true;
+					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllKeyBoardEvents.ShowAll)) {
+						if (m_ShowAllKeyBoardEvents.ShowAll == false) {
+							m_ShowAllKeyBoardEvents.Clicked = false;
+							m_ShowAllKeyBoardEvents.Released = false;
+							m_ShowAllKeyBoardEvents.Pressed = false;
+							m_ShowAllKeyBoardEvents.DoubleClicked = false;
+						}
+						else {
+							m_ShowAllKeyBoardEvents.Clicked = true;
+							m_ShowAllKeyBoardEvents.Released = true;
+							m_ShowAllKeyBoardEvents.Pressed = true;
+							m_ShowAllKeyBoardEvents.DoubleClicked = true;
+						}
 					}
 					ExternalAPI::ImGUIAPI::CheckBox("Clicked", &m_ShowAllKeyBoardEvents.Clicked);
 					ExternalAPI::ImGUIAPI::CheckBox("Released", &m_ShowAllKeyBoardEvents.Released);
@@ -601,15 +696,25 @@ namespace Proof
 					ImGui::OpenPopup("Mouse Log");
 				}
 				if (ImGui::BeginPopup("Mouse Log")) {
-					ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllMouseEvents.ShowAll);
-					if (m_ShowAllMouseEvents.ShowAll == true) {
-						m_ShowAllMouseEvents.Clicked = true;
-						m_ShowAllMouseEvents.Released = true;
-						m_ShowAllMouseEvents.Pressed = true;
-						m_ShowAllMouseEvents.DoubleClicked = true;
-						m_ShowAllMouseEvents.Scroll == true;
-						m_ShowAllMouseEvents.Movement == true;
+					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllMouseEvents.ShowAll)) {
+						if (m_ShowAllMouseEvents.ShowAll == false) {
+							m_ShowAllMouseEvents.Clicked = false;
+							m_ShowAllMouseEvents.Released = false;
+							m_ShowAllMouseEvents.Pressed = false;
+							m_ShowAllMouseEvents.DoubleClicked = false;
+							m_ShowAllMouseEvents.Scroll = false;
+							m_ShowAllMouseEvents.Movement = false;
+						}
+						else {
+							m_ShowAllMouseEvents.Clicked = true;
+							m_ShowAllMouseEvents.Released = true;
+							m_ShowAllMouseEvents.Pressed = true;
+							m_ShowAllMouseEvents.DoubleClicked = true;
+							m_ShowAllMouseEvents.Scroll = true;
+							m_ShowAllMouseEvents.Movement = true;
+						}
 					}
+					
 					ExternalAPI::ImGUIAPI::CheckBox("Clicked", &m_ShowAllMouseEvents.Clicked);
 					ExternalAPI::ImGUIAPI::CheckBox("Released", &m_ShowAllMouseEvents.Released);
 					ExternalAPI::ImGUIAPI::CheckBox("Pressed", &m_ShowAllMouseEvents.Pressed);
@@ -627,6 +732,91 @@ namespace Proof
 						m_ShowAllMouseEvents.ShowOne = true;
 
 
+					ImGui::EndPopup();
+				}
+			}
+
+			// Window
+			{
+				if (ImGui::Button("Window Log Settings")) {
+					ImGui::OpenPopup("Window Log");
+				}
+				if (ImGui::BeginPopup("Window Log")) {
+					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllWindowEvents.ShowAll)) {
+						if (m_ShowAllWindowEvents.ShowAll == false) {
+							m_ShowAllWindowEvents.Resize = false;
+							m_ShowAllWindowEvents.Minimize = false;
+							m_ShowAllWindowEvents.Move = false;
+							m_ShowAllWindowEvents.Close = false;
+							m_ShowAllWindowEvents.Focus = false;
+						}
+						else{
+							m_ShowAllWindowEvents.Resize = true;
+							m_ShowAllWindowEvents.Minimize = true;
+							m_ShowAllWindowEvents.Move = true;
+							m_ShowAllWindowEvents.Close = true;
+							m_ShowAllWindowEvents.Focus = true;
+						}
+					}
+					ExternalAPI::ImGUIAPI::CheckBox("Resize", &m_ShowAllWindowEvents.Resize);
+					ExternalAPI::ImGUIAPI::CheckBox("Minimize", &m_ShowAllWindowEvents.Minimize);
+					ExternalAPI::ImGUIAPI::CheckBox("Move", &m_ShowAllWindowEvents.Move);
+					ExternalAPI::ImGUIAPI::CheckBox("Close", &m_ShowAllWindowEvents.Close);
+					ExternalAPI::ImGUIAPI::CheckBox("Focus", &m_ShowAllWindowEvents.Focus);
+
+					if (m_ShowAllWindowEvents.Resize == false || m_ShowAllWindowEvents.Minimize == false
+						|| m_ShowAllWindowEvents.Move == false || m_ShowAllWindowEvents.Close == false ||
+						m_ShowAllWindowEvents.Focus == false)
+						m_ShowAllWindowEvents.ShowAll = false;
+
+					if (m_ShowAllWindowEvents.Resize == true || m_ShowAllWindowEvents.Minimize == true
+						|| m_ShowAllWindowEvents.Move == true || m_ShowAllWindowEvents.Close == true ||
+						m_ShowAllWindowEvents.Focus == true)
+						m_ShowAllWindowEvents.ShowOne = true;
+					ImGui::EndPopup();
+				}
+			}
+
+			// Controller
+			{
+				if (ImGui::Button("Controller Log Settings")) {
+					ImGui::OpenPopup("Controller Log");
+				}
+				if (ImGui::BeginPopup("Controller Log")) {
+					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllControllerEvents.ShowAll)) {
+						if (m_ShowAllControllerEvents.ShowAll == false) {
+							m_ShowAllControllerEvents.Clicked = false;
+							m_ShowAllControllerEvents.Released = false;
+							m_ShowAllControllerEvents.Pressed = false;
+							m_ShowAllControllerEvents.DoubleClicked = false;
+							m_ShowAllControllerEvents.Joystick = false;
+							m_ShowAllControllerEvents.Trigger = false;
+						}
+						else {
+							m_ShowAllControllerEvents.Clicked = true;
+							m_ShowAllControllerEvents.Released = true;
+							m_ShowAllControllerEvents.Pressed = true;
+							m_ShowAllControllerEvents.DoubleClicked = true;
+							m_ShowAllControllerEvents.Joystick = true;
+							m_ShowAllControllerEvents.Trigger = true;
+						}
+					}
+					ExternalAPI::ImGUIAPI::CheckBox("Clicked", &m_ShowAllControllerEvents.Clicked);
+					ExternalAPI::ImGUIAPI::CheckBox("Released", &m_ShowAllControllerEvents.Released);
+					ExternalAPI::ImGUIAPI::CheckBox("Pressed", &m_ShowAllControllerEvents.Pressed);
+					ExternalAPI::ImGUIAPI::CheckBox("DoubleClicked", &m_ShowAllControllerEvents.DoubleClicked);
+					ExternalAPI::ImGUIAPI::CheckBox("Joystick", &m_ShowAllControllerEvents.Joystick);
+					ExternalAPI::ImGUIAPI::CheckBox("Trigger", &m_ShowAllControllerEvents.Trigger);
+
+					if (m_ShowAllControllerEvents.DoubleClicked == false || m_ShowAllControllerEvents.Pressed == false
+						|| m_ShowAllMouseEvents.Released == false || m_ShowAllControllerEvents.Clicked == false ||
+						m_ShowAllControllerEvents.Joystick == false || m_ShowAllControllerEvents.Trigger == false)
+						m_ShowAllControllerEvents.ShowAll = false;
+
+					if (m_ShowAllControllerEvents.DoubleClicked == true || m_ShowAllControllerEvents.Pressed == true
+						|| m_ShowAllControllerEvents.Released == true || m_ShowAllControllerEvents.Clicked == true ||
+						m_ShowAllControllerEvents.Joystick == true || m_ShowAllControllerEvents.Trigger == true)
+						m_ShowAllControllerEvents.ShowOne = true;
 					ImGui::EndPopup();
 				}
 			}
@@ -928,3 +1118,4 @@ namespace Proof
 		m_AllPanels.insert({mesh->GetID(),temp});
 	}
 }
+

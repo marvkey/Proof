@@ -7,7 +7,7 @@
 namespace Proof {
     class Proof_API ControllerConnectEvent : public Event {
     public:
-            EVENT_CLASS_CATEGORY(EventCategoryInput)
+            EVENT_CLASS_CATEGORY(EventCategoryInput | EventController)
         EVENT_CLASS_TYPE(ControllerConnect)
 
         ControllerConnectEvent(int Index) :
@@ -26,7 +26,7 @@ namespace Proof {
     };
     class Proof_API ControllerDisconnectEvent : public Event {
     public:
-        EVENT_CLASS_CATEGORY(EventCategoryInput)
+        EVENT_CLASS_CATEGORY(EventCategoryInput | EventController)
         EVENT_CLASS_TYPE(ControllerDisconnect)
 
         ControllerDisconnectEvent(int Index) :
@@ -44,7 +44,7 @@ namespace Proof {
         int m_Index;
     };
     class Proof_API ControllerButtonEvent : public Event {
-        EVENT_CLASS_CATEGORY(EventCategoryInput)
+        EVENT_CLASS_CATEGORY(EventCategoryInput | EventController)
     public:
         ControllerButtonEvent(int index,ControllerButton button) :
         m_Button(button),m_Index(index)
@@ -108,7 +108,7 @@ namespace Proof {
         }
     };
     class Proof_API ControllerJoystickAxisEvent : public Event {
-        EVENT_CLASS_CATEGORY(EventCategoryAxis | EventCategoryInput)
+        EVENT_CLASS_CATEGORY(EventCategoryAxis | EventCategoryInput | EventController)
     public:
         ControllerJoystickAxisEvent(int index,float x, float y, float distanceX, float distanceY) :
             X(x), Y(y), m_distanceX(distanceX), m_distanceY(distanceY),m_Index(index)
@@ -154,7 +154,7 @@ namespace Proof {
 
     class Proof_API ControllerTriggerAxisEvent : public Event {
     public:
-        EVENT_CLASS_CATEGORY(EventCategoryAxis | EventCategoryInput)
+        EVENT_CLASS_CATEGORY(EventCategoryAxis | EventCategoryInput | EventController)
         EVENT_CLASS_TYPE(ControllerTriggerAxis)
             ControllerTriggerAxisEvent(int index,float axis, float distance, ControllerAxis triggerAxis) :
             m_Axis(axis),m_Distance(distance), m_TriggerAxis(triggerAxis),m_Index(index)
