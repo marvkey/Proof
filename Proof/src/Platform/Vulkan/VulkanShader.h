@@ -38,8 +38,6 @@ namespace Proof
 		VkShaderModule m_FragmentShaderModule;
 		VkPipelineShaderStageCreateInfo m_ShaderStages[2];
 		friend class VulkanGraphicsPipeline;
-       
-
         std::string m_Path = "gg";
         std::string m_Name ="empty ";
 	};

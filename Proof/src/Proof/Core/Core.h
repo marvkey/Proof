@@ -56,17 +56,35 @@ namespace Proof {
     }
 
     struct Proof_API Timer {
-        std::chrono::time_point<std::chrono::steady_clock>Start, End;
-        void StartTimer() {
-            Start = std::chrono::high_resolution_clock::now();
+        Timer() {
+            Reset();
         }
-        void TimerEnd() {
-            End = std::chrono::high_resolution_clock::now();
-            Duration = End - Start;
-            Milliseconds = Duration.count() * 1000.0f;
+        float TimePassed() {
+            // using nano seconds to get a more accurate answer when minusing to get seconds
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
         }
-        float Milliseconds;
+        float TimePassedMillis() {
+            return TimePassed() * 1000.0f;
+        }
+        void Reset() {
+            m_Start = std::chrono::high_resolution_clock::now();
+        }
     private:
-        std::chrono::duration <float>Duration;
+        std::chrono::time_point<std::chrono::steady_clock>m_Start, End;
+    };
+
+    struct Proof_API RangeTimer {
+    public:
+        RangeTimer(const std::string& name)
+            : m_Name(name) {
+        }
+        ~RangeTimer() {
+            float time = m_Timer.TimePassedMillis();
+            PF_ENGINE_TRACE("{TIMER} %s %fms", m_Name.c_str(), time);
+        }
+    private:
+        std::string m_Name;
+        Timer m_Timer;
+
     };
 }

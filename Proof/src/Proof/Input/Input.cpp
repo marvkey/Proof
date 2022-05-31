@@ -160,4 +160,70 @@ namespace Proof
 		}
 		return false;
 	}
+	std::pair<float, float> Input::GetControllerLeftJoystickAxis(int ID) {
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return { controller.LeftJoystickX,controller.LeftJoystickY };
+		}
+		return { 0,0 };
+	}
+	std::pair<float, float> Input::GetControllerLeftJoystickAxisDistance(int ID) {
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return { controller.DistanceLeftJoystickX,controller.DistanceLeftJoystickY };
+		}
+		return { 0,0 };
+	}
+	std::pair<float, float> Input::GetControllerRightJoystickAxis(int ID) {
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return { controller.RightJoystickX,controller.RightJoystickY };
+		}
+		return { 0,0 };
+	}
+	std::pair<float, float> Input::GetControllerRightJoystickAxisDistance(int ID) {
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return { controller.DistanceRightJoystickX,controller.DistanceRightJoystickY };
+		}
+		return { 0,0 };
+	}
+	float Input::GetControllerLeftTriggerAxis(int ID) {
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return controller.LeftTriggerAxis;
+		}
+		return 0;
+	}
+	float Input::GetControllerLeftTriggerAxisDistance(int ID) {
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return controller.DistanceLeftTriggerAxis;
+		}
+		return 0;
+	}
+
+	float Input::GetControllerRightTriggerAxis(int ID) {
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return controller.RightTriggerAxis;
+		}
+		return 0;
+	}
+	float Input::GetControllerRightTriggerAxisDistance(int ID) {
+		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+			if (controller.ID != ID)
+				continue;
+			return controller.DistanceRightTriggerAxis;
+		}
+		return 0;
+	}
+	
 }

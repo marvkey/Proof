@@ -26,7 +26,7 @@ namespace Proof
 		static float GetMousePosY();
 
 		// CONTROLLER
-		static bool IsControllerClicked(int ID,ControllerButton button);
+		static bool IsControllerClicked(int ID, ControllerButton button);
 		static bool IsAnyControllerClicked(ControllerButton button);
 
 		static bool IsControllerDoubleClick(int ID, ControllerButton button);
@@ -38,5 +38,16 @@ namespace Proof
 		static bool IsControllerPressed(int ID, ControllerButton button);
 		static bool IsAnyControllerPressed(ControllerButton button);
 
+		std::pair<float, float>GetControllerLeftJoystickAxis(int ID);
+		std::pair<float, float> GetControllerLeftJoystickAxisDistance(int ID);
+
+		std::pair<float, float>GetControllerRightJoystickAxis(int ID);
+		std::pair<float, float> GetControllerRightJoystickAxisDistance(int ID);
+
+		float GetControllerLeftTriggerAxis(int ID);
+		float GetControllerLeftTriggerAxisDistance(int ID);
+
+		float GetControllerRightTriggerAxis(int ID);
+		float GetControllerRightTriggerAxisDistance(int ID);
 	};
 }
