@@ -26,12 +26,14 @@ IncludeDir["Log"]= "%{wks.location}/Proof/vendor/Log/include"
 IncludeDir["Assimp"]= "%{wks.location}/Proof/vendor/Assimp/include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/Proof/vendor/ImGuizmo"
 IncludeDir["yaml_cpp"] = "%{wks.location}/Proof/vendor/yaml-cpp/include"
+IncludeDir["fmt"] = "%{wks.location}/Proof/vendor/fmt/include"
 
 group "ExternalDependencies"
 	include "Proof/vendor/ImGUI"
 	include "Proof/vendor/glfw-3.3.2.bin.WIN64"
 	include "Proof/vendor/Glad"
 	include "Proof/vendor/yaml-cpp"
+	include "Proof/vendor/fmt"
 group ""
 
 group "Dependencies"
@@ -41,7 +43,6 @@ group ""
 include "Proof-Editor"
 include "Proof"
 include "SandBox"
-include "ProofPhysics" 
 include "ProofGame"  
 
 

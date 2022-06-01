@@ -27,14 +27,13 @@ namespace Proof{
 			VulkanRenderer::Init();
 	}
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,RendererData& renderSpec) {
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-			OpenGLRenderer3DPBR::BeginContext(editorCamera,frameBuffer,renderSpec);
+		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer, renderSpec);
 	}
 	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector<float>& Position,Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			OpenGLRenderer3DPBR::BeginContext(projection,view,Position, frameBuffer, renderSpec);
 	}
-	
+
 	void Renderer3DPBR::Draw(class MeshComponent& meshComponent, const glm::mat4& positionMatrix) {
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			OpenGLRenderer3DPBR::Draw(meshComponent,positionMatrix);

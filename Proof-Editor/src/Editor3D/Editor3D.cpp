@@ -370,6 +370,7 @@ namespace Proof
 		m_CurrentContentBrowserPanel.ImGuiRender(DeltaTime);
 		m_AssetManagerPanel.ImGuiRender(DeltaTime);
 		m_InputPanel.ImGuiRender(DeltaTime);
+		m_PerformancePanel.ImGuiRender(DeltaTime);
 		Logger();
 	
 		if (m_ShowWorldEditor == false)
@@ -1047,6 +1048,7 @@ namespace Proof
 				ImGui::MenuItem("Render Stats", nullptr, &m_ShowRendererStats);
 				ImGui::MenuItem("World Editor", nullptr, &m_ShowWorldEditor);
 				ImGui::MenuItem("Input Panel", nullptr, &m_InputPanel.m_ShowWindow);
+				ImGui::MenuItem("Performanc Browser", nullptr, &m_PerformancePanel.m_ShowWindow);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();

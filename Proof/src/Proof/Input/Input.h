@@ -26,6 +26,7 @@ namespace Proof
 		static float GetMousePosY();
 
 		// CONTROLLER
+
 		static bool IsControllerClicked(int ID, ControllerButton button);
 		static bool IsAnyControllerClicked(ControllerButton button);
 

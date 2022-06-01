@@ -3,10 +3,11 @@
 #include <iostream>
 #include<chrono>
 #include "UUID.h"
+#include <vector>
 #define PF_BIND_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 #define PF_BIND_ACTION(fn)  std::bind(&fn, this)
 #define PF_BIND_MOTION(fn) std::bind(&fn, this, std::placeholders::_1)
-
+#include <unordered_map>
 /*
 #ifdef PF_PLATFORM_WINDOW64
     #ifdef LINK_DLL
@@ -78,13 +79,47 @@ namespace Proof {
         RangeTimer(const std::string& name)
             : m_Name(name) {
         }
-        ~RangeTimer() {
-            float time = m_Timer.TimePassedMillis();
-            PF_ENGINE_TRACE("{TIMER} %s %fms", m_Name.c_str(), time);
-        }
+        ~RangeTimer();
     private:
         std::string m_Name;
         Timer m_Timer;
 
+    };
+    struct FrameTimersControll {
+    public:
+
+        static void Add(const std::string& name, float time,float maxTime =0.0f) {
+            auto val = s_FrameTimers.find(name);
+            if (val != s_FrameTimers.end()) {
+                val->second.Time += time;
+                return;
+            }
+            s_FrameTimers.insert({ name, { time,maxTime } });
+        }
+        struct TimeManage {
+            float Time = 0;
+            float MaxTime = 0;
+        };
+    private:
+      
+        // name and time
+        static std::unordered_map<std::string, TimeManage> s_FrameTimers;
+        friend class Application;
+        friend class PerformancePanel;
+    };
+
+    struct RangeTimerMacro {
+    public:
+        RangeTimerMacro(const std::string& name, float MaxTime = 0)
+            : m_Name(name) {
+        }
+        ~RangeTimerMacro() {
+            float time = m_Timer.TimePassedMillis();
+            FrameTimersControll::Add(m_Name, time, m_MaxTime);
+        }
+    private:
+        std::string m_Name;
+        float m_MaxTime = 0.0f;
+        Timer m_Timer;
     };
 }

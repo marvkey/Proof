@@ -127,6 +127,7 @@ namespace Proof {
             FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
 
             LastFrameTime = time;
+            FrameTimersControll::s_FrameTimers.clear();
         };
         IsRunning = false;
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan)

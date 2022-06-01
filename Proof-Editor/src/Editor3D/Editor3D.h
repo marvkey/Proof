@@ -14,6 +14,7 @@
 #include<vulkan/vulkan.h>
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
+#include "MainWindow/PerformancePanel.h"
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {
@@ -112,6 +113,7 @@ namespace Proof {
 		class SceneHierachyPanel m_WorldHierachy{this};;
 		class ContentBrowserPanel m_CurrentContentBrowserPanel ={this};
 		class AssetManagerPanel m_AssetManagerPanel;
+		class PerformancePanel m_PerformancePanel;
 		friend class Renderer3D;
 		friend class Renderer;
 		InputPanel m_InputPanel;

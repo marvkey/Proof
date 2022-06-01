@@ -35,6 +35,7 @@ project "Proof"
 		"%{IncludeDir.Assimp}",
         "%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.yaml_cpp}",
+		"%{IncludeDir.fmt}",
         "%{wks.location}/Proof/vendor/entt"
 
 		--"C:/Program Files/Mono/include/mono-2.0"

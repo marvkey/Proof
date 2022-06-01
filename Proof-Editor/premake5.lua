@@ -30,6 +30,8 @@ project "Proof-Editor"
 		"%{IncludeDir.yaml_cpp}",
         "%{wks.location}/Proof/vendor/entt",
 		"%{IncludeDir.Vulkan}",
+		"%{IncludeDir.fmt}",
+
 
 		--"C:/Program Files/Mono/include/mono-2.0"
     }
