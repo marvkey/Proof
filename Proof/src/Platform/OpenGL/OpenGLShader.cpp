@@ -25,13 +25,13 @@ namespace Proof {
 			FragmentShaderFile.close();
 		}
 		else {
-			PF_ENGINE_ERROR("%s Shader File Is Incorrect",m_Name);
+			PF_ENGINE_ERROR("{} Shader File Is Incorrect",m_Name);
 			char full[_MAX_PATH];
 			if (_fullpath(full,VertexPath.c_str(),_MAX_PATH) != NULL)
-				PF_ENGINE_INFO("Full path is: %s",full);
+				PF_ENGINE_INFO("Full path is: {}",full);
 
 			if (_fullpath(full,FragmentPath.c_str(),_MAX_PATH) != NULL)
-				PF_ENGINE_INFO("Full path is: %s",full);
+				PF_ENGINE_INFO("Full path is: {}",full);
 			return;
 		}
 
@@ -45,7 +45,7 @@ namespace Proof {
 		glGetShaderiv(VertexShader,GL_COMPILE_STATUS,&Success);
 		if (!Success) {
 			glGetShaderInfoLog(VertexShader,512,NULL,InfoLog);
-			PF_ENGINE_ERROR("%s SHADER::EROOR::VERTEX::COMPILATION_FAILED %s",m_Name.c_str(),InfoLog);
+			PF_ENGINE_ERROR("{} SHADER::EROOR::VERTEX::COMPILATION_FAILED {}",m_Name,InfoLog);
 		}
 		unsigned int FragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 		const char* CharFragmentShader = FragmentShaderSource.str().c_str();
@@ -55,7 +55,7 @@ namespace Proof {
 		glGetShaderiv(FragmentShader,GL_COMPILE_STATUS,&Success);
 		if (!Success) {
 			glGetShaderInfoLog(FragmentShader,512,NULL,InfoLog);
-			PF_ENGINE_ERROR("%s SHADER::ERROR::FRAGMENT::COMPILATION_FAILED %s",m_Name.c_str(),InfoLog);
+			PF_ENGINE_ERROR("{} SHADER::ERROR::FRAGMENT::COMPILATION_FAILED {}",m_Name.c_str(),InfoLog);
 		}
 
 		m_ID = glCreateProgram();
@@ -65,7 +65,7 @@ namespace Proof {
 		glGetProgramiv(m_ID,GL_LINK_STATUS,&Success);
 		if (!Success) {
 			glGetProgramInfoLog(m_ID,512,NULL,InfoLog);
-			PF_ENGINE_ERROR("%s SHADER::ERROR::PROGRAM::LINKING_FAILED %s",m_Name.c_str(),InfoLog);
+			PF_ENGINE_ERROR("{} SHADER::ERROR::PROGRAM::LINKING_FAILED {}",m_Name.c_str(),InfoLog);
 		}
 		glDeleteShader(VertexShader);
 		glDeleteShader(FragmentShader);
@@ -104,10 +104,10 @@ namespace Proof {
 			ShaderFile.close();
 		}
 		else {
-			PF_ENGINE_ERROR("%s Shader File Is Incorrect",m_Name.c_str());
+			PF_ENGINE_ERROR("{} Shader File Is Incorrect",m_Name.c_str());
 			char full[_MAX_PATH];
 			if (_fullpath(full,ShaderPath.c_str(),_MAX_PATH) != NULL)
-				PF_ENGINE_INFO("Full path is: %s",full);
+				PF_ENGINE_INFO("Full path is: {}",full);
 			return;
 		}
 		unsigned int VertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -119,7 +119,7 @@ namespace Proof {
 		glGetShaderiv(VertexShader,GL_COMPILE_STATUS,&Success);
 		if (!Success) {
 			glGetShaderInfoLog(VertexShader,512,NULL,InfoLog);
-			PF_ENGINE_ERROR("%s ERROR::SHADER::VERTEX::COMPILATION_FAILED %s",m_Name.c_str(),InfoLog);
+			PF_ENGINE_ERROR("{} ERROR::SHADER::VERTEX::COMPILATION_FAILED {}",m_Name.c_str(),InfoLog);
 		}
 
 		unsigned int FragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -129,7 +129,7 @@ namespace Proof {
 		glGetShaderiv(FragmentShader,GL_COMPILE_STATUS,&Success);
 		if (!Success) {
 			glGetShaderInfoLog(FragmentShader,512,NULL,InfoLog);
-			PF_ENGINE_ERROR("%s ERROR::SHADER::FRAGMENT::COMPILATION_FAILED %s",m_Name.c_str(),InfoLog);
+			PF_ENGINE_ERROR("{} ERROR::SHADER::FRAGMENT::COMPILATION_FAILED {}",m_Name.c_str(),InfoLog);
 		}
 
 		m_ID = glCreateProgram();
@@ -139,7 +139,7 @@ namespace Proof {
 		glGetProgramiv(m_ID,GL_LINK_STATUS,&Success);
 		if (!Success) {
 			glGetProgramInfoLog(m_ID,512,NULL,InfoLog);
-			PF_ENGINE_ERROR("%s ERROR::SHADER::PROGRAM::LINKING_FAILED %s",m_Name.c_str(),InfoLog);
+			PF_ENGINE_ERROR("{} ERROR::SHADER::PROGRAM::LINKING_FAILED {}",m_Name.c_str(),InfoLog);
 		}
 		glDeleteShader(VertexShader);
 		glDeleteShader(FragmentShader);

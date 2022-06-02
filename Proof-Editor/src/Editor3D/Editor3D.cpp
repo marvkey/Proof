@@ -1066,7 +1066,7 @@ namespace Proof
 		SceneSerializer scerelizer(ActiveWorld.get());
 		scerelizer.SerilizeText(ActiveWorld->GetPath());
 
-		PF_ENGINE_TRACE("%s Saved",ActiveWorld->GetName().c_str());
+		PF_ENGINE_TRACE("{} Saved",ActiveWorld->GetName().c_str());
 
 	}
 	void Editore3D::PlayWorld() {

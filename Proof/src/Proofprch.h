@@ -8,14 +8,18 @@
 #include <stdio.h>
 #include <array>
 #include <iterator> 
-
+#define FMT_HEADER_ONLY
+#include <fmt/args.h>
+#include <fmt/chrono.h>
+#include <fmt/format.h>
+#include <fmt/format-inl.h>
+#include <fmt/core.h>
 //Proof defined
 #include "Proof/Core/Log.h"
 #include "Proof/Core/Core.h"
 #include "Proof/Input/Input.h"
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Core/Debug/Instrumentor.h"
-
 #if defined(_WIN64)  // if platform is windows
 	#include <windows.h>
 #endif

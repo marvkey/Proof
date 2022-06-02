@@ -5,5 +5,5 @@ std::unordered_map<std::string, Proof::FrameTimersControll::TimeManage> Proof::F
 
 Proof::RangeTimer::~RangeTimer() {
 	float time = m_Timer.TimePassedMillis();
-	PF_ENGINE_ERROR("{TIMER} %s %fms", m_Name.c_str(), time);
+	PF_ENGINE_ERROR("{TIMER} {} %fms", m_Name.c_str(), time);
 }

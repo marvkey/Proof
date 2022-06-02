@@ -84,6 +84,7 @@ namespace Proof {
     }
 
     void Application::Run() {
+            
 
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();

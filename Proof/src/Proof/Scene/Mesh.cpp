@@ -22,7 +22,7 @@ namespace Proof{
         const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
         {
-            PF_WARN("ERROR::ASSIMP %s",importer.GetErrorString());
+            PF_WARN("ERROR::ASSIMP {}",importer.GetErrorString());
             return;
         }
         ProcessNode(scene->mRootNode,scene);

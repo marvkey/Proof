@@ -55,7 +55,8 @@ project "Proof"
         "assimp-vc143-mt.lib",
 		"yaml-cpp",
 		"ProofPhysics",
-        "vulkan-1.lib"
+        "vulkan-1.lib",
+		"fmt"
 
 		--"mono-2.0-sgen.lib",
 

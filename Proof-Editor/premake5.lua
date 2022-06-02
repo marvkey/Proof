@@ -62,7 +62,8 @@ project "Proof-Editor"
 		--"mono-2.0-sgen.lib",
         --"ScriptModule.lib",
 		"ProofPhysics",
-        "vulkan-1.lib"
+        "vulkan-1.lib",
+        "fmt"
     }
    
     postbuildcommands{

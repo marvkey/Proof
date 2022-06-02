@@ -37,7 +37,7 @@ namespace Proof
 			PF_ENGINE_ERROR("Failed to Load Texture");
 			char full[_MAX_PATH];
 			if (_fullpath(full,Path.c_str(),_MAX_PATH) != NULL)
-				PF_ENGINE_INFO("Texture Path %s",full);
+				PF_ENGINE_INFO("Texture Path {}",full);
 		}
 	}
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t ImageWidth,uint32_t ImageHeight,TextureType _TextureType):
@@ -103,7 +103,7 @@ namespace Proof
 				stbi_image_free(m_Data);
 			}
 			else {
-				PF_ENGINE_ERROR("Cube map is empty load path: %s",Paths[i].c_str());
+				PF_ENGINE_ERROR("Cube map is empty load path: {}",Paths[i].c_str());
 			}
 		}
 		glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
@@ -123,7 +123,7 @@ namespace Proof
 				stbi_image_free(m_Data);
 			}
 			else {
-				PF_ENGINE_ERROR("Texture passed in cube map is empty %s",Path.c_str());
+				PF_ENGINE_ERROR("Texture passed in cube map is empty {}",Path.c_str());
 				return;
 			}
 		}
@@ -179,7 +179,7 @@ namespace Proof
 			stbi_image_free(m_Data);
 		}
 		else {
-			PF_ENGINE_ERROR("Failed to load HDR Texture %s",m_Path.c_str());
+			PF_ENGINE_ERROR("Failed to load HDR Texture {}",m_Path);
 		}
 	}
 	void OpenGLHDRTexture::Bind(uint32_t Slot) {

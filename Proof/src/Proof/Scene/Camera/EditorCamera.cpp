@@ -26,7 +26,7 @@ namespace Proof{
 			m_FirstClick = true;
 			glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindowAPI(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse ; // alllows mouse capture
-			PF_ENGINE_INFO("Mouse Speed %f", m_Speed);
+			PF_ENGINE_INFO("Mouse Speed {}", m_Speed);
 		}
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight)) {
 			glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindowAPI(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -96,7 +96,7 @@ namespace Proof{
 					else
 						m_Speed -= 5;
 				}
-				PF_ENGINE_INFO("Mouse Speed %f", m_Speed);
+				PF_ENGINE_INFO("Mouse Speed {}", m_Speed);
 			}
 		}
 	}

@@ -15,13 +15,13 @@ namespace Proof
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData) {
 		if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-			PF_ENGINE_CRITICAL("VULKAN: %s", pCallbackData->pMessage);
+			PF_ENGINE_CRITICAL("VULKAN: {}", pCallbackData->pMessage);
 		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
-			PF_ENGINE_INFO("VULKAN: %s", pCallbackData->pMessage);
+			PF_ENGINE_INFO("VULKAN: {}", pCallbackData->pMessage);
 		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-			PF_ENGINE_WARN("VULKAN: %s", pCallbackData->pMessage);
+			PF_ENGINE_WARN("VULKAN: {}", pCallbackData->pMessage);
 		else
-			PF_ENGINE_TRACE("VULKAN: %s", pCallbackData->pMessage);
+			PF_ENGINE_TRACE("VULKAN: {}", pCallbackData->pMessage);
 
 		return VK_FALSE;
 	}
@@ -123,7 +123,7 @@ namespace Proof
 		if (deviceCount == 0) {
 			PF_CORE_ASSERT(false, "failed to find GPUs with Vulkan support!");
 		}
-		PF_ENGINE_INFO("Device Count %i", deviceCount);
+		PF_ENGINE_INFO("Device Count {}", deviceCount);
 		std::vector<VkPhysicalDevice> devices(deviceCount);
 		vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
 
@@ -139,7 +139,7 @@ namespace Proof
 		}
 
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
-		PF_ENGINE_INFO("physical device: %s", properties.deviceName);
+		PF_ENGINE_INFO("physical device: {}", properties.deviceName);
 	}
 
 	void VulkanGraphicsContext::CreateLogicalDevice() {
@@ -296,14 +296,14 @@ namespace Proof
 		PF_ENGINE_TRACE("avalaible extensions:");
 		std::unordered_set<std::string> available;
 		for (const auto& extension : extensions) {
-			PF_ENGINE_TRACE("\t %s", extension.extensionName);
+			PF_ENGINE_TRACE("\t {}", extension.extensionName);
 			available.insert(extension.extensionName);
 		}
 
 		PF_ENGINE_TRACE("required extensions:");
 		auto requiredExtensions = GetRequiredExtensions();
 		for (const auto& required : requiredExtensions) {
-			PF_ENGINE_TRACE("\t %s", required);
+			PF_ENGINE_TRACE("\t {}", required);
 			if (available.find(required) == available.end()) {
 				PF_CORE_ASSERT(false, "Missing required glfw extension");
 			}
