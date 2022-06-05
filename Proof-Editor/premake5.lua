@@ -31,6 +31,8 @@ project "Proof-Editor"
         "%{wks.location}/Proof/vendor/entt",
 		"%{IncludeDir.Vulkan}",
 		"%{IncludeDir.fmt}",
+        "%{wks.location}/Proof/vendor/optick/src"
+
 
 
 		--"C:/Program Files/Mono/include/mono-2.0"
@@ -45,7 +47,8 @@ project "Proof-Editor"
     {
         --"%{wks.location}/Game/Proof-Game/x64/Debug",
         "%{wks.location}/Proof/vendor/Assimp/Proof-Assimp-lib",
-        "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib"
+        "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib",
+        "%{wks.location}/Proof/vendor/optick/bin/vs2017/x64/Release"
 		--"C:/Program Files/Mono/lib"
 
     }
@@ -63,7 +66,9 @@ project "Proof-Editor"
         --"ScriptModule.lib",
 		"ProofPhysics",
         "vulkan-1.lib",
-        "fmt"
+        "fmt",
+		"OptickCore.lib"
+
     }
    
     postbuildcommands{

@@ -20,6 +20,6 @@ namespace Proof
 	private:
 		World* m_Scene;
 		std::set<UUID> m_AssetLoadID;
-		void SerilizeEntity(YAML::Emitter& out,Entity entity);
+		void SerilizeEntity(YAML::Emitter& out, Entity entity);
 	};
 }

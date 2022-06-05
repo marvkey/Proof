@@ -60,7 +60,24 @@ namespace Proof {
         PF_ENGINE_TRACE("Engine Load Done");
     }
 
+    void Application::LayerUpdate(float deltaTime) {
+        PF_PROFILE_FUNC();
+        for (Layer* layer : MainLayerStack.V_LayerStack)
+            layer->OnUpdate(deltaTime);
+    }
+
+    void Application::ImguiUpdate(float deltaTime) {
+        PF_PROFILE_FUNC("Application::ImguiUpdate");
+        Timer time;
+        ImGuiMainLayer->Begin();
+        for (Layer* layer : MainLayerStack.V_LayerStack)
+            layer->OnImGuiDraw(deltaTime);
+        ImGuiMainLayer->End();
+        m_ImguiFrameTime = time.TimePassedMillis();
+    }
+
     void Application::OnEvent(Event& e) {
+        PF_PROFILE_FUNC();
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
         dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent));
@@ -100,6 +117,7 @@ namespace Proof {
         CurrentWindow::SetvSync(true);
 
         while (glfwWindowShouldClose((GLFWwindow*)CurrentWindow::GetWindowAPI()) == false && Input::IsKeyClicked(KeyBoardKey::Escape)==false) {
+            PF_PROFILE_FRAME("Application::Update");
             float FrameStart = glfwGetTime();
             float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
@@ -111,16 +129,10 @@ namespace Proof {
 
             if (WindowMinimized == false) 
             {
-                for (Layer* layer : MainLayerStack.V_LayerStack)
-                    layer->OnUpdate(DeltaTime);
+                LayerUpdate(DeltaTime);
             }
             if (Renderer::GetAPI() != RendererAPI::API::Vulkan) {
-                Timer time;
-                ImGuiMainLayer->Begin();
-                for (Layer* layer : MainLayerStack.V_LayerStack)
-                    layer->OnImGuiDraw(DeltaTime);
-                ImGuiMainLayer->End();
-                m_ImguiFrameTime = time.TimePassedMillis();
+                ImguiUpdate(DeltaTime);
             }
 
             MainWindow->WindowUpdate();

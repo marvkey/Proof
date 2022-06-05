@@ -58,6 +58,7 @@ namespace Proof{
 		CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
 	}
 	void World::OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR) {
+		PF_PROFILE_FUNC();
 		OnUpdate(DeltaTime,width,height,usePBR);
 	}
 
@@ -68,7 +69,8 @@ namespace Proof{
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
-		
+		PF_PROFILE_FUNC();
+
 		// Scripts
 		{
 			auto& scriptView = m_Registry.view<NativeScriptComponent>();
@@ -268,6 +270,7 @@ namespace Proof{
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){
+		PF_PROFILE_FUNC();
 		m_EditorCamera.OnUpdate(DeltaTime,width,height);
 	}
 

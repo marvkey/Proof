@@ -13,6 +13,8 @@ namespace Proof{
 	void WorldRenderer::Renderer() {
 		if(m_RendererPaused==true)
 			return;
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 
 		if (m_World->m_CurrentState == WorldState::Play) {

@@ -36,14 +36,14 @@ project "Proof"
         "%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.yaml_cpp}",
 		"%{IncludeDir.fmt}",
-        "%{wks.location}/Proof/vendor/entt"
-
+        "%{wks.location}/Proof/vendor/entt",
+        "%{wks.location}/Proof/vendor/optick/src"
 		--"C:/Program Files/Mono/include/mono-2.0"
     }
 	libdirs{
 		"vendor/Assimp/Proof-Assimp-lib",
-        "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib"
-
+        "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib",
+		"%{wks.location}/Proof/vendor/optick/bin/vs2017/x64/Release"
 		--"C:/Program Files/Mono/lib"
 	}
 	links
@@ -56,7 +56,8 @@ project "Proof"
 		"yaml-cpp",
 		"ProofPhysics",
         "vulkan-1.lib",
-		"fmt"
+		"fmt",
+		"OptickCore.lib"
 
 		--"mono-2.0-sgen.lib",
 

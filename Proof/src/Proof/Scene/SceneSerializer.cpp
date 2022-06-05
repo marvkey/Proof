@@ -3,9 +3,11 @@
 #include "Entity.h"
 #include "Component.h"
 #include <string>
+#include <fstream>
 #include <filesystem>
 #include "Proof/Resources/ExternalCreations.h"
-namespace Proof {
+namespace Proof
+{
 	SceneSerializer::SceneSerializer(World* Scene) {
 		PF_CORE_ASSERT(Scene, "Scene cannot be nulltptr");
 		m_Scene = Scene;
@@ -152,16 +154,18 @@ namespace Proof {
 	}
 
 	void SceneSerializer::SerilizeText(const std::string& filePath) {
+		PF_PROFILE_FUNC();
+
 		m_Scene->m_Path = filePath;
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "World" << YAML::Value << m_Scene->GetName();
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID) {
-			Entity entity = {(uint64_t)entityID,m_Scene };
+			Entity entity = { (uint64_t)entityID,m_Scene };
 			SerilizeEntity(out, entity);
-		});
-		
+			});
+
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
@@ -170,6 +174,8 @@ namespace Proof {
 	}
 	void SceneSerializer::SerilizeBinary(const std::string& filepath) {}
 	bool SceneSerializer::DeSerilizeText(const std::string& filePath) {
+		PF_PROFILE_FUNC();
+
 		m_Scene->m_Path = filePath;
 
 		YAML::Node data = YAML::LoadFile(filePath);
@@ -310,7 +316,7 @@ namespace Proof {
 				if (spherColliderComponent) {
 					auto& src = *NewEntity.AddComponent<SphereColliderComponent>();
 					src.Offset = spherColliderComponent["Offset"].as<Vector<float>>();
-					src.Radius= spherColliderComponent["Radius"].as<float>();
+					src.Radius = spherColliderComponent["Radius"].as<float>();
 				}
 			}
 			// RIGID BODY

@@ -3,7 +3,8 @@
 
 #if defined(_WIN64)
 	int  main(int argc,char** argv) {
-		Proof::Application* Proof= Proof::CreateApplication();
+		OPTICK_APP("Proof");
+		Proof::Application* Proof = Proof::CreateApplication();
 		Proof->Run();
 		delete Proof;
 	}

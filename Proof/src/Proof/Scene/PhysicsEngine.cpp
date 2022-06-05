@@ -5,6 +5,8 @@
 #include "Entity.h"
 namespace Proof {
 	void PhysicsEngine::Start(){
+		PF_PROFILE_FUNC();
+
 		/*
 		auto& spherColliderView = m_World->m_Registry.view<SphereColliderComponent>();
 		for (auto entity : spherColliderView) {
@@ -40,6 +42,8 @@ namespace Proof {
 	}
 	void PhysicsEngine::Update(float delta)
 	{
+		PF_PROFILE_FUNC();
+
 		/*
 		// Sphere Collider
 		{

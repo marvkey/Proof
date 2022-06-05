@@ -358,6 +358,8 @@ namespace Proof
 	}
 
 	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
+		PF_PROFILE_FUNC();
+
 		Layer::OnImGuiDraw(DeltaTime);
 		//ImGui::ShowDemoWindow();
 		static bool EnableDocking = true;

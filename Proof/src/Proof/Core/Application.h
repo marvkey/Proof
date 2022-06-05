@@ -28,6 +28,8 @@
         bool WindowMinimized = false;
         bool IsRunning = true;
     private:
+        void LayerUpdate(float deltaTime);
+        void ImguiUpdate(float deltaTime);
         static float m_ImguiFrameTime;
         //InitlizeCSharp ScriptingCharp;
         void OnEvent(Event& e);
