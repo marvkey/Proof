@@ -10,10 +10,13 @@
 #include "Proof/Resources/Math/Random.h"
 #include <GLFW/glfw3.h>
 #include "Proof/Input/InputManager.h"
+#include<chrono>
+
 namespace Proof {
     Special <WindowsWindow> Application::MainWindow = nullptr;
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
+    float Application::m_ImguiFrameTime;
     Application::Application(){
         srand(time(NULL));
         Proof::Log::Init();
@@ -94,7 +97,7 @@ namespace Proof {
      //   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
      //   glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
 
-        CurrentWindow::SetvSync(false);
+        CurrentWindow::SetvSync(true);
 
         while (glfwWindowShouldClose((GLFWwindow*)CurrentWindow::GetWindowAPI()) == false && Input::IsKeyClicked(KeyBoardKey::Escape)==false) {
             float FrameStart = glfwGetTime();
@@ -112,11 +115,12 @@ namespace Proof {
                     layer->OnUpdate(DeltaTime);
             }
             if (Renderer::GetAPI() != RendererAPI::API::Vulkan) {
-
+                Timer time;
                 ImGuiMainLayer->Begin();
                 for (Layer* layer : MainLayerStack.V_LayerStack)
                     layer->OnImGuiDraw(DeltaTime);
                 ImGuiMainLayer->End();
+                m_ImguiFrameTime = time.TimePassedMillis();
             }
 
             MainWindow->WindowUpdate();
@@ -128,7 +132,7 @@ namespace Proof {
             FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
 
             LastFrameTime = time;
-            FrameTimersControll::s_FrameTimers.clear();
+            FrameTimersControll::Reset();
         };
         IsRunning = false;
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan)

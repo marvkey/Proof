@@ -9,5 +9,10 @@ namespace Proof
 	public:
 		virtual void ImGuiRender(class FrameTime deltaTime);
 	private:
+		struct Compare {
+			float Time;
+			uint32_t Pos;
+		};
+		void PerformanceData(Compare& comp);
 	};
 };

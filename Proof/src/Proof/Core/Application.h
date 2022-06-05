@@ -22,11 +22,13 @@
 
         static float GetFPS() {return FPS;}
         static float GetFrameMS() {return FrameMS;};
+        static float GetImguiFrameTime() { return m_ImguiFrameTime; }
     protected:
         Application();
         bool WindowMinimized = false;
         bool IsRunning = true;
     private:
+        static float m_ImguiFrameTime;
         //InitlizeCSharp ScriptingCharp;
         void OnEvent(Event& e);
         void OnWindowMinimizeEvent(WindowMinimizeEvent& e);

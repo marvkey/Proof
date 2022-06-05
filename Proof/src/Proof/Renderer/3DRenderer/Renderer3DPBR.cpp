@@ -30,6 +30,7 @@ namespace Proof{
 		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer, renderSpec);
 	}
 	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector<float>& Position,Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
+		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f,TimerTypes::Renderer);
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			OpenGLRenderer3DPBR::BeginContext(projection,view,Position, frameBuffer, renderSpec);
 	}
@@ -52,6 +53,7 @@ namespace Proof{
 		return nullptr;
 	}
 	void Renderer3DPBR::EndContext() {
+		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__,0,TimerTypes::Renderer);
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			OpenGLRenderer3DPBR::EndContext();
 	}

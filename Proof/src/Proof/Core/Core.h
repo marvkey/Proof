@@ -85,41 +85,66 @@ namespace Proof {
         Timer m_Timer;
 
     };
+    enum class TimerTypes {
+        CPUTimer = 0,
+        Renderer
+    };
     struct FrameTimersControll {
     public:
 
-        static void Add(const std::string& name, float time,float maxTime =0.0f) {
-            auto val = s_FrameTimers.find(name);
-            if (val != s_FrameTimers.end()) {
-                val->second.Time += time;
-                return;
+        static void Add(const std::string& name, float time,float maxTime =0.0f, TimerTypes type = TimerTypes::CPUTimer) {
+            for (FrameTimeManage& timerManage : s_FrameTimers) {
+                if (timerManage.FunctionName == name) {
+                    timerManage.TimerManage.Time += time;
+                    timerManage.Times.emplace_back(time);
+                    return;
+                }   
             }
-            s_FrameTimers.insert({ name, { time,maxTime } });
+            s_FrameTimers.push_back({ name, TimeManage{ time,maxTime,type } });
         }
         struct TimeManage {
             float Time = 0;
             float MaxTime = 0;
+            TimerTypes TimerType;
+        };
+        struct FrameTimeManage {
+            std::string FunctionName;
+            TimeManage TimerManage;
+            std::vector<float> Times;
+            FrameTimeManage(const std::string& functionName, TimeManage& timeManage) :
+                FunctionName(functionName),TimerManage(timeManage)
+            {
+                Times.emplace_back(timeManage.Time);
+            }
         };
     private:
-      
+       static void Reset() {
+            for (FrameTimeManage& frameTime : s_FrameTimers) {
+                frameTime.TimerManage.Time = 0;
+                frameTime.Times.clear();
+            }
+        }
         // name and time
-        static std::unordered_map<std::string, TimeManage> s_FrameTimers;
+        static std::vector<FrameTimeManage> s_FrameTimers;
         friend class Application;
         friend class PerformancePanel;
     };
 
+  
     struct RangeTimerMacro {
     public:
-        RangeTimerMacro(const std::string& name, float MaxTime = 0)
-            : m_Name(name) {
+        RangeTimerMacro(const std::string& name, float maxTime = 0, TimerTypes types = TimerTypes::CPUTimer)
+            : m_Name(name), m_MaxTime(maxTime),m_Type(types) {  
         }
-        ~RangeTimerMacro() {
-            float time = m_Timer.TimePassedMillis();
-            FrameTimersControll::Add(m_Name, time, m_MaxTime);
-        }
+        ~RangeTimerMacro();
     private:
         std::string m_Name;
         float m_MaxTime = 0.0f;
         Timer m_Timer;
+        TimerTypes  m_Type;
     };
+    #define PF_SCOPE_TIME(name) RangeTimerMacro ONLYUSEDONCEPERSCOPE(name); 
+    #define PF_SCOPE_TIME_THRESHHOLD(name,X) RangeTimerMacro ONLYUSEDONCEPERSCOPETHRESHOLD(name,X);
+    #define PF_SCOPE_TIME_THRESHHOLD_TYPE(name,X, Y) RangeTimerMacro ONLYUSEDONCEPERSCOPETHRESHOLDTYPE(name, X,Y)
+
 }

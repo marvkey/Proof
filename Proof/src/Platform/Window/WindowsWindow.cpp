@@ -635,7 +635,7 @@ namespace Proof {
             proofWindow.FrameBufferResizedCallback(width,height);
         });
         glfwSetJoystickCallback(WindowsWindow::ControllerCallbackConnect);
-        PF_INFO("Window created widht %i height %i",Width,Height);
+        PF_INFO("Window created widht {} height {}",Width,Height);
         return 0;
     }
 
