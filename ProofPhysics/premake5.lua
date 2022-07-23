@@ -1,6 +1,8 @@
 project "ProofPhysics"
     kind "StaticLib"
     language "C++"
+    staticruntime "on"
+
     targetdir ("bin/" .. OutputDirectory .. "/%{prj.name}")
     objdir ("bin-int/" .. OutputDirectory .. "/%{prj.name}")
 
@@ -17,13 +19,11 @@ project "ProofPhysics"
     filter "system:windows"
     systemversion "latest"
     cppdialect "C++17"
-    staticruntime "On"
 
     filter "system:linux"
         pic "on"
         systemversion "latest"
         cppdialect "C++17"
-        staticruntime "On"
 
     filter "configurations:Debug"
         runtime "Debug"

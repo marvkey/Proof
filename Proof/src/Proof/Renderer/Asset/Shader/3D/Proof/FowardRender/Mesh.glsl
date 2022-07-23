@@ -50,7 +50,7 @@ void main() {
     vs_in.Normal = mat3(aTransform) * aNormal;
     vs_in.CameraPosition = Camera.Position;
 
-    gl_Position = Camera.ProjectionMatrix * Camera.ViewMatrix * vec4(vs_in.FragPos,1.0);
+    gl_Position = Camera.ProjectionMatrix * Camera.ViewMatrix * aTransform * vec4(aPos,1.0);
 }
 #Fragment Shader
 #version 450 core

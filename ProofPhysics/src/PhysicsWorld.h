@@ -30,7 +30,7 @@ namespace ProofPhysicsEngine {
 		* Holds the head of the list of registered bodies.
 		*/
 		BodyRegistration* m_FirstBody;
-		std::vector<PhysicsObject>m_Objects;
+		std::vector<PhysicsObject>m_Objects; 
 		std::list<SphereCollider>m_SphereColliders;
 		std::list<CubeCollider>m_CubeColliders;
 	};

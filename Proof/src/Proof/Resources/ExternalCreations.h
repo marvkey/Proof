@@ -5,9 +5,9 @@
 
 namespace YAML
 {
-	template<>
-	struct convert<Proof::Vector<>> {
-		static Node encode(const Proof::Vector<>& rhs) {
+	template<typename T>
+	struct convert<Proof::Vector<T>> {
+		static Node encode(const Proof::Vector<T>& rhs) {
 			Node node;
 			node.push_back(rhs.X);
 			node.push_back(rhs.Y);
@@ -16,16 +16,38 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node,Proof::Vector<>& rhs) {
+		static bool decode(const Node& node, Proof::Vector<T>& rhs) {
 			if (!node.IsSequence() || node.size() != 3)
 				return false;
 
-			rhs.X = node[0].as<float>();
-			rhs.Y = node[1].as<float>();
-			rhs.Z = node[2].as<float>();
+			rhs.X = node[0].as<T>();
+			rhs.Y = node[1].as<T>();
+			rhs.Z = node[2].as<T>();
 			return true;
 		}
 	};
+
+	//template<>
+	//struct convert<Proof::Vector<>> {
+	//	static Node encode(const Proof::Vector<>& rhs) {
+	//		Node node;
+	//		node.push_back(rhs.X);
+	//		node.push_back(rhs.Y);
+	//		node.push_back(rhs.Z);
+	//		node.SetStyle(EmitterStyle::Flow);
+	//		return node;
+	//	}
+	//
+	//	static bool decode(const Node& node,Proof::Vector<>& rhs) {
+	//		if (!node.IsSequence() || node.size() != 3)
+	//			return false;
+	//
+	//		rhs.X = node[0].as<float>();
+	//		rhs.Y = node[1].as<float>();
+	//		rhs.Z = node[2].as<float>();
+	//		return true;
+	//	}
+	//};
 	template<>
 	struct convert<glm::vec3> {
 		static Node encode(const glm::vec3& rhs) {
@@ -75,7 +97,15 @@ namespace YAML
 }
 namespace Proof
 {
-	YAML::Emitter& operator<<(YAML::Emitter& out,const Vector<>& v);
+	//YAML::Emitter& operator<<(YAML::Emitter& out,const Vector<>& v);
 
-	YAML::Emitter& operator<<(YAML::Emitter& out,const glm::vec4& v);
+	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v);
+	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v);
+
+	template<typename T>
+	YAML::Emitter& operator<<(YAML::Emitter& out, const const Vector<T>& v) {
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.X << v.Y << v.Z << YAML::EndSeq;
+		return out;
+	}
 }

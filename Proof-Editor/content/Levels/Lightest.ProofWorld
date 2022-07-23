@@ -1,38 +1,172 @@
 World: LightTest
 Entities:
-  - Entity: 3274780553881339979
+  - Entity: 6364087202379299019
     TagComponent:
-      Tag: Empty Entity
+      Tag: Plane
+      tags: []
+    TransformComponent:
+      Location: [0, -150, -1]
+      Rotation: [0, 0, 0]
+      Scale: [76.4000015, 1, 86.0999985]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12067
+      MaterialPointerID: 0
+    CubeColliderComponent:
+      IsTrigger: false
+      OffsetLocation: [0, 0, 0]
+      OffsetScale: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+  - Entity: 14717730292101911459
+    TagComponent:
+      Tag: BigBall
+      tags: []
+    TransformComponent:
+      Location: [-12, -104.962585, -6.0999999]
+      Rotation: [0, 0, 0]
+      Scale: [10, 10, 10]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12508670168373565797
+      MaterialPointerID: 6594
+    SphereColliderComponent:
+      IsTrigger: false
+      Offset: [-17.8999996, 0, 0]
+      Radius: 0.5
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+  - Entity: 7673090354682297444
+    TagComponent:
+      Tag: Capsule
+      tags: []
+    TransformComponent:
+      Location: [0, -116.362602, -26.7000008]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 10407141520700162117
+      MaterialPointerID: 6594
+    CapsuleColliderComponent:
+      IsTrigger: false
+      Offset: [0, 0, 0]
+      Radius: 0.5
+      Height: 1
+      Direction: Y
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+  - Entity: 15701376420590113042
+    TagComponent:
+      Tag: Cube
+      tags: []
+    TransformComponent:
+      Location: [-7.80000019, -76.862587, -7.5]
+      Rotation: [0, 0, 57.2681656]
+      Scale: [4.60000038, 0.999999821, 0.999999523]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12067
+      MaterialPointerID: 6594
+    CubeColliderComponent:
+      IsTrigger: false
+      OffsetLocation: [0, 0, 0]
+      OffsetScale: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+  - Entity: 14422208715072623764
+    TagComponent:
+      Tag: Camera
       tags: []
     TransformComponent:
       Location: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.100000001, 0.100000001, 0.100000001]
     ChildComponent:
-      OwnerID: 10246643017857946525
+      OwnerID: 0
       Children: []
-  - Entity: 15851816075793717139
+    CubeColliderComponent:
+      IsTrigger: false
+      OffsetLocation: [0, 0, 0]
+      OffsetScale: [0, 0, 0]
+      PhysicsMaterialPointerID: 0
+  - Entity: 13564274098992329944
     TagComponent:
-      Tag: Empty Entity
+      Tag: SphereGravity
       tags: []
     TransformComponent:
-      Location: [0, 0, 0]
+      Location: [-7.5999999, -104.462585, -48.5]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 1167938253234886891
+      OwnerID: 0
       Children: []
-  - Entity: 16827497576274301923
+    MeshComponent:
+      MeshAssetPointerID: 12508670168373565797
+      MaterialPointerID: 6594
+    SphereColliderComponent:
+      IsTrigger: false
+      Offset: [0, 0, 0]
+      Radius: 0.5
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+  - Entity: 8760759891831111898
     TagComponent:
-      Tag: Empty Entity
+      Tag: sponza
       tags: []
     TransformComponent:
-      Location: [0, 0, 0]
+      Location: [0, -1.04782796, 300]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.100000001, 0.100000001, 0.100000001]
     ChildComponent:
-      OwnerID: 8854396152154798778
+      OwnerID: 0
       Children: []
+    MeshComponent:
+      MeshAssetPointerID: 19748
+      MaterialPointerID: 0
   - Entity: 1291239417134216629
     TagComponent:
       Tag: Directional Light
@@ -54,87 +188,36 @@ Entities:
       Diffuse: [0, 0, 0]
       Specular: [0, 0, 0]
       LightType: 0
-  - Entity: 8760759891831111898
+  - Entity: 16827497576274301923
     TagComponent:
-      Tag: sponza
-      tags: []
-    TransformComponent:
-      Location: [0, -1.04782796, 0]
-      Rotation: [0, 0, 0]
-      Scale: [0.100000001, 0.100000001, 0.100000001]
-    ChildComponent:
-      OwnerID: 0
-      Children: []
-    MeshComponent:
-      MeshAssetPointerID: 19748
-      MaterialPointerID: 0
-  - Entity: 1047949078784288998
-    TagComponent:
-      Tag: SphereRigibBody
-      tags: []
-    TransformComponent:
-      Location: [0, 9, -8.30000019]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 0
-      Children: []
-    MeshComponent:
-      MeshAssetPointerID: 12508670168373565797
-      MaterialPointerID: 0
-    SphereColliderComponent:
-      Offset: [0, 0, 0]
-      Radius: 1
-  - Entity: 13564274098992329944
-    TagComponent:
-      Tag: Sphere2
-      tags: []
-    TransformComponent:
-      Location: [6.42451191, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 0
-      Children: []
-    MeshComponent:
-      MeshAssetPointerID: 12508670168373565797
-      MaterialPointerID: 0
-    SphereColliderComponent:
-      Offset: [0, 0, 0]
-      Radius: 1
-  - Entity: 6213697661713988778
-    TagComponent:
-      Tag: Cube
+      Tag: Empty Entity
       tags: []
     TransformComponent:
       Location: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [1.89999998, 1.20000005, 2]
+      Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 0
+      OwnerID: 8854396152154798778
       Children: []
-    MeshComponent:
-      MeshAssetPointerID: 12067
-      MaterialPointerID: 6594
-    CubeColliderComponent:
-      OffsetLocation: [0, 0, 0]
-      OffsetScale: [0, 0, 0]
-    RigidBodyComponent:
-      Mass: 1
-      Drag: 0
-      AngularDrag: 0.0500000007
-      Gravity: true
-  - Entity: 14422208715072623764
+  - Entity: 15851816075793717139
     TagComponent:
-      Tag: Camera
+      Tag: Empty Entity
       tags: []
     TransformComponent:
       Location: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.100000001, 0.100000001, 0.100000001]
+      Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 0
+      OwnerID: 1167938253234886891
       Children: []
-    CubeColliderComponent:
-      OffsetLocation: [0, 0, 0]
-      OffsetScale: [0, 0, 0]
+  - Entity: 3274780553881339979
+    TagComponent:
+      Tag: Empty Entity
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 10246643017857946525
+      Children: []

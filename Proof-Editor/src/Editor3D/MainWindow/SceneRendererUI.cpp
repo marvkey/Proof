@@ -23,6 +23,7 @@ namespace Proof{
 		if(m_ShowWindow==false)
 			return;
 
+		PF_PROFILE_FUNC();
 		RenderAsset(deltaTime);
 		
 	}

@@ -8,6 +8,7 @@
 #include <filesystem>
 #include "Proof/Utils/PlatformUtils.h"
 #include "Asset.h"
+#include "PhysicsMaterialAsset.h"
 namespace Proof
 {
 	
@@ -44,12 +45,12 @@ namespace Proof
 			}
 			return nullptr;
 		}
-		static const std::string& GetAssetType(UUID ID) {
+		static AssetType GetAssetType(UUID ID) {
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
 				return it->second.first.Type;
 			}
-			return std::string();
+			return AssetType::None;
 		}
 		/**
 		*  gets an asset without checking if the asset exist, would cause a crash if the asset does not exit
@@ -87,69 +88,75 @@ namespace Proof
 		}
 		static AssetType GetAssetFromFilePath(const std::filesystem::path& path) {
 			const std::string fileFullExtension = Utils::FileDialogs::GetFullFileExtension(path);
+
+
 			if (fileFullExtension == "Mesh.ProofAsset")
-				return AssetType::MeshAsset;
+				return AssetType::Mesh;
 			if (fileFullExtension == "Material.ProofAsset")
 				return AssetType::Material;
 			if (fileFullExtension == "Texture.ProofAsset")
-				return AssetType::TextureAsset;
+				return AssetType::Texture;
 			if (fileFullExtension == "ProofWorld")
-				return AssetType::WorldAsset;
+				return AssetType::World;
+			if (fileFullExtension == PhysicsMaterialAsset::StaticGetExtension())
+				return AssetType::PhysicsMaterial;
 			const std::string fileDirectExtension = Utils::FileDialogs::GetFileExtension(path);
 		
-			for (const std::string& temp : s_PermitableMeshSourceFile) {
-				if (temp == fileDirectExtension)
-					return AssetType::MeshSourceFile;
-			}
+			//for (const std::string& temp : s_PermitableMeshSourceFile) {
+			//	if (temp == fileDirectExtension)
+			//		return AssetType::MeshSourceFile;
+			//}
 			return AssetType::None;
 		}
 
 		
 	private:
-		static bool ResetAssetInfo(UUID ID,const std::string& name, const std::string path) {
+		static bool ResetAssetInfo(UUID ID,const std::string& path) {
 			
 			if (HasID(ID) == false)return false;
 			Asset* asset = ForceGetAsset<Asset>(ID);
 			if (IsAssetLoaded(ID)) {
-				asset->m_AssetName = name;
 				asset->SetPath(path);
 				asset->SaveAsset();
+				asset->m_AssetName = Utils::FileDialogs::GetFileName(path);
 			}
 			auto it = Get().m_AllAssets.at(ID);
 			it.first.Path = path;
-			it.first.Name = name;
 			return true;
 		}
 		struct AssetInfo {
 			std::filesystem::path Path;
-			std::string Type;
-			const std::string& GetName()const {
-				return Name;
+			AssetType Type;
+			std::string GetName()const {
+				return Utils::FileDialogs::GetFileName(Path);
 			}
-			AssetInfo(const std::string& path, const std::string& type) :
+			AssetInfo(const std::string& path, AssetType type) :
 				Path(path), Type(type)
 			{
-				Name = Utils::FileDialogs::GetFileName(path);
-
 			}
 		private:
 			friend class AssetManager;
-			std::string Name;
 		};
 		static std::vector<std::string> s_PermitableMeshSourceFile;
 	
 		static void SaveAllAsset();
 		static AssetManager* s_AssetManager;
 		std::unordered_map<UUID,std::pair<AssetInfo,Count<class Asset>>> m_AllAssets;// path
+		std::unordered_map<UUID, Count<class PhysicsMaterialAsset>> m_AllPhysicsMaterialAsset;// path
 		AssetManager() {};
 		static void InitilizeAssets(const std::string& Path);
 		static void MakeDirectory(const std::string& path);
 		static bool IsFileValid(const std::string& Path);
-		static std::string GetAssetType(const std::string& Path);
+		static AssetType GetAssetType(const std::string& Path);
+
+		static void NewInitilizeAssets(const std::string& Path);
+		static void NewSaveAllAsset(const std::string& Path);
+		static void GenerateAsset(std::set<UUID> assetLoadIn);
+
 		friend class Application;
 		friend class AssetManagerPanel;
 		friend class ContentBrowserPanel;
-		static void NewInitilizeAssets(const std::string& Path);
-		static void GenerateAsset(std::set<UUID> assetLoadIn);
+		friend class NewContentBrowserPanel;
+		friend class PhysicsEngine;
 	};
 }	

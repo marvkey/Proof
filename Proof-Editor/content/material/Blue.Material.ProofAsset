@@ -1,4 +1,4 @@
-AssetType: AssetType::MaterialAsset
+AssetType: Material
 ID: 5962647055937557277
 AlbedoColour: [1, 0, 0]
 Roughness: 1

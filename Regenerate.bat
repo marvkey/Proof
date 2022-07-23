@@ -1,2 +1,2 @@
-vendor\premake\premake5.exe vs2019
+vendor\premake\premake5.exe vs2022
 PAUSE

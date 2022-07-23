@@ -7,7 +7,9 @@
 #include "AssetManager.h"
 
 namespace Proof{
-	MaterialAsset::MaterialAsset(const std::string& assetSavePath) {
+	MaterialAsset::MaterialAsset(const std::string& assetSavePath):
+		Asset(AssetType::Material)
+	{
 		m_ID = AssetManager::CreateID();
 		m_SavePath = assetSavePath;
 		SaveAsset();
@@ -15,7 +17,7 @@ namespace Proof{
 	void MaterialAsset::SaveAsset() {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "AssetType" << YAML::Value << GetAssetType();
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << m_ID;
 
 		out << YAML::Key << "AlbedoColour"<<YAML::Value << m_Material.m_Colour;

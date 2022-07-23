@@ -97,7 +97,7 @@ namespace Proof
 				out << YAML::Key << "Diffuse" << Light->m_Diffuse;
 				out << YAML::Key << "Specular" << Light->m_Specular;
 
-				out << YAML::Key << "LightType" << Light->m_LightType;
+				out << YAML::Key << "LightType" << (int)Light->m_LightType;
 				out << YAML::EndMap; // LightComponent
 			}
 		}
@@ -121,9 +121,10 @@ namespace Proof
 			if (cubeCollider != nullptr) {
 				out << YAML::Key << "CubeColliderComponent";
 				out << YAML::BeginMap; // CubeColliderComponent
+				out << YAML::Key << "IsTrigger" << cubeCollider->IsTrigger;
 				out << YAML::Key << "OffsetLocation" << cubeCollider->OffsetLocation;
-				//out << YAML::Key << "OffsetRotation" << cubeCollider->Offset.Rotation;
 				out << YAML::Key << "OffsetScale" << cubeCollider->OffsetScale;
+				out << YAML::Key << "PhysicsMaterialPointerID" << cubeCollider->m_PhysicsMaterialPointerID;
 				out << YAML::EndMap; // CubeColliderComponent
 			}
 		}
@@ -132,9 +133,36 @@ namespace Proof
 			if (sphereCollider != nullptr) {
 				out << YAML::Key << "SphereColliderComponent";
 				out << YAML::BeginMap; // SphereColliderComponent
-				out << YAML::Key << "Offset" << sphereCollider->Offset;
+				out << YAML::Key << "IsTrigger" << sphereCollider->IsTrigger;
+				out << YAML::Key << "Offset" << sphereCollider->OffsetLocation;
 				out << YAML::Key << "Radius" << sphereCollider->Radius;
+				out << YAML::Key << "PhysicsMaterialPointerID" << sphereCollider->m_PhysicsMaterialPointerID;
 				out << YAML::EndMap; // SphereColliderComponent
+			}
+		}
+		{
+			CapsuleColliderComponent* CapsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			if (CapsuleCollider != nullptr) {
+				out << YAML::Key << "CapsuleColliderComponent";
+				out << YAML::BeginMap; // CapsuleColliderComponent
+				out << YAML::Key << "IsTrigger" << CapsuleCollider->IsTrigger;
+				out << YAML::Key << "Offset" << CapsuleCollider->OffsetLocation;
+				out << YAML::Key << "Radius" << CapsuleCollider->Radius;
+				out << YAML::Key << "Height" << CapsuleCollider->Height;
+				out << YAML::Key << "Direction" << EnumReflection::EnumString<CapsuleDirection>(CapsuleCollider->Direction);
+				out << YAML::Key << "PhysicsMaterialPointerID" << CapsuleCollider->m_PhysicsMaterialPointerID;
+				out << YAML::EndMap; // CapsuleColliderComponent
+			}
+		}
+		{
+			MeshColliderComponent* meshCollider = entity.GetComponent<MeshColliderComponent>();
+			if (meshCollider != nullptr) {
+				out << YAML::Key << "MeshColliderComponent";
+				out << YAML::BeginMap; // MeshColliderComponent
+				out << YAML::Key << "IsTrigger" << meshCollider->IsTrigger;
+				out << YAML::Key << "PhysicsMaterialPointerID" << meshCollider->m_PhysicsMaterialPointerID;
+				out << YAML::Key << "MeshAssetPointerID" << meshCollider->m_MeshAssetPointerID;
+				out << YAML::EndMap; // MeshColliderComponent
 			}
 		}
 		{
@@ -143,9 +171,12 @@ namespace Proof
 				out << YAML::Key << "RigidBodyComponent";
 				out << YAML::BeginMap; // RigidBodyComponent
 				out << YAML::Key << "Mass" << rigidBody->Mass;
-				out << YAML::Key << "Drag" << rigidBody->Drag;
+				out << YAML::Key << "LinearDrag" << rigidBody->LinearDrag;
 				out << YAML::Key << "AngularDrag" << rigidBody->AngularDrag;
 				out << YAML::Key << "Gravity" << rigidBody->Gravity;
+				out << YAML::Key << "Type" << EnumReflection::EnumString<RigidBodyType>(rigidBody->m_RigidBodyType);
+				out << YAML::Key << "FreezeLocation" <<  rigidBody->FreezeLocation;
+				out << YAML::Key << "FreezeRotation" <<  rigidBody->FreezeRotation;
 				out << YAML::EndMap; // RigidBodyComponent
 			}
 		}
@@ -280,7 +311,7 @@ namespace Proof
 					src.m_Diffuse = lightComponent["Diffuse"].as<glm::vec3>();
 					src.m_Specular = lightComponent["Specular"].as<glm::vec3>();
 
-					src.m_LightType = lightComponent["LightType"].as<int>();
+					src.m_LightType =(LightComponent::LightType)lightComponent["LightType"].as<int>();
 
 				}
 			}
@@ -305,18 +336,47 @@ namespace Proof
 				auto cubeColliderComponent = entity["CubeColliderComponent"];
 				if (cubeColliderComponent) {
 					auto& src = *NewEntity.AddComponent<CubeColliderComponent>();
+					src.IsTrigger = cubeColliderComponent["IsTrigger"].as<bool>();
 					src.OffsetLocation = cubeColliderComponent["OffsetLocation"].as<Vector<float>>();
 					src.OffsetScale = cubeColliderComponent["OffsetScale"].as<Vector<float>>();
+					src.m_PhysicsMaterialPointerID = cubeColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
 				}
 			}
 
-			// SPHER COLLIDER
+			// SPHERE COLLIDER
 			{
-				auto spherColliderComponent = entity["SphereColliderComponent"];
-				if (spherColliderComponent) {
+				auto sphereColliderComponent = entity["SphereColliderComponent"];
+				if (sphereColliderComponent) {
 					auto& src = *NewEntity.AddComponent<SphereColliderComponent>();
-					src.Offset = spherColliderComponent["Offset"].as<Vector<float>>();
-					src.Radius = spherColliderComponent["Radius"].as<float>();
+					src.IsTrigger = sphereColliderComponent["IsTrigger"].as<bool>();
+					src.OffsetLocation = sphereColliderComponent["Offset"].as<Vector<float>>();
+					src.Radius = sphereColliderComponent["Radius"].as<float>();
+					src.m_PhysicsMaterialPointerID = sphereColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
+				}
+			}
+			//CAPSULE COLLIDER
+			{
+			
+				auto capsuleColliderComponent= entity["CapsuleColliderComponent"];
+				if (capsuleColliderComponent) {
+					auto& src = *NewEntity.AddComponent<CapsuleColliderComponent>();
+					src.IsTrigger = capsuleColliderComponent["IsTrigger"].as<bool>();
+					src.OffsetLocation = capsuleColliderComponent["Offset"].as<Vector<float>>();
+					src.Radius = capsuleColliderComponent["Radius"].as<float>();
+					src.Height = capsuleColliderComponent["Height"].as<float>();
+					src.Direction = EnumReflection::StringEnum<CapsuleDirection>(capsuleColliderComponent["Direction"].as<std::string>());
+					src.m_PhysicsMaterialPointerID = capsuleColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
+				}
+			}
+			//Mesh COLLIDER
+			{
+
+				auto mehsCollider = entity["MeshColliderComponent"];
+				if (mehsCollider) {
+					auto& src = *NewEntity.AddComponent<MeshColliderComponent>();
+					src.IsTrigger = mehsCollider["IsTrigger"].as<bool>();
+					src.m_PhysicsMaterialPointerID = mehsCollider["PhysicsMaterialPointerID"].as<uint64_t>();
+					src.m_MeshAssetPointerID = mehsCollider["MeshAssetPointerID"].as<uint64_t>();
 				}
 			}
 			// RIGID BODY
@@ -325,9 +385,12 @@ namespace Proof
 				if (rigidBodyComponent) {
 					auto& rgb = *NewEntity.AddComponent<RigidBodyComponent>();
 					rgb.Mass = rigidBodyComponent["Mass"].as<float>();
-					rgb.Drag = rigidBodyComponent["Drag"].as<float>();
+					rgb.LinearDrag = rigidBodyComponent["LinearDrag"].as<float>();
 					rgb.AngularDrag = rigidBodyComponent["AngularDrag"].as<float>();
 					rgb.Gravity = rigidBodyComponent["Gravity"].as<bool>();
+					rgb.FreezeLocation = rigidBodyComponent["FreezeLocation"].as<Vector<bool>>();
+					rgb.FreezeRotation = rigidBodyComponent["FreezeRotation"].as<Vector<bool>>();
+					rgb.m_RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
 				}
 			}
 		}

@@ -24,18 +24,18 @@ namespace Logger {
 			//bufferbasee = new char;
 		}
 		template<typename... Args>
-		void LogError(const char* Msg,Args&&... args);
+		void LogError(const std::string& Msg,Args&&... args);
 		template<typename... Args>
-		void LogInfo(const char* Msg,Args&&... args);
+		void LogInfo(const std::string& Msg,Args&&... args);
 		template<typename... Args>
-		void LogTrace(const char* Msg,Args&&... args);
+		void LogTrace(const std::string& Msg,Args&&... args);
 		template<typename... Args>
-		void LogCritical(const char* Msg,Args&&... args);
+		void LogCritical(const std::string& Msg,Args&&... args);
 		template<typename... Args>
-		void LogWarn(const char* Msg, Args&&... args);
+		void LogWarn(const std::string& Msg, Args&&... args);
 
 		template<typename... Args>
-		std::string GetLogString(const char* Msg,Args&&... args);
+		std::string GetLogString(const std::string& Msg,Args&&... args);
 	public:
 		std::string LoggerName;
 	private:
@@ -45,7 +45,7 @@ namespace Logger {
 	};
 
 	template<typename ...Args>
-	inline void Log::LogError(const char* Msg,Args&& ...args) {
+	inline void Log::LogError(const std::string& Msg,Args&& ...args) {
 		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		fmt::print(fg(fmt::color::red) | fmt::emphasis::bold,
@@ -55,7 +55,7 @@ namespace Logger {
 		fmt::print("\n");
 	}
 	template<typename ...Args>
-	inline void Log::LogInfo(const char* Msg,Args&& ...args) {
+	inline void Log::LogInfo(const std::string& Msg,Args&& ...args) {
 		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		fmt::print(fg(fmt::color::green),
@@ -65,7 +65,7 @@ namespace Logger {
 		fmt::print("\n");
 	}
 	template<typename ...Args>
-	inline void Log::LogTrace(const char* Msg,Args&& ...args) {
+	inline void Log::LogTrace(const std::string& Msg,Args&& ...args) {
 		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		fmt::print(fg(fmt::color::white),
@@ -75,7 +75,7 @@ namespace Logger {
 		fmt::print("\n");
 	}
 	template<typename ...Args>
-	inline void Log::LogCritical(const char* Msg,Args&& ...args) {
+	inline void Log::LogCritical(const std::string& Msg,Args&& ...args) {
 		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		fmt::print(fg(fmt::color::red) | fmt::emphasis::bold | bg(fmt::color::yellow),
@@ -85,7 +85,7 @@ namespace Logger {
 		fmt::print("\n");
 	}
 	template<typename ...Args>
-	inline void Log::LogWarn(const char* Msg,Args&& ...args) {
+	inline void Log::LogWarn(const std::string& Msg,Args&& ...args) {
 		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		fmt::print(fg(fmt::color::yellow),
@@ -96,11 +96,11 @@ namespace Logger {
 	}
 
 	template<typename ...Args>
-	inline std::string Log::GetLogString(const char* Msg, Args && ...args) {
+	inline std::string Log::GetLogString(const std::string& Msg, Args && ...args) {
 
 		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
-		std::string temp = fmt::format("[{}:{}:{}]{}",LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec, LoggerName);
+		std::string temp = fmt::format("[{}:{}:{}]{} ",LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec, LoggerName);
 		//sprintf(buffer, Msg, args...);
 		std::string temp2 = fmt::format(Msg, args...);
 		return temp+ temp2;

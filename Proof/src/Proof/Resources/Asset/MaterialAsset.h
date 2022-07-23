@@ -4,30 +4,29 @@
 #include "Proof/Resources/Asset/Asset.h"
 #include "Proof/Resources/Math/Math.h"
 
-namespace Proof{
+namespace Proof
+{
 	class Proof_API MaterialAsset:public Asset {
 	public:
 		MaterialAsset(const std::string& assetPath);
-		MaterialAsset()=default;
+		MaterialAsset():
+			Asset(AssetType::Material) 
+		{
+
+		}
 		virtual void SaveAsset() override;
 		virtual bool LoadAsset(const std::string& filePath)override;
 		virtual bool IsImageIDNUll() {
 			return true;
 		}
-		virtual std::string GetExtension()const {
-			return "Material.ProofAsset";
-		}
 		static std::string StaticGetExtension() {
 			return "Material.ProofAsset";
 		}
-		virtual uint32_t GetImageID();
-		const static std::string& GetAssetType(){
-			static std::string assetType ="AssetType::MaterialAsset";
-			return assetType;
+
+		virtual std::string GetExtension()const {
+			return "Material.ProofAsset";
 		}
-		virtual const std::string& GetAssetTypeVirtual()const {
-			return GetAssetType();
-		};
+		virtual uint32_t GetImageID();
 		const Material& GetMaterial()const;
 		Material m_Material;
 	private:

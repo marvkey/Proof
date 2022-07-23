@@ -18,6 +18,8 @@
 
 namespace Proof{
     void Mesh::LoadModel(std::string const& path) {
+        PF_PROFILE_FUNC();
+
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
@@ -146,8 +148,8 @@ namespace Proof{
 
 
     SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name,std::vector<Proof::Count<Proof::Texture2D>>& Textures) {
-        //this->m_Vertices = Vertices;
-        //this->m_Indices = Indices;
+        this->m_Vertices = Vertices;
+        this->m_Indices = Indices;
 
         this->m_Textures = Textures;
         m_Name = name;
@@ -189,10 +191,10 @@ namespace Proof{
     }
 
     SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name) {
-        //this->m_Vertices = Vertices;
-        //this->m_Indices = Indices;
+        this->m_Vertices = Vertices;
+        this->m_Indices = Indices;
         m_Name = name;
-       // SetUp();
+        SetUp();
         m_VertexArrayObject = VertexArray::Create();
         m_VertexBufferObject = VertexBuffer::Create(Vertices.data(), Vertices.size() * sizeof(Vertex));
         m_IndexBufferObject = IndexBuffer::Create(Indices.data(), Indices.size());

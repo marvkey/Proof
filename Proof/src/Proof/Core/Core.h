@@ -9,7 +9,7 @@
 #define PF_BIND_MOTION(fn) std::bind(&fn, this, std::placeholders::_1)
 #include <unordered_map>
 #include <optick.h>
-
+#include "Proof/Resources/EnumReflection.h"
 #define PF_ENABLE_PROFILING 1
 #if PF_ENABLE_PROFILING
     #define PF_PROFILE_FRAME(...)           OPTICK_FRAME(__VA_ARGS__)
@@ -48,6 +48,7 @@ inline const std::string ProofCurrentDirectory = "../Proof/";
 #ifdef PF_ENABLE_ASSERT
 #define PF_ASSERT(X,...){ if((!X)) {PF_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak();  } }
 #define PF_CORE_ASSERT(X,...){ if((!X)) {PF_ENGINE_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak(); } } 
+#define PF_CORE_ASSERT(X){ if((!X)) {PF_ENGINE_ERROR("Assertion Failed"); __debugbreak(); } } 
 #else
 #define PF_ASSERT(X,...)
 #define PF_CORE_ASSERT(X,...)

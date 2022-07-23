@@ -294,7 +294,7 @@ namespace Proof
 		friend class OpenGLRenderer3DPBR;
 		uint32_t m_MeshMaterialID = 0;
 		UUID m_MeshAssetPointerID=0;
-		Count<MeshAsset>m_MeshAssetPointer=nullptr;
+		Count<MeshAsset>m_MeshAssetPointer=nullptr; // MIGHT Remove
 	};
 
 	/* THIS IS TEMPORARY THIS IS GONNA GO INTO THE 2D SECTION */
@@ -328,7 +328,7 @@ namespace Proof
 	struct Proof_API LightComponent{
 		LightComponent(const LightComponent&) = default;
 		LightComponent() = default;
-		enum LightType:int {
+		enum class LightType {
 			Direction = 0,
 			Point = 1,
 			Spot = 2
@@ -345,7 +345,7 @@ namespace Proof
 		glm::vec3 m_Ambient;
 		glm::vec3 m_Diffuse;
 		glm::vec3 m_Specular;
-		int m_LightType = 0;
+		LightType m_LightType = LightType::Direction;
 	};
 	struct Proof_API SkyLightComponent{
 		SkyLightComponent(const SkyLightComponent&) = default;
@@ -397,15 +397,27 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
 	};
-		
+	
+
 	struct Proof_API CubeColliderComponent {
 		CubeColliderComponent(const CubeColliderComponent&) = default;
 		CubeColliderComponent() = default;
-		static class Mesh* GetMeshSource();
 		Vector<float> OffsetLocation = { 0,0,0 };
-		Vector<float> OffsetScale= { 0,0,0 };
+		Vector<float> OffsetScale= { 1,1,1 };
+		bool IsTrigger = false;
+
+		void RemovePhysicsMaterial() {
+			m_PhysicsMaterialPointerID = 0;
+		}
+
+		bool HasPhysicsMaterial() {
+			return GetPhysicsMaterial() == nullptr ? false : true;
+		}
+		class PhysicsMaterial* GetPhysicsMaterial();
+
 	private:
-		void* RuntimeBody = nullptr;
+		UUID m_PhysicsMaterialPointerID = 0;
+		void* m_RuntimeBody = nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -417,29 +429,125 @@ namespace Proof
 	struct Proof_API SphereColliderComponent {
 		SphereColliderComponent(const SphereColliderComponent&) = default;
 		SphereColliderComponent() = default;
-		Vector<float> Offset = { 0,0,0 };
-		float Radius = 1.0f;
+		Vector<float> OffsetLocation = { 0,0,0 };
+		float Radius = 0.5f;
+		bool IsTrigger = false;
+		void RemovePhysicsMaterial() {
+			m_PhysicsMaterialPointerID = 0;
+		}
+		bool HasPhysicsMaterial() {
+			return GetPhysicsMaterial() == nullptr ? false : true;
+		}
+		class PhysicsMaterial* GetPhysicsMaterial();
 	private:
-		void* RuntimeBody = nullptr;
+		UUID m_PhysicsMaterialPointerID = 0;
+		void* m_RuntimeBody = nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 	};
+	enum class CapsuleDirection {
+		X=1,
+		Y = 0,
+		Z =2
+	};
+	struct Proof_API CapsuleColliderComponent {
+		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
+		CapsuleColliderComponent() = default;
+		Vector<float> OffsetLocation = { 0,0,0 };
+		float Radius = 0.5f;
+		float Height = 2.0f;
+		CapsuleDirection Direction = CapsuleDirection::Y;
+		bool IsTrigger = false;
+		void RemovePhysicsMaterial() {
+			m_PhysicsMaterialPointerID = 0;
+		}
+		bool HasPhysicsMaterial() {
+			return GetPhysicsMaterial() == nullptr ? false : true;
+		}
+		class PhysicsMaterial* GetPhysicsMaterial();
+	private:
+		void* m_RuntimeBody = nullptr;
+		friend class World;
+		friend class SceneSerializer;
+		friend class SceneHierachyPanel;
+		friend class WorldRenderer;
+		friend class PhysicsEngine;
+		UUID m_PhysicsMaterialPointerID= 0;
+	};
 
+	struct Proof_API MeshColliderComponent {
+		MeshColliderComponent(const MeshColliderComponent&) = default;
+		MeshColliderComponent() = default;
+		bool IsTrigger = false;
+		void RemovePhysicsMaterial() {
+			m_PhysicsMaterialPointerID = 0;
+		}
+		bool HasPhysicsMaterial() {
+			return GetPhysicsMaterial() == nullptr ? false : true;
+		}
+
+		bool HasMesh() {
+			return GetMesh() == nullptr ? false : true;
+		}
+		class PhysicsMaterial* GetPhysicsMaterial();
+		class Mesh* GetMesh(){
+			auto mesh = GetMeshAsset();
+			return mesh == nullptr ? nullptr : mesh->GetMesh();
+		}
+		void RemoveMeshSource() {
+			m_MeshAssetPointerID = 0;
+		}
+	private:
+		class MeshAsset* GetMeshAsset();
+		UUID m_MeshAssetPointerID = 0;// POINTS TO THE MESH ASSET
+		void* m_RuntimeBody = nullptr;
+		void* m_ConvexMeshRuntimeBody = nullptr;
+		friend class World;
+		friend class SceneSerializer;
+		friend class SceneHierachyPanel;
+		friend class WorldRenderer;
+		friend class PhysicsEngine;
+		UUID m_PhysicsMaterialPointerID = 0;
+	};	
+	enum class RigidBodyType {
+		Static,
+		Dynamic
+	};
+	enum class ForceMode {
+		Force,				
+		Impule,			
+		VelocityChange,	
+		Acceleration
+	};
 	class Proof_API RigidBodyComponent {
 	public:
 		RigidBodyComponent(const RigidBodyComponent&) = default;
 		RigidBodyComponent() = default;
 		float Mass = 1.0f;
-		float Drag = 1.0f;
 		float AngularDrag = 0.05f;
+		float LinearDrag = 0.0f;
 		bool Gravity = true;
-		bool MassInfinite = false;
+		bool Kinimatic = false;
+		
+		Vector<bool>FreezeLocation = { false,false,false };
+		Vector<bool>FreezeRotation = { false,false,false };
+
+		RigidBodyType GetType() {
+			return m_RigidBodyType;
+		}
+
+		void AddForce(Vector<float> force, ForceMode mode = ForceMode::Force,bool autoWake=true) const;
+		void AddTorque(Vector<float> force, ForceMode mode = ForceMode::Force, bool autoWake = true)const;
+		bool IsSleeping() const;
+		void PutToSleep();
+		void WakeUp();
 
 	private:
-		void* RuntimeBody = nullptr;
+		RigidBodyType m_RigidBodyType = RigidBodyType::Static;
+		void* m_RuntimeBody = nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;

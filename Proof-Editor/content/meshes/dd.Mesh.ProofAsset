@@ -1,4 +1,4 @@
-AssetType: AssetType::MeshAsset
+AssetType: Mesh
 ID: 9099
 Model: C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\backpack.obj
 SubMeshes: [72, 74, 76]

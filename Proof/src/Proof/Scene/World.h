@@ -52,7 +52,7 @@ namespace Proof{
 		}
 		template<class T, class F>
 		void ForEachEntitiesWithSingle(F func) {
-			auto& entitiyView = m_Registry.view<T>;
+			auto& entitiyView = m_Registry.view<T>();
 			for (auto entity : entitiyView) {
 				func(Entity{ entity,this });
 			}
@@ -101,6 +101,7 @@ namespace Proof{
 		void DeleteEntity(class Entity& ent,bool deleteChildren =true);
 
 		EditorCamera m_EditorCamera ={200,200};
+		class PhysicsEngine* GetPhysicsEngine() { return m_PhysicsEngine; };
 	private:
 		class PhysicsEngine* m_PhysicsEngine =nullptr;
 		class CameraComponent* m_SceneCamera = nullptr;

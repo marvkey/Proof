@@ -14,7 +14,8 @@
 #include<vulkan/vulkan.h>
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
-#include "MainWindow/PerformancePanel.h"
+#include "MainWindow/Performance/PerformancePanel.h"
+
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {
@@ -25,9 +26,8 @@ namespace Proof {
 		virtual void OnImGuiDraw(FrameTime DeltaTime) override;
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		void CreateMaterialEdtior(class MaterialAsset* material);
-		void CreateMeshEditor(class MeshAsset* mesh);
-		
+		// returns if assetEditorWasCreated
+		bool CreateAssetEditor(class Asset* asset);
 		Count<Texture2D>m_CheckeboardTexture;
 		static bool IsKeyPressedEditor(KeyBoardKey Key);
 		static bool IsKeyClickedEditor(KeyBoardKey Key);
@@ -111,7 +111,7 @@ namespace Proof {
 
 		int GuizmoType = (1u << 0)| (1u << 1)| (1u << 2);// imguizmo bit stuff
 		class SceneHierachyPanel m_WorldHierachy{this};;
-		class ContentBrowserPanel m_CurrentContentBrowserPanel ={this};
+		class ContentBrowserPanel m_ContentBrowserPanel ={this};
 		class AssetManagerPanel m_AssetManagerPanel;
 		class PerformancePanel m_PerformancePanel;
 		friend class Renderer3D;

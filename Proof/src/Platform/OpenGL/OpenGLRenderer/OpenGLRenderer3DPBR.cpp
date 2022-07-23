@@ -92,12 +92,12 @@ namespace Proof
 		s_DifferentID.emplace_back(meshPointerId);
 		ModelMatrix = positionMatrix;
 
-		PhysicalBasedRendererVertex temp(ModelMatrix, meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial, usingMaterial);
+		PhysicalBasedRendererVertex temp(positionMatrix, meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial, usingMaterial);
 		s_PBRInstance->m_Transforms.emplace_back(temp);
 	}
 	void OpenGLRenderer3DPBR::Draw(LightComponent& lightComponent, TransformComponent& transform) {
 		s_CurrentLightShader->Bind();
-		if (lightComponent.m_LightType == lightComponent.Point && NumPointLights < 150) {
+		if (lightComponent.m_LightType == LightComponent::LightType::Point && NumPointLights < 150) {
 			std::string numberPointLightstring = "v_PointLight[" + std::to_string(NumPointLights) + "]";
 			s_CurrentLightShader->SetVec3(numberPointLightstring + ".Position", transform.GetWorldLocation());
 			s_CurrentLightShader->SetVec3(numberPointLightstring + ".Ambient", lightComponent.m_Ambient);
@@ -111,7 +111,7 @@ namespace Proof
 			return;
 		}
 
-		if (lightComponent.m_LightType == lightComponent.Spot && NumSpotLights < 150) {
+		if (lightComponent.m_LightType == LightComponent::LightType::Spot && NumSpotLights < 150) {
 			std::string numberSpotLightstring = "v_SpotLight[" + std::to_string(NumSpotLights) + "]";
 			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Direction", { transform.GetWorldRotation() });
 			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Position", { transform.GetWorldLocation() });
@@ -128,7 +128,7 @@ namespace Proof
 			return;
 		}
 
-		if (lightComponent.m_LightType == lightComponent.Direction && NumDirLights < 150) {
+		if (lightComponent.m_LightType == LightComponent::LightType::Direction && NumDirLights < 150) {
 			std::string mumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumDirLights) + "]";
 			s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Direction", transform.GetWorldRotation());
 			s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Ambient", lightComponent.m_Ambient);
@@ -139,6 +139,7 @@ namespace Proof
 		}
 	}
 	void OpenGLRenderer3DPBR::DrawDebugMesh(Mesh* mesh, const glm::mat4& transform) {
+		if (mesh == nullptr)return;
 		s_DebugShader->Bind();
 		s_DebugShader->SetMat4("model", transform);
 		s_DebugShader->SetMat4("projection", s_Projection);
@@ -154,6 +155,8 @@ namespace Proof
 		return  s_PBRInstance;
 	}
 	void OpenGLRenderer3DPBR::EndContext() {
+		PF_PROFILE_FUNC()
+		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 0, TimerTypes::Renderer);
 		Render();
 		Reset();
 		s_RenderFrameBuffer->UnBind();
@@ -208,6 +211,8 @@ namespace Proof
 		glBindVertexArray(0);
 	}
 	void OpenGLRenderer3DPBR::Render() {
+		PF_PROFILE_FUNC()
+		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 0, TimerTypes::Renderer);
 		if (s_RendererData->RenderSettings.Technique == RenderTechnique::DeferedRendering)
 			DeferedRender();
 		else

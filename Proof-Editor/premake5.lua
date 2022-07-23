@@ -3,7 +3,7 @@ project "Proof-Editor"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++17"
-    staticruntime "off"
+    staticruntime "on"
 
     targetdir ("bin/".. OutputDirectory .. "/%{prj.name}")
     objdir ("bin-int/".. OutputDirectory .. "/%{prj.name}")
@@ -31,13 +31,23 @@ project "Proof-Editor"
         "%{wks.location}/Proof/vendor/entt",
 		"%{IncludeDir.Vulkan}",
 		"%{IncludeDir.fmt}",
-        "%{wks.location}/Proof/vendor/optick/src"
-
-
+		"%{IncludeDir.Bullet3}",
+        "%{wks.location}/Proof/vendor/optick/src",
+        "%{wks.location}/Proof/vendor/PhysX/physx/include",
+        "%{wks.location}/Proof/vendor/PhysX/physx/source/physxextensions/src/**",
+        "%{wks.location}/Proof/vendor/PhysX/physx/source/foundation/include/**",
+        
+		"%{wks.location}/Proof/vendor/PhysX/pxshared/include",
+        "%{wks.location}/Proof/vendor/magic_enum/include",
 
 		--"C:/Program Files/Mono/include/mono-2.0"
     }
-
+    includedirs { 
+        "%{wks.location}/Proof/vendor/PhysX/physx/source/**", 
+        "%{wks.location}/Proof/vendor/PhysX/physx", 
+        "physx/include",
+        "%{wks.location}/physx/source/physx/src/**",
+    }
     --filter { "system:windows", "configurations:Debug" }
       --  buildoptions "/MDd"        
 
@@ -48,7 +58,11 @@ project "Proof-Editor"
         --"%{wks.location}/Game/Proof-Game/x64/Debug",
         "%{wks.location}/Proof/vendor/Assimp/Proof-Assimp-lib",
         "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib",
-        "%{wks.location}/Proof/vendor/optick/bin/vs2017/x64/Release"
+        "%{wks.location}/Proof/vendor/optick/bin/vs2017/x64/Release",
+		"%{wks.location}/Proof/vendor/PhysX/physx/bin/win.x86_64.vc142.mt/debug", ----very very very important we change this up
+		"%{wks.location}/Proof/vendor/bullet3/bin"
+
+        
 		--"C:/Program Files/Mono/lib"
 
     }
@@ -62,23 +76,45 @@ project "Proof-Editor"
         "Glad",
         "assimp-vc143-mt.lib",
         "yaml-cpp",
-		--"mono-2.0-sgen.lib",
-        --"ScriptModule.lib",
 		"ProofPhysics",
         "vulkan-1.lib",
-        "fmt",
-		"OptickCore.lib"
+		"OptickCore.lib",
+        "SPIRV-Cross",
+        --"physx",
+        --"PhysXFoundation_64.lib",
+        --"PhysXCooking_64.lib",
+        --"PhysXCommon_64.lib",
+        --"PhysX_64.lib",
+        --"PhysXExtensions_static_64.lib",    
+       -- "PhysXPvdSDK_static_64.lib",
 
+        "LinearMath_vs2010_x64_debug.lib",
+        "BulletCollision_vs2010_x64_debug.lib",
+        "BulletDynamics_vs2010_x64_debug.lib",
     }
-   
-    postbuildcommands{
-
-       -- ("{COPY} %{wks.location}/Proof/vendor/Assimp/Proof-Assimp-lib"..OutputDirectory.."/Proof-Editor")
+   links --physx
+  {
+       
+    "SnippetUtils_static_64.lib",
+    "LowLevel_static_64.lib",
+    "LowLevelAABB_static_64.lib",
+    "LowLevelDynamics_static_64.lib",
+    "PhysX_64.lib",
+    "PhysXCharacterKinematic_static_64.lib",
+    "PhysXCommon_64.lib",
+    "PhysXCooking_64.lib",
+    "PhysXExtensions_static_64.lib",
+    "PhysXFoundation_64.lib",
+    "PhysXPvdSDK_static_64.lib",
+    "PhysXTask_static_64.lib",
+    "PhysXVehicle_static_64.lib",
+    "SceneQuery_static_64.lib",
+    "SimulationController_static_64.lib",
+    "SnippetRender_static_64.lib",
     }
 
     filter "system:windows"
         systemversion "latest"
-        --buildoptions "/MDd"
         defines {
             "PF_PLATFORM_WINDOW64"
         }
@@ -87,19 +123,34 @@ project "Proof-Editor"
     filter "configurations:Debug"
         defines "PF_DEBUG"
         symbols "on"
+        runtime "Debug"
         defines{
 			"PF_ENABLE_ASSERT",
 			"PF_ENABLE_DEBUG"
+		}
+        links
+		{
+            "%{Library.ShaderC_Release}",
 		}
 
     filter "configurations:Release"
         defines "PF_RELEASE"
         optimize "on"
+        runtime "Release"
         defines{
 			"PF_ENABLE_ASSERT",
 			"PF_ENABLE_DEBUG"
+		}
+        links
+		{
+			"%{Library.ShaderC_Release}",
 		}
 
     filter "configurations:Dist"
         defines "PF_DIST"
         optimize "on"	
+        runtime "Release"
+        links
+		{
+			"%{Library.ShaderC_Release}",
+		}

@@ -6,17 +6,16 @@
 #include<vulkan/vulkan.h>
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
-#include "../VulkanDescriptorLayout.h"
 namespace Proof
 {
 	struct DrawPipeline {
 		Count<VulkanGraphicsPipeline> GraphicsPipeline = nullptr;
 		Count<Shader> Shader = nullptr;
-		Count<VulkanSwapChain> SwapChain= nullptr;
+		Count<VulkanSwapChain> SwapChain = nullptr;
 		VulkanPipeLineLayout PipelineLayout;
 		Count<VulkanCommandBuffer> CommandBuffer = NULL;
 		Count<VulkanVertexBuffer> VertexBuffer;
-		
+
 	};
 	class VulkanRenderer {
 	public:
@@ -32,6 +31,5 @@ namespace Proof
 		static void DrawFrame();
 		static int s_CurrentFrameIndex;
 		static uint32_t s_CurrentImageIndex;
-
 	};
 }

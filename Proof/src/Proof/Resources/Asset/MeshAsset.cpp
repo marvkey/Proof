@@ -7,7 +7,9 @@
 namespace Proof
 {
 	using AssetID =uint64_t;
-	MeshAsset::MeshAsset(const std::string& meshFilePath,const std::string& savePath) {
+	MeshAsset::MeshAsset(const std::string& meshFilePath,const std::string& savePath):
+		Asset(AssetType::Mesh) 
+	{
 		m_ID = AssetManager::CreateID();
 		m_Mesh = CreateSpecial<Mesh>(meshFilePath);
 		m_SavePath = savePath;
@@ -17,7 +19,7 @@ namespace Proof
 	void MeshAsset::SaveAsset() {
 		YAML::Emitter out;
 		out<<YAML::BeginMap;
-		out<<YAML::Key<<"AssetType"<<YAML::Value<<GetAssetType();
+		out<<YAML::Key<<"AssetType"<<YAML::Value<<EnumReflection::EnumString(GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << m_ID;
 		out << YAML::Key << "Model" << YAML::Value << m_MeshFilePath;
 		out << YAML::Key << "SubMeshes";

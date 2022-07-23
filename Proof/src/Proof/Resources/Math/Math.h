@@ -183,6 +183,15 @@ namespace Proof
 		inline static T GetMinType() {
 			return std::numeric_limits<T>::min();
 		}
-	
+		/**
+		* @param num: value to be changed
+		* @return The number passed into positve
+		*/
+		template<typename T>
+		inline static T GetPositive(T num) {
+			if (num < 0)
+				num = -num;
+			return num;
+		}
 	};
 }

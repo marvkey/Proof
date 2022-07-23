@@ -46,7 +46,7 @@ namespace Proof
 		// teh stages of the pipeline we are going to use
 		// we are only using the fragment and vertex stages
 		pipelineInfo.stageCount = 2;
-		pipelineInfo.pStages = m_Shader->m_ShaderStages;;
+		pipelineInfo.pStages = m_Shader->m_ShaderStages;
 		pipelineInfo.pVertexInputState = &vertexInputInfo;
 		pipelineInfo.pInputAssemblyState = &info.InputAssemblyInfo;
 		pipelineInfo.pViewportState = &info.ViewportInfo;

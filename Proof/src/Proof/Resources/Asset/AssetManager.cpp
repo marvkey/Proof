@@ -17,8 +17,10 @@ namespace Proof
 			ID = AssetManager::CreateID();
 		}
 		if (HasID(ID) == false) {
-			s_AssetManager->m_AllAssets.insert({ ID,{AssetInfo(asset->GetPath(), asset->GetAssetTypeVirtual()),asset} });
-			
+			s_AssetManager->m_AllAssets.insert({ ID,{AssetInfo(asset->GetPath(), asset->GetAssetType()),asset} });
+			if(asset->GetAssetType() == AssetType::PhysicsMaterial)
+				s_AssetManager->m_AllPhysicsMaterialAsset.insert({ ID,ForceGetAssetShared<PhysicsMaterialAsset>(ID)});
+
 			return;
 		}
 		PF_ASSERT(false,"Asset Maneger Has ID");
@@ -35,6 +37,10 @@ namespace Proof
 	}
 	void AssetManager::Remove(UUID ID) {
 		if (HasID(ID) == true) {
+
+			if (s_AssetManager->m_AllAssets.at(ID).first.Type == AssetType::PhysicsMaterial)
+				s_AssetManager->m_AllPhysicsMaterialAsset.erase(ID);
+
 			s_AssetManager->m_AllAssets.erase(ID);
 			return;
 		}
@@ -64,34 +70,38 @@ namespace Proof
 	}
 	bool AssetManager::LoadAsset(UUID ID) {
 		auto it = s_AssetManager->m_AllAssets.find(ID);
-		if (it != s_AssetManager->m_AllAssets.end()) {
+		if (it == s_AssetManager->m_AllAssets.end())
+			return false;
 
-			if (it->second.second == nullptr) {
-				if (it->second.first.Type == MeshAsset::GetAssetType()) {
-					it->second.second = CreateCount<MeshAsset>();
-					it->second.second->LoadAsset(it->second.first.Path.string());
-					it->second.second->m_AssetName = Utils::FileDialogs::GetFileName(it->second.first.Path);
-					return true;
-				}
-				else if (it->second.first.Type == MaterialAsset::GetAssetType()) {
-					it->second.second = CreateCount<MaterialAsset>();
-					it->second.second->LoadAsset(it->second.first.Path.string());
-					it->second.second->m_AssetName = Utils::FileDialogs::GetFileName(it->second.first.Path);
-					return true;
-				}
-			}
+		if (it->second.second != nullptr)
+			return true;
+		if (it->second.first.Type == AssetType::Mesh) {
+			it->second.second = CreateCount<MeshAsset>();
+			it->second.second->LoadAsset(it->second.first.Path.string());
+			it->second.second->m_AssetName = Utils::FileDialogs::GetFileName(it->second.first.Path);
 			return true;
 		}
-		return false;
+		if (it->second.first.Type == AssetType::Material) {
+			it->second.second = CreateCount<MaterialAsset>();
+			it->second.second->LoadAsset(it->second.first.Path.string());
+			it->second.second->m_AssetName = Utils::FileDialogs::GetFileName(it->second.first.Path);
+			return true;
+		}
+		if (it->second.first.Type == AssetType::PhysicsMaterial) {
+			it->second.second = CreateCount<PhysicsMaterialAsset>();
+			it->second.second->LoadAsset(it->second.first.Path.string());
+			it->second.second->m_AssetName = Utils::FileDialogs::GetFileName(it->second.first.Path);
+			return true;
+		}
 	}
 	void AssetManager::InitilizeAssets(const std::string& Path) {
 		for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(Path)) {
-			if (dirEntry.is_directory()) {
+			if (dirEntry.is_directory())
 				continue;
-			}
+			
 			if (IsFileValid(dirEntry.path().string())) {
 
-				if (GetAssetType(dirEntry.path().string()) == Texture2DAsset::GetAssetType()) {
+				if (GetAssetType(dirEntry.path().string()) == AssetType::Material) {
 					Count<Texture2DAsset> asset = CreateCount<Texture2DAsset>();
 					asset->LoadAsset(dirEntry.path().string());
 					asset->m_AssetName = dirEntry.path().stem().string();
@@ -99,7 +109,7 @@ namespace Proof
 					continue;
 				}
 
-				if (GetAssetType(dirEntry.path().string()) == MeshAsset::GetAssetType()) {
+				if (GetAssetType(dirEntry.path().string()) == AssetType::Mesh) {
 					Count<MeshAsset> asset = CreateCount<MeshAsset>();
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
@@ -107,7 +117,7 @@ namespace Proof
 					continue;
 				}
 
-				if (GetAssetType(dirEntry.path().string()) == MaterialAsset::GetAssetType()) {
+				if (GetAssetType(dirEntry.path().string()) == AssetType::Material) {
 					Count<MaterialAsset> asset = CreateCount<MaterialAsset>();
 					asset->LoadAsset(dirEntry.path().string());
 					AssetManager::NewAsset(asset->GetID(),asset);
@@ -127,7 +137,7 @@ namespace Proof
 		for(auto& asset : s_AssetManager->m_AllAssets){
 			out<<YAML::BeginMap;
 			out << YAML::Key << "Asset" << YAML::Value << asset.first;
-			out<<YAML::Key<<"Type"<<asset.second.second->GetAssetTypeVirtual();
+			out<<YAML::Key<<"Type"<<EnumReflection::EnumString<AssetType>(asset.second.second->GetAssetType());
 			out<<YAML::Key<<"Path"<<asset.second.second->GetPath();
 			out<<YAML::EndMap;
 		}
@@ -142,9 +152,11 @@ namespace Proof
 			return false;
 		return true;
 	}
-	std::string AssetManager::GetAssetType(const std::string& Path) {
+	AssetType AssetManager::GetAssetType(const std::string& Path) {
 		YAML::Node data = YAML::LoadFile(Path);
-		return data["AssetType"].as<std::string>();
+		auto type= data["AssetType"].as<std::string>();
+		
+		return EnumReflection::StringEnum<AssetType>(type);
 	}
 	void AssetManager::NewInitilizeAssets(const std::string& path) {
 		YAML::Node data = YAML::LoadFile(path);
@@ -158,9 +170,33 @@ namespace Proof
 
 			UUID assetID = asset["Asset"].as<uint64_t>();
 			std::string path = asset["Path"].as<std::string>();
-			std::string assetType = asset["Type"].as<std::string>();
+			auto assetType = EnumReflection::StringEnum<AssetType>(asset["Type"].as<std::string>());
 			s_AssetManager->m_AllAssets.insert({ assetID,{AssetInfo(path,assetType),nullptr} });// setting the asset as null as we will load it in another thread
+
+			if (assetType == AssetType::PhysicsMaterial)
+				s_AssetManager->m_AllPhysicsMaterialAsset.insert({ assetID,ForceGetAssetShared<PhysicsMaterialAsset>(assetID) });
 		}
+	}
+	void AssetManager::NewSaveAllAsset(const std::string& Path) {
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Project: " << YAML::Value << "Proof Engine Test";
+		out << YAML::Key << "Total Asset: " << YAML::Value << s_AssetManager->m_AllAssets.size();
+		out << YAML::Key << "ProjectAssets" << YAML::Value << YAML::BeginSeq;
+		for (auto& asset : s_AssetManager->m_AllAssets) {
+			if (asset.second.second != nullptr) {
+				asset.second.second->SaveAsset();
+			}
+			out << YAML::BeginMap;
+			out << YAML::Key << "Asset" << YAML::Value << asset.first;
+			out << YAML::Key << "Type" << EnumReflection::EnumString<AssetType>(asset.second.first.Type);
+			out << YAML::Key << "Path" << asset.second.first.Path.string();
+			out << YAML::EndMap;
+		};
+
+		std::ofstream found(Path);
+		found << out.c_str();
+		found.close();
 	}
 	void AssetManager::GenerateAsset(std::set<UUID> assetLoadIn){
 		for (UUID assetID : assetLoadIn) {
@@ -171,21 +207,21 @@ namespace Proof
 			if (asset.second != nullptr)
 				continue;
 
-			if (asset.first.Type == Texture2DAsset::GetAssetType()) {
+			if (asset.first.Type == AssetType::Texture) {
 				asset.second = CreateCount <Texture2DAsset>();
 				asset.second->LoadAsset(asset.first.Path.string());
 				asset.second->m_AssetName = asset.first.GetName();
 
 				continue;
 			}
-			if (asset.first.Type == MaterialAsset::GetAssetType()) {
+			if (asset.first.Type == AssetType::Material) {
 				asset.second = CreateCount<MaterialAsset>();
 				asset.second->LoadAsset(asset.first.Path.string());
 				asset.second->m_AssetName = asset.first.GetName();
 
 				continue;
 			}
-			if (asset.first.Type == MeshAsset::GetAssetType()) {
+			if (asset.first.Type == AssetType::Mesh) {
 				asset.second = CreateCount <MeshAsset>();
 				asset.second->LoadAsset(asset.first.Path.string());
 				asset.second->m_AssetName = asset.first.GetName();

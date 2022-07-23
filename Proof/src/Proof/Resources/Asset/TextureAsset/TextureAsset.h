@@ -7,7 +7,9 @@ namespace Proof{
 		Texture2DAsset(const std::string& texturePath,const std::string& savePath);
 		virtual void SaveAsset() override;
 		virtual bool LoadAsset(const std::string& filePath)override;
-		Texture2DAsset(){
+		Texture2DAsset():
+			Asset(AssetType::Texture) 
+		{
 		};
 		
 		virtual ~Texture2DAsset(){
@@ -17,13 +19,6 @@ namespace Proof{
 		}
 		virtual std::string GetExtension()const {
 			return "Texture.ProofAsset";
-		}
-		virtual const std::string& GetAssetTypeVirtual()const {
-			return GetAssetType();
-		};
-		const static std::string& GetAssetType() {
-			static std::string assetType = "AssetType::Texture2DAsset";
-			return assetType;
 		}
 		virtual bool IsEditorImageNull(){
 			return m_Texture == nullptr;

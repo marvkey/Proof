@@ -1,30 +1,36 @@
 "Project: ": Proof Engine Test
-"Total Asset: ": 9
+"Total Asset: ": 11
 ProjectAssets:
   - Asset: 6594
-    Type: AssetType::MaterialAsset
+    Type: Material
     Path: content\material\green.Material.ProofAsset
   - Asset: 12067
-    Type: AssetType::MeshAsset
+    Type: Mesh
     Path: content\meshes\cube.Mesh.ProofAsset
   - Asset: 9055691234223281824
-    Type: AssetType::MaterialAsset
+    Type: Material
     Path: content\material\white.Material.ProofAsset
   - Asset: 9099
-    Type: AssetType::MeshAsset
+    Type: Mesh
     Path: content\meshes\backpack.Mesh.ProofAsset
   - Asset: 29460
-    Type: AssetType::MeshAsset
+    Type: Mesh
     Path: content\meshes\rock.Mesh.ProofAsset
   - Asset: 20980
-    Type: AssetType::MeshAsset
+    Type: Mesh
     Path: content\meshes\rocket.Mesh.ProofAsset
   - Asset: 19748
-    Type: AssetType::MeshAsset
+    Type: Mesh
     Path: content\meshes\sponza.Mesh.ProofAsset
   - Asset: 10608
-    Type: AssetType::MeshAsset
+    Type: Mesh
     Path: content\meshes\teapot.Mesh.ProofAsset
-	- Asset: 12508670168373565797
-    Type: AssetType::MeshAsset
+  - Asset: 12508670168373565797
+    Type: Mesh
     Path: content\meshes\sphere.Mesh.ProofAsset
+  - Asset: 10407141520700162117
+    Type: Mesh
+    Path: content\meshes\capsule.Mesh.ProofAsset
+  - Asset: 13823192858720279158
+    Type: PhysicsMaterial
+    Path: content\material\BouncyBall.PhysicsMaterial.ProofAsset

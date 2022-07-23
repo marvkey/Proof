@@ -13,6 +13,8 @@ namespace Proof {
 	std::string Renderer::s_GraphicsCardVersion;
 	Count<class GraphicsContext>Renderer::m_GraphicsContext = nullptr;
 	void Renderer::Init(Window* window) {
+		PF_PROFILE_FUNC();
+
 		m_GraphicsContext = GraphicsContext::Create(window);
 		Renderer3DCore::Init();
 		Renderer3DPBR::Init();
@@ -25,6 +27,8 @@ namespace Proof {
 		PF_ENGINE_TRACE("Renderer Initilized");
 	}
 	void Renderer::Destroy() {
+		PF_PROFILE_FUNC();
+
 		Renderer3DPBR::Destroy();
 
 	}

@@ -80,8 +80,9 @@ namespace Proof {
         PF_PROFILE_FUNC();
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
-        dispatcher.Dispatch<MouseScrollEvent>(PF_BIND_FN(Application::OnMouseScrollEVent));
         
+        /// PUSH LAYERS BACKWARDS
+        /// WHEN WE GET UI WE MIGHT WANT TO ONLY RESPODN TO UI FIRST
          for (Layer* layer : MainLayerStack.V_LayerStack)
             layer->OnEvent(e);
     }
@@ -128,12 +129,10 @@ namespace Proof {
                 RendererCommand::Enable(ProofRenderTest::DepthTest);
 
             if (WindowMinimized == false) 
-            {
+
                 LayerUpdate(DeltaTime);
-            }
-            if (Renderer::GetAPI() != RendererAPI::API::Vulkan) {
+            if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
                 ImguiUpdate(DeltaTime);
-            }
 
             MainWindow->WindowUpdate();
             if (CurrentTime - PreviousTime >= 1.0) {
@@ -144,11 +143,11 @@ namespace Proof {
             FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
 
             LastFrameTime = time;
-            FrameTimersControll::Reset();
+            FrameTimersControll::s_FrameTimers.clear();
         };
         IsRunning = false;
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
-            AssetManager::SaveAllAsset();
+            AssetManager::NewSaveAllAsset("config/AssetManager.ProofAssetManager");
 
         Renderer::Destroy();
     }

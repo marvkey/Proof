@@ -3,29 +3,34 @@
 #include<vector>
 namespace Proof {
     Count<Mesh> MeshWorkShop::m_Cube = CreateCount<Mesh>();
+    Count<Mesh> MeshWorkShop::m_Sphere = CreateCount<Mesh>();
+    Count<Mesh> MeshWorkShop::m_Capasule = CreateCount<Mesh>();
 	void MeshWorkShop::Init(){
         InitCube();
+        InitSphere();
+        InitCapsule();
 	}
 	void MeshWorkShop::InitCube(){
-        std::vector<Vector<float>> veritces = 
+        /*
+        std::vector<Vector<float>> veritces =
         {
 
-                Vector<float>(0.0, 0.0, 0.0),
-                Vector<float>(0.0, 0.0, 1.0),
-                Vector<float>(0.0, 1.0, 0.0),
-                Vector<float>(0.0, 1.0, 1.0),
-                Vector<float>(1.0, 0.0, 0.0),
-                Vector<float>(1.0, 0.0, 1.0),
-                Vector<float>(1.0, 1.0, 0.0),
-                Vector<float>(1.0, 1.0, 1.0),
+            Vector<float>(1.0, 1.0, -1.0);
+            Vector<float>(1.0,-1.0, -1.0);
+            Vector<float>(1.0, 1.0, 1.0);
+            Vector<float>(1.0, -1.0, 1.0);
+            Vector<float>(-1.0, 1.0, -1.0);
+            Vector<float>(-1.0, -1.0, -1.0);
+            Vector<float>(-1.0, 1.0, 1.0);
+            Vector<float>(-1.0, -1.0, 1.0);
         };
 
         std::vector<glm::vec2> texCoords =
         {
-            //glm::vec2(0, 0),
-            //glm::vec2(1, 0),
-            //glm::vec2(1, 1),
-            //glm::vec2(0, 1)
+            glm::vec2(0, 0),
+            glm::vec2(1, 0),
+            glm::vec2(1, 1),
+            glm::vec2(0, 1)
         };
 
         std::vector<Vector<float>> normals =
@@ -60,9 +65,14 @@ namespace Proof {
             }
             cubeVertex.emplace_back(vertex);
         }
-
+        */
         m_Cube = CreateCount<Mesh>("cube.obj");
 
-       // m_Cube->meshes.emplace_back(SubMesh(cubeVertex,indices,"cube"));
 	}
+    void MeshWorkShop::InitSphere() {
+        m_Sphere = CreateCount<Mesh>("sphere.obj");
+    }
+    void MeshWorkShop::InitCapsule() {
+        m_Capasule = CreateCount<Mesh>("capsule.obj");
+    }
 }

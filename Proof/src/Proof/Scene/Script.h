@@ -5,8 +5,10 @@
 #include <memory>
 #include <unordered_map>
 #include <iostream>
+#include "CollisionInfo.h"
 namespace Proof
 {
+	
 	class Proof_API Script {
 	public:
 		virtual ~Script() {};
@@ -16,6 +18,13 @@ namespace Proof
 		virtual void OnSpawn() {}; // called only when spawned into the world
 		virtual void OnDestroy() {}; // called when destoryed
 
+		virtual void OnTriggerEnter(ColliderTypes colliderSetOff, TriggerInfo& info) {};
+		virtual void OnTriggerStay(ColliderTypes colliderSetOff, TriggerInfo& info) {};
+		virtual void OnTriggerLeave(ColliderTypes colliderSetOff, TriggerInfo& info) {};
+		
+		virtual void OnCollisionEnter(ColliderTypes colliderSetOff, CollisionInfo& info) {};
+		virtual void OnCollisionStay(ColliderTypes colliderSetOff, CollisionInfo& info) {};
+		virtual void OnCollisionLeave(ColliderTypes colliderSetOff, CollisionInfo& info) {};
 		template<class T>
 		T* GetComponent() {
 			return m_Owner.GetComponent<T>();

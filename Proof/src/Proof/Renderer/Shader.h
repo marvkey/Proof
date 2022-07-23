@@ -3,8 +3,14 @@
 #include <unordered_map>
 #include <iostream>
 namespace Proof {
+    
     class Proof_API Shader {
-    public:   
+    public:  
+        enum class ShaderStage {
+            None =0,
+            Vertex,
+            Fragment
+        };
         virtual void Bind(){};
         virtual void UnBind(){};
         virtual void SetBool(const std::string& Name,bool Value) {};

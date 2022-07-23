@@ -1,6 +1,5 @@
 #include "Proofprch.h"
 #include "VulkanRenderer.h"
-
 #include "Proof/Renderer/Shader.h"
 
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
@@ -19,7 +18,6 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Renderer/UniformBuffer.h"
 #include "Proof/Scene/Component.h"
-#include "../VulkanUniformBuffer.h"
 namespace Proof
 {
 	static CameraData s_CurrentCamera;
@@ -32,13 +30,15 @@ namespace Proof
 	int VulkanRenderer::s_CurrentFrameIndex = 0;
 	bool VulkanRenderer::s_InContext = false;
 	uint32_t VulkanRenderer::s_CurrentImageIndex = 0;
-
 	void VulkanRenderer::Init() {
 		s_Pipeline = new DrawPipeline();
+		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
+
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(VulkanPushData);
+		s_Pipeline->PipelineLayout = VulkanPipeLineLayout(1, &pushConstantRange);
 
 		std::vector<VulkanVertex>vulkanVertices{
 		 {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -50,7 +50,7 @@ namespace Proof
 		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig);
 		pipelineConfig.RenderPass = s_Pipeline->SwapChain->GetRenderPass();
 		pipelineConfig.PipelineLayout = s_Pipeline->PipelineLayout.PipelineLayout;
-		s_Pipeline->Shader = Shader::Create("gg", ProofCurrentDirectory + "vert.spv", ProofCurrentDirectory + "frag.spv");
+		s_Pipeline->Shader = Shader::GetOrCreate("gg", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Vulkan/BaseShader.shader");
 		auto a = VulkanVertex::GetAttributeDescriptions();
 		auto b = VulkanVertex::GetBindingDescriptions();
 		s_Pipeline->GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(s_Pipeline->Shader, pipelineConfig, a.size(), b.size(), a.data(), b.data());
@@ -59,9 +59,10 @@ namespace Proof
 	}
 	void VulkanRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		s_CurrentCamera = { projection,view,Position };
+		//Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 		PF_CORE_ASSERT(s_InContext == false, "Cannot start a new Render Context if Previous Render COntext is not closed");
 		s_InContext = true;
-		a:
+	a:
 		auto result = s_Pipeline->SwapChain->AcquireNextImage(&s_CurrentImageIndex);
 
 		if (s_CurrentImageIndex == 2) {
@@ -107,10 +108,10 @@ namespace Proof
 
 		s_Pipeline->CommandBuffer->Record(s_CurrentImageIndex, [&](VkCommandBuffer& buffer) {
 			s_Pipeline->VertexBuffer->Bind(buffer);
-		
+
 			for (int i = 0; i < 4; i++) {
 				VulkanPushData push{};
-				push.offfset = { -0.5f + Random::Real<float>(0,1) * 0.02f, -0.4f + i * 0.25f};
+				push.offfset = { -0.5f + Random::Real<float>(0,1) * 0.02f, -0.4f + i * 0.25f };
 				push.color = { 0.0f, 0.0f, 0.2f + 0.2f * i };
 				vkCmdPushConstants(buffer, s_Pipeline->PipelineLayout.PipelineLayout,
 					VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
@@ -120,9 +121,9 @@ namespace Proof
 				);
 				vkCmdDraw(buffer, s_Pipeline->VertexBuffer->GetVertexCount(), 1, 0, 0);
 			}
-		});
+			});
 		auto commandBuffer = GetCurrentCommandBuffer();
-	
+
 		auto result = s_Pipeline->SwapChain->SubmitCommandBuffers(&commandBuffer, &s_CurrentImageIndex);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || CurrentWindow::GetWindowClass().IsFrameBufferResized())

@@ -1,10 +1,9 @@
 #include "ImGUIAPI.h"
-#include <ImGui/imgui.h>
-#include <imgui/imgui_internal.h>
+
 #include <vector>
 #include<iostream>
 #include <array>
-#
+
 namespace Proof
 {
 	namespace ExternalAPI

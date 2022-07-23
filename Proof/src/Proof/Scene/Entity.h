@@ -3,6 +3,8 @@
 #include <type_traits>
 #include "Proof/Core/Core.h"
 #include "Proof/Scene/Component.h"
+
+
 namespace Proof{
 	struct TagComponent;
 	struct TransformComponent;
@@ -150,4 +152,6 @@ namespace Proof{
 		friend class World;
 		friend class PhysicsEngine;
 	};
+
+
 }

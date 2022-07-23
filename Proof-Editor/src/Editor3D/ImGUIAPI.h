@@ -1,5 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include <ImGui/imgui.h>
+#include <imgui/imgui_internal.h>
 namespace Proof
 {
 	namespace ExternalAPI
@@ -14,6 +16,22 @@ namespace Proof
 			static bool CheckBox(const std::string& name, bool* variable);
 			static void SetKeyboardFocusOff();
 			
+			template<typename E>
+			static bool EnumCombo(const std::string& name, E& enumVar) {
+				ImGui::PushID(name.c_str());
+				void* val = &enumVar;
+				int* valNum = (int*)val;
+				auto enumNames = EnumReflection::GetNames<E>();
+				std::vector<const char*> charVec(enumNames.size(), nullptr);
+				for (int i = 0; i < enumNames.size(); i++) {
+					charVec[i] = enumNames[i].c_str();
+				}
+				ImGui::Text(name.c_str());
+				ImGui::SameLine();
+				bool temp =ImGui::Combo("##", valNum, charVec.data(), charVec.size(), charVec.size());
+				ImGui::PopID();
+				return temp;
+			}
 		};
 	}
 }

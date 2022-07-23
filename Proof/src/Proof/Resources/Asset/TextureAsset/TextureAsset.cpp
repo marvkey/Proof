@@ -5,7 +5,9 @@
 #include "../AssetManager.h"
 
 namespace Proof{
-	Texture2DAsset::Texture2DAsset(const std::string& texturePath,const std::string& savePath) {
+	Texture2DAsset::Texture2DAsset(const std::string& texturePath,const std::string& savePath):
+		Asset(AssetType::Texture) 
+	{
 		m_ID = AssetManager::CreateID();
 
 		m_Texture =Texture2D::Create(texturePath);
@@ -16,7 +18,7 @@ namespace Proof{
 	void Texture2DAsset::SaveAsset() {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "AssetType" << YAML::Value << GetAssetType();
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << m_ID;
 		out << YAML::Key << "Texture2D" << YAML::Value << m_TexturePath;
 		out << YAML::EndMap;

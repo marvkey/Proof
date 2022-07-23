@@ -11,11 +11,11 @@ namespace Proof
 		virtual bool LoadAsset(const std::string& FilePath)override;
 		
 		void ChangeMesh(const std::string& meshFilepath);
-		const static std::string& GetAssetType() {
-			static std::string assetType = "AssetType::MeshAsset";
-			return assetType;
+		
+		MeshAsset():
+			Asset(AssetType::Mesh)
+		{
 		}
-		MeshAsset(){}
 		static std::string StaticGetExtension() {
 			return "Mesh.ProofAsset";
 		}
@@ -25,9 +25,7 @@ namespace Proof
 		class Mesh* GetMesh()const{
 			return m_Mesh.get();
 		}
-		virtual const std::string& GetAssetTypeVirtual()const {
-			return GetAssetType();
-		};
+		
 		virtual ~MeshAsset(){}
 
 		virtual bool IsImageIDNUll(){

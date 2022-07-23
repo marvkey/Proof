@@ -6,10 +6,13 @@
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
+#include <fmt/format.h>
 namespace Proof {
 	void AssetManagerPanel::ImGuiRender(FrameTime deltaTime){
 		if (m_ShowWindow == false)
 			return;
+		PF_PROFILE_FUNC();
+
 		ImGui::Begin("Asset Manager", &m_ShowWindow);
 		{
 			for (auto it : AssetManager::s_AssetManager->m_AllAssets) {
@@ -22,13 +25,7 @@ namespace Proof {
 
 				ExternalAPI::ImGUIAPI::TextBar("Path", it.second.first.Path.string());
 
-				if(it.second.first.Type == MeshAsset::GetAssetType())
-					ExternalAPI::ImGUIAPI::TextBar("Type", "MeshAsset");
-				else if(it.second.first.Type == Texture2DAsset::GetAssetType())
-					ExternalAPI::ImGUIAPI::TextBar("Type", "Texture2DAsset");
-				else
-					ExternalAPI::ImGUIAPI::TextBar("Type", "MaterialAsset");
-
+				ExternalAPI::ImGUIAPI::TextBar("Type", fmt::format("{}{}",EnumReflection::EnumString(it.second.first.Type),"Asset"));
 				ImGui::EndChild();
 			}
 		}

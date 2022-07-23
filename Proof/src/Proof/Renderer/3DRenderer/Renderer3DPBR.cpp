@@ -21,6 +21,8 @@
 namespace Proof{
 
 	void Renderer3DPBR::Init() {
+		PF_PROFILE_FUNC();
+
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			OpenGLRenderer3DPBR::Init();
 		else
@@ -37,10 +39,14 @@ namespace Proof{
 	}
 
 	void Renderer3DPBR::Draw(class MeshComponent& meshComponent, const glm::mat4& positionMatrix) {
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("Mesh ID",meshComponent.GetMeshAssetID());
+
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			OpenGLRenderer3DPBR::Draw(meshComponent,positionMatrix);
 	}
 	void Renderer3DPBR::Draw(class LightComponent& lightComponent, class TransformComponent& transform) {
+		PF_PROFILE_FUNC();
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			OpenGLRenderer3DPBR::Draw(lightComponent,transform);
 	}

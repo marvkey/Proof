@@ -6,7 +6,7 @@
 #include <imgui/imgui_internal.h>
 #include "Proof/Scene/EntitiyComponentSystem/ECS.h"
 #include "Proof/Renderer/3DRenderer/Renderer3D.h" // TEMPORARY
-
+#include "Proofprch.h"
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/Asset.h"
@@ -21,8 +21,9 @@
 #include "../Editor3D.h"
 #include "Proof/Scene/Component.h"
 #include "Proof/Resources/Asset/AssetManager.h"
-
-
+#include <string.h>
+#include<magic_enum.hpp>
+#include "Proof/Resources/EnumReflection.h"
 namespace Proof {
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
 	InstanceNativeScriptComponent.Bind<Class>();\
@@ -30,9 +31,13 @@ namespace Proof {
 
 	static MeshAsset* TempAsset = nullptr;
 	static MeshAsset* TempLocation0Asset = nullptr;
+	
 	void SceneHierachyPanel::ImGuiRender(class FrameTime deltaTime) {
+
 		if (m_ShowWindow == false)
 			return;
+		PF_PROFILE_FUNC();
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		if(ImGui::Begin("Herieachy", &m_ShowWindow));
 		{	
@@ -108,15 +113,15 @@ namespace Proof {
 		if (ImGui::BeginMenu("Light")) {
 			if (ImGui::MenuItem("Point ")) {
 				newEntity = m_CurrentWorld->CreateEntity("Point Light");
-				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Point;
+				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::LightType::Point;
 			}
 			if (ImGui::MenuItem("Spot")) {
 				newEntity = m_CurrentWorld->CreateEntity("Spot Light");
-				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Spot;
+				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::LightType::Spot;
 			}
 			if (ImGui::MenuItem("Directional")) {
 				newEntity = m_CurrentWorld->CreateEntity("Directional Light");
-				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::Direction;
+				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::LightType::Direction;
 			}
 			ImGui::EndMenu();
 		}
@@ -262,46 +267,17 @@ namespace Proof {
 		ImGui::PopItemWidth();
 		if (ImGui::BeginPopup("AddComponent")) {
 
-			if (ImGui::MenuItem("Mesh Component")) {
-				entity.AddComponent<MeshComponent>();
-				ImGui::CloseCurrentPopup();
-			}
+			AddComponentGui<MeshComponent>(entity, "Mesh");
+			AddComponentGui<SpriteComponent>(entity, "Sprite");
+			AddComponentGui<NativeScriptComponent>(entity, "Native Script");
+			AddComponentGui<LightComponent>(entity, "Light");
+			AddComponentGui<CameraComponent>(entity, "Camera");
 
-			if (ImGui::MenuItem("Sprite Renderer")) {
-				entity.AddComponent<SpriteComponent>();
-				ImGui::CloseCurrentPopup();
-			}
-
-			if (ImGui::MenuItem("Native Script Component")) {
-				entity.AddComponent<NativeScriptComponent>();
-				ImGui::CloseCurrentPopup();
-			}
-
-			if (ImGui::MenuItem("Light Componet")) {
-				entity.AddComponent<LightComponent>();
-				ImGui::CloseCurrentPopup();
-			}
-
-			if (ImGui::MenuItem("Movement Script")) {
-				entity.AddComponent<NativeScriptComponent>()->Bind<MovementScript>();
-				ImGui::CloseCurrentPopup();
-			}
-			if (ImGui::MenuItem("Camera ")) {
-				entity.AddComponent<CameraComponent>();
-				ImGui::CloseCurrentPopup();
-			}
-			if (ImGui::MenuItem("Cube Collider ")) {
-				entity.AddComponent<CubeColliderComponent>();
-				ImGui::CloseCurrentPopup();
-			}
-			if (ImGui::MenuItem("Sphere Collider ")) {
-				entity.AddComponent<SphereColliderComponent>();
-				ImGui::CloseCurrentPopup();
-			}
-			if (ImGui::MenuItem("Rigid Body")) {
-				entity.AddComponent<RigidBodyComponent>();
-				ImGui::CloseCurrentPopup();
-			}
+			AddComponentGui<CubeColliderComponent>(entity, "Cube Collider");
+			AddComponentGui<SphereColliderComponent>(entity, "Sphere Collider");
+			AddComponentGui<CapsuleColliderComponent>(entity, "Capsule Collider");
+			AddComponentGui<MeshColliderComponent>(entity, "Mesh Collider");
+			AddComponentGui<RigidBodyComponent>(entity, "Rigid Body");
 			ImGui::EndPopup();
 		}
 		uint32_t IndexValue = 0;
@@ -341,13 +317,13 @@ namespace Proof {
 				DrawVectorControl("Location", component.Location);
 				DrawVectorControl("Rotation", component.Rotation);
 				DrawVectorControl("Scale", component.Scale, 1.0f);
-				});
+			});
 			IndexValue += 1;
 		}
 
 		MeshComponent* Meshes = entity.GetComponent<MeshComponent>();
 		if (Meshes != nullptr) {
-			DrawComponents<MeshComponent>({ "Mesh Component"}, entity, Meshes, IndexValue, [](MeshComponent& component) {
+			DrawComponents<MeshComponent>({ "Mesh"}, entity, Meshes, IndexValue, [](MeshComponent& component) {
 			
 				ExternalAPI::ImGUIAPI::TextBar("Mesh", component.GetAsset() != nullptr ? component.GetAsset()->GetName() : "null");
 				if (ImGui::BeginPopupContextItem("RemoveMesh")) {
@@ -361,7 +337,7 @@ namespace Proof {
 					ImGui::EndPopup();
 				}
 				if (ImGui::BeginDragDropTarget()) {
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetAssetType().c_str())) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Mesh).c_str())) {
 						UUID Data = *(const UUID*)payload->Data;
 						component.SetMeshSource(Data);
 					}
@@ -380,7 +356,7 @@ namespace Proof {
 					ImGui::EndPopup();
 				}
 				if (ImGui::BeginDragDropTarget()) {
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MaterialAsset::GetAssetType().c_str())) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Material).c_str())) {
 						uint32_t Data = *(const uint32_t*)payload->Data;
 						component.m_MeshMaterialID = Data;
 					}
@@ -391,7 +367,7 @@ namespace Proof {
 		}
 		SpriteComponent* Sprite = entity.GetComponent<SpriteComponent>();
 		if (Sprite != nullptr) {
-			DrawComponents<SpriteComponent>({ "Sprite: "}, entity, Sprite, IndexValue, [](SpriteComponent& component) {
+			DrawComponents<SpriteComponent>({ "Sprite"}, entity, Sprite, IndexValue, [](SpriteComponent& component) {
 				if (component.GetTexture() != nullptr) {
 					ImGui::Image((ImTextureID)component.GetTexture()->GetID(), { 30,30 });
 				}
@@ -409,7 +385,7 @@ namespace Proof {
 				}
 
 				if (ImGui::BeginDragDropTarget()) {
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(Texture2DAsset::GetAssetType().c_str())) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("")) {
 						uint64_t Data = *(const uint64_t*)payload->Data;
 						component.m_TextureAssetPointerID = Data;
 					}
@@ -423,7 +399,7 @@ namespace Proof {
 
 		NativeScriptComponent* Script = entity.GetComponent<NativeScriptComponent>();
 		if (Script != nullptr) {
-			DrawComponents<NativeScriptComponent>("Native Script: ", entity, Script, IndexValue, [](NativeScriptComponent& NativeScriptComp) {
+			DrawComponents<NativeScriptComponent>("Native Script", entity, Script, IndexValue, [](NativeScriptComponent& NativeScriptComp) {
 				ExternalAPI::ImGUIAPI::TextBar("Sript", NativeScriptComp.GetScriptName());
 				if (ImGui::IsItemClicked()) {
 					ImGui::OpenPopup("Scripts");
@@ -463,12 +439,12 @@ namespace Proof {
 		}
 		LightComponent* Light = entity.GetComponent<LightComponent>();
 		if (Light != nullptr) {
-			DrawComponents<LightComponent>("Light Component: ", entity, Light, IndexValue, [](LightComponent& LightComp) {
-				if (LightComp.m_LightType == LightComp.Direction) {
+			DrawComponents<LightComponent>("Light", entity, Light, IndexValue, [](LightComponent& LightComp) {
+				if (LightComp.m_LightType == LightComponent::LightType::Direction) {
 					ImGui::ColorEdit3("Ambient", glm::value_ptr(LightComp.m_Ambient));
 					ImGui::DragFloat("Intensity", &LightComp.Intensity, 0.01, 0.0f, 100);
 				}
-				else if (LightComp.m_LightType == LightComp.Point) {
+				else if (LightComp.m_LightType == LightComponent::LightType::Point) {
 					ImGui::ColorEdit3("Ambient", glm::value_ptr(LightComp.m_Ambient));
 					ImGui::DragFloat("Intensity", &LightComp.Intensity, 0.01, 0.0f, 100);
 					ImGui::DragFloat("Radius", &LightComp.Radius, 0.01, 0.0f, 100);
@@ -481,7 +457,7 @@ namespace Proof {
 
 
 				}
-				else if (LightComp.m_LightType == LightComp.Spot) {
+				else if (LightComp.m_LightType == LightComponent::LightType::Spot) {
 					ImGui::ColorEdit3("Ambient", glm::value_ptr(LightComp.m_Ambient));
 					ImGui::DragFloat("Intensity", &LightComp.Intensity, 0.01, 0.0f, 100);
 
@@ -495,16 +471,14 @@ namespace Proof {
 					ImGui::DragFloat("Outer-Cutoff", &LightComp.m_OuterCutOff, 0.001);
 
 				}
-				int elementCount = 2;
-				const char* elementNames[] = { "Direction","Point","Spot" };
-				const char* elementName = (LightComp.m_LightType >= 0 && LightComp.m_LightType < elementCount + 1) ? elementNames[LightComp.m_LightType] : "Unknown";
-				ImGui::SliderInt("Type", &LightComp.m_LightType, 0, elementCount, elementName);
+				ExternalAPI::ImGUIAPI::EnumCombo<LightComponent::LightType>("Type", LightComp.m_LightType);
 				});
+				
 			IndexValue += 1;
 		}
 		CameraComponent* cameraComp = entity.GetComponent<CameraComponent>();
 		if (cameraComp != nullptr) {
-			DrawComponents<CameraComponent>("Camera Component: ", entity, cameraComp, IndexValue, [](CameraComponent& CameraComp) {
+			DrawComponents<CameraComponent>("Camera", entity, cameraComp, IndexValue, [](CameraComponent& CameraComp) {
 				ImGui::SliderFloat("Field ov fiew", &CameraComp.m_FovDeg, 0, 360);
 				ImGui::SliderFloat("Near plane", &CameraComp.m_NearPlane, -1, 1);
 				ImGui::SliderFloat("Far plane", &CameraComp.m_FarPlane, 0, 10000);
@@ -514,6 +488,7 @@ namespace Proof {
 					ImGui::EndTooltip();
 				}
 				ExternalAPI::ImGUIAPI::CheckBox("set Automatic resize", &CameraComp.m_AutoSetDimension);
+				ExternalAPI::ImGUIAPI::EnumCombo<CameraComponent::CameraType>("Type", CameraComp.m_CameraType);
 				if (CameraComp.m_AutoSetDimension == false) {
 					int tempWidth = (int)CameraComp.m_Width;
 					int tempHeight = (int)CameraComp.m_Height;
@@ -522,33 +497,160 @@ namespace Proof {
 					CameraComp.m_Width = tempWidth;
 					CameraComp.m_Height = tempHeight;
 				}
+
 				}, "if nothing visible set roation of z axis to 1");
 			IndexValue += 1;
 		}
 		CubeColliderComponent* cubeCollider = entity.GetComponent<CubeColliderComponent>();
 		if (cubeCollider != nullptr) {
-			DrawComponents<CubeColliderComponent>("CubeColliderComponent: ", entity, cubeCollider, IndexValue, [](CubeColliderComponent& collider) {
+			DrawComponents<CubeColliderComponent>("Cube Collider", entity, cubeCollider, IndexValue, [](CubeColliderComponent& collider) {
+				ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &collider.IsTrigger);
 				DrawVectorControl("Offset Location", collider.OffsetLocation);
-				//DrawVectorControl("Offset Rotation", collider.Offset.Rotation);
-				DrawVectorControl("Offset Scale", collider.OffsetScale);
+				DrawVectorControl("Offset Scale", collider.OffsetScale,1.0f);
+
+				ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", collider.HasPhysicsMaterial() != false ? AssetManager::ForceGetAsset<Asset>(collider.m_PhysicsMaterialPointerID)->GetName() : "null");
+				if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginPopup("Remove Physics Material")) {
+					if (ImGui::MenuItem("Remove Material")) {
+						collider.RemovePhysicsMaterial();
+					}
+
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginDragDropTarget()) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::PhysicsMaterial).c_str())) {
+						UUID Data = *(const UUID*)payload->Data;
+						collider.m_PhysicsMaterialPointerID = Data;
+					}
+					ImGui::EndDragDropTarget();
+				}
 			});
 			IndexValue += 1;
 		}
 		SphereColliderComponent* sphereColliderComponent = entity.GetComponent<SphereColliderComponent>();
 		if (sphereColliderComponent != nullptr) {
-			DrawComponents<SphereColliderComponent>("SphereColliderComponent: ", entity, sphereColliderComponent, IndexValue, [](SphereColliderComponent& object) {
+			DrawComponents<SphereColliderComponent>("Sphere Collider", entity, sphereColliderComponent, IndexValue, [](SphereColliderComponent& object) {
+				ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &object.IsTrigger);
 				ImGui::DragFloat("Radius", &object.Radius, 0.5);
+				DrawVectorControl("Offset Location", object.OffsetLocation);
+
+				ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", object.HasPhysicsMaterial() != false ? AssetManager::ForceGetAsset<Asset>(object.m_PhysicsMaterialPointerID)->GetName() : "null");
+				if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginPopup("Remove Physics Material")) {
+					if (ImGui::MenuItem("Remove Material")) {
+						object.RemovePhysicsMaterial();
+					}
+
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginDragDropTarget()) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::PhysicsMaterial).c_str())) {
+						UUID Data = *(const UUID*)payload->Data;
+						object.m_PhysicsMaterialPointerID = Data;
+					}
+					ImGui::EndDragDropTarget();
+				}
+			});
+			IndexValue += 1;
+		}
+
+		CapsuleColliderComponent* capsuleColliderComponent = entity.GetComponent<CapsuleColliderComponent>();
+		if (capsuleColliderComponent != nullptr) {
+			DrawComponents<CapsuleColliderComponent>("Capsule Collider", entity, capsuleColliderComponent, IndexValue, [](CapsuleColliderComponent& object) {
+				ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &object.IsTrigger);
+				ImGui::DragFloat("Radius", &object.Radius, 0.5);
+				ImGui::DragFloat("Height", &object.Height, 0.5);
+				ExternalAPI::ImGUIAPI::EnumCombo("Direction", object.Direction);
+				DrawVectorControl("Offset Location", object.OffsetLocation);
+
+				ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", object.HasPhysicsMaterial() != false ? AssetManager::ForceGetAsset<Asset>(object.m_PhysicsMaterialPointerID)->GetName() : "null");
+				if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginPopup("Remove Physics Material")) {
+					if (ImGui::MenuItem("Remove Material")) {
+						object.RemovePhysicsMaterial();
+					}
+
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginDragDropTarget()) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::PhysicsMaterial).c_str())) {
+						UUID Data = *(const UUID*)payload->Data;
+
+						object.m_PhysicsMaterialPointerID = Data;
+					}
+					ImGui::EndDragDropTarget();
+				}
+			});
+			IndexValue += 1;
+		}
+
+		MeshColliderComponent* meshColliderComponent = entity.GetComponent<MeshColliderComponent>();
+		if (meshColliderComponent != nullptr) {
+			DrawComponents<MeshColliderComponent>("Mesh Collider", entity, meshColliderComponent, IndexValue, [](MeshColliderComponent& object) {
+				ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &object.IsTrigger);
+
+				ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", object.HasPhysicsMaterial() != false ? AssetManager::ForceGetAsset<Asset>(object.m_PhysicsMaterialPointerID)->GetName() : "null");
+				if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginPopup("Remove Physics Material")) {
+					if (ImGui::MenuItem("Remove Material")) {
+						object.RemovePhysicsMaterial();
+					}
+
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginDragDropTarget()) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::PhysicsMaterial).c_str())) {
+						UUID Data = *(const UUID*)payload->Data;
+						object.m_PhysicsMaterialPointerID = Data;
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				ExternalAPI::ImGUIAPI::TextBar("Mesh", object.GetMeshAsset() != nullptr ? object.GetMeshAsset()->GetName() : "null");
+				if (ImGui::BeginPopupContextItem("RemoveMesh")) {
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginPopup("RemoveMesh")) {
+					if (ImGui::MenuItem("Remove Mesh")) {
+						object.RemoveMeshSource();
+					}
+
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginDragDropTarget()) {
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Mesh).c_str())) {
+						UUID Data = *(const UUID*)payload->Data;
+						object.m_MeshAssetPointerID = Data;
+					}
+					ImGui::EndDragDropTarget();
+				}
+				
 			});
 			IndexValue += 1;
 		}
 
 		RigidBodyComponent* rigidBodyComponent = entity.GetComponent<RigidBodyComponent>();
 		if (rigidBodyComponent != nullptr) {
-			DrawComponents<RigidBodyComponent>("RigidBodyComponent: ", entity, rigidBodyComponent, IndexValue, [](RigidBodyComponent& object) {
-				ImGui::DragFloat("Mass", &object.Mass, 0.5);
-				ImGui::DragFloat("Drag", &object.Drag, 0.5);
+			DrawComponents<RigidBodyComponent>("RigidBody", entity, rigidBodyComponent, IndexValue, [](RigidBodyComponent& object) {
+				ExternalAPI::ImGUIAPI::EnumCombo<RigidBodyType>("Type", object.m_RigidBodyType);
+				if (object.m_RigidBodyType == RigidBodyType::Static)return;
+
+				ImGui::DragFloat("Mass", &object.Mass, 0.5,0);
+				ImGui::DragFloat("LinearDrag", &object.LinearDrag, 0.5,0);
 				ImGui::DragFloat("AngularDrag", &object.AngularDrag, 0.5);
 				ExternalAPI::ImGUIAPI::CheckBox("Gravity", &object.Gravity);
+				ExternalAPI::ImGUIAPI::CheckBox("Kinematic", &object.Kinimatic);
+
+				DrawVectorControl("Freeze Location", object.FreezeLocation,false);
+				DrawVectorControl("Freeze Rotation", object.FreezeRotation, false);
 			});
 			IndexValue += 1;
 		}
@@ -696,6 +798,75 @@ namespace Proof {
 		ImGui::PopItemWidth();
 		ImGui::PopStyleColor(3);
 		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
+	}
+	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel, Vector<bool>& Vec, bool resetValue, float columnWidth) {
+
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		ImGui::PushID(UniqeLabel.c_str());// this id is for everything here so imgui does not assign something to the value that we have here
+		ImGui::Columns(2); // distance between label and edits
+		ImGui::SetColumnWidth(0, columnWidth);
+		ImGui::Text(UniqeLabel.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0,0 });
+		ImGui::GetStyle().FrameRounding = 0;
+
+		float LineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // comes from IMGUI
+		ImVec2 buttonSize = { LineHeight + 3.0f,LineHeight };
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 1.0f,0.0f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 1.0f,0.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 1.0f,0.0f,0.0f,1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("X", buttonSize)) {
+			Vec.X = resetValue;
+		}
+		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::Checkbox("##x", &Vec.X); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f,.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 1.0f,0.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.0f,.5f,0.0f,1.0f });
+
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Y", buttonSize)) {
+			Vec.Y = resetValue;
+		}
+		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::Checkbox("##Y", &Vec.Y); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f,0.0f,1.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 1.0f,0.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.0f,0.0f,1.0f,1.0f });
+
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Z", buttonSize)) {
+			Vec.Z = resetValue;
+		}
+		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::Checkbox("##Z", &Vec.Z); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::PopStyleColor(3);
+
+		ImGui::GetStyle().FrameRounding = 6;
+
+		ImGui::PopStyleVar(1);
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}

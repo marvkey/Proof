@@ -11,6 +11,9 @@ namespace Proof {
 	void InputPanel::ImGuiRender(FrameTime deltaTime){
 		if (m_ShowWindow == false)
 			return;
+
+		PF_PROFILE_FUNC();
+
 		ImGui::Begin("Input Panel", &m_ShowWindow);
 		{
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;

@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Panel.h"
+#include "../Panel.h"
 namespace Proof
 {
 

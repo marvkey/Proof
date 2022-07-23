@@ -11,6 +11,10 @@ namespace Proof
         T X = 0,Y = 0,Z = 0;
         Vector() {};
         
+        Vector(T val) {
+            this->X = val, this->Y = val, this->Z = val;
+
+        }
         Vector(const Vector& Other) {
             X = Other.X;
             Y = Other.Y;
@@ -36,6 +40,21 @@ namespace Proof
             if (Y > Z)
                 return Y;
             return Z;
+        }
+        // transform all numbers to positve then finds the biggest 
+        T GetMaxTransformPositive() {
+            Vector<T> vec = GetPositive();
+            if (vec.X > Y) {
+                if (vec.X > vec.Z)
+                    return vec.X;
+                return vec.Z;
+            }
+            if (vec.Y > vec.Z)
+                return vec.Y;
+            return vec.Z;
+        }
+        Vector<T> GetPositive()const {
+            return Vector<T>{Math::GetPositive(X), Math::GetPositive(Y), Math::GetPositive(Z)};
         }
         std::string ToString()const {
             std::stringstream VecStream;
@@ -183,7 +202,12 @@ namespace Proof
         Vector<T>tempVec(other.X * temp,other.Y * temp,other.Z * temp);
         return tempVec;
     }
-    
+
+    template<typename T>
+    Vector<T> operator*(const Vector<T>& other, const Vector<T>& other1) {
+        Vector<T>tempVec(other.X * other1.X, other.Y * other1.Y, other.Z * other1.Z);
+        return tempVec;
+    }
     template<typename T>
     inline Vector<T> operator*(const float& temp, const Vector<T>& other) {
         Vector<T> tempVec(other.X * temp, other.Y * temp, other.Z * temp);

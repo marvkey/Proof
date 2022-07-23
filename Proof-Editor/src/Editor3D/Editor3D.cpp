@@ -11,11 +11,11 @@
 
 #include "Proof/Math/MathResource.h"
 #include "Proof/Scene/Material.h"
+#include "Proof/Resources/Asset/PhysicsMaterialAsset.h"
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "windows.h"
 #include "Proof/Scene/Script.h"
-//#include "../Game/Proof-Game/Proof-Game/src/generated/AllFiles.h"
-//#include "../Game/Proof-Game/Proof-Game/src/generated/Init.h"
+
 #include <Windows.h>
 #include <stdio.h> 
 #include "ImGUIAPI.h"
@@ -33,6 +33,7 @@
 #include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
 #include<thread>
 #include <chrono>
+#include "Proof/Core/SceneCoreClasses.h"
 namespace Proof
 {
 
@@ -256,7 +257,8 @@ namespace Proof
 		m_WorldRenderer = WorldRenderer(ActiveWorld, CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 		// cannot be setting it to window size and stuff innit
 		m_EditorWorld = ActiveWorld;
-
+		SceneCoreClasses::s_CurrentWorld = ActiveWorld.get();
+		
 		float skyboxVertices[] = {
 					 // positions          
 			-1.0f,1.0f,-1.0f,
@@ -325,6 +327,7 @@ namespace Proof
 	}
 
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
+		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
 			Count<ScreenFrameBuffer> bufferl;
@@ -371,7 +374,7 @@ namespace Proof
 		ViewPort();
 		MainToolBar();
 		m_WorldHierachy.ImGuiRender(DeltaTime);
-		m_CurrentContentBrowserPanel.ImGuiRender(DeltaTime);
+		m_ContentBrowserPanel.ImGuiRender(DeltaTime);
 		m_AssetManagerPanel.ImGuiRender(DeltaTime);
 		m_InputPanel.ImGuiRender(DeltaTime);
 		m_PerformancePanel.ImGuiRender(DeltaTime);
@@ -829,7 +832,7 @@ namespace Proof
 		ImGui::End();
 	}
 	void Editore3D::ViewPort() {
-
+		PF_PROFILE_FUNC();
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		static bool Open = true;
 		if (ImGui::Begin("ViewPort",&Open,ImGuiWindowFlags_NoScrollWithMouse| ImGuiWindowFlags_NoScrollbar)) {
@@ -910,7 +913,7 @@ namespace Proof
 					m_WorldHierachy.SetContext(ActiveWorld.get());
 				}
 
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(MeshAsset::GetAssetType().c_str())) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(fmt::format("{}{}","AssetType::","Mesh").c_str())) {
 					UUID meshID = *(UUID*)payload->Data;
 
 					Entity newentt = ActiveWorld->CreateEntity(AssetManager::GetAssetName(meshID));
@@ -1047,12 +1050,12 @@ namespace Proof
 			if (ImGui::BeginMenu("View")) {
 				ImGui::MenuItem("Heirachy", nullptr, &m_WorldHierachy.m_ShowWindow);
 				ImGui::MenuItem("Log", nullptr, &m_ShowLogger);
-				ImGui::MenuItem("Content Browser", nullptr, &m_CurrentContentBrowserPanel.m_ShowWindow);
+				ImGui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel.m_ShowWindow);
 				ImGui::MenuItem("Asset Manager ", nullptr, &m_AssetManagerPanel.m_ShowWindow);
 				ImGui::MenuItem("Render Stats", nullptr, &m_ShowRendererStats);
 				ImGui::MenuItem("World Editor", nullptr, &m_ShowWorldEditor);
 				ImGui::MenuItem("Input Panel", nullptr, &m_InputPanel.m_ShowWindow);
-				ImGui::MenuItem("Performanc Browser", nullptr, &m_PerformancePanel.m_ShowWindow);
+				ImGui::MenuItem("Performance Browser", nullptr, &m_PerformancePanel.m_ShowWindow);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
@@ -1075,6 +1078,7 @@ namespace Proof
 	}
 	void Editore3D::PlayWorld() {
 		ActiveWorld = World::Copy(m_EditorWorld);
+		SceneCoreClasses::s_CurrentWorld = ActiveWorld.get();
 
 		ActiveWorld->m_CurrentState = WorldState::Play;
 		m_WorldHierachy.SetContext(ActiveWorld.get());
@@ -1097,31 +1101,50 @@ namespace Proof
 		ActiveWorld = m_EditorWorld;
 		m_WorldHierachy.SetContext(ActiveWorld.get());
 		m_WorldRenderer.SetContext(ActiveWorld);
+		SceneCoreClasses::s_CurrentWorld = ActiveWorld.get();
 	}
 	void Editore3D::PauseWorld() {
 		ActiveWorld->m_CurrentState = WorldState::Pause;
 	}
 
-	void Editore3D::CreateMaterialEdtior(MaterialAsset* material) {
-		if (material == nullptr)return;
-		auto it = m_AllPanels.find(material->GetID());
+	bool Editore3D::CreateAssetEditor(Asset* asset) {
+		if (asset == nullptr)return false;
+		auto it = m_AllPanels.find(asset->GetID());
 		if (it != m_AllPanels.end()) {
 			it->second->SetWindowVisibile(true);
-			return;
+			return false;
 		}
-		MaterialEditorPanel* temp = new MaterialEditorPanel(material);
-		m_AllPanels.insert({material->GetID(),temp});
-	}
-
-	void Editore3D::CreateMeshEditor(MeshAsset* mesh) {
-		if (mesh == nullptr)return;
-		auto it =m_AllPanels.find(mesh->GetID());
-		if(it!= m_AllPanels.end()){
-			it->second->SetWindowVisibile(true);
-			return;
+		switch (asset->GetAssetType()) {
+			case Proof::AssetType::Mesh:
+			{
+				SceneRendererUI* temp = new SceneRendererUI(dynamic_cast<MeshAsset*>(asset));
+				m_AllPanels.insert({ asset->GetID(),temp });
+				return true;
+			}
+			case Proof::AssetType::Texture:
+			{
+				break;
+			}
+			case Proof::AssetType::Material:
+			{
+				MaterialEditorPanel* temp = new MaterialEditorPanel(dynamic_cast<MaterialAsset*>(asset));
+				m_AllPanels.insert({ asset->GetID(),temp });
+				return true;
+			}
+			case Proof::AssetType::World:
+				break;
+			case Proof::AssetType::MeshSourceFile:
+				break;
+			case Proof::AssetType::PhysicsMaterial:
+			{
+				PhysicsMaterialEditorPanel* temp = new PhysicsMaterialEditorPanel(dynamic_cast<PhysicsMaterialAsset*>(asset));
+				m_AllPanels.insert({ asset->GetID(),temp });
+				return true;
+			}
+			default:
+				break;
 		}
-		SceneRendererUI* temp = new SceneRendererUI(mesh);
-		m_AllPanels.insert({mesh->GetID(),temp});
+		return false;
 	}
 }
 

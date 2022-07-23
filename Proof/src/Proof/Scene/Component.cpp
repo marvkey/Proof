@@ -17,6 +17,7 @@
 #include "script.h"
 #include "Proof/Renderer/MeshWorkShop.h"
 #include "Proof/Resources/Asset/AssetManager.h"
+#include "Proof/Scene/Physics/PhysicsEngine.h"
 namespace Proof
 {
 	static struct Material Empty;
@@ -157,9 +158,6 @@ namespace Proof
 		}
 		*/
 	
-	Mesh* CubeColliderComponent::GetMeshSource(){
-		return MeshWorkShop::GetCubeMesh().get();
-	}
 
 	Texture2DAsset* SpriteComponent::GetAsset()
 	{
@@ -177,5 +175,175 @@ namespace Proof
 		m_TextureAssetPointer = nullptr;
 		return nullptr;
 	}
+	PhysicsMaterial* CubeColliderComponent::GetPhysicsMaterial() {
+		if (m_PhysicsMaterialPointerID == 0) {
+			return nullptr;
+		}
+		PhysicsMaterialAsset* a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
+		if (a == nullptr) {
+			m_PhysicsMaterialPointerID = 0;
+			return nullptr;
+		}
+		return &a->m_Material;
+	}
+	PhysicsMaterial* SphereColliderComponent::GetPhysicsMaterial() {
+		if (m_PhysicsMaterialPointerID == 0) {
+			return nullptr;
+		}
+		PhysicsMaterialAsset* a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
+		if (a == nullptr) {
+			m_PhysicsMaterialPointerID = 0;
+			return nullptr;
+		}
+		return &a->m_Material;
+	}
+
+	PhysicsMaterial* CapsuleColliderComponent::GetPhysicsMaterial() {
+		if (m_PhysicsMaterialPointerID == 0) {
+			return nullptr;
+		}
+		PhysicsMaterialAsset* a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
+		if (a == nullptr) {
+			m_PhysicsMaterialPointerID = 0;
+			return nullptr;
+		}
+		return &a->m_Material;
+	}
+	PhysicsMaterial* MeshColliderComponent::GetPhysicsMaterial() {
+		if (m_PhysicsMaterialPointerID == 0) {
+			return nullptr;
+		}
+		PhysicsMaterialAsset* a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
+		if (a == nullptr) {
+			m_PhysicsMaterialPointerID = 0;
+			return nullptr;
+		}
+		return &a->m_Material;
+	}
+	
+	MeshAsset* MeshColliderComponent::GetMeshAsset() {
+		if (m_MeshAssetPointerID == 0) {
+			return nullptr;
+		}
+		MeshAsset* a = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
+		if (a == nullptr) {
+			m_MeshAssetPointerID = 0;
+			return nullptr;
+		}
+		return a;
+	}
+
+	void RigidBodyComponent::AddForce(Vector<float> force, ForceMode mode, bool autoWake)const {
+		if (m_RuntimeBody == nullptr) return;
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
+		if (physicsEngine == nullptr)return;
+
+		switch (physicsEngine->GetPhysicsType()) {
+			case Proof::PhysicsEngineType::ProofPhysics:
+				break;
+			case Proof::PhysicsEngineType::NvdiaPhysics:
+			{
+				physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+				rigidBody->addForce({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
+				break;
+			}
+			case Proof::PhysicsEngineType::BulletPhysics:
+				break;
+			default:
+				break;
+		}
+	}
+
+	void RigidBodyComponent::AddTorque(Vector<float> force, ForceMode mode, bool autoWake)const {
+		if (m_RuntimeBody == nullptr) return;
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
+		if (physicsEngine == nullptr)return;
+
+		switch (physicsEngine->GetPhysicsType()) {
+		case Proof::PhysicsEngineType::ProofPhysics:
+			break;
+		case Proof::PhysicsEngineType::NvdiaPhysics:
+		{
+			physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+			rigidBody->addTorque({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
+			break;
+		}
+		case Proof::PhysicsEngineType::BulletPhysics:
+			break;
+		default:
+			break;
+		}
+	}
+
+	bool RigidBodyComponent::IsSleeping()const {
+		if (m_RuntimeBody == nullptr) return true;
+		if (m_RigidBodyType == RigidBodyType::Static)return true;
+		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
+		if (physicsEngine == nullptr)return true;
+
+		switch (physicsEngine->GetPhysicsType()) {
+			case Proof::PhysicsEngineType::ProofPhysics:
+				break;
+			case Proof::PhysicsEngineType::NvdiaPhysics:
+			{
+				physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+				return rigidBody->isSleeping();
+				break;
+			}
+			case Proof::PhysicsEngineType::BulletPhysics:
+				break;
+			default:
+				break;
+		}
+		return false;
+	}
+
+	void RigidBodyComponent::PutToSleep() {
+		if (m_RuntimeBody == nullptr) return;
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
+		if (physicsEngine == nullptr)return;
+
+		switch (physicsEngine->GetPhysicsType()) {
+			case Proof::PhysicsEngineType::ProofPhysics:
+				break;
+			case Proof::PhysicsEngineType::NvdiaPhysics:
+			{
+				physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+				rigidBody->putToSleep();
+				break;
+			}
+			case Proof::PhysicsEngineType::BulletPhysics:
+				break;
+			default:
+				break;
+		}
+	}
+
+	void RigidBodyComponent::WakeUp() {
+		if (m_RuntimeBody == nullptr) return;
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
+		if (physicsEngine == nullptr)return;
+
+		switch (physicsEngine->GetPhysicsType()) {
+		case Proof::PhysicsEngineType::ProofPhysics:
+			break;
+		case Proof::PhysicsEngineType::NvdiaPhysics:
+		{
+			physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+			rigidBody->wakeUp();
+			break;
+		}
+		case Proof::PhysicsEngineType::BulletPhysics:
+			break;
+		default:
+			break;
+		}
+	}
+
+	
 
 }

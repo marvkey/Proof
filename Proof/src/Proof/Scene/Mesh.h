@@ -20,8 +20,6 @@ namespace Proof
         const std::vector<Count<class Texture2D>>&GetTextures()const{
             return m_Textures;
         }
-    private:
-        void SetUp();
         std::vector<Vertex> m_Vertices;
         std::vector<uint32_t> m_Indices;
         std::string m_Name;
@@ -29,6 +27,8 @@ namespace Proof
         Count<class VertexBuffer> m_VertexBufferObject;
         Count<class IndexBuffer> m_IndexBufferObject;
         std::vector<Count<class Texture2D>>m_Textures;
+    private:
+        void SetUp();
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
         friend class OpenGLRenderer3DPBR;
@@ -50,6 +50,7 @@ namespace Proof
             return m_Name;
         }
         bool m_Enabled=true;
+
     private:
         std::vector<class SubMesh> meshes;
         std::string m_Name;

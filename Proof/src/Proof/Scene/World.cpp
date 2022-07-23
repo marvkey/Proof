@@ -18,8 +18,7 @@
 #include<glad/glad.h>
 #include "Proof/Scene/Component.h"
 #include "entt/entt.hpp"
-#include "PhysicsEngine.h"
-
+#include "Physics/PhysicsEngine.h"
 namespace Proof{
 	unsigned int quadVAO = 0;
 	unsigned int quadVBO=0;
@@ -89,7 +88,7 @@ namespace Proof{
 					script.Instance->OnUpdate(DeltaTime);
 			}
 		}
-		m_PhysicsEngine->Update(DeltaTime);
+		m_PhysicsEngine->Simulate(DeltaTime);
 		m_EditorCamera.OnUpdate(DeltaTime, width, height);
 		{
 			auto& cameraView = m_Registry.view<CameraComponent>();
@@ -135,9 +134,13 @@ namespace Proof{
 		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
 		CopyComponentIfExists<MeshComponent>(newEntity, entity);
 		CopyComponentIfExists<LightComponent>(newEntity, entity);
-		CopyComponentIfExists<CubeColliderComponent>(newEntity, entity);
 		CopyComponentIfExists<CameraComponent>(newEntity, entity);
+
+		CopyComponentIfExists<CubeColliderComponent>(newEntity, entity);
 		CopyComponentIfExists<SphereColliderComponent>(newEntity, entity);
+		CopyComponentIfExists<CapsuleColliderComponent>(newEntity, entity);
+		CopyComponentIfExists<MeshColliderComponent>(newEntity, entity);
+		CopyComponentIfExists<RigidBodyComponent>(newEntity, entity);
 		if (includeChildren == true) {
 			entity.EachChild([&](Entity childEntity){
 				Entity newChild = CreateEntity(childEntity, true);
@@ -209,8 +212,12 @@ namespace Proof{
 		CopyComponentWorld<MeshComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<LightComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
 		CopyComponentWorld<CubeColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<SphereColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<CapsuleColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<MeshColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
 		CopyComponentWorld<RigidBodyComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newWorld;
