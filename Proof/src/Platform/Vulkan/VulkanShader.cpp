@@ -171,7 +171,7 @@ namespace Proof
     }
     void VulkanShader::Reflect(Shader::ShaderStage stage) {
         if (m_VulkanSPIRV.find(stage) == m_VulkanSPIRV.end()) {
-            PF_ENGINE_ERROR("Shader does not exist");
+            PF_ENGINE_ERROR("{} {} Shader stage does not exist",m_Name, EnumReflection::EnumString(stage));
             return;
         }
         auto& data = m_VulkanSPIRV.at(stage);
@@ -180,7 +180,7 @@ namespace Proof
         spirv_cross::Compiler compiler(data);
         spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
-        PF_ENGINE_TRACE("{} Vulkan::Shader Reflect - {} ",m_Name,fmt::format(EnumReflection::EnumString<Shader::ShaderStage>(stage)));
+        PF_ENGINE_TRACE("{} Vulkan::Shader Reflect - {} ",m_Name,fmt::format(EnumReflection::EnumString(stage)));
         PF_ENGINE_INFO("{}\n", shaderSrc);
         PF_ENGINE_TRACE("    {} uniform buffers", resources.uniform_buffers.size());
         PF_ENGINE_TRACE("    {} sampled images", resources.sampled_images.size());

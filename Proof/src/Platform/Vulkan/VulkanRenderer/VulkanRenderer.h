@@ -24,12 +24,16 @@ namespace Proof
 		static void EndContext();
 		static void Destroy();
 		static VkCommandBuffer GetCurrentCommandBuffer();
+		static void BeginRenderPass();
+		static void EndRenderPass();
+
+		//IMGUI
+		static void BeginFrame() {};
+		static void EndFrame() {};
 	private:
 		static DrawPipeline* s_Pipeline;
 		static bool s_InContext;
 		static void RecreateSwapChain();
 		static void DrawFrame();
-		static int s_CurrentFrameIndex;
-		static uint32_t s_CurrentImageIndex;
 	};
 }

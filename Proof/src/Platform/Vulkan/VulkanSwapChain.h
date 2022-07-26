@@ -13,7 +13,6 @@ namespace Proof
 {
     class VulkanSwapChain {
     public:
-        static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
         VulkanSwapChain(VkExtent2D windowExtent);
         ~VulkanSwapChain();
@@ -32,7 +31,7 @@ namespace Proof
         }
         VkFormat FindDepthFormat();
 
-        VkResult AcquireNextImage(uint32_t* imageIndex);
+        VkResult AcquireNextImage(uint32_t* imageIndex,uint32_t frameIndex);
         VkResult SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
         void Recreate();
 
@@ -49,10 +48,8 @@ namespace Proof
         void CreateSyncObjects();
 
         // Helper functions
-        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(
-            const std::vector<VkSurfaceFormatKHR>& availableFormats);
-        VkPresentModeKHR ChooseSwapPresentMode(
-            const std::vector<VkPresentModeKHR>& availablePresentModes);
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
         VkFormat m_SwapChainImageFormat;
@@ -71,12 +68,14 @@ namespace Proof
         VkExtent2D m_WindowExtent;
 
         VkSwapchainKHR m_SwapChain;
+        VkSemaphore m_PresentSemaphore, m_RenderSemaphore;
+        VkFence m_RenderFence;
 
         std::vector<VkSemaphore> m_ImageAvailableSemaphores;
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         std::vector<VkFence> m_InFlightFences;
         std::vector<VkFence> m_ImagesInFlight;
-        size_t m_CurrentFrame = 0;
+        friend class VulkanRenderer;
     };
 
 }  

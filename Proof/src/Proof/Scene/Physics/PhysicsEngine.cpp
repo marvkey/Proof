@@ -115,7 +115,7 @@ namespace Proof {
 				{
 					auto sphereCollider = entity.GetComponent<SphereColliderComponent>();
 					if (sphereCollider != nullptr) {
-						float size = sphereCollider->Radius ;
+						float size = sphereCollider->Radius * transformComponent->GetWorldScale().GetMaxTransformPositive();
 
 						physx::PxMaterial* colliderMaterial = sphereCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)sphereCollider->GetPhysicsMaterial()->m_RuntimeBody;
 						physx::PxShape* body = m_NVDIAPhysicsEngine->m_Physics->createShape(physx::PxSphereGeometry(size), *colliderMaterial, true);

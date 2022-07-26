@@ -8,26 +8,30 @@ namespace Proof
 	VulkanCommandBuffer::VulkanCommandBuffer(Count<VulkanSwapChain> swapChain, Count<VulkanGraphicsPipeline> pipeline):
 		m_GraphicsPipeline(pipeline)
 	{
+		auto device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		m_SwapChain = swapChain;
-		m_CommandBuffer.resize(VulkanSwapChain::MAX_FRAMES_IN_FLIGHT);
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		// primary can be submited to a que for submition, cannot be called by other command buffers
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.pNext = nullptr;
+
 
 		// command pool opaque objects
 		// that command buffer memory is allocated from
-		allocInfo.commandPool = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetCommandPool();
+		allocInfo.commandPool = device->GetCommandPool();
 		
-		allocInfo.commandBufferCount = (uint32_t)m_CommandBuffer.size();
+		// FRAMES IN FLIGH COULD BE USED
+		allocInfo.commandBufferCount = 1;
 
-		if (vkAllocateCommandBuffers(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &allocInfo, m_CommandBuffer.data()) != VK_SUCCESS)
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+		if (vkAllocateCommandBuffers(device->GetDevice(), &allocInfo, &m_CommandBuffer) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to allocate command buffer");
 
 	}
 	void VulkanCommandBuffer::Bind(uint32_t index ) {
-		vkCmdBindPipeline(m_CommandBuffer[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline->GetPipline());
+		//vkCmdBindPipeline(m_CommandBuffer[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline->GetPipline());
 	}
 
 	void VulkanCommandBuffer::Recreate() {
@@ -49,8 +53,7 @@ namespace Proof
 		vkFreeCommandBuffers(
 			Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(),
 			Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetCommandPool(),
-			static_cast<uint32_t>(m_CommandBuffer.size()),
-			m_CommandBuffer.data());
-		m_CommandBuffer.clear();
+			1,
+			&m_CommandBuffer);
 	}
 };
