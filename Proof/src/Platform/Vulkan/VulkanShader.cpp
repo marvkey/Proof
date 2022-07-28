@@ -120,7 +120,7 @@ namespace Proof
             else {
                 shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), shaderFilePath.string().c_str(),compilerOptions);
                 if (shaderModule.GetCompilationStatus() != shaderc_compilation_status_success) {
-                    PF_ENGINE_ERROR(shaderModule.GetErrorMessage());
+                    PF_ENGINE_ERROR("Shader Stage:: {}  Error:: {}",EnumReflection::EnumString<Shader::ShaderStage>(stage), shaderModule.GetErrorMessage());
                     PF_CORE_ASSERT(false);
                 }
                 shaderData[stage] = std::vector<uint32_t>(shaderModule.cbegin(), shaderModule.cend());
@@ -150,7 +150,7 @@ namespace Proof
         for (auto& [stage, source] : m_SourceCode) {
             shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), filePath.string().c_str(),compilerOptions);
             if (shaderModule.GetCompilationStatus() != shaderc_compilation_status_success) {
-                PF_ENGINE_ERROR(shaderModule.GetErrorMessage());
+                PF_ENGINE_ERROR("Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<Shader::ShaderStage>(stage), shaderModule.GetErrorMessage());
                 PF_CORE_ASSERT(false);
             }
             shaderData[stage] = std::vector<uint32_t>(shaderModule.cbegin(), shaderModule.cend());

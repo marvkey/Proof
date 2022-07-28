@@ -35,4 +35,9 @@ namespace Proof
 		static void RecreateSwapChain();
 		static void DrawFrame();
 	};
+
+	struct MeshPipeLine {
+		Count<Shader> Shader = nullptr;
+		
+	};
 }
