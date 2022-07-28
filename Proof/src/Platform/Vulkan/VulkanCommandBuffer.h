@@ -8,9 +8,9 @@ namespace Proof
 	class VulkanCommandBuffer {
 	public:
 		VulkanCommandBuffer(Count<VulkanSwapChain> swapChain,Count<VulkanGraphicsPipeline> pipeline);
-		void Bind(uint32_t index =0);
+		void Bind(VkPipelineBindPoint bindPoint= VK_PIPELINE_BIND_POINT_GRAPHICS);
 
-		VkCommandBuffer& GetBuffer() {
+		const VkCommandBuffer& GetCommandBuffer()const {
 			return m_CommandBuffer;
 		}
 		uint32_t GetSize() { return 0; }

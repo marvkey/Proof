@@ -92,7 +92,7 @@ namespace Proof
     void VulkanShader::CompileOrGetBinaries(const std::filesystem::path& filePath) {
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
-        compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+        compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_0);
         const bool optimize = true;
         if (optimize)
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -140,7 +140,7 @@ namespace Proof
     void VulkanShader::Compile(const std::filesystem::path& filePath) {
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
-        compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+        compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_0);
         const bool optimize = true;
         if (optimize)
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);

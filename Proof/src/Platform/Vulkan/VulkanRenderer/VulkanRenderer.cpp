@@ -30,12 +30,33 @@ namespace Proof
 	};
 
 	uint32_t swapchainImageIndex;
+	VkPipelineLayout PipelineLayout = nullptr;
 
 	DrawPipeline* VulkanRenderer::s_Pipeline = nullptr;
 	bool VulkanRenderer::s_InContext = false;
 	void VulkanRenderer::Init() {
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		// pipeline layout is used to pass data to pipeline other than vertex and fragment data
+		// this includes texture and uniform buffer objects
+		pipelineLayoutInfo.setLayoutCount = 0; // emty layout
+		pipelineLayoutInfo.pSetLayouts = nullptr;
+		// very efficiently send small data to shader proggramm
+		pipelineLayoutInfo.pushConstantRangeCount = 0;
+		pipelineLayoutInfo.pPushConstantRanges = nullptr;
+		if (vkCreatePipelineLayout(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS)
+			PF_ASSERT(false, "failed to create pipeline layout");
 		s_Pipeline = new DrawPipeline();
 		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
+		s_Pipeline->Shader = Shader::GetOrCreate("TraingleShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Vulkan/TriangleShader.shader");
+
+
+		PipelineConfigInfo pipelineConfig{};
+		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
+		pipelineConfig.RenderPass = s_Pipeline->SwapChain->GetRenderPass();
+		pipelineConfig.PipelineLayout = PipelineLayout;
+
+		s_Pipeline->GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(s_Pipeline->Shader, pipelineConfig);
 		s_Pipeline->CommandBuffer = CreateCount<VulkanCommandBuffer>(s_Pipeline->SwapChain, s_Pipeline->GraphicsPipeline);
 		PF_ENGINE_INFO("Vulkan Renderer Initlized");
 	}
@@ -52,7 +73,7 @@ namespace Proof
 	}
 	VkCommandBuffer VulkanRenderer::GetCurrentCommandBuffer() {
 		if (s_Pipeline == nullptr)return nullptr;
-		return s_Pipeline->CommandBuffer->GetBuffer();
+		return s_Pipeline->CommandBuffer->GetCommandBuffer();
 	}
 	void VulkanRenderer::BeginRenderPass() {
 		// Clear values
@@ -81,6 +102,7 @@ namespace Proof
 		renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
 		renderPassInfo.pClearValues = clearValues.data();
 		s_Pipeline->CommandBuffer->BeginRenderPass(renderPassInfo);
+		s_Pipeline->CommandBuffer->Bind();
 	}
 	void VulkanRenderer::EndRenderPass() {
 		s_Pipeline->CommandBuffer->EndRenderPass();
@@ -97,10 +119,11 @@ namespace Proof
 		vkResetFences(device, 1, &s_Pipeline->SwapChain->m_RenderFence);
 
 		//now that we are sure that the commands finished executing, we can safely reset the command buffer to begin recording again.
-		vkResetCommandBuffer(s_Pipeline->CommandBuffer->GetBuffer(), 0);
+		vkResetCommandBuffer(s_Pipeline->CommandBuffer->GetCommandBuffer(), 0);
 		vkAcquireNextImageKHR(device, s_Pipeline->SwapChain->m_SwapChain, 1000000000, s_Pipeline->SwapChain->m_PresentSemaphore, nullptr, &swapchainImageIndex);
 
 		BeginRenderPass();
+		vkCmdDraw(s_Pipeline->CommandBuffer->GetCommandBuffer(), 3, 1, 0, 0);
 		EndRenderPass();
 		auto commandBuffer = GetCurrentCommandBuffer();
 		auto result = s_Pipeline->SwapChain->SubmitCommandBuffers(&commandBuffer, &swapchainImageIndex);

@@ -12,7 +12,6 @@ namespace Proof
 		Count<VulkanGraphicsPipeline> GraphicsPipeline = nullptr;
 		Count<Shader> Shader = nullptr;
 		Count<VulkanSwapChain> SwapChain = nullptr;
-		VulkanPipeLineLayout PipelineLayout;
 		Count<VulkanCommandBuffer> CommandBuffer = NULL;
 		Count<VulkanVertexBuffer> VertexBuffer;
 

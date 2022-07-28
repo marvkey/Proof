@@ -30,8 +30,8 @@ namespace Proof
 			PF_CORE_ASSERT(false, "Failed to allocate command buffer");
 
 	}
-	void VulkanCommandBuffer::Bind(uint32_t index ) {
-		//vkCmdBindPipeline(m_CommandBuffer[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline->GetPipline());
+	void VulkanCommandBuffer::Bind(VkPipelineBindPoint bindPoint) {
+		vkCmdBindPipeline(m_CommandBuffer, bindPoint, m_GraphicsPipeline->GetPipline());
 	}
 
 	void VulkanCommandBuffer::Recreate() {
