@@ -420,7 +420,7 @@ namespace Proof
 		PF_CORE_ASSERT(false, "failed to find suitable memory type!");
 	}
 
-	void VulkanGraphicsContext::CreateBuffer(VkDeviceSize size,VkBufferUsageFlags usage,VkMemoryPropertyFlags properties,VkBuffer& buffer,VkDeviceMemory& bufferMemory) {
+	void VulkanGraphicsContext::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
 		// HOw we plan touse this buffer
 		VkBufferCreateInfo bufferInfo{};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

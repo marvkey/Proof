@@ -1,4 +1,5 @@
 #include "Editor3D.h"
+
 #include <ImGui/imgui.h>
 #include <ImGui/imgui_impl_glfw.h>
 #include <ImGui/imgui_impl_opengl3.h>
@@ -30,10 +31,11 @@
 #include "Proof/Resources/Asset/AssetManager.h"
 #include <algorithm>
 #include "Proof/Input/InputManager.h"
-#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
 #include<thread>
 #include <chrono>
 #include "Proof/Core/SceneCoreClasses.h"
+#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
+
 namespace Proof
 {
 
@@ -307,7 +309,7 @@ namespace Proof
 		m_SkyBoxShader = Shader::GetOrCreate("SkyBox Shader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/CubeMapShader.shader");
 		m_SkyBoxBuffer = VertexBuffer::Create(&skyboxVertices,sizeof(skyboxVertices));
 		m_SkyBoxVertexArray = VertexArray::Create();
-		m_SkyBoxVertexArray->AddData(0,3,3 * sizeof(float),(void*)0);
+		m_SkyBoxVertexArray->AddData(0,3,3 * sizeof(float),0);
 
 		m_SkyBoxShader->Bind();
 		m_SkyBoxShader->SetInt("skybox",0);

@@ -337,9 +337,9 @@ namespace Proof{
 		};
 		m_IBLSkyBoxBuffer = VertexBuffer::Create(&skyboxVertices,sizeof(skyboxVertices));
 		m_IBLSkyBoxVertexArray = VertexArray::Create();
-		m_IBLSkyBoxVertexArray->AddData(0,3,8 * sizeof(float),(void*)0);
-		m_IBLSkyBoxVertexArray->AddData(1,3,8 * sizeof(float),(void*)(3 * sizeof(float)));
-		m_IBLSkyBoxVertexArray->AddData(2,2,8 * sizeof(float),(void*)(6 * sizeof(float)));
+		m_IBLSkyBoxVertexArray->AddData(0,3,8 * sizeof(float),0);
+		m_IBLSkyBoxVertexArray->AddData(1,3,8 * sizeof(float),(3 * sizeof(float)));
+		m_IBLSkyBoxVertexArray->AddData(2,2,8 * sizeof(float),(6 * sizeof(float)));
 		backgroundShader->Bind();
 		backgroundShader->SetInt("environmentMap",0);
 		m_CaptureFBO = FrameBuffer::Create();

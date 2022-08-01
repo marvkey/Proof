@@ -47,10 +47,10 @@ namespace Proof {
 
 		s_Storage2DData->m_VertexArray->AttachIndexBuffer(s_Storage2DData->m_IndexBuffer);
 
-		s_Storage2DData->m_VertexArray->AddData(0,3,sizeof(Vertex2D),(void*)offsetof(Vertex2D,Position));
-		s_Storage2DData->m_VertexArray->AddData(1,4,sizeof(Vertex2D),(void*)offsetof(Vertex2D,Color));
-		s_Storage2DData->m_VertexArray->AddData(2,3,sizeof(Vertex2D),(void*)offsetof(Vertex2D,TexCoords));
-		s_Storage2DData->m_VertexArray->AddData(3,1,sizeof(Vertex2D),(void*)offsetof(Vertex2D,TexSlot));
+		s_Storage2DData->m_VertexArray->AddData(0,3,sizeof(Vertex2D),offsetof(Vertex2D,Position));
+		s_Storage2DData->m_VertexArray->AddData(1,4,sizeof(Vertex2D),offsetof(Vertex2D,Color));
+		s_Storage2DData->m_VertexArray->AddData(2,3,sizeof(Vertex2D),offsetof(Vertex2D,TexCoords));
+		s_Storage2DData->m_VertexArray->AddData(3,1,sizeof(Vertex2D),offsetof(Vertex2D,TexSlot));
 
 		uint32_t WhiteTextureImage = 0xffffffff;
 		s_Storage2DData->m_WhiteTexture->SetData(&WhiteTextureImage,sizeof(uint32_t));

@@ -19,13 +19,12 @@ namespace Proof
         void CreateShader();
         void CompileOrGetBinaries(const std::filesystem::path& filePath);
         void Compile(const std::filesystem::path& filePath);
-		VkShaderModule m_VertexShaderModule;
-		VkShaderModule m_FragmentShaderModule;
-		VkPipelineShaderStageCreateInfo m_ShaderStages[2];
-		friend class VulkanGraphicsPipeline;
+        VkShaderModule m_ShaderModule[2];
+        VkPipelineShaderStageCreateInfo m_ShaderStages[2];
+        friend class VulkanGraphicsPipeline;
         std::string m_Path = "gg";
-        std::string m_Name ="empty ";
+        std::string m_Name = "empty ";
         std::unordered_map<Shader::ShaderStage, std::vector<uint32_t>> m_VulkanSPIRV;
         std::unordered_map<Shader::ShaderStage, std::string> m_SourceCode;
-	};
+    };
 }

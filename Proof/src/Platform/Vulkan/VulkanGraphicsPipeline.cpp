@@ -4,25 +4,33 @@
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanGraphicsContext.h"
 #include "VulkanShader.h"
-
+#include "VulkanBuffer.h"
 namespace Proof
 {
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
 		vkDestroyPipeline(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_GraphicsPipeline, nullptr);
 	}
-	VulkanGraphicsPipeline::VulkanGraphicsPipeline(Count<Shader> shader, const PipelineConfigInfo& info) {
+	VulkanGraphicsPipeline::VulkanGraphicsPipeline(Count<Shader> shader, const PipelineConfigInfo& info, class VulkanVertexInput* vertexInput) {
 		m_Shader = std::dynamic_pointer_cast<VulkanShader>(shader);
-		m_ConfigInfo = info;
-		PF_CORE_ASSERT(m_ConfigInfo.PipelineLayout, "Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");
-		PF_CORE_ASSERT(m_ConfigInfo.RenderPass, "Cannot create Graphics Pipeline:: no renderpass provided in configInfo");
+		PF_CORE_ASSERT(info.PipelineLayout, "Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");
+		PF_CORE_ASSERT(info.RenderPass, "Cannot create Graphics Pipeline:: no renderpass provided in configInfo");
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		// we are hardcoding values into the vertex data
-		vertexInputInfo.vertexAttributeDescriptionCount = 0;
-		vertexInputInfo.vertexBindingDescriptionCount = 0;
+		if (vertexInput != nullptr) {
+			vertexInputInfo.vertexAttributeDescriptionCount = vertexInput->GetAttributes().size();
+			vertexInputInfo.vertexBindingDescriptionCount = vertexInput->GetDescriptions().size();
 
-		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-		vertexInputInfo.pVertexBindingDescriptions = nullptr;
+			vertexInputInfo.pVertexAttributeDescriptions = vertexInput->GetAttributes().data();
+			vertexInputInfo.pVertexBindingDescriptions = vertexInput->GetDescriptions().data();
+		}
+		else {
+			vertexInputInfo.vertexAttributeDescriptionCount = 0;
+			vertexInputInfo.vertexBindingDescriptionCount = 0;
+
+			vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+			vertexInputInfo.pVertexBindingDescriptions = nullptr;
+		}
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

@@ -10,7 +10,7 @@ namespace Proof {
         switch (RendererAPI::GetAPI()) {
             case RendererAPI::API::None:  PF_CORE_ASSERT(false,"Shader None it needs an api"); return nullptr;
             case RendererAPI::API::OpenGL: return Renderer::GetShaderLibrary().AddShader(CreateCount<class OpenGLShader>(_ShaderName,ShaderPath));
-           //case RendererAPI::API::OpenGL: return CreateCount<class OpenGLShader>(_ShaderName,ShaderPath);
+            case RendererAPI::API::Vulkan: return CreateCount<class VulkanShader>(_ShaderName,ShaderPath);
         }
     }
     Count<Shader> Shader::Create(const std::string& _ShaderName, const std::string& vertPath, const std::string& fragPath) {

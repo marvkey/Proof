@@ -7,12 +7,16 @@
 
 namespace Proof
 {
+ 
+    // Rename MESH Vertex
     struct Vertex {
         Vector<float> Vertices{0,0,0};
         Vector<float> Normal{0,0,0};
         glm::vec2 TexCoords{0,0};
         Vector<float> Tangent{0,0,0};
         Vector<float> Bitangent{0,0,0};
+
+        static class VulkanVertexInput GetVulkanDescription();
     };
 
     struct Vertex2D {

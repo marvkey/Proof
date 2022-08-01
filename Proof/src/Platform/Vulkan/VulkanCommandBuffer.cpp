@@ -5,8 +5,7 @@
 #include "VulkanSwapChain.h"
 namespace Proof
 {
-	VulkanCommandBuffer::VulkanCommandBuffer(Count<VulkanSwapChain> swapChain, Count<VulkanGraphicsPipeline> pipeline):
-		m_GraphicsPipeline(pipeline)
+	VulkanCommandBuffer::VulkanCommandBuffer(Count<VulkanSwapChain> swapChain)
 	{
 		auto device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		m_SwapChain = swapChain;
@@ -30,8 +29,8 @@ namespace Proof
 			PF_CORE_ASSERT(false, "Failed to allocate command buffer");
 
 	}
-	void VulkanCommandBuffer::Bind(VkPipelineBindPoint bindPoint) {
-		vkCmdBindPipeline(m_CommandBuffer, bindPoint, m_GraphicsPipeline->GetPipline());
+	void VulkanCommandBuffer::Bind(VkPipeline pipeLine,VkPipelineBindPoint bindPoint) {
+		vkCmdBindPipeline(m_CommandBuffer, bindPoint, pipeLine);
 	}
 
 	void VulkanCommandBuffer::Recreate() {
@@ -46,7 +45,6 @@ namespace Proof
 		//if (vkAllocateCommandBuffers(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &allocInfo, m_CommandBuffer.data()) != VK_SUCCESS)
 		//	PF_CORE_ASSERT(false, "Failed to allocate command buffer");
 
-		*this = VulkanCommandBuffer(m_SwapChain, m_GraphicsPipeline);
 	}
 
 	void VulkanCommandBuffer::FreeCommandBuffer() {

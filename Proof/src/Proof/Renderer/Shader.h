@@ -7,7 +7,6 @@ namespace Proof {
     class Proof_API Shader {
     public:  
         enum class ShaderStage {
-            None =0,
             Vertex,
             Fragment
         };

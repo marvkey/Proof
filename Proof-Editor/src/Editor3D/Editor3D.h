@@ -9,11 +9,6 @@
 #include "Proof/Renderer/WorldRenderer.h"
 #include "MainWindow/AssetManagerPanel.h"
 #include "MainWindow/InputPanel.h"
-#include "Platform/Vulkan/VulkanGraphicsPipeline.h"
-#include "Platform/Vulkan/VulkanSwapChain.h"
-#include<vulkan/vulkan.h>
-#include "Platform/Vulkan/VulkanCommandBuffer.h"
-#include "Platform/Vulkan/VulkanBuffer.h"
 #include "MainWindow/Performance/PerformancePanel.h"
 
 namespace Proof {

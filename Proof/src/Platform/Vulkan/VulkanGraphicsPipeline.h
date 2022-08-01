@@ -21,13 +21,12 @@ namespace Proof
 	class Proof_API VulkanGraphicsPipeline {
 	public:
 		~VulkanGraphicsPipeline();
-		VulkanGraphicsPipeline(Count<Shader> shader, const PipelineConfigInfo& info);
+		VulkanGraphicsPipeline(Count<Shader> shader, const PipelineConfigInfo& info, class VulkanVertexInput* input = nullptr);
 		static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height);
 		VkPipeline GetPipline() { return m_GraphicsPipeline; }
-		VkPipeline m_GraphicsPipeline;
 
 	private:
 		Count<class VulkanShader> m_Shader = nullptr;
-		PipelineConfigInfo m_ConfigInfo = {};
+		VkPipeline m_GraphicsPipeline;
 	};
 }
