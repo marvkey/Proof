@@ -127,4 +127,6 @@ namespace Proof
 		VkDeviceMemory m_IndexBufferMemory;
 		//VmaAllocation m_Allocation = nullptr;
 	};
+
+	
 }

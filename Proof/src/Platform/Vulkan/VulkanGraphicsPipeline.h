@@ -24,7 +24,6 @@ namespace Proof
 		VulkanGraphicsPipeline(Count<Shader> shader, const PipelineConfigInfo& info, class VulkanVertexInput* input = nullptr);
 		static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height);
 		VkPipeline GetPipline() { return m_GraphicsPipeline; }
-
 	private:
 		Count<class VulkanShader> m_Shader = nullptr;
 		VkPipeline m_GraphicsPipeline;

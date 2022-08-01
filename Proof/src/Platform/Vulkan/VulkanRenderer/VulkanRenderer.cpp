@@ -24,20 +24,12 @@ namespace Proof
 	// meshes with same material will be stored next to each other and drawn together
 	static CameraData s_CurrentCamera;
 	uint32_t frameNumber = 0;
-	struct VulkanPushData {
-		glm::vec2 offfset;
-		alignas(16) glm::vec3 color;
-	};
-
-	struct BasicVertex {
-
-		glm::vec3 position;
-		glm::vec3 index;
-		glm::vec3 color;
+	struct MeshPushConstants {
+		glm::vec4 data;
+		glm::mat4 render_matrix;
 	};
 
 	uint32_t swapchainImageIndex;
-	VkPipelineLayout PipelineLayout = nullptr;
 
 	DrawPipeline* VulkanRenderer::s_Pipeline = nullptr;
 	TrianglePipeLine* s_TrianglePipeLine = nullptr;
@@ -45,21 +37,6 @@ namespace Proof
 	bool VulkanRenderer::s_InContext = false;
 	Mesh MeshCube;
 	void VulkanRenderer::Init() {
-
-
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		// pipeline layout is used to pass data to pipeline other than vertex and fragment data
-		// this includes texture and uniform buffer objects
-		pipelineLayoutInfo.setLayoutCount = 0; // emty layout
-		pipelineLayoutInfo.pSetLayouts = nullptr;
-		// very efficiently send small data to shader proggramm
-		pipelineLayoutInfo.pushConstantRangeCount = 0;
-		pipelineLayoutInfo.pPushConstantRanges = nullptr;
-		if (vkCreatePipelineLayout(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS)
-			PF_ASSERT(false, "failed to create pipeline layout");
-
-		
 		s_Pipeline = new DrawPipeline();
 		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
 		s_Pipeline->CommandBuffer = CreateCount<VulkanCommandBuffer>(s_Pipeline->SwapChain);
@@ -110,11 +87,25 @@ namespace Proof
 		//EndRenderPass();
 
 		BeginRenderPass(s_MeshPipeLine->GraphicsPipeline->GetPipline(), [&](VkCommandBuffer& buffer) {
+			glm::vec3 camPos = { 0.f,0.f,-2.f };
+
+			glm::mat4 view = glm::translate(glm::mat4(1.f), camPos);
+			//camera projection
+			glm::mat4 projection = glm::perspective(glm::radians(70.f), 1700.f / 900.f, 0.1f, 200.0f);
+			projection[1][1] *= -1;
+			//model rotation
+			glm::mat4 model = glm::rotate(glm::mat4{ 1.0f }, glm::radians(frameNumber * 0.4f), glm::vec3(0, 1, 0));
+
+			//calculate final mesh matrix
+			glm::mat4 mesh_matrix = projection * view * model;
+			MeshPushConstants constants;
+			constants.render_matrix = mesh_matrix;
+			
+			s_MeshPipeLine->PushConstant->Bind(buffer, s_MeshPipeLine->PipeLineLayout->GetPipeLineLayout(), &constants);
 			for (const auto& subMesh: MeshCube.GetSubMeshes()) {
 				subMesh.vulkanVertexBufferObject->Bind(buffer);
 				subMesh.vulkanIndexBufferObject->Bind(buffer);
 				vkCmdDrawIndexed(buffer, subMesh.vulkanIndexBufferObject->GetIndexCount(), 1, 0, 0, 0);
-				//vkCmdDraw(buffer, subMesh.vulkanIndexBufferObject->GetSize(), 1, 0, 0);
 			}
 		});
 		EndRenderPass();
@@ -127,17 +118,19 @@ namespace Proof
 		PipelineConfigInfo pipelineConfig{};
 		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
 		pipelineConfig.RenderPass = VulkanRenderer::s_Pipeline->SwapChain->GetRenderPass();
-		pipelineConfig.PipelineLayout = PipelineLayout;
+		pipelineConfig.PipelineLayout = VulkanPipeLineLayout::GetDefaultPipeLineLayout();
 		GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(Shader, pipelineConfig);
 	}
 
 	void MeshPipeLine::Init() {
 		Shader = Shader::Create("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Vulkan/Mesh.shader");
+		PushConstant = CreateCount<VulkanPushConstant>(sizeof(MeshPushConstants));
+		PipeLineLayout = CreateCount<VulkanPipeLineLayout>(PushConstant);
 
 		PipelineConfigInfo pipelineConfig{};
 		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
 		pipelineConfig.RenderPass = VulkanRenderer::s_Pipeline->SwapChain->GetRenderPass();
-		pipelineConfig.PipelineLayout = PipelineLayout;
+		pipelineConfig.PipelineLayout = PipeLineLayout->GetPipeLineLayout();
 		GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(Shader, pipelineConfig, &Vertex::GetVulkanDescription());
 	}
 

@@ -48,7 +48,7 @@ inline const std::string ProofCurrentDirectory = "../Proof/";
 #ifdef PF_ENABLE_ASSERT
 #define PF_ASSERT(X,...){ if((!X)) {PF_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak();  } }
 #define PF_CORE_ASSERT(X,...){ if((!X)) {PF_ENGINE_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak(); } } 
-#define PF_CORE_ASSERT(X){ if((!X)) {PF_ENGINE_ERROR("Assertion Failed"); __debugbreak(); } } 
+//#define PF_CORE_ASSERT(X){ if((!X)) {PF_ENGINE_ERROR("Assertion Failed"); __debugbreak(); } } 
 #else
 #define PF_ASSERT(X,...)
 #define PF_CORE_ASSERT(X,...)

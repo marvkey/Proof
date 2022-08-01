@@ -6,6 +6,8 @@
 #include<vulkan/vulkan.h>
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
+#include "../VulkanPipeLineLayout.h"
+
 namespace Proof
 {
 	struct DrawPipeline {
@@ -46,6 +48,8 @@ namespace Proof
 	struct MeshPipeLine {
 		Count<VulkanGraphicsPipeline> GraphicsPipeline;
 		Count<Shader> Shader;
+		Count<VulkanPipeLineLayout> PipeLineLayout;
+		Count<VulkanPushConstant> PushConstant;
 		void Init();
 	};
 }

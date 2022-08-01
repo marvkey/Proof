@@ -21,7 +21,7 @@ namespace Proof
             case Shader::ShaderStage::Vertex: return ".cach_vulkan_shader.vertex";
             case Shader::ShaderStage::Fragment: return ".cach_vulkan_shader.fragment";
             }
-            PF_CORE_ASSERT(false);
+            PF_CORE_ASSERT(false, "Invalid Shader Stage");
             return "";
         }
         static void CreateCacheDirectoryIfNeeded() {
@@ -34,7 +34,7 @@ namespace Proof
             case Shader::ShaderStage::Vertex:   return shaderc_glsl_vertex_shader;
             case Shader::ShaderStage::Fragment: return shaderc_glsl_fragment_shader;
             }
-            PF_CORE_ASSERT(false);
+            PF_CORE_ASSERT(false,"Invalid Shader stage");
             return (shaderc_shader_kind)0;
         }
     }
@@ -118,8 +118,7 @@ namespace Proof
             else {
                 shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), shaderFilePath.string().c_str(), compilerOptions);
                 if (shaderModule.GetCompilationStatus() != shaderc_compilation_status_success) {
-                    PF_ENGINE_ERROR("Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<Shader::ShaderStage>(stage), shaderModule.GetErrorMessage());
-                    PF_CORE_ASSERT(false);
+                    PF_CORE_ASSERT(false,"Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<Shader::ShaderStage>(stage), shaderModule.GetErrorMessage());
                 }
                 shaderData[stage] = std::vector<uint32_t>(shaderModule.cbegin(), shaderModule.cend());
                 std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
@@ -148,8 +147,7 @@ namespace Proof
         for (auto& [stage, source] : m_SourceCode) {
             shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), filePath.string().c_str(), compilerOptions);
             if (shaderModule.GetCompilationStatus() != shaderc_compilation_status_success) {
-                PF_ENGINE_ERROR("Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<Shader::ShaderStage>(stage), shaderModule.GetErrorMessage());
-                PF_CORE_ASSERT(false);
+                PF_CORE_ASSERT(false,"Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<Shader::ShaderStage>(stage), shaderModule.GetErrorMessage());
             }
             shaderData[stage] = std::vector<uint32_t>(shaderModule.cbegin(), shaderModule.cend());
         }
