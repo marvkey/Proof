@@ -8,28 +8,32 @@ layout(location = 2) in vec2 aTexCoords;
 layout(location = 3) in vec3 aTangent;
 layout(location = 4) in vec3 aBitangent;
 
-layout(location = 0) out vec3 outColor;
+layout(location = 0) out vec4 outColor;
 
 //push constants block
 layout(push_constant) uniform constants
 {
-	vec4 data;
-	mat4 render_matrix;
+	vec4 color;
+	mat4 render;
 } PushConstants;
-
 void main() {
-	gl_Position = PushConstants.render_matrix * vec4(aPosition, 1.0f);
-	outColor = aNormal;
+	outColor = vec4(aNormal,1.0);
+	gl_Position = PushConstants.render * vec4(aPosition, 1.0f);
 }
 
 #Fragment Shader
 
 #version 450
 
-layout(location = 0) in vec3 inColor;
+layout(location = 0) in vec4 inColor;
 
 layout(location = 0) out vec4 outFragColor;
 
+layout(push_constant) uniform constants
+{
+	vec4 color;
+	mat4 render;
+} PushConstants;
 void main() {
-	outFragColor = vec4(0.5,0.2,0.9, 1.0f);
+	outFragColor = PushConstants.color;
 }

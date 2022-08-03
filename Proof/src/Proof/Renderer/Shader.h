@@ -1,4 +1,5 @@
 #pragma once
+#include "Proof/Core/Core.h"
 #include "glm/glm.hpp"
 #include <unordered_map>
 #include <iostream>
@@ -55,14 +56,7 @@ namespace Proof {
             }
         }
     private:
-        Count<Shader>AddShader(const Count<Shader>&_Shader) {
-           if (HasShader(_Shader->GetName()) == false) {
-                ShaderMap.insert({_Shader->GetName(),_Shader});
-                return _Shader;
-           }
-            PF_ENGINE_ERROR(" shader called {} Already exist",_Shader->GetName().c_str());
-            PF_CORE_ASSERT(false,"shader library cannot add existing shader {}",_Shader->GetName().c_str());
-        }
+        Count<Shader>AddShader(const Count<Shader>& _Shader);
         friend class Shader;
     };
 };

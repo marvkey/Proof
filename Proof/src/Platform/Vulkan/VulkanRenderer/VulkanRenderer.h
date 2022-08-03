@@ -14,6 +14,7 @@ namespace Proof
 		Count<VulkanSwapChain> SwapChain = nullptr;
 		Count<VulkanCommandBuffer> CommandBuffer = nullptr;
 	};	
+
 	class VulkanRenderer {
 	public:
 		static void Init();
@@ -22,13 +23,14 @@ namespace Proof
 		static void Destroy();
 		static VkCommandBuffer GetCurrentCommandBuffer();
 		template<typename T>
-		static void BeginRenderPass(VkPipeline pipeLine, T func, const glm::vec4& color = { 0.1,0.1,0.1,1 }, float depth = 1.0f, uint32_t stencil = 0) {
+		static void BeginRenderPass(VkPipeline pipeLine, T func, const glm::vec4& color = { 0.01,0.01,0.01,1 }, float depth = 1.0f, uint32_t stencil = 0) {
 			s_Pipeline->CommandBuffer->BeginRenderPass(swapchainImageIndex, pipeLine,
 				[&](VkCommandBuffer& buffer) {
 					func(buffer);
 				},color,depth,stencil);
 		}
 		static void EndRenderPass();
+		static uint32_t swapchainImageIndex;
 
 		//IMGUI
 		static void BeginFrame() {};

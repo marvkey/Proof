@@ -42,8 +42,8 @@ namespace Proof
 	struct VulkanVertexInput {
 		VulkanVertexInput() {};
 		VulkanVertexInput(const std::vector<VkVertexInputBindingDescription>& descriptions, const std::vector<VkVertexInputAttributeDescription>& attributes) {
-			m_Descriptions = descriptions;
 			m_Attributes = attributes;
+			m_Descriptions = descriptions;
 		}
 		const std::vector<VkVertexInputBindingDescription>& GetDescriptions()const {
 			return m_Descriptions;
@@ -73,7 +73,7 @@ namespace Proof
 			m_Attributes.emplace_back(attribute);
 		}
 		VulkanVertexInput GetData() {
-			VulkanVertexInput(m_Descriptions, m_Attributes);
+			return VulkanVertexInput(m_Descriptions, m_Attributes);
 		}
 		const std::vector<VkVertexInputBindingDescription>& GetDescriptions()const {
 			return m_Descriptions;
@@ -93,36 +93,38 @@ namespace Proof
 	class VulkanVertexBuffer {
 	public:
 		~VulkanVertexBuffer();
-		VulkanVertexBuffer(void* data, size_t size);
+		VulkanVertexBuffer(const void* data, uint32_t size, uint32_t count);
 		virtual void Bind(VkCommandBuffer commandBuffer);
-		virtual void AddData(const void* Data, uint32_t Size, uint32_t SizeOfVertexBuffer = 0){}
 		/**
 		*removes as Current vertex Buffer
 		*/
 		virtual void UnBind(){}
-		uint32_t GetVertexCount() { return m_VertexCount; }
+		uint32_t GetVertexSize() { return m_VertexSize; }
+		uint32_t GetCount() { return m_Count; }
 	private:
 		VkBuffer m_VertexBuffer;
 		VkDeviceMemory m_VertexBufferMemory;
 
 		//VmaAllocation m_Allocation = nullptr;
-		uint32_t m_VertexCount;
+		uint32_t m_VertexSize;
+		uint32_t m_Count;
 	};
 
 	class VulkanIndexBuffer {
 	public:
-		VulkanIndexBuffer(void* data, uint32_t size);
+		VulkanIndexBuffer(const void* data, uint32_t size);
 		~VulkanIndexBuffer();
 		virtual void Bind(VkCommandBuffer commandBuffer);
 
 		uint32_t GetIndexCount() {
-			return GetSize()/sizeof(uint32_t);
+			return m_Count;
 		}
 		uint32_t GetSize() {
 			return m_Size;
 		}
 	private:
 		uint32_t m_Size;
+		uint32_t m_Count;
 		VkBuffer m_IndexBuffer;
 		VkDeviceMemory m_IndexBufferMemory;
 		//VmaAllocation m_Allocation = nullptr;

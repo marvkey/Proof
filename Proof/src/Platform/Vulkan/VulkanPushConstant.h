@@ -6,7 +6,7 @@ namespace Proof
 	class VulkanPushConstant {
 	public:
 		uint32_t GetSize() {
-			return m_PushConstant.size;
+			return m_size;
 		}
 		VulkanPushConstant::VulkanPushConstant(uint32_t size, uint32_t offset = 0, VkShaderStageFlags flags = VK_SHADER_STAGE_VERTEX_BIT ) {
 			//this push constant range starts at the beginning
@@ -15,11 +15,13 @@ namespace Proof
 			m_PushConstant.size = size;
 			//this push constant range is accessible only in the vertex shader
 			m_PushConstant.stageFlags = flags;
+			m_size = size;
 		}
-		void Bind(VkCommandBuffer buffer, VkPipelineLayout layout, void* data) {
-			vkCmdPushConstants(buffer, layout, m_PushConstant.stageFlags, 0, GetSize(), &data);
+		void Bind(VkCommandBuffer buffer, VkPipelineLayout layout, VkShaderStageFlags flags,uint32_t size, void* data) {
+			vkCmdPushConstants(buffer, layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, size, &data);
 		}
 	private:
+		uint32_t m_size;
 		VkPushConstantRange m_PushConstant;
 		friend class VulkanPipeLineLayout;
 	};

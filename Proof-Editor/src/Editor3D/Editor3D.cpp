@@ -38,6 +38,7 @@
 
 namespace Proof
 {
+	EditorCamera camera{ 200,200,45,0.1,200,{0,0,-10} };
 
 	Editore3D::Editore3D():
 		Layer("Editor3D Layer") 	{	}
@@ -234,7 +235,7 @@ namespace Proof
 		}
 	}
 	void Editore3D::OnAttach() {
-		
+		camera = EditorCamera{ CurrentWindow::GetWindowHeight(),CurrentWindow::GetWindowWidth() };
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 
@@ -319,7 +320,6 @@ namespace Proof
 		m_PauseButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PauseButton .png");
 		m_SimulateButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/SimulateButton.png");
 		m_StopButtonTexture =Texture2D::Create("Resources/Icons/MainPanel/StopButton.png");
-
 	}
 	void Editore3D::OnDetach() {
 		if (m_EditorWorld != nullptr) { // using editor world in case active world is on play
@@ -333,7 +333,8 @@ namespace Proof
 		Layer::OnUpdate(DeltaTime);
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
 			Count<ScreenFrameBuffer> bufferl;
-			VulkanRenderer::BeginContext(glm::mat4(1), glm::mat4(1), { 0,0,0 }, bufferl, RendererData());
+			camera.OnUpdate(DeltaTime, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
+			VulkanRenderer::BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, bufferl, RendererData());
 			VulkanRenderer::EndContext();
 		}
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;

@@ -11,6 +11,6 @@ namespace Proof
         setting.AddData(2, VulkanDataFormat::Vec2, offsetof(Vertex, Vertex::TexCoords));
         setting.AddData(3, VulkanDataFormat::Vec3, offsetof(Vertex, Vertex::Tangent));
         setting.AddData(4, VulkanDataFormat::Vec3, offsetof(Vertex, Vertex::Bitangent));
-        return VulkanVertexInput{ setting.GetDescriptions(),setting.GetAttributes()};
+        return setting.GetData();
     }
 }

@@ -118,7 +118,8 @@ namespace Proof
             else {
                 shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), shaderFilePath.string().c_str(), compilerOptions);
                 if (shaderModule.GetCompilationStatus() != shaderc_compilation_status_success) {
-                    PF_CORE_ASSERT(false,"Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<Shader::ShaderStage>(stage), shaderModule.GetErrorMessage());
+                    PF_ENGINE_ERROR("Shader Stage:: {} \n ErrorType {} \n Error Message:: {}",EnumReflection::EnumString(shaderModule.GetCompilationStatus()), EnumReflection::EnumString(stage), shaderModule.GetErrorMessage());
+                    PF_CORE_ASSERT(false);
                 }
                 shaderData[stage] = std::vector<uint32_t>(shaderModule.cbegin(), shaderModule.cend());
                 std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
@@ -147,7 +148,8 @@ namespace Proof
         for (auto& [stage, source] : m_SourceCode) {
             shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), filePath.string().c_str(), compilerOptions);
             if (shaderModule.GetCompilationStatus() != shaderc_compilation_status_success) {
-                PF_CORE_ASSERT(false,"Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<Shader::ShaderStage>(stage), shaderModule.GetErrorMessage());
+                PF_ENGINE_ERROR("Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<Shader::ShaderStage>(stage), shaderModule.GetErrorMessage());
+                PF_CORE_ASSERT(false);
             }
             shaderData[stage] = std::vector<uint32_t>(shaderModule.cbegin(), shaderModule.cend());
         }
@@ -182,7 +184,7 @@ namespace Proof
         PF_ENGINE_TRACE("    {} sampled images", resources.sampled_images.size());
         PF_ENGINE_TRACE("    {} push constant buffers  ", resources.push_constant_buffers.size());
         PF_ENGINE_TRACE("    {} storage buffers  ", resources.storage_buffers.size());
-        PF_ENGINE_TRACE("Uniform buffers:");
+        PF_ENGINE_TRACE("Uniform buffers : ");
 
         for (const auto& resource : resources.uniform_buffers) {
             const auto& bufferType = compiler.get_type(resource.base_type_id);

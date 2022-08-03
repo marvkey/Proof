@@ -4,7 +4,7 @@
 #include <ImGui/imgui.h>
 #include <GLFW/glfw3.h>
 namespace Proof{
-	EditorCamera::EditorCamera(uint32_t width,uint32_t height,float fovDeg,float nearPlane,float farplane,glm::uvec3 position) {
+	EditorCamera::EditorCamera(uint32_t width,uint32_t height,float fovDeg,float nearPlane,float farplane,glm::vec3 position) {
 		m_Height = height;
 		m_Width = width;
 		m_Positon =position;
@@ -25,12 +25,12 @@ namespace Proof{
 		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight)) {
 			m_FirstClick = true;
 			glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindowAPI(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse ; // alllows mouse capture
+			//ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse ; // alllows mouse capture
 			PF_ENGINE_INFO("Mouse Speed {}", m_Speed);
 		}
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight)) {
 			glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindowAPI(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse; // no mouse capture
+			//ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse; // no mouse capture
 			if (m_FirstClick == true) {
 				m_FirstClick = false;
 				MouseLastPosX = Input::GetMousePosX();

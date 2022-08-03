@@ -59,9 +59,18 @@ namespace Proof {
             ShaderMap.insert({Name,_Shader});
             return; 
         }
-        PF_CORE_ASSERT(false,"shader library already has a shader called %s",Name.c_str());
+        PF_ENGINE_ERROR(" shader called {} Already exist", _Shader->GetName());
+        PF_CORE_ASSERT(false,"shader library already has a shader called ");
     }
     bool ShaderLibrary::HasShader(const std::string& Name) {
         return ShaderMap.find(Name) != ShaderMap.end();
+    }
+    Count<Shader> ShaderLibrary::AddShader(const Count<Shader>& _Shader) {
+        if (HasShader(_Shader->GetName()) == false) {
+            ShaderMap.insert({ _Shader->GetName(),_Shader });
+            return _Shader;
+        }
+         PF_ENGINE_ERROR(" shader called {} Already exist",_Shader->GetName().c_str());
+        PF_CORE_ASSERT(false, "shader library cannot add existing shader");
     }
 }

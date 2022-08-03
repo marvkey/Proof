@@ -169,8 +169,10 @@ namespace Proof{
         switch (RendererAPI::GetAPI()) {
             case RendererAPI::API::OpenGL:
                 SetUpOpenGL();
+                break;
             case RendererAPI::API::Vulkan:
                 SetUpVulkan();
+                break;
             default:
                 break;
         }
@@ -213,8 +215,9 @@ namespace Proof{
         m_VertexArrayObject->UnBind();
     }
     void SubMesh::SetUpVulkan() {
+
         vulkanVertexArrayObject = new VulkanVertexArray();
-        vulkanVertexBufferObject = new VulkanVertexBuffer(m_Vertices.data(),m_Vertices.size()* sizeof(Vertex));
+        vulkanVertexBufferObject = new VulkanVertexBuffer(m_Vertices.data(),m_Vertices.size()* sizeof(Vertex), m_Vertices.size());
         vulkanIndexBufferObject = new VulkanIndexBuffer(m_Indices.data(), m_Indices.size());
     }
 }
