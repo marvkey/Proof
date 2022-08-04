@@ -7,6 +7,8 @@
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
 #include "../VulkanPipeLineLayout.h"
+#include "../VulkanPushConstant.h"
+#include "../VulkanGraphicsContext.h"
 
 namespace Proof
 {
@@ -22,12 +24,8 @@ namespace Proof
 		static void EndContext();
 		static void Destroy();
 		static VkCommandBuffer GetCurrentCommandBuffer();
-		template<typename T>
-		static void BeginRenderPass(VkPipeline pipeLine, T func, const glm::vec4& color = { 0.01,0.01,0.01,1 }, float depth = 1.0f, uint32_t stencil = 0) {
-			s_Pipeline->CommandBuffer->BeginRenderPass(swapchainImageIndex, pipeLine,
-				[&](VkCommandBuffer& buffer) {
-					func(buffer);
-				},color,depth,stencil);
+		static void BeginRenderPass(Count<VulkanGraphicsPipeline> graphicsPipeLine, const glm::vec4& color = { 0.01,0.01,0.01,1 }, float depth = 1.0f, uint32_t stencil = 0) {
+			s_Pipeline->CommandBuffer->BeginRenderPass(swapchainImageIndex, graphicsPipeLine,color,depth,stencil);
 		}
 		static void EndRenderPass();
 		static uint32_t swapchainImageIndex;

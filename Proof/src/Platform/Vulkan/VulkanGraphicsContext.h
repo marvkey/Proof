@@ -27,7 +27,7 @@ namespace Proof
 		const bool enableValidationLayers = false;
 #endif
 
-		~VulkanGraphicsContext();
+		virtual ~VulkanGraphicsContext();
 		VulkanGraphicsContext(Window* windowHandle);
 		Window* m_Window;
 		VkCommandPool GetCommandPool() { return m_CommandPool; }

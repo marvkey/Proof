@@ -2,11 +2,12 @@
 #include "Proof/Core/Core.h"
 #include <glm/glm.hpp>
 #include<vulkan/vulkan.h>
-#include "VulkanPushConstant.h"
 namespace Proof{
 	class VulkanPipeLineLayout {
 	public:
-		VulkanPipeLineLayout(Count<VulkanPushConstant>pushConstant);
+		VulkanPipeLineLayout(Count<class VulkanPushConstant>pushConstant);
+		virtual ~VulkanPipeLineLayout() {}
+
 		VkPipelineLayout GetPipeLineLayout() {
 			return m_PipeLineLayout;
 		}

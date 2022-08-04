@@ -15,6 +15,7 @@ namespace Proof
 		Float = VK_FORMAT_R32_SFLOAT,
 		Double = VK_FORMAT_R64_SFLOAT,
 		Char = VK_FORMAT_R4G4_UNORM_PACK8,	
+
 		//signed int vec2
 		Ivec2 = VK_FORMAT_R32G32_SINT,
 		//signed int vec3
@@ -23,18 +24,18 @@ namespace Proof
 		Ivec4 = VK_FORMAT_R32G32B32A32_SINT,
 
 
-		//vec2 with float
+		//vector 2 with float
 		Vec2 = VK_FORMAT_R32G32_SFLOAT,
-		// vec3 with float
+		// vector 3 with float
 		Vec3 = VK_FORMAT_R32G32B32_SFLOAT,
-		//vec4 with float
+		//vector 4 with float
 		Vec4 = VK_FORMAT_R32G32B32A32_SFLOAT,
 
-		//vec2 with double
+		//vector 2 with double
 		DVec2 = VK_FORMAT_R64G64_SFLOAT,
-		// vec3 with double
+		// vector 3 with double
 		DVec3 = VK_FORMAT_R64G64B64_SFLOAT,
-		//vec4 with double
+		//vector 4 with double
 		DVec4 = VK_FORMAT_R64G64B64A64_SFLOAT,
 
 	};

@@ -18,6 +18,7 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Renderer/UniformBuffer.h"
 #include "Proof/Scene/Component.h"
+
 namespace Proof
 {
 	enum class UniformBinding {
@@ -113,7 +114,8 @@ namespace Proof
 		//	vkCmdDraw(buffer, 3, 1, 0, 0);
 		//});
 		//EndRenderPass();
-		BeginRenderPass(s_MeshPipeLine->GraphicsPipeline->GetPipline(), [&](VkCommandBuffer& buffer) {
+		BeginRenderPass(s_MeshPipeLine->GraphicsPipeline);
+		s_Pipeline->CommandBuffer->Record([&](VkCommandBuffer& buffer){
 			{
 				//model rotation
 				glm::mat4 model = glm::translate(glm::mat4(1.0f), { 0,0,0 }) *
@@ -157,12 +159,12 @@ namespace Proof
 				constants.render_matrix = mesh_matrix;
 				constants.data = glm::vec4{ 0.9,0.1,0.9,1.0 };
 			
-				//s_MeshPipeLine->PushConstant->Bind(buffer, s_MeshPipeLine->PipeLineLayout->GetPipeLineLayout(),
-				//	VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,	sizeof(MeshPushConstants) ,&constants);
 
 				for (const auto& subMesh : MonkeyMesh.GetSubMeshes()) {
+
 					vkCmdPushConstants(buffer, s_MeshPipeLine->PipeLineLayout->GetPipeLineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT
 						, 0, sizeof(MeshPushConstants), &constants);
+
 					subMesh.vulkanVertexBufferObject->Bind(buffer);
 					subMesh.vulkanIndexBufferObject->Bind(buffer);
 					vkCmdDrawIndexed(buffer, subMesh.vulkanIndexBufferObject->GetIndexCount(), 1, 0, 0, 0);

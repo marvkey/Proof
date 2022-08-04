@@ -41,37 +41,57 @@ namespace Proof
 
     std::unordered_map<Shader::ShaderStage, std::string> VulkanShader::PreProcess(const std::filesystem::path& filePath) {
 
-        bool VertexChecked = false;
-        bool FragmentChecked = false;
-        std::ifstream ShaderFile;
-        std::string VertexSource;
-        std::string FragmentSource;
-        ShaderFile.open(filePath);
+        std::string vertexShaderSymbol = "#Vertex Shader";
+        std::string fragmentShaderSymbol = "#Fragment Shader";
 
-        if (ShaderFile.is_open() == true) {
-            std::string Line;
-            while (std::getline(ShaderFile, Line)) {
-                if (Line == "#Fragment Shader")
-                    VertexChecked = false;
-                if (VertexChecked == true) {
-                    VertexSource += Line;
-                    VertexSource += "\n";
-                }
-                if (FragmentChecked == true) {
-                    FragmentSource += Line;
-                    FragmentSource += "\n";
-                }
-                if (Line == "#Vertex Shader")
-                    VertexChecked = true;
-                if (Line == "#Fragment Shader")
-                    FragmentChecked = true;
-            }
-            ShaderFile.close();
+        std::string vertexSource;
+        std::string fragmentSource;
+        
+        bool hasVertex = false;
+        bool hasFragment = false;
+
+        std::ifstream shaderFile;
+        shaderFile.open(filePath);
+        if (shaderFile.is_open() == false) {
+            PF_ENGINE_ERROR("cannot open shader path to read {}", filePath.string());
+            PF_CORE_ASSERT(false);
+            return {};
         }
+        std::string Line;
+        while (std::getline(shaderFile, Line)) {
+            if (Line == vertexShaderSymbol) {
+                hasVertex = true;
+                hasFragment = false;
+                continue;
+            }
+
+            if (Line == fragmentShaderSymbol) {
+                hasFragment = true;
+                hasVertex = false;
+                continue;
+            }
+
+            if (hasVertex == true) {
+                vertexSource += Line;
+                vertexSource += "\n";
+                continue;
+            }
+
+            if (hasFragment == true) {
+                fragmentSource += Line;
+                fragmentSource += "\n";
+                continue;
+            }
+        }
+        shaderFile.close();
 
         std::unordered_map<Shader::ShaderStage, std::string> temp;
-        temp[Shader::ShaderStage::Vertex] = VertexSource;
-        temp[Shader::ShaderStage::Fragment] = FragmentSource;
+
+        if(vertexSource.empty() == false)
+            temp[Shader::ShaderStage::Vertex] = vertexSource;
+        if (fragmentSource.empty() == false)
+            temp[Shader::ShaderStage::Fragment] = fragmentSource;
+
         return temp;
     }
     VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filePath) {
@@ -218,24 +238,39 @@ namespace Proof
     }
 
     void VulkanShader::CreateShader() {
-        auto& vertCode = m_VulkanSPIRV[Shader::ShaderStage::Vertex];
-        auto& fragCode = m_VulkanSPIRV[Shader::ShaderStage::Fragment];
-        CreateShaderModule(vertCode, &m_ShaderModule[(int)Shader::ShaderStage::Vertex]);
-        CreateShaderModule(fragCode, &m_ShaderModule[(int)Shader::ShaderStage::Fragment]);
-        m_ShaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        m_ShaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-        m_ShaderStages[0].module = m_ShaderModule[(int)Shader::ShaderStage::Vertex];
-        m_ShaderStages[0].pName = "main"; // main funciton
-        m_ShaderStages[0].flags = 0;
-        m_ShaderStages[0].pNext = nullptr;
-        m_ShaderStages[0].pSpecializationInfo = nullptr;
-
-        m_ShaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        m_ShaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        m_ShaderStages[1].module = m_ShaderModule[(int)Shader::ShaderStage::Fragment];
-        m_ShaderStages[1].pName = "main";
-        m_ShaderStages[1].flags = 0;
-        m_ShaderStages[1].pNext = nullptr;
-        m_ShaderStages[1].pSpecializationInfo = nullptr;
+        for (auto& [shaderStage,code] : m_VulkanSPIRV) {
+            VkShaderModule shaderModule;
+            VkPipelineShaderStageCreateInfo shaderStageInfo;
+            CreateShaderModule(code, &shaderModule);
+            
+            switch (shaderStage) {
+            case Proof::Shader::ShaderStage::Vertex:
+                {
+                    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                    shaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+                    shaderStageInfo.module = shaderModule;
+                    shaderStageInfo.pName = "main"; // main funciton
+                    shaderStageInfo.flags = 0;
+                    shaderStageInfo.pNext = nullptr;
+                    shaderStageInfo.pSpecializationInfo = nullptr;
+                }
+                break;
+            case Proof::Shader::ShaderStage::Fragment:
+                {
+                    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                    shaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+                    shaderStageInfo.module = shaderModule;
+                    shaderStageInfo.pName = "main";
+                    shaderStageInfo.flags = 0;
+                    shaderStageInfo.pNext = nullptr;
+                    shaderStageInfo.pSpecializationInfo = nullptr;
+                }
+                break;
+            default:
+                break;
+            }
+            m_ShaderModule.insert({ shaderStage,{shaderModule} });
+            m_ShaderStages.emplace_back(shaderStageInfo);
+        }
     }
 }

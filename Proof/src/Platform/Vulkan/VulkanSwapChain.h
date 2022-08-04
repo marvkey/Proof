@@ -1,13 +1,10 @@
 #pragma once
 
-
 // vulkan headers
 #include <vulkan/vulkan.h>
-
 // std lib headers
 #include <string>
 #include <vector>
-#include "VulkanGraphicsContext.h"
 
 namespace Proof
 {

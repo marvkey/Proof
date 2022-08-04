@@ -2,6 +2,10 @@
 // std
 #include "Proofprch.h"
 
+#include "VulkanSwapChain.h"
+#include "Proof/Renderer/Renderer.h"
+#include "VulkanGraphicsContext.h"
+
 #include <array>
 #include <cstdlib>
 #include <cstring>
@@ -9,8 +13,8 @@
 #include <limits>
 #include <set>
 #include <stdexcept>
-#include "VulkanSwapChain.h"
-#include "Proof/Renderer/Renderer.h"
+
+
 namespace Proof
 {
 
@@ -80,8 +84,9 @@ namespace Proof
     }
 
     VkResult VulkanSwapChain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex) {
+        auto graphicsContext= Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
         /*
-        auto currentDevice = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         VkSubmitInfo submitInfo = {};
         submitInfo.pCommandBuffers = buffers;
@@ -132,8 +137,8 @@ namespace Proof
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = &m_RenderSemaphore;
 
-        vkResetFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_RenderFence);
-        if (vkQueueSubmit(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetGraphicsQueue(), 1, &submitInfo, m_RenderFence) !=
+        vkResetFences(graphicsContext->GetDevice(), 1, &m_RenderFence);
+        if (vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, m_RenderFence) !=
             VK_SUCCESS) {
             PF_CORE_ASSERT(false, "failed to submit draw command buffer!");
         }
@@ -150,13 +155,15 @@ namespace Proof
 
         presentInfo.pImageIndices = imageIndex;
 
-        auto result = vkQueuePresentKHR(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetPresentQueue(), &presentInfo);
+        auto result = vkQueuePresentKHR(graphicsContext->GetPresentQueue(), &presentInfo);
 
         return {};
     }
 
     void VulkanSwapChain::CreateSwapChain() {
-        SwapChainSupportDetails swapChainSupport = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetSwapChainSupport();
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
+        SwapChainSupportDetails swapChainSupport = graphicsContext->GetSwapChainSupport();
 
         VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
@@ -170,7 +177,7 @@ namespace Proof
 
         VkSwapchainCreateInfoKHR createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetSurface();
+        createInfo.surface = graphicsContext->GetSurface();
 
         createInfo.minImageCount = imageCount;
         createInfo.imageFormat = surfaceFormat.format;
@@ -179,7 +186,7 @@ namespace Proof
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        QueueFamilyIndices indices = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->FindPhysicalQueueFamilies();
+        QueueFamilyIndices indices = graphicsContext->FindPhysicalQueueFamilies();
         uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily };
 
         if (indices.graphicsFamily != indices.presentFamily) {
@@ -201,7 +208,7 @@ namespace Proof
 
         createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
+        if (vkCreateSwapchainKHR(graphicsContext->GetDevice(), &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
             PF_CORE_ASSERT(false, "failed to create swap chain!");
         }
 
@@ -209,15 +216,17 @@ namespace Proof
         // allowed to create a swap chain with more. That's why we'll first query the final number of
         // images with vkGetSwapchainImagesKHR, then resize the container and finally call it again to
         // retrieve the handles.
-        vkGetSwapchainImagesKHR(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_SwapChain, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(graphicsContext->GetDevice(), m_SwapChain, &imageCount, nullptr);
         m_SwapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_SwapChain, &imageCount, m_SwapChainImages.data());
+        vkGetSwapchainImagesKHR(graphicsContext->GetDevice(), m_SwapChain, &imageCount, m_SwapChainImages.data());
 
         m_SwapChainImageFormat = surfaceFormat.format;
         m_SwapChainExtent = extent;
     }
 
     void VulkanSwapChain::CreateImageViews() {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
         m_SwapChainImageViews.resize(m_SwapChainImages.size());
         for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
             VkImageViewCreateInfo viewInfo{};
@@ -360,6 +369,7 @@ namespace Proof
     }
 
     void VulkanSwapChain::CreateDepthResources() {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         VkFormat depthFormat = FindDepthFormat();
         VkExtent2D swapChainExtent = GetSwapChainExtent();
 
@@ -384,7 +394,7 @@ namespace Proof
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
 
-            Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->CreateImageWithInfo(
+            graphicsContext->CreateImageWithInfo(
                 imageInfo,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 m_DepthImages[i],
@@ -401,13 +411,15 @@ namespace Proof
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &viewInfo, nullptr, &m_DepthImageViews[i]) != VK_SUCCESS) {
+            if (vkCreateImageView(graphicsContext->GetDevice(), &viewInfo, nullptr, &m_DepthImageViews[i]) != VK_SUCCESS) {
                 PF_CORE_ASSERT(false, "failed to create texture image view!");
             }
         }
     }
 
     void VulkanSwapChain::CreateSyncObjects() {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
         m_ImageAvailableSemaphores.resize(1);
         m_RenderFinishedSemaphores.resize(1);
         m_InFlightFences.resize(1);
@@ -424,11 +436,11 @@ namespace Proof
         fenceInfo.pNext = nullptr;
 
 
-        if (vkCreateSemaphore(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &semaphoreInfo, nullptr, &m_PresentSemaphore) !=
+        if (vkCreateSemaphore(graphicsContext->GetDevice(), &semaphoreInfo, nullptr, &m_PresentSemaphore) !=
             VK_SUCCESS ||
-            vkCreateSemaphore(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &semaphoreInfo, nullptr, &m_RenderSemaphore) !=
+            vkCreateSemaphore(graphicsContext->GetDevice(), &semaphoreInfo, nullptr, &m_RenderSemaphore) !=
             VK_SUCCESS ||
-            vkCreateFence(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &fenceInfo, nullptr, &m_RenderFence) != VK_SUCCESS) {
+            vkCreateFence(graphicsContext->GetDevice(), &fenceInfo, nullptr, &m_RenderFence) != VK_SUCCESS) {
             PF_CORE_ASSERT(false, "failed to create synchronization objects for a frame!");
         }
     }
