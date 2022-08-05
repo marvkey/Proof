@@ -5,7 +5,7 @@
 // std lib headers
 #include <string>
 #include <vector>
-
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
     class VulkanSwapChain {
@@ -23,13 +23,18 @@ namespace Proof
         uint32_t GetWidth() { return m_SwapChainExtent.width; }
         uint32_t GetHeight() { return m_SwapChainExtent.height; }
 
+
         float ExtentAspectRatio() {
             return static_cast<float>(m_SwapChainExtent.width) / static_cast<float>(m_SwapChainExtent.height);
         }
         VkFormat FindDepthFormat();
 
-        VkResult AcquireNextImage(uint32_t* imageIndex,uint32_t frameIndex);
-        VkResult SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
+        void AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex= Renderer::GetCurrentFrame());
+        void WaitAndResetFences(uint32_t frameIndex = Renderer::GetCurrentFrame());
+        void WaitFences(uint32_t frameIndex = Renderer::GetCurrentFrame());
+        void ResetFences(uint32_t frameIndex = Renderer::GetCurrentFrame());
+
+        void SubmitCommandBuffers(VkCommandBuffer commnadBuffer, uint32_t* imageIndex, uint32_t frameIndex = Renderer::GetCurrentFrame());
         void Recreate();
 
         bool CompareSwapFormats(const VulkanSwapChain& swapChain) {
@@ -65,8 +70,6 @@ namespace Proof
         VkExtent2D m_WindowExtent;
 
         VkSwapchainKHR m_SwapChain;
-        VkSemaphore m_PresentSemaphore, m_RenderSemaphore;
-        VkFence m_RenderFence;
 
         std::vector<VkSemaphore> m_ImageAvailableSemaphores;
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;

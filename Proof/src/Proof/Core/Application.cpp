@@ -30,40 +30,15 @@ namespace Proof {
             ImGuiMainLayer = new ImGuiLayer();
             MainLayerStack.PushLayer(ImGuiMainLayer);
         }
-        //AssetManager::InitilizeAssets("content");
-        /*
-        InputManager::AddMotion("MoveX");
-        InputManager::AddMotion("MoveY");
-        InputManager::MotionAddKey("MoveX", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::A, -1));
-        InputManager::MotionAddKey("MoveX", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::D));
-        InputManager::MotionAddKey("MoveX", MotionInputType(InputDevice::ControllerAxis, (int)ControllerAxis::LeftX));
-
-        InputManager::MotionAddKey("MoveY", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::W));
-        InputManager::MotionAddKey("MoveY", MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::S, -1));
-        InputManager::MotionAddKey("MoveY", MotionInputType(InputDevice::ControllerAxis, (int)ControllerAxis::LeftY));
-
-        InputManager::AddAction("CursorEnabled");
-        InputManager::AddAction("CursorDisabled");
-        InputManager::ActionAddKey("CursorEnabled", InputType(InputDevice::MouseButton, (int)MouseButton::ButtonRight));
-        InputManager::ActionAddKey("CursorDisabled", InputType(InputDevice::MouseButton, (int)MouseButton::ButtonRight));
-
-
-        InputManager::AddMotion("RotateX");
-        InputManager::AddMotion("RotateY");
-        InputManager::MotionAddKey("RotateX", MotionInputType(InputDevice::MouseMovement, (int)MouseMovementInput::X, 1));
-        InputManager::MotionAddKey("RotateY", MotionInputType(InputDevice::MouseMovement, (int)MouseMovementInput::Y, 1));
-
-        InputManager::MotionAddKey("RotateY", MotionInputType(InputDevice::ControllerAxis, (int)ControllerAxis::RightY, 1));
-        InputManager::MotionAddKey("RotateX", MotionInputType(InputDevice::ControllerAxis, (int)ControllerAxis::RightX, 1));
-        */
-
         PF_ENGINE_TRACE("Engine Load Done");
     }
 
     void Application::LayerUpdate(float deltaTime) {
         PF_PROFILE_FUNC();
+        Renderer::BeginFrame();
         for (Layer* layer : MainLayerStack.V_LayerStack)
             layer->OnUpdate(deltaTime);
+        Renderer::EndFrame();
     }
 
     void Application::ImguiUpdate(float deltaTime) {
@@ -119,7 +94,6 @@ namespace Proof {
 
         while (glfwWindowShouldClose((GLFWwindow*)CurrentWindow::GetWindowAPI()) == false && Input::IsKeyClicked(KeyBoardKey::Escape)==false) {
             PF_PROFILE_FRAME("Application::Update");
-            float FrameStart = glfwGetTime();
             float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
             FrameCount++;
@@ -129,7 +103,6 @@ namespace Proof {
                 RendererCommand::Enable(ProofRenderTest::DepthTest);
 
             if (WindowMinimized == false) 
-
                 LayerUpdate(DeltaTime);
             if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
                 ImguiUpdate(DeltaTime);

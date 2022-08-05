@@ -28,7 +28,6 @@ namespace Proof
 	// for instace rendering 
 	// meshes with same material will be stored next to each other and drawn together
 	static CameraData s_CurrentCamera;
-	uint32_t frameNumber = 0;
 	struct MeshPushConstants {
 		glm::vec4 data;
 		glm::mat4 render_matrix;
@@ -92,9 +91,11 @@ namespace Proof
 	}
 
 	void VulkanRenderer::EndRenderPass() {
+
 		s_Pipeline->CommandBuffer->EndRenderPass();
-		const auto& commandBuffer = GetCurrentCommandBuffer();
-		auto result = s_Pipeline->SwapChain->SubmitCommandBuffers(&commandBuffer, &swapchainImageIndex);
+		s_Pipeline->SwapChain->SubmitCommandBuffers(s_Pipeline->CommandBuffer->GetCommandBuffer(), &swapchainImageIndex);
+
+		PF_ENGINE_ERROR("SDSF");
 	}
 	void VulkanRenderer::RecreateSwapChain() {
 		
@@ -102,18 +103,10 @@ namespace Proof
 	void VulkanRenderer::DrawFrame() {
 		const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
 		const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		//wait until the GPU has finished rendering the last frame. Timeout of 1 second
-		vkWaitForFences(device, 1, &s_Pipeline->SwapChain->m_RenderFence, true, 1000000000);
-		vkResetFences(device, 1, &s_Pipeline->SwapChain->m_RenderFence);
 
-		//now that we are sure that the commands finished executing, we can safely reset the command buffer to begin recording again.
-		vkResetCommandBuffer(s_Pipeline->CommandBuffer->GetCommandBuffer(), 0);
-		vkAcquireNextImageKHR(device, s_Pipeline->SwapChain->m_SwapChain, 1000000000, s_Pipeline->SwapChain->m_PresentSemaphore, nullptr, &swapchainImageIndex);
+		s_Pipeline->SwapChain->WaitAndResetFences();
+		s_Pipeline->SwapChain->AcquireNextImage(&swapchainImageIndex);
 
-		//BeginRenderPass(s_TrianglePipeLine->GraphicsPipeline->GetPipline(), [&](VkCommandBuffer& buffer) {
-		//	vkCmdDraw(buffer, 3, 1, 0, 0);
-		//});
-		//EndRenderPass();
 		BeginRenderPass(s_MeshPipeLine->GraphicsPipeline);
 		s_Pipeline->CommandBuffer->Record([&](VkCommandBuffer& buffer){
 			{
@@ -173,7 +166,6 @@ namespace Proof
 		});
 		
 		EndRenderPass();
-		frameNumber++;
 	}
 	
 	void TrianglePipeLine::Init() {

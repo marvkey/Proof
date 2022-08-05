@@ -25,7 +25,7 @@ namespace Proof
 		static void Destroy();
 		static VkCommandBuffer GetCurrentCommandBuffer();
 		static void BeginRenderPass(Count<VulkanGraphicsPipeline> graphicsPipeLine, const glm::vec4& color = { 0.01,0.01,0.01,1 }, float depth = 1.0f, uint32_t stencil = 0) {
-			s_Pipeline->CommandBuffer->BeginRenderPass(swapchainImageIndex, graphicsPipeLine,color,depth,stencil);
+			s_Pipeline->CommandBuffer->BeginRenderPass(swapchainImageIndex, graphicsPipeLine, color, depth, stencil);
 		}
 		static void EndRenderPass();
 		static uint32_t swapchainImageIndex;

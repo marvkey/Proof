@@ -35,5 +35,5 @@ layout(push_constant) uniform constants
 	mat4 render;
 } PushConstants;
 void main() {
-	outFragColor = PushConstants.color;
+	outFragColor = inColor;
 }

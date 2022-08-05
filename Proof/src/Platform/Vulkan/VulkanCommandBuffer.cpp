@@ -8,7 +8,8 @@ namespace Proof
 {
 	VulkanCommandBuffer::VulkanCommandBuffer(Count<VulkanSwapChain> swapChain)
 	{
-		auto device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		m_CommandBuffer.resize(Renderer::GetConfig().FramesFlight);
+		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		m_SwapChain = swapChain;
 
 		VkCommandBufferAllocateInfo allocInfo{};
@@ -19,19 +20,23 @@ namespace Proof
 
 		// command pool opaque objects
 		// that command buffer memory is allocated from
-		allocInfo.commandPool = device->GetCommandPool();
+		allocInfo.commandPool = graphicsContext->GetCommandPool();
 		
-		// FRAMES IN FLIGH COULD BE USED
-		allocInfo.commandBufferCount = 1;
+		allocInfo.commandBufferCount = m_CommandBuffer.size();
 
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-		if (vkAllocateCommandBuffers(device->GetDevice(), &allocInfo, &m_CommandBuffer) != VK_SUCCESS)
+		if (vkAllocateCommandBuffers(graphicsContext->GetDevice(), &allocInfo, m_CommandBuffer.data()) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to allocate command buffer");
 
 	}
-	void VulkanCommandBuffer::BeginRenderPass(uint32_t SwapIndex, Count<VulkanGraphicsPipeline> graphicsPipeLine, const glm::vec4& Color, float Depth, uint32_t stencil) {
+	void VulkanCommandBuffer::BeginRenderPass(uint32_t imageIndex, Count<VulkanGraphicsPipeline> graphicsPipeLine,const glm::vec4& Color, float Depth, uint32_t stencil, uint32_t frameIndex){
 		PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot start render pass when previous render pass is not closed");
+		//we can safely reset the command buffer to begin recording again.
+		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		vkResetCommandBuffer(m_CommandBuffer[frameIndex], 0);
+
+
 		std::array<VkClearValue, 2> clearValues{};
 		clearValues[0].color = { Color.x, Color.y, Color.z, Color.a };
 		// color of screen
@@ -45,7 +50,7 @@ namespace Proof
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = m_SwapChain->GetRenderPass();
 		// teh frameBuffer we are writing
-		renderPassInfo.framebuffer = m_SwapChain->GetFrameBuffer(SwapIndex);
+		renderPassInfo.framebuffer = m_SwapChain->GetFrameBuffer(imageIndex);
 
 		// the area shader loads and 
 		renderPassInfo.renderArea.offset = { 0,0 };
@@ -59,23 +64,25 @@ namespace Proof
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		//begin the command buffer recording. We will use this command buffer exactly once, so we want to let vulkan know that
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		if (vkBeginCommandBuffer(m_CommandBuffer, &beginInfo) != VK_SUCCESS)
+		if (vkBeginCommandBuffer(m_CommandBuffer[frameIndex], &beginInfo) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to begin recording command buffer");
 
-		vkCmdBeginRenderPass(m_CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(m_CommandBuffer[frameIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		m_GraphicspipeLine = graphicsPipeLine;
+		m_FrameIndex = frameIndex;
 	}
-	void VulkanCommandBuffer::Bind(VkPipelineBindPoint bindPoint) {
-		vkCmdBindPipeline(m_CommandBuffer, bindPoint, m_GraphicspipeLine->GetPipline());
+	void VulkanCommandBuffer::Bind(uint32_t frameIndex, VkPipelineBindPoint bindPoint ) {
+		vkCmdBindPipeline(m_CommandBuffer[frameIndex], bindPoint, m_GraphicspipeLine->GetPipline());
 	}
 
 	void VulkanCommandBuffer::EndRenderPass() {
 		PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot End render pass when render pass is not started");
-		vkCmdEndRenderPass(m_CommandBuffer);
-		if (vkEndCommandBuffer(m_CommandBuffer) != VK_SUCCESS)
+		vkCmdEndRenderPass(m_CommandBuffer[m_FrameIndex]);
+		if (vkEndCommandBuffer(m_CommandBuffer[m_FrameIndex]) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Faied to record command Buffers");
 		m_GraphicspipeLine = nullptr;
 		m_RenderPassEnabled = false;
+		m_FrameIndex = 0;
 	}
 
 	void VulkanCommandBuffer::Recreate() {
@@ -94,10 +101,13 @@ namespace Proof
 
 	void VulkanCommandBuffer::FreeCommandBuffer() {
 		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		vkFreeCommandBuffers(
-			graphicsContext->GetDevice(),
-			graphicsContext->GetCommandPool(),
-			1,
-			&m_CommandBuffer);
+
+		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++) {
+			vkFreeCommandBuffers(
+				graphicsContext->GetDevice(),
+				graphicsContext->GetCommandPool(),
+				1,
+				&m_CommandBuffer[i]);
+		}
 	}
 };
