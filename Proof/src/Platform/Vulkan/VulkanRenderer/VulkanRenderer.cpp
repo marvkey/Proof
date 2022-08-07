@@ -21,10 +21,7 @@
 
 namespace Proof
 {
-	enum class UniformBinding {
-		CameraData =0,
 
-	};
 	// for instace rendering 
 	// meshes with same material will be stored next to each other and drawn together
 	static CameraData s_CurrentCamera;
@@ -95,7 +92,6 @@ namespace Proof
 		s_Pipeline->CommandBuffer->EndRenderPass();
 		s_Pipeline->SwapChain->SubmitCommandBuffers(s_Pipeline->CommandBuffer->GetCommandBuffer(), &swapchainImageIndex);
 
-		PF_ENGINE_ERROR("SDSF");
 	}
 	void VulkanRenderer::RecreateSwapChain() {
 		

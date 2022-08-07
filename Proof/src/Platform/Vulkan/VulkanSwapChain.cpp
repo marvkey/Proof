@@ -102,19 +102,7 @@ namespace Proof
             VK_SUCCESS) {
             PF_CORE_ASSERT(false, "failed to submit draw command buffer!");
         }
-        /*
-        VkPresentInfoKHR presentInfo = {};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[*imageIndex];
-
-        VkSwapchainKHR swapChains[] = { m_SwapChain };
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains;
-
-        presentInfo.pImageIndices = imageIndex;
-        */
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 

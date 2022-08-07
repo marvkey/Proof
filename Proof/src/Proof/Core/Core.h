@@ -42,8 +42,7 @@ inline const std::string ProofCurrentDirectory = "../Proof/";
     #define PF_INTERNAL_ASSERT_GET_MACRO(...) PROOF_EXPAND_MACRO( PF_INTERNAL_ASSERT_GET_MACRO_NAME(__VA_ARGS__, PF_INTERNAL_ASSERT_WITH_MSG, PF_INTERNAL_ASSERT_NO_MSG) )
     
     #define PF_ASSERT(X,...){ if((!X)) {PF_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak();  } }
-    #define PF_CORE_ASSERT(X,...){ if((!X)) {PF_ENGINE_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak(); } } 
-    #define PF_CORE_ASSERT(X){ if((!X)) {PF_ENGINE_ERROR("Assertion Failed"); __debugbreak(); } } 
+    #define PF_CORE_ASSERT(...) PROOF_EXPAND_MACRO( PF_INTERNAL_ASSERT_GET_MACRO(__VA_ARGS__)(_ENGINE_, __VA_ARGS__) )
 #else
     #define PF_ASSERT(X,...)
     #define PF_CORE_ASSERT(X,...)

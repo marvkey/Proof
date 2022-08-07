@@ -9,7 +9,7 @@
 #include "../VulkanPipeLineLayout.h"
 #include "../VulkanPushConstant.h"
 #include "../VulkanGraphicsContext.h"
-
+#include "../VulkanDescriptorSet.h"
 namespace Proof
 {
 	struct DrawPipeline {
@@ -30,6 +30,16 @@ namespace Proof
 		static void EndRenderPass();
 		static uint32_t swapchainImageIndex;
 
+		template <class T>
+		static void Submit(T func(VkCommandBuffer buffer)) {
+			VkCommandBufferBeginInfo beginInfo{};
+			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+			vkBeginCommandBuffer(s_Pipeline->CommandBuffer->GetCommandBuffer(), &beginInfo);
+			func(s_Pipeline->CommandBuffer->GetCommandBuffer())
+			vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+		}
 		//IMGUI
 		static void BeginFrame() {};
 		static void EndFrame() {};

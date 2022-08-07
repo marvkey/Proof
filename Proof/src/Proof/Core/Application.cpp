@@ -108,15 +108,16 @@ namespace Proof {
                 ImguiUpdate(DeltaTime);
 
             MainWindow->WindowUpdate();
+            FrameTimersControll::s_FrameTimers.clear();
+
             if (CurrentTime - PreviousTime >= 1.0) {
                 PreviousTime = CurrentTime;
                 FrameCount = 0;
             }
+
             FPS = (1.0 / (CurrentTime - PreviousTime)) * FrameCount;
             FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
-
             LastFrameTime = time;
-            FrameTimersControll::s_FrameTimers.clear();
         };
         IsRunning = false;
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan)

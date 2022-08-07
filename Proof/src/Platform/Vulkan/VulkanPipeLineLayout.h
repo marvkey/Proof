@@ -5,7 +5,7 @@
 namespace Proof{
 	class VulkanPipeLineLayout {
 	public:
-		VulkanPipeLineLayout(Count<class VulkanPushConstant>pushConstant);
+		VulkanPipeLineLayout(Count<class VulkanPushConstant>pushConstant = nullptr, Count<class VulkanDescriptorSetLayout> descriptor = nullptr);
 		virtual ~VulkanPipeLineLayout() {}
 
 		VkPipelineLayout GetPipeLineLayout() {

@@ -4,6 +4,8 @@
 #include<unordered_set>
 #include<set>
 #include <vector>
+#include "VulkanDescriptorSet.h"
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
 
@@ -62,6 +64,8 @@ namespace Proof
 		PickPhysicalDevice();
 		CreateLogicalDevice();
 		CreateCommandPool();
+		//InitDescriptor();
+		InitVMA();
 	}
 
 	VulkanGraphicsContext::~VulkanGraphicsContext() {
@@ -198,10 +202,35 @@ namespace Proof
 		poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
 
 		//we also want the pool to allow for resetting of individual command buffers
-		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;;
+		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 		if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
 			PF_CORE_ASSERT(false, "failed to create command pool!");
+		}
+	}
+
+	void VulkanGraphicsContext::InitVMA() {
+		//initialize the memory allocator
+		//VmaAllocatorCreateInfo allocatorInfo = {};
+		//allocatorInfo.physicalDevice = m_PhysicalDevice;
+		//allocatorInfo.device = m_Device;
+		//allocatorInfo.instance = m_Instance;
+		//vmaCreateAllocator(&allocatorInfo, &m_VMA_Allocator);
+	}
+
+	void VulkanGraphicsContext::InitDescriptors() {
+		uint32_t size = 1000; // maybe also frames in flight
+		m_GlobalPool
+			= VulkanDescriptorPool::Builder()
+			.SetMaxSets(1000)
+			.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000)
+			.Build();
+
+		uint32_t sizeBindings = EnumReflection::GetCount< UniformBinding>();
+
+		m_DescriptorSets.resize(sizeBindings);
+		for (int i = 0; i < m_DescriptorSets.size(); i++) {
+
 		}
 	}
 
@@ -429,7 +458,7 @@ namespace Proof
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 		if (vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-			PF_CORE_ASSERT(false, "failed to create vertex buffer!");
+			PF_CORE_ASSERT(false, "failed to create buffer!");
 		}
 
 		// we can allocate memory of the proper size and required properties we set as an argument

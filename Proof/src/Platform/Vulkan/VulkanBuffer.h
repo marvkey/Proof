@@ -90,7 +90,9 @@ namespace Proof
 	class VulkanVertexArray {
 
 	};
-	
+
+	void Copy(const void* data, uint32_t size);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 	class VulkanVertexBuffer {
 	public:
 		~VulkanVertexBuffer();

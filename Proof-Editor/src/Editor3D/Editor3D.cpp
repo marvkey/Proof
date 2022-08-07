@@ -36,6 +36,9 @@
 #include "Proof/Core/SceneCoreClasses.h"
 #include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
 
+
+
+
 namespace Proof
 {
 	EditorCamera camera{ 200,200,45,0.1,200,{0,0,-10} };

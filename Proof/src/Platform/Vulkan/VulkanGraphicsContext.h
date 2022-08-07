@@ -1,7 +1,8 @@
 #pragma once
 #include"Proof/Renderer/GraphicsContext.h"
 #include <vulkan/vulkan.h>
-#include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
+//#include "vk_mem_alloc.h"
+
 namespace Proof
 {
 
@@ -61,6 +62,7 @@ namespace Proof
 			VkImage& image,
 			VkDeviceMemory& imageMemory);
 
+		
 		VkPhysicalDeviceProperties properties;
 		//void VMACreateBuffer(const VkBufferCreateInfo& bufferInfo, const VmaAllocationCreateInfo& VMAallocinfo, VkBuffer& buffer, VmaAllocation& vmaAlloc);
 		//
@@ -75,6 +77,7 @@ namespace Proof
 		void CreateLogicalDevice();
 		void CreateCommandPool();
 		void InitVMA();
+		void InitDescriptors();
 		// helper functions
 		bool IsDeviceSuitable(VkPhysicalDevice device);
 		std::vector<const char*> GetRequiredExtensions();
@@ -94,10 +97,13 @@ namespace Proof
 		VkSurfaceKHR m_Surface;
 		VkQueue m_GraphicsQueue;
 		VkQueue m_PresentQueue;
-
+		VkPhysicalDeviceProperties m_GpuProperties;
 		//VmaAllocator m_VMA_Allocator; 
 		const std::vector<const char*> m_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> m_DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+		Count<class VulkanDescriptorPool> m_GlobalPool;
+		std::vector<VkDescriptorSet	> m_DescriptorSets;
 	};
 
 }

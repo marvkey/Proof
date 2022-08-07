@@ -78,7 +78,7 @@ project "Proof"
         "vulkan-1.lib",
 		"OptickCore.lib",
 		"SPIRV-Cross",
-        --"VulkanMemoryAllocator.lib",
+    --"VulkanMemoryAllocator.lib",
 		--"physx",
 		--"PhysXFoundation_64.lib",
         --"PhysXCooking_64.lib",
