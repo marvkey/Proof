@@ -69,7 +69,12 @@ namespace Proof
 		//const VmaAllocator& GetVMAAllocator() {
 		//	return m_VMA_Allocator;
 		//}
+
+		uint32_t GetVulkanVersion() {
+			return m_VulkanVersion;
+		}
 	private:
+		uint32_t m_VulkanVersion;
 		void CreateInstance();
 		void SetupDebugMessenger();
 		void CreateSurface();

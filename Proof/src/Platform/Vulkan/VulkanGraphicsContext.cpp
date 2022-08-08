@@ -84,14 +84,14 @@ namespace Proof
 		if (enableValidationLayers && !CheckValidationLayerSupport()) {
 			PF_CORE_ASSERT(false, "validation layers requested, but not available!");
 		}
-
+		m_VulkanVersion = VK_API_VERSION_1_2;
 		VkApplicationInfo appInfo = {};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pApplicationName = "Proof";
-		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.pEngineName = "Prof";
-		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.apiVersion = VK_API_VERSION_1_0;
+		appInfo.applicationVersion = m_VulkanVersion;
+		appInfo.pEngineName = "Proof";
+		appInfo.engineVersion = m_VulkanVersion;
+		appInfo.apiVersion = m_VulkanVersion;
 
 		VkInstanceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

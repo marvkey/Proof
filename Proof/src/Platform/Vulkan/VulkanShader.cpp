@@ -29,7 +29,7 @@ namespace Proof
             if (!std::filesystem::exists(cacheDirectory))
                 std::filesystem::create_directories(cacheDirectory);
         }
-        static shaderc_shader_kind  ShaderStageToShaderC(Shader::ShaderStage stage) {
+        static shaderc_shader_kind ShaderStageToShaderC(Shader::ShaderStage stage) {
             switch (stage) {
             case Shader::ShaderStage::Vertex:   return shaderc_glsl_vertex_shader;
             case Shader::ShaderStage::Fragment: return shaderc_glsl_fragment_shader;
@@ -37,6 +37,8 @@ namespace Proof
             PF_CORE_ASSERT(false,"Invalid Shader stage");
             return (shaderc_shader_kind)0;
         }
+
+     
     }
 
     std::unordered_map<Shader::ShaderStage, std::string> VulkanShader::PreProcess(const std::filesystem::path& filePath) {
@@ -108,9 +110,11 @@ namespace Proof
         }
     }
     void VulkanShader::CompileOrGetBinaries(const std::filesystem::path& filePath) {
+		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
-        compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_0);
+        compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, graphicsContext->GetVulkanVersion());
         const bool optimize = true;
         if (optimize)
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -156,9 +160,11 @@ namespace Proof
     }
 
     void VulkanShader::Compile(const std::filesystem::path& filePath) {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
-        compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_0);
+        compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, graphicsContext->GetVulkanVersion());
         const bool optimize = true;
         if (optimize)
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
