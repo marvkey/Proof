@@ -4,8 +4,7 @@
 #include<vulkan/vulkan.h>
 #include <glm/glm.hpp>
 #include "Proof/Renderer/Vertex.h"
-//#include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
-
+#include "VulkanUtils/VulkanBufferBase.h"
 namespace Proof
 {
 	enum class VulkanDataFormat{
@@ -98,17 +97,12 @@ namespace Proof
 		~VulkanVertexBuffer();
 		VulkanVertexBuffer(const void* data, uint32_t size, uint32_t count);
 		virtual void Bind(VkCommandBuffer commandBuffer);
-		/**
-		*removes as Current vertex Buffer
-		*/
+	
 		virtual void UnBind(){}
 		uint32_t GetVertexSize() { return m_VertexSize; }
 		uint32_t GetCount() { return m_Count; }
 	private:
-		VkBuffer m_VertexBuffer;
-		VkDeviceMemory m_VertexBufferMemory;
-
-		//VmaAllocation m_Allocation = nullptr;
+		VulkanBuffer m_VertexBuffer;
 		uint32_t m_VertexSize;
 		uint32_t m_Count;
 	};
@@ -128,10 +122,6 @@ namespace Proof
 	private:
 		uint32_t m_Size;
 		uint32_t m_Count;
-		VkBuffer m_IndexBuffer;
-		VkDeviceMemory m_IndexBufferMemory;
-		//VmaAllocation m_Allocation = nullptr;
+		VulkanBuffer m_IndexBuffer;
 	};
-
-	
 }

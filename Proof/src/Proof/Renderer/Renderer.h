@@ -50,7 +50,6 @@ namespace Proof {
 			return s_GraphicsCardVersion;
 		}
 		
-
 	private:
 		static Count<class GraphicsContext>m_GraphicsContext;
 		static uint32_t s_CurrentFrame;

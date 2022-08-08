@@ -50,7 +50,7 @@ namespace Proof
 		s_Pipeline->CommandBuffer = CreateCount<VulkanCommandBuffer>(s_Pipeline->SwapChain);
 		PF_ENGINE_INFO("Vulkan Renderer Initlized");
 		MonkeyMesh = Mesh("monkey_smooth.obj");
-		MeshCube = Mesh("cube.obj");
+		MeshCube = Mesh("crytek-sponza-huge-vray.obj");
 		s_TrianglePipeLine = new TrianglePipeLine();
 		s_MeshPipeLine = new MeshPipeLine();
 		//s_TrianglePipeLine->Init();
@@ -111,7 +111,7 @@ namespace Proof
 					glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 1,0,0 })
 					* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,1,0 })
 					* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })
-					* glm::scale(glm::mat4(1.0f), { 1,1,1 });
+					* glm::scale(glm::mat4(1.0f), { 0.01,0.01,0.01 });
 
 				//calculate final mesh matrix
 				MeshPushConstants constants;

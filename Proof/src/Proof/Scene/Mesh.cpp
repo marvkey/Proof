@@ -25,6 +25,7 @@ namespace Proof{
         //importer.ReadFileFromMemory(); pass a string to read file data
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
         {
+            PF_ENGINE_WARN("ERROR::ASSIMP {}", importer.GetErrorString());
             PF_WARN("ERROR::ASSIMP {}",importer.GetErrorString());
             return;
         }
@@ -69,7 +70,8 @@ namespace Proof{
             }
         }
         aiMaterial* material = aiscene->mMaterials[aimesh->mMaterialIndex];
-
+        if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+            return SubMesh(vertices, indices, aimesh->mName.C_Str());
         std::vector<Count<Texture2D>>  diffuseMaps = LoadMaterialTextures(material,aiTextureType_DIFFUSE,Texture2D::TextureType::Diffuse);
         textures.insert(textures.end(),diffuseMaps.begin(),diffuseMaps.end());
 

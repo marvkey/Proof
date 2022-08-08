@@ -41,7 +41,7 @@
 
 namespace Proof
 {
-	EditorCamera camera{ 200,200,45,0.1,200,{0,0,-10} };
+	EditorCamera camera{ 200,200};
 
 	Editore3D::Editore3D():
 		Layer("Editor3D Layer") 	{	}

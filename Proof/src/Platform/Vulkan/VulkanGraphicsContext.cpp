@@ -211,11 +211,11 @@ namespace Proof
 
 	void VulkanGraphicsContext::InitVMA() {
 		//initialize the memory allocator
-		//VmaAllocatorCreateInfo allocatorInfo = {};
-		//allocatorInfo.physicalDevice = m_PhysicalDevice;
-		//allocatorInfo.device = m_Device;
-		//allocatorInfo.instance = m_Instance;
-		//vmaCreateAllocator(&allocatorInfo, &m_VMA_Allocator);
+		VmaAllocatorCreateInfo allocatorInfo = {};
+		allocatorInfo.physicalDevice = m_PhysicalDevice;
+		allocatorInfo.device = m_Device;
+		allocatorInfo.instance = m_Instance;
+		vmaCreateAllocator(&allocatorInfo, &m_VMA_Allocator);
 	}
 
 	void VulkanGraphicsContext::InitDescriptors() {
@@ -434,6 +434,14 @@ namespace Proof
 			}
 		}
 		PF_CORE_ASSERT(false, "failed to find supported format!");
+	}
+
+	bool VulkanGraphicsContext::CreateVmaBuffer(VkBufferCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanBuffer& buffer) {
+		VkResult result =  vmaCreateBuffer(m_VMA_Allocator, &bufferInfo, &vmaInfo, &buffer.Buffer, &buffer.Allocation, nullptr);
+		if (result == false)
+			return false;
+
+		return true;
 	}
 
 	uint32_t VulkanGraphicsContext::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {

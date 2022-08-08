@@ -1,7 +1,8 @@
 #pragma once
 #include"Proof/Renderer/GraphicsContext.h"
+#include "VulkanUtils/VulkanBufferBase.h"
+
 #include <vulkan/vulkan.h>
-//#include "vk_mem_alloc.h"
 
 namespace Proof
 {
@@ -43,6 +44,7 @@ namespace Proof
 		VkFormat FindSupportedFormat(
 			const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
+		bool CreateVmaBuffer(VkBufferCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanBuffer& buffer);
 		// Buffer Helper Functions
 		void CreateBuffer(
 			VkDeviceSize size,
@@ -72,6 +74,10 @@ namespace Proof
 
 		uint32_t GetVulkanVersion() {
 			return m_VulkanVersion;
+		}
+
+		VmaAllocator GetVMA_Allocator() {
+			return m_VMA_Allocator;
 		}
 	private:
 		uint32_t m_VulkanVersion;
@@ -109,6 +115,8 @@ namespace Proof
 
 		Count<class VulkanDescriptorPool> m_GlobalPool;
 		std::vector<VkDescriptorSet	> m_DescriptorSets;
+
+		VmaAllocator m_VMA_Allocator;
 	};
 
 }
