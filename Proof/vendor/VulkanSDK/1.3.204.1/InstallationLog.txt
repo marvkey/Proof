@@ -247,3 +247,234 @@
 [69520] perform  operation: Delete
 [69520] 	- arguments: C:\VulkanSDK\1.3.204.1/Helpers/vc_redist.x64.exe
 [69526] Done
+************************************* Invoked: Fri Jul 29 07:42:30 2022
+[0] Arguments: C:\Users\marvn\OneDrive\Documents\Proof\Proof\vendor\VulkanSDK\1.3.204.1\maintenancetool.exe
+[54] Operations sanity check succeeded.
+[55] Language: en-US
+[1325] Loaded control script ":/metadata/installer-config/installscript_qs.qs"
+[1325] Using control script: ":/metadata/installer-config/installscript_qs.qs"
+[10423] Preparing meta information download...
+[10712] Retrieving meta information from remote repository...
+[10874] Extracting meta information...
+[15417] Preparing meta information download...
+[28317] Installation space required: "4.45 GB" Temporary space required: "514.53 MB" Local repository size: "0.00 bytes"
+[28326] Tmp and install directories are on the same volume. Volume mount point: "C:\\" Free space available: "617.79 GB"
+[29255] Install size: 4 components
+[29255] Preparing the installation...
+[29256] Downloading packages...
+[29257] Downloading archive "1.3.204.1core32.7z.sha1" for component (Optional) SDK 32-bit Core Components.
+[29447] Downloading archive "1.3.204.1core32.7z" for component (Optional) SDK 32-bit Core Components.
+[51642] Downloading archive "1.3.204.1debug.7z.sha1" for component (Optional) Debuggable Shader API Libraries - 64-bit.
+[51787] Downloading archive "1.3.204.1debug.7z" for component (Optional) Debuggable Shader API Libraries - 64-bit.
+[113739] Downloading archive "1.3.204.1debug32.7z.sha1" for component (Optional) Debuggable Shader API Libraries - 32-bit.
+[113989] Downloading archive "1.3.204.1debug32.7z" for component (Optional) Debuggable Shader API Libraries - 32-bit.
+[183006] Downloading archive "1.3.204.1Third-Party.7z.sha1" for component (Optional) 3rd-Party libraries and headers..
+[183250] Downloading archive "1.3.204.1Third-Party.7z" for component (Optional) 3rd-Party libraries and headers..
+[185436] Installing component (Optional) SDK 32-bit Core Components
+[185437] backup com.lunarg.vulkan.32bit operation: Extract
+[185437] 	- arguments: installer://com.lunarg.vulkan.32bit/1.3.204.1core32.7z, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1
+[185437] Done
+[185438] perform com.lunarg.vulkan.32bit operation: Extract
+[185438] 	- arguments: installer://com.lunarg.vulkan.32bit/1.3.204.1core32.7z, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1
+[192324] Done
+[192324] Starting elevated process "C:\\Users\\marvn\\OneDrive\\Documents\\Proof\\Proof\\vendor\\VulkanSDK\\1.3.204.1\\maintenancetool.exe" with arguments " --start-server PRODUCTION,{7c6926b7-8067-4752-9d2e-7607e511c5e4},{c5adede6-4b45-4dc4-97b6-1f2d3643235e}"
+[195455] Finished starting elevated process.
+[195793] "Execute" as admin: true
+[195793] backup com.lunarg.vulkan.32bit operation: Execute
+[195804] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1, SHORTCUTS32, Vulkan SDK 1.3.204.1, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, REMOVESHORTCUTS32, Vulkan SDK 1.3.204.1
+[195804] Done
+[195804] perform com.lunarg.vulkan.32bit operation: Execute
+[195809] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1, SHORTCUTS32, Vulkan SDK 1.3.204.1, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, REMOVESHORTCUTS32, Vulkan SDK 1.3.204.1
+[195816] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1 SHORTCUTS32 Vulkan SDK 1.3.204.1
+[195901] Done
+[195902] "Execute" as admin: true
+[195902] backup com.lunarg.vulkan.32bit operation: Execute
+[195904] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_api_dump.json
+[195904] Done
+[195904] perform com.lunarg.vulkan.32bit operation: Execute
+[195907] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_api_dump.json
+[195913] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "CLEANEXPLICIT32 VkLayer_api_dump.json
+[195936] Done
+[195937] "Execute" as admin: true
+[195937] backup com.lunarg.vulkan.32bit operation: Execute
+[195942] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_api_dump.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_api_dump.json
+[195942] Done
+[195942] perform com.lunarg.vulkan.32bit operation: Execute
+[195948] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_api_dump.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_api_dump.json
+[195952] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "ADDEXPLICIT32 C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Bin32\\VkLayer_api_dump.json
+[195979] Done
+[195980] "Execute" as admin: true
+[195980] backup com.lunarg.vulkan.32bit operation: Execute
+[195982] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_device_simulation.json
+[195982] Done
+[195982] perform com.lunarg.vulkan.32bit operation: Execute
+[195984] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_device_simulation.json
+[195988] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "CLEANEXPLICIT32 VkLayer_device_simulation.json
+[196015] Done
+[196016] "Execute" as admin: true
+[196016] backup com.lunarg.vulkan.32bit operation: Execute
+[196022] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_device_simulation.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_device_simulation.json
+[196022] Done
+[196022] perform com.lunarg.vulkan.32bit operation: Execute
+[196030] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_device_simulation.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_device_simulation.json
+[196033] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "ADDEXPLICIT32 C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Bin32\\VkLayer_device_simulation.json
+[196060] Done
+[196061] "Execute" as admin: true
+[196061] backup com.lunarg.vulkan.32bit operation: Execute
+[196063] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_gfxreconstruct.json
+[196063] Done
+[196063] perform com.lunarg.vulkan.32bit operation: Execute
+[196064] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_gfxreconstruct.json
+[196066] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "CLEANEXPLICIT32 VkLayer_gfxreconstruct.json
+[196090] Done
+[196091] "Execute" as admin: true
+[196091] backup com.lunarg.vulkan.32bit operation: Execute
+[196094] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_gfxreconstruct.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_gfxreconstruct.json
+[196094] Done
+[196094] perform com.lunarg.vulkan.32bit operation: Execute
+[196100] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_gfxreconstruct.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_gfxreconstruct.json
+[196105] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "ADDEXPLICIT32 C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Bin32\\VkLayer_gfxreconstruct.json
+[196133] Done
+[196134] "Execute" as admin: true
+[196134] backup com.lunarg.vulkan.32bit operation: Execute
+[196136] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_khronos_synchronization2.json
+[196136] Done
+[196136] perform com.lunarg.vulkan.32bit operation: Execute
+[196139] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_khronos_synchronization2.json
+[196142] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "CLEANEXPLICIT32 VkLayer_khronos_synchronization2.json
+[196166] Done
+[196167] "Execute" as admin: true
+[196167] backup com.lunarg.vulkan.32bit operation: Execute
+[196173] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_khronos_synchronization2.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_khronos_synchronization2.json
+[196173] Done
+[196173] perform com.lunarg.vulkan.32bit operation: Execute
+[196182] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_khronos_synchronization2.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_khronos_synchronization2.json
+[196187] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "ADDEXPLICIT32 C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Bin32\\VkLayer_khronos_synchronization2.json
+[196213] Done
+[196214] "Execute" as admin: true
+[196214] backup com.lunarg.vulkan.32bit operation: Execute
+[196217] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_khronos_validation.json
+[196217] Done
+[196218] perform com.lunarg.vulkan.32bit operation: Execute
+[196220] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_khronos_validation.json
+[196222] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "CLEANEXPLICIT32 VkLayer_khronos_validation.json
+[196246] Done
+[196247] "Execute" as admin: true
+[196247] backup com.lunarg.vulkan.32bit operation: Execute
+[196252] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_khronos_validation.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_khronos_validation.json
+[196252] Done
+[196252] perform com.lunarg.vulkan.32bit operation: Execute
+[196260] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_khronos_validation.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_khronos_validation.json
+[196265] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "ADDEXPLICIT32 C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Bin32\\VkLayer_khronos_validation.json
+[196288] Done
+[196289] "Execute" as admin: true
+[196289] backup com.lunarg.vulkan.32bit operation: Execute
+[196291] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_monitor.json
+[196291] Done
+[196291] perform com.lunarg.vulkan.32bit operation: Execute
+[196294] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_monitor.json
+[196298] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "CLEANEXPLICIT32 VkLayer_monitor.json
+[196323] Done
+[196324] "Execute" as admin: true
+[196324] backup com.lunarg.vulkan.32bit operation: Execute
+[196327] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_monitor.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_monitor.json
+[196327] Done
+[196327] perform com.lunarg.vulkan.32bit operation: Execute
+[196330] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_monitor.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_monitor.json
+[196333] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "ADDEXPLICIT32 C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Bin32\\VkLayer_monitor.json
+[196360] Done
+[196361] "Execute" as admin: true
+[196361] backup com.lunarg.vulkan.32bit operation: Execute
+[196362] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_screenshot.json
+[196362] Done
+[196362] perform com.lunarg.vulkan.32bit operation: Execute
+[196364] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, CLEANEXPLICIT32, VkLayer_screenshot.json
+[196368] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "CLEANEXPLICIT32 VkLayer_screenshot.json
+[196391] Done
+[196392] "Execute" as admin: true
+[196392] backup com.lunarg.vulkan.32bit operation: Execute
+[196395] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_screenshot.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_screenshot.json
+[196395] Done
+[196395] perform com.lunarg.vulkan.32bit operation: Execute
+[196398] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, ADDEXPLICIT32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_screenshot.json, UNDOEXECUTE, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Helpers\install_helper32.exe, DELKEYVALUE32, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\Bin32\VkLayer_screenshot.json
+[196402] C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Helpers\\install_helper32.exe" started, arguments: "ADDEXPLICIT32 C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1\\Bin32\\VkLayer_screenshot.json
+[196427] Done
+[196428] backup com.lunarg.vulkan.32bit operation: License
+[196428] 	- arguments:
+[196428] Done
+[196428] perform com.lunarg.vulkan.32bit operation: License
+[196428] 	- arguments:
+[196435] Done
+[196442] Installing component (Optional) Debuggable Shader API Libraries - 64-bit
+[196443] backup com.lunarg.vulkan.debug operation: Extract
+[196443] 	- arguments: installer://com.lunarg.vulkan.debug/1.3.204.1debug.7z, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1
+[196443] Done
+[196443] perform com.lunarg.vulkan.debug operation: Extract
+[196443] 	- arguments: installer://com.lunarg.vulkan.debug/1.3.204.1debug.7z, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1
+[222007] Done
+[222008] backup com.lunarg.vulkan.debug operation: License
+[222008] 	- arguments:
+[222008] Done
+[222009] perform com.lunarg.vulkan.debug operation: License
+[222009] 	- arguments:
+[222018] Done
+[222022] Installing component (Optional) Debuggable Shader API Libraries - 32-bit
+[222023] backup com.lunarg.vulkan.debug32 operation: Extract
+[222023] 	- arguments: installer://com.lunarg.vulkan.debug32/1.3.204.1debug32.7z, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1
+[222023] Done
+[222024] perform com.lunarg.vulkan.debug32 operation: Extract
+[222024] 	- arguments: installer://com.lunarg.vulkan.debug32/1.3.204.1debug32.7z, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1
+[239564] Done
+[239564] backup com.lunarg.vulkan.debug32 operation: License
+[239564] 	- arguments:
+[239564] Done
+[239564] perform com.lunarg.vulkan.debug32 operation: License
+[239564] 	- arguments:
+[239568] Done
+[239572] Installing component (Optional) 3rd-Party libraries and headers.
+[239573] backup com.lunarg.vulkan.thirdparty operation: Extract
+[239573] 	- arguments: installer://com.lunarg.vulkan.thirdparty/1.3.204.1Third-Party.7z, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1
+[239573] Done
+[239573] perform com.lunarg.vulkan.thirdparty operation: Extract
+[239573] 	- arguments: installer://com.lunarg.vulkan.thirdparty/1.3.204.1Third-Party.7z, C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1
+[241768] Done
+[241768] backup com.lunarg.vulkan.thirdparty operation: License
+[241768] 	- arguments:
+[241768] Done
+[241768] perform com.lunarg.vulkan.thirdparty operation: License
+[241768] 	- arguments:
+[241772] Done
+[241814] Update finished!
+[242687] perform  operation: Delete
+[242687] 	- arguments: C:/Users/marvn/OneDrive/Documents/Proof/Proof/vendor/VulkanSDK/1.3.204.1/Helpers/vc_redist.x86.exe
+[242693] Done
+[242724] Component name: com.lunarg.vulkan.32bit
+[242725] perform  operation: Execute
+[242725] 	- arguments: reg, ADD, HKEY_LOCAL_MACHINE\SOFTWARE\LunarG\VulkanSDK, /v, com.lunarg.vulkan.32bit, /t, REG_DWORD, /d, 1, /f
+[242732] reg" started, arguments: "ADD HKEY_LOCAL_MACHINE\\SOFTWARE\\LunarG\\VulkanSDK /v com.lunarg.vulkan.32bit /t REG_DWORD /d 1 /f
+[242800] Done
+[242801] Is Installed
+[242801] Component name: com.lunarg.vulkan.debug
+[242801] perform  operation: Execute
+[242801] 	- arguments: reg, ADD, HKEY_LOCAL_MACHINE\SOFTWARE\LunarG\VulkanSDK, /v, com.lunarg.vulkan.debug, /t, REG_DWORD, /d, 1, /f
+[242802] reg" started, arguments: "ADD HKEY_LOCAL_MACHINE\\SOFTWARE\\LunarG\\VulkanSDK /v com.lunarg.vulkan.debug /t REG_DWORD /d 1 /f
+[242853] Done
+[242856] Is Installed
+[242856] Component name: com.lunarg.vulkan.debug32
+[242856] perform  operation: Execute
+[242856] 	- arguments: reg, ADD, HKEY_LOCAL_MACHINE\SOFTWARE\LunarG\VulkanSDK, /v, com.lunarg.vulkan.debug32, /t, REG_DWORD, /d, 1, /f
+[242866] reg" started, arguments: "ADD HKEY_LOCAL_MACHINE\\SOFTWARE\\LunarG\\VulkanSDK /v com.lunarg.vulkan.debug32 /t REG_DWORD /d 1 /f
+[242902] Done
+[242903] Is Installed
+[242903] Component name: com.lunarg.vulkan.thirdparty
+[242903] perform  operation: Execute
+[242903] 	- arguments: reg, ADD, HKEY_LOCAL_MACHINE\SOFTWARE\LunarG\VulkanSDK, /v, com.lunarg.vulkan.thirdparty, /t, REG_DWORD, /d, 1, /f
+[242918] reg" started, arguments: "ADD HKEY_LOCAL_MACHINE\\SOFTWARE\\LunarG\\VulkanSDK /v com.lunarg.vulkan.thirdparty /t REG_DWORD /d 1 /f
+[242970] Done
+[242982] Is Installed
+[242982] Component name: com.lunarg.vulkan.core
+[242983] perform  operation: Execute
+[242983] 	- arguments: reg, ADD, HKEY_LOCAL_MACHINE\SOFTWARE\LunarG\VulkanSDK, /v, com.lunarg.vulkan.core, /t, REG_DWORD, /d, 1, /f
+[242985] reg" started, arguments: "ADD HKEY_LOCAL_MACHINE\\SOFTWARE\\LunarG\\VulkanSDK /v com.lunarg.vulkan.core /t REG_DWORD /d 1 /f
+[243063] Done
+[243064] Is Installed

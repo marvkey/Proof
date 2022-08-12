@@ -9,9 +9,7 @@ workspace "Proof"
 		"Dist"
 	}
 	
-	flags
-	{
-	}
+
 
 
 OutputDirectory ="%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -30,6 +28,7 @@ IncludeDir["SPIRV-Cross"] = "%{wks.location}/Proof/vendor/SPIRV-Cross"
 IncludeDir["shaderc"] = "%{wks.location}/proof/vendor/shaderc/include"
 IncludeDir["PhysX"] = "%{wks.location}/proof/vendor/PhysX/include"
 IncludeDir["Bullet3"] = "%{wks.location}/proof/vendor/Bullet3/src"
+IncludeDir["mono"] = "%{wks.location}/Proof/vendor/mono/include"
 
 
 LibraryDir = {}
@@ -49,6 +48,13 @@ Library["ShaderC_Release"] = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
 Library["SPIRV_Cross_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
 Library["SPIRV_Cross_GLSL_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
 
+
+Library["mono"] = "%{wks.location}/proof/vendor/mono/lib/%{cfg.buildcfg}"
+-- Windows (THIS ARE FOR MONO)
+Library["WinSock"] = "Ws2_32.lib"
+Library["WinMM"] = "Winmm.lib"
+Library["WinVersion"] = "Version.lib"
+Library["BCrypt"] = "Bcrypt.lib"
 group "ExternalDependencies"
 	include "Proof/vendor/ImGUI"
 	include "Proof/vendor/glfw-3.3.2.bin.WIN64"
@@ -68,6 +74,7 @@ group ""
 include "Proof-Editor"
 include "Proof"
 include "SandBox"
-include "ProofGame"  
+include "ProofScript"  
+
 
 

@@ -522,6 +522,21 @@ namespace Proof
 		VelocityChange,	
 		Acceleration
 	};
+	
+	class ScriptComponent {
+	public:
+		bool AddScript(const std::string& className);
+		bool RemoveScript(const std::string& className);
+
+		bool HasScripts();
+
+		bool HasScript(const std::string& name);
+
+		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent&) = default;
+	private:
+		std::vector<std::string> m_Scripts;
+	};
 	class Proof_API RigidBodyComponent {
 	public:
 		RigidBodyComponent(const RigidBodyComponent&) = default;

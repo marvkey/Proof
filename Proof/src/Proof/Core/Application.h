@@ -7,7 +7,6 @@
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Events/WindowEvent.h"
-#include "Proof/Scene/CSharpScripting/CSharpInitilize.h"
     namespace Proof {
     class Layer;
     class ImGuiLayer;
