@@ -84,7 +84,7 @@ namespace Proof
 
         ScriptClass EntityClass;
 
-        std::unordered_map<std::string, Count<ScriptClass>> ScriptClasses;
+        std::unordered_map<std::string, Count<ScriptClass>> ScriptEntityClasses;
         std::unordered_map<UUID, std::vector<Count<ScriptInstance>>> EntityInstances;
     };
     static MonoData* s_Data;
@@ -95,6 +95,7 @@ namespace Proof
         m_MonoClass = mono_class_from_name(image, classNamespace.data(), className.data());
     }
     MonoObject* ScriptClass::Instantiate() {
+        PF_CORE_ASSERT(m_MonoClass, "Mono Class is nullptr");
         return ScriptEngine::InstantiateClass(m_MonoClass);
     }
     MonoMethod* ScriptClass::GetMethod(const std::string& name, int parameterCount) {
@@ -104,7 +105,9 @@ namespace Proof
         return mono_runtime_invoke(method, instance, params, nullptr);
     }
 
-    ScriptInstance::ScriptInstance(Count<ScriptClass> scriptClass, Entity entity) {
+    ScriptInstance::ScriptInstance(Count<ScriptClass> scriptClass, Entity entity):
+    m_ScriptClass(scriptClass)
+    {
         m_Instance = scriptClass->Instantiate();
 
         m_Constructor = s_Data->EntityClass.GetMethod(".ctor", 1);
@@ -156,38 +159,38 @@ namespace Proof
     void ScriptEngine::EndWorld() {
 
     }
-    void ScriptEngine::CallOnUpdate(float ts, Entity entity) {
+    void ScriptEngine::OnUpdate(float ts, Entity entity) {
         PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetID()) != s_Data->EntityInstances.end());
         //holding reference so we do not make a copy each iteration
         for (auto& a : s_Data->EntityInstances[entity.GetID()]) {
             a->CallOnUpdate(ts);
         }
     }
-    void ScriptEngine::CallOnCreate(Entity entity) {
+    void ScriptEngine::OnCreate(Entity entity) {
         auto sc = *entity.GetComponent<ScriptComponent>();
         sc.ForEachScript([&](auto& className) {
             if (ScriptEngine::EntityClassExists(className)) {
-                Count<ScriptInstance> instance = Count<ScriptInstance>(s_Data->ScriptClasses[className], entity);
+                Count<ScriptInstance> instance = CreateCount<ScriptInstance>(s_Data->ScriptEntityClasses[className], entity);
                 s_Data->EntityInstances[entity.GetID()].emplace_back(instance);
                 instance->CallOnCreate();
             }
         });
     }
-    void ScriptEngine::CallOnSpawn(Entity entity) {
+    void ScriptEngine::OnSpawn(Entity entity) {
         PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetID()) != s_Data->EntityInstances.end());
         //holding reference so we do not make a copy each iteration
         for (auto& a : s_Data->EntityInstances[entity.GetID()]) {
             a->CallOnSpawn();
         }
     }
-    void ScriptEngine::CallOnPlace(Entity entity) {
+    void ScriptEngine::OnPlace(Entity entity) {
         PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetID()) != s_Data->EntityInstances.end());
         //holding reference so we do not make a copy each iteration
         for (auto& a : s_Data->EntityInstances[entity.GetID()]) {
             a->CallOnPlace();
         }
     }
-    void ScriptEngine::CallOnDestroy(Entity entity) {
+    void ScriptEngine::OnDestroy(Entity entity) {
         PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetID()) != s_Data->EntityInstances.end());
         //holding reference so we do not make a copy each iteration
         for (auto& a : s_Data->EntityInstances[entity.GetID()]) {
@@ -195,10 +198,13 @@ namespace Proof
         }
     }
     MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass) {
-      return  mono_object_new(s_Data->AppDomain, monoClass);
+        MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
+        //calling default constructor
+        mono_runtime_object_init(instance);
+        return instance;
     }
     bool ScriptEngine::EntityClassExists(const std::string& fullClassName) {
-        return s_Data->ScriptClasses.find(fullClassName) != s_Data->ScriptClasses.end();
+        return s_Data->ScriptEntityClasses.find(fullClassName) != s_Data->ScriptEntityClasses.end();
     }
     void ScriptEngine::InitMono() {
         mono_set_assemblies_path("mono/lib");
@@ -207,16 +213,17 @@ namespace Proof
         PF_CORE_ASSERT(s_Data->RootDomain, "failed to initilize mono domain");
         
         // Create an App Domain
-        s_Data->RootDomain = mono_domain_create_appdomain("ProofDomain", nullptr);
+        s_Data->AppDomain = mono_domain_create_appdomain("ProofDomainRuntime", nullptr);
         mono_domain_set(s_Data->RootDomain, true);
         
         s_Data->CSharpAssembly = Utils::LoadCSharpAssembly("Resources/Scripts/ProofScript.dll");
        // Utils::PrintAssemblyTypes(s_Data->CSharpAssembly);
         LoadAssemblyClasses(s_Data->CSharpAssembly);
+        s_Data->EntityClass = ScriptClass("Proof", "Entity");
     }
     void ScriptEngine::LoadAssemblyClasses(MonoAssembly* assembly) {
 
-        s_Data->ScriptClasses.clear();
+        s_Data->ScriptEntityClasses.clear();
         MonoImage* image = mono_assembly_get_image(assembly);
         const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
         int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
@@ -240,7 +247,7 @@ namespace Proof
 
             bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
             if (isEntity) {
-                s_Data->ScriptClasses[fullName] = CreateCount<ScriptClass>(nameSpace, name);
+                s_Data->ScriptEntityClasses[fullName] = CreateCount<ScriptClass>(nameSpace, name);
                 PF_ENGINE_TRACE("Added To Script Class {}", fullName);
             }
         }

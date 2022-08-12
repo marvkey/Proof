@@ -208,7 +208,8 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		m_Scene->m_Path = filePath;
-
+		if (std::filesystem::exists(filePath) == false)
+			PF_CORE_ASSERT(false);
 		YAML::Node data = YAML::LoadFile(filePath);
 		if (!data["World"]) // if there is no scene no
 			return false;

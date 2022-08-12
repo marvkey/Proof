@@ -18,6 +18,7 @@
 #include<glad/glad.h>
 #include "Proof/Scene/Component.h"
 #include "entt/entt.hpp"
+#include "Proof/Scripting/ScriptEngine.h"
 #include "Physics/PhysicsEngine.h"
 namespace Proof{
 	unsigned int quadVAO = 0;
@@ -67,9 +68,9 @@ namespace Proof{
 		m_EditorCamera.OnUpdate(DeltaTime,width,height);
 	}
 
-	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
+	void World::OnUpdateRuntime(FrameTime DeltaTime, uint32_t width, uint32_t height) {
 		PF_PROFILE_FUNC();
-
+		/*
 		// Scripts
 		{
 			auto& scriptView = m_Registry.view<NativeScriptComponent>();
@@ -86,6 +87,14 @@ namespace Proof{
 				}
 				if(script.Instance->b_CallPerframe == true)
 					script.Instance->OnUpdate(DeltaTime);
+			}
+		}
+		*/
+		{
+			auto& scriptView = m_Registry.view<ScriptComponent>();
+			for (auto entity : scriptView) {
+				auto& script = scriptView.get<ScriptComponent>(entity);
+				ScriptEngine::OnUpdate(DeltaTime, Entity{ entity,this });
 			}
 		}
 		m_PhysicsEngine->Simulate(DeltaTime);
@@ -231,6 +240,7 @@ namespace Proof{
 
 	void World::StartRuntime(){
 		{
+			/*
 			auto& scriptView = m_Registry.view<NativeScriptComponent>();
 			for (auto entity : scriptView) {
 				auto& script = scriptView.get<NativeScriptComponent>(entity);
@@ -243,6 +253,13 @@ namespace Proof{
 					script.Instance->OnCreate();
 					script.Instance->OnPlaced();
 				}
+			}
+			*/
+			auto view = m_Registry.view<ScriptComponent>();
+			for (auto e : view) {
+				Entity entity = { e, this };
+				ScriptEngine::OnCreate(entity);
+				//ScriptEngine::OnPlace(entity);
 			}
 		}
 		m_PhysicsEngine = new PhysicsEngine(this);

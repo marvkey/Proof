@@ -525,23 +525,45 @@ namespace Proof
 	
 	class ScriptComponent {
 	public:
-		bool AddScript(const std::string& className);
-		bool RemoveScript(const std::string& className);
+		bool AddScript(const std::string& className) {
+			if (HasScript(className) == true)return false;
+			m_Scripts.emplace_back(className);
+			return true;
+		}
+		bool RemoveScript(const std::string& className) {
+			for (int i = 0; i < m_Scripts.size(); i++) {
+				if (m_Scripts[i] == className) {
+					m_Scripts.erase(m_Scripts.begin() + i);
+					return true;
+				}
+			}
+			return false;
+		}
 
-		bool HasScripts();
+		bool HasAnyScripts() {
+			return m_Scripts.size() > 0;
+		}
 
-		bool HasScript(const std::string& name);
+		bool HasScript(const std::string& className) {
+			for (int i = 0; i < m_Scripts.size(); i++) {
+				if (m_Scripts[i] == className) {
+					return true;
+				}
+			}
+			return false;
+		}
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;
 
 		template <typename func>
-		void ForEachScript(func&& f) {
+		void ForEachScript(func f) {
 			for (auto& val : m_Scripts)
 				f(val);
 		}
 	private:
 		std::vector<std::string> m_Scripts;
+		friend class ScriptEngine;
 	};
 	class Proof_API RigidBodyComponent {
 	public:

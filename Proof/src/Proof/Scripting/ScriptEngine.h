@@ -56,12 +56,12 @@ namespace Proof
 		static void StartWorld();
 		static void EndWorld();
 
-		static void CallOnUpdate(float ts, Entity entity);
-		static void CallOnCreate(Entity entity);
-		static void CallOnSpawn(Entity entity);
-		static void CallOnPlace(Entity entity);
+		static void OnUpdate(float ts, Entity entity);
+		static void OnCreate(Entity entity);
+		static void OnSpawn(Entity entity);
+		static void OnPlace(Entity entity);
+		static void OnDestroy(Entity entity);
 
-		static void CallOnDestroy(Entity entity);
 		static bool EntityClassExists(const std::string& fullClassName);
 
 		static void RemoveEntity(Entity entity);

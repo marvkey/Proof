@@ -13,6 +13,7 @@ namespace Proof
 		internal Entity(ulong id)
 		{
 			ID = id;
+			Console.WriteLine("Entity Created");
 		}
 		public readonly ulong ID;
 	}

@@ -654,8 +654,10 @@ namespace Proof {
 			});
 			IndexValue += 1;
 		}
+		ScriptComponent* scriptComponent = entity.GetComponent<ScriptComponent>();
 	}
 
+	
 
 
 	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel, Vector<>& Vec, float ResetValue, float columnWidth, float Speed) {
