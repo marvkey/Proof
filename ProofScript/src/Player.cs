@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-namespace Scripts
+using Proof;
+namespace Game
 {
-    public class Player
+    public class Player : Entity
     {
-        public float MyPublicFloatVar = 5.0f;
-
-        public void PrintFloatVar()
+        void OnCreate()
         {
-            Console.WriteLine("MyPublicFloatVar = {0:F}", MyPublicFloatVar);
+
         }
 
-        private void IncrementFloatVar(float value)
+        void OnUpdate(float ts)
         {
-            MyPublicFloatVar += value;
+            Console.WriteLine(ts);
         }
+
+
     }
 }

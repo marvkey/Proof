@@ -534,6 +534,12 @@ namespace Proof
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;
+
+		template <typename func>
+		void ForEachScript(func&& f) {
+			for (auto& val : m_Scripts)
+				f(val);
+		}
 	private:
 		std::vector<std::string> m_Scripts;
 	};

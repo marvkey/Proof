@@ -62,7 +62,7 @@ namespace Proof {
                 return _Shader;
            }
             PF_ENGINE_ERROR(" shader called {} Already exist",_Shader->GetName().c_str());
-            PF_CORE_ASSERT(false,"shader library cannot add existing shader {}",_Shader->GetName().c_str());
+            PF_CORE_ASSERT(false,"shader library cannot add existing shader {}");
         }
         friend class Shader;
     };
