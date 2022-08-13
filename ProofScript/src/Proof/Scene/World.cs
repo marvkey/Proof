@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
-    internal class World
+    public class World
     {
+
     }
 }

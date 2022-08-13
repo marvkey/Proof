@@ -10,16 +10,20 @@ namespace Game
     public class Player : Entity
     {
         private TransformComponent m_TransformComponent;
+        private RigidBodyComponent m_RigidiBody;
         void OnCreate()
         {
             m_TransformComponent = GetComponent<TransformComponent>();
+            m_RigidiBody = GetComponent<RigidBodyComponent>();
         }
 
         void OnUpdate(float ts)
         {
-            m_TransformComponent.Location = new Vector(Proof.Random.Float(0, 10),1,1);
-            Console.WriteLine($"m_TransformComponent.Location{m_TransformComponent.Location.X}");
+            if (Input.IsKeyPressed(KeyBoardKey.F))
+            {
+                m_RigidiBody.AddForce(new Vector(0, 1, 10));
+                Log.Trace("Added force to entity");
+            }
         }
-
     }
 }

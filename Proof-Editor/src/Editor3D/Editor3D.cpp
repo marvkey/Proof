@@ -247,7 +247,7 @@ namespace Proof
 		ActiveWorld = CreateCount<World>();
 
 		SceneSerializer scerelizer(ActiveWorld.get());
-		if (scerelizer.DeSerilizeText("content/Levels/EmptyWorld.ProofWorld") == true) {
+		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofWorld") == true) {
 			m_WorldHierachy.SetContext(ActiveWorld.get());
 			if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
 				AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
@@ -1089,7 +1089,8 @@ namespace Proof
 		GuizmoType = 0;
 		m_WorldHierachy.m_SelectedEntity = {};
 		Entity  entity = ActiveWorld->CreateEntity("script");
-		entity.AddComponent<ScriptComponent>()->AddScript("Game.Player");
+		//entity.AddComponent<RigidBodyComponent>();
+		//entity.AddComponent<ScriptComponent>()->AddScript("Game.Player");
 		ActiveWorld->StartRuntime();
 	}
 	void Editore3D::SimulateWorld() {

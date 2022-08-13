@@ -160,6 +160,7 @@ namespace Proof
         s_Data->CurrentWorld = world;
     }
     void ScriptEngine::EndWorld() {
+        s_Data->EntityInstances.clear();
         s_Data->CurrentWorld = nullptr;
     }
     World* ScriptEngine::GetWorldContext() {
@@ -171,16 +172,20 @@ namespace Proof
         for (auto& a : s_Data->EntityInstances[entity.GetID()]) {
             a->CallOnUpdate(ts);
         }
+      
     }
     void ScriptEngine::OnCreate(Entity entity) {
         auto sc = *entity.GetComponent<ScriptComponent>();
-        sc.ForEachScript([&](auto& className) {
-            if (ScriptEngine::EntityClassExists(className)) {
+        for (auto& className : sc.m_Scripts) {
+            if (ScriptEngine::EntityClassExists(className) == true) {
                 Count<ScriptInstance> instance = CreateCount<ScriptInstance>(s_Data->ScriptEntityClasses[className], entity);
                 s_Data->EntityInstances[entity.GetID()].emplace_back(instance);
                 instance->CallOnCreate();
             }
-        });
+        }
+        //sc.ForEachScript([&](auto className) {
+        //  
+        //});
     }
     void ScriptEngine::OnSpawn(Entity entity) {
         PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetID()) != s_Data->EntityInstances.end());
@@ -235,6 +240,8 @@ namespace Proof
 
         s_Data->ScriptEntityClasses.clear();
         MonoImage* image = mono_assembly_get_image(assembly);
+
+        
         const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
         int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
         MonoClass* entityClass = mono_class_from_name(image, "Proof", "Entity");
@@ -244,14 +251,17 @@ namespace Proof
             mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
             const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
             const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+            
+            MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
+            //one reason it would be null is bcause it is an enum and the namespace kindd affects it
+            if (monoClass == nullptr)continue;
+            if(mono_class_is_enum(monoClass))continue;
             std::string fullName;
 
             if (strlen(nameSpace) != 0) // length of a string
                 fullName = fmt::format("{}.{}", nameSpace, name);
             else
                 fullName = name;
-
-            MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
             if (monoClass == entityClass)
                 continue;
 

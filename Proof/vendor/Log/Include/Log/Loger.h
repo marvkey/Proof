@@ -100,8 +100,7 @@ namespace Logger {
 
 		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
-		std::string temp = fmt::format("[{}:{}:{}]{} ",LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec, LoggerName);
-		//sprintf(buffer, Msg, args...);
+		std::string temp = fmt::format("[{}:{}:{}]{}: ",LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec, LoggerName);
 		std::string temp2 = fmt::format(Msg, args...);
 		return temp+ temp2;
 	}

@@ -26,13 +26,13 @@ namespace Proof
 			Logs.insert({Inputposition(),{(LogType)type,temp}});
 			NewLog = true;
 		}
-		static std::unordered_map<uint16_t,std::pair<LogType,std::string>> Logs;
+		static std::unordered_map<uint32_t,std::pair<LogType,std::string>> Logs;
 		static bool NewLog;
 		static bool m_PauseLog;
 	private:
 		static std::shared_ptr<Logger::Log>EngineLogger;
 		static std::shared_ptr<Logger::Log>ClientLogger;
-		static uint16_t Inputposition() {
+		static uint32_t Inputposition() {
 			return Logs.size() + 1;
 		}
 	};
@@ -48,11 +48,11 @@ namespace Proof
 #define  PF_ENGINE_TRACE(...) ::Proof::Log::GetEngineLogger()->LogTrace(__VA_ARGS__)
 #define	 PF_ENGINE_CRITICAL(...)::Proof::Log::GetEngineLogger()->LogCritical(__VA_ARGS__)
 		// Client Logging
-#define  PF_ERROR(...) ::Proof::Log::AppendString(0,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
-#define  PF_WARN(...)  ::Proof::Log::AppendString(1,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
-#define  PF_INFO(...)  ::Proof::Log::AppendString(2,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
-#define  PF_TRACE(...) ::Proof::Log::AppendString(3,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
-#define	 PF_CRITICAL(...)::Proof::Log::AppendString(4,::Proof::Log::GetEngineLogger()->GetLogString(__VA_ARGS__))
+#define  PF_ERROR(...) ::Proof::Log::AppendString(0,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
+#define  PF_WARN(...)  ::Proof::Log::AppendString(1,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
+#define  PF_INFO(...)  ::Proof::Log::AppendString(2,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
+#define  PF_TRACE(...) ::Proof::Log::AppendString(3,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
+#define	 PF_CRITICAL(...)::Proof::Log::AppendString(4,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
 #else
 		// Engine Logging
 #define  PF_ENGINE_ERROR(...) ::Proof::Log::GetEngineLogger()->LogError(__VA_ARGS__)

@@ -278,6 +278,8 @@ namespace Proof {
 			AddComponentGui<CapsuleColliderComponent>(entity, "Capsule Collider");
 			AddComponentGui<MeshColliderComponent>(entity, "Mesh Collider");
 			AddComponentGui<RigidBodyComponent>(entity, "Rigid Body");
+
+			AddComponentGui<ScriptComponent>(entity, "Scripts");
 			ImGui::EndPopup();
 		}
 		uint32_t IndexValue = 0;
@@ -286,7 +288,7 @@ namespace Proof {
 			DrawComponents<TagComponent>("Tag", entity, tagComponent, IndexValue, [](TagComponent& component) {
 				uint32_t iterate = 0;
 				if (ImGui::Button("Add tag")) {
-					component.AddTag(" ");
+					component.AddTag("");
 				}
 				for (std::string& tag : component.m_Tags) {
 					char buffer[256];
@@ -655,6 +657,34 @@ namespace Proof {
 			IndexValue += 1;
 		}
 		ScriptComponent* scriptComponent = entity.GetComponent<ScriptComponent>();
+		if (scriptComponent != nullptr) {
+			DrawComponents<ScriptComponent>("Scripts", entity, scriptComponent, IndexValue, [](ScriptComponent& object) {
+				uint32_t iterate = 0;
+				if (ImGui::Button("Add Script")) {
+					object.AddScript("");
+				}
+				for (std::string& tag : object.m_Scripts) {
+					char buffer[256];
+					memset(buffer, 0, sizeof(buffer));
+					strcpy_s(buffer, sizeof(buffer), tag.c_str());
+					const std::string name = std::to_string(iterate);
+					ImGui::Text(name.c_str());
+					ImGui::SameLine();
+					ImGui::PushID(name.c_str());
+					if (ImGui::InputTextWithHint("##temp", "ScriptName", buffer, sizeof(buffer))) {
+						tag = buffer;
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("-", { 20,20 })) {
+						object.RemoveScript(iterate);
+					}
+					ImGui::PopID();
+					iterate++;
+
+				}
+			});
+			IndexValue += 1;
+		}
 	}
 
 	

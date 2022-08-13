@@ -150,6 +150,8 @@ namespace Proof{
 		CopyComponentIfExists<CapsuleColliderComponent>(newEntity, entity);
 		CopyComponentIfExists<MeshColliderComponent>(newEntity, entity);
 		CopyComponentIfExists<RigidBodyComponent>(newEntity, entity);
+
+		CopyComponentIfExists<ScriptComponent>(newEntity, entity);
 		if (includeChildren == true) {
 			entity.EachChild([&](Entity childEntity){
 				Entity newChild = CreateEntity(childEntity, true);
@@ -223,6 +225,7 @@ namespace Proof{
 		CopyComponentWorld<MeshColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		CopyComponentWorld<RigidBodyComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<ScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newWorld;
 	}
@@ -256,7 +259,7 @@ namespace Proof{
 				for (auto e : view) {
 					Entity entity = { e, this };
 					ScriptEngine::OnCreate(entity);
-					ScriptEngine::OnPlace(entity);
+					//ScriptEngine::OnPlace(entity);
 				}
 			}
 		}

@@ -72,7 +72,7 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 	};
-	class Proof_API ChildComponent { 
+	struct Proof_API ChildComponent { 
 	public:
 		ChildComponent(const ChildComponent& other) = default;
 		ChildComponent() = default;
@@ -524,6 +524,8 @@ namespace Proof
 	
 	class ScriptComponent {
 	public:
+		ScriptComponent(const ScriptComponent&other) = default;
+		ScriptComponent() = default;
 		bool AddScript(const std::string& className) {
 			if (HasScript(className) == true)return false;
 			m_Scripts.emplace_back(className);
@@ -539,10 +541,17 @@ namespace Proof
 			return false;
 		}
 
+
 		bool HasAnyScripts() {
 			return m_Scripts.size() > 0;
 		}
-
+		bool RemoveScript(uint32_t index) {
+			if (index <= m_Scripts.size()) {
+				m_Scripts.erase(m_Scripts.begin() + index);
+				return true;
+			}
+			return false;
+		};
 		bool HasScript(const std::string& className) {
 			for (int i = 0; i < m_Scripts.size(); i++) {
 				if (m_Scripts[i] == className) {
@@ -552,8 +561,6 @@ namespace Proof
 			return false;
 		}
 
-		ScriptComponent() = default;
-		ScriptComponent(const ScriptComponent&) = default;
 
 		template <typename func>
 		void ForEachScript(func f) {
@@ -563,6 +570,7 @@ namespace Proof
 	private:
 		std::vector<std::string> m_Scripts;
 		friend class ScriptEngine;
+		friend class SceneHierachyPanel;
 	};
 	class Proof_API RigidBodyComponent {
 	public:
