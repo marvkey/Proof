@@ -7,7 +7,7 @@
     <ProjectGuid>{A08527CC-0C3B-A0C1-952F-9A9801E496C5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ProofScript</RootNamespace>
+    <RootNamespace>Proof</RootNamespace>
     <AssemblyName>ProofScript</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -60,9 +60,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\Player.cs" />
-    <Compile Include="src\Proof\Entity.cs" />
+    <Compile Include="src\Proof\Math\Random.cs" />
+    <Compile Include="src\Proof\Math\Vector.cs" />
+    <Compile Include="src\Proof\Scene\Component.cs" />
+    <Compile Include="src\Proof\Scene\Entity.cs" />
+    <Compile Include="src\Proof\InternalCalls.cs" />
+    <Compile Include="src\Proof\Scene\World.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

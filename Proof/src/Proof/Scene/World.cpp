@@ -158,12 +158,7 @@ namespace Proof{
 		}
 		return newEntity;
 	}
-	template<class Component>
-	static void CopyComponent(entt::registry64& dst, entt::registry64& src){
-		auto view = src.view<Component>();
-		for (auto e : view) {
-		}
-	}
+
 	template<typename Component>
 	static void CopyComponentWorld(entt::registry64& dst, entt::registry64& src, const std::unordered_map<UUID, uint64_t>& enttMap)
 	{
@@ -233,14 +228,15 @@ namespace Proof{
 	}
 
 	void World::EndRuntime() {
+		ScriptEngine::EndWorld();
 		delete m_PhysicsEngine;
 		m_PhysicsEngine = nullptr;
 		m_SceneCamera = nullptr;
 	}
 
 	void World::StartRuntime(){
+
 		{
-			/*
 			auto& scriptView = m_Registry.view<NativeScriptComponent>();
 			for (auto entity : scriptView) {
 				auto& script = scriptView.get<NativeScriptComponent>(entity);
@@ -254,12 +250,14 @@ namespace Proof{
 					script.Instance->OnPlaced();
 				}
 			}
-			*/
-			auto view = m_Registry.view<ScriptComponent>();
-			for (auto e : view) {
-				Entity entity = { e, this };
-				ScriptEngine::OnCreate(entity);
-				//ScriptEngine::OnPlace(entity);
+			{
+				ScriptEngine::StartWorld(this);
+				auto view = m_Registry.view<ScriptComponent>();
+				for (auto e : view) {
+					Entity entity = { e, this };
+					ScriptEngine::OnCreate(entity);
+					ScriptEngine::OnPlace(entity);
+				}
 			}
 		}
 		m_PhysicsEngine = new PhysicsEngine(this);
@@ -291,6 +289,18 @@ namespace Proof{
 		ent.m_ID = 0;
 		ent.m_EnttEntity = entt::entity(0);
 		ent.CurrentWorld = nullptr;
+	}
+
+	Entity World::GetEntity(UUID id) {
+		return Entity{ id,this };
+	}
+
+	Entity World::FindEntityByTag(const std::string& tag) {
+		ForEachEntitiesWithSingle<TagComponent>([&](Entity& entity){
+			if (entity.GetComponent<TagComponent>()->Tag == tag)
+				return entity;
+		});
+		return { 0, nullptr };
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){

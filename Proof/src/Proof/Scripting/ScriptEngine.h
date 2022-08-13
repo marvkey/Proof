@@ -53,7 +53,7 @@ namespace Proof
 		static void Init();
 		static void Shutdown();
 
-		static void StartWorld();
+		static void StartWorld(World* world);
 		static void EndWorld();
 
 		static void OnUpdate(float ts, Entity entity);
@@ -64,12 +64,15 @@ namespace Proof
 
 		static bool EntityClassExists(const std::string& fullClassName);
 
+		static World* GetWorldContext();
 		static void RemoveEntity(Entity entity);
 		static void RemoveScript(const std::string& fullClassName, Entity entity);
+		static MonoImage* GetCoreAssemblyImage();
 	private:
 		static MonoObject* InstantiateClass(MonoClass* monoClass);
 		static void InitMono();
 		static void LoadAssemblyClasses(MonoAssembly* assembly);
 		friend class ScriptClass;
+		friend class ScriptFunc;
 	};
 }

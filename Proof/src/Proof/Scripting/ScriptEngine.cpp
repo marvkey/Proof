@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include "ScriptFunc.h"
 namespace Proof
 {
     namespace Utils
@@ -81,9 +82,9 @@ namespace Proof
         MonoDomain* AppDomain = nullptr;
         MonoDomain* RootDomain = nullptr;
         MonoAssembly* CSharpAssembly = nullptr;
-
+        MonoImage* CoreAssemblyImage = nullptr;
         ScriptClass EntityClass;
-
+        World* CurrentWorld = nullptr;
         std::unordered_map<std::string, Count<ScriptClass>> ScriptEntityClasses;
         std::unordered_map<UUID, std::vector<Count<ScriptInstance>>> EntityInstances;
     };
@@ -154,10 +155,15 @@ namespace Proof
     void ScriptEngine::Shutdown() {
 
     }
-    void ScriptEngine::StartWorld() {
+  
+    void ScriptEngine::StartWorld(World* world) {
+        s_Data->CurrentWorld = world;
     }
     void ScriptEngine::EndWorld() {
-
+        s_Data->CurrentWorld = nullptr;
+    }
+    World* ScriptEngine::GetWorldContext() {
+        return s_Data->CurrentWorld;
     }
     void ScriptEngine::OnUpdate(float ts, Entity entity) {
         PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetID()) != s_Data->EntityInstances.end());
@@ -217,9 +223,13 @@ namespace Proof
         mono_domain_set(s_Data->RootDomain, true);
         
         s_Data->CSharpAssembly = Utils::LoadCSharpAssembly("Resources/Scripts/ProofScript.dll");
+        s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CSharpAssembly);
        // Utils::PrintAssemblyTypes(s_Data->CSharpAssembly);
         LoadAssemblyClasses(s_Data->CSharpAssembly);
         s_Data->EntityClass = ScriptClass("Proof", "Entity");
+
+        ScriptFunc::RegisterAllComponents();
+        ScriptFunc::RegisterFunctions();
     }
     void ScriptEngine::LoadAssemblyClasses(MonoAssembly* assembly) {
 
@@ -228,7 +238,7 @@ namespace Proof
         const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
         int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
         MonoClass* entityClass = mono_class_from_name(image, "Proof", "Entity");
-
+        PF_ENGINE_TRACE("C# Script Classes");
         for (int32_t i = 0; i < numTypes; i++) {
             uint32_t cols[MONO_TYPEDEF_SIZE];
             mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
@@ -248,8 +258,12 @@ namespace Proof
             bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
             if (isEntity) {
                 s_Data->ScriptEntityClasses[fullName] = CreateCount<ScriptClass>(nameSpace, name);
-                PF_ENGINE_TRACE("Added To Script Class {}", fullName);
+                PF_ENGINE_TRACE("   Added To Script Class {}", fullName);
             }
         }
+    }
+
+    MonoImage* ScriptEngine::GetCoreAssemblyImage() {
+        return s_Data->CoreAssemblyImage;
     }
 }

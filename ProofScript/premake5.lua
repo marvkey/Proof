@@ -2,7 +2,7 @@ project "ProofScript"
 	kind "SharedLib"
 	language "C#"
 	dotnetframework "4.7.2"
-
+	namespace "Proof"
 	targetdir ("%{wks.location}/Proof-Editor/Resources/Scripts")
 	objdir ("%{wks.location}/Proof-Editor/Resources/Scripts/Intermediates")
 

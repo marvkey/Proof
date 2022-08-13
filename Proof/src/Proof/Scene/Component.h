@@ -44,6 +44,7 @@ namespace Proof
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
 
+		/*TODO CHANGE TO SUBTAG*/
 		void AddTag(const std::string& Tag) {
 			m_Tags.emplace_back(Tag);
 		}
@@ -347,13 +348,13 @@ namespace Proof
 		glm::vec3 m_Specular;
 		LightType m_LightType = LightType::Direction;
 	};
+
 	struct Proof_API SkyLightComponent{
 		SkyLightComponent(const SkyLightComponent&) = default;
 		SkyLightComponent() = default;
 	private:
 		//void SetHDRIPath(const std::string& path):
 	};
-
 
 	struct Proof_API CameraComponent{
 	public:
@@ -397,7 +398,6 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
 	};
-	
 
 	struct Proof_API CubeColliderComponent {
 		CubeColliderComponent(const CubeColliderComponent&) = default;
@@ -424,8 +424,7 @@ namespace Proof
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 	};
-
-
+	
 	struct Proof_API SphereColliderComponent {
 		SphereColliderComponent(const SphereColliderComponent&) = default;
 		SphereColliderComponent() = default;
@@ -597,4 +596,13 @@ namespace Proof
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 	};
+	template<class ... Component>
+	struct ComponentGroup {
+
+	};
+	using AllComponents =
+		ComponentGroup< TagComponent, ChildComponent, TransformComponent,
+		MeshComponent, LightComponent, SkyLightComponent, CameraComponent,
+		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,
+		MeshColliderComponent, ScriptComponent, RigidBodyComponent>;
 }

@@ -92,8 +92,8 @@ namespace Proof{
 		}
 		*/
 		static Count<World> Copy(Count<World> other);
-		virtual void EndRuntime();
 		virtual void StartRuntime();
+		virtual void EndRuntime();
 		entt::registry64 m_Registry;
 		const std::string& GetName()const{return Name;};
 		const std::string& GetPath()const{return m_Path;}
@@ -102,6 +102,10 @@ namespace Proof{
 
 		EditorCamera m_EditorCamera ={200,200};
 		class PhysicsEngine* GetPhysicsEngine() { return m_PhysicsEngine; };
+
+		Entity GetEntity(UUID id);
+
+		Entity FindEntityByTag(const std::string& tag);
 	private:
 		class PhysicsEngine* m_PhysicsEngine =nullptr;
 		class CameraComponent* m_SceneCamera = nullptr;
