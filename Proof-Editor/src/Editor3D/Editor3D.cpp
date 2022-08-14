@@ -1088,7 +1088,7 @@ namespace Proof
 			Log::Logs.clear();
 		GuizmoType = 0;
 		m_WorldHierachy.m_SelectedEntity = {};
-		Entity  entity = ActiveWorld->CreateEntity("script");
+		//Entity  entity = ActiveWorld->CreateEntity("script");
 		//entity.AddComponent<RigidBodyComponent>();
 		//entity.AddComponent<ScriptComponent>()->AddScript("Game.Player");
 		ActiveWorld->StartRuntime();

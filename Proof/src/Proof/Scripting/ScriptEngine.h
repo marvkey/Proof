@@ -17,11 +17,7 @@ extern "C" {
 namespace Proof
 {
 
-	struct MonoFieldData {
-		std::string Name;
-		ProofMonoType Type = ProofMonoType::None;
-		std::any Data;
-	};
+
 	class ScriptClass {
 	public:
 		ScriptClass() = default;

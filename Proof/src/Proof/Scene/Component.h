@@ -522,11 +522,15 @@ namespace Proof
 		VelocityChange,	
 		Acceleration
 	};
+
+	//Rename ScriptClassFields
 	struct ScriptFields {
 		std::any Data;
 		std::string Name;
 		ProofMonoType Type = ProofMonoType::None;
 	};
+	//Rename ScriptClassData
+
 	struct ScriptData {
 	public:
 		// GONNA CHANGE TO ID instead of string

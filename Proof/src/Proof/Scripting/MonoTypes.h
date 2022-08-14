@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-
+#include <any>
 namespace Proof{
 	/*Mono Types that are supported*/
 	enum class ProofMonoType {
@@ -32,5 +32,11 @@ namespace Proof{
 		Internal = (1 << 1),
 		Protected = (1 << 2),
 		Public = (1 << 3)
+	};
+
+	struct MonoFieldData {
+		std::string Name;
+		ProofMonoType Type = ProofMonoType::None;
+		std::any Data;
 	};
 }
