@@ -96,7 +96,9 @@ namespace Proof
         monoData.Data = val;
     }
     static MonoData* s_Data;
-    ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className) {
+    ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className):
+        m_ClassNamespace(classNamespace), m_ClassName(className)
+    {
         MonoImage* image = mono_assembly_get_image(s_Data->CSharpAssembly);
         //data changes it to class
         m_MonoClass = mono_class_from_name(image, classNamespace.data(), className.data());
@@ -249,7 +251,6 @@ namespace Proof
                 for (auto& scriptData : sc.m_Scripts) {
                     for (auto& prop : scriptData.Fields) {
                         MonoClassField* currentField = mono_class_get_field_from_name(instance->m_ScriptClass->GetMonoClass(), prop.Name.c_str());
-                        //mono_field_set_value(instance->m_Instance, currentField, &prop.Data);
                         switch (prop.Type) {
                             case Proof::ProofMonoType::Uint8_t:
                                 mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint8_t>());
@@ -276,7 +277,7 @@ namespace Proof
                                 mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<int64_t>());
                                 break;
                             case Proof::ProofMonoType::Float:
-                                mono_field_set_value(instance->m_Instance, currentField, &pro.Data._Cast<float>();
+                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<float>());
                                 break;
                             case Proof::ProofMonoType::Double:
                                 mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<double>());
@@ -329,29 +330,23 @@ namespace Proof
         if (EntityClassExists(name) == false)return nullptr;
         return s_Data->ScriptEntityClasses[name].get();
     }
-    void ScriptEngine::SetValue(UUID ID, const std::string& className,const std::string& varName, void* data) {
+
+    void ScriptEngine::SetValue(UUID ID,const std::string& className, const std::string& varName, void* data) {
         const ScriptInstance* instance = nullptr;
         auto& temp = s_Data->EntityInstances[ID];
         for (auto& classes : temp) {
-            if (classes->m_ScriptClass->GeClassName() == className)
+            auto fullName = classes->m_ScriptClass->GetFullName();
+
+            if (fullName == className) {
                 instance = classes.get();
+                break;
+            }
         }
+
         MonoClassField* currentField = mono_class_get_field_from_name(instance->m_ScriptClass->GetMonoClass(), varName.c_str());
-        mono_field_set_value(instance->m_Instance, currentField, data);
+        mono_field_set_value(instance->m_Instance, currentField, (void*)data);
     }
-    template<class T>
-    T ScriptEngine::GetValue(UUID ID, const std::string& className, const std::string& varName) {
-        const ScriptInstance* instance = nullptr;
-        auto& temp = s_Data->EntityInstances[ID];
-        for (auto& classes : temp) {
-            if (classes->m_ScriptClass->GeClassName() == className)
-                instance = classes.get();
-        }
-        MonoClassField* currentField = mono_class_get_field_from_name(instance->m_ScriptClass->GetMonoClass(), varName.c_str());
-        T val;
-        mono_field_get_value(instance->m_Instance, currentField, &val);
-        return val;
-    }
+
     MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass) {
         MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
         //calling default constructor

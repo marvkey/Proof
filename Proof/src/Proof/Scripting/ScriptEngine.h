@@ -30,13 +30,15 @@ namespace Proof
 		MonoClass* GetMonoClass() {
 			return m_MonoClass;
 		}
-		const std::string& GeClassName() {
-			return m_ClassName;
+		std::string GetFullName() {
+			return fmt::format("{}.{}", m_ClassNamespace, m_ClassName);
 		}
 	private:
 		std::string m_ClassNamespace;
 		std::string m_ClassName;
 		MonoClass* m_MonoClass = nullptr;
+		friend class ScriptEngine;
+
 	};
 
 	class ScriptInstance {
@@ -88,10 +90,7 @@ namespace Proof
 		static uint8_t GetPropertyAccessbility(MonoProperty* property);
 
 		static const ScriptClass* GetScriptClass(const std::string& name);
-
-		static void SetValue(UUID ID, const std::string& className,const std::string& varName, void* data);
-		template<class T>
-		static T GetValue(UUID ID, const std::string& className, const std::string& varName);
+		static void SetValue(UUID ID, const std::string& className, const std::string& varName, void* data);
 	private:
 		static MonoObject* InstantiateClass(MonoClass* monoClass);
 		static void InitMono();
