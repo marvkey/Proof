@@ -18,6 +18,7 @@
 #include "Proof/Renderer/MeshWorkShop.h"
 #include "Proof/Resources/Asset/AssetManager.h"
 #include "Proof/Scene/Physics/PhysicsEngine.h"
+#include "Proof/Scripting/ScriptEngine.h"
 namespace Proof
 {
 	static struct Material Empty;
@@ -344,6 +345,9 @@ namespace Proof
 		}
 	}
 
-	
-
+	bool ScriptComponent::AddScript(const std::string& className) {
+		if (HasScript(className) == true)return false;
+		m_Scripts.emplace_back(ScriptData{ className });
+		return true;
+	}
 }

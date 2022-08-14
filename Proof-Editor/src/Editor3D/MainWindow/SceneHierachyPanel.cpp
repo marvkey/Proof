@@ -24,6 +24,7 @@
 #include <string.h>
 #include<magic_enum.hpp>
 #include "Proof/Resources/EnumReflection.h"
+#include "Proof/Scripting/ScriptEngine.h"
 namespace Proof {
 #define InitilizeScript(InstanceNativeScriptComponent,Class)\
 	InstanceNativeScriptComponent.Bind<Class>();\
@@ -249,6 +250,7 @@ namespace Proof {
 		}
 		ImGui::PopID();
 	}
+
 
 	void SceneHierachyPanel::DrawComponent(Entity& entity) {
 		auto& Tag = *entity.GetComponent<TagComponent>();
@@ -658,21 +660,35 @@ namespace Proof {
 		}
 		ScriptComponent* scriptComponent = entity.GetComponent<ScriptComponent>();
 		if (scriptComponent != nullptr) {
-			DrawComponents<ScriptComponent>("Scripts", entity, scriptComponent, IndexValue, [](ScriptComponent& object) {
-				uint32_t iterate = 0;
+			DrawComponents<ScriptComponent>("Scripts", entity, scriptComponent, IndexValue, [&](ScriptComponent& object) {
 				if (ImGui::Button("Add Script")) {
 					object.AddScript("");
 				}
-				for (std::string& tag : object.m_Scripts) {
+				if (object.m_Scripts.size() == 0)return;
+				uint32_t iterate = 0;
+				for (auto& scriptData : object.m_Scripts) {
 					char buffer[256];
 					memset(buffer, 0, sizeof(buffer));
-					strcpy_s(buffer, sizeof(buffer), tag.c_str());
+					strcpy_s(buffer, sizeof(buffer), scriptData.ClassName.c_str());
 					const std::string name = std::to_string(iterate);
 					ImGui::Text(name.c_str());
 					ImGui::SameLine();
 					ImGui::PushID(name.c_str());
 					if (ImGui::InputTextWithHint("##temp", "ScriptName", buffer, sizeof(buffer))) {
-						tag = buffer;
+						scriptData.ClassName = buffer;
+						const ScriptClass* scriptClass = ScriptEngine::GetScriptClass(scriptData.ClassName);
+						if (scriptClass != nullptr) {
+							for (auto& data : scriptClass->m_FieldData) {
+								ScriptFields field;
+								field.Name = data.Name;
+								field.Type = data.Type;
+								field.Data = data.Data;
+								scriptData.Fields.emplace_back(field);
+							}
+						}
+						else {
+							scriptData.Fields.clear();
+						}
 					}
 					ImGui::SameLine();
 					if (ImGui::Button("-", { 20,20 })) {
@@ -682,6 +698,188 @@ namespace Proof {
 					iterate++;
 
 				}
+				if (m_CurrentWorld->GetState() == WorldState::Edit) {
+					auto& Data0 = object.m_Scripts[0];
+					if (ScriptEngine::GetScriptClass(Data0.ClassName) == nullptr)return;
+					for (auto& field : Data0.Fields) {
+						switch (field.Type) {
+							case Proof::ProofMonoType::Bool:
+								{
+									bool* data = field.Data._Cast<bool>();
+									ExternalAPI::ImGUIAPI::CheckBox(field.Name, data);
+								}
+								break;
+							case Proof::ProofMonoType::Char:
+								break;
+							case Proof::ProofMonoType::String:
+								break;
+							case Proof::ProofMonoType::Uint8_t:
+								{
+									uint8_t* data = field.Data._Cast<uint8_t>();
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U8, (void*)data, 1.0f);
+									break;
+								}
+							case Proof::ProofMonoType::Uint16_t:
+								{
+									uint16_t* data = field.Data._Cast<uint16_t>();
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U16, (void*)data, 1.0f);
+									break;
+								}
+							case Proof::ProofMonoType::Uint32_t:
+								{
+									uint32_t* data = field.Data._Cast<uint32_t>();
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U32, (void*)data, 1.0f);
+									break;
+								}
+							case Proof::ProofMonoType::Uint64_t:
+								{
+									uint64_t* data = field.Data._Cast<uint64_t>();
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U64, (void*)data, 1.0f);
+									break;
+								}
+							case Proof::ProofMonoType::Int8_t:
+								{
+									int8_t* data = field.Data._Cast<int8_t>();
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S8, (void*)data, 1.0f);
+									break;
+								}
+							case Proof::ProofMonoType::Int16_t:
+								{
+									int16_t* data = field.Data._Cast<int16_t>();
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S16, (void*)data, 1.0f);
+									break;
+								}
+							case Proof::ProofMonoType::Int32_t:
+								{
+									int32_t* data = field.Data._Cast<int32_t>();
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S32, (void*)data, 1.0f);
+									break;
+								}
+							case Proof::ProofMonoType::Int64_t:
+								{
+									int64_t* data = field.Data._Cast<int64_t>();
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S64, (void*)data, 1.0f);
+									break;
+								}
+							case Proof::ProofMonoType::Float:
+								{
+									float* data = field.Data._Cast<float>();
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_Float, (void*)data, 1.0f);
+									break;
+								}
+							case Proof::ProofMonoType::Double:
+								{
+									double* data = field.Data._Cast<double>();
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_Double, (void*)data, 1.0f);
+									break;
+								}
+							case Proof::ProofMonoType::Class:
+								break;
+							case Proof::ProofMonoType::Enum:
+								break;
+							default:
+								break;
+						}
+					}
+				}
+				/*
+				else if (m_CurrentWorld->GetState() == WorldState::Play || m_CurrentWorld->GetState() == WorldState::Simulate || m_CurrentWorld->GetState() == WorldState::Pause) {
+					auto& Data0 = object.m_Scripts[0];
+					if (ScriptEngine::GetScriptClass(Data0.ClassName) == nullptr)return;
+					for (auto& field : Data0.Fields) {
+						switch (field.Type) {
+							case Proof::ProofMonoType::Bool:
+								{
+									bool data = ScriptEngine::GetValue<bool>(entity.GetID(), Data0.ClassName, field.Name);
+									ExternalAPI::ImGUIAPI::CheckBox(field.Name, &data);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+								}
+								break;
+							case Proof::ProofMonoType::Char:
+								break;
+							case Proof::ProofMonoType::String:
+								break;
+							case Proof::ProofMonoType::Uint8_t:
+								{
+									uint8_t data = ScriptEngine::GetValue<uint8_t>(entity.GetID(), Data0.ClassName, field.Name);
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U8, &data, 1.0f);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+									break;
+								}
+							case Proof::ProofMonoType::Uint16_t:
+								{
+									uint16_t data = ScriptEngine::GetValue<uint16_t>(entity.GetID(), Data0.ClassName, field.Name);
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U16, &data, 1.0f);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+									break;
+								}
+							case Proof::ProofMonoType::Uint32_t:
+								{
+									uint32_t data = ScriptEngine::GetValue<uint32_t>(entity.GetID(), Data0.ClassName, field.Name);
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U32, &data, 1.0f);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+									break;
+								}
+							case Proof::ProofMonoType::Uint64_t:
+								{
+									uint64_t data = ScriptEngine::GetValue<uint64_t>(entity.GetID(), Data0.ClassName, field.Name);
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U64, &data, 1.0f);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+									break;
+								}
+							case Proof::ProofMonoType::Int8_t:
+								{
+									int8_t data = ScriptEngine::GetValue<int8_t>(entity.GetID(), Data0.ClassName, field.Name);
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S8, &data, 1.0f);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+									break;
+								}
+							case Proof::ProofMonoType::Int16_t:
+								{
+									int16_t data = ScriptEngine::GetValue<int16_t>(entity.GetID(), Data0.ClassName, field.Name);
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S16, &data, 1.0f);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+									break;
+								}
+							case Proof::ProofMonoType::Int32_t:
+								{
+									int32_t data = ScriptEngine::GetValue<int32_t>(entity.GetID(), Data0.ClassName, field.Name);
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S32, &data, 1.0f);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+									break;
+								}
+							case Proof::ProofMonoType::Int64_t:
+								{
+									int64_t data = ScriptEngine::GetValue<int64_t>(entity.GetID(), Data0.ClassName, field.Name);
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S64, &data, 1.0f);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+									break;
+								}
+							case Proof::ProofMonoType::Float:
+								{
+									float data = ScriptEngine::GetValue<float>(entity.GetID(), Data0.ClassName, field.Name);
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_Float, &data, 1.0f);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+									break;
+								}
+							case Proof::ProofMonoType::Double:
+								{
+									double data = ScriptEngine::GetValue<double>(entity.GetID(), Data0.ClassName, field.Name);
+									ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_Double, &data, 1.0f);
+									ScriptEngine::SetValue(entity.GetID(), Data0.ClassName, field.Name, &data);
+									break;
+								}
+							case Proof::ProofMonoType::Class:
+								break;
+							case Proof::ProofMonoType::Enum:
+								break;
+							default:
+								break;
+						}
+					}
+				}
+					*/
+
 			});
 			IndexValue += 1;
 		}

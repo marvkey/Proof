@@ -6,13 +6,14 @@
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Renderer/Texture.h"
-
+#include "Proof/Scripting/MonoTypes.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
 #include <string>
 #include <format>
 #include <set>
+#include <any>
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
@@ -521,19 +522,28 @@ namespace Proof
 		VelocityChange,	
 		Acceleration
 	};
-	
-	class ScriptComponent {
+	struct ScriptFields {
+		std::any Data;
+		std::string Name;
+		ProofMonoType Type = ProofMonoType::None;
+	};
+	struct ScriptData {
+	public:
+		// GONNA CHANGE TO ID instead of string
+		ScriptData(const std::string& className) {
+			ClassName = className;
+		}
+		std::string ClassName;
+		std::vector<ScriptFields> Fields;
+	};
+	struct ScriptComponent {
 	public:
 		ScriptComponent(const ScriptComponent&other) = default;
 		ScriptComponent() = default;
-		bool AddScript(const std::string& className) {
-			if (HasScript(className) == true)return false;
-			m_Scripts.emplace_back(className);
-			return true;
-		}
+		bool AddScript(const std::string& className);
 		bool RemoveScript(const std::string& className) {
 			for (int i = 0; i < m_Scripts.size(); i++) {
-				if (m_Scripts[i] == className) {
+				if (m_Scripts[i].ClassName == className) {
 					m_Scripts.erase(m_Scripts.begin() + i);
 					return true;
 				}
@@ -554,7 +564,7 @@ namespace Proof
 		};
 		bool HasScript(const std::string& className) {
 			for (int i = 0; i < m_Scripts.size(); i++) {
-				if (m_Scripts[i] == className) {
+				if (m_Scripts[i].ClassName == className) {
 					return true;
 				}
 			}
@@ -565,10 +575,11 @@ namespace Proof
 		template <typename func>
 		void ForEachScript(func f) {
 			for (auto& val : m_Scripts)
-				f(val);
+				f(val.ClassName);
 		}
 	private:
-		std::vector<std::string> m_Scripts;
+		std::vector<ScriptData> m_Scripts;
+		
 		friend class ScriptEngine;
 		friend class SceneHierachyPanel;
 	};

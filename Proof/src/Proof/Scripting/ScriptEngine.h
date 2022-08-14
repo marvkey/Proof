@@ -2,16 +2,26 @@
 //Reference
 //https://github.com/TheCherno/Hazel/blob/scripting/Hazel/src/Hazel/Scripting/ScriptEngine.h
 #include "Proof/Core/Core.h"
+#include "MonoTypes.h"
 #include "proof/Scene/Entity.h"
+#include <any>
 extern "C" {
 	typedef struct _MonoClass MonoClass;
 	typedef struct _MonoObject MonoObject;
 	typedef struct _MonoMethod MonoMethod;
 	typedef struct _MonoAssembly MonoAssembly;
 	typedef struct _MonoImage MonoImage;
+	typedef struct _MonoClassField MonoClassField;
+	typedef struct _MonoProperty MonoProperty;
 }
 namespace Proof
 {
+
+	struct MonoFieldData {
+		std::string Name;
+		ProofMonoType Type = ProofMonoType::None;
+		std::any Data;
+	};
 	class ScriptClass {
 	public:
 		ScriptClass() = default;
@@ -20,10 +30,16 @@ namespace Proof
 		MonoObject* Instantiate();
 		MonoMethod* GetMethod(const std::string& name, int parameterCount);
 		MonoObject* CallMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
+		std::vector<MonoFieldData> m_FieldData;
+		MonoClass* GetMonoClass() {
+			return m_MonoClass;
+		}
+		const std::string& GeClassName() {
+			return m_ClassName;
+		}
 	private:
 		std::string m_ClassNamespace;
 		std::string m_ClassName;
-
 		MonoClass* m_MonoClass = nullptr;
 	};
 
@@ -47,6 +63,8 @@ namespace Proof
 		MonoMethod* m_OnPlaced = nullptr;
 		MonoMethod* m_OnSpawn = nullptr;
 		MonoMethod* m_OnDestroy = nullptr;
+
+		friend class ScriptEngine;
 	};
 	class ScriptEngine {
 	public:
@@ -68,6 +86,16 @@ namespace Proof
 		static void RemoveEntity(Entity entity);
 		static void RemoveScript(const std::string& fullClassName, Entity entity);
 		static MonoImage* GetCoreAssemblyImage();
+		// any variable
+		static uint8_t GetFieldAccessibility(MonoClassField* field);
+		// Getters and setters variables 
+		static uint8_t GetPropertyAccessbility(MonoProperty* property);
+
+		static const ScriptClass* GetScriptClass(const std::string& name);
+
+		static void SetValue(UUID ID, const std::string& className,const std::string& varName, void* data);
+		template<class T>
+		static T GetValue(UUID ID, const std::string& className, const std::string& varName);
 	private:
 		static MonoObject* InstantiateClass(MonoClass* monoClass);
 		static void InitMono();

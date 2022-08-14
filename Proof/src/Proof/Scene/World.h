@@ -37,7 +37,9 @@ namespace Proof{
 		class Entity CreateEntity(const std::string& EntName= "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName, UUID ID);
 		class Entity CreateEntity(Entity entity,bool includeChildren=true);
-		
+		WorldState GetState() {
+			return m_CurrentState;
+		}
 		template<class F>
 		void ForEachEntity(F func) {
 			for (uint64_t i = 0; i < m_Registry.entities.size(); i++) {

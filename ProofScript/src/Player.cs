@@ -11,6 +11,22 @@ namespace Game
     {
         private TransformComponent m_TransformComponent;
         private RigidBodyComponent m_RigidiBody;
+        public int Age = 17;
+        public bool isCool = false;
+        public uint Jump = 25;
+
+        public float Sensitivity = 2.0f;
+        int num
+        {
+            get
+            {
+                return num;
+            }
+            set
+            {
+                num = value;
+            }
+        }
         void OnCreate()
         {
             m_TransformComponent = GetComponent<TransformComponent>();
@@ -21,8 +37,7 @@ namespace Game
         {
             if (Input.IsKeyPressed(KeyBoardKey.F))
             {
-                m_RigidiBody.AddForce(new Vector(0, 1, 10));
-                Log.Trace("Added force to entity");
+                Log.Trace($"Sensitivity {Sensitivity}");
             }
         }
     }

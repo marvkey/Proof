@@ -183,6 +183,20 @@ namespace Proof
 		inline static T GetMinType() {
 			return std::numeric_limits<T>::min();
 		}
+		template<>
+		inline static float GetMinType() {
+			return std::numeric_limits<float>::lowest();
+		}
+
+		template<>
+		inline static double GetMinType() {
+			return std::numeric_limits<double>::lowest();
+		}
+
+		template<>
+		inline static long double GetMinType() {
+			return std::numeric_limits<long double>::lowest();
+		}
 		/**
 		* @param num: value to be changed
 		* @return The number passed into positve

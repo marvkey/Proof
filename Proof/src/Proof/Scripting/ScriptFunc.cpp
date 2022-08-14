@@ -8,7 +8,32 @@
 namespace Proof
 {
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
+	namespace ScriptFuncUtils
+	{
+		bool CheckMonoError(MonoError& error) {
+			bool hasError = !mono_error_ok(&error);
+			if (hasError) {
+				uint32_t errorCode = mono_error_get_error_code(&error);
+				const char* errorMessage = mono_error_get_message(&error);
+				PF_ERROR("Code: {} Message: {}", errorCode, errorMessage);
+				mono_error_cleanup(&error);
+			}
+			return hasError;
+		}
+		std::string MonoToString(MonoString* monoString) {
+			if (monoString == nullptr || mono_string_length(monoString) == 0)
+				return "";
 
+			MonoError error;
+			char* utf8 = mono_string_to_utf8_checked(monoString, &error);
+			if (CheckMonoError(error))
+				return "";
+			std::string result(utf8);
+			mono_free(utf8);
+			return result;
+
+		}
+	}
 	#define PF_ADD_INTERNAL_CALL(Name){\
 		mono_add_internal_call("Proof.InternalCalls::" #Name, Name);\
 		PF_ENGINE_TRACE("	C# registered function {}", #Name);\
