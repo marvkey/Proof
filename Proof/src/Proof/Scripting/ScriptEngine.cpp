@@ -240,68 +240,63 @@ namespace Proof
         for (auto& a : s_Data->EntityInstances[entity.GetID()]) {
             a->CallOnUpdate(ts);
         }
-
+        
     }
     void ScriptEngine::OnCreate(Entity entity) {
         auto sc = *entity.GetComponent<ScriptComponent>();
-        for (auto& Class : sc.m_Scripts) {
-            if (ScriptEngine::EntityClassExists(Class.ClassName) == true) {
-                Count<ScriptInstance> instance = CreateCount<ScriptInstance>(s_Data->ScriptEntityClasses[Class.ClassName], entity);
-                s_Data->EntityInstances[entity.GetID()].emplace_back(instance);
-                for (auto& scriptData : sc.m_Scripts) {
-                    for (auto& prop : scriptData.Fields) {
-                        MonoClassField* currentField = mono_class_get_field_from_name(instance->m_ScriptClass->GetMonoClass(), prop.Name.c_str());
-                        switch (prop.Type) {
-                            case Proof::ProofMonoType::Uint8_t:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint8_t>());
-                                break;
-                            case Proof::ProofMonoType::Uint16_t:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint16_t>());
-                                break;
-                            case Proof::ProofMonoType::Uint32_t:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint32_t>());
-                                break;
-                            case Proof::ProofMonoType::Uint64_t:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint64_t>());
-                                break;
-                            case Proof::ProofMonoType::Int8_t:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<int8_t>());
-                                break;
-                            case Proof::ProofMonoType::Int16_t:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<int16_t>());
-                                break;
-                            case Proof::ProofMonoType::Int32_t:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<int32_t>());
-                                break;
-                            case Proof::ProofMonoType::Int64_t:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<int64_t>());
-                                break;
-                            case Proof::ProofMonoType::Float:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<float>());
-                                break;
-                            case Proof::ProofMonoType::Double:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<double>());
-                                break;
-                            case Proof::ProofMonoType::Class:
-                                break;
-                            case Proof::ProofMonoType::None:
-                                break;
-                            case Proof::ProofMonoType::Bool:
-                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<bool>());
-                                break;
-                            case Proof::ProofMonoType::Char:
-                                break;
-                            case Proof::ProofMonoType::String:
-                                break;
-                            case Proof::ProofMonoType::Enum:
-                                break;
-                            default:
-                                break;
-                        }
-                    }
+        for (auto& script : sc.m_Scripts) {
+            if (ScriptEngine::EntityClassExists(script.ClassName) == false)continue;
+            Count<ScriptInstance> instance = CreateCount<ScriptInstance>(s_Data->ScriptEntityClasses[script.ClassName], entity);
+            s_Data->EntityInstances[entity.GetID()].emplace_back(instance);
+            for (auto& prop : script.Fields) {
+                MonoClassField* currentField = mono_class_get_field_from_name(instance->m_ScriptClass->GetMonoClass(), prop.Name.c_str());
+                switch (prop.Type) {
+                    case Proof::ProofMonoType::Uint8_t:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint8_t>());
+                        break;
+                    case Proof::ProofMonoType::Uint16_t:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint16_t>());
+                        break;
+                    case Proof::ProofMonoType::Uint32_t:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint32_t>());
+                        break;
+                    case Proof::ProofMonoType::Uint64_t:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint64_t>());
+                        break;
+                    case Proof::ProofMonoType::Int8_t:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<int8_t>());
+                        break;
+                    case Proof::ProofMonoType::Int16_t:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<int16_t>());
+                        break;
+                    case Proof::ProofMonoType::Int32_t:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<int32_t>());
+                        break;
+                    case Proof::ProofMonoType::Int64_t:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<int64_t>());
+                        break;
+                    case Proof::ProofMonoType::Float:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<float>());
+                        break;
+                    case Proof::ProofMonoType::Double:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<double>());
+                        break;
+                    case Proof::ProofMonoType::Class:
+                        break;
+                    case Proof::ProofMonoType::Bool:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<bool>());
+                        break;
+                    case Proof::ProofMonoType::Char:
+                        break;
+                    case Proof::ProofMonoType::String:
+                        break;
+                    case Proof::ProofMonoType::Enum:
+                        break;
+                    default:
+                        break;
                 }
-                instance->CallOnCreate();
             }
+            instance->CallOnCreate();
         }
       
     }
@@ -344,7 +339,7 @@ namespace Proof
         }
 
         MonoClassField* currentField = mono_class_get_field_from_name(instance->m_ScriptClass->GetMonoClass(), varName.c_str());
-        mono_field_set_value(instance->m_Instance, currentField, (void*)data);
+        mono_field_set_value(instance->m_Instance, currentField, data);
     }
 
     MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass) {
@@ -396,7 +391,7 @@ namespace Proof
             if (monoClass == nullptr)continue;
             if (mono_class_is_enum(monoClass))continue;
             std::string fullName;
-
+            MonoImage* monoImage = mono_class_get_image(monoClass);
             if (strlen(nameSpace) != 0) // length of a string
                 fullName = fmt::format("{}.{}", nameSpace, name);
             else
@@ -405,8 +400,10 @@ namespace Proof
                 continue;
 
             bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
+            ;
             if (isEntity) {
                 s_Data->ScriptEntityClasses[fullName] = CreateCount<ScriptClass>(nameSpace, name);
+
                 PF_ENGINE_TRACE("   Added To Script Class {}", fullName);
             }
         }
@@ -516,5 +513,8 @@ namespace Proof
         }
 
         return accessibility;
+    }
+    const std::unordered_map<std::string, Count<ScriptClass>>const& ScriptEngine::GetScripts() {
+        return s_Data->ScriptEntityClasses;
     }
 }

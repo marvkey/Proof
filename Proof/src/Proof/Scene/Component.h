@@ -566,6 +566,9 @@ namespace Proof
 			}
 			return false;
 		};
+
+		bool ChangeScript(const std::string& oldClassName, const std::string& newClassName);
+
 		bool HasScript(const std::string& className) {
 			for (int i = 0; i < m_Scripts.size(); i++) {
 				if (m_Scripts[i].ClassName == className) {

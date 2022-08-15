@@ -91,6 +91,8 @@ namespace Proof
 
 		static const ScriptClass* GetScriptClass(const std::string& name);
 		static void SetValue(UUID ID, const std::string& className, const std::string& varName, void* data);
+
+		static const std::unordered_map<std::string, Count<ScriptClass>>const& GetScripts();
 	private:
 		static MonoObject* InstantiateClass(MonoClass* monoClass);
 		static void InitMono();

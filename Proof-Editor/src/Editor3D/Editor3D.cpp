@@ -364,7 +364,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Layer::OnImGuiDraw(DeltaTime);
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
 		for (auto& a : m_AllPanels) {
@@ -1086,7 +1086,7 @@ namespace Proof
 
 		if (m_ClearLogOnPlay)
 			Log::Logs.clear();
-		GuizmoType = 0;
+		//GuizmoType = 0;
 		m_WorldHierachy.m_SelectedEntity = {};
 		//Entity  entity = ActiveWorld->CreateEntity("script");
 		//entity.AddComponent<RigidBodyComponent>();
@@ -1099,7 +1099,7 @@ namespace Proof
 	}
 	void Editore3D::SetWorldEdit() {
 
-		GuizmoType = 0;
+		//GuizmoType = 0;
 		ActiveWorld->EndRuntime();
 		ActiveWorld = m_EditorWorld;
 		m_WorldHierachy.SetContext(ActiveWorld.get());

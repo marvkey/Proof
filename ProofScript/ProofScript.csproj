@@ -59,6 +59,7 @@
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Enemy.cs" />
     <Compile Include="src\Player.cs" />
     <Compile Include="src\Proof\Core\Log.cs" />
     <Compile Include="src\Proof\Input\Input.cs" />

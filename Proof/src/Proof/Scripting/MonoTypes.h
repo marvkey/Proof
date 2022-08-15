@@ -23,6 +23,8 @@ namespace Proof{
 		Double = 0x0d,
 		// only support sublcass of components and Entity classes 
 		Class = 0x12,
+		// only supported for types we have here 
+		Array = 0x14,
 		Enum = 0x55
 	};
 

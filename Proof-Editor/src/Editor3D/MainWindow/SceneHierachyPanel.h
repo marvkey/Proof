@@ -39,7 +39,7 @@ namespace Proof{
 		void DrawComponent(class Entity& entity);
 
 		template<typename T,typename UIFunction>
-		void DrawComponents(const std::string&name, Entity& entity, T* Comp,uint32_t IndexValue,UIFunction Uifunction,const std::string& toolTip=std::string());
+		void DrawComponents(const std::string&name, Entity& entity,UIFunction Uifunction,const std::string& toolTip=std::string());
 		
 		friend class Editore3D;
 	};

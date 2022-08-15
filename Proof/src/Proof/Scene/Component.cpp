@@ -346,8 +346,43 @@ namespace Proof
 	}
 
 	bool ScriptComponent::AddScript(const std::string& className) {
+		if (ScriptEngine::EntityClassExists(className) == false)return false;
 		if (HasScript(className) == true)return false;
-		m_Scripts.emplace_back(ScriptData{ className });
+		ScriptData scriptData{ className };
+		const ScriptClass* scriptClass = ScriptEngine::GetScriptClass(className);
+		if (scriptClass != nullptr) {
+			for (auto& data : scriptClass->m_FieldData) {
+				ScriptFields field;
+				field.Name = data.Name;
+				field.Type = data.Type;
+				field.Data = data.Data;
+				scriptData.Fields.emplace_back(field);
+			}
+		}
+		m_Scripts.emplace_back(scriptData);
 		return true;
+	}
+	bool ScriptComponent::ChangeScript(const std::string& oldClassName, const std::string& newClassName) {
+		if (ScriptEngine::EntityClassExists(newClassName) == false)return false;
+		if (HasScript(oldClassName) == true)return false;
+		int posIndex = -1;
+		for (int i = 0; i < m_Scripts.size(); i++) {
+			if (m_Scripts[i].ClassName == oldClassName)
+				posIndex = i;
+		}
+		if (posIndex == -1)return false; // script not found
+		ScriptData scriptData{ newClassName };
+		const ScriptClass* scriptClass = ScriptEngine::GetScriptClass(newClassName);
+		if (scriptClass != nullptr) {
+			for (auto& data : scriptClass->m_FieldData) {
+				ScriptFields field;
+				field.Name = data.Name;
+				field.Type = data.Type;
+				field.Data = data.Data;
+				scriptData.Fields.emplace_back(field);
+			}
+		}
+		// changing the data located in that script
+		m_Scripts[posIndex] = scriptData;
 	}
 }

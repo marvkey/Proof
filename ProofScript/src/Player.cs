@@ -7,6 +7,7 @@ using Proof;
 
 namespace Game
 {
+  
     public class Player : Entity
     {
         private TransformComponent m_TransformComponent;
