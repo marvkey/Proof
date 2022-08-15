@@ -352,7 +352,7 @@ namespace Proof
 		const ScriptClass* scriptClass = ScriptEngine::GetScriptClass(className);
 		if (scriptClass != nullptr) {
 			for (auto& data : scriptClass->m_FieldData) {
-				ScriptFields field;
+				ScriptField field;
 				field.Name = data.Name;
 				field.Type = data.Type;
 				field.Data = data.Data;
@@ -375,7 +375,7 @@ namespace Proof
 		const ScriptClass* scriptClass = ScriptEngine::GetScriptClass(newClassName);
 		if (scriptClass != nullptr) {
 			for (auto& data : scriptClass->m_FieldData) {
-				ScriptFields field;
+				ScriptField field;
 				field.Name = data.Name;
 				field.Type = data.Type;
 				field.Data = data.Data;

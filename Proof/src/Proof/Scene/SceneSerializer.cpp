@@ -6,6 +6,7 @@
 #include <fstream>
 #include <filesystem>
 #include "Proof/Resources/ExternalCreations.h"
+#include "Proof/Scripting/ScriptEngine.h"
 namespace Proof
 {
 	SceneSerializer::SceneSerializer(World* Scene) {
@@ -181,6 +182,82 @@ namespace Proof
 			}
 		}
 
+		{
+			ScriptComponent* scriptComponent = entity.GetComponent<ScriptComponent>();
+			if (scriptComponent != nullptr) {
+				out << YAML::Key << "ScriptComponent";
+				out << YAML::BeginMap; // ScriptComponent
+				out << YAML::Key << "Scripts" << YAML::BeginSeq;
+
+				for (auto& script : scriptComponent->m_Scripts) {
+					out << YAML::BeginMap;// Script
+					out << YAML::Key << "ScriptID" << script.ClassName;
+					out << YAML::Key << "FieldSize" << script.Fields.size();
+					int fieldIndex = 0;
+					for (auto& field : script.Fields) {
+						out << YAML::Key << fmt::format("Field{}",fieldIndex);
+						out << YAML::BeginMap; //Field
+						out << YAML::Key << "Name" << field.Name;
+						out << YAML::Key << "Type" << EnumReflection::EnumString(field.Type);
+						switch (field.Type) {
+							case Proof::ProofMonoType::None:
+								break;
+							case Proof::ProofMonoType::Bool:
+								out << YAML::Key << "Data" << field.Data._Cast<bool>();
+								break;
+							case Proof::ProofMonoType::Char:
+								break;
+							case Proof::ProofMonoType::String:
+								break;
+							case Proof::ProofMonoType::Uint8_t:
+								out << YAML::Key << "Data" << *field.Data._Cast<uint8_t>();
+								break;
+							case Proof::ProofMonoType::Uint16_t:
+								out << YAML::Key << "Data" << *field.Data._Cast<uint16_t>();
+								break;
+							case Proof::ProofMonoType::Uint32_t:
+								out << YAML::Key << "Data" << *field.Data._Cast<uint32_t>();
+								break;
+							case Proof::ProofMonoType::Uint64_t:
+								out << YAML::Key << "Data" << *field.Data._Cast<uint64_t>();
+								break;
+							case Proof::ProofMonoType::Int8_t:
+								out << YAML::Key << "Data" << *field.Data._Cast<int8_t>();
+								break;
+							case Proof::ProofMonoType::Int16_t:
+								out << YAML::Key << "Data" << *field.Data._Cast<int16_t>();
+								break;
+							case Proof::ProofMonoType::Int32_t:
+								out << YAML::Key << "Data" << *field.Data._Cast<int32_t>();
+								break;
+							case Proof::ProofMonoType::Int64_t:
+								out << YAML::Key << "Data" << *field.Data._Cast<int64_t>();
+								break;
+							case Proof::ProofMonoType::Float:
+								out << YAML::Key << "Data" << *field.Data._Cast<float>();
+								break;
+							case Proof::ProofMonoType::Double:
+								out << YAML::Key << "Data" << *field.Data._Cast<double>();
+								break;
+							case Proof::ProofMonoType::Class:
+								break;
+							case Proof::ProofMonoType::Array:
+								break;
+							case Proof::ProofMonoType::Enum:
+								break;
+							default:
+								break;
+						}
+						out << YAML::EndMap; // Field
+						fieldIndex++;
+					}
+					out << YAML::EndMap;// Script
+				}
+				out << YAML::EndSeq; //Scripts
+				out << YAML::EndMap; // ScriptComponent
+			}
+		}
+
 		out << YAML::EndMap; // entity
 	}
 
@@ -312,7 +389,7 @@ namespace Proof
 					src.m_Diffuse = lightComponent["Diffuse"].as<glm::vec3>();
 					src.m_Specular = lightComponent["Specular"].as<glm::vec3>();
 
-					src.m_LightType =(LightComponent::LightType)lightComponent["LightType"].as<int>();
+					src.m_LightType = (LightComponent::LightType)lightComponent["LightType"].as<int>();
 
 				}
 			}
@@ -357,8 +434,8 @@ namespace Proof
 			}
 			//CAPSULE COLLIDER
 			{
-			
-				auto capsuleColliderComponent= entity["CapsuleColliderComponent"];
+
+				auto capsuleColliderComponent = entity["CapsuleColliderComponent"];
 				if (capsuleColliderComponent) {
 					auto& src = *NewEntity.AddComponent<CapsuleColliderComponent>();
 					src.IsTrigger = capsuleColliderComponent["IsTrigger"].as<bool>();
@@ -392,6 +469,82 @@ namespace Proof
 					rgb.FreezeLocation = rigidBodyComponent["FreezeLocation"].as<Vector<bool>>();
 					rgb.FreezeRotation = rigidBodyComponent["FreezeRotation"].as<Vector<bool>>();
 					rgb.m_RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
+				}
+			}
+
+			//Script Component
+			{
+				auto scriptComponent = entity["ScriptComponent"];
+				if (scriptComponent) {
+					auto& scp = *NewEntity.AddComponent<ScriptComponent>();
+
+					auto scripts = scriptComponent["Scripts"];
+					for (auto script : scripts) {
+						std::string scriptName = script["ScriptID"].as<std::string>();
+						ScriptData scriptData{ scriptName };
+						uint32_t numFieldSize = script["FieldSize"].as<int>();
+
+						for (uint32_t i = 0; i < numFieldSize; i++) {
+							ScriptField scriptField;
+							auto field = script[fmt::format("Field{}", i)];
+							scriptField.Name = field["Name"].as<std::string>();
+							//at release we do not to do this casue the binary are already built and set for us whe 
+							if (ScriptEngine::IsFieldAvailable(scriptName, scriptField.Name) == false)
+								continue;
+							scriptField.Type = EnumReflection::StringEnum<ProofMonoType>(field["Type"].as<std::string>());
+							switch (scriptField.Type) {
+								case Proof::ProofMonoType::None:
+									break;
+								case Proof::ProofMonoType::Bool:
+									scriptField.Data = field["Data"].as<bool>();
+									break;
+								case Proof::ProofMonoType::Char:
+									break;
+								case Proof::ProofMonoType::String:
+									break;
+								case Proof::ProofMonoType::Uint8_t:
+									scriptField.Data = field["Data"].as<uint8_t>();
+									break;
+								case Proof::ProofMonoType::Uint16_t:
+									scriptField.Data = field["Data"].as<uint16_t>();
+									break;
+								case Proof::ProofMonoType::Uint32_t:
+									scriptField.Data = field["Data"].as<uint32_t>();
+									break;
+								case Proof::ProofMonoType::Uint64_t:
+									scriptField.Data = field["Data"].as<uint64_t>();
+									break;
+								case Proof::ProofMonoType::Int8_t:
+									scriptField.Data = field["Data"].as<int8_t>();
+									break;
+								case Proof::ProofMonoType::Int16_t:
+									scriptField.Data = field["Data"].as<int16_t>();
+									break;
+								case Proof::ProofMonoType::Int32_t:
+									scriptField.Data = field["Data"].as<int32_t>();
+									break;
+								case Proof::ProofMonoType::Int64_t:
+									scriptField.Data = field["Data"].as<int64_t>();
+									break;
+								case Proof::ProofMonoType::Float:
+									scriptField.Data = field["Data"].as<float>();
+									break;
+								case Proof::ProofMonoType::Double:
+									scriptField.Data = field["Data"].as<double>();
+									break;
+								case Proof::ProofMonoType::Class:
+									break;
+								case Proof::ProofMonoType::Array:
+									break;
+								case Proof::ProofMonoType::Enum:
+									break;
+								default:
+									break;
+							}
+							scriptData.Fields.emplace_back(scriptField);
+						}
+						scp.m_Scripts.emplace_back(scriptData);
+					}
 				}
 			}
 		}

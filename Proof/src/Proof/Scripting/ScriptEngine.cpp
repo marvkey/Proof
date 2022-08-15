@@ -90,7 +90,7 @@ namespace Proof
         std::unordered_map<UUID, std::vector<Count<ScriptInstance>>> EntityInstances;
     };
     template <class Type>
-    void LoadData(MonoObject* object, MonoClassField* classField, MonoFieldData& monoData) {
+    void LoadData(MonoObject* object, MonoClassField* classField, ScriptField& monoData) {
         Type val;
         mono_field_get_value(object, classField, &val);
         monoData.Data = val;
@@ -111,7 +111,7 @@ namespace Proof
 
             MonoType* monoType = mono_field_get_type(classFields);
             PF_ENGINE_INFO("Name: {} Type: {}", mono_field_get_name(classFields), EnumReflection::EnumString<MonoTypeEnum>((MonoTypeEnum)mono_type_get_type(monoType)));
-            MonoFieldData data;
+            ScriptField data;
             data.Name = mono_field_get_name(classFields);
             data.Type = (ProofMonoType)mono_type_get_type(monoType);
             switch (data.Type) {
@@ -340,6 +340,15 @@ namespace Proof
 
         MonoClassField* currentField = mono_class_get_field_from_name(instance->m_ScriptClass->GetMonoClass(), varName.c_str());
         mono_field_set_value(instance->m_Instance, currentField, data);
+    }
+
+  
+
+    bool ScriptEngine::IsFieldAvailable(const std::string& className, const std::string& varName) {
+        if (EntityClassExists(className) == false) return false;
+        auto& scriptClass = s_Data->ScriptEntityClasses[className];
+        MonoClassField* field = mono_class_get_field_from_name(scriptClass->GetMonoClass(), varName.c_str());
+        return field != nullptr;
     }
 
     MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass) {

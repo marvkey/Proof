@@ -26,7 +26,7 @@ namespace Proof
 		MonoObject* Instantiate();
 		MonoMethod* GetMethod(const std::string& name, int parameterCount);
 		MonoObject* CallMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
-		std::vector<MonoFieldData> m_FieldData;
+		std::vector<ScriptField> m_FieldData;
 		MonoClass* GetMonoClass() {
 			return m_MonoClass;
 		}
@@ -92,6 +92,7 @@ namespace Proof
 		static const ScriptClass* GetScriptClass(const std::string& name);
 		static void SetValue(UUID ID, const std::string& className, const std::string& varName, void* data);
 
+		static bool IsFieldAvailable(const std::string& className, const std::string& varName);
 		static const std::unordered_map<std::string, Count<ScriptClass>>const& GetScripts();
 	private:
 		static MonoObject* InstantiateClass(MonoClass* monoClass);

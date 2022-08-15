@@ -523,23 +523,7 @@ namespace Proof
 		Acceleration
 	};
 
-	//Rename ScriptClassFields
-	struct ScriptFields {
-		std::any Data;
-		std::string Name;
-		ProofMonoType Type = ProofMonoType::None;
-	};
-	//Rename ScriptClassData
 
-	struct ScriptData {
-	public:
-		// GONNA CHANGE TO ID instead of string
-		ScriptData(const std::string& className) {
-			ClassName = className;
-		}
-		std::string ClassName;
-		std::vector<ScriptFields> Fields;
-	};
 	struct ScriptComponent {
 	public:
 		ScriptComponent(const ScriptComponent&other) = default;
@@ -589,6 +573,10 @@ namespace Proof
 		
 		friend class ScriptEngine;
 		friend class SceneHierachyPanel;
+		friend class World;
+		friend class SceneSerializer;
+		friend class WorldRenderer;
+		friend class PhysicsEngine;
 	};
 	class Proof_API RigidBodyComponent {
 	public:

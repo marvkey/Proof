@@ -25,6 +25,7 @@
 #include<magic_enum.hpp>
 #include "Proof/Resources/EnumReflection.h"
 #include "Proof/Scripting/ScriptEngine.h"
+#include "Proof/Scripting/MonoTypes.h"
 namespace Proof
 {
 	#define InitilizeScript(InstanceNativeScriptComponent,Class)\

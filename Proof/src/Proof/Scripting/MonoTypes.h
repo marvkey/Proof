@@ -36,9 +36,23 @@ namespace Proof{
 		Public = (1 << 3)
 	};
 
-	struct MonoFieldData {
+		//Rename ScriptClassFields
+	struct ScriptField {
+		std::any Data;
 		std::string Name;
 		ProofMonoType Type = ProofMonoType::None;
-		std::any Data;
 	};
+	//Rename ScriptClassData
+
+	struct ScriptData {
+	public:
+		// GONNA CHANGE TO ID instead of string
+		ScriptData(const std::string& className) {
+			ClassName = className;
+		}
+		std::string ClassName;
+		std::vector<ScriptField> Fields;
+	};
+
+	
 }
