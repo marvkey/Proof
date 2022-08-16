@@ -14,6 +14,16 @@
 #include "ScriptFunc.h"
 namespace Proof
 {
+    bool CheckMonoError(MonoError& error) {
+        bool hasError = !mono_error_ok(&error);
+        if (hasError) {
+            uint32_t errorCode = mono_error_get_error_code(&error);
+            const char* errorMessage = mono_error_get_message(&error);
+            PF_ERROR("Code: {} Message: {}", errorCode, errorMessage);
+            mono_error_cleanup(&error);
+        }
+        return hasError;
+    }
     namespace Utils
     {
         void PrintAssemblyTypes(MonoAssembly* assembly) {
@@ -84,7 +94,7 @@ namespace Proof
         MonoDomain* RootDomain = nullptr;
         MonoAssembly* CSharpAssembly = nullptr;
         MonoImage* CoreAssemblyImage = nullptr;
-        ScriptClass EntityClass;
+        Count<ScriptClass> EntityClass;
         World* CurrentWorld = nullptr;
         std::unordered_map<std::string, Count<ScriptClass>> ScriptEntityClasses;
         std::unordered_map<UUID, std::vector<Count<ScriptInstance>>> EntityInstances;
@@ -114,16 +124,34 @@ namespace Proof
             ScriptField data;
             data.Name = mono_field_get_name(classFields);
             data.Type = (ProofMonoType)mono_type_get_type(monoType);
+            
+            if ((int)data.Type == MonoTypeEnum::MONO_TYPE_CLASS) {
+                MonoClass* type = mono_type_get_class(monoType);
+                if (type == s_Data->EntityClass->m_MonoClass ) {
+                    data.Type = ProofMonoType::Entity;
+                }
+                
+            }
+            
             switch (data.Type) {
-                case Proof::ProofMonoType::None:
-                    break;
                 case Proof::ProofMonoType::Bool:
                     LoadData<bool>(defaultClass, classFields, data);
                     break;
-                case Proof::ProofMonoType::Char:
-                    break;
+                case Proof::ProofMonoType::Char: 
+                    {
+                        
+                        void* gotData;
+                        mono_field_get_value(defaultClass, classFields, &gotData);
+                        data.Data= (char)gotData;
+                        break;
+                    }
                 case Proof::ProofMonoType::String:
-                    break;
+                    {
+                        MonoString* stringValue;
+                        mono_field_get_value(defaultClass, classFields, &stringValue);
+                        data.Data = ScriptEngine::MonoToString(stringValue);
+                        break;
+                    }
                 case Proof::ProofMonoType::Uint8_t:
                     LoadData<uint8_t>(defaultClass, classFields, data);
                     break;
@@ -157,8 +185,63 @@ namespace Proof
                 case Proof::ProofMonoType::Class:
                     break;
                 case Proof::ProofMonoType::Enum:
+                    {
+                      //  mono_class_get_name(mono_type_get_class(monoType));
+                        //format is {EnumNameSpace}{EnumName}:{EnumType(int,uint32_t)..}: {Name of variable}
+                        std::string nameSpace = mono_class_get_namespace(mono_type_get_class(monoType));
+                        if (nameSpace.empty() == false) {
+                            data.Name = fmt::format("{}.{}:{}:{}", nameSpace, mono_class_get_name(mono_type_get_class(monoType)), EnumReflection::EnumString<ProofMonoType>((ProofMonoType)mono_type_get_type(mono_class_enum_basetype(mono_type_get_class(monoType)))), mono_field_get_name(classFields));
+                        }
+                        else {
+                            data.Name = fmt::format("{}:{}:{}", mono_class_get_name(mono_type_get_class(monoType)), EnumReflection::EnumString<ProofMonoType>((ProofMonoType)mono_type_get_type(mono_class_enum_basetype(mono_type_get_class(monoType)))), mono_field_get_name(classFields));
+                        }
+                        //ScriptEngine::ForEachEnumType(data.Name.substr(0, data.Name.find_first_of(":")), [&](const std::string& val, std::any enumdata) {
+                        //        data.Data = enumdata;
+                        //});
+                        switch ((ProofMonoType)mono_type_get_type(mono_class_enum_basetype(mono_type_get_class(monoType)))) {
+                            case Proof::ProofMonoType::Uint8_t:
+                                break;
+                            case Proof::ProofMonoType::Uint16_t:
+                                break;
+                            case Proof::ProofMonoType::Uint32_t:
+                                break;
+                            case Proof::ProofMonoType::Uint64_t:
+                                break;
+                            case Proof::ProofMonoType::Int8_t:
+                                break;
+                            case Proof::ProofMonoType::Int16_t:
+                                break;
+                            case Proof::ProofMonoType::Int32_t:
+                                {
+                                    int32_t gotData;
+                                    mono_field_get_value(defaultClass, classFields, &gotData);
+
+                                   // mono_field_static_get_value(mono_class_vtable(s_Data->AppDomain, mono_class_from_name(image,nameSpace.c_str(), mono_class_get_name(mono_type_get_class(monoType)))), classFields, &gotData);
+                                    data.Data = (int32_t)gotData;
+                                    break;
+                                }
+                            case Proof::ProofMonoType::Int64_t:
+                                break;
+                            case Proof::ProofMonoType::Float:
+                                break;
+                            case Proof::ProofMonoType::Double:
+                                break;
+                          
+                            default:
+                                break;
+                        }
+                        break;
+                    }
+                case Proof::ProofMonoType::Entity:
+                    data.Data = (uint64_t)0; //we know it woudl always be zero when initilized 
                     break;
+                case Proof::ProofMonoType::Array:
+                    {
+                        
+                        break;
+                    }
                 default:
+                    continue;
                     break;
             }
             m_FieldData.emplace_back(data);
@@ -179,7 +262,7 @@ namespace Proof
         m_ScriptClass(scriptClass) {
         m_Instance = scriptClass->Instantiate();
 
-        m_Constructor = s_Data->EntityClass.GetMethod(".ctor", 1);
+        m_Constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
         m_OnCreate = scriptClass->GetMethod("OnCreate", 0);
         m_OnUpdate = scriptClass->GetMethod("OnUpdate", 1);
         m_OnPlaced = scriptClass->GetMethod("OnPlace", 0);
@@ -287,11 +370,54 @@ namespace Proof
                         mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<bool>());
                         break;
                     case Proof::ProofMonoType::Char:
+                        mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<char>());
                         break;
                     case Proof::ProofMonoType::String:
-                        break;
+                        {
+                            MonoString* string = mono_string_new(s_Data->AppDomain,prop.Data._Cast<std::string>()->c_str());
+                            mono_field_set_value(instance->m_Instance, currentField, string);
+                            break;
+                        }
                     case Proof::ProofMonoType::Enum:
-                        break;
+                        {
+                            auto fieldName = prop.Name.substr(prop.Name.find_last_of(":")+1);
+                            //cause mono enum names the names are treated differently
+                            currentField = mono_class_get_field_from_name(instance->m_ScriptClass->GetMonoClass(), fieldName.c_str());
+                            MonoType* monoType = mono_field_get_type(currentField);
+
+                            switch ((ProofMonoType)mono_type_get_type(mono_class_enum_basetype(mono_type_get_class(monoType)))) {
+                                case Proof::ProofMonoType::Uint8_t:
+                                    break;
+                                case Proof::ProofMonoType::Uint16_t:
+                                    break;
+                                case Proof::ProofMonoType::Uint32_t:
+                                    break;
+                                case Proof::ProofMonoType::Uint64_t:
+                                    break;
+                                case Proof::ProofMonoType::Int8_t:
+                                    break;
+                                case Proof::ProofMonoType::Int16_t:
+                                    break;
+                                case Proof::ProofMonoType::Int32_t:
+                                    mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<int32_t>());
+                                    break;
+                                case Proof::ProofMonoType::Int64_t:
+                                    break;
+                                case Proof::ProofMonoType::Float:
+                                    break;
+                                case Proof::ProofMonoType::Double:
+                                    break;
+
+                                default:
+                                    break;
+                            }
+                            break;
+                        }
+                    case Proof::ProofMonoType::Entity: 
+                        {
+                            mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint64_t>());
+                            break;
+                        }
                     default:
                         break;
                 }
@@ -373,8 +499,8 @@ namespace Proof
         s_Data->CSharpAssembly = Utils::LoadCSharpAssembly("Resources/Scripts/ProofScript.dll");
         s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CSharpAssembly);
         // Utils::PrintAssemblyTypes(s_Data->CSharpAssembly);
+        s_Data->EntityClass =CreateCount<ScriptClass>("Proof", "Entity");
         LoadAssemblyClasses(s_Data->CSharpAssembly);
-        s_Data->EntityClass = ScriptClass("Proof", "Entity");
 
         ScriptFunc::RegisterAllComponents();
         ScriptFunc::RegisterFunctions();
@@ -525,5 +651,137 @@ namespace Proof
     }
     const std::unordered_map<std::string, Count<ScriptClass>>const& ScriptEngine::GetScripts() {
         return s_Data->ScriptEntityClasses;
+    }
+    std::string ScriptEngine::MonoToString(MonoString* monoString){
+        if (monoString == nullptr || mono_string_length(monoString) == 0)
+            return "";
+
+        MonoError error;
+        char* utf8 = mono_string_to_utf8_checked(monoString, &error);
+        if (CheckMonoError(error))
+            return "";
+        std::string result(utf8);
+        mono_free(utf8);
+        return result;
+
+    }
+    MonoString* ScriptEngine::StringToMono(const std::string& data) {
+        MonoString* string = mono_string_new(s_Data->AppDomain, data.c_str());
+        return string;
+    }
+
+    void ScriptEngine::ForEachEnumType(const std::string& classFullName, const std::function<void(const std::string&, std::any)>& func) {
+        MonoImage* image = mono_assembly_get_image(s_Data->CSharpAssembly);
+        std::string nameSpaceData = classFullName.substr(0, classFullName.find_first_of("."));
+        std::string name = classFullName.substr(classFullName.find_first_of(".") + 1);
+        MonoClass* monoClass; 
+        if(nameSpaceData.empty())
+            monoClass = mono_class_from_name(image, "",name.c_str());
+        else
+            monoClass = mono_class_from_name(image, nameSpaceData.c_str(), name.c_str());
+        MonoClassField* classFields;
+        void* fieldsIter = nullptr;
+        int index = 0;
+
+        //GONNA HAVE A LIST OF ALL ENUMS AND their possible values 
+        // the enums will have to be labelled public though
+        MonoObject* enumObject =mono_object_new(s_Data->AppDomain, monoClass);
+        while (classFields = mono_class_get_fields(monoClass, &fieldsIter)) {
+            // the first field is some wierd "value_" probably a built in variable for the enums
+            if (index == 0) {
+                index++;
+                continue;
+            }
+            MonoType* monoType = mono_field_get_type(classFields);
+            const std::string val = mono_field_get_name(classFields);
+            switch ((ProofMonoType)mono_type_get_type(mono_class_enum_basetype(mono_type_get_class(monoType)))) {
+                case Proof::ProofMonoType::Uint8_t:
+                    {
+                        uint8_t* data;
+                        mono_field_get_value(enumObject, classFields, data);
+                        std::any anyData = *data;
+                        func(val, anyData);
+                        break;
+                    }
+                case Proof::ProofMonoType::Uint16_t:
+                    {
+                        uint16_t* data;
+                        mono_field_get_value(enumObject, classFields, data);
+                        std::any anyData = *data;
+                        func(val, anyData);
+                        break;
+                    } 
+                case Proof::ProofMonoType::Uint32_t:
+                    {
+                        uint32_t* data;
+                        mono_field_get_value(enumObject, classFields, data);
+                        std::any anyData = *data;
+                        func(val, anyData);
+                        break;
+                    }
+                case Proof::ProofMonoType::Uint64_t:
+                    {
+                        uint64_t* data;
+                        mono_field_get_value(enumObject, classFields, data);
+                        std::any anyData = *data;
+                        func(val, anyData);
+                        break;
+                    }
+                case Proof::ProofMonoType::Int8_t:
+                    {
+                        int8_t* data;
+                        mono_field_get_value(enumObject, classFields, data);
+                        std::any anyData = *data;
+                        func(val, anyData);
+                        break;
+                    }
+                case Proof::ProofMonoType::Int16_t:
+                    {
+                        int16_t* data;
+                        mono_field_get_value(enumObject, classFields, data);
+                        std::any anyData = *data;
+                        func(val, anyData);
+                        break;
+                    }
+                case Proof::ProofMonoType::Int32_t:
+                    {
+                        int32_t gotData;
+                        
+                       // mono_field_get_value(enumObject, classFields, &gotData);
+                        mono_field_static_get_value(mono_class_vtable(s_Data->AppDomain, monoClass), classFields, &gotData);
+
+                        std::any anyData = gotData;
+                        func(val, anyData);
+                        break;
+                    }
+                case Proof::ProofMonoType::Int64_t:
+                    {
+                        int64_t data;
+                        mono_field_get_value(enumObject, classFields, &data);
+                        std::any anyData = data;
+                        func(val, anyData);
+                        break;
+                    }
+                case Proof::ProofMonoType::Float:
+                    {
+                        float data;
+                        mono_field_get_value(enumObject, classFields, &data);
+                        std::any anyData = data;
+                        func(val, anyData);
+                        break;
+                    }
+                case Proof::ProofMonoType::Double:
+                    {
+                        double data;
+                        mono_field_get_value(enumObject, classFields,& data);
+                        std::any anyData = data;
+                        func(val, anyData);
+                        break;
+                    }
+                default:
+                    break;
+            }
+            index++;
+        }
     }
 }

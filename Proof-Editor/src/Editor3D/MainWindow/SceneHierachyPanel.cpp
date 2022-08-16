@@ -108,7 +108,43 @@ namespace Proof
 
 	void SceneHierachyPanel::OnKeyClicked(KeyClickedEvent& e) {
 	}
+	template<typename Type>
+	void ScriptEnumView(ScriptField& field, const std::string& enumVarName,const std::string& enumClassName) {
+		ImGui::PushID(fmt::format("{}{}", field.Name.c_str(), sizeof(Type)).c_str());
+		std::vector<std::string> comboString;
+		std::string currentEnumString;
+		std::string firstValue;
+		Type castData = *field.Data._Cast<Type>();
 
+		ScriptEngine::ForEachEnumType(enumClassName, [&](const std::string& val, std::any data) {
+			comboString.emplace_back(val);
+			if (castData == *data._Cast<Type>()) {
+				currentEnumString = val;
+				firstValue = val;
+			}
+		});
+		ImGui::Text(enumVarName.c_str());
+		ImGui::SameLine();
+		if (ImGui::BeginCombo("##combo", currentEnumString.c_str())) // The second parameter is the label previewed before opening the combo.
+		{
+			for (int n = 0; n < comboString.size(); n++) {
+				bool is_selected = (currentEnumString == comboString[n]); // You can store your selection however you want, outside or inside your objects
+				if (ImGui::Selectable(comboString[n].c_str(), is_selected))
+					currentEnumString = comboString[n];
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();   // You may set the initial focus when opening the combo (scrolling + for keyboard navigation support)
+			}
+			ImGui::EndCombo();
+		}
+		if (firstValue != currentEnumString) {
+			ScriptEngine::ForEachEnumType(enumClassName, [&](const std::string& val, const std::any& data) {
+				if (currentEnumString == val) {
+					field.Data = data;
+				}
+			});
+		}
+		ImGui::PopID();
+	};
 	bool  SceneHierachyPanel::CreateEntityMenu(Entity owner) {
 		uint64_t selectedPreviousEntityID = m_SelectedEntity.GetID();// we are doing this inncase we created a child entity
 		Entity newEntity;
@@ -144,9 +180,9 @@ namespace Proof
 			return true;
 		return false;
 	}
-
 	void SceneHierachyPanel::DrawEntityNode(Entity entity) {
 		auto& tc = entity.GetComponent<TagComponent>()->Tag;
+		ImGui::PushID(entity.GetID());
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 
 		if (entity.GetComponent<ChildComponent>()->HasChildren() == false) {
@@ -156,7 +192,7 @@ namespace Proof
 		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity.GetID(), flags, tc.c_str());
 		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity")) {
 
 				Entity Data = *(const Entity*)payload->Data;
 				entity.AddChild(Data);
@@ -164,12 +200,12 @@ namespace Proof
 			ImGui::EndDragDropTarget();
 		}
 		if (ImGui::BeginDragDropSource()) {
-			ImGui::SetDragDropPayload("EntityNewOwner", &m_SelectedEntity, sizeof(Entity));
+			ImGui::SetDragDropPayload("SceneEntity", &entity, sizeof(Entity));
 
-			ImGui::TreeNodeEx((void*)&(m_SelectedEntity), ImGuiTreeNodeFlags_SpanFullWidth, tc.c_str());
+			ImGui::TreeNodeEx((void*)&(entity), ImGuiTreeNodeFlags_SpanFullWidth, tc.c_str());
 			ImGui::EndDragDropSource();
 		}
-		if (ImGui::IsItemClicked() || ImGui::IsItemClicked(1)) {
+		if ( ImGui::IsItemClicked() && ImGui::IsKeyDown((int)KeyBoardKey::E) ==false) {
 			m_SelectedEntity = entity;
 		}
 		if (ImGui::BeginPopupContextItem()) {
@@ -210,6 +246,7 @@ namespace Proof
 			}
 			ImGui::TreePop();
 		}
+		ImGui::PopID();
 	}
 
 	template<typename T, typename UIFunction>
@@ -523,6 +560,26 @@ namespace Proof
 		DrawComponents<MeshColliderComponent>("Mesh Collider", entity, [](MeshColliderComponent& meshCollider) {
 			ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &meshCollider.IsTrigger);
 
+			ExternalAPI::ImGUIAPI::TextBar("Mesh", meshCollider.GetMeshAsset() != nullptr ? meshCollider.GetMeshAsset()->GetName() : "null");
+			if (ImGui::BeginPopupContextItem("RemoveMesh")) {
+				ImGui::EndPopup();
+			}
+			if (ImGui::BeginPopup("RemoveMesh")) {
+				if (ImGui::MenuItem("Remove Mesh")) {
+					meshCollider.RemoveMeshSource();
+				}
+
+				ImGui::EndPopup();
+			}
+			if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Mesh).c_str())) {
+					UUID Data = *(const UUID*)payload->Data;
+					meshCollider.m_MeshAssetPointerID = Data;
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+
 			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", meshCollider.HasPhysicsMaterial() != false ? AssetManager::ForceGetAsset<Asset>(meshCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
 				ImGui::EndPopup();
@@ -542,24 +599,7 @@ namespace Proof
 				ImGui::EndDragDropTarget();
 			}
 
-			ExternalAPI::ImGUIAPI::TextBar("Mesh", meshCollider.GetMeshAsset() != nullptr ? meshCollider.GetMeshAsset()->GetName() : "null");
-			if (ImGui::BeginPopupContextItem("RemoveMesh")) {
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginPopup("RemoveMesh")) {
-				if (ImGui::MenuItem("Remove Mesh")) {
-					meshCollider.RemoveMeshSource();
-				}
-
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Mesh).c_str())) {
-					UUID Data = *(const UUID*)payload->Data;
-					meshCollider.m_MeshAssetPointerID = Data;
-				}
-				ImGui::EndDragDropTarget();
-			}
+	
 
 		});
 		DrawComponents<RigidBodyComponent>("RigidBody", entity, [](RigidBodyComponent& rigidBody) {
@@ -630,10 +670,46 @@ namespace Proof
 										ExternalAPI::ImGUIAPI::CheckBox(field.Name, data);
 									}
 									break;
-								case Proof::ProofMonoType::Char:
-									break;
+								case Proof::ProofMonoType::Char: 
+									{
+										char& data = *field.Data._Cast<char>();
+										std::string stringData; 
+										stringData.push_back(data);
+										ImGui::PushID(field.Name.c_str());
+										char buffer[120];
+										memset(buffer, 0, sizeof(buffer));
+										strcpy_s(buffer, sizeof(buffer), stringData.c_str());
+										ImGui::Text(field.Name.c_str());
+										ImGui::SameLine();
+										if(ImGui::InputText("##temp", buffer, sizeof(buffer))) {
+											stringData = buffer;
+											
+										}
+										if (stringData.empty())
+											data = 0;
+										else
+											data = stringData[0];
+										stringData.clear();
+
+										ImGui::PopID();
+										break;
+
+									}
 								case Proof::ProofMonoType::String:
-									break;
+									{
+										std::string* data = field.Data._Cast<std::string>();
+										char buffer[256];
+										memset(buffer, 0, sizeof(buffer));
+										strcpy_s(buffer, sizeof(buffer), data->c_str());
+										ImGui::Text(field.Name.c_str());
+										ImGui::SameLine();
+										ImGui::PushID(field.Name.c_str());
+										if (ImGui::InputText("##temp", buffer, sizeof(buffer))) {
+											*data = buffer;
+										}
+										ImGui::PopID();
+										break;
+									}
 								case Proof::ProofMonoType::Uint8_t:
 									{
 										uint8_t* data = field.Data._Cast<uint8_t>();
@@ -694,10 +770,74 @@ namespace Proof
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_Double, (void*)data, 1.0f);
 										break;
 									}
-								case Proof::ProofMonoType::Class:
-									break;
 								case Proof::ProofMonoType::Enum:
-									break;
+									{
+										std::string enumClassName;
+										std::string enumType;
+										std::string enumVarName;
+
+										enumClassName = field.Name.substr(0, field.Name.find_first_of(":"));
+										enumVarName = field.Name.substr(field.Name.find_last_of(":") + 1);
+										int size = 2;//cause of the 2 :
+										size += enumClassName.size() + enumVarName.size();
+										enumType = field.Name.substr(field.Name.find_first_of(":") + 1,field.Name.size()-size);
+
+										switch (EnumReflection::StringEnum<ProofMonoType>(enumType)) {
+											case Proof::ProofMonoType::Uint8_t:
+												ScriptEnumView<uint8_t>(field, enumVarName, enumClassName);
+												break;
+											case Proof::ProofMonoType::Uint16_t:
+												ScriptEnumView<uint16_t>(field, enumVarName, enumClassName);
+												break;
+											case Proof::ProofMonoType::Uint32_t:
+												ScriptEnumView<uint32_t>(field, enumVarName, enumClassName);
+												break;
+											case Proof::ProofMonoType::Uint64_t:
+												ScriptEnumView<uint64_t>(field, enumVarName, enumClassName);
+												break;
+											case Proof::ProofMonoType::Int8_t:
+												ScriptEnumView<int8_t>(field, enumVarName, enumClassName);
+												break;
+											case Proof::ProofMonoType::Int16_t:
+												ScriptEnumView<int16_t>(field, enumVarName, enumClassName);
+												break;
+											case Proof::ProofMonoType::Int32_t:
+												ScriptEnumView<int32_t>(field, enumVarName, enumClassName);
+												break;
+											case Proof::ProofMonoType::Int64_t:
+												ScriptEnumView<int64_t>(field, enumVarName, enumClassName);
+												break;
+											case Proof::ProofMonoType::Float:
+												ScriptEnumView<float>(field, enumVarName, enumClassName);
+												break;
+											case Proof::ProofMonoType::Double:
+												ScriptEnumView<double>(field, enumVarName, enumClassName);
+												break; break;
+											default:
+												break;
+										}
+										break;
+									}
+								case Proof::ProofMonoType::Entity:
+									{
+										uint64_t* fieldEntity = field.Data._Cast<uint64_t>();
+										ExternalAPI::ImGUIAPI::TextBar("Entity", *fieldEntity == 0 ? "null" : m_CurrentWorld->GetEntity(*fieldEntity).GetName());
+										if (ImGui::IsItemClicked(0)) {
+											if (*fieldEntity != 0) {
+												m_SelectedEntity = { *fieldEntity,m_CurrentWorld };
+											}
+										}
+										if (ImGui::BeginDragDropTarget()) {
+											if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity")) {
+												uint64_t* data = field.Data._Cast<uint64_t>();
+												Entity payloadData = *(const Entity*)payload->Data;
+
+												*data = payloadData.GetID();
+											}
+											ImGui::EndDragDropTarget();
+										}
+										break;
+									}
 								default:
 									break;
 							}
@@ -723,10 +863,49 @@ namespace Proof
 										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, data);
 										break;
 									}
-								case Proof::ProofMonoType::Char:
-									break;
+								case Proof::ProofMonoType::Char: 
+									{
+										char& data = *field.Data._Cast<char>();
+										std::string stringData;
+										stringData.push_back(data);
+										ImGui::PushID(field.Name.c_str());
+										char buffer[120];
+										memset(buffer, 0, sizeof(buffer));
+										strcpy_s(buffer, sizeof(buffer), stringData.c_str());
+										ImGui::Text(field.Name.c_str());
+										ImGui::SameLine();
+										if (ImGui::InputText("##temp", buffer, sizeof(buffer))) {
+											stringData = buffer;
+
+										}
+										if (stringData.empty())
+											data = 0;
+										else
+											data = stringData[0];
+										stringData.clear();
+
+										ImGui::PopID();
+										char* datPoint = field.Data._Cast<char>();
+										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)datPoint);
+										break;
+									}
 								case Proof::ProofMonoType::String:
-									break;
+									{
+										std::string* data = field.Data._Cast<std::string>();
+										char buffer[256];
+										memset(buffer, 0, sizeof(buffer));
+										strcpy_s(buffer, sizeof(buffer), data->c_str());
+										ImGui::Text(field.Name.c_str());
+										ImGui::SameLine();
+										ImGui::PushID(field.Name.c_str());
+										if (ImGui::InputText("##temp", buffer, sizeof(buffer))) {
+											*data = buffer;
+										}
+										ImGui::PopID();
+										
+										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, ScriptEngine::StringToMono(*data));
+										break;
+									}
 								case Proof::ProofMonoType::Uint8_t:
 									{
 										uint8_t* data = field.Data._Cast<uint8_t>();
@@ -797,10 +976,117 @@ namespace Proof
 										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
-								case Proof::ProofMonoType::Class:
-									break;
+
 								case Proof::ProofMonoType::Enum:
-									break;
+									{
+										std::string enumClassName;
+										std::string enumType;
+										std::string enumVarName;
+
+										enumClassName = field.Name.substr(0, field.Name.find_first_of(":"));
+										enumVarName = field.Name.substr(field.Name.find_last_of(":") + 1);
+										int size = 2;//cause of the 2 :
+										size += enumClassName.size() + enumVarName.size();
+										enumType = field.Name.substr(field.Name.find_first_of(":") + 1, field.Name.size() - size);
+
+										switch (EnumReflection::StringEnum<ProofMonoType>(enumType)) 
+										{
+											case Proof::ProofMonoType::Uint8_t:
+												{
+													ScriptEnumView<uint8_t>(field, enumVarName, enumClassName);
+													uint8_t* castData = field.Data._Cast<uint8_t>();
+													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													break;
+												}
+											case Proof::ProofMonoType::Uint16_t:
+												{
+													ScriptEnumView<uint16_t>(field, enumVarName, enumClassName);
+													uint16_t* castData = field.Data._Cast<uint16_t>();
+													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													break;
+												}
+											case Proof::ProofMonoType::Uint32_t:
+												{
+													ScriptEnumView<uint32_t>(field, enumVarName, enumClassName);
+													uint32_t* castData = field.Data._Cast<uint32_t>();
+													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													break;
+												}
+											case Proof::ProofMonoType::Uint64_t:
+												{
+													ScriptEnumView<uint64_t>(field, enumVarName, enumClassName);
+													uint64_t* castData = field.Data._Cast<uint64_t>();
+													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													break;
+												}
+											case Proof::ProofMonoType::Int8_t:
+												{
+													ScriptEnumView<int8_t>(field, enumVarName, enumClassName);
+													int8_t* castData = field.Data._Cast<int8_t>();
+													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													break;
+												}
+											case Proof::ProofMonoType::Int16_t:
+												{
+													ScriptEnumView<int16_t>(field, enumVarName, enumClassName);
+													int16_t* castData = field.Data._Cast<int16_t>();
+													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													break;
+												}
+											case Proof::ProofMonoType::Int32_t:
+												{
+													ScriptEnumView<int32_t>(field, enumVarName, enumClassName);
+													int32_t* castData = field.Data._Cast<int32_t>();
+													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													break;
+												}
+											case Proof::ProofMonoType::Int64_t:
+												{
+													ScriptEnumView<int64_t>(field, enumVarName, enumClassName);
+													int64_t* castData = field.Data._Cast<int64_t>();
+													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													break;
+												}
+											case Proof::ProofMonoType::Float:
+												{
+													ScriptEnumView<float>(field, enumVarName, enumClassName);
+													float* castData = field.Data._Cast<float>();
+													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													break;
+												}
+											case Proof::ProofMonoType::Double:
+												{
+													ScriptEnumView<double>(field, enumVarName, enumClassName);
+													double* castData = field.Data._Cast<double>();
+													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													break;
+												}
+											default:
+												break;
+										}
+										break;
+									}
+								case Proof::ProofMonoType::Entity:
+									{
+										uint64_t* fieldEntity = field.Data._Cast<uint64_t>();
+										ExternalAPI::ImGUIAPI::TextBar("Entity", *fieldEntity == 0 ? "null" : m_CurrentWorld->GetEntity(*fieldEntity).GetName());
+										if (ImGui::IsItemClicked(0)) {
+											if (*fieldEntity != 0) {
+												m_SelectedEntity = { *fieldEntity,m_CurrentWorld };
+											}
+										}
+										if (ImGui::BeginDragDropTarget()) {
+											if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity")) {
+												uint64_t* data = field.Data._Cast<uint64_t>();
+												Entity payloadData = *(const Entity*)payload->Data;
+
+												*data = payloadData.GetID();
+												ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+											}
+											ImGui::EndDragDropTarget();
+										}
+										break;
+									}
 								default:
 									break;
 							}

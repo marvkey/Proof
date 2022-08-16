@@ -5,6 +5,7 @@
 #include "MonoTypes.h"
 #include "proof/Scene/Entity.h"
 #include <any>
+#include <functional>
 extern "C" {
 	typedef struct _MonoClass MonoClass;
 	typedef struct _MonoObject MonoObject;
@@ -13,6 +14,7 @@ extern "C" {
 	typedef struct _MonoImage MonoImage;
 	typedef struct _MonoClassField MonoClassField;
 	typedef struct _MonoProperty MonoProperty;
+	typedef struct _MonoString MonoString;
 }
 namespace Proof
 {
@@ -94,6 +96,9 @@ namespace Proof
 
 		static bool IsFieldAvailable(const std::string& className, const std::string& varName);
 		static const std::unordered_map<std::string, Count<ScriptClass>>const& GetScripts();
+		static std::string MonoToString(MonoString* monoString);
+		static MonoString* StringToMono(const std::string& data);
+		static void ForEachEnumType(const std::string& name, const std::function<void(const std::string&,std::any)>& func);
 	private:
 		static MonoObject* InstantiateClass(MonoClass* monoClass);
 		static void InitMono();

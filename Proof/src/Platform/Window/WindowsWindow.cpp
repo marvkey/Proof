@@ -83,6 +83,7 @@ namespace Proof {
         glfwSwapBuffers((GLFWwindow*)m_Window);
         glfwPollEvents();
         m_FrameBufferResized = false;
+        m_MouseMoved = false;
     }
     void WindowsWindow::key_callback(int key, int scancode, int action, int mods) {
         /* This is for when a key is Clicked 2 */
@@ -553,6 +554,7 @@ namespace Proof {
         EventCallback(mouseEvent);
         m_MousePreviousLocationX = xpos;
         m_MousePreviousLocationY = ypos;
+        m_MouseMoved = true;
     }
 
     void WindowsWindow::Mouse_Hover_Window(int entered){

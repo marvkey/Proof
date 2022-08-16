@@ -25,7 +25,8 @@ namespace Proof{
 		Class = 0x12,
 		// only supported for types we have here 
 		Array = 0x14,
-		Enum = 0x55
+		Enum = 0x11,
+		Entity =100,
 	};
 
 	enum class ProofMonoAccessibility : uint8_t {

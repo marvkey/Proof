@@ -7,7 +7,17 @@ using Proof;
 
 namespace Game
 {
-  
+    public enum PlayerStats
+    {
+        Level1,
+        Level2,
+        Level3,
+    }
+    public enum playerGG
+    {
+        level = 0,
+        adfadsfasdfs
+    }
     public class Player : Entity
     {
         private TransformComponent m_TransformComponent;
@@ -16,7 +26,11 @@ namespace Game
         public bool isCool = false;
         public uint Jump = 25;
 
+        public Entity enemy;
         public float Sensitivity = 2.0f;
+        public string PlayerData;
+        public char plaerLetter = 'T';
+        public KeyBoardKey Key;
         int num
         {
             get
@@ -36,9 +50,9 @@ namespace Game
 
         void OnUpdate(float ts)
         {
-            if (Input.IsKeyPressed(KeyBoardKey.F))
+            if (Input.IsKeyPressed(KeyBoardKey.R))
             {
-                Log.Trace($"Sensitivity {Sensitivity}");
+                Log.Trace($"from player enemy PlayerGG{Key.ToString()}");
             }
         }
     }

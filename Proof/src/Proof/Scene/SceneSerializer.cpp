@@ -245,6 +245,9 @@ namespace Proof
 								break;
 							case Proof::ProofMonoType::Enum:
 								break;
+							case ProofMonoType::Entity:
+								out << YAML::Key << "Data" << *field.Data._Cast<uint64_t>();
+								break;
 							default:
 								break;
 						}
@@ -537,6 +540,9 @@ namespace Proof
 								case Proof::ProofMonoType::Array:
 									break;
 								case Proof::ProofMonoType::Enum:
+									break;
+								case Proof::ProofMonoType::Entity:
+									scriptField.Data = field["Data"].as<uint64_t>();
 									break;
 								default:
 									break;
