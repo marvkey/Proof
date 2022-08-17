@@ -29,6 +29,8 @@ namespace Proof{
 			CreateIBlTexture(path);
 		}
 		World(World&)=default;
+
+		bool HasEnitty(UUID ID);
 		void OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR = false);
 		void OnUpdateEditorNoDraw(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height);

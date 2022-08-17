@@ -200,15 +200,20 @@ namespace Proof
 						out << YAML::Key << "Name" << field.Name;
 						out << YAML::Key << "Type" << EnumReflection::EnumString(field.Type);
 						switch (field.Type) {
-							case Proof::ProofMonoType::None:
-								break;
 							case Proof::ProofMonoType::Bool:
 								out << YAML::Key << "Data" << field.Data._Cast<bool>();
 								break;
 							case Proof::ProofMonoType::Char:
-								break;
+								{
+										out << YAML::Key << "Data" << field.Data._Cast<char>();
+									break;
+								}
 							case Proof::ProofMonoType::String:
-								break;
+								if (field.Data._Cast<std::string>()->empty())
+									out << YAML::Key << "Data" << "";
+								else
+									out << YAML::Key << "Data" << field.Data._Cast<std::string>();
+									break;
 							case Proof::ProofMonoType::Uint8_t:
 								out << YAML::Key << "Data" << *field.Data._Cast<uint8_t>();
 								break;
@@ -239,12 +244,56 @@ namespace Proof
 							case Proof::ProofMonoType::Double:
 								out << YAML::Key << "Data" << *field.Data._Cast<double>();
 								break;
-							case Proof::ProofMonoType::Class:
-								break;
 							case Proof::ProofMonoType::Array:
 								break;
 							case Proof::ProofMonoType::Enum:
-								break;
+								{
+									std::string enumClassName;
+									std::string enumType;
+									std::string enumVarName;
+
+									enumClassName = field.Name.substr(0, field.Name.find_first_of(":"));
+									enumVarName = field.Name.substr(field.Name.find_last_of(":") + 1);
+									int size = 2;//cause of the 2 :
+									size += enumClassName.size() + enumVarName.size();
+									enumType = field.Name.substr(field.Name.find_first_of(":") + 1, field.Name.size() - size);
+									switch (EnumReflection::StringEnum<ProofMonoType>(enumType))
+									{
+										case Proof::ProofMonoType::Uint8_t:
+											out << YAML::Key << "Data" << *field.Data._Cast<uint8_t>();
+											break;
+										case Proof::ProofMonoType::Uint16_t:
+											out << YAML::Key << "Data" << *field.Data._Cast<uint16_t>();
+											break;
+										case Proof::ProofMonoType::Uint32_t:
+											out << YAML::Key << "Data" << *field.Data._Cast<uint32_t>();
+											break;
+										case Proof::ProofMonoType::Uint64_t:
+											out << YAML::Key << "Data" << *field.Data._Cast<uint64_t>();
+											break;
+										case Proof::ProofMonoType::Int8_t:
+											out << YAML::Key << "Data" << *field.Data._Cast<int8_t>();
+											break;
+										case Proof::ProofMonoType::Int16_t:
+											out << YAML::Key << "Data" << *field.Data._Cast<int16_t>();
+											break;
+										case Proof::ProofMonoType::Int32_t:
+											out << YAML::Key << "Data" << *field.Data._Cast<int32_t>();
+											break;
+										case Proof::ProofMonoType::Int64_t:
+											out << YAML::Key << "Data" << *field.Data._Cast<int64_t>();
+											break;
+										case Proof::ProofMonoType::Float:
+											out << YAML::Key << "Data" << *field.Data._Cast<float>();
+											break;
+										case Proof::ProofMonoType::Double:
+											out << YAML::Key << "Data" << *field.Data._Cast<double>();
+											break;
+										default:
+											break;
+									}
+									break;
+								}
 							case ProofMonoType::Entity:
 								out << YAML::Key << "Data" << *field.Data._Cast<uint64_t>();
 								break;
@@ -479,6 +528,9 @@ namespace Proof
 			{
 				auto scriptComponent = entity["ScriptComponent"];
 				if (scriptComponent) {
+					std::string enumClassName;
+					std::string enumType;
+					std::string enumVarName;
 					auto& scp = *NewEntity.AddComponent<ScriptComponent>();
 
 					auto scripts = scriptComponent["Scripts"];
@@ -491,20 +543,38 @@ namespace Proof
 							ScriptField scriptField;
 							auto field = script[fmt::format("Field{}", i)];
 							scriptField.Name = field["Name"].as<std::string>();
-							//at release we do not to do this casue the binary are already built and set for us whe 
-							if (ScriptEngine::IsFieldAvailable(scriptName, scriptField.Name) == false)
-								continue;
 							scriptField.Type = EnumReflection::StringEnum<ProofMonoType>(field["Type"].as<std::string>());
+
+							//at release we do not to do this casue the binary are already built and set for us whe 
+							if (scriptField.Type == Proof::ProofMonoType::Enum) {
+								enumClassName = scriptField.Name.substr(0, scriptField.Name.find_first_of(":"));
+								enumVarName = scriptField.Name.substr(scriptField.Name.find_last_of(":") + 1);
+								int size = 2;//cause of the 2 :
+								size += enumClassName.size() + enumVarName.size();
+								enumType = scriptField.Name.substr(scriptField.Name.find_first_of(":") + 1, scriptField.Name.size() - size);
+								if (ScriptEngine::IsFieldAvailable(scriptName, enumVarName) == false)
+									continue;
+							}
+							else if (ScriptEngine::IsFieldAvailable(scriptName, scriptField.Name) == false)
+								continue;
 							switch (scriptField.Type) {
-								case Proof::ProofMonoType::None:
-									break;
 								case Proof::ProofMonoType::Bool:
 									scriptField.Data = field["Data"].as<bool>();
 									break;
 								case Proof::ProofMonoType::Char:
-									break;
+									{
+										auto& stringCheck = field["Data"].as<std::string>();
+										if (stringCheck.empty() == false)
+											scriptField.Data = field["Data"].as<char>();
+										else
+											scriptField.Data = (char)0;
+										break;
+									}
 								case Proof::ProofMonoType::String:
-									break;
+									{
+										scriptField.Data = field["Data"].as<std::string>();
+										break;
+									}
 								case Proof::ProofMonoType::Uint8_t:
 									scriptField.Data = field["Data"].as<uint8_t>();
 									break;
@@ -535,12 +605,49 @@ namespace Proof
 								case Proof::ProofMonoType::Double:
 									scriptField.Data = field["Data"].as<double>();
 									break;
-								case Proof::ProofMonoType::Class:
-									break;
 								case Proof::ProofMonoType::Array:
 									break;
 								case Proof::ProofMonoType::Enum:
-									break;
+									{
+
+
+
+										switch (EnumReflection::StringEnum<ProofMonoType>(enumType)) {
+											case Proof::ProofMonoType::Uint8_t:
+												scriptField.Data = field["Data"].as<uint8_t>();
+												break;
+											case Proof::ProofMonoType::Uint16_t:
+												scriptField.Data = field["Data"].as<uint16_t>();
+												break;
+											case Proof::ProofMonoType::Uint32_t:
+												scriptField.Data = field["Data"].as<uint32_t>();
+												break;
+											case Proof::ProofMonoType::Uint64_t:
+												scriptField.Data = field["Data"].as<uint64_t>();
+												break;
+											case Proof::ProofMonoType::Int8_t:
+												scriptField.Data = field["Data"].as<int8_t>();
+												break;
+											case Proof::ProofMonoType::Int16_t:
+												scriptField.Data = field["Data"].as<int16_t>();
+												break;
+											case Proof::ProofMonoType::Int32_t:
+												scriptField.Data = field["Data"].as<int32_t>();
+												break;
+											case Proof::ProofMonoType::Int64_t:
+												scriptField.Data = field["Data"].as<int64_t>();
+												break;
+											case Proof::ProofMonoType::Float:
+												scriptField.Data = field["Data"].as<float>();
+												break;
+											case Proof::ProofMonoType::Double:
+												scriptField.Data = field["Data"].as<double>();
+												break;
+											default:
+												break;
+										}
+										break;
+									}
 								case Proof::ProofMonoType::Entity:
 									scriptField.Data = field["Data"].as<uint64_t>();
 									break;

@@ -57,6 +57,12 @@ namespace Proof{
 
 		CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
 	}
+	bool World::HasEnitty(UUID ID) {
+		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
+		if (it == m_Registry.entities.end())
+			return false;
+		return true;
+	}
 	void World::OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR) {
 		PF_PROFILE_FUNC();
 		OnUpdate(DeltaTime,width,height,usePBR);

@@ -565,7 +565,7 @@ namespace Proof
 
 		template <typename func>
 		void ForEachScript(func f) {
-			for (auto& val : m_Scripts)
+			for (const auto& val : m_Scripts)
 				f(val.ClassName);
 		}
 	private:
@@ -576,6 +576,7 @@ namespace Proof
 		friend class World;
 		friend class SceneSerializer;
 		friend class WorldRenderer;
+		friend class Editore3D;
 		friend class PhysicsEngine;
 	};
 	class Proof_API RigidBodyComponent {

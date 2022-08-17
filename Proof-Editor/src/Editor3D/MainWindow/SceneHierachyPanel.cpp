@@ -686,7 +686,7 @@ namespace Proof
 											
 										}
 										if (stringData.empty())
-											data = 0;
+											data = (char)0;
 										else
 											data = stringData[0];
 										stringData.clear();

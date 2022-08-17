@@ -415,7 +415,8 @@ namespace Proof
                         }
                     case Proof::ProofMonoType::Entity: 
                         {
-                            mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint64_t>());
+                            if(s_Data->CurrentWorld->HasEnitty(*prop.Data._Cast<uint64_t>()))
+                                mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint64_t>());
                             break;
                         }
                     default:
