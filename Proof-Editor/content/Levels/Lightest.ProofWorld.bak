@@ -14,28 +14,42 @@ Entities:
     MeshComponent:
       MeshAssetPointerID: 12067
       MaterialPointerID: 0
-
-  - Entity: 3625433680470644105
-    TagComponent:
-      Tag: Point Light
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    ChildComponent:
-      OwnerID: 0
-      Children: []
-    LightComponent:
-      CutOff: 1
-      OuterCutOff: 2
-      Constant: 1
-      Linear: 1
-      Quadratic: 1
-      Ambient: [0, 0, 0]
-      Diffuse: [0, 0, 0]
-      Specular: [0, 0, 0]
-      LightType: 1
+    ScriptComponent:
+      Scripts:
+        - ScriptID: Game.Player
+          FieldSize: 8
+          Field0:
+            Name: Age
+            Type: Int32_t
+            Data: 17
+          Field1:
+            Name: isCool
+            Type: Bool
+            Data: true
+          Field2:
+            Name: Jump
+            Type: Uint32_t
+            Data: 25
+          Field3:
+            Name: enemy
+            Type: Entity
+            Data: 0
+          Field4:
+            Name: Sensitivity
+            Type: Float
+            Data: 2
+          Field5:
+            Name: PlayerData
+            Type: String
+            Data: ""
+          Field6:
+            Name: plaerLetter
+            Type: Char
+            Data: T
+          Field7:
+            Name: Proof.KeyBoardKey:Int32_t:Key
+            Type: Enum
+            Data: 44
   - Entity: 9238440227635985108
     TagComponent:
       Tag: Directional Light

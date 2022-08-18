@@ -79,7 +79,7 @@ project "Proof"
         "BulletCollision_vs2010_x64_debug.lib",
         "BulletDynamics_vs2010_x64_debug.lib",
 		"%{wks.location}/proof/vendor/mono/lib/Debug/mono-2.0-sgen.lib",
-
+		"ProofScriptCore",
 		"OLDNAMES.lib",	
 		"Ws2_32.lib",
 		"Winmm.lib",

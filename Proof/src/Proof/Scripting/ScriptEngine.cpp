@@ -30,18 +30,17 @@ namespace Proof
             MonoImage* image = mono_assembly_get_image(assembly);
             const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
             int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-            PF_ENGINE_INFO("C# Assembly Types");
+
             for (int32_t i = 0; i < numTypes; i++) {
                 uint32_t cols[MONO_TYPEDEF_SIZE];
                 mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
 
                 const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
                 const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-
-                PF_ENGINE_INFO("{}.{}", nameSpace, name);
+                PF_ENGINE_TRACE("{}.{}", nameSpace, name);
             }
         }
-        char* ReadBytes(const std::string& filepath, uint32_t* outSize) {
+        static char* ReadBytes(const std::filesystem::path& filepath, uint32_t* outSize) {
             std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
 
             if (!stream) {
@@ -51,7 +50,7 @@ namespace Proof
 
             std::streampos end = stream.tellg();
             stream.seekg(0, std::ios::beg);
-            uint32_t size = end - stream.tellg();
+            uint64_t size = end - stream.tellg();
 
             if (size == 0) {
                 // File is empty
@@ -62,11 +61,11 @@ namespace Proof
             stream.read((char*)buffer, size);
             stream.close();
 
-            *outSize = size;
+            *outSize = (uint32_t)size;
             return buffer;
         }
 
-        MonoAssembly* LoadCSharpAssembly(const std::string& assemblyPath) {
+        static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath) {
             uint32_t fileSize = 0;
             char* fileData = ReadBytes(assemblyPath, &fileSize);
 
@@ -80,7 +79,8 @@ namespace Proof
                 return nullptr;
             }
 
-            MonoAssembly* assembly = mono_assembly_load_from_full(image, assemblyPath.c_str(), &status, 0);
+            std::string pathString = assemblyPath.string();
+            MonoAssembly* assembly = mono_assembly_load_from_full(image, pathString.c_str(), &status, 0);
             mono_image_close(image);
 
             // Don't forget to free the file data
@@ -90,14 +90,20 @@ namespace Proof
         }
     }
     struct MonoData {
-        MonoDomain* AppDomain = nullptr;
         MonoDomain* RootDomain = nullptr;
-        MonoAssembly* CSharpAssembly = nullptr;
+        MonoDomain* AppDomain = nullptr;
+
+        MonoAssembly* CoreAssembly = nullptr;
         MonoImage* CoreAssemblyImage = nullptr;
+
+        MonoAssembly* AppAssembly = nullptr;
+        MonoImage* AppAssemblyImage = nullptr;
         Count<ScriptClass> EntityClass;
-        World* CurrentWorld = nullptr;
+
         std::unordered_map<std::string, Count<ScriptClass>> ScriptEntityClasses;
         std::unordered_map<UUID, std::vector<Count<ScriptInstance>>> EntityInstances;
+        
+        World* CurrentWorld = nullptr;
     };
     template <class Type>
     void LoadData(MonoObject* object, MonoClassField* classField, ScriptField& monoData) {
@@ -106,10 +112,10 @@ namespace Proof
         monoData.Data = val;
     }
     static MonoData* s_Data;
-    ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className):
+    ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore):
         m_ClassNamespace(classNamespace), m_ClassName(className)
     {
-        MonoImage* image = mono_assembly_get_image(s_Data->CSharpAssembly);
+        MonoImage* image = isCore == false ? s_Data->AppAssemblyImage : s_Data->CoreAssemblyImage;
         //data changes it to class
         m_MonoClass = mono_class_from_name(image, classNamespace.data(), className.data());
         MonoObject* defaultClass = Instantiate();
@@ -120,7 +126,8 @@ namespace Proof
             if (ScriptEngine::GetFieldAccessibility(classFields) ^ (uint8_t)ProofMonoAccessibility::Public)continue;
 
             MonoType* monoType = mono_field_get_type(classFields);
-            PF_ENGINE_INFO("Name: {} Type: {}", mono_field_get_name(classFields), EnumReflection::EnumString<MonoTypeEnum>((MonoTypeEnum)mono_type_get_type(monoType)));
+            //if(appAssembly==true) // dont want data for entity class preety annoying
+            //    PF_ENGINE_INFO("Name: {} Type: {}", mono_field_get_name(classFields), EnumReflection::EnumString<MonoTypeEnum>((MonoTypeEnum)mono_type_get_type(monoType)));
             ScriptField data;
             data.Name = mono_field_get_name(classFields);
             data.Type = (ProofMonoType)mono_type_get_type(monoType);
@@ -195,9 +202,7 @@ namespace Proof
                         else {
                             data.Name = fmt::format("{}:{}:{}", mono_class_get_name(mono_type_get_class(monoType)), EnumReflection::EnumString<ProofMonoType>((ProofMonoType)mono_type_get_type(mono_class_enum_basetype(mono_type_get_class(monoType)))), mono_field_get_name(classFields));
                         }
-                        //ScriptEngine::ForEachEnumType(data.Name.substr(0, data.Name.find_first_of(":")), [&](const std::string& val, std::any enumdata) {
-                        //        data.Data = enumdata;
-                        //});
+                  
                         switch ((ProofMonoType)mono_type_get_type(mono_class_enum_basetype(mono_type_get_class(monoType)))) {
                             case Proof::ProofMonoType::Uint8_t:
                                 break;
@@ -215,8 +220,6 @@ namespace Proof
                                 {
                                     int32_t gotData;
                                     mono_field_get_value(defaultClass, classFields, &gotData);
-
-                                   // mono_field_static_get_value(mono_class_vtable(s_Data->AppDomain, mono_class_from_name(image,nameSpace.c_str(), mono_class_get_name(mono_type_get_class(monoType)))), classFields, &gotData);
                                     data.Data = (int32_t)gotData;
                                     break;
                                 }
@@ -302,6 +305,14 @@ namespace Proof
     void ScriptEngine::Init() {
         s_Data = new MonoData();
         InitMono();
+        LoadAssembly("Resources/Scripts/ProofScriptCore.dll");
+        LoadAppAssembly("GameProject/Asset/Scripts/Binaries/Game.dll");
+        LoadAssemblyClasses();
+
+        ScriptFunc::RegisterAllComponents();
+        ScriptFunc::RegisterFunctions();
+
+        s_Data->EntityClass = CreateCount<ScriptClass>("Proof", "Entity", true);
     }
     void ScriptEngine::Shutdown() {
 
@@ -311,8 +322,24 @@ namespace Proof
         s_Data->CurrentWorld = world;
     }
     void ScriptEngine::EndWorld() {
-        s_Data->EntityInstances.clear();
         s_Data->CurrentWorld = nullptr;
+        s_Data->EntityInstances.clear();
+    }
+    void ScriptEngine::LoadAssembly(const std::filesystem::path& filepath) {
+                // Create an App Domain
+        s_Data->AppDomain = mono_domain_create_appdomain("ProofScriptRuntime", nullptr);
+        mono_domain_set(s_Data->AppDomain, true);
+
+        // Move this maybe
+        s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath);
+        s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
+        // Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
+    }
+    void ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath) {
+        s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath);
+        //auto assemb = s_Data->AppAssembly;
+        s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
+       // auto assembi = s_Data->AppAssemblyImage;
     }
     World* ScriptEngine::GetWorldContext() {
         return s_Data->CurrentWorld;
@@ -478,6 +505,66 @@ namespace Proof
         return field != nullptr;
     }
 
+    bool ScriptEngine::IsFieldAvailable(const std::string& className, const std::string& varName, ProofMonoType type) {
+        if (EntityClassExists(className) == false) return false;
+        auto& scriptClass = s_Data->ScriptEntityClasses[className];
+        MonoClassField* field = mono_class_get_field_from_name(scriptClass->GetMonoClass(), varName.c_str());
+        if (field == nullptr)return false;
+        MonoType* monoType = mono_field_get_type(field);
+
+        if (type == ProofMonoType::Entity)
+            type = ProofMonoType::Class;
+        if (type == (ProofMonoType)mono_type_get_type(monoType))
+            return true;
+        return false;
+    }
+    
+
+
+    void ScriptEngine::ReloadAssembly(World* world) {
+        PF_CORE_ASSERT(world);
+        LoadAssembly("Resources/Scripts/ProofScriptCore.dll");
+        LoadAppAssembly("GameProject/Asset/Scripts/Binaries/Game.dll");
+        LoadAssemblyClasses();
+
+        ScriptFunc::RegisterAllComponents();
+        ScriptFunc::RegisterFunctions();
+
+        world->ForEachComponent<ScriptComponent>([](ScriptComponent& comp) {
+            //using normal for loop since we might be removing the data in theri
+            for (int i = 0; i < comp.m_Scripts.size(); i++) {
+                auto& script = comp.m_Scripts[i];
+                auto& fields = script.Fields;
+
+                if (EntityClassExists(script.ClassName) == false) {
+                    comp.m_Scripts.erase(comp.m_Scripts.begin() + i);
+                    continue;
+                }
+                for (int j = 0; j < script.Fields.size(); j++) {
+                    auto& field = fields[j];
+                    // first get rid of unecesary fields
+                    // make sure we are ching teh same type of each
+                    if (IsFieldAvailable(script.ClassName, field.Name,field.Type) == false) {
+                        script.Fields.erase(script.Fields.begin() + j);
+                        continue;
+                    }
+                }
+                const ScriptClass* scriptClass = ScriptEngine::GetScriptClass(script.ClassName);
+                if (scriptClass != nullptr) {
+                    for (auto& data : scriptClass->m_FieldData) {
+                        if (script.HasField(data.Name) == true)
+                            continue;
+                        ScriptField field;
+                        field.Name = data.Name;
+                        field.Type = data.Type;
+                        field.Data = data.Data;
+                        script.Fields.emplace_back(field);
+                    }
+                }
+            }
+        });
+    }
+
     MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass) {
         MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
         //calling default constructor
@@ -490,56 +577,41 @@ namespace Proof
     void ScriptEngine::InitMono() {
         mono_set_assemblies_path("mono/lib");
 
-        s_Data->RootDomain = mono_jit_init("ProofJITRuntime");
-        PF_CORE_ASSERT(s_Data->RootDomain, "failed to initilize mono domain");
+        MonoDomain* rootDomain = mono_jit_init("ProofJITRuntime");
+        PF_CORE_ASSERT(rootDomain);
 
-        // Create an App Domain
-        s_Data->AppDomain = mono_domain_create_appdomain("ProofDomainRuntime", nullptr);
-        mono_domain_set(s_Data->RootDomain, true);
+        // Store the root domain pointer
+        s_Data->RootDomain = rootDomain;
 
-        s_Data->CSharpAssembly = Utils::LoadCSharpAssembly("Resources/Scripts/ProofScript.dll");
-        s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CSharpAssembly);
-        // Utils::PrintAssemblyTypes(s_Data->CSharpAssembly);
-        s_Data->EntityClass =CreateCount<ScriptClass>("Proof", "Entity");
-        LoadAssemblyClasses(s_Data->CSharpAssembly);
-
-        ScriptFunc::RegisterAllComponents();
-        ScriptFunc::RegisterFunctions();
     }
-    void ScriptEngine::LoadAssemblyClasses(MonoAssembly* assembly) {
+    void ScriptEngine::LoadAssemblyClasses() {
 
         s_Data->ScriptEntityClasses.clear();
-        MonoImage* image = mono_assembly_get_image(assembly);
 
-
-        const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+        const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_Data->AppAssemblyImage, MONO_TABLE_TYPEDEF);
         int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-        MonoClass* entityClass = mono_class_from_name(image, "Proof", "Entity");
+        MonoClass* entityClass = mono_class_from_name(s_Data->CoreAssemblyImage, "Proof", "Entity");
         PF_ENGINE_TRACE("C# Script Classes");
         for (int32_t i = 0; i < numTypes; i++) {
             uint32_t cols[MONO_TYPEDEF_SIZE];
             mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
-            const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-            const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
 
-            MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
-            //one reason it would be null is bcause it is an enum and the namespace kindd affects it
-            if (monoClass == nullptr)continue;
-            if (mono_class_is_enum(monoClass))continue;
+            const char* nameSpace = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
+            const char* name = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
             std::string fullName;
-            MonoImage* monoImage = mono_class_get_image(monoClass);
-            if (strlen(nameSpace) != 0) // length of a string
+            if (strlen(nameSpace) != 0)
                 fullName = fmt::format("{}.{}", nameSpace, name);
             else
                 fullName = name;
+
+            MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, name);
+
             if (monoClass == entityClass)
                 continue;
 
             bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
-            ;
             if (isEntity) {
                 s_Data->ScriptEntityClasses[fullName] = CreateCount<ScriptClass>(nameSpace, name);
-
                 PF_ENGINE_TRACE("   Added To Script Class {}", fullName);
             }
         }
@@ -672,14 +744,27 @@ namespace Proof
     }
 
     void ScriptEngine::ForEachEnumType(const std::string& classFullName, const std::function<void(const std::string&, std::any)>& func) {
-        MonoImage* image = mono_assembly_get_image(s_Data->CSharpAssembly);
         std::string nameSpaceData = classFullName.substr(0, classFullName.find_first_of("."));
         std::string name = classFullName.substr(classFullName.find_first_of(".") + 1);
-        MonoClass* monoClass; 
-        if(nameSpaceData.empty())
-            monoClass = mono_class_from_name(image, "",name.c_str());
-        else
-            monoClass = mono_class_from_name(image, nameSpaceData.c_str(), name.c_str());
+        MonoImage* image;
+        MonoClass* monoClass;
+
+        if (nameSpaceData == "Proof") {
+            MonoImage* image = s_Data->CoreAssemblyImage;
+            if (nameSpaceData.empty())
+                monoClass = mono_class_from_name(image, "", name.c_str());
+            else
+                monoClass = mono_class_from_name(image, nameSpaceData.c_str(), name.c_str());
+        }
+
+        else if (monoClass == nullptr) {
+            if (nameSpaceData.empty())
+                monoClass = mono_class_from_name(image, "", name.c_str());
+            else
+                monoClass = mono_class_from_name(image, nameSpaceData.c_str(), name.c_str());
+        }
+        
+        if (monoClass == nullptr)return;
         MonoClassField* classFields;
         void* fieldsIter = nullptr;
         int index = 0;

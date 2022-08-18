@@ -265,7 +265,7 @@ namespace Proof{
 				for (auto e : view) {
 					Entity entity = { e, this };
 					ScriptEngine::OnCreate(entity);
-					//ScriptEngine::OnPlace(entity);
+					ScriptEngine::OnPlace(entity);
 				}
 			}
 		}

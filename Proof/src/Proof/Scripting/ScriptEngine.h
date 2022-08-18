@@ -6,6 +6,9 @@
 #include "proof/Scene/Entity.h"
 #include <any>
 #include <functional>
+
+#include <filesystem>
+#include <string>
 extern "C" {
 	typedef struct _MonoClass MonoClass;
 	typedef struct _MonoObject MonoObject;
@@ -23,7 +26,7 @@ namespace Proof
 	class ScriptClass {
 	public:
 		ScriptClass() = default;
-		ScriptClass(const std::string & classNamespace, const std::string & className);
+		ScriptClass(const std::string & classNamespace, const std::string & className, bool isCore = false);
 
 		MonoObject* Instantiate();
 		MonoMethod* GetMethod(const std::string& name, int parameterCount);
@@ -74,6 +77,9 @@ namespace Proof
 		static void StartWorld(World* world);
 		static void EndWorld();
 
+		static void LoadAssembly(const std::filesystem::path& filepath);
+		static void LoadAppAssembly(const std::filesystem::path& filepath);
+
 		static void OnUpdate(float ts, Entity entity);
 		static void OnCreate(Entity entity);
 		static void OnSpawn(Entity entity);
@@ -95,14 +101,19 @@ namespace Proof
 		static void SetValue(UUID ID, const std::string& className, const std::string& varName, void* data);
 
 		static bool IsFieldAvailable(const std::string& className, const std::string& varName);
+		static bool IsFieldAvailable(const std::string& className, const std::string& varName,ProofMonoType type);
 		static const std::unordered_map<std::string, Count<ScriptClass>>const& GetScripts();
 		static std::string MonoToString(MonoString* monoString);
 		static MonoString* StringToMono(const std::string& data);
 		static void ForEachEnumType(const std::string& name, const std::function<void(const std::string&,std::any)>& func);
+
+		// reloads the assembly and updates all the script components
+		// if scene is being played scene does not run
+		static void ReloadAssembly(World* world);
 	private:
 		static MonoObject* InstantiateClass(MonoClass* monoClass);
 		static void InitMono();
-		static void LoadAssemblyClasses(MonoAssembly* assembly);
+		static void LoadAssemblyClasses();
 		friend class ScriptClass;
 		friend class ScriptFunc;
 	};

@@ -51,6 +51,14 @@ namespace Proof{
 		ScriptData(const std::string& className) {
 			ClassName = className;
 		}
+
+		bool HasField(const std::string& name) {
+			for (auto& field : Fields) {
+				if (name == field.Name)
+					return true;
+			}
+			return false;
+		}
 		std::string ClassName;
 		std::vector<ScriptField> Fields;
 	};

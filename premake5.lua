@@ -74,7 +74,7 @@ group ""
 include "Proof-Editor"
 include "Proof"
 include "SandBox"
-include "ProofScript"  
+include "ProofScriptCore"  
 
 
 

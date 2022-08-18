@@ -34,6 +34,7 @@
 #include<thread>
 #include <chrono>
 #include "Proof/Core/SceneCoreClasses.h"
+#include "Proof/Scripting/ScriptEngine.h"
 namespace Proof
 {
 
@@ -246,7 +247,7 @@ namespace Proof
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/back.jpg");
 
 		ActiveWorld = CreateCount<World>();
-
+		ScriptEngine::ReloadAssembly(ActiveWorld.get());
 		SceneSerializer scerelizer(ActiveWorld.get());
 		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofWorld") == true) {
 			m_WorldHierachy.SetContext(ActiveWorld.get());
@@ -1075,6 +1076,16 @@ namespace Proof
 				ImGui::MenuItem("World Editor", nullptr, &m_ShowWorldEditor);
 				ImGui::MenuItem("Input Panel", nullptr, &m_InputPanel.m_ShowWindow);
 				ImGui::MenuItem("Performance Browser", nullptr, &m_PerformancePanel.m_ShowWindow);
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Debug")) {
+				if (ImGui::MenuItem("Reload C# Scripts")) {
+					if (ActiveWorld->GetState() == WorldState::Edit)
+						ScriptEngine::ReloadAssembly(ActiveWorld.get());
+					else
+						PF_ERROR("Can only reload c# assembly in Edit state");
+				}
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();

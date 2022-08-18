@@ -552,11 +552,7 @@ namespace Proof
 								int size = 2;//cause of the 2 :
 								size += enumClassName.size() + enumVarName.size();
 								enumType = scriptField.Name.substr(scriptField.Name.find_first_of(":") + 1, scriptField.Name.size() - size);
-								if (ScriptEngine::IsFieldAvailable(scriptName, enumVarName) == false)
-									continue;
 							}
-							else if (ScriptEngine::IsFieldAvailable(scriptName, scriptField.Name) == false)
-								continue;
 							switch (scriptField.Type) {
 								case Proof::ProofMonoType::Bool:
 									scriptField.Data = field["Data"].as<bool>();

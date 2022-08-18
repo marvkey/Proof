@@ -70,6 +70,15 @@ namespace Proof{
 			}
 		}
 
+		template <class T, class F>
+		void ForEachComponent(F func) {
+			auto& entitiyView = m_Registry.view<T>();
+			for (auto entity : entitiyView) {
+				T& comp = *Entity{ entity,this }.GetComponent<T>();
+				func(comp);
+			}
+		}
+
 		/*
 		// WOKR ON THIS
 		template<class ...T>

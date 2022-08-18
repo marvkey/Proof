@@ -5,7 +5,7 @@ Entities:
       Tag: Capsule
       tags: [adfadfad, afdfadfad]
     TransformComponent:
-      Location: [0, -116.362602, -26.7000008]
+      Location: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
@@ -17,39 +17,19 @@ Entities:
     ScriptComponent:
       Scripts:
         - ScriptID: Game.Player
-          FieldSize: 8
+          FieldSize: 3
           Field0:
-            Name: Age
-            Type: Int32_t
-            Data: 17
-          Field1:
-            Name: isCool
-            Type: Bool
-            Data: true
-          Field2:
-            Name: Jump
-            Type: Uint32_t
-            Data: 25
-          Field3:
-            Name: enemy
-            Type: Entity
-            Data: 0
-          Field4:
-            Name: Sensitivity
+            Name: MovementSpeed
             Type: Float
             Data: 2
-          Field5:
-            Name: PlayerData
-            Type: String
-            Data: ""
-          Field6:
-            Name: plaerLetter
-            Type: Char
-            Data: T
-          Field7:
-            Name: Proof.KeyBoardKey:Int32_t:Key
-            Type: Enum
-            Data: 44
+          Field1:
+            Name: SlowSpeed
+            Type: Float
+            Data: 3
+          Field2:
+            Name: testSpeed
+            Type: Float
+            Data: 4.5
   - Entity: 9238440227635985108
     TagComponent:
       Tag: Directional Light
