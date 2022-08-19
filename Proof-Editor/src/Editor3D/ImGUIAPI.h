@@ -15,7 +15,7 @@ namespace Proof
 			static void InputTextBar(const std::string& Name,std::string& Variable,int MaxNumberChar = 1000,int ImGuiTextFlags = 0,bool changeVariable = true,float ColumnWidth = 210.f);
 			static bool CheckBox(const std::string& name, bool* variable);
 			static void SetKeyboardFocusOff();
-			
+			//needs to be edited cause eneums who don thave value 1,2,3 or maybe like 2,4,6 there will be a problem
 			template<typename E>
 			static bool EnumCombo(const std::string& name, E& enumVar) {
 				ImGui::PushID(name.c_str());
@@ -28,7 +28,7 @@ namespace Proof
 				}
 				ImGui::Text(name.c_str());
 				ImGui::SameLine();
-				bool temp =ImGui::Combo("##", valNum, charVec.data(), charVec.size(), charVec.size());
+				bool temp =ImGui::Combo("##", valNum, charVec.data(), charVec.size());
 				ImGui::PopID();
 				return temp;
 			}

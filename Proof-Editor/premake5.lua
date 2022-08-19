@@ -39,8 +39,10 @@ project "Proof-Editor"
         
 		"%{wks.location}/Proof/vendor/PhysX/pxshared/include",
         "%{wks.location}/Proof/vendor/magic_enum/include",
+        "%{wks.location}/Proof/vendor/mono/include",
 
-		--"C:/Program Files/Mono/include/mono-2.0"
+		"{IncludeDir.mono}"
+
     }
     includedirs { 
         "%{wks.location}/Proof/vendor/PhysX/physx/source/**", 
@@ -55,15 +57,11 @@ project "Proof-Editor"
         --buildoptions "/MD"
     libdirs 
     {
-        --"%{wks.location}/Game/Proof-Game/x64/Debug",
         "%{wks.location}/Proof/vendor/Assimp/Proof-Assimp-lib",
         "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib",
         "%{wks.location}/Proof/vendor/optick/bin/vs2017/x64/Release",
 		"%{wks.location}/Proof/vendor/PhysX/physx/bin/win.x86_64.vc142.mt/debug", ----very very very important we change this up
 		"%{wks.location}/Proof/vendor/bullet3/bin"
-
-        
-		--"C:/Program Files/Mono/lib"
 
     }
 
@@ -80,17 +78,13 @@ project "Proof-Editor"
         "vulkan-1.lib",
 		"OptickCore.lib",
         "SPIRV-Cross",
-        --"physx",
-        --"PhysXFoundation_64.lib",
-        --"PhysXCooking_64.lib",
-        --"PhysXCommon_64.lib",
-        --"PhysX_64.lib",
-        --"PhysXExtensions_static_64.lib",    
-       -- "PhysXPvdSDK_static_64.lib",
+
 
         "LinearMath_vs2010_x64_debug.lib",
         "BulletCollision_vs2010_x64_debug.lib",
         "BulletDynamics_vs2010_x64_debug.lib",
+
+        
     }
    links --physx
   {
@@ -118,7 +112,10 @@ project "Proof-Editor"
         defines {
             "PF_PLATFORM_WINDOW64"
         }
-
+        links
+        {
+         
+        }
 
     filter "configurations:Debug"
         defines "PF_DEBUG"

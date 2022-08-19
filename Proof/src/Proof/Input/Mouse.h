@@ -35,6 +35,7 @@ namespace Proof {
         static bool IsScrollUp() {
             return {GetScrollY() > 0};
         }
+        static bool IsMouseMoved();
         static bool IsMouseCaptured();
         static void CaptureMouse(bool caputure);
     };

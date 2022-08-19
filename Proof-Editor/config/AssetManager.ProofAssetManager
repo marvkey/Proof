@@ -28,12 +28,12 @@ ProjectAssets:
   - Asset: 19748
     Type: Mesh
     Path: content\meshes\sponza.Mesh.ProofAsset
-  - Asset: 10407141520700162117
-    Type: Mesh
-    Path: content\meshes\capsule.Mesh.ProofAsset
   - Asset: 12508670168373565797
     Type: Mesh
     Path: content\meshes\sphere.Mesh.ProofAsset
+  - Asset: 10407141520700162117
+    Type: Mesh
+    Path: content\meshes\capsule.Mesh.ProofAsset
   - Asset: 1250867016837356
     Type: Mesh
     Path: content\meshes\terrain.Mesh.ProofAsset

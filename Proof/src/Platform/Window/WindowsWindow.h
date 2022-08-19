@@ -43,6 +43,9 @@ namespace Proof {
         bool IsInputEventEnabled(){
             return m_InputEventEnabled;
         }
+        bool IsMouseMoved() {
+            return m_MouseMoved;
+        }
     private:
         friend class Input;
         // have to use this because GLFW someties will not send that a key hasb een released
@@ -75,6 +78,8 @@ namespace Proof {
         bool m_InputEventEnabled =true;
         float m_MousePreviousLocationX = 0;
         float m_MousePreviousLocationY = 0;
+        bool m_MouseMoved = false;
+        
         // EVENT CALLback is a pointer to a function
         // set event callback is the function we will call whenever we create 
         // a new evvent with calling the object constructor it 
