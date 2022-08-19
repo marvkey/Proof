@@ -22,5 +22,29 @@ namespace Proof
             Y = scalar;
             Z = scalar;
         }
+
+        public static Vector operator +(Vector a, Vector b)
+        {
+            return new Vector(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+        }
+
+        public override string ToString()
+        {
+            return $"X = {X} Y = {Y} Z = {Z}";
+        }
+        public float GetLength()
+        {
+            return (float)Math.Sqrt(X*X + Y*Y + Z*Z);
+        }
+        public Vector Normalize()
+        {
+            float length = GetLength();
+            return new Vector(X/length, Y/length, Z/length);
+        }
+
+        public float GetDot(Vector vec)
+        {
+            return (X * vec.X + Y * vec.Y + Z * vec.Z);
+        }
     }
 }

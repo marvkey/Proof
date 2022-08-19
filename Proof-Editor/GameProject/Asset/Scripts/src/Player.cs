@@ -23,7 +23,10 @@ namespace Game
         {
             if (m_Transform == null)
                 Log.Error("transform component null");
-            Vector currentLocation = m_Transform.Location;
+            else
+                Log.Info($"{m_Transform.Location.X}");
+
+            Vector currentLocation= new Vector(0.0f); //= m_Transform.Location;
             if (Input.IsKeyPressed(KeyBoardKey.DownArrow))
             {
                 currentLocation.Y -= MovementSpeed;
@@ -44,7 +47,7 @@ namespace Game
             
             }
 
-            m_Transform.Rotation = currentLocation;
+            //m_Transform.Location = currentLocation;
             if (Input.IsKeyPressed(KeyBoardKey.R))
             {
                 Log.Trace($"Player movment speed {MovementSpeed}");

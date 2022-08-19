@@ -595,23 +595,27 @@ namespace Proof
         for (int32_t i = 0; i < numTypes; i++) {
             uint32_t cols[MONO_TYPEDEF_SIZE];
             mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
-
             const char* nameSpace = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
             const char* name = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
+
+            MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, name);
+            //one reason it would be null is bcause it is an enum and the namespace kindd affects it
+            if (monoClass == nullptr)continue;
+            if (mono_class_is_enum(monoClass))continue;
             std::string fullName;
-            if (strlen(nameSpace) != 0)
+            MonoImage* monoImage = mono_class_get_image(monoClass);
+            if (strlen(nameSpace) != 0) // length of a string
                 fullName = fmt::format("{}.{}", nameSpace, name);
             else
                 fullName = name;
-
-            MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, name);
-
             if (monoClass == entityClass)
                 continue;
 
             bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
+            ;
             if (isEntity) {
                 s_Data->ScriptEntityClasses[fullName] = CreateCount<ScriptClass>(nameSpace, name);
+
                 PF_ENGINE_TRACE("   Added To Script Class {}", fullName);
             }
         }

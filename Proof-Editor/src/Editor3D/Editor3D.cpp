@@ -247,7 +247,7 @@ namespace Proof
 		CubeMapPaths.emplace_back("Assets/Textures/skybox/back.jpg");
 
 		ActiveWorld = CreateCount<World>();
-		ScriptEngine::ReloadAssembly(ActiveWorld.get());
+		//ScriptEngine::ReloadAssembly(ActiveWorld.get());
 		SceneSerializer scerelizer(ActiveWorld.get());
 		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofWorld") == true) {
 			m_WorldHierachy.SetContext(ActiveWorld.get());
