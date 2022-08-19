@@ -279,9 +279,10 @@ namespace Proof
 			return GetMaterial() == nullptr ? false : true;
 		}
 		UUID GetMeshAssetID();
+		void SetMeshSource(UUID ID);
+
 	private:
 		MeshAsset* GetAsset();
-		void SetMeshSource(UUID ID);
 		void RemoveMeshSource() {
 			m_MeshAssetPointerID = 0;
 			m_MeshAssetPointer = nullptr;

@@ -20,6 +20,7 @@
 #include "Proof/Core/FrameTime.h"
 #include "../Proof-Editor/src/Editor3D/ImGUIAPI.h"
 #include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/AssetThumbnailGenerator.h"
 namespace Proof
 {
 	static const std::filesystem::path s_AssetsPath = "content";
@@ -109,8 +110,19 @@ namespace Proof
 								}
 								goto outDir;
 							}
-
-							ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
+							if (AssetThumbnailGenerator::HasThumbnail(GetIDCurrentDirectory(path.string()))) {
+								ImGui::ImageButton((ImTextureID)AssetThumbnailGenerator::GetThumbnail(GetIDCurrentDirectory(path.string())), {thumbnailSize,thumbnailSize});
+							}
+							else {
+								if (assetType == AssetType::Mesh) {
+									auto info = AssetManager::GetAssetInfo(GetIDCurrentDirectory(path.string()));
+									if (info.IsLoaded()) {
+										AssetThumbnailGenerator::GenerateThumbnail(GetIDCurrentDirectory(path.string()));
+									}
+									ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
+								}
+							}
+							//ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
 							if (ImGui::BeginDragDropSource()) {
 								std::string fileDragSourcePath = path.string();
 								UUID staticID = GetIDCurrentDirectory(fileDragSourcePath);
@@ -293,6 +305,7 @@ namespace Proof
 			return;
 		}
 	}
+	
 	void ContentBrowserPanel::DeleteFolder(const std::string& path) {
 		for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(path)) {// through every file
 			if (dirEntry.is_directory()) {
@@ -327,4 +340,9 @@ namespace Proof
 		}
 		return 0;
 	}
+
+	void GenerateThumbnail(UUID ID) {
+
+	}
+
 }
