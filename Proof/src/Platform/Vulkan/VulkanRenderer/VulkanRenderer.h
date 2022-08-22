@@ -6,17 +6,19 @@
 #include<vulkan/vulkan.h>
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
+#include "../VulkanPipeLineLayout.h"
+#include "../VulkanPushConstant.h"
+#include "../VulkanGraphicsContext.h"
+#include "../VulkanDescriptorSet.h"
 namespace Proof
 {
 	struct DrawPipeline {
-		Count<VulkanGraphicsPipeline> GraphicsPipeline = nullptr;
-		Count<Shader> Shader = nullptr;
 		Count<VulkanSwapChain> SwapChain = nullptr;
-		VulkanPipeLineLayout PipelineLayout;
-		Count<VulkanCommandBuffer> CommandBuffer = NULL;
-		Count<VulkanVertexBuffer> VertexBuffer;
+		Count<VulkanCommandBuffer> CommandBuffer = nullptr;
+		Count<VulkanUniformBuffer> CameraBuffer = nullptr;
+	};	
 
-	};
+	
 	class VulkanRenderer {
 	public:
 		static void Init();
@@ -24,12 +26,69 @@ namespace Proof
 		static void EndContext();
 		static void Destroy();
 		static VkCommandBuffer GetCurrentCommandBuffer();
-	private:
+		static void BeginRenderPass(Count<VulkanGraphicsPipeline> graphicsPipeLine, const glm::vec4& color = { 0.01,0.01,0.01,1 }, float depth = 1.0f, uint32_t stencil = 0) {
+			s_Pipeline->CommandBuffer->BeginRenderPass(swapchainImageIndex, graphicsPipeLine, color, depth, stencil);
+		}
+		static void EndRenderPass();
+		static uint32_t swapchainImageIndex;
+
+		template <class T>
+		static void Submit(T func) {
+			auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
+			VkCommandBufferAllocateInfo allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			allocInfo.commandPool = graphicsContext->GetCommandPool();
+			allocInfo.commandBufferCount = 1;
+
+			VkCommandBuffer commandBuffer;
+			vkAllocateCommandBuffers(graphicsContext->GetDevice(), &allocInfo, &commandBuffer);
+
+			VkCommandBufferBeginInfo beginInfo{};
+			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+			vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+			//VkBufferCopy copyRegion{};
+			//copyRegion.size = size;
+			//vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+			func(commandBuffer);
+			vkEndCommandBuffer(commandBuffer);
+
+			VkSubmitInfo submitInfo{};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &commandBuffer;
+
+			vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+			vkQueueWaitIdle(graphicsContext->GetGraphicsQueue());
+
+			vkFreeCommandBuffers(graphicsContext->GetDevice(), graphicsContext->GetCommandPool(), 1, &commandBuffer);
+		}
+		//IMGUI
+		static void BeginFrame() {};
+		static void EndFrame() {};
 		static DrawPipeline* s_Pipeline;
+	private:
 		static bool s_InContext;
 		static void RecreateSwapChain();
 		static void DrawFrame();
-		static int s_CurrentFrameIndex;
-		static uint32_t s_CurrentImageIndex;
+
+		static void Descriptors();
+	};
+
+	struct TrianglePipeLine {
+		Count<VulkanGraphicsPipeline> GraphicsPipeline;
+		Count<Shader> Shader;
+		void Init();
+	};
+	struct MeshPipeLine {
+		Count<VulkanGraphicsPipeline> GraphicsPipeline;
+		Count<Shader> Shader;
+		Count<VulkanPipeLineLayout> PipeLineLayout;
+		Count<VulkanPushConstant> PushConstant;
+		void Init();
 	};
 }

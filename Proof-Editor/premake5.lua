@@ -57,11 +57,16 @@ project "Proof-Editor"
         --buildoptions "/MD"
     libdirs 
     {
+        --"%{wks.location}/Game/Proof-Game/x64/Debug",
         "%{wks.location}/Proof/vendor/Assimp/Proof-Assimp-lib",
         "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib",
         "%{wks.location}/Proof/vendor/optick/bin/vs2017/x64/Release",
 		"%{wks.location}/Proof/vendor/PhysX/physx/bin/win.x86_64.vc142.mt/debug", ----very very very important we change this up
-		"%{wks.location}/Proof/vendor/bullet3/bin"
+		"%{wks.location}/Proof/vendor/bullet3/bin",
+        "%{wks.location}/Proof/vendor/VulkanMemoryAllocator/build/src/Release",
+        
+		--"C:/Program Files/Mono/lib",
+		"%{wks.location}/Proof/vendor/bullet3/bin",
 
     }
 
@@ -78,6 +83,15 @@ project "Proof-Editor"
         "vulkan-1.lib",
 		"OptickCore.lib",
         "SPIRV-Cross",
+
+        --"VulkanMemoryAllocator.lib",
+        --"physx",
+        --"PhysXFoundation_64.lib",
+        --"PhysXCooking_64.lib",
+        --"PhysXCommon_64.lib",
+        --"PhysX_64.lib",
+        --"PhysXExtensions_static_64.lib",    
+       -- "PhysXPvdSDK_static_64.lib",
 
 
         "LinearMath_vs2010_x64_debug.lib",

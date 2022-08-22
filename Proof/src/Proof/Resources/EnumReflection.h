@@ -4,6 +4,7 @@
 #include <vector>
 namespace Proof
 {
+	
 	// PURPOSE OF THIS CLASS IS TO HAVE A BETTER API FOR MAGIC ENUM THAT SUITS PROOF
 	class EnumReflection {
 	public:

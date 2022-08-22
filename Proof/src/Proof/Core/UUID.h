@@ -1,5 +1,4 @@
 #pragma once
-
 namespace Proof{
 	class UUID{
 	public:

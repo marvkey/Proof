@@ -12,6 +12,7 @@ namespace Proof {
 	std::string Renderer::s_GraphicsCard;
 	std::string Renderer::s_GraphicsCardVersion;
 	Count<class GraphicsContext>Renderer::m_GraphicsContext = nullptr;
+	uint32_t Renderer::s_CurrentFrame = 0;
 	void Renderer::Init(Window* window) {
 		PF_PROFILE_FUNC();
 

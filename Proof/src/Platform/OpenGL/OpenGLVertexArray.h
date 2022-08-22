@@ -23,7 +23,7 @@ namespace Proof {
 		* @param the size of one full vertex
 		* @param offset of the first component
 		*/
-		virtual void AddData(uint32_t Position,uint32_t Count,uint32_t SizeofVertex,const void* Offset);
+		virtual void AddData(uint32_t Position,uint32_t Count,uint32_t SizeofVertex, size_t Offset);
 		/**
 		* remove as the current Vertex Array
 		*/

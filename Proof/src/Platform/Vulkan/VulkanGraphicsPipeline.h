@@ -1,21 +1,11 @@
 #pragma once
-#include "Proof/Renderer/Shader.h"
-#include "Proof/Renderer/Renderer.h"
 #include "Proof/Core/Core.h"
 #include <vulkan/vulkan.h>
-#include <vector>
 namespace Proof
 {
-	struct VulkanPipeLineLayout {
-		VkPipelineLayout PipelineLayout =nullptr;
-		VulkanPipeLineLayout(uint32_t pushConstantRngeCount = 0, VkPushConstantRange* pushConstantRange = nullptr, uint32_t layoutCount = 0, VkDescriptorSetLayout layoutDescriptor = nullptr, VkStructureType structureType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
-		~VulkanPipeLineLayout();
-	};
 	struct PipelineConfigInfo {
-		// this 2prevent pointer problems
-		//PipelineConfigInfo(const PipelineConfigInfo&) = delete;
-		//PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
-
+		VkViewport Viewport;
+		VkRect2D Scissor;
 		VkPipelineViewportStateCreateInfo ViewportInfo;
 		VkPipelineInputAssemblyStateCreateInfo InputAssemblyInfo;
 		VkPipelineRasterizationStateCreateInfo RasterizationInfo;
@@ -23,25 +13,18 @@ namespace Proof
 		VkPipelineColorBlendAttachmentState ColorBlendAttachment;
 		VkPipelineColorBlendStateCreateInfo ColorBlendInfo;
 		VkPipelineDepthStencilStateCreateInfo DepthStencilInfo;
-
-		std::vector<VkDynamicState>DynamicStateEnables; 
-		VkPipelineDynamicStateCreateInfo DynamicStateInfo;
 		VkPipelineLayout PipelineLayout = nullptr;
 		VkRenderPass RenderPass = nullptr;
 		uint32_t Subpass = 0;
 	};
 	class Proof_API VulkanGraphicsPipeline {
 	public:
-
-		~VulkanGraphicsPipeline();
-		VulkanGraphicsPipeline(Count<Shader> shader,const PipelineConfigInfo& info,uint32_t attributeSize=0,uint32_t bindingSize=0,const VkVertexInputAttributeDescription* attributeData=nullptr,const VkVertexInputBindingDescription* bindingData=nullptr);
-		static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+		virtual ~VulkanGraphicsPipeline();
+		VulkanGraphicsPipeline(Count<class Shader> shader, const PipelineConfigInfo& info, class VulkanVertexInput* input = nullptr);
+		static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height);
 		VkPipeline GetPipline() { return m_GraphicsPipeline; }
-		void Recreate(Count<Shader> shader, const PipelineConfigInfo& info, uint32_t attributeSize = 0, uint32_t bindingSize = 0, const VkVertexInputAttributeDescription* attributeData = nullptr, const VkVertexInputBindingDescription* bindingData = nullptr);
 	private:
 		Count<class VulkanShader> m_Shader = nullptr;
-		VkPipelineViewportStateCreateInfo m_ViewportInfo;
 		VkPipeline m_GraphicsPipeline;
-		void RecreatePipeLine();
 	};
 }

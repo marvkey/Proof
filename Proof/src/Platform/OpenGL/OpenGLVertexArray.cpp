@@ -13,10 +13,10 @@ namespace Proof {
    void OpenGLVertexArray::Bind() {
 	  glBindVertexArray(m_ID);
    }
-   void OpenGLVertexArray::AddData(uint32_t Position,uint32_t Count,uint32_t SizeofVertex,const void* Offset) {
+   void OpenGLVertexArray::AddData(uint32_t Position,uint32_t Count,uint32_t SizeofVertex,size_t Offset) {
 	   glBindVertexArray(m_ID);
 	   glEnableVertexAttribArray(Position);
-	   glVertexAttribPointer(Position,Count,GL_FLOAT,GL_FALSE,SizeofVertex,Offset);
+	   glVertexAttribPointer(Position,Count,GL_FLOAT,GL_FALSE,SizeofVertex,(void*)Offset);
    }
    void OpenGLVertexArray::UnBind() {
 	   glBindVertexArray(0);

@@ -1,6 +1,9 @@
 #pragma once
 #include"Proof/Renderer/GraphicsContext.h"
+#include "VulkanUtils/VulkanBufferBase.h"
+
 #include <vulkan/vulkan.h>
+
 namespace Proof
 {
 
@@ -26,7 +29,7 @@ namespace Proof
 		const bool enableValidationLayers = false;
 #endif
 
-		~VulkanGraphicsContext();
+		virtual ~VulkanGraphicsContext();
 		VulkanGraphicsContext(Window* windowHandle);
 		Window* m_Window;
 		VkCommandPool GetCommandPool() { return m_CommandPool; }
@@ -41,6 +44,7 @@ namespace Proof
 		VkFormat FindSupportedFormat(
 			const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
+		bool CreateVmaBuffer(VkBufferCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanBuffer& buffer);
 		// Buffer Helper Functions
 		void CreateBuffer(
 			VkDeviceSize size,
@@ -60,16 +64,35 @@ namespace Proof
 			VkImage& image,
 			VkDeviceMemory& imageMemory);
 
+		
 		VkPhysicalDeviceProperties properties;
+		//void VMACreateBuffer(const VkBufferCreateInfo& bufferInfo, const VmaAllocationCreateInfo& VMAallocinfo, VkBuffer& buffer, VmaAllocation& vmaAlloc);
+		//
+		//const VmaAllocator& GetVMAAllocator() {
+		//	return m_VMA_Allocator;
+		//}
+
+		uint32_t GetVulkanVersion() {
+			return m_VulkanVersion;
+		}
+
+		VmaAllocator GetVMA_Allocator() {
+			return m_VMA_Allocator;
+		}
+		Count<class VulkanDescriptorPool> GetGlobalPool() {
+			return m_GlobalPool;
+		}
 
 	private:
+		uint32_t m_VulkanVersion;
 		void CreateInstance();
 		void SetupDebugMessenger();
 		void CreateSurface();
 		void PickPhysicalDevice();
 		void CreateLogicalDevice();
 		void CreateCommandPool();
-
+		void InitVMA();
+		void InitDescriptors();
 		// helper functions
 		bool IsDeviceSuitable(VkPhysicalDevice device);
 		std::vector<const char*> GetRequiredExtensions();
@@ -89,9 +112,14 @@ namespace Proof
 		VkSurfaceKHR m_Surface;
 		VkQueue m_GraphicsQueue;
 		VkQueue m_PresentQueue;
-
+		VkPhysicalDeviceProperties m_GpuProperties;
+		//VmaAllocator m_VMA_Allocator; 
 		const std::vector<const char*> m_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> m_DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+		Count<class VulkanDescriptorPool> m_GlobalPool = nullptr;
+
+		VmaAllocator m_VMA_Allocator;
 	};
 
 }

@@ -1,19 +1,15 @@
 #pragma once
 
-
 // vulkan headers
 #include <vulkan/vulkan.h>
-
 // std lib headers
 #include <string>
 #include <vector>
-#include "VulkanGraphicsContext.h"
-
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
     class VulkanSwapChain {
     public:
-        static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
         VulkanSwapChain(VkExtent2D windowExtent);
         ~VulkanSwapChain();
@@ -27,13 +23,18 @@ namespace Proof
         uint32_t GetWidth() { return m_SwapChainExtent.width; }
         uint32_t GetHeight() { return m_SwapChainExtent.height; }
 
+
         float ExtentAspectRatio() {
             return static_cast<float>(m_SwapChainExtent.width) / static_cast<float>(m_SwapChainExtent.height);
         }
         VkFormat FindDepthFormat();
 
-        VkResult AcquireNextImage(uint32_t* imageIndex);
-        VkResult SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
+        void AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex= Renderer::GetCurrentFrame());
+        void WaitAndResetFences(uint32_t frameIndex = Renderer::GetCurrentFrame());
+        void WaitFences(uint32_t frameIndex = Renderer::GetCurrentFrame());
+        void ResetFences(uint32_t frameIndex = Renderer::GetCurrentFrame());
+
+        void SubmitCommandBuffers(VkCommandBuffer commnadBuffer, uint32_t* imageIndex, uint32_t frameIndex = Renderer::GetCurrentFrame());
         void Recreate();
 
         bool CompareSwapFormats(const VulkanSwapChain& swapChain) {
@@ -49,10 +50,8 @@ namespace Proof
         void CreateSyncObjects();
 
         // Helper functions
-        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(
-            const std::vector<VkSurfaceFormatKHR>& availableFormats);
-        VkPresentModeKHR ChooseSwapPresentMode(
-            const std::vector<VkPresentModeKHR>& availablePresentModes);
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
         VkFormat m_SwapChainImageFormat;
@@ -76,7 +75,7 @@ namespace Proof
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         std::vector<VkFence> m_InFlightFences;
         std::vector<VkFence> m_ImagesInFlight;
-        size_t m_CurrentFrame = 0;
+        friend class VulkanRenderer;
     };
 
 }  

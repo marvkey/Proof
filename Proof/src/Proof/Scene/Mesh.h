@@ -26,9 +26,15 @@ namespace Proof
         Count<class VertexArray> m_VertexArrayObject;
         Count<class VertexBuffer> m_VertexBufferObject;
         Count<class IndexBuffer> m_IndexBufferObject;
+
+        class VulkanVertexArray* vulkanVertexArrayObject;
+        class VulkanVertexBuffer* vulkanVertexBufferObject;
+        class VulkanIndexBuffer* vulkanIndexBufferObject;
         std::vector<Count<class Texture2D>>m_Textures;
     private:
         void SetUp();
+        void SetUpOpenGL();
+        void SetUpVulkan();
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
         friend class OpenGLRenderer3DPBR;

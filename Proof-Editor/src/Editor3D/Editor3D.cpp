@@ -1,4 +1,5 @@
 #include "Editor3D.h"
+
 #include <ImGui/imgui.h>
 #include <ImGui/imgui_impl_glfw.h>
 #include <ImGui/imgui_impl_opengl3.h>
@@ -30,13 +31,18 @@
 #include "Proof/Resources/Asset/AssetManager.h"
 #include <algorithm>
 #include "Proof/Input/InputManager.h"
-#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
 #include<thread>
 #include <chrono>
 #include "Proof/Core/SceneCoreClasses.h"
+#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
+
+
+
+
 #include "Proof/Scripting/ScriptEngine.h"
 namespace Proof
 {
+	EditorCamera camera{ 200,200};
 
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") {
@@ -234,7 +240,7 @@ namespace Proof
 		}
 	}
 	void Editore3D::OnAttach() {
-
+		camera = EditorCamera{ CurrentWindow::GetWindowHeight(),CurrentWindow::GetWindowWidth() };
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 
@@ -309,7 +315,7 @@ namespace Proof
 		m_SkyBoxShader = Shader::GetOrCreate("SkyBox Shader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/CubeMapShader.shader");
 		m_SkyBoxBuffer = VertexBuffer::Create(&skyboxVertices, sizeof(skyboxVertices));
 		m_SkyBoxVertexArray = VertexArray::Create();
-		m_SkyBoxVertexArray->AddData(0, 3, 3 * sizeof(float), (void*)0);
+		m_SkyBoxVertexArray->AddData(0,3,3 * sizeof(float),0);
 
 		m_SkyBoxShader->Bind();
 		m_SkyBoxShader->SetInt("skybox", 0);
@@ -333,7 +339,8 @@ namespace Proof
 		Layer::OnUpdate(DeltaTime);
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
 			Count<ScreenFrameBuffer> bufferl;
-			VulkanRenderer::BeginContext(glm::mat4(1), glm::mat4(1), { 0,0,0 }, bufferl, RendererData());
+			camera.OnUpdate(DeltaTime, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
+			VulkanRenderer::BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, bufferl, RendererData());
 			VulkanRenderer::EndContext();
 		}
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;

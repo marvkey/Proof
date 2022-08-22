@@ -1,86 +1,40 @@
 #pragma once
 #include<vulkan/vulkan.h>
 #include<vector>
-#include "VulkanSwapChain.h"
-#include "VulkanGraphicsPipeline.h"
-#
+#include "Proof/Renderer/Renderer.h"
+
+#include <glm/glm.hpp>
 namespace Proof
 {
+	class VulkanSwapChain;
+	class VulkanGraphicsPipeline;
 	class VulkanCommandBuffer {
 	public:
-		VulkanCommandBuffer(Count<VulkanSwapChain> swapChain,Count<VulkanGraphicsPipeline> pipeline);
-		void Bind(uint32_t index =0);
-
-		VkCommandBuffer& GetBuffer(uint32_t index=0) {
-			return m_CommandBuffer[index];
-		}
-		uint32_t GetSize() { return m_CommandBuffer.size(); }
-		template<typename T>
-		void Record(int index, T func) {
-			VkCommandBufferBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			if (vkBeginCommandBuffer(m_CommandBuffer[index], &beginInfo) != VK_SUCCESS)
-				PF_CORE_ASSERT(false, "Failed to begin recording command buffer");
-
-
-			VkRenderPassBeginInfo renderPassInfo{};
-			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassInfo.renderPass = m_SwapChain->GetRenderPass();
-			// teh frameBuffer we are writing
-			renderPassInfo.framebuffer = m_SwapChain->GetFrameBuffer(index);
-
-			// the area shader loads and 
-			renderPassInfo.renderArea.offset = { 0,0 };
-			// for high displays swap chain extent could be higher than windows extent
-			renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
-
-			// Clear values
-			std::array<VkClearValue, 2> clearValues{};
-			clearValues[0].color = { 0.1f,0.1f,0.1f,1.0f }; // color of screen
-			// teh reason we are not settign [0].depthStencil is because 
-			//we set color atachmetna as index 0 and depth as index 1 in 
-			// the render pass
-			clearValues[1].depthStencil = { 1.0f,0 };
-
-			renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
-			renderPassInfo.pClearValues = clearValues.data();
-
-
-			// INLINE
-			//MEANS that the render commands will be in the  command buffer itself
-			// NO seccondary command buffers will be used
-			vkCmdBeginRenderPass(m_CommandBuffer[index], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			
-			//-------//
-			//DYNAMIC VIEPORT
-			VkViewport viewport{};
-			viewport.x = 0.0f;
-			viewport.y = 0.0f;
-			viewport.width = static_cast<float>(CurrentWindow::GetWindowWidth());
-			viewport.height = static_cast<float>(CurrentWindow::GetWindowHeight());
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-			VkRect2D scissor{ {0, 0}, {CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight()} };
-			vkCmdSetViewport(m_CommandBuffer[index], 0, 1, &viewport);
-			vkCmdSetScissor(m_CommandBuffer[index], 0, 1, &scissor);
-			//---------------------//
-			Bind(index);
-			func(m_CommandBuffer[index]);
-
-			vkCmdEndRenderPass(m_CommandBuffer[index]);
-			if (vkEndCommandBuffer(m_CommandBuffer[index]) != VK_SUCCESS)
-				PF_CORE_ASSERT(false, "Faied to record command Buffers");
-		}
-		void Recreate();
-		~VulkanCommandBuffer() {
+		VulkanCommandBuffer(Count<VulkanSwapChain> swapChain);
+		virtual ~VulkanCommandBuffer() {
 			void FreeCommandBuffer();
 		}
+		const VkCommandBuffer& GetCommandBuffer(uint32_t frameIndex = Renderer::GetCurrentFrame())const {
+			return m_CommandBuffer[frameIndex];
+		}
+		uint32_t GetSize() { return 0; }
+		void BeginRenderPass(uint32_t imageIndex, Count<VulkanGraphicsPipeline> graphicsPipeLine, const glm::vec4& Color = { 0.1,0.1,0.1,1 }, float Depth = 1.0f, uint32_t stencil = 0, uint32_t frameIndex = Renderer::GetCurrentFrame());
+		template <typename T>
+		void Record(T func) {
+			PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot record if render pass is not started");
+			Bind(m_FrameIndex);
+			func(m_CommandBuffer[m_FrameIndex]);
+		}
+		void EndRenderPass();
+		void Recreate();
 		void FreeCommandBuffer();
-
 	private:
+		bool m_RenderPassEnabled = false;
+		void Bind(uint32_t frameIndex = Renderer::GetCurrentFrame(),VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
 		std::vector<VkCommandBuffer> m_CommandBuffer;
-
-		Count<VulkanGraphicsPipeline> m_GraphicsPipeline;
+		Count<VulkanGraphicsPipeline> m_GraphicspipeLine;
 		Count<VulkanSwapChain> m_SwapChain;
+		// frame used to start render pass
+		uint32_t m_FrameIndex = 0;
 	};
 }

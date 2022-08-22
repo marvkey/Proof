@@ -11,7 +11,7 @@ namespace Proof
 		uint32_t m_Width, m_Height;
 		float m_Speed =5;
 		float m_Sensitivity =0.5;
-		EditorCamera(uint32_t width,uint32_t height,float fovDeg=45,float nearPlane = 0.1,float farplane = 200,glm::uvec3 position ={0,0,0});
+		EditorCamera(uint32_t width,uint32_t height,float fovDeg=45,float nearPlane = 0.1,float farplane = 200,glm::vec3 position ={0,0,0});
 
 		glm::mat4 m_View =glm::mat4(1.0f);
 		glm::mat4 m_Projection= glm::mat4(1.0f);

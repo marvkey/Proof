@@ -14,16 +14,18 @@
 #include "Mesh.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Resources/Math/Vector.h"
-
-
+#include "proof/Renderer/Renderer.h"
+#include "Platform/Vulkan/VulkanBuffer.h"
 namespace Proof{
     void Mesh::LoadModel(std::string const& path) {
         PF_PROFILE_FUNC();
 
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        //importer.ReadFileFromMemory(); pass a string to read file data
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
         {
+            PF_ENGINE_WARN("ERROR::ASSIMP {}", importer.GetErrorString());
             PF_WARN("ERROR::ASSIMP {}",importer.GetErrorString());
             return;
         }
@@ -68,7 +70,8 @@ namespace Proof{
             }
         }
         aiMaterial* material = aiscene->mMaterials[aimesh->mMaterialIndex];
-
+        if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+            return SubMesh(vertices, indices, aimesh->mName.C_Str());
         std::vector<Count<Texture2D>>  diffuseMaps = LoadMaterialTextures(material,aiTextureType_DIFFUSE,Texture2D::TextureType::Diffuse);
         textures.insert(textures.end(),diffuseMaps.begin(),diffuseMaps.end());
 
@@ -153,73 +156,55 @@ namespace Proof{
 
         this->m_Textures = Textures;
         m_Name = name;
-        m_VertexArrayObject = VertexArray::Create();
-        m_VertexBufferObject = VertexBuffer::Create(Vertices.data(), Vertices.size() * sizeof(Vertex));
-        m_IndexBufferObject = IndexBuffer::Create(Indices.data(), Indices.size());
-        m_VertexBufferObject->Bind();
-        m_IndexBufferObject->Bind();
-        m_VertexArrayObject->AttachIndexBuffer(m_IndexBufferObject);
-        m_VertexArrayObject->Bind();
-
-        m_VertexArrayObject->AddData(0, 3, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::Vertices));
-        m_VertexArrayObject->AddData(1, 3, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::Normal));
-        m_VertexArrayObject->AddData(2, 2, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::TexCoords));
-        m_VertexArrayObject->AddData(3, 3, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::Tangent));
-        m_VertexArrayObject->AddData(4, 3, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::Bitangent));
-        m_VertexArrayObject->UnBind();
-
-        Renderer3DPBR::GetRenderer()->m_VertexBuffer->Bind(); // we are gonna have to find a way to deal with this 
-        m_VertexArrayObject->AddData(5, 4, sizeof(PhysicalBasedRendererVertex), (void*)0);
-        m_VertexArrayObject->AddData(6, 4, sizeof(PhysicalBasedRendererVertex), (void*)(sizeof(glm::vec4) * 1));
-        m_VertexArrayObject->AddData(7, 4, sizeof(PhysicalBasedRendererVertex), (void*)(sizeof(glm::vec4) * 2));
-        m_VertexArrayObject->AddData(8, 4, sizeof(PhysicalBasedRendererVertex), (void*)(sizeof(glm::vec4) * 3));
-        m_VertexArrayObject->AddData(9, 3, sizeof(PhysicalBasedRendererVertex), (void*)offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_AlbedoColour));
-        m_VertexArrayObject->AddData(10, 1, sizeof(PhysicalBasedRendererVertex), (void*)offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_Matallness));
-        m_VertexArrayObject->AddData(11, 1, sizeof(PhysicalBasedRendererVertex), (void*)offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_Roughnes));
-        m_VertexArrayObject->AddData(12, 1, sizeof(PhysicalBasedRendererVertex), (void*)offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_AO));
-        m_VertexArrayObject->AddData(13, 1, sizeof(PhysicalBasedRendererVertex), (void*)offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_UsingMaterial));
-        m_VertexArrayObject->AttributeDivisor(5, 1);
-        m_VertexArrayObject->AttributeDivisor(6, 1);
-        m_VertexArrayObject->AttributeDivisor(7, 1);
-        m_VertexArrayObject->AttributeDivisor(8, 1);
-        m_VertexArrayObject->AttributeDivisor(9, 1);// Material
-        m_VertexArrayObject->AttributeDivisor(10, 1);// Material
-        m_VertexArrayObject->AttributeDivisor(11, 1);// MaterialMaterial
-        m_VertexArrayObject->AttributeDivisor(12, 1);// MaterialMaterial
-        m_VertexArrayObject->AttributeDivisor(13, 1);// MaterialMaterial
-        m_VertexArrayObject->UnBind();
+        SetUp();
     }
 
-    SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name) {
+    SubMesh::SubMesh(std::vector<Vertex>& Vertices, std::vector<uint32_t>& Indices, const std::string& name) {
         this->m_Vertices = Vertices;
         this->m_Indices = Indices;
         m_Name = name;
+      
         SetUp();
+    }
+
+    void SubMesh::SetUp() {
+        switch (RendererAPI::GetAPI()) {
+            case RendererAPI::API::OpenGL:
+                SetUpOpenGL();
+                break;
+            case RendererAPI::API::Vulkan:
+                SetUpVulkan();
+                break;
+            default:
+                break;
+        }
+    }
+    void SubMesh::SetUpOpenGL() {
         m_VertexArrayObject = VertexArray::Create();
-        m_VertexBufferObject = VertexBuffer::Create(Vertices.data(), Vertices.size() * sizeof(Vertex));
-        m_IndexBufferObject = IndexBuffer::Create(Indices.data(), Indices.size());
+        m_VertexBufferObject = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex));
+        m_IndexBufferObject = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
         m_VertexBufferObject->Bind();
         m_IndexBufferObject->Bind();
         m_VertexArrayObject->AttachIndexBuffer(m_IndexBufferObject);
         m_VertexArrayObject->Bind();
 
-        m_VertexArrayObject->AddData(0, 3, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::Vertices));
-        m_VertexArrayObject->AddData(1, 3, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::Normal));
-        m_VertexArrayObject->AddData(2, 2, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::TexCoords));
-        m_VertexArrayObject->AddData(3, 3, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::Tangent));
-        m_VertexArrayObject->AddData(4, 3, sizeof(Vertex), (void*)offsetof(Vertex, Vertex::Bitangent));
+        m_VertexArrayObject->AddData(0, 3, sizeof(Vertex), offsetof(Vertex, Vertex::Vertices));
+        m_VertexArrayObject->AddData(1, 3, sizeof(Vertex), offsetof(Vertex, Vertex::Normal));
+        m_VertexArrayObject->AddData(2, 2, sizeof(Vertex), offsetof(Vertex, Vertex::TexCoords));
+        m_VertexArrayObject->AddData(3, 3, sizeof(Vertex), offsetof(Vertex, Vertex::Tangent));
+        m_VertexArrayObject->AddData(4, 3, sizeof(Vertex), offsetof(Vertex, Vertex::Bitangent));
         m_VertexArrayObject->UnBind();
 
         Renderer3DPBR::GetRenderer()->m_VertexBuffer->Bind(); // we are gonna have to find a way to deal with this 
-        m_VertexArrayObject->AddData(5, 4, sizeof(PhysicalBasedRendererVertex), (void*)0);
-        m_VertexArrayObject->AddData(6, 4, sizeof(PhysicalBasedRendererVertex), (void*)(sizeof(glm::vec4) * 1));
-        m_VertexArrayObject->AddData(7, 4, sizeof(PhysicalBasedRendererVertex), (void*)(sizeof(glm::vec4) * 2));
-        m_VertexArrayObject->AddData(8, 4, sizeof(PhysicalBasedRendererVertex), (void*)(sizeof(glm::vec4) * 3));
-        m_VertexArrayObject->AddData(9, 3, sizeof(PhysicalBasedRendererVertex), (void*)offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_AlbedoColour));
-        m_VertexArrayObject->AddData(10, 1, sizeof(PhysicalBasedRendererVertex), (void*)offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_Matallness));
-        m_VertexArrayObject->AddData(11, 1, sizeof(PhysicalBasedRendererVertex), (void*)offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_Roughnes));
-        m_VertexArrayObject->AddData(12, 1, sizeof(PhysicalBasedRendererVertex), (void*)offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_AO));
-        m_VertexArrayObject->AddData(13, 1, sizeof(PhysicalBasedRendererVertex), (void*)offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_UsingMaterial));
+        m_VertexArrayObject->AddData(5, 4, sizeof(PhysicalBasedRendererVertex), 0);
+        m_VertexArrayObject->AddData(6, 4, sizeof(PhysicalBasedRendererVertex), (sizeof(glm::vec4) * 1));
+        m_VertexArrayObject->AddData(7, 4, sizeof(PhysicalBasedRendererVertex), (sizeof(glm::vec4) * 2));
+        m_VertexArrayObject->AddData(8, 4, sizeof(PhysicalBasedRendererVertex), (sizeof(glm::vec4) * 3));
+        m_VertexArrayObject->AddData(9, 3, sizeof(PhysicalBasedRendererVertex), offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_AlbedoColour));
+        m_VertexArrayObject->AddData(10, 1, sizeof(PhysicalBasedRendererVertex), offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_Matallness));
+        m_VertexArrayObject->AddData(11, 1, sizeof(PhysicalBasedRendererVertex), offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_Roughnes));
+        m_VertexArrayObject->AddData(12, 1, sizeof(PhysicalBasedRendererVertex), offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_AO));
+        m_VertexArrayObject->AddData(13, 1, sizeof(PhysicalBasedRendererVertex), offsetof(PhysicalBasedRendererVertex, PhysicalBasedRendererVertex::m_UsingMaterial));
         m_VertexArrayObject->AttributeDivisor(5, 1);
         m_VertexArrayObject->AttributeDivisor(6, 1);
         m_VertexArrayObject->AttributeDivisor(7, 1);
@@ -230,12 +215,11 @@ namespace Proof{
         m_VertexArrayObject->AttributeDivisor(12, 1);// MaterialMaterial
         m_VertexArrayObject->AttributeDivisor(13, 1);// MaterialMaterial
         m_VertexArrayObject->UnBind();
-      //  m_Vertices.clear();
-      //  m_Indices.clear();
     }
+    void SubMesh::SetUpVulkan() {
 
-
-    void SubMesh::SetUp() {
-
+        vulkanVertexArrayObject = new VulkanVertexArray();
+        vulkanVertexBufferObject = new VulkanVertexBuffer(m_Vertices.data(),m_Vertices.size()* sizeof(Vertex), m_Vertices.size());
+        vulkanIndexBufferObject = new VulkanIndexBuffer(m_Indices.data(), m_Indices.size());
     }
 }

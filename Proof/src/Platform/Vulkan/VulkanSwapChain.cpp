@@ -2,6 +2,10 @@
 // std
 #include "Proofprch.h"
 
+#include "VulkanSwapChain.h"
+#include "Proof/Renderer/Renderer.h"
+#include "VulkanGraphicsContext.h"
+
 #include <array>
 #include <cstdlib>
 #include <cstring>
@@ -9,14 +13,14 @@
 #include <limits>
 #include <set>
 #include <stdexcept>
-#include "VulkanSwapChain.h"
-#include "Proof/Renderer/Renderer.h"
+#include "Proof/Resources/Math/Math.h"
+
 namespace Proof
 {
 
     VulkanSwapChain::VulkanSwapChain(VkExtent2D extent)
         : m_WindowExtent{ extent } {
-        vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
+      //  vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
 
         CreateSwapChain();
         CreateImageViews();
@@ -27,84 +31,79 @@ namespace Proof
     }
 
     VulkanSwapChain::~VulkanSwapChain() {
+        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
         for (auto imageView : m_SwapChainImageViews) {
-            vkDestroyImageView(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), imageView, nullptr);
+            vkDestroyImageView(device, imageView, nullptr);
         }
         m_SwapChainImageViews.clear();
 
         if (m_SwapChain != nullptr) {
-            vkDestroySwapchainKHR(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_SwapChain, nullptr);
+            vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
             m_SwapChain = nullptr;
         }
 
         for (int i = 0; i < m_DepthImages.size(); i++) {
-            vkDestroyImageView(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_DepthImageViews[i], nullptr);
-            vkDestroyImage(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_DepthImages[i], nullptr);
-            vkFreeMemory(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_DepthImageMemorys[i], nullptr);
+            vkDestroyImageView(device, m_DepthImageViews[i], nullptr);
+            vkDestroyImage(device, m_DepthImages[i], nullptr);
+            vkFreeMemory(device, m_DepthImageMemorys[i], nullptr);
         }
 
         for (auto framebuffer : m_SwapChainFramebuffers) {
-            vkDestroyFramebuffer(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), framebuffer, nullptr);
+            vkDestroyFramebuffer(device, framebuffer, nullptr);
         }
 
-        vkDestroyRenderPass(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_RenderPass, nullptr);
-
+        vkDestroyRenderPass(device, m_RenderPass, nullptr);
+        for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++) {
+            vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);
+            vkDestroySemaphore(device, m_ImageAvailableSemaphores[i], nullptr);
+            vkDestroyFence(device, m_InFlightFences[i], nullptr);
+        }
         // cleanup synchronization objects
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            vkDestroySemaphore(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_RenderFinishedSemaphores[i], nullptr);
-            vkDestroySemaphore(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_ImageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_InFlightFences[i], nullptr);
+        for (int i = 0; i < m_SwapChainFramebuffers.size(); i++) {
+            vkDestroyFramebuffer(device, m_SwapChainFramebuffers[i], nullptr);
+
+            vkDestroyImageView(device, m_SwapChainImageViews[i], nullptr);
         }
     }
 
-    VkResult VulkanSwapChain::AcquireNextImage(uint32_t* imageIndex) {
-        vkWaitForFences(
-            Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(),
-            1,
-            &m_InFlightFences[m_CurrentFrame],
-            VK_TRUE,
-            std::numeric_limits<uint64_t>::max());
-
-        VkResult result = vkAcquireNextImageKHR(
+    void VulkanSwapChain::AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex) {
+            vkAcquireNextImageKHR(
             Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(),
             m_SwapChain,
-            std::numeric_limits<uint64_t>::max(),
-            m_ImageAvailableSemaphores[m_CurrentFrame],  // must be a not signaled semaphore
+            Math::GetMaxType<uint64_t>(),
+            m_ImageAvailableSemaphores[frameIndex],  // must be a not signaled semaphore
             VK_NULL_HANDLE,
             imageIndex);
 
-        return result;
     }
 
-    VkResult VulkanSwapChain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex) {
-        if (m_ImagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
-            vkWaitForFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_ImagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
-        }
-        m_ImagesInFlight[*imageIndex] = m_InFlightFences[m_CurrentFrame];
+    void VulkanSwapChain::SubmitCommandBuffers(VkCommandBuffer commnadBuffer, uint32_t* imageIndex, uint32_t frameIndex) {
+        auto graphicsContext= Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
 
-        VkSubmitInfo submitInfo = {};
+
+        VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[m_CurrentFrame] };
+        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[frameIndex] };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
 
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = buffers;
+        submitInfo.pCommandBuffers = &commnadBuffer;
 
-        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[m_CurrentFrame] };
+        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[frameIndex] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        vkResetFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[m_CurrentFrame]);
-        if (vkQueueSubmit(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) !=
+        vkResetFences(graphicsContext->GetDevice(), 1, &m_InFlightFences[frameIndex]);
+        if (vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[frameIndex]) !=
             VK_SUCCESS) {
-            PF_CORE_ASSERT(false,"failed to submit draw command buffer!");
+            PF_CORE_ASSERT(false, "failed to submit draw command buffer!");
         }
 
-        VkPresentInfoKHR presentInfo = {};
+        VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
         presentInfo.waitSemaphoreCount = 1;
@@ -115,16 +114,13 @@ namespace Proof
         presentInfo.pSwapchains = swapChains;
 
         presentInfo.pImageIndices = imageIndex;
-
-        auto result = vkQueuePresentKHR(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetPresentQueue(), &presentInfo);
-
-        m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-
-        return result;
+        vkQueuePresentKHR(graphicsContext->GetPresentQueue(), &presentInfo);
     }
 
     void VulkanSwapChain::CreateSwapChain() {
-        SwapChainSupportDetails swapChainSupport = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetSwapChainSupport();
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
+        SwapChainSupportDetails swapChainSupport = graphicsContext->GetSwapChainSupport();
 
         VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
@@ -138,7 +134,7 @@ namespace Proof
 
         VkSwapchainCreateInfoKHR createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetSurface();
+        createInfo.surface = graphicsContext->GetSurface();
 
         createInfo.minImageCount = imageCount;
         createInfo.imageFormat = surfaceFormat.format;
@@ -147,7 +143,7 @@ namespace Proof
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        QueueFamilyIndices indices = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->FindPhysicalQueueFamilies();
+        QueueFamilyIndices indices = graphicsContext->FindPhysicalQueueFamilies();
         uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily };
 
         if (indices.graphicsFamily != indices.presentFamily) {
@@ -169,7 +165,7 @@ namespace Proof
 
         createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
+        if (vkCreateSwapchainKHR(graphicsContext->GetDevice(), &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
             PF_CORE_ASSERT(false, "failed to create swap chain!");
         }
 
@@ -177,15 +173,17 @@ namespace Proof
         // allowed to create a swap chain with more. That's why we'll first query the final number of
         // images with vkGetSwapchainImagesKHR, then resize the container and finally call it again to
         // retrieve the handles.
-        vkGetSwapchainImagesKHR(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_SwapChain, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(graphicsContext->GetDevice(), m_SwapChain, &imageCount, nullptr);
         m_SwapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_SwapChain, &imageCount, m_SwapChainImages.data());
+        vkGetSwapchainImagesKHR(graphicsContext->GetDevice(), m_SwapChain, &imageCount, m_SwapChainImages.data());
 
         m_SwapChainImageFormat = surfaceFormat.format;
         m_SwapChainExtent = extent;
     }
 
     void VulkanSwapChain::CreateImageViews() {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
         m_SwapChainImageViews.resize(m_SwapChainImages.size());
         for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
             VkImageViewCreateInfo viewInfo{};
@@ -268,6 +266,8 @@ namespace Proof
     }
 
     void VulkanSwapChain::CreateFramebuffers() {
+        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+        VkExtent2D swapChainExtent = GetSwapChainExtent();
         m_SwapChainFramebuffers.resize(GetImageCount());
         for (size_t i = 0; i < GetImageCount(); i++) {
             std::array<VkImageView, 2> attachments = { m_SwapChainImageViews[i], m_DepthImageViews[i] };
@@ -282,19 +282,15 @@ namespace Proof
             framebufferInfo.height = swapChainExtent.height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(
-                Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(),
-                &framebufferInfo,
-                nullptr,
-                &m_SwapChainFramebuffers[i]) != VK_SUCCESS) {
+            if (vkCreateFramebuffer(device,&framebufferInfo,nullptr,&m_SwapChainFramebuffers[i]) != VK_SUCCESS) {
                 PF_CORE_ASSERT(false, "failed to create framebuffer!");
             }
         }
     }
 
     void VulkanSwapChain::CreateDepthResources() {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         VkFormat depthFormat = FindDepthFormat();
-        m_SwapChainDepthFormat = depthFormat;
         VkExtent2D swapChainExtent = GetSwapChainExtent();
 
         m_DepthImages.resize(GetImageCount());
@@ -318,7 +314,7 @@ namespace Proof
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
 
-            Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->CreateImageWithInfo(
+            graphicsContext->CreateImageWithInfo(
                 imageInfo,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 m_DepthImages[i],
@@ -335,31 +331,38 @@ namespace Proof
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &viewInfo, nullptr, &m_DepthImageViews[i]) != VK_SUCCESS) {
+            if (vkCreateImageView(graphicsContext->GetDevice(), &viewInfo, nullptr, &m_DepthImageViews[i]) != VK_SUCCESS) {
                 PF_CORE_ASSERT(false, "failed to create texture image view!");
             }
         }
     }
 
     void VulkanSwapChain::CreateSyncObjects() {
-        m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
+        uint32_t framesInFlight = Renderer::GetConfig().FramesFlight;
+        m_ImageAvailableSemaphores.resize(framesInFlight);
+        m_RenderFinishedSemaphores.resize(framesInFlight);
+        m_InFlightFences.resize(framesInFlight);
         m_ImagesInFlight.resize(GetImageCount(), VK_NULL_HANDLE);
 
         VkSemaphoreCreateInfo semaphoreInfo = {};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
         VkFenceCreateInfo fenceInfo = {};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateSemaphore(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) !=
+        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        //we want to create the fence with the Create Signaled flag, so we can wait on it before using it on a GPU command (for the first frame)
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        fenceInfo.pNext = nullptr;
+
+        for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++) {
+
+            if (vkCreateSemaphore(graphicsContext->GetDevice(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) !=
                 VK_SUCCESS ||
-                vkCreateSemaphore(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) !=
+                vkCreateSemaphore(graphicsContext->GetDevice(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) !=
                 VK_SUCCESS ||
-                vkCreateFence(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
+                vkCreateFence(graphicsContext->GetDevice(), &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
                 PF_CORE_ASSERT(false, "failed to create synchronization objects for a frame!");
             }
         }
@@ -367,8 +370,7 @@ namespace Proof
 
     
     
-    VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(
-        const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
         for (const auto& availableFormat : availableFormats) {
             //VK_FORMAT_B8G8R8A8_UNORM 
             //VK_FORMAT_B8G8R8A8_SRGB USES GAMMA CORRECTION
@@ -381,8 +383,7 @@ namespace Proof
         return availableFormats[0];
     }
 
-    VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(
-const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
 
         for (const auto& availablePresentMode : availablePresentModes) {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -419,6 +420,23 @@ const std::vector<VkPresentModeKHR>& availablePresentModes) {
 
             return actualExtent;
         }
+    }
+
+   
+
+    void VulkanSwapChain::WaitAndResetFences(uint32_t frameIndex) {
+        WaitFences(frameIndex);
+        ResetFences(frameIndex);
+    }
+
+    void VulkanSwapChain::WaitFences(uint32_t frameIndex) {
+        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+        vkWaitForFences(device, 1, &m_InFlightFences[frameIndex], VK_TRUE, Math::GetMaxType<uint64_t>());
+    }
+
+    void VulkanSwapChain::ResetFences(uint32_t frameIndex) {
+        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+        vkResetFences(device, 1, &m_InFlightFences[frameIndex]);
     }
 
     VkFormat VulkanSwapChain::FindDepthFormat() {
