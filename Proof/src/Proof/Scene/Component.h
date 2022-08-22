@@ -6,13 +6,14 @@
 #include "Proof/Resources/Asset/MeshAsset.h"
 #include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Renderer/Texture.h"
-
+#include "Proof/Scripting/MonoTypes.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
 #include <string>
 #include <format>
 #include <set>
+#include <any>
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
@@ -44,6 +45,7 @@ namespace Proof
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
 
+		/*TODO CHANGE TO SUBTAG*/
 		void AddTag(const std::string& Tag) {
 			m_Tags.emplace_back(Tag);
 		}
@@ -71,7 +73,7 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 	};
-	class Proof_API ChildComponent { 
+	struct Proof_API ChildComponent { 
 	public:
 		ChildComponent(const ChildComponent& other) = default;
 		ChildComponent() = default;
@@ -277,9 +279,10 @@ namespace Proof
 			return GetMaterial() == nullptr ? false : true;
 		}
 		UUID GetMeshAssetID();
+		void SetMeshSource(UUID ID);
+
 	private:
 		MeshAsset* GetAsset();
-		void SetMeshSource(UUID ID);
 		void RemoveMeshSource() {
 			m_MeshAssetPointerID = 0;
 			m_MeshAssetPointer = nullptr;
@@ -347,13 +350,13 @@ namespace Proof
 		glm::vec3 m_Specular;
 		LightType m_LightType = LightType::Direction;
 	};
+
 	struct Proof_API SkyLightComponent{
 		SkyLightComponent(const SkyLightComponent&) = default;
 		SkyLightComponent() = default;
 	private:
 		//void SetHDRIPath(const std::string& path):
 	};
-
 
 	struct Proof_API CameraComponent{
 	public:
@@ -397,7 +400,6 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
 	};
-	
 
 	struct Proof_API CubeColliderComponent {
 		CubeColliderComponent(const CubeColliderComponent&) = default;
@@ -424,8 +426,7 @@ namespace Proof
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 	};
-
-
+	
 	struct Proof_API SphereColliderComponent {
 		SphereColliderComponent(const SphereColliderComponent&) = default;
 		SphereColliderComponent() = default;
@@ -522,6 +523,63 @@ namespace Proof
 		VelocityChange,	
 		Acceleration
 	};
+
+
+	struct ScriptComponent {
+	public:
+		ScriptComponent(const ScriptComponent&other) = default;
+		ScriptComponent() = default;
+		bool AddScript(const std::string& className);
+		bool RemoveScript(const std::string& className) {
+			for (int i = 0; i < m_Scripts.size(); i++) {
+				if (m_Scripts[i].ClassName == className) {
+					m_Scripts.erase(m_Scripts.begin() + i);
+					return true;
+				}
+			}
+			return false;
+		}
+
+
+		bool HasAnyScripts() {
+			return m_Scripts.size() > 0;
+		}
+		bool RemoveScript(uint32_t index) {
+			if (index <= m_Scripts.size()) {
+				m_Scripts.erase(m_Scripts.begin() + index);
+				return true;
+			}
+			return false;
+		};
+
+		bool ChangeScript(const std::string& oldClassName, const std::string& newClassName);
+
+		bool HasScript(const std::string& className) {
+			for (int i = 0; i < m_Scripts.size(); i++) {
+				if (m_Scripts[i].ClassName == className) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+
+		template <typename func>
+		void ForEachScript(func f) {
+			for (const auto& val : m_Scripts)
+				f(val.ClassName);
+		}
+	private:
+		std::vector<ScriptData> m_Scripts;
+		
+		friend class ScriptEngine;
+		friend class SceneHierachyPanel;
+		friend class World;
+		friend class SceneSerializer;
+		friend class WorldRenderer;
+		friend class Editore3D;
+		friend class PhysicsEngine;
+	};
 	class Proof_API RigidBodyComponent {
 	public:
 		RigidBodyComponent(const RigidBodyComponent&) = default;
@@ -554,4 +612,13 @@ namespace Proof
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 	};
+	template<class ... Component>
+	struct ComponentGroup {
+
+	};
+	using AllComponents =
+		ComponentGroup< TagComponent, ChildComponent, TransformComponent,
+		MeshComponent, LightComponent, SkyLightComponent, CameraComponent,
+		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,
+		MeshColliderComponent, ScriptComponent, RigidBodyComponent>;
 }

@@ -17,7 +17,7 @@ namespace Proof
 			ID = AssetManager::CreateID();
 		}
 		if (HasID(ID) == false) {
-			s_AssetManager->m_AllAssets.insert({ ID,{AssetInfo(asset->GetPath(), asset->GetAssetType()),asset} });
+			s_AssetManager->m_AllAssets.insert({ ID,{AssetInfo(asset->GetPath(), asset->GetAssetType(),ID),asset} });
 			if(asset->GetAssetType() == AssetType::PhysicsMaterial)
 				s_AssetManager->m_AllPhysicsMaterialAsset.insert({ ID,ForceGetAssetShared<PhysicsMaterialAsset>(ID)});
 
@@ -171,7 +171,7 @@ namespace Proof
 			UUID assetID = asset["Asset"].as<uint64_t>();
 			std::string path = asset["Path"].as<std::string>();
 			auto assetType = EnumReflection::StringEnum<AssetType>(asset["Type"].as<std::string>());
-			s_AssetManager->m_AllAssets.insert({ assetID,{AssetInfo(path,assetType),nullptr} });// setting the asset as null as we will load it in another thread
+			s_AssetManager->m_AllAssets.insert({ assetID,{AssetInfo(path,assetType,assetID),nullptr} });// setting the asset as null as we will load it in another thread
 
 			if (assetType == AssetType::PhysicsMaterial)
 				s_AssetManager->m_AllPhysicsMaterialAsset.insert({ assetID,ForceGetAssetShared<PhysicsMaterialAsset>(assetID) });

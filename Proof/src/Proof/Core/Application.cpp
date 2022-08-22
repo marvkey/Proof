@@ -11,6 +11,7 @@
 #include <GLFW/glfw3.h>
 #include "Proof/Input/InputManager.h"
 #include<chrono>
+#include "Proof/Scripting/ScriptEngine.h"
 namespace Proof {
     Special <WindowsWindow> Application::MainWindow = nullptr;
     float Application::FPS = 60.0f;
@@ -20,6 +21,7 @@ namespace Proof {
         srand(time(NULL));
         Proof::Log::Init();
         MainWindow = CreateSpecial<WindowsWindow>(); 
+        ScriptEngine::Init();
 
         Renderer::Init(static_cast<Window*>(MainWindow.get()));
 
@@ -80,7 +82,6 @@ namespace Proof {
 
     void Application::Run() {
             
-
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;

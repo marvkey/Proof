@@ -16,7 +16,8 @@ namespace Proof
 		void SetContext(Count<World>world) {
 			m_World = world;
 		}
-		void Renderer();
+		uint32_t Renderer();
+		uint32_t Renderer(CameraComponent& comp, Vector<float>& location);
 		uint32_t GetWorldTexture(){
 			return m_ScreenFrameBuffer->GetTexture();
 		}

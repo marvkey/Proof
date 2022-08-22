@@ -18,6 +18,7 @@
 #include<glad/glad.h>
 #include "Proof/Scene/Component.h"
 #include "entt/entt.hpp"
+#include "Proof/Scripting/ScriptEngine.h"
 #include "Physics/PhysicsEngine.h"
 namespace Proof{
 	unsigned int quadVAO = 0;
@@ -56,6 +57,12 @@ namespace Proof{
 
 		CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
 	}
+	bool World::HasEnitty(UUID ID) {
+		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
+		if (it == m_Registry.entities.end())
+			return false;
+		return true;
+	}
 	void World::OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR) {
 		PF_PROFILE_FUNC();
 		OnUpdate(DeltaTime,width,height,usePBR);
@@ -67,9 +74,9 @@ namespace Proof{
 		m_EditorCamera.OnUpdate(DeltaTime,width,height);
 	}
 
-	void World::OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height) {
+	void World::OnUpdateRuntime(FrameTime DeltaTime, uint32_t width, uint32_t height) {
 		PF_PROFILE_FUNC();
-
+		/*
 		// Scripts
 		{
 			auto& scriptView = m_Registry.view<NativeScriptComponent>();
@@ -86,6 +93,14 @@ namespace Proof{
 				}
 				if(script.Instance->b_CallPerframe == true)
 					script.Instance->OnUpdate(DeltaTime);
+			}
+		}
+		*/
+		{
+			auto& scriptView = m_Registry.view<ScriptComponent>();
+			for (auto entity : scriptView) {
+				auto& script = scriptView.get<ScriptComponent>(entity);
+				ScriptEngine::OnUpdate(DeltaTime, Entity{ entity,this });
 			}
 		}
 		m_PhysicsEngine->Simulate(DeltaTime);
@@ -141,6 +156,8 @@ namespace Proof{
 		CopyComponentIfExists<CapsuleColliderComponent>(newEntity, entity);
 		CopyComponentIfExists<MeshColliderComponent>(newEntity, entity);
 		CopyComponentIfExists<RigidBodyComponent>(newEntity, entity);
+
+		CopyComponentIfExists<ScriptComponent>(newEntity, entity);
 		if (includeChildren == true) {
 			entity.EachChild([&](Entity childEntity){
 				Entity newChild = CreateEntity(childEntity, true);
@@ -149,12 +166,7 @@ namespace Proof{
 		}
 		return newEntity;
 	}
-	template<class Component>
-	static void CopyComponent(entt::registry64& dst, entt::registry64& src){
-		auto view = src.view<Component>();
-		for (auto e : view) {
-		}
-	}
+
 	template<typename Component>
 	static void CopyComponentWorld(entt::registry64& dst, entt::registry64& src, const std::unordered_map<UUID, uint64_t>& enttMap)
 	{
@@ -219,17 +231,20 @@ namespace Proof{
 		CopyComponentWorld<MeshColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		CopyComponentWorld<RigidBodyComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<ScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newWorld;
 	}
 
 	void World::EndRuntime() {
+		ScriptEngine::EndWorld();
 		delete m_PhysicsEngine;
 		m_PhysicsEngine = nullptr;
 		m_SceneCamera = nullptr;
 	}
 
 	void World::StartRuntime(){
+
 		{
 			auto& scriptView = m_Registry.view<NativeScriptComponent>();
 			for (auto entity : scriptView) {
@@ -242,6 +257,15 @@ namespace Proof{
 					script.Instance->m_World = this;
 					script.Instance->OnCreate();
 					script.Instance->OnPlaced();
+				}
+			}
+			{
+				ScriptEngine::StartWorld(this);
+				auto view = m_Registry.view<ScriptComponent>();
+				for (auto e : view) {
+					Entity entity = { e, this };
+					ScriptEngine::OnCreate(entity);
+					ScriptEngine::OnPlace(entity);
 				}
 			}
 		}
@@ -274,6 +298,18 @@ namespace Proof{
 		ent.m_ID = 0;
 		ent.m_EnttEntity = entt::entity(0);
 		ent.CurrentWorld = nullptr;
+	}
+
+	Entity World::GetEntity(UUID id) {
+		return Entity{ id,this };
+	}
+
+	Entity World::FindEntityByTag(const std::string& tag) {
+		ForEachEntitiesWithSingle<TagComponent>([&](Entity& entity){
+			if (entity.GetComponent<TagComponent>()->Tag == tag)
+				return entity;
+		});
+		return { 0, nullptr };
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){

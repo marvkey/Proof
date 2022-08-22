@@ -120,6 +120,8 @@ namespace Proof
 				RenameFile(fileName, fileFullExension);
 		}
 
+
+		void GenerateThumbnail(UUID ID);
 		void DeleteFolder(const std::string& path);
 		__forceinline UUID GetIDCurrentDirectory(const std::string& path);
 	};

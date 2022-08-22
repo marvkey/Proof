@@ -24,6 +24,33 @@ namespace Proof
 			}
 			return false;
 		}
+		struct AssetInfo {
+			std::filesystem::path Path;
+			AssetType Type;
+			UUID ID;
+			bool IsLoaded() {
+				return AssetManager::IsAssetLoaded(ID);
+			}
+			std::string GetName()const {
+				return Utils::FileDialogs::GetFileName(Path);
+			}
+			AssetInfo(const std::string& path, AssetType type, UUID id) :
+				Path(path), Type(type), ID(id) {
+			}
+
+			AssetInfo() {
+
+			}
+		private:
+			friend class AssetManager;
+		};
+		static AssetManager::AssetInfo GetAssetInfo(UUID ID) {
+			auto it = s_AssetManager->m_AllAssets.find(ID);
+			if (it != s_AssetManager->m_AllAssets.end()) {
+				return it->second.first;
+			}
+			return AssetManager::AssetInfo();
+		}
 		static bool LoadAsset(UUID ID);
 		template<class T>
 		static T* GetAsset(UUID ID) {
@@ -124,19 +151,7 @@ namespace Proof
 			it.first.Path = path;
 			return true;
 		}
-		struct AssetInfo {
-			std::filesystem::path Path;
-			AssetType Type;
-			std::string GetName()const {
-				return Utils::FileDialogs::GetFileName(Path);
-			}
-			AssetInfo(const std::string& path, AssetType type) :
-				Path(path), Type(type)
-			{
-			}
-		private:
-			friend class AssetManager;
-		};
+
 		static std::vector<std::string> s_PermitableMeshSourceFile;
 	
 		static void SaveAllAsset();

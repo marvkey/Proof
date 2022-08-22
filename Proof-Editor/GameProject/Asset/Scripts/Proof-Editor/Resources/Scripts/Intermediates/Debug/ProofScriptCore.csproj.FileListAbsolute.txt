@@ -1,0 +1,5 @@
+C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\GameProject\Asset\Scripts\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScriptCore.csproj.CoreCompileInputs.cache
+C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\GameProject\Asset\Scripts\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScriptCore.dll
+C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\GameProject\Asset\Scripts\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScriptCore.pdb
+C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\GameProject\Asset\Scripts\Proof-Editor\Resources\Scripts\ProofScriptCore.dll
+C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\GameProject\Asset\Scripts\Proof-Editor\Resources\Scripts\ProofScriptCore.pdb

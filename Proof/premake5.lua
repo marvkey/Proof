@@ -45,9 +45,10 @@ project "Proof"
         "%{wks.location}/Proof/vendor/PhysX/physx/source/foundation/include/**",
         "%{wks.location}/Proof/vendor/entt",
         "%{wks.location}/Proof/vendor/optick/src",
-        "%{wks.location}/Proof/vendor/magic_enum/include"
+        "%{wks.location}/Proof/vendor/magic_enum/include",
+        "%{wks.location}/Proof/vendor/mono/include",
+		"{IncludeDir.mono}"
 
-		--"C:/Program Files/Mono/include/mono-2.0"
     }
 	includedirs { 
         "%{wks.location}/Proof/vendor/PhysX/physx/source/**", 
@@ -62,9 +63,10 @@ project "Proof"
 		"%{wks.location}/Proof/vendor/optick/bin/vs2017/x64/Release",
 		"%{wks.location}/Proof/vendor/PhysX/physx/bin/win.x86_64.vc142.mt/debug",
 		"%{wks.location}/Proof/vendor/bullet3/bin",
-        "%{wks.location}/Proof/vendor/VulkanMemoryAllocator/build/src/Release"
+        "%{wks.location}/Proof/vendor/VulkanMemoryAllocator/build/src/Release",
 		
-		--"C:/Program Files/Mono/lib"
+		--"C:/Program Files/Mono/lib",
+		"%{wks.location}/Proof/vendor/bullet3/bin"
 	}
 	links
 	{	
@@ -78,6 +80,7 @@ project "Proof"
         "vulkan-1.lib",
 		"OptickCore.lib",
 		"SPIRV-Cross",
+
     --"VulkanMemoryAllocator.lib",
 		--"physx",
 		--"PhysXFoundation_64.lib",
@@ -88,9 +91,15 @@ project "Proof"
         --"PhysXPvdSDK_static_64.lib",
 
 		"LinearMath_vs2010_x64_debug.lib",
-        "BulletCollision_vs2010_x64_debug.lib",
-        "BulletDynamics_vs2010_x64_debug.lib",
-		
+      "BulletCollision_vs2010_x64_debug.lib",
+      "BulletDynamics_vs2010_x64_debug.lib",
+		"%{wks.location}/proof/vendor/mono/lib/Debug/mono-2.0-sgen.lib",
+		"ProofScriptCore",
+		"OLDNAMES.lib",	
+		"Ws2_32.lib",
+		"Winmm.lib",
+		"Version.lib",
+		"Bcrypt.lib"
 	}
 	links --physx
 	{

@@ -29,6 +29,8 @@ namespace Proof{
 			CreateIBlTexture(path);
 		}
 		World(World&)=default;
+
+		bool HasEnitty(UUID ID);
 		void OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR = false);
 		void OnUpdateEditorNoDraw(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height);
@@ -37,7 +39,9 @@ namespace Proof{
 		class Entity CreateEntity(const std::string& EntName= "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName, UUID ID);
 		class Entity CreateEntity(Entity entity,bool includeChildren=true);
-		
+		WorldState GetState() {
+			return m_CurrentState;
+		}
 		template<class F>
 		void ForEachEntity(F func) {
 			for (uint64_t i = 0; i < m_Registry.entities.size(); i++) {
@@ -63,6 +67,15 @@ namespace Proof{
 			auto entitiygroup = m_Registry.group<T...>();
 			for (auto& entity : entitiygroup) {
 				func(Entity{ entity,this });
+			}
+		}
+
+		template <class T, class F>
+		void ForEachComponent(F func) {
+			auto& entitiyView = m_Registry.view<T>();
+			for (auto entity : entitiyView) {
+				T& comp = *Entity{ entity,this }.GetComponent<T>();
+				func(comp);
 			}
 		}
 
@@ -92,8 +105,8 @@ namespace Proof{
 		}
 		*/
 		static Count<World> Copy(Count<World> other);
-		virtual void EndRuntime();
 		virtual void StartRuntime();
+		virtual void EndRuntime();
 		entt::registry64 m_Registry;
 		const std::string& GetName()const{return Name;};
 		const std::string& GetPath()const{return m_Path;}
@@ -102,6 +115,10 @@ namespace Proof{
 
 		EditorCamera m_EditorCamera ={200,200};
 		class PhysicsEngine* GetPhysicsEngine() { return m_PhysicsEngine; };
+
+		Entity GetEntity(UUID id);
+
+		Entity FindEntityByTag(const std::string& tag);
 	private:
 		class PhysicsEngine* m_PhysicsEngine =nullptr;
 		class CameraComponent* m_SceneCamera = nullptr;

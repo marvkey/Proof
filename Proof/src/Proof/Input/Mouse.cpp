@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include <ImGui/imgui.h>
 #include <GLFW/glfw3.h>
-
+#include "Platform/Window/WindowsWindow.h"
 namespace Proof {
 	static bool s_MouseCaptured = false;
 	bool Mouse::IsMouseCaptured()
@@ -20,4 +20,8 @@ namespace Proof {
 			ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse; // alllows mouse capture
 		}
 	}
+	bool Mouse::IsMouseMoved() {
+		return CurrentWindow::GetWindowClass().IsMouseMoved();
+	}
+
 }
