@@ -3,3 +3,9 @@ C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\Resources
 C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScriptCore.pdb
 C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\Resources\Scripts\ProofScriptCore.dll
 C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\Resources\Scripts\ProofScriptCore.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScriptCore.csproj.AssemblyReference.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScriptCore.csproj.CoreCompileInputs.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScriptCore.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScriptCore.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\ProofScriptCore.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\ProofScriptCore.pdb
