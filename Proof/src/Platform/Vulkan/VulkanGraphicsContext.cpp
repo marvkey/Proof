@@ -64,7 +64,7 @@ namespace Proof
 		PickPhysicalDevice();
 		CreateLogicalDevice();
 		CreateCommandPool();
-		//InitDescriptor();
+		InitDescriptors();
 		InitVMA();
 	}
 
@@ -144,6 +144,12 @@ namespace Proof
 
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
 		PF_ENGINE_INFO("physical device: {}", properties.deviceName);
+		PF_ENGINE_INFO("physical device: {}", properties.deviceName);
+		PF_ENGINE_INFO("	ID: {}", properties.deviceID);
+		PF_ENGINE_INFO("	Type: {}", properties.deviceType);
+		PF_ENGINE_INFO("	Driver Version: {}", properties.driverVersion);
+		PF_ENGINE_INFO("	API Version: {}", properties.apiVersion);
+		PF_ENGINE_INFO("	max bound descriptor sets: {}", properties.limits.maxBoundDescriptorSets);
 	}
 
 	void VulkanGraphicsContext::CreateLogicalDevice() {
@@ -220,18 +226,16 @@ namespace Proof
 
 	void VulkanGraphicsContext::InitDescriptors() {
 		uint32_t size = 1000; // maybe also frames in flight
-		m_GlobalPool
-			= VulkanDescriptorPool::Builder()
-			.SetMaxSets(1000)
-			.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000)
-			.Build();
+			//auto& build= VulkanDescriptorPool::Builder()
+			//.SetMaxSets(1000)
+			//.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000);
+			////.Build(m_Device);
+			//VkDescriptorPoolCreateFlags PoolFlags = 0;
+			std::vector<VkDescriptorPoolSize> PoolSizes{};
+			PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Renderer::GetConfig().FramesFlight});
 
-		uint32_t sizeBindings = EnumReflection::GetCount< UniformBinding>();
+		m_GlobalPool = CreateCount<VulkanDescriptorPool>(Renderer::GetConfig().FramesFlight, 0, PoolSizes,m_Device);
 
-		m_DescriptorSets.resize(sizeBindings);
-		for (int i = 0; i < m_DescriptorSets.size(); i++) {
-
-		}
 	}
 
 	void VulkanGraphicsContext::CreateSurface() {

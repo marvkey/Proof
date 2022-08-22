@@ -79,6 +79,10 @@ namespace Proof
 		VmaAllocator GetVMA_Allocator() {
 			return m_VMA_Allocator;
 		}
+		Count<class VulkanDescriptorPool> GetGlobalPool() {
+			return m_GlobalPool;
+		}
+
 	private:
 		uint32_t m_VulkanVersion;
 		void CreateInstance();
@@ -113,8 +117,7 @@ namespace Proof
 		const std::vector<const char*> m_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> m_DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-		Count<class VulkanDescriptorPool> m_GlobalPool;
-		std::vector<VkDescriptorSet	> m_DescriptorSets;
+		Count<class VulkanDescriptorPool> m_GlobalPool = nullptr;
 
 		VmaAllocator m_VMA_Allocator;
 	};

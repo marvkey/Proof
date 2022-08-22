@@ -16,9 +16,16 @@ layout(push_constant) uniform constants
 	vec4 color;
 	mat4 render;
 } PushConstants;
+
+layout(set =0,binding = 0) uniform CameraData
+{
+	mat4 ProjectionMatrix;
+	mat4 ViewMatrix;
+	vec3 Position;
+}CameraUBO;
 void main() {
 	outColor = vec4(aNormal,1.0);
-	gl_Position = PushConstants.render * vec4(aPosition, 1.0f);
+	gl_Position = CameraUBO.ProjectionMatrix* CameraUBO.ViewMatrix * vec4(aPosition, 1.0f);
 }
 
 #Fragment Shader

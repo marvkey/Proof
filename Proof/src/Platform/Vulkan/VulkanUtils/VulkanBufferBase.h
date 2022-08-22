@@ -8,4 +8,8 @@ namespace Proof{
 		VkBuffer Buffer;
 		VmaAllocation Allocation;
 	};
+
+	struct VulkanImage {
+
+	};
 }

@@ -15,8 +15,10 @@ namespace Proof
 	struct DrawPipeline {
 		Count<VulkanSwapChain> SwapChain = nullptr;
 		Count<VulkanCommandBuffer> CommandBuffer = nullptr;
+		Count<VulkanUniformBuffer> CameraBuffer = nullptr;
 	};	
 
+	
 	class VulkanRenderer {
 	public:
 		static void Init();
@@ -73,6 +75,8 @@ namespace Proof
 		static bool s_InContext;
 		static void RecreateSwapChain();
 		static void DrawFrame();
+
+		static void Descriptors();
 	};
 
 	struct TrianglePipeLine {

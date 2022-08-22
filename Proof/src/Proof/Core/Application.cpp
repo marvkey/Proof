@@ -11,7 +11,6 @@
 #include <GLFW/glfw3.h>
 #include "Proof/Input/InputManager.h"
 #include<chrono>
-
 namespace Proof {
     Special <WindowsWindow> Application::MainWindow = nullptr;
     float Application::FPS = 60.0f;

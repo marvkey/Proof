@@ -50,7 +50,7 @@ namespace Proof
 		// some functionality to configure the viewport or line width without restarting the whole pipeline
 		pipelineInfo.pDynamicState = nullptr;
 
-
+		//pipelineInfo.sha
 		pipelineInfo.layout = info.PipelineLayout;
 		pipelineInfo.renderPass = info.RenderPass;
 		pipelineInfo.subpass = info.Subpass;
@@ -135,6 +135,7 @@ namespace Proof
 		configInfo.DepthStencilInfo.stencilTestEnable = VK_FALSE;
 		configInfo.DepthStencilInfo.front = {};  // Optional
 		configInfo.DepthStencilInfo.back = {};   // Optional
+
 	}
 
 
