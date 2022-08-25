@@ -11,13 +11,13 @@ namespace Proof{
 	};
 	struct ContactPointInfo {
 		//normal of touching surfaces at contact point
-		Vector<float> Normal;
+		Vector Normal;
 		//positon of contact world space
-		Vector<float> Location;
+		Vector Location;
 		// distance contact point
 		float Distance; 
 		// impule contact point
-		Vector<float> Impulse;
+		Vector Impulse;
 	};
 	struct CollisionInfo{
 		Entity otherEntity;

@@ -101,7 +101,7 @@ namespace Proof
         Count<ScriptClass> EntityClass;
 
         std::unordered_map<std::string, Count<ScriptClass>> ScriptEntityClasses;
-        std::unordered_map<UUID, std::vector<Count<ScriptInstance>>> EntityInstances;
+        std::unordered_map<EntityID, std::vector<Count<ScriptInstance>>> EntityInstances;
         
         World* CurrentWorld = nullptr;
     };
@@ -273,7 +273,7 @@ namespace Proof
         m_OnDestroy = scriptClass->GetMethod("OnDestroy", 0);
         // Call Entity constructor
         {
-            UUID entityID = entity.GetID();
+            UUID entityID = entity.GetEntityID();
             void* param = &entityID;
             m_ScriptClass->CallMethod(m_Instance, m_Constructor, &param);
         }
@@ -327,7 +327,8 @@ namespace Proof
     }
     void ScriptEngine::LoadAssembly(const std::filesystem::path& filepath) {
                 // Create an App Domain
-        s_Data->AppDomain = mono_domain_create_appdomain("ProofScriptRuntime", nullptr);
+        std::string name = "ProofScriptRuntime";
+        s_Data->AppDomain = mono_domain_create_appdomain(name.data(), nullptr);
         mono_domain_set(s_Data->AppDomain, true);
 
         // Move this maybe
@@ -345,9 +346,9 @@ namespace Proof
         return s_Data->CurrentWorld;
     }
     void ScriptEngine::OnUpdate(float ts, Entity entity) {
-        PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetID()) != s_Data->EntityInstances.end());
+        PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetEntityID()) != s_Data->EntityInstances.end());
         //holding reference so we do not make a copy each iteration
-        for (auto& a : s_Data->EntityInstances[entity.GetID()]) {
+        for (auto& a : s_Data->EntityInstances[entity.GetEntityID()]) {
             a->CallOnUpdate(ts);
         }
         
@@ -357,7 +358,7 @@ namespace Proof
         for (auto& script : sc.m_Scripts) {
             if (ScriptEngine::EntityClassExists(script.ClassName) == false)continue;
             Count<ScriptInstance> instance = CreateCount<ScriptInstance>(s_Data->ScriptEntityClasses[script.ClassName], entity);
-            s_Data->EntityInstances[entity.GetID()].emplace_back(instance);
+            s_Data->EntityInstances[entity.GetEntityID()].emplace_back(instance);
             for (auto& prop : script.Fields) {
                 MonoClassField* currentField = mono_class_get_field_from_name(instance->m_ScriptClass->GetMonoClass(), prop.Name.c_str());
                 switch (prop.Type) {
@@ -442,7 +443,7 @@ namespace Proof
                         }
                     case Proof::ProofMonoType::Entity: 
                         {
-                            if(s_Data->CurrentWorld->HasEnitty(*prop.Data._Cast<uint64_t>()))
+                            if(s_Data->CurrentWorld->HasEntity(*prop.Data._Cast<uint64_t>()))
                                 mono_field_set_value(instance->m_Instance, currentField, prop.Data._Cast<uint64_t>());
                             break;
                         }
@@ -455,23 +456,23 @@ namespace Proof
       
     }
     void ScriptEngine::OnSpawn(Entity entity) {
-        PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetID()) != s_Data->EntityInstances.end());
+        PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetEntityID()) != s_Data->EntityInstances.end());
         //holding reference so we do not make a copy each iteration
-        for (auto& a : s_Data->EntityInstances[entity.GetID()]) {
+        for (auto& a : s_Data->EntityInstances[entity.GetEntityID()]) {
             a->CallOnSpawn();
         }
     }
     void ScriptEngine::OnPlace(Entity entity) {
-        PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetID()) != s_Data->EntityInstances.end());
+        PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetEntityID()) != s_Data->EntityInstances.end());
         //holding reference so we do not make a copy each iteration
-        for (auto& a : s_Data->EntityInstances[entity.GetID()]) {
+        for (auto& a : s_Data->EntityInstances[entity.GetEntityID()]) {
             a->CallOnPlace();
         }
     }
     void ScriptEngine::OnDestroy(Entity entity) {
-        PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetID()) != s_Data->EntityInstances.end());
+        PF_CORE_ASSERT(s_Data->EntityInstances.find(entity.GetEntityID()) != s_Data->EntityInstances.end());
         //holding reference so we do not make a copy each iteration
-        for (auto& a : s_Data->EntityInstances[entity.GetID()]) {
+        for (auto& a : s_Data->EntityInstances[entity.GetEntityID()]) {
             a->CallOnDestroy();
         }
     }
@@ -480,7 +481,7 @@ namespace Proof
         return s_Data->ScriptEntityClasses[name].get();
     }
 
-    void ScriptEngine::SetValue(UUID ID,const std::string& className, const std::string& varName, void* data) {
+    void ScriptEngine::SetValue(EntityID ID,const std::string& className, const std::string& varName, void* data) {
         const ScriptInstance* instance = nullptr;
         auto& temp = s_Data->EntityInstances[ID];
         for (auto& classes : temp) {
@@ -530,7 +531,8 @@ namespace Proof
         ScriptFunc::RegisterAllComponents();
         ScriptFunc::RegisterFunctions();
 
-        world->ForEachComponent<ScriptComponent>([](ScriptComponent& comp) {
+        world->ForEachEntitiesWithSingle<ScriptComponent>([](Entity entity) {
+            auto& comp = *entity.GetComponent< ScriptComponent>();
             //using normal for loop since we might be removing the data in theri
             for (int i = 0; i < comp.m_Scripts.size(); i++) {
                 auto& script = comp.m_Scripts[i];

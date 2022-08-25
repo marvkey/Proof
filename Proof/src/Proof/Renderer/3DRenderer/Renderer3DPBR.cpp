@@ -31,7 +31,7 @@ namespace Proof{
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera,Count<ScreenFrameBuffer>& frameBuffer,RendererData& renderSpec) {
 		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer, renderSpec);
 	}
-	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector<float>& Position,Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
+	void Renderer3DPBR::BeginContext(const glm::mat4& projection,const glm::mat4& view,const Vector& Position,Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		PF_PROFILE_FUNC()
 		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f,TimerTypes::Renderer);
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
@@ -45,10 +45,17 @@ namespace Proof{
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 			OpenGLRenderer3DPBR::Draw(meshComponent,positionMatrix);
 	}
-	void Renderer3DPBR::Draw(class LightComponent& lightComponent, class TransformComponent& transform) {
-		PF_PROFILE_FUNC();
+	void Renderer3DPBR::SubmitDirectionalLight(class DirectionalLightComponent& comp, TransformComponent& transform) {
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-			OpenGLRenderer3DPBR::Draw(lightComponent,transform);
+			OpenGLRenderer3DPBR::SubmitDirectionalLight(comp, transform);
+	}
+	void Renderer3DPBR::SubmitPointLight(class PointLightComponent& comp, TransformComponent& transform) {
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+			OpenGLRenderer3DPBR::SubmitPointLight(comp, transform);
+	}
+	void Renderer3DPBR::SubmitSpotLight(class SpotLightComponent& comp, TransformComponent& transform) {
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+			OpenGLRenderer3DPBR::SubmitSpotLight(comp, transform);
 	}
 	void Renderer3DPBR::DrawDebugMesh(Mesh* mesh, const glm::mat4& transform){
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)

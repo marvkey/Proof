@@ -8,6 +8,7 @@
 #include <string>
 #include "Panel.h"
 #include <type_traits>
+#include "Proof/Utils/PlatformUtils.h"
 namespace Proof
 {
 	/* THIS CLASS WILL NEED TO BE HANDLED BY CURRENT PROJECT */
@@ -49,7 +50,7 @@ namespace Proof
 			std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
 
 			Count<T> tempAsset = CreateCount<T>(assetSourcePath, m_CurrentDirectory.string() + "\\" + fileFullName);
-			AssetManager::NewAsset(tempAsset->GetID(), tempAsset);
+			AssetManager::NewAsset(tempAsset->GetAssetID(), tempAsset);
 			return { m_CurrentDirectory.string() + "\\" + fileFullName };
 		}
 
@@ -75,7 +76,7 @@ namespace Proof
 			}
 			std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
 			Count<T> tempAsset = CreateCount<T>(m_CurrentDirectory.string() + "\\" + fileFullName);
-			AssetManager::NewAsset(tempAsset->GetID(), tempAsset);
+			AssetManager::NewAsset(tempAsset->GetAssetID(), tempAsset);
 			return { m_CurrentDirectory.string() + "\\" + fileFullName };
 		}
 		/**

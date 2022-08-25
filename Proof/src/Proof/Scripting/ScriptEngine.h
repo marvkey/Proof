@@ -98,7 +98,7 @@ namespace Proof
 		static uint8_t GetPropertyAccessbility(MonoProperty* property);
 
 		static const ScriptClass* GetScriptClass(const std::string& name);
-		static void SetValue(UUID ID, const std::string& className, const std::string& varName, void* data);
+		static void SetValue(EntityID ID, const std::string& className, const std::string& varName, void* data);
 
 		static bool IsFieldAvailable(const std::string& className, const std::string& varName);
 		static bool IsFieldAvailable(const std::string& className, const std::string& varName,ProofMonoType type);

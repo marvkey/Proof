@@ -8,10 +8,12 @@
 namespace Proof{
 	struct TagComponent;
 	struct TransformComponent;
+
+	using EntityID = UUID;
 	class Proof_API Entity {
 	public:
-		Entity(UUID ID,class World* world):
-			m_ID(ID), CurrentWorld(world), m_EnttEntity(entt::entity(ID.Get())) {}
+		Entity(EntityID ID,class World* world):
+			m_ID(ID), CurrentWorld(world) {}
 		Entity(const Entity& other) =default;
 		Entity()=default;
 
@@ -40,7 +42,7 @@ namespace Proof{
 			}
 
 			T* Component = &CurrentWorld->m_Registry.emplace<T>(m_ID, std::forward<Args>(args)...);
-			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
+			CurrentWorld->OnComponentAdded<T>(this->GetEntityID(), Component);
 			return Component;
 		}
 		template<typename T>
@@ -72,13 +74,13 @@ namespace Proof{
 		template<typename T, typename... Args>
 		T* AddorReplaceComponent(Args&&... args) {// need to specify for child component and ID component
 			T* Component = &CurrentWorld->m_Registry.emplace_or_replace<T>(m_ID, std::forward<Args>(args)...);
-			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
+			CurrentWorld->OnComponentAdded<T>(this->GetEntityID(), Component);
 			return Component;
 		}
 		template<typename T, typename... Args>
 		T* GetorCreateComponent(Args&&... args) {
 			T* Component = &CurrentWorld->m_Registry.get_or_emplace<T>(m_ID, std::forward<Args>(args)...);
-			CurrentWorld->OnComponentAdded<T>(this->GetID(), Component);
+			CurrentWorld->OnComponentAdded<T>(this->GetEntityID(), Component);
 			return Component;
 		}
 		bool HasOwner() {
@@ -127,7 +129,7 @@ namespace Proof{
 			return CurrentWorld;
 		}
 		operator bool() const { return m_ID != 0 &&CurrentWorld!=nullptr; }
-		const UUID GetID()const { return m_ID;}
+		const UUID GetEntityID()const { return m_ID;}
 
 		bool operator==(const Entity& other) const {
 			return m_ID == other.m_ID && CurrentWorld == other.CurrentWorld;
@@ -147,11 +149,8 @@ namespace Proof{
 	private:
 		
 		World* CurrentWorld = nullptr;
-		UUID m_ID{0};
-		entt::entity m_EnttEntity{ entt::null };
+		EntityID m_ID{0};
 		friend class World;
 		friend class PhysicsEngine;
 	};
-
-
 }

@@ -124,9 +124,9 @@ namespace Proof
 			ContactPointInfo contactInfo;
 			physx::PxContactPairPoint& contactPoint = points[i];
 			contactInfo.Distance = contactPoint.separation;
-			contactInfo.Impulse = Vector<float>{ contactPoint.impulse.x,contactPoint.impulse.y,contactPoint.impulse.z };
-			contactInfo.Normal = Vector<float>{ contactPoint.normal.x,contactPoint.normal.y,contactPoint.normal.z };
-			contactInfo.Location = Vector<float>{ contactPoint.position.x,contactPoint.position.y,contactPoint.position.z };
+			contactInfo.Impulse = Vector{ contactPoint.impulse.x,contactPoint.impulse.y,contactPoint.impulse.z };
+			contactInfo.Normal = Vector{ contactPoint.normal.x,contactPoint.normal.y,contactPoint.normal.z };
+			contactInfo.Location = Vector{ contactPoint.position.x,contactPoint.position.y,contactPoint.position.z };
 
 			collisonInfo1.ContactPoints.emplace_back(contactInfo);
 			collisonInfo2.ContactPoints.emplace_back(contactInfo);

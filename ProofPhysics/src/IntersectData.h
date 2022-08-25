@@ -28,11 +28,11 @@ namespace ProofPhysicsEngine {
 		/**
 		* Position of contact
 		*/
-		Proof::Vector<float> ContactPoint;
+		Proof::Vector   ContactPoint;
 		/**
 		* Holds the direction of the contact in world coordinates.
 		*/
-		Proof::Vector<float>  ContactNormal;
+		Proof::Vector    ContactNormal;
 		/**
 		* Holds the depth of penetration at the contact point. If both
 		* bodies are specified then the contact point should be midway

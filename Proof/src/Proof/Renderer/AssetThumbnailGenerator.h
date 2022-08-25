@@ -5,22 +5,22 @@
 namespace Proof{
 	class AssetThumbnailGenerator {
 	public:
-		static void GenerateThumbnail(UUID ID);
+		static void GenerateThumbnail(AssetID ID);
 
-		static bool HasThumbnail(UUID ID) {
+		static bool HasThumbnail(AssetID ID) {
 			return AssetThumbnails.find(ID) != AssetThumbnails.end();
 		}
 
-		static uint32_t GetThumbnail(UUID ID) {
+		static uint32_t GetThumbnail(AssetID ID) {
 			PF_CORE_ASSERT(AssetThumbnails.find(ID) != AssetThumbnails.end(), "Not a valid ASSET ID");
 			return AssetThumbnails.at(ID);
 		}
 	private:
 		AssetThumbnailGenerator();
 		virtual ~AssetThumbnailGenerator();
-		void CreateThumbnail(UUID ID);
+		void CreateThumbnail(AssetID ID);
 		Count<World> m_World = nullptr;
 		Count<WorldRenderer> m_WorldRenderer = nullptr;
-		static std::unordered_map<UUID, uint32_t> AssetThumbnails;
+		static std::unordered_map<AssetID, uint32_t> AssetThumbnails;
 	};
 }

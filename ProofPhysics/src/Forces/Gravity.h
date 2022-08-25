@@ -2,8 +2,8 @@
 #include "../../../Proof/src/Proof/Resources/Math/Vector.h"
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
-#include<glm/gtx/rotate_vector.hpp>
-#include<glm/gtx/vector_angle.hpp>
+#include<glm/gtx/rotate_Vector.hpp>
+#include<glm/gtx/Vector_angle.hpp>
 #include "../Body/RigidBody.h"
 namespace ProofPhysicsEngine
 {

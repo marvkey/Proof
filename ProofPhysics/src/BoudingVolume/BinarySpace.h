@@ -2,17 +2,17 @@
 #include "../../../Proof/src/Proof/Resources/Math/Vector.h"
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
-#include<glm/gtx/rotate_vector.hpp>
-#include<glm/gtx/vector_angle.hpp>
-#include <vector>
+#include<glm/gtx/rotate_Vector.hpp>
+#include<glm/gtx/Vector_angle.hpp>
+#include <Vector >
 namespace ProofPhysicsEngine
 {
 	struct Plane {
-		Proof::Vector<> Position;
-		Proof::Vector<> Direction;
+		Proof::Vector   Position;
+		Proof::Vector   Direction;
 	};
 	template<class Object>
-	using BSPObjectSet = std::vector<Object>;
+	using BSPObjectSet = std::Vector <Object>;
 	
 	enum class BSPCHildType {
 		Node,

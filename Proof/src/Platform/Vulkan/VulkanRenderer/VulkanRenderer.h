@@ -22,7 +22,7 @@ namespace Proof
 	class VulkanRenderer {
 	public:
 		static void Init();
-		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec);
+		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec);
 		static void EndContext();
 		static void Destroy();
 		static VkCommandBuffer GetCurrentCommandBuffer();

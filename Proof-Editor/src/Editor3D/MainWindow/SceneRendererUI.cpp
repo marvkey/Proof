@@ -11,9 +11,9 @@ namespace Proof{
 		m_MeshAsset = asset;
 		tempEntity =m_World->CreateEntity(asset->GetName());
 		mesh =tempEntity.AddComponent<MeshComponent>();
-		tempEntity.AddComponent<LightComponent>()->m_Ambient ={1,1,1};
+		tempEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{1,1,1};
 		tempEntity.GetComponent<TransformComponent>()->Location.Z-=10;
-		mesh->m_MeshAssetPointerID = asset->GetID();
+		mesh->m_MeshAssetPointerID = asset->GetAssetID();
 		m_WorldRenderer = { m_World,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() };
 		m_Type= SceneRendererType::MeshAsset;
 		m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::FowardRendering;

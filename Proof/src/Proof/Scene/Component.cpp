@@ -24,7 +24,7 @@ namespace Proof
 	static struct Material Empty;
 	
 	UUID MeshComponent::GetMeshAssetID() {
-		return GetMeshSource() != nullptr ? m_MeshAssetPointerID : 0;
+		return GetMeshSource() != nullptr ? m_MeshAssetPointerID :(UUID) 0;
 	}
 	Material* MeshComponent::GetMaterial() {
 		/*
@@ -48,28 +48,28 @@ namespace Proof
 		}
 		return &a->m_Material;
 	}
-	void MeshComponent::SetMeshSource(UUID ID) {
+	void MeshComponent::SetMeshSource(AssetID ID) {
 		if (ID.Get() == 0)return;
 		if (AssetManager::HasID(ID)) {
 			m_MeshAssetPointer = AssetManager::ForceGetAssetShared<MeshAsset>(ID);
 			m_MeshAssetPointerID = ID;
 		}
 	}	
-	Vector<float> TransformComponent::GetWorldLocation()const {
+	Vector TransformComponent::GetWorldLocation()const {
 		if (entID ==0 )return Location;
 		Entity enttity(entID, m_World);
 		if(enttity.HasOwner())
 			return Location + enttity.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation();
 		return Location;
 	}
-	Vector<float> TransformComponent::GetWorldRotation()const {
+	Vector TransformComponent::GetWorldRotation()const {
 		if (entID == 0)return Rotation;
 		Entity enttity(entID, m_World);
 		if (enttity.HasOwner())
 			return Rotation + enttity.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation();
 		return Rotation;
 	}
-	Vector<float> TransformComponent::GetWorldScale()const {
+	Vector TransformComponent::GetWorldScale()const {
 		if (entID == 0)return Scale;
 		Entity enttity(entID, m_World);
 		if (enttity.HasOwner())
@@ -176,7 +176,7 @@ namespace Proof
 		m_TextureAssetPointer = nullptr;
 		return nullptr;
 	}
-	PhysicsMaterial* CubeColliderComponent::GetPhysicsMaterial() {
+	PhysicsMaterial* CubeColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
@@ -187,7 +187,7 @@ namespace Proof
 		}
 		return &a->m_Material;
 	}
-	PhysicsMaterial* SphereColliderComponent::GetPhysicsMaterial() {
+	PhysicsMaterial* SphereColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
@@ -199,7 +199,7 @@ namespace Proof
 		return &a->m_Material;
 	}
 
-	PhysicsMaterial* CapsuleColliderComponent::GetPhysicsMaterial() {
+	PhysicsMaterial* CapsuleColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
@@ -222,7 +222,7 @@ namespace Proof
 		return &a->m_Material;
 	}
 	
-	MeshAsset* MeshColliderComponent::GetMeshAsset() {
+	MeshAsset* MeshColliderComponent::GetMeshAsset()const {
 		if (m_MeshAssetPointerID == 0) {
 			return nullptr;
 		}
@@ -234,7 +234,7 @@ namespace Proof
 		return a;
 	}
 
-	void RigidBodyComponent::AddForce(Vector<float> force, ForceMode mode, bool autoWake)const {
+	void RigidBodyComponent::AddForce(Vector force, ForceMode mode, bool autoWake)const {
 		if (m_RuntimeBody == nullptr) return;
 		if (m_RigidBodyType == RigidBodyType::Static)return;
 		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
@@ -256,7 +256,7 @@ namespace Proof
 		}
 	}
 
-	void RigidBodyComponent::AddTorque(Vector<float> force, ForceMode mode, bool autoWake)const {
+	void RigidBodyComponent::AddTorque(Vector force, ForceMode mode, bool autoWake)const {
 		if (m_RuntimeBody == nullptr) return;
 		if (m_RigidBodyType == RigidBodyType::Static)return;
 		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();

@@ -26,6 +26,7 @@
 #include "Proof/Resources/EnumReflection.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Scripting/MonoTypes.h"
+
 namespace Proof
 {
 	#define InitilizeScript(InstanceNativeScriptComponent,Class)\
@@ -146,22 +147,22 @@ namespace Proof
 		ImGui::PopID();
 	};
 	bool  SceneHierachyPanel::CreateEntityMenu(Entity owner) {
-		uint64_t selectedPreviousEntityID = m_SelectedEntity.GetID();// we are doing this inncase we created a child entity
+		uint64_t selectedPreviousEntityID = m_SelectedEntity.GetEntityID();// we are doing this inncase we created a child entity
 		Entity newEntity;
 		if (ImGui::MenuItem("Entity"))
 			newEntity = m_CurrentWorld->CreateEntity();
 		if (ImGui::BeginMenu("Light")) {
 			if (ImGui::MenuItem("Point ")) {
 				newEntity = m_CurrentWorld->CreateEntity("Point Light");
-				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::LightType::Point;
+				newEntity.AddComponent<PointLightComponent>();
 			}
 			if (ImGui::MenuItem("Spot")) {
 				newEntity = m_CurrentWorld->CreateEntity("Spot Light");
-				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::LightType::Spot;
+				newEntity.AddComponent<SpotLightComponent>();
 			}
 			if (ImGui::MenuItem("Directional")) {
 				newEntity = m_CurrentWorld->CreateEntity("Directional Light");
-				newEntity.AddComponent<LightComponent>()->m_LightType = LightComponent::LightType::Direction;
+				newEntity.AddComponent<DirectionalLightComponent>();
 			}
 			ImGui::EndMenu();
 		}
@@ -173,16 +174,16 @@ namespace Proof
 			newEntity = m_CurrentWorld->CreateEntity("Camera");
 			newEntity.AddComponent<CameraComponent>();
 		}
-		if (owner && newEntity.GetID() != 0) {
+		if (owner && newEntity.GetEntityID() != 0) {
 			newEntity.SetOwner(owner);
 		}
-		if (newEntity.GetID() != 0)
+		if (newEntity.GetEntityID() != 0)
 			return true;
 		return false;
 	}
 	void SceneHierachyPanel::DrawEntityNode(Entity entity) {
 		auto& tc = entity.GetComponent<TagComponent>()->Tag;
-		ImGui::PushID(entity.GetID());
+		ImGui::PushID(entity.GetEntityID());
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 
 		if (entity.GetComponent<ChildComponent>()->HasChildren() == false) {
@@ -190,7 +191,7 @@ namespace Proof
 		}
 
 		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity.GetID(), flags, tc.c_str());
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity.GetEntityID(), flags, tc.c_str());
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity")) {
 
@@ -313,7 +314,9 @@ namespace Proof
 			AddComponentGui<MeshComponent>(entity, "Mesh");
 			AddComponentGui<SpriteComponent>(entity, "Sprite");
 			AddComponentGui<NativeScriptComponent>(entity, "Native Script");
-			AddComponentGui<LightComponent>(entity, "Light");
+			AddComponentGui<DirectionalLightComponent>(entity, "Directional Light");
+			AddComponentGui<PointLightComponent>(entity, "Point Light");
+			AddComponentGui<SpotLightComponent>(entity, "Spot Light");
 			AddComponentGui<CameraComponent>(entity, "Camera");
 
 			AddComponentGui<CubeColliderComponent>(entity, "Cube Collider");
@@ -425,41 +428,36 @@ namespace Proof
 		DrawComponents<NativeScriptComponent>("Native Script", entity, [](NativeScriptComponent& NativeScriptComp) {
 			ExternalAPI::ImGUIAPI::TextBar("Sript", NativeScriptComp.GetScriptName());
 		});
-		DrawComponents<LightComponent>("Light", entity, [](LightComponent& LightComp) {
-			if (LightComp.m_LightType == LightComponent::LightType::Direction) {
-				ImGui::ColorEdit3("Ambient", glm::value_ptr(LightComp.m_Ambient));
-				ImGui::DragFloat("Intensity", &LightComp.Intensity, 0.01, 0.0f, 100);
-			}
-			else if (LightComp.m_LightType == LightComponent::LightType::Point) {
-				ImGui::ColorEdit3("Ambient", glm::value_ptr(LightComp.m_Ambient));
-				ImGui::DragFloat("Intensity", &LightComp.Intensity, 0.01, 0.0f, 100);
-				ImGui::DragFloat("Radius", &LightComp.Radius, 0.01, 0.0f, 100);
-				ImGui::Text("Constant");
-				ImGui::SameLine();
-				ImGui::DragFloat("##Constant", &LightComp.m_Constant, 0.001);
-				ImGui::DragFloat("Linear", &LightComp.m_Linear, 0.001);
-				ImGui::DragFloat("Quadratic", &LightComp.m_Quadratic, 0.001);
-
-
-
-			}
-			else if (LightComp.m_LightType == LightComponent::LightType::Spot) {
-				ImGui::ColorEdit3("Ambient", glm::value_ptr(LightComp.m_Ambient));
-				ImGui::DragFloat("Intensity", &LightComp.Intensity, 0.01, 0.0f, 100);
-
-				ImGui::DragFloat("Radius", &LightComp.Radius, 0.01, 0.0f, 100);
-
-				ImGui::NewLine();
-				ImGui::DragFloat("Constant", &LightComp.m_Constant, 0.001);
-				ImGui::DragFloat("Linear", &LightComp.m_Linear, 0.001);
-				ImGui::DragFloat("Quadratic", &LightComp.m_Quadratic, 0.001);
-				ImGui::DragFloat("CutOff", &LightComp.m_CutOff, 0.001);
-				ImGui::DragFloat("Outer-Cutoff", &LightComp.m_OuterCutOff, 0.001);
-
-			}
-
-			ExternalAPI::ImGUIAPI::EnumCombo<LightComponent::LightType>("Type", LightComp.m_LightType);
+		
+		DrawComponents<DirectionalLightComponent>("Directonal Light", entity, [](DirectionalLightComponent& drl) {
+			ImGui::ColorEdit3("Ambient", drl.Color.GetValue_Ptr());
+			ImGui::DragFloat("Intensity", &drl.Intensity, 0.01, 0.0f, 100);
 		});
+
+		DrawComponents<PointLightComponent>("Directonal Light", entity, [](PointLightComponent& pl) {
+			ImGui::ColorEdit3("Ambient", pl.Color.GetValue_Ptr());
+			ImGui::DragFloat("Intensity", &pl.Intensity, 0.01, 0.0f, 100);
+			ImGui::DragFloat("Intensity", &pl.Intensity, 0.01, 0.0f, 100);
+			ImGui::DragFloat("Radius", &pl.Radius, 0.01, 0.0f, 100);
+			ImGui::DragFloat("Constant", &pl.Constant, 0.001);
+			ImGui::DragFloat("Linear", &pl.Linear, 0.001);
+			ImGui::DragFloat("Quadratic", &pl.Quadratic, 0.001);
+		});
+
+		DrawComponents<SpotLightComponent>("Directonal Light", entity, [](SpotLightComponent& sl) {
+			ImGui::ColorEdit3("Ambient", sl.Color.GetValue_Ptr());
+			ImGui::DragFloat("Intensity", &sl.Intensity, 0.01, 0.0f, 100);
+
+			ImGui::DragFloat("Radius", &sl.Radius, 0.01, 0.0f, 100);
+
+			ImGui::NewLine();
+			ImGui::DragFloat("Constant", &sl.Constant, 0.001);
+			ImGui::DragFloat("Linear", &sl.Linear, 0.001);
+			ImGui::DragFloat("Quadratic", &sl.Quadratic, 0.001);
+			ImGui::DragFloat("CutOff", &sl.CutOff, 0.001);
+			ImGui::DragFloat("Outer-Cutoff", &sl.OuterCutOff, 0.001);
+		});
+
 		DrawComponents<CameraComponent>("Camera", entity, [](CameraComponent& cameraComp) {
 			ImGui::SliderFloat("Field ov fiew", &cameraComp.m_FovDeg, 0, 360);
 			ImGui::SliderFloat("Near plane", &cameraComp.m_NearPlane, -1, 1);
@@ -832,7 +830,7 @@ namespace Proof
 												uint64_t* data = field.Data._Cast<uint64_t>();
 												Entity payloadData = *(const Entity*)payload->Data;
 
-												*data = payloadData.GetID();
+												*data = payloadData.GetEntityID();
 											}
 											ImGui::EndDragDropTarget();
 										}
@@ -860,7 +858,7 @@ namespace Proof
 									{
 										bool* data = field.Data._Cast<bool>();
 										ExternalAPI::ImGUIAPI::CheckBox(field.Name, data);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, data);
 										break;
 									}
 								case Proof::ProofMonoType::Char: 
@@ -886,7 +884,7 @@ namespace Proof
 
 										ImGui::PopID();
 										char* datPoint = field.Data._Cast<char>();
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)datPoint);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)datPoint);
 										break;
 									}
 								case Proof::ProofMonoType::String:
@@ -903,77 +901,77 @@ namespace Proof
 										}
 										ImGui::PopID();
 										
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, ScriptEngine::StringToMono(*data));
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, ScriptEngine::StringToMono(*data));
 										break;
 									}
 								case Proof::ProofMonoType::Uint8_t:
 									{
 										uint8_t* data = field.Data._Cast<uint8_t>();
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U8, (void*)data, 1.0f);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
 								case Proof::ProofMonoType::Uint16_t:
 									{
 										uint16_t* data = field.Data._Cast<uint16_t>();
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U16, (void*)data, 1.0f);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
 								case Proof::ProofMonoType::Uint32_t:
 									{
 										uint32_t* data = field.Data._Cast<uint32_t>();
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U32, (void*)data, 1.0f);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
 								case Proof::ProofMonoType::Uint64_t:
 									{
 										uint64_t* data = field.Data._Cast<uint64_t>();
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_U64, (void*)data, 1.0f);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
 								case Proof::ProofMonoType::Int8_t:
 									{
 										int8_t* data = field.Data._Cast<int8_t>();
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S8, (void*)data, 1.0f);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
 								case Proof::ProofMonoType::Int16_t:
 									{
 										int16_t* data = field.Data._Cast<int16_t>();
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S16, (void*)data, 1.0f);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
 								case Proof::ProofMonoType::Int32_t:
 									{
 										int32_t* data = field.Data._Cast<int32_t>();
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S32, (void*)data, 1.0f);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
 								case Proof::ProofMonoType::Int64_t:
 									{
 										int64_t* data = field.Data._Cast<int64_t>();
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_S64, (void*)data, 1.0f);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
 								case Proof::ProofMonoType::Float:
 									{
 										float* data = field.Data._Cast<float>();
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_Float, (void*)data, 1.0f);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
 								case Proof::ProofMonoType::Double:
 									{
 										double* data = field.Data._Cast<double>();
 										ImGui::DragScalar(field.Name.c_str(), ImGuiDataType_Double, (void*)data, 1.0f);
-										ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+										ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 										break;
 									}
 
@@ -995,70 +993,70 @@ namespace Proof
 												{
 													ScriptEnumView<uint8_t>(field, enumVarName, enumClassName);
 													uint8_t* castData = field.Data._Cast<uint8_t>();
-													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, enumVarName, (void*)castData);
 													break;
 												}
 											case Proof::ProofMonoType::Uint16_t:
 												{
 													ScriptEnumView<uint16_t>(field, enumVarName, enumClassName);
 													uint16_t* castData = field.Data._Cast<uint16_t>();
-													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, enumVarName, (void*)castData);
 													break;
 												}
 											case Proof::ProofMonoType::Uint32_t:
 												{
 													ScriptEnumView<uint32_t>(field, enumVarName, enumClassName);
 													uint32_t* castData = field.Data._Cast<uint32_t>();
-													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, enumVarName, (void*)castData);
 													break;
 												}
 											case Proof::ProofMonoType::Uint64_t:
 												{
 													ScriptEnumView<uint64_t>(field, enumVarName, enumClassName);
 													uint64_t* castData = field.Data._Cast<uint64_t>();
-													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, enumVarName, (void*)castData);
 													break;
 												}
 											case Proof::ProofMonoType::Int8_t:
 												{
 													ScriptEnumView<int8_t>(field, enumVarName, enumClassName);
 													int8_t* castData = field.Data._Cast<int8_t>();
-													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, enumVarName, (void*)castData);
 													break;
 												}
 											case Proof::ProofMonoType::Int16_t:
 												{
 													ScriptEnumView<int16_t>(field, enumVarName, enumClassName);
 													int16_t* castData = field.Data._Cast<int16_t>();
-													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, enumVarName, (void*)castData);
 													break;
 												}
 											case Proof::ProofMonoType::Int32_t:
 												{
 													ScriptEnumView<int32_t>(field, enumVarName, enumClassName);
 													int32_t* castData = field.Data._Cast<int32_t>();
-													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, enumVarName, (void*)castData);
 													break;
 												}
 											case Proof::ProofMonoType::Int64_t:
 												{
 													ScriptEnumView<int64_t>(field, enumVarName, enumClassName);
 													int64_t* castData = field.Data._Cast<int64_t>();
-													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, enumVarName, (void*)castData);
 													break;
 												}
 											case Proof::ProofMonoType::Float:
 												{
 													ScriptEnumView<float>(field, enumVarName, enumClassName);
 													float* castData = field.Data._Cast<float>();
-													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, enumVarName, (void*)castData);
 													break;
 												}
 											case Proof::ProofMonoType::Double:
 												{
 													ScriptEnumView<double>(field, enumVarName, enumClassName);
 													double* castData = field.Data._Cast<double>();
-													ScriptEngine::SetValue(entity.GetID(), script.ClassName, enumVarName, (void*)castData);
+													ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, enumVarName, (void*)castData);
 													break;
 												}
 											default:
@@ -1080,8 +1078,8 @@ namespace Proof
 												uint64_t* data = field.Data._Cast<uint64_t>();
 												Entity payloadData = *(const Entity*)payload->Data;
 
-												*data = payloadData.GetID();
-												ScriptEngine::SetValue(entity.GetID(), script.ClassName, field.Name, (void*)data);
+												*data = payloadData.GetEntityID();
+												ScriptEngine::SetValue(entity.GetEntityID(), script.ClassName, field.Name, (void*)data);
 											}
 											ImGui::EndDragDropTarget();
 										}
@@ -1098,7 +1096,7 @@ namespace Proof
 		});
 	}
 
-	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel, Vector<>& Vec, float ResetValue, float columnWidth, float Speed) {
+	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel, Vector& Vec, float ResetValue, float columnWidth, float Speed) {
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		ImGui::PushID(UniqeLabel.c_str());// this id is for everything here so imgui does not assign something to the value that we have here
@@ -1241,7 +1239,7 @@ namespace Proof
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}
-	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel, Vector<bool>& Vec, bool resetValue, float columnWidth) {
+	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel, VectorTemplate<bool>& Vec, bool resetValue, float columnWidth) {
 
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];

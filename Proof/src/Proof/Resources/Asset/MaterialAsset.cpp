@@ -10,7 +10,7 @@ namespace Proof{
 	MaterialAsset::MaterialAsset(const std::string& assetSavePath):
 		Asset(AssetType::Material)
 	{
-		m_ID = AssetManager::CreateID();
+		m_AssetID = AssetManager::CreateID();
 		m_SavePath = assetSavePath;
 		SaveAsset();
 	}
@@ -18,7 +18,7 @@ namespace Proof{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(GetAssetType());
-		out << YAML::Key << "ID" << YAML::Value << m_ID;
+		out << YAML::Key << "ID" << YAML::Value << m_AssetID;
 
 		out << YAML::Key << "AlbedoColour"<<YAML::Value << m_Material.m_Colour;
 		out << YAML::Key << "Roughness"<<YAML::Value << m_Material.m_Roughness;
@@ -40,7 +40,7 @@ namespace Proof{
 		YAML::Node data = YAML::LoadFile(m_SavePath);
 		if (!data["AssetType"]) // if there is no scene no
 			return false;
-		m_ID = data["ID"].as<uint64_t>();
+		m_AssetID = data["ID"].as<uint64_t>();
 		
 		m_Material.m_Colour= data["AlbedoColour"].as<glm::vec3>();
 		m_Material.m_Metallness = data["Metallness"].as<float>();

@@ -10,7 +10,7 @@
 #include "MainWindow/AssetManagerPanel.h"
 #include "MainWindow/InputPanel.h"
 #include "MainWindow/Performance/PerformancePanel.h"
-
+#include "MainWindow/SceneHierachyPanel.h"
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {

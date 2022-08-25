@@ -42,6 +42,7 @@ namespace Proof
 	void ContentBrowserPanel::ImGuiRender(FrameTime deltaTime) {
 		if (m_ShowWindow == false)
 			return;
+
 		PF_PROFILE_FUNC();
 		//auto relativePath = std::filesystem::relative(path, g_AssetPath);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });

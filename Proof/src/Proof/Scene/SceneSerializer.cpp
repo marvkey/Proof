@@ -15,7 +15,7 @@ namespace Proof
 	}
 	void SceneSerializer::SerilizeEntity(YAML::Emitter& out, Entity entity) {
 		out << YAML::BeginMap;// entity
-		out << YAML::Key << "Entity" << YAML::Value << entity.GetID();
+		out << YAML::Key << "Entity" << YAML::Value << entity.GetEntityID();
 		{
 			TagComponent* Tag = entity.GetComponent<TagComponent>();
 			if (Tag != nullptr) {
@@ -54,7 +54,7 @@ namespace Proof
 				out << YAML::Key << "Children";
 				out << YAML::Flow;
 				out << YAML::BeginSeq;
-				for (UUID simpleEnitty : childComponent->m_Children) {
+				for (EntityID simpleEnitty : childComponent->m_Children) {
 					out << simpleEnitty;
 				}
 				out << YAML::EndSeq;
@@ -83,23 +83,52 @@ namespace Proof
 			}
 		}
 		{
-			LightComponent* Light = entity.GetComponent<LightComponent>();
-			if (Light != nullptr) {
-				out << YAML::Key << "LightComponent";
-				out << YAML::BeginMap; // LightComponent;
-				out << YAML::Key << "CutOff" << Light->m_CutOff;
-				out << YAML::Key << "OuterCutOff" << Light->m_OuterCutOff;
+			
+			{
+				DirectionalLightComponent* directonalLight = entity.GetComponent<DirectionalLightComponent>();
+				if (directonalLight != nullptr) {
+					out << YAML::Key << "DirectionalLightComponent";
+					out << YAML::BeginMap; // DirectionalLightComponent
+					out << YAML::Key << "Color" << directonalLight->Color;
+					out << YAML::Key << "Intensity" << directonalLight->Intensity;
+					out << YAML::EndMap; // DirectionalLightComponent
+				}
+			}
 
-				out << YAML::Key << "Constant" << Light->m_Constant;
-				out << YAML::Key << "Linear" << Light->m_Linear;
-				out << YAML::Key << "Quadratic" << Light->m_Quadratic;
+			{
+				PointLightComponent* pointLight= entity.GetComponent<PointLightComponent>();
+				if (pointLight != nullptr) {
+					out << YAML::Key << "PointLightComponent";
+					out << YAML::BeginMap; // PointLightComponent
+					out << YAML::Key << "Color" << pointLight->Color;
+					out << YAML::Key << "Intensity" << pointLight->Intensity;
 
-				out << YAML::Key << "Ambient" << Light->m_Ambient;
-				out << YAML::Key << "Diffuse" << Light->m_Diffuse;
-				out << YAML::Key << "Specular" << Light->m_Specular;
+					out << YAML::Key << "Constant" << pointLight->Constant;
+					out << YAML::Key << "Linear" << pointLight->Linear;
+					out << YAML::Key << "Quadratic" << pointLight->Quadratic;
+					out << YAML::Key << "Radius" << pointLight->Radius;
 
-				out << YAML::Key << "LightType" << (int)Light->m_LightType;
-				out << YAML::EndMap; // LightComponent
+					out << YAML::EndMap; // PointLightComponent
+				}
+			}
+
+			{
+				SpotLightComponent* spotLight = entity.GetComponent<SpotLightComponent>();
+				if (spotLight != nullptr) {
+					out << YAML::Key << "SpotLightComponent";
+					out << YAML::BeginMap; // PointLightComponent
+					out << YAML::Key << "Color" << spotLight->Color;
+
+					out << YAML::Key << "Intensity" << spotLight->Intensity;
+					out << YAML::Key << "Constant" << spotLight->Constant;
+					out << YAML::Key << "Linear" << spotLight->Linear;
+					out << YAML::Key << "Quadratic" << spotLight->Quadratic;
+					out << YAML::Key << "Radius" << spotLight->Radius;
+					out << YAML::Key << "OuterCutoff" << spotLight->OuterCutOff;
+					out << YAML::Key << "CutOff" << spotLight->CutOff;
+
+					out << YAML::EndMap; // PointLightComponent
+				}
 			}
 		}
 		{
@@ -377,8 +406,8 @@ namespace Proof
 					auto* tc = NewEntity.GetComponent<TransformComponent>();
 					tc->Location = transformComponet["Location"].as<glm::vec3>();
 
-					tc->Rotation = transformComponet["Rotation"].as<Vector<>>();
-					tc->Scale = transformComponet["Scale"].as<Vector<>>();
+					tc->Rotation = transformComponet["Rotation"].as<Vector>();
+					tc->Scale = transformComponet["Scale"].as<Vector>();
 
 				}
 			}
@@ -427,22 +456,44 @@ namespace Proof
 			}
 			// LIGHT
 			{
-				auto lightComponent = entity["LightComponent"];
-				if (lightComponent) {
-					auto& src = *NewEntity.AddComponent<LightComponent>();
-					src.m_CutOff = lightComponent["CutOff"].as<float>();
-					src.m_OuterCutOff = lightComponent["OuterCutOff"].as<float>();
+			
+				{
+					auto directionalLight = entity["DirectionalLightComponent"];
+					if (directionalLight) {
+						auto& src = *NewEntity.AddComponent<DirectionalLightComponent>();
+						src.Color = directionalLight["Color"].as<Vector>();
+						src.Intensity = directionalLight["Intensity"].as<float>();
+					}
+				}
 
-					src.m_Constant = lightComponent["Constant"].as<float>();
-					src.m_Linear = lightComponent["Linear"].as<float>();
-					src.m_Quadratic = lightComponent["Quadratic"].as<float>();
+				{
+					auto pointLight = entity["PointLightComponent"];
+					if (pointLight) {
+						auto& src = *NewEntity.AddComponent<PointLightComponent>();
+						src.Color = pointLight["Color"].as<Vector>();
+						src.Intensity = pointLight["Intensity"].as<float>();
+						src.Constant = pointLight["Constant"].as<float>();
+						src.Linear = pointLight["Linear"].as<float>();
+						src.Quadratic = pointLight["Quadratic"].as<float>();
+						src.Radius = pointLight["Radius"].as<float>();
 
-					src.m_Ambient = lightComponent["Ambient"].as<glm::vec3>();
-					src.m_Diffuse = lightComponent["Diffuse"].as<glm::vec3>();
-					src.m_Specular = lightComponent["Specular"].as<glm::vec3>();
+					}
+				}
 
-					src.m_LightType = (LightComponent::LightType)lightComponent["LightType"].as<int>();
+				{
+					auto spotLight = entity["SpotLightComponent"];
+					if (spotLight) {
+						auto& src = *NewEntity.AddComponent<SpotLightComponent>();
+						src.Color = spotLight["Color"].as<Vector>();
+						src.Intensity = spotLight["Intensity"].as<float>();
+						src.Constant = spotLight["Constant"].as<float>();
+						src.Linear = spotLight["Linear"].as<float>();
+						src.Quadratic = spotLight["Quadratic"].as<float>();
+						src.Radius = spotLight["Radius"].as<float>();
 
+						src.CutOff = spotLight["CutOff"].as<float>();
+						src.OuterCutOff= spotLight["OuterCutOff"].as<float>();
+					}
 				}
 			}
 			// CAMERA
@@ -467,8 +518,8 @@ namespace Proof
 				if (cubeColliderComponent) {
 					auto& src = *NewEntity.AddComponent<CubeColliderComponent>();
 					src.IsTrigger = cubeColliderComponent["IsTrigger"].as<bool>();
-					src.OffsetLocation = cubeColliderComponent["OffsetLocation"].as<Vector<float>>();
-					src.OffsetScale = cubeColliderComponent["OffsetScale"].as<Vector<float>>();
+					src.OffsetLocation = cubeColliderComponent["OffsetLocation"].as<Vector>();
+					src.OffsetScale = cubeColliderComponent["OffsetScale"].as<Vector>();
 					src.m_PhysicsMaterialPointerID = cubeColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
 				}
 			}
@@ -479,7 +530,7 @@ namespace Proof
 				if (sphereColliderComponent) {
 					auto& src = *NewEntity.AddComponent<SphereColliderComponent>();
 					src.IsTrigger = sphereColliderComponent["IsTrigger"].as<bool>();
-					src.OffsetLocation = sphereColliderComponent["Offset"].as<Vector<float>>();
+					src.OffsetLocation = sphereColliderComponent["Offset"].as<Vector>();
 					src.Radius = sphereColliderComponent["Radius"].as<float>();
 					src.m_PhysicsMaterialPointerID = sphereColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
 				}
@@ -491,7 +542,7 @@ namespace Proof
 				if (capsuleColliderComponent) {
 					auto& src = *NewEntity.AddComponent<CapsuleColliderComponent>();
 					src.IsTrigger = capsuleColliderComponent["IsTrigger"].as<bool>();
-					src.OffsetLocation = capsuleColliderComponent["Offset"].as<Vector<float>>();
+					src.OffsetLocation = capsuleColliderComponent["Offset"].as<Vector>();
 					src.Radius = capsuleColliderComponent["Radius"].as<float>();
 					src.Height = capsuleColliderComponent["Height"].as<float>();
 					src.Direction = EnumReflection::StringEnum<CapsuleDirection>(capsuleColliderComponent["Direction"].as<std::string>());
@@ -518,8 +569,8 @@ namespace Proof
 					rgb.LinearDrag = rigidBodyComponent["LinearDrag"].as<float>();
 					rgb.AngularDrag = rigidBodyComponent["AngularDrag"].as<float>();
 					rgb.Gravity = rigidBodyComponent["Gravity"].as<bool>();
-					rgb.FreezeLocation = rigidBodyComponent["FreezeLocation"].as<Vector<bool>>();
-					rgb.FreezeRotation = rigidBodyComponent["FreezeRotation"].as<Vector<bool>>();
+					rgb.FreezeLocation = rigidBodyComponent["FreezeLocation"].as<VectorTemplate<bool>>();
+					rgb.FreezeRotation = rigidBodyComponent["FreezeRotation"].as<VectorTemplate<bool>>();
 					rgb.m_RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
 				}
 			}
@@ -559,7 +610,7 @@ namespace Proof
 									break;
 								case Proof::ProofMonoType::Char:
 									{
-										auto& stringCheck = field["Data"].as<std::string>();
+										auto stringCheck = field["Data"].as<std::string>();
 										if (stringCheck.empty() == false)
 											scriptField.Data = field["Data"].as<char>();
 										else

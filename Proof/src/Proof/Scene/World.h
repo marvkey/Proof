@@ -24,20 +24,22 @@ namespace Proof{
 	
 	class Proof_API World {
 	public:
+		using EntityID = UUID;
 		World();
 		World(const std::string& path){
 			CreateIBlTexture(path);
 		}
 		World(World&)=default;
 
-		bool HasEnitty(UUID ID);
+		bool HasEntity(EntityID ID)const;
+		bool HasEntity(EntityID ID);
 		void OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR = false);
 		void OnUpdateEditorNoDraw(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height);
 
 		class Entity CreateEntity(const std::string& EntName= "Empty Entity");
-		class Entity CreateEntity(const std::string& EntName, UUID ID);
+		class Entity CreateEntity(const std::string& EntName,EntityID ID);
 		class Entity CreateEntity(Entity entity,bool includeChildren=true);
 		WorldState GetState() {
 			return m_CurrentState;
@@ -45,38 +47,43 @@ namespace Proof{
 		template<class F>
 		void ForEachEntity(F func) {
 			for (uint64_t i = 0; i < m_Registry.entities.size(); i++) {
-				func(Entity{ m_Registry[i],this });
+				Entity created{ m_Registry[i],this };
+				func(created);
 			}
 		}
 		template<class F>
 		void ForEachEntityBackwards(F func) {
 			for (auto it = m_Registry.entities.crbegin(); it != m_Registry.entities.crend(); ++it) {
-				func(class Entity{ *it,this });
+				Entity created{ *it,this };
+				func(created);
 			}
 		}
 		template<class T, class F>
 		void ForEachEntitiesWithSingle(F func) {
-			auto& entitiyView = m_Registry.view<T>();
-			for (auto entity : entitiyView) {
-				func(Entity{ entity,this });
+			const auto& entitiyView = m_Registry.view<T>();
+			for (auto& entity : entitiyView) {
+				Entity created{ entity,this };
+				func(created);
 			}
 		}
 		
 		template<class...T, class F>
 		void ForEachEntitiesWithMultiple(F func) {
-			auto entitiygroup = m_Registry.group<T...>();
+			const auto& entitiygroup = m_Registry.group<T...>();
 			for (auto& entity : entitiygroup) {
-				func(Entity{ entity,this });
+				Entity created{ entity,this };
+				func(created);
 			}
 		}
 
 		template <class T, class F>
 		void ForEachComponent(F func) {
-			auto& entitiyView = m_Registry.view<T>();
-			for (auto entity : entitiyView) {
-				T& comp = *Entity{ entity,this }.GetComponent<T>();
-				func(comp);
+			const auto& entitiyView = m_Registry.view<T>();
+			for (auto& entity : entitiyView) {
+				Entity created = { entity,this };
+				func(*GetComponent<T>(created));
 			}
+			
 		}
 
 		/*
@@ -129,7 +136,7 @@ namespace Proof{
 		void CreateIBlTexture(const std::string& filePath);
 		std::string Name = "DefaultWorld";
 		template<class T>
-		void OnComponentAdded(UUID ID, T* component) {};
+		void OnComponentAdded(EntityID ID, T* component) {};
 		
 		
 		std::string m_Path;
@@ -152,11 +159,14 @@ namespace Proof{
 		Count<Shader>prefilterShader;
 		Count<Shader>brdfShader;
 
+		template <class T>
+		T* GetComponent(Entity entity);
 		friend class SceneHierachyPanel;
 		friend class Entity;
 		friend class SceneSerializer;
 		friend class Editore3D;
 		friend class Renderer;
 		friend class PhysicsEngine;
-	};
+		
+};
 }

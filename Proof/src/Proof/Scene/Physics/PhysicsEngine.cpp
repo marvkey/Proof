@@ -84,7 +84,7 @@ namespace Proof {
 					physx::PxRigidDynamic* body = m_NVDIAPhysicsEngine->m_Physics->createRigidDynamic(physx::PxTransform{ physx::PxVec3(worldLocation.X,worldLocation.Y,worldLocation.Z),
 						physx::PxQuat(worldRotation.X,worldRotation.Y,worldRotation.Z,1) });
 					rigidBodyComponent.m_RuntimeBody = body;
-					body->setName(fmt::to_string(entity.GetID()).c_str()); // we can easily rigidBodyComponent After collsion
+					body->setName(fmt::to_string(entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 					body->setMass(rigidBodyComponent.Mass);
 					body->setAngularDamping(rigidBodyComponent.AngularDrag);
 					body->setLinearDamping(rigidBodyComponent.LinearDrag);
@@ -119,7 +119,7 @@ namespace Proof {
 
 						physx::PxMaterial* colliderMaterial = sphereCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)sphereCollider->GetPhysicsMaterial()->m_RuntimeBody;
 						physx::PxShape* body = m_NVDIAPhysicsEngine->m_Physics->createShape(physx::PxSphereGeometry(size), *colliderMaterial, true);
-						body->setName(fmt::to_string(entity.GetID()).c_str()); // we can easily rigidBodyComponent After collsion
+						body->setName(fmt::to_string(entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 						{
 							// LOCAL Pos so it would be added to the pos of the rigid body so we only chanign location thats we we set location
 							glm::mat4 rotationTransform = glm::toMat4(glm::quat(glm::vec3{ glm::radians(0.f), glm::radians(0.f), glm::radians(90.f) }));
@@ -149,12 +149,12 @@ namespace Proof {
 						auto cubeCollider = entity.GetComponent<CubeColliderComponent>();
 						if (cubeCollider != nullptr) {
 							physx::PxMaterial* colliderMaterial = cubeCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)cubeCollider->GetPhysicsMaterial()->m_RuntimeBody;
-							auto& scalePositiveTransform = transformComponent->GetWorldScale().GetPositive();
-							auto& scalePositiveCollider = cubeCollider->OffsetScale.GetPositive();
+							auto scalePositiveTransform = transformComponent->GetWorldScale().GetPositive();
+							auto scalePositiveCollider = cubeCollider->OffsetScale.GetPositive();
 
 							auto size = scalePositiveTransform * scalePositiveCollider;
 							physx::PxShape* body = m_NVDIAPhysicsEngine->m_Physics->createShape(physx::PxBoxGeometry(size.X, size.Y, size.Z), *colliderMaterial, true);
-							body->setName(fmt::to_string((uint64_t)entity.GetID()).c_str()); // we can easily rigidBodyComponent After collsion
+							body->setName(fmt::to_string((uint64_t)entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 
 							{
 								//only changng the locaiton so we set that and scale cannot be changed on a geometry and is hanled by shape size
@@ -187,10 +187,10 @@ namespace Proof {
 							float radius = capsuleCollider->Radius * transformComponent->GetWorldScale().GetMaxTransformPositive();
 							float height = capsuleCollider->Height;
 							physx::PxShape* body = m_NVDIAPhysicsEngine->m_Physics->createShape(physx::PxCapsuleGeometry(radius, height), *colliderMaterial, true);
-							body->setName(fmt::to_string(entity.GetID()).c_str()); // we can easily rigidBodyComponent After collsion
+							body->setName(fmt::to_string(entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 							// Location
 							{
-								Vector<>capsuleRotation = { 0,0,0 };// originial local pos is {0,0,0}
+								Vector capsuleRotation = { 0,0,0 };// originial local pos is {0,0,0}
 								switch (capsuleCollider->Direction) {
 									case CapsuleDirection::X:
 									{
@@ -285,7 +285,7 @@ namespace Proof {
 								physx::PxConvexMeshGeometry(convexMesh, physx::PxVec3{ worldScale.X,worldScale.Y,worldScale.Z }),
 								*colliderMaterial, true);
 							//ADD CONVEX MESH TO ASSET
-							body->setName(fmt::to_string(entity.GetID()).c_str()); // we can easily rigidBodyComponent After collsion
+							body->setName(fmt::to_string(entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 							if (rigidBodyComponent.GetType() == RigidBodyType::Dynamic) {
 								auto runtimeBody = (physx::PxRigidDynamic*)rigidBodyComponent.m_RuntimeBody;
 								runtimeBody->attachShape(*body);
@@ -380,8 +380,8 @@ namespace Proof {
 				body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBody.FreezeRotation.Y);
 				body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBody.FreezeRotation.Z);
 				const auto& bodyTransform = body->getGlobalPose();
-				transform->Location = Vector<float>{ bodyTransform.p.x,bodyTransform.p.y,bodyTransform.p.z };
-				transform->Rotation = Vector<float>{glm::degrees(bodyTransform.q.x),glm::degrees(bodyTransform.q.y),glm::degrees(bodyTransform.q.z) };
+				transform->Location = Vector{ bodyTransform.p.x,bodyTransform.p.y,bodyTransform.p.z };
+				transform->Rotation = Vector{glm::degrees(bodyTransform.q.x),glm::degrees(bodyTransform.q.y),glm::degrees(bodyTransform.q.z) };
 			}
 		});
 		m_NVDIAPhysicsEngine->Simulate(delta);
@@ -417,11 +417,11 @@ namespace Proof {
 	void PhysicsEngine::StartBulletPhysics() {
 		m_BulletPhysicsEngine = new BulletPhysics();
 		{
-			auto& rigidBodyView = m_World->m_Registry.view<RigidBodyComponent>();
+			const auto& rigidBodyView = m_World->m_Registry.view<RigidBodyComponent>();
 			for (auto entity : rigidBodyView) {
-				const auto& transform = Entity{ entity,m_World }.GetComponent<TransformComponent>();
-				auto& location = transform->GetWorldLocation();
-				auto& rotation = transform->GetWorldRotation();
+				const auto& transform = *Entity{ entity,m_World }.GetComponent<TransformComponent>();
+				auto location = transform.GetWorldLocation();
+				auto rotation = transform.GetWorldRotation();
 				auto& rigidBody = rigidBodyView.get<RigidBodyComponent>(entity);
 				if (rigidBody.m_RigidBodyType == RigidBodyType::Dynamic) {
 					btRigidBody::btRigidBodyConstructionInfo bodyInfo(rigidBody.Mass, nullptr, nullptr);
@@ -451,14 +451,14 @@ namespace Proof {
 		{
 			// Cube Collider
 			{
-				auto& cccV = m_World->m_Registry.view<CubeColliderComponent>();
+				const auto& cccV = m_World->m_Registry.view<CubeColliderComponent>();
 				for (auto entity : cccV) {
 					Entity currentEntity{ entity, m_World };
 					const auto& transform = *currentEntity.GetComponent<TransformComponent>();
 					auto& cubeCollider = cccV.get<CubeColliderComponent>(entity);
-					auto& size = glm::vec3{ transform.GetWorldScale().X * cubeCollider.OffsetScale.X,transform.GetWorldScale().Y * cubeCollider.OffsetScale.Y,transform.GetWorldScale().Z * cubeCollider.OffsetScale.Z };
-					auto& location = transform.GetWorldLocation() + cubeCollider.OffsetLocation;
-					auto& rotation = transform.GetWorldRotation();
+					auto size = glm::vec3{ transform.GetWorldScale().X * cubeCollider.OffsetScale.X,transform.GetWorldScale().Y * cubeCollider.OffsetScale.Y,transform.GetWorldScale().Z * cubeCollider.OffsetScale.Z };
+					auto location = transform.GetWorldLocation() + cubeCollider.OffsetLocation;
+					auto rotation = transform.GetWorldRotation();
 
 					auto body = new btCollisionObject();
 					btBoxShape* box = new btBoxShape(btVector3(size.x, size.y, size.z));
@@ -487,19 +487,19 @@ namespace Proof {
 	void PhysicsEngine::UpdateBulletPhysics(float delta) {
 		m_BulletPhysicsEngine->Simulate(delta);
 
-		auto& rigidBodyView = m_World->m_Registry.view<RigidBodyComponent>();
+		const auto& rigidBodyView = m_World->m_Registry.view<RigidBodyComponent>();
 		for (auto entity : rigidBodyView) {
 			const auto& transform = Entity{ entity,m_World }.GetComponent<TransformComponent>();
-			auto& location = transform->GetWorldLocation();
-			auto& rotation = transform->GetWorldRotation();
+			auto location = transform->GetWorldLocation();
+			auto rotation = transform->GetWorldRotation();
 			auto& rigidBody = rigidBodyView.get<RigidBodyComponent>(entity);
 			if (rigidBody.m_RigidBodyType == RigidBodyType::Dynamic) {
 				btRigidBody* body = (btRigidBody *) rigidBody.m_RuntimeBody;
 				body->getWorldTransform();
 				auto origin = body->getWorldTransform().getOrigin();
 				auto originRotation = body->getWorldTransform().getRotation();
-				transform->Location = Vector<float>{ origin.getX(),origin.getY(),origin.getZ()};
-				transform->Rotation = Vector<float>{ originRotation.getX(),originRotation.getY(),originRotation.getZ() };
+				transform->Location = Vector{ origin.getX(),origin.getY(),origin.getZ()};
+				transform->Rotation = Vector{ originRotation.getX(),originRotation.getY(),originRotation.getZ() };
 			}
 			else {
 			}
@@ -536,7 +536,7 @@ namespace Proof {
 		}
 		// rigid body
 		{
-			auto& rigidBodyView = m_World->m_Registry.view<RigidBodyComponent>();
+			const auto& rigidBodyView = m_World->m_Registry.view<RigidBodyComponent>();
 			for (auto entity : rigidBodyView) {
 				auto& rigidBody = rigidBodyView.get<RigidBodyComponent>(entity);
 				auto& body = m_ProofPhysicsEngine->AddRigidBody(ProofPhysicsEngine::RigidBody());
@@ -582,7 +582,7 @@ namespace Proof {
 		m_ProofPhysicsEngine->Simulate(delta);
 		// RIGID BODY
 		{
-			auto& rgView = m_World->m_Registry.view<RigidBodyComponent>();
+			const auto& rgView = m_World->m_Registry.view<RigidBodyComponent>();
 			for (auto entity : rgView) {
 				auto& rigidBodyComponent = rgView.get<RigidBodyComponent>(entity);
 

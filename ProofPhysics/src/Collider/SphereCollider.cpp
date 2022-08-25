@@ -17,22 +17,22 @@ namespace ProofPhysicsEngine {
 		//For each test axis we simply check if the half-width of the box plus the radius of
 		//the sphere is greater than one component of the relative position of the sphere center
 		//(i.e., the transformed position we found earlier).See the next block of code.
-		Proof::Vector <float> sphereCenter = sphere.Center;
-		Proof::Vector <float> boxCener = box.Center*box.GetOrientation(); // need to add rotation
+		Proof::Vector  sphereCenter = sphere.Center;
+		Proof::Vector  boxCener = box.Center*box.GetOrientation(); // need to add rotation
 		if (abs(boxCener.X) - sphere.Radius > boxCener.X/2 ||
 			abs(boxCener.Y) - sphere.Radius > boxCener.Y/2 ||
 			abs(boxCener.Z) - sphere.Radius > boxCener.Z/2) {
 			return 0;
 		}
 
-		Proof::Vector<> closestPt = box.ClosestPoint(sphere.Center);
+		Proof::Vector   closestPt = box.ClosestPoint(sphere.Center);
 
 		float  dist;
 		dist = (closestPt - boxCener).GetLengthSquared();
 		if (dist > sphere.Radius * sphere.Radius) return 0;
 
 		// Compile the contact.
-		Proof::Vector<> closestPtWorld = box.ClosestPoint(closestPt);
+		Proof::Vector   closestPtWorld = box.ClosestPoint(closestPt);
 		ContactData* contact = data.Contacts;
 		contact->ContactNormal = (sphereCenter - closestPtWorld);
 		contact->ContactNormal.Normalize();
@@ -47,15 +47,15 @@ namespace ProofPhysicsEngine {
 	uint32_t SphereCollider::SphereAndSphere(const SphereCollider& one, const SphereCollider& two, CollisionData& data) {
 		// chcking if we have collsion left
 		if (data.ContactsLeft <= 0)return 0;
-		// findig the vector betwee objects
-		Proof::Vector<float> midline = one.Center - two.Center;
+		// findig the Proof::Vector  betwee objects
+		Proof::Vector   midline = one.Center - two.Center;
 		// if it is large enogu
 		float size = midline.GetLength();
 		if (size <= 0 || size >= one.Radius + two.Radius)
 			return 0;
 		// we can creata normal since we have size at hand
 		// size to hand.
-		Proof::Vector<float> normal = midline * (((float)1.0) / size);
+		Proof::Vector   normal = midline * (((float)1.0) / size);
 		ContactData* contact = data.Contacts;
 		contact->ContactNormal = normal;
 		contact->ContactNormal = one.Center + midline * (float)0.5;

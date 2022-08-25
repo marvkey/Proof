@@ -180,9 +180,9 @@ namespace Proof
 		friend class Editore3D;
 	};
 	struct Proof_API TransformComponent {
-		Vector<float> Location = {0.0f,0.0f,0.0f};
-		Vector<float> Rotation = {0.0f,0.0f,0.0f};
-		Vector<float> Scale = {1.0f,1.0f,1.0f};
+		Vector Location = {0.0f,0.0f,0.0f};
+		Vector Rotation = {0.0f,0.0f,0.0f};
+		Vector Scale = {1.0f,1.0f,1.0f};
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& other) {
 			Location = other.Location;
@@ -197,9 +197,9 @@ namespace Proof
 			return temp;
 		}
 		
-		Vector<float> GetWorldLocation() const;
-		Vector<float> GetWorldRotation() const;
-		Vector<float> GetWorldScale() const;
+		Vector GetWorldLocation() const;
+		Vector GetWorldRotation() const;
+		Vector GetWorldScale() const;
 		glm::mat4 GetLocalTransform() const {
 			return glm::translate(glm::mat4(1.0f), { Location }) *
 				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.X), { 1,0,0 })
@@ -209,19 +209,18 @@ namespace Proof
 		}
 
 		glm::mat4 GetWorldTransform() const;
-		Vector<float> GetFowardVector()const {
+		Vector GetFowardVector()const {
 			// NOT IMPLEMENTED
 			return { cos(glm::radians(Rotation.Y)) * sin(glm::radians(Rotation.Z)), sin(glm::radians(-Rotation.Y)), cos(glm::radians(Rotation.Y)) * cos(glm::radians(Rotation.Z)) };
 		}
-		Vector<float> GetRightVector()const {
+		Vector GetRightVector()const {
 			// NOT IMPLEMENTED
 
 			return { cos(Rotation.Z), 0, -sin(Rotation.Z)};
 		}
-		Vector<float> GetUpVector()const {
+		Vector GetUpVector()const {
 			// NOT IMPLEMENTED
-
-			return Vector<float>::Cross(GetFowardVector(), GetRightVector());
+			return GetFowardVector().Cross(GetRightVector());
 		}
 		friend class World;
 		friend class SceneSerializer;
@@ -271,14 +270,14 @@ namespace Proof
 		MeshComponent(const MeshComponent&) = default;
 	
 		class Material* GetMaterial();
-
-		uint32_t GetMaterialPointerID() {
+		UUID GetMeshAssetID();
+		uint32_t GetMaterialPointerID()const{
 			return m_MeshMaterialID;
 		}
 		bool HasMaterial() {
 			return GetMaterial() == nullptr ? false : true;
 		}
-		UUID GetMeshAssetID();
+		UUID GetMeshAssetID()const;
 		void SetMeshSource(UUID ID);
 
 	private:
@@ -328,27 +327,39 @@ namespace Proof
 		Count<Texture2DAsset> m_TextureAssetPointer;
 	};
 
-	struct Proof_API LightComponent{
-		LightComponent(const LightComponent&) = default;
-		LightComponent() = default;
-		enum class LightType {
-			Direction = 0,
-			Point = 1,
-			Spot = 2
-		};
-		float Intensity =1;
-		float m_CutOff=1; // gets put in cos and radias before use
-		float m_OuterCutOff=2; // gets put in cos and radias before use
+	
 
-		float m_Constant = 1.0f;
-		float m_Linear=1;
-		float m_Quadratic=1;
+	struct DirectionalLightComponent {
+		DirectionalLightComponent(const DirectionalLightComponent&) = default;
+		DirectionalLightComponent() = default;
+		float Intensity = 1;
+		Vector Color = { 0 };
+	};
 
-		float Radius=10;
-		glm::vec3 m_Ambient;
-		glm::vec3 m_Diffuse;
-		glm::vec3 m_Specular;
-		LightType m_LightType = LightType::Direction;
+	struct PointLightComponent {
+		PointLightComponent(const PointLightComponent&) = default;
+		PointLightComponent() = default;
+		Vector Color = { 0 };
+		
+		float Intensity = 1;
+		float Constant = 1;
+		float Linear = 1;
+		float Quadratic = 1;
+		float Radius = 10;
+	};
+
+	struct SpotLightComponent {
+		SpotLightComponent(const SpotLightComponent&) = default;
+		SpotLightComponent() = default;
+		Vector Color = { 0 };
+		
+		float Intensity = 1;
+		float Constant = 1;
+		float Linear = 1;
+		float Quadratic = 1;
+		float Radius = 10;
+		float CutOff = 1; // gets put in cos and radias before use
+		float OuterCutOff = 2; // gets put in cos and radias before use
 	};
 
 	struct Proof_API SkyLightComponent{
@@ -373,14 +384,14 @@ namespace Proof
 		}
 		const glm::mat4& GetView()const { return m_View; }
 		const glm::mat4& GetProjection()const { return m_Projection; }
-		Vector<float> m_Up = {0,1,0};
+		Vector m_Up = {0,1,0};
 	private:
-		void CalculateProjection(const Proof::Vector<float>&position, const Vector<float>& rotation) {
+		void CalculateProjection(const Proof::Vector&position, const Vector& rotation) {
 			glm::vec3 CameraDirection;
 			CameraDirection.x = cos(glm::radians(rotation.Z)) * cos(glm::radians(rotation.Y));
 			CameraDirection.y = sin(glm::radians(rotation.Y));
 			CameraDirection.z = sin(glm::radians(rotation.Z)) * cos(glm::radians(rotation.Y));
-			Vector<float> direction = glm::normalize(CameraDirection);
+			Vector direction = glm::normalize(CameraDirection);
 			m_View = glm::lookAt(glm::vec3{ position }, glm::vec3{ position } + glm::vec3{direction}, glm::vec3{ m_Up });
 			m_Projection = glm::perspective(glm::radians(m_FovDeg),(float)m_Width / (float)m_Height,m_NearPlane,m_FarPlane);
 			m_CameraMatrix = m_View * m_Projection;
@@ -404,8 +415,8 @@ namespace Proof
 	struct Proof_API CubeColliderComponent {
 		CubeColliderComponent(const CubeColliderComponent&) = default;
 		CubeColliderComponent() = default;
-		Vector<float> OffsetLocation = { 0,0,0 };
-		Vector<float> OffsetScale= { 1,1,1 };
+		Vector OffsetLocation = { 0,0,0 };
+		Vector OffsetScale= { 1,1,1 };
 		bool IsTrigger = false;
 
 		void RemovePhysicsMaterial() {
@@ -418,7 +429,7 @@ namespace Proof
 		class PhysicsMaterial* GetPhysicsMaterial();
 
 	private:
-		UUID m_PhysicsMaterialPointerID = 0;
+		mutable UUID m_PhysicsMaterialPointerID = 0;
 		void* m_RuntimeBody = nullptr;
 		friend class World;
 		friend class SceneSerializer;
@@ -430,7 +441,7 @@ namespace Proof
 	struct Proof_API SphereColliderComponent {
 		SphereColliderComponent(const SphereColliderComponent&) = default;
 		SphereColliderComponent() = default;
-		Vector<float> OffsetLocation = { 0,0,0 };
+		Vector OffsetLocation = { 0,0,0 };
 		float Radius = 0.5f;
 		bool IsTrigger = false;
 		void RemovePhysicsMaterial() {
@@ -457,7 +468,7 @@ namespace Proof
 	struct Proof_API CapsuleColliderComponent {
 		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
 		CapsuleColliderComponent() = default;
-		Vector<float> OffsetLocation = { 0,0,0 };
+		Vector OffsetLocation = { 0,0,0 };
 		float Radius = 0.5f;
 		float Height = 2.0f;
 		CapsuleDirection Direction = CapsuleDirection::Y;
@@ -465,7 +476,7 @@ namespace Proof
 		void RemovePhysicsMaterial() {
 			m_PhysicsMaterialPointerID = 0;
 		}
-		bool HasPhysicsMaterial() {
+		bool HasPhysicsMaterial(){
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
 		class PhysicsMaterial* GetPhysicsMaterial();
@@ -476,7 +487,7 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
-		UUID m_PhysicsMaterialPointerID= 0;
+		mutable UUID m_PhysicsMaterialPointerID= 0;
 	};
 
 	struct Proof_API MeshColliderComponent {
@@ -490,11 +501,11 @@ namespace Proof
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
 
-		bool HasMesh() {
+		bool HasMesh()const {
 			return GetMesh() == nullptr ? false : true;
 		}
 		class PhysicsMaterial* GetPhysicsMaterial();
-		class Mesh* GetMesh(){
+		class Mesh* GetMesh()const{
 			auto mesh = GetMeshAsset();
 			return mesh == nullptr ? nullptr : mesh->GetMesh();
 		}
@@ -502,8 +513,8 @@ namespace Proof
 			m_MeshAssetPointerID = 0;
 		}
 	private:
-		class MeshAsset* GetMeshAsset();
-		UUID m_MeshAssetPointerID = 0;// POINTS TO THE MESH ASSET
+		class MeshAsset* GetMeshAsset()const;
+		mutable UUID m_MeshAssetPointerID = 0;// POINTS TO THE MESH ASSET
 		void* m_RuntimeBody = nullptr;
 		void* m_ConvexMeshRuntimeBody = nullptr;
 		friend class World;
@@ -511,7 +522,7 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
-		UUID m_PhysicsMaterialPointerID = 0;
+		mutable UUID m_PhysicsMaterialPointerID = 0;
 	};	
 	enum class RigidBodyType {
 		Static,
@@ -590,15 +601,15 @@ namespace Proof
 		bool Gravity = true;
 		bool Kinimatic = false;
 		
-		Vector<bool>FreezeLocation = { false,false,false };
-		Vector<bool>FreezeRotation = { false,false,false };
+		VectorTemplate<bool>FreezeLocation = { false,false,false };
+		VectorTemplate<bool>FreezeRotation = { false,false,false };
 
 		RigidBodyType GetType() {
 			return m_RigidBodyType;
 		}
 
-		void AddForce(Vector<float> force, ForceMode mode = ForceMode::Force,bool autoWake=true) const;
-		void AddTorque(Vector<float> force, ForceMode mode = ForceMode::Force, bool autoWake = true)const;
+		void AddForce(Vector force, ForceMode mode = ForceMode::Force,bool autoWake=true) const;
+		void AddTorque(Vector force, ForceMode mode = ForceMode::Force, bool autoWake = true)const;
 		bool IsSleeping() const;
 		void PutToSleep();
 		void WakeUp();
@@ -618,7 +629,7 @@ namespace Proof
 	};
 	using AllComponents =
 		ComponentGroup< TagComponent, ChildComponent, TransformComponent,
-		MeshComponent, LightComponent, SkyLightComponent, CameraComponent,
+		MeshComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, SkyLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,
 		MeshColliderComponent, ScriptComponent, RigidBodyComponent>;
 }

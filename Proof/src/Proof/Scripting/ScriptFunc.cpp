@@ -56,7 +56,7 @@ namespace Proof
 #pragma endregion 
 
 #pragma region Entity
-	static bool Entity_HasComponent(UUID entityID, MonoReflectionType* componentType) {
+	static bool Entity_HasComponent(EntityID entityID, MonoReflectionType* componentType) {
 		World* world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world,"world is nullptr");
 		Entity entity =world->GetEntity( entityID);
@@ -70,30 +70,30 @@ namespace Proof
 #pragma endregion 
 
 #pragma region TransformComponent
-	static void TransformComponent_GetLocation(UUID entityID, glm::vec3* outLocation) {
+	static void TransformComponent_GetLocation(EntityID entityID, glm::vec3* outLocation) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		*outLocation = entity.GetComponent<TransformComponent>()->Location;
 	};
-	static void TransformComponent_SetLocation(UUID entityID, glm::vec3* location) {
+	static void TransformComponent_SetLocation(EntityID entityID, glm::vec3* location) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		entity.GetComponent<TransformComponent>()->Location = *location;
 	};
 #pragma endregion 
 
 #pragma region RigidBody
-	static void RigidBody_GetMass(UUID entityID, float* outMass) {
+	static void RigidBody_GetMass(EntityID entityID, float* outMass) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		*outMass = entity.GetComponent<RigidBodyComponent>()->Mass;
 	}
-	static void RigidBody_SetMass(UUID entityID, float* mass) {
+	static void RigidBody_SetMass(EntityID entityID, float* mass) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		entity.GetComponent<RigidBodyComponent>()->Mass = *mass;
 	}
-	static void RigidBody_AddForce(UUID entityID, glm::vec3 force, int forceMode, bool autoAwake) {
+	static void RigidBody_AddForce(EntityID entityID, glm::vec3 force, int forceMode, bool autoAwake) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		entity.GetComponent<RigidBodyComponent>()->AddForce(force, (ForceMode)forceMode, autoAwake);
 	}
-	static void RigidBody_AddTorque(UUID entityID, glm::vec3 force, int forceMode, bool autoAwake) {
+	static void RigidBody_AddTorque(EntityID entityID, glm::vec3 force, int forceMode, bool autoAwake) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		entity.GetComponent<RigidBodyComponent>()->AddTorque(force, (ForceMode)forceMode, autoAwake);
 	}

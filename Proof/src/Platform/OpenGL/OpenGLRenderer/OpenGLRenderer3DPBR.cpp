@@ -55,7 +55,7 @@ namespace Proof
 	void OpenGLRenderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer, renderSpec);
 	}
-	void OpenGLRenderer3DPBR::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
+	void OpenGLRenderer3DPBR::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		s_CurrentCamera = { projection,view,Position };
 		Renderer3DCore::s_CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 		PF_CORE_ASSERT(s_InsideContext == false, "Cannot start a new Render Context if Previous Render COntext is not closed");
@@ -95,49 +95,6 @@ namespace Proof
 		PhysicalBasedRendererVertex temp(positionMatrix, meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial, usingMaterial);
 		s_PBRInstance->m_Transforms.emplace_back(temp);
 	}
-	void OpenGLRenderer3DPBR::Draw(LightComponent& lightComponent, TransformComponent& transform) {
-		s_CurrentLightShader->Bind();
-		if (lightComponent.m_LightType == LightComponent::LightType::Point && NumPointLights < 150) {
-			std::string numberPointLightstring = "v_PointLight[" + std::to_string(NumPointLights) + "]";
-			s_CurrentLightShader->SetVec3(numberPointLightstring + ".Position", transform.GetWorldLocation());
-			s_CurrentLightShader->SetVec3(numberPointLightstring + ".Ambient", lightComponent.m_Ambient);
-			s_CurrentLightShader->SetFloat(numberPointLightstring + +".Constant", lightComponent.m_Constant);
-			s_CurrentLightShader->SetFloat(numberPointLightstring + +".Linear", lightComponent.m_Linear);
-			s_CurrentLightShader->SetFloat(numberPointLightstring + +".Quadratic", lightComponent.m_Quadratic);
-			s_CurrentLightShader->SetFloat(numberPointLightstring + +".Radius", lightComponent.Radius);
-			s_CurrentLightShader->SetFloat(numberPointLightstring + ".Intensity", lightComponent.Intensity);
-			NumPointLights++;
-			s_CurrentLightShader->UnBind();
-			return;
-		}
-
-		if (lightComponent.m_LightType == LightComponent::LightType::Spot && NumSpotLights < 150) {
-			std::string numberSpotLightstring = "v_SpotLight[" + std::to_string(NumSpotLights) + "]";
-			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Direction", { transform.GetWorldRotation() });
-			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Position", { transform.GetWorldLocation() });
-			s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Ambient", lightComponent.m_Ambient);
-			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Constant", lightComponent.m_Constant);
-			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Linear", lightComponent.m_Linear);
-			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Quadratic", lightComponent.m_Quadratic);
-			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Radius", lightComponent.Radius);
-			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Intensity", lightComponent.Intensity);
-			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".CutOff", glm::cos(glm::radians(lightComponent.m_CutOff)));
-			s_CurrentLightShader->SetFloat(numberSpotLightstring + ".OuterCutOff", glm::cos(glm::radians(lightComponent.m_OuterCutOff)));
-			NumSpotLights++;
-			s_CurrentLightShader->UnBind();
-			return;
-		}
-
-		if (lightComponent.m_LightType == LightComponent::LightType::Direction && NumDirLights < 150) {
-			std::string mumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumDirLights) + "]";
-			s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Direction", transform.GetWorldRotation());
-			s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Ambient", lightComponent.m_Ambient);
-			s_CurrentLightShader->SetFloat(mumberDirectionalLightstring + ".Intensity", lightComponent.Intensity);
-			NumDirLights++;
-			s_CurrentLightShader->UnBind();
-			return;
-		}
-	}
 	void OpenGLRenderer3DPBR::DrawDebugMesh(Mesh* mesh, const glm::mat4& transform) {
 		if (mesh == nullptr)return;
 		s_DebugShader->Bind();
@@ -150,6 +107,45 @@ namespace Proof
 			//glPolygonMode(GL_FRONT_AND_BACK, (int)GL_LINES);
 			RendererCommand::DrawElementIndexed(subeMeshes.m_VertexArrayObject, 1, DrawType::Lines);
 		}
+	}
+	void OpenGLRenderer3DPBR::SubmitDirectionalLight(const DirectionalLightComponent& lightComponent, class TransformComponent& transform){
+		s_CurrentLightShader->Bind();
+		std::string mumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumDirLights) + "]";
+		s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Direction", transform.GetWorldRotation());
+		s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Ambient", lightComponent.Color);
+		s_CurrentLightShader->SetFloat(mumberDirectionalLightstring + ".Intensity", lightComponent.Intensity);
+		NumDirLights++;
+		s_CurrentLightShader->UnBind();
+
+	}
+	void OpenGLRenderer3DPBR::SubmitPointLight(class PointLightComponent& lightComponent, TransformComponent& transform) {
+		s_CurrentLightShader->Bind();
+		std::string numberPointLightstring = "v_PointLight[" + std::to_string(NumPointLights) + "]";
+		s_CurrentLightShader->SetVec3(numberPointLightstring + ".Position", transform.GetWorldLocation());
+		s_CurrentLightShader->SetVec3(numberPointLightstring + ".Ambient", lightComponent.Color);
+		s_CurrentLightShader->SetFloat(numberPointLightstring + +".Constant", lightComponent.Constant);
+		s_CurrentLightShader->SetFloat(numberPointLightstring + +".Linear", lightComponent.Linear);
+		s_CurrentLightShader->SetFloat(numberPointLightstring + +".Quadratic", lightComponent.Quadratic);
+		s_CurrentLightShader->SetFloat(numberPointLightstring + +".Radius", lightComponent.Radius);
+		s_CurrentLightShader->SetFloat(numberPointLightstring + ".Intensity", lightComponent.Intensity);
+		NumPointLights++;
+		s_CurrentLightShader->UnBind();
+	}
+	void OpenGLRenderer3DPBR::SubmitSpotLight(class SpotLightComponent& lightComponent, TransformComponent& transform) {
+		s_CurrentLightShader->Bind();
+		std::string numberSpotLightstring = "v_SpotLight[" + std::to_string(NumSpotLights) + "]";
+		s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Direction", { transform.GetWorldRotation() });
+		s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Position", { transform.GetWorldLocation() });
+		s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Ambient", lightComponent.Color);
+		s_CurrentLightShader->SetFloat(numberSpotLightstring +".Constant", lightComponent.Constant);
+		s_CurrentLightShader->SetFloat(numberSpotLightstring +".Linear", lightComponent.Linear);
+		s_CurrentLightShader->SetFloat(numberSpotLightstring +".Quadratic", lightComponent.Quadratic);
+		s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Radius", lightComponent.Radius);
+		s_CurrentLightShader->SetFloat(numberSpotLightstring + ".Intensity", lightComponent.Intensity);
+		s_CurrentLightShader->SetFloat(numberSpotLightstring + ".CutOff", glm::cos(glm::radians(lightComponent.CutOff)));
+		s_CurrentLightShader->SetFloat(numberSpotLightstring + ".OuterCutOff", glm::cos(glm::radians(lightComponent.OuterCutOff)));
+		NumSpotLights++;
+		s_CurrentLightShader->UnBind();
 	}
 	PhysicalBasedRenderer* OpenGLRenderer3DPBR::GetRenderer() {
 		return  s_PBRInstance;

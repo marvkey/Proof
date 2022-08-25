@@ -15,9 +15,9 @@ namespace Proof
 	class Proof_API AssetManager {
 	public:
 		static AssetManager& Get() { return *s_AssetManager; }
-		static void NewAsset(UUID ID,const Count<class Asset>& asset);
-		static bool HasID(UUID ID);
-		static bool IsAssetLoaded(UUID ID) {
+		static void NewAsset(AssetID ID,const Count<class Asset>& asset);
+		static bool HasID(AssetID ID);
+		static bool IsAssetLoaded(AssetID ID) {
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
 				return it->second.second != nullptr;
@@ -27,14 +27,14 @@ namespace Proof
 		struct AssetInfo {
 			std::filesystem::path Path;
 			AssetType Type;
-			UUID ID;
+			AssetID ID;
 			bool IsLoaded() {
 				return AssetManager::IsAssetLoaded(ID);
 			}
 			std::string GetName()const {
 				return Utils::FileDialogs::GetFileName(Path);
 			}
-			AssetInfo(const std::string& path, AssetType type, UUID id) :
+			AssetInfo(const std::string& path, AssetType type, AssetID id) :
 				Path(path), Type(type), ID(id) {
 			}
 
@@ -44,16 +44,16 @@ namespace Proof
 		private:
 			friend class AssetManager;
 		};
-		static AssetManager::AssetInfo GetAssetInfo(UUID ID) {
+		static AssetManager::AssetInfo GetAssetInfo(AssetID ID) {
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
 				return it->second.first;
 			}
 			return AssetManager::AssetInfo();
 		}
-		static bool LoadAsset(UUID ID);
+		static bool LoadAsset(AssetID ID);
 		template<class T>
-		static T* GetAsset(UUID ID) {
+		static T* GetAsset(AssetID ID) {
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
 				if (it->second.second.get() == nullptr)
@@ -63,7 +63,7 @@ namespace Proof
 			return nullptr;
 		}
 		template<class T>
-		static Count<T>GetAssetShared(UUID ID){
+		static Count<T>GetAssetShared(AssetID ID){
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
 				if(it->second.second == nullptr)
@@ -72,7 +72,7 @@ namespace Proof
 			}
 			return nullptr;
 		}
-		static AssetType GetAssetType(UUID ID) {
+		static AssetType GetAssetType(AssetID ID) {
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
 				return it->second.first.Type;
@@ -81,10 +81,10 @@ namespace Proof
 		}
 		/**
 		*  gets an asset without checking if the asset exist, would cause a crash if the asset does not exit
-		* @param UUID:id the uniqe id of teh acces we are getting
+		* @param AssetID:id the uniqe id of teh acces we are getting
 		*/
 		template<class T>
-		static T* ForceGetAsset(UUID ID) { 
+		static T* ForceGetAsset(AssetID ID) { 
 			if(s_AssetManager->m_AllAssets.at(ID).second == nullptr)
 				LoadAsset(ID);
 
@@ -92,21 +92,21 @@ namespace Proof
 		}
 		/**
 		* gets an asset without checking if the asset exist, would cause a crash if the asset does not exit
-		* @param UUID:id the uniqe id of teh acces we are getting
+		* @param AssetID:id the uniqe id of teh acces we are getting
 		*/
 		template<class T>
-		static Count<T>ForceGetAssetShared(UUID ID) {
+		static Count<T>ForceGetAssetShared(AssetID ID) {
 			if (s_AssetManager->m_AllAssets.at(ID).second == nullptr)
 				LoadAsset(ID);
 			return std::dynamic_pointer_cast<T>(s_AssetManager->m_AllAssets.at(ID).second);
 		}
-		static UUID CreateID();
-		static void Remove(UUID ID);
+		static AssetID CreateID();
+		static void Remove(AssetID ID);
 		AssetManager(const AssetManager&) = delete;
 
-		static void NotifyOpenedNewLevel(std::set<UUID> assetLoadIn);
-		static void NotifyOpenedNewAsset(UUID ID);
-		static const std::string& GetAssetName(UUID ID) {
+		static void NotifyOpenedNewLevel(std::set<AssetID> assetLoadIn);
+		static void NotifyOpenedNewAsset(AssetID ID);
+		static const std::string& GetAssetName(AssetID ID) {
 			auto it = s_AssetManager->m_AllAssets.find(ID);
 			if (it != s_AssetManager->m_AllAssets.end()) {
 				return it->second.first.GetName();
@@ -138,7 +138,7 @@ namespace Proof
 
 		
 	private:
-		static bool ResetAssetInfo(UUID ID,const std::string& path) {
+		static bool ResetAssetInfo(AssetID ID,const std::string& path) {
 			
 			if (HasID(ID) == false)return false;
 			Asset* asset = ForceGetAsset<Asset>(ID);
@@ -156,8 +156,8 @@ namespace Proof
 	
 		static void SaveAllAsset();
 		static AssetManager* s_AssetManager;
-		std::unordered_map<UUID,std::pair<AssetInfo,Count<class Asset>>> m_AllAssets;// path
-		std::unordered_map<UUID, Count<class PhysicsMaterialAsset>> m_AllPhysicsMaterialAsset;// path
+		std::unordered_map<AssetID,std::pair<AssetInfo,Count<class Asset>>> m_AllAssets;// path
+		std::unordered_map<AssetID, Count<class PhysicsMaterialAsset>> m_AllPhysicsMaterialAsset;// path
 		AssetManager() {};
 		static void InitilizeAssets(const std::string& Path);
 		static void MakeDirectory(const std::string& path);
@@ -166,7 +166,7 @@ namespace Proof
 
 		static void NewInitilizeAssets(const std::string& Path);
 		static void NewSaveAllAsset(const std::string& Path);
-		static void GenerateAsset(std::set<UUID> assetLoadIn);
+		static void GenerateAsset(std::set<AssetID> assetLoadIn);
 
 		friend class Application;
 		friend class AssetManagerPanel;

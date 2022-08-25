@@ -11,6 +11,8 @@ namespace Proof
 		MeshSourceFile,
 		PhysicsMaterial
 	};
+
+	using AssetID = UUID;
 	class Proof_API Asset {
 	public:
 		
@@ -18,8 +20,8 @@ namespace Proof
 		virtual bool LoadAsset(const std::string& FilePath) =0;
 		bool LoadAsset() { return LoadAsset(m_SavePath); }
 		
-		virtual UUID GetID() {
-			return m_ID;
+		virtual AssetID GetAssetID() {
+			return m_AssetID;
 		}
 		AssetType GetAssetType() {
 			return m_AssetType;
@@ -51,7 +53,7 @@ namespace Proof
 		}
 		std::string m_AssetName;
 		std::string m_SavePath;
-		UUID m_ID = 0;
+		AssetID m_AssetID = 0;
 		friend class ContentBrowserPanel;
 		friend class AssetManager;
 	};

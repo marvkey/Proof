@@ -18,12 +18,12 @@ project "ProofPhysics"
     }
     filter "system:windows"
     systemversion "latest"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
     filter "system:linux"
         pic "on"
         systemversion "latest"
-        cppdialect "C++17"
+        cppdialect "C++20"
 
     filter "configurations:Debug"
         runtime "Debug"

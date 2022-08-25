@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-
+#include <Imgui/Imgui.h>
 namespace Proof{
 
 	class Proof_API Panel {

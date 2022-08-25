@@ -17,7 +17,7 @@ namespace Proof
 			m_World = world;
 		}
 		uint32_t Renderer();
-		uint32_t Renderer(CameraComponent& comp, Vector<float>& location);
+		uint32_t Renderer(CameraComponent& comp, Vector& location);
 		uint32_t GetWorldTexture(){
 			return m_ScreenFrameBuffer->GetTexture();
 		}

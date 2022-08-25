@@ -46,9 +46,9 @@ namespace Proof
             m_Matallness = mat.m_Metallness;
         }
         glm::mat4 m_Transform;
-        Vector<float> m_MaterialAmbient;
-        Vector<float> m_MaterialDiffuse;
-        Vector<float> m_MaterialSpecular;
+        Vector m_MaterialAmbient;
+        Vector m_MaterialDiffuse;
+        Vector m_MaterialSpecular;
         float m_Matallness = 1.f; // default is one
     };
     struct OldCmaerData{

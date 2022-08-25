@@ -8,7 +8,7 @@ namespace Proof{
 	Texture2DAsset::Texture2DAsset(const std::string& texturePath,const std::string& savePath):
 		Asset(AssetType::Texture) 
 	{
-		m_ID = AssetManager::CreateID();
+		m_AssetID = AssetManager::CreateID();
 
 		m_Texture =Texture2D::Create(texturePath);
 		m_SavePath = savePath;
@@ -19,7 +19,7 @@ namespace Proof{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(GetAssetType());
-		out << YAML::Key << "ID" << YAML::Value << m_ID;
+		out << YAML::Key << "ID" << YAML::Value << m_AssetID;
 		out << YAML::Key << "Texture2D" << YAML::Value << m_TexturePath;
 		out << YAML::EndMap;
 
@@ -35,7 +35,7 @@ namespace Proof{
 		if (!data["AssetType"]) // if there is no scene no
 			return false;
 
-		m_ID = data["ID"].as<uint64_t>();
+		m_AssetID = data["ID"].as<uint64_t>();
 		m_TexturePath = data["Texture2D"].as<std::string>();
 
 		m_Texture = Texture2D::Create(m_TexturePath);

@@ -9,6 +9,7 @@
 #include <string>
 #include <string_view>
 #define FMT_HEADER_ONLY
+#define FMT_DEPRECATED_INCLUDE_XCHAR
 	
 #include <fmt/core.h>
 #include <fmt/color.h>
@@ -35,7 +36,13 @@ namespace Logger {
 		void LogWarn(const std::string& Msg, Args&&... args);
 
 		template<typename... Args>
-		std::string GetLogString(const std::string& Msg,Args&&... args);
+		std::string GetLogString(fmt::format_string<Args...> format,Args&&... args);
+
+		template<typename... Args>
+		std::string GetLogString(const std::string& format, Args&&... args);
+
+		template<typename... Args>
+		std::string GetLogString(const char* format, Args&&... args);
 	public:
 		std::string LoggerName;
 	private:
@@ -91,18 +98,37 @@ namespace Logger {
 		fmt::print(fg(fmt::color::yellow),
 			"[{}:{}:{}]", LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec);
 		fmt::print(fg(fmt::color::yellow), "{}: ", LoggerName.c_str());
-		fmt::print(Msg, args...);
+		fmt::print(fg(fmt::color::yellow), Msg, args...);
 		fmt::print("\n");
 	}
 
-	template<typename ...Args>
-	inline std::string Log::GetLogString(const std::string& Msg, Args && ...args) {
+	template<typename... Args>
+	inline std::string Log::GetLogString(fmt::format_string<Args...> msg, Args&&... args) {
 
 		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		std::string temp = fmt::format("[{}:{}:{}]{}: ",LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec, LoggerName);
-		std::string temp2 = fmt::format(Msg, args...);
+		std::string temp2 = fmt::format(msg, std::forward<Args>(args)...);
 		return temp+ temp2;
+	}
+
+	template<typename... Args>
+	inline std::string Log::GetLogString(const std::string& msg, Args&&... args) {
+		CurrentTime = time(NULL);
+		LocalTime = localtime(&CurrentTime);
+		std::string temp = fmt::format("[{}:{}:{}]{}: ", LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec, LoggerName);
+		//std::string temp2 = fmt::format(msg, std::forward<Args>(args)...);
+		return temp ;
+	}
+
+	template<typename... Args>
+	inline std::string Log::GetLogString(const char* msg, Args&&... args) {
+		CurrentTime = time(NULL);
+		LocalTime = localtime(&CurrentTime);
+		std::string temp = fmt::format("[{}:{}:{}]{}: ", LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec, LoggerName);
+		const std::string_view view= msg;
+		//std::string temp2 = fmt::format(msg, std::forward<Args>(args)...);
+		return temp ;
 	}
 }
 #undef _CRT_SECURE_NO_WARNINGS

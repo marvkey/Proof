@@ -68,39 +68,39 @@ namespace Proof
 
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 		dispatcher.Dispatch<ControllerConnectEvent>([](auto& e) {
-			PF_INFO(e.ToString().c_str());
+			PF_INFO(e.ToString());
 		});
 		dispatcher.Dispatch<ControllerDisconnectEvent>([](auto& e) {
-			PF_INFO(e.ToString().c_str());
+			PF_INFO(e.ToString());
 		});
 
 		// KEYBOARD
 		{
 			if (m_ShowAllKeyBoardEvents.ShowOne == true && e.IsInCategory(EventCategory::EventKeyBoard)) {
 				if (m_ShowAllKeyBoardEvents.ShowAll == true) {
-					PF_INFO(e.ToString().c_str());
+					PF_INFO(e.ToString());
 				}
 				if (m_ShowAllKeyBoardEvents.Clicked) {
 					dispatcher.Dispatch<KeyClickedEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllKeyBoardEvents.Released) {
 					dispatcher.Dispatch<KeyReleasedEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllKeyBoardEvents.DoubleClicked) {
 					dispatcher.Dispatch<KeyDoubleClickEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllKeyBoardEvents.Pressed) {
 					dispatcher.Dispatch<KeyPressedEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 				return;
@@ -111,41 +111,41 @@ namespace Proof
 		{
 			if (m_ShowAllMouseEvents.ShowOne == true && e.IsInCategory(EventCategory::EventMouse)) {
 				if (m_ShowAllMouseEvents.ShowAll == true) {
-					PF_INFO(e.ToString().c_str());
+					PF_INFO(e.ToString());
 					return;
 				}
 				if (m_ShowAllMouseEvents.Movement) {
 					dispatcher.Dispatch<MouseMoveEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 				if (m_ShowAllMouseEvents.Clicked) {
 					dispatcher.Dispatch<MouseButtonClickedEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllMouseEvents.Released) {
 					dispatcher.Dispatch<MouseButtonReleasedEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllMouseEvents.DoubleClicked) {
 					dispatcher.Dispatch<MouseButtonDoubleClickEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllMouseEvents.Pressed) {
 					dispatcher.Dispatch<MouseButtonPressedEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllMouseEvents.Scroll) {
 					dispatcher.Dispatch<MouseScrollEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 				return;
@@ -156,35 +156,35 @@ namespace Proof
 		{
 			if (m_ShowAllWindowEvents.ShowOne == true && e.IsInCategory(EventCategory::EventCategoryWindow)) {
 				if (m_ShowAllWindowEvents.ShowAll == true) {
-					PF_INFO(e.ToString().c_str());
+					PF_INFO(e.ToString());
 					return;
 				}
 				if (m_ShowAllWindowEvents.Resize) {
 					dispatcher.Dispatch<WindowResizeEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 				if (m_ShowAllWindowEvents.Minimize) {
 					dispatcher.Dispatch<WindowMinimizeEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllWindowEvents.Move) {
 					dispatcher.Dispatch<WindowMoveEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllWindowEvents.Close) {
 					dispatcher.Dispatch<WindowCloseEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllWindowEvents.Focus) {
 					dispatcher.Dispatch<WindowFocusEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 				return;
@@ -195,44 +195,44 @@ namespace Proof
 		{
 			if (m_ShowAllControllerEvents.ShowOne == true && e.IsInCategory(EventCategory::EventController)) {
 				if (m_ShowAllMouseEvents.ShowAll == true) {
-					PF_INFO(e.ToString().c_str());
+					PF_INFO(e.ToString());
 					return;
 				}
 				if (m_ShowAllControllerEvents.Clicked) {
 					dispatcher.Dispatch<ControllerButtonClickedEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 				if (m_ShowAllControllerEvents.Released) {
 					dispatcher.Dispatch<ControllerButtonReleasedEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllControllerEvents.Pressed) {
 					dispatcher.Dispatch<ControllerButtonPressedEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllControllerEvents.DoubleClicked) {
 					dispatcher.Dispatch<ControllerButtonDoubleClickEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllControllerEvents.Joystick) {
 					dispatcher.Dispatch<ControllerLeftJoystickAxisEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 					dispatcher.Dispatch<ControllerRightJoystickAxisEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 
 				if (m_ShowAllControllerEvents.Trigger) {
 					dispatcher.Dispatch<ControllerTriggerAxisEvent>([](auto& e) {
-						PF_INFO(e.ToString().c_str());
+						PF_INFO(e.ToString());
 					});
 				}
 				return;
@@ -315,7 +315,7 @@ namespace Proof
 		m_SkyBoxShader = Shader::GetOrCreate("SkyBox Shader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/CubeMapShader.shader");
 		m_SkyBoxBuffer = VertexBuffer::Create(&skyboxVertices, sizeof(skyboxVertices));
 		m_SkyBoxVertexArray = VertexArray::Create();
-		m_SkyBoxVertexArray->AddData(0,3,3 * sizeof(float),0);
+		m_SkyBoxVertexArray->AddData(0, 3, 3 * sizeof(float), 0);
 
 		m_SkyBoxShader->Bind();
 		m_SkyBoxShader->SetInt("skybox", 0);
@@ -340,7 +340,8 @@ namespace Proof
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
 			Count<ScreenFrameBuffer> bufferl;
 			camera.OnUpdate(DeltaTime, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
-			VulkanRenderer::BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, bufferl, RendererData());
+			RendererData rednerdata;
+			VulkanRenderer::BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, bufferl, rednerdata);
 			VulkanRenderer::EndContext();
 		}
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
@@ -459,7 +460,7 @@ namespace Proof
 
 			case KeyBoardKey::D:
 				{
-					if (control && m_WorldHierachy.m_SelectedEntity.GetID() != 0)
+					if (control && m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0)
 						m_WorldHierachy.m_SelectedEntity = ActiveWorld->CreateEntity(m_WorldHierachy.m_SelectedEntity);
 					break;
 
@@ -467,7 +468,7 @@ namespace Proof
 			case KeyBoardKey::Delete:
 			case KeyBoardKey::Backspace:
 				{
-					if (m_WorldHierachy.m_SelectedEntity.GetID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
+					if (m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
 
 						if (ActiveWorld->GetState() == WorldState::Edit) {
 							//Basically makig sure that all entities that reference this entity that is deleted their data get sets to null
@@ -479,7 +480,7 @@ namespace Proof
 											uint64_t* data = field.Data._Cast<uint64_t>();
 											if (data == nullptr)
 												return;
-											if (*data == m_WorldHierachy.m_SelectedEntity.GetID())
+											if (*data == m_WorldHierachy.m_SelectedEntity.GetEntityID())
 												*data = 0;
 										}
 									}
@@ -494,7 +495,7 @@ namespace Proof
 				// copy entity
 			case KeyBoardKey::C:
 				{
-					if (control && m_WorldHierachy.m_SelectedEntity.GetID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
+					if (control && m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
 						m_CopyEntity = m_WorldHierachy.m_SelectedEntity;
 					}
 					break;
@@ -502,7 +503,7 @@ namespace Proof
 				// paste entity 
 			case KeyBoardKey::V:
 				{
-					if (control && m_CopyEntity.GetID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
+					if (control && m_CopyEntity.GetEntityID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
 						m_WorldHierachy.m_SelectedEntity = ActiveWorld->CreateEntity(m_CopyEntity);
 					}
 					break;
@@ -888,7 +889,7 @@ namespace Proof
 			// GUIZMOS
 
 			Entity selectedEntity = m_WorldHierachy.GetSelectedEntity();
-			if (selectedEntity.GetID() != 0) {
+			if (selectedEntity.GetEntityID() != 0) {
 				ImGuizmo::SetOrthographic(true);
 				ImGuizmo::SetDrawlist();
 
@@ -959,21 +960,21 @@ namespace Proof
 		/*
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		if (ImGui::Begin("Position")) {
-			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GPosition->GetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
+			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GPosition->GetAssetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		if (ImGui::Begin("Colour")) {
-			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GAlbedo->GetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
+			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GAlbedo->GetAssetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
 		if (ImGui::Begin("Normal")) {
-			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GNormal->GetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
+			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GNormal->GetAssetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -1149,7 +1150,7 @@ namespace Proof
 
 	bool Editore3D::CreateAssetEditor(Asset* asset) {
 		if (asset == nullptr)return false;
-		auto it = m_AllPanels.find(asset->GetID());
+		auto it = m_AllPanels.find(asset->GetAssetID());
 		if (it != m_AllPanels.end()) {
 			it->second->SetWindowVisibile(true);
 			return false;
@@ -1158,7 +1159,7 @@ namespace Proof
 			case Proof::AssetType::Mesh:
 				{
 					SceneRendererUI* temp = new SceneRendererUI(dynamic_cast<MeshAsset*>(asset));
-					m_AllPanels.insert({ asset->GetID(),temp });
+					m_AllPanels.insert({ asset->GetAssetID(),temp });
 					return true;
 				}
 			case Proof::AssetType::Texture:
@@ -1168,7 +1169,7 @@ namespace Proof
 			case Proof::AssetType::Material:
 				{
 					MaterialEditorPanel* temp = new MaterialEditorPanel(dynamic_cast<MaterialAsset*>(asset));
-					m_AllPanels.insert({ asset->GetID(),temp });
+					m_AllPanels.insert({ asset->GetAssetID(),temp });
 					return true;
 				}
 			case Proof::AssetType::World:
@@ -1178,7 +1179,7 @@ namespace Proof
 			case Proof::AssetType::PhysicsMaterial:
 				{
 					PhysicsMaterialEditorPanel* temp = new PhysicsMaterialEditorPanel(dynamic_cast<PhysicsMaterialAsset*>(asset));
-					m_AllPanels.insert({ asset->GetID(),temp });
+					m_AllPanels.insert({ asset->GetAssetID(),temp });
 					return true;
 				}
 			default:

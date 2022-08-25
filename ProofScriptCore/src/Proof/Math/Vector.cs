@@ -47,4 +47,6 @@ namespace Proof
             return (X * vec.X + Y * vec.Y + Z * vec.Z);
         }
     }
+
+
 }

@@ -15,7 +15,7 @@ namespace ProofPhysicsEngine {
 		{
 			
 		}
-		SphereCollider(const Proof::Vector<>& center, float radius) :
+		SphereCollider(const Proof::Vector  & center, float radius) :
 			Collider(ColliderType::Sphere),	
 			Center(center), 
 			Radius(radius)
@@ -32,7 +32,7 @@ namespace ProofPhysicsEngine {
 			return (4 / 3)* Proof::Math::PIE()* Radius* Radius* Radius;
 		}
 		// position
-		Proof::Vector<> Center = {0,0,0};
+		Proof::Vector   Center = {0,0,0};
 		float Radius = 1;
 	};
 }

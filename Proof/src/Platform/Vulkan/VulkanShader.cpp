@@ -204,7 +204,7 @@ namespace Proof
         spirv_cross::Compiler compiler(data);
         spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
-        PF_ENGINE_TRACE("{} Vulkan::Shader Reflect - {} ", m_Name, fmt::format(EnumReflection::EnumString(stage)));
+        PF_ENGINE_TRACE("{} Vulkan::Shader Reflect - {} ", m_Name, EnumReflection::EnumString(stage));
         PF_ENGINE_INFO("{}\n", shaderSrc);
         PF_ENGINE_TRACE("    {} uniform buffers", resources.uniform_buffers.size());
         PF_ENGINE_TRACE("    {} sampled images", resources.sampled_images.size());

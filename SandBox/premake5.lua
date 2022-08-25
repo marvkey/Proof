@@ -1,7 +1,7 @@
 project "SandBox"
 	kind "ConsoleApp"
 	language "C++"
-	cppdialect "C++17"
+	cppdialect "C++20"
 
 	targetdir ("bin/".. OutputDirectory .. "/%{prj.name}")
 	objdir ("bin-int/".. OutputDirectory .. "/%{prj.name}")

@@ -92,7 +92,7 @@ namespace Proof
 			.Build();
 		s_DescriptorSets.resize(Renderer::GetConfig().FramesFlight);
 	}
-	void VulkanRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
+	void VulkanRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		s_InContext = true;
 		s_projection = projection;
 		s_view = view;
@@ -242,7 +242,8 @@ namespace Proof
 		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
 		pipelineConfig.RenderPass = VulkanRenderer::s_Pipeline->SwapChain->GetRenderPass();
 		pipelineConfig.PipelineLayout = PipeLineLayout->GetPipeLineLayout();
-		GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(Shader, pipelineConfig, &Vertex::GetVulkanDescription());
+		auto input = Vertex::GetVulkanDescription();
+		GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(Shader, pipelineConfig, &input);
 	}
 
 }

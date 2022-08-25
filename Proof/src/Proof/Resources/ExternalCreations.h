@@ -6,8 +6,8 @@
 namespace YAML
 {
 	template<typename T>
-	struct convert<Proof::Vector<T>> {
-		static Node encode(const Proof::Vector<T>& rhs) {
+	struct convert<Proof::VectorTemplate<T>> {
+		static Node encode(const Proof::VectorTemplate<T>& rhs) {
 			Node node;
 			node.push_back(rhs.X);
 			node.push_back(rhs.Y);
@@ -16,7 +16,7 @@ namespace YAML
 			return node;
 		}
 
-		static bool decode(const Node& node, Proof::Vector<T>& rhs) {
+		static bool decode(const Node& node, Proof::VectorTemplate<T>& rhs) {
 			if (!node.IsSequence() || node.size() != 3)
 				return false;
 
@@ -103,7 +103,7 @@ namespace Proof
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v);
 
 	template<typename T>
-	YAML::Emitter& operator<<(YAML::Emitter& out, const const Vector<T>& v) {
+	YAML::Emitter& operator<<(YAML::Emitter& out, const const VectorTemplate<T>& v) {
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.X << v.Y << v.Z << YAML::EndSeq;
 		return out;

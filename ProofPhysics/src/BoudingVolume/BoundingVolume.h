@@ -30,7 +30,7 @@ namespace ProofPhysicsEngine
 		* Only leaf nodes can have a rigid body defined (see isLeaf).
 		* Note that it is possible to rewrite the algorithms in this
 		* class to handle objects at all levels of the hierarchy,
-		* but the code provided ignores this vector unless firstChild
+		* but the code provided ignores this Proof::Vector  unless firstChild
 		* is NULL.
 		*/
 		RigidBody* body =nullptr;

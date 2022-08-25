@@ -8,7 +8,7 @@
 #include "Renderer3DCore.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Renderer/RendererAPI.h"
-
+#include "Proof/Scene/Component.h"
 namespace Proof
 {
 	class PhysicalBasedRenderer;
@@ -123,7 +123,7 @@ namespace Proof
 			m_UsingMaterial =usingMaterial;
 		}
 		glm::mat4 m_Transform;
-		Vector<float> m_AlbedoColour;
+		Vector m_AlbedoColour;
 		float m_Matallness = 0.f;
 		float m_Roughnes = 0.f;
 		float m_AO = 0.f;
@@ -133,9 +133,11 @@ namespace Proof
 	public:
 		static void Init();
 		static void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec);
-		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector<>& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec);
+		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec);
 		static void Draw(class MeshComponent& meshComponent, const glm::mat4& positionMatrix);
-		static void Draw(class LightComponent& lightComponent, class TransformComponent& transform);
+		static void SubmitDirectionalLight(class DirectionalLightComponent& comp, class TransformComponent& transform);
+		static void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);
+		static void SubmitSpotLight(class SpotLightComponent& comp, class TransformComponent& transform);
 		static void DrawDebugMesh(class Mesh* mesh, const glm::mat4& transform);
 		static PhysicalBasedRenderer* GetRenderer();
 		static void EndContext();

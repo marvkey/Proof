@@ -8,7 +8,7 @@ namespace Proof
 {
 	PhysicsMaterialAsset::PhysicsMaterialAsset(const std::string& assetSavePath):
 		Asset(AssetType::PhysicsMaterial) {
-		m_ID = AssetManager::CreateID();
+		m_AssetID = AssetManager::CreateID();
 		m_SavePath = assetSavePath;
 		SaveAsset();
 	}
@@ -16,7 +16,7 @@ namespace Proof
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(GetAssetType());
-		out << YAML::Key << "ID" << YAML::Value << m_ID;
+		out << YAML::Key << "ID" << YAML::Value << m_AssetID;
 
 		out << YAML::Key << "StaticFriction" << YAML::Value << m_Material.StaticFriction;
 		out << YAML::Key << "DynamicFriction" << YAML::Value << m_Material.DynamicFriction;
@@ -35,7 +35,7 @@ namespace Proof
 		YAML::Node data = YAML::LoadFile(m_SavePath);
 		if (!data["AssetType"]) // if there is no scene no
 			return false;
-		m_ID = data["ID"].as<uint64_t>();
+		m_AssetID = data["ID"].as<uint64_t>();
 
 		m_Material.StaticFriction = data["StaticFriction"].as<float>();
 		m_Material.DynamicFriction = data["DynamicFriction"].as<float>();

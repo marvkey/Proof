@@ -57,7 +57,13 @@ namespace Proof{
 
 		CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
 	}
-	bool World::HasEnitty(UUID ID) {
+	bool World::HasEntity(EntityID ID)const {
+		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
+		if (it == m_Registry.entities.end())
+			return false;
+		return true;
+	}
+	bool World::HasEntity(EntityID ID) {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
 		if (it == m_Registry.entities.end())
 			return false;
@@ -97,7 +103,7 @@ namespace Proof{
 		}
 		*/
 		{
-			auto& scriptView = m_Registry.view<ScriptComponent>();
+			const auto& scriptView = m_Registry.view<ScriptComponent>();
 			for (auto entity : scriptView) {
 				auto& script = scriptView.get<ScriptComponent>(entity);
 				ScriptEngine::OnUpdate(DeltaTime, Entity{ entity,this });
@@ -106,7 +112,7 @@ namespace Proof{
 		m_PhysicsEngine->Simulate(DeltaTime);
 		m_EditorCamera.OnUpdate(DeltaTime, width, height);
 		{
-			auto& cameraView = m_Registry.view<CameraComponent>();
+			const auto& cameraView = m_Registry.view<CameraComponent>();
 			for (auto entity : cameraView) {
 				auto& camera = cameraView.get<CameraComponent>(entity);
 				m_SceneCamera = &camera;
@@ -126,10 +132,10 @@ namespace Proof{
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {
-		return CreateEntity(EntName, UUID());
+		return CreateEntity(EntName, EntityID());
 	}
 
-	Entity World::CreateEntity(const std::string& EntName,UUID ID) {
+	Entity World::CreateEntity(const std::string& EntName,EntityID ID) {
 		/* we have to do some custmization of entt because when we pass an ID the entities create a vecot of the size of ID*/
 		Entity entity = { ID,this };
 
@@ -148,7 +154,6 @@ namespace Proof{
 		//CopyComponentIfExists<ChildComponent>(Entity{ ID,newWorld.get() }, Entity{ ID,other.get() });
 		CopyComponentIfExists<NativeScriptComponent>(newEntity, entity);
 		CopyComponentIfExists<MeshComponent>(newEntity, entity);
-		CopyComponentIfExists<LightComponent>(newEntity, entity);
 		CopyComponentIfExists<CameraComponent>(newEntity, entity);
 
 		CopyComponentIfExists<CubeColliderComponent>(newEntity, entity);
@@ -158,6 +163,10 @@ namespace Proof{
 		CopyComponentIfExists<RigidBodyComponent>(newEntity, entity);
 
 		CopyComponentIfExists<ScriptComponent>(newEntity, entity);
+
+		CopyComponentIfExists<DirectionalLightComponent>(newEntity, entity);
+		CopyComponentIfExists<PointLightComponent>(newEntity, entity);
+		CopyComponentIfExists<SpotLightComponent>(newEntity, entity);
 		if (includeChildren == true) {
 			entity.EachChild([&](Entity childEntity){
 				Entity newChild = CreateEntity(childEntity, true);
@@ -210,10 +219,10 @@ namespace Proof{
 		auto idView = srcSceneRegistry.view<IDComponent>();
 		for (auto e : idView)
 		{
-			UUID uuid = srcSceneRegistry.get<IDComponent>(e).GetID();
+			EntityID uuid = srcSceneRegistry.get<IDComponent>(e).GetID();
 			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
 			Entity newEntity = newWorld->CreateEntity(name,uuid);
-			enttMap.insert({ uuid,newEntity.GetID() });
+			enttMap.insert({ uuid,newEntity.GetEntityID() });
 		}
 
 		// Copy components (except IDComponent and TagComponent)
@@ -222,7 +231,6 @@ namespace Proof{
 		CopyComponentWorld<ChildComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<NativeScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<MeshComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-		CopyComponentWorld<LightComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<CameraComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		CopyComponentWorld<CubeColliderComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
@@ -232,6 +240,11 @@ namespace Proof{
 
 		CopyComponentWorld<RigidBodyComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentWorld<ScriptComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		CopyComponentWorld<DirectionalLightComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<PointLightComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentWorld<SpotLightComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
 
 		return newWorld;
 	}
@@ -246,7 +259,7 @@ namespace Proof{
 	void World::StartRuntime(){
 
 		{
-			auto& scriptView = m_Registry.view<NativeScriptComponent>();
+			const auto& scriptView = m_Registry.view<NativeScriptComponent>();
 			for (auto entity : scriptView) {
 				auto& script = scriptView.get<NativeScriptComponent>(entity);
 				if (script.Instance == nullptr)
@@ -296,11 +309,10 @@ namespace Proof{
 		}
 		m_Registry.entities.erase(it);
 		ent.m_ID = 0;
-		ent.m_EnttEntity = entt::entity(0);
 		ent.CurrentWorld = nullptr;
 	}
 
-	Entity World::GetEntity(UUID id) {
+	Entity World::GetEntity(EntityID id){
 		return Entity{ id,this };
 	}
 
@@ -493,5 +505,8 @@ namespace Proof{
 		m_CaptureFBO->UnBind();
 		RendererCommand::SetViewPort(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
 	}
-	
+	template<class T>
+	T* GetComponent(Entity entity) {
+		return entity.GetComponent<T>();
+	}
 }

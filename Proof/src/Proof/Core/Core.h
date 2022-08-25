@@ -111,7 +111,7 @@ namespace Proof
                     return;
                 }
             }
-            s_FrameTimers.push_back({ name, TimeManage{ time,maxTime,type } });
+//            s_FrameTimers.push_back({ name, TimeManage{ time,maxTime,type } });
         }
         struct TimeManage {
             float Time = 0;
