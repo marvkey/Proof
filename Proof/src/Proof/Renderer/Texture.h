@@ -1,4 +1,6 @@
 #include<iostream>
+#include "Glad/glad.h"
+
 #pragma once
 namespace Proof {
 	class Proof_API Texture {

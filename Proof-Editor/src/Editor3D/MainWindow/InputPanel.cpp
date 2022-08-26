@@ -3,7 +3,7 @@
 #include <imgui/imgui_internal.h>
 #include "../ImGUIAPI.h"
 #include "Proof/Utils/PlatformUtils.h"
-#include "../Editor3D.h"
+#include "Editor3D/Editor3D.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Input/InputManager.h"
 #include <unordered_map>

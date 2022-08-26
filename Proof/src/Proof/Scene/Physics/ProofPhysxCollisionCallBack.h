@@ -1,6 +1,5 @@
 #pragma once
 #include <PxPhysicsAPI.h>
-
 namespace Proof{
 	class ProofPhysxCollisionCallback :public physx::PxSimulationEventCallback {
 		physx::PxActor* mSubmarineActor;

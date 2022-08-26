@@ -16,9 +16,9 @@
 #include <yaml-cpp/yaml.h>
 #include "Proof/Resources/Asset/MaterialAsset.h"
 #include "Proof/Resources/Asset/PhysicsMaterialAsset.h"
-#include "../Proof-Editor/src/Editor3D/Editor3D.h"
+#include "Editor3D/Editor3D.h"
 #include "Proof/Core/FrameTime.h"
-#include "../Proof-Editor/src/Editor3D/ImGUIAPI.h"
+#include "Editor3D/ImGUIAPI.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/AssetThumbnailGenerator.h"
 namespace Proof

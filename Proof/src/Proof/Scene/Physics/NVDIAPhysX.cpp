@@ -1,8 +1,6 @@
 #include "Proofprch.h"
 #include "NVDIAPhysX.h"
 #include "ProofPhysxCollisionCallBack.h"
-#include "cooking/PxCooking.h"
-
 namespace Proof
 {
 
@@ -48,9 +46,6 @@ namespace Proof
 		m_Cooking->release();
 		m_Physics->release();
 		m_Foundation->release();
-		//m_Dispatcher->release();
-		//m_Pvd->release();
-		//m_Scene->release();
 		//delete m_CollisionCallback;
 	}
 	void NVDIAPhysXEngine::AddRigidBody() {

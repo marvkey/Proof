@@ -1,8 +1,7 @@
 #pragma once
-#include "../ProofPhysics/src/PhysicsWorld.h"
+#include "../../ProofPhysics/src/PhysicsWorld.h"
 #include "../World.h"
 #include "NVDIAPhysX.h"
-#include "BulletPhysics.h"
 #include "../Component.h"
 namespace Proof {
 	enum class PhysicsEngineType {
@@ -27,7 +26,6 @@ namespace Proof {
 		PhysicsEngineType m_PhysicsType;
 		ProofPhysicsEngine::PhysicsWorld* m_ProofPhysicsEngine = nullptr;
 		NVDIAPhysXEngine* m_NVDIAPhysicsEngine = nullptr;
-		BulletPhysics* m_BulletPhysicsEngine = nullptr;
 		World* m_World = nullptr;
 		friend class World;
 

@@ -15,7 +15,6 @@
 #include <fmt/format-inl.h>
 #include <fmt/core.h>
 
-#include <magic_enum.hpp>
 #include "Proof/Resources/EnumReflection.h"
 //Proof defined
 #include "Proof/Core/Log.h"

@@ -1,0 +1,6 @@
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\Intermediates\Release\ProofScriptCore.csproj.AssemblyReference.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\Intermediates\Release\ProofScriptCore.csproj.CoreCompileInputs.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\Intermediates\Release\ProofScriptCore.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\Intermediates\Release\ProofScriptCore.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\ProofScriptCore.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\ProofScriptCore.pdb

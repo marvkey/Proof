@@ -18,7 +18,7 @@
 #include "Proof/Scene/Script.h"
 #include "Proof/Input/KeyCodes.h"
 #include "ImGui/imgui_internal.h"
-#include "../Editor3D.h"
+#include "Editor3D/Editor3D.h"
 #include "Proof/Scene/Component.h"
 #include "Proof/Resources/Asset/AssetManager.h"
 #include <string.h>

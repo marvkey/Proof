@@ -10,8 +10,6 @@
 #include "../CollisionInfo.h"
 #include "../Script.h"
 #include "../Mesh.h"
-#include "PxToolkit.h"
-
 namespace Proof {
 	physx::PxMaterial* defauultMaterial;
 	
@@ -74,9 +72,9 @@ namespace Proof {
 		{
 			m_World->ForEachEntitiesWithSingle<RigidBodyComponent>([&](Entity entity) {
 				const auto& transformComponent = entity.GetComponent<TransformComponent>();
-				const auto& worldLocation = transformComponent->GetWorldLocation();
-				const auto& worldRotation = transformComponent->GetWorldRotation();
-				const auto& worldScale = transformComponent->GetWorldScale();
+				const auto worldLocation = transformComponent->GetWorldLocation();
+				const auto worldRotation = transformComponent->GetWorldRotation();
+				const auto worldScale = transformComponent->GetWorldScale();
 				auto& rigidBodyComponent = *entity.GetComponent<RigidBodyComponent>();
 				physx::PxActor* rigidBodyBase= nullptr;
 				if (rigidBodyComponent.m_RigidBodyType == RigidBodyType::Dynamic) {
@@ -415,192 +413,23 @@ namespace Proof {
 	}
 
 	void PhysicsEngine::StartBulletPhysics() {
-		m_BulletPhysicsEngine = new BulletPhysics();
-		{
-			const auto& rigidBodyView = m_World->m_Registry.view<RigidBodyComponent>();
-			for (auto entity : rigidBodyView) {
-				const auto& transform = *Entity{ entity,m_World }.GetComponent<TransformComponent>();
-				auto location = transform.GetWorldLocation();
-				auto rotation = transform.GetWorldRotation();
-				auto& rigidBody = rigidBodyView.get<RigidBodyComponent>(entity);
-				if (rigidBody.m_RigidBodyType == RigidBodyType::Dynamic) {
-					btRigidBody::btRigidBodyConstructionInfo bodyInfo(rigidBody.Mass, nullptr, nullptr);
-					bodyInfo.m_startWorldTransform = btTransform{ btQuaternion(rotation.X,rotation.Y,rotation.Z),btVector3(location.X,location.Y,location.Z) };
-					bodyInfo.m_angularDamping = rigidBody.AngularDrag;
-					bodyInfo.m_linearDamping = rigidBody.LinearDrag;
-					btRigidBody* body = new btRigidBody(btRigidBody::btRigidBodyConstructionInfo(rigidBody.Mass,nullptr,nullptr));
-					if (rigidBody.Gravity == true)
-						body->setGravity({0,-9.81,0});
-					else
-						body->setGravity({0, 0, 0});
-					body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_DYNAMIC_OBJECT); 
-					//if(rigidBody.Kinimatic)
-					//	body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT); 
-					//else
-					//	body->setCollisionFlags(body->getCollisionFlags()  btCollisionObject::CF_KINEMATIC_OBJECT);  
-					//body->setWorldTransform(btTransform{ btQuaternion(rotation.X,rotation.Y,rotation.Z),btVector3(location.X,location.Y,location.Z) });
-					rigidBody.m_RuntimeBody = body;
-					m_BulletPhysicsEngine->m_World->addRigidBody(body);
-
-				}
-				else {
-				}
-			}
-		}
-		// Colliders
-		{
-			// Cube Collider
-			{
-				const auto& cccV = m_World->m_Registry.view<CubeColliderComponent>();
-				for (auto entity : cccV) {
-					Entity currentEntity{ entity, m_World };
-					const auto& transform = *currentEntity.GetComponent<TransformComponent>();
-					auto& cubeCollider = cccV.get<CubeColliderComponent>(entity);
-					auto size = glm::vec3{ transform.GetWorldScale().X * cubeCollider.OffsetScale.X,transform.GetWorldScale().Y * cubeCollider.OffsetScale.Y,transform.GetWorldScale().Z * cubeCollider.OffsetScale.Z };
-					auto location = transform.GetWorldLocation() + cubeCollider.OffsetLocation;
-					auto rotation = transform.GetWorldRotation();
-
-					auto body = new btCollisionObject();
-					btBoxShape* box = new btBoxShape(btVector3(size.x, size.y, size.z));
-					body->setCollisionShape(box);
-					body->setWorldTransform(btTransform{ btQuaternion(rotation.X,rotation.Y,rotation.Z),btVector3(location.X,location.Y,location.Z) });
-					auto rigidBodyComponent = currentEntity.GetComponent<RigidBodyComponent>();
-					if (rigidBodyComponent != nullptr) {
-						if (rigidBodyComponent->m_RigidBodyType == RigidBodyType::Dynamic) {
-							btRigidBody* rigidBody = (btRigidBody*)rigidBodyComponent->m_RuntimeBody;
-							rigidBody->setCollisionShape(box);
-						}
-						else {
-							//auto rigidBody = (physx::PxRigidStatic*)rigidBodyComponent->RuntimeBody;
-							//rigidBody->attachShape(*body);
-
-						}
-					}
-					cubeCollider.m_RuntimeBody = body;
-					//m_BulletPhysicsEngine->m_World->addCollisionObject(body);
-
-				}
-			}
-		}
+		
 	}
 
 	void PhysicsEngine::UpdateBulletPhysics(float delta) {
-		m_BulletPhysicsEngine->Simulate(delta);
 
-		const auto& rigidBodyView = m_World->m_Registry.view<RigidBodyComponent>();
-		for (auto entity : rigidBodyView) {
-			const auto& transform = Entity{ entity,m_World }.GetComponent<TransformComponent>();
-			auto location = transform->GetWorldLocation();
-			auto rotation = transform->GetWorldRotation();
-			auto& rigidBody = rigidBodyView.get<RigidBodyComponent>(entity);
-			if (rigidBody.m_RigidBodyType == RigidBodyType::Dynamic) {
-				btRigidBody* body = (btRigidBody *) rigidBody.m_RuntimeBody;
-				body->getWorldTransform();
-				auto origin = body->getWorldTransform().getOrigin();
-				auto originRotation = body->getWorldTransform().getRotation();
-				transform->Location = Vector{ origin.getX(),origin.getY(),origin.getZ()};
-				transform->Rotation = Vector{ originRotation.getX(),originRotation.getY(),originRotation.getZ() };
-			}
-			else {
-			}
-		}
 	}
-
 	void PhysicsEngine::EndBulletPhysics() {
-		delete m_BulletPhysicsEngine;
-		m_BulletPhysicsEngine = nullptr;
 	}
 
 	void PhysicsEngine::StartProofPhysics() {
 
-		/*
-		auto& spherColliderView = m_World->m_Registry.view<SphereColliderComponent>();
-		for (auto entity : spherColliderView) {
-			auto& sphereCollider = spherColliderView.get<SphereColliderComponent>(entity);
-			//auto& collider = m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::SphereCollider(Entity{ entity,m_World }.GetComponent<TransformComponent>()->Location + sphereCollider.Offset, sphereCollider.Radius)));
-			//sphereCollider.RuntimeBody = collider.GetCollider();
-		}
-
-		auto& cubeColliderView = m_World->m_Registry.view<CubeColliderComponent>();
-		for (auto entity : cubeColliderView) {
-			auto& cubeCollider = cubeColliderView.get<CubeColliderComponent>(entity);
-			const auto& transform = Entity{entity,m_World }.GetComponent<TransformComponent>();
-
-			//auto& collider = m_PhysicsEngine.AddObject(ProofPhysicsEngine::PhysicsObject(ProofPhysicsEngine::CubeCollider(transform->Location + cubeCollider.OffsetLocation, transform->Rotation, transform->Scale + cubeCollider.OffsetLocation)));
-			//cubeCollider.RuntimeBody = collider.GetCollider();
-		}
-		*/
-		// Colliders
-		{
-		
-		}
-		// rigid body
-		{
-			const auto& rigidBodyView = m_World->m_Registry.view<RigidBodyComponent>();
-			for (auto entity : rigidBodyView) {
-				auto& rigidBody = rigidBodyView.get<RigidBodyComponent>(entity);
-				auto& body = m_ProofPhysicsEngine->AddRigidBody(ProofPhysicsEngine::RigidBody());
-				const auto& transform = Entity{ entity,m_World }.GetComponent<TransformComponent>();
-				body.Location = transform->Location;
-				body.Rotation = transform->Rotation;
-				body.Gravity = rigidBody.Gravity;
-				//body.Drag = rigidBody.Drag;
-				body.AngularDrag = rigidBody.AngularDrag;
-				body.SetMass(rigidBody.Mass);
-				rigidBody.m_RuntimeBody = &body;
-			}
-		}
+	
 	}
 	void PhysicsEngine::UpdateProofPhysics(float delta) {
-		/*
-		// Sphere Collider
-		{
-			auto& sccV = m_World->m_Registry.view<SphereColliderComponent>();
-			for (auto entity : sccV) {
-				Entity currentEntity{ entity, m_World};
-				auto& sphereCollider = sccV.get<SphereColliderComponent>(entity);
-				auto* collider = (ProofPhysicsEngine::SphereCollider*)sphereCollider.RuntimeBody;
-				collider->Center = sphereCollider.Offset + currentEntity.GetComponent<TransformComponent>()->Location;
-				collider->Radius = sphereCollider.Radius * currentEntity.GetComponent<TransformComponent>()->Scale.GetMax();
-			}
-		}
-		// Cube Collider
-		{
-			auto& cccV = m_World->m_Registry.view<CubeColliderComponent>();
-			for (auto entity : cccV) {
-				Entity currentEntity{ entity, m_World};
-				const auto& transform = *currentEntity.GetComponent<TransformComponent>();
-				auto& cubeCollider = cccV.get<CubeColliderComponent>(entity);
-				auto* collider = (ProofPhysicsEngine::CubeCollider*)cubeCollider.RuntimeBody;
-				collider->Center = transform.Location + cubeCollider.OffsetLocation;
-				collider->Rotation = transform.Rotation;
-				collider->Scale = transform.Scale + cubeCollider.OffsetScale;
-			}
-		}
-		*/
-
-		m_ProofPhysicsEngine->Simulate(delta);
-		// RIGID BODY
-		{
-			const auto& rgView = m_World->m_Registry.view<RigidBodyComponent>();
-			for (auto entity : rgView) {
-				auto& rigidBodyComponent = rgView.get<RigidBodyComponent>(entity);
-
-				Entity currentEntity{ entity, m_World };
-				auto& transform = *currentEntity.GetComponent<TransformComponent>();
-				ProofPhysicsEngine::RigidBody* rigidBody = (ProofPhysicsEngine::RigidBody*)rigidBodyComponent.m_RuntimeBody;
-				transform.Location = rigidBody->Location;
-				transform.Rotation = rigidBody->Rotation;
-				rigidBody->SetMass(rigidBodyComponent.Mass);
-				rigidBody->Gravity = rigidBodyComponent.Gravity;
-				rigidBody->AngularDrag = rigidBodyComponent.AngularDrag;
-				//rigidBody->Drag = rigidBodyComponent.Drag;
-			}
-		}
-		//m_PhysicsEngine.HandleCollisions();
+		
 	}
 	void PhysicsEngine::EndProofPhysics() {
 	}
-
 
 }

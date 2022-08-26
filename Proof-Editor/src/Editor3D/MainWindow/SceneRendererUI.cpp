@@ -1,7 +1,8 @@
 #include "SceneRendererUI.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-#include "../ImGUIAPI.h"
+#include "Editor3D/Editor3D.h"
+#include "Editor3D/ImGUIAPI.h"
 #include "SceneHierachyPanel.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Scene/Component.h"
