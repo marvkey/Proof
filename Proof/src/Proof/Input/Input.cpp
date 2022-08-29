@@ -2,106 +2,105 @@
 #include "Input.h"
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Input/Mouse.h"
-#include "ImGui/imgui.h"
 #include "Proof/Core/CurrentWindow.h"
-#include <GLFW/glfw3.h>	
+#include <GLFW/glfw3.h>
 namespace Proof
 {
 	bool Input::IsKeyClicked(KeyBoardKey Key) {
-		if(CurrentWindow::GetWindowClass().IsInputEventEnabled()==false)return false;
-		return std::find(CurrentWindow::GetWindowClass().KeyboardClicked.begin(), CurrentWindow::GetWindowClass().KeyboardClicked.end(), Key) 
+		if(CurrentWindow::GetWindow().IsInputEventEnabled()==false)return false;
+		return std::find(CurrentWindow::GetWindow().KeyboardClicked.begin(), CurrentWindow::GetWindow().KeyboardClicked.end(), Key) 
 			!= 
-			CurrentWindow::GetWindowClass().KeyboardClicked.end();
+			CurrentWindow::GetWindow().KeyboardClicked.end();
 	}
 
 	bool Input::IsKeyReleased(KeyBoardKey Key) {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		return std::find(CurrentWindow::GetWindowClass().KeyboardReleased.begin(), CurrentWindow::GetWindowClass().KeyboardReleased.end(), Key)
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
+		return std::find(CurrentWindow::GetWindow().KeyboardReleased.begin(), CurrentWindow::GetWindow().KeyboardReleased.end(), Key)
 			!=
-			CurrentWindow::GetWindowClass().KeyboardReleased.end();
+			CurrentWindow::GetWindow().KeyboardReleased.end();
 	}
 
 	bool Input::IsKeyHold(KeyBoardKey Key) {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		return std::find(CurrentWindow::GetWindowClass().KeyboardKeyHold.begin(), CurrentWindow::GetWindowClass().KeyboardKeyHold.end(), Key)
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
+		return std::find(CurrentWindow::GetWindow().KeyboardKeyHold.begin(), CurrentWindow::GetWindow().KeyboardKeyHold.end(), Key)
 			!=
-			CurrentWindow::GetWindowClass().KeyboardKeyHold.end();
+			CurrentWindow::GetWindow().KeyboardKeyHold.end();
 	}
 	
 	bool Input::IsKeyPressed(KeyBoardKey Key) {
-		if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)Key)) {
+		if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), (int)Key)) {
 			return  true;
 		}
 		return false;
 	}
 	
 	bool Input::IsKeyDoubleClick(KeyBoardKey Key) {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		return std::find(CurrentWindow::GetWindowClass().KeyboardKeyDoubleClicked.begin(), CurrentWindow::GetWindowClass().KeyboardKeyDoubleClicked.end(), Key)
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
+		return std::find(CurrentWindow::GetWindow().KeyboardKeyDoubleClicked.begin(), CurrentWindow::GetWindow().KeyboardKeyDoubleClicked.end(), Key)
 			!=
-			CurrentWindow::GetWindowClass().KeyboardKeyDoubleClicked.end();
+			CurrentWindow::GetWindow().KeyboardKeyDoubleClicked.end();
 	}
 
 	bool Input::IsMouseButtonClicked(MouseButton Button) {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		return std::find(CurrentWindow::GetWindowClass().MouseButtonClicked.begin(), CurrentWindow::GetWindowClass().MouseButtonClicked.end(), Button)
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
+		return std::find(CurrentWindow::GetWindow().MouseButtonClicked.begin(), CurrentWindow::GetWindow().MouseButtonClicked.end(), Button)
 			!=
-			CurrentWindow::GetWindowClass().MouseButtonClicked.end();
+			CurrentWindow::GetWindow().MouseButtonClicked.end();
 	}
 	bool Input::IsMouseButtonReleased(MouseButton Button) {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		return std::find(CurrentWindow::GetWindowClass().MouseButtonReleased.begin(), CurrentWindow::GetWindowClass().MouseButtonReleased.end(), Button)
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
+		return std::find(CurrentWindow::GetWindow().MouseButtonReleased.begin(), CurrentWindow::GetWindow().MouseButtonReleased.end(), Button)
 			!=
-			CurrentWindow::GetWindowClass().MouseButtonReleased.end();
+			CurrentWindow::GetWindow().MouseButtonReleased.end();
 	}
 
 	bool Input::IsMouseButtonPressed(MouseButton Button) {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)Button)) {
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
+		if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), (int)Button)) {
 			return true;
 		}
 		return false;
 	}
 	bool Input::IsMouseButtonDoubleClicked(MouseButton Button) {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
-		return std::find(CurrentWindow::GetWindowClass().MouseButtonDoubleClicked.begin(), CurrentWindow::GetWindowClass().MouseButtonDoubleClicked.end(), Button)
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
+		return std::find(CurrentWindow::GetWindow().MouseButtonDoubleClicked.begin(), CurrentWindow::GetWindow().MouseButtonDoubleClicked.end(), Button)
 			!=
-			CurrentWindow::GetWindowClass().MouseButtonDoubleClicked.end();
+			CurrentWindow::GetWindow().MouseButtonDoubleClicked.end();
 	}
 
 
 	bool Input::IsMouseScrollUp() {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
 		return Mouse::IsScrollUp();
 	}
 
 	bool Input::IsMouseScrollDown() {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
 		return Mouse::IsScrollDown();
 	}
 
 	bool Input::IsMouseScrolled() {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
 		return Mouse::IsScroll();
 	}
 	float Input::GetScrollWheelX() {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
 		return Mouse::GetScrollX();
 	}
 	float Input::GetScrollWheelY() {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
 		return Mouse::GetScrollY();
 	}
 	float Input::GetMousePosX() {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
 		return Mouse::GetPosX();
 	}
 	float Input::GetMousePosY() {
-		if (CurrentWindow::GetWindowClass().IsInputEventEnabled() == false)return false;
+		if (CurrentWindow::GetWindow().IsInputEventEnabled() == false)return false;
 		return Mouse::GetPosY();
 	}
 	bool Input::IsControllerClicked(int ID, ControllerButton button){
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return controller.Buttons[(int)button] == (int)InputEvent::KeyClicked;
@@ -109,14 +108,14 @@ namespace Proof
 		return false;
 	}
 	bool Input::IsAnyControllerClicked(ControllerButton button){
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.Buttons[(int)button] == (int)InputEvent::KeyClicked)
 				return true;
 		}
 		return false;
 	}
 	bool Input::IsControllerDoubleClick(int ID, ControllerButton button){
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return controller.Buttons[(int)button] == (int)InputEvent::KeyDouble;
@@ -124,14 +123,14 @@ namespace Proof
 		return false;
 	}
 	bool Input::IsAnyControllerDoubleClick(ControllerButton button) {
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.Buttons[(int)button] == (int)InputEvent::KeyDouble)
 				return true;
 		}
 		return false;
 	}
 	bool Input::IsControllerReleased(int ID, ControllerButton button){
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return controller.Buttons[(int)button] == (int)InputEvent::KeyReleased;
@@ -139,14 +138,14 @@ namespace Proof
 		return false;
 	}
 	bool Input::IsAnyControllerReleased(ControllerButton button){
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.Buttons[(int)button] == (int)InputEvent::KeyReleased)
 				return true;
 		}
 		return false;
 	}
 	bool Input::IsControllerPressed(int ID, ControllerButton button){
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return controller.Buttons[(int)button] == (int)InputEvent::KeyPressed;
@@ -154,14 +153,14 @@ namespace Proof
 		return false;
 	}
 	bool Input::IsAnyControllerPressed(ControllerButton button){
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.Buttons[(int)button] == (int)InputEvent::KeyPressed)
 				return true;
 		}
 		return false;
 	}
 	std::pair<float, float> Input::GetControllerLeftJoystickAxis(int ID) {
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return { controller.LeftJoystickX,controller.LeftJoystickY };
@@ -169,7 +168,7 @@ namespace Proof
 		return { 0,0 };
 	}
 	std::pair<float, float> Input::GetControllerLeftJoystickAxisDistance(int ID) {
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return { controller.DistanceLeftJoystickX,controller.DistanceLeftJoystickY };
@@ -177,7 +176,7 @@ namespace Proof
 		return { 0,0 };
 	}
 	std::pair<float, float> Input::GetControllerRightJoystickAxis(int ID) {
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return { controller.RightJoystickX,controller.RightJoystickY };
@@ -185,7 +184,7 @@ namespace Proof
 		return { 0,0 };
 	}
 	std::pair<float, float> Input::GetControllerRightJoystickAxisDistance(int ID) {
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return { controller.DistanceRightJoystickX,controller.DistanceRightJoystickY };
@@ -193,7 +192,7 @@ namespace Proof
 		return { 0,0 };
 	}
 	float Input::GetControllerLeftTriggerAxis(int ID) {
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return controller.LeftTriggerAxis;
@@ -201,7 +200,7 @@ namespace Proof
 		return 0;
 	}
 	float Input::GetControllerLeftTriggerAxisDistance(int ID) {
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return controller.DistanceLeftTriggerAxis;
@@ -210,7 +209,7 @@ namespace Proof
 	}
 
 	float Input::GetControllerRightTriggerAxis(int ID) {
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return controller.RightTriggerAxis;
@@ -218,7 +217,7 @@ namespace Proof
 		return 0;
 	}
 	float Input::GetControllerRightTriggerAxisDistance(int ID) {
-		for (Controller& controller : CurrentWindow::GetWindowClass().m_Controllers) {
+		for (Controller& controller : CurrentWindow::GetWindow().m_Controllers) {
 			if (controller.ID != ID)
 				continue;
 			return controller.DistanceRightTriggerAxis;

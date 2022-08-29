@@ -37,7 +37,7 @@ namespace Proof{
 		template<class T,typename... Args>
 		T* AddComponent(Args&&... args) {
 			if (HasComponent<T>() == true) {
-				PF_WARN("Can not add component Entity already has component");
+				PF_ERROR("Can not add component Entity already has {}", typeid(T).name());
 				return nullptr;
 			}
 

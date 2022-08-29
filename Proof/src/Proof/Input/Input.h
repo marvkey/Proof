@@ -2,7 +2,6 @@
 #include "Proof/Core/Core.h"
 #include "KeyCodes.h"
 #include <vector>
-#include "Mouse.h"
 namespace Proof
 {
 	class Proof_API Input {

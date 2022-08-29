@@ -15,7 +15,7 @@ namespace Proof{
 		tempEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{1,1,1};
 		tempEntity.GetComponent<TransformComponent>()->Location.Z-=10;
 		mesh->m_MeshAssetPointerID = asset->GetAssetID();
-		m_WorldRenderer = { m_World,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() };
+		m_WorldRenderer = { m_World,CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight() };
 		m_Type= SceneRendererType::MeshAsset;
 		m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::FowardRendering;
 	}

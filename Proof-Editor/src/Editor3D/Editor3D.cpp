@@ -14,7 +14,6 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Resources/Asset/PhysicsMaterialAsset.h"
 #include "Proof/Resources/Asset/MaterialAsset.h"
-#include "windows.h"
 #include "Proof/Scene/Script.h"
 
 #include <Windows.h>
@@ -35,8 +34,9 @@
 #include <chrono>
 #include "Proof/Core/SceneCoreClasses.h"
 #include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
+#include "Proof/Core/CurrentWindow.h"
 
-
+#include <GLFW/glfw3.h>
 
 
 #include "Proof/Scripting/ScriptEngine.h"
@@ -49,16 +49,18 @@ namespace Proof
 	}
 	Editore3D::~Editore3D() {
 	}
-	bool Editore3D::IsKeyPressedEditor(KeyBoardKey Key) {
-		if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)Key)) {
-			return  true;
-		}
-		return false;
+	bool Editore3D::IsKeyPressedEditor(KeyBoardKey key) {
+		//if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), (int)Key)) {
+		//	return  true;
+		//}
+		//return false;
+		return Input::IsKeyPressed(key);
 	}
-	bool Editore3D::IsKeyClickedEditor(KeyBoardKey Key) {
-		return std::find(CurrentWindow::GetWindowClass().KeyboardClicked.begin(), CurrentWindow::GetWindowClass().KeyboardClicked.end(), Key)
-			!=
-			CurrentWindow::GetWindowClass().KeyboardClicked.end();
+	bool Editore3D::IsKeyClickedEditor(KeyBoardKey key) {
+		//return std::find(CurrentWindow::GetWindow().KeyboardClicked.begin(), CurrentWindow::GetWindow().KeyboardClicked.end(), Key)
+		//	!=
+		//	CurrentWindow::GetWindow().KeyboardClicked.end();
+		return Input::IsKeyClicked(key);
 	}
 	void Editore3D::OnEvent(Event& e) {
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
@@ -240,7 +242,7 @@ namespace Proof
 		}
 	}
 	void Editore3D::OnAttach() {
-		camera = EditorCamera{ CurrentWindow::GetWindowHeight(),CurrentWindow::GetWindowWidth() };
+		camera = EditorCamera{ CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight() };
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
 
@@ -262,7 +264,7 @@ namespace Proof
 		}
 
 		m_WorldHierachy.SetContext(ActiveWorld.get());
-		m_WorldRenderer = WorldRenderer(ActiveWorld, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
+		m_WorldRenderer = WorldRenderer(ActiveWorld, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
 		// cannot be setting it to window size and stuff innit
 		m_EditorWorld = ActiveWorld;
 		SceneCoreClasses::s_CurrentWorld = ActiveWorld.get();
@@ -339,7 +341,7 @@ namespace Proof
 		Layer::OnUpdate(DeltaTime);
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
 			Count<ScreenFrameBuffer> bufferl;
-			camera.OnUpdate(DeltaTime, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
+			camera.OnUpdate(DeltaTime, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
 			RendererData rednerdata;
 			VulkanRenderer::BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, bufferl, rednerdata);
 			VulkanRenderer::EndContext();
@@ -879,10 +881,10 @@ namespace Proof
 
 
 			if (ImGui::IsWindowFocused()) {
-				CurrentWindow::SetWindowInputEvent(true);
+				CurrentWindow::GetWindow().SetWindowInputEvent(true);
 			}
 			else {
-				CurrentWindow::SetWindowInputEvent(false);
+				CurrentWindow::GetWindow().SetWindowInputEvent(false);
 			}
 			uint32_t Text = m_WorldRenderer.m_ScreenFrameBuffer->GetTexture();
 			ImGui::Image((ImTextureID)Text, ImVec2{ _ViewPortSize.x,_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
@@ -1058,6 +1060,9 @@ namespace Proof
 		}
 
 		if (ImGui::BeginMenuBar()) {
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+
+			}
 			if (ImGui::BeginMenu("File")) {
 
 				if (ImGui::MenuItem("New Project")) { // gonna be implemented later
@@ -1096,6 +1101,7 @@ namespace Proof
 				}
 				ImGui::EndMenu();
 			}
+
 			ImGui::EndMenuBar();
 		}
 		ImGui::End();

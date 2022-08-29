@@ -34,7 +34,7 @@ namespace Proof {
 		SetDarkTheme();
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL) {
 
-			ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)CurrentWindow::GetWindowAPI(), true);
+			ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), true);
 			ImGui_ImplOpenGL3_Init("#version 450");
 		} 
 		
@@ -60,7 +60,7 @@ namespace Proof {
 	
 	void ImGuiLayer::End() {
 		ImGuiIO& io = ImGui::GetIO();
-		io.DisplaySize = ImVec2((float)CurrentWindow::GetWindowWidth(), (float)CurrentWindow::GetWindowHeight());
+		io.DisplaySize = ImVec2((float)CurrentWindow::GetWindow().GetWidth(), (float)CurrentWindow::GetWindow().GetHeight());
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());	
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {

@@ -1,4 +1,5 @@
 #pragma once
+#include "Buffer.h"
 namespace Proof {
 	class Proof_API VertexArray {
 	public:

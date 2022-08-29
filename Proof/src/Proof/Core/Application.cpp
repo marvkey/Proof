@@ -12,25 +12,38 @@
 #include "Proof/Input/InputManager.h"
 #include<chrono>
 #include "Proof/Scripting/ScriptEngine.h"
+#include "CurrentWindow.h"
+
 namespace Proof {
-    Special <WindowsWindow> Application::MainWindow = nullptr;
+    Special <Window> Application::MainWindow = nullptr;
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
     float Application::m_ImguiFrameTime;
-    Application::Application(){
+    Application::Application(const ApplicationConfiguration& config):
+        m_ApplicationConfiguration(config) 
+    {
+        if (m_ApplicationConfiguration.ProjectPath.empty()) {
+            std::ofstream outfile("Proof/Proof.ProofProject");
+            outfile.close();
+            m_ApplicationConfiguration.ProjectPath = "Proof/Proof.ProofProject";
+        }
+        m_ProjectPath = m_ApplicationConfiguration.ProjectPath;
+
         srand(time(NULL));
         Proof::Log::Init();
-        MainWindow = CreateSpecial<WindowsWindow>(); 
-        ScriptEngine::Init();
-
-        Renderer::Init(static_cast<Window*>(MainWindow.get()));
-
+        MainWindow = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
+       // MainWindow->SetEventCallback([this](Event& e) {OnEvent(e); });
+       // MainWindow->SetEventCallback(PF_BIND_FN(});
         MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
+        Renderer::Init(static_cast<Window*>(MainWindow.get()));
+        ScriptEngine::Init();
+        
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan) {
             AssetManager::NewInitilizeAssets("config/AssetManager.ProofAssetManager");
             ImGuiMainLayer = new ImGuiLayer();
             MainLayerStack.PushLayer(ImGuiMainLayer);
         }
+        
         PF_ENGINE_TRACE("Engine Load Done");
     }
 
@@ -54,11 +67,15 @@ namespace Proof {
 
     void Application::OnEvent(Event& e) {
         PF_PROFILE_FUNC();
+        
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
-        
+        dispatcher.Dispatch<WindowCloseEvent>(PF_BIND_FN(Application::OnWindowCloseEvent));
+       
         /// PUSH LAYERS BACKWARDS
         /// WHEN WE GET UI WE MIGHT WANT TO ONLY RESPODN TO UI FIRST
+         if (IsRunning == false)
+            return;
          for (Layer* layer : MainLayerStack.V_LayerStack)
             layer->OnEvent(e);
     }
@@ -71,9 +88,14 @@ namespace Proof {
     }
 
     void Application::OnMouseScrollEVent(MouseScrollEvent& e) {
+
     }
 
     void Application::OnKeyClicked(KeyClickedEvent& e) {
+    }
+
+    void Application::OnWindowCloseEvent(WindowCloseEvent& e) {
+        IsRunning = false;
     }
 
     Application::~Application() {
@@ -90,9 +112,8 @@ namespace Proof {
      //   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
      //   glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
 
-        CurrentWindow::SetvSync(true);
 
-        while (glfwWindowShouldClose((GLFWwindow*)CurrentWindow::GetWindowAPI()) == false && Input::IsKeyClicked(KeyBoardKey::Escape)==false) {
+        while (IsRunning  == true) {
             PF_PROFILE_FRAME("Application::Update");
             float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
@@ -104,7 +125,7 @@ namespace Proof {
 
             if (WindowMinimized == false) 
                 LayerUpdate(DeltaTime);
-            if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
+            if (Renderer::GetAPI() != RendererAPI::API::Vulkan && m_ApplicationConfiguration.EnableImgui == true)
                 ImguiUpdate(DeltaTime);
 
             MainWindow->WindowUpdate();

@@ -1,4 +1,6 @@
 #pragma once
+#include <Glad/glad.h>
+
 namespace Proof {
 	class Proof_API VertexBuffer {
 	public:

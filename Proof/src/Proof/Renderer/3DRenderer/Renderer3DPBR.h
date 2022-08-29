@@ -8,6 +8,7 @@
 #include "Renderer3DCore.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Renderer/RendererAPI.h"
+#include "Proof/Renderer/ScreenFrameBuffer.h"
 #include "Proof/Scene/Component.h"
 namespace Proof
 {

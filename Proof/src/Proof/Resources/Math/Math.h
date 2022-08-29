@@ -5,10 +5,11 @@
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtx/rotate_vector.hpp>
 #include<glm/gtx/vector_angle.hpp>
-#include "Random.h"
+
+#include <limits>
 namespace Proof
 {
-	struct  Math {
+	struct Math {
 
 		Math(const Math&) = delete;
 		/**

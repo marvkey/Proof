@@ -14,7 +14,7 @@ public:
 	}
 };
 
-Proof::Application* Proof::CreateApplication() {
+Proof::Application* Proof::CreateApplication(int argc, char**) {
 	return new Sandbox();
 }
 

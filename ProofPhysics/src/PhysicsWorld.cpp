@@ -54,8 +54,8 @@ namespace ProofPhysicsEngine {
 		}
 	}
 	RigidBody& PhysicsWorld::AddRigidBody(const RigidBody& object) {
-		uint64_t Id = Proof::Random::Int<uint64_t>();
-		m_RigidBodies.insert({ Id,object });
-		return m_RigidBodies.at(Id);
+		//uint64_t Id = Proof::Random::Int<uint64_t>();
+		m_RigidBodies.insert({ 0,object });
+		return m_RigidBodies.at(0);
 	}
 }

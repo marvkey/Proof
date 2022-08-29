@@ -65,7 +65,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "Controller " << m_Index<<" ButtonClickedEvent: " << (int)m_Button;
+            ss << "Controller " << m_Index<<" ButtonClickedEvent: " << EnumReflection::EnumString(m_Button);
             return ss.str();
         }
     };
@@ -78,7 +78,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "Controller " << m_Index << " ButtonPressedEvent: " << (int)m_Button;
+            ss << "Controller " << m_Index << " ButtonPressedEvent: " << EnumReflection::EnumString(m_Button);
             return ss.str();
         }
     };
@@ -91,7 +91,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "Controller " << m_Index << " ButtonReleasedEvent: " << (int)m_Button;
+            ss << "Controller " << m_Index << " ButtonReleasedEvent: " << EnumReflection::EnumString(m_Button);
             return ss.str();
         }
     };
@@ -103,7 +103,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "Controller " << m_Index << " ButtonDoubleClickEvent: " << (int)m_Button;
+            ss << "Controller " << m_Index << " ButtonDoubleClickEvent: " << EnumReflection::EnumString(m_Button);
             return ss.str();
         }
     };

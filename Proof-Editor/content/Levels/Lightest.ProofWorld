@@ -5,7 +5,7 @@ Entities:
       Tag: cube
       tags: [adfadfad, afdfadfad]
     TransformComponent:
-      Location: [-1.39100993, -0.131192982, 1.93517566]
+      Location: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:

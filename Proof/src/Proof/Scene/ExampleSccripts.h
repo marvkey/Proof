@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Scene/Script.h"
 #include "Proof/Input/Input.h"
-#include <GLFW/glfw3.h>
+#include "Proof/Input/Mouse.h"
 #include "Proof/Input/InputManager.h"
 #include "Proof/Core/Core.h"
 namespace Proof{
@@ -12,6 +12,7 @@ namespace Proof{
 		float m_Speed =15.6;
 		float m_Sensitivity=2;
 		void OnCreate()override{
+			/*
 			m_CameraComponent = GetComponent<CameraComponent>();
 			m_Transform = GetComponent<TransformComponent>();
 			PF_ENGINE_INFO("Created all inputs bind");
@@ -28,6 +29,7 @@ namespace Proof{
 
 			InputManager::BindMotion("RotateX", PF_BIND_MOTION(MovementScript::RotateX));
 			InputManager::BindMotion("RotateY", PF_BIND_MOTION(MovementScript::RotateY));
+			*/
 		};
 		void OnUpdate(FrameTime DeltaTime)override{
 			if(m_CameraComponent==nullptr)
@@ -94,6 +96,7 @@ namespace Proof{
 			//}
 		}
 	private:
+		/*
 		void MoveX(float motionValue) {
 			if (Mouse::IsMouseCaptured() == false)return;
 			PF_ENGINE_INFO("moved X");
@@ -125,6 +128,7 @@ namespace Proof{
 			if (m_Transform->Rotation.Y < -89.0f)
 				m_Transform->Rotation.Y = -89.0f;
 		}
+		*/
 		bool m_FirstClick=true;
 		float m_MouseLastPosX;
 		float m_MouseLastPosY;

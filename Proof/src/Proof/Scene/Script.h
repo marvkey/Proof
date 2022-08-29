@@ -55,7 +55,8 @@ namespace Proof
 		}
 		
 		static uint32_t GenerateRandomIDScript() {
-			return Random::Int<uint32_t>(1);
+			//return Random::Int<uint32_t>(1);
+			return 3;
 		}
 		static bool ScriptIDExist(uint32_t ID) {
 			return GetScriptRegisry().find(ID) != GetScriptRegisry().end();

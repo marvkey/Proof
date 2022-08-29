@@ -55,7 +55,7 @@ namespace Proof
 
 	void VulkanRenderer::Init() {
 		s_Pipeline = new DrawPipeline();
-		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight() });
+		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight()});
 		s_Pipeline->CommandBuffer = CreateCount<VulkanCommandBuffer>(s_Pipeline->SwapChain);
 		Descriptors();
 
@@ -226,7 +226,7 @@ namespace Proof
 		Shader = Shader::Create("TraingleShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Vulkan/TriangleShader.shader");
 
 		PipelineConfigInfo pipelineConfig{};
-		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
+		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
 		pipelineConfig.RenderPass = VulkanRenderer::s_Pipeline->SwapChain->GetRenderPass();
 		pipelineConfig.PipelineLayout = VulkanPipeLineLayout::GetDefaultPipeLineLayout();
 		GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(Shader, pipelineConfig);
@@ -239,7 +239,7 @@ namespace Proof
 		PipeLineLayout = CreateCount<VulkanPipeLineLayout>(PushConstant, s_DescriptorLayout);
 
 		PipelineConfigInfo pipelineConfig{};
-		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindowWidth(), CurrentWindow::GetWindowHeight());
+		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
 		pipelineConfig.RenderPass = VulkanRenderer::s_Pipeline->SwapChain->GetRenderPass();
 		pipelineConfig.PipelineLayout = PipeLineLayout->GetPipeLineLayout();
 		auto input = Vertex::GetVulkanDescription();

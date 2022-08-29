@@ -87,21 +87,21 @@ namespace Proof{
 		LightShader = Shader::GetOrCreate("LightShader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/Proof/deferedShading/LighteningPass.glsl");
 		Gbuffer = FrameBuffer::Create();
 		Gbuffer->Bind();
-		GPosition = Texture2D::Create(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);
+		GPosition = Texture2D::Create(CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight(),DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);
 		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,0,GPosition->GetID());
 
-		GNormal = Texture2D::Create(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);
+		GNormal = Texture2D::Create(CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight(),DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::Float,false);
 		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,1,GNormal->GetID());
 
-		GAlbedo = Texture2D::Create(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),DataFormat::RGBA,InternalFormat::RGBA,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::UnsignedByte,false);
+		GAlbedo = Texture2D::Create(CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight(),DataFormat::RGBA,InternalFormat::RGBA,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::UnsignedByte,false);
 		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,2,GAlbedo->GetID());
 
-		GMaterial = Texture2D::Create(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight(),DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::UnsignedByte,false);
+		GMaterial = Texture2D::Create(CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight(),DataFormat::RGBA,InternalFormat::RGBA16F,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,TextureBaseTypes::Nearest,type::UnsignedByte,false);
 		Gbuffer->AttachColourTexture(FrameBufferTextureType::Texture2D,3,GMaterial->GetID());
 
 		unsigned int attachments[4] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2,GL_COLOR_ATTACHMENT3};
 		glDrawBuffers(4,attachments);
-		RenderBuffer = RenderBuffer::Create(RenderBufferAttachment::DepthComponent,CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
+		RenderBuffer = RenderBuffer::Create(RenderBufferAttachment::DepthComponent,CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight());
 		Gbuffer->AttachRenderBuffer(FrameBufferAttachmentType::DepthAttachment,RenderBuffer->GetID());
 		Gbuffer->UnBind();
 	}

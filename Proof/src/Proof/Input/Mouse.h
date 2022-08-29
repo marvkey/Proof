@@ -7,22 +7,18 @@ namespace Proof {
     class Proof_API Mouse :private CurrentWindow {
     public:
         static float GetPosX() {
-            const auto& [X, Y] = GetMouseLocation();
-            return X;
+            return GetWindow().GetMousePosition().X;
         }
         static float GetPosY() {
-            const auto& [X, Y] = GetMouseLocation();
-            return  Y;
+            return GetWindow().GetMousePosition().Y;
         }
 
         static float GetScrollX(){
-            const auto& [X,Y] = GetMouseScrollWheel();
-            return  X;
+            return GetWindow().GetMouseScrollWheel().X;
         }
 
         static float GetScrollY() {
-            const auto& [X,Y] = GetMouseScrollWheel();
-            return Y;
+            return GetWindow().GetMouseScrollWheel().Y;
         }
 
         static bool IsScroll(){

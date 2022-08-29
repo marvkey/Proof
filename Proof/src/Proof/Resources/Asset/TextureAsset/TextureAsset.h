@@ -1,6 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Resources/Asset/Asset.h"
+#include "Proof/Renderer/Texture.h"
 namespace Proof{
 	class Proof_API Texture2DAsset: public Asset {
 	public:

@@ -58,6 +58,8 @@ namespace Proof
 
 	// class member functions
 	VulkanGraphicsContext::VulkanGraphicsContext(Window* window) : m_Window{ window } {
+		glfwMakeContextCurrent((GLFWwindow*)m_Window);
+
 		CreateInstance();
 		SetupDebugMessenger();
 		CreateSurface();

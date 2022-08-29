@@ -3,6 +3,7 @@
 #include <iostream>
 #include<chrono>
 #include "UUID.h"
+#include "Proof/utils/FileSystem.h"
 #include <vector>
 #define PF_BIND_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 #define PF_BIND_ACTION(fn)  std::bind(&fn, this)
@@ -111,7 +112,7 @@ namespace Proof
                     return;
                 }
             }
-//            s_FrameTimers.push_back({ name, TimeManage{ time,maxTime,type } });
+            s_FrameTimers.emplace_back(name, TimeManage( time,maxTime,type ) );
         }
         struct TimeManage {
             float Time = 0;
@@ -122,7 +123,7 @@ namespace Proof
             std::string FunctionName;
             TimeManage TimerManage;
             std::vector<float> Times;
-            FrameTimeManage(const std::string& functionName, TimeManage& timeManage) :
+            FrameTimeManage(const std::string& functionName, const TimeManage& timeManage) :
                 FunctionName(functionName), TimerManage(timeManage) {
                 Times.emplace_back(timeManage.Time);
             }

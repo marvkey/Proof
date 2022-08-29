@@ -4,6 +4,7 @@
 #include <memory>
 #include <sstream>
 #include "Proof/Input/KeyCodes.h"
+#include "Proof/Resources/EnumReflection.h"
 namespace Proof {
     class Proof_API KeyEvent:public Event{
     public:
@@ -25,7 +26,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "KeyClickedEvent: " << (char)m_Key;
+            ss << "KeyClickedEvent: " << EnumReflection::EnumString(m_Key);
             return ss.str();
         }
     };
@@ -38,7 +39,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "KeyReleased: " << (char)m_Key;
+            ss << "KeyReleased: " << EnumReflection::EnumString(m_Key);
             return ss.str();
         }
     };
@@ -51,7 +52,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "KeyDoubleClick: " << (char)m_Key;
+            ss << "KeyDoubleClick: " << EnumReflection::EnumString(m_Key);
             return ss.str();
         }
     };
@@ -63,7 +64,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "KeyHoldEvent: " << (char)m_Key;
+            ss << "KeyHoldEvent: " << EnumReflection::EnumString(m_Key);
             return ss.str();
         }
     };
@@ -76,7 +77,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "KeyPressed: " << (char)m_Key;
+            ss << "KeyPressed: " << EnumReflection::EnumString(m_Key);
             return ss.str();
         }
     };

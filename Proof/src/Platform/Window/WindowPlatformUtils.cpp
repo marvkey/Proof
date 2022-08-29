@@ -14,7 +14,7 @@ namespace Proof{
 			CHAR currentDir[256] = {0};
 			ZeroMemory(&ofn,sizeof(OPENFILENAME));
 			ofn.lStructSize =sizeof(OPENFILENAME);
-			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)CurrentWindow::GetWindowAPI()); // the owning application
+			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)CurrentWindow::GetWindow().GetWindow()); // the owning application
 			ofn.lpstrFile =szFile;
 			ofn.nMaxFile =sizeof(szFile);
 			if (GetCurrentDirectoryA(256,currentDir))
@@ -33,7 +33,7 @@ namespace Proof{
 			CHAR currentDir[256] = {0};
 			ZeroMemory(&ofn,sizeof(OPENFILENAME));
 			ofn.lStructSize = sizeof(OPENFILENAME);
-			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)CurrentWindow::GetWindowAPI()); // the owning application
+			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)CurrentWindow::GetWindow().GetWindow()); // the owning application
 			ofn.lpstrFile = szFile;
 			ofn.nMaxFile = sizeof(szFile);
 			if (GetCurrentDirectoryA(256,currentDir))
@@ -52,7 +52,7 @@ namespace Proof{
 
 	
 		void ShortCutDialogs::Copy(const std::string& text){
-			OpenClipboard(glfwGetWin32Window((GLFWwindow*)CurrentWindow::GetWindowAPI()));
+			OpenClipboard(glfwGetWin32Window((GLFWwindow*)CurrentWindow::GetWindow().GetWindow()));
 			EmptyClipboard();
 			HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE,text.size());
 			if (!hg) {

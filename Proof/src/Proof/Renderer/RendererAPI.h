@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include"VertexArray.h"
+#include <Glad/glad.h>
 namespace Proof {
 	struct ProofClear{
 		enum Clear:uint32_t {

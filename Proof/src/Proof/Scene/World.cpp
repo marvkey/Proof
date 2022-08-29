@@ -503,7 +503,7 @@ namespace Proof{
 		renderQuad();
 		RendererCommand::DepthFunc(DepthType::Less);
 		m_CaptureFBO->UnBind();
-		RendererCommand::SetViewPort(CurrentWindow::GetWindowWidth(),CurrentWindow::GetWindowHeight());
+		RendererCommand::SetViewPort(CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight());
 	}
 	template<class T>
 	T* GetComponent(Entity entity) {

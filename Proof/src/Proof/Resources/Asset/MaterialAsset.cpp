@@ -5,7 +5,7 @@
 #include <yaml-cpp/yaml.h>
 #include "Proof/Resources/ExternalCreations.h"
 #include "AssetManager.h"
-
+#include "Proof/Renderer/Texture.h"
 namespace Proof{
 	MaterialAsset::MaterialAsset(const std::string& assetSavePath):
 		Asset(AssetType::Material)

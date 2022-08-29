@@ -4,6 +4,7 @@
 #include "3DRenderer/Renderer3D.h"
 #include "3DRenderer/Renderer3DPBR.h"
 #include "Proof/Scene/World.h"
+#include "Proof/Renderer/GraphicsContext.h"
 #include "Proof/Renderer/MeshWorkShop.h"
 namespace Proof {
 
@@ -13,6 +14,7 @@ namespace Proof {
 	std::string Renderer::s_GraphicsCardVersion;
 	Count<class GraphicsContext>Renderer::m_GraphicsContext = nullptr;
 	uint32_t Renderer::s_CurrentFrame = 0;
+
 	void Renderer::Init(Window* window) {
 		PF_PROFILE_FUNC();
 
@@ -29,8 +31,9 @@ namespace Proof {
 	}
 	void Renderer::Destroy() {
 		PF_PROFILE_FUNC();
-
 		Renderer3DPBR::Destroy();
-
+		m_GraphicsContext = nullptr;
+		s_CurrentFrame = 0;
+		delete AllShaders;
 	}
 }

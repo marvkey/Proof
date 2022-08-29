@@ -1,9 +1,7 @@
 #pragma once
 #include "Core.h"
-#include "Platform/Window/WindowsWindow.h"
-#include "Proof/Renderer/ScreenFrameBuffer.h"
+#include "Proof/Core/Window.h"
 #include "Proof/Core/LayerStack.h"
-#include "CurrentWindow.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Events/WindowEvent.h"
@@ -11,6 +9,13 @@
     class Layer;
     class ImGuiLayer;
     class LayerStack;
+
+    struct ApplicationConfiguration {
+        std::string Name = "Applicaiton";
+        bool EnableImgui = false;
+        std::string ProjectPath;
+        WindowConfiguration WindowConfiguration;
+    };
     class Proof_API Application {
     public:
         
@@ -23,27 +28,29 @@
         static float GetFrameMS() {return FrameMS;};
         static float GetImguiFrameTime() { return m_ImguiFrameTime; }
     protected:
-        Application();
+        Application(const ApplicationConfiguration& config);
         bool WindowMinimized = false;
         bool IsRunning = true;
+        std::string m_ProjectPath;
     private:
         void LayerUpdate(float deltaTime);
         void ImguiUpdate(float deltaTime);
         static float m_ImguiFrameTime;
-        //InitlizeCSharp ScriptingCharp;
         void OnEvent(Event& e);
         void OnWindowMinimizeEvent(WindowMinimizeEvent& e);
         void OnMouseScrollEVent(MouseScrollEvent& e);
         void OnKeyClicked(KeyClickedEvent& e);
-
+        void OnWindowCloseEvent(WindowCloseEvent& e);
         LayerStack MainLayerStack;
         ImGuiLayer* ImGuiMainLayer;
-        static Special<WindowsWindow>MainWindow;
+        static Special<Window>MainWindow;
         friend class CurrentWindow;
         friend class FrameBuffer;
         float LastFrameTime;
         static float FPS;
         static float FrameMS;
+        ApplicationConfiguration m_ApplicationConfiguration;
+        
     };
-    Application* CreateApplication();
+    Application* CreateApplication(int argc, char** argv);
 }

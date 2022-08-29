@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "EditorCamera.h"
 #include "Proof/Input/Input.h"
+#include "Proof/Input/Mouse.h"
 #include <ImGui/imgui.h>
 #include <GLFW/glfw3.h>
 namespace Proof{
@@ -24,12 +25,12 @@ namespace Proof{
 	void EditorCamera::OnUpdate(FrameTime DeltaTime) {
 		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight)) {
 			m_FirstClick = true;
-			glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindowAPI(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			//ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse ; // alllows mouse capture
 			PF_ENGINE_INFO("Mouse Speed {}", m_Speed);
 		}
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight)) {
-			glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindowAPI(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			//ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse; // no mouse capture
 			if (m_FirstClick == true) {
 				m_FirstClick = false;

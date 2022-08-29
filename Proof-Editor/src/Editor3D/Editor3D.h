@@ -11,6 +11,7 @@
 #include "MainWindow/InputPanel.h"
 #include "MainWindow/Performance/PerformancePanel.h"
 #include "MainWindow/SceneHierachyPanel.h"
+#include "Proof/Project/Project.h"
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {
@@ -75,6 +76,7 @@ namespace Proof {
 			bool Joystick = false;
 			bool Trigger = false;
 		};
+		Count<Project> m_Project;
 		KeyBoardShowEvent m_ShowAllKeyBoardEvents;
 		MouseShowEvent m_ShowAllMouseEvents;
 		WindowShowEvent m_ShowAllWindowEvents;
@@ -84,7 +86,7 @@ namespace Proof {
 		bool m_ViewPoartHoveredorFocused = false;
 		Entity m_CopyEntity;
 		void Logger();
-		bool m_ShowLogSettings = false;;
+		bool m_ShowLogSettings = false;
 		bool m_ClearLogOnPlay = false;
 		bool Docking = false;
 		bool m_ShowLogger = true;

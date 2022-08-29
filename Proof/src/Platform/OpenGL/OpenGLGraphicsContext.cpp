@@ -11,9 +11,9 @@ namespace Proof
         Init();
     }
     void OpenGLGraphicsContext::Init() {
-        glfwMakeContextCurrent(static_cast<::GLFWwindow*>(WindowHandle->GetWindow()));
+        glfwMakeContextCurrent((GLFWwindow*) (WindowHandle->GetWindow()));
         int Status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-        PF_CORE_ASSERT(Status,"GLew is not initilized");
+        PF_CORE_ASSERT(Status,"Glad is not initilized");
         Renderer::s_RenderCompany = (const char*)glGetString(GL_VENDOR);
         Renderer::s_GraphicsCard = (const char*)glGetString(GL_RENDERER);
         Renderer::s_GraphicsCardVersion = (const char*)glGetString(GL_VERSION);

@@ -11,29 +11,20 @@
 
 #include "Proof/Renderer/GraphicsContext.h"
 #include "Proof/Core/Core.h"
-#include "ImGui/imgui.h"
-#include <GLFW/glfw3.h>
 #include "Proof/Renderer/Renderer.h"
+#include <GLFW/glfw3.h>
+#include <Glad/glad.h>
+
 namespace Proof {
 
 
 
-    WindowsWindow::WindowsWindow(unsigned int Width, unsigned int Height) {
-        this->Width = Width;
-        this->Height = Height;
-        // setting all values to false
-        for (int i = 0; i < KeyPressed.size(); i++) {
-            KeyPressed[i] = false;
-        }
-        for (int i = 0; i < MouseButtonPressed.size(); i++) {
-            MouseButtonPressed[i] = false;
-        }
-        this->createWindow();
-        m_MousePreviousLocationX = Input::GetMousePosX();
-        m_MousePreviousLocationY = Input::GetMousePosY();
+    WindowsWindow::WindowsWindow(const WindowConfiguration& configuration):
+    Window(configuration) 
+    {
+        Init();
     }
     void WindowsWindow::WindowUpdate() {
-        glfwSwapInterval(Vsync);
         
         KeyboardClicked.clear();
         KeyboardReleased.clear();
@@ -58,7 +49,7 @@ namespace Proof {
         {
             for (int i = 0; i < m_KeyPressedEventCheck.size(); i++) {
                 KeyBoardKey key = m_KeyPressedEventCheck[i];
-                if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)key)) {
+                if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), (int)key)) {
                     KeyPressedEvent pressedEvent(key);
                     EventCallback(pressedEvent);
                 }
@@ -70,7 +61,7 @@ namespace Proof {
 
             for (int i = 0; i < m_MouseButtonPressedEventCheck.size(); i++) {
                 MouseButton key = m_MouseButtonPressedEventCheck[i];
-                if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindowAPI(), (int)key)) {
+                if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), (int)key)) {
                     MouseButtonPressedEvent pressedEvent(key);
                     EventCallback(pressedEvent);
                 }
@@ -187,12 +178,12 @@ namespace Proof {
             WindowMinimizeEvent Minimizedevent(true);
             EventCallback(Minimizedevent);
 
-        }else if (Width==0 || Height==0){
+        }else if (m_WindowConfiguration.Width==0 || m_WindowConfiguration.Height==0){
             WindowMinimizeEvent Minimizedevent(false);
             EventCallback(Minimizedevent);
         }
-        Width = width;
-        Height = height;
+        m_WindowConfiguration.Width = width;
+        m_WindowConfiguration.Height = height;
     }
 
     void WindowsWindow::Window_Position_Callback(int xpos, int ypos){
@@ -214,25 +205,25 @@ namespace Proof {
         if(event == GLFW_CONNECTED) // because when we callback when removed it is removed so checking if gamepad to glfw the controller is alreayd removed
             if (glfwJoystickIsGamepad(jid) == false)return; // if we are using a controller
         if (event == GLFW_CONNECTED) {
-            CurrentWindow::GetWindowClass().m_Controllers.emplace_back(Controller());
-            Controller& newController = CurrentWindow::GetWindowClass().m_Controllers.back();
+            m_Controllers.emplace_back(Controller());
+            Controller& newController = m_Controllers.back();
             newController.ID = jid;
             newController.Name = glfwGetGamepadName(jid);
             for (int i = 0; i < newController.Buttons.size(); i++) {
                 newController.Buttons[i] = 0;
             }
             ControllerConnectEvent ctEvent(jid);
-            CurrentWindow::GetWindowClass().EventCallback(ctEvent);
+            EventCallback(ctEvent);
         }
         else if (event == GLFW_DISCONNECTED) {
-            for (int i = 0; i < CurrentWindow::GetWindowClass().m_Controllers.size(); i++) {
-                if (CurrentWindow::GetWindowClass().m_Controllers[i].ID == jid) {
-                    CurrentWindow::GetWindowClass().m_Controllers.erase(CurrentWindow::GetWindowClass().m_Controllers.begin() + i);
+            for (int i = 0; i < m_Controllers.size(); i++) {
+                if (m_Controllers[i].ID == jid) {
+                    m_Controllers.erase(m_Controllers.begin() + i);
                     break;
                 }
             }
             ControllerDisconnectEvent ctEvent(jid);
-            CurrentWindow::GetWindowClass().EventCallback(ctEvent);
+            EventCallback(ctEvent);
         }
     }
 
@@ -569,7 +560,7 @@ namespace Proof {
         MouseScrollY.emplace_back(yoffset);
     }
 
-    int WindowsWindow::createWindow() {
+    int WindowsWindow::Init() {
         if (!glfwInit()) {
             PF_CORE_ASSERT(false,"Could Not Initilize GLFW");
             return -1;
@@ -579,19 +570,26 @@ namespace Proof {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // so we do not set an api as open gl
             glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         }
-        m_Window = glfwCreateWindow(Width,Height, "Proof", nullptr,NULL);
+
+        glfwWindowHint(GLFW_DECORATED, m_WindowConfiguration.Decorated);
+        if (m_WindowConfiguration.startMaximized) {
+            m_Window = glfwCreateWindow(m_WindowConfiguration.Width, m_WindowConfiguration.Height, m_WindowConfiguration.Title.c_str(), glfwGetPrimaryMonitor(), NULL);
+        }
+        else
+            m_Window = glfwCreateWindow(m_WindowConfiguration.Width, m_WindowConfiguration.Height, m_WindowConfiguration.Title.c_str(), nullptr, NULL);
         if (m_Window == nullptr) {
-            PF_CORE_ASSERT(false,"Window Is Nullptr");
+            PF_CORE_ASSERT(false,"Window  Nullptr");
             glfwTerminate();
             return -1;
         }
-       
-        glfwSetWindowUserPointer((GLFWwindow*)m_Window, this);
-        glfwMaximizeWindow((GLFWwindow*)m_Window);
 
-        glfwGetWindowSize((GLFWwindow*)m_Window,&Width,&Height);
+        glfwSetWindowUserPointer((GLFWwindow*)m_Window, this);
+        if(m_WindowConfiguration.startFullScreen && m_WindowConfiguration.startMaximized == false)
+            glfwMaximizeWindow((GLFWwindow*)m_Window);
        
-        glfwMakeContextCurrent((GLFWwindow*)m_Window);
+        if (m_WindowConfiguration.startFullScreen == false && m_WindowConfiguration.startMaximized == false)
+            CenterWindow();
+
         glfwSetKeyCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, int key, int scancode, int action, int mods)mutable {
             WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
             proofWindow.key_callback(key, scancode, action, mods);
@@ -636,14 +634,39 @@ namespace Proof {
             WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
             proofWindow.FrameBufferResizedCallback(width,height);
         });
-        glfwSetJoystickCallback(WindowsWindow::ControllerCallbackConnect);
-        PF_INFO("Window created widht {} height {}",Width,Height);
+        WindowsWindow* windowswindow = this;
+    
+
+        glfwSetJoystickCallback([](int cID, int event)
+        {
+            WindowsWindow& data = *static_cast<WindowsWindow*>(glfwGetJoystickUserPointer(cID));
+            data.ControllerCallbackConnect(cID, event);
+        });
+        PF_ENGINE_INFO("Window created widht {} height {}", m_WindowConfiguration.Width, m_WindowConfiguration.Height);
         return 0;
     }
 
-    int WindowsWindow::WindowEnd() {
+    void WindowsWindow::CenterWindow() {
+        int maxWidth = GetSystemMetrics(SM_CXSCREEN);
+        int maxHeight = GetSystemMetrics(SM_CYSCREEN);
+        glfwSetWindowPos((GLFWwindow*)m_Window, (maxWidth/2)-(m_WindowConfiguration.Width/2), (maxHeight / 2) - (m_WindowConfiguration.Height / 2));
+    }
+
+    void WindowsWindow::SetVsync(bool vsync) {
+        m_WindowConfiguration.Vsync = vsync;
+        glfwSwapInterval((int)m_WindowConfiguration.Vsync);
+    }
+
+    Vector2 WindowsWindow::GetMousePosition() {
+        VectorTemplate2<double> pos;
+        glfwGetCursorPos((GLFWwindow*)m_Window, &pos.X, &pos.Y);
+        return Vector2 { (float)pos.X, (float)pos.Y };
+    }
+
+    int WindowsWindow::End() {
         glfwDestroyWindow((GLFWwindow*)m_Window);
         glfwTerminate();
+        m_Window = nullptr;
         return 0;
     }
 }

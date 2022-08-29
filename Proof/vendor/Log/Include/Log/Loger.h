@@ -39,7 +39,7 @@ namespace Logger {
 		std::string GetLogString(fmt::format_string<Args...> format,Args&&... args);
 
 		template<typename... Args>
-		std::string GetLogString(const std::string& format, Args&&... args);
+		std::string GetLogString(std::string format, const Args&... args);
 
 		template<typename... Args>
 		std::string GetLogString(const char* format, Args&&... args);
@@ -109,16 +109,17 @@ namespace Logger {
 		LocalTime = localtime(&CurrentTime);
 		std::string temp = fmt::format("[{}:{}:{}]{}: ",LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec, LoggerName);
 		std::string temp2 = fmt::format(msg, std::forward<Args>(args)...);
+
 		return temp+ temp2;
 	}
 
 	template<typename... Args>
-	inline std::string Log::GetLogString(const std::string& msg, Args&&... args) {
+	inline std::string Log::GetLogString(std::string msg, const Args&... args) {
 		CurrentTime = time(NULL);
 		LocalTime = localtime(&CurrentTime);
 		std::string temp = fmt::format("[{}:{}:{}]{}: ", LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec, LoggerName);
-		//std::string temp2 = fmt::format(msg, std::forward<Args>(args)...);
-		return temp ;
+		std::string temp2 = vformat(msg, fmt::make_format_args(args...));
+		return temp+temp2 ;
 	}
 
 	template<typename... Args>
@@ -127,8 +128,8 @@ namespace Logger {
 		LocalTime = localtime(&CurrentTime);
 		std::string temp = fmt::format("[{}:{}:{}]{}: ", LocalTime->tm_hour, LocalTime->tm_min, LocalTime->tm_sec, LoggerName);
 		const std::string_view view= msg;
-		//std::string temp2 = fmt::format(msg, std::forward<Args>(args)...);
-		return temp ;
+		std::string temp2 = vformat(msg, fmt::make_format_args(args...));
+		return temp + temp2;
 	}
 }
 #undef _CRT_SECURE_NO_WARNINGS
