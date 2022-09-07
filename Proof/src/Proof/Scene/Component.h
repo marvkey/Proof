@@ -1,10 +1,10 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Math/Math.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "Proof/Resources/Asset/MeshAsset.h"
-#include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
+#include "Proof/Asset/MeshAsset.h"
+#include "Proof/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Scripting/MonoTypes.h"
 #define GLM_ENABLE_EXPERIMENTAL

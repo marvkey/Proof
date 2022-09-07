@@ -1,0 +1,4 @@
+Project:
+  Name: Proof
+  AssetDirectory: Proof/Assets
+  AssetManager: Proof/Assets/AssetManager.ProofAssetManager

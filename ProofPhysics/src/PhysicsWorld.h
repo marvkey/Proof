@@ -1,7 +1,7 @@
 #pragma once
 #include<Vector>
 #include "PhysicsObject.h"
-#include "../../../Proof/src/Proof/Resources/Math/Vector.h"
+#include "../../../Proof/src/Proof/Math/Vector.h"
 #include "Collider/SphereCollider.h"
 #include "Collider/CubeCollider.h"
 #include "Body/RigidBody.h"

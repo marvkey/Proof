@@ -11,7 +11,7 @@
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Scene/Component.h"
-#include "Proof/Resources/Asset/MeshAsset.h"
+#include "Proof/Asset/MeshAsset.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/VertexArray.h"
 #include "Proof/Renderer/FrameBuffer.h"

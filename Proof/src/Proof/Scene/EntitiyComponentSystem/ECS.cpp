@@ -1,7 +1,6 @@
 #include "Proofprch.h"
 #include "ECS.h"
 #include "Proof/Scene/Entity.h"
-#include "Proof/Resources/Math/Math.h"
 #include "Proof/Scene/Component.h"
 /*
 namespace Proof{

@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof/Resources/Asset/Asset.h"
+#include "Proof/Asset/Asset.h"
 #include "Proof/Scene/Mesh.h"
 namespace Proof
 {
@@ -12,6 +12,9 @@ namespace Proof
 		
 		void ChangeMesh(const std::string& meshFilepath);
 		
+		virtual ~MeshAsset() {
+
+		}
 		MeshAsset():
 			Asset(AssetType::Mesh)
 		{
@@ -26,7 +29,6 @@ namespace Proof
 			return m_Mesh.get();
 		}
 		
-		virtual ~MeshAsset(){}
 
 		virtual bool IsImageIDNUll(){
 			return true;
@@ -36,7 +38,7 @@ namespace Proof
 	private:
 		Special<class Mesh> m_Mesh =nullptr;
 		friend class AssetManager;
-		std::string m_MeshFilePath;
+		AssetID m_Source;
 	};
 }
 

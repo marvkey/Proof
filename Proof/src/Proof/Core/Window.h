@@ -4,7 +4,7 @@
 #include "Proof/Input/KeyCodes.h"
 #include "Proof/Events/Event.h"
 #include "Proof/Input/Controller.h"
-#include "Proof/Resources/Math/Vector.h"
+#include "Proof/Math/Vector.h"
 namespace Proof {
 	struct WindowConfiguration {
 		uint32_t Width = 1600;

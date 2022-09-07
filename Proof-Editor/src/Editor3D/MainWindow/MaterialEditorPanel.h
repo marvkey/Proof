@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof/Resources/Asset/MaterialAsset.h"
-#include "Proof/Resources/Asset/PhysicsMaterialAsset.h"
+#include "Proof/Asset/MaterialAsset.h"
+#include "Proof/Asset/PhysicsMaterialAsset.h"
 #include "Panel.h"
 
 namespace Proof

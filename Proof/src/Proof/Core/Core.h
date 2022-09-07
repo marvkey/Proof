@@ -5,6 +5,7 @@
 #include "UUID.h"
 #include "Proof/utils/FileSystem.h"
 #include <vector>
+#include "Log.h"
 #define PF_BIND_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 #define PF_BIND_ACTION(fn)  std::bind(&fn, this)
 #define PF_BIND_MOTION(fn) std::bind(&fn, this, std::placeholders::_1)

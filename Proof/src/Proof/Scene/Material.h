@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Proof/Core/Core.h"
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Math/Math.h"
 namespace Proof{
 	struct Proof_API Material {
 		float m_Metallness =0.0f;// also shinines

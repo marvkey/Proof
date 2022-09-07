@@ -2,8 +2,8 @@
 #include <filesystem>
 #include "Proof/Core/Core.h"
 #include <vector>
-#include "Proof/Resources/Asset/Asset.h"
-#include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
+#include "Proof/Asset/Asset.h"
+#include "Proof/Asset/TextureAsset/TextureAsset.h"
 #include <fstream>
 #include <string>
 #include "Panel.h"

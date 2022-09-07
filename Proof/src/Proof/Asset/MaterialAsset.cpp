@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "MaterialAsset.h"
 #include "Proof/Renderer/3DRenderer/Renderer3D.h"
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Math/Math.h"
 #include <yaml-cpp/yaml.h>
 #include "Proof/Resources/ExternalCreations.h"
 #include "AssetManager.h"
@@ -37,7 +37,7 @@ namespace Proof{
 	}
 	bool MaterialAsset::LoadAsset(const std::string& filePath) {
 		m_SavePath = filePath;
-		YAML::Node data = YAML::LoadFile(m_SavePath);
+		YAML::Node data = YAML::LoadFile(m_SavePath.string());
 		if (!data["AssetType"]) // if there is no scene no
 			return false;
 		m_AssetID = data["ID"].as<uint64_t>();

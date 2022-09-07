@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof/Resources/Asset/Asset.h"
+#include "../Asset.h"
 #include "Proof/Renderer/Texture.h"
 namespace Proof{
 	class Proof_API Texture2DAsset: public Asset {
@@ -42,7 +42,7 @@ namespace Proof{
 			return m_Texture;
 		}
 	private:
-		std::string m_TexturePath;
+		AssetID m_Source;
 		Count<class Texture2D> m_Texture;
 	};
 }

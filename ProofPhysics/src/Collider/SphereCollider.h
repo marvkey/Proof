@@ -2,8 +2,8 @@
 #include<glm/vec3.hpp>
 #include "../IntersectData.h"
 #include "Collider.h"
-#include "../../../Proof/src/Proof/Resources/Math/Vector.h"
-#include "../../../Proof/src/Proof/Resources/Math/Math.h"
+#include "../../../Proof/src/Proof/Math/Vector.h"
+#include "../../../Proof/src/Proof/Math/Math.h"
 
 namespace ProofPhysicsEngine {
 	class CubeCollider;

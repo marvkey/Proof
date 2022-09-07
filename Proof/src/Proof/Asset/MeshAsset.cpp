@@ -12,7 +12,7 @@ namespace Proof
 		m_AssetID = AssetManager::CreateID();
 		m_Mesh = CreateSpecial<Mesh>(meshFilePath);
 		m_SavePath = savePath;
-		m_MeshFilePath = meshFilePath;
+		m_Source = AssetManager::GetAssetSourceID(meshFilePath);
 		SaveAsset();
 	}
 	void MeshAsset::SaveAsset() {
@@ -20,7 +20,7 @@ namespace Proof
 		out<<YAML::BeginMap;
 		out<<YAML::Key<<"AssetType"<<YAML::Value<<EnumReflection::EnumString(GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << m_AssetID;
-		out << YAML::Key << "Model" << YAML::Value << m_MeshFilePath;
+		out << YAML::Key << "AssetSource" << YAML::Value << m_Source;
 		out << YAML::Key << "SubMeshes";
 		out << YAML::Flow;
 		out << YAML::BeginSeq;
@@ -47,9 +47,9 @@ namespace Proof
 		if (!data["AssetType"]) // if there is no scene no
 			return false;
 		m_AssetID = data["ID"].as<uint64_t>();
-		m_MeshFilePath = data["Model"].as<std::string>();
+		m_Source = data["AssetSource"].as<uint64_t>();
 
-		m_Mesh = CreateSpecial<Mesh>(m_MeshFilePath);
+		m_Mesh = CreateSpecial<Mesh>(AssetManager::GetAssetSourcePath(m_Source));
 		if (data["SubMeshes"]) {
 			for (const auto& subMesh : data["SubMeshes"]) {
 				uint32_t index = subMesh.as<uint32_t>();
@@ -63,8 +63,8 @@ namespace Proof
 		return true;
 	}
 	void MeshAsset::ChangeMesh(const std::string& meshFilepath){
-		m_MeshFilePath = meshFilepath;
-		m_Mesh = CreateSpecial<Mesh>(m_MeshFilePath);
+		//m_MeshFilePath = meshFilepath;
+		//m_Mesh = CreateSpecial<Mesh>(m_MeshFilePath);
 	}
 	uint32_t MeshAsset::GetImageID() {
 		return InstancedRenderer3D::m_WhiteTexture->GetID();

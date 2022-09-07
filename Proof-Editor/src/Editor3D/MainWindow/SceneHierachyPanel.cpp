@@ -7,12 +7,12 @@
 #include "Proof/Scene/EntitiyComponentSystem/ECS.h"
 #include "Proof/Renderer/3DRenderer/Renderer3D.h" // TEMPORARY
 #include "Proofprch.h"
-#include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
-#include "Proof/Resources/Asset/MeshAsset.h"
-#include "Proof/Resources/Asset/Asset.h"
+#include "Proof/Asset/TextureAsset/TextureAsset.h"
+#include "Proof/Asset/MeshAsset.h"
+#include "Proof/Asset/Asset.h"
 #include "ContentBrowserPanel.h"
 #include <vector>
-#include "Proof/Resources/Asset/MaterialAsset.h"
+#include "Proof/Asset/MaterialAsset.h"
 #include "../ImGUIAPI.h"
 #include "Proof/Scene/ExampleSccripts.h"
 #include "Proof/Scene/Script.h"
@@ -20,7 +20,7 @@
 #include "ImGui/imgui_internal.h"
 #include "Editor3D/Editor3D.h"
 #include "Proof/Scene/Component.h"
-#include "Proof/Resources/Asset/AssetManager.h"
+#include "Proof/Asset/AssetManager.h"
 #include <string.h>
 #include<magic_enum.hpp>
 #include "Proof/Resources/EnumReflection.h"
@@ -485,7 +485,7 @@ namespace Proof
 			DrawVectorControl("Offset Location", cubeCollider.OffsetLocation);
 			DrawVectorControl("Offset Scale", cubeCollider.OffsetScale, 1.0f);
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", cubeCollider.HasPhysicsMaterial() != false ? AssetManager::ForceGetAsset<Asset>(cubeCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
+			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", cubeCollider.HasPhysicsMaterial() != false ? AssetManager::GetAsset<Asset>(cubeCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
 				ImGui::EndPopup();
 			}
@@ -509,7 +509,7 @@ namespace Proof
 			ImGui::DragFloat("Radius", &sphereCollider.Radius, 0.5);
 			DrawVectorControl("Offset Location", sphereCollider.OffsetLocation);
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", sphereCollider.HasPhysicsMaterial() != false ? AssetManager::ForceGetAsset<Asset>(sphereCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
+			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", sphereCollider.HasPhysicsMaterial() != false ? AssetManager::GetAsset<Asset>(sphereCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
 				ImGui::EndPopup();
 			}
@@ -535,7 +535,7 @@ namespace Proof
 			ExternalAPI::ImGUIAPI::EnumCombo("Direction", capsuleCollider.Direction);
 			DrawVectorControl("Offset Location", capsuleCollider.OffsetLocation);
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", capsuleCollider.HasPhysicsMaterial() != false ? AssetManager::ForceGetAsset<Asset>(capsuleCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
+			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", capsuleCollider.HasPhysicsMaterial() != false ? AssetManager::GetAsset<Asset>(capsuleCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
 				ImGui::EndPopup();
 			}
@@ -578,7 +578,7 @@ namespace Proof
 			}
 
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", meshCollider.HasPhysicsMaterial() != false ? AssetManager::ForceGetAsset<Asset>(meshCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
+			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", meshCollider.HasPhysicsMaterial() != false ? AssetManager::GetAsset<Asset>(meshCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
 				ImGui::EndPopup();
 			}

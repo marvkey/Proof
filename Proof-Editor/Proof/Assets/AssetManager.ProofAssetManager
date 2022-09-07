@@ -1,0 +1,9 @@
+Assets:
+  - Asset: 17940291637672428763
+    Type: MeshSourceFile
+    Path: Proof\Assets\Models\cube.obj
+    AssetSource: true
+  - Asset: 4645041025570573733
+    Type: Mesh
+    Path: Proof\Assets\Mesh\cube.Mesh.ProofAsset
+    AssetSource: false

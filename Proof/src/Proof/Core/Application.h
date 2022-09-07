@@ -5,6 +5,7 @@
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Events/WindowEvent.h"
+#include "Proof/Project/Project.h"
     namespace Proof {
     class Layer;
     class ImGuiLayer;
@@ -50,7 +51,6 @@
         static float FPS;
         static float FrameMS;
         ApplicationConfiguration m_ApplicationConfiguration;
-        
     };
     Application* CreateApplication(int argc, char** argv);
 }

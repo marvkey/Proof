@@ -10,9 +10,9 @@ namespace Proof{
 	{
 		m_AssetID = AssetManager::CreateID();
 
-		m_Texture =Texture2D::Create(texturePath);
+		m_Texture = Texture2D::Create(texturePath);
 		m_SavePath = savePath;
-		m_TexturePath = texturePath;
+		m_Source = AssetManager::GetAssetSourceID(texturePath);
 		SaveAsset();
 	}
 	void Texture2DAsset::SaveAsset() {
@@ -20,7 +20,7 @@ namespace Proof{
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << m_AssetID;
-		out << YAML::Key << "Texture2D" << YAML::Value << m_TexturePath;
+		out << YAML::Key << "AssetSource" << YAML::Value << m_Source;
 		out << YAML::EndMap;
 
 		std::ofstream found(m_SavePath);
@@ -30,15 +30,15 @@ namespace Proof{
 	
 	bool Texture2DAsset::LoadAsset(const std::string& filePath) {
 		m_SavePath = filePath;
-		YAML::Node data = YAML::LoadFile(m_SavePath);
+		YAML::Node data = YAML::LoadFile(m_SavePath.string());
 
 		if (!data["AssetType"]) // if there is no scene no
 			return false;
 
 		m_AssetID = data["ID"].as<uint64_t>();
-		m_TexturePath = data["Texture2D"].as<std::string>();
+		m_Source = data["AssetSource"].as<uint64_t>();
 
-		m_Texture = Texture2D::Create(m_TexturePath);
+		m_Texture = Texture2D::Create(AssetManager::GetAssetSourcePath(m_Source));
 		return true;
 	}
 	uint32_t Texture2DAsset::GetImageID() {

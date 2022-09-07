@@ -7,6 +7,7 @@
 #include <filesystem>
 #include "Proof/Resources/ExternalCreations.h"
 #include "Proof/Scripting/ScriptEngine.h"
+
 namespace Proof
 {
 	SceneSerializer::SceneSerializer(World* Scene) {

@@ -1,6 +1,6 @@
 #pragma once
-#include "../../../Proof/src/Proof/Resources/Math/Vector.h"
-#include "../../../Proof/src/Proof/Resources/Math/Math.h"
+#include "../../../Proof/src/Proof/Math/Vector.h"
+#include "../../../Proof/src/Proof/Math/Math.h"
 #include "Body/RigidBody.h"
 namespace ProofPhysicsEngine {
 	struct Interval {

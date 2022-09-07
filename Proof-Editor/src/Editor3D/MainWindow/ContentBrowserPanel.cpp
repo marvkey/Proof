@@ -4,18 +4,21 @@
 
 #include <ImGui/imgui.h>
 #include "Proof/Renderer/Texture.h"
-#include "Proof/Resources/Asset/TextureAsset/TextureAsset.h"
-#include "Proof/Resources/Asset/MeshAsset.h"
+#include "Proof/Asset/AssetManager.h"
+#include "Proof/Asset/Asset.h"
+#include "Proof/Asset/TextureAsset/TextureAsset.h"
+#include "Proof/Asset/MeshAsset.h"
+#include "Proof/Asset/MaterialAsset.h"
+#include "Proof/Asset/PhysicsMaterialAsset.h"
+
 
 #include "Proof/Utils/PlatformUtils.h"
 #include <vector>
 #include "Proof/Scene/Mesh.h"
-#include "Proof/Resources/Asset/AssetManager.h"
-#include "Proof/Resources/Asset/Asset.h"
+
 
 #include <yaml-cpp/yaml.h>
-#include "Proof/Resources/Asset/MaterialAsset.h"
-#include "Proof/Resources/Asset/PhysicsMaterialAsset.h"
+
 #include "Editor3D/Editor3D.h"
 #include "Proof/Core/FrameTime.h"
 #include "Editor3D/ImGUIAPI.h"
@@ -23,15 +26,16 @@
 #include "Proof/Renderer/AssetThumbnailGenerator.h"
 namespace Proof
 {
-	static const std::filesystem::path s_AssetsPath = "content";
 	static float padding = 16.0f; // space between 
 	static float thumbnailSize = 60;
 	static std::string FileRenameName;
 	//original name of file being renamed
 	static std::string NameofFileRename;
+	static std::filesystem::path s_AssetsPath;
 	ContentBrowserPanel::ContentBrowserPanel(Editore3D* owner) :
-		m_CurrentDirectory(s_AssetsPath),
+		m_CurrentDirectory(Project::Get()->GetAssetDir()),
 		m_Owner(owner) {
+		s_AssetsPath = Project::Get()->GetAssetDir();
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 
 		m_FolderIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FolderIcon.png");
@@ -54,7 +58,7 @@ namespace Proof
 				ImGui::BeginChild("Folders", { 200,ImGui::GetContentRegionAvail().y });
 				{
 					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf;
-					if (ImGui::TreeNodeEx("Content", flags)) {
+					if (ImGui::TreeNodeEx(s_AssetsPath.filename().string().c_str(), flags)) {
 						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 							m_CurrentDirectory = s_AssetsPath; // reseting before adding a new path
 						}
@@ -76,18 +80,23 @@ namespace Proof
 							m_CurrentDirectory = m_CurrentDirectory.parent_path();
 						}
 					}
+					ImGui::SameLine();
+					if (ImGui::Button("Regenerate Asset Source", { 50,50 })) {
+						//AssetManager::GenerateAllSourceAssets();
+					}
 					if (ImGui::BeginPopupContextWindow(0, 1, false)) { // right click 
 						if (ImGui::MenuItem("Folder")) {
 							NameofFileRename = Utils::FileDialogs::GetFileName(NewFolder("folder"));
 							FileRenameName = NameofFileRename;
 						}
-						
-						bool fileAdded = false;
-						fileAdded = AddAssetPopupMenuItem<MeshAsset>("Mesh","Mesh(*.obj)\0 * .obj\0 (*.gltf)\0 * .gltf\0 (*.fbx)\0 * .fbx\0", NameofFileRename);
-						fileAdded = AddAssetPopupMenuItem<Texture2DAsset>("Texture2D","Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0", NameofFileRename);
-						fileAdded = AddAssetPopupMenuItem<MaterialAsset>("Material", NameofFileRename);
-						fileAdded = AddAssetPopupMenuItem<PhysicsMaterialAsset>("PhysicsMaterial", NameofFileRename);
-						if (fileAdded  == true)
+
+						if (AddAssetPopupMenuItem<MeshAsset>("Mesh", "Mesh(*.obj)\0 * .obj\0 (*.gltf)\0 * .gltf\0 (*.fbx)\0 * .fbx\0", NameofFileRename))
+							FileRenameName = NameofFileRename;
+						else if (AddAssetPopupMenuItem<Texture2DAsset>("Texture2D", "Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0", NameofFileRename))
+							FileRenameName = NameofFileRename;
+						else if (AddAssetPopupMenuItem<MaterialAsset>("Material", NameofFileRename))
+							FileRenameName = NameofFileRename;
+						else if (AddAssetPopupMenuItem<PhysicsMaterialAsset>("PhysicsMaterial", NameofFileRename))
 							FileRenameName = NameofFileRename;
 						ImGui::EndPopup();
 					}
@@ -111,19 +120,22 @@ namespace Proof
 								}
 								goto outDir;
 							}
+							/*
 							if (AssetThumbnailGenerator::HasThumbnail(GetIDCurrentDirectory(path.string()))) {
 								ImGui::ImageButton((ImTextureID)AssetThumbnailGenerator::GetThumbnail(GetIDCurrentDirectory(path.string())), {thumbnailSize,thumbnailSize});
 							}
 							else {
+
 								if (assetType == AssetType::Mesh) {
 									auto info = AssetManager::GetAssetInfo(GetIDCurrentDirectory(path.string()));
-									if (info.IsLoaded()) {
+									if (info.Loaded) {
 										AssetThumbnailGenerator::GenerateThumbnail(GetIDCurrentDirectory(path.string()));
 									}
 									ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
 								}
 							}
-							//ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
+							*/
+							ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
 							if (ImGui::BeginDragDropSource()) {
 								std::string fileDragSourcePath = path.string();
 								UUID staticID = GetIDCurrentDirectory(fileDragSourcePath);
@@ -135,26 +147,36 @@ namespace Proof
 							}
 							if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 								UUID staticID = GetIDCurrentDirectory(path.string());
-								m_Owner->CreateAssetEditor(AssetManager::GetAsset<Asset>(staticID));
+								m_Owner->CreateAssetEditor(AssetManager::GetAsset<Asset>(staticID).get());
 							}
-						outDir:
+							outDir:
 							if (ImGui::BeginPopupContextItem(path.string().c_str())) {
 								if (ImGui::MenuItem("Rename")) {
 									NameofFileRename = Utils::FileDialogs::GetFileName(path);
 									FileRenameName = NameofFileRename;
 								}
+								if (assetType == AssetType::MeshSourceFile) {
+									if (ImGui::MenuItem("Mesh asset")) {
+										if (ImGui::BeginPopupModal("popup")) {
+											ImGui::Text("Lorem ipsum");
+											ImGui::EndPopup();
+										}
 
-								if (ImGui::MenuItem("Reload")) {
-									if (It.is_directory() == false) {
-										if (AssetManager::HasID(GetIDCurrentDirectory(It.path().string()))) {
-											if (AssetManager::IsAssetLoaded(GetIDCurrentDirectory(It.path().string()))) {
-												AssetManager::ForceGetAssetShared<Asset>(GetIDCurrentDirectory(It.path().string()))->LoadAsset();
+									}
+								}
+								if (assetType != AssetType::MeshSourceFile && assetType != AssetType::TextureSourceFile) {
+									if (ImGui::MenuItem("Reload")) {
+										if (It.is_directory() == false) {
+											if (AssetManager::HasID(GetIDCurrentDirectory(It.path().string()))) {
+												if (AssetManager::IsAssetLoaded(GetIDCurrentDirectory(It.path().string()))) {
+													AssetManager::GetAsset<Asset>(GetIDCurrentDirectory(It.path().string()))->LoadAsset();
+												}
 											}
 										}
 									}
 								}
 								if (ImGui::MenuItem("Delete")) {
-									if (It.is_directory() == false ) {
+									if (It.is_directory() == false) {
 										AssetManager::Remove(GetIDCurrentDirectory(m_CurrentDirectory.string() + "\\" + Utils::FileDialogs::GetFullFileName(path)));
 										std::filesystem::remove_all(m_CurrentDirectory.string() + "\\" + Utils::FileDialogs::GetFullFileName(path));
 									}
@@ -171,7 +193,7 @@ namespace Proof
 								ImGui::TextWrapped(Utils::FileDialogs::GetFileName(path).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
 							else
 								Rename(Utils::FileDialogs::GetFileName(path), Utils::FileDialogs::GetFullFileExtension(path), It.is_directory());
-							
+
 							ImGui::NextColumn();
 							ImGui::PopID();
 						}
@@ -214,7 +236,7 @@ namespace Proof
 		}
 	}
 	std::string ContentBrowserPanel::NewFolder(const std::string& folderName) {
-		std::string name = folderName.empty() ? "folder": folderName;
+		std::string name = folderName.empty() ? "folder" : folderName;
 		if (folderName.empty()) {
 			uint32_t index = 0;
 			while (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + folderName)) {
@@ -244,7 +266,7 @@ namespace Proof
 		if ((ImGui::IsItemHovered() == false && ImGui::IsAnyMouseDown())) // the text no longer edited
 			goto a;
 		if (ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
-		a:
+			a:
 			if (nameExist == true) { // so basically if it is the same name do not change anything
 				FileRenameName = "";
 				ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
@@ -256,7 +278,7 @@ namespace Proof
 			std::filesystem::rename(fileOldFullName, fileNewFullName);
 			for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(fileNewFullName)) {// through every file
 				if (AssetManager::GetAssetFromFilePath(dirEntry.path()) != AssetType::None) {
-					Asset* asset = AssetManager::GetAsset<Asset>(GetIDCurrentDirectory(dirEntry.path().string()));
+					Asset* asset = AssetManager::GetAsset<Asset>(GetIDCurrentDirectory(dirEntry.path().string())).get();
 					if (asset != nullptr)
 						AssetManager::ResetAssetInfo(GetIDCurrentDirectory(dirEntry.path().string()), dirEntry.path().string());
 				}
@@ -306,7 +328,7 @@ namespace Proof
 			return;
 		}
 	}
-	
+
 	void ContentBrowserPanel::DeleteFolder(const std::string& path) {
 		for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(path)) {// through every file
 			if (dirEntry.is_directory()) {

@@ -1,5 +1,5 @@
 #pragma once
-#include "../../../Proof/src/Proof/Resources/Math/Vector.h"
+#include "../../../Proof/src/Proof/Math/Vector.h"
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtx/rotate_Vector.hpp>

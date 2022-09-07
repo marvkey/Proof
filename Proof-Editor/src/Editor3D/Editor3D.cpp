@@ -12,8 +12,8 @@
 
 #include "Proof/Math/MathResource.h"
 #include "Proof/Scene/Material.h"
-#include "Proof/Resources/Asset/PhysicsMaterialAsset.h"
-#include "Proof/Resources/Asset/MaterialAsset.h"
+#include "Proof/Asset/PhysicsMaterialAsset.h"
+#include "Proof/Asset/MaterialAsset.h"
 #include "Proof/Scene/Script.h"
 
 #include <Windows.h>
@@ -23,11 +23,11 @@
 #include "Proof/Utils/PlatformUtils.h"
 #include "MainWindow/SceneRendererUI.h"
 #include "MainWindow/MaterialEditorPanel.h"
-#include "Proof/Resources/Math/Random.h"
+#include "Proof/Math/Random.h"
 #include <string>
 #include "Proof/Core/Core.h"
 #include<GLFW/glfw3.h>
-#include "Proof/Resources/Asset/AssetManager.h"
+#include "Proof/Asset/AssetManager.h"
 #include <algorithm>
 #include "Proof/Input/InputManager.h"
 #include<thread>
@@ -260,7 +260,7 @@ namespace Proof
 		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofWorld") == true) {
 			m_WorldHierachy.SetContext(ActiveWorld.get());
 			if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
-				AssetManager::NotifyOpenedNewLevel(scerelizer.GetAssetLoadID());
+				AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
 		}
 
 		m_WorldHierachy.SetContext(ActiveWorld.get());
@@ -946,8 +946,8 @@ namespace Proof
 
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(fmt::format("{}{}", "AssetType::", "Mesh").c_str())) {
 					UUID meshID = *(UUID*)payload->Data;
-
-					Entity newentt = ActiveWorld->CreateEntity(AssetManager::GetAssetName(meshID));
+					
+					Entity newentt = ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
 					newentt.AddComponent<MeshComponent>()->SetMeshSource(meshID);
 					m_WorldHierachy.m_SelectedEntity = newentt;
 				}

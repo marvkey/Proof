@@ -1,7 +1,7 @@
 #pragma once
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Math/Math.h"
 #include <yaml-cpp/yaml.h>
-#include "Proof/Resources/Math/Vector.h"
+#include "Proof/Math/Vector.h"
 
 namespace YAML
 {

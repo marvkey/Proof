@@ -4,9 +4,9 @@
 #include "../World.h"
 #include "../Entity.h"
 #include "NVDIAPhysX.h"
-#include "Proof/Resources/Asset/AssetManager.h"
+#include "Proof/Asset/AssetManager.h"
 #include "../Material.h"
-#include "Proof/Resources/Asset/PhysicsMaterialAsset.h"
+#include "Proof/Asset/PhysicsMaterialAsset.h"
 #include "../CollisionInfo.h"
 #include "../Script.h"
 #include "../Mesh.h"
@@ -55,15 +55,15 @@ namespace Proof {
 		m_NVDIAPhysicsEngine = new NVDIAPhysXEngine();
 		//
 		{
-			for (auto& [ID,asset] : AssetManager::s_AssetManager->m_AllPhysicsMaterialAsset) {
-				auto& physicsMaterial = asset->m_Material;
-				physx::PxMaterial* body = m_NVDIAPhysicsEngine->m_Physics->createMaterial(physicsMaterial.StaticFriction,physicsMaterial.DynamicFriction,
-				physicsMaterial.Bounciness);
-
-				body->setFrictionCombineMode((physx::PxCombineMode::Enum)physicsMaterial.FrictionCombineMode);
-				body->setRestitutionCombineMode((physx::PxCombineMode::Enum)physicsMaterial.BouncinessCombineMode);
-				asset->m_Material.m_RuntimeBody = body;
-			}
+			//for (auto& [ID,asset] : AssetManager::s_AssetManager->m_AllPhysicsMaterialAsset) {
+			//	auto& physicsMaterial = asset->m_Material;
+			//	physx::PxMaterial* body = m_NVDIAPhysicsEngine->m_Physics->createMaterial(physicsMaterial.StaticFriction,physicsMaterial.DynamicFriction,
+			//	physicsMaterial.Bounciness);
+			//
+			//	body->setFrictionCombineMode((physx::PxCombineMode::Enum)physicsMaterial.FrictionCombineMode);
+			//	body->setRestitutionCombineMode((physx::PxCombineMode::Enum)physicsMaterial.BouncinessCombineMode);
+			//	asset->m_Material.m_RuntimeBody = body;
+			//}
 		}
 
 		//param[in] restitution		The coefficient of restitution

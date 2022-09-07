@@ -6,14 +6,14 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/WindowEvent.h"
-#include "Proof/Resources/Asset/AssetManager.h"
-#include "Proof/Resources/Math/Random.h"
+#include "Proof/Asset/AssetManager.h"
+#include "Proof/Math/Random.h"
 #include <GLFW/glfw3.h>
 #include "Proof/Input/InputManager.h"
 #include<chrono>
 #include "Proof/Scripting/ScriptEngine.h"
 #include "CurrentWindow.h"
-
+#include "Proof/Project/ProjectSerilizer.h"
 namespace Proof {
     Special <Window> Application::MainWindow = nullptr;
     float Application::FPS = 60.0f;
@@ -22,24 +22,41 @@ namespace Proof {
     Application::Application(const ApplicationConfiguration& config):
         m_ApplicationConfiguration(config) 
     {
-        if (m_ApplicationConfiguration.ProjectPath.empty()) {
-            std::ofstream outfile("Proof/Proof.ProofProject");
-            outfile.close();
-            m_ApplicationConfiguration.ProjectPath = "Proof/Proof.ProofProject";
-        }
-        m_ProjectPath = m_ApplicationConfiguration.ProjectPath;
-
         srand(time(NULL));
         Proof::Log::Init();
+        Project::SetApp(this);
+        if (m_ApplicationConfiguration.ProjectPath.empty()) {
+            if(std::filesystem::exists("Proof")==false)
+                std::filesystem::create_directory("Proof");
+            (FileSystem::SetAEnvironmentVariable)("PROOF_PROJECT_DIR", "Proof");
+            m_ApplicationConfiguration.ProjectPath = "Proof/Proof.ProofProject";
+            m_ProjectPath = m_ApplicationConfiguration.ProjectPath;
+            Project::Get()->m_Path = m_ProjectPath;
+            ProjectSerilizer projectSerilizer(Project::Get());
+            projectSerilizer.SerilizeText(m_ProjectPath);
+        }
+        else {
+            m_ProjectPath = m_ApplicationConfiguration.ProjectPath;
+            Project::Get()->m_Path = m_ProjectPath;
+            (FileSystem::SetAEnvironmentVariable)("PROOF_PROJECT_DIR", Project::Get()->m_Path.root_directory().string());
+            ProjectSerilizer projectSerilizer(Project::Get());
+            projectSerilizer.DeSerilizeText(m_ProjectPath);
+        }
+       
+
         MainWindow = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
-       // MainWindow->SetEventCallback([this](Event& e) {OnEvent(e); });
-       // MainWindow->SetEventCallback(PF_BIND_FN(});
-        MainWindow->SetEventCallback(PF_BIND_FN(Application::OnEvent));
+        MainWindow->SetEventCallback([this](Event& e) {OnEvent(e); });
+        auto projdir = Project::GetProjectDir();
+        AssetManagerConfiguration assetManagerconfig;
+        assetManagerconfig.AssetDirectory = Project::Get()->m_AssetDirectory;
+        assetManagerconfig.AssetManager = Project::Get()->m_AssetManager;
+        AssetManager::Init(assetManagerconfig);
+
         Renderer::Init(static_cast<Window*>(MainWindow.get()));
         ScriptEngine::Init();
         
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan) {
-            AssetManager::NewInitilizeAssets("config/AssetManager.ProofAssetManager");
+            AssetManager::InitilizeAssets();
             ImGuiMainLayer = new ImGuiLayer();
             MainLayerStack.PushLayer(ImGuiMainLayer);
         }
@@ -142,7 +159,7 @@ namespace Proof {
         };
         IsRunning = false;
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
-            AssetManager::NewSaveAllAsset("config/AssetManager.ProofAssetManager");
+            AssetManager::SaveAllAssets();
 
         Renderer::Destroy();
     }

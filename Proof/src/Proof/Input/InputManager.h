@@ -54,6 +54,11 @@ namespace Proof {
 		//ControllerAxis = 4,
 		std::array<int, 5> AvalableDevices = { 0,0,0,0 };
 	};
+	// make this class per player ID
+	//call it Input(Something)
+	//have an atual input manger class that proccesses event 
+	//then that class will send liek keyboard event to the id 
+	// this class will be stored in a map with the id signifying the current player
 	class InputManager {
 	public:
 		static void OnEvent(Event& e);

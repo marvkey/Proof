@@ -12,7 +12,7 @@ Entities:
       OwnerID: 0
       Children: []
     MeshComponent:
-      MeshAssetPointerID: 12067
+      MeshAssetPointerID: 4645041025570573733
       MaterialPointerID: 0
     ScriptComponent:
       Scripts:

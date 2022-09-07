@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/ProofCore.h"
 #include "Proof/Renderer/WorldRenderer.h"
-#include "Proof/Resources/Asset/MeshAsset.h"
+#include "Proof/Asset/MeshAsset.h"
 #include "Proof/Scene/World.h"
 #include "Panel.h"
 

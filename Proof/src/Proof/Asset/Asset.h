@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "Proof/Utils/PlatformUtils.h"
 namespace Proof
 {
 	enum class AssetType {
@@ -9,16 +10,19 @@ namespace Proof
 		Material,
 		World,				// NOT TREATED THE SAME AS OTHER ASSETS
 		MeshSourceFile,
-		PhysicsMaterial
+		PhysicsMaterial,
+		TextureSourceFile,
 	};
 
 	using AssetID = UUID;
 	class Proof_API Asset {
 	public:
-		
+		virtual ~Asset() {
+
+		}
 		virtual void SaveAsset() =0;
 		virtual bool LoadAsset(const std::string& FilePath) =0;
-		bool LoadAsset() { return LoadAsset(m_SavePath); }
+		bool LoadAsset() { return LoadAsset(m_SavePath.string()); }
 		
 		virtual AssetID GetAssetID() {
 			return m_AssetID;
@@ -27,19 +31,11 @@ namespace Proof
 			return m_AssetType;
 		}
 		virtual std::string GetExtension()const = 0;
-		virtual uint32_t GetIamgeEdtorID(){
-			return 0;
-		}
-		
-		// FOR BROWSER PURPOSES
-		virtual bool IsEditorImageNull(){
-			return true;
-		}
 
-		virtual const std::string& GetName()const{
-			return m_AssetName;
+		std::string GetName()const{
+			return Utils::FileDialogs::GetFileName(m_SavePath);
 		}
-		const std::string& GetPath()const{
+		const std::filesystem::path& GetPath()const{
 			return m_SavePath;
 		}
 		
@@ -51,8 +47,7 @@ namespace Proof
 		void SetPath(const std::string& newFilePath) {
 			m_SavePath = newFilePath;
 		}
-		std::string m_AssetName;
-		std::string m_SavePath;
+		std::filesystem::path m_SavePath;
 		AssetID m_AssetID = 0;
 		friend class ContentBrowserPanel;
 		friend class AssetManager;

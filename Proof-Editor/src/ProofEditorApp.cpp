@@ -24,7 +24,7 @@ namespace Proof {
 
         ApplicationConfiguration configuration;
         configuration.Name = "Proof Editor";
-        configuration.EnableImgui = false;
+        configuration.EnableImgui = true;
         configuration.ProjectPath = projectPath;
         configuration.WindowConfiguration.Height = 500;
         configuration.WindowConfiguration.Width = 800;

@@ -1,5 +1,5 @@
 #pragma once
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Math/Math.h"
 #include "glm/glm.hpp"
 #include <array>
 #include "vertex.h"

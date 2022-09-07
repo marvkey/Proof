@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "AssetThumbnailGenerator.h"
-#include "Proof/Resources/Asset/AssetManager.h"
+#include "Proof/Asset/AssetManager.h"
 	
 namespace Proof{
 	std::unordered_map<AssetID, uint32_t> AssetThumbnailGenerator::AssetThumbnails;
@@ -12,7 +12,7 @@ namespace Proof{
 	}
 	void AssetThumbnailGenerator::CreateThumbnail(AssetID ID) {
 		auto info = AssetManager::GetAssetInfo(ID);
-		if (info.IsLoaded() == false)return;
+		if (info.Loaded == false)return;
 
 		auto camera = m_World->CreateEntity("Camera");
 		camera.GetComponent<TransformComponent>()->Location.Z -=5;

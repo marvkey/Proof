@@ -1,8 +1,8 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Scene/Material.h"
-#include "Proof/Resources/Asset/Asset.h"
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Asset/Asset.h"
+#include "Proof/Math/Math.h"
 namespace Proof
 {
 	class Proof_API PhysicsMaterialAsset :public Asset {
@@ -16,6 +16,9 @@ namespace Proof
 		virtual bool LoadAsset(const std::string& filePath)override;
 		virtual bool IsImageIDNUll() {
 			return true;
+		}
+		virtual ~PhysicsMaterialAsset() {
+
 		}
 		static std::string StaticGetExtension() {
 			return "PhysicsMaterial.ProofAsset";

@@ -1,7 +1,7 @@
 #pragma once
 #include "Entity.h"
 #include <vector>
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Math/Math.h"
 namespace Proof{
 	enum class ColliderTypes {
 		CubeCollider = 0,

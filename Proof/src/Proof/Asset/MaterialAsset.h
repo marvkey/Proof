@@ -1,8 +1,8 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Scene/Material.h"
-#include "Proof/Resources/Asset/Asset.h"
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Asset/Asset.h"
+#include "Proof/Math/Math.h"
 
 namespace Proof
 {
@@ -12,6 +12,9 @@ namespace Proof
 		MaterialAsset():
 			Asset(AssetType::Material) 
 		{
+
+		}
+		virtual ~MaterialAsset() {
 
 		}
 		virtual void SaveAsset() override;

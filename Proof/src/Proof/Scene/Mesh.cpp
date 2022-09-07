@@ -13,7 +13,7 @@
 #include <sstream>
 #include "Mesh.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
-#include "Proof/Resources/Math/Vector.h"
+#include "Proof/Math/Vector.h"
 #include "proof/Renderer/Renderer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
 namespace Proof{

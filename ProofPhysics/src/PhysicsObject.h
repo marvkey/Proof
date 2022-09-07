@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/vec3.hpp>
-#include "../../Proof/src/Proof/Resources/Math/Vector.h"
+#include "../../Proof/src/Proof/Math/Vector.h"
 #include "Collider/SphereCollider.h"
 namespace ProofPhysicsEngine {
 	class PhysicsObject // rename PhysicsBody

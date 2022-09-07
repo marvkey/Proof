@@ -4,7 +4,8 @@
 #include "Entity.h"
 #include "EntitiyComponentSystem/ECS.h"
 #include "World.h"
-#include "Proof/Resources/Asset/MaterialAsset.h"
+#include "Proof/Asset/MaterialAsset.h"
+#include "Proof/Asset/AssetManager.h"
 #include "Material.h"
 #include "script.h"
 #include "Component.h"
@@ -12,13 +13,15 @@
 #include "Entity.h"
 #include "EntitiyComponentSystem/ECS.h"
 #include "World.h"
-#include "Proof/Resources/Asset/MaterialAsset.h"
+#include "Proof/Asset/MaterialAsset.h"
 #include "Material.h"
 #include "script.h"
 #include "Proof/Renderer/MeshWorkShop.h"
-#include "Proof/Resources/Asset/AssetManager.h"
+#include "Proof/Asset/AssetManager.h"
 #include "Proof/Scene/Physics/PhysicsEngine.h"
 #include "Proof/Scripting/ScriptEngine.h"
+#include "Proof/Asset/PhysicsMaterialAsset.h"
+#include "Proof/Asset/MeshAsset.h"
 namespace Proof
 {
 	static struct Material Empty;
@@ -41,7 +44,7 @@ namespace Proof
 		if (m_MeshMaterialID == 0) {
 			return nullptr;
 		}
-		MaterialAsset* a = AssetManager::GetAsset<MaterialAsset>(m_MeshMaterialID);
+		auto a = AssetManager::GetAsset<MaterialAsset>(m_MeshMaterialID);
 		if (a == nullptr) {
 			m_MeshMaterialID = 0;
 			return nullptr;
@@ -51,7 +54,7 @@ namespace Proof
 	void MeshComponent::SetMeshSource(AssetID ID) {
 		if (ID.Get() == 0)return;
 		if (AssetManager::HasID(ID)) {
-			m_MeshAssetPointer = AssetManager::ForceGetAssetShared<MeshAsset>(ID);
+			m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(ID);
 			m_MeshAssetPointerID = ID;
 		}
 	}	
@@ -88,7 +91,7 @@ namespace Proof
 		if (m_MeshAssetPointerID == 0)
 			return nullptr;
 		if (m_MeshAssetPointer == nullptr)
-			m_MeshAssetPointer = AssetManager::GetAssetShared<MeshAsset>(m_MeshAssetPointerID);
+			m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
 
 		if (m_MeshAssetPointer == nullptr)// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
 			return nullptr;
@@ -102,7 +105,7 @@ namespace Proof
 		/*
 		if (m_MeshAssetPointerID == 0)
 			return nullptr;
-		m_MeshAssetPointer = AssetManager::GetAssetShared<MeshAsset>(m_MeshAssetPointerID); // we reasign if the asset manager returns null then the
+		m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID); // we reasign if the asset manager returns null then the
 		// shared pointer is null
 
 		if (m_MeshAssetPointer == nullptr) {// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
@@ -117,10 +120,10 @@ namespace Proof
 			return nullptr;
 		if (AssetManager::HasID(m_MeshAssetPointerID)) {
 			if (m_MeshAssetPointer == nullptr)
-				m_MeshAssetPointer = AssetManager::GetAssetShared<MeshAsset>(m_MeshAssetPointerID);
+				m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
 			
 			if(m_MeshAssetPointer->GetID() != m_MeshAssetPointerID)
-				m_MeshAssetPointer = AssetManager::GetAssetShared<MeshAsset>(m_MeshAssetPointerID);
+				m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
 
 			return m_MeshAssetPointer.get();
 		}
@@ -131,10 +134,10 @@ namespace Proof
 			return nullptr;
 		}
 		if (AssetManager::HasID(m_MeshAssetPointerID)) {
-			if (AssetManager::ForceGetAssetShared<MeshAsset>(m_MeshAssetPointerID) == nullptr) {
+			if (AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID) == nullptr) {
 				return nullptr;
 			}
-			m_MeshAssetPointer = AssetManager::ForceGetAssetShared<MeshAsset>(m_MeshAssetPointerID);
+			m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
 			return m_MeshAssetPointer.get();
 		}
 
@@ -165,7 +168,7 @@ namespace Proof
 		if (m_TextureAssetPointerID == 0)
 			return nullptr;
 		if (m_TextureAssetPointer == nullptr)
-			m_TextureAssetPointer = AssetManager::GetAssetShared<Texture2DAsset>(m_TextureAssetPointerID);
+			m_TextureAssetPointer = AssetManager::GetAsset<Texture2DAsset>(m_TextureAssetPointerID);
 
 		if (m_TextureAssetPointer == nullptr)// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
 			return nullptr;
@@ -180,7 +183,7 @@ namespace Proof
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
-		PhysicsMaterialAsset* a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
+		auto a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
 		if (a == nullptr) {
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
@@ -191,7 +194,7 @@ namespace Proof
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
-		PhysicsMaterialAsset* a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
+		auto a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
 		if (a == nullptr) {
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
@@ -203,7 +206,7 @@ namespace Proof
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
-		PhysicsMaterialAsset* a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
+		auto a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
 		if (a == nullptr) {
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
@@ -214,7 +217,7 @@ namespace Proof
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
-		PhysicsMaterialAsset* a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
+		auto a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
 		if (a == nullptr) {
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
@@ -226,12 +229,12 @@ namespace Proof
 		if (m_MeshAssetPointerID == 0) {
 			return nullptr;
 		}
-		MeshAsset* a = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
+		auto a = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
 		if (a == nullptr) {
 			m_MeshAssetPointerID = 0;
 			return nullptr;
 		}
-		return a;
+		return a.get();
 	}
 
 	void RigidBodyComponent::AddForce(Vector force, ForceMode mode, bool autoWake)const {

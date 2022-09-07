@@ -1,6 +1,6 @@
 #pragma once
 #include "../IntersectData.h"
-#include "../../../Proof/src/Proof/Resources/Math/Vector.h"
+#include "../../../Proof/src/Proof/Math/Vector.h"
 #include <functional>
 namespace ProofPhysicsEngine {
 	enum class ColliderType {

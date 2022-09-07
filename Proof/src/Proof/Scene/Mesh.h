@@ -2,7 +2,7 @@
 #include <vector>
 #include "Proof/Renderer/Vertex.h"
 #include "Proof/Renderer/Texture.h"
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Math/Math.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"

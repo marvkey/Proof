@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof/Resources/Asset/Asset.h"
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Asset/Asset.h"
+#include "Proof/Math/Math.h"
 
 namespace Proof{
 	class Proof_API WorldAsset :public Asset {
@@ -11,6 +11,9 @@ namespace Proof{
 
 		}
 
+		virtual ~WorldAsset() {
+
+		}
 		// NEEDS NO implementation
 		virtual void SaveAsset() override;
 		virtual bool LoadAsset(const std::string& filePath)override;

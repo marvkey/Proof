@@ -13,7 +13,7 @@
 #include <limits>
 #include <set>
 #include <stdexcept>
-#include "Proof/Resources/Math/Math.h"
+#include "Proof/Math/Math.h"
 
 namespace Proof
 {
