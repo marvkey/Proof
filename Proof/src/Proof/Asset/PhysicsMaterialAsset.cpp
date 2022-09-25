@@ -4,6 +4,8 @@
 #include <yaml-cpp/yaml.h>
 #include "Proof/Resources/ExternalCreations.h"
 #include "AssetManager.h"
+#include "Proof/Utils/PlatformUtils.h"
+
 namespace Proof
 {
 	PhysicsMaterialAsset::PhysicsMaterialAsset(const std::string& assetSavePath):

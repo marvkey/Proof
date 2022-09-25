@@ -13,7 +13,11 @@ namespace Proof
 		PhysicsMaterial,
 		TextureSourceFile,
 	};
-
+	enum class AssetState {
+		None = 0,
+		Ready = BIT(1),
+		Loading = BIT(2),
+	};
 	using AssetID = UUID;
 	class Proof_API Asset {
 	public:

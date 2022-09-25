@@ -14,7 +14,7 @@ namespace Proof
 			return std::string(name);
 		}
 		template <typename E, typename Lambda>
-		static void ForEach(Lambda&& lambda) {
+		static void ForEach(Lambda& lambda) {
 			magic_enum::enum_for_each<E>([&](auto val) {
 				lambda(val);
 			});

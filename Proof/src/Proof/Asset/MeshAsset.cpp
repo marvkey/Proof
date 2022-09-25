@@ -4,6 +4,8 @@
 #include "Proof/Renderer/3DRenderer/Renderer3D.h"
 #include <yaml-cpp/yaml.h>
 #include "AssetManager.h"
+#include "Proof/Utils/PlatformUtils.h"
+
 namespace Proof
 {
 	MeshAsset::MeshAsset(const std::string& meshFilePath,const std::string& savePath):

@@ -3,6 +3,7 @@
 
 #pragma once
 namespace Proof {
+
 	class Proof_API Texture {
 	public:
 		virtual uint32_t  GetID() = 0;
@@ -52,6 +53,11 @@ namespace Proof {
 		ClampToEdge = GL_CLAMP_TO_EDGE,
 		Linear = GL_LINEAR,
 		Nearest = GL_NEAREST
+	};
+
+	class Image {
+	public:
+
 	};
 	class Proof_API Texture2D: public Texture {
 	public:

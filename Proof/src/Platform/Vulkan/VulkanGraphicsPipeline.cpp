@@ -6,7 +6,7 @@
 #include "VulkanShader.h"
 #include "VulkanBuffer.h"
 #include "Proof/Renderer/Shader.h"
-
+#include "VulkanVertexArray.h"
 namespace Proof
 {
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {

@@ -28,7 +28,9 @@ namespace Proof
 #else
 		const bool enableValidationLayers = false;
 #endif
-
+		VkPhysicalDeviceProperties GetGPUProperties() {
+			return m_GPUProperties;
+		}
 		virtual ~VulkanGraphicsContext();
 		VulkanGraphicsContext(Window* windowHandle);
 		Window* m_Window;
@@ -45,6 +47,50 @@ namespace Proof
 			const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 		bool CreateVmaBuffer(VkBufferCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanBuffer& buffer);
+		bool CreateVmaImage(VkImageCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanImage& image);
+
+		VkImageCreateInfo ImageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent) {
+			VkImageCreateInfo info = { };
+			info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+			info.pNext = nullptr;
+
+			info.imageType = VK_IMAGE_TYPE_2D;
+
+			info.format = format;
+			info.extent = extent;
+
+			info.mipLevels = 1;
+			info.arrayLayers = 1;
+			info.samples = VK_SAMPLE_COUNT_1_BIT;
+			info.tiling = VK_IMAGE_TILING_OPTIMAL;
+			info.usage = usageFlags;
+
+			return info;
+		}
+		VulkanBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage) {
+	//allocate vertex buffer
+			VkBufferCreateInfo bufferInfo = {};
+			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			bufferInfo.pNext = nullptr;
+			bufferInfo.size = allocSize;
+
+			bufferInfo.usage = usage;
+
+
+			//let the VMA library know that this data should be writeable by CPU, but also readable by GPU
+			VmaAllocationCreateInfo vmaallocInfo = {};
+			vmaallocInfo.usage = memoryUsage;
+
+			VulkanBuffer newBuffer;
+
+			//allocate the buffer
+			vmaCreateBuffer(m_VMA_Allocator, &bufferInfo, &vmaallocInfo,
+				&newBuffer.Buffer,
+				&newBuffer.Allocation,
+				nullptr);
+
+			return newBuffer;
+		}
 		// Buffer Helper Functions
 		void CreateBuffer(
 			VkDeviceSize size,
@@ -65,7 +111,7 @@ namespace Proof
 			VkDeviceMemory& imageMemory);
 
 		
-		VkPhysicalDeviceProperties properties;
+		VkPhysicalDeviceProperties m_GPUProperties;
 		//void VMACreateBuffer(const VkBufferCreateInfo& bufferInfo, const VmaAllocationCreateInfo& VMAallocinfo, VkBuffer& buffer, VmaAllocation& vmaAlloc);
 		//
 		//const VmaAllocator& GetVMAAllocator() {
@@ -74,6 +120,15 @@ namespace Proof
 
 		uint32_t GetVulkanVersion() {
 			return m_VulkanVersion;
+		}
+		size_t PadUniformBufferSize(size_t originalSize) {
+		// Calculate required alignment based on minimum device offset alignment
+			size_t minUboAlignment = m_GPUProperties.limits.minUniformBufferOffsetAlignment;
+			size_t alignedSize = originalSize;
+			if (minUboAlignment > 0) {
+				alignedSize = (alignedSize + minUboAlignment - 1) & ~(minUboAlignment - 1);
+			}
+			return alignedSize;
 		}
 
 		VmaAllocator GetVMA_Allocator() {
@@ -112,13 +167,11 @@ namespace Proof
 		VkSurfaceKHR m_Surface;
 		VkQueue m_GraphicsQueue;
 		VkQueue m_PresentQueue;
-		VkPhysicalDeviceProperties m_GpuProperties;
 		//VmaAllocator m_VMA_Allocator; 
 		const std::vector<const char*> m_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> m_DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 		Count<class VulkanDescriptorPool> m_GlobalPool = nullptr;
-
 		VmaAllocator m_VMA_Allocator;
 	};
 

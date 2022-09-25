@@ -14,7 +14,7 @@ namespace Proof
 		"blend",
 	};
 
-	bool MeshHasFormat(const std::string& format) {
+	static bool MeshHasFormat(const std::string& format) {
 		for (const auto& a : MeshSourceFormats) {
 			if (a == format)
 				return true;
@@ -31,7 +31,7 @@ namespace Proof
 		"hdr"
 	};
 
-	bool TextureHasFormat(const std::string& format) {
+	static bool TextureHasFormat(const std::string& format) {
 		for (const auto& a : TextureSourceFormats) {
 			if (a == format)
 				return true;

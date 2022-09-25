@@ -123,7 +123,24 @@ namespace Proof
 		if(info.AssetSource == true)
 			s_AssetManagerData->Assets.erase(ID);
 	}
+	AssetType AssetManager::GetAssetFromFilePath(const std::filesystem::path& path){
+		const std::string fileFullExtension = Utils::FileDialogs::GetFullFileExtension(path);
+		if (fileFullExtension == "Mesh.ProofAsset")
+			return AssetType::Mesh;
+		if (fileFullExtension == "Material.ProofAsset")
+			return AssetType::Material;
+		if (fileFullExtension == "Texture.ProofAsset")
+			return AssetType::Texture;
+		if (fileFullExtension == "ProofWorld")
+			return AssetType::World;
+		if (fileFullExtension == "PhysicsMaterial.ProofAsset")
+			return AssetType::PhysicsMaterial;
 
+		if (MeshHasFormat(Utils::FileDialogs::GetFileExtension(path)))return AssetType::MeshSourceFile;
+		if (TextureHasFormat(Utils::FileDialogs::GetFileExtension(path)))return AssetType::TextureSourceFile;
+		const std::string fileDirectExtension = Utils::FileDialogs::GetFileExtension(path);
+		return AssetType::None;
+	}
 	AssetID AssetManager::GetAssetSourceID(const std::filesystem::path& path) {
 		auto relateivePath = std::filesystem::relative(path);
 		if (s_AssetManagerData->AssetSource.contains(relateivePath.string())) {

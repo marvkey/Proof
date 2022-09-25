@@ -24,6 +24,8 @@
 #include "Editor3D/ImGUIAPI.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/AssetThumbnailGenerator.h"
+
+#include "Proof/Asset/AssetSupport.h"
 namespace Proof
 {
 	static float padding = 16.0f; // space between 

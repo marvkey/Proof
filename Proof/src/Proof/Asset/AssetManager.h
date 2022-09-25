@@ -66,23 +66,7 @@ namespace Proof
 		static std::string GetAssetSourcePath(AssetID ID);
 		static AssetID CreateID();
 		static void Remove(AssetID ID);
-		static AssetType GetAssetFromFilePath(const std::filesystem::path& path) {
-			const std::string fileFullExtension = Utils::FileDialogs::GetFullFileExtension(path);
-			if (fileFullExtension == "Mesh.ProofAsset")
-				return AssetType::Mesh;
-			if (fileFullExtension == "Material.ProofAsset")
-				return AssetType::Material;
-			if (fileFullExtension == "Texture.ProofAsset")
-				return AssetType::Texture;
-			if (fileFullExtension == "ProofWorld")
-				return AssetType::World;
-			if (fileFullExtension == "PhysicsMaterial.ProofAsset")
-				return AssetType::PhysicsMaterial;
-
-			if(fileFullExtension == )
-			const std::string fileDirectExtension = Utils::FileDialogs::GetFileExtension(path);
-			return AssetType::None;
-		}
+		static AssetType GetAssetFromFilePath(const std::filesystem::path& path);
 		static bool IsFileValid(const std::string& Path);
 		static void LoadMultipleAsset(std::set<AssetID> assetLoadIn);
 

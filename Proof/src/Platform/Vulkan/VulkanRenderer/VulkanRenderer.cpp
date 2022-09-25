@@ -18,7 +18,8 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Renderer/UniformBuffer.h"
 #include "Proof/Scene/Component.h"
-
+#include "../VulkanVertexArray.h"
+#include "../VulkanTexutre.h"
 namespace Proof
 {
 	enum class UniformBindingSet0 {
@@ -26,7 +27,7 @@ namespace Proof
 	};
 
 	enum class UniformBindingSet1 {
-
+		
 	};
 	// for instace rendering 
 	// meshes with same material will be stored next to each other and drawn together
@@ -52,7 +53,7 @@ namespace Proof
 	static Count<VulkanDescriptorSetLayout> s_DescriptorLayout = nullptr;
 	std::vector<VkDescriptorSet	> s_DescriptorSets;
 	uint32_t sizeBindings = 1;
-
+	Count<VulkanTexture2D> s_Texture;
 	void VulkanRenderer::Init() {
 		s_Pipeline = new DrawPipeline();
 		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight()});
@@ -61,8 +62,9 @@ namespace Proof
 
 		
 		PF_ENGINE_INFO("Vulkan Renderer Initlized");
-		MonkeyMesh = Mesh("monkey_smooth.obj");
+		MonkeyMesh = Mesh("backpack.obj");
 		MeshCube = Mesh("cube.obj");
+		s_Texture = CreateCount<VulkanTexture2D>("container2.png");
 		s_TrianglePipeLine = new TrianglePipeLine();
 		s_MeshPipeLine = new MeshPipeLine();
 		//s_TrianglePipeLine->Init();
@@ -89,6 +91,7 @@ namespace Proof
 
 		s_DescriptorLayout = VulkanDescriptorSetLayout::Builder()
 			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build();
 		s_DescriptorSets.resize(Renderer::GetConfig().FramesFlight);
 	}
@@ -112,10 +115,8 @@ namespace Proof
 	}
 
 	void VulkanRenderer::EndRenderPass() {
-
 		s_Pipeline->CommandBuffer->EndRenderPass();
 		s_Pipeline->SwapChain->SubmitCommandBuffers(s_Pipeline->CommandBuffer->GetCommandBuffer(), &swapchainImageIndex);
-
 	}
 	void VulkanRenderer::RecreateSwapChain() {
 		
@@ -127,27 +128,32 @@ namespace Proof
 		s_Pipeline->SwapChain->WaitAndResetFences();
 		s_Pipeline->SwapChain->AcquireNextImage(&swapchainImageIndex);
 		s_Pipeline->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
-		std::vector<VkDescriptorSet> globalDescriptorSets(2);
 
-		//for (int i = 0; i < 2; i++) {
-			auto bufferInfo = s_Pipeline->CameraBuffer->GetDescriptorInfo(Renderer::GetCurrentFrame());
-			auto writer = VulkanDescriptorWriter(s_DescriptorLayout, graphicsContext->GetGlobalPool());
-			writer.WriteBuffer(0, &bufferInfo);
-			VkDescriptorSetAllocateInfo allocInfo{};
-			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			allocInfo.descriptorPool = graphicsContext->GetGlobalPool()->GetPool();
-			allocInfo.pSetLayouts = &s_DescriptorLayout->GetDescriptorSetLayout();
-			allocInfo.descriptorSetCount = 1;
+		auto bufferInfo = s_Pipeline->CameraBuffer->GetDescriptorInfo(Renderer::GetCurrentFrame());
+		auto writer = VulkanDescriptorWriter(s_DescriptorLayout, graphicsContext->GetGlobalPool());
+		writer.WriteBuffer(0, &bufferInfo);
+	
+		{
+			//write to the descriptor set so that it points to our empire_diffuse texture
+			VkDescriptorImageInfo imageBufferInfo;
+			imageBufferInfo.sampler = s_Texture->GetTextureSampler();
+			imageBufferInfo.imageView = s_Texture->GetImageView();
+			imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
+			writer.WriteImage(1, imageBufferInfo);
+		}
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = graphicsContext->GetGlobalPool()->GetPool();
+		allocInfo.pSetLayouts = &s_DescriptorLayout->GetDescriptorSetLayout();
+		allocInfo.descriptorSetCount = 1;
 
-			vkAllocateDescriptorSets(graphicsContext->GetDevice(), &allocInfo, &s_DescriptorSets[Renderer::GetCurrentFrame()]);
-			for (auto& write : writer.writes) {
-				write.dstSet = s_DescriptorSets[Renderer::GetCurrentFrame()];
-			}
-			vkUpdateDescriptorSets(device, writer.writes.size(), writer.writes.data(), 0, nullptr);
-		//}
+		vkAllocateDescriptorSets(graphicsContext->GetDevice(), &allocInfo, &s_DescriptorSets[Renderer::GetCurrentFrame()]);
+		for (auto& write : writer.writes) {
+			write.dstSet = s_DescriptorSets[Renderer::GetCurrentFrame()];
+		}
+		vkUpdateDescriptorSets(device, writer.writes.size(), writer.writes.data(), 0, nullptr);
 
 		auto& descript = s_DescriptorSets[Renderer::GetCurrentFrame()];
-		//if (s_DescriptorSets[Renderer::GetCurrentFrame()] == nullptr)
 
 		BeginRenderPass(s_MeshPipeLine->GraphicsPipeline);
 		s_Pipeline->CommandBuffer->Record([&](VkCommandBuffer& buffer){
@@ -219,8 +225,6 @@ namespace Proof
 		
 		EndRenderPass();
 	}
-
-
 	
 	void TrianglePipeLine::Init() {
 		Shader = Shader::Create("TraingleShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Vulkan/TriangleShader.shader");
@@ -242,8 +246,14 @@ namespace Proof
 		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
 		pipelineConfig.RenderPass = VulkanRenderer::s_Pipeline->SwapChain->GetRenderPass();
 		pipelineConfig.PipelineLayout = PipeLineLayout->GetPipeLineLayout();
-		auto input = Vertex::GetVulkanDescription();
+
+		VulkanVertexArray vulkanVertexArray{ sizeof(Vertex) };
+		vulkanVertexArray.SetData(0, VulkanDataFormat::Vec3, offsetof(Vertex, Vertex::Vertices));
+		vulkanVertexArray.SetData(1, VulkanDataFormat::Vec3, offsetof(Vertex, Vertex::Normal));
+		vulkanVertexArray.SetData(2, VulkanDataFormat::Vec2, offsetof(Vertex, Vertex::TexCoords));
+		vulkanVertexArray.SetData(3, VulkanDataFormat::Vec3, offsetof(Vertex, Vertex::Tangent));
+		vulkanVertexArray.SetData(4, VulkanDataFormat::Vec3, offsetof(Vertex, Vertex::Bitangent));
+		auto input = vulkanVertexArray.GetData();
 		GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(Shader, pipelineConfig, &input);
 	}
-
 }

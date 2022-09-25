@@ -144,14 +144,14 @@ namespace Proof
 			PF_CORE_ASSERT(false, "failed to find a suitable GPU!");
 		}
 
-		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
-		PF_ENGINE_INFO("physical device: {}", properties.deviceName);
-		PF_ENGINE_INFO("physical device: {}", properties.deviceName);
-		PF_ENGINE_INFO("	ID: {}", properties.deviceID);
-		PF_ENGINE_INFO("	Type: {}", properties.deviceType);
-		PF_ENGINE_INFO("	Driver Version: {}", properties.driverVersion);
-		PF_ENGINE_INFO("	API Version: {}", properties.apiVersion);
-		PF_ENGINE_INFO("	max bound descriptor sets: {}", properties.limits.maxBoundDescriptorSets);
+		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_GPUProperties);
+		PF_ENGINE_INFO("Gpu Name: {}", m_GPUProperties.deviceName);
+		PF_ENGINE_INFO("	ID: {}", m_GPUProperties.deviceID);
+		PF_ENGINE_INFO("	Type: {}", m_GPUProperties.deviceType);
+		PF_ENGINE_INFO("	Driver Version: {}", m_GPUProperties.driverVersion);
+		PF_ENGINE_INFO("	API Version: {}", m_GPUProperties.apiVersion);
+		PF_ENGINE_INFO("	max bound descriptor sets: {}", m_GPUProperties.limits.maxBoundDescriptorSets);
+		PF_ENGINE_INFO("	minimum buffer alignment : {}", m_GPUProperties.limits.minUniformBufferOffsetAlignment);
 	}
 
 	void VulkanGraphicsContext::CreateLogicalDevice() {
@@ -196,7 +196,6 @@ namespace Proof
 		if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
 			PF_CORE_ASSERT(false, "failed to create logical device!");
 		}
-
 		vkGetDeviceQueue(m_Device, indices.graphicsFamily, 0, &m_GraphicsQueue);
 		vkGetDeviceQueue(m_Device, indices.presentFamily, 0, &m_PresentQueue);
 	}
@@ -234,9 +233,11 @@ namespace Proof
 			////.Build(m_Device);
 			//VkDescriptorPoolCreateFlags PoolFlags = 0;
 			std::vector<VkDescriptorPoolSize> PoolSizes{};
-			PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Renderer::GetConfig().FramesFlight});
+			PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,10 });
+			PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 10});
+			PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10 });
 
-		m_GlobalPool = CreateCount<VulkanDescriptorPool>(Renderer::GetConfig().FramesFlight, 0, PoolSizes,m_Device);
+		m_GlobalPool = CreateCount<VulkanDescriptorPool>(10, 0, PoolSizes,m_Device);
 
 	}
 
@@ -444,6 +445,14 @@ namespace Proof
 
 	bool VulkanGraphicsContext::CreateVmaBuffer(VkBufferCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanBuffer& buffer) {
 		VkResult result =  vmaCreateBuffer(m_VMA_Allocator, &bufferInfo, &vmaInfo, &buffer.Buffer, &buffer.Allocation, nullptr);
+		if (result == false)
+			return false;
+
+		return true;
+	}
+
+	bool VulkanGraphicsContext::CreateVmaImage(VkImageCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanImage& image) {
+		VkResult result = vmaCreateImage(m_VMA_Allocator, &bufferInfo, &vmaInfo, &image.Image, &image.Allocation, nullptr);
 		if (result == false)
 			return false;
 

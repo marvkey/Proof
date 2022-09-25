@@ -218,7 +218,7 @@ namespace Proof{
     }
     void SubMesh::SetUpVulkan() {
 
-        vulkanVertexArrayObject = new VulkanVertexArray();
+       // vulkanVertexArrayObject = new VulkanVertexArray();
         vulkanVertexBufferObject = new VulkanVertexBuffer(m_Vertices.data(),m_Vertices.size()* sizeof(Vertex), m_Vertices.size());
         vulkanIndexBufferObject = new VulkanIndexBuffer(m_Indices.data(), m_Indices.size());
     }

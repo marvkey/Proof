@@ -10,6 +10,7 @@ namespace Proof{
 	};
 
 	struct VulkanImage {
-
+		VkImage Image;
+		VmaAllocation Allocation;
 	};
 }

@@ -31,7 +31,10 @@ namespace Proof
 		}
 		static void EndRenderPass();
 		static uint32_t swapchainImageIndex;
+		template <class T>
+		static void SubmitDatafree(std::function<void()>& function) {
 
+		}
 		template <class T>
 		static void Submit(T func) {
 			auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
@@ -51,9 +54,6 @@ namespace Proof
 
 			vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-			//VkBufferCopy copyRegion{};
-			//copyRegion.size = size;
-			//vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 			func(commandBuffer);
 			vkEndCommandBuffer(commandBuffer);
 

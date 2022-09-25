@@ -22,9 +22,7 @@ namespace Proof
         glm::vec2 TexCoords{0,0};
         Vector Tangent{0,0,0};
         Vector Bitangent{0,0,0};
-
-        static class VulkanVertexInput GetVulkanDescription();
-    };
+    }; 
 
     struct Vertex2D {
         Vector Position;

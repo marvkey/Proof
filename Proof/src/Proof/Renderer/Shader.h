@@ -9,7 +9,9 @@ namespace Proof
     public:
         enum class ShaderStage {
             Vertex,
-            Fragment
+            Fragment,
+            Compute,
+            Geometry
         };
         virtual void Bind() {};
         virtual void UnBind() {};
@@ -37,7 +39,7 @@ namespace Proof
         static Count<Shader>Create(const std::string& _ShaderName, const std::string& vertPath, const std::string& fragPath);
         static Count<Shader>GetOrCreate(const std::string& name, const std::string& path);
         virtual const std::string& GetName()const { return ""; };
-        virtual const std::string& GetPath()const { return ""; };
+        virtual const std::unordered_map<Shader::ShaderStage, std::string>& GetPath()const { return {}; };
         virtual ~Shader();
         virtual void Reload() {};
     protected:

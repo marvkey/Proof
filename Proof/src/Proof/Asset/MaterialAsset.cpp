@@ -6,6 +6,8 @@
 #include "Proof/Resources/ExternalCreations.h"
 #include "AssetManager.h"
 #include "Proof/Renderer/Texture.h"
+#include "Proof/Utils/PlatformUtils.h"
+
 namespace Proof{
 	MaterialAsset::MaterialAsset(const std::string& assetSavePath):
 		Asset(AssetType::Material)
