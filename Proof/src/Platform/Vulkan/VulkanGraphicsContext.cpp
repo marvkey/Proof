@@ -116,7 +116,7 @@ namespace Proof
 			createInfo.pNext = nullptr;
 		}
 
-		if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS) {
+		if (vkCreateInstance(&createInfo, m_Allocator, &m_Instance) != VK_SUCCESS) {
 			PF_CORE_ASSERT(false, "failed to create instance!");
 		}
 
@@ -232,12 +232,20 @@ namespace Proof
 			//.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000);
 			////.Build(m_Device);
 			//VkDescriptorPoolCreateFlags PoolFlags = 0;
-			std::vector<VkDescriptorPoolSize> PoolSizes{};
-			PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,10 });
-			PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 10});
-			PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10 });
+		std::vector<VkDescriptorPoolSize> PoolSizes{};
 
-		m_GlobalPool = CreateCount<VulkanDescriptorPool>(10, 0, PoolSizes,m_Device);
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 });
+		m_GlobalPool = CreateCount<VulkanDescriptorPool>(1000, 0, PoolSizes, m_Device);
 
 	}
 

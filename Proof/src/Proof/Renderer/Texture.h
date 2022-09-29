@@ -6,10 +6,10 @@ namespace Proof {
 
 	class Proof_API Texture {
 	public:
-		virtual uint32_t  GetID() = 0;
-		virtual void unBind() = 0;
-		virtual void Bind(uint32_t Slot = 0) = 0;
-		virtual void GenerateMipMap()=0;
+		virtual uint32_t  GetID() { return 0; };
+		virtual void unBind(){};
+		virtual void Bind(uint32_t Slot = 0) {};
+		virtual void GenerateMipMap(){};
 	};
 	enum class type:uint32_t{
 		UnsignedInt =GL_UNSIGNED_INT,
@@ -69,10 +69,10 @@ namespace Proof {
 			Normal,
 			Height,
 		};
-		virtual void SetData(void* data,uint32_t size) = 0;
-		virtual std::string GetPath() = 0;
+		virtual void SetData(void* data,uint32_t size){};
+		virtual std::string GetPath() { return ""; };
 
-		virtual TextureType GetTextureType() = 0;
+		virtual TextureType GetTextureType() { return TextureType::None; };
 		static Count<Texture2D> Create(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType,bool usWrap = true);
 		static Count<Texture2D> Create(const std::string& Path,TextureType _TextureType = TextureType::None);
 		static Count<Texture2D>	Create(uint32_t ImageWidth,uint32_t ImageHeight,TextureType _TextureType= TextureType::None);

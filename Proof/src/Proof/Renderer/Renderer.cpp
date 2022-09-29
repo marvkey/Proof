@@ -3,6 +3,7 @@
 #include "Renderer2D.h"
 #include "3DRenderer/Renderer3D.h"
 #include "3DRenderer/Renderer3DPBR.h"
+#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
 #include "Proof/Scene/World.h"
 #include "Proof/Renderer/GraphicsContext.h"
 #include "Proof/Renderer/MeshWorkShop.h"
@@ -19,8 +20,11 @@ namespace Proof {
 		PF_PROFILE_FUNC();
 
 		m_GraphicsContext = GraphicsContext::Create(window);
+		
 		Renderer3DCore::Init();
 		Renderer3DPBR::Init();
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+			window->m_SwapChain = VulkanRenderer::s_Pipeline->SwapChain;
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 
 		Renderer2D::Init();

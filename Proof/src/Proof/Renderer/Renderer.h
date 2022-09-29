@@ -14,6 +14,14 @@ namespace Proof {
 
 		static void EndFrame() {
 			s_CurrentFrame = (s_CurrentFrame + 1) % GetConfig().FramesFlight;
+
+			//vkAcquireNextImageKHR(
+			//	Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(),
+			//	m_SwapChain,
+			//	Math::GetMaxType<uint64_t>(),
+			//	m_ImageAvailableSemaphores[frameIndex],  // must be a not signaled semaphore
+			//	VK_NULL_HANDLE,
+			//	imageIndex);
 		}
 
 		static uint32_t GetCurrentFrame() {

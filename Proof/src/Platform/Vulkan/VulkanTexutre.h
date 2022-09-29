@@ -4,7 +4,7 @@
 #include "VulkanUtils/VulkanBufferBase.h"
 namespace Proof
 {
-	class VulkanTexture2D {
+	class VulkanTexture2D : public Texture2D {
 	public:
 
 		VulkanTexture2D(const std::string& Path); // Transperant if the image is Png IT has an alpha channel
@@ -15,6 +15,10 @@ namespace Proof
 
 		const VkSampler GetTextureSampler() {
 			return m_TextureSampler;
+		}
+
+		uint32_t GetID() {
+			return 0;
 		}
 	private:
 		VulkanImage m_Image;

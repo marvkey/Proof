@@ -67,6 +67,14 @@ namespace Proof
 
 			return info;
 		}
+
+		static void CHECK_VULKAN_ERROR(VkResult err) {
+			if (err == 0)
+				return;
+			PF_ENGINE_ERROR("[vulkan] Error: VkResult = {}", err);
+			if (err < 0)
+				abort();
+		}
 		VulkanBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage) {
 	//allocate vertex buffer
 			VkBufferCreateInfo bufferInfo = {};
@@ -137,7 +145,19 @@ namespace Proof
 		Count<class VulkanDescriptorPool> GetGlobalPool() {
 			return m_GlobalPool;
 		}
+		const VkInstance GetInstance() {
+			return m_Instance;
+		}
 
+		const VkPhysicalDevice GetGPU() {
+			return m_PhysicalDevice;
+		}
+		VkAllocationCallbacks* GetAllocator() {
+			return m_Allocator;
+		}
+		VkPipelineCache GetPipelineCache() {
+			return m_PipelineCache;
+		}
 	private:
 		uint32_t m_VulkanVersion;
 		void CreateInstance();
@@ -157,12 +177,12 @@ namespace Proof
 		void HasGflwRequiredInstanceExtensions();
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-
+		VkAllocationCallbacks* m_Allocator =nullptr;
 		VkInstance m_Instance;
 		VkDebugUtilsMessengerEXT m_DebugMessenger;
 		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 		VkCommandPool m_CommandPool;
-
+		VkPipelineCache m_PipelineCache;
 		VkDevice m_Device;
 		VkSurfaceKHR m_Surface;
 		VkQueue m_GraphicsQueue;

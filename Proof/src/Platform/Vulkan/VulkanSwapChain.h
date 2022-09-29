@@ -13,7 +13,7 @@ namespace Proof
 
         VulkanSwapChain(VkExtent2D windowExtent);
         ~VulkanSwapChain();
-
+        friend class ImGuiLayer;
         VkFramebuffer GetFrameBuffer(int index)const { return m_SwapChainFramebuffers[index]; }
         VkRenderPass GetRenderPass()const { return m_RenderPass; }
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }

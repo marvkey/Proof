@@ -19,6 +19,7 @@ namespace Proof
 		}
 		uint32_t GetSize() { return 0; }
 		void BeginRenderPass(uint32_t imageIndex, Count<VulkanGraphicsPipeline> graphicsPipeLine, const glm::vec4& Color = { 0.1,0.1,0.1,1 }, float Depth = 1.0f, uint32_t stencil = 0, uint32_t frameIndex = Renderer::GetCurrentFrame());
+		void BeginRenderPass(uint32_t imageIndex, Count<VulkanGraphicsPipeline> graphicsPipeLine, VkRenderPass renderPass, VkFramebuffer buffer, const glm::vec4& Color = { 0.1,0.1,0.1,1 }, float Depth = 1.0f, uint32_t stencil = 0, uint32_t frameIndex = Renderer::GetCurrentFrame());
 		template <typename T>
 		void Record(T func) {
 			PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot record if render pass is not started");
@@ -28,9 +29,9 @@ namespace Proof
 		void EndRenderPass();
 		void Recreate();
 		void FreeCommandBuffer();
+		void Bind(uint32_t frameIndex = Renderer::GetCurrentFrame(),VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
 	private:
 		bool m_RenderPassEnabled = false;
-		void Bind(uint32_t frameIndex = Renderer::GetCurrentFrame(),VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
 		std::vector<VkCommandBuffer> m_CommandBuffer;
 		Count<VulkanGraphicsPipeline> m_GraphicspipeLine;
 		Count<VulkanSwapChain> m_SwapChain;

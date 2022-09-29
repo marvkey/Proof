@@ -2,6 +2,7 @@
 #include "Texture.h"
 #include "RendererAPI.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
+#include "Platform/Vulkan/VulkanTexutre.h"
 //#include "Platform/OpenGL/OpenGLCubeMap.h"
 namespace Proof {
 	Count<Texture2D> Texture2D::Create(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType,bool usWrap ) {
@@ -14,7 +15,7 @@ namespace Proof {
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
 			case RendererAPI::API::OpenGL: return CreateCount<OpenGLTexture2D>(Path,_TextureType);
-		
+			case RendererAPI::API::Vulkan: return CreateCount<VulkanTexture2D>(Path);
 		}
 	}
 

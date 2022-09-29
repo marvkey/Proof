@@ -14,6 +14,8 @@
 #include "Proof/Scripting/ScriptEngine.h"
 #include "CurrentWindow.h"
 #include "Proof/Project/ProjectSerilizer.h"
+#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
+
 namespace Proof {
     Special <Window> Application::MainWindow = nullptr;
     float Application::FPS = 60.0f;
@@ -50,9 +52,9 @@ namespace Proof {
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = Project::Get()->m_AssetDirectory;
         assetManagerconfig.AssetManager = Project::Get()->m_AssetManager;
-        AssetManager::Init(assetManagerconfig);
-
         Renderer::Init(static_cast<Window*>(MainWindow.get()));
+
+        AssetManager::Init(assetManagerconfig);
         ScriptEngine::Init();
         
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan) {
@@ -61,6 +63,10 @@ namespace Proof {
             MainLayerStack.PushLayer(ImGuiMainLayer);
         }
         
+        if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
+            ImGuiMainLayer = new ImGuiLayer();
+            MainLayerStack.PushLayer(ImGuiMainLayer);
+        }
         PF_ENGINE_TRACE("Engine Load Done");
     }
 
@@ -142,7 +148,7 @@ namespace Proof {
 
             if (WindowMinimized == false) 
                 LayerUpdate(DeltaTime);
-            if (Renderer::GetAPI() != RendererAPI::API::Vulkan && m_ApplicationConfiguration.EnableImgui == true)
+            if (m_ApplicationConfiguration.EnableImgui == true)
                 ImguiUpdate(DeltaTime);
 
             MainWindow->WindowUpdate();
@@ -156,6 +162,7 @@ namespace Proof {
             FPS = (1.0 / (CurrentTime - PreviousTime)) * FrameCount;
             FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
             LastFrameTime = time;
+
         };
         IsRunning = false;
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan)

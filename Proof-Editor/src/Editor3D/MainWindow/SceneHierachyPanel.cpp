@@ -43,6 +43,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
+		#if 0 
 		if (ImGui::Begin("Herieachy", &m_ShowWindow));
 		{
 			/*
@@ -101,6 +102,7 @@ namespace Proof
 			}
 			ImGui::EndChild();
 		}
+		#endif 
 
 		ImGui::End();
 		ImGui::PopStyleVar();

@@ -343,8 +343,8 @@ namespace Proof
 			Count<ScreenFrameBuffer> bufferl;
 			camera.OnUpdate(DeltaTime, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
 			RendererData rednerdata;
-			VulkanRenderer::BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, bufferl, rednerdata);
-			VulkanRenderer::EndContext();
+			//VulkanRenderer::BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, bufferl, rednerdata);
+			//VulkanRenderer::EndContext();
 		}
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		m_WorldRenderer.Renderer();
@@ -376,9 +376,10 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Layer::OnImGuiDraw(DeltaTime);
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
+		#if 0
 		for (auto& a : m_AllPanels) {
 			a.second->ImGuiRender(DeltaTime);
 		}
@@ -442,6 +443,7 @@ namespace Proof
 			}
 		}
 		ImGui::End();
+		#endif
 	}
 
 	void Editore3D::OnKeyClicked(KeyClickedEvent& e) {
@@ -867,6 +869,8 @@ namespace Proof
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		static bool Open = true;
 		if (ImGui::Begin("ViewPort", &Open, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar)) {
+			#if  0
+
 			m_ViewPoartHoveredorFocused = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 			m_ViewPortFocused = ImGui::IsWindowFocused();
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -954,37 +958,19 @@ namespace Proof
 				ImGui::EndDragDropTarget();
 
 			}
+			#endif //  0
+
 			/*----------------------------------------------------------------------------------------------------------------------------*/
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
-
-		/*
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
-		if (ImGui::Begin("Position")) {
-			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GPosition->GetAssetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
-		}
-		ImGui::End();
-		ImGui::PopStyleVar();
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
-		if (ImGui::Begin("Colour")) {
-			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GAlbedo->GetAssetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
-		}
-		ImGui::End();
-		ImGui::PopStyleVar();
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
-		if (ImGui::Begin("Normal")) {
-			ImGui::Image((ImTextureID)Renderer3DPBR::GetRenderer()->m_DeferedRendering.GNormal->GetAssetID(),{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
-		}
-		ImGui::End();
-		ImGui::PopStyleVar();
-		*/
+	
 	}
 
 	void Editore3D::MainToolBar() {
 		ImGui::Begin("##MainToolBar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse/* | ImGuiWindowFlags_NoMove*/);
+		#if  0
+
 		Count<Texture2D> icon;
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
 			icon = m_PlayButtonTexture;
@@ -1017,6 +1003,7 @@ namespace Proof
 			if (ActiveWorld->m_CurrentState == WorldState::Edit)
 				SimulateWorld();
 		}
+		#endif //  0
 		ImGui::End();
 	}
 
@@ -1024,7 +1011,7 @@ namespace Proof
 		static bool opt_fullscreen = true;
 		static bool opt_padding = false;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar;
 		if (opt_fullscreen) {
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
 			ImGui::SetNextWindowPos(viewport->GetWorkPos());
