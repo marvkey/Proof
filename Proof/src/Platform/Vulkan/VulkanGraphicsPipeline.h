@@ -17,7 +17,7 @@ namespace Proof
 		VkRenderPass RenderPass = nullptr;
 		uint32_t Subpass = 0;
 	};
-	class Proof_API VulkanGraphicsPipeline {
+	class  VulkanGraphicsPipeline {
 	public:
 		virtual ~VulkanGraphicsPipeline();
 		VulkanGraphicsPipeline(Count<class Shader> shader, const PipelineConfigInfo& info, class VulkanVertexInput* input = nullptr);

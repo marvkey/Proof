@@ -4,6 +4,7 @@
 #include<chrono>
 #include "UUID.h"
 #include "Proof/utils/FileSystem.h"
+#include "Proof/Math/Math.h"
 #include <vector>
 #include "Log.h"
 #define PF_BIND_FN(fn) std::bind(&fn, this, std::placeholders::_1)

@@ -24,6 +24,7 @@ namespace Proof {
 	uint32_t Renderer2D::Renderer2DStats::m_QuadCount=0;
 	uint32_t Renderer2D::Renderer2DStats::m_DrawCalls=0;
 	void Renderer2D::Init() {
+		#if 0
 		s_Renderer2DStats = new Renderer2DStats;
 		for (uint32_t i = 0; i < Renderer2DStorage::s_MaxIndexCount; i += 6) {
 			Renderer2DStorage::QuadIndices[i + 0] = 0 +Offset;
@@ -61,6 +62,7 @@ namespace Proof {
 		s_Storage2DData->m_Shader->SetIntArray("u_TextureSlot",Samplers,Renderer2DStorage::MaxTextureSlot);
 
 	    s_Storage2DData->m_Textures[0]= s_Storage2DData->m_WhiteTexture;
+		#endif
 	}
 	void Renderer2D::BeginContext(const EditorCamera& editorCamera) {
 		s_Storage2DData->m_Shader->Bind();

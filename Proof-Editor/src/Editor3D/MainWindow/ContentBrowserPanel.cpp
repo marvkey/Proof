@@ -38,7 +38,6 @@ namespace Proof
 		m_CurrentDirectory(Project::Get()->GetAssetDir()),
 		m_Owner(owner) {
 		s_AssetsPath = Project::Get()->GetAssetDir();
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 
 		m_FolderIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FolderIcon.png");
 		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
@@ -86,7 +85,7 @@ namespace Proof
 					if (ImGui::Button("Regenerate Asset Source", { 50,50 })) {
 						//AssetManager::GenerateAllSourceAssets();
 					}
-					if (ImGui::BeginPopupContextWindow(0, 1, false)) { // right click 
+					if (ImGui::BeginPopupContextWindow(0, 1)) { // right click 
 						if (ImGui::MenuItem("Folder")) {
 							NameofFileRename = Utils::FileDialogs::GetFileName(NewFolder("folder"));
 							FileRenameName = NameofFileRename;
@@ -267,7 +266,7 @@ namespace Proof
 		ImGui::PopStyleColor();
 		if ((ImGui::IsItemHovered() == false && ImGui::IsAnyMouseDown())) // the text no longer edited
 			goto a;
-		if (ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
+		if (ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::Enter)) {
 			a:
 			if (nameExist == true) { // so basically if it is the same name do not change anything
 				FileRenameName = "";
@@ -311,7 +310,7 @@ namespace Proof
 
 		if ((ImGui::IsItemHovered() == false && ImGui::IsAnyMouseDown())) // the text no longer edited
 			goto a;
-		if (ImGui::IsKeyPressed((int)KeyBoardKey::Enter)) {
+		if (ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::Enter)) {
 			a:
 			if (nameExist == true) {// so basically if it is the same name do not change anything
 				FileRenameName = "";

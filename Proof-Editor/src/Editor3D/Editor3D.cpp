@@ -15,7 +15,7 @@
 #include "Proof/Asset/PhysicsMaterialAsset.h"
 #include "Proof/Asset/MaterialAsset.h"
 #include "Proof/Scene/Script.h"
-
+#include "ImGui/imgui_impl_vulkan.h"
 #include <Windows.h>
 #include <stdio.h> 
 #include "ImGUIAPI.h"
@@ -42,7 +42,7 @@
 #include "Proof/Scripting/ScriptEngine.h"
 namespace Proof
 {
-	EditorCamera camera{ 200,200};
+	EditorCamera camera{ 200,200 };
 
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") {
@@ -243,25 +243,22 @@ namespace Proof
 	}
 	void Editore3D::OnAttach() {
 		camera = EditorCamera{ CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight() };
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
-		m_CheckeboardTexture = Texture2D::Create("Assets/Textures/CheckeboardTexture.jpg");
-
-
-		CubeMapPaths.emplace_back("Assets/Textures/skybox/right.jpg");
-		CubeMapPaths.emplace_back("Assets/Textures/skybox/left.jpg");
-		CubeMapPaths.emplace_back("Assets/Textures/skybox/bottom.jpg");
-		CubeMapPaths.emplace_back("Assets/Textures/skybox/top.jpg");
-		CubeMapPaths.emplace_back("Assets/Textures/skybox/front.jpg");
-		CubeMapPaths.emplace_back("Assets/Textures/skybox/back.jpg");
 
 		ActiveWorld = CreateCount<World>();
 		//ScriptEngine::ReloadAssembly(ActiveWorld.get());
 		SceneSerializer scerelizer(ActiveWorld.get());
 		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofWorld") == true) {
 			m_WorldHierachy.SetContext(ActiveWorld.get());
-			if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
-				AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
+			AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
 		}
+
+		//CubeMapPaths.emplace_back("Assets/Textures/skybox/right.jpg");
+		//CubeMapPaths.emplace_back("Assets/Textures/skybox/left.jpg");
+		//CubeMapPaths.emplace_back("Assets/Textures/skybox/bottom.jpg");
+		//CubeMapPaths.emplace_back("Assets/Textures/skybox/top.jpg");
+		//CubeMapPaths.emplace_back("Assets/Textures/skybox/front.jpg");
+		//CubeMapPaths.emplace_back("Assets/Textures/skybox/back.jpg");
+
 
 		m_WorldHierachy.SetContext(ActiveWorld.get());
 		m_WorldRenderer = WorldRenderer(ActiveWorld, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
@@ -269,8 +266,9 @@ namespace Proof
 		m_EditorWorld = ActiveWorld;
 		SceneCoreClasses::s_CurrentWorld = ActiveWorld.get();
 
+		/*
 		float skyboxVertices[] = {
-					 // positions          
+					 // positions
 			-1.0f,1.0f,-1.0f,
 			-1.0f,-1.0f,-1.0f,
 			1.0f,-1.0f,-1.0f,
@@ -322,7 +320,7 @@ namespace Proof
 		m_SkyBoxShader->Bind();
 		m_SkyBoxShader->SetInt("skybox", 0);
 		m_CubeMap = CubeMap::Create(CubeMapPaths);
-
+*/
 		m_PlayButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PlayButton.png");
 		m_PauseButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PauseButton .png");
 		m_SimulateButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/SimulateButton.png");
@@ -335,18 +333,10 @@ namespace Proof
 			scerelizer.SerilizeText(m_EditorWorld->GetPath());
 		}
 	}
-
+	Count<ScreenFrameBuffer> buffer;
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
-			Count<ScreenFrameBuffer> bufferl;
-			camera.OnUpdate(DeltaTime, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
-			RendererData rednerdata;
-			//VulkanRenderer::BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, bufferl, rednerdata);
-			//VulkanRenderer::EndContext();
-		}
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		m_WorldRenderer.Renderer();
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
 			ActiveWorld->OnUpdateEditor(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
@@ -354,38 +344,22 @@ namespace Proof
 			ActiveWorld->OnUpdateRuntime(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
 		else if (ActiveWorld->m_CurrentState == WorldState::Simulate)
 			ActiveWorld->OnSimulatePhysics(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
-		/*
-		glm::mat4 view = -glm::mat4(glm::mat3(ActiveWorld->m_EditorCamera.m_View));
-		m_WorldRenderer.m_ScreenFrameBuffer->Bind();
-		glDepthFunc(GL_LEQUAL);
-		m_SkyBoxShader->Bind();
-		m_SkyBoxShader->SetMat4("view",view);
-		m_SkyBoxShader->SetMat4("projection", ActiveWorld->m_EditorCamera.m_Projection);
-		m_SkyBoxVertexArray->Bind();
-		glActiveTexture(GL_TEXTURE0);
-		m_CubeMap->Bind();
-		glDrawArrays(GL_TRIANGLES,0,36);
-		m_SkyBoxVertexArray->UnBind();
-		glDepthFunc(GL_LESS);
-		RendererCommand::SetClearColor();
-		m_WorldRenderer.m_ScreenFrameBuffer->UnBind();
-		*/
 	}
 
 	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 
 		Layer::OnImGuiDraw(DeltaTime);
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
-		#if 0
+		MainToolBar();
+
+		ViewPort();
+
 		for (auto& a : m_AllPanels) {
 			a.second->ImGuiRender(DeltaTime);
 		}
-
-		ViewPort();
-		MainToolBar();
 		m_WorldHierachy.ImGuiRender(DeltaTime);
 		m_ContentBrowserPanel.ImGuiRender(DeltaTime);
 		m_AssetManagerPanel.ImGuiRender(DeltaTime);
@@ -399,7 +373,7 @@ namespace Proof
 			if (ImGui::Button("Choose HDR")) {
 				std::string file = Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
 				if (file.empty() == false) {
-					ActiveWorld->CreateIBlTexture(file);
+					//ActiveWorld->CreateIBlTexture(file);
 				}
 			}
 		}
@@ -428,22 +402,21 @@ namespace Proof
 				Renderer::GetShaderLibrary().ReloadeShaders();
 			}
 
-			if (m_WorldRenderer.RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
-				ImGui::Text("Renderer techniqe is FowardRendering");
-			}
-			else {
-				ImGui::Text("Renderer techniqe is DeferedRendering");
-
-			}
-			if (ImGui::Button("Change Renderer")) {
-				if (m_WorldRenderer.RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering)
-					m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::DeferedRendering;
-				else
-					m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::FowardRendering;
-			}
+			//if (m_WorldRenderer.RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
+			//	ImGui::Text("Renderer techniqe is FowardRendering");
+			//}
+			//else {
+			//	ImGui::Text("Renderer techniqe is DeferedRendering");
+			//
+			//}
+			//if (ImGui::Button("Change Renderer")) {
+			//	if (m_WorldRenderer.RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering)
+			//		m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::DeferedRendering;
+			//	else
+			//		m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::FowardRendering;
+			//}
 		}
 		ImGui::End();
-		#endif
 	}
 
 	void Editore3D::OnKeyClicked(KeyClickedEvent& e) {
@@ -518,30 +491,30 @@ namespace Proof
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-					break;
+						//GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+						break;
 				}
 
 			case KeyBoardKey::W:
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						GuizmoType = ImGuizmo::OPERATION::ROTATE;
-					break;
+						//GuizmoType = ImGuizmo::OPERATION::ROTATE;
+						break;
 				}
 			case KeyBoardKey::E:
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						GuizmoType = ImGuizmo::OPERATION::SCALE;
-					break;
+						//GuizmoType = ImGuizmo::OPERATION::SCALE;
+						break;
 				}
 			case KeyBoardKey::R:
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
-					break;
+						//GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
+						break;
 				}
 			case KeyBoardKey::Tab:
 				{
@@ -583,7 +556,7 @@ namespace Proof
 				ImGui::SameLine();
 				if (ImGui::Button("Clear log")) {
 					Log::Logs.clear();
-					ImGui::SetScrollHere();
+					//ImGui::SetScrollHere();
 				}
 				if (ImGui::Button("Settings")) {
 
@@ -600,7 +573,7 @@ namespace Proof
 						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 0.15f,0.15f,0.15f,1.0f });
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
 					ImGui::TextColored({ 1.0,0.0,0.0,1.0 }, it.second.second.c_str());
-					if (ImGui::BeginPopupContextWindow(0, 1, false)) {
+					if (ImGui::BeginPopupContextWindow(0, 1)) {
 						if (ImGui::MenuItem("Copy"))
 							Utils::ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
@@ -618,7 +591,7 @@ namespace Proof
 						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 0.15f,0.15f,0.15f,1.0f });
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
 					ImGui::TextColored({ 1.0,0.635,0.0,1.0 }, it.second.second.c_str());
-					if (ImGui::BeginPopupContextWindow(0, 1, false)) {
+					if (ImGui::BeginPopupContextWindow(0, 1)) {
 						if (ImGui::MenuItem("Copy"))
 							Utils::ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
@@ -634,7 +607,7 @@ namespace Proof
 					if (pos % 2 == 0)
 						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 0.15f,0.15f,0.15f,1.0f });
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
-					if (ImGui::BeginPopupContextWindow(0, 1, false)) {
+					if (ImGui::BeginPopupContextWindow(0, 1)) {
 						if (ImGui::MenuItem("Copy"))
 							Utils::ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
@@ -651,7 +624,7 @@ namespace Proof
 					if (pos % 2 == 0)
 						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 0.15f,0.15f,0.15f,1.0f });
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
-					if (ImGui::BeginPopupContextWindow(0, 1, false)) {
+					if (ImGui::BeginPopupContextWindow(0, 1)) {
 						if (ImGui::MenuItem("Copy"))
 							Utils::ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
@@ -668,7 +641,7 @@ namespace Proof
 
 					ImGui::PushStyleColor(ImGuiCol_FrameBg, { 1,1,0,1 });
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
-					if (ImGui::BeginPopupContextWindow(0, 1, false)) {
+					if (ImGui::BeginPopupContextWindow(0, 1)) {
 						if (ImGui::MenuItem("Copy"))
 							Utils::ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
@@ -683,7 +656,7 @@ namespace Proof
 			}
 			ImGui::PopStyleVar();
 			if (Log::NewLog == true && ImGui::IsWindowFocused() == false) {
-				ImGui::SetScrollHere();
+			//	ImGui::SetScrollHere();
 				Log::NewLog = false;
 			}
 
@@ -869,7 +842,6 @@ namespace Proof
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		static bool Open = true;
 		if (ImGui::Begin("ViewPort", &Open, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar)) {
-			#if  0
 
 			m_ViewPoartHoveredorFocused = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 			m_ViewPortFocused = ImGui::IsWindowFocused();
@@ -890,16 +862,16 @@ namespace Proof
 			else {
 				CurrentWindow::GetWindow().SetWindowInputEvent(false);
 			}
-			uint32_t Text = m_WorldRenderer.m_ScreenFrameBuffer->GetTexture();
+			void* Text = m_WorldRenderer.m_ScreenFrameBuffer->GetTexture();
 			ImGui::Image((ImTextureID)Text, ImVec2{ _ViewPortSize.x,_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			// GUIZMOS
 
 			Entity selectedEntity = m_WorldHierachy.GetSelectedEntity();
 			if (selectedEntity.GetEntityID() != 0) {
-				ImGuizmo::SetOrthographic(true);
-				ImGuizmo::SetDrawlist();
+				//ImGuizmo::SetOrthographic(true);
+				//ImGuizmo::SetDrawlist();
 
-				ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+				//ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
 				const glm::mat4& cameraProjection = ActiveWorld->m_EditorCamera.m_Projection;
 				glm::mat4 cameraView = ActiveWorld->m_EditorCamera.m_View;
@@ -911,27 +883,27 @@ namespace Proof
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
 				// Snap to 45 degrees for rotation
-				if (GuizmoType == ImGuizmo::OPERATION::ROTATE)
-					snapValue = 45.0f;
+				//if (GuizmoType == ImGuizmo::OPERATION::ROTATE)
+				//	snapValue = 45.0f;
 
 				float snapValues[3] = { snapValue,snapValue,snapValue };
 
-				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-					(ImGuizmo::OPERATION)GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
-					nullptr, snap ? snapValues : nullptr);;
+				//ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+				//	(ImGuizmo::OPERATION)GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+				//	nullptr, snap ? snapValues : nullptr);;
 
-				if (ImGuizmo::IsUsing()) {
-
-					if (selectedEntity.HasOwner() == false) {
-						glm::vec3 translation, rotation, scale;
-						MathResource::DecomposeTransform(transform, translation, rotation, scale);
-
-						glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
-						tc.Location = translation;
-						tc.Rotation += {glm::degrees(deltaRotation.x), glm::degrees(deltaRotation.y), glm::degrees(deltaRotation.z)};
-						tc.Scale = scale;
-					}
-				}
+				//if (ImGuizmo::IsUsing()) {
+				//
+				//	if (selectedEntity.HasOwner() == false) {
+				//		glm::vec3 translation, rotation, scale;
+				//		MathResource::DecomposeTransform(transform, translation, rotation, scale);
+				//
+				//		glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
+				//		tc.Location = translation;
+				//		tc.Rotation += {glm::degrees(deltaRotation.x), glm::degrees(deltaRotation.y), glm::degrees(deltaRotation.z)};
+				//		tc.Scale = scale;
+				//	}
+				//}
 			}
 
 			/* putting this underneath image because a window only accpet drop target to when item is bound so and image has been bound */
@@ -948,9 +920,9 @@ namespace Proof
 					m_WorldHierachy.SetContext(ActiveWorld.get());
 				}
 
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(fmt::format("{}{}", "AssetType::", "Mesh").c_str())) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Mesh).c_str())) {
 					UUID meshID = *(UUID*)payload->Data;
-					
+
 					Entity newentt = ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
 					newentt.AddComponent<MeshComponent>()->SetMeshSource(meshID);
 					m_WorldHierachy.m_SelectedEntity = newentt;
@@ -958,18 +930,16 @@ namespace Proof
 				ImGui::EndDragDropTarget();
 
 			}
-			#endif //  0
 
 			/*----------------------------------------------------------------------------------------------------------------------------*/
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
-	
+
 	}
 
 	void Editore3D::MainToolBar() {
 		ImGui::Begin("##MainToolBar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse/* | ImGuiWindowFlags_NoMove*/);
-		#if  0
 
 		Count<Texture2D> icon;
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
@@ -1003,19 +973,19 @@ namespace Proof
 			if (ActiveWorld->m_CurrentState == WorldState::Edit)
 				SimulateWorld();
 		}
-		#endif //  0
 		ImGui::End();
 	}
 
 	void Editore3D::SetDocking(bool* p_open) {
+		// Note: Switch this to true to enable dockspace
 		static bool opt_fullscreen = true;
 		static bool opt_padding = false;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar;
 		if (opt_fullscreen) {
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->GetWorkPos());
-			ImGui::SetNextWindowSize(viewport->GetWorkSize());
+			ImGui::SetNextWindowPos(viewport->WorkPos);
+			ImGui::SetNextWindowSize(viewport->WorkSize);
 			ImGui::SetNextWindowViewport(viewport->ID);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -1026,8 +996,8 @@ namespace Proof
 			dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
 		}
 
-		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-			window_flags |= ImGuiWindowFlags_NoBackground;
+		//if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+			//window_flags |= ImGuiWindowFlags_NoBackground;
 
 		if (!opt_padding)
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -1093,6 +1063,8 @@ namespace Proof
 		}
 		ImGui::End();
 	}
+
+
 
 
 	void Editore3D::Save() {

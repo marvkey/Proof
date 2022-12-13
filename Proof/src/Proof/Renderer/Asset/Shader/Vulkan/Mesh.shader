@@ -7,16 +7,11 @@ layout(location = 1) in vec3 aNormal;
 layout(location = 2) in vec2 aTexCoords;
 layout(location = 3) in vec3 aTangent;
 layout(location = 4) in vec3 aBitangent;
+layout(location = 5) in mat4 aTransform;
 
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec2 outTexCoords;
 
-//push constants block
-layout(push_constant) uniform constants
-{
-	vec4 color;
-	mat4 render;
-} PushConstants;
 
 layout(set =0,binding = 0) uniform CameraData
 {
@@ -27,7 +22,8 @@ layout(set =0,binding = 0) uniform CameraData
 void main() {
 	outTexCoords = aTexCoords;
 	outColor = vec4(aNormal,1.0);
-	gl_Position = CameraUBO.ProjectionMatrix* CameraUBO.ViewMatrix * vec4(aPosition, 1.0f);
+	gl_Position = CameraUBO.ProjectionMatrix * CameraUBO.ViewMatrix * aTransform * vec4(aPosition, 1.0);
+
 }
 
 #Fragment Shader
@@ -38,13 +34,8 @@ layout(location = 0) in vec4 inColor;
 layout(location = 1) in vec2 texCoord;
 
 layout(location = 0) out vec4 outFragColor;
-layout(set = 0, binding = 1) uniform sampler2D tex1;
-layout(push_constant) uniform constants
-{
-	vec4 color;
-	mat4 render;
-} PushConstants;
+layout(set = 1, binding = 0) uniform sampler2D tex1;
 void main() {
 	vec3 color = texture(tex1, texCoord).xyz;
-	outFragColor = vec4(color, 1.0f);
+	outFragColor = vec4(color,1.0);
 }

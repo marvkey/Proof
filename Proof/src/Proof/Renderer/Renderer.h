@@ -5,28 +5,20 @@
 namespace Proof {
 	struct  RendererConfig {
 		uint32_t FramesFlight = 2;
+		uint32_t ImageSize;
+	};
+
+	struct CurrentFrame {
+		uint32_t FrameinFlight;
+		uint32_t ImageIndex;
 	};
 	class Proof_API Renderer{
 	public:
-		static void BeginFrame() {
+		static void BeginFrame();
 
-		}
+		static void EndFrame();
 
-		static void EndFrame() {
-			s_CurrentFrame = (s_CurrentFrame + 1) % GetConfig().FramesFlight;
-
-			//vkAcquireNextImageKHR(
-			//	Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(),
-			//	m_SwapChain,
-			//	Math::GetMaxType<uint64_t>(),
-			//	m_ImageAvailableSemaphores[frameIndex],  // must be a not signaled semaphore
-			//	VK_NULL_HANDLE,
-			//	imageIndex);
-		}
-
-		static uint32_t GetCurrentFrame() {
-			return s_CurrentFrame;
-		}
+		static CurrentFrame GetCurrentFrame();
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 		static ShaderLibrary& GetShaderLibrary() {
 			return *AllShaders;
@@ -41,11 +33,7 @@ namespace Proof {
 		static void Init(Window* window);
 		static void Destroy();
 
-		static const RendererConfig GetConfig() {
-			return RendererConfig();
-		}
-	//	static void Reset();
-		//static void Draw();
+		static const RendererConfig GetConfig();
 
 		static const std::string GetRenderCompany(){
 			return s_RenderCompany;
@@ -58,14 +46,15 @@ namespace Proof {
 			return s_GraphicsCardVersion;
 		}
 		
+		static void OnWindowResize(WindowResizeEvent& e);
 	private:
 		static Count<class GraphicsContext>m_GraphicsContext;
-		static uint32_t s_CurrentFrame;
 		static ShaderLibrary* AllShaders;
 		static std::string s_RenderCompany;
 		static std::string s_GraphicsCard;
 		static std::string s_GraphicsCardVersion;
 		friend class OpenGLGraphicsContext;
+		friend class Application;
 	};
 }
 

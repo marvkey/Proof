@@ -6,11 +6,11 @@
 #include "VulkanGraphicsPipeline.h"
 namespace Proof
 {
-	VulkanCommandBuffer::VulkanCommandBuffer(Count<VulkanSwapChain> swapChain)
+	VulkanCommandBuffer::VulkanCommandBuffer()
 	{
 		m_CommandBuffer.resize(Renderer::GetConfig().FramesFlight);
 		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		m_SwapChain = swapChain;
+		m_SwapChain = graphicsContext->GetSwapChain();
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -29,6 +29,36 @@ namespace Proof
 		if (vkAllocateCommandBuffers(graphicsContext->GetDevice(), &allocInfo, m_CommandBuffer.data()) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to allocate command buffer");
 
+	}
+	
+	void VulkanCommandBuffer::BeginRecord(Count<VulkanGraphicsPipeline> graphicsPipeLine, uint32_t frameIndex,bool viewScreen ){
+		PF_CORE_ASSERT(m_Recording == false, "cannot start recoridng when command buffer is still recording");
+		m_Recording = true;
+		//we can safely reset the command buffer to begin recording again.
+		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		//vkResetCommandBuffer(m_CommandBuffer[frameIndex], 0);
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+		// means taht it will beshown in the window, if not we  wotn show it in teh window
+		if(viewScreen)
+			//begin the command buffer recording. We will use this command buffer exactly once, so we want to let vulkan know that
+			beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		if (vkBeginCommandBuffer(m_CommandBuffer[frameIndex], &beginInfo) != VK_SUCCESS)
+			PF_CORE_ASSERT(false, "Failed to begin recording command buffer");
+
+		m_FrameIndex = frameIndex;
+		m_GraphicspipeLine = graphicsPipeLine;
+
+	}
+	void VulkanCommandBuffer::EndRecord(uint32_t frameIndex ) {
+		PF_CORE_ASSERT(m_Recording == true, "cannot End recording when recoring never started");
+		if (vkEndCommandBuffer(m_CommandBuffer[m_FrameIndex]) != VK_SUCCESS)
+			PF_CORE_ASSERT(false, "Faied to record command Buffers");
+		m_GraphicspipeLine = nullptr;
+		m_Recording = false;
+		m_FrameIndex = 0;
 	}
 	void VulkanCommandBuffer::BeginRenderPass(uint32_t imageIndex, Count<VulkanGraphicsPipeline> graphicsPipeLine,const glm::vec4& Color, float Depth, uint32_t stencil, uint32_t frameIndex){
 		PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot start render pass when previous render pass is not closed");
@@ -55,7 +85,7 @@ namespace Proof
 		// the area shader loads and 
 		renderPassInfo.renderArea.offset = { 0,0 };
 		// for high displays swap chain extent could be higher than windows extent
-		renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
+		renderPassInfo.renderArea.extent = { m_SwapChain->GetSwapChainExtent().X,m_SwapChain->GetSwapChainExtent().Y };
 
 
 		renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
@@ -96,7 +126,7 @@ namespace Proof
 		// the area shader loads and 
 		renderPassInfo.renderArea.offset = { 0,0 };
 		// for high displays swap chain extent could be higher than windows extent
-		renderPassInfo.renderArea.extent = m_SwapChain->GetSwapChainExtent();
+		renderPassInfo.renderArea.extent = { m_SwapChain->GetSwapChainExtent().X,m_SwapChain->GetSwapChainExtent().Y };
 
 
 		renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
@@ -113,7 +143,8 @@ namespace Proof
 		m_FrameIndex = frameIndex;
 	}
 	void VulkanCommandBuffer::Bind(uint32_t frameIndex, VkPipelineBindPoint bindPoint ) {
-		vkCmdBindPipeline(m_CommandBuffer[frameIndex], bindPoint, m_GraphicspipeLine ==nullptr ? nullptr: m_GraphicspipeLine->GetPipline());
+		PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot bind if render pass is not started");
+		vkCmdBindPipeline(m_CommandBuffer[frameIndex], bindPoint, m_GraphicspipeLine->GetPipline());
 	}
 
 	void VulkanCommandBuffer::EndRenderPass() {

@@ -67,7 +67,7 @@ namespace Proof{
 		}
 		return true;
 	}
-	uint32_t MaterialAsset::GetImageID() {
+	void* MaterialAsset::GetImageID() {
 		return InstancedRenderer3D::m_WhiteTexture->GetID();
 	}
 	const Material& MaterialAsset::GetMaterial()const {

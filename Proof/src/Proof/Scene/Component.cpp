@@ -26,9 +26,6 @@ namespace Proof
 {
 	static struct Material Empty;
 	
-	UUID MeshComponent::GetMeshAssetID() {
-		return GetMeshSource() != nullptr ? m_MeshAssetPointerID :(UUID) 0;
-	}
 	Material* MeshComponent::GetMaterial() {
 		/*
 		if (m_MeshMaterialID == 0) {
@@ -54,7 +51,6 @@ namespace Proof
 	void MeshComponent::SetMeshSource(AssetID ID) {
 		if (ID.Get() == 0)return;
 		if (AssetManager::HasID(ID)) {
-			m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(ID);
 			m_MeshAssetPointerID = ID;
 		}
 	}	
@@ -85,6 +81,8 @@ namespace Proof
 			*rotation
 			* glm::scale(glm::mat4(1.0f), { GetWorldScale()});
 	}
+
+	
 
 	MeshAsset* MeshComponent::GetAsset() {
 		/*
@@ -134,14 +132,11 @@ namespace Proof
 			return nullptr;
 		}
 		if (AssetManager::HasID(m_MeshAssetPointerID)) {
-			if (AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID) == nullptr) {
-				return nullptr;
+			if (AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID) != nullptr) {
+				return AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID).get();
 			}
-			m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
-			return m_MeshAssetPointer.get();
+			return nullptr;
 		}
-
-		m_MeshAssetPointer = nullptr;
 		m_MeshAssetPointerID == 0;
 		return nullptr;
 	}

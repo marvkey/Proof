@@ -71,6 +71,7 @@ namespace Proof
 		s_ViewPosition = view;
 	}
 	void OpenGLRenderer3DPBR::Draw(MeshComponent& meshComponent, const glm::mat4& positionMatrix) {
+		#if 0
 		int meshPointerId = meshComponent.GetMeshAssetID();
 		if (meshPointerId == 0)return; // means that therer is no mesh attahced
 		int usingMaterial = meshComponent.HasMaterial();
@@ -94,6 +95,7 @@ namespace Proof
 
 		PhysicalBasedRendererVertex temp(positionMatrix, meshComponent.HasMaterial() == true ? *meshComponent.GetMaterial() : s_DefaultMaterial, usingMaterial);
 		s_PBRInstance->m_Transforms.emplace_back(temp);
+		#endif
 	}
 	void OpenGLRenderer3DPBR::DrawDebugMesh(Mesh* mesh, const glm::mat4& transform) {
 		if (mesh == nullptr)return;
@@ -230,9 +232,9 @@ namespace Proof
 		//s_RenderFrameBuffer->Bind();
 		glBlitFramebuffer(0, 0, s_RenderFrameBuffer->GetFrameWidth(), s_RenderFrameBuffer->GetFrameHeight(), 0, 0, s_RenderFrameBuffer->GetFrameHeight(), s_RenderFrameBuffer->GetFrameWidth(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 		s_RenderFrameBuffer->UnBind();
-		s_RendererData->DeferedData.m_PositionTexture = GetRenderer()->m_DeferedRendering.GPosition->GetID();
-		s_RendererData->DeferedData.m_NormalTexture = GetRenderer()->m_DeferedRendering.GNormal->GetID();
-		s_RendererData->DeferedData.m_AlbedoTexture = GetRenderer()->m_DeferedRendering.GAlbedo->GetID();
+		//s_RendererData->DeferedData.m_PositionTexture = GetRenderer()->m_DeferedRendering.GPosition->GetID();
+		//s_RendererData->DeferedData.m_NormalTexture = GetRenderer()->m_DeferedRendering.GNormal->GetID();
+		//s_RendererData->DeferedData.m_AlbedoTexture = GetRenderer()->m_DeferedRendering.GAlbedo->GetID();
 	}
 	void OpenGLRenderer3DPBR::DeferedRendererRenderLight() {
 		if (NumDirLights == 0 && NumSpotLights == 0 && NumPointLights == 0)return;
@@ -311,13 +313,13 @@ namespace Proof
 				s_PBRInstance->m_WhiteTexture->Bind(1);
 				s_PBRInstance->m_WhiteTexture->Bind(2);
 				s_PBRInstance->m_WhiteTexture->Bind(3);
-
 			}
 
 
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
 				RendererCommand::Enable(ProofRenderTest::CullFace);
 			if (TempMesh->second.GetMeshSource()->m_Enabled == true) {
+				#if 0
 				for (SubMesh& mesh : TempMesh->second.GetMeshSource()->meshes) {
 					if (mesh.m_Enabled == false)
 						continue;
@@ -335,6 +337,7 @@ namespace Proof
 					mesh.m_IndexBufferObject->Bind();
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second, s_RendererData->RenderSettings.Draw);
 				}
+				#endif
 			}
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
 				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render settings
@@ -407,6 +410,7 @@ namespace Proof
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
 				RendererCommand::Enable(ProofRenderTest::CullFace);
 			if (TempMesh->second.GetMeshSource()->m_Enabled == true) {
+				#if 0
 				for (SubMesh& mesh : TempMesh->second.GetMeshSource()->meshes) {
 					if (mesh.m_Enabled == false)
 						continue;
@@ -422,6 +426,7 @@ namespace Proof
 					mesh.m_IndexBufferObject->Bind();
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second, s_RendererData->RenderSettings.Draw);
 				}
+				#endif
 			}
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
 				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render stettings
@@ -490,6 +495,8 @@ namespace Proof
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
 				RendererCommand::Enable(ProofRenderTest::CullFace);
 			if (TempMesh->second.GetMeshSource()->m_Enabled == true) {
+				#if 0
+
 				for (SubMesh& mesh : TempMesh->second.GetMeshSource()->meshes) {
 					if (mesh.m_Enabled == false)
 						continue;
@@ -505,6 +512,7 @@ namespace Proof
 					s_WorldDrawType = DrawType::Triangles;
 					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second, s_WorldDrawType);
 				}
+				#endif
 			}
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
 				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render stettings

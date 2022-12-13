@@ -15,11 +15,11 @@ project "Proof"
 	{
         "src/**.h",
         "src/**.cpp",
-		"vendor/ImGui/ImGui/**.h",
-        "vendor/ImGui/ImGui/**.cpp",
+		--"vendor/ImGui/**.h",
+        --"vendor/ImGui/**.cpp",
 		"vendor/stb_image.h",
-		"vendor/ImGuizmo/ImGuizmo.h",
-		"vendor/ImGuizmo/ImGuizmo.cpp"
+		--"vendor/ImGuizmo/ImGuizmo.h",
+		--"vendor/ImGuizmo/ImGuizmo.cpp"
 
     }
     includedirs 

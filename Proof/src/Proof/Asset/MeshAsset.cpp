@@ -68,7 +68,7 @@ namespace Proof
 		//m_MeshFilePath = meshFilepath;
 		//m_Mesh = CreateSpecial<Mesh>(m_MeshFilePath);
 	}
-	uint32_t MeshAsset::GetImageID() {
+	void* MeshAsset::GetImageID() {
 		return InstancedRenderer3D::m_WhiteTexture->GetID();
 	}
 	

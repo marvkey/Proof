@@ -20,15 +20,33 @@
 #include "Proof/Scene/Component.h"
 #include "../VulkanVertexArray.h"
 #include "../VulkanTexutre.h"
+#include "Proof/Asset/AssetManager.h"
+#include <deque>
 namespace Proof
 {
-	enum class UniformBindingSet0 {
-		CameraData = 0,
-	};
 
-	enum class UniformBindingSet1 {
-		
+
+	std::unordered_map<DescriptorSets, Count<VulkanDescriptorSet>> s_GlobalDescriptors;
+	//static std::vector<std::vector<std::function<void()>>> s_ResourceFreeQueue;
+	struct DeletionQueue {
+
+		void Push(std::function<void()>&& function) {
+			Deletors.push_back(function);
+		}
+
+		void Flush() {
+
+			for (auto& func : Deletors)
+				func();
+
+			Deletors.clear();
+		}
+		std::vector<std::function<void()>> Deletors;
+	private:
+
 	};
+	static std::vector<DeletionQueue> s_ResourceFreeQueue;
+
 	// for instace rendering 
 	// meshes with same material will be stored next to each other and drawn together
 	static CameraData s_CurrentCamera;
@@ -37,193 +55,258 @@ namespace Proof
 		glm::mat4 render_matrix;
 		
 	};
-	uint32_t VulkanRenderer::swapchainImageIndex = 0;
 
 	DrawPipeline* VulkanRenderer::s_Pipeline = nullptr;
-	TrianglePipeLine* s_TrianglePipeLine = nullptr;
 	MeshPipeLine* s_MeshPipeLine = nullptr;
 	bool VulkanRenderer::s_InContext = false;
-	Mesh MeshCube;
-	Mesh MonkeyMesh;
-	class VulkanVertexBuffer* vulkanVertexBufferObject;
-	class VulkanIndexBuffer* vulkanIndexBufferObject;
 	glm::mat4 s_projection;
 	glm::mat4 s_view;
 	glm::vec3 s_loc;
-	static Count<VulkanDescriptorSetLayout> s_DescriptorLayout = nullptr;
+	static Count<VulkanDescriptorSet> s_DescriptorLayout = nullptr;
 	std::vector<VkDescriptorSet	> s_DescriptorSets;
 	uint32_t sizeBindings = 1;
-	Count<VulkanTexture2D> s_Texture;
+	Count<VulkanTexture2D> s_WhiteTexture;
+
+
+	RendererConfig VulkanRenderer::s_RendererConfig;
+	CurrentFrame VulkanRenderer::s_CurrentFrame;
+	Count<VulkanVertexBuffer> s_vertexBuffer;
 	void VulkanRenderer::Init() {
 		s_Pipeline = new DrawPipeline();
 		s_Pipeline->SwapChain = CreateCount<VulkanSwapChain>(VkExtent2D{ CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight()});
-		s_Pipeline->CommandBuffer = CreateCount<VulkanCommandBuffer>(s_Pipeline->SwapChain);
-		Descriptors();
+		s_RendererConfig = RendererConfig{ 2,(uint32_t) s_Pipeline->SwapChain->GetImageCount() };
 
+		s_Pipeline->CommandBuffer = CreateCount<VulkanCommandBuffer>();
+		InitDescriptors();
+		s_vertexBuffer = CreateCount<VulkanVertexBuffer>(1000 * sizeof(VulkanVertexBuffer));
 		
-		PF_ENGINE_INFO("Vulkan Renderer Initlized");
-		MonkeyMesh = Mesh("backpack.obj");
-		MeshCube = Mesh("cube.obj");
-		s_Texture = CreateCount<VulkanTexture2D>("container2.png");
-		s_TrianglePipeLine = new TrianglePipeLine();
+		uint32_t WhiteTextureImage = 0xffffffff;
+
+		s_WhiteTexture = CreateCount<VulkanTexture2D>(1,1,ImageFormat::RGBA,&WhiteTextureImage);
 		s_MeshPipeLine = new MeshPipeLine();
 		//s_TrianglePipeLine->Init();
 		s_MeshPipeLine->Init();
-
-		const std::vector<Vertex> vertices = {
-			{{-0.5f, -0.5f,0}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, -0.5f,0}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, 0.5f,0}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, 0.5f,0}, {1.0f, 1.0f, 1.0f}}
-		};
-
-		const std::vector<uint32_t> indices = {
-			0, 1, 2, 2, 3, 0
-		};
-		vulkanVertexBufferObject = new VulkanVertexBuffer(vertices.data(), vertices.size() * sizeof(Vertex), vertices.size());
-		vulkanIndexBufferObject = new VulkanIndexBuffer(indices.data(), indices.size());
 		s_Pipeline->CameraBuffer = CreateCount<VulkanUniformBuffer>(sizeof(CameraData), 0, 0);
-
+		s_ResourceFreeQueue.resize(Renderer::GetConfig().FramesFlight);
+		s_Pipeline->SwapChain->WaitAndResetFences();
+		
 	}
 
-	void VulkanRenderer::Descriptors() {
-		const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+	void VulkanRenderer::InitDescriptors() {
+		{
+			auto descriptor = VulkanDescriptorSet::Builder(DescriptorSets::Zero)
+				.AddBinding((int)DescriptorSet0::CameraData, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+				.AddBinding((int)DescriptorSet0::WorldData, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+				.Build();
+			s_GlobalDescriptors.insert({ DescriptorSets::Zero,descriptor });
+		}
 
-		s_DescriptorLayout = VulkanDescriptorSetLayout::Builder()
-			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-			.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-			.Build();
-		s_DescriptorSets.resize(Renderer::GetConfig().FramesFlight);
+		{
+			auto descriptor = VulkanDescriptorSet::Builder(DescriptorSets::One)
+				.AddBinding((int)DescriptorSet1::AlbedoMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.AddBinding((int)DescriptorSet1::NormalMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.AddBinding((int)DescriptorSet1::metallicMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.AddBinding((int)DescriptorSet1::roughnessMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.AddBinding((int)DescriptorSet1::DiffuseMap, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.Build();
+			s_GlobalDescriptors.insert({ DescriptorSets::One,descriptor });
+		}
+
+		{
+
+		}
 	}
+	
 	void VulkanRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec) {
 		s_InContext = true;
 		s_projection = projection;
 		s_view = view;
 		s_loc = Position;
 		s_CurrentCamera = CameraData{ projection,view,Position };
+		s_Pipeline->CurrentFrameBuffer = frameBuffer;
+
 	}
+	void VulkanRenderer::BeginContext(Count<ScreenFrameBuffer>& frameBuffer) {
+		s_InContext = true;
+		s_projection = glm::mat4(0);
+		s_view = glm::mat4(0);
+		s_loc = {0,0,0};
+		s_CurrentCamera = CameraData{ s_projection,s_view,s_loc };
+	}
+
 	void VulkanRenderer::EndContext() {
-		DrawFrame();
-
+		DrawContext();
+		Reset();
+		s_Pipeline->CurrentFrameBuffer = nullptr;
 		s_InContext = false;
-	}
-	void VulkanRenderer::Destroy() {
-		delete s_Pipeline;
-	}
-	VkCommandBuffer VulkanRenderer::GetCurrentCommandBuffer() {
-		return s_Pipeline->CommandBuffer->GetCommandBuffer();
-	}
 
-	void VulkanRenderer::EndRenderPass() {
-		s_Pipeline->CommandBuffer->EndRenderPass();
-		s_Pipeline->SwapChain->SubmitCommandBuffers(s_Pipeline->CommandBuffer->GetCommandBuffer(), &swapchainImageIndex);
 	}
-	void VulkanRenderer::RecreateSwapChain() {
-		
+	void VulkanRenderer::BeginFrame() {
+		s_Pipeline->SwapChain->AcquireNextImage(&s_CurrentFrame.ImageIndex);
+		///s_Pipeline->SwapChain->WaitFences();
+		s_Pipeline->SwapChain->ResetFences();
+		/// 
+	}
+	void VulkanRenderer::EndFrame() {
+		DrawFrame();
+		const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		s_ResourceFreeQueue[s_CurrentFrame.FrameinFlight].Flush();
+		graphicsContext->GetGlobalPool()->ResetPool();
+		s_CurrentFrame.FrameinFlight = (s_CurrentFrame.FrameinFlight + 1) % s_RendererConfig.FramesFlight;
+	}
+	void VulkanRenderer::OnWindowResize(WindowResizeEvent& e) {
+		const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		graphicsContext->GetSwapChain()->Recreate({ e.GetWhidt(), e.GetHeight() });
 	}
 	void VulkanRenderer::DrawFrame() {
+		s_Pipeline->SwapChain->SubmitCommandBuffers(s_Pipeline->CommandBuffers, &s_CurrentFrame.ImageIndex);
+		s_Pipeline->CommandBuffers.clear();
+	}
+	void VulkanRenderer::Reset() {
+		s_Pipeline->AmountMeshPerMeshAssetID.clear();
+		s_Pipeline->MeshesPositionIndexTransforms.clear();
+		s_Pipeline->Transforms.clear();
+		s_Pipeline->MeshesID.clear();
+		s_Pipeline->NumberMeshes = 0;
+	}
+	void VulkanRenderer::DrawContext() {
 		const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		const auto& device = graphicsContext->GetDevice();
+		//s_Pipeline->SwapChain->WaitFences();
 
-		s_Pipeline->SwapChain->WaitAndResetFences();
-		s_Pipeline->SwapChain->AcquireNextImage(&swapchainImageIndex);
 		s_Pipeline->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 
-		auto bufferInfo = s_Pipeline->CameraBuffer->GetDescriptorInfo(Renderer::GetCurrentFrame());
-		auto writer = VulkanDescriptorWriter(s_DescriptorLayout, graphicsContext->GetGlobalPool());
-		writer.WriteBuffer(0, &bufferInfo);
-	
 		{
-			//write to the descriptor set so that it points to our empire_diffuse texture
-			VkDescriptorImageInfo imageBufferInfo;
-			imageBufferInfo.sampler = s_Texture->GetTextureSampler();
-			imageBufferInfo.imageView = s_Texture->GetImageView();
-			imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL ;
-			writer.WriteImage(1, imageBufferInfo);
+			auto descriptor = s_GlobalDescriptors[DescriptorSets::Zero];
+			auto bufferInfo = s_Pipeline->CameraBuffer->GetDescriptorInfo(s_CurrentFrame.FrameinFlight);
+			descriptor->WriteBuffer((int)DescriptorSet0::CameraData, &bufferInfo);
+			descriptor->Build();
 		}
-		VkDescriptorSetAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = graphicsContext->GetGlobalPool()->GetPool();
-		allocInfo.pSetLayouts = &s_DescriptorLayout->GetDescriptorSetLayout();
-		allocInfo.descriptorSetCount = 1;
 
-		vkAllocateDescriptorSets(graphicsContext->GetDevice(), &allocInfo, &s_DescriptorSets[Renderer::GetCurrentFrame()]);
-		for (auto& write : writer.writes) {
-			write.dstSet = s_DescriptorSets[Renderer::GetCurrentFrame()];
-		}
-		vkUpdateDescriptorSets(device, writer.writes.size(), writer.writes.data(), 0, nullptr);
+		BeginRenderPass(s_Pipeline->CommandBuffer, s_MeshPipeLine->RenderPass);
+		Record(s_Pipeline->CommandBuffer, [&](Count < VulkanCommandBuffer> commandBuffer) {
+			auto descriptor0 = s_GlobalDescriptors[DescriptorSets::Zero];
+			auto descriptor1 = s_GlobalDescriptors[DescriptorSets::One];
 
-		auto& descript = s_DescriptorSets[Renderer::GetCurrentFrame()];
-
-		BeginRenderPass(s_MeshPipeLine->GraphicsPipeline);
-		s_Pipeline->CommandBuffer->Record([&](VkCommandBuffer& buffer){
 			vkCmdBindDescriptorSets(
-				buffer,
+				commandBuffer->GetCommandBuffer(),
 				VK_PIPELINE_BIND_POINT_GRAPHICS,
 				s_MeshPipeLine->PipeLineLayout->GetPipeLineLayout(),
 				0,
 				1,
-				&descript,
-				0,
+				&descriptor0->m_DescriptorSets[s_CurrentFrame.FrameinFlight],
+				0,	
 				nullptr);
-			
-			{
-				//model rotation
-				glm::mat4 model = glm::translate(glm::mat4(1.0f), { 0,0,0 }) *
-					glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 1,0,0 })
-					* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,1,0 })
-					* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })
-					* glm::scale(glm::mat4(1.0f), { 0.01,0.01,0.01 });
+			uint32_t offset = 0;
+			if(s_Pipeline->Transforms.size() > 0)
+				s_vertexBuffer->AddData(&s_Pipeline->Transforms[0], s_Pipeline->NumberMeshes * sizeof(VulkanRendererVertex));
 
-				//calculate final mesh matrix
-				MeshPushConstants constants;
+			for (const uint64_t& ID : s_Pipeline->MeshesID) {
+				const uint64_t& numMeshes = s_Pipeline->AmountMeshPerMeshAssetID[ID];
+				auto data = s_Pipeline->Transforms[offset];
 
-				glm::mat4 mesh_matrix = s_projection * s_view * model;
-				constants.render_matrix = mesh_matrix;
-				constants.data = glm::vec4{ 0.2,0.1,0.9,1.0 };
-			
-				//s_MeshPipeLine->PushConstant->Bind(buffer, s_MeshPipeLine->PipeLineLayout->GetPipeLineLayout(),
-				//	VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,	sizeof(MeshPushConstants) ,&constants);
+				if (AssetManager::HasID(ID) == false)
+					continue;
+				auto& mesh = *AssetManager::GetAsset<MeshAsset>(ID)->GetMesh();
+				for (const auto& subMesh : mesh.GetSubMeshes()) {
+					{
+						auto descriptor = s_GlobalDescriptors[DescriptorSets::One];
+						VulkanTexture2D* texture = subMesh.m_DiffuseIndex.size() > 0 ? mesh.textures_loaded[subMesh.m_DiffuseIndex[0]]->As<VulkanTexture2D>() : s_WhiteTexture.get();
+						//write to the descriptor set so that it points to our empire_diffuse texture
+						VkDescriptorImageInfo imageBufferInfo;
+						imageBufferInfo.sampler = texture->GetTextureSampler();
+						imageBufferInfo.imageView = texture->GetImageView();
+						imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+						descriptor->WriteImage((int)DescriptorSet1::AlbedoMap, &imageBufferInfo);
+						descriptor->Build();
 
-				for (const auto& subMesh : MeshCube.GetSubMeshes()) {
-					vkCmdPushConstants(buffer, s_MeshPipeLine->PipeLineLayout->GetPipeLineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT
-						, 0, sizeof(MeshPushConstants), &constants);
+						vkCmdBindDescriptorSets(
+							commandBuffer->GetCommandBuffer(),
+							VK_PIPELINE_BIND_POINT_GRAPHICS,
+							s_MeshPipeLine->PipeLineLayout->GetPipeLineLayout(),
+							1,
+							1,
+							&descriptor->m_DescriptorSets[s_CurrentFrame.FrameinFlight],
+							0,
+							nullptr);
 
-					subMesh.vulkanVertexBufferObject->Bind(buffer);
-					subMesh.vulkanIndexBufferObject->Bind(buffer);
-					vkCmdDrawIndexed(buffer, subMesh.vulkanIndexBufferObject->GetIndexCount(), 1, 0, 0, 0);
+					}
+					subMesh.vulkanVertexBufferObject->Bind(commandBuffer->GetCommandBuffer());
+					subMesh.vulkanIndexBufferObject->Bind(commandBuffer->GetCommandBuffer());
+					s_vertexBuffer->Bind(commandBuffer->GetCommandBuffer(), 1);
+					vkCmdDrawIndexed(commandBuffer->GetCommandBuffer(), subMesh.vulkanIndexBufferObject->GetIndexCount(), numMeshes, 0, 0, offset);
 				}
+				offset += numMeshes;
 			}
-
-			{
-				//model rotation
-				glm::mat4 model = glm::translate(glm::mat4(1.0f), { 3,0,0 }) *
-					glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 1,0,0 })
-					* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,1,0 })
-					* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })
-					* glm::scale(glm::mat4(1.0f), { 1,1,1 });
-
-				//calculate final mesh matrix
-				MeshPushConstants constants;
-
-				glm::mat4 mesh_matrix = s_projection * s_view * model;
-				constants.render_matrix = mesh_matrix;
-				constants.data = glm::vec4{ 0.9,0.1,0.9,1.0 };
 			
-
-				for (const auto& subMesh : MonkeyMesh.GetSubMeshes()) {
-
-					vkCmdPushConstants(buffer, s_MeshPipeLine->PipeLineLayout->GetPipeLineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT
-						, 0, sizeof(MeshPushConstants), &constants);
-
-					subMesh.vulkanVertexBufferObject->Bind(buffer);
-					subMesh.vulkanIndexBufferObject->Bind(buffer);
-					vkCmdDrawIndexed(buffer, subMesh.vulkanIndexBufferObject->GetIndexCount(), 1, 0, 0, 0);
-				}
-			}
 		});
+		EndRenderPass(s_Pipeline->CommandBuffer,s_MeshPipeLine->RenderPass);
+		SubmitCommandBuffer(s_Pipeline->CommandBuffer);
+	}
+	void VulkanRenderer::SubmitMesh(MeshComponent& mesh, const glm::mat4& transform) {
+		uint64_t meshPointerId = mesh.GetMeshAssetID();
+		if (meshPointerId == 0)return; // means that therer is no mesh attahced
+		if (s_Pipeline->AmountMeshPerMeshAssetID.contains(meshPointerId)) {
+			s_Pipeline->AmountMeshPerMeshAssetID[meshPointerId] += 1;
+			auto InstanceSize = s_Pipeline->MeshesPositionIndexTransforms[meshPointerId];
+
+			VulkanRendererVertex vertex(transform);
+			s_Pipeline->Transforms.insert(s_Pipeline->Transforms.begin() + InstanceSize.End, vertex);
+			InstanceSize.End++;
+			s_Pipeline->NumberMeshes++;
+
+			return;
+		}
+		s_Pipeline->AmountMeshPerMeshAssetID.insert({ meshPointerId,1 });
+		s_Pipeline->MeshesPositionIndexTransforms.insert({ meshPointerId , PositionIndex{ s_Pipeline->Transforms.size(),s_Pipeline->Transforms.size()} });
+		s_Pipeline->MeshesID.emplace_back(meshPointerId);
+		VulkanRendererVertex vertex(transform);
+		s_Pipeline->Transforms.emplace_back(vertex);
+		s_Pipeline->NumberMeshes++;
+	}
+	void VulkanRenderer::Destroy() {
+				// Free resources in queue
+		for (auto& queue : s_ResourceFreeQueue) {
+			queue.Flush();
+			//for (auto& func : queue)
+			//	func();
+		}
+		s_ResourceFreeQueue.clear();
+		delete s_Pipeline;
+	}
+
+	void VulkanRenderer::BeginRenderPass(Count<VulkanCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass, bool viewScreen, RenderPassSubData subData ) {
+		BeginRenderPass(commandBuffer, renderPass, s_Pipeline->CurrentFrameBuffer, viewScreen);
+	}
+	void VulkanRenderer::SubmitCommandBuffer(Count<VulkanCommandBuffer> commandBuffer) {
+		s_Pipeline->CommandBuffers.emplace_back(commandBuffer);
+	}
+
+
+	void VulkanRenderer::BeginRenderPass(Count<VulkanCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass, Count<ScreenFrameBuffer> frameBuffer, bool viewScreen, RenderPassSubData subData ) {
+		commandBuffer->BeginRecord(renderPass->GetPipeLine(), s_CurrentFrame.FrameinFlight, viewScreen);
+		renderPass->BeginRenderPass(commandBuffer, frameBuffer, { subData.Color.X,subData.Color.Y,subData.Color.Z,subData.Color.W }, subData.Depth, subData.Stencil);
+		//s_Pipeline->CommandBuffers.emplace_back(commandBuffer);
+	}
+
+	void VulkanRenderer::EndRenderPass(Count<VulkanCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass) {
+		renderPass->EndRenderPass(commandBuffer);
+		commandBuffer->EndRecord();
+	}
+	
+	void VulkanRenderer::Record(Count<VulkanCommandBuffer> commandBuffer,std::function<void(Count<VulkanCommandBuffer> commandBuffer)> data) {
+		commandBuffer->Bind();
+		data(commandBuffer);
+	}
+	
+	void VulkanRenderer::SubmitDatafree(std::function<void()>&& func) {
+		s_ResourceFreeQueue[s_CurrentFrame.FrameinFlight].Deletors.emplace_back(func);
+	}
+	void VulkanRenderer::RecordBase(Count<VulkanCommandBuffer> commandBuffer) {
+
+	}
+	void VulkanRenderer::RecreateSwapChain() {
 		
-		EndRenderPass();
 	}
 	
 	void TrianglePipeLine::Init() {
@@ -239,21 +322,29 @@ namespace Proof
 	void MeshPipeLine::Init() {
 		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		Shader = Shader::Create("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Vulkan/Mesh.shader");
-		PushConstant = CreateCount<VulkanPushConstant>(sizeof(MeshPushConstants),0,VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-		PipeLineLayout = CreateCount<VulkanPipeLineLayout>(PushConstant, s_DescriptorLayout);
+		PipeLineLayout = CreateCount<VulkanPipeLineLayout>(nullptr, std::vector{ s_GlobalDescriptors[DescriptorSets::Zero],s_GlobalDescriptors[DescriptorSets::One] });
+		RenderPass = CreateCount<VulkanRenderPass>();
 
 		PipelineConfigInfo pipelineConfig{};
 		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
-		pipelineConfig.RenderPass = VulkanRenderer::s_Pipeline->SwapChain->GetRenderPass();
+		pipelineConfig.RenderPass = RenderPass->GetRenderPass();
 		pipelineConfig.PipelineLayout = PipeLineLayout->GetPipeLineLayout();
 
-		VulkanVertexArray vulkanVertexArray{ sizeof(Vertex) };
+		VulkanVertexArray vulkanVertexArray({ { sizeof(Vertex)}, {sizeof(VulkanRendererVertex), VK_VERTEX_INPUT_RATE_INSTANCE} });
 		vulkanVertexArray.SetData(0, VulkanDataFormat::Vec3, offsetof(Vertex, Vertex::Vertices));
 		vulkanVertexArray.SetData(1, VulkanDataFormat::Vec3, offsetof(Vertex, Vertex::Normal));
 		vulkanVertexArray.SetData(2, VulkanDataFormat::Vec2, offsetof(Vertex, Vertex::TexCoords));
 		vulkanVertexArray.SetData(3, VulkanDataFormat::Vec3, offsetof(Vertex, Vertex::Tangent));
 		vulkanVertexArray.SetData(4, VulkanDataFormat::Vec3, offsetof(Vertex, Vertex::Bitangent));
+
+
+		vulkanVertexArray.SetData(5, VulkanDataFormat::Vec4, 0,1);
+		vulkanVertexArray.SetData(6, VulkanDataFormat::Vec4, (sizeof(glm::vec4) * 1),1);
+		vulkanVertexArray.SetData(7, VulkanDataFormat::Vec4, (sizeof(glm::vec4) * 2),1);
+		vulkanVertexArray.SetData(8, VulkanDataFormat::Vec4, (sizeof(glm::vec4) * 3),1);
+
 		auto input = vulkanVertexArray.GetData();
 		GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(Shader, pipelineConfig, &input);
+		RenderPass->SetGraphicsPipeLine(GraphicsPipeline);
 	}
 }

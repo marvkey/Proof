@@ -25,7 +25,7 @@ namespace Proof{
 		virtual void UnBind()=0;
 		
 		/* return the value of the frame buffer*/
-		virtual uint32_t GetID()=0;
+		virtual void* GetID()=0;
 		/*Read the frame buffer and writes it content to the id of the frame buffer passed
 		*@param frameBufferID the id of the frame buffer needed to write to
 		*/

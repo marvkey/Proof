@@ -11,14 +11,11 @@ namespace Proof
 {
     struct SubMesh {
     public:
-        SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name,std::vector<Proof::Count<class Texture2D>>& Textures);
+        SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name, std::vector<uint32_t> diffuseIndex);
         SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name);
         bool m_Enabled = true;
         std::string GetName() {
             return m_Name;
-        }
-        const std::vector<Count<class Texture2D>>&GetTextures()const{
-            return m_Textures;
         }
         std::vector<Vertex> m_Vertices;
         std::vector<uint32_t> m_Indices;
@@ -30,8 +27,10 @@ namespace Proof
         class VulkanVertexArray* vulkanVertexArrayObject;
         class VulkanVertexBuffer* vulkanVertexBufferObject;
         class VulkanIndexBuffer* vulkanIndexBufferObject;
-        std::vector<Count<class Texture2D>>m_Textures;
+        std::vector<uint32_t> m_DiffuseIndex;
+
     private:
+
         void SetUp();
         void SetUpOpenGL();
         void SetUpVulkan();
@@ -39,6 +38,7 @@ namespace Proof
         friend class MeshWorkShop;
         friend class OpenGLRenderer3DPBR;
     };
+    
     class Mesh {
     public:
         bool m_FaceCulling =false;
@@ -63,8 +63,11 @@ namespace Proof
         void LoadModel(std::string const& path);
         void ProcessNode(void* node,const void* scene);
         SubMesh ProcessMesh(void* mesh,const void* scene);
-        std::vector<Count<Texture2D>> LoadMaterialTextures(void* mat,int type,Texture2D::TextureType _TextureType);
+        //returns the index of textures in the texutre loaded
+        std::vector<uint32_t> LoadMaterialTextures(void* mat,int type,Texture2D::TextureType _TextureType);
         std::vector<Count<Texture2D>> LoadMaterial(void* mat);
+        //path, texture type
+        std::vector<std::pair<std::string, Texture2D::TextureType>> LoadMaterialTexturesTest(void* mat, int type, Texture2D::TextureType _TextureType);
         friend class Renderer3D;
         friend class Editore3D;
         friend class Renderer3DPBR;

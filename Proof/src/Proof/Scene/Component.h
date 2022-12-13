@@ -270,22 +270,22 @@ namespace Proof
 		MeshComponent(const MeshComponent&) = default;
 	
 		class Material* GetMaterial();
-		UUID GetMeshAssetID();
 		uint32_t GetMaterialPointerID()const{
 			return m_MeshMaterialID;
 		}
 		bool HasMaterial() {
 			return GetMaterial() == nullptr ? false : true;
 		}
-		UUID GetMeshAssetID()const;
+		UUID GetMeshAssetID()const {
+			return m_MeshAssetPointerID;
+		}
 		void SetMeshSource(UUID ID);
 
-	private:
-		MeshAsset* GetAsset();
 		void RemoveMeshSource() {
 			m_MeshAssetPointerID = 0;
-			m_MeshAssetPointer = nullptr;
 		}
+	private:
+		MeshAsset* GetAsset();
 		friend class Entity;
 		friend class World;
 		friend class ECS;
@@ -294,9 +294,8 @@ namespace Proof
 		friend class SceneRendererUI;
 		friend class Editore3D;
 		friend class OpenGLRenderer3DPBR;
-		uint32_t m_MeshMaterialID = 0;
+		UUID m_MeshMaterialID = 0;
 		UUID m_MeshAssetPointerID=0;
-		Count<MeshAsset>m_MeshAssetPointer=nullptr; // MIGHT Remove
 	};
 
 	/* THIS IS TEMPORARY THIS IS GONNA GO INTO THE 2D SECTION */

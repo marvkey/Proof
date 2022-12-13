@@ -19,18 +19,28 @@ namespace Proof{
 		std::vector<VkVertexInputBindingDescription> m_Descriptions;
 		std::vector<VkVertexInputAttributeDescription> m_Attributes;
 	};
+	struct VulkanVertexInputDataConfig {
+		uint32_t Size;
+		VkVertexInputRate InputRate ;
+		VulkanVertexInputDataConfig(uint32_t size, VkVertexInputRate inputRate = VK_VERTEX_INPUT_RATE_VERTEX):
+			Size(size), InputRate(inputRate)
+		{
+			
+		}
+	};
 	class VulkanVertexInputData {
 	public:
-		VulkanVertexInputData(uint32_t size, uint32_t binding = 0) {
-			m_Descriptions.resize(1);
-			m_Descriptions[0].binding = 0;
-			m_Descriptions[0].stride = size;
-			m_Descriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		VulkanVertexInputData(const std::vector<VulkanVertexInputDataConfig>& config) {
+			m_Descriptions.resize(config.size());
+			for (uint32_t i = 0; i < config.size(); i++) {
+				m_Descriptions[i].binding = i;
+				m_Descriptions[i].stride = config[i].Size;
+				m_Descriptions[i].inputRate = config[i].InputRate;
+			}
 		}
-		void AddData(uint32_t location, VulkanDataFormat format, uint32_t offset) {
-
+		void AddData(uint32_t location, VulkanDataFormat format, uint32_t offset, uint32_t binding =0) {
 			VkVertexInputAttributeDescription attribute = {};
-			attribute.binding = m_binding;
+			attribute.binding = binding;
 			attribute.location = location;
 			attribute.format = (VkFormat)format;
 			attribute.offset = offset;
@@ -46,14 +56,13 @@ namespace Proof{
 			return m_Attributes;
 		}
 	private:
-		uint32_t m_binding = 0;
 		std::vector<VkVertexInputBindingDescription> m_Descriptions;
 		std::vector<VkVertexInputAttributeDescription> m_Attributes;
 	};
 	class VulkanVertexArray {
 	public:
-		VulkanVertexArray(uint32_t size);
-		virtual void SetData(uint32_t Position, VulkanDataFormat Count, size_t Offset);
+		VulkanVertexArray(const std::vector<VulkanVertexInputDataConfig>& config);
+		virtual void SetData(uint32_t Position, VulkanDataFormat Count, size_t Offset,uint32_t binding =0);
 		VulkanVertexInput GetData() {
 			return m_InputData.GetData();
 		}

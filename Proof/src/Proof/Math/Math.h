@@ -176,12 +176,12 @@ namespace Proof
 		}
 		// @return the max value of a specific type
 		template<typename T>
-		inline static T GetMaxType() {
+		inline constexpr static T GetMaxType() {
 			return std::numeric_limits<T>::max();
 		}
 		// @return the min value of a specific type
 		template<typename T>
-		inline static T GetMinType() {
+		inline constexpr static T GetMinType() {
 			return std::numeric_limits<T>::min();
 		}
 		template<>

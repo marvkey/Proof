@@ -8,21 +8,18 @@
 namespace Proof
 {
 
-	void Copy(const void* data, uint32_t size);
-	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 	class VulkanVertexBuffer {
 	public:
 		~VulkanVertexBuffer();
-		VulkanVertexBuffer(const void* data, uint32_t size, uint32_t count);
-		virtual void Bind(VkCommandBuffer commandBuffer);
-	
+		VulkanVertexBuffer(const void* data, uint32_t size);
+		VulkanVertexBuffer(uint32_t size);
+		virtual void Bind(VkCommandBuffer commandBuffer,uint32_t binding=0);
+		virtual void AddData(const void* data, uint32_t size, uint32_t offset=0);
 		virtual void UnBind(){}
 		uint32_t GetVertexSize() { return m_VertexSize; }
-		uint32_t GetCount() { return m_Count; }
 	private:
 		VulkanBuffer m_VertexBuffer;
 		uint32_t m_VertexSize;
-		uint32_t m_Count;
 	};
 
 	class VulkanIndexBuffer {

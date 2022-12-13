@@ -89,12 +89,11 @@ namespace Proof
         shaderFile.close();
         return source;
     }
+   
+
+
     VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filePath) {
-        //EnumReflection::ForEach<Shader::ShaderStage>([&](auto stage) {
-        //    std::string source = ProcessStage(stage, filePath);
-        //    if (source.empty() ==false )
-        //        m_SourceCode.insert({ stage,source });
-        //});
+       
         magic_enum::enum_for_each<Shader::ShaderStage>([&](Shader::ShaderStage stage) {
             std::string source = ProcessStage(stage, filePath);
             if (source.empty() == false)
@@ -105,17 +104,14 @@ namespace Proof
         CreateShader();
     }
 
-    VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<Shader::ShaderStage, std::string> m_Paths) {
-        for (auto& [stage, path] : m_Paths) {
-            std::string source = ProcessStage(stage, path);
-            if (source.empty())continue;
+    VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<Shader::ShaderStage, std::string> shaders) {
+        for (auto& [stage, source] : shaders) {
             m_SourceCode.insert({ stage,source });
         }
         Utils::CreateCacheDirectoryIfNeeded();
         Compile();
         CreateShader();
     }
-
     VulkanShader::~VulkanShader() {
         for (int i = 0; i < 2; i++) {
           //  vkDestroyShaderModule(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_ShaderModule[i], nullptr);

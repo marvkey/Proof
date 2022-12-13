@@ -29,7 +29,7 @@ namespace Proof
 		virtual std::string GetExtension()const {
 			return "Material.ProofAsset";
 		}
-		virtual uint32_t GetImageID();
+		virtual void* GetImageID();
 		const Material& GetMaterial()const;
 		Material m_Material;
 	private:

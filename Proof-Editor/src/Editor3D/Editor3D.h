@@ -24,7 +24,6 @@ namespace Proof {
 		virtual void OnDetach() override;
 		// returns if assetEditorWasCreated
 		bool CreateAssetEditor(class Asset* asset);
-		Count<Texture2D>m_CheckeboardTexture;
 		static bool IsKeyPressedEditor(KeyBoardKey Key);
 		static bool IsKeyClickedEditor(KeyBoardKey Key);
 		bool m_ViewPortFocused = false;

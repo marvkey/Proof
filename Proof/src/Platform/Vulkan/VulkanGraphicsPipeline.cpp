@@ -38,8 +38,10 @@ namespace Proof
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		// teh stages of the pipeline we are going to use
 		// we are only using the fragment and vertex stages
-		pipelineInfo.stageCount = m_Shader->GetStageCount();
-		pipelineInfo.pStages = m_Shader->m_ShaderStages.data();
+		if (shader != nullptr) {
+			pipelineInfo.stageCount = m_Shader->GetStageCount();
+			pipelineInfo.pStages = m_Shader->m_ShaderStages.data();
+		}
 		pipelineInfo.pVertexInputState = &vertexInputInfo;
 		pipelineInfo.pInputAssemblyState = &info.InputAssemblyInfo;
 		pipelineInfo.pViewportState = &info.ViewportInfo;

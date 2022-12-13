@@ -245,7 +245,7 @@ namespace Proof
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 });
-		m_GlobalPool = CreateCount<VulkanDescriptorPool>(1000, 0, PoolSizes, m_Device);
+		m_GlobalPool = CreateCount<VulkanDescriptorPool>(1000, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, PoolSizes, m_Device);
 
 	}
 
@@ -414,7 +414,6 @@ namespace Proof
 
 		uint32_t formatCount;
 		vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
-
 		if (formatCount != 0) {
 			details.formats.resize(formatCount);
 			vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, details.formats.data());
@@ -422,15 +421,11 @@ namespace Proof
 
 		uint32_t presentModeCount;
 		vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, nullptr);
-
 		if (presentModeCount != 0) {
 			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(
-				device,
-				m_Surface,
-				&presentModeCount,
-				details.presentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, details.presentModes.data());
 		}
+
 		return details;
 	}
 

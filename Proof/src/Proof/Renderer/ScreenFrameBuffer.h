@@ -5,14 +5,18 @@
 namespace Proof {
 	class Proof_API ScreenFrameBuffer {
 	public:
+		template<class T>
+		T* As() {
+			return  dynamic_cast<T*>(this);
+		}
 		/**
 		* Set as current frame buffer
 		*/
-		virtual void Bind() = 0;
+		virtual void Bind(){};
 		/**
 		* Remove as current frame buffer
 		*/
-		virtual void UnBind() = 0;
+		virtual void UnBind(){};
 		/**
 		* changes the size of the frame buffer
 		* @param Width, the width of the frame buffer to render
@@ -32,17 +36,19 @@ namespace Proof {
 		/**
 		* returns the Texture ID
 		*/
-		virtual uint32_t GetTexture() = 0;
+		virtual void* GetTexture() = 0;
 
 		/**
 		* returns the FrameBuffer ID
 		*/
-		virtual uint32_t GetFrameBufferID() = 0;
+		virtual uint32_t GetFrameBufferID() { return 0; };
 
-		virtual void WriteBuffer(const uint32_t m_FrameBufferID) = 0;
+		virtual void WriteBuffer(const uint32_t m_FrameBufferID){};
 
 		virtual uint32_t GetFrameWidth() = 0;
 		virtual uint32_t GetFrameHeight() = 0;
+	private:
+		
 	};
 }
 

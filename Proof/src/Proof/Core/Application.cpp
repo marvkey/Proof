@@ -56,27 +56,14 @@ namespace Proof {
 
         AssetManager::Init(assetManagerconfig);
         ScriptEngine::Init();
-        
-        if (Renderer::GetAPI() != RendererAPI::API::Vulkan) {
-            AssetManager::InitilizeAssets();
-            ImGuiMainLayer = new ImGuiLayer();
-            MainLayerStack.PushLayer(ImGuiMainLayer);
-        }
-        
-        if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
-            ImGuiMainLayer = new ImGuiLayer();
-            MainLayerStack.PushLayer(ImGuiMainLayer);
-        }
+
+        AssetManager::InitilizeAssets();
+        ImGuiMainLayer = new ImGuiLayer();
+        MainLayerStack.PushLayer(ImGuiMainLayer);
+
         PF_ENGINE_TRACE("Engine Load Done");
     }
 
-    void Application::LayerUpdate(float deltaTime) {
-        PF_PROFILE_FUNC();
-        Renderer::BeginFrame();
-        for (Layer* layer : MainLayerStack.V_LayerStack)
-            layer->OnUpdate(deltaTime);
-        Renderer::EndFrame();
-    }
 
     void Application::ImguiUpdate(float deltaTime) {
         PF_PROFILE_FUNC("Application::ImguiUpdate");
@@ -94,7 +81,9 @@ namespace Proof {
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
         dispatcher.Dispatch<WindowCloseEvent>(PF_BIND_FN(Application::OnWindowCloseEvent));
-       
+        dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e) {
+            Renderer::OnWindowResize(e);
+        });
         /// PUSH LAYERS BACKWARDS
         /// WHEN WE GET UI WE MIGHT WANT TO ONLY RESPODN TO UI FIRST
          if (IsRunning == false)
@@ -132,12 +121,9 @@ namespace Proof {
         float CurrentTime;
         if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
             glEnable(GL_BLEND);
-     //   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-     //   glBlendFuncSeparate(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA,GL_ONE,GL_ZERO);
-
-
         while (IsRunning  == true) {
             PF_PROFILE_FRAME("Application::Update");
+            Renderer::BeginFrame();
             float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
             FrameCount++;
@@ -146,12 +132,16 @@ namespace Proof {
             if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
                 RendererCommand::Enable(ProofRenderTest::DepthTest);
 
-            if (WindowMinimized == false) 
-                LayerUpdate(DeltaTime);
+            if (WindowMinimized == false) {
+                PF_PROFILE_FUNC("Layer OnUpdate");
+                for (Layer* layer : MainLayerStack.V_LayerStack)
+                    layer->OnUpdate(DeltaTime);
+            }
             if (m_ApplicationConfiguration.EnableImgui == true)
                 ImguiUpdate(DeltaTime);
-
             MainWindow->WindowUpdate();
+            Renderer::EndFrame();
+
             FrameTimersControll::s_FrameTimers.clear();
 
             if (CurrentTime - PreviousTime >= 1.0) {
@@ -162,12 +152,9 @@ namespace Proof {
             FPS = (1.0 / (CurrentTime - PreviousTime)) * FrameCount;
             FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
             LastFrameTime = time;
-
         };
         IsRunning = false;
-        if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
-            AssetManager::SaveAllAssets();
-
+        AssetManager::SaveAllAssets();
         Renderer::Destroy();
     }
 

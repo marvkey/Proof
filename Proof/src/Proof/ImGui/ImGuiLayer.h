@@ -13,6 +13,7 @@ namespace Proof {
         virtual void OnAttach()override;
         virtual void OnDetach()override;
         void Begin();
+        void OnEvent(Event& e);
         void End();
         void SetDarkTheme();
     private:

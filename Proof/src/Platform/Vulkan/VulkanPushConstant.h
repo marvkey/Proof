@@ -17,7 +17,9 @@ namespace Proof
 		uint32_t GetSize() {
 			return m_size;
 		}
-		
+		const VkPushConstantRange& GetRange() {
+			return m_PushConstant;
+		}
 		virtual ~VulkanPushConstant(){};
 		//static void Bind(VkCommandBuffer                             commandBuffer,
 		//	VkPipelineLayout                            layout,

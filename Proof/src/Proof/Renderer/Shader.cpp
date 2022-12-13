@@ -9,41 +9,63 @@ namespace Proof
 
     Count<Shader> Shader::Create(const std::string& _ShaderName, const std::string& ShaderPath) {
         switch (RendererAPI::GetAPI()) {
-            case RendererAPI::API::None:  PF_CORE_ASSERT(false,"Shader None it needs an api"); return nullptr;
-            case RendererAPI::API::OpenGL: return Renderer::GetShaderLibrary().AddShader(CreateCount<class OpenGLShader>(_ShaderName,ShaderPath));
-            case RendererAPI::API::Vulkan: return CreateCount<class VulkanShader>(_ShaderName,ShaderPath);
+            case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
+            case RendererAPI::API::OpenGL: return Renderer::GetShaderLibrary().AddShader(CreateCount<class OpenGLShader>(_ShaderName, ShaderPath));
+            case RendererAPI::API::Vulkan: return CreateCount<class VulkanShader>(_ShaderName, ShaderPath);
         }
     }
     Count<Shader> Shader::Create(const std::string& _ShaderName, const std::string& vertPath, const std::string& fragPath) {
         switch (RendererAPI::GetAPI()) {
-        case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
-            //case RendererAPI::API::OpenGL: return CreateCount<class OpenGLShader>(_ShaderName,ShaderPath);
+            case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
+                //case RendererAPI::API::OpenGL: return CreateCount<class OpenGLShader>(_ShaderName,ShaderPath);
         }
         return nullptr;
     }
     Count<Shader> Shader::GetOrCreate(const std::string& name, const std::string& path) {
         switch (RendererAPI::GetAPI()) {
-        case RendererAPI::API::None:
-        {
-            PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
-            break;
-        }
-        case RendererAPI::API::OpenGL:
-        {
-            Count<Shader> shader = Renderer::GetShaderLibrary().GetShader(name);
-            if (shader != nullptr)
-                return shader;
-            return Renderer::GetShaderLibrary().AddShader(CreateCount<class OpenGLShader>(name, path));
-            break;
-        }
+            case RendererAPI::API::None:
+                {
+                    PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
+                    break;
+                }
+            case RendererAPI::API::OpenGL:
+                {
+                    Count<Shader> shader = Renderer::GetShaderLibrary().GetShader(name);
+                    if (shader != nullptr)
+                        return shader;
+                    return Renderer::GetShaderLibrary().AddShader(CreateCount<class OpenGLShader>(name, path));
+                    break;
+                }
 
-        case RendererAPI::API::Vulkan:
-        {
-            Count<Shader> shader = Renderer::GetShaderLibrary().GetShader(name);
-            if (shader != nullptr)
-                return shader;
-            return Renderer::GetShaderLibrary().AddShader(CreateCount<class VulkanShader>(name, path));
+            case RendererAPI::API::Vulkan:
+                {
+                    Count<Shader> shader = Renderer::GetShaderLibrary().GetShader(name);
+                    if (shader != nullptr)
+                        return shader;
+                    return Renderer::GetShaderLibrary().AddShader(CreateCount<class VulkanShader>(name, path));
+                }
         }
+    }
+    Count<Shader> Shader::GetOrCreate(const std::string& name, const std::unordered_map<Shader::ShaderStage, std::string> strings) {
+        switch (RendererAPI::GetAPI()) {
+            case RendererAPI::API::None:
+                {
+                    PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
+                    break;
+                }
+            case RendererAPI::API::OpenGL:
+                {
+                    PF_CORE_ASSERT(false, "Open gl not support yet"); return nullptr;
+                    break;
+                }
+
+            case RendererAPI::API::Vulkan:
+                {
+                    Count<Shader> shader = Renderer::GetShaderLibrary().GetShader(name);
+                    if (shader != nullptr)
+                        return shader;
+                    return Renderer::GetShaderLibrary().AddShader(CreateCount<class VulkanShader>(name, strings));
+                }
         }
     }
     Shader::~Shader() {
@@ -71,7 +93,7 @@ namespace Proof
             ShaderMap.insert({ _Shader->GetName(),_Shader });
             return _Shader;
         }
-         PF_ENGINE_ERROR(" shader called {} Already exist",_Shader->GetName().c_str());
+        PF_ENGINE_ERROR(" shader called {} Already exist", _Shader->GetName().c_str());
         PF_CORE_ASSERT(false, "shader library cannot add existing shader");
     }
 }

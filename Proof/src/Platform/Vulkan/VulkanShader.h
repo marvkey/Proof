@@ -6,10 +6,14 @@
 
 namespace Proof
 {
+    struct ShaderArrayData {
+        uint32_t Size;
+        uint32_t* Data;
+    };
     class Proof_API VulkanShader : public Shader {
     public:
         VulkanShader(const std::string& name, const std::filesystem::path& filePath);
-        VulkanShader(const std::string& name, const std::unordered_map<Shader::ShaderStage, std::string> m_Paths);
+        VulkanShader(const std::string& name, const std::unordered_map<Shader::ShaderStage, std::string> shaders);
         ~VulkanShader();
         virtual const std::unordered_map<Shader::ShaderStage, std::string>& GetPath()const { return m_Paths; }
         virtual const std::string& GetName()const { return m_Name; }

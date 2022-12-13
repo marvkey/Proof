@@ -9,7 +9,7 @@ namespace Proof
 		OpenGLTexture2D(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType,bool usWrap=true);
 		virtual ~OpenGLTexture2D();
 		virtual void Bind(uint32_t Slot = 0)override;
-		virtual uint32_t GetID() { return TextureObject; }
+		virtual void* GetID() { return (void*)TextureObject; }
 		virtual void unBind() override;
 		virtual void SetData(void* data,uint32_t size) override;
 		virtual TextureType GetTextureType()override {
@@ -37,8 +37,8 @@ namespace Proof
 		OpenGLCubeMap(const std::string& Path);
 		OpenGLCubeMap(uint32_t textureWidht=512,uint32_t textureHeight=512,bool generateMipMap=false);
 		virtual void Bind(uint32_t Slot = 0)override;
-		virtual uint32_t GetID() {
-			return m_ID;
+		virtual void* GetID() {
+			return (void*)m_ID;
 		}
 		virtual void unBind()override;
 		virtual void GenerateMipMap();
@@ -52,7 +52,7 @@ namespace Proof
 	class Proof_API OpenGLHDRTexture: public HDRTexture{
 	public:
 		OpenGLHDRTexture(const std::string& path);
-		virtual uint32_t GetID(){
+		virtual void* GetID(){
 			return m_ID;
 		}
 		virtual void Bind(uint32_t Slot = 0);
@@ -60,7 +60,7 @@ namespace Proof
 		virtual void GenerateMipMap();
 
 	private:
-		uint32_t m_ID;
+		void* m_ID;
 		float* m_Data;
 		std::string m_Path;
 		int m_Width,m_Height,m_Components;

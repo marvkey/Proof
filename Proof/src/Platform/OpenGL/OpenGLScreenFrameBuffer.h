@@ -32,8 +32,8 @@ namespace Proof {
 		/**
 		* returns the Texture
 		*/
-		virtual uint32_t GetTexture() {
-			return m_TextureID;
+		virtual void* GetTexture() {
+			return (void*)m_TextureID;
 		}
 		/**
 		* returns the FrameBuffer ID

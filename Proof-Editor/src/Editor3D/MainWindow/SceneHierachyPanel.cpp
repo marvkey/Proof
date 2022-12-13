@@ -43,7 +43,6 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
-		#if 0 
 		if (ImGui::Begin("Herieachy", &m_ShowWindow));
 		{
 			/*
@@ -53,7 +52,7 @@ namespace Proof
 			}
 			*/
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
-			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvailWidth(),ImGui::GetWindowHeight() / 2 });
+			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvail().x,ImGui::GetWindowHeight() / 2 });
 			{
 				m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 				// when copying ot temporayr since copies backwards have to do this
@@ -74,7 +73,7 @@ namespace Proof
 				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
 					m_SelectedEntity = {};
 				}
-				if (ImGui::BeginPopupContextWindow(0, 1, false)) { // right click adn open a new entitiy
+				if (ImGui::BeginPopupContextWindow(0)) { // right click adn open a new entitiy
 					CreateEntityMenu();
 					ImGui::EndPopup();
 				}
@@ -102,7 +101,6 @@ namespace Proof
 			}
 			ImGui::EndChild();
 		}
-		#endif 
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -208,7 +206,7 @@ namespace Proof
 			ImGui::TreeNodeEx((void*)&(entity), ImGuiTreeNodeFlags_SpanFullWidth, tc.c_str());
 			ImGui::EndDragDropSource();
 		}
-		if ( ImGui::IsItemClicked() && ImGui::IsKeyDown((int)KeyBoardKey::E) ==false) {
+		if ( ImGui::IsItemClicked() && ImGui::IsKeyDown((ImGuiKey)KeyBoardKey::E) ==false) {
 			m_SelectedEntity = entity;
 		}
 		if (ImGui::BeginPopupContextItem()) {
@@ -239,7 +237,7 @@ namespace Proof
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
 			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
 		}
-		if (m_SelectedEntity && ImGui::IsKeyPressed((int)KeyBoardKey::F)) {
+		if (m_SelectedEntity && ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::F)) {
 			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
 		}
 

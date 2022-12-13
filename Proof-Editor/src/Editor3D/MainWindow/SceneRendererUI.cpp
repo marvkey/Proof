@@ -76,7 +76,7 @@ namespace Proof{
 					m_WorldRenderer.SetRendererPause(true);
 				}
 			}
-			uint32_t Text = m_WorldRenderer.GetWorldTexture();
+			void* Text = m_WorldRenderer.GetWorldTexture();
 			ImGui::Image((ImTextureID)Text,ImVec2{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
 			m_World->m_EditorCamera.OnUpdate(deltaTime,ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);
 			m_LastWidht = ImGui::GetWindowSize().x; m_LastHeight = ImGui::GetWindowSize().y;

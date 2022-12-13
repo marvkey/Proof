@@ -33,7 +33,7 @@ namespace Proof
 		virtual bool IsImageIDNUll(){
 			return true;
 		}
-		virtual uint32_t GetImageID();
+		virtual void* GetImageID();
 		
 	private:
 		Special<class Mesh> m_Mesh =nullptr;

@@ -353,5 +353,6 @@ namespace Proof
     using Vector2 = VectorTemplate2<float>;
     using Vector = VectorTemplate<float>;
     using Vector4 = VectorTemplate4<float>;
-
+    
+    using ScreenSize = VectorTemplate2<uint32_t>;
 }

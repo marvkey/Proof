@@ -86,11 +86,11 @@ namespace Proof
 
 		void ImGUIAPI::SetKeyboardFocusOff()
 		{
-			ImGuiContext& g = *GImGui;
-			ImGuiWindow* window = g.CurrentWindow;
-			g.FocusRequestNextWindow = nullptr;
-			g.FocusRequestNextCounterRegular = window->DC.FocusCounterRegular;
-			g.FocusRequestNextCounterTabStop = INT_MAX;
+			//ImGuiContext& g = *GImGui;
+			//ImGuiWindow* window = g.CurrentWindow;
+			//g.FocusRequestNextWindow = nullptr;
+			//g.FocusRequestNextCounterRegular = window->DC.FocusCounterRegular;
+			//g.FocusRequestNextCounterTabStop = INT_MAX;
 		}
 
 		static void InputText(const std::string& Name,const std::string& Text,float ColumnWidth){

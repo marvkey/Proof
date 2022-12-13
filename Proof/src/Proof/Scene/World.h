@@ -26,6 +26,9 @@ namespace Proof{
 	public:
 		using EntityID = UUID;
 		World();
+		~World() {
+			//m_Registry.on_construct<ScriptComponent>();
+		}
 		World(const std::string& path){
 			CreateIBlTexture(path);
 		}
@@ -69,6 +72,15 @@ namespace Proof{
 		
 		template<class...T, class F>
 		void ForEachEntitiesWithMultiple(F func) {
+			const auto& entitiygroup = m_Registry.group<T...>();
+			for (auto& entity : entitiygroup) {
+				Entity created{ entity,this };
+				func(created);
+			}
+		}
+
+		template<class...T>
+		void ForTemp(std::function<void(T... args)> func) {
 			const auto& entitiygroup = m_Registry.group<T...>();
 			for (auto& entity : entitiygroup) {
 				Entity created{ entity,this };

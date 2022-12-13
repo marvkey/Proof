@@ -23,7 +23,7 @@ namespace Proof{
 		if (info.Type == AssetType::Mesh) {
 			m_World->CreateEntity("Mesh").AddComponent<MeshComponent>()->SetMeshSource(ID);
 		}
-		AssetThumbnails.insert({ ID, m_WorldRenderer->Renderer() });
+		//AssetThumbnails.insert({ ID, m_WorldRenderer->Renderer() });
 	}
 	void AssetThumbnailGenerator::GenerateThumbnail(AssetID ID) {
 		AssetThumbnailGenerator generator;

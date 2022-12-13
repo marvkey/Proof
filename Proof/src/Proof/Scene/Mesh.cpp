@@ -70,21 +70,21 @@ namespace Proof{
             }
         }
         aiMaterial* material = aiscene->mMaterials[aimesh->mMaterialIndex];
-        if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-            return SubMesh(vertices, indices, aimesh->mName.C_Str());
-        std::vector<Count<Texture2D>>  diffuseMaps = LoadMaterialTextures(material,aiTextureType_DIFFUSE,Texture2D::TextureType::Diffuse);
-        textures.insert(textures.end(),diffuseMaps.begin(),diffuseMaps.end());
+        //if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+        //    return SubMesh(vertices, indices, aimesh->mName.C_Str());
+        auto texture = LoadMaterialTextures(material,aiTextureType_DIFFUSE,Texture2D::TextureType::Diffuse);
+      //  textures.insert(textures.end(),diffuseMaps.begin(),diffuseMaps.end());
 
-        std::vector<Count<Texture2D>>  specularMaps = LoadMaterialTextures(material,aiTextureType_SPECULAR,Texture2D::TextureType::Specular);
-        textures.insert(textures.end(),specularMaps.begin(),specularMaps.end());
-
-        std::vector<Count<Texture2D>> normalMaps = LoadMaterialTextures(material,aiTextureType_NORMALS,Texture2D::TextureType::Normal);
-        textures.insert(textures.end(),normalMaps.begin(),normalMaps.end());
-
-        std::vector<Count<Texture2D>>  heightMaps = LoadMaterialTextures(material,aiTextureType_HEIGHT,Texture2D::TextureType::Height);
-        textures.insert(textures.end(),heightMaps.begin(),heightMaps.end());
+        //std::vector<Count<Texture2D>>  specularMaps = LoadMaterialTextures(material,aiTextureType_SPECULAR,Texture2D::TextureType::Specular);
+        //textures.insert(textures.end(),specularMaps.begin(),specularMaps.end());
+        //
+        //std::vector<Count<Texture2D>> normalMaps = LoadMaterialTextures(material,aiTextureType_NORMALS,Texture2D::TextureType::Normal);
+        //textures.insert(textures.end(),normalMaps.begin(),normalMaps.end());
+        //
+        //std::vector<Count<Texture2D>>  heightMaps = LoadMaterialTextures(material,aiTextureType_HEIGHT,Texture2D::TextureType::Height);
+        //textures.insert(textures.end(),heightMaps.begin(),heightMaps.end());
        
-        SubMesh temp(vertices,indices,aimesh->mName.C_Str(),textures);
+        SubMesh temp(vertices,indices,aimesh->mName.C_Str(), texture);
         return temp;
         //aiTextureType_METALNESS
         //aiTextureType_DIFFUSE_ROUGHNESS
@@ -100,28 +100,29 @@ namespace Proof{
         //aiTextureType_SPECULAR
     }
 
-    std::vector<Count<Texture2D>> Mesh::LoadMaterialTextures(void* mat,int type,Texture2D::TextureType _TextureType) {
+    std::vector<uint32_t> Mesh::LoadMaterialTextures(void* mat,int type,Texture2D::TextureType _TextureType) {
         aiMaterial* aimat = (aiMaterial*)mat;
         aiTextureType aitype = (aiTextureType)type;
-        std::vector<Count<Texture2D>>  Textures;
+        std::vector<uint32_t> textures;
         for (unsigned int i = 0; i < aimat->GetTextureCount(aitype); i++) {
             aiString str;
             aimat->GetTexture(aitype,i,&str);
-            bool skip = false;
+            std::string other = str.C_Str();
+            bool addTexture = true;
             for (unsigned int j = 0; j < textures_loaded.size(); j++) {
-                if (std::strcmp(textures_loaded[j]->GetPath().data(),str.C_Str()) == 0) {
-                    Textures.emplace_back(textures_loaded[j]);
-                    skip = true;
+                if (textures_loaded[j]->GetPath() == other) {
+                    textures.emplace_back(j);
+                    addTexture = false;
                     break;
                 }
             }
-            if (!skip) {
+            if (addTexture == true) {
                 Count<Texture2D> NewTexture = Texture2D::Create(str.C_Str(),_TextureType);
-                Textures.emplace_back(NewTexture);
                 textures_loaded.emplace_back(NewTexture);
+                textures.emplace_back(textures_loaded.size()-1);
             }
         }
-        return Textures;
+        return textures;
     }
 
     std::vector<Count<Texture2D>> Mesh::LoadMaterial(void* mat) {
@@ -149,12 +150,39 @@ namespace Proof{
         return std::vector<Count<Texture2D>>();
     }
 
+    std::vector<std::pair<std::string, Texture2D::TextureType>> Mesh::LoadMaterialTexturesTest(void* mat, int type, Texture2D::TextureType _TextureType) {
+       /*
+        aiMaterial* aimat = (aiMaterial*)mat;
+        aiTextureType aitype = (aiTextureType)type;
+        std::vector<std::pair<std::string, Texture2D::TextureType>>  Textures;
+        for (unsigned int i = 0; i < aimat->GetTextureCount(aitype); i++) {
+            aiString str;
+            aimat->GetTexture(aitype, i, &str);
+            bool skip = false;
+            for (unsigned int j = 0; j < textures_loaded.size(); j++) {
+                if (std::strcmp(textures_loaded[j]->GetPath().data(), str.C_Str()) == 0) {
+                    Textures.emplace_back(textures_loaded[j]);
+                    skip = true;
+                    break;
+                }
+            }
+            if (!skip) {
+                std::pair<std::string, Texture2D::TextureType> NewTexture = { str.C_Str(), _TextureType };
+                Textures.emplace_back(NewTexture);
+                textures_loaded.emplace_back(NewTexture);
+            }
+        }
+        return Textures;
+        */
+        return {};
+    }
 
-    SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name,std::vector<Proof::Count<Proof::Texture2D>>& Textures) {
+
+    SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name, std::vector<uint32_t> diffuseIndex) {
         this->m_Vertices = Vertices;
         this->m_Indices = Indices;
 
-        this->m_Textures = Textures;
+        m_DiffuseIndex = diffuseIndex;
         m_Name = name;
         SetUp();
     }
@@ -219,7 +247,7 @@ namespace Proof{
     void SubMesh::SetUpVulkan() {
 
        // vulkanVertexArrayObject = new VulkanVertexArray();
-        vulkanVertexBufferObject = new VulkanVertexBuffer(m_Vertices.data(),m_Vertices.size()* sizeof(Vertex), m_Vertices.size());
+        vulkanVertexBufferObject = new VulkanVertexBuffer(m_Vertices.data(),m_Vertices.size()* sizeof(Vertex));
         vulkanIndexBufferObject = new VulkanIndexBuffer(m_Indices.data(), m_Indices.size());
     }
 }

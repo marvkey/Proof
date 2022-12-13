@@ -41,7 +41,7 @@ namespace Proof{
 		m_Texture = Texture2D::Create(AssetManager::GetAssetSourcePath(m_Source));
 		return true;
 	}
-	uint32_t Texture2DAsset::GetImageID() {
+	void* Texture2DAsset::GetImageID() {
 		return m_Texture != nullptr ? m_Texture->GetID() : InstancedRenderer3D::m_WhiteTexture->GetID();
 	}
 }

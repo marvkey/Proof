@@ -30,8 +30,8 @@ namespace Proof {
         configuration.WindowConfiguration.Width = 800;
         configuration.WindowConfiguration.Vsync = false;
         configuration.WindowConfiguration.Title = "Proof";
-        configuration.WindowConfiguration.startMaximized = false;
-        configuration.WindowConfiguration.startFullScreen = false;
+        configuration.WindowConfiguration.startMaximized = false; //there is a bug when this is set to true
+        configuration.WindowConfiguration.startFullScreen = false;//there is a bug when this is set to true
         configuration.WindowConfiguration.Decorated = true; 
         return new ProofEditor(configuration, projectPath);
     }

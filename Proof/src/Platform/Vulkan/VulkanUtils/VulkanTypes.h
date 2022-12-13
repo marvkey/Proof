@@ -32,5 +32,7 @@ namespace Proof
 		//vector 4 with double
 		DVec4 = VK_FORMAT_R64G64B64A64_SFLOAT,
 
+		//usnigned vec4 32 bit
+		UVec4 = VK_FORMAT_R8G8B8A8_UNORM
 	};
 }

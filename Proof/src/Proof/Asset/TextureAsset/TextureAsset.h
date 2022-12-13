@@ -24,18 +24,18 @@ namespace Proof{
 		virtual bool IsEditorImageNull(){
 			return m_Texture == nullptr;
 		}
-		virtual uint32_t GetImageID();
+		virtual void* GetImageID();
 		friend class AssetManager;
 		bool HasTexture(){
 			return m_Texture != nullptr;
 		};
 
-		uint32_t GetTextureID(){
+		void* GetTextureID(){
 			if(HasTexture())
 				return m_Texture->GetID();
-			return 0;
+			return nullptr;
 		}
-		virtual uint32_t GetIamgeEdtorID() {
+		virtual void* GetIamgeEdtorID() {
 			return GetTextureID();
 		}
 		const Count<class Texture2D>& GetTexture()const{

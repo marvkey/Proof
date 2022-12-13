@@ -167,8 +167,8 @@ namespace Proof
 		stbi_set_flip_vertically_on_load(true);
 		m_Data = stbi_loadf(m_Path.c_str(),&m_Width,&m_Height,&m_Components,0);
 		if (m_Data) {
-			glGenTextures(1,&m_ID);
-			glBindTexture(GL_TEXTURE_2D,m_ID);
+			glGenTextures(1,(GLuint*)m_ID);
+			glBindTexture(GL_TEXTURE_2D, (GLuint)m_ID);
 			glTexImage2D(GL_TEXTURE_2D,0,GL_RGB16F,m_Width,m_Height,0,GL_RGB,GL_FLOAT,m_Data);
 
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
@@ -183,13 +183,13 @@ namespace Proof
 		}
 	}
 	void OpenGLHDRTexture::Bind(uint32_t Slot) {
-		glBindTextureUnit(Slot,m_ID);
+		glBindTextureUnit(Slot, (GLuint)m_ID);
 	}
 	void OpenGLHDRTexture::unBind() {
 		glDisable(GL_TEXTURE_2D);
 	}
 	void OpenGLHDRTexture::GenerateMipMap() {
-		glBindTexture(GL_TEXTURE_2D,m_ID);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)m_ID);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 }

@@ -4,9 +4,14 @@
 #pragma once
 namespace Proof {
 
+	enum class ImageFormat {
+		None = 0,
+		RGBA,
+		RGBA32F
+	};
 	class Proof_API Texture {
 	public:
-		virtual uint32_t  GetID() { return 0; };
+		virtual void*  GetID() = 0;
 		virtual void unBind(){};
 		virtual void Bind(uint32_t Slot = 0) {};
 		virtual void GenerateMipMap(){};
@@ -55,12 +60,29 @@ namespace Proof {
 		Nearest = GL_NEAREST
 	};
 
-	class Image {
+	struct Image {
 	public:
-
+		Image(const void* image, bool hasImage):
+			m_Image(image),
+			m_HasImage(m_HasImage)
+		{
+		}
+		uint32_t GetImage() {
+			return (uint32_t)m_Image;
+		}
+		bool HasImage() {
+			return m_Image;
+		}
+	private:
+		const void* m_Image = nullptr;
+		const bool m_HasImage;
 	};
 	class Proof_API Texture2D: public Texture {
 	public:
+		template<class T>
+		T* As() {
+			return  dynamic_cast<T*>(this);
+		}
 		static enum class TextureType {
 			None=0,
 			Ambient,
@@ -70,12 +92,13 @@ namespace Proof {
 			Height,
 		};
 		virtual void SetData(void* data,uint32_t size){};
-		virtual std::string GetPath() { return ""; };
+		virtual std::string GetPath() = 0;
 
 		virtual TextureType GetTextureType() { return TextureType::None; };
 		static Count<Texture2D> Create(uint32_t width,uint32_t height,DataFormat dataFormat,InternalFormat internalFormat,TextureBaseTypes WrapS,TextureBaseTypes WrapT,TextureBaseTypes MinFilter,TextureBaseTypes MagFilter,type baseType,bool usWrap = true);
 		static Count<Texture2D> Create(const std::string& Path,TextureType _TextureType = TextureType::None);
 		static Count<Texture2D>	Create(uint32_t ImageWidth,uint32_t ImageHeight,TextureType _TextureType= TextureType::None);
+		static Count<Texture2D> Create(uint32_t width, uint32_t height, ImageFormat format, const void* data);
 	};
 
 

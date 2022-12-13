@@ -53,9 +53,7 @@ namespace Proof{
 	{
 		m_EditorCamera.m_FarPlane = 2000;
 		m_EditorCamera.m_Sensitivity = 25;
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
-
-		CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
+		//CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
 	}
 	bool World::HasEntity(EntityID ID)const {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
@@ -330,8 +328,7 @@ namespace Proof{
 	}
 
 	void World::CreateIBlTexture(const std::string& filePath) {
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
-
+		#if 0
 		backgroundShader = Shader::GetOrCreate("IBL_Background",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/BackgroundShader.glsl");
 		equirectangularToCubemapShader = Shader::GetOrCreate("IBL_CUBEMAPSHADER",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/equirectangularToCubemapShader.glsl");
 		IrradianceShader = Shader::GetOrCreate("IBL_IRRADIANCESHader",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/IradianceShader.glsl");
@@ -504,6 +501,7 @@ namespace Proof{
 		RendererCommand::DepthFunc(DepthType::Less);
 		m_CaptureFBO->UnBind();
 		RendererCommand::SetViewPort(CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight());
+		#endif
 	}
 	template<class T>
 	T* GetComponent(Entity entity) {

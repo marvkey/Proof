@@ -7,15 +7,19 @@
 namespace Proof
 {
 	VkPipelineLayout VulkanPipeLineLayout::s_DefaultPipelineLayout;
-	VulkanPipeLineLayout::VulkanPipeLineLayout(Count<VulkanPushConstant> pushConstant, Count<class VulkanDescriptorSetLayout> descriptor) {
+	VulkanPipeLineLayout::VulkanPipeLineLayout(Count<VulkanPushConstant> pushConstant, const std::vector<Count<VulkanDescriptorSet>>& descriptors ) {
 		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		if (descriptor != nullptr) {
+		std::vector< VkDescriptorSetLayout> descriptorLayout;
+		if (descriptors.empty() == false) {
+			for (const auto& desc : descriptors) {
+				descriptorLayout.emplace_back(desc->m_DescriptorSetLayout);
+			}
 			// pipeline layout is used to pass data to pipeline other than vertex and fragment data
 			// this includes texture and uniform buffer objects
-			pipelineLayoutInfo.setLayoutCount =1; // emty layout
-			pipelineLayoutInfo.pSetLayouts = &descriptor->GetDescriptorSetLayout();
+			pipelineLayoutInfo.setLayoutCount = descriptors.size(); // emty layout
+			pipelineLayoutInfo.pSetLayouts = descriptorLayout.data();
 		}
 		else {
 			// pipeline layout is used to pass data to pipeline other than vertex and fragment data
@@ -35,6 +39,14 @@ namespace Proof
 		if (vkCreatePipelineLayout(graphicsContext->GetDevice(), &pipelineLayoutInfo, nullptr, &m_PipeLineLayout) != VK_SUCCESS) {
 			PF_CORE_ASSERT(false, "Failed to create PipeLine Layout");
 		}
+	}
+
+	VulkanPipeLineLayout::VulkanPipeLineLayout(VkPipelineLayoutCreateInfo& info) {
+		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		if (vkCreatePipelineLayout(graphicsContext->GetDevice(), &info, nullptr, &m_PipeLineLayout) != VK_SUCCESS) {
+			PF_CORE_ASSERT(false, "Failed to create PipeLine Layout");
+		}
+
 	}
 	void VulkanPipeLineLayout::SetUpDefaultPipeLine() {
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};

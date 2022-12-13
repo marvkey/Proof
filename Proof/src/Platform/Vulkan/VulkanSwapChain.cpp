@@ -19,102 +19,76 @@ namespace Proof
 {
 
     VulkanSwapChain::VulkanSwapChain(VkExtent2D extent)
-        : m_WindowExtent{ extent } {
+        : m_WindowSize{ extent.width,extent.height } {
       //  vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
 
         CreateSwapChain();
+        CreateSyncObjects();
         CreateImageViews();
         CreateRenderPass();
         CreateDepthResources();
         CreateFramebuffers();
-        CreateSyncObjects();
     }
 
     VulkanSwapChain::~VulkanSwapChain() {
-        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
-        for (auto imageView : m_SwapChainImageViews) {
-            vkDestroyImageView(device, imageView, nullptr);
-        }
-        m_SwapChainImageViews.clear();
-
-        if (m_SwapChain != nullptr) {
-            vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
-            m_SwapChain = nullptr;
-        }
-
-        for (int i = 0; i < m_DepthImages.size(); i++) {
-            vkDestroyImageView(device, m_DepthImageViews[i], nullptr);
-            vkDestroyImage(device, m_DepthImages[i], nullptr);
-            vkFreeMemory(device, m_DepthImageMemorys[i], nullptr);
-        }
-
-        for (auto framebuffer : m_SwapChainFramebuffers) {
-            vkDestroyFramebuffer(device, framebuffer, nullptr);
-        }
-
-        vkDestroyRenderPass(device, m_RenderPass, nullptr);
-        for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++) {
-            vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);
-            vkDestroySemaphore(device, m_ImageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(device, m_InFlightFences[i], nullptr);
-        }
-        // cleanup synchronization objects
-        for (int i = 0; i < m_SwapChainFramebuffers.size(); i++) {
-            vkDestroyFramebuffer(device, m_SwapChainFramebuffers[i], nullptr);
-
-            vkDestroyImageView(device, m_SwapChainImageViews[i], nullptr);
-        }
+        CleanUp();
     }
 
     void VulkanSwapChain::AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex) {
-            vkAcquireNextImageKHR(
-            Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(),
-            m_SwapChain,
-            Math::GetMaxType<uint64_t>(),
-            m_ImageAvailableSemaphores[frameIndex],  // must be a not signaled semaphore
-            VK_NULL_HANDLE,
-            imageIndex);
+            //vkAcquireNextImageKHR(
+            //Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(),
+            //m_SwapChain,
+            //Math::GetMaxType<uint64_t>(),
+            //m_ImageAvailableSemaphores[frameIndex],  // must be a not signaled semaphore
+            //nullptr,
+            //imageIndex);
+            const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+            vkAcquireNextImageKHR(graphicsContext->GetDevice(), m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, imageIndex);
 
     }
 
-    void VulkanSwapChain::SubmitCommandBuffers(VkCommandBuffer commnadBuffer, uint32_t* imageIndex, uint32_t frameIndex) {
+    void VulkanSwapChain::SubmitCommandBuffers(std::vector<Count<VulkanCommandBuffer>> buffers, uint32_t* imageIndex) {
         auto graphicsContext= Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-
+        
+        std::vector<VkCommandBuffer> submitCommandBuffers;
+        for (auto& buffer : buffers) {
+            submitCommandBuffers.emplace_back(buffer->m_CommandBuffer[Renderer::GetCurrentFrame().FrameinFlight]);
+        }
+        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
+        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
 
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[frameIndex] };
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
 
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commnadBuffer;
+        submitInfo.commandBufferCount = submitCommandBuffers.size();
+        submitInfo.pCommandBuffers = submitCommandBuffers.data();
 
-        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[frameIndex] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        vkResetFences(graphicsContext->GetDevice(), 1, &m_InFlightFences[frameIndex]);
-        if (vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[frameIndex]) !=
+        if (vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[Renderer::GetCurrentFrame().FrameinFlight]) !=
             VK_SUCCESS) {
             PF_CORE_ASSERT(false, "failed to submit draw command buffer!");
         }
-
+        //WaitFences();
+        VkSwapchainKHR swapChains[] = { m_SwapChain };
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
-
-        VkSwapchainKHR swapChains[] = { m_SwapChain };
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
-
         presentInfo.pImageIndices = imageIndex;
+        
         vkQueuePresentKHR(graphicsContext->GetPresentQueue(), &presentInfo);
+        vkDeviceWaitIdle(graphicsContext->GetDevice());
+        for(int i =0; i<submitCommandBuffers.size(); i++)
+            vkResetCommandBuffer(submitCommandBuffers[i], 0);
     }
 
     void VulkanSwapChain::CreateSwapChain() {
@@ -122,29 +96,27 @@ namespace Proof
 
         SwapChainSupportDetails swapChainSupport = graphicsContext->GetSwapChainSupport();
 
-        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
-        VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
+        m_SurfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
+        m_PresentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
         VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
 
-        uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-        if (swapChainSupport.capabilities.maxImageCount > 0 &&
-            imageCount > swapChainSupport.capabilities.maxImageCount) {
-            imageCount = swapChainSupport.capabilities.maxImageCount;
+        m_ImageCount = swapChainSupport.capabilities.minImageCount + 1;
+        if (swapChainSupport.capabilities.maxImageCount > 0 && m_ImageCount > swapChainSupport.capabilities.maxImageCount) {
+            m_ImageCount = swapChainSupport.capabilities.maxImageCount;
         }
 
-        VkSwapchainCreateInfoKHR createInfo = {};
+        VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.surface = graphicsContext->GetSurface();
-
-        createInfo.minImageCount = imageCount;
-        createInfo.imageFormat = surfaceFormat.format;
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;
+        createInfo.minImageCount = m_ImageCount;
+        createInfo.imageFormat = m_SurfaceFormat.format;
+        createInfo.imageColorSpace = m_SurfaceFormat.colorSpace;
         createInfo.imageExtent = extent;
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
+       
         QueueFamilyIndices indices = graphicsContext->FindPhysicalQueueFamilies();
-        uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily };
+        uint32_t queueFamilyIndices[] = { indices.graphicsFamily, indices.presentFamily};
 
         if (indices.graphicsFamily != indices.presentFamily) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -153,32 +125,24 @@ namespace Proof
         }
         else {
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            createInfo.queueFamilyIndexCount = 0;      // Optional
-            createInfo.pQueueFamilyIndices = nullptr;  // Optional
         }
 
-        createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+        createInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
         createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-
-        createInfo.presentMode = presentMode;
+        createInfo.presentMode = m_PresentMode;
         createInfo.clipped = VK_TRUE;
 
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
-
         if (vkCreateSwapchainKHR(graphicsContext->GetDevice(), &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
-            PF_CORE_ASSERT(false, "failed to create swap chain!");
+            PF_CORE_ASSERT(false,"failed to create swap chain!");
         }
 
-        // we only specified a minimum number of images in the swap chain, so the implementation is
-        // allowed to create a swap chain with more. That's why we'll first query the final number of
-        // images with vkGetSwapchainImagesKHR, then resize the container and finally call it again to
-        // retrieve the handles.
-        vkGetSwapchainImagesKHR(graphicsContext->GetDevice(), m_SwapChain, &imageCount, nullptr);
-        m_SwapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(graphicsContext->GetDevice(), m_SwapChain, &imageCount, m_SwapChainImages.data());
+        uint32_t swapchainCount;
+        vkGetSwapchainImagesKHR(graphicsContext->GetDevice(), m_SwapChain, &swapchainCount, nullptr);
+        m_SwapChainImages.resize(swapchainCount);
+        vkGetSwapchainImagesKHR(graphicsContext->GetDevice(), m_SwapChain, &swapchainCount, m_SwapChainImages.data());
 
-        m_SwapChainImageFormat = surfaceFormat.format;
-        m_SwapChainExtent = extent;
+        m_ImageFormat = m_SurfaceFormat.format;
+        m_SwapChainExtent = { extent.width,extent.height };
     }
 
     void VulkanSwapChain::CreateImageViews() {
@@ -190,12 +154,12 @@ namespace Proof
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = m_SwapChainImages[i];
             viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = m_SwapChainImageFormat;
+            viewInfo.format = m_ImageFormat;
             viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = 1;
             viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
+            viewInfo.subresourceRange.layerCount = 1;;
 
             if (vkCreateImageView(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &viewInfo, nullptr, &m_SwapChainImageViews[i]) !=
                 VK_SUCCESS) {
@@ -206,7 +170,7 @@ namespace Proof
 
     void VulkanSwapChain::CreateRenderPass() {
         VkAttachmentDescription depthAttachment{};
-        depthAttachment.format = FindDepthFormat();
+        depthAttachment.format = GetDepthFormat();
         depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -220,15 +184,16 @@ namespace Proof
         depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         VkAttachmentDescription colorAttachment = {};
-        colorAttachment.format = GetSwapChainImageFormat();
+        colorAttachment.format = GetImageFormat();
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+       // colorAttachment.finalLayout =  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
+       
         VkAttachmentReference colorAttachmentRef = {};
         colorAttachmentRef.attachment = 0;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -267,12 +232,11 @@ namespace Proof
 
     void VulkanSwapChain::CreateFramebuffers() {
         const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
-        VkExtent2D swapChainExtent = GetSwapChainExtent();
+        VkExtent2D swapChainExtent = { GetSwapChainExtent().X,GetSwapChainExtent().Y };
         m_SwapChainFramebuffers.resize(GetImageCount());
         for (size_t i = 0; i < GetImageCount(); i++) {
             std::array<VkImageView, 2> attachments = { m_SwapChainImageViews[i], m_DepthImageViews[i] };
 
-            VkExtent2D swapChainExtent = GetSwapChainExtent();
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = m_RenderPass;
@@ -290,8 +254,8 @@ namespace Proof
 
     void VulkanSwapChain::CreateDepthResources() {
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-        VkFormat depthFormat = FindDepthFormat();
-        VkExtent2D swapChainExtent = GetSwapChainExtent();
+        VkFormat depthFormat = GetDepthFormat();
+        VkExtent2D swapChainExtent = { GetSwapChainExtent().X , GetSwapChainExtent().Y };
 
         m_DepthImages.resize(GetImageCount());
         m_DepthImageMemorys.resize(GetImageCount());
@@ -344,7 +308,6 @@ namespace Proof
         m_ImageAvailableSemaphores.resize(framesInFlight);
         m_RenderFinishedSemaphores.resize(framesInFlight);
         m_InFlightFences.resize(framesInFlight);
-        m_ImagesInFlight.resize(GetImageCount(), VK_NULL_HANDLE);
 
         VkSemaphoreCreateInfo semaphoreInfo = {};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -354,23 +317,93 @@ namespace Proof
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         //we want to create the fence with the Create Signaled flag, so we can wait on it before using it on a GPU command (for the first frame)
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        fenceInfo.pNext = nullptr;
 
-        for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++) {
+        for (uint32_t i = 0; i < framesInFlight; i++) {
+            if (vkCreateSemaphore(graphicsContext->GetDevice(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) != VK_SUCCESS)
+                PF_CORE_ASSERT(false, "failed to create semapthore!");
+            
+            if (vkCreateSemaphore(graphicsContext->GetDevice(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) != VK_SUCCESS)
+                PF_CORE_ASSERT(false, "failed to create semapthore!");
 
-            if (vkCreateSemaphore(graphicsContext->GetDevice(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) !=
-                VK_SUCCESS ||
-                vkCreateSemaphore(graphicsContext->GetDevice(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) !=
-                VK_SUCCESS ||
-                vkCreateFence(graphicsContext->GetDevice(), &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
+            if(vkCreateFence(graphicsContext->GetDevice(), &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) 
                 PF_CORE_ASSERT(false, "failed to create synchronization objects for a frame!");
-            }
         }
     }
+
+    void VulkanSwapChain::Recreate(VectorTemplate2<uint32_t> size) {
+        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+        vkDeviceWaitIdle(device);
+        {
+            for (size_t i = 0; i < m_SwapChainFramebuffers.size(); i++) {
+                vkDestroyFramebuffer(device, m_SwapChainFramebuffers[i], nullptr);
+            }
+            
+            for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
+                vkDestroyImageView(device, m_SwapChainImageViews[i], nullptr);
+            }
+
+            vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
+        }
+        CreateSwapChain();
+        CreateImageViews();
+        CreateFramebuffers();
+    }
+
+    void VulkanSwapChain::CleanUp() {
+        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+
+        {
+            for (size_t i = 0; i < m_SwapChainFramebuffers.size(); i++) {
+                vkDestroyFramebuffer(device, m_SwapChainFramebuffers[i], nullptr);
+            }
+            
+            for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
+                vkDestroyImageView(device, m_SwapChainImageViews[i], nullptr);
+            }
+
+            vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
+        }
+        for (auto imageView : m_SwapChainImageViews) {
+            vkDestroyImageView(device, imageView, nullptr);
+        }
+        m_SwapChainImageViews.clear();
+
+        if (m_SwapChain != nullptr) {
+            vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
+            m_SwapChain = nullptr;
+        }
+
+        for (int i = 0; i < m_DepthImages.size(); i++) {
+            vkDestroyImageView(device, m_DepthImageViews[i], nullptr);
+            vkDestroyImage(device, m_DepthImages[i], nullptr);
+            vkFreeMemory(device, m_DepthImageMemorys[i], nullptr);
+        }
+        
+        for (auto framebuffer : m_SwapChainFramebuffers) {
+            vkDestroyFramebuffer(device, framebuffer, nullptr);
+        }
+
+        vkDestroyRenderPass(device, m_RenderPass, nullptr);
+        for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++) {
+            vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);
+            vkDestroySemaphore(device, m_ImageAvailableSemaphores[i], nullptr);
+            vkDestroyFence(device, m_InFlightFences[i], nullptr);
+        }
+       //  cleanup synchronization objects
+        for (int i = 0; i < m_SwapChainFramebuffers.size(); i++) {
+            vkDestroyFramebuffer(device, m_SwapChainFramebuffers[i], nullptr);
+        
+            vkDestroyImageView(device, m_SwapChainImageViews[i], nullptr);
+        }
+    }
+
+  
 
     
     
     VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+        return availableFormats[0];
+
         for (const auto& availableFormat : availableFormats) {
             //VK_FORMAT_B8G8R8A8_UNORM 
             //VK_FORMAT_B8G8R8A8_SRGB USES GAMMA CORRECTION
@@ -410,7 +443,7 @@ namespace Proof
             return capabilities.currentExtent;
         }
         else {
-            VkExtent2D actualExtent = m_WindowExtent;
+            VkExtent2D actualExtent = { m_WindowSize.X,m_WindowSize.Y };
             actualExtent.width = std::max(
                 capabilities.minImageExtent.width,
                 std::min(capabilities.maxImageExtent.width, actualExtent.width));
@@ -430,24 +463,42 @@ namespace Proof
     }
 
     void VulkanSwapChain::WaitFences(uint32_t frameIndex) {
-        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
-        vkWaitForFences(device, 1, &m_InFlightFences[frameIndex], VK_TRUE, Math::GetMaxType<uint64_t>());
+        vkWaitForFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex], VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
+        //vkWaitForFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex], VK_TRUE, Math::GetMaxType<uint64_t>());
     }
 
     void VulkanSwapChain::ResetFences(uint32_t frameIndex) {
-        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
-        vkResetFences(device, 1, &m_InFlightFences[frameIndex]);
+        vkResetFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex]);
     }
 
-    VkFormat VulkanSwapChain::FindDepthFormat() {
+    void VulkanSwapChain::Present() {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
+        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
+        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
+        uint32_t currentFrame = Renderer::GetCurrentFrame().FrameinFlight;
+        VkSwapchainKHR swapChains[] = { m_SwapChain };
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pImageIndices = &currentFrame;
+
+        vkQueuePresentKHR(graphicsContext->GetPresentQueue(), &presentInfo);
+        //vkDeviceWaitIdle(graphicsContext->GetDevice());
+        //for (int i = 0; i < submitCommandBuffers.size(); i++)
+        //    vkResetCommandBuffer(submitCommandBuffers[i], 0);
+
+    }
+
+    VkFormat VulkanSwapChain::GetDepthFormat() {
         return Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->FindSupportedFormat(
             { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     }
-    void VulkanSwapChain::Recreate() {
-        // wait while the current swapchain is being used
-      //  vkDeviceWaitIdle(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice());
-        *this = VulkanSwapChain(GetSwapChainExtent());
-    }
+    
 }  

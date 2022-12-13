@@ -48,7 +48,9 @@ namespace Proof
 
 		bool CreateVmaBuffer(VkBufferCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanBuffer& buffer);
 		bool CreateVmaImage(VkImageCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanImage& image);
-
+		Count<class VulkanSwapChain> GetSwapChain() {
+			return CurrentWindow::GetWindow().GetSwapChain();
+		}
 		VkImageCreateInfo ImageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent) {
 			VkImageCreateInfo info = { };
 			info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -158,6 +160,8 @@ namespace Proof
 		VkPipelineCache GetPipelineCache() {
 			return m_PipelineCache;
 		}
+
+
 	private:
 		uint32_t m_VulkanVersion;
 		void CreateInstance();
@@ -193,6 +197,7 @@ namespace Proof
 
 		Count<class VulkanDescriptorPool> m_GlobalPool = nullptr;
 		VmaAllocator m_VMA_Allocator;
+		friend class VulkanRenderer;
 	};
 
 }
