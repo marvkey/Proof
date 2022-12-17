@@ -7,9 +7,9 @@
 #include "Proof/Math/Vector.h"
 namespace Proof {
 	struct WindowConfiguration {
-		uint32_t Width = 1600;
-		uint32_t Height = 900;
-		bool startMaximized = false;
+		uint32_t Width = 0;
+		uint32_t Height = 0;
+		bool startWindowedFullScreen = false;
 		bool startFullScreen = false;
 		bool Vsync = false;
 		bool Decorated = true;

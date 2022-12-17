@@ -531,7 +531,7 @@ namespace Proof
         ScriptFunc::RegisterAllComponents();
         ScriptFunc::RegisterFunctions();
 
-        world->ForEachEntitiesWithSingle<ScriptComponent>([](Entity entity) {
+        world->ForEachEnitityWith<ScriptComponent>([](Entity entity) {
             auto& comp = *entity.GetComponent< ScriptComponent>();
             //using normal for loop since we might be removing the data in theri
             for (int i = 0; i < comp.m_Scripts.size(); i++) {

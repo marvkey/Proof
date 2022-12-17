@@ -336,12 +336,14 @@ class basic_view<Entity, get_t<Component...>, exclude_t<Exclude...>> {
         }
     }
 
+  
+
+public:
+    //moved to public by prooof
     template<typename Func, std::size_t... Index>
     void pick_and_each(Func func, std::index_sequence<Index...> seq) const {
         ((std::get<Index>(pools) == view ? each<Index>(std::move(func), seq) : void()), ...);
     }
-
-public:
     /*! @brief Underlying entity identifier. */
     using entity_type = Entity;
     /*! @brief Unsigned integer type. */

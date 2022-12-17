@@ -197,9 +197,6 @@ namespace Proof
 			return temp;
 		}
 		
-		Vector GetWorldLocation() const;
-		Vector GetWorldRotation() const;
-		Vector GetWorldScale() const;
 		glm::mat4 GetLocalTransform() const {
 			return glm::translate(glm::mat4(1.0f), { Location }) *
 				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.X), { 1,0,0 })
@@ -207,8 +204,6 @@ namespace Proof
 				* glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.Z), { 0,0,1 })
 				* glm::scale(glm::mat4(1.0f), { Scale });
 		}
-
-		glm::mat4 GetWorldTransform() const;
 		Vector GetFowardVector()const {
 			// NOT IMPLEMENTED
 			return { cos(glm::radians(Rotation.Y)) * sin(glm::radians(Rotation.Z)), sin(glm::radians(-Rotation.Y)), cos(glm::radians(Rotation.Y)) * cos(glm::radians(Rotation.Z)) };
@@ -226,9 +221,6 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 		friend class Entity;
-	private:
-		uint64_t entID = 0; /// thi is to get the world transform 
-		class World* m_World = nullptr;
 	};
 	
 	struct Proof_API NativeScriptComponent{

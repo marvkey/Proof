@@ -7,6 +7,7 @@
 #include "Component.h"
 #define ENTT_ID_TYPE uint64_t
 #include "entt/entt.hpp"	
+#include "entt/entity/group.hpp"
 #include <tuple>
 #include <variant>
 class FrameTime;
@@ -61,75 +62,33 @@ namespace Proof{
 				func(created);
 			}
 		}
-		template<class T, class F>
-		void ForEachEntitiesWithSingle(F func) {
-			const auto& entitiyView = m_Registry.view<T>();
+		template<class ...T, class F>
+		void ForEachEnitityWith(F func) {
+			const auto& entitiyView = m_Registry.view<T...>();
 			for (auto& entity : entitiyView) {
 				Entity created{ entity,this };
 				func(created);
 			}
 		}
 		
-		template<class...T, class F>
-		void ForEachEntitiesWithMultiple(F func) {
-			const auto& entitiygroup = m_Registry.group<T...>();
-			for (auto& entity : entitiygroup) {
-				Entity created{ entity,this };
-				func(created);
-			}
+		template <class ...T, class Func>
+		void ForEachComponent(Func func) {
+			auto view = m_Registry.view<T...>();
+			view.pick_and_each(std::move(func), std::index_sequence_for<T>{});
 		}
-
-		template<class...T>
-		void ForTemp(std::function<void(T... args)> func) {
-			const auto& entitiygroup = m_Registry.group<T...>();
-			for (auto& entity : entitiygroup) {
-				Entity created{ entity,this };
-				func(created);
-			}
+		// returns number entities with componet
+		// if more than one componenet passed it returns number entities with that combiniation of component
+		template <class ...T>
+		uint32_t GetNumComponents() {
+			const auto& group = m_Registry.group<T>();
+			return group.size();
 		}
-
-		template <class T, class F>
-		void ForEachComponent(F func) {
-			const auto& entitiyView = m_Registry.view<T>();
-			for (auto& entity : entitiyView) {
-				Entity created = { entity,this };
-				func(*GetComponent<T>(created));
-			}
-			
-		}
-
-		/*
-		// WOKR ON THIS
-		template<class ...T>
-		void ForEachComponentMultiple(void (*func)(std::tuple<T&...> temp) ) {
-			auto componentgroup = m_Registry.group<T...>();
-			for (auto& entity : componentgroup) {
-				func(componentgroup.get(entity));
-			}
-		}
-		// WOKR ON THIS
-		template<class ...T,class F>
-		void ForEachComponentMultipleV2(F func(std::tuple<T&...> temp)) {
-			auto componentgroup = m_Registry.group<T...>();
-			for (auto& entity : componentgroup) {
-				func(componentgroup.get(entity));
-			}
-		}
-		template<class ...T>
-		void ForEachComponentV3(const std::function<void(std::tuple<T...> temp)>& func) {
-			auto componentgroup = m_Registry.group<T...>();
-			for (auto& entity : componentgroup) {
-				func(componentgroup.get(entity));
-			}
-		}
-		*/
+		
 		static Count<World> Copy(Count<World> other);
 		virtual void StartRuntime();
 		virtual void EndRuntime();
-		entt::registry64 m_Registry;
 		const std::string& GetName()const{return Name;};
 		const std::string& GetPath()const{return m_Path;}
-		friend class WorldRenderer;
 		void DeleteEntity(class Entity& ent,bool deleteChildren =true);
 
 		EditorCamera m_EditorCamera ={200,200};
@@ -138,7 +97,14 @@ namespace Proof{
 		Entity GetEntity(UUID id);
 
 		Entity FindEntityByTag(const std::string& tag);
+
+		Vector GetWorldLocation(Entity entity) const;
+		Vector GetWorldRotation(Entity entity) const;
+		Vector GetWorldScale(Entity entity) const;
+		glm::mat4 GetWorldTransform(Entity entity) const;
+
 	private:
+		entt::registry64 m_Registry;
 		class PhysicsEngine* m_PhysicsEngine =nullptr;
 		class CameraComponent* m_SceneCamera = nullptr;
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
@@ -178,6 +144,7 @@ namespace Proof{
 		friend class SceneSerializer;
 		friend class Editore3D;
 		friend class Renderer;
+		friend class WorldRenderer;
 		friend class PhysicsEngine;
 		
 };

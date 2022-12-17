@@ -30,7 +30,7 @@ namespace Proof {
         if (m_ApplicationConfiguration.ProjectPath.empty()) {
             if(std::filesystem::exists("Proof")==false)
                 std::filesystem::create_directory("Proof");
-            (FileSystem::SetAEnvironmentVariable)("PROOF_PROJECT_DIR", "Proof");
+            (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", "Proof");
             m_ApplicationConfiguration.ProjectPath = "Proof/Proof.ProofProject";
             m_ProjectPath = m_ApplicationConfiguration.ProjectPath;
             Project::Get()->m_Path = m_ProjectPath;
@@ -40,7 +40,7 @@ namespace Proof {
         else {
             m_ProjectPath = m_ApplicationConfiguration.ProjectPath;
             Project::Get()->m_Path = m_ProjectPath;
-            (FileSystem::SetAEnvironmentVariable)("PROOF_PROJECT_DIR", Project::Get()->m_Path.root_directory().string());
+            (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", Project::Get()->m_Path.root_directory().string());
             ProjectSerilizer projectSerilizer(Project::Get());
             projectSerilizer.DeSerilizeText(m_ProjectPath);
         }
@@ -119,8 +119,8 @@ namespace Proof {
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
-        if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
-            glEnable(GL_BLEND);
+        //if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
+        //    glEnable(GL_BLEND);
         while (IsRunning  == true) {
             PF_PROFILE_FRAME("Application::Update");
             Renderer::BeginFrame();

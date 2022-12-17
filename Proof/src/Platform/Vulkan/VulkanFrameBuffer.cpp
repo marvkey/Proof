@@ -5,7 +5,9 @@
 #include "VulkanSwapChain.h"
 #include "VulkanRenderPass.h"
 #include "VulkanRenderer/VulkanRenderer.h"
-
+#include "VulkanSwapChain.h"
+#include <algorithm>
+#include <vector>
 namespace Proof
 {
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
@@ -95,11 +97,7 @@ namespace Proof
                 PF_CORE_ASSERT(false, "failed to create texture image view!");
             }
         }
-        {
-            for (int i = 0; i < m_Images.size(); i++) {
-                auto image = m_Images[i];
-            }
-        }
+      
 
 
         for (size_t i = 0; i < m_ImageViews.size(); i++) {
@@ -209,67 +207,41 @@ namespace Proof
         auto swapchain = graphicsContext->GetSwapChain();
 
         m_Framebuffers.resize(swapchain->GetImageCount());
+        for (size_t i = 0; i < swapchain->GetImageCount(); i++) {
+            std::array<VkImageView, 2> attachments;
+            attachments = { m_ImageViews[i], m_DepthImageViews[i] };
 
+            VkFramebufferCreateInfo framebufferInfo = {};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass = m_RenderPass == nullptr ? swapchain->GetRenderPass()->GetRenderPass() : m_RenderPass->GetRenderPass();
+            framebufferInfo.attachmentCount = 2;
+            framebufferInfo.pAttachments = attachments.data();
+            framebufferInfo.width = m_ImageSize.X;
+            framebufferInfo.height = m_ImageSize.Y;
+            framebufferInfo.layers = 1;
 
-        if (m_Depth == true) {
-
-            for (size_t i = 0; i < swapchain->GetImageCount(); i++) {
-                std::array<VkImageView, 2> attachments;
-                attachments = { m_ImageViews[i], m_DepthImageViews[i] };
-
-                VkFramebufferCreateInfo framebufferInfo = {};
-                framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-                framebufferInfo.renderPass = m_RenderPass == nullptr ? swapchain->GetRenderPass() : m_RenderPass->GetRenderPass();
-                framebufferInfo.attachmentCount = m_Depth == true ? 2 : 1;
-                framebufferInfo.pAttachments = attachments.data();
-                framebufferInfo.width = m_ImageSize.X;
-                framebufferInfo.height = m_ImageSize.Y;
-                framebufferInfo.layers = 1;
-
-                if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_Framebuffers[i]) != VK_SUCCESS) {
-                    PF_CORE_ASSERT(false, "failed to create framebuffer!");
-                }
+            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_Framebuffers[i]) != VK_SUCCESS) {
+                PF_CORE_ASSERT(false, "failed to create framebuffer!");
             }
         }
-        else {
-
-            VkImageView attachment[1];
-            VkFramebufferCreateInfo info = {};
-            info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            info.renderPass = m_RenderPass == nullptr ? swapchain->GetRenderPass() : m_RenderPass->GetRenderPass();
-            info.attachmentCount = 1;
-            info.pAttachments = attachment;
-            info.width = m_ImageSize.X;
-            info.height = m_ImageSize.Y;
-            info.layers = 1;
-            for (uint32_t i = 0; i < swapchain->GetImageCount(); i++) {
-                attachment[0] = m_ImageViews[i];
-                if (vkCreateFramebuffer(device, &info, nullptr, &m_Framebuffers[i]) != VK_SUCCESS) {
-                    PF_CORE_ASSERT(false, "failed to create framebuffer!");
-                }
-            }
-        }
+          
     }
 
-    VulkanScreenFrameBuffer::~VulkanScreenFrameBuffer() {
-        Release();
-    }
+   
     void VulkanScreenFrameBuffer::Resize(uint32_t width, uint32_t height, Count<class VulkanRenderPass> renderPass) {
         Release();
-        //if (renderPass != nullptr)
-            //m_RenderPass = renderPass;
+        if (renderPass != nullptr)
+            m_RenderPass = renderPass;
 
         m_ImageSize.X = width;
         m_ImageSize.Y = height;
-        Recreate();
+        Init();
     }
     void VulkanScreenFrameBuffer::Resize(Vector2 imageSize, Count<class VulkanRenderPass> renderPass) {
         Resize(imageSize.X, imageSize.Y, renderPass);
     }
     
     void VulkanScreenFrameBuffer::Release() {
-
-
         for (int i = 0; i < m_Framebuffers.size(); i++) {
             VulkanRenderer::SubmitDatafree([buffer = m_Framebuffers[i],depthViews = m_DepthImageViews[i],
             imageViews = m_ImageViews[i], depthimage = m_DepthImages[i],images = m_Images[i]]() {
@@ -289,9 +261,69 @@ namespace Proof
         m_ImageViews.clear();
         m_DepthImages.clear();
         m_Images.clear();
+         // remove from index if this mesh was in there before 
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        int index = -1;
+        int iterator = 0;
+        for (auto i : graphicsContext->GetSwapChain()->FrameBuffers) {
+            if (i == this) {
+                index = iterator;
+                break;
+            }
+            iterator++;
+        }
+        if (index != -1) {
+            graphicsContext->GetSwapChain()->FrameBuffers.erase(
+                graphicsContext->GetSwapChain()->FrameBuffers.begin() + index);
+        }
     }
     void* VulkanScreenFrameBuffer::GetTexture() {
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         return graphicsContext->GetGlobalPool()->AddTexture(m_ImageSampler[Renderer::GetCurrentFrame().ImageIndex], m_ImageViews[Renderer::GetCurrentFrame().ImageIndex]);
+    }
+    void VulkanScreenFrameBuffer::Init() {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        if (m_ScreenPresent == true) {
+            CreateScreenPresent();
+            goto a;
+        }
+        CreateImageViews();
+        CreateDepthResources();
+        CreateFramebuffers();
+        a:
+        if (std::find(graphicsContext->GetSwapChain()->FrameBuffers.begin(), graphicsContext->GetSwapChain()->FrameBuffers.end(),
+            this) != graphicsContext->GetSwapChain()->FrameBuffers.end())
+            return;
+        else
+            graphicsContext->GetSwapChain()->FrameBuffers.emplace_back(this);
+    }
+    void VulkanScreenFrameBuffer::CreateScreenPresent() {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto swapchain = graphicsContext->GetSwapChain();
+        uint32_t imageCount = swapchain->GetImageCount();
+        m_Images.resize(imageCount);
+        m_ImageViews.resize(imageCount);
+        m_ImageSampler.resize(imageCount);
+
+        m_DepthImages.resize(swapchain->GetImageCount());
+        m_DepthImageViews.resize(swapchain->GetImageCount());
+        m_Framebuffers.resize(swapchain->GetImageCount());
+
+        VkImageView attachment[1];
+        VkFramebufferCreateInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        info.renderPass = m_RenderPass == nullptr ? swapchain->GetRenderPass()->GetRenderPass() : m_RenderPass->GetRenderPass();
+        info.attachmentCount = 1;
+        info.pAttachments = attachment;
+        info.width = CurrentWindow::GetWindow().GetWidth();
+        info.height = CurrentWindow::GetWindow().GetHeight();
+        info.layers = 1;
+        for (uint32_t i = 0; i < graphicsContext->GetSwapChain()->GetImageCount(); i++) {
+            attachment[0] = graphicsContext->GetSwapChain()->GetImageView(i);
+
+            if (vkCreateFramebuffer(graphicsContext->GetDevice(), &info, nullptr, &m_Framebuffers[i]) != VK_SUCCESS) {
+                PF_CORE_ASSERT(false, "failed to create framebuffer!");
+            }
+        }
     }
 }

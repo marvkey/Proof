@@ -9,14 +9,15 @@ namespace Proof
 
 	class VulkanScreenFrameBuffer: public ScreenFrameBuffer {
 	public:
-		VulkanScreenFrameBuffer(Vector2 imageSize, Count<class VulkanRenderPass> renderPass = nullptr, bool includeDepth = true):
-			m_ImageSize{ imageSize }, m_RenderPass{ renderPass }, m_Depth{includeDepth}
+		VulkanScreenFrameBuffer(Vector2 imageSize, Count<class VulkanRenderPass> renderPass = nullptr, bool screenPresent = false):
+			m_ImageSize{ imageSize }, m_RenderPass{ renderPass }, m_ScreenPresent{ screenPresent }
 		{
-			CreateImageViews();
-			CreateDepthResources();
-			CreateFramebuffers();
+			
+			Init();
 		}
-		virtual ~VulkanScreenFrameBuffer();
+		virtual ~VulkanScreenFrameBuffer() {
+			Release();
+		}
 		VkFramebuffer GetFrameBuffer(uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex) {
 			return m_Framebuffers[imageIndex];
 		}
@@ -42,17 +43,21 @@ namespace Proof
 		std::vector<VkImageView> m_ImageViews;
 
 		std::vector<VkSampler> m_ImageSampler;
-		bool m_Depth;
 
 		void* GetTexture();
-	private:
-		void Release();
-		void Recreate() {
-			*this = VulkanScreenFrameBuffer(m_ImageSize, m_RenderPass, m_Depth);
+		bool IsScreenPresent() {
+			return m_ScreenPresent;
 		}
+	private:
+		void Init();
+		void CreateScreenPresent();
+		bool m_ScreenPresent;
+
+		void Release();
 		void CreateImageViews();
 		void CreateDepthResources();
 		void CreateFramebuffers();
 		friend class VulkanRenderer;
+		friend class VulkanSwapChain;
 	};
 }

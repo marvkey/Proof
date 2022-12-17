@@ -141,8 +141,7 @@ namespace Proof{
 		entity.AddComponent<IDComponent>(ID);
 		entity.AddComponent<TagComponent>()->Tag = EntName;
 		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
-		entity.AddComponent<TransformComponent>()->entID = ID;
-		entity.GetComponent<TransformComponent>()->m_World = this;
+		entity.AddComponent<TransformComponent>();
 		return entity;
 	}
 	Entity World::CreateEntity(Entity entity, bool includeChildren){
@@ -315,11 +314,41 @@ namespace Proof{
 	}
 
 	Entity World::FindEntityByTag(const std::string& tag) {
-		ForEachEntitiesWithSingle<TagComponent>([&](Entity& entity){
+		ForEachEnitityWith<TagComponent>([&](Entity& entity){
 			if (entity.GetComponent<TagComponent>()->Tag == tag)
 				return entity;
 		});
 		return { 0, nullptr };
+	}
+
+	Vector World::GetWorldLocation(Entity entity) const {
+		auto& transformComp = *entity.GetComponent<TransformComponent>();
+		if (entity.HasOwner())
+			return transformComp.Location + World::GetWorldLocation(entity.GetOwner());
+		return transformComp.Location;
+	}
+
+	Vector World::GetWorldRotation(Entity entity) const {
+		auto& transformComp = *entity.GetComponent<TransformComponent>();
+		if (entity.HasOwner())
+			return transformComp.Rotation + World::GetWorldRotation(entity.GetOwner());
+		return transformComp.Rotation;
+	}
+
+	Vector World::GetWorldScale(Entity entity) const {
+		auto& transformComp = *entity.GetComponent<TransformComponent>();
+		if (entity.HasOwner())
+			return transformComp.Scale + World::GetWorldScale(entity.GetOwner());
+		return transformComp.Scale;
+	}
+
+	glm::mat4 World::GetWorldTransform(Entity entity) const {
+		auto rotation = GetWorldRotation(entity);
+		return glm::translate(glm::mat4(1.0f), { GetWorldLocation(entity) }) *
+			glm::rotate(glm::mat4(1.0f), glm::radians(rotation.X), { 1,0,0 })
+			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
+			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Z), { 0,0,1 })
+			* glm::scale(glm::mat4(1.0f), { GetWorldScale(entity) });
 	}
 
 	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){

@@ -405,7 +405,7 @@ namespace Proof
 				auto transformComponet = entity["TransformComponent"];
 				if (transformComponet) {
 					auto* tc = NewEntity.GetComponent<TransformComponent>();
-					tc->Location = transformComponet["Location"].as<glm::vec3>();
+					tc->Location = transformComponet["Location"].as<Vector>();
 
 					tc->Rotation = transformComponet["Rotation"].as<Vector>();
 					tc->Scale = transformComponet["Scale"].as<Vector>();

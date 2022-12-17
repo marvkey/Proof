@@ -12,7 +12,7 @@ namespace Proof {
             // filesyste
             {
                 std::filesystem::path workingDirectory = std::filesystem::current_path();
-                (FileSystem::SetAEnvironmentVariable)("PROOF_DIR", workingDirectory.string());
+                (FileSystem::SetAnEnvironmentVariable)("PROOF_DIR", workingDirectory.string());
             }
             PushLayer(new class Editore3D());
         }
@@ -30,8 +30,12 @@ namespace Proof {
         configuration.WindowConfiguration.Width = 800;
         configuration.WindowConfiguration.Vsync = false;
         configuration.WindowConfiguration.Title = "Proof";
-        configuration.WindowConfiguration.startMaximized = false; //there is a bug when this is set to true
-        configuration.WindowConfiguration.startFullScreen = false;//there is a bug when this is set to true
+        
+        //when set to true
+        // a bug happens when we change to another apllication while running proof
+        // it crahses
+        configuration.WindowConfiguration.startWindowedFullScreen = false;
+        configuration.WindowConfiguration.startFullScreen = true;
         configuration.WindowConfiguration.Decorated = true; 
         return new ProofEditor(configuration, projectPath);
     }

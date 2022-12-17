@@ -113,7 +113,7 @@ namespace Proof
 	void OpenGLRenderer3DPBR::SubmitDirectionalLight(const DirectionalLightComponent& lightComponent, class TransformComponent& transform){
 		s_CurrentLightShader->Bind();
 		std::string mumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumDirLights) + "]";
-		s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Direction", transform.GetWorldRotation());
+		//s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Direction", transform.GetWorldRotation());
 		s_CurrentLightShader->SetVec3(mumberDirectionalLightstring + ".Ambient", lightComponent.Color);
 		s_CurrentLightShader->SetFloat(mumberDirectionalLightstring + ".Intensity", lightComponent.Intensity);
 		NumDirLights++;
@@ -123,7 +123,7 @@ namespace Proof
 	void OpenGLRenderer3DPBR::SubmitPointLight(class PointLightComponent& lightComponent, TransformComponent& transform) {
 		s_CurrentLightShader->Bind();
 		std::string numberPointLightstring = "v_PointLight[" + std::to_string(NumPointLights) + "]";
-		s_CurrentLightShader->SetVec3(numberPointLightstring + ".Position", transform.GetWorldLocation());
+		//s_CurrentLightShader->SetVec3(numberPointLightstring + ".Position", transform.GetWorldLocation());
 		s_CurrentLightShader->SetVec3(numberPointLightstring + ".Ambient", lightComponent.Color);
 		s_CurrentLightShader->SetFloat(numberPointLightstring + +".Constant", lightComponent.Constant);
 		s_CurrentLightShader->SetFloat(numberPointLightstring + +".Linear", lightComponent.Linear);
@@ -136,8 +136,8 @@ namespace Proof
 	void OpenGLRenderer3DPBR::SubmitSpotLight(class SpotLightComponent& lightComponent, TransformComponent& transform) {
 		s_CurrentLightShader->Bind();
 		std::string numberSpotLightstring = "v_SpotLight[" + std::to_string(NumSpotLights) + "]";
-		s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Direction", { transform.GetWorldRotation() });
-		s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Position", { transform.GetWorldLocation() });
+		//s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Direction", { transform.GetWorldRotation() });
+		//s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Position", { transform.GetWorldLocation() });
 		s_CurrentLightShader->SetVec3(numberSpotLightstring + ".Ambient", lightComponent.Color);
 		s_CurrentLightShader->SetFloat(numberSpotLightstring +".Constant", lightComponent.Constant);
 		s_CurrentLightShader->SetFloat(numberSpotLightstring +".Linear", lightComponent.Linear);

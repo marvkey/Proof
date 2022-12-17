@@ -17,6 +17,7 @@ namespace Proof {
         void End();
         void SetDarkTheme();
     private:
+        bool m_WindoResize = false;
     };
 }
 

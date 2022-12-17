@@ -565,15 +565,24 @@ namespace Proof {
             PF_CORE_ASSERT(false,"Could Not Initilize GLFW");
             return -1;
         }
-       // glfwWindowHint(GLFW_MAXIMIZED,GLFW_TRUE); // when using this meathod teh window will have some glithy meathod
         if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // so we do not set an api as open gl
             glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         }
 
         glfwWindowHint(GLFW_DECORATED, m_WindowConfiguration.Decorated);
-        if (m_WindowConfiguration.startMaximized) {
-            m_Window = glfwCreateWindow(m_WindowConfiguration.Width, m_WindowConfiguration.Height, m_WindowConfiguration.Title.c_str(), glfwGetPrimaryMonitor(), NULL);
+        if (m_WindowConfiguration.startWindowedFullScreen) {
+            const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+            glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+            glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+            glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+            glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+            m_Window = glfwCreateWindow(mode->width, mode->height, m_WindowConfiguration.Title.c_str(), glfwGetPrimaryMonitor(), NULL);
+            int width, height;
+            glfwGetWindowSize((GLFWwindow*)m_Window, &width, &height);
+            m_WindowConfiguration.Width = width;
+            m_WindowConfiguration.Height = height;
         }
         else
             m_Window = glfwCreateWindow(m_WindowConfiguration.Width, m_WindowConfiguration.Height, m_WindowConfiguration.Title.c_str(), nullptr, NULL);
@@ -584,11 +593,17 @@ namespace Proof {
         }
 
         glfwSetWindowUserPointer((GLFWwindow*)m_Window, this);
-        if(m_WindowConfiguration.startFullScreen && m_WindowConfiguration.startMaximized == false)
+        if (m_WindowConfiguration.startFullScreen && m_WindowConfiguration.startWindowedFullScreen == false) {
             glfwMaximizeWindow((GLFWwindow*)m_Window);
+            int width, height;
+            glfwGetWindowSize((GLFWwindow*)m_Window, &width, &height);
+            m_WindowConfiguration.Width = width;
+            m_WindowConfiguration.Height = height;
+        }
        
-        if (m_WindowConfiguration.startFullScreen == false && m_WindowConfiguration.startMaximized == false)
+        if (m_WindowConfiguration.startFullScreen == false && m_WindowConfiguration.startWindowedFullScreen == false) {
             CenterWindow();
+        }
 
         glfwSetKeyCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, int key, int scancode, int action, int mods)mutable {
             WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
@@ -596,8 +611,8 @@ namespace Proof {
         });
 
         glfwSetMouseButtonCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, int button, int action, int mods){
-                WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
-                proofWindow.mouse_button_callback(button,action, mods);
+            WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
+            proofWindow.mouse_button_callback(button,action, mods);
         });
         glfwSetCursorPosCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, double xpos, double ypos) {
             WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);

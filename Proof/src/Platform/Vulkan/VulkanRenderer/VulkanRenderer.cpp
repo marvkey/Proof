@@ -56,6 +56,7 @@ namespace Proof
 		
 	};
 
+	bool s_IsWindowResised = false;
 	DrawPipeline* VulkanRenderer::s_Pipeline = nullptr;
 	MeshPipeLine* s_MeshPipeLine = nullptr;
 	bool VulkanRenderer::s_InContext = false;
@@ -142,10 +143,17 @@ namespace Proof
 
 	}
 	void VulkanRenderer::BeginFrame() {
+		if (s_IsWindowResised) {
+			const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+			graphicsContext->GetSwapChain()->Recreate({ CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight() });
+			auto x = CurrentWindow::GetWindow().GetWidth();
+
+			s_CurrentFrame.FrameinFlight = 0;
+			s_IsWindowResised = false;
+		}
 		s_Pipeline->SwapChain->AcquireNextImage(&s_CurrentFrame.ImageIndex);
 		///s_Pipeline->SwapChain->WaitFences();
 		s_Pipeline->SwapChain->ResetFences();
-		/// 
 	}
 	void VulkanRenderer::EndFrame() {
 		DrawFrame();
@@ -155,8 +163,7 @@ namespace Proof
 		s_CurrentFrame.FrameinFlight = (s_CurrentFrame.FrameinFlight + 1) % s_RendererConfig.FramesFlight;
 	}
 	void VulkanRenderer::OnWindowResize(WindowResizeEvent& e) {
-		const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		graphicsContext->GetSwapChain()->Recreate({ e.GetWhidt(), e.GetHeight() });
+		s_IsWindowResised = true;
 	}
 	void VulkanRenderer::DrawFrame() {
 		s_Pipeline->SwapChain->SubmitCommandBuffers(s_Pipeline->CommandBuffers, &s_CurrentFrame.ImageIndex);
@@ -314,7 +321,7 @@ namespace Proof
 
 		PipelineConfigInfo pipelineConfig{};
 		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
-		pipelineConfig.RenderPass = VulkanRenderer::s_Pipeline->SwapChain->GetRenderPass();
+		pipelineConfig.RenderPass = VulkanRenderer::s_Pipeline->SwapChain->GetRenderPass()->GetRenderPass();
 		pipelineConfig.PipelineLayout = VulkanPipeLineLayout::GetDefaultPipeLineLayout();
 		GraphicsPipeline = CreateCount<VulkanGraphicsPipeline>(Shader, pipelineConfig);
 	}

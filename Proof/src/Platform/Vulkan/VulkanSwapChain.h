@@ -16,14 +16,10 @@ namespace Proof
         VulkanSwapChain(VkExtent2D windowExtent);
         ~VulkanSwapChain();
         friend class ImGuiLayer;
-        VkFramebuffer GetFrameBuffer(int index)const { return m_SwapChainFramebuffers[index]; }
-        VkRenderPass GetRenderPass()const { return m_RenderPass; }
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
         size_t GetImageCount()const { return m_ImageCount; }
         VkFormat GetImageFormat()const { return m_ImageFormat; }
         ScreenSize GetSwapChainExtent()const { return m_SwapChainExtent; }
-        //uint32_t GetWidth() { return m_SwapChainExtent.width; }
-        //uint32_t GetHeight() { return m_SwapChainExtent.height; }
 
 
         float ExtentAspectRatio() {
@@ -50,18 +46,18 @@ namespace Proof
         VkPresentModeKHR GetPresentMode() {
             return m_PresentMode;
         }
+        Count<class VulkanRenderPass> GetRenderPass();
     private:
         VkSurfaceFormatKHR m_SurfaceFormat;
         VkPresentModeKHR m_PresentMode;
         uint32_t m_ImageCount;
         void CreateSwapChain();
         void CreateImageViews();
-        void CreateDepthResources();
-        void CreateRenderPass();
-        void CreateFramebuffers();
         void CreateSyncObjects();
         void Recreate(VectorTemplate2<uint32_t> size);
         void CleanUp();
+
+        void Init();
         // Helper functions
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
         VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -69,22 +65,19 @@ namespace Proof
 
         VkFormat m_ImageFormat;
         VkFormat m_SwapChainDepthFormat;
-        VkRenderPass m_RenderPass;
         ScreenSize m_WindowSize;
         ScreenSize m_SwapChainExtent;
         VkSwapchainKHR m_SwapChain;
 
-        std::vector<VkImage>m_DepthImages;
-        std::vector<VkImageView>m_DepthImageViews;
-        std::vector<VkDeviceMemory>m_DepthImageMemorys;
-
-        std::vector<VkFramebuffer> m_SwapChainFramebuffers;
+        std::vector<class VulkanScreenFrameBuffer*> FrameBuffers;
         std::vector<VkImageView> m_SwapChainImageViews;
         std::vector<VkImage> m_SwapChainImages;
         std::vector<VkSemaphore> m_ImageAvailableSemaphores;
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         std::vector<VkFence> m_InFlightFences;
         friend class VulkanRenderer;
+        // temporary
+        friend class VulkanScreenFrameBuffer;
     };
 
 }  

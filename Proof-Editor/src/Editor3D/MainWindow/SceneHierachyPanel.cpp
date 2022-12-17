@@ -53,6 +53,10 @@ namespace Proof
 			*/
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
 			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvail().x,ImGui::GetWindowHeight() / 2 });
+			if (ImGui::BeginPopupContextWindow(0)) { // right click adn open a new entitiy
+				CreateEntityMenu();
+				ImGui::EndPopup();
+			}
 			{
 				m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 				// when copying ot temporayr since copies backwards have to do this
@@ -73,10 +77,7 @@ namespace Proof
 				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
 					m_SelectedEntity = {};
 				}
-				if (ImGui::BeginPopupContextWindow(0)) { // right click adn open a new entitiy
-					CreateEntityMenu();
-					ImGui::EndPopup();
-				}
+			
 			}
 			ImGui::EndChild();
 			if (ImGui::BeginDragDropTarget()) {
@@ -209,7 +210,11 @@ namespace Proof
 		if ( ImGui::IsItemClicked() && ImGui::IsKeyDown((ImGuiKey)KeyBoardKey::E) ==false) {
 			m_SelectedEntity = entity;
 		}
-		if (ImGui::BeginPopupContextItem()) {
+		//if (ImGui::BeginPopupContextItem()) {
+		if(ImGui::BeginPopupContextItem("Entity Settings")) {
+			ImGui::EndPopup();
+		}
+		if (ImGui::BeginPopup("Entity Settings")) {
 			if (ImGui::BeginMenu("Child Entity")) {
 				bool temp = CreateEntityMenu(m_SelectedEntity);
 				// not setting to opne because 
@@ -224,16 +229,15 @@ namespace Proof
 
 				m_SelectedEntity = {};
 
-				//ImGui::CloseCurrentPopup();
 				if (opened) {
 					ImGui::EndPopup();
 					ImGui::TreePop();
+					ImGui::PopID();
 					return;
 				}
 			}
 			ImGui::EndPopup();
 		}
-
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
 			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
 		}

@@ -19,13 +19,7 @@ namespace Proof
 			return m_CommandBuffer[frameIndex];
 		}
 		uint32_t GetSize() { return 0; }
-
-
-
-		void BeginRenderPass(uint32_t imageIndex, Count<VulkanGraphicsPipeline> graphicsPipeLine, const glm::vec4& Color = { 0.1,0.1,0.1,1 }, float Depth = 1.0f, uint32_t stencil = 0, uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-		void BeginRenderPass(uint32_t imageIndex, Count<VulkanGraphicsPipeline> graphicsPipeLine, VkRenderPass renderPass, VkFramebuffer buffer, const glm::vec4& Color = { 0.1,0.1,0.1,1 }, float Depth = 1.0f, uint32_t stencil = 0, uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
 	
-		void EndRenderPass();
 		void Recreate();
 		std::vector<VkCommandBuffer> m_CommandBuffer;
 		void FreeCommandBuffer();

@@ -18,8 +18,8 @@ project "Proof"
 		--"vendor/ImGui/**.h",
         --"vendor/ImGui/**.cpp",
 		"vendor/stb_image.h",
-		--"vendor/ImGuizmo/ImGuizmo.h",
-		--"vendor/ImGuizmo/ImGuizmo.cpp"
+		"vendor/ImGuizmo/ImGuizmo.h",
+		"vendor/ImGuizmo/ImGuizmo.cpp"
 
     }
     includedirs 

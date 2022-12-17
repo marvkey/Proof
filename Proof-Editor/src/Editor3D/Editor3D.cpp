@@ -63,7 +63,6 @@ namespace Proof
 		return Input::IsKeyClicked(key);
 	}
 	void Editore3D::OnEvent(Event& e) {
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)return;
 		EventDispatcher dispatcher(e);
 		if (ActiveWorld->m_CurrentState == WorldState::Play)
 			InputManager::OnEvent(e);
@@ -337,13 +336,17 @@ namespace Proof
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
-		m_WorldRenderer.Renderer();
+		if (m_IsViewPortResize&& m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
+			m_WorldRenderer.Resize({(uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y });
+			m_IsViewPortResize = false;
+		}
+		m_WorldRenderer.Render();
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
-			ActiveWorld->OnUpdateEditor(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
+			ActiveWorld->OnUpdateEditor(DeltaTime, m_ViewPortSize.x, m_ViewPortSize.y);
 		else if (ActiveWorld->m_CurrentState == WorldState::Play)
-			ActiveWorld->OnUpdateRuntime(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
+			ActiveWorld->OnUpdateRuntime(DeltaTime, m_ViewPortSize.x, m_ViewPortSize.y);
 		else if (ActiveWorld->m_CurrentState == WorldState::Simulate)
-			ActiveWorld->OnSimulatePhysics(DeltaTime, _ViewPortSize.x, _ViewPortSize.y);
+			ActiveWorld->OnSimulatePhysics(DeltaTime, m_ViewPortSize.x, m_ViewPortSize.y);
 	}
 
 	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
@@ -388,7 +391,8 @@ namespace Proof
 			ImGui::Text("Renderer Company: %s", Renderer::GetRenderCompany().c_str());
 			ImGui::Text("Graphics Card: %s", Renderer::GetGraphicsCard().c_str());
 			ImGui::Text("Graphics Card Verison: %s", Renderer::GetGraphicsCardVersion().c_str());
-			ImGui::Text("%.3f ms/frame %.1f FPS", FrameTime::GetFrameMS(), FrameTime::GetFrameFPS());
+			ImGui::Text("%.3f ms/frame ", FrameTime::GetFrameMS());
+			ImGui::Text("%.3f FPS",FrameTime::GetFrameFPS());
 
 			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER 3D");
 			ImGui::Text("DrawCalls %i", m_WorldRenderer.RenderData.Stats.DrawCalls);
@@ -449,7 +453,7 @@ namespace Proof
 
 						if (ActiveWorld->GetState() == WorldState::Edit) {
 							//Basically makig sure that all entities that reference this entity that is deleted their data get sets to null
-							ActiveWorld->ForEachEntitiesWithSingle<ScriptComponent>([&](Entity& entity) {
+							ActiveWorld->ForEachEnitityWith<ScriptComponent>([&](Entity& entity) {
 								auto& scp = *entity.GetComponent<ScriptComponent>();
 								for (auto& scripts : scp.m_Scripts) {
 									for (auto& field : scripts.Fields) {
@@ -491,7 +495,7 @@ namespace Proof
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						//GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+						GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 						break;
 				}
 
@@ -499,21 +503,21 @@ namespace Proof
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						//GuizmoType = ImGuizmo::OPERATION::ROTATE;
+						GuizmoType = ImGuizmo::OPERATION::ROTATE;
 						break;
 				}
 			case KeyBoardKey::E:
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						//GuizmoType = ImGuizmo::OPERATION::SCALE;
+						GuizmoType = ImGuizmo::OPERATION::SCALE;
 						break;
 				}
 			case KeyBoardKey::R:
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						//GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
+						GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
 						break;
 				}
 			case KeyBoardKey::Tab:
@@ -848,11 +852,13 @@ namespace Proof
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
 			auto viewportOffset = ImGui::GetWindowPos();
-			ImVec2 ViewPortPanelSize = ImGui::GetContentRegionAvail();
 			m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x,viewportMinRegion.y + viewportOffset.y };
 			m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x,viewportMaxRegion.y + viewportOffset.y };
-			if (_ViewPortSize != *((glm::vec2*)&ViewPortPanelSize)) {
-				_ViewPortSize = { ViewPortPanelSize.x,ViewPortPanelSize.y };
+
+			ImVec2 currentviewPortPanelSize = ImGui::GetContentRegionAvail();
+			if (m_ViewPortSize != *((glm::vec2*)&currentviewPortPanelSize)) {
+				m_ViewPortSize = { currentviewPortPanelSize.x,currentviewPortPanelSize.y };
+				m_IsViewPortResize = true;
 			}
 
 
@@ -863,47 +869,43 @@ namespace Proof
 				CurrentWindow::GetWindow().SetWindowInputEvent(false);
 			}
 			void* Text = m_WorldRenderer.m_ScreenFrameBuffer->GetTexture();
-			ImGui::Image((ImTextureID)Text, ImVec2{ _ViewPortSize.x,_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-			// GUIZMOS
+			ImGui::Image((ImTextureID)Text, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
+			// GUIZMOS
 			Entity selectedEntity = m_WorldHierachy.GetSelectedEntity();
 			if (selectedEntity.GetEntityID() != 0) {
-				//ImGuizmo::SetOrthographic(true);
-				//ImGuizmo::SetDrawlist();
+				ImGuizmo::SetOrthographic(false);
+				ImGuizmo::SetDrawlist();
 
-				//ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+				ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
 				const glm::mat4& cameraProjection = ActiveWorld->m_EditorCamera.m_Projection;
 				glm::mat4 cameraView = ActiveWorld->m_EditorCamera.m_View;
 
 				auto& tc = *selectedEntity.GetComponent<TransformComponent>();
+				glm::mat4 transform = tc.GetLocalTransform();
 
-
-				glm::mat4 transform = tc.GetWorldTransform();
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
 				// Snap to 45 degrees for rotation
-				//if (GuizmoType == ImGuizmo::OPERATION::ROTATE)
-				//	snapValue = 45.0f;
+				if (GuizmoType == ImGuizmo::OPERATION::ROTATE)
+					snapValue = 45.0f;
 
 				float snapValues[3] = { snapValue,snapValue,snapValue };
 
-				//ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-				//	(ImGuizmo::OPERATION)GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
-				//	nullptr, snap ? snapValues : nullptr);;
+				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+					(ImGuizmo::OPERATION)GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+					nullptr, snap ? snapValues : nullptr);
 
-				//if (ImGuizmo::IsUsing()) {
-				//
-				//	if (selectedEntity.HasOwner() == false) {
-				//		glm::vec3 translation, rotation, scale;
-				//		MathResource::DecomposeTransform(transform, translation, rotation, scale);
-				//
-				//		glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
-				//		tc.Location = translation;
-				//		tc.Rotation += {glm::degrees(deltaRotation.x), glm::degrees(deltaRotation.y), glm::degrees(deltaRotation.z)};
-				//		tc.Scale = scale;
-				//	}
-				//}
+				if (ImGuizmo::IsUsing()) {
+					glm::vec3 translation, rotation, scale;
+					MathResource::DecomposeTransform(transform, translation, rotation, scale);
+
+					glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
+					tc.Location = translation;
+					tc.Rotation += deltaRotation;
+					tc.Scale = scale;
+				}
 			}
 
 			/* putting this underneath image because a window only accpet drop target to when item is bound so and image has been bound */

@@ -13,11 +13,12 @@ namespace Proof
 		{
 			m_ScreenFrameBuffer=ScreenFrameBuffer::Create(textureWidth,textureHeight);
 		}
+		void Resize(ScreenSize windowSize);
 		void SetContext(Count<World>world) {
 			m_World = world;
 		}
-		void* Renderer();
-		void* Renderer(CameraComponent& comp, Vector& location);
+		void Render();
+		void Render(CameraComponent& comp, Vector& location);
 		void* GetWorldTexture(){
 			return m_ScreenFrameBuffer->GetTexture();
 		}

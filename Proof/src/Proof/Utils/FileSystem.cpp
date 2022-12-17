@@ -3,7 +3,7 @@
 namespace Proof
 {
 	static std::unordered_map<std::string, std::string> s_EnvironmentVariables;
-	void FileSystem::SetAEnvironmentVariable(const std::string& ID, const std::string& value) {
+	void FileSystem::SetAnEnvironmentVariable(const std::string& ID, const std::string& value) {
 		s_EnvironmentVariables.insert({ ID,value });
 	}
 	std::string FileSystem::GetEnvironmentValue(const std::string& ID) {

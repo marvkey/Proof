@@ -70,11 +70,11 @@ namespace Proof {
 		// that is a measure of bouncinesss
 		defauultMaterial = m_NVDIAPhysicsEngine->m_Physics->createMaterial(0.6f, 0.6f, 0.f);
 		{
-			m_World->ForEachEntitiesWithSingle<RigidBodyComponent>([&](Entity entity) {
+			m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity) {
 				const auto& transformComponent = entity.GetComponent<TransformComponent>();
-				const auto worldLocation = transformComponent->GetWorldLocation();
-				const auto worldRotation = transformComponent->GetWorldRotation();
-				const auto worldScale = transformComponent->GetWorldScale();
+				const auto worldLocation = m_World->GetWorldLocation(entity);
+				const auto worldRotation = m_World->GetWorldRotation(entity);
+				const auto worldScale = m_World->GetWorldScale(entity);
 				auto& rigidBodyComponent = *entity.GetComponent<RigidBodyComponent>();
 				physx::PxActor* rigidBodyBase= nullptr;
 				if (rigidBodyComponent.m_RigidBodyType == RigidBodyType::Dynamic) {
@@ -113,7 +113,7 @@ namespace Proof {
 				{
 					auto sphereCollider = entity.GetComponent<SphereColliderComponent>();
 					if (sphereCollider != nullptr) {
-						float size = sphereCollider->Radius * transformComponent->GetWorldScale().GetMaxTransformPositive();
+						float size = sphereCollider->Radius * entity.GetCurrentWorld()->GetWorldScale(entity).GetMaxTransformPositive();
 
 						physx::PxMaterial* colliderMaterial = sphereCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)sphereCollider->GetPhysicsMaterial()->m_RuntimeBody;
 						physx::PxShape* body = m_NVDIAPhysicsEngine->m_Physics->createShape(physx::PxSphereGeometry(size), *colliderMaterial, true);
@@ -147,7 +147,7 @@ namespace Proof {
 						auto cubeCollider = entity.GetComponent<CubeColliderComponent>();
 						if (cubeCollider != nullptr) {
 							physx::PxMaterial* colliderMaterial = cubeCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)cubeCollider->GetPhysicsMaterial()->m_RuntimeBody;
-							auto scalePositiveTransform = transformComponent->GetWorldScale().GetPositive();
+							auto scalePositiveTransform = entity.GetCurrentWorld()->GetWorldScale(entity).GetPositive();
 							auto scalePositiveCollider = cubeCollider->OffsetScale.GetPositive();
 
 							auto size = scalePositiveTransform * scalePositiveCollider;
@@ -182,7 +182,7 @@ namespace Proof {
 						auto capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
 						if (capsuleCollider != nullptr) {
 							physx::PxMaterial* colliderMaterial = capsuleCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)capsuleCollider->GetPhysicsMaterial()->m_RuntimeBody;
-							float radius = capsuleCollider->Radius * transformComponent->GetWorldScale().GetMaxTransformPositive();
+							float radius = capsuleCollider->Radius * entity.GetCurrentWorld()->GetWorldScale(entity).GetMaxTransformPositive();
 							float height = capsuleCollider->Height;
 							physx::PxShape* body = m_NVDIAPhysicsEngine->m_Physics->createShape(physx::PxCapsuleGeometry(radius, height), *colliderMaterial, true);
 							body->setName(fmt::to_string(entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
@@ -304,7 +304,7 @@ namespace Proof {
 		//{
 		//	// Cube Collider
 		//	{
-		//		m_World->ForEachEntitiesWithSingle<CubeColliderComponent>([&](Entity currentEntity) {
+		//		m_World->ForEachEnitityWith<CubeColliderComponent>([&](Entity currentEntity) {
 		//			const auto& transform = *currentEntity.GetComponent<TransformComponent>();
 		//			auto& cubeCollider = *currentEntity.GetComponent<CubeColliderComponent>();
 		//			auto& size = glm::vec3{ transform.GetWorldScale().X * cubeCollider.OffsetScale.X,transform.GetWorldScale().Y * cubeCollider.OffsetScale.Y,transform.GetWorldScale().Z * cubeCollider.OffsetScale.Z };
@@ -342,7 +342,7 @@ namespace Proof {
 	}
 	void PhysicsEngine::UpdateNvdiaPhysx(float delta) {
 
-		m_World->ForEachEntitiesWithSingle<RigidBodyComponent>([&](Entity entity) {
+		m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity) {
 			const auto transform = entity.GetComponent<TransformComponent>();
 			auto rigidBody = *entity.GetComponent<RigidBodyComponent>();
 			if (rigidBody.m_RigidBodyType == RigidBodyType::Dynamic) {

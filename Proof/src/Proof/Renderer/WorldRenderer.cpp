@@ -12,9 +12,12 @@
 #include "Renderer.h"
 namespace Proof
 {
-	void* WorldRenderer::Renderer() {
+	void WorldRenderer::Resize(ScreenSize windowSize) {
+		m_ScreenFrameBuffer->Resize(windowSize.X, windowSize.Y);
+	}
+	void WorldRenderer::Render() {
 		if (m_RendererPaused == true)
-			return 0;
+			return;
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
 
@@ -36,32 +39,32 @@ namespace Proof
 		}
 		// MESHES
 		{
-			const auto& meshGroup = m_World->m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-			for (auto& enity : meshGroup) {
-				const auto& [mesh, transform] = meshGroup.get(enity);
-				Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
-			}
-
+			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
+				Renderer3DPBR::Draw(*entity.GetComponent<MeshComponent>(), m_World->GetWorldTransform(entity));
+			});
 		}
 		// LIGHTS
 		{
-			const auto& directionGroup = m_World->m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
-			const auto& pointGroup = m_World->m_Registry.group<PointLightComponent>(entt::get<TransformComponent>);
-			const auto& spotGroup = m_World->m_Registry.group<SpotLightComponent>(entt::get<TransformComponent>);
-			for (auto& entity : directionGroup) {
-				const auto& [light, transform] = directionGroup.get(entity);
-				Renderer3DPBR::SubmitDirectionalLight(light, transform);
-			}
+			//const auto& directionGroup = m_World->m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
+			//const auto& pointGroup = m_World->m_Registry.group<PointLightComponent>(entt::get<TransformComponent>);
+			//const auto& spotGroup = m_World->m_Registry.group<SpotLightComponent>(entt::get<TransformComponent>);
+			
+			
 
-			for (auto& entity : pointGroup) {
-				const auto& [light, transform] = pointGroup.get(entity);
-				Renderer3DPBR::SubmitPointLight(light, transform);
-			}
-
-			for (auto& entity : spotGroup) {
-				const auto& [light, transform] = spotGroup.get(entity);
-				Renderer3DPBR::SubmitSpotLight(light, transform);
-			}
+			//for (auto& entity : directionGroup) {
+			//	const auto& [light, transform] = directionGroup.get(entity);
+			//	Renderer3DPBR::SubmitDirectionalLight(light, transform);
+			//}
+			//
+			//for (auto& entity : pointGroup) {
+			//	const auto& [light, transform] = pointGroup.get(entity);
+			//	Renderer3DPBR::SubmitPointLight(light, transform);
+			//}
+			//
+			//for (auto& entity : spotGroup) {
+			//	const auto& [light, transform] = spotGroup.get(entity);
+			//	Renderer3DPBR::SubmitSpotLight(light, transform);
+			//}
 		}
 		// PBR
 		{
@@ -169,40 +172,37 @@ namespace Proof
 		}
 		*/
 		#endif
-		return m_ScreenFrameBuffer->GetTexture();
 	}
-	void* WorldRenderer::Renderer(CameraComponent& comp, Vector& location) {
+	void WorldRenderer::Render(CameraComponent& comp, Vector& location) {
 
 
 		Renderer3DPBR::BeginContext(comp.GetProjection(), comp.GetView(), location, m_ScreenFrameBuffer, RenderData);
 		// MESHES
 		{
-			const auto& meshGroup = m_World->m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-			for (auto& enity : meshGroup) {
-				const auto& [mesh, transform] = meshGroup.get(enity);
-				Renderer3DPBR::Draw(mesh, transform.GetWorldTransform());
-			}
+			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
+				Renderer3DPBR::Draw(*entity.GetComponent<MeshComponent>(), m_World->GetWorldTransform(entity));
+			});
 
 		}
 		// LIGHTS
 		{
-			const auto& directionGroup = m_World->m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
-			const auto& pointGroup = m_World->m_Registry.group<PointLightComponent>(entt::get<TransformComponent>);
-			const auto& spotGroup = m_World->m_Registry.group<SpotLightComponent>(entt::get<TransformComponent>);
-			for (auto& entity : directionGroup) {
-				const auto& [light, transform] = directionGroup.get(entity);
-				Renderer3DPBR::SubmitDirectionalLight(light, transform);
-			}
-
-			for (auto& entity : pointGroup) {
-				const auto& [light, transform] = pointGroup.get(entity);
-				Renderer3DPBR::SubmitPointLight(light, transform);
-			}
-
-			for (auto& entity : spotGroup) {
-				const auto& [light, transform] = spotGroup.get(entity);
-				Renderer3DPBR::SubmitSpotLight(light, transform);
-			}
+			//const auto& directionGroup = m_World->m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
+			//const auto& pointGroup = m_World->m_Registry.group<PointLightComponent>(entt::get<TransformComponent>);
+			//const auto& spotGroup = m_World->m_Registry.group<SpotLightComponent>(entt::get<TransformComponent>);
+			//for (auto& entity : directionGroup) {
+			//	const auto& [light, transform] = directionGroup.get(entity);
+			//	Renderer3DPBR::SubmitDirectionalLight(light, transform);
+			//}
+			//
+			//for (auto& entity : pointGroup) {
+			//	const auto& [light, transform] = pointGroup.get(entity);
+			//	Renderer3DPBR::SubmitPointLight(light, transform);
+			//}
+			//
+			//for (auto& entity : spotGroup) {
+			//	const auto& [light, transform] = spotGroup.get(entity);
+			//	Renderer3DPBR::SubmitSpotLight(light, transform);
+			//}
 		}
 		// PBR
 		{
@@ -310,6 +310,5 @@ namespace Proof
 		}
 		*/
 		#endif
-		return m_ScreenFrameBuffer->GetTexture();
 	}
 }

@@ -89,7 +89,7 @@ namespace Proof {
 		bool m_ClearLogOnPlay = false;
 		bool Docking = false;
 		bool m_ShowLogger = true;
-		bool m_ShowRendererStats = false;
+		bool m_ShowRendererStats = true;
 		bool m_ShowWorldEditor= false;
 		void ViewPort();
 		void MainToolBar();
@@ -98,10 +98,10 @@ namespace Proof {
 		Count<Texture2D>m_PauseButtonTexture;
 		Count<Texture2D>m_SimulateButtonTexture;
 		Count<Texture2D>m_StopButtonTexture;
-		glm::vec2 _ViewPortSize;
+		glm::vec2 m_ViewPortSize;
 		void SetDocking(bool *p_open);
 		glm::vec2 _ViewPortLocation;
-		bool ViewPortResize = false;
+		bool m_IsViewPortResize = false;
 		Count<class World>ActiveWorld =nullptr;
 		Count<class World>m_EditorWorld =nullptr;
 
@@ -109,7 +109,7 @@ namespace Proof {
 		class SceneHierachyPanel m_WorldHierachy{this};;
 		class ContentBrowserPanel m_ContentBrowserPanel ={this};
 		class AssetManagerPanel m_AssetManagerPanel;
-		class PerformancePanel m_PerformancePanel;
+		class PerformancePanel m_PerformancePanel = {false};
 		friend class Renderer3D;
 		friend class Renderer;
 		InputPanel m_InputPanel;

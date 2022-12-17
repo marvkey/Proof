@@ -69,7 +69,7 @@ namespace Proof
             VkAttachmentDescription attachment = {};
             attachment.format = VulkanRenderer::s_Pipeline->SwapChain->GetImageFormat();
             attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-            attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR ;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -97,6 +97,7 @@ namespace Proof
             info.pSubpasses = &subpass;
             info.dependencyCount = 1;
             info.pDependencies = &dependency;
+
             if (vkCreateRenderPass(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &info, nullptr, &m_RenderPass) != VK_SUCCESS) {
                 PF_CORE_ASSERT(false, "failed to create render pass!");
             }
@@ -125,45 +126,43 @@ namespace Proof
 
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         auto swapchain = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetSwapChain();
-        if (frameBuffer->As<VulkanScreenFrameBuffer>()->m_Depth == true) {
-            std::array<VkClearValue, 2> clearValues{};
-            clearValues[0].color = { Color.x, Color.y, Color.z, Color.a };
-            // color of screen
-            // teh reason we are not settign [0].depthStencil is because 
-            //we set color atachmetna as index 0 and depth as index 1 in 
-            // the render pass
-            clearValues[1].depthStencil = { Depth,stencil };
-
-
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = m_RenderPass;
-            // teh frameBuffer we are writing
-            renderPassInfo.framebuffer = frameBuffer->As<VulkanScreenFrameBuffer>()->GetFrameBuffer(Renderer::GetCurrentFrame().ImageIndex);
-
-            // the area shader loads and 
-            renderPassInfo.renderArea.offset = { 0,0 };
-            // for high displays swap chain extent could be higher than windows extent
-            renderPassInfo.renderArea.extent = VkExtent2D{ (uint32_t)frameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.X, (uint32_t)frameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.Y };
-
-
-            renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
-            renderPassInfo.pClearValues = clearValues.data();
-            vkCmdBeginRenderPass(command->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        }
-        else {
+        if (frameBuffer->As<VulkanScreenFrameBuffer>()->IsScreenPresent() == true) {
             VkClearValue value{ Color.x, Color.y, Color.z, Color.a };
             VkRenderPassBeginInfo renderPassInfo = {};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = m_RenderPass;
-            renderPassInfo.framebuffer = frameBuffer->As<VulkanScreenFrameBuffer>()->GetFrameBuffer(Renderer::GetCurrentFrame().ImageIndex);
+            renderPassInfo.framebuffer = frameBuffer->As<VulkanScreenFrameBuffer>()->GetFrameBuffer();
             renderPassInfo.renderArea.offset = { 0, 0 };
             renderPassInfo.renderArea.extent = VkExtent2D{ (uint32_t)frameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.X, (uint32_t)frameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.Y };
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &value;
             vkCmdBeginRenderPass(command->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            return;
         }
+        std::array<VkClearValue, 2> clearValues{};
+        clearValues[0].color = { Color.x, Color.y, Color.z, Color.a };
+        // color of screen
+        // teh reason we are not settign [0].depthStencil is because 
+        //we set color atachmetna as index 0 and depth as index 1 in 
+        // the render pass
+        clearValues[1].depthStencil = { Depth,stencil };
 
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = m_RenderPass;
+        // teh frameBuffer we are writing
+        renderPassInfo.framebuffer = frameBuffer->As<VulkanScreenFrameBuffer>()->GetFrameBuffer(Renderer::GetCurrentFrame().ImageIndex);
+
+        // the area shader loads and 
+        renderPassInfo.renderArea.offset = { 0,0 };
+        // for high displays swap chain extent could be higher than windows extent
+        renderPassInfo.renderArea.extent = VkExtent2D{ (uint32_t)frameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.X, (uint32_t)frameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.Y };
+
+
+        renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
+        renderPassInfo.pClearValues = clearValues.data();
+        vkCmdBeginRenderPass(command->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
     void VulkanRenderPass::EndRenderPass(Count<class VulkanCommandBuffer> commandBuffer) {
         PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot End render pass when render pass is not started");

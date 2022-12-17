@@ -54,34 +54,6 @@ namespace Proof
 			m_MeshAssetPointerID = ID;
 		}
 	}	
-	Vector TransformComponent::GetWorldLocation()const {
-		if (entID ==0 )return Location;
-		Entity enttity(entID, m_World);
-		if(enttity.HasOwner())
-			return Location + enttity.GetOwner().GetComponent<TransformComponent>()->GetWorldLocation();
-		return Location;
-	}
-	Vector TransformComponent::GetWorldRotation()const {
-		if (entID == 0)return Rotation;
-		Entity enttity(entID, m_World);
-		if (enttity.HasOwner())
-			return Rotation + enttity.GetOwner().GetComponent<TransformComponent>()->GetWorldRotation();
-		return Rotation;
-	}
-	Vector TransformComponent::GetWorldScale()const {
-		if (entID == 0)return Scale;
-		Entity enttity(entID, m_World);
-		if (enttity.HasOwner())
-			return Scale + enttity.GetOwner().GetComponent<TransformComponent>()->GetWorldScale();
-		return Scale;
-	}
-	glm::mat4 TransformComponent::GetWorldTransform() const {
-		glm::mat4 rotation = glm::toMat4(glm::quat(glm::vec3{ glm::radians(Rotation.X), glm::radians(Rotation.Y), glm::radians(Rotation.Z) }));
-		return glm::translate(glm::mat4(1.0f), { GetWorldLocation()}) 
-			*rotation
-			* glm::scale(glm::mat4(1.0f), { GetWorldScale()});
-	}
-
 	
 
 	MeshAsset* MeshComponent::GetAsset() {
