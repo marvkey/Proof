@@ -1,16 +1,77 @@
 #include "Proofprch.h"
 #include "VulkanGraphicsPipeline.h"
 #include "VulkanShader.h"
-#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/RendererBase.h"
 #include "VulkanGraphicsContext.h"
 #include "VulkanShader.h"
 #include "VulkanBuffer.h"
 #include "Proof/Renderer/Shader.h"
 #include "VulkanVertexArray.h"
+#include "VulkanPipeLineLayout.h"
+#include "VulkanVertexArray.h"
+#include "VulkanRenderPass.h"
 namespace Proof
 {
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
-		vkDestroyPipeline(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_GraphicsPipeline, nullptr);
+		vkDestroyPipeline(RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_GraphicsPipeline, nullptr);
+	}
+	VulkanGraphicsPipeline::VulkanGraphicsPipeline(Count<class Shader> shader, Count<class RenderPass> renderPass, Count<class PipeLineLayout> pipeline, Count<VertexArray > vertexArray ) {
+		PipelineConfigInfo pipelineConfig{};
+		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
+		pipelineConfig.RenderPass = renderPass->As<VulkanRenderPass>()->GetRenderPass();
+		pipelineConfig.PipelineLayout = pipeline->As<VulkanPipeLineLayout>()->GetPipeLineLayout();
+		m_Shader = std::dynamic_pointer_cast<VulkanShader>(shader);
+		PF_CORE_ASSERT(pipelineConfig.PipelineLayout, "Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");
+		PF_CORE_ASSERT(pipelineConfig.RenderPass, "Cannot create Graphics Pipeline:: no renderpass provided in configInfo");
+		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		// we are hardcoding values into the vertex data
+		VulkanVertexInput vertexInput;
+		if (vertexArray != nullptr) {
+			vertexInput = vertexArray->As<VulkanVertexArray>()->GetData();
+			vertexInputInfo.vertexAttributeDescriptionCount = vertexInput.GetAttributes().size();
+			vertexInputInfo.vertexBindingDescriptionCount = vertexInput.GetDescriptions().size();
+
+			vertexInputInfo.pVertexAttributeDescriptions = vertexInput.GetAttributes().data();
+			vertexInputInfo.pVertexBindingDescriptions = vertexInput.GetDescriptions().data();
+		}
+		else {
+			vertexInputInfo.vertexAttributeDescriptionCount = 0;
+			vertexInputInfo.vertexBindingDescriptionCount = 0;
+
+			vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+			vertexInputInfo.pVertexBindingDescriptions = nullptr;
+		}
+
+		VkGraphicsPipelineCreateInfo pipelineInfo{};
+		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		// teh stages of the pipeline we are going to use
+		// we are only using the fragment and vertex stages
+		if (shader != nullptr) {
+			pipelineInfo.stageCount = m_Shader->GetStageCount();
+			pipelineInfo.pStages = m_Shader->m_ShaderStages.data();
+		}
+		pipelineInfo.pVertexInputState = &vertexInputInfo;
+		pipelineInfo.pInputAssemblyState = &pipelineConfig.InputAssemblyInfo;
+		pipelineInfo.pViewportState = &pipelineConfig.ViewportInfo;
+		pipelineInfo.pRasterizationState = &pipelineConfig.RasterizationInfo;
+		pipelineInfo.pMultisampleState = &pipelineConfig.MultisampleInfo;
+		pipelineInfo.pColorBlendState = &pipelineConfig.ColorBlendInfo;
+		pipelineInfo.pDepthStencilState = &pipelineConfig.DepthStencilInfo;
+		// some functionality to configure the viewport or line width without restarting the whole pipeline
+		pipelineInfo.pDynamicState = nullptr;
+
+		//pipelineInfo.sha
+		pipelineInfo.layout = pipelineConfig.PipelineLayout;
+		pipelineInfo.renderPass = pipelineConfig.RenderPass;
+		pipelineInfo.subpass = pipelineConfig.Subpass;
+
+		// can be used for performance increase
+		pipelineInfo.basePipelineIndex = -1;
+		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+		if (vkCreateGraphicsPipelines((RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
+			PF_CORE_ASSERT(false, "Failed to Create Graphics Pipeline");
 	}
 	VulkanGraphicsPipeline::VulkanGraphicsPipeline(Count<Shader> shader, const PipelineConfigInfo& info, class VulkanVertexInput* vertexInput) {
 		m_Shader = std::dynamic_pointer_cast<VulkanShader>(shader);
@@ -61,7 +122,7 @@ namespace Proof
 		pipelineInfo.basePipelineIndex = -1;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-		if (vkCreateGraphicsPipelines((Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
+		if (vkCreateGraphicsPipelines((RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to Create Graphics Pipeline");
 	}
 	void VulkanGraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height) {

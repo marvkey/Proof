@@ -3,7 +3,7 @@
 #include "Application.h"
 #include "Proof/ImGui/ImGuiLayer.h"
 #include "Proof/Events/Event.h"
-#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/RendererBase.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Asset/AssetManager.h"
@@ -14,8 +14,8 @@
 #include "Proof/Scripting/ScriptEngine.h"
 #include "CurrentWindow.h"
 #include "Proof/Project/ProjectSerilizer.h"
-#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
-
+#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/SwapChain.h"
 namespace Proof {
     Special <Window> Application::MainWindow = nullptr;
     float Application::FPS = 60.0f;
@@ -52,7 +52,7 @@ namespace Proof {
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = Project::Get()->m_AssetDirectory;
         assetManagerconfig.AssetManager = Project::Get()->m_AssetManager;
-        Renderer::Init(static_cast<Window*>(MainWindow.get()));
+        RendererBase::Init(static_cast<Window*>(MainWindow.get()));
 
         AssetManager::Init(assetManagerconfig);
         ScriptEngine::Init();
@@ -82,7 +82,7 @@ namespace Proof {
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
         dispatcher.Dispatch<WindowCloseEvent>(PF_BIND_FN(Application::OnWindowCloseEvent));
         dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e) {
-            Renderer::OnWindowResize(e);
+            m_Resized = true;
         });
         /// PUSH LAYERS BACKWARDS
         /// WHEN WE GET UI WE MIGHT WANT TO ONLY RESPODN TO UI FIRST
@@ -115,22 +115,19 @@ namespace Proof {
     }
 
     void Application::Run() {
-            
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
-        //if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
-        //    glEnable(GL_BLEND);
-        while (IsRunning  == true) {
+        while (IsRunning == true) {
             PF_PROFILE_FRAME("Application::Update");
             Renderer::BeginFrame();
+            if (m_Resized)
+                MainWindow->GetSwapChain()->Resize({ CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetWidth()});
             float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
             FrameTime::WorldDeltaTime = DeltaTime;
-            if (Renderer::GetAPI() != RendererAPI::API::Vulkan)
-                RendererCommand::Enable(ProofRenderTest::DepthTest);
 
             if (WindowMinimized == false) {
                 PF_PROFILE_FUNC("Layer OnUpdate");
@@ -155,7 +152,7 @@ namespace Proof {
         };
         IsRunning = false;
         AssetManager::SaveAllAssets();
-        Renderer::Destroy();
+        RendererBase::Destroy();
     }
 
     void Application::PushLayer(Layer* Layer) {

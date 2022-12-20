@@ -8,19 +8,20 @@
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanCommandBuffer.h"
 #include "Proof/Core/Core.h"
+#include "Proof/Renderer/SwapChain.h"
 namespace Proof
 {
-    class VulkanSwapChain {
+    class VulkanSwapChain : public SwapChain {
     public:
 
-        VulkanSwapChain(VkExtent2D windowExtent);
+        VulkanSwapChain(ScreenSize windowExtent);
         ~VulkanSwapChain();
         friend class ImGuiLayer;
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
         size_t GetImageCount()const { return m_ImageCount; }
         VkFormat GetImageFormat()const { return m_ImageFormat; }
         ScreenSize GetSwapChainExtent()const { return m_SwapChainExtent; }
-
+        ScreenSize GetWindowSize()const { return m_WindowSize; }
 
         float ExtentAspectRatio() {
             return static_cast<float>(m_SwapChainExtent.X) / static_cast<float>(m_SwapChainExtent.Y);
@@ -31,8 +32,7 @@ namespace Proof
         void WaitAndResetFences(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
         void WaitFences(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
         void ResetFences(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-        void Present();
-        void SubmitCommandBuffers(std::vector<Count<VulkanCommandBuffer>> buffers, uint32_t* imageIndex);
+        void SubmitCommandBuffers(std::vector<Count<CommandBuffer>> buffers, uint32_t* imageIndex);
 
         bool CompareSwapFormats(const VulkanSwapChain& swapChain) {
             return swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat && swapChain.m_ImageFormat == m_ImageFormat;
@@ -46,7 +46,7 @@ namespace Proof
         VkPresentModeKHR GetPresentMode() {
             return m_PresentMode;
         }
-        Count<class VulkanRenderPass> GetRenderPass();
+        Count<class RenderPass> GetRenderPass();
     private:
         VkSurfaceFormatKHR m_SurfaceFormat;
         VkPresentModeKHR m_PresentMode;
@@ -54,7 +54,7 @@ namespace Proof
         void CreateSwapChain();
         void CreateImageViews();
         void CreateSyncObjects();
-        void Recreate(VectorTemplate2<uint32_t> size);
+        void Resize(ScreenSize size);
         void CleanUp();
 
         void Init();

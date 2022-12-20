@@ -7,6 +7,7 @@ namespace Proof
 {
 
 	void PerformancePanel::ImGuiRender(FrameTime deltaTime) {
+		#if 0
 		if (m_ShowWindow == false)
 			return;
 		PF_PROFILE_FUNC();
@@ -46,6 +47,7 @@ namespace Proof
 			}
 		}
 		ImGui::End();
+		#endif
 	}
 	void PerformancePanel::PerformanceData(Compare& comp) {
 		auto& Time = FrameTimersControll::s_FrameTimers[comp.Pos];

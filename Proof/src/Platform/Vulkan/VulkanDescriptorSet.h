@@ -2,50 +2,18 @@
 #include <vulkan/vulkan.h>
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanUtils/VulkanBufferBase.h"
+#include "Proof/Renderer/UniformBuffer.h"
 namespace Proof
 {
-    /*
-        Set=0 descriptor set containing uniform buffer with global, per-frame or per-view data, as well as globally available textures such as shadow map texture array/atlas
-        Set=1 descriptor set containing uniform buffer and texture descriptors for per-material data, such as albedo map, Fresnel coefficients, etc.
-        Set=2 descriptor set containing dynamic uniform buffer with per-draw data, such as world transform array
-    */
-    enum class DescriptorSets {
-        Zero = 0,
-        One,
-        Two
-    };
-    enum class DescriptorSet0 {
-        //struct
-        CameraData = 0,
-        //struct
-        WorldData = 1,
-
-    };
-
-    enum class DescriptorSet1 {
-        //texture
-        AlbedoMap = 0,
-        //texture
-        NormalMap = 1,
-        //texture
-        metallicMap = 2,
-        //texture
-        roughnessMap = 3,
-        //texture
-        DiffuseMap = 4
-    };
-
-    enum class DescriptorSet2 {
-
-    };
-    class VulkanDescriptorSet {
+   
+    class VulkanDescriptorSet : public DescriptorSet {
     public:
-        struct Builder {
+        struct VulkanDescriptorSetBuilder {
         public:
-            Builder(DescriptorSets set) {
+            VulkanDescriptorSetBuilder(DescriptorSets set) {
                 m_Set = set;
             }
-            Builder& AddBinding(uint32_t binding,VkDescriptorType descriptorType,VkShaderStageFlags stageFlags,uint32_t count = 1);
+            VulkanDescriptorSetBuilder& AddBinding(uint32_t binding, DescriptorType descriptorType, ShaderStage shaderStage ,uint32_t count = 1);
             std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> Bindings{};
 
             Count<VulkanDescriptorSet> Build();
@@ -64,17 +32,19 @@ namespace Proof
             m_Bindings.size();
         }
 
-        VulkanDescriptorSet& WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo);
-        VulkanDescriptorSet& WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInfo);
+        DescriptorSet& WriteBuffer(uint32_t binding,  Count<UniformBuffer> buffer);
+        DescriptorSet& WriteImage(uint32_t binding, Count<class Texture2D> image);
 
-        bool Build(int frame = Renderer::GetCurrentFrame().FrameinFlight);
         void Overwrite(int frame = Renderer::GetCurrentFrame().FrameinFlight);
 
         DescriptorSets SetIndex() {
             return m_Set;
         }
         friend class VulkanPipeLineLayout;
+        void Bind(Count<class CommandBuffer> commandBuffer, Count<class PipeLineLayout>pipeLineLayout);
+
     private:
+        bool Build(int frame = Renderer::GetCurrentFrame().FrameinFlight);
         VkDescriptorSetLayout m_DescriptorSetLayout;
         Special<class VulkanDescriptorWriter> m_Writer;
         std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> m_Bindings;
@@ -155,26 +125,35 @@ namespace Proof
         std::vector<VkWriteDescriptorSet> writes;
 
     private:
+        //have to this casue when passing descriptor itno
+        // it may get deleted so we just store a copy of them 
+        // then delete at end of frame...
+        std::vector<VkDescriptorImageInfo> m_Images;
+        std::vector<VkDescriptorBufferInfo> m_Buffers;
         VulkanDescriptorSet* m_SetLayout;
         Count<VulkanDescriptorPool> m_Pool;
         friend class VulkanRenderer;
     };
   
-	class VulkanUniformBuffer {
+	class VulkanUniformBuffer : public UniformBuffer {
 	public:
-		VulkanUniformBuffer(uint32_t size, uint32_t set, uint32_t binding);
+		VulkanUniformBuffer(uint32_t size, DescriptorSets set, uint32_t binding);
 		virtual ~VulkanUniformBuffer();
         VkBuffer GetBuffer(int index) {
             return m_UniformBuffers[index].Buffer;
         }
-        VkDescriptorBufferInfo GetDescriptorInfo(int index) {
+        VkDescriptorBufferInfo GetDescriptorInfo(int index = Renderer::GetCurrentFrame().FrameinFlight) {
             return {
                 m_UniformBuffers[index].Buffer,
                 0,
                 m_Size,
             };
         }
-		void SetData(const void* data, uint32_t size, uint32_t offset = 0, uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
+        //for unifrm bufffer configuribity stuff
+        void SetData(const void* data, uint32_t size, uint32_t offset = 0) {
+            SetData(data, size, offset, Renderer::GetCurrentFrame().FrameinFlight);
+        }
+        void SetData(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex);
 	private:
         // multiple of this cause of frames in flight
         // we do not want to right to a uniform for the next frame
@@ -182,7 +161,7 @@ namespace Proof
 		std::vector<VulkanBuffer> m_UniformBuffers;
 
         uint32_t m_Size = 0;
-        uint32_t m_Set;
+        DescriptorSets m_Set;
         uint32_t m_Binding;
 	};
 

@@ -9,7 +9,7 @@ namespace Proof
 
 	class VulkanScreenFrameBuffer: public ScreenFrameBuffer {
 	public:
-		VulkanScreenFrameBuffer(Vector2 imageSize, Count<class VulkanRenderPass> renderPass = nullptr, bool screenPresent = false):
+		VulkanScreenFrameBuffer(Vector2 imageSize, Count<class RenderPass> renderPass = nullptr, bool screenPresent = false):
 			m_ImageSize{ imageSize }, m_RenderPass{ renderPass }, m_ScreenPresent{ screenPresent }
 		{
 			
@@ -21,20 +21,15 @@ namespace Proof
 		VkFramebuffer GetFrameBuffer(uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex) {
 			return m_Framebuffers[imageIndex];
 		}
-		void Resize(uint32_t width, uint32_t height, Count<class VulkanRenderPass> renderPass = nullptr);
-		void Resize(uint32_t width, uint32_t height) {
-			Resize(width, height, m_RenderPass);
-		}
-		void Resize(Vector2 imageSize, Count<class VulkanRenderPass> renderPass);
-		void Resize(Vector2 imageSize) {
-			Resize(imageSize.X, imageSize.Y, m_RenderPass);
-		}
+		void Resize(uint32_t width, uint32_t height, Count<class RenderPass> renderPass =nullptr);
+		void Resize(Vector2 imageSize, Count<class RenderPass> renderPass = nullptr);
+		
 
 		virtual uint32_t GetFrameWidth() {return m_ImageSize.X;};
 		virtual uint32_t GetFrameHeight() {return m_ImageSize.Y;}
 		
 		Vector2 m_ImageSize;
-		Count<class VulkanRenderPass> m_RenderPass;
+		Count<class RenderPass> m_RenderPass;
 		std::vector<VkFramebuffer> m_Framebuffers;
 		std::vector<VkImageView> m_DepthImageViews;
 		

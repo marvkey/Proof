@@ -1,18 +1,18 @@
 #include "Proofprch.h"
 #include "VulkanBuffer.h"
-#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/RendererBase.h"
 #include "VulkanGraphicsContext.h"
 #include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
 #include "VulkanRenderer/VulkanRenderer.h"
 namespace Proof
 {
 	VulkanVertexBuffer::~VulkanVertexBuffer() {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), m_VertexBuffer.Buffer, m_VertexBuffer.Allocation);
 	}
 	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint32_t size) {
 		m_VertexSize = size;
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 
 		VkBufferCreateInfo stagingBufferInfo = {};
 		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -34,8 +34,7 @@ namespace Proof
 		memcpy(stagingData, data, m_VertexSize);
 
 		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
-
-		VulkanRenderer::Submit([&](VkCommandBuffer& cmdBuffer) {
+		Renderer::Submit([&](CommandBuffer* cmdBuffer) {
 			VkBufferCreateInfo vertexBufferInfo = {};
 			vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			vertexBufferInfo.pNext = nullptr;
@@ -54,15 +53,15 @@ namespace Proof
 			copy.dstOffset = 0;
 			copy.srcOffset = 0;
 			copy.size = m_VertexSize;
-			vkCmdCopyBuffer(cmdBuffer, stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
+			vkCmdCopyBuffer((VkCommandBuffer)cmdBuffer->Get(), stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
 	VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size) {
 		m_VertexSize = size;
 			
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		VulkanRenderer::Submit([&](VkCommandBuffer& cmdBuffer) {
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		Renderer::Submit([&](CommandBuffer* cmdBuffer) {
 			VkBufferCreateInfo vertexBufferInfo = {};
 			vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			vertexBufferInfo.pNext = nullptr;
@@ -80,16 +79,18 @@ namespace Proof
 		});
 	}
 
-	void VulkanVertexBuffer::Bind(VkCommandBuffer commandBuffer, uint32_t binding ) {
+	void VulkanVertexBuffer::Bind(Count<CommandBuffer> commandBuffer, uint32_t binding )const {
 		std::vector<VkBuffer> buffers;
 		std::vector < VkDeviceSize> offset;
 
 		buffers.emplace_back(m_VertexBuffer.Buffer);
 		offset.emplace_back(0);
-		vkCmdBindVertexBuffers(commandBuffer, binding,1, &m_VertexBuffer.Buffer, offset.data());
+		vkCmdBindVertexBuffers(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), binding,1, &m_VertexBuffer.Buffer, offset.data());
 	}
-	void VulkanVertexBuffer::AddData(const void* data, uint32_t size,uint32_t offset) {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+	void VulkanVertexBuffer::AddData(const void* data, uint32_t size,uint32_t offset){
+		if (size == 0)
+			return;
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 
 		VkBufferCreateInfo stagingBufferInfo = {};
 		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -112,19 +113,19 @@ namespace Proof
 
 		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
 
-		VulkanRenderer::Submit([&](VkCommandBuffer& cmdBuffer) {
+		Renderer::Submit([&](CommandBuffer* cmdBuffer) {
 			VkBufferCopy copy;
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
 			copy.size = size;
-			vkCmdCopyBuffer(cmdBuffer, stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
+			vkCmdCopyBuffer((VkCommandBuffer) cmdBuffer->Get(), stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
 	VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint32_t size) {
 		m_Size = size * sizeof(uint32_t);
 		m_Count = size;
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 
 		VkBufferCreateInfo stagingBufferInfo = {};
 		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -147,7 +148,7 @@ namespace Proof
 
 		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
 
-		VulkanRenderer::Submit([&](VkCommandBuffer& cmdBuffer) {
+		Renderer::Submit([&](CommandBuffer* cmdBuffer) {
 			VkBufferCreateInfo indexBufferInfo = {};
 			indexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			indexBufferInfo.pNext = nullptr;
@@ -166,15 +167,15 @@ namespace Proof
 			copy.dstOffset = 0;
 			copy.srcOffset = 0;
 			copy.size = m_Size;
-			vkCmdCopyBuffer(cmdBuffer, stagingBuffer.Buffer, m_IndexBuffer.Buffer, 1, &copy);
+			vkCmdCopyBuffer((VkCommandBuffer)cmdBuffer->Get(), stagingBuffer.Buffer, m_IndexBuffer.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
 	VulkanIndexBuffer::~VulkanIndexBuffer() {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), m_IndexBuffer.Buffer, m_IndexBuffer.Allocation);
 	}
-	void VulkanIndexBuffer::Bind(VkCommandBuffer commandBuffer) {
-		vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
+	void VulkanIndexBuffer::Bind(Count<CommandBuffer> commandBuffer)const {
+		vkCmdBindIndexBuffer(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
 	}
 }

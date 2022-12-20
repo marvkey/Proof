@@ -3,7 +3,7 @@
 #include "Component.h"
 #include "Entity.h"
 #include "Script.h"
-#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/RendererBase.h"
 #include "Mesh.h"
 #include "Proof/Core/FrameTime.h"
 #include "Component.h"
@@ -205,8 +205,6 @@ namespace Proof{
 		newWorld->m_IBLSkyBoxBuffer= other->m_IBLSkyBoxBuffer;
 		newWorld->m_IBLSkyBoxVertexArray = other->m_IBLSkyBoxVertexArray;
 
-		newWorld->m_CaptureFBO = other->m_CaptureFBO;
-		newWorld->m_CaptureRBO = other->m_CaptureRBO;
 
 		auto& srcSceneRegistry = other->m_Registry;
 		auto& dstSceneRegistry = newWorld->m_Registry;
@@ -438,19 +436,19 @@ namespace Proof{
 		equirectangularToCubemapShader->SetInt("equirectangularMap",0);
 		equirectangularToCubemapShader->SetMat4("projection",captureProjection);
 		m_WorldIBLTexture->Bind(0);
-		RendererCommand::SetViewPort(512,512);
+		Renderer::SetViewPort(512,512);
 		for (uint32_t i = 0; i < 6; ++i) {
 			equirectangularToCubemapShader->SetMat4("view",captureViews[i]);
 			uint32_t temp = (uint32_t)FrameBufferTextureType::CubeMapPosX;
 			temp += i;
 			m_CaptureFBO->AttachColourTexture((FrameBufferTextureType)temp,0,m_WorldCubeMap->GetID(),0);
 			
-			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-			RendererCommand::DepthFunc(DepthType::Equal);
+			Renderer::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+			Renderer::DepthFunc(DepthType::Equal);
 			m_IBLSkyBoxVertexArray->Bind();
-			RendererCommand::DrawArray(36);
+			Renderer::DrawArray(36);
 			m_IBLSkyBoxVertexArray->UnBind();
-			RendererCommand::DepthFunc(DepthType::Less);
+			Renderer::DepthFunc(DepthType::Less);
 		}
 		m_CaptureFBO->UnBind();
 		m_WorldCubeMap->GenerateMipMap();
@@ -464,7 +462,7 @@ namespace Proof{
 		IrradianceShader->SetMat4("projection",captureProjection);
 
 		m_WorldCubeMap->Bind(0);
-		RendererCommand::SetViewPort(32,32);
+		Renderer::SetViewPort(32,32);
 		m_CaptureFBO->Bind();
 
 		for (unsigned int i = 0; i < 6; ++i) {
@@ -473,13 +471,13 @@ namespace Proof{
 			temp += i;
 			m_CaptureFBO->AttachColourTexture((FrameBufferTextureType)temp,0,m_WorldCubeMapIrradiance->GetID());
 
-			RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+			Renderer::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 			
-			RendererCommand::DepthFunc(DepthType::Equal);
+			Renderer::DepthFunc(DepthType::Equal);
 			m_IBLSkyBoxVertexArray->Bind();
-			RendererCommand::DrawArray(36);
+			Renderer::DrawArray(36);
 			m_IBLSkyBoxVertexArray->UnBind();
-			RendererCommand::DepthFunc(DepthType::Less);
+			Renderer::DepthFunc(DepthType::Less);
 			
 		}
 		m_CaptureFBO->UnBind();
@@ -496,7 +494,7 @@ namespace Proof{
 			unsigned int mipHeight = 128 * std::pow(0.5,mip);
 			m_CaptureRBO->Bind();
 			m_CaptureRBO->Remap(mipWidth,mipHeight,RenderBufferAttachment::DepthComponent24);
-			RendererCommand::SetViewPort(mipWidth,mipHeight);
+			Renderer::SetViewPort(mipWidth,mipHeight);
 
 			float roughness = (float)mip / (float)(maxMipLevels - 1);
 			prefilterShader->SetFloat("roughness",roughness);
@@ -505,13 +503,13 @@ namespace Proof{
 				uint32_t temp = (uint32_t)FrameBufferTextureType::CubeMapPosX;
 				temp += i;
 				m_CaptureFBO->AttachColourTexture((FrameBufferTextureType)temp,0,PrefelterMap->GetID(),mip);
-				RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+				Renderer::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 
-				RendererCommand::DepthFunc(DepthType::Equal);
+				Renderer::DepthFunc(DepthType::Equal);
 				m_IBLSkyBoxVertexArray->Bind();
-				RendererCommand::DrawArray(36);
+				Renderer::DrawArray(36);
 				m_IBLSkyBoxVertexArray->UnBind();
-				RendererCommand::DepthFunc(DepthType::Less);
+				Renderer::DepthFunc(DepthType::Less);
 			}
 		}
 
@@ -520,16 +518,16 @@ namespace Proof{
 		m_CaptureRBO->Bind();
 		m_CaptureRBO->Remap(512,512,RenderBufferAttachment::DepthComponent24);
 		m_CaptureFBO->AttachColourTexture(FrameBufferTextureType::Texture2D,0,m_brdflTexture->GetID());
-		RendererCommand::SetViewPort(512,512);
+		Renderer::SetViewPort(512,512);
 
 		brdfShader->Bind();
 
-		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-		RendererCommand::DepthFunc(DepthType::Equal);
+		Renderer::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		Renderer::DepthFunc(DepthType::Equal);
 		renderQuad();
-		RendererCommand::DepthFunc(DepthType::Less);
+		Renderer::DepthFunc(DepthType::Less);
 		m_CaptureFBO->UnBind();
-		RendererCommand::SetViewPort(CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight());
+		Renderer::SetViewPort(CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight());
 		#endif
 	}
 	template<class T>

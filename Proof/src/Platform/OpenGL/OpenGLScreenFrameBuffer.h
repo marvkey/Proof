@@ -28,7 +28,7 @@ namespace Proof {
 		* @param Width, the width of the frame buffer to render
 		* @param Height, the Height of the frame buffer to render
 		*/
-		virtual void Resize(uint32_t Width,uint32_t Height)override;
+		//virtual void Resize(uint32_t Width,uint32_t Height)override;
 		/**
 		* returns the Texture
 		*/

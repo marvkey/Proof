@@ -2,7 +2,7 @@
 #include "VulkanTexutre.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include"../vendor/stb_image.h"
-#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/RendererBase.h"
 #include "VulkanGraphicsContext.h"
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "ImGui/imgui_impl_vulkan.h"
@@ -14,7 +14,7 @@ namespace Proof
 
 		static uint32_t GetVulkanMemoryType(VkMemoryPropertyFlags properties, uint32_t type_bits) {
 			VkPhysicalDeviceMemoryProperties prop;
-			vkGetPhysicalDeviceMemoryProperties(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetGPU(), &prop);
+			vkGetPhysicalDeviceMemoryProperties(RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetGPU(), &prop);
 			for (uint32_t i = 0; i < prop.memoryTypeCount; i++) {
 				if ((prop.memoryTypes[i].propertyFlags & properties) == properties && type_bits & (1 << i))
 					return i;
@@ -29,7 +29,7 @@ namespace Proof
 				case ImageFormat::RGBA32F: return 16;
 			}
 			return 0;
-			
+
 		}
 
 		static VkFormat WalnutFormatToVulkanFormat(ImageFormat format) {
@@ -45,7 +45,7 @@ namespace Proof
 	}
 	VulkanTexture2D::VulkanTexture2D(const std::string& Path, TextureType textureType) {
 		m_Type = textureType;
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		int width, height, channels;
 		m_Path = Path;
 		uint8_t* data = nullptr;
@@ -78,12 +78,12 @@ namespace Proof
 	}
 	VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, ImageFormat format, const void* data)
 		: m_Width(width), m_Height(height), m_Format(format) {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 
 		// check for dimension
 		{
 			VkImageFormatProperties info;
-			vkGetPhysicalDeviceImageFormatProperties(graphicsContext->GetGPU(), Utils::WalnutFormatToVulkanFormat(m_Format), VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,0, &info);
+			vkGetPhysicalDeviceImageFormatProperties(graphicsContext->GetGPU(), Utils::WalnutFormatToVulkanFormat(m_Format), VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, 0, &info);
 			if (width > info.maxExtent.width) {
 				PF_ENGINE_WARN("Image is to wide, made smaller to be support");
 				width = info.maxExtent.width;
@@ -103,9 +103,9 @@ namespace Proof
 	VulkanTexture2D::~VulkanTexture2D() {
 		Release();
 	}
-	
+
 	void VulkanTexture2D::AllocateMemory(uint64_t size) {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		auto device = graphicsContext->GetDevice();
 
 		VkResult err;
@@ -128,7 +128,7 @@ namespace Proof
 			info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			VulkanRenderer::Submit([&](VkCommandBuffer& cmdBuffer) {
+			Renderer::Submit([&](CommandBuffer* cmd) {
 				VmaAllocationCreateInfo vmaallocInfo = {};
 					//let the VMA library know that this data should be GPU native
 				vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -168,17 +168,17 @@ namespace Proof
 
 	}
 
-	void* VulkanTexture2D::GetID() {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+	void* VulkanTexture2D::GetID()const {
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 
-		if(m_Set != nullptr)
+		if (m_Set != nullptr)
 			return m_Set;
 		m_Set = graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
 		return m_Set;
 	}
 
 	void VulkanTexture2D::SetData(const void* data) {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 
 		size_t upload_size = m_Width * m_Height * Utils::BytesPerPixel(m_Format);
 		VulkanBuffer stagingBuffer;
@@ -196,7 +196,7 @@ namespace Proof
 			VmaAllocationCreateInfo vmaallocInfo = {};
 			vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
 			graphicsContext->CreateVmaBuffer(stagingBufferInfo, vmaallocInfo, stagingBuffer);
-			
+
 		}
 		//upload to buffer
 		{
@@ -204,11 +204,11 @@ namespace Proof
 			vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, (void**)(&stagingData));
 
 			memcpy(stagingData, data, upload_size);
-			
+
 			vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
 		}
 		// copy to image
-		VulkanRenderer::Submit([&](VkCommandBuffer& cmd) {
+		Renderer::Submit([&](CommandBuffer* cmd) {
 			VkImageSubresourceRange range;
 			range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			range.baseMipLevel = 0;
@@ -226,16 +226,16 @@ namespace Proof
 			copy_barrier.subresourceRange = range;
 			copy_barrier.srcAccessMask = 0;
 
-			vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &copy_barrier);
-			
+			vkCmdPipelineBarrier((VkCommandBuffer)cmd->Get(), VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &copy_barrier);
+
 			VkBufferImageCopy region = {};
 			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			region.imageSubresource.layerCount = 1;
 			region.imageExtent.width = m_Width;
 			region.imageExtent.height = m_Height;
 			region.imageExtent.depth = 1;
-			vkCmdCopyBufferToImage(cmd, stagingBuffer.Buffer, m_Image.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-			
+			vkCmdCopyBufferToImage((VkCommandBuffer)cmd->Get(), stagingBuffer.Buffer, m_Image.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
 			VkImageMemoryBarrier use_barrier = {};
 			use_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			use_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -248,9 +248,16 @@ namespace Proof
 			use_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			use_barrier.subresourceRange.levelCount = 1;
 			use_barrier.subresourceRange.layerCount = 1;
-			vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &use_barrier);
+			vkCmdPipelineBarrier((VkCommandBuffer)cmd->Get(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &use_barrier);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
+	}
+	VkDescriptorImageInfo VulkanTexture2D::GetImageBufferInfo(VkImageLayout imageLayout) {
+		VkDescriptorImageInfo imageBufferInfo;
+		imageBufferInfo.sampler = GetTextureSampler();
+		imageBufferInfo.imageView = GetImageView();
+		imageBufferInfo.imageLayout = imageLayout;
+		return imageBufferInfo;
 	}
 	void VulkanTexture2D::Release() {
 		//VulkanRenderer::SubmitDatafree([sampler = m_Sampler, imageView = m_ImageView, image = m_Image,

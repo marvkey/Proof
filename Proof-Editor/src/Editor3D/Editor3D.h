@@ -111,7 +111,7 @@ namespace Proof {
 		class AssetManagerPanel m_AssetManagerPanel;
 		class PerformancePanel m_PerformancePanel = {false};
 		friend class Renderer3D;
-		friend class Renderer;
+		friend class RendererBase;
 		InputPanel m_InputPanel;
 		void Save();
 		std::unordered_map<UUID,Panel*>m_AllPanels;

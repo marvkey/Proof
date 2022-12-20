@@ -11,10 +11,7 @@ namespace Proof {
 	};
 	class Proof_API Texture {
 	public:
-		virtual void*  GetID() = 0;
-		virtual void unBind(){};
-		virtual void Bind(uint32_t Slot = 0) {};
-		virtual void GenerateMipMap(){};
+		virtual void* GetID()const = 0;
 	};
 	enum class type:uint32_t{
 		UnsignedInt =GL_UNSIGNED_INT,
@@ -91,7 +88,6 @@ namespace Proof {
 			Normal,
 			Height,
 		};
-		virtual void SetData(void* data,uint32_t size){};
 		virtual std::string GetPath() = 0;
 
 		virtual TextureType GetTextureType() { return TextureType::None; };

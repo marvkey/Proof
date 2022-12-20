@@ -26,7 +26,6 @@ namespace Proof
 			m_RendererPaused =value;
 		}
 		bool GetRendererPaused(){return m_RendererPaused;};
-		RendererData RenderData;
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
 	private:
 		bool  m_RendererPaused =false;

@@ -128,7 +128,6 @@ namespace Proof{
 		Count<VertexArray>m_IBLSkyBoxVertexArray;
 
 		Count<FrameBuffer> m_CaptureFBO;
-		Count<RenderBuffer> m_CaptureRBO;
 		Count<Shader>equirectangularToCubemapShader;
 		Count<Texture2D> m_brdflTexture;
 
@@ -143,7 +142,7 @@ namespace Proof{
 		friend class Entity;
 		friend class SceneSerializer;
 		friend class Editore3D;
-		friend class Renderer;
+		friend class RendererBase;
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 		

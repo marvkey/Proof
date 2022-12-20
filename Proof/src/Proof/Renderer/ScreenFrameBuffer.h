@@ -22,7 +22,9 @@ namespace Proof {
 		* @param Width, the width of the frame buffer to render
 		* @param Height, the Height of the frame buffer to render
 		*/
-		virtual void Resize(uint32_t Width,uint32_t Height)= 0;
+		virtual void Resize(uint32_t Width,uint32_t Height, Count<class RenderPass> renderPass = nullptr)= 0;
+		virtual void Resize(Vector2 imageSize, Count<class RenderPass> renderPass = nullptr) = 0;
+
 		/**
 		* Deletes the frame buffer
 		*/
@@ -33,6 +35,7 @@ namespace Proof {
 		* @param Height, the Height of the frame buffer to render
 		*/
 		static Count<ScreenFrameBuffer> Create(uint32_t Width,uint32_t Height);
+		static Count<ScreenFrameBuffer> Create(Vector2 imageSize, Count<class RenderPass> renderPass = nullptr, bool screenPresent = false);
 		/**
 		* returns the Texture ID
 		*/

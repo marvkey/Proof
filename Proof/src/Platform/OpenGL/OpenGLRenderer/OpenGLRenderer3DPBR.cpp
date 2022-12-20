@@ -5,7 +5,7 @@
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DCore.h"
 #include "Proof/Renderer/VertexArray.h"
-#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/RendererBase.h"
 
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Component.h"
@@ -107,7 +107,7 @@ namespace Proof
 			subeMeshes.m_VertexArrayObject->Bind();
 			subeMeshes.m_IndexBufferObject->Bind();
 			//glPolygonMode(GL_FRONT_AND_BACK, (int)GL_LINES);
-			RendererCommand::DrawElementIndexed(subeMeshes.m_VertexArrayObject, 1, DrawType::Lines);
+			Renderer::DrawElementIndexed(subeMeshes.m_VertexArrayObject, 1, DrawType::Lines);
 		}
 	}
 	void OpenGLRenderer3DPBR::SubmitDirectionalLight(const DirectionalLightComponent& lightComponent, class TransformComponent& transform){
@@ -154,7 +154,7 @@ namespace Proof
 	}
 	void OpenGLRenderer3DPBR::EndContext() {
 		PF_PROFILE_FUNC()
-		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 0, TimerTypes::Renderer);
+		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 0, TimerTypes::RendererBase);
 		Render();
 		Reset();
 		s_RenderFrameBuffer->UnBind();
@@ -210,7 +210,7 @@ namespace Proof
 	}
 	void OpenGLRenderer3DPBR::Render() {
 		PF_PROFILE_FUNC()
-		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 0, TimerTypes::Renderer);
+		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 0, TimerTypes::RendererBase);
 		if (s_RendererData->RenderSettings.Technique == RenderTechnique::DeferedRendering)
 			DeferedRender();
 		else
@@ -239,7 +239,7 @@ namespace Proof
 	void OpenGLRenderer3DPBR::DeferedRendererRenderLight() {
 		if (NumDirLights == 0 && NumSpotLights == 0 && NumPointLights == 0)return;
 		s_RenderFrameBuffer->Bind();
-		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		Renderer::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		s_PBRInstance->m_DeferedRendering.LightShader->Bind();
 
 		s_PBRInstance->m_DeferedRendering.LightShader->SetInt("gPosition", 0);
@@ -262,13 +262,13 @@ namespace Proof
 	void OpenGLRenderer3DPBR::DeferedRendererRenderMesh() {
 		if (s_DifferentID.size() == 0)return;
 		s_RenderFrameBuffer->Bind();
-		RendererCommand::SetClearColor();
-		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		Renderer::SetClearColor();
+		Renderer::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		s_RenderFrameBuffer->UnBind();
 
 		s_PBRInstance->m_DeferedRendering.Gbuffer->Bind();
-		RendererCommand::SetViewPort(s_RenderFrameBuffer->GetFrameWidth(), s_RenderFrameBuffer->GetFrameHeight());
-		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		Renderer::SetViewPort(s_RenderFrameBuffer->GetFrameWidth(), s_RenderFrameBuffer->GetFrameHeight());
+		Renderer::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
 		uint32_t sizeOffset = 0;
 		s_PBRInstance->m_DeferedRendering.MeshShader->Bind();
 		for (uint32_t i = 0; i < s_DifferentID.size(); i++) {
@@ -317,7 +317,7 @@ namespace Proof
 
 
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
-				RendererCommand::Enable(ProofRenderTest::CullFace);
+				Renderer::Enable(ProofRenderTest::CullFace);
 			if (TempMesh->second.GetMeshSource()->m_Enabled == true) {
 				#if 0
 				for (SubMesh& mesh : TempMesh->second.GetMeshSource()->meshes) {
@@ -335,12 +335,12 @@ namespace Proof
 					s_RendererData->Stats.DrawCalls++;
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
-					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second, s_RendererData->RenderSettings.Draw);
+					Renderer::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second, s_RendererData->RenderSettings.Draw);
 				}
 				#endif
 			}
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
-				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render settings
+				Renderer::Disable(ProofRenderTest::CullFace); // rename to render settings
 			sizeOffset += TempAmountMeshes->second;
 		}
 		s_PBRInstance->m_DeferedRendering.MeshShader->UnBind();
@@ -352,8 +352,8 @@ namespace Proof
 	void OpenGLRenderer3DPBR::FowardRenderer() {
 		if (s_DifferentID.size() == 0)return;
 		s_RenderFrameBuffer->Bind();
-		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-		RendererCommand::SetClearColor();
+		Renderer::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		Renderer::SetClearColor();
 		uint32_t sizeOffset = 0;
 		s_PBRInstance->m_FowardRendering.m_Shader->Bind();
 		s_PBRInstance->m_FowardRendering.m_Shader->SetInt("AmountLight", NumLights);
@@ -408,7 +408,7 @@ namespace Proof
 			// draw in wireframe
 			//glPolygonMode(GL_FRONT_AND_BACK,(int)GL_LINES); // keeps this need to put into our game
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
-				RendererCommand::Enable(ProofRenderTest::CullFace);
+				Renderer::Enable(ProofRenderTest::CullFace);
 			if (TempMesh->second.GetMeshSource()->m_Enabled == true) {
 				#if 0
 				for (SubMesh& mesh : TempMesh->second.GetMeshSource()->meshes) {
@@ -424,12 +424,12 @@ namespace Proof
 					s_RendererData->Stats.DrawCalls++;
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
-					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second, s_RendererData->RenderSettings.Draw);
+					Renderer::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second, s_RendererData->RenderSettings.Draw);
 				}
 				#endif
 			}
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
-				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render stettings
+				Renderer::Disable(ProofRenderTest::CullFace); // rename to render stettings
 			sizeOffset += TempAmountMeshes->second;
 		}
 		s_PBRInstance->m_Shader->UnBind();
@@ -439,8 +439,8 @@ namespace Proof
 	void OpenGLRenderer3DPBR::PBRWithFowardRender() {
 		if (s_DifferentID.size() == 0)return;
 		s_RenderFrameBuffer->Bind();
-		RendererCommand::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
-		RendererCommand::SetClearColor();
+		Renderer::Clear(ProofClear::ColourBuffer | ProofClear::DepthBuffer);
+		Renderer::SetClearColor();
 		uint32_t sizeOffset = 0;
 		s_PBRInstance->m_Shader->Bind();
 		s_PBRInstance->m_Shader->SetInt("AmountLight", NumLights);
@@ -493,7 +493,7 @@ namespace Proof
 			// draw in wireframe
 			//glPolygonMode(GL_FRONT_AND_BACK,(int)GL_LINES); // keeps this need to put into our game
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
-				RendererCommand::Enable(ProofRenderTest::CullFace);
+				Renderer::Enable(ProofRenderTest::CullFace);
 			if (TempMesh->second.GetMeshSource()->m_Enabled == true) {
 				#if 0
 
@@ -510,12 +510,12 @@ namespace Proof
 					mesh.m_VertexArrayObject->Bind();
 					mesh.m_IndexBufferObject->Bind();
 					s_WorldDrawType = DrawType::Triangles;
-					RendererCommand::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second, s_WorldDrawType);
+					Renderer::DrawElementIndexed(mesh.m_VertexArrayObject, TempAmountMeshes->second, s_WorldDrawType);
 				}
 				#endif
 			}
 			if (TempMesh->second.GetMeshSource()->m_FaceCulling == true)
-				RendererCommand::Disable(ProofRenderTest::CullFace); // rename to render stettings
+				Renderer::Disable(ProofRenderTest::CullFace); // rename to render stettings
 			sizeOffset += TempAmountMeshes->second;
 			s_PBRInstance->m_Shader->UnBind();
 		}

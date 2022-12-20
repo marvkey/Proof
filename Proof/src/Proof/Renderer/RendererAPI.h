@@ -1,66 +1,43 @@
 #pragma once
 #include <glm/glm.hpp>
-#include"VertexArray.h"
-#include <Glad/glad.h>
+#include "RendererBase.h"
 namespace Proof {
-	struct ProofClear{
-		enum Clear:uint32_t {
-			DepthBuffer = GL_DEPTH_BUFFER_BIT,
-			StencilBuffer = GL_STENCIL_BUFFER_BIT,
-			ColourBuffer = GL_COLOR_BUFFER_BIT
-		};
+	struct  RendererConfig {
+		uint32_t FramesFlight = 2;
+		uint32_t ImageSize;
 	};
 
-	struct ProofRenderTest{
-		enum RenderTest:uint32_t {
-			Blend = GL_BLEND,
-			DepthTest =GL_DEPTH_TEST,
-			CullFace = GL_CULL_FACE
-		};
+	struct CurrentFrame {
+		uint32_t FrameinFlight;
+		uint32_t ImageIndex;
 	};
-
-	enum class DepthType:uint32_t{
-		Equal = GL_LEQUAL,
-		Less = GL_LESS
-	};
-	enum class DrawType: uint32_t {
-		Triangles = GL_TRIANGLES,
-		Points = GL_POINTS,
-		Lines= GL_LINES,
-		Quads = GL_QUADS
-	};
+	
 	class Proof_API RendererAPI {
 	public:
 		enum class API {
 			None =0, OpenGL =1, Vulkan=2
 		};
+
+		//virtual void SetClearColor(const glm::vec4&Color) = 0;
+		virtual void DrawArrays(Count<class CommandBuffer> commandBuffer,uint32_t vertexCount, uint32_t instanceCount,uint32_t firstInstance=0)=0;
+		virtual void DrawElementIndexed(Count<class CommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance =0) = 0;
 		
-		virtual void SetClearColor(const glm::vec4&Color) = 0;
-		virtual void SetClearColor(float R, float G, float B, float A)= 0;
-		virtual void DrawArrays(uint32_t Count,DrawType drawType = DrawType::Triangles)=0;
-		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,DrawType drawType =DrawType::Triangles) = 0;
-		virtual void DrawIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,DrawType drawType = DrawType::Triangles) = 0;
-		virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t Count,uint32_t AmountElement,DrawType drawType = DrawType::Triangles) =0;
-		virtual void DrawElementIndexed(const Count<VertexArray>& ArrayObject,uint32_t AmountElement,DrawType drawType = DrawType::Triangles) = 0;
-		
+		virtual void BeginRenderPass(Count<class CommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class ScreenFrameBuffer> frameBuffer, bool viewScreen = false) =0;
+		virtual void RecordRenderPass(Count<class RenderPass> renderPass,std::function<void(Count<CommandBuffer> commandBuffer)> data) = 0;
+		virtual void EndRenderPass(Count<class RenderPass> renderPass) =0;
+		virtual void SubmitCommandBuffer(Count<class CommandBuffer> commandBuffer) = 0;
+		virtual void Submit(std::function<void(class CommandBuffer*)> func ) = 0;
+		virtual void SubmitDatafree(std::function<void()> func) = 0;
+		virtual CurrentFrame GetCurrentFrame() = 0;
+		virtual RendererConfig GetConfig() = 0;
 		inline static API GetAPI() { return ActiveAPI; }
-
-		/**
-		* @param bitfield use the enum form the struct Proof Clear
-		*/ 
-		virtual void Clear(uint32_t bitField) = 0;
-		/**
-		* @param bitfield use the enum form the struct ProofRenderTest
-		*/
-		virtual void Enable(uint32_t bitField) =0;
-		/**
-		* @param bitfield use the enum form the struct ProofRenderTest
-		*/
-		virtual void Disable(uint32_t bitField) =0;
-
-		virtual void SetViewPort(uint32_t width,uint32_t height) = 0;
-		virtual void DepthFunc(DepthType type) =0;
 	private:
+		virtual void Init() = 0;
+		virtual void Destroy() =0;
+		virtual void BeginFrame() = 0;
+		virtual void EndFrame() = 0;
+		friend class RendererBase;
+		friend class Renderer;
 		static API ActiveAPI;
 	};
 }

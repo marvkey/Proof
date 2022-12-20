@@ -5,14 +5,15 @@
 #include <iostream>
 namespace Proof
 {
-    class Proof_API Shader {
+    enum class ShaderStage {
+        Vertex,
+        Fragment,
+        Compute,
+        Geometry
+    };
+    class Shader {
     public:
-        enum class ShaderStage {
-            Vertex,
-            Fragment,
-            Compute,
-            Geometry
-        };
+      
         virtual void Bind() {};
         virtual void UnBind() {};
         virtual void SetBool(const std::string& Name, bool Value) {};
@@ -38,9 +39,9 @@ namespace Proof
         static Count<Shader>Create(const std::string& _ShaderName, const std::string& ShaderPath);
         static Count<Shader>Create(const std::string& _ShaderName, const std::string& vertPath, const std::string& fragPath);
         static Count<Shader>GetOrCreate(const std::string& name, const std::string& path);
-        static Count<Shader>GetOrCreate(const std::string& name, const std::unordered_map<Shader::ShaderStage, std::string> strings);
+        static Count<Shader>GetOrCreate(const std::string& name, const std::unordered_map<ShaderStage, std::string> strings);
         virtual const std::string& GetName()const { return ""; };
-        virtual const std::unordered_map<Shader::ShaderStage, std::string>& GetPath()const { return {}; };
+        virtual const std::unordered_map<ShaderStage, std::string>& GetPath()const { return {}; };
         virtual ~Shader();
         virtual void Reload() {};
     protected:

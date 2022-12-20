@@ -5,144 +5,81 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "Renderer3DCore.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Renderer/RendererAPI.h"
 #include "Proof/Renderer/ScreenFrameBuffer.h"
+#include "Proof/Renderer/CommandBuffer.h"
+#include "Proof/Renderer/UniformBuffer.h"
 #include "Proof/Scene/Component.h"
+
 namespace Proof
 {
-	class PhysicalBasedRenderer;
-	enum class RenderTechnique{
-		None=0,
-		DeferedRendering,
-		FowardRendering,
-		FowardPlusRendering,
-	};
-	struct RendererData;
-	
-	struct PhysicalBasedRendererVertex;
-	struct Proof_API DeferedRenderingData {
-		Count<class FrameBuffer> Gbuffer;
-		Count<class Texture2D>GPosition;
-		Count<class Texture2D>GAlbedo;
-		Count<class Texture2D>GNormal;
-		Count<class Texture2D>GMaterial;
-		Count<class RenderBuffer>RenderBuffer;
-		Count<class Shader>MeshShader;
-		Count<class Shader>LightShader;
-		DeferedRenderingData();
-		DeferedRenderingData(uint32_t width, uint32_t height);
-	};
-	struct Proof_API FowardRenderingData {
-		Count<class Shader> m_Shader;
-		FowardRenderingData();
-	};
-	struct RendererData{
-	public:
-		RendererData() =default;
-		struct RenderStats {
-		public:
-			RenderStats()=default;
-			uint32_t DrawCalls =0;
-			uint32_t Instances =0;
-			uint32_t AmountLight =0;
-			uint32_t AmountDirectionalLight=0;
-			uint32_t AmountPointLight =0;
-			uint32_t AmountSpotLight =0;
-		};
-		struct DeferedRendererData {
-		public:
-			uint32_t GetPositionTextureID() {
-				return m_PositionTexture;
-			}
-			uint32_t GetNormalTextureID() {
-				return m_NormalTexture;
-			}
-			uint32_t GetAlbedoTexture() {
-				return m_AlbedoTexture;
-			}
-			DeferedRendererData() =default;
-		private:
-			friend class Renderer3DPBR;
-			friend class OpenGLRenderer3DPBR;
-			uint32_t m_PositionTexture = 0;
-			uint32_t m_NormalTexture = 0;
-			uint32_t m_AlbedoTexture = 0;
-		};
-		struct FowardRendererData{
-			
-		};
 
-		struct FowardPlusData{
-			
-		};
-		struct RendererSettings {
-			RenderTechnique Technique= RenderTechnique::FowardRendering;
-			DrawType Draw= DrawType::Triangles;
-		};
-		RenderStats Stats;
-		DeferedRendererData DeferedData;
-		FowardRendererData FowardData;
-		RendererSettings RenderSettings;
-		friend class Renderer3DPBR;
-		friend class OpenGLRenderer3DPBR;
-	private:
-		void Reset(){
-			Stats = RenderStats();
-			DeferedData = DeferedRendererData();
-		}
-	};
-	struct Proof_API PhysicalBasedRenderer { /// Needs to be Renaimed
-		Count<class VertexBuffer> m_VertexBuffer;
-		Count<class Shader> m_Shader;
-		std::unordered_map<uint32_t,uint32_t> m_AmountMeshes;
-		std::unordered_map<uint32_t,class MeshComponent> m_Meshes;
-		std::unordered_map<uint32_t,uint32_t > m_MeshesEndingPositionIndexTransforms;
-		std::vector<PhysicalBasedRendererVertex>m_Transforms;
-		bool SceneHasAmountMeshes(uint32_t ID) { return m_AmountMeshes.find(ID) != m_AmountMeshes.end(); };
-		static Count<class Texture2D>m_WhiteTexture;
-		DeferedRenderingData m_DeferedRendering;
-		FowardRenderingData m_FowardRendering;
-	};
-	
-	
-	struct Proof_API PhysicalBaseRendererGuide{
-	public:
-		static const uint32_t s_MaxMesh = 1000;
-	};
+	struct MeshPipeLine {
+		Count<class GraphicsPipeline> GraphicsPipeline;
+		Count<class Shader> Shader;
+		Count <class PipeLineLayout> PipeLineLayout;
+		Count <class RenderPass > RenderPass;
+		MeshPipeLine();
+		struct MeshVertex {
 
-	struct Proof_API PhysicalBasedRendererVertex{
+			MeshVertex(const glm::mat4& transform) :
+				m_Transform(transform) {
+			}
+			glm::mat4 m_Transform;
+		};
+	};
 	
-		PhysicalBasedRendererVertex(const glm::mat4& transform, const Material& temp,int usingMaterial):
-		m_Transform(transform)
-		{
-			m_AlbedoColour =temp.m_Colour;
-			m_AO= temp.m_AO;
-			m_Roughnes =temp.m_Roughness;
-			m_Matallness = temp.m_Metallness;
-			m_UsingMaterial =usingMaterial;
-		}
-		glm::mat4 m_Transform;
-		Vector m_AlbedoColour;
-		float m_Matallness = 0.f;
-		float m_Roughnes = 0.f;
-		float m_AO = 0.f;
-		int m_UsingMaterial =false;
+	struct RenderStorage {
+		std::vector<Count<CommandBuffer>> CommandBuffers;
+		Count<CommandBuffer> CommandBuffer;
+		Count<UniformBuffer> CameraBuffer = nullptr;
+		Count<ScreenFrameBuffer> CurrentFrameBuffer = nullptr;
+		Count<VertexBuffer> MeshesVertexBuffer;
+		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
+
+		//MESH ASSET ID, meshNumber
+		std::unordered_map<AssetID, uint64_t> AmountMeshPerMeshAssetID;
+		
+		//this is not begening index
+		// but its the beggeninig index of when the mesh was added to the vetor of transfomrs
+		// with this we can use math to find the location of the first index of that specific index
+		// of when it was first added
+		std::unordered_map<AssetID, uint32_t> MeshesPositionAddedIndexTransforms;
+		std::vector<MeshPipeLine::MeshVertex>Transforms;
+		//we need this because when addign a id to a unordered map
+		// treversing we could go in a different direction
+		// therefore our transfomrs will be misplaced
+		//with this we can add mesh id in tthe order there were added to the list 
+		//and use the offset to treverse trhought them in the correct order the transforms were added
+		std::vector<uint64_t> MeshesID;
+		uint32_t NumberMeshes;
+		const uint32_t MaxMesh = 1000;
+
+	};
+	
+	
+	struct RenderInfo {
+		Count<ScreenFrameBuffer> FrameBuffer;
+		Count<CommandBuffer> CommandBuffer;
 	};
 	class Renderer3DPBR {
 	public:
 		static void Init();
-		static void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec);
-		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, RendererData& renderSpec);
-		static void Draw(class MeshComponent& meshComponent, const glm::mat4& positionMatrix);
+		static void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer);
+		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer> frameBuffer);
+		static void SubmitMesh(class MeshComponent& meshComponent, const glm::mat4& transform);
 		static void SubmitDirectionalLight(class DirectionalLightComponent& comp, class TransformComponent& transform);
 		static void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);
 		static void SubmitSpotLight(class SpotLightComponent& comp, class TransformComponent& transform);
 		static void DrawDebugMesh(class Mesh* mesh, const glm::mat4& transform);
-		static PhysicalBasedRenderer* GetRenderer();
 		static void EndContext();
-		static void Reset();
 		static void Destroy();
+	private:
+		static void DrawContext();
+		static void Reset();
+		static void InitDescriptors();
+		static bool s_InContext;
+
 	};
 }

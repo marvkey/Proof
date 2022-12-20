@@ -285,7 +285,6 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneRendererUI;
 		friend class Editore3D;
-		friend class OpenGLRenderer3DPBR;
 		UUID m_MeshMaterialID = 0;
 		UUID m_MeshAssetPointerID=0;
 	};

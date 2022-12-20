@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Renderer/Buffer.h"
 namespace Proof {
-	class Proof_API OpenGLVertexBuffer: public VertexBuffer {
+	class OpenGLVertexBuffer: public VertexBuffer {
 	public:
 		/** 
 		* creates static vertex Buffer
@@ -22,7 +22,7 @@ namespace Proof {
 		/**
 		* sets as current vertex Buffer
 		*/
-		virtual void Bind()override;
+		//virtual void Bind()override;
 		/**
 		* sets the data for the vertex buffer
 		* @param Data the location of the first element in the array or vector
@@ -33,12 +33,12 @@ namespace Proof {
 		/**
 		*removes as Current vertex Buffer
 		*/ 
-		virtual void UnBind()override;
+		//virtual void UnBind()override;
 	private:
 		uint32_t m_ID;
 	};
 
-	class Proof_API OpenGLIndexBuffer: public IndexBuffer {
+	class OpenGLIndexBuffer: public IndexBuffer {
 	public:
 		/**
 		* creats Index Buffer
@@ -68,29 +68,5 @@ namespace Proof {
 		uint32_t m_Count;
 	};
 
-	class Proof_API OpenGLRenderBuffer:public RenderBuffer
-	{
-	public:
-		OpenGLRenderBuffer(RenderBufferAttachment type,uint32_t widht,uint32_t height);
-		//OpenGLRenderBuffer(RenderBufferAttachment type,uint32t_t samples,uint32_t widht,uint32_t height);
-		/**
-		* set as the current RenderBuffer
-		*/
-		virtual void Bind();
-		/**
-		* unset as the current renderBuffer
-		*/
-		virtual void UnBind();
-
-		/*
-		* get the unique id of the render buffer
-		*/
-		virtual uint32_t GetID();
-
-		void Remap(uint32_t width,uint32_t height,RenderBufferAttachment type);
-	private:
-		uint32_t m_ID;
-		uint32_t m_Widht;
-		uint32_t m_Height;
-	};
+	
 }

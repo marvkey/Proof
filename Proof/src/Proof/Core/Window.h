@@ -70,11 +70,11 @@ namespace Proof {
 		friend class Input;
 		friend class CurrentWindow;
 		friend class Editore3D;
-		const Count<class VulkanSwapChain> GetSwapChain()const {
+		Count<class SwapChain> GetSwapChain(){
 			return m_SwapChain;
 		}
 	protected:
-		Count<class VulkanSwapChain> m_SwapChain;
+		Count<class SwapChain> m_SwapChain;
 		bool m_FrameBufferResized = false;
 		bool m_MouseMoved = false;
 		void* m_Window = nullptr;
@@ -99,6 +99,6 @@ namespace Proof {
 		std::vector<KeyBoardKey> m_KeyPressedEventCheck;
 		std::vector<MouseButton> m_MouseButtonPressedEventCheck;
 		std::vector<Controller> m_Controllers;
-		friend class Renderer;
+		friend class RendererBase;
 	};
 }

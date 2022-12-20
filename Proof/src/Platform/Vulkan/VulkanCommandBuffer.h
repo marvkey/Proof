@@ -2,13 +2,13 @@
 #include<vulkan/vulkan.h>
 #include<vector>
 #include "Proof/Renderer/Renderer.h"
-
+#include "Proof/Renderer/CommandBuffer.h"
 #include <glm/glm.hpp>
 namespace Proof
 {
 	class VulkanSwapChain;
 	class VulkanGraphicsPipeline;
-	class VulkanCommandBuffer {
+	class VulkanCommandBuffer : public CommandBuffer {
 	public:
 		VulkanCommandBuffer();
 		//VulkanCommandBuffer(std::vector<void>&commandBuffer);
@@ -18,22 +18,28 @@ namespace Proof
 		const VkCommandBuffer& GetCommandBuffer(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight)const {
 			return m_CommandBuffer[frameIndex];
 		}
-		uint32_t GetSize() { return 0; }
-	
-		void Recreate();
-		std::vector<VkCommandBuffer> m_CommandBuffer;
-		void FreeCommandBuffer();
+		//returns 0 IN COMMAND BUFFER
+		virtual void* Get() {
+			return m_CommandBuffer[0];
+		}
+
+		void Resize();
 	private:
+		VulkanCommandBuffer(bool empty) {
+			m_CommandBuffer.resize(Renderer::GetConfig().FramesFlight);
+		}
+		void FreeCommandBuffer();
 		void Bind(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight,VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
-		void BeginRecord(Count<VulkanGraphicsPipeline> graphicsPipeLine,uint32_t frameIndex= Renderer::GetCurrentFrame().FrameinFlight, bool viewScreen =false);
+		void BeginRecord(Count<class GraphicsPipeline> graphicsPipeLine,uint32_t frameIndex= Renderer::GetCurrentFrame().FrameinFlight, bool viewScreen =false);
 		void EndRecord(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-		friend class VulkanRenderer;
 		bool m_RenderPassEnabled = false;
 		bool m_Recording = false;
-		Count<VulkanGraphicsPipeline> m_GraphicspipeLine;
-		Count<VulkanSwapChain> m_SwapChain;
+		Count<class GraphicsPipeline> m_GraphicspipeLine;
 		friend class VulkanSwapChain;
+		uint32_t m_FrameIndex;
 		// frame used to start render pass
-		uint32_t m_FrameIndex = 0;
+		std::vector<VkCommandBuffer> m_CommandBuffer;
+		friend class VulkanRenderPass;
+		friend class VulkanRendererAPI;
 	};
 }

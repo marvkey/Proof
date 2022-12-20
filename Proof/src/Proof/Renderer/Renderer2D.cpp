@@ -186,16 +186,16 @@ namespace Proof {
 		s_Storage2DData->m_QuadArraySize = 0;
 	}
 	void Renderer2D::Render() {
-		if(s_Storage2DData->m_IndexCount ==0)return; // nothing to draw
-		s_Storage2DData->m_Shader->Bind();
-		s_Storage2DData->m_VertexBuffer->Bind();
-		s_Storage2DData->m_IndexBuffer->Bind();
-		for(uint32_t i =0; i<s_Storage2DData->m_TextureSlotIndex;i++){
-			s_Storage2DData->m_Textures[i]->Bind(i);
-		} 
-		s_Storage2DData->m_VertexBuffer->AddData(s_Storage2DData->m_QuadArray,s_Storage2DData->m_QuadArraySize *sizeof(Vertex2D));
-		RendererCommand::DrawIndexed(s_Storage2DData->m_VertexArray,s_Storage2DData->m_IndexCount);
-		s_Renderer2DStats->m_DrawCalls+=1;
+		//if(s_Storage2DData->m_IndexCount ==0)return; // nothing to draw
+		//s_Storage2DData->m_Shader->Bind();
+		//s_Storage2DData->m_VertexBuffer->Bind();
+		//s_Storage2DData->m_IndexBuffer->Bind();
+		//for(uint32_t i =0; i<s_Storage2DData->m_TextureSlotIndex;i++){
+		//	s_Storage2DData->m_Textures[i]->Bind(i);
+		//} 
+		//s_Storage2DData->m_VertexBuffer->AddData(s_Storage2DData->m_QuadArray,s_Storage2DData->m_QuadArraySize *sizeof(Vertex2D));
+		//Renderer::DrawIndexed(s_Storage2DData->m_VertexArray,s_Storage2DData->m_IndexCount);
+		//s_Renderer2DStats->m_DrawCalls+=1;
 	}
 	
 	

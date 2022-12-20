@@ -5,6 +5,7 @@
 #include "UUID.h"
 #include "Proof/utils/FileSystem.h"
 #include "Proof/Math/Math.h"
+#include "Proof/Math/Vector.h"
 #include <vector>
 #include "Log.h"
 #define PF_BIND_FN(fn) std::bind(&fn, this, std::placeholders::_1)
@@ -13,6 +14,7 @@
 #include <unordered_map>
 #include <optick.h>
 #include "Proof/Resources/EnumReflection.h"
+#include "ProofTypes.h"
 #define PF_ENABLE_PROFILING 1
 #if PF_ENABLE_PROFILING
 #define PF_PROFILE_FRAME(...)           OPTICK_FRAME(__VA_ARGS__)
@@ -101,7 +103,7 @@ namespace Proof
     };
     enum class TimerTypes {
         CPUTimer = 0,
-        Renderer
+        RendererBase
     };
     struct FrameTimersControll {
     public:

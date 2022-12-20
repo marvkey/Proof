@@ -17,7 +17,6 @@ namespace Proof{
 		mesh->m_MeshAssetPointerID = asset->GetAssetID();
 		m_WorldRenderer = { m_World,CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight() };
 		m_Type= SceneRendererType::MeshAsset;
-		m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::FowardRendering;
 	}
 
 	void SceneRendererUI::ImGuiRender(FrameTime deltaTime) {
@@ -29,6 +28,7 @@ namespace Proof{
 		
 	}
 	void SceneRendererUI::MeshUI() {
+		// there is a problem when resizing it may be due to command buffer simaltneous bit
 		float width = ImGui::GetWindowWidth();
 		width *= 0.3;
 		ImGui::BeginChild(m_ID,{width,ImGui::GetContentRegionAvail().y});

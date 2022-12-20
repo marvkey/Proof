@@ -11,11 +11,11 @@ namespace Proof {
 		 /**
 		 * Delete the vertex array
 		 */
-		virtual ~OpenGLVertexArray()override;
+		virtual ~OpenGLVertexArray();
 		/**
 		* set as the current Vertex Array
 		*/
-		virtual void Bind()override;
+		virtual void Bind();
 		/**
 		* sets the data of the vertex array
 		* @param Positon, the position we want to send to the shader
@@ -27,12 +27,12 @@ namespace Proof {
 		/**
 		* remove as the current Vertex Array
 		*/
-		virtual void UnBind()override;
+		virtual void UnBind();
 		/**
 		* attaches a index buffer for drawing
 		* @param indexBuffer, the created index buffer to attach
 		*/
-		virtual void AttachIndexBuffer(Count<IndexBuffer>& indexBuffer)override;
+		virtual void AttachIndexBuffer(Count<IndexBuffer>& indexBuffer);
 		/**
 		* returns the index buffer
 		*/

@@ -8,6 +8,7 @@
 
 namespace Proof{
 	void RenderPanel::ImGuiRender(FrameTime deltaTime) {
+		#if  0
 		if (m_ShowWindow == false)
 			return;
 		if(ImGui::Begin(m_WorldName.c_str(),&m_ShowWindow)){
@@ -17,6 +18,7 @@ namespace Proof{
 				RenderFoward();
 		};
 		ImGui::End();
+		#endif
 	}
 	void RenderPanel::RenderDefered() {
 		

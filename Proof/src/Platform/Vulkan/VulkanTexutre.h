@@ -22,11 +22,12 @@ namespace Proof
 			return m_Sampler;
 		}
 
-		void* GetID();
+		void* GetID ()const;
 
 		uint32_t GetWidth() const { return m_Width; }
 		uint32_t GetHeight() const { return m_Height; }
 		void SetData(const void* data);
+		VkDescriptorImageInfo GetImageBufferInfo(VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	private:
 		void AllocateMemory(uint64_t size);
 		void Release();
@@ -39,6 +40,6 @@ namespace Proof
 
 		std::string m_Path;
 		ImageFormat m_Format = ImageFormat::None;
-		VkDescriptorSet m_Set{ VK_NULL_HANDLE };
+		mutable VkDescriptorSet m_Set{ VK_NULL_HANDLE };
 	};
 }

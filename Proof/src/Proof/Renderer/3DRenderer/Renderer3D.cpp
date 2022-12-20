@@ -80,12 +80,12 @@ namespace Proof
         //glBindBufferBase(GL_UNIFORM_BUFFER,0,M_UniformBufferID);
         Renderer3DInstance = new InstancedRenderer3D();
         Renderer3DStats = new Renderer3D::Render3DStats;
-        s_CameraBuffer = UniformBuffer::Create(sizeof(OldCmaerData),7);
+        //s_CameraBuffer = UniformBuffer::Create(sizeof(OldCmaerData),7);
         Renderer3DInstance->m_Shader = Shader::GetOrCreate("InstanceMeshRenderer",ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/MeshShader.glsl");
         Renderer3DInstance->m_VertexBuffer = VertexBuffer::Create(Renderer3DStats->MaxMeshes * sizeof(InstanceRendererVertex));// can only store that amount of transforms
         Renderer3DInstance->m_WhiteTexture = Texture2D::Create(1,1);
         uint32_t WhiteTextureImage = 0xffffffff;
-        Renderer3DInstance->m_WhiteTexture->SetData(&WhiteTextureImage,sizeof(uint32_t));
+        //Renderer3DInstance->m_WhiteTexture->SetData(&WhiteTextureImage,sizeof(uint32_t));
 
     }
     void Renderer3D::BeginContext(const PerspectiveCamera& camera) {
@@ -195,7 +195,7 @@ namespace Proof
         LightingErrorChecks();
         Renderer3DInstance->m_Shader->SetVec3("viewPos",Position);
         for (uint32_t Size = 0; Size < s_DifferentID.size(); Size++) {
-            Renderer3DInstance->m_VertexBuffer->Bind();
+            //Renderer3DInstance->m_VertexBuffer->Bind();
             Renderer3DInstance->m_VertexBuffer->AddData(&m_InstanceTransforms[SizeofOffset],m_InstanceTransforms.size() * sizeof(InstanceRendererVertex));
             uint32_t TempID = s_DifferentID[Size];
             auto TempMesh = Renderer3DInstance->m_Meshes.find(TempID);
@@ -203,12 +203,12 @@ namespace Proof
             if (TempMesh->second.GetMeshSource()->textures_loaded.size() > 0) {
                 Renderer3DInstance->m_Shader->Bind();
                 Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
-                TempMesh->second.GetMeshSource()->textures_loaded[0]->Bind(0);
+                //TempMesh->second.GetMeshSource()->textures_loaded[0]->Bind(0);
             }
             else {
                 Renderer3DInstance->m_Shader->Bind();
                 Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
-                Renderer3DInstance->m_WhiteTexture->Bind(0);
+                //Renderer3DInstance->m_WhiteTexture->Bind(0);
             }
             /*
             TempMesh->second.GetMesh()->m_VertexArrayObject->Bind();

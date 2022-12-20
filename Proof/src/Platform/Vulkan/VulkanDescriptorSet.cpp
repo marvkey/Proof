@@ -2,20 +2,39 @@
 #include "VulkanDescriptorSet.h"
 #include "VulkanGraphicsContext.h"
 #include "Proof/Renderer/Renderer.h"
+#include "VulkanPipeLineLayout.h"
 #include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanTexutre.h"
+#include "VulkanUtils/VulkanConvert.h"
 namespace Proof
 {
-	Count<VulkanDescriptorSet> VulkanDescriptorSet::Builder::Build() {
-		return CreateCount<VulkanDescriptorSet>(m_Set,Bindings);
+	namespace Utils
+	{
+		VkDescriptorType ProofFormatToVulkanFormat(DescriptorType data) {
+			switch (data) {
+				case Proof::DescriptorType::ImageSampler:
+					return VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					break;
+				case Proof::DescriptorType::UniformBuffer:
+					return VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					break;
+				default:
+					break;
+			}
+			PF_CORE_ASSERT("Format not supported");
+		}
 	}
-
-	VulkanDescriptorSet::Builder& VulkanDescriptorSet::Builder::AddBinding(uint32_t binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint32_t count) {
+	
+	Count<VulkanDescriptorSet> VulkanDescriptorSet::VulkanDescriptorSetBuilder::Build() {
+		return CreateCount<VulkanDescriptorSet>(m_Set, Bindings);
+	}
+	VulkanDescriptorSet::VulkanDescriptorSetBuilder& VulkanDescriptorSet::VulkanDescriptorSetBuilder::AddBinding(uint32_t binding, DescriptorType descriptorType, ShaderStage  stageFlags, uint32_t count) {
 		PF_CORE_ASSERT(Bindings.count(binding) == 0, "Binding already in use");
 		VkDescriptorSetLayoutBinding layoutBinding{};
 		layoutBinding.binding = binding;
-		layoutBinding.descriptorType = descriptorType;
+		layoutBinding.descriptorType = Utils::ProofFormatToVulkanFormat(descriptorType);
 		layoutBinding.descriptorCount = count;
-		layoutBinding.stageFlags = stageFlags;
+		layoutBinding.stageFlags =Utils::ProofShaderToVulkanShader( stageFlags);
 		Bindings[binding] = layoutBinding;
 		return *this;
 	}
@@ -51,13 +70,15 @@ namespace Proof
 		vkDestroyDescriptorSetLayout(device, m_DescriptorSetLayout, nullptr);
 	}
 
-	VulkanDescriptorSet& VulkanDescriptorSet::WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo) {
-		m_Writer->WriteBuffer(binding, bufferInfo);
+	DescriptorSet& VulkanDescriptorSet::WriteBuffer(uint32_t binding, Count<UniformBuffer> buffer) {
+		auto bufferInfo = buffer->As<VulkanUniformBuffer>()->GetDescriptorInfo();
+		m_Writer->WriteBuffer(binding, &bufferInfo);
 		return *this;
 	}
 
-	VulkanDescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInfo) {
-		m_Writer->WriteImage(binding, imageInfo);
+	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, Count<class Texture2D> image) {
+		auto imageInfo = image->As<VulkanTexture2D>()->GetImageBufferInfo();
+		m_Writer->WriteImage(binding, &imageInfo);
 		return *this;
 	}
 
@@ -67,6 +88,19 @@ namespace Proof
 
 	void VulkanDescriptorSet::Overwrite(int frame) {
 		return m_Writer->Overwrite(m_DescriptorSets[frame]);
+	}
+
+	void VulkanDescriptorSet::Bind(Count<class CommandBuffer> commandBuffer, Count<class PipeLineLayout>pipeLineLayout) {
+		Build();
+		vkCmdBindDescriptorSets(
+			commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipeLineLayout->As<VulkanPipeLineLayout>()->GetPipeLineLayout(),
+			(int)m_Set,
+			1,
+			&m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight],
+			0,
+			nullptr);
 	}
 
 	VulkanDescriptorPool::Builder& VulkanDescriptorPool::Builder::AddPoolSize(VkDescriptorType descriptorType, uint32_t count) {
@@ -268,12 +302,12 @@ namespace Proof
 		auto& bindingDescription = m_SetLayout->m_Bindings[binding];
 
 		PF_CORE_ASSERT(bindingDescription.descriptorCount == 1, "Binding single descriptor info, but binding expects multiple");
-
+		m_Buffers.emplace_back(*bufferInfo);
 		VkWriteDescriptorSet write{};
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		write.descriptorType = bindingDescription.descriptorType;
 		write.dstBinding = binding;
-		write.pBufferInfo = bufferInfo;
+		write.pBufferInfo = &m_Buffers.back();
 		write.descriptorCount = 1;
 
 		writes.push_back(write);
@@ -286,12 +320,13 @@ namespace Proof
 		auto& bindingDescription = m_SetLayout->m_Bindings[binding];
 
 		PF_CORE_ASSERT(bindingDescription.descriptorCount == 1,"Binding single descriptor info, but binding expects multiple");
+		m_Images.emplace_back(*imageInfo);
 
 		VkWriteDescriptorSet write{};
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		write.descriptorType = bindingDescription.descriptorType;
 		write.dstBinding = binding;
-		write.pImageInfo = imageInfo;
+		write.pImageInfo = &m_Images.back();
 		write.descriptorCount = 1;
 
 		writes.push_back(write);
@@ -314,14 +349,16 @@ namespace Proof
 		}
 		vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
 		writes.clear();
+		m_Buffers.clear();
+		m_Images.clear();
 	}
 
 
-	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t set, uint32_t binding):
+	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, DescriptorSets set, uint32_t binding):
 		m_Size(size),m_Set(set), m_Binding(binding)
 	{
 		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		VulkanRenderer::Submit([&](VkCommandBuffer& cmdBuffer) {
+		Renderer::Submit([&](CommandBuffer* cmdBuffer) {
 
 			m_UniformBuffers.resize(Renderer::GetConfig().FramesFlight);
 			VkBufferCreateInfo uniformBufferInfo = {};
@@ -365,12 +402,12 @@ namespace Proof
 
 		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
 
-		VulkanRenderer::Submit([&](VkCommandBuffer& cmdBuffer){
+		Renderer::Submit([&](CommandBuffer* cmdBuffer){
 			VkBufferCopy copy;
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
 			copy.size = size;
-			vkCmdCopyBuffer(cmdBuffer, stagingBuffer.Buffer, m_UniformBuffers[frameIndex].Buffer, 1, &copy);
+			vkCmdCopyBuffer((VkCommandBuffer)cmdBuffer->Get(), stagingBuffer.Buffer, m_UniformBuffers[frameIndex].Buffer, 1, &copy);
 		});
 	}
 }

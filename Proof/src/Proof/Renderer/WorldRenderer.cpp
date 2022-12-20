@@ -3,7 +3,6 @@
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Scene/World.h"
-#include "Proof/Renderer/RendererCommand.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Component.h"
 #include <tuple>
@@ -24,23 +23,23 @@ namespace Proof
 		if (m_World->m_CurrentState == WorldState::Play) {
 			const auto& cameraGroup = m_World->m_Registry.group<TransformComponent>(entt::get<CameraComponent>);
 			if (cameraGroup.size() == 0)
-				Renderer3DPBR::BeginContext(m_World->m_EditorCamera, m_ScreenFrameBuffer, RenderData);
+				Renderer3DPBR::BeginContext(m_World->m_EditorCamera, m_ScreenFrameBuffer);
 			else {
 				for (auto entity : cameraGroup) {
 					const auto& [transform, camera] = cameraGroup.get<TransformComponent, CameraComponent>(entity);
 					camera.CalculateProjection(transform.Location, transform.Rotation);
-					Renderer3DPBR::BeginContext(camera.GetProjection(), camera.GetView(), transform.Location, m_ScreenFrameBuffer, RenderData);
+					Renderer3DPBR::BeginContext(camera.GetProjection(), camera.GetView(), transform.Location, m_ScreenFrameBuffer);
 					break;
 				}
 			}
 		}
 		else {
-			Renderer3DPBR::BeginContext(m_World->m_EditorCamera, m_ScreenFrameBuffer, RenderData);
+			Renderer3DPBR::BeginContext(m_World->m_EditorCamera, m_ScreenFrameBuffer);
 		}
 		// MESHES
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
-				Renderer3DPBR::Draw(*entity.GetComponent<MeshComponent>(), m_World->GetWorldTransform(entity));
+				Renderer3DPBR::SubmitMesh(*entity.GetComponent<MeshComponent>(), m_World->GetWorldTransform(entity));
 			});
 		}
 		// LIGHTS
@@ -176,11 +175,11 @@ namespace Proof
 	void WorldRenderer::Render(CameraComponent& comp, Vector& location) {
 
 
-		Renderer3DPBR::BeginContext(comp.GetProjection(), comp.GetView(), location, m_ScreenFrameBuffer, RenderData);
+		Renderer3DPBR::BeginContext(comp.GetProjection(), comp.GetView(), location, m_ScreenFrameBuffer);
 		// MESHES
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
-				Renderer3DPBR::Draw(*entity.GetComponent<MeshComponent>(), m_World->GetWorldTransform(entity));
+				Renderer3DPBR::SubmitMesh (*entity.GetComponent<MeshComponent>(), m_World->GetWorldTransform(entity));
 			});
 
 		}

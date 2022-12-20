@@ -10,7 +10,6 @@ namespace Proof
 	{
 		m_CommandBuffer.resize(Renderer::GetConfig().FramesFlight);
 		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		m_SwapChain = graphicsContext->GetSwapChain();
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -31,7 +30,7 @@ namespace Proof
 
 	}
 	
-	void VulkanCommandBuffer::BeginRecord(Count<VulkanGraphicsPipeline> graphicsPipeLine, uint32_t frameIndex,bool viewScreen ){
+	void VulkanCommandBuffer::BeginRecord(Count<GraphicsPipeline> graphicsPipeLine, uint32_t frameIndex,bool viewScreen ){
 		PF_CORE_ASSERT(m_Recording == false, "cannot start recoridng when command buffer is still recording");
 		m_Recording = true;
 		//we can safely reset the command buffer to begin recording again.
@@ -42,9 +41,11 @@ namespace Proof
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
 		// means taht it will beshown in the window, if not we  wotn show it in teh window
-		if(viewScreen)
+		//if(viewScreen)
 			//begin the command buffer recording. We will use this command buffer exactly once, so we want to let vulkan know that
-			beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		//beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		//we can use teh same command buffer for multiple things
+		beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 		if (vkBeginCommandBuffer(m_CommandBuffer[frameIndex], &beginInfo) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to begin recording command buffer");
 
@@ -63,11 +64,11 @@ namespace Proof
 	
 	void VulkanCommandBuffer::Bind(uint32_t frameIndex, VkPipelineBindPoint bindPoint ) {
 		PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot bind if render pass is not started");
-		vkCmdBindPipeline(m_CommandBuffer[frameIndex], bindPoint, m_GraphicspipeLine->GetPipline());
+		vkCmdBindPipeline(m_CommandBuffer[frameIndex], bindPoint, m_GraphicspipeLine->As<VulkanGraphicsPipeline>()->GetPipline());
 	}
 
 
-	void VulkanCommandBuffer::Recreate() {
+	void VulkanCommandBuffer::Resize() {
 		//m_CommandBuffer.resize(m_SwapChain->GetImageCount());
 		//
 		//VkCommandBufferAllocateInfo allocInfo{};

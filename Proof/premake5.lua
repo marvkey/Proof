@@ -22,6 +22,11 @@ project "Proof"
 		"vendor/ImGuizmo/ImGuizmo.cpp"
 
     }
+	removefiles
+	{
+		"src/Platform/OpenGl/**.h",
+		"src/Platform/OpenGl/**.cpp"
+	}
     includedirs 
 	{
 		"%{wks.location}/Proof/src",

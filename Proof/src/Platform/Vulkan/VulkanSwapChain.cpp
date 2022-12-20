@@ -18,9 +18,10 @@
 #include "VulkanFrameBuffer.h"
 namespace Proof
 {
+    Count<RenderPass> s_renderPass = nullptr;
 
-    VulkanSwapChain::VulkanSwapChain(VkExtent2D extent)
-        : m_WindowSize{ extent.width,extent.height } {
+    VulkanSwapChain::VulkanSwapChain(ScreenSize extent)
+        : m_WindowSize{ extent } {
         Init();
        
     }
@@ -32,6 +33,7 @@ namespace Proof
 
     VulkanSwapChain::~VulkanSwapChain() {
         CleanUp();
+        s_renderPass = nullptr;
     }
 
     void VulkanSwapChain::AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex) {
@@ -40,12 +42,12 @@ namespace Proof
 
     }
 
-    void VulkanSwapChain::SubmitCommandBuffers(std::vector<Count<VulkanCommandBuffer>> buffers, uint32_t* imageIndex) {
+    void VulkanSwapChain::SubmitCommandBuffers(std::vector<Count<CommandBuffer>> buffers, uint32_t* imageIndex) {
         auto graphicsContext= Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         
         std::vector<VkCommandBuffer> submitCommandBuffers;
         for (auto& buffer : buffers) {
-            submitCommandBuffers.emplace_back(buffer->m_CommandBuffer[Renderer::GetCurrentFrame().FrameinFlight]);
+            submitCommandBuffers.emplace_back(buffer->As<VulkanCommandBuffer>()->m_CommandBuffer[Renderer::GetCurrentFrame().FrameinFlight]);
         }
         VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
@@ -83,11 +85,10 @@ namespace Proof
         for(int i =0; i<submitCommandBuffers.size(); i++)
             vkResetCommandBuffer(submitCommandBuffers[i], 0);
     }
-    Count<VulkanRenderPass> s_renderPass = nullptr;
 
-    Count<VulkanRenderPass> VulkanSwapChain::GetRenderPass() {
+    Count<RenderPass> VulkanSwapChain::GetRenderPass() {
         if (s_renderPass == nullptr) {
-            s_renderPass = CreateCount<VulkanRenderPass>();
+            s_renderPass = RenderPass::Create();
         }
         return s_renderPass;
     }
@@ -200,7 +201,7 @@ namespace Proof
         }
     }
 
-    void VulkanSwapChain::Recreate(VectorTemplate2<uint32_t> size) {
+    void VulkanSwapChain::Resize(ScreenSize size) {
         const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
         m_WindowSize = size;
         vkDeviceWaitIdle(device);
@@ -308,29 +309,6 @@ namespace Proof
 
     void VulkanSwapChain::ResetFences(uint32_t frameIndex) {
         vkResetFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex]);
-    }
-
-    void VulkanSwapChain::Present() {
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-
-        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
-        uint32_t currentFrame = Renderer::GetCurrentFrame().FrameinFlight;
-        VkSwapchainKHR swapChains[] = { m_SwapChain };
-        VkPresentInfoKHR presentInfo{};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains;
-        presentInfo.pImageIndices = &currentFrame;
-
-        vkQueuePresentKHR(graphicsContext->GetPresentQueue(), &presentInfo);
-        //vkDeviceWaitIdle(graphicsContext->GetDevice());
-        //for (int i = 0; i < submitCommandBuffers.size(); i++)
-        //    vkResetCommandBuffer(submitCommandBuffers[i], 0);
-
     }
 
     VkFormat VulkanSwapChain::GetDepthFormat() {

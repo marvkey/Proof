@@ -17,26 +17,27 @@ namespace Proof
         std::string GetName() {
             return m_Name;
         }
+        // WE SHOULD NOT BE STORING THIS TEMPORARY
         std::vector<Vertex> m_Vertices;
         std::vector<uint32_t> m_Indices;
         std::string m_Name;
-        Count<class VertexArray> m_VertexArrayObject;
+
+        const std::vector<uint32_t>& GetDiffuseIndex()const {
+            return m_DiffuseIndex;
+        }
+        Count<class VertexBuffer> GetVertexBuffer()const {
+            return m_VertexBufferObject;
+        }
+        Count<class IndexBuffer> GetIndexBuffer()const {
+            return m_IndexBufferObject;
+        }
+    private:
+        std::vector<uint32_t> m_DiffuseIndex;
         Count<class VertexBuffer> m_VertexBufferObject;
         Count<class IndexBuffer> m_IndexBufferObject;
-
-        class VulkanVertexArray* vulkanVertexArrayObject;
-        class VulkanVertexBuffer* vulkanVertexBufferObject;
-        class VulkanIndexBuffer* vulkanIndexBufferObject;
-        std::vector<uint32_t> m_DiffuseIndex;
-
-    private:
-
         void SetUp();
-        void SetUpOpenGL();
-        void SetUpVulkan();
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
-        friend class OpenGLRenderer3DPBR;
     };
     
     class Mesh {
@@ -74,6 +75,5 @@ namespace Proof
         friend class SceneRendererUI;
         friend class MeshAsset;
         friend class MeshWorkShop;
-        friend class OpenGLRenderer3DPBR;
     };
 }

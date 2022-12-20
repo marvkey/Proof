@@ -23,6 +23,6 @@ namespace Proof {
 		static Count<Mesh> m_Cube;
 		static Count<Mesh> m_Sphere;
 		static Count<Mesh> m_Capasule;
-		friend class Renderer;
+		friend class RendererBase;
 	};
 }

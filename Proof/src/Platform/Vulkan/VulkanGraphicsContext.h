@@ -48,7 +48,7 @@ namespace Proof
 
 		bool CreateVmaBuffer(VkBufferCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanBuffer& buffer);
 		bool CreateVmaImage(VkImageCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanImage& image);
-		Count<class VulkanSwapChain> GetSwapChain() {
+		Count<class SwapChain> GetSwapChain(){
 			return CurrentWindow::GetWindow().GetSwapChain();
 		}
 		VkImageCreateInfo ImageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent) {

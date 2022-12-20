@@ -2,7 +2,7 @@
 #include "VulkanShader.h"
 #include <fstream>
 #include "VulkanGraphicsContext.h"
-#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/RendererBase.h"
 
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_cross.hpp>
@@ -16,12 +16,12 @@ namespace Proof
             return "assets/cache/shader/VULKAN";
         }
 
-        static const char* GetVulkanCachedShaderExtension(Shader::ShaderStage stage) {
+        static const char* GetVulkanCachedShaderExtension(ShaderStage stage) {
             switch (stage) {
-                case Shader::ShaderStage::Vertex: return ".cach_vulkan_shader.vertex";
-                case Shader::ShaderStage::Fragment: return ".cach_vulkan_shader.fragment";
-                case Shader::ShaderStage::Compute: return ".cach_vulkan_shader.compute";
-                case Shader::ShaderStage::Geometry: return ".cach_vulkan_shader.geometry";
+                case ShaderStage::Vertex: return ".cach_vulkan_shader.vertex";
+                case ShaderStage::Fragment: return ".cach_vulkan_shader.fragment";
+                case ShaderStage::Compute: return ".cach_vulkan_shader.compute";
+                case ShaderStage::Geometry: return ".cach_vulkan_shader.geometry";
             }
             PF_CORE_ASSERT(false, "Invalid Shader Stage");
             return "";
@@ -31,12 +31,12 @@ namespace Proof
             if (!std::filesystem::exists(cacheDirectory))
                 std::filesystem::create_directories(cacheDirectory);
         }
-        static shaderc_shader_kind ShaderStageToShaderC(Shader::ShaderStage stage) {
+        static shaderc_shader_kind ShaderStageToShaderC(ShaderStage stage) {
             switch (stage) {
-                case Shader::ShaderStage::Vertex:   return shaderc_glsl_vertex_shader;
-                case Shader::ShaderStage::Fragment: return shaderc_glsl_fragment_shader;
-                case Shader::ShaderStage::Compute: return shaderc_glsl_compute_shader;
-                case Shader::ShaderStage::Geometry: return shaderc_glsl_geometry_shader;
+                case ShaderStage::Vertex:   return shaderc_glsl_vertex_shader;
+                case ShaderStage::Fragment: return shaderc_glsl_fragment_shader;
+                case ShaderStage::Compute: return shaderc_glsl_compute_shader;
+                case ShaderStage::Geometry: return shaderc_glsl_geometry_shader;
             }
             PF_CORE_ASSERT(false,"Invalid Shader stage");
             return (shaderc_shader_kind)0;
@@ -45,19 +45,19 @@ namespace Proof
      
     }
 
-    std::string VulkanShader::ProcessStage(Shader::ShaderStage stage, const std::filesystem::path& path) {
+    std::string VulkanShader::ProcessStage(ShaderStage stage, const std::filesystem::path& path) {
         std::string symbol;
         switch (stage) {
-            case Proof::Shader::ShaderStage::Vertex:
+            case Proof::ShaderStage::Vertex:
                 symbol = "#Vertex Shader";
                 break;
-            case Proof::Shader::ShaderStage::Fragment:
+            case Proof::ShaderStage::Fragment:
                 symbol = "#Fragment Shader";
                 break;
-            case Proof::Shader::ShaderStage::Compute:
+            case Proof::ShaderStage::Compute:
                 symbol = "#Compute Shader";
                 break;
-            case Proof::Shader::ShaderStage::Geometry:
+            case Proof::ShaderStage::Geometry:
                 symbol = "#Geometry Shader";
                 break;
             default:
@@ -94,7 +94,7 @@ namespace Proof
 
     VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filePath) {
        
-        magic_enum::enum_for_each<Shader::ShaderStage>([&](Shader::ShaderStage stage) {
+        magic_enum::enum_for_each<ShaderStage>([&](ShaderStage stage) {
             std::string source = ProcessStage(stage, filePath);
             if (source.empty() == false)
                 m_SourceCode.insert({ stage,source });
@@ -104,7 +104,7 @@ namespace Proof
         CreateShader();
     }
 
-    VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<Shader::ShaderStage, std::string> shaders) {
+    VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders) {
         for (auto& [stage, source] : shaders) {
             m_SourceCode.insert({ stage,source });
         }
@@ -118,7 +118,7 @@ namespace Proof
         }
     }
     void VulkanShader::CompileOrGetBinaries(const std::filesystem::path& filePath) {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
@@ -168,7 +168,7 @@ namespace Proof
     }
 
     void VulkanShader::Compile() {
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
@@ -182,7 +182,7 @@ namespace Proof
         for (auto& [stage, source] : m_SourceCode) {
             shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_Paths[stage].c_str(), compilerOptions);
             if (shaderModule.GetCompilationStatus() != shaderc_compilation_status_success) {
-                PF_ENGINE_ERROR("Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<Shader::ShaderStage>(stage), shaderModule.GetErrorMessage());
+                PF_ENGINE_ERROR("Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<ShaderStage>(stage), shaderModule.GetErrorMessage());
                 PF_ENGINE_TRACE("   {}", source);
                 PF_CORE_ASSERT(false);
             }
@@ -200,11 +200,11 @@ namespace Proof
         //createInfo.codeSize = code.size();
         createInfo.codeSize = code.size() * sizeof(uint32_t);// because spirv module needs mutliple of 4
         createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-        if (vkCreateShaderModule(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
+        if (vkCreateShaderModule(RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
             PF_CORE_ASSERT(false, "Failed To Create Shader Module");
 
     }
-    void VulkanShader::Reflect(Shader::ShaderStage stage) {
+    void VulkanShader::Reflect(ShaderStage stage) {
         if (m_VulkanSPIRV.find(stage) == m_VulkanSPIRV.end()) {
             PF_ENGINE_ERROR("{} {} Shader stage does not exist", m_Name, EnumReflection::EnumString(stage));
             return;
@@ -261,7 +261,7 @@ namespace Proof
             CreateShaderModule(code, &shaderModule);
             
             switch (shaderStage) {
-            case Proof::Shader::ShaderStage::Vertex:
+            case Proof::ShaderStage::Vertex:
                 {
                     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                     shaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -272,7 +272,7 @@ namespace Proof
                     shaderStageInfo.pSpecializationInfo = nullptr;
                 }
                 break;
-            case Proof::Shader::ShaderStage::Fragment:
+            case Proof::ShaderStage::Fragment:
                 {
                     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                     shaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -283,7 +283,7 @@ namespace Proof
                     shaderStageInfo.pSpecializationInfo = nullptr;
                 }
                 break;
-            case Proof::Shader::ShaderStage::Geometry:
+            case Proof::ShaderStage::Geometry:
                 {
                     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                     shaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
@@ -294,7 +294,7 @@ namespace Proof
                     shaderStageInfo.pSpecializationInfo = nullptr;
                 }
                 break;
-            case Proof::Shader::ShaderStage::Compute:
+            case Proof::ShaderStage::Compute:
                 {
                     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                     shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;

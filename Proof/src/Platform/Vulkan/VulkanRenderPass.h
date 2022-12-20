@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "Proof/Renderer/RenderPass.h"
 #include <vulkan/vulkan.h>
 namespace Proof{
 
@@ -16,31 +17,34 @@ namespace Proof{
 		}
 		Count<class VulkanGraphicsPipeline> PipeLine;
 	};
-	enum class VulkanRenderPassDefaultType {
-		World,
-		Other
-	};
-	class VulkanRenderPass {
+	
+	class VulkanRenderPass : public RenderPass {
 	public:
-		VulkanRenderPass(VulkanRenderPassDefaultType type = VulkanRenderPassDefaultType::World);
+		VulkanRenderPass(RenderPassType type = RenderPassType::World);
 		VulkanRenderPass(const VulkanRenderPassInfo& info);
 		virtual ~VulkanRenderPass();
-		void SetGraphicsPipeLine(Count<class VulkanGraphicsPipeline> pipeline) {
+		void SetGraphicsPipeline(Count<class GraphicsPipeline> pipeline) {
 			m_PipeLine = pipeline;
 		}
 		VkRenderPass GetRenderPass() {
 			return m_RenderPass;
 		}
-		Count<class VulkanGraphicsPipeline> GetPipeLine() {
+		virtual Count<class GraphicsPipeline> GetPipeLine() {
 			return m_PipeLine;
 		}
-		VkRenderPass m_RenderPass = nullptr;
-
+		Count<class CommandBuffer>  GetCommandBuffer() {
+			return m_CommandBuffer;
+		}
 	private:
-		void BeginRenderPass(Count<class VulkanCommandBuffer> command,Count<class ScreenFrameBuffer>frameBuffer,const glm::vec4& Color = { 0.0,0.0,0.0,1 }, float Depth = 1.0f, uint32_t stencil = 0);
-		void EndRenderPass(Count<class VulkanCommandBuffer> commandBuffer);
+		friend class VulkanRendererAPI;
+		VkRenderPass m_RenderPass = nullptr;
+		void BeginRenderPass(Count<class CommandBuffer> command,Count<class ScreenFrameBuffer>frameBuffer,bool viewScreen = false,const glm::vec4& Color = { 0.0,0.0,0.0,1 }, float Depth = 1.0f, uint32_t stencil = 0);
+		void EndRenderPass();
+		void RecordRenderPass(std::function<void(Count<CommandBuffer> commandBuffer)> func);
 		bool m_RenderPassEnabled = false;
-		Count<class VulkanGraphicsPipeline> m_PipeLine;
+		Count<class GraphicsPipeline> m_PipeLine;
+		Count<CommandBuffer> m_CommandBuffer;
 		friend class VulkanRenderer;
+		friend class VulkanRendererAPI;
 	};
 }

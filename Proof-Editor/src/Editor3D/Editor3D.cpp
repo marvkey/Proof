@@ -1,8 +1,6 @@
 #include "Editor3D.h"
 
 #include <ImGui/imgui.h>
-#include <ImGui/imgui_impl_glfw.h>
-#include <ImGui/imgui_impl_opengl3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -33,7 +31,6 @@
 #include<thread>
 #include <chrono>
 #include "Proof/Core/SceneCoreClasses.h"
-#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
 #include "Proof/Core/CurrentWindow.h"
 
 #include <GLFW/glfw3.h>
@@ -371,7 +368,7 @@ namespace Proof
 		Logger();
 
 		if (m_ShowWorldEditor == false)
-			goto a;
+			return;//goto a;
 		if (ImGui::Begin("Active World", &m_ShowWorldEditor)) {
 			if (ImGui::Button("Choose HDR")) {
 				std::string file = Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
@@ -381,16 +378,18 @@ namespace Proof
 			}
 		}
 		ImGui::End();
-		a:
+		//a:
+
+		#if 0
 		if (m_ShowRendererStats == false)
 			return;
 		ImGui::Begin("Renderer Stastitics", &m_ShowRendererStats);
 		{
 
 			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER SPECS");
-			ImGui::Text("Renderer Company: %s", Renderer::GetRenderCompany().c_str());
-			ImGui::Text("Graphics Card: %s", Renderer::GetGraphicsCard().c_str());
-			ImGui::Text("Graphics Card Verison: %s", Renderer::GetGraphicsCardVersion().c_str());
+			ImGui::Text("Renderer Company: %s", RendererBase::GetRenderCompany().c_str());
+			ImGui::Text("Graphics Card: %s", RendererBase::GetGraphicsCard().c_str());
+			ImGui::Text("Graphics Card Verison: %s", RendererBase::GetGraphicsCardVersion().c_str());
 			ImGui::Text("%.3f ms/frame ", FrameTime::GetFrameMS());
 			ImGui::Text("%.3f FPS",FrameTime::GetFrameFPS());
 
@@ -403,7 +402,7 @@ namespace Proof
 			ImGui::Text("Amount Of Spot Light %i", m_WorldRenderer.RenderData.Stats.AmountSpotLight);
 
 			if (ImGui::Button("Reload Shader")) {
-				Renderer::GetShaderLibrary().ReloadeShaders();
+				RendererBase::GetShaderLibrary().ReloadeShaders();
 			}
 
 			//if (m_WorldRenderer.RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
@@ -421,6 +420,7 @@ namespace Proof
 			//}
 		}
 		ImGui::End();
+		#endif
 	}
 
 	void Editore3D::OnKeyClicked(KeyClickedEvent& e) {

@@ -10,8 +10,9 @@
 #include "Proof/Core/FrameTime.h"
 
 #include "Proof/Renderer/GraphicsContext.h"
+#include "Proof/Renderer/SwapChain.h"
 #include "Proof/Core/Core.h"
-#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/RendererBase.h"
 #include <GLFW/glfw3.h>
 #include <Glad/glad.h>
 
@@ -657,6 +658,7 @@ namespace Proof {
             WindowsWindow& data = *static_cast<WindowsWindow*>(glfwGetJoystickUserPointer(cID));
             data.ControllerCallbackConnect(cID, event);
         });
+
         PF_ENGINE_INFO("Window created widht {} height {}", m_WindowConfiguration.Width, m_WindowConfiguration.Height);
         return 0;
     }

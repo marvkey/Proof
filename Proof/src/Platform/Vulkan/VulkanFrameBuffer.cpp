@@ -28,7 +28,7 @@ namespace Proof
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         auto swapchain = graphicsContext->GetSwapChain();
         uint32_t imageCount = swapchain->GetImageCount();
-        auto imageFormat = swapchain->GetImageFormat();
+        auto imageFormat = swapchain->As<VulkanSwapChain>()->GetImageFormat();
         m_Images.resize(imageCount);
         m_ImageViews.resize(imageCount);
         m_ImageSampler.resize(imageCount);
@@ -48,14 +48,14 @@ namespace Proof
             info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
             info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            VulkanRenderer::Submit([&](VkCommandBuffer& cmdBuffer) {
+            Renderer::Submit([&](CommandBuffer* cmdBuffer) {
                 VmaAllocationCreateInfo vmaallocInfo = {};
                 vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
 
                 graphicsContext->CreateVmaImage(info, vmaallocInfo, m_Images[i]);
             });
 
-            VulkanRenderer::Submit([&](VkCommandBuffer& cmdbuffer) {
+            Renderer::Submit([&](CommandBuffer* cmdBuffer) {
                 VkImageMemoryBarrier imageMemoryBarrier{};
                 imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -68,7 +68,7 @@ namespace Proof
                 imageMemoryBarrier.subresourceRange = VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
                 vkCmdPipelineBarrier(
-                    cmdbuffer,
+                    (VkCommandBuffer)cmdBuffer->Get(),
                     VK_PIPELINE_STAGE_TRANSFER_BIT,
                     VK_PIPELINE_STAGE_TRANSFER_BIT,
                     0,
@@ -121,7 +121,7 @@ namespace Proof
     void VulkanScreenFrameBuffer::CreateDepthResources() {
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         auto swapchain = graphicsContext->GetSwapChain();
-        VkFormat depthFormat = swapchain->GetDepthFormat();
+        VkFormat depthFormat = swapchain->As<VulkanSwapChain>()->GetDepthFormat();
 
         m_DepthImages.resize(swapchain->GetImageCount());
         m_DepthImageViews.resize(swapchain->GetImageCount());
@@ -141,7 +141,7 @@ namespace Proof
             imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
-            VulkanRenderer::Submit([&](VkCommandBuffer& cmdBuffer) {
+            Renderer::Submit([&](CommandBuffer* cmdBuffer) {
                 VmaAllocationCreateInfo vmaallocInfo = {};
                 vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
                 graphicsContext->CreateVmaImage(imageInfo, vmaallocInfo, m_DepthImages[i]);
@@ -161,7 +161,7 @@ namespace Proof
             if (vkCreateImageView(graphicsContext->GetDevice(), &viewInfo, nullptr, &m_DepthImageViews[i]) != VK_SUCCESS) {
                 PF_CORE_ASSERT(false, "failed to create texture image view!");
             }
-            VulkanRenderer::Submit([&](VkCommandBuffer& cmd) {
+            Renderer::Submit([&](CommandBuffer* cmdBuffer) {
             
                 VkImageMemoryBarrier barrier{};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -190,7 +190,7 @@ namespace Proof
                 destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 
                 vkCmdPipelineBarrier(
-                    cmd,
+                    (VkCommandBuffer)cmdBuffer->Get(),
                     sourceStage, destinationStage,
                     0,
                     0, nullptr,
@@ -213,7 +213,7 @@ namespace Proof
 
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = m_RenderPass == nullptr ? swapchain->GetRenderPass()->GetRenderPass() : m_RenderPass->GetRenderPass();
+            framebufferInfo.renderPass = m_RenderPass == nullptr ? swapchain->GetRenderPass()->As<VulkanRenderPass>()->GetRenderPass() : m_RenderPass->As<VulkanRenderPass>()->GetRenderPass();
             framebufferInfo.attachmentCount = 2;
             framebufferInfo.pAttachments = attachments.data();
             framebufferInfo.width = m_ImageSize.X;
@@ -228,7 +228,7 @@ namespace Proof
     }
 
    
-    void VulkanScreenFrameBuffer::Resize(uint32_t width, uint32_t height, Count<class VulkanRenderPass> renderPass) {
+    void VulkanScreenFrameBuffer::Resize(uint32_t width, uint32_t height, Count<class RenderPass> renderPass) {
         Release();
         if (renderPass != nullptr)
             m_RenderPass = renderPass;
@@ -237,13 +237,13 @@ namespace Proof
         m_ImageSize.Y = height;
         Init();
     }
-    void VulkanScreenFrameBuffer::Resize(Vector2 imageSize, Count<class VulkanRenderPass> renderPass) {
+    void VulkanScreenFrameBuffer::Resize(Vector2 imageSize, Count<class RenderPass> renderPass) {
         Resize(imageSize.X, imageSize.Y, renderPass);
     }
     
     void VulkanScreenFrameBuffer::Release() {
         for (int i = 0; i < m_Framebuffers.size(); i++) {
-            VulkanRenderer::SubmitDatafree([buffer = m_Framebuffers[i],depthViews = m_DepthImageViews[i],
+            Renderer::SubmitDatafree([buffer = m_Framebuffers[i],depthViews = m_DepthImageViews[i],
             imageViews = m_ImageViews[i], depthimage = m_DepthImages[i],images = m_Images[i]]() {
                 auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
                 const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
@@ -265,7 +265,7 @@ namespace Proof
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         int index = -1;
         int iterator = 0;
-        for (auto i : graphicsContext->GetSwapChain()->FrameBuffers) {
+        for (auto i : graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->FrameBuffers) {
             if (i == this) {
                 index = iterator;
                 break;
@@ -273,8 +273,8 @@ namespace Proof
             iterator++;
         }
         if (index != -1) {
-            graphicsContext->GetSwapChain()->FrameBuffers.erase(
-                graphicsContext->GetSwapChain()->FrameBuffers.begin() + index);
+            graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->FrameBuffers.erase(
+                graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->FrameBuffers.begin() + index);
         }
     }
     void* VulkanScreenFrameBuffer::GetTexture() {
@@ -291,11 +291,11 @@ namespace Proof
         CreateDepthResources();
         CreateFramebuffers();
         a:
-        if (std::find(graphicsContext->GetSwapChain()->FrameBuffers.begin(), graphicsContext->GetSwapChain()->FrameBuffers.end(),
-            this) != graphicsContext->GetSwapChain()->FrameBuffers.end())
+        if (std::find(graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->FrameBuffers.begin(), graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->FrameBuffers.end(),
+            this) != graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->FrameBuffers.end())
             return;
         else
-            graphicsContext->GetSwapChain()->FrameBuffers.emplace_back(this);
+            graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->FrameBuffers.emplace_back(this);
     }
     void VulkanScreenFrameBuffer::CreateScreenPresent() {
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
@@ -312,14 +312,14 @@ namespace Proof
         VkImageView attachment[1];
         VkFramebufferCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        info.renderPass = m_RenderPass == nullptr ? swapchain->GetRenderPass()->GetRenderPass() : m_RenderPass->GetRenderPass();
+        info.renderPass = m_RenderPass == nullptr ? swapchain->GetRenderPass()->As<VulkanRenderPass>()->GetRenderPass() : m_RenderPass->As<VulkanRenderPass>()->GetRenderPass();
         info.attachmentCount = 1;
         info.pAttachments = attachment;
         info.width = CurrentWindow::GetWindow().GetWidth();
         info.height = CurrentWindow::GetWindow().GetHeight();
         info.layers = 1;
         for (uint32_t i = 0; i < graphicsContext->GetSwapChain()->GetImageCount(); i++) {
-            attachment[0] = graphicsContext->GetSwapChain()->GetImageView(i);
+            attachment[0] = graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->GetImageView(i);
 
             if (vkCreateFramebuffer(graphicsContext->GetDevice(), &info, nullptr, &m_Framebuffers[i]) != VK_SUCCESS) {
                 PF_CORE_ASSERT(false, "failed to create framebuffer!");

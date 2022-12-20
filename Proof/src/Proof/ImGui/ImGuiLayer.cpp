@@ -11,19 +11,20 @@
 #include "Platform/Vulkan/VulkanGraphicsContext.h"
 #include "Platform/Vulkan/VulkanDescriptorSet.h"
 #include "Platform/Vulkan/VulkanSwapChain.h"
-#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
-#include "Platform/Vulkan/VulkanShader.h"
-#include "Platform/Vulkan/VulkanVertexArray.h"
+#include "platform/Vulkan/VulkanRenderPass.h"
+#include "Proof/Renderer/CommandBuffer.h"
+#include "Proof/Renderer/ScreenFrameBuffer.h"
+#include "proof/Renderer/RenderPass.h"
 namespace Proof
 {
 	struct ImguiRenderPass {
-		Count<VulkanCommandBuffer> CommandBuffer;
-		Count<VulkanRenderPass> RenderPass;
-		Count<VulkanScreenFrameBuffer> FrameBuffer;
+		Count<CommandBuffer> CommandBuffer;
+		Count<RenderPass> RenderPass;
+		Count<ScreenFrameBuffer> FrameBuffer;
 		ImguiRenderPass() {
-			RenderPass = CreateCount<VulkanRenderPass>(VulkanRenderPassDefaultType::Other);
-			CommandBuffer = CreateCount<VulkanCommandBuffer>();
-			FrameBuffer = CreateCount<VulkanScreenFrameBuffer>(Vector2{ (float)CurrentWindow::GetWindow().GetWidth(),(float)CurrentWindow::GetWindow().GetHeight() }
+			RenderPass = RenderPass::Create(RenderPassType::Other);
+			CommandBuffer = CommandBuffer::Create();
+			FrameBuffer = ScreenFrameBuffer::Create(Vector2{ (float)CurrentWindow::GetWindow().GetWidth(),(float)CurrentWindow::GetWindow().GetHeight() }
 			, RenderPass, true);
 		}
 	};
@@ -115,12 +116,12 @@ namespace Proof
 			init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 			init_info.Allocator = nullptr;
 			init_info.CheckVkResultFn = nullptr;
-			ImGui_ImplVulkan_Init(&init_info, s_ImguiRenderPass->RenderPass->m_RenderPass);
+			ImGui_ImplVulkan_Init(&init_info, s_ImguiRenderPass->RenderPass->As<VulkanRenderPass>()->GetRenderPass());
 			ImGui_ImplVulkan_SetMinImageCount(Renderer::GetConfig().ImageSize);
 			// Upload Fonts
 			{
-				VulkanRenderer::Submit([&](VkCommandBuffer buffer) {
-					ImGui_ImplVulkan_CreateFontsTexture(buffer);
+				Renderer::Submit([&](CommandBuffer*buffer) {
+					ImGui_ImplVulkan_CreateFontsTexture((VkCommandBuffer)buffer->Get());
 				});
 				ImGui_ImplVulkan_DestroyFontUploadObjects();
 
@@ -189,10 +190,10 @@ namespace Proof
 		{
 			//https://github.com/1111mp/Vulkan/blob/master/src/Application.cpp
 
-			VulkanRenderer::BeginRenderPass(s_ImguiRenderPass->CommandBuffer, s_ImguiRenderPass->RenderPass, s_ImguiRenderPass->FrameBuffer, true);
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), s_ImguiRenderPass->CommandBuffer->GetCommandBuffer());
-			VulkanRenderer::EndRenderPass(s_ImguiRenderPass->CommandBuffer, s_ImguiRenderPass->RenderPass);
-			VulkanRenderer::SubmitCommandBuffer(s_ImguiRenderPass->CommandBuffer);
+			Renderer::BeginRenderPass(s_ImguiRenderPass->CommandBuffer, s_ImguiRenderPass->RenderPass, s_ImguiRenderPass->FrameBuffer, true);
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), s_ImguiRenderPass->CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
+			Renderer::EndRenderPass(s_ImguiRenderPass->RenderPass);
+			Renderer::SubmitCommandBuffer(s_ImguiRenderPass->CommandBuffer);
 		}
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 			void* backup_current_context = CurrentWindow::GetWindow().GetWindow();

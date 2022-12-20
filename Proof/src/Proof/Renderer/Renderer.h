@@ -1,60 +1,57 @@
 #pragma once
-#include "RendererCommand.h"
-#include "Shader.h"
-#include "Proof/Core/Core.h"
+#include <glm/glm.hpp>
+#include "RendererAPI.h"
 namespace Proof {
-	struct  RendererConfig {
-		uint32_t FramesFlight = 2;
-		uint32_t ImageSize;
-	};
-
-	struct CurrentFrame {
-		uint32_t FrameinFlight;
-		uint32_t ImageIndex;
-	};
-	class Proof_API Renderer{
+	
+	class Renderer {
 	public:
-		static void BeginFrame();
-
-		static void EndFrame();
-
-		static CurrentFrame GetCurrentFrame();
-		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
-		static ShaderLibrary& GetShaderLibrary() {
-			return *AllShaders;
-		};
-
+		static void DrawElementIndexed(Count<class CommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount,uint32_t firstInstance){
+			s_RendererAPI->DrawElementIndexed(commandBuffer,indexCount,instanceCount,firstInstance);
+		}
+		static void DrawArrays(Count<class CommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance = 0) {
+			s_RendererAPI->DrawArrays(commandBuffer,vertexCount,instanceCount,firstInstance);
+		}
+		static void BeginRenderPass(Count<class CommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class ScreenFrameBuffer> frameBuffer, bool viewScreen = false) {
+			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer, viewScreen);
+		}
+		static void RecordRenderPass(Count<class RenderPass> renderPass, std::function<void(Count<CommandBuffer> commandBuffer)> data) {
+			s_RendererAPI->RecordRenderPass(renderPass, data);
+		}
+		static void EndRenderPass(Count<class RenderPass> renderPass) {
+			s_RendererAPI->EndRenderPass(renderPass);
+		}
+		static void SubmitCommandBuffer(Count<class CommandBuffer> commandBuffer) {
+			s_RendererAPI->SubmitCommandBuffer(commandBuffer);
+		}
+		static CurrentFrame GetCurrentFrame() {
+			return s_RendererAPI->GetCurrentFrame();
+		}
+		static const RendererConfig GetConfig() {
+			return s_RendererAPI->GetConfig();
+		}
 		static Count<class GraphicsContext> GetGraphicsContext() {
-			return m_GraphicsContext;
+			return RendererBase::GetGraphicsContext();
 		}
-		static GraphicsContext* GetGraphicsContextPointer() {
-			return m_GraphicsContext.get();
+		static void Submit(std::function<void(class CommandBuffer*)> func) {
+			s_RendererAPI->Submit(func);
 		}
-		static void Init(Window* window);
-		static void Destroy();
+		static void SubmitDatafree(std::function<void()> func) {
+			s_RendererAPI->SubmitDatafree(func);
+		}
 
-		static const RendererConfig GetConfig();
+		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
-		static const std::string GetRenderCompany(){
-			return s_RenderCompany;
+		static Count<class Texture2D> GetWhiteTexture();
+	private:
+		static void BeginFrame() {
+			s_RendererAPI->BeginFrame();
 		}
-		static const std::string GetGraphicsCard() {
-			return s_GraphicsCard;
-
-		}
-		static const std::string GetGraphicsCardVersion() {
-			return s_GraphicsCardVersion;
+		static void EndFrame() {
+			s_RendererAPI->EndFrame();
 		}
 		
-		static void OnWindowResize(WindowResizeEvent& e);
-	private:
-		static Count<class GraphicsContext>m_GraphicsContext;
-		static ShaderLibrary* AllShaders;
-		static std::string s_RenderCompany;
-		static std::string s_GraphicsCard;
-		static std::string s_GraphicsCardVersion;
-		friend class OpenGLGraphicsContext;
+		static RendererAPI* s_RendererAPI;
+		friend class RendererBase;
 		friend class Application;
 	};
 }
-

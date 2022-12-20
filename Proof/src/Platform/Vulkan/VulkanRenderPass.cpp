@@ -4,10 +4,12 @@
 #include "VulkanFrameBuffer.h"
 namespace Proof
 {
-	VulkanRenderPass::VulkanRenderPass(VulkanRenderPassDefaultType type) {
-        if (type == VulkanRenderPassDefaultType::World) {
+	VulkanRenderPass::VulkanRenderPass(RenderPassType type) {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto swapChain = graphicsContext->GetSwapChain()->As<VulkanSwapChain>();
+        if (type == RenderPassType::World) {
             VkAttachmentDescription depthAttachment{};
-            depthAttachment.format = VulkanRenderer::s_Pipeline->SwapChain->GetDepthFormat();
+            depthAttachment.format = swapChain->GetDepthFormat();
             depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
             depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -21,7 +23,7 @@ namespace Proof
             depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
             VkAttachmentDescription colorAttachment = {};
-            colorAttachment.format = VulkanRenderer::s_Pipeline->SwapChain->GetImageFormat();
+            colorAttachment.format = swapChain->GetImageFormat();
             colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
             colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -67,7 +69,7 @@ namespace Proof
         }
         else {
             VkAttachmentDescription attachment = {};
-            attachment.format = VulkanRenderer::s_Pipeline->SwapChain->GetImageFormat();
+            attachment.format = swapChain->GetImageFormat();
             attachment.samples = VK_SAMPLE_COUNT_1_BIT;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR ;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -121,22 +123,24 @@ namespace Proof
 	}
     VulkanRenderPass::~VulkanRenderPass() {
     }
-    void VulkanRenderPass::BeginRenderPass(Count<class VulkanCommandBuffer> command, Count<class ScreenFrameBuffer>frameBuffer, const glm::vec4& Color, float Depth, uint32_t stencil) {
+    void VulkanRenderPass::BeginRenderPass(Count<class CommandBuffer> command, Count<class ScreenFrameBuffer>frameBuffer, bool viewScreen , const glm::vec4& Color, float Depth, uint32_t stencil) {
+       
         PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot start render pass when previous render pass is not closed");
-
+        m_CommandBuffer = command;
+        m_CommandBuffer->As<VulkanCommandBuffer>()->BeginRecord(GetPipeLine(), Renderer::GetCurrentFrame().FrameinFlight, viewScreen);
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         auto swapchain = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetSwapChain();
         if (frameBuffer->As<VulkanScreenFrameBuffer>()->IsScreenPresent() == true) {
             VkClearValue value{ Color.x, Color.y, Color.z, Color.a };
             VkRenderPassBeginInfo renderPassInfo = {};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = m_RenderPass;
+            renderPassInfo.renderPass = m_RenderPass;   
             renderPassInfo.framebuffer = frameBuffer->As<VulkanScreenFrameBuffer>()->GetFrameBuffer();
             renderPassInfo.renderArea.offset = { 0, 0 };
             renderPassInfo.renderArea.extent = VkExtent2D{ (uint32_t)frameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.X, (uint32_t)frameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.Y };
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &value;
-            vkCmdBeginRenderPass(command->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBeginRenderPass(command->As<VulkanCommandBuffer>()->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
             return;
         }
         std::array<VkClearValue, 2> clearValues{};
@@ -162,10 +166,17 @@ namespace Proof
 
         renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
         renderPassInfo.pClearValues = clearValues.data();
-        vkCmdBeginRenderPass(command->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(command->As<VulkanCommandBuffer>()->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
-    void VulkanRenderPass::EndRenderPass(Count<class VulkanCommandBuffer> commandBuffer) {
+    void VulkanRenderPass::RecordRenderPass(std::function<void(Count<CommandBuffer> commandBuffer)> func) {
+        m_CommandBuffer->As<VulkanCommandBuffer>()->Bind();
+        func(m_CommandBuffer);
+    }
+
+    void VulkanRenderPass::EndRenderPass() {
         PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot End render pass when render pass is not started");
-        vkCmdEndRenderPass(commandBuffer->GetCommandBuffer());
+        vkCmdEndRenderPass(m_CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
+        m_CommandBuffer->As<VulkanCommandBuffer>()->EndRecord();
+        m_CommandBuffer = nullptr;
     }
 }

@@ -26,7 +26,7 @@
 #include "Proof/Resources/EnumReflection.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Scripting/MonoTypes.h"
-
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
 	#define InitilizeScript(InstanceNativeScriptComponent,Class)\
@@ -407,7 +407,7 @@ namespace Proof
 				ImGui::Image((ImTextureID)spriteComp.GetTexture()->GetID(), { 30,30 });
 			}
 			else {
-				ImGui::Image((ImTextureID)PhysicalBasedRenderer::m_WhiteTexture->GetID(), { 30,30 });
+				//ImGui::Image(Renderer::GetWhiteTexture()->GetID(), {30,30});
 			}
 			if (ImGui::BeginPopupContextItem("RemoveTexture")) {
 				ImGui::EndPopup();

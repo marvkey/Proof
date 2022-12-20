@@ -5,7 +5,9 @@
 #include<set>
 #include <vector>
 #include "VulkanDescriptorSet.h"
-#include "Proof/Renderer/Renderer.h"
+#define VMA_IMPLEMENTATION
+#include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
+#include "Proof/Renderer/RendererBase.h"
 namespace Proof
 {
 

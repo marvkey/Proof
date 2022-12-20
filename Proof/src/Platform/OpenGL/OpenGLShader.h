@@ -27,9 +27,9 @@ namespace Proof
         virtual void SetMat3(const std::string& Name,const glm::mat3& Value)override;
         virtual void SetMat4(const std::string& Name,const glm::mat4& Value)override;
         virtual uint32_t GetID()override;
-        virtual const std::unordered_map<Shader::ShaderStage, std::string>& GetPath()const {
-            std::unordered_map<Shader::ShaderStage, std::string> temp;
-            temp[Shader::ShaderStage::Vertex] = "m_Path";
+        virtual const std::unordered_map<ShaderStage, std::string>& GetPath()const {
+            std::unordered_map<ShaderStage, std::string> temp;
+            temp[ShaderStage::Vertex] = "m_Path";
             return temp;
         }
         virtual const std::string& GetName()const{return m_Name;}
