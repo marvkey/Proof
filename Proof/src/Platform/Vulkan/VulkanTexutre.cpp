@@ -254,8 +254,8 @@ namespace Proof
 	}
 	VkDescriptorImageInfo VulkanTexture2D::GetImageBufferInfo(VkImageLayout imageLayout) {
 		VkDescriptorImageInfo imageBufferInfo;
-		imageBufferInfo.sampler = GetTextureSampler();
-		imageBufferInfo.imageView = GetImageView();
+		imageBufferInfo.sampler = m_Sampler;
+		imageBufferInfo.imageView = m_ImageView;
 		imageBufferInfo.imageLayout = imageLayout;
 		return imageBufferInfo;
 	}

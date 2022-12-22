@@ -14,6 +14,8 @@
 #include "Proof/Utils/PlatformUtils.h"
 namespace Proof
 {
+	#define MESH_EXTENSION "Mesh.ProofAsset"
+	#define MATERIAL_EXTENSION "Material.ProofAsset"
 	struct AssetManagerData {
 		std::unordered_map<AssetID, AssetContainer> Assets;// path
 
@@ -125,9 +127,9 @@ namespace Proof
 	}
 	AssetType AssetManager::GetAssetFromFilePath(const std::filesystem::path& path){
 		const std::string fileFullExtension = Utils::FileDialogs::GetFullFileExtension(path);
-		if (fileFullExtension == "Mesh.ProofAsset")
+		if (fileFullExtension == MESH_EXTENSION)
 			return AssetType::Mesh;
-		if (fileFullExtension == "Material.ProofAsset")
+		if (fileFullExtension == MATERIAL_EXTENSION)
 			return AssetType::Material;
 		if (fileFullExtension == "Texture.ProofAsset")
 			return AssetType::Texture;
@@ -147,10 +149,10 @@ namespace Proof
 			return s_AssetManagerData->AssetSource.at(relateivePath.string());
 		}
 
-		if (std::filesystem::exists(path)) {
-			NewAssetSource(AssetID(), relateivePath);
-			return s_AssetManagerData->AssetSource.at(relateivePath.string());
-		}
+		//if (std::filesystem::exists(path)) {
+		//	NewAssetSource(AssetID(), relateivePath);
+		//	return s_AssetManagerData->AssetSource.at(relateivePath.string());
+		//}
 		PF_CORE_ASSERT(false, "Asset does not exist");
 		return 0;
 	}
@@ -192,6 +194,7 @@ namespace Proof
 			case Proof::AssetType::World:
 				break;
 			case Proof::AssetType::MeshSourceFile:
+				LoadAssetTemplate<MeshSourceFileAsset>(ID);
 				break;
 			case Proof::AssetType::PhysicsMaterial:
 				LoadAssetTemplate<PhysicsMaterialAsset>(ID);
@@ -227,6 +230,8 @@ namespace Proof
 			assetInfo.AssetSource = assetSource;
 			assetInfo.Type = assetType;
 			s_AssetManagerData->Assets.insert({ assetID,{assetInfo,nullptr} });// setting the asset as null as we will load it in another thread
+			if (assetSource)
+				s_AssetManagerData->AssetSource.insert({ std::filesystem::relative(path).string(),assetID });
 		}
 	}
 	void AssetManager::SaveAllAssets() {

@@ -15,7 +15,7 @@
 #include "Proof/Math/Vector.h"
 #include "Proof/Renderer/RendererBase.h"
 namespace Proof{
-    void Mesh::LoadModel(std::string const& path) {
+    void Mesh::LoadModel(std::string const& path ) {
         PF_PROFILE_FUNC();
 
         Assimp::Importer importer;
@@ -29,7 +29,7 @@ namespace Proof{
         }
         ProcessNode(scene->mRootNode,scene);
     }
-    void Mesh::ProcessNode(void* node,const void* scene) {
+    void Mesh::ProcessNode(void* node, const void* scene) {
         aiNode* ainode = (aiNode*)node;
         aiScene* aiscene = (aiScene*)scene;
         for (unsigned int i = 0; i < ainode->mNumMeshes; i++) {

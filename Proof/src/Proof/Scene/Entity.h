@@ -22,16 +22,14 @@ namespace Proof{
 			return CurrentWorld->m_Registry.try_get<Component...>(m_ID);
 		}
 		
-		template<class T>
+		
+		template<class... T>
 		bool HasComponent()const {
-			return CurrentWorld->m_Registry.any_of<T>(m_ID);
+
+			return CurrentWorld->m_Registry.any_of<T...>(m_ID.Get());
 		}
 		template<class... T>
-		bool HasanyComponents()const {
-			return CurrentWorld->m_Registry.any_of<T...>(m_ID);
-		}
-		template<class... T>
-		bool HasallComponents()const {
+		bool HasallComponent()const {
 			return CurrentWorld->m_Registry.all_of<T...>(m_ID);
 		}
 		template<class T,typename... Args>

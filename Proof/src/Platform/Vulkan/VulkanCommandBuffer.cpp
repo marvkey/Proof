@@ -29,6 +29,18 @@ namespace Proof
 			PF_CORE_ASSERT(false, "Failed to allocate command buffer");
 
 	}
+
+	VulkanCommandBuffer::~VulkanCommandBuffer() {
+		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
+		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++) {
+			vkFreeCommandBuffers(
+				graphicsContext->GetDevice(),
+				graphicsContext->GetCommandPool(),
+				1,
+				&m_CommandBuffer[i]);
+		}
+	}
 	
 	void VulkanCommandBuffer::BeginRecord(Count<GraphicsPipeline> graphicsPipeLine, uint32_t frameIndex,bool viewScreen ){
 		PF_CORE_ASSERT(m_Recording == false, "cannot start recoridng when command buffer is still recording");
@@ -83,14 +95,6 @@ namespace Proof
 	}
 
 	void VulkanCommandBuffer::FreeCommandBuffer() {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-
-		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++) {
-			vkFreeCommandBuffers(
-				graphicsContext->GetDevice(),
-				graphicsContext->GetCommandPool(),
-				1,
-				&m_CommandBuffer[i]);
-		}
+		
 	}
 };

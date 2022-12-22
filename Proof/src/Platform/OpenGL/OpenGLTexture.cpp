@@ -5,6 +5,7 @@
 #include "OpenGLTexture.h"
 namespace Proof
 {
+	/*
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& Path,TextureType _TextureType)
 		:
 		m_Path(Path),
@@ -192,4 +193,5 @@ namespace Proof
 		glBindTexture(GL_TEXTURE_2D, (GLuint)m_ID);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
+	*/
 }

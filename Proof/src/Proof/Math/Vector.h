@@ -311,6 +311,12 @@ namespace Proof
         }
     };
     template<typename T>
+    bool operator!=(const VectorTemplate2<T>& other, const VectorTemplate2<T>& other1) {
+        if ((other.X != other1.X) || (other.Y != other1.Y))
+            return true;
+        return false;
+    }
+    template<typename T>
     VectorTemplate2<T> operator*(const VectorTemplate2<T>& other, const T& temp) {
         VectorTemplate2<T>tempVec(other.X * temp, other.Y * temp);
         return tempVec;
@@ -349,7 +355,7 @@ namespace Proof
         VectorTemplate2<T> Temp(Other1.X - Other2.X, Other1.Y - Other2.Y);
         return Temp;
     }
-   
+ 
     using Vector2 = VectorTemplate2<float>;
     using Vector = VectorTemplate<float>;
     using Vector4 = VectorTemplate4<float>;

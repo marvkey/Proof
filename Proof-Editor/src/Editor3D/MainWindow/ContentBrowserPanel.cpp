@@ -148,7 +148,10 @@ namespace Proof
 							}
 							if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 								UUID staticID = GetIDCurrentDirectory(path.string());
-								m_Owner->CreateAssetEditor(AssetManager::GetAsset<Asset>(staticID).get());
+								if (staticID == 0)
+									staticID = AssetManager::GetAssetSourceID(path);
+								m_Owner->CreateAssetEditor(staticID);
+								
 							}
 							outDir:
 							if (ImGui::BeginPopupContextItem(path.string().c_str())) {

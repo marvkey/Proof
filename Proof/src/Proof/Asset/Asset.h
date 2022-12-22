@@ -36,7 +36,7 @@ namespace Proof
 		}
 		virtual std::string GetExtension()const = 0;
 
-		std::string GetName()const{
+		virtual std::string GetName()const{
 			return Utils::FileDialogs::GetFileName(m_SavePath);
 		}
 		const std::filesystem::path& GetPath()const{

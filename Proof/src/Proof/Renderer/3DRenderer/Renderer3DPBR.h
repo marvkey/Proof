@@ -77,6 +77,7 @@ namespace Proof
 		static void Destroy();
 	private:
 		static void DrawContext();
+		static void DrawMeshSource(uint64_t id,uint64_t num,uint64_t offset);
 		static void Reset();
 		static void InitDescriptors();
 		static bool s_InContext;

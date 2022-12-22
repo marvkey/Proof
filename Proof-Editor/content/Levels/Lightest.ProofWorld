@@ -126,3 +126,14 @@ Entities:
     MeshComponent:
       MeshAssetPointerID: 4645041025570573733
       MaterialPointerID: 0
+  - Entity: 17266723913482933523
+    TagComponent:
+      Tag: Spirte
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []

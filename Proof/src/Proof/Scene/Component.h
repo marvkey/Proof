@@ -42,8 +42,12 @@ namespace Proof
 		friend class SceneSerializer;
 	};
 	struct Proof_API TagComponent{
-		TagComponent() = default;
-		TagComponent(const TagComponent&) = default;
+		TagComponent() {
+
+		}
+		TagComponent(const TagComponent&) {
+
+		}
 
 		/*TODO CHANGE TO SUBTAG*/
 		void AddTag(const std::string& Tag) {
@@ -75,8 +79,12 @@ namespace Proof
 	};
 	struct Proof_API ChildComponent { 
 	public:
-		ChildComponent(const ChildComponent& other) = default;
-		ChildComponent() = default;
+		ChildComponent(const ChildComponent& other) {
+
+		}
+		ChildComponent() {
+
+		}
 		uint64_t GetNumChildren()const { return m_Children.size(); }
 		bool HasOwner()const {
 			return m_OwnerID != 0;
@@ -183,7 +191,9 @@ namespace Proof
 		Vector Location = {0.0f,0.0f,0.0f};
 		Vector Rotation = {0.0f,0.0f,0.0f};
 		Vector Scale = {1.0f,1.0f,1.0f};
-		TransformComponent() = default;
+		TransformComponent() {
+
+		}
 		TransformComponent(const TransformComponent& other) {
 			Location = other.Location;
 			Rotation = other.Rotation;
@@ -254,12 +264,16 @@ namespace Proof
 	};
 
 	struct Proof_API MeshComponent{
-		MeshComponent()=default;
+		MeshComponent() {
+
+		}
 		class Mesh* GetMeshSource() {
 			MeshAsset* meshasset= GetAsset();
 			return meshasset != nullptr ? meshasset->GetMesh() : nullptr;
 		}
-		MeshComponent(const MeshComponent&) = default;
+		MeshComponent(const MeshComponent&) {
+
+		}
 	
 		class Material* GetMaterial();
 		uint32_t GetMaterialPointerID()const{
@@ -289,10 +303,13 @@ namespace Proof
 		UUID m_MeshAssetPointerID=0;
 	};
 
-	/* THIS IS TEMPORARY THIS IS GONNA GO INTO THE 2D SECTION */
 	struct Proof_API SpriteComponent{
-		SpriteComponent(const SpriteComponent&) = default;
-		SpriteComponent() = default;
+		SpriteComponent(const SpriteComponent&) {
+
+		}
+		SpriteComponent() {
+
+		}
 		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
 		const Count<Texture2D>& GetTexture(){
 			if (GetAsset() != nullptr) {
@@ -320,15 +337,23 @@ namespace Proof
 	
 
 	struct DirectionalLightComponent {
-		DirectionalLightComponent(const DirectionalLightComponent&) = default;
-		DirectionalLightComponent() = default;
+		DirectionalLightComponent(const DirectionalLightComponent&) {
+
+		}
+		DirectionalLightComponent() {
+
+		}
 		float Intensity = 1;
 		Vector Color = { 0 };
 	};
 
 	struct PointLightComponent {
-		PointLightComponent(const PointLightComponent&) = default;
-		PointLightComponent() = default;
+		PointLightComponent(const PointLightComponent&) {
+
+		}
+		PointLightComponent() {
+
+		}
 		Vector Color = { 0 };
 		
 		float Intensity = 1;
@@ -339,8 +364,12 @@ namespace Proof
 	};
 
 	struct SpotLightComponent {
-		SpotLightComponent(const SpotLightComponent&) = default;
-		SpotLightComponent() = default;
+		SpotLightComponent(const SpotLightComponent&) {
+
+		}
+		SpotLightComponent() {
+
+		}
 		Vector Color = { 0 };
 		
 		float Intensity = 1;
@@ -353,16 +382,24 @@ namespace Proof
 	};
 
 	struct Proof_API SkyLightComponent{
-		SkyLightComponent(const SkyLightComponent&) = default;
-		SkyLightComponent() = default;
+		SkyLightComponent(const SkyLightComponent&) {
+
+		}
+		SkyLightComponent() {
+
+		}
 	private:
 		//void SetHDRIPath(const std::string& path):
 	};
 
 	struct Proof_API CameraComponent{
 	public:
-		CameraComponent(const CameraComponent&) = default;
-		CameraComponent() = default;
+		CameraComponent(const CameraComponent&) {
+
+		}
+		CameraComponent() {
+
+		}
 		enum class CameraType { Orthographic = 0,Perspective = 1 };
 
 		void SetDimensions(uint32_t width,uint32_t Height) {
@@ -429,8 +466,12 @@ namespace Proof
 	};
 	
 	struct Proof_API SphereColliderComponent {
-		SphereColliderComponent(const SphereColliderComponent&) = default;
-		SphereColliderComponent() = default;
+		SphereColliderComponent(const SphereColliderComponent&) {
+
+		}
+		SphereColliderComponent() {
+
+		}
 		Vector OffsetLocation = { 0,0,0 };
 		float Radius = 0.5f;
 		bool IsTrigger = false;
@@ -456,8 +497,12 @@ namespace Proof
 		Z =2
 	};
 	struct Proof_API CapsuleColliderComponent {
-		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
-		CapsuleColliderComponent() = default;
+		CapsuleColliderComponent(const CapsuleColliderComponent&) {
+
+		}
+		CapsuleColliderComponent() {
+
+		}
 		Vector OffsetLocation = { 0,0,0 };
 		float Radius = 0.5f;
 		float Height = 2.0f;
@@ -481,8 +526,12 @@ namespace Proof
 	};
 
 	struct Proof_API MeshColliderComponent {
-		MeshColliderComponent(const MeshColliderComponent&) = default;
-		MeshColliderComponent() = default;
+		MeshColliderComponent(const MeshColliderComponent&) {
+
+		}
+		MeshColliderComponent() {
+
+		}
 		bool IsTrigger = false;
 		void RemovePhysicsMaterial() {
 			m_PhysicsMaterialPointerID = 0;
@@ -528,8 +577,12 @@ namespace Proof
 
 	struct ScriptComponent {
 	public:
-		ScriptComponent(const ScriptComponent&other) = default;
-		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent& other) {
+
+		}
+		ScriptComponent() {
+
+		}
 		bool AddScript(const std::string& className);
 		bool RemoveScript(const std::string& className) {
 			for (int i = 0; i < m_Scripts.size(); i++) {
@@ -583,8 +636,12 @@ namespace Proof
 	};
 	class Proof_API RigidBodyComponent {
 	public:
-		RigidBodyComponent(const RigidBodyComponent&) = default;
-		RigidBodyComponent() = default;
+		RigidBodyComponent(const RigidBodyComponent&) {
+
+		}
+		RigidBodyComponent() {
+
+		}
 		float Mass = 1.0f;
 		float AngularDrag = 0.05f;
 		float LinearDrag = 0.0f;

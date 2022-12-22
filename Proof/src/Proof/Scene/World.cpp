@@ -51,8 +51,8 @@ namespace Proof{
 	
 	World::World()
 	{
-		m_EditorCamera.m_FarPlane = 2000;
-		m_EditorCamera.m_Sensitivity = 25;
+		//m_EditorCamera.m_FarPlane = 2000;
+		//m_EditorCamera.m_Sensitivity = 25;
 		//CreateIBlTexture("Assets/Textures/hdr/AmbienceExposure4k.hdr");
 	}
 	bool World::HasEntity(EntityID ID)const {
@@ -67,18 +67,14 @@ namespace Proof{
 			return false;
 		return true;
 	}
-	void World::OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR) {
+	void World::OnUpdateEditor(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
-		OnUpdate(DeltaTime,width,height,usePBR);
+		OnUpdate(DeltaTime);
 	}
 
-	void World::OnUpdateEditorNoDraw(FrameTime DeltaTime,uint32_t width,uint32_t height) {
-		m_EditorCamera.m_FarPlane = 2000;
-		m_EditorCamera.m_Sensitivity = 25;
-		m_EditorCamera.OnUpdate(DeltaTime,width,height);
-	}
 
-	void World::OnUpdateRuntime(FrameTime DeltaTime, uint32_t width, uint32_t height) {
+
+	void World::OnUpdateRuntime(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		/*
 		// Scripts
@@ -108,15 +104,7 @@ namespace Proof{
 			}
 		}
 		m_PhysicsEngine->Simulate(DeltaTime);
-		m_EditorCamera.OnUpdate(DeltaTime, width, height);
-		{
-			const auto& cameraView = m_Registry.view<CameraComponent>();
-			for (auto entity : cameraView) {
-				auto& camera = cameraView.get<CameraComponent>(entity);
-				m_SceneCamera = &camera;
-				break;
-			}
-		}
+		//m_EditorCamera.OnUpdate(DeltaTime, width, height);
 	}
 	template<typename Component>
 	static Component* CopyComponentIfExists(Entity dst, Entity src)
@@ -125,8 +113,21 @@ namespace Proof{
 			return dst.AddorReplaceComponent<Component>(*src.GetComponent<Component>());
 		return nullptr;
 	}
-	void World::OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height) {
-		OnUpdate(DeltaTime,width,height);
+	void World::OnSimulatePhysics(FrameTime DeltaTime) {
+		OnUpdate(DeltaTime);
+	}
+
+	bool World::HasWorldCamera() {
+		const auto& cameraGroup = m_Registry.group<TransformComponent>(entt::get<CameraComponent>);
+		return cameraGroup.size()>0;
+	}
+
+	Entity World::GetWorldCameraEntity() {
+		if (HasWorldCamera() == false)return Entity{0,nullptr};
+		const auto& cameraGroup = m_Registry.group<TransformComponent>(entt::get<CameraComponent>);
+		for (auto entity : cameraGroup) {
+			return Entity{ entity,this };
+		}
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {
@@ -135,11 +136,13 @@ namespace Proof{
 
 	Entity World::CreateEntity(const std::string& EntName,EntityID ID) {
 		/* we have to do some custmization of entt because when we pass an ID the entities create a vecot of the size of ID*/
+		
+		m_Registry.entities.emplace_back(ID.Get()); // not the correct way but it works there is some bugs with ent so we have to do this
 		Entity entity = { ID,this };
 
-		m_Registry.entities.emplace_back(ID.Get()); // not the correct way but it works there is some bugs with ent so we have to do this
 		entity.AddComponent<IDComponent>(ID);
 		entity.AddComponent<TagComponent>()->Tag = EntName;
+		//entity.AddComponent<TagComponent>();
 		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
 		entity.AddComponent<TransformComponent>();
 		return entity;
@@ -192,7 +195,7 @@ namespace Proof{
 		newWorld->Name = other->Name;
 		newWorld->m_Path = other->m_Path;
 		newWorld->Name = other->Name;
-		newWorld->m_EditorCamera = other->m_EditorCamera;
+		//newWorld->m_EditorCamera = other->m_EditorCamera;
 
 		newWorld->m_LastFrameHeight = other->m_LastFrameHeight;
 		newWorld->m_LastFrameWidth = other->m_LastFrameWidth;
@@ -248,7 +251,6 @@ namespace Proof{
 		ScriptEngine::EndWorld();
 		delete m_PhysicsEngine;
 		m_PhysicsEngine = nullptr;
-		m_SceneCamera = nullptr;
 	}
 
 	void World::StartRuntime(){
@@ -349,9 +351,9 @@ namespace Proof{
 			* glm::scale(glm::mat4(1.0f), { GetWorldScale(entity) });
 	}
 
-	void World::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR){
+	void World::OnUpdate(FrameTime DeltaTime){
 		PF_PROFILE_FUNC();
-		m_EditorCamera.OnUpdate(DeltaTime,width,height);
+		//m_EditorCamera.OnUpdate(DeltaTime,width,height);
 	}
 
 	void World::CreateIBlTexture(const std::string& filePath) {

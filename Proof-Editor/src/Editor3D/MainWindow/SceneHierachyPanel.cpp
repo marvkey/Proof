@@ -239,10 +239,10 @@ namespace Proof
 			ImGui::EndPopup();
 		}
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
-			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
+			//m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
 		}
 		if (m_SelectedEntity && ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::F)) {
-			m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
+			//m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
 		}
 
 		if (opened) {
@@ -407,7 +407,7 @@ namespace Proof
 				ImGui::Image((ImTextureID)spriteComp.GetTexture()->GetID(), { 30,30 });
 			}
 			else {
-				//ImGui::Image(Renderer::GetWhiteTexture()->GetID(), {30,30});
+				ImGui::Image(Renderer::GetWhiteTexture()->GetID(), {30,30});
 			}
 			if (ImGui::BeginPopupContextItem("RemoveTexture")) {
 				ImGui::EndPopup();

@@ -82,6 +82,25 @@ namespace Proof
 		return *this;
 	}
 
+	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, std::vector<Count<class Texture2D>> images) {
+		std::vector< VkDescriptorImageInfo> info;
+		auto whiteImageInfo = Renderer::GetWhiteTexture()->As<VulkanTexture2D>()->GetImageBufferInfo();
+		for (auto image : images) {
+			if (image == nullptr) {
+				//VkDescriptorImageInfo imageInfo;
+				//imageInfo.imageView = nullptr;
+				//imageInfo.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				//imageInfo.sampler = nullptr;
+				info.emplace_back(whiteImageInfo);
+				continue;
+			}
+			auto imageInfo = image->As<VulkanTexture2D>()->GetImageBufferInfo();
+			info.emplace_back(imageInfo);
+		}
+		m_Writer->WriteImage(binding, info);
+		return *this;
+	}
+
 	bool VulkanDescriptorSet::Build(int frame) {
 		return m_Writer->Build(m_DescriptorSets[frame]);
 	}
@@ -328,6 +347,27 @@ namespace Proof
 		write.dstBinding = binding;
 		write.pImageInfo = &m_Images.back();
 		write.descriptorCount = 1;
+
+		writes.push_back(write);
+		return *this;
+	}
+
+	VulkanDescriptorWriter& VulkanDescriptorWriter::WriteImage(uint32_t binding, std::vector<VkDescriptorImageInfo> imageInfo) {
+		 PF_CORE_ASSERT(m_SetLayout->m_Bindings.count(binding) == 1, "Layout does not contain specified binding");
+
+		auto& bindingDescription = m_SetLayout->m_Bindings[binding];
+
+		uint32_t firstPos = m_Images.size();
+		for (auto i : imageInfo) {
+			m_Images.emplace_back(i);
+		}
+
+		VkWriteDescriptorSet write{};
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.descriptorType = bindingDescription.descriptorType;
+		write.dstBinding = binding;
+		write.pImageInfo = &m_Images[firstPos];// the first element it started on
+		write.descriptorCount = imageInfo.size();
 
 		writes.push_back(write);
 		return *this;

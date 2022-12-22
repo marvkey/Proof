@@ -12,9 +12,7 @@ namespace Proof
 	public:
 		VulkanCommandBuffer();
 		//VulkanCommandBuffer(std::vector<void>&commandBuffer);
-		virtual ~VulkanCommandBuffer() {
-			void FreeCommandBuffer();
-		}
+		virtual ~VulkanCommandBuffer();
 		const VkCommandBuffer& GetCommandBuffer(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight)const {
 			return m_CommandBuffer[frameIndex];
 		}

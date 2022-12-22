@@ -56,8 +56,6 @@ namespace Proof
 		template<class T>
 		static Count<T>GetAsset(AssetID ID){
 			auto& it = GetAssets()[ID];
-			if (it.Info.AssetSource == true)
-				return nullptr;
 			if (it.Info.Loaded == false)
 				LoadAsset(ID);
 			return std::dynamic_pointer_cast<T>(it.Asset);

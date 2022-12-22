@@ -2,6 +2,7 @@
 #include "Proof/Renderer/FrameBuffer.h"
 namespace Proof
 {
+	/*
 	class OpenGLFrameBuffer: public FrameBuffer  
 	{
 	public:
@@ -16,4 +17,5 @@ namespace Proof
 	private:
 		uint32_t m_ID;
 	};
+	*/
 }

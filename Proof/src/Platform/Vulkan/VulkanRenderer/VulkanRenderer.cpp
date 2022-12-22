@@ -35,7 +35,7 @@ namespace Proof
 		s_RenderData = new VulkanRendererData();
 		s_RendererConfig = RendererConfig{ 2,(uint32_t)graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->GetImageCount() };
 		s_RenderData->ResourceFreeQueue.resize(Renderer::GetConfig().FramesFlight);
-		graphicsContext->GetSwapChain()->WaitAndResetFences();
+	///	graphicsContext->GetSwapChain()->WaitAndResetFences();
 		
 	}
 	
@@ -48,8 +48,8 @@ namespace Proof
 			s_CurrentFrame.FrameinFlight = 0;
 			s_IsWindowResised = false;
 		}
+		graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->WaitFences();
 		graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->AcquireNextImage(&s_CurrentFrame.ImageIndex);
-		///s_Pipeline->SwapChain->WaitFences();
 		graphicsContext->GetSwapChain()->ResetFences();
 	}
 	void VulkanRenderer::EndFrame() {
@@ -81,6 +81,7 @@ namespace Proof
 
 
 	void VulkanRenderer::SubmitCommandBuffer(Count<CommandBuffer> commandBuffer) {
+		const auto& graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		s_RenderData->CommandBuffers.emplace_back(commandBuffer);
 	}
 	

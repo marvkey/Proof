@@ -8,13 +8,13 @@
 
 namespace Proof
 {
-	MeshAsset::MeshAsset(const std::string& meshFilePath,const std::string& savePath):
+	MeshAsset::MeshAsset(const std::string& meshFilePath,const std::string& savePath, const std::vector<uint32_t>& excludeIndex):
 		Asset(AssetType::Mesh) 
 	{
 		m_AssetID = AssetManager::CreateID();
-		m_Mesh = CreateSpecial<Mesh>(meshFilePath);
 		m_SavePath = savePath;
 		m_Source = AssetManager::GetAssetSourceID(meshFilePath);
+		m_DiscardMesh = excludeIndex;
 		SaveAsset();
 	}
 	void MeshAsset::SaveAsset() {
@@ -26,18 +26,11 @@ namespace Proof
 		out << YAML::Key << "SubMeshes";
 		out << YAML::Flow;
 		out << YAML::BeginSeq;
-		if(m_Mesh != nullptr){
-			int i=0;
-			for (SubMesh subMesh: m_Mesh->GetSubMeshes()) {
-				if(subMesh.m_Enabled==false){
-					out<<i;
-				}
-				i++;
-			}
+		for (size_t i = 0; i < m_DiscardMesh.size(); i++) {
+			auto& val = m_DiscardMesh[i];
+			out << val;
 		}
 		out << YAML::EndSeq;
-		out<<YAML::Key<<"Enabled"<<m_Mesh->m_Enabled;
-		out<<YAML::Key<<"FaceCulling"<<m_Mesh->m_FaceCulling;
 		out << YAML::EndMap;
 		std::ofstream found(m_SavePath);
 		found<<out.c_str();
@@ -51,25 +44,43 @@ namespace Proof
 		m_AssetID = data["ID"].as<uint64_t>();
 		m_Source = data["AssetSource"].as<uint64_t>();
 
-		m_Mesh = CreateSpecial<Mesh>(AssetManager::GetAssetSourcePath(m_Source));
 		if (data["SubMeshes"]) {
 			for (const auto& subMesh : data["SubMeshes"]) {
 				uint32_t index = subMesh.as<uint32_t>();
-				if (m_Mesh->GetSubMeshes().size() > index) {
-					m_Mesh->meshes[index].m_Enabled = false;
-				}
+				m_DiscardMesh.emplace_back(index);
 			}
 		}
-		m_Mesh->m_Enabled = data["Enabled"].as<bool>();
-		m_Mesh->m_FaceCulling = data["FaceCulling"].as<bool>();
 		return true;
 	}
 	void MeshAsset::ChangeMesh(const std::string& meshFilepath){
 		//m_MeshFilePath = meshFilepath;
 		//m_Mesh = CreateSpecial<Mesh>(m_MeshFilePath);
 	}
-	void* MeshAsset::GetImageID() {
-		return InstancedRenderer3D::m_WhiteTexture->GetID();
+	Mesh* MeshAsset::GetMesh() {
+		//we do not want to hold a variable because it means when we want to delte that mesh source file
+		/// it wont be deleted 
+		/// 
+		/// solution we crate a macor for when we running the game as an actual game
+		/// when in taht macro we just return without checking cause u cannot delete asset
+		/// during that phase
+		if (AssetManager::HasID(m_Source) == false)return nullptr;
+			auto asset = AssetManager::GetAsset< MeshSourceFileAsset>(m_Source);
+		return asset->GetMesh();
 	}
-	
+	MeshSourceFileAsset::MeshSourceFileAsset(const std::string& meshFilePath):
+		Asset(AssetType::MeshSourceFile)
+	{
+		m_AssetID = AssetManager::GetAssetSourceID(meshFilePath);
+		m_SavePath = meshFilePath;
+	}
+	bool MeshSourceFileAsset::LoadAsset(const std::string& FilePath) {
+		m_Mesh = CreateSpecial<Mesh>(FilePath);
+		m_SavePath = FilePath;
+		return m_Mesh != nullptr;
+	}
+
+	std::string MeshSourceFileAsset::GetExtension()const {
+		return Utils::FileDialogs::GetFullFileExtension(m_SavePath);
+	}
+
 }

@@ -23,11 +23,10 @@ namespace Proof {
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		// returns if assetEditorWasCreated
-		bool CreateAssetEditor(class Asset* asset);
+		bool CreateAssetEditor(AssetID ID);
 		static bool IsKeyPressedEditor(KeyBoardKey Key);
 		static bool IsKeyClickedEditor(KeyBoardKey Key);
 		bool m_ViewPortFocused = false;
-		
 	private:
 		
 		struct KeyBoardShowEvent {
@@ -75,6 +74,8 @@ namespace Proof {
 			bool Joystick = false;
 			bool Trigger = false;
 		};
+		EditorCamera m_EditorCamera = { 200,200 };
+
 		Count<Project> m_Project;
 		KeyBoardShowEvent m_ShowAllKeyBoardEvents;
 		MouseShowEvent m_ShowAllMouseEvents;
@@ -82,7 +83,6 @@ namespace Proof {
 		ControllerEvent m_ShowAllControllerEvents;
 		virtual void OnEvent(Event& e);
 		void OnKeyClicked(KeyClickedEvent& e);
-		bool m_ViewPoartHoveredorFocused = false;
 		Entity m_CopyEntity;
 		void Logger();
 		bool m_ShowLogSettings = false;

@@ -6,7 +6,7 @@ namespace Proof
 {
 	class Proof_API MeshAsset: public Asset {
 	public:
-		MeshAsset(const std::string& meshFilePath,const std::string& savePath);
+		MeshAsset(const std::string& meshFilePath,const std::string& savePath, const std::vector<uint32_t>& excludeIndex = {});
 		virtual void SaveAsset() override;
 		virtual bool LoadAsset(const std::string& FilePath)override;
 		
@@ -25,20 +25,41 @@ namespace Proof
 		virtual std::string GetExtension()const {
 			return "Mesh.ProofAsset";
 		}
-		class Mesh* GetMesh()const{
-			return m_Mesh.get();
-		}
 		
+		std::vector<uint32_t>& GetDiscardedMesh() {
+			return m_DiscardMesh;
+		}
 
-		virtual bool IsImageIDNUll(){
-			return true;
-		}
-		virtual void* GetImageID();
-		
+		Mesh* GetMesh();
 	private:
-		Special<class Mesh> m_Mesh =nullptr;
+		std::vector<uint32_t> m_DiscardMesh;
 		friend class AssetManager;
 		AssetID m_Source;
+	};
+
+	class MeshSourceFileAsset : public Asset {
+	public:
+		MeshSourceFileAsset() :
+			Asset(AssetType::MeshSourceFile) {
+		}
+		MeshSourceFileAsset(const std::string& meshFilePath);
+		virtual void SaveAsset(){}
+		// the filepath of the actual mesh
+		virtual bool LoadAsset(const std::string& FilePath)override;
+		Mesh* GetMesh() {
+			return m_Mesh.get();
+		}
+		// so we can view it as like cube.fbx
+		virtual std::string GetName()const override{
+			return Utils::FileDialogs::GetFullFileName(m_SavePath);
+		}
+		static std::string StaticGetExtension() {
+			return "MeshSourceFileAsset.ProofAsset";
+		}
+		virtual std::string GetExtension()const;
+	private:
+		friend class AssetManager;
+		Special<class Mesh> m_Mesh = nullptr;
 	};
 }
 

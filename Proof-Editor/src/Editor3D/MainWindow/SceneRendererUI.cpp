@@ -6,18 +6,8 @@
 #include "SceneHierachyPanel.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Scene/Component.h"
+#include "Proof/Asset/AssetManager.h"
 namespace Proof{
-	SceneRendererUI::SceneRendererUI(MeshAsset* asset) {
-		m_World = CreateCount<World>();
-		m_MeshAsset = asset;
-		tempEntity =m_World->CreateEntity(asset->GetName());
-		mesh =tempEntity.AddComponent<MeshComponent>();
-		tempEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{1,1,1};
-		tempEntity.GetComponent<TransformComponent>()->Location.Z-=10;
-		mesh->m_MeshAssetPointerID = asset->GetAssetID();
-		m_WorldRenderer = { m_World,CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight() };
-		m_Type= SceneRendererType::MeshAsset;
-	}
 
 	void SceneRendererUI::ImGuiRender(FrameTime deltaTime) {
 		if(m_ShowWindow==false)
@@ -27,59 +17,129 @@ namespace Proof{
 		RenderAsset(deltaTime);
 		
 	}
-	void SceneRendererUI::MeshUI() {
+	SceneRendererUI::SceneRendererUI(AssetID id) {
+		m_ID = id;
+		m_World = CreateCount<World>();
+		if (AssetManager::HasID(m_ID) == false)return;
+		auto assetInfo = AssetManager::GetAssetInfo(m_ID);
+		switch (assetInfo.Type) {
+			case Proof::AssetType::Mesh:
+				{
+					m_Type = SceneRendererType::MeshAsset;
+					MeshAssetSetUp();
+					break;
+				}
+			case Proof::AssetType::MeshSourceFile:
+				{
+					m_Type = SceneRendererType::MeshSourceFile;
+					MeshSourceAssetSetUp();
+					break;
+				}
+		}
+	}
+	void SceneRendererUI::MeshAssetSetUp() {
+		auto meshAsset = AssetManager::GetAsset<MeshAsset>(m_ID);
+		m_SceneEntity = m_World->CreateEntity(meshAsset->GetName());
+		m_SceneEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{ 1,1,1 };
+		m_SceneEntity.GetComponent<TransformComponent>()->Location.Z -= 10;
+		m_SceneEntity.AddComponent<MeshComponent>()->SetMeshSource(m_ID);
+		m_WorldRenderer = { m_World,CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight() };
+	}
+	
+	void SceneRendererUI::MeshAssetUI() {
 		// there is a problem when resizing it may be due to command buffer simaltneous bit
 		float width = ImGui::GetWindowWidth();
 		width *= 0.3;
 		ImGui::BeginChild(m_ID,{width,ImGui::GetContentRegionAvail().y});
 		{
+			auto meshAsset = AssetManager::GetAsset<MeshAsset>(m_ID);
 			if(ImGui::Button("Renstate mesh")){
 				std::string filePath = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
 				if (filePath.empty() == false) {
-					m_MeshAsset->ChangeMesh(filePath);
+					meshAsset->ChangeMesh(filePath);
 				}
 			}
-			ExternalAPI::ImGUIAPI::CheckBox("FaceCulling",&mesh->GetAsset()->GetMesh()->m_FaceCulling);
-			SceneHierachyPanel::DrawVectorControl("Location",tempEntity.GetComponent<TransformComponent>()->Location,0,width * 0.25);
-			SceneHierachyPanel::DrawVectorControl("Rotation",tempEntity.GetComponent<TransformComponent>()->Rotation,0,width * 0.25);
-			SceneHierachyPanel::DrawVectorControl("Scale",tempEntity.GetComponent<TransformComponent>()->Scale,1,width * 0.25);
-			if (m_MeshAsset != nullptr) {
-				ExternalAPI::ImGUIAPI::CheckBox(mesh->GetAsset()->GetName(),&mesh->GetAsset()->GetMesh()->m_Enabled);
-				ImGui::NewLine();
-				for (SubMesh& subMesh : mesh->GetMeshSource()->meshes) {
-					ExternalAPI::ImGUIAPI::CheckBox(subMesh.GetName(),&subMesh.m_Enabled);
-				}
+			ExternalAPI::ImGUIAPI::CheckBox("FaceCulling",&meshAsset->GetMesh()->m_FaceCulling);
+			//SceneHierachyPanel::DrawVectorControl("Location",m_SceneEntity.GetComponent<TransformComponent>()->Location,0,width * 0.25);
+			//SceneHierachyPanel::DrawVectorControl("Rotation", m_SceneEntity.GetComponent<TransformComponent>()->Rotation,0,width * 0.25);
+			//SceneHierachyPanel::DrawVectorControl("Scale", m_SceneEntity.GetComponent<TransformComponent>()->Scale,1,width * 0.25);
+			ExternalAPI::ImGUIAPI::CheckBox(meshAsset->GetName(),&meshAsset->GetMesh()->Enabled);
+			ImGui::NewLine();
+			for (SubMesh& subMesh : meshAsset->GetMesh()->meshes) {
+				ExternalAPI::ImGUIAPI::CheckBox(subMesh.GetName(),&subMesh.Enabled);
 			}
 		}
 		ImGui::EndChild();
-
 	}
+	void SceneRendererUI::MeshSourceAssetSetUp() {
+		auto meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(m_ID);
+		m_SceneEntity = m_World->CreateEntity(meshAsset->GetName());
+		m_SceneEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{ 1,1,1 };
+		m_SceneEntity.GetComponent<TransformComponent>()->Location.Z -= 10;
+		m_SceneEntity.AddComponent<MeshComponent>()->SetMeshSource(m_ID);
+		m_WorldRenderer = { m_World,CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight() };
+	}
+	void SceneRendererUI::MeshSourceAssetUI() {
+		float width = ImGui::GetWindowWidth();
+		width *= 0.3;
+		ImGui::BeginChild(m_ID, { width,ImGui::GetContentRegionAvail().y });
+		{
+			auto meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(m_ID);
+			//ExternalAPI::ImGUIAPI::CheckBox("FaceCulling", &meshAsset->GetMesh()->m_FaceCulling);
+			//SceneHierachyPanel::DrawVectorControl("Location",m_SceneEntity.GetComponent<TransformComponent>()->Location,0,width * 0.25);
+			//SceneHierachyPanel::DrawVectorControl("Rotation", m_SceneEntity.GetComponent<TransformComponent>()->Rotation,0,width * 0.25);
+			//SceneHierachyPanel::DrawVectorControl("Scale", m_SceneEntity.GetComponent<TransformComponent>()->Scale,1,width * 0.25);
+			//ExternalAPI::ImGUIAPI::CheckBox(meshAsset->GetName(), &meshAsset->GetMesh()->Enabled);
+			ImGui::NewLine();
+			for (SubMesh& subMesh : meshAsset->GetMesh()->meshes) {
+				ExternalAPI::ImGUIAPI::CheckBox(subMesh.GetName(), &subMesh.Enabled);
+			}
+		}
+		ImGui::EndChild();
+	}
+	
 	void SceneRendererUI::RenderAsset(FrameTime deltaTime){
+		Count<Asset> meshAsset; 
+		switch (m_Type) {
+			case SceneRendererType::MeshAsset:
+				meshAsset = AssetManager::GetAsset<MeshAsset>(m_ID);
+				break;
+			case SceneRendererType::MeshSourceFile:
+				meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(m_ID);
+				break;
+		}
 		ImGui::PushID(m_ID);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
-		if (ImGui::Begin(mesh->GetAsset()->GetName().c_str(),&m_ShowWindow)) {
-			if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
-				m_WorldRenderer.SetRendererPause(false);
-			else
-				m_WorldRenderer.SetRendererPause(true);
+		if (ImGui::Begin(meshAsset->GetName().c_str(),&m_ShowWindow)) {
 
-			MeshUI();
-			ImGui::SameLine();
-			ImGui::BeginChild(mesh->GetAsset()->GetName().c_str());
-			m_WorldRenderer.Render();
-			if (m_LastWidht != ImGui::GetWindowSize().x || m_LastHeight != ImGui::GetWindowSize().y) {
-				//m_WorldRenderer.m_ScreenFrameBuffer->Resize(ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);
-				m_LastWidht = ImGui::GetWindowSize().x; m_LastHeight = ImGui::GetWindowSize().y;
-				if (m_WorldRenderer.GetRendererPaused() == true) {
-					m_WorldRenderer.SetRendererPause(false);
-					m_WorldRenderer.Render();
-					m_WorldRenderer.SetRendererPause(true);
-				}
+			switch (m_Type) {
+				case SceneRendererType::MeshAsset:
+					{
+
+						MeshAssetUI();
+						break;
+					}
+				case SceneRendererType::MeshSourceFile:
+					{
+						MeshSourceAssetUI();
+						break;
+					}
 			}
+			ImGui::SameLine();
+			ImGui::BeginChild(meshAsset->GetName().c_str());
+			m_WorldRenderer.Render(m_Camera);
+			ScreenSize currentSize = { (uint32_t)ImGui::GetWindowSize().x,(uint32_t)ImGui::GetWindowSize().y };
+			if (currentSize != m_ScreenSize)
+				m_WorldRenderer.Resize(currentSize);
+			m_ScreenSize = currentSize;
+			
 			void* Text = m_WorldRenderer.GetWorldTexture();
-			ImGui::Image((ImTextureID)Text,ImVec2{ImGui::GetWindowSize().x,ImGui::GetWindowSize().y},ImVec2{0,1},ImVec2{1,0});
-			m_World->m_EditorCamera.OnUpdate(deltaTime,ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);
-			m_LastWidht = ImGui::GetWindowSize().x; m_LastHeight = ImGui::GetWindowSize().y;
+			ImGui::Image((ImTextureID)Text,ImGui::GetWindowSize(), ImVec2{0,1}, ImVec2{1,0});
+			if (ImGui::IsWindowFocused()) {
+				CurrentWindow::GetWindow().SetWindowInputEvent(true);
+				m_Camera.OnUpdate(deltaTime, ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+				CurrentWindow::GetWindow().SetWindowInputEvent(false);
+			}
 			ImGui::EndChild();
 		}
 		ImGui::End();

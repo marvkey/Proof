@@ -3,38 +3,50 @@
 #include "glm/glm.hpp"
 #include <array>
 #include "vertex.h"
+#include "Proof/Renderer/ScreenFrameBuffer.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
+#include "Texture.h"
+#include "UniformBuffer.h"
 namespace Proof {
 	struct SpriteComponent;
 	struct TransformComponent;
 	struct Proof_API Renderer2DStorage {
-		Count<class VertexArray> m_VertexArray;
-		Count<class Shader> m_Shader;
-		Count<class VertexBuffer> m_VertexBuffer;
-		Count<class IndexBuffer> m_IndexBuffer;
-		Count<class Texture2D>m_WhiteTexture;
+		Count<UniformBuffer> CameraBuffer = nullptr;
+		Count<class VertexBuffer> VertexBuffer;
+		Count<class IndexBuffer> IndexBuffer;
+		Count<class CommandBuffer>CommandBuffer;
+		Count<ScreenFrameBuffer> CurrentFrameBuffer ;
+		const uint32_t c_MaxQuadCount = 2000;
+		const uint32_t c_MaxVertexCount = c_MaxQuadCount * sizeof(Vertex2D)*4; // times 4 cause each quad holds 4 vertices
+		const uint32_t c_MaxIndexCount = c_MaxQuadCount * 6;
+		std::vector<uint32_t>QuadIndices;
+		uint32_t IndexCount = 0;
 
-		static const uint32_t s_MaxQuadCount = 2000;
-		static const uint32_t s_MaxVertexCount = s_MaxQuadCount * sizeof(Vertex2D)*4; // times 4 cause each quad holds 4 vertices
-		static const uint32_t s_MaxIndexCount = s_MaxQuadCount * 6;
-		static std::array<uint32_t,s_MaxIndexCount>QuadIndices;
-		uint32_t m_IndexCount = 0;
+		const uint32_t MaxTextureSlot=32; // 1-31 slots
+		std::vector<Count<Texture2D>> Textures;
+		float TextureSlotIndex;
+		uint32_t QuadArraySize;
+		std::vector<Vertex2D> QuadArray;
+		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 
-		static const uint32_t MaxTextureSlot=32; // 1-31 slots
-		std::array<Count<Texture2D>,MaxTextureSlot> m_Textures;
-		float m_TextureSlotIndex;
-		uint32_t m_QuadArraySize;
-		Vertex2D m_QuadArray[s_MaxVertexCount];
+		Renderer2DStorage();
 	};
+
+	struct SpritePipeline {
+		Count<class GraphicsPipeline> GraphicsPipeline;
+		Count<class Shader> Shader;
+		Count <class PipeLineLayout> PipeLineLayout;
+		Count <class RenderPass > RenderPass;
+		SpritePipeline();
+	};
+
 
 	class Proof_API Renderer2D {
 		friend class Camera;
 	public:
 		static void Init();
-		static void BeginContext(const EditorCamera& editorCamera);
-		static void BeginContext(glm::mat4 Projection,glm::mat4& ViewMatrix);
+		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer> frameBuffer);
 
-		static void BeginContext(const class OrthagraphicCamera& Camera);
 		static void DrawQuad(const glm::vec3& Location);
 
 		static void DrawQuad(const glm::vec3& Location,const glm::vec3& Size);
@@ -52,11 +64,12 @@ namespace Proof {
 		static void EndContext();
 
 		struct Renderer2DStats{
-			static uint32_t m_QuadCount;
-			static uint32_t m_DrawCalls;
+			uint32_t m_QuadCount;
+			uint32_t m_DrawCalls;
 		};
 		static void Reset();
 	private:
+		static void InitDescriptors();
 		/* Not using as default rendeer cause it allocates to the heap and we dont need taht waste in performance */
 		static std::vector<Vertex2D> CreateQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Scale,const glm::vec4& Color,float TexIndex);
 		static void Render();

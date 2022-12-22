@@ -39,7 +39,6 @@
 #include "Proof/Scripting/ScriptEngine.h"
 namespace Proof
 {
-	EditorCamera camera{ 200,200 };
 
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") {
@@ -59,6 +58,8 @@ namespace Proof
 		//	CurrentWindow::GetWindow().KeyboardClicked.end();
 		return Input::IsKeyClicked(key);
 	}
+	
+	
 	void Editore3D::OnEvent(Event& e) {
 		EventDispatcher dispatcher(e);
 		if (ActiveWorld->m_CurrentState == WorldState::Play)
@@ -238,7 +239,6 @@ namespace Proof
 		}
 	}
 	void Editore3D::OnAttach() {
-		camera = EditorCamera{ CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetHeight() };
 
 		ActiveWorld = CreateCount<World>();
 		//ScriptEngine::ReloadAssembly(ActiveWorld.get());
@@ -337,13 +337,48 @@ namespace Proof
 			m_WorldRenderer.Resize({(uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y });
 			m_IsViewPortResize = false;
 		}
-		m_WorldRenderer.Render();
-		if (ActiveWorld->m_CurrentState == WorldState::Edit)
-			ActiveWorld->OnUpdateEditor(DeltaTime, m_ViewPortSize.x, m_ViewPortSize.y);
-		else if (ActiveWorld->m_CurrentState == WorldState::Play)
-			ActiveWorld->OnUpdateRuntime(DeltaTime, m_ViewPortSize.x, m_ViewPortSize.y);
-		else if (ActiveWorld->m_CurrentState == WorldState::Simulate)
-			ActiveWorld->OnSimulatePhysics(DeltaTime, m_ViewPortSize.x, m_ViewPortSize.y);
+		switch (ActiveWorld->GetState()) {
+			case Proof::WorldState::Play:
+				{
+					ActiveWorld->OnUpdateRuntime(DeltaTime);
+					if (ActiveWorld->HasWorldCamera()) {
+						auto entity = ActiveWorld->GetWorldCameraEntity();
+						auto location = ActiveWorld->GetWorldLocation(entity);
+						m_WorldRenderer.Render(*entity.GetComponent<CameraComponent>(), location);
+					}
+					else if(m_ViewPortFocused) {
+						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+					}
+					break;
+				}
+			case Proof::WorldState::Pause:
+				{
+					//ActiveWorld->OnUpdateRuntime(DeltaTime);
+					m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+					break;
+				}
+			case Proof::WorldState::Simulate:
+				{
+					ActiveWorld->OnSimulatePhysics(DeltaTime);
+					if (m_ViewPortFocused)
+						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+					m_WorldRenderer.Render(m_EditorCamera);
+					break;
+				}
+			case Proof::WorldState::Edit:
+				{
+					ActiveWorld->OnUpdate(DeltaTime);
+					if (m_ViewPortFocused) {
+						CurrentWindow::GetWindow().SetWindowInputEvent(true);
+						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+						CurrentWindow::GetWindow().SetWindowInputEvent(false);
+					}
+					m_WorldRenderer.Render(m_EditorCamera);
+					break;
+				}
+			default:
+				break;
+		}
 	}
 
 	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
@@ -368,7 +403,7 @@ namespace Proof
 		Logger();
 
 		if (m_ShowWorldEditor == false)
-			return;//goto a;
+			goto a;
 		if (ImGui::Begin("Active World", &m_ShowWorldEditor)) {
 			if (ImGui::Button("Choose HDR")) {
 				std::string file = Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
@@ -378,32 +413,30 @@ namespace Proof
 			}
 		}
 		ImGui::End();
-		//a:
-
-		#if 0
+		a:
 		if (m_ShowRendererStats == false)
 			return;
 		ImGui::Begin("Renderer Stastitics", &m_ShowRendererStats);
 		{
 
 			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER SPECS");
-			ImGui::Text("Renderer Company: %s", RendererBase::GetRenderCompany().c_str());
-			ImGui::Text("Graphics Card: %s", RendererBase::GetGraphicsCard().c_str());
-			ImGui::Text("Graphics Card Verison: %s", RendererBase::GetGraphicsCardVersion().c_str());
+			//ImGui::Text("Renderer Company: %s", RendererBase::GetRenderCompany().c_str());
+			//ImGui::Text("Graphics Card: %s", RendererBase::GetGraphicsCard().c_str());
+			//ImGui::Text("Graphics Card Verison: %s", RendererBase::GetGraphicsCardVersion().c_str());
 			ImGui::Text("%.3f ms/frame ", FrameTime::GetFrameMS());
 			ImGui::Text("%.3f FPS",FrameTime::GetFrameFPS());
 
-			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER 3D");
-			ImGui::Text("DrawCalls %i", m_WorldRenderer.RenderData.Stats.DrawCalls);
-			ImGui::Text("Number Of MeshInstances %i", m_WorldRenderer.RenderData.Stats.Instances);
-
-			ImGui::Text("Amount Of Directional Light %i", m_WorldRenderer.RenderData.Stats.AmountDirectionalLight);
-			ImGui::Text("Amount Of Point Light%i", m_WorldRenderer.RenderData.Stats.AmountPointLight);
-			ImGui::Text("Amount Of Spot Light %i", m_WorldRenderer.RenderData.Stats.AmountSpotLight);
-
-			if (ImGui::Button("Reload Shader")) {
-				RendererBase::GetShaderLibrary().ReloadeShaders();
-			}
+			//ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER 3D");
+			//ImGui::Text("DrawCalls %i", m_WorldRenderer.RenderData.Stats.DrawCalls);
+			//ImGui::Text("Number Of MeshInstances %i", m_WorldRenderer.RenderData.Stats.Instances);
+			//
+			//ImGui::Text("Amount Of Directional Light %i", m_WorldRenderer.RenderData.Stats.AmountDirectionalLight);
+			//ImGui::Text("Amount Of Point Light%i", m_WorldRenderer.RenderData.Stats.AmountPointLight);
+			//ImGui::Text("Amount Of Spot Light %i", m_WorldRenderer.RenderData.Stats.AmountSpotLight);
+			//
+			//if (ImGui::Button("Reload Shader")) {
+			//	RendererBase::GetShaderLibrary().ReloadeShaders();
+			//}
 
 			//if (m_WorldRenderer.RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
 			//	ImGui::Text("Renderer techniqe is FowardRendering");
@@ -420,7 +453,6 @@ namespace Proof
 			//}
 		}
 		ImGui::End();
-		#endif
 	}
 
 	void Editore3D::OnKeyClicked(KeyClickedEvent& e) {
@@ -449,7 +481,7 @@ namespace Proof
 			case KeyBoardKey::Delete:
 			case KeyBoardKey::Backspace:
 				{
-					if (m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
+					if (m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
 
 						if (ActiveWorld->GetState() == WorldState::Edit) {
 							//Basically makig sure that all entities that reference this entity that is deleted their data get sets to null
@@ -476,7 +508,7 @@ namespace Proof
 				// copy entity
 			case KeyBoardKey::C:
 				{
-					if (control && m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
+					if (control && m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
 						m_CopyEntity = m_WorldHierachy.m_SelectedEntity;
 					}
 					break;
@@ -484,7 +516,7 @@ namespace Proof
 				// paste entity 
 			case KeyBoardKey::V:
 				{
-					if (control && m_CopyEntity.GetEntityID() != 0 && (m_ViewPoartHoveredorFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
+					if (control && m_CopyEntity.GetEntityID() != 0 && (m_ViewPortFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
 						m_WorldHierachy.m_SelectedEntity = ActiveWorld->CreateEntity(m_CopyEntity);
 					}
 					break;
@@ -494,7 +526,7 @@ namespace Proof
 			case KeyBoardKey::Q:
 				{
 					// no right button pressed that means that we are using the editor camera
-					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
 						GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 						break;
 				}
@@ -502,21 +534,21 @@ namespace Proof
 			case KeyBoardKey::W:
 				{
 					// no right button pressed that means that we are using the editor camera
-					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
 						GuizmoType = ImGuizmo::OPERATION::ROTATE;
 						break;
 				}
 			case KeyBoardKey::E:
 				{
 					// no right button pressed that means that we are using the editor camera
-					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
 						GuizmoType = ImGuizmo::OPERATION::SCALE;
 						break;
 				}
 			case KeyBoardKey::R:
 				{
 					// no right button pressed that means that we are using the editor camera
-					if (m_ViewPoartHoveredorFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
 						GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
 						break;
 				}
@@ -847,7 +879,7 @@ namespace Proof
 		static bool Open = true;
 		if (ImGui::Begin("ViewPort", &Open, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar)) {
 
-			m_ViewPoartHoveredorFocused = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
+			m_ViewPortFocused = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 			m_ViewPortFocused = ImGui::IsWindowFocused();
 			auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -863,12 +895,14 @@ namespace Proof
 
 
 			if (ImGui::IsWindowFocused()) {
+				m_ViewPortFocused = true;
 				CurrentWindow::GetWindow().SetWindowInputEvent(true);
 			}
 			else {
+				m_ViewPortFocused = false;
 				CurrentWindow::GetWindow().SetWindowInputEvent(false);
 			}
-			void* Text = m_WorldRenderer.m_ScreenFrameBuffer->GetTexture();
+			void* Text = m_WorldRenderer.GetWorldTexture();
 			ImGui::Image((ImTextureID)Text, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
 			// GUIZMOS
@@ -879,8 +913,8 @@ namespace Proof
 
 				ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
-				const glm::mat4& cameraProjection = ActiveWorld->m_EditorCamera.m_Projection;
-				glm::mat4 cameraView = ActiveWorld->m_EditorCamera.m_View;
+				const glm::mat4& cameraProjection = m_EditorCamera.m_Projection;
+				glm::mat4 cameraView = m_EditorCamera.m_View;
 
 				auto& tc = *selectedEntity.GetComponent<TransformComponent>();
 				glm::mat4 transform = tc.GetLocalTransform();
@@ -1115,18 +1149,19 @@ namespace Proof
 		ActiveWorld->m_CurrentState = WorldState::Pause;
 	}
 
-	bool Editore3D::CreateAssetEditor(Asset* asset) {
-		if (asset == nullptr)return false;
-		auto it = m_AllPanels.find(asset->GetAssetID());
+	bool Editore3D::CreateAssetEditor(AssetID ID) {
+		auto it = m_AllPanels.find(ID);
 		if (it != m_AllPanels.end()) {
 			it->second->SetWindowVisibile(true);
 			return false;
 		}
-		switch (asset->GetAssetType()) {
+		auto assetInfo = AssetManager::GetAssetInfo(ID);
+		switch (assetInfo.Type) {
 			case Proof::AssetType::Mesh:
+			case Proof::AssetType::MeshSourceFile:
 				{
-					SceneRendererUI* temp = new SceneRendererUI(dynamic_cast<MeshAsset*>(asset));
-					m_AllPanels.insert({ asset->GetAssetID(),temp });
+					SceneRendererUI* temp = new SceneRendererUI(ID);
+					m_AllPanels.insert({ ID,temp });
 					return true;
 				}
 			case Proof::AssetType::Texture:
@@ -1135,18 +1170,16 @@ namespace Proof
 				}
 			case Proof::AssetType::Material:
 				{
-					MaterialEditorPanel* temp = new MaterialEditorPanel(dynamic_cast<MaterialAsset*>(asset));
-					m_AllPanels.insert({ asset->GetAssetID(),temp });
+					MaterialEditorPanel* temp = new MaterialEditorPanel(AssetManager::GetAsset<MaterialAsset>(ID).get());
+					m_AllPanels.insert({ ID,temp });
 					return true;
 				}
 			case Proof::AssetType::World:
 				break;
-			case Proof::AssetType::MeshSourceFile:
-				break;
 			case Proof::AssetType::PhysicsMaterial:
 				{
-					PhysicsMaterialEditorPanel* temp = new PhysicsMaterialEditorPanel(dynamic_cast<PhysicsMaterialAsset*>(asset));
-					m_AllPanels.insert({ asset->GetAssetID(),temp });
+					PhysicsMaterialEditorPanel* temp = new PhysicsMaterialEditorPanel(AssetManager::GetAsset<PhysicsMaterialAsset>(ID).get());
+					m_AllPanels.insert({ ID,temp });
 					return true;
 				}
 			default:

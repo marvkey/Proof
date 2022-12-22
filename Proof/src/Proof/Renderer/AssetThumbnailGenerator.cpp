@@ -18,7 +18,7 @@ namespace Proof{
 		camera.GetComponent<TransformComponent>()->Location.Z -=5;
 		camera.AddComponent<CameraComponent>();
 
-		m_World->m_EditorCamera.m_Positon.z -= 10;
+		//m_World->m_EditorCamera.m_Positon.z -= 10;
 		m_World->CreateEntity("Light").AddComponent<DirectionalLightComponent>()->Color = Vector{ 1,1,1 };
 		if (info.Type == AssetType::Mesh) {
 			m_World->CreateEntity("Mesh").AddComponent<MeshComponent>()->SetMeshSource(ID);

@@ -7,11 +7,11 @@ Assets:
     Type: MeshSourceFile
     Path: C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\crytek-sponza-huge-vray.obj
     AssetSource: true
-  - Asset: 4645041025570573733
-    Type: Mesh
-    Path: Proof\Assets\Mesh\cube.Mesh.ProofAsset
-    AssetSource: false
   - Asset: 46450410705737
     Type: Mesh
     Path: Proof\Assets\Mesh\sponza.Mesh.ProofAsset
+    AssetSource: false
+  - Asset: 4645041025570573733
+    Type: Mesh
+    Path: Proof\Assets\Mesh\cube.Mesh.ProofAsset
     AssetSource: false

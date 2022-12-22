@@ -13,6 +13,7 @@ namespace Proof
             VulkanDescriptorSetBuilder(DescriptorSets set) {
                 m_Set = set;
             }
+            //count is for arrays 
             VulkanDescriptorSetBuilder& AddBinding(uint32_t binding, DescriptorType descriptorType, ShaderStage shaderStage ,uint32_t count = 1);
             std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> Bindings{};
 
@@ -34,6 +35,7 @@ namespace Proof
 
         DescriptorSet& WriteBuffer(uint32_t binding,  Count<UniformBuffer> buffer);
         DescriptorSet& WriteImage(uint32_t binding, Count<class Texture2D> image);
+        DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>> image);
 
         void Overwrite(int frame = Renderer::GetCurrentFrame().FrameinFlight);
 
@@ -119,6 +121,7 @@ namespace Proof
 
         VulkanDescriptorWriter& WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo);
         VulkanDescriptorWriter& WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInfo);
+        VulkanDescriptorWriter& WriteImage(uint32_t binding, std::vector< VkDescriptorImageInfo> imageInfo);
 
         bool Build(VkDescriptorSet& set);
         void Overwrite(VkDescriptorSet& set);

@@ -2,6 +2,7 @@
 #include "Proof/Renderer/Texture.h"
 namespace Proof
 {
+	/*
 	class Proof_API OpenGLTexture2D: public Texture2D {
 	public:
 		OpenGLTexture2D(const std::string& Path,TextureType _TextureType); // Transperant if the image is Png IT has an alpha channel
@@ -65,5 +66,6 @@ namespace Proof
 		std::string m_Path;
 		int m_Width,m_Height,m_Components;
 	};
+	*/
 }
 

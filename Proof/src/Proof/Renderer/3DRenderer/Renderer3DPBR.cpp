@@ -15,11 +15,9 @@
 #include "Proof/Scene/Material.h"
 #include "../UniformBuffer.h"
 #include "Proof/Scene/Component.h"
-#include "Platform/Vulkan/VulkanRenderer/VulkanRenderer.h"
 #include "../PipeLineLayout.h"
 #include "../RenderPass.h"
 #include "../GraphicsPipeLine.h"
-#include "Platform/Vulkan/VulkanVertexArray.h"
 #include "Proof/Asset/AssetManager.h"
 namespace Proof
 {
@@ -46,10 +44,6 @@ namespace Proof
 
 	static RenderStorage* s_RenderStorage;
 	static MeshPipeLine* s_MeshPipeLine = nullptr;
-
-	glm::mat4 s_projection;
-	glm::mat4 s_view;
-	glm::vec3 s_loc;
 	struct CameraData {
 		CameraData() {};
 		CameraData(const glm::mat4& projection, const glm::mat4& view, const Vector& pos) :
@@ -79,11 +73,9 @@ namespace Proof
 		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
 		PF_CORE_ASSERT(s_InContext ==false, "Cannot begin context if already in a context");
 		s_InContext = true;
-		s_projection = projection;
-		s_view = view;
-		s_loc = Position;
 		s_CurrentCamera = CameraData{ projection,view,Position };
 		s_RenderStorage->CurrentFrameBuffer = frameBuffer;
+		//s_RenderStorage->CommandBuffer = CommandBuffer::Create();
 	}
 
 	void Renderer3DPBR::SubmitMesh(MeshComponent& mesh, const glm::mat4& transform) {
@@ -91,6 +83,7 @@ namespace Proof
 		if (meshPointerId == 0)return; // means that therer is no mesh 
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Mesh ID", meshPointerId);
+
 		if (s_RenderStorage->AmountMeshPerMeshAssetID.contains(meshPointerId)) {
 			s_RenderStorage->AmountMeshPerMeshAssetID[meshPointerId] += 1;
 			auto instanceBeginPos = s_RenderStorage->MeshesPositionAddedIndexTransforms.at(meshPointerId);
@@ -136,12 +129,33 @@ namespace Proof
 		s_RenderStorage->Transforms.clear();
 		s_RenderStorage->MeshesID.clear();
 		s_RenderStorage->NumberMeshes = 0;
+		s_RenderStorage->CurrentFrameBuffer = nullptr;
 	}
 
 	void Renderer3DPBR::Destroy() {
 	
 	}
+	void Renderer3DPBR::DrawMeshSource(uint64_t ID, uint64_t numMeshPerID, uint64_t offset) {
+		auto descriptor1 = s_RenderStorage->Descriptors[DescriptorSets::One];
+		const auto meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(ID);
+				// get asset also does a check for an id so we will need to fix this
+		auto& mesh = *meshAsset->GetMesh();
+	
+		for (const auto& subMesh : mesh.GetSubMeshes()) {
+			if (subMesh.Enabled == false)return;
+			Count<Texture2D> texture = subMesh.GetDiffuseIndex().size() > 0 ? mesh.textures_loaded[subMesh.GetDiffuseIndex()[0]]
+				: Renderer::GetWhiteTexture();
 
+			descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, texture);
+			descriptor1->Bind(s_RenderStorage->CommandBuffer, s_MeshPipeLine->PipeLineLayout);
+			subMesh.GetVertexBuffer()->Bind(s_RenderStorage->CommandBuffer);
+			subMesh.GetIndexBuffer()->Bind(s_RenderStorage->CommandBuffer);
+			s_RenderStorage->MeshesVertexBuffer->Bind(s_RenderStorage->CommandBuffer, 1);
+
+			Renderer::DrawElementIndexed(s_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, offset);
+		}
+		
+	}
 	void Renderer3DPBR::DrawContext() {
 		s_RenderStorage->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 		auto descriptor0 = s_RenderStorage->Descriptors[DescriptorSets::Zero];
@@ -158,8 +172,25 @@ namespace Proof
 				const uint64_t numMeshPerID = s_RenderStorage->AmountMeshPerMeshAssetID[ID];
 				if (AssetManager::HasID(ID) == false)
 					continue;
-				auto& mesh = *AssetManager::GetAsset<MeshAsset>(ID)->GetMesh();
+				const auto meshInfo = AssetManager::GetAssetInfo(ID);
+
+				if (meshInfo.Type == AssetType::MeshSourceFile) {
+				//this is a rare case for just teh asset manager if we want to render a mehs source
+				//yeah simple thing
+					DrawMeshSource(ID, numMeshPerID, offset);
+					offset += numMeshPerID;
+					continue;
+				}
+
+				const auto meshAsset = AssetManager::GetAsset<MeshAsset>(ID);
+				// get asset also does a check for an id so we will need to fix this
+				auto& mesh = *meshAsset->GetMesh();
+				for (int i = 0; i < meshAsset->GetDiscardedMesh().size(); i++) {
+					const auto & index= meshAsset->GetDiscardedMesh()[i];
+					mesh.meshes[index].Enabled = false;
+				}
 				for (const auto& subMesh : mesh.GetSubMeshes()) {
+					if (subMesh.Enabled == false)continue;
 					Count<Texture2D> texture = subMesh.GetDiffuseIndex().size() > 0 ? mesh.textures_loaded[subMesh.GetDiffuseIndex()[0]]
 						: Renderer::GetWhiteTexture();
 
@@ -171,6 +202,10 @@ namespace Proof
 
 					Renderer::DrawElementIndexed(s_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, offset);
 				}
+				for (int i = 0; i < meshAsset->GetDiscardedMesh().size(); i++) {
+					const auto& index = meshAsset->GetDiscardedMesh()[i];
+					mesh.meshes[index].Enabled = true;
+				}
 				offset += numMeshPerID;
 			}
 		});
@@ -178,9 +213,11 @@ namespace Proof
 		Renderer::SubmitCommandBuffer(s_RenderStorage->CommandBuffer);
 	}
 
+	
+
 	void Renderer3DPBR::InitDescriptors() {
 		{
-			auto descriptor = VulkanDescriptorSet::Builder(DescriptorSets::Zero)
+			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
 				.AddBinding((int)DescriptorSet0::WorldData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
 				.Build();
@@ -188,7 +225,7 @@ namespace Proof
 		}
 
 		{
-			auto descriptor = VulkanDescriptorSet::Builder(DescriptorSets::One)
+			auto descriptor = DescriptorSet::Builder(DescriptorSets::One)
 				.AddBinding((int)DescriptorSet1::AlbedoMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
 				.AddBinding((int)DescriptorSet1::NormalMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
 				.AddBinding((int)DescriptorSet1::metallicMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
@@ -201,7 +238,7 @@ namespace Proof
 	}
 
 	MeshPipeLine::MeshPipeLine() {
-		Shader = Shader::Create("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Vulkan/Mesh.shader");
+		Shader = Shader::Create("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Mesh.shader");
 		PipeLineLayout = PipeLineLayout::Create(std::vector{ s_RenderStorage->Descriptors[DescriptorSets::Zero],s_RenderStorage->Descriptors[DescriptorSets::One] });
 		RenderPass = RenderPass::Create();
 

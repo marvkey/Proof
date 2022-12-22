@@ -7,25 +7,27 @@
 
 namespace Proof
 {
-	enum class SceneRendererType{
-		MeshAsset,World,EntityPrefab
-	};
-	class Proof_API SceneRendererUI:public Panel{
-		virtual void ImGuiRender(FrameTime deltaTime)override;
-
+	class SceneRendererUI:public Panel{
 	public:
-		SceneRendererUI(MeshAsset* asset);
-	
-		void RenderAsset(FrameTime deltaTime);
+		virtual void ImGuiRender(FrameTime deltaTime)override;
+		// only supports asset mesh, asset meshourceFile, prefab
+		SceneRendererUI(AssetID id);
 	private:
-		Entity tempEntity;
-		void MeshUI();
-		uint32_t m_LastWidht=0,m_LastHeight=0;
-		UUID m_ID = UUID();
-		class MeshComponent* mesh =  nullptr;
+		EditorCamera m_Camera{200,200};
+		void RenderAsset(FrameTime deltaTime);
+		Entity m_SceneEntity;
+		void MeshAssetUI();
+		void MeshAssetSetUp();
+
+		void MeshSourceAssetSetUp();
+		void MeshSourceAssetUI();
+		ScreenSize m_ScreenSize;
 		Count<World> m_World = nullptr;
-		class MeshAsset* m_MeshAsset = nullptr;
+		AssetID m_ID;
 		WorldRenderer m_WorldRenderer;
+		enum class SceneRendererType {
+			None,MeshAsset,MeshSourceFile,Prefab
+		};
 		SceneRendererType m_Type;
 	};
 }

@@ -13,7 +13,7 @@ namespace Proof
     public:
         SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name, std::vector<uint32_t> diffuseIndex);
         SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name);
-        bool m_Enabled = true;
+        bool Enabled = true;
         std::string GetName() {
             return m_Name;
         }
@@ -44,10 +44,13 @@ namespace Proof
     public:
         bool m_FaceCulling =false;
         Mesh() =default;
-        Mesh(std::string const& path){
+        // exclude index is not gonna have that mesh ready to be rendered that specific mesh will be discarded
+        // so only use it if u dont want tthe mesh to eexist
+        Mesh(std::string const& path) {
             LoadModel(path);
         }
-        const std::vector<class SubMesh>& GetSubMeshes()const{
+        virtual ~Mesh() {};
+        const std::vector<SubMesh>& GetSubMeshes()const {
             return meshes;
         }
         std::vector<Count<Texture2D>> textures_loaded;
@@ -56,13 +59,13 @@ namespace Proof
         const std::string& GetName()const{
             return m_Name;
         }
-        bool m_Enabled=true;
+        bool Enabled=true;
 
     private:
         std::vector<class SubMesh> meshes;
         std::string m_Name;
         void LoadModel(std::string const& path);
-        void ProcessNode(void* node,const void* scene);
+        void ProcessNode(void* node, const void* scene);
         SubMesh ProcessMesh(void* mesh,const void* scene);
         //returns the index of textures in the texutre loaded
         std::vector<uint32_t> LoadMaterialTextures(void* mat,int type,Texture2D::TextureType _TextureType);

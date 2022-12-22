@@ -37,10 +37,11 @@ namespace Proof{
 
 		bool HasEntity(EntityID ID)const;
 		bool HasEntity(EntityID ID);
-		void OnUpdateEditor(FrameTime DeltaTime,uint32_t width,uint32_t height,bool usePBR = false);
-		void OnUpdateEditorNoDraw(FrameTime DeltaTime,uint32_t width,uint32_t height);
-		void OnUpdateRuntime(FrameTime DeltaTime,uint32_t width,uint32_t height);
-		void OnSimulatePhysics(FrameTime DeltaTime,uint32_t width,uint32_t height);
+		void OnUpdateEditor(FrameTime DeltaTime);
+		void OnUpdateRuntime(FrameTime DeltaTime);
+		void OnSimulatePhysics(FrameTime DeltaTime);
+		bool HasWorldCamera();
+		class Entity GetWorldCameraEntity();
 
 		class Entity CreateEntity(const std::string& EntName= "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName,EntityID ID);
@@ -74,7 +75,7 @@ namespace Proof{
 		template <class ...T, class Func>
 		void ForEachComponent(Func func) {
 			auto view = m_Registry.view<T...>();
-			view.pick_and_each(std::move(func), std::index_sequence_for<T>{});
+			view.pick_and_each(std::move(func), std::index_sequence_for<T...>{});
 		}
 		// returns number entities with componet
 		// if more than one componenet passed it returns number entities with that combiniation of component
@@ -91,7 +92,7 @@ namespace Proof{
 		const std::string& GetPath()const{return m_Path;}
 		void DeleteEntity(class Entity& ent,bool deleteChildren =true);
 
-		EditorCamera m_EditorCamera ={200,200};
+		//EditorCamera m_EditorCamera ={200,200};
 		class PhysicsEngine* GetPhysicsEngine() { return m_PhysicsEngine; };
 
 		Entity GetEntity(UUID id);
@@ -106,9 +107,8 @@ namespace Proof{
 	private:
 		entt::registry64 m_Registry;
 		class PhysicsEngine* m_PhysicsEngine =nullptr;
-		class CameraComponent* m_SceneCamera = nullptr;
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
-		void OnUpdate(FrameTime DeltaTime,uint32_t m_Width,uint32_t m_Height,bool usePBR =false);
+		void OnUpdate(FrameTime DeltaTime);
 		WorldState m_CurrentState=WorldState::Edit;
 
 		void CreateIBlTexture(const std::string& filePath);
