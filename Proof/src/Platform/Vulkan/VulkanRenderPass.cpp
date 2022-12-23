@@ -128,6 +128,8 @@ namespace Proof
         PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot start render pass when previous render pass is not closed");
         m_CommandBuffer = command;
         m_CommandBuffer->As<VulkanCommandBuffer>()->BeginRecord(GetPipeLine(), Renderer::GetCurrentFrame().FrameinFlight, viewScreen);
+        m_FrameBuffer = frameBuffer;
+
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         auto swapchain = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetSwapChain();
         if (frameBuffer->As<VulkanScreenFrameBuffer>()->IsScreenPresent() == true) {
@@ -170,6 +172,20 @@ namespace Proof
     }
     void VulkanRenderPass::RecordRenderPass(std::function<void(Count<CommandBuffer> commandBuffer)> func) {
         m_CommandBuffer->As<VulkanCommandBuffer>()->Bind();
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = (float)m_FrameBuffer->GetFrameWidth();
+        viewport.height = (float)m_FrameBuffer->GetFrameHeight();
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(m_CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = { 0, 0 };
+        scissor.extent = VkExtent2D{ (uint32_t)m_FrameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.X, (uint32_t)m_FrameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.Y };;
+        vkCmdSetScissor(m_CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), 0, 1, &scissor);
+        
         func(m_CommandBuffer);
     }
 

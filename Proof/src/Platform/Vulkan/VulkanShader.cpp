@@ -197,7 +197,6 @@ namespace Proof
     void VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code, VkShaderModule* shaderModule) {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        //createInfo.codeSize = code.size();
         createInfo.codeSize = code.size() * sizeof(uint32_t);// because spirv module needs mutliple of 4
         createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
         if (vkCreateShaderModule(RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
@@ -270,8 +269,8 @@ namespace Proof
                     shaderStageInfo.flags = 0;
                     shaderStageInfo.pNext = nullptr;
                     shaderStageInfo.pSpecializationInfo = nullptr;
+                    break;
                 }
-                break;
             case Proof::ShaderStage::Fragment:
                 {
                     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -281,8 +280,8 @@ namespace Proof
                     shaderStageInfo.flags = 0;
                     shaderStageInfo.pNext = nullptr;
                     shaderStageInfo.pSpecializationInfo = nullptr;
+                    break;
                 }
-                break;
             case Proof::ShaderStage::Geometry:
                 {
                     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -292,8 +291,8 @@ namespace Proof
                     shaderStageInfo.flags = 0;
                     shaderStageInfo.pNext = nullptr;
                     shaderStageInfo.pSpecializationInfo = nullptr;
+                    break;
                 }
-                break;
             case Proof::ShaderStage::Compute:
                 {
                     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -303,10 +302,8 @@ namespace Proof
                     shaderStageInfo.flags = 0;
                     shaderStageInfo.pNext = nullptr;
                     shaderStageInfo.pSpecializationInfo = nullptr;
+                    break;
                 }
-                break;
-            default:
-                break;
             }
             m_ShaderModule.insert({ shaderStage,{shaderModule} });
             m_ShaderStages.emplace_back(shaderStageInfo);

@@ -31,6 +31,10 @@ namespace Proof {
 	void VulkanRendererAPI::Init() {
 		VulkanRenderer::Init();
 	}
+	void VulkanRendererAPI::OnWindowResize(WindowResizeEvent& e) {
+		VulkanRenderer::OnWindowResize(e);
+	}
+
 	void VulkanRendererAPI::Destroy() {
 		VulkanRenderer::Destroy();
 		delete s_CommandBuffer;

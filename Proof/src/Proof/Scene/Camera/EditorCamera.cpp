@@ -30,6 +30,7 @@ namespace Proof{
 			ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse ; // alllows mouse capture
 			PF_ENGINE_INFO("Mouse Speed {}", m_Speed);
 		}
+		
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight)) {
 			glfwSetInputMode((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse; // no mouse capture

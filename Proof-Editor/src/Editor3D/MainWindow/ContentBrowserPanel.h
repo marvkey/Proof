@@ -125,5 +125,6 @@ namespace Proof
 		void GenerateThumbnail(UUID ID);
 		void DeleteFolder(const std::string& path);
 		__forceinline UUID GetIDCurrentDirectory(const std::string& path);
+		friend class Editore3D;
 	};
 }

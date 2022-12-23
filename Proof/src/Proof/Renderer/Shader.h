@@ -44,6 +44,10 @@ namespace Proof
         virtual const std::unordered_map<ShaderStage, std::string>& GetPath()const { return {}; };
         virtual ~Shader();
         virtual void Reload() {};
+        template<class T>
+        T* As() {
+            return  dynamic_cast<T*>(this);
+        }
     protected:
         friend class Application;
     };

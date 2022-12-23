@@ -20,7 +20,7 @@ namespace Proof
         void Reflect(ShaderStage stage);
 
         uint32_t GetStageCount() {
-            return m_VulkanSPIRV.size();
+            return m_ShaderStages.size();
         }
     private:
         static void CreateShaderModule(const std::vector<uint32_t>& code, VkShaderModule* shaderModule);

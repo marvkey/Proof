@@ -44,6 +44,7 @@ namespace Proof{
 		bool m_RenderPassEnabled = false;
 		Count<class GraphicsPipeline> m_PipeLine;
 		Count<CommandBuffer> m_CommandBuffer;
+		Count<ScreenFrameBuffer> m_FrameBuffer;
 		friend class VulkanRenderer;
 		friend class VulkanRendererAPI;
 	};

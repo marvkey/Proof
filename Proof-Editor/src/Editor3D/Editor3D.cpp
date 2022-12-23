@@ -335,6 +335,10 @@ namespace Proof
 		Layer::OnUpdate(DeltaTime);
 		if (m_IsViewPortResize&& m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
 			m_WorldRenderer.Resize({(uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y });
+			// so the camera can be edited while beig resized
+			CurrentWindow::GetWindow().SetWindowInputEvent(false);
+			m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			CurrentWindow::GetWindow().SetWindowInputEvent(true);
 			m_IsViewPortResize = false;
 		}
 		switch (ActiveWorld->GetState()) {
@@ -460,9 +464,38 @@ namespace Proof
 
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
 		bool shift = IsKeyPressedEditor(KeyBoardKey::LeftShift) || IsKeyPressedEditor(KeyBoardKey::RightShift);
-
+		
+		//basically means that m_editor camera is beign used 
+		if (m_ViewPortFocused and Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+			return;
 		switch (e.GetKey()) {
-
+			case KeyBoardKey::P:
+			{
+				if(control)
+					Math::ChangeBool(m_WorldHierachy.m_ShowWindow);
+				break;
+			}
+			case KeyBoardKey::L:
+			{
+				if (control)
+					Math::ChangeBool(m_ShowLogger);
+				break;
+			}
+			case KeyBoardKey::B:
+			{
+				if (control)
+					Math::ChangeBool(m_ContentBrowserPanel.m_ShowWindow);
+				break;
+			}
+			case KeyBoardKey::R:
+			{
+				if (control)
+					Math::ChangeBool(m_ShowRendererStats);
+				// no right button pressed that means that we are using the editor camera
+				if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
+				break;
+			}
 			case KeyBoardKey::S:
 				{
 					if (control)
@@ -543,13 +576,6 @@ namespace Proof
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
 						GuizmoType = ImGuizmo::OPERATION::SCALE;
-						break;
-				}
-			case KeyBoardKey::R:
-				{
-					// no right button pressed that means that we are using the editor camera
-					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
 						break;
 				}
 			case KeyBoardKey::Tab:

@@ -159,7 +159,8 @@ namespace Proof
 	void ImGuiLayer::OnEvent(Event& e) {
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e) {
-			m_WindoResize = true;
+			if (e.GetWhidt() != 0 or e.GetHeight() != 0)
+				m_WindoResize = true;
 		});
 	}
 	void ImGuiLayer::End() {

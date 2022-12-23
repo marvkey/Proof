@@ -12,6 +12,16 @@ namespace Proof {
 		uint32_t ImageIndex;
 	};
 	
+	struct RenderPassViewPortConfig {
+		float    X;
+		float    Y;
+		Vector2 Size;
+		float    MinDepth;
+		float    MaxDepth;
+	};
+	struct RenderPassConfig {
+
+	};
 	class Proof_API RendererAPI {
 	public:
 		enum class API {
@@ -28,6 +38,7 @@ namespace Proof {
 		virtual void SubmitCommandBuffer(Count<class CommandBuffer> commandBuffer) = 0;
 		virtual void Submit(std::function<void(class CommandBuffer*)> func ) = 0;
 		virtual void SubmitDatafree(std::function<void()> func) = 0;
+		virtual void OnWindowResize(WindowResizeEvent& e) = 0;
 		virtual CurrentFrame GetCurrentFrame() = 0;
 		virtual RendererConfig GetConfig() = 0;
 		inline static API GetAPI() { return ActiveAPI; }

@@ -35,7 +35,6 @@ namespace Proof
 		s_RenderData = new VulkanRendererData();
 		s_RendererConfig = RendererConfig{ 2,(uint32_t)graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->GetImageCount() };
 		s_RenderData->ResourceFreeQueue.resize(Renderer::GetConfig().FramesFlight);
-	///	graphicsContext->GetSwapChain()->WaitAndResetFences();
 		
 	}
 	
@@ -43,7 +42,6 @@ namespace Proof
 		const auto& graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		if (s_IsWindowResised) {
 			graphicsContext->GetSwapChain()->Resize({ CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight() });
-			auto x = CurrentWindow::GetWindow().GetWidth();
 
 			s_CurrentFrame.FrameinFlight = 0;
 			s_IsWindowResised = false;

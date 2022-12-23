@@ -34,7 +34,6 @@
         bool IsRunning = true;
         std::string m_ProjectPath;
     private:
-        bool m_Resized = false;
         void LayerUpdate(float deltaTime);
         void ImguiUpdate(float deltaTime);
         static float m_ImguiFrameTime;

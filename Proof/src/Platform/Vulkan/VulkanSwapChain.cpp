@@ -70,7 +70,6 @@ namespace Proof
             VK_SUCCESS) {
             PF_CORE_ASSERT(false, "failed to submit draw command buffer!");
         }
-        //WaitFences();
         VkSwapchainKHR swapChains[] = { m_SwapChain };
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

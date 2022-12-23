@@ -38,11 +38,14 @@ namespace Proof {
 		static void SubmitDatafree(std::function<void()> func) {
 			s_RendererAPI->SubmitDatafree(func);
 		}
-
+	
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 		static Count<class Texture2D> GetWhiteTexture();
 	private:
+		static void OnWindowResize(WindowResizeEvent& e) {
+			s_RendererAPI->OnWindowResize(e);
+		}
 		static void BeginFrame() {
 			s_RendererAPI->BeginFrame();
 		}

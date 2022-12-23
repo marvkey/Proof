@@ -48,7 +48,6 @@ namespace Proof
 		//we can safely reset the command buffer to begin recording again.
 		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		//vkResetCommandBuffer(m_CommandBuffer[frameIndex], 0);
-
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -57,7 +56,7 @@ namespace Proof
 			//begin the command buffer recording. We will use this command buffer exactly once, so we want to let vulkan know that
 		//beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		//we can use teh same command buffer for multiple things
-		beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+		//beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 		if (vkBeginCommandBuffer(m_CommandBuffer[frameIndex], &beginInfo) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to begin recording command buffer");
 
@@ -77,6 +76,19 @@ namespace Proof
 	void VulkanCommandBuffer::Bind(uint32_t frameIndex, VkPipelineBindPoint bindPoint ) {
 		PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot bind if render pass is not started");
 		vkCmdBindPipeline(m_CommandBuffer[frameIndex], bindPoint, m_GraphicspipeLine->As<VulkanGraphicsPipeline>()->GetPipline());
+		//VkViewport viewport{};
+		//viewport.x = 0.0f;
+		//viewport.y = 0.0f;
+		//viewport.width = (float)swapChainExtent.width;
+		//viewport.height = (float)swapChainExtent.height;
+		//viewport.minDepth = 0.0f;
+		//viewport.maxDepth = 1.0f;
+		//vkCmdSetViewport(m_CommandBuffer[frameIndex], 0, 1, &viewport);
+		//
+		//VkRect2D scissor{};
+		//scissor.offset = { 0, 0 };
+		//scissor.extent = swapChainExtent;
+		//vkCmdSetScissor(m_CommandBuffer[frameIndex], 0, 1, &scissor);
 	}
 
 

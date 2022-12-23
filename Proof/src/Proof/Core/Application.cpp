@@ -82,7 +82,8 @@ namespace Proof {
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
         dispatcher.Dispatch<WindowCloseEvent>(PF_BIND_FN(Application::OnWindowCloseEvent));
         dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e) {
-            m_Resized = true;
+            if(e.GetWhidt() != 0 or e.GetHeight()!=0)
+                Renderer::OnWindowResize(e);
         });
         /// PUSH LAYERS BACKWARDS
         /// WHEN WE GET UI WE MIGHT WANT TO ONLY RESPODN TO UI FIRST
@@ -121,9 +122,8 @@ namespace Proof {
         while (IsRunning == true) {
             PF_PROFILE_FRAME("Application::Update");
             Renderer::BeginFrame();
-            if (m_Resized)
-                MainWindow->GetSwapChain()->Resize({ CurrentWindow::GetWindow().GetWidth(),CurrentWindow::GetWindow().GetWidth()});
-            float time = (float)glfwGetTime();
+            
+        float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;

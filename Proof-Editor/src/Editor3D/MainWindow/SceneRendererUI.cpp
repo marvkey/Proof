@@ -129,8 +129,13 @@ namespace Proof{
 			ImGui::BeginChild(meshAsset->GetName().c_str());
 			m_WorldRenderer.Render(m_Camera);
 			ScreenSize currentSize = { (uint32_t)ImGui::GetWindowSize().x,(uint32_t)ImGui::GetWindowSize().y };
-			if (currentSize != m_ScreenSize)
+			if (currentSize != m_ScreenSize) {
 				m_WorldRenderer.Resize(currentSize);
+				CurrentWindow::GetWindow().SetWindowInputEvent(false);
+				m_Camera.OnUpdate(deltaTime, ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+				CurrentWindow::GetWindow().SetWindowInputEvent(true);
+			}
+
 			m_ScreenSize = currentSize;
 			
 			void* Text = m_WorldRenderer.GetWorldTexture();

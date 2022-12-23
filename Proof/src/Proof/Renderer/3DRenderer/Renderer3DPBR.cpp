@@ -75,7 +75,7 @@ namespace Proof
 		s_InContext = true;
 		s_CurrentCamera = CameraData{ projection,view,Position };
 		s_RenderStorage->CurrentFrameBuffer = frameBuffer;
-		//s_RenderStorage->CommandBuffer = CommandBuffer::Create();
+		s_RenderStorage->CommandBuffer = CommandBuffer::Create();
 	}
 
 	void Renderer3DPBR::SubmitMesh(MeshComponent& mesh, const glm::mat4& transform) {

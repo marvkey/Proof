@@ -14,6 +14,7 @@ namespace Proof {
 	  virtual void Submit(std::function<void(CommandBuffer* )>func)override;
 	  virtual CurrentFrame GetCurrentFrame();
 	  virtual RendererConfig GetConfig();
+	  virtual void OnWindowResize(WindowResizeEvent& e);
 	  VulkanRendererAPI();
    private:
 	   virtual void Init()override;
