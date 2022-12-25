@@ -35,9 +35,9 @@ namespace Proof
 	static std::string NameofFileRename;
 	static std::filesystem::path s_AssetsPath;
 	ContentBrowserPanel::ContentBrowserPanel(Editore3D* owner) :
-		m_CurrentDirectory(Project::Get()->GetAssetDir()),
+		m_CurrentDirectory(Application::Get()->GetProject()->GetAssetDir()),
 		m_Owner(owner) {
-		s_AssetsPath = Project::Get()->GetAssetDir();
+		s_AssetsPath = Application::Get()->GetProject()->GetAssetDir();
 
 		m_FolderIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FolderIcon.png");
 		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
@@ -83,7 +83,7 @@ namespace Proof
 					}
 					ImGui::SameLine();
 					if (ImGui::Button("Regenerate Asset Source", { 50,50 })) {
-						//AssetManager::GenerateAllSourceAssets();
+						AssetManager::GenerateAllSourceAssets();
 					}
 					if (ImGui::BeginPopupContextWindow(0, 1)) { // right click 
 						if (ImGui::MenuItem("Folder")) {
@@ -113,7 +113,7 @@ namespace Proof
 						for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
 							const auto& path = It.path();
 							ImGui::PushID(path.filename().string().c_str());
-							AssetType assetType = AssetManager::GetAssetFromFilePath(It);
+							AssetType assetType = AssetManager::GetAssetTypeFromFilePath(It);
 							if (It.is_directory()) {
 								ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(), { thumbnailSize,thumbnailSize });
 								if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
@@ -140,7 +140,7 @@ namespace Proof
 							if (ImGui::BeginDragDropSource()) {
 								std::string fileDragSourcePath = path.string();
 								UUID staticID = GetIDCurrentDirectory(fileDragSourcePath);
-								std::string assetTypestring = EnumReflection::EnumString(AssetManager::GetAssetFromFilePath(fileDragSourcePath));
+								std::string assetTypestring = EnumReflection::EnumString(AssetManager::GetAssetTypeFromFilePath(fileDragSourcePath));
 								ImGui::SetDragDropPayload(assetTypestring.c_str(), &staticID, sizeof(UUID));
 								ImGui::Image((ImTextureID)m_FileIcon->GetID(), { 60,60 });
 								ImGui::Text(Utils::FileDialogs::GetFileName(fileDragSourcePath).c_str());
@@ -149,7 +149,7 @@ namespace Proof
 							if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 								UUID staticID = GetIDCurrentDirectory(path.string());
 								if (staticID == 0)
-									staticID = AssetManager::GetAssetSourceID(path);
+									staticID = AssetManager::GetAssetSourceID(path,true);
 								m_Owner->CreateAssetEditor(staticID);
 								
 							}
@@ -281,7 +281,7 @@ namespace Proof
 			const auto& fileNewFullName = m_CurrentDirectory.string() + "\\" + newFullName; // includes path
 			std::filesystem::rename(fileOldFullName, fileNewFullName);
 			for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(fileNewFullName)) {// through every file
-				if (AssetManager::GetAssetFromFilePath(dirEntry.path()) != AssetType::None) {
+				if (AssetManager::GetAssetTypeFromFilePath(dirEntry.path()) != AssetType::None) {
 					Asset* asset = AssetManager::GetAsset<Asset>(GetIDCurrentDirectory(dirEntry.path().string())).get();
 					if (asset != nullptr)
 						AssetManager::ResetAssetInfo(GetIDCurrentDirectory(dirEntry.path().string()), dirEntry.path().string());
@@ -338,7 +338,7 @@ namespace Proof
 			if (dirEntry.is_directory()) {
 				DeleteFolder(dirEntry.path().string());
 			}
-			if (AssetManager::GetAssetFromFilePath(dirEntry.path()) != AssetType::None) {
+			if (AssetManager::GetAssetTypeFromFilePath(dirEntry.path()) != AssetType::None) {
 				AssetManager::Remove(GetIDCurrentDirectory(dirEntry.path().string()));
 			}
 		}

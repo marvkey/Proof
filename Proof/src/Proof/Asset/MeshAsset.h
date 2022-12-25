@@ -46,9 +46,7 @@ namespace Proof
 		virtual void SaveAsset(){}
 		// the filepath of the actual mesh
 		virtual bool LoadAsset(const std::string& FilePath)override;
-		Mesh* GetMesh() {
-			return m_Mesh.get();
-		}
+		Mesh* GetMesh();
 		// so we can view it as like cube.fbx
 		virtual std::string GetName()const override{
 			return Utils::FileDialogs::GetFullFileName(m_SavePath);

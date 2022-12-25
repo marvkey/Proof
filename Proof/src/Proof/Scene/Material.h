@@ -8,6 +8,7 @@ namespace Proof{
 		float m_Roughness = 0.0f;
 		float m_AO=1.0f;
 		glm::vec3 m_Colour{1,1,1};
+		// gonna change these to ID 
 		Count<class Texture2D>NormalTexture;
 		Count<class Texture2D>AlbedoTexture;
 		Count<class Texture2D>MetallicTexture;

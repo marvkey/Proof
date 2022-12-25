@@ -8,10 +8,12 @@
 
 namespace Proof
 {
-	PhysicsMaterialAsset::PhysicsMaterialAsset(const std::string& assetSavePath):
+	PhysicsMaterialAsset::PhysicsMaterialAsset(const std::string& savePath):
 		Asset(AssetType::PhysicsMaterial) {
 		m_AssetID = AssetManager::CreateID();
-		m_SavePath = assetSavePath;
+		m_SavePath = savePath;
+		auto parentDir = std::filesystem::relative(m_SavePath.parent_path());
+		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + GetExtension()};
 		SaveAsset();
 	}
 	void PhysicsMaterialAsset::SaveAsset() {

@@ -50,7 +50,7 @@ namespace Proof
 			std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
 
 			Count<T> tempAsset = CreateCount<T>(assetSourcePath, m_CurrentDirectory.string() + "\\" + fileFullName);
-			AssetManager::NewAsset(tempAsset->GetAssetID(), tempAsset);
+			AssetManager::NewAsset(tempAsset);
 			return { m_CurrentDirectory.string() + "\\" + fileFullName };
 		}
 
@@ -76,7 +76,7 @@ namespace Proof
 			}
 			std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
 			Count<T> tempAsset = CreateCount<T>(m_CurrentDirectory.string() + "\\" + fileFullName);
-			AssetManager::NewAsset(tempAsset->GetAssetID(), tempAsset);
+			AssetManager::NewAsset(tempAsset);
 			return { m_CurrentDirectory.string() + "\\" + fileFullName };
 		}
 		/**

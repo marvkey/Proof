@@ -18,7 +18,7 @@ namespace Proof {
 			for (auto [ID,assetContainer] : AssetManager::GetAssets()) {
 				ImGui::BeginChildFrame((ImGuiID)ID,{ImGui::GetContentRegionAvail().x,100}, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
 				ExternalAPI::ImGUIAPI::TextBar("Asset ID", std::to_string(assetContainer.Info.ID));
-				if(assetContainer.Info.Loaded==false)
+				if(assetContainer.Info.State== AssetState::Ready)
 					ExternalAPI::ImGUIAPI::TextBar("Loaded", "False");
 				else
 					ExternalAPI::ImGUIAPI::TextBar("Loaded", "True");

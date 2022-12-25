@@ -8,11 +8,11 @@ namespace Proof
 {
 
 	int Main(int argc, char** argv) {
-		while (ApplicationRun == true) {
+	//	while (ApplicationRun == true) {
 			Proof::Application* Proof = Proof::CreateApplication(argc, argv);
 			Proof->Run();
 			delete Proof;
-		}
+		//}
 		return 0;
 	}
 }

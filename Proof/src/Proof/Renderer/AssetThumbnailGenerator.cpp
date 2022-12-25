@@ -12,7 +12,7 @@ namespace Proof{
 	}
 	void AssetThumbnailGenerator::CreateThumbnail(AssetID ID) {
 		auto info = AssetManager::GetAssetInfo(ID);
-		if (info.Loaded == false)return;
+		if (info.State == AssetState::Ready)return;
 
 		auto camera = m_World->CreateEntity("Camera");
 		camera.GetComponent<TransformComponent>()->Location.Z -=5;

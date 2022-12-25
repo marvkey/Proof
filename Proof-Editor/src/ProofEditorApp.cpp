@@ -18,7 +18,7 @@ namespace Proof {
         }
     };
     Application* CreateApplication(int argc, char** argv) {
-        std::string_view projectPath;
+        std::string_view projectPath = "Proof/Proof.ProofProject";
         if (argc > 1)
             projectPath = argv[1];
 

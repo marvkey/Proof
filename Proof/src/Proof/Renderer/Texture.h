@@ -37,19 +37,11 @@ namespace Proof {
 		T* As() {
 			return  dynamic_cast<T*>(this);
 		}
-		static enum class TextureType {
-			None=0,
-			Ambient,
-			Diffuse,
-			Specular,
-			Normal,
-			Height,
-		};
+	
 		virtual std::string GetPath() = 0;
 
-		virtual TextureType GetTextureType() { return TextureType::None; };
-		static Count<Texture2D> Create(const std::string& Path,TextureType _TextureType = TextureType::None);
-		static Count<Texture2D>	Create(uint32_t ImageWidth,uint32_t ImageHeight,TextureType _TextureType= TextureType::None);
+		static Count<Texture2D> Create(const std::string& Path);
+		static Count<Texture2D>	Create(uint32_t ImageWidth,uint32_t ImageHeight);
 		static Count<Texture2D> Create(uint32_t width, uint32_t height, ImageFormat format, const void* data);
 	};
 

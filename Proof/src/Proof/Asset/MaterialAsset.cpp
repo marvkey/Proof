@@ -9,11 +9,13 @@
 #include "Proof/Utils/PlatformUtils.h"
 
 namespace Proof{
-	MaterialAsset::MaterialAsset(const std::string& assetSavePath):
+	MaterialAsset::MaterialAsset(const std::string& savePath):
 		Asset(AssetType::Material)
 	{
 		m_AssetID = AssetManager::CreateID();
-		m_SavePath = assetSavePath;
+		m_SavePath = savePath;
+		auto parentDir = std::filesystem::relative(m_SavePath.parent_path());
+		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + GetExtension()};
 		SaveAsset();
 	}
 	void MaterialAsset::SaveAsset() {

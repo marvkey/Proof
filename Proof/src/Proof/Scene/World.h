@@ -1,4 +1,5 @@
 #pragma once
+#include "Proof/Core/Core.h"
 #include "Camera/EditorCamera.h"
 #include "Camera/OrthagraphicCamera.h"
 #include "Proof/Renderer/Shader.h"
@@ -26,13 +27,15 @@ namespace Proof{
 	class Proof_API World {
 	public:
 		using EntityID = UUID;
-		World();
+		World(const std::string& name = "Default World",UUID ID = UUID()) :
+			m_WorldID(ID),Name(name)
+		{
+
+		}
 		~World() {
 			//m_Registry.on_construct<ScriptComponent>();
 		}
-		World(const std::string& path){
-			CreateIBlTexture(path);
-		}
+		
 		World(World&)=default;
 
 		bool HasEntity(EntityID ID)const;
@@ -110,7 +113,7 @@ namespace Proof{
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
 		void OnUpdate(FrameTime DeltaTime);
 		WorldState m_CurrentState=WorldState::Edit;
-
+		UUID m_WorldID;
 		void CreateIBlTexture(const std::string& filePath);
 		std::string Name = "DefaultWorld";
 		template<class T>

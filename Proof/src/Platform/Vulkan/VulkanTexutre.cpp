@@ -43,12 +43,15 @@ namespace Proof
 		}
 
 	}
-	VulkanTexture2D::VulkanTexture2D(const std::string& Path, TextureType textureType) {
-		m_Type = textureType;
+	VulkanTexture2D::VulkanTexture2D(const std::string& Path) {
 		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		int width, height, channels;
 		m_Path = Path;
 		uint8_t* data = nullptr;
+		if (Path.empty()) {
+			PF_INFO("No path passed into texture");
+			return;
+		}
 		if (stbi_is_hdr(Path.c_str())) {
 			data = (uint8_t*)stbi_loadf(Path.c_str(), &width, &height, &channels, 4);
 			m_Format = ImageFormat::RGBA32F;
@@ -57,6 +60,9 @@ namespace Proof
 			data = stbi_load(Path.c_str(), &width, &height, &channels, 4);
 			m_Format = ImageFormat::RGBA;
 		}
+		if(data==nullptr)
+			PF_ENGINE_ERROR("Texture passed is empty{}", Path.c_str());
+
 		// check for dimension
 		{
 			VkImageFormatProperties info;

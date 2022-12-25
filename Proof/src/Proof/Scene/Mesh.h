@@ -11,7 +11,7 @@ namespace Proof
 {
     struct SubMesh {
     public:
-        SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name, std::vector<uint32_t> diffuseIndex);
+        SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name, std::vector<AssetID> diffuseTextures);
         SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name);
         bool Enabled = true;
         std::string GetName() {
@@ -22,8 +22,8 @@ namespace Proof
         std::vector<uint32_t> m_Indices;
         std::string m_Name;
 
-        const std::vector<uint32_t>& GetDiffuseIndex()const {
-            return m_DiffuseIndex;
+        const std::vector<AssetID>& GetDiffuseTextures()const {
+            return m_DiffuseAssets;
         }
         Count<class VertexBuffer> GetVertexBuffer()const {
             return m_VertexBufferObject;
@@ -32,7 +32,7 @@ namespace Proof
             return m_IndexBufferObject;
         }
     private:
-        std::vector<uint32_t> m_DiffuseIndex;
+        std::vector<AssetID> m_DiffuseAssets;
         Count<class VertexBuffer> m_VertexBufferObject;
         Count<class IndexBuffer> m_IndexBufferObject;
         void SetUp();
@@ -46,14 +46,13 @@ namespace Proof
         Mesh() =default;
         // exclude index is not gonna have that mesh ready to be rendered that specific mesh will be discarded
         // so only use it if u dont want tthe mesh to eexist
-        Mesh(std::string const& path) {
+        Mesh(std::string const& path ) {
             LoadModel(path);
         }
         virtual ~Mesh() {};
         const std::vector<SubMesh>& GetSubMeshes()const {
             return meshes;
         }
-        std::vector<Count<Texture2D>> textures_loaded;
         std::vector<Material> Materials_loaded;
        
         const std::string& GetName()const{
@@ -64,14 +63,19 @@ namespace Proof
     private:
         std::vector<class SubMesh> meshes;
         std::string m_Name;
+        struct TextureData {
+            AssetID Texture;
+            AssetID TextureSource;
+        };
+        //stores all teh asset source of a given mesh
+        std::vector<TextureData> m_Textures;
+        std::filesystem::path m_Path;
         void LoadModel(std::string const& path);
         void ProcessNode(void* node, const void* scene);
         SubMesh ProcessMesh(void* mesh,const void* scene);
-        //returns the index of textures in the texutre loaded
-        std::vector<uint32_t> LoadMaterialTextures(void* mat,int type,Texture2D::TextureType _TextureType);
+        //returns the id of  of textures in the texutre loaded
+        std::vector<AssetID> LoadMaterialTextures(void* mat,int type);
         std::vector<Count<Texture2D>> LoadMaterial(void* mat);
-        //path, texture type
-        std::vector<std::pair<std::string, Texture2D::TextureType>> LoadMaterialTexturesTest(void* mat, int type, Texture2D::TextureType _TextureType);
         friend class Renderer3D;
         friend class Editore3D;
         friend class Renderer3DPBR;

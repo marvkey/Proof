@@ -66,13 +66,13 @@ namespace Proof {
             cubeVertex.emplace_back(vertex);
         }
         */
-        m_Cube = CreateCount<Mesh>("cube.obj");
+       // m_Cube = CreateCount<Mesh>("cube.obj");
 
 	}
     void MeshWorkShop::InitSphere() {
-        m_Sphere = CreateCount<Mesh>("sphere.obj");
+      //  m_Sphere = CreateCount<Mesh>("sphere.obj");
     }
     void MeshWorkShop::InitCapsule() {
-        m_Capasule = CreateCount<Mesh>("capsule.obj");
+      //  m_Capasule = CreateCount<Mesh>("capsule.obj");
     }
 }

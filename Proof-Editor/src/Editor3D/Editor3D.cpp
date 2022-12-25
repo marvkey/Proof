@@ -241,19 +241,18 @@ namespace Proof
 	void Editore3D::OnAttach() {
 
 		ActiveWorld = CreateCount<World>();
+		auto startworld = Application::Get()->GetProject()->GetStartWorld();
+		if (AssetManager::HasID(startworld)) {
+			auto Info = AssetManager::GetAssetInfo(startworld);
+			SceneSerializer scerelizer(ActiveWorld.get());
+			if (scerelizer.DeSerilizeText(Info.Path.string()) == true) {
+				m_WorldHierachy.SetContext(ActiveWorld.get());
+				AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
+			}
+		}
 		//ScriptEngine::ReloadAssembly(ActiveWorld.get());
 		SceneSerializer scerelizer(ActiveWorld.get());
-		if (scerelizer.DeSerilizeText("content/Levels/Lightest.ProofWorld") == true) {
-			m_WorldHierachy.SetContext(ActiveWorld.get());
-			AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
-		}
-
-		//CubeMapPaths.emplace_back("Assets/Textures/skybox/right.jpg");
-		//CubeMapPaths.emplace_back("Assets/Textures/skybox/left.jpg");
-		//CubeMapPaths.emplace_back("Assets/Textures/skybox/bottom.jpg");
-		//CubeMapPaths.emplace_back("Assets/Textures/skybox/top.jpg");
-		//CubeMapPaths.emplace_back("Assets/Textures/skybox/front.jpg");
-		//CubeMapPaths.emplace_back("Assets/Textures/skybox/back.jpg");
+		
 
 
 		m_WorldHierachy.SetContext(ActiveWorld.get());
@@ -262,61 +261,6 @@ namespace Proof
 		m_EditorWorld = ActiveWorld;
 		SceneCoreClasses::s_CurrentWorld = ActiveWorld.get();
 
-		/*
-		float skyboxVertices[] = {
-					 // positions
-			-1.0f,1.0f,-1.0f,
-			-1.0f,-1.0f,-1.0f,
-			1.0f,-1.0f,-1.0f,
-			1.0f,-1.0f,-1.0f,
-			1.0f,1.0f,-1.0f,
-			-1.0f,1.0f,-1.0f,
-
-			-1.0f,-1.0f,1.0f,
-			-1.0f,-1.0f,-1.0f,
-			-1.0f,1.0f,-1.0f,
-			-1.0f,1.0f,-1.0f,
-			-1.0f,1.0f,1.0f,
-			-1.0f,-1.0f,1.0f,
-
-			1.0f,-1.0f,-1.0f,
-			1.0f,-1.0f,1.0f,
-			1.0f,1.0f,1.0f,
-			1.0f,1.0f,1.0f,
-			1.0f,1.0f,-1.0f,
-			1.0f,-1.0f,-1.0f,
-
-			-1.0f,-1.0f,1.0f,
-			-1.0f,1.0f,1.0f,
-			1.0f,1.0f,1.0f,
-			1.0f,1.0f,1.0f,
-			1.0f,-1.0f,1.0f,
-			-1.0f,-1.0f,1.0f,
-
-			-1.0f,1.0f,-1.0f,
-			1.0f,1.0f,-1.0f,
-			1.0f,1.0f,1.0f,
-			1.0f,1.0f,1.0f,
-			-1.0f,1.0f,1.0f,
-			-1.0f,1.0f,-1.0f,
-
-			-1.0f,-1.0f,-1.0f,
-			-1.0f,-1.0f,1.0f,
-			1.0f,-1.0f,-1.0f,
-			1.0f,-1.0f,-1.0f,
-			-1.0f,-1.0f,1.0f,
-			1.0f,-1.0f,1.0f
-		};
-
-		m_SkyBoxShader = Shader::GetOrCreate("SkyBox Shader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/3D/CubeMapShader.shader");
-		m_SkyBoxBuffer = VertexBuffer::Create(&skyboxVertices, sizeof(skyboxVertices));
-		m_SkyBoxVertexArray = VertexArray::Create();
-		m_SkyBoxVertexArray->AddData(0, 3, 3 * sizeof(float), 0);
-
-		m_SkyBoxShader->Bind();
-		m_SkyBoxShader->SetInt("skybox", 0);
-		m_CubeMap = CubeMap::Create(CubeMapPaths);
-*/
 		m_PlayButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PlayButton.png");
 		m_PauseButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PauseButton .png");
 		m_SimulateButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/SimulateButton.png");

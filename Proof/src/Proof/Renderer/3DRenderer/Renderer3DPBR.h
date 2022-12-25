@@ -16,11 +16,6 @@ namespace Proof
 {
 
 	struct MeshPipeLine {
-		Count<class GraphicsPipeline> GraphicsPipeline;
-		Count<class Shader> Shader;
-		Count <class PipeLineLayout> PipeLineLayout;
-		Count <class RenderPass > RenderPass;
-		MeshPipeLine();
 		struct MeshVertex {
 
 			MeshVertex(const glm::mat4& transform) :
@@ -28,19 +23,16 @@ namespace Proof
 			}
 			glm::mat4 m_Transform;
 		};
-	};
-	
-	struct RenderStorage {
-		std::vector<Count<CommandBuffer>> CommandBuffers;
-		Count<CommandBuffer> CommandBuffer;
-		Count<UniformBuffer> CameraBuffer = nullptr;
-		Count<ScreenFrameBuffer> CurrentFrameBuffer = nullptr;
+		Count<class GraphicsPipeline> GraphicsPipeline;
+		Count<class Shader> Shader;
+		Count <class PipeLineLayout> PipeLineLayout;
+		Count <class RenderPass > RenderPass;
 		Count<VertexBuffer> MeshesVertexBuffer;
 		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 
 		//MESH ASSET ID, meshNumber
 		std::unordered_map<AssetID, uint64_t> AmountMeshPerMeshAssetID;
-		
+
 		//this is not begening index
 		// but its the beggeninig index of when the mesh was added to the vetor of transfomrs
 		// with this we can use math to find the location of the first index of that specific index
@@ -54,15 +46,20 @@ namespace Proof
 		//and use the offset to treverse trhought them in the correct order the transforms were added
 		std::vector<uint64_t> MeshesID;
 		uint32_t NumberMeshes;
+		// number of different meshes we draw at once
 		const uint32_t MaxMesh = 1000;
 
+		MeshPipeLine();
+		
 	};
 	
-	
-	struct RenderInfo {
-		Count<ScreenFrameBuffer> FrameBuffer;
+	struct RenderStorage {
 		Count<CommandBuffer> CommandBuffer;
+		Count<UniformBuffer> CameraBuffer = nullptr;
+		Count<ScreenFrameBuffer> CurrentFrameBuffer = nullptr;
 	};
+	
+	
 	class Renderer3DPBR {
 	public:
 		static void Init();

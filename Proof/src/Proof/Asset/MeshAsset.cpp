@@ -13,6 +13,8 @@ namespace Proof
 	{
 		m_AssetID = AssetManager::CreateID();
 		m_SavePath = savePath;
+		auto parentDir = std::filesystem::relative(m_SavePath.parent_path());
+		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + GetExtension()};
 		m_Source = AssetManager::GetAssetSourceID(meshFilePath);
 		m_DiscardMesh = excludeIndex;
 		SaveAsset();
@@ -74,13 +76,16 @@ namespace Proof
 		m_SavePath = meshFilePath;
 	}
 	bool MeshSourceFileAsset::LoadAsset(const std::string& FilePath) {
-		m_Mesh = CreateSpecial<Mesh>(FilePath);
 		m_SavePath = FilePath;
+		m_Mesh = CreateSpecial<Mesh>(FilePath);
 		return m_Mesh != nullptr;
 	}
 
 	std::string MeshSourceFileAsset::GetExtension()const {
 		return Utils::FileDialogs::GetFullFileExtension(m_SavePath);
 	}
-
+	Mesh* MeshSourceFileAsset::GetMesh()
+	{
+		return m_Mesh.get();
+	}
 }

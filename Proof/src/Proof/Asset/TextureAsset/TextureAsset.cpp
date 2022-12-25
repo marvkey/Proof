@@ -12,6 +12,8 @@ namespace Proof{
 
 		m_Texture = Texture2D::Create(texturePath);
 		m_SavePath = savePath;
+		auto parentDir = std::filesystem::relative(m_SavePath.parent_path());
+		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + GetExtension()};
 		m_Source = AssetManager::GetAssetSourceID(texturePath);
 		SaveAsset();
 	}
@@ -22,7 +24,6 @@ namespace Proof{
 		out << YAML::Key << "ID" << YAML::Value << m_AssetID;
 		out << YAML::Key << "AssetSource" << YAML::Value << m_Source;
 		out << YAML::EndMap;
-
 		std::ofstream found(m_SavePath);
 		found << out.c_str();
 		found.close();

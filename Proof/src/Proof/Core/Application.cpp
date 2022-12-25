@@ -18,6 +18,7 @@
 #include "Proof/Renderer/SwapChain.h"
 namespace Proof {
     Special <Window> Application::MainWindow = nullptr;
+    Application* Application::s_Instance = nullptr;
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
     float Application::m_ImguiFrameTime;
@@ -26,32 +27,34 @@ namespace Proof {
     {
         srand(time(NULL));
         Proof::Log::Init();
-        Project::SetApp(this);
+        s_Instance = this;
+        m_Project = CreateSpecial<Project>(this);
         if (m_ApplicationConfiguration.ProjectPath.empty()) {
             if(std::filesystem::exists("Proof")==false)
                 std::filesystem::create_directory("Proof");
             (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", "Proof");
             m_ApplicationConfiguration.ProjectPath = "Proof/Proof.ProofProject";
             m_ProjectPath = m_ApplicationConfiguration.ProjectPath;
-            Project::Get()->m_Path = m_ProjectPath;
-            ProjectSerilizer projectSerilizer(Project::Get());
-            projectSerilizer.SerilizeText(m_ProjectPath);
+            m_Project->m_Path = m_ProjectPath;
+            // we would scerilize when we save the project
+            //ProjectSerilizer projectSerilizer(m_Project.get());
+            //projectSerilizer.SerilizeText(m_ProjectPath);
         }
         else {
             m_ProjectPath = m_ApplicationConfiguration.ProjectPath;
-            Project::Get()->m_Path = m_ProjectPath;
-            (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", Project::Get()->m_Path.root_directory().string());
-            ProjectSerilizer projectSerilizer(Project::Get());
+            m_Project->m_Path = m_ProjectPath;
+            (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", m_Project->m_Path.root_directory().string());
+            ProjectSerilizer projectSerilizer(m_Project.get());
             projectSerilizer.DeSerilizeText(m_ProjectPath);
         }
        
 
         MainWindow = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
         MainWindow->SetEventCallback([this](Event& e) {OnEvent(e); });
-        auto projdir = Project::GetProjectDir();
+        auto projdir = m_Project->GetProjectDir();
         AssetManagerConfiguration assetManagerconfig;
-        assetManagerconfig.AssetDirectory = Project::Get()->m_AssetDirectory;
-        assetManagerconfig.AssetManager = Project::Get()->m_AssetManager;
+        assetManagerconfig.AssetDirectory = m_Project->m_AssetDirectory;
+        assetManagerconfig.AssetManager = m_Project->m_AssetManager;
         RendererBase::Init(static_cast<Window*>(MainWindow.get()));
 
         AssetManager::Init(assetManagerconfig);

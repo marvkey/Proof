@@ -200,16 +200,16 @@ namespace Proof
             uint32_t TempID = s_DifferentID[Size];
             auto TempMesh = Renderer3DInstance->m_Meshes.find(TempID);
             auto TempAmountMeshes = Renderer3DInstance->m_AmountMeshes.find(TempID);
-            if (TempMesh->second.GetMeshSource()->textures_loaded.size() > 0) {
-                Renderer3DInstance->m_Shader->Bind();
-                Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
-                //TempMesh->second.GetMeshSource()->textures_loaded[0]->Bind(0);
-            }
-            else {
-                Renderer3DInstance->m_Shader->Bind();
-                Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
-                //Renderer3DInstance->m_WhiteTexture->Bind(0);
-            }
+            //if (TempMesh->second.GetMeshSource()->textures_loaded.size() > 0) {
+            //    Renderer3DInstance->m_Shader->Bind();
+            //    Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
+            //    //TempMesh->second.GetMeshSource()->textures_loaded[0]->Bind(0);
+            //}
+            //else {
+            //    Renderer3DInstance->m_Shader->Bind();
+            //    Renderer3DInstance->m_Shader->SetInt("texture_diffuse",0);
+            //    //Renderer3DInstance->m_WhiteTexture->Bind(0);
+            //}
             /*
             TempMesh->second.GetMesh()->m_VertexArrayObject->Bind();
             TempMesh->second.GetMesh()->m_IndexBufferObject->Bind();

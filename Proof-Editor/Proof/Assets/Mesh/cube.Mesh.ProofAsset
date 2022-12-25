@@ -2,5 +2,3 @@ AssetType: Mesh
 ID: 4645041025570573733
 AssetSource: 17940291637672428763
 SubMeshes: []
-Enabled: true
-FaceCulling: false

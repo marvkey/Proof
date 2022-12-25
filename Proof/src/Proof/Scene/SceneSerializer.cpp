@@ -349,14 +349,22 @@ namespace Proof
 		m_Scene->m_Path = filePath;
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "World" << YAML::Value << m_Scene->GetName();
-		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-		m_Scene->m_Registry.each([&](auto entityID) {
-			Entity entity = { (uint64_t)entityID,m_Scene };
-			SerilizeEntity(out, entity);
-			});
+		{
+			out << YAML::Key << "World";
+			out << YAML::BeginMap;
+			{
+				out << YAML::Key << "Name" << m_Scene->Name;
+				out << YAML::Key << "ID" << m_Scene->m_WorldID;
 
-		out << YAML::EndSeq;
+				out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+				m_Scene->m_Registry.each([&](auto entityID) {
+					Entity entity = { (uint64_t)entityID,m_Scene };
+					SerilizeEntity(out, entity);
+				});
+				out << YAML::EndSeq;
+			}
+			out << YAML::EndMap;
+		}
 		out << YAML::EndMap;
 
 		std::ofstream foud(filePath);
@@ -373,9 +381,13 @@ namespace Proof
 		if (!data["World"]) // if there is no scene no
 			return false;
 
-		m_Scene->Name = data["World"].as<std::string>();
+		auto worldData = data["World"];
+
+		m_Scene->Name = worldData["Name"].as<std::string>();
 		PF_WARN("Deserilizing World {}", m_Scene->Name.c_str());
-		auto entities = data["Entities"];
+
+		m_Scene->m_WorldID = worldData["ID"].as<uint64_t>();
+		auto entities = worldData["Entities"];
 
 		if (!entities)
 			return false;

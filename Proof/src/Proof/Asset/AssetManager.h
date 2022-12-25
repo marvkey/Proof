@@ -12,12 +12,14 @@ namespace Proof
 
 	struct AssetInfo {
 		std::filesystem::path Path;
-		AssetType Type;
-		AssetID ID;
-		bool Loaded = false;
-		bool AssetSource;
+		AssetType Type = AssetType::None;
+		AssetState State =  AssetState::None;
+		AssetID ID{ 0 };
 		std::string GetName()const {
 			return Utils::FileDialogs::GetFileName(Path);
+		}
+		bool IsAssetSource() {
+			return Type == AssetType::MeshSourceFile || Type == AssetType::TextureSourceFile;
 		}
 		friend class AssetManager;
 	};
@@ -36,10 +38,11 @@ namespace Proof
 		static bool IsAssetLoaded(AssetID ID) {
 			PF_CORE_ASSERT(HasID(ID) == false, "ID does not exist");
 			auto info = GetAssets()[ID].Info;
-			return info.Loaded;
+			return info.State == AssetState::Ready;
 		}
-		static void NewAsset(AssetID ID,const Count<Asset>& asset);
-		static void NewAssetSource(AssetID ID, const std::filesystem::path& path);
+		static void NewAsset(const Count<Asset>& asset);
+		static void NewAsset(AssetID ID, const std::filesystem::path& path);
+		static void AddWorldAsset(AssetID ID, const std::filesystem::path& path);
 		static void GenerateAllSourceAssets();
 
 
@@ -56,16 +59,48 @@ namespace Proof
 		template<class T>
 		static Count<T>GetAsset(AssetID ID){
 			auto& it = GetAssets()[ID];
-			if (it.Info.Loaded == false)
+			if (it.Info.Type == AssetType::TextureSourceFile)
+				return nullptr;
+			if (it.Info.State == AssetState::Unloaded)
 				LoadAsset(ID);
+			if (it.Info.Type == AssetType::World)
+				return nullptr;
 			return std::dynamic_pointer_cast<T>(it.Asset);
 		}
-		static AssetID GetAssetSourceID(const std::filesystem::path& path);
+
+		static AssetID GetAssetSourceID(const std::filesystem::path& path,bool createIfnotexist = true);
 		static std::string GetAssetSourcePath(AssetID ID);
+		/**
+		 * gets the asset info by saved path 
+		 * does not check if path exist so may crash
+		 * @param path weher we are chekcing for the asset
+		 * @return teh asset info 
+		 */
+		static AssetInfo GetAssetBySavedPath(const std::filesystem::path& path);
+		/**
+		 * does not check if path exist so may crash
+		 * @param path we are going to check
+		 * @return true if an asset does have that path
+		 */
+		static bool HasAssetBySavedPath(const std::filesystem::path& path);
+
 		static AssetID CreateID();
+		/**
+		 * removes an asset
+		 * it does not check if the asset id exist
+		 * so it may crash if you do not check
+		 * @param ID assset handle we are removeing
+		 */
 		static void Remove(AssetID ID);
-		static AssetType GetAssetFromFilePath(const std::filesystem::path& path);
-		static bool IsFileValid(const std::string& Path);
+
+		/**
+		 * basically tells us what type of asset it is from it extension 
+		 * it does not care if this asset is stored in proof
+		 * just checks the extension of the file
+		 * @param path the fiel path of the asset
+		 * @return the type of asset it would be in proof
+		 */
+		static AssetType GetAssetTypeFromFilePath(const std::filesystem::path& path);
 		static void LoadMultipleAsset(std::set<AssetID> assetLoadIn);
 
 	private:
@@ -76,7 +111,7 @@ namespace Proof
 			if (HasID(ID) == false)return false;
 			auto assetInfo = GetAssetInfo(ID);
 			auto asset = GetAsset<Asset>(ID);
-			if (assetInfo.Loaded) {
+			if (assetInfo.State == AssetState::Ready) {
 				asset->SetPath(path);
 				asset->SaveAsset();
 			}

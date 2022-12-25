@@ -20,6 +20,7 @@ namespace Proof
 				out << YAML::Key << "Name" << m_Project->Name;
 				out << YAML::Key << "AssetDirectory" << m_Project->m_AssetDirectory.string();
 				out << YAML::Key << "AssetManager" << m_Project->m_AssetManager.string();
+				out << YAML::Key << "StartWorld" << m_Project->m_StartWorld;
 			}
 			out << YAML::EndMap;
 		}
@@ -35,7 +36,12 @@ namespace Proof
 		YAML::Node data = YAML::LoadFile(filePath);
 		if (!data["Project"])
 			return false;
-
-		return false;
+		auto projectData = data["Project"];
+		
+		m_Project->Name = projectData["Name"].as<std::string>();
+		m_Project->m_AssetDirectory = projectData["AssetDirectory"].as<std::string>();
+		m_Project->m_AssetManager = projectData["AssetManager"].as<std::string>();
+		m_Project->m_StartWorld = projectData["StartWorld"].as<uint64_t>();
+		return true;
 	}
 }

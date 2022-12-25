@@ -41,8 +41,11 @@ namespace Proof{
 		const Count<class Texture2D>& GetTexture()const{
 			return m_Texture;
 		}
+		AssetID GetAssetSource() {
+			return m_Source;
+		}
 	private:
-		AssetID m_Source;
+		AssetID m_Source{0};
 		Count<class Texture2D> m_Texture;
 	};
 }

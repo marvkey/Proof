@@ -17,7 +17,7 @@
 namespace Proof{
     void Mesh::LoadModel(std::string const& path ) {
         PF_PROFILE_FUNC();
-
+        m_Path = path;
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
         //importer.ReadFileFromMemory(); pass a string to read file data
@@ -68,9 +68,7 @@ namespace Proof{
             }
         }
         aiMaterial* material = aiscene->mMaterials[aimesh->mMaterialIndex];
-        //if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-        //    return SubMesh(vertices, indices, aimesh->mName.C_Str());
-        auto texture = LoadMaterialTextures(material,aiTextureType_DIFFUSE,Texture2D::TextureType::Diffuse);
+        auto texture = LoadMaterialTextures(material,aiTextureType_DIFFUSE);
       //  textures.insert(textures.end(),diffuseMaps.begin(),diffuseMaps.end());
 
         //std::vector<Count<Texture2D>>  specularMaps = LoadMaterialTextures(material,aiTextureType_SPECULAR,Texture2D::TextureType::Specular);
@@ -98,27 +96,35 @@ namespace Proof{
         //aiTextureType_SPECULAR
     }
 
-    std::vector<uint32_t> Mesh::LoadMaterialTextures(void* mat,int type,Texture2D::TextureType _TextureType) {
+    std::vector <AssetID> Mesh::LoadMaterialTextures(void* mat,int type) {
         aiMaterial* aimat = (aiMaterial*)mat;
         aiTextureType aitype = (aiTextureType)type;
-        std::vector<uint32_t> textures;
+        std::vector<AssetID> textures;
         for (unsigned int i = 0; i < aimat->GetTextureCount(aitype); i++) {
-            aiString str;
-            aimat->GetTexture(aitype,i,&str);
-            std::string other = str.C_Str();
-            bool addTexture = true;
-            for (unsigned int j = 0; j < textures_loaded.size(); j++) {
-                if (textures_loaded[j]->GetPath() == other) {
-                    textures.emplace_back(j);
-                    addTexture = false;
-                    break;
+            aiString strFilePath;
+            aimat->GetTexture(aitype,i,&strFilePath);
+            
+            std::string textureFilePath = std::filesystem::relative(m_Path.parent_path() /= strFilePath.C_Str()).string();
+            std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
+
+            if (AssetManager::HasAssetBySavedPath(textureFilePath)) {
+                auto textureSourceID = AssetManager::GetAssetBySavedPath(textureFilePath).ID;
+                
+                for (auto& id : m_Textures) {
+                    if (id.TextureSource == textureSourceID) {
+                        textures.emplace_back(id.Texture);
+                        break;
+                    }
                 }
+                continue;
             }
-            if (addTexture == true) {
-                Count<Texture2D> NewTexture = Texture2D::Create(str.C_Str(),_TextureType);
-                textures_loaded.emplace_back(NewTexture);
-                textures.emplace_back(textures_loaded.size()-1);
-            }
+           
+            // texture is not found so we generate it
+            std::string savePath  = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
+            Count<Texture2DAsset> asset = CreateCount<Texture2DAsset>(textureFilePath, savePath);
+            AssetManager::NewAsset(asset);
+            textures.emplace_back(asset->GetAssetID());
+            m_Textures.emplace_back(TextureData{ asset->GetAssetID(),asset->GetAssetSource() });
         }
         return textures;
     }
@@ -148,39 +154,13 @@ namespace Proof{
         return std::vector<Count<Texture2D>>();
     }
 
-    std::vector<std::pair<std::string, Texture2D::TextureType>> Mesh::LoadMaterialTexturesTest(void* mat, int type, Texture2D::TextureType _TextureType) {
-       /*
-        aiMaterial* aimat = (aiMaterial*)mat;
-        aiTextureType aitype = (aiTextureType)type;
-        std::vector<std::pair<std::string, Texture2D::TextureType>>  Textures;
-        for (unsigned int i = 0; i < aimat->GetTextureCount(aitype); i++) {
-            aiString str;
-            aimat->GetTexture(aitype, i, &str);
-            bool skip = false;
-            for (unsigned int j = 0; j < textures_loaded.size(); j++) {
-                if (std::strcmp(textures_loaded[j]->GetPath().data(), str.C_Str()) == 0) {
-                    Textures.emplace_back(textures_loaded[j]);
-                    skip = true;
-                    break;
-                }
-            }
-            if (!skip) {
-                std::pair<std::string, Texture2D::TextureType> NewTexture = { str.C_Str(), _TextureType };
-                Textures.emplace_back(NewTexture);
-                textures_loaded.emplace_back(NewTexture);
-            }
-        }
-        return Textures;
-        */
-        return {};
-    }
 
 
-    SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name, std::vector<uint32_t> diffuseIndex) {
+    SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name, std::vector<AssetID> diffuseTextures) {
         this->m_Vertices = Vertices;
         this->m_Indices = Indices;
 
-        m_DiffuseIndex = diffuseIndex;
+        m_DiffuseAssets = diffuseTextures;
         m_Name = name;
         SetUp();
     }

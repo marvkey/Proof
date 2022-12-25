@@ -9,7 +9,7 @@ namespace Proof
 	class VulkanTexture2D : public Texture2D {
 	public:
 
-		VulkanTexture2D(const std::string& Path, TextureType textureType = TextureType::None); // Transperant if the image is Png IT has an alpha channel
+		VulkanTexture2D(const std::string& Path); // Transperant if the image is Png IT has an alpha channel
 		VulkanTexture2D(uint32_t width, uint32_t height, ImageFormat format, const void* data);
 		~VulkanTexture2D();
 		const VkImageView GetImageView() {
@@ -31,7 +31,6 @@ namespace Proof
 	private:
 		void AllocateMemory(uint64_t size);
 		void Release();
-		TextureType m_Type = TextureType::None;
 		VkImageView m_ImageView = nullptr;
 		VkSampler m_Sampler = nullptr;
 		VulkanImage m_Image;

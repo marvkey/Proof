@@ -15,8 +15,9 @@ namespace Proof
 	};
 	enum class AssetState {
 		None = 0,
-		Ready = BIT(1),
-		Loading = BIT(2),
+		Unloaded,
+		Ready,
+		Loading,
 	};
 	using AssetID = UUID;
 	class Proof_API Asset {

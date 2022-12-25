@@ -21,6 +21,7 @@
 #include "Proof/Asset/AssetManager.h"
 namespace Proof
 {
+	// add debug names
 	enum class DescriptorSet0 {
 	  //struct
 		CameraData = 0,
@@ -59,11 +60,10 @@ namespace Proof
 	void Renderer3DPBR::Init() {
 		PF_PROFILE_FUNC();
 		s_RenderStorage = new RenderStorage();
-		s_RenderStorage->MeshesVertexBuffer = VertexBuffer::Create(s_RenderStorage->MaxMesh * sizeof(MeshPipeLine::MeshVertex));
+		s_MeshPipeLine = new MeshPipeLine();
 		s_RenderStorage->CommandBuffer = CommandBuffer::Create();
 		s_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
 		InitDescriptors();
-		s_MeshPipeLine = new MeshPipeLine();
 	}
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer) {
 		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer);
@@ -84,25 +84,25 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Mesh ID", meshPointerId);
 
-		if (s_RenderStorage->AmountMeshPerMeshAssetID.contains(meshPointerId)) {
-			s_RenderStorage->AmountMeshPerMeshAssetID[meshPointerId] += 1;
-			auto instanceBeginPos = s_RenderStorage->MeshesPositionAddedIndexTransforms.at(meshPointerId);
+		if (s_MeshPipeLine->AmountMeshPerMeshAssetID.contains(meshPointerId)) {
+			s_MeshPipeLine->AmountMeshPerMeshAssetID[meshPointerId] += 1;
+			auto instanceBeginPos = s_MeshPipeLine->MeshesPositionAddedIndexTransforms.at(meshPointerId);
 
 			uint32_t instanceCurrentPos = 0;
-			uint32_t difference = s_RenderStorage->Transforms.size() - instanceBeginPos;
+			uint32_t difference = s_MeshPipeLine->Transforms.size() - instanceBeginPos;
 			instanceCurrentPos = instanceBeginPos + difference;
-
+			//the minus one at instant current positon is for the way vectors insert 
 			MeshPipeLine::MeshVertex vertex(transform);
-			s_RenderStorage->Transforms.insert(s_RenderStorage->Transforms.begin() + instanceCurrentPos, vertex);
-			s_RenderStorage->NumberMeshes++;
+			s_MeshPipeLine->Transforms.insert(s_MeshPipeLine->Transforms.begin() + instanceCurrentPos-1, vertex);
+			s_MeshPipeLine->NumberMeshes++;
 			return;
 		}
-		s_RenderStorage->AmountMeshPerMeshAssetID.insert({ meshPointerId,1 });
-		s_RenderStorage->MeshesPositionAddedIndexTransforms.insert({ meshPointerId , s_RenderStorage->Transforms.size() });
-		s_RenderStorage->MeshesID.emplace_back(meshPointerId);
+		s_MeshPipeLine->AmountMeshPerMeshAssetID.insert({ meshPointerId,1 });
+		s_MeshPipeLine->MeshesPositionAddedIndexTransforms.insert({ meshPointerId , s_MeshPipeLine->Transforms.size() });
+		s_MeshPipeLine->MeshesID.emplace_back(meshPointerId);
 		MeshPipeLine::MeshVertex vertex(transform);
-		s_RenderStorage->Transforms.emplace_back(vertex);
-		s_RenderStorage->NumberMeshes++;
+		s_MeshPipeLine->Transforms.emplace_back(vertex);
+		s_MeshPipeLine->NumberMeshes++;
 	}
 
 	void Renderer3DPBR::SubmitDirectionalLight(class DirectionalLightComponent& comp, TransformComponent& transform) {
@@ -124,11 +124,11 @@ namespace Proof
 		s_InContext = false;
 	}
 	void Renderer3DPBR::Reset() {
-		s_RenderStorage->AmountMeshPerMeshAssetID.clear();
-		s_RenderStorage->MeshesPositionAddedIndexTransforms.clear();
-		s_RenderStorage->Transforms.clear();
-		s_RenderStorage->MeshesID.clear();
-		s_RenderStorage->NumberMeshes = 0;
+		s_MeshPipeLine->AmountMeshPerMeshAssetID.clear();
+		s_MeshPipeLine->MeshesPositionAddedIndexTransforms.clear();
+		s_MeshPipeLine->Transforms.clear();
+		s_MeshPipeLine->MeshesID.clear();
+		s_MeshPipeLine->NumberMeshes = 0;
 		s_RenderStorage->CurrentFrameBuffer = nullptr;
 	}
 
@@ -136,30 +136,32 @@ namespace Proof
 	
 	}
 	void Renderer3DPBR::DrawMeshSource(uint64_t ID, uint64_t numMeshPerID, uint64_t offset) {
-		auto descriptor1 = s_RenderStorage->Descriptors[DescriptorSets::One];
+		auto descriptor1 = s_MeshPipeLine->Descriptors[DescriptorSets::One];
 		const auto meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(ID);
 				// get asset also does a check for an id so we will need to fix this
 		auto& mesh = *meshAsset->GetMesh();
 	
 		for (const auto& subMesh : mesh.GetSubMeshes()) {
-			if (subMesh.Enabled == false)return;
-			Count<Texture2D> texture = subMesh.GetDiffuseIndex().size() > 0 ? mesh.textures_loaded[subMesh.GetDiffuseIndex()[0]]
+			if (subMesh.Enabled == false)continue;
+			Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(subMesh.GetDiffuseTextures()[0])->GetTexture()
 				: Renderer::GetWhiteTexture();
 
 			descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, texture);
 			descriptor1->Bind(s_RenderStorage->CommandBuffer, s_MeshPipeLine->PipeLineLayout);
 			subMesh.GetVertexBuffer()->Bind(s_RenderStorage->CommandBuffer);
 			subMesh.GetIndexBuffer()->Bind(s_RenderStorage->CommandBuffer);
-			s_RenderStorage->MeshesVertexBuffer->Bind(s_RenderStorage->CommandBuffer, 1);
+			s_MeshPipeLine->MeshesVertexBuffer->Bind(s_RenderStorage->CommandBuffer, 1);
 
 			Renderer::DrawElementIndexed(s_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, offset);
 		}
 		
 	}
 	void Renderer3DPBR::DrawContext() {
+		if (s_MeshPipeLine->Transforms.size() == 0)
+			return;
 		s_RenderStorage->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
-		auto descriptor0 = s_RenderStorage->Descriptors[DescriptorSets::Zero];
-		auto descriptor1 = s_RenderStorage->Descriptors[DescriptorSets::One];
+		auto descriptor0 = s_MeshPipeLine->Descriptors[DescriptorSets::Zero];
+		auto descriptor1 = s_MeshPipeLine->Descriptors[DescriptorSets::One];
 
 		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, s_RenderStorage->CameraBuffer);
 
@@ -167,9 +169,9 @@ namespace Proof
 		Renderer::RecordRenderPass(s_MeshPipeLine->RenderPass, [&](Count <CommandBuffer> commandBuffer) {
 			descriptor0->Bind(commandBuffer, s_MeshPipeLine->PipeLineLayout);
 			uint32_t offset = 0;
-			s_RenderStorage->MeshesVertexBuffer->AddData(s_RenderStorage->Transforms.data(), s_RenderStorage->Transforms.size() * sizeof(MeshPipeLine::MeshVertex));
-			for (const uint64_t& ID : s_RenderStorage->MeshesID) {
-				const uint64_t numMeshPerID = s_RenderStorage->AmountMeshPerMeshAssetID[ID];
+			s_MeshPipeLine->MeshesVertexBuffer->AddData(s_MeshPipeLine->Transforms.data(), s_MeshPipeLine->Transforms.size() * sizeof(MeshPipeLine::MeshVertex));
+			for (const uint64_t& ID : s_MeshPipeLine->MeshesID) {
+				const uint64_t numMeshPerID = s_MeshPipeLine->AmountMeshPerMeshAssetID[ID];
 				if (AssetManager::HasID(ID) == false)
 					continue;
 				const auto meshInfo = AssetManager::GetAssetInfo(ID);
@@ -184,22 +186,28 @@ namespace Proof
 
 				const auto meshAsset = AssetManager::GetAsset<MeshAsset>(ID);
 				// get asset also does a check for an id so we will need to fix this
-				auto& mesh = *meshAsset->GetMesh();
+				auto meshtemp= meshAsset->GetMesh();
+				if (meshtemp == nullptr)continue;
+				auto& mesh = *meshtemp;
 				for (int i = 0; i < meshAsset->GetDiscardedMesh().size(); i++) {
 					const auto & index= meshAsset->GetDiscardedMesh()[i];
 					mesh.meshes[index].Enabled = false;
 				}
+
+	
 				for (const auto& subMesh : mesh.GetSubMeshes()) {
 					if (subMesh.Enabled == false)continue;
-					Count<Texture2D> texture = subMesh.GetDiffuseIndex().size() > 0 ? mesh.textures_loaded[subMesh.GetDiffuseIndex()[0]]
+					//Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(mesh.m_Textures[0].Texture)->GetTexture()
+					//	: Renderer::GetWhiteTexture();
+					Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(subMesh.GetDiffuseTextures()[0])->GetTexture()
 						: Renderer::GetWhiteTexture();
-
+					//Count<Texture2D> texture = Renderer::GetWhiteTexture();
 					descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, texture);
 					descriptor1->Bind(s_RenderStorage->CommandBuffer, s_MeshPipeLine->PipeLineLayout);
 					subMesh.GetVertexBuffer()->Bind(s_RenderStorage->CommandBuffer);
 					subMesh.GetIndexBuffer()->Bind(s_RenderStorage->CommandBuffer);
-					s_RenderStorage->MeshesVertexBuffer->Bind(s_RenderStorage->CommandBuffer,1);
-
+					s_MeshPipeLine->MeshesVertexBuffer->Bind(s_RenderStorage->CommandBuffer,1);
+					
 					Renderer::DrawElementIndexed(s_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, offset);
 				}
 				for (int i = 0; i < meshAsset->GetDiscardedMesh().size(); i++) {
@@ -216,12 +224,17 @@ namespace Proof
 	
 
 	void Renderer3DPBR::InitDescriptors() {
+	
+	
+	}
+
+	MeshPipeLine::MeshPipeLine() {
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
 				.AddBinding((int)DescriptorSet0::WorldData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
 				.Build();
-			s_RenderStorage->Descriptors.insert({ DescriptorSets::Zero,descriptor });
+			Descriptors.insert({ DescriptorSets::Zero,descriptor });
 		}
 
 		{
@@ -232,15 +245,12 @@ namespace Proof
 				.AddBinding((int)DescriptorSet1::roughnessMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
 				.AddBinding((int)DescriptorSet1::DiffuseMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
 				.Build();
-			s_RenderStorage->Descriptors.insert({ DescriptorSets::One,descriptor });
+			Descriptors.insert({ DescriptorSets::One,descriptor });
 		}
-	
-	}
-
-	MeshPipeLine::MeshPipeLine() {
 		Shader = Shader::Create("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Mesh.shader");
-		PipeLineLayout = PipeLineLayout::Create(std::vector{ s_RenderStorage->Descriptors[DescriptorSets::Zero],s_RenderStorage->Descriptors[DescriptorSets::One] });
+		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero],Descriptors[DescriptorSets::One] });
 		RenderPass = RenderPass::Create();
+		MeshesVertexBuffer = VertexBuffer::Create(MaxMesh * sizeof(MeshPipeLine::MeshVertex));
 
 		Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
 		meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));

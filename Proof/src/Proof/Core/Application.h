@@ -24,7 +24,12 @@
         void Run();
         void PushLayer(Layer* Layer);
         void PushOverlay(Layer* Layer);
-
+        static Application* Get() {
+            return s_Instance;
+        }
+       Project* GetProject() {
+            return m_Project.get();
+        }
         static float GetFPS() {return FPS;}
         static float GetFrameMS() {return FrameMS;};
         static float GetImguiFrameTime() { return m_ImguiFrameTime; }
@@ -34,6 +39,7 @@
         bool IsRunning = true;
         std::string m_ProjectPath;
     private:
+        static Application* s_Instance;
         void LayerUpdate(float deltaTime);
         void ImguiUpdate(float deltaTime);
         static float m_ImguiFrameTime;
@@ -50,6 +56,7 @@
         float LastFrameTime;
         static float FPS;
         static float FrameMS;
+        Special<class Project> m_Project;
         ApplicationConfiguration m_ApplicationConfiguration;
     };
     Application* CreateApplication(int argc, char** argv);

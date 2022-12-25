@@ -25,6 +25,7 @@ namespace Proof
 	static const std::vector < std::string> TextureSourceFormats =
 	{
 		"jpeg",
+		"jpg",
 		"png",
 		"tga",
 		"big",

@@ -16,11 +16,12 @@ namespace Proof
 {
 	#define MESH_EXTENSION "Mesh.ProofAsset"
 	#define MATERIAL_EXTENSION "Material.ProofAsset"
+	#define TEXTURE_EXTENSION "Texture.ProofAsset"
 	struct AssetManagerData {
 		std::unordered_map<AssetID, AssetContainer> Assets;// path
 
 		//temporay 
-		std::unordered_map<std::string, AssetID> AssetSource;// path
+		std::unordered_map<std::string, AssetID> AssetPath;// path
 		std::filesystem::path AssetDirectory;
 		std::filesystem::path AssetRegistry;
 	};
@@ -49,23 +50,24 @@ namespace Proof
 		auto& it = GetAssets()[ID];
 		return it.Info;
 	}
-	void AssetManager::NewAsset(AssetID ID, const Count<Asset>& asset) {
-		if (ID == 0) {
-			PF_CORE_ASSERT(false, "ID cannot be 0");
-		}
-		PF_ASSERT(HasID(ID) == false, "Asset Manager Has ID");
-		AssetInfo assetInfo;
-		assetInfo.ID = ID;
-		assetInfo.Path = std::filesystem::relative(asset->m_SavePath);
-		assetInfo.Loaded = false;
-		assetInfo.AssetSource = false;
-		assetInfo.Type = asset->GetAssetType();
-		s_AssetManagerData->Assets.insert({ ID,{assetInfo,asset} });
-	}
 	bool AssetManager::HasID(AssetID ID) {
 		return s_AssetManagerData->Assets.contains(ID);
 	}
-	void AssetManager::NewAssetSource(AssetID ID, const std::filesystem::path& path) {
+	void AssetManager::NewAsset(const Count<Asset>& asset) {
+		if(asset ==nullptr)
+			PF_CORE_ASSERT(false, "Asset cannot be nullptr");
+		AssetInfo assetInfo;
+		assetInfo.ID = asset->GetAssetID();
+		assetInfo.Path = std::filesystem::relative(asset->m_SavePath);
+		assetInfo.Type = asset->GetAssetType();
+		assetInfo.State = AssetState::Unloaded;
+		if (asset->GetAssetType() == AssetType::MeshSourceFile)
+			PF_CORE_ASSERT(false);
+		s_AssetManagerData->Assets.insert({ asset->GetAssetID(),{assetInfo,asset} });
+		s_AssetManagerData->AssetPath.insert({ assetInfo.Path.string(),asset->GetAssetID() });
+	}
+	
+	void AssetManager::NewAsset(AssetID ID, const std::filesystem::path& path) {
 		if (ID == 0) {
 			PF_CORE_ASSERT(false, "ID cannot be 0");
 		}
@@ -73,16 +75,31 @@ namespace Proof
 		AssetInfo assetInfo;
 		assetInfo.ID = ID;
 		assetInfo.Path = std::filesystem::relative(path);
-		assetInfo.Loaded = false;
-		assetInfo.AssetSource = true;
 		auto extension = Utils::FileDialogs::GetFileExtension(path);
 		if (MeshHasFormat(extension))
 			assetInfo.Type = AssetType::MeshSourceFile;
 		else if(TextureHasFormat(extension))
 			assetInfo.Type = AssetType::TextureSourceFile;
-
+		else {
+			PF_ERROR("Extension .{} not supported ", extension);
+			return;
+		}
+		assetInfo.State = AssetState::Unloaded;
 		s_AssetManagerData->Assets.insert({ ID,{assetInfo,nullptr} });
-		s_AssetManagerData->AssetSource.insert({ assetInfo.Path.string(),ID});
+		s_AssetManagerData->AssetPath.insert({ assetInfo.Path.string(),ID});
+	}
+	void AssetManager::AddWorldAsset(AssetID ID, const std::filesystem::path& path)
+	{
+		if (ID == 0) {
+			PF_CORE_ASSERT(false, "ID cannot be 0");
+		}
+		PF_ASSERT(HasID(ID) == false, "Asset Manager Has ID");
+		AssetInfo assetInfo;
+		assetInfo.ID = ID;
+		assetInfo.Path = std::filesystem::relative(path);
+		assetInfo.Type = AssetType::World;
+		s_AssetManagerData->Assets.insert({ ID,{assetInfo,nullptr} });
+		s_AssetManagerData->AssetPath.insert({ assetInfo.Path.string(),ID });
 	}
 	void AssetManager::UnloadAsset(AssetID ID) {
 		PF_ASSERT(false, "Funciton not ready");
@@ -93,9 +110,9 @@ namespace Proof
 	}
 
 	void GenerateAsset(const std::filesystem::path& path) {
-		if (s_AssetManagerData->AssetSource.contains(path.string()) == true)
+		if (s_AssetManagerData->AssetPath.contains(path.string()) == false)
 			return;
-		AssetManager::NewAssetSource(AssetID(), path.string());
+		AssetManager::NewAsset(AssetManager::CreateID(), path.string());
 	}
 	void AssetManager::GenerateAllSourceAssets() {
 		for (auto& it : std::filesystem::recursive_directory_iterator(s_AssetManagerData->AssetDirectory)) {
@@ -118,20 +135,19 @@ namespace Proof
 		return ID;
 	}
 	void AssetManager::Remove(AssetID ID) {
-		PF_ASSERT(HasID(ID) != true, "Asset Manager does not have ID");
 		auto info = s_AssetManagerData->Assets.at(ID).Info;
 		s_AssetManagerData->Assets.erase(ID);
 
-		if(info.AssetSource == true)
+		if(info.IsAssetSource())
 			s_AssetManagerData->Assets.erase(ID);
 	}
-	AssetType AssetManager::GetAssetFromFilePath(const std::filesystem::path& path){
+	AssetType AssetManager::GetAssetTypeFromFilePath(const std::filesystem::path& path){
 		const std::string fileFullExtension = Utils::FileDialogs::GetFullFileExtension(path);
 		if (fileFullExtension == MESH_EXTENSION)
 			return AssetType::Mesh;
 		if (fileFullExtension == MATERIAL_EXTENSION)
 			return AssetType::Material;
-		if (fileFullExtension == "Texture.ProofAsset")
+		if (fileFullExtension == TEXTURE_EXTENSION)
 			return AssetType::Texture;
 		if (fileFullExtension == "ProofWorld")
 			return AssetType::World;
@@ -143,16 +159,15 @@ namespace Proof
 		const std::string fileDirectExtension = Utils::FileDialogs::GetFileExtension(path);
 		return AssetType::None;
 	}
-	AssetID AssetManager::GetAssetSourceID(const std::filesystem::path& path) {
+	AssetID AssetManager::GetAssetSourceID(const std::filesystem::path& path, bool createIfnotexist) {
 		auto relateivePath = std::filesystem::relative(path);
-		if (s_AssetManagerData->AssetSource.contains(relateivePath.string())) {
-			return s_AssetManagerData->AssetSource.at(relateivePath.string());
+		if (s_AssetManagerData->AssetPath.contains(relateivePath.string())) {
+			return s_AssetManagerData->AssetPath.at(relateivePath.string());
 		}
-
-		//if (std::filesystem::exists(path)) {
-		//	NewAssetSource(AssetID(), relateivePath);
-		//	return s_AssetManagerData->AssetSource.at(relateivePath.string());
-		//}
+		if (std::filesystem::exists(path)&& createIfnotexist==true) {
+			NewAsset(AssetManager::CreateID(), relateivePath);
+			return s_AssetManagerData->AssetPath.at(relateivePath.string());
+		}
 		PF_CORE_ASSERT(false, "Asset does not exist");
 		return 0;
 	}
@@ -163,6 +178,16 @@ namespace Proof
 		}
 		return {};
 	}
+
+	AssetInfo AssetManager::GetAssetBySavedPath(const std::filesystem::path& path)
+	{
+		return s_AssetManagerData->Assets[s_AssetManagerData->AssetPath.at(path.string())].Info;
+	}
+
+	bool AssetManager::HasAssetBySavedPath(const std::filesystem::path& path)
+	{
+		return s_AssetManagerData->AssetPath.contains(path.string());
+	}
 	
 
 	template <class T>
@@ -171,7 +196,7 @@ namespace Proof
 		auto& assetInfo = s_AssetManagerData->Assets[ID].Info;
 		it->second.Asset = CreateCount<T>();
 		s_AssetManagerData->Assets[ID].Asset->LoadAsset(assetInfo.Path.string());
-		assetInfo.Loaded = true;
+		assetInfo.State = AssetState::Ready;
 	}
 	bool AssetManager::LoadAsset(AssetID ID) {
 		PF_ASSERT(HasID(ID) == true, "Asset Manager does not have ID");
@@ -205,12 +230,7 @@ namespace Proof
 		return true;
 		
 	}
-	bool AssetManager::IsFileValid(const std::string& Path) {
-		YAML::Node data = YAML::LoadFile(Path);
-		if (!data["AssetType"]) // if there is no scene no
-			return false;
-		return true;
-	}
+	
 
 	void AssetManager::InitilizeAssets() {
 		YAML::Node data = YAML::LoadFile(s_AssetManagerData->AssetRegistry.string());
@@ -222,16 +242,13 @@ namespace Proof
 			AssetID assetID = asset["Asset"].as<uint64_t>();
 			std::string path = asset["Path"].as<std::string>();
 			auto assetType = EnumReflection::StringEnum<AssetType>(asset["Type"].as<std::string>());
-			bool assetSource = asset["AssetSource"].as<bool>();
 			AssetInfo assetInfo;
 			assetInfo.ID = assetID;
 			assetInfo.Path = path;
-			assetInfo.Loaded = false;
-			assetInfo.AssetSource = assetSource;
 			assetInfo.Type = assetType;
+			assetInfo.State = AssetState::Unloaded;
 			s_AssetManagerData->Assets.insert({ assetID,{assetInfo,nullptr} });// setting the asset as null as we will load it in another thread
-			if (assetSource)
-				s_AssetManagerData->AssetSource.insert({ std::filesystem::relative(path).string(),assetID });
+			s_AssetManagerData->AssetPath.insert({ std::filesystem::relative(path).string(),assetID });
 		}
 	}
 	void AssetManager::SaveAllAssets() {
@@ -242,14 +259,13 @@ namespace Proof
 		for (auto& [id,assetManager] : s_AssetManagerData->Assets) {
 			const auto& assetInfo = assetManager.Info;
 			const auto& asset = assetManager.Asset;
-			if (assetInfo.Loaded) {
+			if (assetInfo.State == AssetState::Ready) {
 				asset->SaveAsset();
 			}
 			out << YAML::BeginMap;
 			out << YAML::Key << "Asset" << YAML::Value << assetInfo.ID;
 			out << YAML::Key << "Type" << EnumReflection::EnumString<AssetType>(assetInfo.Type);
 			out << YAML::Key << "Path" << assetInfo.Path.string();
-			out << YAML::Key << "AssetSource" << assetInfo.AssetSource;
 			out << YAML::EndMap;
 		};
 		out << YAML::EndMap;
