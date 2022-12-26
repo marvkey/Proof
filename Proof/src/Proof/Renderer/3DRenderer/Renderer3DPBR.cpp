@@ -8,7 +8,7 @@
 #include "Proof/Scene/Component.h"
 #include "Proof/Scene/Camera/OrthagraphicCamera.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
-
+#include <utility>      
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Entity.h"
@@ -63,7 +63,6 @@ namespace Proof
 		s_MeshPipeLine = new MeshPipeLine();
 		s_RenderStorage->CommandBuffer = CommandBuffer::Create();
 		s_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
-		InitDescriptors();
 	}
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer) {
 		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer);
@@ -83,26 +82,12 @@ namespace Proof
 		if (meshPointerId == 0)return; // means that therer is no mesh 
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Mesh ID", meshPointerId);
-
-		if (s_MeshPipeLine->AmountMeshPerMeshAssetID.contains(meshPointerId)) {
-			s_MeshPipeLine->AmountMeshPerMeshAssetID[meshPointerId] += 1;
-			auto instanceBeginPos = s_MeshPipeLine->MeshesPositionAddedIndexTransforms.at(meshPointerId);
-
-			uint32_t instanceCurrentPos = 0;
-			uint32_t difference = s_MeshPipeLine->Transforms.size() - instanceBeginPos;
-			instanceCurrentPos = instanceBeginPos + difference;
-			//the minus one at instant current positon is for the way vectors insert 
-			MeshPipeLine::MeshVertex vertex(transform);
-			s_MeshPipeLine->Transforms.insert(s_MeshPipeLine->Transforms.begin() + instanceCurrentPos-1, vertex);
-			s_MeshPipeLine->NumberMeshes++;
-			return;
-		}
-		s_MeshPipeLine->AmountMeshPerMeshAssetID.insert({ meshPointerId,1 });
-		s_MeshPipeLine->MeshesPositionAddedIndexTransforms.insert({ meshPointerId , s_MeshPipeLine->Transforms.size() });
-		s_MeshPipeLine->MeshesID.emplace_back(meshPointerId);
 		MeshPipeLine::MeshVertex vertex(transform);
-		s_MeshPipeLine->Transforms.emplace_back(vertex);
+		// [] creatses it if it does not exist
+		s_MeshPipeLine->MeshesTransforms[meshPointerId].emplace_back(vertex);
+		s_MeshPipeLine->AmountMeshes[meshPointerId] += 1;
 		s_MeshPipeLine->NumberMeshes++;
+		
 	}
 
 	void Renderer3DPBR::SubmitDirectionalLight(class DirectionalLightComponent& comp, TransformComponent& transform) {
@@ -124,10 +109,8 @@ namespace Proof
 		s_InContext = false;
 	}
 	void Renderer3DPBR::Reset() {
-		s_MeshPipeLine->AmountMeshPerMeshAssetID.clear();
-		s_MeshPipeLine->MeshesPositionAddedIndexTransforms.clear();
-		s_MeshPipeLine->Transforms.clear();
-		s_MeshPipeLine->MeshesID.clear();
+		s_MeshPipeLine->MeshesTransforms.clear();
+		s_MeshPipeLine->AmountMeshes.clear();
 		s_MeshPipeLine->NumberMeshes = 0;
 		s_RenderStorage->CurrentFrameBuffer = nullptr;
 	}
@@ -157,21 +140,27 @@ namespace Proof
 		
 	}
 	void Renderer3DPBR::DrawContext() {
-		if (s_MeshPipeLine->Transforms.size() == 0)
+		if (s_MeshPipeLine->MeshesTransforms.size() == 0)
 			return;
 		s_RenderStorage->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 		auto descriptor0 = s_MeshPipeLine->Descriptors[DescriptorSets::Zero];
 		auto descriptor1 = s_MeshPipeLine->Descriptors[DescriptorSets::One];
 
 		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, s_RenderStorage->CameraBuffer);
-
+		std::vector<MeshPipeLine::MeshVertex> meshesVertex;
+		std::vector<AssetID> elementsImplaced;
+		for (auto& [ID, transforms] : s_MeshPipeLine->MeshesTransforms) {
+			// dont use std::end instead back inserter because using std::end can resulst in undefinded behavior
+			std::move(transforms.begin(), transforms.end(), std::back_inserter(meshesVertex));
+			elementsImplaced.emplace_back(ID);
+		}
 		Renderer::BeginRenderPass(s_RenderStorage->CommandBuffer, s_MeshPipeLine->RenderPass,s_RenderStorage->CurrentFrameBuffer);
 		Renderer::RecordRenderPass(s_MeshPipeLine->RenderPass, [&](Count <CommandBuffer> commandBuffer) {
 			descriptor0->Bind(commandBuffer, s_MeshPipeLine->PipeLineLayout);
 			uint32_t offset = 0;
-			s_MeshPipeLine->MeshesVertexBuffer->AddData(s_MeshPipeLine->Transforms.data(), s_MeshPipeLine->Transforms.size() * sizeof(MeshPipeLine::MeshVertex));
-			for (const uint64_t& ID : s_MeshPipeLine->MeshesID) {
-				const uint64_t numMeshPerID = s_MeshPipeLine->AmountMeshPerMeshAssetID[ID];
+			s_MeshPipeLine->MeshesVertexBuffer->AddData(meshesVertex.data(),meshesVertex.size() * sizeof(MeshPipeLine::MeshVertex));
+			for (const uint64_t& ID : elementsImplaced) {
+				const uint64_t numMeshPerID = s_MeshPipeLine->AmountMeshes[ID];
 				if (AssetManager::HasID(ID) == false)
 					continue;
 				const auto meshInfo = AssetManager::GetAssetInfo(ID);
@@ -221,12 +210,6 @@ namespace Proof
 		Renderer::SubmitCommandBuffer(s_RenderStorage->CommandBuffer);
 	}
 
-	
-
-	void Renderer3DPBR::InitDescriptors() {
-	
-	
-	}
 
 	MeshPipeLine::MeshPipeLine() {
 		{

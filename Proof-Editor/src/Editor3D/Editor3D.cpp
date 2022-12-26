@@ -911,10 +911,11 @@ namespace Proof
 					tc.Scale = scale;
 				}
 			}
-
+			static bool meshSourceAdded = false;
+			static std::filesystem::path meshSourcePath;
 			/* putting this underneath image because a window only accpet drop target to when item is bound so and image has been bound */
 			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("World")) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::World).c_str())) {
 					std::string Data = (const char*)payload->Data;
 					SceneSerializer scerilize(ActiveWorld.get());
 					scerilize.SerilizeText(ActiveWorld->GetPath());
@@ -933,8 +934,25 @@ namespace Proof
 					newentt.AddComponent<MeshComponent>()->SetMeshSource(meshID);
 					m_WorldHierachy.m_SelectedEntity = newentt;
 				}
+
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::MeshSourceFile).c_str())) {
+					UUID meshSourceId = *(UUID*)payload->Data;
+					meshSourceAdded = true;
+					meshSourcePath = AssetManager::GetAssetInfo(meshSourceId).Path;
+				}
+			
 				ImGui::EndDragDropTarget();
 
+			}
+			if (meshSourceAdded) {
+				AssetID id;
+				std::tie(meshSourceAdded, id) = m_ContentBrowserPanel.AddMesh(meshSourcePath);
+				// basically add mesh is done with its operation and no longer renderng
+				if (meshSourceAdded == false) {
+					Entity newentt = ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
+					newentt.AddComponent<MeshComponent>()->SetMeshSource(id);
+					m_WorldHierachy.m_SelectedEntity = newentt;
+				}
 			}
 
 			/*----------------------------------------------------------------------------------------------------------------------------*/

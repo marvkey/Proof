@@ -107,14 +107,24 @@ namespace Proof{
             std::string textureFilePath = std::filesystem::relative(m_Path.parent_path() /= strFilePath.C_Str()).string();
             std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
 
-            if (AssetManager::HasAssetBySavedPath(textureFilePath)) {
-                auto textureSourceID = AssetManager::GetAssetBySavedPath(textureFilePath).ID;
-                
+            if (AssetManager::HasAsset(textureFilePath)) {
+                auto textureSourceInfo = AssetManager::GetAssetInfo(textureFilePath);
+                // texutre found in m_Textures;
+                bool textureFound = false;
                 for (auto& id : m_Textures) {
-                    if (id.TextureSource == textureSourceID) {
+                    if (id.TextureSource == textureSourceInfo.ID) {
                         textures.emplace_back(id.Texture);
+                        textureFound = true;
                         break;
                     }
+                }
+                // this is temporaty 
+                if (textureFound == false) {
+                    std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
+                    path += "."+Texture2DAsset::StaticGetExtension();
+                    auto asset =  AssetManager::GetAsset< Texture2DAsset>(path);
+                    textures.emplace_back(asset->GetAssetID());
+                    m_Textures.emplace_back(TextureData{ asset->GetAssetID(),asset->GetAssetSource() });
                 }
                 continue;
             }

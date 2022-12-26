@@ -60,8 +60,10 @@ namespace Proof
 			data = stbi_load(Path.c_str(), &width, &height, &channels, 4);
 			m_Format = ImageFormat::RGBA;
 		}
-		if(data==nullptr)
-			PF_ENGINE_ERROR("Texture passed is empty{}", Path.c_str());
+		if (data == nullptr) {
+			PF_ENGINE_ERROR("Texture passed is empty {}", Path.c_str());
+			return;
+		}
 
 		// check for dimension
 		{

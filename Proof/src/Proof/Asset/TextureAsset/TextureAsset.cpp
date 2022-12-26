@@ -13,8 +13,10 @@ namespace Proof{
 		m_Texture = Texture2D::Create(texturePath);
 		m_SavePath = savePath;
 		auto parentDir = std::filesystem::relative(m_SavePath.parent_path());
-		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + GetExtension()};
-		m_Source = AssetManager::GetAssetSourceID(texturePath);
+		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + "." + GetExtension()};
+		if (AssetManager::HasAsset(texturePath) == false)
+			AssetManager::NewAsset(AssetManager::CreateID(), texturePath);
+		m_Source = AssetManager::GetAssetInfo(texturePath).ID;
 		SaveAsset();
 	}
 	void Texture2DAsset::SaveAsset() {
@@ -39,7 +41,7 @@ namespace Proof{
 		m_AssetID = data["ID"].as<uint64_t>();
 		m_Source = data["AssetSource"].as<uint64_t>();
 
-		m_Texture = Texture2D::Create(AssetManager::GetAssetSourcePath(m_Source));
+		m_Texture = Texture2D::Create(AssetManager::GetAssetInfo(m_Source).Path.string());
 		return true;
 	}
 	void* Texture2DAsset::GetImageID() {

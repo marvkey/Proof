@@ -16,6 +16,11 @@ namespace Proof
 	public:
 		ContentBrowserPanel(class Editore3D* owner);
 		void ImGuiRender(class FrameTime deltaTime);
+		//returns false when done rendering
+		// when the window pop up context is done
+		// returns true if still need rendering
+		// the bool is for don, and assetId is the asset id of the mesh
+		static std::pair<bool,AssetID> AddMesh(const std::filesystem::path& meshPath, const std::vector<uint32_t>& excludeIndex = {});
 	private:
 		std::filesystem::path m_CurrentDirectory;
 		Count<Texture2D> m_FolderIcon;
@@ -23,7 +28,7 @@ namespace Proof
 		Count<Texture2D> m_MeshIcon;
 		Count<Texture2D> m_ArrowIcon;
 		class Editore3D* m_Owner;
-		void GetAllSubFolders(const std::string& path);
+		void GetAllSubFolders(const std::filesystem::path& path);
 		/**
 		* Adds an asset and retuns the file path of the asset
 		* assetSourcePath: the source file of the 
@@ -121,10 +126,9 @@ namespace Proof
 				RenameFile(fileName, fileFullExension);
 		}
 
-
+		void ContentSubWindow();
 		void GenerateThumbnail(UUID ID);
 		void DeleteFolder(const std::string& path);
-		__forceinline UUID GetIDCurrentDirectory(const std::string& path);
 		friend class Editore3D;
 	};
 }

@@ -67,22 +67,24 @@ namespace Proof
 				return nullptr;
 			return std::dynamic_pointer_cast<T>(it.Asset);
 		}
-
-		static AssetID GetAssetSourceID(const std::filesystem::path& path,bool createIfnotexist = true);
-		static std::string GetAssetSourcePath(AssetID ID);
+		template<class T>
+		static Count<T>GetAsset(const std::filesystem::path& path) {
+			auto it = GetAssetByPath()[path.string()];
+			return GetAsset<T>(it.Get());
+		}
 		/**
 		 * gets the asset info by saved path 
 		 * does not check if path exist so may crash
 		 * @param path weher we are chekcing for the asset
 		 * @return teh asset info 
 		 */
-		static AssetInfo GetAssetBySavedPath(const std::filesystem::path& path);
+		static AssetInfo GetAssetInfo(const std::filesystem::path& path);
 		/**
 		 * does not check if path exist so may crash
 		 * @param path we are going to check
 		 * @return true if an asset does have that path
 		 */
-		static bool HasAssetBySavedPath(const std::filesystem::path& path);
+		static bool HasAsset(const std::filesystem::path& path);
 
 		static AssetID CreateID();
 		/**
@@ -102,21 +104,26 @@ namespace Proof
 		 */
 		static AssetType GetAssetTypeFromFilePath(const std::filesystem::path& path);
 		static void LoadMultipleAsset(std::set<AssetID> assetLoadIn);
-
 	private:
 		static std::unordered_map<AssetID, AssetContainer>& GetAssets();
+		static std::unordered_map<std::string, AssetID>& GetAssetByPath();
 		static void Init(AssetManagerConfiguration& assetManagerConfiguration);
 		static void UnInizilize();
-		static bool ResetAssetInfo(AssetID ID,const std::string& path) {
-			if (HasID(ID) == false)return false;
-			auto assetInfo = GetAssetInfo(ID);
-			auto asset = GetAsset<Asset>(ID);
-			if (assetInfo.State == AssetState::Ready) {
-				asset->SetPath(path);
+		// id of asset wewant to chanage, and the new path of the asset
+		static bool ResetAssetPath(AssetID ID,const std::string& newPath) {
+			auto& it = GetAssets().at(ID);
+			// changing teh old data in assetBypath
+			GetAssetByPath().erase(it.Info.Path.string());
+			// creating the new data
+			GetAssetByPath().insert({ newPath,it.Info.ID });
+			// new assetINfo
+			it.Info.Path = newPath;
+			if (it.Info.State == AssetState::Ready) {
+				auto asset = GetAsset<Asset>(ID);
+				asset->SetPath(newPath);
 				asset->SaveAsset();
 			}
-			auto it = GetAssets().at(ID);
-			it.Info.Path = path;
+
 			return true;
 		}
 

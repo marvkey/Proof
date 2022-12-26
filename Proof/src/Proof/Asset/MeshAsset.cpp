@@ -14,8 +14,10 @@ namespace Proof
 		m_AssetID = AssetManager::CreateID();
 		m_SavePath = savePath;
 		auto parentDir = std::filesystem::relative(m_SavePath.parent_path());
-		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + GetExtension()};
-		m_Source = AssetManager::GetAssetSourceID(meshFilePath);
+		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + "."+GetExtension()};
+		if (AssetManager::HasAsset(meshFilePath) == false)
+			AssetManager::NewAsset(AssetManager::CreateID(), meshFilePath);
+		m_Source = AssetManager::GetAssetInfo(meshFilePath).ID;
 		m_DiscardMesh = excludeIndex;
 		SaveAsset();
 	}
@@ -72,7 +74,9 @@ namespace Proof
 	MeshSourceFileAsset::MeshSourceFileAsset(const std::string& meshFilePath):
 		Asset(AssetType::MeshSourceFile)
 	{
-		m_AssetID = AssetManager::GetAssetSourceID(meshFilePath);
+		if (AssetManager::HasAsset(meshFilePath) == false)
+			AssetManager::NewAsset(AssetManager::CreateID(), meshFilePath);
+		m_AssetID = AssetManager::GetAssetInfo(meshFilePath).ID;
 		m_SavePath = meshFilePath;
 	}
 	bool MeshSourceFileAsset::LoadAsset(const std::string& FilePath) {

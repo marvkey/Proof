@@ -46,6 +46,10 @@ namespace Proof
 	std::unordered_map<AssetID, AssetContainer>& AssetManager::GetAssets() {
 		return s_AssetManagerData->Assets;
 	}
+	std::unordered_map<std::string, AssetID>& AssetManager::GetAssetByPath()
+	{
+		return s_AssetManagerData->AssetPath;
+	}
 	AssetInfo AssetManager::GetAssetInfo(AssetID ID) {
 		auto& it = GetAssets()[ID];
 		return it.Info;
@@ -137,9 +141,7 @@ namespace Proof
 	void AssetManager::Remove(AssetID ID) {
 		auto info = s_AssetManagerData->Assets.at(ID).Info;
 		s_AssetManagerData->Assets.erase(ID);
-
-		if(info.IsAssetSource())
-			s_AssetManagerData->Assets.erase(ID);
+		s_AssetManagerData->AssetPath.erase(info.Path.string());
 	}
 	AssetType AssetManager::GetAssetTypeFromFilePath(const std::filesystem::path& path){
 		const std::string fileFullExtension = Utils::FileDialogs::GetFullFileExtension(path);
@@ -159,32 +161,16 @@ namespace Proof
 		const std::string fileDirectExtension = Utils::FileDialogs::GetFileExtension(path);
 		return AssetType::None;
 	}
-	AssetID AssetManager::GetAssetSourceID(const std::filesystem::path& path, bool createIfnotexist) {
-		auto relateivePath = std::filesystem::relative(path);
-		if (s_AssetManagerData->AssetPath.contains(relateivePath.string())) {
-			return s_AssetManagerData->AssetPath.at(relateivePath.string());
-		}
-		if (std::filesystem::exists(path)&& createIfnotexist==true) {
-			NewAsset(AssetManager::CreateID(), relateivePath);
-			return s_AssetManagerData->AssetPath.at(relateivePath.string());
-		}
-		PF_CORE_ASSERT(false, "Asset does not exist");
-		return 0;
-	}
+	
 
-	std::string AssetManager::GetAssetSourcePath(AssetID ID) {
-		if (s_AssetManagerData->Assets.contains(ID)) {
-			return s_AssetManagerData->Assets.at(ID).Info.Path.string();
-		}
-		return {};
-	}
+	
 
-	AssetInfo AssetManager::GetAssetBySavedPath(const std::filesystem::path& path)
+	AssetInfo AssetManager::GetAssetInfo(const std::filesystem::path& path)
 	{
 		return s_AssetManagerData->Assets[s_AssetManagerData->AssetPath.at(path.string())].Info;
 	}
 
-	bool AssetManager::HasAssetBySavedPath(const std::filesystem::path& path)
+	bool AssetManager::HasAsset(const std::filesystem::path& path)
 	{
 		return s_AssetManagerData->AssetPath.contains(path.string());
 	}
@@ -203,7 +189,6 @@ namespace Proof
 		
 		auto& asset = s_AssetManagerData->Assets[ID].Asset;
 		auto& assetInfo = s_AssetManagerData->Assets[ID].Info;
-
 		switch (assetInfo.Type) {
 			case Proof::AssetType::None:
 				break;

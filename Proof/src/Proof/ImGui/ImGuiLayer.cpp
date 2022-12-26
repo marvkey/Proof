@@ -76,6 +76,7 @@ namespace Proof
 		Layer::OnAttach();
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
+		// for assetVIewe we can use imguidoc node no split
 		ImGuiIO& io = ImGui::GetIO();;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls

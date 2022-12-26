@@ -365,6 +365,13 @@ namespace Proof
 		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp) {
 
 			ExternalAPI::ImGUIAPI::TextBar("Mesh", meshComp.GetAsset() != nullptr ? meshComp.GetAsset()->GetName() : "null");
+			if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Mesh).c_str())) {
+					UUID Data = *(const UUID*)payload->Data;
+					meshComp.SetMeshSource(Data);
+				}
+				ImGui::EndDragDropTarget();
+			}
 			if (ImGui::BeginPopupContextItem("RemoveMesh")) {
 				ImGui::EndPopup();
 			}
@@ -375,13 +382,7 @@ namespace Proof
 
 				ImGui::EndPopup();
 			}
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Mesh).c_str())) {
-					UUID Data = *(const UUID*)payload->Data;
-					meshComp.SetMeshSource(Data);
-				}
-				ImGui::EndDragDropTarget();
-			}
+			
 
 			ExternalAPI::ImGUIAPI::TextBar("Material", meshComp.HasMaterial() ? AssetManager::GetAsset<Asset>(meshComp.GetMaterialPointerID())->GetName() : "null");
 			if (ImGui::BeginPopupContextItem("RemoveMaterial")) {

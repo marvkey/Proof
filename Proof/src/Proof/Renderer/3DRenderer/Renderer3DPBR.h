@@ -30,27 +30,12 @@ namespace Proof
 		Count<VertexBuffer> MeshesVertexBuffer;
 		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 
-		//MESH ASSET ID, meshNumber
-		std::unordered_map<AssetID, uint64_t> AmountMeshPerMeshAssetID;
-
-		//this is not begening index
-		// but its the beggeninig index of when the mesh was added to the vetor of transfomrs
-		// with this we can use math to find the location of the first index of that specific index
-		// of when it was first added
-		std::unordered_map<AssetID, uint32_t> MeshesPositionAddedIndexTransforms;
-		std::vector<MeshPipeLine::MeshVertex>Transforms;
-		//we need this because when addign a id to a unordered map
-		// treversing we could go in a different direction
-		// therefore our transfomrs will be misplaced
-		//with this we can add mesh id in tthe order there were added to the list 
-		//and use the offset to treverse trhought them in the correct order the transforms were added
-		std::vector<uint64_t> MeshesID;
+		// id, and all teh transforms for that mesh
+		std::unordered_map < AssetID, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
+		std::unordered_map < AssetID, uint32_t> AmountMeshes;
 		uint32_t NumberMeshes;
-		// number of different meshes we draw at once
-		const uint32_t MaxMesh = 1000;
-
+		const uint32_t MaxMesh = 2000;
 		MeshPipeLine();
-		
 	};
 	
 	struct RenderStorage {
@@ -76,7 +61,6 @@ namespace Proof
 		static void DrawContext();
 		static void DrawMeshSource(uint64_t id,uint64_t num,uint64_t offset);
 		static void Reset();
-		static void InitDescriptors();
 		static bool s_InContext;
 
 	};

@@ -11,8 +11,9 @@ namespace Proof
 		void ImGUIAPI::TextBar(const std::string& Name,const std::string& Text,float ColumnWidth) {
 			ImGui::GetStyle().FrameRounding = 3.5;
 			ImGui::PushID(Name.c_str());
-			ImGui::Columns(2); 
-			ImGui::SetColumnWidth(0,ColumnWidth);
+			// columns are taking imgui focused disrupting teh payload
+			//ImGui::Columns(2); 
+			//ImGui::SetColumnWidth(0,ColumnWidth);
 			ImGui::Text(Name.c_str());
 			ImGui::NextColumn();
 
@@ -21,7 +22,7 @@ namespace Proof
 			strcpy_s(buffer,sizeof(buffer),Text.c_str());
 			if (ImGui::InputText("##N",buffer,sizeof(buffer),ImGuiInputTextFlags_ReadOnly));
 			ImGui::PopID();
-			ImGui::Columns(1);
+			//ImGui::Columns(1);
 			ImGui::GetStyle().FrameRounding = 6;
 		}
 		void ImGUIAPI::AcceptPayLoad(const std::string& name,uint32_t& Variable) {
