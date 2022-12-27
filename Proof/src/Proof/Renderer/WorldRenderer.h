@@ -12,6 +12,7 @@ namespace Proof
 			m_World(world)
 		{
 			m_ScreenFrameBuffer=ScreenFrameBuffer::Create(textureWidth,textureHeight);
+			m_CommandBuffer = CommandBuffer::Create();
 		}
 		void Resize(ScreenSize windowSize);
 		void SetContext(Count<World>world) {
@@ -23,13 +24,10 @@ namespace Proof
 		void* GetWorldTexture(){
 			return m_ScreenFrameBuffer->GetTexture();
 		}
-		void SetRendererPause(bool value){
-			m_RendererPaused =value;
-		}
-		bool GetRendererPaused(){return m_RendererPaused;};
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
+		
 	private:
-		bool  m_RendererPaused =false;
+		Count<CommandBuffer> m_CommandBuffer;
 		Count<World>m_World=nullptr;
 	};
 }

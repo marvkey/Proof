@@ -27,10 +27,7 @@ namespace Proof {
 		WorldData = 1,
 
 	};
-
-	enum class DescriptorSet1 {
-		TextureArray = 0
-	};
+	
 	struct CameraData {
 		CameraData() {};
 		CameraData(const glm::mat4& projection, const glm::mat4& view, const Vector& pos) :
@@ -48,27 +45,21 @@ namespace Proof {
 		s_SpritePiipeline = new SpritePipeline();
 	}
 	
-	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer> frameBuffer) {
+	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commdandBuffer) {
 		PF_PROFILE_FUNC()
 		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
 		s_CurrentCamera = CameraData{ projection,view,Position };
 		s_Storage2DData->CurrentFrameBuffer = frameBuffer;
+		s_Storage2DData->CommandBuffer = commdandBuffer;
 	}
 	void Renderer2D::InitDescriptors() {
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				//.AddBinding((int)DescriptorSet0::WorldData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
 				.Build();
 			s_Storage2DData->Descriptors.insert({ DescriptorSets::Zero,descriptor });
 		}
 
-		{
-			auto descriptor = DescriptorSet::Builder(DescriptorSets::One)
-				.AddBinding((int)DescriptorSet1::TextureArray, DescriptorType::ImageSampler, ShaderStage::Fragment,32)
-				.Build();
-			s_Storage2DData->Descriptors.insert({ DescriptorSets::One,descriptor });
-		}
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1,1,1},{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());
@@ -99,15 +90,15 @@ namespace Proof {
 		DrawQuad(Location,Rotation,Size,Color,Renderer::GetWhiteTexture());
 	}
 	void Renderer2D::DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform){
-		DrawQuad({transform.Location},transform.Rotation,transform.Scale,Sprite.Colour,Sprite.GetTexture()!= nullptr ? Sprite.GetTexture() : Renderer::GetWhiteTexture());
+		DrawQuad({transform.Location},transform.Rotation,transform.Scale,Sprite.Colour,nullptr);
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D) {
 		if (s_Storage2DData->IndexCount >= s_Storage2DData->c_MaxIndexCount){ // reached maxed index size
 			Render();
 			Reset();
 		}
+		/*
 		float TextureIndex =-1.0f; // no texture index
-		
 		for(uint32_t i =0; i<s_Storage2DData->TextureSlotIndex;i++){
 			if(s_Storage2DData->Textures[i]->GetID() == texture2D->GetID()){
 				TextureIndex =(float)i;
@@ -119,9 +110,9 @@ namespace Proof {
 			s_Storage2DData->Textures[s_Storage2DData->TextureSlotIndex] =texture2D;
 			s_Storage2DData->TextureSlotIndex++;
 		}
-
+		*/
 		s_Transform = glm::mat4(1.0f);
-		s_Transform = glm::translate(glm::mat4(1.0f),{Location.x,Location.y,0.0f}) *
+		s_Transform = glm::translate(glm::mat4(1.0f),{Location.x,Location.y,Location.z}) *
 			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.x),{1.0f,0.0f,0.0f}) *
 			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.y),{0.0f,1.0f,0.0f}) *
 			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.z),{0.0f,0.0f,1.0f}) *
@@ -130,22 +121,22 @@ namespace Proof {
 		Vertex1.Position = s_Transform * glm::vec4(0.5f,0.5f,0.0f,1.0f);
 		Vertex1.Color = Color;
 		Vertex1.TexCoords = {1.0f,1.0f};
-		Vertex1.TexSlot = TextureIndex;
+		//Vertex1.TexSlot = TextureIndex;
 
-		Vertex2.Position = s_Transform * glm::vec4(0.5f,-0.5f,0.0f,1.0f);
+		Vertex2.Position = s_Transform * glm::vec4(0.5f,-0.5f,0.0,1.0f);
 		Vertex2.Color = Color;
 		Vertex2.TexCoords = {1.0f,0.0f};
-		Vertex2.TexSlot = TextureIndex;
+		//Vertex2.TexSlot = TextureIndex;
 
-		Vertex3.Position = s_Transform * glm::vec4(-0.5f,-0.5f,0.0f,1.0f);
+		Vertex3.Position = s_Transform * glm::vec4(-0.5f,-0.5f,0.0,1.0f);
 		Vertex3.Color = Color;
 		Vertex3.TexCoords = {0.0f,0.0f};
-		Vertex3.TexSlot = TextureIndex;
+		//Vertex3.TexSlot = TextureIndex;
 
-		Vertex4.Position = s_Transform * glm::vec4(-0.5f,0.5f,0.0f,1.0f);
+		Vertex4.Position = s_Transform * glm::vec4(-0.5f,0.5f,0.0,1.0f);
 		Vertex4.Color = Color;
 		Vertex4.TexCoords = {0.0f,1.0f};
-		Vertex4.TexSlot = TextureIndex;
+		//Vertex4.TexSlot = TextureIndex;
 
 		/* Gonna test wich is faster this meathod or the second one*/
 		s_Storage2DData->QuadArray[s_Storage2DData->QuadArraySize] = Vertex1;
@@ -168,8 +159,11 @@ namespace Proof {
 	}
 	void Renderer2D::Reset() {
 		s_Storage2DData->IndexCount = 0;
-		s_Storage2DData->TextureSlotIndex = 1;
+		//s_Storage2DData->TextureSlotIndex = 1;
 		s_Storage2DData->QuadArraySize = 0;
+		s_Storage2DData->CurrentFrameBuffer = nullptr;
+		s_Storage2DData->CommandBuffer = nullptr;
+
 	}
 	
 	void Renderer2D::Render() {
@@ -189,29 +183,24 @@ namespace Proof {
 		#endif
 		s_Storage2DData->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 		auto descriptor0 = s_Storage2DData->Descriptors[DescriptorSets::Zero];
-		auto descriptor1 = s_Storage2DData->Descriptors[DescriptorSets::One];
 
 		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, s_Storage2DData->CameraBuffer);
-		descriptor1->WriteImage((int)DescriptorSet1::TextureArray, s_Storage2DData->Textures);
 		Renderer::BeginRenderPass(s_Storage2DData->CommandBuffer, s_SpritePiipeline->RenderPass, s_Storage2DData->CurrentFrameBuffer);
 		Renderer::RecordRenderPass(s_SpritePiipeline->RenderPass, [&](Count <CommandBuffer> commandBuffer) {
-			s_Storage2DData->VertexBuffer->AddData(s_Storage2DData->QuadArray.data(), s_Storage2DData->QuadArraySize * sizeof(Vertex2D));
 			descriptor0->Bind(commandBuffer, s_SpritePiipeline->PipeLineLayout);
-			descriptor1->Bind(commandBuffer, s_SpritePiipeline->PipeLineLayout);
+			s_Storage2DData->VertexBuffer->AddData(s_Storage2DData->QuadArray.data(), s_Storage2DData->QuadArraySize * sizeof(Vertex2D));
 			s_Storage2DData->VertexBuffer->Bind(commandBuffer);
-			s_Storage2DData->IndexBuffer->Bind(commandBuffer);
-			Renderer::DrawArrays(commandBuffer, s_Storage2DData->IndexBuffer->GetCount(),1);
+			s_Storage2DData->IndexBuffer->Bind(commandBuffer);	
+			Renderer::DrawElementIndexed(commandBuffer, s_Storage2DData->IndexCount, s_Storage2DData->QuadArraySize, 0);
 		});
 		Renderer::EndRenderPass(s_SpritePiipeline->RenderPass);
-		Renderer::SubmitCommandBuffer(s_Storage2DData->CommandBuffer);
-
 	}
 	
 	
 	std::vector<Vertex2D> Renderer2D::CreateQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Scale,const glm::vec4& Color,float TexIndex) {
 		float Depth =0.0f;
 		glm::mat4 Transform = glm::mat4(1.0f);
-		Transform = glm::translate(glm::mat4(1.0f),{Location.x,Location.y,0.0f}) *
+		Transform = glm::translate(glm::mat4(1.0f),{Location.x,Location.y,0.f}) *
 			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.x),{1.0f,0.0f,0.0f})*
 			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.y),{0.0f,1.0f,0.0f}) *
 			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.z),{0.0f,0.0f,1.0f}) *
@@ -221,28 +210,28 @@ namespace Proof {
 		V1.Position = Transform*glm::vec4(0.5f,0.5f,Depth,1.0f);
 		V1.Color = Color;
 		V1.TexCoords ={1.0f,1.0f};
-		V1.TexSlot =TexIndex;
+		//V1.TexSlot =TexIndex;
 
 		V2.Position = Transform*glm::vec4(0.5f,-0.5f,Depth,1.0f);
 		V2.Color = Color;
 		V2.TexCoords = {1.0f,0.0f};
-		V2.TexSlot = TexIndex;
+		//V2.TexSlot = TexIndex;
 
 		V3.Position = Transform * glm::vec4(-0.5f,-0.5f,Depth,1.0f);
 		V3.Color = Color;
 		V3.TexCoords = {0.0f,0.0f};
-		V3.TexSlot = TexIndex;
+		//V3.TexSlot = TexIndex;
 
 		V4.Position = Transform * glm::vec4(-0.5f,0.5f,Depth,1.0f);
 		V4.Color = Color;
 		V4.TexCoords = {0.0f,1.0f};
-		V4.TexSlot = TexIndex;
+		//V4.TexSlot = TexIndex;
 
 		return {V1,V2,V3,V4};
 	}
 	Renderer2DStorage::Renderer2DStorage() {
 		QuadIndices.resize(c_MaxIndexCount);
-		Textures.resize(MaxTextureSlot);
+		//Textures.resize(MaxTextureSlot);
 		QuadArray.resize(c_MaxVertexCount);
 		uint32_t Offset = 0;
 		for (uint32_t i = 0; i < c_MaxIndexCount; i += 6) {
@@ -250,22 +239,21 @@ namespace Proof {
 			QuadIndices[i + 1] = 1 + Offset;
 			QuadIndices[i + 2] = 2 + Offset;
 
-			QuadIndices[i + 3] = 3 + Offset;
+			QuadIndices[i + 3] = 2 + Offset;
 			QuadIndices[i + 4] = 3 + Offset;
 			QuadIndices[i + 5] = 0 + Offset;
 			Offset += 4;
 		}
 
-		VertexBuffer = VertexBuffer::Create(c_MaxVertexCount);
-		IndexBuffer = IndexBuffer::Create(QuadIndices.data(), QuadIndices.size());
+		VertexBuffer = VertexBuffer::Create(c_MaxVertexCount*sizeof(Vertex2D));
+		IndexBuffer = IndexBuffer::Create(QuadIndices.data(), c_MaxIndexCount);
 		CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
-		CommandBuffer = CommandBuffer::Create();
 		uint32_t whiteTextureData = 0xffffffff;
 
 		int32_t Samplers[32];
-		for(uint32_t i=0; i< Renderer2DStorage::MaxTextureSlot;i++)
-			Samplers[i] =i;
-		Textures[0] =  Texture2D::Create(1, 1, ImageFormat::RGBA, &whiteTextureData);
+		//for(uint32_t i=0; i< Renderer2DStorage::MaxTextureSlot;i++)
+		//	Samplers[i] =i;
+		//Textures[0] =  Texture2D::Create(1, 1, ImageFormat::RGBA, &whiteTextureData);
 
 	}
 	SpritePipeline::SpritePipeline() {
@@ -273,9 +261,9 @@ namespace Proof {
 		vertexArray->AddData(0, DataType::Vec3, offsetof(Vertex2D, Vertex2D::Position));
 		vertexArray->AddData(1, DataType::Vec4, offsetof(Vertex2D, Vertex2D::Color));
 		vertexArray->AddData(2, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
-		vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
-		Shader = Shader::GetOrCreate("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Mesh.shader");
-		PipeLineLayout = PipeLineLayout::Create(std::vector{ s_Storage2DData->Descriptors[DescriptorSets::Zero],s_Storage2DData->Descriptors[DescriptorSets::One] });
+		//vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
+		Shader = Shader::GetOrCreate("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.shader");
+		PipeLineLayout = PipeLineLayout::Create(std::vector{ s_Storage2DData->Descriptors[DescriptorSets::Zero]});
 		RenderPass = RenderPass::Create();
 		GraphicsPipeline = GraphicsPipeline::Create(Shader, RenderPass, PipeLineLayout, vertexArray);
 		RenderPass->SetGraphicsPipeline(GraphicsPipeline);

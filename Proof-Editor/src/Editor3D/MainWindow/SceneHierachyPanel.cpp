@@ -404,12 +404,13 @@ namespace Proof
 			}
 		});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
-			if (spriteComp.GetTexture() != nullptr) {
-				ImGui::Image((ImTextureID)spriteComp.GetTexture()->GetID(), { 30,30 });
-			}
-			else {
-				ImGui::Image(Renderer::GetWhiteTexture()->GetID(), {30,30});
-			}
+			//if (spriteComp.GetTexture() != nullptr) {
+			//	ImGui::Image((ImTextureID)spriteComp.GetTexture()->GetID(), { 30,30 });
+			//}
+			//else {
+			//}
+			// get ID crashing applicaiton needs fix
+			//ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetID(), {30,30});
 			if (ImGui::BeginPopupContextItem("RemoveTexture")) {
 				ImGui::EndPopup();
 			}

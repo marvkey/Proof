@@ -70,6 +70,11 @@ namespace Proof
 		s_AssetManagerData->Assets.insert({ asset->GetAssetID(),{assetInfo,asset} });
 		s_AssetManagerData->AssetPath.insert({ assetInfo.Path.string(),asset->GetAssetID() });
 	}
+
+	void AssetManager::AddMemoryAsset(const Count<Asset>& asset)
+	{
+	
+	}
 	
 	void AssetManager::NewAsset(AssetID ID, const std::filesystem::path& path) {
 		if (ID == 0) {
@@ -242,6 +247,7 @@ namespace Proof
 		out << YAML::Key << "Assets" << YAML::Value << YAML::BeginSeq;
 
 		for (auto& [id,assetManager] : s_AssetManagerData->Assets) {
+			
 			const auto& assetInfo = assetManager.Info;
 			const auto& asset = assetManager.Asset;
 			if (assetInfo.State == AssetState::Ready) {

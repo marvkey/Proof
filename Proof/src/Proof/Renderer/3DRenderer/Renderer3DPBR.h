@@ -37,6 +37,16 @@ namespace Proof
 		const uint32_t MaxMesh = 2000;
 		MeshPipeLine();
 	};
+
+	struct DebugMeshPipeLine {
+		Count<class GraphicsPipeline> GraphicsPipeline;
+		Count<class Shader> Shader;
+		Count <class PipeLineLayout> PipeLineLayout;
+		Count <class RenderPass > RenderPass;
+		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
+
+		DebugMeshPipeLine();
+	};
 	
 	struct RenderStorage {
 		Count<CommandBuffer> CommandBuffer;
@@ -48,8 +58,8 @@ namespace Proof
 	class Renderer3DPBR {
 	public:
 		static void Init();
-		static void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer);
-		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer> frameBuffer);
+		static void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<CommandBuffer>& commandBuffer);
+		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commandBuffer);
 		static void SubmitMesh(class MeshComponent& meshComponent, const glm::mat4& transform);
 		static void SubmitDirectionalLight(class DirectionalLightComponent& comp, class TransformComponent& transform);
 		static void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);

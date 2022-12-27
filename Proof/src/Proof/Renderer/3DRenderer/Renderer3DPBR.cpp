@@ -61,20 +61,19 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		s_RenderStorage = new RenderStorage();
 		s_MeshPipeLine = new MeshPipeLine();
-		s_RenderStorage->CommandBuffer = CommandBuffer::Create();
 		s_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
 	}
-	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer) {
-		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer);
+	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commandBuffer) {
+		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer,commandBuffer);
 	}
-	void Renderer3DPBR::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer> frameBuffer) {
+	void Renderer3DPBR::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commandBuffer) {
 		PF_PROFILE_FUNC()
 		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
 		PF_CORE_ASSERT(s_InContext ==false, "Cannot begin context if already in a context");
 		s_InContext = true;
 		s_CurrentCamera = CameraData{ projection,view,Position };
 		s_RenderStorage->CurrentFrameBuffer = frameBuffer;
-		s_RenderStorage->CommandBuffer = CommandBuffer::Create();
+		s_RenderStorage->CommandBuffer = commandBuffer;
 	}
 
 	void Renderer3DPBR::SubmitMesh(MeshComponent& mesh, const glm::mat4& transform) {
@@ -154,6 +153,7 @@ namespace Proof
 			std::move(transforms.begin(), transforms.end(), std::back_inserter(meshesVertex));
 			elementsImplaced.emplace_back(ID);
 		}
+		s_MeshPipeLine->MeshesVertexBuffer = VertexBuffer::Create(meshesVertex.size() * sizeof(MeshPipeLine::MeshVertex));
 		Renderer::BeginRenderPass(s_RenderStorage->CommandBuffer, s_MeshPipeLine->RenderPass,s_RenderStorage->CurrentFrameBuffer);
 		Renderer::RecordRenderPass(s_MeshPipeLine->RenderPass, [&](Count <CommandBuffer> commandBuffer) {
 			descriptor0->Bind(commandBuffer, s_MeshPipeLine->PipeLineLayout);
@@ -186,8 +186,6 @@ namespace Proof
 	
 				for (const auto& subMesh : mesh.GetSubMeshes()) {
 					if (subMesh.Enabled == false)continue;
-					//Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(mesh.m_Textures[0].Texture)->GetTexture()
-					//	: Renderer::GetWhiteTexture();
 					Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(subMesh.GetDiffuseTextures()[0])->GetTexture()
 						: Renderer::GetWhiteTexture();
 					//Count<Texture2D> texture = Renderer::GetWhiteTexture();
@@ -207,7 +205,6 @@ namespace Proof
 			}
 		});
 		Renderer::EndRenderPass(s_MeshPipeLine->RenderPass);
-		Renderer::SubmitCommandBuffer(s_RenderStorage->CommandBuffer);
 	}
 
 
@@ -233,7 +230,36 @@ namespace Proof
 		Shader = Shader::Create("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Mesh.shader");
 		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero],Descriptors[DescriptorSets::One] });
 		RenderPass = RenderPass::Create();
-		MeshesVertexBuffer = VertexBuffer::Create(MaxMesh * sizeof(MeshPipeLine::MeshVertex));
+
+		Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
+		meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
+		meshVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
+		meshVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
+		meshVertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
+		meshVertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
+
+
+		meshVertexArray->AddData(5, DataType::Vec4, 0, 1);
+		meshVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
+		meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
+		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
+
+		GraphicsPipeline = GraphicsPipeline::Create(Shader, RenderPass, PipeLineLayout, meshVertexArray);
+		RenderPass->SetGraphicsPipeline(GraphicsPipeline);
+	}
+	DebugMeshPipeLine::DebugMeshPipeLine()
+	{
+		{
+			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
+				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+				.Build();
+			Descriptors.insert({ DescriptorSets::Zero,descriptor });
+		}
+
+	
+		Shader = Shader::Create("DebugMesh", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Mesh.shader");
+		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
+		RenderPass = RenderPass::Create();
 
 		Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
 		meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));

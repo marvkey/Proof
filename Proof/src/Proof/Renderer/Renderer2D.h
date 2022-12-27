@@ -17,14 +17,14 @@ namespace Proof {
 		Count<class CommandBuffer>CommandBuffer;
 		Count<ScreenFrameBuffer> CurrentFrameBuffer ;
 		const uint32_t c_MaxQuadCount = 2000;
-		const uint32_t c_MaxVertexCount = c_MaxQuadCount * sizeof(Vertex2D)*4; // times 4 cause each quad holds 4 vertices
+		const uint32_t c_MaxVertexCount = c_MaxQuadCount *4; // times 4 cause each quad holds 4 vertices
 		const uint32_t c_MaxIndexCount = c_MaxQuadCount * 6;
 		std::vector<uint32_t>QuadIndices;
 		uint32_t IndexCount = 0;
 
-		const uint32_t MaxTextureSlot=32; // 1-31 slots
-		std::vector<Count<Texture2D>> Textures;
-		float TextureSlotIndex;
+		//const uint32_t MaxTextureSlot=32; // 1-31 slots
+		//std::vector<Count<Texture2D>> Textures;
+		//float TextureSlotIndex;
 		uint32_t QuadArraySize;
 		std::vector<Vertex2D> QuadArray;
 		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
@@ -45,7 +45,7 @@ namespace Proof {
 		friend class Camera;
 	public:
 		static void Init();
-		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer> frameBuffer);
+		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer,Count<CommandBuffer>& commdandBuffer);
 
 		static void DrawQuad(const glm::vec3& Location);
 

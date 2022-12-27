@@ -912,7 +912,7 @@ namespace Proof
 				}
 			}
 			static bool meshSourceAdded = false;
-			static std::filesystem::path meshSourcePath;
+			static std::filesystem::path meshSourcePath;	
 			/* putting this underneath image because a window only accpet drop target to when item is bound so and image has been bound */
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::World).c_str())) {

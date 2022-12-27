@@ -28,8 +28,8 @@ namespace Proof {
 		window->m_SwapChain = SwapChain::Create(ScreenSize{ CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight() });
 		Renderer::s_RendererAPI->Init();
 
-		//Renderer2D::Init();
 		s_BaseTextures = new  BaseTextures();
+		Renderer2D::Init();
 		Renderer3DPBR::Init();
 		MeshWorkShop::Init();
 		PF_ENGINE_TRACE("Renderer Initilized");

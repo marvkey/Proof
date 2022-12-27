@@ -75,6 +75,9 @@ namespace Proof
 	}
 	VkViewport viewPort;
 	VkRect2D Scissor;
+	//FROM IMGUI
+#define IM_ARRAYSIZEERE(_ARR)          ((int)(sizeof(_ARR) / sizeof(*(_ARR))))     // Size of a static C-style array. Don't use on pointers!
+
 	void VulkanGraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height) {
 
 		configInfo.InputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -93,9 +96,9 @@ namespace Proof
 
 		configInfo.ViewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		configInfo.ViewportState.viewportCount = 1;
-		configInfo.ViewportState.pViewports = &viewPort;//leave
+		//configInfo.ViewportState.pViewports = &viewPort;//leave
 		configInfo.ViewportState.scissorCount = 1;
-		configInfo.ViewportState.pScissors = &Scissor;//leave
+		//configInfo.ViewportState.pScissors = &Scissor;//leave
 
 		configInfo.RasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		configInfo.RasterizationInfo.depthClampEnable = VK_FALSE;
@@ -150,13 +153,11 @@ namespace Proof
 		configInfo.DepthStencilInfo.front = {};  // Optional
 		configInfo.DepthStencilInfo.back = {};   // Optional
 
-		std::vector<VkDynamicState> dynamicStates = {
-			VK_DYNAMIC_STATE_VIEWPORT,
-			VK_DYNAMIC_STATE_SCISSOR
-		};
+		VkDynamicState dynamic_states[2] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+
 		configInfo.DynamicSate.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		configInfo.DynamicSate.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-		configInfo.DynamicSate.pDynamicStates = dynamicStates.data();
+		configInfo.DynamicSate.dynamicStateCount = (uint32_t)IM_ARRAYSIZEERE(dynamic_states);
+		configInfo.DynamicSate.pDynamicStates = dynamic_states;
 
 	}
 

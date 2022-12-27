@@ -4,10 +4,11 @@
 #include "Proof/Renderer/RendererBase.h"
 #include "VulkanPushConstant.h"
 #include "VulkanDescriptorSet.h"
+
 namespace Proof
 {
 	VkPipelineLayout VulkanPipeLineLayout::s_DefaultPipelineLayout;
-	VulkanPipeLineLayout::VulkanPipeLineLayout(Count<VulkanPushConstant> pushConstant, const std::vector<Count<DescriptorSet>>& descriptors ) {
+	VulkanPipeLineLayout::VulkanPipeLineLayout(Count<PushConstant> pushConstant, const std::vector<Count<DescriptorSet>>& descriptors ) {
 		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -29,7 +30,7 @@ namespace Proof
 		}
 		if (pushConstant != nullptr) {
 			pipelineLayoutInfo.pushConstantRangeCount = 1;
-			pipelineLayoutInfo.pPushConstantRanges = &pushConstant->m_PushConstant;
+			pipelineLayoutInfo.pPushConstantRanges = &pushConstant->As<VulkanPushConstant>()->m_PushConstant;
 		}
 		else {
 			// very efficiently send small data to shader proggramm

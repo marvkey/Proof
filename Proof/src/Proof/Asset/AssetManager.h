@@ -41,6 +41,7 @@ namespace Proof
 			return info.State == AssetState::Ready;
 		}
 		static void NewAsset(const Count<Asset>& asset);
+		static void AddMemoryAsset(const Count<Asset>& asset);
 		static void NewAsset(AssetID ID, const std::filesystem::path& path);
 		static void AddWorldAsset(AssetID ID, const std::filesystem::path& path);
 		static void GenerateAllSourceAssets();
