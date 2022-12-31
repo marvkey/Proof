@@ -384,7 +384,7 @@ namespace Proof
 		auto worldData = data["World"];
 
 		m_Scene->Name = worldData["Name"].as<std::string>();
-		PF_WARN("Deserilizing World {}", m_Scene->Name.c_str());
+		PF_EC_WARN("Deserilizing World {}", m_Scene->Name.c_str());
 
 		m_Scene->m_WorldID = worldData["ID"].as<uint64_t>();
 		auto entities = worldData["Entities"];

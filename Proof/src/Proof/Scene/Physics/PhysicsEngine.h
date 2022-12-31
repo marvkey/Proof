@@ -1,44 +1,35 @@
 #pragma once
 #include "../../ProofPhysics/src/PhysicsWorld.h"
 #include "../World.h"
-#include "NVDIAPhysX.h"
 #include "../Component.h"
+#define PX_PHYSX_STATIC_LIB
+#include <PxPhysicsAPI.h>
+#include "CollisonCallback.h"
 namespace Proof {
-	enum class PhysicsEngineType {
-		ProofPhysics,
-		NvdiaPhysics,
-		BulletPhysics
-	};
+
 	class PhysicsEngine {
 	public:
-		PhysicsEngine(World* world, PhysicsEngineType type = PhysicsEngineType::NvdiaPhysics) :
-			m_World(world), m_PhysicsType(type) {
-
+		PhysicsEngine(World* world):
+			m_World(world){
+			SetUpBase();
 		}
-		~PhysicsEngine() {
-			End();
-		}
+		virtual ~PhysicsEngine();
 		void Start();
 		void Simulate(float delta);
 		void End();
-		PhysicsEngineType GetPhysicsType() { return m_PhysicsType; }
 	private:
-		PhysicsEngineType m_PhysicsType;
-		ProofPhysicsEngine::PhysicsWorld* m_ProofPhysicsEngine = nullptr;
-		NVDIAPhysXEngine* m_NVDIAPhysicsEngine = nullptr;
+		void SetUpBase();
+		class physx::PxFoundation* m_Foundation = nullptr;
+		class physx::PxPhysics* m_Physics = nullptr;
+		class physx::PxDefaultCpuDispatcher* m_Dispatcher = NULL;
+		class physx::PxPvd* m_Pvd = nullptr;
+		class physx::PxScene* m_Scene = nullptr;
+		class physx::PxDefaultAllocator      m_DefaultAllocatorCallback;
+		class physx::PxDefaultErrorCallback  m_DefaultErrorCallback;
+		class physx::PxCooking* m_Cooking = nullptr;
+		class physx::PxTolerancesScale m_ToleranceScale;
+		class CollisionCallback m_CollisionCallback;
 		World* m_World = nullptr;
 		friend class World;
-
-		void StartNvdiaPhysx();
-		void UpdateNvdiaPhysx(float delta);
-		void EndNvdiaPhysx();
-
-		void StartBulletPhysics();
-		void UpdateBulletPhysics(float delta);
-		void EndBulletPhysics();
-
-		void StartProofPhysics();
-		void UpdateProofPhysics(float delta);
-		void EndProofPhysics();
 	};
 }

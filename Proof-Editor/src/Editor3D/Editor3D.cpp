@@ -294,8 +294,10 @@ namespace Proof
 						auto location = ActiveWorld->GetWorldLocation(entity);
 						m_WorldRenderer.Render(*entity.GetComponent<CameraComponent>(), location);
 					}
-					else if(m_ViewPortFocused) {
+					else
+					{
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+						m_WorldRenderer.Render(m_EditorCamera);
 					}
 					break;
 				}
@@ -966,16 +968,26 @@ namespace Proof
 		ImGui::Begin("##MainToolBar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse/* | ImGuiWindowFlags_NoMove*/);
 
 		Count<Texture2D> icon;
+		std::string state;
 		if (ActiveWorld->m_CurrentState == WorldState::Edit)
+		{
 			icon = m_PlayButtonTexture;
+			state = "Play";
+		}
 		else if (ActiveWorld->m_CurrentState == WorldState::Play)
+		{
 			icon = m_StopButtonTexture;
+			state = "Stop";
+		}
 		else
+		{
 			icon = m_PlayButtonTexture;
+		}
+
 
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.4f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
-		if (ImGui::ImageButton((ImTextureID)icon->GetID(), ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
+		if (ImGui::Button(state.c_str(), ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
 			if (ActiveWorld->m_CurrentState == WorldState::Edit)
 				PlayWorld();
 			else if (ActiveWorld->m_CurrentState == WorldState::Play)
@@ -1115,9 +1127,7 @@ namespace Proof
 			Log::Logs.clear();
 		//GuizmoType = 0;
 		m_WorldHierachy.m_SelectedEntity = {};
-		//Entity  entity = ActiveWorld->CreateEntity("script");
-		//entity.AddComponent<RigidBodyComponent>();
-		//entity.AddComponent<ScriptComponent>()->AddScript("Game.Player");
+
 		ActiveWorld->StartRuntime();
 	}
 	void Editore3D::SimulateWorld() {

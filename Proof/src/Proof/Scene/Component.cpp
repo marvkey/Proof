@@ -205,114 +205,43 @@ namespace Proof
 	}
 
 	void RigidBodyComponent::AddForce(Vector force, ForceMode mode, bool autoWake)const {
-		if (m_RuntimeBody == nullptr) return;
 		if (m_RigidBodyType == RigidBodyType::Static)return;
-		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
-		if (physicsEngine == nullptr)return;
-
-		switch (physicsEngine->GetPhysicsType()) {
-			case Proof::PhysicsEngineType::ProofPhysics:
-				break;
-			case Proof::PhysicsEngineType::NvdiaPhysics:
-			{
-				physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-				rigidBody->addForce({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
-				break;
-			}
-			case Proof::PhysicsEngineType::BulletPhysics:
-				break;
-			default:
-				break;
-		}
+		if (m_RuntimeBody == nullptr) return;
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->addForce({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
 	}
 
 	void RigidBodyComponent::AddTorque(Vector force, ForceMode mode, bool autoWake)const {
 		if (m_RuntimeBody == nullptr) return;
 		if (m_RigidBodyType == RigidBodyType::Static)return;
-		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
-		if (physicsEngine == nullptr)return;
-
-		switch (physicsEngine->GetPhysicsType()) {
-		case Proof::PhysicsEngineType::ProofPhysics:
-			break;
-		case Proof::PhysicsEngineType::NvdiaPhysics:
-		{
-			physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-			rigidBody->addTorque({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
-			break;
-		}
-		case Proof::PhysicsEngineType::BulletPhysics:
-			break;
-		default:
-			break;
-		}
+		
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->addTorque({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
+		
 	}
 
 	bool RigidBodyComponent::IsSleeping()const {
 		if (m_RuntimeBody == nullptr) return true;
 		if (m_RigidBodyType == RigidBodyType::Static)return true;
-		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
-		if (physicsEngine == nullptr)return true;
 
-		switch (physicsEngine->GetPhysicsType()) {
-			case Proof::PhysicsEngineType::ProofPhysics:
-				break;
-			case Proof::PhysicsEngineType::NvdiaPhysics:
-			{
-				physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-				return rigidBody->isSleeping();
-				break;
-			}
-			case Proof::PhysicsEngineType::BulletPhysics:
-				break;
-			default:
-				break;
-		}
-		return false;
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		return rigidBody->isSleeping();
 	}
 
 	void RigidBodyComponent::PutToSleep() {
 		if (m_RuntimeBody == nullptr) return;
 		if (m_RigidBodyType == RigidBodyType::Static)return;
-		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
-		if (physicsEngine == nullptr)return;
 
-		switch (physicsEngine->GetPhysicsType()) {
-			case Proof::PhysicsEngineType::ProofPhysics:
-				break;
-			case Proof::PhysicsEngineType::NvdiaPhysics:
-			{
-				physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-				rigidBody->putToSleep();
-				break;
-			}
-			case Proof::PhysicsEngineType::BulletPhysics:
-				break;
-			default:
-				break;
-		}
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->putToSleep();
 	}
 
 	void RigidBodyComponent::WakeUp() {
 		if (m_RuntimeBody == nullptr) return;
 		if (m_RigidBodyType == RigidBodyType::Static)return;
-		auto physicsEngine = SceneCoreClasses::GetCurrentPhysicsEngine();
-		if (physicsEngine == nullptr)return;
 
-		switch (physicsEngine->GetPhysicsType()) {
-		case Proof::PhysicsEngineType::ProofPhysics:
-			break;
-		case Proof::PhysicsEngineType::NvdiaPhysics:
-		{
-			physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-			rigidBody->wakeUp();
-			break;
-		}
-		case Proof::PhysicsEngineType::BulletPhysics:
-			break;
-		default:
-			break;
-		}
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->wakeUp();
 	}
 
 	bool ScriptComponent::AddScript(const std::string& className) {

@@ -5,6 +5,9 @@ Assets:
   - Asset: 523151243799823422
     Type: TextureSourceFile
     Path: Proof\Assets\Models\backpack\diffuse.jpg
+  - Asset: 8147961363379213054
+    Type: MeshSourceFile
+    Path: Proof\Assets\Models\sphere.obj
   - Asset: 5223393378962800653
     Type: MeshSourceFile
     Path: Proof\Assets\Models\TestTerrain.obj
@@ -17,12 +20,12 @@ Assets:
   - Asset: 963839203
     Type: MeshSourceFile
     Path: Proof\Assets\Models\backpack\backpack.obj
-  - Asset: 432434234236
-    Type: Mesh
-    Path: Proof\Assets\Mesh\backpack.Mesh.ProofAsset
   - Asset: 34312323124134123
     Type: MeshSourceFile
     Path: Proof\Assets\Models\sponza\Sponza.gltf
+  - Asset: 432434234236
+    Type: Mesh
+    Path: Proof\Assets\Mesh\backpack.Mesh.ProofAsset
   - Asset: 342345323
     Type: Mesh
     Path: Proof\Assets\Mesh\Sponza.Mesh.ProofAsset
@@ -122,6 +125,9 @@ Assets:
   - Asset: 7805797399562803748
     Type: Texture
     Path: Proof\Assets\Models\sponza\11490520546946913238.Texture.ProofAsset
+  - Asset: 0
+    Type: None
+    Path: ""
   - Asset: 3578668846828687010
     Type: TextureSourceFile
     Path: Proof\Assets\Models\sponza\6151467286084645207.jpg
@@ -182,3 +188,12 @@ Assets:
   - Asset: 17647221892499275640
     Type: Mesh
     Path: Proof\Assets\Mesh\Terrain.Mesh.ProofAsset
+  - Asset: 566574579191162934
+    Type: Mesh
+    Path: Proof\Assets\Mesh\Sphere.Mesh.ProofAsset
+  - Asset: 9751242508810856553
+    Type: MeshSourceFile
+    Path: Proof\Assets\Models\capsule.obj
+  - Asset: 14701413770166337076
+    Type: Mesh
+    Path: Proof\Assets\Mesh\Capsule.Mesh.ProofAsset

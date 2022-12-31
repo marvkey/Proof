@@ -56,6 +56,7 @@ namespace Proof
 		void CallOnPlace();
 		void CallOnSpawn();
 		void CallOnDestroy();
+
 	private:
 		Count<ScriptClass> m_ScriptClass;
 

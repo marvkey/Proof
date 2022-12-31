@@ -19,24 +19,24 @@ namespace Proof
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
 		
 
-		//Renderer3DPBR::BeginContext(camera, m_ScreenFrameBuffer,m_CommandBuffer);
-		//// MESHES
-		//{
-		//	m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
-		//		auto& mesh = *entity.GetComponent<MeshComponent>();
-		//		if(AssetManager::HasID(mesh.GetMeshAssetID()))
-		//			Renderer3DPBR::SubmitMesh(mesh, m_World->GetWorldTransform(entity));
-		//	});
-		//}
-		//Renderer3DPBR::EndContext();
-
-		Renderer2D::BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, m_ScreenFrameBuffer, m_CommandBuffer);
+		Renderer3DPBR::BeginContext(camera, m_ScreenFrameBuffer,m_CommandBuffer);
+		// MESHES
 		{
-			m_World->ForEachComponent<SpriteComponent, TransformComponent>([&](SpriteComponent& sprite, TransformComponent& transform) {
-				Renderer2D::DrawQuad(sprite, transform);
+			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
+				auto& mesh = *entity.GetComponent<MeshComponent>();
+				if(AssetManager::HasID(mesh.GetMeshAssetID()))
+					Renderer3DPBR::SubmitMesh(mesh, m_World->GetWorldTransform(entity));
 			});
 		}
-		Renderer2D::EndContext();
+		Renderer3DPBR::EndContext();
+
+		//Renderer2D::BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, m_ScreenFrameBuffer, m_CommandBuffer);
+		//{
+		//	m_World->ForEachComponent<SpriteComponent, TransformComponent>([&](SpriteComponent& sprite, TransformComponent& transform) {
+		//		Renderer2D::DrawQuad(sprite, transform);
+		//	});
+		//}
+		//Renderer2D::EndContext();
 		Renderer::SubmitCommandBuffer(m_CommandBuffer);
 	}
 	void WorldRenderer::Render(CameraComponent& comp, Vector& location) {

@@ -30,13 +30,15 @@ namespace Proof{
 		World(const std::string& name = "Default World",UUID ID = UUID()) :
 			m_WorldID(ID),Name(name)
 		{
-
+			Init();
 		}
 		~World() {
 			//m_Registry.on_construct<ScriptComponent>();
 		}
 		
-		World(World&)=default;
+		World(World&) {
+			Init();
+		}
 
 		bool HasEntity(EntityID ID)const;
 		bool HasEntity(EntityID ID);
@@ -105,42 +107,21 @@ namespace Proof{
 		Vector GetWorldLocation(Entity entity) const;
 		Vector GetWorldRotation(Entity entity) const;
 		Vector GetWorldScale(Entity entity) const;
+
 		glm::mat4 GetWorldTransform(Entity entity) const;
 
 	private:
+		void Init();
 		entt::registry64 m_Registry;
 		class PhysicsEngine* m_PhysicsEngine =nullptr;
 		uint32_t m_LastFrameWidth,m_LastFrameHeight;
 		void OnUpdate(FrameTime DeltaTime);
 		WorldState m_CurrentState=WorldState::Edit;
 		UUID m_WorldID;
-		void CreateIBlTexture(const std::string& filePath);
 		std::string Name = "DefaultWorld";
 		template<class T>
 		void OnComponentAdded(EntityID ID, T* component) {};
-		
-		
 		std::string m_Path;
-		class OrthagraphicCamera SceneCamera { -1.0f,1.0f,-1.0f,1.0f };
-		Count<CubeMap> m_WorldCubeMap;
-		Count<CubeMap> m_WorldCubeMapIrradiance;
-		Count<CubeMap> PrefelterMap;
-
-		Count<HDRTexture>m_WorldIBLTexture;
-		Count<VertexBuffer> m_IBLSkyBoxBuffer;
-		Count<VertexArray>m_IBLSkyBoxVertexArray;
-
-		Count<FrameBuffer> m_CaptureFBO;
-		Count<Shader>equirectangularToCubemapShader;
-		Count<Texture2D> m_brdflTexture;
-
-		Count<Shader> backgroundShader;
-		Count<Shader> IrradianceShader;
-		Count<Shader>prefilterShader;
-		Count<Shader>brdfShader;
-
-		template <class T>
-		T* GetComponent(Entity entity);
 		friend class SceneHierachyPanel;
 		friend class Entity;
 		friend class SceneSerializer;

@@ -7,7 +7,7 @@ World:
         Tag: cube
         tags: []
       TransformComponent:
-        Location: [-2, 4.80000019, -20.7000008]
+        Location: [-2, 4.80000019, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -16,20 +16,19 @@ World:
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
         MaterialPointerID: 0
-    - Entity: 1389446701102770590
-      TagComponent:
-        Tag: sponza
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [0.100000001, 0.100000001, 0.100000001]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 342345323
-        MaterialPointerID: 0
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
     - Entity: 17266723913482933523
       TagComponent:
         Tag: square
@@ -72,3 +71,86 @@ World:
       SpriteComponent:
         TextureAssetPointerID: 0
         Colour: [1, 0, 0, 0.753000021]
+    - Entity: 13003128472933448470
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [-1.79999995, 8, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 566574579191162934
+        MaterialPointerID: 0
+      SphereColliderComponent:
+        IsTrigger: false
+        Offset: [0, 0, 0]
+        Radius: 0.5
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 309593720616492112
+      TagComponent:
+        Tag: Capsule
+        tags: []
+      TransformComponent:
+        Location: [1.5, 13.6000004, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 14701413770166337076
+        MaterialPointerID: 0
+      CapsuleColliderComponent:
+        IsTrigger: false
+        Offset: [0, 0, 0]
+        Radius: 0.5
+        Height: 1
+        Direction: Y
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 15951281748875903837
+      TagComponent:
+        Tag: floor
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [5.4000001, 1, 5.30000019]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+        MaterialPointerID: 0
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]

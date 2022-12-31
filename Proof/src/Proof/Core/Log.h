@@ -44,12 +44,18 @@ namespace Proof
 #define  PF_ENGINE_INFO(...)  ::Proof::Log::GetEngineLogger()->LogInfo(__VA_ARGS__)
 #define  PF_ENGINE_TRACE(...) ::Proof::Log::GetEngineLogger()->LogTrace(__VA_ARGS__)
 #define	 PF_ENGINE_CRITICAL(...)::Proof::Log::GetEngineLogger()->LogCritical(__VA_ARGS__)
-// Client Logging
-#define  PF_ERROR(...) {::Proof::Log::AppendString(0,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__));::Proof::Log::GetEngineLogger()->LogError(__VA_ARGS__);}
-#define  PF_WARN(...)  {::Proof::Log::AppendString(1,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__));::Proof::Log::GetEngineLogger()->LogWarn(__VA_ARGS__);}
-#define  PF_INFO(...)  {::Proof::Log::AppendString(2,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__));::Proof::Log::GetEngineLogger()->LogInfo(__VA_ARGS__);}
-#define  PF_TRACE(...) {::Proof::Log::AppendString(3,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__));::Proof::Log::GetEngineLogger()->LogTrace(__VA_ARGS__);}
-#define	 PF_CRITICAL(...){::Proof::Log::AppendString(4,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__));::Proof::Log::GetEngineLogger()->LogCritical(__VA_ARGS__);}
+// Client Logging AND ENGINE
+#define  PF_EC_ERROR(...) {::Proof::Log::AppendString(0,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__));::Proof::Log::GetEngineLogger()->LogError(__VA_ARGS__);}
+#define  PF_EC_WARN(...)  {::Proof::Log::AppendString(1,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__));::Proof::Log::GetEngineLogger()->LogWarn(__VA_ARGS__);}
+#define  PF_EC_INFO(...)  {::Proof::Log::AppendString(2,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__));::Proof::Log::GetEngineLogger()->LogInfo(__VA_ARGS__);}
+#define  PF_EC_TRACE(...) {::Proof::Log::AppendString(3,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__));::Proof::Log::GetEngineLogger()->LogTrace(__VA_ARGS__);}
+#define	 PF_EC_CRITICAL(...){::Proof::Log::AppendString(4,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__));::Proof::Log::GetEngineLogger()->LogCritical(__VA_ARGS__);}
+
+#define  PF_ERROR(...) ::Proof::Log::AppendString(0,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
+#define  PF_WARN(...)  ::Proof::Log::AppendString(1,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
+#define  PF_INFO(...)  ::Proof::Log::AppendString(2,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
+#define  PF_TRACE(...) ::Proof::Log::AppendString(3,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
+#define	 PF_CRITICAL(...)::Proof::Log::AppendString(4,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
 #else
 #define  PF_ENGINE_ERROR(...)
 #define  PF_ENGINE_WARN(...) 

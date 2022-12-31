@@ -119,11 +119,6 @@ namespace Proof {
 		void SimulateWorld();
 		void SetWorldEdit();
 		void PauseWorld();
-		std::vector<std::string>CubeMapPaths; 
-		Count<Shader> m_SkyBoxShader;
-		Count<VertexBuffer> m_SkyBoxBuffer;
-		Count<VertexArray> m_SkyBoxVertexArray;
-		Count<CubeMap> m_CubeMap;
 		WorldRenderer m_WorldRenderer;
 
 	};

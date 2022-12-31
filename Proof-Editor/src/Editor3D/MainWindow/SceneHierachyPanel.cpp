@@ -68,10 +68,24 @@ namespace Proof
 					}
 				}
 				else {
-					m_CurrentWorld->ForEachEntityBackwards([&](Entity entity) {
+					for (uint64_t i = 0; i < m_CurrentWorld->m_Registry.size(); i++)
+					{
+						Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld };
 						if (entity.HasOwner() == false)
 							DrawEntityNode(entity);
-					});
+					}
+					//for (uint64_t i = m_CurrentWorld->m_Registry.size()-1; i >=0; i--)
+					//{
+					//	Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld };
+					//	IDComponent* comp = entity.GetComponent<IDComponent>();
+					//	uint64_t iereewrsdfasfd = comp->GetID().Get();
+					//	if (entity.HasOwner() == false)
+					//		DrawEntityNode(entity);
+					//}
+					//m_CurrentWorld->ForEachEntityBackwards([&](Entity entity) {
+					//	if (entity.HasOwner() == false)
+					//		DrawEntityNode(entity);
+					//});
 				}
 
 				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {

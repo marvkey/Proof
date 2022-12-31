@@ -39,7 +39,7 @@ namespace Proof {
 		if (it == S_ActionMapping.end())return;
 		int location = (int)inputEvent;
 		if (location == -1) {
-			PF_INFO("Cannot pass none to bind an input event");
+			PF_EC_INFO("Cannot pass none to bind an input event");
 			return;
 		}
 		it->second.AvalaibleInputEvents[location]++;

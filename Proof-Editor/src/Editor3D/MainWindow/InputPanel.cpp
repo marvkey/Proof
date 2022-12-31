@@ -43,7 +43,7 @@ namespace Proof {
 				action = "NewAction(" + std::to_string(iterate) + ")";
 			}
 
-			PF_INFO("action added");
+			PF_EC_INFO("action added");
 			InputManager::AddAction(action);
 		}
 
@@ -78,7 +78,7 @@ namespace Proof {
 				action = "NewMotion(" + std::to_string(iterate) + ")";
 			}
 
-			PF_INFO("New Motion");
+			PF_EC_INFO("New Motion");
 			InputManager::AddMotion(action);
 		}
 		int iterationMotion = 0;

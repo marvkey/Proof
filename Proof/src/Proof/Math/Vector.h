@@ -44,7 +44,8 @@ namespace Proof
             return Z;
         }
         // transform all numbers to positve then finds the biggest 
-        T GetMaxTransformPositive() {
+        // finding the bsolute largest
+        T GetMaxAbsolute() {
             VectorTemplate<T> vec = GetPositive();
             if (vec.X > Y) {
                 if (vec.X > vec.Z)
@@ -55,6 +56,8 @@ namespace Proof
                 return vec.Y;
             return vec.Z;
         }
+
+       
         VectorTemplate<T> GetPositive()const {
             return VectorTemplate<T>{Math::GetPositive(X), Math::GetPositive(Y), Math::GetPositive(Z)};
         }

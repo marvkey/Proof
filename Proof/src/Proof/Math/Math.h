@@ -27,6 +27,12 @@ namespace Proof
 			else
 				val = true;
 		}
+
+		// returns teh opposite of a boleaon values
+		inline static bool InverseBool(bool val) {
+			if (val == true)return false;
+			return true;
+		}
 		/*
 		* swaps the 2 variables
 		* @param variable1: varible assign to 2
