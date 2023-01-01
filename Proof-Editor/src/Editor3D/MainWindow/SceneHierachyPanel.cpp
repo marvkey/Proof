@@ -398,7 +398,7 @@ namespace Proof
 			}
 			
 
-			ExternalAPI::ImGUIAPI::TextBar("Material", meshComp.HasMaterial() ? AssetManager::GetAsset<Asset>(meshComp.GetMaterialPointerID())->GetName() : "null");
+			ExternalAPI::ImGUIAPI::TextBar("Material", meshComp.HasMaterial() ? AssetManager::GetAsset<MaterialAsset>(meshComp.GetMaterialAssetID())->GetName() : "null");
 			if (ImGui::BeginPopupContextItem("RemoveMaterial")) {
 				ImGui::EndPopup();
 			}
@@ -411,7 +411,7 @@ namespace Proof
 			}
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Material).c_str())) {
-					uint32_t Data = *(const uint32_t*)payload->Data;
+					uint64_t Data = *(const uint64_t*)payload->Data;
 					meshComp.m_MeshMaterialID = Data;
 				}
 				ImGui::EndDragDropTarget();

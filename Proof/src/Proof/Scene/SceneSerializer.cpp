@@ -69,7 +69,7 @@ namespace Proof
 				out << YAML::Key << "MeshComponent";
 				out << YAML::BeginMap; // Mesh component
 				out << YAML::Key << "MeshAssetPointerID" << YAML::Value << Meshes->m_MeshAssetPointerID;
-				out << YAML::Key << "MaterialPointerID" << Meshes->GetMaterialPointerID();
+				out << YAML::Key << "MaterialPointerID" << Meshes->GetMaterialAssetID();
 				out << YAML::EndMap; // Mesh component
 			}
 		}

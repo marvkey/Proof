@@ -43,7 +43,7 @@ namespace Proof
             //m_MaterialAmbient = mat.m_Ambient;
             //m_MaterialDiffuse = mat.m_Diuffuse;
             //m_MaterialSpecular = mat.m_Specular;
-            m_Matallness = mat.m_Metallness;
+            //m_Matallness = mat.m_Metallness;
         }
         glm::mat4 m_Transform;
         Vector m_MaterialAmbient;

@@ -22,6 +22,7 @@ namespace Proof
 				m_Transform(transform) {
 			}
 			glm::mat4 m_Transform;
+			Vector Color = {1,1,1};
 		};
 		Count<class GraphicsPipeline> GraphicsPipeline;
 		Count<class Shader> Shader;

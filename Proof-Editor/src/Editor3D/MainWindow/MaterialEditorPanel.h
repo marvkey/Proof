@@ -14,7 +14,7 @@ namespace Proof
 	private:
 		MaterialAsset* m_MaterialAsset;
 		void* whiteColourId;
-		Count<Texture2D>m_CheckeboardTexture;
+		//Count<Texture2D>m_CheckeboardTexture;
 	};
 	class Proof_API PhysicsMaterialEditorPanel :public Panel {
 	public:

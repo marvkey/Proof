@@ -145,10 +145,10 @@ namespace Proof{
         float shininess;
 
         aimat->Get(AI_MATKEY_COLOR_AMBIENT,color);
-        material.m_Colour = glm::vec3(color.r,color.b,color.g);
+        material.Colour = glm::vec3(color.r,color.b,color.g);
 
         aimat->Get(AI_MATKEY_SHININESS,shininess);
-        material.m_Metallness = shininess;
+        material.Metallness = shininess;
 
         /*
         mat->Get(AI_MATKEY_COLOR_AMBIENT,color);

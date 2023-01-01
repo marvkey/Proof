@@ -140,7 +140,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialPointerID: 0
+        MaterialPointerID: 6008439512829965240
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]

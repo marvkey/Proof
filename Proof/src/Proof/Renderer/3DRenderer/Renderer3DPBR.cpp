@@ -19,6 +19,7 @@
 #include "../RenderPass.h"
 #include "../GraphicsPipeLine.h"
 #include "Proof/Asset/AssetManager.h"
+#include "Proof/Asset/MaterialAsset.h"
 namespace Proof
 {
 	// add debug names
@@ -82,6 +83,9 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Mesh ID", meshPointerId);
 		MeshPipeLine::MeshVertex vertex(transform);
+	
+		if (mesh.HasMaterial())
+			vertex.Color = AssetManager::GetAsset<MaterialAsset>(mesh.GetMaterialAssetID())->GetMaterial().Colour;
 		// [] creatses it if it does not exist
 		s_MeshPipeLine->MeshesTransforms[meshPointerId].emplace_back(vertex);
 		s_MeshPipeLine->AmountMeshes[meshPointerId] += 1;
@@ -243,6 +247,7 @@ namespace Proof
 		meshVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
 		meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
 		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
+		meshVertexArray->AddData(9, DataType::Vec3, offsetof(MeshPipeLine::MeshVertex, MeshPipeLine::MeshVertex::Color), 1);
 
 		GraphicsPipeline = GraphicsPipeline::Create(Shader, RenderPass, PipeLineLayout, meshVertexArray);
 		RenderPass->SetGraphicsPipeline(GraphicsPipeline);

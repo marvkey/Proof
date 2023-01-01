@@ -252,21 +252,18 @@ namespace Proof
 
 	struct Proof_API MeshComponent{
 		MeshComponent() = default;
-		class Mesh* GetMeshSource() {
-			MeshAsset* meshasset= GetAsset();
-			return meshasset != nullptr ? meshasset->GetMesh() : nullptr;
-		}
+		
 		MeshComponent(const MeshComponent&) = default;
 	
-		class Material* GetMaterial();
-		uint32_t GetMaterialPointerID()const{
-			return m_MeshMaterialID;
-		}
+		
 		bool HasMaterial() {
-			return GetMaterial() == nullptr ? false : true;
+			return m_MeshMaterialID != 0;
 		}
 		UUID GetMeshAssetID()const {
 			return m_MeshAssetPointerID;
+		}
+		UUID GetMaterialAssetID()const {
+			return m_MeshMaterialID;
 		}
 		void SetMeshSource(UUID ID);
 
@@ -429,7 +426,7 @@ namespace Proof
 		SphereColliderComponent(const SphereColliderComponent&) = default;
 		SphereColliderComponent() = default;
 		Vector OffsetLocation = { 0,0,0 };
-		float Radius = 0.5f;
+		float Radius = 1.0f;
 		bool IsTrigger = false;
 		void RemovePhysicsMaterial() {
 			m_PhysicsMaterialPointerID = 0;
@@ -457,7 +454,7 @@ namespace Proof
 		CapsuleColliderComponent() = default;
 		Vector OffsetLocation = { 0,0,0 };
 		float Radius = 0.5f;
-		float Height = 1.0f;
+		float Height = 2.0f;
 		//float Height = 2.0f;
 		CapsuleDirection Direction = CapsuleDirection::Y;
 		bool IsTrigger = false;

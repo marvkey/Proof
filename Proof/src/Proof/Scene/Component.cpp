@@ -26,28 +26,7 @@ namespace Proof
 {
 	static struct Material Empty;
 	
-	Material* MeshComponent::GetMaterial() {
-		/*
-		if (m_MeshMaterialID == 0) {
-			return nullptr;
-		}
-		MaterialAsset* a = AssetManager::GetAsset<MaterialAsset>(m_MeshMaterialID);
-		if (a == nullptr) {
-			m_MeshMaterialID = 0;
-			return nullptr;
-		}
-		return &a->m_Material;
-		*/
-		if (m_MeshMaterialID == 0) {
-			return nullptr;
-		}
-		auto a = AssetManager::GetAsset<MaterialAsset>(m_MeshMaterialID);
-		if (a == nullptr) {
-			m_MeshMaterialID = 0;
-			return nullptr;
-		}
-		return &a->m_Material;
-	}
+
 	void MeshComponent::SetMeshSource(AssetID ID) {
 		if (ID.Get() == 0)return;
 		if (AssetManager::HasID(ID)) {

@@ -4,15 +4,15 @@
 #include "Proof/Math/Math.h"
 namespace Proof{
 	struct Proof_API Material {
-		float m_Metallness =0.0f;// also shinines
-		float m_Roughness = 0.0f;
-		float m_AO=1.0f;
-		glm::vec3 m_Colour{1,1,1};
-		// gonna change these to ID 
-		Count<class Texture2D>NormalTexture;
-		Count<class Texture2D>AlbedoTexture;
-		Count<class Texture2D>MetallicTexture;
-		Count<class Texture2D>RoughnessTexture;
+		float Metallness =0.0f;// also shinines
+		float Roughness = 0.0f;
+		float AO=1.0f;
+		Vector Colour {1,1,1};
+
+		UUID AlbedoTexture;
+		UUID NormalTexture;
+		UUID MetallicTexture;
+		UUID RoughnesTexture;
 	};
 	enum class CombineMode 
 	{
