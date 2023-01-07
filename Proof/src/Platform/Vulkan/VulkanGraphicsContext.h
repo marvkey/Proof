@@ -69,7 +69,7 @@ namespace Proof
 
 			return info;
 		}
-
+		VkSampleCountFlagBits GetMaxSampleCount();
 		static void CHECK_VULKAN_ERROR(VkResult err) {
 			if (err == 0)
 				return;

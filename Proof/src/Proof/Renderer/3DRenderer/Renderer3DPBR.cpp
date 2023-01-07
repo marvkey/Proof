@@ -20,6 +20,7 @@
 #include "../GraphicsPipeLine.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Asset/MaterialAsset.h"
+
 namespace Proof
 {
 	// add debug names
@@ -44,8 +45,6 @@ namespace Proof
 		DiffuseMap = 4
 	};
 
-	static RenderStorage* s_RenderStorage;
-	static MeshPipeLine* s_MeshPipeLine = nullptr;
 	struct CameraData {
 		CameraData() {};
 		CameraData(const glm::mat4& projection, const glm::mat4& view, const Vector& pos) :
@@ -56,13 +55,18 @@ namespace Proof
 		Vector m_Positon;
 	};
 	static CameraData s_CurrentCamera;
-	bool Renderer3DPBR::s_InContext;
+
+	Renderer3DPBR::Renderer3DPBR(Count<RenderPass> renderPass)
+	{
+		m_RenderPass = renderPass;
+		Init();
+	}
 
 	void Renderer3DPBR::Init() {
 		PF_PROFILE_FUNC();
-		s_RenderStorage = new RenderStorage();
-		s_MeshPipeLine = new MeshPipeLine();
-		s_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
+		m_RenderStorage = CreateSpecial<RenderStorage>();
+		m_MeshPipeLine = CreateSpecial<MeshPipeLine>(m_RenderPass);
+		m_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
 	}
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commandBuffer) {
 		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer,commandBuffer);
@@ -73,8 +77,8 @@ namespace Proof
 		PF_CORE_ASSERT(s_InContext ==false, "Cannot begin context if already in a context");
 		s_InContext = true;
 		s_CurrentCamera = CameraData{ projection,view,Position };
-		s_RenderStorage->CurrentFrameBuffer = frameBuffer;
-		s_RenderStorage->CommandBuffer = commandBuffer;
+		m_RenderStorage->CurrentFrameBuffer = frameBuffer;
+		m_RenderStorage->CommandBuffer = commandBuffer;
 	}
 
 	void Renderer3DPBR::SubmitMesh(MeshComponent& mesh, const glm::mat4& transform) {
@@ -87,9 +91,9 @@ namespace Proof
 		if (mesh.HasMaterial())
 			vertex.Color = AssetManager::GetAsset<MaterialAsset>(mesh.GetMaterialAssetID())->GetMaterial().Colour;
 		// [] creatses it if it does not exist
-		s_MeshPipeLine->MeshesTransforms[meshPointerId].emplace_back(vertex);
-		s_MeshPipeLine->AmountMeshes[meshPointerId] += 1;
-		s_MeshPipeLine->NumberMeshes++;
+		m_MeshPipeLine->MeshesTransforms[meshPointerId].emplace_back(vertex);
+		m_MeshPipeLine->AmountMeshes[meshPointerId] += 1;
+		m_MeshPipeLine->NumberMeshes++;
 		
 	}
 
@@ -112,17 +116,17 @@ namespace Proof
 		s_InContext = false;
 	}
 	void Renderer3DPBR::Reset() {
-		s_MeshPipeLine->MeshesTransforms.clear();
-		s_MeshPipeLine->AmountMeshes.clear();
-		s_MeshPipeLine->NumberMeshes = 0;
-		s_RenderStorage->CurrentFrameBuffer = nullptr;
+		m_MeshPipeLine->MeshesTransforms.clear();
+		m_MeshPipeLine->AmountMeshes.clear();
+		m_MeshPipeLine->NumberMeshes = 0;
+		m_RenderStorage->CurrentFrameBuffer = nullptr;
 	}
 
 	void Renderer3DPBR::Destroy() {
 	
 	}
 	void Renderer3DPBR::DrawMeshSource(uint64_t ID, uint64_t numMeshPerID, uint64_t offset) {
-		auto descriptor1 = s_MeshPipeLine->Descriptors[DescriptorSets::One];
+		auto descriptor1 = m_MeshPipeLine->Descriptors[DescriptorSets::One];
 		const auto meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(ID);
 				// get asset also does a check for an id so we will need to fix this
 		auto& mesh = *meshAsset->GetMesh();
@@ -133,38 +137,38 @@ namespace Proof
 				: Renderer::GetWhiteTexture();
 
 			descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, texture);
-			descriptor1->Bind(s_RenderStorage->CommandBuffer, s_MeshPipeLine->PipeLineLayout);
-			subMesh.GetVertexBuffer()->Bind(s_RenderStorage->CommandBuffer);
-			subMesh.GetIndexBuffer()->Bind(s_RenderStorage->CommandBuffer);
-			s_MeshPipeLine->MeshesVertexBuffer->Bind(s_RenderStorage->CommandBuffer, 1);
+			descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
+			subMesh.GetVertexBuffer()->Bind(m_RenderStorage->CommandBuffer);
+			subMesh.GetIndexBuffer()->Bind(m_RenderStorage->CommandBuffer);
+			m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
 
-			Renderer::DrawElementIndexed(s_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, offset);
+			Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, offset);
 		}
 		
 	}
 	void Renderer3DPBR::DrawContext() {
-		if (s_MeshPipeLine->MeshesTransforms.size() == 0)
+		if (m_MeshPipeLine->MeshesTransforms.size() == 0)
 			return;
-		s_RenderStorage->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
-		auto descriptor0 = s_MeshPipeLine->Descriptors[DescriptorSets::Zero];
-		auto descriptor1 = s_MeshPipeLine->Descriptors[DescriptorSets::One];
+		m_RenderStorage->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+		auto descriptor0 = m_MeshPipeLine->Descriptors[DescriptorSets::Zero];
+		auto descriptor1 = m_MeshPipeLine->Descriptors[DescriptorSets::One];
 
-		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, s_RenderStorage->CameraBuffer);
+		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_RenderStorage->CameraBuffer);
 		std::vector<MeshPipeLine::MeshVertex> meshesVertex;
 		std::vector<AssetID> elementsImplaced;
-		for (auto& [ID, transforms] : s_MeshPipeLine->MeshesTransforms) {
+		for (auto& [ID, transforms] : m_MeshPipeLine->MeshesTransforms) {
 			// dont use std::end instead back inserter because using std::end can resulst in undefinded behavior
 			std::move(transforms.begin(), transforms.end(), std::back_inserter(meshesVertex));
 			elementsImplaced.emplace_back(ID);
 		}
-		s_MeshPipeLine->MeshesVertexBuffer = VertexBuffer::Create(meshesVertex.size() * sizeof(MeshPipeLine::MeshVertex));
-		Renderer::BeginRenderPass(s_RenderStorage->CommandBuffer, s_MeshPipeLine->RenderPass,s_RenderStorage->CurrentFrameBuffer);
-		Renderer::RecordRenderPass(s_MeshPipeLine->RenderPass, [&](Count <CommandBuffer> commandBuffer) {
-			descriptor0->Bind(commandBuffer, s_MeshPipeLine->PipeLineLayout);
+		m_MeshPipeLine->MeshesVertexBuffer = VertexBuffer::Create(meshesVertex.size() * sizeof(MeshPipeLine::MeshVertex));
+		//Renderer::BeginRenderPass(m_RenderStorage->CommandBuffer, m_MeshPipeLine->RenderPass,m_RenderStorage->CurrentFrameBuffer,true);
+		Renderer::RecordRenderPass(m_RenderPass, m_MeshPipeLine->GraphicsPipeline, [&](Count <CommandBuffer> commandBuffer) {
+			descriptor0->Bind(commandBuffer, m_MeshPipeLine->PipeLineLayout);
 			uint32_t offset = 0;
-			s_MeshPipeLine->MeshesVertexBuffer->AddData(meshesVertex.data(),meshesVertex.size() * sizeof(MeshPipeLine::MeshVertex));
+			m_MeshPipeLine->MeshesVertexBuffer->AddData(meshesVertex.data(),meshesVertex.size() * sizeof(MeshPipeLine::MeshVertex));
 			for (const uint64_t& ID : elementsImplaced) {
-				const uint64_t numMeshPerID = s_MeshPipeLine->AmountMeshes[ID];
+				const uint64_t numMeshPerID = m_MeshPipeLine->AmountMeshes[ID];
 				if (AssetManager::HasID(ID) == false)
 					continue;
 				const auto meshInfo = AssetManager::GetAssetInfo(ID);
@@ -194,12 +198,12 @@ namespace Proof
 						: Renderer::GetWhiteTexture();
 					//Count<Texture2D> texture = Renderer::GetWhiteTexture();
 					descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, texture);
-					descriptor1->Bind(s_RenderStorage->CommandBuffer, s_MeshPipeLine->PipeLineLayout);
-					subMesh.GetVertexBuffer()->Bind(s_RenderStorage->CommandBuffer);
-					subMesh.GetIndexBuffer()->Bind(s_RenderStorage->CommandBuffer);
-					s_MeshPipeLine->MeshesVertexBuffer->Bind(s_RenderStorage->CommandBuffer,1);
+					descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
+					subMesh.GetVertexBuffer()->Bind(m_RenderStorage->CommandBuffer);
+					subMesh.GetIndexBuffer()->Bind(m_RenderStorage->CommandBuffer);
+					m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer,1);
 					
-					Renderer::DrawElementIndexed(s_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, offset);
+					Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, offset);
 				}
 				for (int i = 0; i < meshAsset->GetDiscardedMesh().size(); i++) {
 					const auto& index = meshAsset->GetDiscardedMesh()[i];
@@ -208,11 +212,11 @@ namespace Proof
 				offset += numMeshPerID;
 			}
 		});
-		Renderer::EndRenderPass(s_MeshPipeLine->RenderPass);
+		//Renderer::EndRenderPass(m_MeshPipeLine->RenderPass);
 	}
 
 
-	MeshPipeLine::MeshPipeLine() {
+	MeshPipeLine::MeshPipeLine(Count<RenderPass> renderPass) {
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
@@ -233,7 +237,6 @@ namespace Proof
 		}
 		Shader = Shader::Create("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Mesh.shader");
 		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero],Descriptors[DescriptorSets::One] });
-		RenderPass = RenderPass::Create();
 
 		Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
 		meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
@@ -249,8 +252,7 @@ namespace Proof
 		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
 		meshVertexArray->AddData(9, DataType::Vec3, offsetof(MeshPipeLine::MeshVertex, MeshPipeLine::MeshVertex::Color), 1);
 
-		GraphicsPipeline = GraphicsPipeline::Create(Shader, RenderPass, PipeLineLayout, meshVertexArray);
-		RenderPass->SetGraphicsPipeline(GraphicsPipeline);
+		GraphicsPipeline = GraphicsPipeline::Create(Shader, renderPass, PipeLineLayout, meshVertexArray);
 	}
 	DebugMeshPipeLine::DebugMeshPipeLine()
 	{
@@ -280,6 +282,5 @@ namespace Proof
 		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
 
 		GraphicsPipeline = GraphicsPipeline::Create(Shader, RenderPass, PipeLineLayout, meshVertexArray);
-		RenderPass->SetGraphicsPipeline(GraphicsPipeline);
 	}
 }

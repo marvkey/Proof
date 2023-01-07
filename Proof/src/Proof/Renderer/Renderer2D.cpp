@@ -18,8 +18,6 @@ namespace Proof {
 
 	static glm::mat4 s_Transform;
 	static Vertex2D Vertex1,Vertex2,Vertex3,Vertex4;
-	static SpritePipeline* s_SpritePiipeline;
-	static Renderer2DStorage* s_Storage2DData;
 	enum class DescriptorSet0 {
 	//struct
 		CameraData = 0,
@@ -40,26 +38,21 @@ namespace Proof {
 
 	static CameraData s_CurrentCamera;
 	void Renderer2D::Init() {
-		s_Storage2DData = new Renderer2DStorage();
-		InitDescriptors();
-		s_SpritePiipeline = new SpritePipeline();
+		m_Storage2DData = CreateSpecial <Renderer2DStorage>();
+		m_SpritePipeline= CreateSpecial<SpritePipeline>(m_RenderPass);
 	}
 	
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commdandBuffer) {
 		PF_PROFILE_FUNC()
 		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
 		s_CurrentCamera = CameraData{ projection,view,Position };
-		s_Storage2DData->CurrentFrameBuffer = frameBuffer;
-		s_Storage2DData->CommandBuffer = commdandBuffer;
+		m_Storage2DData->CurrentFrameBuffer = frameBuffer;
+		m_Storage2DData->CommandBuffer = commdandBuffer;
 	}
-	void Renderer2D::InitDescriptors() {
-		{
-			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.Build();
-			s_Storage2DData->Descriptors.insert({ DescriptorSets::Zero,descriptor });
-		}
-
+	Renderer2D::Renderer2D(Count<class RenderPass> renderPass)
+	{
+		m_RenderPass = renderPass;
+		Init();
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1,1,1},{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());
@@ -68,6 +61,8 @@ namespace Proof {
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Size) {
 		DrawQuad(Location,{0.0,0.0,0.0},Size,{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());
 	}
+
+
 	
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec4& Color) {
 		DrawQuad(Location,Rotation,{1.0f,1.0f,1.0f},Color, Renderer::GetWhiteTexture());
@@ -93,22 +88,22 @@ namespace Proof {
 		DrawQuad({transform.Location},transform.Rotation,transform.Scale,Sprite.Colour,nullptr);
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D) {
-		if (s_Storage2DData->IndexCount >= s_Storage2DData->c_MaxIndexCount){ // reached maxed index size
+		if (m_Storage2DData->IndexCount >= m_Storage2DData->c_MaxIndexCount){ // reached maxed index size
 			Render();
 			Reset();
 		}
 		/*
 		float TextureIndex =-1.0f; // no texture index
-		for(uint32_t i =0; i<s_Storage2DData->TextureSlotIndex;i++){
-			if(s_Storage2DData->Textures[i]->GetID() == texture2D->GetID()){
+		for(uint32_t i =0; i<m_Storage2DData->TextureSlotIndex;i++){
+			if(m_Storage2DData->Textures[i]->GetID() == texture2D->GetID()){
 				TextureIndex =(float)i;
 				break;
 			}
 		}
 		if(TextureIndex ==-1.0f){ /// if the texture does not exist, then we are just going to assing a new texture
-			TextureIndex = (float) s_Storage2DData->TextureSlotIndex; // assinging new
-			s_Storage2DData->Textures[s_Storage2DData->TextureSlotIndex] =texture2D;
-			s_Storage2DData->TextureSlotIndex++;
+			TextureIndex = (float) m_Storage2DData->TextureSlotIndex; // assinging new
+			m_Storage2DData->Textures[m_Storage2DData->TextureSlotIndex] =texture2D;
+			m_Storage2DData->TextureSlotIndex++;
 		}
 		*/
 		s_Transform = glm::mat4(1.0f);
@@ -139,18 +134,18 @@ namespace Proof {
 		//Vertex4.TexSlot = TextureIndex;
 
 		/* Gonna test wich is faster this meathod or the second one*/
-		s_Storage2DData->QuadArray[s_Storage2DData->QuadArraySize] = Vertex1;
-		s_Storage2DData->QuadArray[s_Storage2DData->QuadArraySize+1] = Vertex2;
-		s_Storage2DData->QuadArray[s_Storage2DData->QuadArraySize+2] = Vertex3;
-		s_Storage2DData->QuadArray[s_Storage2DData->QuadArraySize+3] = Vertex4;
+		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize] = Vertex1;
+		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+1] = Vertex2;
+		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+2] = Vertex3;
+		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+3] = Vertex4;
 		/*
-		memcpy(&s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize],&Vertex1,sizeof(Vertex1));
-		memcpy(&s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize +1],&Vertex2,sizeof(Vertex1));
-		memcpy(&s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize +2],&Vertex3,sizeof(Vertex3));
-		memcpy(&s_Storage2DData->m_QuadArray[s_Storage2DData->m_QuadArraySize +3],&Vertex4,sizeof(Vertex4));
+		memcpy(&m_Storage2DData->m_QuadArray[m_Storage2DData->m_QuadArraySize],&Vertex1,sizeof(Vertex1));
+		memcpy(&m_Storage2DData->m_QuadArray[m_Storage2DData->m_QuadArraySize +1],&Vertex2,sizeof(Vertex1));
+		memcpy(&m_Storage2DData->m_QuadArray[m_Storage2DData->m_QuadArraySize +2],&Vertex3,sizeof(Vertex3));
+		memcpy(&m_Storage2DData->m_QuadArray[m_Storage2DData->m_QuadArraySize +3],&Vertex4,sizeof(Vertex4));
 		*/
-		s_Storage2DData->IndexCount+=6; 
-		s_Storage2DData->QuadArraySize += 4;
+		m_Storage2DData->IndexCount+=6; 
+		m_Storage2DData->QuadArraySize += 4;
 		
 	}
 	void Renderer2D::EndContext() {
@@ -158,42 +153,42 @@ namespace Proof {
 		Reset();
 	}
 	void Renderer2D::Reset() {
-		s_Storage2DData->IndexCount = 0;
-		//s_Storage2DData->TextureSlotIndex = 1;
-		s_Storage2DData->QuadArraySize = 0;
-		s_Storage2DData->CurrentFrameBuffer = nullptr;
-		s_Storage2DData->CommandBuffer = nullptr;
+		m_Storage2DData->IndexCount = 0;
+		//m_Storage2DData->TextureSlotIndex = 1;
+		m_Storage2DData->QuadArraySize = 0;
+		m_Storage2DData->CurrentFrameBuffer = nullptr;
+		m_Storage2DData->CommandBuffer = nullptr;
 
 	}
 	
 	void Renderer2D::Render() {
-		if (s_Storage2DData->IndexCount == 0)return; // nothing to draw
+		if (m_Storage2DData->IndexCount == 0)return; // nothing to draw
 
 		#if 0
-		if(s_Storage2DData->m_IndexCount ==0)return; // nothing to draw
-		s_Storage2DData->m_Shader->Bind();
-		s_Storage2DData->m_VertexBuffer->Bind();
-		s_Storage2DData->m_IndexBuffer->Bind();
-		for(uint32_t i =0; i<s_Storage2DData->m_TextureSlotIndex;i++){
-			s_Storage2DData->m_Textures[i]->Bind(i);
+		if(m_Storage2DData->m_IndexCount ==0)return; // nothing to draw
+		m_Storage2DData->m_Shader->Bind();
+		m_Storage2DData->m_VertexBuffer->Bind();
+		m_Storage2DData->m_IndexBuffer->Bind();
+		for(uint32_t i =0; i<m_Storage2DData->m_TextureSlotIndex;i++){
+			m_Storage2DData->m_Textures[i]->Bind(i);
 		} 
-		s_Storage2DData->m_VertexBuffer->AddData(s_Storage2DData->m_QuadArray,s_Storage2DData->m_QuadArraySize *sizeof(Vertex2D));
-		Renderer::DrawIndexed(s_Storage2DData->m_VertexArray,s_Storage2DData->m_IndexCount);
+		m_Storage2DData->m_VertexBuffer->AddData(m_Storage2DData->m_QuadArray,m_Storage2DData->m_QuadArraySize *sizeof(Vertex2D));
+		Renderer::DrawIndexed(m_Storage2DData->m_VertexArray,m_Storage2DData->m_IndexCount);
 		s_Renderer2DStats->m_DrawCalls+=1;
 		#endif
-		s_Storage2DData->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
-		auto descriptor0 = s_Storage2DData->Descriptors[DescriptorSets::Zero];
+		m_Storage2DData->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+		auto descriptor0 = m_SpritePipeline->Descriptors[DescriptorSets::Zero];
 
-		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, s_Storage2DData->CameraBuffer);
-		Renderer::BeginRenderPass(s_Storage2DData->CommandBuffer, s_SpritePiipeline->RenderPass, s_Storage2DData->CurrentFrameBuffer);
-		Renderer::RecordRenderPass(s_SpritePiipeline->RenderPass, [&](Count <CommandBuffer> commandBuffer) {
-			descriptor0->Bind(commandBuffer, s_SpritePiipeline->PipeLineLayout);
-			s_Storage2DData->VertexBuffer->AddData(s_Storage2DData->QuadArray.data(), s_Storage2DData->QuadArraySize * sizeof(Vertex2D));
-			s_Storage2DData->VertexBuffer->Bind(commandBuffer);
-			s_Storage2DData->IndexBuffer->Bind(commandBuffer);	
-			Renderer::DrawElementIndexed(commandBuffer, s_Storage2DData->IndexCount, s_Storage2DData->QuadArraySize, 0);
+		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
+		//Renderer::BeginRenderPass(m_Storage2DData->CommandBuffer, m_RenderPass, m_Storage2DData->CurrentFrameBuffer,false);
+		Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline,[&](Count <CommandBuffer> commandBuffer) {
+			descriptor0->Bind(commandBuffer, m_SpritePipeline->PipeLineLayout);
+			m_Storage2DData->VertexBuffer->AddData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
+			m_Storage2DData->VertexBuffer->Bind(commandBuffer);
+			m_Storage2DData->IndexBuffer->Bind(commandBuffer);	
+			Renderer::DrawElementIndexed(commandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
 		});
-		Renderer::EndRenderPass(s_SpritePiipeline->RenderPass);
+		//Renderer::EndRenderPass(m_SpritePiipeline->RenderPass);
 	}
 	
 	
@@ -256,16 +251,21 @@ namespace Proof {
 		//Textures[0] =  Texture2D::Create(1, 1, ImageFormat::RGBA, &whiteTextureData);
 
 	}
-	SpritePipeline::SpritePipeline() {
+	SpritePipeline::SpritePipeline(Count <class RenderPass > renderPass) {
 		auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
 		vertexArray->AddData(0, DataType::Vec3, offsetof(Vertex2D, Vertex2D::Position));
 		vertexArray->AddData(1, DataType::Vec4, offsetof(Vertex2D, Vertex2D::Color));
 		vertexArray->AddData(2, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
 		//vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
 		Shader = Shader::GetOrCreate("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.shader");
-		PipeLineLayout = PipeLineLayout::Create(std::vector{ s_Storage2DData->Descriptors[DescriptorSets::Zero]});
-		RenderPass = RenderPass::Create();
-		GraphicsPipeline = GraphicsPipeline::Create(Shader, RenderPass, PipeLineLayout, vertexArray);
-		RenderPass->SetGraphicsPipeline(GraphicsPipeline);
+		{
+			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
+				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+				.Build();
+			Descriptors.insert({ DescriptorSets::Zero,descriptor });
+		}
+		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero]});
+		GraphicsPipeline = GraphicsPipeline::Create(Shader, renderPass, PipeLineLayout, vertexArray);
 	}
+
 }

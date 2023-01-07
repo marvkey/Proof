@@ -290,18 +290,16 @@ namespace Proof {
 				if (mesh != nullptr)
 				{
 					std::vector<physx::PxVec3> vertices;
+					std::vector<uint32_t> indices;
+
 					for (const SubMesh& subMesh : mesh->GetSubMeshes())
 					{
 						for (const auto& vertex : subMesh.m_Vertices)
 							vertices.emplace_back(physx::PxVec3{ vertex.Vertices.X,vertex.Vertices.Y,vertex.Vertices.Z });
-					}
-
-					std::vector<uint32_t> indices;
-					for (const SubMesh& subMesh : mesh->GetSubMeshes())
-					{
 						for (const auto& val : subMesh.m_Indices)
 							indices.emplace_back(val);
 					}
+					
 					physx::PxConvexMeshDesc convexDesc;
 					convexDesc.points.count = vertices.size();
 					convexDesc.points.stride = sizeof(physx::PxVec3);

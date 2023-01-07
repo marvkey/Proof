@@ -29,15 +29,15 @@ namespace Proof {
 		Renderer::s_RendererAPI->Init();
 
 		s_BaseTextures = new  BaseTextures();
-		Renderer2D::Init();
-		Renderer3DPBR::Init();
+		//Renderer3DPBR::Init();
+		//Renderer2D::Init();
 		MeshWorkShop::Init();
 		PF_ENGINE_TRACE("Renderer Initilized");
 	}
 
 	void RendererBase::Destroy() {
 		PF_PROFILE_FUNC();
-		Renderer3DPBR::Destroy();
+		//Renderer3DPBR::Destroy();
 		Renderer::s_RendererAPI->Destroy();
 		m_GraphicsContext = nullptr;
 		delete AllShaders;

@@ -191,10 +191,11 @@ namespace Proof
 		}
 		{
 			//https://github.com/1111mp/Vulkan/blob/master/src/Application.cpp
-
+			Renderer::BeginCommandBuffer(s_ImguiRenderPass->CommandBuffer);
 			Renderer::BeginRenderPass(s_ImguiRenderPass->CommandBuffer, s_ImguiRenderPass->RenderPass, s_ImguiRenderPass->FrameBuffer, true);
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), s_ImguiRenderPass->CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
 			Renderer::EndRenderPass(s_ImguiRenderPass->RenderPass);
+			Renderer::EndCommandBuffer(s_ImguiRenderPass->CommandBuffer);
 			Renderer::SubmitCommandBuffer(s_ImguiRenderPass->CommandBuffer);
 		}
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {

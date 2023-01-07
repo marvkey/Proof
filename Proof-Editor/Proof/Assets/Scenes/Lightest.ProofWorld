@@ -7,7 +7,7 @@ World:
         Tag: cube
         tags: []
       TransformComponent:
-        Location: [-2, 4.80000019, 0]
+        Location: [0, 11.8999996, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -29,20 +29,6 @@ World:
         Type: Dynamic
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
-    - Entity: 17266723913482933523
-      TagComponent:
-        Tag: square
-        tags: []
-      TransformComponent:
-        Location: [0, -0.100000001, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      SpriteComponent:
-        TextureAssetPointerID: 0
-        Colour: [0, 0.419355154, 1, 1]
     - Entity: 9935884760427197857
       TagComponent:
         Tag: backpack
@@ -57,26 +43,12 @@ World:
       MeshComponent:
         MeshAssetPointerID: 432434234236
         MaterialPointerID: 0
-    - Entity: 7473635506264845527
-      TagComponent:
-        Tag: Empty Entity
-        tags: []
-      TransformComponent:
-        Location: [0, 0.600000024, -0.400000006]
-        Rotation: [0, 0, 0]
-        Scale: [3.29999995, 3.70000005, 1]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      SpriteComponent:
-        TextureAssetPointerID: 0
-        Colour: [1, 0, 0, 0.753000021]
     - Entity: 13003128472933448470
       TagComponent:
         Tag: Sphere
         tags: []
       TransformComponent:
-        Location: [-1.79999995, 8, 0]
+        Location: [-1.79999995, 16.7999992, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -88,7 +60,7 @@ World:
       SphereColliderComponent:
         IsTrigger: false
         Offset: [0, 0, 0]
-        Radius: 0.5
+        Radius: 1
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
@@ -103,7 +75,7 @@ World:
         Tag: Capsule
         tags: []
       TransformComponent:
-        Location: [1.5, 13.6000004, 0]
+        Location: [-1.60000002, 27.8999996, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -116,7 +88,7 @@ World:
         IsTrigger: false
         Offset: [0, 0, 0]
         Radius: 0.5
-        Height: 1
+        Height: 2
         Direction: Y
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
@@ -129,23 +101,22 @@ World:
         FreezeRotation: [false, false, false]
     - Entity: 15951281748875903837
       TagComponent:
-        Tag: floor
+        Tag: terain
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
         Rotation: [0, 0, 0]
-        Scale: [5.4000001, 1, 5.30000019]
+        Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
-        MaterialPointerID: 6008439512829965240
-      CubeColliderComponent:
+        MeshAssetPointerID: 17647221892499275640
+        MaterialPointerID: 5634022354863745560
+      MeshColliderComponent:
         IsTrigger: false
-        OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 1, 1]
         PhysicsMaterialPointerID: 0
+        MeshAssetPointerID: 17647221892499275640
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0
@@ -154,3 +125,17 @@ World:
         Type: Static
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
+    - Entity: 8733067200903109407
+      TagComponent:
+        Tag: Empty Entity
+        tags: []
+      TransformComponent:
+        Location: [0, 4.80000019, -2.79999995]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      SpriteComponent:
+        TextureAssetPointerID: 0
+        Colour: [1, 0, 0, 1]

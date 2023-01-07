@@ -28,11 +28,10 @@ namespace Proof
 		}
 		void FreeCommandBuffer();
 		void Bind(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight,VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
-		void BeginRecord(Count<class GraphicsPipeline> graphicsPipeLine,uint32_t frameIndex= Renderer::GetCurrentFrame().FrameinFlight, bool viewScreen =false);
+		void BeginRecord(uint32_t frameIndex= Renderer::GetCurrentFrame().FrameinFlight, bool viewScreen =false);
 		void EndRecord(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
 		bool m_RenderPassEnabled = false;
 		bool m_Recording = false;
-		Count<class GraphicsPipeline> m_GraphicspipeLine;
 		friend class VulkanSwapChain;
 		uint32_t m_FrameIndex;
 		// frame used to start render pass

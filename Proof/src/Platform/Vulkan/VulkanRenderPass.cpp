@@ -5,13 +5,16 @@
 namespace Proof
 {
 	VulkanRenderPass::VulkanRenderPass(RenderPassType type) {
+        //https://developer.samsung.com/galaxy-gamedev/resources/articles/renderpasses.html
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         auto swapChain = graphicsContext->GetSwapChain()->As<VulkanSwapChain>();
         if (type == RenderPassType::World) {
+            static int i = 0;
+            i++;
             VkAttachmentDescription depthAttachment{};
             depthAttachment.format = swapChain->GetDepthFormat();
             depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-            depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -25,10 +28,10 @@ namespace Proof
             VkAttachmentDescription colorAttachment = {};
             colorAttachment.format = swapChain->GetImageFormat();
             colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -107,7 +110,6 @@ namespace Proof
 	}
 
 	VulkanRenderPass::VulkanRenderPass(const VulkanRenderPassInfo& info) {
-        m_PipeLine = info.PipeLine;
         VkRenderPassCreateInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderPassInfo.attachmentCount = info.Attachments.size();
@@ -127,7 +129,6 @@ namespace Proof
        
         PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot start render pass when previous render pass is not closed");
         m_CommandBuffer = command;
-        m_CommandBuffer->As<VulkanCommandBuffer>()->BeginRecord(GetPipeLine(), Renderer::GetCurrentFrame().FrameinFlight, viewScreen);
         m_FrameBuffer = frameBuffer;
 
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
@@ -156,7 +157,7 @@ namespace Proof
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_RenderPass;
+        renderPassInfo.renderPass = graphicsContext->GetSwapChain()->GetRenderPass()->As<VulkanRenderPass>()->GetRenderPass();
         // teh frameBuffer we are writing
         renderPassInfo.framebuffer = frameBuffer->As<VulkanScreenFrameBuffer>()->GetFrameBuffer(Renderer::GetCurrentFrame().ImageIndex);
 
@@ -165,13 +166,38 @@ namespace Proof
         // for high displays swap chain extent could be higher than windows extent
         renderPassInfo.renderArea.extent = VkExtent2D{ (uint32_t)frameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.X, (uint32_t)frameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.Y };
 
-
         renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
         renderPassInfo.pClearValues = clearValues.data();
+
+      
         vkCmdBeginRenderPass(command->As<VulkanCommandBuffer>()->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        if (viewScreen == true)
+        {
+            VkClearAttachment clearAttachments[2] = {};
+
+            clearAttachments[0].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            clearAttachments[0].clearValue.color = clearValues[0].color;
+            clearAttachments[0].colorAttachment = 0;
+
+            clearAttachments[1].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+            clearAttachments[1].clearValue.depthStencil = { Depth,stencil };
+
+            VkClearRect clearRect = {};
+            clearRect.layerCount = 1;
+            clearRect.rect.offset = { 0, 0 };
+            clearRect.rect.extent = { m_FrameBuffer->GetFrameWidth(), m_FrameBuffer->GetFrameHeight() };
+
+            vkCmdClearAttachments(command->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+                2,
+                clearAttachments,
+                1,
+                &clearRect);
+        }
+       
     }
-    void VulkanRenderPass::RecordRenderPass(std::function<void(Count<CommandBuffer> commandBuffer)> func) {
-        m_CommandBuffer->As<VulkanCommandBuffer>()->Bind();
+    void VulkanRenderPass::RecordRenderPass(Count<class GraphicsPipeline>pipline, std::function<void(Count<CommandBuffer> commandBuffer)> func) {
+        vkCmdBindPipeline(m_CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+            VK_PIPELINE_BIND_POINT_GRAPHICS, pipline->As<VulkanGraphicsPipeline>()->GetPipline());
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
@@ -192,7 +218,6 @@ namespace Proof
     void VulkanRenderPass::EndRenderPass() {
         PF_CORE_ASSERT(m_RenderPassEnabled == false, "cannot End render pass when render pass is not started");
         vkCmdEndRenderPass(m_CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
-        m_CommandBuffer->As<VulkanCommandBuffer>()->EndRecord();
         m_CommandBuffer = nullptr;
     }
 }

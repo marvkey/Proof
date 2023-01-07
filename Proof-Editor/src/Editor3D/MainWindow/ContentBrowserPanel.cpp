@@ -441,7 +441,7 @@ namespace Proof
 			std::filesystem::rename(fileOldFullName, fileNewFullName);
 			if (AssetManager::HasAsset(fileOldFullName)) {
 				AssetInfo assetInfo = AssetManager::GetAssetInfo(fileOldFullName);
-				AssetManager::ResetAssetPath(assetInfo.ID, fileOldFullName);
+				AssetManager::ResetAssetPath(assetInfo.ID, fileNewFullName);
 			}
 			FileRenameName = "";
 			ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();

@@ -18,8 +18,8 @@ namespace Proof {
 	void VulkanRendererAPI::BeginRenderPass(Count<class CommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class ScreenFrameBuffer> frameBuffer, bool viewScreen) {
 		renderPass->As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, frameBuffer,viewScreen);
 	}
-	void VulkanRendererAPI::RecordRenderPass(Count<class RenderPass> renderPass,std::function<void(Count<CommandBuffer>)> data) {
-		renderPass->As<VulkanRenderPass>()->RecordRenderPass(data);
+	void VulkanRendererAPI::RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<CommandBuffer> commandBuffer)> data) {
+		renderPass->As<VulkanRenderPass>()->RecordRenderPass(pipeline,data);
 	}
 	void VulkanRendererAPI::EndRenderPass(Count<class RenderPass> renderPass) {
 		renderPass->As<VulkanRenderPass>()->EndRenderPass();
@@ -81,6 +81,14 @@ namespace Proof {
 		vkQueueWaitIdle(graphicsContext->GetGraphicsQueue());
 
 		vkFreeCommandBuffers(graphicsContext->GetDevice(), graphicsContext->GetCommandPool(), 1, &commandBuffer);
+	}
+	void VulkanRendererAPI::BeginCommandBuffer(Count<class CommandBuffer> commandBuffer)
+	{
+		commandBuffer->As<VulkanCommandBuffer>()->BeginRecord();
+	}
+	void VulkanRendererAPI::EndCommandBuffer(Count<class CommandBuffer> commandBuffer)
+	{
+		commandBuffer->As<VulkanCommandBuffer>()->EndRecord();
 	}
 	CurrentFrame VulkanRendererAPI::GetCurrentFrame() {
 		return VulkanRenderer::s_CurrentFrame;

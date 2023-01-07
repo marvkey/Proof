@@ -11,11 +11,18 @@ namespace Proof {
 		static void DrawArrays(Count<class CommandBuffer> commandBuffer, uint32_t vertexCount,uint32_t instanceCount, uint32_t firstInstance = 0) {
 			s_RendererAPI->DrawArrays(commandBuffer,vertexCount,instanceCount,firstInstance);
 		}
+		static void BeginCommandBuffer(Count<class CommandBuffer> commandBuffer) {
+			s_RendererAPI->BeginCommandBuffer(commandBuffer);
+		}
+		static void EndCommandBuffer(Count<class CommandBuffer> commandBuffer) {
+			s_RendererAPI->EndCommandBuffer(commandBuffer);
+		}
+
 		static void BeginRenderPass(Count<class CommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class ScreenFrameBuffer> frameBuffer, bool viewScreen = false) {
 			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer, viewScreen);
 		}
-		static void RecordRenderPass(Count<class RenderPass> renderPass, std::function<void(Count<CommandBuffer> commandBuffer)> data) {
-			s_RendererAPI->RecordRenderPass(renderPass, data);
+		static void RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<CommandBuffer> commandBuffer)> data) {
+			s_RendererAPI->RecordRenderPass(renderPass, pipeline,data);
 		}
 		static void EndRenderPass(Count<class RenderPass> renderPass) {
 			s_RendererAPI->EndRenderPass(renderPass);
@@ -38,7 +45,7 @@ namespace Proof {
 		static void SubmitDatafree(std::function<void()> func) {
 			s_RendererAPI->SubmitDatafree(func);
 		}
-	
+		
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 		static Count<class Texture2D> GetWhiteTexture();

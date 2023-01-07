@@ -15,7 +15,6 @@ namespace Proof{
 			SubPass.resize(subPassSize);
 			SubPassDepedency.resize(subPassDependecySize);
 		}
-		Count<class VulkanGraphicsPipeline> PipeLine;
 	};
 	
 	class VulkanRenderPass : public RenderPass {
@@ -23,14 +22,8 @@ namespace Proof{
 		VulkanRenderPass(RenderPassType type = RenderPassType::World);
 		VulkanRenderPass(const VulkanRenderPassInfo& info);
 		virtual ~VulkanRenderPass();
-		void SetGraphicsPipeline(Count<class GraphicsPipeline> pipeline) {
-			m_PipeLine = pipeline;
-		}
 		VkRenderPass GetRenderPass() {
 			return m_RenderPass;
-		}
-		virtual Count<class GraphicsPipeline> GetPipeLine() {
-			return m_PipeLine;
 		}
 		Count<class CommandBuffer>  GetCommandBuffer() {
 			return m_CommandBuffer;
@@ -40,9 +33,8 @@ namespace Proof{
 		VkRenderPass m_RenderPass = nullptr;
 		void BeginRenderPass(Count<class CommandBuffer> command,Count<class ScreenFrameBuffer>frameBuffer,bool viewScreen = false,const glm::vec4& Color = { 0.0,0.0,0.0,1 }, float Depth = 1.0f, uint32_t stencil = 0);
 		void EndRenderPass();
-		void RecordRenderPass(std::function<void(Count<CommandBuffer> commandBuffer)> func);
+		void RecordRenderPass(Count<class GraphicsPipeline>pipline,std::function<void(Count<CommandBuffer> commandBuffer)> func);
 		bool m_RenderPassEnabled = false;
-		Count<class GraphicsPipeline> m_PipeLine;
 		Count<CommandBuffer> m_CommandBuffer;
 		Count<ScreenFrameBuffer> m_FrameBuffer;
 		friend class VulkanRenderer;

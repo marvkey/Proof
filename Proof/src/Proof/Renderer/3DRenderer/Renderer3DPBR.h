@@ -27,7 +27,6 @@ namespace Proof
 		Count<class GraphicsPipeline> GraphicsPipeline;
 		Count<class Shader> Shader;
 		Count <class PipeLineLayout> PipeLineLayout;
-		Count <class RenderPass > RenderPass;
 		Count<VertexBuffer> MeshesVertexBuffer;
 		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 
@@ -36,7 +35,7 @@ namespace Proof
 		std::unordered_map < AssetID, uint32_t> AmountMeshes;
 		uint32_t NumberMeshes;
 		const uint32_t MaxMesh = 2000;
-		MeshPipeLine();
+		MeshPipeLine(Count<RenderPass> renderPass);
 	};
 
 	struct DebugMeshPipeLine {
@@ -55,24 +54,29 @@ namespace Proof
 		Count<ScreenFrameBuffer> CurrentFrameBuffer = nullptr;
 	};
 	
-	
 	class Renderer3DPBR {
 	public:
-		static void Init();
-		static void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<CommandBuffer>& commandBuffer);
-		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commandBuffer);
-		static void SubmitMesh(class MeshComponent& meshComponent, const glm::mat4& transform);
-		static void SubmitDirectionalLight(class DirectionalLightComponent& comp, class TransformComponent& transform);
-		static void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);
-		static void SubmitSpotLight(class SpotLightComponent& comp, class TransformComponent& transform);
-		static void DrawDebugMesh(class Mesh* mesh, const glm::mat4& transform);
-		static void EndContext();
-		static void Destroy();
-	private:
-		static void DrawContext();
-		static void DrawMeshSource(uint64_t id,uint64_t num,uint64_t offset);
-		static void Reset();
-		static bool s_InContext;
+		Renderer3DPBR(Count<RenderPass> renderPass);
+		~Renderer3DPBR() {
 
+		}
+		void Init();
+		void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<CommandBuffer>& commandBuffer);
+		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commandBuffer);
+		void SubmitMesh(class MeshComponent& meshComponent, const glm::mat4& transform);
+		void SubmitDirectionalLight(class DirectionalLightComponent& comp, class TransformComponent& transform);
+		void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);
+		void SubmitSpotLight(class SpotLightComponent& comp, class TransformComponent& transform);
+		void DrawDebugMesh(class Mesh* mesh, const glm::mat4& transform);
+		void EndContext();
+		void Destroy();
+	private:
+		Special<MeshPipeLine> m_MeshPipeLine;
+		Special<RenderStorage> m_RenderStorage;
+		void DrawContext();
+		void DrawMeshSource(uint64_t id,uint64_t num,uint64_t offset);
+		void Reset();
+		bool s_InContext = false;
+		Count <class RenderPass > m_RenderPass;
 	};
 }

@@ -3,13 +3,11 @@
 namespace Proof{
 	enum class RenderPassType {
 		World,
-		Other
+		Other,
 	};
 	class RenderPass {
 	public:
 		virtual ~RenderPass() =default;
-		virtual void SetGraphicsPipeline(Count<class GraphicsPipeline> pipeline) = 0;
-		virtual Count<class GraphicsPipeline> GetPipeLine() = 0;
 		static	Count<RenderPass> Create(RenderPassType type = RenderPassType::World);
 		template<class T>
 		T* As() {

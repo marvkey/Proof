@@ -10,7 +10,7 @@
 namespace Proof {
 	struct SpriteComponent;
 	struct TransformComponent;
-	struct Proof_API Renderer2DStorage {
+	struct Renderer2DStorage {
 		Count<UniformBuffer> CameraBuffer = nullptr;
 		Count<class VertexBuffer> VertexBuffer;
 		Count<class IndexBuffer> IndexBuffer;
@@ -27,52 +27,50 @@ namespace Proof {
 		//float TextureSlotIndex;
 		uint32_t QuadArraySize;
 		std::vector<Vertex2D> QuadArray;
-		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
-
 		Renderer2DStorage();
 	};
 
 	struct SpritePipeline {
 		Count<class GraphicsPipeline> GraphicsPipeline;
 		Count<class Shader> Shader;
+		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 		Count <class PipeLineLayout> PipeLineLayout;
-		Count <class RenderPass > RenderPass;
-		SpritePipeline();
+		SpritePipeline(Count <class RenderPass > renderPass);
 	};
 
 
-	class Proof_API Renderer2D {
+	class Renderer2D {
 		friend class Camera;
 	public:
-		static void Init();
-		static void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer,Count<CommandBuffer>& commdandBuffer);
+		Renderer2D(Count <class RenderPass > renderPass);
+		~Renderer2D() {};
+		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commdandBuffer);
+		void DrawQuad(const glm::vec3& Location);
+		void DrawQuad(const glm::vec3& Location,const glm::vec3& Size);
+		void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec4& Color);
+		void DrawQuad(const glm::vec3& Location, const glm::vec4& Color);
+		void DrawQuad(const glm::vec3& Location, Count<class Texture2D> texture);
+		void DrawQuad(const glm::vec3& Location, const glm::vec4& TintColor,Count<Texture2D> texture);
+		void DrawQuad(const glm::vec3& Location, const glm::vec3& Size, const glm::vec4& TintColor, Count<Texture2D>& texture);
+		void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Size,const glm::vec4& Color);
 
-		static void DrawQuad(const glm::vec3& Location);
-
-		static void DrawQuad(const glm::vec3& Location,const glm::vec3& Size);
-		static void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec4& Color);
-		static void DrawQuad(const glm::vec3& Location,const glm::vec4& Color);
-
-		static void DrawQuad(const glm::vec3& Location, Count<Texture2D> texture);
-		static void DrawQuad(const glm::vec3& Location, const glm::vec4& TintColor,Count<Texture2D> texture);
-		static void DrawQuad(const glm::vec3& Location,const glm::vec3& Size,const glm::vec4& TintColor,Count<Texture2D>& texture);
-
-		static void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Size,const glm::vec4& Color);
-		
-		static void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>&texture2D);
-		static void DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform);
-		static void EndContext();
+		void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>&texture2D);
+		void DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform);
+		void EndContext();
 
 		struct Renderer2DStats{
 			uint32_t m_QuadCount;
 			uint32_t m_DrawCalls;
 		};
-		static void Reset();
 	private:
-		static void InitDescriptors();
+		void Render();
+		void Reset();
+		void Init();
+		Special<SpritePipeline> m_SpritePipeline;
+		Count <class RenderPass > m_RenderPass;
+		Special< Renderer2DStorage> m_Storage2DData;
 		/* Not using as default rendeer cause it allocates to the heap and we dont need taht waste in performance */
 		static std::vector<Vertex2D> CreateQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Scale,const glm::vec4& Color,float TexIndex);
-		static void Render();
 	};
 }
 
