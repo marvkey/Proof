@@ -12,30 +12,71 @@
 #include "VulkanRenderPass.h"
 namespace Proof
 {
+	namespace Utils {
+		VkCompareOp ProofCompareOpToVulkanCompareOp(DepthCompareOperator compare) {
+			switch (compare)
+			{
+				case Proof::DepthCompareOperator::Never:
+					return VK_COMPARE_OP_NEVER;
+					break;
+				case Proof::DepthCompareOperator::Less:
+					return VK_COMPARE_OP_LESS;
+					break;
+				case Proof::DepthCompareOperator::EQual:
+					return VK_COMPARE_OP_EQUAL;
+					break;
+				case Proof::DepthCompareOperator::LessOrEqual:
+					return VK_COMPARE_OP_LESS_OR_EQUAL;
+					break;
+				case Proof::DepthCompareOperator::Greater:
+					return VK_COMPARE_OP_GREATER;
+					break;
+				case Proof::DepthCompareOperator::NotEqual:
+					return VK_COMPARE_OP_NOT_EQUAL;
+					break;
+				case Proof::DepthCompareOperator::GreaterOrEqual:
+					return VK_COMPARE_OP_GREATER_OR_EQUAL;
+					break;
+				case Proof::DepthCompareOperator::Always:
+					return VK_COMPARE_OP_ALWAYS;
+					break;
+				default:
+					break;
+			}
+			PF_CORE_ASSERT(false, "Operand not supported");
+		}
+	}
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
 		vkDestroyPipeline(RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_GraphicsPipeline, nullptr);
 	}
-	VulkanGraphicsPipeline::VulkanGraphicsPipeline(Count<class Shader> shader, Count<class RenderPass> renderPass, Count<class PipeLineLayout> pipeline, Count<VertexArray > vertexArray ) {
-		PipelineConfigInfo pipelineConfig{};
-		VulkanGraphicsPipeline::DefaultPipelineConfigInfo(pipelineConfig, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
-		pipelineConfig.RenderPass = renderPass->As<VulkanRenderPass>()->GetRenderPass();
-		pipelineConfig.PipelineLayout = pipeline->As<VulkanPipeLineLayout>()->GetPipeLineLayout();
-		auto vulkanShader = shader->As<VulkanShader>();
+	VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineConfig& config)
+	{
+		m_DebugName = config.DebugName;
+		m_LineWidth = config.LineWidth;
+		m_WriteDepth = config.WriteDepth;
+		m_DepthCompareOperator = config.DepthCompareOperator;
+		PipelineConfigInfo pipelineConfig;
+		DefaultPipelineConfigInfo(pipelineConfig, config);
+		pipelineConfig.RenderPass = config.RenderPass->As<VulkanRenderPass>()->GetRenderPass();;
+		pipelineConfig.PipelineLayout = config.PipelineLayout->As<VulkanPipeLineLayout>()->GetPipeLineLayout();
+		auto vulkanShader = config.Shader->As<VulkanShader>();
 		PF_CORE_ASSERT(pipelineConfig.PipelineLayout, "Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");
 		PF_CORE_ASSERT(pipelineConfig.RenderPass, "Cannot create Graphics Pipeline:: no renderpass provided in configInfo");
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		// we are hardcoding values into the vertex data
 		VulkanVertexInput vertexInput;
-		if (vertexArray != nullptr) {
-			vertexInput = vertexArray->As<VulkanVertexArray>()->GetData();
+		if (config.VertexArray != nullptr)
+		{
+			vertexInput = config.VertexArray->As<VulkanVertexArray>()->GetData();
 			vertexInputInfo.vertexAttributeDescriptionCount = vertexInput.GetAttributes().size();
 			vertexInputInfo.vertexBindingDescriptionCount = vertexInput.GetDescriptions().size();
 
 			vertexInputInfo.pVertexAttributeDescriptions = vertexInput.GetAttributes().data();
 			vertexInputInfo.pVertexBindingDescriptions = vertexInput.GetDescriptions().data();
 		}
-		else {
+		else
+		{
 			vertexInputInfo.vertexAttributeDescriptionCount = 0;
 			vertexInputInfo.vertexBindingDescriptionCount = 0;
 
@@ -47,7 +88,8 @@ namespace Proof
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		// teh stages of the pipeline we are going to use
 		// we are only using the fragment and vertex stages
-		if (shader != nullptr) {
+		if (vulkanShader != nullptr)
+		{
 			pipelineInfo.stageCount = vulkanShader->GetStageCount();
 			pipelineInfo.pStages = vulkanShader->m_ShaderStages.data();
 		}
@@ -73,31 +115,25 @@ namespace Proof
 		if (vkCreateGraphicsPipelines((RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to Create Graphics Pipeline");
 	}
-	VkViewport viewPort;
-	VkRect2D Scissor;
-	//FROM IMGUI
-#define IM_ARRAYSIZEERE(_ARR)          ((int)(sizeof(_ARR) / sizeof(*(_ARR))))     // Size of a static C-style array. Don't use on pointers!
+	#define IM_ARRAYSIZEERE(_ARR)          ((int)(sizeof(_ARR) / sizeof(*(_ARR))))     // Size of a static C-style array. Don't use on pointers!
+	void VulkanGraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, const GraphicsPipelineConfig& graphicsConfig)
+	{
 
-	void VulkanGraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height) {
 
 		configInfo.InputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		configInfo.InputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		configInfo.InputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
+		configInfo.InputAssemblyInfo.pNext = nullptr;
+		configInfo.InputAssemblyInfo.flags = 0;
 
-		viewPort.x = 0.0f;
-		viewPort.y = 0.0f;
-		viewPort.width = static_cast<float>(width);
-		viewPort.height = static_cast<float>(height);
-		viewPort.minDepth = 0.0f;
-		viewPort.maxDepth = 1.0f;
-		
-		Scissor.offset = { 0, 0 };
-		Scissor.extent = { width, height };
 
 		configInfo.ViewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		configInfo.ViewportState.viewportCount = 1;
 		//configInfo.ViewportState.pViewports = &viewPort;//leave
+		configInfo.ViewportState.pNext = nullptr;
 		configInfo.ViewportState.scissorCount = 1;
+		configInfo.ViewportState.flags = 0;
+
 		//configInfo.ViewportState.pScissors = &Scissor;//leave
 
 		configInfo.RasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -111,6 +147,8 @@ namespace Proof
 		configInfo.RasterizationInfo.depthBiasConstantFactor = 0.0f;  // Optional
 		configInfo.RasterizationInfo.depthBiasClamp = 0.0f;           // Optional
 		configInfo.RasterizationInfo.depthBiasSlopeFactor = 0.0f;     // Optional
+		configInfo.RasterizationInfo.pNext = nullptr;
+		configInfo.RasterizationInfo.flags = 0;
 
 		configInfo.MultisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		configInfo.MultisampleInfo.sampleShadingEnable = VK_FALSE;
@@ -120,6 +158,8 @@ namespace Proof
 		configInfo.MultisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
 		configInfo.MultisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional
 		configInfo.MultisampleInfo.pSampleMask = nullptr;     // Optional
+		configInfo.MultisampleInfo.flags = 0;
+		configInfo.MultisampleInfo.pNext = nullptr;
 
 		configInfo.ColorBlendAttachment.colorWriteMask =
 			VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
@@ -141,6 +181,8 @@ namespace Proof
 		configInfo.ColorBlendInfo.blendConstants[1] = 0.0f;  // Optional
 		configInfo.ColorBlendInfo.blendConstants[2] = 0.0f;  // Optional
 		configInfo.ColorBlendInfo.blendConstants[3] = 0.0f;  // Optional
+		configInfo.ColorBlendInfo.pNext = nullptr;
+		configInfo.ColorBlendInfo.flags = 0;
 
 		configInfo.DepthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		configInfo.DepthStencilInfo.depthTestEnable = VK_TRUE;
@@ -152,15 +194,15 @@ namespace Proof
 		configInfo.DepthStencilInfo.stencilTestEnable = VK_FALSE;
 		configInfo.DepthStencilInfo.front = {};  // Optional
 		configInfo.DepthStencilInfo.back = {};   // Optional
+		configInfo.DepthStencilInfo.pNext = nullptr;
+		configInfo.DepthStencilInfo.flags = 0;
 
 		VkDynamicState dynamic_states[2] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 
 		configInfo.DynamicSate.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		configInfo.DynamicSate.dynamicStateCount = (uint32_t)IM_ARRAYSIZEERE(dynamic_states);
+		configInfo.DynamicSate.pNext = nullptr;
+		configInfo.DynamicSate.flags = 0;
 		configInfo.DynamicSate.pDynamicStates = dynamic_states;
-
 	}
-
-
-
 }

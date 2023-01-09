@@ -2,6 +2,7 @@
 #include "UniformBuffer.h"
 #include "Proof/Core/Core.h"
 namespace Proof{
+	
 	class PipeLineLayout {
 	public:
 		virtual ~PipeLineLayout() = default;

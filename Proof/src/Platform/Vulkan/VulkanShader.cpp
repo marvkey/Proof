@@ -93,8 +93,10 @@ namespace Proof
 
 
     VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filePath) {
-       
+        m_Name = name;
+        m_ConstructorSamePaths = true;
         magic_enum::enum_for_each<ShaderStage>([&](ShaderStage stage) {
+            m_Paths[stage] = filePath.string();
             std::string source = ProcessStage(stage, filePath);
             if (source.empty() == false)
                 m_SourceCode.insert({ stage,source });
@@ -105,6 +107,7 @@ namespace Proof
     }
 
     VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders) {
+        m_Name = name;
         for (auto& [stage, source] : shaders) {
             m_SourceCode.insert({ stage,source });
         }
@@ -180,7 +183,7 @@ namespace Proof
         auto& shaderData = m_VulkanSPIRV;
         shaderData.clear();
         for (auto& [stage, source] : m_SourceCode) {
-            shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_Paths[stage].c_str(), compilerOptions);
+            shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_Name.c_str(), compilerOptions);
             if (shaderModule.GetCompilationStatus() != shaderc_compilation_status_success) {
                 PF_ENGINE_ERROR("Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<ShaderStage>(stage), shaderModule.GetErrorMessage());
                 PF_ENGINE_TRACE("   {}", source);
@@ -193,6 +196,24 @@ namespace Proof
     }
 
     
+
+    void VulkanShader::Reload()
+    {
+        if (m_ConstructorSamePaths)
+        {
+            m_SourceCode.clear();
+            magic_enum::enum_for_each<ShaderStage>([&](ShaderStage stage) {
+                std::string source = ProcessStage(stage, m_Paths[stage]);
+                if (source.empty() == false)
+                    m_SourceCode.insert({ stage,source });
+            });
+            Utils::CreateCacheDirectoryIfNeeded();
+            Compile();
+            CreateShader();
+            return;
+        }
+        PF_CORE_ASSERT(false, "cannot reload because u did not use path constructuro");
+    }
 
     void VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code, VkShaderModule* shaderModule) {
         VkShaderModuleCreateInfo createInfo{};

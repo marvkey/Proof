@@ -20,10 +20,18 @@ namespace Proof
 	class  VulkanGraphicsPipeline : public GraphicsPipeline {
 	public:
 		virtual ~VulkanGraphicsPipeline();
-		VulkanGraphicsPipeline(Count<class Shader> shader, Count<class RenderPass>renderPass, Count<class PipeLineLayout>pipeline, Count<class VertexArray> vertexArray=nullptr);
-		static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height);
+		VulkanGraphicsPipeline(const GraphicsPipelineConfig& config);
 		VkPipeline GetPipline() { return m_GraphicsPipeline; }
+		static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo,const GraphicsPipelineConfig& graphicsConfig);
+
 	private:
+		std::string m_DebugName;
+		float m_LineWidth = 1.0f;
+		bool m_WriteDepth = true;
+		bool m_Depth = true;
+		DepthCompareOperator m_DepthCompareOperator = DepthCompareOperator::Less;
+		// temporary
+		friend class VulkanRenderPass;
 		VkPipeline m_GraphicsPipeline;
 	};
 }

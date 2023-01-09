@@ -162,7 +162,6 @@ namespace Proof
 			elementsImplaced.emplace_back(ID);
 		}
 		m_MeshPipeLine->MeshesVertexBuffer = VertexBuffer::Create(meshesVertex.size() * sizeof(MeshPipeLine::MeshVertex));
-		//Renderer::BeginRenderPass(m_RenderStorage->CommandBuffer, m_MeshPipeLine->RenderPass,m_RenderStorage->CurrentFrameBuffer,true);
 		Renderer::RecordRenderPass(m_RenderPass, m_MeshPipeLine->GraphicsPipeline, [&](Count <CommandBuffer> commandBuffer) {
 			descriptor0->Bind(commandBuffer, m_MeshPipeLine->PipeLineLayout);
 			uint32_t offset = 0;
@@ -212,7 +211,6 @@ namespace Proof
 				offset += numMeshPerID;
 			}
 		});
-		//Renderer::EndRenderPass(m_MeshPipeLine->RenderPass);
 	}
 
 
@@ -235,7 +233,7 @@ namespace Proof
 				.Build();
 			Descriptors.insert({ DescriptorSets::One,descriptor });
 		}
-		Shader = Shader::Create("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Mesh.shader");
+		Shader = Shader::GetOrCreate("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Mesh.shader");
 		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero],Descriptors[DescriptorSets::One] });
 
 		Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
@@ -251,8 +249,14 @@ namespace Proof
 		meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
 		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
 		meshVertexArray->AddData(9, DataType::Vec3, offsetof(MeshPipeLine::MeshVertex, MeshPipeLine::MeshVertex::Color), 1);
+		GraphicsPipelineConfig graphicsPipelineConfig;
+		graphicsPipelineConfig.DebugName = "Mesh";
+		graphicsPipelineConfig.Shader = Shader;
+		graphicsPipelineConfig.VertexArray = meshVertexArray;
+		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		graphicsPipelineConfig.RenderPass = renderPass;
 
-		GraphicsPipeline = GraphicsPipeline::Create(Shader, renderPass, PipeLineLayout, meshVertexArray);
+		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
 	DebugMeshPipeLine::DebugMeshPipeLine()
 	{
@@ -281,6 +285,6 @@ namespace Proof
 		meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
 		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
 
-		GraphicsPipeline = GraphicsPipeline::Create(Shader, RenderPass, PipeLineLayout, meshVertexArray);
+		//GraphicsPipeline = GraphicsPipeline::Create(Shader, RenderPass, PipeLineLayout, meshVertexArray);
 	}
 }

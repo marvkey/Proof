@@ -8,17 +8,27 @@
 namespace Proof
 {
 
-    Count<Shader> Shader::Create(const std::string& _ShaderName, const std::string& ShaderPath) {
+    Count<Shader> Shader::Create(const std::string& name, const std::string& path) {
         switch (RendererAPI::GetAPI()) {
             case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
             case RendererAPI::API::OpenGL: return nullptr;//Renderer::GetShaderLibrary().AddShader(CreateCount<class OpenGLShader>(_ShaderName, ShaderPath));
-            case RendererAPI::API::Vulkan: return CreateCount<class VulkanShader>(_ShaderName, ShaderPath);
+            case RendererAPI::API::Vulkan:
+                {
+                    Count<Shader> shader = CreateCount<class VulkanShader>(name, path);
+                    RendererBase::GetShaderLibrary()->AddShader(shader);
+                    return shader;
+                }
         }
     }
-    Count<Shader> Shader::Create(const std::string& _ShaderName, const std::string& vertPath, const std::string& fragPath) {
+    Count<Shader> Shader::Create(const std::string& name, const std::unordered_map<ShaderStage, std::string> stages) {
         switch (RendererAPI::GetAPI()) {
             case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
-                //case RendererAPI::API::OpenGL: return CreateCount<class OpenGLShader>(_ShaderName,ShaderPath);
+            case RendererAPI::API::Vulkan:
+            {
+                Count<Shader> shader = CreateCount<class VulkanShader>(name, stages);
+                RendererBase::GetShaderLibrary()->AddShader(shader);
+                return shader;
+            }
         }
         return nullptr;
     }
@@ -35,6 +45,7 @@ namespace Proof
                     //if (shader != nullptr)
                     //    return shader;
                     //return Renderer::GetShaderLibrary().AddShader(CreateCount<class OpenGLShader>(name, path));
+                    PF_CORE_ASSERT(false, "Open gl not support yet"); return nullptr;
                     return nullptr;
                     break;
                 }
@@ -44,7 +55,9 @@ namespace Proof
                     Count<Shader> shader = RendererBase::GetShaderLibrary()->GetShader(name);
                     if (shader != nullptr)
                         return shader;
-                    return RendererBase::GetShaderLibrary()->AddShader(CreateCount<class VulkanShader>(name, path));
+                    shader = CreateCount<class VulkanShader>(name, path);
+                    RendererBase::GetShaderLibrary()->AddShader(shader);
+                    return shader;
                 }
         }
     }
@@ -66,36 +79,35 @@ namespace Proof
                     Count<Shader> shader = RendererBase::GetShaderLibrary()->GetShader(name);
                     if (shader != nullptr)
                         return shader;
-                    return RendererBase::GetShaderLibrary()->AddShader(CreateCount<class VulkanShader>(name, strings));
+                    shader = CreateCount<class VulkanShader>(name, strings);
+                    RendererBase::GetShaderLibrary()->AddShader(shader);
+                    return shader;
                 }
         }
     }
+    Count<Shader> Shader::Get(const std::string& name)
+    {
+        Count<Shader> shader = RendererBase::GetShaderLibrary()->GetShader(name);
+        return shader;
+    }
     Shader::~Shader() {
-        //Renderer::GetShaderLibrary().ShaderMap.erase(this->GetName());
+        //RendererBase::GetShaderLibrary().ShaderMap.erase(this->GetName());
     }
-    Count<Shader> ShaderLibrary::GetShader(const std::string& Name) {
-        if (HasShader(Name) == false) {
-            return nullptr;
+    Count<Shader> ShaderLibrary::GetShader(const std::string& name) {
+        if (HasShader(name)) {
+            return ShaderMap[name];
         }
-        return ShaderMap[Name];
+        return nullptr;
     }
-    void ShaderLibrary::AddShader(const std::string& Name, const Count<Shader>& _Shader) {
-        if (HasShader(Name) == false) {
-            ShaderMap.insert({ Name,_Shader });
+    bool ShaderLibrary::HasShader(const std::string& name) {
+        return ShaderMap.contains(name);
+    }
+    void ShaderLibrary::AddShader(const Count<Shader>& shader) {
+        if (HasShader(shader->GetName()) == false) {
+            ShaderMap.insert({ shader->GetName(),shader });
             return;
         }
-        PF_ENGINE_ERROR(" shader called {} Already exist", _Shader->GetName());
-        PF_CORE_ASSERT(false, "shader library already has a shader called ");
-    }
-    bool ShaderLibrary::HasShader(const std::string& Name) {
-        return ShaderMap.find(Name) != ShaderMap.end();
-    }
-    Count<Shader> ShaderLibrary::AddShader(const Count<Shader>& _Shader) {
-        if (HasShader(_Shader->GetName()) == false) {
-            ShaderMap.insert({ _Shader->GetName(),_Shader });
-            return _Shader;
-        }
-        PF_ENGINE_ERROR(" shader called {} Already exist", _Shader->GetName().c_str());
+        PF_ENGINE_ERROR("{} shader called Already exist", shader->GetName().c_str());
         PF_CORE_ASSERT(false, "shader library cannot add existing shader");
     }
 }

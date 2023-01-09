@@ -6,7 +6,6 @@ namespace Proof{
 	struct Proof_API Material {
 		float Metallness =0.0f;// also shinines
 		float Roughness = 0.0f;
-		float AO=1.0f;
 		Vector Colour {1,1,1};
 
 		UUID AlbedoTexture;

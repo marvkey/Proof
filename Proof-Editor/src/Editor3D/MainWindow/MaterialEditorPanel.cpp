@@ -26,8 +26,6 @@ namespace Proof
 			ImGui::NewLine();
 			ImGui::DragFloat("Metallnes",&m_MaterialAsset->m_Material.Metallness,0.001);
 			ImGui::DragFloat("Roughness",&m_MaterialAsset->m_Material.Roughness,0.001);
-			ImGui::NewLine();
-			ImGui::DragFloat("AO",&m_MaterialAsset->m_Material.AO,0.001);
 
 			m_MaterialAsset->SaveAsset();
 		}

@@ -22,7 +22,10 @@ namespace Proof
         uint32_t GetStageCount() {
             return m_ShaderStages.size();
         }
+     
+        virtual void Reload();
     private:
+        bool m_ConstructorSamePaths = false;
         static void CreateShaderModule(const std::vector<uint32_t>& code, VkShaderModule* shaderModule);
         void CreateShader();
         void CompileOrGetBinaries(const std::filesystem::path& filePath);
@@ -32,7 +35,7 @@ namespace Proof
 
         friend class VulkanGraphicsPipeline;
         std::unordered_map<ShaderStage, std::string> m_Paths;
-        std::string m_Name = "empty ";
+        std::string m_Name;
         std::unordered_map<ShaderStage, std::vector<uint32_t>> m_VulkanSPIRV;
         std::unordered_map<ShaderStage, std::string> m_SourceCode;
 

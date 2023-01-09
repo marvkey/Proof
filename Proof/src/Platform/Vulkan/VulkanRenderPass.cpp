@@ -196,8 +196,9 @@ namespace Proof
        
     }
     void VulkanRenderPass::RecordRenderPass(Count<class GraphicsPipeline>pipline, std::function<void(Count<CommandBuffer> commandBuffer)> func) {
+        auto vulkanPipeline =pipline->As<VulkanGraphicsPipeline>();
         vkCmdBindPipeline(m_CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
-            VK_PIPELINE_BIND_POINT_GRAPHICS, pipline->As<VulkanGraphicsPipeline>()->GetPipline());
+            VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetPipline());
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
@@ -211,7 +212,9 @@ namespace Proof
         scissor.offset = { 0, 0 };
         scissor.extent = VkExtent2D{ (uint32_t)m_FrameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.X, (uint32_t)m_FrameBuffer->As<VulkanScreenFrameBuffer>()->m_ImageSize.Y };;
         vkCmdSetScissor(m_CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), 0, 1, &scissor);
-        
+        if(vulkanPipeline->m_LineWidth !=1.0f)
+            vkCmdSetLineWidth(m_CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
+
         func(m_CommandBuffer);
     }
 

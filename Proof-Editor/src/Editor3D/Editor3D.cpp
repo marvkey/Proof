@@ -388,19 +388,15 @@ namespace Proof
 			//	RendererBase::GetShaderLibrary().ReloadeShaders();
 			//}
 
-			//if (m_WorldRenderer.RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering) {
-			//	ImGui::Text("Renderer techniqe is FowardRendering");
-			//}
-			//else {
-			//	ImGui::Text("Renderer techniqe is DeferedRendering");
-			//
-			//}
-			//if (ImGui::Button("Change Renderer")) {
-			//	if (m_WorldRenderer.RenderData.RenderSettings.Technique == RenderTechnique::FowardRendering)
-			//		m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::DeferedRendering;
-			//	else
-			//		m_WorldRenderer.RenderData.RenderSettings.Technique = RenderTechnique::FowardRendering;
-			//}
+			RendererBase::GetShaderLibrary()->ForEachShader([&](Count<Shader> shader) {
+				ImGui::Text(shader->GetName().c_str());
+				ImGui::SameLine();
+				if (ImGui::Button("Reload"))
+				{
+					shader->Reload();
+				}
+			});
+		
 		}
 		ImGui::End();
 	}

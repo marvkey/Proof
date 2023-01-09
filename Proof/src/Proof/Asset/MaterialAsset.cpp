@@ -27,7 +27,6 @@ namespace Proof{
 		out << YAML::Key << "AlbedoColour"<<YAML::Value << m_Material.Colour;
 		out << YAML::Key << "Roughness"<<YAML::Value << m_Material.Roughness;
 		out << YAML::Key << "Metallness"<<YAML::Value << m_Material.Metallness;
-		out << YAML::Key << "AO"<<YAML::Value << m_Material.AO;
 		out << YAML::EndMap;
 		std::ofstream found(m_SavePath);
 		found << out.c_str();
@@ -43,7 +42,6 @@ namespace Proof{
 		m_Material.Colour= data["AlbedoColour"].as<glm::vec3>();
 		m_Material.Metallness = data["Metallness"].as<float>();
 		m_Material.Roughness = data["Roughness"].as<float>();
-		m_Material.AO = data["AO"].as<float>();
 		
 		//std::string metallicTexture =data["MetallicTexturePath"].as<std::string>();
 		//std::string AlbedoTexture =data["AlbedoTexturePath"].as<std::string>();

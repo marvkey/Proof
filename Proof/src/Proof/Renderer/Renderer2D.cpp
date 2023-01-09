@@ -180,7 +180,6 @@ namespace Proof {
 		auto descriptor0 = m_SpritePipeline->Descriptors[DescriptorSets::Zero];
 
 		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
-		//Renderer::BeginRenderPass(m_Storage2DData->CommandBuffer, m_RenderPass, m_Storage2DData->CurrentFrameBuffer,false);
 		Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline,[&](Count <CommandBuffer> commandBuffer) {
 			descriptor0->Bind(commandBuffer, m_SpritePipeline->PipeLineLayout);
 			m_Storage2DData->VertexBuffer->AddData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
@@ -188,7 +187,6 @@ namespace Proof {
 			m_Storage2DData->IndexBuffer->Bind(commandBuffer);	
 			Renderer::DrawElementIndexed(commandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
 		});
-		//Renderer::EndRenderPass(m_SpritePiipeline->RenderPass);
 	}
 	
 	
@@ -251,7 +249,7 @@ namespace Proof {
 		//Textures[0] =  Texture2D::Create(1, 1, ImageFormat::RGBA, &whiteTextureData);
 
 	}
-	SpritePipeline::SpritePipeline(Count <class RenderPass > renderPass) {
+	SpritePipeline::SpritePipeline(Count <RenderPass > renderPass) {
 		auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
 		vertexArray->AddData(0, DataType::Vec3, offsetof(Vertex2D, Vertex2D::Position));
 		vertexArray->AddData(1, DataType::Vec4, offsetof(Vertex2D, Vertex2D::Color));
@@ -265,7 +263,13 @@ namespace Proof {
 			Descriptors.insert({ DescriptorSets::Zero,descriptor });
 		}
 		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero]});
-		GraphicsPipeline = GraphicsPipeline::Create(Shader, renderPass, PipeLineLayout, vertexArray);
+		GraphicsPipelineConfig graphicsPipelineConfig;
+		graphicsPipelineConfig.DebugName = "Sprite";
+		graphicsPipelineConfig.Shader = Shader;
+		graphicsPipelineConfig.VertexArray = vertexArray;
+		graphicsPipelineConfig.RenderPass = renderPass;
+		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
 
 }
