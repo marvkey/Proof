@@ -145,14 +145,14 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [212.100006, 250, 10]
+        Rotation: [212.100006, 89.0999985, 41.2999992]
         Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 1
+        Intensity: 8.82999992
     - Entity: 818557740550586978
       TagComponent:
         Tag: Sponza

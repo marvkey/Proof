@@ -52,10 +52,10 @@ namespace Proof {
 
 	}
 	Count<HDRTexture> HDRTexture::Create(const std::string& path) {
-		//switch (RendererAPI::GetAPI()) {
-		//case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
-		//	case RendererAPI::API::OpenGL: return CreateCount<OpenGLHDRTexture>(path);
-		//}
+		switch (RendererAPI::GetAPI()) {
+		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
+		//	case RendererAPI::API::OpenGL: return CreateCount(path);
+		}
 		return nullptr;
 
 	}

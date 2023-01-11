@@ -37,8 +37,6 @@ namespace Proof
 				case ImageFormat::RGBA:    return VK_FORMAT_R8G8B8A8_SRGB;
 				case ImageFormat::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 			}
-			//VK_FORMAT_R8G8B8A8_SRGB
-			//
 			return (VkFormat)0;
 		}
 

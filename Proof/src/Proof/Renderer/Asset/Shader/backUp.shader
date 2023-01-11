@@ -34,7 +34,7 @@ void main() {
 }
 
 #Fragment Shader
-//https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
+
 #version 450
 
 layout(location = 0) in vec3 WorldPos;
@@ -51,7 +51,8 @@ struct BaseLight {
     float Intensity;
 };
 struct DirectionalLight {
-    BaseLight Base;
+    vec3 Color;
+    float Intensity;
     vec3 Direction;
 };
 //layout(std140, set = 0, binding = 1) buffer DirectionalLightBuffer {
@@ -63,7 +64,38 @@ layout(std140, set = 0, binding = 1) uniform DirectionalLightBuffer
    DirectionalLight Light;
 }DirectionalLightData;
 
+vec3 pbr(BaseLight base, vec3 direction, vec3 normal, vec3 world_pos)
+{
+    vec3  albedo = u_has_albedo_map ? texture(u_albedo_map, in_texcoord).rgb : u_albedo;
+    float metallic = u_has_metallic_map ? texture(u_metallic_map, in_texcoord).r : u_metallic;
+    float roughness = u_has_roughness_map ? texture(u_roughness_map, in_texcoord).r : u_roughness;
+    normal = u_has_normal_map ? getNormalFromMap() : normal;
 
+    vec3 wo = normalize(u_cam_pos - world_pos);
+    vec3 wi = normalize(direction);
+    vec3 h = normalize(wo + wi);
+    vec3 radiance = base.color * base.intensity;
+
+    // fresnel reflectance
+    vec3 F0 = vec3(0.04);
+    F0 = mix(F0, albedo, metallic);
+    vec3 F = fresnelSchlick(max(dot(h, wo), 0.0), F0);
+
+    // cook-torrance brdf
+    float NDF = distributionGGX(normal, h, roughness);
+    float G = geometrySmith(normal, wo, wi, roughness);
+
+    float NdotL = max(dot(normal, wi), 0.0);
+    vec3  num = NDF * G * F;
+    float denom = 4.0 * max(dot(normal, wo), 0.0) * NdotL;
+    vec3  specular = num / max(denom, 1e-5);
+
+    vec3 ks = F;
+    vec3 kd = 1.0 - ks;
+    kd = kd * (1.0 - metallic);
+
+    return (kd * albedo / PI + specular) * radiance * NdotL;
+}
 //https://www.youtube.com/watch?v=RRE-F57fbXw soruce 
 const float PI = 3.14159265359;
 float DistributionGGX(vec3 N, vec3 H, float roughness)
@@ -105,55 +137,58 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
-vec3 pbr(BaseLight base, vec3 direction, vec3 normal, vec3 world_pos, vec3 meshColor, float roughness, float metallic, vec3 camPos)
-{
-    vec3 wo = normalize(camPos - world_pos);
-    vec3 wi = normalize(direction);
-    vec3 h = normalize(wo + wi);
-    vec3 radiance = base.Color * base.Intensity;
-
-    // fresnel reflectance
-    vec3 F0 = vec3(0.04);
-    F0 = mix(F0, meshColor, metallic);
-    vec3 F = fresnelSchlick(max(dot(h, wo), 0.0), F0);
-
-    // cook-torrance brdf
-    float NDF = DistributionGGX(normal, h, roughness);
-    float G = GeometrySmith(normal, wo, wi, roughness);
-
-    float NdotL = max(dot(normal, wi), 0.0);
-    vec3  num = NDF * G * F;
-    float denom = 4.0 * max(dot(normal, wo), 0.0) * NdotL;
-    vec3  specular = num / max(denom, 1e-5);
-
-    vec3 ks = F;
-    vec3 kd = 1.0 - ks;
-    kd = kd * (1.0 - metallic);
-
-    return (kd * meshColor / PI + specular) * radiance * NdotL;
-}
-vec3 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 world_pos, vec3 meshColor, float roughness, float metallic, vec3 camPos)
-{
-    //return pbr(light.Base, light.Direction, normal, world_pos, meshColor, roughness, metallic, camPos);
-    return pbr(light.Base, -light.Direction, normal, world_pos, meshColor, roughness, metallic, camPos);
-}
 // ----------------------------------------------------------------------------
 void main()
 {
     vec3 meshColor = texture(tex1, texCoord).xyz * materialColor;
     vec3 N = normalize(Normal);
     vec3 V = normalize(CameraPoition - WorldPos);
-    vec3 Lo = vec3(0);
+
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
     vec3 F0 = vec3(0.04);
     //  when rougness is 0 metallic will not repson to light because 
     // metallic on responds to specullar lgiht and there will be no speuclar light in the scne
-    float metallic = 0;
-    float roughness = 0.5;
-    Lo += calcDirectionalLight(DirectionalLightData.Light, N, WorldPos, meshColor, roughness, metallic, CameraPoition);
-        // ambient lighting (note that the next IBL tutorial will replace 
-        // this ambient lighting with environment lighting).
+    float metallic = 1.0;
+    float roughness = 0.1;
+    F0 = mix(F0, meshColor, metallic);
+
+    // reflectance equation
+    vec3 Lo = vec3(0.0);
+   // for (int i = 0; i < 4; ++i)
+   // {
+    DirectionalLight currentLight = DirectionalLightData.Light;
+    vec3 L = normalize(currentLight.Direction);
+    vec3 H = normalize(V + L);
+    // Cook-Torrance BRDF
+    float NDF = DistributionGGX(N, H, roughness);
+    float G = GeometrySmith(N, V, L, roughness);
+    vec3 F = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+
+    vec3 numerator = NDF * G * F;
+    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0000001; // + 0.0001 to prevent divide by zero
+    vec3 specular = numerator / denominator;
+
+    // kS is equal to Fresnel
+    vec3 kS = F;
+    // for energy conservation, the diffuse and specular light can't
+    // be above 1.0 (unless the surface emits light); to preserve this
+    // relationship the diffuse component (kD) should equal 1.0 - kS.
+    vec3 kD = vec3(1.0) - kS;
+    // multiply kD by the inverse metalness such that only non-metals 
+    // have diffuse lighting, or a linear blend if partly metal (pure metals
+    // have no diffuse light).
+    kD *= 1.0 - metallic;
+
+    // scale light by NdotL
+    float NdotL = max(dot(L, N), 0.0);
+    vec3 lambert = meshColor / PI;
+    // add to outgoing radiance Lo
+    Lo += (kD * lambert + specular) * NdotL * currentLight.Color * currentLight.Intensity;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+
+
+    // ambient lighting (note that the next IBL tutorial will replace 
+    // this ambient lighting with environment lighting).
     vec3 ambient = vec3(0.03) * meshColor;
 
     vec3 color = ambient + Lo;
