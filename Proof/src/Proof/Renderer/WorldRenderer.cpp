@@ -39,6 +39,15 @@ namespace Proof
 					m_Renderer3D->SubmitMesh(mesh, m_World->GetWorldTransform(entity));
 			});
 		}
+		// light
+		{
+			m_World->ForEachEnitityWith<DirectionalLightComponent>([&](Entity entity) {
+				auto& lightComp = *entity.GetComponent<DirectionalLightComponent>();
+				Vector rotation = m_World->GetWorldRotation(entity) + lightComp.OffsetDirection;
+				DirLight dirLight{ lightComp.Color,lightComp.Intensity,rotation };
+				m_Renderer3D->SubmitDirectionalLight(dirLight);
+			});
+		}
 		m_Renderer3D->EndContext();
 
 		m_Renderer2D->BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, m_ScreenFrameBuffer, m_CommandBuffer);

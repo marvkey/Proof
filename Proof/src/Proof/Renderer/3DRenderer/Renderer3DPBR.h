@@ -14,7 +14,15 @@
 
 namespace Proof
 {
-
+	struct DirLight {
+		Vector Color = { 1 };
+		float Intensity = 1.0f;// has not been implemented
+		Vector Direction;
+	};
+	struct LightPass {
+		Count<class StorageBuffer> DirLightsBuffer;
+		std::vector<DirLight> DirLights;
+	};
 	struct MeshPipeLine {
 		struct MeshVertex {
 
@@ -22,7 +30,7 @@ namespace Proof
 				m_Transform(transform) {
 			}
 			glm::mat4 m_Transform;
-			Vector Color = {1,1,1};
+			Vector Color = { 1,1,1 };
 		};
 		Count<class GraphicsPipeline> GraphicsPipeline;
 		Count<class Shader> Shader;
@@ -36,6 +44,7 @@ namespace Proof
 		uint32_t NumberMeshes;
 		const uint32_t MaxMesh = 2000;
 		MeshPipeLine(Count<RenderPass> renderPass);
+		LightPass LightPass;
 	};
 
 	struct DebugMeshPipeLine {
@@ -53,7 +62,7 @@ namespace Proof
 		Count<UniformBuffer> CameraBuffer = nullptr;
 		Count<ScreenFrameBuffer> CurrentFrameBuffer = nullptr;
 	};
-	
+
 	class Renderer3DPBR {
 	public:
 		Renderer3DPBR(Count<RenderPass> renderPass);
@@ -64,7 +73,7 @@ namespace Proof
 		void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<CommandBuffer>& commandBuffer);
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commandBuffer);
 		void SubmitMesh(class MeshComponent& meshComponent, const glm::mat4& transform);
-		void SubmitDirectionalLight(class DirectionalLightComponent& comp, class TransformComponent& transform);
+		void SubmitDirectionalLight(const DirLight& light);
 		void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);
 		void SubmitSpotLight(class SpotLightComponent& comp, class TransformComponent& transform);
 		void DrawDebugMesh(class Mesh* mesh, const glm::mat4& transform);

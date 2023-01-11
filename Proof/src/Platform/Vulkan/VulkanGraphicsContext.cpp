@@ -148,9 +148,10 @@ namespace Proof
 
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_GPUProperties);
 		PF_ENGINE_INFO("Gpu Name: {}", m_GPUProperties.deviceName);
-		PF_ENGINE_INFO("	ID: {}", m_GPUProperties.deviceID);
-		PF_ENGINE_INFO("	Type: {}", m_GPUProperties.deviceType);
 		PF_ENGINE_INFO("	Driver Version: {}", m_GPUProperties.driverVersion);
+		PF_ENGINE_INFO("	Vendor ID: {}", m_GPUProperties.vendorID);
+		PF_ENGINE_INFO("	Device ID: {}", m_GPUProperties.deviceID);
+		PF_ENGINE_INFO("	Type: {}", m_GPUProperties.deviceType);
 		PF_ENGINE_INFO("	API Version: {}", m_GPUProperties.apiVersion);
 		PF_ENGINE_INFO("	max bound descriptor sets: {}", m_GPUProperties.limits.maxBoundDescriptorSets);
 		PF_ENGINE_INFO("	minimum buffer alignment : {}", m_GPUProperties.limits.minUniformBufferOffsetAlignment);
@@ -240,12 +241,12 @@ namespace Proof
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 });
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 });
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 });
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 });
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 });
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 });
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 });
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 });
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 });
 		m_GlobalPool = CreateCount<VulkanDescriptorPool>(1000, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, PoolSizes, m_Device);
 

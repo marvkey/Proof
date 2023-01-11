@@ -70,6 +70,7 @@ namespace Proof
         VkSwapchainKHR m_SwapChain;
 
         std::vector<class VulkanScreenFrameBuffer*> FrameBuffers;
+        std::vector<class VulkanGraphicsPipeline*> GraphicsPipelines;
         std::vector<VkImageView> m_SwapChainImageViews;
         std::vector<VkImage> m_SwapChainImages;
         std::vector<VkSemaphore> m_ImageAvailableSemaphores;

@@ -261,7 +261,7 @@ namespace Proof
         m_ImageViews.clear();
         m_DepthImages.clear();
         m_Images.clear();
-         // remove from index if this mesh was in there before 
+         // remove from index if this frameBuffer was in there before 
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         int index = -1;
         int iterator = 0;

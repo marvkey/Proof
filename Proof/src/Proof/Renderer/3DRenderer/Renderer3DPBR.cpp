@@ -23,13 +23,14 @@
 
 namespace Proof
 {
+	
 	// add debug names
 	enum class DescriptorSet0 {
 	  //struct
 		CameraData = 0,
 		//struct
-		WorldData = 1,
-
+		WorldData = 2,
+		DirectionalLight=1,
 	};
 
 	enum class DescriptorSet1 {
@@ -38,9 +39,9 @@ namespace Proof
 		//texture
 		NormalMap = 1,
 		//texture
-		metallicMap = 2,
+		MetallicMap = 2,
 		//texture
-		roughnessMap = 3,
+		RoughnessMap = 3,
 		//texture
 		DiffuseMap = 4
 	};
@@ -53,6 +54,7 @@ namespace Proof
 		glm::mat4 m_Projection;
 		glm::mat4 m_View;
 		Vector m_Positon;
+		float padding;
 	};
 	static CameraData s_CurrentCamera;
 
@@ -97,7 +99,8 @@ namespace Proof
 		
 	}
 
-	void Renderer3DPBR::SubmitDirectionalLight(class DirectionalLightComponent& comp, TransformComponent& transform) {
+	void Renderer3DPBR::SubmitDirectionalLight(const DirLight& light) {
+		m_MeshPipeLine->LightPass.DirLights.emplace_back(light);
 	}
 	void Renderer3DPBR::SubmitPointLight(class PointLightComponent& comp, TransformComponent& transform) {
 	}
@@ -118,6 +121,7 @@ namespace Proof
 	void Renderer3DPBR::Reset() {
 		m_MeshPipeLine->MeshesTransforms.clear();
 		m_MeshPipeLine->AmountMeshes.clear();
+		m_MeshPipeLine->LightPass.DirLights.clear();
 		m_MeshPipeLine->NumberMeshes = 0;
 		m_RenderStorage->CurrentFrameBuffer = nullptr;
 	}
@@ -150,10 +154,26 @@ namespace Proof
 		if (m_MeshPipeLine->MeshesTransforms.size() == 0)
 			return;
 		m_RenderStorage->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+		auto dirLgihtBuffer = UniformBuffer::Create(sizeof(DirLight), DescriptorSets::Zero ,(uint32_t)DescriptorSet0::DirectionalLight);
+		//auto DirLightsBuffer = StorageBuffer::Create(DescriptorSets::Zero, (uint32_t)DescriptorSet0::DirectionalLight, 
+		//	m_MeshPipeLine->LightPass.DirLights.data(), m_MeshPipeLine->LightPass.DirLights.size() * sizeof(DirLight));
+
 		auto descriptor0 = m_MeshPipeLine->Descriptors[DescriptorSets::Zero];
 		auto descriptor1 = m_MeshPipeLine->Descriptors[DescriptorSets::One];
 
-		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_RenderStorage->CameraBuffer);
+		descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_RenderStorage->CameraBuffer);
+		if (m_MeshPipeLine->LightPass.DirLights.size() > 0)
+		{
+			dirLgihtBuffer->SetData(&m_MeshPipeLine->LightPass.DirLights[0], sizeof(DirLight));
+		}
+		else
+		{
+			DirLight base;
+			base.Color = Vector{ 0 };
+			dirLgihtBuffer->SetData(&base, sizeof(DirLight));
+
+		}
+		descriptor0->WriteBuffer((uint32_t)DescriptorSet0::DirectionalLight, dirLgihtBuffer);
 		std::vector<MeshPipeLine::MeshVertex> meshesVertex;
 		std::vector<AssetID> elementsImplaced;
 		for (auto& [ID, transforms] : m_MeshPipeLine->MeshesTransforms) {
@@ -217,23 +237,25 @@ namespace Proof
 	MeshPipeLine::MeshPipeLine(Count<RenderPass> renderPass) {
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.AddBinding((int)DescriptorSet0::WorldData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+				.AddBinding((uint32_t)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+				.AddBinding((uint32_t)DescriptorSet0::WorldData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+				.AddBinding((uint32_t)DescriptorSet0::DirectionalLight, DescriptorType::UniformBuffer, ShaderStage::Fragment)
 				.Build();
 			Descriptors.insert({ DescriptorSets::Zero,descriptor });
+
 		}
 
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::One)
-				.AddBinding((int)DescriptorSet1::AlbedoMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.AddBinding((int)DescriptorSet1::NormalMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.AddBinding((int)DescriptorSet1::metallicMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.AddBinding((int)DescriptorSet1::roughnessMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.AddBinding((int)DescriptorSet1::DiffuseMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet1::AlbedoMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet1::NormalMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet1::MetallicMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet1::RoughnessMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet1::DiffuseMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
 				.Build();
 			Descriptors.insert({ DescriptorSets::One,descriptor });
 		}
-		Shader = Shader::GetOrCreate("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Mesh.shader");
+		Shader = Shader::GetOrCreate("MeshShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/MeshPBR.shader");
 		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero],Descriptors[DescriptorSets::One] });
 
 		Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
@@ -257,6 +279,8 @@ namespace Proof
 		graphicsPipelineConfig.RenderPass = renderPass;
 
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+
 	}
 	DebugMeshPipeLine::DebugMeshPipeLine()
 	{

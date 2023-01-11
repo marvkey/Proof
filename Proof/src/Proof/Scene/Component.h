@@ -310,20 +310,25 @@ namespace Proof
 		Count<Texture2DAsset> m_TextureAssetPointer;
 	};
 
-	
+	struct WorldLightComponent {
+		WorldLightComponent(const WorldLightComponent&) = default;
+		WorldLightComponent() = default;
+	};
 
 	struct DirectionalLightComponent {
 		DirectionalLightComponent(const DirectionalLightComponent&) = default;
 		DirectionalLightComponent() = default;
 		float Intensity = 1;
-		Vector Color = { 0 };
+
+		Vector Color = { 1 };
+		Vector OffsetDirection;
 	};
 
 	struct PointLightComponent {
 		PointLightComponent(const PointLightComponent&) = default;
 
 		PointLightComponent() = default;
-		Vector Color = { 0 };
+		Vector Color = { 1 };
 		
 		float Intensity = 1;
 		float Constant = 1;
@@ -339,7 +344,7 @@ namespace Proof
 		SpotLightComponent() = default;
 
 		
-		Vector Color = { 0 };
+		Vector Color = { 1 };
 		
 		float Intensity = 1;
 		float Constant = 1;

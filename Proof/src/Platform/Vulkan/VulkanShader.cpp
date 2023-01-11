@@ -185,8 +185,14 @@ namespace Proof
         for (auto& [stage, source] : m_SourceCode) {
             shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_Name.c_str(), compilerOptions);
             if (shaderModule.GetCompilationStatus() != shaderc_compilation_status_success) {
+                uint32_t num = 1;
                 PF_ENGINE_ERROR("Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<ShaderStage>(stage), shaderModule.GetErrorMessage());
-                PF_ENGINE_TRACE("   {}", source);
+                std::istringstream iss(source);
+                for (std::string line; std::getline(iss, line); )
+                {
+                    PF_ENGINE_TRACE("{} {}", num, line);
+                    num++;
+                }
                 PF_CORE_ASSERT(false);
             }
             shaderData[stage] = std::vector<uint32_t>(shaderModule.cbegin(), shaderModule.cend());

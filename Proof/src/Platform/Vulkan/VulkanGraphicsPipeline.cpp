@@ -140,6 +140,10 @@ namespace Proof
 		configInfo.RasterizationInfo.depthClampEnable = VK_FALSE;
 		configInfo.RasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
 		configInfo.RasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
+		// we are setting it 1
+		// so in teh renderpeass when we set the width we can do a check to see if not 1 then 
+		// we can change teh width
+		// because most of the times it will be 1.f
 		configInfo.RasterizationInfo.lineWidth = 1.0f;
 		configInfo.RasterizationInfo.cullMode = VK_CULL_MODE_NONE;
 		configInfo.RasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;

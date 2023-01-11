@@ -104,7 +104,7 @@ World:
         Tag: terain
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [0, 2.4000001, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -139,3 +139,31 @@ World:
       SpriteComponent:
         TextureAssetPointerID: 0
         Colour: [1, 0, 0, 1]
+    - Entity: 4058116540657120218
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [212.100006, 250, 10]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+    - Entity: 818557740550586978
+      TagComponent:
+        Tag: Sponza
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [0.100000001, 0.100000001, 0.100000001]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 342345323
+        MaterialPointerID: 0

@@ -138,29 +138,26 @@ namespace Proof{
         return textures;
     }
 
-    std::vector<Count<Texture2D>> Mesh::LoadMaterial(void* mat) {
-        aiMaterial* aimat = (aiMaterial*)mat;
-        Material material;
-        aiColor3D color(0.f,0.f,0.f);
-        float shininess;
-
-        aimat->Get(AI_MATKEY_COLOR_AMBIENT,color);
-        material.Colour = glm::vec3(color.r,color.b,color.g);
-
-        aimat->Get(AI_MATKEY_SHININESS,shininess);
-        material.Metallness = shininess;
-
-        /*
-        mat->Get(AI_MATKEY_COLOR_AMBIENT,color);
-        material.Ambient = glm::vec3(color.r,color.b,color.g);
-
-        mat->Get(AI_MATKEY_COLOR_SPECULAR,color);
-        material.Specular = glm::vec3(color.r,color.b,color.g);
-
-        mat->Get(AI_MATKEY_SHININESS,shininess);
-        material.Shininess = shininess;
-        */
-        return std::vector<Count<Texture2D>>();
+    std::vector<Material> Mesh::LoadMaterial(void* mat) {
+        //aiMaterial* aimat = (aiMaterial*)mat;
+        //Material material;
+        //aiColor3D color(0.f,0.f,0.f);
+        //float shininess;
+        //
+        //aimat->Get(AI_MATKEY_COLOR_AMBIENT,color);
+        //material.Colour = glm::vec3(color.r,color.b,color.g);
+        //
+        //aimat->Get(AI_MATKEY_SHININESS,shininess);
+        //material.Metallness = shininess;
+        //
+        //aimat->Get(AI_MATKEY_COLOR_SPECULAR,color);
+        //material. = glm::vec3(color.r,color.b,color.g);
+        //
+        //aimat->Get(AI_MATKEY_SHININESS,shininess);
+        //material.Shininess = shininess;
+        //
+        //return std::vector<Count<Texture2D>>();
+        return std::vector <Material>();
     }
 
 

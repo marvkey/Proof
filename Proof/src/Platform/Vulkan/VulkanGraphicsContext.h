@@ -77,6 +77,32 @@ namespace Proof
 			if (err < 0)
 				abort();
 		}
+		uint32_t GetUniformPadSize(uint32_t originalSize)
+		{
+			// Calculate required alignment based on minimum device offset alignment
+			size_t minUboAlignment = m_GPUProperties.limits.minUniformBufferOffsetAlignment;
+			size_t alignedSize = originalSize;
+			if (minUboAlignment > 0)
+			{
+				alignedSize = (alignedSize + minUboAlignment - 1) & ~(minUboAlignment - 1);
+			}
+			return alignedSize;
+		}
+
+
+		uint32_t GetStoragePadSize(uint32_t originalSize)
+		{
+			// Calculate required alignment based on minimum device offset alignment
+			size_t minUboAlignment = m_GPUProperties.limits.minStorageBufferOffsetAlignment;
+			size_t alignedSize = originalSize;
+			if (minUboAlignment > 0)
+			{
+				alignedSize = (alignedSize + minUboAlignment - 1) & ~(minUboAlignment - 1);
+			}
+			return alignedSize;
+		}
+
+
 		VulkanBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage) {
 	//allocate vertex buffer
 			VkBufferCreateInfo bufferInfo = {};

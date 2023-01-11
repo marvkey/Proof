@@ -39,7 +39,10 @@ namespace Proof
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
     };
-    
+    struct MaterialTable {
+        std::unordered_map<std::string, Material> Materials;
+
+    };
     class Mesh {
     public:
         bool m_FaceCulling =false;
@@ -53,7 +56,8 @@ namespace Proof
         const std::vector<SubMesh>& GetSubMeshes()const {
             return meshes;
         }
-        std::vector<Material> Materials_loaded;
+        
+        std::unordered_map<std::string,Material> Materials;
        
         const std::string& GetName()const{
             return m_Name;
@@ -75,7 +79,7 @@ namespace Proof
         SubMesh ProcessMesh(void* mesh,const void* scene);
         //returns the id of  of textures in the texutre loaded
         std::vector<AssetID> LoadMaterialTextures(void* mat,int type);
-        std::vector<Count<Texture2D>> LoadMaterial(void* mat);
+        std::vector<Material> LoadMaterial(void* mat);
         friend class Renderer3D;
         friend class Editore3D;
         friend class Renderer3DPBR;
