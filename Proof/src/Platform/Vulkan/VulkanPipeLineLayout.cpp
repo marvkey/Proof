@@ -28,9 +28,11 @@ namespace Proof
 			pipelineLayoutInfo.setLayoutCount = 0; // emty layout
 			pipelineLayoutInfo.pSetLayouts = nullptr;
 		}
+		VkPushConstantRange range;
 		if (pushConstant != nullptr) {
+			range = pushConstant->As<VulkanPushConstant>()->GetRange();
 			pipelineLayoutInfo.pushConstantRangeCount = 1;
-			pipelineLayoutInfo.pPushConstantRanges = &pushConstant->As<VulkanPushConstant>()->m_PushConstant;
+			pipelineLayoutInfo.pPushConstantRanges = &range;
 		}
 		else {
 			// very efficiently send small data to shader proggramm

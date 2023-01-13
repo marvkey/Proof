@@ -39,12 +39,9 @@ namespace Proof
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
     };
-    struct MaterialTable {
-        std::unordered_map<std::string, Material> Materials;
-
-    };
     class Mesh {
     public:
+      
         bool m_FaceCulling =false;
         Mesh() =default;
         // exclude index is not gonna have that mesh ready to be rendered that specific mesh will be discarded
@@ -57,7 +54,6 @@ namespace Proof
             return meshes;
         }
         
-        std::unordered_map<std::string,Material> Materials;
        
         const std::string& GetName()const{
             return m_Name;
@@ -66,11 +62,13 @@ namespace Proof
 
     private:
         std::vector<class SubMesh> meshes;
+        std::vector<std::string> m_MaterialsName;
         std::string m_Name;
         struct TextureData {
             AssetID Texture;
             AssetID TextureSource;
         };
+
         //stores all teh asset source of a given mesh
         std::vector<TextureData> m_Textures;
         std::filesystem::path m_Path;

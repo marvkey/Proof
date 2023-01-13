@@ -4,12 +4,13 @@
 #include "Shader.h"
 #include "RendererAPI.h"
 namespace Proof{
-	Count<PushConstant> PushConstant::Create(uint32_t size, ShaderStage flags)
+	Count<PushConstant> PushConstant::Create(uint32_t size, uint32_t offset, ShaderStage shader)
 	{
-		switch (RendererAPI::GetAPI()) {
+		switch (RendererAPI::GetAPI())
+		{
 			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanPushConstant>(size,0,flags);
+			case RendererAPI::API::Vulkan: return CreateCount<VulkanPushConstant>(size, offset, shader);
 		}
 	}
 }

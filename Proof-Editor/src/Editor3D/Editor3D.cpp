@@ -870,7 +870,7 @@ namespace Proof
 				m_ViewPortFocused = false;
 				CurrentWindow::GetWindow().SetWindowInputEvent(false);
 			}
-			void* Text = m_WorldRenderer.GetWorldTexture();
+			const void* Text = m_WorldRenderer.GetImage().SourceImage;
 			ImGui::Image((ImTextureID)Text, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
 			// GUIZMOS
@@ -993,7 +993,7 @@ namespace Proof
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 
-		if (ImGui::ImageButton((ImTextureID)m_PauseButtonTexture->GetID(), ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
+		if (ImGui::ImageButton((ImTextureID)m_PauseButtonTexture->GetImage().SourceImage, ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
 			if (ActiveWorld->m_CurrentState == WorldState::Play)
 				PauseWorld();
 		}
@@ -1001,7 +1001,7 @@ namespace Proof
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.6f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 
-		if (ImGui::ImageButton((ImTextureID)m_SimulateButtonTexture->GetID(), ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
+		if (ImGui::ImageButton((ImTextureID)m_PauseButtonTexture->GetImage().SourceImage, ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
 			if (ActiveWorld->m_CurrentState == WorldState::Edit)
 				SimulateWorld();
 		}

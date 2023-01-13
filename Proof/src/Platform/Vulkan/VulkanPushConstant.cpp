@@ -5,19 +5,25 @@
 #include "VulkanPipeLineLayout.h"
 namespace Proof
 {
-	VulkanPushConstant::VulkanPushConstant(uint32_t size, uint32_t offset, ShaderStage flags)
+	VulkanPushConstant::VulkanPushConstant(uint32_t size, uint32_t offset, ShaderStage stage)
 	{
 		//this push constant range starts at the beginning
-		m_PushConstant.offset = offset;
-		//this push constant range takes up the size of the data
-		m_PushConstant.size = size;
-		//this push constant range is accessible only in the vertex shader
-		m_PushConstant.stageFlags = Utils::ProofShaderToVulkanShader(flags);
-		m_size = size;
+		m_Offset= offset;
+		m_ShaderStage = stage;
+		m_Size = size;
 	}
-	void VulkanPushConstant::Bind(Count<class CommandBuffer> commandBuffer, Count<class PipeLineLayout> pipeLinelayout, const void* pValues)
+	const VkPushConstantRange VulkanPushConstant::GetRange()
 	{
-		vkCmdPushConstants(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), pipeLinelayout->As<VulkanPipeLineLayout>()->GetPipeLineLayout(), m_PushConstant.stageFlags, m_PushConstant.offset, m_PushConstant.size, &pValues);
-
+		return
+		{
+			(uint32_t)Utils::ProofShaderToVulkanShader(m_ShaderStage),
+			m_Offset,
+			m_Size
+		};
+	}
+	void VulkanPushConstant::PushData(Count<CommandBuffer> commandBuffer, Count<PipeLineLayout> pipeLinelayout, const void* data)
+	{
+		vkCmdPushConstants(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), pipeLinelayout->As<VulkanPipeLineLayout>()->GetPipeLineLayout(), 
+			Utils::ProofShaderToVulkanShader(m_ShaderStage), m_Offset, m_Size, data);
 	}
 }

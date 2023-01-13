@@ -108,7 +108,22 @@ namespace Proof
 
     VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders) {
         m_Name = name;
-        for (auto& [stage, source] : shaders) {
+        for (auto& [stage, path] : shaders) {
+            std::ifstream shaderFile;
+            shaderFile.open(path);
+            if (shaderFile.is_open() == false)
+            {
+                PF_ENGINE_ERROR("cannot open shader path to read {}", path);
+                PF_CORE_ASSERT(false);
+            }
+            std::string line;
+            std::string source;
+            while (std::getline(shaderFile, line))
+            {
+                source += line;
+                source += "\n";
+            }
+            shaderFile.close();
             m_SourceCode.insert({ stage,source });
         }
         Utils::CreateCacheDirectoryIfNeeded();

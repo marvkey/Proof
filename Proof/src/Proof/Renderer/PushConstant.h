@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-
+#include "Shader.h"
 namespace Proof {
 	class PushConstant
 	{
@@ -10,7 +10,9 @@ namespace Proof {
 			return  dynamic_cast<T*>(this);
 		}
 		virtual ~PushConstant() {};
-		static Count<PushConstant> Create(uint32_t size,enum class ShaderStage flags);
+		virtual void PushData(Count<class CommandBuffer>commandBuffer, Count<class PipeLineLayout> pipeLinelayout, const void* data) = 0;
+
+		static Count<PushConstant> Create(uint32_t size, uint32_t offset =0,ShaderStage shader = ShaderStage::Vertex);
 	};
 }
 

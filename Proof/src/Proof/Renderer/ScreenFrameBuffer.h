@@ -36,18 +36,7 @@ namespace Proof {
 		*/
 		static Count<ScreenFrameBuffer> Create(uint32_t Width,uint32_t Height);
 		static Count<ScreenFrameBuffer> Create(Vector2 imageSize, Count<class RenderPass> renderPass = nullptr, bool screenPresent = false);
-		/**
-		* returns the Texture ID
-		*/
-		virtual void* GetTexture() = 0;
-
-		/**
-		* returns the FrameBuffer ID
-		*/
-		virtual uint32_t GetFrameBufferID() { return 0; };
-
-		virtual void WriteBuffer(const uint32_t m_FrameBufferID){};
-
+		virtual Image GetImage() = 0;
 		virtual uint32_t GetFrameWidth() = 0;
 		virtual uint32_t GetFrameHeight() = 0;
 	private:

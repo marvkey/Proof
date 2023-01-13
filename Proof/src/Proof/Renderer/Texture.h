@@ -1,36 +1,47 @@
-#include<iostream>
-
 #pragma once
+#include<iostream>
+#include "Proof/Core/Core.h"
 namespace Proof {
 
 	enum class ImageFormat {
+		//https://docs.rs/vulkano/0.6.2/vulkano/format/index.html#:~:text=Unorm%20means%20that%20the%20values,minimum%20representable%20value%20becomes%200.0%20.
 		None = 0,
+		//  unsigned ints
+		// 8 bytes
 		RGBA,
-		RGBA32F
+		RGBA16,
+		
+		RGBA16F,
+		RGBA32F,
+
+		// temporary
+		RGBAScreenFrameBuffer
+	};
+	struct Image {
+	public:
+		Image() {
+
+		}
+		Image(const void* image,ImageFormat format, ScreenSize size) :
+			SourceImage(image), Format(format), Size(size)
+		{
+
+		}
+		bool HasImage() {
+			if (SourceImage == nullptr)return false;
+			return true;
+		}
+		ImageFormat Format = ImageFormat::None;
+		ScreenSize Size;
+		const void* SourceImage = nullptr;
 	};
 	class Proof_API Texture {
 	public:
-		virtual void* GetID()const = 0;
+		virtual Image GetImage()const = 0;
 	};
 	
 
-	struct Image {
-	public:
-		Image(const void* image, bool hasImage):
-			m_Image(image),
-			m_HasImage(m_HasImage)
-		{
-		}
-		uint32_t GetImage() {
-			return (uint32_t)m_Image;
-		}
-		bool HasImage() {
-			return m_Image;
-		}
-	private:
-		const void* m_Image = nullptr;
-		const bool m_HasImage;
-	};
+
 	class Proof_API Texture2D: public Texture {
 	public:
 		template<class T>
@@ -45,13 +56,9 @@ namespace Proof {
 		static Count<Texture2D> Create(uint32_t width, uint32_t height, ImageFormat format, const void* data);
 	};
 
-
 	class Proof_API CubeMap: public Texture{
 	public:
-		virtual void Bind(uint32_t Slot = 0)=0;
-		static Count<CubeMap> Create(const std::vector<std::string>& Paths);
-		static Count<CubeMap> Create(const std::string& Path);
-		static Count<CubeMap> Create(uint32_t textureWidht = 512,uint32_t textureHeight = 512,bool generateMipMap=false);
+		static Count<CubeMap> Create(const std::filesystem::path& Path);
 	};
 
 	class Proof_API HDRTexture: public Texture{

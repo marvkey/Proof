@@ -49,9 +49,7 @@ namespace Proof{
 		//std::string RoughnessTexture =data["RoughnessTexturePath"].as<std::string>();
 		return true;
 	}
-	void* MaterialAsset::GetImageID() {
-		return InstancedRenderer3D::m_WhiteTexture->GetID();
-	}
+	
 	const Material& MaterialAsset::GetMaterial()const {
 		return m_Material;
 	}

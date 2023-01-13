@@ -310,9 +310,24 @@ namespace Proof
 		Count<Texture2DAsset> m_TextureAssetPointer;
 	};
 
-	struct WorldLightComponent {
-		WorldLightComponent(const WorldLightComponent&) = default;
-		WorldLightComponent() = default;
+	struct SkyLightComponent{
+	public:
+		SkyLightComponent(const SkyLightComponent&) = default;
+		SkyLightComponent() = default;
+		float BoxLoad = 1.0f;;
+		Vector OffsetDirection;
+		Vector Color{1};
+		float Intensity = 1;
+		float Exposure = 1.f;
+		float MapRotation = 0;
+	private:
+		void Generate();
+		std::filesystem::path m_HDRPath;
+		friend class Entity;
+		friend class World;
+		friend class ECS;
+		friend class SceneHierachyPanel;
+		friend class SceneSerializer;
 	};
 
 	struct DirectionalLightComponent {

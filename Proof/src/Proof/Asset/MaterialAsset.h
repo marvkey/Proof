@@ -3,7 +3,6 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Asset/Asset.h"
 #include "Proof/Math/Math.h"
-
 namespace Proof
 {
 	class Proof_API MaterialAsset:public Asset {
@@ -19,9 +18,6 @@ namespace Proof
 		}
 		virtual void SaveAsset() override;
 		virtual bool LoadAsset(const std::string& filePath)override;
-		virtual bool IsImageIDNUll() {
-			return true;
-		}
 		static std::string StaticGetExtension() {
 			return "Material.ProofAsset";
 		}
@@ -29,7 +25,6 @@ namespace Proof
 		virtual std::string GetExtension()const {
 			return "Material.ProofAsset";
 		}
-		virtual void* GetImageID();
 		const Material& GetMaterial()const;
 		Material m_Material;
 	private:

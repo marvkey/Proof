@@ -34,7 +34,8 @@ namespace Proof
 		* @param size = the size of the uniform buffer in bytes
 		* @param biningPoint = the binding point of the uniform buffer
 		*/
-		static Count<UniformBuffer>Create(uint32_t size, DescriptorSets set,uint32_t binding) ;
+		static Count<UniformBuffer>Create(uint32_t size, DescriptorSets set, uint32_t binding);
+		static Count<UniformBuffer>Create(const void* data,uint32_t size, DescriptorSets set,uint32_t binding) ;
 
 		/**
 		* changes the data of a set data in the uniform buffer

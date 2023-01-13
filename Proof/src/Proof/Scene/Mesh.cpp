@@ -75,9 +75,6 @@ namespace Proof{
         //
         //std::vector<Count<Texture2D>> normalMaps = LoadMaterialTextures(material,aiTextureType_NORMALS,Texture2D::TextureType::Normal);
         //textures.insert(textures.end(),normalMaps.begin(),normalMaps.end());
-        //
-        //std::vector<Count<Texture2D>>  heightMaps = LoadMaterialTextures(material,aiTextureType_HEIGHT,Texture2D::TextureType::Height);
-        //textures.insert(textures.end(),heightMaps.begin(),heightMaps.end());
        
         SubMesh temp(vertices,indices,aimesh->mName.C_Str(), texture);
         return temp;
@@ -139,8 +136,8 @@ namespace Proof{
     }
 
     std::vector<Material> Mesh::LoadMaterial(void* mat) {
-        //aiMaterial* aimat = (aiMaterial*)mat;
-        //Material material;
+        aiMaterial* aimat = (aiMaterial*)mat;
+        Material material;
         //aiColor3D color(0.f,0.f,0.f);
         //float shininess;
         //

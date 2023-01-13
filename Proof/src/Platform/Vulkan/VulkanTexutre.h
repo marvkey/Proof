@@ -1,5 +1,4 @@
 #pragma once
-#include "Proof/Renderer/Texture.h"
 #include <vulkan/vulkan.h>
 #include "VulkanUtils/VulkanBufferBase.h"
 #include "Proof/Renderer/Texture.h"
@@ -23,6 +22,7 @@ namespace Proof
 		}
 
 		void* GetID ()const;
+		virtual Image GetImage()const;
 
 		uint32_t GetWidth() const { return m_Width; }
 		uint32_t GetHeight() const { return m_Height; }
@@ -40,5 +40,24 @@ namespace Proof
 		std::string m_Path;
 		ImageFormat m_Format = ImageFormat::None;
 		mutable VkDescriptorSet m_Set{ VK_NULL_HANDLE };
+	};
+
+	class VulkanCubeMap : public CubeMap{
+	public:
+		VulkanCubeMap(const std::filesystem::path& Path);
+		virtual std::string GetPath() { return m_Path; };
+		virtual Image GetImage()const ;
+	private:
+		ImageFormat m_Format = ImageFormat::None;
+		ScreenSize m_Size;
+		int m_Channel;
+		VkImageView m_ImageView = nullptr;
+		VkSampler m_Sampler = nullptr;
+		VulkanImage m_Image;
+		void AllocateMemory(uint64_t size);
+		void SetData(const void* data);
+		void Release();
+		mutable VkDescriptorSet m_Set{ VK_NULL_HANDLE };
+		std::string m_Path;
 	};
 }

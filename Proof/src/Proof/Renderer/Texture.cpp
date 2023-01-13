@@ -28,29 +28,16 @@ namespace Proof {
 		//}
 		return nullptr;
 	}
-	Count<CubeMap> CubeMap::Create(const std::vector<std::string>& Paths) {
-		//switch (RendererAPI::GetAPI()) {
-		//case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
-		//case RendererAPI::API::OpenGL: return CreateCount<OpenGLCubeMap>(Paths);
-		//}
-		return nullptr;
-	}
-	Count<CubeMap> CubeMap::Create(const std::string& Path) {
-		//switch (RendererAPI::GetAPI()) {
-		//case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
-		//case RendererAPI::API::OpenGL: return CreateCount<OpenGLCubeMap>(Path);
-		//}
+	Count<CubeMap> CubeMap::Create(const std::filesystem::path& Path) {
+		switch (RendererAPI::GetAPI()) {
+		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
+		case RendererAPI::API::OpenGL: return nullptr;
+		case RendererAPI::API::Vulkan: return CreateCount<VulkanCubeMap>(Path);
+		}
 		return nullptr;
 
 	}
-	Count<CubeMap> CubeMap::Create(uint32_t textureWidht,uint32_t textureHeight,bool generateMipMap) {
-		//switch (RendererAPI::GetAPI()) {
-		//	case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
-		//	//case RendererAPI::API::OpenGL: return CreateCount<OpenGLCubeMap>(textureWidht,textureHeight,generateMipMap);
-		//}
-		return nullptr;
 
-	}
 	Count<HDRTexture> HDRTexture::Create(const std::string& path) {
 		switch (RendererAPI::GetAPI()) {
 		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;

@@ -16,8 +16,8 @@ namespace Proof
 		
 		void Render(EditorCamera& camera);
 		void Render(CameraComponent& comp, Vector& location);
-		void* GetWorldTexture(){
-			return m_ScreenFrameBuffer->GetTexture();
+		Image GetImage(){
+			return m_ScreenFrameBuffer->GetImage();
 		}
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
 		

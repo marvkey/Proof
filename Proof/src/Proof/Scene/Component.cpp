@@ -92,21 +92,6 @@ namespace Proof
 		return nullptr;
 	}
 	
-	/*
-
-		if (neweOwner == m_CurrentID || neweOwner == m_OwnerID) {
-			PF_WARN("cannot add enity as owenr of entity");
-			return false;
-		}
-		auto it = std::find(neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.begin(), neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.end(), neweOwner);
-		if (it == neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.end()) {
-			if (HasEntityOwner() == true) {
-				m_Owner.GetComponent<SubEntityComponet>()->RemoveSubEnity(this->GetOwner());
-			}
-			m_Owner = neweOwner;
-			neweOwner.GetComponent<SubEntityComponet>()->m_AllSubEntity.emplace_back(GetOwner());
-		}
-		*/
 	
 
 	Texture2DAsset* SpriteComponent::GetAsset()
@@ -263,4 +248,5 @@ namespace Proof
 		// changing the data located in that script
 		m_Scripts[posIndex] = scriptData;
 	}
+
 }

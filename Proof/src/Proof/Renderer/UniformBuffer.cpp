@@ -16,6 +16,16 @@ namespace Proof
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
+	Count<UniformBuffer> UniformBuffer::Create(const void* data,uint32_t size, DescriptorSets set, uint32_t bindingPoint) {
+		switch (RendererAPI::GetAPI())
+		{
+			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
+			case RendererAPI::API::OpenGL: return nullptr;
+			case RendererAPI::API::Vulkan: return CreateCount<VulkanUniformBuffer>(data,size, set, bindingPoint);
+		}
+		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
+	}
 	Count<StorageBuffer> StorageBuffer::Create(DescriptorSets set, uint32_t binding, const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex) {
 		switch (RendererAPI::GetAPI())
 		{

@@ -23,9 +23,9 @@ namespace Proof
 		{
 			ImGui::ColorEdit3("Colour",m_MaterialAsset->m_Material.Colour.GetValue_Ptr());
 			ImGui::NewLine();
+			ImGui::SliderFloat ("Metallnes", &m_MaterialAsset->m_Material.Metallness,0,1);
 			ImGui::NewLine();
-			ImGui::DragFloat("Metallnes",&m_MaterialAsset->m_Material.Metallness,0.001);
-			ImGui::DragFloat("Roughness",&m_MaterialAsset->m_Material.Roughness,0.001);
+			ImGui::SliderFloat("Roughness",&m_MaterialAsset->m_Material.Roughness, 0, 1);
 
 			m_MaterialAsset->SaveAsset();
 		}

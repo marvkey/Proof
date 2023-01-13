@@ -104,7 +104,7 @@ World:
         Tag: terain
         tags: []
       TransformComponent:
-        Location: [0, 2.4000001, 0]
+        Location: [0, 2.0999999, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -145,14 +145,14 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [212.100006, 89.0999985, 41.2999992]
+        Rotation: [16, 100, 0]
         Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
       DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 8.82999992
+        Color: [0.589330673, 0.616935492, 0.189060882]
+        Intensity: 5
     - Entity: 818557740550586978
       TagComponent:
         Tag: Sponza

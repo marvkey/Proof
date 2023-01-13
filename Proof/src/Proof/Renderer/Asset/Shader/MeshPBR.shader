@@ -8,23 +8,19 @@ layout(location = 2) in vec2 aTexCoords;
 layout(location = 3) in vec3 aTangent;
 layout(location = 4) in vec3 aBitangent;
 layout(location = 5) in mat4 aTransform;
-layout(location = 9) in vec3 aMaterialColor;
 
 layout(location = 0) out vec3 outWorldPos;
 layout(location = 1) out vec2 outTexCoords;
-layout(location = 2) out vec3 outmaterialColor;
-layout(location = 3) out vec3 outNormal;
-layout(location = 4) out vec3 outCameraPostion;
+layout(location = 2) out vec3 outNormal;
+layout(location = 3) out vec3 outCameraPostion;
 
 layout(set = 0, binding = 0) uniform CameraData
 {
     mat4 ProjectionMatrix;
     mat4 ViewMatrix;
     vec3 Position;
-    float padding;
 }CameraUBO;
 void main() {
-    outmaterialColor = aMaterialColor;
     outTexCoords = aTexCoords;
     outWorldPos = vec3(aTransform * vec4(aPosition, 1.0));
     outNormal = mat3(aTransform) * aNormal;
@@ -34,14 +30,15 @@ void main() {
 }
 
 #Fragment Shader
-//https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
-#version 450
 
+
+#version 450
+//https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
+//https://www.youtube.com/watch?v=RRE-F57fbXw soruce 
 layout(location = 0) in vec3 WorldPos;
 layout(location = 1) in vec2 texCoord;
-layout(location = 2) in vec3 materialColor;
-layout(location = 3) in vec3 Normal;
-layout(location = 4) in vec3 CameraPoition;
+layout(location = 2) in vec3 Normal;
+layout(location = 3) in vec3 CameraPoition;
 
 layout(location = 0) out vec4 outFragColor;
 layout(set = 1, binding = 0) uniform sampler2D tex1;
@@ -64,7 +61,6 @@ layout(std140, set = 0, binding = 1) uniform DirectionalLightBuffer
 }DirectionalLightData;
 
 
-//https://www.youtube.com/watch?v=RRE-F57fbXw soruce 
 const float PI = 3.14159265359;
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -135,12 +131,12 @@ vec3 pbr(BaseLight base, vec3 direction, vec3 normal, vec3 world_pos, vec3 meshC
 vec3 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 world_pos, vec3 meshColor, float roughness, float metallic, vec3 camPos)
 {
     //return pbr(light.Base, light.Direction, normal, world_pos, meshColor, roughness, metallic, camPos);
-    return pbr(light.Base, -light.Direction, normal, world_pos, meshColor, roughness, metallic, camPos);
+    return pbr(light.Base, light.Direction, normal, world_pos, meshColor, roughness, metallic, camPos);
 }
 // ----------------------------------------------------------------------------
 void main()
 {
-    vec3 meshColor = texture(tex1, texCoord).xyz * materialColor;
+    vec3 meshColor = texture(tex1, texCoord).xyz;
     vec3 N = normalize(Normal);
     vec3 V = normalize(CameraPoition - WorldPos);
     vec3 Lo = vec3(0);
@@ -150,7 +146,7 @@ void main()
     //  when rougness is 0 metallic will not repson to light because 
     // metallic on responds to specullar lgiht and there will be no speuclar light in the scne
     float metallic = 0;
-    float roughness = 0.5;
+    float roughness = 0.0;
     Lo += calcDirectionalLight(DirectionalLightData.Light, N, WorldPos, meshColor, roughness, metallic, CameraPoition);
         // ambient lighting (note that the next IBL tutorial will replace 
         // this ambient lighting with environment lighting).

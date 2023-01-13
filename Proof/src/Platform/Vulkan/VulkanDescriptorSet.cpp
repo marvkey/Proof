@@ -364,7 +364,7 @@ namespace Proof
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		write.descriptorType = bindingDescription.descriptorType;
 		write.dstBinding = binding;
-		write.pImageInfo = &m_Images.back();
+		write.pImageInfo = &m_Images[m_Images.size()-1];
 		write.descriptorCount = 1;
 
 		writes.push_back(write);
@@ -434,6 +434,26 @@ namespace Proof
 		for (int i = 0; i < m_UniformBuffers.size(); i++) {
 			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_UniformBuffers[i]);
 		}
+	}
+	VulkanUniformBuffer::VulkanUniformBuffer(const void* data, uint32_t size, DescriptorSets set, uint32_t binding)
+	{
+		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
+		m_UniformBuffers.resize(Renderer::GetConfig().FramesFlight);
+		VkBufferCreateInfo uniformBufferInfo = {};
+		uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		uniformBufferInfo.pNext = nullptr;
+
+		uniformBufferInfo.size = m_Size;
+		uniformBufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+		VmaAllocationCreateInfo vmaallocInfo = {};
+		vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		for (int i = 0; i < m_UniformBuffers.size(); i++)
+		{
+			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_UniformBuffers[i]);
+		}
+		SetData(data, size);
 	}
 	VkDescriptorBufferInfo VulkanUniformBuffer::GetDescriptorInfo(uint32_t index)
 	{

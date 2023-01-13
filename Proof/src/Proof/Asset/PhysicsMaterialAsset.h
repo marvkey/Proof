@@ -14,9 +14,6 @@ namespace Proof
 		}
 		virtual void SaveAsset() override;
 		virtual bool LoadAsset(const std::string& filePath)override;
-		virtual bool IsImageIDNUll() {
-			return true;
-		}
 		virtual ~PhysicsMaterialAsset() {
 
 		}

@@ -40,9 +40,12 @@ namespace Proof
 		std::vector<VkSampler> m_ImageSampler;
 
 		void* GetTexture();
+		virtual Image GetImage();
+
 		bool IsScreenPresent() {
 			return m_ScreenPresent;
 		}
+
 	private:
 		void Init();
 		void CreateScreenPresent();

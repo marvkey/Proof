@@ -31,14 +31,15 @@ namespace Proof
 	}
 
 	VulkanCommandBuffer::~VulkanCommandBuffer() {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-
 		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++) {
-			vkFreeCommandBuffers(
-				graphicsContext->GetDevice(),
-				graphicsContext->GetCommandPool(),
-				1,
-				&m_CommandBuffer[i]);
+			Renderer::SubmitDatafree([buffer = m_CommandBuffer[i]](){
+				auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+				vkFreeCommandBuffers(
+					graphicsContext->GetDevice(),
+					graphicsContext->GetCommandPool(),
+					1,
+					&buffer);
+			});
 		}
 	}
 	

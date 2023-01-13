@@ -141,7 +141,8 @@ namespace Proof
   
 	class VulkanUniformBuffer : public UniformBuffer {
 	public:
-		VulkanUniformBuffer(uint32_t size, DescriptorSets set, uint32_t binding);
+        VulkanUniformBuffer(uint32_t size, DescriptorSets set, uint32_t binding);
+        VulkanUniformBuffer(const  void* data,uint32_t size, DescriptorSets set, uint32_t binding);
 		virtual ~VulkanUniformBuffer();
         VkBuffer GetBuffer(int index) {
             return m_UniformBuffers[index].Buffer;

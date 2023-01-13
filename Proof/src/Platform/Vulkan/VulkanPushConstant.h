@@ -7,18 +7,17 @@ namespace Proof
 {
 	class VulkanPushConstant : public PushConstant {
 	public:
-		VulkanPushConstant(uint32_t size, uint32_t offset = 0, ShaderStage flags = ShaderStage::Vertex);
+		VulkanPushConstant(uint32_t size, uint32_t offset = 0, ShaderStage stage = ShaderStage::Vertex);
 		uint32_t GetSize() {
-			return m_size;
+			return m_Size;
 		}
-		const VkPushConstantRange& GetRange() {
-			return m_PushConstant;
-		}
+		const VkPushConstantRange GetRange();
 		virtual ~VulkanPushConstant(){};
-		void Bind(Count<class CommandBuffer>commandBuffer,Count<class PipeLineLayout> pipeLinelayout, const void* pValues);
+		void PushData(Count<class CommandBuffer>commandBuffer,Count<class PipeLineLayout> pipeLinelayout, const void* data);
 	private:
-		uint32_t m_size;
-		VkPushConstantRange m_PushConstant;
+		ShaderStage m_ShaderStage;
+		uint32_t m_Size;
+		uint32_t m_Offset = 0;
 		friend class VulkanPipeLineLayout;
 	};
 }

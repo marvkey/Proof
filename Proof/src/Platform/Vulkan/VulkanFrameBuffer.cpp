@@ -7,23 +7,10 @@
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanSwapChain.h"
 #include <algorithm>
+#include "VulkanUtils/VulkanConvert.h"
 #include <vector>
 namespace Proof
 {
-    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(graphicsContext->GetGPU(), &memProperties);
-
-        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-                return i;
-            }
-        }
-
-        throw std::runtime_error("failed to find suitable memory type!");
-    }
     void VulkanScreenFrameBuffer::CreateImageViews() {
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         auto swapchain = graphicsContext->GetSwapChain();
@@ -280,6 +267,14 @@ namespace Proof
     void* VulkanScreenFrameBuffer::GetTexture() {
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         return graphicsContext->GetGlobalPool()->AddTexture(m_ImageSampler[Renderer::GetCurrentFrame().ImageIndex], m_ImageViews[Renderer::GetCurrentFrame().ImageIndex]);
+    }
+    Image VulkanScreenFrameBuffer::GetImage()
+    {
+        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto swapchain = graphicsContext->GetSwapChain();
+        auto imageFormat = swapchain->As<VulkanSwapChain>()->GetImageFormat();
+        VkDescriptorSet set =  graphicsContext->GetGlobalPool()->AddTexture(m_ImageSampler[Renderer::GetCurrentFrame().ImageIndex], m_ImageViews[Renderer::GetCurrentFrame().ImageIndex]);
+        return Image(set, Utils::VulkanFormatToProofFormat(imageFormat), { (uint32_t)m_ImageSize.X, (uint32_t)m_ImageSize.Y });
     }
     void VulkanScreenFrameBuffer::Init() {
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();

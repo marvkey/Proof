@@ -212,7 +212,7 @@ namespace Proof
 			ImGui::PushID(path.filename().string().c_str());
 
 			if (It.is_directory()) {
-				ImGui::ImageButton((ImTextureID)m_FolderIcon->GetID(), { thumbnailSize,thumbnailSize });
+				ImGui::ImageButton((ImTextureID)m_FolderIcon->GetImage().SourceImage, { thumbnailSize,thumbnailSize });
 				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 					// wierd bug when we dont use relateive the first "\" becomes "/"
 					m_CurrentDirectory =std::filesystem::relative( m_CurrentDirectory /= path.filename()); // /= is the operator overloaded  to the next folder

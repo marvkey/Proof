@@ -138,7 +138,7 @@ namespace Proof{
 
 			m_ScreenSize = currentSize;
 			
-			void* Text = m_WorldRenderer.GetWorldTexture();
+			const void* Text = m_WorldRenderer.GetImage().SourceImage;
 			ImGui::Image((ImTextureID)Text,ImGui::GetWindowSize(), ImVec2{0,1}, ImVec2{1,0});
 			if (ImGui::IsWindowFocused()) {
 				CurrentWindow::GetWindow().SetWindowInputEvent(true);
