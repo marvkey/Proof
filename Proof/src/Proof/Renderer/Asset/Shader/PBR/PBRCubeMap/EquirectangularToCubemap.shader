@@ -21,7 +21,8 @@ void main()
 #version 450
 
 
-layout(set = 0, binding = 1) uniform  samplerCube  equirectangularMap;
+//layout(set = 0, binding = 1) uniform  sampler  equirectangularMap;
+layout(set = 0, binding = 1) uniform  sampler2D  equirectangularMap;
 layout(location = 0) in vec3 worldPos;
 layout(location = 0) out vec4 outFragColor;
 const vec2 invAtan = vec2(0.1591, 0.3183);
@@ -36,8 +37,8 @@ void main()
 {
     vec2 uv = SampleSphericalMap(normalize(worldPos)); // make sure to normalize localPos
 
-    vec3 color = textureLod(equirectangularMap, vec3(uv,0.0),0.0).rgb;
-
+    //vec3 color = textureLod(equirectangularMap, vec3(uv,0.0),0.0).rgb;
+    vec3 color =  texture(equirectangularMap, uv).xyz;
     outFragColor = vec4(color, 1.0);
 }
 

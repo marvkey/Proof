@@ -597,6 +597,248 @@ namespace Proof
 	VulkanCubeMap::VulkanCubeMap(const std::filesystem::path& path)
 		:
 		m_Path(path.string())
+
+	{
+		// basic part set up 
+		//https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/core/TextureCube.cpp
+
+		int width, height, numChannels;
+		float* data = stbi_loadf(m_Path.c_str(), &width, &height, &numChannels, 0);
+
+		float* data_rgba = new float[size_t(width) * size_t(height) * 4];
+		if (numChannels == 3)
+		{
+			for (size_t i = 0; i < size_t(width) * size_t(height); i++)
+			{
+				for (size_t c = 0; c < 3; c++)
+				{
+					data_rgba[4 * i + c] = data[3 * i + c];
+				}
+				data_rgba[4 * i + 3] = 1.0f;
+			}
+		}
+		else
+		{
+			memcpy(data_rgba, data, size_t(width) * size_t(height) * 4 * 4);
+		}
+		stbi_image_free(data);
+		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+
+		m_Format = ImageFormat::RGBA32F;
+		uint32_t imageSize = width * height * 4 *sizeof(float);
+		uint32_t miplevels = 1;
+		//miplevels = static_cast<uint32_t>(floor(log2(Math::Max(width, height)))) + 1;
+
+		uint32_t layerCount = 1;
+		VulkanBuffer stagingBuffer;
+	// Create the Upload Buffer
+		{
+
+			VkBufferCreateInfo stagingBufferInfo = {};
+			stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			stagingBufferInfo.pNext = nullptr;
+
+			stagingBufferInfo.size = imageSize;
+			stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+			//let the VMA library know that this data should be on CPU RAM
+			VmaAllocationCreateInfo vmaallocInfo = {};
+			vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+			graphicsContext->CreateVmaBuffer(stagingBufferInfo, vmaallocInfo, stagingBuffer);
+		}
+
+		{
+			void* stagingData;
+			vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
+
+			
+			memcpy(stagingData, data_rgba, imageSize);
+
+			vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
+		}
+		{
+			VkImageCreateInfo imageInfo = {};
+			imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+			imageInfo.imageType = VK_IMAGE_TYPE_2D;
+			imageInfo.extent.width = width;
+			imageInfo.extent.height = height;
+			imageInfo.extent.depth = 1;
+			imageInfo.mipLevels = miplevels;
+			imageInfo.arrayLayers = layerCount;
+			imageInfo.format = Utils::ProofFormatToVulkanFormat(m_Format);
+			imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+			imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+			imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+			//info.samples;
+			Renderer::Submit([&](CommandBuffer* cmd) {
+				VmaAllocationCreateInfo vmaallocInfo = {};
+					//let the VMA library know that this data should be GPU native
+				vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+				graphicsContext->CreateVmaImage(imageInfo, vmaallocInfo, m_Image);
+			});
+		}
+
+		Renderer::Submit([&](CommandBuffer* cmd) {
+			VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+
+			VkImageMemoryBarrier barrier = {};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+			barrier.image = m_Image.Image;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.baseMipLevel = 0;
+			barrier.subresourceRange.levelCount = miplevels;
+			barrier.subresourceRange.baseArrayLayer = 0;
+			barrier.subresourceRange.layerCount = layerCount;
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask = 0;
+
+			vkCmdPipelineBarrier((VkCommandBuffer)cmd->Get(), srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+			VkBufferImageCopy region = {};
+			region.bufferOffset = 0;
+			region.bufferRowLength = 0;
+			region.bufferImageHeight = 0;
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.mipLevel = 0;
+			region.imageSubresource.baseArrayLayer = 0;
+			region.imageSubresource.layerCount = layerCount;
+
+			region.imageOffset = { 0, 0 };
+			region.imageExtent = { (uint32_t)width, (uint32_t)height, 1 };
+
+			vkCmdCopyBufferToImage((VkCommandBuffer)cmd->Get(), stagingBuffer.Buffer, m_Image.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+				&region);
+
+
+			barrier.oldLayout = barrier.newLayout;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			srcStage = dstStage;
+			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+
+			vkCmdPipelineBarrier((VkCommandBuffer)cmd->Get(), srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+			// Mipmapping
+
+			{
+				int32_t mipwidth = static_cast<int32_t>(width);
+				int32_t mipheight = static_cast<int32_t>(height);
+				barrier.subresourceRange.levelCount = 1;
+
+				for (uint32_t i = 1; i < miplevels; i++)
+				{
+					barrier.subresourceRange.baseMipLevel = i - 1;
+					barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+					barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+					barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+					barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+					vkCmdPipelineBarrier((VkCommandBuffer)cmd->Get(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
+						nullptr, 0, nullptr, 1, &barrier);
+
+					VkImageBlit blit = {};
+					blit.srcOffsets[0] = { 0, 0, 0 };
+					blit.srcOffsets[1] = { mipwidth, mipheight, 1 };
+					blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;;
+					blit.srcSubresource.mipLevel = i - 1;
+					blit.srcSubresource.baseArrayLayer = 0;
+					blit.srcSubresource.layerCount = 1;
+					blit.dstOffsets[0] = { 0, 0, 0 };
+					blit.dstOffsets[1] = { mipwidth > 1 ? mipwidth / 2 : 1, mipheight > 1 ? mipheight / 2 : 1, 1 };
+					blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;;
+					blit.dstSubresource.mipLevel = i;
+					blit.dstSubresource.baseArrayLayer = 0;
+					blit.dstSubresource.layerCount = layerCount;
+
+					vkCmdBlitImage((VkCommandBuffer)cmd->Get(), m_Image.Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_Image.Image,
+						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
+
+					barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+					barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+					vkCmdPipelineBarrier((VkCommandBuffer)cmd->Get(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+						0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+					mipwidth = Math::Max(mipwidth / 2, 1);
+					mipheight = Math::Max(mipheight / 2, 1);
+				}
+
+				barrier.subresourceRange.baseMipLevel = miplevels - 1;
+				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+				vkCmdPipelineBarrier((VkCommandBuffer)cmd->Get(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
+					nullptr, 0, nullptr, 1, &barrier);
+			}
+		});
+		delete[] data_rgba;
+
+		{
+			VkImageViewCreateInfo createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			createInfo.image = m_Image.Image;
+			createInfo.viewType = layerCount > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
+			createInfo.format = Utils::ProofFormatToVulkanFormat(m_Format);
+			createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+			createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+			createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+			createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+			createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			createInfo.subresourceRange.baseMipLevel = 0;
+			createInfo.subresourceRange.levelCount = miplevels;
+			createInfo.subresourceRange.baseArrayLayer = 0;
+			createInfo.subresourceRange.layerCount = layerCount;
+			vkCreateImageView(graphicsContext->GetDevice(), &createInfo, nullptr, &m_ImageView);
+			/*
+			std::vector<VkImageView> views(layerCount);
+			uint32_t index = 0;
+			for (auto& view : views)
+			{
+				view = createImageView(context->get_device(), get_image(), VK_IMAGE_VIEW_TYPE_2D, format, aspect, miplevels, 1,
+					index);
+				index++;
+			}
+			*/
+		}
+
+		{
+			VkSamplerCreateInfo createInfo = {};
+			createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+			createInfo.magFilter = VK_FILTER_LINEAR;
+			createInfo.minFilter = VK_FILTER_LINEAR;
+			createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			createInfo.anisotropyEnable =  VK_TRUE;
+			createInfo.maxAnisotropy = graphicsContext->GetGPUProperties().limits.maxSamplerAnisotropy;
+			createInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+			createInfo.unnormalizedCoordinates = VK_FALSE;
+			createInfo.compareEnable = VK_FALSE;
+			createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+			createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			createInfo.mipLodBias = 0.0f;
+			createInfo.minLod = 0.0f;
+			createInfo.maxLod = static_cast<float>(miplevels);
+
+			vkCreateSampler(graphicsContext->GetDevice(), &createInfo, nullptr, &m_Sampler);
+		}
+	}
+	/*
+	VulkanCubeMap::VulkanCubeMap(const std::filesystem::path& path)
+		:
+		m_Path(path.string())
 	{
 		uint32_t mipLevels = 1;
 		int width, height, bytesPerPixel;
@@ -896,6 +1138,7 @@ namespace Proof
 		});
 
 	}
+	*/
 	/*
 	VulkanCubeMap::VulkanCubeMap(const std::filesystem::path& path)
 		:
