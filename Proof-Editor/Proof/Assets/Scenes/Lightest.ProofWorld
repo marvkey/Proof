@@ -145,13 +145,13 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [16, 100, 0]
+        Rotation: [-11.3999996, 1, 0]
         Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
       DirectionalLightComponent:
-        Color: [0.589330673, 0.616935492, 0.189060882]
+        Color: [1, 1, 1]
         Intensity: 5
     - Entity: 818557740550586978
       TagComponent:

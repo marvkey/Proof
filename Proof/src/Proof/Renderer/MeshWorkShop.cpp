@@ -1,11 +1,71 @@
 #include "Proofprch.h"
+#include "Proof/Core/Core.h"
+
 #include "MeshWorkShop.h"
 #include<vector>
 namespace Proof {
-    Count<Mesh> MeshWorkShop::m_Cube = CreateCount<Mesh>();
-    Count<Mesh> MeshWorkShop::m_Sphere = CreateCount<Mesh>();
-    Count<Mesh> MeshWorkShop::m_Capasule = CreateCount<Mesh>();
-	void MeshWorkShop::Init(){
+    Count<Mesh> MeshWorkShop::GenerateCube()
+    {
+        //https://pastebin.com/DXKEmvap
+        std::vector<Vector> veritces =
+        {
+
+            Vector(-1, -1, -1),
+            Vector(1, -1, -1),
+            Vector(1, 1, -1),
+            Vector(-1, 1, -1),
+            Vector(-1, -1, 1),
+            Vector(1, -1, 1),
+            Vector(1, 1, 1),
+            Vector(-1, 1, 1)
+        };
+
+        std::vector<Vector2> texCoords =
+        {
+            Vector2(0, 0),
+            Vector2(1, 0),
+            Vector2(1, 1),
+            Vector2(0, 1)
+        };
+
+        std::vector<Vector> normals =
+        {
+            Vector(0, 0, 1),
+            Vector(1, 0, 0),
+            Vector(0, 0, -1),
+            Vector(-1, 0, 0),
+            Vector(0, 1, 0),
+            Vector(0, -1, 0)
+        };
+
+        std::vector<uint32_t> indices =
+        {
+            0, 1, 3, 3, 1, 2,
+            1, 5, 2, 2, 5, 6,
+            5, 4, 6, 6, 4, 7,
+            4, 0, 7, 7, 0, 3,
+            3, 2, 7, 7, 2, 6,
+            4, 5, 0, 0, 5, 1
+        };
+        std::vector<Vertex> cubeVertex;
+        for (uint32_t i = 0; i < veritces.size(); i++)
+        {
+            Vertex vertex;
+            vertex.Vertices = Vector(veritces[i].X, veritces[i].Y, veritces[i].Z);
+            if (normals.size() > i)
+                vertex.Normal = Vector(normals[i].X, normals[i].Y, normals[i].Z);
+            if (texCoords.size() > i)
+            {
+                vertex.TexCoords = texCoords[i];
+                //  vertex.Tangent = Vector(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
+                //vertex.Bitangent = Vector(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
+            }
+            cubeVertex.emplace_back(vertex);
+        }
+        //return CreateCount<Mesh>("Proof/Assets/Models/cube.obj");
+        return CreateCount<Mesh>("Cube", cubeVertex, indices);
+    }
+    void MeshWorkShop::Init(){
         InitCube();
         InitSphere();
         InitCapsule();
@@ -66,7 +126,7 @@ namespace Proof {
             cubeVertex.emplace_back(vertex);
         }
         */
-       // m_Cube = CreateCount<Mesh>("cube.obj");
+      //  m_Cube = CreateCount<Mesh>("cube.obj");
 
 	}
     void MeshWorkShop::InitSphere() {

@@ -5,7 +5,7 @@ namespace Proof {
 	
 	class Renderer {
 	public:
-		static void DrawElementIndexed(Count<class CommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount,uint32_t firstInstance){
+		static void DrawElementIndexed(Count<class CommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount=1,uint32_t firstInstance=0){
 			s_RendererAPI->DrawElementIndexed(commandBuffer,indexCount,instanceCount,firstInstance);
 		}
 		static void DrawArrays(Count<class CommandBuffer> commandBuffer, uint32_t vertexCount,uint32_t instanceCount, uint32_t firstInstance = 0) {

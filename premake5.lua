@@ -31,6 +31,7 @@ IncludeDir["mono"] = "%{wks.location}/Proof/vendor/mono/include"
 IncludeDir["magic_enum"] = "%{wks.location}/Proof/vendor/magic_enum/include"
 IncludeDir["optick"] = "%{wks.location}/Proof/vendor/optick/src"
 IncludeDir["entt"] = "%{wks.location}/Proof/vendor/entt"
+IncludeDir["ktx"] = "%{wks.location}/Proof/vendor/ktx"
 
 LibraryDir = {}
 LibraryDir["ProofOuputDir"] =  "%{wks.location}/Proof/bin/".. OutputDirectory .. "/Proof"
@@ -74,6 +75,7 @@ group "ExternalDependencies"
 	include "Proof/vendor/yaml-cpp"
 	include "Proof/vendor/SPIRV-Cross"
 	include "Proof/vendor/shaderc"
+	include "Proof/vendor/ktx"
 group ""
 
 group "Dependencies"

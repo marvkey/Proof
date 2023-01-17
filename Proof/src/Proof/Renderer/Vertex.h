@@ -10,7 +10,7 @@ namespace Proof
  
     // Rename MESH Vertex
     struct Vertex {
-        Vertex(Vector vertices ={0}, Vector normal ={0}, glm::vec2 texcorrds ={0,0}, Vector tangent = {0}, Vector bitangent = {0}) {
+        Vertex(Vector vertices ={0}, Vector normal ={0}, Vector2 texcorrds ={0,0}, Vector tangent = {0}, Vector bitangent = {0}) {
             Vertices = vertices;
             Normal = normal;
             TexCoords = texcorrds;
@@ -19,7 +19,7 @@ namespace Proof
         }
         Vector Vertices{0,0,0};
         Vector Normal{0,0,0};
-        glm::vec2 TexCoords{0,0};
+        Vector2 TexCoords{0,0};
         Vector Tangent{0,0,0};
         Vector Bitangent{0,0,0};
     }; 

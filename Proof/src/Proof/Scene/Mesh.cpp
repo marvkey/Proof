@@ -15,6 +15,12 @@
 #include "Proof/Math/Vector.h"
 #include "Proof/Renderer/RendererBase.h"
 namespace Proof{
+    Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices)
+    {
+        
+        SubMesh temp(vertices, indices, name);
+        meshes.push_back(temp);
+    }
     void Mesh::LoadModel(std::string const& path ) {
         PF_PROFILE_FUNC();
         m_Path = path;
@@ -52,12 +58,12 @@ namespace Proof{
             if (aimesh->HasNormals())
                 vertex.Normal = Vector(aimesh->mNormals[i].x,aimesh->mNormals[i].y,aimesh->mNormals[i].z);
             if (aimesh->mTextureCoords[0]) {
-                vertex.TexCoords = glm::vec2(aimesh->mTextureCoords[0][i].x,aimesh->mTextureCoords[0][i].y);
+                vertex.TexCoords = Vector2(aimesh->mTextureCoords[0][i].x,aimesh->mTextureCoords[0][i].y);
                 vertex.Tangent = Vector(aimesh->mTangents[i].x,aimesh->mTangents[i].y,aimesh->mTangents[i].z);
                 vertex.Bitangent = Vector(aimesh->mBitangents[i].x,aimesh->mBitangents[i].y,aimesh->mBitangents[i].z);
             }
             else
-                vertex.TexCoords = glm::vec2(0.0f,0.0f);
+                vertex.TexCoords = Vector2(0.0f,0.0f);
             vertices.emplace_back(vertex);
         }
         for (unsigned int i = 0; i <aimesh->mNumFaces; i++) {

@@ -35,7 +35,9 @@ namespace Proof
 
         DescriptorSet& WriteBuffer(uint32_t binding, Count<UniformBuffer> buffer);
         DescriptorSet& WriteBuffer(uint32_t binding,  Count<StorageBuffer> buffer);
+
         DescriptorSet& WriteImage(uint32_t binding, Count<class Texture2D> image);
+        DescriptorSet& WriteImage(uint32_t binding, Count<class CubeMap> image);
         DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>> image);
 
         void Overwrite(int frame = Renderer::GetCurrentFrame().FrameinFlight);

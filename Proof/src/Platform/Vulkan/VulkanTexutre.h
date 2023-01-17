@@ -47,17 +47,21 @@ namespace Proof
 		VulkanCubeMap(const std::filesystem::path& Path);
 		virtual std::string GetPath() { return m_Path; };
 		virtual Image GetImage()const ;
+		VkDescriptorImageInfo GetImageBufferInfo(VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	private:
 		ImageFormat m_Format = ImageFormat::None;
 		ScreenSize m_Size;
 		int m_Channel;
 		VkImageView m_ImageView = nullptr;
 		VkSampler m_Sampler = nullptr;
-		VulkanImage m_Image;
+		VulkanImage m_Image; 
 		void AllocateMemory(uint64_t size);
 		void SetData(const void* data);
 		void Release();
 		mutable VkDescriptorSet m_Set{ VK_NULL_HANDLE };
 		std::string m_Path;
+
+		//temporary we just trying to use ibl in the future when we figure cubmaps say bye bye
+		VkDeviceMemory m_ImageMemory;
 	};
 }

@@ -37,6 +37,10 @@ namespace Proof {
 	};
 	class Proof_API Texture {
 	public:
+		template<class T>
+		T* As() {
+			return  dynamic_cast<T*>(this);
+		}
 		virtual Image GetImage()const = 0;
 	};
 	
@@ -44,10 +48,6 @@ namespace Proof {
 
 	class Proof_API Texture2D: public Texture {
 	public:
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
 	
 		virtual std::string GetPath() = 0;
 

@@ -46,6 +46,7 @@ project "Proof"
 		"%{IncludeDir.optick}",
 		"%{IncludeDir.magic_enum}",
 		"%{IncludeDir.mono}",
+		"%{IncludeDir.ktx}",
 
     }
 	libdirs{
@@ -64,7 +65,7 @@ project "Proof"
         "vulkan-1.lib",
 		"OptickCore.lib",
 		"SPIRV-Cross",
-
+		"ktx",
 		"ProofScriptCore",
 
 		"%{wks.location}/proof/vendor/mono/lib/Debug/mono-2.0-sgen.lib",
@@ -77,7 +78,7 @@ project "Proof"
 		"%{Library.PhysXFoundation_static_64}",
 		"%{Library.PhysXPvdSDK_static_64}",
 		"%{Library.PhysXVehicle_static_64}",
-		
+		--c# dll stuff
 		"OLDNAMES.lib",	
 		"Ws2_32.lib",
 		"Winmm.lib",
@@ -93,6 +94,8 @@ project "Proof"
 	filter "files:vendor/ImGui/**.cpp"
 	flags { "NoPCH" }
 	filter "files:vendor/ImGuizmo/**.cpp"
+	flags { "NoPCH" }
+	filter "files:src/Platform/Vulkan/ktx/**.cpp"
 	flags { "NoPCH" }
 
 	filter "system:windows"

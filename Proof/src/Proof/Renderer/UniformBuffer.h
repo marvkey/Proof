@@ -72,6 +72,7 @@ namespace Proof
 
 		virtual DescriptorSet& WriteBuffer(uint32_t binding, Count<UniformBuffer> buffer) = 0;
 		virtual DescriptorSet& WriteBuffer(uint32_t binding, Count<StorageBuffer> buffer) = 0;
+		virtual DescriptorSet& WriteImage(uint32_t binding, Count<class CubeMap> image) = 0;
 		virtual DescriptorSet& WriteImage(uint32_t binding, Count<class Texture2D> image) = 0;
 		virtual DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>> image) = 0;
 		virtual void Bind(Count<class CommandBuffer> commandBuffer, Count<class PipeLineLayout>piipeLineLayout) =0;

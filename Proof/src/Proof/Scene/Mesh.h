@@ -49,6 +49,8 @@ namespace Proof
         Mesh(std::string const& path ) {
             LoadModel(path);
         }
+
+        Mesh(const std::string& name,std::vector<Vertex> vertices, std::vector<uint32_t>indices);
         virtual ~Mesh() {};
         const std::vector<SubMesh>& GetSubMeshes()const {
             return meshes;

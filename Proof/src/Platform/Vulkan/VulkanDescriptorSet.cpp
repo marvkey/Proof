@@ -10,7 +10,7 @@ namespace Proof
 {
 	namespace Utils
 	{
-		VkDescriptorType ProofFormatToVulkanFormat(DescriptorType data) {
+		static VkDescriptorType ProofFormatToVulkanFormat(DescriptorType data) {
 			switch (data) {
 				case Proof::DescriptorType::ImageSampler:
 					return VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -92,12 +92,16 @@ namespace Proof
 		return *this;
 	}
 
-	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, Count<class Texture2D> image) {
+	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, Count<Texture2D> image) {
 		auto imageInfo = image->As<VulkanTexture2D>()->GetImageBufferInfo();
 		m_Writer->WriteImage(binding, &imageInfo);
 		return *this;
 	}
-
+	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, Count<CubeMap> image) {
+		auto imageInfo = image->As<VulkanCubeMap>()->GetImageBufferInfo();
+		m_Writer->WriteImage(binding, &imageInfo);
+		return *this;
+	}
 	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, std::vector<Count<class Texture2D>> images) {
 		std::vector< VkDescriptorImageInfo> info;
 		auto whiteImageInfo = Renderer::GetWhiteTexture()->As<VulkanTexture2D>()->GetImageBufferInfo();
@@ -436,6 +440,7 @@ namespace Proof
 		}
 	}
 	VulkanUniformBuffer::VulkanUniformBuffer(const void* data, uint32_t size, DescriptorSets set, uint32_t binding)
+		:m_Size(size), m_Set(set), m_Binding(binding)
 	{
 		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
 
@@ -453,7 +458,7 @@ namespace Proof
 		{
 			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_UniformBuffers[i]);
 		}
-		SetData(data, size);
+		SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
 	}
 	VkDescriptorBufferInfo VulkanUniformBuffer::GetDescriptorInfo(uint32_t index)
 	{
