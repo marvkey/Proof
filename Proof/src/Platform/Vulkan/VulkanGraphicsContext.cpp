@@ -73,15 +73,22 @@ namespace Proof
 	}
 
 	VulkanGraphicsContext::~VulkanGraphicsContext() {
-		vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
-		vkDestroyDevice(m_Device, nullptr);
-
-		if (enableValidationLayers) {
+		if (enableValidationLayers)
+		{
 			DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 		}
+		m_GlobalPool = nullptr;
+		// cannot put in submit because
+		// the device will gett deleted and everyting that needs to be delted will crash
+		// so we delete withotu adding to deleque
+	//	Renderer::SubmitDatafree([device = m_Device,instance = m_Instance, surface = m_Surface,commandPool = m_CommandPool]() {
+			vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
+			vkDestroyDevice(m_Device, nullptr);
 
-		vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
-		vkDestroyInstance(m_Instance, nullptr);
+			vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
+			vkDestroyInstance(m_Instance, nullptr);
+		//});
+		
 	}
 
 	void VulkanGraphicsContext::CreateInstance() {
@@ -175,9 +182,10 @@ namespace Proof
 
 		VkPhysicalDeviceFeatures deviceFeatures = {};
 		deviceFeatures.samplerAnisotropy = VK_TRUE;
-
+		deviceFeatures.depthClamp = VK_TRUE;
 		VkDeviceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
 
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -185,7 +193,6 @@ namespace Proof
 		createInfo.pEnabledFeatures = &deviceFeatures;
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(m_DeviceExtensions.size());
 		createInfo.ppEnabledExtensionNames = m_DeviceExtensions.data();
-
 		// might not really be necessary anymore because device specific validation layers
 		// have been deprecated
 		if (enableValidationLayers) {
@@ -203,7 +210,8 @@ namespace Proof
 		vkGetDeviceQueue(m_Device, indices.presentFamily, 0, &m_PresentQueue);
 	}
 
-	void VulkanGraphicsContext::CreateCommandPool() {
+	void VulkanGraphicsContext::CreateCommandPool()
+	{
 		QueueFamilyIndices queueFamilyIndices = FindPhysicalQueueFamilies();
 
 		VkCommandPoolCreateInfo poolInfo = {};
@@ -214,10 +222,12 @@ namespace Proof
 		//we also want the pool to allow for resetting of individual command buffers
 		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-		if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
+		if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS)
+		{
 			PF_CORE_ASSERT(false, "failed to create command pool!");
 		}
 	}
+
 
 	void VulkanGraphicsContext::InitVMA() {
 		//initialize the memory allocator
@@ -229,6 +239,7 @@ namespace Proof
 	}
 
 	void VulkanGraphicsContext::InitDescriptors() {
+		//uint32_t size = Renderer::GetConfig().FramesFlight; // maybe also frames in flight
 		uint32_t size = 1000; // maybe also frames in flight
 			//auto& build= VulkanDescriptorPool::Builder()
 			//.SetMaxSets(1000)
@@ -457,7 +468,7 @@ namespace Proof
 		return true;
 	}
 
-	bool VulkanGraphicsContext::CreateVmaImage(VkImageCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanImage& image) {
+	bool VulkanGraphicsContext::CreateVmaImage(VkImageCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanImageAlloc& image) {
 		VkResult result = vmaCreateImage(m_VMA_Allocator, &bufferInfo, &vmaInfo, &image.Image, &image.Allocation, nullptr);
 		if (result == false)
 			return false;
@@ -493,130 +504,5 @@ namespace Proof
 
 		PF_CORE_ASSERT(false, "failed to find suitable memory type!");
 	}
-
-	void VulkanGraphicsContext::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
-		// HOw we plan touse this buffer
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
-		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		if (vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-			PF_CORE_ASSERT(false, "failed to create buffer!");
-		}
-
-		// we can allocate memory of the proper size and required properties we set as an argument
-		VkMemoryRequirements memRequirements;
-		vkGetBufferMemoryRequirements(m_Device, buffer, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
-
-		if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-			PF_CORE_ASSERT(false, "failed to allocate vertex buffer memory!");
-		}
-
-		// we bind buffer to memory just allocated
-		vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
-	}
-
-	VkCommandBuffer VulkanGraphicsContext::BeginSingleTimeCommands() {
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = m_CommandPool;
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
-		return commandBuffer;
-	}
-
-	void VulkanGraphicsContext::EndSingleTimeCommands(VkCommandBuffer commandBuffer) {
-		vkEndCommandBuffer(commandBuffer);
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(m_GraphicsQueue);
-
-		vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &commandBuffer);
-	}
-
-	void VulkanGraphicsContext::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
-
-		VkBufferCopy copyRegion{};
-		copyRegion.srcOffset = 0;  // Optional
-		copyRegion.dstOffset = 0;  // Optional
-		copyRegion.size = size;
-		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-		EndSingleTimeCommands(commandBuffer);
-	}
-
-	void VulkanGraphicsContext::CopyBufferToImage(
-		VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount) {
-		VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
-
-		VkBufferImageCopy region{};
-		region.bufferOffset = 0;
-		region.bufferRowLength = 0;
-		region.bufferImageHeight = 0;
-
-		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		region.imageSubresource.mipLevel = 0;
-		region.imageSubresource.baseArrayLayer = 0;
-		region.imageSubresource.layerCount = layerCount;
-
-		region.imageOffset = { 0, 0, 0 };
-		region.imageExtent = { width, height, 1 };
-
-		vkCmdCopyBufferToImage(
-			commandBuffer,
-			buffer,
-			image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			1,
-			&region);
-		EndSingleTimeCommands(commandBuffer);
-	}
-
-	void VulkanGraphicsContext::CreateImageWithInfo(
-		const VkImageCreateInfo& imageInfo,
-		VkMemoryPropertyFlags properties,
-		VkImage& image,
-		VkDeviceMemory& imageMemory) {
-		if (vkCreateImage(m_Device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
-			PF_CORE_ASSERT(false, "failed to create image!");
-		}
-
-		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(m_Device, image, &memRequirements);
-
-		VkMemoryAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
-
-		if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-			PF_CORE_ASSERT(false, "failed to allocate image memory!");
-		}
-
-		if (vkBindImageMemory(m_Device, image, imageMemory, 0) != VK_SUCCESS) {
-			PF_CORE_ASSERT(false, "failed to bind image memory!");
-		}
-	}
+	
 }

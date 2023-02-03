@@ -28,7 +28,6 @@ namespace Proof {
 		static bool IsKeyClickedEditor(KeyBoardKey Key);
 		bool m_ViewPortFocused = false;
 	private:
-		
 		struct KeyBoardShowEvent {
 			bool ShowAll = false;
 			bool ShowOne = false;
@@ -76,7 +75,6 @@ namespace Proof {
 		};
 		EditorCamera m_EditorCamera = { 200,200 };
 
-		Count<Project> m_Project;
 		KeyBoardShowEvent m_ShowAllKeyBoardEvents;
 		MouseShowEvent m_ShowAllMouseEvents;
 		WindowShowEvent m_ShowAllWindowEvents;
@@ -102,7 +100,7 @@ namespace Proof {
 		void SetDocking(bool *p_open);
 		glm::vec2 _ViewPortLocation;
 		bool m_IsViewPortResize = false;
-		Count<class World>ActiveWorld =nullptr;
+		Count<class World>m_ActiveWorld =nullptr;
 		Count<class World>m_EditorWorld =nullptr;
 
 		int GuizmoType = (1u << 0)| (1u << 1)| (1u << 2);// imguizmo bit stuff
@@ -119,7 +117,9 @@ namespace Proof {
 		void SimulateWorld();
 		void SetWorldEdit();
 		void PauseWorld();
-		WorldRenderer m_WorldRenderer;
+
+		void NewWorld();
+		Special<WorldRenderer> m_WorldRenderer;
 
 	};
 }

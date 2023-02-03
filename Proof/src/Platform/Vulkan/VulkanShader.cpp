@@ -7,6 +7,8 @@
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
+
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
     namespace Utils
@@ -89,8 +91,16 @@ namespace Proof
         shaderFile.close();
         return source;
     }
-   
 
+    void VulkanShader::Release()
+    {
+        for (auto& [data, shaderModule] : m_ShaderModule)
+        {
+            Renderer::SubmitDatafree([shaderModuler =shaderModule] {
+                vkDestroyShaderModule(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), shaderModuler, nullptr);
+            });
+        }
+    }
 
     VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filePath) {
         m_Name = name;
@@ -131,9 +141,7 @@ namespace Proof
         CreateShader();
     }
     VulkanShader::~VulkanShader() {
-        for (int i = 0; i < 2; i++) {
-          //  vkDestroyShaderModule(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_ShaderModule[i], nullptr);
-        }
+        Release();
     }
     void VulkanShader::CompileOrGetBinaries(const std::filesystem::path& filePath) {
 		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
@@ -190,6 +198,7 @@ namespace Proof
 
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
+        
         compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, graphicsContext->GetVulkanVersion());
         const bool optimize = true;
         if (optimize)
@@ -233,7 +242,7 @@ namespace Proof
             CreateShader();
             return;
         }
-        PF_CORE_ASSERT(false, "cannot reload because u did not use path constructuro");
+        PF_CORE_ASSERT(false, "cannot reload because you did not use path constructuro");
     }
 
     void VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code, VkShaderModule* shaderModule) {

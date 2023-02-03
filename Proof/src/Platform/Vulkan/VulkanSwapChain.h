@@ -19,20 +19,20 @@ namespace Proof
         friend class ImGuiLayer;
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
         size_t GetImageCount()const { return m_ImageCount; }
-        VkFormat GetImageFormat()const { return m_ImageFormat; }
+        ImageFormat GetImageFormat();
+        ImageFormat GetDepthFormat();
         ScreenSize GetSwapChainExtent()const { return m_SwapChainExtent; }
         ScreenSize GetWindowSize()const { return m_WindowSize; }
 
         float ExtentAspectRatio() {
             return static_cast<float>(m_SwapChainExtent.X) / static_cast<float>(m_SwapChainExtent.Y);
         }
-        VkFormat GetDepthFormat();
 
-        void AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex= Renderer::GetCurrentFrame().FrameinFlight);
+        void AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
         void WaitAndResetFences(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
         void WaitFences(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
         void ResetFences(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-        void SubmitCommandBuffers(std::vector<Count<CommandBuffer>> buffers, uint32_t* imageIndex);
+        void SubmitCommandBuffers(std::vector<Count<RenderCommandBuffer>> buffers, uint32_t* imageIndex);
 
         bool CompareSwapFormats(const VulkanSwapChain& swapChain) {
             return swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat && swapChain.m_ImageFormat == m_ImageFormat;
@@ -46,8 +46,11 @@ namespace Proof
         VkPresentModeKHR GetPresentMode() {
             return m_PresentMode;
         }
-        Count<class RenderPass> GetRenderPass();
+        virtual ImageLayouts GetImageLayout();
+
     private:
+        VkFormat FindDepthFormat();
+
         VkSurfaceFormatKHR m_SurfaceFormat;
         VkPresentModeKHR m_PresentMode;
         uint32_t m_ImageCount;
@@ -69,7 +72,7 @@ namespace Proof
         ScreenSize m_SwapChainExtent;
         VkSwapchainKHR m_SwapChain;
 
-        std::vector<class VulkanScreenFrameBuffer*> FrameBuffers;
+        std::vector<class VulkanFrameBuffer*> FrameBuffers;
         std::vector<class VulkanGraphicsPipeline*> GraphicsPipelines;
         std::vector<VkImageView> m_SwapChainImageViews;
         std::vector<VkImage> m_SwapChainImages;
@@ -78,7 +81,7 @@ namespace Proof
         std::vector<VkFence> m_InFlightFences;
         friend class VulkanRenderer;
         // temporary
-        friend class VulkanScreenFrameBuffer;
+        friend class VulkanFrameBuffer;
     };
 
 }  

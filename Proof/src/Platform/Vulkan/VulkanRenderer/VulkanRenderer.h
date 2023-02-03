@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
-#include "Proof/Renderer/ScreenFrameBuffer.h"
+#include "Proof/Renderer/FrameBuffer.h"
 #include "Platform/Vulkan/VulkanGraphicsPipeline.h"
 #include "Platform/Vulkan/VulkanSwapChain.h"
 #include<vulkan/vulkan.h>
@@ -32,7 +32,7 @@ namespace Proof
 	};
 
 	struct VulkanRendererData {
-		std::vector<Count<CommandBuffer>> CommandBuffers;
+		std::vector<Count<RenderCommandBuffer>> CommandBuffers;
 		std::vector<DeletionQueue> ResourceFreeQueue;
 
 	};
@@ -42,7 +42,7 @@ namespace Proof
 	public:
 		static void Init();
 		static void Destroy();
-		static void SubmitCommandBuffer(Count<CommandBuffer> commandBuffer);
+		static void SubmitCommandBuffer(Count<RenderCommandBuffer> commandBuffer);
 		static void SubmitDatafree(std::function<void()> func);
 		
 		static void BeginFrame();

@@ -6,7 +6,7 @@ namespace Proof {
 		/*
 		* sets as current vertex Buffer
 		*/
-		virtual void Bind(Count<class CommandBuffer> commandBuffer, uint32_t binding = 0)const =0;
+		virtual void Bind(Count<class RenderCommandBuffer> commandBuffer, uint32_t binding = 0)const =0;
 		/**
 		* sets the data for the vertex buffer
 		* @param Data the location of the first element in the array or vector
@@ -37,7 +37,7 @@ namespace Proof {
 		/**
 		*set as Current Index Buffer
 		*/
-		virtual void Bind(Count<class CommandBuffer> commandBuffer)const = 0;
+		virtual void Bind(Count<class RenderCommandBuffer> commandBuffer)const = 0;
 		/**
 		*removes as Current Index Buffer
 		*/

@@ -59,7 +59,7 @@ namespace Proof
 	static bool Entity_HasComponent(EntityID entityID, MonoReflectionType* componentType) {
 		World* world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world,"world is nullptr");
-		Entity entity =world->GetEntity( entityID);
+		Entity entity =world->TryGetEntity( entityID);
 		PF_CORE_ASSERT(entity,"world is null");
 
 		MonoType* managedType = mono_reflection_type_get_type(componentType);

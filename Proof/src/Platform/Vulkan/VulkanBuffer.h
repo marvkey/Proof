@@ -12,7 +12,7 @@ namespace Proof
 		~VulkanVertexBuffer();
 		VulkanVertexBuffer(const void* data, uint32_t size);
 		VulkanVertexBuffer(uint32_t size);
-		virtual void Bind(Count<CommandBuffer> commandBuffer,uint32_t binding=0)const override;
+		virtual void Bind(Count<RenderCommandBuffer> commandBuffer,uint32_t binding=0)const override;
 		virtual void AddData(const void* data, uint32_t size, uint32_t offset=0);
 		uint32_t GetVertexSize()const { return m_VertexSize; }
 	private:
@@ -24,7 +24,7 @@ namespace Proof
 	public:
 		VulkanIndexBuffer(const void* data, uint32_t size);
 		~VulkanIndexBuffer();
-		virtual void Bind(Count<CommandBuffer> commandBuffer)const;
+		virtual void Bind(Count<RenderCommandBuffer> commandBuffer)const;
 
 		uint32_t GetCount()const override{
 			return m_Count;

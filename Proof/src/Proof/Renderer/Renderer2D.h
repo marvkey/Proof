@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include <array>
 #include "vertex.h"
-#include "Proof/Renderer/ScreenFrameBuffer.h"
+#include "Proof/Renderer/FrameBuffer.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
 #include "Texture.h"
 #include "UniformBuffer.h"
@@ -14,7 +14,7 @@ namespace Proof {
 		Count<UniformBuffer> CameraBuffer = nullptr;
 		Count<class VertexBuffer> VertexBuffer;
 		Count<class IndexBuffer> IndexBuffer;
-		Count<class CommandBuffer>CommandBuffer;
+		Count<class RenderCommandBuffer>CommandBuffer;
 		Count<ScreenFrameBuffer> CurrentFrameBuffer ;
 		const uint32_t c_MaxQuadCount = 2000;
 		const uint32_t c_MaxVertexCount = c_MaxQuadCount *4; // times 4 cause each quad holds 4 vertices
@@ -44,7 +44,7 @@ namespace Proof {
 	public:
 		Renderer2D(Count <class RenderPass > renderPass);
 		~Renderer2D() {};
-		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commdandBuffer);
+		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commdandBuffer);
 		void DrawQuad(const glm::vec3& Location);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& Size);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec4& Color);

@@ -10,7 +10,7 @@ namespace Proof {
 			return  dynamic_cast<T*>(this);
 		}
 		virtual ~PushConstant() {};
-		virtual void PushData(Count<class CommandBuffer>commandBuffer, Count<class PipeLineLayout> pipeLinelayout, const void* data) = 0;
+		virtual void PushData(Count<class RenderCommandBuffer>commandBuffer, Count<class PipeLineLayout> pipeLinelayout, const void* data) = 0;
 
 		static Count<PushConstant> Create(uint32_t size, uint32_t offset =0,ShaderStage shader = ShaderStage::Vertex);
 	};

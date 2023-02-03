@@ -16,9 +16,10 @@
 #include "Proof/Math/Math.h"
 #include "VulkanRenderPass.h"
 #include "VulkanFrameBuffer.h"
+#include "VulkanTexutre.h"
+#include "VulkanUtils/VulkanConvert.h"
 namespace Proof
 {
-    Count<RenderPass> s_renderPass = nullptr;
 
     VulkanSwapChain::VulkanSwapChain(ScreenSize extent)
         : m_WindowSize{ extent } {
@@ -33,7 +34,16 @@ namespace Proof
 
     VulkanSwapChain::~VulkanSwapChain() {
         CleanUp();
-        s_renderPass = nullptr;
+    }
+
+    ImageFormat VulkanSwapChain::GetImageFormat()
+    {
+        return Utils::VulkanFormatToProofFormat(m_ImageFormat);
+    }
+
+    ImageFormat VulkanSwapChain::GetDepthFormat()
+    {
+        return Utils::VulkanFormatToProofFormat(m_SwapChainDepthFormat);
     }
 
     void VulkanSwapChain::AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex) {
@@ -42,12 +52,12 @@ namespace Proof
 
     }
 
-    void VulkanSwapChain::SubmitCommandBuffers(std::vector<Count<CommandBuffer>> buffers, uint32_t* imageIndex) {
+    void VulkanSwapChain::SubmitCommandBuffers(std::vector<Count<RenderCommandBuffer>> buffers, uint32_t* imageIndex) {
         auto graphicsContext= Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         
         std::vector<VkCommandBuffer> submitCommandBuffers;
         for (auto& buffer : buffers) {
-            submitCommandBuffers.emplace_back(buffer->As<VulkanCommandBuffer>()->m_CommandBuffer[Renderer::GetCurrentFrame().FrameinFlight]);
+            submitCommandBuffers.emplace_back(buffer->As<VulkanRenderCommandBuffer>()->m_CommandBuffers[Renderer::GetCurrentFrame().FrameinFlight]);
         }
         VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
@@ -85,11 +95,22 @@ namespace Proof
             vkResetCommandBuffer(submitCommandBuffers[i], 0);
     }
 
-    Count<RenderPass> VulkanSwapChain::GetRenderPass() {
-        if (s_renderPass == nullptr) {
-            s_renderPass = RenderPass::Create();
+    ImageLayouts VulkanSwapChain::GetImageLayout()
+    {
+        std::vector<VulkanImage> images;
+        images.resize(m_ImageCount);
+        int index = 0;
+        for (auto& image : images)
+        {
+            image = VulkanImage(nullptr, GetImageFormat(), {(float) m_SwapChainExtent.X, (float)m_SwapChainExtent.Y }, { nullptr,m_SwapChainImageViews[index] });
+            index++;
         }
-        return s_renderPass;
+        std::vector<Image> imagesCast(m_ImageCount);
+        for (uint32_t i = 0; i < imagesCast.size(); i++)
+        {
+            imagesCast[i] = images[i];
+        }
+        return ImageLayouts(imagesCast);
     }
 
     void VulkanSwapChain::CreateSwapChain() {
@@ -101,11 +122,13 @@ namespace Proof
         m_PresentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
         VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
 
+        m_ImageCount = Renderer::GetConfig().MaxImageCount;
+        /*
         m_ImageCount = swapChainSupport.capabilities.minImageCount + 1;
         if (swapChainSupport.capabilities.maxImageCount > 0 && m_ImageCount > swapChainSupport.capabilities.maxImageCount) {
             m_ImageCount = swapChainSupport.capabilities.maxImageCount;
         }
-
+        */
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.surface = graphicsContext->GetSurface();
@@ -143,6 +166,7 @@ namespace Proof
         vkGetSwapchainImagesKHR(graphicsContext->GetDevice(), m_SwapChain, &swapchainCount, m_SwapChainImages.data());
 
         m_ImageFormat = m_SurfaceFormat.format;
+        m_SwapChainDepthFormat = FindDepthFormat();
         m_SwapChainExtent = { extent.width,extent.height };
     }
 
@@ -208,35 +232,49 @@ namespace Proof
             
             for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
                 vkDestroyImageView(device, m_SwapChainImageViews[i], nullptr);
+                vkDestroyImage(device, m_SwapChainImages[i], nullptr);
             }
             m_SwapChainImageViews.clear();
             vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
         }
         CreateSwapChain();
         CreateImageViews();
-        for (auto i : FrameBuffers)
-            i->Init();
+        //for (auto i : FrameBuffers)
+        //    i->Init();
     }
 
     void VulkanSwapChain::CleanUp() {
-        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+        auto device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
 
         {
-            vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
             for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
-                vkDestroyImageView(device, m_SwapChainImageViews[i], nullptr);
-                vkDestroyImage(device, m_SwapChainImages[i], nullptr);
+                Renderer::SubmitDatafree([imageViews = m_SwapChainImageViews[i],images = m_SwapChainImages[i], device = device] {
+                    vkDestroyImageView(device,imageViews , nullptr);
+                    //vkDestroyImage(device, images, nullptr);
+                });
+
             }
+            Renderer::SubmitDatafree([swapchain = m_SwapChain,device = device] {
+                vkDestroySwapchainKHR(device, swapchain, nullptr);
+            });
+
             m_SwapChainImageViews.clear();
             m_SwapChainImages.clear();
+            m_SwapChain = nullptr;
         }
 
 
         for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++) {
-            vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);
-            vkDestroySemaphore(device, m_ImageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(device, m_InFlightFences[i], nullptr);
+            Renderer::SubmitDatafree([finishSemaphore = m_RenderFinishedSemaphores[i], imageAvailableSemphore = m_ImageAvailableSemaphores[i], fences = m_InFlightFences[i], device = device]{
+                vkDestroySemaphore(device, finishSemaphore, nullptr);
+                vkDestroySemaphore(device, imageAvailableSemphore, nullptr);
+                vkDestroyFence(device, fences, nullptr);
+            });
+
         }
+        m_RenderFinishedSemaphores.clear();
+        m_ImageAvailableSemaphores.clear();
+        m_InFlightFences.clear();
     }
 
  
@@ -303,15 +341,15 @@ namespace Proof
 
     void VulkanSwapChain::WaitFences(uint32_t frameIndex) {
         vkWaitForFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex], VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
-        //vkWaitForFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex], VK_TRUE, Math::GetMaxType<uint64_t>());
     }
 
     void VulkanSwapChain::ResetFences(uint32_t frameIndex) {
         vkResetFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex]);
     }
 
-    VkFormat VulkanSwapChain::GetDepthFormat() {
-        return Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->FindSupportedFormat(
+    VkFormat VulkanSwapChain::FindDepthFormat() {
+        return 
+           Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->FindSupportedFormat(
             { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);

@@ -20,13 +20,29 @@ namespace Proof{
 		GreaterOrEqual,
 		Always 
 	};
+
+	enum class CullMode {
+		None= 0,
+		Front,
+		Back,
+		FrontAndBck,
+	};
+
+	enum class FrontFace {
+		ClockWise = 0,
+		CounterClockWise,
+	};
 	struct GraphicsPipelineConfig {
 		std::string DebugName;
 		Count<class Shader> Shader;
+		// should kinda remove this ngl
 		Count<class VertexArray> VertexArray;
 		Count<class PipeLineLayout> PipelineLayout;
 		float LineWidth = 1.0f;
 		bool WriteDepth = true;
+		bool DepthTest = true;
+		CullMode CullMode = CullMode::None;
+		FrontFace FrontFace = FrontFace::ClockWise;
 		Count<class RenderPass> RenderPass;
 		DepthCompareOperator DepthCompareOperator = DepthCompareOperator::Less;
 	};

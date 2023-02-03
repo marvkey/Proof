@@ -6,11 +6,7 @@
 
 namespace Proof
 {
-    struct ShaderArrayData {
-        uint32_t Size;
-        uint32_t* Data;
-    };
-    class Proof_API VulkanShader : public Shader {
+    class VulkanShader : public Shader {
     public:
         VulkanShader(const std::string& name, const std::filesystem::path& filePath);
         VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders);
@@ -25,20 +21,23 @@ namespace Proof
      
         virtual void Reload();
     private:
-        bool m_ConstructorSamePaths = false;
         static void CreateShaderModule(const std::vector<uint32_t>& code, VkShaderModule* shaderModule);
         void CreateShader();
         void CompileOrGetBinaries(const std::filesystem::path& filePath);
         void Compile();
+        void Release();
+        std::string ProcessStage(ShaderStage stage, const std::filesystem::path& path);
+
+        std::string m_Name;
         std::vector<VkPipelineShaderStageCreateInfo> m_ShaderStages;
         std::unordered_map < ShaderStage, VkShaderModule>m_ShaderModule;
-
-        friend class VulkanGraphicsPipeline;
         std::unordered_map<ShaderStage, std::string> m_Paths;
-        std::string m_Name;
         std::unordered_map<ShaderStage, std::vector<uint32_t>> m_VulkanSPIRV;
         std::unordered_map<ShaderStage, std::string> m_SourceCode;
 
-        std::string ProcessStage(ShaderStage stage, const std::filesystem::path& path);
+        bool m_ConstructorSamePaths = false;
+        friend class VulkanGraphicsPipeline;
+
+
     };
 }

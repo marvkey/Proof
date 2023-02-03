@@ -8,19 +8,11 @@ namespace Proof{
 	public:
 		VulkanPipeLineLayout(Count<class PushConstant>pushConstant = nullptr,const std::vector<Count<class DescriptorSet>>& descriptors ={});
 		VulkanPipeLineLayout(VkPipelineLayoutCreateInfo& info);
-		virtual ~VulkanPipeLineLayout() {}
-
+		virtual ~VulkanPipeLineLayout();
 		VkPipelineLayout GetPipeLineLayout() {
 			return m_PipeLineLayout;
 		}
-		static VkPipelineLayout GetDefaultPipeLineLayout() {
-			if (s_DefaultPipelineLayout == nullptr)
-				SetUpDefaultPipeLine();
-			return s_DefaultPipelineLayout;
-		}
 	private:
-		static void SetUpDefaultPipeLine();
-		static VkPipelineLayout s_DefaultPipelineLayout ;
 		VkPipelineLayout m_PipeLineLayout;
 	};
 }

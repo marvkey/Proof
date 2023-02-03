@@ -4,6 +4,7 @@ namespace Proof
 {
 	static std::unordered_map<std::string, std::string> s_EnvironmentVariables;
 	void FileSystem::SetAnEnvironmentVariable(const std::string& ID, const std::string& value) {
+		PF_CORE_ASSERT(!s_EnvironmentVariables.contains(ID), "Already contains variable use override");
 		s_EnvironmentVariables.insert({ ID,value });
 	}
 	std::string FileSystem::GetEnvironmentValue(const std::string& ID) {

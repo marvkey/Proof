@@ -13,7 +13,7 @@ namespace Proof
 	{
 		m_AssetID = AssetManager::CreateID();
 		m_SavePath = savePath;
-		auto parentDir = std::filesystem::relative(m_SavePath.parent_path());
+		auto parentDir = std::filesystem::relative(m_SavePath.parent_path(), Application::Get()->GetProject()->GetAssetDirectory());
 		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + "."+GetExtension()};
 		if (AssetManager::HasAsset(meshFilePath) == false)
 			AssetManager::NewAsset(AssetManager::CreateID(), meshFilePath);

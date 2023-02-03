@@ -8,35 +8,38 @@ namespace Proof
 {
 	class VulkanSwapChain;
 	class VulkanGraphicsPipeline;
+	// for submiting straight to quee so does not need funcitonality
 	class VulkanCommandBuffer : public CommandBuffer {
 	public:
 		VulkanCommandBuffer();
-		//VulkanCommandBuffer(std::vector<void>&commandBuffer);
 		virtual ~VulkanCommandBuffer();
-		const VkCommandBuffer& GetCommandBuffer(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight)const {
+		VkCommandBuffer GetCommandBuffer(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight){
 			return m_CommandBuffer[frameIndex];
 		}
-		//returns 0 IN COMMAND BUFFER
-		virtual void* Get() {
-			return m_CommandBuffer[0];
-		}
-
-		void Resize();
 	private:
-		VulkanCommandBuffer(bool empty) {
-			m_CommandBuffer.resize(Renderer::GetConfig().FramesFlight);
-		}
-		void FreeCommandBuffer();
-		void Bind(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight,VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
-		void BeginRecord(uint32_t frameIndex= Renderer::GetCurrentFrame().FrameinFlight, bool viewScreen =false);
-		void EndRecord(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-		bool m_RenderPassEnabled = false;
-		bool m_Recording = false;
 		friend class VulkanSwapChain;
-		uint32_t m_FrameIndex;
-		// frame used to start render pass
 		std::vector<VkCommandBuffer> m_CommandBuffer;
 		friend class VulkanRenderPass;
+		friend class VulkanRendererAPI;
+	};
+
+
+	class VulkanRenderCommandBuffer : public RenderCommandBuffer {
+	public:
+		VulkanRenderCommandBuffer(CommandBuffer* commandBuffer = nullptr);
+		virtual ~VulkanRenderCommandBuffer();
+		VkCommandBuffer GetCommandBuffer(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
+	private:
+		void BeginRecord(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
+		void EndRecord(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
+		CommandBuffer* m_NormalCommandBuffer;
+		void Init();
+		void Release();
+		bool m_Recording = false;
+
+		std::vector<VkCommandBuffer> m_CommandBuffers;
+		friend class VulkanRenderPass;
+		friend class VulkanSwapChain;
 		friend class VulkanRendererAPI;
 	};
 }

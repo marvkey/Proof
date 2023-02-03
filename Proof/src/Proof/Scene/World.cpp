@@ -21,8 +21,6 @@
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Physics/PhysicsEngine.h"
 namespace Proof {
-	unsigned int quadVAO = 0;
-	unsigned int quadVBO = 0;
 
 
 	bool World::HasEntity(EntityID ID)const {
@@ -39,16 +37,43 @@ namespace Proof {
 	}
 	void World::OnUpdateEditor(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
-		OnUpdate(DeltaTime);
-	}
-	void GG(RigidBodyComponent) {
-
+		DeleteEntitiesfromQeue();
 	}
 	void World::Init()
 	{
 	
 	}
 
+	void World::DeleteEntitiesfromQeue()
+	{
+		// job to remove entites does not care if has child or not
+		for (auto& ID : m_EntityDeleteQueue)
+		{
+			auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
+			if (it == m_Registry.entities.end())
+				return;
+			// incase we only deleting the head enitty
+			Entity entity{ ID,this };
+			entity.EachChild([&](Entity childEntity) {
+				childEntity.SetOwner(Entity{});
+			});
+			if (entity.HasOwner())
+			{
+				if (TryGetEntity(entity.GetOwner().GetEntityID()))
+				{
+					entity.GetOwner().RemoveChild(entity);
+				}
+			}
+			
+			for (auto&& pdata : m_Registry.pools)
+			{
+				pdata.pool&& pdata.pool->remove(ID.Get(), &m_Registry);
+			}
+			m_Registry.entities.erase(it);
+		}
+
+		m_EntityDeleteQueue.clear();
+	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
@@ -81,7 +106,16 @@ namespace Proof {
 			}
 		}
 		m_PhysicsEngine->Simulate(DeltaTime);
-		//m_EditorCamera.OnUpdate(DeltaTime, width, height);
+
+		DeleteEntitiesfromQeue();
+	}
+
+	Entity World::TryGetEntity(UUID id) {
+		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), id.Get());
+		if (it == m_Registry.entities.end())
+			return Entity{};
+
+		return Entity{ *it,this };
 	}
 	template<typename Component>
 	static Component* CopyComponentIfExists(Entity dst, Entity src)
@@ -91,7 +125,7 @@ namespace Proof {
 		return nullptr;
 	}
 	void World::OnSimulatePhysics(FrameTime DeltaTime) {
-		OnUpdate(DeltaTime);
+		DeleteEntitiesfromQeue();
 	}
 
 	bool World::HasWorldCamera() {
@@ -184,11 +218,8 @@ namespace Proof {
 	Count<World> World::Copy(Count<World> other) {
 		Count<World> newWorld = CreateCount<World>();
 		newWorld->Name = other->Name;
-		newWorld->m_Path = other->m_Path;
+		//newWorld->m_WorldID = other->m_WorldID;
 		newWorld->Name = other->Name;
-
-		newWorld->m_LastFrameHeight = other->m_LastFrameHeight;
-		newWorld->m_LastFrameWidth = other->m_LastFrameWidth;
 
 		auto& srcSceneRegistry = other->m_Registry;
 		auto& dstSceneRegistry = newWorld->m_Registry;
@@ -251,36 +282,14 @@ namespace Proof {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ent.m_ID.Get());
 		if (it == m_Registry.entities.end())
 			return;
-		if (deleteChildren == false)
-		{
-			ent.EachChild([&](Entity childEntity) {
-				childEntity.GetComponent<ChildComponent>()->m_OwnerID = 0;
-				childEntity.GetComponent<ChildComponent>()->m_OwnerPointer = nullptr;
-				// we are not using remove because it would change the vector we are looping causing some problems
-			});
-		}
-		else
+		m_EntityDeleteQueue.emplace_back(ent.GetEntityID());
+		if (deleteChildren)
 		{
 			ent.EachChild([&](Entity childEntity) {
 				DeleteEntity(childEntity, true);
 			});
 		}
-		if (ent.HasOwner())
-			ent.SetOwner({}); // removing the owner
-		if (m_CurrentState == WorldState::Simulate || m_CurrentState == WorldState::Play)
-		{
-		}
-		for (auto&& pdata : m_Registry.pools)
-		{
-			pdata.pool&& pdata.pool->remove(ent.m_ID.Get(), &m_Registry);
-		}
-		m_Registry.entities.erase(it);
-		ent.m_ID = 0;
-		ent.CurrentWorld = nullptr;
-	}
-
-	Entity World::GetEntity(EntityID id) {
-		return Entity{ id,this };
+		
 	}
 
 	Entity World::FindEntityByTag(const std::string& tag) {
@@ -319,16 +328,5 @@ namespace Proof {
 			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
 			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Z), { 0,0,1 })
 			* glm::scale(glm::mat4(1.0f), { GetWorldScale(entity) });
-	}
-
-
-
-	void World::OnUpdate(FrameTime DeltaTime) {
-		PF_PROFILE_FUNC();
-	}
-
-	template<class T>
-	T* GetComponent(Entity entity) {
-		return entity.GetComponent<T>();
 	}
 }

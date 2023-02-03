@@ -9,22 +9,26 @@ namespace Proof {
 	CommandBuffer* s_CommandBuffer =nullptr;
 	VulkanRendererAPI::VulkanRendererAPI() {
 	}
-	void VulkanRendererAPI::DrawArrays(Count<class CommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance ) {
-		vkCmdDraw(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, 0, firstInstance);
+	VulkanRendererAPI::~VulkanRendererAPI()
+	{
+		delete s_CommandBuffer;
 	}
-	void VulkanRendererAPI::DrawElementIndexed(Count<class CommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance) {
-		vkCmdDrawIndexed(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, 0, 0, firstInstance);
+	void VulkanRendererAPI::DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance ) {
+		vkCmdDraw(commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, 0, firstInstance);
 	}
-	void VulkanRendererAPI::BeginRenderPass(Count<class CommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class ScreenFrameBuffer> frameBuffer, bool viewScreen) {
-		renderPass->As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, frameBuffer,viewScreen);
+	void VulkanRendererAPI::DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance) {
+		vkCmdDrawIndexed(commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, 0, 0, firstInstance);
 	}
-	void VulkanRendererAPI::RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<CommandBuffer> commandBuffer)> data) {
+	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) {
+		renderPass->As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, frameBuffer);
+	}
+	void VulkanRendererAPI::RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<RenderCommandBuffer> commandBuffer)> data) {
 		renderPass->As<VulkanRenderPass>()->RecordRenderPass(pipeline,data);
 	}
 	void VulkanRendererAPI::EndRenderPass(Count<class RenderPass> renderPass) {
 		renderPass->As<VulkanRenderPass>()->EndRenderPass();
 	}
-	void VulkanRendererAPI::SubmitCommandBuffer(Count<class CommandBuffer> commandBuffer) {
+	void VulkanRendererAPI::SubmitCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) {
 		VulkanRenderer::SubmitCommandBuffer(commandBuffer);
 	}
 
@@ -51,7 +55,7 @@ namespace Proof {
 	void VulkanRendererAPI::Submit(std::function<void(CommandBuffer*)> func) {
 		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		if (s_CommandBuffer == nullptr)
-			s_CommandBuffer = new VulkanCommandBuffer(true);
+			s_CommandBuffer = new VulkanCommandBuffer();
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -82,13 +86,13 @@ namespace Proof {
 
 		vkFreeCommandBuffers(graphicsContext->GetDevice(), graphicsContext->GetCommandPool(), 1, &commandBuffer);
 	}
-	void VulkanRendererAPI::BeginCommandBuffer(Count<class CommandBuffer> commandBuffer)
+	void VulkanRendererAPI::BeginCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)
 	{
-		commandBuffer->As<VulkanCommandBuffer>()->BeginRecord();
+		commandBuffer->As<VulkanRenderCommandBuffer>()->BeginRecord();
 	}
-	void VulkanRendererAPI::EndCommandBuffer(Count<class CommandBuffer> commandBuffer)
+	void VulkanRendererAPI::EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)
 	{
-		commandBuffer->As<VulkanCommandBuffer>()->EndRecord();
+		commandBuffer->As<VulkanRenderCommandBuffer>()->EndRecord();
 	}
 	CurrentFrame VulkanRendererAPI::GetCurrentFrame() {
 		return VulkanRenderer::s_CurrentFrame;

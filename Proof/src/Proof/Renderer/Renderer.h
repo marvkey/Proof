@@ -5,29 +5,31 @@ namespace Proof {
 	
 	class Renderer {
 	public:
-		static void DrawElementIndexed(Count<class CommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount=1,uint32_t firstInstance=0){
+		static void DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount=1,uint32_t firstInstance=0){
 			s_RendererAPI->DrawElementIndexed(commandBuffer,indexCount,instanceCount,firstInstance);
 		}
-		static void DrawArrays(Count<class CommandBuffer> commandBuffer, uint32_t vertexCount,uint32_t instanceCount, uint32_t firstInstance = 0) {
+		static void DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount,uint32_t instanceCount, uint32_t firstInstance = 0) {
 			s_RendererAPI->DrawArrays(commandBuffer,vertexCount,instanceCount,firstInstance);
 		}
-		static void BeginCommandBuffer(Count<class CommandBuffer> commandBuffer) {
+		static void BeginCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) {
 			s_RendererAPI->BeginCommandBuffer(commandBuffer);
 		}
-		static void EndCommandBuffer(Count<class CommandBuffer> commandBuffer) {
+		static void EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) {
 			s_RendererAPI->EndCommandBuffer(commandBuffer);
 		}
-
-		static void BeginRenderPass(Count<class CommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class ScreenFrameBuffer> frameBuffer, bool viewScreen = false) {
-			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer, viewScreen);
+		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) {
+			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer);
 		}
-		static void RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<CommandBuffer> commandBuffer)> data) {
+		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class ScreenFrameBuffer> frameBuffer) {
+			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer);
+		}
+		static void RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<RenderCommandBuffer> commandBuffer)> data) {
 			s_RendererAPI->RecordRenderPass(renderPass, pipeline,data);
 		}
 		static void EndRenderPass(Count<class RenderPass> renderPass) {
 			s_RendererAPI->EndRenderPass(renderPass);
 		}
-		static void SubmitCommandBuffer(Count<class CommandBuffer> commandBuffer) {
+		static void SubmitCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) {
 			s_RendererAPI->SubmitCommandBuffer(commandBuffer);
 		}
 		static CurrentFrame GetCurrentFrame() {

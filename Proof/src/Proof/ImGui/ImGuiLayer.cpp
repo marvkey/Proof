@@ -13,19 +13,29 @@
 #include "Platform/Vulkan/VulkanSwapChain.h"
 #include "platform/Vulkan/VulkanRenderPass.h"
 #include "Proof/Renderer/CommandBuffer.h"
-#include "Proof/Renderer/ScreenFrameBuffer.h"
+#include "Proof/Renderer/FrameBuffer.h"
 #include "proof/Renderer/RenderPass.h"
 namespace Proof
 {
 	struct ImguiRenderPass {
-		Count<CommandBuffer> CommandBuffer;
+		Count<RenderCommandBuffer> CommandBuffer;
 		Count<RenderPass> RenderPass;
-		Count<ScreenFrameBuffer> FrameBuffer;
+		Count<FrameBuffer> FrameBuffer;
 		ImguiRenderPass() {
-			RenderPass = RenderPass::Create(RenderPassType::Other);
-			CommandBuffer = CommandBuffer::Create();
-			FrameBuffer = ScreenFrameBuffer::Create(Vector2{ (float)CurrentWindow::GetWindow().GetWidth(),(float)CurrentWindow::GetWindow().GetHeight() }
-			, RenderPass, true);
+			RenderPassConfig config;
+			config.DebugName = "Imgui RenderPass";
+			config.Attachments = { CurrentWindow::GetWindow().GetSwapChain()->GetImageFormat() };
+			config.Attachments.Attachments[0].PresentKHr = true;
+			RenderPass = RenderPass::Create(config);
+
+			FrameBufferConfig frameBuffferconfig;
+			frameBuffferconfig.DebugName = "Imgui-FrameBuffer";
+			frameBuffferconfig.Attachments = { CurrentWindow::GetWindow().GetSwapChain()->GetImageFormat() };
+			frameBuffferconfig.Attachments.Attachments[0].SetOverrideLayout(CurrentWindow::GetWindow().GetSwapChain()->GetImageLayout());
+			frameBuffferconfig.Size = { (float)CurrentWindow::GetWindow().GetWidth(), (float)CurrentWindow::GetWindow().GetHeight() };
+			FrameBuffer = FrameBuffer::Create(frameBuffferconfig);
+	
+			CommandBuffer = RenderCommandBuffer::Create();
 		}
 	};
 	static ImguiRenderPass* s_ImguiRenderPass;
@@ -70,6 +80,11 @@ namespace Proof
 	
 	ImGuiLayer::ImGuiLayer() :
 		Layer("ImGUI Layer") {
+	}
+
+	ImGuiLayer::~ImGuiLayer()
+	{
+
 	}
 
 	void ImGuiLayer::OnAttach() {
@@ -118,11 +133,11 @@ namespace Proof
 			init_info.Allocator = nullptr;
 			init_info.CheckVkResultFn = nullptr;
 			ImGui_ImplVulkan_Init(&init_info, s_ImguiRenderPass->RenderPass->As<VulkanRenderPass>()->GetRenderPass());
-			ImGui_ImplVulkan_SetMinImageCount(Renderer::GetConfig().ImageSize);
+			ImGui_ImplVulkan_SetMinImageCount(Renderer::GetConfig().MaxImageCount);
 			// Upload Fonts
 			{
 				Renderer::Submit([&](CommandBuffer*buffer) {
-					ImGui_ImplVulkan_CreateFontsTexture((VkCommandBuffer)buffer->Get());
+					ImGui_ImplVulkan_CreateFontsTexture(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
 				});
 				ImGui_ImplVulkan_DestroyFontUploadObjects();
 
@@ -192,8 +207,8 @@ namespace Proof
 		{
 			//https://github.com/1111mp/Vulkan/blob/master/src/Application.cpp
 			Renderer::BeginCommandBuffer(s_ImguiRenderPass->CommandBuffer);
-			Renderer::BeginRenderPass(s_ImguiRenderPass->CommandBuffer, s_ImguiRenderPass->RenderPass, s_ImguiRenderPass->FrameBuffer, true);
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), s_ImguiRenderPass->CommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
+			Renderer::BeginRenderPass(s_ImguiRenderPass->CommandBuffer, s_ImguiRenderPass->RenderPass, s_ImguiRenderPass->FrameBuffer);
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), s_ImguiRenderPass->CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
 			Renderer::EndRenderPass(s_ImguiRenderPass->RenderPass);
 			Renderer::EndCommandBuffer(s_ImguiRenderPass->CommandBuffer);
 			Renderer::SubmitCommandBuffer(s_ImguiRenderPass->CommandBuffer);

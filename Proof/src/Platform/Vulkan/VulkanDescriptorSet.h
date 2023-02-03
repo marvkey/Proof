@@ -46,7 +46,7 @@ namespace Proof
             return m_Set;
         }
         friend class VulkanPipeLineLayout;
-        void Bind(Count<class CommandBuffer> commandBuffer, Count<class PipeLineLayout>pipeLineLayout);
+        void Bind(Count<class RenderCommandBuffer> commandBuffer, Count<class PipeLineLayout>pipeLineLayout);
 
     private:
         bool Build(int frame = Renderer::GetCurrentFrame().FrameinFlight);
@@ -84,7 +84,6 @@ namespace Proof
 
         virtual ~VulkanDescriptorPool();
 
-        void FreeDescriptors(std::vector<VkDescriptorSet>& descriptors) const;
 
         bool Allocate(VkDescriptorSet* set, VkDescriptorSetLayout layout);
         VkDescriptorPool GetPool() {

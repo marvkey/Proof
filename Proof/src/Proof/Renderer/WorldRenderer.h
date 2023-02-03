@@ -1,5 +1,5 @@
 #pragma once
-#include "ScreenFrameBuffer.h"
+#include "FrameBuffer.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Scene/World.h"
 namespace Proof
@@ -7,6 +7,7 @@ namespace Proof
 	class WorldRenderer {
 	public:
 		WorldRenderer()=default;
+		virtual ~WorldRenderer();
 
 		WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight);
 		void Resize(ScreenSize windowSize);
@@ -24,7 +25,7 @@ namespace Proof
 	private:
 		Special<Renderer3DPBR> m_Renderer3D;
 		Special<class Renderer2D>  m_Renderer2D;
-		Count<CommandBuffer> m_CommandBuffer;
+		Count<RenderCommandBuffer> m_CommandBuffer;
 		Count<class RenderPass> m_RenderPass;
 		Count<World>m_World=nullptr;
 	};

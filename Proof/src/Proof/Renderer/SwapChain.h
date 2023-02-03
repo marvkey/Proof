@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "Texture.h"
 #include "Renderer.h"
 namespace Proof{
 	class SwapChain {
@@ -12,7 +13,11 @@ namespace Proof{
 		virtual void WaitFences(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight) = 0;
 		virtual void Resize(ScreenSize size)=0;
 		virtual size_t GetImageCount()const = 0;
-		virtual Count<class RenderPass> GetRenderPass() = 0;
+
+		virtual ImageFormat GetImageFormat() = 0;
+		virtual ImageFormat GetDepthFormat() = 0;
+
+		virtual ImageLayouts GetImageLayout() = 0;
 		template<class T>
 		T* As() {
 			return  dynamic_cast<T*>(this);

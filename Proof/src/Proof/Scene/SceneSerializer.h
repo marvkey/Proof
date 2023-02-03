@@ -13,6 +13,8 @@ namespace Proof
 
 		/* Openign the file and creating a scene from data*/
 		bool DeSerilizeText(const std::string& filePath);
+		bool DeSerilizeText(AssetID ID);
+
 		bool DeSerilizeBinary(const std::string& filepath);
 		const std::set<AssetID>& GetAssetLoadID()const {
 			return m_AssetLoadID;

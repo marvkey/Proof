@@ -346,14 +346,12 @@ namespace Proof
 	void SceneSerializer::SerilizeText(const std::string& filePath) {
 		PF_PROFILE_FUNC();
 
-		m_Scene->m_Path = filePath;
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		{
 			out << YAML::Key << "World";
 			out << YAML::BeginMap;
 			{
-				out << YAML::Key << "Name" << m_Scene->Name;
 				out << YAML::Key << "ID" << m_Scene->m_WorldID;
 
 				out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
@@ -366,15 +364,15 @@ namespace Proof
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
-
-		std::ofstream foud(filePath);
+		auto parentDir = std::filesystem::path(filePath).parent_path();
+		auto savePath = parentDir /= {Utils::FileDialogs::GetFileName(filePath) + "." + "ProofWorld"};
+		std::ofstream foud(savePath.string());
 		foud << out.c_str();
 	}
 	void SceneSerializer::SerilizeBinary(const std::string& filepath) {}
 	bool SceneSerializer::DeSerilizeText(const std::string& filePath) {
 		PF_PROFILE_FUNC();
 
-		m_Scene->m_Path = filePath;
 		if (std::filesystem::exists(filePath) == false)
 			PF_CORE_ASSERT(false);
 		YAML::Node data = YAML::LoadFile(filePath);
@@ -383,7 +381,7 @@ namespace Proof
 
 		auto worldData = data["World"];
 
-		m_Scene->Name = worldData["Name"].as<std::string>();
+		m_Scene->Name = Utils::FileDialogs::GetFileName(filePath);
 		PF_EC_WARN("Deserilizing World {}", m_Scene->Name.c_str());
 
 		m_Scene->m_WorldID = worldData["ID"].as<uint64_t>();
@@ -670,8 +668,6 @@ namespace Proof
 								case Proof::ProofMonoType::Enum:
 									{
 
-
-
 										switch (EnumReflection::StringEnum<ProofMonoType>(enumType)) {
 											case Proof::ProofMonoType::Uint8_t:
 												scriptField.Data = field["Data"].as<uint8_t>();
@@ -722,6 +718,12 @@ namespace Proof
 			}
 		}
 		return true;
+	}
+	bool SceneSerializer::DeSerilizeText(AssetID ID)
+	{
+		auto assetInfo = AssetManager::GetAssetInfo(ID);
+		auto path = Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string();
+		return DeSerilizeText(path);
 	}
 	bool SceneSerializer::DeSerilizeBinary(const std::string& filepath) {
 		PF_CORE_ASSERT(false, "Functon has not been created");

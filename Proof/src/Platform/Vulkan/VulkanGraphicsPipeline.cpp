@@ -12,6 +12,7 @@
 #include "VulkanRenderPass.h"
 namespace Proof
 {
+	void* dynamicState = new VkDynamicState[2]{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 	namespace Utils {
 		VkCompareOp ProofCompareOpToVulkanCompareOp(DepthCompareOperator compare) {
 			switch (compare)
@@ -45,9 +46,48 @@ namespace Proof
 			}
 			PF_CORE_ASSERT(false, "Operand not supported");
 		}
+
+		static VkCullModeFlagBits ProofFormatToVulkanFormat(CullMode mode) {
+			switch (mode)
+			{
+				case Proof::CullMode::None:
+					return VK_CULL_MODE_NONE;
+					break;
+				case Proof::CullMode::Front:
+					return VK_CULL_MODE_FRONT_BIT;
+					break;
+				case Proof::CullMode::Back:
+					return VK_CULL_MODE_BACK_BIT;
+					break;
+				case Proof::CullMode::FrontAndBck:
+					return VK_CULL_MODE_FRONT_AND_BACK;
+					break;
+				default:
+					break;
+			}
+			PF_CORE_ASSERT(false, "Operand not supported ");
+		}
+
+		static VkFrontFace ProofFormatToVulkanFormat(FrontFace mode) {
+			switch (mode)
+			{
+				case Proof::FrontFace::ClockWise:
+					return VkFrontFace::VK_FRONT_FACE_CLOCKWISE;
+					break;
+				case Proof::FrontFace::CounterClockWise:
+					return VkFrontFace::VK_FRONT_FACE_COUNTER_CLOCKWISE;
+					break;
+				default:
+					break;
+			}
+			PF_CORE_ASSERT(false, "Operand not supported ");
+
+		}
 	}
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
-		vkDestroyPipeline(RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), m_GraphicsPipeline, nullptr);
+		Renderer::SubmitDatafree([pipline = m_GraphicsPipeline]() {
+			vkDestroyPipeline(RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), pipline, nullptr);
+		});
 	}
 	VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineConfig& config)
 	{
@@ -114,12 +154,13 @@ namespace Proof
 
 		if (vkCreateGraphicsPipelines((RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to Create Graphics Pipeline");
+
 	}
 	#define IM_ARRAYSIZEERE(_ARR)          ((int)(sizeof(_ARR) / sizeof(*(_ARR))))     // Size of a static C-style array. Don't use on pointers!
 	void VulkanGraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, const GraphicsPipelineConfig& graphicsConfig)
 	{
 
-
+		
 		configInfo.InputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		configInfo.InputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		configInfo.InputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
@@ -129,7 +170,6 @@ namespace Proof
 
 		configInfo.ViewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		configInfo.ViewportState.viewportCount = 1;
-		//configInfo.ViewportState.pViewports = &viewPort;//leave
 		configInfo.ViewportState.pNext = nullptr;
 		configInfo.ViewportState.scissorCount = 1;
 		configInfo.ViewportState.flags = 0;
@@ -145,8 +185,8 @@ namespace Proof
 		// we can change teh width
 		// because most of the times it will be 1.f
 		configInfo.RasterizationInfo.lineWidth = 1.0f;
-		configInfo.RasterizationInfo.cullMode = VK_CULL_MODE_NONE;
-		configInfo.RasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		configInfo.RasterizationInfo.cullMode = Utils::ProofFormatToVulkanFormat(graphicsConfig.CullMode);
+		configInfo.RasterizationInfo.frontFace = Utils::ProofFormatToVulkanFormat(graphicsConfig.FrontFace);
 		configInfo.RasterizationInfo.depthBiasEnable = VK_FALSE;
 		configInfo.RasterizationInfo.depthBiasConstantFactor = 0.0f;  // Optional
 		configInfo.RasterizationInfo.depthBiasClamp = 0.0f;           // Optional
@@ -187,11 +227,11 @@ namespace Proof
 		configInfo.ColorBlendInfo.blendConstants[3] = 0.0f;  // Optional
 		configInfo.ColorBlendInfo.pNext = nullptr;
 		configInfo.ColorBlendInfo.flags = 0;
-
+		
 		configInfo.DepthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		configInfo.DepthStencilInfo.depthTestEnable = VK_TRUE;
-		configInfo.DepthStencilInfo.depthWriteEnable = VK_TRUE;
-		configInfo.DepthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+		configInfo.DepthStencilInfo.depthTestEnable = graphicsConfig.DepthTest;
+		configInfo.DepthStencilInfo.depthWriteEnable = graphicsConfig.WriteDepth;
+		configInfo.DepthStencilInfo.depthCompareOp = Utils::ProofCompareOpToVulkanCompareOp(graphicsConfig.DepthCompareOperator);
 		configInfo.DepthStencilInfo.depthBoundsTestEnable = VK_FALSE;
 		configInfo.DepthStencilInfo.minDepthBounds = 0.0f;  // Optional
 		configInfo.DepthStencilInfo.maxDepthBounds = 1.0f;  // Optional
@@ -201,12 +241,13 @@ namespace Proof
 		configInfo.DepthStencilInfo.pNext = nullptr;
 		configInfo.DepthStencilInfo.flags = 0;
 
-		VkDynamicState dynamic_states[2] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		// this is gettting deleted from memrory thats the problem
+		//VkDynamicState dynamic_states[2] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 
 		configInfo.DynamicSate.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		configInfo.DynamicSate.dynamicStateCount = (uint32_t)IM_ARRAYSIZEERE(dynamic_states);
+		configInfo.DynamicSate.dynamicStateCount = 2;
 		configInfo.DynamicSate.pNext = nullptr;
 		configInfo.DynamicSate.flags = 0;
-		configInfo.DynamicSate.pDynamicStates = dynamic_states;
+		configInfo.DynamicSate.pDynamicStates = (VkDynamicState*)dynamicState;
 	}
 }

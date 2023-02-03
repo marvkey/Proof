@@ -33,12 +33,16 @@
         static float GetFPS() {return FPS;}
         static float GetFrameMS() {return FrameMS;};
         static float GetImguiFrameTime() { return m_ImguiFrameTime; }
+
+        void OpenProject(const std::filesystem::path& path);
+
+        void Save();
     protected:
         Application(const ApplicationConfiguration& config);
         bool WindowMinimized = false;
-        bool IsRunning = true;
-        std::string m_ProjectPath;
+        bool m_IsRunning = true;
     private:
+        bool m_ApplicationShouldShutdown = false;
         static Application* s_Instance;
         void LayerUpdate(float deltaTime);
         void ImguiUpdate(float deltaTime);

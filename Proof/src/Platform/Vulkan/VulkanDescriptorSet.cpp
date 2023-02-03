@@ -67,7 +67,9 @@ namespace Proof
 
 	VulkanDescriptorSet::~VulkanDescriptorSet() {
 		auto device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
-		vkDestroyDescriptorSetLayout(device, m_DescriptorSetLayout, nullptr);
+		Renderer::SubmitDatafree([graphicsDevice = device, descriptorLayout = m_DescriptorSetLayout]() {
+			vkDestroyDescriptorSetLayout(graphicsDevice, descriptorLayout, nullptr);
+		});
 	}
 
 	DescriptorSet& VulkanDescriptorSet::WriteBuffer(uint32_t binding, Count<UniformBuffer> buffer) {
@@ -129,10 +131,10 @@ namespace Proof
 		return m_Writer->Overwrite(m_DescriptorSets[frame]);
 	}
 
-	void VulkanDescriptorSet::Bind(Count<class CommandBuffer> commandBuffer, Count<class PipeLineLayout>pipeLineLayout) {
+	void VulkanDescriptorSet::Bind(Count<class RenderCommandBuffer> commandBuffer, Count<class PipeLineLayout>pipeLineLayout) {
 		Build();
 		vkCmdBindDescriptorSets(
-			commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+			commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			pipeLineLayout->As<VulkanPipeLineLayout>()->GetPipeLineLayout(),
 			(int)m_Set,
@@ -173,8 +175,12 @@ namespace Proof
 			//grab pool from the back of the vector and remove it from there.
 			VkDescriptorPool pool = m_FreePools.back();
 			m_FreePools.pop_back();
+			Renderer::SubmitDatafree([device = m_Device,copyPool = pool]() {
+				vkDestroyDescriptorPool(device, copyPool, nullptr);
+			});
 		}
 		else {
+
 		}
 		m_CurrentPool = CreatePool(device, maxSets, poolFlags);
 	}
@@ -182,14 +188,28 @@ namespace Proof
 
 
 	VulkanDescriptorPool::~VulkanDescriptorPool() {
-		//vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
+		// same problem as graphhics context
+		// this is on graphics context classs so has to be deleted at the
+		for (uint32_t i = 0; i < m_UsedPools.size(); i++)
+		{
+			//Renderer::SubmitDatafree([device = m_Device, copyPool = m_UsedPools[i]]() {
+				vkDestroyDescriptorPool(m_Device, m_UsedPools[i], nullptr);
+			//});
+		}
+
+		for (uint32_t i = 0; i < m_FreePools.size(); i++)
+		{
+			//Renderer::SubmitDatafree([device = m_Device, copyPool = m_FreePools[i]]() {
+				vkDestroyDescriptorPool(m_Device, m_FreePools[i], nullptr);
+		//	});
+		}
+		
+		//Renderer::SubmitDatafree([device = m_Device, copyPool = m_CurrentPool]() {
+			vkDestroyDescriptorPool(m_Device, m_CurrentPool, nullptr);
+		//});
 	}
 
 
-
-	void VulkanDescriptorPool::FreeDescriptors(std::vector<VkDescriptorSet>& descriptors) const {
-		//vkFreeDescriptorSets(m_Device,m_DescriptorPool,descriptors.size(),descriptors.data());
-	}
 	VkDescriptorSetLayout TextreuLayout;
 	VkSampler fontSampler;
 	void InitTextureLayout() {
@@ -362,13 +382,14 @@ namespace Proof
 		auto& bindingDescription = m_SetLayout->m_Bindings[binding];
 
 		PF_CORE_ASSERT(bindingDescription.descriptorCount == 1,"Binding single descriptor info, but binding expects multiple");
-		m_Images.emplace_back(*imageInfo);
+		VkDescriptorImageInfo copyImage = *imageInfo;
+		m_Images.emplace_back(copyImage);
 
 		VkWriteDescriptorSet write{};
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		write.descriptorType = bindingDescription.descriptorType;
 		write.dstBinding = binding;
-		write.pImageInfo = &m_Images[m_Images.size()-1];
+		write.pImageInfo = new VkDescriptorImageInfo(copyImage);
 		write.descriptorCount = 1;
 
 		writes.push_back(write);
@@ -377,7 +398,7 @@ namespace Proof
 
 	VulkanDescriptorWriter& VulkanDescriptorWriter::WriteImage(uint32_t binding, std::vector<VkDescriptorImageInfo> imageInfo) {
 		 PF_CORE_ASSERT(m_SetLayout->m_Bindings.count(binding) == 1, "Layout does not contain specified binding");
-
+		 PF_CORE_ASSERT(false, "Not implemented");
 		auto& bindingDescription = m_SetLayout->m_Bindings[binding];
 
 		uint32_t firstPos = m_Images.size();
@@ -413,6 +434,7 @@ namespace Proof
 		vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
 		for (auto & write : writes) {
 			delete write.pBufferInfo;
+			delete write.pImageInfo;
 		}
 		writes.clear();
 		m_Buffers.clear();
@@ -471,11 +493,11 @@ namespace Proof
 	}
 
 	VulkanUniformBuffer::~VulkanUniformBuffer() {
+		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		for (int i = 0; i < m_UniformBuffers.size(); i++)
 		{
-			Renderer::SubmitDatafree([buffer = m_UniformBuffers[i]]() {
-				auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-				vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), buffer.Buffer, buffer.Allocation);
+			Renderer::SubmitDatafree([context = graphicsContext, buffer = m_UniformBuffers[i]]() {
+				vmaDestroyBuffer(context->GetVMA_Allocator(), buffer.Buffer, buffer.Allocation);
 			});
 		}
 	}
@@ -507,22 +529,22 @@ namespace Proof
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
 			copy.size = size;
-			vkCmdCopyBuffer((VkCommandBuffer)cmdBuffer->Get(), stagingBuffer.Buffer, m_UniformBuffers[Renderer::GetCurrentFrame().FrameinFlight].Buffer, 1, &copy);
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_UniformBuffers[Renderer::GetCurrentFrame().FrameinFlight].Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
-
 	}
 	
 
 	VulkanStorageBuffer::~VulkanStorageBuffer()
 	{
-		//for (int i = 0; i < m_StorageBuffer.size(); i++)
-		//{
-		//	Renderer::SubmitDatafree([buffer = m_StorageBuffer[i]]() {
-		//		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		//		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), buffer.Buffer, buffer.Allocation);
-		//	});
-		//}
+		auto allocator = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetVMA_Allocator();
+
+		for (int i = 0; i < m_StorageBuffer.size(); i++)
+		{
+			Renderer::SubmitDatafree([allocator = allocator,buffer = m_StorageBuffer[i]]() {
+				vmaDestroyBuffer(allocator, buffer.Buffer, buffer.Allocation);
+			});
+		}
 	}
 
 	VulkanStorageBuffer::VulkanStorageBuffer(DescriptorSets set, uint32_t binding, const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex)
@@ -584,7 +606,7 @@ namespace Proof
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
 			copy.size = m_Size;
-			vkCmdCopyBuffer((VkCommandBuffer)cmdBuffer->Get(), stagingBuffer.Buffer, m_StorageBuffer[Renderer::GetCurrentFrame().FrameinFlight].Buffer, 1, &copy);
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_StorageBuffer[Renderer::GetCurrentFrame().FrameinFlight].Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 

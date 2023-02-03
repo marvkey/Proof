@@ -3,40 +3,42 @@
 #include "Proof/Renderer/RenderPass.h"
 #include <vulkan/vulkan.h>
 namespace Proof{
-
-	struct VulkanRenderPassInfo {
-		std::vector< VkAttachmentDescription> Attachments;
-		std::vector< VkAttachmentReference> AttachmentRef;
-		std::vector< VkSubpassDescription> SubPass;
-		std::vector < VkSubpassDependency> SubPassDepedency;
-		VulkanRenderPassInfo(uint32_t attachmentSize, uint32_t subPassSize, uint32_t subPassDependecySize) {
-			Attachments.resize(attachmentSize);
-			AttachmentRef.resize(attachmentSize);
-			SubPass.resize(subPassSize);
-			SubPassDepedency.resize(subPassDependecySize);
-		}
+	struct VulkanRenderPassAttach {
+		VkAttachmentDescription AttchmentDescription;
+		VkAttachmentReference AttachmentRef;
 	};
-	
 	class VulkanRenderPass : public RenderPass {
 	public:
-		VulkanRenderPass(RenderPassType type = RenderPassType::World);
-		VulkanRenderPass(const VulkanRenderPassInfo& info);
+		VulkanRenderPass(const RenderPassConfig& config);
 		virtual ~VulkanRenderPass();
 		VkRenderPass GetRenderPass() {
 			return m_RenderPass;
 		}
-		Count<class CommandBuffer>  GetCommandBuffer() {
+		Count<class RenderCommandBuffer>  GetCurrentCommandBuffer() {
 			return m_CommandBuffer;
 		}
 	private:
-		friend class VulkanRendererAPI;
-		VkRenderPass m_RenderPass = nullptr;
-		void BeginRenderPass(Count<class CommandBuffer> command,Count<class ScreenFrameBuffer>frameBuffer,bool viewScreen = false,const glm::vec4& Color = { 0.0,0.0,0.0,1 }, float Depth = 1.0f, uint32_t stencil = 0);
+		void AddColorAttachment(const RenderPassImageConfig& config);
+		void SetDepthAttachment(const RenderPassImageConfig& config);
+
+		void Init();
+		void CreateRenderPass();
+
+		void BeginRenderPass(Count<class RenderCommandBuffer> command,Count<class FrameBuffer>frameBuffer);
+		void RecordRenderPass(Count<class GraphicsPipeline>pipline,std::function<void(Count<RenderCommandBuffer> commandBuffer)> func);
 		void EndRenderPass();
-		void RecordRenderPass(Count<class GraphicsPipeline>pipline,std::function<void(Count<CommandBuffer> commandBuffer)> func);
+
+		void Release();
+		Count<RenderCommandBuffer> m_CommandBuffer;
+		Count<FrameBuffer> m_CurrentFrameBuffer;
+		RenderPassConfig m_Config;
+		VulkanRenderPassAttach m_DepthAttachment;
+		std::vector< VulkanRenderPassAttach> m_ColorAttachments;
+		ImageFormat m_DepthFormat = ImageFormat::None;
+
 		bool m_RenderPassEnabled = false;
-		Count<CommandBuffer> m_CommandBuffer;
-		Count<ScreenFrameBuffer> m_FrameBuffer;
+		VkRenderPass m_RenderPass = nullptr;
+
 		friend class VulkanRenderer;
 		friend class VulkanRendererAPI;
 	};

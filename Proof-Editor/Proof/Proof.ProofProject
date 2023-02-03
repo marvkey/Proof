@@ -1,5 +1,5 @@
 Project:
   Name: Proof
-  AssetDirectory: Proof/Assets
-  AssetManager: Proof/Assets/AssetManager.ProofAssetManager
+  AssetDirectory: Assets
+  AssetManager: Assets/AssetManager.ProofAssetManager
   StartWorld: 6477593735195019013

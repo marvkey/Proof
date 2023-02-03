@@ -14,7 +14,7 @@ namespace Proof {
 		/**
 		* Deletes the frame buffer
 		*/
-		virtual ~OpenGLScreenFrameBuffer()override;
+		//virtual ~OpenGLScreenFrameBuffer()override;
 		/**
 		* Set as current frame buffer
 		*/

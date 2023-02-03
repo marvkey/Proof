@@ -7,8 +7,10 @@
 namespace Proof
 {
 	VulkanVertexBuffer::~VulkanVertexBuffer() {
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), m_VertexBuffer.Buffer, m_VertexBuffer.Allocation);
+		Renderer::SubmitDatafree([vertexBuffer = m_VertexBuffer]() {
+			auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+			vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), vertexBuffer.Buffer, vertexBuffer.Allocation);
+		});
 	}
 	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint32_t size) {
 		m_VertexSize = size;
@@ -53,7 +55,7 @@ namespace Proof
 			copy.dstOffset = 0;
 			copy.srcOffset = 0;
 			copy.size = m_VertexSize;
-			vkCmdCopyBuffer((VkCommandBuffer)cmdBuffer->Get(), stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
@@ -79,13 +81,13 @@ namespace Proof
 		});
 	}
 
-	void VulkanVertexBuffer::Bind(Count<CommandBuffer> commandBuffer, uint32_t binding )const {
+	void VulkanVertexBuffer::Bind(Count<RenderCommandBuffer> commandBuffer, uint32_t binding )const {
 		std::vector<VkBuffer> buffers;
 		std::vector < VkDeviceSize> offset;
 
 		buffers.emplace_back(m_VertexBuffer.Buffer);
 		offset.emplace_back(0);
-		vkCmdBindVertexBuffers(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), binding,1, &m_VertexBuffer.Buffer, offset.data());
+		vkCmdBindVertexBuffers(commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), binding,1, &m_VertexBuffer.Buffer, offset.data());
 	}
 	void VulkanVertexBuffer::AddData(const void* data, uint32_t size,uint32_t offset){
 		if (size == 0)
@@ -118,7 +120,7 @@ namespace Proof
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
 			copy.size = size;
-			vkCmdCopyBuffer((VkCommandBuffer) cmdBuffer->Get(), stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
@@ -167,15 +169,17 @@ namespace Proof
 			copy.dstOffset = 0;
 			copy.srcOffset = 0;
 			copy.size = m_Size;
-			vkCmdCopyBuffer((VkCommandBuffer)cmdBuffer->Get(), stagingBuffer.Buffer, m_IndexBuffer.Buffer, 1, &copy);
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_IndexBuffer.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
 	VulkanIndexBuffer::~VulkanIndexBuffer() {
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), m_IndexBuffer.Buffer, m_IndexBuffer.Allocation);
+		Renderer::SubmitDatafree([buffer = m_IndexBuffer]() {
+			auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+			vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), buffer.Buffer, buffer.Allocation);
+		});
 	}
-	void VulkanIndexBuffer::Bind(Count<CommandBuffer> commandBuffer)const {
-		vkCmdBindIndexBuffer(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
+	void VulkanIndexBuffer::Bind(Count<RenderCommandBuffer>commandBuffer)const {
+		vkCmdBindIndexBuffer(commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), m_IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
 	}
 }

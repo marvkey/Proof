@@ -11,6 +11,7 @@ namespace Proof {
 		void PushOverlay(Layer* layer);
 		void PopOverlay(Layer* layer);
 
+		void Empty();
 		std::vector<Layer*>::iterator begin() { return V_LayerStack.begin(); };
 		std::vector<Layer*>::iterator end() { return V_LayerStack.end(); };
 		std::vector<Layer*>::reverse_iterator rbegin() { return V_LayerStack.rbegin(); }

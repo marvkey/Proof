@@ -21,9 +21,9 @@ namespace Proof
 			m_Size
 		};
 	}
-	void VulkanPushConstant::PushData(Count<CommandBuffer> commandBuffer, Count<PipeLineLayout> pipeLinelayout, const void* data)
+	void VulkanPushConstant::PushData(Count<RenderCommandBuffer> commandBuffer, Count<PipeLineLayout> pipeLinelayout, const void* data)
 	{
-		vkCmdPushConstants(commandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), pipeLinelayout->As<VulkanPipeLineLayout>()->GetPipeLineLayout(), 
+		vkCmdPushConstants(commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), pipeLinelayout->As<VulkanPipeLineLayout>()->GetPipeLineLayout(), 
 			Utils::ProofShaderToVulkanShader(m_ShaderStage), m_Offset, m_Size, data);
 	}
 }

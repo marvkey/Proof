@@ -839,7 +839,7 @@ namespace Proof
 								case Proof::ProofMonoType::Entity:
 									{
 										uint64_t* fieldEntity = field.Data._Cast<uint64_t>();
-										ExternalAPI::ImGUIAPI::TextBar("Entity", *fieldEntity == 0 ? "null" : m_CurrentWorld->GetEntity(*fieldEntity).GetName());
+										ExternalAPI::ImGUIAPI::TextBar("Entity", *fieldEntity == 0 ? "null" : m_CurrentWorld->TryGetEntity(*fieldEntity).GetName());
 										if (ImGui::IsItemClicked(0)) {
 											if (*fieldEntity != 0) {
 												m_SelectedEntity = { *fieldEntity,m_CurrentWorld };
@@ -1087,7 +1087,7 @@ namespace Proof
 								case Proof::ProofMonoType::Entity:
 									{
 										uint64_t* fieldEntity = field.Data._Cast<uint64_t>();
-										ExternalAPI::ImGUIAPI::TextBar("Entity", *fieldEntity == 0 ? "null" : m_CurrentWorld->GetEntity(*fieldEntity).GetName());
+										ExternalAPI::ImGUIAPI::TextBar("Entity", *fieldEntity == 0 ? "null" : m_CurrentWorld->TryGetEntity(*fieldEntity).GetName());
 										if (ImGui::IsItemClicked(0)) {
 											if (*fieldEntity != 0) {
 												m_SelectedEntity = { *fieldEntity,m_CurrentWorld };

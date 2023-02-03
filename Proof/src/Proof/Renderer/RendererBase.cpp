@@ -29,19 +29,17 @@ namespace Proof {
 		Renderer::s_RendererAPI->Init();
 
 		s_BaseTextures = new  BaseTextures();
-		//Renderer3DPBR::Init();
-		//Renderer2D::Init();
 		MeshWorkShop::Init();
 		PF_ENGINE_TRACE("Renderer Initilized");
 	}
 
 	void RendererBase::Destroy() {
 		PF_PROFILE_FUNC();
-		//Renderer3DPBR::Destroy();
-		Renderer::s_RendererAPI->Destroy();
-		m_GraphicsContext = nullptr;
+		// delete the graphics conttext tehn destroy render api
 		delete AllShaders;
 		delete s_BaseTextures;
+		Renderer::s_RendererAPI->Destroy();
+		m_GraphicsContext = nullptr;
 	}
 	BaseTextures::BaseTextures() {
 		uint32_t whiteTexturedata = 0xffffffff;

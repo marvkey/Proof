@@ -62,7 +62,6 @@ namespace Proof {
             }
             cubeVertex.emplace_back(vertex);
         }
-        //return CreateCount<Mesh>("Proof/Assets/Models/cube.obj");
         return CreateCount<Mesh>("Cube", cubeVertex, indices);
     }
     void MeshWorkShop::Init(){

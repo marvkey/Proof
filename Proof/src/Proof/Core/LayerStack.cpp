@@ -4,11 +4,7 @@
 
 namespace Proof {
 	LayerStack::~LayerStack() {
-		for (Layer* layer : V_LayerStack) {
-			layer->OnDetach();
-			PF_ENGINE_TRACE("{} Detach and Delete",layer->GetName().c_str());
-			delete layer;
-		}
+		Empty();
 	}
 
 	void LayerStack::PushLayer(Layer* layer) {
@@ -40,6 +36,15 @@ namespace Proof {
 			PF_ENGINE_TRACE("{} Detach", layer->GetName().c_str());
 			layer->OnDetach();
 			V_LayerStack.erase(it);
+		}
+	}
+	void LayerStack::Empty()
+	{
+		for (Layer* layer : V_LayerStack)
+		{
+			layer->OnDetach();
+			PF_ENGINE_TRACE("{} Detach and Delete", layer->GetName().c_str());
+			delete layer;
 		}
 	}
 }

@@ -250,7 +250,7 @@ namespace Proof
 		bool m_HasScriptAttached = false;
 	};
 
-	struct Proof_API MeshComponent{
+	struct MeshComponent{
 		MeshComponent() = default;
 		
 		MeshComponent(const MeshComponent&) = default;
@@ -283,6 +283,20 @@ namespace Proof
 		UUID m_MeshAssetPointerID=0;
 	};
 
+	struct DynamicMeshComponent {
+	public:
+
+	private:
+		friend class Entity;
+		friend class World;
+		friend class ECS;
+		friend class SceneHierachyPanel;
+		friend class SceneSerializer;
+		friend class SceneRendererUI;
+		friend class Editore3D;
+		UUID m_MeshID;
+		uint32_t m_SubmeshIndex = 0;
+	};
 	struct Proof_API SpriteComponent{
 		SpriteComponent(const SpriteComponent&) = default;
 		SpriteComponent() = default;

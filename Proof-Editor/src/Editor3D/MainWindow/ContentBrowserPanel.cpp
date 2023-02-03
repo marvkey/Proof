@@ -43,9 +43,9 @@ namespace Proof
 	static std::filesystem::path s_PathCreateMesh = {};
 	static std::filesystem::path s_AssetsDir;
 	ContentBrowserPanel::ContentBrowserPanel(Editore3D* owner) :
-		m_CurrentDirectory(Application::Get()->GetProject()->GetAssetDir()),
+		m_CurrentDirectory(Application::Get()->GetProject()->GetAssetDirectory()),
 		m_Owner(owner) {
-		s_AssetsDir = Application::Get()->GetProject()->GetAssetDir();
+		s_AssetsDir = Application::Get()->GetProject()->GetAssetDirectory();
 		m_FolderIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FolderIcon.png");
 		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
 		m_MeshIcon = Texture2D::Create("Resources/Icons/ContentBrowser/MeshComponentIcon.png");
@@ -54,7 +54,6 @@ namespace Proof
 	void ContentBrowserPanel::ImGuiRender(FrameTime deltaTime) {
 		if (m_ShowWindow == false)
 			return;
-
 		PF_PROFILE_FUNC();
 		//auto relativePath = std::filesystem::relative(path, g_AssetPath);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
@@ -87,11 +86,11 @@ namespace Proof
 			if (std::filesystem::exists(savePath) == false)
 				std::filesystem::create_directory(savePath);
 			// making it a file
-			savePath = std::filesystem::relative(savePath /= Utils::FileDialogs::GetFileName(savePath));
+			savePath = std::filesystem::relative(savePath /= Utils::FileDialogs::GetFileName(savePath),s_AssetsDir);
 		}
 		else {
 			//fix / backlash issue
-			savePath = std::filesystem::relative(savePath);
+			savePath = std::filesystem::relative(savePath, s_AssetsDir);
 		}
 		std::string finalPath = savePath.string();
 
@@ -109,7 +108,7 @@ namespace Proof
 		return Meshasset->GetAssetID();
 	}
 	std::pair<bool, AssetID> ContentBrowserPanel::AddMesh(const std::filesystem::path& meshPath, const std::vector<uint32_t>& excludeIndex) {
-		static std::string meshAddedSavePath = "Mesh";
+		static std::string meshAddedSavePath = "Mesh\\";
 		bool returnValue = false;
 		if(ImGui::IsPopupOpen("Add Mesh") ==false)
 			ImGui::OpenPopup("Add Mesh");
@@ -147,6 +146,85 @@ namespace Proof
 				returnValue = false;
 				s_PathCreateMesh = "";
 				ImGui::CloseCurrentPopup(); 
+			}
+			ImGui::EndPopup();
+		}
+		return { returnValue,ID };
+	}
+	AssetID AddWorldFunc(Count<World> world,std::filesystem::path savePath) {
+		if (std::filesystem::is_directory(savePath))
+		{
+			if (std::filesystem::exists(savePath) == false)
+				std::filesystem::create_directory(savePath);
+			// making it a file
+			savePath = std::filesystem::relative(savePath /= Utils::FileDialogs::GetFileName(savePath));
+		}
+		else
+		{
+	  //fix / backlash issue
+			savePath = std::filesystem::relative(savePath);
+		}
+		std::string finalPath = savePath.string();
+
+		if (std::filesystem::exists(std::filesystem::path(finalPath).parent_path()) == false)
+		{
+			std::filesystem::create_directory(std::filesystem::path(finalPath).parent_path());
+		}
+		uint32_t endIndex = 0; // the ending index of a file like file(0) or file(1)
+		while (std::filesystem::exists(finalPath + fmt::format("({})", endIndex)))
+		{
+			endIndex++;
+		}
+		if (endIndex != 0)
+			finalPath += fmt::format("({})", endIndex);
+
+		SceneSerializer serilizer(world.get());
+		serilizer.SerilizeText(finalPath);
+
+		AssetID ID = world->GetID();
+		AssetManager::AddWorldAsset(ID, finalPath);
+		return ID;
+	}
+	std::pair<bool, AssetID> ContentBrowserPanel::AddWorld(Count<World> world)
+	{
+		static std::string worldAddedSavePath = "Scenes\\";
+		bool returnValue = false;
+		if (ImGui::IsPopupOpen("Add World") == false)
+			ImGui::OpenPopup("Add World");
+		AssetID ID = 0;
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		if (ImGui::BeginPopupModal("Add World", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			returnValue = true;
+			char buffer[1024];
+			memset(buffer, 0, sizeof(buffer));
+			strcpy_s(buffer, sizeof(buffer), worldAddedSavePath.c_str());
+			ImGui::SameLine();
+			ImGui::Text(s_AssetsDir.string().c_str());
+			if (ImGui::InputText("##Path", buffer, sizeof(buffer))) // do not remove text callback
+				worldAddedSavePath = buffer;
+			ImGui::SetItemDefaultFocus();
+
+			ImGui::Separator();
+
+			if (ImGui::Button("OK", ImVec2(120, 0)))
+			{
+				auto assetDirCopy = s_AssetsDir;
+				// we are copyying because when we apply /= opperator it affects teh s_AssetDir to be dfferent
+				std::string savedPath = std::filesystem::path{ assetDirCopy /= worldAddedSavePath }.string();
+				ID = AddWorldFunc(world, savedPath);
+				returnValue = false;
+				worldAddedSavePath = "Scenes\\";
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SetItemDefaultFocus();
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel", ImVec2(120, 0)))
+			{
+				worldAddedSavePath = "Scenes\\";
+				returnValue = false;
+				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
 		}
@@ -190,7 +268,7 @@ namespace Proof
 
 		for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
 			// wierd bug when we dont use relateive the first "\" becomes "/"
-			const auto path = std::filesystem::relative(It.path());
+			const auto path = std::filesystem::relative(It.path(),s_AssetsDir);
 			CurrentFileInfo currentFileInfo;
 			if (AssetManager::HasAsset(path)) {
 				auto info = AssetManager::GetAssetInfo(path);

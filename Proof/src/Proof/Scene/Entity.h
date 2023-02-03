@@ -40,7 +40,6 @@ namespace Proof{
 			}
 
 			T* Component = &CurrentWorld->m_Registry.emplace<T>(m_ID, std::forward<Args>(args)...);
-			CurrentWorld->OnComponentAdded<T>(this->GetEntityID(), Component);
 			return Component;
 		}
 		template<typename T>
@@ -72,19 +71,19 @@ namespace Proof{
 		template<typename T, typename... Args>
 		T* AddorReplaceComponent(Args&&... args) {// need to specify for child component and ID component
 			T* Component = &CurrentWorld->m_Registry.emplace_or_replace<T>(m_ID, std::forward<Args>(args)...);
-			CurrentWorld->OnComponentAdded<T>(this->GetEntityID(), Component);
 			return Component;
 		}
 		template<typename T, typename... Args>
 		T* GetorCreateComponent(Args&&... args) {
 			T* Component = &CurrentWorld->m_Registry.get_or_emplace<T>(m_ID, std::forward<Args>(args)...);
-			CurrentWorld->OnComponentAdded<T>(this->GetEntityID(), Component);
 			return Component;
 		}
 		bool HasOwner() {
 			return GetComponent<ChildComponent>()->HasOwner();
 		}
-		
+		UUID GetOwnerUUID() {
+			return GetComponent<ChildComponent>()->GetOwnerID();
+		}
 		Entity GetOwner() {
 			UUID id = GetComponent<ChildComponent>()->GetOwnerID();
 			if (id == 0) return {};

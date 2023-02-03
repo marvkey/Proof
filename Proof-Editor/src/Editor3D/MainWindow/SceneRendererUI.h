@@ -24,7 +24,7 @@ namespace Proof
 		ScreenSize m_ScreenSize;
 		Count<World> m_World = nullptr;
 		AssetID m_ID;
-		WorldRenderer m_WorldRenderer;
+		Special<class WorldRenderer> m_WorldRenderer;
 		enum class SceneRendererType {
 			None,MeshAsset,MeshSourceFile,Prefab
 		};

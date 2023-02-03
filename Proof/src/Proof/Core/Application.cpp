@@ -22,45 +22,41 @@ namespace Proof {
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
     float Application::m_ImguiFrameTime;
+   
     Application::Application(const ApplicationConfiguration& config):
         m_ApplicationConfiguration(config) 
     {
         srand(time(NULL));
         Proof::Log::Init();
         s_Instance = this;
-        m_Project = CreateSpecial<Project>(this);
         if (m_ApplicationConfiguration.ProjectPath.empty()) {
             if(std::filesystem::exists("Proof")==false)
                 std::filesystem::create_directory("Proof");
             (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", "Proof");
             m_ApplicationConfiguration.ProjectPath = "Proof/Proof.ProofProject";
-            m_ProjectPath = m_ApplicationConfiguration.ProjectPath;
-            m_Project->m_Path = m_ProjectPath;
+            ProjectConfig config("Proof/Proof.ProofProject","Proof");
+            m_Project = Project::New(config);
             // we would scerilize when we save the project
             //ProjectSerilizer projectSerilizer(m_Project.get());
             //projectSerilizer.SerilizeText(m_ProjectPath);
         }
         else {
-            m_ProjectPath = m_ApplicationConfiguration.ProjectPath;
-            m_Project->m_Path = m_ProjectPath;
-            (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", m_Project->m_Path.root_directory().string());
-            ProjectSerilizer projectSerilizer(m_Project.get());
-            projectSerilizer.DeSerilizeText(m_ProjectPath);
+            m_Project = Project::Load(m_ApplicationConfiguration.ProjectPath);
+            (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", m_Project->GetProjectDirectory().string());
         }
        
 
         MainWindow = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
         MainWindow->SetEventCallback([this](Event& e) {OnEvent(e); });
-        auto projdir = m_Project->GetProjectDir();
-        AssetManagerConfiguration assetManagerconfig;
-        assetManagerconfig.AssetDirectory = m_Project->m_AssetDirectory;
-        assetManagerconfig.AssetManager = m_Project->m_AssetManager;
         RendererBase::Init(static_cast<Window*>(MainWindow.get()));
 
+        AssetManagerConfiguration assetManagerconfig;
+        assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
+        assetManagerconfig.AssetManager = m_Project->GetFromSystemProjectDirectory(m_Project->GetConfig().AssetManager);
         AssetManager::Init(assetManagerconfig);
-        ScriptEngine::Init();
-
         AssetManager::InitilizeAssets();
+
+        ScriptEngine::Init();
         ImGuiMainLayer = new ImGuiLayer();
         MainLayerStack.PushLayer(ImGuiMainLayer);
 
@@ -90,7 +86,7 @@ namespace Proof {
         });
         /// PUSH LAYERS BACKWARDS
         /// WHEN WE GET UI WE MIGHT WANT TO ONLY RESPODN TO UI FIRST
-         if (IsRunning == false)
+         if (m_IsRunning == false)
             return;
          for (Layer* layer : MainLayerStack.V_LayerStack)
             layer->OnEvent(e);
@@ -111,22 +107,23 @@ namespace Proof {
     }
 
     void Application::OnWindowCloseEvent(WindowCloseEvent& e) {
-        IsRunning = false;
+        m_IsRunning = false;
     }
 
     Application::~Application() {
-
+        //if (m_ApplicationShouldShutdown)
+          //  std::exit(EXIT_SUCCESS);
     }
 
     void Application::Run() {
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
-        while (IsRunning == true) {
+        while (m_IsRunning == true) {
             PF_PROFILE_FRAME("Application::Update");
             Renderer::BeginFrame();
             
-        float time = (float)glfwGetTime();
+            float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
@@ -153,8 +150,14 @@ namespace Proof {
             FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
             LastFrameTime = time;
         };
-        IsRunning = false;
+        if (glfwWindowShouldClose((GLFWwindow*) Application::MainWindow->GetWindow()) == GLFW_TRUE)
+        {
+            m_ApplicationShouldShutdown = true;
+        }
+        MainLayerStack.Empty();
+        // remove the swpchain so it cna be deleted in the queue
         AssetManager::SaveAllAssets();
+        Application::MainWindow->m_SwapChain = nullptr;
         RendererBase::Destroy();
     }
 
@@ -164,5 +167,14 @@ namespace Proof {
 
     void Application::PushOverlay(Layer* Layer) {
         MainLayerStack.PushOverlay(Layer);
+    }
+
+    void Application::OpenProject(const std::filesystem::path& path)
+    {
+    }
+    void Application::Save()
+    {
+        AssetManager::SaveAllAssets();
+
     }
 }

@@ -42,7 +42,7 @@ namespace Proof {
 		m_SpritePipeline= CreateSpecial<SpritePipeline>(m_RenderPass);
 	}
 	
-	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commdandBuffer) {
+	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commdandBuffer) {
 		PF_PROFILE_FUNC()
 		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
 		s_CurrentCamera = CameraData{ projection,view,Position };
@@ -180,7 +180,7 @@ namespace Proof {
 		auto descriptor0 = m_SpritePipeline->Descriptors[DescriptorSets::Zero];
 
 		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
-		Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline,[&](Count <CommandBuffer> commandBuffer) {
+		Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline,[&](Count <RenderCommandBuffer> commandBuffer) {
 			descriptor0->Bind(commandBuffer, m_SpritePipeline->PipeLineLayout);
 			m_Storage2DData->VertexBuffer->AddData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
 			m_Storage2DData->VertexBuffer->Bind(commandBuffer);

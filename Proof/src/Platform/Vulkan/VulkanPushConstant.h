@@ -13,7 +13,7 @@ namespace Proof
 		}
 		const VkPushConstantRange GetRange();
 		virtual ~VulkanPushConstant(){};
-		void PushData(Count<class CommandBuffer>commandBuffer,Count<class PipeLineLayout> pipeLinelayout, const void* data);
+		void PushData(Count<class RenderCommandBuffer>commandBuffer,Count<class PipeLineLayout> pipeLinelayout, const void* data);
 	private:
 		ShaderStage m_ShaderStage;
 		uint32_t m_Size;

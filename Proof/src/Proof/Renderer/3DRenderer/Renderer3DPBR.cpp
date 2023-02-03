@@ -71,10 +71,10 @@ namespace Proof
 		m_MeshMaterialPipeline = CreateSpecial<MeshMaterialPipeline>(m_RenderPass);
 		m_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
 	}
-	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commandBuffer) {
+	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {
 		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer,commandBuffer);
 	}
-	void Renderer3DPBR::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commandBuffer) {
+	void Renderer3DPBR::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {
 		PF_PROFILE_FUNC()
 		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
 		PF_CORE_ASSERT(s_InContext ==false, "Cannot begin context if already in a context");
@@ -205,8 +205,8 @@ namespace Proof
 		auto descriptor0 = m_MeshPipeLine->Descriptors[DescriptorSets::Zero];
 		auto descriptor1 = m_MeshPipeLine->Descriptors[DescriptorSets::One];
 		uint32_t currentOffset = m_MeshPipeLine->OffsetBegin;
-		Renderer::RecordRenderPass(m_RenderPass, m_MeshPipeLine->GraphicsPipeline, [&](Count <CommandBuffer> commandBuffer) {
-			descriptor0->Bind(commandBuffer, m_MeshPipeLine->PipeLineLayout);
+		Renderer::RecordRenderPass(m_RenderPass, m_MeshPipeLine->GraphicsPipeline, [&](Count <RenderCommandBuffer> commandBuffer) {
+			descriptor0->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
 			for (const uint64_t& ID : m_MeshPipeLine->ElementsImplaced)
 			{
 				const uint64_t numMeshPerID = m_MeshPipeLine->AmountMeshes[ID];
@@ -263,7 +263,7 @@ namespace Proof
 		auto descriptor0 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::Zero];
 		auto descriptor1 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::One];
 		uint32_t currentOffset = m_MeshMaterialPipeline->OffsetBegin;
-		Renderer::RecordRenderPass(m_RenderPass, m_MeshMaterialPipeline->GraphicsPipeline, [&](Count <CommandBuffer> commandBuffer) {
+		Renderer::RecordRenderPass(m_RenderPass, m_MeshMaterialPipeline->GraphicsPipeline, [&](Count <RenderCommandBuffer> commandBuffer) {
 			descriptor0->Bind(commandBuffer, m_MeshMaterialPipeline->PipeLineLayout);
 			for (const uint64_t& ID : m_MeshMaterialPipeline->ElementsImplaced)
 			{
@@ -318,9 +318,6 @@ namespace Proof
 		RenderMesh();
 		RenderMeshMaterial();
 	}
-	
-	
-	
 	
 	void Renderer3DPBR::DrawMeshSource(uint64_t ID, uint64_t numMeshPerID, uint64_t offset) {
 		auto descriptor1 = m_MeshPipeLine->Descriptors[DescriptorSets::One];
@@ -450,6 +447,7 @@ namespace Proof
 	}
 	DebugMeshPipeLine::DebugMeshPipeLine()
 	{
+		/*
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
@@ -476,6 +474,7 @@ namespace Proof
 		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
 
 		//GraphicsPipeline = GraphicsPipeline::Create(Shader, RenderPass, PipeLineLayout, meshVertexArray);
+		*/
 	}
 	
 }

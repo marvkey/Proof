@@ -33,7 +33,7 @@ namespace Proof
 		const auto& graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		s_IsWindowResised = false;
 		s_RenderData = new VulkanRendererData();
-		s_RendererConfig = RendererConfig{ 2,(uint32_t)graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->GetImageCount() };
+		s_RendererConfig = RendererConfig();
 		s_RenderData->ResourceFreeQueue.resize(Renderer::GetConfig().FramesFlight);
 		
 	}
@@ -67,20 +67,18 @@ namespace Proof
 	}
 	
 	void VulkanRenderer::Destroy() {
-				// Free resources in queue
+		// Free resources in queue
 		for (auto& queue : s_RenderData->ResourceFreeQueue) {
 			queue.Flush();
-			//for (auto& func : queue)
-			//	func();
 		}
 		s_RenderData->ResourceFreeQueue.clear();
 		delete s_RenderData;
 	}
 
 
-	void VulkanRenderer::SubmitCommandBuffer(Count<CommandBuffer> commandBuffer) {
-		const auto& graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		s_RenderData->CommandBuffers.emplace_back(commandBuffer);
+	void VulkanRenderer::SubmitCommandBuffer(Count<RenderCommandBuffer> commandBuffer) {
+		if(commandBuffer != nullptr)
+			s_RenderData->CommandBuffers.emplace_back(commandBuffer);
 	}
 	
 	void VulkanRenderer::SubmitDatafree(std::function<void()> func) {

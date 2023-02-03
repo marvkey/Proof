@@ -39,7 +39,7 @@
 #include "Proof/Scripting/ScriptEngine.h"
 namespace Proof
 {
-
+	static bool SaveSceneDialouge = false;
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") {
 	}
@@ -62,7 +62,7 @@ namespace Proof
 	
 	void Editore3D::OnEvent(Event& e) {
 		EventDispatcher dispatcher(e);
-		if (ActiveWorld->m_CurrentState == WorldState::Play)
+		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 			InputManager::OnEvent(e);
 
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
@@ -240,26 +240,27 @@ namespace Proof
 	}
 	void Editore3D::OnAttach() {
 
-		ActiveWorld = CreateCount<World>();
-		auto startworld = Application::Get()->GetProject()->GetStartWorld();
+		m_ActiveWorld = CreateCount<World>();
+		auto startworld = Application::Get()->GetProject()->GetConfig().StartWorld;
 		if (AssetManager::HasID(startworld)) {
 			auto Info = AssetManager::GetAssetInfo(startworld);
-			SceneSerializer scerelizer(ActiveWorld.get());
-			if (scerelizer.DeSerilizeText(Info.Path.string()) == true) {
-				m_WorldHierachy.SetContext(ActiveWorld.get());
+			SceneSerializer scerelizer(m_ActiveWorld.get());
+			auto path = Application::Get()->GetProject()->GetAssetFileSystemPath(Info.Path);
+			if (scerelizer.DeSerilizeText(path.string()) == true) {
+				m_WorldHierachy.SetContext(m_ActiveWorld.get());
 				AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
 			}
 		}
-		//ScriptEngine::ReloadAssembly(ActiveWorld.get());
-		SceneSerializer scerelizer(ActiveWorld.get());
+		//ScriptEngine::ReloadAssembly(m_ActiveWorld.get());
+		SceneSerializer scerelizer(m_ActiveWorld.get());
 		
 
 
-		m_WorldHierachy.SetContext(ActiveWorld.get());
-		m_WorldRenderer = WorldRenderer(ActiveWorld, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
+		m_WorldHierachy.SetContext(m_ActiveWorld.get());
+		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_ActiveWorld, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
 		// cannot be setting it to window size and stuff innit
-		m_EditorWorld = ActiveWorld;
-		SceneCoreClasses::s_CurrentWorld = ActiveWorld.get();
+		m_EditorWorld = m_ActiveWorld;
+		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
 
 		m_PlayButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PlayButton.png");
 		m_PauseButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PauseButton .png");
@@ -270,7 +271,8 @@ namespace Proof
 	void Editore3D::OnDetach() {
 		if (m_EditorWorld != nullptr) { // using editor world in case active world is on play
 			SceneSerializer scerelizer(m_EditorWorld.get());
-			scerelizer.SerilizeText(m_EditorWorld->GetPath());
+			auto assetInfo = AssetManager::GetAssetInfo(m_EditorWorld->GetID());
+			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 		}
 	}
 	Count<ScreenFrameBuffer> buffer;
@@ -278,52 +280,52 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
 		if (m_IsViewPortResize&& m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
-			m_WorldRenderer.Resize({(uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y });
+			m_WorldRenderer->Resize({(uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y });
 			// so the camera can be edited while beig resized
 			CurrentWindow::GetWindow().SetWindowInputEvent(false);
 			m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 			CurrentWindow::GetWindow().SetWindowInputEvent(true);
 			m_IsViewPortResize = false;
 		}
-		switch (ActiveWorld->GetState()) {
+		switch (m_ActiveWorld->GetState()) {
 			case Proof::WorldState::Play:
 				{
-					ActiveWorld->OnUpdateRuntime(DeltaTime);
-					if (ActiveWorld->HasWorldCamera()) {
-						auto entity = ActiveWorld->GetWorldCameraEntity();
-						auto location = ActiveWorld->GetWorldLocation(entity);
-						m_WorldRenderer.Render(*entity.GetComponent<CameraComponent>(), location);
+					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
+					if (m_ActiveWorld->HasWorldCamera()) {
+						auto entity = m_ActiveWorld->GetWorldCameraEntity();
+						auto location = m_ActiveWorld->GetWorldLocation(entity);
+						m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location);
 					}
 					else
 					{
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-						m_WorldRenderer.Render(m_EditorCamera);
+						m_WorldRenderer->Render(m_EditorCamera);
 					}
 					break;
 				}
 			case Proof::WorldState::Pause:
 				{
-					//ActiveWorld->OnUpdateRuntime(DeltaTime);
+					//m_ActiveWorld->OnUpdateRuntime(DeltaTime);
 					m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 					break;
 				}
 			case Proof::WorldState::Simulate:
 				{
-					ActiveWorld->OnSimulatePhysics(DeltaTime);
+					m_ActiveWorld->OnSimulatePhysics(DeltaTime);
 					if (m_ViewPortFocused)
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-					m_WorldRenderer.Render(m_EditorCamera);
+					m_WorldRenderer->Render(m_EditorCamera);
 					break;
 				}
 			case Proof::WorldState::Edit:
 				{
-					ActiveWorld->OnUpdate(DeltaTime);
+					m_ActiveWorld->OnUpdateEditor(DeltaTime);
 					if (m_ViewPortFocused) {
 						CurrentWindow::GetWindow().SetWindowInputEvent(true);
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 						CurrentWindow::GetWindow().SetWindowInputEvent(false);
 					}
-					m_WorldRenderer.Render(m_EditorCamera);
+					m_WorldRenderer->Render(m_EditorCamera);
 					break;
 				}
 			default:
@@ -358,7 +360,7 @@ namespace Proof
 			if (ImGui::Button("Choose HDR")) {
 				std::string file = Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
 				if (file.empty() == false) {
-					//ActiveWorld->CreateIBlTexture(file);
+					//m_ActiveWorld->CreateIBlTexture(file);
 				}
 			}
 		}
@@ -449,7 +451,7 @@ namespace Proof
 			case KeyBoardKey::D:
 				{
 					if (control && m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0)
-						m_WorldHierachy.m_SelectedEntity = ActiveWorld->CreateEntity(m_WorldHierachy.m_SelectedEntity);
+						m_WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(m_WorldHierachy.m_SelectedEntity);
 					break;
 
 				}
@@ -458,9 +460,9 @@ namespace Proof
 				{
 					if (m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
 
-						if (ActiveWorld->GetState() == WorldState::Edit) {
+						if (m_ActiveWorld->GetState() == WorldState::Edit) {
 							//Basically makig sure that all entities that reference this entity that is deleted their data get sets to null
-							ActiveWorld->ForEachEnitityWith<ScriptComponent>([&](Entity& entity) {
+							m_ActiveWorld->ForEachEnitityWith<ScriptComponent>([&](Entity& entity) {
 								auto& scp = *entity.GetComponent<ScriptComponent>();
 								for (auto& scripts : scp.m_Scripts) {
 									for (auto& field : scripts.Fields) {
@@ -475,7 +477,7 @@ namespace Proof
 								}
 							});
 						}
-						ActiveWorld->DeleteEntity(m_WorldHierachy.m_SelectedEntity);
+						m_ActiveWorld->DeleteEntity(m_WorldHierachy.m_SelectedEntity);
 						m_WorldHierachy.m_SelectedEntity = {};
 					}
 					break;
@@ -492,7 +494,7 @@ namespace Proof
 			case KeyBoardKey::V:
 				{
 					if (control && m_CopyEntity.GetEntityID() != 0 && (m_ViewPortFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
-						m_WorldHierachy.m_SelectedEntity = ActiveWorld->CreateEntity(m_CopyEntity);
+						m_WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(m_CopyEntity);
 					}
 					break;
 				}
@@ -527,7 +529,7 @@ namespace Proof
 					Entity selected = m_WorldHierachy.m_SelectedEntity;
 					if (shift == true) {
 						if (selected.HasChildren()) {
-							m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],ActiveWorld.get() };
+							m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.get() };
 						}
 					}
 
@@ -537,12 +539,12 @@ namespace Proof
 						int childIndexAdd = 0;
 						childIndexAdd += childIndex;
 						if (childIndex >= numChildren)
-							m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[0],ActiveWorld.get() };
+							m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.get() };
 						else if (childIndex < numChildren)
-							m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[childIndexAdd],ActiveWorld.get() };
+							m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[childIndexAdd],m_ActiveWorld.get() };
 					}
 					else if (selected.HasChildren()) {
-						m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],ActiveWorld.get() };
+						m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.get() };
 					}
 					break;
 				}
@@ -870,22 +872,32 @@ namespace Proof
 				m_ViewPortFocused = false;
 				CurrentWindow::GetWindow().SetWindowInputEvent(false);
 			}
-			const void* Text = m_WorldRenderer.GetImage().SourceImage;
+			const void* Text = m_WorldRenderer->GetImage().SourceImage;
 			ImGui::Image((ImTextureID)Text, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
+
 			// GUIZMOS
+
+			// cherno game engein reveiw 22 minutes 48 seconds reference
 			Entity selectedEntity = m_WorldHierachy.GetSelectedEntity();
-			if (selectedEntity.GetEntityID() != 0) {
-				ImGuizmo::SetOrthographic(false);
+			if (selectedEntity) {
+
+				//ImGuizmo::SetOrthographic(true);
+				//ImGuizmo::SetDrawlist();
+				//
+				//ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y,
+				//	ImGui::GetWindowHeight(), ImGui::GetWindowWidth());
+				ImGuizmo::SetOrthographic(true);
 				ImGuizmo::SetDrawlist();
 
 				ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
+
 				const glm::mat4& cameraProjection = m_EditorCamera.m_Projection;
 				glm::mat4 cameraView = m_EditorCamera.m_View;
 
-				auto& tc = *selectedEntity.GetComponent<TransformComponent>();
-				glm::mat4 transform = tc.GetLocalTransform();
+				auto& selectedentityTc = *selectedEntity.GetComponent<TransformComponent>();
+				glm::mat4  selectedEntitytransform = selectedentityTc.GetLocalTransform();
 
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
@@ -896,17 +908,36 @@ namespace Proof
 				float snapValues[3] = { snapValue,snapValue,snapValue };
 
 				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-					(ImGuizmo::OPERATION)GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+					(ImGuizmo::OPERATION)GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(selectedEntitytransform),
 					nullptr, snap ? snapValues : nullptr);
 
 				if (ImGuizmo::IsUsing()) {
-					glm::vec3 translation, rotation, scale;
-					MathResource::DecomposeTransform(transform, translation, rotation, scale);
+					Entity parent = m_ActiveWorld->TryGetEntity(selectedEntity.GetOwnerUUID());
 
-					glm::vec3 deltaRotation = rotation - glm::vec3{ tc.Rotation };
-					tc.Location = translation;
-					tc.Rotation += deltaRotation;
-					tc.Scale = scale;
+					if (parent)
+					{
+						glm::mat4 parentTransform = m_ActiveWorld->GetWorldTransform(parent);
+						selectedEntitytransform = glm::inverse(parentTransform) * selectedEntitytransform;
+						glm::vec3 translation, rotation, scale;
+						MathResource::DecomposeTransform(selectedEntitytransform, translation, rotation, scale);
+
+						glm::vec3 deltaRotation = rotation - glm::vec3{ selectedentityTc.Rotation };
+						selectedentityTc.Location = translation;
+						selectedentityTc.Rotation += Vector{Math::Degrees(deltaRotation).x, Math::Degrees(deltaRotation).y, Math::Degrees(deltaRotation).z};
+						selectedentityTc.Scale = scale;
+
+					}
+					else
+					{
+						glm::vec3 translation, rotation, scale;
+						MathResource::DecomposeTransform(selectedEntitytransform, translation, rotation, scale);
+
+						glm::vec3 deltaRotation = rotation - glm::vec3{ selectedentityTc.Rotation };
+						selectedentityTc.Location = translation;
+						selectedentityTc.Rotation += Vector{ Math::Degrees(deltaRotation).x, Math::Degrees(deltaRotation).y, Math::Degrees(deltaRotation).z };
+						selectedentityTc.Scale = scale;
+					}
+				
 				}
 			}
 			static bool meshSourceAdded = false;
@@ -914,21 +945,24 @@ namespace Proof
 			/* putting this underneath image because a window only accpet drop target to when item is bound so and image has been bound */
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::World).c_str())) {
-					std::string Data = (const char*)payload->Data;
-					SceneSerializer scerilize(ActiveWorld.get());
-					scerilize.SerilizeText(ActiveWorld->GetPath());
+					UUID ID = *(UUID*)payload->Data;
+
+					m_EditorWorld = CreateCount<World>();
+					m_ActiveWorld = m_EditorWorld;
+					m_WorldRenderer->SetContext(m_ActiveWorld);
+					m_WorldHierachy.SetContext(m_ActiveWorld.get());
+					SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
 					m_WorldHierachy.m_SelectedEntity = {};
 
-					ActiveWorld = CreateCount<World>();
-					SceneSerializer ScerilizerNewWorld(ActiveWorld.get());
-					ScerilizerNewWorld.DeSerilizeText(Data);
-					m_WorldHierachy.SetContext(ActiveWorld.get());
+					SceneSerializer ScerilizerNewWorld(m_ActiveWorld.get());
+					ScerilizerNewWorld.DeSerilizeText(ID);
+
 				}
 
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Mesh).c_str())) {
 					UUID meshID = *(UUID*)payload->Data;
 
-					Entity newentt = ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
+					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
 					newentt.AddComponent<MeshComponent>()->SetMeshSource(meshID);
 					m_WorldHierachy.m_SelectedEntity = newentt;
 				}
@@ -947,12 +981,20 @@ namespace Proof
 				std::tie(meshSourceAdded, id) = m_ContentBrowserPanel.AddMesh(meshSourcePath);
 				// basically add mesh is done with its operation and no longer renderng
 				if (meshSourceAdded == false) {
-					Entity newentt = ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
+					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
 					newentt.AddComponent<MeshComponent>()->SetMeshSource(id);
 					m_WorldHierachy.m_SelectedEntity = newentt;
 				}
 			}
-
+			if (SaveSceneDialouge)
+			{
+				AssetID id;
+				std::tie(SaveSceneDialouge,id ) = m_ContentBrowserPanel.AddWorld(m_ActiveWorld);
+				if (SaveSceneDialouge == false)
+				{
+					m_ActiveWorld->m_WorldID = id;
+				}
+			}
 			/*----------------------------------------------------------------------------------------------------------------------------*/
 		}
 		ImGui::End();
@@ -965,12 +1007,12 @@ namespace Proof
 
 		Count<Texture2D> icon;
 		std::string state;
-		if (ActiveWorld->m_CurrentState == WorldState::Edit)
+		if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
 		{
 			icon = m_PlayButtonTexture;
 			state = "Play";
 		}
-		else if (ActiveWorld->m_CurrentState == WorldState::Play)
+		else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 		{
 			icon = m_StopButtonTexture;
 			state = "Stop";
@@ -980,13 +1022,12 @@ namespace Proof
 			icon = m_PlayButtonTexture;
 		}
 
-
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.4f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 		if (ImGui::Button(state.c_str(), ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
-			if (ActiveWorld->m_CurrentState == WorldState::Edit)
+			if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
 				PlayWorld();
-			else if (ActiveWorld->m_CurrentState == WorldState::Play)
+			else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 				SetWorldEdit();
 		}
 		ImGui::SameLine();
@@ -994,7 +1035,7 @@ namespace Proof
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 
 		if (ImGui::ImageButton((ImTextureID)m_PauseButtonTexture->GetImage().SourceImage, ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
-			if (ActiveWorld->m_CurrentState == WorldState::Play)
+			if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 				PauseWorld();
 		}
 		ImGui::SameLine();
@@ -1002,7 +1043,7 @@ namespace Proof
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 
 		if (ImGui::ImageButton((ImTextureID)m_PauseButtonTexture->GetImage().SourceImage, ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
-			if (ActiveWorld->m_CurrentState == WorldState::Edit)
+			if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
 				SimulateWorld();
 		}
 		ImGui::End();
@@ -1060,6 +1101,11 @@ namespace Proof
 				if (ImGui::MenuItem("Open Project")) {
 					// gonna be implemented later
 				}
+				if (ImGui::MenuItem("New Scene"))
+				{
+					Save();
+					NewWorld();
+				}
 				if (ImGui::MenuItem("Save", "ctrl+s")) {
 					Save();
 				}
@@ -1083,8 +1129,8 @@ namespace Proof
 
 			if (ImGui::BeginMenu("Debug")) {
 				if (ImGui::MenuItem("Reload C# Scripts")) {
-					if (ActiveWorld->GetState() == WorldState::Edit)
-						ScriptEngine::ReloadAssembly(ActiveWorld.get());
+					if (m_ActiveWorld->GetState() == WorldState::Edit)
+						ScriptEngine::ReloadAssembly(m_ActiveWorld.get());
 					else
 						PF_ERROR("Can only reload c# assembly in Edit state");
 				}
@@ -1096,51 +1142,66 @@ namespace Proof
 		ImGui::End();
 	}
 
-
-
-
 	void Editore3D::Save() {
-		if (ActiveWorld == nullptr)
+		if (m_ActiveWorld == nullptr)
 			return;
-		if (ActiveWorld->m_CurrentState != WorldState::Edit)
+		if (m_ActiveWorld->m_CurrentState != WorldState::Edit){
 			PF_ERROR("Cannot save when in runtime mode");
+			return;
+		}
+		if (!AssetManager::HasID(m_ActiveWorld->GetID()))
+		{
+			SaveSceneDialouge = true;
+			
+			return;
+		}
+		SceneSerializer scerelizer(m_ActiveWorld.get());
+		auto assetInfo = AssetManager::GetAssetInfo(m_ActiveWorld->GetID());
+		scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 
-		SceneSerializer scerelizer(ActiveWorld.get());
-		scerelizer.SerilizeText(ActiveWorld->GetPath());
-
-		PF_ENGINE_TRACE("{} Saved", ActiveWorld->GetName().c_str());
+		PF_ENGINE_TRACE("{} Saved", m_ActiveWorld->GetName().c_str());
 
 	}
 	void Editore3D::PlayWorld() {
-		ActiveWorld = World::Copy(m_EditorWorld);
-		SceneCoreClasses::s_CurrentWorld = ActiveWorld.get();
+		m_ActiveWorld = World::Copy(m_EditorWorld);
+		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
 
-		ActiveWorld->m_CurrentState = WorldState::Play;
-		m_WorldHierachy.SetContext(ActiveWorld.get());
-		m_WorldRenderer.SetContext(ActiveWorld);
+		m_ActiveWorld->m_CurrentState = WorldState::Play;
+		m_WorldHierachy.SetContext(m_ActiveWorld.get());
+		m_WorldRenderer->SetContext(m_ActiveWorld);
 
 		if (m_ClearLogOnPlay)
 			Log::Logs.clear();
 		//GuizmoType = 0;
 		m_WorldHierachy.m_SelectedEntity = {};
 
-		ActiveWorld->StartRuntime();
+		m_ActiveWorld->StartRuntime();
 	}
 	void Editore3D::SimulateWorld() {
 
-		ActiveWorld->m_CurrentState = WorldState::Simulate;
+		m_ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
 	void Editore3D::SetWorldEdit() {
 
 		//GuizmoType = 0;
-		ActiveWorld->EndRuntime();
-		ActiveWorld = m_EditorWorld;
-		m_WorldHierachy.SetContext(ActiveWorld.get());
-		m_WorldRenderer.SetContext(ActiveWorld);
-		SceneCoreClasses::s_CurrentWorld = ActiveWorld.get();
+		m_ActiveWorld->EndRuntime();
+		m_ActiveWorld = m_EditorWorld;
+		m_WorldHierachy.SetContext(m_ActiveWorld.get());
+		m_WorldRenderer->SetContext(m_ActiveWorld);
+		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
 	}
 	void Editore3D::PauseWorld() {
-		ActiveWorld->m_CurrentState = WorldState::Pause;
+		m_ActiveWorld->m_CurrentState = WorldState::Pause;
+	}
+
+	void Editore3D::NewWorld()
+	{
+		m_EditorWorld = CreateCount<World>();
+		m_ActiveWorld = m_EditorWorld;
+		m_WorldRenderer->SetContext(m_ActiveWorld);
+		m_WorldHierachy.SetContext(m_ActiveWorld.get());
+		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
+		m_WorldHierachy.m_SelectedEntity = {};
 	}
 
 	bool Editore3D::CreateAssetEditor(AssetID ID) {
@@ -1182,4 +1243,3 @@ namespace Proof
 		return false;
 	}
 }
-

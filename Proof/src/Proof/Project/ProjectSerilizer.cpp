@@ -17,10 +17,10 @@ namespace Proof
 			out << YAML::Key << "Project";
 			out << YAML::BeginMap;
 			{
-				out << YAML::Key << "Name" << m_Project->Name;
-				out << YAML::Key << "AssetDirectory" << m_Project->m_AssetDirectory.string();
-				out << YAML::Key << "AssetManager" << m_Project->m_AssetManager.string();
-				out << YAML::Key << "StartWorld" << m_Project->m_StartWorld;
+				out << YAML::Key << "Name" << m_Project->m_ProjectConfig.Name;
+				out << YAML::Key << "AssetDirectory" << m_Project->m_ProjectConfig.AssetDirectory.string();
+				out << YAML::Key << "AssetManager" << m_Project->m_ProjectConfig.AssetManager.string();
+				out << YAML::Key << "StartWorld" << m_Project->m_ProjectConfig.StartWorld;
 			}
 			out << YAML::EndMap;
 		}
@@ -30,7 +30,6 @@ namespace Proof
 		foud.close();
 	}
 	bool ProjectSerilizer::DeSerilizeText(const std::string& filePath) {
-		m_Project->m_Path = filePath;
 		if (std::filesystem::exists(filePath) == false)
 			PF_CORE_ASSERT(false);
 		YAML::Node data = YAML::LoadFile(filePath);
@@ -38,10 +37,10 @@ namespace Proof
 			return false;
 		auto projectData = data["Project"];
 		
-		m_Project->Name = projectData["Name"].as<std::string>();
-		m_Project->m_AssetDirectory = projectData["AssetDirectory"].as<std::string>();
-		m_Project->m_AssetManager = projectData["AssetManager"].as<std::string>();
-		m_Project->m_StartWorld = projectData["StartWorld"].as<uint64_t>();
+		m_Project->m_ProjectConfig.Name = projectData["Name"].as<std::string>();
+		m_Project->m_ProjectConfig.AssetDirectory = projectData["AssetDirectory"].as<std::string>();
+		m_Project->m_ProjectConfig.AssetManager = projectData["AssetManager"].as<std::string>();
+		m_Project->m_ProjectConfig.StartWorld = projectData["StartWorld"].as<uint64_t>();
 		return true;
 	}
 }

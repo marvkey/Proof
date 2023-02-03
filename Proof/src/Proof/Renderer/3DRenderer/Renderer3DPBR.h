@@ -7,7 +7,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "Proof/Scene/Material.h"
 #include "Proof/Renderer/RendererAPI.h"
-#include "Proof/Renderer/ScreenFrameBuffer.h"
+#include "Proof/Renderer/FrameBuffer.h"
 #include "Proof/Renderer/CommandBuffer.h"
 #include "Proof/Renderer/UniformBuffer.h"
 #include "Proof/Scene/Component.h"
@@ -97,7 +97,7 @@ namespace Proof
 	};
 	
 	struct RenderStorage {
-		Count<CommandBuffer> CommandBuffer;
+		Count<RenderCommandBuffer> CommandBuffer;
 		Count<UniformBuffer> CameraBuffer = nullptr;
 		Count<ScreenFrameBuffer> CurrentFrameBuffer = nullptr;
 	};
@@ -109,8 +109,8 @@ namespace Proof
 
 		}
 		void Init();
-		void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<CommandBuffer>& commandBuffer);
-		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<CommandBuffer>& commandBuffer);
+		void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<RenderCommandBuffer>& commandBuffer);
+		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
 		void SubmitMesh(class MeshComponent& meshComponent, const glm::mat4& transform);
 		void SubmitDirectionalLight(const DirLight& light);
 		void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);

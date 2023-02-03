@@ -9,7 +9,7 @@ namespace Proof{
 		VmaAllocation Allocation;
 	};
 
-	struct VulkanImage {
+	struct VulkanImageAlloc {
 		VkImage Image;
 		VmaAllocation Allocation;
 	};

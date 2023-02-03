@@ -5,11 +5,11 @@
 #include "RendererAPI.h"
 namespace Proof
 {
-    Count<RenderPass> Proof::RenderPass::Create(RenderPassType type) {
+    Count<RenderPass> Proof::RenderPass::Create(const RenderPassConfig& config) {
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanRenderPass>(type);
+			case RendererAPI::API::Vulkan: return CreateCount<VulkanRenderPass>(config);
 		}
     }
 }

@@ -20,7 +20,12 @@ namespace Proof
 		// when the window pop up context is done
 		// returns true if still need rendering
 		// the bool is for don, and assetId is the asset id of the mesh
-		static std::pair<bool,AssetID> AddMesh(const std::filesystem::path& meshPath, const std::vector<uint32_t>& excludeIndex = {});
+		static std::pair<bool, AssetID> AddMesh(const std::filesystem::path& meshPath, const std::vector<uint32_t>& excludeIndex = {});
+			//returns false when done rendering
+		// when the window pop up context is done
+		// returns true if still need rendering
+		// the bool is for don, and assetId is the asset id of the mesh
+		static std::pair<bool,AssetID> AddWorld(Count<class World> world);
 	private:
 		std::filesystem::path m_CurrentDirectory;
 		Count<Texture2D> m_FolderIcon;

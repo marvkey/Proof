@@ -6,10 +6,11 @@ ImGUI WILL BE THE first to receive input then the gampley if the Input is not ne
 it needs it if that is false then we will move on untill the whole layer is looped.
 */
 namespace Proof {
+
     class Proof_API ImGuiLayer :public Layer{
     public:
         ImGuiLayer();
-        ~ImGuiLayer() = default;
+        ~ImGuiLayer();
         virtual void OnAttach()override;
         virtual void OnDetach()override;
         void Begin();

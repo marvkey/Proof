@@ -21,13 +21,6 @@ namespace Proof {
 		}
 		return nullptr;
 	}
-	Count<Texture2D> Texture2D::Create(uint32_t ImageWidth,uint32_t ImageHeight) {
-		//switch (RendererAPI::GetAPI()) {
-		//	case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
-		//	case RendererAPI::API::OpenGL: return CreateCount<OpenGLTexture2D>(ImageWidth,ImageHeight,_TextureType);
-		//}
-		return nullptr;
-	}
 	Count<CubeMap> CubeMap::Create(const std::filesystem::path& Path) {
 		switch (RendererAPI::GetAPI()) {
 		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
@@ -38,12 +31,4 @@ namespace Proof {
 
 	}
 
-	Count<HDRTexture> HDRTexture::Create(const std::string& path) {
-		switch (RendererAPI::GetAPI()) {
-		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
-		//	case RendererAPI::API::OpenGL: return CreateCount(path);
-		}
-		return nullptr;
-
-	}
 }

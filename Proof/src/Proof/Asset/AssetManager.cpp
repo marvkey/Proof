@@ -62,7 +62,7 @@ namespace Proof
 			PF_CORE_ASSERT(false, "Asset cannot be nullptr");
 		AssetInfo assetInfo;
 		assetInfo.ID = asset->GetAssetID();
-		assetInfo.Path = std::filesystem::relative(asset->m_SavePath);
+		assetInfo.Path = std::filesystem::relative(asset->m_SavePath, s_AssetManagerData->AssetDirectory);
 		assetInfo.Type = asset->GetAssetType();
 		assetInfo.State = AssetState::Unloaded;
 		if (asset->GetAssetType() == AssetType::MeshSourceFile)
@@ -75,7 +75,6 @@ namespace Proof
 	{
 	
 	}
-	
 	void AssetManager::NewAsset(AssetID ID, const std::filesystem::path& path) {
 		if (ID == 0) {
 			PF_CORE_ASSERT(false, "ID cannot be 0");
@@ -83,7 +82,7 @@ namespace Proof
 		PF_ASSERT(HasID(ID) == false, "Asset Manager Has ID");
 		AssetInfo assetInfo;
 		assetInfo.ID = ID;
-		assetInfo.Path = std::filesystem::relative(path);
+		assetInfo.Path = std::filesystem::relative(path, s_AssetManagerData->AssetDirectory);
 		auto extension = Utils::FileDialogs::GetFileExtension(path);
 		if (MeshHasFormat(extension))
 			assetInfo.Type = AssetType::MeshSourceFile;
@@ -103,9 +102,20 @@ namespace Proof
 			PF_CORE_ASSERT(false, "ID cannot be 0");
 		}
 		PF_ASSERT(HasID(ID) == false, "Asset Manager Has ID");
+		std::filesystem::path finalPath = std::filesystem::relative(path, s_AssetManagerData->AssetDirectory);
+		if (finalPath.has_parent_path())
+		{
+			auto parentDir = finalPath.parent_path();
+			finalPath = parentDir /= {Utils::FileDialogs::GetFileName(path) + "." + "ProofWorld"};
+		}
+		else
+		{
+			finalPath = { Utils::FileDialogs::GetFileName(path) + "." + "ProofWorld" };
+		}
+
 		AssetInfo assetInfo;
 		assetInfo.ID = ID;
-		assetInfo.Path = std::filesystem::relative(path);
+		assetInfo.Path = finalPath;
 		assetInfo.Type = AssetType::World;
 		s_AssetManagerData->Assets.insert({ ID,{assetInfo,nullptr} });
 		s_AssetManagerData->AssetPath.insert({ assetInfo.Path.string(),ID });
@@ -138,7 +148,7 @@ namespace Proof
 	}
 	AssetID AssetManager::CreateID() {
 		AssetID ID = AssetID();
-		while (HasID(ID) == true || ID ==0) {
+		while (HasID(ID) == true) {
 			ID = AssetID();
 		}
 		return ID;
@@ -166,9 +176,6 @@ namespace Proof
 		const std::string fileDirectExtension = Utils::FileDialogs::GetFileExtension(path);
 		return AssetType::None;
 	}
-	
-
-	
 
 	AssetInfo AssetManager::GetAssetInfo(const std::filesystem::path& path)
 	{
@@ -186,7 +193,8 @@ namespace Proof
 		auto it = s_AssetManagerData->Assets.find(ID);
 		auto& assetInfo = s_AssetManagerData->Assets[ID].Info;
 		it->second.Asset = CreateCount<T>();
-		s_AssetManagerData->Assets[ID].Asset->LoadAsset(assetInfo.Path.string());
+		auto path = Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path);
+		s_AssetManagerData->Assets[ID].Asset->LoadAsset(path.string());
 		assetInfo.State = AssetState::Ready;
 	}
 	bool AssetManager::LoadAsset(AssetID ID) {
@@ -238,7 +246,7 @@ namespace Proof
 			assetInfo.Type = assetType;
 			assetInfo.State = AssetState::Unloaded;
 			s_AssetManagerData->Assets.insert({ assetID,{assetInfo,nullptr} });// setting the asset as null as we will load it in another thread
-			s_AssetManagerData->AssetPath.insert({ std::filesystem::relative(path).string(),assetID });
+			s_AssetManagerData->AssetPath.insert({ path,assetID });
 		}
 	}
 	void AssetManager::SaveAllAssets() {
