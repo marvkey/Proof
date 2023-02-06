@@ -20,9 +20,17 @@
 #include "entt/entt.hpp"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Physics/PhysicsEngine.h"
+#include "Physics/PhysicsWorld.h"
 namespace Proof {
-
-
+	World::World(const std::string& name, UUID ID)
+		:
+		m_WorldID(ID), Name(name)
+	{
+		Init();
+	}
+	World::~World()
+	{
+	}
 	bool World::HasEntity(EntityID ID)const {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
 		if (it == m_Registry.entities.end())
@@ -41,7 +49,6 @@ namespace Proof {
 	}
 	void World::Init()
 	{
-	
 	}
 
 	void World::DeleteEntitiesfromQeue()
@@ -64,7 +71,7 @@ namespace Proof {
 					entity.GetOwner().RemoveChild(entity);
 				}
 			}
-			
+
 			for (auto&& pdata : m_Registry.pools)
 			{
 				pdata.pool&& pdata.pool->remove(ID.Get(), &m_Registry);
@@ -73,6 +80,23 @@ namespace Proof {
 		}
 
 		m_EntityDeleteQueue.clear();
+	}
+
+	void World::OnMeshColliderComponentCreate(MeshColliderComponent& component)
+	{
+		if (component.HasMesh() == false)
+			return;
+
+		if (!PhysicsMeshCooker::HasMesh(component.GetMeshSource()))
+		{
+			PhysicsMeshCooker::CookMesh(component.GetMeshSource());
+		}
+
+	}
+
+	void World::OnMeshColliderComponentDelete(MeshColliderComponent& component)
+	{
+
 	}
 
 	void World::OnUpdateRuntime(FrameTime DeltaTime) {
@@ -105,7 +129,7 @@ namespace Proof {
 				ScriptEngine::OnUpdate(DeltaTime, Entity{ entity,this });
 			}
 		}
-		m_PhysicsEngine->Simulate(DeltaTime);
+		m_PhysicsWorld->OnUpdate(DeltaTime);
 
 		DeleteEntitiesfromQeue();
 	}
@@ -214,21 +238,22 @@ namespace Proof {
 	{
 		CopyComponentSingleWorld<Component...>(dst, src, enttMap);
 	}
-	//static void CopyComponent
-	Count<World> World::Copy(Count<World> other) {
-		Count<World> newWorld = CreateCount<World>();
-		newWorld->Name = other->Name;
-		//newWorld->m_WorldID = other->m_WorldID;
-		newWorld->Name = other->Name;
 
-		auto& srcSceneRegistry = other->m_Registry;
+	//static void CopyComponent
+	Count<World> World::Copy(Count<World> worldToCopy) {
+		Count<World> newWorld = CreateCount<World>();
+		
+		newWorld->Name = worldToCopy->Name;
+		//newWorld->m_WorldID = other->m_WorldID;
+	
+		auto& srcSceneRegistry = worldToCopy->m_Registry;
 		auto& dstSceneRegistry = newWorld->m_Registry;
 		std::unordered_map<UUID, uint64_t> enttMap;
 
 		// Create entities in new scene
 		// in reverse order
 		auto idView = srcSceneRegistry.view<IDComponent>();
-		std::for_each(idView.rbegin(),idView.rend(),[&](auto e) {
+		std::for_each(idView.rbegin(), idView.rend(), [&](auto e) {
 			EntityID uuid = srcSceneRegistry.get<IDComponent>(e).GetID();
 			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
 			Entity newEntity = newWorld->CreateEntity(name, uuid);
@@ -242,8 +267,7 @@ namespace Proof {
 
 	void World::EndRuntime() {
 		ScriptEngine::EndWorld();
-		delete m_PhysicsEngine;
-		m_PhysicsEngine = nullptr;
+		delete m_PhysicsWorld;
 	}
 
 	void World::StartRuntime() {
@@ -274,8 +298,7 @@ namespace Proof {
 				}
 			}
 		}
-		m_PhysicsEngine = new PhysicsEngine(this);
-		m_PhysicsEngine->Start();
+		m_PhysicsWorld = new PhysicsWorld(this, PhysicsWorldConfig());
 	}
 
 	void World::DeleteEntity(Entity& ent, bool deleteChildren) {
@@ -289,7 +312,7 @@ namespace Proof {
 				DeleteEntity(childEntity, true);
 			});
 		}
-		
+
 	}
 
 	Entity World::FindEntityByTag(const std::string& tag) {

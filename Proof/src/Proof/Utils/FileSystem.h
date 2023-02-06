@@ -7,6 +7,9 @@ namespace Proof{
 		static void SetAnEnvironmentVariable(const std::string& ID, const std::string& value);
 		static std::string GetEnvironmentValue(const std::string& ID);
 		static std::string GetProjectDir();
+	private:
+		static void ClearEnvironmentVariables();
+		friend class Application;
 	};
 
 	struct FilePath {

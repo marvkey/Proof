@@ -183,9 +183,8 @@ namespace Proof
 
 		}
 		m_CurrentPool = CreatePool(device, maxSets, poolFlags);
+		InitTextureLayout();
 	}
-
-
 
 	VulkanDescriptorPool::~VulkanDescriptorPool() {
 		// same problem as graphhics context
@@ -207,46 +206,18 @@ namespace Proof
 		//Renderer::SubmitDatafree([device = m_Device, copyPool = m_CurrentPool]() {
 			vkDestroyDescriptorPool(m_Device, m_CurrentPool, nullptr);
 		//});
+
+		vkDestroySampler(m_Device,m_FontSampler,nullptr);
+		vkDestroyDescriptorSetLayout(m_Device, m_TextureLayout,nullptr);
 	}
 
 
-	VkDescriptorSetLayout TextreuLayout;
-	VkSampler fontSampler;
-	void InitTextureLayout() {
-		const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		if (fontSampler == nullptr){
-			VkSamplerCreateInfo info = {};
-			info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-			info.magFilter = VK_FILTER_LINEAR;
-			info.minFilter = VK_FILTER_LINEAR;
-			info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			info.minLod = -1000;
-			info.maxLod = 1000;
-			info.maxAnisotropy = 1.0f;
-			VkResult err = vkCreateSampler(graphicsContext->GetDevice(), &info, nullptr, &fontSampler);
-		}
-		VkSampler sampler[1] = { fontSampler };
-		VkDescriptorSetLayoutBinding binding[1] = {};
-		binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		binding[0].descriptorCount = 1;
-		binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-		binding[0].pImmutableSamplers = sampler;
-		VkDescriptorSetLayoutCreateInfo info = {};
-		info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		info.bindingCount = 1;
-		info.pBindings = binding;
-		VkResult err = vkCreateDescriptorSetLayout(graphicsContext->GetDevice(), &info, nullptr, &TextreuLayout);
-	}
+	
 	VkDescriptorSet VulkanDescriptorPool::AddTexture(VkSampler sampler, VkImageView image_view, VkImageLayout image_layout) {
-		if (TextreuLayout == nullptr)
-			InitTextureLayout();
 		// Create Descriptor Set:
 		VkDescriptorSet descriptor_set;
 		{
-			Allocate(&descriptor_set, TextreuLayout);
+			Allocate(&descriptor_set, m_TextureLayout);
 		}
 
 		// Update the Descriptor Set:
@@ -347,6 +318,35 @@ namespace Proof
 		vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptorPool);
 
 		return descriptorPool;
+	}
+
+	void VulkanDescriptorPool::InitTextureLayout()
+	{
+		{
+			VkSamplerCreateInfo info = {};
+			info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+			info.magFilter = VK_FILTER_LINEAR;
+			info.minFilter = VK_FILTER_LINEAR;
+			info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			info.minLod = -1000;
+			info.maxLod = 1000;
+			info.maxAnisotropy = 1.0f;
+			VkResult err = vkCreateSampler(m_Device, &info, nullptr, &m_FontSampler);
+		}
+		VkSampler sampler[1] = { m_FontSampler };
+		VkDescriptorSetLayoutBinding binding[1] = {};
+		binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		binding[0].descriptorCount = 1;
+		binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		binding[0].pImmutableSamplers = sampler;
+		VkDescriptorSetLayoutCreateInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		info.bindingCount = 1;
+		info.pBindings = binding;
+		VkResult err = vkCreateDescriptorSetLayout(m_Device, &info, nullptr, &m_TextureLayout);
 	}
 
 	VulkanDescriptorWriter::VulkanDescriptorWriter(VulkanDescriptorSet* setLayout, Count<VulkanDescriptorPool> pool):

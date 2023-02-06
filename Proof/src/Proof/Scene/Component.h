@@ -434,7 +434,7 @@ namespace Proof
 		CubeColliderComponent(const CubeColliderComponent&) = default;
 		CubeColliderComponent() = default;
 		Vector OffsetLocation = { 0,0,0 };
-		Vector OffsetScale= { 1,1,1 };
+		Vector OffsetScale= { 0,0,0 };
 		bool IsTrigger = false;
 
 		void RemovePhysicsMaterial() {
@@ -454,6 +454,7 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
+		friend class PhysicsActor;
 	};
 	
 	struct Proof_API SphereColliderComponent {
@@ -475,6 +476,7 @@ namespace Proof
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
+		friend class PhysicsActor;
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 	};
@@ -504,6 +506,7 @@ namespace Proof
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
+		friend class PhysicsActor;
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 		mutable UUID m_PhysicsMaterialPointerID= 0;
@@ -531,6 +534,9 @@ namespace Proof
 		void RemoveMeshSource() {
 			m_MeshAssetPointerID = 0;
 		}
+		AssetID GetMeshSource() {
+			return m_MeshAssetPointerID;
+		}
 	private:
 		class MeshAsset* GetMeshAsset()const;
 		mutable UUID m_MeshAssetPointerID = 0;// POINTS TO THE MESH ASSET
@@ -540,6 +546,7 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
+		friend class PhysicsActor;
 		friend class PhysicsEngine;
 		mutable UUID m_PhysicsMaterialPointerID = 0;
 	};	
@@ -553,64 +560,7 @@ namespace Proof
 		VelocityChange,	
 		Acceleration
 	};
-
-
-	struct ScriptComponent {
-	public:
-		ScriptComponent(const ScriptComponent& other) = default;
-		ScriptComponent() = default;
-		
-		bool AddScript(const std::string& className);
-		bool RemoveScript(const std::string& className) {
-			for (int i = 0; i < m_Scripts.size(); i++) {
-				if (m_Scripts[i].ClassName == className) {
-					m_Scripts.erase(m_Scripts.begin() + i);
-					return true;
-				}
-			}
-			return false;
-		}
-
-
-		bool HasAnyScripts() {
-			return m_Scripts.size() > 0;
-		}
-		bool RemoveScript(uint32_t index) {
-			if (index <= m_Scripts.size()) {
-				m_Scripts.erase(m_Scripts.begin() + index);
-				return true;
-			}
-			return false;
-		};
-
-		bool ChangeScript(const std::string& oldClassName, const std::string& newClassName);
-
-		bool HasScript(const std::string& className) {
-			for (int i = 0; i < m_Scripts.size(); i++) {
-				if (m_Scripts[i].ClassName == className) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-
-		template <typename func>
-		void ForEachScript(func f) {
-			for (const auto& val : m_Scripts)
-				f(val.ClassName);
-		}
-	private:
-		std::vector<ScriptData> m_Scripts;
-		
-		friend class ScriptEngine;
-		friend class SceneHierachyPanel;
-		friend class World;
-		friend class SceneSerializer;
-		friend class WorldRenderer;
-		friend class Editore3D;
-		friend class PhysicsEngine;
-	};
+	
 	class Proof_API RigidBodyComponent {
 	public:
 		RigidBodyComponent(const RigidBodyComponent&) = default;
@@ -642,6 +592,68 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 		friend class WorldRenderer;
+		friend class PhysicsActor;
+	};
+
+	struct ScriptComponent {
+	public:
+		ScriptComponent(const ScriptComponent& other) = default;
+		ScriptComponent() = default;
+
+		bool AddScript(const std::string& className);
+		bool RemoveScript(const std::string& className) {
+			for (int i = 0; i < m_Scripts.size(); i++)
+			{
+				if (m_Scripts[i].ClassName == className)
+				{
+					m_Scripts.erase(m_Scripts.begin() + i);
+					return true;
+				}
+			}
+			return false;
+		}
+
+
+		bool HasAnyScripts() {
+			return m_Scripts.size() > 0;
+		}
+		bool RemoveScript(uint32_t index) {
+			if (index <= m_Scripts.size())
+			{
+				m_Scripts.erase(m_Scripts.begin() + index);
+				return true;
+			}
+			return false;
+		};
+
+		bool ChangeScript(const std::string& oldClassName, const std::string& newClassName);
+
+		bool HasScript(const std::string& className) {
+			for (int i = 0; i < m_Scripts.size(); i++)
+			{
+				if (m_Scripts[i].ClassName == className)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+
+		template <typename func>
+		void ForEachScript(func f) {
+			for (const auto& val : m_Scripts)
+				f(val.ClassName);
+		}
+	private:
+		std::vector<ScriptData> m_Scripts;
+
+		friend class ScriptEngine;
+		friend class SceneHierachyPanel;
+		friend class World;
+		friend class SceneSerializer;
+		friend class WorldRenderer;
+		friend class Editore3D;
 		friend class PhysicsEngine;
 	};
 	template<class ... Component>

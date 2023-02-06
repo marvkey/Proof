@@ -29,24 +29,15 @@ namespace Proof {
 	public:
 		using EntityID = UUID;
 
-		World(const std::string& name = "Default World", UUID ID = UUID()) :
-			m_WorldID(ID), Name(name)
-		{
-			Init();
-		}
-		~World() {
-			//m_Registry.on_construct<ScriptComponent>();
-		}
+		World(const std::string& name = "Default World", UUID ID = UUID());
+		virtual ~World();
 
-		World(World&) {
-			Init();
-		}
 		AssetID GetID() {
 			return m_WorldID;
 		}
 		const std::string& GetName()const { return Name; };
-		static Count<World> Copy(Count<World> other);
-		class PhysicsEngine* GetPhysicsEngine()const { return m_PhysicsEngine; };
+		static Count<World> Copy(Count<World> worldToCopy);
+		class PhysicsWorld* GetPhysicsEngine()const { return m_PhysicsWorld; };
 
 		bool HasEntity(EntityID ID)const;
 		bool HasEntity(EntityID ID);
@@ -123,9 +114,15 @@ namespace Proof {
 		void Init();
 		void DeleteEntitiesfromQeue();
 		
+		// this is nore for beforee we strt runtime so we cna have mesh collider 
+		// for debugging
+		void OnMeshColliderComponentCreate(MeshColliderComponent& component);
+		void OnMeshColliderComponentDelete(MeshColliderComponent& component);
+
+
 		std::vector< EntityID> m_EntityDeleteQueue;
 		entt::registry64 m_Registry;
-		class PhysicsEngine* m_PhysicsEngine = nullptr;
+		class PhysicsWorld* m_PhysicsWorld =nullptr;
 		WorldState m_CurrentState = WorldState::Edit;
 		UUID m_WorldID;
 		std::string Name = "DefaultWorld";
@@ -135,7 +132,5 @@ namespace Proof {
 		friend class Editore3D;
 		friend class RendererBase;
 		friend class WorldRenderer;
-		friend class PhysicsEngine;
-
 	};
 }

@@ -85,7 +85,8 @@ namespace Proof
 		m_Format = ImageFormat::RGBA;
 		if (data == nullptr)
 		{
-			PF_ENGINE_ERROR("Texture passed is empty {}", Path.c_str());
+			PF_ERROR("Texture passed is empty {}", Path.c_str());
+			PF_CORE_ASSERT(false);
 			return;
 		}
 		// check for dimension

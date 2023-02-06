@@ -13,4 +13,8 @@ namespace Proof
 	std::string FileSystem::GetProjectDir() {
 		return s_EnvironmentVariables.at("PROOF_PROJECT_DIR");
 	}
+	void FileSystem::ClearEnvironmentVariables()
+	{
+		s_EnvironmentVariables.clear();
+	}
 }

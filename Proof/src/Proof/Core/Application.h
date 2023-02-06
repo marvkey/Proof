@@ -37,6 +37,9 @@
         void OpenProject(const std::filesystem::path& path);
 
         void Save();
+        Window* GetWindow() {
+            return m_Window.get();
+        }
     protected:
         Application(const ApplicationConfiguration& config);
         bool WindowMinimized = false;
@@ -54,7 +57,7 @@
         void OnWindowCloseEvent(WindowCloseEvent& e);
         LayerStack MainLayerStack;
         ImGuiLayer* ImGuiMainLayer;
-        static Special<Window>MainWindow;
+        Special<Window>m_Window;
         friend class CurrentWindow;
         friend class FrameBuffer;
         float LastFrameTime;

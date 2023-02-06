@@ -30,5 +30,6 @@ namespace Proof{
 	private:
 		void* m_RuntimeBody = nullptr;
 		friend class PhysicsEngine;
+		friend class PhysicsActor;
 	};
 }

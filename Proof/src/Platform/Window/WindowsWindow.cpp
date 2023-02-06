@@ -5,7 +5,6 @@
 #include  "Proof/Events/KeyEvent.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Events/ControllerEvent.h"
-#include "Proof/Core/CurrentWindow.h"
 
 #include "Proof/Core/FrameTime.h"
 
@@ -18,12 +17,19 @@
 
 namespace Proof {
 
-
-
+    static uint8_t s_GLFWWindowCount = 0;
+    static void GLFWErrorCallback(int error, const char* description)
+    {
+        PF_ENGINE_ERROR("GLFW {}: {}", error, description);
+    }
     WindowsWindow::WindowsWindow(const WindowConfiguration& configuration):
     Window(configuration) 
     {
         Init();
+    }
+    WindowsWindow::~WindowsWindow()
+    {
+        End();
     }
     void WindowsWindow::WindowUpdate() {
         
@@ -50,7 +56,7 @@ namespace Proof {
         {
             for (int i = 0; i < m_KeyPressedEventCheck.size(); i++) {
                 KeyBoardKey key = m_KeyPressedEventCheck[i];
-                if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), (int)key)) {
+                if (glfwGetKey((GLFWwindow*)m_Window, (int)key)) {
                     KeyPressedEvent pressedEvent(key);
                     EventCallback(pressedEvent);
                 }
@@ -62,7 +68,7 @@ namespace Proof {
 
             for (int i = 0; i < m_MouseButtonPressedEventCheck.size(); i++) {
                 MouseButton key = m_MouseButtonPressedEventCheck[i];
-                if (glfwGetMouseButton((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), (int)key)) {
+                if (glfwGetMouseButton((GLFWwindow*)m_Window, (int)key)) {
                     MouseButtonPressedEvent pressedEvent(key);
                     EventCallback(pressedEvent);
                 }
@@ -562,15 +568,20 @@ namespace Proof {
     }
 
     int WindowsWindow::Init() {
-        if (!glfwInit()) {
-            PF_CORE_ASSERT(false,"Could Not Initilize GLFW");
-            return -1;
+
+        if (s_GLFWWindowCount == 0)
+        {
+            if (!glfwInit())
+            {
+                int success = glfwInit();
+                PF_CORE_ASSERT(success, "Could not initialize GLFW!");
+                glfwSetErrorCallback(GLFWErrorCallback);
+            }
         }
         if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // so we do not set an api as open gl
             glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         }
-
         glfwWindowHint(GLFW_DECORATED, m_WindowConfiguration.Decorated);
         if (m_WindowConfiguration.startWindowedFullScreen) {
             const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -587,12 +598,12 @@ namespace Proof {
         }
         else
             m_Window = glfwCreateWindow(m_WindowConfiguration.Width, m_WindowConfiguration.Height, m_WindowConfiguration.Title.c_str(), nullptr, NULL);
+        s_GLFWWindowCount++;
         if (m_Window == nullptr) {
             PF_CORE_ASSERT(false,"Window  Nullptr");
             glfwTerminate();
             return -1;
         }
-
         glfwSetWindowUserPointer((GLFWwindow*)m_Window, this);
         if (m_WindowConfiguration.startFullScreen && m_WindowConfiguration.startWindowedFullScreen == false) {
             glfwMaximizeWindow((GLFWwindow*)m_Window);
@@ -650,8 +661,6 @@ namespace Proof {
             WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
             proofWindow.FrameBufferResizedCallback(width,height);
         });
-        WindowsWindow* windowswindow = this;
-    
 
         glfwSetJoystickCallback([](int cID, int event)
         {
@@ -682,7 +691,11 @@ namespace Proof {
 
     int WindowsWindow::End() {
         glfwDestroyWindow((GLFWwindow*)m_Window);
-        glfwTerminate();
+        s_GLFWWindowCount--;
+        if (s_GLFWWindowCount == 0)
+        {
+            glfwTerminate();
+        }
         m_Window = nullptr;
         return 0;
     }

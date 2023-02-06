@@ -49,7 +49,7 @@ namespace Proof
 		bool CreateVmaBuffer(VkBufferCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanBuffer& buffer);
 		bool CreateVmaImage(VkImageCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanImageAlloc& image);
 		Count<class SwapChain> GetSwapChain(){
-			return CurrentWindow::GetWindow().GetSwapChain();
+			return Application::Get()->GetWindow()->GetSwapChain();
 		}
 		VkSampleCountFlagBits GetMaxSampleCount();
 		uint32_t GetUniformPadSize(uint32_t originalSize)

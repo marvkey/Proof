@@ -12,12 +12,12 @@
 #include "Proof/Input/InputManager.h"
 #include<chrono>
 #include "Proof/Scripting/ScriptEngine.h"
-#include "CurrentWindow.h"
 #include "Proof/Project/ProjectSerilizer.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/SwapChain.h"
+
+#include "Proof/Scene/Physics/PhysicsEngine.h"
 namespace Proof {
-    Special <Window> Application::MainWindow = nullptr;
     Application* Application::s_Instance = nullptr;
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
@@ -45,10 +45,9 @@ namespace Proof {
             (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", m_Project->GetProjectDirectory().string());
         }
        
-
-        MainWindow = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
-        MainWindow->SetEventCallback([this](Event& e) {OnEvent(e); });
-        RendererBase::Init(static_cast<Window*>(MainWindow.get()));
+        m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
+        m_Window->SetEventCallback([this](Event& e) {OnEvent(e); });
+        RendererBase::Init(static_cast<Window*>(m_Window.get()));
 
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
@@ -56,6 +55,8 @@ namespace Proof {
         AssetManager::Init(assetManagerconfig);
         AssetManager::InitilizeAssets();
 
+
+        PhysicsEngine::Init();
         ScriptEngine::Init();
         ImGuiMainLayer = new ImGuiLayer();
         MainLayerStack.PushLayer(ImGuiMainLayer);
@@ -111,8 +112,8 @@ namespace Proof {
     }
 
     Application::~Application() {
-        //if (m_ApplicationShouldShutdown)
-          //  std::exit(EXIT_SUCCESS);
+        if (m_ApplicationShouldShutdown)
+            std::exit(EXIT_SUCCESS);
     }
 
     void Application::Run() {
@@ -136,7 +137,7 @@ namespace Proof {
             }
             if (m_ApplicationConfiguration.EnableImgui == true)
                 ImguiUpdate(DeltaTime);
-            MainWindow->WindowUpdate();
+           m_Window->WindowUpdate();
             Renderer::EndFrame();
 
             FrameTimersControll::s_FrameTimers.clear();
@@ -150,15 +151,21 @@ namespace Proof {
             FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
             LastFrameTime = time;
         };
-        if (glfwWindowShouldClose((GLFWwindow*) Application::MainWindow->GetWindow()) == GLFW_TRUE)
+        if (glfwWindowShouldClose((GLFWwindow*) m_Window->GetWindow()) == GLFW_TRUE)
         {
             m_ApplicationShouldShutdown = true;
         }
         MainLayerStack.Empty();
         // remove the swpchain so it cna be deleted in the queue
         AssetManager::SaveAllAssets();
-        Application::MainWindow->m_SwapChain = nullptr;
+        m_Window->m_SwapChain = nullptr;
         RendererBase::Destroy();
+
+        FileSystem::ClearEnvironmentVariables();
+        ScriptEngine::Shutdown();
+        PhysicsEngine::Release();
+        m_Project = nullptr;
+        m_Window = nullptr;
     }
 
     void Application::PushLayer(Layer* Layer) {

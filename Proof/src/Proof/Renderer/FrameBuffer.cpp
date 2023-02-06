@@ -18,7 +18,7 @@ namespace Proof {
 	Count<ScreenFrameBuffer> ScreenFrameBuffer::Create(uint32_t Width, uint32_t Height)
 	{
 		auto screenBuffer= CreateCount<ScreenFrameBuffer>();
-		auto swapChain = CurrentWindow::GetWindow().GetSwapChain();
+		auto swapChain = Application::Get()->GetWindow()->GetSwapChain();
 		FrameBufferConfig config;
 		config.DebugName = "Screen FrameBuffer";
 		config.Attachments = { swapChain->GetImageFormat(),swapChain->GetDepthFormat()};

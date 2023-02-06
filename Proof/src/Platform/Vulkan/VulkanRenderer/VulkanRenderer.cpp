@@ -41,7 +41,7 @@ namespace Proof
 	void VulkanRenderer::BeginFrame() {
 		const auto& graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
 		if (s_IsWindowResised) {
-			graphicsContext->GetSwapChain()->Resize({ CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight() });
+			graphicsContext->GetSwapChain()->Resize({ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() });
 
 			s_CurrentFrame.FrameinFlight = 0;
 			s_IsWindowResised = false;

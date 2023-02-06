@@ -63,7 +63,7 @@ namespace Proof
 		// returns nullptr if the asset does not exist
 		template<class T>
 		static Count<T>GetAsset(AssetID ID){
-			auto& it = GetAssets()[ID];
+			auto& it = GetAssets().at(ID);
 			if (it.Info.Type == AssetType::TextureSourceFile)
 				return nullptr;
 			if (it.Info.State == AssetState::Unloaded)
@@ -74,7 +74,7 @@ namespace Proof
 		}
 		template<class T>
 		static Count<T>GetAsset(const std::filesystem::path& path) {
-			auto it = GetAssetByPath()[path.string()];
+			auto& it = GetAssetByPath().at(path.string());
 			return GetAsset<T>(it.Get());
 		}
 		/**

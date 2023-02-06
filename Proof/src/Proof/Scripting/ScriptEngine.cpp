@@ -315,7 +315,13 @@ namespace Proof
         s_Data->EntityClass = CreateCount<ScriptClass>("Proof", "Entity", true);
     }
     void ScriptEngine::Shutdown() {
+        mono_domain_set(mono_get_root_domain(), false);
 
+        mono_domain_unload(s_Data->AppDomain);
+        s_Data->AppDomain = nullptr;
+
+        mono_jit_cleanup(s_Data->RootDomain);
+        s_Data->RootDomain = nullptr;
     }
 
     void ScriptEngine::StartWorld(World* world) {

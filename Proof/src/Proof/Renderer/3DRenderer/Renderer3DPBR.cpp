@@ -239,6 +239,7 @@ namespace Proof
 					if (subMesh.Enabled == false)continue;
 					Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(subMesh.GetDiffuseTextures()[0])->GetTexture()
 						: Renderer::GetWhiteTexture();
+					//texture = Renderer::GetWhiteTexture();
 					descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, texture);
 					descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
 					subMesh.GetVertexBuffer()->Bind(m_RenderStorage->CommandBuffer);

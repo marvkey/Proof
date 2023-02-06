@@ -13,11 +13,7 @@ namespace Proof
 
 
 	// local callback functions
-	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-		VkDebugUtilsMessageTypeFlagsEXT messageType,
-		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-		void* pUserData) {
+	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,VkDebugUtilsMessageTypeFlagsEXT messageType,const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,void* pUserData) {
 		if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 			PF_ENGINE_CRITICAL("VULKAN: {}", pCallbackData->pMessage);
 		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
@@ -30,14 +26,8 @@ namespace Proof
 		return VK_FALSE;
 	}
 
-	VkResult CreateDebugUtilsMessengerEXT(
-		VkInstance instance,
-		const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-		const VkAllocationCallbacks* pAllocator,
-		VkDebugUtilsMessengerEXT* pDebugMessenger) {
-		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-			instance,
-			"vkCreateDebugUtilsMessengerEXT");
+	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,const VkAllocationCallbacks* pAllocator,VkDebugUtilsMessengerEXT* pDebugMessenger) {
+		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance,"vkCreateDebugUtilsMessengerEXT");
 		if (func != nullptr) {
 			return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
 		}
@@ -58,10 +48,7 @@ namespace Proof
 		}
 	}
 
-	// class member functions
 	VulkanGraphicsContext::VulkanGraphicsContext(Window* window) : m_Window{ window } {
-		glfwMakeContextCurrent((GLFWwindow*)m_Window);
-
 		CreateInstance();
 		SetupDebugMessenger();
 		CreateSurface();
@@ -88,7 +75,6 @@ namespace Proof
 			vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
 			vkDestroyInstance(m_Instance, nullptr);
 		//});
-		
 	}
 
 	void VulkanGraphicsContext::CreateInstance() {
@@ -239,8 +225,7 @@ namespace Proof
 	}
 
 	void VulkanGraphicsContext::InitDescriptors() {
-		//uint32_t size = Renderer::GetConfig().FramesFlight; // maybe also frames in flight
-		uint32_t size = 1000; // maybe also frames in flight
+		uint32_t size = 1000; 
 			//auto& build= VulkanDescriptorPool::Builder()
 			//.SetMaxSets(1000)
 			//.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000);
@@ -248,7 +233,7 @@ namespace Proof
 			//VkDescriptorPoolCreateFlags PoolFlags = 0;
 		std::vector<VkDescriptorPoolSize> PoolSizes{};
 
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 });
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 });
@@ -258,8 +243,8 @@ namespace Proof
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 });
 		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 });
 		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 });
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 });
-		m_GlobalPool = CreateCount<VulkanDescriptorPool>(1000, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, PoolSizes, m_Device);
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 });
+		m_GlobalPool = CreateCount<VulkanDescriptorPool>(size, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, PoolSizes, m_Device);
 
 	}
 

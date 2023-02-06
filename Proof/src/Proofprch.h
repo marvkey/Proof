@@ -5,7 +5,6 @@
 #include "Proof/Input/Input.h"
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Core/Debug/Instrumentor.h"
-#include "Proof/Core/CurrentWindow.h"
 #include "Proof/Resources/EnumReflection.h"
 
 #include <iostream>

@@ -101,6 +101,10 @@ namespace Proof
         VkDevice m_Device;
         uint32_t m_MaxSets;
         uint32_t m_PoolFlags;
+
+        VkSampler m_FontSampler;
+        VkDescriptorSetLayout m_TextureLayout;
+        void InitTextureLayout();
         VkDescriptorPool GrabPool() {
             //there are reusable pools availible
             if (m_FreePools.size() > 0) {

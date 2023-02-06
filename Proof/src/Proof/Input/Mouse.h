@@ -1,24 +1,23 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof/Core/CurrentWindow.h"
 #include <utility>
 
 namespace Proof {
-    class Proof_API Mouse :private CurrentWindow {
+    class Mouse{
     public:
         static float GetPosX() {
-            return GetWindow().GetMousePosition().X;
+            return Application::Get()->GetWindow()->GetMousePosition().X;
         }
         static float GetPosY() {
-            return GetWindow().GetMousePosition().Y;
+            return Application::Get()->GetWindow()->GetMousePosition().Y;
         }
 
         static float GetScrollX(){
-            return GetWindow().GetMouseScrollWheel().X;
+            return Application::Get()->GetWindow()->GetMouseScrollWheel().X;
         }
 
         static float GetScrollY() {
-            return GetWindow().GetMouseScrollWheel().Y;
+            return Application::Get()->GetWindow()->GetMouseScrollWheel().Y;
         }
 
         static bool IsScroll(){

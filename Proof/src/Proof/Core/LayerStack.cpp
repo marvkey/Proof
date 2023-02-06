@@ -46,5 +46,7 @@ namespace Proof {
 			PF_ENGINE_TRACE("{} Detach and Delete", layer->GetName().c_str());
 			delete layer;
 		}
+		V_LayerStack.clear();
+		LayerStackIndex = 0;
 	}
 }

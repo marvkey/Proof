@@ -72,8 +72,6 @@ namespace Proof
 		//}
 	}
 	void CollisionCallback::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) {
-
-		
 		Entity entity1{ (uint64_t)pairHeader.actors[0]->getName(),SceneCoreClasses::GetCurrentWorld() };
 		Entity entity2{ (uint64_t)pairHeader.actors[1]->getName(),SceneCoreClasses::GetCurrentWorld() };
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)

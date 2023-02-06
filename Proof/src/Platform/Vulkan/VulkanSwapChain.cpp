@@ -248,7 +248,7 @@ namespace Proof
 
         {
             for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
-                Renderer::SubmitDatafree([imageViews = m_SwapChainImageViews[i],images = m_SwapChainImages[i], device = device] {
+                Renderer::SubmitDatafree([imageViews = m_SwapChainImageViews[i],images = m_SwapChainImages[i],device = device] {
                     vkDestroyImageView(device,imageViews , nullptr);
                     //vkDestroyImage(device, images, nullptr);
                 });

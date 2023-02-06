@@ -43,7 +43,7 @@ namespace Proof{
 		m_SceneEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{ 1,1,1 };
 		m_SceneEntity.GetComponent<TransformComponent>()->Location.Z -= 10;
 		m_SceneEntity.AddComponent<MeshComponent>()->SetMeshSource(m_ID);
-		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_World, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight() );
+		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_World, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() );
 	}
 	
 	void SceneRendererUI::MeshAssetUI() {
@@ -77,7 +77,7 @@ namespace Proof{
 		m_SceneEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{ 1,1,1 };
 		m_SceneEntity.GetComponent<TransformComponent>()->Location.Z -= 10;
 		m_SceneEntity.AddComponent<MeshComponent>()->SetMeshSource(m_ID);
-		m_WorldRenderer =CreateSpecial<WorldRenderer>( m_World, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight() );
+		m_WorldRenderer =CreateSpecial<WorldRenderer>( m_World, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() );
 	}
 	void SceneRendererUI::MeshSourceAssetUI() {
 		float width = ImGui::GetWindowWidth();
@@ -131,9 +131,9 @@ namespace Proof{
 			ScreenSize currentSize = { (uint32_t)ImGui::GetWindowSize().x,(uint32_t)ImGui::GetWindowSize().y };
 			if (currentSize != m_ScreenSize) {
 				m_WorldRenderer->Resize(currentSize);
-				CurrentWindow::GetWindow().SetWindowInputEvent(false);
+				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 				m_Camera.OnUpdate(deltaTime, ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
-				CurrentWindow::GetWindow().SetWindowInputEvent(true);
+				Application::Get()->GetWindow()->SetWindowInputEvent(true);
 			}
 
 			m_ScreenSize = currentSize;
@@ -141,9 +141,9 @@ namespace Proof{
 			const void* Text = m_WorldRenderer->GetImage().SourceImage;
 			ImGui::Image((ImTextureID)Text,ImGui::GetWindowSize(), ImVec2{0,1}, ImVec2{1,0});
 			if (ImGui::IsWindowFocused()) {
-				CurrentWindow::GetWindow().SetWindowInputEvent(true);
+				Application::Get()->GetWindow()->SetWindowInputEvent(true);
 				m_Camera.OnUpdate(deltaTime, ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
-				CurrentWindow::GetWindow().SetWindowInputEvent(false);
+				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
 			ImGui::EndChild();
 		}

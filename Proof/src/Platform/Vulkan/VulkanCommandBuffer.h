@@ -32,7 +32,7 @@ namespace Proof
 	private:
 		void BeginRecord(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
 		void EndRecord(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-		CommandBuffer* m_NormalCommandBuffer;
+		CommandBuffer* m_NormalCommandBuffer =nullptr;
 		void Init();
 		void Release();
 		bool m_Recording = false;

@@ -25,7 +25,7 @@ namespace Proof {
 			Renderer::s_RendererAPI = new VulkanRendererAPI();
 		}
 		m_GraphicsContext = GraphicsContext::Create(window);
-		window->m_SwapChain = SwapChain::Create(ScreenSize{ CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight() });
+		window->m_SwapChain = SwapChain::Create(ScreenSize{ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() });
 		Renderer::s_RendererAPI->Init();
 
 		s_BaseTextures = new  BaseTextures();

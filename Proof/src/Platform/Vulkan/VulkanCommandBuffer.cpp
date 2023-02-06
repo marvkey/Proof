@@ -11,6 +11,20 @@ namespace Proof
 		m_CommandBuffer.resize(Renderer::GetConfig().FramesFlight);
 	}
 	VulkanCommandBuffer::~VulkanCommandBuffer() {
+		// called by render sumit class
+		/*
+		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
+		{
+			Renderer::SubmitDatafree([buffer = m_CommandBuffer[i]](){
+				auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+				vkFreeCommandBuffers(
+					graphicsContext->GetDevice(),
+					graphicsContext->GetCommandPool(),
+					1,
+					&buffer);
+			});
+		}
+		*/
 	}
 	
 
@@ -45,7 +59,7 @@ namespace Proof
 
 	void VulkanRenderCommandBuffer::Release()
 	{
-		if (m_NormalCommandBuffer)
+		if (m_NormalCommandBuffer != nullptr)
 		{
 			m_NormalCommandBuffer = nullptr;
 			return;

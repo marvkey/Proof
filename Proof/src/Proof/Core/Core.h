@@ -72,7 +72,6 @@ namespace Proof
     inline constexpr Special<T> CreateSpecial(Args&&... args) {
         return std::make_unique<T>(std::forward<Args>(args)...);
     }
-
     struct Proof_API Timer {
         Timer() {
             Reset();

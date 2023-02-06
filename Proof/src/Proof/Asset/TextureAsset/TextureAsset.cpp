@@ -40,8 +40,8 @@ namespace Proof{
 
 		m_AssetID = data["ID"].as<uint64_t>();
 		m_Source = data["AssetSource"].as<uint64_t>();
-
-		m_Texture = Texture2D::Create(AssetManager::GetAssetInfo(m_Source).Path.string());
+		auto path = Application::Get()->GetProject()->GetAssetFileSystemPath(AssetManager::GetAssetInfo(m_Source).Path.string());
+		m_Texture = Texture2D::Create(path.string());
 		return true;
 	}
 	Image Texture2DAsset::GetImage() {

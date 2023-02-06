@@ -107,7 +107,7 @@ namespace Proof{
             aiString strFilePath;
             aimat->GetTexture(aitype,i,&strFilePath);
             
-            std::string textureFilePath = std::filesystem::relative(m_Path.parent_path() /= strFilePath.C_Str()).string();
+            std::string textureFilePath = std::filesystem::relative(m_Path.parent_path() /= strFilePath.C_Str(),Application::Get()->GetProject()->GetAssetDirectory()).string();
             std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
 
             if (AssetManager::HasAsset(textureFilePath)) {
@@ -123,17 +123,18 @@ namespace Proof{
                 }
                 // this is temporaty 
                 if (textureFound == false) {
-                    std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
+                    std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName, Application::Get()->GetProject()->GetAssetDirectory()).string();
                     path += "."+Texture2DAsset::StaticGetExtension();
-                    auto asset =  AssetManager::GetAsset< Texture2DAsset>(path);
+                    Count< Texture2DAsset> asset =  AssetManager::GetAsset< Texture2DAsset>(path);
                     textures.emplace_back(asset->GetAssetID());
                     m_Textures.emplace_back(TextureData{ asset->GetAssetID(),asset->GetAssetSource() });
+
                 }
                 continue;
             }
            
             // texture is not found so we generate it
-            std::string savePath  = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
+            std::string savePath  = std::filesystem::relative(m_Path.parent_path() /= textureName, Application::Get()->GetProject()->GetAssetDirectory()).string();
             Count<Texture2DAsset> asset = CreateCount<Texture2DAsset>(textureFilePath, savePath);
             AssetManager::NewAsset(asset);
             textures.emplace_back(asset->GetAssetID());

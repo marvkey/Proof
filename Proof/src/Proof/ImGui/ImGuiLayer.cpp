@@ -4,7 +4,6 @@
 #include "ImGui/imgui_impl_glfw.h"
 #include "ImGui/imgui_impl_opengl3.h"
 #include "ImGui/imgui_impl_vulkan.h"
-#include "Proof/Core/CurrentWindow.h"
 #include <GLFW/glfw3.h>
 #include "ImGuizmo.h"
 #include "Proof/Renderer/Renderer.h"
@@ -24,15 +23,15 @@ namespace Proof
 		ImguiRenderPass() {
 			RenderPassConfig config;
 			config.DebugName = "Imgui RenderPass";
-			config.Attachments = { CurrentWindow::GetWindow().GetSwapChain()->GetImageFormat() };
+			config.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat() };
 			config.Attachments.Attachments[0].PresentKHr = true;
 			RenderPass = RenderPass::Create(config);
 
 			FrameBufferConfig frameBuffferconfig;
 			frameBuffferconfig.DebugName = "Imgui-FrameBuffer";
-			frameBuffferconfig.Attachments = { CurrentWindow::GetWindow().GetSwapChain()->GetImageFormat() };
-			frameBuffferconfig.Attachments.Attachments[0].SetOverrideLayout(CurrentWindow::GetWindow().GetSwapChain()->GetImageLayout());
-			frameBuffferconfig.Size = { (float)CurrentWindow::GetWindow().GetWidth(), (float)CurrentWindow::GetWindow().GetHeight() };
+			frameBuffferconfig.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat() };
+			frameBuffferconfig.Attachments.Attachments[0].SetOverrideLayout(Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout());
+			frameBuffferconfig.Size = { (float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight() };
 			FrameBuffer = FrameBuffer::Create(frameBuffferconfig);
 	
 			CommandBuffer = RenderCommandBuffer::Create();
@@ -106,7 +105,7 @@ namespace Proof
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Regular.ttf", 17.0f);
 		SetDarkTheme();
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL) {
-			ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), true);
+			ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), true);
 			ImGui_ImplOpenGL3_Init("#version 450");
 		}
 	
@@ -115,9 +114,9 @@ namespace Proof
 
 			ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
 			const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-			SetupVulkanWindow(wd, graphicsContext->GetSurface(), CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
+			SetupVulkanWindow(wd, graphicsContext->GetSurface(), Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 			
-			ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), true);
+			ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), true);
 			ImGui_ImplVulkan_InitInfo init_info = {};
 			init_info.Instance = graphicsContext->GetInstance();
 			init_info.PhysicalDevice = graphicsContext->GetGPU();
@@ -185,18 +184,18 @@ namespace Proof
 		ImGuiIO& io = ImGui::GetIO();
 		if (m_WindoResize == true) {
 
-			s_ImguiRenderPass->FrameBuffer->Resize(Vector2{ (float)CurrentWindow::GetWindow().GetWidth(),(float)CurrentWindow::GetWindow().GetHeight() } );
+			s_ImguiRenderPass->FrameBuffer->Resize(Vector2{ (float)Application::Get()->GetWindow()->GetWidth(),(float)Application::Get()->GetWindow()->GetHeight() } );
 			ImGui_ImplVulkan_SetMinImageCount(graphicsContext->GetSwapChain()->GetImageCount());
 
 			ImGui_ImplVulkanH_CreateOrResizeWindow(graphicsContext->GetInstance(),
 				graphicsContext->GetGPU(),
 				graphicsContext->GetDevice(), wd,
 				graphicsContext->FindPhysicalQueueFamilies().graphicsFamily,
-				nullptr, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight(),
+				nullptr, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight(),
 				graphicsContext->GetSwapChain()->GetImageCount());
 			m_WindoResize = false;
 		}
-		io.DisplaySize = ImVec2((float)CurrentWindow::GetWindow().GetWidth(), (float)CurrentWindow::GetWindow().GetHeight());
+		io.DisplaySize = ImVec2((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 		wd->FrameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		ImGui_ImplVulkanH_Frame* fd = &wd->Frames[wd->FrameIndex];
 		ImGui::Render();
@@ -214,7 +213,7 @@ namespace Proof
 			Renderer::SubmitCommandBuffer(s_ImguiRenderPass->CommandBuffer);
 		}
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-			void* backup_current_context = CurrentWindow::GetWindow().GetWindow();
+			void* backup_current_context = Application::Get()->GetWindow()->GetWindow();
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent((GLFWwindow*)backup_current_context);

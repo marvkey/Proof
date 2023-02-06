@@ -31,8 +31,6 @@
 #include<thread>
 #include <chrono>
 #include "Proof/Core/SceneCoreClasses.h"
-#include "Proof/Core/CurrentWindow.h"
-
 #include <GLFW/glfw3.h>
 
 
@@ -46,16 +44,16 @@ namespace Proof
 	Editore3D::~Editore3D() {
 	}
 	bool Editore3D::IsKeyPressedEditor(KeyBoardKey key) {
-		//if (glfwGetKey((GLFWwindow*)CurrentWindow::GetWindow().GetWindow(), (int)Key)) {
+		//if (glfwGetKey((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), (int)Key)) {
 		//	return  true;
 		//}
 		//return false;
 		return Input::IsKeyPressed(key);
 	}
 	bool Editore3D::IsKeyClickedEditor(KeyBoardKey key) {
-		//return std::find(CurrentWindow::GetWindow().KeyboardClicked.begin(), CurrentWindow::GetWindow().KeyboardClicked.end(), Key)
+		//return std::find(Application::Get()->GetWindow()->KeyboardClicked.begin(), Application::Get()->GetWindow()->KeyboardClicked.end(), Key)
 		//	!=
-		//	CurrentWindow::GetWindow().KeyboardClicked.end();
+		//	Application::Get()->GetWindow()->KeyboardClicked.end();
 		return Input::IsKeyClicked(key);
 	}
 	
@@ -257,7 +255,7 @@ namespace Proof
 
 
 		m_WorldHierachy.SetContext(m_ActiveWorld.get());
-		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_ActiveWorld, CurrentWindow::GetWindow().GetWidth(), CurrentWindow::GetWindow().GetHeight());
+		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_ActiveWorld, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 		// cannot be setting it to window size and stuff innit
 		m_EditorWorld = m_ActiveWorld;
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
@@ -282,9 +280,9 @@ namespace Proof
 		if (m_IsViewPortResize&& m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
 			m_WorldRenderer->Resize({(uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y });
 			// so the camera can be edited while beig resized
-			CurrentWindow::GetWindow().SetWindowInputEvent(false);
+			Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-			CurrentWindow::GetWindow().SetWindowInputEvent(true);
+			Application::Get()->GetWindow()->SetWindowInputEvent(true);
 			m_IsViewPortResize = false;
 		}
 		switch (m_ActiveWorld->GetState()) {
@@ -321,9 +319,9 @@ namespace Proof
 				{
 					m_ActiveWorld->OnUpdateEditor(DeltaTime);
 					if (m_ViewPortFocused) {
-						CurrentWindow::GetWindow().SetWindowInputEvent(true);
+						Application::Get()->GetWindow()->SetWindowInputEvent(true);
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-						CurrentWindow::GetWindow().SetWindowInputEvent(false);
+						Application::Get()->GetWindow()->SetWindowInputEvent(false);
 					}
 					m_WorldRenderer->Render(m_EditorCamera);
 					break;
@@ -866,11 +864,11 @@ namespace Proof
 
 			if (ImGui::IsWindowFocused()) {
 				m_ViewPortFocused = true;
-				CurrentWindow::GetWindow().SetWindowInputEvent(true);
+				Application::Get()->GetWindow()->SetWindowInputEvent(true);
 			}
 			else {
 				m_ViewPortFocused = false;
-				CurrentWindow::GetWindow().SetWindowInputEvent(false);
+				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
 			const void* Text = m_WorldRenderer->GetImage().SourceImage;
 			ImGui::Image((ImTextureID)Text, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
@@ -1162,6 +1160,15 @@ namespace Proof
 		PF_ENGINE_TRACE("{} Saved", m_ActiveWorld->GetName().c_str());
 
 	}
+	void Editore3D::NewWorld()
+	{
+		m_EditorWorld = CreateCount<World>();
+		m_ActiveWorld = m_EditorWorld;
+		m_WorldRenderer->SetContext(m_EditorWorld);
+		m_WorldHierachy.SetContext(m_ActiveWorld.get());
+		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
+		m_WorldHierachy.m_SelectedEntity = {};
+	}
 	void Editore3D::PlayWorld() {
 		m_ActiveWorld = World::Copy(m_EditorWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
@@ -1194,15 +1201,7 @@ namespace Proof
 		m_ActiveWorld->m_CurrentState = WorldState::Pause;
 	}
 
-	void Editore3D::NewWorld()
-	{
-		m_EditorWorld = CreateCount<World>();
-		m_ActiveWorld = m_EditorWorld;
-		m_WorldRenderer->SetContext(m_ActiveWorld);
-		m_WorldHierachy.SetContext(m_ActiveWorld.get());
-		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
-		m_WorldHierachy.m_SelectedEntity = {};
-	}
+	
 
 	bool Editore3D::CreateAssetEditor(AssetID ID) {
 		auto it = m_AllPanels.find(ID);

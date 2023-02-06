@@ -6,9 +6,7 @@ namespace Proof {
     class Proof_API WindowsWindow : public Window {
     public:
         WindowsWindow(const WindowConfiguration& configuration);
-       virtual ~WindowsWindow(){
-            End();
-        }
+        virtual ~WindowsWindow();
         inline void SetEventCallback(const std::function<void(Event&)>& callback) { EventCallback = callback; }
         void CenterWindow();
     private:

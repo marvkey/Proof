@@ -166,7 +166,8 @@ namespace Proof
 		*/
 		template<typename T>
 		inline static T Degrees(T Radian) {
-			return Radian * (180 / PIE());
+			//180/PIE() = 57.295779513082320876798154814105
+			return Radian * static_cast<T>(57.295779513082320876798154814105);
 		}
 		/**
 		* @param Degree: value to be changed
@@ -174,11 +175,12 @@ namespace Proof
 		*/
 		template<typename T>
 		inline static T Radian(T Degree) {
-			return Degree * (PIE() / 180);
+			//PIE()/180 = 0.01745329251994329576923690768489
+			return Degree * static_cast<T>(0.01745329251994329576923690768489);
 		}
 		// @return the numerical value PIE
 		constexpr inline static float PIE() {
-			return 3.14159265359;
+			return 3.14159265358979323846264338327950288;
 		}
 		// @return the max value of a specific type
 		template<typename T>
