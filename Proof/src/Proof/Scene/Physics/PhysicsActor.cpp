@@ -44,6 +44,7 @@ namespace Proof {
 		AddRigidBody();
 
 		if (m_Entity.HasComponent<CubeColliderComponent>()) AddCubeCollider();
+		if (m_Entity.HasComponent<SphereColliderComponent>())AddSphereCollider();
 
 	}
 	PhysicsActor::~PhysicsActor()
@@ -91,10 +92,8 @@ namespace Proof {
 			glm::radians( worldRotation.Z)));
 		
 		
-		//auto quat = glm::quat({ glm::radians(worldRotation.X), glm::radians(worldRotation.Z),glm::radians(worldRotation.Z) });
-		
-		physx::PxTransform physxTransform{ physx::PxVec3(worldLocation.X,worldLocation.Y,worldLocation.Z),
-				physx::PxQuat(myquaternion.x,myquaternion.y,myquaternion.z,myquaternion.w) };
+		physx::PxTransform physxTransform{ PhysxUtils::VectorToPhysxVector(worldLocation),
+				PhysxUtils::VectorToPhysxQuat(worldRotation)};
 		physx::PxActor* rigidBodyBase = nullptr;
 		if (rigidBodyComponent.m_RigidBodyType == RigidBodyType::Dynamic)
 		{
@@ -137,63 +136,54 @@ namespace Proof {
 		auto& rigidBodyComponent = *m_Entity.GetComponent<RigidBodyComponent>();
 		physx::PxMaterial* colliderMaterial = cubeCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)cubeCollider->GetPhysicsMaterial()->m_RuntimeBody;
 		
+		const Vector worldScalePositive = m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetPositive();
+		const Vector colliderScalePositive = cubeCollider->OffsetScale.GetPositive();
 		
-		auto worldScalePositive = m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetPositive();
-		auto colliderScalePositive = cubeCollider->OffsetScale.GetPositive();
-		const auto worldLocation = m_PhysicsWorld->GetWorld()->GetWorldLocation(m_Entity);
-		const auto worldRotation = m_PhysicsWorld->GetWorld()->GetWorldRotation(m_Entity);
-
-		auto localPos = cubeCollider->OffsetLocation;
-		auto size = worldScalePositive + colliderScalePositive;
-		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxBoxGeometry(size.X, size.Y, size.Z), *colliderMaterial, true);
+		Vector size = worldScalePositive + colliderScalePositive;
+		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxBoxGeometry(PhysxUtils::VectorToPhysxVector(size)), *colliderMaterial, true);
 		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 
 		auto localtransform = body->getLocalPose();
-		localtransform.p += {localPos.X, localPos.Y, localPos.Z};
+		localtransform.p += PhysxUtils::VectorToPhysxVector(cubeCollider->OffsetLocation);
 		body->setLocalPose(localtransform);
 		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(cubeCollider->IsTrigger));
 		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, cubeCollider->IsTrigger);
-
 
 		cubeCollider->m_RuntimeBody = body;
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 		rigidBody->attachShape(*body);
 	}
 
-	static Vector ConvertQuartToVector(glm::quat q) {
-		//https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-		Vector angles;
+	void PhysicsActor::AddSphereCollider()
+	{
+		auto sphereCollider = m_Entity.GetComponent<SphereColliderComponent>();
+		auto& rigidBodyComponent = *m_Entity.GetComponent<RigidBodyComponent>();
+		float size = sphereCollider->Radius * m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetMaxAbsolute();
 
- // roll (x-axis rotation)
-		double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
-		double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
-		angles.X = std::atan2(sinr_cosp, cosr_cosp);
+		physx::PxMaterial* colliderMaterial = sphereCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)sphereCollider->GetPhysicsMaterial()->m_RuntimeBody;
+		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxSphereGeometry(size), *colliderMaterial, true);
 
-		// pitch (y-axis rotation)
-		double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
-		double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
-		angles.Y = 2 * std::atan2(sinp, cosp) - Math::PIE() / 2;
+		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
+		auto localtransform = body->getLocalPose();
+		localtransform.p += PhysxUtils::VectorToPhysxVector(sphereCollider->OffsetLocation);
+		body->setLocalPose(localtransform);
+		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(sphereCollider->IsTrigger));
+		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, sphereCollider->IsTrigger);
 
-		// yaw (z-axis rotation)
-		double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
-		double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
-		angles.Z = std::atan2(siny_cosp, cosy_cosp);
+		sphereCollider->m_RuntimeBody = body;
+		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
+		rigidBody->attachShape(*body);
+	}
 
-		return angles;
-	};
+
 	void PhysicsActor::SyncTransform()
 	{
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 
 		TransformComponent& transform = *m_Entity.GetComponent<TransformComponent>();
 		auto actorPos = rigidBody->getGlobalPose();
-
-		auto quat = glm::quat(actorPos.q.w, actorPos.q.x, actorPos.q.y, actorPos.q.z);
-		Vector vec =ConvertQuartToVector(quat);
-
 		
-		//glm::vec3 pos = glm::vec3(glm::quat(quat));
-		transform.Location = Vector{ actorPos.p.x,actorPos.p.y,actorPos.p.z };
-		transform.Rotation = Vector{ glm::degrees(vec.X),glm::degrees(vec.Y),glm::degrees(vec.Z) };
+		transform.Location = PhysxUtils::PhysxToVector(actorPos.p);
+		transform.Rotation = PhysxUtils::PhysxQuatToVector(actorPos.q);
 	}
 }

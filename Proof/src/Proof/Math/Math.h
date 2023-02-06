@@ -7,6 +7,7 @@
 #include<glm/gtx/vector_angle.hpp>
 
 #include <limits>
+#include "Vector.h"
 namespace Proof
 {
 	struct Math {
@@ -216,5 +217,32 @@ namespace Proof
 				num = -num;
 			return num;
 		}
+
+		// make sure quaternion values are in radians
+
+		// values are returned in degrees
+		static Vector ConvertQuartToVector(const glm::quat& q) {
+
+			//Math::Pie()/2 = 1.57079632679489661923132169163975144
+		//https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+			Vector angles;
+
+			// roll (x-axis rotation)
+			double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+			double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+			angles.X = std::atan2(sinr_cosp, cosr_cosp);
+
+			// pitch (y-axis rotation)
+			double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
+			double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
+			angles.Y = 2 * std::atan2(sinp, cosp) - 1.57079632679489661923132169163975144;
+
+			// yaw (z-axis rotation)
+			double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+			double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+			angles.Z = std::atan2(siny_cosp, cosy_cosp);
+
+			return { Math::Degrees(angles.X),Math::Degrees(angles.Y),Math::Degrees(angles.Z) };
+		};
 	};
 }

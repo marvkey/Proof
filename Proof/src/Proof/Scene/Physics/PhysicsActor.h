@@ -18,5 +18,6 @@ namespace Proof{
 		void* m_RuntimeBody;
 		void AddRigidBody();
 		void AddCubeCollider();
+		void AddSphereCollider();
 	};
 }

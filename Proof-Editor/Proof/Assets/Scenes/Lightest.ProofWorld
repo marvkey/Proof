@@ -8,7 +8,7 @@ World:
       TransformComponent:
         Location: [0, 14.6000004, -8.10000038]
         Rotation: [0, 0, 20.2000008]
-        Scale: [1, 1, 1]
+        Scale: [6, 6, 12]
       ChildComponent:
         OwnerID: 0
         Children: []
@@ -95,3 +95,30 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 2.43000007
+    - Entity: 13371055274113837168
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [0, 71.8000031, -0.300000012]
+        Rotation: [0, 0, 0]
+        Scale: [24, 24, 24]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 566574579191162934
+        MaterialPointerID: 0
+      SphereColliderComponent:
+        IsTrigger: false
+        Offset: [0, 0, 0]
+        Radius: 1
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]

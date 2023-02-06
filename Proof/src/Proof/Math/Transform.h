@@ -2,8 +2,8 @@
 #include "Vector.h"
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
-#include "Math.h"
 namespace Proof {
+	/*
 	template< class T=float>
 	struct Transform {
 		Vector <T> Location;
@@ -17,4 +17,5 @@ namespace Proof {
 				* glm::scale(glm::mat4(1.0f), { Scale });
 		}
 	};
+	*/
 }
