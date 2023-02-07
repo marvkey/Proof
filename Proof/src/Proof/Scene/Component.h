@@ -491,7 +491,6 @@ namespace Proof
 		Vector OffsetLocation = { 0,0,0 };
 		float Radius = 0.5f;
 		float Height = 2.0f;
-		//float Height = 2.0f;
 		CapsuleDirection Direction = CapsuleDirection::Y;
 		bool IsTrigger = false;
 		void RemovePhysicsMaterial() {

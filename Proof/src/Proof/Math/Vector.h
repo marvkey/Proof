@@ -45,7 +45,7 @@ namespace Proof
         }
         // transform all numbers to positve then finds the biggest 
         // finding the bsolute largest
-        T GetMaxAbsolute() {
+        T GetMaxAbsolute()const {
             VectorTemplate<T> vec = GetPositive();
             if (vec.X > Y) {
                 if (vec.X > vec.Z)

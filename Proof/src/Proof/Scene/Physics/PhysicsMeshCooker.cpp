@@ -7,7 +7,7 @@
 
 namespace  Proof {
 	std::unordered_map<AssetID, Count<class Mesh>> s_Meshes;
-	std::unordered_map<AssetID, physx::PxConvexMesh*> s_ConvexMeshes;
+	std::unordered_map<AssetID, physx::PxTriangleMesh*> s_ConvexMeshes;
 	static class physx::PxCooking* s_MeshCooker = nullptr;
 	bool PhysicsMeshCooker::HasMesh(AssetID ID)
 	{
@@ -18,7 +18,7 @@ namespace  Proof {
 		return s_Meshes.at(ID);
 	}
 
-	physx::PxConvexMesh* PhysicsMeshCooker::GetConvexMesh(AssetID ID)
+	physx::PxTriangleMesh* PhysicsMeshCooker::GetConvexMesh(AssetID ID)
 	{
 		return s_ConvexMeshes.at(ID);
 	}
@@ -27,7 +27,7 @@ namespace  Proof {
 		PF_CORE_ASSERT(AssetManager::HasID(ID), "Asset Manager does not have asset");
 
 		Mesh* mesh = AssetManager::GetAsset<MeshAsset>(ID)->GetMesh();
-
+		physx::PxHullPolygon
 		if (mesh)
 		{
 			std::vector<physx::PxVec3> vertices;
@@ -36,64 +36,64 @@ namespace  Proof {
 			for (const SubMesh& subMesh : mesh->GetSubMeshes())
 			{
 				for (const auto& vertex : subMesh.m_Vertices)
-					vertices.emplace_back(physx::PxVec3{ vertex.Vertices.X,vertex.Vertices.Y,vertex.Vertices.Z });
+					vertices.emplace_back(PhysxUtils::VectorToPhysxVector(vertex.Vertices));
 				for (const auto& val : subMesh.m_Indices)
 					indices.emplace_back(val);
 			}
 
-			physx::PxConvexMeshDesc convexDesc;
-			convexDesc.points.count = vertices.size();
-			convexDesc.points.stride = sizeof(physx::PxVec3);
-			convexDesc.points.data = vertices.data();
+			physx::PxTriangleMeshDesc meshDesc;
+			meshDesc.points.count = vertices.size();
+			meshDesc.points.stride = sizeof(physx::PxVec3);
+			meshDesc.points.data = vertices.data();
 
-			convexDesc.indices.count = indices.size();
-			convexDesc.indices.stride = sizeof(uint32_t);
-			convexDesc.indices.data = indices.data();
-			convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
+			meshDesc.triangles.count = indices.size();
+			meshDesc.triangles.stride = 3 * sizeof(uint32_t);
+			meshDesc.triangles.data = indices.data();
 
-			convexDesc.flags |= physx::PxConvexFlag::ePLANE_SHIFTING;
+			//convexDesc.flags |= physx::PxConvexFlag::ePLANE_SHIFTING;
 
 			physx::PxDefaultMemoryOutputStream buf;
-			physx::PxConvexMeshCookingResult::Enum error;
-			if (!s_MeshCooker->cookConvexMesh(convexDesc, buf, &error))
+			physx::PxTriangleMeshCookingResult::Enum error;
+			if (!s_MeshCooker->cookTriangleMesh(meshDesc, buf, &error))
 			{
 				switch (error)
 				{
-					case physx::PxConvexMeshCookingResult::eSUCCESS:
+					case physx::PxTriangleMeshCookingResult::eSUCCESS:
 						break;
-					case physx::PxConvexMeshCookingResult::eZERO_AREA_TEST_FAILED:
-						PF_EC_ERROR("Physx mesh cooking failed,couldn't find 4 initial vertices without a small triangle");
+					case physx::PxTriangleMeshCookingResult::eLARGE_TRIANGLE:
+						PF_EC_ERROR("Large traingle convex triangel mesh cooking");
+						//PF_EC_ERROR("Physx mesh cooking failed,couldn't find 4 initial vertices without a small triangle");
 						break;
-					case physx::PxConvexMeshCookingResult::ePOLYGONS_LIMIT_REACHED:
-						PF_EC_ERROR("Physx mesh cooking failed,has reached the 255 polygons limit,Try to simplify the input vertices or try to use the eINFLATE_CONVEX or the eQUANTIZE_INPUT flags");
-						break;
+					//case physx::PxTriangleMeshCookingResult::e:
+					//	PF_EC_ERROR("Physx mesh cooking failed,has reached the 255 polygons limit,Try to simplify the input vertices or try to use the eINFLATE_CONVEX or the eQUANTIZE_INPUT flags");
+					//	break;
 					case physx::PxConvexMeshCookingResult::eFAILURE:
 						PF_EC_ERROR("Physx mesh cooking failed");
 						break;
 				}
 			}
 			physx::PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
-			physx::PxConvexMesh* convexMesh = PhysicsEngine::GetPhysics()->createConvexMesh(input);
-			s_ConvexMeshes[ID] = convexMesh;
+			physx::PxTriangleMesh* triangelMesh = PhysicsEngine::GetPhysics()->createTriangleMesh(input);
+			s_ConvexMeshes[ID] = triangelMesh;
 
 			{
 				std::vector<Vertex> meshVertices;
 				std::vector<uint32_t> meshIndices;
-				auto vertices = convexMesh->getVertices();
-				auto indices = convexMesh->getIndexBuffer();
-				for (uint32_t vertexPosIndex = 0; vertexPosIndex < convexMesh->getNbVertices(); vertexPosIndex++)
+				auto vertices = triangelMesh->getVertices();
+				uint32_t* indices =(uint32_t*) triangelMesh->getTriangles();
+				for (uint32_t vertexPosIndex = 0; vertexPosIndex < triangelMesh->getNbVertices(); vertexPosIndex++)
 				{
 					auto pos = vertices[vertexPosIndex];
 					Vertex vertex;
 					vertex.Vertices = Vector{ pos.x,pos.y,pos.z };
 					meshVertices.emplace_back(vertex);
 				}
-				for (uint32_t indexPos = 0; indexPos < PF_ARRAYSIZE(indices); indexPos++)
+				for (uint32_t indexPos = 0; indexPos < triangelMesh->getNbTriangles()*3; indexPos++)
 				{
 					meshVertices.emplace_back(indices[indexPos]);
 				}
-				Count<Mesh> mesh = CreateCount<Mesh>(AssetManager::GetAsset<MeshAsset>(ID)->GetName(),
-					meshVertices, meshIndices);
+				//Count<Mesh> mesh = CreateCount<Mesh>(AssetManager::GetAsset<MeshAsset>(ID)->GetName(),
+				//	meshVertices, meshIndices);
 			}
 		}
 	}

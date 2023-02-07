@@ -55,8 +55,6 @@ namespace Proof
         const std::vector<SubMesh>& GetSubMeshes()const {
             return meshes;
         }
-        
-       
         const std::string& GetName()const{
             return m_Name;
         }
@@ -86,5 +84,7 @@ namespace Proof
         friend class SceneRendererUI;
         friend class MeshAsset;
         friend class MeshWorkShop;
+
+        const UUID m_MeshUniqueID = UUID();
     };
 }

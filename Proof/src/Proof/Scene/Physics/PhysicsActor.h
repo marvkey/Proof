@@ -11,6 +11,8 @@ namespace Proof{
 
 		bool IsSleeping();
 		void SyncTransform();
+
+
 	private:
 		enum class RigidBodyType m_RigidBodyType;
 		class PhysicsWorld* m_PhysicsWorld =nullptr;
@@ -19,5 +21,7 @@ namespace Proof{
 		void AddRigidBody();
 		void AddCubeCollider();
 		void AddSphereCollider();
+		void AddCapsuleCollider();
+		void AddMeshCollider();
 	};
 }

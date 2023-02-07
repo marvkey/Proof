@@ -9,7 +9,7 @@ namespace Proof{
 		static bool HasMesh(AssetID ID);
 		static void CookMesh(AssetID ID);
 		static const Count<class Mesh> GetConvexMeshAsMesh(AssetID ID);
-		static physx::PxConvexMesh* GetConvexMesh(AssetID ID);
+		static physx::PxTriangleMesh* GetConvexMesh(AssetID ID);
 		static void DeleteMesh(AssetID ID);
 	private:
 		static void Init();

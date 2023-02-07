@@ -45,6 +45,8 @@ namespace Proof {
 
 		if (m_Entity.HasComponent<CubeColliderComponent>()) AddCubeCollider();
 		if (m_Entity.HasComponent<SphereColliderComponent>())AddSphereCollider();
+		if (m_Entity.HasComponent<CapsuleColliderComponent>()) AddCapsuleCollider();
+		if (m_Entity.HasComponent<MeshColliderComponent>()) AddMeshCollider();
 
 	}
 	PhysicsActor::~PhysicsActor()
@@ -156,15 +158,14 @@ namespace Proof {
 
 	void PhysicsActor::AddSphereCollider()
 	{
-		auto sphereCollider = m_Entity.GetComponent<SphereColliderComponent>();
-		auto& rigidBodyComponent = *m_Entity.GetComponent<RigidBodyComponent>();
+		SphereColliderComponent* sphereCollider = m_Entity.GetComponent<SphereColliderComponent>();
 		float size = sphereCollider->Radius * m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetMaxAbsolute();
 
 		physx::PxMaterial* colliderMaterial = sphereCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)sphereCollider->GetPhysicsMaterial()->m_RuntimeBody;
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxSphereGeometry(size), *colliderMaterial, true);
 
 		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
-		auto localtransform = body->getLocalPose();
+		physx::PxTransform localtransform = body->getLocalPose();
 		localtransform.p += PhysxUtils::VectorToPhysxVector(sphereCollider->OffsetLocation);
 		body->setLocalPose(localtransform);
 		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(sphereCollider->IsTrigger));
@@ -175,6 +176,68 @@ namespace Proof {
 		rigidBody->attachShape(*body);
 	}
 
+	void PhysicsActor::AddCapsuleCollider()
+	{
+		CapsuleColliderComponent* capsuleCollider = m_Entity.GetComponent<CapsuleColliderComponent>();
+		const Vector worldScalePositive = m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetPositive();
+		physx::PxMaterial* colliderMaterial = capsuleCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)capsuleCollider->GetPhysicsMaterial()->m_RuntimeBody;
+		float radius = capsuleCollider->Radius * worldScalePositive.GetMaxAbsolute()*2.35;
+		float height = capsuleCollider->Height;
+		Vector capsuleRotation = { 0,0,0 };// originial local pos is {0,0,0}
+		switch (capsuleCollider->Direction)
+		{
+			case CapsuleDirection::X:
+				{
+					height *= worldScalePositive.X;
+					capsuleRotation.X += 0;// default is facing X direction
+				}
+				break;
+			case CapsuleDirection::Y:
+				{
+					height *= worldScalePositive.Y;
+					capsuleRotation.Y += 90; // have to swap ssicne starting is facing X direction
+					break;
+				}
+			case CapsuleDirection::Z:
+				{
+					height *= worldScalePositive.Z;
+					capsuleRotation.Z += 90; // have to swap ssicne starting is facing X direction
+					break;
+				}
+		}
+		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxCapsuleGeometry(radius, height), *colliderMaterial, true);
+		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
+
+		physx::PxTransform localtransform = body->getLocalPose();
+		localtransform.p += PhysxUtils::VectorToPhysxVector(capsuleCollider->OffsetLocation);
+		//localtransform.q += PhysxUtils::VectorToPhysxQuat(capsuleRotation);
+		body->setLocalPose(localtransform);
+		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(capsuleCollider->IsTrigger));
+		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, capsuleCollider->IsTrigger);
+
+		capsuleCollider->m_RuntimeBody = body;
+		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
+		rigidBody->attachShape(*body);
+	}
+
+	void PhysicsActor::AddMeshCollider()
+	{
+		
+		MeshColliderComponent* meshCollider = m_Entity.GetComponent<MeshColliderComponent>();
+		if (!AssetManager::HasID(meshCollider->GetMeshSource()))return;
+		if (PhysicsMeshCooker::HasMesh(meshCollider->GetMeshSource()) == false)
+		{
+			PhysicsMeshCooker::CookMesh(meshCollider->GetMeshSource());
+		}
+		physx::PxMaterial* colliderMaterial = meshCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)meshCollider->GetPhysicsMaterial()->m_RuntimeBody;
+		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(
+			physx::PxTriangleMeshGeometry(PhysicsMeshCooker::GetConvexMesh(meshCollider->GetMeshSource())),*colliderMaterial, true);
+		//ADD CONVEX MESH TO ASSET
+		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
+		meshCollider->m_RuntimeBody = body;
+		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
+		rigidBody->attachShape(*body);
+	}
 
 	void PhysicsActor::SyncTransform()
 	{

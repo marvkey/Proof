@@ -6,9 +6,9 @@ World:
         Tag: cube
         tags: []
       TransformComponent:
-        Location: [0, 14.6000004, -8.10000038]
+        Location: [0, 22.3999996, 0]
         Rotation: [0, 0, 20.2000008]
-        Scale: [6, 6, 12]
+        Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
@@ -33,7 +33,7 @@ World:
         Tag: terain
         tags: []
       TransformComponent:
-        Location: [-4.6834712, 46.9389992, -3.12700009]
+        Location: [-4.6834712, 9.83899975, -3.12700009]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -100,9 +100,65 @@ World:
         Tag: Sphere
         tags: []
       TransformComponent:
-        Location: [0, 71.8000031, -0.300000012]
+        Location: [-12.1010103, 17.9992619, -13.325098]
         Rotation: [0, 0, 0]
-        Scale: [24, 24, 24]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 566574579191162934
+        MaterialPointerID: 0
+      SphereColliderComponent:
+        IsTrigger: false
+        Offset: [0, 0, 0]
+        Radius: 1
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 655345057779759823
+      TagComponent:
+        Tag: Capsule
+        tags: []
+      TransformComponent:
+        Location: [-20.6000004, 32.2999992, 4]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 14701413770166337076
+        MaterialPointerID: 0
+      CapsuleColliderComponent:
+        IsTrigger: false
+        Offset: [0, 0, 0]
+        Radius: 0.5
+        Height: 2
+        Direction: X
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 1772898617069473212
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [0, 22.3999996, -9.96637154]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
