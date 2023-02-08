@@ -14,7 +14,13 @@ namespace Proof
 		m_SavePath = savePath;
 		auto parentDir = std::filesystem::relative(m_SavePath.parent_path(), Application::Get()->GetProject()->GetAssetDirectory());
 		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + "."+GetExtension()};
+		m_Material = CreateCount<PhysicsMaterial>();
 		SaveAsset();
+	}
+	PhysicsMaterialAsset::PhysicsMaterialAsset():
+		Asset(AssetType::PhysicsMaterial) 
+	{
+		m_Material = CreateCount<PhysicsMaterial>();
 	}
 	void PhysicsMaterialAsset::SaveAsset() {
 		YAML::Emitter out;
@@ -22,12 +28,12 @@ namespace Proof
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << m_AssetID;
 
-		out << YAML::Key << "StaticFriction" << YAML::Value << m_Material.StaticFriction;
-		out << YAML::Key << "DynamicFriction" << YAML::Value << m_Material.DynamicFriction;
-		out << YAML::Key << "Bounciness" << YAML::Value << m_Material.Bounciness;
+		out << YAML::Key << "StaticFriction" << YAML::Value << m_Material->StaticFriction;
+		out << YAML::Key << "DynamicFriction" << YAML::Value << m_Material->DynamicFriction;
+		out << YAML::Key << "Bounciness" << YAML::Value << m_Material->Bounciness;
 
-		out << YAML::Key << "FrictionCombineMode" << YAML::Value << EnumReflection::EnumString(m_Material.FrictionCombineMode);
-		out << YAML::Key << "BouncinessCombineMode" << YAML::Value << EnumReflection::EnumString(m_Material.BouncinessCombineMode);
+		out << YAML::Key << "FrictionCombineMode" << YAML::Value << EnumReflection::EnumString(m_Material->FrictionCombineMode);
+		out << YAML::Key << "BouncinessCombineMode" << YAML::Value << EnumReflection::EnumString(m_Material->BouncinessCombineMode);
 
 		out << YAML::EndMap;
 		std::ofstream found(m_SavePath);
@@ -41,19 +47,19 @@ namespace Proof
 			return false;
 		m_AssetID = data["ID"].as<uint64_t>();
 
-		m_Material.StaticFriction = data["StaticFriction"].as<float>();
-		m_Material.DynamicFriction = data["DynamicFriction"].as<float>();
-		m_Material.Bounciness = data["Bounciness"].as<float>();
+		m_Material->StaticFriction = data["StaticFriction"].as<float>();
+		m_Material->DynamicFriction = data["DynamicFriction"].as<float>();
+		m_Material->Bounciness = data["Bounciness"].as<float>();
 
-		m_Material.FrictionCombineMode = EnumReflection::StringEnum<CombineMode>(data["FrictionCombineMode"].as<std::string>());
-		m_Material.BouncinessCombineMode = EnumReflection::StringEnum<CombineMode>(data["BouncinessCombineMode"].as<std::string>());
+		m_Material->FrictionCombineMode = EnumReflection::StringEnum<CombineMode>(data["FrictionCombineMode"].as<std::string>());
+		m_Material->BouncinessCombineMode = EnumReflection::StringEnum<CombineMode>(data["BouncinessCombineMode"].as<std::string>());
 	
 		return true;
 	}
 	uint32_t PhysicsMaterialAsset::GetImageID() {
 		return uint32_t();
 	}
-	const PhysicsMaterial& PhysicsMaterialAsset::GetMaterial() const {
+	Count<PhysicsMaterial> PhysicsMaterialAsset::GetMaterial() const {
 		return m_Material;
 	}
 }

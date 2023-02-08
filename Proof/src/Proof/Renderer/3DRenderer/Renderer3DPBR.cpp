@@ -45,7 +45,6 @@ namespace Proof
 		//texture
 		RoughnessMap = 3,
 	};
-	Count<Mesh> capsuleMesh;
 	struct CameraData {
 		CameraData() {};
 		CameraData(const glm::mat4& projection, const glm::mat4& view, const Vector& pos) :
@@ -70,11 +69,10 @@ namespace Proof
 		m_RenderStorage = CreateSpecial<RenderStorage>();
 		m_MeshPipeLine = CreateSpecial<MeshPipeLine>(m_RenderPass);
 		m_MeshMaterialPipeline = CreateSpecial<MeshMaterialPipeline>(m_RenderPass);
-		capsuleMesh = MeshWorkShop::GenerateCapsule();
 		m_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
 	}
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {
-		BeginContext(editorCamera.m_Projection, editorCamera.m_View, editorCamera.m_Positon, frameBuffer,commandBuffer);
+		BeginContext(editorCamera.m_Projection, editorCamera.m_View, GlmVecToProof(editorCamera.m_Positon), frameBuffer,commandBuffer);
 	}
 	void Renderer3DPBR::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {
 		PF_PROFILE_FUNC()
@@ -86,34 +84,46 @@ namespace Proof
 		m_RenderStorage->CommandBuffer = commandBuffer;
 	}
 
-	void Renderer3DPBR::SubmitMesh(MeshComponent& mesh, const glm::mat4& transform) {
-		uint64_t meshPointerId = mesh.GetMeshAssetID();
-		if (meshPointerId == 0)return; // means that therer is no mesh 
+	void Renderer3DPBR::SubmitMesh(Count<Mesh> mesh, const glm::mat4& transform) {
 		PF_PROFILE_FUNC();
-		PF_PROFILE_TAG("Mesh ID", meshPointerId);
+		if (mesh == nullptr)return;
+		uint64_t meshPointerId = mesh->GetMeshSpecificID();
 		MeshPipeLine::MeshVertex vertex(transform);
-		if (mesh.HasMaterial())
-		{
-			auto mat = AssetManager::GetAsset<MaterialAsset>(mesh.GetMaterialAssetID())->GetMaterial();
-			MaterialData data;
-			data.Colour = mat.Colour;
-			data.Roughness = mat.Roughness;
-			data.Metallness = mat.Metallness;
 
-			m_MeshMaterialPipeline->MeshesTransforms[meshPointerId].emplace_back(vertex);
-			m_MeshMaterialPipeline->AmountMeshes[meshPointerId] += 1;
-			m_MeshMaterialPipeline->MaterialDatas[meshPointerId] = data;
-			m_MeshMaterialPipeline->NumberMeshes++;
-		}
+		if (m_MeshPipeLine->Meshes.contains(meshPointerId))
+			m_MeshPipeLine->Meshes[meshPointerId].Count += 1;
 		else
 		{
-			m_MeshPipeLine->MeshesTransforms[meshPointerId].emplace_back(vertex);
-			m_MeshPipeLine->AmountMeshes[meshPointerId] += 1;
-			m_MeshPipeLine->NumberMeshes++;
+			m_MeshPipeLine->Meshes[meshPointerId].Mesh = mesh;
+			m_MeshPipeLine->Meshes[meshPointerId].Count += 1;
 		}
-		//if (mesh.HasMaterial())
-			//vertex.Color = 
-		// [] creatses it if it does not exist
+
+		m_MeshPipeLine->MeshesTransforms[meshPointerId].emplace_back(vertex);
+		m_MeshPipeLine->NumberMeshes++;
+	}
+
+	void Renderer3DPBR::SubmitMeshWithMaterial(Count<Mesh> mesh, Count<Material> material, const glm::mat4& transform)
+	{
+		PF_PROFILE_FUNC();
+		if (mesh == nullptr || material ==nullptr)return;
+		uint64_t meshPointerId = mesh->GetMeshSpecificID();
+		MeshPipeLine::MeshVertex vertex(transform);
+
+		MaterialData data;
+		data.Colour = material->Colour;
+		data.Roughness = material->Roughness;
+		data.Metallness = material->Metallness;
+
+		if (m_MeshMaterialPipeline->Meshes.contains(meshPointerId))
+			m_MeshMaterialPipeline->Meshes[meshPointerId].Count += 1;
+		else
+		{
+			m_MeshMaterialPipeline->Meshes[meshPointerId].Mesh = mesh;
+			m_MeshMaterialPipeline->Meshes[meshPointerId].Count += 1;
+		}
+		m_MeshMaterialPipeline->MeshesTransforms[meshPointerId].emplace_back(vertex);
+		m_MeshMaterialPipeline->MaterialDatas[meshPointerId] = data;
+		m_MeshMaterialPipeline->NumberMeshes++;
 	}
 
 	void Renderer3DPBR::SubmitDirectionalLight(const DirLight& light) {
@@ -211,32 +221,10 @@ namespace Proof
 			descriptor0->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
 			for (const uint64_t& ID : m_MeshPipeLine->ElementsImplaced)
 			{
-				const uint64_t numMeshPerID = m_MeshPipeLine->AmountMeshes[ID];
-				if (AssetManager::HasID(ID) == false)
-					continue;
-				const auto meshInfo = AssetManager::GetAssetInfo(ID);
+				const uint64_t meshInstances = m_MeshPipeLine->Meshes[ID].Count;
+				const Count<Mesh> mesh = m_MeshPipeLine->Meshes[ID].Mesh;
 
-				if (meshInfo.Type == AssetType::MeshSourceFile)
-				{
-					//this is a rare case for just teh asset manager if we want to render a mehs source
-					//yeah simple thing
-					DrawMeshSource(ID, numMeshPerID, currentOffset);
-					currentOffset += numMeshPerID;
-					continue;
-				}
-
-				const auto meshAsset = AssetManager::GetAsset<MeshAsset>(ID);
-				auto meshtemp = meshAsset->GetMesh();
-				if (meshtemp == nullptr)continue;
-				auto& mesh = *meshtemp;
-				for (int i = 0; i < meshAsset->GetDiscardedMesh().size(); i++)
-				{
-					const auto& index = meshAsset->GetDiscardedMesh()[i];
-					mesh.meshes[index].Enabled = false;
-				}
-
-
-				for (const auto& subMesh : mesh.GetSubMeshes())
+				for (const auto& subMesh : mesh->GetSubMeshes())
 				{
 					if (subMesh.Enabled == false)continue;
 					Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(subMesh.GetDiffuseTextures()[0])->GetTexture()
@@ -248,14 +236,10 @@ namespace Proof
 					subMesh.GetIndexBuffer()->Bind(m_RenderStorage->CommandBuffer);
 					m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
 
-					Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, currentOffset);
+					Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), meshInstances, currentOffset);
 				}
-				for (int i = 0; i < meshAsset->GetDiscardedMesh().size(); i++)
-				{
-					const auto& index = meshAsset->GetDiscardedMesh()[i];
-					mesh.meshes[index].Enabled = true;
-				}
-				currentOffset += numMeshPerID;
+				
+				currentOffset += meshInstances;
 			}
 		});
 	}
@@ -270,25 +254,11 @@ namespace Proof
 			descriptor0->Bind(commandBuffer, m_MeshMaterialPipeline->PipeLineLayout);
 			for (const uint64_t& ID : m_MeshMaterialPipeline->ElementsImplaced)
 			{
-				const uint64_t numMeshPerID = m_MeshMaterialPipeline->AmountMeshes[ID];
-				auto material = m_MeshMaterialPipeline->MaterialDatas[ID];
+				const uint64_t meshInstances = m_MeshMaterialPipeline->Meshes[ID].Count;
+				Count<Mesh> mesh = m_MeshMaterialPipeline->Meshes[ID].Mesh;
+				MaterialData materialData = m_MeshMaterialPipeline->MaterialDatas[ID];
 
-				if (AssetManager::HasID(ID) == false)
-					continue;
-				const auto meshInfo = AssetManager::GetAssetInfo(ID);
-
-
-				const auto meshAsset = AssetManager::GetAsset<MeshAsset>(ID);
-				auto meshtemp = meshAsset->GetMesh();
-				if (meshtemp == nullptr)continue;
-				auto& mesh = *meshtemp;
-				for (int i = 0; i < meshAsset->GetDiscardedMesh().size(); i++)
-				{
-					const auto& index = meshAsset->GetDiscardedMesh()[i];
-					mesh.meshes[index].Enabled = false;
-				}
-
-				for (const auto& subMesh : mesh.GetSubMeshes())
+				for (const auto& subMesh : mesh->GetSubMeshes())
 				{
 					if (subMesh.Enabled == false)continue;
 					Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(subMesh.GetDiffuseTextures()[0])->GetTexture()
@@ -304,15 +274,10 @@ namespace Proof
 
 					// TODO(move) into the rnderer 3D class might go into the renderer3d itself
 					m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
-					m_MeshMaterialPipeline->MaterialPushConstant->PushData(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout, &material);
-					Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, currentOffset);
+					m_MeshMaterialPipeline->MaterialPushConstant->PushData(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout, &materialData);
+					Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), meshInstances, currentOffset);
 				}
-				for (int i = 0; i < meshAsset->GetDiscardedMesh().size(); i++)
-				{
-					const auto& index = meshAsset->GetDiscardedMesh()[i];
-					mesh.meshes[index].Enabled = true;
-				}
-				currentOffset += numMeshPerID;
+				currentOffset += meshInstances;
 			}
 		});
 	}
@@ -322,27 +287,6 @@ namespace Proof
 		RenderMeshMaterial();
 	}
 	
-	void Renderer3DPBR::DrawMeshSource(uint64_t ID, uint64_t numMeshPerID, uint64_t offset) {
-		auto descriptor1 = m_MeshPipeLine->Descriptors[DescriptorSets::One];
-		const auto meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(ID);
-				// get asset also does a check for an id so we will need to fix this
-		auto& mesh = *meshAsset->GetMesh();
-	
-		for (const auto& subMesh : mesh.GetSubMeshes()) {
-			if (subMesh.Enabled == false)continue;
-			Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(subMesh.GetDiffuseTextures()[0])->GetTexture()
-				: Renderer::GetWhiteTexture();
-
-			descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, texture);
-			descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
-			subMesh.GetVertexBuffer()->Bind(m_RenderStorage->CommandBuffer);
-			subMesh.GetIndexBuffer()->Bind(m_RenderStorage->CommandBuffer);
-			m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
-
-			Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), numMeshPerID, offset);
-		}
-		
-	}
 	void Renderer3DPBR::DrawContext() {
 		SetPasses();
 		MeshPass();

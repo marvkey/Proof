@@ -6,12 +6,12 @@ namespace ProofPhysicsEngine {
 		glm::mat3 thisOrientation = GetOrientation();
 		glm::mat3 otherOrientation = other.GetOrientation();
 		Proof::Vector   test[15] = {
-			Proof::Vector  (thisOrientation[0]),
-			Proof::Vector  (thisOrientation[1]),
-			Proof::Vector  (thisOrientation[2]),
-			Proof::Vector  (otherOrientation[0]),
-			Proof::Vector  (otherOrientation[1]),
-			Proof::Vector  (otherOrientation[2]),
+			//Proof::Vector  (thisOrientation[0]),
+			//Proof::Vector  (thisOrientation[1]),
+			//Proof::Vector  (thisOrientation[2]),
+			//Proof::Vector  (otherOrientation[0]),
+			//Proof::Vector  (otherOrientation[1]),
+			//Proof::Vector  (otherOrientation[2]),
 		};
 	
 		for (int i = 0; i < 3; i++) { // fill the remaining of test
@@ -43,10 +43,10 @@ namespace ProofPhysicsEngine {
 		Proof::Vector   center = other.Center;
 		Proof::Vector   extent = other.Scale;
 		glm::mat3 boxOrientation = other.GetOrientation();
-		static Proof::Vector   A[]{
-			Proof::Vector  (boxOrientation[0]),
-			Proof::Vector  (boxOrientation[1]),
-			Proof::Vector  (boxOrientation[2]),
+		static Proof::Vector  A[8]{
+			//Proof::Vector  (boxOrientation[0]),
+			//Proof::Vector  (boxOrientation[1]),
+			//Proof::Vector  (boxOrientation[2]),
 		};
 		vertex[0] = center + A[0] * extent.X + A[1] * extent.Y + A[2] * extent.Z;
 		vertex[1] = center - A[0] * extent.X + A[1] * extent.Y + A[2] * extent.Z;
@@ -73,7 +73,7 @@ namespace ProofPhysicsEngine {
 		glm::mat3 boxOrientation = GetOrientation();
 		Proof::Vector   direction = other - Center;
 		for (int i = 0; i < 3; i++) {
-			Proof::Vector   axis = boxOrientation[i];
+			Proof::Vector   axis;// boxOrientation[i];
 			float distance = direction.Dot(axis);
 
 			// clamping the component Scale if needed // (UNDERSTAND)

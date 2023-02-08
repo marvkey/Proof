@@ -18,14 +18,15 @@ namespace Proof
 			return;
 
 		PF_PROFILE_FUNC();
+		auto material = m_MaterialAsset->GetMaterial();
 
 		ImGui::Begin(m_MaterialAsset->GetName().c_str(),&m_ShowWindow);
 		{
-			ImGui::ColorEdit3("Colour",m_MaterialAsset->m_Material.Colour.GetValue_Ptr());
+			ImGui::ColorEdit3("Colour", material->Colour.GetValue_Ptr());
 			ImGui::NewLine();
-			ImGui::SliderFloat ("Metallnes", &m_MaterialAsset->m_Material.Metallness,0,1);
+			ImGui::SliderFloat ("Metallnes", &material->Metallness,0,1);
 			ImGui::NewLine();
-			ImGui::SliderFloat("Roughness",&m_MaterialAsset->m_Material.Roughness, 0, 1);
+			ImGui::SliderFloat("Roughness",&material->Roughness, 0, 1);
 
 			m_MaterialAsset->SaveAsset();
 		}
@@ -38,14 +39,15 @@ namespace Proof
 		if (m_ShowWindow == false)
 			return;
 		PF_PROFILE_FUNC();
+		auto material = m_MaterialAsset->GetMaterial();
 		ImGui::Begin(m_MaterialAsset->GetName().c_str(), &m_ShowWindow);
 		{
-			ImGui::DragFloat("StaticFriction", &m_MaterialAsset->m_Material.StaticFriction, 0.05);
-			ImGui::DragFloat("DynamicFriction", &m_MaterialAsset->m_Material.DynamicFriction, 0.05);
-			ImGui::DragFloat("Bounciness", &m_MaterialAsset->m_Material.Bounciness, 0.05);
+			ImGui::DragFloat("StaticFriction", &material->StaticFriction, 0.05);
+			ImGui::DragFloat("DynamicFriction", &material->DynamicFriction, 0.05);
+			ImGui::DragFloat("Bounciness", &material->Bounciness, 0.05);
 
-			ExternalAPI::ImGUIAPI::EnumCombo("FrictionCombine", m_MaterialAsset->m_Material.FrictionCombineMode);
-			ExternalAPI::ImGUIAPI::EnumCombo("BouncinessCombine", m_MaterialAsset->m_Material.BouncinessCombineMode);
+			ExternalAPI::ImGUIAPI::EnumCombo("FrictionCombine", material->FrictionCombineMode);
+			ExternalAPI::ImGUIAPI::EnumCombo("BouncinessCombine", material->BouncinessCombineMode);
 		}
 		ImGui::End();
 	}

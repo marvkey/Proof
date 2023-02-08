@@ -15,10 +15,7 @@ namespace Proof
 		virtual ~MeshAsset() {
 
 		}
-		MeshAsset():
-			Asset(AssetType::Mesh)
-		{
-		}
+		MeshAsset();
 		static std::string StaticGetExtension() {
 			return "Mesh.ProofAsset";
 		}
@@ -29,8 +26,8 @@ namespace Proof
 		std::vector<uint32_t>& GetDiscardedMesh() {
 			return m_DiscardMesh;
 		}
-
-		Mesh* GetMesh();
+		
+		Count<Mesh> GetMesh();
 	private:
 		std::vector<uint32_t> m_DiscardMesh;
 		friend class AssetManager;
@@ -46,7 +43,7 @@ namespace Proof
 		virtual void SaveAsset(){}
 		// the filepath of the actual mesh
 		virtual bool LoadAsset(const std::string& FilePath)override;
-		Mesh* GetMesh();
+		Count<Mesh> GetMesh();
 		// so we can view it as like cube.fbx
 		virtual std::string GetName()const override{
 			return Utils::FileDialogs::GetFullFileName(m_SavePath);
@@ -57,7 +54,7 @@ namespace Proof
 		virtual std::string GetExtension()const;
 	private:
 		friend class AssetManager;
-		Special<class Mesh> m_Mesh = nullptr;
+		Count<class Mesh> m_Mesh = nullptr;
 	};
 }
 

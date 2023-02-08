@@ -9,6 +9,11 @@
 #include "Proof/Utils/PlatformUtils.h"
 
 namespace Proof{
+	MaterialAsset::MaterialAsset() :
+		Asset(AssetType::Material)
+	{
+		m_Material = CreateCount<Material>();
+	}
 	MaterialAsset::MaterialAsset(const std::string& savePath):
 		Asset(AssetType::Material)
 	{
@@ -16,6 +21,7 @@ namespace Proof{
 		m_SavePath = savePath;
 		auto parentDir = std::filesystem::relative(m_SavePath.parent_path(),Application::Get()->GetProject()->GetAssetDirectory());
 		m_SavePath = parentDir /= {Utils::FileDialogs::GetFileName(m_SavePath) + "." + GetExtension()};
+		m_Material = CreateCount<Material>();
 		SaveAsset();
 	}
 	void MaterialAsset::SaveAsset() {
@@ -24,9 +30,9 @@ namespace Proof{
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << m_AssetID;
 
-		out << YAML::Key << "AlbedoColour"<<YAML::Value << m_Material.Colour;
-		out << YAML::Key << "Roughness"<<YAML::Value << m_Material.Roughness;
-		out << YAML::Key << "Metallness"<<YAML::Value << m_Material.Metallness;
+		out << YAML::Key << "AlbedoColour"<<YAML::Value << m_Material->Colour;
+		out << YAML::Key << "Roughness"<<YAML::Value << m_Material->Roughness;
+		out << YAML::Key << "Metallness"<<YAML::Value << m_Material->Metallness;
 		out << YAML::EndMap;
 		std::ofstream found(m_SavePath);
 		found << out.c_str();
@@ -38,19 +44,14 @@ namespace Proof{
 		if (!data["AssetType"]) // if there is no scene no
 			return false;
 		m_AssetID = data["ID"].as<uint64_t>();
-		
-		m_Material.Colour= data["AlbedoColour"].as<glm::vec3>();
-		m_Material.Metallness = data["Metallness"].as<float>();
-		m_Material.Roughness = data["Roughness"].as<float>();
-		
-		//std::string metallicTexture =data["MetallicTexturePath"].as<std::string>();
-		//std::string AlbedoTexture =data["AlbedoTexturePath"].as<std::string>();
-		//std::string NormalTexture =data["NormalTexturePath"].as<std::string>();
-		//std::string RoughnessTexture =data["RoughnessTexturePath"].as<std::string>();
+		m_Material->Colour= data["AlbedoColour"].as<Vector>();
+
+		m_Material->Metallness = data["Metallness"].as<float>();
+		m_Material->Roughness = data["Roughness"].as<float>();
 		return true;
 	}
 	
-	const Material& MaterialAsset::GetMaterial()const {
+	Count<Material>MaterialAsset::GetMaterial()const {
 		return m_Material;
 	}
 }

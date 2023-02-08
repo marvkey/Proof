@@ -107,8 +107,13 @@ namespace Proof
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
 				auto& mesh = *entity.GetComponent<MeshComponent>();
-				if(AssetManager::HasID(mesh.GetMeshAssetID()))
-					m_Renderer3D->SubmitMesh(mesh, m_World->GetWorldTransform(entity));
+				if (AssetManager::HasID(mesh.GetMeshID()))
+				{
+					if (mesh.HasMaterial())
+						m_Renderer3D->SubmitMeshWithMaterial(mesh.GetMesh(), mesh.GetMaterial(), m_World->GetWorldTransform(entity));
+					else
+						m_Renderer3D->SubmitMesh(mesh.GetMesh(), m_World->GetWorldTransform(entity));
+				}
 			});
 		}
 		// light
@@ -163,8 +168,8 @@ namespace Proof
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
 				auto& mesh = *entity.GetComponent<MeshComponent>();
-				if (AssetManager::HasID(mesh.GetMeshAssetID()))
-					m_Renderer3D->SubmitMesh(mesh, m_World->GetWorldTransform(entity));
+				if (AssetManager::HasID(mesh.GetMeshID()))
+					m_Renderer3D->SubmitMesh(mesh.GetMesh(), m_World->GetWorldTransform(entity));
 				});
 			}
 			// light

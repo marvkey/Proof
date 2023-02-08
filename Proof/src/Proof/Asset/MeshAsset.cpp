@@ -60,7 +60,11 @@ namespace Proof
 		//m_MeshFilePath = meshFilepath;
 		//m_Mesh = CreateSpecial<Mesh>(m_MeshFilePath);
 	}
-	Mesh* MeshAsset::GetMesh() {
+	MeshAsset::MeshAsset() :
+		Asset(AssetType::Mesh)
+	{
+	}
+	Count<Mesh> MeshAsset::GetMesh() {
 		//we do not want to hold a variable because it means when we want to delte that mesh source file
 		/// it wont be deleted 
 		/// 
@@ -71,6 +75,7 @@ namespace Proof
 			auto asset = AssetManager::GetAsset< MeshSourceFileAsset>(m_Source);
 		return asset->GetMesh();
 	}
+	
 	MeshSourceFileAsset::MeshSourceFileAsset(const std::string& meshFilePath):
 		Asset(AssetType::MeshSourceFile)
 	{
@@ -81,15 +86,15 @@ namespace Proof
 	}
 	bool MeshSourceFileAsset::LoadAsset(const std::string& FilePath) {
 		m_SavePath = FilePath;
-		m_Mesh = CreateSpecial<Mesh>(FilePath);
+		m_Mesh = CreateCount<Mesh>(FilePath);
 		return m_Mesh != nullptr;
 	}
 
 	std::string MeshSourceFileAsset::GetExtension()const {
 		return Utils::FileDialogs::GetFullFileExtension(m_SavePath);
 	}
-	Mesh* MeshSourceFileAsset::GetMesh()
+	Count<Mesh> MeshSourceFileAsset::GetMesh()
 	{
-		return m_Mesh.get();
+		return m_Mesh;
 	}
 }

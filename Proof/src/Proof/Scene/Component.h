@@ -195,11 +195,11 @@ namespace Proof
 		}
 		
 		glm::mat4 GetLocalTransform() const {
-			return glm::translate(glm::mat4(1.0f), { Location }) *
+			return glm::translate(glm::mat4(1.0f), ProofToglmVec(Location)) *
 				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.X), { 1,0,0 })
 				* glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.Y), { 0,1,0 })
 				* glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.Z), { 0,0,1 })
-				* glm::scale(glm::mat4(1.0f), { Scale });
+				* glm::scale(glm::mat4(1.0f), ProofToglmVec(Scale));
 		}
 		Vector GetFowardVector()const {
 			// NOT IMPLEMENTED
@@ -252,26 +252,20 @@ namespace Proof
 
 	struct MeshComponent{
 		MeshComponent() = default;
-		
 		MeshComponent(const MeshComponent&) = default;
-	
-		
-		bool HasMaterial() {
-			return m_MeshMaterialID != 0;
-		}
-		UUID GetMeshAssetID()const {
-			return m_MeshAssetPointerID;
-		}
-		UUID GetMaterialAssetID()const {
-			return m_MeshMaterialID;
-		}
-		void SetMeshSource(UUID ID);
 
-		void RemoveMeshSource() {
-			m_MeshAssetPointerID = 0;
-		}
+		bool HasMaterial();
+		AssetID GetMaterialID()const;
+		void SetMaterial(AssetID ID);
+		void RemoveMaterial();
+
+		AssetID GetMeshID()const;
+		void SetMesh(UUID ID);
+		void RemoveMesh();
+
+		Count<Mesh> GetMesh();
+		Count<Material> GetMaterial();
 	private:
-		MeshAsset* GetAsset();
 		friend class Entity;
 		friend class World;
 		friend class ECS;
@@ -279,8 +273,8 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneRendererUI;
 		friend class Editore3D;
-		UUID m_MeshMaterialID = 0;
-		UUID m_MeshAssetPointerID=0;
+		AssetID m_MeshID = 0;
+		AssetID m_MaterialID=0;
 	};
 
 	struct DynamicMeshComponent {
@@ -409,8 +403,8 @@ namespace Proof
 			CameraDirection.x = cos(glm::radians(rotation.Z)) * cos(glm::radians(rotation.Y));
 			CameraDirection.y = sin(glm::radians(rotation.Y));
 			CameraDirection.z = sin(glm::radians(rotation.Z)) * cos(glm::radians(rotation.Y));
-			Vector direction = glm::normalize(CameraDirection);
-			m_View = glm::lookAt(glm::vec3{ position }, glm::vec3{ position } + glm::vec3{direction}, glm::vec3{ m_Up });
+			Vector direction = GlmVecToProof(glm::normalize(CameraDirection));
+			m_View = glm::lookAt(ProofToglmVec(position), ProofToglmVec( position) + ProofToglmVec(direction), ProofToglmVec( m_Up ));
 			m_Projection = glm::perspective(glm::radians(m_FovDeg),(float)m_Width / (float)m_Height,m_NearPlane,m_FarPlane);
 			m_CameraMatrix = m_View * m_Projection;
 		}
@@ -444,7 +438,7 @@ namespace Proof
 		bool HasPhysicsMaterial() {
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		class PhysicsMaterial* GetPhysicsMaterial();
+		Count<PhysicsMaterial> GetPhysicsMaterial();
 
 	private:
 		mutable UUID m_PhysicsMaterialPointerID = 0;
@@ -469,7 +463,7 @@ namespace Proof
 		bool HasPhysicsMaterial() {
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		class PhysicsMaterial* GetPhysicsMaterial();
+		Count<PhysicsMaterial> GetPhysicsMaterial();
 	private:
 		UUID m_PhysicsMaterialPointerID = 0;
 		void* m_RuntimeBody = nullptr;
@@ -499,7 +493,7 @@ namespace Proof
 		bool HasPhysicsMaterial(){
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		class PhysicsMaterial* GetPhysicsMaterial();
+		Count<PhysicsMaterial> GetPhysicsMaterial();
 	private:
 		void* m_RuntimeBody = nullptr;
 		friend class World;
@@ -521,23 +515,16 @@ namespace Proof
 		bool HasPhysicsMaterial() {
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
+		Count<PhysicsMaterial> GetPhysicsMaterial();
+		Count<Mesh> GetMesh();
 
-		bool HasMesh()const {
-			return GetMesh() == nullptr ? false : true;
-		}
-		class PhysicsMaterial* GetPhysicsMaterial();
-		class Mesh* GetMesh()const{
-			auto mesh = GetMeshAsset();
-			return mesh == nullptr ? nullptr : mesh->GetMesh();
+		UUID GetMeshSource() {
+			return m_MeshAssetPointerID;
 		}
 		void RemoveMeshSource() {
 			m_MeshAssetPointerID = 0;
 		}
-		AssetID GetMeshSource() {
-			return m_MeshAssetPointerID;
-		}
 	private:
-		class MeshAsset* GetMeshAsset()const;
 		mutable UUID m_MeshAssetPointerID = 0;// POINTS TO THE MESH ASSET
 		void* m_RuntimeBody = nullptr;
 		void* m_ConvexMeshRuntimeBody = nullptr;

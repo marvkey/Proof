@@ -85,7 +85,7 @@ namespace Proof {
 		DrawQuad(Location,Rotation,Size,Color,Renderer::GetWhiteTexture());
 	}
 	void Renderer2D::DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform){
-		DrawQuad({transform.Location},transform.Rotation,transform.Scale,Sprite.Colour,nullptr);
+		DrawQuad( ProofToglmVec(transform.Location),ProofToglmVec(transform.Rotation),ProofToglmVec(transform.Scale),glm::vec4{Sprite.Colour},nullptr);
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D) {
 		if (m_Storage2DData->IndexCount >= m_Storage2DData->c_MaxIndexCount){ // reached maxed index size
@@ -113,22 +113,22 @@ namespace Proof {
 			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.z),{0.0f,0.0f,1.0f}) *
 			glm::scale(glm::mat4(1.0f),{Size.x,Size.y,Size.z});
 
-		Vertex1.Position = s_Transform * glm::vec4(0.5f,0.5f,0.0f,1.0f);
+		Vertex1.Position = GlmVecToProof( s_Transform * glm::vec4(0.5f,0.5f,0.0f,1.0f));
 		Vertex1.Color = Color;
 		Vertex1.TexCoords = {1.0f,1.0f};
 		//Vertex1.TexSlot = TextureIndex;
 
-		Vertex2.Position = s_Transform * glm::vec4(0.5f,-0.5f,0.0,1.0f);
+		Vertex2.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f,-0.5f,0.0,1.0f));
 		Vertex2.Color = Color;
 		Vertex2.TexCoords = {1.0f,0.0f};
 		//Vertex2.TexSlot = TextureIndex;
 
-		Vertex3.Position = s_Transform * glm::vec4(-0.5f,-0.5f,0.0,1.0f);
+		Vertex3.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f,-0.5f,0.0,1.0f));
 		Vertex3.Color = Color;
 		Vertex3.TexCoords = {0.0f,0.0f};
 		//Vertex3.TexSlot = TextureIndex;
 
-		Vertex4.Position = s_Transform * glm::vec4(-0.5f,0.5f,0.0,1.0f);
+		Vertex4.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f,0.5f,0.0,1.0f));
 		Vertex4.Color = Color;
 		Vertex4.TexCoords = {0.0f,1.0f};
 		//Vertex4.TexSlot = TextureIndex;
@@ -200,22 +200,22 @@ namespace Proof {
 			glm::scale(glm::mat4(1.0f),{Scale.x,Scale.y,Scale.z});
 
 		Vertex2D V1,V2,V3,V4;
-		V1.Position = Transform*glm::vec4(0.5f,0.5f,Depth,1.0f);
+		V1.Position = GlmVecToProof( Transform*glm::vec4(0.5f,0.5f,Depth,1.0f));
 		V1.Color = Color;
 		V1.TexCoords ={1.0f,1.0f};
 		//V1.TexSlot =TexIndex;
 
-		V2.Position = Transform*glm::vec4(0.5f,-0.5f,Depth,1.0f);
+		V2.Position = GlmVecToProof(Transform*glm::vec4(0.5f,-0.5f,Depth,1.0f));
 		V2.Color = Color;
 		V2.TexCoords = {1.0f,0.0f};
 		//V2.TexSlot = TexIndex;
 
-		V3.Position = Transform * glm::vec4(-0.5f,-0.5f,Depth,1.0f);
+		V3.Position = GlmVecToProof(Transform * glm::vec4(-0.5f,-0.5f,Depth,1.0f));
 		V3.Color = Color;
 		V3.TexCoords = {0.0f,0.0f};
 		//V3.TexSlot = TexIndex;
 
-		V4.Position = Transform * glm::vec4(-0.5f,0.5f,Depth,1.0f);
+		V4.Position = GlmVecToProof( Transform * glm::vec4(-0.5f,0.5f,Depth,1.0f));
 		V4.Color = Color;
 		V4.TexCoords = {0.0f,1.0f};
 		//V4.TexSlot = TexIndex;

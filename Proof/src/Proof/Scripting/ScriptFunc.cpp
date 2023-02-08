@@ -72,11 +72,11 @@ namespace Proof
 #pragma region TransformComponent
 	static void TransformComponent_GetLocation(EntityID entityID, glm::vec3* outLocation) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
-		*outLocation = entity.GetComponent<TransformComponent>()->Location;
+		*outLocation = ProofToglmVec(entity.GetComponent<TransformComponent>()->Location);
 	};
 	static void TransformComponent_SetLocation(EntityID entityID, glm::vec3* location) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
-		entity.GetComponent<TransformComponent>()->Location = *location;
+		entity.GetComponent<TransformComponent>()->Location = GlmVecToProof(* location);
 	};
 #pragma endregion 
 
@@ -89,11 +89,11 @@ namespace Proof
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		entity.GetComponent<RigidBodyComponent>()->Mass = *mass;
 	}
-	static void RigidBody_AddForce(EntityID entityID, glm::vec3 force, int forceMode, bool autoAwake) {
+	static void RigidBody_AddForce(EntityID entityID, Vector force, int forceMode, bool autoAwake) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		entity.GetComponent<RigidBodyComponent>()->AddForce(force, (ForceMode)forceMode, autoAwake);
 	}
-	static void RigidBody_AddTorque(EntityID entityID, glm::vec3 force, int forceMode, bool autoAwake) {
+	static void RigidBody_AddTorque(EntityID entityID, Vector force, int forceMode, bool autoAwake) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		entity.GetComponent<RigidBodyComponent>()->AddTorque(force, (ForceMode)forceMode, autoAwake);
 	}

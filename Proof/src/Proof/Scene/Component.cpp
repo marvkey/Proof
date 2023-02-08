@@ -25,74 +25,6 @@
 namespace Proof
 {
 	static struct Material Empty;
-	
-
-	void MeshComponent::SetMeshSource(AssetID ID) {
-		if (ID.Get() == 0)return;
-		if (AssetManager::HasID(ID)) {
-			m_MeshAssetPointerID = ID;
-		}
-	}	
-	
-
-	MeshAsset* MeshComponent::GetAsset() {
-		/*
-		if (m_MeshAssetPointerID == 0)
-			return nullptr;
-		if (m_MeshAssetPointer == nullptr)
-			m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
-
-		if (m_MeshAssetPointer == nullptr)// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
-			return nullptr;
-		if (AssetManager::HasID(m_MeshAssetPointerID)) {
-			return m_MeshAssetPointer.get();
-		}
-		m_MeshAssetPointerID = 0;
-		m_MeshAssetPointer = nullptr;
-		return nullptr;
-		*/
-		/*
-		if (m_MeshAssetPointerID == 0)
-			return nullptr;
-		m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID); // we reasign if the asset manager returns null then the
-		// shared pointer is null
-
-		if (m_MeshAssetPointer == nullptr) {// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
-			m_MeshAssetPointerID = 0;
-			return nullptr;
-		}
-		
-		return m_MeshAssetPointer.get();
-		*/
-		/*
-		if (m_MeshAssetPointerID == 0)
-			return nullptr;
-		if (AssetManager::HasID(m_MeshAssetPointerID)) {
-			if (m_MeshAssetPointer == nullptr)
-				m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
-			
-			if(m_MeshAssetPointer->GetID() != m_MeshAssetPointerID)
-				m_MeshAssetPointer = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
-
-			return m_MeshAssetPointer.get();
-		}
-		m_MeshAssetPointerID = 0;
-		return nullptr;
-		*/
-		if (m_MeshAssetPointerID == 0) {
-			return nullptr;
-		}
-		if (AssetManager::HasID(m_MeshAssetPointerID)) {
-			if (AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID) != nullptr) {
-				return AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID).get();
-			}
-			return nullptr;
-		}
-		m_MeshAssetPointerID == 0;
-		return nullptr;
-	}
-	
-	
 
 	Texture2DAsset* SpriteComponent::GetAsset()
 	{
@@ -110,7 +42,7 @@ namespace Proof
 		m_TextureAssetPointer = nullptr;
 		return nullptr;
 	}
-	PhysicsMaterial* CubeColliderComponent::GetPhysicsMaterial(){
+	Count<PhysicsMaterial> CubeColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
@@ -119,9 +51,9 @@ namespace Proof
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
 		}
-		return &a->m_Material;
+		return a->GetMaterial();
 	}
-	PhysicsMaterial* SphereColliderComponent::GetPhysicsMaterial(){
+	Count<PhysicsMaterial> SphereColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
@@ -130,10 +62,10 @@ namespace Proof
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
 		}
-		return &a->m_Material;
+		return a->GetMaterial();
 	}
 
-	PhysicsMaterial* CapsuleColliderComponent::GetPhysicsMaterial(){
+	Count<PhysicsMaterial> CapsuleColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
@@ -142,9 +74,9 @@ namespace Proof
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
 		}
-		return &a->m_Material;
+		return a->GetMaterial();
 	}
-	PhysicsMaterial* MeshColliderComponent::GetPhysicsMaterial() {
+	Count<PhysicsMaterial> MeshColliderComponent::GetPhysicsMaterial() {
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
@@ -153,21 +85,9 @@ namespace Proof
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
 		}
-		return &a->m_Material;
+		return a->GetMaterial();
 	}
 	
-	MeshAsset* MeshColliderComponent::GetMeshAsset()const {
-		if (m_MeshAssetPointerID == 0) {
-			return nullptr;
-		}
-		auto a = AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID);
-		if (a == nullptr) {
-			m_MeshAssetPointerID = 0;
-			return nullptr;
-		}
-		return a.get();
-	}
-
 	void RigidBodyComponent::AddForce(Vector force, ForceMode mode, bool autoWake)const {
 		if (m_RigidBodyType == RigidBodyType::Static)return;
 		if (m_RuntimeBody == nullptr) return;
@@ -249,4 +169,74 @@ namespace Proof
 		m_Scripts[posIndex] = scriptData;
 	}
 
+	
+
+	AssetID MeshComponent::GetMeshID() const
+	{
+		return m_MeshID;
+	}
+
+	void MeshComponent::SetMesh(UUID ID)
+	{
+		#ifdef PF_ENABLE_DEBUG
+			if (!AssetManager::HasID(ID))return;
+		#endif // 
+
+		m_MeshID = ID;
+	}
+
+	void MeshComponent::RemoveMesh()
+	{
+		m_MeshID = 0;
+	}
+
+	Count<Mesh> MeshComponent::GetMesh()
+	{
+		if (m_MeshID == 0)return nullptr;
+		#ifdef PF_ENABLE_DEBUG
+			if (!AssetManager::HasID(m_MeshID)) { m_MeshID = 0; return nullptr; };
+		#endif 
+		return AssetManager::GetAsset<MeshAsset>(m_MeshID)->GetMesh();
+	}
+
+	bool MeshComponent::HasMaterial()
+	{
+		return m_MaterialID != 0;
+	}
+	Count<Material> MeshComponent::GetMaterial()
+	{
+		if (m_MaterialID == 0)return nullptr;
+		#ifdef PF_ENABLE_DEBUG
+			if (!AssetManager::HasID(m_MaterialID)) { m_MaterialID = 0; return nullptr; };
+		#endif 
+		return AssetManager::GetAsset<MaterialAsset>(m_MaterialID)->GetMaterial();
+	}
+
+	AssetID MeshComponent::GetMaterialID() const
+	{
+		return m_MaterialID;
+	}
+
+	void MeshComponent::SetMaterial(AssetID ID)
+	{
+		#ifdef PF_ENABLE_DEBUG
+			if (!AssetManager::HasID(ID))return;
+		#endif // 
+
+		m_MaterialID = ID;
+	}
+
+	void MeshComponent::RemoveMaterial()
+	{
+		m_MaterialID = 0;
+	}
+
+	Count<Mesh> MeshColliderComponent::GetMesh()
+	{
+		if (m_MeshAssetPointerID == 0)return nullptr;
+		#ifdef PF_ENABLE_DEBUG
+		if (!PhysicsMeshCooker::HasMesh(m_MeshAssetPointerID)) { m_MeshAssetPointerID = 0; return nullptr; };
+		#endif 
+		return PhysicsMeshCooker::GetConvexMeshAsMesh(m_MeshAssetPointerID);
+	}
 }

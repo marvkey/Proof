@@ -59,7 +59,9 @@ namespace Proof
             return m_Name;
         }
         bool Enabled=true;
-
+        const UUID& GetMeshSpecificID()const {
+            return m_MeshUniqueID;
+        }
     private:
         std::vector<class SubMesh> meshes;
         std::vector<std::string> m_MaterialsName;

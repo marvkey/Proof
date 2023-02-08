@@ -18,7 +18,7 @@ namespace ProofPhysicsEngine {
 		//the sphere is greater than one component of the relative position of the sphere center
 		//(i.e., the transformed position we found earlier).See the next block of code.
 		Proof::Vector  sphereCenter = sphere.Center;
-		Proof::Vector  boxCener = box.Center*box.GetOrientation(); // need to add rotation
+		Proof::Vector  boxCener = box.Center;//*box.GetOrientation(); // need to add rotation
 		if (abs(boxCener.X) - sphere.Radius > boxCener.X/2 ||
 			abs(boxCener.Y) - sphere.Radius > boxCener.Y/2 ||
 			abs(boxCener.Z) - sphere.Radius > boxCener.Z/2) {

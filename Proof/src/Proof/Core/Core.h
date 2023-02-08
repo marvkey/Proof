@@ -4,7 +4,7 @@
 #include<chrono>
 #include "UUID.h"
 #include "Proof/utils/FileSystem.h"
-#include "Proof/Math/Math.h"
+#include "Proof/Math/MathInclude.h"
 #include "Proof/Math/Vector.h"
 #include <vector>
 #include "Log.h"

@@ -919,10 +919,10 @@ namespace Proof
 						glm::vec3 translation, rotation, scale;
 						MathResource::DecomposeTransform(selectedEntitytransform, translation, rotation, scale);
 
-						glm::vec3 deltaRotation = rotation - glm::vec3{ selectedentityTc.Rotation };
-						selectedentityTc.Location = translation;
+						glm::vec3 deltaRotation = rotation - ProofToglmVec(  selectedentityTc.Rotation );
+						selectedentityTc.Location =GlmVecToProof( translation);
 						selectedentityTc.Rotation += Vector{Math::Degrees(deltaRotation).x, Math::Degrees(deltaRotation).y, Math::Degrees(deltaRotation).z};
-						selectedentityTc.Scale = scale;
+						selectedentityTc.Scale =GlmVecToProof( scale);
 
 					}
 					else
@@ -930,10 +930,10 @@ namespace Proof
 						glm::vec3 translation, rotation, scale;
 						MathResource::DecomposeTransform(selectedEntitytransform, translation, rotation, scale);
 
-						glm::vec3 deltaRotation = rotation - glm::vec3{ selectedentityTc.Rotation };
-						selectedentityTc.Location = translation;
+						glm::vec3 deltaRotation = rotation - ProofToglmVec(selectedentityTc.Rotation);
+						selectedentityTc.Location =GlmVecToProof( translation);
 						selectedentityTc.Rotation += Vector{ Math::Degrees(deltaRotation).x, Math::Degrees(deltaRotation).y, Math::Degrees(deltaRotation).z };
-						selectedentityTc.Scale = scale;
+						selectedentityTc.Scale = GlmVecToProof(scale);
 					}
 				
 				}
@@ -961,7 +961,7 @@ namespace Proof
 					UUID meshID = *(UUID*)payload->Data;
 
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
-					newentt.AddComponent<MeshComponent>()->SetMeshSource(meshID);
+					newentt.AddComponent<MeshComponent>()->SetMesh(meshID);
 					m_WorldHierachy.m_SelectedEntity = newentt;
 				}
 
@@ -980,7 +980,7 @@ namespace Proof
 				// basically add mesh is done with its operation and no longer renderng
 				if (meshSourceAdded == false) {
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
-					newentt.AddComponent<MeshComponent>()->SetMeshSource(id);
+					newentt.AddComponent<MeshComponent>()->SetMesh(id);
 					m_WorldHierachy.m_SelectedEntity = newentt;
 				}
 			}

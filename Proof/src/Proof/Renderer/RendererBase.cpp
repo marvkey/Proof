@@ -29,7 +29,6 @@ namespace Proof {
 		Renderer::s_RendererAPI->Init();
 
 		s_BaseTextures = new  BaseTextures();
-		MeshWorkShop::Init();
 		PF_ENGINE_TRACE("Renderer Initilized");
 	}
 

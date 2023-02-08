@@ -11,7 +11,7 @@ namespace ProofPhysicsEngine
 		glm::vec3 Gravity = { 0,-9.8,0 };
 		void UpdateForce(RigidBody& body) {
 			if (body.IsMassInfinite() || body.Gravity ==false)return; // has infinite mass no need ot calculate
-			body.AddForce(Gravity * body.GetMass());
+			//body.AddForce(Gravity * body.GetMass());
 		}
 	};
 }

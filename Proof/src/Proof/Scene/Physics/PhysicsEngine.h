@@ -1,5 +1,4 @@
 #pragma once
-#include "../../ProofPhysics/src/PhysicsWorld.h"
 #include "../World.h"
 #include "../Component.h"
 

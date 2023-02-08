@@ -14,6 +14,7 @@
 
 namespace Proof
 {
+	//using uint64_t = uint64_t;
 	struct DirLight {
 		Vector Color = { 1 };
 		float Intensity = 1.0f;// has not been implemented
@@ -22,6 +23,11 @@ namespace Proof
 	struct LightPass {
 		Count<class UniformBuffer> DirLightsBuffer;
 		std::vector<DirLight> DirLights;
+	};
+	struct MeshInstance {
+		Count<Mesh> Mesh;
+		//number of instance count
+		uint32_t Count;
 	};
 	struct MeshPipeLine {
 		struct MeshVertex {
@@ -38,10 +44,11 @@ namespace Proof
 		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 
 		// id, and all teh transforms for that mesh
-		std::unordered_map < AssetID, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
-		std::unordered_map < AssetID, uint32_t> AmountMeshes;
+		std::unordered_map < uint64_t, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
+		std::unordered_map < uint64_t, MeshInstance> Meshes;
 		uint32_t NumberMeshes;
-		std::vector<AssetID> ElementsImplaced;
+		// order teh meshes are pushed intehvector that stores all transforms
+		std::vector<uint64_t> ElementsImplaced;
 
 		MeshPipeLine(Count<RenderPass> renderPass);
 		// the begin offset we should start rendering
@@ -49,7 +56,7 @@ namespace Proof
 		LightPass LightPass;
 		void Reset() {
 			MeshesTransforms.clear();
-			AmountMeshes.clear();
+			Meshes.clear();
 			LightPass.DirLights.clear();
 			ElementsImplaced.clear();
 			NumberMeshes = 0;
@@ -70,17 +77,18 @@ namespace Proof
 		MeshMaterialPipeline(Count<RenderPass> renderPass);
 		Count<class PushConstant> MaterialPushConstant;
 		uint32_t NumberMeshes;
-		std::vector<AssetID> ElementsImplaced;
+		// order teh meshes are pushed intehvector that stores all transforms
+		std::vector<uint64_t> ElementsImplaced;
 		// the begin offset we should start rendering
 		uint32_t OffsetBegin = 0;
-		std::unordered_map < AssetID, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
-		std::unordered_map < AssetID, uint32_t> AmountMeshes;
-		std::unordered_map < AssetID, MaterialData> MaterialDatas;
+		std::unordered_map < uint64_t, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
+		std::unordered_map < uint64_t, MeshInstance> Meshes;
+		std::unordered_map < uint64_t, MaterialData> MaterialDatas;
 		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 		void Reset() {
 			MeshesTransforms.clear();
 			ElementsImplaced.clear();
-			AmountMeshes.clear();
+			Meshes.clear();
 			MaterialDatas.clear();
 			NumberMeshes = 0;
 		}
@@ -111,7 +119,8 @@ namespace Proof
 		void Init();
 		void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<RenderCommandBuffer>& commandBuffer);
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
-		void SubmitMesh(class MeshComponent& meshComponent, const glm::mat4& transform);
+		void SubmitMesh(Count<Mesh> mesh, const glm::mat4& transform);
+		void SubmitMeshWithMaterial(Count<Mesh> mesh, Count<Material> material, const glm::mat4& transform);
 		void SubmitDirectionalLight(const DirLight& light);
 		void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);
 		void SubmitSpotLight(class SpotLightComponent& comp, class TransformComponent& transform);
@@ -129,7 +138,6 @@ namespace Proof
 		Special< MeshMaterialPipeline> m_MeshMaterialPipeline;
 		Special<RenderStorage> m_RenderStorage;
 		void DrawContext();
-		void DrawMeshSource(uint64_t id,uint64_t num,uint64_t offset);
 		void Reset();
 		bool s_InContext = false;
 		Count <class RenderPass > m_RenderPass;

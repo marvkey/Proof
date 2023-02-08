@@ -8,11 +8,7 @@ namespace Proof
 	class Proof_API MaterialAsset:public Asset {
 	public:
 		MaterialAsset(const std::string& assetPath);
-		MaterialAsset():
-			Asset(AssetType::Material) 
-		{
-
-		}
+		MaterialAsset();
 		virtual ~MaterialAsset() {
 
 		}
@@ -25,9 +21,9 @@ namespace Proof
 		virtual std::string GetExtension()const {
 			return "Material.ProofAsset";
 		}
-		const Material& GetMaterial()const;
-		Material m_Material;
+		Count<Material> GetMaterial()const;
 	private:
+		Count<Material> m_Material;
 		friend class AssetManager;
 	};
 }

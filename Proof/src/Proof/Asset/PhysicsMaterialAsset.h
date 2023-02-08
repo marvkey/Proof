@@ -8,10 +8,7 @@ namespace Proof
 	class Proof_API PhysicsMaterialAsset :public Asset {
 	public:
 		PhysicsMaterialAsset(const std::string& assetPath);
-		PhysicsMaterialAsset() :
-			Asset(AssetType::PhysicsMaterial) {
-
-		}
+		PhysicsMaterialAsset();
 		virtual void SaveAsset() override;
 		virtual bool LoadAsset(const std::string& filePath)override;
 		virtual ~PhysicsMaterialAsset() {
@@ -24,9 +21,10 @@ namespace Proof
 			return "PhysicsMaterial.ProofAsset";
 		}
 		virtual uint32_t GetImageID();
-		const PhysicsMaterial& GetMaterial()const;
-		PhysicsMaterial m_Material;
+		Count<PhysicsMaterial> GetMaterial()const;
 	private:
+		Count<PhysicsMaterial> m_Material;
+
 		friend class AssetManager;
 	};
 }

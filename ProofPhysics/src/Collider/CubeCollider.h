@@ -19,16 +19,18 @@ namespace ProofPhysicsEngine {
 			
 		}
 		CubeCollider(const Proof::Vector & location, const Proof::Vector & rotation, const Proof::Vector & scale):
-			Collider(ColliderType::Cube),
-			Center(location), Rotation(rotation), Scale(scale)
+			Collider(ColliderType::Cube)
+			//Center(location), Rotation(rotation), Scale(scale)
 		{
 
 		}
 		static float transformToAxis(const CubeCollider& box,
 			const Proof::Vector  & axis) {
-			return box.Center.X/2* axis.GetDistance(box.GetOrientation()[0]) +
-				box.Center.Y / 2 * axis.GetDistance(box.GetOrientation()[1]) +
-				box.Center.Z / 2 * axis.GetDistance(box.GetOrientation()[2]);
+			//return box.Center.X/2* axis.GetDistance(box.GetOrientation()[0]) +
+			//	box.Center.Y / 2 * axis.GetDistance(box.GetOrientation()[1]) +
+			//	box.Center.Z / 2 * axis.GetDistance(box.GetOrientation()[2]);
+
+			return 0.0f;
 		}
 		bool overlapOnAxis(
 			const CubeCollider& one,
@@ -36,14 +38,14 @@ namespace ProofPhysicsEngine {
 			const Proof::Vector  & axis
 		) {
 			// Project the half-size of one onto axis.
-			float oneProject = transformToAxis(one, axis);
-			float twoProject = transformToAxis(two, axis);
-			// Find the Proof::Vector  between the two centers.
-			Proof::Vector   toCenter = two.GetOrientation4()[3] - one.GetOrientation4()[3];
-			// Project this onto the axis.
-			float distance = axis.GetDistance(toCenter);
+			//float oneProject = transformToAxis(one, axis);
+			//float twoProject = transformToAxis(two, axis);
+			//// Find the Proof::Vector  between the two centers.
+			//Proof::Vector   toCenter = two.GetOrientation4()[3] - one.GetOrientation4()[3];
+			//// Project this onto the axis.
+			//float distance = axis.GetDistance(toCenter);
 			// Check for overlap.
-			return (distance < oneProject + twoProject);
+			return 0;
 		}
 		Proof::Vector   Center = {0,0,0}; // location
 		Proof::Vector   Rotation = { 0,0,0 };
@@ -62,11 +64,11 @@ namespace ProofPhysicsEngine {
 		}
 		glm::mat3 GetOrientation4()const {
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, { Center.X,Center.Y,Center.Z });
-			model = glm::rotate(model, Rotation.X, { 1,0,0 });// WE are NOT APPLYING Radians here 
-			model = glm::rotate(model, Rotation.Y, { 0,1,0 });// WE are NOT APPLYING Radians here 
-			model = glm::rotate(model, Rotation.Z, { 0,0,1 });// WE are NOT APPLYING Radians here 
-			model = glm::scale(model, { Scale.X,Scale.Y,Scale.Z });
+			//model = glm::translate(model, { Center.X,Center.Y,Center.Z });
+			//model = glm::rotate(model, Rotation.X, { 1,0,0 });// WE are NOT APPLYING Radians here 
+			//model = glm::rotate(model, Rotation.Y, { 0,1,0 });// WE are NOT APPLYING Radians here 
+			//model = glm::rotate(model, Rotation.Z, { 0,0,1 });// WE are NOT APPLYING Radians here 
+			//model = glm::scale(model, { Scale.X,Scale.Y,Scale.Z });
 
 			return model;
 		}
@@ -78,8 +80,9 @@ namespace ProofPhysicsEngine {
 			const Proof::Vector  & point,
 			CollisionData& data
 		) {
+			/*
 			// Transform the point into box coordinates.
-			Proof::Vector   relPt = point * box.GetOrientation();
+			//Proof::Vector   relPt = point * box.GetOrientation();
 			Proof::Vector   normal;
 
 			// penetration is least deep.
@@ -111,6 +114,7 @@ namespace ProofPhysicsEngine {
 			contact->body[1] = NULL;
 			contact->Restitution = data.Restitution;
 			contact->Friction = data.Friction;
+			*/
 			return 1;
 		}
 	

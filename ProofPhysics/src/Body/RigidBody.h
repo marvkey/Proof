@@ -17,7 +17,7 @@ namespace ProofPhysicsEngine {
 			m_LastFrameAcceleration += m_ForceAccum * (1 / m_Mass);
 
 			// angular acceleration
-			Proof::Vector   angularAcceleration = _transformInertiaTensorWorld(m_Quat, m_InverseInertiaTensor) * m_TorqueAccum; // INVERSE INERTIA TENSOR WORLD SPACE
+			Proof::Vector   angularAcceleration;// _transformInertiaTensorWorld(m_Quat, m_InverseInertiaTensor)* m_TorqueAccum; // INVERSE INERTIA TENSOR WORLD SPACE
 			
 			// Adjust velocities
 			// Update linear velocity from both acceleration and impulse
@@ -39,7 +39,7 @@ namespace ProofPhysicsEngine {
 			m_Quat = glm::normalize(m_Quat);
 
 			// FORMULA ACCELRATION( change in veolocity/time)
-			m_Acceleration = glm::vec3(m_LastFrameVelocity - Velocity) / deltaTime;
+			//m_Acceleration = glm::vec3(m_LastFrameVelocity - Velocity) / deltaTime;
 			ClearForceAccum();
 		}
 		/**
@@ -68,8 +68,9 @@ namespace ProofPhysicsEngine {
 
 		glm::mat3x4 GetTransform() {
 			glm::mat4 rotation = glm::toMat4(glm::quat(glm::vec3{ glm::radians(Rotation.X), glm::radians(Rotation.Y), glm::radians(Rotation.Z) }));
-			return glm::translate(glm::mat4(1.0f), { Location })
-				* rotation;
+			//return glm::translate(glm::mat4(1.0f), { ProofToglmVec(Location) })
+			//	* rotation;
+			return glm::mat3x4();
 		}
 
 		void AddForce(const Proof::Vector  & force) {

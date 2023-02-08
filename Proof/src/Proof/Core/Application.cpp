@@ -53,6 +53,7 @@ namespace Proof {
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
         assetManagerconfig.AssetManager = m_Project->GetFromSystemProjectDirectory(m_Project->GetConfig().AssetManager);
         AssetManager::Init(assetManagerconfig);
+
         AssetManager::InitilizeAssets();
 
 
@@ -77,7 +78,6 @@ namespace Proof {
 
     void Application::OnEvent(Event& e) {
         PF_PROFILE_FUNC();
-        
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
         dispatcher.Dispatch<WindowCloseEvent>(PF_BIND_FN(Application::OnWindowCloseEvent));
@@ -137,7 +137,7 @@ namespace Proof {
             }
             if (m_ApplicationConfiguration.EnableImgui == true)
                 ImguiUpdate(DeltaTime);
-           m_Window->WindowUpdate();
+            m_Window->WindowUpdate();
             Renderer::EndFrame();
 
             FrameTimersControll::s_FrameTimers.clear();

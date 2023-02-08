@@ -84,13 +84,6 @@ namespace Proof {
 
 	void World::OnMeshColliderComponentCreate(MeshColliderComponent& component)
 	{
-		if (component.HasMesh() == false)
-			return;
-
-		if (!PhysicsMeshCooker::HasMesh(component.GetMeshSource()))
-		{
-			PhysicsMeshCooker::CookMesh(component.GetMeshSource());
-		}
 
 	}
 
@@ -346,10 +339,10 @@ namespace Proof {
 
 	glm::mat4 World::GetWorldTransform(Entity entity) const {
 		auto rotation = GetWorldRotation(entity);
-		return glm::translate(glm::mat4(1.0f), { GetWorldLocation(entity) }) *
+		return glm::translate(glm::mat4(1.0f), { ProofToglmVec(GetWorldLocation(entity)) }) *
 			glm::rotate(glm::mat4(1.0f), glm::radians(rotation.X), { 1,0,0 })
 			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
 			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Z), { 0,0,1 })
-			* glm::scale(glm::mat4(1.0f), { GetWorldScale(entity) });
+			* glm::scale(glm::mat4(1.0f), { ProofToglmVec(GetWorldScale(entity)) });
 	}
 }

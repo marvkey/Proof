@@ -35,7 +35,7 @@ namespace Proof{
 				return m_Texture->GetImage();
 			return Image();
 		}
-		const Count<class Texture2D>& GetTexture()const{
+		Count<class Texture2D> GetTexture(){
 			return m_Texture;
 		}
 		AssetID GetAssetSource() {

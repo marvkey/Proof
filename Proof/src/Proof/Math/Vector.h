@@ -1,5 +1,4 @@
 #pragma once
-#include <glm/glm.hpp>
 #include <sstream>
 #include <string>
 #include<iostream>>
@@ -23,11 +22,6 @@ namespace Proof
             Z = Other.Z;
         }
 
-        VectorTemplate(const glm::vec3& Other) {
-            X = Other.x;
-            Y = Other.y;
-            Z = Other.z;
-        }
 
         VectorTemplate(T x, T y, T z) {
             this->X = x, this->Y = y, this->Z = z;
@@ -101,35 +95,6 @@ namespace Proof
         T GetAngle(const VectorTemplate& Vec)const {
             T Angle = Dot(*this, Vec) / (GetLength(*this) * GetLength(Vec));
             return Math::DInverseCos<T>(Angle);
-        }
-
-
-        operator const glm::vec3()const { return glm::vec3(X, Y, Z); }
-        VectorTemplate operator=(glm::vec3 const& obj) {
-            X = obj.x;
-            Y = obj.y;
-            Z = obj.z;
-            return *this;
-        }
-
-        VectorTemplate operator&(glm::vec3 const& obj) {
-            this->X = obj.x;
-            this->Y = obj.y;
-            this->Z = obj.z;
-            return *this;
-        }
-
-        VectorTemplate operator +=(glm::vec3& Other) {
-            this->X += Other.x;
-            this->Y += Other.y;
-            this->Z += Other.z;
-            return *this;
-        }
-        VectorTemplate operator -=(const glm::vec3& Other) {
-            this->X -= Other.x;
-            this->Y -= Other.y;
-            this->Z -= Other.z;
-            return *this;
         }
 
         void AddScaledVectorTemplate(VectorTemplate& other, float number) {
