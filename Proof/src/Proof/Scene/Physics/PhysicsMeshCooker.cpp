@@ -27,7 +27,6 @@ namespace  Proof {
 		PF_CORE_ASSERT(AssetManager::HasID(ID), "Asset Manager does not have asset");
 
 		Mesh* mesh = AssetManager::GetAsset<MeshAsset>(ID)->GetMesh();
-		physx::PxHullPolygon
 		if (mesh)
 		{
 			std::vector<physx::PxVec3> vertices;

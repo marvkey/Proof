@@ -21,6 +21,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Asset/MaterialAsset.h"
 #include "Proof/Renderer/PushConstant.h"
+#include "Proof/Renderer/MeshWorkShop.h"
 namespace Proof
 {
 	
@@ -44,7 +45,7 @@ namespace Proof
 		//texture
 		RoughnessMap = 3,
 	};
-
+	Count<Mesh> capsuleMesh;
 	struct CameraData {
 		CameraData() {};
 		CameraData(const glm::mat4& projection, const glm::mat4& view, const Vector& pos) :
@@ -69,6 +70,7 @@ namespace Proof
 		m_RenderStorage = CreateSpecial<RenderStorage>();
 		m_MeshPipeLine = CreateSpecial<MeshPipeLine>(m_RenderPass);
 		m_MeshMaterialPipeline = CreateSpecial<MeshMaterialPipeline>(m_RenderPass);
+		capsuleMesh = MeshWorkShop::GenerateCapsule();
 		m_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
 	}
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {

@@ -327,7 +327,7 @@ namespace Proof
 				break;
 			}
 			// not working for somereason 
-			//ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
+			ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
 			if (ImGui::BeginDragDropSource()) {
 				std::string fileDragSourcePath = path.string();
 				// we doingthis becausefor loop and dragsurce may change
