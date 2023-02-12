@@ -26,7 +26,6 @@ void main() {
     outNormal = mat3(aTransform) * aNormal;
     outCameraPostion = CameraUBO.Position;
     gl_Position = CameraUBO.ProjectionMatrix * CameraUBO.ViewMatrix * vec4(outWorldPos, 1.0);
-
 }
 
 #Fragment Shader

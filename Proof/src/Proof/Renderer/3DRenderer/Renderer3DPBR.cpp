@@ -45,17 +45,6 @@ namespace Proof
 		//texture
 		RoughnessMap = 3,
 	};
-	struct CameraData {
-		CameraData() {};
-		CameraData(const glm::mat4& projection, const glm::mat4& view, const Vector& pos) :
-			m_Projection(projection), m_View(view), m_Positon(pos) {
-		};
-		glm::mat4 m_Projection;
-		glm::mat4 m_View;
-		Vector m_Positon;
-	};
-
-	
 	static CameraData s_CurrentCamera;
 
 	Renderer3DPBR::Renderer3DPBR(Count<RenderPass> renderPass)
@@ -133,10 +122,6 @@ namespace Proof
 	}
 	void Renderer3DPBR::SubmitSpotLight(class SpotLightComponent& comp, TransformComponent& transform) {
 	}
-	void Renderer3DPBR::DrawDebugMesh(Mesh* mesh, const glm::mat4& transform) {
-
-	}
-	
 	void Renderer3DPBR::EndContext() {
 		PF_CORE_ASSERT(s_InContext == true, "Cannot end context if already n a context");
 		PF_PROFILE_FUNC()
@@ -150,6 +135,7 @@ namespace Proof
 		m_MeshMaterialPipeline->Reset();
 
 		m_RenderStorage->CurrentFrameBuffer = nullptr;
+		m_RenderStorage->CommandBuffer = nullptr;
 	}
 
 	void Renderer3DPBR::Destroy() {
@@ -392,36 +378,4 @@ namespace Proof
 
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
-	DebugMeshPipeLine::DebugMeshPipeLine()
-	{
-		/*
-		{
-			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.Build();
-			Descriptors.insert({ DescriptorSets::Zero,descriptor });
-		}
-
-	
-		Shader = Shader::GetOrCreate("DebugMesh", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Mesh.shader");
-		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
-		RenderPass = RenderPass::Create();
-
-		Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
-		meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-		meshVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-		meshVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
-		meshVertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
-		meshVertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-
-
-		meshVertexArray->AddData(5, DataType::Vec4, 0, 1);
-		meshVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
-		meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
-		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
-
-		//GraphicsPipeline = GraphicsPipeline::Create(Shader, RenderPass, PipeLineLayout, meshVertexArray);
-		*/
-	}
-	
 }

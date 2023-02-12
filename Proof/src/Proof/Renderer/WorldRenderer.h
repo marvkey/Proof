@@ -24,6 +24,7 @@ namespace Proof
 		
 	private:
 		Special<Renderer3DPBR> m_Renderer3D;
+		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
 		Special<class Renderer2D>  m_Renderer2D;
 		Count<RenderCommandBuffer> m_CommandBuffer;
 		Count<class RenderPass> m_RenderPass;

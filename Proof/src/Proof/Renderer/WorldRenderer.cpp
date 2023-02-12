@@ -13,6 +13,8 @@
 #include "GraphicsPipeLine.h"
 #include "PipeLineLayout.h"
 #include "Shader.h"
+#include "Proof/Scene/Physics/PhysicsMeshCooker.h"
+#include"DebugMeshRenderer.h"
 namespace Proof
 {
 	Count<CubeMap> textureCubeMap;
@@ -20,15 +22,7 @@ namespace Proof
 	Count<PipeLineLayout> PipelineLayout;
 	Count<Mesh> Cube;
 	std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
-	struct CameraData {
-		CameraData() {};
-		CameraData(const glm::mat4& projection, const glm::mat4& view, const Vector& pos) :
-			m_Projection(projection), m_View(view), m_Positon(pos) {
-		};
-		glm::mat4 m_Projection;
-		glm::mat4 m_View;
-		Vector m_Positon;
-	};
+
 	WorldRenderer::~WorldRenderer() {
 		textureCubeMap = nullptr;
 		RenderPipline = nullptr;
@@ -45,6 +39,7 @@ namespace Proof
 		m_CommandBuffer = RenderCommandBuffer::Create();
 		m_Renderer3D = CreateSpecial< Renderer3DPBR>(m_RenderPass);
 		m_Renderer2D = CreateSpecial< Renderer2D>(m_RenderPass);
+		m_DebugMeshRenderer = CreateSpecial<DebugMeshRenderer>(m_RenderPass);
 		/*
 		Cube = MeshWorkShop::GenerateCube();
 		{
@@ -135,6 +130,46 @@ namespace Proof
 		}
 		m_Renderer2D->EndContext();
 		#endif
+		m_DebugMeshRenderer->BeginContext(camera.m_Projection, camera.m_View,GlmVecToProof( camera.m_Positon), m_ScreenFrameBuffer, m_CommandBuffer);
+		
+		{
+			m_World->ForEachEnitityWith<CubeColliderComponent>([&](Entity entity) {
+				glm::mat4 transform = m_World->GetWorldTransform(entity);
+				auto& collider = *entity.GetComponent<CubeColliderComponent>();
+
+				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
+					glm::scale(glm::mat4(1.0f), ProofToglmVec(collider.OffsetScale));
+
+				m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetCubeColliderMesh(), transform * colliderTransform);
+			});
+
+			m_World->ForEachEnitityWith<SphereColliderComponent>([&](Entity entity) {
+				glm::mat4 transform = m_World->GetWorldTransform(entity);
+				auto& collider = *entity.GetComponent<SphereColliderComponent>();
+
+				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
+					glm::scale(glm::mat4(1.0f), ProofToglmVec(collider.Radius * 1.0f));
+
+				m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetSphereColliderMesh(), transform * colliderTransform);
+			});
+
+			m_World->ForEachEnitityWith<CapsuleColliderComponent>([&](Entity entity) {
+				glm::mat4 transform = m_World->GetWorldTransform(entity);
+				auto& collider = *entity.GetComponent<CapsuleColliderComponent>();
+
+				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
+					glm::scale(glm::mat4(1.0f), glm::vec3{collider.Radius*0.5f,collider.Height,collider.Radius* 0.5f });
+
+				m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetCapsuleColliderMesh(), transform * colliderTransform);
+			});
+
+			m_World->ForEachEnitityWith<MeshColliderComponent>([&](Entity entity) {
+				glm::mat4 transform = m_World->GetWorldTransform(entity);
+				auto& collider = *entity.GetComponent<MeshColliderComponent>();
+				m_DebugMeshRenderer->SubmitMesh(collider.GetMesh(), transform);
+			});
+		}
+		m_DebugMeshRenderer->EndContext();
 		Renderer::EndRenderPass(m_RenderPass);
 		Renderer::EndCommandBuffer(m_CommandBuffer);
 

@@ -84,7 +84,7 @@ namespace Proof {
 
 	void World::OnMeshColliderComponentCreate(MeshColliderComponent& component)
 	{
-
+		
 	}
 
 	void World::OnMeshColliderComponentDelete(MeshColliderComponent& component)

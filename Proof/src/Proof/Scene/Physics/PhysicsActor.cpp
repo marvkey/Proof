@@ -141,7 +141,7 @@ namespace Proof {
 		const Vector worldScalePositive = m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetPositive();
 		const Vector colliderScalePositive = cubeCollider->OffsetScale.GetPositive();
 		
-		Vector size = worldScalePositive + colliderScalePositive;
+		Vector size = worldScalePositive * colliderScalePositive;
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxBoxGeometry(PhysxUtils::VectorToPhysxVector(size)), *colliderMaterial, true);
 		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 

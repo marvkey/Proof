@@ -5,6 +5,8 @@
 #include "Proof/Scene/Mesh.h"
 #include"Proof/Asset/MeshAsset.h"
 
+#include "Proof/Renderer/MeshWorkShop.h"
+
 namespace  Proof {
 	std::unordered_map<AssetID, Count<class Mesh>> s_Meshes;
 	std::unordered_map<AssetID, physx::PxTriangleMesh*> s_ConvexMeshes;
@@ -106,6 +108,22 @@ namespace  Proof {
 		s_ConvexMeshes.erase(ID);
 		s_Meshes.erase(ID);
 	}
+	Count<class Mesh> PhysicsMeshCooker::GetCubeColliderMesh()
+	{
+		static auto mesh = MeshWorkShop::GenerateCube();
+		return mesh;
+	}
+	Count<class Mesh> PhysicsMeshCooker::GetCapsuleColliderMesh()
+	{
+		static auto capsule = MeshWorkShop::GenerateCapsule();
+		return capsule;
+	}
+	Count<class Mesh> PhysicsMeshCooker::GetSphereColliderMesh()
+	{
+		static auto sphere = MeshWorkShop::GenerateUVSphere();
+		return sphere;
+	}
+
 	void PhysicsMeshCooker::Init()
 	{
 		s_MeshCooker = PxCreateCooking(PX_PHYSICS_VERSION, *PhysicsEngine::GetFoundation(), physx::PxCookingParams(PhysicsEngine::GetPhysics()->getTolerancesScale()));

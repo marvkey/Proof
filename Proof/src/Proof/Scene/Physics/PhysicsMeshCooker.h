@@ -11,6 +11,10 @@ namespace Proof{
 		static const Count<class Mesh> GetConvexMeshAsMesh(AssetID ID);
 		static physx::PxTriangleMesh* GetConvexMesh(AssetID ID);
 		static void DeleteMesh(AssetID ID);
+
+		static Count<class Mesh> GetCubeColliderMesh();
+		static Count<class Mesh> GetCapsuleColliderMesh();
+		static Count<class Mesh> GetSphereColliderMesh();
 	private:
 		static void Init();
 		static void Release();

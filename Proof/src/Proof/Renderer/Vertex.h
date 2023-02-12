@@ -30,4 +30,20 @@ namespace Proof
         glm::vec2 TexCoords;
         //float TexSlot;
     };
+
+    struct CameraData {
+        CameraData() {};
+        CameraData(const glm::mat4& projection, const glm::mat4& view, const Vector& pos) :
+            m_Projection(projection), m_View(view), m_Positon(pos) {
+        };
+        glm::mat4 m_Projection;
+        glm::mat4 m_View;
+        Vector m_Positon;
+    };
+
+    struct MeshInstance {
+        Count<class Mesh> Mesh;
+        //number of instance count
+        uint32_t Count;
+    };
 }

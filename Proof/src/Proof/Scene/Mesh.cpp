@@ -24,6 +24,7 @@ namespace Proof{
     }
     void Mesh::LoadModel(std::string const& path ) {
         PF_PROFILE_FUNC();
+        m_Name = Utils::FileDialogs::GetFileName(path);
         m_Path = path;
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);

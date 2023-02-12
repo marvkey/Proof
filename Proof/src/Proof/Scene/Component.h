@@ -428,7 +428,7 @@ namespace Proof
 		CubeColliderComponent(const CubeColliderComponent&) = default;
 		CubeColliderComponent() = default;
 		Vector OffsetLocation = { 0,0,0 };
-		Vector OffsetScale= { 0,0,0 };
+		Vector OffsetScale= { 1,1,1 };
 		bool IsTrigger = false;
 
 		void RemovePhysicsMaterial() {

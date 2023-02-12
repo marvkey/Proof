@@ -405,7 +405,7 @@ namespace Proof
 			
 			if (AssetManager::HasID(meshComp.GetMaterialID()))
 			{
-				Count<MaterialAsset> mat = AssetManager::GetAsset<MaterialAsset>(meshComp.GetMeshID());
+				Count<MaterialAsset> mat = AssetManager::GetAsset<MaterialAsset>(meshComp.GetMaterialID());
 				ExternalAPI::ImGUIAPI::TextBar("Material", mat->GetName());
 			}
 			else

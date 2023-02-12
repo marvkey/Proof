@@ -14,6 +14,33 @@ namespace Proof
 {
 	void* dynamicState = new VkDynamicState[2]{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 	namespace Utils {
+		static VkPrimitiveTopology ProofTopologyToVulkanTopology(DrawType type) 
+		{
+			switch (type)
+			{
+				case Proof::DrawType::TriangleList:
+					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+					break;
+				case Proof::DrawType::TriangleStrip:
+					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+					break;
+				case Proof::DrawType::TriangleFan:
+					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+					break;
+				case Proof::DrawType::LineList:
+					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+					break;
+				case Proof::DrawType::LineStrip:
+					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+					break;
+				case Proof::DrawType::PointList:
+					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+					break;
+				default:
+					break;
+			}
+			PF_CORE_ASSERT(false, "Operand not supported");
+		}
 		VkCompareOp ProofCompareOpToVulkanCompareOp(DepthCompareOperator compare) {
 			switch (compare)
 			{
@@ -162,7 +189,7 @@ namespace Proof
 
 		
 		configInfo.InputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		configInfo.InputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		configInfo.InputAssemblyInfo.topology =Utils::ProofTopologyToVulkanTopology(graphicsConfig.DrawMode);
 		configInfo.InputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 		configInfo.InputAssemblyInfo.pNext = nullptr;
 		configInfo.InputAssemblyInfo.flags = 0;

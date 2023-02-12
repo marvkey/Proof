@@ -26,16 +26,6 @@ namespace Proof {
 
 	};
 	
-	struct CameraData {
-		CameraData() {};
-		CameraData(const glm::mat4& projection, const glm::mat4& view, const Vector& pos) :
-			m_Projection(projection), m_View(view), m_Positon(pos) {
-		};
-		glm::mat4 m_Projection;
-		glm::mat4 m_View;
-		Vector m_Positon;
-	};
-
 	static CameraData s_CurrentCamera;
 	void Renderer2D::Init() {
 		m_Storage2DData = CreateSpecial <Renderer2DStorage>();
@@ -61,7 +51,6 @@ namespace Proof {
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Size) {
 		DrawQuad(Location,{0.0,0.0,0.0},Size,{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());
 	}
-
 
 	
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec4& Color) {

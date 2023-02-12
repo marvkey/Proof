@@ -234,9 +234,16 @@ namespace Proof
 	Count<Mesh> MeshColliderComponent::GetMesh()
 	{
 		if (m_MeshAssetPointerID == 0)return nullptr;
-		#ifdef PF_ENABLE_DEBUG
-		if (!PhysicsMeshCooker::HasMesh(m_MeshAssetPointerID)) { m_MeshAssetPointerID = 0; return nullptr; };
-		#endif 
-		return PhysicsMeshCooker::GetConvexMeshAsMesh(m_MeshAssetPointerID);
+
+		
+		if (AssetManager::HasID(m_MeshAssetPointerID))
+		{
+			if (PhysicsMeshCooker::HasMesh(m_MeshAssetPointerID))
+			{
+				return PhysicsMeshCooker::GetConvexMeshAsMesh(m_MeshAssetPointerID);
+			}
+			return AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID)->GetMesh();
+		}
+		return nullptr;
 	}
 }

@@ -11,7 +11,7 @@
 #include "Proof/Renderer/CommandBuffer.h"
 #include "Proof/Renderer/UniformBuffer.h"
 #include "Proof/Scene/Component.h"
-
+#include "../Vertex.h"
 namespace Proof
 {
 	//using uint64_t = uint64_t;
@@ -23,11 +23,6 @@ namespace Proof
 	struct LightPass {
 		Count<class UniformBuffer> DirLightsBuffer;
 		std::vector<DirLight> DirLights;
-	};
-	struct MeshInstance {
-		Count<Mesh> Mesh;
-		//number of instance count
-		uint32_t Count;
 	};
 	struct MeshPipeLine {
 		struct MeshVertex {
@@ -60,6 +55,7 @@ namespace Proof
 			LightPass.DirLights.clear();
 			ElementsImplaced.clear();
 			NumberMeshes = 0;
+			OffsetBegin = 0;
 		}
 	};
 	struct MaterialData {
@@ -91,17 +87,9 @@ namespace Proof
 			Meshes.clear();
 			MaterialDatas.clear();
 			NumberMeshes = 0;
+			OffsetBegin = 0;
 		}
 	
-	};
-	struct DebugMeshPipeLine {
-		Count<class GraphicsPipeline> GraphicsPipeline;
-		Count<class Shader> Shader;
-		Count <class PipeLineLayout> PipeLineLayout;
-		Count <class RenderPass > RenderPass;
-		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
-
-		DebugMeshPipeLine();
 	};
 	
 	struct RenderStorage {
@@ -124,7 +112,6 @@ namespace Proof
 		void SubmitDirectionalLight(const DirLight& light);
 		void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);
 		void SubmitSpotLight(class SpotLightComponent& comp, class TransformComponent& transform);
-		void DrawDebugMesh(class Mesh* mesh, const glm::mat4& transform);
 		void EndContext();
 		void Destroy();
 	private:

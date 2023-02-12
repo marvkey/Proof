@@ -18,7 +18,7 @@ World:
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
-        OffsetScale: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
@@ -71,7 +71,7 @@ World:
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
-        OffsetScale: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1

@@ -45,6 +45,7 @@ namespace Proof{
 		FrontFace FrontFace = FrontFace::ClockWise;
 		Count<class RenderPass> RenderPass;
 		DepthCompareOperator DepthCompareOperator = DepthCompareOperator::Less;
+		DrawType DrawMode = DrawType::TriangleList;
 	};
 	class GraphicsPipeline {
 	public:
