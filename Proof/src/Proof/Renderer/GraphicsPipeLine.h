@@ -13,7 +13,7 @@ namespace Proof{
 	enum class DepthCompareOperator {
 		Never = 0,
 		Less,
-		EQual,
+		Equal,
 		LessOrEqual,
 		Greater,
 		NotEqual,

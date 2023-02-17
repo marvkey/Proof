@@ -6,8 +6,8 @@ World:
         Tag: cube
         tags: []
       TransformComponent:
-        Location: [0, 22.3999996, 0]
-        Rotation: [0, 0, 20.2000008]
+        Location: [-13.3999996, 17.5, -14.6999998]
+        Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
@@ -100,7 +100,7 @@ World:
         Tag: Sphere
         tags: []
       TransformComponent:
-        Location: [-12.1010103, 17.9992619, -13.325098]
+        Location: [-10.5010004, 17.9992619, -13.325098]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:

@@ -50,7 +50,7 @@ namespace Proof
 				case Proof::DepthCompareOperator::Less:
 					return VK_COMPARE_OP_LESS;
 					break;
-				case Proof::DepthCompareOperator::EQual:
+				case Proof::DepthCompareOperator::Equal:
 					return VK_COMPARE_OP_EQUAL;
 					break;
 				case Proof::DepthCompareOperator::LessOrEqual:

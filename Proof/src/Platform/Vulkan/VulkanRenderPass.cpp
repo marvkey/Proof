@@ -99,6 +99,7 @@ namespace Proof
         subpass.pInputAttachments = nullptr;
         subpass.pPreserveAttachments = nullptr;
         subpass.preserveAttachmentCount =0;
+        subpass.pResolveAttachments = 0;
         subpass.flags = 0;
         // create render pass
         VkRenderPassCreateInfo renderPassInfo = {};
@@ -109,6 +110,36 @@ namespace Proof
         renderPassInfo.pSubpasses = &subpass;
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
+        /*
+            Bit mask that specifies which view rendering is broadcast to
+            0011 = Broadcast to first and second view (layer)
+        */
+
+        /*
+        
+        */
+        // default broadcast to all layers
+        //https://anishbhobe.site/post/vulkan-render-to-cubemap-using-multiview/#3-attaching-the-cubemap-to-the-framebuffer
+        const uint32_t viewMask = 0b00111111;
+        //const uint32_t viewMask = 0;
+        /*
+            Bit mask that specifies correlation between views
+            An implementation may use this for optimizations (concurrent render)
+        */
+        const uint32_t correlationMask = 0;
+
+        VkRenderPassMultiviewCreateInfo renderPassMultiviewCI{};
+        renderPassMultiviewCI.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+        renderPassMultiviewCI.subpassCount = 1;
+        renderPassMultiviewCI.pViewMasks = &viewMask;
+        renderPassMultiviewCI.correlationMaskCount = 0;
+        renderPassMultiviewCI.pCorrelationMasks = nullptr;
+        renderPassMultiviewCI.pNext = nullptr;
+        renderPassMultiviewCI.pViewOffsets = NULL;
+        if (m_Config.MultiView)
+        {
+            renderPassInfo.pNext = &renderPassMultiviewCI;
+        }
         if (vkCreateRenderPass(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS)
         {
             PF_CORE_ASSERT(false, "failed to create render pass!");

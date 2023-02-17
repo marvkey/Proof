@@ -199,6 +199,8 @@ namespace Proof
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
         
+
+        
         compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, graphicsContext->GetVulkanVersion());
         const bool optimize = true;
         if (optimize)

@@ -169,6 +169,7 @@ namespace Proof
 		VkPhysicalDeviceFeatures deviceFeatures = {};
 		deviceFeatures.samplerAnisotropy = VK_TRUE;
 		deviceFeatures.depthClamp = VK_TRUE;
+		deviceFeatures.geometryShader = VK_TRUE;
 		VkDeviceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
@@ -188,7 +189,14 @@ namespace Proof
 		else {
 			createInfo.enabledLayerCount = 0;
 		}
-
+		//explains this
+		//https://www.reddit.com/r/vulkan/comments/or8e8u/comment/h6hdwyr/
+		//VkPhysicalDeviceVulkan11Features features;
+		//features.multiview = true;
+		//features.shaderDrawParameters = true;
+		//features.pNext = nullptr;
+		//createInfo.pNext = &features;
+		
 		if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
 			PF_CORE_ASSERT(false, "failed to create logical device!");
 		}

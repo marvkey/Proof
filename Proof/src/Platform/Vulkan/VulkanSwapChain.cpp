@@ -155,7 +155,12 @@ namespace Proof
         createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         createInfo.presentMode = m_PresentMode;
         createInfo.clipped = VK_TRUE;
-
+        // Enable required extension features
+        //VkPhysicalDeviceVulkan12Features physicalDeviceFeature{};
+        //physicalDeviceFeature.shader
+        //physicalDeviceMultiviewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR;
+        //physicalDeviceMultiviewFeatures.multiview = VK_TRUE;
+        //createInfo.pNext = &physicalDeviceMultiviewFeatures;
         if (vkCreateSwapchainKHR(graphicsContext->GetDevice(), &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
             PF_CORE_ASSERT(false,"failed to create swap chain!");
         }

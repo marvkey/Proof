@@ -15,19 +15,22 @@
 #include "Shader.h"
 #include "Proof/Scene/Physics/PhysicsMeshCooker.h"
 #include"DebugMeshRenderer.h"
+#include"Vertex.h"
 namespace Proof
 {
 	Count<CubeMap> textureCubeMap;
 	Count<GraphicsPipeline> RenderPipline;
 	Count<PipeLineLayout> PipelineLayout;
-	Count<Mesh> Cube;
+	Count<Mesh> Cube; 
+	Count< UniformBuffer> cameraBuffer;
 	std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 
 	WorldRenderer::~WorldRenderer() {
 		textureCubeMap = nullptr;
 		RenderPipline = nullptr;
 		PipelineLayout = nullptr;
-		Cube = nullptr;
+		Cube = nullptr; 
+		cameraBuffer = nullptr;
 		Descriptors.clear();
 	}
 	WorldRenderer::WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight) :
@@ -40,18 +43,20 @@ namespace Proof
 		m_Renderer3D = CreateSpecial< Renderer3DPBR>(m_RenderPass);
 		m_Renderer2D = CreateSpecial< Renderer2D>(m_RenderPass);
 		m_DebugMeshRenderer = CreateSpecial<DebugMeshRenderer>(m_RenderPass);
-		/*
+		
 		Cube = MeshWorkShop::GenerateCube();
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex)
 				.AddBinding(1, DescriptorType::ImageSampler, ShaderStage::Fragment)
 				.Build();
+
+
 			Descriptors.insert({ DescriptorSets::Zero,descriptor });
 			textureCubeMap = CubeMap::Create("Assets/qwantani_puresky_4k.hdr");
 			
 
-			PipelineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero]});
+			PipelineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
 			GraphicsPipelineConfig pipelineConfig;
 			pipelineConfig.DebugName = "HDR create";
 			pipelineConfig.Shader = Shader::GetOrCreate("BackgroundShader.Shader",
@@ -65,10 +70,10 @@ namespace Proof
 			pipelineConfig.VertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
 			pipelineConfig.PipelineLayout = PipelineLayout;
 			pipelineConfig.RenderPass = m_RenderPass;
-
+			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
 			RenderPipline = GraphicsPipeline::Create(pipelineConfig);
 		}
-		*/
+		
 	}
 	void WorldRenderer::Resize(ScreenSize windowSize) {
 		m_ScreenFrameBuffer->Resize(Vector2{ (float)windowSize.X, (float)windowSize.Y });
@@ -78,13 +83,12 @@ namespace Proof
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer);
-		/*
+		CameraData cmaeraData = CameraData(camera.m_Projection, camera.m_View, GlmVecToProof(camera.m_Positon));
+		cameraBuffer = UniformBuffer::Create(&cmaeraData, sizeof(CameraData), DescriptorSets::Zero, 0);
 
 		{
 			Renderer::RecordRenderPass(m_RenderPass, RenderPipline, [&](Count <RenderCommandBuffer> commandBuffer) {
-				auto cmaeraData = CameraData{ camera.m_Projection,camera.m_View,camera.m_Positon };
 				auto descriptor0 = Descriptors[DescriptorSets::Zero];
-				auto cameraBuffer = UniformBuffer::Create(&cmaeraData, sizeof(CameraData), DescriptorSets::Zero, 0);
 				descriptor0->WriteBuffer(0, cameraBuffer);
 				descriptor0->WriteImage(1, textureCubeMap);
 				descriptor0->Bind(commandBuffer, PipelineLayout);
@@ -96,7 +100,7 @@ namespace Proof
 				}
 			});
 		}
-		*/
+		
 		m_Renderer3D->BeginContext(camera, m_ScreenFrameBuffer,m_CommandBuffer);
 		// MESHES
 		{

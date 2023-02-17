@@ -34,6 +34,8 @@ namespace Proof{
 			}
 		std::string DebugName;
 		RenderPassAttachment Attachments;
+
+		bool MultiView = false;
 	};
 	class RenderPass {
 	public:

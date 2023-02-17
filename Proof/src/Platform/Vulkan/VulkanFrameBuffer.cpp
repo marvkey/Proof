@@ -285,7 +285,6 @@ namespace Proof
 
             // i dont wanna do this but it needs a compatible render to create for some reason
             framebufferInfo.renderPass = renderPass.GetRenderPass();
-            //framebufferInfo.renderPass = swapchain->GetRenderPass()->As<VulkanRenderPass>()->GetRenderPass();
             framebufferInfo.attachmentCount = attachments.size();
             framebufferInfo.pAttachments = attachments.data();
             framebufferInfo.width = m_Config.Size.X;

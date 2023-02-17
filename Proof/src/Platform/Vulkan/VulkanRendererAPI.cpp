@@ -6,12 +6,10 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanRenderPass.h"
 namespace Proof {
-	CommandBuffer* s_CommandBuffer =nullptr;
 	VulkanRendererAPI::VulkanRendererAPI() {
 	}
 	VulkanRendererAPI::~VulkanRendererAPI()
 	{
-		delete s_CommandBuffer;
 	}
 	void VulkanRendererAPI::DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance ) {
 		vkCmdDraw(commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, 0, firstInstance);
@@ -41,7 +39,6 @@ namespace Proof {
 
 	void VulkanRendererAPI::Destroy() {
 		VulkanRenderer::Destroy();
-		delete s_CommandBuffer;
 	}
 	void VulkanRendererAPI::BeginFrame() {
 		VulkanRenderer::BeginFrame();
@@ -54,8 +51,7 @@ namespace Proof {
 	}
 	void VulkanRendererAPI::Submit(std::function<void(CommandBuffer*)> func) {
 		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		if (s_CommandBuffer == nullptr)
-			s_CommandBuffer = new VulkanCommandBuffer();
+		VulkanCommandBuffer* commandBufferContainer = new VulkanCommandBuffer();
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -71,9 +67,9 @@ namespace Proof {
 
 		vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-		for (int i = 0; i < s_CommandBuffer->As<VulkanCommandBuffer>()->m_CommandBuffer.size(); i++)
-			s_CommandBuffer->As<VulkanCommandBuffer>()->m_CommandBuffer[i] = commandBuffer;
-		func(s_CommandBuffer);
+		for (int i = 0; i < commandBufferContainer->As<VulkanCommandBuffer>()->m_CommandBuffer.size(); i++)
+			commandBufferContainer->As<VulkanCommandBuffer>()->m_CommandBuffer[i] = commandBuffer;
+		func(commandBufferContainer);
 		vkEndCommandBuffer(commandBuffer);
 
 		VkSubmitInfo submitInfo{};
@@ -85,6 +81,8 @@ namespace Proof {
 		vkQueueWaitIdle(graphicsContext->GetGraphicsQueue());
 
 		vkFreeCommandBuffers(graphicsContext->GetDevice(), graphicsContext->GetCommandPool(), 1, &commandBuffer);
+
+		delete commandBufferContainer;
 	}
 	void VulkanRendererAPI::BeginCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)
 	{

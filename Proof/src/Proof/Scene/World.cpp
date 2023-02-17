@@ -30,6 +30,7 @@ namespace Proof {
 	}
 	World::~World()
 	{
+		//m_Registry.on_construct<MeshColliderComponent>().disconnect<&World::OnMeshColliderComponentCreate>(this);
 	}
 	bool World::HasEntity(EntityID ID)const {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
@@ -49,6 +50,7 @@ namespace Proof {
 	}
 	void World::Init()
 	{
+		//m_Registry.on_construct<MeshColliderComponent>().connect<&World::OnMeshColliderComponentCreate>(this);
 	}
 
 	void World::DeleteEntitiesfromQeue()
@@ -84,7 +86,7 @@ namespace Proof {
 
 	void World::OnMeshColliderComponentCreate(MeshColliderComponent& component)
 	{
-		
+		PF_CORE_ASSERT(false);
 	}
 
 	void World::OnMeshColliderComponentDelete(MeshColliderComponent& component)
