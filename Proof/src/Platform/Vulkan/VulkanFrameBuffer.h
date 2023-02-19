@@ -8,9 +8,36 @@ namespace Proof
 {
 
 	struct VulkanFrameBufferImages {
+		VulkanFrameBufferImages() 
+		{
+			Images = {};
+			ImageViews = {};
+			ImageSampler = {};
+		}
+		VulkanFrameBufferImages(bool imageAttach) :
+			ImageAttached(imageAttach)
+		{
+			Images = {};
+			ImageViews = {};
+			ImageSampler = {};
+		}
+
+		VulkanFrameBufferImages(const VulkanFrameBufferImages& other):
+			ImageAttached(other.ImageAttached)
+		{
+			Images = other.Images;
+			ImageViews = other.ImageViews;
+			ImageSampler = other.ImageSampler;
+		}
+		VulkanFrameBufferImages& operator=(const VulkanFrameBufferImages& right) {
+			return *this;
+		}
 		std::vector<VulkanImageAlloc> Images;
 		std::vector<VkImageView> ImageViews;
 		std::vector<VkSampler> ImageSampler;
+
+		// weathere fraemBuffer is responsible for deleting casue the framebufer never created this image
+		 const bool ImageAttached = false;
 	};
 	class VulkanFrameBuffer : public FrameBuffer {
 	public:

@@ -30,9 +30,12 @@ namespace Proof
 	enum class DescriptorSet0 {
 	  //struct
 		CameraData = 0,
-		//struct
-		WorldData = 2,
 		DirectionalLight=1,
+		IrradianceMap = 4,
+		PrefilterMap = 5,
+		BRDF = 6,
+		//struct
+		WorldData = 3,
 	};
 
 	enum class DescriptorSet1 {
@@ -71,6 +74,15 @@ namespace Proof
 		s_CurrentCamera = CameraData{ projection,view,Position };
 		m_RenderStorage->CurrentFrameBuffer = frameBuffer;
 		m_RenderStorage->CommandBuffer = commandBuffer;
+	}
+
+
+	void Renderer3DPBR::SetPbrMaps(Count<class CubeMap> irrdianceMap, Count<class CubeMap> prefilterMap, Count<Texture2D> brdf)
+	{
+		m_MeshPipeLine->IrradianceMap = irrdianceMap;
+		m_MeshPipeLine->PrefilterMap = prefilterMap;
+		m_MeshPipeLine->BRDf = brdf;
+
 	}
 
 	void Renderer3DPBR::SubmitMesh(Count<Mesh> mesh, const glm::mat4& transform) {
@@ -155,7 +167,6 @@ namespace Proof
 
 		auto descriptor0 = m_MeshPipeLine->Descriptors[DescriptorSets::Zero];
 
-		descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_RenderStorage->CameraBuffer);
 		m_MeshPipeLine->LightPass.DirLightsBuffer = UniformBuffer::Create(sizeof(DirLight), DescriptorSets::Zero, (uint32_t)DescriptorSet0::DirectionalLight);
 		if (m_MeshPipeLine->LightPass.DirLights.size() > 0)
 		{
@@ -167,7 +178,14 @@ namespace Proof
 			base.Color = Vector{ 0 };
 			m_MeshPipeLine->LightPass.DirLightsBuffer->SetData(&base, sizeof(DirLight));
 		}
+		descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_RenderStorage->CameraBuffer);
 		descriptor0->WriteBuffer((uint32_t)DescriptorSet0::DirectionalLight, m_MeshPipeLine->LightPass.DirLightsBuffer);
+		PF_CORE_ASSERT(m_MeshPipeLine->IrradianceMap, "Irradiance map is empty");
+		PF_CORE_ASSERT(m_MeshPipeLine->PrefilterMap, "Prefilter map is empty");
+		PF_CORE_ASSERT(m_MeshPipeLine->BRDf, "BRDF map is empty");
+		descriptor0->WriteImage((uint32_t)DescriptorSet0::IrradianceMap, m_MeshPipeLine->IrradianceMap);
+		descriptor0->WriteImage((uint32_t)DescriptorSet0::PrefilterMap, m_MeshPipeLine->PrefilterMap);
+		descriptor0->WriteImage((uint32_t)DescriptorSet0::BRDF, m_MeshPipeLine->BRDf);
 		// mesh pbr 
 		{
 			m_MeshPipeLine->OffsetBegin = 0;
@@ -183,7 +201,10 @@ namespace Proof
 			descriptor0 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::Zero];
 			descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_RenderStorage->CameraBuffer);
 			descriptor0->WriteBuffer((uint32_t)DescriptorSet0::DirectionalLight, m_MeshPipeLine->LightPass.DirLightsBuffer);
-
+			descriptor0->WriteImage((uint32_t)DescriptorSet0::IrradianceMap, m_MeshPipeLine->IrradianceMap);
+			descriptor0->WriteImage((uint32_t)DescriptorSet0::PrefilterMap, m_MeshPipeLine->PrefilterMap);
+			descriptor0->WriteImage((uint32_t)DescriptorSet0::BRDF, m_MeshPipeLine->BRDf);
+			
 			// mesh material pbr 
 			m_MeshMaterialPipeline->OffsetBegin = meshesVertex.size();
 			for (auto& [ID, transforms] : m_MeshMaterialPipeline->MeshesTransforms)
@@ -283,8 +304,10 @@ namespace Proof
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding((uint32_t)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.AddBinding((uint32_t)DescriptorSet0::WorldData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
 				.AddBinding((uint32_t)DescriptorSet0::DirectionalLight, DescriptorType::UniformBuffer, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet0::IrradianceMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet0::PrefilterMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet0::BRDF, DescriptorType::ImageSampler, ShaderStage::Fragment)
 				.Build();
 			Descriptors.insert({ DescriptorSets::Zero,descriptor });
 
@@ -333,8 +356,10 @@ namespace Proof
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding((uint32_t)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.AddBinding((uint32_t)DescriptorSet0::WorldData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
 				.AddBinding((uint32_t)DescriptorSet0::DirectionalLight, DescriptorType::UniformBuffer, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet0::IrradianceMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet0::PrefilterMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.AddBinding((uint32_t)DescriptorSet0::BRDF, DescriptorType::ImageSampler, ShaderStage::Fragment)
 				.Build();
 			Descriptors.insert({ DescriptorSets::Zero,descriptor });
 

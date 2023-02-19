@@ -19,6 +19,9 @@
 namespace Proof
 {
 	Count<CubeMap> textureCubeMap;
+	Count<Texture2D> brdfTexture;
+	Count<CubeMap> iradianceCubeMap;
+	Count<CubeMap> prefilterCubeMap;
 	Count<GraphicsPipeline> RenderPipline;
 	Count<PipeLineLayout> PipelineLayout;
 	Count<Mesh> Cube; 
@@ -53,7 +56,7 @@ namespace Proof
 
 
 			Descriptors.insert({ DescriptorSets::Zero,descriptor });
-			textureCubeMap = CubeMap::Create("Assets/qwantani_puresky_4k.hdr");
+			textureCubeMap = CubeMap::Create("Assets/MegaSun4k.hdr",512,false);
 			
 
 			PipelineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
@@ -73,7 +76,19 @@ namespace Proof
 			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
 			RenderPipline = GraphicsPipeline::Create(pipelineConfig);
 		}
-		
+		{
+			
+			Count<Shader> shader = Shader::GetOrCreate("IrradinceCubeMap",
+				{ {ShaderStage::Vertex,ProofCurrentDirectorySrc +
+				"Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/CubeMap.vs"},
+				{ShaderStage::Fragment,ProofCurrentDirectorySrc +
+				"Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/Irradiance.Frag"} });
+
+			iradianceCubeMap = CubeMap::Create(textureCubeMap,shader, 64, false);
+			prefilterCubeMap = CubeMap::GeneratePrefiltered(textureCubeMap);
+			brdfTexture = Texture2D::GenerateBRDF();
+		}
+	
 	}
 	void WorldRenderer::Resize(ScreenSize windowSize) {
 		m_ScreenFrameBuffer->Resize(Vector2{ (float)windowSize.X, (float)windowSize.Y });
@@ -102,6 +117,8 @@ namespace Proof
 		}
 		
 		m_Renderer3D->BeginContext(camera, m_ScreenFrameBuffer,m_CommandBuffer);
+
+		m_Renderer3D->SetPbrMaps(iradianceCubeMap,prefilterCubeMap,brdfTexture);
 		// MESHES
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
@@ -134,6 +151,7 @@ namespace Proof
 		}
 		m_Renderer2D->EndContext();
 		#endif
+		/*
 		m_DebugMeshRenderer->BeginContext(camera.m_Projection, camera.m_View,GlmVecToProof( camera.m_Positon), m_ScreenFrameBuffer, m_CommandBuffer);
 		
 		{
@@ -174,6 +192,7 @@ namespace Proof
 			});
 		}
 		m_DebugMeshRenderer->EndContext();
+		*/
 		Renderer::EndRenderPass(m_RenderPass);
 		Renderer::EndCommandBuffer(m_CommandBuffer);
 

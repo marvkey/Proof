@@ -19,12 +19,9 @@ void main()
 {
     outWorldPos = aPos;
 
-    ////
     mat4 rotView = mat4(mat3(CameraUBO.View));
     vec4 clipPos = CameraUBO.Projection * rotView * vec4(outWorldPos, 1.0);
-    //
     gl_Position = clipPos.xyww;
-    //gl_Position = CameraUBO.Projection * CameraUBO.View * vec4(outWorldPos, 1.0);
 }
 
 #Fragment Shader
@@ -32,13 +29,13 @@ void main()
 
 
 layout(set = 0, binding = 1) uniform  samplerCube environmentMap;
-layout(location = 0) in vec3 WorldPos;
+layout(location = 0) in vec3 WorldPos;      
 layout(location = 0) out vec4 outFragColor;
  
 void main()
 {
 
-    vec3 envColor = textureLod(environmentMap, WorldPos, 0.0).rgb;
+    vec3 envColor = textureLod(environmentMap, WorldPos,11).rgb;
 
     // HDR tonemap and gamma correct
     envColor = envColor / (envColor + vec3(1.0));

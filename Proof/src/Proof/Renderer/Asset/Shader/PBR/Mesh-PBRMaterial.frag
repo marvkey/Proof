@@ -68,6 +68,10 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}   
 vec3 pbr(BaseLight base, vec3 direction, vec3 normal, vec3 world_pos, vec3 meshColor, float roughness, float metallic, vec3 camPos)
 {
     vec3 wo = normalize(camPos - world_pos);
@@ -100,7 +104,42 @@ vec3 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 world_pos, v
     //return pbr(light.Base, light.Direction, normal, world_pos, meshColor, roughness, metallic, camPos);
     return pbr(light.Base, light.Direction, normal, world_pos, meshColor, roughness, metallic, camPos);
 }
+layout(set = 0, binding = 4) uniform samplerCube irradianceMap;
+layout(set = 0, binding = 5) uniform samplerCube prefilterMap;
+layout(set = 0, binding = 6) uniform sampler2D BRDFLUT;
 
+vec3 IndirectLightingDiffuse(vec3 normal, vec3 world_pos, vec3 color, float roughness,float metallic,vec3 cameraPos )
+{
+    //mips in range of 0-4, need to add more casue some of our cubemps can have  mips
+    const float MAX_REFLECTION_LOD = 4.0; 
+    float ao        = 1;
+
+    vec3 wo = normalize(cameraPos - world_pos);
+    vec3 r  = reflect(-wo, normal);
+
+    // fresnel reflectance
+    vec3 F0 = vec3(0.04);
+         F0 = mix(F0, color, metallic);
+
+    vec3 F  = fresnelSchlickRoughness(max(dot(normal, wo), 0.0), F0, roughness);
+    vec3 ks = F;
+    vec3 kd = 1.0 - ks;
+         kd = kd * (1.0 - metallic);
+    
+    // diffuse IBL term
+    vec3 irradiance = texture(irradianceMap, normal).rgb;
+    vec3 diffuse    = color * irradiance;
+
+    // specular IBL term
+    vec3 prefiletered_color = textureLod(prefilterMap, r, roughness * MAX_REFLECTION_LOD).rgb;
+    vec2 brdf               = texture(BRDFLUT, vec2(max(dot(normal, wo), 0.0), roughness)).rg;
+    vec3 specular           =  prefiletered_color * (F * brdf.x + brdf.y);
+
+
+    vec3 emision = vec3(0);
+    // total indirect lighting
+    return (kd * diffuse + specular) * ao + emision;
+}
 // ----------------------------------------------------------------------------
 struct Material{
     vec3 Color;
@@ -112,6 +151,8 @@ layout( push_constant ) uniform constants
 {
 	Material Mat;
 } MaterialData;
+
+
 layout(set = 1, binding = 0) uniform sampler2D AlbedoMap;
 layout(set = 1, binding = 1) uniform sampler2D NormalMap;
 layout(set = 1, binding = 2) uniform sampler2D MetallicMap;
@@ -138,9 +179,8 @@ void main()
     // metallic on responds to specullar lgiht and there will be no speuclar light in the scne
   
     Lo += calcDirectionalLight(DirectionalLightData.Light, N, WorldPos, currentMaterial.Color, currentMaterial.Roughness, currentMaterial.Metallic, CameraPoition);
-        // ambient lighting (note that the next IBL tutorial will replace 
-        // this ambient lighting with environment lighting).
-    vec3 ambient = vec3(0.03) * currentMaterial.Color;
+    //vec3 ambient = textureLod(irradianceMap,N,0).rgb ;
+    vec3 ambient = IndirectLightingDiffuse(N,WorldPos,currentMaterial.Color,currentMaterial.Roughness,currentMaterial.Metallic,CameraPoition);
 
     vec3 color = ambient + Lo;
 

@@ -56,7 +56,9 @@ namespace Proof
         auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
         auto swapchain = graphicsContext->GetSwapChain();
         VkFormat depthFormat = Utils::ProofFormatToVulkanFormat(imageAttach.Format);
+        bool hasImage = true ? imageAttach.GetImage().HasImage() == true || imageAttach.GetImagelayout().HasImages() == true : false;
 
+        m_DepthImage = VulkanFrameBufferImages(hasImage);
         m_DepthFormat = imageAttach.Format;
         m_DepthImage.Images.resize(swapchain->GetImageCount());
         m_DepthImage.ImageSampler.resize(swapchain->GetImageCount());
@@ -145,7 +147,8 @@ namespace Proof
         uint32_t imageCount = swapchain->GetImageCount();
         auto imageFormat = Utils::ProofFormatToVulkanFormat(imageAttach.Format);
 
-        VulkanFrameBufferImages image;
+        bool hasImage = true ? imageAttach.GetImage().HasImage() == true || imageAttach.GetImagelayout().HasImages() == true : false;
+        VulkanFrameBufferImages image(hasImage);
         image.Images.resize(imageCount);
         image.ImageViews.resize(imageCount);
         image.ImageSampler.resize(imageCount);
@@ -375,6 +378,8 @@ namespace Proof
         {
             for (auto& coloredimage : m_ColorImages)
             {
+                if (coloredimage.ImageAttached == true)
+                    continue;
                 Renderer::SubmitDatafree([images = coloredimage.Images[i], imageViews = coloredimage.ImageViews[i],imageSampler = coloredimage.ImageSampler[i]]()
                 {
                     auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
@@ -387,6 +392,8 @@ namespace Proof
 
             if (HasDepthImage())
             {
+                if (m_DepthImage.ImageAttached == true)
+                    continue;
                 Renderer::SubmitDatafree([images = m_DepthImage.Images[i], imageViews = m_DepthImage.ImageViews[i], imageSampler = m_DepthImage.ImageSampler[i]]()
                 {
                     auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();

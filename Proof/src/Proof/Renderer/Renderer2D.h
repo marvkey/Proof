@@ -57,7 +57,9 @@ namespace Proof {
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>&texture2D);
 		void DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform);
 		void EndContext();
+		static std::vector<Vertex2D> CreateQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec3& Scale, const glm::vec4& Color, float TexIndex);
 
+		static std::pair<Count<VertexBuffer>, Count<IndexBuffer>> CreateQuad();
 		struct Renderer2DStats{
 			uint32_t m_QuadCount;
 			uint32_t m_DrawCalls;
@@ -70,7 +72,6 @@ namespace Proof {
 		Count <class RenderPass > m_RenderPass;
 		Special< Renderer2DStorage> m_Storage2DData;
 		/* Not using as default rendeer cause it allocates to the heap and we dont need taht waste in performance */
-		static std::vector<Vertex2D> CreateQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Scale,const glm::vec4& Color,float TexIndex);
 	};
 }
 

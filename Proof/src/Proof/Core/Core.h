@@ -60,7 +60,7 @@ namespace Proof
 {
     template<typename T>
     using Count = std::shared_ptr<T>;
-
+    
     template<typename T, typename ... Args>
     inline constexpr Count<T> CreateCount(Args&&... args) {
         return std::make_shared<T>(std::forward<Args>(args)...);

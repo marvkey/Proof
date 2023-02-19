@@ -3,7 +3,27 @@
 #include<iostream>
 #include <any>
 namespace Proof {
+	static uint32_t ConvertToRGBA(const Vector& color)
+	{
+		uint8_t r = (uint8_t)(color.X * 255.0f);
+		uint8_t g = (uint8_t)(color.Y * 255.0f);
+		uint8_t b = (uint8_t)(color.Z * 255.0f);
+		uint8_t a = (uint8_t)(1 * 255.0f);
 
+		uint32_t result = (a << 24) | (b << 16) | (g << 8) | r;
+		return result;
+	}
+
+	static uint32_t ConvertToRGBA(const Vector4& color)
+	{
+		uint8_t r = (uint8_t)(color.X * 255.0f);
+		uint8_t g = (uint8_t)(color.Y * 255.0f);
+		uint8_t b = (uint8_t)(color.Z * 255.0f);
+		uint8_t a = (uint8_t)(color.W * 255.0f);
+
+		uint32_t result = (a << 24) | (b << 16) | (g << 8) | r;
+		return result;
+	}
 	enum class ImageFormat {
 		//https://docs.rs/vulkano/0.6.2/vulkano/format/index.html#:~:text=Unorm%20means%20that%20the%20values,minimum%20representable%20value%20becomes%200.0%20.
 		None = 0,
@@ -85,12 +105,28 @@ namespace Proof {
 		}
 		virtual Image GetImage()const = 0;
 	};
-	
+	struct TextureUsage {
+		enum Enum : uint32_t {
+			DoNotCare = (1u << 0),
+			Color = (1u << 1),
+			Depth = (1u << 2),
+		};
+	};
+
+	enum class AdressType {
+		Repeat,
+		ClampEdge
+	};
+	struct TextureConfig {
+		ImageFormat Format = ImageFormat::RGBA;
+		TextureUsage::Enum Usage = TextureUsage::DoNotCare;
+		uint32_t width=10, Height =10;
+		AdressType  Address = AdressType::Repeat;
+	};
 	class Proof_API Texture2D: public Texture {
 	public:
-	
-		virtual std::string GetPath() = 0;
-
+		static Count<Texture2D> GenerateBRDF(uint32_t dimension = 512, uint32_t sampleCount = 1024);
+		static Count<Texture2D> Create(TextureConfig config);
 		static Count<Texture2D> Create(const std::string& Path);
 		static Count<Texture2D>	Create(uint32_t ImageWidth,uint32_t ImageHeight);
 		static Count<Texture2D> Create(uint32_t width, uint32_t height, ImageFormat format, const void* data);
@@ -98,7 +134,9 @@ namespace Proof {
 
 	class Proof_API CubeMap: public Texture{
 	public:
-		static Count<CubeMap> Create(const std::filesystem::path& Path);
+		static Count<CubeMap> Create(const std::filesystem::path& Path, uint32_t dimension = 512, bool generateMips = false);
+		static Count<CubeMap> Create(Count<CubeMap>map, Count<class Shader> shader, uint32_t dimension = 64, bool generateMips = false);
+		static Count<CubeMap> GeneratePrefiltered(Count<CubeMap>map, uint32_t dimension = 128,uint32_t numSamples =1024);
 	};
 
 }

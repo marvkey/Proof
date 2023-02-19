@@ -17,7 +17,6 @@ layout(set = 0, binding = 0) uniform ProjView{
 
 void main() {
     outPosition = A_POSITION;
-   // outPosition.x *= -1.0f;
     gl_Position = pv.projection * pv.view[gl_ViewIndex] * vec4(A_POSITION, 1.0f);
 }
 

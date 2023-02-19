@@ -17,6 +17,8 @@ namespace Proof{
 		Count<class RenderCommandBuffer>  GetCurrentCommandBuffer() {
 			return m_CommandBuffer;
 		}
+		void RecordRenderPass(Count<class GraphicsPipeline>pipline, VkViewport viewport, VkRect2D scissor, std::function<void(Count<RenderCommandBuffer> commandBuffer)> func);
+
 	private:
 		void AddColorAttachment(const RenderPassImageConfig& config);
 		void SetDepthAttachment(const RenderPassImageConfig& config);

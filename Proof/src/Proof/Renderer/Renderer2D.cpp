@@ -141,6 +141,7 @@ namespace Proof {
 		Render();
 		Reset();
 	}
+
 	void Renderer2D::Reset() {
 		m_Storage2DData->IndexCount = 0;
 		//m_Storage2DData->TextureSlotIndex = 1;
@@ -180,36 +181,59 @@ namespace Proof {
 	
 	
 	std::vector<Vertex2D> Renderer2D::CreateQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Scale,const glm::vec4& Color,float TexIndex) {
-		float Depth =0.0f;
 		glm::mat4 Transform = glm::mat4(1.0f);
-		Transform = glm::translate(glm::mat4(1.0f),{Location.x,Location.y,0.f}) *
+		Transform = glm::translate(glm::mat4(1.0f),{Location.x,Location.y,Location .z}) *
 			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.x),{1.0f,0.0f,0.0f})*
 			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.y),{0.0f,1.0f,0.0f}) *
 			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.z),{0.0f,0.0f,1.0f}) *
 			glm::scale(glm::mat4(1.0f),{Scale.x,Scale.y,Scale.z});
 
 		Vertex2D V1,V2,V3,V4;
-		V1.Position = GlmVecToProof( Transform*glm::vec4(0.5f,0.5f,Depth,1.0f));
+		V1.Position = GlmVecToProof( Transform*glm::vec4(0.5f,0.5f,0,1.0f));
 		V1.Color = Color;
 		V1.TexCoords ={1.0f,1.0f};
 		//V1.TexSlot =TexIndex;
 
-		V2.Position = GlmVecToProof(Transform*glm::vec4(0.5f,-0.5f,Depth,1.0f));
+		V2.Position = GlmVecToProof(Transform*glm::vec4(0.5f,-0.5f, 0,1.0f));
 		V2.Color = Color;
 		V2.TexCoords = {1.0f,0.0f};
 		//V2.TexSlot = TexIndex;
 
-		V3.Position = GlmVecToProof(Transform * glm::vec4(-0.5f,-0.5f,Depth,1.0f));
+		V3.Position = GlmVecToProof(Transform * glm::vec4(-0.5f,-0.5f, 0,1.0f));
 		V3.Color = Color;
 		V3.TexCoords = {0.0f,0.0f};
 		//V3.TexSlot = TexIndex;
 
-		V4.Position = GlmVecToProof( Transform * glm::vec4(-0.5f,0.5f,Depth,1.0f));
+		V4.Position = GlmVecToProof( Transform * glm::vec4(-0.5f,0.5f, 0,1.0f));
 		V4.Color = Color;
 		V4.TexCoords = {0.0f,1.0f};
 		//V4.TexSlot = TexIndex;
 
 		return {V1,V2,V3,V4};
+	}
+	std::pair<Count<VertexBuffer>, Count<IndexBuffer>> Renderer2D::CreateQuad()
+	{
+		//https://learnopengl.com/code_viewer_gh.php?code=src/6.pbr/2.2.1.ibl_specular/ibl_specular.cpp
+		///std::vector<Vertex> vertices = {
+		///	{{0.5f,0.5f,0.0f}, {0}, {1.0f, 1.0f}},
+		///	{{0.5f,-0.5f,0.0}, {0}, {1.0f, 0.0f}},
+		///	{{-0.5f,-0.5f,0.0}, {0}, {0.0f, 0.0f}},
+		///	{{-0.5f,0.5f,0.0}, {0}, {0.0f, 1.0f}},
+		///};
+		std::vector<Vertex> vertices = {
+			{{-1.0f,  1.0f, 0.0f}, {0}, {0.0f, 1.0f}},
+			{{-1.0f, -1.0f, 0.0f}, {0}, {0.0f, 0.0f}},
+			{{1.0f,  1.0f, 0.0f}, {0}, {1.0f, 1.0f}},
+			{{1.0f, -1.0f, 0.0f}, {0}, {1.0f, 0.0f}},
+		};
+		std::vector<uint32_t> indices = {
+			2, 3, 0, 
+			3,1,0
+		};
+
+		Count<VertexBuffer> buffer = VertexBuffer::Create(vertices.data(), vertices.size()* sizeof(Vertex));
+		Count<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size());
+		return std::make_pair(buffer, indexBuffer);
 	}
 	Renderer2DStorage::Renderer2DStorage() {
 		QuadIndices.resize(c_MaxIndexCount);

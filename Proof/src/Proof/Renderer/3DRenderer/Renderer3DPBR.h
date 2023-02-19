@@ -49,6 +49,9 @@ namespace Proof
 		// the begin offset we should start rendering
 		uint32_t OffsetBegin = 0;
 		LightPass LightPass;
+		Count<class CubeMap> IrradianceMap;
+		Count<class CubeMap> PrefilterMap;
+		Count<Texture2D> BRDf;
 		void Reset() {
 			MeshesTransforms.clear();
 			Meshes.clear();
@@ -56,7 +59,11 @@ namespace Proof
 			ElementsImplaced.clear();
 			NumberMeshes = 0;
 			OffsetBegin = 0;
+			IrradianceMap = nullptr;
+			PrefilterMap = nullptr;
+			BRDf = nullptr;
 		}
+
 	};
 	struct MaterialData {
 		Vector Colour{ 1,1,1 };
@@ -107,6 +114,8 @@ namespace Proof
 		void Init();
 		void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<RenderCommandBuffer>& commandBuffer);
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
+		
+		void SetPbrMaps(Count<class CubeMap> irrdianceMap, Count<class CubeMap> prefilterMap,Count<Texture2D> brdf);
 		void SubmitMesh(Count<Mesh> mesh, const glm::mat4& transform);
 		void SubmitMeshWithMaterial(Count<Mesh> mesh, Count<Material> material, const glm::mat4& transform);
 		void SubmitDirectionalLight(const DirLight& light);

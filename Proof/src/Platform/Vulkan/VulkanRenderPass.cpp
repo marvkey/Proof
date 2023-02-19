@@ -120,7 +120,7 @@ namespace Proof
         */
         // default broadcast to all layers
         //https://anishbhobe.site/post/vulkan-render-to-cubemap-using-multiview/#3-attaching-the-cubemap-to-the-framebuffer
-        const uint32_t viewMask = 0b00111111;
+        const uint32_t viewMask = 0b11111111;
         //const uint32_t viewMask = 0;
         /*
             Bit mask that specifies correlation between views
@@ -331,6 +331,21 @@ namespace Proof
         scissor.extent = { (uint32_t)viewport.width,(uint32_t)viewport.height };
         vkCmdSetScissor(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &scissor);
         if(vulkanPipeline->m_LineWidth !=1.0f)
+            vkCmdSetLineWidth(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
+
+        func(m_CommandBuffer);
+    }
+    void VulkanRenderPass::RecordRenderPass(Count<class GraphicsPipeline>pipline, VkViewport viewport, VkRect2D scissor, std::function<void(Count<RenderCommandBuffer> commandBuffer)> func) {
+        auto vulkanPipeline = pipline->As<VulkanGraphicsPipeline>();
+        vkCmdBindPipeline(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+            VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetPipline());
+
+        
+        vkCmdSetViewport(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &viewport);
+
+     
+        vkCmdSetScissor(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &scissor);
+        if (vulkanPipeline->m_LineWidth != 1.0f)
             vkCmdSetLineWidth(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
 
         func(m_CommandBuffer);

@@ -29,7 +29,7 @@ namespace Proof
 			switch (format)
 			{
 				case ImageFormat::RGBA:    return 4;
-				//case ImageFormat::RGBA16F:	return 8;
+				case ImageFormat::RGBA16F:	return 8;
 				case ImageFormat::RGBA32F: return 16;
 			}
 			PF_CORE_ASSERT(false, fmt::format("not supported yet {}",EnumReflection::EnumString(format)));
