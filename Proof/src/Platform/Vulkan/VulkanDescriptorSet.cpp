@@ -26,7 +26,7 @@ namespace Proof
 	}
 	
 	Count<VulkanDescriptorSet> VulkanDescriptorSet::VulkanDescriptorSetBuilder::Build() {
-		return CreateCount<VulkanDescriptorSet>(m_Set, Bindings);
+		return Count< VulkanDescriptorSet>::Create(m_Set, Bindings);
 	}
 	VulkanDescriptorSet::VulkanDescriptorSetBuilder& VulkanDescriptorSet::VulkanDescriptorSetBuilder::AddBinding(uint32_t binding, DescriptorType descriptorType, ShaderStage  stageFlags, uint32_t count) {
 		PF_CORE_ASSERT(Bindings.count(binding) == 0, "Binding already in use");
@@ -150,7 +150,7 @@ namespace Proof
 	}
 
 	Count<VulkanDescriptorPool> VulkanDescriptorPool::Builder::Build(VkDevice device) {
-		return CreateCount<VulkanDescriptorPool>(MaxSets, PoolFlags,PoolSizes,device);
+		return Count<VulkanDescriptorPool>::Create(MaxSets, PoolFlags,PoolSizes,device);
 	}
 
 	VulkanDescriptorPool::VulkanDescriptorPool(uint32_t maxSets, VkDescriptorPoolCreateFlags poolFlags, const std::vector<VkDescriptorPoolSize>& poolSizes, VkDevice& device):
@@ -322,26 +322,12 @@ namespace Proof
 
 	void VulkanDescriptorPool::InitTextureLayout()
 	{
-		{
-			VkSamplerCreateInfo info = {};
-			info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-			info.magFilter = VK_FILTER_LINEAR;
-			info.minFilter = VK_FILTER_LINEAR;
-			info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			info.minLod = -1000;
-			info.maxLod = 1000;
-			info.maxAnisotropy = 1.0f;
-			VkResult err = vkCreateSampler(m_Device, &info, nullptr, &m_FontSampler);
-		}
+		
 		VkSampler sampler[1] = { m_FontSampler };
 		VkDescriptorSetLayoutBinding binding[1] = {};
 		binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		binding[0].descriptorCount = 1;
 		binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-		binding[0].pImmutableSamplers = sampler;
 		VkDescriptorSetLayoutCreateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		info.bindingCount = 1;

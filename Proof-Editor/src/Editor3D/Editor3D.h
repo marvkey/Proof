@@ -112,7 +112,7 @@ namespace Proof {
 		friend class RendererBase;
 		InputPanel m_InputPanel;
 		void Save();
-		std::unordered_map<UUID,Panel*>m_AllPanels;
+		std::unordered_map<UUID,Count<Panel>>m_AllPanels;
 		void PlayWorld();
 		void SimulateWorld();
 		void SetWorldEdit();

@@ -19,7 +19,6 @@
 #include "../RenderPass.h"
 #include "../GraphicsPipeLine.h"
 #include "Proof/Asset/AssetManager.h"
-#include "Proof/Asset/MaterialAsset.h"
 #include "Proof/Renderer/PushConstant.h"
 #include "Proof/Renderer/MeshWorkShop.h"
 namespace Proof
@@ -234,7 +233,7 @@ namespace Proof
 				for (const auto& subMesh : mesh->GetSubMeshes())
 				{
 					if (subMesh.Enabled == false)continue;
-					Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(subMesh.GetDiffuseTextures()[0])->GetTexture()
+					Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2D>(subMesh.GetDiffuseTextures()[0])
 						: Renderer::GetWhiteTexture();
 					//texture = Renderer::GetWhiteTexture();
 					descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, texture);
@@ -268,7 +267,7 @@ namespace Proof
 				for (const auto& subMesh : mesh->GetSubMeshes())
 				{
 					if (subMesh.Enabled == false)continue;
-					Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2DAsset>(subMesh.GetDiffuseTextures()[0])->GetTexture()
+					Count<Texture2D> texture = subMesh.GetDiffuseTextures().size() > 0 ? AssetManager::GetAsset<Texture2D>(subMesh.GetDiffuseTextures()[0])
 						: Renderer::GetWhiteTexture();
 
 					descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, texture);

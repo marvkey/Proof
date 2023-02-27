@@ -11,7 +11,7 @@ namespace Proof
 		{
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan:return CreateCount<VulkanGraphicsPipeline>(piplineConfig);
+			case RendererAPI::API::Vulkan:return Count<VulkanGraphicsPipeline>::Create(piplineConfig);
 
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");

@@ -87,14 +87,14 @@ World:
         tags: []
       TransformComponent:
         Location: [0.271118194, 0, -1.95475864]
-        Rotation: [24.5, -23.2000008, -30]
+        Rotation: [34, 188.399994, -7.80000019]
         Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 2.43000007
+        Intensity: 1
     - Entity: 13371055274113837168
       TagComponent:
         Tag: Sphere

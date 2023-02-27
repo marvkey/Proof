@@ -18,43 +18,25 @@ namespace Proof
 		Unloaded,
 		Ready,
 		Loading,
+		Invalid
 	};
+
+	#define ASSET_CLASS_TYPE(type) static AssetType GetStaticType() { return AssetType::type; }\
+								virtual AssetType GetAssetType() const override { return GetStaticType(); }
 	using AssetID = UUID;
-	class Proof_API Asset {
+	class Asset {
 	public:
 		virtual ~Asset() {
 
 		}
-		virtual void SaveAsset() =0;
-		virtual bool LoadAsset(const std::string& FilePath) =0;
-		bool LoadAsset() { return LoadAsset(m_SavePath.string()); }
-		
-		virtual AssetID GetAssetID() {
-			return m_AssetID;
+		AssetID GetID() {
+			return m_ID;
 		}
-		AssetType GetAssetType() {
-			return m_AssetType;
-		}
-		virtual std::string GetExtension()const = 0;
-
-		virtual std::string GetName()const{
-			return Utils::FileDialogs::GetFileName(m_SavePath);
-		}
-		const std::filesystem::path& GetPath()const{
-			return m_SavePath;
-		}
-		
-	protected:
-		Asset(AssetType assetType) {
-			m_AssetType = assetType;
-		}	
-		AssetType  m_AssetType;
-		void SetPath(const std::string& newFilePath) {
-			m_SavePath = newFilePath;
-		}
-		std::filesystem::path m_SavePath;
-		AssetID m_AssetID = 0;
+		virtual AssetType GetAssetType() const = 0;
+	private:
+		AssetID m_ID{0};
 		friend class ContentBrowserPanel;
+		friend class AssetSerializer;
 		friend class AssetManager;
 	};
 }

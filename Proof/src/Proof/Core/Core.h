@@ -2,6 +2,8 @@
 #include <memory>
 #include <iostream>
 #include<chrono>
+#include "SmartPointer.h"
+
 #include "UUID.h"
 #include "Proof/utils/FileSystem.h"
 #include "Proof/Math/MathInclude.h"
@@ -58,13 +60,7 @@ inline const std::string ProofCurrentDirectory = "../Proof/";
 
 namespace Proof
 {
-    template<typename T>
-    using Count = std::shared_ptr<T>;
-    
-    template<typename T, typename ... Args>
-    inline constexpr Count<T> CreateCount(Args&&... args) {
-        return std::make_shared<T>(std::forward<Args>(args)...);
-    }
+    using MemoryAddress = uintptr_t;
 
     template<typename T>
     using Special = std::unique_ptr<T>;

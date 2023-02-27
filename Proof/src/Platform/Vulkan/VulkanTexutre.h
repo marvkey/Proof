@@ -61,7 +61,9 @@ namespace Proof
 		VulkanImageAlloc GetImageAlloc() {
 			return m_Image;
 		}
-
+		virtual std::string GetPath()const {
+			return m_Path;
+		}
 		void* GetID ()const;
 		virtual Image GetImage()const;
 
@@ -70,6 +72,7 @@ namespace Proof
 		void SetData(const void* data);
 		VkDescriptorImageInfo GetImageBufferInfo(VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	private:
+		std::string m_Path;
 		void AllocateMemory(uint64_t size, uint32_t bits = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VkSamplerAddressMode mode= VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_REPEAT);
 		void Release();
 		uint32_t m_MipLevels = 1;
@@ -86,6 +89,8 @@ namespace Proof
 	class VulkanCubeMap : public CubeMap, VulkanTexture {
 	public:
 		VulkanCubeMap(const std::filesystem::path& Path, uint32_t dimension = 512, bool generateMips = false);
+		VulkanCubeMap(uint32_t dimension = 512, bool generateMips = false);
+		VulkanCubeMap(Count<Texture2D> texture,uint32_t dimension = 512, bool generateMips = false);
 		VulkanCubeMap(Count<CubeMap> map, Count<class Shader> shader, uint32_t dimension=64, bool generateMips=false);
 		
 		static Count<CubeMap> GeneratePreFilterMap(Count<CubeMap>map, uint32_t dimension = 128, uint32_t numSamples = 1024);
@@ -101,17 +106,20 @@ namespace Proof
 		VulkanImageAlloc GetImageAlloc() {
 			return m_Image;
 		}
+		virtual std::string GetPath()const {
+			return m_Path;
+		}
 		void SetData(const void* data);
 		void SetData(const void* data[6]);
 		void SetData(Count<Texture2D> textures);
 		void SetData(Count<Texture2D> textures[6]);
 	private:
 		uint32_t m_Dimension;
-
+		std::string m_Path;
 		// shader makes it esier for us to generate irradiance and other typees of maps
 		void GenerateCubeMap(Count<Texture> textures,Count<class Shader> shader = Shader::GetOrCreate("Equirectangular to Cubemap",
 			ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/EquirectangularToCubemap.shader"));
-		ImageFormat m_Format = ImageFormat::RGBA16F;
+		ImageFormat m_Format = ImageFormat::RGBA32F;
 		VkImageView m_ImageView = nullptr;
 		VkSampler m_Sampler = nullptr;
 		VulkanImageAlloc m_Image;

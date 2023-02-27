@@ -4,7 +4,6 @@
 #include "Entity.h"
 #include "EntitiyComponentSystem/ECS.h"
 #include "World.h"
-#include "Proof/Asset/MaterialAsset.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Material.h"
 #include "script.h"
@@ -13,19 +12,17 @@
 #include "Entity.h"
 #include "EntitiyComponentSystem/ECS.h"
 #include "World.h"
-#include "Proof/Asset/MaterialAsset.h"
 #include "Material.h"
 #include "script.h"
 #include "Proof/Renderer/MeshWorkShop.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Scene/Physics/PhysicsEngine.h"
 #include "Proof/Scripting/ScriptEngine.h"
-#include "Proof/Asset/PhysicsMaterialAsset.h"
-#include "Proof/Asset/MeshAsset.h"
 namespace Proof
 {
 	static struct Material Empty;
 
+	/*
 	Texture2DAsset* SpriteComponent::GetAsset()
 	{
 		if (m_TextureAssetPointerID == 0)
@@ -35,57 +32,62 @@ namespace Proof
 
 		if (m_TextureAssetPointer == nullptr)// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
 			return nullptr;
-		if (AssetManager::HasID(m_TextureAssetPointerID)) {
-			return m_TextureAssetPointer.get();
+		if (AssetManager::HasAsset(m_TextureAssetPointerID)) {
+			return m_TextureAssetPointer.Get();
 		}
 		m_TextureAssetPointerID = 0;
 		m_TextureAssetPointer = nullptr;
 		return nullptr;
 	}
+	*/
 	Count<PhysicsMaterial> CubeColliderComponent::GetPhysicsMaterial(){
-		if (m_PhysicsMaterialPointerID == 0) {
+		if (m_PhysicsMaterialPointerID == 0)
+		{
 			return nullptr;
 		}
-		auto a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
-		if (a == nullptr) {
+		auto a = AssetManager::GetAsset<PhysicsMaterial>(m_PhysicsMaterialPointerID);
+		if (a == nullptr)
+		{
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
 		}
-		return a->GetMaterial();
+		return a;
 	}
 	Count<PhysicsMaterial> SphereColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
-		auto a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
+		auto a = AssetManager::GetAsset<PhysicsMaterial>(m_PhysicsMaterialPointerID);
 		if (a == nullptr) {
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
 		}
-		return a->GetMaterial();
+		return a;
 	}
 
 	Count<PhysicsMaterial> CapsuleColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
-		auto a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
-		if (a == nullptr) {
+		auto a = AssetManager::GetAsset<PhysicsMaterial>(m_PhysicsMaterialPointerID);
+		if (a == nullptr)
+		{
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
 		}
-		return a->GetMaterial();
+		return a;
 	}
 	Count<PhysicsMaterial> MeshColliderComponent::GetPhysicsMaterial() {
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
-		auto a = AssetManager::GetAsset<PhysicsMaterialAsset>(m_PhysicsMaterialPointerID);
-		if (a == nullptr) {
+		auto a = AssetManager::GetAsset<PhysicsMaterial>(m_PhysicsMaterialPointerID);
+		if (a == nullptr)
+		{
 			m_PhysicsMaterialPointerID = 0;
 			return nullptr;
 		}
-		return a->GetMaterial();
+		return a;
 	}
 	
 	void RigidBodyComponent::AddForce(Vector force, ForceMode mode, bool autoWake)const {
@@ -179,7 +181,7 @@ namespace Proof
 	void MeshComponent::SetMesh(UUID ID)
 	{
 		#ifdef PF_ENABLE_DEBUG
-			if (!AssetManager::HasID(ID))return;
+			if (!AssetManager::HasAsset(ID))return;
 		#endif // 
 
 		m_MeshID = ID;
@@ -194,9 +196,9 @@ namespace Proof
 	{
 		if (m_MeshID == 0)return nullptr;
 		#ifdef PF_ENABLE_DEBUG
-			if (!AssetManager::HasID(m_MeshID)) { m_MeshID = 0; return nullptr; };
+			if (!AssetManager::HasAsset(m_MeshID)) { m_MeshID = 0; return nullptr; };
 		#endif 
-		return AssetManager::GetAsset<MeshAsset>(m_MeshID)->GetMesh();
+		return AssetManager::GetAsset<Mesh>(m_MeshID);
 	}
 
 	bool MeshComponent::HasMaterial()
@@ -207,9 +209,9 @@ namespace Proof
 	{
 		if (m_MaterialID == 0)return nullptr;
 		#ifdef PF_ENABLE_DEBUG
-			if (!AssetManager::HasID(m_MaterialID)) { m_MaterialID = 0; return nullptr; };
+			if (!AssetManager::HasAsset(m_MaterialID)) { m_MaterialID = 0; return nullptr; };
 		#endif 
-		return AssetManager::GetAsset<MaterialAsset>(m_MaterialID)->GetMaterial();
+		return AssetManager::GetAsset<Material>(m_MaterialID);
 	}
 
 	AssetID MeshComponent::GetMaterialID() const
@@ -220,7 +222,7 @@ namespace Proof
 	void MeshComponent::SetMaterial(AssetID ID)
 	{
 		#ifdef PF_ENABLE_DEBUG
-			if (!AssetManager::HasID(ID))return;
+			if (!AssetManager::HasAsset(ID))return;
 		#endif // 
 
 		m_MaterialID = ID;
@@ -236,13 +238,13 @@ namespace Proof
 		if (m_MeshAssetPointerID == 0)return nullptr;
 
 		
-		if (AssetManager::HasID(m_MeshAssetPointerID))
+		if (AssetManager::HasAsset(m_MeshAssetPointerID))
 		{
 			if (PhysicsMeshCooker::HasMesh(m_MeshAssetPointerID))
 			{
 				return PhysicsMeshCooker::GetConvexMeshAsMesh(m_MeshAssetPointerID);
 			}
-			return AssetManager::GetAsset<MeshAsset>(m_MeshAssetPointerID)->GetMesh();
+			return AssetManager::GetAsset<Mesh>(m_MeshAssetPointerID);
 		}
 		return nullptr;
 	}

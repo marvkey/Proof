@@ -8,7 +8,7 @@ namespace Proof {
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None: PF_CORE_ASSERT(false,"Window handle can not be null ptr") return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;// CreateCount<OpenGLGraphicsContext>(WindowHandle);
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanGraphicsContext>(WindowHandle);
+			case RendererAPI::API::Vulkan: return Count<VulkanGraphicsContext>::Create(WindowHandle);
 		}
 	}
 }

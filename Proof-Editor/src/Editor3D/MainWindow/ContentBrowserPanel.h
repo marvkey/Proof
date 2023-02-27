@@ -3,7 +3,6 @@
 #include "Proof/Core/Core.h"
 #include <vector>
 #include "Proof/Asset/Asset.h"
-#include "Proof/Asset/TextureAsset/TextureAsset.h"
 #include <fstream>
 #include <string>
 #include "Panel.h"
@@ -11,6 +10,7 @@
 #include "Proof/Utils/PlatformUtils.h"
 namespace Proof
 {
+	class Texture2D;
 	/* THIS CLASS WILL NEED TO BE HANDLED BY CURRENT PROJECT */
 	class Proof_API ContentBrowserPanel :public Panel {
 	public:
@@ -39,6 +39,7 @@ namespace Proof
 		* assetSourcePath: the source file of the 
 		* @return returns the path to the asset
 		*/
+		/*
 		template <typename T>
 		std::string AddAssetSource(const std::string& assetSourcePath ) {
 			if (assetSourcePath.empty())return {};
@@ -63,12 +64,13 @@ namespace Proof
 			AssetManager::NewAsset(tempAsset);
 			return { m_CurrentDirectory.string() + "\\" + fileFullName };
 		}
-
+		*/
 		/**
 		* Adds an asset and retuns the file path of the asset
 		* assetName: name of the asset
 		* @return returns the path to the asset
 		*/
+		/*
 		template <typename T>
 		std::string AddAssetName(const std::string& assetName = typeid(T).name()) {
 			std::string fileFullName; // name of the full file including extension
@@ -82,13 +84,14 @@ namespace Proof
 			while (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + fileFullName)) {
 				endIndex++;
 				fileName = fileDefaultName + "(" + std::to_string(endIndex) + ")";
-				fileFullName = fileName + "." + T::StaticGetExtension();
+				fileFullName = fileName + "." + T::GetStaticType();
 			}
 			std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
 			Count<T> tempAsset = CreateCount<T>(m_CurrentDirectory.string() + "\\" + fileFullName);
 			AssetManager::NewAsset(tempAsset);
 			return { m_CurrentDirectory.string() + "\\" + fileFullName };
 		}
+		*/
 		/**
 		* adds a asset to menu item to add to content broweser
 		* name: the asset we want to add texture, mesh, so one
@@ -101,7 +104,7 @@ namespace Proof
 			if (ImGui::MenuItem(name.c_str())) {
 				std::string extensionFilePathSource = Utils::FileDialogs::OpenFile(filter);
 				if (extensionFilePathSource.empty())return false;
-				setFileToRename = Utils::FileDialogs::GetFileName(AddAssetSource<T>(extensionFilePathSource));
+				//setFileToRename = Utils::FileDialogs::GetFileName(AddAssetSource<T>(extensionFilePathSource));
 				return true;
 			}
 			return false;
@@ -114,7 +117,7 @@ namespace Proof
 		template <typename T>
 		bool AddAssetPopupMenuItem(const std::string& name, std::string& setFileToRename) {
 			if (ImGui::MenuItem(name.c_str())) {
-				setFileToRename = Utils::FileDialogs::GetFileName(AddAssetName<T>(name));
+				//setFileToRename = Utils::FileDialogs::GetFileName(AddAssetName<T>(name));
 				return true;
 			}
 			return false;

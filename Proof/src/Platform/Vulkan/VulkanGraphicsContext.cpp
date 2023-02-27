@@ -252,7 +252,7 @@ namespace Proof
 		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 });
 		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 });
 		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 });
-		m_GlobalPool = CreateCount<VulkanDescriptorPool>(size, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, PoolSizes, m_Device);
+		m_GlobalPool = Count<VulkanDescriptorPool>::Create(size, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, PoolSizes, m_Device);
 
 	}
 

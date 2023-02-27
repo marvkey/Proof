@@ -10,8 +10,6 @@
 
 #include "Proof/Math/MathResource.h"
 #include "Proof/Scene/Material.h"
-#include "Proof/Asset/PhysicsMaterialAsset.h"
-#include "Proof/Asset/MaterialAsset.h"
 #include "Proof/Scene/Script.h"
 #include "ImGui/imgui_impl_vulkan.h"
 #include <Windows.h>
@@ -238,27 +236,27 @@ namespace Proof
 	}
 	void Editore3D::OnAttach() {
 
-		m_ActiveWorld = CreateCount<World>();
+		m_ActiveWorld = Count<World>::Create();
 		auto startworld = Application::Get()->GetProject()->GetConfig().StartWorld;
-		if (AssetManager::HasID(startworld)) {
+		if (AssetManager::HasAsset(startworld)) {
 			auto Info = AssetManager::GetAssetInfo(startworld);
-			SceneSerializer scerelizer(m_ActiveWorld.get());
+			SceneSerializer scerelizer(m_ActiveWorld.Get());
 			auto path = Application::Get()->GetProject()->GetAssetFileSystemPath(Info.Path);
 			if (scerelizer.DeSerilizeText(path.string()) == true) {
-				m_WorldHierachy.SetContext(m_ActiveWorld.get());
+				m_WorldHierachy.SetContext(m_ActiveWorld.Get());
 				AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
 			}
 		}
-		//ScriptEngine::ReloadAssembly(m_ActiveWorld.get());
-		SceneSerializer scerelizer(m_ActiveWorld.get());
+		//ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
+		SceneSerializer scerelizer(m_ActiveWorld.Get());
 		
 
 
-		m_WorldHierachy.SetContext(m_ActiveWorld.get());
+		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
 		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_ActiveWorld, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 		// cannot be setting it to window size and stuff innit
 		m_EditorWorld = m_ActiveWorld;
-		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
+		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		m_PlayButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PlayButton.png");
 		m_PauseButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PauseButton .png");
@@ -268,7 +266,7 @@ namespace Proof
 	}
 	void Editore3D::OnDetach() {
 		if (m_EditorWorld != nullptr) { // using editor world in case active world is on play
-			SceneSerializer scerelizer(m_EditorWorld.get());
+			SceneSerializer scerelizer(m_EditorWorld.Get());
 			auto assetInfo = AssetManager::GetAssetInfo(m_EditorWorld->GetID());
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 		}
@@ -459,7 +457,7 @@ namespace Proof
 					if (m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
 
 						if (m_ActiveWorld->GetState() == WorldState::Edit) {
-							//Basically makig sure that all entities that reference this entity that is deleted their data get sets to null
+							//Basically makig sure that all entities that reference this entity that is deleted their data Get sets to null
 							m_ActiveWorld->ForEachEnitityWith<ScriptComponent>([&](Entity& entity) {
 								auto& scp = *entity.GetComponent<ScriptComponent>();
 								for (auto& scripts : scp.m_Scripts) {
@@ -527,7 +525,7 @@ namespace Proof
 					Entity selected = m_WorldHierachy.m_SelectedEntity;
 					if (shift == true) {
 						if (selected.HasChildren()) {
-							m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.get() };
+							m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
 						}
 					}
 
@@ -537,12 +535,12 @@ namespace Proof
 						int childIndexAdd = 0;
 						childIndexAdd += childIndex;
 						if (childIndex >= numChildren)
-							m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.get() };
+							m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
 						else if (childIndex < numChildren)
-							m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[childIndexAdd],m_ActiveWorld.get() };
+							m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[childIndexAdd],m_ActiveWorld.Get() };
 					}
 					else if (selected.HasChildren()) {
-						m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.get() };
+						m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
 					}
 					break;
 				}
@@ -940,19 +938,19 @@ namespace Proof
 			}
 			static bool meshSourceAdded = false;
 			static std::filesystem::path meshSourcePath;	
-			/* putting this underneath image because a window only accpet drop target to when item is bound so and image has been bound */
+			/* putting this underneath image because a window only accpet drop tarGet to when item is bound so and image has been bound */
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::World).c_str())) {
 					UUID ID = *(UUID*)payload->Data;
 
-					m_EditorWorld = CreateCount<World>();
+					m_EditorWorld = Count<World>::Create();
 					m_ActiveWorld = m_EditorWorld;
 					m_WorldRenderer->SetContext(m_ActiveWorld);
-					m_WorldHierachy.SetContext(m_ActiveWorld.get());
-					SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
+					m_WorldHierachy.SetContext(m_ActiveWorld.Get());
+					SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 					m_WorldHierachy.m_SelectedEntity = {};
 
-					SceneSerializer ScerilizerNewWorld(m_ActiveWorld.get());
+					SceneSerializer ScerilizerNewWorld(m_ActiveWorld.Get());
 					ScerilizerNewWorld.DeSerilizeText(ID);
 
 				}
@@ -970,9 +968,7 @@ namespace Proof
 					meshSourceAdded = true;
 					meshSourcePath = AssetManager::GetAssetInfo(meshSourceId).Path;
 				}
-			
 				ImGui::EndDragDropTarget();
-
 			}
 			if (meshSourceAdded) {
 				AssetID id;
@@ -1128,7 +1124,7 @@ namespace Proof
 			if (ImGui::BeginMenu("Debug")) {
 				if (ImGui::MenuItem("Reload C# Scripts")) {
 					if (m_ActiveWorld->GetState() == WorldState::Edit)
-						ScriptEngine::ReloadAssembly(m_ActiveWorld.get());
+						ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
 					else
 						PF_ERROR("Can only reload c# assembly in Edit state");
 				}
@@ -1147,13 +1143,13 @@ namespace Proof
 			PF_ERROR("Cannot save when in runtime mode");
 			return;
 		}
-		if (!AssetManager::HasID(m_ActiveWorld->GetID()))
+		if (!AssetManager::HasAsset(m_ActiveWorld->GetID()))
 		{
 			SaveSceneDialouge = true;
 			
 			return;
 		}
-		SceneSerializer scerelizer(m_ActiveWorld.get());
+		SceneSerializer scerelizer(m_ActiveWorld.Get());
 		auto assetInfo = AssetManager::GetAssetInfo(m_ActiveWorld->GetID());
 		scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 
@@ -1162,19 +1158,19 @@ namespace Proof
 	}
 	void Editore3D::NewWorld()
 	{
-		m_EditorWorld = CreateCount<World>();
+		m_EditorWorld = Count<World>::Create();
 		m_ActiveWorld = m_EditorWorld;
 		m_WorldRenderer->SetContext(m_EditorWorld);
-		m_WorldHierachy.SetContext(m_ActiveWorld.get());
-		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
+		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
+		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 		m_WorldHierachy.m_SelectedEntity = {};
 	}
 	void Editore3D::PlayWorld() {
 		m_ActiveWorld = World::Copy(m_EditorWorld);
-		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
+		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
-		m_WorldHierachy.SetContext(m_ActiveWorld.get());
+		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
 		m_WorldRenderer->SetContext(m_ActiveWorld);
 
 		if (m_ClearLogOnPlay)
@@ -1193,9 +1189,9 @@ namespace Proof
 		//GuizmoType = 0;
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;
-		m_WorldHierachy.SetContext(m_ActiveWorld.get());
+		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
 		m_WorldRenderer->SetContext(m_ActiveWorld);
-		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.get();
+		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 	}
 	void Editore3D::PauseWorld() {
 		m_ActiveWorld->m_CurrentState = WorldState::Pause;
@@ -1214,8 +1210,8 @@ namespace Proof
 			case Proof::AssetType::Mesh:
 			case Proof::AssetType::MeshSourceFile:
 				{
-					SceneRendererUI* temp = new SceneRendererUI(ID);
-					m_AllPanels.insert({ ID,temp });
+					//Count<SceneRendererUI> panel= Count<SceneRendererUI>::Create(ID);
+					//m_AllPanels.insert({ ID,panel});
 					return true;
 				}
 			case Proof::AssetType::Texture:
@@ -1224,16 +1220,16 @@ namespace Proof
 				}
 			case Proof::AssetType::Material:
 				{
-					MaterialEditorPanel* temp = new MaterialEditorPanel(AssetManager::GetAsset<MaterialAsset>(ID).get());
-					m_AllPanels.insert({ ID,temp });
+					//Count<Panel> panel= Count<MaterialEditorPanel>::Create(AssetManager::GetAsset<Material>(ID));
+					//m_AllPanels.insert({ ID,panel });
 					return true;
 				}
 			case Proof::AssetType::World:
 				break;
 			case Proof::AssetType::PhysicsMaterial:
 				{
-					PhysicsMaterialEditorPanel* temp = new PhysicsMaterialEditorPanel(AssetManager::GetAsset<PhysicsMaterialAsset>(ID).get());
-					m_AllPanels.insert({ ID,temp });
+					//Count<Panel> panel = Count<PhysicsMaterialEditorPanel>::Create (AssetManager::GetAsset<PhysicsMaterial>(ID));
+					//m_AllPanels.insert({ ID,panel });
 					return true;
 				}
 			default:

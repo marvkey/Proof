@@ -4,8 +4,6 @@
 #include "../ImGUIAPI.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Core/FrameTime.h"
-#include "Proof/Asset/MeshAsset.h"
-#include "Proof/Asset/TextureAsset/TextureAsset.h"
 #include <fmt/format.h>
 namespace Proof {
 	void AssetManagerPanel::ImGuiRender(FrameTime deltaTime){

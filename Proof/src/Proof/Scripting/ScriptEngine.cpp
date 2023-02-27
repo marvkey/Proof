@@ -312,7 +312,7 @@ namespace Proof
         ScriptFunc::RegisterAllComponents();
         ScriptFunc::RegisterFunctions();
 
-        s_Data->EntityClass = CreateCount<ScriptClass>("Proof", "Entity", true);
+        s_Data->EntityClass = Count<ScriptClass>::Create("Proof", "Entity", true);
     }
     void ScriptEngine::Shutdown() {
         mono_domain_set(mono_get_root_domain(), false);
@@ -363,7 +363,7 @@ namespace Proof
         auto sc = *entity.GetComponent<ScriptComponent>();
         for (auto& script : sc.m_Scripts) {
             if (ScriptEngine::EntityClassExists(script.ClassName) == false)continue;
-            Count<ScriptInstance> instance = CreateCount<ScriptInstance>(s_Data->ScriptEntityClasses[script.ClassName], entity);
+            Count<ScriptInstance> instance = Count<ScriptInstance>::Create(s_Data->ScriptEntityClasses[script.ClassName], entity);
             s_Data->EntityInstances[entity.GetEntityID()].emplace_back(instance);
             for (auto& prop : script.Fields) {
                 MonoClassField* currentField = mono_class_get_field_from_name(instance->m_ScriptClass->GetMonoClass(), prop.Name.c_str());
@@ -484,7 +484,7 @@ namespace Proof
     }
     const ScriptClass* ScriptEngine::GetScriptClass(const std::string& name) {
         if (EntityClassExists(name) == false)return nullptr;
-        return s_Data->ScriptEntityClasses[name].get();
+        return s_Data->ScriptEntityClasses[name].Get();
     }
 
     void ScriptEngine::SetValue(EntityID ID,const std::string& className, const std::string& varName, void* data) {
@@ -494,7 +494,7 @@ namespace Proof
             auto fullName = classes->m_ScriptClass->GetFullName();
 
             if (fullName == className) {
-                instance = classes.get();
+                instance = classes.Get();
                 break;
             }
         }
@@ -622,7 +622,7 @@ namespace Proof
             bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
             ;
             if (isEntity) {
-                s_Data->ScriptEntityClasses[fullName] = CreateCount<ScriptClass>(nameSpace, name);
+                s_Data->ScriptEntityClasses[fullName] = Count<ScriptClass>::Create(nameSpace, name);
 
                 PF_ENGINE_TRACE("   Added To Script Class {}", fullName);
             }

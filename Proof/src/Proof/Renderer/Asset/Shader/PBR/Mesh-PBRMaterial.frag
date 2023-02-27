@@ -94,7 +94,7 @@ vec3 pbr(BaseLight base, vec3 direction, vec3 normal, vec3 world_pos, vec3 meshC
     vec3  specular = num / max(denom, 1e-5);
 
     vec3 ks = F;
-    vec3 kd = 1.0 - ks;
+    vec3 kd = vec3(1.0) - ks;
     kd = kd * (1.0 - metallic);
 
     return (kd * meshColor / PI + specular) * radiance * NdotL;
@@ -104,17 +104,18 @@ vec3 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 world_pos, v
     //return pbr(light.Base, light.Direction, normal, world_pos, meshColor, roughness, metallic, camPos);
     return pbr(light.Base, light.Direction, normal, world_pos, meshColor, roughness, metallic, camPos);
 }
+
 layout(set = 0, binding = 4) uniform samplerCube irradianceMap;
 layout(set = 0, binding = 5) uniform samplerCube prefilterMap;
 layout(set = 0, binding = 6) uniform sampler2D BRDFLUT;
 
 vec3 IndirectLightingDiffuse(vec3 normal, vec3 world_pos, vec3 color, float roughness,float metallic,vec3 cameraPos )
 {
-    //mips in range of 0-4, need to add more casue some of our cubemps can have  mips
+      //mips in range of 0-4, need to add more casue some of our cubemps can have  mips
     const float MAX_REFLECTION_LOD = 4.0; 
     float ao        = 1;
 
-    vec3 wo = normalize(cameraPos - world_pos);
+    vec3 wo = normalize(cameraPos  - world_pos);
     vec3 r  = reflect(-wo, normal);
 
     // fresnel reflectance
@@ -136,7 +137,7 @@ vec3 IndirectLightingDiffuse(vec3 normal, vec3 world_pos, vec3 color, float roug
     vec3 specular           =  prefiletered_color * (F * brdf.x + brdf.y);
 
 
-    vec3 emision = vec3(0);
+    vec3 emision =vec3(0);
     // total indirect lighting
     return (kd * diffuse + specular) * ao + emision;
 }

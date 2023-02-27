@@ -10,7 +10,7 @@ namespace Proof{
 		{
 			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanPushConstant>(size, offset, shader);
+			case RendererAPI::API::Vulkan: return Count<VulkanPushConstant>::Create(size, offset, shader);
 		}
 	}
 }

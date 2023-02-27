@@ -3,7 +3,6 @@
 
 #include "PhysicsMeshCooker.h"
 #include "Proof/Scene/Mesh.h"
-#include"Proof/Asset/MeshAsset.h"
 
 #include "Proof/Renderer/MeshWorkShop.h"
 
@@ -26,9 +25,9 @@ namespace  Proof {
 	}
 	void PhysicsMeshCooker::CookMesh(AssetID ID)
 	{
-		PF_CORE_ASSERT(AssetManager::HasID(ID), "Asset Manager does not have asset");
+		PF_CORE_ASSERT(AssetManager::HasAsset(ID), "Asset Manager does not have asset");
 
-		Count<Mesh> mesh = AssetManager::GetAsset<MeshAsset>(ID)->GetMesh();
+		Count<Mesh> mesh = AssetManager::GetAsset<Mesh>(ID);
 		if (mesh)
 		{
 			std::vector<physx::PxVec3> vertices;

@@ -75,7 +75,7 @@ namespace Proof{
             }
         }
         aiMaterial* material = aiscene->mMaterials[aimesh->mMaterialIndex];
-        auto texture = LoadMaterialTextures(material,aiTextureType_DIFFUSE);
+        auto texture = LoadMaterialTextures(material, aiTextureType_DIFFUSE);
       //  textures.insert(textures.end(),diffuseMaps.begin(),diffuseMaps.end());
 
         //std::vector<Count<Texture2D>>  specularMaps = LoadMaterialTextures(material,aiTextureType_SPECULAR,Texture2D::TextureType::Specular);
@@ -104,65 +104,77 @@ namespace Proof{
         aiMaterial* aimat = (aiMaterial*)mat;
         aiTextureType aitype = (aiTextureType)type;
         std::vector<AssetID> textures;
-        for (unsigned int i = 0; i < aimat->GetTextureCount(aitype); i++) {
+        for (unsigned int i = 0; i < aimat->GetTextureCount(aitype); i++)
+        {
             aiString strFilePath;
-            aimat->GetTexture(aitype,i,&strFilePath);
-            
-            std::string textureFilePath = std::filesystem::relative(m_Path.parent_path() /= strFilePath.C_Str(),Application::Get()->GetProject()->GetAssetDirectory()).string();
+            aimat->GetTexture(aitype, i, &strFilePath);
+
+            std::string textureFilePath = std::filesystem::relative(m_Path.parent_path() /= strFilePath.C_Str(), Application::Get()->GetProject()->GetAssetDirectory()).string();
             std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
 
-            if (AssetManager::HasAsset(textureFilePath)) {
+            if (AssetManager::HasAsset(textureFilePath))
+            {
                 auto textureSourceInfo = AssetManager::GetAssetInfo(textureFilePath);
                 // texutre found in m_Textures;
                 bool textureFound = false;
-                for (auto& id : m_Textures) {
-                    if (id.TextureSource == textureSourceInfo.ID) {
+                for (auto& id : m_Textures)
+                {
+                    if (id.TextureSource == textureSourceInfo.ID)
+                    {
                         textures.emplace_back(id.Texture);
                         textureFound = true;
                         break;
                     }
                 }
                 // this is temporaty 
-                if (textureFound == false) {
+                if (textureFound == false)
+                {
+                    //std::string path = (m_Path.parent_path() /= textureName).string();
                     std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName, Application::Get()->GetProject()->GetAssetDirectory()).string();
-                    path += "."+Texture2DAsset::StaticGetExtension();
-                    Count< Texture2DAsset> asset =  AssetManager::GetAsset< Texture2DAsset>(path);
-                    textures.emplace_back(asset->GetAssetID());
-                    m_Textures.emplace_back(TextureData{ asset->GetAssetID(),asset->GetAssetSource() });
+                    path += ".Texture.ProofAsset";
+                    Count< Texture2D> asset = AssetManager::GetAsset< Texture2D>(path);
+                    textures.emplace_back(asset->GetID());
+                    m_Textures.emplace_back(TextureData{ asset->GetID(),AssetManager::GetAssetInfo(textureFilePath).ID });
 
                 }
                 continue;
             }
-           
+
+            PF_CORE_ASSERT(false, "Does not work because the save path is messed up");
+            AssetManager::NewAssetSource(textureFilePath,AssetType::TextureSourceFile);
             // texture is not found so we generate it
-            std::string savePath  = std::filesystem::relative(m_Path.parent_path() /= textureName, Application::Get()->GetProject()->GetAssetDirectory()).string();
-            Count<Texture2DAsset> asset = CreateCount<Texture2DAsset>(textureFilePath, savePath);
-            AssetManager::NewAsset(asset);
-            textures.emplace_back(asset->GetAssetID());
-            m_Textures.emplace_back(TextureData{ asset->GetAssetID(),asset->GetAssetSource() });
+            std::string savePath = AssetManager::GetAssetFileSystemPath(m_Path.parent_path() /= textureName).string();
+            //std::string savePath = std::filesystem::relative(m_Path.parent_path() /= textureName, Application::Get()->GetProject()->GetAssetDirectory()).string();
+            Count<Asset> asset = Texture2D::Create(textureFilePath);
+            AssetManager::NewAsset(asset,savePath);
+            textures.emplace_back(asset->GetID());
+            m_Textures.emplace_back(TextureData{ asset->GetID(),AssetManager::GetAssetInfo(textureFilePath).ID});
         }
         return textures;
     }
 
     std::vector<Material> Mesh::LoadMaterial(void* mat) {
         aiMaterial* aimat = (aiMaterial*)mat;
+        for (unsigned int i = 0; i < aimat->GetTextureCount(aiTextureType_DIFFUSE); i++)
+        {
+
+        }
         Material material;
-        //aiColor3D color(0.f,0.f,0.f);
-        //float shininess;
-        //
-        //aimat->Get(AI_MATKEY_COLOR_AMBIENT,color);
-        //material.Colour = glm::vec3(color.r,color.b,color.g);
-        //
-        //aimat->Get(AI_MATKEY_SHININESS,shininess);
-        //material.Metallness = shininess;
-        //
-        //aimat->Get(AI_MATKEY_COLOR_SPECULAR,color);
-        //material. = glm::vec3(color.r,color.b,color.g);
-        //
-        //aimat->Get(AI_MATKEY_SHININESS,shininess);
-        //material.Shininess = shininess;
-        //
-        //return std::vector<Count<Texture2D>>();
+        aiColor3D color(0.f,0.f,0.f);
+        float shininess;
+        float riughness;
+        
+        
+        aimat->Get(AI_MATKEY_COLOR_AMBIENT,color);
+        material.Colour = Vector(color.r, color.g,color.b);
+        
+        aimat->Get(AI_MATKEY_SHININESS,shininess);
+        material.Metallness = shininess;
+        
+        
+        aimat->Get(AI_MATKEY_REFLECTIVITY, riughness);
+        material.Roughness = riughness;
+
         return std::vector <Material>();
     }
 

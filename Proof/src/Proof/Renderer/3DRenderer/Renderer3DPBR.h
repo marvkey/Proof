@@ -1,4 +1,5 @@
 #pragma once
+#include "Proof/Core/Core.h"
 #include <unordered_map>
 #include <array>
 #include <vector>
@@ -14,7 +15,7 @@
 #include "../Vertex.h"
 namespace Proof
 {
-	//using uint64_t = uint64_t;
+
 	struct DirLight {
 		Vector Color = { 1 };
 		float Intensity = 1.0f;// has not been implemented
@@ -35,12 +36,12 @@ namespace Proof
 		Count<class GraphicsPipeline> GraphicsPipeline;
 		Count<class Shader> Shader;
 		Count <class PipeLineLayout> PipeLineLayout;
-		Count<VertexBuffer> MeshesVertexBuffer;
+		Count<class VertexBuffer> MeshesVertexBuffer;
 		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 
 		// id, and all teh transforms for that mesh
-		std::unordered_map < uint64_t, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
-		std::unordered_map < uint64_t, MeshInstance> Meshes;
+		std::unordered_map < UUID, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
+		std::unordered_map < UUID, MeshInstance> Meshes;
 		uint32_t NumberMeshes;
 		// order teh meshes are pushed intehvector that stores all transforms
 		std::vector<uint64_t> ElementsImplaced;
@@ -70,6 +71,13 @@ namespace Proof
 		float Metallness = 0.0f;// also shinines
 		float Roughness = 0.0f;
 	};
+
+	struct MaterialTextureData {
+		UUID Color;
+		UUID Normal;
+		UUID Metallic;
+		UUID Roughness;
+	};
 	// takes from mesh pipline
 	struct MeshMaterialPipeline {
 	public:
@@ -84,9 +92,12 @@ namespace Proof
 		std::vector<uint64_t> ElementsImplaced;
 		// the begin offset we should start rendering
 		uint32_t OffsetBegin = 0;
-		std::unordered_map < uint64_t, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
-		std::unordered_map < uint64_t, MeshInstance> Meshes;
-		std::unordered_map < uint64_t, MaterialData> MaterialDatas;
+		std::unordered_map < UUID, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
+		std::unordered_map < UUID, MeshInstance> Meshes;
+		std::unordered_map < UUID, MaterialData> MaterialDatas;
+
+		std::unordered_map< UUID, Count<Texture2D>> MaterialTextures;
+
 		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 		void Reset() {
 			MeshesTransforms.clear();

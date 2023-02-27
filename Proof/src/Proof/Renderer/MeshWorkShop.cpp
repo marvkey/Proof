@@ -64,7 +64,7 @@ namespace Proof {
             }
             cubeVertex.emplace_back(vertex);
         }
-        return CreateCount<Mesh>("Cube", cubeVertex, indices);
+        return Count<Mesh>::Create("Cube", cubeVertex, indices);
     }
     constexpr int MIN_SECTOR_COUNT = 3;
     constexpr int MIN_STACK_COUNT = 2;
@@ -145,7 +145,7 @@ namespace Proof {
                 }
             }
         }
-        return CreateCount<Mesh>("Sphere", vertices, indices);
+        return Count<Mesh>::Create("Sphere", vertices, indices);
     }
     Count<Mesh> MeshWorkShop::GenerateCapsule(float radius, float height, uint32_t numSides)
     {
@@ -206,6 +206,6 @@ namespace Proof {
             indices.emplace_back(i + numSides + 1);
             indices.emplace_back((i + 1) % numSides + numSides + 1);
         }
-        return CreateCount<Mesh>("Capsule",vertices,indices);
+        return Count<Mesh>::Create("Capsule",vertices,indices);
     }
 }

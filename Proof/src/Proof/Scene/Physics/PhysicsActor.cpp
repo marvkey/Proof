@@ -4,6 +4,7 @@
 #include "PhysicsWorld.h"
 #include "PhysicsEngine.h"
 #include "Proof/Scene/Component.h"
+#include "Proof/Scene/Material.h"
 namespace Proof {
 	physx::PxMaterial* defauultMaterial;
 	namespace Utils {
@@ -224,7 +225,7 @@ namespace Proof {
 	{
 		
 		MeshColliderComponent* meshCollider = m_Entity.GetComponent<MeshColliderComponent>();
-		if (!AssetManager::HasID(meshCollider->GetMeshSource()))return;
+		if (!AssetManager::HasAsset(meshCollider->GetMeshSource()))return;
 		if (PhysicsMeshCooker::HasMesh(meshCollider->GetMeshSource()) == false)
 		{
 			PhysicsMeshCooker::CookMesh(meshCollider->GetMeshSource());

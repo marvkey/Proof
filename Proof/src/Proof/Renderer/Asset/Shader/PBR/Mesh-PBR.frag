@@ -97,7 +97,7 @@ vec3 pbr(BaseLight base, vec3 direction, vec3 normal, vec3 world_pos, vec3 meshC
     vec3  specular = num / max(denom, 1e-5);
 
     vec3 ks = F;
-    vec3 kd = 1.0 - ks;
+    vec3 kd = vec3(1.0) - ks;
     kd = kd * (1.0 - metallic);
 
     return (kd * meshColor / PI + specular) * radiance * NdotL;

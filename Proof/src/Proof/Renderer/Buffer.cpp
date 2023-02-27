@@ -8,7 +8,7 @@ namespace Proof
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Vertex Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;// CreateCount< OpenGLVertexBuffer>(Data, amount);
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanVertexBuffer>(Data, amount);
+			case RendererAPI::API::Vulkan: return Count< VulkanVertexBuffer>::Create(Data, amount);
 		}
 	}
 
@@ -16,15 +16,15 @@ namespace Proof
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Vertex Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;// CreateCount< OpenGLVertexBuffer>(Size);
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanVertexBuffer>(Size);
+			case RendererAPI::API::Vulkan: return Count< VulkanVertexBuffer>::Create(Size);
 		}
 	}
 
-	Count<IndexBuffer>IndexBuffer::Create(const void* Data, uint32_t Count) {
+	Count<IndexBuffer>IndexBuffer::Create(const void* Data, uint32_t count) {
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Index Buffer None it needs an api "); return nullptr;
 			case RendererAPI::API::OpenGL: return  nullptr;// CreateCount< OpenGLIndexBuffer>(Data, Count);
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanIndexBuffer>(Data,Count);
+			case RendererAPI::API::Vulkan: return Count<VulkanIndexBuffer>::Create(Data,count);
 		}
 		return nullptr;
 

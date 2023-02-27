@@ -97,13 +97,22 @@ namespace Proof {
 		}
 		std::vector<Image> Images;
 	};
-	class Proof_API Texture {
+	class Proof_API Texture: public Asset
+	{
 	public:
+		Texture()
+		{
+
+		}
 		template<class T>
 		T* As() {
 			return  dynamic_cast<T*>(this);
 		}
 		virtual Image GetImage()const = 0;
+		// if mempty means string was constructed with no path
+		virtual std::string GetPath()const = 0;
+
+		ASSET_CLASS_TYPE(Texture);
 	};
 	struct TextureUsage {
 		enum Enum : uint32_t {

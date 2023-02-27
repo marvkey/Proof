@@ -11,7 +11,6 @@
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Scene/Component.h"
-#include "Proof/Asset/MeshAsset.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/VertexArray.h"
 #include "Proof/Renderer/FrameBuffer.h"
@@ -236,7 +235,7 @@ namespace Proof {
 
 	//static void CopyComponent
 	Count<World> World::Copy(Count<World> worldToCopy) {
-		Count<World> newWorld = CreateCount<World>();
+		Count<World> newWorld = Count<World>::Create();
 		
 		newWorld->Name = worldToCopy->Name;
 		//newWorld->m_WorldID = other->m_WorldID;

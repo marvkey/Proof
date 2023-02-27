@@ -6,10 +6,6 @@
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Asset/Asset.h"
-#include "Proof/Asset/TextureAsset/TextureAsset.h"
-#include "Proof/Asset/MeshAsset.h"
-#include "Proof/Asset/MaterialAsset.h"
-#include "Proof/Asset/PhysicsMaterialAsset.h"
 
 
 #include "Proof/Utils/PlatformUtils.h"
@@ -103,9 +99,8 @@ namespace Proof
 		}
 		if (endIndex != 0)
 			finalPath += fmt::format("({})", endIndex);
-		Count<MeshAsset> Meshasset = CreateCount<MeshAsset>(meshPath.string(), finalPath, excludeIndex);
-		AssetManager::NewAsset(Meshasset);
-		return Meshasset->GetAssetID();
+
+		return AssetManager::NewAsset<Mesh>(finalPath, meshPath.string())->GetID();
 	}
 	std::pair<bool, AssetID> ContentBrowserPanel::AddMesh(const std::filesystem::path& meshPath, const std::vector<uint32_t>& excludeIndex) {
 		static std::string meshAddedSavePath = "Mesh\\";
@@ -178,7 +173,7 @@ namespace Proof
 		if (endIndex != 0)
 			finalPath += fmt::format("({})", endIndex);
 
-		SceneSerializer serilizer(world.get());
+		SceneSerializer serilizer(world.Get());
 		serilizer.SerilizeText(finalPath);
 
 		AssetID ID = world->GetID();
@@ -249,11 +244,11 @@ namespace Proof
 				FileRenameName = NameofFileRename;
 			}
 
-			if (AddAssetPopupMenuItem<Texture2DAsset>("Texture2D", "Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0", NameofFileRename))
+			if (AddAssetPopupMenuItem<Texture2D>("Texture2D", "Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0", NameofFileRename))
 				FileRenameName = NameofFileRename;
-			else if (AddAssetPopupMenuItem<MaterialAsset>("Material", NameofFileRename))
+			else if (AddAssetPopupMenuItem<Material>("Material", NameofFileRename))
 				FileRenameName = NameofFileRename;
-			else if (AddAssetPopupMenuItem<PhysicsMaterialAsset>("PhysicsMaterial", NameofFileRename))
+			else if (AddAssetPopupMenuItem<PhysicsMaterial>("PhysicsMaterial", NameofFileRename))
 				FileRenameName = NameofFileRename;
 			ImGui::EndPopup();
 		}
@@ -332,7 +327,7 @@ namespace Proof
 				std::string fileDragSourcePath = path.string();
 				// we doingthis becausefor loop and dragsurce may change
 				if (AssetManager::HasAsset(fileDragSourcePath) == false) {
-					AssetManager::NewAsset(AssetManager::CreateID(), fileDragSourcePath);
+					AssetManager::NewAssetSource(fileDragSourcePath,AssetManager::GetAssetTypeFromFilePath(fileDragSourcePath));
 				}
 				auto staticAssetInfo = AssetManager::GetAssetInfo(fileDragSourcePath);
 				UUID staticID = AssetManager::GetAssetInfo(fileDragSourcePath).ID;
@@ -356,7 +351,7 @@ namespace Proof
 				if (currentFileInfo.AssetType != AssetType::MeshSourceFile && currentFileInfo.AssetType != AssetType::TextureSourceFile && It.is_directory() == false) {
 					if (ImGui::MenuItem("Reload")) {
 						if (AssetManager::IsAssetLoaded(currentFileInfo.ID)) {
-							AssetManager::GetAsset<Asset>(currentFileInfo.ID)->LoadAsset();
+							//AssetManager::GetAsset<Asset>(currentFileInfo.ID)->LoadAsset();
 						}
 					}
 

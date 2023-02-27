@@ -7,12 +7,9 @@
 #include "Proof/Scene/EntitiyComponentSystem/ECS.h"
 #include "Proof/Renderer/3DRenderer/Renderer3D.h" // TEMPORARY
 #include "Proofprch.h"
-#include "Proof/Asset/TextureAsset/TextureAsset.h"
-#include "Proof/Asset/MeshAsset.h"
 #include "Proof/Asset/Asset.h"
 #include "ContentBrowserPanel.h"
 #include <vector>
-#include "Proof/Asset/MaterialAsset.h"
 #include "../ImGUIAPI.h"
 #include "Proof/Scene/ExampleSccripts.h"
 #include "Proof/Scene/Script.h"
@@ -33,8 +30,6 @@ namespace Proof
 	InstanceNativeScriptComponent.Bind<Class>();\
 	InstanceNativeScriptComponent.SetName(#Class)
 
-	static MeshAsset* TempAsset = nullptr;
-	static MeshAsset* TempLocation0Asset = nullptr;
 
 	void SceneHierachyPanel::ImGuiRender(class FrameTime deltaTime) {
 
@@ -377,9 +372,9 @@ namespace Proof
 			DrawVectorControl("Scale", transformComp.Scale, 1.0f);
 		});
 		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp) {
-			if (AssetManager::HasID(meshComp.GetMeshID())) {
-				Count<MeshAsset> meshAsset = AssetManager::GetAsset<MeshAsset>(meshComp.GetMeshID());
-				ExternalAPI::ImGUIAPI::TextBar("Mesh", meshAsset->GetName());
+			if (AssetManager::HasAsset(meshComp.GetMeshID())) {
+				auto assetInfo= AssetManager::GetAssetInfo(meshComp.GetMeshID());
+				ExternalAPI::ImGUIAPI::TextBar("Mesh", assetInfo.GetName());
 			}
 			else
 			{
@@ -403,10 +398,10 @@ namespace Proof
 				ImGui::EndPopup();
 			}
 			
-			if (AssetManager::HasID(meshComp.GetMaterialID()))
+			if (AssetManager::HasAsset(meshComp.GetMaterialID()))
 			{
-				Count<MaterialAsset> mat = AssetManager::GetAsset<MaterialAsset>(meshComp.GetMaterialID());
-				ExternalAPI::ImGUIAPI::TextBar("Material", mat->GetName());
+				auto assetInfo = AssetManager::GetAssetInfo(meshComp.GetMaterialID());
+				ExternalAPI::ImGUIAPI::TextBar("Material", assetInfo.GetName());
 			}
 			else
 				ExternalAPI::ImGUIAPI::TextBar("Material", "null");
@@ -517,7 +512,7 @@ namespace Proof
 			DrawVectorControl("Offset Location", cubeCollider.OffsetLocation);
 			DrawVectorControl("Offset Scale", cubeCollider.OffsetScale, 1.0f);
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", cubeCollider.HasPhysicsMaterial() != false ? AssetManager::GetAsset<Asset>(cubeCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
+			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", cubeCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(cubeCollider.m_PhysicsMaterialPointerID).GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
 				ImGui::EndPopup();
 			}
@@ -541,7 +536,7 @@ namespace Proof
 			ImGui::DragFloat("Radius", &sphereCollider.Radius, 0.5);
 			DrawVectorControl("Offset Location", sphereCollider.OffsetLocation);
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", sphereCollider.HasPhysicsMaterial() != false ? AssetManager::GetAsset<Asset>(sphereCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
+			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", sphereCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(sphereCollider.m_PhysicsMaterialPointerID).GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
 				ImGui::EndPopup();
 			}
@@ -567,7 +562,7 @@ namespace Proof
 			ExternalAPI::ImGUIAPI::EnumCombo("Direction", capsuleCollider.Direction);
 			DrawVectorControl("Offset Location", capsuleCollider.OffsetLocation);
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", capsuleCollider.HasPhysicsMaterial() != false ? AssetManager::GetAsset<Asset>(capsuleCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
+			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", capsuleCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(capsuleCollider.m_PhysicsMaterialPointerID).GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
 				ImGui::EndPopup();
 			}
@@ -610,7 +605,7 @@ namespace Proof
 			}
 
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", meshCollider.HasPhysicsMaterial() != false ? AssetManager::GetAsset<Asset>(meshCollider.m_PhysicsMaterialPointerID)->GetName() : "null");
+			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", meshCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(meshCollider.m_PhysicsMaterialPointerID).GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
 				ImGui::EndPopup();
 			}

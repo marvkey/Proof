@@ -3,9 +3,8 @@
 #include "Proof/Math/Math.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "Proof/Asset/MeshAsset.h"
-#include "Proof/Asset/TextureAsset/TextureAsset.h"
 #include "Proof/Renderer/Texture.h"
+#include "Material.h"
 #include "Proof/Scripting/MonoTypes.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -263,8 +262,8 @@ namespace Proof
 		void SetMesh(UUID ID);
 		void RemoveMesh();
 
-		Count<Mesh> GetMesh();
-		Count<Material> GetMaterial();
+		Count<class Mesh> GetMesh();
+		Count<class Material> GetMaterial();
 	private:
 		friend class Entity;
 		friend class World;
@@ -295,17 +294,9 @@ namespace Proof
 		SpriteComponent(const SpriteComponent&) = default;
 		SpriteComponent() = default;
 		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
-		const Count<Texture2D>& GetTexture(){
-			if (GetAsset() != nullptr) {
-				return m_TextureAssetPointer->GetTexture();
-			}
-			return nullptr;
-		}
-		Texture2DAsset* GetAsset();
 
 		void RemoveTexture(){
 			m_TextureAssetPointerID = 0;
-			m_TextureAssetPointer = nullptr;
 		}
 	private:
 		friend class Entity;
@@ -315,7 +306,6 @@ namespace Proof
 		friend class SceneSerializer;
 		uint32_t StartIndexSlot = 0;
 		UUID m_TextureAssetPointerID = 0;
-		Count<Texture2DAsset> m_TextureAssetPointer;
 	};
 
 	struct SkyLightComponent{
@@ -438,7 +428,7 @@ namespace Proof
 		bool HasPhysicsMaterial() {
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial();
 
 	private:
 		mutable UUID m_PhysicsMaterialPointerID = 0;
@@ -463,7 +453,7 @@ namespace Proof
 		bool HasPhysicsMaterial() {
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial();
 	private:
 		UUID m_PhysicsMaterialPointerID = 0;
 		void* m_RuntimeBody = nullptr;
@@ -493,7 +483,7 @@ namespace Proof
 		bool HasPhysicsMaterial(){
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial();
 	private:
 		void* m_RuntimeBody = nullptr;
 		friend class World;
@@ -515,8 +505,8 @@ namespace Proof
 		bool HasPhysicsMaterial() {
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<PhysicsMaterial> GetPhysicsMaterial();
-		Count<Mesh> GetMesh();
+		Count<class PhysicsMaterial> GetPhysicsMaterial();
+		Count<class Mesh> GetMesh();
 
 		UUID GetMeshSource() {
 			return m_MeshAssetPointerID;
@@ -598,7 +588,6 @@ namespace Proof
 			}
 			return false;
 		}
-
 
 		bool HasAnyScripts() {
 			return m_Scripts.size() > 0;

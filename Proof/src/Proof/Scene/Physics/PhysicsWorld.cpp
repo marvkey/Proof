@@ -87,7 +87,7 @@ namespace Proof {
 		
 		m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity) {
 			auto id =entity.GetEntityID();
-			m_PhysicsActor.insert({ id, CreateCount<PhysicsActor>(this, entity) });
+			m_PhysicsActor.insert({ id, Count<PhysicsActor>::Create(this, entity) });
 		});
 	}
 	void PhysicsWorld::EndWorld()

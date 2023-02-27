@@ -56,7 +56,7 @@ namespace Proof
 
 
 			Descriptors.insert({ DescriptorSets::Zero,descriptor });
-			textureCubeMap = CubeMap::Create("Assets/MegaSun4k.hdr",512,false);
+			textureCubeMap = CubeMap::Create("Assets/Arches_E_PineTree_3k.hdr",512,true);
 			
 
 			PipelineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
@@ -105,7 +105,7 @@ namespace Proof
 			Renderer::RecordRenderPass(m_RenderPass, RenderPipline, [&](Count <RenderCommandBuffer> commandBuffer) {
 				auto descriptor0 = Descriptors[DescriptorSets::Zero];
 				descriptor0->WriteBuffer(0, cameraBuffer);
-				descriptor0->WriteImage(1, textureCubeMap);
+				descriptor0->WriteImage(1, prefilterCubeMap);
 				descriptor0->Bind(commandBuffer, PipelineLayout);
 				for (const auto& subMesh : Cube->GetSubMeshes())
 				{
@@ -123,7 +123,7 @@ namespace Proof
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
 				auto& mesh = *entity.GetComponent<MeshComponent>();
-				if (AssetManager::HasID(mesh.GetMeshID()))
+				if (AssetManager::HasAsset(mesh.GetMeshID()))
 				{
 					if (mesh.HasMaterial())
 						m_Renderer3D->SubmitMeshWithMaterial(mesh.GetMesh(), mesh.GetMaterial(), m_World->GetWorldTransform(entity));
@@ -226,7 +226,7 @@ namespace Proof
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
 				auto& mesh = *entity.GetComponent<MeshComponent>();
-				if (AssetManager::HasID(mesh.GetMeshID()))
+				if (AssetManager::HasAsset(mesh.GetMeshID()))
 					m_Renderer3D->SubmitMesh(mesh.GetMesh(), m_World->GetWorldTransform(entity));
 				});
 			}

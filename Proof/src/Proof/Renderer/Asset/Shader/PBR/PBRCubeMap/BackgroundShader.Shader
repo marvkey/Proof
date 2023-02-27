@@ -1,12 +1,8 @@
 #Vertex Shader
 
 #version 450
+//https://gist.github.com/keijiro/01dc44ad440623a5d30c
 layout(location = 0) in vec3 aPos;
-//layout(location = 1) in vec3 aNormal;
-//layout(location = 2) in vec2 aTexCoords;
-//layout(location = 3) in vec3 aTangent;
-//layout(location = 4) in vec3 aBitangent;
-layout(location = 5) in mat4 aTransform;
 layout(location = 0) out vec3 outWorldPos;
 layout(set = 0, binding = 0) uniform CameraData
 {
@@ -14,6 +10,10 @@ layout(set = 0, binding = 0) uniform CameraData
     mat4 View;
     vec3 Position;
 }CameraUBO;
+
+// roating the cubemap
+// can hvave rotating 
+//https://gist.github.com/onedayitwillmake/3288507
 
 void main()
 {
@@ -32,11 +32,14 @@ layout(set = 0, binding = 1) uniform  samplerCube environmentMap;
 layout(location = 0) in vec3 WorldPos;      
 layout(location = 0) out vec4 outFragColor;
  
+float exposure = 1.0f; // around a maximum of 500 is just plain white
+vec3 tintColor = vec3(1);
 void main()
 {
 
-    vec3 envColor = textureLod(environmentMap, WorldPos,11).rgb;
-
+    vec3 envColor = textureLod(environmentMap, WorldPos,0).rgb;
+    envColor *= tintColor;
+    envColor *= exposure;
     // HDR tonemap and gamma correct
     envColor = envColor / (envColor + vec3(1.0));
     envColor = pow(envColor, vec3(1.0 / 2.2));

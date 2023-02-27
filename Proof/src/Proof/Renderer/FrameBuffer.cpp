@@ -11,13 +11,13 @@ namespace Proof {
 		{
 			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanFrameBuffer>(config);
+			case RendererAPI::API::Vulkan: return Count<VulkanFrameBuffer>::Create(config);
 		}
 	}
 
 	Count<ScreenFrameBuffer> ScreenFrameBuffer::Create(uint32_t Width, uint32_t Height)
 	{
-		auto screenBuffer= CreateCount<ScreenFrameBuffer>();
+		auto screenBuffer= Count<ScreenFrameBuffer>::Create();
 		auto swapChain = Application::Get()->GetWindow()->GetSwapChain();
 		FrameBufferConfig config;
 		config.DebugName = "Screen FrameBuffer";

@@ -14,7 +14,7 @@ namespace Proof
             case RendererAPI::API::OpenGL: return nullptr;//Renderer::GetShaderLibrary().AddShader(CreateCount<class OpenGLShader>(_ShaderName, ShaderPath));
             case RendererAPI::API::Vulkan:
                 {
-                    Count<Shader> shader = CreateCount<class VulkanShader>(name, path);
+                    Count<Shader> shader = Count<class VulkanShader>::Create(name, path);
                     RendererBase::GetShaderLibrary()->AddShader(shader);
                     return shader;
                 }
@@ -25,7 +25,7 @@ namespace Proof
             case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
             case RendererAPI::API::Vulkan:
             {
-                Count<Shader> shader = CreateCount<class VulkanShader>(name, stages);
+                Count<Shader> shader = Count<class VulkanShader>::Create(name, stages);
                 RendererBase::GetShaderLibrary()->AddShader(shader);
                 return shader;
             }
@@ -55,7 +55,7 @@ namespace Proof
                     Count<Shader> shader = RendererBase::GetShaderLibrary()->GetShader(name);
                     if (shader != nullptr)
                         return shader;
-                    shader = CreateCount<class VulkanShader>(name, path);
+                    shader = Count<class VulkanShader>::Create(name, path);
                     RendererBase::GetShaderLibrary()->AddShader(shader);
                     return shader;
                 }
@@ -79,7 +79,7 @@ namespace Proof
                     Count<Shader> shader = RendererBase::GetShaderLibrary()->GetShader(name);
                     if (shader != nullptr)
                         return shader;
-                    shader = CreateCount<class VulkanShader>(name, strings);
+                    shader = Count<class VulkanShader>::Create(name, strings);
                     RendererBase::GetShaderLibrary()->AddShader(shader);
                     return shader;
                 }

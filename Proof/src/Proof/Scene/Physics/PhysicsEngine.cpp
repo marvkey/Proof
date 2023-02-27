@@ -5,7 +5,6 @@
 #include "../Entity.h"
 #include "Proof/Asset/AssetManager.h"
 #include "../Material.h"
-#include "Proof/Asset/PhysicsMaterialAsset.h"
 #include "../CollisionInfo.h"
 #include "../Script.h"
 #include "../Mesh.h"

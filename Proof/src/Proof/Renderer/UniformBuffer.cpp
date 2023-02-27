@@ -11,7 +11,7 @@ namespace Proof
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanUniformBuffer>(size, set, bindingPoint);
+			case RendererAPI::API::Vulkan: return Count<VulkanUniformBuffer>::Create(size, set, bindingPoint);
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
@@ -21,7 +21,7 @@ namespace Proof
 		{
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanUniformBuffer>(data,size, set, bindingPoint);
+			case RendererAPI::API::Vulkan: return Count<VulkanUniformBuffer>::Create(data,size, set, bindingPoint);
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
@@ -31,7 +31,7 @@ namespace Proof
 		{
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanStorageBuffer>(set, binding,data,size,offset,frameIndex);
+			case RendererAPI::API::Vulkan: return Count<VulkanStorageBuffer>::Create(set, binding,data,size,offset,frameIndex);
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;

@@ -9,6 +9,9 @@
 #include "Material.h"
 namespace Proof
 {
+    class MeshSource {
+
+    };
     struct SubMesh {
     public:
         SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name, std::vector<AssetID> diffuseTextures);
@@ -39,14 +42,20 @@ namespace Proof
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
     };
-    class Mesh {
+    class Mesh : public Asset
+    {
     public:
-      
+        ASSET_CLASS_TYPE(Mesh);
+
         bool m_FaceCulling =false;
-        Mesh() =default;
+        Mesh()
+        {
+
+        }
         // exclude index is not gonna have that mesh ready to be rendered that specific mesh will be discarded
         // so only use it if u dont want tthe mesh to eexist
-        Mesh(std::string const& path ) {
+        Mesh(std::string const& path) 
+        {
             LoadModel(path);
         }
 
@@ -59,8 +68,11 @@ namespace Proof
             return m_Name;
         }
         bool Enabled=true;
-        const UUID& GetMeshSpecificID()const {
-            return m_MeshUniqueID;
+        std::filesystem::path GetPath() {
+            return m_Path;
+        }
+        UUID GetMeshSpecificID() {
+            return m_UiuqeMeshID;
         }
     private:
         std::vector<class SubMesh> meshes;
@@ -71,6 +83,7 @@ namespace Proof
             AssetID TextureSource;
         };
 
+        Count<MaterialTable> MaterialTable;
         //stores all teh asset source of a given mesh
         std::vector<TextureData> m_Textures;
         std::filesystem::path m_Path;
@@ -80,6 +93,10 @@ namespace Proof
         //returns the id of  of textures in the texutre loaded
         std::vector<AssetID> LoadMaterialTextures(void* mat,int type);
         std::vector<Material> LoadMaterial(void* mat);
+
+        void GenerateMaterialTable();
+
+        const UUID m_UiuqeMeshID = UUID();
         friend class Renderer3D;
         friend class Editore3D;
         friend class Renderer3DPBR;
@@ -87,6 +104,5 @@ namespace Proof
         friend class MeshAsset;
         friend class MeshWorkShop;
 
-        const UUID m_MeshUniqueID = UUID();
     };
 }

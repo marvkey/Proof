@@ -12,7 +12,7 @@ namespace Proof {
 			return m_GraphicsContext;
 		}
 		static GraphicsContext* GetGraphicsContextPointer() {
-			return m_GraphicsContext.get();
+			return m_GraphicsContext.Get();
 		}
 
 		static const std::string GetRenderCompany(){

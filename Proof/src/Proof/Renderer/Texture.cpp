@@ -9,7 +9,7 @@ namespace Proof {
 	Count<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, ImageFormat format, const void* data) {
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanTexture2D>(width,height,format, data);
+			case RendererAPI::API::Vulkan: return Count<VulkanTexture2D>::Create(width,height,format, data);
 		}
 		return nullptr;
 	}
@@ -29,7 +29,7 @@ namespace Proof {
 		{
 			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;// CreateCount<OpenGLTexture2D>(Path, _TextureType);
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanTexture2D>(config);
+			case RendererAPI::API::Vulkan: return Count<VulkanTexture2D>::Create(config);
 		}
 		return nullptr;
 	}
@@ -37,7 +37,7 @@ namespace Proof {
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;// CreateCount<OpenGLTexture2D>(Path, _TextureType);
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanTexture2D>(Path);
+			case RendererAPI::API::Vulkan: return Count<VulkanTexture2D>::Create(Path);
 		}
 		return nullptr;
 	}
@@ -45,7 +45,7 @@ namespace Proof {
 		switch (RendererAPI::GetAPI()) {
 		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
 		case RendererAPI::API::OpenGL: return nullptr;
-		case RendererAPI::API::Vulkan: return CreateCount<VulkanCubeMap>(Path,dimension,generateMips);
+		case RendererAPI::API::Vulkan: return Count<VulkanCubeMap>::Create(Path,dimension,generateMips);
 		}
 		return nullptr;
 
@@ -56,7 +56,7 @@ namespace Proof {
 		{
 			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return CreateCount<VulkanCubeMap>(map, shader,dimension, generateMips);
+			case RendererAPI::API::Vulkan: return Count<VulkanCubeMap>::Create(map, shader,dimension, generateMips);
 		}
 		return nullptr;
 

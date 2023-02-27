@@ -19,8 +19,8 @@ namespace Proof{
 	}
 	SceneRendererUI::SceneRendererUI(AssetID id) {
 		m_ID = id;
-		m_World = CreateCount<World>();
-		if (AssetManager::HasID(m_ID) == false)return;
+		m_World = Count<World>::Create();
+		if (AssetManager::HasAsset(m_ID) == false)return;
 		auto assetInfo = AssetManager::GetAssetInfo(m_ID);
 		switch (assetInfo.Type) {
 			case Proof::AssetType::Mesh:
@@ -38,8 +38,8 @@ namespace Proof{
 		}
 	}
 	void SceneRendererUI::MeshAssetSetUp() {
-		auto meshAsset = AssetManager::GetAsset<MeshAsset>(m_ID);
-		m_SceneEntity = m_World->CreateEntity(meshAsset->GetName());
+		auto assetInfo= AssetManager::GetAssetInfo(m_ID);
+		m_SceneEntity = m_World->CreateEntity(assetInfo.GetName());
 		m_SceneEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{ 1,1,1 };
 		m_SceneEntity.GetComponent<TransformComponent>()->Location.Z -= 10;
 		m_SceneEntity.AddComponent<MeshComponent>()->SetMesh(m_ID);
@@ -47,16 +47,17 @@ namespace Proof{
 	}
 	
 	void SceneRendererUI::MeshAssetUI() {
+		/*
 		// there is a problem when resizing it may be due to command buffer simaltneous bit
 		float width = ImGui::GetWindowWidth();
 		width *= 0.3;
 		ImGui::BeginChild(m_ID,{width,ImGui::GetContentRegionAvail().y});
 		{
-			auto meshAsset = AssetManager::GetAsset<MeshAsset>(m_ID);
+			auto mesh = AssetManager::GetAsset<Mesh>(m_ID);
 			if(ImGui::Button("Renstate mesh")){
 				std::string filePath = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
 				if (filePath.empty() == false) {
-					meshAsset->ChangeMesh(filePath);
+					mesh->LoadModel(filePath);
 				}
 			}
 			ExternalAPI::ImGUIAPI::CheckBox("FaceCulling",&meshAsset->GetMesh()->m_FaceCulling);
@@ -69,17 +70,21 @@ namespace Proof{
 				ExternalAPI::ImGUIAPI::CheckBox(subMesh.GetName(),&subMesh.Enabled);
 			}
 		}
-		ImGui::EndChild();
+		ImGui::EndChild
+		*/
 	}
 	void SceneRendererUI::MeshSourceAssetSetUp() {
+		/*
 		auto meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(m_ID);
 		m_SceneEntity = m_World->CreateEntity(meshAsset->GetName());
 		m_SceneEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{ 1,1,1 };
 		m_SceneEntity.GetComponent<TransformComponent>()->Location.Z -= 10;
 		m_SceneEntity.AddComponent<MeshComponent>()->SetMesh(m_ID);
 		m_WorldRenderer =CreateSpecial<WorldRenderer>( m_World, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() );
+		*/
 	}
 	void SceneRendererUI::MeshSourceAssetUI() {
+		/*
 		float width = ImGui::GetWindowWidth();
 		width *= 0.3;
 		ImGui::BeginChild(m_ID, { width,ImGui::GetContentRegionAvail().y });
@@ -96,17 +101,19 @@ namespace Proof{
 			}
 		}
 		ImGui::EndChild();
+		*/
 	}
 	
 	void SceneRendererUI::RenderAsset(FrameTime deltaTime){
+		/*
 		Count<Asset> meshAsset; 
 		switch (m_Type) {
 			case SceneRendererType::MeshAsset:
-				meshAsset = AssetManager::GetAsset<MeshAsset>(m_ID);
+				meshAsset = AssetManager::GetAsset<Mesh>(m_ID);
 				break;
-			case SceneRendererType::MeshSourceFile:
-				meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(m_ID);
-				break;
+//			case SceneRendererType::MeshSourceFile:
+//				meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(m_ID);
+//				break;
 		}
 		ImGui::PushID(m_ID);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2{0,0});
@@ -150,5 +157,6 @@ namespace Proof{
 		ImGui::End();
 		ImGui::PopStyleVar();
 		ImGui::PopID();
+		*/
 	};
 }

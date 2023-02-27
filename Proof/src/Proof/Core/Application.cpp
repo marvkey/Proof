@@ -54,9 +54,6 @@ namespace Proof {
         assetManagerconfig.AssetManager = m_Project->GetFromSystemProjectDirectory(m_Project->GetConfig().AssetManager);
         AssetManager::Init(assetManagerconfig);
 
-        AssetManager::InitilizeAssets();
-
-
         PhysicsEngine::Init();
         ScriptEngine::Init();
         ImGuiMainLayer = new ImGuiLayer();

@@ -35,7 +35,7 @@ namespace Proof{
 	{
 		PF_PROFILE_FUNC();
 		if (mesh == nullptr)return;
-		uint64_t meshPointerId = mesh->GetMeshSpecificID();
+		MemoryAddress meshPointerId = (MemoryAddress) &*mesh.Get();
 		DebugMeshPipeLine::MeshVertex vertex(transform);
 
 		if (m_Pipeline->Meshes.contains(meshPointerId))
