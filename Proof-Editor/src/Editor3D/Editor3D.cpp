@@ -19,6 +19,7 @@
 #include "Proof/Utils/PlatformUtils.h"
 #include "MainWindow/SceneRendererUI.h"
 #include "MainWindow/MaterialEditorPanel.h"
+#include "Proof/Scene/Material.h"
 #include "Proof/Math/Random.h"
 #include <string>
 #include "Proof/Core/Core.h"
@@ -1220,8 +1221,9 @@ namespace Proof
 				}
 			case Proof::AssetType::Material:
 				{
-					//Count<Panel> panel= Count<MaterialEditorPanel>::Create(AssetManager::GetAsset<Material>(ID));
-					//m_AllPanels.insert({ ID,panel });
+
+					Count<Panel> panel= Count<MaterialEditorPanel>::Create(AssetManager::GetAsset<Material>(ID));
+					m_AllPanels.insert({ ID,panel });
 					return true;
 				}
 			case Proof::AssetType::World:

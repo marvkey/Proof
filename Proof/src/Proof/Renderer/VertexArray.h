@@ -32,9 +32,5 @@ namespace Proof {
 		* @param offset of the first component
 		*/
 		virtual void AddData(uint32_t Position, DataType Count, size_t Offset, uint32_t binding = 0) = 0;
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
 	};
 }

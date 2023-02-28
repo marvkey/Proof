@@ -34,7 +34,7 @@ namespace Proof
     }
     void VulkanFrameBuffer::SetUpAttachments()
     {
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
         for (auto& frameImageConfig : m_Config.Attachments.Attachments)
         {
             if (Utils::IsDepthFormat(frameImageConfig.Format))
@@ -53,7 +53,7 @@ namespace Proof
     }
     void VulkanFrameBuffer::SetDepth(const FrameBufferImageConfig& imageAttach)
     {
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
         auto swapchain = graphicsContext->GetSwapChain();
         VkFormat depthFormat = Utils::ProofFormatToVulkanFormat(imageAttach.Format);
         bool hasImage = true ? imageAttach.GetImage().HasImage() == true || imageAttach.GetImagelayout().HasImages() == true : false;
@@ -142,7 +142,7 @@ namespace Proof
     }
     void VulkanFrameBuffer::AddImage(const FrameBufferImageConfig& imageAttach)
     {
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
         auto swapchain = graphicsContext->GetSwapChain();
         uint32_t imageCount = swapchain->GetImageCount();
         auto imageFormat = Utils::ProofFormatToVulkanFormat(imageAttach.Format);
@@ -232,7 +232,7 @@ namespace Proof
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &viewInfo, nullptr, &image.ImageViews[i]) !=
+            if (vkCreateImageView(Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), &viewInfo, nullptr, &image.ImageViews[i]) !=
                 VK_SUCCESS)
             {
                 PF_CORE_ASSERT(false, "failed to create texture image view!");
@@ -259,8 +259,8 @@ namespace Proof
     void VulkanFrameBuffer::CreateFramebuffer()
     {
 
-        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        const auto& device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
         auto swapchain = graphicsContext->GetSwapChain();
 
@@ -307,7 +307,7 @@ namespace Proof
     }
     Image VulkanFrameBuffer::GetColorAttachmentImage(uint32_t index, uint32_t imageIndex)
     {
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
         auto swapchain = graphicsContext->GetSwapChain();
         VkDescriptorSet set = graphicsContext->GetGlobalPool()->AddTexture(
             m_ColorImages[index].ImageSampler[imageIndex],
@@ -325,7 +325,7 @@ namespace Proof
         if(m_DepthFormat == ImageFormat::None)
             return Image();
 
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
         auto swapchain = graphicsContext->GetSwapChain();
         VkDescriptorSet set = graphicsContext->GetGlobalPool()->AddTexture(
             m_DepthImage.ImageSampler[imageIndex],
@@ -372,7 +372,7 @@ namespace Proof
     }
     void VulkanFrameBuffer::Release()
     {
-        auto swapchain = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetSwapChain()    ;
+        auto swapchain = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetSwapChain()    ;
 
         for (size_t i = 0; i < swapchain->GetImageCount(); i++)
         {
@@ -382,7 +382,7 @@ namespace Proof
                     continue;
                 Renderer::SubmitDatafree([images = coloredimage.Images[i], imageViews = coloredimage.ImageViews[i],imageSampler = coloredimage.ImageSampler[i]]()
                 {
-                    auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+                    auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
                     const auto& device = graphicsContext->GetDevice();
                     vkDestroyImageView(device, imageViews, nullptr);
                     vkDestroySampler(device, imageSampler, nullptr);
@@ -396,7 +396,7 @@ namespace Proof
                     continue;
                 Renderer::SubmitDatafree([images = m_DepthImage.Images[i], imageViews = m_DepthImage.ImageViews[i], imageSampler = m_DepthImage.ImageSampler[i]]()
                 {
-                    auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+                    auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
                     const auto& device = graphicsContext->GetDevice();
                     vkDestroyImageView(device, imageViews, nullptr);
                     vkDestroySampler(device, imageSampler, nullptr);
@@ -405,7 +405,7 @@ namespace Proof
             }
 
             Renderer::SubmitDatafree([buffer = m_Framebuffers[i]]() {
-                const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+                const auto& device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
                 vkDestroyFramebuffer(device, buffer, nullptr);
             });
         }

@@ -2,6 +2,7 @@
 
 #include "Proof/Core/Core.h"
 #include "Proof/Math/Math.h"
+#include "Proof/Asset/Asset.h"
 namespace Proof{
 	struct Material : public Asset {
 		Material();

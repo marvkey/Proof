@@ -8,6 +8,10 @@
 #include "AssetSupport.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "AssetSerelizer.h"
+#include <thread>
+#include  <algorithm>
+#include <execution>
+#include <future>
 namespace Proof
 {
 	#define MESH_EXTENSION "Mesh.ProofAsset"
@@ -248,9 +252,24 @@ namespace Proof
 		found.close();
 	}
 	void AssetManager::LoadMultipleAsset(std::set<AssetID> assetLoadIn){
-		for (AssetID assetID : assetLoadIn) {
-			AssetManager::LoadAsset(assetID);
-		}
+		Timer time;
+		#if 0
+		auto particles_task = std::async(std::launch::async,
+			[&]() {
+			std::for_each(std::execution::par,
+				assetLoadIn.begin(),
+				assetLoadIn.end(),
+				[](AssetID Part) {
+				AssetManager::LoadAsset(Part);
+			});
+		});
+		particles_task.wait();
+		#else
+		for (auto& id : assetLoadIn)
+			LoadAsset(id);
+		#endif
+		
+		PF_ENGINE_INFO("Time Load Asset {}ms ",time.TimePassedMillis());
 	}
 	std::filesystem::path AssetManager::GetAssetFileSystemPath(const std::filesystem::path& path) {
 		return Application::Get()->GetProject()->GetAssetFileSystemPath(path);
@@ -258,6 +277,4 @@ namespace Proof
 	std::filesystem::path AssetManager::GetDirectory() {
 		return Application::Get()->GetProject()->GetAssetDirectory();
 	}
-
-	
 }

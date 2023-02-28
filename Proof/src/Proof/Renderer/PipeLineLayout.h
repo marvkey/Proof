@@ -7,9 +7,5 @@ namespace Proof{
 	public:
 		virtual ~PipeLineLayout() = default;
 		static Count<PipeLineLayout> Create (const std::vector<Count<class DescriptorSet>>& descriptors = {}, Count<class PushConstant> pushConstnat =nullptr);
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
 	};
 }

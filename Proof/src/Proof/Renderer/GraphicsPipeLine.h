@@ -50,10 +50,6 @@ namespace Proof{
 	class GraphicsPipeline {
 	public:
 		virtual ~GraphicsPipeline() = default;
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
 		static Count<GraphicsPipeline> Create(const GraphicsPipelineConfig& piplineConfig);
 	};
 }

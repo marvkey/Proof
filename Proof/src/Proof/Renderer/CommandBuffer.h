@@ -18,10 +18,5 @@ namespace Proof
 	public:
 		static Count<RenderCommandBuffer >Create(CommandBuffer* buffer =nullptr);
 		virtual ~RenderCommandBuffer() = default;
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
-
 	};
 }

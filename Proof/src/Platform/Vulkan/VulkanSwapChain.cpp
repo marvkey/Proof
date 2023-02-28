@@ -47,17 +47,17 @@ namespace Proof
     }
 
     void VulkanSwapChain::AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex) {
-            const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+            const auto& graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
             vkAcquireNextImageKHR(graphicsContext->GetDevice(), m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, imageIndex);
 
     }
 
     void VulkanSwapChain::SubmitCommandBuffers(std::vector<Count<RenderCommandBuffer>> buffers, uint32_t* imageIndex) {
-        auto graphicsContext= Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext= Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
         
         std::vector<VkCommandBuffer> submitCommandBuffers;
         for (auto& buffer : buffers) {
-            submitCommandBuffers.emplace_back(buffer->As<VulkanRenderCommandBuffer>()->m_CommandBuffers[Renderer::GetCurrentFrame().FrameinFlight]);
+            submitCommandBuffers.emplace_back(buffer.As<VulkanRenderCommandBuffer>()->m_CommandBuffers[Renderer::GetCurrentFrame().FrameinFlight]);
         }
         VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
@@ -114,7 +114,7 @@ namespace Proof
     }
 
     void VulkanSwapChain::CreateSwapChain() {
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
         SwapChainSupportDetails swapChainSupport = graphicsContext->GetSwapChainSupport();
 
@@ -176,7 +176,7 @@ namespace Proof
     }
 
     void VulkanSwapChain::CreateImageViews() {
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
         m_SwapChainImageViews.resize(m_SwapChainImages.size());
         for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
@@ -191,7 +191,7 @@ namespace Proof
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &viewInfo, nullptr, &m_SwapChainImageViews[i]) !=
+            if (vkCreateImageView(Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), &viewInfo, nullptr, &m_SwapChainImageViews[i]) !=
                 VK_SUCCESS) {
                 PF_CORE_ASSERT(false, "failed to create texture image view!");
             }
@@ -201,7 +201,7 @@ namespace Proof
 
 
     void VulkanSwapChain::CreateSyncObjects() {
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
         uint32_t framesInFlight = Renderer::GetConfig().FramesFlight;
         m_ImageAvailableSemaphores.resize(framesInFlight);
@@ -230,7 +230,7 @@ namespace Proof
     }
 
     void VulkanSwapChain::Resize(ScreenSize size) {
-        const auto& device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+        const auto& device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
         m_WindowSize = size;
         vkDeviceWaitIdle(device);
         {
@@ -249,7 +249,7 @@ namespace Proof
     }
 
     void VulkanSwapChain::CleanUp() {
-        auto device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+        auto device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
 
         {
             for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
@@ -345,16 +345,16 @@ namespace Proof
     }
 
     void VulkanSwapChain::WaitFences(uint32_t frameIndex) {
-        vkWaitForFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex], VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
+        vkWaitForFences(Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex], VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
     }
 
     void VulkanSwapChain::ResetFences(uint32_t frameIndex) {
-        vkResetFences(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex]);
+        vkResetFences(Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), 1, &m_InFlightFences[frameIndex]);
     }
 
     VkFormat VulkanSwapChain::FindDepthFormat() {
         return 
-           Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->FindSupportedFormat(
+           Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->FindSupportedFormat(
             { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);

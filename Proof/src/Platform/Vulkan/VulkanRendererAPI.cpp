@@ -12,10 +12,10 @@ namespace Proof {
 	{
 	}
 	void VulkanRendererAPI::DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance ) {
-		vkCmdDraw(commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, 0, firstInstance);
+		vkCmdDraw(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, 0, firstInstance);
 	}
 	void VulkanRendererAPI::DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance) {
-		vkCmdDrawIndexed(commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, 0, 0, firstInstance);
+		vkCmdDrawIndexed(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, 0, 0, firstInstance);
 	}
 	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) {
 		renderPass->As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, frameBuffer);
@@ -50,7 +50,7 @@ namespace Proof {
 		VulkanRenderer::SubmitDatafree(func);
 	}
 	void VulkanRendererAPI::Submit(std::function<void(CommandBuffer*)> func) {
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		VulkanCommandBuffer* commandBufferContainer = new VulkanCommandBuffer();
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -86,11 +86,11 @@ namespace Proof {
 	}
 	void VulkanRendererAPI::BeginCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)
 	{
-		commandBuffer->As<VulkanRenderCommandBuffer>()->BeginRecord();
+		commandBuffer.As<VulkanRenderCommandBuffer>()->BeginRecord();
 	}
 	void VulkanRendererAPI::EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)
 	{
-		commandBuffer->As<VulkanRenderCommandBuffer>()->EndRecord();
+		commandBuffer.As<VulkanRenderCommandBuffer>()->EndRecord();
 	}
 	CurrentFrame VulkanRendererAPI::GetCurrentFrame() {
 		return VulkanRenderer::s_CurrentFrame;

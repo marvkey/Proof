@@ -16,6 +16,9 @@
 #include "VulkanRendererAPI.h"
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Renderer/Renderer2D.h"
+
+/// tempiry for textures because teh 
+#include "Imgui/imgui_impl_vulkan.h"
 namespace Proof
 {
 
@@ -23,7 +26,7 @@ namespace Proof
 		m_Path(Path)
 
 	{
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		int width, height, channels;
 		if (Path.empty())
 		{
@@ -123,7 +126,7 @@ namespace Proof
 	}
 	VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, ImageFormat format, const void* data)
 		: m_Width(width), m_Height(height), m_Format(format) {
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		// check for dimension
 		{
@@ -153,7 +156,7 @@ namespace Proof
 
 	VulkanTexture2D::VulkanTexture2D(TextureConfig config)
 	{
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		// check for dimension
 		{
 			VkImageFormatProperties info;
@@ -270,7 +273,7 @@ namespace Proof
 	}
 
 	void VulkanTexture2D::AllocateMemory(uint64_t size, uint32_t bits, VkSamplerAddressMode mode) {
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		auto device = graphicsContext->GetDevice();
 		uint32_t layerCount = 1;
 
@@ -366,29 +369,20 @@ namespace Proof
 			createInfo.maxLod = static_cast<float>(m_MipLevels);
 			vkCreateSampler(device, &createInfo, nullptr, &m_Sampler);
 		}
-
+		m_Set = graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
 	}
 
 	void* VulkanTexture2D::GetID()const {
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
-
-		if (m_Set != nullptr)
-			return m_Set;
-		m_Set = graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
 		return m_Set;
 	}
 
 	Image VulkanTexture2D::GetImage()const
 	{
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
-
-		if (m_Set == nullptr)
-			m_Set = graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
 		return VulkanImage(m_Set, m_Format, { (float)GetWidth(),(float)GetHeight() }, VulkanImageExcessData{ m_Sampler,m_ImageView });
 	}
 
 	void VulkanTexture2D::SetData(const void* data) {
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 
 		size_t upload_size = m_Width * m_Height * Utils::BytesPerPixel(m_Format);
@@ -538,8 +532,8 @@ namespace Proof
 	void VulkanTexture2D::Release() {
 		Renderer::SubmitDatafree([sampler = m_Sampler, imageView = m_ImageView, image = m_Image]()
 		{
-			VkDevice device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
-			auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+			VkDevice device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
+			auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 			vkDestroySampler(device, sampler, nullptr);
 			vkDestroyImageView(device, imageView, nullptr);
@@ -678,7 +672,7 @@ namespace Proof
 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-			barrier.image = preFilterMap->As<VulkanCubeMap>()->GetImageAlloc().Image;
+			barrier.image = preFilterMap.As<VulkanCubeMap>()->GetImageAlloc().Image;
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			barrier.subresourceRange.baseMipLevel = 0;
 			barrier.subresourceRange.levelCount = totalMips;
@@ -740,7 +734,7 @@ namespace Proof
 						barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 						barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-						barrier.image = fbColorAttachment->As<VulkanTexture2D>()->GetImageAlloc().Image;
+						barrier.image = fbColorAttachment.As<VulkanTexture2D>()->GetImageAlloc().Image;
 						barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 						barrier.subresourceRange.baseMipLevel = 0;
 						barrier.subresourceRange.levelCount = 1;
@@ -772,9 +766,9 @@ namespace Proof
 
 						copyRegion.extent.depth = 1;
 
-						vkCmdCopyImage(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), fbColorAttachment->As<VulkanTexture2D>()->GetImageAlloc().Image,
+						vkCmdCopyImage(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), fbColorAttachment.As<VulkanTexture2D>()->GetImageAlloc().Image,
 							VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-							preFilterMap->As<VulkanCubeMap>()->GetImageAlloc().Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+							preFilterMap.As<VulkanCubeMap>()->GetImageAlloc().Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 					}
 				}
 				mipsize = mipsize / 2;
@@ -789,7 +783,7 @@ namespace Proof
 			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-			barrier.image = preFilterMap->As<VulkanCubeMap>()->GetImageAlloc().Image;
+			barrier.image = preFilterMap.As<VulkanCubeMap>()->GetImageAlloc().Image;
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			barrier.subresourceRange.baseMipLevel = 0;
 			barrier.subresourceRange.levelCount = totalMips;
@@ -811,11 +805,6 @@ namespace Proof
 
 	Image VulkanCubeMap::GetImage()const
 	{
-
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
-
-		if (m_Set == nullptr)
-			m_Set = graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
 		return VulkanImage(m_Set, m_Format, { (float)m_Dimension,(float)m_Dimension }, VulkanImageExcessData{ m_Sampler,m_ImageView });
 	}
 	VkDescriptorImageInfo VulkanCubeMap::GetImageBufferInfo(VkImageLayout imageLayout)
@@ -836,7 +825,7 @@ namespace Proof
 		const uint32_t size = 4 * 6 * m_Dimension * m_Dimension;
 		const uint32_t layerSize = 4 * m_Dimension * m_Dimension;
 
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		VkFormat format = Utils::ProofFormatToVulkanFormat(m_Format);
 		VkImageCreateInfo imageInfo = {};
@@ -923,6 +912,9 @@ namespace Proof
 			createInfo.maxLod = static_cast<float>(m_MipLevels);
 			vkCreateSampler(graphicsContext->GetDevice(), &createInfo, nullptr, &m_Sampler);
 		}
+
+		m_Set = graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
+
 	}
 	void VulkanCubeMap::SetData(const void* data)
 	{
@@ -947,7 +939,7 @@ namespace Proof
 	}
 	void VulkanCubeMap::GenerateCubeMap(Count<Texture> texture, Count< Shader> shader)
 	{
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		const uint32_t size = 4 * 6 * m_Dimension * m_Dimension;
 		const uint32_t layerSize = 4 * m_Dimension * m_Dimension;
@@ -1044,7 +1036,7 @@ namespace Proof
 				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 				barrier.image = m_Image.Image;
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				barrier.subresourceRange.aspectMask= VK_IMAGE_ASPECT_COLOR_BIT;
 				barrier.subresourceRange.baseMipLevel = 0;
 				barrier.subresourceRange.levelCount = m_MipLevels;
 				barrier.subresourceRange.baseArrayLayer = 0;
@@ -1055,28 +1047,6 @@ namespace Proof
 			}
 			if (m_MipLevels == 1)
 				return;
-			Renderer::Submit([&](CommandBuffer* cmd) {
-
-				VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-				VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-				VkImageMemoryBarrier barrier = {};
-				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-
-				barrier.image = m_Image.Image;
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				barrier.subresourceRange.baseMipLevel = 0;
-				barrier.subresourceRange.levelCount = m_MipLevels;
-				barrier.subresourceRange.baseArrayLayer = 0;
-				barrier.subresourceRange.layerCount = 6;
-				barrier.srcAccessMask = 0;
-				barrier.dstAccessMask = 0;
-
-				//vkCmdPipelineBarrier(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-			});
 			// Mipmapping
 
 			for(uint32_t face =0; face<6; face++)
@@ -1112,7 +1082,7 @@ namespace Proof
 					VkImageBlit blit{};
 					blit.srcOffsets[0] = { 0, 0, 0 };
 					blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-					blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					blit.srcSubresource.aspectMask= VK_IMAGE_ASPECT_COLOR_BIT;
 					blit.srcSubresource.mipLevel = i - 1;
 					blit.srcSubresource.baseArrayLayer = face;
 					blit.srcSubresource.layerCount = 1;
@@ -1163,8 +1133,8 @@ namespace Proof
 	{
 		Renderer::SubmitDatafree([sampler = m_Sampler, imageView = m_ImageView, image = m_Image]()
 		{
-			VkDevice device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
-			auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+			VkDevice device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
+			auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 			vkDestroySampler(device, sampler, nullptr);
 			vkDestroyImageView(device, imageView, nullptr);

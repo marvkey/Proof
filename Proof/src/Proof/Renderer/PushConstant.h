@@ -5,10 +5,6 @@ namespace Proof {
 	class PushConstant
 	{
 	public:
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
 		virtual ~PushConstant() {};
 		virtual void PushData(Count<class RenderCommandBuffer>commandBuffer, Count<class PipeLineLayout> pipeLinelayout, const void* data) = 0;
 

@@ -42,7 +42,7 @@ namespace Proof
 
 	VulkanDescriptorSet::VulkanDescriptorSet(DescriptorSets set, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
 	{
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		m_Set = set;
 		m_Writer = CreateSpecial<VulkanDescriptorWriter>(this, graphicsContext->GetGlobalPool());
 		m_Bindings = bindings;
@@ -66,14 +66,14 @@ namespace Proof
 	}
 
 	VulkanDescriptorSet::~VulkanDescriptorSet() {
-		auto device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+		auto device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
 		Renderer::SubmitDatafree([graphicsDevice = device, descriptorLayout = m_DescriptorSetLayout]() {
 			vkDestroyDescriptorSetLayout(graphicsDevice, descriptorLayout, nullptr);
 		});
 	}
 
 	DescriptorSet& VulkanDescriptorSet::WriteBuffer(uint32_t binding, Count<UniformBuffer> buffer) {
-		auto bufferInfo = buffer->As<VulkanUniformBuffer>()->GetDescriptorInfo();
+		auto bufferInfo = buffer.As<VulkanUniformBuffer>()->GetDescriptorInfo();
 		if (bufferInfo.range == 0 || bufferInfo.buffer == nullptr)
 		{
 			PF_ENGINE_WARN("Cannot write Uniform Buffer to descriptor set with size 0 OR buffer == nullptr");
@@ -84,7 +84,7 @@ namespace Proof
 	}
 
 	DescriptorSet& VulkanDescriptorSet::WriteBuffer(uint32_t binding, Count<StorageBuffer> buffer) {
-		auto bufferInfo = buffer->As<VulkanStorageBuffer>()->GetDescriptorInfo();
+		auto bufferInfo = buffer.As<VulkanStorageBuffer>()->GetDescriptorInfo();
 		if (bufferInfo.range == 0 || bufferInfo.buffer ==nullptr)
 		{
 			PF_ENGINE_WARN("Cannot write Storage buffer to descriptor set with size 0 OR buffer == nullptr");
@@ -95,18 +95,18 @@ namespace Proof
 	}
 
 	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, Count<Texture2D> image) {
-		auto imageInfo = image->As<VulkanTexture2D>()->GetImageBufferInfo();
+		auto imageInfo = image.As<VulkanTexture2D>()->GetImageBufferInfo();
 		m_Writer->WriteImage(binding, &imageInfo);
 		return *this;
 	}
 	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, Count<CubeMap> image) {
-		auto imageInfo = image->As<VulkanCubeMap>()->GetImageBufferInfo();
+		auto imageInfo = image.As<VulkanCubeMap>()->GetImageBufferInfo();
 		m_Writer->WriteImage(binding, &imageInfo);
 		return *this;
 	}
 	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, std::vector<Count<class Texture2D>> images) {
 		std::vector< VkDescriptorImageInfo> info;
-		auto whiteImageInfo = Renderer::GetWhiteTexture()->As<VulkanTexture2D>()->GetImageBufferInfo();
+		auto whiteImageInfo = Renderer::GetWhiteTexture().As<VulkanTexture2D>()->GetImageBufferInfo();
 		for (auto image : images) {
 			if (image == nullptr) {
 				//VkDescriptorImageInfo imageInfo;
@@ -116,7 +116,7 @@ namespace Proof
 				info.emplace_back(whiteImageInfo);
 				continue;
 			}
-			auto imageInfo = image->As<VulkanTexture2D>()->GetImageBufferInfo();
+			auto imageInfo = image.As<VulkanTexture2D>()->GetImageBufferInfo();
 			info.emplace_back(imageInfo);
 		}
 		m_Writer->WriteImage(binding, info);
@@ -134,9 +134,9 @@ namespace Proof
 	void VulkanDescriptorSet::Bind(Count<class RenderCommandBuffer> commandBuffer, Count<class PipeLineLayout>pipeLineLayout) {
 		Build();
 		vkCmdBindDescriptorSets(
-			commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+			commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			pipeLineLayout->As<VulkanPipeLineLayout>()->GetPipeLineLayout(),
+			pipeLineLayout.As<VulkanPipeLineLayout>()->GetPipeLineLayout(),
 			(int)m_Set,
 			1,
 			&m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight],
@@ -288,7 +288,7 @@ namespace Proof
 		if (needReallocate) {
 			//allocate a new pool and retry
 			m_CurrentPool = GrabPool();
-			m_UsedPools.push_back(m_CurrentPool);
+			m_UsedPools.emplace_back(m_CurrentPool);
 
 			allocResult = vkAllocateDescriptorSets(m_Device, &allocInfo, set);
 
@@ -404,7 +404,7 @@ namespace Proof
 	}
 
 	bool VulkanDescriptorWriter::Build(VkDescriptorSet& set) {
-		const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		const auto& graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		graphicsContext->GetGlobalPool()->Allocate(&m_SetLayout->m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight], m_SetLayout->m_DescriptorSetLayout);
 		Overwrite(m_SetLayout->m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight]);
 		return true;
@@ -413,7 +413,7 @@ namespace Proof
 
 
 	void VulkanDescriptorWriter::Overwrite(VkDescriptorSet& set) {
-		auto device = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice();
+		auto device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
 		for (auto& write : writes) {
 			write.dstSet = set;
 		}
@@ -431,7 +431,7 @@ namespace Proof
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, DescriptorSets set, uint32_t binding):
 		m_Size(size),m_Set(set), m_Binding(binding)
 	{
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		m_UniformBuffers.resize(Renderer::GetConfig().FramesFlight);
 		VkBufferCreateInfo uniformBufferInfo = {};
@@ -450,7 +450,7 @@ namespace Proof
 	VulkanUniformBuffer::VulkanUniformBuffer(const void* data, uint32_t size, DescriptorSets set, uint32_t binding)
 		:m_Size(size), m_Set(set), m_Binding(binding)
 	{
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		m_UniformBuffers.resize(Renderer::GetConfig().FramesFlight);
 		VkBufferCreateInfo uniformBufferInfo = {};
@@ -470,7 +470,7 @@ namespace Proof
 	}
 	VkDescriptorBufferInfo VulkanUniformBuffer::GetDescriptorInfo(uint32_t index)
 	{
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		return {
 			m_UniformBuffers[Renderer::GetCurrentFrame().FrameinFlight].Buffer,
 			0,
@@ -479,7 +479,7 @@ namespace Proof
 	}
 
 	VulkanUniformBuffer::~VulkanUniformBuffer() {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		for (int i = 0; i < m_UniformBuffers.size(); i++)
 		{
 			Renderer::SubmitDatafree([context = graphicsContext, buffer = m_UniformBuffers[i]]() {
@@ -488,7 +488,7 @@ namespace Proof
 		}
 	}
 	void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex) {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		VulkanBuffer stagingBuffer;
 
 		VkBufferCreateInfo stagingBufferInfo = {};
@@ -523,7 +523,7 @@ namespace Proof
 
 	VulkanStorageBuffer::~VulkanStorageBuffer()
 	{
-		auto allocator = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetVMA_Allocator();
+		auto allocator = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetVMA_Allocator();
 
 		for (int i = 0; i < m_StorageBuffer.size(); i++)
 		{
@@ -545,7 +545,7 @@ namespace Proof
 			return;
 		}
 		m_Size = size;
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		{
 			Renderer::Submit([&](CommandBuffer* cmdBuffer) {
@@ -600,7 +600,7 @@ namespace Proof
 
 	VkDescriptorBufferInfo VulkanStorageBuffer::GetDescriptorInfo(uint32_t index)
 	{
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		return {
 				m_StorageBuffer[Renderer::GetCurrentFrame().FrameinFlight].Buffer,
 				0,

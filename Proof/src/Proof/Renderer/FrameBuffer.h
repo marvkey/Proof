@@ -76,10 +76,6 @@ namespace Proof {
 		virtual bool HasColorAttachment() = 0;
 		virtual const FrameBufferConfig& GetConfig() const = 0;
 		virtual void Resize(Vector2 imageSize) = 0;
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
 	};
 	class ScreenFrameBuffer {
 	public:

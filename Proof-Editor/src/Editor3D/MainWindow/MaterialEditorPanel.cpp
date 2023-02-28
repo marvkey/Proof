@@ -6,6 +6,7 @@
 #include "Editor3D/Editor3D.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Renderer/Renderer.h"
+#include "Proof/Scene/Material.h"
 #include "Proof/Core/Core.h"
 namespace Proof
 {

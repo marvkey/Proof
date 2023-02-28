@@ -294,6 +294,7 @@ namespace Proof
 			}
 			// file only
 			//we have to use this m_fileicon get for some reason crashing
+			/*
 			switch (currentFileInfo.AssetType)
 			{
 			case Proof::AssetType::Mesh:
@@ -321,8 +322,9 @@ namespace Proof
 				ImGui::Button("File", { thumbnailSize,thumbnailSize });
 				break;
 			}
+			*/
 			// not working for somereason 
-			//ImGui::ImageButton((ImTextureID)m_FileIcon->GetID(), { thumbnailSize,thumbnailSize });
+			ImGui::ImageButton((ImTextureID)m_FileIcon->GetImage().SourceImage, {thumbnailSize,thumbnailSize});
 			if (ImGui::BeginDragDropSource()) {
 				std::string fileDragSourcePath = path.string();
 				// we doingthis becausefor loop and dragsurce may change

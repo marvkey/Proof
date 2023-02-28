@@ -156,7 +156,7 @@ namespace Proof{
     std::vector<Material> Mesh::LoadMaterial(void* mat) {
         aiMaterial* aimat = (aiMaterial*)mat;
         for (unsigned int i = 0; i < aimat->GetTextureCount(aiTextureType_DIFFUSE); i++)
-        {
+        {   
 
         }
         Material material;

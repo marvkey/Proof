@@ -41,7 +41,7 @@ namespace Proof
 	static ImGui_ImplVulkanH_Window g_MainWindowData;
 	
 	static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface, int width, int height) {
-		const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		const auto& graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		wd->Surface = surface;
 
@@ -113,7 +113,7 @@ namespace Proof
 			s_ImguiRenderPass = new ImguiRenderPass();
 
 			ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
-			const auto& graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+			const auto& graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 			SetupVulkanWindow(wd, graphicsContext->GetSurface(), Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 			
 			ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), true);
@@ -179,7 +179,7 @@ namespace Proof
 		});
 	}
 	void ImGuiLayer::End() {
-		auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
 		ImGuiIO& io = ImGui::GetIO();
 		if (m_WindoResize == true) {
@@ -207,7 +207,7 @@ namespace Proof
 			//https://github.com/1111mp/Vulkan/blob/master/src/Application.cpp
 			Renderer::BeginCommandBuffer(s_ImguiRenderPass->CommandBuffer);
 			Renderer::BeginRenderPass(s_ImguiRenderPass->CommandBuffer, s_ImguiRenderPass->RenderPass, s_ImguiRenderPass->FrameBuffer);
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), s_ImguiRenderPass->CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), s_ImguiRenderPass->CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
 			Renderer::EndRenderPass(s_ImguiRenderPass->RenderPass);
 			Renderer::EndCommandBuffer(s_ImguiRenderPass->CommandBuffer);
 			Renderer::SubmitCommandBuffer(s_ImguiRenderPass->CommandBuffer);

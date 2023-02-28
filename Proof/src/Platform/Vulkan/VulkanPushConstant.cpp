@@ -23,7 +23,7 @@ namespace Proof
 	}
 	void VulkanPushConstant::PushData(Count<RenderCommandBuffer> commandBuffer, Count<PipeLineLayout> pipeLinelayout, const void* data)
 	{
-		vkCmdPushConstants(commandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), pipeLinelayout->As<VulkanPipeLineLayout>()->GetPipeLineLayout(), 
+		vkCmdPushConstants(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), pipeLinelayout.As<VulkanPipeLineLayout>()->GetPipeLineLayout(),
 			Utils::ProofShaderToVulkanShader(m_ShaderStage), m_Offset, m_Size, data);
 	}
 }

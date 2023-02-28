@@ -20,10 +20,6 @@ namespace Proof
 	public:
 		virtual ~StorageBuffer() = default;
 		static Count<StorageBuffer>Create(DescriptorSets set, uint32_t binding, const void* data, uint32_t size, uint32_t offset =0, uint32_t frameIndex= Renderer::GetCurrentFrame().FrameinFlight);
-		template<typename T>
-		T* As() {
-			return dynamic_cast<T*>(this);
-		}
 	};
 	class UniformBuffer {
 	public:
@@ -77,9 +73,5 @@ namespace Proof
 		virtual DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>> image) = 0;
 		virtual void Bind(Count<class RenderCommandBuffer> commandBuffer, Count<class PipeLineLayout>piipeLineLayout) =0;
 		static Count<DescriptorSet>Create(DescriptorSets set, std::unordered_map<uint32_t, DescriptrLayoutBinding> Bindings);
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
 	};
 }

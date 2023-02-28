@@ -104,10 +104,6 @@ namespace Proof {
 		{
 
 		}
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
 		virtual Image GetImage()const = 0;
 		// if mempty means string was constructed with no path
 		virtual std::string GetPath()const = 0;

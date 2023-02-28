@@ -18,8 +18,8 @@ namespace Proof
     void VulkanRenderPass::Init()
     {
         //https://developer.samsung.com/galaxy-gamedev/resources/articles/renderpasses.html
-        auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
-        auto swapChain = graphicsContext->GetSwapChain()->As<VulkanSwapChain>();
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+        auto swapChain = graphicsContext->GetSwapChain().As<VulkanSwapChain>();
 
         for (auto& imageConfig : m_Config.Attachments.Attachments)
         {
@@ -140,7 +140,7 @@ namespace Proof
         {
             renderPassInfo.pNext = &renderPassMultiviewCI;
         }
-        if (vkCreateRenderPass(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS)
+        if (vkCreateRenderPass(Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS)
         {
             PF_CORE_ASSERT(false, "failed to create render pass!");
         }
@@ -152,7 +152,7 @@ namespace Proof
         m_DepthFormat = ImageFormat::None;
 
         Renderer::SubmitDatafree([renderPass = m_RenderPass] {
-            auto graphicsContext = Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>();
+            auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
             vkDestroyRenderPass(graphicsContext->GetDevice(), renderPass, nullptr);
         });
@@ -253,7 +253,7 @@ namespace Proof
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = m_RenderPass;
             // teh frameBuffer we are writing
-            renderPassInfo.framebuffer = frameBuffer->As<VulkanFrameBuffer>()->GetFrameBuffer();
+            renderPassInfo.framebuffer = frameBuffer.As<VulkanFrameBuffer>()->GetFrameBuffer();
 
             // the area shader loads and 
             renderPassInfo.renderArea.offset = { 0,0 };
@@ -264,7 +264,7 @@ namespace Proof
             renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
             renderPassInfo.pClearValues = clearValues.data();
 
-            vkCmdBeginRenderPass(command->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBeginRenderPass(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         }
 
 
@@ -306,15 +306,15 @@ namespace Proof
     
             clears.emplace_back(clearAttach);
         }
-        vkCmdClearAttachments(command->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+        vkCmdClearAttachments(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
             clears.size(),
             clears.data(),
             reactClear.size(),
             reactClear.data());
     }
     void VulkanRenderPass::RecordRenderPass(Count<class GraphicsPipeline>pipline, std::function<void(Count<RenderCommandBuffer> commandBuffer)> func) {
-        auto vulkanPipeline =pipline->As<VulkanGraphicsPipeline>();
-        vkCmdBindPipeline(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+        auto vulkanPipeline =pipline.As<VulkanGraphicsPipeline>();
+        vkCmdBindPipeline(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
             VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetPipline());
 
         VkViewport viewport{};
@@ -324,36 +324,36 @@ namespace Proof
         viewport.height = (float)m_CurrentFrameBuffer->GetConfig().Size.Y;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &viewport);
+        vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &viewport);
 
         VkRect2D scissor{};
         scissor.offset = { 0, 0 };
         scissor.extent = { (uint32_t)viewport.width,(uint32_t)viewport.height };
-        vkCmdSetScissor(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &scissor);
+        vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &scissor);
         if(vulkanPipeline->m_LineWidth !=1.0f)
-            vkCmdSetLineWidth(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
+            vkCmdSetLineWidth(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
 
         func(m_CommandBuffer);
     }
     void VulkanRenderPass::RecordRenderPass(Count<class GraphicsPipeline>pipline, VkViewport viewport, VkRect2D scissor, std::function<void(Count<RenderCommandBuffer> commandBuffer)> func) {
-        auto vulkanPipeline = pipline->As<VulkanGraphicsPipeline>();
-        vkCmdBindPipeline(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+        auto vulkanPipeline = pipline.As<VulkanGraphicsPipeline>();
+        vkCmdBindPipeline(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
             VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetPipline());
 
         
-        vkCmdSetViewport(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &viewport);
+        vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &viewport);
 
      
-        vkCmdSetScissor(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &scissor);
+        vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &scissor);
         if (vulkanPipeline->m_LineWidth != 1.0f)
-            vkCmdSetLineWidth(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
+            vkCmdSetLineWidth(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
 
         func(m_CommandBuffer);
     }
 
     void VulkanRenderPass::EndRenderPass() {
         PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
-        vkCmdEndRenderPass(m_CommandBuffer->As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
+        vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
         m_CommandBuffer = nullptr;
         m_RenderPassEnabled = false;
     }

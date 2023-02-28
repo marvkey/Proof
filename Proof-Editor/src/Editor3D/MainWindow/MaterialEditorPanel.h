@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Panel.h"
-
+#include "Proof/Scene/Material.h"
 namespace Proof
 {
 	class Material;

@@ -97,7 +97,7 @@ namespace Proof
         for (auto& [data, shaderModule] : m_ShaderModule)
         {
             Renderer::SubmitDatafree([shaderModuler =shaderModule] {
-                vkDestroyShaderModule(Renderer::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), shaderModuler, nullptr);
+                vkDestroyShaderModule(Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), shaderModuler, nullptr);
             });
         }
     }
@@ -144,7 +144,7 @@ namespace Proof
         Release();
     }
     void VulkanShader::CompileOrGetBinaries(const std::filesystem::path& filePath) {
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
@@ -194,7 +194,7 @@ namespace Proof
     }
 
     void VulkanShader::Compile() {
-        auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+        auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
@@ -252,7 +252,7 @@ namespace Proof
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = code.size() * sizeof(uint32_t);// because spirv module needs mutliple of 4
         createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-        if (vkCreateShaderModule(RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
+        if (vkCreateShaderModule(RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
             PF_CORE_ASSERT(false, "Failed To Create Shader Module");
 
     }

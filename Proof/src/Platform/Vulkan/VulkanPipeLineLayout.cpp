@@ -8,13 +8,13 @@
 namespace Proof
 {
 	VulkanPipeLineLayout::VulkanPipeLineLayout(Count<PushConstant> pushConstant, const std::vector<Count<DescriptorSet>>& descriptors ) {
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		std::vector< VkDescriptorSetLayout> descriptorLayout;
 		if (descriptors.empty() == false) {
 			for (const auto& desc : descriptors) {
-				descriptorLayout.emplace_back(desc->As<VulkanDescriptorSet>()->m_DescriptorSetLayout);
+				descriptorLayout.emplace_back(desc.As<VulkanDescriptorSet>()->m_DescriptorSetLayout);
 			}
 			// pipeline layout is used to pass data to pipeline other than vertex and fragment data
 			// this includes texture and uniform buffer objects
@@ -29,7 +29,7 @@ namespace Proof
 		}
 		VkPushConstantRange range;
 		if (pushConstant != nullptr) {
-			range = pushConstant->As<VulkanPushConstant>()->GetRange();
+			range = pushConstant.As<VulkanPushConstant>()->GetRange();
 			pipelineLayoutInfo.pushConstantRangeCount = 1;
 			pipelineLayoutInfo.pPushConstantRanges = &range;
 		}
@@ -44,7 +44,7 @@ namespace Proof
 	}
 
 	VulkanPipeLineLayout::VulkanPipeLineLayout(VkPipelineLayoutCreateInfo& info) {
-		auto graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As <VulkanGraphicsContext>();
 		if (vkCreatePipelineLayout(graphicsContext->GetDevice(), &info, nullptr, &m_PipeLineLayout) != VK_SUCCESS) {
 			PF_CORE_ASSERT(false, "Failed to create PipeLine Layout");
 		}
@@ -53,7 +53,7 @@ namespace Proof
 	VulkanPipeLineLayout::~VulkanPipeLineLayout()
 	{
 		Renderer::SubmitDatafree([pipline = m_PipeLineLayout]() {
-			vkDestroyPipelineLayout(RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), pipline, nullptr);
+			vkDestroyPipelineLayout(RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), pipline, nullptr);
 		});
 	}
 }

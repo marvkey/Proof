@@ -30,7 +30,7 @@ namespace Proof
 	VulkanRendererData* s_RenderData;
 	static bool s_IsWindowResised;
 	void VulkanRenderer::Init() {
-		const auto& graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		s_IsWindowResised = false;
 		s_RenderData = new VulkanRendererData();
 		s_RendererConfig = RendererConfig();
@@ -39,20 +39,20 @@ namespace Proof
 	}
 	
 	void VulkanRenderer::BeginFrame() {
-		const auto& graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		if (s_IsWindowResised) {
 			graphicsContext->GetSwapChain()->Resize({ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() });
 
 			s_CurrentFrame.FrameinFlight = 0;
 			s_IsWindowResised = false;
 		}
-		graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->WaitFences();
-		graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->AcquireNextImage(&s_CurrentFrame.ImageIndex);
+		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->WaitFences();
+		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->AcquireNextImage(&s_CurrentFrame.ImageIndex);
 		graphicsContext->GetSwapChain()->ResetFences();
 	}
 	void VulkanRenderer::EndFrame() {
 		DrawFrame();
-		const auto& graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
+		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		s_RenderData->ResourceFreeQueue[s_CurrentFrame.FrameinFlight].Flush();
 		graphicsContext->GetGlobalPool()->ResetPool();
 		s_CurrentFrame.FrameinFlight = (s_CurrentFrame.FrameinFlight + 1) % s_RendererConfig.FramesFlight;
@@ -61,8 +61,8 @@ namespace Proof
 		s_IsWindowResised = true;
 	}
 	void VulkanRenderer::DrawFrame() {
-		const auto& graphicsContext = RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>();
-		graphicsContext->GetSwapChain()->As<VulkanSwapChain>()->SubmitCommandBuffers(s_RenderData->CommandBuffers, &s_CurrentFrame.ImageIndex);
+		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
+		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->SubmitCommandBuffers(s_RenderData->CommandBuffers, &s_CurrentFrame.ImageIndex);
 		s_RenderData->CommandBuffers.clear();
 	}
 	

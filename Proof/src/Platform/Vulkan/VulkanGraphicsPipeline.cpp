@@ -113,7 +113,7 @@ namespace Proof
 	}
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
 		Renderer::SubmitDatafree([pipline = m_GraphicsPipeline]() {
-			vkDestroyPipeline(RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice(), pipline, nullptr);
+			vkDestroyPipeline(RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), pipline, nullptr);
 		});
 	}
 	VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineConfig& config)
@@ -125,8 +125,8 @@ namespace Proof
 		PipelineConfigInfo pipelineConfig;
 		DefaultPipelineConfigInfo(pipelineConfig, config);
 		pipelineConfig.RenderPass = config.RenderPass->As<VulkanRenderPass>()->GetRenderPass();;
-		pipelineConfig.PipelineLayout = config.PipelineLayout->As<VulkanPipeLineLayout>()->GetPipeLineLayout();
-		auto vulkanShader = config.Shader->As<VulkanShader>();
+		pipelineConfig.PipelineLayout = config.PipelineLayout.As<VulkanPipeLineLayout>()->GetPipeLineLayout();
+		auto vulkanShader = config.Shader.As<VulkanShader>();
 		PF_CORE_ASSERT(pipelineConfig.PipelineLayout, "Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");
 		PF_CORE_ASSERT(pipelineConfig.RenderPass, "Cannot create Graphics Pipeline:: no renderpass provided in configInfo");
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
@@ -135,7 +135,7 @@ namespace Proof
 		VulkanVertexInput vertexInput;
 		if (config.VertexArray != nullptr)
 		{
-			vertexInput = config.VertexArray->As<VulkanVertexArray>()->GetData();
+			vertexInput = config.VertexArray.As<VulkanVertexArray>()->GetData();
 			vertexInputInfo.vertexAttributeDescriptionCount = vertexInput.GetAttributes().size();
 			vertexInputInfo.vertexBindingDescriptionCount = vertexInput.GetDescriptions().size();
 
@@ -179,7 +179,7 @@ namespace Proof
 		pipelineInfo.basePipelineIndex = -1;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-		if (vkCreateGraphicsPipelines((RendererBase::GetGraphicsContext()->As<VulkanGraphicsContext>()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
+		if (vkCreateGraphicsPipelines((RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to Create Graphics Pipeline");
 
 	}
