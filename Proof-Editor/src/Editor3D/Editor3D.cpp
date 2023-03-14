@@ -458,6 +458,7 @@ namespace Proof
 					if (m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
 
 						if (m_ActiveWorld->GetState() == WorldState::Edit) {
+							/*
 							//Basically makig sure that all entities that reference this entity that is deleted their data Get sets to null
 							m_ActiveWorld->ForEachEnitityWith<ScriptComponent>([&](Entity& entity) {
 								auto& scp = *entity.GetComponent<ScriptComponent>();
@@ -473,6 +474,7 @@ namespace Proof
 									}
 								}
 							});
+							*/
 						}
 						m_ActiveWorld->DeleteEntity(m_WorldHierachy.m_SelectedEntity);
 						m_WorldHierachy.m_SelectedEntity = {};

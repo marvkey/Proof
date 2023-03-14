@@ -21,6 +21,9 @@ namespace Game
 
         void OnUpdate(float ts)
         {
+            Log.Info($"Hello world from scripts");
+
+            /*
             if (m_Transform == null)
                 Log.Error("transform component null");
             else
@@ -52,7 +55,7 @@ namespace Game
             {
                 Log.Trace($"Player movment speed {MovementSpeed}");
             }
-
+            */
         }
     }
 }

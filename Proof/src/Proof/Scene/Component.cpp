@@ -22,24 +22,6 @@ namespace Proof
 {
 	static struct Material Empty;
 
-	/*
-	Texture2DAsset* SpriteComponent::GetAsset()
-	{
-		if (m_TextureAssetPointerID == 0)
-			return nullptr;
-		if (m_TextureAssetPointer == nullptr)
-			m_TextureAssetPointer = AssetManager::GetAsset<Texture2DAsset>(m_TextureAssetPointerID);
-
-		if (m_TextureAssetPointer == nullptr)// if the last if statmetn make sthe mesh asset pointer still equal to null, no need to transverse again
-			return nullptr;
-		if (AssetManager::HasAsset(m_TextureAssetPointerID)) {
-			return m_TextureAssetPointer.Get();
-		}
-		m_TextureAssetPointerID = 0;
-		m_TextureAssetPointer = nullptr;
-		return nullptr;
-	}
-	*/
 	Count<PhysicsMaterial> CubeColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0)
 		{
@@ -128,47 +110,6 @@ namespace Proof
 
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
 		rigidBody->wakeUp();
-	}
-
-	bool ScriptComponent::AddScript(const std::string& className) {
-		if (ScriptEngine::EntityClassExists(className) == false)return false;
-		if (HasScript(className) == true)return false;
-		ScriptData scriptData{ className };
-		const ScriptClass* scriptClass = ScriptEngine::GetScriptClass(className);
-		if (scriptClass != nullptr) {
-			for (auto& data : scriptClass->m_FieldData) {
-				ScriptField field;
-				field.Name = data.Name;
-				field.Type = data.Type;
-				field.Data = data.Data;
-				scriptData.Fields.emplace_back(field);
-			}
-		}
-		m_Scripts.emplace_back(scriptData);
-		return true;
-	}
-	bool ScriptComponent::ChangeScript(const std::string& oldClassName, const std::string& newClassName) {
-		if (ScriptEngine::EntityClassExists(newClassName) == false)return false;
-		if (HasScript(oldClassName) == true)return false;
-		int posIndex = -1;
-		for (int i = 0; i < m_Scripts.size(); i++) {
-			if (m_Scripts[i].ClassName == oldClassName)
-				posIndex = i;
-		}
-		if (posIndex == -1)return false; // script not found
-		ScriptData scriptData{ newClassName };
-		const ScriptClass* scriptClass = ScriptEngine::GetScriptClass(newClassName);
-		if (scriptClass != nullptr) {
-			for (auto& data : scriptClass->m_FieldData) {
-				ScriptField field;
-				field.Name = data.Name;
-				field.Type = data.Type;
-				field.Data = data.Data;
-				scriptData.Fields.emplace_back(field);
-			}
-		}
-		// changing the data located in that script
-		m_Scripts[posIndex] = scriptData;
 	}
 
 	void MeshComponent::SetMesh(UUID ID, bool copyMaterialTable )

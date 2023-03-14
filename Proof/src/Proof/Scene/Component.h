@@ -4,8 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Proof/Renderer/Texture.h"
+#include <unordered_set>
 #include "Material.h"
-#include "Proof/Scripting/MonoTypes.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
@@ -575,61 +575,7 @@ namespace Proof
 	public:
 		ScriptComponent(const ScriptComponent& other) = default;
 		ScriptComponent() = default;
-
-		bool AddScript(const std::string& className);
-		bool RemoveScript(const std::string& className) {
-			for (int i = 0; i < m_Scripts.size(); i++)
-			{
-				if (m_Scripts[i].ClassName == className)
-				{
-					m_Scripts.erase(m_Scripts.begin() + i);
-					return true;
-				}
-			}
-			return false;
-		}
-
-		bool HasAnyScripts() {
-			return m_Scripts.size() > 0;
-		}
-		bool RemoveScript(uint32_t index) {
-			if (index <= m_Scripts.size())
-			{
-				m_Scripts.erase(m_Scripts.begin() + index);
-				return true;
-			}
-			return false;
-		};
-
-		bool ChangeScript(const std::string& oldClassName, const std::string& newClassName);
-
-		bool HasScript(const std::string& className) {
-			for (int i = 0; i < m_Scripts.size(); i++)
-			{
-				if (m_Scripts[i].ClassName == className)
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-
-
-		template <typename func>
-		void ForEachScript(func f) {
-			for (const auto& val : m_Scripts)
-				f(val.ClassName);
-		}
-	private:
-		std::vector<ScriptData> m_Scripts;
-
-		friend class ScriptEngine;
-		friend class SceneHierachyPanel;
-		friend class World;
-		friend class SceneSerializer;
-		friend class WorldRenderer;
-		friend class Editore3D;
-		friend class PhysicsEngine;
+		std::unordered_set<std::string> ScriptsNames;
 	};
 	template<class ... Component>
 	struct ComponentGroup {

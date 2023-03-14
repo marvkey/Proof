@@ -120,7 +120,7 @@ namespace Proof {
 			for (auto entity : scriptView)
 			{
 				auto& script = scriptView.get<ScriptComponent>(entity);
-				ScriptEngine::OnUpdate(DeltaTime, Entity{ entity,this });
+				ScriptEngine::OnUpdateEntity(Entity{ entity,this }, DeltaTime);
 			}
 		}
 		m_PhysicsWorld->OnUpdate(DeltaTime);
@@ -260,7 +260,7 @@ namespace Proof {
 	}
 
 	void World::EndRuntime() {
-		ScriptEngine::EndWorld();
+		ScriptEngine::EndRuntime();
 		delete m_PhysicsWorld;
 	}
 
@@ -282,13 +282,13 @@ namespace Proof {
 				}
 			}
 			{
-				ScriptEngine::StartWorld(this);
+				ScriptEngine::BeginRuntime(this);
 				auto view = m_Registry.view<ScriptComponent>();
 				for (auto e : view)
 				{
 					Entity entity = { e, this };
-					ScriptEngine::OnCreate(entity);
-					ScriptEngine::OnPlace(entity);
+					ScriptEngine::OnCreateEntity(entity);
+					//ScriptEngine::OnPlace(entity);
 				}
 			}
 		}

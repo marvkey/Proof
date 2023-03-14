@@ -31,6 +31,7 @@ namespace Proof{
 		Editore3D* m_EditorOwner = nullptr;
 		// Retuns True of an entity is created
 		bool CreateEntityMenu(Entity owner = {});
+
 		World* m_CurrentWorld = nullptr;
 		Entity m_SelectedEntity = {};
 		//class ContentBrowserPanel* m_BrowserPanel =nullptr;

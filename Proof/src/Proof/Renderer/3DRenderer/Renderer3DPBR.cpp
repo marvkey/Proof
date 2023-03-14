@@ -264,7 +264,6 @@ namespace Proof
 					const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
 					auto material = mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex);
 					Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
-
  					descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
 					//descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
 					//descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);

@@ -39,6 +39,12 @@ namespace Proof {
 		static Count<World> Copy(Count<World> worldToCopy);
 		class PhysicsWorld* GetPhysicsEngine()const { return m_PhysicsWorld; };
 
+
+		// if the scene is on play or pause 
+		// does not use when is simualate
+		bool IsRunning() {
+			return GetState() == WorldState::Play || GetState() == WorldState::Pause;
+		}
 		bool HasEntity(EntityID ID)const;
 		bool HasEntity(EntityID ID);
 		bool HasWorldCamera();
