@@ -3,6 +3,8 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Math/Math.h"
 #include "Proof/Asset/Asset.h"
+
+#include <map>
 namespace Proof{
 	struct Material : public Asset {
 		Material();
@@ -16,45 +18,57 @@ namespace Proof{
 		Count<class Texture2D> NormalTexture;
 		Count<class Texture2D> MetallicTexture;
 		Count<class Texture2D> RoughnessTexture;
-		ASSET_CLASS_TYPE(Material);
 
+		std::string Name;
+		ASSET_CLASS_TYPE(Material);
+		//used for rendering
+		UUID GetMaterialSpecificID() {
+			return m_UniqeMaterialID;
+		}
+	private:
+		const UUID m_UniqeMaterialID = UUID();
 	};
 
 	class MaterialTable {
 	public:
-		MaterialTable(uint32_t size) {
-			m_Materials.resize(size);
-		}
-		MaterialTable(class Mesh* mesh);
-		MaterialTable(std::initializer_list<Count<Material>> materials) :
-			m_Materials(materials)
-		{
-
-		}
 		MaterialTable() {
-
+			SetMaterial(0, Count<Material>::Create());
 		}
+		Count<MaterialTable> Copy();
 		// material can be nulltr
-		void AddMaterial(Count<Material> material) {
-			m_Materials.emplace_back(material);
+		// index cna be existing or non exisitng
+		void SetMaterial(uint32_t materialIndex,Count<Material> material) {
+			m_Materials[materialIndex] =material;
 		}
 
-		void RemoveMaterial(uint32_t index) {
-			PF_CORE_ASSERT(m_Materials.size() > index, "Material Tabel is not taht size");
-			m_Materials.erase(m_Materials.begin() + index);
+		void RemoveMaterial(uint32_t materialIndex) {
+			PF_CORE_ASSERT(HasMaterial(materialIndex), "Does not conatin material index");
+			m_Materials.erase(materialIndex);
 		}
 		
-		Count<Material> GetMaterial(uint32_t index) {
-			PF_CORE_ASSERT(m_Materials.size() > index, "Material Tabel is not taht size");
-			return m_Materials[index];
+		Count<Material> GetMaterial(uint32_t materialIndex) {
+			PF_CORE_ASSERT(HasMaterial(materialIndex), "Does not conatin material index");
+			return m_Materials[materialIndex];
 		}
-		uint32_t GetSize() {
-			m_Materials.size();
-		}
-	private:
 
-		std::vector<Count<Material>> m_Materials;
+		uint32_t GetMaterialCount( ) {
+			return m_Materials.size();
+		}
+
+		bool HasMaterial(uint32_t materialIndex)const {
+			return m_Materials.contains(materialIndex);
+		}
+
+		const std::map<uint32_t, Count<Material>>& GetMaterials()const {
+			return m_Materials;
+		};
+
+	private:
+		// index, materisl
+		std::map<uint32_t ,Count<Material>> m_Materials;
 	};
+
+	bool operator==(const MaterialTable& other, const MaterialTable& other1);
 	enum class CombineMode 
 	{
 		Average =0,

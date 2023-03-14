@@ -251,19 +251,20 @@ namespace Proof
 
 	struct MeshComponent{
 		MeshComponent() = default;
-		MeshComponent(const MeshComponent&) = default;
+		MeshComponent(const MeshComponent&other):
+		m_MeshID(other.m_MeshID)
+			,MaterialTable(Count<class MaterialTable>::CreateFrom(other.MaterialTable))
+		{
+		}
 
-		bool HasMaterial();
-		AssetID GetMaterialID()const;
-		void SetMaterial(AssetID ID);
-		void RemoveMaterial();
-
-		AssetID GetMeshID()const;
-		void SetMesh(UUID ID);
+		void SetMesh(UUID ID,bool takeMaterialTable = true);
 		void RemoveMesh();
 
+		// we could do  check and compare if these material table equls the meshes material table when serilizing
+		// if they do match then we just store in serilize using hte meshes
+		//if no mathc then we save the material table
+		Count<MaterialTable> MaterialTable = Count<class MaterialTable>::Create();
 		Count<class Mesh> GetMesh();
-		Count<class Material> GetMaterial();
 	private:
 		friend class Entity;
 		friend class World;
@@ -273,7 +274,6 @@ namespace Proof
 		friend class SceneRendererUI;
 		friend class Editore3D;
 		AssetID m_MeshID = 0;
-		AssetID m_MaterialID=0;
 	};
 
 	struct DynamicMeshComponent {

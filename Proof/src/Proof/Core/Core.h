@@ -14,6 +14,7 @@
 #define PF_BIND_ACTION(fn)  std::bind(&fn, this)
 #define PF_BIND_MOTION(fn) std::bind(&fn, this, std::placeholders::_1)
 #include <unordered_map>
+#include <map>
 #include <optick.h>
 #include "Proof/Resources/EnumReflection.h"
 #include "ProofTypes.h"

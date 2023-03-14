@@ -46,4 +46,12 @@ namespace Proof
         //number of instance count
         uint32_t Count;
     };
+
+    struct MaterialMeshInstance
+    {
+        Count<class Mesh> Mesh;
+              //number of instance count
+        Count<class MaterialTable> MaterialTables;
+        uint32_t Count;
+    };
 }

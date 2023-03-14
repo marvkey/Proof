@@ -65,6 +65,7 @@ namespace Proof {
             cubeVertex.emplace_back(vertex);
         }
         return Count<Mesh>::Create("Cube", cubeVertex, indices);
+
     }
     constexpr int MIN_SECTOR_COUNT = 3;
     constexpr int MIN_STACK_COUNT = 2;

@@ -32,15 +32,17 @@ namespace  Proof {
 		{
 			std::vector<physx::PxVec3> vertices;
 			std::vector<uint32_t> indices;
-
-			for (const SubMesh& subMesh : mesh->GetSubMeshes())
+			uint32_t index = 0;
+			for (const SubMesh& subMesh : mesh->GetMeshSource()->GetSubMeshes())
 			{
-				for (const auto& vertex : subMesh.m_Vertices)
+				if (mesh->IsMeshExcluded(index))continue;
+				for (const auto& vertex : subMesh.Vertices)
 					vertices.emplace_back(PhysxUtils::VectorToPhysxVector(vertex.Vertices));
-				for (const auto& val : subMesh.m_Indices)
+				for (const auto& val : subMesh.Indices)
 					indices.emplace_back(val);
+				index++;
 			}
-
+		
 			physx::PxTriangleMeshDesc meshDesc;
 			meshDesc.points.count = vertices.size();
 			meshDesc.points.stride = sizeof(physx::PxVec3);
@@ -109,18 +111,22 @@ namespace  Proof {
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetCubeColliderMesh()
 	{
-		static auto mesh = MeshWorkShop::GenerateCube();
-		return mesh;
+		//static auto mesh = MeshWorkShop::GenerateCube();
+		//return mesh;
+		return nullptr;
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetCapsuleColliderMesh()
 	{
-		static auto capsule = MeshWorkShop::GenerateCapsule();
-		return capsule;
+		//static auto capsule = MeshWorkShop::GenerateCapsule();
+		//return capsule;
+		return nullptr;
+
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetSphereColliderMesh()
 	{
-		static auto sphere = MeshWorkShop::GenerateUVSphere();
-		return sphere;
+		//static auto sphere = MeshWorkShop::GenerateUVSphere();
+		//return sphere;
+		return nullptr;
 	}
 
 	void PhysicsMeshCooker::Init()

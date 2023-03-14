@@ -60,8 +60,8 @@ namespace Proof
 			GetAssets().insert({ assetInfo.ID,{assetInfo,asset} });
 			GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
 		}
-		
-		template<class AssetType, typename ... Args, std::enable_if_t<Is_Compatible<AssetType, Asset>::value, int> = 0>
+		template <class AssetType, class... Args,
+			std::enable_if_t<std::is_constructible<AssetType, Args...>::value&& Is_Compatible<AssetType, Asset>::value, int> = 0>
 		static Count<AssetType> NewAsset(const std::filesystem::path& savePath, Args&&... args) {
 			static_assert(!std::is_same<AssetType, class World>::value, "Cannot craet  a world like this");
 			Count<Asset> asset = Count<AssetType>::Create(std::forward<Args>(args)...);
@@ -71,7 +71,22 @@ namespace Proof
 			assetInfo.State = AssetState::Ready;
 			assetInfo.ID = asset->GetID();
 			assetInfo.Type = asset->GetAssetType();
-
+			PF_CORE_ASSERT(false);
+			GetAssets().insert({ assetInfo.ID,{assetInfo,asset} });
+			GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
+			return asset.As<AssetType>();
+		}
+		template<class AssetType, typename ... Args, std::enable_if_t<Is_Compatible<AssetType, Asset>::value, int> = 0>
+		static Count<AssetType> CreateRuntimeAsset(Args&&... args) {
+			static_assert(!std::is_same<AssetType, class World>::value, "Cannot craet  a world like this");
+			Count<Asset> asset = Count<AssetType>::Create(std::forward<Args>(args)...);
+			asset->m_ID = AssetManager::CreateID();
+			AssetInfo assetInfo;
+			//assetInfo.Path = std::filesystem::relative(savePath, AssetManager::GetDirectory());
+			assetInfo.State = AssetState::Ready;
+			assetInfo.ID = asset->GetID();
+			assetInfo.Type = asset->GetAssetType();
+			assetInfo.RuntimeAsset = true;
 			GetAssets().insert({ assetInfo.ID,{assetInfo,asset} });
 			GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
 			return asset.As<AssetType>();
@@ -98,7 +113,7 @@ namespace Proof
 		static Count<T>GetAsset(AssetID ID) {
 			PF_CORE_ASSERT(HasAsset(ID), "ID does not exist");
 			auto& it = GetAssets().at(ID);
-			if (it.Info.Type == AssetType::TextureSourceFile || it.Info.Type == AssetType::MeshSourceFile)
+			if (it.Info.Type == AssetType::TextureSourceFile)
 				return nullptr;
 			if (it.Info.State == AssetState::Unloaded)
 				LoadAsset(ID);
@@ -156,7 +171,10 @@ namespace Proof
 		static AssetType GetAssetTypeFromFilePath(const std::filesystem::path& path);
 
 		static void LoadMultipleAsset(std::set<AssetID> assetLoadIn);
+		// reutns the fule file path
 		static std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path);
+		// returns relative to the asset manager folder
+		static std::filesystem::path GetAssetFileSystemPathRelative(const std::filesystem::path& path);
 
 		static std::filesystem::path GetDirectory();
 		// pass full path
@@ -166,8 +184,6 @@ namespace Proof
 		static const AssetManagerData const* GetAssetManagerData();
 
 
-		// pass full path
-		static void AddMemoryAsset(const Count<Asset>& asset);
 		static void UnloadAsset(AssetID ID);
 
 	private:

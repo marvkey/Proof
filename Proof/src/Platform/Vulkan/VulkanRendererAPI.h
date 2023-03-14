@@ -3,7 +3,7 @@
 namespace Proof {
    class VulkanRendererAPI: public RendererAPI {
    public:
-	  virtual void DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance = 0) override;
+	  virtual void DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount,uint32_t instanceCount,uint32_t firstVertex = 0,uint32_t firstInstance = 0) override;
 	  virtual void DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance=0) override;
 	
 	  virtual void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) override;

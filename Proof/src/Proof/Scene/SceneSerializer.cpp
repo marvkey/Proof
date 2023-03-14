@@ -7,7 +7,7 @@
 #include <filesystem>
 #include "Proof/Resources/ExternalCreations.h"
 #include "Proof/Scripting/ScriptEngine.h"
-
+#include "Mesh.h"
 namespace Proof
 {
 	SceneSerializer::SceneSerializer(World* Scene) {
@@ -69,7 +69,6 @@ namespace Proof
 				out << YAML::Key << "MeshComponent";
 				out << YAML::BeginMap; // Mesh component
 				out << YAML::Key << "MeshAssetPointerID" << YAML::Value << Meshes->m_MeshID;
-				out << YAML::Key << "MaterialPointerID" << Meshes->m_MaterialID;
 				out << YAML::EndMap; // Mesh component
 			}
 		}
@@ -444,13 +443,7 @@ namespace Proof
 				if (meshComponent) {
 					auto& src = *NewEntity.AddComponent<MeshComponent>();
 					src.m_MeshID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
-					src.m_MaterialID = meshComponent["MaterialPointerID"].as<uint64_t>();
-					if (src.m_MeshID != 0) {
-						m_AssetLoadID.emplace(src.m_MeshID);
-					}
-					if (src.m_MaterialID != 0) {
-						m_AssetLoadID.emplace(src.m_MaterialID);
-					}
+					src.MaterialTable = AssetManager::GetAsset<Mesh>(src.m_MeshID)->GetMaterialTable()->Copy();
 				}
 			}
 			// SPRITE

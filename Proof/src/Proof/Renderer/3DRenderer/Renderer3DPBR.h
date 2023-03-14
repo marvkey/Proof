@@ -25,6 +25,10 @@ namespace Proof
 		Count<class UniformBuffer> DirLightsBuffer;
 		std::vector<DirLight> DirLights;
 	};
+	struct MaterialTableData {
+	public:
+		std::vector<UUID> MaterialIndexes;
+	};
 	struct MeshPipeLine {
 		struct MeshVertex {
 
@@ -72,38 +76,37 @@ namespace Proof
 		float Roughness = 0.0f;
 	};
 
+
 	struct MaterialTextureData {
-		UUID Color;
-		UUID Normal;
-		UUID Metallic;
-		UUID Roughness;
+		Count<Texture2D>Color;
+		Count<Texture2D>Normal;
+		Count<Texture2D>Metallic;
+		Count<Texture2D>Roughness;
 	};
 	// takes from mesh pipline
+	// make 
 	struct MeshMaterialPipeline {
 	public:
 		// going to use mesh pipline buffers
 		Count<class GraphicsPipeline> GraphicsPipeline;
 		Count<class Shader> Shader;
 		Count <class PipeLineLayout> PipeLineLayout;
-		MeshMaterialPipeline(Count<RenderPass> renderPass);
+		MeshMaterialPipeline(Count<class RenderPass> renderPass);
 		Count<class PushConstant> MaterialPushConstant;
 		uint32_t NumberMeshes;
 		// order teh meshes are pushed intehvector that stores all transforms
 		std::vector<uint64_t> ElementsImplaced;
 		// the begin offset we should start rendering
 		uint32_t OffsetBegin = 0;
+		// mesh unique id, mesh transfomr
 		std::unordered_map < UUID, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
-		std::unordered_map < UUID, MeshInstance> Meshes;
-		std::unordered_map < UUID, MaterialData> MaterialDatas;
-
-		std::unordered_map< UUID, Count<Texture2D>> MaterialTextures;
-
+		// mesh uniqe id, mesh instance 
+		std::unordered_map < UUID, std::vector<MaterialMeshInstance>> Meshes;
 		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 		void Reset() {
 			MeshesTransforms.clear();
 			ElementsImplaced.clear();
 			Meshes.clear();
-			MaterialDatas.clear();
 			NumberMeshes = 0;
 			OffsetBegin = 0;
 		}
@@ -115,23 +118,27 @@ namespace Proof
 		Count<UniformBuffer> CameraBuffer = nullptr;
 		Count<ScreenFrameBuffer> CurrentFrameBuffer = nullptr;
 	};
-
+	class Mesh;
 	class Renderer3DPBR {
 	public:
-		Renderer3DPBR(Count<RenderPass> renderPass);
+		Renderer3DPBR(Count<class RenderPass> renderPass);
 		~Renderer3DPBR() {
 
 		}
 		void Init();
 		void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<RenderCommandBuffer>& commandBuffer);
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
-		
 		void SetPbrMaps(Count<class CubeMap> irrdianceMap, Count<class CubeMap> prefilterMap,Count<Texture2D> brdf);
+
 		void SubmitMesh(Count<Mesh> mesh, const glm::mat4& transform);
-		void SubmitMeshWithMaterial(Count<Mesh> mesh, Count<Material> material, const glm::mat4& transform);
+		void SubmitMeshWithMaterial(Count<Mesh> mesh, Count<MaterialTable> table, const glm::mat4& transform);
+		void SubmitSubMesh(Count<Mesh> mesh, uint32_t meshIndex, const glm::mat4& transform);
+		void SubmitSubMeshWithMaterial(Count<Mesh> mesh, uint32_t index, Count<Material> material, const glm::mat4& transform);
+		
 		void SubmitDirectionalLight(const DirLight& light);
 		void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);
 		void SubmitSpotLight(class SpotLightComponent& comp, class TransformComponent& transform);
+
 		void EndContext();
 		void Destroy();
 	private:

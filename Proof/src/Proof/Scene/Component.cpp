@@ -171,20 +171,15 @@ namespace Proof
 		m_Scripts[posIndex] = scriptData;
 	}
 
-	
-
-	AssetID MeshComponent::GetMeshID() const
-	{
-		return m_MeshID;
-	}
-
-	void MeshComponent::SetMesh(UUID ID)
+	void MeshComponent::SetMesh(UUID ID, bool copyMaterialTable )
 	{
 		#ifdef PF_ENABLE_DEBUG
 			if (!AssetManager::HasAsset(ID))return;
 		#endif // 
 
 		m_MeshID = ID;
+		if (copyMaterialTable)
+			MaterialTable = AssetManager::GetAsset<Mesh>(m_MeshID)->GetMaterialTable()->Copy();
 	}
 
 	void MeshComponent::RemoveMesh()
@@ -200,38 +195,7 @@ namespace Proof
 		#endif 
 		return AssetManager::GetAsset<Mesh>(m_MeshID);
 	}
-
-	bool MeshComponent::HasMaterial()
-	{
-		return m_MaterialID != 0;
-	}
-	Count<Material> MeshComponent::GetMaterial()
-	{
-		if (m_MaterialID == 0)return nullptr;
-		#ifdef PF_ENABLE_DEBUG
-			if (!AssetManager::HasAsset(m_MaterialID)) { m_MaterialID = 0; return nullptr; };
-		#endif 
-		return AssetManager::GetAsset<Material>(m_MaterialID);
-	}
-
-	AssetID MeshComponent::GetMaterialID() const
-	{
-		return m_MaterialID;
-	}
-
-	void MeshComponent::SetMaterial(AssetID ID)
-	{
-		#ifdef PF_ENABLE_DEBUG
-			if (!AssetManager::HasAsset(ID))return;
-		#endif // 
-
-		m_MaterialID = ID;
-	}
-
-	void MeshComponent::RemoveMaterial()
-	{
-		m_MaterialID = 0;
-	}
+	
 
 	Count<Mesh> MeshColliderComponent::GetMesh()
 	{

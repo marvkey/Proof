@@ -151,7 +151,7 @@ void main()
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
     vec3 F0 = vec3(0.04);
     //  when rougness is 0 metallic will not repson to light because 
-    // metallic on responds to specullar lgiht and there will be no speuclar light in the scne
+    // metallic on responds to specullar lgiht and there will be no spe5uclar light in the scne
     float metallic = 0;
     float roughness = 0.5;
     Lo += calcDirectionalLight(DirectionalLightData.Light, N, WorldPos, meshColor, roughness, metallic, CameraPoition);
@@ -167,4 +167,3 @@ void main()
 
     outFragColor = vec4(color, 1.0);
 }
-

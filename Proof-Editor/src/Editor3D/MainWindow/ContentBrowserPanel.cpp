@@ -100,7 +100,9 @@ namespace Proof
 		if (endIndex != 0)
 			finalPath += fmt::format("({})", endIndex);
 
-		return AssetManager::NewAsset<Mesh>(finalPath, meshPath.string())->GetID();
+		PF_CORE_ASSERT(false);
+		return 0;
+		//return AssetManager::NewAsset<Mesh>(finalPath, meshPath.string())->GetID();
 	}
 	std::pair<bool, AssetID> ContentBrowserPanel::AddMesh(const std::filesystem::path& meshPath, const std::vector<uint32_t>& excludeIndex) {
 		static std::string meshAddedSavePath = "Mesh\\";
@@ -329,7 +331,7 @@ namespace Proof
 				std::string fileDragSourcePath = path.string();
 				// we doingthis becausefor loop and dragsurce may change
 				if (AssetManager::HasAsset(fileDragSourcePath) == false) {
-					AssetManager::NewAssetSource(fileDragSourcePath,AssetManager::GetAssetTypeFromFilePath(fileDragSourcePath));
+					//AssetManager::NewAssetSource(fileDragSourcePath,AssetManager::GetAssetTypeFromFilePath(fileDragSourcePath));
 				}
 				auto staticAssetInfo = AssetManager::GetAssetInfo(fileDragSourcePath);
 				UUID staticID = AssetManager::GetAssetInfo(fileDragSourcePath).ID;

@@ -102,18 +102,20 @@ namespace Proof
 		cameraBuffer = UniformBuffer::Create(&cmaeraData, sizeof(CameraData), DescriptorSets::Zero, 0);
 
 		{
+			
 			Renderer::RecordRenderPass(m_RenderPass, RenderPipline, [&](Count <RenderCommandBuffer> commandBuffer) {
 				auto descriptor0 = Descriptors[DescriptorSets::Zero];
 				descriptor0->WriteBuffer(0, cameraBuffer);
 				descriptor0->WriteImage(1, prefilterCubeMap);
 				descriptor0->Bind(commandBuffer, PipelineLayout);
-				for (const auto& subMesh : Cube->GetSubMeshes())
+				for (const auto& subMesh : Cube->GetMeshSource()->GetSubMeshes())
 				{
-					subMesh.GetVertexBuffer()->Bind(commandBuffer);
-					subMesh.GetIndexBuffer()->Bind(commandBuffer);
-					Renderer::DrawElementIndexed(commandBuffer, subMesh.GetIndexBuffer()->GetCount());
+					subMesh.VertexBuffer->Bind(commandBuffer);
+					subMesh.IndexBuffer->Bind(commandBuffer);
+					Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexBuffer->GetCount());
 				}
 			});
+			
 		}
 		
 		m_Renderer3D->BeginContext(camera, m_ScreenFrameBuffer,m_CommandBuffer);
@@ -123,12 +125,13 @@ namespace Proof
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
 				auto& mesh = *entity.GetComponent<MeshComponent>();
-				if (AssetManager::HasAsset(mesh.GetMeshID()))
+				if (AssetManager::HasAsset(mesh.GetMesh()))
 				{
-					if (mesh.HasMaterial())
-						m_Renderer3D->SubmitMeshWithMaterial(mesh.GetMesh(), mesh.GetMaterial(), m_World->GetWorldTransform(entity));
-					else
+					 //if material equls meshMaterial
+					if (*mesh.MaterialTable == *mesh.GetMesh()->GetMaterialTable())
 						m_Renderer3D->SubmitMesh(mesh.GetMesh(), m_World->GetWorldTransform(entity));
+					else
+						m_Renderer3D->SubmitMeshWithMaterial(mesh.GetMesh(), mesh.GetMesh()->GetMaterialTable(), m_World->GetWorldTransform(entity));
 				}
 			});
 		}
@@ -226,7 +229,7 @@ namespace Proof
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
 				auto& mesh = *entity.GetComponent<MeshComponent>();
-				if (AssetManager::HasAsset(mesh.GetMeshID()))
+				if (AssetManager::HasAsset(mesh.GetMesh()))
 					m_Renderer3D->SubmitMesh(mesh.GetMesh(), m_World->GetWorldTransform(entity));
 				});
 			}

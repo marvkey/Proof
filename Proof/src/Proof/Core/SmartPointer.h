@@ -316,15 +316,34 @@ namespace Proof{
 		T* operator->() const {
 			return this->Get();
 		}
+
+		template <class _Ty2 = T, std::enable_if_t<!std::disjunction_v<std::is_array<_Ty2>, std::is_void<_Ty2>>, int> = 0>
+		_Ty2& operator*() const noexcept {
+			return *this->Get();
+		}
 		template<typename  U>
 		inline constexpr Count<U> As()const;
 		explicit operator bool() const noexcept {
 			return this->Get() != nullptr;
 		}
 
-		template <class... Args>
+		template <class... Args, std::enable_if_t<std::is_constructible<T, Args...>::value, int> = 0>
 		static Count Create(Args&&... args) {
 			T* data = new T(args...);
+			Count<T> t(data);
+			return t;
+		} 
+		static Count CreateFrom(const Count& other) {
+			if (!other)return nullptr;
+			const auto& copy = *other;
+			T* data = new T(copy);
+			Count<T> t(data);
+			return t;
+		}
+
+		static Count CreateFrom(Count&& other) {
+			if (!other)return nullptr;
+			T* data = new T(*other);
 			Count<T> t(data);
 			return t;
 		}

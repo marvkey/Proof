@@ -8,8 +8,8 @@ namespace Proof {
 		static void DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount=1,uint32_t firstInstance=0){
 			s_RendererAPI->DrawElementIndexed(commandBuffer,indexCount,instanceCount,firstInstance);
 		}
-		static void DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount,uint32_t instanceCount, uint32_t firstInstance = 0) {
-			s_RendererAPI->DrawArrays(commandBuffer,vertexCount,instanceCount,firstInstance);
+		static void DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex = 0, uint32_t firstInstance = 0) {
+			s_RendererAPI->DrawArrays(commandBuffer,vertexCount,instanceCount,firstVertex,firstInstance);
 		}
 		static void BeginCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) {
 			s_RendererAPI->BeginCommandBuffer(commandBuffer);

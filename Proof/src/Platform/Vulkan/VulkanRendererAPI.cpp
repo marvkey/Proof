@@ -11,8 +11,8 @@ namespace Proof {
 	VulkanRendererAPI::~VulkanRendererAPI()
 	{
 	}
-	void VulkanRendererAPI::DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstInstance ) {
-		vkCmdDraw(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, 0, firstInstance);
+	void VulkanRendererAPI::DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex , uint32_t firstInstance) {
+		vkCmdDraw(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, firstVertex, firstInstance);
 	}
 	void VulkanRendererAPI::DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance) {
 		vkCmdDrawIndexed(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, 0, 0, firstInstance);

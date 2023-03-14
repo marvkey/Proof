@@ -16,4 +16,3 @@ void main() {
     outPosition = A_POSITION;
     gl_Position = pv.projection * pv.view * vec4(A_POSITION, 1.0f);
 }
-

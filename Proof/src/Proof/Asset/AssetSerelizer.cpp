@@ -124,7 +124,7 @@ namespace Proof {
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(mesh->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << mesh->GetID();
-		out << YAML::Key << "AssetSource" << YAML::Value << AssetManager::GetAssetInfo(mesh->GetPath()).ID;
+		out << YAML::Key << "AssetSource" << YAML::Value << AssetManager::GetAssetInfo(mesh->GetMeshSource()->GetPath()).ID;
 		out << YAML::Key << "SubMeshes";
 		out << YAML::Flow;
 	
@@ -139,13 +139,24 @@ namespace Proof {
 		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		if (!data["AssetType"]) // if there is no scene no
 			return nullptr;
-		//m_AssetID = data["ID"].as<uint64_t>();
 		uint64_t source = data["AssetSource"].as<uint64_t>();
 		
-		auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(source).Path);
-		Count<Mesh> mesh = Count<Mesh>::Create(path.string());
+		PF_CORE_ASSERT(AssetManager::HasAsset(source), "Trying to load mesh with meshSource that does not exist");
+		Count<Mesh> mesh = Count<Mesh>::Create(AssetManager::GetAsset<MeshSource>(source));
+		SetID(assetData, mesh);
 
 		return mesh;
+	}
+
+	void MeshSourceAssetSerializer::Save(const AssetInfo& data, const Count<class Asset>& asset) const
+	{
+
+	}
+	Count<class Asset> MeshSourceAssetSerializer::TryLoadAsset(const AssetInfo& data) const
+	{
+		Count<MeshSource> source = Count<MeshSource>::Create(AssetManager::GetAssetFileSystemPath(data.Path).string());
+		SetID(data, source);
+		return source;
 	}
 
 }

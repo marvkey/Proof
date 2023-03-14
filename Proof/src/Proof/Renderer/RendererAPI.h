@@ -21,7 +21,7 @@ namespace Proof {
 		virtual ~RendererAPI(){};
 		virtual void BeginCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) = 0;
 		virtual void EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) = 0;
-		virtual void DrawArrays(Count<class RenderCommandBuffer> commandBuffer,uint32_t vertexCount, uint32_t instanceCount,uint32_t firstInstance=0)=0;
+		virtual void DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex = 0, uint32_t firstInstance = 0)=0;
 		virtual void DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance =0) = 0;
 		
 		virtual void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) = 0;

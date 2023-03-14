@@ -16,190 +16,163 @@
 #include "Proof/Renderer/RendererBase.h"
 #include "Proof/Renderer/Buffer.h"
 namespace Proof{
-    Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices)
+    MeshSource::MeshSource(const std::string & path)
     {
-        
-        SubMesh temp(vertices, indices, name);
-        meshes.push_back(temp);
-    }
-    void Mesh::LoadModel(std::string const& path ) {
         PF_PROFILE_FUNC();
-        m_Name = Utils::FileDialogs::GetFileName(path);
         m_Path = path;
         Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-        //importer.ReadFileFromMemory(); pass a string to read file data
+        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
         {
-            PF_EC_WARN("ERROR::ASSIMP {}",importer.GetErrorString());
+            PF_EC_WARN("ERROR::ASSIMP {}", importer.GetErrorString());
             return;
         }
-        ProcessNode(scene->mRootNode,scene);
+        ProcessNode(scene->mRootNode, scene);
+       
+        m_MaterialTable = Count<MaterialTable>::Create();
+        for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; materialIndex++)
+        {
+            m_MaterialTable->SetMaterial(materialIndex, GetMaterial(scene->mMaterials[materialIndex]));
+        }
     }
-    void Mesh::ProcessNode(void* node, const void* scene) {
+
+    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
+    {
+        m_MaterialTable = Count<MaterialTable>::Create();
+        SubMesh meh(vertices, indices, name);
+        m_SubMeshes.emplace_back(meh);
+    }
+    void MeshSource::ProcessNode(void* node, const void* scene)
+    {
         aiNode* ainode = (aiNode*)node;
         aiScene* aiscene = (aiScene*)scene;
-        for (unsigned int i = 0; i < ainode->mNumMeshes; i++) {
+        for (uint32_t i = 0; i < ainode->mNumMeshes; i++)
+        {
             aiMesh* mesh = aiscene->mMeshes[ainode->mMeshes[i]];
-            meshes.emplace_back(ProcessMesh(mesh, aiscene));
+            m_SubMeshes.emplace_back(ProcessMesh(mesh, aiscene));
         }
-        for (unsigned int i = 0; i < ainode->mNumChildren; i++) {
+        for (uint32_t i = 0; i < ainode->mNumChildren; i++)
+        {
             ProcessNode(ainode->mChildren[i], aiscene);
         }
     }
-    SubMesh Mesh::ProcessMesh(void* mesh,const void* scene) {
+
+    SubMesh MeshSource::ProcessMesh(void* mesh, const void* scene)
+    {
         aiMesh* aimesh = (aiMesh*)mesh;
         aiScene* aiscene = (aiScene*)scene;
+
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
         std::vector<Count<Texture2D>> textures;
 
-        for (unsigned int i = 0; i < aimesh->mNumVertices; i++) {
+        for (uint32_t i = 0; i < aimesh->mNumVertices; i++)
+        {
             Vertex vertex;
             vertex.Vertices = Vector(aimesh->mVertices[i].x, aimesh->mVertices[i].y, aimesh->mVertices[i].z);
             if (aimesh->HasNormals())
-                vertex.Normal = Vector(aimesh->mNormals[i].x,aimesh->mNormals[i].y,aimesh->mNormals[i].z);
-            if (aimesh->mTextureCoords[0]) {
-                vertex.TexCoords = Vector2(aimesh->mTextureCoords[0][i].x,aimesh->mTextureCoords[0][i].y);
-                vertex.Tangent = Vector(aimesh->mTangents[i].x,aimesh->mTangents[i].y,aimesh->mTangents[i].z);
-                vertex.Bitangent = Vector(aimesh->mBitangents[i].x,aimesh->mBitangents[i].y,aimesh->mBitangents[i].z);
+                vertex.Normal = Vector(aimesh->mNormals[i].x, aimesh->mNormals[i].y, aimesh->mNormals[i].z);
+            if (aimesh->mTextureCoords[0])
+            {
+                vertex.TexCoords = Vector2(aimesh->mTextureCoords[0][i].x, aimesh->mTextureCoords[0][i].y);
+                vertex.Tangent = Vector(aimesh->mTangents[i].x, aimesh->mTangents[i].y, aimesh->mTangents[i].z);
+                vertex.Bitangent = Vector(aimesh->mBitangents[i].x, aimesh->mBitangents[i].y, aimesh->mBitangents[i].z);
             }
             else
-                vertex.TexCoords = Vector2(0.0f,0.0f);
+                vertex.TexCoords = Vector2(0.0f, 0.0f);
             vertices.emplace_back(vertex);
         }
-        for (unsigned int i = 0; i <aimesh->mNumFaces; i++) {
-            aiFace& face =aimesh->mFaces[i];
-            for (unsigned int j = 0; j < face.mNumIndices; j++) {
+        for (uint32_t i = 0; i < aimesh->mNumFaces; i++)
+        {
+            aiFace& face = aimesh->mFaces[i];
+            for (uint32_t  j = 0; j < face.mNumIndices; j++)
+            {
                 indices.emplace_back(face.mIndices[j]);
             }
         }
-        aiMaterial* material = aiscene->mMaterials[aimesh->mMaterialIndex];
-        auto texture = LoadMaterialTextures(material, aiTextureType_DIFFUSE);
-      //  textures.insert(textures.end(),diffuseMaps.begin(),diffuseMaps.end());
-
-        //std::vector<Count<Texture2D>>  specularMaps = LoadMaterialTextures(material,aiTextureType_SPECULAR,Texture2D::TextureType::Specular);
-        //textures.insert(textures.end(),specularMaps.begin(),specularMaps.end());
-        //
-        //std::vector<Count<Texture2D>> normalMaps = LoadMaterialTextures(material,aiTextureType_NORMALS,Texture2D::TextureType::Normal);
-        //textures.insert(textures.end(),normalMaps.begin(),normalMaps.end());
-       
-        SubMesh temp(vertices,indices,aimesh->mName.C_Str(), texture);
+        SubMesh temp(vertices, indices, aimesh->mName.C_Str(), aimesh->mMaterialIndex);
         return temp;
-        //aiTextureType_METALNESS
-        //aiTextureType_DIFFUSE_ROUGHNESS
-        //aiTextureType_AMBIENT_OCCLUSION AO
-        //aiTextureType_NORMALS
-
-        //aiTextureType_DIFFUSE
-        //aiTextureType_SPECULAR
-
-        // What we are gonna support
-        //aiTextureType_DIFFUSE
-        //aiTextureType_NORMALS
-        //aiTextureType_SPECULAR
     }
 
-    std::vector <AssetID> Mesh::LoadMaterialTextures(void* mat,int type) {
+    Count<Material> MeshSource::GetMaterial(void* mat)
+    {
         aiMaterial* aimat = (aiMaterial*)mat;
-        aiTextureType aitype = (aiTextureType)type;
-        std::vector<AssetID> textures;
-        for (unsigned int i = 0; i < aimat->GetTextureCount(aitype); i++)
-        {
+        Count<Material> material = Count<Material>::Create();
+        aiColor3D color(0.f, 0.f, 0.f);
+        float metallness;
+        float roghness;
+        material->Name = aimat->GetName().C_Str();
+        aimat->Get(AI_MATKEY_COLOR_AMBIENT, color);
+        aimat->Get(AI_MATKEY_METALLIC_FACTOR, metallness);
+        aimat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roghness);
+
+        material->Colour = Vector(color.r, color.g, color.b);
+        material->Metallness = metallness;
+        material->Roughness = roghness;
+
+        LoadMaterialTextures(material, aimat);
+        return material;
+    }
+
+    void MeshSource::LoadMaterialTextures(Count<Material> material, void* aiMat)
+    {
+        aiMaterial* aimat = (aiMaterial*)aiMat;
+        auto LoadTexture = [&](Count<Texture2D>& texture,aiTextureType textureType)->void {
             aiString strFilePath;
-            aimat->GetTexture(aitype, i, &strFilePath);
-
-            std::string textureFilePath = std::filesystem::relative(m_Path.parent_path() /= strFilePath.C_Str(), Application::Get()->GetProject()->GetAssetDirectory()).string();
-            std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
-
-            if (AssetManager::HasAsset(textureFilePath))
+            if (aimat->GetTexture(textureType, 0, &strFilePath) == aiReturn_SUCCESS)
             {
-                auto textureSourceInfo = AssetManager::GetAssetInfo(textureFilePath);
-                // texutre found in m_Textures;
-                bool textureFound = false;
-                for (auto& id : m_Textures)
+                std::string textureFilePath = std::filesystem::relative(m_Path.parent_path() /= strFilePath.C_Str(), Application::Get()->GetProject()->GetAssetDirectory()).string();
+                std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
+                // checking if has the texturer source file
+
+                if (AssetManager::HasAsset(textureFilePath))
                 {
-                    if (id.TextureSource == textureSourceInfo.ID)
-                    {
-                        textures.emplace_back(id.Texture);
-                        textureFound = true;
-                        break;
-                    }
-                }
-                // this is temporaty 
-                if (textureFound == false)
-                {
-                    //std::string path = (m_Path.parent_path() /= textureName).string();
+                    // changing the path to a proof asset path
+                    PF_EC_WARN("Getting mehs texture this way is risky what if the name changes");
                     std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName, Application::Get()->GetProject()->GetAssetDirectory()).string();
                     path += ".Texture.ProofAsset";
-                    Count< Texture2D> asset = AssetManager::GetAsset< Texture2D>(path);
-                    textures.emplace_back(asset->GetID());
-                    m_Textures.emplace_back(TextureData{ asset->GetID(),AssetManager::GetAssetInfo(textureFilePath).ID });
+                    texture = AssetManager::GetAsset<Texture2D>(path);
 
                 }
-                continue;
+                else
+                {
+
+                    AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
+                    Count<Asset> asset = Texture2D::Create(AssetManager::GetAssetFileSystemPath(textureFilePath).string());
+                    AssetManager::NewAsset(asset, AssetManager::GetAssetFileSystemPath(textureFilePath).string());
+                    texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetFileSystemPathRelative(textureFilePath));
+                }
             }
+        };
 
-            PF_CORE_ASSERT(false, "Does not work because the save path is messed up");
-            AssetManager::NewAssetSource(textureFilePath,AssetType::TextureSourceFile);
-            // texture is not found so we generate it
-            std::string savePath = AssetManager::GetAssetFileSystemPath(m_Path.parent_path() /= textureName).string();
-            //std::string savePath = std::filesystem::relative(m_Path.parent_path() /= textureName, Application::Get()->GetProject()->GetAssetDirectory()).string();
-            Count<Asset> asset = Texture2D::Create(textureFilePath);
-            AssetManager::NewAsset(asset,savePath);
-            textures.emplace_back(asset->GetID());
-            m_Textures.emplace_back(TextureData{ asset->GetID(),AssetManager::GetAssetInfo(textureFilePath).ID});
-        }
-        return textures;
+        LoadTexture(material->AlbedoTexture, aiTextureType_DIFFUSE);
+        LoadTexture(material->NormalTexture, aiTextureType_NORMALS);
+        LoadTexture(material->MetallicTexture, aiTextureType_METALNESS);
+        LoadTexture(material->RoughnessTexture, aiTextureType_DIFFUSE_ROUGHNESS);
     }
 
-    std::vector<Material> Mesh::LoadMaterial(void* mat) {
-        aiMaterial* aimat = (aiMaterial*)mat;
-        for (unsigned int i = 0; i < aimat->GetTextureCount(aiTextureType_DIFFUSE); i++)
-        {   
-
-        }
-        Material material;
-        aiColor3D color(0.f,0.f,0.f);
-        float shininess;
-        float riughness;
-        
-        
-        aimat->Get(AI_MATKEY_COLOR_AMBIENT,color);
-        material.Colour = Vector(color.r, color.g,color.b);
-        
-        aimat->Get(AI_MATKEY_SHININESS,shininess);
-        material.Metallness = shininess;
-        
-        
-        aimat->Get(AI_MATKEY_REFLECTIVITY, riughness);
-        material.Roughness = riughness;
-
-        return std::vector <Material>();
+    Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& excludeSubMeshes)
+        :m_MeshSource(meshSource)
+    {
+        m_MaterialTable = meshSource->GenerateMaterialTable();
+        m_ExcludeMeshes = excludeSubMeshes;
+        m_Name = Utils::FileDialogs::GetFileName(m_MeshSource->GetPath());
+    }
+    Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices)
+    {
+        m_MeshSource = Count<MeshSource>::Create(name,vertices, indices);
+        m_MaterialTable = m_MeshSource->GenerateMaterialTable();
     }
 
+    SubMesh::SubMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::string& name, uint32_t materialIndex)
+    {
+        Vertices = vertices;
+        Indices = indices;
+        Name = name;
+        MaterialIndex = materialIndex;
 
-
-    SubMesh::SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name, std::vector<AssetID> diffuseTextures) {
-        this->m_Vertices = Vertices;
-        this->m_Indices = Indices;
-
-        m_DiffuseAssets = diffuseTextures;
-        m_Name = name;
-        SetUp();
+        VertexBuffer = VertexBuffer::Create(Vertices.data(), Vertices.size() * sizeof(Vertex));
+        IndexBuffer = IndexBuffer::Create(Indices.data(), Indices.size());
     }
 
-    SubMesh::SubMesh(std::vector<Vertex>& Vertices, std::vector<uint32_t>& Indices, const std::string& name) {
-        this->m_Vertices = Vertices;
-        this->m_Indices = Indices;
-        m_Name = name;
-      
-        SetUp();
-    }
-
-    void SubMesh::SetUp() {
-        m_VertexBufferObject = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex));
-        m_IndexBufferObject = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
-    }
-   
 }

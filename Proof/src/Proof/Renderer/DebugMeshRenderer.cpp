@@ -75,7 +75,7 @@ namespace Proof{
 			if (meshesVertex.empty() == false)
 				m_Pipeline->MeshesVertexBuffer = VertexBuffer::Create(meshesVertex.data(), meshesVertex.size() * sizeof(DebugMeshPipeLine::MeshVertex));
 		}
-
+		#if 0
 		// render
 		if (m_Pipeline->ElementsImplaced.empty())return;
 		auto descriptor0 = m_Pipeline->Descriptors[DescriptorSets::Zero];
@@ -87,7 +87,7 @@ namespace Proof{
 			for (const uint64_t& ID : m_Pipeline->ElementsImplaced)
 			{
 				const uint64_t meshInstances = m_Pipeline->Meshes[ID].Count;
-				const Count<Mesh> mesh = m_Pipeline->Meshes[ID].Mesh;
+				Count<Mesh> mesh = m_Pipeline->Meshes[ID].Mesh;
 
 				Vector color(0.46275f, 0.72549f, 0.00000f);
 				for (const auto& subMesh : mesh->GetSubMeshes())
@@ -103,6 +103,7 @@ namespace Proof{
 				currentOffset += meshInstances;
 			}
 		});
+			#endif
 	}
 
 	DebugMeshPipeLine::DebugMeshPipeLine(Count<RenderPass> renderPass)

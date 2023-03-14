@@ -7,101 +7,95 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "Material.h"
+
+#include <algorithm>
 namespace Proof
 {
-    class MeshSource {
-
-    };
     struct SubMesh {
-    public:
-        SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name, std::vector<AssetID> diffuseTextures);
-        SubMesh(std::vector<Vertex>& Vertices,std::vector<uint32_t>& Indices,const std::string& name);
-        bool Enabled = true;
-        std::string GetName() {
-            return m_Name;
+        SubMesh() {
+     
         }
-        // WE SHOULD NOT BE STORING THIS TEMPORARY
-        std::vector<Vertex> m_Vertices;
-        std::vector<uint32_t> m_Indices;
-        std::string m_Name;
+        SubMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32_t>& Indices, const std::string& name, uint32_t materialIndex=0);
+        uint32_t MaterialIndex=0;
+        std::vector<Vertex> Vertices;
+        std::vector<uint32_t> Indices;
+        std::string Name;
 
-        const std::vector<AssetID>& GetDiffuseTextures()const {
-            return m_DiffuseAssets;
-        }
-        Count<class VertexBuffer> GetVertexBuffer()const {
-            return m_VertexBufferObject;
-        }
-        Count<class IndexBuffer> GetIndexBuffer()const {
-            return m_IndexBufferObject;
-        }
-    private:
-        std::vector<AssetID> m_DiffuseAssets;
-        Count<class VertexBuffer> m_VertexBufferObject;
-        Count<class IndexBuffer> m_IndexBufferObject;
-        void SetUp();
+        Count<class VertexBuffer> VertexBuffer;
+        Count<class IndexBuffer> IndexBuffer;
+
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
     };
+    class MeshSource : public Asset{
+    public:
+        MeshSource() {
+            m_MaterialTable = Count<MaterialTable>::Create();
+        };
+        MeshSource(const std::string& path);
+        MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+
+        std::filesystem::path GetPath() {
+            return m_Path;
+        }
+        Count<MaterialTable> GenerateMaterialTable(){
+            return m_MaterialTable->Copy();
+        }
+
+        const std::vector<SubMesh>& GetSubMeshes()const  {
+            return m_SubMeshes;
+        }
+        ASSET_CLASS_TYPE(MeshSourceFile);
+
+    private:
+
+        void ProcessNode(void* node, const void* scene);
+        SubMesh ProcessMesh(void* mesh, const void* scene);
+
+        Count<Material> GetMaterial(void* material);
+        void LoadMaterialTextures(Count<Material> material, void* aiMat);
+        std::vector<SubMesh> m_SubMeshes;
+        Count<MaterialTable> m_MaterialTable;
+        std::filesystem::path m_Path;
+    };
+    
     class Mesh : public Asset
     {
     public:
         ASSET_CLASS_TYPE(Mesh);
-
-        bool m_FaceCulling =false;
-        Mesh()
-        {
-
-        }
-        // exclude index is not gonna have that mesh ready to be rendered that specific mesh will be discarded
-        // so only use it if u dont want tthe mesh to eexist
-        Mesh(std::string const& path) 
-        {
-            LoadModel(path);
-        }
-
+        Mesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& excludeSubMeshes = {});
         Mesh(const std::string& name,std::vector<Vertex> vertices, std::vector<uint32_t>indices);
-        virtual ~Mesh() {};
-        const std::vector<SubMesh>& GetSubMeshes()const {
-            return meshes;
-        }
+        ~Mesh() {};
         const std::string& GetName()const{
             return m_Name;
-        }
-        bool Enabled=true;
-        std::filesystem::path GetPath() {
-            return m_Path;
         }
         UUID GetMeshSpecificID() {
             return m_UiuqeMeshID;
         }
-    private:
-        std::vector<class SubMesh> meshes;
-        std::vector<std::string> m_MaterialsName;
-        std::string m_Name;
-        struct TextureData {
-            AssetID Texture;
-            AssetID TextureSource;
+        Count<MaterialTable> GetMaterialTable() {
+            return m_MaterialTable;
+        }
+        Count<MeshSource> GetMeshSource() {
+            return m_MeshSource;
+        }
+        const std::vector<uint32_t>& GetExcludeMeshes() {
+            return m_ExcludeMeshes;
         };
 
-        Count<MaterialTable> MaterialTable;
-        //stores all teh asset source of a given mesh
-        std::vector<TextureData> m_Textures;
-        std::filesystem::path m_Path;
-        void LoadModel(std::string const& path);
-        void ProcessNode(void* node, const void* scene);
-        SubMesh ProcessMesh(void* mesh,const void* scene);
-        //returns the id of  of textures in the texutre loaded
-        std::vector<AssetID> LoadMaterialTextures(void* mat,int type);
-        std::vector<Material> LoadMaterial(void* mat);
+        bool IsMeshExcluded(uint32_t index) {
+            return std::find(m_ExcludeMeshes.begin(), m_ExcludeMeshes.end(), index) != m_ExcludeMeshes.end();
+        }
 
-        void GenerateMaterialTable();
-
+    private:
+        Count<MeshSource> m_MeshSource;
+        std::string m_Name; 
+        Count<MaterialTable> m_MaterialTable;
+        std::vector<uint32_t> m_ExcludeMeshes;
         const UUID m_UiuqeMeshID = UUID();
         friend class Renderer3D;
         friend class Editore3D;
         friend class Renderer3DPBR;
         friend class SceneRendererUI;
-        friend class MeshAsset;
         friend class MeshWorkShop;
 
     };

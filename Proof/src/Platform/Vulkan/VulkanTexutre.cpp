@@ -200,9 +200,10 @@ namespace Proof
 	Count<Texture2D> VulkanTexture2D::GenerateBRDF(uint32_t dimension, uint32_t sampleCount)
 	{
 
+
 		TextureConfig config;
 		config.Format = ImageFormat::RGBA16F;
-		config.Address= AdressType::ClampEdge;
+		config.Address = AdressType::ClampEdge;
 		config.Height = dimension;
 		config.width = dimension;
 		config.Usage = TextureUsage::Color;
@@ -228,8 +229,8 @@ namespace Proof
 		GraphicsPipelineConfig pipelineConfig;
 		pipelineConfig.DebugName = "BRDFMap Pipeline";
 		pipelineConfig.Shader = Shader::GetOrCreate("BRDFMap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/BRDF.shader");
-		
-		auto [quadVertxBuffer,quadindexBuffer] = Renderer2D::CreateQuad();
+
+		auto [quadVertxBuffer, quadindexBuffer] = Renderer2D::CreateQuad();
 
 		pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
 		pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
@@ -246,28 +247,28 @@ namespace Proof
 		Renderer::Submit([&](CommandBuffer* cmd) {
 			Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(cmd);
 
-				VkViewport viewport = {};
-				viewport.x = 0.0f;
-				viewport.y = static_cast<float>(dimension);
-				viewport.width = static_cast<float>(dimension);
-				viewport.height = -static_cast<float>(dimension);
-				viewport.minDepth = 0.0f;
-				viewport.maxDepth = 1.0f;
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = static_cast<float>(dimension);
+			viewport.width = static_cast<float>(dimension);
+			viewport.height = -static_cast<float>(dimension);
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
 
-				VkRect2D scissor = {};
-				scissor.offset = { 0, 0 };
-				scissor.extent = { dimension, dimension };
+			VkRect2D scissor = {};
+			scissor.offset = { 0, 0 };
+			scissor.extent = { dimension, dimension };
 
-				uint32_t copy = sampleCount;
-				pushConstatnt->PushData(renderCmd, PipelineLayout, &copy);
+			uint32_t copy = sampleCount;
+			pushConstatnt->PushData(renderCmd, PipelineLayout, &copy);
 
-				Renderer::BeginRenderPass(renderCmd, renderPass, frameBuffer);
-				renderPass->As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor, [&](Count <RenderCommandBuffer> commandBuffer) {
-					quadVertxBuffer->Bind(renderCmd);
-					quadindexBuffer->Bind(renderCmd);
-					Renderer::DrawElementIndexed(renderCmd, quadindexBuffer->GetCount());
-				});
-				Renderer::EndRenderPass(renderPass);
+			Renderer::BeginRenderPass(renderCmd, renderPass, frameBuffer);
+			renderPass->As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor, [&](Count <RenderCommandBuffer> commandBuffer) {
+				quadVertxBuffer->Bind(renderCmd);
+				quadindexBuffer->Bind(renderCmd);
+				Renderer::DrawElementIndexed(renderCmd, quadindexBuffer->GetCount());
+			});
+			Renderer::EndRenderPass(renderPass);
 		});
 		return brdfTexture;
 	}
@@ -580,7 +581,7 @@ namespace Proof
 			uint32_t NumSamples = 128;
 		};
 
-		Count<PushConstant> PcbConstnat = PushConstant::Create(sizeof(PCB),0,ShaderStage::Fragment);
+		Count<PushConstant> PcbConstnat = PushConstant::Create(sizeof(PCB), 0, ShaderStage::Fragment);
 		Count<CubeMap> preFilterMap = CubeMap::Create(nullptr, nullptr, dimension, true);
 
 
@@ -709,17 +710,17 @@ namespace Proof
 					PcbConstnat->PushData(renderCmd, PipelineLayout, &pcb);
 
 					Renderer::BeginRenderPass(renderCmd, renderPass, frameBuffer);
-					renderPass->As<VulkanRenderPass>()->RecordRenderPass(RenderPipline,viewport, scissor,[&](Count <RenderCommandBuffer> commandBuffer) {
+					renderPass->As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor, [&](Count <RenderCommandBuffer> commandBuffer) {
 
 						auto descriptor0 = Descriptors[DescriptorSets::Zero];
 						descriptor0->WriteBuffer(0, ubuffer);
 						descriptor0->WriteImage(1, map);
 						descriptor0->Bind(renderCmd, PipelineLayout);
-						for (const auto& subMesh : cube->GetSubMeshes())
+						for (const auto& subMesh : cube->GetMeshSource()->GetSubMeshes())
 						{
-							subMesh.GetVertexBuffer()->Bind(renderCmd);
-							subMesh.GetIndexBuffer()->Bind(renderCmd);
-							Renderer::DrawElementIndexed(renderCmd, subMesh.GetIndexBuffer()->GetCount());
+							subMesh.VertexBuffer->Bind(renderCmd);
+							subMesh.IndexBuffer->Bind(renderCmd);
+							Renderer::DrawElementIndexed(renderCmd, subMesh.IndexBuffer->GetCount());
 						}
 
 					});
@@ -1015,11 +1016,11 @@ namespace Proof
 				else
 					descriptor0->WriteImage(1, texture.As<CubeMap>());
 				descriptor0->Bind(renderCmd, PipelineLayout);
-				for (const auto& subMesh : cube->GetSubMeshes())
+				for (const auto& subMesh : cube->GetMeshSource()->GetSubMeshes())
 				{
-					subMesh.GetVertexBuffer()->Bind(renderCmd);
-					subMesh.GetIndexBuffer()->Bind(renderCmd);
-					Renderer::DrawElementIndexed(renderCmd, subMesh.GetIndexBuffer()->GetCount());
+					subMesh.VertexBuffer->Bind(renderCmd);
+					subMesh.IndexBuffer->Bind(renderCmd);
+					Renderer::DrawElementIndexed(renderCmd, subMesh.IndexBuffer->GetCount());
 				}
 
 			});
@@ -1036,7 +1037,7 @@ namespace Proof
 				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 				barrier.image = m_Image.Image;
-				barrier.subresourceRange.aspectMask= VK_IMAGE_ASPECT_COLOR_BIT;
+				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				barrier.subresourceRange.baseMipLevel = 0;
 				barrier.subresourceRange.levelCount = m_MipLevels;
 				barrier.subresourceRange.baseArrayLayer = 0;
@@ -1049,7 +1050,7 @@ namespace Proof
 				return;
 			// Mipmapping
 
-			for(uint32_t face =0; face<6; face++)
+			for (uint32_t face = 0; face < 6; face++)
 			{
 				VkImageMemoryBarrier barrier{};
 				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -1082,7 +1083,7 @@ namespace Proof
 					VkImageBlit blit{};
 					blit.srcOffsets[0] = { 0, 0, 0 };
 					blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-					blit.srcSubresource.aspectMask= VK_IMAGE_ASPECT_COLOR_BIT;
+					blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 					blit.srcSubresource.mipLevel = i - 1;
 					blit.srcSubresource.baseArrayLayer = face;
 					blit.srcSubresource.layerCount = 1;
@@ -1126,7 +1127,7 @@ namespace Proof
 					0, nullptr,
 					1, &barrier);
 			}
-		
+
 		});
 	}
 	void VulkanCubeMap::Release()

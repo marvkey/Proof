@@ -213,6 +213,7 @@ namespace Proof {
 	}
 	std::pair<Count<VertexBuffer>, Count<IndexBuffer>> Renderer2D::CreateQuad()
 	{
+
 		// dont change it used to genearaate BRDF for PBR
 		//https://learnopengl.com/code_viewer_gh.php?code=src/6.pbr/2.2.1.ibl_specular/ibl_specular.cpp
 		///std::vector<Vertex> vertices = {
@@ -228,11 +229,11 @@ namespace Proof {
 			{{1.0f, -1.0f, 0.0f}, {0}, {1.0f, 0.0f}},
 		};
 		std::vector<uint32_t> indices = {
-			2, 3, 0, 
+			2, 3, 0,
 			3,1,0
 		};
 
-		Count<VertexBuffer> buffer = VertexBuffer::Create(vertices.data(), vertices.size()* sizeof(Vertex));
+		Count<VertexBuffer> buffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
 		Count<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size());
 		return std::make_pair(buffer, indexBuffer);
 	}

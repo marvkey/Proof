@@ -31,7 +31,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::Material] = CreateSpecial<MaterialAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Mesh] = CreateSpecial<MeshAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Texture] = CreateSpecial<TextureAssetSerializer>();
-			//s_AssetManagerData->AssetSerilizer[AssetType::World] = CreateSpecial<TextureAssetSerializer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::MeshSourceFile] = CreateSpecial<MeshSourceAssetSerializer>();
 		}
 		if (std::filesystem::exists(assetManagerConfiguration.AssetDirectory) == false) {
 			std::filesystem::create_directory(assetManagerConfiguration.AssetDirectory);
@@ -58,12 +58,11 @@ namespace Proof
 	}
 	void AssetManager::NewAssetSource(const std::filesystem::path& path, AssetType type)
 	{
-	
 		if (type == AssetType::MeshSourceFile && MeshHasFormat(Utils::FileDialogs::GetFileExtension(path)))
 		{
 			AssetInfo assetInfo;
 			assetInfo.Path = std::filesystem::relative(path, AssetManager::GetDirectory());
-			assetInfo.State = AssetState::Ready;
+			assetInfo.State = AssetState::Unloaded;
 			assetInfo.ID = AssetManager::CreateID();
 			assetInfo.Type = AssetType::MeshSourceFile;
 
@@ -86,12 +85,8 @@ namespace Proof
 		}
 	}
 	bool AssetManager::HasAsset(AssetID ID) {
+		if (ID == 0)return false;
 		return s_AssetManagerData->Assets.contains(ID);
-	}
-
-	void AssetManager::AddMemoryAsset(const Count<Asset>& asset)
-	{
-	
 	}
 	void AssetManager::AddWorldAsset(AssetID ID, const std::filesystem::path& path)
 	{
@@ -217,10 +212,10 @@ namespace Proof
 			assetInfo.Path = path;
 			assetInfo.Type = assetType;
 
-			if(assetType == AssetType::TextureSourceFile || assetType == AssetType::MeshSourceFile)
-			assetInfo.State = AssetState::Ready;
-				else
-			assetInfo.State = AssetState::Unloaded;
+			if(assetType == AssetType::TextureSourceFile)
+				assetInfo.State = AssetState::Ready;
+			else
+				assetInfo.State = AssetState::Unloaded;
 
 			s_AssetManagerData->Assets.insert({ assetID,{assetInfo,nullptr} });// setting the asset as null as we will load it in another thread
 			s_AssetManagerData->AssetPath.insert({ path,assetID });
@@ -235,6 +230,8 @@ namespace Proof
 			
 			const auto& assetInfo = assetManager.Info;
 			const auto& asset = assetManager.Asset;
+			if (assetInfo.RuntimeAsset)
+				continue;
 			if (assetInfo.State == AssetState::Ready) {
 				if (s_AssetManagerData->AssetSerilizer.contains(assetInfo.Type))
 					s_AssetManagerData->AssetSerilizer.at(assetInfo.Type)->Save(assetInfo,asset);
@@ -273,6 +270,9 @@ namespace Proof
 	}
 	std::filesystem::path AssetManager::GetAssetFileSystemPath(const std::filesystem::path& path) {
 		return Application::Get()->GetProject()->GetAssetFileSystemPath(path);
+	}
+	std::filesystem::path AssetManager::GetAssetFileSystemPathRelative(const std::filesystem::path& path) {
+		return std::filesystem::relative(path, AssetManager::GetDirectory());
 	}
 	std::filesystem::path AssetManager::GetDirectory() {
 		return Application::Get()->GetProject()->GetAssetDirectory();
