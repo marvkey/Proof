@@ -106,7 +106,7 @@ namespace Proof
 			Renderer::RecordRenderPass(m_RenderPass, RenderPipline, [&](Count <RenderCommandBuffer> commandBuffer) {
 				auto descriptor0 = Descriptors[DescriptorSets::Zero];
 				descriptor0->WriteBuffer(0, cameraBuffer);
-				descriptor0->WriteImage(1, prefilterCubeMap);
+				descriptor0->WriteImage(1, iradianceCubeMap);
 				descriptor0->Bind(commandBuffer, PipelineLayout);
 				for (const auto& subMesh : Cube->GetMeshSource()->GetSubMeshes())
 				{

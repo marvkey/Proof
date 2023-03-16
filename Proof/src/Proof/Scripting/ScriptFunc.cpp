@@ -4,9 +4,14 @@
 #include "mono/metadata/object.h"
 #include "mono/metadata/reflection.h"
 #include "ScriptEngine.h"
-
+//(IMPORTANT)
+/*
+*WHEN PASSING A MONO TYPE MAKE SURE ITS A SRUCT BECAUSE WHEN ITS A CLASS IT GETS SOME UNDEFNIED BEHAVIOR
+*/
 namespace Proof
 {
+
+	
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
 	namespace ScriptFuncUtils
 	{
@@ -14,7 +19,7 @@ namespace Proof
 	
 	}
 	#define PF_ADD_INTERNAL_CALL(Name){\
-		mono_add_internal_call("Proof.InternalCalls::" #Name, Name);\
+		mono_add_internal_call("Proof.InternalCalls::" #Name, (void*)Name);\
 		PF_ENGINE_TRACE("	C# registered function {}", #Name);\
 	}
 #pragma region Log
@@ -70,8 +75,7 @@ namespace Proof
 #pragma endregion 
 
 #pragma region TransformComponent
-	static void TransformComponent_GetLocation(uint64_t entityID,glm::vec3* outLocation ) {
-		/*
+	static void TransformComponent_GetLocation(uint64_t entityID,Vector* outLocation ) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		#if PF_ENABLE_DEBUG
 			if (!entity)
@@ -80,19 +84,17 @@ namespace Proof
 				return;
 			}
 		#endif
-		*outLocation = ProofToglmVec(entity.GetComponent<TransformComponent>()->Location);
-		//*outLocation = entity.GetComponent<TransformComponent>()->Location
-		*/
-		World* scene = ScriptEngine::GetWorldContext();
-		PF_CORE_ASSERT(scene);
-		Entity entity = scene->GetEntity(entityID);
-		PF_CORE_ASSERT(entity);
-
-		*outLocation = ProofToglmVec(entity.GetComponent<TransformComponent>()->Location);
+		*outLocation = entity.GetComponent<TransformComponent>()->Location;
 	};
 	static void TransformComponent_SetLocation(EntityID entityID, Vector* location) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
-		//entity.GetComponent<TransformComponent>()->Location = GlmVecToProof(* location);
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("TransformComponent.SetLocation - entity is invalid");
+			return;
+		}
+		#endif
 		entity.GetComponent<TransformComponent>()->Location = *location;
 	};
 #pragma endregion 

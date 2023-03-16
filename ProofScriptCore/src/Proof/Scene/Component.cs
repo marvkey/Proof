@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,9 +17,8 @@ namespace Proof
 		{
 			get
 			{
-
-				InternalCalls.TransformComponent_GetLocation(Entity.ID, out Vector location);
-				return location;
+				InternalCalls.TransformComponent_GetLocation(Entity.ID, out Vector loc);
+				return loc;
 			}
 			set
 			{
@@ -51,7 +51,8 @@ namespace Proof
 				InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
 			}
 		}
-	}
+
+    }
 	public enum ForceMode
 	{
 		Force,				

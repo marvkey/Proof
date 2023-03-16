@@ -44,14 +44,6 @@ World:
         IsTrigger: false
         PhysicsMaterialPointerID: 0
         MeshAssetPointerID: 17647221892499275640
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
     - Entity: 11554720084880278188
       TagComponent:
         Tag: Floor
@@ -92,9 +84,6 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 1
-      ScriptComponent:
-        Scripts:
-          []
     - Entity: 13371055274113837168
       TagComponent:
         Tag: Sphere
@@ -292,24 +281,11 @@ World:
               - Name: testSpeed
                 Type: Float
                 Data: 4.5
-          - Script: Game.Enemy
-            ScriptFields:
-              - Name: Strenght
-                Type: Float
-                Data: 100
       SphereColliderComponent:
         IsTrigger: false
         Offset: [0, 0, 0]
         Radius: 1
         PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Dynamic
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
     - Entity: 8252522412901248687
       TagComponent:
         Tag: backpack

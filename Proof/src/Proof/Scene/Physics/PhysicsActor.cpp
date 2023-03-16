@@ -62,9 +62,17 @@ namespace Proof {
 		}
 		rigidBody->release();
 	}
-	void PhysicsActor::OnUpdate(float deltaTime)
+	void PhysicsActor::OnFixedUpdate(float deltaTime)
 	{
+		// posibbly calling fixed update on scripts maybe we add it or maybe not
 
+		{
+			physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
+
+			TransformComponent& transform = *m_Entity.GetComponent<TransformComponent>();
+			physx::PxTransform newPos(PhysxUtils::VectorToPhysxVector(transform.Location), PhysxUtils::VectorToPhysxQuat(transform.Rotation));
+			rigidBody->setGlobalPose(newPos);
+		}
 	}
 
 	bool PhysicsActor::IsSleeping()

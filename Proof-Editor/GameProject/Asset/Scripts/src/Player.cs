@@ -18,39 +18,27 @@ namespace Game
         {
             m_Transform = GetComponent<TransformComponent>();
             Log.Info("On create");
-            Log.Error(MovementSpeed);
+            Log.Info($"Location {m_Transform.Location.X}");
 
         }
 
         void OnUpdate(float ts)
         {
             if (m_Transform == null)
-            {
                 Log.Error("transform component null");
-                return;
-            }
-            //Vector currentLocation = m_Transform.Location;
+
+            Vector currentLocation = m_Transform.Location;
             if (Input.IsKeyPressed(KeyBoardKey.DownArrow))
             {
-                Log.Error("Down Arrow");
-                Log.Error(m_Transform.Location.X);
-
-                // GetComponent<TransformComponent>().Location.Y -= MovementSpeed;
-            }
-            //m_Transform.Location = currentLocation;
-
-            /*
-            if (Input.IsKeyPressed(KeyBoardKey.DownArrow))
-            {
-                Log.Error("Down Arrow");
+                Log.Trace("Movement");
                 currentLocation.Y -= MovementSpeed;
             }
             if (Input.IsKeyPressed(KeyBoardKey.UpArrow))
             {
                 currentLocation.Y += MovementSpeed;
-            
+
             }
-            
+
             if (Input.IsKeyPressed(KeyBoardKey.LeftArrow))
             {
                 currentLocation.X -= MovementSpeed;
@@ -58,15 +46,13 @@ namespace Game
             if (Input.IsKeyPressed(KeyBoardKey.RightArrow))
             {
                 currentLocation.X += MovementSpeed;
-            
+
             }
             m_Transform.Location = currentLocation;
-
             if (Input.IsKeyPressed(KeyBoardKey.R))
             {
                 Log.Trace($"Player movment speed {MovementSpeed}");
             }
-            */
 
         }
     }

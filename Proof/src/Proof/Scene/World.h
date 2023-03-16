@@ -45,6 +45,10 @@ namespace Proof {
 		bool IsRunning() {
 			return GetState() == WorldState::Play || GetState() == WorldState::Pause;
 		}
+
+		bool IsPlaying() {
+			return GetState() == WorldState::Play || GetState() == WorldState::Pause;
+		}
 		bool HasEntity(EntityID ID)const;
 		bool HasEntity(EntityID ID);
 		bool HasWorldCamera();

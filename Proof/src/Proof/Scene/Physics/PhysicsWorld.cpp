@@ -62,8 +62,16 @@ namespace Proof {
 		EndWorld();
 	}
 
-	void PhysicsWorld::OnUpdate(float deltaTime)
+	void PhysicsWorld::OnFixedUpdate(float deltaTime)
 	{
+		if (m_World->IsPlaying())
+		{
+			for (auto& [Id, actor] : m_Actors)
+			{
+				// right now just updating transform
+				actor->OnFixedUpdate(deltaTime);
+			}
+		}
 		bool advance = Advance(deltaTime);
 
 		if (advance)
@@ -87,13 +95,13 @@ namespace Proof {
 		
 		m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity) {
 			auto id =entity.GetEntityID();
-			m_PhysicsActor.insert({ id, Count<PhysicsActor>::Create(this, entity) });
+			m_Actors.insert({ id, Count<PhysicsActor>::Create(this, entity) });
 		});
 	}
 	void PhysicsWorld::EndWorld()
 	{
 		// release all rigid bodies before we release teh scene
-		m_PhysicsActor.clear();
+		m_Actors.clear();
 		if (m_Config.PvdClient)
 		{
 			m_Transport->disconnect();

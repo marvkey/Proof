@@ -7,13 +7,15 @@ namespace Proof{
 	public:
 		PhysicsActor(class PhysicsWorld* physicsWorld,Entity entity);
 		virtual ~PhysicsActor();
-		void OnUpdate(float deltaTime);
+
+
 
 		bool IsSleeping();
 		void SyncTransform();
 
-
 	private:
+		// not sure how we gonna treat this yet
+		void OnFixedUpdate(float deltaTime);
 		enum class RigidBodyType m_RigidBodyType;
 		class PhysicsWorld* m_PhysicsWorld =nullptr;
 		Entity m_Entity;

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
-    public class Vector
+    public struct Vector
     {
-        public float X, Y, Z;
+        public float X,Y,Z;
         public static Vector Zero => new Vector(0.0f);
         public Vector(float x, float y, float z)
         {

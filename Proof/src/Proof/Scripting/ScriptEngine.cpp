@@ -176,7 +176,8 @@ namespace Proof
     MonoObject* ScriptClass::CallMethod(MonoObject* instance, MonoMethod* method, void** params) {
 
         MonoObject* exception = nullptr;
-        return mono_runtime_invoke(method, instance, params, &exception);
+       mono_runtime_invoke(method, instance, params, &exception);
+       return exception;
     }
     ScriptInstance::ScriptInstance(Count<ScriptClass> scriptClass, Entity entity) :
         m_ScriptClass(scriptClass) {
