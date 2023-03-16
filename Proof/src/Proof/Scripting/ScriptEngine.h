@@ -110,8 +110,6 @@ namespace Proof
 	class ScriptInstance {
 	public:
 		ScriptInstance(Count<ScriptClass> scriptClass, Entity entity);
-		ScriptInstance(std::string className, Entity entity);
-
 		void CallOnCreate();
 		void CallOnUpdate(float ts);
 
@@ -166,6 +164,10 @@ namespace Proof
 
 		static void BeginRuntime(World* world);
 		static void EndRuntime();
+				// reloads the assembly and updates all the script components
+		// if scene is being played scene does not run
+		static void ReloadAssembly(World* world);
+
 
 		static bool EntityClassExists(const std::string& fullClassName);
 		static World* GetWorldContext();
@@ -186,10 +188,6 @@ namespace Proof
 		static void CreateScriptFieldMap(Entity entity);
 		static std::string MonoToString(MonoString* monoString);
 		static MonoString* StringToMono(const std::string& data);
-
-		// reloads the assembly and updates all the script components
-		// if scene is being played scene does not run
-		static void ReloadAssembly(World* world);
 	private:
 		static void LoadAssembly(const std::filesystem::path& filepath);
 		static void LoadAppAssembly(const std::filesystem::path& filepath);

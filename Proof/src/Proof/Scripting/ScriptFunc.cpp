@@ -70,13 +70,30 @@ namespace Proof
 #pragma endregion 
 
 #pragma region TransformComponent
-	static void TransformComponent_GetLocation(EntityID entityID, glm::vec3* outLocation) {
+	static void TransformComponent_GetLocation(uint64_t entityID,glm::vec3* outLocation ) {
+		/*
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+			if (!entity)
+			{
+				PF_ERROR("TransformComponent.GetLocation - entity is invalid");
+				return;
+			}
+		#endif
+		*outLocation = ProofToglmVec(entity.GetComponent<TransformComponent>()->Location);
+		//*outLocation = entity.GetComponent<TransformComponent>()->Location
+		*/
+		World* scene = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(scene);
+		Entity entity = scene->GetEntity(entityID);
+		PF_CORE_ASSERT(entity);
+
 		*outLocation = ProofToglmVec(entity.GetComponent<TransformComponent>()->Location);
 	};
-	static void TransformComponent_SetLocation(EntityID entityID, glm::vec3* location) {
+	static void TransformComponent_SetLocation(EntityID entityID, Vector* location) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
-		entity.GetComponent<TransformComponent>()->Location = GlmVecToProof(* location);
+		//entity.GetComponent<TransformComponent>()->Location = GlmVecToProof(* location);
+		entity.GetComponent<TransformComponent>()->Location = *location;
 	};
 #pragma endregion 
 
@@ -128,6 +145,7 @@ namespace Proof
 
 	
 	void ScriptFunc::RegisterAllComponents() {
+		s_EntityHasComponentFuncs.clear();
 		RegisterComponent(AllComponents{});
 
 	}

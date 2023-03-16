@@ -14,7 +14,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialPointerID: 0
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -41,7 +40,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 17647221892499275640
-        MaterialPointerID: 5634022354863745560
       MeshColliderComponent:
         IsTrigger: false
         PhysicsMaterialPointerID: 0
@@ -67,7 +65,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialPointerID: 5642053961336929036
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -95,6 +92,9 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 1
+      ScriptComponent:
+        Scripts:
+          []
     - Entity: 13371055274113837168
       TagComponent:
         Tag: Sphere
@@ -108,7 +108,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 566574579191162934
-        MaterialPointerID: 0
       SphereColliderComponent:
         IsTrigger: false
         Offset: [0, 0, 0]
@@ -135,7 +134,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 14701413770166337076
-        MaterialPointerID: 0
       CapsuleColliderComponent:
         IsTrigger: false
         Offset: [0, 0, 0]
@@ -164,7 +162,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 566574579191162934
-        MaterialPointerID: 0
       SphereColliderComponent:
         IsTrigger: false
         Offset: [0, 0, 0]
@@ -191,7 +188,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialPointerID: 0
     - Entity: 10503789258133210294
       TagComponent:
         Tag: cube
@@ -205,7 +201,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialPointerID: 0
     - Entity: 15217109824472033708
       TagComponent:
         Tag: cube
@@ -219,7 +214,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialPointerID: 0
     - Entity: 1333011857573457957
       TagComponent:
         Tag: cube
@@ -233,7 +227,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialPointerID: 0
     - Entity: 6920087711923071758
       TagComponent:
         Tag: cube
@@ -247,7 +240,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialPointerID: 0
     - Entity: 14801962403377538790
       TagComponent:
         Tag: cube
@@ -261,7 +253,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialPointerID: 0
     - Entity: 11319732417842329475
       TagComponent:
         Tag: Sponza
@@ -275,7 +266,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 342345323
-        MaterialPointerID: 0
     - Entity: 7126273600172663719
       TagComponent:
         Tag: MaterialSphere
@@ -289,7 +279,24 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 566574579191162934
-        MaterialPointerID: 6008439512829965240
+      ScriptComponent:
+        Scripts:
+          - Script: Game.Player
+            ScriptFields:
+              - Name: SlowSpeed
+                Type: Float
+                Data: 3
+              - Name: MovementSpeed
+                Type: Float
+                Data: 2
+              - Name: testSpeed
+                Type: Float
+                Data: 4.5
+          - Script: Game.Enemy
+            ScriptFields:
+              - Name: Strenght
+                Type: Float
+                Data: 100
       SphereColliderComponent:
         IsTrigger: false
         Offset: [0, 0, 0]
@@ -316,4 +323,3 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 432434234236
-        MaterialPointerID: 0

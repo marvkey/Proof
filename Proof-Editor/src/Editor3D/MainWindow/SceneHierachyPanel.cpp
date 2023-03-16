@@ -632,7 +632,7 @@ namespace Proof
 				ImGui::OpenPopup("Open Scripts");
 			}
 			if (ImGui::BeginPopup("Open Scripts")) {
-				for (const auto& [scriptName, script] : ScriptEngine::GetScripts()) {
+				for (const auto [scriptName, script] : ScriptEngine::GetScripts()) {
 					if (ImGui::MenuItem(scriptName.c_str())) {
 						scriptComp.ScriptsNames.insert(scriptName);
 						ImGui::CloseCurrentPopup();
@@ -640,6 +640,7 @@ namespace Proof
 				}
 				ImGui::EndPopup();
 			}
+			/*
 			{
 				std::vector<std::string> deletes;
 				for (const auto& scriptName : scriptComp.ScriptsNames)
@@ -661,7 +662,11 @@ namespace Proof
 						{
 							if (ImGui::MenuItem(newScriptName.c_str()))
 							{
-								//scriptComp(scriptData.ClassName, newScriptName);
+								if (newScriptName != scriptName)
+								{
+									scriptComp.ScriptsNames.insert(newScriptName);
+									deletes.emplace_back(scriptName);
+								}
 								ImGui::CloseCurrentPopup();
 							}
 						}
@@ -676,7 +681,7 @@ namespace Proof
 				for (auto& scriptname : deletes)
 					scriptComp.ScriptsNames.erase(scriptname);
 			}
-
+			*/
 			if (m_CurrentWorld->IsRunning() == false)
 			{
 				for (const auto& scriptName : scriptComp.ScriptsNames)

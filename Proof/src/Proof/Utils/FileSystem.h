@@ -1,12 +1,15 @@
 #pragma once
 #include <string>
 #include <filesystem>
+#include "Proof/Core/Buffer.h"
 namespace Proof{
 	class FileSystem {
 	public:
 		static void SetAnEnvironmentVariable(const std::string& ID, const std::string& value);
 		static std::string GetEnvironmentValue(const std::string& ID);
 		static std::string GetProjectDir();
+
+		static Buffer ReadFileBinary(const std::filesystem::path& filepath);
 	private:
 		static void ClearEnvironmentVariables();
 		friend class Application;

@@ -7,12 +7,16 @@
 #include "mono/jit/jit.h"
 #include "mono/metadata/assembly.h"
 #include "mono/metadata/object.h"
+#include "mono/metadata/mono-debug.h"
+#include "mono/metadata/threads.h"
+
 #include "mono/metadata/attrdefs.h"
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 #include "ScriptFunc.h"
 #include <fmt/format.h>
+#include "Proof/Core/Buffer.h"
 namespace Proof
 {
     static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
@@ -46,8 +50,60 @@ namespace Proof
         }
         return hasError;
     }
-    namespace Utils
-    {
+    namespace Utils {
+
+        static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false)
+        {
+            ScopedBuffer fileData = FileSystem::ReadFileBinary(assemblyPath);
+
+            // NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
+            MonoImageOpenStatus status;
+            MonoImage* image = mono_image_open_from_data_full(fileData.As<char>(), fileData.Size(), 1, &status, 0);
+
+            if (status != MONO_IMAGE_OK)
+            {
+                const char* errorMessage = mono_image_strerror(status);
+                // Log some error message using the errorMessage data
+                return nullptr;
+            }
+
+            if (loadPDB)
+            {
+                std::filesystem::path pdbPath = assemblyPath;
+                pdbPath.replace_extension(".pdb");
+
+                if (std::filesystem::exists(pdbPath))
+                {
+                    ScopedBuffer pdbFileData = FileSystem::ReadFileBinary(pdbPath);
+                    mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.Size());
+                    PF_ENGINE_INFO("Loaded PDB {}", pdbPath.string());
+                }
+            }
+
+            std::string pathString = assemblyPath.string();
+            MonoAssembly* assembly = mono_assembly_load_from_full(image, pathString.c_str(), &status, 0);
+            mono_image_close(image);
+
+            return assembly;
+        }
+
+        void PrintAssemblyTypes(MonoAssembly* assembly)
+        {
+            MonoImage* image = mono_assembly_get_image(assembly);
+            const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+            int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+
+            for (int32_t i = 0; i < numTypes; i++)
+            {
+                uint32_t cols[MONO_TYPEDEF_SIZE];
+                mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+
+                const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+                const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+                PF_ENGINE_TRACE("{}.{}", nameSpace, name);
+            }
+        }
+
         ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
         {
             std::string typeName = mono_type_get_name(monoType);
@@ -61,69 +117,9 @@ namespace Proof
 
             return it->second;
         }
-        void PrintAssemblyTypes(MonoAssembly* assembly) {
-            MonoImage* image = mono_assembly_get_image(assembly);
-            const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-            int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
 
-            for (int32_t i = 0; i < numTypes; i++) {
-                uint32_t cols[MONO_TYPEDEF_SIZE];
-                mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+    }
 
-                const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-                const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-                PF_ENGINE_TRACE("{}.{}", nameSpace, name);
-            }
-        }
-        static char* ReadBytes(const std::filesystem::path& filepath, uint32_t* outSize) {
-            std::ifstream stream(filepath, std::ios::binary | std::ios::ate);
-
-            if (!stream) {
-                // Failed to open the file
-                return nullptr;
-            }
-
-            std::streampos end = stream.tellg();
-            stream.seekg(0, std::ios::beg);
-            uint64_t size = end - stream.tellg();
-
-            if (size == 0) {
-                // File is empty
-                return nullptr;
-            }
-
-            char* buffer = new char[size];
-            stream.read((char*)buffer, size);
-            stream.close();
-
-            *outSize = (uint32_t)size;
-            return buffer;
-        }
-
-        static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath) {
-            uint32_t fileSize = 0;
-            char* fileData = ReadBytes(assemblyPath, &fileSize);
-
-            // NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
-            MonoImageOpenStatus status;
-            MonoImage* image = mono_image_open_from_data_full(fileData, fileSize, 1, &status, 0);
-
-            if (status != MONO_IMAGE_OK) {
-                const char* errorMessage = mono_image_strerror(status);
-                // Log some error message using the errorMessage data
-                return nullptr;
-            }
-
-            std::string pathString = assemblyPath.string();
-            MonoAssembly* assembly = mono_assembly_load_from_full(image, pathString.c_str(), &status, 0);
-            mono_image_close(image);
-
-            // Don't forget to free the file data
-            delete[] fileData;
-
-            return assembly;
-        }
-    } // namespace utils
     struct MonoData {
         MonoDomain* RootDomain = nullptr;
         MonoDomain* AppDomain = nullptr;
@@ -143,6 +139,12 @@ namespace Proof
         std::unordered_map<EntityID, std::unordered_map<std::string,Count<ScriptInstance>>> EntityInstances;
         
         World* CurrentWorld = nullptr;
+
+        #ifdef PF_ENABLE_DEBUG 
+            bool EnableDebugging = true;
+        #else
+            bool EnableDebugging = false;
+        #endif
     };
     
     static MonoData* s_Data;
@@ -173,32 +175,25 @@ namespace Proof
     }
     MonoObject* ScriptClass::CallMethod(MonoObject* instance, MonoMethod* method, void** params) {
 
-        MonoObject* obk = nullptr;
-        return mono_runtime_invoke(method, instance, params, &obk);
+        MonoObject* exception = nullptr;
+        return mono_runtime_invoke(method, instance, params, &exception);
     }
     ScriptInstance::ScriptInstance(Count<ScriptClass> scriptClass, Entity entity) :
         m_ScriptClass(scriptClass) {
         m_Instance = scriptClass->Instantiate();
 
-        m_Constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
-        m_OnCreate = scriptClass->GetMethod("OnCreate", 0);
-        m_OnUpdate = scriptClass->GetMethod("OnUpdate", 1);
-        m_OnPlaced = scriptClass->GetMethod("OnPlace", 0);
-        m_OnSpawn = scriptClass->GetMethod("OnSpawn", 0);
-        m_OnDestroy = scriptClass->GetMethod("OnDestroy", 0);
+       	m_Constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
+		m_OnCreate = scriptClass->GetMethod("OnCreate", 0);
+		m_OnUpdate = scriptClass->GetMethod("OnUpdate", 1);
+       // m_OnPlaced = scriptClass->GetMethod("OnPlace", 0);
+       // m_OnSpawn = scriptClass->GetMethod("OnSpawn", 0);
+       // m_OnDestroy = scriptClass->GetMethod("OnDestroy", 0);
         // Call Entity constructor
         {
-            UUID entityID = entity.GetEntityID();
+            uint64_t entityID = entity.GetEntityID();
             void* param = &entityID;
             m_ScriptClass->CallMethod(m_Instance, m_Constructor, &param);
         }
-    }
-
-    ScriptInstance::ScriptInstance(std::string className, Entity entity)
-    {
-
-        if (!s_Data->ScriptEntityClasses.contains(className)) return;
-        m_ScriptClass = s_Data->ScriptEntityClasses[className];
     }
 
     void ScriptInstance::CallOnCreate() {
@@ -248,13 +243,16 @@ namespace Proof
     }
     void ScriptEngine::Init() {
         s_Data = new MonoData();
+
         InitMono();
+        ScriptFunc::RegisterFunctions();
+
         LoadAssembly("Resources/Scripts/ProofScriptCore.dll");
         LoadAppAssembly("GameProject/Asset/Scripts/Binaries/Game.dll");
+
         LoadAssemblyClasses();
 
         ScriptFunc::RegisterAllComponents();
-        ScriptFunc::RegisterFunctions();
 
         s_Data->EntityClass = Count<ScriptClass>::Create("Proof", "Entity", true);
     }
@@ -282,15 +280,13 @@ namespace Proof
         mono_domain_set(s_Data->AppDomain, true);
 
         // Move this maybe
-        s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath);
+        s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath,s_Data->EnableDebugging);
         s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
         // Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
     }
     void ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath) {
-        s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath);
-        //auto assemb = s_Data->AppAssembly;
+        s_Data->AppAssembly = Utils::LoadMonoAssembly(filepath, s_Data->EnableDebugging);
         s_Data->AppAssemblyImage = mono_assembly_get_image(s_Data->AppAssembly);
-       // auto assembi = s_Data->AppAssemblyImage;
     }
     World* ScriptEngine::GetWorldContext() {
         return s_Data->CurrentWorld;
@@ -303,12 +299,17 @@ namespace Proof
 
     void ScriptEngine::ReloadAssembly(World* world) {
         PF_CORE_ASSERT(world);
+        mono_domain_set(mono_get_root_domain(), false);
+
+        mono_domain_unload(s_Data->AppDomain);
         LoadAssembly("Resources/Scripts/ProofScriptCore.dll");
         LoadAppAssembly("GameProject/Asset/Scripts/Binaries/Game.dll");
         LoadAssemblyClasses();
 
         ScriptFunc::RegisterAllComponents();
         ScriptFunc::RegisterFunctions();
+        // Retrieve and instantiate class
+        s_Data->EntityClass = Count<ScriptClass>::Create("Proof", "Entity", true);
     }
 
     MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass) {
@@ -323,12 +324,26 @@ namespace Proof
     }
     void ScriptEngine::InitMono() {
         mono_set_assemblies_path("mono/lib");
+        if (s_Data->EnableDebugging)
+        {
+            const char* argv[2] = {
+                "--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=MonoDebugger.log",
+                "--soft-breakpoints"
+            };
 
+            mono_jit_parse_options(2, (char**)argv);
+            mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+        }
         MonoDomain* rootDomain = mono_jit_init("ProofJITRuntime");
         PF_CORE_ASSERT(rootDomain);
-
         // Store the root domain pointer
         s_Data->RootDomain = rootDomain;
+
+
+        if (s_Data->EnableDebugging)
+            mono_debug_domain_create(s_Data->RootDomain);
+
+        mono_thread_set_main(mono_thread_current());
 
     }
     void ScriptEngine::LoadAssemblyClasses() {
@@ -431,14 +446,15 @@ namespace Proof
         UUID entityUUID = entity.GetEntityID();
         if (s_Data->EntityInstances.contains(entityUUID))
         {
-            for (const auto& [scriptName, instance]: s_Data->EntityInstances[entityUUID])
+            for (auto& [scriptName, instance]: s_Data->EntityInstances[entityUUID])
             {
                 instance->CallOnUpdate(ts);
             }
         }
         else
         {
-            PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  enityt Tag {}", entityUUID,entity.GetName());
+            PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID,entity.GetName());
+            PF_CORE_ASSERT(false);
         }
     }
     std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& ScriptEngine::GetScriptFieldMap(Entity entity)

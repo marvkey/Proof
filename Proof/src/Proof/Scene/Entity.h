@@ -125,7 +125,7 @@ namespace Proof{
 		World* GetCurrentWorld()const {
 			return CurrentWorld;
 		}
-		operator bool() const { return m_ID != 0 &&CurrentWorld!=nullptr; }
+		operator bool() const { return m_ID != 0 && CurrentWorld!=nullptr && CurrentWorld->HasEntity(m_ID); }
 		const UUID GetEntityID()const { return m_ID;}
 
 		bool operator==(const Entity& other) const {

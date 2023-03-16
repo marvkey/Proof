@@ -16,6 +16,7 @@ namespace Proof
 		{
 			get
 			{
+
 				InternalCalls.TransformComponent_GetLocation(Entity.ID, out Vector location);
 				return location;
 			}

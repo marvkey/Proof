@@ -17,21 +17,32 @@ namespace Game
         void OnCreate()
         {
             m_Transform = GetComponent<TransformComponent>();
+            Log.Info("On create");
+            Log.Error(MovementSpeed);
+
         }
 
         void OnUpdate(float ts)
         {
-            Log.Info($"Hello world from scripts");
-
-            /*
             if (m_Transform == null)
+            {
                 Log.Error("transform component null");
-            else
-                Log.Info($"{m_Transform.Location.X}");
-
-            Vector currentLocation= new Vector(0.0f); //= m_Transform.Location;
+                return;
+            }
+            //Vector currentLocation = m_Transform.Location;
             if (Input.IsKeyPressed(KeyBoardKey.DownArrow))
             {
+                Log.Error("Down Arrow");
+                Log.Error(m_Transform.Location.X);
+
+                // GetComponent<TransformComponent>().Location.Y -= MovementSpeed;
+            }
+            //m_Transform.Location = currentLocation;
+
+            /*
+            if (Input.IsKeyPressed(KeyBoardKey.DownArrow))
+            {
+                Log.Error("Down Arrow");
                 currentLocation.Y -= MovementSpeed;
             }
             if (Input.IsKeyPressed(KeyBoardKey.UpArrow))
@@ -49,13 +60,14 @@ namespace Game
                 currentLocation.X += MovementSpeed;
             
             }
+            m_Transform.Location = currentLocation;
 
-            //m_Transform.Location = currentLocation;
             if (Input.IsKeyPressed(KeyBoardKey.R))
             {
                 Log.Trace($"Player movment speed {MovementSpeed}");
             }
             */
+
         }
     }
 }

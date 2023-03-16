@@ -10,6 +10,17 @@
 #include "Mesh.h"
 namespace Proof
 {
+	#define WRITE_SCRIPT_FIELD(FieldType, Type)           \
+			case ScriptFieldType::FieldType:          \
+				out << scriptField.GetValue<Type>();  \
+				break
+	#define READ_SCRIPT_FIELD(FieldType, Type)             \
+		case ScriptFieldType::FieldType:                   \
+		{                                                  \
+			Type data = scriptField["Data"].as<Type>();    \
+			fieldInstance.SetValue(data);                  \
+			break;                                         \
+	}
 	SceneSerializer::SceneSerializer(World* Scene) {
 		PF_CORE_ASSERT(Scene, "Scene cannot be nulltptr");
 		m_Scene = Scene;
@@ -111,7 +122,66 @@ namespace Proof
 					out << YAML::EndMap; // PointLightComponent
 				}
 			}
+			{
+				ScriptComponent* scriptComponent = entity.GetComponent<ScriptComponent>();
+				if (scriptComponent != nullptr)
+				{
+					out << YAML::Key << "ScriptComponent";
+					out << YAML::BeginMap; //ScriptComponent
+					out << YAML::Key << "Scripts" << YAML::BeginSeq; //scriptSeq
+					for (const std::string& scriptName : scriptComponent->ScriptsNames)
+					{
+						out << YAML::BeginMap;// Script
+						out << YAML::Key << "Script" << scriptName;
+						PF_ENGINE_INFO("Saving script {}", scriptName);
 
+						out << YAML::Key << "ScriptFields" << YAML::Value;
+						out << YAML::BeginSeq; // scriptfields
+						Count<ScriptClass> entityClass = ScriptEngine::GetScriptClass(scriptName);
+						const auto& fields = entityClass->GetFields();
+						auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+						for (const auto& [fieldName, field] : fields)
+						{
+							if (!entityFields.contains(scriptName) )
+								continue;
+							if(!entityFields.at(scriptName).contains(fieldName)) continue;
+
+							out << YAML::BeginMap; // ScriptField
+							out << YAML::Key << "Name" << YAML::Value << fieldName;
+							out << YAML::Key << "Type" << YAML::Value << Utils::ScriptFieldTypeToString(field.Type);
+
+							out << YAML::Key << "Data" << YAML::Value;
+							ScriptFieldInstance& scriptField = entityFields.at(scriptName).at(fieldName);
+
+							switch (field.Type)
+							{
+								WRITE_SCRIPT_FIELD(Float, float);
+								WRITE_SCRIPT_FIELD(Double, double);
+								WRITE_SCRIPT_FIELD(Bool, bool);
+								WRITE_SCRIPT_FIELD(Char, char);
+								WRITE_SCRIPT_FIELD(Byte, int8_t);
+								WRITE_SCRIPT_FIELD(Short, int16_t);
+								WRITE_SCRIPT_FIELD(Int, int32_t);
+								WRITE_SCRIPT_FIELD(Long, int64_t);
+								WRITE_SCRIPT_FIELD(UByte, uint8_t);
+								WRITE_SCRIPT_FIELD(UShort, uint16_t);
+								WRITE_SCRIPT_FIELD(UInt, uint32_t);
+								WRITE_SCRIPT_FIELD(ULong, uint64_t);
+								//WRITE_SCRIPT_FIELD(Vector2, Vector);
+								//WRITE_SCRIPT_FIELD(Vector3, glm::vec3);
+								//WRITE_SCRIPT_FIELD(Vector4, glm::vec4);
+								WRITE_SCRIPT_FIELD(Entity, UUID);
+							}
+							out << YAML::EndMap; // ScriptField
+						}
+						out << YAML::EndSeq; // scriptfields
+						out << YAML::EndMap;//script
+					}
+					out << YAML::EndSeq;//scriptSeq
+					out << YAML::EndMap; // ScriptComponent
+				}
+			}
+			
 			{
 				SpotLightComponent* spotLight = entity.GetComponent<SpotLightComponent>();
 				if (spotLight != nullptr) {
@@ -211,14 +281,7 @@ namespace Proof
 			}
 		}
 
-		{
-			ScriptComponent* scriptComponent = entity.GetComponent<ScriptComponent>();
-			if (scriptComponent != nullptr) {
-				out << YAML::Key << "ScriptComponent";
-				out << YAML::EndMap; // ScriptComponent
-			}
-		}
-
+		
 		out << YAML::EndMap; // entity
 	}
 
@@ -270,14 +333,14 @@ namespace Proof
 			return false;
 		for (auto entity : entities) {
 			uint64_t EntID = entity["Entity"].as<uint64_t>();
-
-			std::string name;
+			
+			std::string Entityname;
 			auto tagcomponent = entity["TagComponent"];
 			if (tagcomponent) {
-				name = tagcomponent["Tag"].as<std::string>();
+				Entityname = tagcomponent["Tag"].as<std::string>();
 			}
 
-			Entity NewEntity = m_Scene->CreateEntity(name, EntID);
+			Entity NewEntity = m_Scene->CreateEntity(Entityname, EntID);
 			{
 				if (tagcomponent) {
 					if (tagcomponent["tags"]) {
@@ -463,8 +526,59 @@ namespace Proof
 			{
 				auto scriptComponent = entity["ScriptComponent"];
 				if (scriptComponent) {
-					std::string enumClassName;
 					auto& scp = *NewEntity.AddComponent<ScriptComponent>();
+					auto scripts = scriptComponent["Scripts"];
+					for (auto script : scripts)
+					{
+						std::string scriptName = script["Script"].as<std::string>();
+						auto& engineScripts = ScriptEngine::GetScripts();
+						if (!engineScripts.contains(scriptName))
+							continue;
+
+						scp.ScriptsNames.insert(scriptName);
+						Count<ScriptClass> scriptClass = ScriptEngine::GetScriptClass(scriptName);
+						const auto& fields = scriptClass->GetFields();
+						auto& entityFields = ScriptEngine::GetScriptFieldMap(NewEntity);
+						
+						auto scriptFields = script["ScriptFields"];
+
+						for (auto scriptField : scriptFields)
+						{
+							std::string fieldName = scriptField["Name"].as<std::string>();
+							std::string fieldTypeString = scriptField["Type"].as<std::string>();
+							ScriptFieldType type = Utils::ScriptFieldTypeFromString(fieldTypeString);
+							if (!fields.contains(fieldName))
+							{
+								PF_ENGINE_WARN("Entity {} Script {} does not contain {} field", Entity{ EntID,m_Scene }.GetName(), scriptName, fieldName);
+								continue;
+							}
+							//creating the field instance adnscript
+							ScriptFieldInstance& fieldInstance = entityFields[scriptName][fieldName];
+
+							fieldInstance.Field = fields.at(fieldName);
+
+
+							switch (type)
+							{
+								READ_SCRIPT_FIELD(Float, float);
+								READ_SCRIPT_FIELD(Double, double);
+								READ_SCRIPT_FIELD(Bool, bool);
+								READ_SCRIPT_FIELD(Char, char);
+								READ_SCRIPT_FIELD(Byte, int8_t);
+								READ_SCRIPT_FIELD(Short, int16_t);
+								READ_SCRIPT_FIELD(Int, int32_t);
+								READ_SCRIPT_FIELD(Long, int64_t);
+								READ_SCRIPT_FIELD(UByte, uint8_t);
+								READ_SCRIPT_FIELD(UShort, uint16_t);
+								READ_SCRIPT_FIELD(UInt, uint32_t);
+								READ_SCRIPT_FIELD(ULong, uint64_t);
+								//READ_SCRIPT_FIELD(Vector2, glm::vec2);
+								//READ_SCRIPT_FIELD(Vector3, glm::vec3);
+								//READ_SCRIPT_FIELD(Vector4, glm::vec4);
+								//READ_SCRIPT_FIELD(Entity, UUID);
+							}
+						}
+					}
 				}
 			}
 		}

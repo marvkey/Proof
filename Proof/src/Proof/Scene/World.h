@@ -63,6 +63,7 @@ namespace Proof {
 		class Entity CreateEntity(const std::string& EntName, EntityID ID);
 		class Entity CreateEntity(Entity entity, bool includeChildren = true);
 		Entity TryGetEntity(UUID id);
+		Entity GetEntity(UUID id);
 		Entity FindEntityByTag(const std::string& tag);
 		// entities get added to a que and deleted at teh e end of the frame
 		void DeleteEntity(class Entity& ent, bool deleteChildren = true);

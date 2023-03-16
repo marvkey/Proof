@@ -135,6 +135,10 @@ namespace Proof {
 
 		return Entity{ *it,this };
 	}
+	Entity World::GetEntity(UUID id)
+	{
+		return Entity{ id,this };
+	}
 	template<typename Component>
 	static Component* CopyComponentIfExists(Entity dst, Entity src)
 	{
