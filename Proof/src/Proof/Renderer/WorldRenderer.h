@@ -23,6 +23,8 @@ namespace Proof
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
 		
 	private:
+		void Render(const glm::mat4&projection, const glm::mat4& view,const Vector& location);
+
 		Special<Renderer3DPBR> m_Renderer3D;
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
 		Special<class Renderer2D>  m_Renderer2D;

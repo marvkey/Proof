@@ -4,6 +4,7 @@
 #include "mono/metadata/object.h"
 #include "mono/metadata/reflection.h"
 #include "ScriptEngine.h"
+#include "Proof/Scene/Physics/PhysicsWorld.h"
 //(IMPORTANT)
 /*
 *WHEN PASSING A MONO TYPE MAKE SURE ITS A SRUCT BECAUSE WHEN ITS A CLASS IT GETS SOME UNDEFNIED BEHAVIOR
@@ -102,19 +103,45 @@ namespace Proof
 #pragma region RigidBody
 	static void RigidBody_GetMass(EntityID entityID, float* outMass) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("RigidBody.GetMass - entity is invalid or Does not have rigidBody");
+			return;
+		}
+		#endif
 		*outMass = entity.GetComponent<RigidBodyComponent>()->Mass;
 	}
 	static void RigidBody_SetMass(EntityID entityID, float* mass) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("RigidBody.SetMass - entity is invalid or Does not have rigidBody");
+			return;
+		}
+		#endif
 		entity.GetComponent<RigidBodyComponent>()->Mass = *mass;
 	}
 	static void RigidBody_AddForce(EntityID entityID, Vector force, int forceMode, bool autoAwake) {
-		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
-		entity.GetComponent<RigidBodyComponent>()->AddForce(force, (ForceMode)forceMode, autoAwake);
+		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		{
+			PF_ERROR("RigidBody.AddForce - entity is invalid  or does not have rigid body");
+			return;
+		}
+
+		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+		actor->AddForce(force, (ForceMode)forceMode, autoAwake);
 	}
 	static void RigidBody_AddTorque(EntityID entityID, Vector force, int forceMode, bool autoAwake) {
-		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
-		entity.GetComponent<RigidBodyComponent>()->AddTorque(force, (ForceMode)forceMode, autoAwake);
+		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		{
+			PF_ERROR("RigidBody.AddTorque - entity is invalid  or does not have rigid body");
+			return;
+		}
+
+		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+		actor->AddTorque(force, (ForceMode)forceMode, autoAwake);
 	}
 #pragma endregion
 #pragma region ScriptFunc

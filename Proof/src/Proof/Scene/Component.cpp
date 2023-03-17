@@ -71,46 +71,6 @@ namespace Proof
 		}
 		return a;
 	}
-	
-	void RigidBodyComponent::AddForce(Vector force, ForceMode mode, bool autoWake)const {
-		if (m_RigidBodyType == RigidBodyType::Static)return;
-		if (m_RuntimeBody == nullptr) return;
-		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		rigidBody->addForce({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
-	}
-
-	void RigidBodyComponent::AddTorque(Vector force, ForceMode mode, bool autoWake)const {
-		if (m_RuntimeBody == nullptr) return;
-		if (m_RigidBodyType == RigidBodyType::Static)return;
-		
-		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		rigidBody->addTorque({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
-		
-	}
-
-	bool RigidBodyComponent::IsSleeping()const {
-		if (m_RuntimeBody == nullptr) return true;
-		if (m_RigidBodyType == RigidBodyType::Static)return true;
-
-		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		return rigidBody->isSleeping();
-	}
-
-	void RigidBodyComponent::PutToSleep() {
-		if (m_RuntimeBody == nullptr) return;
-		if (m_RigidBodyType == RigidBodyType::Static)return;
-
-		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		rigidBody->putToSleep();
-	}
-
-	void RigidBodyComponent::WakeUp() {
-		if (m_RuntimeBody == nullptr) return;
-		if (m_RigidBodyType == RigidBodyType::Static)return;
-
-		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		rigidBody->wakeUp();
-	}
 
 	void MeshComponent::SetMesh(UUID ID, bool copyMaterialTable )
 	{

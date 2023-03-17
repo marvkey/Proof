@@ -61,6 +61,8 @@ namespace Proof
 		m_MeshPipeLine = CreateSpecial<MeshPipeLine>(m_RenderPass);
 		m_MeshMaterialPipeline = CreateSpecial<MeshMaterialPipeline>(m_RenderPass);
 		m_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
+		m_MeshPipeLine->LightPass.DirLightsBuffer = UniformBuffer::Create(sizeof(DirLight), DescriptorSets::Zero, (uint32_t)DescriptorSet0::DirectionalLight);
+
 	}
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {
 		BeginContext(editorCamera.m_Projection, editorCamera.m_View, GlmVecToProof(editorCamera.m_Positon), frameBuffer,commandBuffer);
@@ -192,7 +194,6 @@ namespace Proof
 
 		auto descriptor0 = m_MeshPipeLine->Descriptors[DescriptorSets::Zero];
 
-		m_MeshPipeLine->LightPass.DirLightsBuffer = UniformBuffer::Create(sizeof(DirLight), DescriptorSets::Zero, (uint32_t)DescriptorSet0::DirectionalLight);
 		if (m_MeshPipeLine->LightPass.DirLights.size() > 0)
 		{
 			m_MeshPipeLine->LightPass.DirLightsBuffer->SetData(&m_MeshPipeLine->LightPass.DirLights[0], sizeof(DirLight));
@@ -201,13 +202,15 @@ namespace Proof
 		{
 			DirLight base;
 			base.Color = Vector{ 0 };
-			m_MeshPipeLine->LightPass.DirLightsBuffer->SetData(&base, sizeof(DirLight));
+			m_MeshPipeLine->LightPass.DirLights.push_back(base);
+			m_MeshPipeLine->LightPass.DirLightsBuffer->SetData(&m_MeshPipeLine->LightPass.DirLights[0], sizeof(DirLight));
 		}
 		descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_RenderStorage->CameraBuffer);
 		descriptor0->WriteBuffer((uint32_t)DescriptorSet0::DirectionalLight, m_MeshPipeLine->LightPass.DirLightsBuffer);
 		PF_CORE_ASSERT(m_MeshPipeLine->IrradianceMap, "Irradiance map is empty");
 		PF_CORE_ASSERT(m_MeshPipeLine->PrefilterMap, "Prefilter map is empty");
 		PF_CORE_ASSERT(m_MeshPipeLine->BRDf, "BRDF map is empty");
+
 		descriptor0->WriteImage((uint32_t)DescriptorSet0::IrradianceMap, m_MeshPipeLine->IrradianceMap);
 		descriptor0->WriteImage((uint32_t)DescriptorSet0::PrefilterMap, m_MeshPipeLine->PrefilterMap);
 		descriptor0->WriteImage((uint32_t)DescriptorSet0::BRDF, m_MeshPipeLine->BRDf);
@@ -253,6 +256,7 @@ namespace Proof
 			descriptor0->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
 			for (const uint64_t& ID : m_MeshPipeLine->ElementsImplaced)
 			{
+
 				const uint64_t meshInstances = m_MeshPipeLine->Meshes[ID].Count;
 				Count<Mesh> mesh= m_MeshPipeLine->Meshes[ID].Mesh;
 				Count<MeshSource> meshSource= mesh->GetMeshSource();
@@ -260,7 +264,7 @@ namespace Proof
 				for (uint32_t index = 0; index < meshSource->GetSubMeshes().size(); index++)
 				{
 					if (mesh->IsMeshExcluded(index))continue;
-
+					
 					const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
 					auto material = mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex);
 					Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();

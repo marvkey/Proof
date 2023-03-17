@@ -15,7 +15,7 @@ namespace Proof {
 		// begin world and end world is already called
 		PhysicsWorld(World* world,const PhysicsWorldConfig& sceneConfig);
 		virtual ~PhysicsWorld();
-		void OnUpdate(float deltaTime);
+		void OnFixedUpdate(float deltaTime);
 		World* GetWorld() {
 			return m_World;
 		}
@@ -23,6 +23,8 @@ namespace Proof {
 		physx::PxScene* GetPhysicsScene() {
 			return m_Scene;
 		}
+		bool HasActor(UUID id);
+		Count<PhysicsActor> GetActor(UUID id);
 	private:
 		void StartWorld();
 		void EndWorld();
@@ -39,7 +41,7 @@ namespace Proof {
 		// creates a copy nd uses desctrocture
 		// so we would use Count so it is created once instead of twice
 		// performance saved
-		std::unordered_map<UUID,Count<PhysicsActor>> m_PhysicsActor;
+		std::unordered_map<UUID,Count<PhysicsActor>> m_Actors;
 		PhysicsWorldConfig m_Config;
 		World* m_World;
 	};

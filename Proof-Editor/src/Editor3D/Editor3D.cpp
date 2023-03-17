@@ -31,7 +31,7 @@
 #include <chrono>
 #include "Proof/Core/SceneCoreClasses.h"
 #include <GLFW/glfw3.h>
-
+#include "Proof/Input/Mouse.h"
 
 #include "Proof/Scripting/ScriptEngine.h"
 namespace Proof
@@ -276,7 +276,7 @@ namespace Proof
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
-		if (m_IsViewPortResize&& m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
+		if (m_IsViewPortResize && m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
 			m_WorldRenderer->Resize({(uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y });
 			// so the camera can be edited while beig resized
 			Application::Get()->GetWindow()->SetWindowInputEvent(false);
@@ -288,9 +288,13 @@ namespace Proof
 			case Proof::WorldState::Play:
 				{
 					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
-					if (m_ActiveWorld->HasWorldCamera()) {
+					if (m_ActiveWorld->HasWorldCamera() && Mouse::IsMouseCaptured()) {
 						auto entity = m_ActiveWorld->GetWorldCameraEntity();
 						auto location = m_ActiveWorld->GetWorldLocation(entity);
+						auto rotation = m_ActiveWorld->GetWorldRotation(entity);
+						entity.GetComponent<CameraComponent>()->Width = m_ViewPortSize.x;
+						entity.GetComponent<CameraComponent>()->Height = m_ViewPortSize.y;
+						entity.GetComponent<CameraComponent>()->CalculateProjection(location, rotation);
 						m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location);
 					}
 					else
@@ -410,6 +414,14 @@ namespace Proof
 		if (m_ViewPortFocused and Input::IsMouseButtonPressed(MouseButton::ButtonRight))
 			return;
 		switch (e.GetKey()) {
+			case KeyBoardKey::Escape:
+			{
+					if (m_ActiveWorld->IsPlaying())
+					{
+						Mouse::CaptureMouse(false);
+					}
+					break;
+			}
 			case KeyBoardKey::P:
 			{
 				if(control)
@@ -1182,13 +1194,13 @@ namespace Proof
 		m_WorldHierachy.m_SelectedEntity = {};
 
 		m_ActiveWorld->StartRuntime();
+		Mouse::CaptureMouse(true);
 	}
 	void Editore3D::SimulateWorld() {
 
 		m_ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
 	void Editore3D::SetWorldEdit() {
-
 		//GuizmoType = 0;
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;

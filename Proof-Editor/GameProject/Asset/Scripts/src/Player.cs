@@ -11,48 +11,26 @@ namespace Game
     public class Player : Entity
     {
         private TransformComponent m_Transform;
-        public float MovementSpeed = 2.0f;
-        public float SlowSpeed = 3.0f;
-        public float testSpeed = 4.5f;
+        private RigidBodyComponent m_RigidBody;
+
+        public float FowardForce = 200f;
+        public float SideWayForce = 500f;
         void OnCreate()
         {
             m_Transform = GetComponent<TransformComponent>();
-            Log.Info("On create");
-            Log.Info($"Location {m_Transform.Location.X}");
+            m_RigidBody = GetComponent<RigidBodyComponent>();   
 
         }
 
         void OnUpdate(float ts)
         {
-            if (m_Transform == null)
-                Log.Error("transform component null");
+            m_RigidBody.AddForce(new Vector( 0,0, FowardForce * ts));
 
-            Vector currentLocation = m_Transform.Location;
-            if (Input.IsKeyPressed(KeyBoardKey.DownArrow))
-            {
-                Log.Trace("Movement");
-                currentLocation.Y -= MovementSpeed;
-            }
-            if (Input.IsKeyPressed(KeyBoardKey.UpArrow))
-            {
-                currentLocation.Y += MovementSpeed;
+            if (Input.IsKeyPressed(KeyBoardKey.D))
+                m_RigidBody.AddForce(new Vector(-SideWayForce * ts,0,0));
 
-            }
-
-            if (Input.IsKeyPressed(KeyBoardKey.LeftArrow))
-            {
-                currentLocation.X -= MovementSpeed;
-            }
-            if (Input.IsKeyPressed(KeyBoardKey.RightArrow))
-            {
-                currentLocation.X += MovementSpeed;
-
-            }
-            m_Transform.Location = currentLocation;
-            if (Input.IsKeyPressed(KeyBoardKey.R))
-            {
-                Log.Trace($"Player movment speed {MovementSpeed}");
-            }
+            if(Input.IsKeyPressed(KeyBoardKey.A))
+                m_RigidBody.AddForce(new Vector(SideWayForce * ts,0,0));
 
         }
     }

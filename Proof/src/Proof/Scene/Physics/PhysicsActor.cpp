@@ -62,6 +62,45 @@ namespace Proof {
 		}
 		rigidBody->release();
 	}
+	void PhysicsActor::AddForce(Vector force, ForceMode mode, bool autoWake)
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->addForce({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
+	}
+	void PhysicsActor::AddTorque(Vector force, ForceMode mode, bool autoWake)
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->addTorque({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
+	}
+
+	void PhysicsActor::PutToSleep()
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->putToSleep();
+	}
+	void PhysicsActor::WakeUp()
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->wakeUp();
+	}
+	bool PhysicsActor::IsSleeping()
+	{
+		switch (m_RigidBodyType)
+		{
+			case Proof::RigidBodyType::Static:
+				return true;
+			case Proof::RigidBodyType::Dynamic:
+				physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+				return rigidBody->isSleeping();
+		}
+		PF_CORE_ASSERT(false);
+	}
 	void PhysicsActor::OnFixedUpdate(float deltaTime)
 	{
 		// posibbly calling fixed update on scripts maybe we add it or maybe not
@@ -75,23 +114,12 @@ namespace Proof {
 		}
 	}
 
-	bool PhysicsActor::IsSleeping()
-	{
-		switch (m_RigidBodyType)
-		{
-			case Proof::RigidBodyType::Static:
-				return true;
-			case Proof::RigidBodyType::Dynamic:
-				physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-				return rigidBody->isSleeping();
-		}
-		PF_CORE_ASSERT(false);
-	}
+
 
 	void PhysicsActor::AddRigidBody()
 	{
 		if (defauultMaterial == nullptr)
-			defauultMaterial = PhysicsEngine::GetPhysics()->createMaterial(0.6f, 0.6f, 0.f);
+			defauultMaterial = PhysicsEngine::GetPhysics()->createMaterial(0.0f, 0.0, 0.0);
 
 		const auto& transformComponent = *m_Entity.GetComponent<TransformComponent>();
 		const auto worldLocation = m_PhysicsWorld->GetWorld()->GetWorldLocation(m_Entity);

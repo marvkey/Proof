@@ -1,0 +1,83 @@
+World:
+  ID: 1231203838479
+  Entities:
+    - Entity: 11324041314292594131
+      TagComponent:
+        Tag: Plane
+        tags: []
+      TransformComponent:
+        Location: [0, -3.20000005, 0]
+        Rotation: [0, 0, 0]
+        Scale: [-10, 1, 20000]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 9019730813530534380
+      TagComponent:
+        Tag: Player
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: [11923592787940579810]
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+      ScriptComponent:
+        Scripts:
+          - Script: Game.Player
+            ScriptFields:
+              - Name: FowardForce
+                Type: Float
+                Data: 200
+              - Name: SideWayForce
+                Type: Float
+                Data: 500
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 11923592787940579810
+      TagComponent:
+        Tag: Camera
+        tags: []
+      TransformComponent:
+        Location: [0, 2.4000001, -11]
+        Rotation: [0, 0, 90]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 9019730813530534380
+        Children: []
+      CameraComponent:
+        NearPlane: 0.100000001
+        FarPlane: 200
+        FOV: 90
+        Width: 250
+        Height: 250
+        UpVector: [0, 1, 0]

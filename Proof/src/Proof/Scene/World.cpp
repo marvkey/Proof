@@ -123,7 +123,10 @@ namespace Proof {
 				ScriptEngine::OnUpdateEntity(Entity{ entity,this }, DeltaTime);
 			}
 		}
-		m_PhysicsWorld->OnUpdate(DeltaTime);
+		if (HasWorldCamera())
+		{
+		}
+		m_PhysicsWorld->OnFixedUpdate(DeltaTime);
 
 		DeleteEntitiesfromQeue();
 	}

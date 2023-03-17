@@ -17,6 +17,9 @@ Assets:
   - Asset: 6477593735195019013
     Type: World
     Path: Scenes\Lightest.ProofWorld
+  - Asset: 1231203838479
+    Type: World
+    Path: Scenes\SinglePlayer.ProofWorld
   - Asset: 963839203
     Type: MeshSourceFile
     Path: Models\backpack\backpack.obj

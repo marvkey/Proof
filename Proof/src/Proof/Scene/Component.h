@@ -376,38 +376,28 @@ namespace Proof
 
 		CameraComponent() = default;
 		enum class CameraType { Orthographic = 0,Perspective = 1 };
+		Vector UPVector = {0,1,0};
+		
+		CameraType Type = CameraType::Perspective;
+		float NearPlane = 0.1;
+		float FarPlane = 1000;
+		float FovDeg = 45;
+		uint32_t Width = 250,Height = 250;
+		glm::mat4 View = glm::mat4(1.0f);
+		glm::mat4 Projection = glm::mat4(1.0f);
+		glm::mat4 CameraMatrix = glm::mat4(1.0f);
 
-		void SetDimensions(uint32_t width,uint32_t Height) {
-			m_Width = width;
-			m_Height = Height;
-		}
-		bool AutoSetDimension(bool value) {
-			value = m_AutoSetDimension;
-		}
-		const glm::mat4& GetView()const { return m_View; }
-		const glm::mat4& GetProjection()const { return m_Projection; }
-		Vector m_Up = {0,1,0};
-	private:
-		void CalculateProjection(const Proof::Vector&position, const Vector& rotation) {
+		void CalculateProjection(const Proof::Vector& position, const Vector& rotation) {
 			glm::vec3 CameraDirection;
 			CameraDirection.x = cos(glm::radians(rotation.Z)) * cos(glm::radians(rotation.Y));
 			CameraDirection.y = sin(glm::radians(rotation.Y));
 			CameraDirection.z = sin(glm::radians(rotation.Z)) * cos(glm::radians(rotation.Y));
 			Vector direction = GlmVecToProof(glm::normalize(CameraDirection));
-			m_View = glm::lookAt(ProofToglmVec(position), ProofToglmVec( position) + ProofToglmVec(direction), ProofToglmVec( m_Up ));
-			m_Projection = glm::perspective(glm::radians(m_FovDeg),(float)m_Width / (float)m_Height,m_NearPlane,m_FarPlane);
-			m_CameraMatrix = m_View * m_Projection;
+			View = glm::lookAt(ProofToglmVec(position), ProofToglmVec(position) + ProofToglmVec(direction), ProofToglmVec(UPVector));
+			Projection = glm::perspective(glm::radians(FovDeg), (float)Width / (float)Height, NearPlane, FarPlane);
+			CameraMatrix = View * Projection;
 		}
-		CameraType m_CameraType = CameraType::Perspective;
 
-		bool m_AutoSetDimension = true;
-		float m_NearPlane = 0.1;
-		float m_FarPlane = 1000;
-		float m_FovDeg = 45;
-		uint32_t m_Width = 250,m_Height = 250;
-		glm::mat4 m_View = glm::mat4(1.0f);
-		glm::mat4 m_Projection = glm::mat4(1.0f);
-		glm::mat4 m_CameraMatrix = glm::mat4(1.0f);
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -554,13 +544,6 @@ namespace Proof
 		RigidBodyType GetType() {
 			return m_RigidBodyType;
 		}
-
-		void AddForce(Vector force, ForceMode mode = ForceMode::Force,bool autoWake=true) const;
-		void AddTorque(Vector force, ForceMode mode = ForceMode::Force, bool autoWake = true)const;
-		bool IsSleeping() const;
-		void PutToSleep();
-		void WakeUp();
-
 	private:
 		RigidBodyType m_RigidBodyType = RigidBodyType::Static;
 		void* m_RuntimeBody = nullptr;

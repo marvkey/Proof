@@ -356,16 +356,14 @@ namespace Proof
 			DrawVectorControl("Scale", transformComp.Scale, 1.0f);
 		});
 		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp) {
-			/*
-			if (AssetManager::HasAsset(meshComp.GetMeshID())) {
-				auto assetInfo= AssetManager::GetAssetInfo(meshComp.GetMeshID());
+			if (AssetManager::HasAsset(meshComp.GetMesh())) {
+				auto assetInfo= AssetManager::GetAssetInfo(meshComp.GetMesh());
 				ExternalAPI::ImGUIAPI::TextBar("Mesh", assetInfo.GetName());
 			}
 			else
 			{
 				ExternalAPI::ImGUIAPI::TextBar("Mesh", "null");
 			}
-			*/
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Mesh).c_str())) {
 					UUID Data = *(const UUID*)payload->Data;
@@ -383,6 +381,7 @@ namespace Proof
 
 				ImGui::EndPopup();
 			}
+
 			/*
 			if (AssetManager::HasAsset(meshComp.GetMaterialID()))
 			{
@@ -472,16 +471,16 @@ namespace Proof
 		});
 
 		DrawComponents<CameraComponent>("Camera", entity, [](CameraComponent& cameraComp) {
-			ImGui::SliderFloat("Field ov fiew", &cameraComp.m_FovDeg, 0, 360);
-			ImGui::SliderFloat("Near plane", &cameraComp.m_NearPlane, -1, 1);
-			ImGui::SliderFloat("Far plane", &cameraComp.m_FarPlane, 0, 10000);
+			ImGui::SliderFloat("Field ov fiew", &cameraComp.FovDeg, 0, 360);
+			ImGui::SliderFloat("Near plane", &cameraComp.NearPlane, -1, 1);
+			ImGui::SliderFloat("Far plane", &cameraComp.FarPlane, 0, 10000);
 			if (ImGui::IsItemHovered()) {
 				ImGui::BeginTooltip();
 				ImGui::Text("Setting to 0 means you can see any object no matter how far away it is");
 				ImGui::EndTooltip();
 			}
-			ExternalAPI::ImGUIAPI::CheckBox("set Automatic resize", &cameraComp.m_AutoSetDimension);
-			ExternalAPI::ImGUIAPI::EnumCombo<CameraComponent::CameraType>("Type", cameraComp.m_CameraType);
+			ExternalAPI::ImGUIAPI::EnumCombo("Type", cameraComp.Type);
+			/*
 			if (cameraComp.m_AutoSetDimension == false) {
 				int tempWidth = (int)cameraComp.m_Width;
 				int tempHeight = (int)cameraComp.m_Height;
@@ -490,6 +489,7 @@ namespace Proof
 				cameraComp.m_Width = tempWidth;
 				cameraComp.m_Height = tempHeight;
 			}
+			*/
 
 		}, "if nothing visible set roation of z axis to 1");
 
@@ -682,7 +682,7 @@ namespace Proof
 					scriptComp.ScriptsNames.erase(scriptname);
 			}
 			*/
-			if (m_CurrentWorld->IsRunning() == false)
+			if (m_CurrentWorld->IsPlaying() == false)
 			{
 				for (const auto& scriptName : scriptComp.ScriptsNames)
 				{

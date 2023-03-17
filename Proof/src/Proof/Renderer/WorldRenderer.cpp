@@ -93,16 +93,18 @@ namespace Proof
 	void WorldRenderer::Resize(ScreenSize windowSize) {
 		m_ScreenFrameBuffer->Resize(Vector2{ (float)windowSize.X, (float)windowSize.Y });
 	}
-	void WorldRenderer::Render(EditorCamera& camera) {
+
+	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location)
+	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer);
-		CameraData cmaeraData = CameraData(camera.m_Projection, camera.m_View, GlmVecToProof(camera.m_Positon));
+		CameraData cmaeraData = CameraData(projection, view, location);
 		cameraBuffer = UniformBuffer::Create(&cmaeraData, sizeof(CameraData), DescriptorSets::Zero, 0);
 
 		{
-			
+
 			Renderer::RecordRenderPass(m_RenderPass, RenderPipline, [&](Count <RenderCommandBuffer> commandBuffer) {
 				auto descriptor0 = Descriptors[DescriptorSets::Zero];
 				descriptor0->WriteBuffer(0, cameraBuffer);
@@ -115,23 +117,23 @@ namespace Proof
 					Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexBuffer->GetCount());
 				}
 			});
-			
-		}
-		
-		m_Renderer3D->BeginContext(camera, m_ScreenFrameBuffer,m_CommandBuffer);
 
-		m_Renderer3D->SetPbrMaps(iradianceCubeMap,prefilterCubeMap,brdfTexture);
+		}
+
+		m_Renderer3D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
+		m_Renderer3D->SetPbrMaps(iradianceCubeMap, prefilterCubeMap, brdfTexture);
 		// MESHES
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
-				auto& mesh = *entity.GetComponent<MeshComponent>();
-				if (AssetManager::HasAsset(mesh.GetMesh()))
+				auto& meshComponent = *entity.GetComponent<MeshComponent>();
+				if (AssetManager::HasAsset(meshComponent.GetMesh()))
 				{
+					Count<Mesh> mesh = meshComponent.GetMesh();
 					 //if material equls meshMaterial
-					if (*mesh.MaterialTable == *mesh.GetMesh()->GetMaterialTable())
-						m_Renderer3D->SubmitMesh(mesh.GetMesh(), m_World->GetWorldTransform(entity));
+					if (*meshComponent.MaterialTable == *mesh->GetMaterialTable())
+						m_Renderer3D->SubmitMesh(mesh, m_World->GetWorldTransform(entity));
 					else
-						m_Renderer3D->SubmitMeshWithMaterial(mesh.GetMesh(), mesh.GetMesh()->GetMaterialTable(), m_World->GetWorldTransform(entity));
+						m_Renderer3D->SubmitMeshWithMaterial(mesh, mesh->GetMaterialTable(), m_World->GetWorldTransform(entity));
 				}
 			});
 		}
@@ -156,7 +158,7 @@ namespace Proof
 		#endif
 		/*
 		m_DebugMeshRenderer->BeginContext(camera.m_Projection, camera.m_View,GlmVecToProof( camera.m_Positon), m_ScreenFrameBuffer, m_CommandBuffer);
-		
+
 		{
 			m_World->ForEachEnitityWith<CubeColliderComponent>([&](Entity entity) {
 				glm::mat4 transform = m_World->GetWorldTransform(entity);
@@ -201,60 +203,11 @@ namespace Proof
 
 		Renderer::SubmitCommandBuffer(m_CommandBuffer);
 	}
-	void WorldRenderer::Render(CameraComponent& camera, Vector& location) {
-
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
-		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer);
-		/*
-		// prefeltired
-		{
-			Renderer::RecordRenderPass(m_RenderPass, RenderPipline, [&](Count <RenderCommandBuffer> commandBuffer) {
-				auto cmaeraData = CameraData{ camera.GetProjection(),camera.m_View,location};
-				auto descriptor0 = Descriptors[DescriptorSets::Zero];
-				auto cameraBuffer = UniformBuffer::Create(&cmaeraData, sizeof(CameraData), DescriptorSets::Zero, 0);
-				descriptor0->WriteBuffer(0, cameraBuffer);
-				descriptor0->WriteImage(1, textureCubeMap);
-				descriptor0->Bind(commandBuffer, PipelineLayout);
-				for (const auto& subMesh : Cube->GetSubMeshes())
-				{
-					subMesh.GetVertexBuffer()->Bind(commandBuffer);
-					subMesh.GetIndexBuffer()->Bind(commandBuffer);
-					Renderer::DrawElementIndexed(commandBuffer, subMesh.GetIndexBuffer()->GetCount());
-				}
-			});
-		}
-		*/
-		m_Renderer3D->BeginContext(camera.GetProjection(), camera.GetView(), location,  m_ScreenFrameBuffer, m_CommandBuffer);
-		// MESHES
-		{
-			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
-				auto& mesh = *entity.GetComponent<MeshComponent>();
-				if (AssetManager::HasAsset(mesh.GetMesh()))
-					m_Renderer3D->SubmitMesh(mesh.GetMesh(), m_World->GetWorldTransform(entity));
-				});
-			}
-			// light
-		{
-			m_World->ForEachEnitityWith<DirectionalLightComponent>([&](Entity entity) {
-				auto& lightComp = *entity.GetComponent<DirectionalLightComponent>();
-				Vector rotation = m_World->GetWorldRotation(entity) + lightComp.OffsetDirection;
-				DirLight dirLight{ lightComp.Color,lightComp.Intensity,rotation };
-				m_Renderer3D->SubmitDirectionalLight(dirLight);
-			});
-		}
-		m_Renderer3D->EndContext();
-
-		m_Renderer2D->BeginContext(camera.m_Projection, camera.m_View, location, m_ScreenFrameBuffer, m_CommandBuffer);
-		{
-			m_World->ForEachComponent<SpriteComponent, TransformComponent>([&](SpriteComponent& sprite, TransformComponent& transform) {
-				m_Renderer2D->DrawQuad(sprite, transform);
-			});
-		}
-		m_Renderer2D->EndContext();
-		Renderer::EndRenderPass(m_RenderPass);
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+	void WorldRenderer::Render(EditorCamera& camera) 
+	{
+		Render(camera.m_Projection, camera.m_View, { camera.m_Positon.x,camera.m_Positon.y,camera.m_Positon.z });
 	}
-	
+	void WorldRenderer::Render(CameraComponent& camera, Vector& location) {
+		Render(camera.Projection, camera.View, location);
+	}
 }

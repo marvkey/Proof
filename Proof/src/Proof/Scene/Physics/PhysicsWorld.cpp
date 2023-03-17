@@ -89,6 +89,15 @@ namespace Proof {
 			}
 		}
 	}
+	bool PhysicsWorld::HasActor(UUID id)
+	{
+		return m_Actors.contains(id);
+	}
+	Count<PhysicsActor> PhysicsWorld::GetActor(UUID id)
+	{
+		PF_CORE_ASSERT(HasActor(id), " Does not contain actor");
+		return m_Actors.at(id);
+	}
 	void PhysicsWorld::StartWorld()
 	{
 		PF_PROFILE_FUNC();

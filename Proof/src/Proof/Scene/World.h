@@ -42,12 +42,12 @@ namespace Proof {
 
 		// if the scene is on play or pause 
 		// does not use when is simualate
-		bool IsRunning() {
-			return GetState() == WorldState::Play || GetState() == WorldState::Pause;
+		bool IsPlaying() {
+			return GetState() == WorldState::Play;
 		}
 
-		bool IsPlaying() {
-			return GetState() == WorldState::Play || GetState() == WorldState::Pause;
+		bool IsSimulating() {
+			return GetState() == WorldState::Simulate;
 		}
 		bool HasEntity(EntityID ID)const;
 		bool HasEntity(EntityID ID);

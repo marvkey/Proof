@@ -8,14 +8,18 @@ namespace Proof{
 		PhysicsActor(class PhysicsWorld* physicsWorld,Entity entity);
 		virtual ~PhysicsActor();
 
-
+		void AddForce(Vector force, ForceMode mode = ForceMode::Force, bool autoWake = true);
+		void AddTorque(Vector force, ForceMode mode = ForceMode::Force, bool autoWake = true);
+		void PutToSleep();
+		void WakeUp();
 
 		bool IsSleeping();
 		void SyncTransform();
+		void OnFixedUpdate(float deltaTime);
 
 	private:
+		friend class PhysicsWorld;
 		// not sure how we gonna treat this yet
-		void OnFixedUpdate(float deltaTime);
 		enum class RigidBodyType m_RigidBodyType;
 		class PhysicsWorld* m_PhysicsWorld =nullptr;
 		Entity m_Entity;
