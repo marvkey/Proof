@@ -61,7 +61,7 @@ namespace Proof {
 	Count<class Asset> MaterialAssetSerializer::TryLoadAsset(const AssetInfo& assetData) const
 	{
 		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
-		if (!data["AssetType"]) 
+		if (!data["AssetType"])
 			return nullptr;
 		Count<Material> material = Count<Material>::Create();
 		//m_AssetID = data["ID"].as<uint64_t>();
@@ -83,12 +83,12 @@ namespace Proof {
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(material->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << material->GetID();
 
-		out << YAML::Key << "StaticFriction" << YAML::Value << material->StaticFriction;
-		out << YAML::Key << "DynamicFriction" << YAML::Value << material->DynamicFriction;
-		out << YAML::Key << "Bounciness" << YAML::Value << material->Bounciness;
+		out << YAML::Key << "StaticFriction" << YAML::Value << material->GetStaticFriction();
+		out << YAML::Key << "DynamicFriction" << YAML::Value << material->GetDynamicFriction();
+		out << YAML::Key << "Bounciness" << YAML::Value << material->GetBounciness();
 
-		out << YAML::Key << "FrictionCombineMode" << YAML::Value << EnumReflection::EnumString(material->FrictionCombineMode);
-		out << YAML::Key << "BouncinessCombineMode" << YAML::Value << EnumReflection::EnumString(material->BouncinessCombineMode);
+		out << YAML::Key << "FrictionCombineMode" << YAML::Value << EnumReflection::EnumString(material->GetFrictionCombineMode());
+		out << YAML::Key << "BouncinessCombineMode" << YAML::Value << EnumReflection::EnumString(material->GetBouncinessCombineMode());
 
 		out << YAML::EndMap;
 		std::ofstream found(AssetManager::GetAssetFileSystemPath(data.Path).string());
@@ -105,15 +105,15 @@ namespace Proof {
 		//m_AssetID = data["ID"].as<uint64_t>();
 		Count<PhysicsMaterial> material = Count<PhysicsMaterial>::Create();
 
-		material->StaticFriction = data["StaticFriction"].as<float>();
-		material->DynamicFriction = data["DynamicFriction"].as<float>();
-		material->Bounciness = data["Bounciness"].as<float>();
+		material->SetStaticFriction(data["StaticFriction"].as<float>());
+		material->SetDynamicFriction(data["DynamicFriction"].as<float>());
+		material->SetBounciness(data["Bounciness"].as<float>());
 
-		material->FrictionCombineMode = EnumReflection::StringEnum<CombineMode>(data["FrictionCombineMode"].as<std::string>());
-		material->BouncinessCombineMode = EnumReflection::StringEnum<CombineMode>(data["BouncinessCombineMode"].as<std::string>());
+		material->SetFrictionCombineMode(EnumReflection::StringEnum<CombineMode>(data["FrictionCombineMode"].as<std::string>()));
+		material->SetBouncinessCombineMode(EnumReflection::StringEnum<CombineMode>(data["BouncinessCombineMode"].as<std::string>()));
 
 		SetID(assetData, material);
-		return Count<class Asset>();
+		return material;
 	}
 
 	void MeshAssetSerializer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const

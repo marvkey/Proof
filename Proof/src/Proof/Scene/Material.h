@@ -7,7 +7,7 @@
 #include <map>
 namespace Proof{
 	struct Material : public Asset {
-		Material();
+		Material(const std::string& name = "");
 		// setting mutable because we can always change
 		// for liek when we get material through a material asset
 		float Metallness =0.0f;// also shinines
@@ -31,10 +31,12 @@ namespace Proof{
 
 	class MaterialTable {
 	public:
-		MaterialTable() {
-			SetMaterial(0, Count<Material>::Create());
+		MaterialTable(uint32_t materialCount = 1) {
+			for (uint32_t index = 0; index < materialCount; index++)
+			{
+				SetMaterial(index, Count<Material>::Create(fmt::format("Default")));
+			}
 		}
-		Count<MaterialTable> Copy();
 		// material can be nulltr
 		// index cna be existing or non exisitng
 		void SetMaterial(uint32_t materialIndex,Count<Material> material) {
@@ -78,15 +80,40 @@ namespace Proof{
 	};
 	struct PhysicsMaterial: public Asset
 	{
-		PhysicsMaterial();
-		float StaticFriction = 0.6f;
-		float DynamicFriction = 0.6f;
-		float Bounciness = 0.0f;
+		PhysicsMaterial(float staticFriction =0.6f, float dynamicFriction = 0.6f, float bounciness = 0.0f);
+		float GetStaticFriction() {
+			return m_StaticFriction;
+		}
+		float GetDynamicFriction() {
+			return m_DynamicFriction;
+		}
+		float GetBounciness() {
+			return m_Bounciness;
+		}
 
-		CombineMode FrictionCombineMode = CombineMode::Average;
-		CombineMode BouncinessCombineMode = CombineMode::Average;
+		void SetStaticFriction(float friciono);
+		void SetDynamicFriction(float friction);
+		void SetBounciness(float bounciness);
+
+		CombineMode GetFrictionCombineMode() {
+			return m_FrictionCombineMode;
+		}
+
+		CombineMode GetBouncinessCombineMode() {
+			return m_BouncinessCombineMode;
+		}
+
+		void SetFrictionCombineMode(CombineMode mode);
+		void SetBouncinessCombineMode(CombineMode mode);
+
 		ASSET_CLASS_TYPE(PhysicsMaterial);
 	private:
+		float m_StaticFriction = 0.6f;
+		float m_DynamicFriction = 0.6f;
+		float m_Bounciness = 0.0f;
+
+		CombineMode m_FrictionCombineMode = CombineMode::Average;
+		CombineMode m_BouncinessCombineMode = CombineMode::Average;
 		void* m_RuntimeBody = nullptr;
 		friend class PhysicsEngine;
 		friend class PhysicsActor;

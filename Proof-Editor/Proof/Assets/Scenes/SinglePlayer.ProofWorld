@@ -18,7 +18,7 @@ World:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
         OffsetScale: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
+        PhysicsMaterialPointerID: 14027245898106135139
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0
@@ -49,7 +49,7 @@ World:
                 Data: 200
               - Name: SideWayForce
                 Type: Float
-                Data: 500
+                Data: 900
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]

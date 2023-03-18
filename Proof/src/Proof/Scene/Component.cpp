@@ -27,13 +27,12 @@ namespace Proof
 		{
 			return nullptr;
 		}
-		auto a = AssetManager::GetAsset<PhysicsMaterial>(m_PhysicsMaterialPointerID);
-		if (a == nullptr)
+		if (AssetManager::HasAsset(m_PhysicsMaterialPointerID))
 		{
-			m_PhysicsMaterialPointerID = 0;
-			return nullptr;
+			return AssetManager::GetAsset<PhysicsMaterial>(m_PhysicsMaterialPointerID);
 		}
-		return a;
+		m_PhysicsMaterialPointerID = 0;
+		return nullptr;
 	}
 	Count<PhysicsMaterial> SphereColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0) {
@@ -80,7 +79,7 @@ namespace Proof
 
 		m_MeshID = ID;
 		if (copyMaterialTable)
-			MaterialTable = AssetManager::GetAsset<Mesh>(m_MeshID)->GetMaterialTable()->Copy();
+			MaterialTable =Count<class MaterialTable>::CreateFrom( AssetManager::GetAsset<Mesh>(m_MeshID)->GetMaterialTable());
 	}
 
 	void MeshComponent::RemoveMesh()

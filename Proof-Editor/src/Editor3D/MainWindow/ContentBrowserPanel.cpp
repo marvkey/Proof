@@ -77,7 +77,7 @@ namespace Proof
 		ImGui::PopStyleVar();
 	}
 
-	AssetID AddMeshFunc(const std::filesystem::path& meshPath, std::filesystem::path savePath, const std::vector<uint32_t>& excludeIndex) {
+	AssetID AddMeshFunc(Count<MeshSource> meshSource, std::filesystem::path savePath, const std::vector<uint32_t>& excludeIndex) {
 		if (std::filesystem::is_directory(savePath)) {
 			if (std::filesystem::exists(savePath) == false)
 				std::filesystem::create_directory(savePath);
@@ -101,10 +101,9 @@ namespace Proof
 			finalPath += fmt::format("({})", endIndex);
 
 		PF_CORE_ASSERT(false);
-		return 0;
-		//return AssetManager::NewAsset<Mesh>(finalPath, meshPath.string())->GetID();
+		return AssetManager::NewAsset<Mesh>(finalPath, meshSource)->GetID();
 	}
-	std::pair<bool, AssetID> ContentBrowserPanel::AddMesh(const std::filesystem::path& meshPath, const std::vector<uint32_t>& excludeIndex) {
+	std::pair<bool, AssetID> ContentBrowserPanel::AddMesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& excludeIndex) {
 		static std::string meshAddedSavePath = "Mesh\\";
 		bool returnValue = false;
 		if(ImGui::IsPopupOpen("Add Mesh") ==false)
@@ -130,7 +129,7 @@ namespace Proof
 				auto assetDirCopy = s_AssetsDir;
 				// we are copyying because when we apply /= opperator it affects teh s_AssetDir to be dfferent
 				std::string savedPath = std::filesystem::path{ assetDirCopy /= meshAddedSavePath }.string();
-				ID =AddMeshFunc(meshPath, savedPath, excludeIndex);
+				ID =AddMeshFunc(meshSource, savedPath, excludeIndex);
 				returnValue = false;
 				meshAddedSavePath = "Mesh";
 				s_PathCreateMesh = "";
@@ -246,11 +245,13 @@ namespace Proof
 				FileRenameName = NameofFileRename;
 			}
 
-			if (AddAssetPopupMenuItem<Texture2D>("Texture2D", "Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0", NameofFileRename))
-				FileRenameName = NameofFileRename;
-			else if (AddAssetPopupMenuItem<Material>("Material", NameofFileRename))
+			if (AddAssetPopupMenuItem<Material>("Material", NameofFileRename))
 				FileRenameName = NameofFileRename;
 			else if (AddAssetPopupMenuItem<PhysicsMaterial>("PhysicsMaterial", NameofFileRename))
+			{
+				FileRenameName = NameofFileRename;
+			}
+			else if (AddAssetPopupMenuItem<Texture2D>("Texture2D", "Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0", NameofFileRename))
 				FileRenameName = NameofFileRename;
 			ImGui::EndPopup();
 		}
@@ -294,44 +295,12 @@ namespace Proof
 				}
 				goto FolderorFile;
 			}
-			// file only
-			//we have to use this m_fileicon get for some reason crashing
-			/*
-			switch (currentFileInfo.AssetType)
-			{
-			case Proof::AssetType::Mesh:
-				ImGui::Button("Mesh", { thumbnailSize,thumbnailSize });
-				break;
-			case Proof::AssetType::Texture:
-				ImGui::Button("Texture", { thumbnailSize,thumbnailSize });
-				break;
-			case Proof::AssetType::Material:
-				ImGui::Button("Material", { thumbnailSize,thumbnailSize });
-				break;
-			case Proof::AssetType::World:
-				ImGui::Button("World", { thumbnailSize,thumbnailSize });
-				break;
-			case Proof::AssetType::MeshSourceFile:
-				ImGui::Button("MeshSourceFile", { thumbnailSize,thumbnailSize });
-				break;
-			case Proof::AssetType::PhysicsMaterial:
-				ImGui::Button("PhysicsMaterial", { thumbnailSize,thumbnailSize });
-				break;
-			case Proof::AssetType::TextureSourceFile:
-				ImGui::Button("TextureSourceFile", { thumbnailSize,thumbnailSize });
-				break;
-			default:
-				ImGui::Button("File", { thumbnailSize,thumbnailSize });
-				break;
-			}
-			*/
-			// not working for somereason 
 			ImGui::ImageButton((ImTextureID)m_FileIcon->GetImage().SourceImage, {thumbnailSize,thumbnailSize});
 			if (ImGui::BeginDragDropSource()) {
 				std::string fileDragSourcePath = path.string();
 				// we doingthis becausefor loop and dragsurce may change
 				if (AssetManager::HasAsset(fileDragSourcePath) == false) {
-					//AssetManager::NewAssetSource(fileDragSourcePath,AssetManager::GetAssetTypeFromFilePath(fileDragSourcePath));
+					AssetManager::NewAssetSource(fileDragSourcePath,AssetManager::GetAssetTypeFromFilePath(fileDragSourcePath));
 				}
 				auto staticAssetInfo = AssetManager::GetAssetInfo(fileDragSourcePath);
 				UUID staticID = AssetManager::GetAssetInfo(fileDragSourcePath).ID;
@@ -355,7 +324,8 @@ namespace Proof
 				if (currentFileInfo.AssetType != AssetType::MeshSourceFile && currentFileInfo.AssetType != AssetType::TextureSourceFile && It.is_directory() == false) {
 					if (ImGui::MenuItem("Reload")) {
 						if (AssetManager::IsAssetLoaded(currentFileInfo.ID)) {
-							//AssetManager::GetAsset<Asset>(currentFileInfo.ID)->LoadAsset();
+							
+							//AssetManager::GetAsset<Asset>(currentFileInfo.ID)();
 						}
 					}
 
@@ -397,7 +367,7 @@ namespace Proof
 		}
 		if (createMesh == true) {
 			AssetID id;
-			std::tie(createMesh,id) = AddMesh(s_PathCreateMesh);
+			std::tie(createMesh,id) = AddMesh(AssetManager::GetAsset<MeshSource>(s_PathCreateMesh));
 		}
 		ImGui::Columns(1);
 		ImGui::SliderFloat("Thumbnail Size", &thumbnailSize, 16, 512);
@@ -476,7 +446,7 @@ namespace Proof
 			for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(fileNewFullName)) {// through every file
 				if (AssetManager::HasAsset(dirEntry.path())) {
 					AssetInfo assetInfo = AssetManager::GetAssetInfo(dirEntry.path());
-					AssetManager::ResetAssetPath(assetInfo.ID, dirEntry.path().string());
+					AssetManager::ChangeAssetPath(assetInfo.ID, dirEntry.path().string());
 				}
 			}
 			ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
@@ -488,9 +458,11 @@ namespace Proof
 	void ContentBrowserPanel::RenameFile(const std::string& fileName, const std::string& fileFullExension) {
 
 		std::string newFullName = FileRenameName + "." + fileFullExension;
+		//just name and extension
+		std::string oldFullName = NameofFileRename + "." + fileFullExension;
 
 		bool nameExist = std::filesystem::exists(m_CurrentDirectory.string() + "\\" + newFullName);
-		if (newFullName == NameofFileRename || nameExist == false)
+		if (newFullName == oldFullName || nameExist == false)
 			ImGui::PushStyleColor(ImGuiCol_Text, { 1,1,1,1 });
 		else
 			ImGui::PushStyleColor(ImGuiCol_Text, { 1.0,0.0,0.0,1 }); // error name not valuable
@@ -518,7 +490,8 @@ namespace Proof
 			std::filesystem::rename(fileOldFullName, fileNewFullName);
 			if (AssetManager::HasAsset(fileOldFullName)) {
 				AssetInfo assetInfo = AssetManager::GetAssetInfo(fileOldFullName);
-				AssetManager::ResetAssetPath(assetInfo.ID, fileNewFullName);
+				AssetManager::ChangeAssetPath(assetInfo.ID, fileNewFullName);
+				AssetManager::SaveAssetManager();
 			}
 			FileRenameName = "";
 			ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();

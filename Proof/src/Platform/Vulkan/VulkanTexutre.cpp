@@ -26,6 +26,9 @@ namespace Proof
 		m_Path(Path)
 
 	{
+		Init(m_Path);
+	}
+	void VulkanTexture2D::Init(const std::string& Path) {
 		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		int width, height, channels;
 		if (Path.empty())
@@ -123,6 +126,10 @@ namespace Proof
 		AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format));
 		SetData(data);
 		stbi_image_free(data);
+	}
+	void VulkanTexture2D::Recreate(const std::string& path) {
+		Release();
+		Init(path);
 	}
 	VulkanTexture2D::VulkanTexture2D(uint32_t width, uint32_t height, ImageFormat format, const void* data)
 		: m_Width(width), m_Height(height), m_Format(format) {
@@ -543,6 +550,7 @@ namespace Proof
 		m_Sampler = nullptr;
 		m_ImageView = nullptr;
 		m_Image.Image = nullptr;
+		m_Set = nullptr;
 		m_Image.Allocation = nullptr;
 	}
 

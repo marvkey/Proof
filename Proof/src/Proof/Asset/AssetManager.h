@@ -20,7 +20,7 @@ namespace Proof
 		std::string GetName()const {
 			return Utils::FileDialogs::GetFileName(Path);
 		}
-		bool IsAssetSource() {
+		bool IsAssetSource()const  {
 			return Type == AssetType::MeshSourceFile || Type == AssetType::TextureSourceFile;
 		}
 		friend class AssetManager;
@@ -47,7 +47,7 @@ namespace Proof
 	class World;
 	class Proof_API AssetManager {
 	public:
-
+		static std::string GetExtension(AssetType type);
 		static void NewAsset(Count<Asset>& asset, const std::filesystem::path& savePath) {
 			PF_CORE_ASSERT(asset);
 			asset->m_ID = AssetManager::CreateID();
@@ -59,6 +59,7 @@ namespace Proof
 
 			GetAssets().insert({ assetInfo.ID,{assetInfo,asset} });
 			GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
+			AssetManager::SaveAsset(assetInfo.ID);
 		}
 		template <class AssetType, class... Args,
 			std::enable_if_t<std::is_constructible<AssetType, Args...>::value&& Is_Compatible<AssetType, Asset>::value, int> = 0>
@@ -71,11 +72,12 @@ namespace Proof
 			assetInfo.State = AssetState::Ready;
 			assetInfo.ID = asset->GetID();
 			assetInfo.Type = asset->GetAssetType();
-			PF_CORE_ASSERT(false);
 			GetAssets().insert({ assetInfo.ID,{assetInfo,asset} });
 			GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
+			AssetManager::SaveAsset(assetInfo.ID);
 			return asset.As<AssetType>();
 		}
+		// cannot access this asset by path only by its id
 		template<class AssetType, typename ... Args, std::enable_if_t<Is_Compatible<AssetType, Asset>::value, int> = 0>
 		static Count<AssetType> CreateRuntimeAsset(Args&&... args) {
 			static_assert(!std::is_same<AssetType, class World>::value, "Cannot craet  a world like this");
@@ -88,10 +90,10 @@ namespace Proof
 			assetInfo.Type = asset->GetAssetType();
 			assetInfo.RuntimeAsset = true;
 			GetAssets().insert({ assetInfo.ID,{assetInfo,asset} });
-			GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
+			//GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
 			return asset.As<AssetType>();
 		}
-
+/*
 		template <class Type, std::enable_if_t<Is_Compatible<Type, Asset>::value, int> = 0>
 		static void NewAssetNoLoad(const std::filesystem::path& savePath) {
 			AssetInfo assetInfo;
@@ -103,6 +105,7 @@ namespace Proof
 			GetAssets().insert({ assetInfo.ID,{assetInfo,nullptr} });
 			GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
 		}
+		*/
 		static void NewAssetSource(const std::filesystem::path& path, AssetType type);
 		static bool IsAssetLoaded(AssetID ID) {
 			PF_CORE_ASSERT(HasAsset(ID), "ID does not exist");
@@ -186,26 +189,23 @@ namespace Proof
 
 		static void UnloadAsset(AssetID ID);
 
+		static void SaveAsset(AssetID Id);
+		// change assetPath
+		static void ChangeAssetPath(AssetID ID, const std::filesystem::path& newPath);
+
+		// loops trhough all assets and saves them
+		static void SaveAllAssets();
+		// just saves the assetanager inot the assetManager file
+		static void SaveAssetManager();
 	private:
 		static std::unordered_map<AssetID, AssetContainer>& GetAssets();
 		static std::unordered_map<std::string, AssetID>& GetAssetByPath();
 		static void Init(AssetManagerConfiguration& assetManagerConfiguration);
 		static void UnInizilize();
-		// id of asset wewant to chanage, and the new path of the asset
-		static bool ResetAssetPath(AssetID ID,const std::string& newPath) {
-			auto& it = GetAssets().at(ID);
-			// changing teh old data in assetBypath
-			GetAssetByPath().erase(it.Info.Path.string());
-			// creating the new data
-			GetAssetByPath().insert({ newPath,it.Info.ID });
-			// new assetINfo
-			it.Info.Path = newPath;
-			return true;
-		}
+		
 
 		static std::vector<std::string> s_PermitableMeshSourceFile;
 	
-		static void SaveAllAssets();
 		static void InitilizeAssets();
 
 		friend class Application;

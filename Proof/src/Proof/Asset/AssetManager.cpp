@@ -29,6 +29,7 @@ namespace Proof
 		s_AssetManagerData->AssetRegistry = assetManagerConfiguration.AssetManager;
 		{
 			s_AssetManagerData->AssetSerilizer[AssetType::Material] = CreateSpecial<MaterialAssetSerializer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::PhysicsMaterial] = CreateSpecial<PhysicsMaterialAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Mesh] = CreateSpecial<MeshAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Texture] = CreateSpecial<TextureAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::MeshSourceFile] = CreateSpecial<MeshSourceAssetSerializer>();
@@ -53,8 +54,34 @@ namespace Proof
 		return s_AssetManagerData->AssetPath;
 	}
 	AssetInfo AssetManager::GetAssetInfo(AssetID ID) {
-		auto& it = GetAssets()[ID];
+		PF_CORE_ASSERT(HasAsset(ID), "Does not contian assetID");
+		auto& it = GetAssets().at(ID);
 		return it.Info;
+	}
+	std::string AssetManager::GetExtension(AssetType type)
+	{
+		switch (type)
+		{
+			case Proof::AssetType::None:
+				return "";
+			case Proof::AssetType::Mesh:
+				return "Mesh.ProofAsset";
+			case Proof::AssetType::Texture:
+				return "Texture.ProofAsset";
+			case Proof::AssetType::Material:
+				return "Material.ProofAsset";
+			case Proof::AssetType::World:
+				return "ProofWorld";
+			case Proof::AssetType::MeshSourceFile:
+				return "";
+			case Proof::AssetType::PhysicsMaterial:
+				return "PhysicsMaterial.ProofAsset";
+			case Proof::AssetType::TextureSourceFile:
+				return "";
+			default:
+				break;
+		}
+		PF_CORE_ASSERT(false,fmt::format("Asset Type {} does not have extension", EnumReflection::EnumString(type)).c_str());
 	}
 	void AssetManager::NewAssetSource(const std::filesystem::path& path, AssetType type)
 	{
@@ -168,12 +195,23 @@ namespace Proof
 
 	AssetInfo AssetManager::GetAssetInfo(const std::filesystem::path& path)
 	{
-		return s_AssetManagerData->Assets[s_AssetManagerData->AssetPath.at(path.string())].Info;
+		PF_CORE_ASSERT(HasAsset(path), "Does not conatin Asset");
+		auto changepath = std::filesystem::relative(path, AssetManager::GetDirectory());
+		// error is c++ library 
+		if (changepath.empty())
+			return s_AssetManagerData->Assets[s_AssetManagerData->AssetPath.at(path.string())].Info;
+		else
+			return s_AssetManagerData->Assets[s_AssetManagerData->AssetPath.at(changepath.string())].Info;
 	}
 
 	bool AssetManager::HasAsset(const std::filesystem::path& path)
 	{
-		return s_AssetManagerData->AssetPath.contains(path.string());
+		auto changepath = std::filesystem::relative(path, AssetManager::GetDirectory());
+		// error is c++ library 
+		if(changepath.empty())
+			return s_AssetManagerData->AssetPath.contains(path.string());
+		else
+			return s_AssetManagerData->AssetPath.contains(changepath.string());
 	}
 	
 	bool AssetManager::LoadAsset(AssetID ID) {
@@ -221,6 +259,17 @@ namespace Proof
 			s_AssetManagerData->AssetPath.insert({ path,assetID });
 		}
 	}
+	void AssetManager::SaveAsset(AssetID Id) {
+
+		PF_CORE_ASSERT(AssetManager::HasAsset(Id), "trying to save asset that does not exist");
+		const auto& assetInfo = GetAssetInfo(Id);
+
+		if (!assetInfo.IsAssetSource() && assetInfo.State == AssetState::Ready)
+		{
+			s_AssetManagerData->AssetSerilizer.at(assetInfo.Type)->Save(assetInfo, AssetManager::GetAsset<Asset>(Id));
+		}
+
+	}
 	void AssetManager::SaveAllAssets() {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -232,10 +281,34 @@ namespace Proof
 			const auto& asset = assetManager.Asset;
 			if (assetInfo.RuntimeAsset)
 				continue;
-			if (assetInfo.State == AssetState::Ready) {
+			if (assetInfo.State == AssetState::Ready && assetInfo.IsAssetSource() ==false) {
 				if (s_AssetManagerData->AssetSerilizer.contains(assetInfo.Type))
 					s_AssetManagerData->AssetSerilizer.at(assetInfo.Type)->Save(assetInfo,asset);
 			}
+			out << YAML::BeginMap;
+			out << YAML::Key << "Asset" << YAML::Value << assetInfo.ID;
+			out << YAML::Key << "Type" << EnumReflection::EnumString<AssetType>(assetInfo.Type);
+			out << YAML::Key << "Path" << assetInfo.Path.string();
+			out << YAML::EndMap;
+		};
+		out << YAML::EndMap;
+
+		std::ofstream found(s_AssetManagerData->AssetRegistry);
+		found << out.c_str();
+		found.close();
+	}
+	void AssetManager::SaveAssetManager() 
+	{
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Assets" << YAML::Value << YAML::BeginSeq;
+
+		for (auto& [id, assetManager] : s_AssetManagerData->Assets)
+		{
+
+			const auto& assetInfo = assetManager.Info;
+			if (assetInfo.RuntimeAsset)
+				continue;
 			out << YAML::BeginMap;
 			out << YAML::Key << "Asset" << YAML::Value << assetInfo.ID;
 			out << YAML::Key << "Type" << EnumReflection::EnumString<AssetType>(assetInfo.Type);
@@ -267,6 +340,20 @@ namespace Proof
 		#endif
 		
 		PF_ENGINE_INFO("Time Load Asset {}ms ",time.TimePassedMillis());
+	}
+
+	void AssetManager::ChangeAssetPath(AssetID ID, const std::filesystem::path& newPath) 
+	{
+		PF_CORE_ASSERT(AssetManager::HasAsset(ID), "Does not contain asset");
+		auto& it = GetAssets().at(ID);
+
+		auto path = std::filesystem::relative(newPath, AssetManager::GetDirectory());
+		// changing teh old data in assetBypath
+		GetAssetByPath().erase(it.Info.Path.string());
+		// creating the new data
+		GetAssetByPath().insert({ path.string(),it.Info.ID });
+		// new assetINfo
+		it.Info.Path = path;
 	}
 	std::filesystem::path AssetManager::GetAssetFileSystemPath(const std::filesystem::path& path) {
 		return Application::Get()->GetProject()->GetAssetFileSystemPath(path);

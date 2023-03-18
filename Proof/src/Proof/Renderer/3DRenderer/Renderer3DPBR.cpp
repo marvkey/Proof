@@ -297,6 +297,7 @@ namespace Proof
 			{
 				for (auto& meshMaterialInstance : m_MeshMaterialPipeline->Meshes[ID])
 				{
+					
 					const uint64_t meshInstances = meshMaterialInstance.Count;
 					Count<Mesh> mesh = meshMaterialInstance.Mesh;
 					Count<MeshSource> meshSource = mesh->GetMeshSource();
@@ -304,7 +305,7 @@ namespace Proof
 					{
 						if (mesh->IsMeshExcluded(i))continue;
 						const SubMesh& subMesh = meshSource->GetSubMeshes()[i];
-						auto material = mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex);
+						auto material = meshMaterialInstance.MaterialTables->GetMaterial(subMesh.MaterialIndex);
 						MaterialData materialData;
 						materialData.Colour = material->Colour;
 						materialData.Metallness = material->Metallness;
@@ -312,9 +313,9 @@ namespace Proof
 
 						Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
 						descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
-						descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
-						descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);
-						descriptor1->WriteImage((int)DescriptorSet1::RoughnessMap, material->RoughnessTexture != nullptr ? material->RoughnessTexture : whiteTexture);
+						//descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
+						//descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);
+						//descriptor1->WriteImage((int)DescriptorSet1::RoughnessMap, material->RoughnessTexture != nullptr ? material->RoughnessTexture : whiteTexture);
 
 						descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout);
 						subMesh.VertexBuffer->Bind(m_RenderStorage->CommandBuffer);

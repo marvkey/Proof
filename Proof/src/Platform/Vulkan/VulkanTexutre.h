@@ -71,10 +71,14 @@ namespace Proof
 		uint32_t GetHeight() const { return m_Height; }
 		void SetData(const void* data);
 		VkDescriptorImageInfo GetImageBufferInfo(VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+		void Recreate(const std::string& path);
 	private:
 		std::string m_Path;
 		void AllocateMemory(uint64_t size, uint32_t bits = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VkSamplerAddressMode mode= VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_REPEAT);
 		void Release();
+
+		void Init(const std::string& path);
 		uint32_t m_MipLevels = 1;
 		VkImageView m_ImageView = nullptr;
 		VkSampler m_Sampler = nullptr;

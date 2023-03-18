@@ -80,6 +80,24 @@ namespace Proof
 				out << YAML::Key << "MeshComponent";
 				out << YAML::BeginMap; // Mesh component
 				out << YAML::Key << "MeshAssetPointerID" << YAML::Value << Meshes->m_MeshID;
+				if (AssetManager::HasAsset(Meshes->GetMesh()))
+				{
+					if (Meshes->GetMesh()->GetMaterialTable() == Meshes->MaterialTable)
+						goto leave;
+					/*
+					out << YAML::Key << "MaterialTable" << YAML::BeginSeq; //MaterialTbale 
+					{
+						out << YAML::Key << "Materials";
+						out << YAML::BeginMap;
+						for (auto& [index, Material] : Meshes->MaterialTable->GetMaterials())
+						{
+							out << YAML::Key << index << YAML::Value << Material->GetID();
+						}
+						out << YAML::EndMap;
+					}
+					*/
+				}
+				leave:
 				out << YAML::EndMap; // Mesh component
 			}
 		}
@@ -385,7 +403,7 @@ namespace Proof
 				if (meshComponent) {
 					auto& src = *NewEntity.AddComponent<MeshComponent>();
 					src.m_MeshID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
-					src.MaterialTable = AssetManager::GetAsset<Mesh>(src.m_MeshID)->GetMaterialTable()->Copy();
+					src.MaterialTable = Count<MaterialTable>::CreateFrom( AssetManager::GetAsset<Mesh>(src.m_MeshID)->GetMaterialTable());
 				}
 			}
 			// SPRITE

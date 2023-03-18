@@ -108,6 +108,7 @@ namespace Proof {
 		// if mempty means string was constructed with no path
 		virtual std::string GetPath()const = 0;
 
+
 		ASSET_CLASS_TYPE(Texture);
 	};
 	struct TextureUsage {
@@ -130,6 +131,7 @@ namespace Proof {
 	};
 	class Proof_API Texture2D: public Texture {
 	public:
+		virtual void Recreate(const std::string& path) = 0;
 		static Count<Texture2D> GenerateBRDF(uint32_t dimension = 512, uint32_t sampleCount = 1024);
 		static Count<Texture2D> Create(TextureConfig config);
 		static Count<Texture2D> Create(const std::string& Path);

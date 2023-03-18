@@ -987,7 +987,7 @@ namespace Proof
 			}
 			if (meshSourceAdded) {
 				AssetID id;
-				std::tie(meshSourceAdded, id) = m_ContentBrowserPanel.AddMesh(meshSourcePath);
+				std::tie(meshSourceAdded, id) = m_ContentBrowserPanel.AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
 				// basically add mesh is done with its operation and no longer renderng
 				if (meshSourceAdded == false) {
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
@@ -1161,14 +1161,25 @@ namespace Proof
 		if (!AssetManager::HasAsset(m_ActiveWorld->GetID()))
 		{
 			SaveSceneDialouge = true;
-			
 			return;
 		}
-		SceneSerializer scerelizer(m_ActiveWorld.Get());
-		auto assetInfo = AssetManager::GetAssetInfo(m_ActiveWorld->GetID());
-		scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
+		float timeSave;
+		{
+			Timer time;
+			SceneSerializer scerelizer(m_ActiveWorld.Get());
+			auto assetInfo = AssetManager::GetAssetInfo(m_ActiveWorld->GetID());
+			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 
-		PF_ENGINE_TRACE("{} Saved", m_ActiveWorld->GetName().c_str());
+			timeSave = time.TimePassedMillis();
+		}
+		PF_EC_TRACE("{} Saved  in {} m/s", m_ActiveWorld->GetName().c_str(), timeSave);
+
+		{
+			Timer time;
+			AssetManager::SaveAssetManager();
+			timeSave = time.TimePassedMillis();
+		}
+		PF_EC_TRACE("AssetManager Saved {} m/s", timeSave);
 
 	}
 	void Editore3D::NewWorld()
@@ -1244,8 +1255,8 @@ namespace Proof
 				break;
 			case Proof::AssetType::PhysicsMaterial:
 				{
-					//Count<Panel> panel = Count<PhysicsMaterialEditorPanel>::Create (AssetManager::GetAsset<PhysicsMaterial>(ID));
-					//m_AllPanels.insert({ ID,panel });
+					Count<Panel> panel = Count<PhysicsMaterialEditorPanel>::Create (AssetManager::GetAsset<PhysicsMaterial>(ID));
+					m_AllPanels.insert({ ID,panel });
 					return true;
 				}
 			default:

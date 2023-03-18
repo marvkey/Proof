@@ -15,7 +15,8 @@ namespace Proof
 			//ImGui::Columns(2); 
 			//ImGui::SetColumnWidth(0,ColumnWidth);
 			ImGui::Text(Name.c_str());
-			ImGui::NextColumn();
+			ImGui::SameLine();
+			//ImGui::NextColumn();
 
 			char buffer[1024];
 			memset(buffer,0,sizeof(buffer));

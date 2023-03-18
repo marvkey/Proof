@@ -326,7 +326,10 @@ namespace Proof{
 		explicit operator bool() const noexcept {
 			return this->Get() != nullptr;
 		}
-
+		
+		// an error can occure if teh class you are trying to create 
+		// has a virutal function not implemented 
+		// or hte arguments do not mathc the contrucor
 		template <class... Args, std::enable_if_t<std::is_constructible<T, Args...>::value, int> = 0>
 		static Count Create(Args&&... args) {
 			T* data = new T(args...);

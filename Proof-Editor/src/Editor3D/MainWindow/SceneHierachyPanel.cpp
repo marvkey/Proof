@@ -381,33 +381,31 @@ namespace Proof
 
 				ImGui::EndPopup();
 			}
-
-			/*
-			if (AssetManager::HasAsset(meshComp.GetMaterialID()))
+			ImGui::Separator();
+			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
+			bool open = ImGui::TreeNodeEx("MaterialTablerwrs", treeNodeFlags, "Material Table");
+			if (!open)return;
+			for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
 			{
-				auto assetInfo = AssetManager::GetAssetInfo(meshComp.GetMaterialID());
-				ExternalAPI::ImGUIAPI::TextBar("Material", assetInfo.GetName());
-			}
-			else
-				ExternalAPI::ImGUIAPI::TextBar("Material", "null");
-				*/
-			if (ImGui::BeginPopupContextItem("RemoveMaterial")) {
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginPopup("RemoveMaterial")) {
-				if (ImGui::MenuItem("Remove Material")) {
-					//meshComp.RemoveMaterial() ;
+				std::string name = material != nullptr ? material->Name : "null";
+				ExternalAPI::ImGUIAPI::TextBar(fmt::format("Index {}",index), name);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Material).c_str()))
+					{
+						uint64_t Data = *(const uint64_t*)payload->Data;
+						if (AssetManager::HasAsset(Data))
+						{
+							auto material = AssetManager::GetAsset<Material>(Data);
+							meshComp.MaterialTable->SetMaterial(index, material);
+						}
+					}
+					ImGui::EndDragDropTarget();
 				}
+			}
 
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Material).c_str())) {
-					uint64_t Data = *(const uint64_t*)payload->Data;
-					//meshComp.SetMaterial(Data);
-				}
-				ImGui::EndDragDropTarget();
-			}
+			ImGui::TreePop();
 		});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
 			//if (spriteComp.GetTexture() != nullptr) {

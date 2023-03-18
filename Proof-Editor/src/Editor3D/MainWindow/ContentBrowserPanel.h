@@ -20,7 +20,7 @@ namespace Proof
 		// when the window pop up context is done
 		// returns true if still need rendering
 		// the bool is for don, and assetId is the asset id of the mesh
-		static std::pair<bool, AssetID> AddMesh(const std::filesystem::path& meshPath, const std::vector<uint32_t>& excludeIndex = {});
+		static std::pair<bool, AssetID> AddMesh(Count<class MeshSource> meshSource, const std::vector<uint32_t>& excludeIndex = {});
 			//returns false when done rendering
 		// when the window pop up context is done
 		// returns true if still need rendering
@@ -34,64 +34,7 @@ namespace Proof
 		Count<Texture2D> m_ArrowIcon;
 		class Editore3D* m_Owner;
 		void GetAllSubFolders(const std::filesystem::path& path);
-		/**
-		* Adds an asset and retuns the file path of the asset
-		* assetSourcePath: the source file of the 
-		* @return returns the path to the asset
-		*/
-		/*
-		template <typename T>
-		std::string AddAssetSource(const std::string& assetSourcePath ) {
-			if (assetSourcePath.empty())return {};
-			std::string fileFullName; // name of the full file including extension
-			std::string fileDefaultName; // name that is what we get when first importaed
-			std::string fileName; // name that we can add a 1 or 2 at the end
 
-			fileDefaultName = Utils::FileDialogs::GetFileName(assetSourcePath);
-			fileName = fileDefaultName;
-			fileFullName = fileName + "." + T::StaticGetExtension();
-
-
-			uint32_t endIndex = 0; // the ending index of a file like file(0) or file(1)
-			while (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + fileFullName)) {
-				endIndex++;
-				fileName = fileDefaultName + "(" + std::to_string(endIndex) + ")";
-				fileFullName = fileName + "." + T::StaticGetExtension();
-			}
-			std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
-
-			Count<T> tempAsset = CreateCount<T>(assetSourcePath, m_CurrentDirectory.string() + "\\" + fileFullName);
-			AssetManager::NewAsset(tempAsset);
-			return { m_CurrentDirectory.string() + "\\" + fileFullName };
-		}
-		*/
-		/**
-		* Adds an asset and retuns the file path of the asset
-		* assetName: name of the asset
-		* @return returns the path to the asset
-		*/
-		/*
-		template <typename T>
-		std::string AddAssetName(const std::string& assetName = typeid(T).name()) {
-			std::string fileFullName; // name of the full file including extension
-			std::string fileDefaultName; // name that is what we get when first importaed
-			std::string fileName; // name that we can add a 1 or 2 at the end
-
-			fileDefaultName = assetName;
-			fileName = fileDefaultName;
-			fileFullName = fileName + "." + T::StaticGetExtension();
-			uint32_t endIndex = 0; // the ending index of a file like file(0) or file(1)
-			while (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + fileFullName)) {
-				endIndex++;
-				fileName = fileDefaultName + "(" + std::to_string(endIndex) + ")";
-				fileFullName = fileName + "." + T::GetStaticType();
-			}
-			std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
-			Count<T> tempAsset = CreateCount<T>(m_CurrentDirectory.string() + "\\" + fileFullName);
-			AssetManager::NewAsset(tempAsset);
-			return { m_CurrentDirectory.string() + "\\" + fileFullName };
-		}
-		*/
 		/**
 		* adds a asset to menu item to add to content broweser
 		* name: the asset we want to add texture, mesh, so one
@@ -104,10 +47,36 @@ namespace Proof
 			if (ImGui::MenuItem(name.c_str())) {
 				std::string extensionFilePathSource = Utils::FileDialogs::OpenFile(filter);
 				if (extensionFilePathSource.empty())return false;
-				//setFileToRename = Utils::FileDialogs::GetFileName(AddAssetSource<T>(extensionFilePathSource));
+				//	setFileToRename = Utils::FileDialogs::GetFileName(AddAssetSource<T>(extensionFilePathSource));
 				return true;
 			}
 			return false;
+		}
+		/**
+		* Adds an asset and retuns the file path of the asset
+		* assetName: name of the asset
+		* @return returns the path to the asset
+		*/
+		template <typename T>
+		std::string AddAssetName(const std::string& assetName = typeid(T).name()) {
+			std::string fileFullName; // name of the full file including extension
+			std::string fileDefaultName; // name that is what we get when first importaed
+			std::string fileName; // name that we can add a 1 or 2 at the end
+
+			fileDefaultName = assetName;
+			fileName = fileDefaultName;
+			fileFullName = fileName + "." + AssetManager::GetExtension(T::GetStaticType());
+			uint32_t endIndex = 0; // the ending index of a file like file(0) or file(1)
+			while (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + fileFullName))
+			{
+				endIndex++;
+				fileName = fileDefaultName + "(" + std::to_string(endIndex) + ")";
+				fileFullName = fileName + "." + AssetManager::GetExtension(T::GetStaticType());
+			}
+			std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
+
+			auto asset = AssetManager::NewAsset<T>(m_CurrentDirectory.string() + "\\" + fileFullName);
+			return { m_CurrentDirectory.string() + "\\" + fileFullName };
 		}
 		/**
 		* adds a asset to menu item to add to content broweser
@@ -117,7 +86,7 @@ namespace Proof
 		template <typename T>
 		bool AddAssetPopupMenuItem(const std::string& name, std::string& setFileToRename) {
 			if (ImGui::MenuItem(name.c_str())) {
-				//setFileToRename = Utils::FileDialogs::GetFileName(AddAssetName<T>(name));
+				setFileToRename = Utils::FileDialogs::GetFileName(AddAssetName<T>(name));
 				return true;
 			}
 			return false;

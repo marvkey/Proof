@@ -119,7 +119,7 @@ namespace Proof {
 	void PhysicsActor::AddRigidBody()
 	{
 		if (defauultMaterial == nullptr)
-			defauultMaterial = PhysicsEngine::GetPhysics()->createMaterial(0.0f, 0.0, 0.0);
+			defauultMaterial = PhysicsEngine::GetPhysics()->createMaterial(0.6f, 0.6f, 0.6f);
 
 		const auto& transformComponent = *m_Entity.GetComponent<TransformComponent>();
 		const auto worldLocation = m_PhysicsWorld->GetWorld()->GetWorldLocation(m_Entity);

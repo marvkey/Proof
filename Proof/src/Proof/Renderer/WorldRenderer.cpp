@@ -133,7 +133,7 @@ namespace Proof
 					if (*meshComponent.MaterialTable == *mesh->GetMaterialTable())
 						m_Renderer3D->SubmitMesh(mesh, m_World->GetWorldTransform(entity));
 					else
-						m_Renderer3D->SubmitMeshWithMaterial(mesh, mesh->GetMaterialTable(), m_World->GetWorldTransform(entity));
+						m_Renderer3D->SubmitMeshWithMaterial(mesh, meshComponent.MaterialTable , m_World->GetWorldTransform(entity));
 				}
 			});
 		}

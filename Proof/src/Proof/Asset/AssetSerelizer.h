@@ -3,8 +3,8 @@
 namespace Proof {
 	struct AssetInfo;
 	class  AssetSerializer {
-	public: 
-		virtual void Save(const AssetInfo& data, const Count<class Asset>& asset)const =0;
+	public:
+		virtual void Save(const AssetInfo& data, const Count<class Asset>& asset)const = 0;
 		virtual Count<class Asset>TryLoadAsset(const AssetInfo& data)const = 0;
 	protected:
 		static void SetID(const AssetInfo& data, const Count<class Asset>& asset);

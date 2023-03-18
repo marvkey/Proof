@@ -39,7 +39,7 @@ namespace Proof
             return m_Path;
         }
         Count<MaterialTable> GenerateMaterialTable(){
-            return m_MaterialTable->Copy();
+            return Count<MaterialTable>::CreateFrom(m_MaterialTable);
         }
 
         const std::vector<SubMesh>& GetSubMeshes()const  {

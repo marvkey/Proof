@@ -21,6 +21,9 @@ namespace Proof
 		if(m_ShowWindow==false)
 			return;
 
+		// save if any data is changed
+		bool shouldSave = false;
+
 		PF_PROFILE_FUNC();
 		if (!m_Material)return;
 		ImGui::PushID((MemoryAddress)&*m_Material.Get());
@@ -31,14 +34,30 @@ namespace Proof
 		}
 		ImGui::Begin(name.c_str(),&m_ShowWindow);
 		{
-			ImGui::ColorEdit3("Colour", m_Material->Colour.GetValue_Ptr());
+			if (ImGui::ColorEdit3("Colour", m_Material->Colour.GetValue_Ptr()))
+			{
+				shouldSave = true;
+			}
 			ImGui::NewLine();
-			ImGui::SliderFloat ("Metallnes", &m_Material->Metallness,0,1);
+			
+			if (ImGui::SliderFloat("Metallnes", &m_Material->Metallness, 0, 1))
+			{
+				shouldSave = true;
+			}
 			ImGui::NewLine();
-			ImGui::SliderFloat("Roughness",&m_Material->Roughness, 0, 1);
+
+			if (ImGui::SliderFloat("Roughness", &m_Material->Roughness, 0, 1))
+			{
+				shouldSave = true;
+			}
 		}
 		ImGui::End();
 		ImGui::PopID();
+
+		if (shouldSave)
+		{
+			AssetManager::SaveAsset(m_Material->GetID());
+		}
 	}
 
 	PhysicsMaterialEditorPanel::PhysicsMaterialEditorPanel(Count<PhysicsMaterial> material):
@@ -50,6 +69,9 @@ namespace Proof
 			return;
 		PF_PROFILE_FUNC();
 		if (!m_Material)return;
+
+		// if any data is changed
+		bool shouldSave = false;
 		ImGui::PushID((MemoryAddress) & *m_Material.Get());
 		std::string name = "No name";
 		if (AssetManager::HasAsset(m_Material))
@@ -58,14 +80,45 @@ namespace Proof
 		}
 		ImGui::Begin(name.c_str(), &m_ShowWindow);
 		{
-			ImGui::DragFloat("StaticFriction", &m_Material->StaticFriction, 0.05);
-			ImGui::DragFloat("DynamicFriction", &m_Material->DynamicFriction, 0.05);
-			ImGui::DragFloat("Bounciness", &m_Material->Bounciness, 0.05);
+			float staticFriction = m_Material->GetStaticFriction();
+			float dynamicFrction = m_Material->GetDynamicFriction();
+			float bounciness = m_Material->GetBounciness();
 
-			ExternalAPI::ImGUIAPI::EnumCombo("FrictionCombine", m_Material->FrictionCombineMode);
-			ExternalAPI::ImGUIAPI::EnumCombo("BouncinessCombine", m_Material->BouncinessCombineMode);
+			if (ImGui::SliderFloat("StaticFriction", &staticFriction, 0, FLT_MAX, "0.05", ImGuiSliderFlags_AlwaysClamp));
+			{
+				m_Material->SetStaticFriction(staticFriction);
+				shouldSave = true;
+			}
+			if (ImGui::SliderFloat("DynamicFriction", &dynamicFrction, 0, FLT_MAX, "0.05", ImGuiSliderFlags_AlwaysClamp));
+			{
+				shouldSave = true;
+				m_Material->SetDynamicFriction(dynamicFrction);
+			}
+			if (ImGui::SliderFloat("Bounciness", &bounciness, 0, 1, "0.01", ImGuiSliderFlags_AlwaysClamp));
+			{
+				shouldSave = true;
+				m_Material->SetBounciness(bounciness);
+			}
+			CombineMode frictionMode = m_Material->GetFrictionCombineMode();
+			CombineMode	bounceMode = m_Material->GetBouncinessCombineMode();
+			if (ExternalAPI::ImGUIAPI::EnumCombo("FrictionCombine", frictionMode))
+			{
+				shouldSave = true;
+				m_Material->SetFrictionCombineMode(frictionMode);
+			}
+			if (ExternalAPI::ImGUIAPI::EnumCombo("BouncinessCombine", bounceMode))
+			{
+				shouldSave = true;
+				m_Material->SetBouncinessCombineMode(bounceMode);
+			}
 		}
 		ImGui::End();
 		ImGui::PopID();
+
+
+		if (shouldSave)
+		{
+			AssetManager::SaveAsset(m_Material->GetID());
+		}
 	}
 }
