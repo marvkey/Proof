@@ -266,10 +266,10 @@ namespace Proof
 
 		for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
 			// wierd bug when we dont use relateive the first "\" becomes "/"
-			const auto path = std::filesystem::relative(It.path(),s_AssetsDir);
+			const auto path = It.path();
 			CurrentFileInfo currentFileInfo;
-			if (AssetManager::HasAsset(path)) {
-				auto info = AssetManager::GetAssetInfo(path);
+			if (AssetManager::HasAsset(It.path())) {
+				auto info = AssetManager::GetAssetInfo(It.path());
 				currentFileInfo.AssetType = info.Type;
 				currentFileInfo.HasAsset = true;
 				currentFileInfo.ID = info.ID;

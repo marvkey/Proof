@@ -31,11 +31,9 @@ namespace Proof{
 
 	class MaterialTable {
 	public:
-		MaterialTable(uint32_t materialCount = 1) {
-			for (uint32_t index = 0; index < materialCount; index++)
-			{
-				SetMaterial(index, Count<Material>::Create(fmt::format("Default")));
-			}
+		MaterialTable(bool createMatIndex0Default = true) {
+			if(createMatIndex0Default)
+				SetMaterial(0, Count<Material>::Create(fmt::format("Default")));
 		}
 		// material can be nulltr
 		// index cna be existing or non exisitng

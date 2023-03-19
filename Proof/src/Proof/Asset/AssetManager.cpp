@@ -49,7 +49,7 @@ namespace Proof
 	std::unordered_map<AssetID, AssetContainer>& AssetManager::GetAssets() {
 		return s_AssetManagerData->Assets;
 	}
-	std::unordered_map<std::string, AssetID>& AssetManager::GetAssetByPath()
+	std::unordered_map<std::filesystem::path, AssetID>& AssetManager::GetAssetByPath()
 	{
 		return s_AssetManagerData->AssetPath;
 	}
@@ -172,7 +172,7 @@ namespace Proof
 		PF_CORE_ASSERT(HasAsset(ID), "Asset does not exist");
 		auto info = s_AssetManagerData->Assets.at(ID).Info;
 		s_AssetManagerData->Assets.erase(ID);
-		s_AssetManagerData->AssetPath.erase(info.Path.string());
+		s_AssetManagerData->AssetPath.erase(info.Path);
 	}
 	AssetType AssetManager::GetAssetTypeFromFilePath(const std::filesystem::path& path){
 		const std::string fileFullExtension = Utils::FileDialogs::GetFullFileExtension(path);
@@ -196,22 +196,14 @@ namespace Proof
 	AssetInfo AssetManager::GetAssetInfo(const std::filesystem::path& path)
 	{
 		PF_CORE_ASSERT(HasAsset(path), "Does not conatin Asset");
-		auto changepath = std::filesystem::relative(path, AssetManager::GetDirectory());
-		// error is c++ library 
-		if (changepath.empty())
-			return s_AssetManagerData->Assets[s_AssetManagerData->AssetPath.at(path.string())].Info;
-		else
-			return s_AssetManagerData->Assets[s_AssetManagerData->AssetPath.at(changepath.string())].Info;
+		auto changepath = AssetManager::GetAssetFileSystemPathRelative(path);
+		return s_AssetManagerData->Assets[s_AssetManagerData->AssetPath.at(changepath.string())].Info;
 	}
 
 	bool AssetManager::HasAsset(const std::filesystem::path& path)
 	{
-		auto changepath = std::filesystem::relative(path, AssetManager::GetDirectory());
-		// error is c++ library 
-		if(changepath.empty())
-			return s_AssetManagerData->AssetPath.contains(path.string());
-		else
-			return s_AssetManagerData->AssetPath.contains(changepath.string());
+		auto changepath  = AssetManager::GetAssetFileSystemPathRelative(path);
+		return s_AssetManagerData->AssetPath.contains(changepath.string());
 	}
 	
 	bool AssetManager::LoadAsset(AssetID ID) {
@@ -349,7 +341,7 @@ namespace Proof
 
 		auto path = std::filesystem::relative(newPath, AssetManager::GetDirectory());
 		// changing teh old data in assetBypath
-		GetAssetByPath().erase(it.Info.Path.string());
+		GetAssetByPath().erase(it.Info.Path);
 		// creating the new data
 		GetAssetByPath().insert({ path.string(),it.Info.ID });
 		// new assetINfo

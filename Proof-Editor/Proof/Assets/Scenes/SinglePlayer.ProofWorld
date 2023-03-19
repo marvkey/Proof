@@ -6,9 +6,9 @@ World:
         Tag: Plane
         tags: []
       TransformComponent:
-        Location: [0, -3.20000005, 0]
+        Location: [0, -3, 0]
         Rotation: [0, 0, 0]
-        Scale: [-10, 1, 20000]
+        Scale: [22.7999992, 1, 2000]
       ChildComponent:
         OwnerID: 0
         Children: []
@@ -32,7 +32,7 @@ World:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [0, 0, 2.5999999]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -44,12 +44,15 @@ World:
         Scripts:
           - Script: Game.Player
             ScriptFields:
+              - Name: Movement
+                Type: Bool
+                Data: true
               - Name: FowardForce
                 Type: Float
-                Data: 200
+                Data: 800
               - Name: SideWayForce
                 Type: Float
-                Data: 900
+                Data: 70
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -57,7 +60,7 @@ World:
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
-        LinearDrag: 0
+        LinearDrag: 1
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Dynamic
@@ -81,3 +84,172 @@ World:
         Width: 250
         Height: 250
         UpVector: [0, 1, 0]
+    - Entity: 5028329592928643564
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.20000005, 32.2999992, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 5.05000019
+    - Entity: 10082092721294569342
+      TagComponent:
+        Tag: obstacle
+        tags: []
+      TransformComponent:
+        Location: [0, -1, 35.8032494]
+        Rotation: [0, 0, 0]
+        Scale: [3.95164466, 1, 1.04498231]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 16233326068385086713
+            Index: 0
+      ScriptComponent:
+        Scripts:
+          - Script: Game.Enemy
+            ScriptFields:
+              []
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 10316412769445700768
+      TagComponent:
+        Tag: obstacle
+        tags: []
+      TransformComponent:
+        Location: [5.5801096, -1, 42.8016853]
+        Rotation: [0, 0, 0]
+        Scale: [3.95164466, 1, 1.04498231]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 16233326068385086713
+            Index: 0
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 16646876674023566072
+      TagComponent:
+        Tag: obstacle
+        tags: []
+      TransformComponent:
+        Location: [-2.39715242, -1, 64.0204391]
+        Rotation: [0, 0, 0]
+        Scale: [3.95164466, 1, 1.04498231]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 16233326068385086713
+            Index: 0
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 16460968471095271854
+      TagComponent:
+        Tag: obstacle
+        tags: []
+      TransformComponent:
+        Location: [5.31236267, -1, 74.4531021]
+        Rotation: [0, 0, 0]
+        Scale: [3.95164466, 1, 1.04498231]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 16233326068385086713
+            Index: 0
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 4782896935549349338
+      TagComponent:
+        Tag: obstacle
+        tags: []
+      TransformComponent:
+        Location: [-5.19300365, -1, 86.8037033]
+        Rotation: [0, 0, 0]
+        Scale: [3.95164466, 1, 1.04498231]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 16233326068385086713
+            Index: 0
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]

@@ -11,7 +11,7 @@ namespace Game
 
     public class Enemy : Entity
     {
-        public float Strenght = 100f;
+        
         void OnCreate()
         {
         }
@@ -19,6 +19,17 @@ namespace Game
         void OnUpdate(float ts)
         {
 
+        }
+
+        void OnCollisionEnter(Entity other)
+        {
+            Player obj = other.As<Player>();
+            if (obj != null)
+            {
+                obj.Movement = false;
+                Log.Info($"{GetComponent<TagComponent>().Tag} Removed {obj.GetComponent<TagComponent>().Tag} Movment");
+
+            }
         }
     }
 }

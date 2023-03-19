@@ -8,6 +8,7 @@ namespace Proof
 	struct VulkanImageExcessData {
 		VkSampler ImageSampler;
 		VkImageView ImageView;
+		VkImage Image;
 	};
 	struct VulkanImage : public Image {
 		VulkanImage(const void* image, ImageFormat format, Vector2 size, VulkanImageExcessData data):
@@ -27,6 +28,13 @@ namespace Proof
 			if (m_ExcessData.has_value())
 			{
 				return m_ExcessData._Cast<VulkanImageExcessData>()->ImageSampler;
+			}
+		}
+
+		VkImage GetImage() {
+			if (m_ExcessData.has_value())
+			{
+				return m_ExcessData._Cast<VulkanImageExcessData>()->Image;
 			}
 		}
 	};

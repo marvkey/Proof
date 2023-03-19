@@ -29,9 +29,11 @@ namespace Proof{
         }
         ProcessNode(scene->mRootNode, scene);
        
-        m_MaterialTable = Count<MaterialTable>::Create();
+        
+        m_MaterialTable = Count<MaterialTable>::Create(scene->mNumMaterials > 0 ? false : true);
         for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; materialIndex++)
         {
+            //scene->mMaterials[]
             m_MaterialTable->SetMaterial(materialIndex, GetMaterial(scene->mMaterials[materialIndex]));
         }
     }
@@ -101,7 +103,10 @@ namespace Proof{
         aiColor3D color(0.f, 0.f, 0.f);
         float metallness;
         float roghness;
-        material->Name = aimat->GetName().C_Str();
+        //aiGetMaterialString(aimat,mat, AI_MATKEY_NAME, &name);
+        aiString name;
+        aimat->Get(AI_MATKEY_NAME, name);
+        material->Name = name.C_Str();
         aimat->Get(AI_MATKEY_COLOR_AMBIENT, color);
         aimat->Get(AI_MATKEY_METALLIC_FACTOR, metallness);
         aimat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roghness);
@@ -121,7 +126,7 @@ namespace Proof{
             aiString strFilePath;
             if (aimat->GetTexture(textureType, 0, &strFilePath) == aiReturn_SUCCESS)
             {
-                std::string textureFilePath = std::filesystem::relative(m_Path.parent_path() /= strFilePath.C_Str(), Application::Get()->GetProject()->GetAssetDirectory()).string();
+                std::string textureFilePath = (m_Path.parent_path() /= strFilePath.C_Str()).string();
                 std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
                 // checking if has the texturer source file
 
@@ -129,7 +134,7 @@ namespace Proof{
                 {
                     // changing the path to a proof asset path
                     PF_EC_WARN("Getting mehs texture this way is risky what if the name changes");
-                    std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName, Application::Get()->GetProject()->GetAssetDirectory()).string();
+                    std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
                     path += ".Texture.ProofAsset";
                     texture = AssetManager::GetAsset<Texture2D>(path);
 
@@ -138,9 +143,9 @@ namespace Proof{
                 {
 
                     AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
-                    Count<Asset> asset = Texture2D::Create(AssetManager::GetAssetFileSystemPath(textureFilePath).string());
-                    AssetManager::NewAsset(asset, AssetManager::GetAssetFileSystemPath(textureFilePath).string());
-                    texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetFileSystemPathRelative(textureFilePath));
+                    Count<Asset> asset = Texture2D::Create(textureFilePath);
+                    AssetManager::NewAsset(asset, textureFilePath);
+                    texture = AssetManager::GetAsset<Texture2D>(textureFilePath);
                 }
             }
         };

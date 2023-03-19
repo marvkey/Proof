@@ -62,26 +62,64 @@ namespace Proof
 #pragma endregion 
 
 #pragma region Entity
-	static bool Entity_HasComponent(EntityID entityID, MonoReflectionType* componentType) {
+	static bool Entity_HasComponent(uint64_t entityID, MonoReflectionType* componentType) {
 		World* world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world,"world is nullptr");
-		Entity entity =world->TryGetEntity( entityID);
-		PF_CORE_ASSERT(entity,"world is null");
+		Entity entity = { entityID,world };
+		PF_CORE_ASSERT(entity,"Entity is null");
 
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
 		PF_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(),"mangaed type does not exist");
 		// second paremter is calling the funciton
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
 	}
-#pragma endregion 
 
+	static MonoObject* GetScriptInstance(UUID entityID, MonoString* classFullName)
+	{
+		return ScriptEngine::GetMonoManagedObject(entityID,ScriptEngine::MonoToString(classFullName));
+	}
+#pragma endregion 
+#pragma region TagComponent
+	static void TagComponent_GetTag(uint64_t entityID, MonoString** tag)
+	{
+		//https://stackoverflow.com/questions/22428411/add-mono-internal-call-where-a-string-is-passed-by-reference
+		// pass mono by refernce with stirngs
+
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TagComponent.GetTag - entity is invalid");
+			return;
+		}
+
+		*tag = ScriptEngine::StringToMono(entity.GetComponent<TagComponent>()->Tag);
+		#endif
+	}
+	static void TagComponent_SetTag(uint64_t entityID, MonoString** tag)
+	{
+		//https://stackoverflow.com/questions/22428411/add-mono-internal-call-where-a-string-is-passed-by-reference
+		// pass mono by refernce with stirngs
+
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TagComponent.SetTag - entity is invalid");
+			return;
+		}
+
+		entity.GetComponent<TagComponent>()->Tag  = ScriptEngine::MonoToString( *tag);
+		#endif
+	}
+#pragma endregion 
 #pragma region TransformComponent
 	static void TransformComponent_GetLocation(uint64_t entityID,Vector* outLocation ) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		#if PF_ENABLE_DEBUG
 			if (!entity)
 			{
-				PF_ERROR("TransformComponent.GetLocation - entity is invalid");
+				PF_EC_ERROR("TransformComponent.GetLocation - entity is invalid");
 				return;
 			}
 		#endif
@@ -92,7 +130,7 @@ namespace Proof
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("TransformComponent.SetLocation - entity is invalid");
+			PF_EC_ERROR("TransformComponent.SetLocation - entity is invalid");
 			return;
 		}
 		#endif
@@ -202,6 +240,12 @@ namespace Proof
 		//Entity 
 		{
 			PF_ADD_INTERNAL_CALL(Entity_HasComponent);
+			PF_ADD_INTERNAL_CALL(GetScriptInstance);
+		}
+		// Tag Componnent
+		{
+			PF_ADD_INTERNAL_CALL(TagComponent_GetTag);
+			PF_ADD_INTERNAL_CALL(TagComponent_SetTag);
 		}
 		//Transform Component
 		{
@@ -211,7 +255,6 @@ namespace Proof
 
 		//Rigid Body Component
 		{
-
 			PF_ADD_INTERNAL_CALL(RigidBody_GetMass);
 			PF_ADD_INTERNAL_CALL(RigidBody_SetMass);
 			PF_ADD_INTERNAL_CALL(RigidBody_AddForce);

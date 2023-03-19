@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Proof
 {
-	public class Entity
+    [StructLayout(LayoutKind.Sequential)]
+    public class Entity
 	{
 		protected Entity() { ID = 0; }
 
@@ -29,5 +31,21 @@ namespace Proof
 			T component = new T() { Entity = this };
 			return component;
 		}
+        public T As<T>() where T : Entity, new()
+        {
+            object instance = InternalCalls.GetScriptInstance(ID, typeof(T).FullName);
+            return instance as T;
+        }
+        public string Name
+		{
+			get
+			{
+				return GetComponent<TagComponent>().Tag;
+			}
+			set
+			{
+                GetComponent<TagComponent>().Tag = Name;
+            }
+        }
 	}
 }

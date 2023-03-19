@@ -8,6 +8,7 @@ namespace Proof {
     //http://www.songho.ca/opengl/gl_sphere.html#sphere
     Count<Mesh> MeshWorkShop::GenerateCube()
     {
+        /*
         //https://pastebin.com/DXKEmvap
         std::vector<Vector> veritces =
         {
@@ -64,7 +65,23 @@ namespace Proof {
             }
             cubeVertex.emplace_back(vertex);
         }
-        return Count<Mesh>::Create("Cube", cubeVertex, indices);
+        */
+        //https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/Primitives.cpp
+        std::vector<Vertex> vertices = {
+            {{1.0f, 1.0f, -1.0f}, {1.0f, 1.0f, 0.2f}, {1.0f, 1.0f}},
+            {{1.0f, -1.0f, -1.0f}, {1.0f, 0.2f, 0.2f}, {1.0f, 0.0f}},
+            {{-1.0f, -1.0f, -1.0f}, {0.2f, 0.2f, 0.2f}, {0.0f, 0.0f}},
+            {{-1.0f, 1.0f, -1.0f}, {0.2f, 1.0f, 0.2f}, {0.0f, 1.0f}},
+            {{-1.0f, -1.0f, 1.0f}, {0.2f, 0.2f, 1.0f}, {0.0f, 0.0f}},
+            {{1.0f, -1.0f, 1.0f}, {1.0f, 0.2f, 1.0f}, {1.0f, 0.0f}},
+            {{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+            {{-1.0f, 1.0f, 1.0f}, {0.2f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+        };
+        
+        std::vector<uint32_t> indices = {
+        0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 1, 0, 6, 1, 6, 5, 7, 6, 0, 7, 0, 3, 7, 3, 2, 7, 2, 4, 4, 2, 1, 4, 1, 5,
+        };
+        return Count<Mesh>::Create("Cube", vertices, indices);
 
     }
     constexpr int MIN_SECTOR_COUNT = 3;

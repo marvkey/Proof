@@ -154,7 +154,29 @@ namespace Proof
         image.ImageSampler.resize(imageCount);
         for (int i = 0; i < imageCount; i++)
         {
-           
+            if (imageAttach.GetImagelayout().HasImages())
+            {
+                if (imageAttach.GetImagelayout().Images.size() >= i)
+                {
+                    VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImagelayout().Images[i];
+                    image.Images[i].Image = vkImage.GetImage();
+                }
+                else
+                {
+                    VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImagelayout().Images.back();
+                    image.Images[i].Image = vkImage.GetImage();
+                }
+                continue;
+            }
+            if (imageAttach.GetImage().HasImage())
+            {
+                VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImage();
+                image.Images[i].Image = vkImage.GetImage();
+                //image.ImageSampler[i] = vkImage.GetImageSampler();
+                continue;
+            }
+            if (image.Images[i].Image != nullptr)
+                continue;
             VkImageCreateInfo info = {};
             info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             info.imageType = VK_IMAGE_TYPE_2D;
@@ -166,7 +188,7 @@ namespace Proof
             info.arrayLayers = 1;
             info.samples = VK_SAMPLE_COUNT_1_BIT;
             info.tiling = VK_IMAGE_TILING_OPTIMAL;
-            info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT ;
+            info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
             info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             Renderer::Submit([&](CommandBuffer* cmdBuffer) {
@@ -207,11 +229,13 @@ namespace Proof
                 {
                     VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImagelayout().Images[i];
                     image.ImageViews[i] = vkImage.GetImageView();
+                    image.ImageSampler[i] = vkImage.GetImageSampler();
                 }
                 else
                 {
                     VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImagelayout().Images.back();
                     image.ImageViews[i] = vkImage.GetImageView();
+                    image.ImageSampler[i] = vkImage.GetImageSampler();
                 }
                 continue;
             }
@@ -219,6 +243,7 @@ namespace Proof
             {
                 VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImage();
                 image.ImageViews[i] = vkImage.GetImageView();
+                image.ImageSampler[i] = vkImage.GetImageSampler();
                 continue;
             }
             VkImageViewCreateInfo viewInfo{};
@@ -241,6 +266,8 @@ namespace Proof
 
         for (size_t i = 0; i < image.ImageSampler.size(); i++)
         {
+            if (image.ImageSampler[i] != nullptr)
+                continue;
             VkSamplerCreateInfo info = {};
             info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
             info.magFilter = VK_FILTER_LINEAR;
@@ -252,7 +279,11 @@ namespace Proof
             info.minLod = -1000;
             info.maxLod = 1000;
             info.maxAnisotropy = 1.0f;
-            VkResult err = vkCreateSampler(graphicsContext->GetDevice(), &info, nullptr, &image.ImageSampler[i]);
+            if (vkCreateSampler(graphicsContext->GetDevice(), &info, nullptr, &image.ImageSampler[i]) !=
+                VK_SUCCESS)
+            {
+                PF_CORE_ASSERT(false, "failed to create texture image sampler");
+            }
         }
         m_ColorImages.emplace_back(image);
     }
@@ -314,7 +345,7 @@ namespace Proof
             m_ColorImages[index].ImageViews[imageIndex]);
 
         return VulkanImage(set, m_Config.Attachments.Attachments[index].Format, m_Config.Size, VulkanImageExcessData{ m_ColorImages[index].ImageSampler[imageIndex],
-            m_ColorImages[index].ImageViews[imageIndex] });
+            m_ColorImages[index].ImageViews[imageIndex],m_ColorImages[index].Images[imageIndex].Image });
     }
     VulkanFrameBufferImages VulkanFrameBuffer::GetColorAttachmentFrameBufferImage(uint32_t index)
     {
@@ -332,7 +363,7 @@ namespace Proof
             m_DepthImage.ImageViews[imageIndex]);
 
         return VulkanImage(set, m_DepthFormat, m_Config.Size, VulkanImageExcessData{ m_DepthImage.ImageSampler[imageIndex],
-             m_DepthImage.ImageViews[imageIndex] });
+             m_DepthImage.ImageViews[imageIndex], m_DepthImage.Images[imageIndex].Image });
     }
     ImageLayouts VulkanFrameBuffer::GetColorAttachmentImageLayout(uint32_t index)
     {

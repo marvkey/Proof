@@ -224,3 +224,6 @@ Assets:
   - Asset: 14027245898106135139
     Type: PhysicsMaterial
     Path: Material\SlipperyMaterial.PhysicsMaterial.ProofAsset
+  - Asset: 16233326068385086713
+    Type: Material
+    Path: Material\Black.Material.ProofAsset

@@ -85,6 +85,7 @@ namespace Proof {
 				break;
 			case physx::PxErrorCode::eABORT:
 				PF_EC_CRITICAL("(Physx) Message: {}, File: {}, Line: {}", message, file, line);
+				PF_CORE_ASSERT(false);
 				break;
 			default:
 				PF_EC_CRITICAL("(Physx Unkown Error) Message: {}, File: {}, Line: {}", message, file, line);

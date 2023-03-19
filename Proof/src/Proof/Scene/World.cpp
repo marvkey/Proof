@@ -120,7 +120,7 @@ namespace Proof {
 			for (auto entity : scriptView)
 			{
 				auto& script = scriptView.get<ScriptComponent>(entity);
-				ScriptEngine::OnUpdateEntity(Entity{ entity,this }, DeltaTime);
+				ScriptMeathod::OnUpdate(Entity{ entity,this }, DeltaTime);
 			}
 		}
 		if (HasWorldCamera())
@@ -294,7 +294,7 @@ namespace Proof {
 				for (auto e : view)
 				{
 					Entity entity = { e, this };
-					ScriptEngine::OnCreateEntity(entity);
+					ScriptMeathod::OnCreate(entity);
 					//ScriptEngine::OnPlace(entity);
 				}
 			}

@@ -39,7 +39,7 @@ namespace Proof
 		std::unordered_map<AssetID, AssetContainer> Assets;// path
 
 		//temporay 
-		std::unordered_map<std::string, AssetID> AssetPath;// path
+		std::unordered_map<std::filesystem::path, AssetID> AssetPath;// path
 		std::unordered_map<AssetType, Special<class AssetSerializer>> AssetSerilizer;// path
 		std::filesystem::path AssetDirectory;
 		std::filesystem::path AssetRegistry;
@@ -48,6 +48,8 @@ namespace Proof
 	class Proof_API AssetManager {
 	public:
 		static std::string GetExtension(AssetType type);
+
+		// PATH (PASS THE FULL PATH)
 		static void NewAsset(Count<Asset>& asset, const std::filesystem::path& savePath) {
 			PF_CORE_ASSERT(asset);
 			asset->m_ID = AssetManager::CreateID();
@@ -61,6 +63,12 @@ namespace Proof
 			GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
 			AssetManager::SaveAsset(assetInfo.ID);
 		}
+
+		/**
+		 * .
+		 * 
+		 * @param savePath  Pass the Full path
+		 */
 		template <class AssetType, class... Args,
 			std::enable_if_t<std::is_constructible<AssetType, Args...>::value&& Is_Compatible<AssetType, Asset>::value, int> = 0>
 		static Count<AssetType> NewAsset(const std::filesystem::path& savePath, Args&&... args) {
@@ -106,6 +114,11 @@ namespace Proof
 			GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
 		}
 		*/
+
+
+		/*
+		*path Pass the full path
+		*/
 		static void NewAssetSource(const std::filesystem::path& path, AssetType type);
 		static bool IsAssetLoaded(AssetID ID) {
 			PF_CORE_ASSERT(HasAsset(ID), "ID does not exist");
@@ -124,16 +137,22 @@ namespace Proof
 				return nullptr;
 			return it.Asset.As<T>();
 		}
+		/**
+		 * .
+		 * 
+		 * @param path Pass the full path
+		 * \return 
+		 */
 		template<class T>
 		static Count<T>GetAsset(const std::filesystem::path& path) {
-			
-			auto& it = GetAssetByPath().at(path.string());
-			
-			return GetAsset<T>(it.Get());
+			PF_CORE_ASSERT(AssetManager::HasAsset(path));
+			auto info = AssetManager::GetAssetInfo(path);
+			return GetAsset<T>(info.ID);
 		}
 		static bool HasAsset(AssetID ID);
 		/**
 		 * does not check if path exist so may crash
+		 * pass the FULL PATH not relative to asset path
 		 * @param path we are going to check
 		 * @return true if an asset does have that path
 		*/
@@ -154,8 +173,7 @@ namespace Proof
 		static void Remove(AssetID ID);
 		/**
 		 * gets the asset info by saved path
-		 * does not check if path exist so may crash
-		 * @param path weher we are chekcing for the asset
+		 * @param path PASS THE FULLL PATH
 		 * @return teh asset info
 		 */
 		static AssetInfo GetAssetInfo(const std::filesystem::path& path);
@@ -191,6 +209,7 @@ namespace Proof
 
 		static void SaveAsset(AssetID Id);
 		// change assetPath
+		// pass the full path
 		static void ChangeAssetPath(AssetID ID, const std::filesystem::path& newPath);
 
 		// loops trhough all assets and saves them
@@ -199,7 +218,7 @@ namespace Proof
 		static void SaveAssetManager();
 	private:
 		static std::unordered_map<AssetID, AssetContainer>& GetAssets();
-		static std::unordered_map<std::string, AssetID>& GetAssetByPath();
+		static std::unordered_map<std::filesystem::path, AssetID>& GetAssetByPath();
 		static void Init(AssetManagerConfiguration& assetManagerConfiguration);
 		static void UnInizilize();
 		

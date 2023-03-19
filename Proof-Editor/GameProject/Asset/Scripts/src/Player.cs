@@ -7,9 +7,10 @@ using Proof;
 
 namespace Game
 {
-   
+
     public class Player : Entity
     {
+        public bool Movement = true;
         private TransformComponent m_Transform;
         private RigidBodyComponent m_RigidBody;
 
@@ -18,20 +19,27 @@ namespace Game
         void OnCreate()
         {
             m_Transform = GetComponent<TransformComponent>();
-            m_RigidBody = GetComponent<RigidBodyComponent>();   
+            m_RigidBody = GetComponent<RigidBodyComponent>();
 
         }
 
         void OnUpdate(float ts)
         {
-            m_RigidBody.AddForce(new Vector( 0,0, FowardForce * ts));
+            if (Movement == false)
+                return;
+
+            m_RigidBody.AddForce(new Vector(0, 0, FowardForce * ts));
 
             if (Input.IsKeyPressed(KeyBoardKey.D))
-                m_RigidBody.AddForce(new Vector(-SideWayForce * ts,0,0));
+                m_RigidBody.AddForce(new Vector(-SideWayForce * ts, 0, 0),ForceMode.VelocityChange);
 
-            if(Input.IsKeyPressed(KeyBoardKey.A))
-                m_RigidBody.AddForce(new Vector(SideWayForce * ts,0,0));
+            if (Input.IsKeyPressed(KeyBoardKey.A))
+                m_RigidBody.AddForce(new Vector(SideWayForce * ts, 0, 0), ForceMode.VelocityChange);
 
+        }
+
+        void OnCollisionEnter(Entity other)
+        {
         }
     }
 }

@@ -42,6 +42,17 @@ namespace Proof
 		#region Entity
 		[System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static object GetScriptInstance(ulong entityID, string scrptName);
+        #endregion
+
+        #region TagComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TagComponent_GetTag(ulong entityID, out string message);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TagComponent_SetTag(ulong entityID, ref string message);
         #endregion
 
         #region TransformComponent

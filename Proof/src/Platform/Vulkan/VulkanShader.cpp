@@ -7,7 +7,6 @@
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
-
 #include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
@@ -192,19 +191,76 @@ namespace Proof
         for (auto&& [stage, data] : m_SourceCode)
             Reflect(stage);
     }
+    class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface
+    {
+        //https://github.com/beaumanvienna/vulkan/blob/617f70e1a311c6f498ec69507dcc9d4aadb86612/engine/platform/Vulkan/VKshader.cpp
+        shaderc_include_result* GetInclude(const char* requestedSource, shaderc_include_type type, const char* requestingSource, size_t includeDepth) override {
+            std::string msg = std::string(requestingSource);
+            msg += std::to_string(type);
+            msg += static_cast<char>(includeDepth);
 
+            const std::string name = std::string(requestedSource);
+            const std::string contents = ReadFile(name);
+
+            auto container = new std::array<std::string, 2>;
+            (*container)[0] = name;
+            (*container)[1] = contents;
+
+            auto data = new shaderc_include_result;
+
+            data->user_data = container;
+
+            data->source_name = (*container)[0].data();
+            data->source_name_length = (*container)[0].size();
+
+            data->content = (*container)[1].data();
+            data->content_length = (*container)[1].size();
+
+            return data;
+        }
+        void ReleaseInclude(shaderc_include_result* data) override {
+            delete static_cast<std::array<std::string, 2>*>(data->user_data);
+            delete data;
+        }
+        std::string ReadFile(const std::string& filepath)
+        {
+            
+            std::string truePath = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/" + filepath;
+            std::string sourceCode;
+            std::ifstream in(truePath, std::ios::in | std::ios::binary);
+            if (in)
+            {
+                in.seekg(0, std::ios::end);
+                size_t size = in.tellg();
+                if (size > 0)
+                {
+                    sourceCode.resize(size);
+                    in.seekg(0, std::ios::beg);
+                    in.read(&sourceCode[0], size);
+                }
+                else
+                {
+                    PF_ENGINE_WARN("ShaderIncluder::ReadFile: Could not read shader file '{0}'", truePath);
+                }
+            }
+            else
+            {
+                PF_ENGINE_WARN("ShaderIncluder::ReadFile Could not open shader file '{0}'", truePath);
+            }
+            return sourceCode;
+        }
+    };
     void VulkanShader::Compile() {
         auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
         
-
-        
         compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, graphicsContext->GetVulkanVersion());
         const bool optimize = true;
         if (optimize)
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
+        compilerOptions.SetIncluder(std::make_unique< ShaderIncluder>());
 
         auto& shaderData = m_VulkanSPIRV;
         shaderData.clear();

@@ -100,8 +100,7 @@ namespace Proof
 		m_Format = ImageFormat::RGBA;
 		if (data == nullptr)
 		{
-			PF_ERROR("Texture passed is empty {}", Path.c_str());
-			PF_CORE_ASSERT(false);
+			PF_EC_ERROR("Texture passed is NotValid {}", Path.c_str());
 			return;
 		}
 		// check for dimension
@@ -184,6 +183,8 @@ namespace Proof
 		m_Width = config.width;
 		m_Height = config.Height;
 		m_Format = config.Format;
+
+		uint32_t blck = 0xFF000000;
 		if (config.Usage & TextureUsage::Color)
 		{
 			uint32_t bit = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT
@@ -198,6 +199,8 @@ namespace Proof
 			AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format), VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
 		else
 			AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format), VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+
+		SetData(&blck);
 	}
 
 	VulkanTexture2D::~VulkanTexture2D() {
@@ -386,7 +389,7 @@ namespace Proof
 
 	Image VulkanTexture2D::GetImage()const
 	{
-		return VulkanImage(m_Set, m_Format, { (float)GetWidth(),(float)GetHeight() }, VulkanImageExcessData{ m_Sampler,m_ImageView });
+		return VulkanImage(m_Set, m_Format, { (float)GetWidth(),(float)GetHeight() }, VulkanImageExcessData{ m_Sampler,m_ImageView,m_Image.Image });
 	}
 
 	void VulkanTexture2D::SetData(const void* data) {
@@ -567,6 +570,20 @@ namespace Proof
 		SetData(text);
 	}
 
+	VulkanCubeMap::VulkanCubeMap(Count<Texture2D> texture, uint32_t dimension, bool generateMips)
+		:
+		m_Dimension(dimension)
+
+	{
+		if (generateMips)
+			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(dimension, dimension)))) + 1;
+		AllocateMemory();
+		if (texture)
+		{
+			GenerateCubeMap(texture);
+		}
+	}
+
 	VulkanCubeMap::VulkanCubeMap(Count<CubeMap> map, Count<Shader> shader, uint32_t dimension, bool generateMips)
 		:
 		m_Dimension(dimension)
@@ -577,6 +594,8 @@ namespace Proof
 		AllocateMemory();
 		if (map)
 			GenerateCubeMap(map.As<Texture>(), shader);
+	
+
 	}
 
 	Count<CubeMap> VulkanCubeMap::GeneratePreFilterMap(Count<CubeMap> map, uint32_t dimension, uint32_t numSamples )
@@ -599,7 +618,8 @@ namespace Proof
 		conigTexture.Usage = TextureUsage::Color;
 		conigTexture.width = dimension;
 		conigTexture.Height = dimension;
-		Count<Texture2D>fbColorAttachment = Texture2D::Create(conigTexture);
+		Count<Texture2D> fbColorAttachment = Texture2D::Create(conigTexture);
+
 		FrameBufferConfig frameConfig;
 		frameConfig.DebugName = "Texture-Cube";
 		frameConfig.Size.X = dimension;
@@ -625,7 +645,7 @@ namespace Proof
 		PipelineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] }, PcbConstnat);
 
 		GraphicsPipelineConfig pipelineConfig;
-		pipelineConfig.DebugName = "generate cubemap create";
+		pipelineConfig.DebugName = "generate PRefiltered map";
 		pipelineConfig.Shader = Shader::GetOrCreate("prefilterCubeMap",
 			{ {ShaderStage::Vertex,ProofCurrentDirectorySrc +
 			"Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/prefilter.vs"},
@@ -642,7 +662,7 @@ namespace Proof
 		pipelineConfig.RenderPass = renderPass;
 		Count<GraphicsPipeline> RenderPipline = GraphicsPipeline::Create(pipelineConfig);
 		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-		glm::mat4 captureViews[] =
+		glm::mat4 captureViews[6] =
 		{
 			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
 			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
@@ -708,8 +728,22 @@ namespace Proof
 				VkRect2D scissor = {};
 				scissor.offset = { 0, 0 };
 				scissor.extent = { mipsize, mipsize };
+				
 				for (uint32_t face = 0; face < 6; face++)
 				{
+					{
+						fbColorAttachment = Texture2D::Create(conigTexture);
+
+						frameConfig.DebugName = "Texture-Cube";
+						frameConfig.Size.X = dimension;
+						frameConfig.Size.Y = dimension;
+						frameConfig.Attachments = { format };
+						frameConfig.Attachments.Attachments[0].SetOverrideImage(fbColorAttachment->GetImage());
+
+						frameBuffer = FrameBuffer::Create(frameConfig);
+
+						renderPass = RenderPass::Create(renderPassConfig);
+					}
 					uboData.view = captureViews[face];
 					ubuffer->SetData(&uboData, sizeof(uboData));
 					pcb.Roughness = (float)miplevel / (float)(totalMips - 1);
@@ -742,6 +776,7 @@ namespace Proof
 						barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 						barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 						barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+						 //VkImage image = frameBuffer.As<VulkanFrameBuffer>()->GetColorAttachmentFrameBufferImage(0).Images[Renderer::GetCurrentFrame().ImageIndex].Image;
 
 						barrier.image = fbColorAttachment.As<VulkanTexture2D>()->GetImageAlloc().Image;
 						barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -765,17 +800,19 @@ namespace Proof
 						copyRegion.srcOffset = { 0, 0, 0 };
 
 						copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-						copyRegion.dstSubresource.baseArrayLayer = face;
 						copyRegion.dstSubresource.mipLevel = miplevel;
+						copyRegion.dstSubresource.baseArrayLayer = face;
 						copyRegion.dstSubresource.layerCount = 1;
 						copyRegion.dstOffset = { 0, 0, 0 };
 
 						copyRegion.extent.width = static_cast<uint32_t>(mipsize);
 						copyRegion.extent.height = static_cast<uint32_t>(mipsize);
 
-						copyRegion.extent.depth = 1;
+						copyRegion.extent.depth = 0;
 
-						vkCmdCopyImage(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), fbColorAttachment.As<VulkanTexture2D>()->GetImageAlloc().Image,
+						//VkImage image = frameBuffer.As<VulkanFrameBuffer>()->GetColorAttachmentFrameBufferImage(0).Images[Renderer::GetCurrentFrame().ImageIndex].Image;
+						VkImage image = fbColorAttachment.As<VulkanTexture2D>()->GetImageAlloc().Image;
+						vkCmdCopyImage(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(),image,
 							VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 							preFilterMap.As<VulkanCubeMap>()->GetImageAlloc().Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 					}
@@ -814,7 +851,7 @@ namespace Proof
 
 	Image VulkanCubeMap::GetImage()const
 	{
-		return VulkanImage(m_Set, m_Format, { (float)m_Dimension,(float)m_Dimension }, VulkanImageExcessData{ m_Sampler,m_ImageView });
+		return VulkanImage(m_Set, m_Format, { (float)m_Dimension,(float)m_Dimension }, VulkanImageExcessData{ m_Sampler,m_ImageView,m_Image.Image});
 	}
 	VkDescriptorImageInfo VulkanCubeMap::GetImageBufferInfo(VkImageLayout imageLayout)
 	{

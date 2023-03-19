@@ -69,7 +69,7 @@ namespace Proof {
 
 		material->Metallness = data["Metallness"].as<float>();
 		material->Roughness = data["Roughness"].as<float>();
-
+		material->Name = assetData.GetName();
 		SetID(assetData, material);
 		return material;
 	}

@@ -22,9 +22,9 @@ namespace Proof
 		virtual void OnTriggerStay(ColliderTypes colliderSetOff, TriggerInfo& info) {};
 		virtual void OnTriggerLeave(ColliderTypes colliderSetOff, TriggerInfo& info) {};
 		
-		virtual void OnCollisionEnter(ColliderTypes colliderSetOff, CollisionInfo& info) {};
-		virtual void OnCollisionStay(ColliderTypes colliderSetOff, CollisionInfo& info) {};
-		virtual void OnCollisionLeave(ColliderTypes colliderSetOff, CollisionInfo& info) {};
+		//virtual void OnCollisionEnter(ColliderTypes colliderSetOff, CollisionInfo& info) {};
+		//virtual void OnCollisionStay(ColliderTypes colliderSetOff, CollisionInfo& info) {};
+		//virtual void OnCollisionLeave(ColliderTypes colliderSetOff, CollisionInfo& info) {};
 		template<class T>
 		T* GetComponent() {
 			return m_Owner.GetComponent<T>();

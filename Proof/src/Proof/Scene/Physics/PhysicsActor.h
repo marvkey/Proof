@@ -17,6 +17,15 @@ namespace Proof{
 		void SyncTransform();
 		void OnFixedUpdate(float deltaTime);
 
+
+		void OnCollisonEnter(const PhysicsActor* actor);
+
+
+		// actor enters a trigger box, current actor gets told actor has overlappe
+		void OnTriggerEnter(const PhysicsActor* actor);
+
+		// current acotr overlaps another trigger box
+		void OnOverlapTriggerEnter(const PhysicsActor* actor);
 	private:
 		friend class PhysicsWorld;
 		// not sure how we gonna treat this yet

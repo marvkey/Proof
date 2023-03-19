@@ -18,7 +18,7 @@ void main() {
 
 
 #Fragment Shader
-// https://github.com/kidrigger/Blaze/blob/canon/Blaze/shaders/env/fBrdfLut.frag
+// https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/shaders/env/fBrdfLut.frag
 
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
@@ -27,9 +27,7 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inTexCoord;
 
 layout(location = 0) out vec4 outColor;
-layout(push_constant) uniform PushConsts{
-    uint NumSamples;
-} consts;
+
 const float PI = 3.1415926535897932384626433832795f;
 
 float RadicalInverse_VdC(uint bits)
@@ -103,7 +101,7 @@ vec2 IntegrateBRDF(float NdotV, float roughness)
 
     vec3 N = vec3(0.0, 0.0, 1.0);
 
-    const uint SAMPLE_COUNT = consts.NumSamples;
+    const uint SAMPLE_COUNT = 1024u;
     for (uint i = 0u; i < SAMPLE_COUNT; ++i)
     {
         vec2 Xi = Hammersley(i, SAMPLE_COUNT);

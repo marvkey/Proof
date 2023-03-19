@@ -19,6 +19,7 @@
 #include "Proof/Core/Buffer.h"
 namespace Proof
 {
+   
     static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
     {
         { "System.Single", ScriptFieldType::Float },
@@ -186,6 +187,11 @@ namespace Proof
        	m_Constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
 		m_OnCreate = scriptClass->GetMethod("OnCreate", 0);
 		m_OnUpdate = scriptClass->GetMethod("OnUpdate", 1);
+
+        m_OnTriggerEnter = scriptClass->GetMethod("OnTriggerEnter", 1);
+        m_OnCollisionEnter = scriptClass->GetMethod("OnCollisionEnter", 1);
+
+        m_OnOverlapTriggerEnter = scriptClass->GetMethod("OnOverllapTriggerEnter", 1);
        // m_OnPlaced = scriptClass->GetMethod("OnPlace", 0);
        // m_OnSpawn = scriptClass->GetMethod("OnSpawn", 0);
        // m_OnDestroy = scriptClass->GetMethod("OnDestroy", 0);
@@ -219,6 +225,51 @@ namespace Proof
     void ScriptInstance::CallOnDestroy() {
         if (m_OnDestroy)
             m_ScriptClass->CallMethod(m_Instance, m_OnDestroy);
+    }
+    void ScriptInstance::CallOnCollisionEnter(Entity otherEntity)
+    {
+        if (!m_OnCollisionEnter)return;
+        uint64_t enittyID = otherEntity.GetEntityID();
+        void* param = &enittyID;
+
+        {
+            MonoObject* instance = m_ScriptClass->Instantiate();
+            m_ScriptClass->CallMethod(instance, m_Constructor, &param);
+
+
+            param = instance;
+            m_ScriptClass->CallMethod(m_Instance, m_OnCollisionEnter, &param);
+        }
+    }
+    void ScriptInstance::CallOnTriggerEnter(Entity otherEntity)
+    {
+        if (!m_OnTriggerEnter)return;
+        UUID enittyID = otherEntity.GetEntityID();
+        void* param = &enittyID;
+
+        {
+            MonoObject* instance = m_ScriptClass->Instantiate();
+            m_ScriptClass->CallMethod(instance, m_Constructor, &param);
+
+
+            param = instance;
+            m_ScriptClass->CallMethod(m_Instance, m_OnTriggerEnter, &param);
+        }
+    }
+    void ScriptInstance::CallOnOverllapTriggerEnter(Entity otherEntity)
+    {
+        if (!m_OnOverlapTriggerEnter)return;
+        UUID enittyID = otherEntity.GetEntityID();
+        void* param = &enittyID;
+
+        {
+            MonoObject* instance = m_ScriptClass->Instantiate();
+            m_ScriptClass->CallMethod(instance, m_Constructor, &param);
+
+
+            param = instance;
+            m_ScriptClass->CallMethod(m_Instance, m_OnOverlapTriggerEnter, &param);
+        }
     }
     bool ScriptInstance::GetFieldValueInternal(const std::string& name, void* buffer)
     {
@@ -414,50 +465,7 @@ namespace Proof
     {
         return s_Data->EntityInstances.contains(entity.GetEntityID());
     }
-    void ScriptEngine::OnCreateEntity(Entity entity)
-    {
-        const auto& sc = *entity.GetComponent<ScriptComponent>();
-
-        for (auto& className : sc.ScriptsNames)
-        {
-            if (ScriptEngine::EntityClassExists(className))
-            {
-                UUID entityID = entity.GetEntityID();
-
-                Count<ScriptInstance> instance = Count<ScriptInstance>::Create(s_Data->ScriptEntityClasses[className], entity);
-                s_Data->EntityInstances[entity.GetEntityID()][className] = instance;
-
-
-                if (s_Data->EntityScriptFields.contains(entityID))
-                {
-                    const auto& fieldMap = s_Data->EntityScriptFields.at(entityID);
-                    for (const auto& [scriptName, scriptData] : fieldMap)
-                    {
-                        for(const auto& [fieldName, fieldData]: scriptData)
-                            instance->SetFieldValueInternal(fieldName, fieldData.m_Buffer);
-                    }
-                }
-
-                instance->CallOnCreate();
-            }
-        }
-    }  
-    void ScriptEngine::OnUpdateEntity(Entity entity, float ts)
-    {
-        UUID entityUUID = entity.GetEntityID();
-        if (s_Data->EntityInstances.contains(entityUUID))
-        {
-            for (auto& [scriptName, instance]: s_Data->EntityInstances[entityUUID])
-            {
-                instance->CallOnUpdate(ts);
-            }
-        }
-        else
-        {
-            PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID,entity.GetName());
-            PF_CORE_ASSERT(false);
-        }
-    }
+    
     std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& ScriptEngine::GetScriptFieldMap(Entity entity)
     {
         UUID entityID = entity.GetEntityID();
@@ -486,5 +494,107 @@ namespace Proof
     MonoString* ScriptEngine::StringToMono(const std::string& data) {
         MonoString* string = mono_string_new(s_Data->AppDomain, data.c_str());
         return string;
+    }
+    MonoObject* ScriptEngine::GetMonoManagedObject(UUID uuid, const std::string& fullName)
+    {
+        PF_CORE_ASSERT(s_Data->EntityInstances.find(uuid) != s_Data->EntityInstances.end());
+        if (!s_Data->EntityInstances.contains(uuid))return nullptr;
+
+        auto& entData = s_Data->EntityInstances.at(uuid);
+
+        if (entData.contains(fullName))
+        {
+            return entData.at(fullName)->GetMonoObject();
+        }
+        return nullptr;
+    }
+    void ScriptMeathod::OnCreate(Entity entity)
+    {
+        const auto& sc = *entity.GetComponent<ScriptComponent>();
+
+        for (auto& className : sc.ScriptsNames)
+        {
+            if (ScriptEngine::EntityClassExists(className))
+            {
+                UUID entityID = entity.GetEntityID();
+
+                Count<ScriptInstance> instance = Count<ScriptInstance>::Create(s_Data->ScriptEntityClasses[className], entity);
+                s_Data->EntityInstances[entity.GetEntityID()][className] = instance;
+
+
+                if (s_Data->EntityScriptFields.contains(entityID))
+                {
+                    const auto& fieldMap = s_Data->EntityScriptFields.at(entityID);
+                    for (const auto& [scriptName, scriptData] : fieldMap)
+                    {
+                        for (const auto& [fieldName, fieldData] : scriptData)
+                            instance->SetFieldValueInternal(fieldName, fieldData.m_Buffer);
+                    }
+                }
+
+                instance->CallOnCreate();
+            }
+        }
+    }
+    void ScriptMeathod::OnUpdate(Entity entity, FrameTime time)
+    {
+        UUID entityUUID = entity.GetEntityID();
+        if (s_Data->EntityInstances.contains(entityUUID))
+        {
+            for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
+            {
+                instance->CallOnUpdate(time);
+            }
+        }
+        else
+        {
+            PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID, entity.GetName());
+        }
+    }
+    void ScriptMeathod::OnCollisionEnter(Entity currentEntity, Entity collidingEntity)
+    {
+        UUID entityUUID = currentEntity.GetEntityID();
+        if (s_Data->EntityInstances.contains(entityUUID))
+        {
+            for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
+            {
+                instance->CallOnCollisionEnter(collidingEntity);
+            }
+        }
+        else
+        {
+            PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID, currentEntity.GetName());
+        }
+    }
+    void ScriptMeathod::OnTriggerEnter(Entity currentEntity, Entity triggerEntity)
+    {
+        UUID entityUUID = currentEntity.GetEntityID();
+        if (s_Data->EntityInstances.contains(entityUUID))
+        {
+            for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
+            {
+                instance->CallOnTriggerEnter(triggerEntity);
+            }
+        }
+        else
+        {
+            PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID, currentEntity.GetName());
+        }
+    }
+    void ScriptMeathod::OnOverlapTriggerEnter(Entity currentEntity, Entity entityWithTriggerBox)
+    {
+
+        UUID entityUUID = currentEntity.GetEntityID();
+        if (s_Data->EntityInstances.contains(entityUUID))
+        {
+            for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
+            {
+                instance->CallOnOverllapTriggerEnter(entityWithTriggerBox);
+            }
+        }
+        else
+        {
+            PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID, currentEntity.GetName());
+        }
     }
 }

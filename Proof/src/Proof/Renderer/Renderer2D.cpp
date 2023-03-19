@@ -213,26 +213,18 @@ namespace Proof {
 	}
 	std::pair<Count<VertexBuffer>, Count<IndexBuffer>> Renderer2D::CreateQuad()
 	{
+		// refernce from https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/Primitives.cpp
 
-		// dont change it used to genearaate BRDF for PBR
-		//https://learnopengl.com/code_viewer_gh.php?code=src/6.pbr/2.2.1.ibl_specular/ibl_specular.cpp
-		///std::vector<Vertex> vertices = {
-		///	{{0.5f,0.5f,0.0f}, {0}, {1.0f, 1.0f}},
-		///	{{0.5f,-0.5f,0.0}, {0}, {1.0f, 0.0f}},
-		///	{{-0.5f,-0.5f,0.0}, {0}, {0.0f, 0.0f}},
-		///	{{-0.5f,0.5f,0.0}, {0}, {0.0f, 1.0f}},
-		///};
+		// keep this it is important for teh brdf
 		std::vector<Vertex> vertices = {
-			{{-1.0f,  1.0f, 0.0f}, {0}, {0.0f, 1.0f}},
-			{{-1.0f, -1.0f, 0.0f}, {0}, {0.0f, 0.0f}},
-			{{1.0f,  1.0f, 0.0f}, {0}, {1.0f, 1.0f}},
-			{{1.0f, -1.0f, 0.0f}, {0}, {1.0f, 0.0f}},
+			{{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.2f}, {1.0f, 1.0f}},
+			{{-1.0f, 1.0f, 0.0f}, {0.2f, 1.0f, 0.2f}, {0.0f, 1.0f}},
+			{{-1.0f, -1.0f, 0.0f}, {0.2f, 0.2f, 0.2f}, {0.0f, 0.0f}},
+			{{1.0f, -1.0f, 0.0f}, {1.0f, 0.2f, 0.2f}, {1.0f, 0.0f}},
 		};
 		std::vector<uint32_t> indices = {
-			2, 3, 0,
-			3,1,0
+			0, 1, 2, 0, 2, 3,
 		};
-
 		Count<VertexBuffer> buffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
 		Count<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size());
 		return std::make_pair(buffer, indexBuffer);

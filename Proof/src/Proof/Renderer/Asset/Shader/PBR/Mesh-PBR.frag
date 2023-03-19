@@ -31,7 +31,7 @@ layout(std140, set = 0, binding = 1) uniform DirectionalLightBuffer
 }DirectionalLightData;
 
 
-const float PI = 3.14159265359;
+const float PI = 3.1415926535897932384626433832795f;
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a = roughness * roughness;

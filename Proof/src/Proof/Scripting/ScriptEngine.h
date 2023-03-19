@@ -64,6 +64,7 @@ namespace Proof
 
 		friend class ScriptEngine;
 		friend class ScriptInstance;
+		friend class ScriptMeathod;
 	};
 	class ScriptClass {
 	public:
@@ -110,12 +111,7 @@ namespace Proof
 	class ScriptInstance {
 	public:
 		ScriptInstance(Count<ScriptClass> scriptClass, Entity entity);
-		void CallOnCreate();
-		void CallOnUpdate(float ts);
-
-		void CallOnPlace();
-		void CallOnSpawn();
-		void CallOnDestroy();
+	
 
 		template<typename T>
 		T GetFieldValue(const std::string& name)
@@ -139,24 +135,65 @@ namespace Proof
 		Count<ScriptClass> GetScriptClass()const  {
 			return m_ScriptClass;
 		}
+
+		MonoObject* GetMonoObject() 
+		{
+			return m_Instance;
+		}
 	private:
+		void CallOnCreate();
+		void CallOnUpdate(float ts);
+
+		void CallOnPlace();
+		void CallOnSpawn();
+		void CallOnDestroy();
+
+		void CallOnCollisionEnter(Entity otherEntity);
+		void CallOnTriggerEnter(Entity otherEntity);
+
+		// entity box we are enterin g
+		void CallOnOverllapTriggerEnter(Entity otherEntity);
+
+
 		bool GetFieldValueInternal(const std::string& name, void* buffer);
 		bool SetFieldValueInternal(const std::string& name, const void* value);
 		Count<ScriptClass> m_ScriptClass;
 
 		MonoObject* m_Instance = nullptr;
 		MonoMethod* m_Constructor = nullptr;
+
 		MonoMethod* m_OnCreate = nullptr;
 		MonoMethod* m_OnUpdate = nullptr;
 		MonoMethod* m_OnPlaced = nullptr;
 		MonoMethod* m_OnSpawn = nullptr;
 		MonoMethod* m_OnDestroy = nullptr;
+
+		MonoMethod* m_OnCollisionEnter = nullptr;
+		MonoMethod* m_OnTriggerEnter = nullptr;
+		MonoMethod* m_OnOverlapTriggerEnter = nullptr;
+
 		inline static uint8_t s_FieldValueBuffer[16];
 		friend class ScriptEngine;
+		friend class ScriptMeathod;
 	};
 
+	class ScriptMeathod 
+	{
+	public:
+		static void OnCreate(Entity entity);
+		static void OnUpdate(Entity entity, FrameTime time);
+		
+		// physics
+		static void OnCollisionEnter(Entity currentEntity, Entity collidingEntity);
+
+
+		// current entier, entity that has enterd the current entity trigger box
+		static void OnTriggerEnter(Entity currentEntity, Entity triggerEntity);
+
+		//  current entity has entered anotehr entity trigger box and is notfieid
+		static void OnOverlapTriggerEnter(Entity currentEntity, Entity entityWithTriggerBox);
+	};
 	// need a better system cause when we create prefabs may run into a problem for fields
-	
 	class ScriptEngine {
 	public:
 		static void Init();
@@ -178,16 +215,14 @@ namespace Proof
 		// scirpt name, instnace
 		static std::unordered_map<std::string, Count<ScriptInstance>>const GetScriptInstnace(Entity enitty);
 		static bool EntityHasScripts(Entity enitty);
-
-		static void OnCreateEntity(Entity entity);
-		static void OnUpdateEntity(Entity entity, float ts);
-
 		// class name, field, data
 		static std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& GetScriptFieldMap(Entity entity);
 		static bool HasScriptFieldMap(Entity entity);
 		static void CreateScriptFieldMap(Entity entity);
 		static std::string MonoToString(MonoString* monoString);
 		static MonoString* StringToMono(const std::string& data);
+
+		static MonoObject* GetMonoManagedObject(UUID ID, const std::string& fullName);
 	private:
 		static void LoadAssembly(const std::filesystem::path& filepath);
 		static void LoadAppAssembly(const std::filesystem::path& filepath);

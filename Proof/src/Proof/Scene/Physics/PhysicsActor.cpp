@@ -5,6 +5,8 @@
 #include "PhysicsEngine.h"
 #include "Proof/Scene/Component.h"
 #include "Proof/Scene/Material.h"
+
+#include "Proof/Scripting/ScriptEngine.h"
 namespace Proof {
 	physx::PxMaterial* defauultMaterial;
 	namespace Utils {
@@ -114,7 +116,28 @@ namespace Proof {
 		}
 	}
 
+	void PhysicsActor::OnCollisonEnter(const PhysicsActor* actor)
+	{
+		if (ScriptEngine::EntityHasScripts(m_Entity))
+		{
+			ScriptMeathod::OnCollisionEnter(m_Entity, actor->m_Entity);
+		}
+	}
+	void PhysicsActor::OnTriggerEnter(const PhysicsActor* actor)
+	{
+		if (ScriptEngine::EntityHasScripts(m_Entity))
+		{
+			ScriptMeathod::OnTriggerEnter(m_Entity,actor->m_Entity);
+		}
+	}
 
+	void PhysicsActor::OnOverlapTriggerEnter(const PhysicsActor* actor)
+	{
+		if (ScriptEngine::EntityHasScripts(m_Entity))
+		{
+			ScriptMeathod::OnOverlapTriggerEnter(m_Entity, actor->m_Entity);
+		}
+	}
 
 	void PhysicsActor::AddRigidBody()
 	{

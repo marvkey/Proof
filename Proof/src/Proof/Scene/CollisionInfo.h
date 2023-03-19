@@ -19,11 +19,18 @@ namespace Proof{
 		// impule contact point
 		Vector Impulse;
 	};
-	struct CollisionInfo{
+	struct ContactInfo{
 		Entity otherEntity;
 		std::vector<ContactPointInfo> ContactPoints;
 		ColliderTypes OtherColliderType;
 		uint32_t NumContacts;	
+	};
+
+	// like thi because of c# scripitng 
+	// so use Id for the entity
+	struct CollisonInfo 
+	{
+		UUID Entity;
 	};
 
 	struct TriggerInfo {

@@ -73,8 +73,9 @@ namespace Proof
 		void AddImage(const FrameBufferImageConfig& imageAttach);
 
 		std::vector<VkFramebuffer> m_Framebuffers;
-		void CreateFramebuffer();
 
+
+		void CreateFramebuffer();
 		void Release();
 	};
 	
