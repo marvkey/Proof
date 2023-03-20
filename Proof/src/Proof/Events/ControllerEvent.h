@@ -125,7 +125,7 @@ namespace Proof {
         float X = 0, Y = 0;
         float m_distanceX=0, m_distanceY=0;// distnacce moved
     };
-
+    // merge joystick xis even tto one 
     class Proof_API ControllerLeftJoystickAxisEvent : public ControllerJoystickAxisEvent {
     public:
         EVENT_CLASS_TYPE(ControllerLeftJoystickAxis)

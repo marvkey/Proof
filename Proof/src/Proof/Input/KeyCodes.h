@@ -2,12 +2,12 @@
 namespace Proof
 {
 	enum class InputDevice {
-		KeyBoard =0,
-		MouseButton = 1, // mouse button pressed
-		MouseMovement =2, // moseu scroll to side or up, r wheal up or down
-		ControllerButton =3,
-		ControllerAxis=4,
-		None = -1
+		None = 0,
+		KeyBoard =1,
+		MouseButton = 2, // mouse button pressed
+		MouseMovement =3, // moseu scroll to side or up, r wheal up or down
+		ControllerButton =4,
+		ControllerAxis=5,
 	};
 	enum class KeyBoardKey:int32_t {
 		None = 0,
@@ -137,13 +137,15 @@ namespace Proof
 		Button1 = ButtonRight,
 		Button2 = ButtonMiddle,
 	};
-	enum class MouseMovementInput { // rname MouseAxis
-		X =0,
-		Y =1,
+	enum class MouseAxis { // rname MouseAxis
+		None =0,
+		X =1,
+		Y =2,
 		ScrollUp,
 		ScrolDown
 	};
 	enum class JoystickKey {
+		None=-1,
 		Joystick1 = 0,
 		Joystick2 = 1,
 		Joystick3 = 2,
@@ -162,6 +164,8 @@ namespace Proof
 		Joystick16 = 15,
 	};
 	enum class ControllerButton {
+	//https://wiki.libsdl.org/SDL2/SDL_GameControllerButton
+
 		None =-1,
 		ButtonA = 0,
 		ButtonB = 1,
@@ -184,11 +188,9 @@ namespace Proof
 		ButtonCIRCLE = ButtonB,
 		ButtonSQUARE = ButtonX,
 		ButtonTRIANGLE = ButtonY,
+
 		ButtonRightTrigger =20, // this are proof defined only used in the proof engine as this values
 		ButtonLeftTrigger = 21 // this are proof defined only used in the proof engine as this values
-	};
-	enum class Ps4ControllerButton {
-
 	};
 	enum class ControllerAxis{
 		LeftX =0,

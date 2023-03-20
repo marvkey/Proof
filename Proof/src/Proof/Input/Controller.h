@@ -4,31 +4,48 @@
 #include <array>
 #include "KeyCodes.h"
 namespace Proof {
-    enum BrandController{
-        Playstation =0,
-        XBOX =1,
-        Other =2
+    enum class ControllerBrand{
+        None =0,
+        Playstation =1,
+        XBOX =2,
+        Other =3
+    };
+
+    struct ControllerJoystick 
+    {
+        InputEvent State = InputEvent::None;
+
+        // current axis of joystick
+        Vector2 Axis;
+
+        // disntance the joystick has moved since last frame
+        Vector2 Distance;
+    };
+
+    struct ControllerTrigger 
+    {
+        InputEvent State = InputEvent::None;
+
+        float Axis;
+        // disntance the Trigger has moved since last frame
+        float DistanceAxis;
     };
     struct Controller {
         Controller() {
-            for (int& num : Buttons)
-                num = (int)InputEvent::None;
+            for (auto&[button, state] : Buttons)
+                state = InputEvent::None;
         }
         std::string Name;
-        std::array<int, 15>Buttons; // SIZE is 15 cause that is teh controller we would support
-        int ID = 0;
-        int m_ButtonRightTrigger = (int)InputEvent::None;            // needs to be seperate since GLFW does not handle this we do it our self
-        int m_ButtonLeftTriggerr = (int)InputEvent::None;            // needs to be seperate since GLFW does not handle this we do it our self
-        float LeftJoystickX =0, LeftJoystickY = 0;                             // change to 2d vector
-        float DistanceLeftJoystickX = 0, DistanceLeftJoystickY = 0;            // change to 2d vector
+        uint32_t ID = 0;
+        ControllerBrand Brand = ControllerBrand::None;
+        std::unordered_map<ControllerButton, InputEvent>  Buttons;
 
-        float RightJoystickX =0, RightJoystickY = 0;                            // change to 2d vector
-        float DistanceRightJoystickX = 0, DistanceRightJoystickY = 0;           // change to 2d vector
+        ControllerJoystick RightJoystick;
+        ControllerJoystick LeftJoystick;
 
-        float RightTriggerAxis = 0;
-        float DistanceRightTriggerAxis = 0;
-
-        float LeftTriggerAxis = 0;
-        float DistanceLeftTriggerAxis = 0;
+        ControllerTrigger RightTrigger;
+        ControllerTrigger LeftTrigger;
+    private:
+        uint32_t PlayerIndex = 1;
     };
 }

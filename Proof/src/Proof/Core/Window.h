@@ -98,7 +98,9 @@ namespace Proof {
 				// have to use this because GLFW someties will not send that a key hasb een released
 		std::vector<KeyBoardKey> m_KeyPressedEventCheck;
 		std::vector<MouseButton> m_MouseButtonPressedEventCheck;
-		std::vector<Controller> m_Controllers;
+
+		// controller ID
+		std::map<uint32_t, Controller> m_Controllers;
 		friend class RendererBase;
 	};
 }

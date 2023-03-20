@@ -48,6 +48,7 @@ namespace Proof {
         m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
         m_Window->SetEventCallback([this](Event& e) {OnEvent(e); });
         RendererBase::Init(static_cast<Window*>(m_Window.get()));
+        InputManager::Init();
 
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
@@ -163,6 +164,7 @@ namespace Proof {
         PhysicsEngine::Release();
         m_Project = nullptr;
         m_Window = nullptr;
+        InputManager::Destroy();
     }
 
     void Application::PushLayer(Layer* Layer) {

@@ -26,17 +26,8 @@ namespace Proof
 
 		// CONTROLLER
 
-		static bool IsControllerClicked(int ID, ControllerButton button);
-		static bool IsAnyControllerClicked(ControllerButton button);
-
-		static bool IsControllerDoubleClick(int ID, ControllerButton button);
-		static bool IsAnyControllerDoubleClick(ControllerButton button);
-
-		static bool IsControllerReleased(int ID, ControllerButton button);
-		static bool IsAnyControllerReleased(ControllerButton button);
-
-		static bool IsControllerPressed(int ID, ControllerButton button);
-		static bool IsAnyControllerPressed(ControllerButton button);
+		static bool IsControllerState(int ID, ControllerButton button, InputEvent state);
+		static bool IsAnyControllerState(ControllerButton button, InputEvent state);
 
 		std::pair<float, float>GetControllerLeftJoystickAxis(int ID);
 		std::pair<float, float> GetControllerLeftJoystickAxisDistance(int ID);

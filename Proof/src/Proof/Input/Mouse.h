@@ -33,5 +33,7 @@ namespace Proof {
         static bool IsMouseMoved();
         static bool IsMouseCaptured();
         static void CaptureMouse(bool caputure);
+    private:
+        inline static uint32_t PlayerIndex = 1;
     };
 }

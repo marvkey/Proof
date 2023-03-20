@@ -13,7 +13,7 @@ namespace Proof {
 			return;
 
 		PF_PROFILE_FUNC();
-
+		/*
 		ImGui::Begin("Input Panel", &m_ShowWindow);
 		{
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
@@ -31,9 +31,11 @@ namespace Proof {
 			}
 		}
 		ImGui::End();
+		*/
 	}
 	void InputPanel::Action()
 	{
+		/*
 		ImGui::SameLine();
 		if (ImGui::Button("+", { 20,20 })) {
 			std::string action = "NewAction";
@@ -67,8 +69,10 @@ namespace Proof {
 			}
 
 		}
+		*/
 	}
 	void InputPanel::MotionInput(){
+		/*
 		ImGui::SameLine();
 		if (ImGui::Button("+", { 20,20 })) {
 			std::string action = "NewMotion";
@@ -125,5 +129,9 @@ namespace Proof {
 			a:
 			iterationMotion++;
 		}
+	
+		*/
 	}
+
+
 }

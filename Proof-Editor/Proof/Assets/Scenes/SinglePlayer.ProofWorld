@@ -49,10 +49,10 @@ World:
                 Data: true
               - Name: FowardForce
                 Type: Float
-                Data: 800
+                Data: 1000
               - Name: SideWayForce
                 Type: Float
-                Data: 70
+                Data: 200
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -146,10 +146,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 16233326068385086713
-            Index: 0
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -176,10 +172,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 16233326068385086713
-            Index: 0
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -206,10 +198,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 16233326068385086713
-            Index: 0
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -236,10 +224,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 16233326068385086713
-            Index: 0
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]

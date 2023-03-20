@@ -2,159 +2,220 @@
 #include "InputManager.h"
 #include "Proof/Events/Event.h"
 namespace Proof {
-	std::unordered_map<std::string, Action> InputManager::S_ActionMapping = {};
-	std::unordered_map<std::string, Motion> InputManager::s_MotionMapping = {};
-	void InputManager::OnEvent(Event& e){
-		EventDispatcher dispatcher(e);
-		// KEYBOARD
-		{
-			dispatcher.Dispatch< KeyClickedEvent>(InputManager::OnKeyClicked);
-			dispatcher.Dispatch<KeyHoldEvent>(InputManager::OnKeyHold);
-			dispatcher.Dispatch<KeyDoubleClickEvent>(InputManager::OnKeyDoubleClicked);
-			dispatcher.Dispatch<KeyPressedEvent>(InputManager::OnKeyPressed);
-		}
-		//MOUSE
-		{
-			dispatcher.Dispatch<MouseMoveEvent>(InputManager::OnMouseMoved);
-			dispatcher.Dispatch<MouseButtonClickedEvent>(InputManager::OnMouseClicked);
-			dispatcher.Dispatch<MouseButtonReleasedEvent>(InputManager::OnMouseReleased);
-		}
-		// CONTROLLER
-		{
-			dispatcher.Dispatch<ControllerButtonClickedEvent>(InputManager::OnControllerClicked);
-			dispatcher.Dispatch<ControllerButtonPressedEvent>(InputManager::OnControllerPressed);
-			dispatcher.Dispatch<ControllerButtonReleasedEvent>(InputManager::OnControllerReleased);
-			
-			// AXIS
-			{
-				dispatcher.Dispatch<ControllerLeftJoystickAxisEvent>(InputManager::ControllerLeftJoystickAxis);
-				dispatcher.Dispatch<ControllerRightJoystickAxisEvent>(InputManager::ControllerRightJoystickAxis);
 
-				dispatcher.Dispatch<ControllerTriggerAxisEvent>(InputManager::ControllerTriggerAxis);
-			}
-		}
+
+	// KEYBAORD AND MOUSE FOR NOW ARE SET TO PLAYER 1
+	struct InputManagerData 
+	{
+		std::unordered_map<std::string, Action> ActionMapping;
+		std::unordered_map<std::string, Motion> MotionMapping;
+		// (pleyer index, (action name, actuion))
+		std::unordered_map<uint32_t, std::unordered_map<std::string, PlayerActions >> PlayerActions;
+		// (pleyer index, (motion name, Motion))
+		std::unordered_map<uint32_t, std::unordered_map<std::string, PlayerMotion>> PlayerMotions;
+
+		bool Runtime = false;
+	};
+	InputManagerData* s_Data;
+
+	void InputManagerMeathods::SetPlayer(uint32_t player)
+	{
+		s_Data->PlayerActions[player] = {};
+		s_Data->PlayerMotions[player] = {};
 	}
-	void InputManager::BindAction(const std::string& name, InputEvent inputEvent, const std::function<void()>& func) {
-		auto it = S_ActionMapping.find(name);
-		if (it == S_ActionMapping.end())return;
-		int location = (int)inputEvent;
-		if (location == -1) {
-			PF_EC_INFO("Cannot pass none to bind an input event");
+
+	void InputManagerMeathods::DeletePlayer(uint32_t player)
+	{
+		PF_CORE_ASSERT(HasPlayer(player),"Does not contain player index");
+
+		s_Data->PlayerActions.erase(player);
+		s_Data->PlayerMotions.erase(player);
+	}
+
+	bool InputManagerMeathods::HasPlayer(uint32_t player)
+	{
+		return s_Data->PlayerActions.contains(player);
+	}
+	void InputManagerMeathods::BindAction(const std::string& name, uint32_t player, InputEvent inputEvent, const std::function<void()>& func) 
+	{
+		PF_CORE_ASSERT(HasPlayer(player), "Does not contain player");
+
+		auto& actionMapping = s_Data->PlayerActions[player];
+
+
+		if (s_Data->ActionMapping.contains(name))
+		{
+			PF_EC_WARN("Player {} Tried binding Action to {} wich does not exist",player, name);
 			return;
 		}
-		it->second.AvalaibleInputEvents[location]++;
-		it->second.FunctionCallback = func;
+
+		actionMapping[name].ActionName = name;
+		actionMapping[name].Action = func;
+		actionMapping[name].Event = inputEvent;
+	}
+	void InputManagerMeathods::BindMotion(const std::string& name, uint32_t player, const std::function<void(float)>& func)
+	{
+		PF_CORE_ASSERT(HasPlayer(player), "Does not contain player");
+
+		auto& motionMapping = s_Data->PlayerMotions[player];
+
+		if (s_Data->MotionMapping.contains(name))
+		{
+			PF_EC_WARN("Player {} Tried binding motion to {} wich does not exist", player, name);
+			return;
+		}
+		motionMapping[name].MotionName = name;
+		motionMapping[name].Action = func;
 	}
 
-	bool InputManager::ActionAddKey(const std::string& name, InputType inputype){
-		auto it = S_ActionMapping.find(name);
-		if (it == S_ActionMapping.end())return false;
-		it->second.m_Inputs.emplace_back(inputype);
-		it->second.AvalableDevices[(int)inputype.Device] ++; // increasing the amount of input for certain device
-		return true;
+	void InputManagerMeathods::CallAction(const std::string& name, uint32_t player, InputEvent inputEvent)
+	{
+		PF_CORE_ASSERT(HasPlayer(player), "Does not contain player");
+		auto& actionMapping = s_Data->PlayerActions[player];
+		if (actionMapping.contains(name))
+		{
+			auto& action = actionMapping[name];
+			if(action.Event == inputEvent)
+				action.Action();
+		}
 	}
-
+	void InputManagerMeathods::CallMotion(const std::string& name, uint32_t player, float motionValue)
+	{
+		PF_CORE_ASSERT(HasPlayer(player), "Does not contain player");
+		auto& motionMapping = s_Data->PlayerMotions[player];
+		if (motionMapping.contains(name))
+		{
+			motionMapping[name].Action(motionValue);
+		}
+	}
+	void InputManager::ActionAddKey(const std::string& name, InputType inputype){
+		PF_CORE_ASSERT(HasAction(name), fmt::format("Input manager cannot add aciton {} when it has not been added", name));
+		auto& action =s_Data->ActionMapping[name];
+		action.Inputs[inputype.Device].emplace_back(inputype);
+	}
+	
 	bool InputManager::AddAction(const std::string& name){
-		if (S_ActionMapping.find(name) != S_ActionMapping.end()) {
-			PF_ENGINE_INFO("already has action ");
+		if (s_Data->ActionMapping.contains(name))
 			return false;
-		}
-		S_ActionMapping.insert({ name,Action() });
+		s_Data->ActionMapping[name] =Action() ;
 		return true;
 	}
 
-	void InputManager::BindMotion(const std::string& name, const std::function<void(float MotionValue)>& func) {
-		auto it = s_MotionMapping.find(name);
-		if (it == s_MotionMapping.end())return;
-		it->second.FunctionCallback = func;
+	bool InputManager::HasMotion(const std::string& name) 
+	{
+		return s_Data->MotionMapping.contains(name);
+	}
+	bool InputManager::HasAction(const std::string& name) {
+		return s_Data->ActionMapping.contains(name);
+	}
+	void InputManager::MotionAddKey(const std::string& name, MotionInputType inputType) {
+		PF_CORE_ASSERT(HasMotion(name), fmt::format("Input manager cannot add Motion {} when it has not been added", name));
+		auto& motion = s_Data->MotionMapping[name];
+		motion.Inputs[inputType.Device].emplace_back(inputType);
 	}
 
-	bool InputManager::MotionAddKey(const std::string& name, MotionInputType inputType){
-		auto it = s_MotionMapping.find(name);
-		if (it == s_MotionMapping.end())return false;
-		it->second.Inputs.emplace_back(inputType);
-		it->second.AvalableDevices[(int)inputType.Device] ++;  // increasing the amount of input for certain device
-		return true;
-	}
-
-	bool InputManager::AddMotion(const std::string& name){
-		if (s_MotionMapping.find(name) != s_MotionMapping.end()) {
-			PF_ENGINE_INFO("already has Motion");
+	bool InputManager::AddMotion(const std::string& name) {
+		if (s_Data->MotionMapping.contains(name))
 			return false;
-		}
-		s_MotionMapping.insert({ name,Motion() });
+		s_Data->MotionMapping[name] = Motion();
 		return true;
 	}
+	
+	void InputManager::RuntimeStart()
+	{
+		s_Data->Runtime = true;
+	}
 
-	void InputManager::OnKeyHold(KeyHoldEvent& e){
-		for (const auto& [name, action] : S_ActionMapping) {
+	void InputManager::RuntimeEnd()
+	{
+		s_Data->PlayerActions.clear();
+		s_Data->PlayerMotions.clear();
+
+		s_Data->Runtime = false;
+	}
+
+
+	void OnKeyHold(KeyHoldEvent& e){
+
+		for (const auto& [name, action] : s_Data->ActionMapping) {
 			// checking if key hold is an available format
-			if (action.FunctionCallback == nullptr)continue;
-			if (action.AvalaibleInputEvents[(int)InputEvent::KeyHold] == 0) 
+			if (!action.Inputs.contains(InputDevice::KeyBoard))
 				continue;
-			for (auto& inputs : action.m_Inputs) {
-				if (inputs.Key == (int)e.GetKey()) {
-					action.FunctionCallback();
+
+			auto& data = action.Inputs.at(InputDevice::KeyBoard);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)e.GetKey())
+				{
+					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyHold);
 				}
 			}
 		}
 	}
-	void InputManager::OnKeyDoubleClicked(KeyDoubleClickEvent& e){
-		for (const auto& [name, action] : S_ActionMapping) {
-			// checking if KeyDouble is an available format
-			if (action.FunctionCallback == nullptr)continue;
-			if (action.AvalaibleInputEvents[(int)InputEvent::KeyDouble] == 0)
+	void OnKeyDoubleClicked(KeyDoubleClickEvent& e){
+		for (const auto& [name, action] : s_Data->ActionMapping)
+		{
+			// checking if key hold is an available format
+			if (!action.Inputs.contains(InputDevice::KeyBoard))
 				continue;
-			if(action.AvalableDevices[(int)InputDevice::KeyBoard] == 0)
-				continue;
-			for (auto& inputs : action.m_Inputs) {
-				if (inputs.Key == (int)e.GetKey()) {
-					action.FunctionCallback();
+
+			auto& data = action.Inputs.at(InputDevice::KeyBoard);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)e.GetKey())
+				{
+					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyDouble);
 				}
 			}
 		}
 	}
-	void InputManager::OnKeyReleased(KeyReleasedEvent& e){
-		for (const auto& [name, action] : S_ActionMapping) {
-			if (action.FunctionCallback == nullptr)continue;
-			// checking if key Releaed is an available format
-			if (action.AvalaibleInputEvents[(int)InputEvent::KeyReleased] == 0)
+	void OnKeyReleased(KeyReleasedEvent& e){
+		for (const auto& [name, action] : s_Data->ActionMapping)
+		{
+			// checking if key hold is an available format
+			if (!action.Inputs.contains(InputDevice::KeyBoard))
 				continue;
-			if(action.AvalableDevices[(int)InputDevice::KeyBoard] == 0)
-				continue;
-			for (auto& inputs : action.m_Inputs) {
-				if (inputs.Key == (int)e.GetKey()) {
-					action.FunctionCallback();
+			auto& data = action.Inputs.at(InputDevice::KeyBoard);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)e.GetKey())
+				{
+					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyReleased);
 				}
 			}
 		}
 	}
 	
-	void InputManager::OnKeyClicked(KeyClickedEvent& e){
-		for (const auto& [name, action] : S_ActionMapping) {
-			if (action.FunctionCallback == nullptr)continue;
-
-			// checking if key CLicked is an available format
-			if (action.AvalaibleInputEvents[(int)InputEvent::KeyClicked] == 0)
+	void OnKeyClicked(KeyClickedEvent& e){
+		for (const auto& [name, action] : s_Data->ActionMapping)
+		{
+			// checking if key hold is an available format
+			if (!action.Inputs.contains(InputDevice::KeyBoard))
 				continue;
-			for (auto& inputs : action.m_Inputs) {
-				if (inputs.Key == (int)e.GetKey()) {
-					action.FunctionCallback();
+			auto& data = action.Inputs.at(InputDevice::KeyBoard);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)e.GetKey())
+				{
+					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyClicked);
 				}
 			}
 		}
 	}
-	void InputManager::OnKeyPressed(KeyPressedEvent& e){
+	void OnKeyPressed(KeyPressedEvent& e){
 		// Motion movement
 		{
-			for (const auto& [name, motion] : s_MotionMapping) {
-				if (motion.FunctionCallback == nullptr)continue;
-
-				if (motion.AvalableDevices[(int)InputDevice::KeyBoard] == 0)
+			for (const auto& [name, action] : s_Data->MotionMapping)
+			{
+				// checking if key hold is an available format
+				if (!action.Inputs.contains(InputDevice::KeyBoard))
 					continue;
-				for (auto& inputs : motion.Inputs) {
-					if (inputs.Key == (int)e.GetKey()) {
-						motion.FunctionCallback(inputs.MotionValue);
+				auto& data = action.Inputs.at(InputDevice::KeyBoard);
+				for (auto& inputs : data)
+				{
+					if (inputs.Key == (int)e.GetKey())
+					{
+						InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue);
 					}
 				}
 			}
@@ -162,223 +223,301 @@ namespace Proof {
 
 		// Action 
 		{
-			for (const auto& [name, action] : S_ActionMapping) {
-				if (action.FunctionCallback == nullptr)continue;
-				// checking if key Pressed is an available format
-				if (action.AvalaibleInputEvents[(int)InputEvent::KeyPressed] == 0)
+			for (const auto& [name, action] : s_Data->ActionMapping)
+			{
+				// checking if key hold is an available format
+				if (!action.Inputs.contains(InputDevice::KeyBoard))
 					continue;
-				if(action.AvalableDevices[(int)InputDevice::KeyBoard] == 0)
-					continue;
-				for (auto& inputs : action.m_Inputs) {
-					if (inputs.Key == (int)e.GetKey()) {
-						action.FunctionCallback();
+				auto& data = action.Inputs.at(InputDevice::KeyBoard);
+				for (auto& inputs : data)
+				{
+					if (inputs.Key == (int)e.GetKey())
+					{
+						InputManagerMeathods::CallAction(name, 1, InputEvent::KeyPressed);
 					}
 				}
 			}
 		}
 	}
 
-	void InputManager::OnMouseClicked(MouseButtonClickedEvent& e){
-		for (const auto& [name, action] : S_ActionMapping) {
-			if (action.FunctionCallback == nullptr)continue;
-			// checking if key Pressed is an available format
-			if (action.AvalaibleInputEvents[(int)InputEvent::KeyClicked] == 0)
+	void OnMouseClicked(MouseButtonClickedEvent& e){
+		for (const auto& [name, action] : s_Data->ActionMapping) {
+			// checking if key hold is an available format
+			if (!action.Inputs.contains(InputDevice::MouseButton))
 				continue;
-			if(action.AvalableDevices[(int)InputDevice::MouseButton] == 0)
-				continue;
-			for (auto& inputs : action.m_Inputs) {
-				if (inputs.Device != InputDevice::MouseButton) // if it is the mouse input
-					continue;
-				if (inputs.Key == (int)e.GetButton()) {
-					action.FunctionCallback();
+			auto& data = action.Inputs.at(InputDevice::MouseButton);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)e.GetButton())
+				{
+					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyClicked);
 				}
 			}
 		}
 	}
 
-	void InputManager::OnMousePressed(MouseButtonPressedEvent& e){
-		for (const auto& [name, action] : S_ActionMapping) {
-			if (action.FunctionCallback == nullptr)continue;
-			// checking if key Pressed is an available format
-			if (action.AvalaibleInputEvents[(int)InputEvent::KeyPressed] == 0)
+	void OnMousePressed(MouseButtonPressedEvent& e){
+		for (const auto& [name, action] : s_Data->ActionMapping)
+		{
+			// checking if key hold is an available format
+			if (!action.Inputs.contains(InputDevice::MouseButton))
 				continue;
-			if(action.AvalableDevices[(int)InputDevice::MouseButton] == 0)
-				continue;
-			for (auto& inputs : action.m_Inputs) {
-				if (inputs.Device != InputDevice::MouseButton) // if it is the mouse input
-					continue;
-				if (inputs.Key == (int)e.GetButton()) {
-					action.FunctionCallback();
+			auto& data = action.Inputs.at(InputDevice::MouseButton);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)e.GetButton())
+				{
+					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyPressed);
 				}
 			}
 		}
 		// Motion movement
 		{
-			for (const auto& [name, motion] : s_MotionMapping) {
-				if (motion.FunctionCallback == nullptr)continue;
-				if (motion.AvalableDevices[(int)InputDevice::MouseButton] == 0)
+			for (const auto& [name, motion] : s_Data->MotionMapping) {
+				if (!motion.Inputs.contains(InputDevice::MouseMovement))
 					continue;
-				for (auto& inputs : motion.Inputs) {
-					if (inputs.Device != InputDevice::MouseButton) // if it is the mouse input
-						continue;
+				auto& data = motion.Inputs.at(InputDevice::MouseMovement);
+				for (auto& inputs : data)
+				{
 					if (inputs.Key == (int)e.GetButton())
-						motion.FunctionCallback(inputs.MotionValue);
+					{
+						InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue);
+					}
 				}
 			}
 		}
 	}
 
-	void InputManager::OnMouseReleased(MouseButtonReleasedEvent& e){
+	void OnMouseReleased(MouseButtonReleasedEvent& e){
+		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
-			for (const auto& [name, action] : S_ActionMapping) {
-				if (action.FunctionCallback == nullptr)continue;
-				// checking if key Pressed is an available format
-				if (action.AvalaibleInputEvents[(int)InputEvent::KeyReleased] == 0)
-					continue;
-				if(action.AvalableDevices[(int)InputDevice::MouseButton] == 0)
-					continue;
-				for (auto& inputs : action.m_Inputs) {
-					if (inputs.Device != InputDevice::MouseButton) // if it is the mouse input
-						continue;
-					if (inputs.Key == (int)e.GetButton()) {
-						action.FunctionCallback();
-					}
+			// checking if key hold is an available format
+			if (!action.Inputs.contains(InputDevice::MouseButton))
+				continue;
+
+			auto& data = action.Inputs.at(InputDevice::MouseButton);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)e.GetButton())
+				{
+					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyReleased);
 				}
 			}
 		}
 	}
-	void InputManager::OnMouseMoved(MouseMoveEvent& e){
+	
+	void OnMouseMoved(MouseMoveEvent& e){
 		float movedX = e.GetMovedX();
 		float movedY = e.GetMovedY();
 		// Motion Movement
+		for (const auto& [name, motion] : s_Data->MotionMapping)
 		{
-			for (const auto& [name, motion] : s_MotionMapping) {
-				if (motion.FunctionCallback == nullptr)continue;
-				if (motion.AvalableDevices[(int)InputDevice::MouseMovement] == 0)
-					continue;
-				for (auto& inputs : motion.Inputs) {
-					if (inputs.Device != InputDevice::MouseMovement)
-						continue;
-					if (inputs.Key == (int)MouseMovementInput::X) {
-						motion.FunctionCallback(inputs.MotionValue * e.GetMovedX()); // mihgt not mutltiply
+			if (motion.Inputs.contains(InputDevice::MouseMovement))
+			{
+				auto& data = motion.Inputs.at(InputDevice::MouseMovement);
+				for (auto& inputs : data)
+				{
+					if (inputs.Key == (int)MouseAxis::X)
+					{
+						InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * movedX);
 					}
-					else if (inputs.Key == (int)MouseMovementInput::Y) {
-						motion.FunctionCallback(inputs.MotionValue * e.GetMovedY()); // mihgt not mutltiply
+					else if (inputs.Key == (int)MouseAxis::Y)
+					{
+						InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue* movedY);
 					}
 				}
 			}
 		}
 	}
-	void InputManager::OnControllerClicked(ControllerButtonClickedEvent& e){
-		for (const auto& [name, action] : S_ActionMapping) {
-			if (action.FunctionCallback == nullptr)continue;
-			// checking if key Pressed is an available format
-			if (action.AvalaibleInputEvents[(int)InputEvent::KeyClicked] == 0)
+	void OnControllerClicked(ControllerButtonClickedEvent& e) {
+		for (const auto& [name, action] : s_Data->ActionMapping)
+		{
+				// checking if key hold is an available format
+			if (!action.Inputs.contains(InputDevice::ControllerButton))
 				continue;
-			if (action.AvalableDevices[(int)InputDevice::ControllerButton] == 0)
-				continue;
-			for (auto& inputs : action.m_Inputs) {
-				if (inputs.Device != InputDevice::ControllerButton) // if it is the mouse input
-					continue;
-				if (inputs.Key == (int)e.GetButton()) {
-					action.FunctionCallback();
+
+			auto& data = action.Inputs.at(InputDevice::ControllerButton);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)e.GetButton())
+				{
+					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyClicked);
 				}
 			}
 		}
 	}
-	void InputManager::OnControllerPressed(ControllerButtonPressedEvent& e){
+	void OnControllerPressed(ControllerButtonPressedEvent& e){
 		// ACTION
 		{
-			for (const auto& [name, action] : S_ActionMapping) {
-				if (action.FunctionCallback == nullptr)continue;
-				// checking if key Pressed is an available format
-				if (action.AvalaibleInputEvents[(int)InputEvent::KeyPressed] == 0)
+			for (const auto& [name, action] : s_Data->ActionMapping)
+			{
+					// checking if key hold is an available format
+				if (!action.Inputs.contains(InputDevice::ControllerButton))
 					continue;
-				if (action.AvalableDevices[(int)InputDevice::ControllerButton] == 0)
-					continue;
-				for (auto& inputs : action.m_Inputs) {
-					if (inputs.Device != InputDevice::ControllerButton) // if it is the mouse input
-						continue;
-					if (inputs.Key == (int)e.GetButton()) {
-						action.FunctionCallback();
+
+				auto& data = action.Inputs.at(InputDevice::ControllerButton);
+				for (auto& inputs : data)
+				{
+					if (inputs.Key == (int)e.GetButton())
+					{
+						InputManagerMeathods::CallAction(name, 1, InputEvent::KeyPressed);
 					}
 				}
 			}
 		}
 		// M0TIION
 		{
-			for (const auto& [name, motion] : s_MotionMapping) {
-				if (motion.FunctionCallback == nullptr)continue;
-				if (motion.AvalableDevices[(int)InputDevice::ControllerButton] == 0) // controller button supported
+			for (const auto& [name, motion] : s_Data->MotionMapping) {
+					// checking if key hold is an available format
+				if (!motion.Inputs.contains(InputDevice::ControllerButton))
 					continue;
-				for (auto& inputs : motion.Inputs) {
-					if (inputs.Device != InputDevice::ControllerButton) // if it is the controller button 
-						continue;
+
+				auto& data = motion.Inputs.at(InputDevice::ControllerButton);
+				for (auto& inputs : data)
+				{
 					if (inputs.Key == (int)e.GetButton())
-						motion.FunctionCallback(inputs.MotionValue);
+					{
+						InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue);
+					}
 				}
 			}
 		}
 	}
-	void InputManager::OnControllerReleased(ControllerButtonReleasedEvent& e){
-		for (const auto& [name, action] : S_ActionMapping) {
-			if (action.FunctionCallback == nullptr)continue;
-			// checking if key Pressed is an available format
-			if (action.AvalaibleInputEvents[(int)InputEvent::KeyReleased] == 0)
+	void OnControllerReleased(ControllerButtonReleasedEvent& e){
+		for (const auto& [name, action] : s_Data->ActionMapping)
+		{
+				// checking if key hold is an available format
+			if (!action.Inputs.contains(InputDevice::ControllerButton))
 				continue;
-			if (action.AvalableDevices[(int)InputDevice::ControllerButton] == 0)
-				continue;
-			for (auto& inputs : action.m_Inputs) {
-				if (inputs.Device != InputDevice::ControllerButton) // if it is the mouse input
-					continue;
-				if (inputs.Key == (int)e.GetButton()) {
-					action.FunctionCallback();
+
+			auto& data = action.Inputs.at(InputDevice::ControllerButton);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)e.GetButton())
+				{
+					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyReleased);
 				}
 			}
 		}
 	}
-	void InputManager::ControllerTriggerAxis(ControllerTriggerAxisEvent& e){
-		for (const auto& [name, motion] : s_MotionMapping) {
-			if (motion.FunctionCallback == nullptr)continue;
-			if (motion.AvalableDevices[(int)InputDevice::ControllerAxis] == 0) // controller button supported
+
+	void OnControllerDoubleClick(ControllerButtonDoubleClickEvent& e) {
+		for (const auto& [name, action] : s_Data->ActionMapping)
+		{
+				// checking if key hold is an available format
+			if (!action.Inputs.contains(InputDevice::ControllerButton))
 				continue;
-			for (auto& inputs : motion.Inputs) {
-				if (inputs.Device != InputDevice::ControllerAxis) // if it is the controller button 
-					continue;
+
+			auto& data = action.Inputs.at(InputDevice::ControllerButton);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)e.GetButton())
+				{
+					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyDouble);
+				}
+			}
+		}
+	}
+	void ControllerTriggerAxis(ControllerTriggerAxisEvent& e){
+		for (const auto& [name, motion] : s_Data->MotionMapping)
+		{
+			// checking if key hold is an available format
+			if (!motion.Inputs.contains(InputDevice::ControllerAxis))
+				continue;
+
+			auto& data = motion.Inputs.at(InputDevice::ControllerAxis);
+			for (auto& inputs : data)
+			{
 				if (inputs.Key == (int)e.GetTriggerAxis())
-					motion.FunctionCallback(inputs.MotionValue* e.GetAxis());
+				{
+					InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * e.GetAxis());
+				}
 			}
 		}
 	}
-	void InputManager::ControllerLeftJoystickAxis(ControllerLeftJoystickAxisEvent& e){
-		for (const auto& [name, motion] : s_MotionMapping) {
-			if (motion.FunctionCallback == nullptr)continue;
-			if (motion.AvalableDevices[(int)InputDevice::ControllerAxis] == 0) // controller button supported
+	void ControllerLeftJoystickAxis(ControllerLeftJoystickAxisEvent& e){
+		for (const auto& [name, motion] : s_Data->MotionMapping)
+		{
+			// checking if key hold is an available format
+			if (!motion.Inputs.contains(InputDevice::ControllerAxis))
 				continue;
-			for (auto& inputs : motion.Inputs) {
-				if (inputs.Device != InputDevice::ControllerAxis) // if it is the controller button 
-					continue;
+
+			auto& data = motion.Inputs.at(InputDevice::ControllerAxis);
+			for (auto& inputs : data)
+			{
 				if (inputs.Key == (int)ControllerAxis::LeftX)
-					motion.FunctionCallback(inputs.MotionValue * e.GetX());
-				else if(inputs.Key == (int)ControllerAxis::LeftY)
-					motion.FunctionCallback(inputs.MotionValue * e.GetY());
+				{
+					InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * e.GetDistanceX());
+				}
+				else if (inputs.Key == (int)ControllerAxis::LeftY)
+				{
+					InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * e.GetDistanceY());
+				}
 			}
 		}
 	}
-	void InputManager::ControllerRightJoystickAxis(ControllerRightJoystickAxisEvent& e)
+	void ControllerRightJoystickAxis(ControllerRightJoystickAxisEvent& e)
 	{
-		for (const auto& [name, motion] : s_MotionMapping) {
-			if (motion.FunctionCallback == nullptr)continue;
-			if (motion.AvalableDevices[(int)InputDevice::ControllerAxis] == 0) // controller button supported
+		for (const auto& [name, motion] : s_Data->MotionMapping)
+		{
+			// checking if key hold is an available format
+			if (!motion.Inputs.contains(InputDevice::ControllerAxis))
 				continue;
-			for (auto& inputs : motion.Inputs) {
-				if (inputs.Device != InputDevice::ControllerAxis) // if it is the controller button 
-					continue;
+
+			auto& data = motion.Inputs.at(InputDevice::ControllerAxis);
+			for (auto& inputs : data)
+			{
 				if (inputs.Key == (int)ControllerAxis::RightX)
-					motion.FunctionCallback(inputs.MotionValue * e.GetX());
-				else if (inputs.Key == (int)ControllerAxis::RightY)
-					motion.FunctionCallback(inputs.MotionValue * e.GetY());
+				{
+					InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * e.GetDistanceX());
+				}
+				else if (inputs.Key == (int)ControllerAxis::RightX)
+				{
+					InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * e.GetDistanceY());
+				}
 			}
 		}
 	}
+	void InputManager::OnEvent(Event& e) {
+		if (s_Data->Runtime == false)
+			return;
+		EventDispatcher dispatcher(e);
+		// KEYBOARD
+		{
+			dispatcher.Dispatch< KeyClickedEvent>(OnKeyClicked);
+			dispatcher.Dispatch<KeyHoldEvent>(OnKeyHold);
+			dispatcher.Dispatch<KeyDoubleClickEvent>(OnKeyDoubleClicked);
+			dispatcher.Dispatch<KeyPressedEvent>(OnKeyPressed);
+		}
+		//MOUSE
+		{
+			dispatcher.Dispatch<MouseMoveEvent>(OnMouseMoved);
+			dispatcher.Dispatch<MouseButtonClickedEvent>(OnMouseClicked);
+			dispatcher.Dispatch<MouseButtonReleasedEvent>(OnMouseReleased);
+		}
+		// CONTROLLER
+		{
+			dispatcher.Dispatch<ControllerButtonClickedEvent>(OnControllerClicked);
+			dispatcher.Dispatch<ControllerButtonReleasedEvent>(OnControllerReleased);
+			dispatcher.Dispatch<ControllerButtonDoubleClickEvent>(OnControllerDoubleClick);
+
+			// AXIS
+			{
+				dispatcher.Dispatch<ControllerLeftJoystickAxisEvent>(ControllerLeftJoystickAxis);
+				dispatcher.Dispatch<ControllerRightJoystickAxisEvent>(ControllerRightJoystickAxis);
+
+				dispatcher.Dispatch<ControllerTriggerAxisEvent>(ControllerTriggerAxis);
+			}
+		}
+	}
+	void InputManager::Init()
+	{
+		s_Data = new InputManagerData();
+	}
+
+	void InputManager::Destroy()
+	{
+		delete s_Data;
+	}
+
 }
