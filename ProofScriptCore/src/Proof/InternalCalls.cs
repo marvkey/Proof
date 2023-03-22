@@ -45,6 +45,9 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static object GetScriptInstance(ulong entityID, string scrptName);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static object Entity_GetOwner(ulong entityID, out ulong ownerID);
         #endregion
 
         #region TagComponent
@@ -88,7 +91,16 @@ namespace Proof
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody_AddTorque(ulong entityID, Vector force, int forceMode, bool autoAwake);
-		#endregion
+        #endregion
 
-	}
+        #region TextComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static object TextComponent_GetText(ulong entityID, out string Text);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static object TextComponent_SetText(ulong entityID, ref string Text);
+        #endregion
+
+
+    }
 }

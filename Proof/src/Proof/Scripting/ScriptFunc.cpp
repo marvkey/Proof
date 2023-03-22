@@ -78,6 +78,25 @@ namespace Proof
 	{
 		return ScriptEngine::GetMonoManagedObject(entityID,ScriptEngine::MonoToString(classFullName));
 	}
+
+	static void Entity_GetOwner(uint64_t entityID, uint64_t* owenerId)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("Entity.GetOwner - entity is invalid");
+			return;
+		}
+		#endif
+
+		if (!entity.HasOwner())
+		{
+			*owenerId = 0;
+			return;
+		}
+		*owenerId = entity.GetOwnerUUID();
+	}
 #pragma endregion 
 #pragma region TagComponent
 	static void TagComponent_GetTag(uint64_t entityID, MonoString** tag)
@@ -93,8 +112,8 @@ namespace Proof
 			return;
 		}
 
-		*tag = ScriptEngine::StringToMono(entity.GetComponent<TagComponent>()->Tag);
 		#endif
+		*tag = ScriptEngine::StringToMono(entity.GetComponent<TagComponent>()->Tag);
 	}
 	static void TagComponent_SetTag(uint64_t entityID, MonoString** tag)
 	{
@@ -108,9 +127,10 @@ namespace Proof
 			PF_EC_ERROR("TagComponent.SetTag - entity is invalid");
 			return;
 		}
+		#endif
+
 
 		entity.GetComponent<TagComponent>()->Tag  = ScriptEngine::MonoToString( *tag);
-		#endif
 	}
 #pragma endregion 
 #pragma region TransformComponent
@@ -137,6 +157,47 @@ namespace Proof
 		entity.GetComponent<TransformComponent>()->Location = *location;
 	};
 #pragma endregion 
+#pragma region TextComponent
+
+	static void TextComponent_GetText(uint64_t entityID, MonoString** text) 
+	{
+
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TextComponent.GetText - entity is invalid");
+			return;
+		}
+
+		#endif
+		if (!entity.HasComponent<TextComponent>())
+		{
+			PF_EC_ERROR("TextComponent.GetText - Does not have TextComponent");
+			return;
+		}
+		* text = ScriptEngine::StringToMono(entity.GetComponent<TextComponent>()->Text);
+	}
+
+	static void TextComponent_SetText(uint64_t entityID, MonoString** text)
+	{
+
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TextComponent.SetText - entity is invalid");
+			return;
+		}
+		#endif
+		if (!entity.HasComponent<TextComponent>())
+		{
+			PF_EC_ERROR("TextComponent.SetText - Does not have TextComponent");
+			return;
+		}
+		entity.GetComponent<TextComponent>()->Text = ScriptEngine::MonoToString(*text);
+	}
+#pragma endregion
 
 #pragma region RigidBody
 	static void RigidBody_GetMass(EntityID entityID, float* outMass) {
@@ -241,6 +302,7 @@ namespace Proof
 		{
 			PF_ADD_INTERNAL_CALL(Entity_HasComponent);
 			PF_ADD_INTERNAL_CALL(GetScriptInstance);
+			PF_ADD_INTERNAL_CALL(Entity_GetOwner);
 		}
 		// Tag Componnent
 		{
@@ -259,6 +321,11 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(RigidBody_SetMass);
 			PF_ADD_INTERNAL_CALL(RigidBody_AddForce);
 			PF_ADD_INTERNAL_CALL(RigidBody_AddTorque);
+		}
+		//TextComponent
+		{
+			PF_ADD_INTERNAL_CALL(TextComponent_GetText);
+			PF_ADD_INTERNAL_CALL(TextComponent_SetText);
 		}
 		
 	}

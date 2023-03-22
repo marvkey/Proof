@@ -32,7 +32,7 @@ World:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [0, 0, 2.5999999]
+        Location: [0, 0, 0.5]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -242,14 +242,19 @@ World:
         Tag: Score
         tags: []
       TransformComponent:
-        Location: [2.4000001, 4.19999981, 1.60000002]
-        Rotation: [0, 188.199997, 0]
-        Scale: [1, 1, 1]
+        Location: [0, 12, 0]
+        Rotation: [0, 180, 0]
+        Scale: [2.9000001, 2.5, 3]
       ChildComponent:
         OwnerID: 9019730813530534380
         Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: Game.Score
+            ScriptFields:
+              []
       TextComponent:
-        Color: [1, 1, 1, 1]
+        Color: [0, 0.322580576, 1, 1]
         Kerning: 0
         LineSpacing: 1
-        Text: Yo wagwan
+        Text: 0

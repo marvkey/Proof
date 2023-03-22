@@ -23,7 +23,16 @@ namespace Proof
 			Type componentType = typeof(T);
 			return InternalCalls.Entity_HasComponent(ID, componentType);
 		}
-		public T GetComponent<T>() where T : Component, new()
+
+        public Entity GetOwner()
+        {
+			InternalCalls.Entity_GetOwner(ID, out ulong owenrId);
+			if (owenrId == 0)
+				return null;
+
+			return new Entity(owenrId);
+        }
+        public T GetComponent<T>() where T : Component, new()
 		{
 			if (!HasComponent<T>())
 				return null;

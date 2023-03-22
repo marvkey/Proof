@@ -70,6 +70,23 @@ namespace Proof
 		}
 
     }
+
+	public class TextComponent : Component
+	{
+		public string Text
+		{
+			get
+			{
+				InternalCalls.TextComponent_GetText(Entity.ID, out string text);
+				return text;
+			}
+
+			set
+			{
+				InternalCalls.TextComponent_SetText(Entity.ID, ref value);	
+			}
+		}
+	}
 	public enum ForceMode
 	{
 		Force,				
