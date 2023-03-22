@@ -7,9 +7,10 @@ namespace Proof
 {
 	namespace Utils
 	{
-		
+
 		static VkShaderStageFlagBits ProofShaderToVulkanShader(ShaderStage stage) {
-			switch (stage) {
+			switch (stage)
+			{
 				case Proof::ShaderStage::Vertex:
 					return VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
 					break;
@@ -25,43 +26,544 @@ namespace Proof
 			}
 			PF_CORE_ASSERT(false, "Not supported");
 		}
+		//Note that the stencil component is always 1 byte per pixel in these formats.
+		//from chatgpt
 		static uint32_t BytesPerPixel(ImageFormat format) {
+		
 			switch (format)
 			{
-				case ImageFormat::RGBA:    return 4;
-				case ImageFormat::RGBA16F:	return 4;
-				case ImageFormat::RGBA32F: return 16;
+				case Proof::ImageFormat::None:
+					return 0;
+					break;
+				case Proof::ImageFormat::R:
+					return 1;
+					break;
+				case Proof::ImageFormat::RG:
+					return 2;
+					break;
+				case Proof::ImageFormat::RGB:
+					return 3;
+					break;
+				case Proof::ImageFormat::BGR8:
+					return 3;
+					break;
+				case Proof::ImageFormat::RGBA:
+					return 4;
+					break;
+				case Proof::ImageFormat::BGRA8:
+					return 4;
+					break;
+				case Proof::ImageFormat::R8UI:
+					return 1;
+					break;
+				case Proof::ImageFormat::RG8UI:
+					return 2;
+					break;
+				case Proof::ImageFormat::RGB8UI:
+					return 3;
+					break;
+				case Proof::ImageFormat::BGR8UI:
+					return 3;
+					break;
+				case Proof::ImageFormat::RGBA8UI:
+					return 4;
+					break;
+				case Proof::ImageFormat::BGRA8UI:
+					return 4;
+					break;
+				case Proof::ImageFormat::STENCIL8UI:
+					return 1;
+					break;
+				case Proof::ImageFormat::R8SNORM:
+					return 1;
+					break;
+				case Proof::ImageFormat::RG8SNORM:
+					return 2;
+					break;
+				case Proof::ImageFormat::RGB8SNORM:
+					return 3;
+					break;
+				case Proof::ImageFormat::BGR8SNORM:
+					return 3;
+					break;
+				case Proof::ImageFormat::RGBA8SNORM:
+					return 4;
+					break;
+				case Proof::ImageFormat::BRGA8SNORM:
+					return 4;
+					break;
+				case Proof::ImageFormat::R8I:
+					return 1;
+					break;
+				case Proof::ImageFormat::RG8I:
+					return 2;
+					break;
+				case Proof::ImageFormat::RGB8I:
+					return 3;
+					break;
+				case Proof::ImageFormat::BGR8I:
+					return 3;
+					break;
+				case Proof::ImageFormat::RGBA8I:
+					return 4;
+					break;
+				case Proof::ImageFormat::BGRA8I:
+					return 4;
+					break;
+				case Proof::ImageFormat::R16:
+					return 2;
+					break;
+				case Proof::ImageFormat::RG16:
+					return 4;
+					break;
+				case Proof::ImageFormat::RGB16:
+					return 6;
+					break;
+				case Proof::ImageFormat::RGBA16:
+					return 8;
+					break;
+				case Proof::ImageFormat::R16UI:
+					return 2;
+					break;
+				case Proof::ImageFormat::RG16UI:
+					return 4;
+					break;
+				case Proof::ImageFormat::RGB16UI:
+					return 6;
+					break;
+				case Proof::ImageFormat::RGBA16UI:
+					return 8;
+					break;
+				case Proof::ImageFormat::DEPTH16:
+					return 2;
+					break;
+				case Proof::ImageFormat::DEPTH16STENCIL8UI:
+					return 3;
+					break;
+				case Proof::ImageFormat::R16SNORM:
+					return 2;
+					break;
+				case Proof::ImageFormat::RG16SNORM:
+					return 4;
+					break;
+				case Proof::ImageFormat::RGB16SNORM:
+					return 6;
+					break;
+				case Proof::ImageFormat::RGBA16SNORM:
+					return 8;
+					break;
+				case Proof::ImageFormat::R16I:
+					return 2;
+					break;
+				case Proof::ImageFormat::RG16I:
+					return 4;
+					break;
+				case Proof::ImageFormat::RGB16I:
+					return 6;
+					break;
+				case Proof::ImageFormat::RGBA16I:
+					return 8;
+					break;
+				case Proof::ImageFormat::R16F:
+					return 2;
+					break;
+				case Proof::ImageFormat::RG16F:
+					return 4;
+					break;
+				case Proof::ImageFormat::RGB16F:
+					return 6;
+					break;
+				case Proof::ImageFormat::RGBA16F:
+					return 8;
+					break;
+				case Proof::ImageFormat::R32UI:
+					return 4;
+					break;
+				case Proof::ImageFormat::RG32UI:
+					return 8;
+					break;
+				case Proof::ImageFormat::RGB32UI:
+					return 12;
+					break;
+				case Proof::ImageFormat::RGBA32UI:
+					return 16;
+					break;
+				case Proof::ImageFormat::X8DEPTH24PACK32:
+					return 4;
+					break;
+				case Proof::ImageFormat::DEPTH24STENCIL8UI:
+					return 4;
+					break;
+				case Proof::ImageFormat::R32I:
+					return 4;
+					break;
+				case Proof::ImageFormat::RG32I:
+					return 8;
+					break;
+				case Proof::ImageFormat::RGB32I:
+					return 12;
+					break;
+				case Proof::ImageFormat::RGBA32I:
+					return 16;
+					break;
+				case Proof::ImageFormat::R32F:
+					return 4;
+					break;
+				case Proof::ImageFormat::RG32F:
+					return 8;
+					break;
+				case Proof::ImageFormat::RGB32F:
+					return 12;
+					break;
+				case Proof::ImageFormat::RGBA32F:
+					return 16;
+					break;
+				case Proof::ImageFormat::DEPTH32F:
+					return 4;
+					break;
+				case Proof::ImageFormat::DEPTH32FSTENCIL8UI:
+					return 5;
+					break;
+				case Proof::ImageFormat::R64UI:
+					return 8;
+					break;
+				case Proof::ImageFormat::RG64UI:
+					return 16;
+					break;
+				case Proof::ImageFormat::RGB64UI:
+					return 24;
+					break;
+				case Proof::ImageFormat::RGBA64UI:
+					return 32;
+					break;
+				case Proof::ImageFormat::R64I:
+					return 8;
+					break;
+				case Proof::ImageFormat::RG64I:
+					return 16;
+					break;
+				case Proof::ImageFormat::RGB64I:
+					return 24;
+					break;
+				case Proof::ImageFormat::RGBA64I:
+					return 32;
+					break;
+				case Proof::ImageFormat::R64F:
+					return 8;
+					break;
+				case Proof::ImageFormat::RG64F:
+					return 16;
+					break;
+				case Proof::ImageFormat::RGB64F:
+					return 24;
+					break;
+				case Proof::ImageFormat::RGBA64F:
+					return 32;
+					break;
+				default:
+					break;
 			}
-			PF_CORE_ASSERT(false, fmt::format("not supported yet {}",EnumReflection::EnumString(format)));
+			PF_CORE_ASSERT(false, fmt::format("not supported yet {}", EnumReflection::EnumString(format)));
 
 		}
 
 		static VkFormat ProofFormatToVulkanFormat(ImageFormat format) {
+			//refence
+			//https://github.com/KhronosGroup/Vulkan-Samples-Deprecated/blob/master/external/include/vulkan/vk_format.h
+
 			switch (format)
 			{
-				case ImageFormat::RGBA:    return VK_FORMAT_R8G8B8A8_UNORM;
-				case ImageFormat::RGBA16:    return VK_FORMAT_R16G16B16A16_UNORM;
+				#pragma region BitsPerComponent8
 
-				case ImageFormat::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
-				case ImageFormat::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
+				#pragma region UnsignedByte
+				case Proof::ImageFormat::None:
+					return VK_FORMAT_UNDEFINED;
+					break;
+				case Proof::ImageFormat::R:
+					return VK_FORMAT_R8_UNORM;
+					break;
+				case Proof::ImageFormat::RG:
+					return VK_FORMAT_R8G8_UNORM;
+					break;
+				case Proof::ImageFormat::RGB:
+					return VK_FORMAT_R8G8B8_UNORM;
+					break;
+				case Proof::ImageFormat::BGR8:
+					return  VK_FORMAT_B8G8R8_UNORM;
+					break;
+				case Proof::ImageFormat::RGBA:
+					return VK_FORMAT_R8G8B8A8_UNORM;
+					break;
+				case Proof::ImageFormat::BGRA8:
+					return VK_FORMAT_B8G8R8A8_UNORM;
+					break;
+				case Proof::ImageFormat::R8UI:
+					return VK_FORMAT_R8_UINT;
+					break;
+				case Proof::ImageFormat::RG8UI:
+					return VK_FORMAT_R8G8_UINT;
+					break;
+				case Proof::ImageFormat::RGB8UI:
+					return  VK_FORMAT_R8G8B8_UINT;
+					break;
+				case Proof::ImageFormat::BGR8UI:
+					return VK_FORMAT_B8G8R8_UINT;
+					break;
+				case Proof::ImageFormat::RGBA8UI:
+					return VK_FORMAT_R8G8B8A8_UINT;
+					break;
+				case Proof::ImageFormat::BGRA8UI:
+					return VK_FORMAT_B8G8R8A8_UINT;
+					break;
+				case Proof::ImageFormat::STENCIL8UI:
+					return VK_FORMAT_S8_UINT;
+					break;
+					#pragma endregion 
 
-				case ImageFormat::BGRA8UNORM: return VK_FORMAT_B8G8R8A8_UNORM;
-				case ImageFormat::RGBA8UNORM: return VK_FORMAT_R8G8B8A8_UNORM;
-				case ImageFormat::BGR8UNORM:return VK_FORMAT_B8G8R8_UNORM;
-				case ImageFormat::RGB8UNORM:return VK_FORMAT_R8G8B8_UNORM;
+					#pragma region Byte
 
-				case ImageFormat::DEPTH16UNORM: return VK_FORMAT_D16_UNORM;
-				case ImageFormat::DEPTH32F: return VK_FORMAT_D32_SFLOAT;
-				case ImageFormat::DEPTH16UNORMSTENCIL8UINT: return VK_FORMAT_D16_UNORM_S8_UINT;
-				case ImageFormat::DEPTH24UNORMSTENCIL8UINT: return VK_FORMAT_D24_UNORM_S8_UINT;
-				case ImageFormat::DEPTH32FSTENCIL8UINT: return VK_FORMAT_D32_SFLOAT_S8_UINT;
-				case ImageFormat::STENCIL8UINT: return VK_FORMAT_S8_UINT;
+				case Proof::ImageFormat::R8SNORM:
+					return VK_FORMAT_R8_SNORM;
+					break;
+				case Proof::ImageFormat::RG8SNORM:
+					return VK_FORMAT_R8G8_SNORM;
+					break;
+				case Proof::ImageFormat::RGB8SNORM:
+					return VK_FORMAT_R8G8B8_SNORM;
+					break;
+				case Proof::ImageFormat::BGR8SNORM:
+					return VK_FORMAT_B8G8R8_SNORM;
+					break;
+				case Proof::ImageFormat::RGBA8SNORM:
+					return VK_FORMAT_R8G8B8A8_SNORM;
+					break;
+				case Proof::ImageFormat::BRGA8SNORM:
+					return VK_FORMAT_B8G8R8A8_SNORM;
+					break;
+				case Proof::ImageFormat::R8I:
+					return VK_FORMAT_R8_SINT;
+					break;
+				case Proof::ImageFormat::RG8I:
+					return VK_FORMAT_R8G8_SINT;
+					break;
+				case Proof::ImageFormat::RGB8I:
+					return VK_FORMAT_R8G8B8_SINT;
+					break;
+				case Proof::ImageFormat::BGR8I:
+					return VK_FORMAT_B8G8R8_SINT;
+					break;
+				case Proof::ImageFormat::RGBA8I:
+					return VK_FORMAT_R8G8B8A8_SINT;
+					break;
+				case Proof::ImageFormat::BGRA8I:
+					return VK_FORMAT_B8G8R8A8_SINT;
+					break;
+					#pragma endregion
+
+					#pragma endregion 
+
+					#pragma region BitsPerComponent16
+
+					#pragma region unsiged16Int
+
+				case Proof::ImageFormat::R16:
+					return VK_FORMAT_R16_UNORM;
+					break;
+				case Proof::ImageFormat::RG16:
+					return VK_FORMAT_R16G16_UNORM;
+					break;
+				case Proof::ImageFormat::RGB16:
+					return VK_FORMAT_R16G16B16_UNORM;
+					break;
+				case Proof::ImageFormat::RGBA16:
+					return VK_FORMAT_R16G16B16A16_UNORM;
+					break;
+				case Proof::ImageFormat::R16UI:
+					return VK_FORMAT_R16_UINT;
+					break;
+				case Proof::ImageFormat::RG16UI:
+					return VK_FORMAT_R16G16_UINT;
+					break;
+				case Proof::ImageFormat::RGB16UI:
+					return VK_FORMAT_R16G16B16_UINT;
+					break;
+				case Proof::ImageFormat::RGBA16UI:
+					return VK_FORMAT_R16G16B16A16_UINT;
+					break;
+				case Proof::ImageFormat::DEPTH16:
+					return VK_FORMAT_D16_UNORM;
+					break;
+				case Proof::ImageFormat::DEPTH16STENCIL8UI:
+					return VK_FORMAT_D16_UNORM_S8_UINT;
+					break;
+					#pragma endregion
+
+					#pragma region Int16
+				case Proof::ImageFormat::R16SNORM:
+					return VK_FORMAT_R16_SNORM;
+					break;
+				case Proof::ImageFormat::RG16SNORM:
+					return VK_FORMAT_R16G16_SNORM;
+					break;
+				case Proof::ImageFormat::RGB16SNORM:
+					return VK_FORMAT_R16G16B16_SNORM;
+					break;
+				case Proof::ImageFormat::RGBA16SNORM:
+					return VK_FORMAT_R16G16B16A16_SNORM;
+					break;
+				case Proof::ImageFormat::R16I:
+					return VK_FORMAT_R16_SINT;
+					break;
+				case Proof::ImageFormat::RG16I:
+					return VK_FORMAT_R16G16_SINT;
+					break;
+				case Proof::ImageFormat::RGB16I:
+					return VK_FORMAT_R16G16B16_SINT;
+					break;
+				case Proof::ImageFormat::RGBA16I:
+					return VK_FORMAT_R16G16B16A16_SINT;
+					break;
+					#pragma endregion
+
+					#pragma region flaot16
+				case Proof::ImageFormat::R16F:
+					return VK_FORMAT_R16_SFLOAT;
+					break;
+				case Proof::ImageFormat::RG16F:
+					return VK_FORMAT_R16G16_SFLOAT;
+					break;
+				case Proof::ImageFormat::RGB16F:
+					return VK_FORMAT_R16G16B16_SFLOAT;
+					break;
+				case Proof::ImageFormat::RGBA16F:
+					return VK_FORMAT_R16G16B16A16_SFLOAT;
+					break;
+					#pragma endregion
+
+					#pragma endregion
+
+					#pragma region BitsPerComponent32
+
+					#pragma region UNSGINEDInt32
+				case Proof::ImageFormat::R32UI:
+					return VK_FORMAT_R32_UINT;
+					break;
+				case Proof::ImageFormat::RG32UI:
+					return VK_FORMAT_R32G32_UINT;
+					break;
+				case Proof::ImageFormat::RGB32UI:
+					return VK_FORMAT_R32G32B32_UINT;
+					break;
+				case Proof::ImageFormat::RGBA32UI:
+					return VK_FORMAT_R32G32B32A32_UINT;
+					break;
+				case Proof::ImageFormat::X8DEPTH24PACK32:
+					return VK_FORMAT_X8_D24_UNORM_PACK32;
+					break;
+				case Proof::ImageFormat::DEPTH24STENCIL8UI:
+					return VK_FORMAT_D24_UNORM_S8_UINT;
+					break;
+					#pragma endregion 
+
+					#pragma region Int32
+				case Proof::ImageFormat::R32I:
+					return VK_FORMAT_R32_SINT;
+					break;
+				case Proof::ImageFormat::RG32I:
+					return VK_FORMAT_R32G32_SINT;
+					break;
+				case Proof::ImageFormat::RGB32I:
+					return VK_FORMAT_R32G32B32_SINT;
+					break;
+				case Proof::ImageFormat::RGBA32I:
+					return VK_FORMAT_R32G32B32A32_SINT;
+					break;
+					#pragma endregion 
+
+					#pragma region FLOAT
+
+				case Proof::ImageFormat::R32F:
+					return VK_FORMAT_R32_SFLOAT;
+					break;
+				case Proof::ImageFormat::RG32F:
+					return VK_FORMAT_R32G32_SFLOAT;
+					break;
+				case Proof::ImageFormat::RGB32F:
+					return VK_FORMAT_R32G32B32_SFLOAT;
+					break;
+				case Proof::ImageFormat::RGBA32F:
+					return VK_FORMAT_R32G32B32A32_SFLOAT;
+					break;
+				case Proof::ImageFormat::DEPTH32F:
+					return VK_FORMAT_D32_SFLOAT;
+					break;
+				case Proof::ImageFormat::DEPTH32FSTENCIL8UI:
+					return VK_FORMAT_D32_SFLOAT_S8_UINT;
+					break;
+					#pragma endregion 
+
+					#pragma endregion 
+
+					#pragma region BitsPerComponent64
+
+					#pragma region UNSIGNEDInt64
+
+				case Proof::ImageFormat::R64UI:
+					return VK_FORMAT_R64_UINT;
+					break;
+				case Proof::ImageFormat::RG64UI:
+					return VK_FORMAT_R64G64_UINT;
+					break;
+				case Proof::ImageFormat::RGB64UI:
+					return VK_FORMAT_R64G64B64_UINT;
+					break;
+				case Proof::ImageFormat::RGBA64UI:
+					return VK_FORMAT_R64G64B64A64_UINT;
+					break;
+					#pragma endregion 
+
+					#pragma region Int64
+
+				case Proof::ImageFormat::R64I:
+					return VK_FORMAT_R64_SINT;
+					break;
+				case Proof::ImageFormat::RG64I:
+					return VK_FORMAT_R64G64_SINT;
+					break;
+				case Proof::ImageFormat::RGB64I:
+					return VK_FORMAT_R64G64B64_SINT;
+					break;
+				case Proof::ImageFormat::RGBA64I:
+					return VK_FORMAT_R64G64B64A64_SINT;
+					break;
+					#pragma endregion 
+
+					#pragma region Double
+
+				case Proof::ImageFormat::R64F:
+					return VK_FORMAT_R64_SFLOAT;
+					break;
+				case Proof::ImageFormat::RG64F:
+					return VK_FORMAT_R64G64_SFLOAT;
+					break;
+				case Proof::ImageFormat::RGB64F:
+					return VK_FORMAT_R64G64B64_SFLOAT;
+					break;
+				case Proof::ImageFormat::RGBA64F:
+					return VK_FORMAT_R64G64B64A64_SFLOAT;
+					break;
+					#pragma endregion 
+
+					#pragma endregion 
 
 			}
+			PF_CORE_ASSERT(false, "Type is not supported");
 			return (VkFormat)0;
 		}
 
 		static ImageFormat VulkanFormatToProofFormat(VkFormat format) {
+			//reference
+			//https://github.com/KhronosGroup/Vulkan-Samples-Deprecated/blob/master/external/include/vulkan/vk_format.h
 			switch (format)
 			{
 				case VK_FORMAT_R8G8B8A8_UNORM:    return ImageFormat::RGBA; //ImageFormat::RGBA8UNORM
@@ -70,17 +572,17 @@ namespace Proof
 				case VK_FORMAT_R16G16B16A16_SFLOAT: return  ImageFormat::RGBA16F;
 				case VK_FORMAT_R32G32B32A32_SFLOAT: return  ImageFormat::RGBA32F;
 
-				case VK_FORMAT_B8G8R8A8_UNORM: return  ImageFormat::BGRA8UNORM;
+				case VK_FORMAT_B8G8R8A8_UNORM: return  ImageFormat::BGRA8;
 
-				case VK_FORMAT_B8G8R8_UNORM:return ImageFormat::BGR8UNORM;
-				case VK_FORMAT_R8G8B8_UNORM:return  ImageFormat::RGB8UNORM;
+				case VK_FORMAT_B8G8R8_UNORM:return ImageFormat::BGR8;
+				case VK_FORMAT_R8G8B8_UNORM:return  ImageFormat::RGB;
 
-				case VK_FORMAT_D16_UNORM: return  ImageFormat::DEPTH16UNORM;
+				case VK_FORMAT_D16_UNORM: return  ImageFormat::DEPTH16;
 				case VK_FORMAT_D32_SFLOAT: return  ImageFormat::DEPTH32F;
-				case  VK_FORMAT_D16_UNORM_S8_UINT: return  ImageFormat::DEPTH16UNORMSTENCIL8UINT;
-				case VK_FORMAT_D24_UNORM_S8_UINT: return  ImageFormat::DEPTH24UNORMSTENCIL8UINT;
-				case VK_FORMAT_D32_SFLOAT_S8_UINT: return  ImageFormat::DEPTH32FSTENCIL8UINT;
-				case VK_FORMAT_S8_UINT: return  ImageFormat::STENCIL8UINT;
+				case  VK_FORMAT_D16_UNORM_S8_UINT: return  ImageFormat::DEPTH16STENCIL8UI;
+				case VK_FORMAT_D24_UNORM_S8_UINT: return  ImageFormat::DEPTH24STENCIL8UI;
+				case VK_FORMAT_D32_SFLOAT_S8_UINT: return  ImageFormat::DEPTH32FSTENCIL8UI;
+				case VK_FORMAT_S8_UINT: return  ImageFormat::STENCIL8UI;
 			}
 			PF_ENGINE_INFO("proof does not vulkan vk format support {}", format);
 			PF_CORE_ASSERT(false);
@@ -90,18 +592,19 @@ namespace Proof
 		static bool IsDepthFormat(ImageFormat format) {
 			switch (format)
 			{
-				case Proof::ImageFormat::DEPTH16UNORM:
+				case Proof::ImageFormat::DEPTH16:
+				case Proof::ImageFormat::DEPTH16STENCIL8UI:
+				case Proof::ImageFormat::DEPTH24STENCIL8UI:
 				case Proof::ImageFormat::DEPTH32F:
-				case Proof::ImageFormat::DEPTH24UNORMSTENCIL8UINT:
-				case Proof::ImageFormat::DEPTH32FSTENCIL8UINT:
+				case Proof::ImageFormat::DEPTH32FSTENCIL8UI:
+				case Proof::ImageFormat::X8DEPTH24PACK32:
 					return true;
-
 			}
 			return false;
 		}
 
 		static bool IsStencilFormat(ImageFormat format) {
-			return format == ImageFormat::STENCIL8UINT;
+			return format == ImageFormat::STENCIL8UI;
 		}
 
 		static bool IsColorFormat(ImageFormat format) {

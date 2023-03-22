@@ -24,6 +24,11 @@
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Imgui/UI.h"
 #include "Proof/Renderer/Renderer.h"
+#include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
+//include those before stdlig.h
+
+#include "misc/cpp/imgui_stdlib.h"
 namespace Proof
 {
 	#define SET_FEILD_DEFAULT(FieldType, Type)           \
@@ -321,6 +326,8 @@ namespace Proof
 			AddComponentGui<CapsuleColliderComponent>(entity, "Capsule Collider");
 			AddComponentGui<MeshColliderComponent>(entity, "Mesh Collider");
 			AddComponentGui<RigidBodyComponent>(entity, "Rigid Body");
+
+			AddComponentGui<TextComponent>(entity, "Text");
 
 			AddComponentGui<ScriptComponent>(entity, "Scripts");
 			ImGui::EndPopup();
@@ -794,6 +801,14 @@ namespace Proof
 					ImGui::TreePop();
 				}
 			}
+		});
+
+		DrawComponents<TextComponent>("Text Component", entity, [](TextComponent& textComponent) {
+			ImGui::InputTextMultiline("ither", &textComponent.Text);
+			ImGui::ColorEdit4("##Colour", glm::value_ptr(textComponent.Colour));
+
+			ImGui::DragFloat("Kerningfdadsfsafa", &textComponent.Kerning,0.025);
+			ImGui::DragFloat("Line Spacing", &textComponent.LineSpacing, 0.025);
 		});
 	}
 

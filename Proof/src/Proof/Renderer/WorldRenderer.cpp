@@ -15,6 +15,7 @@
 #include "Shader.h"
 #include "Proof/Scene/Physics/PhysicsMeshCooker.h"
 #include"DebugMeshRenderer.h"
+#include"Font.h"
 #include"Vertex.h"
 namespace Proof
 {
@@ -147,15 +148,29 @@ namespace Proof
 			});
 		}
 		m_Renderer3D->EndContext();
-		#if 0
-		m_Renderer2D->BeginContext(camera.m_Projection, camera.m_View, camera.m_Positon, m_ScreenFrameBuffer, m_CommandBuffer);
+		m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
 		{
+			glm::mat4 identity =
+				glm::translate(glm::mat4(1.0f), glm::vec3{ 0,0,0 }) *
+				glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 1,0,0 })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,1,0 })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })
+				* glm::scale(glm::mat4(1.0f), glm::vec3{ 0,0,0 });
 			m_World->ForEachComponent<SpriteComponent, TransformComponent>([&](SpriteComponent& sprite, TransformComponent& transform) {
 				m_Renderer2D->DrawQuad(sprite, transform);
 			});
+			TextParams parms;
+
+			m_World->ForEachEnitityWith<TextComponent>([&](Entity& entity) {
+				TextComponent& text = *entity.GetComponent<TextComponent>();
+				parms.Color = text.Colour;
+				parms.Kerning = text.Kerning;
+				parms.LineSpacing = text.LineSpacing;
+				m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, m_World->GetWorldTransform(entity));
+			});
+			
 		}
 		m_Renderer2D->EndContext();
-		#endif
 		/*
 		m_DebugMeshRenderer->BeginContext(camera.m_Projection, camera.m_View,GlmVecToProof( camera.m_Positon), m_ScreenFrameBuffer, m_CommandBuffer);
 

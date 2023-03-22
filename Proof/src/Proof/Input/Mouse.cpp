@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "Mouse.h"
-#include <ImGui/imgui.h>
+#include <Imgui/imgui.h>
 #include <GLFW/glfw3.h>
 #include "Platform/Window/WindowsWindow.h"
 namespace Proof {

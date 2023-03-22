@@ -32,6 +32,8 @@ IncludeDir["magic_enum"] = "%{wks.location}/Proof/vendor/magic_enum/include"
 IncludeDir["optick"] = "%{wks.location}/Proof/vendor/optick/src"
 IncludeDir["entt"] = "%{wks.location}/Proof/vendor/entt"
 IncludeDir["ktx"] = "%{wks.location}/Proof/vendor/ktx"
+IncludeDir["msdfgen"] = "%{wks.location}/Proof/vendor/msdf-atlas-gen/msdfgen"
+IncludeDir["msdf_atlas_gen"] = "%{wks.location}/Proof/vendor/msdf-atlas-gen"
 
 LibraryDir = {}
 LibraryDir["ProofOuputDir"] =  "%{wks.location}/Proof/bin/".. OutputDirectory .. "/Proof"
@@ -75,7 +77,7 @@ group "ExternalDependencies"
 	include "Proof/vendor/yaml-cpp"
 	include "Proof/vendor/SPIRV-Cross"
 	include "Proof/vendor/shaderc"
-	include "Proof/vendor/ktx"
+	include "Proof/vendor/msdf-atlas-gen"
 group ""
 
 group "Dependencies"

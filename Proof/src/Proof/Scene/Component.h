@@ -560,6 +560,22 @@ namespace Proof
 		ScriptComponent() = default;
 		std::unordered_set<std::string> ScriptsNames;
 	};
+
+	struct TextComponent {
+	public:
+		TextComponent(const TextComponent& other) = default;
+		TextComponent() = default;
+
+		//chagne to u32 string in teh futre 
+		std::string Text;
+		glm::vec4 Colour{ 1 };
+
+		// horizontal distnace between each character
+		float Kerning = 0.0f;
+		// spacing of new line 
+		float LineSpacing = 1.0f;
+		//Todo background color
+	};
 	template<class ... Component>
 	struct ComponentGroup {
 
@@ -568,7 +584,7 @@ namespace Proof
 		ComponentGroup<IDComponent, TagComponent, ChildComponent, TransformComponent,
 		MeshComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
-		ScriptComponent>;
+		ScriptComponent, TextComponent>;
 	
 
 	using LightComponnet =ComponentGroup< DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

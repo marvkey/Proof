@@ -26,7 +26,7 @@ layout(location = 0) in vec4 inColor;
 layout(location = 1) in vec2 inTexCoord;
 void main() {
 	vec4 temp = inColor;
-	//if (temp.a < 0.01)
-		//discard;
+	if (temp.a ==0)
+		discard;
 	outFragColor = temp;
 }

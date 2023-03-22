@@ -47,6 +47,8 @@ project "Proof"
 		"%{IncludeDir.magic_enum}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.ktx}",
+		"%{IncludeDir.msdfgen}",
+		"%{IncludeDir.msdf_atlas_gen}",
 
     }
 	libdirs{
@@ -65,8 +67,8 @@ project "Proof"
         "vulkan-1.lib",
 		"OptickCore.lib",
 		"SPIRV-Cross",
-		"ktx",
 		"ProofScriptCore",
+		"msdf-atlas-gen",
 
 		"%{wks.location}/proof/vendor/mono/lib/Debug/mono-2.0-sgen.lib",
 		

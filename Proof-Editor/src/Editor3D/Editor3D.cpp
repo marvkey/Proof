@@ -34,6 +34,7 @@
 #include "Proof/Input/Mouse.h"
 
 #include "Proof/Scripting/ScriptEngine.h"
+#include "Proof/Renderer/Font.h"
 namespace Proof
 {
 	static bool SaveSceneDialouge = false;
@@ -56,7 +57,7 @@ namespace Proof
 		return Input::IsKeyClicked(key);
 	}
 	
-	
+
 	void Editore3D::OnEvent(Event& e) {
 		EventDispatcher dispatcher(e);
 		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
@@ -236,7 +237,6 @@ namespace Proof
 		}
 	}
 	void Editore3D::OnAttach() {
-
 		m_ActiveWorld = Count<World>::Create();
 		auto startworld = Application::Get()->GetProject()->GetConfig().StartWorld;
 		if (AssetManager::HasAsset(startworld)) {
@@ -344,10 +344,17 @@ namespace Proof
 		MainToolBar();
 
 		ViewPort();
-
+		static Count<Font> testFont;
+		if (testFont ==nullptr)
+			testFont = Count<Font>::Create("Assets/Fonts/Poppins/Poppins-Regular.ttf");
 		for (auto& a : m_AllPanels) {
 			a.second->ImGuiRender(DeltaTime);
 		}
+
+		ImGui::Begin("font field");
+
+		ImGui::Image((ImTextureID*)testFont->GetAtlasTexture()->GetImage().SourceImage, { ImGui::GetWindowWidth(),ImGui::GetWindowWidth()});
+		ImGui::End();
 		m_WorldHierachy.ImGuiRender(DeltaTime);
 		m_ContentBrowserPanel.ImGuiRender(DeltaTime);
 		m_AssetManagerPanel.ImGuiRender(DeltaTime);

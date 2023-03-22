@@ -1,5 +1,5 @@
 #pragma once
-#include <imgui/imgui.h>
+#include <Imgui/imgui.h>
 
 namespace Proof::UI {
 	struct ScopedStyleColor {

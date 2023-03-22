@@ -33,13 +33,13 @@ namespace Proof
 			frameBuffferconfig.Attachments.Attachments[0].SetOverrideLayout(Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout());
 			frameBuffferconfig.Size = { (float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight() };
 			FrameBuffer = FrameBuffer::Create(frameBuffferconfig);
-	
+
 			CommandBuffer = RenderCommandBuffer::Create();
 		}
 	};
 	static ImguiRenderPass* s_ImguiRenderPass;
 	static ImGui_ImplVulkanH_Window g_MainWindowData;
-	
+
 	static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface, int width, int height) {
 		const auto& graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
@@ -48,7 +48,8 @@ namespace Proof
 		// Check for WSI support
 		VkBool32 res;
 		vkGetPhysicalDeviceSurfaceSupportKHR(graphicsContext->GetGPU(), graphicsContext->FindPhysicalQueueFamilies().graphicsFamily, wd->Surface, &res);
-		if (res != VK_TRUE) {
+		if (res != VK_TRUE)
+		{
 			PF_CORE_ASSERT(false, "Error no WSI support on physical device 0\n");
 		}
 
@@ -76,7 +77,7 @@ namespace Proof
 
 	}
 
-	
+
 	ImGuiLayer::ImGuiLayer() :
 		Layer("ImGUI Layer") {
 	}
@@ -104,18 +105,20 @@ namespace Proof
 		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Bold.ttf", 18.0f);
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Regular.ttf", 17.0f);
 		SetDarkTheme();
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL) {
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		{
 			ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), true);
 			ImGui_ImplOpenGL3_Init("#version 450");
 		}
-	
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
+
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+		{
 			s_ImguiRenderPass = new ImguiRenderPass();
 
 			ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
 			const auto& graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 			SetupVulkanWindow(wd, graphicsContext->GetSurface(), Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
-			
+
 			ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), true);
 			ImGui_ImplVulkan_InitInfo init_info = {};
 			init_info.Instance = graphicsContext->GetInstance();
@@ -135,7 +138,7 @@ namespace Proof
 			ImGui_ImplVulkan_SetMinImageCount(Renderer::GetConfig().MaxImageCount);
 			// Upload Fonts
 			{
-				Renderer::Submit([&](CommandBuffer*buffer) {
+				Renderer::Submit([&](CommandBuffer* buffer) {
 					ImGui_ImplVulkan_CreateFontsTexture(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
 				});
 				ImGui_ImplVulkan_DestroyFontUploadObjects();
@@ -158,11 +161,13 @@ namespace Proof
 
 	void ImGuiLayer::Begin() {
 
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL) {
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		{
 			ImGui_ImplOpenGL3_NewFrame();
 		}
 
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+		{
 			ImGui_ImplVulkan_NewFrame();
 		}
 		ImGui_ImplGlfw_NewFrame();
@@ -182,9 +187,10 @@ namespace Proof
 		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
 		ImGuiIO& io = ImGui::GetIO();
-		if (m_WindoResize == true) {
+		if (m_WindoResize == true)
+		{
 
-			s_ImguiRenderPass->FrameBuffer->Resize(Vector2{ (float)Application::Get()->GetWindow()->GetWidth(),(float)Application::Get()->GetWindow()->GetHeight() } );
+			s_ImguiRenderPass->FrameBuffer->Resize(Vector2{ (float)Application::Get()->GetWindow()->GetWidth(),(float)Application::Get()->GetWindow()->GetHeight() });
 			ImGui_ImplVulkan_SetMinImageCount(graphicsContext->GetSwapChain()->GetImageCount());
 
 			ImGui_ImplVulkanH_CreateOrResizeWindow(graphicsContext->GetInstance(),
@@ -200,7 +206,8 @@ namespace Proof
 		ImGui_ImplVulkanH_Frame* fd = &wd->Frames[wd->FrameIndex];
 		ImGui::Render();
 		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL) {
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		{
 			ImGui_ImplOpenGL3_RenderDrawData(main_draw_data);
 		}
 		{
@@ -212,7 +219,8 @@ namespace Proof
 			Renderer::EndCommandBuffer(s_ImguiRenderPass->CommandBuffer);
 			Renderer::SubmitCommandBuffer(s_ImguiRenderPass->CommandBuffer);
 		}
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
 			void* backup_current_context = Application::Get()->GetWindow()->GetWindow();
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();

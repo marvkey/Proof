@@ -52,6 +52,7 @@ namespace Proof
 			return Application::Get()->GetWindow()->GetSwapChain();
 		}
 		VkSampleCountFlagBits GetMaxSampleCount();
+		VkSampleCountFlagBits GetSampleCount();
 		uint32_t GetUniformPadSize(uint32_t originalSize)
 		{
 			// Calculate required alignment based on minimum device offset alignment

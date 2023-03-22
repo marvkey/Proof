@@ -2,7 +2,7 @@
 #include "EditorCamera.h"
 #include "Proof/Input/Input.h"
 #include "Proof/Input/Mouse.h"
-#include <ImGui/imgui.h>
+#include <Imgui/imgui.h>
 #include <GLFW/glfw3.h>
 namespace Proof{
 	EditorCamera::EditorCamera(uint32_t width,uint32_t height,float fovDeg,float nearPlane,float farplane,glm::vec3 position) {

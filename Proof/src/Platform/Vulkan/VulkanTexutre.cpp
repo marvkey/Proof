@@ -301,7 +301,7 @@ namespace Proof
 			info.extent.depth = 1;
 			info.mipLevels = m_MipLevels;
 			info.arrayLayers = 1;
-			info.samples = VK_SAMPLE_COUNT_1_BIT;
+			info.samples = graphicsContext->GetSampleCount();;
 			info.tiling = VK_IMAGE_TILING_OPTIMAL;
 			info.usage = bits;
 			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -887,7 +887,7 @@ namespace Proof
 		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.samples = graphicsContext->GetSampleCount();
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 		Renderer::Submit([&](CommandBuffer* cmd) {

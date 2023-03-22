@@ -164,9 +164,11 @@ namespace Proof
     }
     void VulkanRenderPass::SetDepthAttachment(const RenderPassImageConfig& config)
     {
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+
         VkAttachmentDescription depthAttachment{};
         depthAttachment.format = Utils::ProofFormatToVulkanFormat(config.Format);
-        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.samples = graphicsContext->GetSampleCount();
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -193,11 +195,12 @@ namespace Proof
         attachmentRef.attachment = attachIndex;
 
         VkAttachmentDescription attachment = {};
+        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
         if (config.PresentKHr == true)
         {
             attachment.format = Utils::ProofFormatToVulkanFormat(config.Format);
-            attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            attachment.samples = graphicsContext->GetSampleCount();
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -210,7 +213,7 @@ namespace Proof
         else
         {
             attachment.format = Utils::ProofFormatToVulkanFormat(config.Format);
-            attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            attachment.samples = graphicsContext->GetSampleCount();
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;

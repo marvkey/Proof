@@ -9,6 +9,8 @@ project "ImGui"
 	{
 		"ImGui/**.h",
 		"ImGui/**.cpp",
+		"misc/cpp/**.h",
+		"misc/cpp/**.cpp"
 	}
     includedirs 
 	{

@@ -81,6 +81,14 @@ namespace Proof
 		VkDescriptorImageInfo GetImageBufferInfo(VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		void Recreate(const std::string& path);
+
+		uint32_t GetHeight() {
+			return m_Height;
+		}
+
+		uint32_t GetWidth() {
+			return m_Width;
+		}
 	private:
 		std::string m_Path;
 		void AllocateMemory(uint64_t size, uint32_t bits = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VkSamplerAddressMode mode= VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_REPEAT);

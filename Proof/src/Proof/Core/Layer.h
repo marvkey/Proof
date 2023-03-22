@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include "ImGui/imgui.h"
+#include "Imgui/imgui.h"
 #include "Proof/Core/Log.h"
 #include "FrameTime.h"
 namespace Proof {

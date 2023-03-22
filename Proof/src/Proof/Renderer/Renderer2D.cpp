@@ -14,6 +14,8 @@
 #include "RenderPass.h"
 #include "GraphicsPipeLine.h"
 #include "CommandBuffer.h"
+#include "Font.h"
+#include "MSDFData.h"
 namespace Proof {
 
 	static glm::mat4 s_Transform;
@@ -30,6 +32,7 @@ namespace Proof {
 	void Renderer2D::Init() {
 		m_Storage2DData = CreateSpecial <Renderer2DStorage>();
 		m_SpritePipeline= CreateSpecial<SpritePipeline>(m_RenderPass);
+		m_TextPipeline = CreateSpecial<TextPipeline>(m_RenderPass);
 	}
 	
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commdandBuffer) {
@@ -127,15 +130,129 @@ namespace Proof {
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+1] = Vertex2;
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+2] = Vertex3;
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+3] = Vertex4;
-		/*
-		memcpy(&m_Storage2DData->m_QuadArray[m_Storage2DData->m_QuadArraySize],&Vertex1,sizeof(Vertex1));
-		memcpy(&m_Storage2DData->m_QuadArray[m_Storage2DData->m_QuadArraySize +1],&Vertex2,sizeof(Vertex1));
-		memcpy(&m_Storage2DData->m_QuadArray[m_Storage2DData->m_QuadArraySize +2],&Vertex3,sizeof(Vertex3));
-		memcpy(&m_Storage2DData->m_QuadArray[m_Storage2DData->m_QuadArraySize +3],&Vertex4,sizeof(Vertex4));
-		*/
+
 		m_Storage2DData->IndexCount+=6; 
 		m_Storage2DData->QuadArraySize += 4;
 		
+	}
+	void Renderer2D::DrawString(const std::string& text, Count<class Font> font, const TextParams& textParam, const glm::mat4& transform)
+	{
+		if (m_Storage2DData->TextIndexCount >= m_Storage2DData->c_MaxIndexCount)
+		{ // reached maxed index size
+			Render();
+			Reset();
+		}
+		//https://freetype.org/freetype2/docs/tutorial/step2.html
+		const auto& fontGeometry =  font->GetMSDFData()->FontGeometry;
+		const auto& metrics = fontGeometry.getMetrics();
+		Count<Texture2D> fontAtlas = font->GetAtlasTexture();
+
+		m_Storage2DData->FontTexture = fontAtlas;
+
+		double x = 0.0;
+		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+		double y = -fsScale * metrics.ascenderY;
+		const float spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
+		for (size_t i = 0; i < text.size(); i++)
+		{
+			char32_t character = text[i];
+
+			if (character == '\r')
+				continue;
+
+			if (character == '\n')
+			{
+				x = 0;
+				y -= fsScale * metrics.lineHeight + textParam.LineSpacing;
+				continue;
+			}
+			if (character == ' ')
+			{
+				float advance = spaceGlyphAdvance;
+				if (i < text.size() - 1)
+				{
+					char nextCharacter = text[i + 1];
+					double dAdvance;
+					fontGeometry.getAdvance(dAdvance, character, nextCharacter);
+					advance = (float)dAdvance;
+				}
+
+				x += fsScale * advance + textParam.Kerning;
+				continue;
+			}
+
+			if (character == '\t')
+			{
+				// NOTE(Marv): is this right?
+				x += 4.0f * (fsScale * spaceGlyphAdvance + textParam.Kerning);
+				continue;
+			}
+			auto glyph = fontGeometry.getGlyph(character);
+
+			if (!glyph)
+				glyph = fontGeometry.getGlyph('?');
+
+			if (!glyph)
+				continue;
+
+			double al, ab, ar, at;
+			glyph->getQuadAtlasBounds(al, ab, ar, at);
+			glm::vec2 texCoordMin((float)al, (float)ab);
+			glm::vec2 texCoordMax((float)ar, (float)at);
+
+			double pl, pb, pr, pt;
+			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+			glm::vec2 quadMin(pl, pb);
+			glm::vec2 quadMax(pr, pt);
+
+
+			quadMin *= fsScale, quadMax *= fsScale;
+
+			//ofst location
+			quadMin += glm::vec2(x, y);
+			quadMax += glm::vec2(x, y);
+
+
+			float texelWidth = 1.0f / fontAtlas->GetWidth();
+			float texelHeight = 1.0f / fontAtlas->GetHeight();
+			texCoordMin *= glm::vec2(texelWidth, texelHeight);
+			texCoordMax *= glm::vec2(texelWidth, texelHeight);
+
+
+			TextVertex textVertex1, textVertex2, textVertex3, textVertex4;
+			textVertex1.Positon = transform * glm::vec4(quadMin, 0.0f, 1.0f);
+			textVertex1.Color = textParam.Color ;
+			textVertex1.TexCoord = texCoordMin;
+
+			textVertex2.Positon = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+			textVertex2.Color = textParam.Color;
+			textVertex2.TexCoord = { texCoordMin.x, texCoordMax.y };
+
+			textVertex3.Positon = transform * glm::vec4(quadMax, 0.0f, 1.0f);
+			textVertex3.Color = textParam.Color;
+			textVertex3.TexCoord = texCoordMax;
+
+			textVertex4.Positon = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+			textVertex4.Color = textParam.Color;
+			textVertex4.TexCoord = { texCoordMax.x, texCoordMin.y };
+
+			m_Storage2DData->TextArray[m_Storage2DData->TextArraySize] = textVertex1;
+			m_Storage2DData->TextArray[m_Storage2DData->TextArraySize+1] = textVertex2;
+			m_Storage2DData->TextArray[m_Storage2DData->TextArraySize+2] = textVertex3;
+			m_Storage2DData->TextArray[m_Storage2DData->TextArraySize+3] = textVertex4;
+
+			m_Storage2DData->TextArraySize+=4;
+			m_Storage2DData->TextIndexCount += 6;
+
+			if (i < text.size() - 1)
+			{
+				double advance = glyph->getAdvance();
+				char nextCharacter = text[i + 1];
+				fontGeometry.getAdvance(advance, character, nextCharacter);
+
+				x += fsScale * advance + textParam.Kerning;
+			}
+		}
 	}
 	void Renderer2D::EndContext() {
 		Render();
@@ -143,40 +260,50 @@ namespace Proof {
 	}
 
 	void Renderer2D::Reset() {
-		m_Storage2DData->IndexCount = 0;
-		//m_Storage2DData->TextureSlotIndex = 1;
+
+		m_Storage2DData->TextIndexCount = 0;
+		m_Storage2DData->TextArraySize =  0;
+
 		m_Storage2DData->QuadArraySize = 0;
+		m_Storage2DData->IndexCount = 0;
+
 		m_Storage2DData->CurrentFrameBuffer = nullptr;
 		m_Storage2DData->CommandBuffer = nullptr;
 
 	}
 	
 	void Renderer2D::Render() {
-		if (m_Storage2DData->IndexCount == 0)return; // nothing to draw
-
-		#if 0
-		if(m_Storage2DData->m_IndexCount ==0)return; // nothing to draw
-		m_Storage2DData->m_Shader->Bind();
-		m_Storage2DData->m_VertexBuffer->Bind();
-		m_Storage2DData->m_IndexBuffer->Bind();
-		for(uint32_t i =0; i<m_Storage2DData->m_TextureSlotIndex;i++){
-			m_Storage2DData->m_Textures[i]->Bind(i);
-		} 
-		m_Storage2DData->m_VertexBuffer->AddData(m_Storage2DData->m_QuadArray,m_Storage2DData->m_QuadArraySize *sizeof(Vertex2D));
-		Renderer::DrawIndexed(m_Storage2DData->m_VertexArray,m_Storage2DData->m_IndexCount);
-		s_Renderer2DStats->m_DrawCalls+=1;
-		#endif
 		m_Storage2DData->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
-		auto descriptor0 = m_SpritePipeline->Descriptors[DescriptorSets::Zero];
 
-		descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
-		Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline,[&](Count <RenderCommandBuffer> commandBuffer) {
-			descriptor0->Bind(commandBuffer, m_SpritePipeline->PipeLineLayout);
-			m_Storage2DData->VertexBuffer->AddData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
-			m_Storage2DData->VertexBuffer->Bind(commandBuffer);
-			m_Storage2DData->IndexBuffer->Bind(commandBuffer);	
-			Renderer::DrawElementIndexed(commandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
-		});
+		if(m_Storage2DData->TextIndexCount > 0){
+			auto descriptor0 = m_TextPipeline->Descriptors[DescriptorSets::Zero];
+
+			descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
+			descriptor0->WriteImage(1, m_Storage2DData->FontTexture);
+
+			Renderer::RecordRenderPass(m_RenderPass, m_TextPipeline->GraphicsPipeline, [&](Count <RenderCommandBuffer> commandBuffer) {
+				m_Storage2DData->TextVertexBuffer->AddData(m_Storage2DData->TextArray.data(), m_Storage2DData->TextArraySize * sizeof(TextVertex));
+				descriptor0->Bind(commandBuffer, m_TextPipeline->PipeLineLayout);
+
+				m_Storage2DData->IndexBuffer->Bind(commandBuffer);
+				m_Storage2DData->TextVertexBuffer->Bind(commandBuffer);
+
+				Renderer::DrawElementIndexed(commandBuffer, m_Storage2DData->TextIndexCount, m_Storage2DData->TextArraySize);
+			});
+		}
+		if (m_Storage2DData->IndexCount == 0)return; // nothing to draw
+		{
+			auto descriptor0 = m_SpritePipeline->Descriptors[DescriptorSets::Zero];
+
+			descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
+			Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline, [&](Count <RenderCommandBuffer> commandBuffer) {
+				descriptor0->Bind(commandBuffer, m_SpritePipeline->PipeLineLayout);
+				m_Storage2DData->VertexBuffer->AddData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
+				m_Storage2DData->VertexBuffer->Bind(commandBuffer);
+				m_Storage2DData->IndexBuffer->Bind(commandBuffer);
+				Renderer::DrawElementIndexed(commandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
+			});
+		}
 	}
 	
 	
@@ -233,6 +360,7 @@ namespace Proof {
 		QuadIndices.resize(c_MaxIndexCount);
 		//Textures.resize(MaxTextureSlot);
 		QuadArray.resize(c_MaxVertexCount);
+		TextArray.resize(c_MaxVertexCount);
 		uint32_t Offset = 0;
 		for (uint32_t i = 0; i < c_MaxIndexCount; i += 6) {
 			QuadIndices[i + 0] = 0 +Offset;
@@ -248,6 +376,8 @@ namespace Proof {
 		VertexBuffer = VertexBuffer::Create(c_MaxVertexCount*sizeof(Vertex2D));
 		IndexBuffer = IndexBuffer::Create(QuadIndices.data(), c_MaxIndexCount);
 		CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
+
+		TextVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(TextVertex));
 		uint32_t whiteTextureData = 0xffffffff;
 
 		int32_t Samplers[32];
@@ -272,6 +402,30 @@ namespace Proof {
 		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero]});
 		GraphicsPipelineConfig graphicsPipelineConfig;
 		graphicsPipelineConfig.DebugName = "Sprite";
+		graphicsPipelineConfig.Shader = Shader;
+		graphicsPipelineConfig.VertexArray = vertexArray;
+		graphicsPipelineConfig.RenderPass = renderPass;
+		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+	}
+
+	TextPipeline::TextPipeline(Count<class RenderPass> renderPass)
+	{
+		auto vertexArray = VertexArray::Create({ sizeof(TextVertex) });
+		vertexArray->AddData(0, DataType::Vec3, offsetof(TextVertex, TextVertex::Positon));
+		vertexArray->AddData(1, DataType::Vec4, offsetof(TextVertex, TextVertex::Color));
+		vertexArray->AddData(2, DataType::Vec3, offsetof(TextVertex, TextVertex::TexCoord));
+		Shader = Shader::GetOrCreate("Text", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text.shader");
+		{
+			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
+				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+				.AddBinding((int)1, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.Build();
+			Descriptors.insert({ DescriptorSets::Zero,descriptor });
+		}
+		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
+		GraphicsPipelineConfig graphicsPipelineConfig;
+		graphicsPipelineConfig.DebugName = "Text Vertex";
 		graphicsPipelineConfig.Shader = Shader;
 		graphicsPipelineConfig.VertexArray = vertexArray;
 		graphicsPipelineConfig.RenderPass = renderPass;

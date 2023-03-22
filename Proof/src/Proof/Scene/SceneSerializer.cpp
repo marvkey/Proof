@@ -130,8 +130,9 @@ namespace Proof
 			}
 
 			{
-				PointLightComponent* pointLight= entity.GetComponent<PointLightComponent>();
-				if (pointLight != nullptr) {
+				PointLightComponent* pointLight = entity.GetComponent<PointLightComponent>();
+				if (pointLight != nullptr)
+				{
 					out << YAML::Key << "PointLightComponent";
 					out << YAML::BeginMap; // PointLightComponent
 					out << YAML::Key << "Color" << pointLight->Color;
@@ -165,9 +166,9 @@ namespace Proof
 						auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
 						for (const auto& [fieldName, field] : fields)
 						{
-							if (!entityFields.contains(scriptName) )
+							if (!entityFields.contains(scriptName))
 								continue;
-							if(!entityFields.at(scriptName).contains(fieldName)) continue;
+							if (!entityFields.at(scriptName).contains(fieldName)) continue;
 
 							out << YAML::BeginMap; // ScriptField
 							out << YAML::Key << "Name" << YAML::Value << fieldName;
@@ -204,10 +205,11 @@ namespace Proof
 					out << YAML::EndMap; // ScriptComponent
 				}
 			}
-			
+
 			{
 				SpotLightComponent* spotLight = entity.GetComponent<SpotLightComponent>();
-				if (spotLight != nullptr) {
+				if (spotLight != nullptr)
+				{
 					out << YAML::Key << "SpotLightComponent";
 					out << YAML::BeginMap; // PointLightComponent
 					out << YAML::Key << "Color" << spotLight->Color;
@@ -222,6 +224,19 @@ namespace Proof
 
 					out << YAML::EndMap; // PointLightComponent
 				}
+			}
+		}
+		{
+			TextComponent* textComponent = entity.GetComponent<TextComponent>();
+			if (textComponent != nullptr)
+			{
+				out << YAML::Key << "TextComponent";
+				out << YAML::BeginMap; // Text Component
+				out << YAML::Key << "Color" << textComponent->Colour;
+				out << YAML::Key << "Kerning" << textComponent->Kerning;
+				out << YAML::Key << "LineSpacing" << textComponent->LineSpacing;
+				out << YAML::Key << "Text" << textComponent->Text;
+				out << YAML::EndMap; // Text Component
 			}
 		}
 		{
@@ -485,6 +500,19 @@ namespace Proof
 						src.CutOff = spotLight["CutOff"].as<float>();
 						src.OuterCutOff= spotLight["OuterCutOff"].as<float>();
 					}
+				}
+			}
+			// Text
+			{
+
+				auto textComponent = entity["TextComponent"];
+				if (textComponent)
+				{
+					auto& src = *NewEntity.AddComponent<TextComponent>();
+					src.Colour = textComponent["Color"].as<glm::vec4>();
+					src.Kerning = textComponent["Kerning"].as<float>();
+					src.LineSpacing = textComponent["LineSpacing"].as<float>();
+					src.Text = textComponent["Text"].as<std::string>();
 				}
 			}
 			// CAMERA

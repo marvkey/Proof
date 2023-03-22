@@ -485,6 +485,11 @@ namespace Proof
 		return VK_SAMPLE_COUNT_1_BIT;
 	}
 
+	VkSampleCountFlagBits VulkanGraphicsContext::GetSampleCount()
+	{
+		return VK_SAMPLE_COUNT_1_BIT;
+	}
+
 	uint32_t VulkanGraphicsContext::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 		VkPhysicalDeviceMemoryProperties memProperties;
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memProperties);
