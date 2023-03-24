@@ -12,6 +12,8 @@
 #include <tuple>
 #include <variant>
 #include <vector>
+
+// cannot include prefab
 class FrameTime;
 namespace entt {
 	using registry64 = basic_registry<uint64_t>;
@@ -63,6 +65,7 @@ namespace Proof {
 		void OnUpdateEditor(FrameTime DeltaTime);
 		void OnSimulatePhysics(FrameTime DeltaTime);
 
+		Entity CreateEntity(const std::string& name, Count<class Prefab> prefab, Vector location);
 		class Entity CreateEntity(const std::string& EntName = "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName, EntityID ID);
 		class Entity CreateEntity(Entity entity, bool includeChildren = true);
@@ -119,8 +122,6 @@ namespace Proof {
 			return group.size();
 		}
 
-
-
 	private:
 		void Init();
 		void DeleteEntitiesfromQeue();
@@ -130,7 +131,7 @@ namespace Proof {
 		void OnMeshColliderComponentCreate(MeshColliderComponent& component);
 		void OnMeshColliderComponentDelete(MeshColliderComponent& component);
 
-
+		void OnChildComponentDestroy(ChildComponent& childComponent	);
 		std::vector< EntityID> m_EntityDeleteQueue;
 		entt::registry64 m_Registry;
 		class PhysicsWorld* m_PhysicsWorld =nullptr;
@@ -143,5 +144,6 @@ namespace Proof {
 		friend class Editore3D;
 		friend class RendererBase;
 		friend class WorldRenderer;
+		friend class PrefabAssetSerilizer;
 	};
 }

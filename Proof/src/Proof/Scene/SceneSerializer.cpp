@@ -25,11 +25,11 @@ namespace Proof
 		PF_CORE_ASSERT(Scene, "Scene cannot be nulltptr");
 		m_Scene = Scene;
 	}
-	void SceneSerializer::SerilizeEntity(YAML::Emitter& out, Entity entity) {
+	void SceneSerializer::SerilizeEntity(YAML::Emitter& out, entt::registry64& registry, UUID entityID) {
 		out << YAML::BeginMap;// entity
-		out << YAML::Key << "Entity" << YAML::Value << entity.GetEntityID();
+		out << YAML::Key << "Entity" << YAML::Value << entityID;
 		{
-			TagComponent* Tag = entity.GetComponent<TagComponent>();
+			TagComponent* Tag = &registry.get< TagComponent>(entityID);
 			if (Tag != nullptr) {
 				auto& tag = Tag->Tag;
 				out << YAML::Key << "TagComponent";
@@ -46,7 +46,7 @@ namespace Proof
 			}
 		}
 		{
-			TransformComponent* Transfrom = entity.GetComponent<TransformComponent>();
+			TransformComponent* Transfrom = &registry.get<TransformComponent>(entityID);
 			if (Transfrom != nullptr) {
 				out << YAML::Key << "TransformComponent";
 				out << YAML::BeginMap; // transform component
@@ -57,7 +57,7 @@ namespace Proof
 			}
 		}
 		{
-			ChildComponent* childComponent = entity.GetComponent<ChildComponent>();
+			ChildComponent* childComponent = &registry.get<ChildComponent>(entityID);
 			if (childComponent != nullptr) {
 				out << YAML::Key << "ChildComponent";
 				out << YAML::BeginMap; // SubEntityComponet
@@ -75,18 +75,19 @@ namespace Proof
 			}
 		}
 		{
-			MeshComponent* Meshes = entity.GetComponent<MeshComponent>();
-			if (Meshes != nullptr) {
+			if (registry.any_of<MeshComponent>(entityID)) {
+				MeshComponent& meshComponent = registry.get<MeshComponent>(entityID);
+
 				out << YAML::Key << "MeshComponent";
 				out << YAML::BeginMap; // Mesh component
-				out << YAML::Key << "MeshAssetPointerID" << YAML::Value << Meshes->m_MeshID;
-				if (AssetManager::HasAsset(Meshes->GetMesh()))
+				out << YAML::Key << "MeshAssetPointerID" << YAML::Value << meshComponent.m_MeshID;
+				if (AssetManager::HasAsset(meshComponent.GetMesh()))
 				{
-					if (*Meshes->GetMesh()->GetMaterialTable() == *Meshes->MaterialTable)
+					if (meshComponent.GetMesh()->GetMaterialTable() == meshComponent.MaterialTable)
 						goto leave;
 					out << YAML::Key << "MaterialTable"; 
 					out << YAML::BeginSeq;//MaterialTbale 
-					for (auto& [index, material] : Meshes->MaterialTable->GetMaterials())
+					for (auto& [index, material] : meshComponent.MaterialTable->GetMaterials())
 					{
 						out << YAML::BeginMap;// material
 
@@ -107,53 +108,53 @@ namespace Proof
 			}
 		}
 		{
-			SpriteComponent* Sprite = entity.GetComponent<SpriteComponent>();
-			if (Sprite != nullptr) {
+			if (registry.any_of<SpriteComponent>(entityID)) {
+				SpriteComponent& sprite = registry.get<SpriteComponent>(entityID);
 				out << YAML::Key << "SpriteComponent";
 				out << YAML::BeginMap; // Sprite component
-				out << YAML::Key << "TextureAssetPointerID" << YAML::Value << Sprite->m_TextureAssetPointerID;
-				out << YAML::Key << "Colour" << YAML::Value << Sprite->Colour;
+				out << YAML::Key << "TextureAssetPointerID" << YAML::Value << sprite.m_TextureAssetPointerID;
+				out << YAML::Key << "Colour" << YAML::Value << sprite.Colour;
 				out << YAML::EndMap; // Sprite component
 			}
 		}
 		{
 			
 			{
-				DirectionalLightComponent* directonalLight = entity.GetComponent<DirectionalLightComponent>();
-				if (directonalLight != nullptr) {
+				if (registry.any_of<DirectionalLightComponent>(entityID)) {
+					DirectionalLightComponent& directonalLight = registry.get<DirectionalLightComponent>(entityID);
 					out << YAML::Key << "DirectionalLightComponent";
 					out << YAML::BeginMap; // DirectionalLightComponent
-					out << YAML::Key << "Color" << directonalLight->Color;
-					out << YAML::Key << "Intensity" << directonalLight->Intensity;
+					out << YAML::Key << "Color" << directonalLight.Color;
+					out << YAML::Key << "Intensity" << directonalLight.Intensity;
 					out << YAML::EndMap; // DirectionalLightComponent
 				}
 			}
 
 			{
-				PointLightComponent* pointLight = entity.GetComponent<PointLightComponent>();
-				if (pointLight != nullptr)
+				if (registry.any_of<PointLightComponent>(entityID))
 				{
+					PointLightComponent& pointLight = registry.get<PointLightComponent>(entityID);
 					out << YAML::Key << "PointLightComponent";
 					out << YAML::BeginMap; // PointLightComponent
-					out << YAML::Key << "Color" << pointLight->Color;
-					out << YAML::Key << "Intensity" << pointLight->Intensity;
+					out << YAML::Key << "Color" << pointLight.Color;
+					out << YAML::Key << "Intensity" << pointLight.Intensity;
 
-					out << YAML::Key << "Constant" << pointLight->Constant;
-					out << YAML::Key << "Linear" << pointLight->Linear;
-					out << YAML::Key << "Quadratic" << pointLight->Quadratic;
-					out << YAML::Key << "Radius" << pointLight->Radius;
+					out << YAML::Key << "Constant" << pointLight.Constant;
+					out << YAML::Key << "Linear" << pointLight.Linear;
+					out << YAML::Key << "Quadratic" << pointLight.Quadratic;
+					out << YAML::Key << "Radius" << pointLight.Radius;
 
 					out << YAML::EndMap; // PointLightComponent
 				}
 			}
 			{
-				ScriptComponent* scriptComponent = entity.GetComponent<ScriptComponent>();
-				if (scriptComponent != nullptr)
+				if (registry.any_of<ScriptComponent>(entityID))
 				{
+					ScriptComponent& scriptComponent = registry.get<ScriptComponent>(entityID);
 					out << YAML::Key << "ScriptComponent";
 					out << YAML::BeginMap; //ScriptComponent
 					out << YAML::Key << "Scripts" << YAML::BeginSeq; //scriptSeq
-					for (const std::string& scriptName : scriptComponent->ScriptsNames)
+					for (const std::string& scriptName : scriptComponent.ScriptsNames)
 					{
 						out << YAML::BeginMap;// Script
 						out << YAML::Key << "Script" << scriptName;
@@ -163,7 +164,7 @@ namespace Proof
 						out << YAML::BeginSeq; // scriptfields
 						Count<ScriptClass> entityClass = ScriptEngine::GetScriptClass(scriptName);
 						const auto& fields = entityClass->GetFields();
-						auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
+						auto& entityFields = ScriptEngine::GetScriptFieldMap({ entityID,nullptr });
 						for (const auto& [fieldName, field] : fields)
 						{
 							if (!entityFields.contains(scriptName))
@@ -207,113 +208,119 @@ namespace Proof
 			}
 
 			{
-				SpotLightComponent* spotLight = entity.GetComponent<SpotLightComponent>();
-				if (spotLight != nullptr)
+				if (registry.any_of<SpotLightComponent>(entityID))
 				{
+					SpotLightComponent& spotLight = registry.get<SpotLightComponent>(entityID);
+
 					out << YAML::Key << "SpotLightComponent";
 					out << YAML::BeginMap; // PointLightComponent
-					out << YAML::Key << "Color" << spotLight->Color;
+					out << YAML::Key << "Color" << spotLight.Color;
 
-					out << YAML::Key << "Intensity" << spotLight->Intensity;
-					out << YAML::Key << "Constant" << spotLight->Constant;
-					out << YAML::Key << "Linear" << spotLight->Linear;
-					out << YAML::Key << "Quadratic" << spotLight->Quadratic;
-					out << YAML::Key << "Radius" << spotLight->Radius;
-					out << YAML::Key << "OuterCutoff" << spotLight->OuterCutOff;
-					out << YAML::Key << "CutOff" << spotLight->CutOff;
+					out << YAML::Key << "Intensity" << spotLight.Intensity;
+					out << YAML::Key << "Constant" <<spotLight.Constant;
+					out << YAML::Key << "Linear" << spotLight.Linear;
+					out << YAML::Key << "Quadratic" << spotLight.Quadratic;
+					out << YAML::Key << "Radius" << spotLight.Radius;
+					out << YAML::Key << "OuterCutoff" << spotLight.OuterCutOff;
+					out << YAML::Key << "CutOff" << spotLight.CutOff;
 
 					out << YAML::EndMap; // PointLightComponent
 				}
 			}
 		}
 		{
-			TextComponent* textComponent = entity.GetComponent<TextComponent>();
-			if (textComponent != nullptr)
+			if (registry.any_of<TextComponent>(entityID))
 			{
+				TextComponent& textComponent = registry.get<TextComponent>(entityID);
+
 				out << YAML::Key << "TextComponent";
 				out << YAML::BeginMap; // Text Component
-				out << YAML::Key << "Color" << textComponent->Colour;
-				out << YAML::Key << "Kerning" << textComponent->Kerning;
-				out << YAML::Key << "LineSpacing" << textComponent->LineSpacing;
-				out << YAML::Key << "Text" << textComponent->Text;
+				out << YAML::Key << "Color" << textComponent.Colour;
+				out << YAML::Key << "Kerning" << textComponent.Kerning;
+				out << YAML::Key << "LineSpacing" << textComponent.LineSpacing;
+				out << YAML::Key << "Text" << textComponent.Text;
 				out << YAML::EndMap; // Text Component
 			}
 		}
 		{
-			CameraComponent* cameraComponent = entity.GetComponent<CameraComponent>();
-			if (cameraComponent != nullptr) {
+			if (registry.any_of<CameraComponent>(entityID)) {
+				CameraComponent& cameraComponent = registry.get<CameraComponent>(entityID);
+
 				out << YAML::Key << "CameraComponent";
 				out << YAML::BeginMap; // Camera Componet
-				out << YAML::Key << "NearPlane" << cameraComponent->NearPlane;
-				out << YAML::Key << "FarPlane" << cameraComponent->FarPlane;
-				out << YAML::Key << "FOV" << cameraComponent->FovDeg;
-				out << YAML::Key << "Width" << cameraComponent->Width;
-				out << YAML::Key << "Height" << cameraComponent->Height;
-				out << YAML::Key << "UpVector" << cameraComponent->UPVector;
+				out << YAML::Key << "NearPlane" << cameraComponent.NearPlane;
+				out << YAML::Key << "FarPlane" << cameraComponent.FarPlane;
+				out << YAML::Key << "FOV" << cameraComponent.FovDeg;
+				out << YAML::Key << "Width" << cameraComponent.Width;
+				out << YAML::Key << "Height" << cameraComponent.Height;
+				out << YAML::Key << "UpVector" << cameraComponent.UPVector;
 				out << YAML::EndMap; // CameraComponet
 			}
 		}
 		{
-			CubeColliderComponent* cubeCollider = entity.GetComponent<CubeColliderComponent>();
-			if (cubeCollider != nullptr) {
+			if (registry.any_of<CubeColliderComponent>(entityID)) {
+			
+				CubeColliderComponent& cubeCollider = registry.get<CubeColliderComponent>(entityID);
 				out << YAML::Key << "CubeColliderComponent";
 				out << YAML::BeginMap; // CubeColliderComponent
-				out << YAML::Key << "IsTrigger" << cubeCollider->IsTrigger;
-				out << YAML::Key << "OffsetLocation" << cubeCollider->OffsetLocation;
-				out << YAML::Key << "OffsetScale" << cubeCollider->OffsetScale;
-				out << YAML::Key << "PhysicsMaterialPointerID" << cubeCollider->m_PhysicsMaterialPointerID;
+				out << YAML::Key << "IsTrigger" << cubeCollider.IsTrigger;
+				out << YAML::Key << "OffsetLocation" << cubeCollider.OffsetLocation;
+				out << YAML::Key << "OffsetScale" << cubeCollider.OffsetScale;
+				out << YAML::Key << "PhysicsMaterialPointerID" << cubeCollider.m_PhysicsMaterialPointerID;
 				out << YAML::EndMap; // CubeColliderComponent
 			}
 		}
 		{
-			SphereColliderComponent* sphereCollider = entity.GetComponent<SphereColliderComponent>();
-			if (sphereCollider != nullptr) {
+			if (registry.any_of<SphereColliderComponent>(entityID)) {
+
+				SphereColliderComponent& sphereCollider = registry.get<SphereColliderComponent>(entityID);
 				out << YAML::Key << "SphereColliderComponent";
 				out << YAML::BeginMap; // SphereColliderComponent
-				out << YAML::Key << "IsTrigger" << sphereCollider->IsTrigger;
-				out << YAML::Key << "Offset" << sphereCollider->OffsetLocation;
-				out << YAML::Key << "Radius" << sphereCollider->Radius;
-				out << YAML::Key << "PhysicsMaterialPointerID" << sphereCollider->m_PhysicsMaterialPointerID;
+				out << YAML::Key << "IsTrigger" << sphereCollider.IsTrigger;
+				out << YAML::Key << "Offset" << sphereCollider.OffsetLocation;
+				out << YAML::Key << "Radius" << sphereCollider.Radius;
+				out << YAML::Key << "PhysicsMaterialPointerID" << sphereCollider.m_PhysicsMaterialPointerID;
 				out << YAML::EndMap; // SphereColliderComponent
 			}
 		}
 		{
-			CapsuleColliderComponent* CapsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
-			if (CapsuleCollider != nullptr) {
+			if (registry.any_of<CapsuleColliderComponent>(entityID)) {
+
+				CapsuleColliderComponent& CapsuleCollider = registry.get<CapsuleColliderComponent>(entityID);
 				out << YAML::Key << "CapsuleColliderComponent";
 				out << YAML::BeginMap; // CapsuleColliderComponent
-				out << YAML::Key << "IsTrigger" << CapsuleCollider->IsTrigger;
-				out << YAML::Key << "Offset" << CapsuleCollider->OffsetLocation;
-				out << YAML::Key << "Radius" << CapsuleCollider->Radius;
-				out << YAML::Key << "Height" << CapsuleCollider->Height;
-				out << YAML::Key << "Direction" << EnumReflection::EnumString<CapsuleDirection>(CapsuleCollider->Direction);
-				out << YAML::Key << "PhysicsMaterialPointerID" << CapsuleCollider->m_PhysicsMaterialPointerID;
+				out << YAML::Key << "IsTrigger" << CapsuleCollider.IsTrigger;
+				out << YAML::Key << "Offset" << CapsuleCollider.OffsetLocation;
+				out << YAML::Key << "Radius" << CapsuleCollider.Radius;
+				out << YAML::Key << "Height" << CapsuleCollider.Height;
+				out << YAML::Key << "Direction" << EnumReflection::EnumString<CapsuleDirection>(CapsuleCollider.Direction);
+				out << YAML::Key << "PhysicsMaterialPointerID" << CapsuleCollider.m_PhysicsMaterialPointerID;
 				out << YAML::EndMap; // CapsuleColliderComponent
 			}
 		}
 		{
-			MeshColliderComponent* meshCollider = entity.GetComponent<MeshColliderComponent>();
-			if (meshCollider != nullptr) {
+			if (registry.any_of<MeshColliderComponent>(entityID)) {
+				MeshColliderComponent& meshCollider = registry.get<MeshColliderComponent>(entityID);
 				out << YAML::Key << "MeshColliderComponent";
 				out << YAML::BeginMap; // MeshColliderComponent
-				out << YAML::Key << "IsTrigger" << meshCollider->IsTrigger;
-				out << YAML::Key << "PhysicsMaterialPointerID" << meshCollider->m_PhysicsMaterialPointerID;
-				out << YAML::Key << "MeshAssetPointerID" << meshCollider->m_MeshAssetPointerID;
+				out << YAML::Key << "IsTrigger" << meshCollider.IsTrigger;
+				out << YAML::Key << "PhysicsMaterialPointerID" << meshCollider.m_PhysicsMaterialPointerID;
+				out << YAML::Key << "MeshAssetPointerID" << meshCollider.m_MeshAssetPointerID;
 				out << YAML::EndMap; // MeshColliderComponent
 			}
 		}
 		{
-			RigidBodyComponent* rigidBody = entity.GetComponent<RigidBodyComponent>();
-			if (rigidBody != nullptr) {
+			if (registry.any_of<RigidBodyComponent>(entityID)) {
+				RigidBodyComponent& rigidBody = registry.get<RigidBodyComponent>(entityID);
 				out << YAML::Key << "RigidBodyComponent";
 				out << YAML::BeginMap; // RigidBodyComponent
-				out << YAML::Key << "Mass" << rigidBody->Mass;
-				out << YAML::Key << "LinearDrag" << rigidBody->LinearDrag;
-				out << YAML::Key << "AngularDrag" << rigidBody->AngularDrag;
-				out << YAML::Key << "Gravity" << rigidBody->Gravity;
-				out << YAML::Key << "Type" << EnumReflection::EnumString<RigidBodyType>(rigidBody->m_RigidBodyType);
-				out << YAML::Key << "FreezeLocation" <<  rigidBody->FreezeLocation;
-				out << YAML::Key << "FreezeRotation" <<  rigidBody->FreezeRotation;
+				out << YAML::Key << "Mass" << rigidBody.Mass;
+				out << YAML::Key << "LinearDrag" << rigidBody.LinearDrag;
+				out << YAML::Key << "AngularDrag" << rigidBody.AngularDrag;
+				out << YAML::Key << "Gravity" << rigidBody.Gravity;
+				out << YAML::Key << "Type" << EnumReflection::EnumString<RigidBodyType>(rigidBody.m_RigidBodyType);
+				out << YAML::Key << "FreezeLocation" <<  rigidBody.FreezeLocation;
+				out << YAML::Key << "FreezeRotation" <<  rigidBody.FreezeRotation;
 				out << YAML::EndMap; // RigidBodyComponent
 			}
 		}
@@ -321,6 +328,8 @@ namespace Proof
 		
 		out << YAML::EndMap; // entity
 	}
+
+	
 
 	void SceneSerializer::SerilizeText(const std::string& filePath) {
 		PF_PROFILE_FUNC();
@@ -336,7 +345,7 @@ namespace Proof
 				out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 				m_Scene->m_Registry.each([&](auto entityID) {
 					Entity entity = { (uint64_t)entityID,m_Scene };
-					SerilizeEntity(out, entity);
+					SerilizeEntity(out,m_Scene->m_Registry, entityID);
 				});
 				out << YAML::EndSeq;
 			}
@@ -368,22 +377,34 @@ namespace Proof
 
 		if (!entities)
 			return false;
-		for (auto entity : entities) {
+
+		DeSerilizeEntity(entities, m_Scene, &m_AssetLoadID);
+		return true;
+	}
+
+	void SceneSerializer::DeSerilizeEntity(YAML::Node& entities, World* world, std::set<AssetID>* assetLoad)
+	{
+		for (auto entity : entities)
+		{
 			uint64_t EntID = entity["Entity"].as<uint64_t>();
-			
+
 			std::string Entityname;
 			auto tagcomponent = entity["TagComponent"];
-			if (tagcomponent) {
+			if (tagcomponent)
+			{
 				Entityname = tagcomponent["Tag"].as<std::string>();
 			}
 
-			Entity NewEntity = m_Scene->CreateEntity(Entityname, EntID);
+			Entity NewEntity = world->CreateEntity(Entityname, EntID);
 			{
-				if (tagcomponent) {
-					if (tagcomponent["tags"]) {
+				if (tagcomponent)
+				{
+					if (tagcomponent["tags"])
+					{
 						auto* tc = NewEntity.GetComponent<TagComponent>();
 
-						for (auto tag : tagcomponent["tags"]) {
+						for (auto tag : tagcomponent["tags"])
+						{
 							tc->AddTag(tag.as<std::string>());
 						}
 					}
@@ -392,7 +413,8 @@ namespace Proof
 			// Transform
 			{
 				auto transformComponet = entity["TransformComponent"];
-				if (transformComponet) {
+				if (transformComponet)
+				{
 					auto* tc = NewEntity.GetComponent<TransformComponent>();
 					tc->Location = transformComponet["Location"].as<Vector>();
 
@@ -404,12 +426,15 @@ namespace Proof
 			// ChildComponent
 			{
 				auto subEntityComponent = entity["ChildComponent"];
-				if (subEntityComponent) {
+				if (subEntityComponent)
+				{
 					auto* tc = NewEntity.GetComponent<ChildComponent>();
 					tc->m_OwnerID = subEntityComponent["OwnerID"].as<uint64_t>();
 
-					if (subEntityComponent["Children"]) {
-						for (auto entityID : subEntityComponent["Children"]) {
+					if (subEntityComponent["Children"])
+					{
+						for (auto entityID : subEntityComponent["Children"])
+						{
 							uint64_t childID = entityID.as<uint64_t>();
 							tc->m_Children.emplace_back(childID);
 						}
@@ -420,7 +445,8 @@ namespace Proof
 			// MESH
 			{
 				auto meshComponent = entity["MeshComponent"];
-				if (meshComponent) {
+				if (meshComponent)
+				{
 					auto& src = *NewEntity.AddComponent<MeshComponent>();
 					src.m_MeshID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
 					if (meshComponent["MaterialTable"])
@@ -451,21 +477,25 @@ namespace Proof
 			// SPRITE
 			{
 				auto spriteRendererComponent = entity["SpriteComponent"];
-				if (spriteRendererComponent) {
+				if (spriteRendererComponent)
+				{
 					auto& src = *NewEntity.AddComponent<SpriteComponent>();
 					src.m_TextureAssetPointerID = spriteRendererComponent["TextureAssetPointerID"].as<uint64_t>();
 					src.Colour = spriteRendererComponent["Colour"].as<glm::vec4>();
-					if (src.m_TextureAssetPointerID != 0) {
-						m_AssetLoadID.emplace(src.m_TextureAssetPointerID);
+					if (src.m_TextureAssetPointerID != 0)
+					{
+						if (assetLoad)
+							assetLoad->emplace(src.m_TextureAssetPointerID);
 					}
 				}
 			}
 			// LIGHT
 			{
-			
+
 				{
 					auto directionalLight = entity["DirectionalLightComponent"];
-					if (directionalLight) {
+					if (directionalLight)
+					{
 						auto& src = *NewEntity.AddComponent<DirectionalLightComponent>();
 						src.Color = directionalLight["Color"].as<Vector>();
 						src.Intensity = directionalLight["Intensity"].as<float>();
@@ -474,7 +504,8 @@ namespace Proof
 
 				{
 					auto pointLight = entity["PointLightComponent"];
-					if (pointLight) {
+					if (pointLight)
+					{
 						auto& src = *NewEntity.AddComponent<PointLightComponent>();
 						src.Color = pointLight["Color"].as<Vector>();
 						src.Intensity = pointLight["Intensity"].as<float>();
@@ -488,7 +519,8 @@ namespace Proof
 
 				{
 					auto spotLight = entity["SpotLightComponent"];
-					if (spotLight) {
+					if (spotLight)
+					{
 						auto& src = *NewEntity.AddComponent<SpotLightComponent>();
 						src.Color = spotLight["Color"].as<Vector>();
 						src.Intensity = spotLight["Intensity"].as<float>();
@@ -498,7 +530,7 @@ namespace Proof
 						src.Radius = spotLight["Radius"].as<float>();
 
 						src.CutOff = spotLight["CutOff"].as<float>();
-						src.OuterCutOff= spotLight["OuterCutOff"].as<float>();
+						src.OuterCutOff = spotLight["OuterCutOff"].as<float>();
 					}
 				}
 			}
@@ -518,7 +550,8 @@ namespace Proof
 			// CAMERA
 			{
 				auto cameraComponent = entity["CameraComponent"];
-				if (cameraComponent) {
+				if (cameraComponent)
+				{
 					auto& src = *NewEntity.AddComponent<CameraComponent>();
 					src.NearPlane = cameraComponent["NearPlane"].as<float>();
 					src.FarPlane = cameraComponent["FarPlane"].as<float>();
@@ -531,7 +564,8 @@ namespace Proof
 			// CUBE COLLIDER
 			{
 				auto cubeColliderComponent = entity["CubeColliderComponent"];
-				if (cubeColliderComponent) {
+				if (cubeColliderComponent)
+				{
 					auto& src = *NewEntity.AddComponent<CubeColliderComponent>();
 					src.IsTrigger = cubeColliderComponent["IsTrigger"].as<bool>();
 					src.OffsetLocation = cubeColliderComponent["OffsetLocation"].as<Vector>();
@@ -543,7 +577,8 @@ namespace Proof
 			// SPHERE COLLIDER
 			{
 				auto sphereColliderComponent = entity["SphereColliderComponent"];
-				if (sphereColliderComponent) {
+				if (sphereColliderComponent)
+				{
 					auto& src = *NewEntity.AddComponent<SphereColliderComponent>();
 					src.IsTrigger = sphereColliderComponent["IsTrigger"].as<bool>();
 					src.OffsetLocation = sphereColliderComponent["Offset"].as<Vector>();
@@ -555,7 +590,8 @@ namespace Proof
 			{
 
 				auto capsuleColliderComponent = entity["CapsuleColliderComponent"];
-				if (capsuleColliderComponent) {
+				if (capsuleColliderComponent)
+				{
 					auto& src = *NewEntity.AddComponent<CapsuleColliderComponent>();
 					src.IsTrigger = capsuleColliderComponent["IsTrigger"].as<bool>();
 					src.OffsetLocation = capsuleColliderComponent["Offset"].as<Vector>();
@@ -569,7 +605,8 @@ namespace Proof
 			{
 
 				auto mehsCollider = entity["MeshColliderComponent"];
-				if (mehsCollider) {
+				if (mehsCollider)
+				{
 					auto& src = *NewEntity.AddComponent<MeshColliderComponent>();
 					src.IsTrigger = mehsCollider["IsTrigger"].as<bool>();
 					src.m_PhysicsMaterialPointerID = mehsCollider["PhysicsMaterialPointerID"].as<uint64_t>();
@@ -579,7 +616,8 @@ namespace Proof
 			// RIGID BODY
 			{
 				auto rigidBodyComponent = entity["RigidBodyComponent"];
-				if (rigidBodyComponent) {
+				if (rigidBodyComponent)
+				{
 					auto& rgb = *NewEntity.AddComponent<RigidBodyComponent>();
 					rgb.Mass = rigidBodyComponent["Mass"].as<float>();
 					rgb.LinearDrag = rigidBodyComponent["LinearDrag"].as<float>();
@@ -594,7 +632,8 @@ namespace Proof
 			//Script Component
 			{
 				auto scriptComponent = entity["ScriptComponent"];
-				if (scriptComponent) {
+				if (scriptComponent)
+				{
 					auto& scp = *NewEntity.AddComponent<ScriptComponent>();
 					auto scripts = scriptComponent["Scripts"];
 					for (auto script : scripts)
@@ -608,7 +647,7 @@ namespace Proof
 						Count<ScriptClass> scriptClass = ScriptEngine::GetScriptClass(scriptName);
 						const auto& fields = scriptClass->GetFields();
 						auto& entityFields = ScriptEngine::GetScriptFieldMap(NewEntity);
-						
+
 						auto scriptFields = script["ScriptFields"];
 
 						for (auto scriptField : scriptFields)
@@ -618,7 +657,7 @@ namespace Proof
 							ScriptFieldType type = Utils::ScriptFieldTypeFromString(fieldTypeString);
 							if (!fields.contains(fieldName))
 							{
-								PF_ENGINE_WARN("Entity {} Script {} does not contain {} field", Entity{ EntID,m_Scene }.GetName(), scriptName, fieldName);
+								PF_ENGINE_WARN("Entity {} Script {} does not contain {} field", Entity{ EntID,world }.GetName(), scriptName, fieldName);
 								continue;
 							}
 							//creating the field instance adnscript
@@ -651,8 +690,8 @@ namespace Proof
 				}
 			}
 		}
-		return true;
 	}
+
 	bool SceneSerializer::DeSerilizeText(AssetID ID)
 	{
 		auto assetInfo = AssetManager::GetAssetInfo(ID);

@@ -35,6 +35,7 @@
 
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Renderer/Font.h"
+#include "Proof/Scene/Prefab.h"
 namespace Proof
 {
 	static bool SaveSceneDialouge = false;
@@ -961,7 +962,8 @@ namespace Proof
 			static bool meshSourceAdded = false;
 			static std::filesystem::path meshSourcePath;	
 			/* putting this underneath image because a window only accpet drop tarGet to when item is bound so and image has been bound */
-			if (ImGui::BeginDragDropTarget()) {
+			if (ImGui::BeginDragDropTarget()) 
+			{
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::World).c_str())) {
 					UUID ID = *(UUID*)payload->Data;
 
@@ -990,8 +992,18 @@ namespace Proof
 					meshSourceAdded = true;
 					meshSourcePath = AssetManager::GetAssetInfo(meshSourceId).Path;
 				}
+
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
+				{
+					UUID prefabId = *(UUID*)payload->Data;
+
+					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabId);
+					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(prefabId).GetName(), prefab, Vector{ 0,0,0 });
+					m_WorldHierachy.m_SelectedEntity = newentt;
+				}
 				ImGui::EndDragDropTarget();
 			}
+
 			if (meshSourceAdded) {
 				AssetID id;
 				std::tie(meshSourceAdded, id) = m_ContentBrowserPanel.AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));

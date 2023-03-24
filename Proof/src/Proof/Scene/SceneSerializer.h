@@ -19,9 +19,13 @@ namespace Proof
 		const std::set<AssetID>& GetAssetLoadID()const {
 			return m_AssetLoadID;
 		}
+
+		// for prefab 
+		static void SerilizeEntity(YAML::Emitter& out, entt::registry64& registry, UUID entityID);
+		// for prefab 
+		static void DeSerilizeEntity(YAML::Node& entities, World* world, std::set<AssetID>* assetLoad = nullptr);
 	private:
 		World* m_Scene;
 		std::set<AssetID> m_AssetLoadID;
-		void SerilizeEntity(YAML::Emitter& out, Entity entity);
 	};
 }

@@ -100,7 +100,7 @@ namespace Proof {
 		std::vector<MouseButton> m_MouseButtonPressedEventCheck;
 
 		// controller ID
-		std::map<uint32_t, Controller> m_Controllers;
+		std::map<int, Controller> m_Controllers;
 		friend class RendererBase;
 	};
 }

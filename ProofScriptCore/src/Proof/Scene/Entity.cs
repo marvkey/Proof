@@ -27,7 +27,7 @@ namespace Proof
         public Entity GetOwner()
         {
 			InternalCalls.Entity_GetOwner(ID, out ulong owenrId);
-			if (owenrId == 0)
+			if (owenrId == 0)	
 				return null;
 
 			return new Entity(owenrId);

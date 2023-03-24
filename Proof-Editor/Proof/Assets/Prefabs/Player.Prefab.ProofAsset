@@ -1,0 +1,86 @@
+AssetType: Prefab
+ID: 2084699011716531434
+EntityOwner: 9019730813530534380
+Entities:
+  - Entity: 9019730813530534380
+    TagComponent:
+      Tag: Player
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: [11923592787940579810, 10239675716060485003]
+    MeshComponent:
+      MeshAssetPointerID: 4645041025570573733
+      MaterialTable:
+        - Material: ""
+          AssetID: 9010836309271670693
+          Index: 0
+    ScriptComponent:
+      Scripts:
+        - Script: Game.Player
+          ScriptFields:
+            - Name: Movement
+              Type: Bool
+              Data: true
+            - Name: FowardForce
+              Type: Float
+              Data: 1000
+            - Name: SideWayForce
+              Type: Float
+              Data: 200
+    CubeColliderComponent:
+      IsTrigger: false
+      OffsetLocation: [0, 0, 0]
+      OffsetScale: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 1
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+  - Entity: 11923592787940579810
+    TagComponent:
+      Tag: Camera
+      tags: []
+    TransformComponent:
+      Location: [0, 2.4000001, -11]
+      Rotation: [0, 0, 90]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 9019730813530534380
+      Children: []
+    CameraComponent:
+      NearPlane: 0.100000001
+      FarPlane: 200
+      FOV: 90
+      Width: 250
+      Height: 250
+      UpVector: [0, 1, 0]
+  - Entity: 10239675716060485003
+    TagComponent:
+      Tag: Score
+      tags: []
+    TransformComponent:
+      Location: [0, 12, 0]
+      Rotation: [0, 180, 0]
+      Scale: [2.9000001, 2.5, 3]
+    ChildComponent:
+      OwnerID: 9019730813530534380
+      Children: []
+    ScriptComponent:
+      Scripts:
+        - Script: Game.Score
+          ScriptFields:
+            []
+    TextComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
+      Text: 0

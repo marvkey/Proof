@@ -23,6 +23,7 @@
 
 #include "Proof/Asset/AssetSupport.h"
 
+#include "Proof/Scene/Prefab.h"
 namespace Proof
 {
 	struct CurrentFileInfo {
@@ -54,6 +55,27 @@ namespace Proof
 		//auto relativePath = std::filesystem::relative(path, g_AssetPath);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		ImGui::Begin("Content Browser", &m_ShowWindow);
+		ImGui::Button("Drag dropereere");
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
+			{
+				Entity entity = *(const Entity*)payload->Data;
+				if (entity)
+				{
+					std::string path = AddAssetName<Prefab>(entity.GetName());
+					FileRenameName = Utils::FileDialogs::GetFileName(path);
+
+					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(path);
+
+					prefab->SetEntity(entity);
+
+					auto ID = prefab->GetID();
+					AssetManager::SaveAsset(ID);
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
 		// Content folder structure
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
 		ImGui::BeginChild("Folders", { 200,ImGui::GetContentRegionAvail().y });
@@ -229,6 +251,7 @@ namespace Proof
 
 	void ContentBrowserPanel::ContentSubWindow() {
 		ImGui::BeginChild("Sub Window");
+	
 		if (ImGui::Button("<-", { 50,50 })) {
 			if (m_CurrentDirectory != s_AssetsDir) {
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
@@ -265,6 +288,7 @@ namespace Proof
 		ImGui::Columns(columnCount, 0, false);
 
 		for (auto& It : std::filesystem::directory_iterator(m_CurrentDirectory)) {
+			
 			// wierd bug when we dont use relateive the first "\" becomes "/"
 			const auto path = It.path();
 			CurrentFileInfo currentFileInfo;
@@ -311,6 +335,8 @@ namespace Proof
 				ImGui::Button(Utils::FileDialogs::GetFileName(fileDragSourcePath).c_str(), { 60,60 });
 				ImGui::EndDragDropSource();
 			}
+
+			
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 				UUID staticID = AssetManager::GetAssetInfo(path).ID;
 				m_Owner->CreateAssetEditor(staticID);
@@ -492,6 +518,8 @@ namespace Proof
 				AssetInfo assetInfo = AssetManager::GetAssetInfo(fileOldFullName);
 				AssetManager::ChangeAssetPath(assetInfo.ID, fileNewFullName);
 				AssetManager::SaveAssetManager();
+
+				AssetManager::SaveAsset(assetInfo.ID);
 			}
 			FileRenameName = "";
 			ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();

@@ -14,6 +14,10 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 0
+            Index: 0
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -40,6 +44,10 @@ World:
         Children: [11923592787940579810, 10239675716060485003]
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 9010836309271670693
+            Index: 0
       ScriptComponent:
         Scripts:
           - Script: Game.Player
@@ -113,7 +121,7 @@ World:
         MeshAssetPointerID: 4645041025570573733
         MaterialTable:
           - Material: ""
-            AssetID: 16233326068385086713
+            AssetID: 0
             Index: 0
       ScriptComponent:
         Scripts:
@@ -146,6 +154,10 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 0
+            Index: 0
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -172,6 +184,10 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 0
+            Index: 0
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -198,6 +214,10 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 0
+            Index: 0
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -224,6 +244,10 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 0
+            Index: 0
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
@@ -254,7 +278,37 @@ World:
             ScriptFields:
               []
       TextComponent:
-        Color: [0, 0.322580576, 1, 1]
+        Color: [1, 1, 1, 1]
         Kerning: 0
         LineSpacing: 1
         Text: 0
+    - Entity: 187520468470264026
+      TagComponent:
+        Tag: obstacle
+        tags: []
+      TransformComponent:
+        Location: [-7.69999981, 0, 23.7999992]
+        Rotation: [0, 0, 0]
+        Scale: [3.95164466, 1, 1.04498231]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 0
+            Index: 0
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]

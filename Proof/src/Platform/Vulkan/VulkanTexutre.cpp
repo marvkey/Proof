@@ -609,7 +609,7 @@ namespace Proof
 		};
 
 		Count<PushConstant> PcbConstnat = PushConstant::Create(sizeof(PCB), 0, ShaderStage::Fragment);
-		Count<CubeMap> preFilterMap = CubeMap::Create(nullptr, nullptr, dimension, true);
+		Count<CubeMap> preFilterMap = CubeMap::Create(nullptr,nullptr, dimension, true);
 
 
 		auto format = ImageFormat::RGBA32F;
@@ -731,19 +731,6 @@ namespace Proof
 				
 				for (uint32_t face = 0; face < 6; face++)
 				{
-					{
-						fbColorAttachment = Texture2D::Create(conigTexture);
-
-						frameConfig.DebugName = "Texture-Cube";
-						frameConfig.Size.X = dimension;
-						frameConfig.Size.Y = dimension;
-						frameConfig.Attachments = { format };
-						frameConfig.Attachments.Attachments[0].SetOverrideImage(fbColorAttachment->GetImage());
-
-						frameBuffer = FrameBuffer::Create(frameConfig);
-
-						renderPass = RenderPass::Create(renderPassConfig);
-					}
 					uboData.view = captureViews[face];
 					ubuffer->SetData(&uboData, sizeof(uboData));
 					pcb.Roughness = (float)miplevel / (float)(totalMips - 1);
@@ -807,14 +794,14 @@ namespace Proof
 
 						copyRegion.extent.width = static_cast<uint32_t>(mipsize);
 						copyRegion.extent.height = static_cast<uint32_t>(mipsize);
-
-						copyRegion.extent.depth = 0;
+						copyRegion.extent.depth = 1;
 
 						//VkImage image = frameBuffer.As<VulkanFrameBuffer>()->GetColorAttachmentFrameBufferImage(0).Images[Renderer::GetCurrentFrame().ImageIndex].Image;
 						VkImage image = fbColorAttachment.As<VulkanTexture2D>()->GetImageAlloc().Image;
 						vkCmdCopyImage(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(),image,
 							VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 							preFilterMap.As<VulkanCubeMap>()->GetImageAlloc().Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+
 					}
 				}
 				mipsize = mipsize / 2;

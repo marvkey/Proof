@@ -5,6 +5,8 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Resources/ExternalCreations.h"
 #include "Proof/Scene/Mesh.h"
+#include "Proof/Scene/Prefab.h"
+#include "Proof/Scene/SceneSerializer.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
 	{
@@ -157,6 +159,46 @@ namespace Proof {
 		Count<MeshSource> source = Count<MeshSource>::Create(AssetManager::GetAssetFileSystemPath(data.Path).string());
 		SetID(data, source);
 		return source;
+	}
+
+	void PrefabAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+		Count<Prefab> prefab = asset.As<Prefab>();
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(prefab->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << prefab->GetID();
+		out << YAML::Key << "EntityOwner" << YAML::Value << prefab->m_BaseEntityID;
+		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+		prefab->GetRegistry().each([&](auto entityID) {
+			SceneSerializer::SerilizeEntity(out, prefab->m_Registry, entityID);
+		});
+		out << YAML::Flow;
+		out << YAML::EndMap;
+		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		found << out.c_str();
+		found.close();
+	}
+
+	Count<class Asset> PrefabAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!data["AssetType"])
+			return nullptr;
+		Count<Prefab> prefab = Count<Prefab>::Create();
+		UUID owernID= data["EntityOwner"].as<uint64_t>();
+		auto entities = data["Entities"];
+
+		Count<World> world = Count<World>::Create("prefab world");
+
+		SceneSerializer::DeSerilizeEntity(entities, world.Get(), nullptr);
+
+		prefab->SetEntity(Entity{ owernID,world.Get() });
+		SetID(assetData, prefab);
+
+
+		return prefab;
 	}
 
 }

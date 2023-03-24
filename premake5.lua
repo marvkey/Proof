@@ -16,7 +16,7 @@ IncludeDir={}
 IncludeDir["GLFW"]="%{wks.location}/Proof/vendor/glfw-3.3.2.bin.WIN64/include"
 IncludeDir["ImGui"]="%{wks.location}/Proof/vendor/ImGUI"
 IncludeDir["glm"]="%{wks.location}/Proof/vendor/glm"
-IncludeDir["Vulkan"]="%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Include"
+IncludeDir["Vulkan"]="%{wks.location}/Proof/vendor/VulkanSDK/Include"
 IncludeDir["Glad"] = "%{wks.location}/Proof/vendor/Glad/include"
 IncludeDir["Log"]= "%{wks.location}/Proof/vendor/Log/include"
 IncludeDir["Assimp"]= "%{wks.location}/Proof/vendor/Assimp/include"
@@ -37,7 +37,7 @@ IncludeDir["msdf_atlas_gen"] = "%{wks.location}/Proof/vendor/msdf-atlas-gen"
 
 LibraryDir = {}
 LibraryDir["ProofOuputDir"] =  "%{wks.location}/Proof/bin/".. OutputDirectory .. "/Proof"
-LibraryDir["VulkanSDK"] = "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib"
+LibraryDir["VulkanSDK"] = "%{wks.location}/Proof/vendor/VulkanSDK/Lib"
 
 Library = {}
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"

@@ -260,7 +260,10 @@ namespace Proof
         const bool optimize = true;
         if (optimize)
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
-        compilerOptions.SetIncluder(std::make_unique< ShaderIncluder>());
+
+
+        Special<shaderc::CompileOptions::IncluderInterface> inclue = CreateSpecial< ShaderIncluder>();
+        compilerOptions.SetIncluder(std::move(inclue));
 
         auto& shaderData = m_VulkanSPIRV;
         shaderData.clear();
@@ -277,6 +280,7 @@ namespace Proof
                 }
                 PF_CORE_ASSERT(false);
             }
+            shaderData[stage]; 
             shaderData[stage] = std::vector<uint32_t>(shaderModule.cbegin(), shaderModule.cend());
         }
         for (auto&& [stage, data] : m_VulkanSPIRV)
@@ -313,6 +317,7 @@ namespace Proof
 
     }
     void VulkanShader::Reflect(ShaderStage stage) {
+        return;
         if (m_VulkanSPIRV.find(stage) == m_VulkanSPIRV.end()) {
             PF_ENGINE_ERROR("{} {} Shader stage does not exist", m_Name, EnumReflection::EnumString(stage));
             return;
@@ -321,6 +326,8 @@ namespace Proof
         auto& shaderSrc = m_SourceCode.at(stage);
 
         spirv_cross::Compiler compiler(data);
+
+        //this line is crahsing for some reason
         spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
         PF_ENGINE_TRACE("{} Vulkan::Shader Reflect - {} ", m_Name, EnumReflection::EnumString(stage));

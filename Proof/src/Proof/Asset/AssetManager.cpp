@@ -33,6 +33,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::Mesh] = CreateSpecial<MeshAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Texture] = CreateSpecial<TextureAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::MeshSourceFile] = CreateSpecial<MeshSourceAssetSerializer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::Prefab] = CreateSpecial<PrefabAssetSerilizer>();
 		}
 		if (std::filesystem::exists(assetManagerConfiguration.AssetDirectory) == false) {
 			std::filesystem::create_directory(assetManagerConfiguration.AssetDirectory);
@@ -76,6 +77,8 @@ namespace Proof
 				return "";
 			case Proof::AssetType::PhysicsMaterial:
 				return "PhysicsMaterial.ProofAsset";
+			case Proof::AssetType::Prefab:
+				return "Prefab.ProofAsset";
 			case Proof::AssetType::TextureSourceFile:
 				return "";
 			default:

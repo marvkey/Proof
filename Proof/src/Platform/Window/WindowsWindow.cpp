@@ -215,7 +215,7 @@ namespace Proof {
             controller.ID = jid;
             controller.Name = glfwGetGamepadName(jid);
 
-            m_Controllers[jid] = controller;
+            m_Controllers.insert({ jid,  controller });
 
             ControllerConnectEvent ctEvent(jid);
             EventCallback(ctEvent);
@@ -242,7 +242,7 @@ namespace Proof {
                 // eras this current controller since we have to change the value of settings 
                 m_Controllers.erase(ID);
                 // creaet a new contorller with id 
-                m_Controllers[jid - 1] = newControll;
+                m_Controllers.insert({ jid - 1,  newControll });
 
                 goto startLoop;
             }

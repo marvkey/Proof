@@ -12,7 +12,9 @@ namespace Proof
 		MeshSourceFile,
 		PhysicsMaterial,
 		TextureSourceFile,
-		Font
+		Font,
+		FontSource,
+		Prefab
 	};
 	enum class AssetState {
 		None = 0,

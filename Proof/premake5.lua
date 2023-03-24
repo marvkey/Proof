@@ -52,7 +52,7 @@ project "Proof"
 
     }
 	libdirs{
-        "%{wks.location}/Proof/vendor/VulkanSDK/1.3.204.1/Lib",
+        "%{wks.location}/Proof/vendor/VulkanSDK/Lib",
 		"%{wks.location}/Proof/bin/".. OutputDirectory .. "/Proof"
 	}
 	links
