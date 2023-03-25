@@ -192,7 +192,7 @@ namespace Proof {
 
 		Count<World> world = Count<World>::Create("prefab world");
 
-		SceneSerializer::DeSerilizeEntity(entities, world.Get(), nullptr);
+		SceneSerializer::DeSerilizeEntity(entities, world.Get(), nullptr,true);
 
 		prefab->SetEntity(Entity{ owernID,world.Get() });
 		SetID(assetData, prefab);

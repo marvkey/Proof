@@ -17,9 +17,9 @@ namespace Proof {
 				return;
 
 			UUID id = srcEntity.GetComponent<IDComponent>()->GetID();
-			uint64_t dstEntity = enttMap.at(id);
+			uint64_t dstComponent = enttMap.at(id);
 			auto& srcComponent = *srcEntity.GetComponent<Component>();
-			dst.emplace_or_replace<Component>(dstEntity, srcComponent);
+			dst.emplace_or_replace<Component>(dstComponent, srcComponent);
 			
 		}(), ...);
 	}
@@ -38,34 +38,62 @@ namespace Proof {
 	Prefab::Prefab() {
 
 	}
-	void Prefab::SetEntity(Entity entity)
+	Prefab::~Prefab()
 	{
-		if (!entity)return;
-		m_Registry.clear();
-
-
+		//m_Registry = {};
+	}
+	void Prefab::SetEntity(Entity srcEntity)
+	{
+		if (!srcEntity)return;
+		//m_Registry.clear();
 		std::unordered_map<UUID, uint64_t> enttMap;
+		{
+			UUID newID = UUID();
 
+			m_Registry.entities.emplace_back(newID);
+			uint64_t copyID = srcEntity.GetEntityID();
 
-		m_Registry.entities.emplace_back(entity.GetEntityID());
-		uint64_t id = entity.GetEntityID();
-		enttMap.insert({ id,id });
-		CopyComponent(AllComponents{}, m_Registry, entity, enttMap);
-		m_BaseEntityID = id;
+			enttMap[copyID] = newID;
+			CopyComponent(AllComponents{}, m_Registry, srcEntity, enttMap);
+			m_BaseEntityID = newID;
+			// for easier user interface reasons
+			m_Registry.get<TransformComponent>(newID).Location = { 0,0,0 };
+		}
+		std::function<void(UUID)> createEntity = [&](UUID srcID)
+		{
+			World* entityWorld = srcEntity.GetCurrentWorld();
+			Entity srcChildEntity = srcEntity.GetCurrentWorld()->GetEntity(srcID);
 
+			if (srcChildEntity.HasOwner())
+			{
+				Entity owner = srcChildEntity.GetOwner();
 
-		// for easier user interface reasons
-		m_Registry.get<TransformComponent>(id).Location = { 0,0,0 };
-		if (!entity.HasChildren())
+				if (!enttMap.contains(owner.GetEntityID()))
+				{
+					createEntity(owner.GetEntityID());
+				}
+				UUID newChildID = UUID();
+				m_Registry.entities.emplace_back(newChildID);
+				enttMap.insert({ srcID,newChildID });
+
+				CopyComponent(AllComponents{}, m_Registry, srcChildEntity, enttMap);
+
+				UUID ownerPrefabId = enttMap[owner.GetEntityID()];
+
+				m_Registry.get<ChildComponent>(ownerPrefabId).RemoveChild(srcID);
+				m_Registry.get<ChildComponent>(ownerPrefabId).AddChild(newChildID);
+
+				m_Registry.get<ChildComponent>(newChildID).SetOwner(ownerPrefabId);
+			}
+		};
+
+		if (!srcEntity.HasChildren())
 			return;
 
-		entity.EachChild([&](Entity childEntity) {
-			m_Registry.entities.emplace_back(childEntity.GetEntityID());
-			uint64_t newId = childEntity.GetEntityID();
-			enttMap.insert({ newId,newId });
-			CopyComponent(AllComponents{}, m_Registry, childEntity, enttMap);
+		srcEntity.EachChild([&](Entity childEntity) {
+			if (!enttMap.contains(childEntity.GetEntityID()))
+				createEntity(childEntity.GetEntityID());
 		});
-
 
 	}
 }

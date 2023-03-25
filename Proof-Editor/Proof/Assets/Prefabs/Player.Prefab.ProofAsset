@@ -1,8 +1,8 @@
 AssetType: Prefab
-ID: 2084699011716531434
-EntityOwner: 9019730813530534380
+ID: 17294375315616685708
+EntityOwner: 13228766923197797717
 Entities:
-  - Entity: 9019730813530534380
+  - Entity: 13228766923197797717
     TagComponent:
       Tag: Player
       tags: []
@@ -12,7 +12,7 @@ Entities:
       Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
-      Children: [11923592787940579810, 10239675716060485003]
+      Children: [11877231393503580999, 8071785434771891890]
     MeshComponent:
       MeshAssetPointerID: 4645041025570573733
       MaterialTable:
@@ -23,15 +23,7 @@ Entities:
       Scripts:
         - Script: Game.Player
           ScriptFields:
-            - Name: Movement
-              Type: Bool
-              Data: true
-            - Name: FowardForce
-              Type: Float
-              Data: 1000
-            - Name: SideWayForce
-              Type: Float
-              Data: 200
+            []
     CubeColliderComponent:
       IsTrigger: false
       OffsetLocation: [0, 0, 0]
@@ -45,7 +37,7 @@ Entities:
       Type: Dynamic
       FreezeLocation: [false, false, false]
       FreezeRotation: [false, false, false]
-  - Entity: 11923592787940579810
+  - Entity: 11877231393503580999
     TagComponent:
       Tag: Camera
       tags: []
@@ -54,7 +46,7 @@ Entities:
       Rotation: [0, 0, 90]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 9019730813530534380
+      OwnerID: 13228766923197797717
       Children: []
     CameraComponent:
       NearPlane: 0.100000001
@@ -63,7 +55,7 @@ Entities:
       Width: 250
       Height: 250
       UpVector: [0, 1, 0]
-  - Entity: 10239675716060485003
+  - Entity: 8071785434771891890
     TagComponent:
       Tag: Score
       tags: []
@@ -72,7 +64,7 @@ Entities:
       Rotation: [0, 180, 0]
       Scale: [2.9000001, 2.5, 3]
     ChildComponent:
-      OwnerID: 9019730813530534380
+      OwnerID: 13228766923197797717
       Children: []
     ScriptComponent:
       Scripts:

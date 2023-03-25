@@ -34,10 +34,7 @@ namespace Proof {
 	}
 	World::~World()
 	{
-		//m_Registry.on_construct<MeshColliderComponent>().disconnect<&World::OnMeshColliderComponentCreate>(this);
-		m_Registry.clear();
 
-		m_Registry.on_destroy<ChildComponent>().disconnect(this);
 	}
 	bool World::HasEntity(EntityID ID)const {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
@@ -235,12 +232,11 @@ namespace Proof {
 				return;
 			}
 
-			uint64_t srcId = enttMap.at(srcID);
 			uint64_t destinationID = dstEntity.GetEntityID();
-			if (!src.any_of<Component>(srcId))
+			if (!src.any_of<Component>(srcID))
 				return;
 
-			const auto& srcComponent = src.get<Component>(srcId);
+			const auto& srcComponent = src.get<Component>(srcID);
 			dstMap.emplace_or_replace<Component>(destinationID, srcComponent);
 			
 		}(), ...);
@@ -254,6 +250,7 @@ namespace Proof {
 	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, Vector location)
 	{
 		Entity newEntity = CreateEntity(name);
+		
 		std::unordered_map<UUID, uint64_t> enttMap;
 		{
 
@@ -264,9 +261,16 @@ namespace Proof {
 			newEntity.GetComponent<TransformComponent>()->Location = location;
 
 
+			newEntity.GetComponent<ChildComponent>()->m_Children = {};
+			newEntity.GetComponent<ChildComponent>()->m_OwnerPointer = nullptr;
+			newEntity.GetComponent<ChildComponent>()->m_OwnerID = 0;
+			newEntity.GetComponent<ChildComponent>()->m_CurrentID = newEntity.GetEntityID();
+
 			if (prefab->GetRegistry().size() == 1)
 				return newEntity;
 		}
+
+		UUID newEntityID = newEntity.GetEntityID();
 		auto& prefaRegistry = prefab->GetRegistry();
 		std::function<Entity(UUID)> createEntity = [&](UUID registryEntityId)->Entity
 		{
@@ -283,6 +287,25 @@ namespace Proof {
 				enttMap[registryEntityId] = thisEntity.GetEntityID();
 				CopyComponentPrefab(AllComponents{}, thisEntity, m_Registry, prefab->GetRegistry(), registryEntityId, enttMap);
 
+				thisEntity.GetComponent<ChildComponent>()->m_Children = {};
+				thisEntity.GetComponent<ChildComponent>()->m_OwnerPointer = nullptr;
+				thisEntity.GetComponent<ChildComponent>()->m_OwnerID = 0;
+				thisEntity.GetComponent<ChildComponent>()->m_CurrentID = thisEntity.GetEntityID();
+
+				for (UUID id : prefaRegistry.get<ChildComponent>(registryEntityId).GetChildren())
+				{
+					if (enttMap.contains(registryEntityId))
+					{
+						Entity subChild = Entity{ enttMap[registryEntityId], this };
+						thisEntity.AddChild(subChild);
+					}
+					else
+					{
+						createEntity(id);
+					}
+				}
+				if(owner)
+					owner.GetComponent<ChildComponent>()->AddChild(*thisEntity.GetComponent<ChildComponent>());
 				return thisEntity;
 			}
 			else
@@ -298,16 +321,13 @@ namespace Proof {
 		for (UUID registryEntityID : prefab->GetRegistry().entities)
 		{
 			if (registryEntityID == prefab->GetBaseEntity())continue;
-
-
 			if (enttMap.contains(registryEntityID))
 				continue;
 
 			createEntity(registryEntityID);
-
 		}
 
-		return newEntity;
+		return { newEntityID,this };
 	}
 	template<typename... Component>
 	static void CopyComponentSingleWorld(entt::registry64& dst, entt::registry64& src, const std::unordered_map<UUID, uint64_t>& enttMap)

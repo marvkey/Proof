@@ -124,6 +124,10 @@ namespace Proof
 			newOwner.m_Children.emplace_back(m_CurrentID);
 			return true;
 		}
+		bool SetOwner(UUID newOwner) {
+			m_OwnerID = newOwner; // poitn to the enitty of that child
+			return true;
+		}
 
 		bool AddChild(ChildComponent& child) {
 			if (child == *this) {
@@ -139,6 +143,13 @@ namespace Proof
 			child.m_OwnerPointer = this;
 			return true;
 		}
+
+		bool AddChild(UUID child) {
+			if (HasChild(child) == true)return true;
+			m_Children.emplace_back(child);
+			return true;
+		}
+
 		bool RemoveChild(ChildComponent& child) {
 			if (HasChildren() == false)return false;
 			auto it = std::find(m_Children.begin(), m_Children.end(), child.m_CurrentID);
@@ -147,6 +158,15 @@ namespace Proof
 			child.m_OwnerID = 0;
 			child.m_OwnerPointer = nullptr;// we should not rely on this because an entity can be deleted and the pointer could
 			// still be poiting to that empty memeoory block
+			m_Children.erase(it);
+			return true;
+		}
+
+		bool RemoveChild(UUID id) {
+			if (HasChildren() == false)return false;
+			auto it = std::find(m_Children.begin(), m_Children.end(), id);
+			if (it == m_Children.end())// checking if we have the child
+				return false;
 			m_Children.erase(it);
 			return true;
 		}

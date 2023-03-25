@@ -67,11 +67,9 @@ namespace Proof
 					FileRenameName = Utils::FileDialogs::GetFileName(path);
 
 					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(path);
-
 					prefab->SetEntity(entity);
 
-					auto ID = prefab->GetID();
-					AssetManager::SaveAsset(ID);
+					AssetManager::SaveAsset(prefab->GetID());
 				}
 			}
 			ImGui::EndDragDropTarget();

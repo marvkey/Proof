@@ -12,7 +12,7 @@ namespace Proof{
 
 		Prefab();
 
-
+		~Prefab();
 		void SetEntity(Entity entity);
 		ASSET_CLASS_TYPE(Prefab);
 

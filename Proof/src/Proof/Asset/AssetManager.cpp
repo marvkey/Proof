@@ -217,10 +217,11 @@ namespace Proof
 			return false;
 
 		 auto asset= s_AssetManagerData->AssetSerilizer.at(assetInfo.Type)->TryLoadAsset(assetInfo);
-		if (asset)
-			assetInfo.State = AssetState::Ready;
-		if(asset)
-			s_AssetManagerData->Assets[ID].Asset = asset;
+		 if (asset)
+		 {
+			 assetInfo.State = AssetState::Ready;
+			 s_AssetManagerData->Assets[ID].Asset = asset;
+		 }
 		return asset != nullptr;
 	}
 

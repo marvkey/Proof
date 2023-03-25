@@ -998,7 +998,9 @@ namespace Proof
 					UUID prefabId = *(UUID*)payload->Data;
 
 					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabId);
-					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(prefabId).GetName(), prefab, Vector{ 0,0,0 });
+					std::string name = AssetManager::GetAssetInfo(prefabId).GetName();
+
+					Entity newentt = m_ActiveWorld->CreateEntity(name, prefab, Vector{ 0,0,0 });
 					m_WorldHierachy.m_SelectedEntity = newentt;
 				}
 				ImGui::EndDragDropTarget();

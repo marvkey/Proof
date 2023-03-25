@@ -29,50 +29,50 @@ namespace Proof
 		out << YAML::BeginMap;// entity
 		out << YAML::Key << "Entity" << YAML::Value << entityID;
 		{
-			TagComponent* Tag = &registry.get< TagComponent>(entityID);
-			if (Tag != nullptr) {
-				auto& tag = Tag->Tag;
-				out << YAML::Key << "TagComponent";
-				out << YAML::BeginMap; // tag component
-				out << YAML::Key << "Tag" << YAML::Value << tag;
-				out << YAML::Key << "tags";
-				out << YAML::Flow;
-				out << YAML::BeginSeq;
-				for (std::string& tag : Tag->m_Tags) {
-					out << tag;
-				}
-				out << YAML::EndSeq;
-				out << YAML::EndMap; // tag component
+			PF_CORE_ASSERT(registry.any_of< TagComponent>(entityID), "Does not contian Tag Componnet");
+			TagComponent& Tag = registry.get< TagComponent>(entityID);
+			auto& tag = Tag.Tag;
+			out << YAML::Key << "TagComponent";
+			out << YAML::BeginMap; // tag component
+			out << YAML::Key << "Tag" << YAML::Value << tag;
+			out << YAML::Key << "tags";
+			out << YAML::Flow;
+			out << YAML::BeginSeq;
+			for (std::string& tag : Tag.m_Tags) {
+				out << tag;
 			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap; // tag component
 		}
 		{
-			TransformComponent* Transfrom = &registry.get<TransformComponent>(entityID);
-			if (Transfrom != nullptr) {
-				out << YAML::Key << "TransformComponent";
-				out << YAML::BeginMap; // transform component
-				out << YAML::Key << "Location" << YAML::Value << Transfrom->Location;
-				out << YAML::Key << "Rotation" << YAML::Value << Transfrom->Rotation;
-				out << YAML::Key << "Scale" << YAML::Value << Transfrom->Scale;
-				out << YAML::EndMap; // transform component
-			}
+
+			PF_CORE_ASSERT(registry.any_of< TransformComponent>(entityID), "Does not contian Transform Component");
+
+			TransformComponent& transfrom = registry.get<TransformComponent>(entityID);
+			out << YAML::Key << "TransformComponent";
+			out << YAML::BeginMap; // transform component
+			out << YAML::Key << "Location" << YAML::Value << transfrom.Location;
+			out << YAML::Key << "Rotation" << YAML::Value << transfrom.Rotation;
+			out << YAML::Key << "Scale" << YAML::Value << transfrom.Scale;
+			out << YAML::EndMap; // transform component
 		}
 		{
-			ChildComponent* childComponent = &registry.get<ChildComponent>(entityID);
-			if (childComponent != nullptr) {
-				out << YAML::Key << "ChildComponent";
-				out << YAML::BeginMap; // SubEntityComponet
-				out << YAML::Key << "OwnerID" << YAML::Value << childComponent->GetOwnerID();
+			PF_CORE_ASSERT(registry.any_of< ChildComponent>(entityID), "Does not contian Child Component");
 
-				out << YAML::Key << "Children";
-				out << YAML::Flow;
-				out << YAML::BeginSeq;
-				for (EntityID simpleEnitty : childComponent->m_Children) {
-					out << simpleEnitty;
-				}
-				out << YAML::EndSeq;
+			ChildComponent& childComponent = registry.get<ChildComponent>(entityID);
+			out << YAML::Key << "ChildComponent";
+			out << YAML::BeginMap; //child
+			out << YAML::Key << "OwnerID" << YAML::Value << childComponent.GetOwnerID();
 
-				out << YAML::EndMap; // Mesh component
+			out << YAML::Key << "Children";
+			out << YAML::Flow;
+			out << YAML::BeginSeq;
+			for (EntityID simpleEnitty : childComponent.m_Children)
+			{
+				out << simpleEnitty;
 			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap; // child component
 		}
 		{
 			if (registry.any_of<MeshComponent>(entityID)) {
@@ -382,7 +382,7 @@ namespace Proof
 		return true;
 	}
 
-	void SceneSerializer::DeSerilizeEntity(YAML::Node& entities, World* world, std::set<AssetID>* assetLoad)
+	void SceneSerializer::DeSerilizeEntity(YAML::Node& entities, World* world, std::set<AssetID>* assetLoad, bool prefab)
 	{
 		for (auto entity : entities)
 		{
@@ -644,6 +644,8 @@ namespace Proof
 							continue;
 
 						scp.ScriptsNames.insert(scriptName);
+						if (prefab)
+							continue;
 						Count<ScriptClass> scriptClass = ScriptEngine::GetScriptClass(scriptName);
 						const auto& fields = scriptClass->GetFields();
 						auto& entityFields = ScriptEngine::GetScriptFieldMap(NewEntity);
