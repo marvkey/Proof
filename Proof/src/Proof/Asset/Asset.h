@@ -14,7 +14,8 @@ namespace Proof
 		TextureSourceFile,
 		Font,
 		FontSource,
-		Prefab
+		Prefab,
+		UIPanel
 	};
 	enum class AssetState {
 		None = 0,

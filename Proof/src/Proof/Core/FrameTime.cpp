@@ -1,5 +1,7 @@
 #include "Proofprch.h"
 #include "FrameTime.h"
+
+#include "Application.h"
 #include <GLFW/glfw3.h>
 
 namespace Proof {

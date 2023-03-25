@@ -3,7 +3,7 @@
 #include "Application.h"
 namespace Proof
 {
-    class Proof_API FrameTime {
+    class FrameTime {
     public:
         FrameTime(float time = 0.0f)
             :DeltaTime(time) {}

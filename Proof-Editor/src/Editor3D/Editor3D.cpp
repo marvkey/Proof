@@ -36,6 +36,8 @@
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Renderer/Font.h"
 #include "Proof/Scene/Prefab.h"
+
+#include "MainWindow/GuiPanel.h"
 namespace Proof
 {
 	static bool SaveSceneDialouge = false;
@@ -252,7 +254,8 @@ namespace Proof
 		//ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
 		SceneSerializer scerelizer(m_ActiveWorld.Get());
 		
-
+		Count<Panel> panel = Count<GuiPanel>::Create();
+		m_AllPanels.insert({ UUID(),panel});
 
 		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
 		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_ActiveWorld, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
