@@ -25,10 +25,12 @@ namespace Proof
 	{
 		None = 0,
 		Float, Double,
-		Bool, Char, Byte, Short, Int, Long,Enum,
-		UByte, UShort, UInt, ULong,
+		Bool, Char, 
+		Int8_t, Int16_t, Int32_t, Int64_t,Enum,
+		Uint8_t,Uint16_t, Uint32_t, Uint64_t,
 		Vector2, Vector3, Vector4,
-		Entity
+		Entity,
+		Prefab
 	};
 	struct ScriptField {
 		ScriptFieldType Type;
@@ -221,12 +223,12 @@ namespace Proof
 		static void CreateScriptFieldMap(Entity entity);
 		static std::string MonoToString(MonoString* monoString);
 		static MonoString* StringToMono(const std::string& data);
+		static MonoObject* InstantiateClass(MonoClass* monoClass);
 
 		static MonoObject* GetMonoManagedObject(UUID ID, const std::string& fullName);
 	private:
 		static void LoadAssembly(const std::filesystem::path& filepath);
 		static void LoadAppAssembly(const std::filesystem::path& filepath);
-		static MonoObject* InstantiateClass(MonoClass* monoClass);
 		static void InitMono();
 		static void LoadAssemblyClasses();
 		friend class ScriptClass;
@@ -245,18 +247,19 @@ namespace Proof
 				case ScriptFieldType::Double:  return "Double";
 				case ScriptFieldType::Bool:    return "Bool";
 				case ScriptFieldType::Char:    return "Char";
-				case ScriptFieldType::Byte:    return "Byte";
-				case ScriptFieldType::Short:   return "Short";
-				case ScriptFieldType::Int:     return "Int";
-				case ScriptFieldType::Long:    return "Long";
-				case ScriptFieldType::UByte:   return "UByte";
-				case ScriptFieldType::UShort:  return "UShort";
-				case ScriptFieldType::UInt:    return "UInt";
-				case ScriptFieldType::ULong:   return "ULong";
+				case ScriptFieldType::Int8_t:    return "Byte";
+				case ScriptFieldType::Int16_t:   return "Short";
+				case ScriptFieldType::Int32_t:     return "Int";
+				case ScriptFieldType::Int64_t:    return "Long";
+				case ScriptFieldType::Uint8_t:   return "UByte";
+				case ScriptFieldType::Uint16_t:  return "UShort";
+				case ScriptFieldType::Uint32_t:    return "UInt";
+				case ScriptFieldType::Uint64_t:   return "ULong";
 				case ScriptFieldType::Vector2: return "Vector2";
 				case ScriptFieldType::Vector3: return "Vector3";
 				case ScriptFieldType::Vector4: return "Vector4";
 				case ScriptFieldType::Entity:  return "Entity";
+				case ScriptFieldType::Prefab:  return "Prefab";
 			}
 			PF_CORE_ASSERT(false, "Unknown ScriptFieldType");
 			return "None";
@@ -269,18 +272,19 @@ namespace Proof
 			if (fieldType == "Double")  return ScriptFieldType::Double;
 			if (fieldType == "Bool")    return ScriptFieldType::Bool;
 			if (fieldType == "Char")    return ScriptFieldType::Char;
-			if (fieldType == "Byte")    return ScriptFieldType::Byte;
-			if (fieldType == "Short")   return ScriptFieldType::Short;
-			if (fieldType == "Int")     return ScriptFieldType::Int;
-			if (fieldType == "Long")    return ScriptFieldType::Long;
-			if (fieldType == "UByte")   return ScriptFieldType::UByte;
-			if (fieldType == "UShort")  return ScriptFieldType::UShort;
-			if (fieldType == "UInt")    return ScriptFieldType::UInt;
-			if (fieldType == "ULong")   return ScriptFieldType::ULong;
+			if (fieldType == "Byte")    return ScriptFieldType::Int8_t;
+			if (fieldType == "Short")   return ScriptFieldType::Int16_t;
+			if (fieldType == "Int")     return ScriptFieldType::Int32_t;
+			if (fieldType == "Long")    return ScriptFieldType::Int64_t;
+			if (fieldType == "UByte")   return ScriptFieldType::Uint8_t;
+			if (fieldType == "UShort")  return ScriptFieldType::Uint16_t;
+			if (fieldType == "UInt")    return ScriptFieldType::Uint32_t;
+			if (fieldType == "ULong")   return ScriptFieldType::Uint64_t;
 			if (fieldType == "Vector2") return ScriptFieldType::Vector2;
 			if (fieldType == "Vector3") return ScriptFieldType::Vector3;
 			if (fieldType == "Vector4") return ScriptFieldType::Vector4;
 			if (fieldType == "Entity")  return ScriptFieldType::Entity;
+			if (fieldType == "Prefab")  return ScriptFieldType::Prefab;
 
 			PF_CORE_ASSERT(false, "Unknown ScriptFieldType");
 			return ScriptFieldType::None;

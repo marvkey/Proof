@@ -26,6 +26,7 @@
 #include "Proof/Renderer/Renderer.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+#include "Proof/Scene/Prefab.h"
 //include those before stdlig.h
 
 #include "misc/cpp/imgui_stdlib.h"
@@ -33,7 +34,7 @@ namespace Proof
 {
 	#define SET_FEILD_DEFAULT(FieldType, Type)           \
 			case ScriptFieldType::FieldType:          \
-				scriptInstance.SetValue<float>(entityClass->GetFieldDefaultValue<float>(fieldName));  \
+				scriptInstance.SetValue<Type>(entityClass->GetFieldDefaultValue<Type>(fieldName));  \
 				break
 	
 	#define SET_FIELD_NUMERICAL_VALUE(FieldType, Type, name, ImguiDataType)           \
@@ -237,10 +238,10 @@ namespace Proof
 			ImGui::EndPopup();
 		}
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
-			//m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
+			m_EditorOwner->m_EditorCamera.m_Positon = ProofToglmVec( m_CurrentWorld->GetWorldLocation(m_SelectedEntity));
 		}
 		if (m_SelectedEntity && ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::F)) {
-			//m_CurrentWorld->m_EditorCamera.m_Positon = m_SelectedEntity.GetComponent<TransformComponent>()->Location;
+			m_EditorOwner->m_EditorCamera.m_Positon = ProofToglmVec(m_CurrentWorld->GetWorldLocation(m_SelectedEntity));
 		}
 
 		if (opened) {
@@ -720,19 +721,26 @@ namespace Proof
 							SET_FEILD_DEFAULT(Double, double);
 							SET_FEILD_DEFAULT(Bool, bool);
 							SET_FEILD_DEFAULT(Char, char);
-							SET_FEILD_DEFAULT(Byte, int8_t);
-							SET_FEILD_DEFAULT(Short, int16_t);
-							SET_FEILD_DEFAULT(Int, int32_t);
-							SET_FEILD_DEFAULT(Long, int64_t);
-							SET_FEILD_DEFAULT(UByte, uint8_t);
-							SET_FEILD_DEFAULT(UShort, uint16_t);
-							SET_FEILD_DEFAULT(UInt, uint32_t);
-							SET_FEILD_DEFAULT(ULong, uint64_t);
+							SET_FEILD_DEFAULT(Int8_t, int8_t);
+							SET_FEILD_DEFAULT(Int16_t, int16_t);
+							SET_FEILD_DEFAULT(Int32_t, int32_t);
+							SET_FEILD_DEFAULT(Int64_t, int64_t);
+							SET_FEILD_DEFAULT(Uint8_t, uint8_t);
+							SET_FEILD_DEFAULT(Uint16_t, uint16_t);
+							SET_FEILD_DEFAULT(Uint32_t, uint32_t);
+							SET_FEILD_DEFAULT(Uint64_t, uint64_t);
 							SET_FEILD_DEFAULT(Vector2, Vector2);
 							SET_FEILD_DEFAULT(Vector3, Vector);
 							SET_FEILD_DEFAULT(Vector4, Vector4);
-							SET_FEILD_DEFAULT(Entity, UUID);
+
+							// these typs are clses so its weird getting ther data
+							case ScriptFieldType::Entity:
+							case ScriptFieldType::Prefab:
+								scriptInstance.SetValue<uint64_t>(0);
+								break;
+
 							default:
+								PF_CORE_ASSERT(false);
 								break;
 						}
 					}
@@ -744,17 +752,75 @@ namespace Proof
 							SET_FIELD_NUMERICAL_VALUE(Float, float, fieldName, ImGuiDataType_Float);
 							SET_FIELD_NUMERICAL_VALUE(Double, double, fieldName, ImGuiDataType_Double);
 
-							SET_FIELD_NUMERICAL_VALUE(Byte, int8_t, fieldName, ImGuiDataType_S8);
-							SET_FIELD_NUMERICAL_VALUE(Short, int16_t, fieldName, ImGuiDataType_S16);
-							SET_FIELD_NUMERICAL_VALUE(Int, int32_t, fieldName, ImGuiDataType_S32);
-							SET_FIELD_NUMERICAL_VALUE(Long, int64_t, fieldName, ImGuiDataType_S64);
+							SET_FIELD_NUMERICAL_VALUE(Int8_t, int8_t, fieldName, ImGuiDataType_S8);
+							SET_FIELD_NUMERICAL_VALUE(Int16_t, int16_t, fieldName, ImGuiDataType_S16);
+							SET_FIELD_NUMERICAL_VALUE(Int32_t, int32_t, fieldName, ImGuiDataType_S32);
+							SET_FIELD_NUMERICAL_VALUE(Int64_t, int64_t, fieldName, ImGuiDataType_S64);
 
-							SET_FIELD_NUMERICAL_VALUE(UByte, uint8_t, fieldName, ImGuiDataType_S8);
-							SET_FIELD_NUMERICAL_VALUE(UShort, uint16_t, fieldName, ImGuiDataType_U16);
-							SET_FIELD_NUMERICAL_VALUE(UInt, uint32_t, fieldName, ImGuiDataType_U32);
-							SET_FIELD_NUMERICAL_VALUE(ULong, uint64_t, fieldName, ImGuiDataType_U64);
+							SET_FIELD_NUMERICAL_VALUE(Uint8_t, uint8_t, fieldName, ImGuiDataType_S8);
+							SET_FIELD_NUMERICAL_VALUE(Uint16_t, uint16_t, fieldName, ImGuiDataType_U16);
+							SET_FIELD_NUMERICAL_VALUE(Uint32_t, uint32_t, fieldName, ImGuiDataType_U32);
+							SET_FIELD_NUMERICAL_VALUE(Uint64_t, uint64_t, fieldName, ImGuiDataType_U64);
 
+							case ScriptFieldType::Bool:
+								{
+									bool var = scriptField.GetValue<bool>();
+									ExternalAPI::ImGUIAPI::CheckBox(fieldName, &var);
+									scriptField.SetValue<bool>(var);
+									break;
+								}
+							case ScriptFieldType::Prefab:
+								{
+									if (AssetManager::HasAsset(scriptField.GetValue<uint64_t>()))
+									{
+										auto assetInfo =AssetManager::GetAssetInfo(scriptField.GetValue<uint64_t>());
+										ExternalAPI::ImGUIAPI::TextBar(field.Name, assetInfo.GetName());
+
+									}
+									else
+									{
+										scriptField.SetValue<uint64_t>(0);
+
+										ExternalAPI::ImGUIAPI::TextBar(field.Name, "null (Prefab)");
+									}
+									if (ImGui::BeginDragDropTarget())
+									{
+										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
+										{
+											UUID prefabId = *(UUID*)payload->Data;
+											if (AssetManager::HasAsset(prefabId))
+												scriptField.SetValue<uint64_t>(prefabId);
+										}
+										ImGui::EndDragDropTarget();
+									}
+									break;
+								}
+							case ScriptFieldType::Entity:
+								{
+									if (m_CurrentWorld->HasEntity(scriptField.GetValue<uint64_t>()))
+									{
+										Entity ent = m_CurrentWorld->GetEntity(scriptField.GetValue<uint64_t>());
+										ExternalAPI::ImGUIAPI::TextBar(field.Name, ent.GetName());
+										scriptField.SetValue<uint64_t>(ent.GetEntityID().Get());
+									}
+									else
+									{
+										scriptField.SetValue<uint64_t>(0);
+										ExternalAPI::ImGUIAPI::TextBar(field.Name, "null (Entity)");
+									}
+									if (ImGui::BeginDragDropTarget())
+									{
+										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
+										{
+											Entity ent = *(Entity*)payload->Data;
+											scriptField.SetValue<uint64_t>(ent.GetEntityID());
+										}
+										ImGui::EndDragDropTarget();
+									}
+									break;
+								}
 							default:
+								PF_CORE_ASSERT(false);
 								break;
 						}
 					}
@@ -785,15 +851,67 @@ namespace Proof
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Float, float, name, ImGuiDataType_Float);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Double, double, name, ImGuiDataType_Double);
 								
-							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Byte, int8_t, name, ImGuiDataType_S8);
-							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Short, int16_t, name, ImGuiDataType_S16);
-							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Int, int32_t, name, ImGuiDataType_S32);
-							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Long, int64_t, name, ImGuiDataType_S64);
+							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Int8_t, int8_t, name, ImGuiDataType_S8);
+							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Int16_t, int16_t, name, ImGuiDataType_S16);
+							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Int32_t, int32_t, name, ImGuiDataType_S32);
+							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Int64_t, int64_t, name, ImGuiDataType_S64);
 								
-							SET_FIELD_NUMERICAL_VALUE_RUNTIME(UByte, uint8_t, name, ImGuiDataType_S8);
-							SET_FIELD_NUMERICAL_VALUE_RUNTIME(UShort, uint16_t, name, ImGuiDataType_U16);
-							SET_FIELD_NUMERICAL_VALUE_RUNTIME(UInt, uint32_t, name, ImGuiDataType_U32);
-							SET_FIELD_NUMERICAL_VALUE_RUNTIME(ULong, uint64_t, name, ImGuiDataType_U64);
+							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint8_t, uint8_t, name, ImGuiDataType_S8);
+							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint16_t, uint16_t, name, ImGuiDataType_U16);
+							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint32_t, uint32_t, name, ImGuiDataType_U32);
+							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint64_t, uint64_t, name, ImGuiDataType_U64);
+
+							case ScriptFieldType::Prefab:
+								{
+									if (AssetManager::HasAsset(instance->GetFieldValue<uint64_t>(name)))
+									{
+										auto assetInfo = AssetManager::GetAssetInfo(instance->GetFieldValue<uint64_t>(name));
+										ExternalAPI::ImGUIAPI::TextBar(field.Name, assetInfo.GetName());
+
+									}
+									else
+									{
+										instance->SetFieldValue<uint64_t>(name,0);
+
+										ExternalAPI::ImGUIAPI::TextBar(field.Name, "null (Prefab)");
+									}
+									if (ImGui::BeginDragDropTarget())
+									{
+										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
+										{
+											UUID prefabId = *(UUID*)payload->Data;
+											if (AssetManager::HasAsset(prefabId))
+												instance->SetFieldValue<uint64_t>(name, prefabId);
+										}
+										ImGui::EndDragDropTarget();
+									}
+									break;
+								}
+							case ScriptFieldType::Entity:
+								{
+									if (m_CurrentWorld->HasEntity(instance->GetFieldValue<uint64_t>(name)))
+									{
+										Entity ent = m_CurrentWorld->GetEntity(instance->GetFieldValue<uint64_t>(name));
+										ExternalAPI::ImGUIAPI::TextBar(field.Name, ent.GetName());
+
+									}
+									else
+									{
+										instance->SetFieldValue<uint64_t>(name,0);
+										ExternalAPI::ImGUIAPI::TextBar(field.Name, "null (Entity)");
+									}
+									if (ImGui::BeginDragDropTarget())
+									{
+
+										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
+										{
+											UUID entityID = *(UUID*)payload->Data;
+											instance->SetFieldValue<uint64_t>(name, entityID);
+										}
+										ImGui::EndDragDropTarget();
+									}
+									break;
+								}
 							default:
 								break;
 						}
@@ -807,7 +925,7 @@ namespace Proof
 			ImGui::InputTextMultiline("ither", &textComponent.Text);
 			ImGui::ColorEdit4("##Colour", glm::value_ptr(textComponent.Colour));
 
-			ImGui::DragFloat("Kerningfdadsfsafa", &textComponent.Kerning,0.025);
+			ImGui::DragFloat("Kernng", &textComponent.Kerning,0.025);
 			ImGui::DragFloat("Line Spacing", &textComponent.LineSpacing, 0.025);
 		});
 	}

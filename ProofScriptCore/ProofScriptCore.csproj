@@ -21,7 +21,8 @@
     <OutputPath>..\Proof-Editor\Resources\Scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -33,7 +34,8 @@
     <OutputPath>..\Proof-Editor\Resources\Scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -45,7 +47,8 @@
     <OutputPath>..\Proof-Editor\Resources\Scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -61,9 +64,11 @@
     <Compile Include="src\Proof\Input\KeyCodes.cs" />
     <Compile Include="src\Proof\InternalCalls.cs" />
     <Compile Include="src\Proof\Math\Random.cs" />
+    <Compile Include="src\Proof\Math\Transform.cs" />
     <Compile Include="src\Proof\Math\Vector.cs" />
     <Compile Include="src\Proof\Scene\Component.cs" />
     <Compile Include="src\Proof\Scene\Entity.cs" />
+    <Compile Include="src\Proof\Scene\Prefab.cs" />
     <Compile Include="src\Proof\Scene\World.cs" />
   </ItemGroup>
   <ItemGroup>

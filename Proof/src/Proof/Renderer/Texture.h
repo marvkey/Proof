@@ -65,7 +65,7 @@ namespace Proof {
 		STENCIL8UI,
 		#pragma endregion 
 
-		#pragma region Byte
+		#pragma region Int8_t
 		R8SNORM,
 		RG8SNORM,
 		RGB8SNORM,

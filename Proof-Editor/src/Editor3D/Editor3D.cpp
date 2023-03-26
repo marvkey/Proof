@@ -254,8 +254,8 @@ namespace Proof
 		//ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
 		SceneSerializer scerelizer(m_ActiveWorld.Get());
 		
-		Count<Panel> panel = Count<GuiPanel>::Create();
-		m_AllPanels.insert({ UUID(),panel});
+		//Count<Panel> panel = Count<GuiPanel>::Create();
+		//m_AllPanels.insert({ UUID(),panel});
 
 		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
 		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_ActiveWorld, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
@@ -1003,7 +1003,7 @@ namespace Proof
 					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabId);
 					std::string name = AssetManager::GetAssetInfo(prefabId).GetName();
 
-					Entity newentt = m_ActiveWorld->CreateEntity(name, prefab, Vector{ 0,0,0 });
+					Entity newentt = m_ActiveWorld->CreateEntity(name, prefab, TransformComponent());
 					m_WorldHierachy.m_SelectedEntity = newentt;
 				}
 				ImGui::EndDragDropTarget();

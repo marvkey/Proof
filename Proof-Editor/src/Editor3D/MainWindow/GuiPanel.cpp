@@ -7,7 +7,8 @@
 namespace Proof
 {
 	GuiPanel::GuiPanel()
-		:m_Camera(10, 12, 45, 0.1, 2000, { 0,0,10 })
+		:
+		m_Camera(45)
 	{
 		m_UIPanel = Count<UIPanel>::Create();
 		
@@ -35,12 +36,14 @@ namespace Proof
 		ImGui::Begin("GUI Panel", &m_ShowWindow);
 		if (ImGui::IsWindowFocused())
 		{
-			Application::Get()->GetWindow()->SetWindowInputEvent(false);
-			m_Camera.OnUpdate(deltaTime, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+			Application::Get()->GetWindow()->SetWindowInputEvent(true);
+			m_Camera.SetViewportSize(ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+			m_Camera.OnUpdate(deltaTime);
 			Application::Get()->GetWindow()->SetWindowInputEvent(false);
 		}
 
-		const void* Text = UiRenderer::DrawUI(m_UIPanel, m_Camera.m_Positon, m_Camera.m_Projection,m_Camera.m_View, ImGui::GetWindowWidth(), ImGui::GetWindowHeight()).SourceImage;
+		const void* Text = UiRenderer::DrawUI(m_UIPanel, m_Camera.GetPosition(), m_Camera.GetViewProjection(), glm::mat4(1.0f),
+				ImGui::GetWindowWidth(), ImGui::GetWindowHeight()).SourceImage;
 
 		ImGui::Image((ImTextureID)Text, ImVec2{ ImGui::GetWindowWidth(),ImGui::GetWindowHeight() }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 

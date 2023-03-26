@@ -26,19 +26,22 @@ namespace Proof
         { "System.Double", ScriptFieldType::Double },
         { "System.Boolean", ScriptFieldType::Bool },
         { "System.Char", ScriptFieldType::Char },
-        { "System.Int16", ScriptFieldType::Short },
-        { "System.Int32", ScriptFieldType::Int },
-        { "System.Int64", ScriptFieldType::Long },
-        { "System.Byte", ScriptFieldType::Byte },
-        { "System.UInt16", ScriptFieldType::UShort },
-        { "System.UInt32", ScriptFieldType::UInt },
-        { "System.UInt64", ScriptFieldType::ULong },
+        { "System.SByte", ScriptFieldType::Int8_t },
+        { "System.Int16", ScriptFieldType::Int16_t },
+        { "System.Int32", ScriptFieldType::Int32_t },
+        { "System.Int64", ScriptFieldType::Int64_t },
+
+        { "System.Byte", ScriptFieldType::Uint8_t },
+        { "System.UInt16", ScriptFieldType::Uint16_t },
+        { "System.UInt32", ScriptFieldType::Uint32_t },
+        { "System.UInt64", ScriptFieldType::Uint64_t },
 
         { "Proof.Vector2", ScriptFieldType::Vector2 },
         { "Proof.Vector3", ScriptFieldType::Vector3 },
         { "Proof.Vector4", ScriptFieldType::Vector4 },
 
         { "Proof.Entity", ScriptFieldType::Entity },
+        { "Proof.Prefab", ScriptFieldType::Prefab },
     };
    
     bool CheckMonoError(MonoError& error) {
@@ -290,7 +293,8 @@ namespace Proof
             return false;
 
         const ScriptField& field = it->second;
-        mono_field_set_value(m_Instance, field.ClassField, (void*)value);
+        mono_field_set_value(m_Instance, field.ClassField,(void*) value);
+
         return true;
     }
     void ScriptEngine::Init() {
@@ -528,7 +532,40 @@ namespace Proof
                     for (const auto& [scriptName, scriptData] : fieldMap)
                     {
                         for (const auto& [fieldName, fieldData] : scriptData)
+                        {
+                            if (fieldData.Field.Type == ScriptFieldType::Prefab)
+                            {
+                                uint64_t id = *(uint64_t*)fieldData.m_Buffer;
+                                if (id == 0)
+                                    continue;
+                                void* param = &id;
+                                Count<ScriptClass> prefab = Count<ScriptClass>::Create("Proof", "Prefab", true);
+                                MonoObject* prefabinstnace = prefab->Instantiate();
+                                MonoMethod* constructo = prefab->GetMethod(".ctor", 1);
+                                prefab->CallMethod(prefabinstnace, constructo, &param);
+
+                                // this is how we do it 
+                                mono_field_set_value(instance->GetMonoObject(), fieldData.Field.ClassField, prefabinstnace);
+                                continue;
+                            }
+
+                            if (fieldData.Field.Type == ScriptFieldType::Entity)
+                            {
+                                uint64_t id = *(uint64_t*)fieldData.m_Buffer;
+                                if (id == 0)
+                                    continue;
+
+                                void* param = &id;
+                                MonoObject* entityInstnace = s_Data->EntityClass->Instantiate();
+                                MonoMethod* constructo = s_Data->EntityClass->GetMethod(".ctor", 1);
+                                s_Data->EntityClass->CallMethod(entityInstnace, constructo, &param);
+
+                                // this is how we do it 
+                                mono_field_set_value(instance->GetMonoObject(), fieldData.Field.ClassField, &entityInstnace);
+                                continue;
+                            }
                             instance->SetFieldValueInternal(fieldName, fieldData.m_Buffer);
+                        }
                     }
                 }
 

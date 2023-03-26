@@ -312,3 +312,27 @@ World:
         Type: Static
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
+    - Entity: 6350634750770785597
+      TagComponent:
+        Tag: Game Manager
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: Game.GameManager
+            ScriptFields:
+              - Name: Player
+                Type: Entity
+                Data: 9019730813530534380
+              - Name: Obstacle
+                Type: Prefab
+                Data: 1577826132282995918
+              - Name: Plane
+                Type: Prefab
+                Data: 0

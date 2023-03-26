@@ -5,6 +5,7 @@
 #include "mono/metadata/reflection.h"
 #include "ScriptEngine.h"
 #include "Proof/Scene/Physics/PhysicsWorld.h"
+#include "Proof/Scene/Prefab.h"
 //(IMPORTANT)
 /*
 *WHEN PASSING A MONO TYPE MAKE SURE ITS A SRUCT BECAUSE WHEN ITS A CLASS IT GETS SOME UNDEFNIED BEHAVIOR
@@ -60,7 +61,25 @@ namespace Proof
 		return Input::IsMouseButtonDoubleClicked((MouseButton)mouseCode);
 	}
 #pragma endregion 
+	#pragma region World
 
+	//retutnrs entity ID
+	static uint64_t  World_Instanciate(uint64_t prefabID, TransformComponent transform)
+	{
+		if (!AssetManager::HasAsset(prefabID))
+		{
+			PF_EC_ERROR("World.Instanciate - pregabID is invalid {}",prefabID);
+			return 0;
+		}
+
+		World* world = ScriptEngine::GetWorldContext();
+		AssetInfo info = AssetManager::GetAssetInfo(prefabID);
+		Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabID);
+		Entity entity = world->CreateEntity(info.GetName(), prefab, transform);
+
+		return entity.GetEntityID().Get();
+	}
+	#pragma endregion
 #pragma region Entity
 	static bool Entity_HasComponent(uint64_t entityID, MonoReflectionType* componentType) {
 		World* world = ScriptEngine::GetWorldContext();
@@ -129,8 +148,8 @@ namespace Proof
 		}
 		#endif
 
-
-		entity.GetComponent<TagComponent>()->Tag  = ScriptEngine::MonoToString( *tag);
+		std::string newTag = ScriptEngine::MonoToString(*tag);
+		entity.GetComponent<TagComponent>()->Tag  = newTag;
 	}
 #pragma endregion 
 #pragma region TransformComponent
@@ -297,6 +316,10 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(Input_IsMouseButtonPressed);
 			PF_ADD_INTERNAL_CALL(Input_IsMouseButtonReleased);
 			PF_ADD_INTERNAL_CALL(Input_IsMouseButtonDoubleClicked);
+		}
+		//World
+		{
+			PF_ADD_INTERNAL_CALL(World_Instanciate);
 		}
 		//Entity 
 		{

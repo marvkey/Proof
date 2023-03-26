@@ -320,7 +320,7 @@ namespace Proof
 					break;
 					#pragma endregion 
 
-					#pragma region Byte
+					#pragma region Int8_t
 
 				case Proof::ImageFormat::R8SNORM:
 					return VK_FORMAT_R8_SNORM;

@@ -53,7 +53,7 @@ namespace Proof
 			}
 			set
 			{
-                GetComponent<TagComponent>().Tag = Name;
+                InternalCalls.TagComponent_SetTag(ID, ref value);
             }
         }
 	}

@@ -27,6 +27,8 @@ namespace Proof {
 		static bool IsKeyPressedEditor(KeyBoardKey Key);
 		static bool IsKeyClickedEditor(KeyBoardKey Key);
 		bool m_ViewPortFocused = false;
+		EditorCamera m_EditorCamera = { 200,200 };
+
 	private:
 		struct KeyBoardShowEvent {
 			bool ShowAll = false;
@@ -73,7 +75,6 @@ namespace Proof {
 			bool Joystick = false;
 			bool Trigger = false;
 		};
-		EditorCamera m_EditorCamera = { 200,200 };
 
 		KeyBoardShowEvent m_ShowAllKeyBoardEvents;
 		MouseShowEvent m_ShowAllMouseEvents;

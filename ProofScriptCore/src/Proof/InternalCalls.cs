@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProofScriptCore.src.Proof.Math;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Proof
@@ -37,10 +38,17 @@ namespace Proof
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Input_IsMouseButtonDoubleClicked(int mouseCode);
-		#endregion
+        #endregion
 
-		#region Entity
-		[System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        #region World
+
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+		//returns entity ID
+        internal extern static ulong World_Instanciate(ulong prefabID, Transform transform);
+        #endregion
+
+        #region Entity
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]

@@ -65,7 +65,7 @@ namespace Proof {
 		void OnUpdateEditor(FrameTime DeltaTime);
 		void OnSimulatePhysics(FrameTime DeltaTime);
 
-		Entity CreateEntity(const std::string& name, Count<class Prefab> prefab, Vector location);
+		Entity CreateEntity(const std::string& name, Count<class Prefab> prefab, TransformComponent transform);
 		class Entity CreateEntity(const std::string& EntName = "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName, EntityID ID);
 		class Entity CreateEntity(Entity entity, bool includeChildren = true);

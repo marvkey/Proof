@@ -16,6 +16,8 @@ namespace Game
 
         public float FowardForce = 200f;
         public float SideWayForce = 500f;
+
+        
         void OnCreate()
         {
             m_Transform = GetComponent<TransformComponent>();
@@ -37,9 +39,6 @@ namespace Game
                 m_RigidBody.AddForce(new Vector(SideWayForce * ts, 0, 0), ForceMode.VelocityChange);
 
         }
-
-        void OnCollisionEnter(Entity other)
-        {
-        }
+      
     }
 }

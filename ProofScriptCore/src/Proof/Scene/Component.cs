@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProofScriptCore.src.Proof.Math;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -68,7 +69,7 @@ namespace Proof
 				InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
 			}
 		}
-
+		
     }
 
 	public class TextComponent : Component

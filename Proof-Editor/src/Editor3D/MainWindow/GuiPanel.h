@@ -13,6 +13,6 @@ namespace Proof
 	private:
 		Count<class UIPanel> m_UIPanel;
 
-		EditorCamera m_Camera;
+		EditorCamera2D m_Camera;
 	};
 }

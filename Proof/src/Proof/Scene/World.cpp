@@ -247,7 +247,7 @@ namespace Proof {
 	{
 		CopyComponentSinglPrefab<Component...>(dst, dstMap, src, srcID, enttMap);
 	}
-	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, Vector location)
+	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, TransformComponent transfom)
 	{
 		Entity newEntity = CreateEntity(name);
 		
@@ -258,7 +258,7 @@ namespace Proof {
 			enttMap[prefab->GetBaseEntity()] = newEntity.GetEntityID();
 
 			CopyComponentPrefab(AllComponents{}, newEntity, m_Registry, prefab->GetRegistry(), prefab->GetBaseEntity(), enttMap);
-			newEntity.GetComponent<TransformComponent>()->Location = location;
+			*newEntity.GetComponent<TransformComponent>() = transfom;
 
 
 			newEntity.GetComponent<ChildComponent>()->m_Children = {};
@@ -270,7 +270,6 @@ namespace Proof {
 				return newEntity;
 		}
 
-		UUID newEntityID = newEntity.GetEntityID();
 		auto& prefaRegistry = prefab->GetRegistry();
 		std::function<Entity(UUID)> createEntity = [&](UUID registryEntityId)->Entity
 		{
@@ -327,7 +326,7 @@ namespace Proof {
 			createEntity(registryEntityID);
 		}
 
-		return { newEntityID,this };
+		return newEntity;
 	}
 	template<typename... Component>
 	static void CopyComponentSingleWorld(entt::registry64& dst, entt::registry64& src, const std::unordered_map<UUID, uint64_t>& enttMap)
