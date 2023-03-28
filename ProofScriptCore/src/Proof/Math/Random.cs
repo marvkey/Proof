@@ -24,6 +24,15 @@ namespace Proof
             return rand.Next(min, max);
         }
 
+        public static Vector Vector(float min, float max)
+        {
+            Vector vec ;
+            vec.X=Float(min,max);
+            vec.Y=Float(min,max);
+            vec.Z = Float(min,max);
+
+            return vec;
+        }
         public static bool Bool(){
             return Convert.ToBoolean(rand.Next(0,1));
         }

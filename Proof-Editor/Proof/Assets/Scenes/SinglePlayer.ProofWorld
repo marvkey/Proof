@@ -52,9 +52,6 @@ World:
         Scripts:
           - Script: Game.Player
             ScriptFields:
-              - Name: Movement
-                Type: Bool
-                Data: true
               - Name: FowardForce
                 Type: Float
                 Data: 1000
@@ -106,161 +103,6 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 5.05000019
-    - Entity: 10082092721294569342
-      TagComponent:
-        Tag: obstacle
-        tags: []
-      TransformComponent:
-        Location: [0, -1, 35.8032494]
-        Rotation: [0, 0, 0]
-        Scale: [3.95164466, 1, 1.04498231]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 0
-            Index: 0
-      ScriptComponent:
-        Scripts:
-          - Script: Game.Enemy
-            ScriptFields:
-              []
-      CubeColliderComponent:
-        IsTrigger: false
-        OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-    - Entity: 10316412769445700768
-      TagComponent:
-        Tag: obstacle
-        tags: []
-      TransformComponent:
-        Location: [5.5801096, -1, 42.8016853]
-        Rotation: [0, 0, 0]
-        Scale: [3.95164466, 1, 1.04498231]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 0
-            Index: 0
-      CubeColliderComponent:
-        IsTrigger: false
-        OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-    - Entity: 16646876674023566072
-      TagComponent:
-        Tag: obstacle
-        tags: []
-      TransformComponent:
-        Location: [-2.39715242, -1, 64.0204391]
-        Rotation: [0, 0, 0]
-        Scale: [3.95164466, 1, 1.04498231]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 0
-            Index: 0
-      CubeColliderComponent:
-        IsTrigger: false
-        OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-    - Entity: 16460968471095271854
-      TagComponent:
-        Tag: obstacle
-        tags: []
-      TransformComponent:
-        Location: [5.31236267, -1, 74.4531021]
-        Rotation: [0, 0, 0]
-        Scale: [3.95164466, 1, 1.04498231]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 0
-            Index: 0
-      CubeColliderComponent:
-        IsTrigger: false
-        OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-    - Entity: 4782896935549349338
-      TagComponent:
-        Tag: obstacle
-        tags: []
-      TransformComponent:
-        Location: [-5.19300365, -1, 86.8037033]
-        Rotation: [0, 0, 0]
-        Scale: [3.95164466, 1, 1.04498231]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 0
-            Index: 0
-      CubeColliderComponent:
-        IsTrigger: false
-        OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
     - Entity: 10239675716060485003
       TagComponent:
         Tag: Score
@@ -282,36 +124,6 @@ World:
         Kerning: 0
         LineSpacing: 1
         Text: 0
-    - Entity: 187520468470264026
-      TagComponent:
-        Tag: obstacle
-        tags: []
-      TransformComponent:
-        Location: [-7.69999981, 0, 23.7999992]
-        Rotation: [0, 0, 0]
-        Scale: [3.95164466, 1, 1.04498231]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 0
-            Index: 0
-      CubeColliderComponent:
-        IsTrigger: false
-        OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
     - Entity: 6350634750770785597
       TagComponent:
         Tag: Game Manager
@@ -327,12 +139,21 @@ World:
         Scripts:
           - Script: Game.GameManager
             ScriptFields:
+              - Name: spawnWaitTime
+                Type: Float
+                Data: 4000
               - Name: Player
                 Type: Entity
                 Data: 9019730813530534380
               - Name: Obstacle
                 Type: Prefab
-                Data: 1577826132282995918
+                Data: 17662049752082377387
               - Name: Plane
                 Type: Prefab
                 Data: 0
+              - Name: IncreasePlayerSpeed
+                Type: Float
+                Data: 50
+              - Name: SpawnDistance
+                Type: Float
+                Data: 25

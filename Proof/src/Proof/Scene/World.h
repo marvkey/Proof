@@ -78,6 +78,7 @@ namespace Proof {
 		Vector GetWorldLocation(Entity entity) const;
 		Vector GetWorldRotation(Entity entity) const;
 		Vector GetWorldScale(Entity entity) const;
+		TransformComponent GetWorldTransformComponent(Entity entity) const;
 		glm::mat4 GetWorldTransform(Entity entity) const;
 
 		WorldState GetState() {
@@ -130,6 +131,9 @@ namespace Proof {
 		// for debugging
 		void OnMeshColliderComponentCreate(MeshColliderComponent& component);
 		void OnMeshColliderComponentDelete(MeshColliderComponent& component);
+
+		void OnRigidBodyComponentCreate(entt::registry64& component, uint64_t entityID);
+		void OnScriptAdded(entt::registry64& component,uint64_t entityID);
 
 		void OnChildComponentDestroy(ChildComponent& childComponent	);
 		std::vector< EntityID> m_EntityDeleteQueue;

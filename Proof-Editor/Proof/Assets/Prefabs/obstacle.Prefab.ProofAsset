@@ -1,15 +1,15 @@
 AssetType: Prefab
-ID: 1577826132282995918
-EntityOwner: 16460968471095271854
+ID: 17662049752082377387
+EntityOwner: 4356811072826522224
 Entities:
-  - Entity: 16460968471095271854
+  - Entity: 4356811072826522224
     TagComponent:
       Tag: obstacle
       tags: []
     TransformComponent:
       Location: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [3.95164466, 1, 1.04498231]
+      Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
       Children: []
@@ -19,6 +19,11 @@ Entities:
         - Material: ""
           AssetID: 0
           Index: 0
+    ScriptComponent:
+      Scripts:
+        - Script: Game.Enemy
+          ScriptFields:
+            []
     CubeColliderComponent:
       IsTrigger: false
       OffsetLocation: [0, 0, 0]

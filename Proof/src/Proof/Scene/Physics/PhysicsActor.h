@@ -17,10 +17,10 @@ namespace Proof{
 		void SyncTransform();
 		void OnFixedUpdate(float deltaTime);
 
-
 		void OnCollisonEnter(const PhysicsActor* actor);
 
-
+		void ClearForce(ForceMode mode = ForceMode::Force);
+		void ClearTorque(ForceMode mode = ForceMode::Force);
 		// actor enters a trigger box, current actor gets told actor has overlappe
 		void OnTriggerEnter(const PhysicsActor* actor);
 

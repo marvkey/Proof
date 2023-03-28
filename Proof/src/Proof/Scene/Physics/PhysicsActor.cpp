@@ -8,6 +8,8 @@
 
 #include "Proof/Scripting/ScriptEngine.h"
 namespace Proof {
+
+	
 	physx::PxMaterial* defauultMaterial;
 	namespace Utils {
 		static physx::PxMat44 glmMat4ToPhysxMat4(const glm::mat4& mat4) {
@@ -35,6 +37,26 @@ namespace Proof {
 
 
 			return newMat;
+		}
+
+		static physx::PxForceMode::Enum ToPhysxForce(ForceMode mode) {
+			switch (mode)
+			{
+				case Proof::ForceMode::Force:
+					return physx::PxForceMode::eFORCE;
+					break;
+				case Proof::ForceMode::Impule:
+					return physx::PxForceMode::eIMPULSE;
+					break;
+				case Proof::ForceMode::VelocityChange:
+					return physx::PxForceMode::eVELOCITY_CHANGE;
+					break;
+				case Proof::ForceMode::Acceleration:
+					return physx::PxForceMode::eACCELERATION;
+					break;
+			}
+
+			PF_CORE_ASSERT(false, "Not Valid");
 		}
 	}
 	PhysicsActor::PhysicsActor(PhysicsWorld* physicsWorld, Entity entity)
@@ -68,13 +90,14 @@ namespace Proof {
 	{
 		if (m_RigidBodyType == RigidBodyType::Static)return;
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		rigidBody->addForce({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
+
+		rigidBody->addForce({ force.X,force.Y,force.Z }, Utils::ToPhysxForce(mode), autoWake);
 	}
 	void PhysicsActor::AddTorque(Vector force, ForceMode mode, bool autoWake)
 	{
 		if (m_RigidBodyType == RigidBodyType::Static)return;
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		rigidBody->addTorque({ force.X,force.Y,force.Z }, (physx::PxForceMode::Enum)mode, autoWake);
+		rigidBody->addTorque({ force.X,force.Y,force.Z }, Utils::ToPhysxForce(mode), autoWake);
 	}
 
 	void PhysicsActor::PutToSleep()
@@ -110,9 +133,20 @@ namespace Proof {
 		{
 			physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 
-			TransformComponent& transform = *m_Entity.GetComponent<TransformComponent>();
+			TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldTransformComponent(m_Entity);
 			physx::PxTransform newPos(PhysxUtils::VectorToPhysxVector(transform.Location), PhysxUtils::VectorToPhysxQuat(transform.Rotation));
-			rigidBody->setGlobalPose(newPos);
+			rigidBody->setGlobalPose(newPos,false);
+
+			// adjusting the new size
+			if (m_Entity.HasComponent<CubeColliderComponent>())
+			{
+				physx::PxShape* colliderShape =(physx::PxShape *) m_Entity.GetComponent<CubeColliderComponent>()->m_RuntimeBody;
+
+				const Vector colliderScalePositive = m_Entity.GetComponent<CubeColliderComponent>()->OffsetScale.GetPositive();
+
+				Vector size = m_PhysicsWorld->GetWorld()->GetWorldScale(m_Entity).GetPositive() * colliderScalePositive;
+				colliderShape->setGeometry(physx::PxBoxGeometry(PhysxUtils::VectorToPhysxVector(size)));
+			}
 		}
 	}
 
@@ -122,6 +156,20 @@ namespace Proof {
 		{
 			ScriptMeathod::OnCollisionEnter(m_Entity, actor->m_Entity);
 		}
+	}
+	void PhysicsActor::ClearForce(ForceMode mode )
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->clearForce(Utils::ToPhysxForce(mode));
+	}
+	void PhysicsActor::ClearTorque(ForceMode mode)
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->clearTorque(Utils::ToPhysxForce(mode));
 	}
 	void PhysicsActor::OnTriggerEnter(const PhysicsActor* actor)
 	{
@@ -204,7 +252,6 @@ namespace Proof {
 		Vector size = worldScalePositive * colliderScalePositive;
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxBoxGeometry(PhysxUtils::VectorToPhysxVector(size)), *colliderMaterial, true);
 		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
-
 		auto localtransform = body->getLocalPose();
 		localtransform.p += PhysxUtils::VectorToPhysxVector(cubeCollider->OffsetLocation);
 		body->setLocalPose(localtransform);

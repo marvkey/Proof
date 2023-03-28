@@ -117,7 +117,17 @@ namespace Proof
 		public void AddTorque(Vector force, ForceMode mode = ForceMode.Force, bool autoWake = true) => 
 			InternalCalls.RigidBody_AddTorque(Entity.ID, force, (int)mode, autoWake);	
 
-	}
+
+		public void ClearForce(ForceMode mode = ForceMode.Force)
+		{
+			InternalCalls.RigidBody_ClearForce(Entity.ID, (int)mode);
+		}
+
+        public void ClearTorque(ForceMode mode = ForceMode.Force)
+        {
+            InternalCalls.RigidBody_ClearTorque(Entity.ID, (int)mode);
+        }
+    }
 
 }
 

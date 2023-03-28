@@ -57,7 +57,6 @@ namespace Proof
 
 
 			Descriptors.insert({ DescriptorSets::Zero,descriptor });
-			textureCubeMap = CubeMap::Create("Assets/Arches_E_PineTree_3k.hdr",512,true);
 			
 
 			PipelineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
@@ -85,6 +84,7 @@ namespace Proof
 				{ShaderStage::Fragment,ProofCurrentDirectorySrc +
 				"Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/Irradiance.Frag"} });
 
+			textureCubeMap = CubeMap::Create("Assets/Arches_E_PineTree_3k.hdr", 512, false);
 			iradianceCubeMap = CubeMap::Create(textureCubeMap,shader, 64, false);
 			prefilterCubeMap = CubeMap::GeneratePrefiltered(textureCubeMap);
 			brdfTexture = Texture2D::GenerateBRDF();
@@ -103,7 +103,7 @@ namespace Proof
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer);
 		CameraData cmaeraData = CameraData(projection, view, location);
 		cameraBuffer = UniformBuffer::Create(&cmaeraData, sizeof(CameraData), DescriptorSets::Zero, 0);
-
+		/*
 		{
 
 			Renderer::RecordRenderPass(m_RenderPass, RenderPipline, [&](Count <RenderCommandBuffer> commandBuffer) {
@@ -120,7 +120,7 @@ namespace Proof
 			});
 
 		}
-
+		*/
 		m_Renderer3D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
 		m_Renderer3D->SetPbrMaps(iradianceCubeMap, prefilterCubeMap, brdfTexture);
 		// MESHES
@@ -148,6 +148,7 @@ namespace Proof
 			});
 		}
 		m_Renderer3D->EndContext();
+
 		m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
 		{
 			glm::mat4 identity =
@@ -171,8 +172,7 @@ namespace Proof
 			
 		}
 		m_Renderer2D->EndContext();
-		/*
-		m_DebugMeshRenderer->BeginContext(camera.m_Projection, camera.m_View,GlmVecToProof( camera.m_Positon), m_ScreenFrameBuffer, m_CommandBuffer);
+		m_DebugMeshRenderer->BeginContext(projection, view,location, m_ScreenFrameBuffer, m_CommandBuffer);
 
 		{
 			m_World->ForEachEnitityWith<CubeColliderComponent>([&](Entity entity) {
@@ -212,7 +212,6 @@ namespace Proof
 			});
 		}
 		m_DebugMeshRenderer->EndContext();
-		*/
 		Renderer::EndRenderPass(m_RenderPass);
 		Renderer::EndCommandBuffer(m_CommandBuffer);
 

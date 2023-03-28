@@ -24,6 +24,8 @@ namespace Proof {
 			return m_Scene;
 		}
 		bool HasActor(UUID id);
+
+		Count<PhysicsActor> NewActor(UUID id);
 		Count<PhysicsActor> GetActor(UUID id);
 	private:
 		void StartWorld();

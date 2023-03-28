@@ -23,11 +23,11 @@ namespace Game
 
         void OnCollisionEnter(Entity other)
         {
-            Player obj = other.As<Player>();
-            if (obj != null)
+            Player player = other.As<Player>();
+            if (player != null)
             {
-                obj.Movement = false;
-                Log.Info($"{GetComponent<TagComponent>().Tag} Removed {obj.GetComponent<TagComponent>().Tag} Movment");
+                player.Destroy();
+                Log.Info($"{GetComponent<TagComponent>().Tag} Removed {player.GetComponent<TagComponent>().Tag} Movment");
 
             }
         }

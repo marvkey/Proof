@@ -99,6 +99,13 @@ namespace Proof
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody_AddTorque(ulong entityID, Vector force, int forceMode, bool autoAwake);
+
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidBody_ClearTorque(ulong entityID, int forceMode);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidBody_ClearForce(ulong entityID, int forceMode);
         #endregion
 
         #region TextComponent

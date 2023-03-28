@@ -93,6 +93,15 @@ namespace Proof {
 	{
 		return m_Actors.contains(id);
 	}
+	Count<PhysicsActor> PhysicsWorld::NewActor(UUID id)
+	{
+		Entity ent = Entity{ id,m_World };
+		if (!ent.HasComponent<RigidBodyComponent>())
+			return nullptr;
+		auto actor= Count<PhysicsActor>::Create(this,ent);
+		m_Actors[id] = actor;
+		return actor;
+	}
 	Count<PhysicsActor> PhysicsWorld::GetActor(UUID id)
 	{
 		PF_CORE_ASSERT(HasActor(id), " Does not contain actor");

@@ -54,7 +54,6 @@ namespace Proof {
 	}
 	void World::Init()
 	{
-		//m_Registry.on_construct<MeshColliderComponent>().connect<&World::OnMeshColliderComponentCreate>(this);
 	}
 
 	void World::DeleteEntitiesfromQeue()
@@ -96,6 +95,16 @@ namespace Proof {
 	void World::OnMeshColliderComponentDelete(MeshColliderComponent& component)
 	{
 
+	}
+
+	void World::OnRigidBodyComponentCreate(entt::registry64& component, uint64_t entityID)
+	{
+		m_PhysicsWorld->NewActor(entityID);
+	}
+
+	void World::OnScriptAdded(entt::registry64& component, uint64_t entityID)
+	{
+		ScriptMeathod::OnCreate({ entityID,this });
 	}
 
 	
@@ -290,7 +299,8 @@ namespace Proof {
 				thisEntity.GetComponent<ChildComponent>()->m_OwnerPointer = nullptr;
 				thisEntity.GetComponent<ChildComponent>()->m_OwnerID = 0;
 				thisEntity.GetComponent<ChildComponent>()->m_CurrentID = thisEntity.GetEntityID();
-
+				
+			
 				for (UUID id : prefaRegistry.get<ChildComponent>(registryEntityId).GetChildren())
 				{
 					if (enttMap.contains(registryEntityId))
@@ -381,10 +391,7 @@ namespace Proof {
 		return newWorld;
 	}
 
-	void World::EndRuntime() {
-		ScriptEngine::EndRuntime();
-		delete m_PhysicsWorld;
-	}
+	
 
 	void World::StartRuntime() {
 
@@ -415,8 +422,18 @@ namespace Proof {
 			}
 		}
 		m_PhysicsWorld = new PhysicsWorld(this, PhysicsWorldConfig());
-	}
 
+		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
+		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
+
+	}
+	void World::EndRuntime() {
+		m_Registry.on_construct<RigidBodyComponent>().disconnect(this);
+		m_Registry.on_construct<ScriptComponent>().disconnect(this);
+
+		ScriptEngine::EndRuntime();
+		delete m_PhysicsWorld;
+	}
 	void World::DeleteEntity(Entity& ent, bool deleteChildren) {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ent.m_ID.Get());
 		if (it == m_Registry.entities.end())
@@ -458,6 +475,16 @@ namespace Proof {
 		if (entity.HasOwner())
 			return transformComp.Scale + World::GetWorldScale(entity.GetOwner());
 		return transformComp.Scale;
+	}
+
+	TransformComponent World::GetWorldTransformComponent(Entity entity) const
+	{
+		TransformComponent transform;
+		transform.Location = GetWorldLocation(entity);
+		transform.Rotation = GetWorldRotation(entity);
+		transform.Scale = GetWorldScale(entity);
+
+		return transform;
 	}
 	
 	glm::mat4 World::GetWorldTransform(Entity entity) const {

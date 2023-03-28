@@ -261,6 +261,30 @@ namespace Proof
 		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
 		actor->AddTorque(force, (ForceMode)forceMode, autoAwake);
 	}
+
+	static void RigidBody_ClearForce(EntityID entityID, int forceMode)
+	{
+		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		{
+			PF_ERROR("RigidBody.ClearForce - entity is invalid  or does not have rigid body");
+			return;
+		}
+
+		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+		actor->ClearForce((ForceMode)forceMode);
+	}
+
+	static void RigidBody_ClearTorque(EntityID entityID, int forceMode)
+	{
+		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		{
+			PF_ERROR("RigidBody.ClearTorque - entity is invalid  or does not have rigid body");
+			return;
+		}
+
+		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+		actor->ClearTorque((ForceMode)forceMode);
+	}
 #pragma endregion
 #pragma region ScriptFunc
 
@@ -344,6 +368,9 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(RigidBody_SetMass);
 			PF_ADD_INTERNAL_CALL(RigidBody_AddForce);
 			PF_ADD_INTERNAL_CALL(RigidBody_AddTorque);
+
+			PF_ADD_INTERNAL_CALL(RigidBody_ClearForce);
+			PF_ADD_INTERNAL_CALL(RigidBody_ClearTorque);
 		}
 		//TextComponent
 		{

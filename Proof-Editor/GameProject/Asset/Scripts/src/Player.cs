@@ -10,13 +10,20 @@ namespace Game
 
     public class Player : Entity
     {
-        public bool Movement = true;
+        private bool m_Movement = true;
         private TransformComponent m_Transform;
         private RigidBodyComponent m_RigidBody;
 
         public float FowardForce = 200f;
         public float SideWayForce = 500f;
 
+        public void Destroy()
+        {
+            m_Movement = false;
+            m_RigidBody.ClearForce(ForceMode.VelocityChange);
+            m_RigidBody.ClearForce(ForceMode.Force);
+            m_RigidBody.ClearTorque(ForceMode.Force);
+        }
         
         void OnCreate()
         {
@@ -27,7 +34,7 @@ namespace Game
 
         void OnUpdate(float ts)
         {
-            if (Movement == false)
+            if (m_Movement == false)
                 return;
 
             m_RigidBody.AddForce(new Vector(0, 0, FowardForce * ts));
@@ -40,5 +47,11 @@ namespace Game
 
         }
       
+        public bool IsAlive()
+        {
+            return m_Movement != false;
+        }
+
+        
     }
 }

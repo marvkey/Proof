@@ -561,7 +561,7 @@ namespace Proof
                                 s_Data->EntityClass->CallMethod(entityInstnace, constructo, &param);
 
                                 // this is how we do it 
-                                mono_field_set_value(instance->GetMonoObject(), fieldData.Field.ClassField, &entityInstnace);
+                                mono_field_set_value(instance->GetMonoObject(), fieldData.Field.ClassField, entityInstnace);
                                 continue;
                             }
                             instance->SetFieldValueInternal(fieldName, fieldData.m_Buffer);

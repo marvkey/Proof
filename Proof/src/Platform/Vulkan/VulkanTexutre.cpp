@@ -22,7 +22,7 @@
 namespace Proof
 {
 
-	VulkanTexture2D::VulkanTexture2D(const std::string& Path):
+	VulkanTexture2D::VulkanTexture2D(const std::string& Path) :
 		m_Path(Path)
 
 	{
@@ -173,12 +173,12 @@ namespace Proof
 				config.width = info.maxExtent.width;
 			}
 
-			if (config.Height> info.maxExtent.height)
+			if (config.Height > info.maxExtent.height)
 			{
 				PF_ENGINE_WARN("Image is to tall, made smaller to be support");
 				config.Height = info.maxExtent.height;
 			}
-		
+
 		}
 		m_Width = config.width;
 		m_Height = config.Height;
@@ -188,8 +188,8 @@ namespace Proof
 		if (config.Usage & TextureUsage::Color)
 		{
 			uint32_t bit = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT
-		| VK_IMAGE_USAGE_SAMPLED_BIT;
-			if(config.Address == AdressType::ClampEdge)
+				| VK_IMAGE_USAGE_SAMPLED_BIT;
+			if (config.Address == AdressType::ClampEdge)
 				AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format), bit, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
 			else
 				AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format), bit);
@@ -301,7 +301,7 @@ namespace Proof
 			info.extent.depth = 1;
 			info.mipLevels = m_MipLevels;
 			info.arrayLayers = 1;
-			info.samples = graphicsContext->GetSampleCount();;
+			info.samples = VK_SAMPLE_COUNT_1_BIT;
 			info.tiling = VK_IMAGE_TILING_OPTIMAL;
 			info.usage = bits;
 			info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -594,11 +594,11 @@ namespace Proof
 		AllocateMemory();
 		if (map)
 			GenerateCubeMap(map.As<Texture>(), shader);
-	
+
 
 	}
 
-	Count<CubeMap> VulkanCubeMap::GeneratePreFilterMap(Count<CubeMap> map, uint32_t dimension, uint32_t numSamples )
+	Count<CubeMap> VulkanCubeMap::GeneratePreFilterMap(Count<CubeMap> map, uint32_t dimension, uint32_t numSamples)
 	{
 		// https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/util/Environment.cpp
 		 // https://github.com/SaschaWillems/Vulkan-glTF-PBR/blob/master/src/main.cpp //(generate cuebmap)
@@ -609,7 +609,7 @@ namespace Proof
 		};
 
 		Count<PushConstant> PcbConstnat = PushConstant::Create(sizeof(PCB), 0, ShaderStage::Fragment);
-		Count<CubeMap> preFilterMap = CubeMap::Create(nullptr,nullptr, dimension, true);
+		Count<CubeMap> preFilterMap = CubeMap::Create(nullptr, nullptr, dimension, true);
 
 
 		auto format = ImageFormat::RGBA32F;
@@ -728,9 +728,22 @@ namespace Proof
 				VkRect2D scissor = {};
 				scissor.offset = { 0, 0 };
 				scissor.extent = { mipsize, mipsize };
-				
+
 				for (uint32_t face = 0; face < 6; face++)
 				{
+					{
+						fbColorAttachment = Texture2D::Create(conigTexture);
+
+						frameConfig.DebugName = "Texture-Cube";
+						frameConfig.Size.X = dimension;
+						frameConfig.Size.Y = dimension;
+						frameConfig.Attachments = { format };
+						frameConfig.Attachments.Attachments[0].SetOverrideImage(fbColorAttachment->GetImage());
+
+						frameBuffer = FrameBuffer::Create(frameConfig);
+
+						renderPass = RenderPass::Create(renderPassConfig);
+					}
 					uboData.view = captureViews[face];
 					ubuffer->SetData(&uboData, sizeof(uboData));
 					pcb.Roughness = (float)miplevel / (float)(totalMips - 1);
@@ -794,14 +807,14 @@ namespace Proof
 
 						copyRegion.extent.width = static_cast<uint32_t>(mipsize);
 						copyRegion.extent.height = static_cast<uint32_t>(mipsize);
+
 						copyRegion.extent.depth = 1;
 
 						//VkImage image = frameBuffer.As<VulkanFrameBuffer>()->GetColorAttachmentFrameBufferImage(0).Images[Renderer::GetCurrentFrame().ImageIndex].Image;
 						VkImage image = fbColorAttachment.As<VulkanTexture2D>()->GetImageAlloc().Image;
-						vkCmdCopyImage(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(),image,
+						vkCmdCopyImage(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), image,
 							VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 							preFilterMap.As<VulkanCubeMap>()->GetImageAlloc().Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
-
 					}
 				}
 				mipsize = mipsize / 2;
@@ -838,7 +851,7 @@ namespace Proof
 
 	Image VulkanCubeMap::GetImage()const
 	{
-		return VulkanImage(m_Set, m_Format, { (float)m_Dimension,(float)m_Dimension }, VulkanImageExcessData{ m_Sampler,m_ImageView,m_Image.Image});
+		return VulkanImage(m_Set, m_Format, { (float)m_Dimension,(float)m_Dimension }, VulkanImageExcessData{ m_Sampler,m_ImageView,m_Image.Image });
 	}
 	VkDescriptorImageInfo VulkanCubeMap::GetImageBufferInfo(VkImageLayout imageLayout)
 	{
@@ -874,7 +887,7 @@ namespace Proof
 		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		imageInfo.samples = graphicsContext->GetSampleCount();
+		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 		Renderer::Submit([&](CommandBuffer* cmd) {
