@@ -39,10 +39,10 @@ namespace Game
 
             m_RigidBody.AddForce(new Vector(0, 0, FowardForce * ts));
 
-            if (Input.IsKeyPressed(KeyBoardKey.D))
+            if (Input.IsKeyPressed(KeyBoardKey.D) || Input.IsKeyPressed(KeyBoardKey.RightArrow))
                 m_RigidBody.AddForce(new Vector(-SideWayForce * ts, 0, 0),ForceMode.VelocityChange);
 
-            if (Input.IsKeyPressed(KeyBoardKey.A))
+            if (Input.IsKeyPressed(KeyBoardKey.A) || Input.IsKeyPressed(KeyBoardKey.LeftArrow))
                 m_RigidBody.AddForce(new Vector(SideWayForce * ts, 0, 0), ForceMode.VelocityChange);
 
         }
@@ -51,7 +51,5 @@ namespace Game
         {
             return m_Movement != false;
         }
-
-        
     }
 }

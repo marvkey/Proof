@@ -41,6 +41,16 @@ namespace Proof {
 		}
 		return nullptr;
 	}
+	Count<CubeMap> CubeMap::Create(Count<Texture2D> textrure, uint32_t dimension, bool generateMips)
+	{
+		switch (RendererAPI::GetAPI())
+		{
+			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case RendererAPI::API::OpenGL: return nullptr;
+			case RendererAPI::API::Vulkan: return Count<VulkanCubeMap>::Create(textrure, dimension, generateMips);
+		}
+		return nullptr;
+	}
 	Count<CubeMap> CubeMap::Create(const std::filesystem::path& Path, uint32_t dimension, bool generateMips) {
 		switch (RendererAPI::GetAPI()) {
 		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;

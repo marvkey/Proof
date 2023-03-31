@@ -8,7 +8,7 @@ World:
       TransformComponent:
         Location: [0, -3, 0]
         Rotation: [0, 0, 0]
-        Scale: [22.7999992, 1, 2000]
+        Scale: [25, 1, 2000]
       ChildComponent:
         OwnerID: 0
         Children: []
@@ -76,7 +76,7 @@ World:
         Tag: Camera
         tags: []
       TransformComponent:
-        Location: [0, 2.4000001, -11]
+        Location: [0, 7, -13]
         Rotation: [0, 0, 90]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -139,9 +139,6 @@ World:
         Scripts:
           - Script: Game.GameManager
             ScriptFields:
-              - Name: spawnWaitTime
-                Type: Float
-                Data: 4000
               - Name: Player
                 Type: Entity
                 Data: 9019730813530534380
@@ -151,9 +148,3 @@ World:
               - Name: Plane
                 Type: Prefab
                 Data: 0
-              - Name: IncreasePlayerSpeed
-                Type: Float
-                Data: 50
-              - Name: SpawnDistance
-                Type: Float
-                Data: 25

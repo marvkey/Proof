@@ -333,8 +333,8 @@ namespace Proof
         scissor.offset = { 0, 0 };
         scissor.extent = { (uint32_t)viewport.width,(uint32_t)viewport.height };
         vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &scissor);
-        if(vulkanPipeline->m_LineWidth !=1.0f)
-            vkCmdSetLineWidth(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
+        //if(vulkanPipeline->m_LineWidth !=1.0f)
+        //    vkCmdSetLineWidth(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
 
         func(m_CommandBuffer);
     }

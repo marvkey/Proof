@@ -286,6 +286,16 @@ namespace Proof
 		actor->ClearTorque((ForceMode)forceMode);
 	}
 #pragma endregion
+
+	#pragma region Random
+	static bool Random_RandomBool() {
+		return Random::Bool();
+	}
+
+	static int32_t Random_RandomInt32(int32_t min, int32_t max){
+		return Random::Int<int32_t>(min, max);
+	}
+	#pragma endregion
 #pragma region ScriptFunc
 
 	template<typename... Component>
@@ -376,6 +386,11 @@ namespace Proof
 		{
 			PF_ADD_INTERNAL_CALL(TextComponent_GetText);
 			PF_ADD_INTERNAL_CALL(TextComponent_SetText);
+		}
+		//random
+		{
+			PF_ADD_INTERNAL_CALL(Random_RandomBool);
+			PF_ADD_INTERNAL_CALL(Random_RandomInt32);
 		}
 		
 	}

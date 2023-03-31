@@ -75,7 +75,6 @@ namespace Proof{
 			if (meshesVertex.empty() == false)
 				m_Pipeline->MeshesVertexBuffer = VertexBuffer::Create(meshesVertex.data(), meshesVertex.size() * sizeof(DebugMeshPipeLine::MeshVertex));
 		}
-		#if 0
 		// render
 		if (m_Pipeline->ElementsImplaced.empty())return;
 		auto descriptor0 = m_Pipeline->Descriptors[DescriptorSets::Zero];
@@ -90,20 +89,18 @@ namespace Proof{
 				Count<Mesh> mesh = m_Pipeline->Meshes[ID].Mesh;
 
 				Vector color(0.46275f, 0.72549f, 0.00000f);
-				for (const auto& subMesh : mesh->GetSubMeshes())
+				for (const auto& subMesh : mesh->GetMeshSource()->GetSubMeshes())
 				{
-					if (subMesh.Enabled == false)continue;
-					subMesh.GetVertexBuffer()->Bind(m_CommandBuffer);
-					subMesh.GetIndexBuffer()->Bind(m_CommandBuffer);
+					subMesh.VertexBuffer->Bind(m_CommandBuffer);
+					subMesh.IndexBuffer->Bind(m_CommandBuffer);
 					m_Pipeline->MeshesVertexBuffer->Bind(m_CommandBuffer, 1);
 					m_Pipeline->PushConstantColor->PushData(m_CommandBuffer, m_Pipeline->PipeLineLayout, &color);
-					Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.GetIndexBuffer()->GetCount(), meshInstances, currentOffset);
+					Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
 				}
 
 				currentOffset += meshInstances;
 			}
 		});
-			#endif
 	}
 
 	DebugMeshPipeLine::DebugMeshPipeLine(Count<RenderPass> renderPass)
@@ -139,6 +136,7 @@ namespace Proof{
 		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
 		graphicsPipelineConfig.RenderPass = renderPass;
 		graphicsPipelineConfig.DrawMode = DrawType::LineStrip;
+		graphicsPipelineConfig.LineWidth =5;
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
 }

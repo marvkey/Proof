@@ -3,7 +3,7 @@
 #include<iostream>
 #include <any>
 namespace Proof {
-	static uint32_t ConvertToRGBA(const Vector& color)
+	static uint32_t ConvertToBytes(const Vector& color)
 	{
 		uint8_t r = (uint8_t)(color.X * 255.0f);
 		uint8_t g = (uint8_t)(color.Y * 255.0f);
@@ -14,7 +14,7 @@ namespace Proof {
 		return result;
 	}
 
-	static uint32_t ConvertToRGBA(const Vector4& color)
+	static uint32_t ConvertToBytes(const Vector4& color)
 	{
 		uint8_t r = (uint8_t)(color.X * 255.0f);
 		uint8_t g = (uint8_t)(color.Y * 255.0f);
@@ -258,6 +258,7 @@ namespace Proof {
 
 	class Proof_API CubeMap : public Texture {
 	public:
+		static Count<CubeMap> Create(Count<Texture2D> textrure, uint32_t dimension = 512, bool generateMips = false);
 		static Count<CubeMap> Create(const std::filesystem::path& Path, uint32_t dimension = 512, bool generateMips = false);
 		static Count<CubeMap> Create(Count<CubeMap>map, Count<class Shader> shader, uint32_t dimension = 64, bool generateMips = false);
 		static Count<CubeMap> GeneratePrefiltered(Count<CubeMap>map, uint32_t dimension = 128, uint32_t numSamples = 1024);

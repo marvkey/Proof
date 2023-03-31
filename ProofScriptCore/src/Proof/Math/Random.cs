@@ -21,7 +21,7 @@ namespace Proof
 
         public static int Int(int min, int max)
         {
-            return rand.Next(min, max);
+            return InternalCalls.Random_RandomInt32(min, max);
         }
 
         public static Vector Vector(float min, float max)
@@ -34,7 +34,7 @@ namespace Proof
             return vec;
         }
         public static bool Bool(){
-            return Convert.ToBoolean(rand.Next(0,1));
+            return InternalCalls.Random_RandomBool();
         }
     }
 }

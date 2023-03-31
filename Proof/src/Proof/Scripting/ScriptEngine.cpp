@@ -197,7 +197,7 @@ namespace Proof
         m_OnOverlapTriggerEnter = scriptClass->GetMethod("OnOverllapTriggerEnter", 1);
        // m_OnPlaced = scriptClass->GetMethod("OnPlace", 0);
        // m_OnSpawn = scriptClass->GetMethod("OnSpawn", 0);
-       // m_OnDestroy = scriptClass->GetMethod("OnDestroy", 0);
+        m_OnDestroy = scriptClass->GetMethod("OnDestroy", 0);
         // Call Entity constructor
         {
             uint64_t entityID = entity.GetEntityID();
@@ -379,7 +379,7 @@ namespace Proof
         return s_Data->ScriptEntityClasses.find(fullClassName) != s_Data->ScriptEntityClasses.end();
     }
     void ScriptEngine::InitMono() {
-        mono_set_assemblies_path("mono/lib");
+        //mono_set_assemblies_path("mono/lib");
         if (s_Data->EnableDebugging)
         {
             const char* argv[2] = {
@@ -588,6 +588,7 @@ namespace Proof
             PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID, entity.GetName());
         }
     }
+    
     void ScriptMeathod::OnCollisionEnter(Entity currentEntity, Entity collidingEntity)
     {
         UUID entityUUID = currentEntity.GetEntityID();

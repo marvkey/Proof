@@ -110,10 +110,23 @@ namespace Proof
 
         #region TextComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static object TextComponent_GetText(ulong entityID, out string Text);
+        internal extern static void TextComponent_GetText(ulong entityID, out string Text);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static object TextComponent_SetText(ulong entityID, ref string Text);
+        internal extern static void TextComponent_SetText(ulong entityID, ref string Text);
+		#endregion
+
+
+
+
+
+		#region Random
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool Random_RandomBool();
+
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static int Random_RandomInt32(int min, int max);
         #endregion
 
 

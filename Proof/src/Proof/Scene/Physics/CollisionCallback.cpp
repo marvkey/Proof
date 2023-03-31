@@ -20,7 +20,6 @@ namespace Proof
 				overlappTrigger->OnOverlapTriggerEnter(triggerActor);
 			}
 		}
-		
 	}
 	void CollisionCallback::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) {
 		PhysicsActor* actor0 = (PhysicsActor*)pairHeader.actors[0]->userData;

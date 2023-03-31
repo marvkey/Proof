@@ -92,7 +92,7 @@ namespace Proof
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		// for assetVIewe we can use imguidoc node no split
-		ImGuiIO& io = ImGui::GetIO();;
+		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking

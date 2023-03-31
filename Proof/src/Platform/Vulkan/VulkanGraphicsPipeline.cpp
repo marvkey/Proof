@@ -211,7 +211,7 @@ namespace Proof
 		// so in teh renderpeass when we set the width we can do a check to see if not 1 then 
 		// we can change teh width
 		// because most of the times it will be 1.f
-		configInfo.RasterizationInfo.lineWidth = 1.0f;
+		configInfo.RasterizationInfo.lineWidth =  graphicsConfig.LineWidth;
 		configInfo.RasterizationInfo.cullMode = Utils::ProofFormatToVulkanFormat(graphicsConfig.CullMode);
 		configInfo.RasterizationInfo.frontFace = Utils::ProofFormatToVulkanFormat(graphicsConfig.FrontFace);
 		configInfo.RasterizationInfo.depthBiasEnable = VK_FALSE;

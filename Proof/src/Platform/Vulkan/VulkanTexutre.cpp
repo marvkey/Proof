@@ -577,6 +577,8 @@ namespace Proof
 	{
 		if (generateMips)
 			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(dimension, dimension)))) + 1;
+
+		m_Format = texture.As<VulkanTexture2D>()->GetImage().Format;
 		AllocateMemory();
 		if (texture)
 		{
@@ -868,8 +870,8 @@ namespace Proof
 		//https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/core/TextureCube.cpp
 		// (Goto) same file to view creating a framebuffer with data
 		// it would generate this texture for us then we convert to cubemap
-		const uint32_t size = 4 * 6 * m_Dimension * m_Dimension;
-		const uint32_t layerSize = 4 * m_Dimension * m_Dimension;
+		const uint32_t size = Utils::BytesPerPixel(m_Format) * 6 * m_Dimension * m_Dimension;
+		const uint32_t layerSize = Utils::BytesPerPixel(m_Format) * m_Dimension * m_Dimension;
 
 		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
@@ -987,8 +989,6 @@ namespace Proof
 	{
 		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
-		const uint32_t size = 4 * 6 * m_Dimension * m_Dimension;
-		const uint32_t layerSize = 4 * m_Dimension * m_Dimension;
 		FrameBufferConfig frameConfig;
 		frameConfig.DebugName = "Texture-Cube";
 		frameConfig.Size.X = m_Dimension;

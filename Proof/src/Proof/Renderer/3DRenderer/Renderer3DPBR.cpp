@@ -367,7 +367,6 @@ namespace Proof
 		}
 		std::unordered_map<ShaderStage, std::string> shaders;
 		shaders[ShaderStage::Vertex] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Mesh-PBR.vert";
-		//shaders[ShaderStage::Fragment] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/MaterialShader2.shader";
 		shaders[ShaderStage::Fragment] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Mesh-PBR.frag";
 		
 		Shader = Shader::GetOrCreate("MeshShader", shaders);
@@ -421,6 +420,7 @@ namespace Proof
 		std::unordered_map<ShaderStage, std::string> shaders;
 		shaders[ShaderStage::Vertex] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Mesh-PBR.vert";
 		shaders[ShaderStage::Fragment] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Mesh-PBRMaterial.frag";
+		//shaders[ShaderStage::Fragment] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/MaterialShader2.shader";
 
 		Shader = Shader::GetOrCreate("Mesh-PBRShader", shaders);
 		MaterialPushConstant = PushConstant::Create(sizeof(MaterialData), 0, ShaderStage::Fragment);

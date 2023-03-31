@@ -184,7 +184,7 @@ namespace Proof
 	public:
 		static void OnCreate(Entity entity);
 		static void OnUpdate(Entity entity, FrameTime time);
-		
+	//	static void OnDestroy(Entity entity, const std::string& name);
 		// physics
 		static void OnCollisionEnter(Entity currentEntity, Entity collidingEntity);
 

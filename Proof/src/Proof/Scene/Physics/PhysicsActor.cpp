@@ -90,7 +90,6 @@ namespace Proof {
 	{
 		if (m_RigidBodyType == RigidBodyType::Static)return;
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-
 		rigidBody->addForce({ force.X,force.Y,force.Z }, Utils::ToPhysxForce(mode), autoWake);
 	}
 	void PhysicsActor::AddTorque(Vector force, ForceMode mode, bool autoWake)

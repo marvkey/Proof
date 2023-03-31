@@ -84,7 +84,9 @@ namespace Proof
 				{ShaderStage::Fragment,ProofCurrentDirectorySrc +
 				"Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/Irradiance.Frag"} });
 
-			textureCubeMap = CubeMap::Create("Assets/Arches_E_PineTree_3k.hdr", 512, false);
+			//textureCubeMap = CubeMap::Create("Assets/Arches_E_PineTree_3k.hdr", 512, false);
+			uint32_t grey = ConvertToBytes(Vector(169, 169, 169));
+			textureCubeMap = CubeMap::Create(Texture2D::Create(1,1,ImageFormat::RGBA, &grey), 512, false);
 			iradianceCubeMap = CubeMap::Create(textureCubeMap,shader, 64, false);
 			prefilterCubeMap = CubeMap::GeneratePrefiltered(textureCubeMap);
 			brdfTexture = Texture2D::GenerateBRDF();

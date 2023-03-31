@@ -348,17 +348,14 @@ namespace Proof
 		MainToolBar();
 
 		ViewPort();
-		static Count<Font> testFont;
-		if (testFont ==nullptr)
-			testFont = Count<Font>::Create("Assets/Fonts/Poppins/Poppins-Regular.ttf");
+		
+		
+		
 		for (auto& a : m_AllPanels) {
 			a.second->ImGuiRender(DeltaTime);
 		}
 
-		ImGui::Begin("font field");
 
-		ImGui::Image((ImTextureID*)testFont->GetAtlasTexture()->GetImage().SourceImage, { ImGui::GetWindowWidth(),ImGui::GetWindowWidth()});
-		ImGui::End();
 		m_WorldHierachy.ImGuiRender(DeltaTime);
 		m_ContentBrowserPanel.ImGuiRender(DeltaTime);
 		m_AssetManagerPanel.ImGuiRender(DeltaTime);
@@ -428,6 +425,11 @@ namespace Proof
 			case KeyBoardKey::Escape:
 			{
 					if (m_ActiveWorld->IsPlaying())
+					{
+						Mouse::CaptureMouse(false);
+						break;
+					}
+					if (Mouse::IsMouseCaptured())
 					{
 						Mouse::CaptureMouse(false);
 					}

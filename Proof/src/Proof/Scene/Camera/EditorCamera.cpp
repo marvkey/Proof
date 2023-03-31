@@ -26,14 +26,13 @@ namespace Proof{
 
 		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight)) {
 			m_FirstClick = true;
-			glfwSetInputMode((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse ; // alllows mouse capture
+			Mouse::CaptureMouse(false);
+
 			PF_ENGINE_INFO("Mouse Speed {}", m_Speed);
 		}
 		
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight)) {
-			glfwSetInputMode((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse; // no mouse capture
+			Mouse::CaptureMouse(true);
 			if (m_FirstClick == true) {
 				m_FirstClick = false;
 				MouseLastPosX = Input::GetMousePosX();

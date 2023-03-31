@@ -111,22 +111,19 @@ namespace  Proof {
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetCubeColliderMesh()
 	{
-		//static auto mesh = MeshWorkShop::GenerateCube();
-		//return mesh;
-		return nullptr;
+		static auto mesh = MeshWorkShop::GenerateCube();
+		return mesh;
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetCapsuleColliderMesh()
 	{
-		//static auto capsule = MeshWorkShop::GenerateCapsule();
-		//return capsule;
-		return nullptr;
+		static auto capsule = MeshWorkShop::GenerateCapsule();
+		return capsule;
 
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetSphereColliderMesh()
 	{
-		//static auto sphere = MeshWorkShop::GenerateUVSphere();
-		//return sphere;
-		return nullptr;
+		static auto sphere = MeshWorkShop::GenerateUVSphere();
+		return sphere;
 	}
 
 	void PhysicsMeshCooker::Init()
