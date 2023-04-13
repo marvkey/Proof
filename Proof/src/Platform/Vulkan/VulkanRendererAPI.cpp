@@ -17,6 +17,10 @@ namespace Proof {
 	void VulkanRendererAPI::DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance) {
 		vkCmdDrawIndexed(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, 0, 0, firstInstance);
 	}
+	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer, Viewport vieport, ViewportScissor scisscor)
+	{
+		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer,frameBuffer, vieport, scisscor);
+	}
 	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) {
 		renderPass->As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, frameBuffer);
 	}

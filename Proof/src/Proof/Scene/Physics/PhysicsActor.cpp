@@ -156,6 +156,13 @@ namespace Proof {
 			ScriptMeathod::OnCollisionEnter(m_Entity, actor->m_Entity);
 		}
 	}
+	void PhysicsActor::OnCollisonLeave(const PhysicsActor* actor)
+	{
+		if (ScriptEngine::EntityHasScripts(m_Entity))
+		{
+			ScriptMeathod::OnCollisionLeave(m_Entity, actor->m_Entity);
+		}
+	}
 	void PhysicsActor::ClearForce(ForceMode mode )
 	{
 		if (m_RigidBodyType == RigidBodyType::Static)return;
@@ -169,6 +176,35 @@ namespace Proof {
 
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
 		rigidBody->clearTorque(Utils::ToPhysxForce(mode));
+	}
+
+	Vector PhysicsActor::GetLinearVelocity()
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return  Vector(0);
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+
+		return PhysxUtils::PhysxToVector(rigidBody->getLinearVelocity());
+	}
+
+	Vector PhysicsActor::GetAngularVelocity()
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return  Vector(0);
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+
+		return PhysxUtils::PhysxToVector(rigidBody->getAngularVelocity());
+	}
+	void PhysicsActor::SetLinearVelocity(Vector velocity, bool wakeUp )
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->setLinearVelocity(PhysxUtils::VectorToPhysxVector(velocity), wakeUp);
+	}
+	void PhysicsActor::SetAngularVelocity(Vector velocity, bool wakeUp)
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->setAngularVelocity(PhysxUtils::VectorToPhysxVector(velocity), wakeUp);
 	}
 	void PhysicsActor::OnTriggerEnter(const PhysicsActor* actor)
 	{
@@ -185,6 +221,7 @@ namespace Proof {
 			ScriptMeathod::OnOverlapTriggerEnter(m_Entity, actor->m_Entity);
 		}
 	}
+
 
 	void PhysicsActor::AddRigidBody()
 	{
@@ -270,7 +307,6 @@ namespace Proof {
 		physx::PxMaterial* colliderMaterial = sphereCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)sphereCollider->GetPhysicsMaterial()->m_RuntimeBody;
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxSphereGeometry(size), *colliderMaterial, true);
 
-		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 		physx::PxTransform localtransform = body->getLocalPose();
 		localtransform.p += PhysxUtils::VectorToPhysxVector(sphereCollider->OffsetLocation);
 		body->setLocalPose(localtransform);

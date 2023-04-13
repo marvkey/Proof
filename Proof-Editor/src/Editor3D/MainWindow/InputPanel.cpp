@@ -8,39 +8,43 @@
 #include "Proof/Input/InputManager.h"
 #include <unordered_map>
 namespace Proof {
-	void InputPanel::ImGuiRender(FrameTime deltaTime){
+	void InputPanel::ImGuiRender(FrameTime deltaTime) {
 		if (m_ShowWindow == false)
 			return;
 
 		PF_PROFILE_FUNC();
-		/*
+
 		ImGui::Begin("Input Panel", &m_ShowWindow);
 		{
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
 			bool opened = ImGui::TreeNodeEx((void*)"Action Mapping", treeNodeFlags, "Action Mapping");
-			if (opened) {
+			if (opened)
+			{
 				Action();
 				ImGui::TreePop();
 			}
 			bool openedMotion = ImGui::TreeNodeEx((void*)"Motion Mapping", treeNodeFlags, "Motion Mapping");
 
-			if (openedMotion) {
+			if (openedMotion)
+			{
 				MotionInput();
 				ImGui::TreePop();
 			}
 		}
 		ImGui::End();
-		*/
+
 	}
 	void InputPanel::Action()
 	{
-		/*
+
 		ImGui::SameLine();
-		if (ImGui::Button("+", { 20,20 })) {
+		if (ImGui::Button("+", { 20,20 }))
+		{
 			std::string action = "NewAction";
 			int iterate = 0;
-			while (InputManager::S_ActionMapping.find(action) != InputManager::S_ActionMapping.end()) {
+			while (InputManager::HasAction(action))
+			{
 				iterate++;
 				action = "NewAction(" + std::to_string(iterate) + ")";
 			}
@@ -48,89 +52,214 @@ namespace Proof {
 			PF_EC_INFO("action added");
 			InputManager::AddAction(action);
 		}
+		for (const auto& [actionName, action] : InputManager::GetActionMappings())
+		{
+			UI::ScopedID(actionName.c_str());
+			ImGui::Text(actionName.c_str());
+			ImGui::SameLine();
+			if (ImGui::Button("New Key"))
+				ImGui::OpenPopup("Add Key");
 
-		for (auto& [name, action] : InputManager::S_ActionMapping) {
-			ImGui::Text(name.c_str());
-			for (InputType& device : action.m_Inputs) {
+			if (ImGui::BeginPopup("Add Key"))
+			{
+				EnumReflection::ForEach<KeyBoardKey>([&](KeyBoardKey key) {
+					if (key == KeyBoardKey::None)
+						return;
+					if (ImGui::MenuItem(EnumReflection::EnumString(key).c_str()))
+					{
+						InputManager::ActionAddKey(actionName, InputType(InputDevice::KeyBoard, (int)key));
+					}
+				});
+				ImGui::Separator();
+				EnumReflection::ForEach<MouseButton>([&](MouseButton key) {
+					if (key == MouseButton::None)
+						return;
+					if (ImGui::MenuItem(EnumReflection::EnumString(key).c_str()))
+					{
+						InputManager::ActionAddKey(actionName, InputType(InputDevice::MouseButton, (int)key));
+					}
+				});
 
-				ImGui::SameLine();
-				ImGui::Text(std::to_string((char)device.Key).c_str());
+				ImGui::Separator();
+				EnumReflection::ForEach<ControllerButton>([&](ControllerButton key) {
+					if (key == ControllerButton::None)
+						return;
+					if (ImGui::MenuItem(EnumReflection::EnumString(key).c_str()))
+					{
+						InputManager::ActionAddKey(actionName, InputType(InputDevice::ControllerButton, (int)key));
+					}
+				});
+				ImGui::EndPopup();
 			}
+			for (auto& [device, inputType] : action.Inputs)
+			{
+				for (auto& type : inputType)
+				{
+					switch (device)
+					{
+						case Proof::InputDevice::KeyBoard:
+							{
+								ImGui::SameLine();
+								ImGui::Text(EnumReflection::EnumString<KeyBoardKey>((KeyBoardKey)type.Key).c_str());
+							}
+							break;
+						case Proof::InputDevice::MouseButton:
+							{
+								ImGui::SameLine();
+								ImGui::Text(EnumReflection::EnumString<MouseButton>((MouseButton)type.Key).c_str());
+							}
+							break;
+						case Proof::InputDevice::MouseMovement:
+							{
+								ImGui::SameLine();
+								ImGui::Text(EnumReflection::EnumString<MouseAxis>((MouseAxis)type.Key).c_str());
+							}
+							break;
+						case Proof::InputDevice::ControllerButton:
+							{
+								ImGui::SameLine();
+								ImGui::Text(EnumReflection::EnumString<ControllerButton>((ControllerButton)type.Key).c_str());
+							}
+							break;
+						case Proof::InputDevice::ControllerAxis:
+							{
+								ImGui::SameLine();
+								ImGui::Text(EnumReflection::EnumString<ControllerAxis>((ControllerAxis)type.Key).c_str());
+							}
+							break;
+						default:
+							continue;
+							break;
+					}
+				}
+				
+			}
+		}
+	}
+	void InputPanel::MotionInput() {
+		ImGui::SameLine();
+		if (ImGui::Button("+", { 20,20 })) {
+			std::string motion = "NewMotion";
+			int iterate = 0;
+			while (InputManager::HasMotion(motion))
+			{
+				iterate++;
+				motion = "NewMotion(" + std::to_string(iterate) + ")";
+
+			}
+			PF_EC_INFO("New Motion");
+			InputManager::AddMotion(motion);
+		}
+		for (auto& [motionName, motion] : InputManager::GetMotionMappings())
+		{
+			UI::ScopedID(motionName.c_str());
+			ImGui::Text(motionName.c_str());
 			ImGui::SameLine();
 
 			if (ImGui::Button("New Key"))
 				ImGui::OpenPopup("Add Key");
 
-			if (ImGui::BeginPopup("Add Key")) {
-				if (ImGui::MenuItem("R")) {
-					InputManager::ActionAddKey(name, InputType(InputDevice::KeyBoard, (int)KeyBoardKey::R));
-				}
+			if (ImGui::BeginPopup("Add Key"))
+			{
+				EnumReflection::ForEach<KeyBoardKey>([&](KeyBoardKey key) {
+					if (key == KeyBoardKey::None)
+						return;
+					if (ImGui::MenuItem(EnumReflection::EnumString(key).c_str()))
+					{
+						InputManager::MotionAddKey(motionName, MotionInputType(InputDevice::KeyBoard, (int)key));
+					}
+				});
+				ImGui::Separator();
+				EnumReflection::ForEach<MouseButton>([&](MouseButton key) {
+					if (key == MouseButton::None)
+						return;
+					if (ImGui::MenuItem(EnumReflection::EnumString(key).c_str()))
+					{
+						InputManager::MotionAddKey(motionName, MotionInputType(InputDevice::MouseButton, (int)key));
+					}
+				});
+
+				ImGui::Separator();
+				EnumReflection::ForEach<ControllerButton>([&](ControllerButton key) {
+					if (key == ControllerButton::None)
+						return;
+					if (ImGui::MenuItem(EnumReflection::EnumString(key).c_str()))
+					{
+						InputManager::MotionAddKey(motionName, MotionInputType(InputDevice::ControllerButton, (int)key));
+
+					}
+				});
 				ImGui::EndPopup();
 			}
+			for (auto& [device,motionList] : motion.Inputs)
+			{
+				for (const MotionInputType& type : motionList)
+				{
+					switch (device)
+					{
+						case Proof::InputDevice::KeyBoard:
+							{
+								ImGui::SameLine();
+								ImGui::Text(EnumReflection::EnumString<KeyBoardKey>((KeyBoardKey)type.Key).c_str());
+								ImGui::SameLine();
 
-		}
-		*/
-	}
-	void InputPanel::MotionInput(){
-		/*
-		ImGui::SameLine();
-		if (ImGui::Button("+", { 20,20 })) {
-			std::string action = "NewMotion";
-			int iterate = 0;
-			while (InputManager::s_MotionMapping.find(action) != InputManager::s_MotionMapping.end()) {
-				iterate++;
-				action = "NewMotion(" + std::to_string(iterate) + ")";
-			}
+								const float* constValue = &type.MotionValue;
+								float* unConstValue = const_cast<float*>(constValue);
+								ImGui::DragFloat("Motion", unConstValue);
+							}
+							break;
+						case Proof::InputDevice::MouseButton:
+							{
+								ImGui::SameLine();
+								ImGui::Text(EnumReflection::EnumString<MouseButton>((MouseButton)type.Key).c_str());
+								ImGui::SameLine();
 
-			PF_EC_INFO("New Motion");
-			InputManager::AddMotion(action);
-		}
-		int iterationMotion = 0;
-		for (auto& [name, motion] : InputManager::s_MotionMapping) {
-			ImGui::Text(name.c_str());
-			int iteration = 0;
-			for (MotionInputType& device : motion.Inputs) {
-				ImGui::PushID(iteration+iterationMotion);
-				std::stringstream ss;
-				ss << (char)device.Key;
-				ImGui::Text(ss.str().c_str());
-				ImGui::SameLine();
-				ImGui::SliderFloat("MotionValue", &device.MotionValue,-1000,1000);
-				ImGui::PopID();
-				iteration++;
-			}
-			ImGui::SameLine();
+								const float* constValue = &type.MotionValue;
+								float* unConstValue = const_cast<float*>(constValue);
+								ImGui::DragFloat("Motion", unConstValue);
+							}
+							break;
+						case Proof::InputDevice::MouseMovement:
+							{
+								ImGui::SameLine();
+								ImGui::Text(EnumReflection::EnumString<MouseAxis>((MouseAxis)type.Key).c_str());
+								ImGui::SameLine();
 
-			if (ImGui::Button("New Key")) {
-				m_EditedValue = name;
-				ImGui::OpenPopup("Add Key");
+								const float* constValue = &type.MotionValue;
+								float* unConstValue = const_cast<float*>(constValue);
+								ImGui::DragFloat("Motion", unConstValue);
+							}
+							break;
+						case Proof::InputDevice::ControllerButton:
+							{
+								ImGui::SameLine();
+								ImGui::Text(EnumReflection::EnumString<ControllerButton>((ControllerButton)type.Key).c_str());
+								ImGui::SameLine();
+
+								const float* constValue = &type.MotionValue;
+								float* unConstValue = const_cast<float*>(constValue);
+								ImGui::DragFloat("Motion", unConstValue);
+							}
+							break;
+						case Proof::InputDevice::ControllerAxis:
+							{
+								ImGui::SameLine();
+								ImGui::Text(EnumReflection::EnumString<ControllerAxis>((ControllerAxis)type.Key).c_str());
+								ImGui::SameLine();
+
+								const float* constValue = &type.MotionValue;
+								float* unConstValue = const_cast<float*>(constValue);
+								ImGui::DragFloat("Motion", unConstValue);
+							}
+							break;
+						default:
+							continue;
+							break;
+					}
+				}
+
 			}
-			if (m_EditedValue != name)
-				goto a;
-			if (ImGui::BeginPopup("Add Key")) {
-				if (ImGui::MenuItem("W")) {
-					m_EditedValue = "";
-					InputManager::MotionAddKey(name, MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::W));
-				}
-				if (ImGui::MenuItem("S")) {
-					m_EditedValue = "";
-					InputManager::MotionAddKey(name, MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::S));
-				}
-				if (ImGui::MenuItem("A")) {
-					m_EditedValue = "";
-					InputManager::MotionAddKey(name, MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::A));
-				}
-				if (ImGui::MenuItem("D")) {
-					m_EditedValue = "";
-					InputManager::MotionAddKey(name, MotionInputType(InputDevice::KeyBoard, (int)KeyBoardKey::D));
-				}
-				ImGui::EndPopup();
-			}
-			a:
-			iterationMotion++;
 		}
-	
-		*/
 	}
 
 

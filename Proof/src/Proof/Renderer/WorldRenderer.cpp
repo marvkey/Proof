@@ -41,6 +41,7 @@ namespace Proof
 		m_World(world)
 	{
 		m_ScreenFrameBuffer = ScreenFrameBuffer::Create(textureWidth, textureHeight);
+
 		RenderPassConfig renderPassConfig("world renderPass", m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig());
 		m_RenderPass = RenderPass::Create(renderPassConfig);
 		m_CommandBuffer = RenderCommandBuffer::Create();
@@ -97,12 +98,14 @@ namespace Proof
 		m_ScreenFrameBuffer->Resize(Vector2{ (float)windowSize.X, (float)windowSize.Y });
 	}
 
-	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location)
+	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewPort, ViewportScissor scissor, bool clearOnLoad )
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
+		//m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = clearOnLoad;
+
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
-		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer);
+		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer->GetFrameBuffer(), viewPort, scissor);
 		CameraData cmaeraData = CameraData(projection, view, location);
 		cameraBuffer = UniformBuffer::Create(&cmaeraData, sizeof(CameraData), DescriptorSets::Zero, 0);
 		/*
@@ -221,9 +224,35 @@ namespace Proof
 	}
 	void WorldRenderer::Render(EditorCamera& camera) 
 	{
-		Render(camera.m_Projection, camera.m_View, { camera.m_Positon.x,camera.m_Positon.y,camera.m_Positon.z });
+		Viewport viewPort;
+		viewPort.X = 0.0f;
+		viewPort.Y = 0.0f;
+		viewPort.Height = m_ScreenFrameBuffer->GetFrameHeight();
+		viewPort.Width = m_ScreenFrameBuffer->GetFrameWidth();
+		viewPort.MinDepth = 0;
+		viewPort.MaxDepth = 1;
+
+		ViewportScissor scissor;
+		scissor.Offset = { 0,0 };
+		scissor.Extent = { (float)m_ScreenFrameBuffer->GetFrameWidth(),(float)m_ScreenFrameBuffer->GetFrameHeight() };
+		Render(camera.m_Projection, camera.m_View, { camera.m_Positon.x,camera.m_Positon.y,camera.m_Positon.z }, viewPort,scissor);
 	}
 	void WorldRenderer::Render(CameraComponent& camera, Vector& location) {
-		Render(camera.Projection, camera.View, location);
+		Viewport viewPort;
+		viewPort.X = 0.0f;
+		viewPort.Y = 0.0f;
+		viewPort.Height = m_ScreenFrameBuffer->GetFrameHeight();
+		viewPort.Width = m_ScreenFrameBuffer->GetFrameWidth();
+		viewPort.MinDepth = 0;
+		viewPort.MaxDepth = 1;
+
+		ViewportScissor scissor;
+		scissor.Offset = { 0,0 };
+		scissor.Extent = {(float) m_ScreenFrameBuffer->GetFrameWidth(),(float)m_ScreenFrameBuffer->GetFrameHeight() };
+		Render(camera.Projection, camera.View, location,viewPort,scissor);
+	}
+	void WorldRenderer::Render(CameraComponent& camera, Vector& location, Viewport viewport, ViewportScissor scissor, bool clearOnLoad )
+	{
+		Render(camera.Projection, camera.View, location, viewport, scissor, clearOnLoad);
 	}
 }

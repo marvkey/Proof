@@ -99,7 +99,7 @@ namespace Proof
 		return Mouse::GetPosY();
 	}
 	bool Input::IsControllerState(int ID, ControllerButton button, InputEvent state){
-		auto& controllerHodler = Application::Get()->GetWindow()->m_Controllers;
+		auto& controllerHodler = Application::Get()->GetWindow()->s_Controllers;
 		if (!controllerHodler.contains(ID))
 			return false ;
 	
@@ -107,7 +107,7 @@ namespace Proof
 	}
 	bool Input::IsAnyControllerState(ControllerButton button, InputEvent state)
 	{
-		for (auto& [ID, controller] : Application::Get()->GetWindow()->m_Controllers)
+		for (auto& [ID, controller] : Application::Get()->GetWindow()->s_Controllers)
 		{
 			if (controller.Buttons[button] == state)
 				return true;
@@ -115,50 +115,50 @@ namespace Proof
 		return false;
 	}
 	std::pair<float, float> Input::GetControllerLeftJoystickAxis(int ID) {
-		auto& controllerHodler = Application::Get()->GetWindow()->m_Controllers;
+		auto& controllerHodler = Application::Get()->GetWindow()->s_Controllers;
 		if (!controllerHodler.contains(ID))
 			return { 0,0 };
 		return { controllerHodler[ID].LeftJoystick.Axis.X,controllerHodler[ID].LeftJoystick.Axis.Y };
 	}
 	std::pair<float, float> Input::GetControllerLeftJoystickAxisDistance(int ID) {
-		auto& controllerHodler = Application::Get()->GetWindow()->m_Controllers;
+		auto& controllerHodler = Application::Get()->GetWindow()->s_Controllers;
 		if (!controllerHodler.contains(ID))
 			return { 0,0 };
 		return { controllerHodler[ID].LeftJoystick.Distance.X,controllerHodler[ID].LeftJoystick.Distance.Y };
 	}
 	std::pair<float, float> Input::GetControllerRightJoystickAxis(int ID) {
-		auto& controllerHodler = Application::Get()->GetWindow()->m_Controllers;
+		auto& controllerHodler = Application::Get()->GetWindow()->s_Controllers;
 		if (!controllerHodler.contains(ID))
 			return { 0,0 };
 		return { controllerHodler[ID].RightJoystick.Axis.X,controllerHodler[ID].RightJoystick.Axis.Y };
 	}
 	std::pair<float, float> Input::GetControllerRightJoystickAxisDistance(int ID) {
-		auto& controllerHodler = Application::Get()->GetWindow()->m_Controllers;
+		auto& controllerHodler = Application::Get()->GetWindow()->s_Controllers;
 		if (!controllerHodler.contains(ID))
 			return { 0,0 };
 		return { controllerHodler[ID].RightJoystick.Distance.X,controllerHodler[ID].RightJoystick.Distance.Y };
 	}
 	float Input::GetControllerLeftTriggerAxis(int ID) {
-		auto& controllerHodler = Application::Get()->GetWindow()->m_Controllers;
+		auto& controllerHodler = Application::Get()->GetWindow()->s_Controllers;
 		if (!controllerHodler.contains(ID))
 			return 0;
 		return controllerHodler[ID].LeftTrigger.Axis;
 	}
 	float Input::GetControllerLeftTriggerAxisDistance(int ID) {
-		auto& controllerHodler = Application::Get()->GetWindow()->m_Controllers;
+		auto& controllerHodler = Application::Get()->GetWindow()->s_Controllers;
 		if (!controllerHodler.contains(ID))
 			return 0;
 		return controllerHodler[ID].LeftTrigger.DistanceAxis;
 	}
 
 	float Input::GetControllerRightTriggerAxis(int ID) {
-		auto& controllerHodler = Application::Get()->GetWindow()->m_Controllers;
+		auto& controllerHodler = Application::Get()->GetWindow()->s_Controllers;
 		if (!controllerHodler.contains(ID))
 			return 0;
 		return controllerHodler[ID].RightTrigger.Axis;
 	}
 	float Input::GetControllerRightTriggerAxisDistance(int ID) {
-		auto& controllerHodler =Application::Get()->GetWindow()->m_Controllers;
+		auto& controllerHodler =Application::Get()->GetWindow()->s_Controllers;
 		if (!controllerHodler.contains(ID))
 			return 0;
 		return controllerHodler[ID].RightTrigger.DistanceAxis;

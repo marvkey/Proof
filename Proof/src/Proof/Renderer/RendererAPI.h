@@ -11,7 +11,22 @@ namespace Proof {
 		uint32_t FrameinFlight;
 		uint32_t ImageIndex;
 	};
-	
+	struct Viewport {
+		// upper left and right corner
+		float X;
+		float Y;
+
+		float Width = 0.0f;
+		float Height = 0.0f;
+
+		float MinDepth = 0.0f;
+		float MaxDepth = 1.0f;
+	};
+
+	struct ViewportScissor {
+		Vector2 Offset = { 0,0 };
+		Vector2 Extent = { 0,0 };
+	};
 
 	class Proof_API RendererAPI {
 	public:
@@ -27,6 +42,7 @@ namespace Proof {
 		virtual void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) = 0;
 		virtual void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class ScreenFrameBuffer> frameBuffer);
 
+		virtual void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer, Viewport vieport, ViewportScissor scisscor) = 0;
 		virtual void RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<RenderCommandBuffer> commandBuffer)> data) = 0;
 		virtual void EndRenderPass(Count<class RenderPass> renderPass) =0;
 		virtual void SubmitCommandBuffer(Count<class RenderCommandBuffer>commandBuffer) = 0;

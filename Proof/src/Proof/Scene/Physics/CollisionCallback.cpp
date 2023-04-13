@@ -32,6 +32,8 @@ namespace Proof
 		}
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 		{
+			actor0->OnCollisonLeave(actor1);
+			actor1->OnCollisonLeave(actor0);
 		}
 
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)

@@ -30,5 +30,19 @@ namespace Proof
 
             return new Entity(entityID);
         }
+
+        public static Entity TryFindEntityByTag(string tag)
+        {
+            ulong id = InternalCalls.World_TryFindEntityByTag(tag);
+            if ( id== 0)
+                return null;
+
+            return new Entity(id);
+        }
+
+        public static void DeleteEntity(Entity entity, bool deleteChildren = true)
+        {
+            InternalCalls.World_DeleteEntity(entity.ID, deleteChildren);
+        }
     }
 }

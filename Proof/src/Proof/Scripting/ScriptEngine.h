@@ -151,6 +151,8 @@ namespace Proof
 		void CallOnDestroy();
 
 		void CallOnCollisionEnter(Entity otherEntity);
+		void CallOnCollissionLeave(Entity otherEntity);
+
 		void CallOnTriggerEnter(Entity otherEntity);
 
 		// entity box we are enterin g
@@ -171,6 +173,7 @@ namespace Proof
 		MonoMethod* m_OnDestroy = nullptr;
 
 		MonoMethod* m_OnCollisionEnter = nullptr;
+		MonoMethod* m_OnCollisionLeave = nullptr;
 		MonoMethod* m_OnTriggerEnter = nullptr;
 		MonoMethod* m_OnOverlapTriggerEnter = nullptr;
 
@@ -183,11 +186,14 @@ namespace Proof
 	{
 	public:
 		static void OnCreate(Entity entity);
+		static void OnDestroy(Entity entity);
 		static void OnUpdate(Entity entity, FrameTime time);
+
+		static void CallMeathod(Count<ScriptInstance> instnace, MonoMethod* meathod, void** params);
 	//	static void OnDestroy(Entity entity, const std::string& name);
 		// physics
 		static void OnCollisionEnter(Entity currentEntity, Entity collidingEntity);
-
+		static void OnCollisionLeave(Entity currentEntity, Entity leavingEntity);
 
 		// current entier, entity that has enterd the current entity trigger box
 		static void OnTriggerEnter(Entity currentEntity, Entity triggerEntity);
@@ -215,7 +221,7 @@ namespace Proof
 
 		static const std::unordered_map<std::string, Count<ScriptClass>>const& GetScripts();
 		// scirpt name, instnace
-		static std::unordered_map<std::string, Count<ScriptInstance>>const GetScriptInstnace(Entity enitty);
+		static std::unordered_map<std::string, Count<ScriptInstance>>const& GetScriptInstnace(Entity enitty);
 		static bool EntityHasScripts(Entity enitty);
 		// class name, field, data
 		static std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& GetScriptFieldMap(Entity entity);

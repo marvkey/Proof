@@ -1,6 +1,7 @@
 #pragma once
 #include "Proof/Core/Window.h"
 #include <vector>
+#include <GLFW/glfw3.h>
 namespace Proof {
  
     class Proof_API WindowsWindow : public Window {
@@ -33,7 +34,11 @@ namespace Proof {
         void ContollerButtonCallback(Controller& controller);
         void ContollerAxisCallback(Controller& controller);
         void FrameBufferResizedCallback(int width, int height);
-        friend class CurrentWindow;
+
+        //keyID,key
+        inline static std::unordered_map<uint32_t,ControllerButton> s_ControllerLastKeyClicked; // the last key for controller register
+        static InputEvent ControllerGetState(Controller& controller, GLFWgamepadstate& state, ControllerButton button);
+        inline static WindowsWindow* s_lastWindow;
         bool m_InputEventEnabled =true;
         float m_MousePreviousLocationX = 0;
         float m_MousePreviousLocationY = 0;

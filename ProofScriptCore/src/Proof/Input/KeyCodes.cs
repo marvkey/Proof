@@ -197,4 +197,15 @@ namespace Proof{
 		LeftTrigger =4,
 		RightTrigger =5
 	};
+
+	public enum InputState
+	{
+        None = -1,
+        KeyReleased = 0,
+        KeyPressed = 1,
+        KeyHold = 2,
+        KeyClicked = 3,
+        //KEY PRESSED AND KEY HOLD IS THE SMAE FOR MOUSE INPUTS
+        KeyDouble = 4
+    }
 }

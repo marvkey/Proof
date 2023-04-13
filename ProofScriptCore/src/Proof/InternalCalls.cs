@@ -45,6 +45,13 @@ namespace Proof
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
 		//returns entity ID
         internal extern static ulong World_Instanciate(ulong prefabID, Transform transform);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        //returns entity ID
+        internal extern static ulong World_TryFindEntityByTag(string message);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern	static void World_DeleteEntity(ulong entityID, bool deleteChildren);
         #endregion
 
         #region Entity
@@ -106,6 +113,14 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void RigidBody_ClearForce(ulong entityID, int forceMode);
+
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidBody_GetLinearVelocity(ulong entityID, out Vector linearVelocity);
+
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidBody_SetLinearVelocity(ulong entityID, ref Vector linearVelocity, bool autoAwake);
         #endregion
 
         #region TextComponent
@@ -116,10 +131,6 @@ namespace Proof
         internal extern static void TextComponent_SetText(ulong entityID, ref string Text);
 		#endregion
 
-
-
-
-
 		#region Random
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Random_RandomBool();
@@ -127,8 +138,24 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static int Random_RandomInt32(int min, int max);
+
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float Random_RandomFloat(float min, float max);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static double Random_RandomDouble(double min, double max);
         #endregion
 
 
+        #region PlayerInputComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        //internal extern static void PlayerInputComponent_SetAction(ulong entityID,string className,string ActionName,int state,Action func);
+        internal extern static void PlayerInputComponent_SetAction(ulong entityID,string className,string ActionName,int state,string funcName);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        //internal extern static void PlayerInputComponent_SetMotion(ulong entityID, string className,string ActionName, Action<float> func);
+        internal extern static void PlayerInputComponent_SetMotion(ulong entityID, string className,string ActionName, string funcName);
+        #endregion
     }
 }

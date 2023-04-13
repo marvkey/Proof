@@ -95,6 +95,10 @@ namespace Proof
 		VelocityChange,	
 		Acceleration
 	};
+	public class PlayerInputComponent : Component
+	{
+
+	}
 	public class RigidBodyComponent : Component
 	{
 		public float Mass
@@ -127,6 +131,18 @@ namespace Proof
         {
             InternalCalls.RigidBody_ClearTorque(Entity.ID, (int)mode);
         }
+
+
+		public Vector GetLinearVelocity()
+		{
+			InternalCalls.RigidBody_GetLinearVelocity(Entity.ID, out Vector velocity);
+			return velocity;
+		}
+
+		public void SetLinearVelocity(Vector velocity, bool wakeUp = true)
+		{
+			InternalCalls.RigidBody_SetLinearVelocity(Entity.ID, ref velocity, wakeUp);
+		}
     }
 
 }

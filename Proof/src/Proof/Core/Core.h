@@ -61,6 +61,15 @@ inline const std::string ProofCurrentDirectory = "../Proof/";
 
 namespace Proof
 {
+    enum class Players {
+        None = 0,
+        Player0,
+        Player1,
+        Player2,
+        Player3,
+        Player4,
+        Player5,
+    };
     using MemoryAddress = uintptr_t;
 
     template<typename T>

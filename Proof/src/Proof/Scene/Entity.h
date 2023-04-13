@@ -143,6 +143,23 @@ namespace Proof{
 		auto ForceGetComponent() {
 			return CurrentWorld->m_Registry.get<Component...>(m_ID);
 		}
+
+		// loops through all child entitues and check camera
+		Entity GetCamera() {
+			if (HasComponent< CameraComponent>())
+				return *this;
+
+			Entity cam{ 0,nullptr };
+			EachChild([&](Entity child) {
+				if (child.HasComponent<CameraComponent>())
+				{
+					cam = child;
+					return;
+				}
+			});
+
+			return cam;
+		}
 	private:
 		
 		World* CurrentWorld = nullptr;

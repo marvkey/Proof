@@ -233,3 +233,9 @@ Assets:
   - Asset: 17662049752082377387
     Type: Prefab
     Path: Prefabs\obstacle.Prefab.ProofAsset
+  - Asset: 13308300816728474787
+    Type: World
+    Path: Scenes\MultiplayerScene.ProofWorld
+  - Asset: 11599348577564145596
+    Type: Prefab
+    Path: Prefabs\mPlayer.Prefab.ProofAsset

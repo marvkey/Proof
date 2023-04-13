@@ -24,6 +24,22 @@ namespace Proof
 			return InternalCalls.Entity_HasComponent(ID, componentType);
 		}
 
+		public void SetAction(string ActionName, InputState state, Action func) 
+		{
+			if (!HasComponent<PlayerInputComponent>())
+				return;
+			if (func == null) return;
+			InternalCalls.PlayerInputComponent_SetAction(ID, this.GetType().FullName, ActionName, (int)state, func.Method.Name);
+		}
+
+		public void SetMotion(string MotionName,Action<float> func)
+		{
+			if (!HasComponent<PlayerInputComponent>())
+				return;
+            if (func == null) return;
+
+            InternalCalls.PlayerInputComponent_SetMotion(ID, this.GetType().FullName,MotionName, func.Method.Name);
+		}
         public Entity GetOwner()
         {
 			InternalCalls.Entity_GetOwner(ID, out ulong owenrId);

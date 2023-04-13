@@ -29,6 +29,8 @@ namespace Proof {
         srand(time(NULL));
         Proof::Log::Init();
         s_Instance = this;
+        InputManager::Init();
+
         if (m_ApplicationConfiguration.ProjectPath.empty()) {
             if(std::filesystem::exists("Proof")==false)
                 std::filesystem::create_directory("Proof");
@@ -48,7 +50,6 @@ namespace Proof {
         m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
         m_Window->SetEventCallback([this](Event& e) {OnEvent(e); });
         RendererBase::Init(static_cast<Window*>(m_Window.get()));
-        InputManager::Init();
 
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();

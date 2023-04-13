@@ -26,6 +26,7 @@ namespace Proof {
     Window(configuration) 
     {
         Init();
+        s_lastWindow = this;
     }
     WindowsWindow::~WindowsWindow()
     {
@@ -215,19 +216,25 @@ namespace Proof {
             controller.ID = jid;
             controller.Name = glfwGetGamepadName(jid);
 
-            m_Controllers.insert({ jid,  controller });
-
+            s_Controllers.insert({ jid,  controller });
             ControllerConnectEvent ctEvent(jid);
-            EventCallback(ctEvent);
+            s_lastWindow->EventCallback(ctEvent);
         }
         else if (event == GLFW_DISCONNECTED) {
 
-            if (!m_Controllers.contains(jid))
+            if (!s_Controllers.contains(jid))
                 return;
             
-            m_Controllers.erase(jid);
+            ControllerDisconnectEvent ctEvent(jid);
+            s_lastWindow->EventCallback(ctEvent);
+
+            s_Controllers.erase(jid);
+            s_ControllerLastKeyClicked.erase(jid);
+            if (s_Controllers.size() == 0)
+                return;
+
             startLoop:
-            for (auto& [ID, controller] : m_Controllers)
+            for (auto& [ID, controller] : s_Controllers)
             {
                 if (ID < jid)
                     continue;
@@ -240,14 +247,13 @@ namespace Proof {
 
                 // this is for the glfw suport of controllers
                 // eras this current controller since we have to change the value of settings 
-                m_Controllers.erase(ID);
+                s_Controllers.erase(ID);
                 // creaet a new contorller with id 
-                m_Controllers.insert({ jid - 1,  newControll });
+                s_Controllers.insert({ jid - 1,  newControll });
 
                 goto startLoop;
             }
-            ControllerDisconnectEvent ctEvent(jid);
-            EventCallback(ctEvent);
+         
         }
     }
 
@@ -257,40 +263,38 @@ namespace Proof {
     }
 
     void WindowsWindow::ControllerEventCallback(){
-        for (auto&[ID, controller] : m_Controllers) {
+        for (auto&[ID, controller] : s_Controllers) {
             ContollerButtonCallback(controller);
             ContollerAxisCallback(controller);
         }
     }
-    static std::unordered_map<int, int> s_ControllerLastKeyClicked; // the last key for controller register
 
-    static InputEvent ControllerGetState(Controller& controller, GLFWgamepadstate& state, ControllerButton button) {
-
+    InputEvent WindowsWindow::ControllerGetState(Controller& controller, GLFWgamepadstate& state, ControllerButton button) {
+        if (!s_ControllerLastKeyClicked.contains(controller.ID))
+        {
+            s_ControllerLastKeyClicked[controller.ID] = ControllerButton::None;
+        }
         if ((button == ControllerButton::ButtonLeftTrigger) || (button == ControllerButton::ButtonRightTrigger))
             goto trigerCheck;
         {
             int buttonIndex = (int)button;
-            auto it = s_ControllerLastKeyClicked.find(controller.ID);
-            if (it == s_ControllerLastKeyClicked.end()) {
-                s_ControllerLastKeyClicked.insert({ controller.ID,-1 });
-            }
-
+           
             if (state.buttons[buttonIndex] == GLFW_PRESS) {
                 if (controller.Buttons[button] == InputEvent::KeyPressed || controller.Buttons[button] == InputEvent::KeyClicked) // THE KEY WAS ALSO PRESSED last FRAME
                     return InputEvent::KeyPressed;
                 if (controller.Buttons[button] == InputEvent::None) { // THE KEY WAS NOT PRESSED LAST FRAME
                     auto it = s_ControllerLastKeyClicked.find(controller.ID);
                     if (it != s_ControllerLastKeyClicked.end()) {
-                        it->second = buttonIndex;
+                        it->second = (ControllerButton)buttonIndex;
                     }
                     else {
-                        s_ControllerLastKeyClicked.insert({ controller.ID,buttonIndex });
+                        s_ControllerLastKeyClicked.insert({ controller.ID,(ControllerButton) buttonIndex });
                     }
                     return InputEvent::KeyClicked;
                 }
             }
             if (state.buttons[buttonIndex] == GLFW_RELEASE) {
-                if (buttonIndex == s_ControllerLastKeyClicked.at(controller.ID)) { // double click checking
+                if (buttonIndex == (int)s_ControllerLastKeyClicked.at(controller.ID)) { // double click checking
                     if (controller.Buttons[button] == InputEvent::KeyClicked || controller.Buttons[button] == InputEvent::KeyPressed) {
                         static auto before = std::chrono::system_clock::now();
                         auto now = std::chrono::system_clock::now();
@@ -298,7 +302,7 @@ namespace Proof {
                         before = now;
 
                         if (diff_ms > 10 && diff_ms < 400) {
-                            s_ControllerLastKeyClicked.at(controller.ID) = -1;
+                            s_ControllerLastKeyClicked.at(controller.ID) = (ControllerButton)-1;
                             return InputEvent::KeyDouble;
                         }
                     }
@@ -323,17 +327,17 @@ namespace Proof {
                         if (controller.LeftTrigger.State == InputEvent::None) { // THE KEY WAS NOT PRESSED LAST FRAME
                             auto it = s_ControllerLastKeyClicked.find(controller.ID);
                             if (it != s_ControllerLastKeyClicked.end()) {
-                                it->second = (int)ControllerButton::ButtonLeftTrigger;
+                                it->second = ControllerButton::ButtonLeftTrigger;
                             }
                             else {
-                                s_ControllerLastKeyClicked.insert({ controller.ID,(int)ControllerButton::ButtonLeftTrigger });
+                                s_ControllerLastKeyClicked.insert({ controller.ID,ControllerButton::ButtonLeftTrigger });
                             }
                             return InputEvent::KeyClicked;
                         }
 
                     }
                     if (state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] < 0) { // key is released
-                        if ((int)ControllerButton::ButtonLeftTrigger == s_ControllerLastKeyClicked.at(controller.ID)) { // double click checking
+                        if (ControllerButton::ButtonLeftTrigger == s_ControllerLastKeyClicked.at(controller.ID)) { // double click checking
                             if (controller.LeftTrigger.State == InputEvent::KeyClicked || controller.LeftTrigger.State == InputEvent::KeyPressed) { // double click checking
                                 static auto before = std::chrono::system_clock::now();
                                 auto now = std::chrono::system_clock::now();
@@ -341,7 +345,7 @@ namespace Proof {
                                 before = now;
                                 
                                 if (diff_ms > 10 && diff_ms < 400) {
-                                    s_ControllerLastKeyClicked.at(controller.ID) = -1;
+                                    s_ControllerLastKeyClicked.at(controller.ID) = (ControllerButton)-1;
                                     return InputEvent::KeyDouble;
                                 }
                             }
@@ -362,17 +366,17 @@ namespace Proof {
                         if (controller.RightTrigger.State == InputEvent::None) { // THE KEY WAS NOT PRESSED LAST FRAME
                             auto it = s_ControllerLastKeyClicked.find(controller.ID);
                             if (it != s_ControllerLastKeyClicked.end()) {
-                                it->second = (int)ControllerButton::ButtonRightTrigger;
+                                it->second = ControllerButton::ButtonRightTrigger;
                             }
                             else {
-                                s_ControllerLastKeyClicked.insert({ controller.ID,(int)ControllerButton::ButtonRightTrigger });
+                                s_ControllerLastKeyClicked.insert({ controller.ID,ControllerButton::ButtonRightTrigger });
                             }
                             return InputEvent::KeyClicked;
                         }
 
                     }
                     if (state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] < 0) { // key is released
-                        if ((int)ControllerButton::ButtonRightTrigger == s_ControllerLastKeyClicked.at(controller.ID)) { // double click checking
+                        if (ControllerButton::ButtonRightTrigger == s_ControllerLastKeyClicked.at(controller.ID)) { // double click checking
                             if (controller.RightTrigger.State == InputEvent::KeyClicked || controller.RightTrigger.State == InputEvent::KeyPressed) { // double click checking
                                 static auto before = std::chrono::system_clock::now();
                                 auto now = std::chrono::system_clock::now();
@@ -380,7 +384,7 @@ namespace Proof {
                                 before = now;
 
                                 if (diff_ms > 10 && diff_ms < 400) {
-                                    s_ControllerLastKeyClicked.at(controller.ID) =(int) ControllerButton::None;
+                                    s_ControllerLastKeyClicked.at(controller.ID) =ControllerButton::None;
                                     return InputEvent::KeyDouble;
                                 }
                             }
@@ -397,16 +401,14 @@ namespace Proof {
         return InputEvent::None; // incase
     }
     void WindowsWindow::ContollerButtonCallback(Controller& controller){
-        static std::unordered_map<int, int> s_ControllerLastKeyClicked; // the last key for controller register
         GLFWgamepadstate state;
 
         if (glfwGetGamepadState(controller.ID, &state) == false)
             return;
         int ctrlID = controller.ID;
-        for (int buttonCount = 0; buttonCount < controller.Buttons.size(); buttonCount++) { // +2 for the trigger kerys4
-            InputEvent action = ControllerGetState(controller, state, (ControllerButton)buttonCount);
-            ControllerButton button = (ControllerButton)buttonCount;
-            controller.Buttons[(ControllerButton)buttonCount] = action;
+        for (auto& [button,event] : controller.Buttons) { // +2 for the trigger kerys4
+            InputEvent action = ControllerGetState(controller, state, button);
+            controller.Buttons[button] = action;
 
             switch (action) {
             case InputEvent::KeyPressed:
@@ -435,6 +437,7 @@ namespace Proof {
                 break;
             }
         }
+        /*
         // TRiggers
         {
             // Left
@@ -511,6 +514,7 @@ namespace Proof {
                 
             }
         }
+        */
     }
 
     void WindowsWindow::ContollerAxisCallback(Controller& controller) {
@@ -586,7 +590,11 @@ namespace Proof {
         MouseScrollX.emplace_back(xoffset);
         MouseScrollY.emplace_back(yoffset);
     }
+    static void SetJoystickCallback(WindowsWindow* window, int cID, int event)
+    {
+        glfwSetJoystickUserPointer(cID, window);
 
+    }
     int WindowsWindow::Init() {
 
         if (s_GLFWWindowCount == 0)
@@ -625,6 +633,7 @@ namespace Proof {
             return -1;
         }
         glfwSetWindowUserPointer((GLFWwindow*)m_Window, this);
+
         if (m_WindowConfiguration.startFullScreen && m_WindowConfiguration.startWindowedFullScreen == false) {
             glfwMaximizeWindow((GLFWwindow*)m_Window);
             int width, height;
@@ -682,10 +691,14 @@ namespace Proof {
             proofWindow.FrameBufferResizedCallback(width,height);
         });
 
+        
         glfwSetJoystickCallback([](int cID, int event)
         {
-            WindowsWindow& data = *static_cast<WindowsWindow*>(glfwGetJoystickUserPointer(cID));
-            data.ControllerCallbackConnect(cID, event);
+            //SetJoystickCallback
+            
+            WindowsWindow* proofWindow = (WindowsWindow*)glfwGetJoystickUserPointer(cID);
+           // WindowsWindow& data = *static_cast<WindowsWindow*>(glfwGetJoystickUserPointer(cID));
+            proofWindow->ControllerCallbackConnect(cID, event);
         });
 
         PF_ENGINE_INFO("Window created widht {} height {}", m_WindowConfiguration.Width, m_WindowConfiguration.Height);

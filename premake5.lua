@@ -88,6 +88,7 @@ include "Proof-Editor"
 include "Proof"
 include "SandBox"
 include "ProofScriptCore"  
+include "ProofRuntime"  
 
 
 

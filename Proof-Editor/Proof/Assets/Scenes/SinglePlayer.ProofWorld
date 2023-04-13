@@ -89,6 +89,7 @@ World:
         Width: 250
         Height: 250
         UpVector: [0, 1, 0]
+        UseLocalRotation: true
     - Entity: 5028329592928643564
       TagComponent:
         Tag: Directional Light

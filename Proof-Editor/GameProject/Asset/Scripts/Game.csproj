@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\Enemy.cs" />
+    <Compile Include="src\Multiplayer\MPlayer.cs" />
     <Compile Include="src\Player.cs" />
     <Compile Include="src\Score.cs" />
     <Compile Include="src\SinglePlayer\GameManager.cs" />

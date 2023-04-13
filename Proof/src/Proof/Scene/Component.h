@@ -418,6 +418,7 @@ namespace Proof
 			CameraMatrix = View * Projection;
 		}
 
+		bool UseLocalRotation = false;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -595,6 +596,14 @@ namespace Proof
 		// spacing of new line 
 		float LineSpacing = 1.0f;
 		//Todo background color
+
+		bool UseLocalRotation = false;
+	};
+	
+	struct PlayerInputComponent {
+	public:
+		Players InputPlayer  = Players::None;
+		Count<class Prefab> Player;
 	};
 	template<class ... Component>
 	struct ComponentGroup {
@@ -604,7 +613,7 @@ namespace Proof
 		ComponentGroup<IDComponent, TagComponent, ChildComponent, TransformComponent,
 		MeshComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
-		ScriptComponent, TextComponent>;
+		ScriptComponent, TextComponent, PlayerInputComponent>;
 	
 
 	using LightComponnet =ComponentGroup< DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

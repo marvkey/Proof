@@ -11,12 +11,12 @@ namespace Proof
         private static System.Random rand = new System.Random();
         public static float Float(float min, float max)
         {
-            return (float)rand.NextDouble() * (max - min) + min;// between min and max
+            return InternalCalls.Random_RandomFloat(min, max);  
         }
 
         public static double Double(double min, double max)
         {
-            return rand.NextDouble() * (max - min) + min;
+            return InternalCalls.Random_RandomDouble(min, max); 
         }
 
         public static int Int(int min, int max)

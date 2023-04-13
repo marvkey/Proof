@@ -38,6 +38,7 @@
 #include "Proof/Scene/Prefab.h"
 
 #include "MainWindow/GuiPanel.h"
+#include "Proof/Project/ProjectSerilizer.h"
 namespace Proof
 {
 	static bool SaveSceneDialouge = false;
@@ -268,6 +269,8 @@ namespace Proof
 		m_SimulateButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/SimulateButton.png");
 		m_StopButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/StopButton.png");
 
+		m_PlayersCount = 4;
+
 	}
 	void Editore3D::OnDetach() {
 		if (m_EditorWorld != nullptr) { // using editor world in case active world is on play
@@ -276,7 +279,9 @@ namespace Proof
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 		}
 	}
-	Count<ScreenFrameBuffer> buffer;
+
+	float viepOrtX;
+	float viepOrtY;
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
@@ -292,10 +297,101 @@ namespace Proof
 			case Proof::WorldState::Play:
 				{
 					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
-					if (m_ActiveWorld->HasWorldCamera() && Mouse::IsMouseCaptured()) {
+
+					int player = 1;
+					if (m_PlayersCount > 1 && Mouse::IsMouseCaptured())
+					{
+						m_ActiveWorld->ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
+							PlayerInputComponent& input = *entity.GetComponent<PlayerInputComponent>();
+							if ((int)input.InputPlayer < m_PlayersCount)
+							{
+								Entity cameraEntity = entity.GetCamera();
+								if (cameraEntity)
+								{
+									auto camera =cameraEntity.GetComponent<CameraComponent>();
+									uint32_t windowWIdth = m_ViewPortSize.x / 2;
+									uint32_t windowHeight = m_ViewPortSize.y / 2;
+									auto location = m_ActiveWorld->GetWorldLocation(cameraEntity);
+									Vector rotation;
+									if (camera->UseLocalRotation)
+										rotation = cameraEntity.GetComponent<TransformComponent>()->Rotation;
+									else
+										rotation = m_ActiveWorld->GetWorldRotation(entity);
+									camera->Width = windowWIdth;
+									camera->Height = windowHeight;
+									camera->CalculateProjection(location, rotation);
+									bool clear = false;
+									if (player == 1)
+										m_WorldRenderer->Render(*camera, location);
+
+										clear = true;
+									switch (m_PlayersCount)
+									{
+										case 4:
+											{
+												switch (input.InputPlayer)
+												{
+													//case Proof::Players::None:
+													//	break;
+													case Proof::Players::Player0:
+														{
+															Viewport view;
+															view.X = 0;
+															view.Y = windowHeight;
+
+															view.Width	 = windowWIdth;
+															view.Height = windowHeight;
+
+															ViewportScissor  scissor;
+															scissor.Extent = { (float)windowWIdth*2,(float)windowHeight*2 };
+															scissor.Offset = { view.X ,view.Y };
+
+															m_WorldRenderer->Render(*camera, location, view, scissor);
+														}
+														break;
+													case Proof::Players::Player1:
+														{
+															Viewport view;
+															view.X = windowWIdth;
+															view.Y = windowHeight;
+
+															view.Width = windowWIdth;
+															view.Height = windowHeight;
+
+															ViewportScissor  scissor;
+															scissor.Extent = { (float)windowWIdth,(float)windowHeight };
+															scissor.Offset = { view.X,view.Y };
+															m_WorldRenderer->Render(*camera, location,view,scissor);
+														}
+														break;
+													case Proof::Players::Player2:
+														break;
+													case Proof::Players::Player3:
+														break;
+													case Proof::Players::Player4:
+														break;
+													//case Proof::Players::Player5:
+													//	break;
+													default:
+														break;
+												}
+											}
+										default:
+											break;
+									}
+									player++;
+								}
+							}
+						});
+					}
+					else if (m_ActiveWorld->HasWorldCamera() && Mouse::IsMouseCaptured()) {
 						auto entity = m_ActiveWorld->GetWorldCameraEntity();
 						auto location = m_ActiveWorld->GetWorldLocation(entity);
-						auto rotation = m_ActiveWorld->GetWorldRotation(entity);
+						Vector rotation;
+						if (entity.GetComponent<CameraComponent>()->UseLocalRotation)
+							rotation = entity.GetComponent<TransformComponent>()->Rotation;
+						else
+							rotation = m_ActiveWorld->GetWorldRotation(entity);
 						entity.GetComponent<CameraComponent>()->Width = m_ViewPortSize.x;
 						entity.GetComponent<CameraComponent>()->Height = m_ViewPortSize.y;
 						entity.GetComponent<CameraComponent>()->CalculateProjection(location, rotation);
@@ -349,7 +445,11 @@ namespace Proof
 
 		ViewPort();
 		
-		
+		ImGui::Begin("Debug");
+
+		ImGui::DragFloat("VIeposrtX", &viepOrtX);
+		ImGui::DragFloat("VIeposrtY", &viepOrtY);
+		ImGui::End();
 		
 		for (auto& a : m_AllPanels) {
 			a.second->ImGuiRender(DeltaTime);
@@ -429,10 +529,10 @@ namespace Proof
 						Mouse::CaptureMouse(false);
 						break;
 					}
-					if (Mouse::IsMouseCaptured())
-					{
-						Mouse::CaptureMouse(false);
-					}
+					//if (Mouse::IsMouseCaptured())
+					//{
+					//	Mouse::CaptureMouse(false);
+					//}
 					break;
 			}
 			case KeyBoardKey::P:
@@ -586,7 +686,7 @@ namespace Proof
 				ImGui::SameLine();
 				if (ImGui::Button("Clear log")) {
 					Log::Logs.clear();
-					//ImGui::SetScrollHere();
+					ImGui::SetScrollHereY();
 				}
 				if (ImGui::Button("Settings")) {
 
@@ -686,7 +786,7 @@ namespace Proof
 			}
 			ImGui::PopStyleVar();
 			if (Log::NewLog == true && ImGui::IsWindowFocused() == false) {
-			//	ImGui::SetScrollHere();
+				ImGui::SetScrollHereY();
 				Log::NewLog = false;
 			}
 
@@ -1206,6 +1306,9 @@ namespace Proof
 			timeSave = time.TimePassedMillis();
 		}
 		PF_EC_TRACE("AssetManager Saved {} m/s", timeSave);
+
+		ProjectSerilizer serilizer(Application::Get()->GetProject());
+		serilizer.SerilizeText(Application::Get()->GetProject()->GetConfig().Project.string());
 
 	}
 	void Editore3D::NewWorld()

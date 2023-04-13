@@ -23,7 +23,6 @@ namespace Proof {
 		config.DebugName = "Screen FrameBuffer";
 		config.Attachments = { swapChain->GetImageFormat(),swapChain->GetDepthFormat()};
 		config.Size = { (float)Width,(float)Height };
-
 		screenBuffer->m_FrameBuffer = FrameBuffer::Create(config);
 		return screenBuffer;
 	}

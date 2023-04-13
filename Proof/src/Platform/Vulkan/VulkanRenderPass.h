@@ -26,6 +26,7 @@ namespace Proof{
 		void Init();
 		void CreateRenderPass();
 
+		void BeginRenderPass(Count<class RenderCommandBuffer> command, Count<class FrameBuffer>frameBuffer, Viewport vieport, ViewportScissor scisscor);
 		void BeginRenderPass(Count<class RenderCommandBuffer> command,Count<class FrameBuffer>frameBuffer);
 		void RecordRenderPass(Count<class GraphicsPipeline>pipline,std::function<void(Count<RenderCommandBuffer> commandBuffer)> func);
 		void EndRenderPass();
@@ -40,7 +41,8 @@ namespace Proof{
 
 		bool m_RenderPassEnabled = false;
 		VkRenderPass m_RenderPass = nullptr;
-
+		VkViewport m_Viewport;
+		VkRect2D m_Scissor;
 		friend class VulkanRenderer;
 		friend class VulkanRendererAPI;
 	};

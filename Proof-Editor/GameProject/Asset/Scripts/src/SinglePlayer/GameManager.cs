@@ -25,18 +25,23 @@ namespace Game
 
             for(int i=0; i < 10; i++)
             {
-                int rand = Proof.Random.Int(1, 2);
-                switch (rand)
-                {
-                    case 1:
-                        SpawnObstacle1();
-                        break;
-                    case 2:
-                        SpawnObstacle2();
-                        break;
-                }
+                //int rand = Proof.Random.Int(1, 3);
+                //switch (rand)
+                //{
+                //    case 1:
+                //        SpawnObstacle1();
+                //        break;
+                //    case 2:
+                //        SpawnObstacle2();
+                //        break;
+                //    case 3:
+                //        SpawnObstacle3();
+                //        break;
+                //}
+
             }
-           
+                SpawnObstacle4();
+
         }
 
         void OnUpdate(float ts)
@@ -87,7 +92,7 @@ namespace Game
                 for (int i = 0; i < 4; i++)
                 {
                     spawnTransform.Location.Z = baseLocationZ;
-                    spawnTransform.Location.Y = 1;
+                    spawnTransform.Location.Y = -0.8f;
                     spawnTransform.Location.X = baseLocationX;
                     Entity ent = World.Instanciate(Obstacle, spawnTransform);
 
@@ -100,7 +105,7 @@ namespace Game
                 for (int i = 0; i < 4; i++)
                 {
                     spawnTransform.Location.Z = baseLocationZ;
-                    spawnTransform.Location.Y = 1;
+                    spawnTransform.Location.Y = -0.8f;
                     spawnTransform.Location.X = baseLocationX;
                     Entity ent = World.Instanciate(Obstacle, spawnTransform);
 
@@ -108,10 +113,53 @@ namespace Game
                     baseLocationX -= 2.1f;
                 }
             }
-
             spawnDistanceZ += 15;
+        }
 
+        private void SpawnObstacle3()
+        {
+            Vector playerLocation = Player.GetComponent<TransformComponent>().Location;
+            Transform spawnTransform = new Transform();
+            spawnTransform.Location.Z = playerLocation.Z + spawnDistanceZ;
 
+                spawnTransform.Location.X = 0;
+            spawnTransform.Location.Y = 1f;
+
+            spawnTransform.Scale.Y = 1f;
+            spawnTransform.Scale.Z = 1;
+            spawnTransform.Scale.X = 25f;
+
+            Entity ent = World.Instanciate(Obstacle, spawnTransform);
+            spawnDistanceZ += 13;
+
+        }
+
+        private void SpawnObstacle4()
+        {
+            Vector playerLocation = Player.GetComponent<TransformComponent>().Location;
+            Transform spawnTransform = new Transform();
+            float SpawnTransformz = playerLocation.Z + spawnDistanceZ;
+
+            spawnTransform.Scale.Y = 1;
+            spawnTransform.Scale.Z = 1;
+            spawnTransform.Scale.X = 1;
+            spawnTransform.Location.Y = -0.8f;
+
+            int iterations = Proof.Random.Int(5, 15);
+            Log.Warn($"Number iteration {iterations}");
+            for(int i = 0; i < iterations; i++)
+            {
+                int subIteration = Proof.Random.Int(1, 3);
+                for (int j = 0; j < subIteration; j++)
+                {
+                    spawnTransform.Location.Z = SpawnTransformz;
+                    spawnTransform.Location.X = Proof.Random.Float(-23,23);
+
+                    Entity ent = World.Instanciate(Obstacle, spawnTransform);
+                }
+                SpawnTransformz += 3;
+            }
+            spawnDistanceZ += 20;
         }
     }
 }

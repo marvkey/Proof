@@ -20,7 +20,7 @@
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Physics/PhysicsEngine.h"
 #include "Physics/PhysicsWorld.h"
-
+#include "Proof/Input/InputManager.h"
 #include "Proof/Scene/Prefab.h"
 namespace Proof {
 	World::World(const std::string& name, UUID ID)
@@ -102,13 +102,20 @@ namespace Proof {
 		m_PhysicsWorld->NewActor(entityID);
 	}
 
+	void World::OnRigidBodyComponentDelete(entt::registry64& component, uint64_t entityID)
+	{
+		m_PhysicsWorld->RemoveActor(entityID);
+	}
+
 	void World::OnScriptAdded(entt::registry64& component, uint64_t entityID)
 	{
 		ScriptMeathod::OnCreate({ entityID,this });
 	}
 
-	
-
+	void World::OnScriptDelete(entt::registry64& component, uint64_t entityID)
+	{
+		ScriptMeathod::OnDestroy({ entityID,this }); 
+	}
 	void World::OnUpdateRuntime(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		/*
@@ -256,9 +263,9 @@ namespace Proof {
 	{
 		CopyComponentSinglPrefab<Component...>(dst, dstMap, src, srcID, enttMap);
 	}
-	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, TransformComponent transfom)
+	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, TransformComponent transfom, EntityID id)
 	{
-		Entity newEntity = CreateEntity(name);
+		Entity newEntity = CreateEntity(name, id);
 		
 		std::unordered_map<UUID, uint64_t> enttMap;
 		{
@@ -394,7 +401,31 @@ namespace Proof {
 	
 
 	void World::StartRuntime() {
+		m_CurrentState = WorldState::Play;
+		InputManager::StartRuntime(GetNumComponents< PlayerInputComponent>());
 
+		ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
+			PlayerInputComponent inputCopy = *entity.GetComponent<PlayerInputComponent>();
+			if (inputCopy.InputPlayer == Players::None)
+				return;
+			TransformComponent transfomr = *entity.GetComponent<TransformComponent>();
+			if (!AssetManager::HasAsset(inputCopy.Player))return;
+
+			UUID playerID = entity.GetEntityID();
+			DeleteEntity(entity);
+			DeleteEntitiesfromQeue();
+
+			Entity newEntity =CreateEntity(AssetManager::GetAssetInfo(inputCopy.Player).GetName(), inputCopy.Player, transfomr, playerID);
+			newEntity.AddComponent<PlayerInputComponent>(inputCopy);
+
+			InputManagerMeathods::SetPlayer((uint32_t)inputCopy.InputPlayer);
+		});
+		m_PhysicsWorld = new PhysicsWorld(this, PhysicsWorldConfig());
+		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
+		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
+
+		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
+		m_Registry.on_destroy<ScriptComponent>().connect<&World::OnScriptDelete>(this);
 		{
 			const auto& scriptView = m_Registry.view<NativeScriptComponent>();
 			for (auto entity : scriptView)
@@ -421,20 +452,25 @@ namespace Proof {
 				}
 			}
 		}
-		m_PhysicsWorld = new PhysicsWorld(this, PhysicsWorldConfig());
+		///
+		///
+	
 
-		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
-		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
 
 	}
 	void World::EndRuntime() {
+		InputManager::EndRuntime();
+
 		m_Registry.on_construct<RigidBodyComponent>().disconnect(this);
+		m_Registry.on_destroy<RigidBodyComponent>().disconnect(this);
+
 		m_Registry.on_construct<ScriptComponent>().disconnect(this);
+		m_Registry.on_destroy<ScriptComponent>().disconnect(this);
 
 		ScriptEngine::EndRuntime();
 		delete m_PhysicsWorld;
 	}
-	void World::DeleteEntity(Entity& ent, bool deleteChildren) {
+	void World::DeleteEntity(Entity ent, bool deleteChildren) {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ent.m_ID.Get());
 		if (it == m_Registry.entities.end())
 			return;

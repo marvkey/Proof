@@ -331,6 +331,7 @@ namespace Proof
 			AddComponentGui<TextComponent>(entity, "Text");
 
 			AddComponentGui<ScriptComponent>(entity, "Scripts");
+			AddComponentGui<PlayerInputComponent>(entity, "Player Input");
 			ImGui::EndPopup();
 		}
 		DrawComponents<TagComponent>("Tag", entity, [](TagComponent& subTag) {
@@ -486,6 +487,7 @@ namespace Proof
 				ImGui::EndTooltip();
 			}
 			ExternalAPI::ImGUIAPI::EnumCombo("Type", cameraComp.Type);
+			ExternalAPI::ImGUIAPI::CheckBox("Local Rotation", &cameraComp.UseLocalRotation);
 			/*
 			if (cameraComp.m_AutoSetDimension == false) {
 				int tempWidth = (int)cameraComp.m_Width;
@@ -927,6 +929,29 @@ namespace Proof
 
 			ImGui::DragFloat("Kernng", &textComponent.Kerning,0.025);
 			ImGui::DragFloat("Line Spacing", &textComponent.LineSpacing, 0.025);
+		});
+
+		DrawComponents<PlayerInputComponent>("Player Input", entity, [](PlayerInputComponent& player) {
+			ExternalAPI::ImGUIAPI::EnumCombo("Player", player.InputPlayer);
+			if (AssetManager::HasAsset(player.Player))
+			{
+				auto assetInfo = AssetManager::GetAssetInfo(player.Player);
+				ExternalAPI::ImGUIAPI::TextBar("PlayerPrefab", assetInfo.GetName());
+			}
+			else
+			{
+				ExternalAPI::ImGUIAPI::TextBar("PlayerPrefab", "null (Prefab)");
+			}
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
+				{
+					UUID prefabId = *(UUID*)payload->Data;
+					if (AssetManager::HasAsset(prefabId))
+						player.Player = AssetManager::GetAsset<Prefab>(prefabId);
+				}
+				ImGui::EndDragDropTarget();
+			}
 		});
 	}
 

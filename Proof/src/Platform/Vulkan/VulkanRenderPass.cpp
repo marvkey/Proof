@@ -228,9 +228,9 @@ namespace Proof
         m_ColorAttachments.emplace_back(VulkanRenderPassAttach{ attachment,attachmentRef });
     }
 
-    void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, Count<class FrameBuffer> frameBuffer)
+    void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, Count<class FrameBuffer> frameBuffer, Viewport vieport, ViewportScissor scisscor)
     {
-        PF_CORE_ASSERT(m_RenderPassEnabled == false, fmt::format("cannot start {} render pass when previous render pass is not closed",m_Config.DebugName).c_str());
+        PF_CORE_ASSERT(m_RenderPassEnabled == false, fmt::format("cannot start {} render pass when previous render pass is not closed", m_Config.DebugName).c_str());
         m_CommandBuffer = command;
         m_CurrentFrameBuffer = frameBuffer;
         m_RenderPassEnabled = true;
@@ -238,7 +238,16 @@ namespace Proof
         const FrameBufferConfig& config = frameBuffer->GetConfig();
         VkClearValue colorValue{ config.ClearColor.X, config.ClearColor.Y, config.ClearColor.Z, config.ClearColor.W };
         std::vector< VkClearValue> clearValues;
-  
+        m_Viewport.x = vieport.X;
+        m_Viewport.y = vieport.Y;
+        m_Viewport.width = (float)vieport.Width;
+        m_Viewport.height = (float)vieport.Height;
+        m_Viewport.minDepth = vieport.MinDepth;
+        m_Viewport.maxDepth = vieport.MaxDepth;
+
+
+        m_Scissor.offset = { (int)scisscor.Offset.X, (int)scisscor.Offset.Y };
+        m_Scissor.extent = { (uint32_t)scisscor.Extent.X,(uint32_t)scisscor.Extent.Y };
         // setting frameBuffer clear values
         {
             clearValues.resize(config.Attachments.Attachments.size());
@@ -259,10 +268,8 @@ namespace Proof
             renderPassInfo.framebuffer = frameBuffer.As<VulkanFrameBuffer>()->GetFrameBuffer();
 
             // the area shader loads and 
-            renderPassInfo.renderArea.offset = { 0,0 };
             // for high displays swap chain extent could be higher than windows extent
-            renderPassInfo.renderArea.extent.width = config.Size.X;
-            renderPassInfo.renderArea.extent.height = config.Size.Y;
+            renderPassInfo.renderArea = m_Scissor;
 
             renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
             renderPassInfo.pClearValues = clearValues.data();
@@ -286,27 +293,23 @@ namespace Proof
                 iterate++;
                 VkClearRect clearRect = {};
                 clearRect.layerCount = 1;
-                clearRect.rect.offset = { 0, 0 };
-                clearRect.rect.extent.width = config.Size.X;
-                clearRect.rect.extent.height = config.Size.Y;
+                clearRect.rect = m_Scissor;
                 reactClear.emplace_back(clearRect);
             }
             // basically no need to check if it is depth
             // it would be a depth or stencil format 
             // if it not a color formats
-            else if(config.ClearDepthOnLoad)
+            else if (config.ClearDepthOnLoad)
             {
                 clearAttach.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                clearAttach.clearValue.depthStencil = { config.DepthClearValue,config.StencilClearValue};
+                clearAttach.clearValue.depthStencil = { config.DepthClearValue,config.StencilClearValue };
 
                 VkClearRect clearRect = {};
                 clearRect.layerCount = 1;
-                clearRect.rect.offset = { 0, 0 };
-                clearRect.rect.extent.width = config.Size.X;
-                clearRect.rect.extent.height = config.Size.Y;
+                clearRect.rect = m_Scissor;
                 reactClear.emplace_back(clearRect);
             }
-    
+
             clears.emplace_back(clearAttach);
         }
         vkCmdClearAttachments(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
@@ -314,25 +317,36 @@ namespace Proof
             clears.data(),
             reactClear.size(),
             reactClear.data());
+
+ 
+    }
+
+    void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, Count<class FrameBuffer> frameBuffer)
+    {
+        Viewport viewport;
+        ViewportScissor scissor;
+        viewport.X = 0.0f;
+        viewport.Y = 0.0f;
+        viewport.Width = (float)frameBuffer->GetConfig().Size.X ;
+        viewport.Height = (float)frameBuffer->GetConfig().Size.Y ;
+        viewport.MinDepth = 0.0f;
+        viewport.MaxDepth = 1.0f;
+
+
+        scissor.Offset = { 0, 0 };
+        scissor.Extent = { viewport.Width,viewport.Height };
+
+        BeginRenderPass(command, frameBuffer, viewport, scissor);
     }
     void VulkanRenderPass::RecordRenderPass(Count<class GraphicsPipeline>pipline, std::function<void(Count<RenderCommandBuffer> commandBuffer)> func) {
         auto vulkanPipeline =pipline.As<VulkanGraphicsPipeline>();
         vkCmdBindPipeline(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
             VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetPipline());
 
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = (float)m_CurrentFrameBuffer->GetConfig().Size.X;
-        viewport.height = (float)m_CurrentFrameBuffer->GetConfig().Size.Y;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &viewport);
+        
+        vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &m_Viewport);
 
-        VkRect2D scissor{};
-        scissor.offset = { 0, 0 };
-        scissor.extent = { (uint32_t)viewport.width,(uint32_t)viewport.height };
-        vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &scissor);
+        vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &m_Scissor);
         //if(vulkanPipeline->m_LineWidth !=1.0f)
         //    vkCmdSetLineWidth(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
 

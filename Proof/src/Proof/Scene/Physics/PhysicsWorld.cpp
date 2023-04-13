@@ -107,6 +107,11 @@ namespace Proof {
 		PF_CORE_ASSERT(HasActor(id), " Does not contain actor");
 		return m_Actors.at(id);
 	}
+	void PhysicsWorld::RemoveActor(UUID id)
+	{
+		PF_CORE_ASSERT(HasActor(id), " Does not contain actor");
+		m_Actors.erase(id);
+	}
 	void PhysicsWorld::StartWorld()
 	{
 		PF_PROFILE_FUNC();

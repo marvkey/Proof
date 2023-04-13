@@ -179,7 +179,7 @@ namespace Proof
     }
     MonoObject* ScriptClass::CallMethod(MonoObject* instance, MonoMethod* method, void** params) {
 
-        MonoObject* exception = nullptr;
+       MonoObject* exception = nullptr;
        mono_runtime_invoke(method, instance, params, &exception);
        return exception;
     }
@@ -193,6 +193,7 @@ namespace Proof
 
         m_OnTriggerEnter = scriptClass->GetMethod("OnTriggerEnter", 1);
         m_OnCollisionEnter = scriptClass->GetMethod("OnCollisionEnter", 1);
+        m_OnCollisionLeave = scriptClass->GetMethod("OnCollisionLeave", 1);
 
         m_OnOverlapTriggerEnter = scriptClass->GetMethod("OnOverllapTriggerEnter", 1);
        // m_OnPlaced = scriptClass->GetMethod("OnPlace", 0);
@@ -243,6 +244,22 @@ namespace Proof
             param = instance;
             m_ScriptClass->CallMethod(m_Instance, m_OnCollisionEnter, &param);
         }
+    }
+    void ScriptInstance::CallOnCollissionLeave(Entity otherEntity)
+    {
+        if (!m_OnCollisionLeave)return;
+        uint64_t enittyID = otherEntity.GetEntityID();
+        void* param = &enittyID;
+
+        {
+            MonoObject* instance = m_ScriptClass->Instantiate();
+            m_ScriptClass->CallMethod(instance, m_Constructor, &param);
+
+
+            param = instance;
+            m_ScriptClass->CallMethod(m_Instance, m_OnCollisionLeave, &param);
+        }
+
     }
     void ScriptInstance::CallOnTriggerEnter(Entity otherEntity)
     {
@@ -461,7 +478,7 @@ namespace Proof
     const std::unordered_map<std::string, Count<ScriptClass>>const& ScriptEngine::GetScripts() {
         return s_Data->ScriptEntityClasses;
     }
-    std::unordered_map<std::string, Count<ScriptInstance>> const ScriptEngine::GetScriptInstnace(Entity entity)
+    std::unordered_map<std::string, Count<ScriptInstance>> const& ScriptEngine::GetScriptInstnace(Entity entity)
     {
         return s_Data->EntityInstances[entity.GetEntityID()];
     }
@@ -573,6 +590,22 @@ namespace Proof
             }
         }
     }
+    void ScriptMeathod::OnDestroy(Entity entity)
+    {
+        const auto& sc = *entity.GetComponent<ScriptComponent>();
+
+        UUID entityUUID = entity.GetEntityID();
+
+        if (s_Data->EntityInstances.contains(entityUUID))
+        {
+            for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
+            {
+                instance->CallOnDestroy();
+            }
+            s_Data->EntityInstances.erase(entityUUID);
+        }
+
+    }
     void ScriptMeathod::OnUpdate(Entity entity, FrameTime time)
     {
         UUID entityUUID = entity.GetEntityID();
@@ -588,6 +621,12 @@ namespace Proof
             PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID, entity.GetName());
         }
     }
+
+    void ScriptMeathod::CallMeathod(Count<ScriptInstance> instnace, MonoMethod* meathod, void** params)
+    {
+        MonoObject* exception = nullptr;
+        mono_runtime_invoke(meathod, instnace->m_Instance, params, &exception);
+    }
     
     void ScriptMeathod::OnCollisionEnter(Entity currentEntity, Entity collidingEntity)
     {
@@ -597,6 +636,22 @@ namespace Proof
             for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
             {
                 instance->CallOnCollisionEnter(collidingEntity);
+            }
+        }
+        else
+        {
+            PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID, currentEntity.GetName());
+        }
+    }
+    void ScriptMeathod::OnCollisionLeave(Entity currentEntity, Entity leavingEntity)
+    {
+
+        UUID entityUUID = currentEntity.GetEntityID();
+        if (s_Data->EntityInstances.contains(entityUUID))
+        {
+            for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
+            {
+                instance->CallOnCollissionLeave(leavingEntity);
             }
         }
         else

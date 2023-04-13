@@ -1,0 +1,48 @@
+World:
+  ID: 13308300816728474787
+  Entities:
+    - Entity: 17282964813727439423
+      TagComponent:
+        Tag: plane
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [37.2000008, 1, 1000]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 0
+            Index: 0
+    - Entity: 15009829747103843900
+      TagComponent:
+        Tag: Plyer1
+        tags: []
+      TransformComponent:
+        Location: [0, 5, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      PlayerInputComponent:
+        InputPlayer: Player0
+        PrefabID: 11599348577564145596
+    - Entity: 3941401691345106710
+      TagComponent:
+        Tag: Plyer2
+        tags: []
+      TransformComponent:
+        Location: [-44.9000015, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      PlayerInputComponent:
+        InputPlayer: Player1
+        PrefabID: 11599348577564145596

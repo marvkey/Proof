@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#define MAGIC_ENUM_RANGE_MIN -10
+#define MAGIC_ENUM_RANGE_MAX 5000
 #include <magic_enum.hpp>
 #include <vector>
 namespace Proof
@@ -13,10 +15,10 @@ namespace Proof
 			auto name = magic_enum::enum_name<E>(value);
 			return std::string(name);
 		}
-		template <typename E, typename Lambda>
-		static void ForEach(Lambda& lambda) {
-			magic_enum::enum_for_each<E>([&](auto val) {
-				lambda(val);
+		template <typename E, typename Func>
+		static void ForEach(Func func) {
+			magic_enum::enum_for_each<E>([&](E val) {
+				func(val);
 			});
 		}
 		template <typename E>

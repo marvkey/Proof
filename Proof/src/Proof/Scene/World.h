@@ -65,7 +65,7 @@ namespace Proof {
 		void OnUpdateEditor(FrameTime DeltaTime);
 		void OnSimulatePhysics(FrameTime DeltaTime);
 
-		Entity CreateEntity(const std::string& name, Count<class Prefab> prefab, TransformComponent transform);
+		Entity CreateEntity(const std::string& name, Count<class Prefab> prefab, TransformComponent transform, EntityID id = EntityID());
 		class Entity CreateEntity(const std::string& EntName = "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName, EntityID ID);
 		class Entity CreateEntity(Entity entity, bool includeChildren = true);
@@ -73,7 +73,7 @@ namespace Proof {
 		Entity GetEntity(UUID id);
 		Entity FindEntityByTag(const std::string& tag);
 		// entities get added to a que and deleted at teh e end of the frame
-		void DeleteEntity(class Entity& ent, bool deleteChildren = true);
+		void DeleteEntity(class Entity ent, bool deleteChildren = true);
 
 		Vector GetWorldLocation(Entity entity) const;
 		Vector GetWorldRotation(Entity entity) const;
@@ -113,13 +113,14 @@ namespace Proof {
 		template <class ...T, class Func>
 		void ForEachComponent(Func func) {
 			auto view = m_Registry.view<T...>();
+			
 			view.pick_and_each(std::move(func), std::index_sequence_for<T...>{});
 		}
 		// returns number entities with componet
 		// if more than one componenet passed it returns number entities with that combiniation of component
 		template <class ...T>
 		uint32_t GetNumComponents() {
-			const auto& group = m_Registry.group<T>();
+			auto group = m_Registry.view<T...>();
 			return group.size();
 		}
 
@@ -133,7 +134,9 @@ namespace Proof {
 		void OnMeshColliderComponentDelete(MeshColliderComponent& component);
 
 		void OnRigidBodyComponentCreate(entt::registry64& component, uint64_t entityID);
-		void OnScriptAdded(entt::registry64& component,uint64_t entityID);
+		void OnRigidBodyComponentDelete(entt::registry64& component, uint64_t entityID);
+		void OnScriptAdded(entt::registry64& component, uint64_t entityID);
+		void OnScriptDelete(entt::registry64& component,uint64_t entityID);
 
 		void OnChildComponentDestroy(ChildComponent& childComponent	);
 		std::vector< EntityID> m_EntityDeleteQueue;

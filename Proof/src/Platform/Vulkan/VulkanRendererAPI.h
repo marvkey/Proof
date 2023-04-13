@@ -5,7 +5,8 @@ namespace Proof {
    public:
 	  virtual void DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount,uint32_t instanceCount,uint32_t firstVertex = 0,uint32_t firstInstance = 0) override;
 	  virtual void DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance=0) override;
-	
+
+	  virtual void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer, Viewport vieport, ViewportScissor scisscor);
 	  virtual void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) override;
 	  virtual void RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<class RenderCommandBuffer> commandBuffer)> data) override;
 	  virtual void EndRenderPass(Count<class RenderPass> renderPass) override;

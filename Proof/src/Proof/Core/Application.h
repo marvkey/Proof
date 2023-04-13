@@ -40,6 +40,8 @@
         Window* GetWindow() {
             return m_Window.get();
         }
+
+        
     protected:
         Application(const ApplicationConfiguration& config);
         bool WindowMinimized = false;

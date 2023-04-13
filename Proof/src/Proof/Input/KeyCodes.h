@@ -167,10 +167,11 @@ namespace Proof
 	//https://wiki.libsdl.org/SDL2/SDL_GameControllerButton
 
 		None =-1,
-		ButtonA = 0,
-		ButtonB = 1,
-		ButtonX = 2,
-		ButtonY = 3,
+		ButtonCROSS = 0,
+		ButtonCIRCLE = 1,
+		ButtonSQUARE = 2,
+		ButtonTRIANGLE = 3,
+	
 		ButtonLeftBumper = 4,
 		ButtonRightBumper = 5,
 		ButtonBack = 6,
@@ -183,12 +184,11 @@ namespace Proof
 		ButtonDpadDown= 13,
 		ButtonDpadLeft = 14,
 
-
-		ButtonCROSS = ButtonA,
-		ButtonCIRCLE = ButtonB,
-		ButtonSQUARE = ButtonX,
-		ButtonTRIANGLE = ButtonY,
-
+		ButtonA = ButtonCROSS,
+		ButtonB = ButtonCIRCLE,
+		ButtonX = ButtonSQUARE,
+		ButtonY = ButtonTRIANGLE,
+	
 		ButtonRightTrigger =20, // this are proof defined only used in the proof engine as this values
 		ButtonLeftTrigger = 21 // this are proof defined only used in the proof engine as this values
 	};

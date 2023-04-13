@@ -73,6 +73,15 @@ namespace Proof {
 		Count<class SwapChain> GetSwapChain(){
 			return m_SwapChain;
 		}
+
+		static bool HasController(int index) {
+			return s_Controllers.contains(index);
+		}
+
+		static class Controller& GetController(int index) {
+			PF_CORE_ASSERT(HasController(index), "Does not contain controller");
+			return s_Controllers.at(index);
+		}
 	protected:
 		Count<class SwapChain> m_SwapChain;
 		bool m_FrameBufferResized = false;
@@ -100,7 +109,8 @@ namespace Proof {
 		std::vector<MouseButton> m_MouseButtonPressedEventCheck;
 
 		// controller ID
-		std::map<int, Controller> m_Controllers;
+		inline static std::map<int, Controller> s_Controllers;
 		friend class RendererBase;
+		friend class InputManager;
 	};
 }

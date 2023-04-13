@@ -3,3 +3,21 @@ Project:
   AssetDirectory: Assets
   AssetManager: Assets/AssetManager.ProofAssetManager
   StartWorld: 1231203838479
+  Input:
+    ActionMapping:
+      - Action: NewAction
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [66, 261]
+          - InputDevice: MouseButton
+            Keys: [0]
+      - Action: NewAction(1)
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [301]
+    MotionMapping:
+      - Motion: NewMotion
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [69, 74]
+            MotionValues: [56, 11]

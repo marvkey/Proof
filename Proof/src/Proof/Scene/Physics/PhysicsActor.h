@@ -18,6 +18,7 @@ namespace Proof{
 		void OnFixedUpdate(float deltaTime);
 
 		void OnCollisonEnter(const PhysicsActor* actor);
+		void OnCollisonLeave(const PhysicsActor* actor);
 
 		void ClearForce(ForceMode mode = ForceMode::Force);
 		void ClearTorque(ForceMode mode = ForceMode::Force);
@@ -26,6 +27,14 @@ namespace Proof{
 
 		// current acotr overlaps another trigger box
 		void OnOverlapTriggerEnter(const PhysicsActor* actor);
+
+		// veclocity in a straight line
+		Vector GetLinearVelocity();
+		// veclocity in an angle
+		Vector GetAngularVelocity();
+
+		void SetLinearVelocity(Vector velocity, bool wakeUp = true);
+		void SetAngularVelocity(Vector velocity, bool wakeUp = true);
 	private:
 		friend class PhysicsWorld;
 		// not sure how we gonna treat this yet

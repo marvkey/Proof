@@ -6,6 +6,7 @@
 #include "ScriptEngine.h"
 #include "Proof/Scene/Physics/PhysicsWorld.h"
 #include "Proof/Scene/Prefab.h"
+#include "Proof/Input/InputManager.h"
 //(IMPORTANT)
 /*
 *WHEN PASSING A MONO TYPE MAKE SURE ITS A SRUCT BECAUSE WHEN ITS A CLASS IT GETS SOME UNDEFNIED BEHAVIOR
@@ -78,6 +79,31 @@ namespace Proof
 		Entity entity = world->CreateEntity(info.GetName(), prefab, transform);
 
 		return entity.GetEntityID().Get();
+	}
+
+	static uint64_t World_TryFindEntityByTag(MonoString* classFullName)
+	{ 
+		World* world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+		std::string tag = ScriptEngine::MonoToString(classFullName);
+		Entity entity = world->FindEntityByTag(tag);
+		return entity.GetEntityID();
+	}
+
+	static void World_DeleteEntity(uint64_t entityID, bool deleteChildren) 
+	{
+		World* world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("World.DeleteEntity  - entity is invalid");
+			return;
+		}
+		#endif
+		world->DeleteEntity(entity, deleteChildren);
 	}
 	#pragma endregion
 #pragma region Entity
@@ -285,6 +311,49 @@ namespace Proof
 		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
 		actor->ClearTorque((ForceMode)forceMode);
 	}
+	static void RigidBody_GetLinearVelocity(EntityID entityID, Vector* force) 
+	{
+		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		{
+			PF_ERROR("RigidBody.GetLinearVelocity - entity is invalid  or does not have rigid body");
+			return;
+		}
+		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+		*force = actor->GetLinearVelocity();
+	}
+
+	static void RigidBody_SetLinearVelocity(EntityID entityID, Vector* force, bool wakeUP)
+	{
+		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		{
+			PF_ERROR("RigidBody.SetLinearVelocity - entity is invalid  or does not have rigid body");
+			return;
+		}
+		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+		 actor->SetLinearVelocity(*force, wakeUP);
+	}
+	static void RigidBody_SetAngularVelocity(EntityID entityID, Vector* force, bool wakeUP)
+	{
+		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		{
+			PF_ERROR("RigidBody.SetAngularVelocity - entity is invalid  or does not have rigid body");
+			return;
+		}
+		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+		actor->SetAngularVelocity(*force, wakeUP);
+	}
+
+	static void RigidBody_GetAngularVelocity(EntityID entityID, Vector* force)
+	{
+
+		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		{
+			PF_ERROR("RigidBody.GetAngularVelocity - entity is invalid  or does not have rigid body");
+			return;
+		}
+		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+		*force = actor->GetAngularVelocity();
+	}
 #pragma endregion
 
 	#pragma region Random
@@ -295,7 +364,82 @@ namespace Proof
 	static int32_t Random_RandomInt32(int32_t min, int32_t max){
 		return Random::Int<int32_t>(min, max);
 	}
+
+	static float Random_RandomFloat(float min, float max)
+	{
+		return Random::Real<float>(min, max);
+	}
+
+	static double Random_RandomDouble(double min, double max)
+	{
+		return Random::Real<double>(min, max);
+	}
 	#pragma endregion
+
+	#pragma region PlayerInputComponent
+	static void PlayerInputComponent_SetAction(uint64_t entityID, MonoString* className,MonoString* ActionName, uint32_t inputState, MonoString* meathodName)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerInputComponent.SetAction - entity is invalid or Does not have rigidBody");
+			return;
+		}
+		#endif
+
+		if (!entity.HasComponent<PlayerInputComponent>())
+			return;
+
+		PlayerInputComponent& playerInput = *entity.GetComponent <PlayerInputComponent>();
+		
+		auto entityScripts = ScriptEngine::GetScriptInstnace(entity);
+
+		std::string classAsString = ScriptEngine::MonoToString(className);
+		if(!entityScripts.contains(classAsString))return;
+
+		Count<ScriptInstance> script = entityScripts.at(classAsString);
+
+		std::string meathodNameStr = ScriptEngine::MonoToString(meathodName);
+		MonoMethod* meathod = mono_class_get_method_from_name(script->GetScriptClass()->GetMonoClass(), meathodNameStr.c_str(), 0);
+		auto call = [script = script, meathod = meathod]() {
+			ScriptMeathod::CallMeathod(script, meathod, nullptr);
+		};
+		InputManagerMeathods::BindAction(ScriptEngine::MonoToString(ActionName), (uint32_t)playerInput.InputPlayer, (InputEvent) inputState,call);
+	}
+
+	static void PlayerInputComponent_SetMotion(uint64_t entityID, MonoString* className, MonoString* ActionName, uint32_t inputState, MonoString* meathodName)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerInputComponent.SetMotion - entity is invalid or Does not have rigidBody");
+			return;
+		}
+		#endif
+
+		if (!entity.HasComponent<PlayerInputComponent>())
+			return;
+
+		PlayerInputComponent& playerInput = *entity.GetComponent <PlayerInputComponent>();
+
+		auto entityScripts = ScriptEngine::GetScriptInstnace(entity);
+
+		std::string classAsString = ScriptEngine::MonoToString(className);
+		if (!entityScripts.contains(classAsString))return;
+
+		Count<ScriptInstance> script = entityScripts.at(classAsString);
+		std::string meathodNameStr = ScriptEngine::MonoToString(meathodName);
+		MonoMethod* meathod = mono_class_get_method_from_name(script->GetScriptClass()->GetMonoClass(), meathodNameStr.c_str(), 0);
+		auto call = [script = script, meathod = meathod](float axisValue) {
+			void* param = &axisValue;
+
+			ScriptMeathod::CallMeathod(script, meathod, &param);
+		};
+		InputManagerMeathods::BindMotion(ScriptEngine::MonoToString(ActionName), (uint32_t)playerInput.InputPlayer, call);
+	}
+	#pragma endregion 
 #pragma region ScriptFunc
 
 	template<typename... Component>
@@ -354,6 +498,8 @@ namespace Proof
 		//World
 		{
 			PF_ADD_INTERNAL_CALL(World_Instanciate);
+			PF_ADD_INTERNAL_CALL(World_TryFindEntityByTag);
+			PF_ADD_INTERNAL_CALL(World_DeleteEntity);
 		}
 		//Entity 
 		{
@@ -381,6 +527,12 @@ namespace Proof
 
 			PF_ADD_INTERNAL_CALL(RigidBody_ClearForce);
 			PF_ADD_INTERNAL_CALL(RigidBody_ClearTorque);
+
+			PF_ADD_INTERNAL_CALL(RigidBody_GetAngularVelocity);
+			PF_ADD_INTERNAL_CALL(RigidBody_SetAngularVelocity);
+
+			PF_ADD_INTERNAL_CALL(RigidBody_GetLinearVelocity);
+			PF_ADD_INTERNAL_CALL(RigidBody_SetLinearVelocity);
 		}
 		//TextComponent
 		{
@@ -391,6 +543,14 @@ namespace Proof
 		{
 			PF_ADD_INTERNAL_CALL(Random_RandomBool);
 			PF_ADD_INTERNAL_CALL(Random_RandomInt32);
+			PF_ADD_INTERNAL_CALL(Random_RandomFloat);
+			PF_ADD_INTERNAL_CALL(Random_RandomDouble);
+		}
+
+		//Player InputComponent
+		{
+			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetAction);
+			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetMotion);
 		}
 		
 	}

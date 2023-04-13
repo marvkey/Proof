@@ -30,10 +30,12 @@ namespace Proof {
         // disntance the Trigger has moved since last frame
         float DistanceAxis;
     };
-    struct Controller {
+    struct Controller
+    {
         Controller() {
-            for (auto&[button, state] : Buttons)
-                state = InputEvent::None;
+            EnumReflection::ForEach<ControllerButton>([&](ControllerButton& button){
+                Buttons[button] = InputEvent::None;
+            });
         }
         std::string Name;
         uint32_t ID = 0;
@@ -45,7 +47,6 @@ namespace Proof {
 
         ControllerTrigger RightTrigger;
         ControllerTrigger LeftTrigger;
-    private:
-        uint32_t PlayerIndex = 1;
+        Players Player = Players::None;
     };
 }

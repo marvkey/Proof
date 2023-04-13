@@ -1,5 +1,7 @@
 #include "Proofprch.h"
 #include "InputManager.h"
+#include "Proof/Input/InputManager.h"
+#include "Proof/Input/Controller.h"
 #include "Proof/Events/Event.h"
 namespace Proof {
 
@@ -15,6 +17,7 @@ namespace Proof {
 		std::unordered_map<uint32_t, std::unordered_map<std::string, PlayerMotion>> PlayerMotions;
 
 		bool Runtime = false;
+		uint32_t PlayerCount = 0;
 	};
 	InputManagerData* s_Data;
 
@@ -43,7 +46,7 @@ namespace Proof {
 		auto& actionMapping = s_Data->PlayerActions[player];
 
 
-		if (s_Data->ActionMapping.contains(name))
+		if (!s_Data->ActionMapping.contains(name))
 		{
 			PF_EC_WARN("Player {} Tried binding Action to {} wich does not exist",player, name);
 			return;
@@ -59,7 +62,7 @@ namespace Proof {
 
 		auto& motionMapping = s_Data->PlayerMotions[player];
 
-		if (s_Data->MotionMapping.contains(name))
+		if (!s_Data->MotionMapping.contains(name))
 		{
 			PF_EC_WARN("Player {} Tried binding motion to {} wich does not exist", player, name);
 			return;
@@ -121,12 +124,25 @@ namespace Proof {
 		return true;
 	}
 	
-	void InputManager::RuntimeStart()
+	void InputManager::StartRuntime(uint32_t playerCount)
 	{
 		s_Data->Runtime = true;
+		s_Data->PlayerCount = playerCount;
+
+		auto& controllers = Application::Get()->GetWindow()->s_Controllers;
+
+		int currentPlayer = 0;
+		for (auto [ID, contoller] : controllers)
+		{
+			if (playerCount > ID)
+			{
+				contoller.Player = (Players)currentPlayer;
+			}
+			currentPlayer++;
+		}
 	}
 
-	void InputManager::RuntimeEnd()
+	void InputManager::EndRuntime()
 	{
 		s_Data->PlayerActions.clear();
 		s_Data->PlayerMotions.clear();
@@ -147,7 +163,7 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetKey())
 				{
-					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyHold);
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyHold);
 				}
 			}
 		}
@@ -164,7 +180,7 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetKey())
 				{
-					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyDouble);
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyDouble);
 				}
 			}
 		}
@@ -180,7 +196,7 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetKey())
 				{
-					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyReleased);
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyReleased);
 				}
 			}
 		}
@@ -197,7 +213,7 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetKey())
 				{
-					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyClicked);
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyClicked);
 				}
 			}
 		}
@@ -215,7 +231,7 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetKey())
 					{
-						InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue);
+						InputManagerMeathods::CallMotion(name, (uint32_t)Players::Player0, inputs.MotionValue);
 					}
 				}
 			}
@@ -233,7 +249,7 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetKey())
 					{
-						InputManagerMeathods::CallAction(name, 1, InputEvent::KeyPressed);
+						InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyPressed);
 					}
 				}
 			}
@@ -250,7 +266,7 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
-					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyClicked);
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyClicked);
 				}
 			}
 		}
@@ -267,7 +283,7 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
-					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyPressed);
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyPressed);
 				}
 			}
 		}
@@ -281,7 +297,7 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetButton())
 					{
-						InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue);
+						InputManagerMeathods::CallMotion(name, (uint32_t)Players::Player0, inputs.MotionValue);
 					}
 				}
 			}
@@ -300,7 +316,7 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
-					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyReleased);
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyReleased);
 				}
 			}
 		}
@@ -319,11 +335,11 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)MouseAxis::X)
 					{
-						InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * movedX);
+						InputManagerMeathods::CallMotion(name, (uint32_t)Players::Player0, inputs.MotionValue * movedX);
 					}
 					else if (inputs.Key == (int)MouseAxis::Y)
 					{
-						InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue* movedY);
+						InputManagerMeathods::CallMotion(name, (uint32_t)Players::Player0, inputs.MotionValue* movedY);
 					}
 				}
 			}
@@ -341,7 +357,8 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
-					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyClicked);
+					Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+					InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyClicked);
 				}
 			}
 		}
@@ -360,7 +377,8 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetButton())
 					{
-						InputManagerMeathods::CallAction(name, 1, InputEvent::KeyPressed);
+						Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+						InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyPressed);
 					}
 				}
 			}
@@ -377,7 +395,8 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetButton())
 					{
-						InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue);
+						Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+						InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue);
 					}
 				}
 			}
@@ -395,7 +414,9 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
-					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyReleased);
+					Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
+					InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyReleased);
 				}
 			}
 		}
@@ -413,7 +434,9 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
-					InputManagerMeathods::CallAction(name, 1, InputEvent::KeyDouble);
+					Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
+					InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyDouble);
 				}
 			}
 		}
@@ -430,7 +453,9 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetTriggerAxis())
 				{
-					InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * e.GetAxis());
+					Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
+					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetAxis());
 				}
 			}
 		}
@@ -445,13 +470,16 @@ namespace Proof {
 			auto& data = motion.Inputs.at(InputDevice::ControllerAxis);
 			for (auto& inputs : data)
 			{
+				Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
 				if (inputs.Key == (int)ControllerAxis::LeftX)
 				{
-					InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * e.GetDistanceX());
+
+					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetX());
 				}
 				else if (inputs.Key == (int)ControllerAxis::LeftY)
 				{
-					InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * e.GetDistanceY());
+					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetY());
 				}
 			}
 		}
@@ -467,13 +495,15 @@ namespace Proof {
 			auto& data = motion.Inputs.at(InputDevice::ControllerAxis);
 			for (auto& inputs : data)
 			{
+				Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
 				if (inputs.Key == (int)ControllerAxis::RightX)
 				{
-					InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * e.GetDistanceX());
+					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetX());
 				}
 				else if (inputs.Key == (int)ControllerAxis::RightX)
 				{
-					InputManagerMeathods::CallMotion(name, 1, inputs.MotionValue * e.GetDistanceY());
+					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetY());
 				}
 			}
 		}
@@ -509,6 +539,12 @@ namespace Proof {
 				dispatcher.Dispatch<ControllerTriggerAxisEvent>(ControllerTriggerAxis);
 			}
 		}
+	}
+	const std::unordered_map<std::string, Action>& InputManager::GetActionMappings() {
+		return s_Data->ActionMapping;
+	}
+	const std::unordered_map<std::string, Motion>& InputManager::GetMotionMappings() {
+		return s_Data->MotionMapping;
 	}
 	void InputManager::Init()
 	{

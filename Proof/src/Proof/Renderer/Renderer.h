@@ -20,12 +20,17 @@ namespace Proof {
 		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) {
 			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer);
 		}
+
+		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer, Viewport vieport, ViewportScissor scisscor) {
+			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer, vieport, scisscor);
+		}
 		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class ScreenFrameBuffer> frameBuffer) {
 			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer);
 		}
 		static void RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<RenderCommandBuffer> commandBuffer)> data) {
 			s_RendererAPI->RecordRenderPass(renderPass, pipeline,data);
 		}
+
 		static void EndRenderPass(Count<class RenderPass> renderPass) {
 			s_RendererAPI->EndRenderPass(renderPass);
 		}

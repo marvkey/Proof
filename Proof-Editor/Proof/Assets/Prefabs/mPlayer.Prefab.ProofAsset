@@ -1,0 +1,45 @@
+AssetType: Prefab
+ID: 11599348577564145596
+EntityOwner: 3416963568519086306
+Entities:
+  - Entity: 3416963568519086306
+    TagComponent:
+      Tag: mPlayer
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: [17994452846099664540]
+    MeshComponent:
+      MeshAssetPointerID: 4645041025570573733
+      MaterialTable:
+        - Material: ""
+          AssetID: 0
+          Index: 0
+    ScriptComponent:
+      Scripts:
+        - Script: Game.MPlayer
+          ScriptFields:
+            []
+  - Entity: 17994452846099664540
+    TagComponent:
+      Tag: Camera
+      tags: []
+    TransformComponent:
+      Location: [0, 7, -13]
+      Rotation: [0, 0, 90]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 3416963568519086306
+      Children: []
+    CameraComponent:
+      NearPlane: 0.100000001
+      FarPlane: 2000
+      FOV: 90
+      Width: 250
+      Height: 250
+      UpVector: [0, 1, 0]
+      UseLocalRotation: true

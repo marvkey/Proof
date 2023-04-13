@@ -122,5 +122,9 @@ namespace Proof {
 		void NewWorld();
 		Special<WorldRenderer> m_WorldRenderer;
 
+
+		//std::vector<Special<WorldRenderer>> m_MultiplayerRender;
+
+		uint32_t m_PlayersCount = 1;
 	};
 }

@@ -17,13 +17,15 @@ namespace Proof
 		
 		void Render(EditorCamera& camera);
 		void Render(CameraComponent& comp, Vector& location);
+		void Render(CameraComponent& comp, Vector& location, Viewport viewport, ViewportScissor scissor, bool clearPreviousFrame = true);
 		Image GetImage(){
 			return m_ScreenFrameBuffer->GetImage();
 		}
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
 		
+
 	private:
-		void Render(const glm::mat4&projection, const glm::mat4& view,const Vector& location);
+		void Render(const glm::mat4&projection, const glm::mat4& view,const Vector& location, Viewport viewPort, ViewportScissor scissor, bool clearPreviousFrame = true);
 
 		Special<Renderer3DPBR> m_Renderer3D;
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;

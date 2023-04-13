@@ -106,7 +106,6 @@ namespace Proof {
 
 		InputManager() = delete;
 		
-		
 		static bool AddAction(const std::string& name);
 		static void ActionAddKey(const std::string& name, InputType inputype);
 
@@ -116,9 +115,12 @@ namespace Proof {
 		static bool HasMotion(const std::string& name);
 		static bool HasAction(const std::string& name);
 		// MOTION INPUTS
-		static void RuntimeStart();
-		static void RuntimeEnd();
+		static void StartRuntime(uint32_t playerCount =1);
+		static void EndRuntime();
+		static const std::unordered_map<std::string, Action>& GetActionMappings();
+		static const std::unordered_map<std::string, Motion>& GetMotionMappings();
 	private:
+
 		static void Init();
 		static void Destroy();
 		friend class Application;

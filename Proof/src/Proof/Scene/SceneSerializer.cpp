@@ -8,6 +8,7 @@
 #include "Proof/Resources/ExternalCreations.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Mesh.h"
+#include "Prefab.h"
 namespace Proof
 {
 	#define WRITE_SCRIPT_FIELD(FieldType, Type)           \
@@ -255,6 +256,7 @@ namespace Proof
 				out << YAML::Key << "Width" << cameraComponent.Width;
 				out << YAML::Key << "Height" << cameraComponent.Height;
 				out << YAML::Key << "UpVector" << cameraComponent.UPVector;
+				out << YAML::Key << "UseLocalRotation" << cameraComponent.UseLocalRotation;
 				out << YAML::EndMap; // CameraComponet
 			}
 		}
@@ -326,6 +328,20 @@ namespace Proof
 			}
 		}
 
+		{
+			if (registry.any_of<PlayerInputComponent>(entityID))
+			{
+				PlayerInputComponent& playerInput = registry.get<PlayerInputComponent>(entityID);
+				out << YAML::Key << "PlayerInputComponent";
+				out << YAML::BeginMap; // PlayerInputComponent
+				out << YAML::Key << "InputPlayer" << EnumReflection::EnumString(playerInput.InputPlayer);
+				if(playerInput.Player)
+					out << YAML::Key << "PrefabID" << playerInput.Player->GetID();
+				else
+					out << YAML::Key << "PrefabID" << 0;
+				out << YAML::EndMap; // PlayerInputComponent
+			}
+		}
 		
 		out << YAML::EndMap; // entity
 	}
@@ -471,7 +487,14 @@ namespace Proof
 					}
 					else
 					{
-						src.MaterialTable = Count<MaterialTable>::CreateFrom(AssetManager::GetAsset<Mesh>(src.m_MeshID)->GetMaterialTable());
+						if (AssetManager::HasAsset(src.m_MeshID))
+						{
+							src.MaterialTable = Count<MaterialTable>::CreateFrom(AssetManager::GetAsset<Mesh>(src.m_MeshID)->GetMaterialTable());
+						}
+						else
+						{
+							src.MaterialTable = Count<MaterialTable>::Create();
+						}
 					}
 				}
 			}
@@ -559,6 +582,7 @@ namespace Proof
 					src.FovDeg = cameraComponent["FOV"].as<float>();
 					src.Width = cameraComponent["Width"].as<uint32_t>();
 					src.Height = cameraComponent["Height"].as<uint32_t>();
+					src.UseLocalRotation = cameraComponent["UseLocalRotation"].as<bool>();
 
 				}
 			}
@@ -627,6 +651,19 @@ namespace Proof
 					rgb.FreezeLocation = rigidBodyComponent["FreezeLocation"].as<VectorTemplate<bool>>();
 					rgb.FreezeRotation = rigidBodyComponent["FreezeRotation"].as<VectorTemplate<bool>>();
 					rgb.m_RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
+				}
+			}
+
+			//PlayerInputComponent
+			{
+				auto playerInputComponent = entity["PlayerInputComponent"];
+				if (playerInputComponent)
+				{
+					auto& pic = *NewEntity.AddComponent<PlayerInputComponent>();
+					pic.InputPlayer = EnumReflection::StringEnum< Players>(playerInputComponent["InputPlayer"].as<std::string>());
+					uint64_t assetId = playerInputComponent["PrefabID"].as<uint64_t>();
+					if (AssetManager::HasAsset(assetId))
+						pic.Player = AssetManager::GetAsset<Prefab>(assetId);
 				}
 			}
 

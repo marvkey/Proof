@@ -11,14 +11,19 @@ namespace Game
 
     public class Enemy : Entity
     {
-        
+        public Entity MainPlayer;
         void OnCreate()
         {
+            MainPlayer = World.TryFindEntityByTag("Player");
         }
 
         void OnUpdate(float ts)
         {
+            if (MainPlayer == null) return;
 
+            Log.Info("unoadjsfdnadfnsajndk");
+            if (MainPlayer.GetComponent<TransformComponent>().Location.Z < this.GetComponent<TransformComponent>().Location.Z)
+                World.DeleteEntity(this);
         }
 
         void OnCollisionEnter(Entity other)
@@ -30,6 +35,11 @@ namespace Game
                 Log.Info($"{GetComponent<TagComponent>().Tag} Removed {player.GetComponent<TagComponent>().Tag} Movment");
 
             }
+        }
+
+        void OnDestroy()
+        {
+            Log.Info("destoryed");
         }
     }
 }
