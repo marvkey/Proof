@@ -18,6 +18,19 @@ World:
           - Material: ""
             AssetID: 0
             Index: 0
+      CubeColliderComponent:
+        IsTrigger: false
+        OffsetLocation: [0, 0, 0]
+        OffsetScale: [1, 1.5, 1]
+        PhysicsMaterialPointerID: 14027245898106135139
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
     - Entity: 15009829747103843900
       TagComponent:
         Tag: Plyer1
@@ -31,13 +44,13 @@ World:
         Children: []
       PlayerInputComponent:
         InputPlayer: Player0
-        PrefabID: 11599348577564145596
+        PrefabID: 13977925822409635784
     - Entity: 3941401691345106710
       TagComponent:
         Tag: Plyer2
         tags: []
       TransformComponent:
-        Location: [-44.9000015, 0, 0]
+        Location: [-11.1999998, 5, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -45,4 +58,44 @@ World:
         Children: []
       PlayerInputComponent:
         InputPlayer: Player1
-        PrefabID: 11599348577564145596
+        PrefabID: 13977925822409635784
+    - Entity: 1986260784185728371
+      TagComponent:
+        Tag: Explosive
+        tags: []
+      TransformComponent:
+        Location: [0, 2.20000005, 18]
+        Rotation: [0, 0, 0]
+        Scale: [0.5, 0.5, 0.5]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 566574579191162934
+        MaterialTable:
+          - Material: ""
+            AssetID: 0
+            Index: 0
+      ScriptComponent:
+        Scripts:
+          - Script: Game.Explosive
+            ScriptFields:
+              - Name: Speed
+                Type: Float
+                Data: 300
+              - Name: M_PowerupApplied
+                Type: Bool
+                Data: false
+      SphereColliderComponent:
+        IsTrigger: true
+        Offset: [0, 0, 0]
+        Radius: 1
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]

@@ -12,6 +12,7 @@
 #include "MainWindow/Performance/PerformancePanel.h"
 #include "MainWindow/SceneHierachyPanel.h"
 #include "Proof/Project/Project.h"
+#include "Proof/Scene/Component.h"
 namespace Proof {
 	
 	class Proof_API Editore3D : public Layer {
@@ -123,7 +124,7 @@ namespace Proof {
 		Special<WorldRenderer> m_WorldRenderer;
 
 
-		//std::vector<Special<WorldRenderer>> m_MultiplayerRender;
+		std::unordered_map<Players, Count<WorldRenderer>> m_MultiplayerRender;
 
 		uint32_t m_PlayersCount = 1;
 	};

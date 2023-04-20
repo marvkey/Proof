@@ -273,7 +273,7 @@ namespace Proof
 			pushConstatnt->PushData(renderCmd, PipelineLayout, &copy);
 
 			Renderer::BeginRenderPass(renderCmd, renderPass, frameBuffer);
-			renderPass->As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor, [&](Count <RenderCommandBuffer> commandBuffer) {
+			renderPass.As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor, [&](Count <RenderCommandBuffer> commandBuffer) {
 				quadVertxBuffer->Bind(renderCmd);
 				quadindexBuffer->Bind(renderCmd);
 				Renderer::DrawElementIndexed(renderCmd, quadindexBuffer->GetCount());
@@ -754,7 +754,7 @@ namespace Proof
 					PcbConstnat->PushData(renderCmd, PipelineLayout, &pcb);
 
 					Renderer::BeginRenderPass(renderCmd, renderPass, frameBuffer);
-					renderPass->As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor, [&](Count <RenderCommandBuffer> commandBuffer) {
+					renderPass.As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor, [&](Count <RenderCommandBuffer> commandBuffer) {
 
 						auto descriptor0 = Descriptors[DescriptorSets::Zero];
 						descriptor0->WriteBuffer(0, ubuffer);

@@ -53,8 +53,11 @@ namespace Proof {
 		}
 
 		actionMapping[name].ActionName = name;
-		actionMapping[name].Action = func;
-		actionMapping[name].Event = inputEvent;
+		if (actionMapping[name].Events.contains(inputEvent))
+		{
+			PF_WARN("Binding Action {} has a funciton bind to InputEvent {}", name, EnumReflection::EnumString(inputEvent));
+		}
+		actionMapping[name].Events[inputEvent] = func;
 	}
 	void InputManagerMeathods::BindMotion(const std::string& name, uint32_t player, const std::function<void(float)>& func)
 	{
@@ -78,8 +81,11 @@ namespace Proof {
 		if (actionMapping.contains(name))
 		{
 			auto& action = actionMapping[name];
-			if(action.Event == inputEvent)
-				action.Action();
+			if (action.Events.contains(inputEvent))
+			{
+				std::function<void()>& func = action.Events[inputEvent];
+				func();
+			}
 		}
 	}
 	void InputManagerMeathods::CallMotion(const std::string& name, uint32_t player, float motionValue)
@@ -131,8 +137,8 @@ namespace Proof {
 
 		auto& controllers = Application::Get()->GetWindow()->s_Controllers;
 
-		int currentPlayer = 0;
-		for (auto [ID, contoller] : controllers)
+		int currentPlayer = 2;
+		for (auto& [ID, contoller] : controllers)
 		{
 			if (playerCount > ID)
 			{
@@ -169,7 +175,7 @@ namespace Proof {
 		}
 	}
 	void OnKeyDoubleClicked(KeyDoubleClickEvent& e){
-		for (const auto& [name, action] : s_Data->ActionMapping)
+  		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
 			// checking if key hold is an available format
 			if (!action.Inputs.contains(InputDevice::KeyBoard))
@@ -321,7 +327,30 @@ namespace Proof {
 			}
 		}
 	}
-	
+
+	void OnMouseScroll(MouseScrollEvent& e) {
+		for (const auto& [name, action] : s_Data->ActionMapping)
+		{
+			// checking if key hold is an available format
+			if (!action.Inputs.contains(InputDevice::MouseMovement))
+				continue;
+
+			auto& data = action.Inputs.at(InputDevice::MouseMovement);
+			for (auto& inputs : data)
+			{
+				if (inputs.Key == (int)MouseAxis::ScrollUp)
+				{
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyPressed);
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0,InputEvent::KeyClicked);
+				}
+				else if(inputs.Key == (int)MouseAxis::ScrolDown)
+				{
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyClicked);
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyPressed);
+				}
+			}
+		}
+	}
 	void OnMouseMoved(MouseMoveEvent& e){
 		float movedX = e.GetMovedX();
 		float movedY = e.GetMovedY();
@@ -518,12 +547,14 @@ namespace Proof {
 			dispatcher.Dispatch<KeyHoldEvent>(OnKeyHold);
 			dispatcher.Dispatch<KeyDoubleClickEvent>(OnKeyDoubleClicked);
 			dispatcher.Dispatch<KeyPressedEvent>(OnKeyPressed);
+			dispatcher.Dispatch<KeyReleasedEvent>(OnKeyReleased);
 		}
 		//MOUSE
 		{
 			dispatcher.Dispatch<MouseMoveEvent>(OnMouseMoved);
 			dispatcher.Dispatch<MouseButtonClickedEvent>(OnMouseClicked);
 			dispatcher.Dispatch<MouseButtonReleasedEvent>(OnMouseReleased);
+			dispatcher.Dispatch<MouseScrollEvent>(OnMouseScroll); 
 		}
 		// CONTROLLER
 		{

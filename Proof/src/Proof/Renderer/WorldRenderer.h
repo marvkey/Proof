@@ -15,6 +15,7 @@ namespace Proof
 			m_World = world;
 		}
 		
+		void Clear();
 		void Render(EditorCamera& camera);
 		void Render(CameraComponent& comp, Vector& location);
 		void Render(CameraComponent& comp, Vector& location, Viewport viewport, ViewportScissor scissor, bool clearPreviousFrame = true);

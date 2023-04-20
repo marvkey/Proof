@@ -14,17 +14,18 @@ namespace Proof
 		
 		UIText text;
 		text.Text = "Yo Wagwan";
-		text.Postion = { 0,3 };
-		text.Size = { 3,2 };
+		text.Postion = { 1,1 };
+		text.Size = { 1,1 };
 
 		m_UIPanel->AddText(text);
 
 		UIButton button;
-		button.Size = { 3,3 };
+		button.Size = { 1,1 };
 		button.TintColour = { 1,1,1,1};
+		text.Postion = { 0,0 };
 
 		//m_UIPanel->AddButton(button);
-
+		//m_Camera.
 	}
 
 	void GuiPanel::ImGuiRender(FrameTime deltaTime)
@@ -42,7 +43,7 @@ namespace Proof
 			Application::Get()->GetWindow()->SetWindowInputEvent(false);
 		}
 
-		const void* Text = UiRenderer::DrawUI(m_UIPanel, m_Camera.GetPosition(), m_Camera.GetViewProjection(), glm::mat4(1.0f),
+		const void* Text = UiRenderer::DrawUI(m_UIPanel, m_Camera.GetPosition(), glm::mat4(1.0f), glm::mat4(1.0f),
 				ImGui::GetWindowWidth(), ImGui::GetWindowHeight()).SourceImage;
 
 		ImGui::Image((ImTextureID)Text, ImVec2{ ImGui::GetWindowWidth(),ImGui::GetWindowHeight() }, ImVec2{ 0,1 }, ImVec2{ 1,0 });

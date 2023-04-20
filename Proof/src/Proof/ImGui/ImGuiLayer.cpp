@@ -134,7 +134,7 @@ namespace Proof
 			init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 			init_info.Allocator = nullptr;
 			init_info.CheckVkResultFn = nullptr;
-			ImGui_ImplVulkan_Init(&init_info, s_ImguiRenderPass->RenderPass->As<VulkanRenderPass>()->GetRenderPass());
+			ImGui_ImplVulkan_Init(&init_info, s_ImguiRenderPass->RenderPass.As<VulkanRenderPass>()->GetRenderPass());
 			ImGui_ImplVulkan_SetMinImageCount(Renderer::GetConfig().MaxImageCount);
 			// Upload Fonts
 			{
@@ -201,15 +201,15 @@ namespace Proof
 				graphicsContext->GetSwapChain()->GetImageCount());
 			m_WindoResize = false;
 		}
-		io.DisplaySize = ImVec2((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
+		//io.DisplaySize = ImVec2((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 		wd->FrameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		ImGui_ImplVulkanH_Frame* fd = &wd->Frames[wd->FrameIndex];
 		ImGui::Render();
 		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-		{
-			ImGui_ImplOpenGL3_RenderDrawData(main_draw_data);
-		}
+		//if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		//{
+		//	ImGui_ImplOpenGL3_RenderDrawData(main_draw_data);
+		//}
 		{
 			//https://github.com/1111mp/Vulkan/blob/master/src/Application.cpp
 			Renderer::BeginCommandBuffer(s_ImguiRenderPass->CommandBuffer);

@@ -1,8 +1,8 @@
 AssetType: Prefab
-ID: 11599348577564145596
-EntityOwner: 3416963568519086306
+ID: 13977925822409635784
+EntityOwner: 519167572545979755
 Entities:
-  - Entity: 3416963568519086306
+  - Entity: 519167572545979755
     TagComponent:
       Tag: mPlayer
       tags: []
@@ -12,7 +12,7 @@ Entities:
       Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
-      Children: [17994452846099664540]
+      Children: [4106780510061365873]
     MeshComponent:
       MeshAssetPointerID: 4645041025570573733
       MaterialTable:
@@ -24,7 +24,20 @@ Entities:
         - Script: Game.MPlayer
           ScriptFields:
             []
-  - Entity: 17994452846099664540
+    CubeColliderComponent:
+      IsTrigger: false
+      OffsetLocation: [0, 0, 0]
+      OffsetScale: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+  - Entity: 4106780510061365873
     TagComponent:
       Tag: Camera
       tags: []
@@ -33,7 +46,7 @@ Entities:
       Rotation: [0, 0, 90]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 3416963568519086306
+      OwnerID: 519167572545979755
       Children: []
     CameraComponent:
       NearPlane: 0.100000001

@@ -52,6 +52,10 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern	static void World_DeleteEntity(ulong entityID, bool deleteChildren);
+
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float World_GetTimeStep();
         #endregion
 
         #region Entity
@@ -91,11 +95,14 @@ namespace Proof
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector Scale);
-		#endregion
 
-		#region RigidBody
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_GetFowardVector(ulong entityID, out Vector vec);
+        #endregion
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+        #region RigidBody
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody_GetMass(ulong entityID, out float outMass);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -147,6 +154,13 @@ namespace Proof
         internal extern static double Random_RandomDouble(double min, double max);
         #endregion
 
+        #region MeshComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool MeshComponent_GetVisible(ulong entityID);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool MeshComponent_SetVisible(ulong entityID, bool value);
+        #endregion
 
         #region PlayerInputComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -154,8 +168,8 @@ namespace Proof
         internal extern static void PlayerInputComponent_SetAction(ulong entityID,string className,string ActionName,int state,string funcName);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        //internal extern static void PlayerInputComponent_SetMotion(ulong entityID, string className,string ActionName, Action<float> func);
-        internal extern static void PlayerInputComponent_SetMotion(ulong entityID, string className,string ActionName, string funcName);
+        //internal extern static void PlayerInputComponent_SetMotion(ulong entityID, string className,string motionName, Action<float> func);
+        internal extern static void PlayerInputComponent_SetMotion(ulong entityID, string className,string motionName, string funcName);
         #endregion
     }
 }

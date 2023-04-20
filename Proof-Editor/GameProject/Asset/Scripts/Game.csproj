@@ -60,7 +60,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\Enemy.cs" />
+    <Compile Include="src\Multiplayer\mGameManager.cs" />
     <Compile Include="src\Multiplayer\MPlayer.cs" />
+    <Compile Include="src\Multiplayer\PowerUps\Explosive.cs" />
+    <Compile Include="src\Multiplayer\PowerUps\PowerUp.cs" />
     <Compile Include="src\Player.cs" />
     <Compile Include="src\Score.cs" />
     <Compile Include="src\SinglePlayer\GameManager.cs" />
@@ -71,6 +74,7 @@
       <Name>ProofScriptCore</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

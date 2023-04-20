@@ -212,6 +212,9 @@ namespace Proof
         }
         else
         {
+
+        }
+        {
             attachment.format = Utils::ProofFormatToVulkanFormat(config.Format);
             attachment.samples = graphicsContext->GetSampleCount();
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -247,6 +250,7 @@ namespace Proof
 
 
         m_Scissor.offset = { (int)scisscor.Offset.X, (int)scisscor.Offset.Y };
+
         m_Scissor.extent = { (uint32_t)scisscor.Extent.X,(uint32_t)scisscor.Extent.Y };
         // setting frameBuffer clear values
         {
@@ -270,7 +274,6 @@ namespace Proof
             // the area shader loads and 
             // for high displays swap chain extent could be higher than windows extent
             renderPassInfo.renderArea = m_Scissor;
-
             renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
             renderPassInfo.pClearValues = clearValues.data();
 

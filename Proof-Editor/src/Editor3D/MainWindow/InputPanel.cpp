@@ -89,6 +89,14 @@ namespace Proof {
 						InputManager::ActionAddKey(actionName, InputType(InputDevice::ControllerButton, (int)key));
 					}
 				});
+
+				ImGui::Separator();
+				EnumReflection::ForEach<ControllerAxis>([&](ControllerAxis key) {
+					if (ImGui::MenuItem(EnumReflection::EnumString(key).c_str()))
+					{
+						InputManager::ActionAddKey(actionName, InputType(InputDevice::ControllerAxis, (int)key));
+					}
+				});
 				ImGui::EndPopup();
 			}
 			for (auto& [device, inputType] : action.Inputs)
@@ -189,6 +197,14 @@ namespace Proof {
 
 					}
 				});
+
+				ImGui::Separator();
+				EnumReflection::ForEach<ControllerAxis>([&](ControllerAxis key) {
+					if (ImGui::MenuItem(EnumReflection::EnumString(key).c_str()))
+					{
+						InputManager::MotionAddKey(motionName, MotionInputType(InputDevice::ControllerAxis, (int)key));
+					}
+				});
 				ImGui::EndPopup();
 			}
 			for (auto& [device,motionList] : motion.Inputs)
@@ -199,7 +215,7 @@ namespace Proof {
 					{
 						case Proof::InputDevice::KeyBoard:
 							{
-								ImGui::SameLine();
+								//ImGui::SameLine();
 								ImGui::Text(EnumReflection::EnumString<KeyBoardKey>((KeyBoardKey)type.Key).c_str());
 								ImGui::SameLine();
 
@@ -210,7 +226,7 @@ namespace Proof {
 							break;
 						case Proof::InputDevice::MouseButton:
 							{
-								ImGui::SameLine();
+								//ImGui::SameLine();
 								ImGui::Text(EnumReflection::EnumString<MouseButton>((MouseButton)type.Key).c_str());
 								ImGui::SameLine();
 
@@ -221,7 +237,7 @@ namespace Proof {
 							break;
 						case Proof::InputDevice::MouseMovement:
 							{
-								ImGui::SameLine();
+								//ImGui::SameLine();
 								ImGui::Text(EnumReflection::EnumString<MouseAxis>((MouseAxis)type.Key).c_str());
 								ImGui::SameLine();
 
@@ -232,7 +248,7 @@ namespace Proof {
 							break;
 						case Proof::InputDevice::ControllerButton:
 							{
-								ImGui::SameLine();
+								//ImGui::SameLine();
 								ImGui::Text(EnumReflection::EnumString<ControllerButton>((ControllerButton)type.Key).c_str());
 								ImGui::SameLine();
 
@@ -243,7 +259,7 @@ namespace Proof {
 							break;
 						case Proof::InputDevice::ControllerAxis:
 							{
-								ImGui::SameLine();
+								//ImGui::SameLine();
 								ImGui::Text(EnumReflection::EnumString<ControllerAxis>((ControllerAxis)type.Key).c_str());
 								ImGui::SameLine();
 

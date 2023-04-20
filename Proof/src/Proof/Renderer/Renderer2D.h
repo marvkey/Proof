@@ -76,7 +76,7 @@ namespace Proof {
 	class Renderer2D {
 		friend class Camera;
 	public:
-		Renderer2D(Count <class RenderPass > renderPass);
+		Renderer2D(Count <class RenderPass > renderPass, bool screenSpace = false);
 		~Renderer2D() {};
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commdandBuffer);
 		void DrawQuad(const glm::vec3& Location);
@@ -103,6 +103,7 @@ namespace Proof {
 			uint32_t m_DrawCalls;
 		};
 	private:
+		bool m_ScreenSpace = false;
 		void Render();
 		void Reset();
 		void Init();

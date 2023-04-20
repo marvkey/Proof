@@ -105,6 +105,9 @@ namespace Proof
 		#endif
 		world->DeleteEntity(entity, deleteChildren);
 	}
+	static float World_GetTimeStep() {
+		return FrameTime::GetWorldDeltaTime();
+	}
 	#pragma endregion
 #pragma region Entity
 	static bool Entity_HasComponent(uint64_t entityID, MonoReflectionType* componentType) {
@@ -121,6 +124,8 @@ namespace Proof
 
 	static MonoObject* GetScriptInstance(UUID entityID, MonoString* classFullName)
 	{
+		if (!ScriptEngine::EntityHasScripts({ entityID, ScriptEngine::GetWorldContext() }))
+			return nullptr;
 		return ScriptEngine::GetMonoManagedObject(entityID,ScriptEngine::MonoToString(classFullName));
 	}
 
@@ -201,6 +206,64 @@ namespace Proof
 		#endif
 		entity.GetComponent<TransformComponent>()->Location = *location;
 	};
+
+	static void TransformComponent_GetRotation(uint64_t entityID, Vector* outRoation) {
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TransformComponent.Rotation - entity is invalid");
+			return;
+		}
+		#endif
+		* outRoation = entity.GetComponent<TransformComponent>()->Rotation;
+	};
+
+	static void TransformComponent_SetRotation(EntityID entityID, Vector* rotation) {
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TransformComponent.SetRotation - entity is invalid");
+			return;
+		}
+		#endif
+		entity.GetComponent<TransformComponent>()->Rotation = *rotation;
+	};
+	static void TransformComponent_GetScale(uint64_t entityID, Vector* outScale) {
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TransformComponent.Scale - entity is invalid");
+			return;
+		}
+		#endif
+		* outScale = entity.GetComponent<TransformComponent>()->Scale;
+	};
+	static void TransformComponent_SetScale(EntityID entityID, Vector* scale) {
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TransformComponent.SetScale - entity is invalid");
+			return;
+		}
+		#endif
+		entity.GetComponent<TransformComponent>()->Scale = *scale;
+	};
+	static void TransformComponent_GetFowardVector(uint64_t entityID,Vector* vec)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TransformComponent.GetFowardVector - entity is invalid");
+			return;
+		}
+		#endif
+		*vec = entity.GetComponent<TransformComponent>()->GetFowardVector();
+	}
 #pragma endregion 
 #pragma region TextComponent
 
@@ -376,6 +439,74 @@ namespace Proof
 	}
 	#pragma endregion
 
+	#pragma region ChildComponent 
+
+	static void ChildComponent_AddChild(uint64_t entityID, uint64_t childId) 
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		Entity childEntity{ childId,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity || childEntity)
+		{
+			PF_ERROR("ChildComponent.AddChild - entity is invalid ");
+			return;
+		}
+		#endif
+		entity.AddChild(childEntity);
+	}
+
+	static void ChildComponent_RemoveChild(uint64_t entityID, uint64_t childId)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		Entity childEntity{ childId,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity || childEntity)
+		{
+			PF_ERROR("ChildComponent.RemoveChild - entity is invalid ");
+			return;
+		}
+		#endif
+		entity.RemoveChild(childEntity);
+	}
+	#pragma endregion 
+
+	#pragma region MeshComponent
+	static bool MeshComponent_GetVisible(uint64_t entityID)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("MeshComponent.GetVisible - entity is invalid ");
+			return false;
+		}
+		#endif
+
+		if (entity.HasComponent<MeshComponent>())
+		{
+			return entity.GetComponent<MeshComponent>()->Visible;
+		}
+		PF_ERROR("MeshComponent.GetVisible entity tag: {} ID: {}  does not conatin mesh Compoonent", entity.GetName(), entity.GetEntityID());
+	}
+	static void MeshComponent_SetVisible(uint64_t entityID,bool visible)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("MeshComponent.GetVisible - entity is invalid ");
+			return;
+		}
+		#endif
+
+		if (entity.HasComponent<MeshComponent>())
+		{
+			entity.GetComponent<MeshComponent>()->Visible = visible;
+			return;
+		}
+		PF_ERROR("MeshComponent.SetVisible entity tag: {} ID: {}  does not conatin mesh Compoonent", entity.GetName(), entity.GetEntityID());
+	}
+	#pragma endregion
 	#pragma region PlayerInputComponent
 	static void PlayerInputComponent_SetAction(uint64_t entityID, MonoString* className,MonoString* ActionName, uint32_t inputState, MonoString* meathodName)
 	{
@@ -408,7 +539,7 @@ namespace Proof
 		InputManagerMeathods::BindAction(ScriptEngine::MonoToString(ActionName), (uint32_t)playerInput.InputPlayer, (InputEvent) inputState,call);
 	}
 
-	static void PlayerInputComponent_SetMotion(uint64_t entityID, MonoString* className, MonoString* ActionName, uint32_t inputState, MonoString* meathodName)
+	static void PlayerInputComponent_SetMotion(uint64_t entityID, MonoString* className, MonoString* motionName, MonoString* meathodName)
 	{
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		#if PF_ENABLE_DEBUG
@@ -431,13 +562,12 @@ namespace Proof
 
 		Count<ScriptInstance> script = entityScripts.at(classAsString);
 		std::string meathodNameStr = ScriptEngine::MonoToString(meathodName);
-		MonoMethod* meathod = mono_class_get_method_from_name(script->GetScriptClass()->GetMonoClass(), meathodNameStr.c_str(), 0);
-		auto call = [script = script, meathod = meathod](float axisValue) {
-			void* param = &axisValue;
-
+		MonoMethod* meathod = mono_class_get_method_from_name(script->GetScriptClass()->GetMonoClass(), meathodNameStr.c_str(), 1);
+		auto call = [script = script, meathod = meathod](float motionValue) {
+			void* param = &motionValue;
 			ScriptMeathod::CallMeathod(script, meathod, &param);
 		};
-		InputManagerMeathods::BindMotion(ScriptEngine::MonoToString(ActionName), (uint32_t)playerInput.InputPlayer, call);
+		InputManagerMeathods::BindMotion(ScriptEngine::MonoToString(motionName), (uint32_t)playerInput.InputPlayer, call);
 	}
 	#pragma endregion 
 #pragma region ScriptFunc
@@ -500,6 +630,7 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(World_Instanciate);
 			PF_ADD_INTERNAL_CALL(World_TryFindEntityByTag);
 			PF_ADD_INTERNAL_CALL(World_DeleteEntity);
+			PF_ADD_INTERNAL_CALL(World_GetTimeStep);
 		}
 		//Entity 
 		{
@@ -516,6 +647,11 @@ namespace Proof
 		{
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetLocation);
 			PF_ADD_INTERNAL_CALL(TransformComponent_SetLocation);
+			PF_ADD_INTERNAL_CALL(TransformComponent_GetRotation);
+			PF_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
+			PF_ADD_INTERNAL_CALL(TransformComponent_GetScale);
+			PF_ADD_INTERNAL_CALL(TransformComponent_SetScale);
+			PF_ADD_INTERNAL_CALL(TransformComponent_GetFowardVector);
 		}
 
 		//Rigid Body Component
@@ -533,6 +669,16 @@ namespace Proof
 
 			PF_ADD_INTERNAL_CALL(RigidBody_GetLinearVelocity);
 			PF_ADD_INTERNAL_CALL(RigidBody_SetLinearVelocity);
+		}
+		// MeshComponent 
+		{
+			PF_ADD_INTERNAL_CALL(MeshComponent_GetVisible);
+			PF_ADD_INTERNAL_CALL(MeshComponent_SetVisible);
+		}
+		//ChildCOmponet 
+		{
+			PF_ADD_INTERNAL_CALL(ChildComponent_AddChild);
+			PF_ADD_INTERNAL_CALL(ChildComponent_RemoveChild);
 		}
 		//TextComponent
 		{

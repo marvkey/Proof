@@ -237,6 +237,7 @@ namespace Proof
 		static void LoadAppAssembly(const std::filesystem::path& filepath);
 		static void InitMono();
 		static void LoadAssemblyClasses();
+		static void AssemblyLoadFields(Count<ScriptClass> script, MonoClass* monoClass);
 		friend class ScriptClass;
 		friend class ScriptFunc;
 	};

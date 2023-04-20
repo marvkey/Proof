@@ -220,19 +220,9 @@ namespace Proof
 				* glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.Z), { 0,0,1 })
 				* glm::scale(glm::mat4(1.0f), ProofToglmVec(Scale));
 		}
-		Vector GetFowardVector()const {
-			// NOT IMPLEMENTED
-			return { cos(glm::radians(Rotation.Y)) * sin(glm::radians(Rotation.Z)), sin(glm::radians(-Rotation.Y)), cos(glm::radians(Rotation.Y)) * cos(glm::radians(Rotation.Z)) };
-		}
-		Vector GetRightVector()const {
-			// NOT IMPLEMENTED
-
-			return { cos(Rotation.Z), 0, -sin(Rotation.Z)};
-		}
-		Vector GetUpVector()const {
-			// NOT IMPLEMENTED
-			return GetFowardVector().Cross(GetRightVector());
-		}
+		Vector GetFowardVector()const;
+		Vector GetRightVector()const;
+		Vector GetUpVector()const;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -285,6 +275,7 @@ namespace Proof
 		//if no mathc then we save the material table
 		Count<MaterialTable> MaterialTable = Count<class MaterialTable>::Create();
 		Count<class Mesh> GetMesh();
+		bool Visible = true;
 	private:
 		friend class Entity;
 		friend class World;

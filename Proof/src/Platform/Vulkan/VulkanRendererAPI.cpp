@@ -22,13 +22,13 @@ namespace Proof {
 		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer,frameBuffer, vieport, scisscor);
 	}
 	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) {
-		renderPass->As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, frameBuffer);
+		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, frameBuffer);
 	}
 	void VulkanRendererAPI::RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<RenderCommandBuffer> commandBuffer)> data) {
-		renderPass->As<VulkanRenderPass>()->RecordRenderPass(pipeline,data);
+		renderPass.As<VulkanRenderPass>()->RecordRenderPass(pipeline,data);
 	}
 	void VulkanRendererAPI::EndRenderPass(Count<class RenderPass> renderPass) {
-		renderPass->As<VulkanRenderPass>()->EndRenderPass();
+		renderPass.As<VulkanRenderPass>()->EndRenderPass();
 	}
 	void VulkanRendererAPI::SubmitCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) {
 		VulkanRenderer::SubmitCommandBuffer(commandBuffer);

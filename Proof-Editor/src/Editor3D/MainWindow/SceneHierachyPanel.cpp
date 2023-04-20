@@ -415,6 +415,8 @@ namespace Proof
 			}
 
 			ImGui::TreePop();
+
+			ExternalAPI::ImGUIAPI::CheckBox("Visible", &meshComp.Visible);
 		});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
 			//if (spriteComp.GetTexture() != nullptr) {

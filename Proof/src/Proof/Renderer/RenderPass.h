@@ -41,9 +41,5 @@ namespace Proof{
 	public:
 		virtual ~RenderPass() =default;
 		static	Count<RenderPass> Create(const RenderPassConfig& config);
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
 	};
 }

@@ -21,5 +21,7 @@ namespace ProofScriptCore.src.Proof.Math
         {
             Location = location; Rotation = rotation; Scale = scale;
         }
+
+     
     }
 }

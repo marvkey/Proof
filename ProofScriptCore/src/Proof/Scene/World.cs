@@ -22,7 +22,7 @@ namespace Proof
         {
             Transform transform;
             transform.Location = location;
-            transform.Rotation = new Vector( 0.0f);
+            transform.Rotation = new Vector(0.0f);
             transform.Scale = new Vector(1.0f);
             ulong entityID = InternalCalls.World_Instanciate(prefab.ID, transform);
             if (entityID == 0)
@@ -34,7 +34,7 @@ namespace Proof
         public static Entity TryFindEntityByTag(string tag)
         {
             ulong id = InternalCalls.World_TryFindEntityByTag(tag);
-            if ( id== 0)
+            if (id == 0)
                 return null;
 
             return new Entity(id);
@@ -43,6 +43,11 @@ namespace Proof
         public static void DeleteEntity(Entity entity, bool deleteChildren = true)
         {
             InternalCalls.World_DeleteEntity(entity.ID, deleteChildren);
+        }
+
+        public static float GetTimeStep()
+        {
+            return InternalCalls.World_GetTimeStep();
         }
     }
 }

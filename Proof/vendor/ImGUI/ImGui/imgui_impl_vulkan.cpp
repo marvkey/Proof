@@ -92,7 +92,7 @@ struct ImGui_ImplVulkanH_WindowRenderBuffers
 {
     uint32_t            Index;
     uint32_t            Count;
-    ImGui_ImplVulkanH_FrameRenderBuffers*   FrameRenderBuffers;
+    ImGui_ImplVulkanH_FrameRenderBuffers* FrameRenderBuffers;
 };
 
 // For multi-viewport support:
@@ -103,8 +103,8 @@ struct ImGui_ImplVulkan_ViewportData
     ImGui_ImplVulkanH_Window                Window;             // Used by secondary viewports only
     ImGui_ImplVulkanH_WindowRenderBuffers   RenderBuffers;      // Used by all viewports
 
-    ImGui_ImplVulkan_ViewportData()         { WindowOwned = false; memset(&RenderBuffers, 0, sizeof(RenderBuffers)); }
-    ~ImGui_ImplVulkan_ViewportData()        { }
+    ImGui_ImplVulkan_ViewportData() { WindowOwned = false; memset(&RenderBuffers, 0, sizeof(RenderBuffers)); }
+    ~ImGui_ImplVulkan_ViewportData() { }
 };
 
 // Vulkan data
@@ -968,7 +968,7 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
 
     if (!bd->DescriptorSetLayout)
     {
-        VkSampler sampler[1] = {bd->FontSampler};
+        VkSampler sampler[1] = { bd->FontSampler };
         VkDescriptorSetLayoutBinding binding[1] = {};
         binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         binding[0].descriptorCount = 1;
@@ -1028,15 +1028,15 @@ void    ImGui_ImplVulkan_DestroyDeviceObjects()
     ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(v->Device, v->Allocator);
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 
-    if (bd->ShaderModuleVert)     { vkDestroyShaderModule(v->Device, bd->ShaderModuleVert, v->Allocator); bd->ShaderModuleVert = VK_NULL_HANDLE; }
-    if (bd->ShaderModuleFrag)     { vkDestroyShaderModule(v->Device, bd->ShaderModuleFrag, v->Allocator); bd->ShaderModuleFrag = VK_NULL_HANDLE; }
-    if (bd->FontView)             { vkDestroyImageView(v->Device, bd->FontView, v->Allocator); bd->FontView = VK_NULL_HANDLE; }
-    if (bd->FontImage)            { vkDestroyImage(v->Device, bd->FontImage, v->Allocator); bd->FontImage = VK_NULL_HANDLE; }
-    if (bd->FontMemory)           { vkFreeMemory(v->Device, bd->FontMemory, v->Allocator); bd->FontMemory = VK_NULL_HANDLE; }
-    if (bd->FontSampler)          { vkDestroySampler(v->Device, bd->FontSampler, v->Allocator); bd->FontSampler = VK_NULL_HANDLE; }
-    if (bd->DescriptorSetLayout)  { vkDestroyDescriptorSetLayout(v->Device, bd->DescriptorSetLayout, v->Allocator); bd->DescriptorSetLayout = VK_NULL_HANDLE; }
-    if (bd->PipelineLayout)       { vkDestroyPipelineLayout(v->Device, bd->PipelineLayout, v->Allocator); bd->PipelineLayout = VK_NULL_HANDLE; }
-    if (bd->Pipeline)             { vkDestroyPipeline(v->Device, bd->Pipeline, v->Allocator); bd->Pipeline = VK_NULL_HANDLE; }
+    if (bd->ShaderModuleVert) { vkDestroyShaderModule(v->Device, bd->ShaderModuleVert, v->Allocator); bd->ShaderModuleVert = VK_NULL_HANDLE; }
+    if (bd->ShaderModuleFrag) { vkDestroyShaderModule(v->Device, bd->ShaderModuleFrag, v->Allocator); bd->ShaderModuleFrag = VK_NULL_HANDLE; }
+    if (bd->FontView) { vkDestroyImageView(v->Device, bd->FontView, v->Allocator); bd->FontView = VK_NULL_HANDLE; }
+    if (bd->FontImage) { vkDestroyImage(v->Device, bd->FontImage, v->Allocator); bd->FontImage = VK_NULL_HANDLE; }
+    if (bd->FontMemory) { vkFreeMemory(v->Device, bd->FontMemory, v->Allocator); bd->FontMemory = VK_NULL_HANDLE; }
+    if (bd->FontSampler) { vkDestroySampler(v->Device, bd->FontSampler, v->Allocator); bd->FontSampler = VK_NULL_HANDLE; }
+    if (bd->DescriptorSetLayout) { vkDestroyDescriptorSetLayout(v->Device, bd->DescriptorSetLayout, v->Allocator); bd->DescriptorSetLayout = VK_NULL_HANDLE; }
+    if (bd->PipelineLayout) { vkDestroyPipelineLayout(v->Device, bd->PipelineLayout, v->Allocator); bd->PipelineLayout = VK_NULL_HANDLE; }
+    if (bd->Pipeline) { vkDestroyPipeline(v->Device, bd->Pipeline, v->Allocator); bd->Pipeline = VK_NULL_HANDLE; }
 }
 
 bool    ImGui_ImplVulkan_LoadFunctions(PFN_vkVoidFunction(*loader_func)(const char* function_name, void* user_data), void* user_data)
@@ -1045,17 +1045,17 @@ bool    ImGui_ImplVulkan_LoadFunctions(PFN_vkVoidFunction(*loader_func)(const ch
     // You can use the default Vulkan loader using:
     //      ImGui_ImplVulkan_LoadFunctions([](const char* function_name, void*) { return vkGetInstanceProcAddr(your_vk_isntance, function_name); });
     // But this would be equivalent to not setting VK_NO_PROTOTYPES.
-#ifdef VK_NO_PROTOTYPES
-#define IMGUI_VULKAN_FUNC_LOAD(func) \
+    #ifdef VK_NO_PROTOTYPES
+    #define IMGUI_VULKAN_FUNC_LOAD(func) \
     func = reinterpret_cast<decltype(func)>(loader_func(#func, user_data)); \
     if (func == nullptr)   \
         return false;
     IMGUI_VULKAN_FUNC_MAP(IMGUI_VULKAN_FUNC_LOAD)
-#undef IMGUI_VULKAN_FUNC_LOAD
-#else
+        #undef IMGUI_VULKAN_FUNC_LOAD
+        #else
     IM_UNUSED(loader_func);
     IM_UNUSED(user_data);
-#endif
+    #endif
     g_FunctionsLoaded = true;
     return true;
 }
@@ -1665,9 +1665,9 @@ static void ImGui_ImplVulkan_RenderWindow(ImGuiViewport* viewport, void*)
     ImGui_ImplVulkanH_FrameSemaphores* fsd = &wd->FrameSemaphores[wd->SemaphoreIndex];
     {
         {
-          err = vkAcquireNextImageKHR(v->Device, wd->Swapchain, UINT64_MAX, fsd->ImageAcquiredSemaphore, VK_NULL_HANDLE, &wd->FrameIndex);
-          check_vk_result(err);
-          fd = &wd->Frames[wd->FrameIndex];
+            err = vkAcquireNextImageKHR(v->Device, wd->Swapchain, UINT64_MAX, fsd->ImageAcquiredSemaphore, VK_NULL_HANDLE, &wd->FrameIndex);
+            check_vk_result(err);
+            fd = &wd->Frames[wd->FrameIndex];
         }
         for (;;)
         {

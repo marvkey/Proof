@@ -37,6 +37,22 @@ namespace Proof
 		cameraBuffer = nullptr;
 		Descriptors.clear();
 	}
+
+	void WorldRenderer::Clear() {
+		// draw black screen 
+		//Renderer::BeginCommandBuffer(m_CommandBuffer);
+		Renderer::Submit([&](CommandBuffer* buffer) {
+			Count<RenderCommandBuffer> rdbuffer = RenderCommandBuffer::Create(buffer);
+			Renderer::BeginRenderPass(rdbuffer, m_RenderPass, m_ScreenFrameBuffer->GetFrameBuffer());
+			m_Renderer2D->BeginContext(glm::mat4(0), glm::mat4(0), { 0,0,0 }, m_ScreenFrameBuffer, rdbuffer);
+			m_Renderer2D->DrawQuad({ 0,0,0 });
+			m_Renderer2D->EndContext();
+			Renderer::EndRenderPass(m_RenderPass);
+		});
+		//Renderer::EndCommandBuffer(m_CommandBuffer);
+		//Renderer::SubmitCommandBuffer(m_CommandBuffer);
+	}
+
 	WorldRenderer::WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight) :
 		m_World(world)
 	{
@@ -49,6 +65,8 @@ namespace Proof
 		m_Renderer2D = CreateSpecial< Renderer2D>(m_RenderPass);
 		m_DebugMeshRenderer = CreateSpecial<DebugMeshRenderer>(m_RenderPass);
 		
+		if (textureCubeMap != nullptr)
+			return;
 		Cube = MeshWorkShop::GenerateCube();
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
@@ -102,7 +120,7 @@ namespace Proof
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
-		//m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = clearOnLoad;
+		m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = clearOnLoad;
 
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer->GetFrameBuffer(), viewPort, scissor);
@@ -132,6 +150,8 @@ namespace Proof
 		{
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
 				auto& meshComponent = *entity.GetComponent<MeshComponent>();
+				if (meshComponent.Visible == false)
+					return;
 				if (AssetManager::HasAsset(meshComponent.GetMesh()))
 				{
 					Count<Mesh> mesh = meshComponent.GetMesh();

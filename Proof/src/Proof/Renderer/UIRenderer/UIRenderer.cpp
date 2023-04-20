@@ -18,7 +18,7 @@ namespace Proof {
             RenderPassConfig renderPassConfig("Ui RenderPass", s_ScreenFrameBuffer->GetFrameBuffer()->GetConfig());
             s_RenderPass = RenderPass::Create(renderPassConfig);
             s_CommandBuffer = RenderCommandBuffer::Create();
-            s_Renderer2D = Count<Renderer2D>::Create(s_RenderPass);
+            s_Renderer2D = Count<Renderer2D>::Create(s_RenderPass,true);
         }
         Renderer::BeginCommandBuffer(s_CommandBuffer);
         Renderer::BeginRenderPass(s_CommandBuffer, s_RenderPass, s_ScreenFrameBuffer);  
@@ -26,7 +26,7 @@ namespace Proof {
         s_Renderer2D->BeginContext(projectionMatrix, viewProjection, GlmVecToProof(cameraLocaion), s_ScreenFrameBuffer, s_CommandBuffer);
         for (auto& [Id,button] : panel->GetButtons())
         {
-            s_Renderer2D->DrawQuad({ button.Postion,1 }, { button.Rotation,0 }, { button.Size,1 }, button.TintColour,nullptr);
+            s_Renderer2D->DrawQuad({ button.Postion,0 }, { button.Rotation,0 }, { button.Size,1 }, button.TintColour,nullptr);
         }
         TextParams textParam;
         glm::mat4 textTransform;
@@ -36,7 +36,7 @@ namespace Proof {
             textParam.Kerning = text.Kerning;
             textParam.LineSpacing = text.LineSpacing;
 
-            textTransform = glm::translate(glm::mat4(1.0f), { text.Postion,1 }) *
+            textTransform = glm::translate(glm::mat4(1.0f), { text.Postion,0 }) *
                 glm::rotate(glm::mat4(1.0f), glm::radians(text.Rotation.x), { 1,0,0 })
                 * glm::rotate(glm::mat4(1.0f), glm::radians(text.Rotation.y), { 0,1,0 })
                 * glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })

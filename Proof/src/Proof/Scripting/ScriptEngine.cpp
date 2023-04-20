@@ -9,7 +9,9 @@
 #include "mono/metadata/object.h"
 #include "mono/metadata/mono-debug.h"
 #include "mono/metadata/threads.h"
-
+#include <mono/jit/jit.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/debug-helpers.h>
 #include "mono/metadata/attrdefs.h"
 #include <fstream>
 #include <sstream>
@@ -144,6 +146,7 @@ namespace Proof
         
         World* CurrentWorld = nullptr;
 
+        std::unordered_map<std::string, std::set<std::string>> ScriptSubClasses;
         #ifdef PF_ENABLE_DEBUG 
             bool EnableDebugging = true;
         #else
@@ -174,8 +177,24 @@ namespace Proof
         PF_CORE_ASSERT(m_MonoClass, "Mono Class is nullptr");
         return ScriptEngine::InstantiateClass(m_MonoClass);
     }
+    MonoMethod* GetMeathod(const std::string& methodName, int parameterCount, MonoClass* monoClass) {
+        // Search for the method in the current class
+        MonoMethod* method = mono_class_get_method_from_name(monoClass, methodName.c_str(), parameterCount);
+
+        // If the method was not found in the current class, search in the parent class
+        if (!method)
+        {
+            MonoClass* parentClass = mono_class_get_parent(monoClass);
+            if (parentClass)
+            {
+                method = GetMeathod(methodName, parameterCount, parentClass);
+            }
+        }
+
+        return method;
+    }
     MonoMethod* ScriptClass::GetMethod(const std::string& name, int parameterCount) {
-        return mono_class_get_method_from_name(m_MonoClass, name.c_str(), parameterCount);
+        return GetMeathod(name.c_str(), parameterCount,m_MonoClass);
     }
     MonoObject* ScriptClass::CallMethod(MonoObject* instance, MonoMethod* method, void** params) {
 
@@ -450,25 +469,56 @@ namespace Proof
             if (!isEntity) continue;
 
             s_Data->ScriptEntityClasses[fullName] = Count<ScriptClass>::Create(nameSpace, className);
+            s_Data->ScriptSubClasses[fullName];
+
             auto scriptClass = s_Data->ScriptEntityClasses[fullName];
             PF_ENGINE_TRACE("   Added To Script Class {}", fullName);
 
             int fieldCount = mono_class_num_fields(monoClass);
             PF_ENGINE_WARN("{} has {} fields:", className, fieldCount);
-            void* iterator = nullptr;
-            while (MonoClassField* field = mono_class_get_fields(monoClass, &iterator))
-            {
-                const char* fieldName = mono_field_get_name(field);
-                uint32_t flags = mono_field_get_flags(field);
-                if (flags & MONO_FIELD_ATTR_PUBLIC)
-                {
-                    MonoType* type = mono_field_get_type(field);
-                    ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
-                    PF_ENGINE_WARN("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
 
-                    scriptClass->m_Fields[fieldName] = { fieldType, fieldName, field };
-                }
+            MonoClass* parent = mono_class_get_parent(monoClass);
+
+            if (parent != nullptr && parent != entityClass && mono_class_is_subclass_of(parent, entityClass, false))
+            {
+                const char* nameSpace = mono_class_get_namespace(parent);
+                const char* name = mono_class_get_name(parent);
+
+                // Combine the namespace and name to form the full class name
+                std::string parentfullName = nameSpace;
+                parentfullName += ".";
+                parentfullName += name;
+
+                s_Data->ScriptSubClasses[parentfullName].insert(fullName);
             }
+            
+            AssemblyLoadFields(scriptClass, monoClass);
+        }
+    }
+    void ScriptEngine::AssemblyLoadFields(Count<ScriptClass> scriptClass, MonoClass* monoClass)
+    {
+        MonoClass* entityClass = mono_class_from_name(s_Data->CoreAssemblyImage, "Proof", "Entity");
+        void* iterator = nullptr;
+        while (MonoClassField* field = mono_class_get_fields(monoClass, &iterator))
+        {
+            const char* fieldName = mono_field_get_name(field);
+            uint32_t flags = mono_field_get_flags(field);
+            if (flags & MONO_FIELD_ATTR_PUBLIC )
+            {
+                MonoType* type = mono_field_get_type(field);
+                ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
+                if (fieldType == ScriptFieldType::None)
+                    continue;
+                PF_ENGINE_WARN("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
+
+                scriptClass->m_Fields[fieldName] = { fieldType, fieldName, field };
+            }
+        }
+        MonoClass* parentClass = mono_class_get_parent(monoClass);
+        if (parentClass != nullptr && parentClass != entityClass)
+        {
+            if (mono_class_is_subclass_of(parentClass, entityClass, false))
+                AssemblyLoadFields(scriptClass, parentClass);
         }
     }
     MonoImage* ScriptEngine::GetCoreAssemblyImage() {
@@ -518,7 +568,7 @@ namespace Proof
     }
     MonoObject* ScriptEngine::GetMonoManagedObject(UUID uuid, const std::string& fullName)
     {
-        PF_CORE_ASSERT(s_Data->EntityInstances.find(uuid) != s_Data->EntityInstances.end());
+        PF_CORE_ASSERT(s_Data->EntityInstances.contains(uuid));
         if (!s_Data->EntityInstances.contains(uuid))return nullptr;
 
         auto& entData = s_Data->EntityInstances.at(uuid);
@@ -526,6 +576,17 @@ namespace Proof
         if (entData.contains(fullName))
         {
             return entData.at(fullName)->GetMonoObject();
+        } 
+
+        if(!s_Data->ScriptSubClasses.contains(fullName))
+            return nullptr;
+
+
+        // checking if it is a subclass
+        for (auto& scriptName : s_Data->ScriptSubClasses[fullName])
+        {
+            if(entData.contains(scriptName))
+                 return entData.at(scriptName)->GetMonoObject();
         }
         return nullptr;
     }

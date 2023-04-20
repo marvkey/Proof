@@ -5,19 +5,48 @@ Project:
   StartWorld: 1231203838479
   Input:
     ActionMapping:
-      - Action: NewAction
+      - Action: IncreaseInventory
+        InputDevices:
+          - InputDevice: None
+            Keys: [3]
+          - InputDevice: ControllerButton
+            Keys: [5]
+      - Action: DecreaseInventory
+        InputDevices:
+          - InputDevice: None
+            Keys: [4]
+          - InputDevice: ControllerButton
+            Keys: [4]
+      - Action: Drop
         InputDevices:
           - InputDevice: KeyBoard
-            Keys: [66, 261]
+            Keys: [69]
+          - InputDevice: ControllerButton
+            Keys: [2]
+      - Action: ApplyPowerUp
+        InputDevices:
           - InputDevice: MouseButton
             Keys: [0]
-      - Action: NewAction(1)
+          - InputDevice: ControllerButton
+            Keys: [20]
+      - Action: ChangeSpeed
         InputDevices:
           - InputDevice: KeyBoard
-            Keys: [301]
+            Keys: [83]
+          - InputDevice: ControllerButton
+            Keys: [21]
+      - Action: Jump
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [32]
+          - InputDevice: ControllerButton
+            Keys: [0]
     MotionMapping:
-      - Motion: NewMotion
+      - Motion: MoveX
         InputDevices:
           - InputDevice: KeyBoard
-            Keys: [69, 74]
-            MotionValues: [56, 11]
+            Keys: [65, 68]
+            MotionValues: [1, -1]
+          - InputDevice: ControllerAxis
+            Keys: [0]
+            MotionValues: [-1]

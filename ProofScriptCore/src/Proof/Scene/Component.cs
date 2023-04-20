@@ -69,7 +69,16 @@ namespace Proof
 				InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
 			}
 		}
-		
+        public Vector GetFowardVector()
+        {
+            InternalCalls.TransformComponent_GetFowardVector(Entity.ID, out Vector foward);
+            return foward;
+        }
+
+		public void Translate(Vector vec)
+		{
+			Location += vec;
+		}
     }
 
 	public class TextComponent : Component
@@ -98,6 +107,21 @@ namespace Proof
 	public class PlayerInputComponent : Component
 	{
 
+	}
+
+	public class MeshComponent : Component
+	{
+		public bool Visible
+		{
+			get
+			{
+				return InternalCalls.MeshComponent_GetVisible(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.MeshComponent_SetVisible(Entity.ID, value);
+			}
+		}
 	}
 	public class RigidBodyComponent : Component
 	{

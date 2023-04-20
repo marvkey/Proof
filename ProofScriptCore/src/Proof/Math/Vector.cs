@@ -12,6 +12,12 @@ namespace Proof
     {
         public float X,Y,Z;
         public static Vector Zero => new Vector(0.0f);
+        public Vector(Vector other)
+        {
+            X = other.X;
+            Y = other.Y;
+            Z = other.Z;
+        }
         public Vector(float x, float y, float z)
         {
             X = x;
@@ -48,7 +54,10 @@ namespace Proof
         {
             return (X * vec.X + Y * vec.Y + Z * vec.Z);
         }
+
+        public static Vector operator *(Vector a,float sclar)
+        {
+            return new Vector(a.X *sclar, a.Y * sclar, a.Z * sclar);
+        }
     }
-
-
 }

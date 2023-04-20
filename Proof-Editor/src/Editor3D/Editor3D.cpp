@@ -280,8 +280,6 @@ namespace Proof
 		}
 	}
 
-	float viepOrtX;
-	float viepOrtY;
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
@@ -301,6 +299,7 @@ namespace Proof
 					int player = 1;
 					if (m_PlayersCount > 1 && Mouse::IsMouseCaptured())
 					{
+
 						m_ActiveWorld->ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
 							PlayerInputComponent& input = *entity.GetComponent<PlayerInputComponent>();
 							if ((int)input.InputPlayer < m_PlayersCount)
@@ -310,7 +309,7 @@ namespace Proof
 								{
 									auto camera =cameraEntity.GetComponent<CameraComponent>();
 									uint32_t windowWIdth = m_ViewPortSize.x / 2;
-									uint32_t windowHeight = m_ViewPortSize.y / 2;
+									uint32_t windowHeight = m_ViewPortSize.y ;
 									auto location = m_ActiveWorld->GetWorldLocation(cameraEntity);
 									Vector rotation;
 									if (camera->UseLocalRotation)
@@ -320,66 +319,12 @@ namespace Proof
 									camera->Width = windowWIdth;
 									camera->Height = windowHeight;
 									camera->CalculateProjection(location, rotation);
-									bool clear = false;
-									if (player == 1)
-										m_WorldRenderer->Render(*camera, location);
-
-										clear = true;
-									switch (m_PlayersCount)
+									m_WorldRenderer->Clear();
+									if (m_MultiplayerRender.contains(input.InputPlayer))
 									{
-										case 4:
-											{
-												switch (input.InputPlayer)
-												{
-													//case Proof::Players::None:
-													//	break;
-													case Proof::Players::Player0:
-														{
-															Viewport view;
-															view.X = 0;
-															view.Y = windowHeight;
-
-															view.Width	 = windowWIdth;
-															view.Height = windowHeight;
-
-															ViewportScissor  scissor;
-															scissor.Extent = { (float)windowWIdth*2,(float)windowHeight*2 };
-															scissor.Offset = { view.X ,view.Y };
-
-															m_WorldRenderer->Render(*camera, location, view, scissor);
-														}
-														break;
-													case Proof::Players::Player1:
-														{
-															Viewport view;
-															view.X = windowWIdth;
-															view.Y = windowHeight;
-
-															view.Width = windowWIdth;
-															view.Height = windowHeight;
-
-															ViewportScissor  scissor;
-															scissor.Extent = { (float)windowWIdth,(float)windowHeight };
-															scissor.Offset = { view.X,view.Y };
-															m_WorldRenderer->Render(*camera, location,view,scissor);
-														}
-														break;
-													case Proof::Players::Player2:
-														break;
-													case Proof::Players::Player3:
-														break;
-													case Proof::Players::Player4:
-														break;
-													//case Proof::Players::Player5:
-													//	break;
-													default:
-														break;
-												}
-											}
-										default:
-											break;
+										m_MultiplayerRender[input.InputPlayer]->Resize({ windowWIdth, windowHeight });
+										m_MultiplayerRender[input.InputPlayer]->Render(*camera, location);
 									}
-									player++;
 								}
 							}
 						});
@@ -444,12 +389,6 @@ namespace Proof
 		MainToolBar();
 
 		ViewPort();
-		
-		ImGui::Begin("Debug");
-
-		ImGui::DragFloat("VIeposrtX", &viepOrtX);
-		ImGui::DragFloat("VIeposrtY", &viepOrtY);
-		ImGui::End();
 		
 		for (auto& a : m_AllPanels) {
 			a.second->ImGuiRender(DeltaTime);
@@ -996,6 +935,44 @@ namespace Proof
 				m_ViewPortFocused = false;
 				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
+			if (m_ActiveWorld->IsPlaying() && m_PlayersCount > 1)
+			{
+				//(input, entity ID)
+				std::map<int, uint64_t> inputs;
+				m_ActiveWorld->ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
+					PlayerInputComponent& input = *entity.GetComponent<PlayerInputComponent>();
+					if (!m_MultiplayerRender.contains(input.InputPlayer))return;
+					inputs[(int)input.InputPlayer] = entity.GetEntityID();
+				});
+
+				switch (inputs.size())
+				{
+					case 4:
+						{
+							auto element = inputs.begin();
+							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)inputs.begin()->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y / 2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							element++;
+							ImGui::SameLine();
+							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x/2,m_ViewPortSize.y/2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+
+							element++;
+							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y / 2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							ImGui::SameLine();
+							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y / 2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+
+						}
+
+					case 2:
+						{
+							auto element = inputs.begin();
+							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x /2,m_ViewPortSize.y  }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							
+							ImGui::SameLine();
+							element++;
+							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+						}
+				}
+			}
 			const void* Text = m_WorldRenderer->GetImage().SourceImage;
 			ImGui::Image((ImTextureID)Text, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
@@ -1334,6 +1311,17 @@ namespace Proof
 		m_WorldHierachy.m_SelectedEntity = {};
 
 		m_ActiveWorld->StartRuntime();
+
+		if (m_PlayersCount > 1)
+		{
+			for (int i = 0; i < m_PlayersCount; i++)
+			{
+				if (m_MultiplayerRender[(Players)(i + 1)] == nullptr)
+					m_MultiplayerRender[(Players)(i + 1)] = Count<WorldRenderer>::Create(m_ActiveWorld, m_ViewPortSize.x, m_ViewPortSize.y);
+				else
+					m_MultiplayerRender[(Players)(i + 1)]->SetContext(m_ActiveWorld);
+			}
+		}
 		Mouse::CaptureMouse(true);
 	}
 	void Editore3D::SimulateWorld() {

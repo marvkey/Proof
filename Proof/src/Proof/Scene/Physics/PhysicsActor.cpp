@@ -136,7 +136,7 @@ namespace Proof {
 			physx::PxTransform newPos(PhysxUtils::VectorToPhysxVector(transform.Location), PhysxUtils::VectorToPhysxQuat(transform.Rotation));
 			rigidBody->setGlobalPose(newPos,false);
 
-			// adjusting the new size
+			// adjusting the new size	
 			if (m_Entity.HasComponent<CubeColliderComponent>())
 			{
 				physx::PxShape* colliderShape =(physx::PxShape *) m_Entity.GetComponent<CubeColliderComponent>()->m_RuntimeBody;

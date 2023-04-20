@@ -124,7 +124,7 @@ namespace Proof
 		m_DepthCompareOperator = config.DepthCompareOperator;
 		PipelineConfigInfo pipelineConfig;
 		DefaultPipelineConfigInfo(pipelineConfig, config);
-		pipelineConfig.RenderPass = config.RenderPass->As<VulkanRenderPass>()->GetRenderPass();;
+		pipelineConfig.RenderPass = config.RenderPass.As<VulkanRenderPass>()->GetRenderPass();;
 		pipelineConfig.PipelineLayout = config.PipelineLayout.As<VulkanPipeLineLayout>()->GetPipeLineLayout();
 		auto vulkanShader = config.Shader.As<VulkanShader>();
 		PF_CORE_ASSERT(pipelineConfig.PipelineLayout, "Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");

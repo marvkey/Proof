@@ -36,8 +36,10 @@ namespace Proof {
 	struct PlayerActions 
 	{
 		std::string ActionName;
-		InputEvent Event;
-		std::function<void()> Action;
+		//event, Action 
+		std::unordered_map<InputEvent, std::function<void()>>Events;
+		//InputEvent Event;
+		//std::function<void()> Action;
 	};
 
 	struct PlayerMotion

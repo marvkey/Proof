@@ -42,9 +42,10 @@ namespace Proof {
 		m_Storage2DData->CurrentFrameBuffer = frameBuffer;
 		m_Storage2DData->CommandBuffer = commdandBuffer;
 	}
-	Renderer2D::Renderer2D(Count<class RenderPass> renderPass)
+	Renderer2D::Renderer2D(Count<class RenderPass> renderPass, bool screenSpace)
 	{
 		m_RenderPass = renderPass;
+		m_ScreenSpace = screenSpace;
 		Init();
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
@@ -99,33 +100,66 @@ namespace Proof {
 		}
 		*/
 		s_Transform = glm::mat4(1.0f);
-		s_Transform = glm::translate(glm::mat4(1.0f),{Location.x,Location.y,Location.z}) *
-			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.x),{1.0f,0.0f,0.0f}) *
-			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.y),{0.0f,1.0f,0.0f}) *
-			glm::rotate(glm::mat4(1.0f),glm::radians(Rotation.z),{0.0f,0.0f,1.0f}) *
-			glm::scale(glm::mat4(1.0f),{Size.x,Size.y,Size.z});
 
-		Vertex1.Position = GlmVecToProof( s_Transform * glm::vec4(0.5f,0.5f,0.0f,1.0f));
-		Vertex1.Color = Color;
-		Vertex1.TexCoords = {1.0f,1.0f};
-		//Vertex1.TexSlot = TextureIndex;
+		if (m_ScreenSpace == false)
+		{
 
-		Vertex2.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f,-0.5f,0.0,1.0f));
-		Vertex2.Color = Color;
-		Vertex2.TexCoords = {1.0f,0.0f};
-		//Vertex2.TexSlot = TextureIndex;
+			s_Transform = glm::translate(glm::mat4(1.0f), { Location.x,Location.y,Location.z }) *
+				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.x), { 1.0f,0.0f,0.0f }) *
+				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.y), { 0.0f,1.0f,0.0f }) *
+				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.z), { 0.0f,0.0f,1.0f }) *
+				glm::scale(glm::mat4(1.0f), { Size.x,Size.y,Size.z });
 
-		Vertex3.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f,-0.5f,0.0,1.0f));
-		Vertex3.Color = Color;
-		Vertex3.TexCoords = {0.0f,0.0f};
-		//Vertex3.TexSlot = TextureIndex;
+			Vertex1.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f));
+			Vertex1.Color = Color;
+			Vertex1.TexCoords = { 1.0f,1.0f };
+			//Vertex1.TexSlot = TextureIndex;
 
-		Vertex4.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f,0.5f,0.0,1.0f));
-		Vertex4.Color = Color;
-		Vertex4.TexCoords = {0.0f,1.0f};
-		//Vertex4.TexSlot = TextureIndex;
+			Vertex2.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, -0.5f, 0.0, 1.0f));
+			Vertex2.Color = Color;
+			Vertex2.TexCoords = { 1.0f,0.0f };
+			//Vertex2.TexSlot = TextureIndex;
 
-		/* Gonna test wich is faster this meathod or the second one*/
+			Vertex3.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, -0.5f, 0.0, 1.0f));
+			Vertex3.Color = Color;
+			Vertex3.TexCoords = { 0.0f,0.0f };
+			//Vertex3.TexSlot = TextureIndex;
+
+			Vertex4.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, 0.5f, 0.0, 1.0f));
+			Vertex4.Color = Color;
+			Vertex4.TexCoords = { 0.0f,1.0f };
+			//Vertex4.TexSlot = TextureIndex
+		}
+		else
+		{
+
+			s_Transform = glm::translate(glm::mat4(1.0f), { Location.x,Location.y,0 })*
+				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.x), { 1.0f,0.0f,0.0f }) *
+				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.y), { 0.0f,1.0f,0.0f }) *
+				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.z), { 0.0f,0.0f,1.0f }) *
+				glm::scale(glm::mat4(1.0f), { Size.x,Size.y,Size.z });
+			Vertex1.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f));
+			Vertex1.Color = Color;
+			Vertex1.TexCoords = { 1.0f,1.0f };
+			//Vertex1.TexSlot = TextureIndex;
+
+			Vertex2.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, -0.5f, 0.0, 1.0f));
+			Vertex2.Color = Color;
+			Vertex2.TexCoords = { 1.0f,0.0f };
+			//Vertex2.TexSlot = TextureIndex;
+
+			Vertex3.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, -0.5f, 0.0, 1.0f));
+			Vertex3.Color = Color;
+			Vertex3.TexCoords = { 0.0f,0.0f };
+			//Vertex3.TexSlot = TextureIndex;
+
+			Vertex4.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, 0.5f, 0.0, 1.0f));
+			Vertex4.Color = Color;
+			Vertex4.TexCoords = { 0.0f,1.0f };
+			//Vertex4.TexSlot = TextureIndex
+		}
+		
+;
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize] = Vertex1;
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+1] = Vertex2;
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+2] = Vertex3;
@@ -218,21 +252,25 @@ namespace Proof {
 			texCoordMin *= glm::vec2(texelWidth, texelHeight);
 			texCoordMax *= glm::vec2(texelWidth, texelHeight);
 
-
+			glm::mat4 copyTransfrom = transform;
+			if (m_ScreenSpace == true)
+			{
+				copyTransfrom = glm::mat4(1.0f);
+			}
 			TextVertex textVertex1, textVertex2, textVertex3, textVertex4;
-			textVertex1.Positon = transform * glm::vec4(quadMin, 0.0f, 1.0f);
+			textVertex1.Positon = copyTransfrom * glm::vec4(quadMin, 0.0f, 1.0f);
 			textVertex1.Color = textParam.Color ;
 			textVertex1.TexCoord = texCoordMin;
 
-			textVertex2.Positon = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+			textVertex2.Positon = copyTransfrom * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
 			textVertex2.Color = textParam.Color;
 			textVertex2.TexCoord = { texCoordMin.x, texCoordMax.y };
 
-			textVertex3.Positon = transform * glm::vec4(quadMax, 0.0f, 1.0f);
+			textVertex3.Positon = copyTransfrom * glm::vec4(quadMax, 0.0f, 1.0f);
 			textVertex3.Color = textParam.Color;
 			textVertex3.TexCoord = texCoordMax;
 
-			textVertex4.Positon = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+			textVertex4.Positon = copyTransfrom * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
 			textVertex4.Color = textParam.Color;
 			textVertex4.TexCoord = { texCoordMax.x, texCoordMin.y };
 
@@ -273,7 +311,19 @@ namespace Proof {
 	}
 	
 	void Renderer2D::Render() {
-		m_Storage2DData->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+		CameraData screnData;
+		screnData.m_Positon = s_CurrentCamera.m_Positon;
+		screnData.m_Projection = glm::mat4(1.0f);
+		screnData.m_View = glm::mat4(1.0f);
+		if (m_ScreenSpace == true)
+		{
+			m_Storage2DData->CameraBuffer->SetData(&screnData, sizeof(CameraData));
+		}
+		else
+		{
+			m_Storage2DData->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+
+		}
 
 		if(m_Storage2DData->TextIndexCount > 0){
 			auto descriptor0 = m_TextPipeline->Descriptors[DescriptorSets::Zero];
