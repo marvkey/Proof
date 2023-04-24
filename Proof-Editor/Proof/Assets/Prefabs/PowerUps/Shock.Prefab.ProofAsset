@@ -1,0 +1,39 @@
+AssetType: Prefab
+ID: 16359374454295279052
+EntityOwner: 14517891011057715553
+Entities:
+  - Entity: 14517891011057715553
+    TagComponent:
+      Tag: Shock
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [3, 3, 3]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 566574579191162934
+      MaterialTable:
+        - Material: ""
+          AssetID: 0
+          Index: 0
+    ScriptComponent:
+      Scripts:
+        - Script: Game.Shake
+          ScriptFields:
+            []
+    SphereColliderComponent:
+      IsTrigger: true
+      Offset: [0, 0, 0]
+      Radius: 1
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]

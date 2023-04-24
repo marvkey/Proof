@@ -34,6 +34,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::Texture] = CreateSpecial<TextureAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::MeshSourceFile] = CreateSpecial<MeshSourceAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Prefab] = CreateSpecial<PrefabAssetSerilizer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::UIPanel] = CreateSpecial<UIPanelAssetSerilizer>();
 		}
 		if (std::filesystem::exists(assetManagerConfiguration.AssetDirectory) == false) {
 			std::filesystem::create_directory(assetManagerConfiguration.AssetDirectory);
@@ -81,6 +82,8 @@ namespace Proof
 				return "Prefab.ProofAsset";
 			case Proof::AssetType::TextureSourceFile:
 				return "";
+			case Proof::AssetType::UIPanel:
+				return "UIPanel.ProofAsset";
 			default:
 				break;
 		}
@@ -335,7 +338,7 @@ namespace Proof
 			LoadAsset(id);
 		#endif
 		
-		PF_ENGINE_INFO("Time Load Asset {}ms ",time.TimePassedMillis());
+		PF_ENGINE_INFO("Time Load Asset {}ms ",time.ElapsedMillis());
 	}
 
 	void AssetManager::ChangeAssetPath(AssetID ID, const std::filesystem::path& newPath) 

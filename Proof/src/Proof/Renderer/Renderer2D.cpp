@@ -78,29 +78,43 @@ namespace Proof {
 		DrawQuad(Location,Rotation,Size,Color,Renderer::GetWhiteTexture());
 	}
 	void Renderer2D::DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform){
-		DrawQuad( ProofToglmVec(transform.Location),ProofToglmVec(transform.Rotation),ProofToglmVec(transform.Scale),glm::vec4{Sprite.Colour},nullptr);
+		if (Sprite.Texture != nullptr)
+		{
+			DrawQuad(ProofToglmVec(transform.Location), ProofToglmVec(transform.Rotation), ProofToglmVec(transform.Scale),
+				glm::vec4{ Sprite.Colour }, Sprite.Texture);
+		}
+		else
+		{
+
+			DrawQuad( ProofToglmVec(transform.Location),ProofToglmVec(transform.Rotation),ProofToglmVec(transform.Scale),glm::vec4{Sprite.Colour}, nullptr);
+		}
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D) {
 		if (m_Storage2DData->IndexCount >= m_Storage2DData->c_MaxIndexCount){ // reached maxed index size
 			Render();
 			Reset();
 		}
-		/*
 		float TextureIndex =-1.0f; // no texture index
-		for(uint32_t i =0; i<m_Storage2DData->TextureSlotIndex;i++){
-			if(m_Storage2DData->Textures[i]->GetID() == texture2D->GetID()){
-				TextureIndex =(float)i;
-				break;
+		if (texture2D != nullptr)
+		{
+			for (uint32_t i = 0; i < m_Storage2DData->TextureSlotIndex; i++)
+			{
+				if (m_Storage2DData->Textures[i]->GetID() == texture2D->GetID())
+				{
+					TextureIndex = (float)i;
+					break;
+				}
+			}
+			if (TextureIndex == -1.0f)
+			{ /// if the texture does not exist, then we are just going to assing a new texture
+				TextureIndex = (float)m_Storage2DData->TextureSlotIndex; // assinging new
+				m_Storage2DData->Textures[m_Storage2DData->TextureSlotIndex] =texture2D ;
+				m_Storage2DData->TextureSlotIndex++;
 			}
 		}
-		if(TextureIndex ==-1.0f){ /// if the texture does not exist, then we are just going to assing a new texture
-			TextureIndex = (float) m_Storage2DData->TextureSlotIndex; // assinging new
-			m_Storage2DData->Textures[m_Storage2DData->TextureSlotIndex] =texture2D;
-			m_Storage2DData->TextureSlotIndex++;
-		}
-		*/
+		if (TextureIndex == -1)
+			TextureIndex = 0;
 		s_Transform = glm::mat4(1.0f);
-
 		if (m_ScreenSpace == false)
 		{
 
@@ -113,22 +127,22 @@ namespace Proof {
 			Vertex1.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f));
 			Vertex1.Color = Color;
 			Vertex1.TexCoords = { 1.0f,1.0f };
-			//Vertex1.TexSlot = TextureIndex;
+			Vertex1.TexSlot = TextureIndex;
 
 			Vertex2.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, -0.5f, 0.0, 1.0f));
 			Vertex2.Color = Color;
 			Vertex2.TexCoords = { 1.0f,0.0f };
-			//Vertex2.TexSlot = TextureIndex;
+			Vertex2.TexSlot = TextureIndex;
 
 			Vertex3.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, -0.5f, 0.0, 1.0f));
 			Vertex3.Color = Color;
 			Vertex3.TexCoords = { 0.0f,0.0f };
-			//Vertex3.TexSlot = TextureIndex;
+			Vertex3.TexSlot = TextureIndex;
 
 			Vertex4.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, 0.5f, 0.0, 1.0f));
 			Vertex4.Color = Color;
 			Vertex4.TexCoords = { 0.0f,1.0f };
-			//Vertex4.TexSlot = TextureIndex
+			Vertex4.TexSlot = TextureIndex;
 		}
 		else
 		{
@@ -141,25 +155,23 @@ namespace Proof {
 			Vertex1.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f));
 			Vertex1.Color = Color;
 			Vertex1.TexCoords = { 1.0f,1.0f };
-			//Vertex1.TexSlot = TextureIndex;
+			Vertex1.TexSlot = TextureIndex;
 
 			Vertex2.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, -0.5f, 0.0, 1.0f));
 			Vertex2.Color = Color;
 			Vertex2.TexCoords = { 1.0f,0.0f };
-			//Vertex2.TexSlot = TextureIndex;
+			Vertex2.TexSlot = TextureIndex;
 
 			Vertex3.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, -0.5f, 0.0, 1.0f));
 			Vertex3.Color = Color;
 			Vertex3.TexCoords = { 0.0f,0.0f };
-			//Vertex3.TexSlot = TextureIndex;
+			Vertex3.TexSlot = TextureIndex;
 
 			Vertex4.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, 0.5f, 0.0, 1.0f));
 			Vertex4.Color = Color;
 			Vertex4.TexCoords = { 0.0f,1.0f };
-			//Vertex4.TexSlot = TextureIndex
+			Vertex4.TexSlot = TextureIndex;
 		}
-		
-;
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize] = Vertex1;
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+1] = Vertex2;
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+2] = Vertex3;
@@ -253,10 +265,10 @@ namespace Proof {
 			texCoordMax *= glm::vec2(texelWidth, texelHeight);
 
 			glm::mat4 copyTransfrom = transform;
-			if (m_ScreenSpace == true)
-			{
-				copyTransfrom = glm::mat4(1.0f);
-			}
+			//if (m_ScreenSpace == true)
+			//{
+			//	copyTransfrom = glm::mat4(1.0f);
+			//}
 			TextVertex textVertex1, textVertex2, textVertex3, textVertex4;
 			textVertex1.Positon = copyTransfrom * glm::vec4(quadMin, 0.0f, 1.0f);
 			textVertex1.Color = textParam.Color ;
@@ -308,6 +320,10 @@ namespace Proof {
 		m_Storage2DData->CurrentFrameBuffer = nullptr;
 		m_Storage2DData->CommandBuffer = nullptr;
 
+		// reseting every textures back to white that has been changed
+		//for (uint32_t i = 1; i < m_Storage2DData->TextureSlotIndex; i++)
+		//	m_Storage2DData->Textures[i] = m_Storage2DData->Textures[0];
+		m_Storage2DData->TextureSlotIndex = 1;
 	}
 	
 	void Renderer2D::Render() {
@@ -315,15 +331,15 @@ namespace Proof {
 		screnData.m_Positon = s_CurrentCamera.m_Positon;
 		screnData.m_Projection = glm::mat4(1.0f);
 		screnData.m_View = glm::mat4(1.0f);
-		if (m_ScreenSpace == true)
-		{
-			m_Storage2DData->CameraBuffer->SetData(&screnData, sizeof(CameraData));
-		}
-		else
-		{
+		//if (m_ScreenSpace == true)
+		//{
+			//m_Storage2DData->CameraBuffer->SetData(&screnData, sizeof(CameraData));
+		//}
+		//else
+		//{
 			m_Storage2DData->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 
-		}
+		//}
 
 		if(m_Storage2DData->TextIndexCount > 0){
 			auto descriptor0 = m_TextPipeline->Descriptors[DescriptorSets::Zero];
@@ -346,6 +362,8 @@ namespace Proof {
 			auto descriptor0 = m_SpritePipeline->Descriptors[DescriptorSets::Zero];
 
 			descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
+			descriptor0->WriteImage(1, m_Storage2DData->Textures);
+
 			Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline, [&](Count <RenderCommandBuffer> commandBuffer) {
 				descriptor0->Bind(commandBuffer, m_SpritePipeline->PipeLineLayout);
 				m_Storage2DData->VertexBuffer->AddData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
@@ -369,22 +387,22 @@ namespace Proof {
 		V1.Position = GlmVecToProof( Transform*glm::vec4(0.5f,0.5f,0,1.0f));
 		V1.Color = Color;
 		V1.TexCoords ={1.0f,1.0f};
-		//V1.TexSlot =TexIndex;
+		V1.TexSlot =TexIndex;
 
 		V2.Position = GlmVecToProof(Transform*glm::vec4(0.5f,-0.5f, 0,1.0f));
 		V2.Color = Color;
 		V2.TexCoords = {1.0f,0.0f};
-		//V2.TexSlot = TexIndex;
+		V2.TexSlot = TexIndex;
 
 		V3.Position = GlmVecToProof(Transform * glm::vec4(-0.5f,-0.5f, 0,1.0f));
 		V3.Color = Color;
 		V3.TexCoords = {0.0f,0.0f};
-		//V3.TexSlot = TexIndex;
+		V3.TexSlot = TexIndex;
 
 		V4.Position = GlmVecToProof( Transform * glm::vec4(-0.5f,0.5f, 0,1.0f));
 		V4.Color = Color;
 		V4.TexCoords = {0.0f,1.0f};
-		//V4.TexSlot = TexIndex;
+		V4.TexSlot = TexIndex;
 
 		return {V1,V2,V3,V4};
 	}
@@ -408,7 +426,6 @@ namespace Proof {
 	}
 	Renderer2DStorage::Renderer2DStorage() {
 		QuadIndices.resize(c_MaxIndexCount);
-		//Textures.resize(MaxTextureSlot);
 		QuadArray.resize(c_MaxVertexCount);
 		TextArray.resize(c_MaxVertexCount);
 		uint32_t Offset = 0;
@@ -431,9 +448,11 @@ namespace Proof {
 		uint32_t whiteTextureData = 0xffffffff;
 
 		int32_t Samplers[32];
-		//for(uint32_t i=0; i< Renderer2DStorage::MaxTextureSlot;i++)
-		//	Samplers[i] =i;
-		//Textures[0] =  Texture2D::Create(1, 1, ImageFormat::RGBA, &whiteTextureData);
+		Textures.resize(Renderer2DStorage::c_MaxTextureSlot);
+		WhiteTexture = Texture2D::Create(1, 1, ImageFormat::RGBA, &whiteTextureData);
+
+		for(uint32_t i=0; i < Renderer2DStorage::c_MaxTextureSlot;i++)
+			Textures[i] = WhiteTexture;
 
 	}
 	SpritePipeline::SpritePipeline(Count <RenderPass > renderPass) {
@@ -441,11 +460,12 @@ namespace Proof {
 		vertexArray->AddData(0, DataType::Vec3, offsetof(Vertex2D, Vertex2D::Position));
 		vertexArray->AddData(1, DataType::Vec4, offsetof(Vertex2D, Vertex2D::Color));
 		vertexArray->AddData(2, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
-		//vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
+		vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
 		Shader = Shader::GetOrCreate("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.shader");
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+				.AddBinding((int)1, DescriptorType::ImageSampler, ShaderStage::Fragment, 32)
 				.Build();
 			Descriptors.insert({ DescriptorSets::Zero,descriptor });
 		}
@@ -469,7 +489,7 @@ namespace Proof {
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.AddBinding((int)1, DescriptorType::ImageSampler, ShaderStage::Fragment)
+				.AddBinding(1, DescriptorType::ImageSampler, ShaderStage::Fragment)
 				.Build();
 			Descriptors.insert({ DescriptorSets::Zero,descriptor });
 		}

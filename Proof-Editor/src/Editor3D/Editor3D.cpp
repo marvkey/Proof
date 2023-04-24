@@ -255,7 +255,7 @@ namespace Proof
 		//ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
 		SceneSerializer scerelizer(m_ActiveWorld.Get());
 		
-		//Count<Panel> panel = Count<GuiPanel>::Create();
+		//Count<Panel> panel = Count<GuiPanel>::Create(Count<UIPanel>::Create());
 		//m_AllPanels.insert({ UUID(),panel});
 
 		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
@@ -320,9 +320,13 @@ namespace Proof
 									camera->Height = windowHeight;
 									camera->CalculateProjection(location, rotation);
 									m_WorldRenderer->Clear();
+									
 									if (m_MultiplayerRender.contains(input.InputPlayer))
 									{
 										m_MultiplayerRender[input.InputPlayer]->Resize({ windowWIdth, windowHeight });
+										if(entity.HasComponent<PlayerHUDComponent>() )
+											m_MultiplayerRender[input.InputPlayer]->Render(*camera, location,entity.GetComponent<PlayerHUDComponent>()->HudTable);
+										else
 										m_MultiplayerRender[input.InputPlayer]->Render(*camera, location);
 									}
 								}
@@ -1273,14 +1277,14 @@ namespace Proof
 			auto assetInfo = AssetManager::GetAssetInfo(m_ActiveWorld->GetID());
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 
-			timeSave = time.TimePassedMillis();
+			timeSave = time.ElapsedMillis();
 		}
 		PF_EC_TRACE("{} Saved  in {} m/s", m_ActiveWorld->GetName().c_str(), timeSave);
 
 		{
 			Timer time;
 			AssetManager::SaveAssetManager();
-			timeSave = time.TimePassedMillis();
+			timeSave = time.ElapsedMillis();
 		}
 		PF_EC_TRACE("AssetManager Saved {} m/s", timeSave);
 
@@ -1373,6 +1377,12 @@ namespace Proof
 			case Proof::AssetType::PhysicsMaterial:
 				{
 					Count<Panel> panel = Count<PhysicsMaterialEditorPanel>::Create (AssetManager::GetAsset<PhysicsMaterial>(ID));
+					m_AllPanels.insert({ ID,panel });
+					return true;
+				}
+			case AssetType::UIPanel:
+				{
+					Count<Panel> panel = Count<GuiPanel>::Create(AssetManager::GetAsset<UIPanel>(ID));
 					m_AllPanels.insert({ ID,panel });
 					return true;
 				}

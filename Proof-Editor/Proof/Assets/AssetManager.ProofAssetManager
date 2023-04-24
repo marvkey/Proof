@@ -1,13 +1,13 @@
 Assets:
-  - Asset: 17940291637672428763
-    Type: MeshSourceFile
-    Path: Models\cube.fbx
-  - Asset: 523151243799823422
-    Type: TextureSourceFile
-    Path: Models\backpack\diffuse.jpg
   - Asset: 1231203838479
     Type: World
     Path: Scenes\SinglePlayer.ProofWorld
+  - Asset: 523151243799823422
+    Type: TextureSourceFile
+    Path: Models\backpack\diffuse.jpg
+  - Asset: 17940291637672428763
+    Type: MeshSourceFile
+    Path: Models\cube.fbx
   - Asset: 8147961363379213054
     Type: MeshSourceFile
     Path: Models\sphere.fbx
@@ -23,72 +23,72 @@ Assets:
   - Asset: 963839203
     Type: MeshSourceFile
     Path: Models\backpack\backpack.obj
-  - Asset: 34312323124134123
-    Type: MeshSourceFile
-    Path: Models\sponza\Sponza.gltf
   - Asset: 432434234236
     Type: Mesh
     Path: Mesh\backpack.Mesh.ProofAsset
+  - Asset: 34312323124134123
+    Type: MeshSourceFile
+    Path: Models\sponza\Sponza.gltf
   - Asset: 342345323
     Type: Mesh
     Path: Mesh\Sponza.Mesh.ProofAsset
-  - Asset: 9529509898895796101
-    Type: Texture
-    Path: Models\backpack\diffuse.Texture.ProofAsset
   - Asset: 16939163064772381024
     Type: Texture
     Path: Models\sponza\9288698199695299068.Texture.ProofAsset
+  - Asset: 9529509898895796101
+    Type: Texture
+    Path: Models\backpack\diffuse.Texture.ProofAsset
   - Asset: 13397360882012002329
     Type: TextureSourceFile
     Path: Models\sponza\5061699253647017043.png
-  - Asset: 14104285121916242549
-    Type: Texture
-    Path: Models\sponza\5061699253647017043.Texture.ProofAsset
   - Asset: 5179502121906340082
     Type: Texture
     Path: Models\sponza\6047387724914829168.Texture.ProofAsset
+  - Asset: 14104285121916242549
+    Type: Texture
+    Path: Models\sponza\5061699253647017043.Texture.ProofAsset
   - Asset: 6610013759195162281
     Type: TextureSourceFile
     Path: Models\sponza\8006627369776289000.png
-  - Asset: 5982832368335776544
-    Type: Texture
-    Path: Models\sponza\8006627369776289000.Texture.ProofAsset
   - Asset: 4204181595148279891
     Type: TextureSourceFile
     Path: Models\sponza\5823059166183034438.jpg
-  - Asset: 15724215216271412437
-    Type: TextureSourceFile
-    Path: Models\sponza\7268504077753552595.jpg
+  - Asset: 5982832368335776544
+    Type: Texture
+    Path: Models\sponza\8006627369776289000.Texture.ProofAsset
   - Asset: 10274948682084250722
     Type: Texture
     Path: Models\sponza\6151467286084645207.Texture.ProofAsset
-  - Asset: 6538615149571293472
-    Type: Texture
-    Path: Models\sponza\7268504077753552595.Texture.ProofAsset
+  - Asset: 15724215216271412437
+    Type: TextureSourceFile
+    Path: Models\sponza\7268504077753552595.jpg
   - Asset: 3921054448758108169
     Type: TextureSourceFile
     Path: Models\sponza\2969916736137545357.jpg
-  - Asset: 14460076666082601164
-    Type: TextureSourceFile
-    Path: Models\sponza\8750083169368950601.jpg
-  - Asset: 5478984544963386083
-    Type: TextureSourceFile
-    Path: Models\sponza\15295713303328085182.jpg
+  - Asset: 6538615149571293472
+    Type: Texture
+    Path: Models\sponza\7268504077753552595.Texture.ProofAsset
   - Asset: 9640355367814545224
     Type: Texture
     Path: Models\sponza\4975155472559461469.Texture.ProofAsset
+  - Asset: 5478984544963386083
+    Type: TextureSourceFile
+    Path: Models\sponza\15295713303328085182.jpg
+  - Asset: 14460076666082601164
+    Type: TextureSourceFile
+    Path: Models\sponza\8750083169368950601.jpg
   - Asset: 2922325940131240013
     Type: Texture
     Path: Models\sponza\8750083169368950601.Texture.ProofAsset
-  - Asset: 13385113021977325518
-    Type: TextureSourceFile
-    Path: Models\sponza\5792855332885324923.jpg
   - Asset: 7525996125266057618
     Type: Texture
     Path: Models\Wood04_4K_BaseColor.Texture.ProofAsset
   - Asset: 9530217476629553935
     Type: TextureSourceFile
     Path: Models\sponza\755318871556304029.jpg
+  - Asset: 13385113021977325518
+    Type: TextureSourceFile
+    Path: Models\sponza\5792855332885324923.jpg
   - Asset: 5444296356632275682
     Type: Texture
     Path: Models\sponza\5792855332885324923.Texture.ProofAsset
@@ -110,69 +110,72 @@ Assets:
   - Asset: 2262990738480370960
     Type: TextureSourceFile
     Path: Models\sponza\6047387724914829168.jpg
-  - Asset: 1221668089559778155
-    Type: Texture
-    Path: Models\sponza\5823059166183034438.Texture.ProofAsset
   - Asset: 12389589401197884412
     Type: TextureSourceFile
     Path: Models\sponza\8481240838833932244.jpg
+  - Asset: 1221668089559778155
+    Type: Texture
+    Path: Models\sponza\5823059166183034438.Texture.ProofAsset
   - Asset: 13118775855800601995
     Type: TextureSourceFile
     Path: Models\sponza\7441062115984513793.jpg
-  - Asset: 8886223481538982816
-    Type: Texture
-    Path: Models\sponza\7441062115984513793.Texture.ProofAsset
   - Asset: 2108692410783758697
     Type: Texture
     Path: Models\sponza\755318871556304029.Texture.ProofAsset
-  - Asset: 15471161748990505593
-    Type: TextureSourceFile
-    Path: Models\sponza\11490520546946913238.jpg
+  - Asset: 8886223481538982816
+    Type: Texture
+    Path: Models\sponza\7441062115984513793.Texture.ProofAsset
   - Asset: 16169879306069291477
     Type: Texture
     Path: Models\sponza\white.Texture.ProofAsset
+  - Asset: 15471161748990505593
+    Type: TextureSourceFile
+    Path: Models\sponza\11490520546946913238.jpg
   - Asset: 7805797399562803748
     Type: Texture
     Path: Models\sponza\11490520546946913238.Texture.ProofAsset
   - Asset: 3578668846828687010
     Type: TextureSourceFile
     Path: Models\sponza\6151467286084645207.jpg
-  - Asset: 11884758266386751196
-    Type: TextureSourceFile
-    Path: Models\sponza\white.png
   - Asset: 11752739987443804276
     Type: TextureSourceFile
     Path: Models\sponza\4675343432951571524.jpg
+  - Asset: 11884758266386751196
+    Type: TextureSourceFile
+    Path: Models\sponza\white.png
   - Asset: 10706691629756905183
     Type: TextureSourceFile
     Path: Models\sponza\4975155472559461469.jpg
-  - Asset: 12679040358804560163
-    Type: Texture
-    Path: Models\sponza\4675343432951571524.Texture.ProofAsset
   - Asset: 5580887056260493768
     Type: Texture
     Path: Models\sponza\11474523244911310074.Texture.ProofAsset
-  - Asset: 8883275384828228391
+  - Asset: 12679040358804560163
+    Type: Texture
+    Path: Models\sponza\4675343432951571524.Texture.ProofAsset
+  - Asset: 41328468163910362
     Type: TextureSourceFile
-    Path: Models\sponza\2775690330959970771.jpg
+    Path: Images\awesomeface.png
   - Asset: 7346864967242903242
     Type: TextureSourceFile
     Path: Models\sponza\16275776544635328252.png
-  - Asset: 10969753771671222335
-    Type: Texture
-    Path: Models\sponza\2775690330959970771.Texture.ProofAsset
+  - Asset: 8883275384828228391
+    Type: TextureSourceFile
+    Path: Models\sponza\2775690330959970771.jpg
   - Asset: 9845575082398062127
     Type: TextureSourceFile
     Path: Models\sponza\9288698199695299068.jpg
+  - Asset: 10969753771671222335
+    Type: Texture
+    Path: Models\sponza\2775690330959970771.Texture.ProofAsset
   - Asset: 5716039310843167148
     Type: TextureSourceFile
     Path: Models\sponza\2185409758123873465.jpg
-  - Asset: 565619503486162631
-    Type: Texture
-    Path: Models\sponza\2185409758123873465.Texture.ProofAsset
   - Asset: 15617481969196675214
     Type: Texture
     Path: Models\sponza\17876391417123941155.Texture.ProofAsset
+  - Asset: 565619503486162631
+    Type: Texture
+    Path: Models\sponza\2185409758123873465.Texture.ProofAsset
   - Asset: 4331347188845063133
     Type: TextureSourceFile
     Path: Models\sponza\17876391417123941155.jpg
@@ -182,27 +185,33 @@ Assets:
   - Asset: 4470052075513253391
     Type: Texture
     Path: Models\sponza\8481240838833932244.Texture.ProofAsset
-  - Asset: 3792275242324487702
-    Type: TextureSourceFile
-    Path: Models\sponza\6772804448157695701.jpg
   - Asset: 7639213810905814004
     Type: Texture
     Path: Models\sponza\2969916736137545357.Texture.ProofAsset
+  - Asset: 3792275242324487702
+    Type: TextureSourceFile
+    Path: Models\sponza\6772804448157695701.jpg
+  - Asset: 5306886724956390622
+    Type: Prefab
+    Path: Prefabs\PowerUps\Explosive.Prefab.ProofAsset
   - Asset: 10462931596583106257
     Type: Texture
     Path: Models\sponza\6772804448157695701.Texture.ProofAsset
+  - Asset: 4015502858990313943
+    Type: Prefab
+    Path: Prefabs\mPlayer.Prefab.ProofAsset
   - Asset: 17647221892499275640
     Type: Mesh
     Path: Mesh\Terrain.Mesh.ProofAsset
   - Asset: 566574579191162934
     Type: Mesh
     Path: Mesh\Sphere.Mesh.ProofAsset
-  - Asset: 5642053961336929036
-    Type: Material
-    Path: Material\Blue.Material.ProofAsset
   - Asset: 9751242508810856553
     Type: MeshSourceFile
     Path: Models\capsule.fbx
+  - Asset: 5642053961336929036
+    Type: Material
+    Path: Material\Blue.Material.ProofAsset
   - Asset: 14701413770166337076
     Type: Mesh
     Path: Mesh\Capsule.Mesh.ProofAsset
@@ -236,6 +245,12 @@ Assets:
   - Asset: 13308300816728474787
     Type: World
     Path: Scenes\MultiplayerScene.ProofWorld
-  - Asset: 13977925822409635784
+  - Asset: 1798143042432216336
+    Type: UIPanel
+    Path: UI\PlayerHUD.UIPanel.ProofAsset
+  - Asset: 96342634762984
+    Type: Texture
+    Path: Images\awsomeFace.Texture.ProofAsset
+  - Asset: 16359374454295279052
     Type: Prefab
-    Path: Prefabs\mPlayer.Prefab.ProofAsset
+    Path: Prefabs\PowerUps\Shock.Prefab.ProofAsset

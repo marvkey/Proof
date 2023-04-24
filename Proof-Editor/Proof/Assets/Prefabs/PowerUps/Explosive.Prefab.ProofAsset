@@ -1,0 +1,39 @@
+AssetType: Prefab
+ID: 5306886724956390622
+EntityOwner: 6104714278752056889
+Entities:
+  - Entity: 6104714278752056889
+    TagComponent:
+      Tag: Explosive
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 566574579191162934
+      MaterialTable:
+        - Material: ""
+          AssetID: 0
+          Index: 0
+    ScriptComponent:
+      Scripts:
+        - Script: Game.Explosive
+          ScriptFields:
+            []
+    SphereColliderComponent:
+      IsTrigger: true
+      Offset: [0, 0, 0]
+      Radius: 1
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]

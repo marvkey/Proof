@@ -420,6 +420,13 @@ namespace Proof {
 
 			InputManagerMeathods::SetPlayer((uint32_t)inputCopy.InputPlayer);
 		});
+		ForEachEnitityWith<PlayerHUDComponent>([&](Entity entity) {
+			PlayerHUDComponent& hud = *entity.GetComponent<PlayerHUDComponent>();
+			if (hud.HudTable != nullptr)
+			{
+				hud.HudTable = Count<UITable>::Create(hud.HudTable->Generate());
+			}
+		});
 		m_PhysicsWorld = new PhysicsWorld(this, PhysicsWorldConfig());
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
 		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);

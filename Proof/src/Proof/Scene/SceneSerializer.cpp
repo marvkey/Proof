@@ -113,7 +113,10 @@ namespace Proof
 				SpriteComponent& sprite = registry.get<SpriteComponent>(entityID);
 				out << YAML::Key << "SpriteComponent";
 				out << YAML::BeginMap; // Sprite component
-				out << YAML::Key << "TextureAssetPointerID" << YAML::Value << sprite.m_TextureAssetPointerID;
+				if(sprite.Texture != nullptr)
+					out << YAML::Key << "TextureAssetPointerID" << YAML::Value << sprite.Texture->GetID();
+				else 
+					out << YAML::Key << "TextureAssetPointerID" << YAML::Value << 0;
 				out << YAML::Key << "Colour" << YAML::Value << sprite.Colour;
 				out << YAML::EndMap; // Sprite component
 			}
@@ -198,6 +201,7 @@ namespace Proof
 								//WRITE_SCRIPT_FIELD(Vector4, glm::vec4);
 								WRITE_SCRIPT_FIELD(Entity, uint64_t);
 								WRITE_SCRIPT_FIELD(Prefab, uint64_t);
+								WRITE_SCRIPT_FIELD(ImageAsset, uint64_t);
 							}
 							out << YAML::EndMap; // ScriptField
 						}
@@ -343,6 +347,34 @@ namespace Proof
 			}
 		}
 		
+		{
+			if (registry.any_of<PlayerHUDComponent>(entityID))
+			{
+				PlayerHUDComponent& hud = registry.get<PlayerHUDComponent>(entityID);
+				out << YAML::Key << "PlayerHUDComponent";
+				out << YAML::BeginMap; // PlayerHudComponent
+
+				out << YAML::Key << "UiTable";
+				out << YAML::BeginSeq;//hudTable
+				if (hud.HudTable != nullptr)
+				{
+					for (auto& [index,panel] : hud.HudTable->GetPanels())
+					{
+						out << YAML::BeginMap;// hud
+
+						out << YAML::Key << "HUD" << YAML::Key << "";
+						AssetID  id = panel != nullptr ? panel->GetID() : AssetID(0);
+						out << YAML::Key << "HUDAssetID" << YAML::Value << id;
+						out << YAML::Key << "Index" << YAML::Value << index;
+
+						out << YAML::EndMap;// hud
+
+					}
+				}
+				out << YAML::EndSeq; // hudTable
+				out << YAML::EndMap; // PlayerHudComponent
+			}
+		}
 		out << YAML::EndMap; // entity
 	}
 
@@ -504,12 +536,16 @@ namespace Proof
 				if (spriteRendererComponent)
 				{
 					auto& src = *NewEntity.AddComponent<SpriteComponent>();
-					src.m_TextureAssetPointerID = spriteRendererComponent["TextureAssetPointerID"].as<uint64_t>();
+					uint64_t id = spriteRendererComponent["TextureAssetPointerID"].as<uint64_t>();
 					src.Colour = spriteRendererComponent["Colour"].as<glm::vec4>();
-					if (src.m_TextureAssetPointerID != 0)
+					if (id != 0)
 					{
 						if (assetLoad)
-							assetLoad->emplace(src.m_TextureAssetPointerID);
+							assetLoad->emplace(id);
+						if (AssetManager::HasAsset(id))
+						{
+							src.Texture = AssetManager::GetAsset<Texture2D>(id);
+						}
 					}
 				}
 			}
@@ -666,6 +702,29 @@ namespace Proof
 						pic.Player = AssetManager::GetAsset<Prefab>(assetId);
 				}
 			}
+			// PlayerHudComppoent
+			{
+				auto playerHudComponent = entity["PlayerHUDComponent"];
+				if (playerHudComponent)
+				{
+					auto& phc = *NewEntity.AddComponent<PlayerHUDComponent>();
+					Count<UITable> table = Count<UITable>::Create();
+					for(auto hud :  playerHudComponent["UiTable"])
+					{
+						AssetID id = hud["HUDAssetID"].as<uint64_t>();
+						UINT32 index= hud["Index"].as<uint32_t>();
+						if (AssetManager::HasAsset(id))
+						{
+							table->SetUI(index, AssetManager::GetAsset<UIPanel>(id));
+						}
+						else
+						{
+							table->SetUI(index, nullptr);
+						}
+					}
+					phc.HudTable = table;
+				}
+			}
 
 			//Script Component
 			{
@@ -725,6 +784,7 @@ namespace Proof
 								//READ_SCRIPT_FIELD(Vector4, glm::vec4);
 								READ_SCRIPT_FIELD(Entity, uint64_t);
 								READ_SCRIPT_FIELD(Prefab, uint64_t);
+								READ_SCRIPT_FIELD(ImageAsset, uint64_t);
 							}
 						}
 					}

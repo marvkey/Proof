@@ -15,12 +15,14 @@ namespace Game
         private float m_SlowSpeed;
         private RigidBodyComponent m_RigidBody;
         PowerUp[] m_Inventory = new PowerUp[2];
+        PlayerHUDComponent m_HUD;
         private int m_CurrentInventory = 0;
         public float SideWayForce = 200f;
-
+        public bool DisableFowardForce = false;
         void OnCreate()
         {
             m_RigidBody = GetComponent<RigidBodyComponent>();
+            m_HUD = GetComponent<PlayerHUDComponent>();
             SetMotion("MoveX", MoveX);
             m_Inventory[0] = null;
             m_Inventory[1] = null;
@@ -40,7 +42,15 @@ namespace Game
 
         void OnUpdate(float ts)
         {
-            if (m_RigidBody == null) return;
+            UIPanel viewPanel = m_HUD.GetPanel(0);
+            UIButtonImage slot0 = viewPanel.GetImageButton("Inventory0");
+            Log.Info("Color of slot "+slot0.Color);
+            if (m_Inventory[0] != null)
+            {
+                slot0.Image = m_Inventory[0].Image;
+            }
+            //slot0.Color = new Vector4( Proof.Random.Float(0, 1), Proof.Random.Float(0, 1), Proof.Random.Float(0, 1),1);
+            if (m_RigidBody == null || DisableFowardForce == true) return;
             m_RigidBody.AddForce(GetComponent<TransformComponent>().GetFowardVector()* FowardForce * ts);
         }
         void Pressed()

@@ -44,7 +44,7 @@ World:
         Children: []
       PlayerInputComponent:
         InputPlayer: Player0
-        PrefabID: 13977925822409635784
+        PrefabID: 4015502858990313943
     - Entity: 3941401691345106710
       TagComponent:
         Tag: Plyer2
@@ -58,15 +58,15 @@ World:
         Children: []
       PlayerInputComponent:
         InputPlayer: Player1
-        PrefabID: 13977925822409635784
-    - Entity: 1986260784185728371
+        PrefabID: 4015502858990313943
+    - Entity: 9865137983053174728
       TagComponent:
         Tag: Explosive
         tags: []
       TransformComponent:
-        Location: [0, 2.20000005, 18]
+        Location: [0, 5.4000001, 0]
         Rotation: [0, 0, 0]
-        Scale: [0.5, 0.5, 0.5]
+        Scale: [2.70000005, 4.4000001, 3.5]
       ChildComponent:
         OwnerID: 0
         Children: []
@@ -80,9 +80,18 @@ World:
         Scripts:
           - Script: Game.Explosive
             ScriptFields:
+              - Name: ForceStrentght
+                Type: Float
+                Data: 20
+              - Name: Image
+                Type: ImageAsset
+                Data: 96342634762984
               - Name: Speed
                 Type: Float
-                Data: 300
+                Data: 3
+              - Name: m_Throw
+                Type: Bool
+                Data: false
               - Name: M_PowerupApplied
                 Type: Bool
                 Data: false

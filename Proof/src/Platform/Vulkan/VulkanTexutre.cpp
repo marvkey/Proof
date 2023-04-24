@@ -533,12 +533,11 @@ namespace Proof
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
-	VkDescriptorImageInfo VulkanTexture2D::GetImageBufferInfo(VkImageLayout imageLayout) {
-		VkDescriptorImageInfo imageBufferInfo;
-		imageBufferInfo.sampler = m_Sampler;
-		imageBufferInfo.imageView = m_ImageView;
-		imageBufferInfo.imageLayout = imageLayout;
-		return imageBufferInfo;
+	VkDescriptorImageInfo& VulkanTexture2D::GetImageBufferInfo() {
+		m_ImageDescriptorInfo.sampler = m_Sampler;
+		m_ImageDescriptorInfo.imageView = m_ImageView;
+		m_ImageDescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		return m_ImageDescriptorInfo;
 	}
 	void VulkanTexture2D::Release() {
 		Renderer::SubmitDatafree([sampler = m_Sampler, imageView = m_ImageView, image = m_Image]()
@@ -855,13 +854,12 @@ namespace Proof
 	{
 		return VulkanImage(m_Set, m_Format, { (float)m_Dimension,(float)m_Dimension }, VulkanImageExcessData{ m_Sampler,m_ImageView,m_Image.Image });
 	}
-	VkDescriptorImageInfo VulkanCubeMap::GetImageBufferInfo(VkImageLayout imageLayout)
+	VkDescriptorImageInfo& VulkanCubeMap::GetImageBufferInfo()
 	{
-		VkDescriptorImageInfo imageBufferInfo;
-		imageBufferInfo.sampler = m_Sampler;
-		imageBufferInfo.imageView = m_ImageView;
-		imageBufferInfo.imageLayout = imageLayout;
-		return imageBufferInfo;
+		m_ImageDescriptorInfo.sampler = m_Sampler;
+		m_ImageDescriptorInfo.imageView = m_ImageView;
+		m_ImageDescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		return m_ImageDescriptorInfo;
 	}
 
 

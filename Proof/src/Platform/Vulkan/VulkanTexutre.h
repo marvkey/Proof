@@ -44,8 +44,10 @@ namespace Proof
 
 		virtual VkImageView GetImageView() = 0;
 		virtual VkSampler GetSampler() = 0;
-		virtual VkDescriptorImageInfo GetImageBufferInfo(VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) =0;
+		virtual VkDescriptorImageInfo& GetImageBufferInfo() =0;
 		virtual VulkanImageAlloc GetImageAlloc() = 0;
+	protected:
+		VkDescriptorImageInfo m_ImageDescriptorInfo;
 	};
 	class VulkanTexture2D : public Texture2D, VulkanTexture {
 	public:
@@ -78,7 +80,7 @@ namespace Proof
 		uint32_t GetWidth() const { return m_Width; }
 		uint32_t GetHeight() const { return m_Height; }
 		void SetData(const void* data);
-		VkDescriptorImageInfo GetImageBufferInfo(VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		VkDescriptorImageInfo& GetImageBufferInfo();
 
 		void Recreate(const std::string& path);
 
@@ -116,7 +118,7 @@ namespace Proof
 		static Count<CubeMap> GeneratePreFilterMap(Count<CubeMap>map, uint32_t dimension = 128, uint32_t numSamples = 1024);
 		virtual ~VulkanCubeMap();
 		virtual Image GetImage()const ;
-		VkDescriptorImageInfo GetImageBufferInfo(VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		VkDescriptorImageInfo& GetImageBufferInfo();
 		VkImageView GetImageView() {
 			return m_ImageView;
 		}

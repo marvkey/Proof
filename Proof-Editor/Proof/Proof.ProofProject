@@ -27,6 +27,8 @@ Project:
         InputDevices:
           - InputDevice: MouseButton
             Keys: [0]
+          - InputDevice: KeyBoard
+            Keys: [70]
           - InputDevice: ControllerButton
             Keys: [20]
       - Action: ChangeSpeed

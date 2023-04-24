@@ -17,8 +17,8 @@ namespace Proof
 		
 		void Clear();
 		void Render(EditorCamera& camera);
-		void Render(CameraComponent& comp, Vector& location);
-		void Render(CameraComponent& comp, Vector& location, Viewport viewport, ViewportScissor scissor, bool clearPreviousFrame = true);
+		void Render(CameraComponent& comp, Vector& location, Count<UITable> uiTable =nullptr);
+		void Render(CameraComponent& comp, Vector& location, Viewport viewport, ViewportScissor scissor, bool clearPreviousFrame = true, Count<UITable> uiTable = nullptr);
 		Image GetImage(){
 			return m_ScreenFrameBuffer->GetImage();
 		}
@@ -26,11 +26,12 @@ namespace Proof
 		
 
 	private:
-		void Render(const glm::mat4&projection, const glm::mat4& view,const Vector& location, Viewport viewPort, ViewportScissor scissor, bool clearPreviousFrame = true);
+		void Render(const glm::mat4&projection, const glm::mat4& view,const Vector& location, Viewport viewPort, ViewportScissor scissor, bool clearPreviousFrame = true, Count<UITable> uiTabel = nullptr);
 
 		Special<Renderer3DPBR> m_Renderer3D;
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
 		Special<class Renderer2D>  m_Renderer2D;
+		Special<class Renderer2D>  m_UIRenderer;
 		Count<RenderCommandBuffer> m_CommandBuffer;
 		Count<class RenderPass> m_RenderPass;
 		Count<World>m_World=nullptr;

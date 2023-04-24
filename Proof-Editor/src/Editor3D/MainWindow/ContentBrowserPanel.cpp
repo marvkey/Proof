@@ -22,7 +22,7 @@
 #include "Proof/Renderer/AssetThumbnailGenerator.h"
 
 #include "Proof/Asset/AssetSupport.h"
-
+#include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Scene/Prefab.h"
 namespace Proof
 {
@@ -269,9 +269,9 @@ namespace Proof
 			if (AddAssetPopupMenuItem<Material>("Material", NameofFileRename))
 				FileRenameName = NameofFileRename;
 			else if (AddAssetPopupMenuItem<PhysicsMaterial>("PhysicsMaterial", NameofFileRename))
-			{
 				FileRenameName = NameofFileRename;
-			}
+			else if(AddAssetPopupMenuItem<UIPanel>("UI", NameofFileRename))
+				FileRenameName = NameofFileRename;
 			else if (AddAssetPopupMenuItem<Texture2D>("Texture2D", "Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0", NameofFileRename))
 				FileRenameName = NameofFileRename;
 			ImGui::EndPopup();

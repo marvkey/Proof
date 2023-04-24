@@ -54,6 +54,12 @@ namespace Proof::UI {
 
 	struct ScopedID {
 		ScopedID() = default;
+		ScopedID(std::string str_id, bool predicate = true)
+			: m_Set(predicate)
+		{
+			if (predicate)
+				ImGui::PushID(str_id.c_str());
+		}
 		ScopedID(const char* str_id, bool predicate = true)
 			: m_Set(predicate)
 		{

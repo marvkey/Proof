@@ -33,7 +33,7 @@ namespace Proof
 	}
 #pragma endregion 
 
-#pragma region Input
+	#pragma region Input
 	static bool Input_IsKeyClicked(int keycode) {
 		return Input::IsKeyClicked((KeyBoardKey) keycode);
 	}
@@ -62,6 +62,7 @@ namespace Proof
 		return Input::IsMouseButtonDoubleClicked((MouseButton)mouseCode);
 	}
 #pragma endregion 
+	
 	#pragma region World
 
 	//retutnrs entity ID
@@ -109,7 +110,8 @@ namespace Proof
 		return FrameTime::GetWorldDeltaTime();
 	}
 	#pragma endregion
-#pragma region Entity
+	
+	#pragma region Entity
 	static bool Entity_HasComponent(uint64_t entityID, MonoReflectionType* componentType) {
 		World* world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world,"world is nullptr");
@@ -148,7 +150,8 @@ namespace Proof
 		*owenerId = entity.GetOwnerUUID();
 	}
 #pragma endregion 
-#pragma region TagComponent
+	
+	#pragma region TagComponent
 	static void TagComponent_GetTag(uint64_t entityID, MonoString** tag)
 	{
 		//https://stackoverflow.com/questions/22428411/add-mono-internal-call-where-a-string-is-passed-by-reference
@@ -183,7 +186,8 @@ namespace Proof
 		entity.GetComponent<TagComponent>()->Tag  = newTag;
 	}
 #pragma endregion 
-#pragma region TransformComponent
+	
+	#pragma region TransformComponent
 	static void TransformComponent_GetLocation(uint64_t entityID,Vector* outLocation ) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		#if PF_ENABLE_DEBUG
@@ -265,7 +269,8 @@ namespace Proof
 		*vec = entity.GetComponent<TransformComponent>()->GetFowardVector();
 	}
 #pragma endregion 
-#pragma region TextComponent
+	
+	#pragma region TextComponent
 
 	static void TextComponent_GetText(uint64_t entityID, MonoString** text) 
 	{
@@ -307,7 +312,30 @@ namespace Proof
 	}
 #pragma endregion
 
-#pragma region RigidBody
+	#pragma region RigidBody
+	static bool RigidBody_GetGravity(EntityID entityID) {
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("RigidBody.GetGravity - entity is invalid or Does not have rigidBody");
+			return false;
+		}
+		#endif
+		return entity.GetComponent<RigidBodyComponent>()->Gravity;
+	}
+
+	static void RigidBody_SetGravity(EntityID entityID, bool* gravity) {
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("RigidBody.SetGravity - entity is invalid or Does not have rigidBody");
+			return ;
+		}
+		#endif
+		entity.GetComponent<RigidBodyComponent>()->Gravity = *gravity;
+	}
 	static void RigidBody_GetMass(EntityID entityID, float* outMass) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
 		#if PF_ENABLE_DEBUG
@@ -507,6 +535,7 @@ namespace Proof
 		PF_ERROR("MeshComponent.SetVisible entity tag: {} ID: {}  does not conatin mesh Compoonent", entity.GetName(), entity.GetEntityID());
 	}
 	#pragma endregion
+	
 	#pragma region PlayerInputComponent
 	static void PlayerInputComponent_SetAction(uint64_t entityID, MonoString* className,MonoString* ActionName, uint32_t inputState, MonoString* meathodName)
 	{
@@ -545,7 +574,7 @@ namespace Proof
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("PlayerInputComponent.SetMotion - entity is invalid or Does not have rigidBody");
+			PF_ERROR("PlayerInputComponent.SetMotion - entity is invalid ");
 			return;
 		}
 		#endif
@@ -570,6 +599,298 @@ namespace Proof
 		InputManagerMeathods::BindMotion(ScriptEngine::MonoToString(motionName), (uint32_t)playerInput.InputPlayer, call);
 	}
 	#pragma endregion 
+
+	#pragma region PlayerHUDComponent
+	
+	static uint64_t PlayerHUDComponent_GetHUDAssetID(uint64_t entityID, uint32_t index) {
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerHUDComponent.GetHUDAssetID - entity is invalid ");
+			return 0;
+		}
+		#endif
+
+		if (!entity.HasComponent<PlayerHUDComponent>())
+		{
+			PF_ERROR("PlayerHUDComponent.GetHUDAssetID entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
+			return 0;
+		}
+
+		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		if (comp.HudTable->HasPanel(index)&& comp.HudTable->GetPanel(index) != nullptr)
+		{
+			return comp.HudTable->GetPanel(index)->GetID();
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	struct UIBaseData {
+		glm::vec2 Position;
+		glm::vec2 Rotation;
+		glm::vec2 Size;
+		glm::vec4 Color;
+	};
+
+	struct UIImageButtonData {
+		UIBaseData Base;
+		uint64_t AssetID;
+	};
+	static bool PlayerHUDComponent_IndexHasHUD(uint64_t entityID, uint32_t tableIndex) 
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerHUDComponent.IndexHasHUD - entity is invalid ");
+			return {};
+		}
+		#endif
+
+		if (!entity.HasComponent<PlayerHUDComponent>())
+		{
+			PF_ERROR("PlayerHUDComponent.IndexHasHUD entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
+			return {};
+		}
+		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	static bool PlayerHUDComponent_HasButton(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName) 
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerHUDComponent.HasButton - entity is invalid ");
+			return false;
+		}
+		#endif
+
+		if (!entity.HasComponent<PlayerHUDComponent>())
+		{
+			PF_ERROR("PlayerHUDComponent.HasButton entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
+			return false;
+		}
+
+		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
+		{
+			auto panel = comp.HudTable->GetPanel(tableIndex);
+			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			if (panel->ButtonHas(buttonNamestr))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	static void PlayerHUDComponent_SetButtonData(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName, UIBaseData* data)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerHUDComponent.SetButtonData - entity is invalid ");
+			return;
+		}
+		#endif
+
+		if (!entity.HasComponent<PlayerHUDComponent>())
+		{
+			PF_ERROR("PlayerHUDComponent.SetButtonData entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
+			return;
+		}
+
+		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
+		{
+			auto panel = comp.HudTable->GetPanel(tableIndex);
+			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			if (!panel->ButtonHas(buttonNamestr))
+			{
+				PF_ERROR("PlayerHUDComponent.SetButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
+				return;
+			}
+			UIButton& button = panel->ButtonGet(buttonNamestr);
+
+			button.TintColour = data->Color;
+			button.Postion = data->Position;
+			button.Rotation = data->Rotation;
+			button.Size = data->Size;
+		}
+	}
+	static UIBaseData PlayerHUDComponent_GetButtonData(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerHUDComponent_GetButtonData - entity is invalid ");
+			return {};
+		}
+		#endif
+
+		if (!entity.HasComponent<PlayerHUDComponent>())
+		{
+			PF_ERROR("PlayerHUDComponent.GetButtonData entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
+			return {};
+		}
+
+		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		UIBaseData data;
+		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
+		{
+			auto panel = comp.HudTable->GetPanel(tableIndex);
+			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			if (!panel->ButtonHas(buttonNamestr))
+			{
+				PF_ERROR("PlayerHUDComponent.GetButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
+				return {};
+			}
+			UIButton& button = panel->ButtonGet(buttonNamestr);
+
+			data.Color = button.TintColour;
+			data.Position = button.Postion;
+			data.Rotation = button.Rotation;
+			data.Size = button.Size;
+			return data;
+			
+		}
+		return {};
+	}
+
+	static bool PlayerHUDComponent_HasImageButton(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerHUDComponent.HasImageButton - entity is invalid ");
+			return false;
+		}
+		#endif
+
+		if (!entity.HasComponent<PlayerHUDComponent>())
+		{
+			PF_ERROR("PlayerHUDComponent.HasImageButton entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
+			return false;
+		}
+
+		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
+		{
+			auto panel = comp.HudTable->GetPanel(tableIndex);
+			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			if (panel->ImageButtonHas(buttonNamestr))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	static UIImageButtonData PlayerHUDComponent_GetImageButtonData(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerHUDComponent_GetImageButtonData - entity is invalid ");
+			return {};
+		}
+		#endif
+
+		if (!entity.HasComponent<PlayerHUDComponent>())
+		{
+			PF_ERROR("PlayerHUDComponent.GetImageButtonData entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
+			return {};
+		}
+
+		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		UIImageButtonData data;
+		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
+		{
+			auto panel = comp.HudTable->GetPanel(tableIndex);
+			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			if (!panel->ImageButtonHas(buttonNamestr))
+			{
+				PF_ERROR("PlayerHUDComponent.GetImageButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
+				return {};
+			}
+			UIButtonImage& button = panel->GetImageButton(buttonNamestr);
+
+			data.Base.Color = button.TintColour;
+			data.Base.Position = button.Postion;
+			data.Base.Rotation = button.Rotation;
+			data.Base.Size = button.Size;
+			data.AssetID = (button.Texture != nullptr ) ? button.Texture->GetID() : AssetID(0);
+			return data;
+
+		}
+		return {};
+	}
+	static void PlayerHUDComponent_SetImageButtonData(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName, UIImageButtonData* data)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerHUDComponent.SetImageButtonData - entity is invalid ");
+			return;
+		}
+		#endif
+
+		if (!entity.HasComponent<PlayerHUDComponent>())
+		{
+			PF_ERROR("PlayerHUDComponent.SetImageButtonData entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
+			return;
+		}
+
+		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
+		{
+			auto panel = comp.HudTable->GetPanel(tableIndex);
+			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			if (!panel->ImageButtonHas(buttonNamestr))
+			{
+				PF_ERROR("PlayerHUDComponent.SetImageButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
+				return;
+			}
+			UIButtonImage& button = panel->GetImageButton(buttonNamestr);
+
+			button.TintColour = data->Base.Color;
+			button.Postion = data->Base.Position ;
+			button.Rotation = data->Base.Rotation;
+			button.Size = data->Base.Size;
+			if (data->AssetID != 0)
+			{
+				if (button.Texture == nullptr)
+				{
+					if (AssetManager::HasAsset(data->AssetID))
+					{
+						button.Texture = AssetManager::GetAsset<Texture2D>(data->AssetID);
+						return;
+					}
+				}
+
+				if (button.Texture->GetID() == data->AssetID)
+					return;
+				button.Texture = AssetManager::GetAsset<Texture2D>(data->AssetID);
+			}
+
+			if (data->AssetID == 0 && button.Texture != nullptr)
+				button.Texture = nullptr;
+		}
+	}
+	#pragma endregion
+
 #pragma region ScriptFunc
 
 	template<typename... Component>
@@ -598,7 +919,6 @@ namespace Proof
 		RegisterComponent<Component...>();
 	}
 
-	
 	void ScriptFunc::RegisterAllComponents() {
 		s_EntityHasComponentFuncs.clear();
 		RegisterComponent(AllComponents{});
@@ -656,6 +976,8 @@ namespace Proof
 
 		//Rigid Body Component
 		{
+			PF_ADD_INTERNAL_CALL(RigidBody_GetGravity);
+			PF_ADD_INTERNAL_CALL(RigidBody_SetGravity);
 			PF_ADD_INTERNAL_CALL(RigidBody_GetMass);
 			PF_ADD_INTERNAL_CALL(RigidBody_SetMass);
 			PF_ADD_INTERNAL_CALL(RigidBody_AddForce);
@@ -699,5 +1021,17 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetMotion);
 		}
 		
+		//playerHud COmponent
+		{
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_IndexHasHUD);
+
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_HasButton);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_GetButtonData);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetButtonData);
+			
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_HasImageButton);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_GetImageButtonData);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetImageButtonData);
+		}
 	}
 }

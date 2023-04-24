@@ -63,6 +63,7 @@ namespace Proof
 		m_CommandBuffer = RenderCommandBuffer::Create();
 		m_Renderer3D = CreateSpecial< Renderer3DPBR>(m_RenderPass);
 		m_Renderer2D = CreateSpecial< Renderer2D>(m_RenderPass);
+		m_UIRenderer = CreateSpecial < Renderer2D>(m_RenderPass, true);
 		m_DebugMeshRenderer = CreateSpecial<DebugMeshRenderer>(m_RenderPass);
 		
 		if (textureCubeMap != nullptr)
@@ -116,7 +117,7 @@ namespace Proof
 		m_ScreenFrameBuffer->Resize(Vector2{ (float)windowSize.X, (float)windowSize.Y });
 	}
 
-	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewPort, ViewportScissor scissor, bool clearOnLoad )
+	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewPort, ViewportScissor scissor, bool clearOnLoad, Count<UITable> uiTable)
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
@@ -237,6 +238,44 @@ namespace Proof
 			});
 		}
 		m_DebugMeshRenderer->EndContext();
+		// uiPass
+		if(uiTable != nullptr)
+		{
+			m_UIRenderer->BeginContext(glm::mat4(1.0), glm::mat4(1.0), location, m_ScreenFrameBuffer, m_CommandBuffer);
+			for (auto [panelId, Hud] : uiTable->GetPanels())
+			{
+
+				for (auto& [Id, button] : Hud->GetButtons())
+				{
+					glm::vec2 copy = { button.Postion.x / 4,button.Postion.y / 4 };
+					m_UIRenderer->DrawQuad({ copy,0 }, { button.Rotation,0 }, { button.Size.x / 4,button.Size.y / 4,1 }, button.TintColour, nullptr);
+				}
+
+				for (auto& [Id, button] : Hud->GetImageButtons())
+				{
+					glm::vec2 copy = { button.Postion.x / 4,button.Postion.y / 4 };
+					m_UIRenderer->DrawQuad({ copy,0 }, { button.Rotation,0 }, { button.Size.x / 4,button.Size.y / 4,1 }, button.TintColour, button.Texture);
+				}
+				TextParams textParam;
+				glm::mat4 textTransform;
+				for (auto& [Id, text] : Hud->GetTexts())
+				{
+
+					textParam.Color = text.Param.Color;
+					textParam.Kerning = text.Param.Kerning;
+					textParam.LineSpacing = text.Param.LineSpacing;
+					glm::vec2 copy = { text.Postion.x / 4,text.Postion.y / 4 };
+
+					textTransform = glm::translate(glm::mat4(1.0f), { copy,0 }) *
+						glm::rotate(glm::mat4(1.0f), glm::radians(text.Rotation.x), { 1,0,0 })
+						* glm::rotate(glm::mat4(1.0f), glm::radians(text.Rotation.y), { 0,1,0 })
+						* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })
+						* glm::scale(glm::mat4(1.0f), { text.Size.x / 8,text.Size.y / 8,1 / 8 });
+					m_UIRenderer->DrawString(text.Text, text.Font, textParam, textTransform);
+				}
+			}
+			m_UIRenderer->EndContext();
+		}
 		Renderer::EndRenderPass(m_RenderPass);
 		Renderer::EndCommandBuffer(m_CommandBuffer);
 
@@ -257,7 +296,7 @@ namespace Proof
 		scissor.Extent = { (float)m_ScreenFrameBuffer->GetFrameWidth(),(float)m_ScreenFrameBuffer->GetFrameHeight() };
 		Render(camera.m_Projection, camera.m_View, { camera.m_Positon.x,camera.m_Positon.y,camera.m_Positon.z }, viewPort,scissor);
 	}
-	void WorldRenderer::Render(CameraComponent& camera, Vector& location) {
+	void WorldRenderer::Render(CameraComponent& camera, Vector& location, Count<UITable> uiTable) {
 		Viewport viewPort;
 		viewPort.X = 0.0f;
 		viewPort.Y = 0.0f;
@@ -269,10 +308,10 @@ namespace Proof
 		ViewportScissor scissor;
 		scissor.Offset = { 0,0 };
 		scissor.Extent = {(float) m_ScreenFrameBuffer->GetFrameWidth(),(float)m_ScreenFrameBuffer->GetFrameHeight() };
-		Render(camera.Projection, camera.View, location,viewPort,scissor);
+		Render(camera.Projection, camera.View, location,viewPort,scissor, true, uiTable);
 	}
-	void WorldRenderer::Render(CameraComponent& camera, Vector& location, Viewport viewport, ViewportScissor scissor, bool clearOnLoad )
+	void WorldRenderer::Render(CameraComponent& camera, Vector& location, Viewport viewport, ViewportScissor scissor, bool clearOnLoad, Count<UITable> uiTable )
 	{
-		Render(camera.Projection, camera.View, location, viewport, scissor, clearOnLoad);
+		Render(camera.Projection, camera.View, location, viewport, scissor, clearOnLoad, uiTable);
 	}
 }

@@ -101,6 +101,10 @@ namespace Proof
         #endregion
 
         #region RigidBody
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool RigidBody_GetGravity(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidBody_SetGravity(ulong entityID, ref bool gravity);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody_GetMass(ulong entityID, out float outMass);
@@ -125,9 +129,14 @@ namespace Proof
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void RigidBody_GetLinearVelocity(ulong entityID, out Vector linearVelocity);
 
-
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void RigidBody_SetLinearVelocity(ulong entityID, ref Vector linearVelocity, bool autoAwake);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidBody_GetAngularVelocity(ulong entityID, out Vector linearVelocity);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidBody_SetAngularVelocity(ulong entityID, ref Vector linearVelocity, bool autoAwake);
         #endregion
 
         #region TextComponent
@@ -170,6 +179,28 @@ namespace Proof
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         //internal extern static void PlayerInputComponent_SetMotion(ulong entityID, string className,string motionName, Action<float> func);
         internal extern static void PlayerInputComponent_SetMotion(ulong entityID, string className,string motionName, string funcName);
+        #endregion
+
+        #region PlayerHUDComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool PlayerHUDComponent_IndexHasHUD(ulong entityID, uint tableIndex);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool PlayerHUDComponent_HasButton(ulong entityID, uint tableIndex, string buttonName);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static UIBaseData PlayerHUDComponent_GetButtonData(ulong entityID, uint tableIndex, string buttonName);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerHUDComponent_SetButtonData(ulong entityID, uint tableIndex, string buttonName, ref UIBaseData data);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool PlayerHUDComponent_HasImageButton(ulong entityID, uint tableIndex, string buttonName);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static UiImageButtonData PlayerHUDComponent_GetImageButtonData(ulong entityID, uint tableIndex, string buttonName);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerHUDComponent_SetImageButtonData(ulong entityID, uint tableIndex,string buttonName, ref UiImageButtonData data);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool PlayerHUDComponent_HasText(ulong entityID, uint tableIndex, string textname);
         #endregion
     }
 }

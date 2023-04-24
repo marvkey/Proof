@@ -5,6 +5,7 @@
 #include "Proof/Renderer/UniformBuffer.h"
 namespace Proof
 {
+    class VulkanDescriptorBuffer;
    
     class VulkanDescriptorSet : public DescriptorSet {
     public:
@@ -38,7 +39,7 @@ namespace Proof
 
         DescriptorSet& WriteImage(uint32_t binding, Count<class Texture2D> image);
         DescriptorSet& WriteImage(uint32_t binding, Count<class CubeMap> image);
-        DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>> image);
+        DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>>& image);
 
         void Overwrite(int frame = Renderer::GetCurrentFrame().FrameinFlight);
 
@@ -125,26 +126,28 @@ namespace Proof
     public:
         VulkanDescriptorWriter(VulkanDescriptorSet* setLayout, Count<VulkanDescriptorPool> pool);
 
-        VulkanDescriptorWriter& WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo);
-        VulkanDescriptorWriter& WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInfo);
-        VulkanDescriptorWriter& WriteImage(uint32_t binding, std::vector< VkDescriptorImageInfo> imageInfo);
+        VulkanDescriptorWriter& WriteBuffer(uint32_t binding, VkDescriptorBufferInfo& bufferInfo);
+        VulkanDescriptorWriter& WriteImage(uint32_t binding, VkDescriptorImageInfo& imageInfo);
+        VulkanDescriptorWriter& WriteImage(uint32_t binding, Count< std::vector< VkDescriptorImageInfo>> imageInfo);
 
         bool Build(VkDescriptorSet& set);
         void Overwrite(VkDescriptorSet& set);
         std::vector<VkWriteDescriptorSet> writes;
 
     private:
-        //have to this casue when passing descriptor itno
-        // it may get deleted so we just store a copy of them 
-        // then delete at end of frame...
-        std::vector<VkDescriptorImageInfo> m_Images;
-        std::vector<VkDescriptorBufferInfo> m_Buffers;
+        std::vector< Count< std::vector< VkDescriptorImageInfo>>> m_ImageInfos;
         VulkanDescriptorSet* m_SetLayout;
         Count<VulkanDescriptorPool> m_Pool;
         friend class VulkanRenderer;
     };
   
-	class VulkanUniformBuffer : public UniformBuffer {
+    class VulkanDescriptorBuffer  {
+    public:
+        virtual VkDescriptorBufferInfo& GetDescriptorInfo(uint32_t index = Renderer::GetCurrentFrame().FrameinFlight) = 0;
+    protected:
+        VkDescriptorBufferInfo m_BufferInfo;
+    };
+	class VulkanUniformBuffer : public UniformBuffer, public VulkanDescriptorBuffer {
 	public:
         VulkanUniformBuffer(uint32_t size, DescriptorSets set, uint32_t binding);
         VulkanUniformBuffer(const  void* data,uint32_t size, DescriptorSets set, uint32_t binding);
@@ -152,7 +155,7 @@ namespace Proof
         VkBuffer GetBuffer(int index) {
             return m_UniformBuffers[index].Buffer;
         }
-        VkDescriptorBufferInfo GetDescriptorInfo(uint32_t index = Renderer::GetCurrentFrame().FrameinFlight);
+        VkDescriptorBufferInfo& GetDescriptorInfo(uint32_t index = Renderer::GetCurrentFrame().FrameinFlight);
         //for unifrm bufffer configuribity stuff
         void SetData(const void* data, uint32_t size, uint32_t offset = 0) {
             SetData(data, size, offset, Renderer::GetCurrentFrame().FrameinFlight);
@@ -170,11 +173,11 @@ namespace Proof
         uint32_t m_Binding;
 	};
 
-    class VulkanStorageBuffer  : public StorageBuffer {
+    class VulkanStorageBuffer  : public StorageBuffer, public VulkanDescriptorBuffer {
     public:
         virtual ~VulkanStorageBuffer();
         VulkanStorageBuffer(DescriptorSets set, uint32_t binding, const void* data, uint32_t size, uint32_t offset = 0, uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-        VkDescriptorBufferInfo GetDescriptorInfo(uint32_t index = Renderer::GetCurrentFrame().FrameinFlight);
+        VkDescriptorBufferInfo& GetDescriptorInfo(uint32_t index = Renderer::GetCurrentFrame().FrameinFlight);
     private:
         DescriptorSets m_Set;
         uint32_t m_Binding;

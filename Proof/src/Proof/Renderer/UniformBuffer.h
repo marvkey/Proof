@@ -15,7 +15,6 @@ namespace Proof
 		UniformBuffer,
 		StorageBuffer
 	} ;
-
 	class StorageBuffer {
 	public:
 		virtual ~StorageBuffer() = default;
@@ -70,7 +69,7 @@ namespace Proof
 		virtual DescriptorSet& WriteBuffer(uint32_t binding, Count<StorageBuffer> buffer) = 0;
 		virtual DescriptorSet& WriteImage(uint32_t binding, Count<class CubeMap> image) = 0;
 		virtual DescriptorSet& WriteImage(uint32_t binding, Count<class Texture2D> image) = 0;
-		virtual DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>> image) = 0;
+		virtual DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>>& image) = 0;
 		virtual void Bind(Count<class RenderCommandBuffer> commandBuffer, Count<class PipeLineLayout>piipeLineLayout) =0;
 		static Count<DescriptorSet>Create(DescriptorSets set, std::unordered_map<uint32_t, DescriptrLayoutBinding> Bindings);
 	};

@@ -26,15 +26,16 @@ namespace Proof {
 		Count<class IndexBuffer> IndexBuffer;	
 		Count<class RenderCommandBuffer>CommandBuffer;
 		Count<ScreenFrameBuffer> CurrentFrameBuffer ;
+		Count<Texture2D> WhiteTexture;
 		const uint32_t c_MaxQuadCount = 2000;
 		const uint32_t c_MaxVertexCount = c_MaxQuadCount *4; // times 4 cause each quad holds 4 vertices
 		const uint32_t c_MaxIndexCount = c_MaxQuadCount * 6;
 		std::vector<uint32_t>QuadIndices;
 		uint32_t IndexCount = 0;
 
-		//const uint32_t MaxTextureSlot=32; // 1-31 slots
-		//std::vector<Count<Texture2D>> Textures;
-		//float TextureSlotIndex;
+		const uint32_t c_MaxTextureSlot=32; // 1-31 slots
+		std::vector<Count<Texture2D>> Textures;
+		float TextureSlotIndex = 1; //0 white texture
 		uint32_t QuadArraySize = 0;
 		std::vector<Vertex2D> QuadArray;
 
@@ -64,15 +65,7 @@ namespace Proof {
 		Count <class PipeLineLayout> PipeLineLayout;
 		TextPipeline(Count <class RenderPass > renderPass);
 	};
-	struct TextParams
-	{
-		glm::vec4 Color{ 1.0f };
-		// horizontal distnace between each character
-
-		float Kerning = 0.0f;
-		// spacing of new line 
-		float LineSpacing = 1.0f;
-	};
+	
 	class Renderer2D {
 		friend class Camera;
 	public:

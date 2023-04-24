@@ -1,8 +1,8 @@
 AssetType: Prefab
-ID: 13977925822409635784
-EntityOwner: 519167572545979755
+ID: 4015502858990313943
+EntityOwner: 5673350444770711892
 Entities:
-  - Entity: 519167572545979755
+  - Entity: 5673350444770711892
     TagComponent:
       Tag: mPlayer
       tags: []
@@ -12,7 +12,7 @@ Entities:
       Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
-      Children: [4106780510061365873]
+      Children: [15350172655083938898]
     MeshComponent:
       MeshAssetPointerID: 4645041025570573733
       MaterialTable:
@@ -37,7 +37,12 @@ Entities:
       Type: Dynamic
       FreezeLocation: [false, false, false]
       FreezeRotation: [false, false, false]
-  - Entity: 4106780510061365873
+    PlayerHUDComponent:
+      UiTable:
+        - HUD: ""
+          HUDAssetID: 1798143042432216336
+          Index: 0
+  - Entity: 15350172655083938898
     TagComponent:
       Tag: Camera
       tags: []
@@ -46,7 +51,7 @@ Entities:
       Rotation: [0, 0, 90]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 519167572545979755
+      OwnerID: 5673350444770711892
       Children: []
     CameraComponent:
       NearPlane: 0.100000001

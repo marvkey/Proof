@@ -106,7 +106,7 @@ namespace Proof
 	};
 	public class PlayerInputComponent : Component
 	{
-
+		
 	}
 
 	public class MeshComponent : Component
@@ -123,6 +123,18 @@ namespace Proof
 			}
 		}
 	}
+
+	public class PlayerHUDComponent : Component
+	{
+        public UIPanel GetPanel(uint index)
+        {
+            if (InternalCalls.PlayerHUDComponent_IndexHasHUD(Entity.ID, index))
+            {
+                return new UIPanel(index, Entity);
+            }
+            return null;
+        }
+    }
 	public class RigidBodyComponent : Component
 	{
 		public float Mass
@@ -140,6 +152,17 @@ namespace Proof
 			}
         }
 
+		public bool Gravity
+		{
+			get
+			{
+				return InternalCalls.RigidBody_GetGravity(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.RigidBody_SetGravity(Entity.ID, ref value);
+			}
+		}
 		public void AddForce(Vector force, ForceMode mode = ForceMode.Force, bool autoWake = true)=>
 			InternalCalls.RigidBody_AddForce(Entity.ID, force, (int)mode, autoWake);
 		public void AddTorque(Vector force, ForceMode mode = ForceMode.Force, bool autoWake = true) => 
@@ -167,6 +190,17 @@ namespace Proof
 		{
 			InternalCalls.RigidBody_SetLinearVelocity(Entity.ID, ref velocity, wakeUp);
 		}
+
+        public Vector GetAngularVelocity()
+        {
+            InternalCalls.RigidBody_GetAngularVelocity(Entity.ID, out Vector velocity);
+            return velocity;
+        }
+
+        public void SetAngularVelocity(Vector velocity, bool wakeUp = true)
+        {
+            InternalCalls.RigidBody_SetAngularVelocity(Entity.ID, ref velocity, wakeUp);
+        }
     }
 
 }

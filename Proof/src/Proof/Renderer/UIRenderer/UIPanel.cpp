@@ -2,43 +2,41 @@
 #include "UIPanel.h"
 
 namespace Proof {
-	void UIPanel::AddButton(const UIButton& button, UUID ID)
+	void UIPanel::SetButton(const UIButton& button, std::string ID)
 	{
 		m_Buttons[ID] = button;
 	}
 
-	void UIPanel::AddButtonImage(const UIButtonImage& button, UUID ID)
+	void UIPanel::SetButtonImage(const UIButtonImage& button, std::string ID)
 	{
 		m_ImageButtons[ID] = button;
-
 	}
-	void UIPanel::AddText(const UIText& button, UUID ID)
+	void UIPanel::SetText(const UIText& button, std::string ID)
 	{
-
 		m_Text[ID] = button;
 	}
-	bool UIPanel::ButtonHas(UUID ID)
+	bool UIPanel::ButtonHas(std::string ID)
 	{
 		return m_Buttons.contains(ID);
 	}
-	bool UIPanel::ImageButtonHas(UUID ID)
+	bool UIPanel::ImageButtonHas(std::string ID)
 	{
 		return m_ImageButtons.contains(ID);
 
 	}
-	bool UIPanel::TextHas(UUID ID)
+	bool UIPanel::TextHas(std::string ID)
 	{
 		return m_Text.contains(ID);
 	}
-	UIButton& UIPanel::ButtonGet(UUID ID)
+	UIButton& UIPanel::ButtonGet(std::string ID)
 	{
 		return m_Buttons[ID];
 	}
-	UIButtonImage& UIPanel::GetImageButton(UUID ID)
+	UIButtonImage& UIPanel::GetImageButton(std::string ID)
 	{
 		return m_ImageButtons[ID];
 	}
-	UIText& UIPanel::TextGet(UUID ID)
+	UIText& UIPanel::TextGet(std::string ID)
 	{
 		return m_Text[ID];
 	}

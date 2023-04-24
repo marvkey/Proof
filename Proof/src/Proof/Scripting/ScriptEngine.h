@@ -30,7 +30,8 @@ namespace Proof
 		Uint8_t,Uint16_t, Uint32_t, Uint64_t,
 		Vector2, Vector3, Vector4,
 		Entity,
-		Prefab
+		Prefab,
+		ImageAsset
 	};
 	struct ScriptField {
 		ScriptFieldType Type;
@@ -267,6 +268,7 @@ namespace Proof
 				case ScriptFieldType::Vector4: return "Vector4";
 				case ScriptFieldType::Entity:  return "Entity";
 				case ScriptFieldType::Prefab:  return "Prefab";
+				case ScriptFieldType::ImageAsset:  return "ImageAsset";
 			}
 			PF_CORE_ASSERT(false, "Unknown ScriptFieldType");
 			return "None";
@@ -292,6 +294,7 @@ namespace Proof
 			if (fieldType == "Vector4") return ScriptFieldType::Vector4;
 			if (fieldType == "Entity")  return ScriptFieldType::Entity;
 			if (fieldType == "Prefab")  return ScriptFieldType::Prefab;
+			if (fieldType == "ImageAsset")  return ScriptFieldType::ImageAsset;
 
 			PF_CORE_ASSERT(false, "Unknown ScriptFieldType");
 			return ScriptFieldType::None;

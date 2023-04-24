@@ -83,18 +83,22 @@ namespace Proof
             Reset();
         }
         // returns the time passed in nanoseconds
-        float TimePassed() {
+        float Elapsed() {
             // using nano seconds to get a more accurate answer when minusing to get seconds
             return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
         }
-        float TimePassedMillis() {
-            return TimePassed() * 1000.0f;
+        float ElapsedMillis() {
+            return Elapsed() * 1000.0f;
+        }
+
+        float ElapsedSeconds() {
+            return ElapsedMillis() * 1000.0f;
         }
         void Reset() {
             m_Start = std::chrono::high_resolution_clock::now();
         }
     private:
-        std::chrono::time_point<std::chrono::steady_clock>m_Start, End;
+        std::chrono::time_point<std::chrono::steady_clock>m_Start;
     };
 
     struct Proof_API RangeTimer {

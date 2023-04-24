@@ -44,6 +44,7 @@ namespace Proof
 
         { "Proof.Entity", ScriptFieldType::Entity },
         { "Proof.Prefab", ScriptFieldType::Prefab },
+        { "Proof.ImageAsset", ScriptFieldType::ImageAsset },
     };
    
     bool CheckMonoError(MonoError& error) {

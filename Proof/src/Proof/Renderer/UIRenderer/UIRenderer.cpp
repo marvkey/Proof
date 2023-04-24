@@ -26,23 +26,30 @@ namespace Proof {
         s_Renderer2D->BeginContext(projectionMatrix, viewProjection, GlmVecToProof(cameraLocaion), s_ScreenFrameBuffer, s_CommandBuffer);
         for (auto& [Id,button] : panel->GetButtons())
         {
-            s_Renderer2D->DrawQuad({ button.Postion,0 }, { button.Rotation,0 }, { button.Size,1 }, button.TintColour,nullptr);
+            glm::vec2 copy = { button.Postion.x / 4,button.Postion.y/4 };
+            s_Renderer2D->DrawQuad({ copy,0 }, { button.Rotation,0 }, { button.Size.x/4,button.Size.y / 4,1 }, button.TintColour,nullptr);
+        }
+
+        for (auto& [Id, button] : panel->GetImageButtons())
+        {
+            glm::vec2 copy = { button.Postion.x / 4,button.Postion.y / 4 };
+            s_Renderer2D->DrawQuad({ copy,0 }, { button.Rotation,0 }, { button.Size.x / 4,button.Size.y / 4,1 }, button.TintColour, nullptr);
         }
         TextParams textParam;
         glm::mat4 textTransform;
         for(auto& [Id, text] : panel->GetTexts()){
 
-            textParam.Color = text.Colour;
-            textParam.Kerning = text.Kerning;
-            textParam.LineSpacing = text.LineSpacing;
+            textParam.Color = text.Param.Color;
+            textParam.Kerning = text.Param.Kerning;
+            textParam.LineSpacing = text.Param.LineSpacing;
+            glm::vec2 copy = { text.Postion.x / 4,text.Postion.y / 4 };
 
-            textTransform = glm::translate(glm::mat4(1.0f), { text.Postion,0 }) *
+            textTransform = glm::translate(glm::mat4(1.0f), { copy,0 }) *
                 glm::rotate(glm::mat4(1.0f), glm::radians(text.Rotation.x), { 1,0,0 })
                 * glm::rotate(glm::mat4(1.0f), glm::radians(text.Rotation.y), { 0,1,0 })
                 * glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })
-                * glm::scale(glm::mat4(1.0f), { text.Size,1 });
+                * glm::scale(glm::mat4(1.0f), { text.Size.x/8,text.Size.y / 8,1/8 });
             s_Renderer2D->DrawString(text.Text, text.Font, textParam, textTransform);
-
         }
 
         s_Renderer2D->EndContext();
@@ -53,4 +60,5 @@ namespace Proof {
 
         return s_ScreenFrameBuffer->GetImage();
     }
+   
 }

@@ -7,7 +7,15 @@
 
 namespace Proof
 {
- 
+    struct TextParams
+    {
+        glm::vec4 Color{ 1.0f };
+        // horizontal distnace between each character
+
+        float Kerning = 0.0f;
+        // spacing of new line 
+        float LineSpacing = 1.0f;
+    };
     // Rename MESH Vertex
     struct Vertex {
         Vertex(Vector vertices ={0}, Vector normal ={0}, Vector2 texcorrds ={0,0}, Vector tangent = {0}, Vector bitangent = {0}) {
@@ -28,7 +36,7 @@ namespace Proof
         Vector Position;
         glm::vec4 Color;
         glm::vec2 TexCoords;
-        //float TexSlot;
+        float TexSlot;
     };
 
     struct CameraData {

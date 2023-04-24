@@ -135,6 +135,7 @@ namespace Proof {
 			TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldTransformComponent(m_Entity);
 			physx::PxTransform newPos(PhysxUtils::VectorToPhysxVector(transform.Location), PhysxUtils::VectorToPhysxQuat(transform.Rotation));
 			rigidBody->setGlobalPose(newPos,false);
+			rigidBody->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, Math::InverseBool(m_Entity.GetComponent<RigidBodyComponent>()->Gravity));
 
 			// adjusting the new size	
 			if (m_Entity.HasComponent<CubeColliderComponent>())
@@ -387,7 +388,6 @@ namespace Proof {
 
 		TransformComponent& transform = *m_Entity.GetComponent<TransformComponent>();
 		auto actorPos = rigidBody->getGlobalPose();
-		
 		transform.Location = PhysxUtils::PhysxToVector(actorPos.p);
 		transform.Rotation = PhysxUtils::PhysxQuatToVector(actorPos.q);
 	}

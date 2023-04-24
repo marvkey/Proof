@@ -13,10 +13,12 @@ namespace Game
         {
 
         }
+        public ImageAsset Image;
+
         public float Speed = 3.0f;
         protected MPlayer m_Owner = null;
 
-        private bool m_Throw = false;
+        protected bool m_Throw = false;
         protected MPlayer m_CollidedPlayer = null;
 
         protected bool M_PowerupApplied = false;
@@ -49,7 +51,7 @@ namespace Game
             m_Throw = true;
         }
 
-        public void PickUp(MPlayer player)
+        virtual public void PickUp(MPlayer player)
         {
             m_Owner = player;
             GetComponent<MeshComponent>().Visible = false;

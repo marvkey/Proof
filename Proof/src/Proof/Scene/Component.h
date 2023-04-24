@@ -6,6 +6,7 @@
 #include "Proof/Renderer/Texture.h"
 #include <unordered_set>
 #include "Material.h"
+#include "Proof/Renderer/UIRenderer/UIPanel.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
@@ -305,10 +306,7 @@ namespace Proof
 		SpriteComponent(const SpriteComponent&) = default;
 		SpriteComponent() = default;
 		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
-
-		void RemoveTexture(){
-			m_TextureAssetPointerID = 0;
-		}
+		Count<Texture2D> Texture;
 	private:
 		friend class Entity;
 		friend class World;
@@ -316,7 +314,6 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 		uint32_t StartIndexSlot = 0;
-		UUID m_TextureAssetPointerID = 0;
 	};
 
 	struct SkyLightComponent{
@@ -596,6 +593,10 @@ namespace Proof
 		Players InputPlayer  = Players::None;
 		Count<class Prefab> Player;
 	};
+
+	struct PlayerHUDComponent {
+		Count< UITable> HudTable = Count<class UITable>::Create();
+	};
 	template<class ... Component>
 	struct ComponentGroup {
 
@@ -604,7 +605,7 @@ namespace Proof
 		ComponentGroup<IDComponent, TagComponent, ChildComponent, TransformComponent,
 		MeshComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
-		ScriptComponent, TextComponent, PlayerInputComponent>;
+		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent>;
 	
 
 	using LightComponnet =ComponentGroup< DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

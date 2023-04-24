@@ -21,7 +21,8 @@
     <OutputPath>..\Proof-Editor\Resources\Scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -33,7 +34,8 @@
     <OutputPath>..\Proof-Editor\Resources\Scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -45,7 +47,8 @@
     <OutputPath>..\Proof-Editor\Resources\Scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -56,20 +59,22 @@
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Proof\Asset\Assets.cs" />
     <Compile Include="src\Proof\Core\Log.cs" />
     <Compile Include="src\Proof\Input\Input.cs" />
     <Compile Include="src\Proof\Input\KeyCodes.cs" />
     <Compile Include="src\Proof\InternalCalls.cs" />
     <Compile Include="src\Proof\Math\Random.cs" />
+    <Compile Include="src\Proof\Math\Timer.cs" />
     <Compile Include="src\Proof\Math\Transform.cs" />
     <Compile Include="src\Proof\Math\Vector.cs" />
     <Compile Include="src\Proof\Scene\Component.cs" />
     <Compile Include="src\Proof\Scene\Entity.cs" />
     <Compile Include="src\Proof\Scene\Prefab.cs" />
     <Compile Include="src\Proof\Scene\World.cs" />
+    <Compile Include="src\Proof\UI\UIComponent.cs" />
   </ItemGroup>
-  <ItemGroup>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

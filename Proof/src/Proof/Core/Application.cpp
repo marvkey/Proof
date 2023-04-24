@@ -72,7 +72,7 @@ namespace Proof {
         for (Layer* layer : MainLayerStack.V_LayerStack)
             layer->OnImGuiDraw(deltaTime);
         ImGuiMainLayer->End();
-        m_ImguiFrameTime = time.TimePassedMillis();
+        m_ImguiFrameTime = time.ElapsedMillis();
     }
 
     void Application::OnEvent(Event& e) {

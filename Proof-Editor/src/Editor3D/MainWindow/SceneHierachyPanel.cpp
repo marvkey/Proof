@@ -332,6 +332,7 @@ namespace Proof
 
 			AddComponentGui<ScriptComponent>(entity, "Scripts");
 			AddComponentGui<PlayerInputComponent>(entity, "Player Input");
+			AddComponentGui<PlayerHUDComponent>(entity, "Player HUD");
 			ImGui::EndPopup();
 		}
 		DrawComponents<TagComponent>("Tag", entity, [](TagComponent& subTag) {
@@ -419,27 +420,29 @@ namespace Proof
 			ExternalAPI::ImGUIAPI::CheckBox("Visible", &meshComp.Visible);
 		});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
-			//if (spriteComp.GetTexture() != nullptr) {
-			//	ImGui::Image((ImTextureID)spriteComp.GetTexture()->GetID(), { 30,30 });
-			//}
-			//else {
-			//}
-			// get ID crashing applicaiton needs fix
-			//ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetID(), {30,30});
+			if (spriteComp.Texture != nullptr) {
+				ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, {30,30});
+			}
+			else {
+				ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, {30,30});
+			}
 			if (ImGui::BeginPopupContextItem("RemoveTexture")) {
 				ImGui::EndPopup();
 			}
 			if (ImGui::BeginPopup("RemoveTexture")) {
 				if (ImGui::MenuItem("Remove Texture")) {
-					spriteComp.RemoveTexture();
+					spriteComp.Texture = nullptr;
 				}
 				ImGui::EndPopup();
 			}
 
 			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("")) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str())) {
 					uint64_t Data = *(const uint64_t*)payload->Data;
-					spriteComp.m_TextureAssetPointerID = Data;
+					if (AssetManager::HasAsset(Data))
+					{
+						spriteComp.Texture =AssetManager::GetAsset<Texture2D>(Data);
+					}
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -740,9 +743,9 @@ namespace Proof
 							// these typs are clses so its weird getting ther data
 							case ScriptFieldType::Entity:
 							case ScriptFieldType::Prefab:
+							case ScriptFieldType::ImageAsset:
 								scriptInstance.SetValue<uint64_t>(0);
 								break;
-
 							default:
 								PF_CORE_ASSERT(false);
 								break;
@@ -765,7 +768,34 @@ namespace Proof
 							SET_FIELD_NUMERICAL_VALUE(Uint16_t, uint16_t, fieldName, ImGuiDataType_U16);
 							SET_FIELD_NUMERICAL_VALUE(Uint32_t, uint32_t, fieldName, ImGuiDataType_U32);
 							SET_FIELD_NUMERICAL_VALUE(Uint64_t, uint64_t, fieldName, ImGuiDataType_U64);
-
+							case ScriptFieldType::ImageAsset:
+								{
+									ImGui::Text(fieldName.c_str());
+									ImGui::SameLine();
+									if (AssetManager::HasAsset(scriptField.GetValue<uint64_t>()))
+									{
+										auto texture = AssetManager::GetAsset<Texture2D>(scriptField.GetValue<uint64_t>());
+										//ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
+										ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+									}
+									else
+									{
+										ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+									}
+									if (ImGui::BeginDragDropTarget())
+									{
+										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+										{
+											uint64_t Data = *(const uint64_t*)payload->Data;
+											if (AssetManager::HasAsset(Data))
+											{
+												scriptField.SetValue(Data); 
+											}
+										}
+										ImGui::EndDragDropTarget();
+									}
+									break;
+								}
 							case ScriptFieldType::Bool:
 								{
 									bool var = scriptField.GetValue<bool>();
@@ -864,7 +894,33 @@ namespace Proof
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint16_t, uint16_t, name, ImGuiDataType_U16);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint32_t, uint32_t, name, ImGuiDataType_U32);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint64_t, uint64_t, name, ImGuiDataType_U64);
-
+							case ScriptFieldType::ImageAsset:
+								{
+									ImGui::Text(field.Name.c_str());
+									ImGui::SameLine();
+									if (AssetManager::HasAsset(instance->GetFieldValue<uint64_t>(name)))
+									{
+										auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
+										ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
+									}
+									else
+									{
+										ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+									}
+									if (ImGui::BeginDragDropTarget())
+									{
+										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+										{
+											uint64_t Data = *(const uint64_t*)payload->Data;
+											if (AssetManager::HasAsset(Data))
+											{
+												instance->SetFieldValue(name,Data);
+											}
+										}
+										ImGui::EndDragDropTarget();
+									}
+									break;
+								}
 							case ScriptFieldType::Prefab:
 								{
 									if (AssetManager::HasAsset(instance->GetFieldValue<uint64_t>(name)))
@@ -954,6 +1010,37 @@ namespace Proof
 				}
 				ImGui::EndDragDropTarget();
 			}
+		});
+
+
+		DrawComponents<PlayerHUDComponent>("Player HUD", entity, [](PlayerHUDComponent& playerHud){
+			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
+			bool open = ImGui::TreeNodeEx("HudCadfasd", treeNodeFlags, "HUd Table");
+			if (!open)return;
+			ImGui::SameLine();
+			if(ImGui::Button("+")) {
+				playerHud.HudTable->SetUI(playerHud.HudTable->GetPanelSize(), nullptr);
+			}
+			for (auto& [index, hud] : playerHud.HudTable->GetPanels())
+			{
+				std::string name = hud != nullptr ? hud->Name : "null";
+				ExternalAPI::ImGUIAPI::TextBar(fmt::format("Index {}", index), name);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::UIPanel).c_str()))
+					{
+						uint64_t Data = *(const uint64_t*)payload->Data;
+						if (AssetManager::HasAsset(Data))
+						{
+							auto ui = AssetManager::GetAsset<UIPanel>(Data);
+							playerHud.HudTable->SetUI(index, ui);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+			}
+			ImGui::TreePop();
 		});
 	}
 
@@ -1096,6 +1183,56 @@ namespace Proof
 		ImGui::DragFloat("##A", &Vec.a, 0.1f, 0, 0, "%.3f"); // does not show ## as label
 		ImGui::PopItemWidth();
 		ImGui::PopStyleColor(3);
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
+	}
+	void SceneHierachyPanel::DrawVector2Control(const std::string& UniqeLabel, glm::vec2& Vec, float ResetValue, float columnWidth)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		ImGui::PushID(UniqeLabel.c_str());// this id is for everything here so imgui does not assign something to the value that we have here
+		ImGui::Columns(2); // distance between label and edits
+		ImGui::SetColumnWidth(0, columnWidth);
+		ImGui::Text(UniqeLabel.c_str());
+		ImGui::NextColumn();
+		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0,0 });
+		float LineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // comes from IMGUI
+		ImVec2 buttonSize = { LineHeight + 3.0f,LineHeight };
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 1.0f,0.0f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 1.0f,0.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 1.0f,0.0f,0.0f,1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("X", buttonSize))
+		{
+			Vec.r = ResetValue;
+		}
+		ImGui::PopFont();
+		ImGui::SameLine();
+		ImGui::DragFloat("##x", &Vec.r, 0.1f, 0, 0, "%.3f"); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f,.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 1.0f,0.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.0f,.5f,0.0f,1.0f });
+
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Y", buttonSize))
+		{
+			Vec.y = ResetValue;
+		}
+		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::DragFloat("##Y", &Vec.y, 0.1f, 0, 0, "%.3f"); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
+
 		ImGui::PopStyleVar();
 		ImGui::Columns(1);
 		ImGui::PopID();
