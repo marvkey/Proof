@@ -102,11 +102,11 @@ namespace Proof
 			if (std::filesystem::exists(savePath) == false)
 				std::filesystem::create_directory(savePath);
 			// making it a file
-			savePath = std::filesystem::relative(savePath /= Utils::FileDialogs::GetFileName(savePath),s_AssetsDir);
+			savePath /= Utils::FileDialogs::GetFileName(savePath);
 		}
 		else {
 			//fix / backlash issue
-			savePath = std::filesystem::relative(savePath, s_AssetsDir);
+			//savePath = std::savePath, s_AssetsDir);
 		}
 		std::string finalPath = savePath.string();
 
@@ -120,7 +120,6 @@ namespace Proof
 		if (endIndex != 0)
 			finalPath += fmt::format("({})", endIndex);
 
-		PF_CORE_ASSERT(false);
 		return AssetManager::NewAsset<Mesh>(finalPath, meshSource)->GetID();
 	}
 	std::pair<bool, AssetID> ContentBrowserPanel::AddMesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& excludeIndex) {

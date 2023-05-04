@@ -18,29 +18,34 @@ namespace Game
         public Prefab Plane;
 
         private float spawnDistanceZ = 0.0f;
+        private float m_SpawnRate;
         void OnCreate()
         {
             if (Player == null || Obstacle == null) return;
             spawnDistanceZ = 20.0f;
-
-            for(int i=0; i < 10; i++)
+            for (int i = 0; i < 10; i++)
             {
-                //int rand = Proof.Random.Int(1, 3);
-                //switch (rand)
-                //{
-                //    case 1:
-                //        SpawnObstacle1();
-                //        break;
-                //    case 2:
-                //        SpawnObstacle2();
-                //        break;
-                //    case 3:
-                //        SpawnObstacle3();
-                //        break;
-                //}
+                int rand = Proof.Random.Int(1, 4);
+                switch (rand)
+                {
+                    case 1:
+                        SpawnObstacle1();
+                        break;
+                    case 2:
+                        SpawnObstacle2();
+                        break;
+                    case 3:
+                        SpawnObstacle1();
+                        break;
+                    case 4:
+                        {
+                            SpawnObstacle4();
+                            i += 3;
+                        }
+                        break;
+                }
 
             }
-                SpawnObstacle4();
 
         }
 
@@ -51,6 +56,35 @@ namespace Game
             if (!Player.As<Player>().IsAlive())
                 return;
 
+            m_SpawnRate += ts;
+
+            if(m_SpawnRate >= 5)
+            {
+                spawnDistanceZ -= 35;
+                for (int i = 0; i < 10; i++)
+                {
+                    int rand = Proof.Random.Int(1, 4);
+                    switch (rand)
+                    {
+                        case 1:
+                            SpawnObstacle1();
+                            break;
+                        case 2:
+                            SpawnObstacle2();
+                            break;
+                        case 3:
+                        //    SpawnObstacle3();
+                        case 4:
+                            {
+                                SpawnObstacle4();
+                                i += 3;
+                            }
+                            break;
+                    }
+
+                }
+                m_SpawnRate = 0;
+            }
         }
 
         private void SpawnObstacle1()
@@ -145,8 +179,7 @@ namespace Game
             spawnTransform.Scale.X = 1;
             spawnTransform.Location.Y = -0.8f;
 
-            int iterations = Proof.Random.Int(5, 15);
-            Log.Warn($"Number iteration {iterations}");
+            int iterations = Proof.Random.Int(4, 6);
             for(int i = 0; i < iterations; i++)
             {
                 int subIteration = Proof.Random.Int(1, 3);
@@ -154,6 +187,9 @@ namespace Game
                 {
                     spawnTransform.Location.Z = SpawnTransformz;
                     spawnTransform.Location.X = Proof.Random.Float(-23,23);
+                    spawnTransform.Scale.X = Proof.Random.Float(1,3);
+                    spawnTransform.Scale.Z = 1;
+                    spawnTransform.Scale.Y = 1;
 
                     Entity ent = World.Instanciate(Obstacle, spawnTransform);
                 }

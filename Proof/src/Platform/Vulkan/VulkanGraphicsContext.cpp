@@ -241,7 +241,7 @@ namespace Proof
 			//VkDescriptorPoolCreateFlags PoolFlags = 0;
 		std::vector<VkDescriptorPoolSize> PoolSizes{};
 
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 });
+		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 });
 		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 });
@@ -471,16 +471,16 @@ namespace Proof
 
 	VkSampleCountFlagBits VulkanGraphicsContext::GetMaxSampleCount()
 	{
-		VkPhysicalDeviceProperties physicalDeviceProperties;
-		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &physicalDeviceProperties);
-
-		VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
-		if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
-		if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
-		if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
-		if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
-		if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
-		if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+		//VkPhysicalDeviceProperties physicalDeviceProperties;
+		//vkGetPhysicalDeviceProperties(m_PhysicalDevice, &physicalDeviceProperties);
+		//
+		//VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+		//if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+		//if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+		//if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+		//if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+		//if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+		//if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
 
 		return VK_SAMPLE_COUNT_1_BIT;
 	}

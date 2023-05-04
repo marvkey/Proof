@@ -36,6 +36,7 @@ namespace Proof{
 		};
 
 		std::string	Name;
+		bool Visible = true;
 	private:
 
 		std::unordered_map<std::string, UIButton> m_Buttons;

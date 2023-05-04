@@ -92,7 +92,7 @@ namespace Proof
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		// for assetVIewe we can use imguidoc node no split
-		ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO& io = ImGui::GetIO();;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
@@ -189,7 +189,7 @@ namespace Proof
 		ImGuiIO& io = ImGui::GetIO();
 		if (m_WindoResize == true)
 		{
-
+			
 			s_ImguiRenderPass->FrameBuffer->Resize(Vector2{ (float)Application::Get()->GetWindow()->GetWidth(),(float)Application::Get()->GetWindow()->GetHeight() });
 			ImGui_ImplVulkan_SetMinImageCount(graphicsContext->GetSwapChain()->GetImageCount());
 
@@ -201,15 +201,15 @@ namespace Proof
 				graphicsContext->GetSwapChain()->GetImageCount());
 			m_WindoResize = false;
 		}
-		//io.DisplaySize = ImVec2((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
+		io.DisplaySize = ImVec2((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 		wd->FrameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		ImGui_ImplVulkanH_Frame* fd = &wd->Frames[wd->FrameIndex];
 		ImGui::Render();
 		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		//if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-		//{
-		//	ImGui_ImplOpenGL3_RenderDrawData(main_draw_data);
-		//}
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		{
+			ImGui_ImplOpenGL3_RenderDrawData(main_draw_data);
+		}
 		{
 			//https://github.com/1111mp/Vulkan/blob/master/src/Application.cpp
 			Renderer::BeginCommandBuffer(s_ImguiRenderPass->CommandBuffer);

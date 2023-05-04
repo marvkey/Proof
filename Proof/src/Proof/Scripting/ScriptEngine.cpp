@@ -21,7 +21,7 @@
 #include "Proof/Core/Buffer.h"
 namespace Proof
 {
-   
+
     static std::unordered_map<std::string, ScriptFieldType> s_ScriptFieldTypeMap =
     {
         { "System.Single", ScriptFieldType::Float },
@@ -148,6 +148,15 @@ namespace Proof
         World* CurrentWorld = nullptr;
 
         std::unordered_map<std::string, std::set<std::string>> ScriptSubClasses;
+
+        void Clear () {
+            EntityClass = nullptr;
+            EntityScriptFields.clear();
+            ScriptEntityClasses.clear();
+            EntityInstances.clear();
+            ScriptSubClasses.clear();
+
+        }
         #ifdef PF_ENABLE_DEBUG 
             bool EnableDebugging = true;
         #else
@@ -201,6 +210,12 @@ namespace Proof
 
        MonoObject* exception = nullptr;
        mono_runtime_invoke(method, instance, params, &exception);
+       if (exception != nullptr)
+       {
+           MonoClass* excClass = mono_object_get_class(exception);
+           MonoString* msg = mono_object_to_string(exception, nullptr);
+           PF_EC_ERROR("C#: {}", mono_string_to_utf8(msg));
+       }
        return exception;
     }
     ScriptInstance::ScriptInstance(Count<ScriptClass> scriptClass, Entity entity) :
@@ -236,7 +251,6 @@ namespace Proof
         if (m_OnUpdate == nullptr)return;
         void* param = &ts;
         m_ScriptClass->CallMethod(m_Instance, m_OnUpdate, &param);
-
     }
     void ScriptInstance::CallOnPlace() {
         if (m_OnPlaced)
@@ -357,6 +371,7 @@ namespace Proof
 
         mono_jit_cleanup(s_Data->RootDomain);
         s_Data->RootDomain = nullptr;
+        delete s_Data;
     }
 
     void ScriptEngine::BeginRuntime(World* world) {
@@ -392,9 +407,11 @@ namespace Proof
 
     void ScriptEngine::ReloadAssembly(World* world) {
         PF_CORE_ASSERT(world);
+       // s_Data->Clear();
         mono_domain_set(mono_get_root_domain(), false);
-
         mono_domain_unload(s_Data->AppDomain);
+
+        /*
         LoadAssembly("Resources/Scripts/ProofScriptCore.dll");
         LoadAppAssembly("GameProject/Asset/Scripts/Binaries/Game.dll");
         LoadAssemblyClasses();
@@ -403,6 +420,20 @@ namespace Proof
         ScriptFunc::RegisterFunctions();
         // Retrieve and instantiate class
         s_Data->EntityClass = Count<ScriptClass>::Create("Proof", "Entity", true);
+        */
+
+        {
+            ScriptFunc::RegisterFunctions();
+
+            LoadAssembly("Resources/Scripts/ProofScriptCore.dll");
+            LoadAppAssembly("GameProject/Asset/Scripts/Binaries/Game.dll");
+
+            LoadAssemblyClasses();
+
+            ScriptFunc::RegisterAllComponents();
+
+            s_Data->EntityClass = Count<ScriptClass>::Create("Proof", "Entity", true);
+        }
     }
 
     MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass) {
@@ -623,6 +654,7 @@ namespace Proof
                                 MonoMethod* constructo = prefab->GetMethod(".ctor", 1);
                                 prefab->CallMethod(prefabinstnace, constructo, &param);
 
+                               // MonoClassField* field = mono_class_get_field_from_name(prefab->GetMonoClass(), fieldData.Field.Name.c_str());
                                 // this is how we do it 
                                 mono_field_set_value(instance->GetMonoObject(), fieldData.Field.ClassField, prefabinstnace);
                                 continue;
@@ -639,6 +671,7 @@ namespace Proof
                                 MonoMethod* constructo = s_Data->EntityClass->GetMethod(".ctor", 1);
                                 s_Data->EntityClass->CallMethod(entityInstnace, constructo, &param);
 
+                                MonoClassField* field = mono_class_get_field_from_name(s_Data->EntityClass->GetMonoClass(), fieldData.Field.Name.c_str());
                                 // this is how we do it 
                                 mono_field_set_value(instance->GetMonoObject(), fieldData.Field.ClassField, entityInstnace);
                                 continue;
@@ -752,4 +785,5 @@ namespace Proof
             PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID, currentEntity.GetName());
         }
     }
+
 }

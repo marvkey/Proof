@@ -49,6 +49,11 @@ namespace Proof {
 		std::function<void(float motionValue )> Action;
 		
 	};
+
+	enum class PlayerInputState {
+		Enabled =0,
+		Disabled = 1
+	};
 	class InputManagerMeathods
 	{
 	public:
@@ -60,6 +65,7 @@ namespace Proof {
 		static void DeletePlayer(uint32_t player);
 		static bool HasPlayer(uint32_t player);
 
+		static void SetPlayerInput(uint32_t player,PlayerInputState state);
 		/**
 		 *
 		 * 

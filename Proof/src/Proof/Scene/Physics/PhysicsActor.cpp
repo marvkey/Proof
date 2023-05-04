@@ -370,14 +370,17 @@ namespace Proof {
 		if (!AssetManager::HasAsset(meshCollider->GetMeshSource()))return;
 		if (PhysicsMeshCooker::HasMesh(meshCollider->GetMeshSource()) == false)
 		{
-			PhysicsMeshCooker::CookMesh(meshCollider->GetMeshSource());
+			PhysicsMeshCooker::CookMesh(meshCollider->GetMeshSource());	
 		}
 		physx::PxMaterial* colliderMaterial = meshCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)meshCollider->GetPhysicsMaterial()->m_RuntimeBody;
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(
 			physx::PxTriangleMeshGeometry(PhysicsMeshCooker::GetConvexMesh(meshCollider->GetMeshSource())),*colliderMaterial, true);
+				//physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(
+		//physx::PxConvexMeshGeometry(PhysicsMeshCooker::GetConvexMesh(meshCollider->GetMeshSource())), *colliderMaterial, true);
 		//ADD CONVEX MESH TO ASSET
-		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 		meshCollider->m_RuntimeBody = body;
+		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(meshCollider->IsTrigger));
+		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, meshCollider->IsTrigger);
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 		rigidBody->attachShape(*body);
 	}

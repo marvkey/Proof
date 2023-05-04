@@ -1,36 +1,6 @@
 World:
   ID: 13308300816728474787
   Entities:
-    - Entity: 17282964813727439423
-      TagComponent:
-        Tag: plane
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [37.2000008, 1, 1000]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 0
-            Index: 0
-      CubeColliderComponent:
-        IsTrigger: false
-        OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 1.5, 1]
-        PhysicsMaterialPointerID: 14027245898106135139
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
     - Entity: 15009829747103843900
       TagComponent:
         Tag: Plyer1
@@ -38,7 +8,7 @@ World:
       TransformComponent:
         Location: [0, 5, 0]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
+        Scale: [2, 2, 2]
       ChildComponent:
         OwnerID: 0
         Children: []
@@ -52,59 +22,52 @@ World:
       TransformComponent:
         Location: [-11.1999998, 5, 0]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
+        Scale: [2, 2, 2]
       ChildComponent:
         OwnerID: 0
         Children: []
       PlayerInputComponent:
         InputPlayer: Player1
         PrefabID: 4015502858990313943
-    - Entity: 9865137983053174728
+    - Entity: 13613974707328583001
       TagComponent:
-        Tag: Explosive
+        Tag: GameManager
         tags: []
       TransformComponent:
-        Location: [0, 5.4000001, 0]
+        Location: [0, 0, 0]
         Rotation: [0, 0, 0]
-        Scale: [2.70000005, 4.4000001, 3.5]
+        Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
-      MeshComponent:
-        MeshAssetPointerID: 566574579191162934
-        MaterialTable:
-          - Material: ""
-            AssetID: 0
-            Index: 0
       ScriptComponent:
         Scripts:
-          - Script: Game.Explosive
+          - Script: Game.mGameManager
             ScriptFields:
-              - Name: ForceStrentght
-                Type: Float
-                Data: 20
-              - Name: Image
-                Type: ImageAsset
-                Data: 96342634762984
-              - Name: Speed
-                Type: Float
-                Data: 3
-              - Name: m_Throw
-                Type: Bool
-                Data: false
-              - Name: M_PowerupApplied
-                Type: Bool
-                Data: false
-      SphereColliderComponent:
-        IsTrigger: true
-        Offset: [0, 0, 0]
-        Radius: 1
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
+              - Name: Obstacle
+                Type: Prefab
+                Data: 1607569046936484718
+              - Name: Plane
+                Type: Prefab
+                Data: 5615780023732569603
+              - Name: DorrOpenerThing
+                Type: Prefab
+                Data: 5938616521392695289
+              - Name: RampObstacle
+                Type: Prefab
+                Data: 4219147424771132432
+              - Name: PhysicsCube
+                Type: Prefab
+                Data: 16366832242524300474
+              - Name: PowerUp2
+                Type: Prefab
+                Data: 5306886724956390622
+              - Name: WorldLenght
+                Type: Int
+                Data: 1000
+              - Name: PowerUp1
+                Type: Prefab
+                Data: 16359374454295279052
+              - Name: PowerUp3
+                Type: Prefab
+                Data: 9051383557077222183

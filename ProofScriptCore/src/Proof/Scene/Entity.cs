@@ -32,6 +32,13 @@ namespace Proof
 			InternalCalls.PlayerInputComponent_SetAction(ID, this.GetType().FullName, ActionName, (int)state, func.Method.Name);
 		}
 
+		public void SetInputState(PlayerInputState state)
+		{
+			if (!HasComponent<PlayerInputComponent>())
+				return;
+            InternalCalls.PlayerInputComponent_SetInputState(ID, (int)state);
+
+        }
 		public void SetMotion(string MotionName,Action<float> func)
 		{
 			if (!HasComponent<PlayerInputComponent>())

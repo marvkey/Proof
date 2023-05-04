@@ -1,0 +1,33 @@
+AssetType: Prefab
+ID: 4219147424771132432
+EntityOwner: 1270351127435196589
+Entities:
+  - Entity: 1270351127435196589
+    TagComponent:
+      Tag: RampObstacle
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 7317233367818780658
+      MaterialTable:
+        - Material: ""
+          AssetID: 0
+          Index: 0
+    MeshColliderComponent:
+      IsTrigger: false
+      PhysicsMaterialPointerID: 0
+      MeshAssetPointerID: 7317233367818780658
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]

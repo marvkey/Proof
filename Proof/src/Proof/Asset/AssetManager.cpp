@@ -156,12 +156,13 @@ namespace Proof
 	
 	void AssetManager::GenerateAllSourceAssets() {
 		for (auto& it : std::filesystem::recursive_directory_iterator(s_AssetManagerData->AssetDirectory)) {
-			if (MeshHasFormat(it.path().extension().string())) {
+			std::string extension = it.path().extension().string();
+			if (MeshHasFormat(extension)) {
 				NewAssetSource(it.path(),AssetType::MeshSourceFile);
 				return;
 			}
 
-			if (TextureHasFormat(it.path().extension().string())) {
+			if (TextureHasFormat(extension)) {
 				NewAssetSource(it.path(), AssetType::TextureSourceFile);
 				return;
 			}

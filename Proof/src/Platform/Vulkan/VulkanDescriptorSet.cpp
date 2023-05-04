@@ -6,6 +6,7 @@
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanTexutre.h"
 #include "VulkanUtils/VulkanConvert.h"
+#include "backends/imgui_impl_vulkan.h"
 namespace Proof
 {
 	namespace Utils
@@ -228,6 +229,7 @@ namespace Proof
 			write_desc[0].pImageInfo = desc_image;
 			vkUpdateDescriptorSets(m_Device, 1, write_desc, 0, NULL);
 		}
+		//return ImGui_ImplVulkan_AddTexture(sampler, image_view, image_layout);
 		return descriptor_set;
 	}
 
@@ -335,12 +337,15 @@ namespace Proof
 		binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		binding[0].descriptorCount = 1;
 		binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-		//binding[0].pImmutableSamplers = &m_FontSampler;
+		binding[0].pImmutableSamplers = &m_FontSampler;
+		//binding[0].pImmutableSamplers = nullptr;
 		VkDescriptorSetLayoutCreateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		info.bindingCount = 1;
 		info.pBindings = binding;
 		VkResult err = vkCreateDescriptorSetLayout(m_Device, &info, nullptr, &m_TextureLayout);
+
+	
 	}
 
 	VulkanDescriptorWriter::VulkanDescriptorWriter(VulkanDescriptorSet* setLayout, Count<VulkanDescriptorPool> pool):

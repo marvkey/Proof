@@ -179,11 +179,20 @@ namespace Proof
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         //internal extern static void PlayerInputComponent_SetMotion(ulong entityID, string className,string motionName, Action<float> func);
         internal extern static void PlayerInputComponent_SetMotion(ulong entityID, string className,string motionName, string funcName);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerInputComponent_SetInputState(ulong entityID, int inputState);
+
         #endregion
 
         #region PlayerHUDComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool PlayerHUDComponent_IndexHasHUD(ulong entityID, uint tableIndex);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool PlayerHUDComponent_GetVisible(ulong entityID, uint tableIndex);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerHUDComponent_SetVisible(ulong entityID, uint tableIndex, ref bool visible);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool PlayerHUDComponent_HasButton(ulong entityID, uint tableIndex, string buttonName);
@@ -201,6 +210,10 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool PlayerHUDComponent_HasText(ulong entityID, uint tableIndex, string textname);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerHUDComponent_GetTextData(ulong entityID, uint tableIndex, string textname, out UITextData textData, out string text);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerHUDComponent_SetTextData(ulong entityID, uint tableIndex, string textname, ref UITextData textData, ref string text);
         #endregion
     }
 }

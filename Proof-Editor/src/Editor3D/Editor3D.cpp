@@ -41,6 +41,7 @@
 #include "Proof/Project/ProjectSerilizer.h"
 namespace Proof
 {
+	static bool s_DetachPlayer = false;
 	static bool SaveSceneDialouge = false;
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") {
@@ -297,7 +298,7 @@ namespace Proof
 					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
 
 					int player = 1;
-					if (m_PlayersCount > 1 && Mouse::IsMouseCaptured())
+					if (m_PlayersCount > 1 && Mouse::IsMouseCaptured() && s_DetachPlayer == false)
 					{
 
 						m_ActiveWorld->ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
@@ -325,15 +326,15 @@ namespace Proof
 									{
 										m_MultiplayerRender[input.InputPlayer]->Resize({ windowWIdth, windowHeight });
 										if(entity.HasComponent<PlayerHUDComponent>() )
-											m_MultiplayerRender[input.InputPlayer]->Render(*camera, location,entity.GetComponent<PlayerHUDComponent>()->HudTable);
+											m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, m_RenderSettings,entity.GetComponent<PlayerHUDComponent>()->HudTable);
 										else
-										m_MultiplayerRender[input.InputPlayer]->Render(*camera, location);
+										m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, m_RenderSettings);
 									}
 								}
 							}
 						});
 					}
-					else if (m_ActiveWorld->HasWorldCamera() && Mouse::IsMouseCaptured()) {
+					else if (m_ActiveWorld->HasWorldCamera() && Mouse::IsMouseCaptured() && s_DetachPlayer == false) {
 						auto entity = m_ActiveWorld->GetWorldCameraEntity();
 						auto location = m_ActiveWorld->GetWorldLocation(entity);
 						Vector rotation;
@@ -344,12 +345,12 @@ namespace Proof
 						entity.GetComponent<CameraComponent>()->Width = m_ViewPortSize.x;
 						entity.GetComponent<CameraComponent>()->Height = m_ViewPortSize.y;
 						entity.GetComponent<CameraComponent>()->CalculateProjection(location, rotation);
-						m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location);
+						m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location, m_RenderSettings);
 					}
 					else
 					{
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-						m_WorldRenderer->Render(m_EditorCamera);
+						m_WorldRenderer->Render(m_EditorCamera, m_RenderSettings);
 					}
 					break;
 				}
@@ -364,7 +365,7 @@ namespace Proof
 					m_ActiveWorld->OnSimulatePhysics(DeltaTime);
 					if (m_ViewPortFocused)
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-					m_WorldRenderer->Render(m_EditorCamera);
+					m_WorldRenderer->Render(m_EditorCamera, m_RenderSettings);
 					break;
 				}
 			case Proof::WorldState::Edit:
@@ -375,7 +376,7 @@ namespace Proof
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 						Application::Get()->GetWindow()->SetWindowInputEvent(false);
 					}
-					m_WorldRenderer->Render(m_EditorCamera);
+					m_WorldRenderer->Render(m_EditorCamera, m_RenderSettings);
 					break;
 				}
 			default:
@@ -387,11 +388,11 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Layer::OnImGuiDraw(DeltaTime);
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
+
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
 		MainToolBar();
-
 		ViewPort();
 		
 		for (auto& a : m_AllPanels) {
@@ -424,6 +425,8 @@ namespace Proof
 		{
 
 			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER SPECS");
+
+			ImGui::Checkbox("View COlliders", &m_RenderSettings.ViewColliders);
 			//ImGui::Text("Renderer Company: %s", RendererBase::GetRenderCompany().c_str());
 			//ImGui::Text("Graphics Card: %s", RendererBase::GetGraphicsCard().c_str());
 			//ImGui::Text("Graphics Card Verison: %s", RendererBase::GetGraphicsCardVersion().c_str());
@@ -470,6 +473,7 @@ namespace Proof
 					if (m_ActiveWorld->IsPlaying())
 					{
 						Mouse::CaptureMouse(false);
+						s_DetachPlayer = true;
 						break;
 					}
 					//if (Mouse::IsMouseCaptured())
@@ -912,6 +916,7 @@ namespace Proof
 	}
 	void Editore3D::ViewPort() {
 		PF_PROFILE_FUNC();
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		static bool Open = true;
 		if (ImGui::Begin("ViewPort", &Open, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar)) {
@@ -939,7 +944,7 @@ namespace Proof
 				m_ViewPortFocused = false;
 				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
-			if (m_ActiveWorld->IsPlaying() && m_PlayersCount > 1)
+			if (m_ActiveWorld->IsPlaying() && m_PlayersCount > 1 && s_DetachPlayer == false)
 			{
 				//(input, entity ID)
 				std::map<int, uint64_t> inputs;
@@ -977,8 +982,12 @@ namespace Proof
 						}
 				}
 			}
-			const void* Text = m_WorldRenderer->GetImage().SourceImage;
-			ImGui::Image((ImTextureID)Text, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			else
+			{
+
+				const void* Text = m_WorldRenderer->GetImage().SourceImage;
+				ImGui::Image((ImTextureID)Text, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			}
 
 
 			// GUIZMOS
@@ -1076,7 +1085,7 @@ namespace Proof
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::MeshSourceFile).c_str())) {
 					UUID meshSourceId = *(UUID*)payload->Data;
 					meshSourceAdded = true;
-					meshSourcePath = AssetManager::GetAssetInfo(meshSourceId).Path;
+					meshSourcePath =AssetManager::GetAssetFileSystemPath( AssetManager::GetAssetInfo(meshSourceId).Path);
 				}
 
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
@@ -1162,7 +1171,14 @@ namespace Proof
 			if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
 				SimulateWorld();
 		}
+		ImGui::SameLine();
+		int playerCount = m_PlayersCount;
+		if (ImGui::DragInt("PlayerCount", &playerCount, 1, 1, 4))
+		{
+			m_PlayersCount = playerCount;
+		}
 		ImGui::End();
+
 	}
 
 	void Editore3D::SetDocking(bool* p_open) {
@@ -1303,6 +1319,7 @@ namespace Proof
 	}
 	void Editore3D::PlayWorld() {
 		m_ActiveWorld = World::Copy(m_EditorWorld);
+		s_DetachPlayer = false;
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
@@ -1329,7 +1346,7 @@ namespace Proof
 		Mouse::CaptureMouse(true);
 	}
 	void Editore3D::SimulateWorld() {
-
+		s_DetachPlayer = false;
 		m_ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
 	void Editore3D::SetWorldEdit() {

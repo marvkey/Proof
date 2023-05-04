@@ -30,13 +30,7 @@ Project:
           - InputDevice: KeyBoard
             Keys: [70]
           - InputDevice: ControllerButton
-            Keys: [20]
-      - Action: ChangeSpeed
-        InputDevices:
-          - InputDevice: KeyBoard
-            Keys: [83]
-          - InputDevice: ControllerButton
-            Keys: [21]
+            Keys: [1]
       - Action: Jump
         InputDevices:
           - InputDevice: KeyBoard
@@ -44,6 +38,14 @@ Project:
           - InputDevice: ControllerButton
             Keys: [0]
     MotionMapping:
+      - Motion: DecreaseSpeed
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [83]
+            MotionValues: [1]
+          - InputDevice: ControllerAxis
+            Keys: [4]
+            MotionValues: [1]
       - Motion: MoveX
         InputDevices:
           - InputDevice: KeyBoard
@@ -52,3 +54,11 @@ Project:
           - InputDevice: ControllerAxis
             Keys: [0]
             MotionValues: [-1]
+      - Motion: IncreaseSpeed
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [87]
+            MotionValues: [1]
+          - InputDevice: ControllerAxis
+            Keys: [5]
+            MotionValues: [1]

@@ -47,7 +47,7 @@ namespace Proof
     {
         std::vector<VkAttachmentDescription> attachmentDescriptions;
 
-        // compiler deleteing this for some reason before the functions is finsed 
+       // compiler deleteing this for some reason before the functions is finsed 
         static std::vector<VkAttachmentReference> colorAttachmentRefs;
         colorAttachmentRefs.clear();
         for (auto& colorAttachment : m_ColorAttachments)
@@ -98,7 +98,7 @@ namespace Proof
         subpass.inputAttachmentCount = 0;
         subpass.pInputAttachments = nullptr;
         subpass.pPreserveAttachments = nullptr;
-        subpass.preserveAttachmentCount =0;
+        subpass.preserveAttachmentCount = 0;
         subpass.pResolveAttachments = 0;
         subpass.flags = 0;
         // create render pass
@@ -116,7 +116,7 @@ namespace Proof
         */
 
         /*
-        
+
         */
         // default broadcast to all layers
         //https://anishbhobe.site/post/vulkan-render-to-cubemap-using-multiview/#3-attaching-the-cubemap-to-the-framebuffer
@@ -195,12 +195,11 @@ namespace Proof
         attachmentRef.attachment = attachIndex;
 
         VkAttachmentDescription attachment = {};
-        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
         if (config.PresentKHr == true)
         {
             attachment.format = Utils::ProofFormatToVulkanFormat(config.Format);
-            attachment.samples = graphicsContext->GetSampleCount();
+            attachment.samples = VK_SAMPLE_COUNT_1_BIT;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -212,11 +211,8 @@ namespace Proof
         }
         else
         {
-
-        }
-        {
             attachment.format = Utils::ProofFormatToVulkanFormat(config.Format);
-            attachment.samples = graphicsContext->GetSampleCount();
+            attachment.samples = VK_SAMPLE_COUNT_1_BIT;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;

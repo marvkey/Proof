@@ -1,0 +1,34 @@
+AssetType: Prefab
+ID: 16366832242524300474
+EntityOwner: 8157334311377680077
+Entities:
+  - Entity: 8157334311377680077
+    TagComponent:
+      Tag: physicsCube
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 4645041025570573733
+      MaterialTable:
+        - Material: ""
+          AssetID: 0
+          Index: 0
+    CubeColliderComponent:
+      IsTrigger: false
+      OffsetLocation: [0, 0, 0]
+      OffsetScale: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]

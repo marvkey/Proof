@@ -15,6 +15,7 @@ namespace Game
         Jumpin =2
         
     }
+
     public class Player : Entity
     {
         private bool m_Movement = true;
@@ -23,7 +24,8 @@ namespace Game
         private PlayerState m_State = PlayerState.Moving;
         public float FowardForce = 200f;
         public float SideWayForce = 500f;
-
+        bool m_TouchingPlane = true;
+        public float JumpSpeed = 3;
         public void Destroy()
         {
             m_Movement = false;
@@ -56,7 +58,15 @@ namespace Game
                 Jump();
 
             if(m_State == PlayerState.Jumpin)
-                m_RigidBody.AddForce(new Vector(0,-1,0),ForceMode.VelocityChange);
+            {
+                m_RigidBody.SetLinearVelocity(new Vector(m_RigidBody.GetLinearVelocity().X, m_RigidBody.GetLinearVelocity().Y-1, m_RigidBody.GetLinearVelocity().Z));
+            }
+
+            if(m_Transform.Location.Z % 100 == 0)
+            {
+                FowardForce += 30;
+                SideWayForce += 15;
+            }
         }
         
         public bool IsAlive()
@@ -68,17 +78,23 @@ namespace Game
         {
             if (m_State == PlayerState.Jumpin)
                 return;
-            m_RigidBody.AddForce(new Vector(0, 20,0), ForceMode.VelocityChange);
             m_State = PlayerState.Jumpin;
-            //m_RigidBody.SetLinearVelocity(new Vector(0, 10, m_RigidBody.GetLinearVelocity().Z));
+            m_RigidBody.SetLinearVelocity(new Vector(m_RigidBody.GetLinearVelocity().X, JumpSpeed, m_RigidBody.GetLinearVelocity().Z));
+            m_TouchingPlane = false;
         }
 
-        void OnCollisionEnter(Entity leav)
+        void OnCollisionEnter(Entity otherEntity)
         {
-            if (!(leav.Name == "Plane"))
+            if (otherEntity.Name == "Plane")
+            {
+                if (m_State == PlayerState.Jumpin)
+                {
+                    m_TouchingPlane = true;
+                    m_State = PlayerState.Moving;
+                    m_RigidBody.ClearTorque(ForceMode.Force);
+                }
                 return;
-            m_State = PlayerState.Moving;
-            Log.Info("Baack moving");
+            }
         }
     }
 }

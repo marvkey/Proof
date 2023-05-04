@@ -23,8 +23,11 @@ namespace Proof {
 
 		pairFlags |= physx::PxPairFlag::eCONTACT_DEFAULT;
 		pairFlags |= physx::PxPairFlag::eTRIGGER_DEFAULT;
+		pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
+		pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_CCD;
 
 		return physx::PxFilterFlags();
+	
 	}
 	PhysicsWorld::PhysicsWorld(World* world, const PhysicsWorldConfig& sceneConfig)
 		:

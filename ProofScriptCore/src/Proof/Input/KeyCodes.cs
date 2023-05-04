@@ -208,4 +208,10 @@ namespace Proof{
         //KEY PRESSED AND KEY HOLD IS THE SMAE FOR MOUSE INPUTS
         KeyDouble = 4
     }
+
+	public enum PlayerInputState
+	{
+		Enabled =0,
+		Disabled = 1
+	}
 }

@@ -6,7 +6,8 @@
 #include <PxPhysicsAPI.h>
 #include "CollisonCallback.h"
 #include "PhysicsMeshCooker.h"
-
+//solve objexts goign to fast for collisoin
+//https://www.youtube.com/watch?v=XvrFQJ3n8Mo
 namespace Proof {
 	class PhysicsEngine {
 	public:

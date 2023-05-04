@@ -380,7 +380,7 @@ namespace Proof
 			createInfo.maxLod = static_cast<float>(m_MipLevels);
 			vkCreateSampler(device, &createInfo, nullptr, &m_Sampler);
 		}
-		m_Set = graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
+		m_Set = (VkDescriptorSet) graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
 	}
 
 	void* VulkanTexture2D::GetID()const {

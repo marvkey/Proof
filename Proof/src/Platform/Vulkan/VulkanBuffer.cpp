@@ -14,6 +14,11 @@ namespace Proof
 	}
 	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint32_t size) {
 		m_VertexSize = size;
+		if (m_VertexSize == 0)
+		{
+			PF_ENGINE_ERROR("Vertex buffer cannot be createed with a size of 0 ");
+			return;
+		}
 		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		VkBufferCreateInfo stagingBufferInfo = {};
@@ -61,7 +66,11 @@ namespace Proof
 	}
 	VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size) {
 		m_VertexSize = size;
-			
+		if (m_VertexSize == 0)
+		{
+			PF_ENGINE_ERROR("Vertex buffer cannot be createed with a size of 0 ");
+			return;
+		}
 		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		Renderer::Submit([&](CommandBuffer* cmdBuffer) {
 			VkBufferCreateInfo vertexBufferInfo = {};
@@ -91,7 +100,10 @@ namespace Proof
 	}
 	void VulkanVertexBuffer::AddData(const void* data, uint32_t size,uint32_t offset){
 		if (size == 0)
+		{
+			PF_ENGINE_ERROR("Vertex buffer cannot add data with a size of 0");
 			return;
+		}
 		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		VkBufferCreateInfo stagingBufferInfo = {};
@@ -127,6 +139,11 @@ namespace Proof
 	VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint32_t size) {
 		m_Size = size * sizeof(uint32_t);
 		m_Count = size;
+		if (m_Size == 0)
+		{
+			PF_ENGINE_ERROR("Index Buffer size of 0 cannot be created");
+			return;
+		}
 		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		VkBufferCreateInfo stagingBufferInfo = {};

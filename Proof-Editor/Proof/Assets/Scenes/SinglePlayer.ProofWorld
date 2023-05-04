@@ -58,6 +58,9 @@ World:
               - Name: SideWayForce
                 Type: Float
                 Data: 200
+              - Name: JumpSpeed
+                Type: Float
+                Data: 35
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]

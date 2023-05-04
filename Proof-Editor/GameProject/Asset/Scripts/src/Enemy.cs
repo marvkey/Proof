@@ -12,6 +12,8 @@ namespace Game
     public class Enemy : Entity
     {
         public Entity MainPlayer;
+
+        float m_Timer = 0.5f;
         void OnCreate()
         {
             MainPlayer = World.TryFindEntityByTag("Player");
@@ -21,8 +23,9 @@ namespace Game
         {
             if (MainPlayer == null) return;
 
-            Log.Info("unoadjsfdnadfnsajndk");
-            if (MainPlayer.GetComponent<TransformComponent>().Location.Z < this.GetComponent<TransformComponent>().Location.Z)
+            if (MainPlayer.GetComponent<TransformComponent>().Location.Z > this.GetComponent<TransformComponent>().Location.Z)
+                m_Timer -= ts;
+            if (m_Timer <= 0)
                 World.DeleteEntity(this);
         }
 
@@ -32,15 +35,9 @@ namespace Game
             if (player != null)
             {
                 player.Destroy();
-                Log.Info($"{GetComponent<TagComponent>().Tag} Removed {player.GetComponent<TagComponent>().Tag} Movment");
-
             }
         }
-
-        void OnDestroy()
-        {
-            Log.Info("destoryed");
-        }
+      
     }
 }
 

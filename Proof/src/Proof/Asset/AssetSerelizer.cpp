@@ -334,7 +334,7 @@ namespace Proof {
 			{
 				uiText.Font = AssetManager::GetAsset<Font>(fontId);
 			}
-			std::string name = texts["Text"].as<std::string>();
+			std::string name = text["Text"].as<std::string>();
 			uiPanel->SetText(uiText, name);
 		}
 		SetID(assetData, uiPanel);

@@ -117,7 +117,7 @@ namespace Proof
 		m_ScreenFrameBuffer->Resize(Vector2{ (float)windowSize.X, (float)windowSize.Y });
 	}
 
-	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewPort, ViewportScissor scissor, bool clearOnLoad, Count<UITable> uiTable)
+	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings,bool clearOnLoad, Count<UITable> uiTable)
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
@@ -198,53 +198,67 @@ namespace Proof
 			
 		}
 		m_Renderer2D->EndContext();
-		m_DebugMeshRenderer->BeginContext(projection, view,location, m_ScreenFrameBuffer, m_CommandBuffer);
 
+		if (renderSettings.ViewColliders)
 		{
-			m_World->ForEachEnitityWith<CubeColliderComponent>([&](Entity entity) {
-				glm::mat4 transform = m_World->GetWorldTransform(entity);
-				auto& collider = *entity.GetComponent<CubeColliderComponent>();
+			m_DebugMeshRenderer->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
 
-				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
-					glm::scale(glm::mat4(1.0f), ProofToglmVec(collider.OffsetScale));
+			{
+				m_World->ForEachEnitityWith<CubeColliderComponent>([&](Entity entity) {
+					glm::mat4 transform = m_World->GetWorldTransform(entity);
+					auto& collider = *entity.GetComponent<CubeColliderComponent>();
 
-				m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetCubeColliderMesh(), transform * colliderTransform);
-			});
+					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
+						glm::scale(glm::mat4(1.0f), ProofToglmVec(collider.OffsetScale));
 
-			m_World->ForEachEnitityWith<SphereColliderComponent>([&](Entity entity) {
-				glm::mat4 transform = m_World->GetWorldTransform(entity);
-				auto& collider = *entity.GetComponent<SphereColliderComponent>();
+					m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetCubeColliderMesh(), transform * colliderTransform);
+				});
 
-				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
-					glm::scale(glm::mat4(1.0f), ProofToglmVec(collider.Radius * 1.0f));
+				m_World->ForEachEnitityWith<SphereColliderComponent>([&](Entity entity) {
+					glm::mat4 transform = m_World->GetWorldTransform(entity);
+					auto& collider = *entity.GetComponent<SphereColliderComponent>();
 
-				m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetSphereColliderMesh(), transform * colliderTransform);
-			});
+					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
+						glm::scale(glm::mat4(1.0f), ProofToglmVec(collider.Radius * 1.0f));
 
-			m_World->ForEachEnitityWith<CapsuleColliderComponent>([&](Entity entity) {
-				glm::mat4 transform = m_World->GetWorldTransform(entity);
-				auto& collider = *entity.GetComponent<CapsuleColliderComponent>();
+					m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetSphereColliderMesh(), transform * colliderTransform);
+				});
 
-				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
-					glm::scale(glm::mat4(1.0f), glm::vec3{collider.Radius*0.5f,collider.Height,collider.Radius* 0.5f });
+				m_World->ForEachEnitityWith<CapsuleColliderComponent>([&](Entity entity) {
+					glm::mat4 transform = m_World->GetWorldTransform(entity);
+					auto& collider = *entity.GetComponent<CapsuleColliderComponent>();
 
-				m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetCapsuleColliderMesh(), transform * colliderTransform);
-			});
+					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
+						glm::scale(glm::mat4(1.0f), glm::vec3{ collider.Radius * 0.5f,collider.Height,collider.Radius * 0.5f });
 
-			m_World->ForEachEnitityWith<MeshColliderComponent>([&](Entity entity) {
-				glm::mat4 transform = m_World->GetWorldTransform(entity);
-				auto& collider = *entity.GetComponent<MeshColliderComponent>();
-				m_DebugMeshRenderer->SubmitMesh(collider.GetMesh(), transform);
-			});
+					m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetCapsuleColliderMesh(), transform * colliderTransform);
+				});
+
+				m_World->ForEachEnitityWith<MeshColliderComponent>([&](Entity entity) {
+					glm::mat4 transform = m_World->GetWorldTransform(entity);
+					auto& collider = *entity.GetComponent<MeshColliderComponent>();
+
+					if (PhysicsMeshCooker::HasMesh(collider.GetMeshSource()))
+					{
+						m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetConvexMeshAsMesh(collider.GetMeshSource()), transform);
+					}
+					else
+					{
+						m_DebugMeshRenderer->SubmitMesh(collider.GetMesh(), transform);
+					}
+				});
+			}
+			m_DebugMeshRenderer->EndContext();
 		}
-		m_DebugMeshRenderer->EndContext();
+		
 		// uiPass
 		if(uiTable != nullptr)
 		{
 			m_UIRenderer->BeginContext(glm::mat4(1.0), glm::mat4(1.0), location, m_ScreenFrameBuffer, m_CommandBuffer);
 			for (auto [panelId, Hud] : uiTable->GetPanels())
 			{
-
+				if (Hud->Visible == false)
+					continue;
 				for (auto& [Id, button] : Hud->GetButtons())
 				{
 					glm::vec2 copy = { button.Postion.x / 4,button.Postion.y / 4 };
@@ -281,7 +295,7 @@ namespace Proof
 
 		Renderer::SubmitCommandBuffer(m_CommandBuffer);
 	}
-	void WorldRenderer::Render(EditorCamera& camera) 
+	void WorldRenderer::Render(EditorCamera& camera, RenderSettings renderSettings)
 	{
 		Viewport viewPort;
 		viewPort.X = 0.0f;
@@ -294,9 +308,9 @@ namespace Proof
 		ViewportScissor scissor;
 		scissor.Offset = { 0,0 };
 		scissor.Extent = { (float)m_ScreenFrameBuffer->GetFrameWidth(),(float)m_ScreenFrameBuffer->GetFrameHeight() };
-		Render(camera.m_Projection, camera.m_View, { camera.m_Positon.x,camera.m_Positon.y,camera.m_Positon.z }, viewPort,scissor);
+		Render(camera.m_Projection, camera.m_View, { camera.m_Positon.x,camera.m_Positon.y,camera.m_Positon.z }, viewPort,scissor,renderSettings);
 	}
-	void WorldRenderer::Render(CameraComponent& camera, Vector& location, Count<UITable> uiTable) {
+	void WorldRenderer::Render(CameraComponent& camera, Vector& location, RenderSettings renderSettings,Count<UITable> uiTable) {
 		Viewport viewPort;
 		viewPort.X = 0.0f;
 		viewPort.Y = 0.0f;
@@ -308,10 +322,10 @@ namespace Proof
 		ViewportScissor scissor;
 		scissor.Offset = { 0,0 };
 		scissor.Extent = {(float) m_ScreenFrameBuffer->GetFrameWidth(),(float)m_ScreenFrameBuffer->GetFrameHeight() };
-		Render(camera.Projection, camera.View, location,viewPort,scissor, true, uiTable);
+		Render(camera.Projection, camera.View, location,viewPort,scissor, renderSettings,true, uiTable);
 	}
-	void WorldRenderer::Render(CameraComponent& camera, Vector& location, Viewport viewport, ViewportScissor scissor, bool clearOnLoad, Count<UITable> uiTable )
+	void WorldRenderer::Render(CameraComponent& camera, Vector& location, Viewport viewport, ViewportScissor scissor, RenderSettings renderSettings,bool clearOnLoad, Count<UITable> uiTable )
 	{
-		Render(camera.Projection, camera.View, location, viewport, scissor, clearOnLoad, uiTable);
+		Render(camera.Projection, camera.View, location, viewport, scissor, renderSettings, clearOnLoad, uiTable);
 	}
 }

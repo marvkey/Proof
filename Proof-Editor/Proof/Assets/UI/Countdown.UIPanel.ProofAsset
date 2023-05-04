@@ -1,0 +1,16 @@
+AssetType: UIPanel
+ID: 16785536633103106005
+Buttons:
+  []
+ImageButtons:
+  []
+Texts:
+  - Text: Countdown
+    Position: [-1.60000002, 3.79999995]
+    Size: [15.1000004, 14.3999996]
+    Rotation: [0, 0]
+    Color: [1, 1, 1, 1]
+    Input: 5
+    Kerning: 0.0250000004
+    LineSpacing: 1
+    Font: 0

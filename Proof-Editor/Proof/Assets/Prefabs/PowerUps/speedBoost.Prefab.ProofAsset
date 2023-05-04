@@ -1,0 +1,39 @@
+AssetType: Prefab
+ID: 9051383557077222183
+EntityOwner: 4380468272541366873
+Entities:
+  - Entity: 4380468272541366873
+    TagComponent:
+      Tag: speedBoost
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 566574579191162934
+      MaterialTable:
+        - Material: ""
+          AssetID: 0
+          Index: 0
+    ScriptComponent:
+      Scripts:
+        - Script: Game.SpeedBoost
+          ScriptFields:
+            []
+    SphereColliderComponent:
+      IsTrigger: true
+      Offset: [0, 0, 0]
+      Radius: 1
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]

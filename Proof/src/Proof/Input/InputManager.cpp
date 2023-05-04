@@ -15,6 +15,7 @@ namespace Proof {
 		std::unordered_map<uint32_t, std::unordered_map<std::string, PlayerActions >> PlayerActions;
 		// (pleyer index, (motion name, Motion))
 		std::unordered_map<uint32_t, std::unordered_map<std::string, PlayerMotion>> PlayerMotions;
+		std::unordered_map<uint32_t, PlayerInputState > PlayerInputState;
 
 		bool Runtime = false;
 		uint32_t PlayerCount = 0;
@@ -25,6 +26,7 @@ namespace Proof {
 	{
 		s_Data->PlayerActions[player] = {};
 		s_Data->PlayerMotions[player] = {};
+		s_Data->PlayerInputState[player] = PlayerInputState::Enabled;
 	}
 
 	void InputManagerMeathods::DeletePlayer(uint32_t player)
@@ -33,11 +35,18 @@ namespace Proof {
 
 		s_Data->PlayerActions.erase(player);
 		s_Data->PlayerMotions.erase(player);
+		s_Data->PlayerInputState.erase(player);
 	}
 
 	bool InputManagerMeathods::HasPlayer(uint32_t player)
 	{
 		return s_Data->PlayerActions.contains(player);
+	}
+	void InputManagerMeathods::SetPlayerInput(uint32_t player,PlayerInputState state)
+	{
+		PF_CORE_ASSERT(HasPlayer(player), "Does not contain player index");
+		s_Data->PlayerInputState[player] = state;
+
 	}
 	void InputManagerMeathods::BindAction(const std::string& name, uint32_t player, InputEvent inputEvent, const std::function<void()>& func) 
 	{
@@ -77,6 +86,7 @@ namespace Proof {
 	void InputManagerMeathods::CallAction(const std::string& name, uint32_t player, InputEvent inputEvent)
 	{
 		PF_CORE_ASSERT(HasPlayer(player), "Does not contain player");
+		if (s_Data->PlayerInputState[player] == PlayerInputState::Disabled)return;
 		auto& actionMapping = s_Data->PlayerActions[player];
 		if (actionMapping.contains(name))
 		{
@@ -91,6 +101,7 @@ namespace Proof {
 	void InputManagerMeathods::CallMotion(const std::string& name, uint32_t player, float motionValue)
 	{
 		PF_CORE_ASSERT(HasPlayer(player), "Does not contain player");
+		if (s_Data->PlayerInputState[player] == PlayerInputState::Disabled)return;
 		auto& motionMapping = s_Data->PlayerMotions[player];
 		if (motionMapping.contains(name))
 		{
@@ -543,18 +554,25 @@ namespace Proof {
 		EventDispatcher dispatcher(e);
 		// KEYBOARD
 		{
-			dispatcher.Dispatch< KeyClickedEvent>(OnKeyClicked);
-			dispatcher.Dispatch<KeyHoldEvent>(OnKeyHold);
-			dispatcher.Dispatch<KeyDoubleClickEvent>(OnKeyDoubleClicked);
-			dispatcher.Dispatch<KeyPressedEvent>(OnKeyPressed);
-			dispatcher.Dispatch<KeyReleasedEvent>(OnKeyReleased);
+			if (InputManagerMeathods::HasPlayer(1))
+			{
+				dispatcher.Dispatch< KeyClickedEvent>(OnKeyClicked);
+				dispatcher.Dispatch<KeyHoldEvent>(OnKeyHold);
+				dispatcher.Dispatch<KeyDoubleClickEvent>(OnKeyDoubleClicked);
+				dispatcher.Dispatch<KeyPressedEvent>(OnKeyPressed);
+				dispatcher.Dispatch<KeyReleasedEvent>(OnKeyReleased);
+			}
 		}
 		//MOUSE
 		{
-			dispatcher.Dispatch<MouseMoveEvent>(OnMouseMoved);
-			dispatcher.Dispatch<MouseButtonClickedEvent>(OnMouseClicked);
-			dispatcher.Dispatch<MouseButtonReleasedEvent>(OnMouseReleased);
-			dispatcher.Dispatch<MouseScrollEvent>(OnMouseScroll); 
+			if (InputManagerMeathods::HasPlayer(1))
+			{
+
+				dispatcher.Dispatch<MouseMoveEvent>(OnMouseMoved);
+				dispatcher.Dispatch<MouseButtonClickedEvent>(OnMouseClicked);
+				dispatcher.Dispatch<MouseButtonReleasedEvent>(OnMouseReleased);
+				dispatcher.Dispatch<MouseScrollEvent>(OnMouseScroll);
+			}
 		}
 		// CONTROLLER
 		{

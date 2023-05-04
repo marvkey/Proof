@@ -89,6 +89,12 @@ namespace Proof
         public UIBaseData BaseData;
         public ImageAsset ImageAssetID;
     }
+    struct UITextData
+    {
+        public UIBaseData BaseData;
+        public float Kerning;
+        public float LineSpacing;
+    }
     public class UIButtonImage : UIComponent
     {
         UiImageButtonData ButtonData
@@ -162,18 +168,120 @@ namespace Proof
 
     public class UIText : UIComponent
     {
+        UITextData TextData
+        {
+            get
+            {
+                InternalCalls.PlayerHUDComponent_GetTextData(Entity.ID, TableIndex, Name, out UITextData data, out string text);
+                return data;
+            }
+            set
+            {
+                InternalCalls.PlayerHUDComponent_GetTextData(Entity.ID, TableIndex, Name, out UITextData data, out string text);
+                InternalCalls.PlayerHUDComponent_SetTextData(Entity.ID, TableIndex, Name, ref value, ref text);
+            }
+        }
 
+        public string Text
+        {
+            get
+            {
+                InternalCalls.PlayerHUDComponent_GetTextData(Entity.ID, TableIndex, Name, out UITextData data, out string text);
+                return text;
+            }
+            set
+            {
+                InternalCalls.PlayerHUDComponent_GetTextData(Entity.ID, TableIndex, Name, out UITextData data, out string text);
+                InternalCalls.PlayerHUDComponent_SetTextData(Entity.ID, TableIndex, Name, ref data, ref value);
+            }
+        }
+
+
+        public Vector2 Position
+        {
+            get
+            {
+                return TextData.BaseData.Position;
+            }
+            set
+            {
+                UITextData copy = TextData;
+                copy.BaseData.Position = value;
+                TextData = copy;
+            }
+        }
+        public Vector2 Rotation
+        {
+            get { return TextData.BaseData.Rotation; }
+            set
+            {
+                UITextData copy = TextData;
+                copy.BaseData.Rotation = value;
+                TextData = copy;
+            }
+
+        }
+        public Vector2 Size
+        {
+            get { return TextData.BaseData.Size; }
+            set
+            {
+                UITextData copy = TextData;
+                copy.BaseData.Size = value;
+                TextData = copy;
+            }
+        }
+        public Vector4 Color
+        {
+            get { return TextData.BaseData.Color; }
+
+            set
+            {
+                UITextData copy = TextData;
+                copy.BaseData.Color = value;
+                TextData = copy;
+            }
+        }
+        public float Kerning
+        {
+            get { return TextData.Kerning; }
+            set
+            {
+                UITextData copy = TextData;
+                copy.Kerning = value;
+                TextData = copy;
+            }
+        }
+        public float LineSpacing
+        {
+            get { return TextData.LineSpacing; }
+            set
+            {
+                UITextData copy = TextData;
+                copy.LineSpacing = value;
+                TextData = copy;
+            }
+        }
     }
 
     public class UIPanel
     {
         public uint TableIndex { get; internal set; }
         public Entity Entity { get; internal set; }
+        
 
         internal UIPanel(uint index, Entity entity)
         {
             Entity = entity;
             TableIndex = index;
+        }
+        public bool Visible
+        {
+            get { return InternalCalls.PlayerHUDComponent_GetVisible(Entity.ID, TableIndex);  }
+            set
+            {
+                InternalCalls.PlayerHUDComponent_SetVisible(Entity.ID, TableIndex, ref value);
+            }
         }
         public UIButton GetUIButton(string name) {
             if (InternalCalls.PlayerHUDComponent_HasButton(Entity.ID, TableIndex, name))

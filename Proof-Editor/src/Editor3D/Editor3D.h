@@ -123,7 +123,7 @@ namespace Proof {
 		void NewWorld();
 		Special<WorldRenderer> m_WorldRenderer;
 
-
+		RenderSettings m_RenderSettings;
 		std::unordered_map<Players, Count<WorldRenderer>> m_MultiplayerRender;
 
 		uint32_t m_PlayersCount = 1;

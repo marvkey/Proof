@@ -4,6 +4,10 @@
 #include "Proof/Scene/World.h"
 namespace Proof
 {
+	struct RenderSettings 
+	{
+		bool ViewColliders = false;
+	};
 	class WorldRenderer {
 	public:
 		WorldRenderer()=default;
@@ -16,17 +20,16 @@ namespace Proof
 		}
 		
 		void Clear();
-		void Render(EditorCamera& camera);
-		void Render(CameraComponent& comp, Vector& location, Count<UITable> uiTable =nullptr);
-		void Render(CameraComponent& comp, Vector& location, Viewport viewport, ViewportScissor scissor, bool clearPreviousFrame = true, Count<UITable> uiTable = nullptr);
+		void Render(EditorCamera& camera, RenderSettings renderSettings);
+		void Render(CameraComponent& comp, Vector& location, RenderSettings renderSettings,Count<UITable> uiTable =nullptr);
+		void Render(CameraComponent& comp, Vector& location, Viewport viewport, ViewportScissor scissor, RenderSettings renderSettings,bool clearPreviousFrame = true, Count<UITable> uiTable = nullptr);
 		Image GetImage(){
 			return m_ScreenFrameBuffer->GetImage();
 		}
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
-		
 
 	private:
-		void Render(const glm::mat4&projection, const glm::mat4& view,const Vector& location, Viewport viewPort, ViewportScissor scissor, bool clearPreviousFrame = true, Count<UITable> uiTabel = nullptr);
+		void Render(const glm::mat4&projection, const glm::mat4& view,const Vector& location, Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings,bool clearPreviousFrame = true, Count<UITable> uiTabel = nullptr);
 
 		Special<Renderer3DPBR> m_Renderer3D;
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;

@@ -50,6 +50,8 @@ namespace Proof {
         m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
         m_Window->SetEventCallback([this](Event& e) {OnEvent(e); });
         RendererBase::Init(static_cast<Window*>(m_Window.get()));
+        ImGuiMainLayer = new ImGuiLayer();
+        MainLayerStack.PushLayer(ImGuiMainLayer);
 
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
@@ -58,8 +60,7 @@ namespace Proof {
 
         PhysicsEngine::Init();
         ScriptEngine::Init();
-        ImGuiMainLayer = new ImGuiLayer();
-        MainLayerStack.PushLayer(ImGuiMainLayer);
+;
 
         PF_ENGINE_TRACE("Engine Load Done");
     }

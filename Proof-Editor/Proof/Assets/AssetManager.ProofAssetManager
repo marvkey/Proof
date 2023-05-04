@@ -92,6 +92,9 @@ Assets:
   - Asset: 5444296356632275682
     Type: Texture
     Path: Models\sponza\5792855332885324923.Texture.ProofAsset
+  - Asset: 7317233367818780658
+    Type: Mesh
+    Path: Mesh\RampObstacle.Mesh.ProofAsset
   - Asset: 6008439512829965240
     Type: Material
     Path: Material\Yellow.Material.ProofAsset
@@ -170,6 +173,9 @@ Assets:
   - Asset: 5716039310843167148
     Type: TextureSourceFile
     Path: Models\sponza\2185409758123873465.jpg
+  - Asset: 17579205707960480452
+    Type: MeshSourceFile
+    Path: Models\ramp.fbx
   - Asset: 15617481969196675214
     Type: Texture
     Path: Models\sponza\17876391417123941155.Texture.ProofAsset
@@ -185,12 +191,12 @@ Assets:
   - Asset: 4470052075513253391
     Type: Texture
     Path: Models\sponza\8481240838833932244.Texture.ProofAsset
-  - Asset: 7639213810905814004
-    Type: Texture
-    Path: Models\sponza\2969916736137545357.Texture.ProofAsset
   - Asset: 3792275242324487702
     Type: TextureSourceFile
     Path: Models\sponza\6772804448157695701.jpg
+  - Asset: 7639213810905814004
+    Type: Texture
+    Path: Models\sponza\2969916736137545357.Texture.ProofAsset
   - Asset: 5306886724956390622
     Type: Prefab
     Path: Prefabs\PowerUps\Explosive.Prefab.ProofAsset
@@ -254,3 +260,30 @@ Assets:
   - Asset: 16359374454295279052
     Type: Prefab
     Path: Prefabs\PowerUps\Shock.Prefab.ProofAsset
+  - Asset: 1607569046936484718
+    Type: Prefab
+    Path: Prefabs\mObstacle.Prefab.ProofAsset
+  - Asset: 5615780023732569603
+    Type: Prefab
+    Path: Prefabs\plane.Prefab.ProofAsset
+  - Asset: 12143617232921481109
+    Type: MeshSourceFile
+    Path: Models\boxObstacleOpener.fbx
+  - Asset: 15639346670585879852
+    Type: Mesh
+    Path: Mesh\meshobstacleDorr.Mesh.ProofAsset
+  - Asset: 16366832242524300474
+    Type: Prefab
+    Path: Prefabs\physicsCube.Prefab.ProofAsset
+  - Asset: 9051383557077222183
+    Type: Prefab
+    Path: Prefabs\PowerUps\speedBoost.Prefab.ProofAsset
+  - Asset: 5938616521392695289
+    Type: Prefab
+    Path: Prefabs\meshobstacleDorr.Prefab.ProofAsset
+  - Asset: 4219147424771132432
+    Type: Prefab
+    Path: Prefabs\RampObstacle.Prefab.ProofAsset
+  - Asset: 16785536633103106005
+    Type: UIPanel
+    Path: UI\Countdown.UIPanel.ProofAsset

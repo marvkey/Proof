@@ -265,6 +265,11 @@ namespace Proof {
 	}
 	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, TransformComponent transfom, EntityID id)
 	{
+		/**
+		 * when an entity with sub children has rigid body this fucntions crahses 
+		 * it could be a problem with the emplace or replace in the copy compoentnt single
+		 * 
+		 */
 		Entity newEntity = CreateEntity(name, id);
 		
 		std::unordered_map<UUID, uint64_t> enttMap;
@@ -427,12 +432,7 @@ namespace Proof {
 				hud.HudTable = Count<UITable>::Create(hud.HudTable->Generate());
 			}
 		});
-		m_PhysicsWorld = new PhysicsWorld(this, PhysicsWorldConfig());
-		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
-		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
-
-		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
-		m_Registry.on_destroy<ScriptComponent>().connect<&World::OnScriptDelete>(this);
+	
 		{
 			const auto& scriptView = m_Registry.view<NativeScriptComponent>();
 			for (auto entity : scriptView)
@@ -461,9 +461,12 @@ namespace Proof {
 		}
 		///
 		///
-	
+		m_PhysicsWorld = new PhysicsWorld(this, PhysicsWorldConfig());
+		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
+		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
 
-
+		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
+		m_Registry.on_destroy<ScriptComponent>().connect<&World::OnScriptDelete>(this);
 	}
 	void World::EndRuntime() {
 		InputManager::EndRuntime();
@@ -492,11 +495,16 @@ namespace Proof {
 	}
 
 	Entity World::FindEntityByTag(const std::string& tag) {
+		Entity returnEntity;
 		ForEachEnitityWith<TagComponent>([&](Entity& entity) {
 			if (entity.GetComponent<TagComponent>()->Tag == tag)
-				return entity;
+			{
+				returnEntity = entity;
+				return;
+			}
+
 		});
-		return { 0, nullptr };
+		return returnEntity;
 	}
 
 	Vector World::GetWorldLocation(Entity entity) const {
