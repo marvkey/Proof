@@ -388,11 +388,12 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Layer::OnImGuiDraw(DeltaTime);
-		ImGui::ShowDemoWindow();
-
+		//ImGui::ShowDemoWindow();
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
+
 		MainToolBar();
+
 		ViewPort();
 		
 		for (auto& a : m_AllPanels) {

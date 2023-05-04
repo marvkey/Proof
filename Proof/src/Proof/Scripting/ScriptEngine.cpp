@@ -713,7 +713,7 @@ namespace Proof
         }
         else
         {
-            PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID, entity.GetName());
+            //PF_ENGINE_ERROR("Could not find ScriptInstance for entity {}  entityy Tag {}", entityUUID, entity.GetName());
         }
     }
 
