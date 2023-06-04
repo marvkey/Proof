@@ -61,6 +61,7 @@ namespace Proof
 		virtual bool HasColorAttachment();
 		virtual void Resize(Vector2 imageSize);
 
+		virtual void Copy(Count<FrameBuffer> framebUFFer);
 	private:
 		void Init();
 		void SetUpAttachments();
@@ -77,6 +78,7 @@ namespace Proof
 
 		void CreateFramebuffer();
 		void Release();
+		friend class VulkanSwapChain;
 	};
 	
 }

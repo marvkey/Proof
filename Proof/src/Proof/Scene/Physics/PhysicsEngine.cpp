@@ -59,10 +59,10 @@ namespace Proof {
 	void PhysicsEngine::Release()
 	{
 		PhysicsMeshCooker::Release();
-		s_Pvd->release();
 		s_Physics->release();
-		s_Foundation->release();
 		s_Dispatcher->release();
+		s_Pvd->release();
+		s_Foundation->release();
 	}
 	void PhysicsErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
 	{

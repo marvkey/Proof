@@ -1,8 +1,8 @@
 AssetType: Prefab
-ID: 17662049752082377387
-EntityOwner: 4356811072826522224
+ID: 2160014749406616865
+EntityOwner: 6980777423027814910
 Entities:
-  - Entity: 4356811072826522224
+  - Entity: 6980777423027814910
     TagComponent:
       Tag: obstacle
       tags: []
@@ -17,7 +17,7 @@ Entities:
       MeshAssetPointerID: 4645041025570573733
       MaterialTable:
         - Material: ""
-          AssetID: 0
+          AssetID: 16233326068385086713
           Index: 0
     ScriptComponent:
       Scripts:

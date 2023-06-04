@@ -11,6 +11,7 @@ namespace Proof
 		while (ApplicationRun == true) {
 			Proof::Application* Proof = Proof::CreateApplication(argc, argv);
 			Proof->Run();
+			ApplicationRun = !Proof->GetApplicationShouldShutdown();
 			delete Proof;
 		}
 		return 0;

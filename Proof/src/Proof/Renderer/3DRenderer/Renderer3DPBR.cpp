@@ -182,6 +182,7 @@ namespace Proof
 	}
 	void Renderer3DPBR::SetPasses()
 	{
+		PF_PROFILE_FUNC();
 		// camera data
 		m_RenderStorage->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 
@@ -248,6 +249,7 @@ namespace Proof
 	void Renderer3DPBR::RenderMesh()
 	{
 		if (m_MeshPipeLine->ElementsImplaced.empty())return;
+		PF_PROFILE_FUNC();
 
 		auto descriptor0 = m_MeshPipeLine->Descriptors[DescriptorSets::Zero];
 		auto descriptor1 = m_MeshPipeLine->Descriptors[DescriptorSets::One];
@@ -269,9 +271,10 @@ namespace Proof
 					auto material = mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex);
 					Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
  					descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
-					//descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
-					//descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);
-					//descriptor1->WriteImage((int)DescriptorSet1::RoughnessMap, material->RoughnessTexture != nullptr ? material->RoughnessTexture : whiteTexture);
+					descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);
+					descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
+					descriptor1->WriteImage((int)DescriptorSet1::RoughnessMap, material->RoughnessTexture != nullptr ? material->RoughnessTexture : whiteTexture);
+
 					descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
 
 					subMesh.VertexBuffer->Bind(m_RenderStorage->CommandBuffer);
@@ -287,6 +290,7 @@ namespace Proof
 	void Renderer3DPBR::RenderMeshMaterial()
 	{
 		if (m_MeshMaterialPipeline->ElementsImplaced.empty())return;
+		PF_PROFILE_FUNC();
 
 		auto descriptor0 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::Zero];
 		auto descriptor1 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::One];
@@ -310,6 +314,15 @@ namespace Proof
 						materialData.Colour = material->Colour;
 						materialData.Metallness = material->Metallness;
 						materialData.Roughness = material->Roughness;
+						materialData.Tiling = material->Tiling;
+						materialData.Offset = material->Offset;
+						//materialData.Offset = { 0,0 };
+						//materialData.Tiling = { 0,0 };
+						if (material->UsePBR)
+							materialData.UsePBR = 1;
+						else
+							materialData.UsePBR = 0;
+						//materialData.UsePBR =(int) material->UsePBR;
 
 						Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
 						descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
@@ -333,11 +346,13 @@ namespace Proof
 	}
 	void Renderer3DPBR::MeshPass()
 	{
+		PF_PROFILE_FUNC();
 		RenderMesh();
 		RenderMeshMaterial();
 	}
 	
 	void Renderer3DPBR::DrawContext() {
+		PF_PROFILE_FUNC();
 		SetPasses();
 		MeshPass();
 	}
@@ -439,12 +454,13 @@ namespace Proof
 		meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
 		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
 		GraphicsPipelineConfig graphicsPipelineConfig;
-		graphicsPipelineConfig.DebugName = "Mesh";
+		graphicsPipelineConfig.DebugName = "Material ";
 		graphicsPipelineConfig.Shader = Shader;
 		graphicsPipelineConfig.VertexArray = meshVertexArray;
 		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
 		graphicsPipelineConfig.RenderPass = renderPass;
 
+		//graphicsPipelineConfig.Blend = true;
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
 }

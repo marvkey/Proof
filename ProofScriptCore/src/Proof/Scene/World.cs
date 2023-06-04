@@ -9,6 +9,18 @@ namespace Proof
 {
     public static class World
     {
+        public static void Play()
+        {
+            InternalCalls.World_Play();
+        }
+        public static void Pause()
+        {
+            InternalCalls.World_Pause();
+        }
+        public static bool OpenWorld(ulong id)
+        {
+            return InternalCalls.World_OpenWorld(id);
+        }
         public static Entity Instanciate(Prefab prefab, Transform transform)
         {
             ulong entityID = InternalCalls.World_Instanciate(prefab.ID, transform);
@@ -48,6 +60,40 @@ namespace Proof
         public static float GetTimeStep()
         {
             return InternalCalls.World_GetTimeStep();
+        }
+        public static void Restart()
+        {
+            InternalCalls.World_Restart();
+        }
+        public static T[] GetEntityWithType<T>() where T : Entity, new()
+        {
+            ulong[] list =null;
+            InternalCalls.World_ForEachEntityWith(typeof(T).FullName, ref list);
+
+            if (list == null)
+            {
+                list = new ulong[] { };
+                T[] scriptslist = new T[list.Length];
+                int index = 0;
+                foreach (ulong entityID in list)
+                {
+                    Entity entity = new Entity(entityID);
+                    scriptslist[index] = entity.As<T>();
+                    index++;
+                }
+                return scriptslist;
+            }
+            {
+                T[] scriptslist = new T[list.Length];
+                int index = 0;
+                foreach (ulong entityID in list)
+                {
+                    Entity entity = new Entity(entityID);
+                    scriptslist[index] = entity.As<T>();
+                    index++;
+                }
+                return scriptslist;
+            }
         }
     }
 }

@@ -12,6 +12,11 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Scene/Script.h"
 #include "ImGui/imgui_impl_vulkan.h"
+#include <thread>
+#include <future>
+#include <algorithm>
+#include <iostream>
+#include <vector>
 #include <Windows.h>
 #include <stdio.h> 
 #include "ImGUIAPI.h"
@@ -39,6 +44,7 @@
 
 #include "MainWindow/GuiPanel.h"
 #include "Proof/Project/ProjectSerilizer.h"
+#include "Proof/Renderer/ParticleSystem.h"
 namespace Proof
 {
 	static bool s_DetachPlayer = false;
@@ -249,17 +255,15 @@ namespace Proof
 			SceneSerializer scerelizer(m_ActiveWorld.Get());
 			auto path = Application::Get()->GetProject()->GetAssetFileSystemPath(Info.Path);
 			if (scerelizer.DeSerilizeText(path.string()) == true) {
-				m_WorldHierachy.SetContext(m_ActiveWorld.Get());
+				m_WorldHierachy.SetContext(m_ActiveWorld);
 				AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
 			}
 		}
 		//ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
 		SceneSerializer scerelizer(m_ActiveWorld.Get());
-		
-		//Count<Panel> panel = Count<GuiPanel>::Create(Count<UIPanel>::Create());
-		//m_AllPanels.insert({ UUID(),panel});
 
-		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
+
+		m_WorldHierachy.SetContext(m_ActiveWorld);
 		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_ActiveWorld, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 		// cannot be setting it to window size and stuff innit
 		m_EditorWorld = m_ActiveWorld;
@@ -272,13 +276,17 @@ namespace Proof
 
 		m_PlayersCount = 4;
 
+		
+
 	}
 	void Editore3D::OnDetach() {
+
 		if (m_EditorWorld != nullptr) { // using editor world in case active world is on play
 			SceneSerializer scerelizer(m_EditorWorld.Get());
 			auto assetInfo = AssetManager::GetAssetInfo(m_EditorWorld->GetID());
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 		}
+		AssetManager::SaveAllAssets();
 	}
 
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
@@ -295,46 +303,56 @@ namespace Proof
 		switch (m_ActiveWorld->GetState()) {
 			case Proof::WorldState::Play:
 				{
-					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
 
 					int player = 1;
-					if (m_PlayersCount > 1 && Mouse::IsMouseCaptured() && s_DetachPlayer == false)
+					if (m_PlayersCount > 1 && s_DetachPlayer == false && m_ActiveWorld->GetNumComponents<PlayerInputComponent>() > 0)
 					{
 
 						m_ActiveWorld->ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
 							PlayerInputComponent& input = *entity.GetComponent<PlayerInputComponent>();
-							if ((int)input.InputPlayer < m_PlayersCount)
+							if ((int)input.InputPlayer < m_PlayersCount && input.InputPlayer == Players::Player0)
 							{
 								Entity cameraEntity = entity.GetCamera();
 								if (cameraEntity)
 								{
 									auto camera =cameraEntity.GetComponent<CameraComponent>();
-									uint32_t windowWIdth = m_ViewPortSize.x / 2;
+									uint32_t windowWIdth = m_ViewPortSize.x ;
 									uint32_t windowHeight = m_ViewPortSize.y ;
 									auto location = m_ActiveWorld->GetWorldLocation(cameraEntity);
 									Vector rotation;
 									if (camera->UseLocalRotation)
 										rotation = cameraEntity.GetComponent<TransformComponent>()->Rotation;
 									else
-										rotation = m_ActiveWorld->GetWorldRotation(entity);
+										rotation = m_ActiveWorld->GetWorldRotation(cameraEntity);
 									camera->Width = windowWIdth;
 									camera->Height = windowHeight;
 									camera->CalculateProjection(location, rotation);
 									m_WorldRenderer->Clear();
-									
+									std::vector<std::future<void>> renders;
 									if (m_MultiplayerRender.contains(input.InputPlayer))
 									{
-										m_MultiplayerRender[input.InputPlayer]->Resize({ windowWIdth, windowHeight });
-										if(entity.HasComponent<PlayerHUDComponent>() )
-											m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, m_RenderSettings,entity.GetComponent<PlayerHUDComponent>()->HudTable);
+										if(m_IsViewPortResize)
+											m_MultiplayerRender[input.InputPlayer]->Resize({ windowWIdth, windowHeight });
+										if (entity.HasComponent<PlayerHUDComponent>())
+										{
+											//renders.push_back(std::async(std::launch::async, [&]() {
+												m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, m_RenderSettings,entity.GetComponent<PlayerHUDComponent>()->HudTable);
+											//}));
+										}
 										else
-										m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, m_RenderSettings);
+										{
+											//renders.push_back(std::async(std::launch::async, [&]() {
+												m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, m_RenderSettings);
+											//}));
+
+										}
+										//if(renders)
 									}
 								}
 							}
 						});
 					}
-					else if (m_ActiveWorld->HasWorldCamera() && Mouse::IsMouseCaptured() && s_DetachPlayer == false) {
+					else if (m_ActiveWorld->HasWorldCamera() && s_DetachPlayer == false) {
 						auto entity = m_ActiveWorld->GetWorldCameraEntity();
 						auto location = m_ActiveWorld->GetWorldLocation(entity);
 						Vector rotation;
@@ -345,13 +363,18 @@ namespace Proof
 						entity.GetComponent<CameraComponent>()->Width = m_ViewPortSize.x;
 						entity.GetComponent<CameraComponent>()->Height = m_ViewPortSize.y;
 						entity.GetComponent<CameraComponent>()->CalculateProjection(location, rotation);
-						m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location, m_RenderSettings);
+						if (!entity.HasComponent<PlayerHUDComponent>())
+							m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location, m_RenderSettings);
+						else
+							m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location, m_RenderSettings, entity.GetComponent<PlayerHUDComponent>()->HudTable);
 					}
 					else
 					{
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 						m_WorldRenderer->Render(m_EditorCamera, m_RenderSettings);
 					}
+					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
+
 					break;
 				}
 			case Proof::WorldState::Pause:
@@ -945,7 +968,7 @@ namespace Proof
 				m_ViewPortFocused = false;
 				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
-			if (m_ActiveWorld->IsPlaying() && m_PlayersCount > 1 && s_DetachPlayer == false)
+			if (m_ActiveWorld->IsPlaying() && m_PlayersCount > 1 && s_DetachPlayer == false && m_ActiveWorld->GetNumComponents<PlayerInputComponent>() >0 )
 			{
 				//(input, entity ID)
 				std::map<int, uint64_t> inputs;
@@ -955,20 +978,20 @@ namespace Proof
 					inputs[(int)input.InputPlayer] = entity.GetEntityID();
 				});
 
-				switch (inputs.size())
+				switch (m_PlayersCount)
 				{
 					case 4:
 						{
 							auto element = inputs.begin();
-							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)inputs.begin()->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y / 2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-							element++;
-							ImGui::SameLine();
-							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x/2,m_ViewPortSize.y/2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-
-							element++;
-							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y / 2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-							ImGui::SameLine();
-							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y / 2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)inputs.begin()->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y  }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							//element++;
+							//ImGui::SameLine();
+							//ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x/2,m_ViewPortSize.y/2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							//
+							//element++;
+							//ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y / 2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							//ImGui::SameLine();
+							//ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y / 2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
 						}
 
@@ -1066,7 +1089,7 @@ namespace Proof
 					m_EditorWorld = Count<World>::Create();
 					m_ActiveWorld = m_EditorWorld;
 					m_WorldRenderer->SetContext(m_ActiveWorld);
-					m_WorldHierachy.SetContext(m_ActiveWorld.Get());
+					m_WorldHierachy.SetContext(m_ActiveWorld);
 					SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 					m_WorldHierachy.m_SelectedEntity = {};
 
@@ -1177,6 +1200,12 @@ namespace Proof
 		if (ImGui::DragInt("PlayerCount", &playerCount, 1, 1, 4))
 		{
 			m_PlayersCount = playerCount;
+		}
+		// scene is playing
+		if (state == "Stop")
+		{
+			ImGui::SameLine();
+			ImGui::Checkbox("Detach Player", &s_DetachPlayer);
 		}
 		ImGui::End();
 
@@ -1314,7 +1343,7 @@ namespace Proof
 		m_EditorWorld = Count<World>::Create();
 		m_ActiveWorld = m_EditorWorld;
 		m_WorldRenderer->SetContext(m_EditorWorld);
-		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
+		m_WorldHierachy.SetContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 		m_WorldHierachy.m_SelectedEntity = {};
 	}
@@ -1324,7 +1353,7 @@ namespace Proof
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
-		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
+		m_WorldHierachy.SetContext(m_ActiveWorld);
 		m_WorldRenderer->SetContext(m_ActiveWorld);
 
 		if (m_ClearLogOnPlay)
@@ -1333,9 +1362,9 @@ namespace Proof
 		m_WorldHierachy.m_SelectedEntity = {};
 
 		m_ActiveWorld->StartRuntime();
-
-		if (m_PlayersCount > 1)
+			
 		{
+			
 			for (int i = 0; i < m_PlayersCount; i++)
 			{
 				if (m_MultiplayerRender[(Players)(i + 1)] == nullptr)
@@ -1344,7 +1373,7 @@ namespace Proof
 					m_MultiplayerRender[(Players)(i + 1)]->SetContext(m_ActiveWorld);
 			}
 		}
-		Mouse::CaptureMouse(true);
+		//Mouse::CaptureMouse(true);
 	}
 	void Editore3D::SimulateWorld() {
 		s_DetachPlayer = false;
@@ -1354,9 +1383,10 @@ namespace Proof
 		//GuizmoType = 0;
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;
-		m_WorldHierachy.SetContext(m_ActiveWorld.Get());
+		m_WorldHierachy.SetContext(m_ActiveWorld);
 		m_WorldRenderer->SetContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
+		s_DetachPlayer = false;
 	}
 	void Editore3D::PauseWorld() {
 		m_ActiveWorld->m_CurrentState = WorldState::Pause;
@@ -1401,6 +1431,12 @@ namespace Proof
 			case AssetType::UIPanel:
 				{
 					Count<Panel> panel = Count<GuiPanel>::Create(AssetManager::GetAsset<UIPanel>(ID));
+					m_AllPanels.insert({ ID,panel });
+					return true;
+				}
+			case AssetType::ParticleSystem:
+				{
+					Count<ParticleSystemPanel> panel = Count<ParticleSystemPanel>::Create(AssetManager::GetAsset<ParticleSystem>(ID));
 					m_AllPanels.insert({ ID,panel });
 					return true;
 				}

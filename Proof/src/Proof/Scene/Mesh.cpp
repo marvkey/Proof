@@ -127,6 +127,8 @@ namespace Proof{
             if (aimat->GetTexture(textureType, 0, &strFilePath) == aiReturn_SUCCESS)
             {
                 std::string textureFilePath = (m_Path.parent_path() /= strFilePath.C_Str()).string();
+                //textureFilePath = std::filesystem::(textureFilePath, Application::).string();
+                //AssetManager::GetAssetFileSystemPath
                 std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
                 // checking if has the texturer source file
 
@@ -136,16 +138,27 @@ namespace Proof{
                     PF_EC_WARN("Getting mehs texture this way is risky what if the name changes");
                     std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
                     path += ".Texture.ProofAsset";
-                    texture = AssetManager::GetAsset<Texture2D>(path);
-
+                    if(AssetManager::HasAsset(path))
+                        texture = AssetManager::GetAsset<Texture2D>(path);
+                    else
+                    {
+                        
+                        AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
+                        Count<Asset> asset = Texture2D::Create(textureFilePath);
+                        AssetManager::NewAsset(asset, path);
+                        texture = AssetManager::GetAsset<Texture2D>(path);
+                       // PF_EC_CRITICAL("Proof Should not be using raw texture file to create meshes causes an error for invalid descript set");
+                        //texture = Texture2D::Create(textureFilePath);
+                    }
                 }
                 else
                 {
-
+                    std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
+                    path += ".Texture.ProofAsset";
                     AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
                     Count<Asset> asset = Texture2D::Create(textureFilePath);
-                    AssetManager::NewAsset(asset, textureFilePath);
-                    texture = AssetManager::GetAsset<Texture2D>(textureFilePath);
+                    AssetManager::NewAsset(asset, path);
+                    texture = AssetManager::GetAsset<Texture2D>(path);
                 }
             }
         };

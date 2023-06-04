@@ -6,13 +6,24 @@ namespace Proof
 {
 	public static class InternalCalls
 	{
-		#region Log
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void ApplyCameraRotate(ulong entityID);
+        
+        #region Log
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void Log_Message(int logType, string message);
-		#endregion
+        #endregion
 
-		#region Input
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+        #region Mouse
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Mouse_CaptureMouse(bool caputre);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Mouse_IsMouseCaptured();
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Mouse_GetPosition(out Vector2 pos);
+        #endregion
+        #region Input
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Input_IsKeyClicked(int keycode);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -40,11 +51,25 @@ namespace Proof
 		internal extern static bool Input_IsMouseButtonDoubleClicked(int mouseCode);
         #endregion
 
+        #region Application
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Application_Shutdown();
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float Application_GetFPS();
+        #endregion
         #region World
 
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
 		//returns entity ID
         internal extern static ulong World_Instanciate(ulong prefabID, Transform transform);
+
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void World_Pause();
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void World_Play();
+
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool World_OpenWorld(ulong worldID);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         //returns entity ID
@@ -53,12 +78,23 @@ namespace Proof
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern	static void World_DeleteEntity(ulong entityID, bool deleteChildren);
 
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void World_Restart();
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static float World_GetTimeStep();
+
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        //returns entity ID of objects with class naem
+        internal extern static void World_ForEachEntityWith(string className, ref ulong[] types);
         #endregion
 
         #region Entity
+
+        //returns entity of id
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Entity_GetChildren(ulong entityID, ref ulong[] types);
+
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
 
@@ -214,6 +250,34 @@ namespace Proof
         internal extern static void PlayerHUDComponent_GetTextData(ulong entityID, uint tableIndex, string textname, out UITextData textData, out string text);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void PlayerHUDComponent_SetTextData(ulong entityID, uint tableIndex, string textname, ref UITextData textData, ref string text);
+        #endregion
+
+        #region ParticleSystemComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool ParticleSystemComponent_HasParticleIndex(ulong entityID, uint tableIndex);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool ParticleSystemComponent_ParticleIndexHasParticle(ulong entityID, uint tableIndex);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool ParticleSystemComponent_GetVisible(ulong entityID, uint tableIndex);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void ParticleSystemComponent_SetVisible(ulong entityID, uint tableIndex, ref bool visible);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void ParticleSystemComponent_Play(ulong entityID, uint tableIndex);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void ParticleSystemComponent_Pause(ulong entityID, uint tableIndex);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void ParticleSystemComponent_End(ulong entityID, uint tableIndex);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void ParticleSystemComponent_Restart(ulong entityID, uint tableIndex);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static int ParticleSystemComponent_GetState(ulong entityID, uint tableIndex);
+        
+        //returns all particle indexes
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void ParticleSystemComponent_GetParticles(ulong entityID, ref uint[] types);
         #endregion
     }
 }

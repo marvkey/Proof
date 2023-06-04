@@ -7,6 +7,12 @@
 #include "Proof/Scene/Physics/PhysicsWorld.h"
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Input/InputManager.h"
+#include <mono/metadata/appdomain.h>
+#include "Proof/Scene/SceneSerializer.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include "Proof/Input/Mouse.h"
 //(IMPORTANT)
 /*
 *WHEN PASSING A MONO TYPE MAKE SURE ITS A SRUCT BECAUSE WHEN ITS A CLASS IT GETS SOME UNDEFNIED BEHAVIOR
@@ -25,6 +31,29 @@ namespace Proof
 		mono_add_internal_call("Proof.InternalCalls::" #Name, (void*)Name);\
 		PF_ENGINE_TRACE("	C# registered function {}", #Name);\
 	}
+
+	static void ApplyCameraRotate(uint64_t entityID) 
+	{
+		return;
+		World* world = ScriptEngine::GetWorldContext();
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("World.DeleteEntity  - entity is invalid");
+			return;
+		}
+		#endif
+		glm::quat quaternionRotation = glm::quat(glm::radians(ProofToglmVec(world->GetWorldRotation(entity))));
+		float playerRotationZ = glm::degrees(glm::eulerAngles(quaternionRotation).y);
+		glm::mat4 cameraRotation = glm::rotate(glm::mat4(1.0f), glm::radians(playerRotationZ), glm::vec3(0.0f, 1.0f, 0.0f));
+		quaternionRotation = glm::quat_cast(cameraRotation);
+
+		glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(quaternionRotation));
+		entity.GetCamera().GetComponent<TransformComponent>()->Rotation.Z = entity.GetComponent<TransformComponent>()->Rotation.Z;
+		entity.GetCamera().GetComponent<TransformComponent>()->Rotation.Z += 90;
+	}
 #pragma region Log
 	static void Log_Message(int logType, MonoString* message) {
 		std::wstring ws = mono_string_chars(message);
@@ -32,6 +61,32 @@ namespace Proof
 		Log::AppendString(logType, Proof::Log::GetClientLogger()->GetLogString(str));
 	}
 #pragma endregion 
+
+	#pragma region Application 
+	static void Application_Shutdown()
+	{
+		Application::Get()->ShutDown();
+	}
+
+	static float Application_GetFPS()
+	{
+		return Application::GetFPS();
+	}
+	#pragma endregion 
+	#pragma region Mouse
+	static void Mouse_CaptureMouse(bool caputre) 
+	{
+		Mouse::CaptureMouse(caputre);
+	}
+
+	static void Mouse_GetPosition(Vector2* pos) {
+		*pos = { Mouse::GetPosX(),Mouse::GetPosY() };
+	}
+	static bool Mouse_IsMouseCaptured() 
+	{
+		return Mouse::IsMouseCaptured();
+	}
+	#pragma endregion
 
 	#pragma region Input
 	static bool Input_IsKeyClicked(int keycode) {
@@ -62,26 +117,72 @@ namespace Proof
 		return Input::IsMouseButtonDoubleClicked((MouseButton)mouseCode);
 	}
 #pragma endregion 
-	
 	#pragma region World
+	static void World_Pause() 
+	{
+		World* world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+		world->Pause();
+		
+	}
 
+	static void World_Play() {
+		World* world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+		world->Play();
+	}
 	//retutnrs entity ID
 	static uint64_t  World_Instanciate(uint64_t prefabID, TransformComponent transform)
 	{
 		if (!AssetManager::HasAsset(prefabID))
 		{
-			PF_EC_ERROR("World.Instanciate - pregabID is invalid {}",prefabID);
+			PF_EC_ERROR("World.Instanciate - prefabID is invalid {}",prefabID);
 			return 0;
 		}
 
 		World* world = ScriptEngine::GetWorldContext();
 		AssetInfo info = AssetManager::GetAssetInfo(prefabID);
 		Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabID);
-		Entity entity = world->CreateEntity(info.GetName(), prefab, transform);
-
+		Entity entity = world->CreateEntity(info.GetName(), prefab, transform,UUID());
 		return entity.GetEntityID().Get();
 	}
 
+	static bool World_OpenWorld(uint64_t worldID) 
+	{
+		World* world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+		if (!AssetManager::HasAsset(worldID))
+		{
+			PF_EC_ERROR("World.OpenWorld  ID {} is invalid",worldID);
+			return false;
+		}
+		
+		//world->EndRuntime();
+		
+		//SceneSerializer sere(world);
+		//if (sere.DeSerilizeText(AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(worldID).Path).string()) == true)
+		//{
+		//	AssetManager::LoadMultipleAsset(sere.GetAssetLoadID());
+		//	//world->StartRuntime();
+		//	return true;
+		//}
+		return false;
+	}
+	static void World_Restart()
+	{
+		World* world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+		world->EnableRestart = true;
+		///World* world = ScriptEngine::GetWorldContext();
+		///PF_CORE_ASSERT(world, "world is nullptr");
+		///SceneSerializer scerelizer(world);
+		///auto path = AssetManager::GetAssetInfo(world->GetID()).Path;
+		///if (scerelizer.DeSerilizeText(AssetManager::GetAssetFileSystemPath(path).string()) == true)
+		///{
+		///	AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
+		///}
+
+	}
 	static uint64_t World_TryFindEntityByTag(MonoString* classFullName)
 	{ 
 		World* world = ScriptEngine::GetWorldContext();
@@ -90,7 +191,24 @@ namespace Proof
 		Entity entity = world->FindEntityByTag(tag);
 		return entity.GetEntityID();
 	}
+	static void World_ForEachEntityWith(MonoString* classFullName, MonoArray** theArray)
+	{
+		World* world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
 
+		std::vector<uint64_t> objects;
+		std::string className = ScriptEngine::MonoToString(classFullName);
+
+		for (auto& [entityID, scripts] : ScriptEngine::EachEntityScript())
+		{
+			if (scripts.contains(className))
+				objects.emplace_back(entityID);
+		}
+		if (objects.size() == 0)
+			return;
+		*theArray = mono_array_new(ScriptEngine::GetDomain(), mono_get_uint64_class(), objects.size());
+		memcpy(mono_array_addr(*theArray, uint64_t, 0), objects.data(), objects.size() * sizeof(uint64_t));
+	}
 	static void World_DeleteEntity(uint64_t entityID, bool deleteChildren) 
 	{
 		World* world = ScriptEngine::GetWorldContext();
@@ -106,13 +224,35 @@ namespace Proof
 		#endif
 		world->DeleteEntity(entity, deleteChildren);
 	}
+
+	//static void World_OpenWorld(AssetID worldID, uint32_t playerCount ) {
+	//
+	//}
+	//static void 
 	static float World_GetTimeStep() {
 		return FrameTime::GetWorldDeltaTime();
 	}
 	#pragma endregion
 	
 	#pragma region Entity
+	static void Entity_GetChildren(uint64_t entityID,MonoArray** theArray)
+	{
+		World* world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+		Entity entity = { entityID,world };
+		PF_CORE_ASSERT(entity, "Entity is null");
+
+		std::vector<uint64_t> objects;
+		entity.EachChild([&](Entity child) {
+			objects.emplace_back(child.GetEntityID());
+		});
+		if (objects.size() == 0)
+			return;
+		*theArray = mono_array_new(ScriptEngine::GetDomain(), mono_get_uint64_class(), objects.size());
+		memcpy(mono_array_addr(*theArray, uint64_t, 0), objects.data(), objects.size() * sizeof(uint64_t));
+	}
 	static bool Entity_HasComponent(uint64_t entityID, MonoReflectionType* componentType) {
+		if (entityID == 0)return false;
 		World* world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world,"world is nullptr");
 		Entity entity = { entityID,world };
@@ -619,6 +759,254 @@ namespace Proof
 
 	#pragma endregion 
 
+	#pragma region ParticleSystemComponent
+	static bool ParticleSystemComponent_HasParticleIndex(uint64_t entityID, uint32_t tableIndex)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("ParticleSystemComponent.HasParticleIndex - entity is invalid ");
+			return false;
+		}
+		#endif
+
+		if (!entity.HasComponent<ParticleSystemComponent>())
+		{
+			PF_ERROR("ParticleSystemComponent.HasParticleIndex entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
+			return false;
+		}
+		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		if (comp.ParticleHandlerTable!= nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex))
+		{
+			return true;
+		}
+		return false;
+	}
+	static bool ParticleSystemComponent_ParticleIndexHasParticle(uint64_t entityID, uint32_t tableIndex)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("ParticleSystemComponent.ParticleIndexHasParticle - entity is invalid ");
+			return false;
+		}
+		#endif
+
+		if (!entity.HasComponent<ParticleSystemComponent>())
+		{
+			PF_ERROR("ParticleSystemComponent.ParticleIndexHasParticle entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
+			return false;
+		}
+		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex)!=nullptr)
+		{
+			return true;
+		}
+		return false;
+	}
+	static bool ParticleSystemComponent_GetVisible(uint64_t entityID, uint32_t tableIndex) 
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("ParticleSystemComponent.GetVisible - entity is invalid ");
+			return {};
+		}
+		#endif
+
+		if (!entity.HasComponent<ParticleSystemComponent>())
+		{
+			PF_ERROR("ParticleSystemComponent.GetVisible entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
+			return {};
+		}
+		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		{
+			return comp.ParticleHandlerTable->GetHandler(tableIndex)->Visible;
+		}
+		PF_ERROR("PlayerHUDComponent.GetVisible entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetEntityID(), tableIndex);
+		return false;
+	}
+	static void ParticleSystemComponent_SetVisible(uint64_t entityID, uint32_t tableIndex, bool* visible)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("ParticleSystemComponent.SetVisible - entity is invalid ");
+			return;
+		}
+		#endif
+
+		if (!entity.HasComponent<ParticleSystemComponent>())
+		{
+			PF_ERROR("ParticleSystemComponent.SetVisible entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
+			return;
+		}
+		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		{
+			comp.ParticleHandlerTable->GetHandler(tableIndex)->Visible = *visible;
+			return;
+		}
+		PF_ERROR("ParticleSystemComponent.SetVisible entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetEntityID(), tableIndex);
+	}
+
+	static void ParticleSystemComponent_Play(uint64_t entityID, uint32_t tableIndex)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("ParticleSystemComponent.Play - entity is invalid ");
+			return;
+		}
+		#endif
+
+		if (!entity.HasComponent<ParticleSystemComponent>())
+		{
+			PF_ERROR("ParticleSystemComponent.Play() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
+			return;
+		}
+		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		{
+			comp.ParticleHandlerTable->GetHandler(tableIndex)->Play();
+			return;
+		}
+		PF_ERROR("ParticleSystemComponent.Play() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetEntityID(), tableIndex);
+	}
+	static void ParticleSystemComponent_Pause(uint64_t entityID, uint32_t tableIndex)
+	{
+
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("ParticleSystemComponent.Pause() - entity is invalid ");
+			return;
+		}
+		#endif
+
+		if (!entity.HasComponent<ParticleSystemComponent>())
+		{
+			PF_ERROR("ParticleSystemComponent.Pause() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
+			return;
+		}
+		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		{
+			comp.ParticleHandlerTable->GetHandler(tableIndex)->Pause();
+			return;
+		}
+		PF_ERROR("ParticleSystemComponent.Pause() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetEntityID(), tableIndex);
+	}
+	static void ParticleSystemComponent_End(uint64_t entityID, uint32_t tableIndex)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("ParticleSystemComponent.End() - entity is invalid ");
+			return;
+		}
+		#endif
+
+		if (!entity.HasComponent<ParticleSystemComponent>())
+		{
+			PF_ERROR("ParticleSystemComponent.End() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
+			return;
+		}
+		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		{
+			comp.ParticleHandlerTable->GetHandler(tableIndex)->End();
+			return;
+		}
+		PF_ERROR("ParticleSystemComponent.End() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetEntityID(), tableIndex);
+	}
+	static void ParticleSystemComponent_Restart(uint64_t entityID, uint32_t tableIndex)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("ParticleSystemComponent.Restart() - entity is invalid ");
+			return;
+		}
+		#endif
+
+		if (!entity.HasComponent<ParticleSystemComponent>())
+		{
+			PF_ERROR("ParticleSystemComponent.Restart() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
+			return;
+		}
+		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		{
+			comp.ParticleHandlerTable->GetHandler(tableIndex)->Restart();
+			return;
+		}
+		PF_ERROR("ParticleSystemComponent.Restart() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetEntityID(), tableIndex);
+	}
+	static int ParticleSystemComponent_GetState(uint64_t entityID, uint32_t tableIndex)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("ParticleSystemComponent.GetState - entity is invalid ");
+			return 0 ;
+		}
+		#endif
+
+		if (!entity.HasComponent<ParticleSystemComponent>())
+		{
+			PF_ERROR("ParticleSystemComponent.GetState entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
+			return 0;
+		}
+		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		{
+			return (int)comp.ParticleHandlerTable->GetHandler(tableIndex)->GetState();
+		}
+		PF_ERROR("ParticleSystemComponent.GetState entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetEntityID(), tableIndex);
+	}
+
+	static void ParticleSystemComponent_GetParticles(uint64_t entityID, MonoArray** theArray)
+	{
+		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
+		#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("ParticleSystemComponent.GetParticles - entity is invalid ");
+			return;
+		}
+		#endif
+
+		if (!entity.HasComponent<ParticleSystemComponent>())
+		{
+			PF_ERROR("ParticleSystemComponent.GetParticles entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
+			return;
+		}
+		std::vector<uint32_t> objects;
+		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+
+		for (auto& part : comp.ParticleHandlerTable->GetHandlers())
+		{
+			objects.emplace_back(part.first);
+		}
+
+		if (objects.size() == 0)
+			return;
+		*theArray = mono_array_new(ScriptEngine::GetDomain(), mono_get_uint32_class(), objects.size());
+		memcpy(mono_array_addr(*theArray, uint64_t, 0), objects.data(), objects.size() * sizeof(uint64_t));
+	}
+	#pragma endregion
+
 	#pragma region PlayerHUDComponent
 	
 	static uint64_t PlayerHUDComponent_GetHUDAssetID(uint64_t entityID, uint32_t index) {
@@ -651,6 +1039,7 @@ namespace Proof
 		glm::vec2 Position;
 		glm::vec2 Rotation;
 		glm::vec2 Size;
+		bool Visible = true;
 		glm::vec4 Color;
 	};
 
@@ -798,6 +1187,7 @@ namespace Proof
 			button.TintColour = data->Color;
 			button.Postion = data->Position;
 			button.Rotation = data->Rotation;
+			button.Visible = data->Visible;
 			button.Size = data->Size;
 			return;
 		}
@@ -837,6 +1227,7 @@ namespace Proof
 			data.Color = button.TintColour;
 			data.Position = button.Postion;
 			data.Rotation = button.Rotation;
+			data.Visible = button.Visible;
 			data.Size = button.Size;
 			return data;
 			
@@ -908,6 +1299,7 @@ namespace Proof
 			data.Base.Position = button.Postion;
 			data.Base.Rotation = button.Rotation;
 			data.Base.Size = button.Size;
+			data.Base.Visible = button.Visible;
 			data.AssetID = (button.Texture != nullptr ) ? button.Texture->GetID() : AssetID(0);
 			return data;
 
@@ -945,7 +1337,8 @@ namespace Proof
 			UIButtonImage& button = panel->GetImageButton(buttonNamestr);
 
 			button.TintColour = data->Base.Color;
-			button.Postion = data->Base.Position ;
+			button.Postion = data->Base.Position;
+			button.Visible = data->Base.Visible;
 			button.Rotation = data->Base.Rotation;
 			button.Size = data->Base.Size;
 			if (data->AssetID != 0)
@@ -1033,6 +1426,7 @@ namespace Proof
 			data->Base.Position = text.Postion;
 			data->Base.Rotation = text.Rotation;
 			data->Base.Size = text.Size;
+			data->Base.Visible = text.Visible;
 			*textData =ScriptEngine::StringToMono( text.Text);
 			return;
 		}
@@ -1071,7 +1465,8 @@ namespace Proof
 			text.Param.Color = data->Base.Color ;
 			text.Postion= data->Base.Position ;
 			text.Rotation = data->Base.Rotation ;
-			text.Size =data->Base.Size  ;
+			text.Size = data->Base.Size;
+			text.Visible =data->Base.Visible;
 			text.Text = ScriptEngine::MonoToString(*textData);
 			return;
 		}
@@ -1116,9 +1511,24 @@ namespace Proof
 
 	void ScriptFunc::RegisterFunctions() {
 		PF_ENGINE_INFO("C# Register Functions");
+
+		{
+			PF_ADD_INTERNAL_CALL(ApplyCameraRotate);
+		}
+		//Applicaiton 
+		{
+			PF_ADD_INTERNAL_CALL(Application_Shutdown);
+			PF_ADD_INTERNAL_CALL(Application_GetFPS);
+		}
 		//LOG
 		{
 			PF_ADD_INTERNAL_CALL(Log_Message);
+		}
+		// Mouse
+		{
+			PF_ADD_INTERNAL_CALL(Mouse_CaptureMouse);
+			PF_ADD_INTERNAL_CALL(Mouse_IsMouseCaptured);
+			PF_ADD_INTERNAL_CALL(Mouse_GetPosition);
 		}
 		//Input
 		{
@@ -1139,12 +1549,18 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(World_TryFindEntityByTag);
 			PF_ADD_INTERNAL_CALL(World_DeleteEntity);
 			PF_ADD_INTERNAL_CALL(World_GetTimeStep);
+			PF_ADD_INTERNAL_CALL(World_ForEachEntityWith);
+			PF_ADD_INTERNAL_CALL(World_Restart);
+			PF_ADD_INTERNAL_CALL(World_OpenWorld);
+			PF_ADD_INTERNAL_CALL(World_Play);
+			PF_ADD_INTERNAL_CALL(World_Pause);
 		}
 		//Entity 
 		{
 			PF_ADD_INTERNAL_CALL(Entity_HasComponent);
 			PF_ADD_INTERNAL_CALL(GetScriptInstance);
 			PF_ADD_INTERNAL_CALL(Entity_GetOwner);
+			PF_ADD_INTERNAL_CALL(Entity_GetChildren);
 		}
 		// Tag Componnent
 		{
@@ -1228,6 +1644,21 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_HasText);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_GetTextData);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetTextData);
+		}
+		//particleSystem component
+		{
+			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_HasParticleIndex);
+			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_ParticleIndexHasParticle);
+
+			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_GetVisible);
+			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_SetVisible);
+			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_Play);
+			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_Pause);
+			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_End);
+			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_Restart);
+			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_GetState);
+
+			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_GetParticles);
 		}
 	}
 }

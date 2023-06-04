@@ -33,6 +33,7 @@ namespace Proof
     }; 
 
     struct Vertex2D {
+        glm::mat4 model;
         Vector Position;
         glm::vec4 Color;
         glm::vec2 TexCoords;

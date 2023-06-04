@@ -272,7 +272,9 @@ namespace Proof
             renderPassInfo.renderArea = m_Scissor;
             renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
             renderPassInfo.pClearValues = clearValues.data();
+            vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &m_Viewport);
 
+            vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &m_Scissor);
             vkCmdBeginRenderPass(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         }
 
@@ -343,9 +345,7 @@ namespace Proof
             VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetPipline());
 
         
-        vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &m_Viewport);
-
-        vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &m_Scissor);
+     
         //if(vulkanPipeline->m_LineWidth !=1.0f)
         //    vkCmdSetLineWidth(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vulkanPipeline->m_LineWidth);
 

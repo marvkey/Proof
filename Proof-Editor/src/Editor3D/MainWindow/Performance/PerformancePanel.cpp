@@ -7,7 +7,6 @@ namespace Proof
 {
 
 	void PerformancePanel::ImGuiRender(FrameTime deltaTime) {
-		#if 0
 		if (m_ShowWindow == false)
 			return;
 		PF_PROFILE_FUNC();
@@ -25,9 +24,9 @@ namespace Proof
 					if (FrameTimersControll::s_FrameTimers[i].TimerManage.TimerType == TimerTypes::CPUTimer)
 						frameTimersCPU.push_back({ FrameTimersControll::s_FrameTimers[i].TimerManage.Time,i });
 				}
-				std::sort(frameTimersCPU.begin(), frameTimersCPU.end(), [](const Compare& lhs, const Compare& rhs) {
-					return lhs.Time > rhs.Time;
-					});
+				//std::sort(frameTimersCPU.begin(), frameTimersCPU.end(), [](const Compare& lhs, const Compare& rhs) {
+				//	return lhs.Time > rhs.Time;
+				//	});
 				for (Compare& comp : frameTimersCPU)
 					PerformanceData(comp);
 				ImGui::TreePop();
@@ -35,19 +34,18 @@ namespace Proof
 			bool rendererOpen = ImGui::TreeNodeEx("RendererNODE", treeNodeFlags, "Renderer");
 			if (rendererOpen) {
 				for (uint32_t i = 0; i < FrameTimersControll::s_FrameTimers.size(); i++) {
-					if (FrameTimersControll::s_FrameTimers[i].TimerManage.TimerType == TimerTypes::Renderer)
+					if (FrameTimersControll::s_FrameTimers[i].TimerManage.TimerType == TimerTypes::RendererBase)
 						frameTimersRenderer.push_back({ FrameTimersControll::s_FrameTimers[i].TimerManage.Time,i });
 				}
-				std::sort(frameTimersRenderer.begin(), frameTimersRenderer.end(), [](const Compare& lhs, const Compare& rhs) {
-					return lhs.Time > rhs.Time;
-					});
+				//std::sort(frameTimersRenderer.begin(), frameTimersRenderer.end(), [](const Compare& lhs, const Compare& rhs) {
+				//	return lhs.Time > rhs.Time;
+				//	});
 				for (Compare& comp : frameTimersRenderer)
 					PerformanceData(comp);
 				ImGui::TreePop();
 			}
 		}
 		ImGui::End();
-		#endif
 	}
 	void PerformancePanel::PerformanceData(Compare& comp) {
 		auto& Time = FrameTimersControll::s_FrameTimers[comp.Pos];
@@ -71,6 +69,8 @@ namespace Proof
 			}
 			return;
 		}
-		ImGui::Text("%.3fms %s", Time.TimerManage.Time, Time.FunctionName.c_str());
+		ImGui::Text("%.3fms ", Time.TimerManage.Time);
+		ImGui::SameLine();
+		ImGui::Text(Time.FunctionName.c_str());
 	}
 }

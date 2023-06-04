@@ -67,6 +67,7 @@ namespace Proof {
 
 	void PhysicsWorld::OnFixedUpdate(float deltaTime)
 	{
+		PF_PROFILE_FUNC();
 		if (m_World->IsPlaying())
 		{
 			for (auto& [Id, actor] : m_Actors)
@@ -142,9 +143,12 @@ namespace Proof {
 		if (m_Accumulator < m_SubStepSize)
 			return false;
 		m_Accumulator -= m_SubStepSize;
-
-		m_Scene->simulate(m_SubStepSize);
-		m_Scene->fetchResults(true);
+		PF_PROFILE_FUNC("PhysicsWorld::Simulate");
+		for (uint32_t i = 0; i < m_SubStepSize; i++)
+		{
+			m_Scene->simulate(m_SubStepSize);
+			m_Scene->fetchResults(true);
+		}
 		return true;
 	}
 }

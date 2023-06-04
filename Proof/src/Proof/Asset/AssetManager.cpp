@@ -11,6 +11,7 @@
 #include <thread>
 #include  <algorithm>
 #include <execution>
+#include "Proof/Renderer/Texture.h"
 #include <future>
 namespace Proof
 {
@@ -35,6 +36,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::MeshSourceFile] = CreateSpecial<MeshSourceAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Prefab] = CreateSpecial<PrefabAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::UIPanel] = CreateSpecial<UIPanelAssetSerilizer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::ParticleSystem] = CreateSpecial<ParticleSystemSerilizer>();
 		}
 		if (std::filesystem::exists(assetManagerConfiguration.AssetDirectory) == false) {
 			std::filesystem::create_directory(assetManagerConfiguration.AssetDirectory);
@@ -45,7 +47,9 @@ namespace Proof
 		AssetManager::InitilizeAssets();
 	}
 	void AssetManager::UnInizilize() {
-		SaveAllAssets();
+		//SaveAllAssets();
+		s_AssetManagerData->Assets.clear();
+
 		s_AssetManagerData = nullptr;
 	}
 	std::unordered_map<AssetID, AssetContainer>& AssetManager::GetAssets() {
@@ -84,6 +88,8 @@ namespace Proof
 				return "";
 			case Proof::AssetType::UIPanel:
 				return "UIPanel.ProofAsset";
+			case Proof::AssetType::ParticleSystem:
+				return "ParticleSystem.ProofAsset";
 			default:
 				break;
 		}
@@ -146,6 +152,7 @@ namespace Proof
 		s_AssetManagerData->AssetPath.insert({ assetInfo.Path.string(),ID });
 	}
 	void AssetManager::UnloadAsset(AssetID ID) {
+		//s_AssetManagerData->Assets[ID].Asset = nullptr;
 		PF_ASSERT(false, "Funciton not ready");
 
 		PF_ASSERT(HasAsset(ID) == false, "Asset Manager does not have ID");
@@ -156,15 +163,21 @@ namespace Proof
 	
 	void AssetManager::GenerateAllSourceAssets() {
 		for (auto& it : std::filesystem::recursive_directory_iterator(s_AssetManagerData->AssetDirectory)) {
+			if (AssetManager::HasAsset(it.path()))continue;
 			std::string extension = it.path().extension().string();
+			extension.erase(extension.begin());// remove the "."
 			if (MeshHasFormat(extension)) {
 				NewAssetSource(it.path(),AssetType::MeshSourceFile);
-				return;
+				continue;
 			}
 
 			if (TextureHasFormat(extension)) {
 				NewAssetSource(it.path(), AssetType::TextureSourceFile);
-				return;
+				std::string path = std::filesystem::relative(it.path().parent_path() /= Utils::FileDialogs::GetFileName(it.path())).string();
+				path += ".Texture.ProofAsset";
+				Count<Asset> asset = Texture2D::Create(it.path().string());
+				AssetManager::NewAsset(asset, path);
+				continue;
 			}
 		}
 	}

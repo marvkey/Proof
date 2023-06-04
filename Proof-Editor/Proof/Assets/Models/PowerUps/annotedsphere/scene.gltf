@@ -1,0 +1,303 @@
+{
+  "accessors": [
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 14040,
+      "max": [
+        0.9510599970817566,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -0.9510599970817566,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 168480,
+      "componentType": 5126,
+      "count": 14040,
+      "max": [
+        0.9920772314071655,
+        0.9808568358421326,
+        0.9920781850814819
+      ],
+      "min": [
+        -0.9920772314071655,
+        -0.9808568358421326,
+        -0.9920781850814819
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 26160,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 336960,
+      "componentType": 5126,
+      "count": 240,
+      "max": [
+        0.769029974937439,
+        0.7806900143623352,
+        0.7899600267410278
+      ],
+      "min": [
+        -0.769029974937439,
+        -0.7806900143623352,
+        -0.7899600267410278
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 339840,
+      "componentType": 5126,
+      "count": 240,
+      "max": [
+        0.9920772314071655,
+        0.9435210227966309,
+        0.9435231685638428
+      ],
+      "min": [
+        -0.9920772314071655,
+        -0.9435210227966309,
+        -0.943524956703186
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 104640,
+      "componentType": 5125,
+      "count": 240,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 342720,
+      "componentType": 5126,
+      "count": 2252,
+      "max": [
+        0.958109974861145,
+        1.0074199438095093,
+        1.0074599981307983
+      ],
+      "min": [
+        -0.958109974861145,
+        -1.0074000358581543,
+        -1.0073699951171875
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 369744,
+      "componentType": 5126,
+      "count": 2252,
+      "max": [
+        0.9920772314071655,
+        0.9997427463531494,
+        0.9996646642684937
+      ],
+      "min": [
+        -0.9920772314071655,
+        -0.9997956156730652,
+        -0.9999151229858398
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 105600,
+      "componentType": 5125,
+      "count": 4584,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "Heferum Games (https://sketchfab.com/HeferumGames)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/adorned-metal-sphere-f6534bb774624712bfe04631ea8bf2b5",
+      "title": "Adorned Metal Sphere"
+    },
+    "generator": "Sketchfab-12.68.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 123936,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 396768,
+      "byteOffset": 123936,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 520704,
+      "uri": "scene.bin"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Material",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "roughnessFactor": 0.0
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Material.001",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.057802312076091766,
+          0.057802312076091766,
+          0.057802312076091766,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Icosphere_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0
+          },
+          "indices": 2,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Icosphere.001_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 4,
+            "POSITION": 3
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Icosphere.002_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 7,
+            "POSITION": 6
+          },
+          "indices": 8,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2,
+        4,
+        6
+      ],
+      "name": "Root"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "Icosphere"
+    },
+    {
+      "mesh": 0,
+      "name": "Icosphere_0"
+    },
+    {
+      "children": [
+        5
+      ],
+      "name": "Icosphere.001"
+    },
+    {
+      "mesh": 1,
+      "name": "Icosphere.001_0"
+    },
+    {
+      "children": [
+        7
+      ],
+      "name": "Icosphere.002"
+    },
+    {
+      "mesh": 2,
+      "name": "Icosphere.002_0"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}

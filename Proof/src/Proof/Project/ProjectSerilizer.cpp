@@ -23,6 +23,7 @@ namespace Proof
 				out << YAML::Key << "AssetDirectory" << m_Project->m_ProjectConfig.AssetDirectory.string();
 				out << YAML::Key << "AssetManager" << m_Project->m_ProjectConfig.AssetManager.string();
 				out << YAML::Key << "StartWorld" << m_Project->m_ProjectConfig.StartWorld;
+				out << YAML::Key << "ScriptModuleDirectory" << m_Project->m_ProjectConfig.ScriptModuleDirectory.string();
 			}
 			//input
 			{
@@ -127,8 +128,10 @@ namespace Proof
 		//m_Project->m_ProjectConfig. = filePath;
 		m_Project->m_ProjectConfig.AssetDirectory = projectData["AssetDirectory"].as<std::string>();
 		m_Project->m_ProjectConfig.AssetManager = projectData["AssetManager"].as<std::string>();
+		if(projectData["ScriptModuleDirectory"])
+			m_Project->m_ProjectConfig.ScriptModuleDirectory = projectData["ScriptModuleDirectory"].as<std::string>();
 		m_Project->m_ProjectConfig.StartWorld = projectData["StartWorld"].as<uint64_t>();
-		//Input
+		//Input ScriptModuleDirectory: Resources/Scripts/Binaries
 		if (projectData["Input"])
 		{
 			auto input = projectData["Input"];

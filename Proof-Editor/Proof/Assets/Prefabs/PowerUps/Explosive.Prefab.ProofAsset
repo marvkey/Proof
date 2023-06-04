@@ -1,24 +1,30 @@
 AssetType: Prefab
-ID: 5306886724956390622
-EntityOwner: 6104714278752056889
+ID: 7078710943034729593
+EntityOwner: 5727303447038601474
 Entities:
-  - Entity: 6104714278752056889
+  - Entity: 5727303447038601474
     TagComponent:
       Tag: Explosive
       tags: []
     TransformComponent:
       Location: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.5, 0.5, 0.5]
+      Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
       Children: []
     MeshComponent:
-      MeshAssetPointerID: 566574579191162934
+      MeshAssetPointerID: 496270331543024030
       MaterialTable:
         - Material: ""
-          AssetID: 0
+          AssetID: 8045788484859044740
           Index: 0
+        - Material: ""
+          AssetID: 1356555244972497892
+          Index: 1
+        - Material: ""
+          AssetID: 1356555244972497892
+          Index: 2
     ScriptComponent:
       Scripts:
         - Script: Game.Explosive

@@ -109,7 +109,7 @@ namespace Proof {
 	//then that class will send liek keyboard event to the id 
 	// this class will be stored in a map with the id signifying the current player
 	class InputManager {
-	public:
+	public: 
 		static void OnEvent(Event& e);
 
 		InputManager() = delete;
@@ -125,6 +125,7 @@ namespace Proof {
 		// MOTION INPUTS
 		static void StartRuntime(uint32_t playerCount =1);
 		static void EndRuntime();
+
 		static const std::unordered_map<std::string, Action>& GetActionMappings();
 		static const std::unordered_map<std::string, Motion>& GetMotionMappings();
 	private:

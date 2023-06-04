@@ -17,7 +17,29 @@ namespace Proof
 			ID = id;
 		}
 		public readonly ulong ID;
+		public void ApplyCameraRotate()
+		{
+			InternalCalls.ApplyCameraRotate(ID);
 
+        }
+		public Entity[] GetChildren()
+		{
+            ulong[] list = null;
+            InternalCalls.Entity_GetChildren(ID, ref list);
+
+            if (list == null)
+                return null;
+
+            Entity[] entityList = new Entity[list.Length];
+            int index = 0;
+            foreach (ulong entityID in list)
+            {
+                Entity entity = new Entity(entityID);
+                entityList[index] = entity;
+                index++;
+            }
+            return entityList;
+        }
 		public bool HasComponent<T>() where T : Component, new()
         {
 			Type componentType = typeof(T);

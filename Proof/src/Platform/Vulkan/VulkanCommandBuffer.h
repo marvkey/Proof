@@ -21,6 +21,7 @@ namespace Proof
 		std::vector<VkCommandBuffer> m_CommandBuffer;
 		friend class VulkanRenderPass;
 		friend class VulkanRendererAPI;
+		friend class VulkanCubeMap;
 	};
 
 

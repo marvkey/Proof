@@ -380,7 +380,7 @@ namespace Proof
 			createInfo.maxLod = static_cast<float>(m_MipLevels);
 			vkCreateSampler(device, &createInfo, nullptr, &m_Sampler);
 		}
-		m_Set = (VkDescriptorSet) graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
+		m_Set = (VkDescriptorSet)graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
 	}
 
 	void* VulkanTexture2D::GetID()const {
@@ -599,6 +599,7 @@ namespace Proof
 
 	}
 
+
 	Count<CubeMap> VulkanCubeMap::GeneratePreFilterMap(Count<CubeMap> map, uint32_t dimension, uint32_t numSamples)
 	{
 		// https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/util/Environment.cpp
@@ -665,12 +666,12 @@ namespace Proof
 		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 		glm::mat4 captureViews[6] =
 		{
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
 		};
 		struct UboData {
 			/// Projection matrix common to each face of the cubemap.
@@ -715,9 +716,10 @@ namespace Proof
 		});
 		PCB pcb;
 		uint32_t mipsize = dimension;
-		Renderer::Submit([&](CommandBuffer* cmd) {
-			for (uint32_t miplevel = 0; miplevel < totalMips; miplevel++)
-			{
+		for (uint32_t miplevel = 0; miplevel < totalMips; miplevel++)
+		{
+			Renderer::Submit([&](CommandBuffer* cmd) {
+
 				VkViewport viewport = {};
 				viewport.x = 0.0f;
 				viewport.y = static_cast<float>(mipsize);
@@ -745,29 +747,31 @@ namespace Proof
 
 						renderPass = RenderPass::Create(renderPassConfig);
 					}
-					uboData.view = captureViews[face];
-					ubuffer->SetData(&uboData, sizeof(uboData));
-					pcb.Roughness = (float)miplevel / (float)(totalMips - 1);
-					pcb.NumSamples = numSamples;
-					Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(cmd);
-					PcbConstnat->PushData(renderCmd, PipelineLayout, &pcb);
 
-					Renderer::BeginRenderPass(renderCmd, renderPass, frameBuffer);
-					renderPass.As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor, [&](Count <RenderCommandBuffer> commandBuffer) {
+					Renderer::Submit([&](CommandBuffer* rednderercmd) {
+						uboData.view = captureViews[face];
+						ubuffer->SetData(&uboData, sizeof(uboData));
+						pcb.Roughness = (float)miplevel / (float)(totalMips - 1);
+						pcb.NumSamples = numSamples;
+						Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(rednderercmd);
+						PcbConstnat->PushData(renderCmd, PipelineLayout, &pcb);
+						Renderer::BeginRenderPass(renderCmd, renderPass, frameBuffer);
+						renderPass.As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor, [&](Count <RenderCommandBuffer> commandBuffer) {
 
-						auto descriptor0 = Descriptors[DescriptorSets::Zero];
-						descriptor0->WriteBuffer(0, ubuffer);
-						descriptor0->WriteImage(1, map);
-						descriptor0->Bind(renderCmd, PipelineLayout);
-						for (const auto& subMesh : cube->GetMeshSource()->GetSubMeshes())
-						{
-							subMesh.VertexBuffer->Bind(renderCmd);
-							subMesh.IndexBuffer->Bind(renderCmd);
-							Renderer::DrawElementIndexed(renderCmd, subMesh.IndexBuffer->GetCount());
-						}
+							auto descriptor0 = Descriptors[DescriptorSets::Zero];
+							descriptor0->WriteBuffer(0, ubuffer);
+							descriptor0->WriteImage(1, map);
+							descriptor0->Bind(renderCmd, PipelineLayout);
+							for (const auto& subMesh : cube->GetMeshSource()->GetSubMeshes())
+							{
+								subMesh.VertexBuffer->Bind(renderCmd);
+								subMesh.IndexBuffer->Bind(renderCmd);
+								Renderer::DrawElementIndexed(renderCmd, subMesh.IndexBuffer->GetCount());
+							}
 
+						});
+						Renderer::EndRenderPass(renderPass);
 					});
-					Renderer::EndRenderPass(renderPass);
 
 					{
 						VkImageMemoryBarrier barrier = {};
@@ -777,7 +781,7 @@ namespace Proof
 						barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 						barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 						barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-						 //VkImage image = frameBuffer.As<VulkanFrameBuffer>()->GetColorAttachmentFrameBufferImage(0).Images[Renderer::GetCurrentFrame().ImageIndex].Image;
+						// VkImage image = frameBuffer.As<VulkanFrameBuffer>()->GetColorAttachmentFrameBufferImage(0).Images[Renderer::GetCurrentFrame().ImageIndex].Image;
 
 						barrier.image = fbColorAttachment.As<VulkanTexture2D>()->GetImageAlloc().Image;
 						barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -802,7 +806,25 @@ namespace Proof
 
 						copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 						copyRegion.dstSubresource.mipLevel = miplevel;
-						copyRegion.dstSubresource.baseArrayLayer = face;
+
+						//3 is bottom face
+						//2 is top 
+						if (face == 2)
+							copyRegion.dstSubresource.baseArrayLayer =3;
+						else if (face == 3)
+							copyRegion.dstSubresource.baseArrayLayer = 2;
+						else if (face == 0)
+							copyRegion.dstSubresource.baseArrayLayer = 1;
+						else if (face == 1)
+							copyRegion.dstSubresource.baseArrayLayer = 0;
+						else if (face == 4)
+							copyRegion.dstSubresource.baseArrayLayer = 5;
+						else if (face == 5)
+							copyRegion.dstSubresource.baseArrayLayer = 4;
+
+						//else
+							//copyRegion.dstSubresource.baseArrayLayer = face;
+
 						copyRegion.dstSubresource.layerCount = 1;
 						copyRegion.dstOffset = { 0, 0, 0 };
 
@@ -819,8 +841,9 @@ namespace Proof
 					}
 				}
 				mipsize = mipsize / 2;
-			}
-		});
+			});
+
+		}
 		Renderer::Submit([&](CommandBuffer* cmd) {
 
 			VkImageMemoryBarrier barrier = {};

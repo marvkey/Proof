@@ -3,10 +3,10 @@ World:
   Entities:
     - Entity: 15009829747103843900
       TagComponent:
-        Tag: Plyer1
+        Tag: Player1
         tags: []
       TransformComponent:
-        Location: [0, 5, 0]
+        Location: [75, 5, 0]
         Rotation: [0, 0, 0]
         Scale: [2, 2, 2]
       ChildComponent:
@@ -14,13 +14,13 @@ World:
         Children: []
       PlayerInputComponent:
         InputPlayer: Player0
-        PrefabID: 4015502858990313943
+        PrefabID: 10688024360887681853
     - Entity: 3941401691345106710
       TagComponent:
-        Tag: Plyer2
+        Tag: Player2
         tags: []
       TransformComponent:
-        Location: [-11.1999998, 5, 0]
+        Location: [25, 5, 0]
         Rotation: [0, 0, 0]
         Scale: [2, 2, 2]
       ChildComponent:
@@ -28,7 +28,7 @@ World:
         Children: []
       PlayerInputComponent:
         InputPlayer: Player1
-        PrefabID: 4015502858990313943
+        PrefabID: 10688024360887681853
     - Entity: 13613974707328583001
       TagComponent:
         Tag: GameManager
@@ -46,28 +46,65 @@ World:
             ScriptFields:
               - Name: Obstacle
                 Type: Prefab
-                Data: 1607569046936484718
+                Data: 2560735802227511469
               - Name: Plane
                 Type: Prefab
                 Data: 5615780023732569603
+              - Name: PowerUp4
+                Type: Prefab
+                Data: 7078710943034729593
               - Name: DorrOpenerThing
                 Type: Prefab
-                Data: 5938616521392695289
+                Data: 8973332958083417899
               - Name: RampObstacle
                 Type: Prefab
-                Data: 4219147424771132432
+                Data: 2589065491834814977
+              - Name: FinishLevel
+                Type: Prefab
+                Data: 14125234285029124407
               - Name: PhysicsCube
                 Type: Prefab
-                Data: 16366832242524300474
-              - Name: PowerUp2
-                Type: Prefab
-                Data: 5306886724956390622
+                Data: 18340308131538130791
               - Name: WorldLenght
                 Type: Int
-                Data: 1000
+                Data: 1500
               - Name: PowerUp1
                 Type: Prefab
-                Data: 16359374454295279052
+                Data: 17021343848416113346
+              - Name: PowerUp2
+                Type: Prefab
+                Data: 4599095272181346891
               - Name: PowerUp3
                 Type: Prefab
-                Data: 9051383557077222183
+                Data: 4078040449754614894
+              - Name: CurrentPositon
+                Type: Int
+                Data: 0
+    - Entity: 16086807001025570804
+      TagComponent:
+        Tag: Player3
+        tags: []
+      TransformComponent:
+        Location: [-25, 5, 0]
+        Rotation: [0, 0, 0]
+        Scale: [2, 2, 2]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      PlayerInputComponent:
+        InputPlayer: Player2
+        PrefabID: 10688024360887681853
+    - Entity: 13050312240543819981
+      TagComponent:
+        Tag: player4
+        tags: []
+      TransformComponent:
+        Location: [-75, 5, 0]
+        Rotation: [0, 0, 0]
+        Scale: [2, 2, 2]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      PlayerInputComponent:
+        InputPlayer: Player3
+        PrefabID: 10688024360887681853

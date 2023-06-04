@@ -50,8 +50,12 @@ namespace Proof {
         m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
         m_Window->SetEventCallback([this](Event& e) {OnEvent(e); });
         RendererBase::Init(static_cast<Window*>(m_Window.get()));
+        if (m_ApplicationConfiguration.EnableImgui)
+        {
         ImGuiMainLayer = new ImGuiLayer();
         MainLayerStack.PushLayer(ImGuiMainLayer);
+
+        }
 
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
@@ -59,8 +63,7 @@ namespace Proof {
         AssetManager::Init(assetManagerconfig);
 
         PhysicsEngine::Init();
-        ScriptEngine::Init();
-;
+         ScriptEngine::Init();
 
         PF_ENGINE_TRACE("Engine Load Done");
     }
@@ -112,15 +115,25 @@ namespace Proof {
     }
 
     Application::~Application() {
-        if (m_ApplicationShouldShutdown)
-            std::exit(EXIT_SUCCESS);
+        MainLayerStack.Empty();
+    // remove the swpchain so it cna be deleted in the queue
+        FileSystem::ClearEnvironmentVariables();
+        ScriptEngine::Shutdown();
+        PhysicsEngine::Release();
+        m_Project = nullptr;
+        m_Window->m_SwapChain = nullptr;
+        m_Window = nullptr;
+
+        AssetManager::UnInizilize();
+        RendererBase::Destroy();
+        InputManager::Destroy();
     }
 
     void Application::Run() {
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
-        while (m_IsRunning == true) {
+        while (m_IsRunning == true && m_ApplicationShouldShutdown == false) {
             PF_PROFILE_FRAME("Application::Update");
             Renderer::BeginFrame();
             
@@ -155,18 +168,6 @@ namespace Proof {
         {
             m_ApplicationShouldShutdown = true;
         }
-        MainLayerStack.Empty();
-        // remove the swpchain so it cna be deleted in the queue
-        AssetManager::SaveAllAssets();
-        m_Window->m_SwapChain = nullptr;
-        RendererBase::Destroy();
-
-        FileSystem::ClearEnvironmentVariables();
-        ScriptEngine::Shutdown();
-        PhysicsEngine::Release();
-        m_Project = nullptr;
-        m_Window = nullptr;
-        InputManager::Destroy();
     }
 
     void Application::PushLayer(Layer* Layer) {

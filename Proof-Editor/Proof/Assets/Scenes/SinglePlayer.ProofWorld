@@ -16,7 +16,7 @@ World:
         MeshAssetPointerID: 4645041025570573733
         MaterialTable:
           - Material: ""
-            AssetID: 0
+            AssetID: 13329416995872930766
             Index: 0
       CubeColliderComponent:
         IsTrigger: false
@@ -36,14 +36,14 @@ World:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [0, 0, 0.5]
+        Location: [0, 1, 0.5]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
+        Scale: [3, 3, 3]
       ChildComponent:
         OwnerID: 0
-        Children: [11923592787940579810, 10239675716060485003]
+        Children: [11923592787940579810]
       MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
+        MeshAssetPointerID: 566574579191162934
         MaterialTable:
           - Material: ""
             AssetID: 9010836309271670693
@@ -106,28 +106,7 @@ World:
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 5.05000019
-    - Entity: 10239675716060485003
-      TagComponent:
-        Tag: Score
-        tags: []
-      TransformComponent:
-        Location: [0, 12, 0]
-        Rotation: [0, 180, 0]
-        Scale: [2.9000001, 2.5, 3]
-      ChildComponent:
-        OwnerID: 9019730813530534380
-        Children: []
-      ScriptComponent:
-        Scripts:
-          - Script: Game.Score
-            ScriptFields:
-              []
-      TextComponent:
-        Color: [1, 1, 1, 1]
-        Kerning: 0
-        LineSpacing: 1
-        Text: 0
+        Intensity: 1
     - Entity: 6350634750770785597
       TagComponent:
         Tag: Game Manager
@@ -148,7 +127,7 @@ World:
                 Data: 9019730813530534380
               - Name: Obstacle
                 Type: Prefab
-                Data: 17662049752082377387
+                Data: 2160014749406616865
               - Name: Plane
                 Type: Prefab
                 Data: 0

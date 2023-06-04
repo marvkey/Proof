@@ -51,6 +51,13 @@ namespace Proof {
 		bool IsSimulating() {
 			return GetState() == WorldState::Simulate;
 		}
+
+		void Pause() {
+			m_CurrentState = WorldState::Pause;
+		}
+		void Play() {
+			m_CurrentState = WorldState::Play;
+		}
 		bool HasEntity(EntityID ID)const;
 		bool HasEntity(EntityID ID);
 		bool HasWorldCamera();
@@ -123,7 +130,7 @@ namespace Proof {
 			auto group = m_Registry.view<T...>();
 			return group.size();
 		}
-
+		bool EnableRestart = false;
 	private:
 		void Init();
 		void DeleteEntitiesfromQeue();

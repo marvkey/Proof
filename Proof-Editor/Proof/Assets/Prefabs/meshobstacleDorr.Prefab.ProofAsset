@@ -1,29 +1,29 @@
 AssetType: Prefab
-ID: 5938616521392695289
-EntityOwner: 15206448189776379309
+ID: 8973332958083417899
+EntityOwner: 14871909992875752278
 Entities:
-  - Entity: 15206448189776379309
+  - Entity: 14871909992875752278
     TagComponent:
       Tag: meshobstacleDorr
       tags: []
     TransformComponent:
       Location: [0, 0, 0]
-      Rotation: [0, 0, -90]
-      Scale: [10, 25, 1]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
-      Children: [10257623037753555175, 7757784783989617745]
+      Children: [3245130110571371148, 2383278897110887848]
     MeshComponent:
       MeshAssetPointerID: 15639346670585879852
       MaterialTable:
         - Material: ""
-          AssetID: 0
+          AssetID: 17034989143390742759
           Index: 0
     CubeColliderComponent:
       IsTrigger: false
       OffsetLocation: [-0.5, 0, 0]
       OffsetScale: [0.5, 1, 0.00999999978]
-      PhysicsMaterialPointerID: 0
+      PhysicsMaterialPointerID: 14027245898106135139
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0
@@ -32,7 +32,7 @@ Entities:
       Type: Static
       FreezeLocation: [false, false, false]
       FreezeRotation: [false, false, false]
-  - Entity: 10257623037753555175
+  - Entity: 3245130110571371148
     TagComponent:
       Tag: otherObstacle
       tags: []
@@ -41,13 +41,13 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 15206448189776379309
+      OwnerID: 14871909992875752278
       Children: []
     CubeColliderComponent:
       IsTrigger: false
       OffsetLocation: [0, 0, 0]
       OffsetScale: [0.899999976, -0.219999999, 0.00999999978]
-      PhysicsMaterialPointerID: 0
+      PhysicsMaterialPointerID: 14027245898106135139
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0
@@ -56,7 +56,7 @@ Entities:
       Type: Static
       FreezeLocation: [false, false, false]
       FreezeRotation: [false, false, false]
-  - Entity: 7757784783989617745
+  - Entity: 2383278897110887848
     TagComponent:
       Tag: otherObstacle1
       tags: []
@@ -65,13 +65,13 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ChildComponent:
-      OwnerID: 15206448189776379309
+      OwnerID: 14871909992875752278
       Children: []
     CubeColliderComponent:
       IsTrigger: false
       OffsetLocation: [0, 0, 0]
       OffsetScale: [0.899999976, -0.219999999, 0.00999999978]
-      PhysicsMaterialPointerID: 0
+      PhysicsMaterialPointerID: 14027245898106135139
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0

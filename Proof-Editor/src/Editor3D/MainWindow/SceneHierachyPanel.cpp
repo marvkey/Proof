@@ -83,7 +83,7 @@ namespace Proof
 				// when copying ot temporayr since copies backwards have to do this
 				if (m_CurrentWorld->m_CurrentState == WorldState::Edit) {
 					for (uint64_t i = 0; i < m_CurrentWorld->m_Registry.size(); i++) {
-						Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld };
+						Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld.Get()};
 						if (entity.HasOwner() == false)
 							DrawEntityNode(entity);
 					}
@@ -91,7 +91,7 @@ namespace Proof
 				else {
 					for (uint64_t i = 0; i < m_CurrentWorld->m_Registry.size(); i++)
 					{
-						Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld };
+						Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld.Get()};
 						if (entity.HasOwner() == false)
 							DrawEntityNode(entity);
 					}
@@ -246,7 +246,7 @@ namespace Proof
 
 		if (opened) {
 			for (const UUID& I : entity.GetComponent<ChildComponent>()->m_Children) {
-				DrawEntityNode(Entity{ I,m_CurrentWorld });
+				DrawEntityNode(Entity{ I,m_CurrentWorld.Get()});
 			}
 			ImGui::TreePop();
 		}
@@ -333,6 +333,8 @@ namespace Proof
 			AddComponentGui<ScriptComponent>(entity, "Scripts");
 			AddComponentGui<PlayerInputComponent>(entity, "Player Input");
 			AddComponentGui<PlayerHUDComponent>(entity, "Player HUD");
+
+			AddComponentGui<ParticleSystemComponent>(entity, "Particle System");
 			ImGui::EndPopup();
 		}
 		DrawComponents<TagComponent>("Tag", entity, [](TagComponent& subTag) {
@@ -622,10 +624,8 @@ namespace Proof
 				}
 				ImGui::EndDragDropTarget();
 			}
-
-	
-
 		});
+		
 		DrawComponents<RigidBodyComponent>("RigidBody", entity, [](RigidBodyComponent& rigidBody) {
 			ExternalAPI::ImGUIAPI::EnumCombo<RigidBodyType>("Type", rigidBody.m_RigidBodyType);
 			if (rigidBody.m_RigidBodyType == RigidBodyType::Static)return;
@@ -640,6 +640,51 @@ namespace Proof
 			DrawVectorControl("Freeze Rotation", rigidBody.FreezeRotation, false);
 		});
 
+		DrawComponents<ParticleSystemComponent>("Particle System",entity, [&](ParticleSystemComponent& particleSystem) {
+			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
+			bool open = ImGui::TreeNodeEx("PartcileTable", treeNodeFlags, "Particle Table");
+			if (!open)return;
+			ImGui::SameLine();
+			if (ImGui::Button("+"))
+			{
+				particleSystem.ParticleHandlerTable->SetHandler(particleSystem.ParticleHandlerTable->GetHandlerSize(), nullptr);
+			}
+			for (auto& [index, particleHandler] : particleSystem.ParticleHandlerTable->GetHandlers())
+			{
+				UI::ScopedID scope(&index);
+				std::string name;
+				if (particleHandler !=nullptr &&AssetManager::HasAsset(particleHandler->GetParticleSystem()))
+				{
+					name = AssetManager::GetAssetInfo(particleHandler->GetParticleSystem()).GetName();
+				}
+				else
+				{
+					name = "null";
+				}
+				ExternalAPI::ImGUIAPI::TextBar(fmt::format("Index {}", index), name);
+				if (particleHandler != nullptr)
+				{
+					ImGui::SameLine();
+					ImGui::Checkbox("Visible", &particleHandler->Visible);
+				}
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::ParticleSystem).c_str()))
+					{
+						uint64_t Data = *(const uint64_t*)payload->Data;
+						if (AssetManager::HasAsset(Data))
+						{
+							auto par = AssetManager::GetAsset<ParticleSystem>(Data);
+							Count<ParticleHandler> handler = Count<ParticleHandler>::Create(par);
+							particleSystem.ParticleHandlerTable->SetHandler(index, handler);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+			}
+			ImGui::TreePop();
+		});
 		DrawComponents<ScriptComponent>("Scripts", entity, [&](ScriptComponent& scriptComp) {
 			if (ImGui::Button("Add Script")) {
 				ImGui::OpenPopup("Open Scripts");
@@ -775,8 +820,8 @@ namespace Proof
 									if (AssetManager::HasAsset(scriptField.GetValue<uint64_t>()))
 									{
 										auto texture = AssetManager::GetAsset<Texture2D>(scriptField.GetValue<uint64_t>());
-										//ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
-										ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+										ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
+										//ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
 									}
 									else
 									{
@@ -902,6 +947,7 @@ namespace Proof
 									{
 										auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
 										ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
+										//ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
 									}
 									else
 									{
@@ -1024,8 +1070,14 @@ namespace Proof
 			}
 			for (auto& [index, hud] : playerHud.HudTable->GetPanels())
 			{
+				UI::ScopedID scope(&index);
 				std::string name = hud != nullptr ? hud->Name : "null";
 				ExternalAPI::ImGUIAPI::TextBar(fmt::format("Index {}", index), name);
+				if (hud != nullptr)
+				{
+					ImGui::SameLine();
+					ImGui::Checkbox("Visible", &hud->Visible);
+				}
 				if (ImGui::BeginDragDropTarget())
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::UIPanel).c_str()))

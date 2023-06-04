@@ -30,7 +30,12 @@ namespace Proof
             Y = scalar;
             Z = scalar;
         }
+        public static Vector operator +(Vector a) => a;
+        public static Vector operator -(Vector a) => new Vector(-a.X, -a.Y, -a.Z);
+        public static Vector operator -(Vector a, Vector b) {
 
+           return new Vector(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+        }
         public static Vector operator +(Vector a, Vector b)
         {
             return new Vector(a.X + b.X, a.Y + b.Y, a.Z + b.Z);

@@ -41,6 +41,7 @@ namespace Proof{
 		float LineWidth = 1.0f;
 		bool WriteDepth = true;
 		bool DepthTest = true;
+		bool Blend = false;
 		CullMode CullMode = CullMode::None;
 		FrontFace FrontFace = FrontFace::ClockWise;
 		Count<class RenderPass> RenderPass;

@@ -1,8 +1,8 @@
 AssetType: Prefab
-ID: 16366832242524300474
-EntityOwner: 8157334311377680077
+ID: 18340308131538130791
+EntityOwner: 15269945736164917261
 Entities:
-  - Entity: 8157334311377680077
+  - Entity: 15269945736164917261
     TagComponent:
       Tag: physicsCube
       tags: []
@@ -17,13 +17,13 @@ Entities:
       MeshAssetPointerID: 4645041025570573733
       MaterialTable:
         - Material: ""
-          AssetID: 0
+          AssetID: 17034989143390742759
           Index: 0
     CubeColliderComponent:
       IsTrigger: false
       OffsetLocation: [0, 0, 0]
       OffsetScale: [1, 1, 1]
-      PhysicsMaterialPointerID: 0
+      PhysicsMaterialPointerID: 14027245898106135139
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0

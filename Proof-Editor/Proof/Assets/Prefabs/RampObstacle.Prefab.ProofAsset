@@ -1,8 +1,8 @@
 AssetType: Prefab
-ID: 4219147424771132432
-EntityOwner: 1270351127435196589
+ID: 2589065491834814977
+EntityOwner: 2198039362543583671
 Entities:
-  - Entity: 1270351127435196589
+  - Entity: 2198039362543583671
     TagComponent:
       Tag: RampObstacle
       tags: []
@@ -17,11 +17,11 @@ Entities:
       MeshAssetPointerID: 7317233367818780658
       MaterialTable:
         - Material: ""
-          AssetID: 0
+          AssetID: 17034989143390742759
           Index: 0
     MeshColliderComponent:
       IsTrigger: false
-      PhysicsMaterialPointerID: 0
+      PhysicsMaterialPointerID: 14027245898106135139
       MeshAssetPointerID: 7317233367818780658
     RigidBodyComponent:
       Mass: 1

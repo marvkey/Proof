@@ -1,0 +1,43 @@
+AssetType: UIPanel
+ID: 3138277554460297504
+Buttons:
+  - Button: Background
+    Position: [0.100000001, 0]
+    Size: [10, 10]
+    Rotation: [0, 0]
+    Text: ""
+    TintColor: [0.00403225422, 0.00403225422, 0.00403225422, 0.862745106]
+    Visible: true
+ImageButtons:
+  - ImageButton: Medal1
+    Position: [0, 6]
+    Size: [4, 4]
+    Rotation: [0, 0]
+    TintColor: [1, 1, 1, 1]
+    Visible: false
+    ImageAssetID: 5821739079156100886
+  - ImageButton: Medal2
+    Position: [0, 6]
+    Size: [4, 4]
+    Rotation: [0, 0]
+    TintColor: [1, 1, 1, 1]
+    Visible: false
+    ImageAssetID: 8475222841305135918
+  - ImageButton: Medal3
+    Position: [0.100000001, 6]
+    Size: [3.29999995, 3.70000005]
+    Rotation: [0, 0]
+    TintColor: [1, 1, 1, 1]
+    Visible: false
+    ImageAssetID: 6665563444149579355
+Texts:
+  - Text: GameOverText
+    Position: [-3.29999995, 1.20000005]
+    Size: [3, 5]
+    Rotation: [0, 0]
+    Color: [1, 1, 1, 1]
+    Input: "You Came 1\n"
+    Kerning: 0
+    LineSpacing: 0.5
+    Visible: false
+    Font: 0

@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 5615780023732569603
-EntityOwner: 13378806673276668317
+EntityOwner: 14933038901290352467
 Entities:
-  - Entity: 13378806673276668317
+  - Entity: 14933038901290352467
     TagComponent:
       Tag: plane
       tags: []
@@ -17,7 +17,7 @@ Entities:
       MeshAssetPointerID: 4645041025570573733
       MaterialTable:
         - Material: ""
-          AssetID: 0
+          AssetID: 13329416995872930766
           Index: 0
     CubeColliderComponent:
       IsTrigger: false

@@ -1,0 +1,63 @@
+AssetType: UIPanel
+ID: 4391299040253937018
+Buttons:
+  - Button: Background
+    Position: [0, 0]
+    Size: [100, 100]
+    Rotation: [0, 0]
+    Text: ""
+    TintColor: [0, 0, 0, 1]
+    Visible: true
+ImageButtons:
+  - ImageButton: ResumeButton
+    Position: [0, 0.300000012]
+    Size: [3.9000001, 1]
+    Rotation: [0, 0]
+    TintColor: [1, 1, 1, 1]
+    Visible: true
+    ImageAssetID: 10563355652128028718
+  - ImageButton: QuitButton
+    Position: [0, -1.29999995]
+    Size: [3.9000001, 1]
+    Rotation: [0, 0]
+    TintColor: [1, 1, 1, 1]
+    Visible: true
+    ImageAssetID: 3279783081301061708
+  - ImageButton: RestartButton
+    Position: [0, 1.89999998]
+    Size: [3.9000001, 1]
+    Rotation: [0, 0]
+    TintColor: [1, 1, 1, 1]
+    Visible: true
+    ImageAssetID: 8802839674074871244
+Texts:
+  - Text: Text0
+    Position: [-0.699999988, 3]
+    Size: [1, 1]
+    Rotation: [0, 0]
+    Color: [1, 1, 1, 1]
+    Input: Press [N]
+    Kerning: 0
+    LineSpacing: 1
+    Visible: true
+    Font: 0
+  - Text: Text1
+    Position: [-0.699999988, 1.39999998]
+    Size: [1, 1]
+    Rotation: [0, 0]
+    Color: [1, 1, 1, 1]
+    Input: Press [R]
+    Kerning: 0
+    LineSpacing: 1
+    Visible: true
+    Font: 0
+  - Text: Text2
+    Position: [-0.699999988, -0.200000003]
+    Size: [1, 1]
+    Rotation: [0, 0]
+    Color: [1, 1, 1, 1]
+    Input: Press [Q]
+    Kerning: 0
+    LineSpacing: 1
+    Visible: true
+    Font: 0

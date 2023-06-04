@@ -15,7 +15,8 @@ namespace Proof
 		Font,
 		FontSource,
 		Prefab,
-		UIPanel
+		UIPanel,
+		ParticleSystem
 	};
 	enum class AssetState {
 		None = 0,

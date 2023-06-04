@@ -40,8 +40,16 @@
         Window* GetWindow() {
             return m_Window.get();
         }
-
+        bool GetApplicationShouldShutdown() {
+            return m_ApplicationShouldShutdown;
+        }
         
+        void ShutDown() {
+            m_ApplicationShouldShutdown = true;
+        }
+        ApplicationConfiguration GetConfig() {
+            return m_ApplicationConfiguration;
+        }
     protected:
         Application(const ApplicationConfiguration& config);
         bool WindowMinimized = false;

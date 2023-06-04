@@ -32,5 +32,6 @@ namespace Proof
         {
             InternalCalls.Log_Message((int)logType, message);
         }
+
     }
 }

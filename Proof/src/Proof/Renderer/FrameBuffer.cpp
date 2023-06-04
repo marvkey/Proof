@@ -26,6 +26,12 @@ namespace Proof {
 		screenBuffer->m_FrameBuffer = FrameBuffer::Create(config);
 		return screenBuffer;
 	}
+	Count<ScreenFrameBuffer> ScreenFrameBuffer::Create(const FrameBufferConfig& config)
+	{
+		auto screenBuffer = Count<ScreenFrameBuffer>::Create();
+		screenBuffer->m_FrameBuffer = FrameBuffer::Create(config);
+		return screenBuffer;
+	}
 	void ScreenFrameBuffer::Resize(Vector2 imageSize)
 	{
 		m_FrameBuffer->Resize(imageSize);

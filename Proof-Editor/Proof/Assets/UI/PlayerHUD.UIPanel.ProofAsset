@@ -1,19 +1,80 @@
 AssetType: UIPanel
 ID: 1798143042432216336
 Buttons:
-  []
+  - Button: InventoryIndicator0
+    Position: [1.60000002, -3.70000005]
+    Size: [0.5, 0.100000001]
+    Rotation: [0, 0]
+    Text: ""
+    TintColor: [1, 0, 0, 1]
+    Visible: true
+  - Button: InventoryIndicator1
+    Position: [2.4000001, -3.70000005]
+    Size: [0.5, 0.100000001]
+    Rotation: [0, 0]
+    Text: ""
+    TintColor: [1, 0, 0, 1]
+    Visible: false
 ImageButtons:
   - ImageButton: Inventory0
     Position: [1.60000002, -3.20000005]
     Size: [0.5, 0.5]
     Rotation: [0, 0]
     TintColor: [1, 1, 1, 1]
+    Visible: true
     ImageAssetID: 0
   - ImageButton: Inventory1
     Position: [2.4000001, -3.20000005]
     Size: [0.5, 0.5]
     Rotation: [0, 0]
     TintColor: [1, 1, 1, 1]
+    Visible: true
     ImageAssetID: 0
+  - ImageButton: Crosshair
+    Position: [0, -0.5]
+    Size: [0.5, 0.5]
+    Rotation: [0, 0]
+    TintColor: [1, 1, 1, 1]
+    Visible: false
+    ImageAssetID: 7228735299644984543
 Texts:
-  []
+  - Text: Inventory0
+    Position: [1.5, -2.29999995]
+    Size: [1, 1]
+    Rotation: [0, 0]
+    Color: [1, 0.967741907, 0, 1]
+    Input: 1
+    Kerning: 0
+    LineSpacing: 1
+    Visible: false
+    Font: 0
+  - Text: Inventory1
+    Position: [2.29999995, -2.29999995]
+    Size: [1, 1]
+    Rotation: [0, 0]
+    Color: [1, 0.968627453, 0, 1]
+    Input: 1
+    Kerning: 0
+    LineSpacing: 1
+    Visible: false
+    Font: 0
+  - Text: SpeedText
+    Position: [-3.79999995, 3.5]
+    Size: [1, 1]
+    Rotation: [0, 0]
+    Color: [1, 1, 1, 1]
+    Input: "FPS:"
+    Kerning: 0
+    LineSpacing: 1
+    Visible: true
+    Font: 0
+  - Text: SpeedVal
+    Position: [-2.4000001, 3.5]
+    Size: [1, 1]
+    Rotation: [0, 0]
+    Color: [1, 1, 1, 1]
+    Input: 0
+    Kerning: 0
+    LineSpacing: 1
+    Visible: true
+    Font: 0

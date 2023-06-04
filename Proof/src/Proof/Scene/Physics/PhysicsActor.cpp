@@ -288,7 +288,8 @@ namespace Proof {
 		
 		Vector size = worldScalePositive * colliderScalePositive;
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxBoxGeometry(PhysxUtils::VectorToPhysxVector(size)), *colliderMaterial, true);
-		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
+		PF_CORE_ASSERT(body, "Body is not created");
+		//body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 		auto localtransform = body->getLocalPose();
 		localtransform.p += PhysxUtils::VectorToPhysxVector(cubeCollider->OffsetLocation);
 		body->setLocalPose(localtransform);
@@ -307,6 +308,7 @@ namespace Proof {
 
 		physx::PxMaterial* colliderMaterial = sphereCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)sphereCollider->GetPhysicsMaterial()->m_RuntimeBody;
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxSphereGeometry(size), *colliderMaterial, true);
+		PF_CORE_ASSERT(body, "Body is not created");
 
 		physx::PxTransform localtransform = body->getLocalPose();
 		localtransform.p += PhysxUtils::VectorToPhysxVector(sphereCollider->OffsetLocation);
@@ -349,6 +351,8 @@ namespace Proof {
 				}
 		}
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxCapsuleGeometry(radius, height), *colliderMaterial, true);
+		PF_CORE_ASSERT(body, "Body is not created");
+
 		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
 
 		physx::PxTransform localtransform = body->getLocalPose();
@@ -374,10 +378,12 @@ namespace Proof {
 		}
 		physx::PxMaterial* colliderMaterial = meshCollider->HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)meshCollider->GetPhysicsMaterial()->m_RuntimeBody;
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(
-			physx::PxTriangleMeshGeometry(PhysicsMeshCooker::GetConvexMesh(meshCollider->GetMeshSource())),*colliderMaterial, true);
+			physx::PxTriangleMeshGeometry(PhysicsMeshCooker::GetConvexMesh(meshCollider->GetMeshSource()),PhysxUtils::VectorToPhysxVector(m_Entity.GetComponent<TransformComponent>()->Scale)),*colliderMaterial, true);
 				//physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(
 		//physx::PxConvexMeshGeometry(PhysicsMeshCooker::GetConvexMesh(meshCollider->GetMeshSource())), *colliderMaterial, true);
 		//ADD CONVEX MESH TO ASSET
+		PF_CORE_ASSERT(body, "Body is not created");
+
 		meshCollider->m_RuntimeBody = body;
 		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(meshCollider->IsTrigger));
 		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, meshCollider->IsTrigger);

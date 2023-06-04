@@ -14,8 +14,12 @@ namespace Proof {
                 std::filesystem::path workingDirectory = std::filesystem::current_path();
                 (FileSystem::SetAnEnvironmentVariable)("PROOF_DIR", workingDirectory.string());
             }
-            PushLayer(new class Editore3D());
+            m_Editor = new class Editore3D();
+            PushLayer(m_Editor);
         }
+
+    private:
+        class Editore3D* m_Editor = nullptr;
     };
     Application* CreateApplication(int argc, char** argv) {
         std::string_view projectPath = "Proof/Proof.ProofProject";

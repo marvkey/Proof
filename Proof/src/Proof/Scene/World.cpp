@@ -34,7 +34,7 @@ namespace Proof {
 	}
 	World::~World()
 	{
-
+		m_Registry = {};
 	}
 	bool World::HasEntity(EntityID ID)const {
 		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
@@ -51,6 +51,25 @@ namespace Proof {
 	void World::OnUpdateEditor(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		DeleteEntitiesfromQeue();
+		{
+			PF_PROFILE_FUNC("World::OnUpdateEditor - Partilce OnUpdate");
+
+			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
+			for (auto entity : particleView)
+			{
+				auto& particleSystem = particleView.get<ParticleSystemComponent>(entity);
+				if (particleSystem.ParticleHandlerTable == nullptr)continue;
+				Entity wfadfas{ entity,this };
+				for (auto& [index, handler] : particleSystem.ParticleHandlerTable->GetHandlers())
+				{
+					if (handler != nullptr)
+					{
+						if(handler->Visible == true)
+							handler->Update(DeltaTime, GetWorldLocation(wfadfas));
+					}
+				}
+			}
+		}
 	}
 	void World::Init()
 	{
@@ -138,7 +157,30 @@ namespace Proof {
 			}
 		}
 		*/
+		if (m_CurrentState == WorldState::Pause)
+			return;
 		{
+			PF_PROFILE_FUNC("World::OnUpdate - Partilce OnUpdate");
+
+			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
+			for (auto entity : particleView)
+			{
+				auto& particleSystem = particleView.get<ParticleSystemComponent>(entity);
+				if (particleSystem.ParticleHandlerTable == nullptr)continue;
+				Entity wfadfas{ entity,this };
+				for (auto& [index, handler] : particleSystem.ParticleHandlerTable->GetHandlers())
+				{
+					if (handler != nullptr)
+					{
+						if(handler->Visible == true)
+							handler->Update(DeltaTime, GetWorldLocation(wfadfas));
+					}
+				}
+			}
+		}
+		{
+			PF_PROFILE_FUNC("World::OnUpdateEditor - C# OnUpdate");
+
 			const auto& scriptView = m_Registry.view<ScriptComponent>();
 			for (auto entity : scriptView)
 			{
@@ -146,6 +188,7 @@ namespace Proof {
 				ScriptMeathod::OnUpdate(Entity{ entity,this }, DeltaTime);
 			}
 		}
+		
 		if (HasWorldCamera())
 		{
 		}
@@ -382,7 +425,7 @@ namespace Proof {
 		Count<World> newWorld = Count<World>::Create();
 		
 		newWorld->Name = worldToCopy->Name;
-		//newWorld->m_WorldID = other->m_WorldID;
+		///newWorld->m_WorldID = other->m_WorldID;
 	
 		auto& srcSceneRegistry = worldToCopy->m_Registry;
 		auto& dstSceneRegistry = newWorld->m_Registry;
@@ -407,7 +450,9 @@ namespace Proof {
 
 	void World::StartRuntime() {
 		m_CurrentState = WorldState::Play;
-		InputManager::StartRuntime(GetNumComponents< PlayerInputComponent>());
+		int numPlayrs = 1;
+		numPlayrs += Application::Get()->GetWindow()->GetControllers().size();
+		InputManager::StartRuntime(numPlayrs);
 
 		ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
 			PlayerInputComponent inputCopy = *entity.GetComponent<PlayerInputComponent>();
@@ -415,7 +460,13 @@ namespace Proof {
 				return;
 			TransformComponent transfomr = *entity.GetComponent<TransformComponent>();
 			if (!AssetManager::HasAsset(inputCopy.Player))return;
-
+			if ((int)inputCopy.InputPlayer > numPlayrs)
+			{
+				UUID playerID = entity.GetEntityID();
+				DeleteEntity(entity);
+				DeleteEntitiesfromQeue();
+				return;
+			}
 			UUID playerID = entity.GetEntityID();
 			DeleteEntity(entity);
 			DeleteEntitiesfromQeue();
@@ -432,7 +483,15 @@ namespace Proof {
 				hud.HudTable = Count<UITable>::Create(hud.HudTable->Generate());
 			}
 		});
-	
+		ForEachEnitityWith<ParticleSystemComponent>([&](Entity entity) {
+			ParticleSystemComponent& part = *entity.GetComponent<ParticleSystemComponent>();
+			if (part.ParticleHandlerTable != nullptr)
+			{
+				part.ParticleHandlerTable = Count<ParticleHandlerTable>::Create(part.ParticleHandlerTable->Generate());
+			}
+		});
+		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
+		m_Registry.on_destroy<ScriptComponent>().connect<&World::OnScriptDelete>(this);
 		{
 			const auto& scriptView = m_Registry.view<NativeScriptComponent>();
 			for (auto entity : scriptView)
@@ -461,12 +520,13 @@ namespace Proof {
 		}
 		///
 		///
-		m_PhysicsWorld = new PhysicsWorld(this, PhysicsWorldConfig());
+		PhysicsWorldConfig config;
+		config.Gravity = { 0,-500.8f,0 };// for multiplayer scene
+		m_PhysicsWorld = new PhysicsWorld(this, config);
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
 		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
 
-		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
-		m_Registry.on_destroy<ScriptComponent>().connect<&World::OnScriptDelete>(this);
+
 	}
 	void World::EndRuntime() {
 		InputManager::EndRuntime();
@@ -524,7 +584,7 @@ namespace Proof {
 	Vector World::GetWorldScale(Entity entity) const {
 		auto& transformComp = *entity.GetComponent<TransformComponent>();
 		if (entity.HasOwner())
-			return transformComp.Scale + World::GetWorldScale(entity.GetOwner());
+			return transformComp.Scale * World::GetWorldScale(entity.GetOwner());
 		return transformComp.Scale;
 	}
 

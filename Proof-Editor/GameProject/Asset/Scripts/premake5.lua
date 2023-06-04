@@ -24,7 +24,8 @@ project "Game"
 	language "C#"
 	dotnetframework "4.7.2"
 
-	targetdir ("Binaries")
+	targetdir(ProofRootDir.. "/Proof-Editor/Proof/Resources/Scripts/Binaries")
+	--targetdir ("Binaries")
 	objdir ("Intermediates")
 
 	files 
@@ -50,6 +51,7 @@ project "Game"
 		optimize "Full"
 		symbols "Off"
 
-group "Proof"
-	include (ProofRootDir .. "/ProofScriptCore")
-group ""
+--group "Proof"
+--	flags { "ExcludeFromBuild" }
+--	include (ProofRootDir .. "/ProofScriptCore")
+--group ""

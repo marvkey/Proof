@@ -4,3 +4,5 @@ C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\Intermedi
 C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\Intermediates\Release\ProofScriptCore.pdb
 C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\ProofScriptCore.dll
 C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Resources\Scripts\ProofScriptCore.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Resources\Scripts\Binaries\ProofScriptCore.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Resources\Scripts\Binaries\ProofScriptCore.pdb

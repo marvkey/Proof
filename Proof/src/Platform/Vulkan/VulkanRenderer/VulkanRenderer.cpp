@@ -39,6 +39,7 @@ namespace Proof
 	}
 	
 	void VulkanRenderer::BeginFrame() {
+		PF_PROFILE_FUNC();
 		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		if (s_IsWindowResised) {
 			graphicsContext->GetSwapChain()->Resize({ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() });
@@ -51,6 +52,7 @@ namespace Proof
 		graphicsContext->GetSwapChain()->ResetFences();
 	}
 	void VulkanRenderer::EndFrame() {
+		PF_PROFILE_FUNC();
 		DrawFrame();
 		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		s_RenderData->ResourceFreeQueue[s_CurrentFrame.FrameinFlight].Flush();
@@ -61,6 +63,7 @@ namespace Proof
 		s_IsWindowResised = true;
 	}
 	void VulkanRenderer::DrawFrame() {
+		PF_PROFILE_FUNC();
 		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->SubmitCommandBuffers(s_RenderData->CommandBuffers, &s_CurrentFrame.ImageIndex);
 		s_RenderData->CommandBuffers.clear();
@@ -77,7 +80,9 @@ namespace Proof
 
 
 	void VulkanRenderer::SubmitCommandBuffer(Count<RenderCommandBuffer> commandBuffer) {
-		if(commandBuffer != nullptr)
+		if (commandBuffer == nullptr)
+			return;
+		if(std::find(s_RenderData->CommandBuffers.begin(), s_RenderData->CommandBuffers.end(), commandBuffer) ==s_RenderData->CommandBuffers.end() )
 			s_RenderData->CommandBuffers.emplace_back(commandBuffer);
 	}
 	

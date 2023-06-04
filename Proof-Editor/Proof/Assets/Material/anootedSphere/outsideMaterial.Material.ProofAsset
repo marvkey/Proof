@@ -1,0 +1,10 @@
+AssetType: Material
+ID: 8045788484859044740
+AlbedoColour: [0.764905155, 0.245740101, 0.92338711]
+Roughness: 0.560000002
+Metallness: 0
+UsePBR: true
+AlbedoTexture: 0
+NormalTexture: 0
+MetallicTexture: 0
+RoughnessTexture: 0

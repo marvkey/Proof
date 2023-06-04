@@ -24,21 +24,29 @@ namespace Proof {
         Renderer::BeginRenderPass(s_CommandBuffer, s_RenderPass, s_ScreenFrameBuffer);  
 
         s_Renderer2D->BeginContext(projectionMatrix, viewProjection, GlmVecToProof(cameraLocaion), s_ScreenFrameBuffer, s_CommandBuffer);
+        for (auto& [Id, button] : panel->GetImageButtons())
+        {
+            if (button.Visible == false)
+                continue;
+            glm::vec2 copy = { button.Postion.x / 4,button.Postion.y / 4 };
+            s_Renderer2D->DrawQuad({ copy,0 }, { button.Rotation,0 }, { button.Size.x / 4,button.Size.y / 4,1 }, button.TintColour, button.Texture);
+        }
+        // gonna do this for render order
         for (auto& [Id,button] : panel->GetButtons())
         {
+
+            if (button.Visible == false)
+                continue;
             glm::vec2 copy = { button.Postion.x / 4,button.Postion.y/4 };
             s_Renderer2D->DrawQuad({ copy,0 }, { button.Rotation,0 }, { button.Size.x/4,button.Size.y / 4,1 }, button.TintColour,nullptr);
         }
 
-        for (auto& [Id, button] : panel->GetImageButtons())
-        {
-            glm::vec2 copy = { button.Postion.x / 4,button.Postion.y / 4 };
-            s_Renderer2D->DrawQuad({ copy,0 }, { button.Rotation,0 }, { button.Size.x / 4,button.Size.y / 4,1 }, button.TintColour, nullptr);
-        }
+      
         TextParams textParam;
         glm::mat4 textTransform;
         for(auto& [Id, text] : panel->GetTexts()){
-
+            if (text.Visible == false)
+                continue;
             textParam.Color = text.Param.Color;
             textParam.Kerning = text.Param.Kerning;
             textParam.LineSpacing = text.Param.LineSpacing;

@@ -1,7 +1,7 @@
 #include "Proof/Core/Proof.h"
 #include "Proof/Core/Application.h"
 #include <filesystem>
-#include "Editor3D/Editor3D.h"
+#include "Runtime/RuntimeLayer.h"
 #include "Proof/Project/Project.h"
 namespace Proof {
     class ProofEditor : public Application {
@@ -18,13 +18,13 @@ namespace Proof {
         }
     };
     Application* CreateApplication(int argc, char** argv) {
-        std::string_view projectPath = "Proof/Proof.ProofProject";
+        std::string_view projectPath = "../Proof-Editor/Proof/Proof.ProofProject";
         if (argc > 1)
             projectPath = argv[1];
 
         ApplicationConfiguration configuration;
         configuration.Name = "Proof Rntime";
-        configuration.EnableImgui = false;
+        configuration.EnableImgui = true;
         configuration.ProjectPath = projectPath;
         configuration.WindowConfiguration.Height = 500;
         configuration.WindowConfiguration.Width = 800;

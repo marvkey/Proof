@@ -1,9 +1,10 @@
 #Vertex Shader
 #version 450 core
-layout(location = 0) in vec3 aPos;
-layout(location = 1) in vec4 aColor;
-layout(location = 2) in vec2 aTexCoord;
-layout(location = 3) in float aTextureIndex;
+layout(location = 0) in mat4 aTransfomr;
+layout(location = 4) in vec3 aPos;
+layout(location = 5) in vec4 aColor;
+layout(location = 6) in vec2 aTexCoord;
+layout(location = 7) in float aTextureIndex;
 
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec2 outTexCoords;
@@ -32,8 +33,9 @@ layout(location = 2) in float  inTextureIndex;
 layout(set = 0, binding = 1) uniform sampler2D u_Textures[32];
 
 void main() {
-	vec4 temp = texture(u_Textures[int(inTextureIndex)], inTexCoord) * inColor;
-	if (temp.a ==0)
+	vec4  texColor = texture(u_Textures[int(inTextureIndex)], inTexCoord) * inColor;
+	//(before item becomes black)
+	if (texColor.a < 0.1)
 		discard;
-	outFragColor = temp;
+	outFragColor = vec4(texColor.rgb, texColor.a);
 }

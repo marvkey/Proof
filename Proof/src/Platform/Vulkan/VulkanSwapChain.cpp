@@ -237,15 +237,23 @@ namespace Proof
             
             for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
                 vkDestroyImageView(device, m_SwapChainImageViews[i], nullptr);
-                vkDestroyImage(device, m_SwapChainImages[i], nullptr);
+                //vkDestroyImage(device, m_SwapChainImages[i], nullptr);
             }
             m_SwapChainImageViews.clear();
             vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
+            m_SwapChainImageViews.clear();
+            m_SwapChainImages.clear();
+            m_SwapChain = nullptr;
         }
+
         CreateSwapChain();
         CreateImageViews();
         //for (auto i : FrameBuffers)
+        //{
+        //    if(i->m_DepthImage)
+        //    i->Release();
         //    i->Init();
+        //}
     }
 
     void VulkanSwapChain::CleanUp() {

@@ -1,0 +1,27 @@
+AssetType: Prefab
+ID: 10134814683330764321
+EntityOwner: 16301995925001450980
+Entities:
+  - Entity: 16301995925001450980
+    TagComponent:
+      Tag: annotedSphere
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 496270331543024030
+      MaterialTable:
+        - Material: ""
+          AssetID: 8045788484859044740
+          Index: 0
+        - Material: ""
+          AssetID: 1356555244972497892
+          Index: 1
+        - Material: ""
+          AssetID: 1356555244972497892
+          Index: 2

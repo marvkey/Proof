@@ -349,12 +349,12 @@ namespace Proof {
 			auto& data = action.Inputs.at(InputDevice::MouseMovement);
 			for (auto& inputs : data)
 			{
-				if (inputs.Key == (int)MouseAxis::ScrollUp)
+				if (inputs.Key == (int)e.GetAxis())
 				{
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyPressed);
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0,InputEvent::KeyClicked);
 				}
-				else if(inputs.Key == (int)MouseAxis::ScrolDown)
+				else if(inputs.Key == (int)e.GetAxis())
 				{
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyClicked);
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyPressed);

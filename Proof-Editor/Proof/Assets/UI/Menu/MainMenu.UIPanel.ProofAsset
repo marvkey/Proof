@@ -1,0 +1,77 @@
+AssetType: UIPanel
+ID: 6505712906522179490
+Buttons:
+  - Button: Background
+    Position: [0, -6.30000019]
+    Size: [100, 6.0999999]
+    Rotation: [0, 0]
+    Text: ""
+    TintColor: [0.834677398, 0.834677398, 0.834677398, 1]
+    Visible: false
+  - Button: Button1
+    Position: [0, -0.400000006]
+    Size: [100, 6]
+    Rotation: [0, 0]
+    Text: ""
+    TintColor: [0.835294127, 0.835294127, 0.835294127, 1]
+    Visible: false
+  - Button: Button2
+    Position: [-3.5, 1]
+    Size: [5.5999999, 12.6999998]
+    Rotation: [0, 0]
+    Text: ""
+    TintColor: [0.733870983, 0.733870983, 0.733870983, 1]
+    Visible: true
+ImageButtons:
+  - ImageButton: Play
+    Position: [-2.5, 0]
+    Size: [3, 1]
+    Rotation: [0, 0]
+    TintColor: [1, 1, 1, 1]
+    Visible: true
+    ImageAssetID: 11363646704190780496
+  - ImageButton: Quit
+    Position: [-2.5, -1.60000002]
+    Size: [3, 1]
+    Rotation: [0, 0]
+    TintColor: [1, 1, 1, 1]
+    Visible: true
+    ImageAssetID: 3279783081301061708
+  - ImageButton: ImageButton2
+    Position: [2.20000005, 0]
+    Size: [6, 8.19999981]
+    Rotation: [0, 0]
+    TintColor: [1, 1, 1, 1]
+    Visible: true
+    ImageAssetID: 9492005051549899763
+Texts:
+  - Text: MainMenu
+    Position: [-3.79999995, 4]
+    Size: [3, 3]
+    Rotation: [0, 0]
+    Color: [0, 0, 0, 1]
+    Input: Proof
+    Kerning: 0
+    LineSpacing: 1
+    Visible: true
+    Font: 0
+  - Text: Text1
+    Position: [-3.20000005, 1.10000002]
+    Size: [1, 1]
+    Rotation: [0, 0]
+    Color: [1, 1, 1, 1]
+    Input: Press [P]
+    Kerning: 0
+    LineSpacing: 1
+    Visible: true
+    Font: 0
+  - Text: Text2
+    Position: [-3.20000005, -0.600000024]
+    Size: [1, 1]
+    Rotation: [0, 0]
+    Color: [1, 1, 1, 1]
+    Input: Press [Q]
+    Kerning: 0
+    LineSpacing: 1
+    Visible: true
+    Font: 0

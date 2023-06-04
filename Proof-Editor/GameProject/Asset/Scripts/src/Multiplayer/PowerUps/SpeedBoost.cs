@@ -1,66 +1,71 @@
 ﻿using Proof;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Game
 {
-    class SpeedBoost : PowerUp
+    class SpeedBoost : PlayerPowerUp
     {
-        public float IncrementSpeed = 100f;
+        public float IncrementSpeed = 600f;
         public float Duration = 5.0f;
         private float m_Timer;
+        bool m_HasRUnTrnasform = false;
+        bool m_InitialPowerUp = false;
+        public override float GetCountDown()
+        {
+            return m_Timer;
+        }
+        protected void OnCreate()
+        {
+            Image = new ImageAsset(10460736942826054302);
+        }
 
-        
         protected override void ApplyPowerUp()
         {
-            m_Timer += World.GetTimeStep();
-
-            if(m_Timer >= Duration)
+            m_Timer -= World.GetTimeStep();
+            if(m_InitialPowerUp == false)
+            {
+                m_Timer = Duration;
+                m_Owner.m_ParticleSystem.GetParticle(3).Play();
+                InitialAddPowerUp();
+                m_InitialPowerUp = true;
+            }
+            if(m_Timer <= 0.0f)
             {
                 M_PowerupApplied = true;
 
                 m_Owner.FowardForce -= IncrementSpeed;
-                m_Owner.SideWayForce -= IncrementSpeed / 2;
+                m_Owner.SideWayForce -= IncrementSpeed / 3;
+                m_Owner.m_ParticleSystem.GetParticle(3).End();
             }
         }
-        void OnUpdate(float ts)
+
+        protected void OnUpdate(float ts)
         {
+            base.OnUpdate(ts);
+      
+            if (m_Owner == null && m_Throw == false && m_HasRUnTrnasform == false)
+            {
+                GetComponent<TransformComponent>().Rotation = new Vector(0, 0, 180);
+                GetComponent<TransformComponent>().Location = new Vector(GetComponent<TransformComponent>().Location.X, GetComponent<TransformComponent>().Location.Y + 3,
+                    GetComponent<TransformComponent>().Location.Z);
+                m_HasRUnTrnasform = true;
+
+            }
             if (m_Throw == false && m_Owner != null)
             {
                 GetComponent<TransformComponent>().Location = m_Owner.GetComponent<TransformComponent>().Location;
-                GetComponent<TransformComponent>().Rotation = m_Owner.GetComponent<TransformComponent>().Rotation;
+                GetComponent<TransformComponent>().Rotation = new Vector(m_Owner.GetComponent<TransformComponent>().Rotation.X, m_Owner.GetComponent<TransformComponent>().Rotation.Y,
+                    180);
             }
-            if (m_Throw)
-                GetComponent<TransformComponent>().Translate(GetComponent<TransformComponent>().GetFowardVector() * Speed * ts);
-
-            if (m_Owner != null)
-                ApplyPowerUp();
-
             if (M_PowerupApplied == true)
             {
+                m_Owner.RemoveItem(this);
                 World.DeleteEntity(this);
             }
-
         }
-
-        void OnTriggerEnter(Entity other)
-        {
-
-        }
-
-        public override void PickUp(MPlayer player)
-        {
-            base.PickUp(player);
-        }
-
         void InitialAddPowerUp()
         {
             m_Owner.FowardForce += IncrementSpeed;
-            m_Owner.SideWayForce += IncrementSpeed/2;
+            m_Owner.SideWayForce += IncrementSpeed/3;
         }
     }
 }

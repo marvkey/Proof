@@ -57,6 +57,31 @@ namespace Proof {
 		out << YAML::Key << "AlbedoColour" << YAML::Value << material->Colour;
 		out << YAML::Key << "Roughness" << YAML::Value << material->Roughness;
 		out << YAML::Key << "Metallness" << YAML::Value << material->Metallness;
+		out << YAML::Key << "Tiling" << YAML::Value << material->Tiling;
+		out << YAML::Key << "Offset" << YAML::Value << material->Offset;
+		out << YAML::Key << "UsePBR" << YAML::Value << material->UsePBR;
+
+		if(material->AlbedoTexture)
+			out << YAML::Key << "AlbedoTexture" << YAML::Value << material->AlbedoTexture->GetID();
+		else
+			out << YAML::Key << "AlbedoTexture" << YAML::Value << 0;
+
+		if (material->NormalTexture)
+			out << YAML::Key << "NormalTexture" << YAML::Value << material->NormalTexture->GetID();
+		else
+			out << YAML::Key << "NormalTexture" << YAML::Value << 0;
+
+		if (material->MetallicTexture)
+			out << YAML::Key << "MetallicTexture" << YAML::Value << material->MetallicTexture->GetID();
+		else
+			out << YAML::Key << "MetallicTexture" << YAML::Value << 0;
+
+		if (material->RoughnessTexture)
+			out << YAML::Key << "RoughnessTexture" << YAML::Value << material->RoughnessTexture->GetID();
+		else
+			out << YAML::Key << "RoughnessTexture" << YAML::Value << 0;
+
+
 		out << YAML::EndMap;
 		std::ofstream found(AssetManager::GetAssetFileSystemPath(data.Path).string());
 		found << out.c_str();
@@ -68,11 +93,56 @@ namespace Proof {
 		if (!data["AssetType"])
 			return nullptr;
 		Count<Material> material = Count<Material>::Create();
-		//m_AssetID = data["ID"].as<uint64_t>();
 		material->Colour = data["AlbedoColour"].as<Vector>();
 
 		material->Metallness = data["Metallness"].as<float>();
 		material->Roughness = data["Roughness"].as<float>();
+
+		if (data["Tiling"])
+		{
+			material->Tiling = data["Tiling"].as<glm::vec2>();
+			material->Offset = data["Offset"].as<glm::vec2>();
+		}
+		if(data["UsePBR"])
+			material->UsePBR = data["UsePBR"].as<bool>();
+
+		if (data["AlbedoTexture"])
+		{
+			uint64_t id = data["AlbedoTexture"].as<uint64_t>();
+			if (AssetManager::HasAsset(id))
+			{
+				material->AlbedoTexture = AssetManager::GetAsset<Texture2D>(id);
+			}
+		}
+		if (data["NormalTexture"])
+		{
+			uint64_t id = data["NormalTexture"].as<uint64_t>();
+			if (AssetManager::HasAsset(id))
+			{
+				material->NormalTexture = AssetManager::GetAsset<Texture2D>(id);
+			}
+		}
+
+		if (data["MetallicTexture"])
+		{
+			uint64_t id = data["MetallicTexture"].as<uint64_t>();
+			if (AssetManager::HasAsset(id))
+			{
+				material->MetallicTexture = AssetManager::GetAsset<Texture2D>(id);
+			}
+		}
+
+
+		if (data["RoughnessTexture"])
+		{
+			uint64_t id = data["RoughnessTexture"].as<uint64_t>();
+			if (AssetManager::HasAsset(id))
+			{
+				material->RoughnessTexture = AssetManager::GetAsset<Texture2D>(id);
+			}
+		}
+
+		
 		material->Name = assetData.GetName();
 		SetID(assetData, material);
 		return material;
@@ -201,7 +271,89 @@ namespace Proof {
 
 		return prefab;
 	}
+	void ParticleSystemSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+		Count<ParticleSystem> particleSystem = asset.As<ParticleSystem>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(particleSystem->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << particleSystem->GetID();
+		out << YAML::Key << "Velocity" << YAML::Value << particleSystem->Velocity;
+		out << YAML::Key << "VelocityVariation" << YAML::Value << particleSystem->VelocityVariation;
+		out << YAML::Key << "PlayOnAwake" << YAML::Value << particleSystem->PlayOnAwake;
+		out << YAML::Key << "ColorBegin" << YAML::Value << particleSystem->ColorBegin;
+		out << YAML::Key << "ColorEnd" << YAML::Value << particleSystem->ColorEnd;
+		out << YAML::Key << "SizeBegin" << YAML::Value << particleSystem->SizeBegin;
+		out << YAML::Key << "SizeEnd" << YAML::Value << particleSystem->SizeEnd;
+		out << YAML::Key << "SizeVariation" << YAML::Value << particleSystem->SizeVariation;
+		out << YAML::Key << "LifeTime" << YAML::Value << particleSystem->LifeTime;
+		out << YAML::Key << "MaxParticles" << YAML::Value << particleSystem->MaxParticles;
+		out << YAML::Key << "Loop" << YAML::Value << particleSystem->Loop;
+		out << YAML::Key << "Use3D" << YAML::Value << particleSystem->Use3D;
+		out << YAML::Key << "SizeBegin3D" << YAML::Value << particleSystem->SizeBegin3D;
+		out << YAML::Key << "SizeEnd3D" << YAML::Value << particleSystem->SizeEnd3D;
+		out << YAML::Key << "SizeVariation3D" << YAML::Value << particleSystem->SizeVariation3D;
+		out << YAML::Key << "Rotation3D" << YAML::Value << particleSystem->Rotation3D;
+		if(particleSystem->Texture != nullptr)
+			out << YAML::Key << "TextureID" << YAML::Value << (uint64_t)particleSystem->Texture->GetID();
+		else
+			out << YAML::Key << "TextureID" << YAML::Value << 0;
+		//
+		{
+			out << YAML::Key << "ParticleEmissionEnable" << YAML::Value << particleSystem->Emision.Enabled;
+			out << YAML::Key << "ParticleEmissionParticleOverTime" << YAML::Value << particleSystem->Emision.ParticleOverTime;
+			out << YAML::Key << "ParticleEmissionSpawnRateDistance" << YAML::Value << particleSystem->Emision.SpawnRateDistance;
 
+		}
+		out << YAML::EndMap;
+		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		found << out.c_str();
+		found.close();
+	}
+	Count<class Asset> ParticleSystemSerilizer::TryLoadAsset(const AssetInfo& assetData)const
+	{
+		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!data["AssetType"])
+			return nullptr;
+		Count<ParticleSystem> particleSystem = Count<ParticleSystem>::Create();
+		
+		particleSystem->Velocity = data["Velocity"].as<Vector>();
+		particleSystem->VelocityVariation = data["VelocityVariation"].as<Vector>();
+		particleSystem->ColorBegin = data["ColorBegin"].as<glm::vec4>();
+		particleSystem->ColorEnd = data["ColorEnd"].as<glm::vec4>();
+		particleSystem->SizeBegin = data["SizeBegin"].as<float>();
+		particleSystem->SizeEnd = data["SizeEnd"].as<float>();
+		particleSystem->SizeVariation = data["SizeVariation"].as<float>();
+		particleSystem->LifeTime = data["LifeTime"].as<float>();
+		particleSystem->MaxParticles = data["MaxParticles"].as<uint32_t>();
+		particleSystem->Loop = data["Loop"].as<bool>();
+		particleSystem->PlayOnAwake = data["PlayOnAwake"].as<bool>();
+		if (data["Use3D"])
+		{
+
+			particleSystem->Use3D = data["Use3D"].as<bool>();
+			particleSystem->SizeBegin3D = data["SizeBegin3D"].as<Vector>();
+			particleSystem->SizeEnd3D = data["SizeEnd3D"].as<Vector>();
+			particleSystem->SizeVariation3D = data["SizeVariation3D"].as<Vector>();
+			particleSystem->Rotation3D = data["Rotation3D"].as<Vector>();
+		}
+
+		uint64_t id = data["TextureID"].as<uint64_t>();
+		if (AssetManager::HasAsset(id))
+		{
+			particleSystem->Texture = AssetManager::GetAsset<Texture2D>(id);
+		}
+
+		//partilce emmision
+		{
+			particleSystem->Emision.Enabled = data["ParticleEmissionEnable"].as<bool>();
+			particleSystem->Emision.ParticleOverTime = data["ParticleEmissionParticleOverTime"].as<uint32_t>();
+			particleSystem->Emision.SpawnRateDistance = data["ParticleEmissionSpawnRateDistance"].as<float>();
+
+		}
+		SetID(assetData, particleSystem);
+		return particleSystem;
+	}
 	void UIPanelAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
 	{
 		Count<UIPanel>uiPanel  = asset.As<UIPanel>();
@@ -223,6 +375,7 @@ namespace Proof {
 				out << YAML::Key << "Rotation" << button.Rotation;
 				out << YAML::Key << "Text" << button.Text;
 				out << YAML::Key << "TintColor" << button.TintColour;
+				out << YAML::Key << "Visible" << button.Visible;
 				out << YAML::EndMap;// Button
 			}
 			out << YAML::EndSeq;
@@ -240,6 +393,8 @@ namespace Proof {
 				out << YAML::Key << "Size" << imageButton.Size;
 				out << YAML::Key << "Rotation" << imageButton.Rotation;
 				out << YAML::Key << "TintColor" << imageButton.TintColour;
+				out << YAML::Key << "Visible" << imageButton.Visible;
+
 				AssetID id = (imageButton.Texture == nullptr) ? AssetID(0) : imageButton.Texture->GetID();
 				out << YAML::Key << "ImageAssetID" <<(uint64_t) id;
 				out << YAML::EndMap;// Button
@@ -262,6 +417,7 @@ namespace Proof {
 				out << YAML::Key << "Input" << texts.Text;
 				out << YAML::Key << "Kerning" << texts.Param.Kerning;
 				out << YAML::Key << "LineSpacing" << texts.Param.LineSpacing;
+				out << YAML::Key << "Visible" << texts.Visible;
 				AssetID id = (texts.Font == nullptr) ? AssetID(0) : texts.Font->GetID();
 				out << YAML::Key << "Font" << (uint64_t)id;
 				out << YAML::EndMap;// Text
@@ -290,7 +446,10 @@ namespace Proof {
 			uiButton.Rotation = button["Rotation"].as<glm::vec2>();
 			uiButton.Text = button["Text"].as < std::string >();
 			uiButton.TintColour = button["TintColor"].as < glm::vec4>();
-
+			if (button["Visible"])
+			{
+				uiButton.Visible = button["Visible"].as<bool>();
+			}
 			std::string name = button["Button"].as<std::string>();
 			uiPanel->SetButton(uiButton, name);
 		}
@@ -304,7 +463,10 @@ namespace Proof {
 			uiImageButton.Size = imageButton["Size"].as<glm::vec2>();
 			uiImageButton.Rotation = imageButton["Rotation"].as<glm::vec2>();
 			uiImageButton.TintColour = imageButton["TintColor"].as < glm::vec4>();
-
+			if (imageButton["Visible"])
+			{
+				uiImageButton.Visible = imageButton["Visible"].as<bool>();
+			}
 			AssetID textureId = imageButton["ImageAssetID"].as<uint64_t>();
 
 			if (AssetManager::HasAsset(textureId))
@@ -327,7 +489,10 @@ namespace Proof {
 			uiText.Text = text["Input"].as < std::string>();
 			uiText.Param.Kerning = text["Kerning"].as < float>();
 			uiText.Param.LineSpacing = text["LineSpacing"].as<float>();
-
+			if (text["Visible"])
+			{
+				uiText.Visible = text["Visible"].as<bool>();
+			}
 			AssetID fontId = text["Font"].as<uint64_t>();
 
 			if (AssetManager::HasAsset(fontId))
@@ -341,4 +506,5 @@ namespace Proof {
 		return uiPanel;
 
 	}
+
 }

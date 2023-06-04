@@ -13,7 +13,9 @@ namespace Proof{
 		float Metallness =0.0f;// also shinines
 		float Roughness = 0.0f;
 		Vector Colour {1,1,1};
-
+		glm::vec2 Tiling{ 1,1 };
+		glm::vec2 Offset{ 0,0 };
+		bool UsePBR = true;
 		Count<class Texture2D> AlbedoTexture;
 		Count<class Texture2D> NormalTexture;
 		Count<class Texture2D> MetallicTexture;

@@ -1,8 +1,8 @@
 AssetType: Prefab
-ID: 1607569046936484718
-EntityOwner: 9401483867267863440
+ID: 2560735802227511469
+EntityOwner: 8046514079372769662
 Entities:
-  - Entity: 9401483867267863440
+  - Entity: 8046514079372769662
     TagComponent:
       Tag: mObstacle
       tags: []
@@ -17,13 +17,13 @@ Entities:
       MeshAssetPointerID: 4645041025570573733
       MaterialTable:
         - Material: ""
-          AssetID: 0
+          AssetID: 17034989143390742759
           Index: 0
     CubeColliderComponent:
       IsTrigger: false
       OffsetLocation: [0, 0, 0]
       OffsetScale: [1, 1, 1]
-      PhysicsMaterialPointerID: 0
+      PhysicsMaterialPointerID: 14027245898106135139
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0

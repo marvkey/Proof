@@ -10,19 +10,34 @@ namespace Proof{
 	public:
 		ASSET_CLASS_TYPE(UIPanel);
 
-		void SetButton(const UIButton& button, std::string);
-		void SetButtonImage(const UIButtonImage& button, std::string);
-		void SetText(const UIText& button, std::string);
+		void SetPlaceHolder(const UIPlaceHolder& placeHolder, const std::string&);
+		void SetImage(const UIImage& placeHolder, const std::string&);
 
-		bool ButtonHas(std::string ID);
-		bool ImageButtonHas(std::string ID);
-		bool TextHas(std::string ID);
+		void SetButton(const UIButton& button, const std::string&);
+		void SetButtonImage(const UIButtonImage& button, const std::string&);
+		void SetText(const UIText& button, const std::string&);
+
+
+		bool PlaceHolderHas(const std::string& ID);
+		bool ImageHas(const std::string& ID);
+
+		bool ButtonHas(const std::string& ID);
+		bool ImageButtonHas(const std::string& ID);
+		bool TextHas(const std::string& ID);
 		
 
-		UIButton& ButtonGet(std::string ID);
-		UIButtonImage& GetImageButton(std::string ID);
-		UIText& TextGet(std::string ID);
+		UIPlaceHolder& PlaceHolderGet(const std::string& ID);
+		UIImage& ImageGet(const std::string& ID);
+		UIButton& ButtonGet(const std::string& ID);
+		UIButtonImage& GetImageButton(const std::string& ID);
+		UIText& TextGet(const std::string& ID);
 
+		const std::unordered_map<std::string, UIPlaceHolder>& GetPlaceHolders() {
+			return m_PlaceHolders;
+		};
+		const std::unordered_map<std::string, UIImage>& GetImages() {
+			return m_Images;
+		};
 		const std::unordered_map<std::string, UIButton>& GetButtons() {
 			return m_Buttons;
 		};
@@ -39,6 +54,8 @@ namespace Proof{
 		bool Visible = true;
 	private:
 
+		std::unordered_map<std::string, UIPlaceHolder> m_PlaceHolders;
+		std::unordered_map<std::string, UIImage> m_Images;
 		std::unordered_map<std::string, UIButton> m_Buttons;
 		std::unordered_map<std::string, UIButtonImage> m_ImageButtons;
 		std::unordered_map<std::string, UIText> m_Text;

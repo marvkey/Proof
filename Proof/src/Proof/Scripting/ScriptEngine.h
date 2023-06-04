@@ -11,6 +11,7 @@
 extern "C" {
 	typedef struct _MonoClass MonoClass;
 	typedef struct _MonoObject MonoObject;
+	typedef struct _MonoDomain MonoDomain;
 	typedef struct _MonoMethod MonoMethod;
 	typedef struct _MonoAssembly MonoAssembly;
 	typedef struct _MonoImage MonoImage;
@@ -224,6 +225,7 @@ namespace Proof
 		// scirpt name, instnace
 		static std::unordered_map<std::string, Count<ScriptInstance>>const& GetScriptInstnace(Entity enitty);
 		static bool EntityHasScripts(Entity enitty);
+		static const std::unordered_map<EntityID, std::unordered_map<std::string, Count<ScriptInstance>>>& EachEntityScript();
 		// class name, field, data
 		static std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& GetScriptFieldMap(Entity entity);
 		static bool HasScriptFieldMap(Entity entity);
@@ -233,6 +235,7 @@ namespace Proof
 		static MonoObject* InstantiateClass(MonoClass* monoClass);
 
 		static MonoObject* GetMonoManagedObject(UUID ID, const std::string& fullName);
+		static MonoDomain* GetDomain();
 	private:
 		static void LoadAssembly(const std::filesystem::path& filepath);
 		static void LoadAppAssembly(const std::filesystem::path& filepath);

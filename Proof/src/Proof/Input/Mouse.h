@@ -30,6 +30,8 @@ namespace Proof {
         static bool IsScrollUp() {
             return {GetScrollY() > 0};
         }
+
+        static void GetScreenSpace(glm::vec2 windwoPos, glm::vec2 windowSize);
         static bool IsMouseMoved();
         static bool IsMouseCaptured();
         static void CaptureMouse(bool caputure);

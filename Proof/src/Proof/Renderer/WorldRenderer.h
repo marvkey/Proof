@@ -13,6 +13,10 @@ namespace Proof
 		WorldRenderer()=default;
 		virtual ~WorldRenderer();
 
+
+		void BeginContext();
+		void EndContext();
+		void AddRender(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewport, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame = true, Count<UITable> uiTable = nullptr);
 		WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight);
 		void Resize(ScreenSize windowSize);
 		void SetContext(Count<World>world) {
@@ -35,6 +39,7 @@ namespace Proof
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
 		Special<class Renderer2D>  m_Renderer2D;
 		Special<class Renderer2D>  m_UIRenderer;
+		Special<class Renderer2D>  m_ParticleSystemRenderer;
 		Count<RenderCommandBuffer> m_CommandBuffer;
 		Count<class RenderPass> m_RenderPass;
 		Count<World>m_World=nullptr;

@@ -6,6 +6,17 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
+	public static class Mouse
+	{
+		public static void Capture(bool capture) => InternalCalls.Mouse_CaptureMouse(capture);
+		public static bool IsMouseCaptured() => InternalCalls.Mouse_IsMouseCaptured();
+		public static Vector2 GetPositon()
+		{
+			Vector2 vec = new Vector2();
+			InternalCalls.Mouse_GetPosition(out vec);
+			return vec;
+		}
+    }
     public static class Input
     {
         // checks if key has been pressed on only render once until key is pressed again

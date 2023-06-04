@@ -12,7 +12,7 @@ namespace Proof{
 		std::filesystem::path AssetDirectory = {};
 		std::filesystem::path AssetManager = {};
 
-		std::filesystem::path ScriptPath = {};
+		std::filesystem::path ScriptModuleDirectory = {};
 
 		uint64_t StartWorld = 0;
 		ProjectConfig(std::filesystem::path project, const std::string& name = "Untitled"):
@@ -20,7 +20,7 @@ namespace Proof{
 		{
 			AssetDirectory = "Assets";
 			AssetManager = AssetDirectory / "AssetManager.ProofAssetManager";
-			//ScriptPath = "Assets";
+			ScriptModuleDirectory = "Resources/Scripts/Binaries";
 		}
 		ProjectConfig()
 		{

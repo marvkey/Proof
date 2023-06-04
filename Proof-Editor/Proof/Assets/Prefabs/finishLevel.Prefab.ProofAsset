@@ -1,0 +1,34 @@
+AssetType: Prefab
+ID: 14125234285029124407
+EntityOwner: 9185710890420801030
+Entities:
+  - Entity: 9185710890420801030
+    TagComponent:
+      Tag: finishLevel
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 4645041025570573733
+      MaterialTable:
+        - Material: ""
+          AssetID: 10123378520422782407
+          Index: 0
+    CubeColliderComponent:
+      IsTrigger: false
+      OffsetLocation: [0, 0, 0]
+      OffsetScale: [1, 1, 1]
+      PhysicsMaterialPointerID: 17163322928043719126
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]

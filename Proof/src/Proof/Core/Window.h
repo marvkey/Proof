@@ -82,6 +82,10 @@ namespace Proof {
 			PF_CORE_ASSERT(HasController(index), "Does not contain controller");
 			return s_Controllers.at(index);
 		}
+
+		static std::map<int, Controller>& GetControllers() {
+			return s_Controllers;
+		}
 	protected:
 		Count<class SwapChain> m_SwapChain;
 		bool m_FrameBufferResized = false;

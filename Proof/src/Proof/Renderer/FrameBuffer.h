@@ -81,6 +81,7 @@ namespace Proof {
 	class ScreenFrameBuffer {
 	public:
 		static Count<ScreenFrameBuffer> Create(uint32_t Width, uint32_t Height);
+		static Count<ScreenFrameBuffer> Create(const FrameBufferConfig& config);
 		virtual void Resize(Vector2 imageSize);
 		const Count<FrameBuffer> const GetFrameBuffer() {
 			return m_FrameBuffer;

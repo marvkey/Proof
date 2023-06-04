@@ -18,11 +18,10 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
-    <OutputPath>Binaries\</OutputPath>
+    <OutputPath>..\..\..\Proof\Resources\Scripts\Binaries\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -31,11 +30,10 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>Binaries\</OutputPath>
+    <OutputPath>..\..\..\Proof\Resources\Scripts\Binaries\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -44,40 +42,39 @@
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>Binaries\</OutputPath>
+    <OutputPath>..\..\..\Proof\Resources\Scripts\Binaries\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <Reference Include="ProofScriptCore" />
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <Reference Include="ProofScriptCore" />
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
+    <Reference Include="ProofScriptCore" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\Enemy.cs" />
-    <Compile Include="src\Multiplayer\mGameManager.cs" />
+    <Compile Include="src\Menu\MainMenuController.cs" />
     <Compile Include="src\Multiplayer\MPlayer.cs" />
+    <Compile Include="src\Multiplayer\PowerUps\DecreaseSpeed.cs" />
     <Compile Include="src\Multiplayer\PowerUps\Explosive.cs" />
+    <Compile Include="src\Multiplayer\PowerUps\OpponentPowerUp.cs" />
+    <Compile Include="src\Multiplayer\PowerUps\PlayerPowerUp.cs" />
     <Compile Include="src\Multiplayer\PowerUps\PowerUp.cs" />
     <Compile Include="src\Multiplayer\PowerUps\Shake.cs" />
     <Compile Include="src\Multiplayer\PowerUps\SpeedBoost.cs" />
+    <Compile Include="src\Multiplayer\mGameManager.cs" />
     <Compile Include="src\Player.cs" />
     <Compile Include="src\Score.cs" />
     <Compile Include="src\SinglePlayer\GameManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\ProofScriptCore\ProofScriptCore.csproj">
-      <Project>{49FAD7F9-B585-45BE-BE96-C8B22AA1A1BE}</Project>
-      <Name>ProofScriptCore</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

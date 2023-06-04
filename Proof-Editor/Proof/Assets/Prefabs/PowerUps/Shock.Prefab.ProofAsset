@@ -1,24 +1,30 @@
 AssetType: Prefab
-ID: 16359374454295279052
-EntityOwner: 14517891011057715553
+ID: 17021343848416113346
+EntityOwner: 3702312336614852986
 Entities:
-  - Entity: 14517891011057715553
+  - Entity: 3702312336614852986
     TagComponent:
       Tag: Shock
       tags: []
     TransformComponent:
       Location: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [3, 3, 3]
+      Scale: [1, 1, 1]
     ChildComponent:
       OwnerID: 0
       Children: []
     MeshComponent:
-      MeshAssetPointerID: 566574579191162934
+      MeshAssetPointerID: 9001221638474333588
       MaterialTable:
         - Material: ""
-          AssetID: 0
+          AssetID: 5516646184549321449
           Index: 0
+        - Material: ""
+          AssetID: 5143032474919958024
+          Index: 1
+        - Material: ""
+          AssetID: 0
+          Index: 2
     ScriptComponent:
       Scripts:
         - Script: Game.Shake

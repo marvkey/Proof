@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include "Material.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Renderer//ParticleSystem.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
@@ -594,6 +595,13 @@ namespace Proof
 		Count<class Prefab> Player;
 	};
 
+	struct ParticleSystemComponent {
+	public:
+		ParticleSystemComponent(const ParticleSystemComponent& other) = default;
+		ParticleSystemComponent() = default;
+		Count< ParticleHandlerTable> ParticleHandlerTable = Count<class ParticleHandlerTable>::Create();
+	};
+
 	struct PlayerHUDComponent {
 		Count< UITable> HudTable = Count<class UITable>::Create();
 	};
@@ -605,7 +613,7 @@ namespace Proof
 		ComponentGroup<IDComponent, TagComponent, ChildComponent, TransformComponent,
 		MeshComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
-		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent>;
+		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent>;
 	
 
 	using LightComponnet =ComponentGroup< DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

@@ -1,0 +1,27 @@
+AssetType: Prefab
+ID: 11819765409088477783
+EntityOwner: 5085429977297545960
+Entities:
+  - Entity: 5085429977297545960
+    TagComponent:
+      Tag: HexSphere
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 9001221638474333588
+      MaterialTable:
+        - Material: ""
+          AssetID: 5516646184549321449
+          Index: 0
+        - Material: ""
+          AssetID: 5143032474919958024
+          Index: 1
+        - Material: ""
+          AssetID: 0
+          Index: 2

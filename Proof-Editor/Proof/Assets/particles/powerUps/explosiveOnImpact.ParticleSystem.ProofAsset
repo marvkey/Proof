@@ -1,0 +1,22 @@
+AssetType: ParticleSystem
+ID: 6380623428051862791
+Velocity: [0.5, 2, 0.5]
+VelocityVariation: [-5, 3, -5]
+PlayOnAwake: false
+ColorBegin: [1, 0, 0, 1]
+ColorEnd: [1, 0.453824162, 0.108870983, 1]
+SizeBegin: 1.5
+SizeEnd: 1
+SizeVariation: 1
+LifeTime: 0.100000001
+MaxParticles: 30
+Loop: false
+Use3D: false
+SizeBegin3D: [4, 4, 4]
+SizeEnd3D: [0, 0, 0]
+SizeVariation3D: [0, 0, 0]
+Rotation3D: [0, 0, 0]
+TextureID: 2414626481707234728
+ParticleEmissionEnable: true
+ParticleEmissionParticleOverTime: 5
+ParticleEmissionSpawnRateDistance: 0

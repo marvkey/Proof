@@ -16,3 +16,7 @@ C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\GameProject\Asset\Scripts\I
 C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\GameProject\Asset\Scripts\Intermediates\Debug\Game.csproj.CopyComplete
 C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\GameProject\Asset\Scripts\Intermediates\Debug\Game.dll
 C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\GameProject\Asset\Scripts\Intermediates\Debug\Game.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Resources\Script\Binaries\Game.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Resources\Script\Binaries\Game.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Resources\Scripts\Binaries\Game.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Resources\Scripts\Binaries\Game.pdb

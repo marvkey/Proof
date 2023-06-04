@@ -1,0 +1,140 @@
+AssetType: Prefab
+ID: 9787389706
+EntityOwner: 15004063563671679551
+Entities:
+  - Entity: 15004063563671679551
+    TagComponent:
+      Tag: mPlayer
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: [17387935818093084625, 13563056289257436061, 7607784131832643506]
+    MeshComponent:
+      MeshAssetPointerID: 566574579191162934
+      MaterialTable:
+        - Material: ""
+          AssetID: 18143463248801073075
+          Index: 0
+    ScriptComponent:
+      Scripts:
+        - Script: Game.MPlayer
+          ScriptFields:
+            []
+    CubeColliderComponent:
+      IsTrigger: false
+      OffsetLocation: [0, 0, 0]
+      OffsetScale: [1, 1, 1]
+      PhysicsMaterialPointerID: 3770778745595209056
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.100000001
+      AngularDrag: 100000000
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+    PlayerHUDComponent:
+      UiTable:
+        - HUD: ""
+          HUDAssetID: 1798143042432216336
+          Visible: true
+          Index: 0
+        - HUD: ""
+          HUDAssetID: 16785536633103106005
+          Visible: true
+          Index: 1
+        - HUD: ""
+          HUDAssetID: 3138277554460297504
+          Visible: false
+          Index: 2
+        - HUD: ""
+          HUDAssetID: 4391299040253937018
+          Visible: false
+          Index: 3
+    ParticleSystemComponent:
+      ParticleHandlerTable:
+        - ParticleHandler: ""
+          ParticleHandlerAssetID: 10353059648819036927
+          Visible: false
+          Index: 0
+        - ParticleHandler: ""
+          ParticleHandlerAssetID: 6380623428051862791
+          Visible: true
+          Index: 1
+        - ParticleHandler: ""
+          ParticleHandlerAssetID: 3952350028482928379
+          Visible: true
+          Index: 2
+        - ParticleHandler: ""
+          ParticleHandlerAssetID: 3640090056689202196
+          Visible: true
+          Index: 3
+  - Entity: 17387935818093084625
+    TagComponent:
+      Tag: Camera
+      tags: []
+    TransformComponent:
+      Location: [0, 7, -13.1000004]
+      Rotation: [0, 0, 90]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 15004063563671679551
+      Children: []
+    CameraComponent:
+      NearPlane: 0.100000001
+      FarPlane: 2000
+      FOV: 90
+      Width: 250
+      Height: 250
+      UpVector: [0, 1, 0]
+      UseLocalRotation: true
+  - Entity: 13563056289257436061
+    TagComponent:
+      Tag: Text
+      tags: []
+    TransformComponent:
+      Location: [1, 14, 0]
+      Rotation: [0, 180, 0]
+      Scale: [2, 2, 1]
+    ChildComponent:
+      OwnerID: 15004063563671679551
+      Children: []
+    TextComponent:
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
+      Text: ""
+      UseLocalRotation: true
+  - Entity: 7607784131832643506
+    TagComponent:
+      Tag: ParticleSystem
+      tags: []
+    TransformComponent:
+      Location: [0, 0, -1.29999995]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 15004063563671679551
+      Children: []
+    ParticleSystemComponent:
+      ParticleHandlerTable:
+        - ParticleHandler: ""
+          ParticleHandlerAssetID: 9602570931173179966
+          Visible: false
+          Index: 0
+        - ParticleHandler: ""
+          ParticleHandlerAssetID: 6380623428051862791
+          Visible: true
+          Index: 1
+        - ParticleHandler: ""
+          ParticleHandlerAssetID: 3952350028482928379
+          Visible: true
+          Index: 2
+        - ParticleHandler: ""
+          ParticleHandlerAssetID: 3640090056689202196
+          Visible: true
+          Index: 3

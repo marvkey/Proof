@@ -74,6 +74,9 @@ namespace Proof
 		Vector Colour{ 1,1,1 };
 		float Metallness = 0.0f;// also shinines
 		float Roughness = 0.0f;
+		int UsePBR = 1;// set to ture
+		glm::vec2 Tiling;
+		glm::vec2 Offset;
 	};
 
 

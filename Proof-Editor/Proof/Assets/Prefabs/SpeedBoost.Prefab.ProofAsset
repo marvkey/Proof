@@ -1,0 +1,75 @@
+AssetType: Prefab
+ID: 11548780449461948724
+EntityOwner: 6806683903270849584
+Entities:
+  - Entity: 6806683903270849584
+    TagComponent:
+      Tag: SpeedBoost
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: [12736620024273840684, 14893580217171861254, 8264468394378465755]
+  - Entity: 12736620024273840684
+    TagComponent:
+      Tag: speedBoost
+      tags: []
+    TransformComponent:
+      Location: [0, 10, -11]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 6806683903270849584
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 11555578086406638904
+      MaterialTable:
+        - Material: ""
+          AssetID: 15178313566187308241
+          Index: 0
+        - Material: ""
+          AssetID: 6008439512829965240
+          Index: 1
+  - Entity: 14893580217171861254
+    TagComponent:
+      Tag: speedBoost
+      tags: []
+    TransformComponent:
+      Location: [0, 13, -11]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 6806683903270849584
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 11555578086406638904
+      MaterialTable:
+        - Material: ""
+          AssetID: 15178313566187308241
+          Index: 0
+        - Material: ""
+          AssetID: 6008439512829965240
+          Index: 1
+  - Entity: 8264468394378465755
+    TagComponent:
+      Tag: speedBoost
+      tags: []
+    TransformComponent:
+      Location: [0, 16, -11]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 6806683903270849584
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 11555578086406638904
+      MaterialTable:
+        - Material: ""
+          AssetID: 15178313566187308241
+          Index: 0
+        - Material: ""
+          AssetID: 6008439512829965240
+          Index: 1

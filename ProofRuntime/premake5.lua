@@ -4,6 +4,7 @@ project "ProofRuntime"
     language "C++"
     cppdialect "C++20"
     staticruntime "on"
+    defines "PF_ENABLE_RUNTIME"
 
     targetdir ("bin/".. OutputDirectory .. "/%{prj.name}")
     objdir ("bin-int/".. OutputDirectory .. "/%{prj.name}")
@@ -45,9 +46,7 @@ project "ProofRuntime"
    
     filter "system:windows"
         systemversion "latest"
-        defines {
-            "PF_PLATFORM_WINDOW64"
-        }
+        defines "PF_PLATFORM_WINDOW64"
        
 
     filter "configurations:Debug"
@@ -56,7 +55,7 @@ project "ProofRuntime"
         runtime "Debug"
         defines{
 			"PF_ENABLE_ASSERT",
-			"PF_ENABLE_DEBUG"
+			"PF_ENABLE_DEBUG",
 		}
 
     filter "configurations:Release"
@@ -65,7 +64,7 @@ project "ProofRuntime"
         runtime "Release"
         defines{
 			"PF_ENABLE_ASSERT",
-			"PF_ENABLE_DEBUG"
+			"PF_ENABLE_DEBUG",
 		}
 
     filter "configurations:Dist"

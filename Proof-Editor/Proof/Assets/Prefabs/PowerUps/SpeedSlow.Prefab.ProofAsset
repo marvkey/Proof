@@ -1,0 +1,42 @@
+AssetType: Prefab
+ID: 4078040449754614894
+EntityOwner: 10034402999802690140
+Entities:
+  - Entity: 10034402999802690140
+    TagComponent:
+      Tag: SpeedSlow
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ChildComponent:
+      OwnerID: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 11555578086406638904
+      MaterialTable:
+        - Material: ""
+          AssetID: 15178313566187308241
+          Index: 0
+        - Material: ""
+          AssetID: 0
+          Index: 1
+    ScriptComponent:
+      Scripts:
+        - Script: Game.SpeedSlow
+          ScriptFields:
+            []
+    CubeColliderComponent:
+      IsTrigger: true
+      OffsetLocation: [-0.899999976, 0.899999976, 0]
+      OffsetScale: [3.29999995, 1.89999998, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]

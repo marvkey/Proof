@@ -189,8 +189,14 @@ namespace Proof
 		ImGuiIO& io = ImGui::GetIO();
 		if (m_WindoResize == true)
 		{
+
+			FrameBufferConfig frameBuffferconfig;
+			frameBuffferconfig.DebugName = "Imgui-FrameBuffer";
+			frameBuffferconfig.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat() };
+			frameBuffferconfig.Attachments.Attachments[0].SetOverrideLayout(Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout());
+			frameBuffferconfig.Size = { (float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight() };
 			
-			s_ImguiRenderPass->FrameBuffer->Resize(Vector2{ (float)Application::Get()->GetWindow()->GetWidth(),(float)Application::Get()->GetWindow()->GetHeight() });
+			s_ImguiRenderPass->FrameBuffer = FrameBuffer::Create(frameBuffferconfig); 
 			ImGui_ImplVulkan_SetMinImageCount(graphicsContext->GetSwapChain()->GetImageCount());
 
 			ImGui_ImplVulkanH_CreateOrResizeWindow(graphicsContext->GetInstance(),

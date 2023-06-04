@@ -21,6 +21,7 @@ namespace Proof
         public Vector2 Position;
         public Vector2 Rotation;
         public Vector2 Size;
+        public bool Visible;
         public Vector4 Color;
     }
     public class UIButton : UIComponent
@@ -36,7 +37,19 @@ namespace Proof
                 InternalCalls.PlayerHUDComponent_SetButtonData(Entity.ID, TableIndex, Name, ref value);
             }
         }
-
+        public bool Visible
+        {
+            get
+            {
+                return ButtonData.Visible;
+            }
+            set
+            {
+                UIBaseData copy = ButtonData;
+                copy.Visible = value;
+                ButtonData = copy;
+            }
+        }
         public Vector2 Position
         {
             get
@@ -106,6 +119,19 @@ namespace Proof
             set
             {
                 InternalCalls.PlayerHUDComponent_SetImageButtonData(Entity.ID, TableIndex, Name,ref value);
+            }
+        }
+        public bool Visible
+        {
+            get
+            {
+                return ButtonData.BaseData.Visible;
+            }
+            set
+            {
+                UiImageButtonData copy = ButtonData;
+                copy.BaseData.Visible = value;
+                ButtonData = copy;
             }
         }
         public Vector2 Position
@@ -195,7 +221,19 @@ namespace Proof
                 InternalCalls.PlayerHUDComponent_SetTextData(Entity.ID, TableIndex, Name, ref data, ref value);
             }
         }
-
+        public bool Visible
+        {
+            get
+            {
+                return TextData.BaseData.Visible;
+            }
+            set
+            {
+                UITextData copy = TextData;
+                copy.BaseData.Visible = value;
+                TextData = copy;
+            }
+        }
 
         public Vector2 Position
         {

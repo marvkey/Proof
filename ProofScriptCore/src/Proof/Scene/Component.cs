@@ -1,4 +1,5 @@
-﻿using ProofScriptCore.src.Proof.Math;
+﻿using ProofScriptCore.src.Proof.Asset;
+using ProofScriptCore.src.Proof.Math;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -135,7 +136,55 @@ namespace Proof
             return null;
         }
     }
-	public class RigidBodyComponent : Component
+    public class CameraComponent : Component
+	{
+
+	}
+    public class ParticleSystemComponent : Component
+	{
+       
+
+		public bool HasParticleIndex(uint index)
+		{
+			return InternalCalls.ParticleSystemComponent_HasParticleIndex(Entity.ID, index);
+		}
+
+		public bool ParticleIndexHasParticle(uint index)
+		{
+			return	InternalCalls.ParticleSystemComponent_ParticleIndexHasParticle(Entity.ID, index);
+		}
+
+        public ParticleSystem GetParticle(uint index)
+        {
+            if (ParticleIndexHasParticle(index))
+            {
+                return new ParticleSystem(index, Entity);
+            }
+            return null;
+        }
+
+		public ParticleSystem[] GetParticles()
+		{
+            uint[] list = null;
+            InternalCalls.ParticleSystemComponent_GetParticles(Entity.ID, ref list);
+
+            if (list == null)
+                return null;
+			ParticleSystem[] particleSystems = new ParticleSystem[list.Length];
+			int index = -1;
+			foreach(uint partIndex  in list)
+			{
+				index++;
+                if (ParticleIndexHasParticle(partIndex) == false) continue;
+
+                ParticleSystem ps = new ParticleSystem(partIndex,Entity);
+                particleSystems[index] = ps;
+
+            }
+			return particleSystems;
+        }
+    }
+    public class RigidBodyComponent : Component
 	{
 		public float Mass
         {

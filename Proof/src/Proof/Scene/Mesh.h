@@ -54,7 +54,7 @@ namespace Proof
 
         Count<Material> GetMaterial(void* material);
         void LoadMaterialTextures(Count<Material> material, void* aiMat);
-        std::vector<SubMesh> m_SubMeshes;
+        std::vector<SubMesh> m_SubMeshes;   
         Count<MaterialTable> m_MaterialTable;
         std::filesystem::path m_Path;
     };

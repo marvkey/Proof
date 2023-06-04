@@ -126,7 +126,10 @@ namespace Proof
         }
 
     }
-
+    struct ScriptSubclassData {
+        std::string ParentName;
+        std::set<std::string> SubClasses;
+    };
     struct MonoData {
         MonoDomain* RootDomain = nullptr;
         MonoDomain* AppDomain = nullptr;
@@ -146,8 +149,8 @@ namespace Proof
         std::unordered_map<EntityID, std::unordered_map<std::string,Count<ScriptInstance>>> EntityInstances;
         
         World* CurrentWorld = nullptr;
-
-        std::unordered_map<std::string, std::set<std::string>> ScriptSubClasses;
+        //(scirpt name) (script direct Parent name, script subclasses)
+        std::unordered_map<std::string, ScriptSubclassData> ScriptSubClasses;
 
         void Clear () {
             EntityClass = nullptr;
@@ -190,18 +193,18 @@ namespace Proof
     MonoMethod* GetMeathod(const std::string& methodName, int parameterCount, MonoClass* monoClass) {
         // Search for the method in the current class
         MonoMethod* method = mono_class_get_method_from_name(monoClass, methodName.c_str(), parameterCount);
-
+        
         // If the method was not found in the current class, search in the parent class
-        if (!method)
-        {
-            MonoClass* parentClass = mono_class_get_parent(monoClass);
-            if (parentClass)
-            {
-                method = GetMeathod(methodName, parameterCount, parentClass);
-            }
-        }
 
-        return method;
+        if (method != nullptr)
+            return method;
+        
+        MonoClass* parentClass = mono_class_get_parent(monoClass);
+        if (parentClass)
+        {
+            return GetMeathod(methodName, parameterCount, parentClass);
+        }
+        return nullptr;
     }
     MonoMethod* ScriptClass::GetMethod(const std::string& name, int parameterCount) {
         return GetMeathod(name.c_str(), parameterCount,m_MonoClass);
@@ -353,9 +356,13 @@ namespace Proof
 
         InitMono();
         ScriptFunc::RegisterFunctions();
+        
+        auto assemlblyPath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/ProofScriptCore.dll";
+        auto appAssemblyPath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/Game.dll";
 
-        LoadAssembly("Resources/Scripts/ProofScriptCore.dll");
-        LoadAppAssembly("GameProject/Asset/Scripts/Binaries/Game.dll");
+      
+        LoadAssembly(assemlblyPath);
+        LoadAppAssembly(appAssemblyPath);
 
         LoadAssemblyClasses();
 
@@ -425,8 +432,14 @@ namespace Proof
         {
             ScriptFunc::RegisterFunctions();
 
-            LoadAssembly("Resources/Scripts/ProofScriptCore.dll");
-            LoadAppAssembly("GameProject/Asset/Scripts/Binaries/Game.dll");
+
+            auto assemlblyPath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/ProofScriptCore.dll";
+            auto appAssemblyPath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/Game.dll";
+
+
+            LoadAssembly(assemlblyPath);
+            LoadAppAssembly(appAssemblyPath);
+
 
             LoadAssemblyClasses();
 
@@ -493,7 +506,7 @@ namespace Proof
 
             MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, className);
 
-            if (monoClass == entityClass)
+            if (monoClass == entityClass || monoClass == nullptr)
                 continue;
             MonoImage* monoImage = mono_class_get_image(monoClass);
 
@@ -521,7 +534,8 @@ namespace Proof
                 parentfullName += ".";
                 parentfullName += name;
 
-                s_Data->ScriptSubClasses[parentfullName].insert(fullName);
+                s_Data->ScriptSubClasses[fullName].ParentName = parentfullName;
+                s_Data->ScriptSubClasses[parentfullName].SubClasses.insert(fullName);
             }
             
             AssemblyLoadFields(scriptClass, monoClass);
@@ -568,6 +582,11 @@ namespace Proof
     {
         return s_Data->EntityInstances.contains(entity.GetEntityID());
     }
+
+    const std::unordered_map<EntityID, std::unordered_map<std::string, Count<ScriptInstance>>>& ScriptEngine::EachEntityScript()
+    {
+        return s_Data->EntityInstances;
+    }
     
     std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& ScriptEngine::GetScriptFieldMap(Entity entity)
     {
@@ -613,14 +632,35 @@ namespace Proof
         if(!s_Data->ScriptSubClasses.contains(fullName))
             return nullptr;
 
-
-        // checking if it is a subclass
-        for (auto& scriptName : s_Data->ScriptSubClasses[fullName])
+        for (auto& [scriptName,instnace] :entData)
         {
-            if(entData.contains(scriptName))
-                 return entData.at(scriptName)->GetMonoObject();
+            // need to do this recursivelya
+            if (s_Data->ScriptSubClasses[fullName].SubClasses.contains(scriptName))
+            {
+                return instnace->GetMonoObject();
+            }
+            // not sure
+           return GetMonoManagedObject(uuid, scriptName);
         }
+        /*
+        // checking if it is a subclass
+        for (const auto& subclassName : s_Data->ScriptSubClasses[fullName].SubClasses)
+        {
+            
+            if(entData.contains(subclassName))
+                 return entData.at(subclassName)->GetMonoObject();
+            if(s_Data->ScriptSubClasses[subclassName].ParentName)
+            GetMonoManagedObject(uuid, subclassName);
+            //std::string parentName = s_Data->ScriptSubClasses.at(subclassName).ParentName;
+
+            //if(entData.contains(parentName))
+        }
+        */
         return nullptr;
+    }
+    MonoDomain* ScriptEngine::GetDomain()
+    {
+        return s_Data->AppDomain;
     }
     void ScriptMeathod::OnCreate(Entity entity)
     {
@@ -633,6 +673,8 @@ namespace Proof
                 UUID entityID = entity.GetEntityID();
 
                 Count<ScriptInstance> instance = Count<ScriptInstance>::Create(s_Data->ScriptEntityClasses[className], entity);
+                if (instance == nullptr)
+                    continue;
                 s_Data->EntityInstances[entity.GetEntityID()][className] = instance;
 
 
@@ -703,6 +745,7 @@ namespace Proof
     }
     void ScriptMeathod::OnUpdate(Entity entity, FrameTime time)
     {
+        PF_PROFILE_FUNC();
         UUID entityUUID = entity.GetEntityID();
         if (s_Data->EntityInstances.contains(entityUUID))
         {

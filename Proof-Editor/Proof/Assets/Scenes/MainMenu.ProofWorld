@@ -1,0 +1,33 @@
+World:
+  ID: 9731897389791312
+  Entities:
+    - Entity: 3758890825294120544
+      TagComponent:
+        Tag: (player)
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: Game.MainMenuController
+            ScriptFields:
+              []
+      CameraComponent:
+        NearPlane: 0.100000001
+        FarPlane: 1000
+        FOV: 45
+        Width: 250
+        Height: 250
+        UpVector: [0, 1, 0]
+        UseLocalRotation: false
+      PlayerHUDComponent:
+        UiTable:
+          - HUD: ""
+            HUDAssetID: 6505712906522179490
+            Visible: true
+            Index: 0

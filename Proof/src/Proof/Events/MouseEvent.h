@@ -104,9 +104,16 @@ namespace Proof {
         }
         float GetScrollX() { return m_X; }
         float GetScrollY() { return m_Y; }
+        MouseAxis GetAxis()const {
+            if (m_Y == 1)
+                return MouseAxis::ScrollUp;
+            else if (m_Y == -1)
+                return MouseAxis::ScrolDown;
+            return MouseAxis::None;
+        }
         std::string ToString()const override {
             std::stringstream ss;
-            ss << "MouseScrollEvent X: " << m_X << ", Y: " << m_Y;
+            ss << "MouseScrollEvent X: " << m_X << ", Y: " << m_Y << " Mouse Axis: "<< EnumReflection::EnumString(GetAxis());
             return ss.str();
         }
     private:

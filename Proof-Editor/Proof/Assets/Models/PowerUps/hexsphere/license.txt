@@ -1,0 +1,11 @@
+Model Information:
+* title:	Hex-sphere
+* source:	https://sketchfab.com/3d-models/hex-sphere-2d4f7dde4bda4987960f73a8a711ace7
+* author:	sirkitree (https://sketchfab.com/sirkitree)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Hex-sphere" (https://sketchfab.com/3d-models/hex-sphere-2d4f7dde4bda4987960f73a8a711ace7) by sirkitree (https://sketchfab.com/sirkitree) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

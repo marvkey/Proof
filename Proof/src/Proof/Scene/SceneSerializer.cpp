@@ -245,6 +245,7 @@ namespace Proof
 				out << YAML::Key << "Kerning" << textComponent.Kerning;
 				out << YAML::Key << "LineSpacing" << textComponent.LineSpacing;
 				out << YAML::Key << "Text" << textComponent.Text;
+				out << YAML::Key << "UseLocalRotation" << textComponent.UseLocalRotation;
 				out << YAML::EndMap; // Text Component
 			}
 		}
@@ -365,6 +366,8 @@ namespace Proof
 						out << YAML::Key << "HUD" << YAML::Key << "";
 						AssetID  id = panel != nullptr ? panel->GetID() : AssetID(0);
 						out << YAML::Key << "HUDAssetID" << YAML::Value << id;
+						if(panel != nullptr)
+							out << YAML::Key << "Visible" << YAML::Value << panel->Visible;
 						out << YAML::Key << "Index" << YAML::Value << index;
 
 						out << YAML::EndMap;// hud
@@ -373,6 +376,41 @@ namespace Proof
 				}
 				out << YAML::EndSeq; // hudTable
 				out << YAML::EndMap; // PlayerHudComponent
+			}
+		}
+
+		{
+			if (registry.any_of<ParticleSystemComponent>(entityID))
+			{
+				ParticleSystemComponent& particleSystemComponent = registry.get<ParticleSystemComponent>(entityID);
+				out << YAML::Key << "ParticleSystemComponent";
+				out << YAML::BeginMap; // ParticleSystemComponent
+
+				out << YAML::Key << "ParticleHandlerTable";
+				out << YAML::BeginSeq;//ParticleHandlerTable
+				if (particleSystemComponent.ParticleHandlerTable != nullptr)
+				{
+					for (auto& [index, particleHandler] : particleSystemComponent.ParticleHandlerTable->GetHandlers())
+					{
+						out << YAML::BeginMap;// particleHandler
+
+						out << YAML::Key << "ParticleHandler" << YAML::Key << "";
+						AssetID  id = 0;
+
+						if (particleHandler != nullptr && particleHandler->GetParticleSystem() != nullptr)
+							id = particleHandler->GetParticleSystem()->GetID();
+						out << YAML::Key << "ParticleHandlerAssetID" << YAML::Value << id;
+
+						if (particleHandler != nullptr)
+							out << YAML::Key << "Visible" << YAML::Value << particleHandler->Visible;
+						out << YAML::Key << "Index" << YAML::Value << index;
+
+						out << YAML::EndMap;// particleHandler
+
+					}
+				}
+				out << YAML::EndSeq; // ParticleHandlerTable
+				out << YAML::EndMap; // ParticleSystemComponent
 			}
 		}
 		out << YAML::EndMap; // entity
@@ -422,6 +460,14 @@ namespace Proof
 		PF_EC_WARN("Deserilizing World {}", m_Scene->Name.c_str());
 
 		m_Scene->m_WorldID = worldData["ID"].as<uint64_t>();
+		m_Scene->ForEachEntityBackwards([&](Entity entity) {
+			m_Scene->DeleteEntity(entity);
+		});
+		m_Scene->DeleteEntitiesfromQeue();
+		//for (auto entity : m_Scene->m_Registry.view<entt::entity>())
+		//{
+		//	m_Scene->m_Registry.destroy(entity);
+		//}
 		auto entities = worldData["Entities"];
 
 		if (!entities)
@@ -605,6 +651,8 @@ namespace Proof
 					src.Kerning = textComponent["Kerning"].as<float>();
 					src.LineSpacing = textComponent["LineSpacing"].as<float>();
 					src.Text = textComponent["Text"].as<std::string>();
+					if(textComponent["UseLocalRotation"])
+						src.UseLocalRotation = textComponent["UseLocalRotation"].as<bool>();
 				}
 			}
 			// CAMERA
@@ -711,11 +759,17 @@ namespace Proof
 					Count<UITable> table = Count<UITable>::Create();
 					for(auto hud :  playerHudComponent["UiTable"])
 					{
+						
 						AssetID id = hud["HUDAssetID"].as<uint64_t>();
-						UINT32 index= hud["Index"].as<uint32_t>();
+						uint32_t index= hud["Index"].as<uint32_t>();
 						if (AssetManager::HasAsset(id))
 						{
 							table->SetUI(index, AssetManager::GetAsset<UIPanel>(id));
+							if (hud["Visible"])
+							{
+								bool visible = hud["Visible"].as<bool>();
+								table->GetPanel(index)->Visible = visible;
+							}
 						}
 						else
 						{
@@ -725,7 +779,35 @@ namespace Proof
 					phc.HudTable = table;
 				}
 			}
+			// ParticleSystemComponent
+			{
+				auto particleSystemComponent = entity["ParticleSystemComponent"];
+				if (particleSystemComponent)
+				{
+					auto& psc = *NewEntity.AddComponent<ParticleSystemComponent>();
+					Count<ParticleHandlerTable> table = Count<ParticleHandlerTable>::Create();
+					for (auto  particleHandler : particleSystemComponent["ParticleHandlerTable"])
+					{
 
+						AssetID id = particleHandler["ParticleHandlerAssetID"].as<uint64_t>();
+						uint32_t index = particleHandler["Index"].as<uint32_t>();
+						if (AssetManager::HasAsset(id))
+						{
+							table->SetHandler(index, Count<ParticleHandler>::Create( AssetManager::GetAsset<ParticleSystem>(id)));
+							if (particleHandler["Visible"])
+							{
+								bool visible = particleHandler["Visible"].as<bool>();
+								table->GetHandler(index)->Visible = visible;
+							}
+						}
+						else
+						{
+							table->SetHandler(index, nullptr);
+						}
+					}
+					psc.ParticleHandlerTable = table;
+				}
+			}
 			//Script Component
 			{
 				auto scriptComponent = entity["ScriptComponent"];

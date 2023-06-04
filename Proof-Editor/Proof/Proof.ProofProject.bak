@@ -1,0 +1,83 @@
+Project:
+  Name: Proof
+  AssetDirectory: Assets
+  AssetManager: Assets/AssetManager.ProofAssetManager
+  StartWorld: 9731897389791312
+  ScriptModuleDirectory: Resources/Scripts/Binaries
+  Input:
+    ActionMapping:
+      - Action: Jump
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [32]
+          - InputDevice: ControllerButton
+            Keys: [0]
+      - Action: Pause
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [256]
+      - Action: DecreaseInventory
+        InputDevices:
+          - InputDevice: MouseMovement
+            Keys: [4]
+          - InputDevice: ControllerButton
+            Keys: [4]
+      - Action: Play
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [80]
+      - Action: IncreaseInventory
+        InputDevices:
+          - InputDevice: MouseMovement
+            Keys: [3]
+          - InputDevice: ControllerButton
+            Keys: [5]
+      - Action: Drop
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [69]
+          - InputDevice: ControllerButton
+            Keys: [2]
+      - Action: ApplyPowerUp
+        InputDevices:
+          - InputDevice: MouseButton
+            Keys: [0]
+          - InputDevice: KeyBoard
+            Keys: [70]
+          - InputDevice: ControllerButton
+            Keys: [1]
+    MotionMapping:
+      - Motion: MoveX
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [65, 68]
+            MotionValues: [1, -1]
+          - InputDevice: ControllerAxis
+            Keys: [0]
+            MotionValues: [-1]
+      - Motion: DecreaseSpeed
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [83]
+            MotionValues: [1]
+          - InputDevice: ControllerAxis
+            Keys: [4]
+            MotionValues: [1]
+      - Motion: RMouyseotateX
+        InputDevices:
+          - InputDevice: MouseMovement
+            Keys: [1]
+            MotionValues: [1]
+      - Motion: IncreaseSpeed
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [87]
+            MotionValues: [1]
+          - InputDevice: ControllerAxis
+            Keys: [5]
+            MotionValues: [1]
+      - Motion: RMouyseotateY
+        InputDevices:
+          - InputDevice: MouseMovement
+            Keys: [2]
+            MotionValues: [1]

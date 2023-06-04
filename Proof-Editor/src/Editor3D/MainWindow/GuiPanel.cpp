@@ -194,6 +194,7 @@ namespace Proof
 		SceneHierachyPanel::DrawVector2Control("Position", button.Postion);
 		SceneHierachyPanel::DrawVector2Control("Rotation", button.Rotation, 0.0f);
 		SceneHierachyPanel::DrawVector2Control("Size", button.Size, 1.0f);
+		ImGui::Checkbox("Visible", &button.Visible);
 		ImGui::InputTextMultiline("Text", &button.Text);
 	}
 	void GuiPanel::DrawImageButtonComponent(const std::string& name, UIButtonImage& button)
@@ -204,6 +205,33 @@ namespace Proof
 		SceneHierachyPanel::DrawVector2Control("Position", button.Postion);
 		SceneHierachyPanel::DrawVector2Control("Rotation", button.Rotation, 0.0f);
 		SceneHierachyPanel::DrawVector2Control("Size", button.Size, 1.0f);
+		ImGui::Checkbox("Visible", &button.Visible);
+
+		if (button.Texture != nullptr)
+		{
+			bool fdasf = true;
+			ImGui::Checkbox("##x", &fdasf);
+			ImGui::SameLine();
+			ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+		}
+		else
+		{
+			ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+			{
+				uint64_t Data = *(const uint64_t*)payload->Data;
+				if (AssetManager::HasAsset(Data))
+				{
+					button.Texture = AssetManager::GetAsset<Texture2D>(Data);
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+
 	}
 	void GuiPanel::DrawTextComponent(const std::string& name, UIText& text)
 	{
@@ -215,7 +243,7 @@ namespace Proof
 		ImGui::DragFloat("Kernng", &text.Param.Kerning, 0.025);
 		ImGui::DragFloat("Line Spacing", &text.Param.LineSpacing, 0.025);
 		ImGui::ColorEdit4("Color", glm::value_ptr(text.Param.Color));
-
+		ImGui::Checkbox("Visible", &text.Visible);
 
 		ImGui::InputTextMultiline("Text", &text.Text);
 

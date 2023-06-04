@@ -271,6 +271,8 @@ namespace Proof
 				FileRenameName = NameofFileRename;
 			else if(AddAssetPopupMenuItem<UIPanel>("UI", NameofFileRename))
 				FileRenameName = NameofFileRename;
+			else if(AddAssetPopupMenuItem<ParticleSystem>("ParticleSystem",NameofFileRename))
+				FileRenameName = NameofFileRename;
 			else if (AddAssetPopupMenuItem<Texture2D>("Texture2D", "Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0", NameofFileRename))
 				FileRenameName = NameofFileRename;
 			ImGui::EndPopup();
