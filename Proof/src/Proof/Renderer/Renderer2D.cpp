@@ -16,6 +16,7 @@
 #include "CommandBuffer.h"
 #include "Font.h"
 #include "MSDFData.h"
+#include "Proof/Math/MathInclude.h"
 namespace Proof {
 
 	static glm::mat4 s_Transform;
@@ -31,9 +32,11 @@ namespace Proof {
 	static CameraData s_CurrentCamera;
 	void Renderer2D::Init() {
 		m_Storage2DData = CreateSpecial <Renderer2DStorage>();
-		if(m_SpritePipeline == nullptr)
-			m_SpritePipeline= CreateSpecial<SpritePipeline>(m_RenderPass);
-		m_TextPipeline = CreateSpecial<TextPipeline>(m_RenderPass);
+		//if(m_SpritePipeline == nullptr)
+		//	m_SpritePipeline= CreateSpecial<SpritePipeline>();
+		//m_TextPipeline = CreateSpecial<TextPipeline>();
+
+		m_SpritePipeline->GraphicsPipeline->SetInput("CameraData", m_Storage2DData->CameraBuffer);
 	}
 	
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commdandBuffer) {
@@ -43,17 +46,21 @@ namespace Proof {
 		m_Storage2DData->CurrentFrameBuffer = frameBuffer;
 		m_Storage2DData->CommandBuffer = commdandBuffer;
 	}
-	Renderer2D::Renderer2D(Count<class RenderPass> renderPass, bool screenSpace)
+	Renderer2D::Renderer2D(Count<ScreenFrameBuffer>& frameBuffer,bool screenSpace)
 	{
-		m_RenderPass = renderPass;
 		m_ScreenSpace = screenSpace;
+		if (m_SpritePipeline == nullptr)
+			m_SpritePipeline = CreateSpecial<SpritePipeline>(frameBuffer->GetFrameBuffer());
+
+		m_TextPipeline = CreateSpecial<TextPipeline>(frameBuffer->GetFrameBuffer());
 		Init();
 	}
-	Renderer2D::Renderer2D(Count<class RenderPass> renderPass, const std::string& spriteRenderShaderPath)
+	Renderer2D::Renderer2D(Count<ScreenFrameBuffer>& frameBuffer,const std::string& spriteRenderShaderPath)
 	{
-		m_RenderPass = renderPass;
 		m_ScreenSpace = false;
-		m_SpritePipeline = CreateSpecial<SpritePipeline>(m_RenderPass, spriteRenderShaderPath);
+		m_SpritePipeline = CreateSpecial<SpritePipeline>(frameBuffer->GetFrameBuffer(), spriteRenderShaderPath);
+		m_TextPipeline = CreateSpecial<TextPipeline>(frameBuffer->GetFrameBuffer());
+		
 		Init();
 
 	}
@@ -340,8 +347,8 @@ namespace Proof {
 		m_Storage2DData->CommandBuffer = nullptr;
 
 		// reseting every textures back to white that has been changed
-		//for (uint32_t i = 1; i < m_Storage2DData->TextureSlotIndex; i++)
-		//	m_Storage2DData->Textures[i] = m_Storage2DData->Textures[0];
+		for (uint32_t i = 1; i < 32; i++)
+			m_Storage2DData->Textures[i] = m_Storage2DData->Textures[0];
 		m_Storage2DData->TextureSlotIndex = 1;
 	}
 	
@@ -352,50 +359,58 @@ namespace Proof {
 		screnData.m_Positon = s_CurrentCamera.m_Positon;
 		screnData.m_Projection = glm::mat4(1.0f);
 		screnData.m_View = glm::mat4(1.0f);
-		//if (m_ScreenSpace == true)
-		//{
-			//m_Storage2DData->CameraBuffer->SetData(&screnData, sizeof(CameraData));
-		//}
-		//else
-		//{
-			m_Storage2DData->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+		
+		m_Storage2DData->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 
+		if (m_Storage2DData->IndexCount > 0) // nothing to draw
+		{
+			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
+		//	m_SpritePipeline->GraphicsPipeline->SetInput("CameraData", m_Storage2DData->CameraBuffer);
+			m_Storage2DData->VertexBuffer->SetData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
+			m_SpritePipeline->GraphicsPipeline->SetInput("u_Textures", m_Storage2DData->Textures);
+
+			Renderer::BeginRenderPass(m_Storage2DData->CommandBuffer, m_SpritePipeline->RenderPass, m_SpritePipeline->GraphicsPipeline);
+			m_Storage2DData->VertexBuffer->Bind(m_Storage2DData->CommandBuffer);
+			m_Storage2DData->IndexBuffer->Bind(m_Storage2DData->CommandBuffer);
+			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
+			Renderer::EndRenderPass(m_SpritePipeline->RenderPass);
+		}
 		//}
 
+		#if 0
 		if(m_Storage2DData->TextIndexCount > 0){
-			PF_PROFILE_FUNC("Renderer2D::String Pass");
+			PF_PROFILE_FUNC("Renderer2D::String Draw");
 			auto descriptor0 = m_TextPipeline->Descriptors[DescriptorSets::Zero];
 
 			descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
 			descriptor0->WriteImage(1, m_Storage2DData->FontTexture);
 
-			Renderer::RecordRenderPass(m_RenderPass, m_TextPipeline->GraphicsPipeline, [&](Count <RenderCommandBuffer> commandBuffer) {
-				m_Storage2DData->TextVertexBuffer->AddData(m_Storage2DData->TextArray.data(), m_Storage2DData->TextArraySize * sizeof(TextVertex));
-				descriptor0->Bind(commandBuffer, m_TextPipeline->PipeLineLayout);
+			//Renderer::RecordRenderPass(m_RenderPass, m_TextPipeline->GraphicsPipeline);
+			m_Storage2DData->TextVertexBuffer->SetData(m_Storage2DData->TextArray.data(), m_Storage2DData->TextArraySize * sizeof(TextVertex));
+			descriptor0->Bind(m_Storage2DData->CommandBuffer, m_TextPipeline->PipeLineLayout);
 
-				m_Storage2DData->IndexBuffer->Bind(commandBuffer);
-				m_Storage2DData->TextVertexBuffer->Bind(commandBuffer);
+			m_Storage2DData->IndexBuffer->Bind(m_Storage2DData->CommandBuffer);
+			m_Storage2DData->TextVertexBuffer->Bind(m_Storage2DData->CommandBuffer);
 
-				Renderer::DrawElementIndexed(commandBuffer, m_Storage2DData->TextIndexCount, m_Storage2DData->TextArraySize);
-			});
+			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->TextIndexCount, m_Storage2DData->TextArraySize);
 		}
 		if (m_Storage2DData->IndexCount == 0)return; // nothing to draw
 		{
-			PF_PROFILE_FUNC("Renderer2D::Quad Pass");
+			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
 
 			auto descriptor0 = m_SpritePipeline->Descriptors[DescriptorSets::Zero];
 
 			descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
 			descriptor0->WriteImage(1, m_Storage2DData->Textures);
 
-			Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline, [&](Count <RenderCommandBuffer> commandBuffer) {
-				m_Storage2DData->VertexBuffer->AddData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
-				descriptor0->Bind(commandBuffer, m_SpritePipeline->PipeLineLayout);
-				m_Storage2DData->VertexBuffer->Bind(commandBuffer);
-				m_Storage2DData->IndexBuffer->Bind(commandBuffer);
-				Renderer::DrawElementIndexed(commandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
-			});
+			//Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline);
+			m_Storage2DData->VertexBuffer->SetData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
+			descriptor0->Bind(m_Storage2DData->CommandBuffer, m_SpritePipeline->PipeLineLayout);
+			m_Storage2DData->VertexBuffer->Bind(m_Storage2DData->CommandBuffer);
+			m_Storage2DData->IndexBuffer->Bind(m_Storage2DData->CommandBuffer);
+			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
 		}
+		#endif
 	}
 	
 	
@@ -466,20 +481,19 @@ namespace Proof {
 
 		VertexBuffer = VertexBuffer::Create(c_MaxVertexCount*sizeof(Vertex2D));
 		IndexBuffer = IndexBuffer::Create(QuadIndices.data(), c_MaxIndexCount);
-		CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
+		CameraBuffer = UniformBuffer::Create(sizeof(CameraData));
 
 		TextVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(TextVertex));
 		uint32_t whiteTextureData = 0xffffffff;
 
-		int32_t Samplers[32];
 		Textures.resize(Renderer2DStorage::c_MaxTextureSlot);
-		WhiteTexture = Texture2D::Create(1, 1, ImageFormat::RGBA, &whiteTextureData);
+		WhiteTexture = Texture2D::Create(&whiteTextureData,TextureConfiguration( ));
 
 		for(uint32_t i=0; i < Renderer2DStorage::c_MaxTextureSlot;i++)
 			Textures[i] = WhiteTexture;
 
 	}
-	SpritePipeline::SpritePipeline(Count <RenderPass > renderPass) 
+	SpritePipeline::SpritePipeline(Count<FrameBuffer> frameBuffer)
 	{
 		auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
 
@@ -494,28 +508,31 @@ namespace Proof {
 		vertexArray->AddData(6, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
 		vertexArray->AddData(7, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
 
-		Shader = Shader::GetOrCreate("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.shader");
-		{
-			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.AddBinding((int)1, DescriptorType::ImageSampler, ShaderStage::Fragment, 32)
-				.Build();
-			Descriptors.insert({ DescriptorSets::Zero,descriptor });
-		}
-		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
+		auto shader = Shader::GetOrCreate("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.shader");
+		//{
+		//	auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
+		//		.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+		//		.AddBinding((int)1, DescriptorType::ImageSampler, ShaderStage::Fragment, 32)
+		//		.Build();
+		//	Descriptors.insert({ DescriptorSets::Zero,descriptor });
+		//}
+		//PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
+
+		RenderPassConfig rednerPassConfig("Sprite pipline ",frameBuffer);
+		RenderPass = RenderPass::Create(rednerPassConfig);
+
+
 		GraphicsPipelineConfig graphicsPipelineConfig;
 		graphicsPipelineConfig.DebugName = "Sprite";
-		graphicsPipelineConfig.Shader = Shader;
+		graphicsPipelineConfig.Shader = shader;
 		graphicsPipelineConfig.VertexArray = vertexArray;
-		graphicsPipelineConfig.RenderPass = renderPass;
-		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
-		//blendign is very expensive for rendierng 
-		//graphicsPipelineConfig.Blend = true;
+		graphicsPipelineConfig.RenderPass = RenderPass;
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
 
-	SpritePipeline::SpritePipeline(Count<class RenderPass> renderPass, const std::string& shaderPath)
+	SpritePipeline::SpritePipeline(Count<FrameBuffer> frameBuffer, const std::string& shaderPath)
 	{
+		/*
 		auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
 		vertexArray->AddData(0, DataType::Vec4, 0);
 		vertexArray->AddData(1, DataType::Vec4, (sizeof(glm::vec4) * 1));
@@ -542,14 +559,16 @@ namespace Proof {
 		graphicsPipelineConfig.Shader = Shader;
 		graphicsPipelineConfig.VertexArray = vertexArray;
 		graphicsPipelineConfig.RenderPass = renderPass;
-		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
 		//blendign is very expensive for rendierng 
 		//graphicsPipelineConfig.Blend = true;
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+		*/
 	}
 
-	TextPipeline::TextPipeline(Count<class RenderPass> renderPass)
+	TextPipeline::TextPipeline(Count<FrameBuffer> frameBuffer)
 	{
+		/*
 		auto vertexArray = VertexArray::Create({ sizeof(TextVertex) });
 		vertexArray->AddData(0, DataType::Vec3, offsetof(TextVertex, TextVertex::Positon));
 		vertexArray->AddData(1, DataType::Vec4, offsetof(TextVertex, TextVertex::Color));
@@ -568,8 +587,9 @@ namespace Proof {
 		graphicsPipelineConfig.Shader = Shader;
 		graphicsPipelineConfig.VertexArray = vertexArray;
 		graphicsPipelineConfig.RenderPass = renderPass;
-		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+		*/
 	}
 
 }

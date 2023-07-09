@@ -8,6 +8,8 @@
 #include "Material.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer//ParticleSystem.h"
+#include "Proof/Math/Vector.h"
+#include "Proof/Math/MathConvert.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>

@@ -1,5 +1,4 @@
 #pragma once
-#include "Proof/Core/Core.h"
 #include "Panel.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Renderer/ParticleSystem.h"

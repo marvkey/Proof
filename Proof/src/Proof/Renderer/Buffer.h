@@ -11,9 +11,8 @@ namespace Proof {
 		* sets the data for the vertex buffer
 		* @param Data the location of the first element in the array or vector
 		* @parm Size the size of element in vertex buffer
-		* @parm SizeOfVertexBuffer the size of the vertex buffer at given time
 		*/
-		virtual void AddData(const void* Data, uint32_t Size, uint32_t SizeOfVertexBuffer = 0) = 0;
+		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
 	
 		/**
 		* creates static vertex Buffer
@@ -21,6 +20,9 @@ namespace Proof {
 		* @parm Size the size of the vertex Buffer
 		*/
 		static Count<VertexBuffer>Create(const void* Data,uint32_t Size);
+
+		virtual void Resize(uint32_t size) = 0;
+		//virtual void Resize(const void* data, uint32_t size) = 0;
 		/**
 		* creates Dynamic vertex Buffer
 		* @parm amount the size of the vertex Buffer
@@ -30,6 +32,29 @@ namespace Proof {
 		* deletes the vertex buffer
 		*/
 		virtual ~VertexBuffer() = default;
+
+		template<typename T>
+		std::vector<T> GetData()
+		{
+			std::vector<T> data;
+			Buffer buffer = GetDataRaw();
+			T* vertices = reinterpret_cast<T*>(buffer.m_Data());
+
+			for (size_t i = 0; i < GetVertexSize() / sizeof(T); i++)
+			{
+				data.emplace_back(vertices[i]);
+			}
+			return data;
+		}
+
+		Count<Buffer> GetDataScope()
+		{
+			Count<Buffer> buffer = Count<Buffer>::Create(GetDataRaw());
+			return buffer;
+		}
+		virtual uint32_t GetVertexSize()const = 0;
+	protected:
+		virtual Buffer GetDataRaw() = 0;
 	};
 
 	class Proof_API IndexBuffer {
@@ -56,6 +81,8 @@ namespace Proof {
 		*/
 		virtual uint32_t GetCount()const = 0;
 		virtual uint32_t GetSize()const = 0;
+		virtual std::vector<uint32_t> GetData()const = 0;
+
 
 	};
 

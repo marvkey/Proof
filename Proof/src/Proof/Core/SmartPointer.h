@@ -6,6 +6,13 @@ namespace Proof{
  * a lot of this code was taken from the visual studio representiaon of shared poitner
  * it has been manuactured for a better api adn multithreading
  */
+	// Template function to check if a class has implemented all virtual functions
+	template <typename T, typename = void>
+	struct HasImplementedAllVirtuals : std::false_type {};
+
+	template <typename T>
+	struct HasImplementedAllVirtuals<T, std::void_t<decltype(std::declval<T>().foo()), decltype(std::declval<T>().bar())>> : std::true_type {};
+
 
 	class RefCounterBase {
 	public:
@@ -336,6 +343,7 @@ namespace Proof{
 			Count<T> t(data);
 			return t;
 		} 
+		
 		static Count CreateFrom(const Count& other) {
 			if (!other)return nullptr;
 			const auto& copy = *other;

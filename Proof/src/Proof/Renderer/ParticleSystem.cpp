@@ -1,5 +1,7 @@
 #include "Proofprch.h"
 #include "ParticleSystem.h"
+#include "Proof/Math/MathInclude.h"
+
 namespace Proof {
 	static glm::vec4 Lerp(const glm::vec4& start, const glm::vec4& end, float t)
 	{
@@ -83,9 +85,11 @@ namespace Proof {
 			UpdateColor(particle, ts);
 			particle.Life -= ts;
 			particle.Position += ProofToglmVec(particle.Velocity) * ts;
-			particle.Rotation += 0.01 * ts;
 			if (!m_ParticleSystem->Use3D)
 				particle.Rotation += 0.01 * ts;
+			else
+				particle.Rotation += 0.01 * ts;
+
 			//else
 			//	particle.Rotation3D += Vect0.01 * ts;
 			m_CurrentNumParticles++;
@@ -129,7 +133,7 @@ namespace Proof {
 			Particle& particle = m_ParticlePool[m_PoolIndex];
 			particle.Active = true;
 			particle.Position = ProofToglmVec( m_CurrentPosition);
-			particle.Rotation = Random::Real<float>(0,2) * glm::pi<float>();
+			particle.Rotation = Random::Real<float>(0,2) * Math::PIE();
 			particle.Rotation3D = m_ParticleSystem->Rotation3D;
 			// Velocity
 			particle.Velocity =m_ParticleSystem->Velocity;

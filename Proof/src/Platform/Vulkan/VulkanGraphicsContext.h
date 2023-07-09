@@ -1,9 +1,8 @@
 #pragma once
 #include"Proof/Renderer/GraphicsContext.h"
 #include "VulkanUtils/VulkanBufferBase.h"
-
 #include <vulkan/vulkan.h>
-
+//#include "Vulkan.h"
 namespace Proof
 {
 
@@ -31,6 +30,7 @@ namespace Proof
 		VkPhysicalDeviceProperties GetGPUProperties() {
 			return m_GPUProperties;
 		}
+		void SetDebugUtilsObjectName(VkObjectType objectType, const std::string& name, void* objectHandle);
 		virtual ~VulkanGraphicsContext();
 		VulkanGraphicsContext(Window* windowHandle);
 		Window* m_Window;
@@ -123,9 +123,9 @@ namespace Proof
 		VmaAllocator GetVMA_Allocator() {
 			return m_VMA_Allocator;
 		}
-		Count<class VulkanDescriptorPool> GetGlobalPool() {
-			return m_GlobalPool;
-		}
+		//Count<class VulkanDescriptorPool> GetGlobalPool() {
+		//	return m_GlobalPool;
+		//}
 		const VkInstance GetInstance() {
 			return m_Instance;
 		}
@@ -140,7 +140,11 @@ namespace Proof
 			return m_PipelineCache;
 		}
 
-
+		
+		//returns sampler and its hash
+		std::pair<VkSampler, uint64_t> GetOrCreateSampler(VkSamplerCreateInfo samplerInfo);
+		// (DO NOT PUT THIS INOT A RENDDER::SUBMIT FREE BECAUSE IT SENDS THE SMAPLER THERE ALREADY
+		void DeleteSampler(uint64_t samplerHash);
 	private:
 		VkCommandPool m_CommandPool;
 		uint32_t m_VulkanVersion;
@@ -177,6 +181,9 @@ namespace Proof
 		Count<class VulkanDescriptorPool> m_GlobalPool = nullptr;
 		VmaAllocator m_VMA_Allocator;
 		friend class VulkanRenderer;
+
+		// sampler has, sampler ref count, sampler
+		std::unordered_map<uint64_t, std::pair<uint32_t,VkSampler>> m_Samplers;
 	};
 
 }

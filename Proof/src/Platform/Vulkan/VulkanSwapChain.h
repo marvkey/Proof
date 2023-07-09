@@ -9,6 +9,7 @@
 #include "VulkanCommandBuffer.h"
 #include "Proof/Core/Core.h"
 #include "Proof/Renderer/SwapChain.h"
+#include "VulkanUtils/VulkanBufferBase.h"
 namespace Proof
 {
     class VulkanSwapChain : public SwapChain {
@@ -46,7 +47,8 @@ namespace Proof
         VkPresentModeKHR GetPresentMode() {
             return m_PresentMode;
         }
-        virtual ImageLayouts GetImageLayout();
+        virtual ImageLayouts2D GetImageLayout();
+        virtual Count<Image2D>  GetImage(uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex);
 
     private:
         VkFormat FindDepthFormat();
@@ -55,7 +57,6 @@ namespace Proof
         VkPresentModeKHR m_PresentMode;
         uint32_t m_ImageCount;
         void CreateSwapChain();
-        void CreateImageViews();
         void CreateSyncObjects();
         void Resize(ScreenSize size);
         void CleanUp();
@@ -76,9 +77,12 @@ namespace Proof
         std::vector<class VulkanGraphicsPipeline*> GraphicsPipelines;
         std::vector<VkImageView> m_SwapChainImageViews;
         std::vector<VkImage> m_SwapChainImages;
+        std::vector<VmaAllocation> m_SwapChainImageAllocation;
         std::vector<VkSemaphore> m_ImageAvailableSemaphores;
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         std::vector<VkFence> m_InFlightFences;
+
+        std::vector<Count<class Image2D>> m_ImagesRefs;
         friend class VulkanRenderer;
         // temporary
         friend class VulkanFrameBuffer;

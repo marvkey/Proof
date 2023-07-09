@@ -1,16 +1,7 @@
 #pragma once
-#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
-#include "Proof/Renderer/FrameBuffer.h"
-#include "Platform/Vulkan/VulkanGraphicsPipeline.h"
-#include "Platform/Vulkan/VulkanSwapChain.h"
+#include "Proof/Core/Core.h"
 #include<vulkan/vulkan.h>
-#include "Proof/Renderer/CommandBuffer.h"
-#include "Platform/Vulkan/VulkanBuffer.h"
-#include "../VulkanPipeLineLayout.h"
-#include "../VulkanPushConstant.h"
-#include "../VulkanGraphicsContext.h"
-#include "../VulkanDescriptorSet.h"
-#include "../VulkanFrameBuffer.h"
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
 	struct DeletionQueue {
@@ -32,7 +23,7 @@ namespace Proof
 	};
 
 	struct VulkanRendererData {
-		std::vector<Count<RenderCommandBuffer>> CommandBuffers;
+		std::vector<Count<class RenderCommandBuffer>> CommandBuffers;
 		std::vector<DeletionQueue> ResourceFreeQueue;
 
 	};
@@ -42,17 +33,21 @@ namespace Proof
 	public:
 		static void Init();
 		static void Destroy();
-		static void SubmitCommandBuffer(Count<RenderCommandBuffer> commandBuffer);
+		static void SubmitCommandBuffer(Count<class RenderCommandBuffer> commandBuffer);
 		static void SubmitDatafree(std::function<void()> func);
 		
 		static void BeginFrame();
 		static void EndFrame();
 		static void DrawFrame();
 
+		static Count<class VulkanGraphicsContext> GetGraphicsContext();
+
 	private:
-		static void OnWindowResize(WindowResizeEvent& e);
+		static void SetGraphicsContext(Count<GraphicsContext> graphics);
+		static void OnWindowResize(class WindowResizeEvent& e);
 		static RendererConfig s_RendererConfig;
 		static CurrentFrame s_CurrentFrame;
 		friend class VulkanRendererAPI;
+		friend class RendererBase;
 	};
 }

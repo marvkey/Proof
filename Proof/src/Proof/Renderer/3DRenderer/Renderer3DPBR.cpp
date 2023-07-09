@@ -21,8 +21,11 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Renderer/PushConstant.h"
 #include "Proof/Renderer/MeshWorkShop.h"
+#include "Proof/Renderer/Buffer.h"
 namespace Proof
 {
+	
+	
 	
 	
 	// add debug names
@@ -59,9 +62,9 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		m_RenderStorage = CreateSpecial<RenderStorage>();
 		m_MeshPipeLine = CreateSpecial<MeshPipeLine>(m_RenderPass);
-		m_MeshMaterialPipeline = CreateSpecial<MeshMaterialPipeline>(m_RenderPass);
-		m_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
-		m_MeshPipeLine->LightPass.DirLightsBuffer = UniformBuffer::Create(sizeof(DirLight), DescriptorSets::Zero, (uint32_t)DescriptorSet0::DirectionalLight);
+		m_MeshMaterialPipeline = CreateSpecial<MeshMaterialPipeline>(m_RenderPass,*m_MeshPipeLine);
+		m_RenderStorage->CameraBuffer = UniformBuffer::Create(sizeof(CameraData));
+		m_MeshPipeLine->LightPass.DirLightsBuffer = UniformBuffer::Create(sizeof(DirLight));
 
 	}
 	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {
@@ -75,17 +78,19 @@ namespace Proof
 		s_CurrentCamera = CameraData{ projection,view,Position };
 		m_RenderStorage->CurrentFrameBuffer = frameBuffer;
 		m_RenderStorage->CommandBuffer = commandBuffer;
+		m_Performance = {};
 	}
 
 
-	void Renderer3DPBR::SetPbrMaps(Count<class CubeMap> irrdianceMap, Count<class CubeMap> prefilterMap, Count<Texture2D> brdf)
+	void Renderer3DPBR::SetPbrMaps(Count<class TextureCube> irrdianceMap, Count<class TextureCube> prefilterMap, Count<Texture2D> brdf)
 	{
 		m_MeshPipeLine->IrradianceMap = irrdianceMap;
 		m_MeshPipeLine->PrefilterMap = prefilterMap;
 		m_MeshPipeLine->BRDf = brdf;
 
 	}
-
+	std::unordered_map<UUID, uint32_t> positonsOfMesh;
+	std::vector<glm::mat4> s_Meshestransform;
 	void Renderer3DPBR::SubmitMesh(Count<Mesh> mesh, const glm::mat4& transform) {
 		PF_PROFILE_FUNC();
 		if (mesh == nullptr)return;
@@ -102,6 +107,18 @@ namespace Proof
 
 		m_MeshPipeLine->MeshesTransforms[meshPointerId].emplace_back(vertex);
 		m_MeshPipeLine->NumberMeshes++;
+
+		{
+			//if (positonsOfMesh.contains(meshPointerId))
+			//{
+			//	//uint32_t meshPos = positonsOfMesh
+			//}
+			//else
+			//{
+			//	s_Meshestransform.emplace_back(transform);
+			//	positonsOfMesh[meshPointerId] = s_Meshestransform.size() - 1;
+			//}
+		}
 	}
 
 	void Renderer3DPBR::SubmitMeshWithMaterial(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform)
@@ -148,18 +165,23 @@ namespace Proof
 
 	void Renderer3DPBR::SubmitSubMesh(Count<Mesh> mesh, uint32_t meshIndex, const glm::mat4& transform)
 	{
+		PF_CORE_ASSERT(false);
 	}
 
 	void Renderer3DPBR::SubmitSubMeshWithMaterial(Count<Mesh> mesh, uint32_t index, Count<Material> material, const glm::mat4& transform)
 	{
+		PF_CORE_ASSERT(false);
 	}
 
 	void Renderer3DPBR::SubmitDirectionalLight(const DirLight& light) {
 		m_MeshPipeLine->LightPass.DirLights.emplace_back(light);
 	}
 	void Renderer3DPBR::SubmitPointLight(class PointLightComponent& comp, TransformComponent& transform) {
+		PF_CORE_ASSERT(false);
+
 	}
 	void Renderer3DPBR::SubmitSpotLight(class SpotLightComponent& comp, TransformComponent& transform) {
+		PF_CORE_ASSERT(false);
 	}
 	void Renderer3DPBR::EndContext() {
 		PF_CORE_ASSERT(s_InContext == true, "Cannot end context if already n a context");
@@ -191,6 +213,9 @@ namespace Proof
 	}
 	void Renderer3DPBR::SetMeshPass()
 	{
+		PF_PROFILE_FUNC();
+		Timer timer;
+
 		std::vector<MeshPipeLine::MeshVertex> meshesVertex;
 
 		auto descriptor0 = m_MeshPipeLine->Descriptors[DescriptorSets::Zero];
@@ -227,12 +252,13 @@ namespace Proof
 		}
 
 		{
-			descriptor0 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::Zero];
-			descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_RenderStorage->CameraBuffer);
-			descriptor0->WriteBuffer((uint32_t)DescriptorSet0::DirectionalLight, m_MeshPipeLine->LightPass.DirLightsBuffer);
-			descriptor0->WriteImage((uint32_t)DescriptorSet0::IrradianceMap, m_MeshPipeLine->IrradianceMap);
-			descriptor0->WriteImage((uint32_t)DescriptorSet0::PrefilterMap, m_MeshPipeLine->PrefilterMap);
-			descriptor0->WriteImage((uint32_t)DescriptorSet0::BRDF, m_MeshPipeLine->BRDf);
+			//descriptor0 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::Zero];
+			//descriptor0 = m_MeshPipeLine->Descriptors[DescriptorSets::Zero];
+			//descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_RenderStorage->CameraBuffer);
+			//descriptor0->WriteBuffer((uint32_t)DescriptorSet0::DirectionalLight, m_MeshPipeLine->LightPass.DirLightsBuffer);
+			//descriptor0->WriteImage((uint32_t)DescriptorSet0::IrradianceMap, m_MeshPipeLine->IrradianceMap);
+			//descriptor0->WriteImage((uint32_t)DescriptorSet0::PrefilterMap, m_MeshPipeLine->PrefilterMap);
+			//descriptor0->WriteImage((uint32_t)DescriptorSet0::BRDF, m_MeshPipeLine->BRDf);
 			
 			// mesh material pbr 
 			m_MeshMaterialPipeline->OffsetBegin = meshesVertex.size();
@@ -243,111 +269,121 @@ namespace Proof
 				m_MeshMaterialPipeline->ElementsImplaced.emplace_back(ID);
 			}
 		}
-		if(meshesVertex.empty() == false)
-			m_MeshPipeLine->MeshesVertexBuffer = VertexBuffer::Create(meshesVertex.data(),meshesVertex.size() * sizeof(MeshPipeLine::MeshVertex));
+		if (meshesVertex.empty() == false)
+		{
+		//	if (m_MeshPipeLine->MeshesVertexBuffer == nullptr)
+				m_MeshPipeLine->MeshesVertexBuffer = VertexBuffer::Create(meshesVertex.data(), meshesVertex.size() * sizeof(MeshPipeLine::MeshVertex));
+			//else
+			//	m_MeshPipeLine->MeshesVertexBuffer->Resize(meshesVertex.data(), meshesVertex.size() * sizeof(MeshPipeLine::MeshVertex));
+		}
+		m_Performance.SetMeshPass = timer.ElapsedMillis();
 	}
 	void Renderer3DPBR::RenderMesh()
 	{
 		if (m_MeshPipeLine->ElementsImplaced.empty())return;
 		PF_PROFILE_FUNC();
+		Timer timer;
 
 		auto descriptor0 = m_MeshPipeLine->Descriptors[DescriptorSets::Zero];
 		auto descriptor1 = m_MeshPipeLine->Descriptors[DescriptorSets::One];
 		uint32_t currentOffset = m_MeshPipeLine->OffsetBegin;
-		Renderer::RecordRenderPass(m_RenderPass, m_MeshPipeLine->GraphicsPipeline, [&](Count <RenderCommandBuffer> commandBuffer) {
-			descriptor0->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
-			for (const uint64_t& ID : m_MeshPipeLine->ElementsImplaced)
+
+		//Renderer::RecordRenderPass(m_RenderPass, m_MeshPipeLine->GraphicsPipeline);
+		descriptor0->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
+		for (const uint64_t& ID : m_MeshPipeLine->ElementsImplaced)
+		{
+
+			const uint64_t meshInstances = m_MeshPipeLine->Meshes[ID].Count;
+			Count<Mesh> mesh= m_MeshPipeLine->Meshes[ID].Mesh;
+			Count<MeshSource> meshSource= mesh->GetMeshSource();
+			//std::string info = fmt::format("Renderere3DPBR::Draw Mesh {}  ID {}", Utils::FileDialogs::GetFileName(meshSource->GetPath()).c_str(), mesh->GetID());
+			//PF_PROFILE_FUNC(info.c_str());
+			for (uint32_t index : mesh->GetSubMeshes())
 			{
+				const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+				auto material = mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex);
+				Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
+ 				descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
+				//descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);
+				//descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
+				//descriptor1->WriteImage((int)DescriptorSet1::RoughnessMap, material->RoughnessTexture != nullptr ? material->RoughnessTexture : whiteTexture);
 
-				const uint64_t meshInstances = m_MeshPipeLine->Meshes[ID].Count;
-				Count<Mesh> mesh= m_MeshPipeLine->Meshes[ID].Mesh;
-				Count<MeshSource> meshSource= mesh->GetMeshSource();
-				
-				for (uint32_t index = 0; index < meshSource->GetSubMeshes().size(); index++)
-				{
-					if (mesh->IsMeshExcluded(index))continue;
-					
-					const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
-					auto material = mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex);
-					Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
- 					descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
-					descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);
-					descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
-					descriptor1->WriteImage((int)DescriptorSet1::RoughnessMap, material->RoughnessTexture != nullptr ? material->RoughnessTexture : whiteTexture);
+				descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
 
-					descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
+				subMesh.VertexBuffer->Bind(m_RenderStorage->CommandBuffer);
+				subMesh.IndexBuffer->Bind(m_RenderStorage->CommandBuffer);
+				m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
+				Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
 
-					subMesh.VertexBuffer->Bind(m_RenderStorage->CommandBuffer);
-					subMesh.IndexBuffer->Bind(m_RenderStorage->CommandBuffer);
-					m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
-					Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
-
-				}
-				currentOffset += meshInstances;
 			}
-		});
+			currentOffset += meshInstances;
+		}
+
+		m_Performance.RenderMesh = timer.ElapsedMillis();
 	}
 	void Renderer3DPBR::RenderMeshMaterial()
 	{
 		if (m_MeshMaterialPipeline->ElementsImplaced.empty())return;
 		PF_PROFILE_FUNC();
+		Timer timer;
 
-		auto descriptor0 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::Zero];
-		auto descriptor1 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::One];
+		//auto descriptor0 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::Zero];
+		//auto descriptor1 = m_MeshMaterialPipeline->Descriptors[DescriptorSets::One];
+
+
+		auto descriptor0 = m_MeshPipeLine->Descriptors[DescriptorSets::Zero];
+		auto descriptor1 = m_MeshPipeLine->Descriptors[DescriptorSets::One];
+
 		uint32_t currentOffset = m_MeshMaterialPipeline->OffsetBegin;
-		Renderer::RecordRenderPass(m_RenderPass, m_MeshMaterialPipeline->GraphicsPipeline, [&](Count <RenderCommandBuffer> commandBuffer) {
-			descriptor0->Bind(commandBuffer, m_MeshMaterialPipeline->PipeLineLayout);
-			for (const uint64_t& ID : m_MeshMaterialPipeline->ElementsImplaced)
+		//Renderer::RecordRenderPass(m_RenderPass, m_MeshMaterialPipeline->GraphicsPipeline);
+		descriptor0->Bind(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout);
+		for (const uint64_t& ID : m_MeshMaterialPipeline->ElementsImplaced)
+		{
+			for (auto& meshMaterialInstance : m_MeshMaterialPipeline->Meshes[ID])
 			{
-				for (auto& meshMaterialInstance : m_MeshMaterialPipeline->Meshes[ID])
-				{
 					
-					const uint64_t meshInstances = meshMaterialInstance.Count;
-					Count<Mesh> mesh = meshMaterialInstance.Mesh;
-					Count<MeshSource> meshSource = mesh->GetMeshSource();
-					for (uint32_t i = 0; i < meshSource->GetSubMeshes().size(); i++)
-					{
-						if (mesh->IsMeshExcluded(i))continue;
-						const SubMesh& subMesh = meshSource->GetSubMeshes()[i];
-						auto material = meshMaterialInstance.MaterialTables->GetMaterial(subMesh.MaterialIndex);
-						MaterialData materialData;
-						materialData.Colour = material->Colour;
-						materialData.Metallness = material->Metallness;
-						materialData.Roughness = material->Roughness;
-						materialData.Tiling = material->Tiling;
-						materialData.Offset = material->Offset;
-						//materialData.Offset = { 0,0 };
-						//materialData.Tiling = { 0,0 };
-						if (material->UsePBR)
-							materialData.UsePBR = 1;
-						else
-							materialData.UsePBR = 0;
-						//materialData.UsePBR =(int) material->UsePBR;
+				const uint64_t meshInstances = meshMaterialInstance.Count;
+				Count<Mesh> mesh = meshMaterialInstance.Mesh;
+				Count<MeshSource> meshSource = mesh->GetMeshSource();
+				for (uint32_t index : mesh->GetSubMeshes())
+				{
+					const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+					auto material = meshMaterialInstance.MaterialTables->GetMaterial(subMesh.MaterialIndex);
+					MaterialData materialData;
+					materialData.Colour = material->Colour;
+					materialData.Metallness = material->Metallness;
+					materialData.Roughness = material->Roughness;
+					materialData.Tiling = material->Tiling;
+					materialData.Offset = material->Offset;
+					if (material->UsePBR)
+						materialData.UsePBR = 1;
+					else
+						materialData.UsePBR = 0;
 
-						Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
-						descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
-						//descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
-						//descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);
-						//descriptor1->WriteImage((int)DescriptorSet1::RoughnessMap, material->RoughnessTexture != nullptr ? material->RoughnessTexture : whiteTexture);
+					Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
+					descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
+					//descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
+					//descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);
+					//descriptor1->WriteImage((int)DescriptorSet1::RoughnessMap, material->RoughnessTexture != nullptr ? material->RoughnessTexture : whiteTexture);
 
-						descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout);
-						subMesh.VertexBuffer->Bind(m_RenderStorage->CommandBuffer);
-						subMesh.IndexBuffer->Bind(m_RenderStorage->CommandBuffer);
+					descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout);
+					subMesh.VertexBuffer->Bind(m_RenderStorage->CommandBuffer);
+					subMesh.IndexBuffer->Bind(m_RenderStorage->CommandBuffer);
 
-						m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
-						m_MeshMaterialPipeline->MaterialPushConstant->PushData(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout, &materialData);
-						Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
-					}
-					currentOffset += meshInstances;
-
+					m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
+					m_MeshMaterialPipeline->MaterialPushConstant->PushData(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout, &materialData);
+					Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
 				}
+				currentOffset += meshInstances;
+
 			}
-		});
+		}
+		m_Performance.RenderMeshMaterial = timer.ElapsedMillis();
 	}
 	void Renderer3DPBR::MeshPass()
 	{
 		PF_PROFILE_FUNC();
-		RenderMesh();
+		RenderMesh();	
 		RenderMeshMaterial();
 	}
 	
@@ -383,7 +419,7 @@ namespace Proof
 		std::unordered_map<ShaderStage, std::string> shaders;
 		shaders[ShaderStage::Vertex] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Mesh-PBR.vert";
 		shaders[ShaderStage::Fragment] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Mesh-PBR.frag";
-		
+		TexturePushConstant = PushConstant::Create(sizeof(MaterialData), 0, ShaderStage::Fragment);
 		Shader = Shader::GetOrCreate("MeshShader", shaders);
 		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero],Descriptors[DescriptorSets::One] });
 
@@ -403,34 +439,34 @@ namespace Proof
 		graphicsPipelineConfig.DebugName = "Mesh";
 		graphicsPipelineConfig.Shader = Shader;
 		graphicsPipelineConfig.VertexArray = meshVertexArray;
-		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
 		graphicsPipelineConfig.RenderPass = renderPass;
 
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
-	MeshMaterialPipeline::MeshMaterialPipeline(Count<RenderPass> renderPass)
+	MeshMaterialPipeline::MeshMaterialPipeline(Count<RenderPass> renderPass, MeshPipeLine& meshpipline)
 	{
 	
 		{
-			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-				.AddBinding((uint32_t)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.AddBinding((uint32_t)DescriptorSet0::DirectionalLight, DescriptorType::UniformBuffer, ShaderStage::Fragment)
-				.AddBinding((uint32_t)DescriptorSet0::IrradianceMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.AddBinding((uint32_t)DescriptorSet0::PrefilterMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.AddBinding((uint32_t)DescriptorSet0::BRDF, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.Build();
-			Descriptors.insert({ DescriptorSets::Zero,descriptor });
+			//auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
+			//	.AddBinding((uint32_t)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+			//	.AddBinding((uint32_t)DescriptorSet0::DirectionalLight, DescriptorType::UniformBuffer, ShaderStage::Fragment)
+			//	.AddBinding((uint32_t)DescriptorSet0::IrradianceMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+			//	.AddBinding((uint32_t)DescriptorSet0::PrefilterMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+			//	.AddBinding((uint32_t)DescriptorSet0::BRDF, DescriptorType::ImageSampler, ShaderStage::Fragment)
+			//	.Build();
+			//Descriptors.insert({ DescriptorSets::Zero,descriptor });
 
 		}
 
 		{
-			auto descriptor = DescriptorSet::Builder(DescriptorSets::One)
-				.AddBinding((uint32_t)DescriptorSet1::AlbedoMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.AddBinding((uint32_t)DescriptorSet1::NormalMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.AddBinding((uint32_t)DescriptorSet1::MetallicMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.AddBinding((uint32_t)DescriptorSet1::RoughnessMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.Build();
-			Descriptors.insert({ DescriptorSets::One,descriptor });
+			//auto descriptor = DescriptorSet::Builder(DescriptorSets::One)
+			//	.AddBinding((uint32_t)DescriptorSet1::AlbedoMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+			//	.AddBinding((uint32_t)DescriptorSet1::NormalMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+			//	.AddBinding((uint32_t)DescriptorSet1::MetallicMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+			//	.AddBinding((uint32_t)DescriptorSet1::RoughnessMap, DescriptorType::ImageSampler, ShaderStage::Fragment)
+			//	.Build();
+			//Descriptors.insert({ DescriptorSets::One,descriptor });
 		}
 		std::unordered_map<ShaderStage, std::string> shaders;
 		shaders[ShaderStage::Vertex] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Mesh-PBR.vert";
@@ -439,7 +475,8 @@ namespace Proof
 
 		Shader = Shader::GetOrCreate("Mesh-PBRShader", shaders);
 		MaterialPushConstant = PushConstant::Create(sizeof(MaterialData), 0, ShaderStage::Fragment);
-		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero],Descriptors[DescriptorSets::One] }, MaterialPushConstant);
+		//PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero],Descriptors[DescriptorSets::One] }, MaterialPushConstant);
+		PipeLineLayout = PipeLineLayout::Create(std::vector{ meshpipline.Descriptors[DescriptorSets::Zero],meshpipline.Descriptors[DescriptorSets::One] }, MaterialPushConstant);
 
 		Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
 		meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
@@ -457,7 +494,7 @@ namespace Proof
 		graphicsPipelineConfig.DebugName = "Material ";
 		graphicsPipelineConfig.Shader = Shader;
 		graphicsPipelineConfig.VertexArray = meshVertexArray;
-		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
 		graphicsPipelineConfig.RenderPass = renderPass;
 
 		//graphicsPipelineConfig.Blend = true;

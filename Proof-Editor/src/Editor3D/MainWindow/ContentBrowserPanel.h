@@ -1,23 +1,25 @@
 #pragma once
-#include <filesystem>
-#include "Proof/Core/Core.h"
-#include <vector>
+//#include "Proof/Core/Core.h"
+#include "Panel.h"
 #include "Proof/Asset/Asset.h"
+#include "Proof/Utils/PlatformUtils.h"
+
 #include <fstream>
 #include <string>
 #include "Panel.h"
 #include <type_traits>
-#include "Proof/Utils/PlatformUtils.h"
+#include <vector>
+#include <filesystem>
 namespace Proof
 {
 	class Texture2D;
 	/* THIS CLASS WILL NEED TO BE HANDLED BY CURRENT PROJECT */
 	class Proof_API ContentBrowserPanel :public Panel {
 	public:
-		ContentBrowserPanel(class Editore3D* owner);
+		ContentBrowserPanel();
 		void ImGuiRender(class FrameTime deltaTime);
 		//returns false when done rendering
-		// when the window pop up context is done
+		// when the window pop up context is done	
 		// returns true if still need rendering
 		// the bool is for don, and assetId is the asset id of the mesh
 		static std::pair<bool, AssetID> AddMesh(Count<class MeshSource> meshSource, const std::vector<uint32_t>& excludeIndex = {});
@@ -32,7 +34,6 @@ namespace Proof
 		Count<Texture2D> m_FileIcon;
 		Count<Texture2D> m_MeshIcon;
 		Count<Texture2D> m_ArrowIcon;
-		class Editore3D* m_Owner;
 		void GetAllSubFolders(const std::filesystem::path& path);
 
 		/**

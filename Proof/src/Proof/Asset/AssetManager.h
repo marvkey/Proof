@@ -39,6 +39,7 @@ namespace Proof
 		std::unordered_map<AssetID, AssetContainer> Assets;// path
 
 		//temporay 
+		//std::unordered_map< AssetType,std::unordered_map<AssetID, 
 		std::unordered_map<std::filesystem::path, AssetID> AssetPath;// path
 		std::unordered_map<AssetType, Special<class AssetSerializer>> AssetSerilizer;// path
 		std::filesystem::path AssetDirectory;
@@ -217,6 +218,7 @@ namespace Proof
 		// just saves the assetanager inot the assetManager file
 		static void SaveAssetManager();
 	private:
+		static void AddAsset(AssetInfo info, Count<Asset> asset);
 		static std::unordered_map<AssetID, AssetContainer>& GetAssets();
 		static std::unordered_map<std::filesystem::path, AssetID>& GetAssetByPath();
 		static void Init(AssetManagerConfiguration& assetManagerConfiguration);

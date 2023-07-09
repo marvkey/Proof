@@ -23,11 +23,12 @@ namespace Proof {
    void OpenGLVertexBuffer::Bind() {
 	  glBindBuffer(GL_ARRAY_BUFFER,m_ID);
    }
+   /*
    void OpenGLVertexBuffer::AddData(const void* Data,uint32_t Size,uint32_t SizeOfVertexBuffer) {
 	  glBindBuffer(GL_ARRAY_BUFFER,m_ID);
 	  glBufferSubData(GL_ARRAY_BUFFER,SizeOfVertexBuffer,Size,Data);   
    }
-
+   */
    void OpenGLVertexBuffer::UnBind() {
 	  glBindBuffer(GL_ARRAY_BUFFER,0);
    }

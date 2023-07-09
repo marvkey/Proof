@@ -1,5 +1,6 @@
 #include "Proofprch.h"
 #include "VulkanShader.h"
+
 #include <fstream>
 #include "VulkanGraphicsContext.h"
 #include "Proof/Renderer/RendererBase.h"
@@ -7,7 +8,10 @@
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
+#include "VulkanRenderer/VulkanRenderer.h"
+
 #include "Proof/Renderer/Renderer.h"
+#include "VulkanUtils/VulkanConvert.h"
 namespace Proof
 {
     namespace Utils
@@ -91,14 +95,34 @@ namespace Proof
         return source;
     }
 
+    
+
+    const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(uint32_t set) const
+    {
+        return nullptr;
+    }
+
     void VulkanShader::Release()
     {
         for (auto& [data, shaderModule] : m_ShaderModule)
         {
             Renderer::SubmitDatafree([shaderModuler =shaderModule] {
-                vkDestroyShaderModule(Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), shaderModuler, nullptr);
+                if(shaderModuler)
+                    vkDestroyShaderModule(VulkanRenderer::GetGraphicsContext()->GetDevice(), shaderModuler, nullptr);
             });
+            shaderModule = nullptr;
         }
+        VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+
+        //for (auto& [set, shaderResouce] : m_DescriptorResource)
+        //{
+        //    Renderer::SubmitDatafree([shaderResouce = shaderResouce, device = device] {
+        //        if(shaderResouce.Layout)
+        //            vkDestroyDescriptorSetLayout(device, shaderResouce.Layout, nullptr);
+        //        if(shaderResouce.Pool)
+        //            vkDestroyDescriptorPool(device, shaderResouce.Pool, nullptr);
+        //    });
+        //}
     }
 
     VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filePath) {
@@ -143,12 +167,12 @@ namespace Proof
         Release();
     }
     void VulkanShader::CompileOrGetBinaries(const std::filesystem::path& filePath) {
-		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
+		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
         compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, graphicsContext->GetVulkanVersion());
-        const bool optimize = true;
+        const bool optimize = false;/// so we can load the shader attributes
         if (optimize)
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
 
@@ -251,13 +275,14 @@ namespace Proof
         }
     };
     void VulkanShader::Compile() {
-        auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
+        auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
         
         compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, graphicsContext->GetVulkanVersion());
-        const bool optimize = true;
+        
+        const bool optimize = false;/// so we can load the shader attributes
         if (optimize)
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
 
@@ -307,17 +332,23 @@ namespace Proof
         PF_CORE_ASSERT(false, "cannot reload because you did not use path constructuro");
     }
 
+    const SahderInputDeclaration* VulkanShader::GetInputDelcaration(std::string name)const
+    {
+        if (m_InputDeclration.contains(name))
+            return &m_InputDeclration.at(name);
+        return nullptr;
+    }
+
     void VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code, VkShaderModule* shaderModule) {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = code.size() * sizeof(uint32_t);// because spirv module needs mutliple of 4
         createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-        if (vkCreateShaderModule(RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
+        if (vkCreateShaderModule(VulkanRenderer::GetGraphicsContext()->GetDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
             PF_CORE_ASSERT(false, "Failed To Create Shader Module");
 
     }
     void VulkanShader::Reflect(ShaderStage stage) {
-        return;
         if (m_VulkanSPIRV.find(stage) == m_VulkanSPIRV.end()) {
             PF_ENGINE_ERROR("{} {} Shader stage does not exist", m_Name, EnumReflection::EnumString(stage));
             return;
@@ -341,31 +372,346 @@ namespace Proof
         for (const auto& resource : resources.uniform_buffers) {
             const auto& bufferType = compiler.get_type(resource.base_type_id);
             uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
+            
             uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+            uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
             int memberCount = bufferType.member_types.size();
 
             PF_ENGINE_TRACE("  {}", resource.name);
             PF_ENGINE_TRACE("    Size = {}", bufferSize);
+            PF_ENGINE_TRACE("    Set = {}", descriptorSet);
             PF_ENGINE_TRACE("    Binding = {}", binding);
             PF_ENGINE_TRACE("    Members = {}", memberCount);
+            auto& uniformBuffer = m_ShaderDescriptorSet[descriptorSet].UniformBuffers[binding];
+            // make sure we only bidn to stages 
+            uniformBuffer.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
+            uniformBuffer = { resource.name,DescriptorResourceType::UniformBuffer,(int)uniformBuffer.Stage,1};
+            PF_CORE_ASSERT(!m_InputDeclration.contains(resource.name),"Dont use the same name for shader data");
+            m_InputDeclration[resource.name] = { descriptorSet,binding };
+        }
+        PF_ENGINE_TRACE("Storage constant buffers:");
+        for (const auto& resource : resources.storage_buffers)
+        {
+            PF_ENGINE_TRACE("   {}", resource.name);
+            PF_ENGINE_TRACE("   ID = {}", resource.id);
+            uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+            uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            auto& storageBuffer = m_ShaderDescriptorSet[descriptorSet].StorageBuffers[binding];
+            storageBuffer.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
+            storageBuffer = { resource.name,DescriptorResourceType::StorageBuffer, (int)storageBuffer.Stage,1 };
+            PF_CORE_ASSERT(!m_InputDeclration.contains(resource.name), "Dont use the same name for shader data");
+            m_InputDeclration[resource.name] = { descriptorSet,binding };
+        }
+        PF_ENGINE_TRACE("push constant buffers:");
+        for (const auto& resource : resources.push_constant_buffers)
+        {
+            PF_ENGINE_TRACE("   {}", resource.name);
+            PF_ENGINE_TRACE("   ID = {}", resource.id);
+            uint32_t offset = compiler.get_decoration(resource.id, spv::DecorationOffset);
+            uint32_t size = compiler.get_declared_struct_size(compiler.get_type(resource.base_type_id));
+            uint32_t pushStage = (int)m_PushConstants[resource.name].stageFlags;
+            pushStage |= (uint32_t) Utils::ProofShaderToVulkanShader(stage);
+            m_PushConstants[resource.name] = VkPushConstantRange{pushStage, offset,size };
+
+            PF_ENGINE_TRACE("   Offset = {}", offset);
+            PF_ENGINE_TRACE("   Size = {}", size);
         }
 
         PF_ENGINE_TRACE("Sampled images:");
         for (const auto& resource : resources.sampled_images) {
+           
+            const auto& type = compiler.get_type(resource.type_id);
+            uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+            uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            auto& sampledImage = m_ShaderDescriptorSet[descriptorSet].ImageSamplers[binding];
+            sampledImage.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
+
+             //https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide
+            //( why  we need  this)
+            /**
+             uniform sampler2D uSampler[10]; .
+             for (const Resource &resource : res.sampled_images)
+             {
+                const SPIRType &type = comp.get_type(resource.type_id); // Notice how we're using type_id here because we need the array information and not decoration information.
+                print(type.array.size()); // 1, because it's one dimension.
+                print(type.array[0]); // 10
+                print(type.array_size_literal[0]); // true
+             }
+             */
+            uint32_t nImages = 0;
+            uint32_t arraySize = type.array.size();
+            for (int i = 0; i < arraySize; i++)
+            {
+                nImages += type.array[i];
+            }
+
+            sampledImage = { resource.name,DescriptorResourceType::ImageSampler, (int)sampledImage.Stage,nImages };
+            PF_CORE_ASSERT(!m_InputDeclration.contains(resource.name), "Dont use the same name for shader data");
+            
             PF_ENGINE_TRACE("   {}", resource.name);
             PF_ENGINE_TRACE("   ID = {}", resource.id);
+            PF_ENGINE_TRACE("   Count = {}", nImages);
+            m_InputDeclration[resource.name] = { descriptorSet,binding };
         }
 
-        PF_ENGINE_TRACE("push constant buffers:");
-        for (const auto& resource : resources.push_constant_buffers) {
+        PF_ENGINE_TRACE("Seperate Samplers:");
+        for (const auto& resource : resources.separate_samplers)
+        {
+            const auto& type = compiler.get_type(resource.type_id);
+
+            uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+            uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            auto& seperateSampler = m_ShaderDescriptorSet[descriptorSet].SeperateSamplers[binding];
+            seperateSampler.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
+
+
+             //https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide
+            //( why  we need  this)
+            /**
+             uniform sampler2D uSampler[10]; .
+             for (const Resource &resource : res.sampled_images)
+             {
+                const SPIRType &type = comp.get_type(resource.type_id); // Notice how we're using type_id here because we need the array information and not decoration information.
+                print(type.array.size()); // 1, because it's one dimension.
+                print(type.array[0]); // 10
+                print(type.array_size_literal[0]); // true
+             }
+             */
+            uint32_t nImages = 0;
+            uint32_t arraySize = type.array.size();
+            for (int i = 0; i < arraySize; i++)
+            {
+                nImages += type.array[i];
+            }
+
+            seperateSampler = { resource.name,DescriptorResourceType::ImageSampler, (int)seperateSampler.Stage,nImages };
+            PF_CORE_ASSERT(!m_InputDeclration.contains(resource.name), "Dont use the same name for shader data");
+
             PF_ENGINE_TRACE("   {}", resource.name);
             PF_ENGINE_TRACE("   ID = {}", resource.id);
+            PF_ENGINE_TRACE("   Count = {}", nImages);
+            m_InputDeclration[resource.name] = { descriptorSet,binding };
         }
 
-        PF_ENGINE_TRACE("storage constant buffers:");
-        for (const auto& resource : resources.storage_buffers) {
+        PF_ENGINE_TRACE("Seperate Textures:");
+        for (const auto& resource : resources.separate_images)
+        {
+            const auto& type = compiler.get_type(resource.type_id);
+
+            uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+            uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            auto& seperateTextures = m_ShaderDescriptorSet[descriptorSet].SeperateTextures[binding];
+            seperateTextures.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
+
+             //https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide
+            //( why  we need  this)
+            /**
+             uniform sampler2D uSampler[10]; .
+             for (const Resource &resource : res.sampled_images)
+             {
+                const SPIRType &type = comp.get_type(resource.type_id); // Notice how we're using type_id here because we need the array information and not decoration information.
+                print(type.array.size()); // 1, because it's one dimension.
+                print(type.array[0]); // 10
+                print(type.array_size_literal[0]); // true
+             }
+             */
+            uint32_t nImages = 0;
+            uint32_t arraySize = type.array.size();
+            for (int i = 0; i < arraySize; i++)
+            {
+                nImages += type.array[i];
+            }
+
+            seperateTextures = { resource.name,DescriptorResourceType::ImageSampler, (int)seperateTextures.Stage,nImages };
+            PF_CORE_ASSERT(!m_InputDeclration.contains(resource.name), "Dont use the same name for shader data");
+
             PF_ENGINE_TRACE("   {}", resource.name);
             PF_ENGINE_TRACE("   ID = {}", resource.id);
+            PF_ENGINE_TRACE("   Count = {}", nImages);
+            m_InputDeclration[resource.name] = { descriptorSet,binding };
+        }
+        
+        VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+        m_TypeCounts.clear();
+        for (uint32_t set = 0; set < m_ShaderDescriptorSet.size(); set++)
+        {
+            auto& shaderDescriptorSet = m_ShaderDescriptorSet[set];
+            if (!shaderDescriptorSet) // empty
+                continue;
+
+            if (!shaderDescriptorSet.UniformBuffers.empty())
+            {
+                VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+                typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                typeCount.descriptorCount = shaderDescriptorSet.UniformBuffers.size();
+            }
+
+            if (!shaderDescriptorSet.StorageBuffers.empty())
+            {
+                VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+                typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                typeCount.descriptorCount = shaderDescriptorSet.StorageBuffers.size();
+            }
+
+            if (!shaderDescriptorSet.ImageSamplers.empty())
+            {
+                VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+                typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                typeCount.descriptorCount = shaderDescriptorSet.ImageSamplers.size();
+            }
+
+            if (!shaderDescriptorSet.SeperateTextures.empty())
+            {
+                VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+                typeCount.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                typeCount.descriptorCount = shaderDescriptorSet.SeperateTextures.size();
+            }
+
+            if (!shaderDescriptorSet.SeperateSamplers.empty())
+            {
+                VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+                typeCount.type = VK_DESCRIPTOR_TYPE_SAMPLER;
+                typeCount.descriptorCount = shaderDescriptorSet.SeperateSamplers.size();
+            }
+
+            if (!shaderDescriptorSet.StorageImages.empty())
+            {
+                VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+                typeCount.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                typeCount.descriptorCount = shaderDescriptorSet.StorageImages.size();
+            }
+            VkDescriptorPoolCreateInfo descriptorPoolInfo{};
+            descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+            descriptorPoolInfo.pNext = nullptr;
+            descriptorPoolInfo.poolSizeCount = m_TypeCounts[set].size();
+            descriptorPoolInfo.pPoolSizes = m_TypeCounts[set].data();
+            descriptorPoolInfo.maxSets = 1;
+            //VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorResource[set].Pool));
+            
+            std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+            for (auto& [binding, uniformBuffer] : shaderDescriptorSet.UniformBuffers)
+            {
+                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                layoutBinding.descriptorCount = 1;
+                layoutBinding.stageFlags = uniformBuffer.Stage;
+                layoutBinding.pImmutableSamplers = nullptr;
+                layoutBinding.binding = binding;
+                //PF_CORE_ASSERT()
+
+                VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[uniformBuffer.Name];
+                writeDescritporSet = {};
+                writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                writeDescritporSet.descriptorType = layoutBinding.descriptorType;
+                writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
+                writeDescritporSet.dstBinding = layoutBinding.binding;
+            }
+
+            for (auto& [binding, storageBuffer] : shaderDescriptorSet.StorageBuffers)
+            {
+                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                layoutBinding.descriptorCount = 1;
+                layoutBinding.stageFlags = storageBuffer.Stage;
+                layoutBinding.pImmutableSamplers = nullptr;
+                layoutBinding.binding = binding;
+                //PF_CORE_ASSERT()
+
+                VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[storageBuffer.Name];
+                writeDescritporSet = {};
+                writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                writeDescritporSet.descriptorType = layoutBinding.descriptorType;
+                writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
+                writeDescritporSet.dstBinding = layoutBinding.binding;
+            }
+
+            for (auto& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
+            {
+                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                layoutBinding.descriptorCount = imageSampler.DescriptorCount;
+                layoutBinding.stageFlags = imageSampler.Stage;
+                layoutBinding.pImmutableSamplers = nullptr;
+                layoutBinding.binding = binding;
+                //PF_CORE_ASSERT()
+
+                VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[imageSampler.Name];
+                writeDescritporSet = {};
+                writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                writeDescritporSet.descriptorType = layoutBinding.descriptorType;
+                writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
+                writeDescritporSet.dstBinding = layoutBinding.binding;
+            }
+
+            for (auto& [binding, seperateTexture] : shaderDescriptorSet.SeperateTextures)
+            {
+                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                layoutBinding.descriptorCount = seperateTexture.DescriptorCount;
+                layoutBinding.stageFlags = seperateTexture.Stage;
+                layoutBinding.pImmutableSamplers = nullptr;
+                layoutBinding.binding = binding;
+                //PF_CORE_ASSERT()
+
+                VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[seperateTexture.Name];
+                writeDescritporSet = {};
+                writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                writeDescritporSet.descriptorType = layoutBinding.descriptorType;
+                writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
+                writeDescritporSet.dstBinding = layoutBinding.binding;
+            }
+
+            for (auto& [binding, seperateSampler] : shaderDescriptorSet.SeperateSamplers)
+            {
+                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+                layoutBinding.descriptorCount = seperateSampler.DescriptorCount;
+                layoutBinding.stageFlags = seperateSampler.Stage;
+                layoutBinding.pImmutableSamplers = nullptr;
+                layoutBinding.binding = binding;
+                //PF_CORE_ASSERT()
+
+                VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[seperateSampler.Name];
+                writeDescritporSet = {};
+                writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                writeDescritporSet.descriptorType = layoutBinding.descriptorType;
+                writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
+                writeDescritporSet.dstBinding = layoutBinding.binding;
+            }
+
+            for (auto& [binding, storageImage] : shaderDescriptorSet.StorageImages)
+            {
+                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                layoutBinding.descriptorCount = storageImage.DescriptorCount;
+                layoutBinding.stageFlags = storageImage.Stage;
+                layoutBinding.pImmutableSamplers = nullptr;
+                layoutBinding.binding = binding;
+                //PF_CORE_ASSERT()
+
+                VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[storageImage.Name];
+                writeDescritporSet = {};
+                writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                writeDescritporSet.descriptorType = layoutBinding.descriptorType;
+                writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
+                writeDescritporSet.dstBinding = layoutBinding.binding;
+            }
+
+            VkDescriptorSetLayoutCreateInfo descriptorLayoutInfo{};
+            descriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            descriptorLayoutInfo.pNext = nullptr;
+            descriptorLayoutInfo.bindingCount = layoutBindings.size();
+            descriptorLayoutInfo.pBindings = layoutBindings.data();
+            // have to allocate because of graphics pipline needs set layout to to be used
+            VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayoutInfo, nullptr, &m_DescriptorResource[set].Layout));
+
+            VkDescriptorSetAllocateInfo allocInfo = {};
+            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            allocInfo.pNext = nullptr;
+            allocInfo.pSetLayouts = &m_DescriptorResource[set].Layout;
+            allocInfo.descriptorPool = m_DescriptorResource[set].Pool;
+            allocInfo.descriptorSetCount = 1;
+           // VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &m_DescriptorResource[set].Set));
         }
     }
 

@@ -4,9 +4,12 @@
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanPipeLineLayout.h"
 #include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanCommandBuffer.h"
 #include "VulkanTexutre.h"
 #include "VulkanUtils/VulkanConvert.h"
 #include "backends/imgui_impl_vulkan.h"
+#include "VulkanRenderer/VulkanRenderer.h"
+
 namespace Proof
 {
 	namespace Utils
@@ -43,9 +46,9 @@ namespace Proof
 
 	VulkanDescriptorSet::VulkanDescriptorSet(DescriptorSets set, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
 	{
-		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		m_Set = set;
-		m_Writer = CreateSpecial<VulkanDescriptorWriter>(this, graphicsContext->GetGlobalPool());
+		//m_Writer = CreateSpecial<VulkanDescriptorWriter>(this, graphicsContext->GetGlobalPool());
 		m_Bindings = bindings;
 
 		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
@@ -67,42 +70,42 @@ namespace Proof
 	}
 
 	VulkanDescriptorSet::~VulkanDescriptorSet() {
-		auto device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
 		Renderer::SubmitDatafree([graphicsDevice = device, descriptorLayout = m_DescriptorSetLayout]() {
 			vkDestroyDescriptorSetLayout(graphicsDevice, descriptorLayout, nullptr);
 		});
 	}
 
 	DescriptorSet& VulkanDescriptorSet::WriteBuffer(uint32_t binding, Count<UniformBuffer> buffer) {
-		auto& bufferInfo = buffer.As<VulkanUniformBuffer>()->GetDescriptorInfo();
-		if (bufferInfo.range == 0 || bufferInfo.buffer == nullptr)
-		{
-			PF_ENGINE_WARN("Cannot write Uniform Buffer to descriptor set with size 0 OR buffer == nullptr");
-			return *this;
-		}
-		m_Writer->WriteBuffer(binding, bufferInfo);
+		//auto& bufferInfo = buffer.As<VulkanUniformBuffer>()->GetDescriptorInfo();
+		//if (bufferInfo.range == 0 || bufferInfo.buffer == nullptr)
+		//{
+		//	PF_ENGINE_WARN("Cannot write Uniform Buffer to descriptor set with size 0 OR buffer == nullptr");
+		//	return *this;
+		//}
+		//m_Writer->WriteBuffer(binding, bufferInfo);
 		return *this;
 	}
 
 	DescriptorSet& VulkanDescriptorSet::WriteBuffer(uint32_t binding, Count<StorageBuffer> buffer) {
-		auto& bufferInfo = buffer.As<VulkanStorageBuffer>()->GetDescriptorInfo();
-		if (bufferInfo.range == 0 || bufferInfo.buffer ==nullptr)
-		{
-			PF_ENGINE_WARN("Cannot write Storage buffer to descriptor set with size 0 OR buffer == nullptr");
-			return *this;
-		}
-		m_Writer->WriteBuffer(binding, bufferInfo);
+		//auto& bufferInfo = buffer.As<VulkanStorageBuffer>()->GetDescriptorInfo();
+		//if (bufferInfo.range == 0 || bufferInfo.buffer ==nullptr)
+		//{
+		//	PF_ENGINE_WARN("Cannot write Storage buffer to descriptor set with size 0 OR buffer == nullptr");
+		//	return *this;
+		//}
+		//m_Writer->WriteBuffer(binding, bufferInfo);
 		return *this;
 	}
 
 	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, Count<Texture2D> image) {
-		auto& imageInfo = image.As<VulkanTexture2D>()->GetImageBufferInfo();
-		m_Writer->WriteImage(binding, imageInfo);
+		//auto& imageInfo = image.As<VulkanTexture2D>()->GetImageBufferInfo();
+		//m_Writer->WriteImage(binding, imageInfo);
 		return *this;
 	}
-	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, Count<CubeMap> image) {
-		auto& imageInfo = image.As<VulkanCubeMap>()->GetImageBufferInfo();
-		m_Writer->WriteImage(binding, imageInfo);
+	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, Count<TextureCube> image) {
+		//auto& imageInfo = image.As<VulkanTextureCube>()->GetImageBufferInfo();
+		//m_Writer->WriteImage(binding, imageInfo);
 		return *this;
 	}
 	DescriptorSet& VulkanDescriptorSet::WriteImage(uint32_t binding, std::vector<Count<class Texture2D>>& images) {
@@ -110,9 +113,9 @@ namespace Proof
 
 		for (auto image : images)
 		{
-			auto& imageInfo = image.As<VulkanTexture2D>()->GetImageBufferInfo();
+		//	auto& imageInfo = image.As<VulkanTexture2D>()->GetImageBufferInfo();
 
-			info->push_back(imageInfo);
+			//info->push_back(imageInfo);
 		}
 		m_Writer->WriteImage(binding, info);
 		return *this;
@@ -186,24 +189,26 @@ namespace Proof
 		// this is on graphics context classs so has to be deleted at the
 		for (uint32_t i = 0; i < m_UsedPools.size(); i++)
 		{
-			//Renderer::SubmitDatafree([device = m_Device, copyPool = m_UsedPools[i]]() {
-				vkDestroyDescriptorPool(m_Device, m_UsedPools[i], nullptr);
-			//});
+			Renderer::SubmitDatafree([device = m_Device, copyPool = m_UsedPools[i]]() {
+				vkDestroyDescriptorPool(device, copyPool, nullptr);
+			});
 		}
 
 		for (uint32_t i = 0; i < m_FreePools.size(); i++)
 		{
-			//Renderer::SubmitDatafree([device = m_Device, copyPool = m_FreePools[i]]() {
-				vkDestroyDescriptorPool(m_Device, m_FreePools[i], nullptr);
-		//	});
+			Renderer::SubmitDatafree([device = m_Device, copyPool = m_FreePools[i]]() {
+				vkDestroyDescriptorPool(device, copyPool, nullptr);
+			});
 		}
 		
-		//Renderer::SubmitDatafree([device = m_Device, copyPool = m_CurrentPool]() {
-			vkDestroyDescriptorPool(m_Device, m_CurrentPool, nullptr);
-		//});
+		Renderer::SubmitDatafree([device = m_Device, copyPool = m_CurrentPool]() {
+			vkDestroyDescriptorPool(device, copyPool, nullptr);
+		});
+		Renderer::SubmitDatafree([device = m_Device,fontSampler = m_FontSampler, textureLayout = m_TextureLayout]() {
 
-		vkDestroySampler(m_Device,m_FontSampler,nullptr);
-		vkDestroyDescriptorSetLayout(m_Device, m_TextureLayout,nullptr);
+			vkDestroySampler(device, fontSampler, nullptr);
+			vkDestroyDescriptorSetLayout(device, textureLayout, nullptr);
+		});
 	}
 
 
@@ -398,7 +403,7 @@ namespace Proof
 		VkWriteDescriptorSet write{};
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		write.descriptorType = bindingDescription.descriptorType;
-		write.dstBinding = binding;
+		write.dstBinding = binding;	
 		write.pImageInfo = imageInfo->data();// the first element it started on
 		write.descriptorCount = imageInfo->size();
 
@@ -411,205 +416,21 @@ namespace Proof
 	}
 
 	bool VulkanDescriptorWriter::Build(VkDescriptorSet& set) {
-		const auto& graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-		graphicsContext->GetGlobalPool()->Allocate(&m_SetLayout->m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight], m_SetLayout->m_DescriptorSetLayout);
-		Overwrite(m_SetLayout->m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight]);
+		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
+		//graphicsContext->GetGlobalPool()->Allocate(&m_SetLayout->m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight], m_SetLayout->m_DescriptorSetLayout);
+		//Overwrite(m_SetLayout->m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight]);
 		return true;
 	}
 
 
 
 	void VulkanDescriptorWriter::Overwrite(VkDescriptorSet& set) {
-		auto device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
 		for (auto& write : writes) {
 			write.dstSet = set;
 		}
 		vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
 		writes.clear();
 		m_ImageInfos.clear();
-	}
-
-
-	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, DescriptorSets set, uint32_t binding):
-		m_Size(size),m_Set(set), m_Binding(binding)
-	{
-		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-
-		m_UniformBuffers.resize(Renderer::GetConfig().FramesFlight);
-		VkBufferCreateInfo uniformBufferInfo = {};
-		uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		uniformBufferInfo.pNext = nullptr;
-
-		uniformBufferInfo.size = m_Size;
-		uniformBufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-		for (int i = 0; i < m_UniformBuffers.size(); i++) {
-			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_UniformBuffers[i]);
-		}
-	}
-	VulkanUniformBuffer::VulkanUniformBuffer(const void* data, uint32_t size, DescriptorSets set, uint32_t binding)
-		:m_Size(size), m_Set(set), m_Binding(binding)
-	{
-		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-
-		m_UniformBuffers.resize(Renderer::GetConfig().FramesFlight);
-		VkBufferCreateInfo uniformBufferInfo = {};
-		uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		uniformBufferInfo.pNext = nullptr;
-
-		uniformBufferInfo.size = m_Size;
-		uniformBufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-		for (int i = 0; i < m_UniformBuffers.size(); i++)
-		{
-			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_UniformBuffers[i]);
-		}
-		SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
-	}
-	VkDescriptorBufferInfo& VulkanUniformBuffer::GetDescriptorInfo(uint32_t index)
-	{
-		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-		m_BufferInfo = 
-		{
-			m_UniformBuffers[Renderer::GetCurrentFrame().FrameinFlight].Buffer,
-			0,
-			m_Size,
-		};
-		return m_BufferInfo;
-	}
-
-	VulkanUniformBuffer::~VulkanUniformBuffer() {
-		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-		for (int i = 0; i < m_UniformBuffers.size(); i++)
-		{
-			Renderer::SubmitDatafree([context = graphicsContext, buffer = m_UniformBuffers[i]]() {
-				vmaDestroyBuffer(context->GetVMA_Allocator(), buffer.Buffer, buffer.Allocation);
-			});
-		}
-	}
-	void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex) {
-		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-		VulkanBuffer stagingBuffer;
-
-		VkBufferCreateInfo stagingBufferInfo = {};
-		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		stagingBufferInfo.pNext = nullptr;
-
-		stagingBufferInfo.size = size;
-		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-		//let the VMA library know that this data should be on CPU RAM
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-
-		graphicsContext->CreateVmaBuffer(stagingBufferInfo, vmaallocInfo, stagingBuffer);
-		void* stagingData;
-		vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
-
-		memcpy(stagingData, data, size);
-
-		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
-
-		Renderer::Submit([&](CommandBuffer* cmdBuffer){
-			VkBufferCopy copy;
-			copy.dstOffset = offset;
-			copy.srcOffset = 0;
-			copy.size = size;
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_UniformBuffers[Renderer::GetCurrentFrame().FrameinFlight].Buffer, 1, &copy);
-		});
-		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
-	}
-	
-
-	VulkanStorageBuffer::~VulkanStorageBuffer()
-	{
-		auto allocator = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetVMA_Allocator();
-
-		for (int i = 0; i < m_StorageBuffer.size(); i++)
-		{
-			Renderer::SubmitDatafree([allocator = allocator,buffer = m_StorageBuffer[i]]() {
-				vmaDestroyBuffer(allocator, buffer.Buffer, buffer.Allocation);
-			});
-		}
-	}
-
-	VulkanStorageBuffer::VulkanStorageBuffer(DescriptorSets set, uint32_t binding, const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex)
-		:
-		m_Set(set), m_Binding(binding)
-
-	{
-		m_StorageBuffer.resize(Renderer::GetConfig().FramesFlight);
-		if (size == 0)
-		{
-			PF_ENGINE_WARN("Cannot set storage buffer with size 0");
-			return;
-		}
-		m_Size = size;
-		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-
-		{
-			Renderer::Submit([&](CommandBuffer* cmdBuffer) {
-
-				m_StorageBuffer.resize(Renderer::GetConfig().FramesFlight);
-				VkBufferCreateInfo uniformBufferInfo = {};
-				uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				uniformBufferInfo.pNext = nullptr;
-
-				uniformBufferInfo.size = m_Size;
-				uniformBufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-				VmaAllocationCreateInfo vmaallocInfo = {};
-				vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-				for (int i = 0; i < m_StorageBuffer.size(); i++)
-				{
-					graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_StorageBuffer[i]);
-				}
-			});
-		}
-
-		VulkanBuffer stagingBuffer;
-
-		VkBufferCreateInfo stagingBufferInfo = {};
-		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		stagingBufferInfo.pNext = nullptr;
-
-		stagingBufferInfo.size = m_Size;
-		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-		//let the VMA library know that this data should be on CPU RAM
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-
-		graphicsContext->CreateVmaBuffer(stagingBufferInfo, vmaallocInfo, stagingBuffer);
-		void* stagingData;
-		vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
-
-		memcpy(stagingData, data, m_Size);
-
-		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
-		Renderer::Submit([&](CommandBuffer* cmdBuffer) {
-			VkBufferCopy copy;
-			copy.dstOffset = offset;
-			copy.srcOffset = 0;
-			copy.size = m_Size;
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_StorageBuffer[Renderer::GetCurrentFrame().FrameinFlight].Buffer, 1, &copy);
-		});
-		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
-
-	}
-
-	VkDescriptorBufferInfo& VulkanStorageBuffer::GetDescriptorInfo(uint32_t index)
-	{
-		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-		m_BufferInfo = {
-				m_StorageBuffer[Renderer::GetCurrentFrame().FrameinFlight].Buffer,
-				0,
-				m_Size,
-		};
-		return m_BufferInfo;
-	}
+	}	
 }

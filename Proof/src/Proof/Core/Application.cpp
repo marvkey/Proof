@@ -49,11 +49,12 @@ namespace Proof {
        
         m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
         m_Window->SetEventCallback([this](Event& e) {OnEvent(e); });
+
         RendererBase::Init(static_cast<Window*>(m_Window.get()));
         if (m_ApplicationConfiguration.EnableImgui)
         {
-        ImGuiMainLayer = new ImGuiLayer();
-        MainLayerStack.PushLayer(ImGuiMainLayer);
+            m_ImGuiMainLayer = ImGuiLayer::Create();
+            MainLayerStack.PushLayer(m_ImGuiMainLayer);
 
         }
 
@@ -63,19 +64,19 @@ namespace Proof {
         AssetManager::Init(assetManagerconfig);
 
         PhysicsEngine::Init();
-         ScriptEngine::Init();
+        ScriptEngine::Init();
 
         PF_ENGINE_TRACE("Engine Load Done");
     }
 
 
     void Application::ImguiUpdate(float deltaTime) {
-        PF_PROFILE_FUNC("Application::ImguiUpdate");
+        PF_PROFILE_FUNC();
         Timer time;
-        ImGuiMainLayer->Begin();
-        for (Layer* layer : MainLayerStack.V_LayerStack)
+        m_ImGuiMainLayer->Begin();
+        for (Count<Layer>& layer : MainLayerStack.V_LayerStack)
             layer->OnImGuiDraw(deltaTime);
-        ImGuiMainLayer->End();
+        m_ImGuiMainLayer->End();
         m_ImguiFrameTime = time.ElapsedMillis();
     }
 
@@ -92,7 +93,7 @@ namespace Proof {
         /// WHEN WE GET UI WE MIGHT WANT TO ONLY RESPODN TO UI FIRST
          if (m_IsRunning == false)
             return;
-         for (Layer* layer : MainLayerStack.V_LayerStack)
+         for (Count<Layer>& layer : MainLayerStack.V_LayerStack)
             layer->OnEvent(e);
     }
 
@@ -145,11 +146,13 @@ namespace Proof {
 
             if (WindowMinimized == false) {
                 PF_PROFILE_FUNC("Layer OnUpdate");
-                for (Layer* layer : MainLayerStack.V_LayerStack)
+                for (Count<Layer>& layer : MainLayerStack.V_LayerStack)
                     layer->OnUpdate(DeltaTime);
             }
             if (m_ApplicationConfiguration.EnableImgui == true)
+            {
                 ImguiUpdate(DeltaTime);
+            }
             m_Window->WindowUpdate();
             Renderer::EndFrame();
 
@@ -170,12 +173,12 @@ namespace Proof {
         }
     }
 
-    void Application::PushLayer(Layer* Layer) {
-        MainLayerStack.PushLayer(Layer);
+    void Application::PushLayer(Count<Layer> layer) {
+        MainLayerStack.PushLayer(layer);
     }
 
-    void Application::PushOverlay(Layer* Layer) {
-        MainLayerStack.PushOverlay(Layer);
+    void Application::PushOverlay(Count<Layer> layer) {
+        MainLayerStack.PushOverlay(layer);
     }
 
     void Application::OpenProject(const std::filesystem::path& path)

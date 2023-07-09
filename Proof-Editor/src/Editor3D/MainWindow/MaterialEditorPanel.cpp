@@ -7,7 +7,9 @@
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Scene/Material.h"
-#include "Proof/Core/Core.h"
+#include "SceneHierachyPanel.h"
+#include "Proof/Scene/Entity.h"
+#include "Proof/Renderer/WorldRenderer.h"
 namespace Proof
 {
 
@@ -20,6 +22,7 @@ namespace Proof
 	void MaterialEditorPanel::ImGuiRender(FrameTime deltaTime) {
 		if (m_ShowWindow == false)
 			return;
+
 
 		// save if any data is changed
 		bool shouldSave = false;
@@ -62,14 +65,14 @@ namespace Proof
 				{
 					//auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
 					//ImGui::Image((ImTextureID)m_Material->AlbedoTexture->GetImage().SourceImage, { 30,30 });
-					ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 					ImGui::SameLine();
 					bool val = true;
 					ImGui::Checkbox("##n", &val);
 				}
 				else
 				{
-					ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 				}
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -92,14 +95,14 @@ namespace Proof
 				{
 					//auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
 					//ImGui::Image((ImTextureID)m_Material->NormalTexture->GetImage().SourceImage, { 30,30 });
-					ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 					ImGui::SameLine();
 					bool val = true;
 					ImGui::Checkbox("##n", &val);
 				}
 				else
 				{
-					ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 				}
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -123,14 +126,14 @@ namespace Proof
 					
 					//auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
 					//ImGui::Image((ImTextureID)m_Material->MetallicTexture->GetImage().SourceImage, { 30,30 });
-					ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 					ImGui::SameLine();
 					bool val = true;
 					ImGui::Checkbox("##n", &val);
 				}
 				else
 				{
-					ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+					UI::Image(Renderer::GetWhiteTexture()->GetImage(), { 30,30 });
 				}
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -154,14 +157,14 @@ namespace Proof
 				{
 					//auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
 					//ImGui::Image((ImTextureID)m_Material->RoughnessTexture->GetImage().SourceImage, { 30,30 });
-					ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 					ImGui::SameLine();
 					bool val = true;
 					ImGui::Checkbox("##n", &val);
 				}
 				else
 				{
-					ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 				}
 				if (ImGui::BeginDragDropTarget())
 				{
@@ -342,11 +345,11 @@ namespace Proof
 					bool fdasf = true;
 					ImGui::Checkbox("##x", &fdasf);
 					ImGui::SameLine();
-					ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 				}
 				else
 				{
-					ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 				}
 
 				if (ImGui::BeginDragDropTarget())
@@ -374,7 +377,7 @@ namespace Proof
 		{
 
 			UI::ScopedStyleColor bgColor(ImGuiCol_ChildBg, { 0,0,0,1 });
-			ImGui::BeginChild("WIndow", ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y });
+			ImGui::BeginChild("Window", ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y });
 			if (m_Size != Vector2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y })
 			{
 				m_Camera.OnUpdate(deltaTime, ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
@@ -389,9 +392,8 @@ namespace Proof
 			}
 		
 			m_WorldRenderer->Render(m_Camera, RenderSettings());
-			const void* Text = m_WorldRenderer->GetImage().SourceImage;
-
-			ImGui::Image((ImTextureID)Text, ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+		
+			UI::Image(m_WorldRenderer->GetImage(), ImVec2{ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y}, ImVec2{0,1}, ImVec2{1,0});
 			ImGui::EndChild();
 		}
 		ImGui::End();

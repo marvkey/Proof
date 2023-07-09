@@ -5,13 +5,12 @@
 #include<set>
 #include <vector>
 #include "VulkanDescriptorSet.h"
-#define VMA_IMPLEMENTATION
 #include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
 #include "Proof/Renderer/RendererBase.h"
+
+#include "Vulkan.h"
 namespace Proof
 {
-
-
 	// local callback functions
 	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,VkDebugUtilsMessageTypeFlagsEXT messageType,const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,void* pUserData) {
 		if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
@@ -47,7 +46,25 @@ namespace Proof
 			func(instance, debugMessenger, pAllocator);
 		}
 	}
+	void VulkanGraphicsContext::SetDebugUtilsObjectName(VkObjectType objectType, const std::string& name, void* objectHandle) {
 
+		static PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXTFuncPtr = nullptr;
+
+		if (vkSetDebugUtilsObjectNameEXTFuncPtr == nullptr)
+		{
+			vkSetDebugUtilsObjectNameEXTFuncPtr = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
+				vkGetDeviceProcAddr(m_Device, "vkSetDebugUtilsObjectNameEXT")
+				);
+		}
+		VkDebugUtilsObjectNameInfoEXT nameInfo{};
+		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		nameInfo.pNext = nullptr;
+		nameInfo.objectType = objectType;
+		nameInfo.objectHandle = reinterpret_cast<uint64_t>(objectHandle);;
+		nameInfo.pObjectName = name.c_str();
+
+		VK_CHECK_RESULT(vkSetDebugUtilsObjectNameEXTFuncPtr(m_Device, &nameInfo));
+	}
 	VulkanGraphicsContext::VulkanGraphicsContext(Window* window) : m_Window{ window } {
 		CreateInstance();
 		SetupDebugMessenger();
@@ -57,6 +74,7 @@ namespace Proof
 		CreateCommandPool();
 		InitDescriptors();
 		InitVMA();
+		
 	}
 
 	VulkanGraphicsContext::~VulkanGraphicsContext() {
@@ -65,16 +83,43 @@ namespace Proof
 			DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 		}
 		m_GlobalPool = nullptr;
-		// cannot put in submit because
-		// the device will gett deleted and everyting that needs to be delted will crash
-		// so we delete withotu adding to deleque
-	//	Renderer::SubmitDatafree([device = m_Device,instance = m_Instance, surface = m_Surface,commandPool = m_CommandPool]() {
-			vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
-			vkDestroyDevice(m_Device, nullptr);
+		Renderer::SubmitDatafree([device = m_Device,instance = m_Instance, surface = m_Surface,commandPool = m_CommandPool]()mutable {
+			vkDestroyCommandPool(device, commandPool, nullptr);
+			vkDestroyDevice(device, nullptr);
 
-			vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
-			vkDestroyInstance(m_Instance, nullptr);
-		//});
+			vkDestroySurfaceKHR(instance, surface, nullptr);
+			vkDestroyInstance(instance, nullptr);
+		});
+	}
+
+	std::pair<VkSampler, uint64_t> VulkanGraphicsContext::GetOrCreateSampler(VkSamplerCreateInfo samplerInfo)
+	{
+		auto hash=Utils::GetHashSamplerInfo(samplerInfo);
+		if (m_Samplers.contains(hash))
+		{
+			m_Samplers[hash].first++;
+			return { m_Samplers[hash].second, hash};
+		}
+
+		VkSampler sampler;
+		vkCreateSampler(m_Device, &samplerInfo, nullptr, &sampler);
+		SetDebugUtilsObjectName(VK_OBJECT_TYPE_SAMPLER, std::format("{} Sampler", hash), sampler);
+		m_Samplers[hash] = { 1,sampler };
+		return { sampler,hash };
+	}
+
+	void VulkanGraphicsContext::DeleteSampler(uint64_t samplerHash)
+	{
+		if (m_Samplers.contains(samplerHash) == false)return;
+		auto [refCount,sampler] = m_Samplers[samplerHash];
+		refCount--;
+		if (refCount == 0)
+		{
+			m_Samplers.erase(samplerHash);
+			Renderer::SubmitDatafree([sampler = sampler, device = m_Device] {
+				vkDestroySampler(device, sampler, nullptr);
+			});
+		}
 	}
 
 	void VulkanGraphicsContext::CreateInstance() {
@@ -239,20 +284,20 @@ namespace Proof
 			//.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000);
 			////.Build(m_Device);
 			//VkDescriptorPoolCreateFlags PoolFlags = 0;
-		std::vector<VkDescriptorPoolSize> PoolSizes{};
-
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 });
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 });
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 });
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 });
+		//std::vector<VkDescriptorPoolSize> PoolSizes{};
+		//
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 });
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 });
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 });
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 });
 		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 });
 		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 });
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 });
-		PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 });
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 });
+		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 });
 		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 });
 		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 });
 		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 });
-		m_GlobalPool = Count<VulkanDescriptorPool>::Create(size, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, PoolSizes, m_Device);
+		//m_GlobalPool = Count<VulkanDescriptorPool>::Create(size, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, PoolSizes, m_Device);
 
 	}
 

@@ -49,8 +49,12 @@ namespace Proof
 	void AssetManager::UnInizilize() {
 		//SaveAllAssets();
 		s_AssetManagerData->Assets.clear();
-
 		s_AssetManagerData = nullptr;
+	}
+	void AssetManager::AddAsset(AssetInfo assetInfo, Count<Asset> asset)
+	{
+		//GetAssets().insert({ assetInfo.ID,{assetInfo,asset} });
+		//GetAssetByPath().insert({ assetInfo.Path.string(),assetInfo.ID });
 	}
 	std::unordered_map<AssetID, AssetContainer>& AssetManager::GetAssets() {
 		return s_AssetManagerData->Assets;
@@ -175,7 +179,7 @@ namespace Proof
 				NewAssetSource(it.path(), AssetType::TextureSourceFile);
 				std::string path = std::filesystem::relative(it.path().parent_path() /= Utils::FileDialogs::GetFileName(it.path())).string();
 				path += ".Texture.ProofAsset";
-				Count<Asset> asset = Texture2D::Create(it.path().string());
+				Count<Asset> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(it.path())), it.path());
 				AssetManager::NewAsset(asset, path);
 				continue;
 			}
@@ -276,9 +280,11 @@ namespace Proof
 
 		PF_CORE_ASSERT(AssetManager::HasAsset(Id), "trying to save asset that does not exist");
 		const auto& assetInfo = GetAssetInfo(Id);
-
+		if (assetInfo.RuntimeAsset)
+			return;
 		if (!assetInfo.IsAssetSource() && assetInfo.State == AssetState::Ready)
 		{
+			PF_CORE_ASSERT(s_AssetManagerData->AssetSerilizer.contains(assetInfo.Type), "AssetManager Save Does not contain speicfied type");
 			s_AssetManagerData->AssetSerilizer.at(assetInfo.Type)->Save(assetInfo, AssetManager::GetAsset<Asset>(Id));
 		}
 

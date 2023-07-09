@@ -42,7 +42,12 @@ namespace Proof
 		Count <class PipeLineLayout> PipeLineLayout;
 		Count<class VertexBuffer> MeshesVertexBuffer;
 		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
+		Count<class PushConstant> TexturePushConstant;
 
+
+		std::vector<MeshPipeLine::MeshVertex> MeshesVertexes;
+		//mesh id, pos it was first indexed into the vertex
+		std::unordered_map<UUID, uint32_t> MeshPos;
 		// id, and all teh transforms for that mesh
 		std::unordered_map < UUID, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
 		std::unordered_map < UUID, MeshInstance> Meshes;
@@ -54,9 +59,11 @@ namespace Proof
 		// the begin offset we should start rendering
 		uint32_t OffsetBegin = 0;
 		LightPass LightPass;
-		Count<class CubeMap> IrradianceMap;
-		Count<class CubeMap> PrefilterMap;
+		Count<class TextureCube> IrradianceMap;
+		Count<class TextureCube> PrefilterMap;
 		Count<Texture2D> BRDf;
+
+		
 		void Reset() {
 			MeshesTransforms.clear();
 			Meshes.clear();
@@ -69,6 +76,13 @@ namespace Proof
 			BRDf = nullptr;
 		}
 
+	};
+	struct MeshTextureInfo 
+	{
+		int HasAlbedo;
+		int HasNormal;
+		int HasMetallic;
+		int HasRoughness;
 	};
 	struct MaterialData {
 		Vector Colour{ 1,1,1 };
@@ -94,7 +108,7 @@ namespace Proof
 		Count<class GraphicsPipeline> GraphicsPipeline;
 		Count<class Shader> Shader;
 		Count <class PipeLineLayout> PipeLineLayout;
-		MeshMaterialPipeline(Count<class RenderPass> renderPass);
+		MeshMaterialPipeline(Count<class RenderPass> renderPass, MeshPipeLine& meshpipline);
 		Count<class PushConstant> MaterialPushConstant;
 		uint32_t NumberMeshes;
 		// order teh meshes are pushed intehvector that stores all transforms
@@ -105,7 +119,8 @@ namespace Proof
 		std::unordered_map < UUID, std::vector< MeshPipeLine::MeshVertex>> MeshesTransforms;
 		// mesh uniqe id, mesh instance 
 		std::unordered_map < UUID, std::vector<MaterialMeshInstance>> Meshes;
-		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
+
+	//	std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 		void Reset() {
 			MeshesTransforms.clear();
 			ElementsImplaced.clear();
@@ -122,6 +137,11 @@ namespace Proof
 		Count<ScreenFrameBuffer> CurrentFrameBuffer = nullptr;
 	};
 	class Mesh;
+	struct RenderPBRPerformance {
+		float SetMeshPass = 0;
+		float RenderMesh = 0;
+		float RenderMeshMaterial = 0;
+	};
 	class Renderer3DPBR {
 	public:
 		Renderer3DPBR(Count<class RenderPass> renderPass);
@@ -131,7 +151,7 @@ namespace Proof
 		void Init();
 		void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<RenderCommandBuffer>& commandBuffer);
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
-		void SetPbrMaps(Count<class CubeMap> irrdianceMap, Count<class CubeMap> prefilterMap,Count<Texture2D> brdf);
+		void SetPbrMaps(Count<class TextureCube> irrdianceMap, Count<class TextureCube> prefilterMap,Count<Texture2D> brdf);
 
 		void SubmitMesh(Count<Mesh> mesh, const glm::mat4& transform);
 		void SubmitMeshWithMaterial(Count<Mesh> mesh, Count<MaterialTable> table, const glm::mat4& transform);
@@ -144,6 +164,10 @@ namespace Proof
 
 		void EndContext();
 		void Destroy();
+		RenderPBRPerformance GetPorformanceProfiler()const
+		{
+			return m_Performance;
+		}
 	private:
 		void SetPasses();
 		void SetMeshPass();
@@ -158,5 +182,6 @@ namespace Proof
 		void Reset();
 		bool s_InContext = false;
 		Count <class RenderPass > m_RenderPass;
+		RenderPBRPerformance  m_Performance;
 	};
 }

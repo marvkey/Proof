@@ -5,12 +5,12 @@
 namespace Proof{
 	
 	struct VulkanBuffer {
-		VkBuffer Buffer;
-		VmaAllocation Allocation;
+		VkBuffer Buffer = nullptr;
+		VmaAllocation Allocation = nullptr;
 	};
 
 	struct VulkanImageAlloc {
-		VkImage Image;
-		VmaAllocation Allocation;
+		VkImage Image = nullptr;
+		VmaAllocation Allocation = nullptr;
 	};
 }

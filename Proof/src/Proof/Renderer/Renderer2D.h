@@ -52,26 +52,29 @@ namespace Proof {
 
 	struct SpritePipeline {
 		Count<class GraphicsPipeline> GraphicsPipeline;
-		Count<class Shader> Shader;
-		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
-		Count <class PipeLineLayout> PipeLineLayout;
-		SpritePipeline(Count <class RenderPass > renderPass);
-		SpritePipeline(Count <class RenderPass > renderPass, const std::string& shaderPath);
+		Count<class RenderPass> RenderPass;
+		//Count<class Shader> Shader;
+		//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
+		//Count <class PipeLineLayout> PipeLineLayout;
+		//SpritePipeline(Count <class RenderPass > renderPass);
+		SpritePipeline(Count<FrameBuffer> frameBuffer,const std::string& shaderPath);
+		SpritePipeline(Count<FrameBuffer> frameBuffer);
 	};
 
 	struct TextPipeline {
 		Count<class GraphicsPipeline> GraphicsPipeline;
-		Count<class Shader> Shader;
-		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
-		Count <class PipeLineLayout> PipeLineLayout;
-		TextPipeline(Count <class RenderPass > renderPass);
+		Count<class RenderPass> RenderPass;
+	//	Count<class Shader> Shader;
+		//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
+//		Count <class PipeLineLayout> PipeLineLayout;
+		TextPipeline(Count<FrameBuffer> frameBuffer);
 	};
 	
 	class Renderer2D {
 		friend class Camera;
 	public:
-		Renderer2D(Count <class RenderPass > renderPass, bool screenSpace = false);
-		Renderer2D(Count <class RenderPass > renderPass, const std::string& spriteRenderShaderPath);
+		Renderer2D(Count<ScreenFrameBuffer>& frameBuffer,bool screenSpace = false);
+		Renderer2D(Count<ScreenFrameBuffer>& frameBuffer,const std::string& spriteRenderShaderPath);
 		~Renderer2D() {};
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commdandBuffer);
 		void DrawQuad(const glm::vec3& Location);
@@ -104,7 +107,6 @@ namespace Proof {
 		void Init();
 		Special<SpritePipeline> m_SpritePipeline;
 		Special<TextPipeline> m_TextPipeline;
-		Count <class RenderPass > m_RenderPass;
 		Special< Renderer2DStorage> m_Storage2DData;
 		/* Not using as default rendeer cause it allocates to the heap and we dont need taht waste in performance */
 	};

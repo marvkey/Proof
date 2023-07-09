@@ -1,4 +1,5 @@
 #pragma once
+#include "SmartPointer.h"
 #include <vector>
 namespace Proof {
 	class Layer;
@@ -6,18 +7,18 @@ namespace Proof {
 	public:
 		LayerStack() = default;
 		~LayerStack();
-		void PushLayer(Layer* layer);
-		void PopLayer(Layer* layer);
-		void PushOverlay(Layer* layer);
-		void PopOverlay(Layer* layer);
+		void PushLayer(Count<Layer> layer);
+		void PopLayer(Count<Layer> layer);
+		void PushOverlay(Count<Layer> layer);
+		void PopOverlay(Count<Layer> layer);
 
 		void Empty();
-		std::vector<Layer*>::iterator begin() { return V_LayerStack.begin(); };
-		std::vector<Layer*>::iterator end() { return V_LayerStack.end(); };
-		std::vector<Layer*>::reverse_iterator rbegin() { return V_LayerStack.rbegin(); }
-		std::vector<Layer*>::reverse_iterator rend() { return V_LayerStack.rend(); }
+		std::vector<Count<Layer>>::iterator begin() { return V_LayerStack.begin(); };
+		std::vector<Count<Layer>>::iterator end() { return V_LayerStack.end(); };
+		std::vector<Count<Layer>>::reverse_iterator rbegin() { return V_LayerStack.rbegin(); }
+		//std::vector<Count<Layer>>::reverse_iterator rend() { return V_LayerStack.rend(); }
 	private:
-		std::vector<Layer*>V_LayerStack;
+		std::vector<Count<Layer>>V_LayerStack;
 		unsigned int LayerStackIndex = 0;
 		friend class Application;
 	};

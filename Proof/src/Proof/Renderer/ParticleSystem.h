@@ -1,7 +1,8 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include"Proof/Asset/Asset.h"
-
+#include "Proof/Math/Math.h"
+#include <glm/glm.hpp>
 namespace Proof {
 
 	struct ParticleEmission {

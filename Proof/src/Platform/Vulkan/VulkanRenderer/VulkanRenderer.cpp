@@ -22,6 +22,20 @@
 #include "Proof/Asset/AssetManager.h"
 #include "../VulkanRenderPass.h"
 #include <deque>
+
+#include "Proof/Renderer/CommandBuffer.h"
+#include "Platform/Vulkan/VulkanBuffer.h"
+#include "../VulkanPipeLineLayout.h"
+#include "../VulkanPushConstant.h"
+#include "../VulkanGraphicsContext.h"
+#include "../VulkanDescriptorSet.h"
+#include "../VulkanFrameBuffer.h"
+
+
+#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
+#include "Proof/Renderer/FrameBuffer.h"
+#include "Platform/Vulkan/VulkanGraphicsPipeline.h"
+#include "Platform/Vulkan/VulkanSwapChain.h"
 namespace Proof
 {
 
@@ -29,8 +43,9 @@ namespace Proof
 	CurrentFrame VulkanRenderer::s_CurrentFrame;
 	VulkanRendererData* s_RenderData;
 	static bool s_IsWindowResised;
+	Count<class VulkanGraphicsContext> s_GraphicsContext;
 	void VulkanRenderer::Init() {
-		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
+		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
 		s_IsWindowResised = false;
 		s_RenderData = new VulkanRendererData();
 		s_RendererConfig = RendererConfig();
@@ -40,7 +55,7 @@ namespace Proof
 	
 	void VulkanRenderer::BeginFrame() {
 		PF_PROFILE_FUNC();
-		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
+		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
 		if (s_IsWindowResised) {
 			graphicsContext->GetSwapChain()->Resize({ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() });
 
@@ -54,24 +69,38 @@ namespace Proof
 	void VulkanRenderer::EndFrame() {
 		PF_PROFILE_FUNC();
 		DrawFrame();
-		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
+		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
 		s_RenderData->ResourceFreeQueue[s_CurrentFrame.FrameinFlight].Flush();
-		graphicsContext->GetGlobalPool()->ResetPool();
+		//graphicsContext->GetGlobalPool()->ResetPool();
 		s_CurrentFrame.FrameinFlight = (s_CurrentFrame.FrameinFlight + 1) % s_RendererConfig.FramesFlight;
+	}
+	void VulkanRenderer::SetGraphicsContext(Count<GraphicsContext> graphics)
+	{
+		s_GraphicsContext = graphics.As<VulkanGraphicsContext>();
 	}
 	void VulkanRenderer::OnWindowResize(WindowResizeEvent& e) {
 		s_IsWindowResised = true;
 	}
 	void VulkanRenderer::DrawFrame() {
 		PF_PROFILE_FUNC();
-		const auto& graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
+		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
 		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->SubmitCommandBuffers(s_RenderData->CommandBuffers, &s_CurrentFrame.ImageIndex);
 		s_RenderData->CommandBuffers.clear();
+	}
+
+	Count<class VulkanGraphicsContext> VulkanRenderer::GetGraphicsContext()
+	{
+		return s_GraphicsContext;
 	}
 	
 	void VulkanRenderer::Destroy() {
 		// Free resources in queue
 		for (auto& queue : s_RenderData->ResourceFreeQueue) {
+			queue.Flush();
+		}
+		s_GraphicsContext = nullptr;
+		for (auto& queue : s_RenderData->ResourceFreeQueue)
+		{
 			queue.Flush();
 		}
 		s_RenderData->ResourceFreeQueue.clear();

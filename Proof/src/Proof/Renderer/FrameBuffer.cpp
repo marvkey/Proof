@@ -44,8 +44,8 @@ namespace Proof {
 	{
 		return m_FrameBuffer->GetConfig().Size.Y;
 	}
-	Image ScreenFrameBuffer::GetImage()
+	Count<Image2D> ScreenFrameBuffer::GetImage(uint32_t imageIndex)
 	{
-		return m_FrameBuffer->GetColorAttachmentImage(0);
+		return m_FrameBuffer->GetColorAttachmentImage(0,imageIndex);
 	}
 }

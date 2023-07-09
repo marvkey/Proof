@@ -6,6 +6,7 @@
 #include "Proof/Core/FrameTime.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "SceneHierachyPanel.h"
+#include "Proof/ProofCore.h"
 namespace Proof
 {
 	GuiPanel::GuiPanel(Count<class UIPanel> panel)
@@ -112,10 +113,10 @@ namespace Proof
 		{
 			UI::ScopedStyleColor bgColor(ImGuiCol_ChildBg, { 0,0,0,1 });
 			ImGui::BeginChild("WIndow", ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y });
-			const void* Text = UiRenderer::DrawUI(m_UIPanel, m_Camera.GetPosition(), glm::mat4(1.0f), glm::mat4(1.0f),
-				ImGui::GetWindowWidth(), ImGui::GetWindowHeight()).SourceImage;
-
-			ImGui::Image((ImTextureID)Text, ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			//const void* Text = UiRenderer::DrawUI(m_UIPanel, m_Camera.GetPosition(), glm::mat4(1.0f), glm::mat4(1.0f),
+			//	ImGui::GetWindowWidth(), ImGui::GetWindowHeight()).SourceImage;
+			//
+			//ImGui::Image((ImTextureID)Text, ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			ImGui::EndChild();
 		}
 		ImGui::End();
@@ -212,11 +213,11 @@ namespace Proof
 			bool fdasf = true;
 			ImGui::Checkbox("##x", &fdasf);
 			ImGui::SameLine();
-			ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+			UI::Image(Renderer::GetWhiteTexture()->GetImage(), {30,30});
 		}
 		else
 		{
-			ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+			UI::Image(Renderer::GetWhiteTexture()->GetImage(), { 30,30 });
 		}
 
 		if (ImGui::BeginDragDropTarget())

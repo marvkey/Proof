@@ -1,5 +1,4 @@
 #pragma once
-#include "Proof/Core/Core.h"
 #include "Panel.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"

@@ -37,7 +37,6 @@ namespace Proof{
 		Count<class Shader> Shader;
 		// should kinda remove this ngl
 		Count<class VertexArray> VertexArray;
-		Count<class PipeLineLayout> PipelineLayout;
 		float LineWidth = 1.0f;
 		bool WriteDepth = true;
 		bool DepthTest = true;
@@ -50,6 +49,10 @@ namespace Proof{
 	};
 	class GraphicsPipeline {
 	public:
+		virtual void SetInput(std::string_view name, Count<class UniformBuffer> buffer) = 0;
+		virtual void SetInput(std::string_view name, Count<class Texture2D> iamge) = 0;
+		virtual void SetInput(std::string_view name, Count<class StorageBuffer> buffer) = 0;
+		virtual void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images) = 0;
 		virtual ~GraphicsPipeline() = default;
 		static Count<GraphicsPipeline> Create(const GraphicsPipelineConfig& piplineConfig);
 	};

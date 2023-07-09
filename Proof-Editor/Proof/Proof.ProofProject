@@ -2,7 +2,7 @@ Project:
   Name: Proof
   AssetDirectory: Assets
   AssetManager: Assets/AssetManager.ProofAssetManager
-  StartWorld: 9731897389791312
+  StartWorld: 6477593735195019013
   ScriptModuleDirectory: Resources/Scripts/Binaries
   Input:
     ActionMapping:

@@ -10,15 +10,15 @@ namespace Proof {
     class Proof_API ImGuiLayer :public Layer{
     public:
         ImGuiLayer();
-        ~ImGuiLayer();
-        virtual void OnAttach()override;
-        virtual void OnDetach()override;
-        void Begin();
-        void OnEvent(Event& e);
-        void End();
+        ImGuiLayer(const std::string& name);
+        virtual ~ImGuiLayer() {};
+        virtual void Begin() = 0;
+        virtual void End() = 0;
         void SetDarkTheme();
-    private:
-        bool m_WindoResize = false;
+        static Count<ImGuiLayer> Create();
+        virtual ImTextureID ToImguiImage(Count<class Image2D> iamge) = 0;
+        virtual ImTextureID ToImguiImage(Count<class Texture2D> texture) = 0;
+
     };
 }
 

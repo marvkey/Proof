@@ -25,20 +25,29 @@ namespace Proof{
 		RenderPassConfig() {
 
 		}
-		RenderPassConfig(const std::string& name, const FrameBufferConfig& config) {
-			DebugName = name;
-			for (const auto& attach : config.Attachments.Attachments)
+		RenderPassConfig(const std::string& debugName, Count<FrameBuffer> buffer) {
+			DebugName = debugName;
+			for (const auto& attach : buffer->GetConfig().Attachments.Attachments)
 			{
 				Attachments.Attachments.emplace_back(attach.Format);
 			}
+			TargetBuffer = buffer;
+		}
+		RenderPassConfig(const std::string& debugName, const FrameBufferConfig& conif) {
+			DebugName = debugName;
+			for (const auto& attach : conif.Attachments.Attachments)
+			{
+				Attachments.Attachments.emplace_back(attach.Format);
 			}
+		}
 		std::string DebugName;
 		RenderPassAttachment Attachments;
-
+		Count<FrameBuffer> TargetBuffer;
 		bool MultiView = false;
 	};
 	class RenderPass {
 	public:
+		virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) = 0;
 		virtual ~RenderPass() =default;
 		static	Count<RenderPass> Create(const RenderPassConfig& config);
 	};

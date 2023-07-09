@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "GraphicsContext.h"
 namespace Proof {
 	
 	struct BaseTextures;

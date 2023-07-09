@@ -329,4 +329,14 @@ namespace Proof
     using Vector4 = VectorTemplate4<float>;
     
     using ScreenSize = VectorTemplate2<uint32_t>;
+
+    using Vector2U8 = VectorTemplate2<uint8_t>;
+    using Vector2U16 = VectorTemplate2<uint16_t>;
+    using Vector2U = VectorTemplate2<uint32_t>;
+    using Vector2U64 = VectorTemplate2<uint16_t>;
+
+    using Vector2I8 = VectorTemplate2<uint8_t>;
+    using Vector2I = VectorTemplate2<int32_t>;
+    using Vector2I64 = VectorTemplate2<uint64_t>;
+    using Vector2I16 = VectorTemplate2<uint16_t>;
 }

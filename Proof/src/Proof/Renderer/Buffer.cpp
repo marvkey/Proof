@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
+#include "Platform/Vulkan/VulkanResourceBuffer.h"
 #include "RendererAPI.h"
 namespace Proof
 {

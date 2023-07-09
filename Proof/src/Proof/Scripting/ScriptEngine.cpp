@@ -61,11 +61,11 @@ namespace Proof
 
         static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false)
         {
-            ScopedBuffer fileData = FileSystem::ReadFileBinary(assemblyPath);
+            Buffer fileData = FileSystem::ReadFileBinary(assemblyPath);
 
             // NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
             MonoImageOpenStatus status;
-            MonoImage* image = mono_image_open_from_data_full(fileData.As<char>(), fileData.Size(), 1, &status, 0);
+            MonoImage* image = mono_image_open_from_data_full(fileData.As<char>(), fileData.GetSize(), 1, &status, 0);
 
             if (status != MONO_IMAGE_OK)
             {
@@ -81,8 +81,8 @@ namespace Proof
 
                 if (std::filesystem::exists(pdbPath))
                 {
-                    ScopedBuffer pdbFileData = FileSystem::ReadFileBinary(pdbPath);
-                    mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.Size());
+                    Buffer pdbFileData = FileSystem::ReadFileBinary(pdbPath);
+                    mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.GetSize());
                     PF_ENGINE_INFO("Loaded PDB {}", pdbPath.string());
                 }
             }
@@ -90,7 +90,7 @@ namespace Proof
             std::string pathString = assemblyPath.string();
             MonoAssembly* assembly = mono_assembly_load_from_full(image, pathString.c_str(), &status, 0);
             mono_image_close(image);
-
+            fileData.Release();
             return assembly;
         }
 

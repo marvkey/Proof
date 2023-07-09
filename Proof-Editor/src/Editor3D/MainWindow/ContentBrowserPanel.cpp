@@ -1,5 +1,6 @@
 #include "Proofprch.h"
 #include "ContentBrowserPanel.h"
+#include "Proof/Core/Core.h"
 #include "Proof/ImGui/ImGuiLayer.h"
 
 #include <ImGui/imgui.h>
@@ -7,6 +8,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Asset/Asset.h"
 
+#include "Proof/Scene/SceneSerializer.h"
 
 #include "Proof/Utils/PlatformUtils.h"
 #include <vector>
@@ -39,14 +41,14 @@ namespace Proof
 	static std::string NameofFileRename;
 	static std::filesystem::path s_PathCreateMesh = {};
 	static std::filesystem::path s_AssetsDir;
-	ContentBrowserPanel::ContentBrowserPanel(Editore3D* owner) :
-		m_CurrentDirectory(Application::Get()->GetProject()->GetAssetDirectory()),
-		m_Owner(owner) {
+	ContentBrowserPanel::ContentBrowserPanel():
+		m_CurrentDirectory(Application::Get()->GetProject()->GetAssetDirectory())
+	{
 		s_AssetsDir = Application::Get()->GetProject()->GetAssetDirectory();
-		m_FolderIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FolderIcon.png");
-		m_FileIcon = Texture2D::Create("Resources/Icons/ContentBrowser/FileIcon.png");
-		m_MeshIcon = Texture2D::Create("Resources/Icons/ContentBrowser/MeshComponentIcon.png");
-		m_ArrowIcon = Texture2D::Create("Resources/Icons/ContentBrowser/ArrowIcon.png");
+		m_FolderIcon = Texture2D::Create(TextureConfiguration(),"Resources/Icons/ContentBrowser/FolderIcon.png");
+		m_FileIcon = Texture2D::Create(TextureConfiguration(),"Resources/Icons/ContentBrowser/FileIcon.png");
+		m_MeshIcon = Texture2D::Create(TextureConfiguration(),"Resources/Icons/ContentBrowser/MeshComponentIcon.png");
+		m_ArrowIcon = Texture2D::Create(TextureConfiguration(),"Resources/Icons/ContentBrowser/ArrowIcon.png");
 	}
 	void ContentBrowserPanel::ImGuiRender(FrameTime deltaTime) {
 		if (m_ShowWindow == false)
@@ -311,14 +313,14 @@ namespace Proof
 			ImGui::PushID(path.filename().string().c_str());
 
 			if (It.is_directory()) {
-				ImGui::ImageButton((ImTextureID)m_FolderIcon->GetImage().SourceImage, { thumbnailSize,thumbnailSize });
+				UI::ImageButton(m_FolderIcon->GetImage(), {thumbnailSize,thumbnailSize});
 				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 					// wierd bug when we dont use relateive the first "\" becomes "/"
 					m_CurrentDirectory =std::filesystem::relative( m_CurrentDirectory /= path.filename()); // /= is the operator overloaded  to the next folder
 				}
 				goto FolderorFile;
 			}
-			ImGui::ImageButton((ImTextureID)m_FileIcon->GetImage().SourceImage, {thumbnailSize,thumbnailSize});
+			UI::ImageButton(m_FileIcon->GetImage(), {thumbnailSize,thumbnailSize});
 			if (ImGui::BeginDragDropSource()) {
 				std::string fileDragSourcePath = path.string();
 				// we doingthis becausefor loop and dragsurce may change
@@ -338,7 +340,7 @@ namespace Proof
 			
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 				UUID staticID = AssetManager::GetAssetInfo(path).ID;
-				m_Owner->CreateAssetEditor(staticID);
+				Editore3D::Get()->CreateAssetEditor(staticID);
 			}
 			FolderorFile:
 			if (ImGui::BeginPopupContextItem(path.string().c_str())) {

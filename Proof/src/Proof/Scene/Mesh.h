@@ -23,7 +23,7 @@ namespace Proof
 
         Count<class VertexBuffer> VertexBuffer;
         Count<class IndexBuffer> IndexBuffer;
-
+        glm::mat4 Transform;
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
     };
@@ -46,11 +46,10 @@ namespace Proof
             return m_SubMeshes;
         }
         ASSET_CLASS_TYPE(MeshSourceFile);
-
     private:
 
-        void ProcessNode(void* node, const void* scene);
-        SubMesh ProcessMesh(void* mesh, const void* scene);
+        void ProcessNode(void* node, const void* scene, const glm::mat4& parentTransform);
+        SubMesh ProcessMesh(void* mesh, const void* scene, const glm::mat4& transform) ;
 
         Count<Material> GetMaterial(void* material);
         void LoadMaterialTextures(Count<Material> material, void* aiMat);
@@ -63,7 +62,8 @@ namespace Proof
     {
     public:
         ASSET_CLASS_TYPE(Mesh);
-        Mesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& excludeSubMeshes = {});
+        // can leave submeshes empty automaticallly goign to get all meshSOurce aset
+        Mesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
         Mesh(const std::string& name,std::vector<Vertex> vertices, std::vector<uint32_t>indices);
         ~Mesh() {};
         const std::string& GetName()const{
@@ -78,19 +78,13 @@ namespace Proof
         Count<MeshSource> GetMeshSource() {
             return m_MeshSource;
         }
-        const std::vector<uint32_t>& GetExcludeMeshes() {
-            return m_ExcludeMeshes;
-        };
-
-        bool IsMeshExcluded(uint32_t index) {
-            return std::find(m_ExcludeMeshes.begin(), m_ExcludeMeshes.end(), index) != m_ExcludeMeshes.end();
-        }
-
+        const std::vector<uint32_t>& GetSubMeshes()const { return m_SubMeshes; };
+        void SetSubMeshes(const std::vector<uint32_t>& submeshes);
     private:
         Count<MeshSource> m_MeshSource;
         std::string m_Name; 
         Count<MaterialTable> m_MaterialTable;
-        std::vector<uint32_t> m_ExcludeMeshes;
+        std::vector<uint32_t> m_SubMeshes;
         const UUID m_UiuqeMeshID = UUID();
         friend class Renderer3D;
         friend class Editore3D;

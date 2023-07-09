@@ -34,10 +34,10 @@ namespace Proof
 		glm::vec3 rotationVec(x, 0.0f, z);
 		return rotationVec;
 	}
-	Count<CubeMap> textureCubeMap;
+	Count<TextureCube> textureCubeMap;
 	Count<Texture2D> brdfTexture;
-	Count<CubeMap> iradianceCubeMap;
-	Count<CubeMap> prefilterCubeMap;
+	Count<TextureCube> iradianceCubeMap;
+	Count<TextureCube> prefilterCubeMap;
 	Count<GraphicsPipeline> RenderPipline;
 	Count<PipeLineLayout> PipelineLayout;
 	Count<Mesh> Cube; 
@@ -59,12 +59,8 @@ namespace Proof
 	WorldRenderer::WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight) :
 		m_World(world)
 	{
-		RenderPassConfig renderPassconfig;
-		renderPassconfig.DebugName = "world renderer RenderPass";
-		renderPassconfig.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat(),Application::Get()->GetWindow()->GetSwapChain()->GetDepthFormat() };
-		//if (Application::Get()->GetConfig().EnableImgui == false)
-		//	renderPassconfig.Attachments.Attachments[0].PresentKHr = true;
-		m_RenderPass = RenderPass::Create(renderPassconfig);
+		cameraBuffer = UniformBuffer::Create(sizeof(CameraData));
+		
 
 		FrameBufferConfig config;
 		config.DebugName = "Screen FrameBuffer";
@@ -74,9 +70,18 @@ namespace Proof
 		config.Size = { (float)textureWidth,(float)textureHeight };
 		m_ScreenFrameBuffer = ScreenFrameBuffer::Create(config);
 
+		RenderPassConfig renderPassconfig;
+		renderPassconfig.DebugName = "world renderer RenderPass";
+		renderPassconfig.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat(),Application::Get()->GetWindow()->GetSwapChain()->GetDepthFormat() };
+		//if (Application::Get()->GetConfig().EnableImgui == false)
+		//	renderPassconfig.Attachments.Attachments[0].PresentKHr = true;
+		renderPassconfig.TargetBuffer = m_ScreenFrameBuffer->GetFrameBuffer();
+		m_RenderPass = RenderPass::Create(renderPassconfig);
+
 		m_CommandBuffer = RenderCommandBuffer::Create();
+		m_Renderer2D = CreateSpecial< Renderer2D>(m_ScreenFrameBuffer);
+		#if 0
 		m_Renderer3D = CreateSpecial< Renderer3DPBR>(m_RenderPass);
-		m_Renderer2D = CreateSpecial< Renderer2D>(m_RenderPass);
 		m_UIRenderer = CreateSpecial < Renderer2D>(m_RenderPass, true);
 		m_ParticleSystemRenderer = CreateSpecial< Renderer2D>(m_RenderPass, ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/ParticleSystem.shader");
 		m_DebugMeshRenderer = CreateSpecial<DebugMeshRenderer>(m_RenderPass);
@@ -106,7 +111,7 @@ namespace Proof
 			pipelineConfig.VertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
 			pipelineConfig.VertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
 			pipelineConfig.VertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-			pipelineConfig.PipelineLayout = PipelineLayout;
+			//pipelineConfig.PipelineLayout = PipelineLayout;
 			pipelineConfig.RenderPass = m_RenderPass;
 			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
 			RenderPipline = GraphicsPipeline::Create(pipelineConfig);
@@ -122,12 +127,12 @@ namespace Proof
 			uint32_t grey = ConvertToBytes(Vector(169, 169, 169));
 			uint32_t white = ConvertToBytes(Vector4(1, 1, 1, 1));
 			//textureCubeMap = CubeMap::Create("Assets/qwantani_puresky_4k.hdr", 1024, true);
-			textureCubeMap = CubeMap::Create(Texture2D::Create(1, 1, ImageFormat::RGBA, &white), 512, false);
-			iradianceCubeMap = CubeMap::Create(textureCubeMap, shader, 64, false);
-			prefilterCubeMap = CubeMap::GeneratePrefiltered(textureCubeMap);
+			textureCubeMap = TextureCube::Create(Texture2D::Create(1, 1, ImageFormat::RGBA, &white), 512, false);
+			iradianceCubeMap = TextureCube::Create(textureCubeMap, shader, 64, false);
+			prefilterCubeMap = TextureCube::GeneratePrefiltered(textureCubeMap);
 			brdfTexture = Texture2D::GenerateBRDF();
 		}
-
+		#endif
 	}
 	void WorldRenderer::Clear() {
 		// draw black screen 
@@ -138,11 +143,11 @@ namespace Proof
 		}
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
 	//	Renderer::Submit([&](CommandBuffer* buffer) {
-			Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer->GetFrameBuffer());
+			//Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer->GetFrameBuffer());
 			m_Renderer2D->BeginContext(glm::mat4(0), glm::mat4(0), { 0,0,0 }, m_ScreenFrameBuffer, m_CommandBuffer);
 			m_Renderer2D->DrawQuad({ 0,0,0 });
 			m_Renderer2D->EndContext();
-			Renderer::EndRenderPass(m_RenderPass);
+			//Renderer::EndRenderPass(m_RenderPass);
 		//});
 		Renderer::EndCommandBuffer(m_CommandBuffer);
 		Renderer::SubmitCommandBuffer(m_CommandBuffer);
@@ -165,31 +170,66 @@ namespace Proof
 		Renderer::EndCommandBuffer(m_CommandBuffer);
 		Renderer::SubmitCommandBuffer(m_CommandBuffer);
 	}
-
+	CameraData cmaeraData;
 	void WorldRenderer::AddRender(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame, Count<UITable> uiTable)
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
 		m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = clearPreviousFrame;
+		{
+			PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
+			m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
+
+			glm::mat4 identity =
+				glm::translate(glm::mat4(1.0f), glm::vec3{ 0,0,0 }) *
+				glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 1,0,0 })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,1,0 })
+				* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })
+				* glm::scale(glm::mat4(1.0f), glm::vec3{ 0,0,0 });
+			m_World->ForEachComponent<SpriteComponent, TransformComponent>([&](SpriteComponent& sprite, TransformComponent& transform) {
+				m_Renderer2D->DrawQuad(sprite, transform);
+			});
+			TextParams parms;
+
+			m_World->ForEachEnitityWith<TextComponent>([&](Entity& entity) {
+				TextComponent& text = *entity.GetComponent<TextComponent>();
+				parms.Color = text.Colour;
+				parms.Kerning = text.Kerning;
+				parms.LineSpacing = text.LineSpacing;
+				if (text.UseLocalRotation == false)
+					m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, m_World->GetWorldTransform(entity));
+				else
+				{
+					auto rotation = entity.ForceGetComponent<TransformComponent>().Rotation;
+					auto mat = glm::translate(glm::mat4(1.0f), { ProofToglmVec(m_World->GetWorldLocation(entity)) }) *
+						glm::rotate(glm::mat4(1.0f), glm::radians(rotation.X), { 1,0,0 })
+						* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
+						* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Z), { 0,0,1 })
+						* glm::scale(glm::mat4(1.0f), { ProofToglmVec(m_World->GetWorldScale(entity)) });
+					m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, mat);
+				}
+			});
+		}
+		m_Renderer2D->EndContext();
+		#if 0
+		m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = clearPreviousFrame;
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer->GetFrameBuffer(), viewPort, scissor);
-		CameraData cmaeraData = CameraData(projection, view, location);
-		cameraBuffer = UniformBuffer::Create(&cmaeraData, sizeof(CameraData), DescriptorSets::Zero, 0);
+		cmaeraData = { projection, view, location };
+		cameraBuffer->SetData(&cmaeraData, sizeof(CameraData));
 		{
 
-			Renderer::RecordRenderPass(m_RenderPass, RenderPipline, [&](Count <RenderCommandBuffer> commandBuffer) {
+			Renderer::RecordRenderPass(m_RenderPass, RenderPipline);
 				auto descriptor0 = Descriptors[DescriptorSets::Zero];
 				descriptor0->WriteBuffer(0, cameraBuffer);
 				//descriptor0->WriteImage(1, prefilterCubeMap);
 				descriptor0->WriteImage(1, textureCubeMap);
-				descriptor0->Bind(commandBuffer, PipelineLayout);
+				descriptor0->Bind(m_CommandBuffer, PipelineLayout);
 				for (const auto& subMesh : Cube->GetMeshSource()->GetSubMeshes())
 				{
-					subMesh.VertexBuffer->Bind(commandBuffer);
-					subMesh.IndexBuffer->Bind(commandBuffer);
-					Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexBuffer->GetCount());
+					subMesh.VertexBuffer->Bind(m_CommandBuffer);
+					subMesh.IndexBuffer->Bind(m_CommandBuffer);
+					Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexBuffer->GetCount());
 				}
-			});
-
 		}
 
 		m_Renderer3D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
@@ -227,7 +267,7 @@ namespace Proof
 
 		{
 			{
-				PF_PROFILE_FUNC("WorldRenderer::Rnderer2D Pass");
+				PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
 				m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
 
 				glm::mat4 identity =
@@ -263,6 +303,7 @@ namespace Proof
 			}
 			PF_PROFILE_FUNC("WorldRenderer::Paricle Pass");
 			m_ParticleSystemRenderer->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
+
 			m_World->ForEachEnitityWith<ParticleSystemComponent>([&](Entity& entity) {
 				ParticleSystemComponent& particleSystem = *entity.GetComponent<ParticleSystemComponent>();
 				Vector scale = m_World->GetWorldScale(entity);
@@ -299,8 +340,8 @@ namespace Proof
 					}
 				}
 			});
+			m_ParticleSystemRenderer->EndContext();
 		}
-		m_ParticleSystemRenderer->EndContext();
 
 		if (renderSettings.ViewColliders)
 		{
@@ -404,6 +445,7 @@ namespace Proof
 			m_UIRenderer->EndContext();
 		}
 		Renderer::EndRenderPass(m_RenderPass);
+		#endif // 
 	}
 
 	
@@ -415,12 +457,12 @@ namespace Proof
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
-		//m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = clearOnLoad;
+		m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = false;
 
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
 		AddRender(projection, view, location, viewPort, scissor, renderSettings, clearOnLoad, uiTable);
 		Renderer::EndCommandBuffer(m_CommandBuffer);
-
+		////
 		Renderer::SubmitCommandBuffer(m_CommandBuffer);
 	}
 	void WorldRenderer::Render(EditorCamera& camera, RenderSettings renderSettings)

@@ -1,8 +1,8 @@
 #pragma once
 #include<vulkan/vulkan.h>
+#include "Proof/Renderer/CommandBuffer.h"
 #include<vector>
 #include "Proof/Renderer/Renderer.h"
-#include "Proof/Renderer/CommandBuffer.h"
 #include <glm/glm.hpp>
 namespace Proof
 {
@@ -21,7 +21,7 @@ namespace Proof
 		std::vector<VkCommandBuffer> m_CommandBuffer;
 		friend class VulkanRenderPass;
 		friend class VulkanRendererAPI;
-		friend class VulkanCubeMap;
+		friend class VulkanTextureCube;
 	};
 
 

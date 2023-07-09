@@ -30,6 +30,8 @@
 //include those before stdlig.h
 
 #include "misc/cpp/imgui_stdlib.h"
+#include "Proof/ProofCore.h"
+
 namespace Proof
 {
 	#define SET_FEILD_DEFAULT(FieldType, Type)           \
@@ -57,6 +59,14 @@ namespace Proof
 				}								\
 				break;							\
 			}	
+	template<class T>
+	static void AddComponentGui(Entity entity, const std::string& name) {
+		if (ImGui::MenuItem(name.c_str()))
+		{
+			entity.AddComponent<T>();
+			ImGui::CloseCurrentPopup();
+		}
+	};
 	void SceneHierachyPanel::ImGuiRender(class FrameTime deltaTime) {
 
 		if (m_ShowWindow == false)
@@ -141,9 +151,6 @@ namespace Proof
 		ImGui::End();
 		ImGui::PopStyleVar();
 
-	}
-
-	void SceneHierachyPanel::OnKeyClicked(KeyClickedEvent& e) {
 	}
 
 	bool  SceneHierachyPanel::CreateEntityMenu(Entity owner) {
@@ -238,10 +245,10 @@ namespace Proof
 			ImGui::EndPopup();
 		}
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
-			m_EditorOwner->m_EditorCamera.m_Positon = ProofToglmVec( m_CurrentWorld->GetWorldLocation(m_SelectedEntity));
+			Editore3D::Get()->m_EditorCamera.m_Positon = ProofToglmVec(m_CurrentWorld->GetWorldLocation(m_SelectedEntity));
 		}
 		if (m_SelectedEntity && ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::F)) {
-			m_EditorOwner->m_EditorCamera.m_Positon = ProofToglmVec(m_CurrentWorld->GetWorldLocation(m_SelectedEntity));
+			Editore3D::Get()->m_EditorCamera.m_Positon = ProofToglmVec(m_CurrentWorld->GetWorldLocation(m_SelectedEntity));
 		}
 
 		if (opened) {
@@ -422,12 +429,10 @@ namespace Proof
 			ExternalAPI::ImGUIAPI::CheckBox("Visible", &meshComp.Visible);
 		});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
-			if (spriteComp.Texture != nullptr) {
-				ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, {30,30});
-			}
-			else {
-				ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, {30,30});
-			}
+			if (spriteComp.Texture != nullptr)
+				UI::Image(spriteComp.Texture, {30,30});
+			else 
+				UI::Image(Renderer::GetWhiteTexture(), {30,30});
 			if (ImGui::BeginPopupContextItem("RemoveTexture")) {
 				ImGui::EndPopup();
 			}
@@ -820,12 +825,12 @@ namespace Proof
 									if (AssetManager::HasAsset(scriptField.GetValue<uint64_t>()))
 									{
 										auto texture = AssetManager::GetAsset<Texture2D>(scriptField.GetValue<uint64_t>());
-										ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
+										UI::Image(texture->GetImage(), { 30,30 });
 										//ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
 									}
 									else
 									{
-										ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+										UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 									}
 									if (ImGui::BeginDragDropTarget())
 									{
@@ -946,12 +951,12 @@ namespace Proof
 									if (AssetManager::HasAsset(instance->GetFieldValue<uint64_t>(name)))
 									{
 										auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
-										ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
+										UI::Image(texture, { 30,30 });
 										//ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
 									}
 									else
 									{
-										ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
+										UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 									}
 									if (ImGui::BeginDragDropTarget())
 									{

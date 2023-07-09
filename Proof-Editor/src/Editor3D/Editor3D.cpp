@@ -4,9 +4,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "Proof/ProofCore.h"
+#include "Proof/Scene/SceneSerializer.h"
 #include "ImGuizmo.h"
 #include "Proof/Utils/PlatformUtils.h"
+#include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Renderer/Renderer.h"
+#include "Proof/Math/Vector.h"
 
 #include "Proof/Math/MathResource.h"
 #include "Proof/Scene/Material.h"
@@ -45,14 +49,53 @@
 #include "MainWindow/GuiPanel.h"
 #include "Proof/Project/ProjectSerilizer.h"
 #include "Proof/Renderer/ParticleSystem.h"
+
+
+#include "MainWindow/AssetManagerPanel.h"
+#include "MainWindow/InputPanel.h"
+#include "MainWindow/Performance/PerformancePanel.h"
+#include "MainWindow/SceneHierachyPanel.h"
+#include "MainWindow/SceneHierachyPanel.h"
+#include "MainWindow/ContentBrowserPanel.h"
 namespace Proof
 {
+	struct EditorData
+	{
+
+		bool ShowLogSettings = false;
+		bool ClearLogOnPlay = false;
+		bool Docking = false;
+		bool ShowLogger = true;
+		bool ShowRendererStats = true;
+		bool ShowWorldEditor = false;
+
+		int GuizmoType = (1u << 0) | (1u << 1) | (1u << 2);// imguizmo bit stuff
+		SceneHierachyPanel WorldHierachy;
+		ContentBrowserPanel ContentBrowserPanel;
+		AssetManagerPanel AssetManagerPanel;
+		PerformancePanel PerformancePanel = { false };
+		InputPanel InputPanel;
+
+		Count<Texture2D> PlayButtonTexture;
+		Count<Texture2D> PauseButtonTexture;
+		Count<Texture2D> SimulateButtonTexture;
+		Count<Texture2D> StopButtonTexture;
+		RenderSettings RenderSettings;
+
+
+	};
+	static EditorData* s_EditorData = nullptr;
 	static bool s_DetachPlayer = false;
 	static bool SaveSceneDialouge = false;
+	Editore3D* Editore3D::s_Instance =  nullptr;
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") {
+		s_Instance = this;
+		s_EditorData = new EditorData();
 	}
 	Editore3D::~Editore3D() {
+		delete s_EditorData;
+		s_EditorData = nullptr;
 	}
 	bool Editore3D::IsKeyPressedEditor(KeyBoardKey key) {
 		//if (glfwGetKey((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), (int)Key)) {
@@ -255,7 +298,7 @@ namespace Proof
 			SceneSerializer scerelizer(m_ActiveWorld.Get());
 			auto path = Application::Get()->GetProject()->GetAssetFileSystemPath(Info.Path);
 			if (scerelizer.DeSerilizeText(path.string()) == true) {
-				m_WorldHierachy.SetContext(m_ActiveWorld);
+				s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
 				AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
 			}
 		}
@@ -263,16 +306,16 @@ namespace Proof
 		SceneSerializer scerelizer(m_ActiveWorld.Get());
 
 
-		m_WorldHierachy.SetContext(m_ActiveWorld);
+		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
 		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_ActiveWorld, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 		// cannot be setting it to window size and stuff innit
 		m_EditorWorld = m_ActiveWorld;
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
-		m_PlayButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PlayButton.png");
-		m_PauseButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/PauseButton .png");
-		m_SimulateButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/SimulateButton.png");
-		m_StopButtonTexture = Texture2D::Create("Resources/Icons/MainPanel/StopButton.png");
+		s_EditorData->PlayButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PlayButton.png");
+		s_EditorData->PauseButtonTexture = Texture2D::Create(TextureConfiguration(),"Resources/Icons/MainPanel/PauseButton .png");
+		s_EditorData->SimulateButtonTexture = Texture2D::Create(TextureConfiguration(),"Resources/Icons/MainPanel/SimulateButton.png");
+		s_EditorData->StopButtonTexture = Texture2D::Create(TextureConfiguration(),"Resources/Icons/MainPanel/StopButton.png");
 
 		m_PlayersCount = 4;
 
@@ -336,13 +379,13 @@ namespace Proof
 										if (entity.HasComponent<PlayerHUDComponent>())
 										{
 											//renders.push_back(std::async(std::launch::async, [&]() {
-												m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, m_RenderSettings,entity.GetComponent<PlayerHUDComponent>()->HudTable);
+												m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, s_EditorData->RenderSettings,entity.GetComponent<PlayerHUDComponent>()->HudTable);
 											//}));
 										}
 										else
 										{
 											//renders.push_back(std::async(std::launch::async, [&]() {
-												m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, m_RenderSettings);
+												m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, s_EditorData->RenderSettings);
 											//}));
 
 										}
@@ -364,14 +407,14 @@ namespace Proof
 						entity.GetComponent<CameraComponent>()->Height = m_ViewPortSize.y;
 						entity.GetComponent<CameraComponent>()->CalculateProjection(location, rotation);
 						if (!entity.HasComponent<PlayerHUDComponent>())
-							m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location, m_RenderSettings);
+							m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location, s_EditorData->RenderSettings);
 						else
-							m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location, m_RenderSettings, entity.GetComponent<PlayerHUDComponent>()->HudTable);
+							m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location, s_EditorData->RenderSettings, entity.GetComponent<PlayerHUDComponent>()->HudTable);
 					}
 					else
 					{
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-						m_WorldRenderer->Render(m_EditorCamera, m_RenderSettings);
+						m_WorldRenderer->Render(m_EditorCamera, s_EditorData->RenderSettings);
 					}
 					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
 
@@ -388,7 +431,7 @@ namespace Proof
 					m_ActiveWorld->OnSimulatePhysics(DeltaTime);
 					if (m_ViewPortFocused)
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-					m_WorldRenderer->Render(m_EditorCamera, m_RenderSettings);
+					m_WorldRenderer->Render(m_EditorCamera, s_EditorData->RenderSettings);
 					break;
 				}
 			case Proof::WorldState::Edit:
@@ -399,7 +442,7 @@ namespace Proof
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 						Application::Get()->GetWindow()->SetWindowInputEvent(false);
 					}
-					m_WorldRenderer->Render(m_EditorCamera, m_RenderSettings);
+					m_WorldRenderer->Render(m_EditorCamera, s_EditorData->RenderSettings);
 					break;
 				}
 			default:
@@ -414,26 +457,32 @@ namespace Proof
 		//ImGui::ShowDemoWindow();
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
-
 		MainToolBar();
-
-		ViewPort();
-		
-		for (auto& a : m_AllPanels) {
-			a.second->ImGuiRender(DeltaTime);
-		}
-
-
-		m_WorldHierachy.ImGuiRender(DeltaTime);
-		m_ContentBrowserPanel.ImGuiRender(DeltaTime);
-		m_AssetManagerPanel.ImGuiRender(DeltaTime);
-		m_InputPanel.ImGuiRender(DeltaTime);
-		m_PerformancePanel.ImGuiRender(DeltaTime);
 		Logger();
 
-		if (m_ShowWorldEditor == false)
+		ViewPort();
+	
+
+		{
+			//ImGui::Begin("Render Speed Panel");
+			//ImGui::Text("SetMeshPass %f", m_WorldRenderer->GetRenderer3DPBR()->GetPorformanceProfiler().SetMeshPass);
+			//ImGui::Text("RenderMesh %f", m_WorldRenderer->GetRenderer3DPBR()->GetPorformanceProfiler().RenderMesh);
+			//ImGui::Text("RenderMeshMaterial %f", m_WorldRenderer->GetRenderer3DPBR()->GetPorformanceProfiler().RenderMeshMaterial);
+			//ImGui::End();
+		}
+
+		s_EditorData->WorldHierachy.ImGuiRender(DeltaTime);
+		s_EditorData->ContentBrowserPanel.ImGuiRender(DeltaTime);
+		s_EditorData->AssetManagerPanel.ImGuiRender(DeltaTime);
+		s_EditorData->InputPanel.ImGuiRender(DeltaTime);
+		s_EditorData->PerformancePanel.ImGuiRender(DeltaTime);
+		for (auto& a : m_AllPanels)
+		{
+			a.second->ImGuiRender(DeltaTime);
+		}
+		if (s_EditorData->ShowWorldEditor == false)
 			goto a;
-		if (ImGui::Begin("Active World", &m_ShowWorldEditor)) {
+		if (ImGui::Begin("Active World", &s_EditorData->ShowWorldEditor)) {
 			if (ImGui::Button("Choose HDR")) {
 				std::string file = Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
 				if (file.empty() == false) {
@@ -443,14 +492,14 @@ namespace Proof
 		}
 		ImGui::End();
 		a:
-		if (m_ShowRendererStats == false)
+		if (s_EditorData->ShowRendererStats == false)
 			return;
-		ImGui::Begin("Renderer Stastitics", &m_ShowRendererStats);
+		ImGui::Begin("Renderer Stastitics", &s_EditorData->ShowRendererStats);
 		{
 
 			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER SPECS");
 
-			ImGui::Checkbox("View COlliders", &m_RenderSettings.ViewColliders);
+			ImGui::Checkbox("View COlliders", &s_EditorData->RenderSettings.ViewColliders);
 			//ImGui::Text("Renderer Company: %s", RendererBase::GetRenderCompany().c_str());
 			//ImGui::Text("Graphics Card: %s", RendererBase::GetGraphicsCard().c_str());
 			//ImGui::Text("Graphics Card Verison: %s", RendererBase::GetGraphicsCardVersion().c_str());
@@ -509,28 +558,28 @@ namespace Proof
 			case KeyBoardKey::P:
 			{
 				if(control)
-					Math::ChangeBool(m_WorldHierachy.m_ShowWindow);
+					Math::ChangeBool(s_EditorData->WorldHierachy.m_ShowWindow);
 				break;
 			}
 			case KeyBoardKey::L:
 			{
 				if (control)
-					Math::ChangeBool(m_ShowLogger);
+					Math::ChangeBool(s_EditorData->ShowLogger);
 				break;
 			}
 			case KeyBoardKey::B:
 			{
 				if (control)
-					Math::ChangeBool(m_ContentBrowserPanel.m_ShowWindow);
+					Math::ChangeBool(s_EditorData->ContentBrowserPanel.m_ShowWindow);
 				break;
 			}
 			case KeyBoardKey::R:
 			{
 				if (control)
-					Math::ChangeBool(m_ShowRendererStats);
+					Math::ChangeBool(s_EditorData->ShowRendererStats);
 				// no right button pressed that means that we are using the editor camera
 				if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-					GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
+					s_EditorData->GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
 				break;
 			}
 			case KeyBoardKey::S:
@@ -543,15 +592,15 @@ namespace Proof
 
 			case KeyBoardKey::D:
 				{
-					if (control && m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0)
-						m_WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(m_WorldHierachy.m_SelectedEntity);
+					if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetEntityID() != 0)
+						s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(s_EditorData->WorldHierachy.m_SelectedEntity);
 					break;
 
 				}
 			case KeyBoardKey::Delete:
 			case KeyBoardKey::Backspace:
 				{
-					if (m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
+					if (s_EditorData->WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
 
 						if (m_ActiveWorld->GetState() == WorldState::Edit) {
 							/*
@@ -564,7 +613,7 @@ namespace Proof
 											uint64_t* data = field.Data._Cast<uint64_t>();
 											if (data == nullptr)
 												return;
-											if (*data == m_WorldHierachy.m_SelectedEntity.GetEntityID())
+											if (*data == s_EditorData->WorldHierachy.m_SelectedEntity.GetEntityID())
 												*data = 0;
 										}
 									}
@@ -572,24 +621,24 @@ namespace Proof
 							});
 							*/
 						}
-						m_ActiveWorld->DeleteEntity(m_WorldHierachy.m_SelectedEntity);
-						m_WorldHierachy.m_SelectedEntity = {};
+						m_ActiveWorld->DeleteEntity(s_EditorData->WorldHierachy.m_SelectedEntity);
+						s_EditorData->WorldHierachy.m_SelectedEntity = {};
 					}
 					break;
 				}
 				// copy entity
 			case KeyBoardKey::C:
 				{
-					if (control && m_WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
-						m_CopyEntity = m_WorldHierachy.m_SelectedEntity;
+					if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
+						m_CopyEntity = s_EditorData->WorldHierachy.m_SelectedEntity;
 					}
 					break;
 				}
 				// paste entity 
 			case KeyBoardKey::V:
 				{
-					if (control && m_CopyEntity.GetEntityID() != 0 && (m_ViewPortFocused || m_WorldHierachy.m_WindowHoveredorFocus)) {
-						m_WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(m_CopyEntity);
+					if (control && m_CopyEntity.GetEntityID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
+						s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(m_CopyEntity);
 					}
 					break;
 				}
@@ -599,7 +648,7 @@ namespace Proof
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+						s_EditorData->GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 						break;
 				}
 
@@ -607,24 +656,24 @@ namespace Proof
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						GuizmoType = ImGuizmo::OPERATION::ROTATE;
+						s_EditorData->GuizmoType = ImGuizmo::OPERATION::ROTATE;
 						break;
 				}
 			case KeyBoardKey::E:
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-						GuizmoType = ImGuizmo::OPERATION::SCALE;
+						s_EditorData->GuizmoType = ImGuizmo::OPERATION::SCALE;
 						break;
 				}
 			case KeyBoardKey::Tab:
 				{
-					if (m_ViewPortFocused == false || m_WorldHierachy.m_SelectedEntity == false)
+					if (m_ViewPortFocused == false || s_EditorData->WorldHierachy.m_SelectedEntity == false)
 						break;
-					Entity selected = m_WorldHierachy.m_SelectedEntity;
+					Entity selected = s_EditorData->WorldHierachy.m_SelectedEntity;
 					if (shift == true) {
 						if (selected.HasChildren()) {
-							m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
+							s_EditorData->WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
 						}
 					}
 
@@ -634,26 +683,26 @@ namespace Proof
 						int childIndexAdd = 0;
 						childIndexAdd += childIndex;
 						if (childIndex >= numChildren)
-							m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
+							s_EditorData->WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
 						else if (childIndex < numChildren)
-							m_WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[childIndexAdd],m_ActiveWorld.Get() };
+							s_EditorData->WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[childIndexAdd],m_ActiveWorld.Get() };
 					}
 					else if (selected.HasChildren()) {
-						m_WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
+						s_EditorData->WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
 					}
 					break;
 				}
 		}
 	}
 	void Editore3D::Logger() {
-		if (m_ShowLogger == false)
+		if (s_EditorData->ShowLogger == false)
 			return;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
-		if (ImGui::Begin("Log", &m_ShowLogger, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
+		if (ImGui::Begin("Log", &s_EditorData->ShowLogger, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
 			ImGui::BeginMenuBar();
 			{
 				ExternalAPI::ImGUIAPI::CheckBox("pause logging", &Log::m_PauseLog);
-				ExternalAPI::ImGUIAPI::CheckBox("Clear On Play", &m_ClearLogOnPlay);
+				ExternalAPI::ImGUIAPI::CheckBox("Clear On Play", &s_EditorData->ClearLogOnPlay);
 				ImGui::SameLine();
 				if (ImGui::Button("Clear log")) {
 					Log::Logs.clear();
@@ -661,7 +710,7 @@ namespace Proof
 				}
 				if (ImGui::Button("Settings")) {
 
-					Math::ChangeBool(m_ShowLogSettings);
+					Math::ChangeBool(s_EditorData->ShowLogSettings);
 				}
 			}
 			ImGui::EndMenuBar();
@@ -764,10 +813,10 @@ namespace Proof
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
-		if (m_ShowLogSettings == false)
+		if (s_EditorData->ShowLogSettings == false)
 			return;
 
-		if (ImGui::Begin("Log Settings", &m_ShowLogSettings)) {
+		if (ImGui::Begin("Log Settings", &s_EditorData->ShowLogSettings)) {
 			// KEYBOARD
 			{
 				if (ImGui::Button("KeyBoard Log Settings")) {
@@ -977,13 +1026,12 @@ namespace Proof
 					if (!m_MultiplayerRender.contains(input.InputPlayer))return;
 					inputs[(int)input.InputPlayer] = entity.GetEntityID();
 				});
-
 				switch (m_PlayersCount)
 				{
 					case 4:
 						{
 							auto element = inputs.begin();
-							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)inputs.begin()->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y  }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							UI::Image( m_MultiplayerRender[(Players)inputs.begin()->first]->GetImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y  }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 							//element++;
 							//ImGui::SameLine();
 							//ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x/2,m_ViewPortSize.y/2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
@@ -998,26 +1046,25 @@ namespace Proof
 					case 2:
 						{
 							auto element = inputs.begin();
-							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x /2,m_ViewPortSize.y  }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							UI::Image(m_MultiplayerRender[(Players)element->first]->GetImage(), ImVec2{m_ViewPortSize.x / 2,m_ViewPortSize.y}, ImVec2{0,1}, ImVec2{1,0});
 							
 							ImGui::SameLine();
 							element++;
-							ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							UI::Image(m_MultiplayerRender[(Players)element->first]->GetImage(), ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 						}
 				}
 			}
 			else
 			{
 
-				const void* Text = m_WorldRenderer->GetImage().SourceImage;
-				ImGui::Image((ImTextureID)Text, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+				UI::Image(m_WorldRenderer->GetImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			}
 
 
 			// GUIZMOS
 
 			// cherno game engein reveiw 22 minutes 48 seconds reference
-			Entity selectedEntity = m_WorldHierachy.GetSelectedEntity();
+			Entity selectedEntity = s_EditorData->WorldHierachy.GetSelectedEntity();
 			if (selectedEntity) {
 
 				//ImGuizmo::SetOrthographic(true);
@@ -1040,13 +1087,13 @@ namespace Proof
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
 				// Snap to 45 degrees for rotation
-				if (GuizmoType == ImGuizmo::OPERATION::ROTATE)
+				if (s_EditorData->GuizmoType == ImGuizmo::OPERATION::ROTATE)
 					snapValue = 45.0f;
 
 				float snapValues[3] = { snapValue,snapValue,snapValue };
 
 				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-					(ImGuizmo::OPERATION)GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(selectedEntitytransform),
+					(ImGuizmo::OPERATION)s_EditorData->GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(selectedEntitytransform),
 					nullptr, snap ? snapValues : nullptr);
 
 				if (ImGuizmo::IsUsing()) {
@@ -1089,9 +1136,9 @@ namespace Proof
 					m_EditorWorld = Count<World>::Create();
 					m_ActiveWorld = m_EditorWorld;
 					m_WorldRenderer->SetContext(m_ActiveWorld);
-					m_WorldHierachy.SetContext(m_ActiveWorld);
+					s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
 					SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
-					m_WorldHierachy.m_SelectedEntity = {};
+					s_EditorData->WorldHierachy.m_SelectedEntity = {};
 
 					SceneSerializer ScerilizerNewWorld(m_ActiveWorld.Get());
 					ScerilizerNewWorld.DeSerilizeText(ID);
@@ -1103,7 +1150,7 @@ namespace Proof
 
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
 					newentt.AddComponent<MeshComponent>()->SetMesh(meshID);
-					m_WorldHierachy.m_SelectedEntity = newentt;
+					s_EditorData->WorldHierachy.m_SelectedEntity = newentt;
 				}
 
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::MeshSourceFile).c_str())) {
@@ -1120,25 +1167,25 @@ namespace Proof
 					std::string name = AssetManager::GetAssetInfo(prefabId).GetName();
 
 					Entity newentt = m_ActiveWorld->CreateEntity(name, prefab, TransformComponent());
-					m_WorldHierachy.m_SelectedEntity = newentt;
+					s_EditorData->WorldHierachy.m_SelectedEntity = newentt;
 				}
 				ImGui::EndDragDropTarget();
 			}
 
 			if (meshSourceAdded) {
 				AssetID id;
-				std::tie(meshSourceAdded, id) = m_ContentBrowserPanel.AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
+				std::tie(meshSourceAdded, id) = s_EditorData->ContentBrowserPanel.AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
 				// basically add mesh is done with its operation and no longer renderng
 				if (meshSourceAdded == false) {
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
 					newentt.AddComponent<MeshComponent>()->SetMesh(id);
-					m_WorldHierachy.m_SelectedEntity = newentt;
+					s_EditorData->WorldHierachy.m_SelectedEntity = newentt;
 				}
 			}
 			if (SaveSceneDialouge)
 			{
 				AssetID id;
-				std::tie(SaveSceneDialouge,id ) = m_ContentBrowserPanel.AddWorld(m_ActiveWorld);
+				std::tie(SaveSceneDialouge,id ) = s_EditorData->ContentBrowserPanel.AddWorld(m_ActiveWorld);
 				if (SaveSceneDialouge == false)
 				{
 					m_ActiveWorld->m_WorldID = id;
@@ -1152,55 +1199,55 @@ namespace Proof
 	}
 
 	void Editore3D::MainToolBar() {
-		ImGui::Begin("##MainToolBar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse/* | ImGuiWindowFlags_NoMove*/);
+		ImGui::Begin("##MainToolBar", nullptr,ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse  /* | ImGuiWindowFlags_NoMove*/);
 
 		Count<Texture2D> icon;
 		std::string state;
 		if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
 		{
-			icon = m_PlayButtonTexture;
+			icon = s_EditorData->PlayButtonTexture;
 			state = "Play";
 		}
 		else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 		{
-			icon = m_StopButtonTexture;
+			icon = s_EditorData->StopButtonTexture;
 			state = "Stop";
 		}
 		else
 		{
-			icon = m_PlayButtonTexture;
+			icon = s_EditorData->PlayButtonTexture;
 		}
 
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.4f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 		if (ImGui::Button(state.c_str(), ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
-			if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
-				PlayWorld();
-			else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
-				SetWorldEdit();
+			//if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
+			//	PlayWorld();
+			//else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
+			//	SetWorldEdit();
 		}
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
-
-		if (ImGui::ImageButton((ImTextureID)m_PauseButtonTexture->GetImage().SourceImage, ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
-			if (m_ActiveWorld->m_CurrentState == WorldState::Play)
-				PauseWorld();
+		
+		if (UI::ImageButton(s_EditorData->PlayButtonTexture->GetImage(), ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
+			//if (m_ActiveWorld->m_CurrentState == WorldState::Play)
+			//	PauseWorld();
 		}
-		ImGui::SameLine();
-		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.6f);
-		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
-
-		if (ImGui::ImageButton((ImTextureID)m_PauseButtonTexture->GetImage().SourceImage, ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
-			if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
-				SimulateWorld();
-		}
-		ImGui::SameLine();
-		int playerCount = m_PlayersCount;
-		if (ImGui::DragInt("PlayerCount", &playerCount, 1, 1, 4))
-		{
-			m_PlayersCount = playerCount;
-		}
+		//ImGui::SameLine();
+		//ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.6f);
+		//ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
+		//
+		//if (UI::ImageButton(s_EditorData->PauseButtonTexture->GetImage(), ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
+		//	if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
+		//		SimulateWorld();
+		//}
+		//ImGui::SameLine();
+		//int playerCount = m_PlayersCount;
+		//if (ImGui::DragInt("PlayerCount", &playerCount, 1, 1, 4))
+		//{
+		//	m_PlayersCount = playerCount;
+		//}
 		// scene is playing
 		if (state == "Stop")
 		{
@@ -1212,42 +1259,45 @@ namespace Proof
 	}
 
 	void Editore3D::SetDocking(bool* p_open) {
-		// Note: Switch this to true to enable dockspace
-		static bool opt_fullscreen = true;
-		static bool opt_padding = false;
+		// code taken form walnut https://github.com/TheCherno/Walnut/blob/master/Walnut/src/Walnut/Application.cpp
+
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar;
-		if (opt_fullscreen) {
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->WorkPos);
-			ImGui::SetNextWindowSize(viewport->WorkSize);
-			ImGui::SetNextWindowViewport(viewport->ID);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-		}
-		else {
-			dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-		}
 
-		//if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-			//window_flags |= ImGuiWindowFlags_NoBackground;
+		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+		// because it would be confusing to have two docking targets within each others.
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+		window_flags |= ImGuiWindowFlags_MenuBar;
 
-		if (!opt_padding)
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin("Proof Engine", p_open, window_flags);
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-		if (!opt_padding)
-			ImGui::PopStyleVar();
-		if (opt_fullscreen)
-			ImGui::PopStyleVar(2);
+		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
+		// and handle the pass-thru hole, so we ask Begin() to not render a background.
+		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+			window_flags |= ImGuiWindowFlags_NoBackground;
+
+		// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+		// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+		// all active windows docked into it will lose their parent and become undocked.
+		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("Proof Engine", nullptr, window_flags);
+		ImGui::PopStyleVar();
+
+		ImGui::PopStyleVar(2);
+
+		// Submit the DockSpace
 		ImGuiIO& io = ImGui::GetIO();
-		ImGuiStyle& style = ImGui::GetStyle();
-		style.WindowMinSize.x = 100.0f; // sets the minimum width of everything
-
-		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
-			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
 
@@ -1278,14 +1328,14 @@ namespace Proof
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("View")) {
-				ImGui::MenuItem("Heirachy", nullptr, &m_WorldHierachy.m_ShowWindow);
-				ImGui::MenuItem("Log", nullptr, &m_ShowLogger);
-				ImGui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel.m_ShowWindow);
-				ImGui::MenuItem("Asset Manager ", nullptr, &m_AssetManagerPanel.m_ShowWindow);
-				ImGui::MenuItem("Render Stats", nullptr, &m_ShowRendererStats);
-				ImGui::MenuItem("World Editor", nullptr, &m_ShowWorldEditor);
-				ImGui::MenuItem("Input Panel", nullptr, &m_InputPanel.m_ShowWindow);
-				ImGui::MenuItem("Performance Browser", nullptr, &m_PerformancePanel.m_ShowWindow);
+				ImGui::MenuItem("Heirachy", nullptr, &s_EditorData->WorldHierachy.m_ShowWindow);
+				ImGui::MenuItem("Log", nullptr, &s_EditorData->ShowLogger);
+				ImGui::MenuItem("Content Browser", nullptr, &s_EditorData->ContentBrowserPanel.m_ShowWindow);
+				ImGui::MenuItem("Asset Manager ", nullptr, &s_EditorData->AssetManagerPanel.m_ShowWindow);
+				ImGui::MenuItem("Render Stats", nullptr, &s_EditorData->ShowRendererStats);
+				ImGui::MenuItem("World Editor", nullptr, &s_EditorData->ShowWorldEditor);
+				ImGui::MenuItem("Input Panel", nullptr, &s_EditorData->InputPanel.m_ShowWindow);
+				ImGui::MenuItem("Performance Browser", nullptr, &s_EditorData->PerformancePanel.m_ShowWindow);
 				ImGui::EndMenu();
 			}
 
@@ -1343,9 +1393,9 @@ namespace Proof
 		m_EditorWorld = Count<World>::Create();
 		m_ActiveWorld = m_EditorWorld;
 		m_WorldRenderer->SetContext(m_EditorWorld);
-		m_WorldHierachy.SetContext(m_ActiveWorld);
+		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
-		m_WorldHierachy.m_SelectedEntity = {};
+		s_EditorData->WorldHierachy.m_SelectedEntity = {};
 	}
 	void Editore3D::PlayWorld() {
 		m_ActiveWorld = World::Copy(m_EditorWorld);
@@ -1353,13 +1403,13 @@ namespace Proof
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
-		m_WorldHierachy.SetContext(m_ActiveWorld);
+		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
 		m_WorldRenderer->SetContext(m_ActiveWorld);
 
-		if (m_ClearLogOnPlay)
+		if (s_EditorData->ClearLogOnPlay)
 			Log::Logs.clear();
-		//GuizmoType = 0;
-		m_WorldHierachy.m_SelectedEntity = {};
+		//s_EditorData->GuizmoType = 0;
+		s_EditorData->WorldHierachy.m_SelectedEntity = {};
 
 		m_ActiveWorld->StartRuntime();
 			
@@ -1380,10 +1430,10 @@ namespace Proof
 		m_ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
 	void Editore3D::SetWorldEdit() {
-		//GuizmoType = 0;
+		//s_EditorData->GuizmoType = 0;
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;
-		m_WorldHierachy.SetContext(m_ActiveWorld);
+		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
 		m_WorldRenderer->SetContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 		s_DetachPlayer = false;

@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Renderer/VertexArray.h"
+#include "Proof/Renderer/Buffer.h"
 namespace Proof {
 	class Proof_API OpenGLVertexArray:public VertexArray {
 	public:

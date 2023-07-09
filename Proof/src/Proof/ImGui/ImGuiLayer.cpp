@@ -1,39 +1,31 @@
 #include "Proofprch.h"
 #include "ImGuiLayer.h"
 #include "ImGui/imgui.h"
-#include "ImGui/imgui_impl_glfw.h"
-#include "ImGui/imgui_impl_opengl3.h"
-#include "ImGui/imgui_impl_vulkan.h"
-#include <GLFW/glfw3.h>
-#include "ImGuizmo.h"
 #include "Proof/Renderer/Renderer.h"
-#include "Platform/Vulkan/VulkanGraphicsContext.h"
-#include "Platform/Vulkan/VulkanDescriptorSet.h"
-#include "Platform/Vulkan/VulkanSwapChain.h"
-#include "platform/Vulkan/VulkanRenderPass.h"
-#include "Proof/Renderer/CommandBuffer.h"
-#include "Proof/Renderer/FrameBuffer.h"
-#include "proof/Renderer/RenderPass.h"
+#include "Platform/Vulkan/VulkanImguiLayer.h"
 namespace Proof
 {
+	#if 0
 	struct ImguiRenderPass {
 		Count<RenderCommandBuffer> CommandBuffer;
 		Count<RenderPass> RenderPass;
 		Count<FrameBuffer> FrameBuffer;
 		ImguiRenderPass() {
-			RenderPassConfig config;
-			config.DebugName = "Imgui RenderPass";
-			config.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat() };
-			config.Attachments.Attachments[0].PresentKHr = true;
-			RenderPass = RenderPass::Create(config);
+			
 
 			FrameBufferConfig frameBuffferconfig;
 			frameBuffferconfig.DebugName = "Imgui-FrameBuffer";
 			frameBuffferconfig.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat() };
-			frameBuffferconfig.Attachments.Attachments[0].SetOverrideLayout(Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout());
+			frameBuffferconfig.Attachments.Attachments[0].ExistingImage = Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout();
 			frameBuffferconfig.Size = { (float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight() };
 			FrameBuffer = FrameBuffer::Create(frameBuffferconfig);
+			RenderPassConfig config;
+			config.DebugName = "Imgui RenderPass";
+			config.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat() };
+			config.Attachments.Attachments[0].PresentKHr = true;
+			config.TargetBuffer = FrameBuffer;
 
+			RenderPass = RenderPass::Create(config);
 			CommandBuffer = RenderCommandBuffer::Create();
 		}
 	};
@@ -78,9 +70,7 @@ namespace Proof
 	}
 
 
-	ImGuiLayer::ImGuiLayer() :
-		Layer("ImGUI Layer") {
-	}
+	
 
 	ImGuiLayer::~ImGuiLayer()
 	{
@@ -136,9 +126,10 @@ namespace Proof
 			init_info.CheckVkResultFn = nullptr;
 			ImGui_ImplVulkan_Init(&init_info, s_ImguiRenderPass->RenderPass.As<VulkanRenderPass>()->GetRenderPass());
 			ImGui_ImplVulkan_SetMinImageCount(Renderer::GetConfig().MaxImageCount);
+
 			// Upload Fonts
 			{
-				Renderer::Submit([&](CommandBuffer* buffer) {
+				Renderer::SubmitCommand([&](CommandBuffer* buffer) {
 					ImGui_ImplVulkan_CreateFontsTexture(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
 				});
 				ImGui_ImplVulkan_DestroyFontUploadObjects();
@@ -193,7 +184,7 @@ namespace Proof
 			FrameBufferConfig frameBuffferconfig;
 			frameBuffferconfig.DebugName = "Imgui-FrameBuffer";
 			frameBuffferconfig.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat() };
-			frameBuffferconfig.Attachments.Attachments[0].SetOverrideLayout(Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout());
+			frameBuffferconfig.Attachments.Attachments[0].ExistingImage = Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout();
 			frameBuffferconfig.Size = { (float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight() };
 			
 			s_ImguiRenderPass->FrameBuffer = FrameBuffer::Create(frameBuffferconfig); 
@@ -206,8 +197,8 @@ namespace Proof
 				nullptr, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight(),
 				graphicsContext->GetSwapChain()->GetImageCount());
 			m_WindoResize = false;
+			io.DisplaySize = ImVec2((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 		}
-		io.DisplaySize = ImVec2((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 		wd->FrameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		ImGui_ImplVulkanH_Frame* fd = &wd->Frames[wd->FrameIndex];
 		ImGui::Render();
@@ -219,7 +210,9 @@ namespace Proof
 		{
 			//https://github.com/1111mp/Vulkan/blob/master/src/Application.cpp
 			Renderer::BeginCommandBuffer(s_ImguiRenderPass->CommandBuffer);
-			Renderer::BeginRenderPass(s_ImguiRenderPass->CommandBuffer, s_ImguiRenderPass->RenderPass, s_ImguiRenderPass->FrameBuffer);
+			// begin render pass
+
+			s_ImguiRenderPass->RenderPass.As<VulkanRenderPass>()->BeginRenderPass(s_ImguiRenderPass->CommandBuffer);
 			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), s_ImguiRenderPass->CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
 			Renderer::EndRenderPass(s_ImguiRenderPass->RenderPass);
 			Renderer::EndCommandBuffer(s_ImguiRenderPass->CommandBuffer);
@@ -233,6 +226,16 @@ namespace Proof
 			glfwMakeContextCurrent((GLFWwindow*)backup_current_context);
 		}
 	}
+	#endif
+	ImGuiLayer::ImGuiLayer() :
+		Layer("ImGUI Layer") {
+	}
+	ImGuiLayer::ImGuiLayer(const std::string& name) :
+		Layer(name)
+	{
+
+	}
+
 	void ImGuiLayer::SetDarkTheme() {
 
 		auto& style = ImGui::GetStyle();
@@ -275,5 +278,14 @@ namespace Proof
 		style.ScrollbarSize = 15;
 		style.WindowRounding = 0.0f;
 
+	}
+	Count<ImGuiLayer> ImGuiLayer::Create()
+	{
+		switch (RendererAPI::GetAPI())
+		{
+			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case RendererAPI::API::OpenGL: return nullptr;
+			case RendererAPI::API::Vulkan: return Count<VulkanImguiLayer>::Create();
+		}
 	}
 }

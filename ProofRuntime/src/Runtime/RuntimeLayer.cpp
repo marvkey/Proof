@@ -64,6 +64,8 @@ namespace Proof {
 	bool enableStart = false;
 	void RuntimeLayer::OnUpdate(FrameTime DeltaTime)
 	{
+		PF_PROFILE_FUNC();
+
 		m_DrawFirstPlayer = false;
 
 		if (enableStart)
@@ -242,6 +244,8 @@ namespace Proof {
 
 	void RuntimeLayer::OnImGuiDraw(FrameTime DeltaTime)
 	{
+
+		PF_PROFILE_FUNC();
 
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);

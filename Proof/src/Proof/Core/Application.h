@@ -22,8 +22,8 @@
         
         virtual ~Application(); // main app//
         void Run();
-        void PushLayer(Layer* Layer);
-        void PushOverlay(Layer* Layer);
+        void PushLayer(Count<Layer> layer);
+        void PushOverlay(Count<Layer> layer);
         static Application* Get() {
             return s_Instance;
         }
@@ -50,6 +50,7 @@
         ApplicationConfiguration GetConfig() {
             return m_ApplicationConfiguration;
         }
+        Count<ImGuiLayer> GetImguiLayer() { return m_ImGuiMainLayer; }
     protected:
         Application(const ApplicationConfiguration& config);
         bool WindowMinimized = false;
@@ -66,7 +67,7 @@
         void OnKeyClicked(KeyClickedEvent& e);
         void OnWindowCloseEvent(WindowCloseEvent& e);
         LayerStack MainLayerStack;
-        ImGuiLayer* ImGuiMainLayer;
+        Count<ImGuiLayer> m_ImGuiMainLayer;
         Special<Window>m_Window;
         friend class CurrentWindow;
         friend class FrameBuffer;

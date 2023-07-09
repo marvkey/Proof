@@ -4,11 +4,11 @@
 #include "Proof/Renderer/RendererBase.h"
 #include "VulkanPushConstant.h"
 #include "VulkanDescriptorSet.h"
-
+#include "VulkanRenderer/VulkanRenderer.h"
 namespace Proof
 {
 	VulkanPipeLineLayout::VulkanPipeLineLayout(Count<PushConstant> pushConstant, const std::vector<Count<DescriptorSet>>& descriptors ) {
-		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
+		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		std::vector< VkDescriptorSetLayout> descriptorLayout;
@@ -53,7 +53,7 @@ namespace Proof
 	VulkanPipeLineLayout::~VulkanPipeLineLayout()
 	{
 		Renderer::SubmitDatafree([pipline = m_PipeLineLayout]() {
-			vkDestroyPipelineLayout(RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), pipline, nullptr);
+			vkDestroyPipelineLayout(VulkanRenderer::GetGraphicsContext()->GetDevice(), pipline, nullptr);
 		});
 	}
 }

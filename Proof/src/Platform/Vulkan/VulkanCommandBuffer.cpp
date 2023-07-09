@@ -3,7 +3,9 @@
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanGraphicsContext.h"
 #include "VulkanSwapChain.h"
+#include "Proof/Renderer/Renderer.h"
 #include "VulkanGraphicsPipeline.h"
+#include "VulkanRenderer/VulkanRenderer.h"
 namespace Proof
 {
 	VulkanCommandBuffer::VulkanCommandBuffer()
@@ -43,7 +45,7 @@ namespace Proof
 	}
 	void VulkanRenderCommandBuffer::Init()
 	{
-		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		m_CommandBuffers.resize(Renderer::GetConfig().FramesFlight);
 
 		VkCommandBufferAllocateInfo allocInfo{};
@@ -67,7 +69,7 @@ namespace Proof
 		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 		{
 			Renderer::SubmitDatafree([buffer = m_CommandBuffers[i]](){
-				auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+				auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 				vkFreeCommandBuffers(
 					graphicsContext->GetDevice(),
 					graphicsContext->GetCommandPool(),

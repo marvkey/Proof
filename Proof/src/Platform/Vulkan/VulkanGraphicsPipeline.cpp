@@ -6,10 +6,13 @@
 #include "VulkanShader.h"
 #include "VulkanBuffer.h"
 #include "Proof/Renderer/Shader.h"
+#include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanVertexArray.h"
 #include "VulkanPipeLineLayout.h"
+#include "VulkanDescriptorManager.h"
 #include "VulkanVertexArray.h"
 #include "VulkanRenderPass.h"
+#include "VulkanCommandBuffer.h"
 namespace Proof
 {
 	void* dynamicState = new VkDynamicState[2]{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
@@ -112,20 +115,49 @@ namespace Proof
 		}
 	}
 	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
-		Renderer::SubmitDatafree([pipline = m_GraphicsPipeline]() {
-			vkDestroyPipeline(RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), pipline, nullptr);
+		Renderer::SubmitDatafree([pipline = m_GraphicsPipeline, piplinelayout =  m_PipeLineLayout]() {
+			vkDestroyPipeline(VulkanRenderer::GetGraphicsContext()->GetDevice(), pipline, nullptr);
+			vkDestroyPipelineLayout(VulkanRenderer::GetGraphicsContext()->GetDevice(), piplinelayout, nullptr);
 		});
+		m_DescritptorSetManager = nullptr;
+		m_GraphicsPipeline = nullptr;
+		m_PipeLineLayout = nullptr;
+	}
+	void VulkanGraphicsPipeline::BeginRecord(Count<class RenderCommandBuffer> commandBuffer)
+	{
+		PF_CORE_ASSERT(m_CommandBuffer == nullptr, fmt::format("cannot start record {} Graphics Pipline when already recording", m_Config.DebugName).c_str());
+
+		m_CommandBuffer = commandBuffer;
+		vkCmdBindPipeline(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+			VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipline());
+		m_DescritptorSetManager->Bind();
+		auto& frameSet =m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
+		for (auto& [set, setInfo] : frameSet)
+		{
+			vkCmdBindDescriptorSets(
+				m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				m_PipeLineLayout,
+				(int)set,
+				1,
+				&setInfo.Set,
+				0,
+				nullptr);
+		}
+		
+	}
+	void VulkanGraphicsPipeline::EndRecord()
+	{
+		m_CommandBuffer = nullptr;
 	}
 	VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineConfig& config)
 	{
-		m_DebugName = config.DebugName;
-		m_LineWidth = config.LineWidth;
-		m_WriteDepth = config.WriteDepth;
-		m_DepthCompareOperator = config.DepthCompareOperator;
+		m_Config = config;
+		CreatePipelineLayout();
 		PipelineConfigInfo pipelineConfig;
 		DefaultPipelineConfigInfo(pipelineConfig, config);
 		pipelineConfig.RenderPass = config.RenderPass.As<VulkanRenderPass>()->GetRenderPass();;
-		pipelineConfig.PipelineLayout = config.PipelineLayout.As<VulkanPipeLineLayout>()->GetPipeLineLayout();
+		pipelineConfig.PipelineLayout = m_PipeLineLayout;
 		auto vulkanShader = config.Shader.As<VulkanShader>();
 		PF_CORE_ASSERT(pipelineConfig.PipelineLayout, "Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");
 		PF_CORE_ASSERT(pipelineConfig.RenderPass, "Cannot create Graphics Pipeline:: no renderpass provided in configInfo");
@@ -179,9 +211,39 @@ namespace Proof
 		pipelineInfo.basePipelineIndex = -1;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-		if (vkCreateGraphicsPipelines((RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
+		if (vkCreateGraphicsPipelines((VulkanRenderer::GetGraphicsContext()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to Create Graphics Pipeline");
 
+		VulkanDescriptorManagerConfig descriptorConfig;
+		descriptorConfig.DebugName = m_Config.DebugName + " DescritporManager";
+		descriptorConfig.Shader = m_Config.Shader.As<VulkanShader>();
+		m_DescritptorSetManager = Count<VulkanDescriptorManager>::Create(descriptorConfig);
+
+	}
+	void VulkanGraphicsPipeline::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
+	{
+		m_DescritptorSetManager->SetInput(name, buffer);
+	}
+	void VulkanGraphicsPipeline::PushData(std::string_view name, const void* data)
+	{
+		auto vkShader = m_Config.Shader.As<VulkanShader>();
+		std::string str = std::string(name);
+		PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
+		const auto& pushRange = vkShader->GetPushConstants().at(str);
+		vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), GetPipelineLayout(),
+			pushRange.stageFlags, pushRange.offset, pushRange.size, data);
+	}
+	void VulkanGraphicsPipeline::SetInput(std::string_view name, Count<class UniformBuffer> buffer)
+	{
+		m_DescritptorSetManager->SetInput(name, buffer);
+	}
+	void VulkanGraphicsPipeline::SetInput(std::string_view name, Count<class Texture2D> image)
+	{
+		m_DescritptorSetManager->SetInput(name, image);
+	}
+	void VulkanGraphicsPipeline::SetInput(std::string_view name, const std::vector<Count<class Texture2D>>& images)
+	{
+		m_DescritptorSetManager->SetInput(name, images);
 	}
 	#define IM_ARRAYSIZEERE(_ARR)          ((int)(sizeof(_ARR) / sizeof(*(_ARR))))     // Size of a static C-style array. Don't use on pointers!
 	void VulkanGraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, const GraphicsPipelineConfig& graphicsConfig)
@@ -285,5 +347,45 @@ namespace Proof
 		configInfo.DynamicSate.pNext = nullptr;
 		configInfo.DynamicSate.flags = 0;
 		configInfo.DynamicSate.pDynamicStates = (VkDynamicState*)dynamicState;
+	}
+	void VulkanGraphicsPipeline::CreatePipelineLayout()
+	{
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+
+		auto shader = m_Config.Shader.As<VulkanShader>();
+		std::vector< VkDescriptorSetLayout> descriptorLayout;
+		std::vector< VkPushConstantRange> pushConstantsRange;
+
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.pNext = nullptr;
+
+		for (auto& [set, resource] : shader->GetDescriptorResource())
+		{
+			descriptorLayout.emplace_back(resource.Layout);
+		}
+		if (!descriptorLayout.empty())
+		{
+			pipelineLayoutInfo.pSetLayouts = descriptorLayout.data();
+			pipelineLayoutInfo.setLayoutCount = descriptorLayout.size();
+		}
+		else
+		{
+			pipelineLayoutInfo.pSetLayouts = nullptr;
+			pipelineLayoutInfo.setLayoutCount = 0;
+		}
+		for (auto& [name, range] : shader->GetPushConstants())
+			pushConstantsRange.emplace_back(range);
+		if (!pushConstantsRange.empty())
+		{
+			pipelineLayoutInfo.pushConstantRangeCount = pushConstantsRange.size();
+			pipelineLayoutInfo.pPushConstantRanges = pushConstantsRange.data();
+		}
+		else
+		{
+			pipelineLayoutInfo.pushConstantRangeCount = 0;
+			pipelineLayoutInfo.pPushConstantRanges = nullptr;
+		}
+		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipeLineLayout));
 	}
 }

@@ -18,7 +18,7 @@ namespace Proof{
 	{
 		m_RenderPass = renderPass;
 		m_Pipeline = CreateSpecial<DebugMeshPipeLine>(m_RenderPass);
-		m_CameraBuffer = UniformBuffer::Create(sizeof(CameraData), DescriptorSets::Zero, (uint32_t)DescriptorSet0::CameraData);
+		m_CameraBuffer = UniformBuffer::Create(sizeof(CameraData));
 	}
 
 	void DebugMeshRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer)
@@ -81,7 +81,7 @@ namespace Proof{
 		m_CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 		descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_CameraBuffer);
 		uint32_t currentOffset = m_Pipeline->OffsetBegin;
-		Renderer::RecordRenderPass(m_RenderPass, m_Pipeline->GraphicsPipeline, [&](Count <RenderCommandBuffer> commandBuffer) {
+		//Renderer::RecordRenderPass(m_RenderPass, m_Pipeline->GraphicsPipeline);
 			descriptor0->Bind(m_CommandBuffer, m_Pipeline->PipeLineLayout);
 			for (const uint64_t& ID : m_Pipeline->ElementsImplaced)
 			{
@@ -100,7 +100,6 @@ namespace Proof{
 
 				currentOffset += meshInstances;
 			}
-		});
 	}
 
 	DebugMeshPipeLine::DebugMeshPipeLine(Count<RenderPass> renderPass)
@@ -133,7 +132,7 @@ namespace Proof{
 		graphicsPipelineConfig.DebugName = "Debug-Mesh";
 		graphicsPipelineConfig.Shader = Shader;
 		graphicsPipelineConfig.VertexArray = meshVertexArray;
-		graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
 		graphicsPipelineConfig.RenderPass = renderPass;
 		graphicsPipelineConfig.DrawMode = DrawType::LineStrip;
 		graphicsPipelineConfig.LineWidth =5;

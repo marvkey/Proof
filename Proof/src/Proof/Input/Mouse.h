@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include <utility>
-
+#include "glm/glm.hpp"
 namespace Proof {
     class Mouse{
     public:

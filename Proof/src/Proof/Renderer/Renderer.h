@@ -1,13 +1,16 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <functional>
 #include "RendererAPI.h"
 namespace Proof {
 	
 	class Renderer {
 	public:
-		static void DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount=1,uint32_t firstInstance=0){
-			s_RendererAPI->DrawElementIndexed(commandBuffer,indexCount,instanceCount,firstInstance);
+		static void DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount=1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0)
+		{
+			s_RendererAPI->DrawElementIndexed(commandBuffer, indexCount, instanceCount, firstIndex,vertexOffset,firstInstance);
 		}
+
 		static void DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex = 0, uint32_t firstInstance = 0) {
 			s_RendererAPI->DrawArrays(commandBuffer,vertexCount,instanceCount,firstVertex,firstInstance);
 		}
@@ -17,20 +20,9 @@ namespace Proof {
 		static void EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) {
 			s_RendererAPI->EndCommandBuffer(commandBuffer);
 		}
-		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) {
-			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer);
+		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class GraphicsPipeline> pipline) {
+			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, pipline);
 		}
-
-		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer, Viewport vieport, ViewportScissor scisscor) {
-			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer, vieport, scisscor);
-		}
-		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class ScreenFrameBuffer> frameBuffer) {
-			s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, frameBuffer);
-		}
-		static void RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<RenderCommandBuffer> commandBuffer)> data) {
-			s_RendererAPI->RecordRenderPass(renderPass, pipeline,data);
-		}
-
 		static void EndRenderPass(Count<class RenderPass> renderPass) {
 			s_RendererAPI->EndRenderPass(renderPass);
 		}
@@ -46,7 +38,7 @@ namespace Proof {
 		static Count<class GraphicsContext> GetGraphicsContext() {
 			return RendererBase::GetGraphicsContext();
 		}
-		static void Submit(std::function<void(class CommandBuffer*)> func) {
+		static void SubmitCommand(std::function<void(class CommandBuffer*)> func) {
 			s_RendererAPI->Submit(func);
 		}
 		static void SubmitDatafree(std::function<void()> func) {
@@ -56,17 +48,32 @@ namespace Proof {
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 		static Count<class Texture2D> GetWhiteTexture();
+
+		//submit to render thread
+		template<class FuncT>
+		static void Submit(FuncT&& func)
+		{
+			//https://www.youtube.com/watch?v=WeqxJeme_88
+			//(1:14:02)
+			auto renderCommandQueue = [](void* ptr)
+			{
+				auto pFunc = (FuncT*)ptr;
+				(*pFunc)();
+		
+				pFunc->~FuncT();
+			};
+			auto storageBuffer = GetRenderCommandQueue().Allocate(renderCommandQueue, sizeof(func));
+			new (storageBuffer)FuncT(std::forward<FuncT>(func));
+		};
+		static class CommandQueue& GetRenderCommandQueue();
 	private:
 		static void OnWindowResize(WindowResizeEvent& e) {
 			s_RendererAPI->OnWindowResize(e);
 		}
-		static void BeginFrame() {
-			s_RendererAPI->BeginFrame();
-		}
-		static void EndFrame() {
-			s_RendererAPI->EndFrame();
-		}
-		
+		static void BeginFrame();
+		static void EndFrame();
+		static void Init();
+		static void Unit();
 		static RendererAPI* s_RendererAPI;
 		friend class RendererBase;
 		friend class Application;

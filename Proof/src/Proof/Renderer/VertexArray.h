@@ -1,5 +1,8 @@
 #pragma once
-#include "Buffer.h"
+#include "Proof/Core/SmartPointer.h"
+//#include "Buffer.h"
+#include "Proof/Math/Vector.h"
+#include "Proof/Core/ProofTypes.h"
 namespace Proof {
 	enum class VertexInputRate {
 		Vertex = 0,

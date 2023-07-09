@@ -16,6 +16,58 @@
 #include "Proof/Renderer/RendererBase.h"
 #include "Proof/Renderer/Buffer.h"
 namespace Proof{
+    static glm::mat4 AIMatrixToGLM(const aiMatrix4x4& aiMatrix) {
+        glm::mat4 glmMatrix;
+        // glm::mat4 and aiMatrix4x4 are both column-major matrices,
+        // so we can copy the values directly
+        glmMatrix[0][0] = aiMatrix.a1;
+        glmMatrix[1][0] = aiMatrix.a2;
+        glmMatrix[2][0] = aiMatrix.a3;
+        glmMatrix[3][0] = aiMatrix.a4;
+
+        glmMatrix[0][1] = aiMatrix.b1;
+        glmMatrix[1][1] = aiMatrix.b2;
+        glmMatrix[2][1] = aiMatrix.b3;
+        glmMatrix[3][1] = aiMatrix.b4;
+
+        glmMatrix[0][2] = aiMatrix.c1;
+        glmMatrix[1][2] = aiMatrix.c2;
+        glmMatrix[2][2] = aiMatrix.c3;
+        glmMatrix[3][2] = aiMatrix.c4;
+
+        glmMatrix[0][3] = aiMatrix.d1;
+        glmMatrix[1][3] = aiMatrix.d2;
+        glmMatrix[2][3] = aiMatrix.d3;
+        glmMatrix[3][3] = aiMatrix.d4;
+
+        return glmMatrix;
+    }
+    static aiMatrix4x4 GLMToAIMatrix(const glm::mat4& glmMatrix) {
+        aiMatrix4x4 aiMatrix;
+        // glm::mat4 and aiMatrix4x4 are both column-major matrices,
+        // so we can copy the values directly
+        aiMatrix.a1 = glmMatrix[0][0];
+        aiMatrix.a2 = glmMatrix[1][0];
+        aiMatrix.a3 = glmMatrix[2][0];
+        aiMatrix.a4 = glmMatrix[3][0];
+
+        aiMatrix.b1 = glmMatrix[0][1];
+        aiMatrix.b2 = glmMatrix[1][1];
+        aiMatrix.b3 = glmMatrix[2][1];
+        aiMatrix.b4 = glmMatrix[3][1];
+
+        aiMatrix.c1 = glmMatrix[0][2];
+        aiMatrix.c2 = glmMatrix[1][2];
+        aiMatrix.c3 = glmMatrix[2][2];
+        aiMatrix.c4 = glmMatrix[3][2];
+
+        aiMatrix.d1 = glmMatrix[0][3];
+        aiMatrix.d2 = glmMatrix[1][3];
+        aiMatrix.d3 = glmMatrix[2][3];
+        aiMatrix.d4 = glmMatrix[3][3];
+
+        return aiMatrix;
+    }
     MeshSource::MeshSource(const std::string & path)
     {
         PF_PROFILE_FUNC();
@@ -27,13 +79,13 @@ namespace Proof{
             PF_EC_WARN("ERROR::ASSIMP {}", importer.GetErrorString());
             return;
         }
-        ProcessNode(scene->mRootNode, scene);
+        
+        ProcessNode(scene->mRootNode, scene, AIMatrixToGLM(scene->mRootNode->mTransformation));
        
         
         m_MaterialTable = Count<MaterialTable>::Create(scene->mNumMaterials > 0 ? false : true);
         for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; materialIndex++)
         {
-            //scene->mMaterials[]
             m_MaterialTable->SetMaterial(materialIndex, GetMaterial(scene->mMaterials[materialIndex]));
         }
     }
@@ -44,26 +96,27 @@ namespace Proof{
         SubMesh meh(vertices, indices, name);
         m_SubMeshes.emplace_back(meh);
     }
-    void MeshSource::ProcessNode(void* node, const void* scene)
+    void MeshSource::ProcessNode(void* node, const void* scene, const glm::mat4& parentTransform)
     {
         aiNode* ainode = (aiNode*)node;
         aiScene* aiscene = (aiScene*)scene;
+        glm::mat4 transform = parentTransform * AIMatrixToGLM(ainode->mTransformation);
+
         for (uint32_t i = 0; i < ainode->mNumMeshes; i++)
         {
             aiMesh* mesh = aiscene->mMeshes[ainode->mMeshes[i]];
-            m_SubMeshes.emplace_back(ProcessMesh(mesh, aiscene));
+            m_SubMeshes.emplace_back(ProcessMesh(mesh, aiscene,transform));
         }
         for (uint32_t i = 0; i < ainode->mNumChildren; i++)
         {
-            ProcessNode(ainode->mChildren[i], aiscene);
+            ProcessNode(ainode->mChildren[i], aiscene, transform);
         }
     }
 
-    SubMesh MeshSource::ProcessMesh(void* mesh, const void* scene)
+    SubMesh MeshSource::ProcessMesh(void* mesh, const void* scene, const glm::mat4& transform)
     {
         aiMesh* aimesh = (aiMesh*)mesh;
         aiScene* aiscene = (aiScene*)scene;
-
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
         std::vector<Count<Texture2D>> textures;
@@ -93,6 +146,7 @@ namespace Proof{
             }
         }
         SubMesh temp(vertices, indices, aimesh->mName.C_Str(), aimesh->mMaterialIndex);
+        temp.Transform = transform;
         return temp;
     }
 
@@ -135,7 +189,7 @@ namespace Proof{
                 if (AssetManager::HasAsset(textureFilePath))
                 {
                     // changing the path to a proof asset path
-                    PF_EC_WARN("Getting mehs texture this way is risky what if the name changes");
+                   // PF_EC_WARN("Getting mehs texture this way is risky what if the name changes");
                     std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
                     path += ".Texture.ProofAsset";
                     if(AssetManager::HasAsset(path))
@@ -144,7 +198,7 @@ namespace Proof{
                     {
                         
                         AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
-                        Count<Asset> asset = Texture2D::Create(textureFilePath);
+                        Count<Asset> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(path)), textureFilePath);
                         AssetManager::NewAsset(asset, path);
                         texture = AssetManager::GetAsset<Texture2D>(path);
                        // PF_EC_CRITICAL("Proof Should not be using raw texture file to create meshes causes an error for invalid descript set");
@@ -156,7 +210,7 @@ namespace Proof{
                     std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
                     path += ".Texture.ProofAsset";
                     AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
-                    Count<Asset> asset = Texture2D::Create(textureFilePath);
+                    Count<Asset> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(textureFilePath)),textureFilePath);
                     AssetManager::NewAsset(asset, path);
                     texture = AssetManager::GetAsset<Texture2D>(path);
                 }
@@ -169,28 +223,41 @@ namespace Proof{
         LoadTexture(material->RoughnessTexture, aiTextureType_DIFFUSE_ROUGHNESS);
     }
 
-    Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& excludeSubMeshes)
+    Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& submeshes)
         :m_MeshSource(meshSource)
     {
         m_MaterialTable = meshSource->GenerateMaterialTable();
-        m_ExcludeMeshes = excludeSubMeshes;
         m_Name = Utils::FileDialogs::GetFileName(m_MeshSource->GetPath());
+        SetSubMeshes(submeshes);
     }
     Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices)
     {
         m_MeshSource = Count<MeshSource>::Create(name,vertices, indices);
         m_MaterialTable = m_MeshSource->GenerateMaterialTable();
+        SetSubMeshes({});
+    }
+
+    void Mesh::SetSubMeshes(const std::vector<uint32_t>& submesh)
+    {
+        if (!submesh.empty())
+        {
+            m_SubMeshes = submesh;
+            return;
+        }
+        const auto& submeshes = m_MeshSource->GetSubMeshes();
+        m_SubMeshes.resize(submeshes.size());
+        for (uint32_t i = 0; i < submeshes.size(); i++)
+            m_SubMeshes[i] = i;
     }
 
     SubMesh::SubMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::string& name, uint32_t materialIndex)
     {
-        Vertices = vertices;
-        Indices = indices;
         Name = name;
         MaterialIndex = materialIndex;
-
-        VertexBuffer = VertexBuffer::Create(Vertices.data(), Vertices.size() * sizeof(Vertex));
-        IndexBuffer = IndexBuffer::Create(Indices.data(), Indices.size());
+        Vertices = vertices;
+        Indices = indices;
+        VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
+        IndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
     }
 
 }

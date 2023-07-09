@@ -12,6 +12,9 @@ layout(location = 0) out vec4 outFragColor;
 layout(set = 0, binding = 4) uniform samplerCube irradianceMap;
 layout(set = 0, binding = 5) uniform samplerCube prefilterMap;
 layout(set = 0, binding = 6) uniform sampler2D BRDFLUT;
+
+//layout(set = 3, binding = 3) uniform sampler2D samplers[];
+
 struct BaseLight {
     vec3 Color;
     float Intensity;

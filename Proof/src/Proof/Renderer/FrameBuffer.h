@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Texture.h"
+#include "Image.h"
 #include "Renderer.h"
 namespace Proof {
 	struct FrameBufferImageConfig {
@@ -9,33 +9,10 @@ namespace Proof {
 			: Format(format) {}
 
 		ImageFormat Format = ImageFormat::None;
-		bool Blend = true;
+	//	bool Blend = true;
 		bool ClearOnLoad = true;
 		
-		// basicllya make the value of somethign this
-		void SetOverrideImage(const Image& image) {
-			if (m_ImageLayout.Images.empty()==false)
-				PF_CORE_ASSERT(false, "Cannot set image and image layout");
-			m_Image = image;
-		}
-
-		// tempoarary we will find a better way to andle this
-		void SetOverrideLayout(const ImageLayouts& image) {
-			if (m_Image.HasImage())
-				PF_CORE_ASSERT(false, "Cannot set image and image layout");
-			m_ImageLayout = image;
-		}
-
-		const Image& GetImage()const {
-			return m_Image;
-		}
-
-		const ImageLayouts& GetImagelayout()const {
-			return m_ImageLayout;
-		}
-	private:
-		ImageLayouts m_ImageLayout;
-		Image m_Image;
+		ImageLayouts2D ExistingImage;
 	};
 	struct FrameBufferAttachments {
 		FrameBufferAttachments() = default;
@@ -64,11 +41,10 @@ namespace Proof {
 	public:
 		static Count<FrameBuffer> Create(const FrameBufferConfig& config);
 		// index is hte framebuffer image index
-		virtual Image GetColorAttachmentImage(uint32_t index, uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex) = 0;
-		virtual Image GetDepthImage(uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex) = 0;
-
-		virtual ImageLayouts GetColorAttachmentImageLayout(uint32_t index) = 0;
-		virtual ImageLayouts GetDepthImageLayout() = 0;
+		virtual Count <Image2D> GetColorAttachmentImage(uint32_t index, uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex) = 0;
+		virtual Count <Image2D> GetDepthImage(uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex) = 0;
+		virtual ImageLayouts2D GetColorAttachmentImageLayout(uint32_t index) = 0;
+		virtual ImageLayouts2D GetDepthImageLayout() = 0;
 
 		virtual ~FrameBuffer() = default;
 
@@ -88,7 +64,7 @@ namespace Proof {
 		}
 		virtual uint32_t GetFrameWidth();
 		virtual uint32_t GetFrameHeight();
-		virtual Image GetImage();
+		virtual Count<Image2D> GetImage(uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex);
 	private:
 		Count<FrameBuffer> m_FrameBuffer;
 	};

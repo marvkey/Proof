@@ -84,7 +84,7 @@ namespace Proof
 				out << YAML::Key << "MeshAssetPointerID" << YAML::Value << meshComponent.m_MeshID;
 				if (AssetManager::HasAsset(meshComponent.GetMesh()))
 				{
-					if (meshComponent.GetMesh()->GetMaterialTable() == meshComponent.MaterialTable)
+					if (*meshComponent.GetMesh()->GetMaterialTable() == *meshComponent.MaterialTable)
 						goto leave;
 					out << YAML::Key << "MaterialTable"; 
 					out << YAML::BeginSeq;//MaterialTbale 

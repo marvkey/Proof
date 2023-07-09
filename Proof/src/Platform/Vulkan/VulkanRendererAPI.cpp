@@ -5,6 +5,7 @@
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanRenderPass.h"
+#include "VulkanGraphicsContext.h"
 namespace Proof {
 	VulkanRendererAPI::VulkanRendererAPI() {
 	}
@@ -17,21 +18,29 @@ namespace Proof {
 	void VulkanRendererAPI::DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance) {
 		vkCmdDrawIndexed(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, 0, 0, firstInstance);
 	}
-	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer, Viewport vieport, ViewportScissor scisscor)
+
+	void VulkanRendererAPI::DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
 	{
-		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer,frameBuffer, vieport, scisscor);
+		vkCmdDrawIndexed(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
-	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class FrameBuffer> frameBuffer) {
-		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, frameBuffer);
+
+	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<GraphicsPipeline> pipline)
+	{
+		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, pipline);
 	}
-	void VulkanRendererAPI::RecordRenderPass(Count<class RenderPass> renderPass, Count<class GraphicsPipeline>pipeline, std::function<void(Count<RenderCommandBuffer> commandBuffer)> data) {
-		renderPass.As<VulkanRenderPass>()->RecordRenderPass(pipeline,data);
-	}
-	void VulkanRendererAPI::EndRenderPass(Count<class RenderPass> renderPass) {
+
+	void VulkanRendererAPI::EndRenderPass(Count<class RenderPass> renderPass)
+	{
 		renderPass.As<VulkanRenderPass>()->EndRenderPass();
 	}
+
 	void VulkanRendererAPI::SubmitCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) {
 		VulkanRenderer::SubmitCommandBuffer(commandBuffer);
+	}
+
+	void VulkanRendererAPI::SetGraphicsContext(Count<GraphicsContext> context)
+	{
+		VulkanRenderer::SetGraphicsContext(context);
 	}
 
 	void VulkanRendererAPI::Init() {
@@ -54,7 +63,7 @@ namespace Proof {
 		VulkanRenderer::SubmitDatafree(func);
 	}
 	void VulkanRendererAPI::Submit(std::function<void(CommandBuffer*)> func) {
-		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
+		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		VulkanCommandBuffer* commandBufferContainer = new VulkanCommandBuffer();
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

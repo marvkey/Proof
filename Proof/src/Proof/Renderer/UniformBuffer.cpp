@@ -1,42 +1,43 @@
 #include "Proofprch.h"
 #include "UniformBuffer.h"
 #include "Platform/OpenGL/OpenGLUniformBuffer.h"
-#include "Platform/Vulkan/VulkanDescriptorSet.h"
+#include "Platform/Vulkan/VulkanResourceBuffer.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanTexutre.h"
 #include "RendererAPI.h"
 namespace Proof
 {
-	Count<UniformBuffer> UniformBuffer::Create(uint32_t size, DescriptorSets set, uint32_t bindingPoint) {
+	Count<UniformBuffer> UniformBuffer::Create(uint32_t size) {
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return Count<VulkanUniformBuffer>::Create(size, set, bindingPoint);
+			case RendererAPI::API::Vulkan: return Count<VulkanUniformBuffer>::Create(size);
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Count<UniformBuffer> UniformBuffer::Create(const void* data,uint32_t size, DescriptorSets set, uint32_t bindingPoint) {
+	Count<UniformBuffer> UniformBuffer::Create(const void* data,uint32_t size) {
 		switch (RendererAPI::GetAPI())
 		{
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return Count<VulkanUniformBuffer>::Create(data,size, set, bindingPoint);
+			case RendererAPI::API::Vulkan: return Count<VulkanUniformBuffer>::Create(data,size);
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Count<StorageBuffer> StorageBuffer::Create(DescriptorSets set, uint32_t binding, const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex) {
+	Count<StorageBuffer> StorageBuffer::Create(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex) {
 		switch (RendererAPI::GetAPI())
 		{
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return Count<VulkanStorageBuffer>::Create(set, binding,data,size,offset,frameIndex);
+			case RendererAPI::API::Vulkan: return Count<VulkanStorageBuffer>::Create(data,size,offset,frameIndex);
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
 	Count<DescriptorSet> DescriptorSet::Create(DescriptorSets set, std::unordered_map<uint32_t, DescriptrLayoutBinding> Bindings) {
+		/*
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
@@ -51,9 +52,11 @@ namespace Proof
 				}
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
+		*/
 		return nullptr;
 	}
 	Count<DescriptorSet> DescriptorSet::Builder::Build() {
+		/*
 		switch (RendererAPI::GetAPI()) {
 			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
 			case RendererAPI::API::OpenGL: return nullptr;
@@ -68,6 +71,7 @@ namespace Proof
 				}
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
+		*/
 		return nullptr;
 	}
 	DescriptorSet::Builder::Builder(DescriptorSets set) {

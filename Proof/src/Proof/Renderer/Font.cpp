@@ -28,8 +28,11 @@ namespace Proof {
 		msdfgen::BitmapConstRef<T, N> bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
 
 
-		Count<Texture2D> texture = Texture2D::Create(bitmap.width, bitmap.height, ImageFormat::RGB, nullptr);
-		texture->SetData((void*)bitmap.pixels);
+		TextureConfiguration config;
+		config.DebugName = "Font " + fontName;
+		config.Width = bitmap.width;
+		config.Height = bitmap.height;
+		Count<Texture2D> texture = Texture2D::Create((void*)bitmap.pixels,config);
 		return texture;
 	}
 	Font::Font(const std::filesystem::path& fullPath)

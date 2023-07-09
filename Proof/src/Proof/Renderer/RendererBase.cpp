@@ -10,6 +10,7 @@
 #include "Renderer.h"
 #include "Shader.h"
 #include "platform/Vulkan/VulkanRendererAPI.h"
+#include "SwapChain.h"
 namespace Proof {
 
 	ShaderLibrary* RendererBase::AllShaders = new ShaderLibrary;
@@ -17,7 +18,7 @@ namespace Proof {
 	std::string RendererBase::s_GraphicsCard;
 	std::string RendererBase::s_GraphicsCardVersion;
 	BaseTextures* RendererBase::s_BaseTextures = nullptr;
-	Count<class GraphicsContext>RendererBase::m_GraphicsContext = nullptr;
+	Count<class GraphicsContext> RendererBase::m_GraphicsContext = nullptr;
 
 	void RendererBase::Init(Window* window) {
 		PF_PROFILE_FUNC();
@@ -25,6 +26,8 @@ namespace Proof {
 			Renderer::s_RendererAPI = new VulkanRendererAPI();
 		}
 		m_GraphicsContext = GraphicsContext::Create(window);
+		Renderer::s_RendererAPI->SetGraphicsContext(m_GraphicsContext);
+
 		window->m_SwapChain = SwapChain::Create(ScreenSize{ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() });
 		Renderer::s_RendererAPI->Init();
 
@@ -37,14 +40,17 @@ namespace Proof {
 		// delete the graphics conttext tehn destroy render api
 		delete AllShaders;
 		delete s_BaseTextures;
-		Renderer::s_RendererAPI->Destroy();
 		m_GraphicsContext = nullptr;
+		Renderer::s_RendererAPI->Destroy();
+		delete Renderer::s_RendererAPI;
+		Renderer::s_RendererAPI = nullptr;
 	}
 	BaseTextures::BaseTextures() {
 		uint32_t whiteTexturedata = 0xffffffff;
-		WhiteTexture = Texture2D::Create(1, 1, ImageFormat::RGBA, &whiteTexturedata);
+		WhiteTexture = Texture2D::Create(&whiteTexturedata,TextureConfiguration("White Texture") );
+
 
 		uint32_t blackTexturedata = 0xFF000000;
-		BlackTexture = Texture2D::Create(1, 1, ImageFormat::RGBA, &blackTexturedata);
+		BlackTexture = Texture2D::Create(&blackTexturedata,TextureConfiguration("Black Texture"));
 	}
 }

@@ -29,7 +29,7 @@ namespace Proof {
 		* @parm Size the size of element in vertex buffer 
 		* @parm SizeOfVertexBuffer the size of the vertex buffer at given time
 		*/
-		virtual void AddData(const void* Data,uint32_t Size,uint32_t SizeOfVertexBuffer =0)override;
+		///virtual void AddData(const void* Data,uint32_t Size,uint32_t SizeOfVertexBuffer =0)override;
 		/**
 		*removes as Current vertex Buffer
 		*/ 

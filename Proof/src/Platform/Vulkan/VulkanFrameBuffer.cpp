@@ -6,9 +6,11 @@
 #include "VulkanRenderPass.h"
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanSwapChain.h"
+#include "VulkanDescriptorSet.h"
 #include <algorithm>
 #include "VulkanUtils/VulkanConvert.h"
 #include "VulkanTexutre.h"
+#include "VulkanImage.h"
 #include <vector>
 namespace Proof
 {
@@ -38,10 +40,12 @@ namespace Proof
             return;
         else
             graphicsContext->GetSwapChain().As<VulkanSwapChain>()->FrameBuffers.emplace_back(this);
+
+        PF_ENGINE_TRACE("FrameBuffer {} created with {} ImageAttachment", m_Config.DebugName, m_ColorImages.size());
     }
     void VulkanFrameBuffer::SetUpAttachments()
     {
-        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+        auto graphicsContext = VulkanRenderer::GetGraphicsContext();
         for (auto& frameImageConfig : m_Config.Attachments.Attachments)
         {
             if (Utils::IsDepthFormat(frameImageConfig.Format))
@@ -60,18 +64,88 @@ namespace Proof
     }
     void VulkanFrameBuffer::SetDepth(const FrameBufferImageConfig& imageAttach)
     {
-        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+        auto graphicsContext = VulkanRenderer::GetGraphicsContext();
         auto swapchain = graphicsContext->GetSwapChain();
         VkFormat depthFormat = Utils::ProofFormatToVulkanFormat(imageAttach.Format);
-        bool hasImage = true ? imageAttach.GetImage().HasImage() == true || imageAttach.GetImagelayout().HasImages() == true : false;
+        bool hasImage = true ? imageAttach.ExistingImage.HasImages() : false;
+        m_DepthImage.RefImages.resize(swapchain->GetImageCount());
+        if (hasImage)
+        {
+            PF_CORE_ASSERT(imageAttach.ExistingImage.Images.size() == swapchain->GetImageCount(), "Not equal to image count ");
+            for (int i = 0; i < imageAttach.ExistingImage.Images.size(); i++)
+                m_DepthImage.RefImages[i] = imageAttach.ExistingImage.Images[i];
+            return;
+        }
 
-        m_DepthImage = VulkanFrameBufferImages(hasImage);
         m_DepthFormat = imageAttach.Format;
-        m_DepthImage.Images.resize(swapchain->GetImageCount());
-        m_DepthImage.ImageSampler.resize(swapchain->GetImageCount());
-        m_DepthImage.ImageViews.resize(swapchain->GetImageCount());
         for (int i = 0; i < swapchain->GetImageCount(); i++)
         {
+
+            ImageConfiguration imageConfig;
+            imageConfig.DebugName = fmt::format("{} DepthImage ",m_Config.DebugName);
+            imageConfig.Format = m_DepthFormat;
+            imageConfig.Usage = ImageUsage::Attachment;
+            imageConfig.Width = m_Config.Size.X;
+            imageConfig.Height = m_Config.Size.Y;
+            m_DepthImage.RefImages[i] = Image2D::Create(imageConfig);
+            Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+
+                VkImageMemoryBarrier barrier{};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.image = m_DepthImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier.subresourceRange.baseMipLevel = 0;
+                barrier.subresourceRange.levelCount = 1;
+                barrier.subresourceRange.baseArrayLayer = 0;
+                barrier.subresourceRange.layerCount = 1;
+
+                VkPipelineStageFlags sourceStage;
+                VkPipelineStageFlags destinationStage;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+                if (hasStencilComponent(depthFormat))
+                {
+                    barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                }
+                barrier.srcAccessMask = 0;
+                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+                sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+
+                vkCmdPipelineBarrier(
+                    cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+                    sourceStage, destinationStage,
+                    0,
+                    0, nullptr,
+                    0, nullptr,
+                    1, &barrier);
+                /*
+                VkClearColorValue clearColor = {};
+                clearColor.float32[0] = 0.0f; // Red
+                clearColor.float32[1] = 0.0f; // Green
+                clearColor.float32[2] = 0.0f; // Blue
+                clearColor.float32[3] = 1.0f; // Alpha
+                // Specify the range of the image to clear
+                VkImageSubresourceRange subresourceRange = {};
+                subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; // Set the aspect mask for color image
+                subresourceRange.baseMipLevel = 0;                       // Set the base mip level
+                subresourceRange.levelCount = 1;                         // Set the number of mip levels
+                subresourceRange.baseArrayLayer = 0;                     // Set the base array layer
+                subresourceRange.layerCount = 1;                         // Set the number of layers
+
+                // Clear the image to the specified color
+                vkCmdClearColorImage(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_DepthImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 
+                    &clearColor, 1, &subresourceRange);
+                    */
+
+            });
+            m_DepthImage.RefImages[i].As<VulkanImage2D>()->UpdateDescriptor();
+            /*
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -87,10 +161,10 @@ namespace Proof
             imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
-            Renderer::Submit([&](CommandBuffer* cmdBuffer) {
+            Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
                 VmaAllocationCreateInfo vmaallocInfo = {};
                 vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-                graphicsContext->CreateVmaImage(imageInfo, vmaallocInfo,m_DepthImage.Images[i]);
+                graphicsContext->CreateVmaImage(imageInfo, vmaallocInfo, imageAlloc);
             });
 
             VkImageViewCreateInfo viewInfo{};
@@ -108,7 +182,7 @@ namespace Proof
             {
                 PF_CORE_ASSERT(false, "failed to create texture image view!");
             }
-            Renderer::Submit([&](CommandBuffer* cmdBuffer) {
+            Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
 
                 VkImageMemoryBarrier barrier{};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -145,22 +219,87 @@ namespace Proof
                     0, nullptr,
                     1, &barrier);
             });
+            */
         }
     }
     void VulkanFrameBuffer::AddImage(const FrameBufferImageConfig& imageAttach)
     {
-        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+        auto graphicsContext = VulkanRenderer::GetGraphicsContext();
         auto swapchain = graphicsContext->GetSwapChain();
         uint32_t imageCount = swapchain->GetImageCount();
         auto imageFormat = Utils::ProofFormatToVulkanFormat(imageAttach.Format);
+        bool hasImage = true ? imageAttach.ExistingImage.HasImages() : false;
+        
+        VulkanFrameBufferImages colorImage;
+        colorImage.RefImages.resize(imageCount);
+        if (hasImage)
+        {
 
-        bool hasImage = true ? imageAttach.GetImage().HasImage() == true || imageAttach.GetImagelayout().HasImages() == true : false;
-        VulkanFrameBufferImages image(hasImage);
-        image.Images.resize(imageCount);
-        image.ImageViews.resize(imageCount);
-        image.ImageSampler.resize(imageCount);
+            PF_CORE_ASSERT(imageAttach.ExistingImage.Images.size() == swapchain->GetImageCount(), "Not equal to image count ");
+            for (int i = 0; i < imageAttach.ExistingImage.Images.size(); i++)
+                colorImage.RefImages[i] = imageAttach.ExistingImage.Images[i];
+
+            m_ColorImages.emplace_back(colorImage);
+            return;
+        }
         for (int i = 0; i < imageCount; i++)
         {
+            ImageConfiguration imageConfig;
+            imageConfig.DebugName = fmt::format("{} ColorAttachment Index: {} ", m_Config.DebugName, m_ColorImages.size());
+            imageConfig.Format = imageAttach.Format;
+            imageConfig.Usage = ImageUsage::Attachment;
+            imageConfig.Width = m_Config.Size.X;
+            imageConfig.Height = m_Config.Size.Y;
+            colorImage.RefImages[i] = Image2D::Create(imageConfig);
+
+            Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+                VkImageMemoryBarrier imageMemoryBarrier{};
+                imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+                imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;//VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                imageMemoryBarrier.image = colorImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+                imageMemoryBarrier.subresourceRange = VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+                vkCmdPipelineBarrier(
+                    cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    0,
+                    0, nullptr,
+                    0, nullptr,
+                    1, &imageMemoryBarrier);
+                /*
+                VkClearColorValue clearColor = {};
+                clearColor.float32[0] = 0.0f; // Red
+                clearColor.float32[1] = 0.0f; // Green
+                clearColor.float32[2] = 0.0f; // Blue
+                clearColor.float32[3] = 1.0f; // Alpha
+                // Specify the range of the image to clear
+                VkImageSubresourceRange subresourceRange = {};
+                subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; // Set the aspect mask for color image
+                subresourceRange.baseMipLevel = 0;                       // Set the base mip level
+                subresourceRange.levelCount = 1;                         // Set the number of mip levels
+                subresourceRange.baseArrayLayer = 0;                     // Set the base array layer
+                subresourceRange.layerCount = 1;                         // Set the number of layers
+                
+                // Clear the image to the specified color
+                vkCmdClearColorImage(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), colorImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    &clearColor, 1, &subresourceRange);
+                */
+
+            });
+            colorImage.RefImages[i].As<VulkanImage2D>()->UpdateDescriptor();
+        }
+        m_ColorImages.emplace_back(colorImage);
+
+        /*
+        for (int i = 0; i < imageCount; i++)
+        {
+           
             if (imageAttach.GetImagelayout().HasImages())
             {
                 if (imageAttach.GetImagelayout().Images.size() >= i)
@@ -179,7 +318,7 @@ namespace Proof
             {
                 VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImage();
                 image.Images[i].Image = vkImage.GetImage();
-                //image.ImageSampler[i] = vkImage.GetImageSampler();
+                image.ImageSampler[i] = vkImage.GetImageSampler();
                 continue;
             }
             if (image.Images[i].Image != nullptr)
@@ -198,14 +337,14 @@ namespace Proof
             info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
             info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            Renderer::Submit([&](CommandBuffer* cmdBuffer) {
+            Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
                 VmaAllocationCreateInfo vmaallocInfo = {};
                 vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
                 graphicsContext->CreateVmaImage(info, vmaallocInfo, image.Images[i]);
             });
 
-            Renderer::Submit([&](CommandBuffer* cmdBuffer) {
+            Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
                 VkImageMemoryBarrier imageMemoryBarrier{};
                 imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -264,7 +403,7 @@ namespace Proof
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), &viewInfo, nullptr, &image.ImageViews[i]) !=
+            if (vkCreateImageView(VulkanRenderer::GetGraphicsContext()->GetDevice(), &viewInfo, nullptr, &image.ImageViews[i]) !=
                 VK_SUCCESS)
             {
                 PF_CORE_ASSERT(false, "failed to create texture image view!");
@@ -291,14 +430,15 @@ namespace Proof
             {
                 PF_CORE_ASSERT(false, "failed to create texture image sampler");
             }
+
         }
-        m_ColorImages.emplace_back(image);
+        */
     }
     void VulkanFrameBuffer::CreateFramebuffer()
     {
 
-        const auto& device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
-        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+        const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+        auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
         auto swapchain = graphicsContext->GetSwapChain();
 
@@ -311,12 +451,12 @@ namespace Proof
 
             for (auto& coloredImage : m_ColorImages)
             {
-                attachments.emplace_back(coloredImage.ImageViews[i]);
+                attachments.emplace_back(coloredImage.RefImages[i].As<VulkanImage2D>()->Getinfo().ImageView);
             }
             // has depth
             if (m_DepthFormat != ImageFormat::None)
             {
-                attachments.emplace_back(m_DepthImage.ImageViews[i]);
+                attachments.emplace_back(m_DepthImage.RefImages[i].As<VulkanImage2D>()->Getinfo().ImageView);
             }
 
             
@@ -343,56 +483,26 @@ namespace Proof
     {
         return m_Framebuffers[index];
     }
-    Image VulkanFrameBuffer::GetColorAttachmentImage(uint32_t index, uint32_t imageIndex)
+    Count<Image2D> VulkanFrameBuffer::GetColorAttachmentImage(uint32_t colorIndex, uint32_t imageIndex)
     {
-        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-        auto swapchain = graphicsContext->GetSwapChain();
-        VkDescriptorSet set = graphicsContext->GetGlobalPool()->AddTexture(
-            m_ColorImages[index].ImageSampler[imageIndex],
-            m_ColorImages[index].ImageViews[imageIndex]);
+        return m_ColorImages[colorIndex].RefImages[imageIndex];
+    }
 
-        return VulkanImage(set, m_Config.Attachments.Attachments[index].Format, m_Config.Size, VulkanImageExcessData{ m_ColorImages[index].ImageSampler[imageIndex],
-            m_ColorImages[index].ImageViews[imageIndex],m_ColorImages[index].Images[imageIndex].Image });
-    }
-    VulkanFrameBufferImages VulkanFrameBuffer::GetColorAttachmentFrameBufferImage(uint32_t index)
-    {
-        return m_ColorImages[index];
-    }
-    Image VulkanFrameBuffer::GetDepthImage(uint32_t imageIndex )
+    Count<Image2D> VulkanFrameBuffer::GetDepthImage(uint32_t imageIndex )
     {
         if(m_DepthFormat == ImageFormat::None)
-            return Image();
-
-        auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-        auto swapchain = graphicsContext->GetSwapChain();
-        VkDescriptorSet set = graphicsContext->GetGlobalPool()->AddTexture(
-            m_DepthImage.ImageSampler[imageIndex],
-            m_DepthImage.ImageViews[imageIndex]);
-
-        return VulkanImage(set, m_DepthFormat, m_Config.Size, VulkanImageExcessData{ m_DepthImage.ImageSampler[imageIndex],
-             m_DepthImage.ImageViews[imageIndex], m_DepthImage.Images[imageIndex].Image });
+            return nullptr;
+        return m_DepthImage.RefImages[imageIndex];
     }
-    ImageLayouts VulkanFrameBuffer::GetColorAttachmentImageLayout(uint32_t index)
+    ImageLayouts2D VulkanFrameBuffer::GetColorAttachmentImageLayout(uint32_t index)
     {
-        std::vector<Image> image;
-        image.resize(m_Framebuffers.size());
-        for (int i = 0; i < m_Framebuffers.size(); i++)
-        {
-            image.emplace_back(GetColorAttachmentImage(index,i));
-        }
-        return ImageLayouts(image);
+        return ImageLayouts2D(m_ColorImages[index].RefImages);
     }
-    ImageLayouts VulkanFrameBuffer::GetDepthImageLayout()
+    ImageLayouts2D VulkanFrameBuffer::GetDepthImageLayout()
     {
         if (HasDepthImage() == false)
-            return ImageLayouts();
-        std::vector<Image> image;
-        image.resize(m_Framebuffers.size());
-        for (int i = 0; i < m_Framebuffers.size(); i++)
-        {
-            image.emplace_back(GetDepthImage(i));
-        }
-        return ImageLayouts(image);
+            return ImageLayouts2D();
+        return ImageLayouts2D(m_DepthImage.RefImages);
     }
     bool VulkanFrameBuffer::HasDepthImage()
     {
@@ -410,13 +520,14 @@ namespace Proof
     }
     void VulkanFrameBuffer::Copy(Count<FrameBuffer> copyFrameBuffer)
     {
+        /*
 
         Count<VulkanFrameBuffer> copyVulkanFrameBuffer = copyFrameBuffer.As<VulkanFrameBuffer>();
         {
                 // prepare for copy
             for (int imageIndex = 0; imageIndex < copyVulkanFrameBuffer->m_ColorImages.size(); imageIndex++)
             {
-                Renderer::Submit([&](CommandBuffer* cmd) {
+                Renderer::SubmitCommand([&](CommandBuffer* cmd) {
                     //Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(cmd);
                     VkImage image = copyVulkanFrameBuffer->m_ColorImages[imageIndex].Images[Renderer::GetCurrentFrame().ImageIndex].Image;
 
@@ -444,7 +555,7 @@ namespace Proof
             if (copyFrameBuffer->HasDepthImage())
             {
                 //VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-                Renderer::Submit([&](CommandBuffer* cmd) {
+                Renderer::SubmitCommand([&](CommandBuffer* cmd) {
                     VkImage image = copyVulkanFrameBuffer->m_DepthImage.Images[Renderer::GetCurrentFrame().ImageIndex].Image;
 
                     VkImageMemoryBarrier barrier = {};
@@ -473,43 +584,48 @@ namespace Proof
         {
 
         }
+        */
     }
     void VulkanFrameBuffer::Release()
     {
-        auto swapchain = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetSwapChain()    ;
+        auto swapchain = VulkanRenderer::GetGraphicsContext()->GetSwapChain()    ;
 
         for (size_t i = 0; i < swapchain->GetImageCount(); i++)
         {
             for (auto& coloredimage : m_ColorImages)
             {
-                if (coloredimage.ImageAttached == true)
-                    continue;
+                coloredimage.RefImages.clear();
+                /*
                 Renderer::SubmitDatafree([images = coloredimage.Images[i], imageViews = coloredimage.ImageViews[i],imageSampler = coloredimage.ImageSampler[i]]()
                 {
-                    auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+                    auto graphicsContext = VulkanRenderer::GetGraphicsContext();
                     const auto& device = graphicsContext->GetDevice();
                     vkDestroyImageView(device, imageViews, nullptr);
                     vkDestroySampler(device, imageSampler, nullptr);
                     vmaDestroyImage(graphicsContext->GetVMA_Allocator(), images.Image, images.Allocation);
                 });
+                */
             }
 
             if (HasDepthImage())
             {
-                if (m_DepthImage.ImageAttached == true)
+                if (!HasDepthImage())
                     continue;
+                m_DepthImage.RefImages.clear();
+                /*
                 Renderer::SubmitDatafree([images = m_DepthImage.Images[i], imageViews = m_DepthImage.ImageViews[i], imageSampler = m_DepthImage.ImageSampler[i]]()
                 {
-                    auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
+                    auto graphicsContext = VulkanRenderer::GetGraphicsContext();
                     const auto& device = graphicsContext->GetDevice();
                     vkDestroyImageView(device, imageViews, nullptr);
                     vkDestroySampler(device, imageSampler, nullptr);
                     vmaDestroyImage(graphicsContext->GetVMA_Allocator(), images.Image, images.Allocation);
                 });
+                */
             }
 
             Renderer::SubmitDatafree([buffer = m_Framebuffers[i]]() {
-                const auto& device = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice();
+                const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice();
                 vkDestroyFramebuffer(device, buffer, nullptr);
             });
         }

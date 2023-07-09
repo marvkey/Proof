@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "RendererResouce.h"
 #include "Renderer.h"
 #include "Shader.h"
 namespace Proof
@@ -15,12 +16,15 @@ namespace Proof
 		UniformBuffer,
 		StorageBuffer
 	} ;
-	class StorageBuffer {
+	class StorageBuffer : public RendererBufferResource {
 	public:
 		virtual ~StorageBuffer() = default;
-		static Count<StorageBuffer>Create(DescriptorSets set, uint32_t binding, const void* data, uint32_t size, uint32_t offset =0, uint32_t frameIndex= Renderer::GetCurrentFrame().FrameinFlight);
+		static Count<StorageBuffer>Create(const void* data, uint32_t size, uint32_t offset =0, uint32_t frameIndex= Renderer::GetCurrentFrame().FrameinFlight);
+
+		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
+
 	};
-	class UniformBuffer {
+	class UniformBuffer : public RendererBufferResource {
 	public:
 		virtual ~UniformBuffer() = default;
 		/*
@@ -29,8 +33,8 @@ namespace Proof
 		* @param size = the size of the uniform buffer in bytes
 		* @param biningPoint = the binding point of the uniform buffer
 		*/
-		static Count<UniformBuffer>Create(uint32_t size, DescriptorSets set, uint32_t binding);
-		static Count<UniformBuffer>Create(const void* data,uint32_t size, DescriptorSets set,uint32_t binding) ;
+		static Count<UniformBuffer>Create(uint32_t binding);
+		static Count<UniformBuffer>Create(const void* data,uint32_t size) ;
 
 		/**
 		* changes the data of a set data in the uniform buffer
@@ -39,10 +43,6 @@ namespace Proof
 		* @param the offset in the uniform buffer from the stating point in bytes if it is the last element just use the current size of the uniform buffer
 		*/
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
-		template<typename T>
-		T* As() {
-			return dynamic_cast<T*>(this);
-		}
 	};
 
 
@@ -67,7 +67,7 @@ namespace Proof
 
 		virtual DescriptorSet& WriteBuffer(uint32_t binding, Count<UniformBuffer> buffer) = 0;
 		virtual DescriptorSet& WriteBuffer(uint32_t binding, Count<StorageBuffer> buffer) = 0;
-		virtual DescriptorSet& WriteImage(uint32_t binding, Count<class CubeMap> image) = 0;
+		virtual DescriptorSet& WriteImage(uint32_t binding, Count<class TextureCube> image) = 0;
 		virtual DescriptorSet& WriteImage(uint32_t binding, Count<class Texture2D> image) = 0;
 		virtual DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>>& image) = 0;
 		virtual void Bind(Count<class RenderCommandBuffer> commandBuffer, Count<class PipeLineLayout>piipeLineLayout) =0;

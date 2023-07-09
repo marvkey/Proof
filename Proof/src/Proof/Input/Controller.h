@@ -3,6 +3,7 @@
 #include "Input.h"
 #include <array>
 #include "KeyCodes.h"
+#include "Proof/Math/Vector.h"
 namespace Proof {
     enum class ControllerBrand{
         None =0,

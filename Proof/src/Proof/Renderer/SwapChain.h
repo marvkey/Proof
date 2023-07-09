@@ -17,7 +17,7 @@ namespace Proof{
 		virtual ImageFormat GetImageFormat() = 0;
 		virtual ImageFormat GetDepthFormat() = 0;
 
-		virtual ImageLayouts GetImageLayout() = 0;
+		virtual ImageLayouts2D GetImageLayout() = 0;
 		template<class T>
 		T* As() {
 			return  dynamic_cast<T*>(this);

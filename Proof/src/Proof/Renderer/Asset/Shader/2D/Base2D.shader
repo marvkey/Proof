@@ -34,6 +34,7 @@ layout(set = 0, binding = 1) uniform sampler2D u_Textures[32];
 
 void main() {
 	vec4  texColor = texture(u_Textures[int(inTextureIndex)], inTexCoord) * inColor;
+//	vec4  texColor =  inColor;
 	//(before item becomes black)
 	if (texColor.a < 0.1)
 		discard;

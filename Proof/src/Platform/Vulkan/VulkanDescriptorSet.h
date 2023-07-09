@@ -3,8 +3,10 @@
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanUtils/VulkanBufferBase.h"
 #include "Proof/Renderer/UniformBuffer.h"
+#include "Vulkan.h"
 namespace Proof
 {
+
     class VulkanDescriptorBuffer;
    
     class VulkanDescriptorSet : public DescriptorSet {
@@ -38,7 +40,7 @@ namespace Proof
         DescriptorSet& WriteBuffer(uint32_t binding,  Count<StorageBuffer> buffer);
 
         DescriptorSet& WriteImage(uint32_t binding, Count<class Texture2D> image);
-        DescriptorSet& WriteImage(uint32_t binding, Count<class CubeMap> image);
+        DescriptorSet& WriteImage(uint32_t binding, Count<class TextureCube> image);
         DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>>& image);
 
         void Overwrite(int frame = Renderer::GetCurrentFrame().FrameinFlight);
@@ -60,6 +62,13 @@ namespace Proof
         friend class VulkanDescriptorWriter;
     };
 
+    //class VulkanDescriptorSetManager 
+    //{
+    //public:
+    //    VulkanDescriptorSetManager(Count<VulkanShader> shader);
+    //private:
+    //    std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> Bindings{};
+    //};
     class VulkanDescriptorPool {
     public:
         struct Builder {
@@ -140,48 +149,8 @@ namespace Proof
         Count<VulkanDescriptorPool> m_Pool;
         friend class VulkanRenderer;
     };
-  
-    class VulkanDescriptorBuffer  {
-    public:
-        virtual VkDescriptorBufferInfo& GetDescriptorInfo(uint32_t index = Renderer::GetCurrentFrame().FrameinFlight) = 0;
-    protected:
-        VkDescriptorBufferInfo m_BufferInfo;
-    };
-	class VulkanUniformBuffer : public UniformBuffer, public VulkanDescriptorBuffer {
-	public:
-        VulkanUniformBuffer(uint32_t size, DescriptorSets set, uint32_t binding);
-        VulkanUniformBuffer(const  void* data,uint32_t size, DescriptorSets set, uint32_t binding);
-		virtual ~VulkanUniformBuffer();
-        VkBuffer GetBuffer(int index) {
-            return m_UniformBuffers[index].Buffer;
-        }
-        VkDescriptorBufferInfo& GetDescriptorInfo(uint32_t index = Renderer::GetCurrentFrame().FrameinFlight);
-        //for unifrm bufffer configuribity stuff
-        void SetData(const void* data, uint32_t size, uint32_t offset = 0) {
-            SetData(data, size, offset, Renderer::GetCurrentFrame().FrameinFlight);
-        }
-        void SetData(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex);
-	private:
-        // multiple of this cause of frames in flight
-        // we do not want to right to a uniform for the next frame
-        // while a uniform is still being read by the gpu on the current frame
-		std::vector<VulkanBuffer> m_UniformBuffers;
+	
 
-        uint32_t m_Size = 0;
-        uint32_t m_Padding;
-        DescriptorSets m_Set;
-        uint32_t m_Binding;
-	};
 
-    class VulkanStorageBuffer  : public StorageBuffer, public VulkanDescriptorBuffer {
-    public:
-        virtual ~VulkanStorageBuffer();
-        VulkanStorageBuffer(DescriptorSets set, uint32_t binding, const void* data, uint32_t size, uint32_t offset = 0, uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-        VkDescriptorBufferInfo& GetDescriptorInfo(uint32_t index = Renderer::GetCurrentFrame().FrameinFlight);
-    private:
-        DescriptorSets m_Set;
-        uint32_t m_Binding;
-        uint32_t m_Size = 0;
-        std::vector<VulkanBuffer> m_StorageBuffer;
-    };
+
 }

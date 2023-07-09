@@ -386,6 +386,9 @@ namespace Proof {
 		}
 	}
 	void OnControllerClicked(ControllerButtonClickedEvent& e) {
+		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
+			return;
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
 				// checking if key hold is an available format
@@ -397,13 +400,15 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
-					Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
 					InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyClicked);
 				}
 			}
 		}
 	}
 	void OnControllerPressed(ControllerButtonPressedEvent& e){
+		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
+			return;
 		// ACTION
 		{
 			for (const auto& [name, action] : s_Data->ActionMapping)
@@ -417,7 +422,6 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetButton())
 					{
-						Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
 						InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyPressed);
 					}
 				}
@@ -435,7 +439,6 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetButton())
 					{
-						Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
 						InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue);
 					}
 				}
@@ -443,6 +446,9 @@ namespace Proof {
 		}
 	}
 	void OnControllerReleased(ControllerButtonReleasedEvent& e){
+		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
+			return;
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
 				// checking if key hold is an available format
@@ -454,7 +460,6 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
-					Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
 
 					InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyReleased);
 				}
@@ -463,6 +468,9 @@ namespace Proof {
 	}
 
 	void OnControllerDoubleClick(ControllerButtonDoubleClickEvent& e) {
+		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
+			return;
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
 				// checking if key hold is an available format
@@ -474,14 +482,15 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
-					Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
-
 					InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyDouble);
 				}
 			}
 		}
 	}
 	void ControllerTriggerAxis(ControllerTriggerAxisEvent& e){
+		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
+			return;
 		for (const auto& [name, motion] : s_Data->MotionMapping)
 		{
 			// checking if key hold is an available format
@@ -493,7 +502,6 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetTriggerAxis())
 				{
-					Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
 
 					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetAxis());
 				}
@@ -501,6 +509,9 @@ namespace Proof {
 		}
 	}
 	void ControllerLeftJoystickAxis(ControllerLeftJoystickAxisEvent& e){
+		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
+			return;
 		for (const auto& [name, motion] : s_Data->MotionMapping)
 		{
 			// checking if key hold is an available format
@@ -526,6 +537,9 @@ namespace Proof {
 	}
 	void ControllerRightJoystickAxis(ControllerRightJoystickAxisEvent& e)
 	{
+			Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
+			return;
 		for (const auto& [name, motion] : s_Data->MotionMapping)
 		{
 			// checking if key hold is an available format
@@ -535,7 +549,6 @@ namespace Proof {
 			auto& data = motion.Inputs.at(InputDevice::ControllerAxis);
 			for (auto& inputs : data)
 			{
-				Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
 
 				if (inputs.Key == (int)ControllerAxis::RightX)
 				{
@@ -551,6 +564,7 @@ namespace Proof {
 	void InputManager::OnEvent(Event& e) {
 		if (s_Data->Runtime == false)
 			return;
+		PF_PROFILE_FUNC();
 		EventDispatcher dispatcher(e);
 		// KEYBOARD
 		{
