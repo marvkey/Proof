@@ -19,7 +19,9 @@ namespace Proof
 	class StorageBuffer : public RendererBufferResource {
 	public:
 		virtual ~StorageBuffer() = default;
-		static Count<StorageBuffer>Create(const void* data, uint32_t size, uint32_t offset =0, uint32_t frameIndex= Renderer::GetCurrentFrame().FrameinFlight);
+		//static Count<StorageBuffer>Create(const void* data, uint32_t size, uint32_t offset = 0, uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
+		static Count<StorageBuffer>Create(uint32_t size);
+		static Count<StorageBuffer>Create(const void* data, uint32_t size);
 
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
 

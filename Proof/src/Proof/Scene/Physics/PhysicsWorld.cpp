@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "PhysicsWorld.h"
 #include "PhysicsEngine.h"
+#include "Proof/Scene/World.h"
 #include "Proof/Scene/Entity.h"
 namespace Proof {
 	physx::PxFilterFlags shaderControl(

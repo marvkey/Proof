@@ -20,7 +20,6 @@
 #include "Proof/Scripting/ScriptEngine.h"
 namespace Proof
 {
-	static struct Material Empty;
 
 	Count<PhysicsMaterial> CubeColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0)

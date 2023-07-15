@@ -6,12 +6,9 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "Proof/Scene/Material.h"
-#include "Proof/Renderer/RendererAPI.h"
 #include "Proof/Renderer/FrameBuffer.h"
 #include "Proof/Renderer/CommandBuffer.h"
 #include "Proof/Renderer/UniformBuffer.h"
-#include "Proof/Scene/Component.h"
 #include "../Vertex.h"
 namespace Proof
 {
@@ -55,7 +52,7 @@ namespace Proof
 		// order teh meshes are pushed intehvector that stores all transforms
 		std::vector<uint64_t> ElementsImplaced;
 
-		MeshPipeLine(Count<RenderPass> renderPass);
+		MeshPipeLine(Count<class RenderPass> renderPass);
 		// the begin offset we should start rendering
 		uint32_t OffsetBegin = 0;
 		LightPass LightPass;
@@ -156,7 +153,7 @@ namespace Proof
 		void SubmitMesh(Count<Mesh> mesh, const glm::mat4& transform);
 		void SubmitMeshWithMaterial(Count<Mesh> mesh, Count<MaterialTable> table, const glm::mat4& transform);
 		void SubmitSubMesh(Count<Mesh> mesh, uint32_t meshIndex, const glm::mat4& transform);
-		void SubmitSubMeshWithMaterial(Count<Mesh> mesh, uint32_t index, Count<Material> material, const glm::mat4& transform);
+		void SubmitSubMeshWithMaterial(Count<Mesh> mesh, uint32_t index, Count<class Material> material, const glm::mat4& transform);
 		
 		void SubmitDirectionalLight(const DirLight& light);
 		void SubmitPointLight(class PointLightComponent& comp, class TransformComponent& transform);

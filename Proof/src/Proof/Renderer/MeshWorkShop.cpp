@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "Proof/Core/Core.h"
-
+#include "Proof/Scene/Mesh.h"
 #include "MeshWorkShop.h"
 #include<vector>
 namespace Proof {

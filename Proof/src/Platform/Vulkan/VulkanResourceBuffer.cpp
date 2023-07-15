@@ -90,6 +90,56 @@ namespace Proof{
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
 
+	
+
+	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size)
+		:m_Size(size)
+
+	{
+		PF_CORE_ASSERT(m_Size == 0, "Cannot create storageBuffer with a size of 0");
+		
+		m_StorageBuffer.resize(Renderer::GetConfig().FramesFlight);
+		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+		VkBufferCreateInfo uniformBufferInfo = {};
+		uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		uniformBufferInfo.pNext = nullptr;
+
+		uniformBufferInfo.size = m_Size;
+		uniformBufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+		VmaAllocationCreateInfo vmaallocInfo = {};
+		vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		for (int i = 0; i < m_StorageBuffer.size(); i++)
+		{
+			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_StorageBuffer[i]);
+		}
+
+	}
+
+	VulkanStorageBuffer::VulkanStorageBuffer(const void* data, uint32_t size)
+		:m_Size(size)
+
+	{
+		PF_CORE_ASSERT(m_Size == 0, "Cannot create storageBuffer with a size of 0");
+
+		m_StorageBuffer.resize(Renderer::GetConfig().FramesFlight);
+		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+		VkBufferCreateInfo uniformBufferInfo = {};
+		uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		uniformBufferInfo.pNext = nullptr;
+
+		uniformBufferInfo.size = m_Size;
+		uniformBufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+		VmaAllocationCreateInfo vmaallocInfo = {};
+		vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		for (int i = 0; i < m_StorageBuffer.size(); i++)
+		{
+			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_StorageBuffer[i]);
+		}
+		SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
+
+	}
 	VulkanStorageBuffer::~VulkanStorageBuffer()
 	{
 		auto allocator = VulkanRenderer::GetGraphicsContext()->GetVMA_Allocator();
@@ -100,46 +150,17 @@ namespace Proof{
 				vmaDestroyBuffer(allocator, buffer.Buffer, buffer.Allocation);
 			});
 		}
-	}
-
-	VulkanStorageBuffer::VulkanStorageBuffer(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex)
+	}	
+	void VulkanStorageBuffer::SetData(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex)
 	{
-		m_StorageBuffer.resize(Renderer::GetConfig().FramesFlight);
-		if (size == 0)
-		{
-			PF_ENGINE_WARN("Cannot set storage buffer with size 0");
-			return;
-		}
-		m_Size = size;
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-
-		{
-			Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-
-				m_StorageBuffer.resize(Renderer::GetConfig().FramesFlight);
-				VkBufferCreateInfo uniformBufferInfo = {};
-				uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				uniformBufferInfo.pNext = nullptr;
-
-				uniformBufferInfo.size = m_Size;
-				uniformBufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-				VmaAllocationCreateInfo vmaallocInfo = {};
-				vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-				for (int i = 0; i < m_StorageBuffer.size(); i++)
-				{
-					graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_StorageBuffer[i]);
-				}
-			});
-		}
-
 		VulkanBuffer stagingBuffer;
 
 		VkBufferCreateInfo stagingBufferInfo = {};
 		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		stagingBufferInfo.pNext = nullptr;
 
-		stagingBufferInfo.size = m_Size;
+		stagingBufferInfo.size = size;
 		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
 		//let the VMA library know that this data should be on CPU RAM
@@ -150,17 +171,17 @@ namespace Proof{
 		void* stagingData;
 		vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
 
-		memcpy(stagingData, data, m_Size);
+		memcpy(stagingData, data, size);
 
 		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
+
 		Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
 			VkBufferCopy copy;
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
-			copy.size = m_Size;
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_StorageBuffer[Renderer::GetCurrentFrame().FrameinFlight].Buffer, 1, &copy);
+			copy.size = size;
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_StorageBuffer[frameIndex].Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
-
 	}
 }

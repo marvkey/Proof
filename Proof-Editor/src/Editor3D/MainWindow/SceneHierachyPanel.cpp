@@ -12,6 +12,7 @@
 #include <vector>
 #include "../ImGUIAPI.h"
 #include "Proof/Scene/ExampleSccripts.h"
+#include "Proof/Scene/Material.h"
 #include "Proof/Scene/Script.h"
 #include "Proof/Input/KeyCodes.h"
 #include "ImGui/imgui_internal.h"

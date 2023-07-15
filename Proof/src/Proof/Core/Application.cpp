@@ -17,6 +17,7 @@
 #include "Proof/Renderer/SwapChain.h"
 
 #include "Proof/Scene/Physics/PhysicsEngine.h"
+#include "Proof/Utils/FileSystem.h"
 namespace Proof {
     Application* Application::s_Instance = nullptr;
     float Application::FPS = 60.0f;

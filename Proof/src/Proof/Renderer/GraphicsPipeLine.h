@@ -43,16 +43,16 @@ namespace Proof{
 		bool Blend = false;
 		CullMode CullMode = CullMode::None;
 		FrontFace FrontFace = FrontFace::ClockWise;
-		Count<class RenderPass> RenderPass;
 		DepthCompareOperator DepthCompareOperator = DepthCompareOperator::Less;
 		DrawType DrawMode = DrawType::TriangleList;
+		Count<class FrameBuffer> TargetBuffer;
+
 	};
 	class GraphicsPipeline {
 	public:
-		virtual void SetInput(std::string_view name, Count<class UniformBuffer> buffer) = 0;
-		virtual void SetInput(std::string_view name, Count<class Texture2D> iamge) = 0;
-		virtual void SetInput(std::string_view name, Count<class StorageBuffer> buffer) = 0;
-		virtual void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images) = 0;
+		virtual Count<class Shader> GetShader()const = 0;
+		virtual Count<class FrameBuffer> GetTargetBuffer()const= 0;
+		virtual const GraphicsPipelineConfig& GetConfig()const = 0;
 		virtual ~GraphicsPipeline() = default;
 		static Count<GraphicsPipeline> Create(const GraphicsPipelineConfig& piplineConfig);
 	};

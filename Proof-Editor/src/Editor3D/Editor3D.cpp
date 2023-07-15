@@ -11,7 +11,7 @@
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Math/Vector.h"
-
+#include "EditorResources.h"
 #include "Proof/Math/MathResource.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Scene/Script.h"
@@ -57,6 +57,8 @@
 #include "MainWindow/SceneHierachyPanel.h"
 #include "MainWindow/SceneHierachyPanel.h"
 #include "MainWindow/ContentBrowserPanel.h"
+
+#include "Proof/Renderer/RendererBase.h"
 namespace Proof
 {
 	struct EditorData
@@ -291,6 +293,7 @@ namespace Proof
 		}
 	}
 	void Editore3D::OnAttach() {
+		EditorResources::Init();
 		m_ActiveWorld = Count<World>::Create();
 		auto startworld = Application::Get()->GetProject()->GetConfig().StartWorld;
 		if (AssetManager::HasAsset(startworld)) {
@@ -323,13 +326,14 @@ namespace Proof
 
 	}
 	void Editore3D::OnDetach() {
-
+		m_AllPanels.clear();
 		if (m_EditorWorld != nullptr) { // using editor world in case active world is on play
 			SceneSerializer scerelizer(m_EditorWorld.Get());
 			auto assetInfo = AssetManager::GetAssetInfo(m_EditorWorld->GetID());
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 		}
 		AssetManager::SaveAllAssets();
+		EditorResources::Unizilize();
 	}
 
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {

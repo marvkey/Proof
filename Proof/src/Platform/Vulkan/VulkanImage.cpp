@@ -7,6 +7,7 @@
 #include "VulkanUtils/VulkanConvert.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanImage.h"
+#include "VulkanUtils/VulkanConvert.h"
 #include "VulkanImguiLayer.h"
 namespace Proof {
 	
@@ -86,7 +87,7 @@ namespace Proof {
 			usage |= VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 		VkImageAspectFlags aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (Utils::IsStencilFormat(m_Specification.Format))
+		if (Utils::ContainStencilFormat(m_Specification.Format))
 			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
 		VkFormat vulkanFormat = Utils::ProofFormatToVulkanFormat(m_Specification.Format);
@@ -356,7 +357,7 @@ namespace Proof {
 		Count<VulkanImage2D> image = m_Specification.Image.As<VulkanImage2D>();
 		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
 		VkImageAspectFlags aspectMask = Utils::IsDepthFormat(image->GetSpecification().Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (Utils::IsStencilFormat(image->GetSpecification().Format))
+		if (Utils::ContainStencilFormat(image->GetSpecification().Format))
 			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		VkFormat vulkanFormat = Utils::ProofFormatToVulkanFormat(image->GetSpecification().Format);
 

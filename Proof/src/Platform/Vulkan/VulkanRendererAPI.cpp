@@ -4,14 +4,16 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanCommandBuffer.h"
+#include "VulkanRenderMaterial.h"
+#include "VulkanComputePass.h"
 #include "VulkanRenderPass.h"
 #include "VulkanGraphicsContext.h"
 namespace Proof {
 	VulkanRendererAPI::VulkanRendererAPI() {
 	}
-	VulkanRendererAPI::~VulkanRendererAPI()
-	{
-	}
+	//VulkanRendererAPI::~VulkanRendererAPI()
+	//{
+	//}
 	void VulkanRendererAPI::DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex , uint32_t firstInstance) {
 		vkCmdDraw(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, firstVertex, firstInstance);
 	}
@@ -24,14 +26,34 @@ namespace Proof {
 		vkCmdDrawIndexed(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
 
-	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<GraphicsPipeline> pipline)
+	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear )
 	{
-		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, pipline);
+		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, explicitClear);
+	}
+
+	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial, bool explicitClear )
+	{
+		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, renderMaterial, explicitClear);
 	}
 
 	void VulkanRendererAPI::EndRenderPass(Count<class RenderPass> renderPass)
 	{
 		renderPass.As<VulkanRenderPass>()->EndRenderPass();
+	}
+
+	void VulkanRendererAPI::BeginComputePass(Count<RenderCommandBuffer> commandBuffer, Count<ComputePass> computePass)
+	{
+		computePass.As<VulkanComputePass>()->BeginComputePass(commandBuffer);
+	}
+
+	void VulkanRendererAPI::BeginComputePass(Count<RenderCommandBuffer> commandBuffer, Count<ComputePass> computePass,Count<RenderMaterial> renderMaterial)
+	{
+		computePass.As<VulkanComputePass>()->BeginComputePass(commandBuffer,renderMaterial.As<VulkanRenderMaterial>());
+	}
+
+	void VulkanRendererAPI::EndComputePass( Count<ComputePass> computePass)
+	{
+		computePass.As<VulkanComputePass>()->EndComputePass();
 	}
 
 	void VulkanRendererAPI::SubmitCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) {

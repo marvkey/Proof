@@ -34,7 +34,7 @@ namespace Proof
 		virtual ~Asset() {
 
 		}
-		AssetID GetID() {
+		AssetID GetID() {//rename to getAssetID
 			return m_ID;
 		}
 		virtual AssetType GetAssetType() const = 0;

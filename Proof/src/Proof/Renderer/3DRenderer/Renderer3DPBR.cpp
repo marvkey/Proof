@@ -18,6 +18,7 @@
 #include "../PipeLineLayout.h"
 #include "../RenderPass.h"
 #include "../GraphicsPipeLine.h"
+#include "Proof/Scene/Component.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Renderer/PushConstant.h"
 #include "Proof/Renderer/MeshWorkShop.h"
@@ -303,7 +304,7 @@ namespace Proof
 				const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
 				auto material = mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex);
 				Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
- 				descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
+ 				//descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
 				//descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);
 				//descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
 				//descriptor1->WriteImage((int)DescriptorSet1::RoughnessMap, material->RoughnessTexture != nullptr ? material->RoughnessTexture : whiteTexture);
@@ -347,32 +348,32 @@ namespace Proof
 				Count<MeshSource> meshSource = mesh->GetMeshSource();
 				for (uint32_t index : mesh->GetSubMeshes())
 				{
-					const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
-					auto material = meshMaterialInstance.MaterialTables->GetMaterial(subMesh.MaterialIndex);
-					MaterialData materialData;
-					materialData.Colour = material->Colour;
-					materialData.Metallness = material->Metallness;
-					materialData.Roughness = material->Roughness;
-					materialData.Tiling = material->Tiling;
-					materialData.Offset = material->Offset;
-					if (material->UsePBR)
-						materialData.UsePBR = 1;
-					else
-						materialData.UsePBR = 0;
-
-					Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
-					descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
+					//const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+					//auto material = meshMaterialInstance.MaterialTables->GetMaterial(subMesh.MaterialIndex);
+					//MaterialData materialData;
+					//materialData.Colour = material->Colour;
+					//materialData.Metallness = material->Metallness;
+					//materialData.Roughness = material->Roughness;
+					//materialData.Tiling = material->Tiling;
+					//materialData.Offset = material->Offset;
+					//if (material->UsePBR)
+					//	materialData.UsePBR = 1;
+					//else
+					//	materialData.UsePBR = 0;
+					//
+					//Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
+					//descriptor1->WriteImage((int)DescriptorSet1::AlbedoMap, material->AlbedoTexture != nullptr ? material->AlbedoTexture : whiteTexture);
 					//descriptor1->WriteImage((int)DescriptorSet1::MetallicMap, material->MetallicTexture != nullptr ? material->MetallicTexture : whiteTexture);
 					//descriptor1->WriteImage((int)DescriptorSet1::NormalMap, material->NormalTexture != nullptr ? material->NormalTexture : whiteTexture);
 					//descriptor1->WriteImage((int)DescriptorSet1::RoughnessMap, material->RoughnessTexture != nullptr ? material->RoughnessTexture : whiteTexture);
 
 					descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout);
-					subMesh.VertexBuffer->Bind(m_RenderStorage->CommandBuffer);
-					subMesh.IndexBuffer->Bind(m_RenderStorage->CommandBuffer);
-
-					m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
-					m_MeshMaterialPipeline->MaterialPushConstant->PushData(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout, &materialData);
-					Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
+					//subMesh.VertexBuffer->Bind(m_RenderStorage->CommandBuffer);
+					//subMesh.IndexBuffer->Bind(m_RenderStorage->CommandBuffer);
+					//
+					//m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
+					//m_MeshMaterialPipeline->MaterialPushConstant->PushData(m_RenderStorage->CommandBuffer, m_MeshMaterialPipeline->PipeLineLayout, &materialData);
+					//Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
 				}
 				currentOffset += meshInstances;
 
@@ -440,7 +441,7 @@ namespace Proof
 		graphicsPipelineConfig.Shader = Shader;
 		graphicsPipelineConfig.VertexArray = meshVertexArray;
 		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
-		graphicsPipelineConfig.RenderPass = renderPass;
+		//graphicsPipelineConfig.RenderPass = renderPass;
 
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
@@ -490,14 +491,14 @@ namespace Proof
 		meshVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
 		meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
 		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
-		GraphicsPipelineConfig graphicsPipelineConfig;
-		graphicsPipelineConfig.DebugName = "Material ";
-		graphicsPipelineConfig.Shader = Shader;
-		graphicsPipelineConfig.VertexArray = meshVertexArray;
-		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
-		graphicsPipelineConfig.RenderPass = renderPass;
-
-		//graphicsPipelineConfig.Blend = true;
-		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+		//GraphicsPipelineConfig graphicsPipelineConfig;
+		//graphicsPipelineConfig.DebugName = "Material ";
+		//graphicsPipelineConfig.Shader = Shader;
+		//graphicsPipelineConfig.VertexArray = meshVertexArray;
+		////graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		//graphicsPipelineConfig.RenderPass = renderPass;
+		//
+		////graphicsPipelineConfig.Blend = true;
+		//GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
 }

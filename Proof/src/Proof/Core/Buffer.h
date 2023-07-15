@@ -73,6 +73,17 @@ namespace Proof{
 			return (T*)m_Data;
 		}
 
+		void Fill(uint8_t value)
+		{
+			if(m_Size >0)
+				std::memset(m_Data, value, m_Size*sizeof(uint8_t));
+		}
+
+		template<typename T>
+		T& Read(uint64_t offset)
+		{
+			return *static_cast<T*>(static_cast<void*>(m_Data + offset));
+		}
 		operator bool() const
 		{
 			return (bool)m_Data;

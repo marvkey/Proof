@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "Proof/Core/Buffer.h"
 namespace Proof {
 	class Proof_API VertexBuffer {
 	public:
@@ -38,7 +39,7 @@ namespace Proof {
 		{
 			std::vector<T> data;
 			Buffer buffer = GetDataRaw();
-			T* vertices = reinterpret_cast<T*>(buffer.m_Data());
+			T* vertices = reinterpret_cast<T*>(buffer.Get());
 
 			for (size_t i = 0; i < GetVertexSize() / sizeof(T); i++)
 			{
@@ -47,14 +48,9 @@ namespace Proof {
 			return data;
 		}
 
-		Count<Buffer> GetDataScope()
-		{
-			Count<Buffer> buffer = Count<Buffer>::Create(GetDataRaw());
-			return buffer;
-		}
+		virtual Buffer GetDataRaw() = 0;
 		virtual uint32_t GetVertexSize()const = 0;
 	protected:
-		virtual Buffer GetDataRaw() = 0;
 	};
 
 	class Proof_API IndexBuffer {

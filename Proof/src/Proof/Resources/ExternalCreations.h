@@ -26,7 +26,6 @@ namespace YAML
 			return true;
 		}
 	};
-	/*
 	template<typename T>
 	struct convert<Proof::VectorTemplate2<T>> {
 		static Node encode(const Proof::VectorTemplate2<T>& rhs) {
@@ -46,7 +45,6 @@ namespace YAML
 			return true;
 		}
 	};
-	*/
 	//template<>
 	//struct convert<Proof::Vector<>> {
 	//	static Node encode(const Proof::Vector<>& rhs) {
@@ -146,6 +144,13 @@ namespace Proof
 	YAML::Emitter& operator<<(YAML::Emitter& out, const const VectorTemplate<T>& v) {
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.X << v.Y << v.Z << YAML::EndSeq;
+		return out;
+	}
+
+	template<typename T>
+	YAML::Emitter& operator<<(YAML::Emitter& out, const const VectorTemplate2<T>& v) {
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.X << v.Y << YAML::EndSeq;
 		return out;
 	}
 }

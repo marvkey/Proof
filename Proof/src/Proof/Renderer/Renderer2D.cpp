@@ -36,7 +36,7 @@ namespace Proof {
 		//	m_SpritePipeline= CreateSpecial<SpritePipeline>();
 		//m_TextPipeline = CreateSpecial<TextPipeline>();
 
-		m_SpritePipeline->GraphicsPipeline->SetInput("CameraData", m_Storage2DData->CameraBuffer);
+		m_SpritePipeline->RenderPass->SetInput("CameraData", m_Storage2DData->CameraBuffer);
 	}
 	
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commdandBuffer) {
@@ -347,7 +347,7 @@ namespace Proof {
 		m_Storage2DData->CommandBuffer = nullptr;
 
 		// reseting every textures back to white that has been changed
-		for (uint32_t i = 1; i < 32; i++)
+		for (uint32_t i = 1; i < m_Storage2DData->TextureSlotIndex; i++)
 			m_Storage2DData->Textures[i] = m_Storage2DData->Textures[0];
 		m_Storage2DData->TextureSlotIndex = 1;
 	}
@@ -367,9 +367,9 @@ namespace Proof {
 			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
 		//	m_SpritePipeline->GraphicsPipeline->SetInput("CameraData", m_Storage2DData->CameraBuffer);
 			m_Storage2DData->VertexBuffer->SetData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
-			m_SpritePipeline->GraphicsPipeline->SetInput("u_Textures", m_Storage2DData->Textures);
+			m_SpritePipeline->RenderPass->SetInput("u_Textures", m_Storage2DData->Textures);
 
-			Renderer::BeginRenderPass(m_Storage2DData->CommandBuffer, m_SpritePipeline->RenderPass, m_SpritePipeline->GraphicsPipeline);
+			Renderer::BeginRenderPass(m_Storage2DData->CommandBuffer, m_SpritePipeline->RenderPass);
 			m_Storage2DData->VertexBuffer->Bind(m_Storage2DData->CommandBuffer);
 			m_Storage2DData->IndexBuffer->Bind(m_Storage2DData->CommandBuffer);
 			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
@@ -518,16 +518,19 @@ namespace Proof {
 		//}
 		//PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
 
-		RenderPassConfig rednerPassConfig("Sprite pipline ",frameBuffer);
-		RenderPass = RenderPass::Create(rednerPassConfig);
+		
 
 
 		GraphicsPipelineConfig graphicsPipelineConfig;
-		graphicsPipelineConfig.DebugName = "Sprite";
+		graphicsPipelineConfig.DebugName = "Sprite Pipeline";
 		graphicsPipelineConfig.Shader = shader;
 		graphicsPipelineConfig.VertexArray = vertexArray;
-		graphicsPipelineConfig.RenderPass = RenderPass;
+		graphicsPipelineConfig.TargetBuffer = frameBuffer;
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+		RenderPassConfig rednerPassConfig("Sprite RenderPass", frameBuffer);
+		rednerPassConfig.Pipeline = GraphicsPipeline;
+		RenderPass = RenderPass::Create(rednerPassConfig);
 	}
 
 	SpritePipeline::SpritePipeline(Count<FrameBuffer> frameBuffer, const std::string& shaderPath)

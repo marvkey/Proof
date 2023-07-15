@@ -54,30 +54,29 @@ namespace Proof {
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(material->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << material->GetID();
 
-		out << YAML::Key << "AlbedoColour" << YAML::Value << material->Colour;
-		out << YAML::Key << "Roughness" << YAML::Value << material->Roughness;
-		out << YAML::Key << "Metallness" << YAML::Value << material->Metallness;
-		out << YAML::Key << "Tiling" << YAML::Value << material->Tiling;
-		out << YAML::Key << "Offset" << YAML::Value << material->Offset;
-		out << YAML::Key << "UsePBR" << YAML::Value << material->UsePBR;
+		out << YAML::Key << "AlbedoColour" << YAML::Value << material->GetAlbedoColor();
+		out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
+		out << YAML::Key << "Metallness" << YAML::Value << material->GetMetalness();
+		out << YAML::Key << "Tiling" << YAML::Value << material->GetTiling();
+		out << YAML::Key << "Offset" << YAML::Value << material->GetOffset();
 
-		if(material->AlbedoTexture)
-			out << YAML::Key << "AlbedoTexture" << YAML::Value << material->AlbedoTexture->GetID();
+		if(material->GetAlbedoMap() && material->GetAlbedoMap()  != Renderer::GetWhiteTexture())
+			out << YAML::Key << "AlbedoTexture" << YAML::Value << material->GetAlbedoMap()->GetID();
 		else
 			out << YAML::Key << "AlbedoTexture" << YAML::Value << 0;
 
-		if (material->NormalTexture)
-			out << YAML::Key << "NormalTexture" << YAML::Value << material->NormalTexture->GetID();
+		if (material->GetNormalMap() && material->GetNormalMap() != Renderer::GetWhiteTexture())
+			out << YAML::Key << "NormalTexture" << YAML::Value << material->GetNormalMap()->GetID();
 		else
 			out << YAML::Key << "NormalTexture" << YAML::Value << 0;
 
-		if (material->MetallicTexture)
-			out << YAML::Key << "MetallicTexture" << YAML::Value << material->MetallicTexture->GetID();
+		if (material->GetMetalnessMap() && material->GetMetalnessMap() != Renderer::GetWhiteTexture())
+			out << YAML::Key << "MetallicTexture" << YAML::Value << material->GetMetalnessMap()->GetID();
 		else
 			out << YAML::Key << "MetallicTexture" << YAML::Value << 0;
 
-		if (material->RoughnessTexture)
-			out << YAML::Key << "RoughnessTexture" << YAML::Value << material->RoughnessTexture->GetID();
+		if (material->GetRoughnessMap() && material->GetRoughnessMap() != Renderer::GetWhiteTexture())
+			out << YAML::Key << "RoughnessTexture" << YAML::Value << material->GetRoughnessMap()->GetID();
 		else
 			out << YAML::Key << "RoughnessTexture" << YAML::Value << 0;
 
@@ -92,26 +91,24 @@ namespace Proof {
 		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		if (!data["AssetType"])
 			return nullptr;
-		Count<Material> material = Count<Material>::Create();
-		material->Colour = data["AlbedoColour"].as<Vector>();
+		Count<Material> material = Count<Material>::Create(assetData.GetName());
+		material->GetAlbedoColor() = data["AlbedoColour"].as<Vector>();
 
-		material->Metallness = data["Metallness"].as<float>();
-		material->Roughness = data["Roughness"].as<float>();
+		material->GetMetalness() = data["Metallness"].as<float>();
+		material->GetRoughness() = data["Roughness"].as<float>();
 
 		if (data["Tiling"])
 		{
-			material->Tiling = data["Tiling"].as<glm::vec2>();
-			material->Offset = data["Offset"].as<glm::vec2>();
+			material->GetTiling() = data["Tiling"].as<Vector2>();
+			material->GetOffset() = data["Offset"].as<Vector2>();
 		}
-		if(data["UsePBR"])
-			material->UsePBR = data["UsePBR"].as<bool>();
 
 		if (data["AlbedoTexture"])
 		{
 			uint64_t id = data["AlbedoTexture"].as<uint64_t>();
 			if (AssetManager::HasAsset(id))
 			{
-				material->AlbedoTexture = AssetManager::GetAsset<Texture2D>(id);
+				material->SetAlbedoMap (AssetManager::GetAsset<Texture2D>(id));
 			}
 		}
 		if (data["NormalTexture"])
@@ -119,7 +116,7 @@ namespace Proof {
 			uint64_t id = data["NormalTexture"].as<uint64_t>();
 			if (AssetManager::HasAsset(id))
 			{
-				material->NormalTexture = AssetManager::GetAsset<Texture2D>(id);
+				material->SetNormalMap(AssetManager::GetAsset<Texture2D>(id));
 			}
 		}
 
@@ -128,7 +125,7 @@ namespace Proof {
 			uint64_t id = data["MetallicTexture"].as<uint64_t>();
 			if (AssetManager::HasAsset(id))
 			{
-				material->MetallicTexture = AssetManager::GetAsset<Texture2D>(id);
+				material->SetMetalnessMap(AssetManager::GetAsset<Texture2D>(id));
 			}
 		}
 
@@ -138,7 +135,7 @@ namespace Proof {
 			uint64_t id = data["RoughnessTexture"].as<uint64_t>();
 			if (AssetManager::HasAsset(id))
 			{
-				material->RoughnessTexture = AssetManager::GetAsset<Texture2D>(id);
+				material->SetRoughnessMap(AssetManager::GetAsset<Texture2D>(id));
 			}
 		}
 

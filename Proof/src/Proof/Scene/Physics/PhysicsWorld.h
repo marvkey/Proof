@@ -1,7 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "PhysicsActor.h"
-#include "Proof/Scene/World.h"
 #include "CollisonCallback.h"
 #include <PxPhysicsAPI.h>
 
@@ -13,7 +12,7 @@ namespace Proof {
 	class PhysicsWorld {
 	public:
 		// begin world and end world is already called
-		PhysicsWorld(World* world,const PhysicsWorldConfig& sceneConfig);
+		PhysicsWorld(class World* world,const PhysicsWorldConfig& sceneConfig);
 		virtual ~PhysicsWorld();
 		void OnFixedUpdate(float deltaTime);
 		World* GetWorld() {

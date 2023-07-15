@@ -105,6 +105,7 @@ namespace Proof {
 			return static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 		}
 	}
+	struct Buffer;
 	class TextureImporter
 	{
 	public:

@@ -11,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include "Mesh.h"
+#include "Material.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Math/Vector.h"
 #include "Proof/Renderer/RendererBase.h"
@@ -89,7 +90,11 @@ namespace Proof{
             m_MaterialTable->SetMaterial(materialIndex, GetMaterial(scene->mMaterials[materialIndex]));
         }
     }
+    MeshSource::MeshSource()
+    {
+        m_MaterialTable = Count<MaterialTable>::Create();
 
+    }
     MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
     {
         m_MaterialTable = Count<MaterialTable>::Create();
@@ -165,9 +170,9 @@ namespace Proof{
         aimat->Get(AI_MATKEY_METALLIC_FACTOR, metallness);
         aimat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roghness);
 
-        material->Colour = Vector(color.r, color.g, color.b);
-        material->Metallness = metallness;
-        material->Roughness = roghness;
+        //material->Colour = Vector(color.r, color.g, color.b);
+        //material->Metallness = metallness;
+        //material->Roughness = roghness;
 
         LoadMaterialTextures(material, aimat);
         return material;
@@ -217,10 +222,10 @@ namespace Proof{
             }
         };
 
-        LoadTexture(material->AlbedoTexture, aiTextureType_DIFFUSE);
-        LoadTexture(material->NormalTexture, aiTextureType_NORMALS);
-        LoadTexture(material->MetallicTexture, aiTextureType_METALNESS);
-        LoadTexture(material->RoughnessTexture, aiTextureType_DIFFUSE_ROUGHNESS);
+        //LoadTexture(material->AlbedoTexture, aiTextureType_DIFFUSE);
+        //LoadTexture(material->NormalTexture, aiTextureType_NORMALS);
+        //LoadTexture(material->MetallicTexture, aiTextureType_METALNESS);
+        //LoadTexture(material->RoughnessTexture, aiTextureType_DIFFUSE_ROUGHNESS);
     }
 
     Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& submeshes)

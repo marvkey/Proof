@@ -2,6 +2,7 @@
 #include "Proof/Core/Application.h"
 #include <filesystem>
 #include "Editor3D/Editor3D.h"
+#include "Proof/Utils/FileSystem.h"
 #include "Proof/Project/Project.h"
 namespace Proof {
     class ProofEditor : public Application {

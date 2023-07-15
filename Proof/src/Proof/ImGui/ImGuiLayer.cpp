@@ -95,13 +95,13 @@ namespace Proof
 		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Bold.ttf", 18.0f);
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Regular.ttf", 17.0f);
 		SetDarkTheme();
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		if (Renderer::GetAPI() == Renderer::API::OpenGL)
 		{
 			ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), true);
 			ImGui_ImplOpenGL3_Init("#version 450");
 		}
 
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+		if (Renderer::GetAPI() == Renderer::API::Vulkan)
 		{
 			s_ImguiRenderPass = new ImguiRenderPass();
 
@@ -140,10 +140,10 @@ namespace Proof
 	void ImGuiLayer::OnDetach() {
 		Layer::OnDetach();
 
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		if (Renderer::GetAPI() == Renderer::API::OpenGL)
 			ImGui_ImplOpenGL3_Shutdown();
 
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+		if (Renderer::GetAPI() == Renderer::API::Vulkan)
 			ImGui_ImplVulkan_Shutdown();
 		delete s_ImguiRenderPass;
 		ImGui_ImplGlfw_Shutdown();
@@ -152,12 +152,12 @@ namespace Proof
 
 	void ImGuiLayer::Begin() {
 
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		if (Renderer::GetAPI() == Renderer::API::OpenGL)
 		{
 			ImGui_ImplOpenGL3_NewFrame();
 		}
 
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+		if (Renderer::GetAPI() == Renderer::API::Vulkan)
 		{
 			ImGui_ImplVulkan_NewFrame();
 		}
@@ -203,7 +203,7 @@ namespace Proof
 		ImGui_ImplVulkanH_Frame* fd = &wd->Frames[wd->FrameIndex];
 		ImGui::Render();
 		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		if (Renderer::GetAPI() == Renderer::API::OpenGL)
 		{
 			ImGui_ImplOpenGL3_RenderDrawData(main_draw_data);
 		}
@@ -281,11 +281,11 @@ namespace Proof
 	}
 	Count<ImGuiLayer> ImGuiLayer::Create()
 	{
-		switch (RendererAPI::GetAPI())
+		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return Count<VulkanImguiLayer>::Create();
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanImguiLayer>::Create();
 		}
 	}
 }

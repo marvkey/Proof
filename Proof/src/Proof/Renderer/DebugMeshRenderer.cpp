@@ -133,7 +133,7 @@ namespace Proof{
 		graphicsPipelineConfig.Shader = Shader;
 		graphicsPipelineConfig.VertexArray = meshVertexArray;
 		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
-		graphicsPipelineConfig.RenderPass = renderPass;
+		//graphicsPipelineConfig.RenderPass = renderPass;
 		graphicsPipelineConfig.DrawMode = DrawType::LineStrip;
 		graphicsPipelineConfig.LineWidth =5;
 		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);

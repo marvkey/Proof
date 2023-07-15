@@ -1,17 +1,17 @@
 #include "Proofprch.h"
 #include "FrameBuffer.h"
-#include "RendererAPI.h"
+#include "Renderer.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "GraphicsContext.h"
 #include "SwapChain.h"
 namespace Proof {
 	Count<FrameBuffer> FrameBuffer::Create(const FrameBufferConfig& config)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return Count<VulkanFrameBuffer>::Create(config);
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanFrameBuffer>::Create(config);
 		}
 	}
 
@@ -21,7 +21,7 @@ namespace Proof {
 		auto swapChain = Application::Get()->GetWindow()->GetSwapChain();
 		FrameBufferConfig config;
 		config.DebugName = "Screen FrameBuffer";
-		config.Attachments = { swapChain->GetImageFormat(),swapChain->GetDepthFormat()};
+		config.Attachments = { swapChain->GetImageFormat(),ImageFormat::DEPTH24STENCIL8UI};
 		config.Size = { (float)Width,(float)Height };
 		screenBuffer->m_FrameBuffer = FrameBuffer::Create(config);
 		return screenBuffer;

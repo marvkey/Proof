@@ -6,9 +6,11 @@
 #include <fstream>
 #include <filesystem>
 #include "Proof/Resources/ExternalCreations.h"
+#include "Proof/Scene/Material.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Mesh.h"
 #include "Prefab.h"
+#include "Material.h"
 namespace Proof
 {
 	#define WRITE_SCRIPT_FIELD(FieldType, Type)           \

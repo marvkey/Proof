@@ -19,6 +19,8 @@
 #include "ScriptFunc.h"
 #include <fmt/format.h>
 #include "Proof/Core/Buffer.h"
+#include "Proof/Utils/FileSystem.h"
+
 namespace Proof
 {
 

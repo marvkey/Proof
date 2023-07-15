@@ -11,6 +11,16 @@
 #include "Vulkan.h"
 namespace Proof
 {
+	/*		if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+			PF_ENGINE_CRITICAL("VULKAN: {}", pCallbackData->pMessage);
+		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT )
+			PF_ENGINE_ERROR("VULKAN: {}", pCallbackData->pMessage);
+		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+			PF_ENGINE_TRACE("VULKAN: {}", pCallbackData->pMessage);
+		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+			PF_ENGINE_WARN("VULKAN: {}", pCallbackData->pMessage);
+		else
+			PF_ENGINE_TRACE("VULKAN: {}", pCallbackData->pMessage);*/
 	// local callback functions
 	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,VkDebugUtilsMessageTypeFlagsEXT messageType,const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,void* pUserData) {
 		if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
@@ -512,6 +522,11 @@ namespace Proof
 			return false;
 
 		return true;
+	}
+
+	Count<class SwapChain> VulkanGraphicsContext::GetSwapChain()
+	{
+		return Application::Get()->GetWindow()->GetSwapChain();
 	}
 
 	VkSampleCountFlagBits VulkanGraphicsContext::GetMaxSampleCount()

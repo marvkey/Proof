@@ -104,6 +104,7 @@ namespace Proof
 	{
 		std::string DebugName;
 		Count<class VulkanShader> Shader;
+		uint32_t LastSet = 3; //(set0,set1,set2,set3)  those are 3 sets
 	};
 
 
@@ -111,6 +112,7 @@ namespace Proof
 	{
 	public:
 		VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config);
+		~VulkanDescriptorManager();
 		void SetInput(std::string_view name, Count<class UniformBuffer> buffer);
 		void SetInput(std::string_view name, Count<class StorageBuffer> buffer);
 		void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images);
@@ -119,11 +121,11 @@ namespace Proof
 		void Bind();
 		//void SetInput(std::string_view name, Count<class > buffer);
 		struct DescriptorResource {
-			VkDescriptorSet Set;
-			VkDescriptorSetLayout Layout;
+			VkDescriptorSet Set  = nullptr;
+			VkDescriptorSetLayout Layout = nullptr;
 		};
 		const std::vector<std::map<uint32_t, DescriptorResource>>& GetDescriptorSets()const { return m_DescriptorSets; }
-
+		const std::map<uint32_t, std::map<uint32_t, RenderPassInput>>& GetInputs() { return m_Inputs; }
 		//bool IsBuild() { return m_Build; }
 	private:
 		VulkanDescriptorManagerConfig m_Config;
@@ -135,10 +137,11 @@ namespace Proof
 		std::vector<std::map<uint32_t, DescriptorResource>>m_DescriptorSets;
 
 		//set,binding,
-		std::unordered_map<uint32_t, std::unordered_map<uint32_t, RenderPassInput>> m_Inputs ;
+		std::map<uint32_t, std::map<uint32_t, RenderPassInput>> m_Inputs ;
 		VkDescriptorPool m_DescriptorPool;
 
 		void Init();
 		bool m_Build = false;
+		void Release();
 	};
 }

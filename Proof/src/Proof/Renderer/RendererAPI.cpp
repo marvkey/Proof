@@ -2,6 +2,8 @@
 #include "RendererAPI.h"
 #include "FrameBuffer.h"
 namespace Proof {
-	RendererAPI::API RendererAPI::ActiveAPI = RendererAPI::API::Vulkan;
+	Renderer::API RendererAPI::ActiveAPI = Renderer::API::Vulkan;
+
+	RendererAPI::~RendererAPI() {}
 
 }

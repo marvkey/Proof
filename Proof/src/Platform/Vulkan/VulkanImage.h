@@ -1,9 +1,9 @@
 #pragma once
-#include <vulkan/vulkan.h>
-#include "VulkanUtils/VulkanBufferBase.h"
 #include "Proof/Core/Core.h"
+#include "VulkanUtils/VulkanBufferBase.h"
 #include "Proof/Renderer/Image.h"
-
+#include "Proof/Core/Buffer.h"
+#include <vulkan/vulkan.h>
 namespace Proof
 {
 	

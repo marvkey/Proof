@@ -447,6 +447,7 @@ namespace Proof
         
         for (size_t i = 0; i < swapchain->GetImageCount(); i++)
         {
+
             std::vector<VkImageView> attachments;
 
             for (auto& coloredImage : m_ColorImages)

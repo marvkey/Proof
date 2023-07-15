@@ -30,7 +30,7 @@ namespace Proof
     std::string NumberPointLightstring;
     std::string NumberSpotLightstring;
 
-    static Material EmptyMaterial;
+    //static Material EmptyMaterial;
     static uint32_t Temp2 = (sizeof(glm::vec4));
     static uint32_t Temp3 = (sizeof(glm::vec4) * 2);
     static uint32_t Temp4 = (sizeof(glm::vec4) * 3);

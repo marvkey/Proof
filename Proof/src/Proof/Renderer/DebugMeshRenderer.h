@@ -1,7 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include <unordered_map>
-#include "Proof/Renderer/RendererAPI.h"
 #include "Proof/Renderer/FrameBuffer.h"
 #include "Proof/Renderer/CommandBuffer.h"
 #include "Proof/Renderer/UniformBuffer.h"

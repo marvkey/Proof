@@ -666,7 +666,7 @@ namespace Proof {
                 glfwSetErrorCallback(GLFWErrorCallback);
             }
         }
-        if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+        if (Renderer::GetAPI() == Renderer::API::Vulkan)
         {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // so we do not set an api as open gl
             glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);

@@ -1,14 +1,14 @@
 #include "Proofprch.h"
 #include "GraphicsContext.h"
-#include "RendererAPI.h"
+#include "Renderer.h"
 #include "Platform/OpenGL/OpenGLGraphicsContext.h"
 #include "Platform/Vulkan/VulkanGraphicsContext.h"
 namespace Proof {
 	Count<GraphicsContext> GraphicsContext::Create(Window* WindowHandle) {
-		switch (RendererAPI::GetAPI()) {
-			case RendererAPI::API::None: PF_CORE_ASSERT(false,"Window handle can not be null ptr") return nullptr;
-			case RendererAPI::API::OpenGL: return nullptr;// CreateCount<OpenGLGraphicsContext>(WindowHandle);
-			case RendererAPI::API::Vulkan: return Count<VulkanGraphicsContext>::Create(WindowHandle);
+		switch (Renderer::GetAPI()) {
+			case Renderer::API::None: PF_CORE_ASSERT(false,"Window handle can not be null ptr") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;// CreateCount<OpenGLGraphicsContext>(WindowHandle);
+			case Renderer::API::Vulkan: return Count<VulkanGraphicsContext>::Create(WindowHandle);
 		}
 	}
 }

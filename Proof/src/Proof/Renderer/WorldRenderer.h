@@ -8,10 +8,16 @@ namespace Proof
 	{
 		bool ViewColliders = false;
 	};
-
+	struct MeshRenderPipline
+	{
+		Count<class GraphicsPipeline> Pipline;
+		Count<class RenderPass> RenderPass;
+		Count<class VertexBuffer> TransformsBuffer;
+		std::vector<glm::mat4> Transforms;
+	};
 	class WorldRenderer {
 	public:
-		WorldRenderer()=default;
+		//WorldRenderer()=default;
 		virtual ~WorldRenderer();
 
 
@@ -45,7 +51,10 @@ namespace Proof
 		Special<class Renderer2D>  m_UIRenderer;
 		Special<class Renderer2D>  m_ParticleSystemRenderer;
 		Count<RenderCommandBuffer> m_CommandBuffer;
-		Count<class RenderPass> m_RenderPass;
+		//Count<class RenderPass> m_RenderPass;
 		Count<World>m_World=nullptr;
+
+		void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform);
+		MeshRenderPipline m_MeshPipeline;
 	};
 }

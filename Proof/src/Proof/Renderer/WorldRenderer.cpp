@@ -3,7 +3,9 @@
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Renderer/RenderPass.h"
+#include "Proof/Renderer/Buffer.h"
 #include "Proof/Scene/World.h"
+#include "RenderMaterial.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Component.h"
 #include <tuple>
@@ -13,15 +15,20 @@
 #include "Platform/Vulkan/VulkanSwapChain.h"
 #include "GraphicsPipeLine.h"
 #include "PipeLineLayout.h"
+#include "Proof/Scene/Mesh.h"
 #include "Shader.h"
 #include "Proof/Scene/Physics/PhysicsMeshCooker.h"
 #include"DebugMeshRenderer.h"
 #include"Font.h"
 #include "ParticleSystem.h"
+#include "RenderMaterial.h"
+#include "Proof/Scene/Material.h"
 #include"Vertex.h"
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
+#include "Platform/Vulkan/VulkanImage.h"
 namespace Proof
 {
-
+	
 	glm::vec3 convertRotationToVec3(float rotation) {
 		// Convert rotation from degrees to radians
 		float rotationRadians = glm::radians(rotation);
@@ -61,25 +68,58 @@ namespace Proof
 	{
 		cameraBuffer = UniformBuffer::Create(sizeof(CameraData));
 		
-
+			//if(Application::Get()->GetConfig().EnableImgui == false)
+		//	config.Attachments.Attachments[0].SetOverrideLayout(Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout()); // this line basically makes us able to render to window
 		FrameBufferConfig config;
 		config.DebugName = "Screen FrameBuffer";
-		config.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat(),Application::Get()->GetWindow()->GetSwapChain()->GetDepthFormat() };
-		//if(Application::Get()->GetConfig().EnableImgui == false)
-		//	config.Attachments.Attachments[0].SetOverrideLayout(Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout()); // this line basically makes us able to render to window
+		config.Attachments = { ImageFormat::RGBA32F,ImageFormat::DEPTH32FSTENCIL8UI };
+		config.ClearColor = { 0.1,0.1,0.1,0.9 };
+		config.ClearFrameBufferOnLoad = false;
+		config.ClearDepthOnLoad = false;
+	
 		config.Size = { (float)textureWidth,(float)textureHeight };
+		// last attachment is depth so it is not added as a base attachmetn
+		config.Attachments.Attachments[0].ClearOnLoad = false;
 		m_ScreenFrameBuffer = ScreenFrameBuffer::Create(config);
 
-		RenderPassConfig renderPassconfig;
-		renderPassconfig.DebugName = "world renderer RenderPass";
-		renderPassconfig.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat(),Application::Get()->GetWindow()->GetSwapChain()->GetDepthFormat() };
-		//if (Application::Get()->GetConfig().EnableImgui == false)
-		//	renderPassconfig.Attachments.Attachments[0].PresentKHr = true;
-		renderPassconfig.TargetBuffer = m_ScreenFrameBuffer->GetFrameBuffer();
-		m_RenderPass = RenderPass::Create(renderPassconfig);
+		
 
 		m_CommandBuffer = RenderCommandBuffer::Create();
 		m_Renderer2D = CreateSpecial< Renderer2D>(m_ScreenFrameBuffer);
+		// init mesh
+		{
+
+
+			Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
+			meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
+			meshVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
+			meshVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
+			meshVertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
+			meshVertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
+
+
+			meshVertexArray->AddData(5, DataType::Vec4, 0, 1);
+			meshVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
+			meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
+			meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
+
+			GraphicsPipelineConfig graphicsPipelineConfig;
+			graphicsPipelineConfig.DebugName = "MeshPipeline";
+			graphicsPipelineConfig.Shader = Shader::Get("ProofPBR_Static");
+			graphicsPipelineConfig.VertexArray = meshVertexArray;
+			graphicsPipelineConfig.TargetBuffer = m_ScreenFrameBuffer->GetFrameBuffer();
+			m_MeshPipeline.Pipline = GraphicsPipeline::Create(graphicsPipelineConfig);
+			m_MeshPipeline.TransformsBuffer = VertexBuffer::Create(sizeof(glm::mat4));
+			m_MeshPipeline.Transforms.resize(1);
+
+			RenderPassConfig renderPassConfig;
+			renderPassConfig.DebugName = "Mesh Render Pass";
+			renderPassConfig.Attachments = { ImageFormat::RGBA32F,ImageFormat::DEPTH32FSTENCIL8UI };
+			renderPassConfig.Pipeline = m_MeshPipeline.Pipline;
+			m_MeshPipeline.RenderPass = RenderPass::Create(renderPassConfig);
+			m_MeshPipeline.RenderPass->SetInput("CameraData", cameraBuffer);
+		}
+	
 		#if 0
 		m_Renderer3D = CreateSpecial< Renderer3DPBR>(m_RenderPass);
 		m_UIRenderer = CreateSpecial < Renderer2D>(m_RenderPass, true);
@@ -135,27 +175,7 @@ namespace Proof
 		#endif
 	}
 	void WorldRenderer::Clear() {
-		// draw black screen 
-		bool val =m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad;
-		if (val == false)
-		{
-			m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = true;
-		}
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
-	//	Renderer::Submit([&](CommandBuffer* buffer) {
-			//Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer->GetFrameBuffer());
-			m_Renderer2D->BeginContext(glm::mat4(0), glm::mat4(0), { 0,0,0 }, m_ScreenFrameBuffer, m_CommandBuffer);
-			m_Renderer2D->DrawQuad({ 0,0,0 });
-			m_Renderer2D->EndContext();
-			//Renderer::EndRenderPass(m_RenderPass);
-		//});
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);
-
-		if (val == false)
-		{
-			m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = false;
-		}
+		
 	}
 
 	void WorldRenderer::BeginContext()
@@ -175,7 +195,48 @@ namespace Proof
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
-		m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = clearPreviousFrame;
+
+		cmaeraData = { projection, view, location };
+		cameraBuffer->SetData(&cmaeraData, sizeof(CameraData));
+		// clear screen
+		Renderer::BeginCommandBuffer(m_CommandBuffer);
+
+		Renderer::BeginRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass,true);
+		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
+
+
+
+		{
+			const auto& entitiyView = m_World->m_Registry.view<MeshComponent>();
+			for (auto& entity : entitiyView)
+			{
+				Entity created{ entity,m_World.Get() };
+				MeshComponent& meshcomp = *created.GetComponent<MeshComponent>();
+				if (meshcomp.GetMesh() == nullptr)continue;
+				m_MeshPipeline.Transforms[0] = m_World->GetWorldTransform(created);
+				m_MeshPipeline.TransformsBuffer->SetData(m_MeshPipeline.Transforms.data(), m_MeshPipeline.Transforms.size() * sizeof(glm::mat4));
+				Count<Mesh> mesh = meshcomp.GetMesh();
+
+				Count<MeshSource> meshSource = mesh->GetMeshSource();
+				for (uint32_t index : mesh->GetSubMeshes())
+				{
+					const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+					auto renderMaterial = meshcomp.MaterialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
+
+					Renderer::BeginRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass, renderMaterial);
+					subMesh.VertexBuffer->Bind(m_CommandBuffer);
+					subMesh.IndexBuffer->Bind(m_CommandBuffer);
+					m_MeshPipeline.TransformsBuffer->Bind(m_CommandBuffer, 1);
+					Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexBuffer->GetCount(), 1, 0);
+					Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
+				}
+				break;
+			}
+
+		}
+		
+		#if 1
+
 		{
 			PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
 			m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
@@ -206,12 +267,20 @@ namespace Proof
 						* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
 						* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Z), { 0,0,1 })
 						* glm::scale(glm::mat4(1.0f), { ProofToglmVec(m_World->GetWorldScale(entity)) });
-					m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, mat);
+					//m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, mat);
 				}
 			});
+			m_Renderer2D->EndContext();
+
 		}
-		m_Renderer2D->EndContext();
-		#if 0
+		#endif
+
+		Renderer::EndCommandBuffer(m_CommandBuffer);
+
+		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+
+		
+		#if  0
 		m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = clearPreviousFrame;
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer->GetFrameBuffer(), viewPort, scissor);
 		cmaeraData = { projection, view, location };
@@ -457,13 +526,12 @@ namespace Proof
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
-		m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = false;
 
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
 		AddRender(projection, view, location, viewPort, scissor, renderSettings, clearOnLoad, uiTable);
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-		////
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		
+	}
+	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform)
+	{
 	}
 	void WorldRenderer::Render(EditorCamera& camera, RenderSettings renderSettings)
 	{

@@ -39,7 +39,8 @@ namespace Proof{
     class VulkanStorageBuffer : public StorageBuffer {
     public:
         virtual ~VulkanStorageBuffer();
-        VulkanStorageBuffer(const void* data, uint32_t size, uint32_t offset = 0, uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
+        VulkanStorageBuffer(uint32_t size);
+        VulkanStorageBuffer(const void* data, uint32_t size);
         const VkDescriptorBufferInfo& GetDescriptorInfoVulkan(uint32_t frmaeIndex = Renderer::GetCurrentFrame().FrameinFlight)const {
             m_BufferInfo = {
                 m_StorageBuffer[frmaeIndex].Buffer,
@@ -48,7 +49,10 @@ namespace Proof{
             };
             return m_BufferInfo;
         }
-        virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) {};
+        void SetData(const void* data, uint32_t size, uint32_t offset = 0) {
+            SetData(data, size, offset, Renderer::GetCurrentFrame().FrameinFlight);
+        }
+        virtual void SetData(const void* data, uint32_t size, uint32_t offset,uint32_t frameIndex);
         virtual ResourceDescriptorInfo GetResourceDescriptorInfo(uint32_t  frameIndex = Renderer::GetCurrentFrame().FrameinFlight)const { return (ResourceDescriptorInfo)&GetDescriptorInfoVulkan(frameIndex); }
     private:
         uint32_t m_Size = 0;

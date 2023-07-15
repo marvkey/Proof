@@ -1,9 +1,12 @@
 #pragma once
-#include "World.h"
 #include <yaml-cpp/yaml.h>
 #include <set>
+#include "World.h"
+
+#include <entt/entt.hpp>
 namespace Proof
 {
+	class World;
 	class Proof_API SceneSerializer {
 	public:
 		SceneSerializer(World* Scene);

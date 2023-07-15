@@ -12,6 +12,8 @@
 
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanUtils/VulkanConvert.h"
+
+#include <fmt/format.h>
 namespace Proof
 {
     namespace Utils
@@ -114,15 +116,17 @@ namespace Proof
         }
         VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice();
 
-        //for (auto& [set, shaderResouce] : m_DescriptorResource)
-        //{
-        //    Renderer::SubmitDatafree([shaderResouce = shaderResouce, device = device] {
-        //        if(shaderResouce.Layout)
-        //            vkDestroyDescriptorSetLayout(device, shaderResouce.Layout, nullptr);
-        //        if(shaderResouce.Pool)
-        //            vkDestroyDescriptorPool(device, shaderResouce.Pool, nullptr);
-        //    });
-        //}
+        for (auto& [set, shaderResouce] : m_DescriptorResource)
+        {
+            Renderer::SubmitDatafree([shaderResouce = shaderResouce, device = device] {
+                if(shaderResouce.Layout)
+                    vkDestroyDescriptorSetLayout(device, shaderResouce.Layout, nullptr);
+                if (shaderResouce.Set)
+                    vkFreeDescriptorSets(device, shaderResouce.Pool, 1, &shaderResouce.Set);
+                if(shaderResouce.Pool)
+                    vkDestroyDescriptorPool(device, shaderResouce.Pool, nullptr);
+            });
+        }
     }
 
     VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filePath) {
@@ -172,6 +176,7 @@ namespace Proof
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
         compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, graphicsContext->GetVulkanVersion());
+        
         const bool optimize = false;/// so we can load the shader attributes
         if (optimize)
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -332,10 +337,34 @@ namespace Proof
         PF_CORE_ASSERT(false, "cannot reload because you did not use path constructuro");
     }
 
-    const SahderInputDeclaration* VulkanShader::GetInputDelcaration(std::string name)const
+    const ShaderResourceBufferInfo* VulkanShader::GetPushConstantInput(const std::string& storageName, const std::string& name) const
     {
-        if (m_InputDeclration.contains(name))
-            return &m_InputDeclration.at(name);
+        if (m_PushConstantResourceInfo.contains(storageName))
+        {
+            if (m_PushConstantResourceInfo.at(storageName).second.contains(name))
+            {
+                return &m_PushConstantResourceInfo.at(storageName).second.at(name);
+            }
+        }
+        return nullptr;
+    }
+
+    const SahderInputDeclaration* VulkanShader::GetInputDeclaration(std::string name)const
+    {
+        if (m_InputDeclaration.contains(name))
+            return &m_InputDeclaration.at(name);
+        return nullptr;
+    }
+
+    const ShaderResourceBufferInfo* VulkanShader::GetStorageBufferInput(const std::string& storageName, const std::string& name) const
+    {
+        if (m_StorageBufferResourceInfo.contains(storageName))
+        {
+            if (m_StorageBufferResourceInfo.at(storageName).second.contains(name))
+            {
+                return &m_StorageBufferResourceInfo.at(storageName).second.at(name);
+            }
+        }
         return nullptr;
     }
 
@@ -376,7 +405,7 @@ namespace Proof
             uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
             uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
             int memberCount = bufferType.member_types.size();
-
+            
             PF_ENGINE_TRACE("  {}", resource.name);
             PF_ENGINE_TRACE("    Size = {}", bufferSize);
             PF_ENGINE_TRACE("    Set = {}", descriptorSet);
@@ -386,35 +415,57 @@ namespace Proof
             // make sure we only bidn to stages 
             uniformBuffer.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
             uniformBuffer = { resource.name,DescriptorResourceType::UniformBuffer,(int)uniformBuffer.Stage,1};
-            PF_CORE_ASSERT(!m_InputDeclration.contains(resource.name),"Dont use the same name for shader data");
-            m_InputDeclration[resource.name] = { descriptorSet,binding };
+            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name),"Dont use the same name for shader data");
+            m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
         PF_ENGINE_TRACE("Storage constant buffers:");
         for (const auto& resource : resources.storage_buffers)
         {
-            PF_ENGINE_TRACE("   {}", resource.name);
-            PF_ENGINE_TRACE("   ID = {}", resource.id);
+            const auto& bufferType = compiler.get_type(resource.base_type_id);
+            uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
+
             uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
             uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            int memberCount = bufferType.member_types.size();
+
+            PF_ENGINE_TRACE("  {}", resource.name);
+            PF_ENGINE_TRACE("    Size = {}", bufferSize);
+            PF_ENGINE_TRACE("    Set = {}", descriptorSet);
+            PF_ENGINE_TRACE("    Binding = {}", binding);
+            PF_ENGINE_TRACE("    Members = {}", memberCount);
+
             auto& storageBuffer = m_ShaderDescriptorSet[descriptorSet].StorageBuffers[binding];
             storageBuffer.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
             storageBuffer = { resource.name,DescriptorResourceType::StorageBuffer, (int)storageBuffer.Stage,1 };
-            PF_CORE_ASSERT(!m_InputDeclration.contains(resource.name), "Dont use the same name for shader data");
-            m_InputDeclration[resource.name] = { descriptorSet,binding };
+            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
+            m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
         PF_ENGINE_TRACE("push constant buffers:");
         for (const auto& resource : resources.push_constant_buffers)
         {
-            PF_ENGINE_TRACE("   {}", resource.name);
-            PF_ENGINE_TRACE("   ID = {}", resource.id);
+            const auto& bufferType = compiler.get_type(resource.base_type_id);
+            uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
+
             uint32_t offset = compiler.get_decoration(resource.id, spv::DecorationOffset);
-            uint32_t size = compiler.get_declared_struct_size(compiler.get_type(resource.base_type_id));
+            int memberCount = bufferType.member_types.size();
+
+            std::unordered_map<std::string, ShaderResourceBufferInfo> resourceInputs;
+            for (size_t i = 0; i < memberCount; ++i)
+            {
+                const auto& memberName = compiler.get_member_name(resource.base_type_id, i);
+                const auto& memberSize = compiler.get_declared_struct_member_size(bufferType, i);
+                auto memberOffset = compiler.get_member_decoration(resource.base_type_id, i, spv::DecorationOffset);
+                auto newName = fmt::format("{}.{}", resource.name, memberName);
+                resourceInputs[newName] = { (uint32_t)memberSize,(uint32_t)memberOffset };
+            }
+            m_PushConstantResourceInfo[resource.name] = { bufferSize, resourceInputs };
             uint32_t pushStage = (int)m_PushConstants[resource.name].stageFlags;
             pushStage |= (uint32_t) Utils::ProofShaderToVulkanShader(stage);
-            m_PushConstants[resource.name] = VkPushConstantRange{pushStage, offset,size };
+            m_PushConstants[resource.name] = VkPushConstantRange{pushStage, offset,bufferSize };
 
-            PF_ENGINE_TRACE("   Offset = {}", offset);
-            PF_ENGINE_TRACE("   Size = {}", size);
+            PF_ENGINE_TRACE("  {}", resource.name);
+            PF_ENGINE_TRACE("    Size = {}", bufferSize);
+            PF_ENGINE_TRACE("    Members = {}", memberCount);
         }
 
         PF_ENGINE_TRACE("Sampled images:");
@@ -446,12 +497,12 @@ namespace Proof
             }
 
             sampledImage = { resource.name,DescriptorResourceType::ImageSampler, (int)sampledImage.Stage,nImages };
-            PF_CORE_ASSERT(!m_InputDeclration.contains(resource.name), "Dont use the same name for shader data");
+            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
             
             PF_ENGINE_TRACE("   {}", resource.name);
             PF_ENGINE_TRACE("   ID = {}", resource.id);
             PF_ENGINE_TRACE("   Count = {}", nImages);
-            m_InputDeclration[resource.name] = { descriptorSet,binding };
+            m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
 
         PF_ENGINE_TRACE("Seperate Samplers:");
@@ -485,12 +536,12 @@ namespace Proof
             }
 
             seperateSampler = { resource.name,DescriptorResourceType::ImageSampler, (int)seperateSampler.Stage,nImages };
-            PF_CORE_ASSERT(!m_InputDeclration.contains(resource.name), "Dont use the same name for shader data");
+            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
 
             PF_ENGINE_TRACE("   {}", resource.name);
             PF_ENGINE_TRACE("   ID = {}", resource.id);
             PF_ENGINE_TRACE("   Count = {}", nImages);
-            m_InputDeclration[resource.name] = { descriptorSet,binding };
+            m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
 
         PF_ENGINE_TRACE("Seperate Textures:");
@@ -523,22 +574,21 @@ namespace Proof
             }
 
             seperateTextures = { resource.name,DescriptorResourceType::ImageSampler, (int)seperateTextures.Stage,nImages };
-            PF_CORE_ASSERT(!m_InputDeclration.contains(resource.name), "Dont use the same name for shader data");
+            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
 
             PF_ENGINE_TRACE("   {}", resource.name);
             PF_ENGINE_TRACE("   ID = {}", resource.id);
             PF_ENGINE_TRACE("   Count = {}", nImages);
-            m_InputDeclration[resource.name] = { descriptorSet,binding };
+            m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
         
         VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice();
         m_TypeCounts.clear();
-        for (uint32_t set = 0; set < m_ShaderDescriptorSet.size(); set++)
+        for (auto& [set, shaderDescriptorSet] : m_ShaderDescriptorSet)
         {
             auto& shaderDescriptorSet = m_ShaderDescriptorSet[set];
             if (!shaderDescriptorSet) // empty
                 continue;
-
             if (!shaderDescriptorSet.UniformBuffers.empty())
             {
                 VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
@@ -713,6 +763,20 @@ namespace Proof
             allocInfo.descriptorSetCount = 1;
            // VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &m_DescriptorResource[set].Set));
         }
+        // we need every descriptor to have a layout for shader reasons 
+        for (int set = 0; set < 4; set++)
+        {
+            if (!m_DescriptorResource.contains(set))
+            {
+                VkDescriptorSetLayoutCreateInfo descriptorLayoutInfo{};
+                descriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                descriptorLayoutInfo.pNext = nullptr;
+                descriptorLayoutInfo.bindingCount = 0;
+                descriptorLayoutInfo.pBindings = nullptr;
+                VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayoutInfo, nullptr, &m_DescriptorResource[set].Layout));
+
+            }
+        }
     }
 
     void VulkanShader::CreateShader() {
@@ -767,8 +831,9 @@ namespace Proof
                     break;
                 }
             }
+            
             m_ShaderModule.insert({ shaderStage,{shaderModule} });
-            m_ShaderStages.emplace_back(shaderStageInfo);
+            m_ShaderStages[shaderStage] = shaderStageInfo;
         }
     }
 }

@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "Texture.h"
-#include "RendererAPI.h"
+#include "Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
 #include "Platform/Vulkan/VulkanTexutre.h"
 #include "Platform/Vulkan/VulkanImage.h"
@@ -10,73 +10,73 @@
 namespace Proof {
 	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, const std::filesystem::path& path)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return Count<VulkanTexture2D>::Create(path,config);
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(path,config);
 		}
 		return nullptr;
 	}
 	Count<Texture2D> Texture2D::Create(const void* data,const TextureConfiguration& config)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return Count<VulkanTexture2D>::Create(config,data);
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config,data);
 		}
 		return nullptr;
 	}
 	Count<TextureCube> TextureCube::Create(const std::filesystem::path& Path, uint32_t dimension, bool generateMips) {
-		switch (RendererAPI::GetAPI()) {
-		case RendererAPI::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
-		case RendererAPI::API::OpenGL: return nullptr;
-		//case RendererAPI::API::Vulkan: return Count<VulkanTextureCube>::Create(Path,dimension,generateMips);
+		switch (Renderer::GetAPI()) {
+		case Renderer::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
+		case Renderer::API::OpenGL: return nullptr;
+		//case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(Path,dimension,generateMips);
 		}
 		return nullptr;
 
 	}
 
 	Count<TextureCube> TextureCube::Create(Count<TextureCube>map, Count<class Shader> shader, uint32_t dimension, bool generateMips) {
-		switch (RendererAPI::GetAPI())
+		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case RendererAPI::API::OpenGL: return nullptr;
-			//case RendererAPI::API::Vulkan: return Count<VulkanTextureCube>::Create(map, shader,dimension, generateMips);
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			//case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(map, shader,dimension, generateMips);
 		}
 		return nullptr;
 
 	}
 	Count<TextureCube> TextureCube::GeneratePrefiltered(Count<TextureCube>map, uint32_t dimenison , uint32_t numSamples)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case RendererAPI::API::OpenGL: return nullptr;
-			//case RendererAPI::API::Vulkan: return VulkanTextureCube::GeneratePreFilterMap(map, dimenison,numSamples);
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			//case Renderer::API::Vulkan: return VulkanTextureCube::GeneratePreFilterMap(map, dimenison,numSamples);
 		}
 		return nullptr;
 	}
 
 	Count<Image2D> Image2D::Create(const ImageConfiguration& specification)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return Count<VulkanImage2D>::Create(specification);
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanImage2D>::Create(specification);
 		}
 		return nullptr;
 	}
 
 	Count<ImageView> ImageView::Create(const ImageViewConfiguration& specification)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan: return Count<VulkanImageView>::Create(specification);
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanImageView>::Create(specification);
 		}
 		return nullptr;
 	}

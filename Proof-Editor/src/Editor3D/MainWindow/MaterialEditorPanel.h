@@ -5,8 +5,6 @@
 #include "Proof/Scene/Camera/EditorCamera.h"
 namespace Proof
 {
-	class Material;
-	class PhysicsMaterial;
 	class Proof_API MaterialEditorPanel:public Panel {
 	public:
 		MaterialEditorPanel(Count<Material> material );

@@ -1,5 +1,7 @@
 #include "Proofprch.h"
 #include "FileSystem.h"
+#include "Proof/Core/Buffer.h"
+
 namespace Proof
 {
 	static std::unordered_map<std::string, std::string> s_EnvironmentVariables;

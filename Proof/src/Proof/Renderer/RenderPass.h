@@ -31,7 +31,6 @@ namespace Proof{
 			{
 				Attachments.Attachments.emplace_back(attach.Format);
 			}
-			TargetBuffer = buffer;
 		}
 		RenderPassConfig(const std::string& debugName, const FrameBufferConfig& conif) {
 			DebugName = debugName;
@@ -42,12 +41,19 @@ namespace Proof{
 		}
 		std::string DebugName;
 		RenderPassAttachment Attachments;
-		Count<FrameBuffer> TargetBuffer;
+		Count< class GraphicsPipeline> Pipeline;
 		bool MultiView = false;
 	};
 	class RenderPass {
 	public:
-		virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) = 0;
+		virtual void SetInput(std::string_view name, Count<class UniformBuffer> buffer) = 0;
+		virtual void SetInput(std::string_view name, Count<class Texture2D> iamge) = 0;
+		virtual void SetInput(std::string_view name, Count<class StorageBuffer> buffer) = 0;
+		virtual void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images) = 0;
+		//virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) = 0;
+		virtual Count< class GraphicsPipeline> GetPipeline() = 0;
+		virtual Count<class FrameBuffer> GetTargetFrameBuffer() = 0;
+
 		virtual ~RenderPass() =default;
 		static	Count<RenderPass> Create(const RenderPassConfig& config);
 	};

@@ -17,12 +17,12 @@ Assets:
   - Asset: 17940291637672428763
     Type: MeshSourceFile
     Path: Models\cube.fbx
-  - Asset: 1752479425523143769
-    Type: TextureSourceFile
-    Path: Images\particlePack\PNG (Black background)\circle_05.png
   - Asset: 7550597728136066028
     Type: TextureSourceFile
     Path: Images\particlePack\PNG (Black background)\spark_01.png
+  - Asset: 1752479425523143769
+    Type: TextureSourceFile
+    Path: Images\particlePack\PNG (Black background)\circle_05.png
   - Asset: 4645041025570573733
     Type: Mesh
     Path: Mesh\cube.Mesh.ProofAsset
@@ -38,12 +38,12 @@ Assets:
   - Asset: 5223393378962800653
     Type: MeshSourceFile
     Path: Models\TestTerrain.obj
-  - Asset: 36841140856676435
-    Type: Texture
-    Path: Images\particlePack\PNG (Black background)\slash_02.Texture.ProofAsset
   - Asset: 8147961363379213054
     Type: MeshSourceFile
     Path: Models\sphere.fbx
+  - Asset: 36841140856676435
+    Type: Texture
+    Path: Images\particlePack\PNG (Black background)\slash_02.Texture.ProofAsset
   - Asset: 6477593735195019013
     Type: World
     Path: Scenes\Lightest.ProofWorld
@@ -1625,6 +1625,9 @@ Assets:
   - Asset: 4814144375688022001
     Type: Texture
     Path: Images\particlePack\PNG (Transparent)\flame_04.Texture.ProofAsset
+  - Asset: 17275110330326612509
+    Type: Material
+    Path: Material\TestMaterial.Material.ProofAsset
   - Asset: 15181182516863247999
     Type: Texture
     Path: Images\particlePack\PNG (Black background)\star_05.Texture.ProofAsset

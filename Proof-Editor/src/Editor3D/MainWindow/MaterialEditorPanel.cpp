@@ -10,6 +10,7 @@
 #include "SceneHierachyPanel.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Renderer/WorldRenderer.h"
+#include "Proof/Renderer/RenderMaterial.h"
 namespace Proof
 {
 
@@ -35,8 +36,15 @@ namespace Proof
 		{
 			name = AssetManager::GetAssetInfo(m_Material).GetName();
 		}
+		Count<RenderMaterial> renderMaterial = m_Material->GetRenderMaterial();
 		ImGui::Begin(name.c_str(), &m_ShowWindow);
 		{
+			if (ImGui::ColorEdit3("Albedo", m_Material->GetAlbedoColor().GetValue_Ptr()))
+			{
+				//renderMaterial->Set("u_MaterialUniform.Color", Vector(0,0.5,0.1));
+				shouldSave = true;
+			}
+			/*
 			if (ImGui::ColorEdit3("Colour", m_Material->Colour.GetValue_Ptr()))
 			{
 				shouldSave = true;
@@ -56,8 +64,8 @@ namespace Proof
 
 			SceneHierachyPanel::DrawVector2Control("Tiling", m_Material->Tiling);
 			SceneHierachyPanel::DrawVector2Control("Offset", m_Material->Offset);
-			
-
+			*/
+			/*
 			{
 				ImGui::Text("Albedo");
 				ImGui::SameLine();
@@ -123,7 +131,7 @@ namespace Proof
 				ImGui::SameLine();
 				if (AssetManager::HasAsset(m_Material->MetallicTexture))
 				{
-					
+
 					//auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
 					//ImGui::Image((ImTextureID)m_Material->MetallicTexture->GetImage().SourceImage, { 30,30 });
 					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
@@ -183,18 +191,20 @@ namespace Proof
 				shouldSave = true;
 			}
 		}
-		ImGui::End();
-		ImGui::PopID();
-		contdown -= deltaTime;
-		if (shouldSave || contdown <=0)
-		{
+		*/
+			ImGui::End();
+			ImGui::PopID();
+			contdown -= deltaTime;
+			if (shouldSave || contdown <= 0)
+			{
 
-			contdown = 10;
-			AssetManager::SaveAsset(m_Material->GetID());
+				contdown = 10;
+				AssetManager::SaveAsset(m_Material->GetID());
+			}
 		}
 	}
 
-	PhysicsMaterialEditorPanel::PhysicsMaterialEditorPanel(Count<PhysicsMaterial> material):
+	PhysicsMaterialEditorPanel::PhysicsMaterialEditorPanel(Count<PhysicsMaterial> material) :
 		m_Material(material)
 	{
 	}
@@ -261,11 +271,11 @@ namespace Proof
 	{
 		m_ParticleSystem = particle;
 		m_World = Count<World>::Create();
-		Entity entity =  m_World->CreateEntity("particle");
+		Entity entity = m_World->CreateEntity("particle");
 		m_ParticleHandler = Count<ParticleHandler>::Create(m_ParticleSystem);
 		entity.AddComponent<ParticleSystemComponent>()->ParticleHandlerTable->SetHandler(0, m_ParticleHandler);
-		entity.GetComponent<TransformComponent>()->Location.Z-=20.0f;
-		m_WorldRenderer = Count<WorldRenderer>::Create(m_World,10,10);
+		entity.GetComponent<TransformComponent>()->Location.Z -= 20.0f;
+		m_WorldRenderer = Count<WorldRenderer>::Create(m_World, 10, 10);
 	}
 	void ParticleSystemPanel::ImGuiRender(FrameTime deltaTime)
 	{
@@ -338,7 +348,7 @@ namespace Proof
 			ExternalAPI::ImGUIAPI::CheckBox("Loop", &m_ParticleSystem->Loop);
 			ExternalAPI::ImGUIAPI::CheckBox("PlayOnAwake", &m_ParticleSystem->PlayOnAwake);
 			ImGui::DragFloat("Life", &m_ParticleSystem->LifeTime, 0.5, 0);
-			ImGui::DragScalar("MaxParticles", ImGuiDataType_U32, &m_ParticleSystem->MaxParticles,4,0);
+			ImGui::DragScalar("MaxParticles", ImGuiDataType_U32, &m_ParticleSystem->MaxParticles, 4, 0);
 			{
 				if (m_ParticleSystem->Texture != nullptr)
 				{
@@ -390,10 +400,10 @@ namespace Proof
 				m_Camera.OnUpdate(deltaTime, ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
 				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
-		
+
 			m_WorldRenderer->Render(m_Camera, RenderSettings());
-		
-			UI::Image(m_WorldRenderer->GetImage(), ImVec2{ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y}, ImVec2{0,1}, ImVec2{1,0});
+
+			UI::Image(m_WorldRenderer->GetImage(), ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			ImGui::EndChild();
 		}
 		ImGui::End();

@@ -377,7 +377,7 @@ namespace Proof
 			return false;
 		}
 
-		static bool IsStencilFormat(ImageFormat format) {
+		static bool ContainStencilFormat(ImageFormat format) {
 			switch (format)
 			{
 				case ImageFormat::STENCIL8UI:
@@ -392,7 +392,7 @@ namespace Proof
 		static bool IsColorFormat(ImageFormat format) {
 			if (IsDepthFormat(format))
 				return false;
-			if (IsStencilFormat(format))
+			if (ContainStencilFormat(format))
 				return false;
 
 			return true;

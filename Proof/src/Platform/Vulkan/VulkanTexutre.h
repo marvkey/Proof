@@ -2,6 +2,8 @@
 #include <vulkan/vulkan.h>
 #include "VulkanUtils/VulkanBufferBase.h"
 #include "Proof/Renderer/Texture.h"
+#include "Proof/Core/Buffer.h"
+
 #include "Proof/Renderer/Shader.h"
 namespace Proof
 {

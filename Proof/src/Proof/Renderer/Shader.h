@@ -30,6 +30,7 @@ namespace Proof
 
     class ShaderLibrary {
     public:
+        void LoadShader(const std::string& name, const std::filesystem::path& path);
         Count<Shader> GetShader(const std::string& name);
         bool HasShader(const std::string& name);
         void AddShader(const Count<Shader>& shader);

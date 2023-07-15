@@ -7,11 +7,11 @@ namespace Proof
   
 	Count<GraphicsPipeline> GraphicsPipeline::Create(const GraphicsPipelineConfig& piplineConfig)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (Renderer::GetAPI())
 		{
-			case RendererAPI::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
-			case RendererAPI::API::OpenGL: return nullptr;
-			case RendererAPI::API::Vulkan:return Count<VulkanGraphicsPipeline>::Create(piplineConfig);
+			case Renderer::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan:return Count<VulkanGraphicsPipeline>::Create(piplineConfig);
 
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");

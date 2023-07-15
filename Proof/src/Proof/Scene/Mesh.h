@@ -7,10 +7,11 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "Material.h"
-
 #include <algorithm>
 namespace Proof
 {
+    class Material;
+    class MaterialTable;
     struct SubMesh {
         SubMesh() {
      
@@ -29,9 +30,7 @@ namespace Proof
     };
     class MeshSource : public Asset{
     public:
-        MeshSource() {
-            m_MaterialTable = Count<MaterialTable>::Create();
-        };
+        MeshSource();
         MeshSource(const std::string& path);
         MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 

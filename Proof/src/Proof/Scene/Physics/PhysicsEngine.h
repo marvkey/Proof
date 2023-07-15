@@ -1,6 +1,7 @@
 #pragma once
-#include "../World.h"
-#include "../Component.h"
+#include "Proof/Math/Vector.h"
+#include "Proof/Math/Math.h"
+#include <glm/glm.hpp>
 
 #define PX_PHYSX_STATIC_LIB
 #include <PxPhysicsAPI.h>

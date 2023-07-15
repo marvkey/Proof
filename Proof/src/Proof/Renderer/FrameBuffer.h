@@ -29,13 +29,11 @@ namespace Proof {
 		float Samples = 1;
 		mutable Vector4 ClearColor = { 0,0,0,1.0f };
 		FrameBufferAttachments Attachments;
-		mutable float DepthClearValue = 1.0f;
+		float DepthClearValue = 1.0f;
 		uint32_t StencilClearValue = 0;
-		mutable bool ClearDepthOnLoad = true;
-
-		// bascially do we want to clear teh frame buffer when we load 
-		// set to false if not 
-		mutable bool ClearFrameBufferOnLoad = true;
+		// clear when getting drawn from a render pass
+		bool ClearDepthOnLoad = true;
+		bool ClearFrameBufferOnLoad = true;
 	};
 	class FrameBuffer {
 	public:

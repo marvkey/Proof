@@ -15,13 +15,22 @@ namespace Proof
 
         Init();
 	}
+    VulkanDescriptorManager::~VulkanDescriptorManager()
+    {
+        Release();
+    }
 	void VulkanDescriptorManager::SetInput(std::string_view name, Count<UniformBuffer> buffer)
 	{
         m_Build = false;
         auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl =  shader->GetInputDelcaration(name.data());
+        const SahderInputDeclaration* decl =  shader->GetInputDeclaration(name.data());
         if (decl)
         {
+           /// if (!m_Inputs.contains(decl->Set))
+           /// {
+           ///     PF_ENGINE_ERROR("Descriptor Manager {}, Input {} Descriptro Manager does not contain the set ", m_Config.DebugName, name, decl->Set);
+           ///     return;
+           /// }
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
 
            // VkWriteDescriptorSet& write = m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight][decl->Set][decl->Binding];
@@ -39,9 +48,14 @@ namespace Proof
         m_Build = false;
         auto shader = m_Config.Shader;
 
-        const SahderInputDeclaration* decl = shader->GetInputDelcaration(name.data());
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
         if (decl)
         {
+            //if (!m_Inputs.contains(decl->Set))
+            //{
+            //    PF_ENGINE_ERROR("Descriptor Manager {}, Input {} Descriptro Manager does not contain the set ", m_Config.DebugName, name, decl->Set);
+            //    return;
+            //}
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
 
             //VkWriteDescriptorSet& write = m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight][decl->Set][decl->Binding];
@@ -57,9 +71,14 @@ namespace Proof
     {
         m_Build = false;
         auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDelcaration(name.data());
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
         if (decl)
         {
+            //if (!m_Inputs.contains(decl->Set))
+            //{
+            //    PF_ENGINE_ERROR("Descriptor Manager {}, Input {} Descriptro Manager does not contain the set ", m_Config.DebugName, name, decl->Set);
+            //    return;
+            //}
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(images);
         }
         else
@@ -71,9 +90,14 @@ namespace Proof
     {
         m_Build = false;
         auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDelcaration(name.data());
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
         if (decl)
         {
+            //if (!m_Inputs.contains(decl->Set))
+            //{
+            //    PF_ENGINE_ERROR("Descriptor Manager {}, Input {} Descriptro Manager does not contain the set ", m_Config.DebugName, name, decl->Set);
+            //    return;
+            //}
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
             //VkWriteDescriptorSet& write = m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight][decl->Set][decl->Binding];
             //write.dstSet = m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight][decl->Set].Set;
@@ -153,6 +177,13 @@ namespace Proof
 
         for (auto& [set, setData] : descriptorSets)
         {
+            // if that set does not have data n ned to call update on it
+            // mainly for render material as they dont bind to sets they dont contain
+            // also for graphics pipline wiht a render material 
+            // as they should not have any data at set 0
+            // so we check if the input contians any data at set 0 if not no need to update
+            if (!m_Inputs.contains(set))continue;
+
             std::vector< VkWriteDescriptorSet> writes;
             writes.resize(setData.size());
             uint32_t index =0;
@@ -165,6 +196,7 @@ namespace Proof
             vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
         }
 
+        
         m_Build = true;
     }
     void VulkanDescriptorManager::Init()
@@ -235,6 +267,8 @@ namespace Proof
         #endif
         for (auto& [set, shaderDescriptorSet] : shader->GetShaderDescriptorSet())
         {
+            if (set > m_Config.LastSet)
+                continue;
             std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
             for (auto& [binding, uniformBuffer] : shaderDescriptorSet.UniformBuffers)
             {
@@ -385,6 +419,8 @@ namespace Proof
             descriptorLayoutInfo.pNext = nullptr;
             descriptorLayoutInfo.bindingCount = layoutBindings.size();
             descriptorLayoutInfo.pBindings = layoutBindings.data();
+            if (layoutBindings.empty())
+                continue;
             for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
             {
                 VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayoutInfo, nullptr, &m_DescriptorSets[frame][set].Layout));
@@ -401,5 +437,29 @@ namespace Proof
                 vkAllocateDescriptorSets(device, &allocInfo, &m_DescriptorSets[frame][set].Set);
             }
         }
+
+      
+    }
+    void VulkanDescriptorManager::Release()
+    {
+        
+        Renderer::SubmitDatafree([pool = m_DescriptorPool, descriptorSet=m_DescriptorSets ] {
+            auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+            for (int frame = 0; frame < descriptorSet.size(); frame++)
+            {
+                for (auto [binding, resource] : descriptorSet[frame])
+                {
+                    vkDestroyDescriptorSetLayout(device, resource.Layout, nullptr);
+                    VK_CHECK_RESULT(vkFreeDescriptorSets(device, pool, 1, &resource.Set));
+                }
+            }
+            vkDestroyDescriptorPool(device, pool, nullptr);
+
+        });
+        m_WriteDescriptorMap.clear();
+        m_DescriptorSets.clear();
+        m_DescriptorPool = nullptr;
+        m_Build = false;
     }
 }
+

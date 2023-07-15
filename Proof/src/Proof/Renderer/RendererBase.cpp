@@ -22,7 +22,7 @@ namespace Proof {
 
 	void RendererBase::Init(Window* window) {
 		PF_PROFILE_FUNC();
-		if (RendererAPI::ActiveAPI == RendererAPI::API::Vulkan) {
+		if (RendererAPI::ActiveAPI == Renderer::API::Vulkan) {
 			Renderer::s_RendererAPI = new VulkanRendererAPI();
 		}
 		m_GraphicsContext = GraphicsContext::Create(window);
@@ -33,6 +33,8 @@ namespace Proof {
 
 		s_BaseTextures = new  BaseTextures();
 		PF_ENGINE_TRACE("Renderer Initilized");
+
+		AllShaders->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.shader");
 	}
 
 	void RendererBase::Destroy() {

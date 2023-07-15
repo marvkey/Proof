@@ -339,4 +339,12 @@ namespace Proof
     using Vector2I = VectorTemplate2<int32_t>;
     using Vector2I64 = VectorTemplate2<uint64_t>;
     using Vector2I16 = VectorTemplate2<uint16_t>;
+
+    using VectorI8 = VectorTemplate<uint8_t>;
+    using VectorI = VectorTemplate<int32_t>;
+    using VectorI64 = VectorTemplate<uint64_t>;
+    using VectorI16 = VectorTemplate<uint16_t>;
+
+    using Vector4I = VectorTemplate4<int32_t>;
+
 }

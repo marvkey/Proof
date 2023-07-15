@@ -1,13 +1,147 @@
 #include "Proofprch.h"
 #include "Material.h"
 #include "Proof/Scene/Physics/PhysicsEngine.h"
+#include "Proof/Renderer/RenderMaterial.h"
+#include "Proof/Renderer/Renderer.h"
 namespace Proof {
+    struct ShaderMaterialData
+    {
+
+    };
    
     Material::Material(const std::string& name)
         :Name(name)
     {
+        // means it is using pbr shader
+        m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration("name", Shader::Get("ProofPBR_Static")));
+        if (m_RenderMaterial->GetConfig().Shader == Shader::Get("ProofPBR_Static"))
+            m_DefaultShader = true;   
+    }
+    void Material::SetDefault()
+    {
+        if (!m_DefaultShader)
+            return;
+        SetAlbedo(Vector(0.8f));
+        //emision
+        SetMetalness(0.0f);
+        SetRoughness(0.4f);
+
+        SetAlbedoTextureToggle(false);
+        SetNormalTextureToggle(false);
+        SetRoughnessTextureToggle(false);
+        SetMetalnessTextureToggle(false);
+
+        SetAlbedoMap(Renderer::GetWhiteTexture());
+        SetNormalMap(Renderer::GetWhiteTexture());
+        SetMetalnessMap(Renderer::GetWhiteTexture());
+        SetRoughnessMap(Renderer::GetWhiteTexture());
     }
 
+    Vector& Material::GetAlbedoColor() const
+    {
+        return m_RenderMaterial->GetVector("u_MaterialUniform.Albedo");
+    }
+    void Material::SetAlbedo(const Vector& vec)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.Albedo", vec);
+    }
+    float& Material::GetMetalness()const
+    {
+        return m_RenderMaterial->GetFloat("u_MaterialUniform.Metalness");
+    }
+    void Material::SetMetalness(float metallness)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.Metalness",metallness);
+    }
+    float& Material::GetRoughness()const
+    {
+        return m_RenderMaterial->GetFloat("u_MaterialUniform.Roughness");
+    }
+    void Material::SetRoughness(float roghness)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.Roughness", roghness);
+    }
+    bool& Material::GetAlbedoTextureToggle()
+    {
+        return m_RenderMaterial->GetBool("u_MaterialUniform.AlbedoTexToggle");
+    }
+    void Material::SetAlbedoTextureToggle(bool value)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.AlbedoTexToggle",value);
+    }
+    bool& Material::GetNormalTextureToggle()
+    {
+        return m_RenderMaterial->GetBool("u_MaterialUniform.NormalTexToggle");
+    }
+    void Material::SetNormalTextureToggle(bool value)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.NormalTexToggle",value);
+    }
+    bool& Material::GetRoughnessTextureToggle()
+    {
+        return m_RenderMaterial->GetBool("u_MaterialUniform.RoghnessTexToggle");
+    }
+    void Material::SetRoughnessTextureToggle(bool value)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.RoghnessTexToggle",value);
+    }
+    bool& Material::GetMetalnessTextureToggle()
+    {
+        return m_RenderMaterial->GetBool("u_MaterialUniform.MetallnesTexToggle");
+    }
+    void Material::SetMetalnessTextureToggle(bool value)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.MetallnesTexToggle", value);
+    }
+    Vector2& Material::GetTiling()const
+    {
+        return m_RenderMaterial->GetVector2("u_MaterialUniform.Tiling");
+    }
+    void Material::SetTiling(const Vector2& vec)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.Tiling",vec);
+    }
+    Vector2& Material::GetOffset()const
+    {
+        return m_RenderMaterial->GetVector2("u_MaterialUniform.Offset");
+    }
+    void Material::SetOffset(const Vector2& value)const
+    {
+        return m_RenderMaterial->Set("u_MaterialUniform.Offset", value);
+    }
+    void Material::SetAlbedoMap(Count<class Texture2D> texture)
+    {
+        m_RenderMaterial->Set("u_AlbedoMap", texture);
+    }
+    void Material::SetNormalMap(Count<class Texture2D> texture)
+    {
+        m_RenderMaterial->Set("u_NormalMap", texture);
+    }
+    void Material::SetMetalnessMap(Count<class Texture2D> texture)
+    {
+        m_RenderMaterial->Set("u_MetallicMap", texture);
+    }
+    void Material::SetRoughnessMap(Count<class Texture2D> texture)
+    {
+        m_RenderMaterial->Set("u_RoughnessMap", texture);
+    }
+    Count<class Texture2D> Material::GetAlbedoMap()
+    {
+        return m_RenderMaterial->TryGetTexture2D("u_AlbedoMap");
+    }
+    Count<class Texture2D> Material::GetNormalMap()
+    {
+        return m_RenderMaterial->TryGetTexture2D("u_NormalMap");
+    }
+    Count<class Texture2D> Material::GetMetalnessMap()
+    {
+        return m_RenderMaterial->TryGetTexture2D("u_MetallicMap");
+    }
+    Count<class Texture2D> Material::GetRoughnessMap()
+    {
+        return m_RenderMaterial->TryGetTexture2D("u_RoughnessMap");
+    }
+   
     PhysicsMaterial::PhysicsMaterial(float staticFriction , float dynamicFriction , float bounciness )
     {
         m_RuntimeBody = PhysicsEngine::GetPhysics()->createMaterial(staticFriction, dynamicFriction, bounciness);
