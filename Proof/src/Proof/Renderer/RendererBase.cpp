@@ -35,6 +35,7 @@ namespace Proof {
 		PF_ENGINE_TRACE("Renderer Initilized");
 
 		AllShaders->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.shader");
+		AllShaders->LoadShader("BRDFLUT", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/BRDFLut.glsl");
 	}
 
 	void RendererBase::Destroy() {

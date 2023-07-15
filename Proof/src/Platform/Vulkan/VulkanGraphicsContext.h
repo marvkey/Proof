@@ -13,12 +13,14 @@ namespace Proof
 	};
 
 	struct QueueFamilyIndices {
-		uint32_t graphicsFamily;
-		uint32_t presentFamily;
-		bool graphicsFamilyHasValue = false;
-		bool presentFamilyHasValue = false;
-		bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
+		std::optional<uint32_t> graphicsAndComputeFamily;
+		std::optional<uint32_t> presentFamily;
+
+		bool isComplete() {
+			return graphicsAndComputeFamily.has_value() && presentFamily.has_value();
+		}
 	};
+
 
 	class VulkanGraphicsContext : public GraphicsContext {
 	public:
@@ -37,8 +39,11 @@ namespace Proof
 		VkDevice GetDevice() { return m_Device; }
 		VkCommandPool GetCommandPool() { return m_CommandPool; }
 		VkSurfaceKHR GetSurface() { return m_Surface; }
+		// graphics and compute queue
 		VkQueue GetGraphicsQueue() { return m_GraphicsQueue; }
 		VkQueue GetPresentQueue() { return m_PresentQueue; }
+
+
 
 		SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(m_PhysicalDevice); }
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -179,6 +184,8 @@ namespace Proof
 		Count<class VulkanDescriptorPool> m_GlobalPool = nullptr;
 		VmaAllocator m_VMA_Allocator;
 		friend class VulkanRenderer;
+
+		
 
 		// sampler has, sampler ref count, sampler
 		std::unordered_map<uint64_t, std::pair<uint32_t,VkSampler>> m_Samplers;

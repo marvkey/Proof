@@ -47,7 +47,7 @@ namespace Proof
 		std::unordered_map<std::string, VkWriteDescriptorSet> WriteDesriptorSet;
 		operator bool() const {
 			return !(UniformBuffers.empty() && StorageBuffers.empty() && ImageSamplers.empty() && StorageImages.empty() && SeperateTextures.empty()
-				&& SeperateSamplers.empty());
+				&& SeperateSamplers.empty() && StorageImages.empty());
 		}
 	};
 }

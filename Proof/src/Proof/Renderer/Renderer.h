@@ -53,7 +53,7 @@ namespace Proof {
 		static void BeginComputePass(Count<class RenderCommandBuffer> commandBuffer,Count<class ComputePass> computPass,Count<class RenderMaterial> renderMaterial);
 		static void EndComputePass(Count<class ComputePass> computPass);
 
-
+		static Count<class Texture2D> GenerateBRDFLut();
 		static class CommandQueue& GetRenderCommandQueue();
 		static CurrentFrame GetCurrentFrame();
 		static const RendererConfig GetConfig();
@@ -61,6 +61,7 @@ namespace Proof {
 		static Renderer::API GetAPI();
 
 		static Count<class Texture2D> GetWhiteTexture();
+		static Count<class Texture2D> GetBlackTexture();
 
 		//submit to render thread
 		//template<class FuncT>

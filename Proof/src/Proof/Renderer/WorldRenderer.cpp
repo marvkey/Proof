@@ -21,7 +21,9 @@
 #include"DebugMeshRenderer.h"
 #include"Font.h"
 #include "ParticleSystem.h"
+#include "ComputePipeline.h"
 #include "RenderMaterial.h"
+#include "ComputePass.h"
 #include "Proof/Scene/Material.h"
 #include"Vertex.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
@@ -82,7 +84,7 @@ namespace Proof
 		config.Attachments.Attachments[0].ClearOnLoad = false;
 		m_ScreenFrameBuffer = ScreenFrameBuffer::Create(config);
 
-		
+		m_BRDFLUT = Renderer::GenerateBRDFLut();
 
 		m_CommandBuffer = RenderCommandBuffer::Create();
 		m_Renderer2D = CreateSpecial< Renderer2D>(m_ScreenFrameBuffer);
@@ -204,8 +206,6 @@ namespace Proof
 		Renderer::BeginRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass,true);
 		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
 
-
-
 		{
 			const auto& entitiyView = m_World->m_Registry.view<MeshComponent>();
 			for (auto& entity : entitiyView)
@@ -270,6 +270,8 @@ namespace Proof
 					//m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, mat);
 				}
 			});
+
+			m_Renderer2D->DrawQuad({ 0,1,1 }, m_BRDFLUT);
 			m_Renderer2D->EndContext();
 
 		}

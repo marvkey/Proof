@@ -54,6 +54,8 @@ namespace Proof
 		//Count<class RenderPass> m_RenderPass;
 		Count<World>m_World=nullptr;
 
+		Count<class Texture2D> m_BRDFLUT;
+
 		void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform);
 		MeshRenderPipline m_MeshPipeline;
 	};

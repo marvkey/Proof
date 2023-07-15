@@ -115,7 +115,7 @@ namespace Proof {
 		{
 			for (uint32_t i = 0; i < m_Storage2DData->TextureSlotIndex; i++)
 			{
-				if (m_Storage2DData->Textures[i]->GetID() == texture2D->GetID())
+				if (m_Storage2DData->Textures[i] == texture2D)
 				{
 					TextureIndex = (float)i;
 					break;

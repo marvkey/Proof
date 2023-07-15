@@ -331,7 +331,7 @@ namespace Proof
 		imageConfig.Width = m_Config.Width;
 		imageConfig.Height = m_Config.Height;
 		imageConfig.Mips = mipCount;
-		if (!m_ImageData)
+		if (!m_ImageData || m_Config.Storage)
 			imageConfig.Usage = ImageUsage::Storage;
 		vk_Image->Build();
 		auto& imageInfo = vk_Image->GetinfoRef();

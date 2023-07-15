@@ -286,7 +286,6 @@ namespace Proof
         shaderc::CompileOptions compilerOptions;
         
         compilerOptions.SetTargetEnvironment(shaderc_target_env_vulkan, graphicsContext->GetVulkanVersion());
-        
         const bool optimize = false;/// so we can load the shader attributes
         if (optimize)
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -394,10 +393,11 @@ namespace Proof
         PF_ENGINE_INFO("{}\n", shaderSrc);
         PF_ENGINE_TRACE("    {} uniform buffers", resources.uniform_buffers.size());
         PF_ENGINE_TRACE("    {} sampled images", resources.sampled_images.size());
+        PF_ENGINE_TRACE("    {} sotrage images", resources.storage_images.size());
         PF_ENGINE_TRACE("    {} push constant buffers  ", resources.push_constant_buffers.size());
         PF_ENGINE_TRACE("    {} storage buffers  ", resources.storage_buffers.size());
-        PF_ENGINE_TRACE("Uniform buffers : ");
 
+        PF_ENGINE_TRACE("Uniform buffers : ");
         for (const auto& resource : resources.uniform_buffers) {
             const auto& bufferType = compiler.get_type(resource.base_type_id);
             uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
@@ -496,6 +496,8 @@ namespace Proof
                 nImages += type.array[i];
             }
 
+
+            if (nImages == 0)nImages = 1;
             sampledImage = { resource.name,DescriptorResourceType::ImageSampler, (int)sampledImage.Stage,nImages };
             PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
             
@@ -504,7 +506,44 @@ namespace Proof
             PF_ENGINE_TRACE("   Count = {}", nImages);
             m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
+        PF_ENGINE_TRACE("Storage images:");
+        for (const auto& resource : resources.storage_images)
+        {
 
+            const auto& type = compiler.get_type(resource.type_id);
+            uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+            uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            auto& sampledImage = m_ShaderDescriptorSet[descriptorSet].StorageImages[binding];
+            sampledImage.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
+
+             //https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide
+            //( why  we need  this)
+            /**
+             uniform sampler2D uSampler[10]; .
+             for (const Resource &resource : res.sampled_images)
+             {
+                const SPIRType &type = comp.get_type(resource.type_id); // Notice how we're using type_id here because we need the array information and not decoration information.
+                print(type.array.size()); // 1, because it's one dimension.
+                print(type.array[0]); // 10
+                print(type.array_size_literal[0]); // true
+             }
+             */
+            uint32_t nImages = 0;
+            uint32_t arraySize = type.array.size();
+            for (int i = 0; i < arraySize; i++)
+            {
+                nImages += type.array[i];
+            }
+            if (nImages == 0)nImages = 1;
+
+            sampledImage = { resource.name,DescriptorResourceType::ImageSampler, (int)sampledImage.Stage,nImages };
+            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
+
+            PF_ENGINE_TRACE("   {}", resource.name);
+            PF_ENGINE_TRACE("   ID = {}", resource.id);
+            PF_ENGINE_TRACE("   Count = {}", nImages);
+            m_InputDeclaration[resource.name] = { descriptorSet,binding };
+        }
         PF_ENGINE_TRACE("Seperate Samplers:");
         for (const auto& resource : resources.separate_samplers)
         {
@@ -534,6 +573,8 @@ namespace Proof
             {
                 nImages += type.array[i];
             }
+
+            if (nImages == 0)nImages = 1;
 
             seperateSampler = { resource.name,DescriptorResourceType::ImageSampler, (int)seperateSampler.Stage,nImages };
             PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
@@ -572,6 +613,7 @@ namespace Proof
             {
                 nImages += type.array[i];
             }
+            if (nImages == 0)nImages = 1;
 
             seperateTextures = { resource.name,DescriptorResourceType::ImageSampler, (int)seperateTextures.Stage,nImages };
             PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
@@ -627,7 +669,7 @@ namespace Proof
             if (!shaderDescriptorSet.StorageImages.empty())
             {
                 VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
-                typeCount.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 typeCount.descriptorCount = shaderDescriptorSet.StorageImages.size();
             }
             VkDescriptorPoolCreateInfo descriptorPoolInfo{};

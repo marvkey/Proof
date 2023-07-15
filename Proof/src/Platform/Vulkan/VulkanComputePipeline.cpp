@@ -7,8 +7,9 @@
 #
 
 namespace Proof {
-	VulkanComputePipeline::VulkanComputePipeline(const ComputePipelineConfig& config)
+	VulkanComputePipeline::VulkanComputePipeline(const ComputePipelineConfig& config):m_Config(config)
 	{
+		Build();
 	}
 	VulkanComputePipeline::~VulkanComputePipeline()
 	{

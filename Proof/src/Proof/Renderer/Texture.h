@@ -93,11 +93,7 @@ namespace Proof {
 		virtual ~TextureCube() {};
 
 		virtual Count<Image2D> GetImage()const =0 ;
-
-		static Count<TextureCube> Create(Count<Texture2D> textrure, uint32_t dimension = 512, bool generateMips = false);
-		static Count<TextureCube> Create(const std::filesystem::path& Path, uint32_t dimension = 512, bool generateMips = false);
-		static Count<TextureCube> Create(Count<TextureCube>map, Count<class Shader> shader, uint32_t dimension = 64, bool generateMips = false);
-		static Count<TextureCube> GeneratePrefiltered(Count<TextureCube>map, uint32_t dimension = 128, uint32_t numSamples = 1024);
+		static Count<TextureCube> Create(const TextureConfiguration& config, const std::filesystem::path& path);
 	};
 	namespace Utils {
 		inline uint32_t GetMipLevelCount(uint32_t width, uint32_t height)

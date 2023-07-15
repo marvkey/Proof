@@ -28,36 +28,6 @@ namespace Proof {
 		}
 		return nullptr;
 	}
-	Count<TextureCube> TextureCube::Create(const std::filesystem::path& Path, uint32_t dimension, bool generateMips) {
-		switch (Renderer::GetAPI()) {
-		case Renderer::API::None: PF_CORE_ASSERT(false,"RENDERER:API None is not a default value!") return nullptr;
-		case Renderer::API::OpenGL: return nullptr;
-		//case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(Path,dimension,generateMips);
-		}
-		return nullptr;
-
-	}
-
-	Count<TextureCube> TextureCube::Create(Count<TextureCube>map, Count<class Shader> shader, uint32_t dimension, bool generateMips) {
-		switch (Renderer::GetAPI())
-		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case Renderer::API::OpenGL: return nullptr;
-			//case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(map, shader,dimension, generateMips);
-		}
-		return nullptr;
-
-	}
-	Count<TextureCube> TextureCube::GeneratePrefiltered(Count<TextureCube>map, uint32_t dimenison , uint32_t numSamples)
-	{
-		switch (Renderer::GetAPI())
-		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case Renderer::API::OpenGL: return nullptr;
-			//case Renderer::API::Vulkan: return VulkanTextureCube::GeneratePreFilterMap(map, dimenison,numSamples);
-		}
-		return nullptr;
-	}
 
 	Count<Image2D> Image2D::Create(const ImageConfiguration& specification)
 	{
@@ -159,4 +129,9 @@ namespace Proof {
 		return Buffer((uint8_t*)data,bufferSize,true);
 	}
 	
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, const std::filesystem::path& path)
+	{
+		return Count<TextureCube>();
+	}
+
 }

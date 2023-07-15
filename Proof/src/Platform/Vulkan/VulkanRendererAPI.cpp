@@ -9,6 +9,7 @@
 #include "VulkanRenderPass.h"
 #include "VulkanGraphicsContext.h"
 namespace Proof {
+	
 	VulkanRendererAPI::VulkanRendererAPI() {
 	}
 	//VulkanRendererAPI::~VulkanRendererAPI()
@@ -85,7 +86,7 @@ namespace Proof {
 		VulkanRenderer::SubmitDatafree(func);
 	}
 	void VulkanRendererAPI::Submit(std::function<void(CommandBuffer*)> func) {
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
 		VulkanCommandBuffer* commandBufferContainer = new VulkanCommandBuffer();
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

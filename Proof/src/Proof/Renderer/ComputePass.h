@@ -12,7 +12,7 @@ namespace Proof
 	class ComputePass
 	{
 	public:
-		Count<ComputePass> Create(const ComputePassConfiguration& config);
+		static Count<ComputePass> Create(const ComputePassConfiguration& config);
 		virtual void SetInput(std::string_view name, Count<class UniformBuffer> buffer) = 0;
 		virtual void SetInput(std::string_view name, Count<class Texture2D> images) = 0;
 		virtual void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images) = 0;

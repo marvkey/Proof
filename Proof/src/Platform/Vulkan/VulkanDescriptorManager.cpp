@@ -339,7 +339,29 @@ namespace Proof
                     m_WriteDescriptorMap[frame][set][binding] = writeDescritporSet;
                 }
             }
+            for (auto& [binding, storageImage] : shaderDescriptorSet.StorageImages)
+            {
+                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                layoutBinding.descriptorCount = storageImage.DescriptorCount;
+                layoutBinding.stageFlags = storageImage.Stage;
+                layoutBinding.pImmutableSamplers = nullptr;
+                layoutBinding.binding = binding;
+                //PF_CORE_ASSERT()
 
+                //VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[imageSampler.Name];
+                //writeDescritporSet = {};
+                //writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                //writeDescritporSet.descriptorType = layoutBinding.descriptorType;
+                //writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
+                //writeDescritporSet.dstBinding = layoutBinding.binding;
+
+                const VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet.at(storageImage.Name);
+                for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
+                {
+                    m_WriteDescriptorMap[frame][set][binding] = writeDescritporSet;
+                }
+            }
             for (auto& [binding, seperateTexture] : shaderDescriptorSet.SeperateTextures)
             {
                 VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
@@ -390,29 +412,6 @@ namespace Proof
                 }
             }
 
-            for (auto& [binding, storageImage] : shaderDescriptorSet.StorageImages)
-            {
-                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
-                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                layoutBinding.descriptorCount = storageImage.DescriptorCount;
-                layoutBinding.stageFlags = storageImage.Stage;
-                layoutBinding.pImmutableSamplers = nullptr;
-                layoutBinding.binding = binding;
-                //PF_CORE_ASSERT()
-
-                //VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[storageImage.Name];
-                //writeDescritporSet = {};
-                //writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                //writeDescritporSet.descriptorType = layoutBinding.descriptorType;
-                //writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
-                //writeDescritporSet.dstBinding = layoutBinding.binding;
-
-                const VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet.at(storageImage.Name);
-                for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
-                {
-                    m_WriteDescriptorMap[frame][set][binding] = writeDescritporSet;
-                }
-            }
 
             VkDescriptorSetLayoutCreateInfo descriptorLayoutInfo{};
             descriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

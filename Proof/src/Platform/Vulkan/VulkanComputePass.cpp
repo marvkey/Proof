@@ -101,7 +101,7 @@ namespace Proof
 			if (set == 0 || setInfo.Set == nullptr)continue;
 			vkCmdBindDescriptorSets(
 				m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
-				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				VK_PIPELINE_BIND_POINT_COMPUTE,
 				m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 				(int)set,
 				1,

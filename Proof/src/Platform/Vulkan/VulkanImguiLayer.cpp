@@ -20,7 +20,7 @@ namespace Proof {
 
 		// Check for WSI support
 		VkBool32 res;
-		vkGetPhysicalDeviceSurfaceSupportKHR(graphicsContext->GetGPU(), graphicsContext->FindPhysicalQueueFamilies().graphicsFamily, wd->Surface, &res);
+		vkGetPhysicalDeviceSurfaceSupportKHR(graphicsContext->GetGPU(), graphicsContext->FindPhysicalQueueFamilies().graphicsAndComputeFamily.value(), wd->Surface, &res);
 		if (res != VK_TRUE)
 		{
 			PF_CORE_ASSERT(false, "Error no WSI support on physical device 0\n");
@@ -45,7 +45,7 @@ namespace Proof {
 		ImGui_ImplVulkanH_CreateOrResizeWindow(graphicsContext->GetInstance(),
 			graphicsContext->GetGPU(),
 			graphicsContext->GetDevice(), wd,
-			graphicsContext->FindPhysicalQueueFamilies().graphicsFamily,
+			graphicsContext->FindPhysicalQueueFamilies().graphicsAndComputeFamily.value(),
 			nullptr, width, height,
 			graphicsContext->GetSwapChain()->GetImageCount());
 
@@ -124,7 +124,7 @@ namespace Proof {
 		init_info.Instance = graphicsContext->GetInstance();
 		init_info.PhysicalDevice = graphicsContext->GetGPU();
 		init_info.Device = graphicsContext->GetDevice();
-		init_info.QueueFamily = graphicsContext->FindPhysicalQueueFamilies().graphicsFamily;
+		init_info.QueueFamily = graphicsContext->FindPhysicalQueueFamilies().graphicsAndComputeFamily.value();
 		init_info.Queue = graphicsContext->GetGraphicsQueue();
 		init_info.PipelineCache = nullptr;
 		init_info.DescriptorPool = m_DescriptorPool;
@@ -329,7 +329,7 @@ namespace Proof {
 		ImGui_ImplVulkanH_CreateOrResizeWindow(graphicsContext->GetInstance(),
 			graphicsContext->GetGPU(),
 			graphicsContext->GetDevice(), wd,
-			graphicsContext->FindPhysicalQueueFamilies().graphicsFamily,
+			graphicsContext->FindPhysicalQueueFamilies().graphicsAndComputeFamily.value(),
 			nullptr, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight(),
 			graphicsContext->GetSwapChain()->GetImageCount());
 
