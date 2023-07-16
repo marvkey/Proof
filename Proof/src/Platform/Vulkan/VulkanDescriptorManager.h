@@ -32,26 +32,25 @@ namespace Proof
 	struct RenderPassInput
 	{
 		RenderPassResourceType Type = RenderPassResourceType::None;
-		std::vector<Count<RendererResource>> Input;
+		std::vector<Count<RefCounted>> Input;
 		RenderPassInput() = default;
 		RenderPassInput(Count<class UniformBuffer> resource):
-			Type(RenderPassResourceType::UniformBuffer), Input(std::vector<Count<RendererResource>>(1, resource))
+			Type(RenderPassResourceType::UniformBuffer), Input(std::vector<Count<RefCounted>>(1, resource))
 		{
 
 		}
 		RenderPassInput(Count<class StorageBuffer> resource) :
-			Type(RenderPassResourceType::StorageBuffer), Input(std::vector<Count<RendererResource>>(1, resource))
+			Type(RenderPassResourceType::StorageBuffer), Input(std::vector<Count<RefCounted>>(1, resource))
 		{
 
 		}
-		RenderPassInput(Count<class Texture2D> resource) :
-			Type(RenderPassResourceType::Texture2D), Input(std::vector<Count<RendererResource>>(1, resource))
+		RenderPassInput(Count<Texture2D> resource) :
+			Type(RenderPassResourceType::Texture2D), Input(std::vector<Count<RefCounted>>(1, resource))
 		{
-
 		}
 
-		RenderPassInput(Count<class TextureCube> resource) :
-			Type(RenderPassResourceType::TextureCube), Input(std::vector<Count<RendererResource>>(1, resource))
+		RenderPassInput(Count<TextureCube> resource) :
+			Type(RenderPassResourceType::TextureCube), Input(std::vector<Count<RefCounted>>(1, resource))
 		{
 
 		}
@@ -108,7 +107,7 @@ namespace Proof
 	};
 
 
-	class VulkanDescriptorManager
+	class VulkanDescriptorManager : public RefCounted
 	{
 	public:
 		VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config);

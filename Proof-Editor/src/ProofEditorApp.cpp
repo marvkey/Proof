@@ -1,4 +1,5 @@
 #include "Proof/Core/Proof.h"
+#include "Proof/Core/Core.h"
 #include "Proof/Core/Application.h"
 #include <filesystem>
 #include "Editor3D/Editor3D.h"

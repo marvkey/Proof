@@ -62,7 +62,7 @@ namespace Proof{
 
 	};
 
-	class UITable {
+	class UITable : public RefCounted {
 	public:
 		UITable() {
 		}

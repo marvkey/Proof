@@ -666,7 +666,7 @@ namespace Proof
     }
     void ScriptMeathod::OnCreate(Entity entity)
     {
-        const auto& sc = *entity.GetComponent<ScriptComponent>();
+        const auto& sc = entity.GetComponent<ScriptComponent>();
 
         for (auto& className : sc.ScriptsNames)
         {
@@ -731,7 +731,7 @@ namespace Proof
     }
     void ScriptMeathod::OnDestroy(Entity entity)
     {
-        const auto& sc = *entity.GetComponent<ScriptComponent>();
+        const auto& sc = entity.GetComponent<ScriptComponent>();
 
         UUID entityUUID = entity.GetEntityID();
 

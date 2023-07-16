@@ -1,9 +1,9 @@
 #include "AssetManagerPanel.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+#include "Proof/Imgui/ImguiLayer.h"
 #include "../ImGUIAPI.h"
 #include "Proof/Asset/AssetManager.h"
-#include "Proof/Core/FrameTime.h"
 #include <fmt/format.h>
 namespace Proof {
 	void AssetManagerPanel::ImGuiRender(FrameTime deltaTime){

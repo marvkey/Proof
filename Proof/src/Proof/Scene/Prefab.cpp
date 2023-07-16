@@ -16,9 +16,9 @@ namespace Proof {
 			if (!srcEntity.HasComponent<Component>())
 				return;
 
-			UUID id = srcEntity.GetComponent<IDComponent>()->GetID();
+			UUID id = srcEntity.GetComponent<IDComponent>().GetID();
 			uint64_t dstComponent = enttMap.at(id);
-			auto& srcComponent = *srcEntity.GetComponent<Component>();
+			auto& srcComponent = srcEntity.GetComponent<Component>();
 			dst.emplace_or_replace<Component>(dstComponent, srcComponent);
 			
 		}(), ...);

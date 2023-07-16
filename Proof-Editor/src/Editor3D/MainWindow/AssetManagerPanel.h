@@ -1,5 +1,4 @@
 #pragma once
-#include "Proof/Core/Core.h"
 #include "Panel.h"
 namespace Proof {
 	class AssetManagerPanel: public Panel

@@ -8,7 +8,7 @@ namespace Proof
 		Count<class Shader> Shader;
 	};
 
-	class ComputePipeline
+	class ComputePipeline : public RefCounted
 	{
 	public:
 		static Count< ComputePipeline> Create(const ComputePipelineConfig& config);

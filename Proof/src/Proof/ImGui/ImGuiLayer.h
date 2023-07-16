@@ -7,7 +7,7 @@ it needs it if that is false then we will move on untill the whole layer is loop
 */
 namespace Proof {
 
-    class Proof_API ImGuiLayer :public Layer{
+    class ImGuiLayer : public Layer{
     public:
         ImGuiLayer();
         ImGuiLayer(const std::string& name);
@@ -15,7 +15,7 @@ namespace Proof {
         virtual void Begin() = 0;
         virtual void End() = 0;
         void SetDarkTheme();
-        static Count<ImGuiLayer> Create();
+        static Count<class ImGuiLayer> Create();
         virtual ImTextureID ToImguiImage(Count<class Image2D> iamge) = 0;
         virtual ImTextureID ToImguiImage(Count<class Texture2D> texture) = 0;
 

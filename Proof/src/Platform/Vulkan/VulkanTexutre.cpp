@@ -18,10 +18,7 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/CommandBuffer.h"
 #include "Proof/Renderer/GraphicsContext.h"
-#include "Proof/Renderer/PipeLineLayout.h"
-#include "Proof/Renderer/PushConstant.h"
 #include "VulkanCommandBuffer.h"
-#include "VulkanDescriptorSet.h"
 #include "VulkanImage.h"
 #include "Vulkan.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -645,6 +642,31 @@ namespace Proof
 	void VulkanTexture2D::Release() {
 		m_Image = nullptr;
 		m_ImageData = {};
+	}
+
+	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config, const std::filesystem::path& path)
+		:m_Config(config), m_Path(path)
+	{
+		TextureConfiguration textureConfig;
+		textureConfig.DebugName = "Texture Cube Texture";
+		textureConfig.Height = config.Height;
+		textureConfig.Width = config.Width;
+		textureConfig.Format = ImageFormat::RGBA32F;
+		textureConfig.Storage = true;
+
+		m_Texture = Texture2D::Create(textureConfig, path).As<VulkanTexture2D>();
+	}
+	void VulkanTextureCube::Build()
+	{
+		
+	}
+	void VulkanTextureCube::Release()
+	{
+	
+	}
+	ResourceDescriptorInfo VulkanTextureCube::GetResourceDescriptorInfo()const
+	{
+		return m_Texture->GetResourceDescriptorInfo();
 	}
 	#if 0
 	VulkanTextureCube::VulkanTextureCube(const std::filesystem::path& path, uint32_t dimension, bool generateMips)
@@ -1299,6 +1321,7 @@ namespace Proof
 		});
 		#endif
 	}
+	
 	void VulkanTextureCube::Release()
 	{
 		#ifdef 0
@@ -1318,4 +1341,5 @@ namespace Proof
 		#endif
 	}
 	#endif
+	
 }

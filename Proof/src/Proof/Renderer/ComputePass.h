@@ -9,7 +9,7 @@ namespace Proof
 		Vector4 DebugMarker;
 	};
 	
-	class ComputePass
+	class ComputePass : public RefCounted
 	{
 	public:
 		static Count<ComputePass> Create(const ComputePassConfiguration& config);

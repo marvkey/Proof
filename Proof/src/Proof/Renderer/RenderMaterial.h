@@ -1,14 +1,15 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Shader.h"
+#include"Proof/Math/Vector.h"
+#include <glm/glm.hpp>
 namespace Proof{
 
 	struct RenderMaterialConfiguration
 	{
 		std::string DebugName;
-		Count<Shader> Shader;
+		Count<class Shader> Shader;
 	};
-	class RenderMaterial
+	class RenderMaterial : public RefCounted
 	{
 	public:virtual void Set(std::string_view name, Count<class UniformBuffer> buffer0) = 0;
 		  virtual void Set(std::string_view name, Count<class Texture2D> texture) = 0;

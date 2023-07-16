@@ -3,7 +3,7 @@
 #include "Texture.h"
 #include "Renderer.h"
 namespace Proof{
-	class SwapChain {
+	class SwapChain : public RefCounted {
 	public:
 		static Count<SwapChain> Create(ScreenSize size);
 		virtual ScreenSize GetSwapChainExtent()const = 0;
@@ -18,9 +18,9 @@ namespace Proof{
 		virtual ImageFormat GetDepthFormat() = 0;
 
 		virtual ImageLayouts2D GetImageLayout() = 0;
-		template<class T>
-		T* As() {
-			return  dynamic_cast<T*>(this);
-		}
+		//template<class T>
+		//T* As() {
+		//	return  dynamic_cast<T*>(this);
+		//}
 	};
 }

@@ -25,10 +25,7 @@
 
 #include "Proof/Renderer/CommandBuffer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"
-#include "../VulkanPipeLineLayout.h"
-#include "../VulkanPushConstant.h"
 #include "../VulkanGraphicsContext.h"
-#include "../VulkanDescriptorSet.h"
 #include "../VulkanFrameBuffer.h"
 
 

@@ -6,11 +6,11 @@
 #include "VulkanGraphicsContext.h"
 #include "Proof/Renderer/Renderer.h"
 #include <GLFW/glfw3.h>
-#include "VulkanDescriptorSet.h"
 #include "VulkanFrameBuffer.h"
 #include "VulkanSwapChain.h"
 #include "VulkanImage.h"
 #include "VulkanRenderer/VulkanRenderer.h"
+#include "Vulkan.h"
 namespace Proof {
 	static ImGui_ImplVulkanH_Window g_MainWindowData;
 	static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface, int width, int height) {

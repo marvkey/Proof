@@ -1,9 +1,7 @@
 #include "Proofprch.h"
 #include "DebugMeshRenderer.h"
 #include "Vertex.h"
-#include "PushConstant.h"
 #include "VertexArray.h"
-#include "PipeLineLayout.h"
 #include "GraphicsPipeLine.h"
 #include "Proof/Scene/Mesh.h"
 #include "Buffer.h"
@@ -61,60 +59,60 @@ namespace Proof{
 	}
 	void DebugMeshRenderer::Draw()
 	{
-		std::vector<DebugMeshPipeLine::MeshVertex> meshesVertex;
-
-		// setup
-		{
-			m_Pipeline->OffsetBegin = 0;
-			for (auto& [ID, transforms] : m_Pipeline->MeshesTransforms)
-			{
-				// dont use std::end instead back inserter because using std::end can resulst in undefinded behavior
-				std::move(transforms.begin(), transforms.end(), std::back_inserter(meshesVertex));
-				m_Pipeline->ElementsImplaced.emplace_back(ID);
-			}
-			if (meshesVertex.empty() == false)
-				m_Pipeline->MeshesVertexBuffer = VertexBuffer::Create(meshesVertex.data(), meshesVertex.size() * sizeof(DebugMeshPipeLine::MeshVertex));
-		}
-		// render
-		if (m_Pipeline->ElementsImplaced.empty())return;
-		auto descriptor0 = m_Pipeline->Descriptors[DescriptorSets::Zero];
-		m_CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
-		descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_CameraBuffer);
-		uint32_t currentOffset = m_Pipeline->OffsetBegin;
-		//Renderer::RecordRenderPass(m_RenderPass, m_Pipeline->GraphicsPipeline);
-			descriptor0->Bind(m_CommandBuffer, m_Pipeline->PipeLineLayout);
-			for (const uint64_t& ID : m_Pipeline->ElementsImplaced)
-			{
-				const uint64_t meshInstances = m_Pipeline->Meshes[ID].Count;
-				Count<Mesh> mesh = m_Pipeline->Meshes[ID].Mesh;
-
-				Vector color(0.46275f, 0.72549f, 0.00000f);
-				for (const auto& subMesh : mesh->GetMeshSource()->GetSubMeshes())
-				{
-					subMesh.VertexBuffer->Bind(m_CommandBuffer);
-					subMesh.IndexBuffer->Bind(m_CommandBuffer);
-					m_Pipeline->MeshesVertexBuffer->Bind(m_CommandBuffer, 1);
-					m_Pipeline->PushConstantColor->PushData(m_CommandBuffer, m_Pipeline->PipeLineLayout, &color);
-					Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
-				}
-
-				currentOffset += meshInstances;
-			}
+		//std::vector<DebugMeshPipeLine::MeshVertex> meshesVertex;
+		//
+		//// setup
+		//{
+		//	m_Pipeline->OffsetBegin = 0;
+		//	for (auto& [ID, transforms] : m_Pipeline->MeshesTransforms)
+		//	{
+		//		// dont use std::end instead back inserter because using std::end can resulst in undefinded behavior
+		//		std::move(transforms.begin(), transforms.end(), std::back_inserter(meshesVertex));
+		//		m_Pipeline->ElementsImplaced.emplace_back(ID);
+		//	}
+		//	if (meshesVertex.empty() == false)
+		//		m_Pipeline->MeshesVertexBuffer = VertexBuffer::Create(meshesVertex.data(), meshesVertex.size() * sizeof(DebugMeshPipeLine::MeshVertex));
+		//}
+		//// render
+		//if (m_Pipeline->ElementsImplaced.empty())return;
+		//auto descriptor0 = m_Pipeline->Descriptors[DescriptorSets::Zero];
+		//m_CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+		//descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_CameraBuffer);
+		//uint32_t currentOffset = m_Pipeline->OffsetBegin;
+		////Renderer::RecordRenderPass(m_RenderPass, m_Pipeline->GraphicsPipeline);
+		//	descriptor0->Bind(m_CommandBuffer, m_Pipeline->PipeLineLayout);
+		//	for (const uint64_t& ID : m_Pipeline->ElementsImplaced)
+		//	{
+		//		const uint64_t meshInstances = m_Pipeline->Meshes[ID].Count;
+		//		Count<Mesh> mesh = m_Pipeline->Meshes[ID].Mesh;
+		//
+		//		Vector color(0.46275f, 0.72549f, 0.00000f);
+		//		for (const auto& subMesh : mesh->GetMeshSource()->GetSubMeshes())
+		//		{
+		//			subMesh.VertexBuffer->Bind(m_CommandBuffer);
+		//			subMesh.IndexBuffer->Bind(m_CommandBuffer);
+		//			m_Pipeline->MeshesVertexBuffer->Bind(m_CommandBuffer, 1);
+		//			m_Pipeline->PushConstantColor->PushData(m_CommandBuffer, m_Pipeline->PipeLineLayout, &color);
+		//			Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
+		//		}
+		//
+		//		currentOffset += meshInstances;
+		//	}
 	}
 
 	DebugMeshPipeLine::DebugMeshPipeLine(Count<RenderPass> renderPass)
 	{
 		{
-			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-				.AddBinding((uint32_t)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.Build();
-			Descriptors.insert({ DescriptorSets::Zero,descriptor });
+			///auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
+			///	.AddBinding((uint32_t)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+			///	.Build();
+			///Descriptors.insert({ DescriptorSets::Zero,descriptor });
 
 		}
 
-		Shader = Shader::GetOrCreate("DebugMesh", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/DebugMeshShader.shader");
-		PushConstantColor = PushConstant::Create(sizeof(Vector), 0, ShaderStage::Fragment);
-		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero]}, PushConstantColor);
+		//Shader = Shader::GetOrCreate("DebugMesh", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/DebugMeshShader.shader");
+		//PushConstantColor = PushConstant::Create(sizeof(Vector), 0, ShaderStage::Fragment);
+		//PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero]}, PushConstantColor);
 
 		Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshVertex), VertexInputRate::Instance} });
 		meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
@@ -136,6 +134,6 @@ namespace Proof{
 		//graphicsPipelineConfig.RenderPass = renderPass;
 		graphicsPipelineConfig.DrawMode = DrawType::LineStrip;
 		graphicsPipelineConfig.LineWidth =5;
-		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+		//GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
 }

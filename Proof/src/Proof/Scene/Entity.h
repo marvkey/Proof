@@ -17,12 +17,15 @@ namespace Proof{
 		Entity(const Entity& other) =default;
 		Entity()=default;
 
-		template<class... Component>
-		auto GetComponent() {
-			return CurrentWorld->m_Registry.try_get<Component...>(m_ID);
+		//template<class T>
+		//T& GetComponent() {
+		//	return CurrentWorld->m_Registry.get<T>(m_ID);
+		//}
+		template<class... Components>
+		auto& GetComponent()
+		{
+			return CurrentWorld->m_Registry.get<Components...>(m_ID);
 		}
-		
-		
 		template<class... T>
 		bool HasComponent()const {
 
@@ -33,13 +36,13 @@ namespace Proof{
 			return CurrentWorld->m_Registry.all_of<T...>(m_ID);
 		}
 		template<class T,typename... Args>
-		T* AddComponent(Args&&... args) {
+		T& AddComponent(Args&&... args) {
 			if (HasComponent<T>() == true) {
 				PF_ERROR("Can not add component Entity already has {}", typeid(T).name());
-				return nullptr;
+				return GetComponent<T>();
 			}
 
-			T* Component = &CurrentWorld->m_Registry.emplace<T>(m_ID, std::forward<Args>(args)...);
+			T& Component = CurrentWorld->m_Registry.emplace<T>(m_ID, std::forward<Args>(args)...);
 			return Component;
 		}
 		template<typename T>
@@ -69,33 +72,33 @@ namespace Proof{
 			return false;
 		}
 		template<typename T, typename... Args>
-		T* AddorReplaceComponent(Args&&... args) {// need to specify for child component and ID component
-			T* Component = &CurrentWorld->m_Registry.emplace_or_replace<T>(m_ID, std::forward<Args>(args)...);
+		T& AddorReplaceComponent(Args&&... args) {// need to specify for child component and ID component
+			T& Component = CurrentWorld->m_Registry.emplace_or_replace<T>(m_ID, std::forward<Args>(args)...);
 			return Component;
 		}
 		template<typename T, typename... Args>
-		T* GetorCreateComponent(Args&&... args) {
-			T* Component = &CurrentWorld->m_Registry.get_or_emplace<T>(m_ID, std::forward<Args>(args)...);
+		T& GetorCreateComponent(Args&&... args) {
+			T& Component = CurrentWorld->m_Registry.get_or_emplace<T>(m_ID, std::forward<Args>(args)...);
 			return Component;
 		}
 		bool HasOwner() {
-			return GetComponent<ChildComponent>()->HasOwner();
+			return GetComponent<ChildComponent>().HasOwner();
 		}
 		UUID GetOwnerUUID() {
-			return GetComponent<ChildComponent>()->GetOwnerID();
+			return GetComponent<ChildComponent>().GetOwnerID();
 		}
 		Entity GetOwner() {
-			UUID id = GetComponent<ChildComponent>()->GetOwnerID();
+			UUID id = GetComponent<ChildComponent>().GetOwnerID();
 			if (id == 0) return {};
 			return Entity{ id ,CurrentWorld }; // if owner id is 0 entt still cant do anthing
 		}
 		bool RemoveChild(Entity entity) {
 			if (!entity)return false;
-			return GetComponent<ChildComponent>()->RemoveChild(*entity.GetComponent<ChildComponent>());
+			return GetComponent<ChildComponent>().RemoveChild(entity.GetComponent<ChildComponent>());
 		}
 		bool AddChild(Entity entity) {
 			if (entity == Entity{})return false;
-			return GetComponent<ChildComponent>()->AddChild(*entity.GetComponent<ChildComponent>());
+			return GetComponent<ChildComponent>().AddChild(entity.GetComponent<ChildComponent>());
 		}
 		bool SetOwner(Entity entity) {
 			if (!entity) {
@@ -103,22 +106,22 @@ namespace Proof{
 					return GetOwner().RemoveChild(*this);
 				return true;
 			}
-			return GetComponent<ChildComponent>()->SetOwner(*entity.GetComponent<ChildComponent>());
+			return GetComponent<ChildComponent>().SetOwner(entity.GetComponent<ChildComponent>());
 		}
 		bool HasChild(Entity entity) {
 			if (entity == Entity{})return false;
-			return GetComponent<ChildComponent>()->HasChild(*entity.GetComponent<ChildComponent>());
+			return GetComponent<ChildComponent>().HasChild(entity.GetComponent<ChildComponent>());
 		}
 
 		bool HasChildren() {
-			return GetComponent<ChildComponent>()->HasChildren();
+			return GetComponent<ChildComponent>().HasChildren();
 		}
 		template<typename Func>
 		void EachChild(Func func) {
-			ChildComponent* child = GetComponent<ChildComponent>();
-			if (child == nullptr) return;
-			for (uint64_t ID = 0; ID < child->m_Children.size();ID++) {
-				Entity entity{ child->m_Children[ID],CurrentWorld};
+			if (!HasComponent<ChildComponent>()) return;
+			ChildComponent& child = GetComponent<ChildComponent>();
+			for (uint64_t ID = 0; ID < child.m_Children.size();ID++) {
+				Entity entity{ child.m_Children[ID],CurrentWorld};
 				func(entity);
 			}
 		}
@@ -139,10 +142,10 @@ namespace Proof{
 		std::string GetName();
 		
 		void SetName(const std::string& Name);
-		template<class... Component>
-		auto ForceGetComponent() {
-			return CurrentWorld->m_Registry.get<Component...>(m_ID);
-		}
+		//template<class... Component>
+		//auto& GetComponent() {
+		//	return CurrentWorld->m_Registry.get<Component...>(m_ID);
+		//}
 
 		// loops through all child entitues and check camera
 		Entity GetCamera() {

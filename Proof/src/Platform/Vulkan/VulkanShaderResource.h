@@ -1,7 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "vulkan/vulkan.h"
-#include "VulkanDescriptorSet.h"
 namespace Proof
 {
 	struct vulkanSahderFlags

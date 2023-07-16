@@ -18,8 +18,8 @@ namespace Proof{
 		Count<class GraphicsPipeline> GraphicsPipeline;
 		Count<class Shader> Shader;
 		Count<class VertexBuffer> MeshesVertexBuffer;
-		Count<class PushConstant> PushConstantColor;
-		Count <class PipeLineLayout> PipeLineLayout;
+		//Count<class PushConstant> PushConstantColor;
+		//Count <class PipeLineLayout> PipeLineLayout;
 		std::unordered_map<DescriptorSets, Count<class DescriptorSet>> Descriptors;
 
 
@@ -42,7 +42,7 @@ namespace Proof{
 	class DebugMeshRenderer {
 	public:
 
-		DebugMeshRenderer(Count<RenderPass> renderPass);
+		DebugMeshRenderer(Count<class RenderPass> renderPass);
 
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
 		void SubmitMesh(Count<class Mesh> mesh, const glm::mat4& transform);

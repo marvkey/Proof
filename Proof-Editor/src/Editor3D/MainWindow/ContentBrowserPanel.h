@@ -6,7 +6,6 @@
 
 #include <fstream>
 #include <string>
-#include "Panel.h"
 #include <type_traits>
 #include <vector>
 #include <filesystem>
@@ -14,7 +13,7 @@ namespace Proof
 {
 	class Texture2D;
 	/* THIS CLASS WILL NEED TO BE HANDLED BY CURRENT PROJECT */
-	class Proof_API ContentBrowserPanel :public Panel {
+	class ContentBrowserPanel :public Panel {
 	public:
 		ContentBrowserPanel();
 		void ImGuiRender(class FrameTime deltaTime);

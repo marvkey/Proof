@@ -1,10 +1,10 @@
 #pragma once
-#include <vulkan/vulkan.h>
-#include "VulkanUtils/VulkanBufferBase.h"
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Core/Buffer.h"
-
 #include "Proof/Renderer/Shader.h"
+#include "VulkanUtils/VulkanBufferBase.h"
+
+#include <vulkan/vulkan.h>
 namespace Proof
 {
 	struct VulkanImageExcessData {
@@ -130,7 +130,20 @@ namespace Proof
 		Count<Image2D> m_Image;
 		Buffer m_ImageData;
 	};
+	class VulkanTextureCube : public TextureCube {
+	public:
+		VulkanTextureCube(const TextureConfiguration& config, const std::filesystem::path& path);
+		virtual Count<Image2D> GetImage()const { return nullptr; };
+		const VkDescriptorImageInfo& GetDescriptorInfoVulkan()const { return *(VkDescriptorImageInfo*)GetResourceDescriptorInfo(); };
+		virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const override;
+	private:
+		TextureConfiguration m_Config;
+		std::filesystem::path m_Path;
+		Count<VulkanTexture2D> m_Texture;
+		void Build();
+		void Release();
 
+	};
 	#if 0
 	class VulkanTextureCube : public TextureCube{
 	public:

@@ -32,6 +32,7 @@
 
 #include "misc/cpp/imgui_stdlib.h"
 #include "Proof/ProofCore.h"
+#include "Proof/Scene/Mesh.h"
 
 namespace Proof
 {
@@ -190,11 +191,11 @@ namespace Proof
 		return false;
 	}
 	void SceneHierachyPanel::DrawEntityNode(Entity entity) {
-		auto& tc = entity.GetComponent<TagComponent>()->Tag;
+		auto& tc = entity.GetComponent<TagComponent>().Tag;
 		ImGui::PushID(entity.GetEntityID());
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 
-		if (entity.GetComponent<ChildComponent>()->HasChildren() == false) {
+		if (entity.GetComponent<ChildComponent>().HasChildren() == false) {
 			flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
 		}
 
@@ -253,7 +254,7 @@ namespace Proof
 		}
 
 		if (opened) {
-			for (const UUID& I : entity.GetComponent<ChildComponent>()->m_Children) {
+			for (const UUID& I : entity.GetComponent<ChildComponent>().m_Children) {
 				DrawEntityNode(Entity{ I,m_CurrentWorld.Get()});
 			}
 			ImGui::TreePop();
@@ -268,7 +269,7 @@ namespace Proof
 
 		ImGui::PushID((void*)typeid(T).hash_code());
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-		T& component = *entity.GetComponent<T>();
+		T& component = entity.GetComponent<T>();
 		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 1.5,1.5 });
@@ -306,7 +307,7 @@ namespace Proof
 		ImGui::PopID();
 	}
 	void SceneHierachyPanel::DrawComponent(Entity& entity) {
-		auto& Tag = *entity.GetComponent<TagComponent>();
+		auto& Tag = entity.GetComponent<TagComponent>();
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, sizeof(buffer), Tag.Tag.c_str());

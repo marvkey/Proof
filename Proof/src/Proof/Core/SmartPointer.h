@@ -2,6 +2,299 @@
 #include <atomic>
 #include <compare>
 namespace Proof{
+
+
+	class RefCounted {
+	public:
+		RefCounted() {}; // non-atomic initializations
+
+		RefCounted(const RefCounted& other)
+		{
+		}
+		RefCounted& operator=(const RefCounted& other)
+		{
+		}
+		virtual ~RefCounted() {};
+		
+		
+		uint32_t GetStrongCount() {
+			return m_StrongRefCount;
+		}
+
+		uint32_t GetWeakCount() {
+			return m_WeakRefCount;
+		}
+	protected:
+		virtual void Delete()const {
+			delete this;
+		}
+	private:
+		void IncreaseStrongRef() {
+			m_StrongRefCount++;
+		}
+		void ReleaseStrongRef() {
+			m_StrongRefCount--;
+			if (m_StrongRefCount == 0)
+			{
+				Delete();
+			}
+		}
+
+		void IncreaseWeakRef()
+		{
+			m_WeakRefCount++;
+		}
+
+		void DecreaseWeakRef()
+		{
+			m_WeakRefCount--;
+		}
+		mutable std::atomic<uint32_t>  m_StrongRefCount = 0;
+		mutable std::atomic<uint32_t>  m_WeakRefCount = 0;
+		template <class T>
+		friend class Count;
+	};
+
+	template <class _Yty, class _Ty>
+	struct Is_Compatible : std::is_convertible<_Yty*, _Ty*>::type {
+		// N4659 [util.smartptr.shared]/5 "a pointer type Y* is said to be compatible
+		// with a pointer type T* " "when either Y* is convertible to T* ..."
+	};
+	template<class T>
+	class Count
+	{
+	public:
+		using element_type = std::remove_extent_t<T>;
+		//template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
+		constexpr Count() noexcept
+		{
+			m_Ptr = nullptr;
+			//static_assert(std::is_base_of<RefCounted, class T>::value, "Has to be a base of RefCount" );
+		}
+
+		//template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
+		constexpr Count(nullptr_t) noexcept 
+		{ 
+			m_Ptr = nullptr;
+			//static_assert(std::is_base_of<RefCounted, class T>::value, "Has to be a base of RefCount"); 
+		} 
+
+		template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
+		Count(T* data) {
+			this->m_Ptr = data;
+			AddStrongRef();
+		}
+		/*
+		//template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+		template <typename U = T, typename std::enable_if<std::is_same<U, T>::value>::type* = nullptr>
+		Count(const Count<U>& right, element_type* px) noexcept {
+			// construct shared_ptr object that aliases _Right
+			this->AliasConstructor(right, px);
+		}
+
+		template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+		Count(Count<Type>&& right, element_type* px) noexcept {
+			// construct shared_ptr object that aliases _Right
+			this->AliasMoveConstructor(std::move(right), px);
+		}
+		*/
+		Count(const Count& other) noexcept { // construct shared_ptr object that owns same resource as _Other
+			this->CopyConstructor(other);
+		}
+		template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+		Count(const Count<Type>& other) noexcept { // construct shared_ptr object that owns same resource as _Other
+			this->CopyConstructor(other);
+		}
+
+		Count(Count&& right) noexcept { // construct shared_ptr object that takes resource from _Right
+			this->MoveConstructor(std::move(right));
+		}
+
+		template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+		Count(Count<Type>&& right) noexcept { // construct shared_ptr object that takes resource from _Right
+			this->MoveConstructor(std::move(right));
+		}
+		~Count() {
+			this->DecrementStrongRef();
+		}
+		Count& operator=(const Count& other) noexcept {
+			Count(other).Swap(*this);
+			return *this;
+		}
+		template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+		Count& operator=(const Count<Type>& other)noexcept {
+			Count(other).Swap(*this);
+			return *this;
+		}
+
+		Count& operator=(Count&& _Right) noexcept { // take resource from _Right
+			Count(std::move(_Right)).Swap(*this);
+			return *this;
+		}
+		template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+		Count& operator=(Count<Type>&& other)noexcept {
+			Count(std::move(other)).Swap(*this);
+			return *this;
+		}
+
+		T* operator->() const {
+			return this->Get();
+		}
+		T* Get() const noexcept {
+			return m_Ptr;
+		}
+		template <class _Ty2 = T, std::enable_if_t<!std::disjunction_v<std::is_array<_Ty2>, std::is_void<_Ty2>>, int> = 0>
+		_Ty2& operator*() const noexcept {
+			return *this->Get();
+		}
+		explicit operator bool() const noexcept {
+			return this->Get() != nullptr;
+		}
+		template <class... Args, std::enable_if_t<std::is_constructible<T, Args...>::value, int> = 0>
+		static Count Create(Args&&... args) {
+			T* data = new T(args...);
+			Count<T> t(data);
+			return t;
+		}
+		template<class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+		inline Type* AsRaw()const
+		{
+			//usign stawtic instae of dynamic casue the template will not allow us to use a type not allwoed
+			// static cast little faster than dynamic
+			return static_cast<Type*>(m_Ptr);
+		}
+		static Count CreateFrom(const Count<T>& other) {
+			if (!other)return nullptr;
+			const T& copy = *other.m_Ptr;
+			T* data = new T(copy);
+			Count<T> t(data);
+			return t;
+		}
+
+		static Count<T> CreateFrom(Count<T>&& other) {
+			if (!other)return nullptr;
+			T* data = new T(other.m_Ptr);
+			Count<T> t(data);
+			return t;
+		}
+
+		uint32_t GetStrongCount()
+		{
+			if (m_Ptr)
+				return m_Ptr->GetStrongCount();
+			return 0;
+		}
+		uint32_t GetWeakCount()
+		{
+			if (m_Ptr)
+				return m_Ptr->GetWeakCount();
+			return 0;
+		}
+		template<class U, std::enable_if_t<Is_Compatible<U, T>::value, int> = 0>
+		inline constexpr Count<U> As()const;
+
+	private:
+		T* m_Ptr = nullptr;
+
+		template <class _Ty2>
+		void MoveConstructor(Count<_Ty2>&& right) noexcept {
+			// implement shared_ptr's (converting) move ctor and weak_ptr's move ctor
+			m_Ptr = right.m_Ptr;
+			right.m_Ptr = nullptr;
+		}
+
+		template <class _Ty2>
+		void CopyConstructor(const Count<_Ty2>& other) noexcept {
+			// implement shared_ptr's (converting) copy ctor
+			other.AddStrongRef();
+
+			m_Ptr = other.m_Ptr;
+		}
+
+		//template <class _Ty2>
+		//void AliasConstructor(const Count<_Ty2>& other, element_type* px) noexcept {
+		//	// implement shared_ptr's aliasing ctor
+		//	other.AddStrongRef();
+		//	m_Ptr = px;
+		//}
+		//
+		//template <class _Ty2>
+		//void AliasMoveConstructor(const Count<_Ty2>& other, element_type* px) noexcept {
+		//	// implement shared_ptr's aliasing move ctor
+		//	m_Ptr = px;
+		//
+		//	other.m_Ptr = nullptr;
+		//}
+		//template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
+
+		void AddStrongRef()const {
+			if (m_Ptr)
+			{
+				void* cast = m_Ptr;
+				RefCounted* refCast = static_cast<RefCounted*>(cast);
+				refCast->IncreaseStrongRef();
+				//m_Ptr->IncreaseStrongRef();
+			}
+		}
+		//template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
+
+		void DecrementStrongRef()const { // decrement reference count
+			if (m_Ptr)
+			{
+				void* cast = m_Ptr;
+				RefCounted* refCast = static_cast<RefCounted*>(cast);
+				refCast->ReleaseStrongRef();
+				//m_Ptr->ReleaseStrongRef();
+			}
+		}
+
+		void Swap(Count& _Right) noexcept { // swap pointers
+			std::swap(m_Ptr, _Right.m_Ptr);
+		}
+
+		friend class Count;
+	};
+	template <class _Ty1, class _Ty2>
+	_NODISCARD bool operator==(const Count<_Ty1>& _Left, const Count<_Ty2>& _Right) noexcept {
+		return _Left.Get() == _Right.Get();
+	}
+	template <class _Ty>
+	_NODISCARD bool operator==(const Count<_Ty>& _Left, nullptr_t) noexcept {
+		return _Left.Get() == nullptr;
+	}
+	template <class _Ty1, class _Ty2>
+	_NODISCARD Count<_Ty1> Dynamic_Count_cast(const Count<_Ty2>& _Other) noexcept {
+		// dynamic_cast for shared_ptr that properly respects the reference count control block
+		const auto _Ptr = dynamic_cast<typename Count<_Ty1>::element_type*>(_Other.Get());
+
+		if (_Ptr)
+		{
+			//return Count<_Ty1>(_Other, _Ptr);
+			return Count<_Ty1>(_Ptr);
+		}
+
+		return {};
+	}
+
+	template <class _Ty1, class _Ty2>
+	_NODISCARD Count<_Ty1> Dynamic_Count_cast(Count<_Ty2>&& _Other) noexcept {
+		// dynamic_cast for shared_ptr that properly respects the reference count control block
+		const auto _Ptr = dynamic_cast<typename Count<_Ty1>::element_type*>(_Other.Get());
+
+		if (_Ptr)
+		{
+			return Count<_Ty1>(std::move(_Other), _Ptr);
+		}
+
+		return {};
+	}
+	template<typename T>
+	template <class U, std::enable_if_t<Is_Compatible<U, T>::value, int>>
+	inline constexpr Count<U> Count<T>::As()const
+	{
+		return Dynamic_Count_cast<U>(*this);
+	}
+	#if 0 
 	/**
  * a lot of this code was taken from the visual studio representiaon of shared poitner
  * it has been manuactured for a better api adn multithreading
@@ -146,7 +439,7 @@ namespace Proof{
 			}
 		}
 
-		void DecreaseStrongRef() noexcept { // decrement reference count
+		void DecrementStrongRef() noexcept { // decrement reference count
 			if (m_RefCount)
 			{
 				m_RefCount->RemoveStrongRef();
@@ -298,7 +591,7 @@ namespace Proof{
 			this->MoveConstructor(std::move(right));
 		}
 		~Count() {
-			this->DecreaseStrongRef();
+			this->DecrementStrongRef();
 		}
 		Count& operator=(const Count& other) noexcept {
 			Count(other).Swap(*this);
@@ -399,5 +692,5 @@ namespace Proof{
 	{
 		return Dynamic_Count_cast<U>(*this);
 	}
-
+	#endif
 }

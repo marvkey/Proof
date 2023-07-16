@@ -46,33 +46,4 @@ namespace Proof
 		*/
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
 	};
-
-
-	struct DescriptrLayoutBinding {
-		uint32_t binding;
-		DescriptorType descriptorType;
-		uint32_t descriptorCount;
-		ShaderStage shaderStage ;
-	};
-	class DescriptorSet {
-	public:
-		virtual ~DescriptorSet()=default;
-		struct Builder {
-			Builder(DescriptorSets set);
-			Builder& AddBinding(uint32_t binding, DescriptorType descriptorType, ShaderStage shaderStage, uint32_t count = 1);
-
-			Count<DescriptorSet> Build();
-		private:
-			std::unordered_map<uint32_t, DescriptrLayoutBinding> Bindings{};
-			DescriptorSets m_Set;
-		};
-
-		virtual DescriptorSet& WriteBuffer(uint32_t binding, Count<UniformBuffer> buffer) = 0;
-		virtual DescriptorSet& WriteBuffer(uint32_t binding, Count<StorageBuffer> buffer) = 0;
-		virtual DescriptorSet& WriteImage(uint32_t binding, Count<class TextureCube> image) = 0;
-		virtual DescriptorSet& WriteImage(uint32_t binding, Count<class Texture2D> image) = 0;
-		virtual DescriptorSet& WriteImage(uint32_t binding, std::vector<Count<class Texture2D>>& image) = 0;
-		virtual void Bind(Count<class RenderCommandBuffer> commandBuffer, Count<class PipeLineLayout>piipeLineLayout) =0;
-		static Count<DescriptorSet>Create(DescriptorSets set, std::unordered_map<uint32_t, DescriptrLayoutBinding> Bindings);
-	};
 }

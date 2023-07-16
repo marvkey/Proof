@@ -3,7 +3,7 @@
 #include "Proof/Scene/Entity.h"
 namespace Proof {
 	
-	class Proof_API Editore3D : public Layer {
+	class Editore3D : public Layer {
 	public:
 		Editore3D();
 		~Editore3D();

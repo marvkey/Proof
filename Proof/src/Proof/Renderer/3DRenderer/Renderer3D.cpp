@@ -143,7 +143,7 @@ namespace Proof
         if (lightComponent.m_LightType == lightComponent.Direction && NumberDirectionalLight < 150) {
             NumberDirectionalLightstring = "v_DirectionalLight[" + std::to_string(NumberDirectionalLight) + "]";
             Renderer3DInstance->m_Shader->Bind();
-            Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->Rotation);
+            Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".direction",lightComponent.GetOwner().GetComponent<TransformComponent>().Rotation);
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".ambient",lightComponent.m_Ambient);
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".diffuse",lightComponent.m_Diffuse);
             Renderer3DInstance->m_Shader->SetVec3(NumberDirectionalLightstring + ".specular",lightComponent.m_Specular);
@@ -156,7 +156,7 @@ namespace Proof
         if (lightComponent.m_LightType == lightComponent.Point && NumberPointLight < 150) {
             NumberPointLightstring = "v_PointLight[" + std::to_string(NumberPointLight) + "]";
             Renderer3DInstance->m_Shader->Bind();
-            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".position",lightComponent.GetOwner().GetComponent<TransformComponent>()->Location);
+            Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".position",lightComponent.GetOwner().GetComponent<TransformComponent>().Location);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".ambient",lightComponent.m_Ambient);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".diffuse",lightComponent.m_Diffuse);
             Renderer3DInstance->m_Shader->SetVec3(NumberPointLightstring + ".specular",lightComponent.m_Specular);
@@ -171,8 +171,8 @@ namespace Proof
         if (lightComponent.m_LightType == lightComponent.Spot && NumberPointLight < 150) {
             NumberSpotLightstring = "v_SpotLight[" + std::to_string(NumberSpotLight) + "]";
             Renderer3DInstance->m_Shader->Bind();
-            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",lightComponent.GetOwner().GetComponent<TransformComponent>()->Rotation);
-            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".position",{lightComponent.GetOwner().GetComponent<TransformComponent>()->Location});
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".direction",lightComponent.GetOwner().GetComponent<TransformComponent>().Rotation);
+            Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".position",{lightComponent.GetOwner().GetComponent<TransformComponent>().Location});
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".ambient",lightComponent.m_Ambient);
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".diffuse",lightComponent.m_Diffuse);
             Renderer3DInstance->m_Shader->SetVec3(NumberSpotLightstring + ".specular",lightComponent.m_Specular);

@@ -48,7 +48,7 @@ namespace Proof {
 		Pause,
 		End
 	};
-    class ParticleHandler{
+    class ParticleHandler : public RefCounted {
     public:
 		ParticleHandler(Count<ParticleSystem> particleSystem);
         void Update(float ts, Vector position);
@@ -88,7 +88,7 @@ namespace Proof {
 		void UpdateSize(Particle& particle,float ts);
     };
 
-	class ParticleHandlerTable {
+	class ParticleHandlerTable : public RefCounted {
 	public:
 		ParticleHandlerTable() {
 		}

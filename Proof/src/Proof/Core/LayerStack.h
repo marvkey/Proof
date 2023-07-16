@@ -3,7 +3,9 @@
 #include <vector>
 namespace Proof {
 	class Layer;
-	class Proof_API LayerStack{
+	class LayerStack : public RefCounted
+
+	{
 	public:
 		LayerStack() = default;
 		~LayerStack();

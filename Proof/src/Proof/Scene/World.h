@@ -27,7 +27,7 @@ namespace Proof {
 		Edit
 	};
 
-	class Proof_API World {
+	class Proof_API World : public RefCounted {
 	public:
 		using EntityID = UUID;
 

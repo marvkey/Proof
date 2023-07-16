@@ -273,8 +273,8 @@ namespace Proof
 		m_World = Count<World>::Create();
 		Entity entity = m_World->CreateEntity("particle");
 		m_ParticleHandler = Count<ParticleHandler>::Create(m_ParticleSystem);
-		entity.AddComponent<ParticleSystemComponent>()->ParticleHandlerTable->SetHandler(0, m_ParticleHandler);
-		entity.GetComponent<TransformComponent>()->Location.Z -= 20.0f;
+		entity.AddComponent<ParticleSystemComponent>().ParticleHandlerTable->SetHandler(0, m_ParticleHandler);
+		entity.GetComponent<TransformComponent>().Location.Z -= 20.0f;
 		m_WorldRenderer = Count<WorldRenderer>::Create(m_World, 10, 10);
 	}
 	void ParticleSystemPanel::ImGuiRender(FrameTime deltaTime)
@@ -318,7 +318,7 @@ namespace Proof
 					m_ParticleHandler->End();
 				}
 			}
-			auto& location = m_World->FindEntityByTag("particle").GetComponent<TransformComponent>()->Location;
+			auto& location = m_World->FindEntityByTag("particle").GetComponent<TransformComponent>().Location;
 			SceneHierachyPanel::DrawVectorControl("Location", location);
 			SceneHierachyPanel::DrawVectorControl("Velocity", m_ParticleSystem->Velocity);
 			SceneHierachyPanel::DrawVectorControl("VelocityVariation", m_ParticleSystem->VelocityVariation);

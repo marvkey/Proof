@@ -59,6 +59,8 @@
 #include "MainWindow/ContentBrowserPanel.h"
 
 #include "Proof/Renderer/RendererBase.h"
+
+#include "Proof/Scene/Mesh.h"
 namespace Proof
 {
 	struct EditorData
@@ -356,24 +358,24 @@ namespace Proof
 					{
 
 						m_ActiveWorld->ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
-							PlayerInputComponent& input = *entity.GetComponent<PlayerInputComponent>();
+							PlayerInputComponent& input = entity.GetComponent<PlayerInputComponent>();
 							if ((int)input.InputPlayer < m_PlayersCount && input.InputPlayer == Players::Player0)
 							{
 								Entity cameraEntity = entity.GetCamera();
 								if (cameraEntity)
 								{
-									auto camera =cameraEntity.GetComponent<CameraComponent>();
+									auto& camera =cameraEntity.GetComponent<CameraComponent>();
 									uint32_t windowWIdth = m_ViewPortSize.x ;
 									uint32_t windowHeight = m_ViewPortSize.y ;
 									auto location = m_ActiveWorld->GetWorldLocation(cameraEntity);
 									Vector rotation;
-									if (camera->UseLocalRotation)
-										rotation = cameraEntity.GetComponent<TransformComponent>()->Rotation;
+									if (camera.UseLocalRotation)
+										rotation = cameraEntity.GetComponent<TransformComponent>().Rotation;
 									else
 										rotation = m_ActiveWorld->GetWorldRotation(cameraEntity);
-									camera->Width = windowWIdth;
-									camera->Height = windowHeight;
-									camera->CalculateProjection(location, rotation);
+									camera.Width = windowWIdth;
+									camera.Height = windowHeight;
+									camera.CalculateProjection(location, rotation);
 									m_WorldRenderer->Clear();
 									std::vector<std::future<void>> renders;
 									if (m_MultiplayerRender.contains(input.InputPlayer))
@@ -383,13 +385,13 @@ namespace Proof
 										if (entity.HasComponent<PlayerHUDComponent>())
 										{
 											//renders.push_back(std::async(std::launch::async, [&]() {
-												m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, s_EditorData->RenderSettings,entity.GetComponent<PlayerHUDComponent>()->HudTable);
+												m_MultiplayerRender[input.InputPlayer]->Render(camera, location, s_EditorData->RenderSettings,entity.GetComponent<PlayerHUDComponent>().HudTable);
 											//}));
 										}
 										else
 										{
 											//renders.push_back(std::async(std::launch::async, [&]() {
-												m_MultiplayerRender[input.InputPlayer]->Render(*camera, location, s_EditorData->RenderSettings);
+												m_MultiplayerRender[input.InputPlayer]->Render(camera, location, s_EditorData->RenderSettings);
 											//}));
 
 										}
@@ -403,17 +405,17 @@ namespace Proof
 						auto entity = m_ActiveWorld->GetWorldCameraEntity();
 						auto location = m_ActiveWorld->GetWorldLocation(entity);
 						Vector rotation;
-						if (entity.GetComponent<CameraComponent>()->UseLocalRotation)
-							rotation = entity.GetComponent<TransformComponent>()->Rotation;
+						if (entity.GetComponent<CameraComponent>().UseLocalRotation)
+							rotation = entity.GetComponent<TransformComponent>().Rotation;
 						else
 							rotation = m_ActiveWorld->GetWorldRotation(entity);
-						entity.GetComponent<CameraComponent>()->Width = m_ViewPortSize.x;
-						entity.GetComponent<CameraComponent>()->Height = m_ViewPortSize.y;
-						entity.GetComponent<CameraComponent>()->CalculateProjection(location, rotation);
+						entity.GetComponent<CameraComponent>().Width = m_ViewPortSize.x;
+						entity.GetComponent<CameraComponent>().Height = m_ViewPortSize.y;
+						entity.GetComponent<CameraComponent>().CalculateProjection(location, rotation);
 						if (!entity.HasComponent<PlayerHUDComponent>())
-							m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location, s_EditorData->RenderSettings);
+							m_WorldRenderer->Render(entity.GetComponent<CameraComponent>(), location, s_EditorData->RenderSettings);
 						else
-							m_WorldRenderer->Render(*entity.GetComponent<CameraComponent>(), location, s_EditorData->RenderSettings, entity.GetComponent<PlayerHUDComponent>()->HudTable);
+							m_WorldRenderer->Render(entity.GetComponent<CameraComponent>(), location, s_EditorData->RenderSettings, entity.GetComponent<PlayerHUDComponent>().HudTable);
 					}
 					else
 					{
@@ -610,7 +612,7 @@ namespace Proof
 							/*
 							//Basically makig sure that all entities that reference this entity that is deleted their data Get sets to null
 							m_ActiveWorld->ForEachEnitityWith<ScriptComponent>([&](Entity& entity) {
-								auto& scp = *entity.GetComponent<ScriptComponent>();
+								auto& scp = entity.GetComponent<ScriptComponent>();
 								for (auto& scripts : scp.m_Scripts) {
 									for (auto& field : scripts.Fields) {
 										if (field.Type == ProofMonoType::Enum) {
@@ -677,22 +679,22 @@ namespace Proof
 					Entity selected = s_EditorData->WorldHierachy.m_SelectedEntity;
 					if (shift == true) {
 						if (selected.HasChildren()) {
-							s_EditorData->WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
+							s_EditorData->WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>().m_Children[0],m_ActiveWorld.Get() };
 						}
 					}
 
 					else if (selected.HasOwner()) {
-						int childIndex = selected.GetOwner().GetComponent<ChildComponent>()->GetChildIndex(*selected.GetComponent<ChildComponent>());
-						int numChildren = selected.GetOwner().GetComponent<ChildComponent>()->GetNumChildren() - 1;
+						int childIndex = selected.GetOwner().GetComponent<ChildComponent>().GetChildIndex(selected.GetComponent<ChildComponent>());
+						int numChildren = selected.GetOwner().GetComponent<ChildComponent>().GetNumChildren() - 1;
 						int childIndexAdd = 0;
 						childIndexAdd += childIndex;
 						if (childIndex >= numChildren)
-							s_EditorData->WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
+							s_EditorData->WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>().m_Children[0],m_ActiveWorld.Get() };
 						else if (childIndex < numChildren)
-							s_EditorData->WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>()->m_Children[childIndexAdd],m_ActiveWorld.Get() };
+							s_EditorData->WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>().m_Children[childIndexAdd],m_ActiveWorld.Get() };
 					}
 					else if (selected.HasChildren()) {
-						s_EditorData->WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>()->m_Children[0],m_ActiveWorld.Get() };
+						s_EditorData->WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>().m_Children[0],m_ActiveWorld.Get() };
 					}
 					break;
 				}
@@ -1026,7 +1028,7 @@ namespace Proof
 				//(input, entity ID)
 				std::map<int, uint64_t> inputs;
 				m_ActiveWorld->ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
-					PlayerInputComponent& input = *entity.GetComponent<PlayerInputComponent>();
+					PlayerInputComponent& input = entity.GetComponent<PlayerInputComponent>();
 					if (!m_MultiplayerRender.contains(input.InputPlayer))return;
 					inputs[(int)input.InputPlayer] = entity.GetEntityID();
 				});
@@ -1085,8 +1087,8 @@ namespace Proof
 				const glm::mat4& cameraProjection = m_EditorCamera.m_Projection;
 				glm::mat4 cameraView = m_EditorCamera.m_View;
 
-				auto& selectedentityTc = *selectedEntity.GetComponent<TransformComponent>();
-				glm::mat4  selectedEntitytransform = selectedentityTc.GetLocalTransform();
+				auto& selectedentityTc = selectedEntity.GetComponent<TransformComponent>();
+				glm::mat4 selectedEntitytransform = selectedentityTc.GetLocalTransform();
 
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
@@ -1153,7 +1155,7 @@ namespace Proof
 					UUID meshID = *(UUID*)payload->Data;
 
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
-					newentt.AddComponent<MeshComponent>()->SetMesh(meshID);
+					newentt.AddComponent<MeshComponent>().SetMesh(meshID);
 					s_EditorData->WorldHierachy.m_SelectedEntity = newentt;
 				}
 
@@ -1182,7 +1184,7 @@ namespace Proof
 				// basically add mesh is done with its operation and no longer renderng
 				if (meshSourceAdded == false) {
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
-					newentt.AddComponent<MeshComponent>()->SetMesh(id);
+					newentt.AddComponent<MeshComponent>().SetMesh(id);
 					s_EditorData->WorldHierachy.m_SelectedEntity = newentt;
 				}
 			}

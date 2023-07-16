@@ -18,7 +18,6 @@ namespace Proof{
 		bool CreateEntityMenu(Entity owner = {});
 		Count<class World> m_CurrentWorld = nullptr;
 		Entity m_SelectedEntity = {};
-		//class ContentBrowserPanel* m_BrowserPanel =nullptr;
 		void DrawEntityNode(class Entity entity); 
 		void DrawComponent(class Entity& entity);
 

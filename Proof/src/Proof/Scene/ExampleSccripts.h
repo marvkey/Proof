@@ -60,7 +60,7 @@ namespace Proof{
 				CameraDirection.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
 				CameraDirection.y = sin(glm::radians(m_Pitch));
 				CameraDirection.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
-				GetComponent<TransformComponent>()->Rotation = CameraDirection;
+				GetComponent<TransformComponent>().Rotation = CameraDirection;
 				m_MouseLastPosX = Input::GetMousePosX();
 				m_MouseLastPosY = Input::GetMousePosY();
 			}

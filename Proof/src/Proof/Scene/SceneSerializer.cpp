@@ -498,11 +498,11 @@ namespace Proof
 				{
 					if (tagcomponent["tags"])
 					{
-						auto* tc = NewEntity.GetComponent<TagComponent>();
+						auto& tc = NewEntity.GetComponent<TagComponent>();
 
 						for (auto tag : tagcomponent["tags"])
 						{
-							tc->AddTag(tag.as<std::string>());
+							tc.AddTag(tag.as<std::string>());
 						}
 					}
 				}
@@ -512,11 +512,11 @@ namespace Proof
 				auto transformComponet = entity["TransformComponent"];
 				if (transformComponet)
 				{
-					auto* tc = NewEntity.GetComponent<TransformComponent>();
-					tc->Location = transformComponet["Location"].as<Vector>();
+					auto& tc = NewEntity.GetComponent<TransformComponent>();
+					tc.Location = transformComponet["Location"].as<Vector>();
 
-					tc->Rotation = transformComponet["Rotation"].as<Vector>();
-					tc->Scale = transformComponet["Scale"].as<Vector>();
+					tc.Rotation = transformComponet["Rotation"].as<Vector>();
+					tc.Scale = transformComponet["Scale"].as<Vector>();
 
 				}
 			}
@@ -525,15 +525,15 @@ namespace Proof
 				auto subEntityComponent = entity["ChildComponent"];
 				if (subEntityComponent)
 				{
-					auto* tc = NewEntity.GetComponent<ChildComponent>();
-					tc->m_OwnerID = subEntityComponent["OwnerID"].as<uint64_t>();
+					ChildComponent& tc = NewEntity.GetComponent<ChildComponent>();
+					tc.m_OwnerID = subEntityComponent["OwnerID"].as<uint64_t>();
 
 					if (subEntityComponent["Children"])
 					{
 						for (auto entityID : subEntityComponent["Children"])
 						{
 							uint64_t childID = entityID.as<uint64_t>();
-							tc->m_Children.emplace_back(childID);
+							tc.m_Children.emplace_back(childID);
 						}
 					}
 
@@ -544,7 +544,7 @@ namespace Proof
 				auto meshComponent = entity["MeshComponent"];
 				if (meshComponent)
 				{
-					auto& src = *NewEntity.AddComponent<MeshComponent>();
+					auto& src = NewEntity.AddComponent<MeshComponent>();
 					src.m_MeshID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
 					if (meshComponent["MaterialTable"])
 					{
@@ -583,7 +583,7 @@ namespace Proof
 				auto spriteRendererComponent = entity["SpriteComponent"];
 				if (spriteRendererComponent)
 				{
-					auto& src = *NewEntity.AddComponent<SpriteComponent>();
+					auto& src = NewEntity.AddComponent<SpriteComponent>();
 					uint64_t id = spriteRendererComponent["TextureAssetPointerID"].as<uint64_t>();
 					src.Colour = spriteRendererComponent["Colour"].as<glm::vec4>();
 					if (id != 0)
@@ -604,7 +604,7 @@ namespace Proof
 					auto directionalLight = entity["DirectionalLightComponent"];
 					if (directionalLight)
 					{
-						auto& src = *NewEntity.AddComponent<DirectionalLightComponent>();
+						auto& src = NewEntity.AddComponent<DirectionalLightComponent>();
 						src.Color = directionalLight["Color"].as<Vector>();
 						src.Intensity = directionalLight["Intensity"].as<float>();
 					}
@@ -614,7 +614,7 @@ namespace Proof
 					auto pointLight = entity["PointLightComponent"];
 					if (pointLight)
 					{
-						auto& src = *NewEntity.AddComponent<PointLightComponent>();
+						auto& src = NewEntity.AddComponent<PointLightComponent>();
 						src.Color = pointLight["Color"].as<Vector>();
 						src.Intensity = pointLight["Intensity"].as<float>();
 						src.Constant = pointLight["Constant"].as<float>();
@@ -629,7 +629,7 @@ namespace Proof
 					auto spotLight = entity["SpotLightComponent"];
 					if (spotLight)
 					{
-						auto& src = *NewEntity.AddComponent<SpotLightComponent>();
+						auto& src = NewEntity.AddComponent<SpotLightComponent>();
 						src.Color = spotLight["Color"].as<Vector>();
 						src.Intensity = spotLight["Intensity"].as<float>();
 						src.Constant = spotLight["Constant"].as<float>();
@@ -648,7 +648,7 @@ namespace Proof
 				auto textComponent = entity["TextComponent"];
 				if (textComponent)
 				{
-					auto& src = *NewEntity.AddComponent<TextComponent>();
+					auto& src = NewEntity.AddComponent<TextComponent>();
 					src.Colour = textComponent["Color"].as<glm::vec4>();
 					src.Kerning = textComponent["Kerning"].as<float>();
 					src.LineSpacing = textComponent["LineSpacing"].as<float>();
@@ -662,7 +662,7 @@ namespace Proof
 				auto cameraComponent = entity["CameraComponent"];
 				if (cameraComponent)
 				{
-					auto& src = *NewEntity.AddComponent<CameraComponent>();
+					auto& src = NewEntity.AddComponent<CameraComponent>();
 					src.NearPlane = cameraComponent["NearPlane"].as<float>();
 					src.FarPlane = cameraComponent["FarPlane"].as<float>();
 					src.FovDeg = cameraComponent["FOV"].as<float>();
@@ -677,7 +677,7 @@ namespace Proof
 				auto cubeColliderComponent = entity["CubeColliderComponent"];
 				if (cubeColliderComponent)
 				{
-					auto& src = *NewEntity.AddComponent<CubeColliderComponent>();
+					auto& src = NewEntity.AddComponent<CubeColliderComponent>();
 					src.IsTrigger = cubeColliderComponent["IsTrigger"].as<bool>();
 					src.OffsetLocation = cubeColliderComponent["OffsetLocation"].as<Vector>();
 					src.OffsetScale = cubeColliderComponent["OffsetScale"].as<Vector>();
@@ -690,7 +690,7 @@ namespace Proof
 				auto sphereColliderComponent = entity["SphereColliderComponent"];
 				if (sphereColliderComponent)
 				{
-					auto& src = *NewEntity.AddComponent<SphereColliderComponent>();
+					auto& src = NewEntity.AddComponent<SphereColliderComponent>();
 					src.IsTrigger = sphereColliderComponent["IsTrigger"].as<bool>();
 					src.OffsetLocation = sphereColliderComponent["Offset"].as<Vector>();
 					src.Radius = sphereColliderComponent["Radius"].as<float>();
@@ -703,7 +703,7 @@ namespace Proof
 				auto capsuleColliderComponent = entity["CapsuleColliderComponent"];
 				if (capsuleColliderComponent)
 				{
-					auto& src = *NewEntity.AddComponent<CapsuleColliderComponent>();
+					auto& src = NewEntity.AddComponent<CapsuleColliderComponent>();
 					src.IsTrigger = capsuleColliderComponent["IsTrigger"].as<bool>();
 					src.OffsetLocation = capsuleColliderComponent["Offset"].as<Vector>();
 					src.Radius = capsuleColliderComponent["Radius"].as<float>();
@@ -718,7 +718,7 @@ namespace Proof
 				auto mehsCollider = entity["MeshColliderComponent"];
 				if (mehsCollider)
 				{
-					auto& src = *NewEntity.AddComponent<MeshColliderComponent>();
+					auto& src = NewEntity.AddComponent<MeshColliderComponent>();
 					src.IsTrigger = mehsCollider["IsTrigger"].as<bool>();
 					src.m_PhysicsMaterialPointerID = mehsCollider["PhysicsMaterialPointerID"].as<uint64_t>();
 					src.m_MeshAssetPointerID = mehsCollider["MeshAssetPointerID"].as<uint64_t>();
@@ -729,7 +729,7 @@ namespace Proof
 				auto rigidBodyComponent = entity["RigidBodyComponent"];
 				if (rigidBodyComponent)
 				{
-					auto& rgb = *NewEntity.AddComponent<RigidBodyComponent>();
+					auto& rgb = NewEntity.AddComponent<RigidBodyComponent>();
 					rgb.Mass = rigidBodyComponent["Mass"].as<float>();
 					rgb.LinearDrag = rigidBodyComponent["LinearDrag"].as<float>();
 					rgb.AngularDrag = rigidBodyComponent["AngularDrag"].as<float>();
@@ -745,7 +745,7 @@ namespace Proof
 				auto playerInputComponent = entity["PlayerInputComponent"];
 				if (playerInputComponent)
 				{
-					auto& pic = *NewEntity.AddComponent<PlayerInputComponent>();
+					auto& pic = NewEntity.AddComponent<PlayerInputComponent>();
 					pic.InputPlayer = EnumReflection::StringEnum< Players>(playerInputComponent["InputPlayer"].as<std::string>());
 					uint64_t assetId = playerInputComponent["PrefabID"].as<uint64_t>();
 					if (AssetManager::HasAsset(assetId))
@@ -757,7 +757,7 @@ namespace Proof
 				auto playerHudComponent = entity["PlayerHUDComponent"];
 				if (playerHudComponent)
 				{
-					auto& phc = *NewEntity.AddComponent<PlayerHUDComponent>();
+					auto& phc = NewEntity.AddComponent<PlayerHUDComponent>();
 					Count<UITable> table = Count<UITable>::Create();
 					for(auto hud :  playerHudComponent["UiTable"])
 					{
@@ -786,7 +786,7 @@ namespace Proof
 				auto particleSystemComponent = entity["ParticleSystemComponent"];
 				if (particleSystemComponent)
 				{
-					auto& psc = *NewEntity.AddComponent<ParticleSystemComponent>();
+					auto& psc = NewEntity.AddComponent<ParticleSystemComponent>();
 					Count<ParticleHandlerTable> table = Count<ParticleHandlerTable>::Create();
 					for (auto  particleHandler : particleSystemComponent["ParticleHandlerTable"])
 					{
@@ -815,7 +815,7 @@ namespace Proof
 				auto scriptComponent = entity["ScriptComponent"];
 				if (scriptComponent)
 				{
-					auto& scp = *NewEntity.AddComponent<ScriptComponent>();
+					auto& scp = NewEntity.AddComponent<ScriptComponent>();
 					auto scripts = scriptComponent["Scripts"];
 					for (auto script : scripts)
 					{

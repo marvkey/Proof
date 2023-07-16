@@ -14,7 +14,6 @@
 #include "Renderer.h"
 #include "Platform/Vulkan/VulkanSwapChain.h"
 #include "GraphicsPipeLine.h"
-#include "PipeLineLayout.h"
 #include "Proof/Scene/Mesh.h"
 #include "Shader.h"
 #include "Proof/Scene/Physics/PhysicsMeshCooker.h"
@@ -211,7 +210,7 @@ namespace Proof
 			for (auto& entity : entitiyView)
 			{
 				Entity created{ entity,m_World.Get() };
-				MeshComponent& meshcomp = *created.GetComponent<MeshComponent>();
+				MeshComponent& meshcomp = created.GetComponent<MeshComponent>();
 				if (meshcomp.GetMesh() == nullptr)continue;
 				m_MeshPipeline.Transforms[0] = m_World->GetWorldTransform(created);
 				m_MeshPipeline.TransformsBuffer->SetData(m_MeshPipeline.Transforms.data(), m_MeshPipeline.Transforms.size() * sizeof(glm::mat4));
@@ -253,7 +252,7 @@ namespace Proof
 			TextParams parms;
 
 			m_World->ForEachEnitityWith<TextComponent>([&](Entity& entity) {
-				TextComponent& text = *entity.GetComponent<TextComponent>();
+				TextComponent& text = entity.GetComponent<TextComponent>();
 				parms.Color = text.Colour;
 				parms.Kerning = text.Kerning;
 				parms.LineSpacing = text.LineSpacing;
@@ -261,7 +260,7 @@ namespace Proof
 					m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, m_World->GetWorldTransform(entity));
 				else
 				{
-					auto rotation = entity.ForceGetComponent<TransformComponent>().Rotation;
+					auto rotation = entity.GetComponent<TransformComponent>().Rotation;
 					auto mat = glm::translate(glm::mat4(1.0f), { ProofToglmVec(m_World->GetWorldLocation(entity)) }) *
 						glm::rotate(glm::mat4(1.0f), glm::radians(rotation.X), { 1,0,0 })
 						* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
@@ -310,7 +309,7 @@ namespace Proof
 		{
 			PF_PROFILE_FUNC("WorldRenderer::Mesh Pass");
 			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
-				auto& meshComponent = *entity.GetComponent<MeshComponent>();
+				auto& meshComponent = entity.GetComponent<MeshComponent>();
 				if (meshComponent.Visible == false)
 					return;
 				if (AssetManager::HasAsset(meshComponent.GetMesh()))
@@ -327,7 +326,7 @@ namespace Proof
 		// light
 		{
 			m_World->ForEachEnitityWith<DirectionalLightComponent>([&](Entity entity) {
-				auto& lightComp = *entity.GetComponent<DirectionalLightComponent>();
+				auto& lightComp = entity.GetComponent<DirectionalLightComponent>();
 				Vector rotation = m_World->GetWorldRotation(entity) + lightComp.OffsetDirection;
 				DirLight dirLight{ lightComp.Color,lightComp.Intensity,rotation };
 				m_Renderer3D->SubmitDirectionalLight(dirLight);
@@ -353,7 +352,7 @@ namespace Proof
 				TextParams parms;
 
 				m_World->ForEachEnitityWith<TextComponent>([&](Entity& entity) {
-					TextComponent& text = *entity.GetComponent<TextComponent>();
+					TextComponent& text = entity.GetComponent<TextComponent>();
 					parms.Color = text.Colour;
 					parms.Kerning = text.Kerning;
 					parms.LineSpacing = text.LineSpacing;
@@ -361,7 +360,7 @@ namespace Proof
 						m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, m_World->GetWorldTransform(entity));
 					else
 					{
-						auto rotation = entity.ForceGetComponent<TransformComponent>().Rotation;
+						auto rotation = entity.GetComponent<TransformComponent>().Rotation;
 						auto mat = glm::translate(glm::mat4(1.0f), { ProofToglmVec(m_World->GetWorldLocation(entity)) }) *
 							glm::rotate(glm::mat4(1.0f), glm::radians(rotation.X), { 1,0,0 })
 							* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
@@ -376,7 +375,7 @@ namespace Proof
 			m_ParticleSystemRenderer->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
 
 			m_World->ForEachEnitityWith<ParticleSystemComponent>([&](Entity& entity) {
-				ParticleSystemComponent& particleSystem = *entity.GetComponent<ParticleSystemComponent>();
+				ParticleSystemComponent& particleSystem = entity.GetComponent<ParticleSystemComponent>();
 				Vector scale = m_World->GetWorldScale(entity);
 				Vector enittyrotation = m_World->GetWorldRotation(entity);
 				if (particleSystem.ParticleHandlerTable == nullptr)return;
@@ -421,7 +420,7 @@ namespace Proof
 			{
 				m_World->ForEachEnitityWith<CubeColliderComponent>([&](Entity entity) {
 					glm::mat4 transform = m_World->GetWorldTransform(entity);
-					auto& collider = *entity.GetComponent<CubeColliderComponent>();
+					auto& collider = entity.GetComponent<CubeColliderComponent>();
 
 					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
 						glm::scale(glm::mat4(1.0f), ProofToglmVec(collider.OffsetScale));
@@ -431,7 +430,7 @@ namespace Proof
 
 				m_World->ForEachEnitityWith<SphereColliderComponent>([&](Entity entity) {
 					glm::mat4 transform = m_World->GetWorldTransform(entity);
-					auto& collider = *entity.GetComponent<SphereColliderComponent>();
+					auto& collider = entity.GetComponent<SphereColliderComponent>();
 
 					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
 						glm::scale(glm::mat4(1.0f), ProofToglmVec(collider.Radius * 1.0f));
@@ -441,7 +440,7 @@ namespace Proof
 
 				m_World->ForEachEnitityWith<CapsuleColliderComponent>([&](Entity entity) {
 					glm::mat4 transform = m_World->GetWorldTransform(entity);
-					auto& collider = *entity.GetComponent<CapsuleColliderComponent>();
+					auto& collider = entity.GetComponent<CapsuleColliderComponent>();
 
 					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
 						glm::scale(glm::mat4(1.0f), glm::vec3{ collider.Radius * 0.5f,collider.Height,collider.Radius * 0.5f });
@@ -451,7 +450,7 @@ namespace Proof
 
 				m_World->ForEachEnitityWith<MeshColliderComponent>([&](Entity entity) {
 					glm::mat4 transform = m_World->GetWorldTransform(entity);
-					auto& collider = *entity.GetComponent<MeshColliderComponent>();
+					auto& collider = entity.GetComponent<MeshColliderComponent>();
 
 					if (PhysicsMeshCooker::HasMesh(collider.GetMeshSource()))
 					{

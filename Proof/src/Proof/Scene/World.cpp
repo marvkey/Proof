@@ -194,6 +194,7 @@ namespace Proof {
 		}
 		m_PhysicsWorld->OnFixedUpdate(DeltaTime);
 
+		Entity{ 12,this }.GetComponent<TransformComponent>();
 		DeleteEntitiesfromQeue();
 	}
 
@@ -240,8 +241,8 @@ namespace Proof {
 		Entity entity = { ID,this };
 
 		entity.AddComponent<IDComponent>(ID);
-		entity.AddComponent<TagComponent>()->Tag = EntName;
-		entity.AddComponent<ChildComponent>()->m_CurrentID = ID;
+		entity.AddComponent<TagComponent>().Tag = EntName;
+		entity.AddComponent<ChildComponent>().m_CurrentID = ID;
 		entity.AddComponent<TransformComponent>();
 		return entity;
 	}
@@ -257,7 +258,7 @@ namespace Proof {
 			}
 
 			if (src.HasComponent<Componnents>())
-				dst.AddorReplaceComponent<Componnents>(*src.GetComponent<Componnents>());
+				dst.AddorReplaceComponent<Componnents>(src.GetComponent<Componnents>());
 		}(), ...);
 	}
 	template<typename... Component>
@@ -322,13 +323,13 @@ namespace Proof {
 			enttMap[prefab->GetBaseEntity()] = newEntity.GetEntityID();
 
 			CopyComponentPrefab(AllComponents{}, newEntity, m_Registry, prefab->GetRegistry(), prefab->GetBaseEntity(), enttMap);
-			*newEntity.GetComponent<TransformComponent>() = transfom;
+			newEntity.GetComponent<TransformComponent>() = transfom;
 
 
-			newEntity.GetComponent<ChildComponent>()->m_Children = {};
-			newEntity.GetComponent<ChildComponent>()->m_OwnerPointer = nullptr;
-			newEntity.GetComponent<ChildComponent>()->m_OwnerID = 0;
-			newEntity.GetComponent<ChildComponent>()->m_CurrentID = newEntity.GetEntityID();
+			newEntity.GetComponent<ChildComponent>().m_Children = {};
+			newEntity.GetComponent<ChildComponent>().m_OwnerPointer = nullptr;
+			newEntity.GetComponent<ChildComponent>().m_OwnerID = 0;
+			newEntity.GetComponent<ChildComponent>().m_CurrentID = newEntity.GetEntityID();
 
 			if (prefab->GetRegistry().size() == 1)
 				return newEntity;
@@ -350,10 +351,10 @@ namespace Proof {
 				enttMap[registryEntityId] = thisEntity.GetEntityID();
 				CopyComponentPrefab(AllComponents{}, thisEntity, m_Registry, prefab->GetRegistry(), registryEntityId, enttMap);
 
-				thisEntity.GetComponent<ChildComponent>()->m_Children = {};
-				thisEntity.GetComponent<ChildComponent>()->m_OwnerPointer = nullptr;
-				thisEntity.GetComponent<ChildComponent>()->m_OwnerID = 0;
-				thisEntity.GetComponent<ChildComponent>()->m_CurrentID = thisEntity.GetEntityID();
+				thisEntity.GetComponent<ChildComponent>().m_Children = {};
+				thisEntity.GetComponent<ChildComponent>().m_OwnerPointer = nullptr;
+				thisEntity.GetComponent<ChildComponent>().m_OwnerID = 0;
+				thisEntity.GetComponent<ChildComponent>().m_CurrentID = thisEntity.GetEntityID();
 				
 			
 				for (UUID id : prefaRegistry.get<ChildComponent>(registryEntityId).GetChildren())
@@ -369,7 +370,7 @@ namespace Proof {
 					}
 				}
 				if(owner)
-					owner.GetComponent<ChildComponent>()->AddChild(*thisEntity.GetComponent<ChildComponent>());
+					owner.GetComponent<ChildComponent>().AddChild(thisEntity.GetComponent<ChildComponent>());
 				return thisEntity;
 			}
 			else
@@ -455,10 +456,10 @@ namespace Proof {
 		InputManager::StartRuntime(numPlayrs);
 
 		ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
-			PlayerInputComponent inputCopy = *entity.GetComponent<PlayerInputComponent>();
+			PlayerInputComponent inputCopy = entity.GetComponent<PlayerInputComponent>();
 			if (inputCopy.InputPlayer == Players::None)
 				return;
-			TransformComponent transfomr = *entity.GetComponent<TransformComponent>();
+			TransformComponent transfomr = entity.GetComponent<TransformComponent>();
 			if (!AssetManager::HasAsset(inputCopy.Player))return;
 			if ((int)inputCopy.InputPlayer > numPlayrs)
 			{
@@ -477,14 +478,14 @@ namespace Proof {
 			InputManagerMeathods::SetPlayer((uint32_t)inputCopy.InputPlayer);
 		});
 		ForEachEnitityWith<PlayerHUDComponent>([&](Entity entity) {
-			PlayerHUDComponent& hud = *entity.GetComponent<PlayerHUDComponent>();
+			PlayerHUDComponent& hud = entity.GetComponent<PlayerHUDComponent>();
 			if (hud.HudTable != nullptr)
 			{
 				hud.HudTable = Count<UITable>::Create(hud.HudTable->Generate());
 			}
 		});
 		ForEachEnitityWith<ParticleSystemComponent>([&](Entity entity) {
-			ParticleSystemComponent& part = *entity.GetComponent<ParticleSystemComponent>();
+			ParticleSystemComponent& part = entity.GetComponent<ParticleSystemComponent>();
 			if (part.ParticleHandlerTable != nullptr)
 			{
 				part.ParticleHandlerTable = Count<ParticleHandlerTable>::Create(part.ParticleHandlerTable->Generate());
@@ -557,7 +558,7 @@ namespace Proof {
 	Entity World::FindEntityByTag(const std::string& tag) {
 		Entity returnEntity;
 		ForEachEnitityWith<TagComponent>([&](Entity& entity) {
-			if (entity.GetComponent<TagComponent>()->Tag == tag)
+			if (entity.GetComponent<TagComponent>().Tag == tag)
 			{
 				returnEntity = entity;
 				return;
@@ -568,21 +569,21 @@ namespace Proof {
 	}
 
 	Vector World::GetWorldLocation(Entity entity) const {
-		auto& transformComp = *entity.GetComponent<TransformComponent>();
+		auto& transformComp = entity.GetComponent<TransformComponent>();
 		if (entity.HasOwner())
 			return transformComp.Location + World::GetWorldLocation(entity.GetOwner());
 		return transformComp.Location;
 	}
 
 	Vector World::GetWorldRotation(Entity entity) const {
-		auto& transformComp = *entity.GetComponent<TransformComponent>();
+		auto& transformComp = entity.GetComponent<TransformComponent>();
 		if (entity.HasOwner())
 			return transformComp.Rotation + World::GetWorldRotation(entity.GetOwner());
 		return transformComp.Rotation;
 	}
 
 	Vector World::GetWorldScale(Entity entity) const {
-		auto& transformComp = *entity.GetComponent<TransformComponent>();
+		auto& transformComp = entity.GetComponent<TransformComponent>();
 		if (entity.HasOwner())
 			return transformComp.Scale * World::GetWorldScale(entity.GetOwner());
 		return transformComp.Scale;

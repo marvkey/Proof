@@ -1,23 +1,22 @@
 #pragma once
-#include "Renderer.h"
+#include "Proof/Renderer/Renderer.h"
+#include "Proof/Core/SmartPointer.h"
+#include "Proof/Asset/Asset.h"
 namespace Proof{
 	using ResourceDescriptorInfo = void*;
 
-	class RendererResource {
-	public:
-		virtual int GetJustForPolyMorphysm() = 0;
-	};
-	class RendererViewResource  : public  RendererResource//: public Asset
+	
+	class RendererViewResource  : public  Asset//: public Asset
 	{
 	public:
 		virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const = 0;
-		virtual int GetJustForPolyMorphysm() { return 0; };
+		virtual AssetType GetAssetType() const { return AssetType::None;  }
+
 	};
 
-	class RendererBufferResource : public RendererResource
+	class RendererBufferResource : public RefCounted
 	{
 	public:
-		virtual int GetJustForPolyMorphysm() { return 0; };
 		virtual ResourceDescriptorInfo GetResourceDescriptorInfo(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight)const = 0;
 	};
 }

@@ -52,8 +52,8 @@ namespace Proof
 		quaternionRotation = glm::quat_cast(cameraRotation);
 
 		glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(quaternionRotation));
-		entity.GetCamera().GetComponent<TransformComponent>()->Rotation.Z = entity.GetComponent<TransformComponent>()->Rotation.Z;
-		entity.GetCamera().GetComponent<TransformComponent>()->Rotation.Z += 90;
+		entity.GetCamera().GetComponent<TransformComponent>().Rotation.Z = entity.GetComponent<TransformComponent>().Rotation.Z;
+		entity.GetCamera().GetComponent<TransformComponent>().Rotation.Z += 90;
 	}
 #pragma region Log
 	static void Log_Message(int logType, MonoString* message) {
@@ -307,7 +307,7 @@ namespace Proof
 		}
 
 		#endif
-		*tag = ScriptEngine::StringToMono(entity.GetComponent<TagComponent>()->Tag);
+		*tag = ScriptEngine::StringToMono(entity.GetComponent<TagComponent>().Tag);
 	}
 	static void TagComponent_SetTag(uint64_t entityID, MonoString** tag)
 	{
@@ -324,7 +324,7 @@ namespace Proof
 		#endif
 
 		std::string newTag = ScriptEngine::MonoToString(*tag);
-		entity.GetComponent<TagComponent>()->Tag  = newTag;
+		entity.GetComponent<TagComponent>().Tag  = newTag;
 	}
 #pragma endregion 
 	
@@ -338,7 +338,7 @@ namespace Proof
 				return;
 			}
 		#endif
-		*outLocation = entity.GetComponent<TransformComponent>()->Location;
+		*outLocation = entity.GetComponent<TransformComponent>().Location;
 	};
 	static void TransformComponent_SetLocation(EntityID entityID, Vector* location) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
@@ -349,7 +349,7 @@ namespace Proof
 			return;
 		}
 		#endif
-		entity.GetComponent<TransformComponent>()->Location = *location;
+		entity.GetComponent<TransformComponent>().Location = *location;
 	};
 
 	static void TransformComponent_GetRotation(uint64_t entityID, Vector* outRoation) {
@@ -361,7 +361,7 @@ namespace Proof
 			return;
 		}
 		#endif
-		* outRoation = entity.GetComponent<TransformComponent>()->Rotation;
+		* outRoation = entity.GetComponent<TransformComponent>().Rotation;
 	};
 
 	static void TransformComponent_SetRotation(EntityID entityID, Vector* rotation) {
@@ -373,7 +373,7 @@ namespace Proof
 			return;
 		}
 		#endif
-		entity.GetComponent<TransformComponent>()->Rotation = *rotation;
+		entity.GetComponent<TransformComponent>().Rotation = *rotation;
 	};
 	static void TransformComponent_GetScale(uint64_t entityID, Vector* outScale) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
@@ -384,7 +384,7 @@ namespace Proof
 			return;
 		}
 		#endif
-		* outScale = entity.GetComponent<TransformComponent>()->Scale;
+		* outScale = entity.GetComponent<TransformComponent>().Scale;
 	};
 	static void TransformComponent_SetScale(EntityID entityID, Vector* scale) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
@@ -395,7 +395,7 @@ namespace Proof
 			return;
 		}
 		#endif
-		entity.GetComponent<TransformComponent>()->Scale = *scale;
+		entity.GetComponent<TransformComponent>().Scale = *scale;
 	};
 	static void TransformComponent_GetFowardVector(uint64_t entityID,Vector* vec)
 	{
@@ -407,7 +407,7 @@ namespace Proof
 			return;
 		}
 		#endif
-		*vec = entity.GetComponent<TransformComponent>()->GetFowardVector();
+		*vec = entity.GetComponent<TransformComponent>().GetFowardVector();
 	}
 #pragma endregion 
 	
@@ -430,7 +430,7 @@ namespace Proof
 			PF_EC_ERROR("TextComponent.GetText - Does not have TextComponent");
 			return;
 		}
-		* text = ScriptEngine::StringToMono(entity.GetComponent<TextComponent>()->Text);
+		* text = ScriptEngine::StringToMono(entity.GetComponent<TextComponent>().Text);
 	}
 
 	static void TextComponent_SetText(uint64_t entityID, MonoString** text)
@@ -449,7 +449,7 @@ namespace Proof
 			PF_EC_ERROR("TextComponent.SetText - Does not have TextComponent");
 			return;
 		}
-		entity.GetComponent<TextComponent>()->Text = ScriptEngine::MonoToString(*text);
+		entity.GetComponent<TextComponent>().Text = ScriptEngine::MonoToString(*text);
 	}
 #pragma endregion
 
@@ -463,7 +463,7 @@ namespace Proof
 			return false;
 		}
 		#endif
-		return entity.GetComponent<RigidBodyComponent>()->Gravity;
+		return entity.GetComponent<RigidBodyComponent>().Gravity;
 	}
 
 	static void RigidBody_SetGravity(EntityID entityID, bool* gravity) {
@@ -475,7 +475,7 @@ namespace Proof
 			return ;
 		}
 		#endif
-		entity.GetComponent<RigidBodyComponent>()->Gravity = *gravity;
+		entity.GetComponent<RigidBodyComponent>().Gravity = *gravity;
 	}
 	static void RigidBody_GetMass(EntityID entityID, float* outMass) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
@@ -486,7 +486,7 @@ namespace Proof
 			return;
 		}
 		#endif
-		*outMass = entity.GetComponent<RigidBodyComponent>()->Mass;
+		*outMass = entity.GetComponent<RigidBodyComponent>().Mass;
 	}
 	static void RigidBody_SetMass(EntityID entityID, float* mass) {
 		Entity entity{ entityID,ScriptEngine::GetWorldContext() };
@@ -497,7 +497,7 @@ namespace Proof
 			return;
 		}
 		#endif
-		entity.GetComponent<RigidBodyComponent>()->Mass = *mass;
+		entity.GetComponent<RigidBodyComponent>().Mass = *mass;
 	}
 	static void RigidBody_AddForce(EntityID entityID, Vector force, int forceMode, bool autoAwake) {
 		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
@@ -653,7 +653,7 @@ namespace Proof
 
 		if (entity.HasComponent<MeshComponent>())
 		{
-			return entity.GetComponent<MeshComponent>()->Visible;
+			return entity.GetComponent<MeshComponent>().Visible;
 		}
 		PF_ERROR("MeshComponent.GetVisible entity tag: {} ID: {}  does not conatin mesh Compoonent", entity.GetName(), entity.GetEntityID());
 	}
@@ -670,7 +670,7 @@ namespace Proof
 
 		if (entity.HasComponent<MeshComponent>())
 		{
-			entity.GetComponent<MeshComponent>()->Visible = visible;
+			entity.GetComponent<MeshComponent>().Visible = visible;
 			return;
 		}
 		PF_ERROR("MeshComponent.SetVisible entity tag: {} ID: {}  does not conatin mesh Compoonent", entity.GetName(), entity.GetEntityID());
@@ -692,7 +692,7 @@ namespace Proof
 		if (!entity.HasComponent<PlayerInputComponent>())
 			return;
 
-		PlayerInputComponent& playerInput = *entity.GetComponent <PlayerInputComponent>();
+		PlayerInputComponent& playerInput = entity.GetComponent <PlayerInputComponent>();
 		
 		auto entityScripts = ScriptEngine::GetScriptInstnace(entity);
 
@@ -723,7 +723,7 @@ namespace Proof
 		if (!entity.HasComponent<PlayerInputComponent>())
 			return;
 
-		PlayerInputComponent& playerInput = *entity.GetComponent <PlayerInputComponent>();
+		PlayerInputComponent& playerInput = entity.GetComponent <PlayerInputComponent>();
 
 		auto entityScripts = ScriptEngine::GetScriptInstnace(entity);
 
@@ -754,7 +754,7 @@ namespace Proof
 		if (!entity.HasComponent<PlayerInputComponent>())
 			return;
 
-		PlayerInputComponent& playerInput = *entity.GetComponent <PlayerInputComponent>();
+		PlayerInputComponent& playerInput = entity.GetComponent <PlayerInputComponent>();
 		InputManagerMeathods::SetPlayerInput((uint32_t)playerInput.InputPlayer, (PlayerInputState)inputState);
 	}
 
@@ -777,7 +777,7 @@ namespace Proof
 			PF_ERROR("ParticleSystemComponent.HasParticleIndex entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
 			return false;
 		}
-		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 		if (comp.ParticleHandlerTable!= nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex))
 		{
 			return true;
@@ -800,7 +800,7 @@ namespace Proof
 			PF_ERROR("ParticleSystemComponent.ParticleIndexHasParticle entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
 			return false;
 		}
-		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex)!=nullptr)
 		{
 			return true;
@@ -823,7 +823,7 @@ namespace Proof
 			PF_ERROR("ParticleSystemComponent.GetVisible entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
 			return {};
 		}
-		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		{
 			return comp.ParticleHandlerTable->GetHandler(tableIndex)->Visible;
@@ -847,7 +847,7 @@ namespace Proof
 			PF_ERROR("ParticleSystemComponent.SetVisible entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
 			return;
 		}
-		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		{
 			comp.ParticleHandlerTable->GetHandler(tableIndex)->Visible = *visible;
@@ -872,7 +872,7 @@ namespace Proof
 			PF_ERROR("ParticleSystemComponent.Play() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
 			return;
 		}
-		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		{
 			comp.ParticleHandlerTable->GetHandler(tableIndex)->Play();
@@ -897,7 +897,7 @@ namespace Proof
 			PF_ERROR("ParticleSystemComponent.Pause() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
 			return;
 		}
-		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		{
 			comp.ParticleHandlerTable->GetHandler(tableIndex)->Pause();
@@ -921,7 +921,7 @@ namespace Proof
 			PF_ERROR("ParticleSystemComponent.End() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
 			return;
 		}
-		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		{
 			comp.ParticleHandlerTable->GetHandler(tableIndex)->End();
@@ -945,7 +945,7 @@ namespace Proof
 			PF_ERROR("ParticleSystemComponent.Restart() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
 			return;
 		}
-		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		{
 			comp.ParticleHandlerTable->GetHandler(tableIndex)->Restart();
@@ -969,7 +969,7 @@ namespace Proof
 			PF_ERROR("ParticleSystemComponent.GetState entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetEntityID());
 			return 0;
 		}
-		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		{
 			return (int)comp.ParticleHandlerTable->GetHandler(tableIndex)->GetState();
@@ -994,7 +994,7 @@ namespace Proof
 			return;
 		}
 		std::vector<uint32_t> objects;
-		ParticleSystemComponent& comp = *entity.GetComponent<ParticleSystemComponent>();
+		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 
 		for (auto& part : comp.ParticleHandlerTable->GetHandlers())
 		{
@@ -1026,7 +1026,7 @@ namespace Proof
 			return 0;
 		}
 
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(index)&& comp.HudTable->GetPanel(index) != nullptr)
 		{
 			return comp.HudTable->GetPanel(index)->GetID();
@@ -1070,7 +1070,7 @@ namespace Proof
 			PF_ERROR("PlayerHUDComponent.IndexHasHUD entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
 			return {};
 		}
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			return true;
@@ -1094,7 +1094,7 @@ namespace Proof
 			PF_ERROR("PlayerHUDComponent.GetVisible entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
 			return {};
 		}
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			return comp.HudTable->GetPanel(tableIndex)->Visible;
@@ -1118,7 +1118,7 @@ namespace Proof
 			PF_ERROR("PlayerHUDComponent.SetVisible entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetEntityID());
 			return ;
 		}
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			comp.HudTable->GetPanel(tableIndex)->Visible = *visible;
@@ -1144,7 +1144,7 @@ namespace Proof
 			return false;
 		}
 
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
@@ -1173,7 +1173,7 @@ namespace Proof
 			return;
 		}
 
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
@@ -1212,7 +1212,7 @@ namespace Proof
 			return {};
 		}
 
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		UIBaseData data;
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
@@ -1254,7 +1254,7 @@ namespace Proof
 			return false;
 		}
 
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
@@ -1283,7 +1283,7 @@ namespace Proof
 			return {};
 		}
 
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		UIImageButtonData data;
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
@@ -1325,7 +1325,7 @@ namespace Proof
 			return;
 		}
 
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
@@ -1381,7 +1381,7 @@ namespace Proof
 			return false;
 		}
 
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
@@ -1409,7 +1409,7 @@ namespace Proof
 			return;
 		}
 
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
@@ -1449,7 +1449,7 @@ namespace Proof
 			return;
 		}
 
-		PlayerHUDComponent& comp = *entity.GetComponent<PlayerHUDComponent>();
+		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);

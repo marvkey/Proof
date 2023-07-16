@@ -70,7 +70,7 @@ namespace Proof
 		friend class ScriptInstance;
 		friend class ScriptMeathod;
 	};
-	class ScriptClass {
+	class ScriptClass : public RefCounted {
 	public:
 		ScriptClass() = default;
 		ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore = false);
@@ -112,7 +112,7 @@ namespace Proof
 		friend class ScriptEngine;
 
 	};
-	class ScriptInstance {
+	class ScriptInstance : public RefCounted {
 	public:
 		ScriptInstance(Count<ScriptClass> scriptClass, Entity entity);
 	

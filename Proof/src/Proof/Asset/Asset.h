@@ -4,7 +4,7 @@
 namespace Proof
 {
 	enum class AssetType {
-		None =0,
+		None =0,// for items that just need asset or not
 		Mesh,
 		Texture,
 		Material,
@@ -29,7 +29,7 @@ namespace Proof
 	#define ASSET_CLASS_TYPE(type) static AssetType GetStaticType() { return AssetType::type; }\
 								virtual AssetType GetAssetType() const override { return GetStaticType(); }
 	using AssetID = UUID;
-	class Asset {
+	class Asset : public RefCounted {
 	public:
 		virtual ~Asset() {
 

@@ -35,7 +35,7 @@ namespace Proof {
 		bool ClearDepthOnLoad = true;
 		bool ClearFrameBufferOnLoad = true;
 	};
-	class FrameBuffer {
+	class FrameBuffer : public RefCounted {
 	public:
 		static Count<FrameBuffer> Create(const FrameBufferConfig& config);
 		// index is hte framebuffer image index
@@ -52,7 +52,7 @@ namespace Proof {
 		virtual void Resize(Vector2 imageSize) = 0;
 
 	};
-	class ScreenFrameBuffer {
+	class ScreenFrameBuffer : public RefCounted {
 	public:
 		static Count<ScreenFrameBuffer> Create(uint32_t Width, uint32_t Height);
 		static Count<ScreenFrameBuffer> Create(const FrameBufferConfig& config);

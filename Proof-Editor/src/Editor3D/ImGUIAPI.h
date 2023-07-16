@@ -6,7 +6,7 @@ namespace Proof
 {
 	namespace ExternalAPI
 	{
-		class Proof_API ImGUIAPI {
+		class ImGUIAPI {
 		public:
 			static void TextBar(const std::string& Name,const std::string& Text ="null",float ColumnWidth=210.f);
 			static void AcceptPayLoad(const std::string& name, uint32_t& Variable);

@@ -1,10 +1,11 @@
 #pragma once
-#include <iostream>
-#include "Imgui/imgui.h"
 #include "Proof/Core/Log.h"
 #include "FrameTime.h"
+
+#include "Imgui/imgui.h"
+#include <iostream>
 namespace Proof {
-	class Layer {
+	class Layer : public RefCounted {
 	public:
 		Layer(const std::string& Name = "Debug Layer"):
 			m_DebugName(Name)

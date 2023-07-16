@@ -173,7 +173,7 @@ namespace Proof {
 				auto location = m_World->GetWorldLocation(entity);
 				Vector rotation;
 				if (entity.GetCamera().GetComponent<CameraComponent>()->UseLocalRotation)
-					rotation = entity.GetCamera().GetComponent<TransformComponent>()->Rotation;
+					rotation = entity.GetCamera().GetComponent<TransformComponent>().Rotation;
 				else
 					rotation = m_World->GetWorldRotation(entity);
 				entity.GetCamera().GetComponent<CameraComponent>()->Width = windowWIdth;
@@ -223,17 +223,17 @@ namespace Proof {
 			auto entity = m_World->GetWorldCameraEntity();
 			auto location = m_World->GetWorldLocation(entity);
 			Vector rotation;
-			if (entity.GetComponent<CameraComponent>()->UseLocalRotation)
-				rotation = entity.GetComponent<TransformComponent>()->Rotation;
+			if (entity.GetComponent<CameraComponent>().UseLocalRotation)
+				rotation = entity.GetComponent<TransformComponent>().Rotation;
 			else
 				rotation = m_World->GetWorldRotation(entity);
-			entity.GetComponent<CameraComponent>()->Width = windowWIdth;
-			entity.GetComponent<CameraComponent>()->Height = windowHeight;
-			entity.GetComponent<CameraComponent>()->CalculateProjection(location, rotation);
+			entity.GetComponent<CameraComponent>().Width = windowWIdth;
+			entity.GetComponent<CameraComponent>().Height = windowHeight;
+			entity.GetComponent<CameraComponent>().CalculateProjection(location, rotation);
 			if (!entity.HasComponent<PlayerHUDComponent>())
-				m_WorldRenderers[0]->Render(*entity.GetComponent<CameraComponent>(), location, RenderSettings(), nullptr);
+				m_WorldRenderers[0]->Render(entity.GetComponent<CameraComponent>(), location, RenderSettings(), nullptr);
 			else
-				m_WorldRenderers[0]->Render(*entity.GetComponent<CameraComponent>(), location, RenderSettings(), entity.GetComponent<PlayerHUDComponent>()->HudTable);
+				m_WorldRenderers[0]->Render(entity.GetComponent<CameraComponent>(), location, RenderSettings(), entity.GetComponent<PlayerHUDComponent>()->HudTable);
 			m_DrawFirstPlayer = true;
 
 		}
@@ -362,7 +362,7 @@ namespace Proof {
 
 			Vector rotation;
 			if (camera->UseLocalRotation)
-				rotation = entity.GetCamera().GetComponent<TransformComponent>()->Rotation;
+				rotation = entity.GetCamera().GetComponent<TransformComponent>().Rotation;
 			else
 				rotation = world->GetWorldRotation(entity.GetCamera());
 			camera->Width = windowWIdth / 2;
@@ -399,7 +399,7 @@ namespace Proof {
 
 			Vector rotation;
 			if (camera->UseLocalRotation)
-				rotation = entity.GetCamera().GetComponent<TransformComponent>()->Rotation;
+				rotation = entity.GetCamera().GetComponent<TransformComponent>().Rotation;
 			else
 				rotation = world->GetWorldRotation(entity.GetCamera());
 			camera->Width = windowWIdth / 2;
@@ -429,7 +429,7 @@ namespace Proof {
 
 			Vector rotation;
 			if (camera->UseLocalRotation)
-				rotation = entity.GetCamera().GetComponent<TransformComponent>()->Rotation;
+				rotation = entity.GetCamera().GetComponent<TransformComponent>().Rotation;
 			else
 				rotation = world->GetWorldRotation(entity.GetCamera());
 			camera->Width = windowWIdth / 2;
@@ -458,7 +458,7 @@ namespace Proof {
 
 			Vector rotation;
 			if (camera->UseLocalRotation)
-				rotation = entity.GetCamera().GetComponent<TransformComponent>()->Rotation;
+				rotation = entity.GetCamera().GetComponent<TransformComponent>().Rotation;
 			else
 				rotation = world->GetWorldRotation(entity.GetCamera());
 			camera->Width = windowWIdth / 2;

@@ -15,7 +15,7 @@ namespace Proof
 		Count<class VertexBuffer> TransformsBuffer;
 		std::vector<glm::mat4> Transforms;
 	};
-	class WorldRenderer {
+	class WorldRenderer : public RefCounted {
 	public:
 		//WorldRenderer()=default;
 		virtual ~WorldRenderer();

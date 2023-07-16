@@ -1,18 +1,19 @@
 
 #pragma once
-#include <memory>
-#include <Log/Loger.h>
-#include <unordered_map>
 #include "SmartPointer.h"
+#include <Log/Loger.h>
+
+#include <memory>
+#include <unordered_map>
 namespace Proof
 {
-	class Log {
+	class Log : public RefCounted {
 	public:
 		static void Init();
-		static const Count<Logger::Log>& GetEngineLogger() {
+		static const std::shared_ptr<Logger::Log>& GetEngineLogger() {
 			return EngineLogger;
 		}
-		static const Count<Logger::Log>& GetClientLogger() {
+		static const std::shared_ptr<Logger::Log>& GetClientLogger() {
 			return ClientLogger;
 		}
 		static enum LogType {
@@ -31,8 +32,8 @@ namespace Proof
 		static bool NewLog;
 		static bool m_PauseLog;
 	private:
-		static Count<Logger::Log>EngineLogger;
-		static Count<Logger::Log>ClientLogger;
+		static std::shared_ptr<Logger::Log>EngineLogger;
+		static std::shared_ptr<Logger::Log>ClientLogger;
 		static uint32_t Inputposition() {
 			return Logs.size() + 1;
 		}

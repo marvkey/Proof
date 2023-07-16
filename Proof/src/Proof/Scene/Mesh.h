@@ -22,8 +22,8 @@ namespace Proof
         std::vector<uint32_t> Indices;
         std::string Name;
 
-        Count<class VertexBuffer> VertexBuffer;
-        Count<class IndexBuffer> IndexBuffer;
+        Count<class VertexBuffer> VertexBuffer = nullptr;
+        Count<class IndexBuffer> IndexBuffer = nullptr;
         glm::mat4 Transform;
         friend class Renderer3DPBR;
         friend class MeshWorkShop;

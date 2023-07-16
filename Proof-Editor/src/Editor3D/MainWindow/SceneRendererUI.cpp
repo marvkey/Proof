@@ -8,6 +8,7 @@
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Scene/Component.h"
 #include "Proof/Asset/AssetManager.h"
+#include "Proof/Renderer/RenderPass.h"
 namespace Proof{
 
 	void SceneRendererUI::ImGuiRender(FrameTime deltaTime) {
@@ -41,9 +42,9 @@ namespace Proof{
 	void SceneRendererUI::MeshAssetSetUp() {
 		auto assetInfo= AssetManager::GetAssetInfo(m_ID);
 		m_SceneEntity = m_World->CreateEntity(assetInfo.GetName());
-		m_SceneEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{ 1,1,1 };
-		m_SceneEntity.GetComponent<TransformComponent>()->Location.Z -= 10;
-		m_SceneEntity.AddComponent<MeshComponent>()->SetMesh(m_ID);
+		m_SceneEntity.AddComponent<DirectionalLightComponent>().Color = Vector{ 1,1,1 };
+		m_SceneEntity.GetComponent<TransformComponent>().Location.Z -= 10;
+		m_SceneEntity.AddComponent<MeshComponent>().SetMesh(m_ID);
 		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_World, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() );
 	}
 	
@@ -62,9 +63,9 @@ namespace Proof{
 				}
 			}
 			ExternalAPI::ImGUIAPI::CheckBox("FaceCulling",&meshAsset->GetMesh()->m_FaceCulling);
-			//SceneHierachyPanel::DrawVectorControl("Location",m_SceneEntity.GetComponent<TransformComponent>()->Location,0,width * 0.25);
-			//SceneHierachyPanel::DrawVectorControl("Rotation", m_SceneEntity.GetComponent<TransformComponent>()->Rotation,0,width * 0.25);
-			//SceneHierachyPanel::DrawVectorControl("Scale", m_SceneEntity.GetComponent<TransformComponent>()->Scale,1,width * 0.25);
+			//SceneHierachyPanel::DrawVectorControl("Location",m_SceneEntity.GetComponent<TransformComponent>().Location,0,width * 0.25);
+			//SceneHierachyPanel::DrawVectorControl("Rotation", m_SceneEntity.GetComponent<TransformComponent>().Rotation,0,width * 0.25);
+			//SceneHierachyPanel::DrawVectorControl("Scale", m_SceneEntity.GetComponent<TransformComponent>().Scale,1,width * 0.25);
 			ExternalAPI::ImGUIAPI::CheckBox(meshAsset->GetName(),&meshAsset->GetMesh()->Enabled);
 			ImGui::NewLine();
 			for (SubMesh& subMesh : meshAsset->GetMesh()->meshes) {
@@ -79,8 +80,8 @@ namespace Proof{
 		auto meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(m_ID);
 		m_SceneEntity = m_World->CreateEntity(meshAsset->GetName());
 		m_SceneEntity.AddComponent<DirectionalLightComponent>()->Color = Vector{ 1,1,1 };
-		m_SceneEntity.GetComponent<TransformComponent>()->Location.Z -= 10;
-		m_SceneEntity.AddComponent<MeshComponent>()->SetMesh(m_ID);
+		m_SceneEntity.GetComponent<TransformComponent>().Location.Z -= 10;
+		m_SceneEntity.AddComponent<MeshComponent>().SetMesh(m_ID);
 		m_WorldRenderer =CreateSpecial<WorldRenderer>( m_World, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() );
 		*/
 	}
@@ -92,9 +93,9 @@ namespace Proof{
 		{
 			auto meshAsset = AssetManager::GetAsset<MeshSourceFileAsset>(m_ID);
 			//ExternalAPI::ImGUIAPI::CheckBox("FaceCulling", &meshAsset->GetMesh()->m_FaceCulling);
-			//SceneHierachyPanel::DrawVectorControl("Location",m_SceneEntity.GetComponent<TransformComponent>()->Location,0,width * 0.25);
-			//SceneHierachyPanel::DrawVectorControl("Rotation", m_SceneEntity.GetComponent<TransformComponent>()->Rotation,0,width * 0.25);
-			//SceneHierachyPanel::DrawVectorControl("Scale", m_SceneEntity.GetComponent<TransformComponent>()->Scale,1,width * 0.25);
+			//SceneHierachyPanel::DrawVectorControl("Location",m_SceneEntity.GetComponent<TransformComponent>().Location,0,width * 0.25);
+			//SceneHierachyPanel::DrawVectorControl("Rotation", m_SceneEntity.GetComponent<TransformComponent>().Rotation,0,width * 0.25);
+			//SceneHierachyPanel::DrawVectorControl("Scale", m_SceneEntity.GetComponent<TransformComponent>().Scale,1,width * 0.25);
 			//ExternalAPI::ImGUIAPI::CheckBox(meshAsset->GetName(), &meshAsset->GetMesh()->Enabled);
 			ImGui::NewLine();
 			for (SubMesh& subMesh : meshAsset->GetMesh()->meshes) {

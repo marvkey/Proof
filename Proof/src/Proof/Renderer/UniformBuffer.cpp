@@ -25,58 +25,6 @@ namespace Proof
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	\
-	Count<DescriptorSet> DescriptorSet::Create(DescriptorSets set, std::unordered_map<uint32_t, DescriptrLayoutBinding> Bindings) {
-		/*
-		switch (Renderer::GetAPI()) {
-			case Renderer::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
-			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan:
-				{
-					auto builder = VulkanDescriptorSet::Builder(set);
-
-					for (auto [i, dlb] : Bindings) {
-						builder.AddBinding(dlb.binding, dlb.descriptorType, dlb.shaderStage, dlb.descriptorCount);
-					}
-					return builder.Build();
-				}
-		}
-		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
-		*/
-		return nullptr;
-	}
-	Count<DescriptorSet> DescriptorSet::Builder::Build() {
-		/*
-		switch (Renderer::GetAPI()) {
-			case Renderer::API::None:  PF_CORE_ASSERT(false, "Uniform Buffer None it needs an api"); return nullptr;
-			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan:
-				{
-					auto builder = VulkanDescriptorSet::VulkanDescriptorSetBuilder(m_Set);
-
-					for (auto [i, dlb] : Bindings) {
-						builder.AddBinding(dlb.binding, dlb.descriptorType, dlb.shaderStage, dlb.descriptorCount);
-					}
-					return builder.Build();
-				}
-		}
-		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
-		*/
-		return nullptr;
-	}
-	DescriptorSet::Builder::Builder(DescriptorSets set) {
-		m_Set = set;
-	}
-	
-	DescriptorSet::Builder& DescriptorSet::Builder::AddBinding(uint32_t binding, DescriptorType descriptorType, ShaderStage shaderStage, uint32_t count) {
-		DescriptrLayoutBinding layoutBinding{};
-		layoutBinding.binding = binding;
-		layoutBinding.descriptorType = descriptorType;
-		layoutBinding.descriptorCount = count;
-		layoutBinding.shaderStage = shaderStage;
-		Bindings[binding] = layoutBinding;
-		return *this;
-	}
 
 	Count<StorageBuffer> StorageBuffer::Create(uint32_t size)
 	{

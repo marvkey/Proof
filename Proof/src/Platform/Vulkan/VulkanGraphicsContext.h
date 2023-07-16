@@ -181,7 +181,6 @@ namespace Proof
 		const std::vector<const char*> m_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 		const std::vector<const char*> m_DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME,VK_KHR_MULTIVIEW_EXTENSION_NAME };
 
-		Count<class VulkanDescriptorPool> m_GlobalPool = nullptr;
 		VmaAllocator m_VMA_Allocator;
 		friend class VulkanRenderer;
 

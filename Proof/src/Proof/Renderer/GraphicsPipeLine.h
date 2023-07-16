@@ -48,7 +48,7 @@ namespace Proof{
 		Count<class FrameBuffer> TargetBuffer;
 
 	};
-	class GraphicsPipeline {
+	class GraphicsPipeline : public RefCounted {
 	public:
 		virtual Count<class Shader> GetShader()const = 0;
 		virtual Count<class FrameBuffer> GetTargetBuffer()const= 0;

@@ -2,7 +2,7 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Core/Buffer.h"
 namespace Proof {
-	class Proof_API VertexBuffer {
+	class VertexBuffer : public RefCounted {
 	public:
 		/*
 		* sets as current vertex Buffer
@@ -53,7 +53,7 @@ namespace Proof {
 	protected:
 	};
 
-	class Proof_API IndexBuffer {
+	class IndexBuffer : public RefCounted {
 	public:
 		/**
 		*set as Current Index Buffer

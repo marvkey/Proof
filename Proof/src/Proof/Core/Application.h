@@ -50,7 +50,7 @@
         ApplicationConfiguration GetConfig() {
             return m_ApplicationConfiguration;
         }
-        Count<ImGuiLayer> GetImguiLayer() { return m_ImGuiMainLayer; }
+        Count<class ImGuiLayer> GetImguiLayer() { return m_ImGuiMainLayer; }
     protected:
         Application(const ApplicationConfiguration& config);
         bool WindowMinimized = false;
@@ -67,7 +67,7 @@
         void OnKeyClicked(KeyClickedEvent& e);
         void OnWindowCloseEvent(WindowCloseEvent& e);
         LayerStack MainLayerStack;
-        Count<ImGuiLayer> m_ImGuiMainLayer;
+        Count<class ImGuiLayer> m_ImGuiMainLayer;
         Special<Window>m_Window;
         friend class CurrentWindow;
         friend class FrameBuffer;

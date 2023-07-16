@@ -6,7 +6,6 @@
 #include "VulkanRenderPass.h"
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanSwapChain.h"
-#include "VulkanDescriptorSet.h"
 #include <algorithm>
 #include "VulkanUtils/VulkanConvert.h"
 #include "VulkanTexutre.h"

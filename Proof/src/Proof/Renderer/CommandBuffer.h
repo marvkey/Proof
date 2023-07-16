@@ -3,7 +3,7 @@
 namespace Proof
 {
 
-	class CommandBuffer {
+	class CommandBuffer : public RefCounted {
 	public:
 		static Count<CommandBuffer>Create();
 		virtual ~CommandBuffer() = default;
@@ -14,7 +14,7 @@ namespace Proof
 		
 	};
 
-	class RenderCommandBuffer {
+	class RenderCommandBuffer : public RefCounted{
 	public:
 		static Count<RenderCommandBuffer >Create(CommandBuffer* buffer =nullptr);
 		virtual ~RenderCommandBuffer() = default;

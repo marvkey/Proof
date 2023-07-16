@@ -11,7 +11,7 @@ namespace Proof
         Compute,
         Geometry
     };
-    class Shader {
+    class Shader : public RefCounted {
     public:
         virtual ~Shader();
         static Count<Shader>Create(const std::string& name, const std::string& ShaderPath);

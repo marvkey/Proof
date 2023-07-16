@@ -44,7 +44,7 @@ namespace Proof{
 		Count< class GraphicsPipeline> Pipeline;
 		bool MultiView = false;
 	};
-	class RenderPass {
+	class RenderPass : public RefCounted {
 	public:
 		virtual void SetInput(std::string_view name, Count<class UniformBuffer> buffer) = 0;
 		virtual void SetInput(std::string_view name, Count<class Texture2D> iamge) = 0;

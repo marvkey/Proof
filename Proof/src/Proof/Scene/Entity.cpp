@@ -4,11 +4,10 @@
 namespace Proof
 {
 	std::string Entity::GetName(){
-		return GetComponent<TagComponent>() != nullptr ? GetComponent<TagComponent>()->Tag : "DefaultEntity";
+		return HasComponent<TagComponent>() != false ? GetComponent<TagComponent>().Tag : "UnnamedEntity";
 	}
 	void Entity::SetName(const std::string& Name) {
-		auto* Tag = GetComponent<TagComponent>();
-		if (Tag != nullptr)
-			Tag->Tag = Name;
+		if (HasComponent<TagComponent>())
+			GetComponent<TagComponent>().Tag = Name;
 	}
 }

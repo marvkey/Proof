@@ -86,7 +86,7 @@ namespace Proof {
 
 			for (uint32_t i = 0; i < numberActors; i++)
 			{
-				PhysicsActor* actor = (PhysicsActor*)activeActors[i]->userData;
+				Count<PhysicsActor> actor = (PhysicsActor*)activeActors[i]->userData;
 				if (!actor->IsSleeping())
 				{
 					actor->SyncTransform();

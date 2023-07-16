@@ -38,7 +38,7 @@ namespace Proof
 		Count<class Shader> Shader;
 		Count <class PipeLineLayout> PipeLineLayout;
 		Count<class VertexBuffer> MeshesVertexBuffer;
-		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
+		//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 		Count<class PushConstant> TexturePushConstant;
 
 

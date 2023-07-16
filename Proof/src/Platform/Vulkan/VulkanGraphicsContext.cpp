@@ -4,29 +4,21 @@
 #include<unordered_set>
 #include<set>
 #include <vector>
-#include "VulkanDescriptorSet.h"
 #include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
 #include "Proof/Renderer/RendererBase.h"
-
+#include "Proof/Renderer/Renderer.h"
 #include "Vulkan.h"
 namespace Proof
 {
-	/*		if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+	
+	// local callback functions
+	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,VkDebugUtilsMessageTypeFlagsEXT messageType,const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,void* pUserData) {
+		if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
 			PF_ENGINE_CRITICAL("VULKAN: {}", pCallbackData->pMessage);
-		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT )
+		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 			PF_ENGINE_ERROR("VULKAN: {}", pCallbackData->pMessage);
 		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 			PF_ENGINE_TRACE("VULKAN: {}", pCallbackData->pMessage);
-		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-			PF_ENGINE_WARN("VULKAN: {}", pCallbackData->pMessage);
-		else
-			PF_ENGINE_TRACE("VULKAN: {}", pCallbackData->pMessage);*/
-	// local callback functions
-	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,VkDebugUtilsMessageTypeFlagsEXT messageType,const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,void* pUserData) {
-		if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-			PF_ENGINE_CRITICAL("VULKAN: {}", pCallbackData->pMessage);
-		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
-			PF_ENGINE_INFO("VULKAN: {}", pCallbackData->pMessage);
 		else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
 			PF_ENGINE_WARN("VULKAN: {}", pCallbackData->pMessage);
 		else
@@ -92,7 +84,6 @@ namespace Proof
 		{
 			DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 		}
-		m_GlobalPool = nullptr;
 		Renderer::SubmitDatafree([device = m_Device,instance = m_Instance, surface = m_Surface,commandPool = m_CommandPool]()mutable {
 			vkDestroyCommandPool(device, commandPool, nullptr);
 			vkDestroyDevice(device, nullptr);

@@ -162,7 +162,6 @@ namespace Proof
 	};
 
 
-	using RawImage = void*;
 	class Image : public RendererViewResource
 	{
 	public:
@@ -191,7 +190,7 @@ namespace Proof
 		uint32_t Layer = 0;
 		std::string DebugName;
 	};
-	class ImageView {
+	class ImageView : public RefCounted{
 	public:
 		virtual ~ImageView() = default;
 		static Count<ImageView>Create(const ImageViewConfiguration& specification);

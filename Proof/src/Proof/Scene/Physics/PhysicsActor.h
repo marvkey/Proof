@@ -3,7 +3,7 @@
 #include "Proof/Scene/Entity.h"
 namespace Proof{
 
-	class PhysicsActor{
+	class PhysicsActor : public RefCounted {
 	public:
 		PhysicsActor(class PhysicsWorld* physicsWorld,Entity entity);
 		virtual ~PhysicsActor();

@@ -29,6 +29,16 @@ namespace Proof {
 		return nullptr;
 	}
 
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, const std::filesystem::path& path)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, path);
+		}
+		return nullptr;
+	}
 	Count<Image2D> Image2D::Create(const ImageConfiguration& specification)
 	{
 		switch (Renderer::GetAPI())
@@ -128,10 +138,6 @@ namespace Proof {
 		size_t bufferSize = width * height * Utils::BytesPerPixel(format);
 		return Buffer((uint8_t*)data,bufferSize,true);
 	}
-	
-	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, const std::filesystem::path& path)
-	{
-		return Count<TextureCube>();
-	}
+
 
 }

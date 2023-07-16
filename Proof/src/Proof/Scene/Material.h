@@ -100,7 +100,7 @@ namespace Proof{
 
 	};
 
-	class MaterialTable {
+	class MaterialTable : public RefCounted {
 	public:
 		MaterialTable(bool createMatIndex0Default = true) {
 			if(createMatIndex0Default)

@@ -3,17 +3,14 @@
 #include "Proof/Scene/Physics/PhysicsEngine.h"
 #include "Proof/Renderer/RenderMaterial.h"
 #include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/Shader.h"
 namespace Proof {
-    struct ShaderMaterialData
-    {
-
-    };
    
     Material::Material(const std::string& name)
         :Name(name)
     {
         // means it is using pbr shader
-        m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration("name", Shader::Get("ProofPBR_Static")));
+        m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration(name, Shader::Get("ProofPBR_Static")));
         if (m_RenderMaterial->GetConfig().Shader == Shader::Get("ProofPBR_Static"))
             m_DefaultShader = true;   
     }

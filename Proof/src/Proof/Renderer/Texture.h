@@ -54,7 +54,7 @@ namespace Proof {
 		bool GenerateMips = false;
 		bool Storage = false;
 	};
-	class Proof_API Texture : public Asset, public RendererViewResource
+	class Texture : public RendererViewResource
 	{
 	public:
 		Texture()
@@ -67,7 +67,7 @@ namespace Proof {
 		ASSET_CLASS_TYPE(Texture);
 	};
 	
-	class Proof_API Texture2D : public Texture {
+	class Texture2D : public Texture {
 	public:
 		virtual ~Texture2D() {};
 
@@ -88,7 +88,7 @@ namespace Proof {
 
 	};
 
-	class Proof_API TextureCube : public Texture {
+	class TextureCube : public Texture {
 	public:
 		virtual ~TextureCube() {};
 

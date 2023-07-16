@@ -16,7 +16,7 @@ namespace Proof {
 
 		}
 	};
-	class VertexArray {
+	class VertexArray : public RefCounted {
 	public:
 		/**
 		* create a vertex array

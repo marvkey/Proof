@@ -267,7 +267,7 @@ namespace Proof {
 		// make this into a callback
 		if (Application::Get()->GetImguiLayer() != nullptr)
 		{
-			Application::Get()->GetImguiLayer().As<VulkanImguiLayer>()->UpdateImageDescriptor(this);
+			Application::Get()->GetImguiLayer().AsRaw<VulkanImguiLayer>()->UpdateImageDescriptor(this);
 		}
 	}
 

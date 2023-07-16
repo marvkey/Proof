@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof/ProofCore.h"
+//#include "Proof/ProofCore.h"
 
 namespace Proof{
 	class AssetThumbnailGenerator {
@@ -19,8 +19,8 @@ namespace Proof{
 		AssetThumbnailGenerator();
 		virtual ~AssetThumbnailGenerator();
 		void CreateThumbnail(AssetID ID);
-		Count<World> m_World = nullptr;
-		Count<WorldRenderer> m_WorldRenderer = nullptr;
+		Count<class World> m_World = nullptr;
+		Count<class WorldRenderer> m_WorldRenderer = nullptr;
 		static std::unordered_map<AssetID, uint32_t> AssetThumbnails;
 	};
 }
