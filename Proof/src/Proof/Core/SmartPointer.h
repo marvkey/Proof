@@ -152,8 +152,8 @@ namespace Proof{
 		}
 		template <class... Args, std::enable_if_t<std::is_constructible<T, Args...>::value, int> = 0>
 		static Count Create(Args&&... args) {
-			T* data = new T(args...);
-			Count<T> t(data);
+				T* data = new T(args...);
+				Count<T> t(data);
 			return t;
 		}
 		template<class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>

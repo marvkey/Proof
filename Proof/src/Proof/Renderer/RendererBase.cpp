@@ -31,11 +31,14 @@ namespace Proof {
 		window->m_SwapChain = SwapChain::Create(ScreenSize{ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() });
 		Renderer::s_RendererAPI->Init();
 
-		s_BaseTextures = new  BaseTextures();
-		PF_ENGINE_TRACE("Renderer Initilized");
 
 		AllShaders->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.shader");
 		AllShaders->LoadShader("BRDFLUT", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/BRDFLut.glsl");
+		AllShaders->LoadShader("EquirectangularToCubemap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EquirectangularToCubemap.glsl");
+		AllShaders->LoadShader("SkyBox", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/SkyBox.glsl");
+
+		s_BaseTextures = new  BaseTextures();
+		PF_ENGINE_TRACE("Renderer Initilized");
 	}
 
 	void RendererBase::Destroy() {
@@ -55,5 +58,23 @@ namespace Proof {
 
 		uint32_t blackTexturedata = 0xFF000000;
 		BlackTexture = Texture2D::Create(&blackTexturedata,TextureConfiguration("Black Texture"));
+
+
+		TextureConfiguration cubeTextureConfig;
+		cubeTextureConfig.GenerateMips = false;
+		cubeTextureConfig.Height = 1024;
+		cubeTextureConfig.Width = 1024;
+		cubeTextureConfig.Storage = true;
+		cubeTextureConfig.Format = ImageFormat::RGBA32F;
+		cubeTextureConfig.Wrap = TextureWrap::ClampEdge;
+
+		uint8_t* data = new uint8_t[cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA32F)];
+		// since image is in format is a float we use 0x3F to normalize for floating poitn for white
+		std::memset(data, 0x3F, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA32F));
+		WhiteTextureCube = TextureCube::Create(data, cubeTextureConfig);
+		
+		std::memset(data, 0, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA32F));
+		BlackTextureCube = TextureCube::Create(data, cubeTextureConfig);
+		delete[] data;	
 	}
 }

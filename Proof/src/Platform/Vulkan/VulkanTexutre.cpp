@@ -4,7 +4,6 @@
 #include "VulkanGraphicsContext.h"
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanUtils/VulkanConvert.h"
-#include "ktx/include/ktx.h"
 #include "VulkanVertexArray.h"
 #include "VulkanRenderPass.h"
 #include "Bitmap.h"
@@ -14,13 +13,15 @@
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "VulkanGraphicsPipeline.h"
-
+#include "VulkanComputePass.h"
+#include "VulkanComputePipeline.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/CommandBuffer.h"
 #include "Proof/Renderer/GraphicsContext.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanImage.h"
 #include "Vulkan.h"
+#include  "Proof/Utils/FileSystem.h"
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include"../vendor/stb_image.h"
@@ -319,7 +320,7 @@ namespace Proof
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
 		Count<VulkanImage2D> vk_Image = m_Image.As<VulkanImage2D>();
-		uint32_t mipCount = m_Config.GenerateMips ? VulkanTexture2D::GetMipLevelCount() : 1;
+		uint32_t mipCount = m_Config.GenerateMips ? GetMipLevelCount() : 1;
 
 		vk_Image->Release();
 
@@ -641,610 +642,68 @@ namespace Proof
 
 	void VulkanTexture2D::Release() {
 		m_Image = nullptr;
-		m_ImageData = {};
+		m_ImageData.Release();
 	}
 
 	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config, const std::filesystem::path& path)
 		:m_Config(config), m_Path(path)
 	{
-		TextureConfiguration textureConfig;
-		textureConfig.DebugName = "Texture Cube Texture";
-		textureConfig.Height = config.Height;
-		textureConfig.Width = config.Width;
-		textureConfig.Format = ImageFormat::RGBA32F;
-		textureConfig.Storage = true;
 
+		TextureConfiguration textureConfig;
+		textureConfig.DebugName = "VulkanCubemap texture";
+		textureConfig.Format = m_Config.Format;
+		textureConfig.GenerateMips = false;
+		textureConfig.Height = m_Config.Height;
+		textureConfig.Width = m_Config.Width;
+		textureConfig.Storage = true;
 		m_Texture = Texture2D::Create(textureConfig, path).As<VulkanTexture2D>();
-	}
-	void VulkanTextureCube::Build()
-	{
+
+		ImageConfiguration imageConfig;
+		imageConfig.DebugName = fmt::format("{} TextureCubeImage", Utils::FileDialogs::GetFileName(path));
+		imageConfig.Format = config.Format;
+		imageConfig.Height = config.Height;
+		imageConfig.Width = config.Width;
+		imageConfig.Layers = 6;
+		imageConfig.Usage = ImageUsage::Storage;
+		m_Image = Image2D::Create(imageConfig);
+		Build();
 		
 	}
-	void VulkanTextureCube::Release()
+	VulkanTextureCube::VulkanTextureCube(const void* data, const TextureConfiguration& config)
+		:m_Config(config)
+
 	{
-	
+		TextureConfiguration textureConfig;
+		textureConfig.DebugName = "VulkanCubemap texture";
+		textureConfig.Format = m_Config.Format;
+		textureConfig.GenerateMips = false;
+		textureConfig.Height = m_Config.Height;
+		textureConfig.Width = m_Config.Width;
+		textureConfig.Storage = true;
+		m_Texture = Texture2D::Create(data,textureConfig).As<VulkanTexture2D>();
+
+		ImageConfiguration imageConfig;
+		imageConfig.DebugName = "TextureCubeImage";
+		imageConfig.Format = config.Format;
+		imageConfig.Height = config.Height;
+		imageConfig.Width = config.Width;
+		imageConfig.Layers = 6;
+		imageConfig.Usage = ImageUsage::Storage;
+		m_Image = Image2D::Create(imageConfig);
+		Build();
 	}
-	ResourceDescriptorInfo VulkanTextureCube::GetResourceDescriptorInfo()const
+	void VulkanTextureCube::GenerateMips()
 	{
-		return m_Texture->GetResourceDescriptorInfo();
-	}
-	#if 0
-	VulkanTextureCube::VulkanTextureCube(const std::filesystem::path& path, uint32_t dimension, bool generateMips)
-		:
-		m_Dimension(dimension),
-		m_Path(path.string())
-	{
-		if (generateMips)
-			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(dimension, dimension)))) + 1;
-
-		AllocateMemory();
-		//Count<Texture2D> text = Texture2D::Create(path.string());
-		//SetData(text);
-	}
-
-	VulkanTextureCube::VulkanTextureCube(Count<Texture2D> texture, uint32_t dimension, bool generateMips)
-		:
-		m_Dimension(dimension)
-
-	{
-		if (generateMips)
-			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(dimension, dimension)))) + 1;
-
-		//m_Format = texture.As<VulkanTexture2D>()->GetImage();
-		AllocateMemory();
-		if (texture)
-		{
-			GenerateCubeMap(texture);
-		}
-	}
-
-	VulkanTextureCube::VulkanTextureCube(Count<TextureCube> map, Count<Shader> shader, uint32_t dimension, bool generateMips)
-		:
-		m_Dimension(dimension)
-
-	{
-		if (generateMips)
-			m_MipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(dimension, dimension)))) + 1;
-		AllocateMemory();
-		if (map)
-			GenerateCubeMap(map.As<Texture>(), shader);
-
-
-	}
-
-
-	Count<TextureCube> VulkanTextureCube::GeneratePreFilterMap(Count<TextureCube> map, uint32_t dimension, uint32_t numSamples)
-	{
-		#if 0
-
-
-		// https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/util/Environment.cpp
-		 // https://github.com/SaschaWillems/Vulkan-glTF-PBR/blob/master/src/main.cpp //(generate cuebmap)
-		struct PCB
-		{
-			float Roughness = 0;
-			uint32_t NumSamples = 128;
-		};
-
-		Count<PushConstant> PcbConstnat = PushConstant::Create(sizeof(PCB), 0, ShaderStage::Fragment);
-		Count<TextureCube> preFilterMap = TextureCube::Create(nullptr, nullptr, dimension, true);
-
-
-		auto format = ImageFormat::RGBA32F;
-		TextureConfig conigTexture;
-		conigTexture.Format = format;
-		conigTexture.Usage = TextureUsage::Color;
-		conigTexture.width = dimension;
-		conigTexture.Height = dimension;
-		Count<Texture2D> fbColorAttachment = Texture2D::Create(conigTexture);
-
-		FrameBufferConfig frameConfig;
-		frameConfig.DebugName = "Texture-Cube";
-		frameConfig.Size.X = dimension;
-		frameConfig.Size.Y = dimension;
-		frameConfig.Attachments = { format };
-		frameConfig.Attachments.Attachments[0].SetOverrideImage(fbColorAttachment->GetImage());
-
-		Count<FrameBuffer> frameBuffer = FrameBuffer::Create(frameConfig);
-
-		RenderPassConfig renderPassConfig("texture-cube-RenderPass", frameBuffer->GetConfig());
-		renderPassConfig.MultiView = true;
-		Count<RenderPass> renderPass = RenderPass::Create(renderPassConfig);
-
-		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
-
-		auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-			.AddBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-			.AddBinding(1, DescriptorType::ImageSampler, ShaderStage::Fragment)
-			.Build();
-		Descriptors.insert({ DescriptorSets::Zero,descriptor });
-
-		Count<PipeLineLayout> PipelineLayout;
-		PipelineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] }, PcbConstnat);
-
-		GraphicsPipelineConfig pipelineConfig;
-		pipelineConfig.DebugName = "generate PRefiltered map";
-		pipelineConfig.Shader = Shader::GetOrCreate("prefilterCubeMap",
-			{ {ShaderStage::Vertex,ProofCurrentDirectorySrc +
-			"Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/prefilter.vs"},
-			{ShaderStage::Fragment,ProofCurrentDirectorySrc +
-			"Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/prefilter.fs"} });
-
-		pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
-		pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-		pipelineConfig.VertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-		pipelineConfig.VertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
-		pipelineConfig.VertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
-		pipelineConfig.VertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-		pipelineConfig.PipelineLayout = PipelineLayout;
-		pipelineConfig.RenderPass = renderPass;
-		Count<GraphicsPipeline> RenderPipline = GraphicsPipeline::Create(pipelineConfig);
-		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-		glm::mat4 captureViews[6] =
-		{
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-		};
-		struct UboData {
-			/// Projection matrix common to each face of the cubemap.
-			glm::mat4 projection;
-
-			/// View matrix to look at the direction of each cubemap face.
-			glm::mat4 view;
-		};
-		UboData uboData = {
-			glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f),
-			captureViews[0]
-		};
-		Count<UniformBuffer> ubuffer = UniformBuffer::Create(&uboData, sizeof(uboData), DescriptorSets::Zero, 0);
-		auto cube = MeshWorkShop::GenerateCube();
-
-		uint32_t totalMips = static_cast<uint32_t>(std::floor(std::log2(std::max(dimension, dimension)))) + 1;
-
-				// cubemap is incolor attahcment oopitmal format we just need to change it first to VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-		// so we cna render this my solution no toutorial had this 
-		// we need to have a bettter system of rendering
 		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-
-			VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-			VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			VkImageMemoryBarrier barrier = {};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-
-			barrier.image = preFilterMap.As<VulkanTextureCube>()->GetImageAlloc().Image;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = totalMips;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 6;
-			barrier.srcAccessMask = 0;
-			barrier.dstAccessMask = 0;
-
-			vkCmdPipelineBarrier(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-		});
-		PCB pcb;
-		uint32_t mipsize = dimension;
-		for (uint32_t miplevel = 0; miplevel < totalMips; miplevel++)
-		{
-			Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-
-				VkViewport viewport = {};
-				viewport.x = 0.0f;
-				viewport.y = static_cast<float>(mipsize);
-				viewport.width = static_cast<float>(mipsize);
-				viewport.height = -static_cast<float>(mipsize);
-				viewport.minDepth = 0.0f;
-				viewport.maxDepth = 1.0f;
-
-				VkRect2D scissor = {};
-				scissor.offset = { 0, 0 };
-				scissor.extent = { mipsize, mipsize };
-
-				for (uint32_t face = 0; face < 6; face++)
-				{
-					{
-						fbColorAttachment = Texture2D::Create(conigTexture);
-
-						frameConfig.DebugName = "Texture-Cube";
-						frameConfig.Size.X = dimension;
-						frameConfig.Size.Y = dimension;
-						frameConfig.Attachments = { format };
-						frameConfig.Attachments.Attachments[0].SetOverrideImage(fbColorAttachment->GetImage());
-
-						frameBuffer = FrameBuffer::Create(frameConfig);
-
-						renderPass = RenderPass::Create(renderPassConfig);
-					}
-
-					Renderer::SubmitCommand([&](CommandBuffer* rednderercmd) {
-						uboData.view = captureViews[face];
-						ubuffer->SetData(&uboData, sizeof(uboData));
-						pcb.Roughness = (float)miplevel / (float)(totalMips - 1);
-						pcb.NumSamples = numSamples;
-						Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(rednderercmd);
-						PcbConstnat->PushData(renderCmd, PipelineLayout, &pcb);
-						Renderer::BeginRenderPass(renderCmd, renderPass, frameBuffer);
-						renderPass.As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor);
-
-						auto descriptor0 = Descriptors[DescriptorSets::Zero];
-						descriptor0->WriteBuffer(0, ubuffer);
-						descriptor0->WriteImage(1, map);
-						descriptor0->Bind(renderCmd, PipelineLayout);
-						for (const auto& subMesh : cube->GetMeshSource()->GetSubMeshes())
-						{
-							subMesh.VertexBuffer->Bind(renderCmd);
-							subMesh.IndexBuffer->Bind(renderCmd);
-							Renderer::DrawElementIndexed(renderCmd, subMesh.IndexBuffer->GetCount());
-						}
-
-						Renderer::EndRenderPass(renderPass);
-					});
-
-					{
-						VkImageMemoryBarrier barrier = {};
-						barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-						barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-						//barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-						barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-						barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-						barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-						// VkImage image = frameBuffer.As<VulkanFrameBuffer>()->GetColorAttachmentFrameBufferImage(0).Images[Renderer::GetCurrentFrame().ImageIndex].Image;
-
-						barrier.image = fbColorAttachment.As<VulkanTexture2D>()->GetImageAlloc().Image;
-						barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-						barrier.subresourceRange.baseMipLevel = 0;
-						barrier.subresourceRange.levelCount = 1;
-						barrier.subresourceRange.baseArrayLayer = 0;
-						barrier.subresourceRange.layerCount = 1;
-						barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-						barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
-						vkCmdPipelineBarrier(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-							VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-					}
-					{
-						VkImageCopy copyRegion = {};
-
-						copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-						copyRegion.srcSubresource.baseArrayLayer = 0;
-						copyRegion.srcSubresource.mipLevel = 0;
-						copyRegion.srcSubresource.layerCount = 1;
-						copyRegion.srcOffset = { 0, 0, 0 };
-
-						copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-						copyRegion.dstSubresource.mipLevel = miplevel;
-
-						//3 is bottom face
-						//2 is top 
-						if (face == 2)
-							copyRegion.dstSubresource.baseArrayLayer = 3;
-						else if (face == 3)
-							copyRegion.dstSubresource.baseArrayLayer = 2;
-						else if (face == 0)
-							copyRegion.dstSubresource.baseArrayLayer = 1;
-						else if (face == 1)
-							copyRegion.dstSubresource.baseArrayLayer = 0;
-						else if (face == 4)
-							copyRegion.dstSubresource.baseArrayLayer = 5;
-						else if (face == 5)
-							copyRegion.dstSubresource.baseArrayLayer = 4;
-
-						//else
-							//copyRegion.dstSubresource.baseArrayLayer = face;
-
-						copyRegion.dstSubresource.layerCount = 1;
-						copyRegion.dstOffset = { 0, 0, 0 };
-
-						copyRegion.extent.width = static_cast<uint32_t>(mipsize);
-						copyRegion.extent.height = static_cast<uint32_t>(mipsize);
-
-						copyRegion.extent.depth = 1;
-
-						//VkImage image = frameBuffer.As<VulkanFrameBuffer>()->GetColorAttachmentFrameBufferImage(0).Images[Renderer::GetCurrentFrame().ImageIndex].Image;
-						VkImage image = fbColorAttachment.As<VulkanTexture2D>()->GetImageAlloc().Image;
-						vkCmdCopyImage(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), image,
-							VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-							preFilterMap.As<VulkanTextureCube>()->GetImageAlloc().Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
-					}
-				}
-				mipsize = mipsize / 2;
-			});
-
-		}
-		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-
-			VkImageMemoryBarrier barrier = {};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-
-			barrier.image = preFilterMap.As<VulkanTextureCube>()->GetImageAlloc().Image;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = totalMips;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 6;
-			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-			vkCmdPipelineBarrier(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(),
-				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-		});
-		return preFilterMap;
-		#endif 
-		return nullptr;
-	}
-
-	VulkanTextureCube::~VulkanTextureCube()
-	{
-		Release();
-	}
-
-
-	Count<Image2D> VulkanTextureCube::GetImage()const
-	{
-		return m_Image;
-		//return VulkanImage(m_Set, m_Format, { (float)m_Dimension,(float)m_Dimension }, VulkanImageExcessData{ m_Sampler,m_ImageView,m_Image.Image });
-	}
-	VkDescriptorImageInfo& VulkanTextureCube::GetImageBufferInfo()
-	{
-		m_ImageDescriptorInfo.sampler = m_Sampler;
-		m_ImageDescriptorInfo.imageView = m_ImageView;
-		m_ImageDescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		return m_ImageDescriptorInfo;
-	}
-
-
-	void VulkanTextureCube::AllocateMemory()
-	{
-		#ifdef 0
-
-
-		//https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/core/TextureCube.cpp
-		// (Goto) same file to view creating a framebuffer with data
-		// it would generate this texture for us then we convert to cubemap
-		const uint32_t size = Utils::BytesPerPixel(m_Format) * 6 * m_Dimension * m_Dimension;
-		const uint32_t layerSize = Utils::BytesPerPixel(m_Format) * m_Dimension * m_Dimension;
-
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-
-		VkFormat format = Utils::ProofFormatToVulkanFormat(m_Format);
-		VkImageCreateInfo imageInfo = {};
-		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.extent.width = m_Dimension;
-		imageInfo.extent.height = m_Dimension;
-		imageInfo.extent.depth = 1;
-		imageInfo.mipLevels = m_MipLevels;
-		imageInfo.arrayLayers = 6;
-		imageInfo.format = format;
-		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-			VmaAllocationCreateInfo vmaallocInfo = {};
-				//let the VMA library know that this data should be GPU native
-			vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-			graphicsContext->CreateVmaImage(imageInfo, vmaallocInfo, m_Image);
-		});
-
-		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-
-			VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-			VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			VkImageMemoryBarrier barrier = {};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-
-			barrier.image = m_Image.Image;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = m_MipLevels;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 6;
-			barrier.srcAccessMask = 0;
-			barrier.dstAccessMask = 0;
-
-			vkCmdPipelineBarrier(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-		});
-		{
-			VkImageViewCreateInfo createInfo = {};
-			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			createInfo.image = m_Image.Image;
-			createInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
-			createInfo.format = format;
-			createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			createInfo.subresourceRange.baseMipLevel = 0;
-			createInfo.subresourceRange.levelCount = m_MipLevels;
-			createInfo.subresourceRange.baseArrayLayer = 0;
-			createInfo.subresourceRange.layerCount = 6;
-			vkCreateImageView(graphicsContext->GetDevice(), &createInfo, nullptr, &m_ImageView);
-		}
-
-		{
-			VkSamplerCreateInfo createInfo = {};
-			createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-			createInfo.magFilter = VK_FILTER_LINEAR;
-			createInfo.minFilter = VK_FILTER_LINEAR;
-			createInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-			createInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-			createInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-			createInfo.anisotropyEnable = VK_TRUE;
-			createInfo.maxAnisotropy = graphicsContext->GetGPUProperties().limits.maxSamplerAnisotropy;
-			createInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-			createInfo.unnormalizedCoordinates = VK_FALSE;
-			createInfo.compareEnable = VK_FALSE;
-			createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-			createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			createInfo.mipLodBias = 0.0f;
-			createInfo.minLod = 0.0f;
-			createInfo.maxLod = static_cast<float>(m_MipLevels);
-			vkCreateSampler(graphicsContext->GetDevice(), &createInfo, nullptr, &m_Sampler);
-		}
-
-		m_Set = graphicsContext->GetGlobalPool()->AddTexture(m_Sampler, m_ImageView);
-		#endif // 0
-
-	}
-	void VulkanTextureCube::SetData(const void* data)
-	{
-		Count<Texture2D> texture = Texture2D::Create(m_Dimension, m_Dimension, m_Format, data);
-		GenerateCubeMap(texture);
-	}
-	void VulkanTextureCube::SetData(const void* data[6])
-	{
-		//https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/core/TextureCube.cpp
-
-		PF_CORE_ASSERT(false, "Has not been implmented");
-	}
-	void VulkanTextureCube::SetData(Count<Texture2D> texture)
-	{
-		GenerateCubeMap(texture);
-	}
-	void VulkanTextureCube::SetData(Count<Texture2D> textures[6])
-	{
-		PF_CORE_ASSERT(false, "Has not been implmented");
-		//https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/core/TextureCube.cpp
-		// go to file to see implementation
-	}
-	void VulkanTextureCube::GenerateCubeMap(Count<Texture> texture, Count< Shader> shader)
-	{
-		#ifdef 0
-
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-
-		FrameBufferConfig frameConfig;
-		frameConfig.DebugName = "Texture-Cube";
-		frameConfig.Size.X = m_Dimension;
-		frameConfig.Size.Y = m_Dimension;
-		frameConfig.Attachments = { m_Format };
-		frameConfig.Attachments.Attachments[0].SetOverrideImage(GetImage());
-
-		Count<FrameBuffer> frameBuffer = FrameBuffer::Create(frameConfig);
-
-		RenderPassConfig renderPassConfig("texture-cube-RenderPass", frameBuffer->GetConfig());
-		renderPassConfig.MultiView = true;
-		Count<RenderPass> renderPass = RenderPass::Create(renderPassConfig);
-
-		std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
-
-		auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-			.AddBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-			.AddBinding(1, DescriptorType::ImageSampler, ShaderStage::Fragment)
-			.Build();
-		Descriptors.insert({ DescriptorSets::Zero,descriptor });
-
-		Count<PipeLineLayout> PipelineLayout;
-		PipelineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
-
-		GraphicsPipelineConfig pipelineConfig;
-		pipelineConfig.DebugName = "generate cubemap create";
-		pipelineConfig.Shader = shader;
-
-		pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
-		pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-		pipelineConfig.VertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-		pipelineConfig.VertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
-		pipelineConfig.VertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
-		pipelineConfig.VertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-		pipelineConfig.PipelineLayout = PipelineLayout;
-		pipelineConfig.RenderPass = renderPass;
-		Count<GraphicsPipeline> RenderPipline = GraphicsPipeline::Create(pipelineConfig);
-
-		struct UboData {
-			/// Projection matrix common to each face of the cubemap.
-			alignas(16) glm::mat4 projection;
-
-			/// View matrix to look at the direction of each cubemap face.
-			alignas(16) glm::mat4 view[6];
-		};
-		UboData uboData = {
-			glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f),
+			const int faces = 6;
+			for (int face = 0; face < faces; face++)
 			{
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-				glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-			}
-		};
-		Count<UniformBuffer> ubuffer = UniformBuffer::Create(&uboData, sizeof(uboData), DescriptorSets::Zero, 0);
-		auto cube = MeshWorkShop::GenerateCube();
-
-		Renderer::SubmitCommand([&](CommandBuffer* buffer) {
-			Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(buffer);
-
-			Renderer::BeginRenderPass(renderCmd, renderPass, frameBuffer);
-			Renderer::RecordRenderPass(renderPass, RenderPipline);
-
-			auto descriptor0 = Descriptors[DescriptorSets::Zero];
-			descriptor0->WriteBuffer(0, ubuffer);
-			if (texture.As<Texture2D>())
-				descriptor0->WriteImage(1, texture.As<Texture2D>());
-			else
-				descriptor0->WriteImage(1, texture.As<TextureCube>());
-			descriptor0->Bind(renderCmd, PipelineLayout);
-			for (const auto& subMesh : cube->GetMeshSource()->GetSubMeshes())
-			{
-				subMesh.VertexBuffer->Bind(renderCmd);
-				subMesh.IndexBuffer->Bind(renderCmd);
-				Renderer::DrawElementIndexed(renderCmd, subMesh.IndexBuffer->GetCount());
-			}
-
-			Renderer::EndRenderPass(renderPass);
-		});
-		Renderer::SubmitCommand([&](CommandBuffer* buffer) {
-			if (m_MipLevels == 1)
-			{
-
-				VkImageMemoryBarrier barrier = {};
-				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.image = m_Image.Image;
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				barrier.subresourceRange.baseMipLevel = 0;
-				barrier.subresourceRange.levelCount = m_MipLevels;
-				barrier.subresourceRange.baseArrayLayer = 0;
-				barrier.subresourceRange.layerCount = 6;
-				barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				vkCmdPipelineBarrier(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-			}
-			if (m_MipLevels == 1)
-				return;
-			// Mipmapping
-
-			for (uint32_t face = 0; face < 6; face++)
-			{
+				uint32_t mipCount = GetMipLevelCount();
+				VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer();
 				VkImageMemoryBarrier barrier{};
 				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				barrier.image = m_Image.Image;
+				barrier.image = image;
 				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1252,11 +711,10 @@ namespace Proof
 				barrier.subresourceRange.layerCount = 1;
 				barrier.subresourceRange.levelCount = 1;
 
-				int32_t mipWidth = static_cast<int32_t>(m_Dimension);
-				int32_t mipHeight = static_cast<int32_t>(m_Dimension);
+				int32_t mipWidth = m_Config.Width;
+				int32_t mipHeight = m_Config.Height;
 
-				// if mipmap is 1 then we dont run it
-				for (uint32_t i = 1; i < m_MipLevels; i++)
+				for (uint32_t i = 1; i < mipCount; i++)
 				{
 					barrier.subresourceRange.baseMipLevel = i - 1;
 					barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -1264,82 +722,203 @@ namespace Proof
 					barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 					barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
-					vkCmdPipelineBarrier(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
-						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-						0, nullptr,
-						0, nullptr,
-						1, &barrier);
+					vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+						0, nullptr, 0, nullptr, 1, &barrier);
 
 					VkImageBlit blit{};
 					blit.srcOffsets[0] = { 0, 0, 0 };
 					blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
 					blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 					blit.srcSubresource.mipLevel = i - 1;
-					blit.srcSubresource.baseArrayLayer = face;
+					blit.srcSubresource.baseArrayLayer = 0;
 					blit.srcSubresource.layerCount = 1;
 					blit.dstOffsets[0] = { 0, 0, 0 };
 					blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
 					blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 					blit.dstSubresource.mipLevel = i;
-					blit.dstSubresource.baseArrayLayer = face;
+					blit.dstSubresource.baseArrayLayer = 0;
 					blit.dstSubresource.layerCount = 1;
 
-					vkCmdBlitImage(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
-						m_Image.Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-						m_Image.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-						1, &blit,
-						VK_FILTER_LINEAR);
+					vkCmdBlitImage(cmdBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+						1, &blit, VK_FILTER_LINEAR);
 
 					barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 					barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 					barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-					vkCmdPipelineBarrier(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
-						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-						0, nullptr,
-						0, nullptr,
-						1, &barrier);
+					vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+						0, nullptr, 0, nullptr, 1, &barrier);
 
 					if (mipWidth > 1) mipWidth /= 2;
 					if (mipHeight > 1) mipHeight /= 2;
 				}
 
-				barrier.subresourceRange.baseMipLevel = m_MipLevels - 1;
+				barrier.subresourceRange.baseMipLevel = mipCount - 1;
 				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-				vkCmdPipelineBarrier(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
-					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-					0, nullptr,
-					0, nullptr,
-					1, &barrier);
+				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+					0, nullptr, 0, nullptr, 1, &barrier);
+			}
+		});
+	}
+	void VulkanTextureCube::Build()
+	{
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+
+		Count<VulkanImage2D> vk_Image = m_Image.As<VulkanImage2D>();
+		uint32_t mipCount = m_Config.GenerateMips ? GetMipLevelCount() : 1;
+
+		vk_Image->Release();
+		ImageConfiguration& imageConfig = vk_Image->GetSpecificationRef();
+		imageConfig.Format = m_Config.Format;
+		imageConfig.Width = m_Config.Width;
+		imageConfig.Height = m_Config.Height;
+		imageConfig.Mips = mipCount;
+		if (!m_Texture || m_Config.Storage)
+			imageConfig.Usage = ImageUsage::Storage;
+		vk_Image->Build();
+
+		auto& imageInfo = vk_Image->GetinfoRef();
+		if (!m_Texture)
+		{
+			Renderer::SubmitCommand([&](CommandBuffer* cmd) {
+				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer();
+
+				VkImageSubresourceRange subresourceRange = {};
+				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				subresourceRange.layerCount = 6;
+				subresourceRange.levelCount = GetMipLevelCount();
+
+				Utils::SetImageLayout(cmdBuffer, imageInfo.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout, subresourceRange);
+
+			});
+		}
+		else
+		{
+
+		// sampler
+			{
+
+				vk_Image->GetinfoRef().Sampler = nullptr;
+				graphicsContext->DeleteSampler(vk_Image->GetSamplerHash());
+
+				VkSamplerCreateInfo samplerCreateInfo = {};
+				samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+				samplerCreateInfo.maxAnisotropy = 1.0f;
+				samplerCreateInfo.magFilter = Utils::VulkanSamplerFilter(m_Config.Filter);
+				samplerCreateInfo.minFilter = Utils::VulkanSamplerFilter(m_Config.Filter);
+				samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+				samplerCreateInfo.addressModeU = Utils::VulkanSamplerWrap(m_Config.Wrap);
+				samplerCreateInfo.addressModeV = Utils::VulkanSamplerWrap(m_Config.Wrap);
+				samplerCreateInfo.addressModeW = Utils::VulkanSamplerWrap(m_Config.Wrap);
+				samplerCreateInfo.mipLodBias = 0.0f;
+				samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+				samplerCreateInfo.minLod = 0.0f;
+				samplerCreateInfo.maxLod = mipCount;
+				/**
+				 *
+				 * anisotrotic filtering.
+				 *
+				 */
+				samplerCreateInfo.anisotropyEnable = false;
+				samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+				auto [sampler, hash] = graphicsContext->GetOrCreateSampler(samplerCreateInfo);
+				vk_Image->GetinfoRef().Sampler = sampler;
+				vk_Image->SetSamplerHash(hash);
+				vk_Image->UpdateDescriptor();
+
 			}
 
-		});
-		#endif
+			{
+				VkImageViewCreateInfo imageViewCreateInfo = {};
+				imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+				imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+				imageViewCreateInfo.format = Utils::ProofFormatToVulkanFormat(m_Config.Format);
+				imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				imageViewCreateInfo.subresourceRange.levelCount = mipCount;
+				imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+				imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+				imageViewCreateInfo.subresourceRange.layerCount = 6;
+				imageViewCreateInfo.image = imageInfo.ImageAlloc.Image;
+				if (imageInfo.ImageView)
+					vkDestroyImageView(device, imageInfo.ImageView, nullptr);
+
+				vkCreateImageView(graphicsContext->GetDevice(), &imageViewCreateInfo, nullptr, &vk_Image->GetinfoRef().ImageView);
+
+				graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
+				vk_Image->UpdateDescriptor();
+			}
+			TextureConfiguration textureConfig;
+			textureConfig.DebugName = "VulkanCubemap texture";
+			textureConfig.Format = m_Config.Format;
+			textureConfig.GenerateMips = false;
+			textureConfig.Height = m_Config.Height;
+			textureConfig.Width = m_Config.Width;
+			textureConfig.Storage = true;
+
+			ComputePipelineConfig computePipelineConfig;
+			computePipelineConfig.DebugName = "EquirectangularToCubemap Pipeline";
+			computePipelineConfig.Shader = Shader::Get("EquirectangularToCubemap");
+
+			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
+
+
+			ComputePassConfiguration computePassConfig;
+			computePassConfig.DebugName = "EquirectangularToCubemap Pass";
+			computePassConfig.Pipeline = computePipeline;
+
+			auto computePass = ComputePass::Create(computePassConfig);
+
+			computePass->SetInput("u_EquirectangularMap", m_Texture);
+			Count<TextureCube> cube = this;
+			computePass->SetInput("u_CubeMap", cube);
+			struct pushData
+			{
+				Vector2U imageSize;
+				Vector2U cubeSize;
+			};
+
+			// make sure cube does not delete this due to refercne cout
+			Renderer::SubmitDatafree([cube]()
+			{
+				auto id = cube->GetID();
+			});
+			Renderer::SubmitCommand([&](CommandBuffer* buffer) {
+
+				Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
+				Renderer::BeginComputePass(renderCommandBuffer, computePass);
+
+				pushData pushData;
+				pushData.imageSize = { m_Texture->GetSize() };
+				pushData.cubeSize = GetSize();
+				computePass->PushData("pc", &pushData);
+				computePass->Dispatch(m_Config.Width / 32, m_Config.Height / 32, 6);
+				Renderer::EndComputePass(computePass);
+
+			});
+			if (m_Texture && m_Config.GenerateMips && mipCount > 1)
+				GenerateMips();
+			m_Texture = nullptr;
+		}
 	}
-	
 	void VulkanTextureCube::Release()
 	{
-		#ifdef 0
-		Renderer::SubmitDatafree([sampler = m_Sampler, imageView = m_ImageView, image = m_Image]()
-		{
-			VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice();
-			auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-
-			vkDestroySampler(device, sampler, nullptr);
-			vkDestroyImageView(device, imageView, nullptr);
-			vmaDestroyImage(graphicsContext->GetVMA_Allocator(), image.Image, image.Allocation);
-		});
-		m_Sampler = nullptr;
-		m_ImageView = nullptr;
-		m_Image.Image = nullptr;
-		m_Image.Allocation = nullptr;
-		#endif
+		m_Texture = nullptr;
+		m_Image = nullptr;
 	}
-	#endif
+	ResourceDescriptorInfo VulkanTextureCube::GetResourceDescriptorInfo()const
+	{
+		return m_Image->GetResourceDescriptorInfo();
+	}
+	VulkanTextureCube::~VulkanTextureCube()
+	{
+		Release();
+	}
 	
 }

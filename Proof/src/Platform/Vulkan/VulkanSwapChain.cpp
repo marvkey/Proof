@@ -435,23 +435,13 @@ namespace Proof
     }
 
     VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
-
-        for (const auto& availablePresentMode : availablePresentModes) {
-            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-                PF_ENGINE_INFO("Present mode: Mailbox");
-                return availablePresentMode;
-            }
-        }
-
-        // for (const auto &availablePresentMode : availablePresentModes) {
-        //   if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-     //           PF_ENGINE_INFO("Present mode: Immediate");
-        // 
-        //     return availablePresentMode;
-        //   }
-        // }
+        #if 1
         PF_ENGINE_INFO("Present mode: V-Sync");
         return VK_PRESENT_MODE_FIFO_KHR;
+        #else 
+        PF_ENGINE_INFO("Present mode: Immediate");
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
+        #endif
     }
 
    

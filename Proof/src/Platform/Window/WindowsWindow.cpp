@@ -710,7 +710,6 @@ namespace Proof {
         {
             CenterWindow();
         }
-
         glfwSetKeyCallback((GLFWwindow*)m_Window, [](::GLFWwindow* window, int key, int scancode, int action, int mods)mutable {
             WindowsWindow& proofWindow = *(WindowsWindow*)glfwGetWindowUserPointer(window);
             proofWindow.key_callback(key, scancode, action, mods);

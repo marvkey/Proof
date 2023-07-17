@@ -117,7 +117,10 @@ namespace Proof
 	}
 	bool ProjectSerilizer::DeSerilizeText(const std::string& filePath) {
 		if (std::filesystem::exists(filePath) == false)
+		{
+			PF_ENGINE_ERROR("Project serlizer path {} does not exist", filePath);
 			PF_CORE_ASSERT(false);
+		}
 		YAML::Node data = YAML::LoadFile(filePath);
 		if (!data["Project"])
 			return false;

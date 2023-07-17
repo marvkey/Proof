@@ -94,6 +94,7 @@ namespace Proof {
 
 		virtual Count<Image2D> GetImage()const =0 ;
 		static Count<TextureCube> Create(const TextureConfiguration& config, const std::filesystem::path& path);
+		static Count<TextureCube> Create(const void* data,const TextureConfiguration& config);
 	};
 	namespace Utils {
 		inline uint32_t GetMipLevelCount(uint32_t width, uint32_t height)

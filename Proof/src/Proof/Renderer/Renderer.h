@@ -62,6 +62,8 @@ namespace Proof {
 
 		static Count<class Texture2D> GetWhiteTexture();
 		static Count<class Texture2D> GetBlackTexture();
+		static Count<class TextureCube> GetWhiteTextureCube();
+		static Count<class TextureCube> GetBlackTextureCube();
 
 		//submit to render thread
 		//template<class FuncT>

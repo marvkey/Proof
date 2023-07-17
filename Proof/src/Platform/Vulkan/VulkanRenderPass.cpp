@@ -358,7 +358,8 @@ namespace Proof
         BeginRenderPassBase(command, vieport, scisscor);
         const auto vulkanPipeline = GetPipeline().As<VulkanGraphicsPipeline>();
         vulkanPipeline->Bind( m_CommandBuffer);
-        material.As<VulkanRenderMaterial>()->Bind(command.As<VulkanRenderCommandBuffer>(),this);
+        Count<VulkanRenderPass> pass = this;
+        material.As<VulkanRenderMaterial>()->Bind(command.As<VulkanRenderCommandBuffer>(), pass);
         m_DescritptorSetManager->Bind();
 
         auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
@@ -658,4 +659,9 @@ namespace Proof
     {
         m_DescritptorSetManager->SetInput(name, images);
     }
+    void VulkanRenderPass::SetInput(std::string_view name, Count<class TextureCube> imageCube)
+    {
+        m_DescritptorSetManager->SetInput(name, imageCube);
+    }
+
 }

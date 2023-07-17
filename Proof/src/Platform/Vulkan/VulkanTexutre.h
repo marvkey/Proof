@@ -133,64 +133,30 @@ namespace Proof
 	class VulkanTextureCube : public TextureCube {
 	public:
 		VulkanTextureCube(const TextureConfiguration& config, const std::filesystem::path& path);
-		virtual Count<Image2D> GetImage()const { return nullptr; };
+		VulkanTextureCube(const void* data,const TextureConfiguration& config);
+		~VulkanTextureCube();
+		virtual Count<Image2D> GetImage()const { return m_Image; };
 		const VkDescriptorImageInfo& GetDescriptorInfoVulkan()const { return *(VkDescriptorImageInfo*)GetResourceDescriptorInfo(); };
-		virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const override;
+		virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const ;
+
+		//virtual void Resize(uint32_t width, uint32_t height) ;
+		//virtual void Resize(Vector2U size)  { Resize(size.X, size.Y); }
+
+		virtual uint32_t GetWidth()const { return m_Config.Width; };
+		virtual uint32_t GetHeight() const { return m_Config.Height; };
+		virtual Vector2U GetSize()const { return { m_Config.Width, m_Config.Height }; }
+
+		virtual float GetAspectRatio()const { return (float)GetWidth() / (float)GetHeight(); };
+		uint32_t GetMipLevelCount() { return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height); }
 	private:
+		void GenerateMips();
 		TextureConfiguration m_Config;
 		std::filesystem::path m_Path;
+		//texture we load
 		Count<VulkanTexture2D> m_Texture;
+		Count<Image2D> m_Image;
 		void Build();
 		void Release();
 
 	};
-	#if 0
-	class VulkanTextureCube : public TextureCube{
-	public:
-		VulkanTextureCube(const std::filesystem::path& Path, uint32_t dimension = 512, bool generateMips = false);
-		VulkanTextureCube(uint32_t dimension = 512, bool generateMips = false);
-		VulkanTextureCube(Count<Texture2D> texture,uint32_t dimension = 512, bool generateMips = false);
-		VulkanTextureCube(Count<TextureCube> map, Count<class Shader> shader, uint32_t dimension=64, bool generateMips=false);
-		
-		static Count<TextureCube> GeneratePreFilterMap(Count<TextureCube>map, uint32_t dimension = 128, uint32_t numSamples = 1024);
-		virtual ~VulkanTextureCube();
-		virtual Count<Image2D> GetImage()const ;
-		VkDescriptorImageInfo& GetImageBufferInfo();
-		VkImageView GetImageView() {
-			return m_ImageView;
-		}
-		virtual VkSampler GetSampler() {
-			return m_Sampler;
-		}
-		VulkanImageAlloc GetImageAlloc() {
-			return m_Image;
-		}
-		virtual std::string GetPath()const {
-			return m_Path;
-		}
-		void SetData(const void* data);
-		void SetData(const void* data[6]);
-		void SetData(Count<Texture2D> textures);
-		void SetData(Count<Texture2D> textures[6]);
-		const VkDescriptorImageInfo& GetDescriptorInfoVulkan()const { return m_ImageDescriptorInfo; };
-		virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const { return (ResourceDescriptorInfo)&m_ImageDescriptorInfo; }
-	private:
-		uint32_t m_Dimension;
-		std::string m_Path;
-		// shader makes it esier for us to generate irradiance and other typees of maps
-		void GenerateCubeMap(Count<Texture> textures,Count<class Shader> shader = Shader::GetOrCreate("Equirectangular to Cubemap",
-			ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/EquirectangularToCubemap.shader"));
-		ImageFormat m_Format = ImageFormat::RGBA32F;
-		VkImageView m_ImageView = nullptr;
-		VkSampler m_Sampler = nullptr;
-		VulkanImageAlloc m_Image;
-
-		void AllocateMemory();
-		void Release();
-		mutable VkDescriptorSet m_Set{ VK_NULL_HANDLE };
-		VkDescriptorImageInfo m_ImageDescriptorInfo;
-		Count<Image2D> m_Image;
-		uint32_t m_MipLevels =1;
-	};
-	#endif
 }

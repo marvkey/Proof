@@ -43,6 +43,8 @@ namespace Proof {
 		Count<class Texture2D> WhiteTexture;
 		Count<class Texture2D> BlackTexture;
 		Count<class Texture2D> NullTexture;
+		Count<class TextureCube> WhiteTextureCube;
+		Count<class TextureCube> BlackTextureCube;
 		BaseTextures();
 	};
 }

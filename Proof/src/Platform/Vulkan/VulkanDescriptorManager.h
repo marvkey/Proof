@@ -114,6 +114,7 @@ namespace Proof
 		~VulkanDescriptorManager();
 		void SetInput(std::string_view name, Count<class UniformBuffer> buffer);
 		void SetInput(std::string_view name, Count<class StorageBuffer> buffer);
+		void SetInput(std::string_view name, Count<class TextureCube> buffer);
 		void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images);
 		void SetInput(std::string_view name, Count<class Texture2D> iamge);
 

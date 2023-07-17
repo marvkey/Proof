@@ -211,7 +211,7 @@ namespace Proof {
 	
 
 
-	void VulkanRenderMaterial::Bind(Count<class VulkanRenderCommandBuffer> commandBuffer, VulkanComputePass* pipeline)
+	void VulkanRenderMaterial::Bind(Count<class VulkanRenderCommandBuffer> commandBuffer, Count<VulkanComputePass> computePass)
 	{
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
 		m_DescritptorSetManager->Bind();
@@ -229,7 +229,7 @@ namespace Proof {
 			vkCmdBindDescriptorSets(
 				commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
 				VK_PIPELINE_BIND_POINT_COMPUTE,
-				pipeline->GetConfig().Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
+				computePass->GetConfig().Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 				(int)set,
 				1,
 				&setInfo.Set,
@@ -241,12 +241,12 @@ namespace Proof {
 		{
 			if (pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT)
 			{
-				pipeline->PushData(pushName, m_UniformBufferStorage.Get());
+				computePass->PushData(pushName, m_UniformBufferStorage.Get());
 			}
 		}
 	}
 
-	void VulkanRenderMaterial::Bind(Count<VulkanRenderCommandBuffer> commandBuffer, VulkanRenderPass* pipeline)
+	void VulkanRenderMaterial::Bind(Count<VulkanRenderCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass)
 	{
 		
 
@@ -266,7 +266,7 @@ namespace Proof {
 			vkCmdBindDescriptorSets(
 				commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
 				VK_PIPELINE_BIND_POINT_COMPUTE,
-				pipeline->GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
+				renderPass->GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
 				(int)set,
 				1,
 				&setInfo.Set,
@@ -278,7 +278,7 @@ namespace Proof {
 		{
 			if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT || pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT)
 			{
-				pipeline->PushData(pushName, m_UniformBufferStorage.Get());
+				renderPass->PushData(pushName, m_UniformBufferStorage.Get());
 			}
 		}
 	}

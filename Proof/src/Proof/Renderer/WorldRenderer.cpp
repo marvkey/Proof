@@ -46,14 +46,15 @@ namespace Proof
 	Count<Texture2D> brdfTexture;
 	Count<TextureCube> iradianceCubeMap;
 	Count<TextureCube> prefilterCubeMap;
-	Count<GraphicsPipeline> RenderPipline;
+	Count<GraphicsPipeline> skyBoxRenderPipeline;
 	Count<PipeLineLayout> PipelineLayout;
+	Count<RenderPass> skyBoxPass;
 	Count<Mesh> Cube; 
 	Count< UniformBuffer> cameraBuffer;
 	std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 	WorldRenderer::~WorldRenderer() {
 		textureCubeMap = nullptr;
-		RenderPipline = nullptr;
+		skyBoxRenderPipeline = nullptr;
 		PipelineLayout = nullptr;
 		Cube = nullptr; 
 		cameraBuffer = nullptr;
@@ -74,7 +75,7 @@ namespace Proof
 		FrameBufferConfig config;
 		config.DebugName = "Screen FrameBuffer";
 		config.Attachments = { ImageFormat::RGBA32F,ImageFormat::DEPTH32FSTENCIL8UI };
-		config.ClearColor = { 0.1,0.1,0.1,0.9 };
+		config.ClearColor = { 0,0,0,1 };
 		config.ClearFrameBufferOnLoad = false;
 		config.ClearDepthOnLoad = false;
 	
@@ -120,7 +121,41 @@ namespace Proof
 			m_MeshPipeline.RenderPass = RenderPass::Create(renderPassConfig);
 			m_MeshPipeline.RenderPass->SetInput("CameraData", cameraBuffer);
 		}
-	
+
+		TextureConfiguration cubeTextureConfig;
+		cubeTextureConfig.GenerateMips = false;
+		cubeTextureConfig.Height = 1024;
+		cubeTextureConfig.Width = 1024;
+		cubeTextureConfig.Storage = true;
+		cubeTextureConfig.Format = ImageFormat::RGBA32F;
+		cubeTextureConfig.Wrap = TextureWrap::ClampEdge;
+		textureCubeMap = TextureCube::Create(cubeTextureConfig, "Assets/qwantani_puresky_4k.hdr");
+		//textureCubeMap = Renderer::GetWhiteTextureCube();
+
+		{
+			GraphicsPipelineConfig pipelineConfig;
+			pipelineConfig.DebugName = "SKy box";
+			pipelineConfig.Shader = Shader::Get("SkyBox");
+			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+			pipelineConfig.TargetBuffer = m_ScreenFrameBuffer->GetFrameBuffer();
+			pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
+			pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
+			pipelineConfig.VertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
+			pipelineConfig.VertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
+			pipelineConfig.VertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
+			pipelineConfig.VertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
+			skyBoxRenderPipeline  = GraphicsPipeline::Create(pipelineConfig);
+
+			RenderPassConfig renderPassConfig;
+			renderPassConfig.DebugName = "skyBoxPass Pass";
+			renderPassConfig.Attachments = { ImageFormat::RGBA32F,ImageFormat::DEPTH32FSTENCIL8UI };
+			renderPassConfig.Pipeline = skyBoxRenderPipeline;
+			skyBoxPass = RenderPass::Create(renderPassConfig);
+			skyBoxPass->SetInput("CameraData", cameraBuffer);
+			skyBoxPass->SetInput("u_EnvironmentMap", textureCubeMap);
+		}
+		Cube = MeshWorkShop::GenerateCube();
+
 		#if 0
 		m_Renderer3D = CreateSpecial< Renderer3DPBR>(m_RenderPass);
 		m_UIRenderer = CreateSpecial < Renderer2D>(m_RenderPass, true);
@@ -129,7 +164,6 @@ namespace Proof
 
 		if (textureCubeMap != nullptr)
 			return;
-		Cube = MeshWorkShop::GenerateCube();
 		{
 			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 				.AddBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex)
@@ -205,6 +239,15 @@ namespace Proof
 		Renderer::BeginRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass,true);
 		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
 
+		Renderer::BeginRenderPass(m_CommandBuffer, skyBoxPass);
+		for (const auto& subMesh : Cube->GetMeshSource()->GetSubMeshes())
+		{
+			subMesh.VertexBuffer->Bind(m_CommandBuffer);
+			subMesh.IndexBuffer->Bind(m_CommandBuffer);
+			Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexBuffer->GetCount());
+		}
+		Renderer::EndRenderPass(skyBoxPass);
+		
 		{
 			const auto& entitiyView = m_World->m_Registry.view<MeshComponent>();
 			for (auto& entity : entitiyView)

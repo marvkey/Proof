@@ -22,6 +22,10 @@ namespace Proof
 	{
 		m_DescritptorSetManager->SetInput(name, buffer);
 	}
+	void VulkanComputePass::SetInput(std::string_view name, Count<class TextureCube> buffer)
+	{
+		m_DescritptorSetManager->SetInput(name, buffer);
+	}
 
 	void VulkanComputePass::PushData(std::string_view name, const void* data)
 	{
@@ -36,6 +40,10 @@ namespace Proof
 		:m_Config(config)
 	{
 		Build();
+	}
+	VulkanComputePass::~VulkanComputePass()
+	{
+		m_DescritptorSetManager = nullptr;
 	}
 	void VulkanComputePass::Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
@@ -88,7 +96,8 @@ namespace Proof
 	void VulkanComputePass::BeginComputePass(Count<class RenderCommandBuffer> command, Count<class VulkanRenderMaterial> material)
 	{
 		BeginComputePassBase(command);
-		material->Bind(m_CommandBuffer.As<VulkanRenderCommandBuffer>(), this);
+		Count<VulkanComputePass> pass = this;
+		material->Bind(m_CommandBuffer.As<VulkanRenderCommandBuffer>(), pass);
 		m_DescritptorSetManager->Bind();
 
 		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];

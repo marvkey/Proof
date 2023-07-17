@@ -42,6 +42,28 @@ namespace Proof
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
         }
 	}
+    void VulkanDescriptorManager::SetInput(std::string_view name, Count<class TextureCube> buffer)
+    {
+        m_Build = false;
+        auto shader = m_Config.Shader;
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+        if (decl)
+        {
+            //if (!m_Inputs.contains(decl->Set))
+            //{
+            //    PF_ENGINE_ERROR("Descriptor Manager {}, Input {} Descriptro Manager does not contain the set ", m_Config.DebugName, name, decl->Set);
+            //    return;
+            //}
+            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+            //VkWriteDescriptorSet& write = m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight][decl->Set][decl->Binding];
+            //write.dstSet = m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight][decl->Set].Set;
+            //write.pImageInfo = &buffer.As<VulkanTexture2D>()->GetImageBufferInfo();
+        }
+        else
+        {
+            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+        }
+    }
 
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
     {
@@ -146,12 +168,12 @@ namespace Proof
                         break;
                     case Proof::RenderPassResourceType::TextureCube:
                         {
-                           // write.pImageInfo = &resource.Input[0].As<VulkanTextureCube>()->GetDescriptorInfoVulkan();
+                            write.pImageInfo = &resource.Input[0].As<VulkanTextureCube>()->GetDescriptorInfoVulkan();
                         }
                         break;
                     case Proof::RenderPassResourceType::Image2D:
                         {
-                            //write.pBufferInfo = resource.Input[0].As<VulkanImage>()->GetDescriptorInfo();
+                           //write.pBufferInfo = resource.Input[0].As<VulkanI>()->GetDescriptorInfo();
                         }
                         break;
                     case Proof::RenderPassResourceType::Texture2DSet:
@@ -449,7 +471,8 @@ namespace Proof
                 for (auto [binding, resource] : descriptorSet[frame])
                 {
                     vkDestroyDescriptorSetLayout(device, resource.Layout, nullptr);
-                    VK_CHECK_RESULT(vkFreeDescriptorSets(device, pool, 1, &resource.Set));
+                    if(resource.Set)
+                        VK_CHECK_RESULT(vkFreeDescriptorSets(device, pool, 1, &resource.Set));
                 }
             }
             vkDestroyDescriptorPool(device, pool, nullptr);

@@ -39,6 +39,16 @@ namespace Proof {
 		}
 		return nullptr;
 	}
+	Count<TextureCube> TextureCube::Create(const void* data, const TextureConfiguration& config)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(data,config);
+		}
+		return nullptr;
+	}
 	Count<Image2D> Image2D::Create(const ImageConfiguration& specification)
 	{
 		switch (Renderer::GetAPI())
@@ -98,10 +108,10 @@ namespace Proof {
 				return Buffer();
 			}
 			// prrety sure flaot is already 4 so it is the smae as width * height * 4 *4 im guessing i forgot
-			float* data_rgba = new float[size_t(width) * size_t(height) * 4];
+			float* data_rgba = new float[size_t(widthint) * size_t(heightInt) * 4];
 			if (channels == 3)
 			{
-				for (size_t i = 0; i < size_t(width) * size_t(height); i++)
+				for (size_t i = 0; i < size_t(widthint) * size_t(heightInt); i++)
 				{
 					for (size_t c = 0; c < 3; c++)
 					{
@@ -112,12 +122,16 @@ namespace Proof {
 			}
 			else
 			{
-				memcpy(data_rgba, data, size_t(width) * size_t(height) * 4 * 4);
+				memcpy(data_rgba, data, size_t(widthint) * size_t(heightInt) * 4 * 4);
 			}
 			stbi_image_free(data);
 			width = widthint;
 			height = heightInt;
-			return Buffer((uint8_t*)data_rgba, size_t(width) * size_t(height) * 4 * 4);
+			uint32_t imageSize = width * height * 4 * sizeof(float);
+			Buffer buffer((uint8_t*)data_rgba, imageSize,true);
+			
+			delete[] data_rgba;
+			return buffer;
 		}
 
 		uint8_t* data = stbi_load(path.string().c_str(), &widthint, &heightInt, &channels, 4);

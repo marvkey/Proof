@@ -17,12 +17,12 @@ Assets:
   - Asset: 1231203838479
     Type: World
     Path: Scenes\SinglePlayer.ProofWorld
-  - Asset: 36841140856676435
-    Type: Texture
-    Path: Images\particlePack\PNG (Black background)\slash_02.Texture.ProofAsset
   - Asset: 8147961363379213054
     Type: MeshSourceFile
     Path: Models\sphere.fbx
+  - Asset: 36841140856676435
+    Type: Texture
+    Path: Images\particlePack\PNG (Black background)\slash_02.Texture.ProofAsset
   - Asset: 5223393378962800653
     Type: MeshSourceFile
     Path: Models\TestTerrain.obj
@@ -35,12 +35,12 @@ Assets:
   - Asset: 4645041025570573733
     Type: Mesh
     Path: Mesh\cube.Mesh.ProofAsset
-  - Asset: 7550597728136066028
-    Type: TextureSourceFile
-    Path: Images\particlePack\PNG (Black background)\spark_01.png
   - Asset: 1752479425523143769
     Type: TextureSourceFile
     Path: Images\particlePack\PNG (Black background)\circle_05.png
+  - Asset: 7550597728136066028
+    Type: TextureSourceFile
+    Path: Images\particlePack\PNG (Black background)\spark_01.png
   - Asset: 198693368207659498
     Type: Texture
     Path: Images\particlePack\PNG (Black background)\scorch_03.Texture.ProofAsset

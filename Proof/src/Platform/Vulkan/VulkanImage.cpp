@@ -95,6 +95,8 @@ namespace Proof {
 		VkImageCreateInfo imageCreateInfo = {};
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+		if(m_Specification.Layers  >1)
+			imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 		imageCreateInfo.format = vulkanFormat;
 		imageCreateInfo.extent.width = m_Specification.Width;
 		imageCreateInfo.extent.height = m_Specification.Height;

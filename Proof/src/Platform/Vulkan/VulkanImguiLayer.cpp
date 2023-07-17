@@ -29,16 +29,16 @@ namespace Proof {
 		// Select Surface Format
 		const VkFormat requestSurfaceImageFormat[] = { VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM };
 		const VkColorSpaceKHR requestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
-		wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(graphicsContext->GetGPU(), wd->Surface, requestSurfaceImageFormat, (size_t)IM_ARRAYSIZE(requestSurfaceImageFormat), requestSurfaceColorSpace);
-		//wd->SurfaceFormat = graphicsContext->GetSwapChain().As<VulkanSwapChain>()->GetSurfaceFormat();
+		//wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(graphicsContext->GetGPU(), wd->Surface, requestSurfaceImageFormat, (size_t)IM_ARRAYSIZE(requestSurfaceImageFormat), requestSurfaceColorSpace);
+		wd->SurfaceFormat = graphicsContext->GetSwapChain().As<VulkanSwapChain>()->GetSurfaceFormat();
 		// Select Present Mode
 		#ifdef IMGUI_UNLIMITED_FRAME_RATE
 		VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_FIFO_KHR };
 		#else
 		VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_FIFO_KHR };
 		#endif
-		wd->PresentMode = ImGui_ImplVulkanH_SelectPresentMode(graphicsContext->GetGPU(), wd->Surface, &present_modes[0], IM_ARRAYSIZE(present_modes));
-		//wd->PresentMode = graphicsContext->GetSwapChain().As<VulkanSwapChain>()->GetPresentMode();
+		//wd->PresentMode = ImGui_ImplVulkanH_SelectPresentMode(graphicsContext->GetGPU(), wd->Surface, &present_modes[0], IM_ARRAYSIZE(present_modes));
+		wd->PresentMode = graphicsContext->GetSwapChain().As<VulkanSwapChain>()->GetPresentMode();
 		//printf("[vulkan] Selected PresentMode = %d\n", wd->PresentMode);
 
 		// Create SwapChain, RenderPass, Framebuffer, etc.

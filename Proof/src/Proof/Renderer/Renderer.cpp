@@ -111,6 +111,16 @@ namespace Proof {
 		return RendererBase::s_BaseTextures->BlackTexture;
 	}
 
+	Count<class TextureCube> Renderer::GetWhiteTextureCube()
+	{
+		return RendererBase::s_BaseTextures->WhiteTextureCube;
+	}
+
+	Count<class TextureCube> Renderer::GetBlackTextureCube()
+	{
+		return RendererBase::s_BaseTextures->BlackTextureCube;
+	}
+
 	Count<Texture2D> Renderer::GenerateBRDFLut()
 	{
 		const uint32_t imageSize = 1024;
@@ -123,7 +133,7 @@ namespace Proof {
 		
 		// widht* height * bytes per pixel
 		uint8_t* data = new uint8_t[imageSize * imageSize * 8];
-		memset(data, 0xFF000000, imageSize * imageSize * 8);
+		//memset(data, 0xFF000000, imageSize * imageSize * 8);
 		Count<Texture2D> brdfLut = Texture2D::Create(data,textureConfig);
 		
 		ComputePipelineConfig computePipelineConfig;
