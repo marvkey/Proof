@@ -233,6 +233,7 @@ namespace Proof
 
         m_RenderPass = nullptr;
     }
+   
     VulkanRenderPass::~VulkanRenderPass() {
         Release();
     }
@@ -246,7 +247,7 @@ namespace Proof
         depthAttachment.format = Utils::ProofFormatToVulkanFormat(config.Format);
         depthAttachment.samples = graphicsContext->GetSampleCount();
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // we want to control these ourself
-        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -277,7 +278,7 @@ namespace Proof
             attachment.format = Utils::ProofFormatToVulkanFormat(config.Format);
             attachment.samples = VK_SAMPLE_COUNT_1_BIT;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -346,9 +347,6 @@ namespace Proof
             renderPassInfo.renderArea = vk_scissor;
             renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
             renderPassInfo.pClearValues = clearValues.data();
-//vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &vk_viewport);
-
-           // vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &vk_scissor);
             vkCmdBeginRenderPass(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         }
     }
@@ -382,82 +380,9 @@ namespace Proof
                 0,
                 nullptr);
         }
-
-        VkViewport vk_viewport;
-        VkRect2D vk_scissor;
-        vk_viewport.x = vieport.X;
-        vk_viewport.y = vieport.Y;
-        vk_viewport.width = (float)vieport.Width;
-        vk_viewport.height = (float)vieport.Height;
-        vk_viewport.minDepth = vieport.MinDepth;
-        vk_viewport.maxDepth = vieport.MaxDepth;
-
-        vk_scissor.offset = { (int)scisscor.Offset.X, (int)scisscor.Offset.Y };
-        vk_scissor.extent = { (uint32_t)scisscor.Extent.X,(uint32_t)scisscor.Extent.Y };
-        const FrameBufferConfig frameBufferConfig = GetTargetFrameBuffer()->GetConfig();
-        VkClearValue colorValue{ frameBufferConfig.ClearColor.X, frameBufferConfig.ClearColor.Y, frameBufferConfig.ClearColor.Z, frameBufferConfig.ClearColor.W };
-
-        vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &vk_viewport);
-        vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &vk_scissor);
-        if (frameBufferConfig.ClearFrameBufferOnLoad || explicitClear)
-        {
-            std::vector< VkClearAttachment> clears;
-            std::vector< VkClearRect> reactClear;
-            reactClear.resize(frameBufferConfig.Attachments.Attachments.size());
-            clears.resize(frameBufferConfig.Attachments.Attachments.size());
-            uint32_t iterate = 0;
-
-            // has depth, in framebuffer creat depth buffer is always the last attachment
-            int depthIndex = -1;
-            for (auto& attach : frameBufferConfig.Attachments.Attachments)
-            {
-                VkClearAttachment clearAttach;
-                if ((attach.ClearOnLoad || explicitClear) && Utils::IsColorFormat(attach.Format))
-                {
-                    clearAttach.colorAttachment = iterate;
-                    clearAttach.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                    clearAttach.clearValue = colorValue;
-                    VkClearRect clearRect = {};
-                    clearRect.layerCount = 1;
-                    clearRect.rect = vk_scissor;
-                    reactClear[iterate] = clearRect;
-                    clears[iterate] = clearAttach;
-
-                }
-                else if ((frameBufferConfig.ClearDepthOnLoad || explicitClear) && GetTargetFrameBuffer()->HasDepthImage())
-                {
-                    // basically no need to check if it is depth
-                    // it would be a depth or stencil format 
-                    // if it not a color formats
-                    depthIndex = iterate;
-                }
-                iterate++;
-
-            }
-            if (depthIndex != -1)
-            {
-                VkClearAttachment clearAttach;
-                //config.Attachments.Attachments[depthIdex];
-                clearAttach.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                if (Utils::ContainStencilFormat(m_DepthFormat))
-                    clearAttach.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-                clearAttach.clearValue.depthStencil = { frameBufferConfig.DepthClearValue,frameBufferConfig.StencilClearValue };
-               // clearAttach.clearValue = colorValue;
-                clears[clears.size() - 1] = clearAttach;
-
-                VkClearRect clearRect = {};
-                clearRect.layerCount = 1;
-                clearRect.rect = vk_scissor;
-                reactClear[reactClear.size() - 1] = clearRect;
-            }
-            vkCmdClearAttachments(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
-                clears.size(),
-                clears.data(),
-                reactClear.size(),
-                reactClear.data());
-        }
+        SetViewPorts(vieport, scisscor, explicitClear);
+        
     }
-
     void VulkanRenderPass::BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear )
     {
         Viewport viewport;
@@ -501,6 +426,46 @@ namespace Proof
                 0,
                 nullptr);
         }
+        SetViewPorts(vieport, scisscor, explicitClear);
+    }
+    void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear)
+    {
+        Viewport viewport;
+        ViewportScissor scissor;
+        viewport.X = 0.0f;
+        viewport.Y = 0.0f;
+        viewport.Width = (float)GetTargetFrameBuffer()->GetConfig().Size.X;
+        viewport.Height = (float)GetTargetFrameBuffer()->GetConfig().Size.Y;
+        viewport.MinDepth = 0.0f;
+        viewport.MaxDepth = 1.0f;
+
+
+        scissor.Offset = { 0, 0 };
+        scissor.Extent = { viewport.Width,viewport.Height };
+
+        BeginRenderPass(command, viewport, scissor, explicitClear);
+    }
+    void VulkanRenderPass::RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial)
+    {
+        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot Push material fi render pass not enabled");
+        PF_CORE_ASSERT(m_MaterialRenderPass == true, "cannot Push if not a material Render Pass");
+
+        Count< VulkanRenderPass> pass = this;
+        renderMaterial.As<VulkanRenderMaterial>()->Bind(m_CommandBuffer.As<VulkanRenderCommandBuffer>(), pass);
+
+    }
+    
+    void VulkanRenderPass::EndRenderPass() {
+        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
+        vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
+        m_CommandBuffer = nullptr;
+        m_RenderPassEnabled = false;
+        m_MaterialRenderPass = false;
+    }
+    void VulkanRenderPass::SetViewPorts(Viewport vieport, ViewportScissor scisscor, bool explicitClear)
+    {
+        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot Set viewports if render pass not started");
+
         VkViewport vk_viewport;
         VkRect2D vk_scissor;
         vk_viewport.x = vieport.X;
@@ -521,27 +486,29 @@ namespace Proof
         {
             std::vector< VkClearAttachment> clears;
             std::vector< VkClearRect> reactClear;
-            reactClear.resize(frameBufferConfig.Attachments.Attachments.size());
-            clears.resize(frameBufferConfig.Attachments.Attachments.size());
             uint32_t iterate = 0;
 
             // has depth, in framebuffer creat depth buffer is always the last attachment
             int depthIndex = -1;
             for (auto& attach : frameBufferConfig.Attachments.Attachments)
             {
+               
                 VkClearAttachment clearAttach;
-                if ( (attach.ClearOnLoad || explicitClear )&& Utils::IsColorFormat(attach.Format))
+
+                if ((attach.ClearOnLoad || explicitClear) && Utils::IsColorFormat(attach.Format))
                 {
                     clearAttach.colorAttachment = iterate;
                     clearAttach.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                     clearAttach.clearValue = colorValue;
+
+                    clears.push_back(clearAttach);
+
                     VkClearRect clearRect = {};
                     clearRect.layerCount = 1;
                     clearRect.rect = vk_scissor;
-                    reactClear[iterate] = clearRect;
-                    clears[iterate] = clearAttach;
-
+                    reactClear.push_back(clearRect);
                 }
+                //depth always ccomes last in the order
                 else if ((frameBufferConfig.ClearDepthOnLoad || explicitClear) && GetTargetFrameBuffer()->HasDepthImage())
                 {
                     // basically no need to check if it is depth
@@ -555,63 +522,26 @@ namespace Proof
             if (depthIndex != -1)
             {
                 VkClearAttachment clearAttach;
-                     //config.Attachments.Attachments[depthIdex];
+                //config.Attachments.Attachments[depthIdex];
                 clearAttach.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
                 if (Utils::ContainStencilFormat(m_DepthFormat))
                     clearAttach.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
                 clearAttach.clearValue.depthStencil = { frameBufferConfig.DepthClearValue,frameBufferConfig.StencilClearValue };
                // clearAttach.clearValue = colorValue;
-                clears[clears.size() - 1] = clearAttach;
+                clears.push_back(clearAttach);
 
                 VkClearRect clearRect = {};
                 clearRect.layerCount = 1;
                 clearRect.rect = vk_scissor;
-                reactClear[reactClear.size() - 1] = clearRect;
+                reactClear.push_back(clearRect);
             }
-            vkCmdClearAttachments(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+            vkCmdClearAttachments(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
                 clears.size(),
                 clears.data(),
                 reactClear.size(),
                 reactClear.data());
         }
-  
-
     }
-    void VulkanRenderPass::RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial)
-    {
-        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot Push material fi render pass not enabled");
-        PF_CORE_ASSERT(m_MaterialRenderPass == true, "cannot Push if not a material Render Pass");
-
-        Count< VulkanRenderPass> pass = this;
-        renderMaterial.As<VulkanRenderMaterial>()->Bind(m_CommandBuffer.As<VulkanRenderCommandBuffer>(), pass);
-
-    }
-    void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear)
-    {
-        Viewport viewport;
-        ViewportScissor scissor;
-        viewport.X = 0.0f;
-        viewport.Y = 0.0f;
-        viewport.Width = (float)GetTargetFrameBuffer()->GetConfig().Size.X ;
-        viewport.Height = (float)GetTargetFrameBuffer()->GetConfig().Size.Y ;
-        viewport.MinDepth = 0.0f;
-        viewport.MaxDepth = 1.0f;
-
-
-        scissor.Offset = { 0, 0 };
-        scissor.Extent = { viewport.Width,viewport.Height };
-
-        BeginRenderPass(command, viewport, scissor,explicitClear);
-    }
-    
-    void VulkanRenderPass::EndRenderPass() {
-        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
-        vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
-        m_CommandBuffer = nullptr;
-        m_RenderPassEnabled = false;
-        m_MaterialRenderPass = false;
-    }
-
     void VulkanRenderPass::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
     {
         m_DescritptorSetManager->SetInput(name, buffer);

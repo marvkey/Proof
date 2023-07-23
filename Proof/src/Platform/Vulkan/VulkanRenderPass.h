@@ -48,6 +48,7 @@ namespace Proof{
 		void RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial);
 
 		void Release();
+		void SetViewPorts(Viewport vieport, ViewportScissor scisscor, bool explicitClear);
 		Count<RenderCommandBuffer> m_CommandBuffer;
 		RenderPassConfig m_Config;
 		VulkanRenderPassAttach m_DepthAttachment;

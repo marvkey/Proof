@@ -52,7 +52,7 @@ namespace Proof {
 		PF_PROFILE_FUNC();
 		DeleteEntitiesfromQeue();
 		{
-			PF_PROFILE_FUNC("World::OnUpdateEditor - Partilce OnUpdate");
+			PF_PROFILE_FUNC("World::OnUpdateEditor - Particle OnUpdate");
 
 			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
 			for (auto entity : particleView)
@@ -160,7 +160,7 @@ namespace Proof {
 		if (m_CurrentState == WorldState::Pause)
 			return;
 		{
-			PF_PROFILE_FUNC("World::OnUpdate - Partilce OnUpdate");
+			PF_PROFILE_FUNC("World::OnUpdate - Particle OnUpdate");
 
 			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
 			for (auto entity : particleView)

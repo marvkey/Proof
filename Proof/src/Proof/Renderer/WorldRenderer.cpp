@@ -78,8 +78,6 @@ namespace Proof
 		config.Attachments = { ImageFormat::RGBA32F,ImageFormat::DEPTH32FSTENCIL8UI };
 		config.ClearColor = { 0,0,0,1 };
 		config.ClearFrameBufferOnLoad = false;
-		config.ClearDepthOnLoad = false;
-	
 		config.Size = { (float)textureWidth,(float)textureHeight };
 		// last attachment is depth so it is not added as a base attachmetn
 		config.Attachments.Attachments[0].ClearOnLoad = false;
@@ -294,7 +292,7 @@ namespace Proof
 		#if 1
 
 		{
-			PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
+			//PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
 			m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
 
 			glm::mat4 identity =
@@ -611,14 +609,15 @@ namespace Proof
 			Count<MaterialTable> materialTable = meshDrawInfo.MaterialTable;
 			meshSource->GetVertexBuffer()->Bind(m_CommandBuffer);
 			meshSource->GetIndexBuffer()->Bind(m_CommandBuffer);
+			m_MeshPipeline.TransformsBuffer->Bind(m_CommandBuffer, 1);
 			for (uint32_t index : mesh->GetSubMeshes())
 			{
+				//TODO REMOVE MESH MATERIAL ABLE FROM MESH CLASS, ONLY MESH SOURCE SHOULD HAVE A MATERIAL TABLE
 				const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
 				Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex)? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
 					: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
 
 				Renderer::RenderPassPushRenderMaterial(m_MeshPipeline.RenderPass, renderMaterial);
-				m_MeshPipeline.TransformsBuffer->Bind(m_CommandBuffer, 1);
 				Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, meshDrawInfo.InstanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 			}
 		}
