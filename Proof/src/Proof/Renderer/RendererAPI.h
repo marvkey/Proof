@@ -15,12 +15,14 @@ namespace Proof {
 		virtual void DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance =0) = 0;
 		
 		virtual void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear = false) = 0;
-		virtual void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass,Count<class RenderMaterial> renderMaterial, bool explicitClear = false) = 0;
-		virtual void EndRenderPass(Count<class RenderPass> renderPass)=0 ;
+		virtual void BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear = false)= 0;
+		virtual void EndRenderPass(Count<class RenderPass> renderPass) = 0;
+		virtual void RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial) = 0;
 
-		virtual void BeginComputePass(Count<class RenderCommandBuffer> commandBuffer,Count<class ComputePass> computPass) = 0;
-		virtual void BeginComputePass(Count<class RenderCommandBuffer> commandBuffer,Count<class ComputePass> computPass,Count<class RenderMaterial> renderMaterial) = 0;
+		virtual void BeginComputePass(Count<class RenderCommandBuffer> commandBuffer, Count<class ComputePass> computPass) = 0;
+		virtual void BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> commandBuffer, Count<class ComputePass> computPass) = 0;
 		virtual void EndComputePass(Count<class ComputePass> computPass) = 0;
+		virtual void ComputePassPushRenderMaterial(Count<class ComputePass> computePass, Count<class RenderMaterial> renderMaterial) = 0;
 
 		virtual void SubmitCommandBuffer(Count<class RenderCommandBuffer>commandBuffer) = 0;
 		virtual void Submit(std::function<void(class CommandBuffer*)> func ) = 0;

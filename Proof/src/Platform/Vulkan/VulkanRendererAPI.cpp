@@ -32,9 +32,9 @@ namespace Proof {
 		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, explicitClear);
 	}
 
-	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial, bool explicitClear )
+	void VulkanRendererAPI::BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear )
 	{
-		renderPass.As<VulkanRenderPass>()->BeginRenderPass(commandBuffer, renderMaterial, explicitClear);
+		renderPass.As<VulkanRenderPass>()->BeginRenderMaterialRenderPass(commandBuffer, explicitClear);
 	}
 
 	void VulkanRendererAPI::EndRenderPass(Count<class RenderPass> renderPass)
@@ -42,19 +42,29 @@ namespace Proof {
 		renderPass.As<VulkanRenderPass>()->EndRenderPass();
 	}
 
+	void VulkanRendererAPI::RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial)
+	{
+		renderPass.As<VulkanRenderPass>()->RenderPassPushRenderMaterial(renderMaterial);
+	}
+
 	void VulkanRendererAPI::BeginComputePass(Count<RenderCommandBuffer> commandBuffer, Count<ComputePass> computePass)
 	{
 		computePass.As<VulkanComputePass>()->BeginComputePass(commandBuffer);
 	}
 
-	void VulkanRendererAPI::BeginComputePass(Count<RenderCommandBuffer> commandBuffer, Count<ComputePass> computePass,Count<RenderMaterial> renderMaterial)
+	void VulkanRendererAPI::BeginRenderMaterialComputePass(Count<RenderCommandBuffer> commandBuffer, Count<ComputePass> computePass)
 	{
-		computePass.As<VulkanComputePass>()->BeginComputePass(commandBuffer,renderMaterial.As<VulkanRenderMaterial>());
+		computePass.As<VulkanComputePass>()->BeginRenderMaterialComputePass(commandBuffer);
 	}
 
 	void VulkanRendererAPI::EndComputePass( Count<ComputePass> computePass)
 	{
 		computePass.As<VulkanComputePass>()->EndComputePass();
+	}
+
+	void VulkanRendererAPI::ComputePassPushRenderMaterial(Count<class ComputePass> computePass, Count<class RenderMaterial> renderMaterial)
+	{
+		computePass.As<VulkanComputePass>()->ComputePassPushRenderMaterial(renderMaterial);
 	}
 
 	void VulkanRendererAPI::SubmitCommandBuffer(Count<class RenderCommandBuffer> commandBuffer) {
@@ -65,8 +75,13 @@ namespace Proof {
 	{
 		VulkanRenderer::SetGraphicsContext(context);
 	}
-
+	VkFence submitFence;
 	void VulkanRendererAPI::Init() {
+		VkFenceCreateInfo fenceInfo = {};
+		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceInfo.pNext = nullptr;
+		fenceInfo.flags = 0;
+		vkCreateFence(VulkanRenderer::GetGraphicsContext()->GetDevice(), &fenceInfo, nullptr, &submitFence);
 		VulkanRenderer::Init();
 	}
 	void VulkanRendererAPI::OnWindowResize(WindowResizeEvent& e) {
@@ -113,10 +128,12 @@ namespace Proof {
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(graphicsContext->GetGraphicsQueue());
-
+		vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, submitFence);
+		vkWaitForFences(graphicsContext->GetDevice(), 1, &submitFence, VK_TRUE, UINT64_MAX);
+		vkResetFences(VulkanRenderer::GetGraphicsContext()->GetDevice(), 1, &submitFence);
+		
 		vkFreeCommandBuffers(graphicsContext->GetDevice(), graphicsContext->GetCommandPool(), 1, &commandBuffer);
+		vkQueueWaitIdle(graphicsContext->GetGraphicsQueue());
 
 		delete commandBufferContainer;
 	}

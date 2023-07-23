@@ -89,17 +89,40 @@ namespace Proof{
         {
             m_MaterialTable->SetMaterial(materialIndex, GetMaterial(scene->mMaterials[materialIndex]));
         }
+
+        m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex));
+        m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
+
+        m_Indices.clear();
+        m_Vertices.clear();
     }
     MeshSource::MeshSource()
     {
         m_MaterialTable = Count<MaterialTable>::Create();
 
     }
-    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
+    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) :
+        m_Vertices(vertices), m_Indices(indices)
     {
         m_MaterialTable = Count<MaterialTable>::Create();
-        SubMesh meh(vertices, indices, name);
-        m_SubMeshes.emplace_back(meh);
+        SubMesh subMesh;
+        subMesh.BaseVertex = 0;
+        subMesh.BaseIndex = 0;
+        subMesh.IndexCount = indices.size();
+        subMesh.MaterialIndex = 0;
+        subMesh.Name = name;
+        subMesh.Transform = glm::translate(glm::mat4(1.0f), ProofToglmVec(0)) *
+            glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 1,0,0 }) *
+            glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 0,1,0 }) *
+            glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 0,0,1 }) *
+            glm::scale(glm::mat4(1.0f), ProofToglmVec({ 1,1,1 }));
+
+        m_SubMeshes.emplace_back(subMesh);
+        m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex));
+        m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
+
+        m_Indices.clear();
+        m_Vertices.clear();
     }
     void MeshSource::ProcessNode(void* node, const void* scene, const glm::mat4& parentTransform)
     {
@@ -110,7 +133,7 @@ namespace Proof{
         for (uint32_t i = 0; i < ainode->mNumMeshes; i++)
         {
             aiMesh* mesh = aiscene->mMeshes[ainode->mMeshes[i]];
-            m_SubMeshes.emplace_back(ProcessMesh(mesh, aiscene,transform));
+            m_SubMeshes.emplace_back(ProcessMesh(mesh, aiscene, transform));
         }
         for (uint32_t i = 0; i < ainode->mNumChildren; i++)
         {
@@ -124,7 +147,10 @@ namespace Proof{
         aiScene* aiscene = (aiScene*)scene;
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
-        std::vector<Count<Texture2D>> textures;
+
+        SubMesh subMesh;
+        subMesh.BaseIndex = m_Indices.size();
+        subMesh.BaseVertex = m_Vertices.size();
 
         for (uint32_t i = 0; i < aimesh->mNumVertices; i++)
         {
@@ -140,92 +166,100 @@ namespace Proof{
             }
             else
                 vertex.TexCoords = Vector2(0.0f, 0.0f);
-            vertices.emplace_back(vertex);
+            m_Vertices.emplace_back(vertex);
         }
+        uint32_t indexCount = 0;
         for (uint32_t i = 0; i < aimesh->mNumFaces; i++)
         {
             aiFace& face = aimesh->mFaces[i];
-            for (uint32_t  j = 0; j < face.mNumIndices; j++)
+            for (uint32_t j = 0; j < face.mNumIndices; j++)
             {
-                indices.emplace_back(face.mIndices[j]);
+                indexCount++;
+                m_Indices.emplace_back(face.mIndices[j]);
             }
         }
-        SubMesh temp(vertices, indices, aimesh->mName.C_Str(), aimesh->mMaterialIndex);
-        temp.Transform = transform;
-        return temp;
+
+        subMesh.Name = aimesh->mName.C_Str();
+        subMesh.Transform = transform;
+        subMesh.IndexCount = indexCount;
+        subMesh.MaterialIndex = aimesh->mMaterialIndex;
+        return subMesh;
     }
 
     Count<Material> MeshSource::GetMaterial(void* mat)
     {
         aiMaterial* aimat = (aiMaterial*)mat;
         Count<Material> material = Count<Material>::Create();
-        aiColor3D color(0.f, 0.f, 0.f);
-        float metallness;
-        float roghness;
+        float metallness = 0.0;
+        float roghness = 0.5;
         //aiGetMaterialString(aimat,mat, AI_MATKEY_NAME, &name);
         aiString name;
         aimat->Get(AI_MATKEY_NAME, name);
         material->Name = name.C_Str();
-        aimat->Get(AI_MATKEY_COLOR_AMBIENT, color);
+        if (material->Name.empty())
+            material->Name = "UnnamedMaterial";
+        aiColor3D color;
+        if(aimat->Get(AI_MATKEY_COLOR_AMBIENT, color) == aiReturn_SUCCESS)
+        {
+            material->SetAlbedo(Vector(color.r, color.g, color.b));
+        }
         aimat->Get(AI_MATKEY_METALLIC_FACTOR, metallness);
         aimat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roghness);
 
-        //material->Colour = Vector(color.r, color.g, color.b);
-        //material->Metallness = metallness;
-        //material->Roughness = roghness;
-
+        material->GetMetalness() = metallness;
+        material->GetRoughness() = roghness;
         LoadMaterialTextures(material, aimat);
         return material;
     }
-
-    void MeshSource::LoadMaterialTextures(Count<Material> material, void* aiMat)
+    static Count<Texture2D> LoadTextures(aiTextureType textureType, aiMaterial* aimat,MeshSource* meshSource)
     {
-        aiMaterial* aimat = (aiMaterial*)aiMat;
-        auto LoadTexture = [&](Count<Texture2D>& texture,aiTextureType textureType)->void {
-            aiString strFilePath;
-            if (aimat->GetTexture(textureType, 0, &strFilePath) == aiReturn_SUCCESS)
-            {
-                std::string textureFilePath = (m_Path.parent_path() /= strFilePath.C_Str()).string();
-                //textureFilePath = std::filesystem::(textureFilePath, Application::).string();
-                //AssetManager::GetAssetFileSystemPath
-                std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
-                // checking if has the texturer source file
+        aiString strFilePath;
+        if (aimat->GetTexture(textureType, 0, &strFilePath) == aiReturn_SUCCESS)
+        {
+            std::string textureFilePath = (meshSource->GetPath().parent_path() /= strFilePath.C_Str()).string();
+            //textureFilePath = std::filesystem::(textureFilePath, Application::).string();
+            //AssetManager::GetAssetFileSystemPath
+            std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
+            // checking if has the texturer source file
 
-                if (AssetManager::HasAsset(textureFilePath))
-                {
-                    // changing the path to a proof asset path
-                   // PF_EC_WARN("Getting mehs texture this way is risky what if the name changes");
-                    std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
-                    path += ".Texture.ProofAsset";
-                    if(AssetManager::HasAsset(path))
-                        texture = AssetManager::GetAsset<Texture2D>(path);
-                    else
-                    {
-                        
-                        AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
-                        Count<Asset> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(path)), textureFilePath);
-                        AssetManager::NewAsset(asset, path);
-                        texture = AssetManager::GetAsset<Texture2D>(path);
-                       // PF_EC_CRITICAL("Proof Should not be using raw texture file to create meshes causes an error for invalid descript set");
-                        //texture = Texture2D::Create(textureFilePath);
-                    }
-                }
+            if (AssetManager::HasAsset(textureFilePath))
+            {
+                // changing the path to a proof asset path
+               // PF_EC_WARN("Getting mehs texture this way is risky what if the name changes");
+                std::string path = std::filesystem::relative(meshSource->GetPath().parent_path() /= textureName).string();
+                path += ".Texture.ProofAsset";
+                if (AssetManager::HasAsset(path))
+                    return AssetManager::GetAsset<Texture2D>(path);
                 else
                 {
-                    std::string path = std::filesystem::relative(m_Path.parent_path() /= textureName).string();
-                    path += ".Texture.ProofAsset";
+
                     AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
-                    Count<Asset> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(textureFilePath)),textureFilePath);
+                    Count<Asset> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(path)), textureFilePath);
                     AssetManager::NewAsset(asset, path);
-                    texture = AssetManager::GetAsset<Texture2D>(path);
+                    return AssetManager::GetAsset<Texture2D>(path);
+                   // PF_EC_CRITICAL("Proof Should not be using raw texture file to create meshes causes an error for invalid descript set");
+                    //texture = Texture2D::Create(textureFilePath);
                 }
             }
-        };
-
-        //LoadTexture(material->AlbedoTexture, aiTextureType_DIFFUSE);
-        //LoadTexture(material->NormalTexture, aiTextureType_NORMALS);
-        //LoadTexture(material->MetallicTexture, aiTextureType_METALNESS);
-        //LoadTexture(material->RoughnessTexture, aiTextureType_DIFFUSE_ROUGHNESS);
+            else
+            {
+                std::string path = std::filesystem::relative(meshSource->GetPath().parent_path() /= textureName).string();
+                path += ".Texture.ProofAsset";
+                AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
+                Count<Asset> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(textureFilePath)), textureFilePath);
+                AssetManager::NewAsset(asset, path);
+                return AssetManager::GetAsset<Texture2D>(path);
+            }
+        }
+        return Renderer::GetWhiteTexture();
+    }
+    void MeshSource::LoadMaterialTextures(Count<Material> material, void* mat)
+    {
+        aiMaterial* aiMaterialCast = (aiMaterial*)mat;
+        material->SetAlbedoMap(LoadTextures(aiTextureType_DIFFUSE, aiMaterialCast, this));
+        material->SetNormalMap(LoadTextures(aiTextureType_NORMALS, aiMaterialCast, this));
+        material->SetMetalnessMap(LoadTextures(aiTextureType_METALNESS, aiMaterialCast, this));
+        material->SetRoughnessMap(LoadTextures(aiTextureType_DIFFUSE_ROUGHNESS, aiMaterialCast, this));
     }
 
     Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& submeshes)
@@ -254,15 +288,4 @@ namespace Proof{
         for (uint32_t i = 0; i < submeshes.size(); i++)
             m_SubMeshes[i] = i;
     }
-
-    SubMesh::SubMesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::string& name, uint32_t materialIndex)
-    {
-        Name = name;
-        MaterialIndex = materialIndex;
-        Vertices = vertices;
-        Indices = indices;
-        VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
-        IndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
-    }
-
 }

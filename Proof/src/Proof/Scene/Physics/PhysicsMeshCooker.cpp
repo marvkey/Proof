@@ -36,11 +36,11 @@ namespace  Proof {
 		for (const SubMesh& subMesh : mesh->GetMeshSource()->GetSubMeshes())
 		{
 			//if (mesh->IsMeshExcluded(index))continue;
-			for (const auto& vertex : subMesh.Vertices)
-				vertices.emplace_back(PhysxUtils::VectorToPhysxVector(vertex.Vertices));
-			for (const auto& val : subMesh.Indices)
-				indices.emplace_back(val);
-			index++;
+			//for (const auto& vertex : subMesh.Vertices)
+			//	vertices.emplace_back(PhysxUtils::VectorToPhysxVector(vertex.Vertices));
+			//for (const auto& val : subMesh.Indices)
+			//	indices.emplace_back(val);
+			//index++;
 		}
 		/*
 		{

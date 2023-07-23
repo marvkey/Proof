@@ -4,9 +4,53 @@
 #include "Proof/Scene/World.h"
 namespace Proof
 {
+	struct MeshKey
+	{
+		AssetID MeshID;
+		Count<class MaterialTable> MaterialTable;
+		 // Define the equality operator
+		bool operator==(const MeshKey& other) const {
+			return MeshID == other.MeshID && *MaterialTable == *other.MaterialTable;
+		}
+	};
+}
+
+namespace std {
+	template <>
+	struct hash < Proof::MeshKey > {
+		size_t operator()(const Proof::MeshKey& key) const {
+			// Calculate the hash value using the memory location of MaterialTable and the AssetID (uint64_t).
+			size_t hashValue = std::hash<uint64_t>()((uint64_t)key.MeshID);
+			for (const auto& [index, material] : key.MaterialTable->GetMaterials())
+			{
+				uint64_t location = (uint64_t)material->GetID();
+				hashValue ^= std::hash< uint64_t>()(location);
+			}
+			return hashValue;
+		}
+	};
+}
+namespace Proof
+{
 	struct RenderSettings 
 	{
 		bool ViewColliders = false;
+	};
+
+	
+
+	struct MeshDrawInfo
+	{
+		Count<Mesh> Mesh = nullptr;
+		Count<MaterialTable> MaterialTable = nullptr;
+		//Count<RenderMaterial> OvverrideMaterial;
+		uint32_t InstanceCount = 0;
+
+	};
+	struct SubMeshKey
+	{
+		AssetID MeshID;
+		uint32_t MeshIndex;
 	};
 	struct MeshRenderPipline
 	{
@@ -23,7 +67,7 @@ namespace Proof
 
 		void BeginContext();
 		void EndContext();
-		void AddRender(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewport, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame = true, Count<UITable> uiTable = nullptr);
+		void Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewport, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame = true, Count<UITable> uiTable = nullptr);
 		WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight);
 		void Resize(ScreenSize windowSize);
 		void SetContext(Count<World>world) {
@@ -38,12 +82,7 @@ namespace Proof
 			return m_ScreenFrameBuffer->GetImage();
 		}
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
-		const Renderer3DPBR* GetRenderer3DPBR()const
-		{
-			return m_Renderer3D.get();
-		}
 	private:
-		void Render(const glm::mat4&projection, const glm::mat4& view,const Vector& location, Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings,bool clearPreviousFrame = true, Count<UITable> uiTabel = nullptr);
 
 		Special<Renderer3DPBR> m_Renderer3D;
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
@@ -56,7 +95,15 @@ namespace Proof
 
 		Count<class Texture2D> m_BRDFLUT;
 
-		void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform);
+		void SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform);
+
+		void MeshPass();
+		std::unordered_map<MeshKey, std::vector<glm::mat4>> m_MeshTransformMap;
+		std::unordered_map<MeshKey, MeshDrawInfo> m_MeshDrawList;
 		MeshRenderPipline m_MeshPipeline;
-	};
+
+		void Reset();
+	};	
 }
+
+

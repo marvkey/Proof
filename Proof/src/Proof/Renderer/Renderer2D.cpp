@@ -364,7 +364,6 @@ namespace Proof {
 		if (m_Storage2DData->IndexCount > 0) // nothing to draw
 		{
 			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
-		//	m_SpritePipeline->GraphicsPipeline->SetInput("CameraData", m_Storage2DData->CameraBuffer);
 			m_Storage2DData->VertexBuffer->SetData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
 			m_SpritePipeline->RenderPass->SetInput("u_Textures", m_Storage2DData->Textures);
 

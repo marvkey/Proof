@@ -30,6 +30,7 @@ namespace Proof {
 		{
 			if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT || pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT)
 			{
+				m_UniformName = pushName;
 				allocateSize = pushData.size;
 				break;
 			}
@@ -265,7 +266,7 @@ namespace Proof {
 			// so we basically just seeing if thats teh case we dont bind it
 			vkCmdBindDescriptorSets(
 				commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
-				VK_PIPELINE_BIND_POINT_COMPUTE,
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
 				renderPass->GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
 				(int)set,
 				1,
@@ -286,7 +287,7 @@ namespace Proof {
 	const ShaderResourceBufferInfo* VulkanRenderMaterial::FindUniformDeclaration(const std::string& name)
 	{
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
-		return vk_Shader->GetPushConstantInput("u_MaterialUniform", name);
+		return vk_Shader->GetPushConstantInput(m_UniformName, name);
 	}
 
 }

@@ -442,7 +442,7 @@ namespace Proof
 		int i = 0;
 		for (const auto& queueFamily : queueFamilies)
 		{
-			if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) && (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT))
+			if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) && (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)&& !indices.graphicsAndComputeFamily.has_value())
 			{
 				indices.graphicsAndComputeFamily = i;
 			}

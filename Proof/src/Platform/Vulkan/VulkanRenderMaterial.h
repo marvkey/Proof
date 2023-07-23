@@ -77,7 +77,7 @@ namespace Proof
 		Buffer m_UniformBufferStorage;
 		RenderMaterialConfiguration m_Config;
 		Count< VulkanDescriptorManager> m_DescritptorSetManager;
-
+		std::string m_UniformName;
 		const ShaderResourceBufferInfo* FindUniformDeclaration(const std::string& name);
 		void Build();
 		void Release();

@@ -18,6 +18,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Scene/Physics/PhysicsEngine.h"
 #include "Proof/Scripting/ScriptEngine.h"
+#include "Proof/Scene/Material.h"
 namespace Proof
 {
 

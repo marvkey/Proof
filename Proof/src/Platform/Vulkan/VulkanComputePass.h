@@ -23,11 +23,14 @@ namespace Proof
 		void Build();
 		void BeginComputePassBase(Count<class RenderCommandBuffer> command);
 		void BeginComputePass(Count<class RenderCommandBuffer> command);
-		void BeginComputePass(Count<class RenderCommandBuffer> command,Count<class VulkanRenderMaterial> material);
+		void BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> command);
+		void ComputePassPushRenderMaterial(Count<class RenderMaterial> renderMaterial);
+
 		void EndComputePass();
 
 		ComputePassConfiguration m_Config;
 		bool m_RenderPassEnabled = false;
+		bool m_MaterialRenderPass = false;
 
 		Count<VulkanDescriptorManager> m_DescritptorSetManager;
 		Count<class RenderCommandBuffer> m_CommandBuffer= nullptr;

@@ -34,17 +34,19 @@ namespace Proof{
 	private:
 		void AddColorAttachment(const RenderPassImageConfig& config);
 		void SetDepthAttachment(const RenderPassImageConfig& config);
-
 		void Init();
 		void CreateRenderPass();
 
 		void BeginRenderPassBase(Count<class RenderCommandBuffer> command, Viewport vieport, ViewportScissor scisscor);
+		
 		void BeginRenderPass(Count<class RenderCommandBuffer> command, Viewport vieport, ViewportScissor scisscor, bool explicitClear = false);
-		void BeginRenderPass(Count<class RenderCommandBuffer> command, Count<class RenderMaterial>, Viewport vieport, ViewportScissor scisscor, bool explicitClear = false);
-		void BeginRenderPass(Count<class RenderCommandBuffer> command,Count<class RenderMaterial>, bool explicitClear = false);
 		void BeginRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear = false);
-
 		void EndRenderPass();
+
+		void BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, Viewport vieport, ViewportScissor scisscor, bool explicitClear = false);
+		void BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear = false);
+		void RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial);
+
 		void Release();
 		Count<RenderCommandBuffer> m_CommandBuffer;
 		RenderPassConfig m_Config;
@@ -53,7 +55,7 @@ namespace Proof{
 		ImageFormat m_DepthFormat = ImageFormat::None;
 		VkRenderPass m_RenderPass = nullptr;
 		bool m_RenderPassEnabled = false;
-		
+		bool m_MaterialRenderPass = false;
 		Count<VulkanDescriptorManager> m_DescritptorSetManager;
 		friend class VulkanRenderer;
 		friend class VulkanRendererAPI;

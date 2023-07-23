@@ -72,108 +72,6 @@ namespace Proof
 
 		}
 	}
-	#if 0
-
-	void VulkanTexture2D::Init(const std::string& Path) {
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-		int width, height, channels;
-		if (Path.empty())
-		{
-			PF_INFO("No path passed into texture");
-			return;
-		}
-		stbi_set_flip_vertically_on_load(true);
-		if (stbi_is_hdr(Path.c_str()))
-		{
-//https://github.com/marvkey/Proof/blob/main/Proof/src/Platform/Vulkan/VulkanTexutre.cpp (check cubemap sized)
-//https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/core/TextureCube.cpp
-			m_Format = ImageFormat::RGBA32F;
-
-			float* data = stbi_loadf(Path.c_str(), &width, &height, &channels, 0);
-			if (data == nullptr)
-			{
-				PF_ENGINE_ERROR("Texture passed is empty {}", Path.c_str());
-				return;
-			}
-			// check for dimension
-			{
-				VkImageFormatProperties info;
-				vkGetPhysicalDeviceImageFormatProperties(graphicsContext->GetGPU(), Utils::ProofFormatToVulkanFormat(m_Format), VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, 0, &info);
-				if (width > info.maxExtent.width)
-				{
-					PF_ENGINE_WARN("Image is to wide, made smaller to be support");
-					width = info.maxExtent.width;
-				}
-
-				if (height > info.maxExtent.height)
-				{
-					PF_ENGINE_WARN("Image is to tall, made smaller to be support");
-					height = info.maxExtent.height;
-				}
-				m_Width = width;
-				m_Height = height;
-				m_Channel = channels;
-			}
-			// prrety sure flaot is already 4 so it is the smae as width * height * 4 *4 im guessing i forgot
-			float* data_rgba = new float[size_t(width) * size_t(height) * 4];
-			if (channels == 3)
-			{
-				for (size_t i = 0; i < size_t(width) * size_t(height); i++)
-				{
-					for (size_t c = 0; c < 3; c++)
-					{
-						data_rgba[4 * i + c] = data[3 * i + c];
-					}
-					data_rgba[4 * i + 3] = 1.0f;
-				}
-			}
-			else
-			{
-				// the extra *4 is for size of a float 
-				memcpy(data_rgba, data, size_t(width) * size_t(height) * 4 * 4);
-			}
-			stbi_image_free(data);
-
-			// same s width * height * 16
-			// sizeof(float) == 34
-			uint32_t imageSize = width * height * 4 * sizeof(float);
-			AllocateMemory(imageSize);
-			SetData(data_rgba);
-			delete[]data_rgba;
-			return;
-		}
-
-		uint8_t* data = stbi_load(Path.c_str(), &width, &height, &channels, 4);
-		m_Format = ImageFormat::RGBA;
-		if (data == nullptr)
-		{
-			PF_EC_ERROR("Texture passed exist but format is not Valid {}", Path.c_str());
-			return;
-		}
-		// check for dimension
-		{
-			VkImageFormatProperties info;
-			vkGetPhysicalDeviceImageFormatProperties(graphicsContext->GetGPU(), Utils::ProofFormatToVulkanFormat(m_Format), VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, 0, &info);
-			if (width > info.maxExtent.width)
-			{
-				PF_ENGINE_WARN("Image is to wide, made smaller to be support");
-				width = info.maxExtent.width;
-			}
-
-			if (height > info.maxExtent.height)
-			{
-				PF_ENGINE_WARN("Image is to tall, made smaller to be support");
-				height = info.maxExtent.height;
-			}
-			m_Width = width;
-			m_Height = height;
-			m_Channel = channels;
-		}
-		AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format));
-		SetData(data);
-		stbi_image_free(data);
-	}
-	#endif
 
 	void VulkanTexture2D::GenerateMips()
 	{
@@ -250,8 +148,8 @@ namespace Proof
 		m_ImageData = TextureImporter::ToBufferFromMemory(data, m_Config.Format, m_Config.Width, m_Config.Height);
 		if (!m_ImageData)
 		{
-			// nulltexture
-			return;
+			PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
+			m_ImageData = TextureImporter::ToBufferFromFile("Assets/Textures/NullTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
 		}
 		ImageConfiguration imageConfig;
 		imageConfig.Format = m_Config.Format;
@@ -263,7 +161,7 @@ namespace Proof
 		// render thread
 		Build();
 	}
-	
+
 
 	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, const void* data)
 		:m_Config(config)
@@ -273,8 +171,8 @@ namespace Proof
 		m_ImageData = TextureImporter::ToBufferFromMemory(data, m_Config.Format, m_Config.Width, m_Config.Height);
 		if (!m_ImageData)
 		{
-			// nulltexture
-			return;
+			PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
+			m_ImageData = TextureImporter::ToBufferFromFile("Assets/Textures/NullTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
 		}
 		ImageConfiguration imageConfig;
 		imageConfig.Format = m_Config.Format;
@@ -293,14 +191,14 @@ namespace Proof
 		Utils::ValidateConfiguration(m_Config);
 		if (!m_ImageData)
 		{
-			// nulltexture
-			return;
+			PF_EC_ERROR("Texture: {} could not Image Path: {}", m_Config.DebugName, path.string());
+			m_ImageData = TextureImporter::ToBufferFromFile("Assets/Textures/NullTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
 		}
 		ImageConfiguration imageConfig;
 		imageConfig.Format = m_Config.Format;
 		imageConfig.Width = m_Config.Width;
 		imageConfig.Height = m_Config.Height;
-		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width,m_Config.Height) : 1;
+		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
 		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
 		m_Image = Image2D::Create(imageConfig);
 		//render Thread
@@ -344,7 +242,7 @@ namespace Proof
 				subresourceRange.layerCount = 1;
 				subresourceRange.levelCount = GetMipLevelCount();
 
-				Utils::SetImageLayout(cmdBuffer, imageInfo.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout,subresourceRange);
+				Utils::SetImageLayout(cmdBuffer, imageInfo.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout, subresourceRange);
 
 			});
 		}
@@ -449,7 +347,7 @@ namespace Proof
 
 		// sampler
 		{
-		
+
 			vk_Image->GetinfoRef().Sampler = nullptr;
 			graphicsContext->DeleteSampler(vk_Image->GetSamplerHash());
 
@@ -467,9 +365,9 @@ namespace Proof
 			samplerCreateInfo.minLod = 0.0f;
 			samplerCreateInfo.maxLod = mipCount;
 			/**
-			 * 
+			 *
 			 * anisotrotic filtering.
-			 * 
+			 *
 			 */
 			samplerCreateInfo.anisotropyEnable = false;
 			samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
@@ -483,7 +381,7 @@ namespace Proof
 
 		if (!m_Config.Storage)
 		{
-		
+
 			VkImageViewCreateInfo imageViewCreateInfo = {};
 			imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -495,11 +393,11 @@ namespace Proof
 			imageViewCreateInfo.subresourceRange.levelCount = mipCount;
 			imageViewCreateInfo.subresourceRange.layerCount = 1;
 			imageViewCreateInfo.image = imageInfo.ImageAlloc.Image;
-			if(imageInfo.ImageView)
+			if (imageInfo.ImageView)
 				vkDestroyImageView(device, imageInfo.ImageView, nullptr);
-			
+
 			vkCreateImageView(graphicsContext->GetDevice(), &imageViewCreateInfo, nullptr, &vk_Image->GetinfoRef().ImageView);
-			
+
 			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
 			vk_Image->UpdateDescriptor();
 		}
@@ -507,130 +405,10 @@ namespace Proof
 			GenerateMips();
 		m_ImageData.Release();
 	}
-	#if 0
 
-	VulkanTexture2D::VulkanTexture2D(TextureConfig config)
-	{
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-		// check for dimension
-		{
-			VkImageFormatProperties info;
-			vkGetPhysicalDeviceImageFormatProperties(graphicsContext->GetGPU(), Utils::ProofFormatToVulkanFormat(config.Format), VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, 0, &info);
-			if (config.width > info.maxExtent.width)
-			{
-				PF_ENGINE_WARN("Image is to wide, made smaller to be support");
-				config.width = info.maxExtent.width;
-			}
-
-			if (config.Height > info.maxExtent.height)
-			{
-				PF_ENGINE_WARN("Image is to tall, made smaller to be support");
-				config.Height = info.maxExtent.height;
-			}
-
-		}
-		m_Width = config.width;
-		m_Height = config.Height;
-		m_Format = config.Format;
-
-		uint32_t blck = 0xFF000000;
-		if (config.Usage & TextureUsage::Color)
-		{
-			uint32_t bit = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT
-				| VK_IMAGE_USAGE_SAMPLED_BIT;
-			if (config.Address == AdressType::ClampEdge)
-				AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format), bit, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-			else
-				AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format), bit);
-			return;
-		}
-		if (config.Address == AdressType::ClampEdge)
-			AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format), VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-		else
-			AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format), VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
-
-		SetData(&blck);
-	}
-	#endif
 	VulkanTexture2D::~VulkanTexture2D() {
 		Release();
 	}
-	#if 0
-
-	Count<Texture2D> VulkanTexture2D::GenerateBRDF(uint32_t dimension, uint32_t sampleCount)
-	{
-
-		TextureConfig config;
-		config.Format = ImageFormat::RGBA16F;
-		config.Address = AdressType::ClampEdge;
-		config.Height = dimension;
-		config.width = dimension;
-		config.Usage = TextureUsage::Color;
-		Count<Texture2D>brdfTexture = Texture2D::Create(config);
-
-		FrameBufferConfig frameConfig;
-		frameConfig.DebugName = "Texture-BRDF";
-		frameConfig.Size.X = dimension;
-		frameConfig.Size.Y = dimension;
-		frameConfig.Attachments = { ImageFormat::RGBA16F };
-		frameConfig.Attachments.Attachments[0].SetOverrideImage(brdfTexture->GetImage());
-
-		Count<FrameBuffer> frameBuffer = FrameBuffer::Create(frameConfig);
-
-		Count<PushConstant> pushConstatnt = PushConstant::Create(sizeof(uint32_t), 0, ShaderStage::Fragment);
-
-		RenderPassConfig renderPassConfig("brdf Renderpass", frameBuffer->GetConfig());
-		Count<RenderPass> renderPass = RenderPass::Create(renderPassConfig);
-
-		Count<PipeLineLayout> PipelineLayout;
-		PipelineLayout = PipeLineLayout::Create({}, pushConstatnt);
-
-		GraphicsPipelineConfig pipelineConfig;
-		pipelineConfig.DebugName = "BRDFMap Pipeline";
-		pipelineConfig.Shader = Shader::GetOrCreate("BRDFMap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/BRDF.shader");
-
-		auto [quadVertxBuffer, quadindexBuffer] = Renderer2D::CreateQuad();
-
-		pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
-		pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-		pipelineConfig.VertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-		pipelineConfig.VertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
-		pipelineConfig.VertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
-		pipelineConfig.VertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-		pipelineConfig.PipelineLayout = PipelineLayout;
-		pipelineConfig.RenderPass = renderPass;
-
-		Count<VertexBuffer> buffer;
-		Count<GraphicsPipeline> RenderPipline = GraphicsPipeline::Create(pipelineConfig);
-
-		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-			Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(cmd);
-
-			VkViewport viewport = {};
-			viewport.x = 0.0f;
-			viewport.y = static_cast<float>(dimension);
-			viewport.width = static_cast<float>(dimension);
-			viewport.height = -static_cast<float>(dimension);
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-
-			VkRect2D scissor = {};
-			scissor.offset = { 0, 0 };
-			scissor.extent = { dimension, dimension };
-
-			uint32_t copy = sampleCount;
-			pushConstatnt->PushData(renderCmd, PipelineLayout, &copy);
-
-			Renderer::BeginRenderPass(renderCmd, renderPass, frameBuffer);
-			renderPass.As<VulkanRenderPass>()->RecordRenderPass(RenderPipline, viewport, scissor);
-			quadVertxBuffer->Bind(renderCmd);
-			quadindexBuffer->Bind(renderCmd);
-			Renderer::DrawElementIndexed(renderCmd, quadindexBuffer->GetCount());
-			Renderer::EndRenderPass(renderPass);
-		});
-		return brdfTexture;
-	}
-	#endif
 
 	void VulkanTexture2D::Resize(uint32_t width, uint32_t height)
 	{
@@ -651,7 +429,7 @@ namespace Proof
 
 		TextureConfiguration textureConfig;
 		textureConfig.DebugName = "VulkanCubemap texture";
-		textureConfig.Format = m_Config.Format;
+		textureConfig.Format = ImageFormat::RGBA32F;
 		textureConfig.GenerateMips = false;
 		textureConfig.Height = m_Config.Height;
 		textureConfig.Width = m_Config.Width;
@@ -665,9 +443,10 @@ namespace Proof
 		imageConfig.Width = config.Width;
 		imageConfig.Layers = 6;
 		imageConfig.Usage = ImageUsage::Storage;
+		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
 		Build();
-		
+
 	}
 	VulkanTextureCube::VulkanTextureCube(const void* data, const TextureConfiguration& config)
 		:m_Config(config)
@@ -680,7 +459,7 @@ namespace Proof
 		textureConfig.Height = m_Config.Height;
 		textureConfig.Width = m_Config.Width;
 		textureConfig.Storage = true;
-		m_Texture = Texture2D::Create(data,textureConfig).As<VulkanTexture2D>();
+		m_Texture = Texture2D::Create(data, textureConfig).As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
 		imageConfig.DebugName = "TextureCubeImage";
@@ -689,81 +468,27 @@ namespace Proof
 		imageConfig.Width = config.Width;
 		imageConfig.Layers = 6;
 		imageConfig.Usage = ImageUsage::Storage;
+		imageConfig.Transfer = true;
+		m_Image = Image2D::Create(imageConfig);
+		Build();
+	}
+	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config)
+		:m_Config(config)
+	{
+		ImageConfiguration imageConfig;
+		imageConfig.DebugName = "TextureCubeImage";
+		imageConfig.Format = config.Format;
+		imageConfig.Height = config.Height;
+		imageConfig.Width = config.Width;
+		imageConfig.Layers = 6;
+		imageConfig.Usage = ImageUsage::Storage;
+		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
 		Build();
 	}
 	void VulkanTextureCube::GenerateMips()
 	{
-		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-			const int faces = 6;
-			for (int face = 0; face < faces; face++)
-			{
-				uint32_t mipCount = GetMipLevelCount();
-				VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
-				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer();
-				VkImageMemoryBarrier barrier{};
-				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				barrier.image = image;
-				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				barrier.subresourceRange.baseArrayLayer = face;
-				barrier.subresourceRange.layerCount = 1;
-				barrier.subresourceRange.levelCount = 1;
-
-				int32_t mipWidth = m_Config.Width;
-				int32_t mipHeight = m_Config.Height;
-
-				for (uint32_t i = 1; i < mipCount; i++)
-				{
-					barrier.subresourceRange.baseMipLevel = i - 1;
-					barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-					barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-					barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-					barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
-					vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-						0, nullptr, 0, nullptr, 1, &barrier);
-
-					VkImageBlit blit{};
-					blit.srcOffsets[0] = { 0, 0, 0 };
-					blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-					blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-					blit.srcSubresource.mipLevel = i - 1;
-					blit.srcSubresource.baseArrayLayer = 0;
-					blit.srcSubresource.layerCount = 1;
-					blit.dstOffsets[0] = { 0, 0, 0 };
-					blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-					blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-					blit.dstSubresource.mipLevel = i;
-					blit.dstSubresource.baseArrayLayer = 0;
-					blit.dstSubresource.layerCount = 1;
-
-					vkCmdBlitImage(cmdBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-						1, &blit, VK_FILTER_LINEAR);
-
-					barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-					barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-					vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-						0, nullptr, 0, nullptr, 1, &barrier);
-
-					if (mipWidth > 1) mipWidth /= 2;
-					if (mipHeight > 1) mipHeight /= 2;
-				}
-
-				barrier.subresourceRange.baseMipLevel = mipCount - 1;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-					0, nullptr, 0, nullptr, 1, &barrier);
-			}
-		});
+		PF_CORE_ASSERT(false);
 	}
 	void VulkanTextureCube::Build()
 	{
@@ -786,6 +511,25 @@ namespace Proof
 		auto& imageInfo = vk_Image->GetinfoRef();
 		if (!m_Texture)
 		{
+
+			VkImageViewCreateInfo imageViewCreateInfo = {};
+			imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+			imageViewCreateInfo.format = Utils::ProofFormatToVulkanFormat(m_Config.Format);
+			imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imageViewCreateInfo.subresourceRange.levelCount = mipCount;
+			imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+			imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+			imageViewCreateInfo.subresourceRange.layerCount = 6;
+			imageViewCreateInfo.image = imageInfo.ImageAlloc.Image;
+			if (imageInfo.ImageView)
+				vkDestroyImageView(device, imageInfo.ImageView, nullptr);
+
+			vkCreateImageView(graphicsContext->GetDevice(), &imageViewCreateInfo, nullptr, &vk_Image->GetinfoRef().ImageView);
+
+			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
+			vk_Image->UpdateDescriptor();
+
 			Renderer::SubmitCommand([&](CommandBuffer* cmd) {
 				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer();
 
@@ -854,13 +598,6 @@ namespace Proof
 				graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
 				vk_Image->UpdateDescriptor();
 			}
-			TextureConfiguration textureConfig;
-			textureConfig.DebugName = "VulkanCubemap texture";
-			textureConfig.Format = m_Config.Format;
-			textureConfig.GenerateMips = false;
-			textureConfig.Height = m_Config.Height;
-			textureConfig.Width = m_Config.Width;
-			textureConfig.Storage = true;
 
 			ComputePipelineConfig computePipelineConfig;
 			computePipelineConfig.DebugName = "EquirectangularToCubemap Pipeline";
@@ -885,9 +622,9 @@ namespace Proof
 			};
 
 			// make sure cube does not delete this due to refercne cout
-			Renderer::SubmitDatafree([cube]()
+			Renderer::SubmitDatafree([cube = cube]()
 			{
-				auto id = cube->GetID();
+				auto id = cube->GetHeight();
 			});
 			Renderer::SubmitCommand([&](CommandBuffer* buffer) {
 
@@ -916,9 +653,15 @@ namespace Proof
 	{
 		return m_Image->GetResourceDescriptorInfo();
 	}
+	void VulkanTextureCube::Resize(uint32_t width, uint32_t height)
+	{
+		m_Config.Width = width;
+		m_Config.Height = height;
+		Build();
+	}
 	VulkanTextureCube::~VulkanTextureCube()
 	{
 		Release();
 	}
-	
+
 }

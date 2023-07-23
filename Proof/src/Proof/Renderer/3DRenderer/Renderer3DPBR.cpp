@@ -309,10 +309,10 @@ namespace Proof
 
 			//	descriptor1->Bind(m_RenderStorage->CommandBuffer, m_MeshPipeLine->PipeLineLayout);
 
-				subMesh.VertexBuffer->Bind(m_RenderStorage->CommandBuffer);
-				subMesh.IndexBuffer->Bind(m_RenderStorage->CommandBuffer);
-				m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
-				Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
+				//subMesh.VertexBuffer->Bind(m_RenderStorage->CommandBuffer);
+				//subMesh.IndexBuffer->Bind(m_RenderStorage->CommandBuffer);
+				//m_MeshPipeLine->MeshesVertexBuffer->Bind(m_RenderStorage->CommandBuffer, 1);
+				//Renderer::DrawElementIndexed(m_RenderStorage->CommandBuffer, subMesh.IndexBuffer->GetCount(), meshInstances, currentOffset);
 
 			}
 			currentOffset += meshInstances;

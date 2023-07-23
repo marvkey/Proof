@@ -132,11 +132,16 @@ namespace Proof
     }
     void VulkanDescriptorManager::Bind()
     {
-
+       
         auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
         auto& descriptorSets= m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight];
         std::unordered_map<uint32_t, std::vector<VkDescriptorImageInfo>> imageInfos;
         uint32_t lastImageInfo = 0;
+
+        if (m_Build == true && m_LastFrameBinned == Renderer::GetCurrentFrame().FrameinFlight)
+        {
+            goto updataDescriptor;
+        }
         for (auto& [set, SetInfo] : m_Inputs)
         {
             for (auto& [binding, resource] : SetInfo)
@@ -196,30 +201,34 @@ namespace Proof
                 }
             }
         }
+        updataDescriptor:
 
-        for (auto& [set, setData] : descriptorSets)
+        if (m_LastFrameBinned != Renderer::GetCurrentFrame().FrameinFlight)
         {
-            // if that set does not have data n ned to call update on it
-            // mainly for render material as they dont bind to sets they dont contain
-            // also for graphics pipline wiht a render material 
-            // as they should not have any data at set 0
-            // so we check if the input contians any data at set 0 if not no need to update
-            if (!m_Inputs.contains(set))continue;
 
-            std::vector< VkWriteDescriptorSet> writes;
-            writes.resize(setData.size());
-            uint32_t index =0;
-            for (auto& [binding, write] : setData)
+            for (auto& [set, setData] : descriptorSets)
             {
-             //   write.dstSet = m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight][set].Set;
-                writes[index] = descriptorSets[set][binding];
-                index++;
-            }
-            vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
-        }
+                // if that set does not have data n ned to call update on it
+                // mainly for render material as they dont bind to sets they dont contain
+                // also for graphics pipline wiht a render material 
+                // as they should not have any data at set 0
+                // so we check if the input contians any data at set 0 if not no need to update
+                if (!m_Inputs.contains(set))continue;
 
-        
+                std::vector< VkWriteDescriptorSet> writes;
+                writes.resize(setData.size());
+                uint32_t index = 0;
+                for (auto& [binding, write] : setData)
+                {
+                 //   write.dstSet = m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight][set].Set;
+                    writes[index] = descriptorSets[set][binding];
+                    index++;
+                }
+                vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
+            }
+        }
         m_Build = true;
+        m_LastFrameBinned = Renderer::GetCurrentFrame().FrameinFlight;
     }
     void VulkanDescriptorManager::Init()
     {

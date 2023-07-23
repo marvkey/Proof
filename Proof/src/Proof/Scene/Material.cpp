@@ -13,6 +13,7 @@ namespace Proof {
         m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration(name, Shader::Get("ProofPBR_Static")));
         if (m_RenderMaterial->GetConfig().Shader == Shader::Get("ProofPBR_Static"))
             m_DefaultShader = true;   
+        SetDefault();
     }
     void Material::SetDefault()
     {
@@ -23,8 +24,8 @@ namespace Proof {
         SetMetalness(0.0f);
         SetRoughness(0.4f);
 
-        SetAlbedoTextureToggle(false);
-        SetNormalTextureToggle(false);
+        SetAlbedoTextureToggle(true);
+        SetNormalTextureToggle(true);
         SetRoughnessTextureToggle(false);
         SetMetalnessTextureToggle(false);
 

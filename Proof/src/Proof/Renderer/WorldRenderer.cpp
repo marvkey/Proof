@@ -47,30 +47,31 @@ namespace Proof
 	Count<TextureCube> iradianceCubeMap;
 	Count<TextureCube> prefilterCubeMap;
 	Count<GraphicsPipeline> skyBoxRenderPipeline;
-	Count<PipeLineLayout> PipelineLayout;
+	//Count<PipeLineLayout> PipelineLayout;
 	Count<RenderPass> skyBoxPass;
 	Count<Mesh> Cube; 
 	Count< UniformBuffer> cameraBuffer;
-	std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
+	Count<Environment> environment;
+	//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 	WorldRenderer::~WorldRenderer() {
 		textureCubeMap = nullptr;
 		skyBoxRenderPipeline = nullptr;
-		PipelineLayout = nullptr;
+	//	PipelineLayout = nullptr;
 		Cube = nullptr; 
 		cameraBuffer = nullptr;
-		Descriptors.clear();
+		//Descriptors.clear();
 		brdfTexture = nullptr;
 		prefilterCubeMap = nullptr;
 		iradianceCubeMap = nullptr;
 		Cube = nullptr;
-		PipelineLayout = nullptr;
+		//PipelineLayout = nullptr;
 	}
 	WorldRenderer::WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight) :
 		m_World(world)
 	{
 		cameraBuffer = UniformBuffer::Create(sizeof(CameraData));
 		
-			//if(Application::Get()->GetConfig().EnableImgui == false)
+		//if(Application::Get()->GetConfig().EnableImgui == false)
 		//	config.Attachments.Attachments[0].SetOverrideLayout(Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout()); // this line basically makes us able to render to window
 		FrameBufferConfig config;
 		config.DebugName = "Screen FrameBuffer";
@@ -129,9 +130,10 @@ namespace Proof
 		cubeTextureConfig.Storage = true;
 		cubeTextureConfig.Format = ImageFormat::RGBA32F;
 		cubeTextureConfig.Wrap = TextureWrap::ClampEdge;
-		textureCubeMap = TextureCube::Create(cubeTextureConfig, "Assets/qwantani_puresky_4k.hdr");
+		//textureCubeMap = TextureCube::Create(cubeTextureConfig, "Assets/qwantani_puresky_4k.hdr");
 		//textureCubeMap = Renderer::GetWhiteTextureCube();
-
+		//auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap("Assets/qwantani_puresky_4k.hdr");
+		//environment = Count<Environment>::Create(irradiance, prefilter);
 		{
 			GraphicsPipelineConfig pipelineConfig;
 			pipelineConfig.DebugName = "SKy box";
@@ -152,7 +154,7 @@ namespace Proof
 			renderPassConfig.Pipeline = skyBoxRenderPipeline;
 			skyBoxPass = RenderPass::Create(renderPassConfig);
 			skyBoxPass->SetInput("CameraData", cameraBuffer);
-			skyBoxPass->SetInput("u_EnvironmentMap", textureCubeMap);
+			skyBoxPass->SetInput("u_EnvironmentMap", Renderer::GetWhiteTextureCube());
 		}
 		Cube = MeshWorkShop::GenerateCube();
 
@@ -226,28 +228,27 @@ namespace Proof
 		Renderer::SubmitCommandBuffer(m_CommandBuffer);
 	}
 	CameraData cmaeraData;
-	void WorldRenderer::AddRender(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame, Count<UITable> uiTable)
+	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame, Count<UITable> uiTable)
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
-
 		cmaeraData = { projection, view, location };
 		cameraBuffer->SetData(&cmaeraData, sizeof(CameraData));
+		Reset();
 		// clear screen
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
-
 		Renderer::BeginRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass,true);
 		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
 
 		Renderer::BeginRenderPass(m_CommandBuffer, skyBoxPass);
+		Cube->GetMeshSource()->GetVertexBuffer()->Bind(m_CommandBuffer);
+		Cube->GetMeshSource()->GetIndexBuffer()->Bind(m_CommandBuffer);
 		for (const auto& subMesh : Cube->GetMeshSource()->GetSubMeshes())
 		{
-			subMesh.VertexBuffer->Bind(m_CommandBuffer);
-			subMesh.IndexBuffer->Bind(m_CommandBuffer);
-			Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexBuffer->GetCount());
+			Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, 1, subMesh.BaseIndex, subMesh.BaseVertex);
 		}
 		Renderer::EndRenderPass(skyBoxPass);
-		
+		/*
 		{
 			const auto& entitiyView = m_World->m_Registry.view<MeshComponent>();
 			for (auto& entity : entitiyView)
@@ -276,7 +277,20 @@ namespace Proof
 			}
 
 		}
+		*/
+		const auto& entityView = m_World->m_Registry.view<MeshComponent>();
+		for (auto& entityID : entityView)
+		{
+			Entity entity{ entityID,m_World.Get() };
+			MeshComponent& meshComponent = entity.GetComponent<MeshComponent>();
 		
+			if (AssetManager::HasAsset(meshComponent.GetMesh()))
+			{
+				Count<Mesh> mesh = meshComponent.GetMesh();
+				SubmitStaticMesh(mesh, meshComponent.MaterialTable, m_World->GetWorldTransform(entity));
+			}
+		}
+		MeshPass();
 		#if 1
 
 		{
@@ -566,16 +580,58 @@ namespace Proof
 		m_ScreenFrameBuffer->Resize(Vector2{ (float)windowSize.X, (float)windowSize.Y });
 	}
 
-	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings,bool clearOnLoad, Count<UITable> uiTable)
+	void WorldRenderer::SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform)
 	{
-		PF_PROFILE_FUNC();
-		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
 
-		AddRender(projection, view, location, viewPort, scissor, renderSettings, clearOnLoad, uiTable);
-		
+		MeshKey meshKey = { mesh->GetID(),materialTable };
+		auto& dc = m_MeshDrawList[meshKey];
+		dc.InstanceCount++;
+		dc.MaterialTable = materialTable;
+		dc.Mesh = mesh;
+
+		m_MeshTransformMap[meshKey].emplace_back(transform);
 	}
-	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform)
+	void WorldRenderer::MeshPass()
 	{
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		PF_PROFILE_FUNC();
+
+		if (m_MeshDrawList.empty())return;
+		Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass);
+
+		for (auto& [meshKey, meshDrawInfo] : m_MeshDrawList)
+		{
+
+			m_MeshPipeline.TransformsBuffer->Resize(meshDrawInfo.InstanceCount * sizeof(glm::mat4));
+			m_MeshPipeline.TransformsBuffer->SetData(m_MeshTransformMap[meshKey].data(), meshDrawInfo.InstanceCount * sizeof(glm::mat4));
+			Count<Mesh> mesh = meshDrawInfo.Mesh;
+			Count<MeshSource> meshSource = mesh->GetMeshSource();
+			Count<MaterialTable> materialTable = meshDrawInfo.MaterialTable;
+			meshSource->GetVertexBuffer()->Bind(m_CommandBuffer);
+			meshSource->GetIndexBuffer()->Bind(m_CommandBuffer);
+			for (uint32_t index : mesh->GetSubMeshes())
+			{
+				const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+				Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex)? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
+					: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
+
+				Renderer::RenderPassPushRenderMaterial(m_MeshPipeline.RenderPass, renderMaterial);
+				m_MeshPipeline.TransformsBuffer->Bind(m_CommandBuffer, 1);
+				Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, meshDrawInfo.InstanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+			}
+		}
+		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
+
+	}
+	void WorldRenderer::Reset()
+	{
+		//mesh Pass
+		{
+			m_MeshTransformMap.clear();
+			m_MeshDrawList.clear();
+		}
 	}
 	void WorldRenderer::Render(EditorCamera& camera, RenderSettings renderSettings)
 	{

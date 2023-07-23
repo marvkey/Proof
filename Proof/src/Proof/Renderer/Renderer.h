@@ -3,6 +3,7 @@
 #include <functional>
 #include "Proof/Math/Vector.h" 
 #include "Proof/Events/WindowEvent.h"
+#include <filesystem>
 namespace Proof {
 	struct  RendererConfig {
 		uint32_t FramesFlight = 2;
@@ -45,13 +46,14 @@ namespace Proof {
 
 		// explicit clear means the framebuffer will overide its base command and clear all attachemtns when set true
 		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear = false);
-		// explicit clear means the framebuffer will overide its base command and clear all attachemtns when set true
-		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial,bool explicitClear = false);
+		static void BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass,bool explicitClear = false);
 		static void EndRenderPass(Count<class RenderPass> renderPass);
+		static void RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial);
 
 		static void BeginComputePass(Count<class RenderCommandBuffer> commandBuffer,Count<class ComputePass> computPass);
-		static void BeginComputePass(Count<class RenderCommandBuffer> commandBuffer,Count<class ComputePass> computPass,Count<class RenderMaterial> renderMaterial);
+		static void BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> commandBuffer, Count<class ComputePass> computPass);
 		static void EndComputePass(Count<class ComputePass> computPass);
+		static void ComputePassPushRenderMaterial(Count<class ComputePass> computePass, Count<class RenderMaterial> renderMaterial);
 
 		static Count<class Texture2D> GenerateBRDFLut();
 		static class CommandQueue& GetRenderCommandQueue();
@@ -64,7 +66,9 @@ namespace Proof {
 		static Count<class Texture2D> GetBlackTexture();
 		static Count<class TextureCube> GetWhiteTextureCube();
 		static Count<class TextureCube> GetBlackTextureCube();
-
+		
+		//environment and prefilter
+		static std::pair<Count<class TextureCube>, Count<class TextureCube>>CreateEnvironmentMap(const std::filesystem::path& path);
 		//submit to render thread
 		//template<class FuncT>
 		//static void Submit(FuncT&& func)

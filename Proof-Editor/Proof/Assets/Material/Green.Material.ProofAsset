@@ -3,4 +3,9 @@ ID: 5634022354863745560
 AlbedoColour: [0.155767828, 0.814516127, 0.128089249]
 Roughness: 1
 Metallness: 0
-UsePBR: false
+Tiling: [0, 0]
+Offset: [0, 0]
+AlbedoTexture: 0
+NormalTexture: 0
+MetallicTexture: 0
+RoughnessTexture: 0

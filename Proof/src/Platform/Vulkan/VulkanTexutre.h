@@ -109,7 +109,12 @@ namespace Proof
 		virtual Vector2U GetSize()const override { return {m_Config.Width, m_Config.Height }; }
 		
 		virtual float GetAspectRatio()const override { return (float)GetWidth() / (float)GetHeight(); };
-		uint32_t GetMipLevelCount() { return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height); }
+		uint32_t GetMipLevelCount() { 
+			if (m_Config.GenerateMips)
+				Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+			else
+				return 1;
+		}
 
 		const std::filesystem::path& GetPath()const override { return m_Path; };
 		const TextureConfiguration& GetSpecification()const override { return m_Config; };
@@ -133,25 +138,32 @@ namespace Proof
 	class VulkanTextureCube : public TextureCube {
 	public:
 		VulkanTextureCube(const TextureConfiguration& config, const std::filesystem::path& path);
-		VulkanTextureCube(const void* data,const TextureConfiguration& config);
+		VulkanTextureCube(const void* data, const TextureConfiguration& config);
+		VulkanTextureCube(const TextureConfiguration& config);
 		~VulkanTextureCube();
 		virtual Count<Image2D> GetImage()const { return m_Image; };
 		const VkDescriptorImageInfo& GetDescriptorInfoVulkan()const { return *(VkDescriptorImageInfo*)GetResourceDescriptorInfo(); };
 		virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const ;
 
-		//virtual void Resize(uint32_t width, uint32_t height) ;
-		//virtual void Resize(Vector2U size)  { Resize(size.X, size.Y); }
+		virtual void Resize(uint32_t width, uint32_t height) ;
+		virtual void Resize(Vector2U size)  { Resize(size.X, size.Y); }
 
 		virtual uint32_t GetWidth()const { return m_Config.Width; };
 		virtual uint32_t GetHeight() const { return m_Config.Height; };
 		virtual Vector2U GetSize()const { return { m_Config.Width, m_Config.Height }; }
 
 		virtual float GetAspectRatio()const { return (float)GetWidth() / (float)GetHeight(); };
-		uint32_t GetMipLevelCount() { return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height); }
-	private:
+		uint32_t GetMipLevelCount() {
+			if (m_Config.GenerateMips)
+				Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+			else
+				return 1;
+		};
 		void GenerateMips();
+	private:
 		TextureConfiguration m_Config;
 		std::filesystem::path m_Path;
+
 		//texture we load
 		Count<VulkanTexture2D> m_Texture;
 		Count<Image2D> m_Image;

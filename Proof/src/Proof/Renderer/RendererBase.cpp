@@ -36,6 +36,8 @@ namespace Proof {
 		AllShaders->LoadShader("BRDFLUT", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/BRDFLut.glsl");
 		AllShaders->LoadShader("EquirectangularToCubemap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EquirectangularToCubemap.glsl");
 		AllShaders->LoadShader("SkyBox", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/SkyBox.glsl");
+		AllShaders->LoadShader("EnvironmentIrradiance", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradiance.glsl");
+		AllShaders->LoadShader("EnvironmentPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentPrefilter.glsl");
 
 		s_BaseTextures = new  BaseTextures();
 		PF_ENGINE_TRACE("Renderer Initilized");
@@ -65,15 +67,15 @@ namespace Proof {
 		cubeTextureConfig.Height = 1024;
 		cubeTextureConfig.Width = 1024;
 		cubeTextureConfig.Storage = true;
-		cubeTextureConfig.Format = ImageFormat::RGBA32F;
+		cubeTextureConfig.Format = ImageFormat::RGBA16F;
 		cubeTextureConfig.Wrap = TextureWrap::ClampEdge;
 
-		uint8_t* data = new uint8_t[cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA32F)];
+		uint8_t* data = new uint8_t[cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F)];
 		// since image is in format is a float we use 0x3F to normalize for floating poitn for white
-		std::memset(data, 0x3F, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA32F));
+		std::memset(data, 0x3F, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F));
 		WhiteTextureCube = TextureCube::Create(data, cubeTextureConfig);
 		
-		std::memset(data, 0, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA32F));
+		std::memset(data, 0, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F));
 		BlackTextureCube = TextureCube::Create(data, cubeTextureConfig);
 		delete[] data;	
 	}

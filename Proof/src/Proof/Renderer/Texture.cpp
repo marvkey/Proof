@@ -98,7 +98,7 @@ namespace Proof {
 		int widthint;
 		int heightInt;
 
-		stbi_set_flip_vertically_on_load(true);
+		//stbi_set_flip_vertically_on_load(true);
 		if (IsImageFormatFloat(format))
 		{
 			float* data = stbi_loadf(path.string().c_str(), &widthint, &heightInt, &channels, 0);

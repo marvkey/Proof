@@ -74,6 +74,7 @@ namespace Proof {
 		virtual const TextureConfiguration& GetSpecification()const = 0;
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void Resize(Vector2U size) = 0;
+		virtual uint32_t GetMipLevelCount() = 0;
 
 		virtual uint32_t GetWidth()const = 0;
 		virtual float GetAspectRatio()const = 0;
@@ -91,17 +92,41 @@ namespace Proof {
 	class TextureCube : public Texture {
 	public:
 		virtual ~TextureCube() {};
+		virtual uint32_t GetWidth()const = 0;
+		virtual float GetAspectRatio()const = 0;
+		virtual uint32_t GetHeight()const = 0;
+		virtual Vector2U GetSize()const = 0;
 
+		virtual void Resize(uint32_t width, uint32_t height) =0;
+		virtual void Resize(Vector2U size) = 0;
+		virtual uint32_t GetMipLevelCount() = 0;
+			
 		virtual Count<Image2D> GetImage()const =0 ;
 		static Count<TextureCube> Create(const TextureConfiguration& config, const std::filesystem::path& path);
 		static Count<TextureCube> Create(const void* data,const TextureConfiguration& config);
 	};
+
 	namespace Utils {
 		inline uint32_t GetMipLevelCount(uint32_t width, uint32_t height)
 		{
 			return static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 		}
 	}
+	class Environment : public RefCounted
+	{
+	public:
+		Environment()
+		{
+
+		}
+		Environment(Count< TextureCube> irradianceMap, Count<TextureCube> prefilterMap):
+			IrradianceMap(irradianceMap), PrefilterMap(prefilterMap)
+		{
+
+		}
+		Count<TextureCube> IrradianceMap = nullptr;
+		Count<TextureCube> PrefilterMap = nullptr;
+	};
 	struct Buffer;
 	class TextureImporter
 	{

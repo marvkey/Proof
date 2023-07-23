@@ -65,10 +65,6 @@ namespace Proof
 		m_RenderPassEnabled = true;
 
 		vkCmdBindPipeline(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_Config.Pipeline.As<VulkanComputePipeline>()->GetComputePipeline());
-		
-
-		// dsptach
-
 	}
 	void VulkanComputePass::BeginComputePass(Count<class RenderCommandBuffer> command)
 	{
@@ -93,11 +89,13 @@ namespace Proof
 				nullptr);
 		}
 	}
-	void VulkanComputePass::BeginComputePass(Count<class RenderCommandBuffer> command, Count<class VulkanRenderMaterial> material)
+	void VulkanComputePass::BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> command)
 	{
 		BeginComputePassBase(command);
-		Count<VulkanComputePass> pass = this;
-		material->Bind(m_CommandBuffer.As<VulkanRenderCommandBuffer>(), pass);
+		PF_CORE_ASSERT(m_MaterialRenderPass == false, "cannot start material render pass if previous material render pass not disabled");
+
+		m_MaterialRenderPass = true;
+
 		m_DescritptorSetManager->Bind();
 
 		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
@@ -119,9 +117,19 @@ namespace Proof
 				nullptr);
 		}
 	}
+	void VulkanComputePass::ComputePassPushRenderMaterial(Count<class RenderMaterial> renderMaterial)
+	{
+		PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot Push material fi render pass not enabled");
+		PF_CORE_ASSERT(m_MaterialRenderPass == true, "cannot Push if not a material Render Pass");
+
+		Count< VulkanComputePass> pass = this;
+		renderMaterial.As<VulkanRenderMaterial>()->Bind(m_CommandBuffer.As<VulkanRenderCommandBuffer>(), pass);
+	}
 	void VulkanComputePass::EndComputePass()
 	{
+		PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
 		m_CommandBuffer =nullptr;
+		m_MaterialRenderPass = false;
 		m_RenderPassEnabled = false;
 	}
 }

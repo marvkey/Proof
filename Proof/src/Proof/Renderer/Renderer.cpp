@@ -8,6 +8,8 @@
 #include "Proof/Renderer/CommandBuffer.h"
 #include "ComputePipeline.h"
 #include "Shader.h"
+#include "RenderMaterial.h"
+#include "Platform/Vulkan/VulkanTexutre.h"
 namespace Proof {
 	RendererAPI* Renderer::s_RendererAPI;
 	static std::vector<CommandQueue*> s_RenderCommandQueue;
@@ -33,14 +35,15 @@ namespace Proof {
 		s_RendererAPI->EndCommandBuffer(commandBuffer);
 	}
 
-	void Renderer::BeginRenderPass(Count<RenderCommandBuffer> commandBuffer, Count<RenderPass> renderPass, bool explicitClear )
+
+	void Renderer::BeginRenderPass(Count<RenderCommandBuffer> commandBuffer, Count<RenderPass> renderPass, bool explicitClear)
 	{
-		s_RendererAPI->BeginRenderPass(commandBuffer, renderPass, explicitClear);
+		s_RendererAPI->BeginRenderPass(commandBuffer, renderPass,explicitClear);
 	}
 
-	void Renderer::BeginRenderPass(Count<RenderCommandBuffer> commandBuffer, Count<RenderPass> renderPass,Count<RenderMaterial> renderMaterial, bool explicitClear)
+	void Renderer::BeginRenderMaterialRenderPass(Count<RenderCommandBuffer> commandBuffer, Count<RenderPass> renderPass, bool explicitClear)
 	{
-		s_RendererAPI->BeginRenderPass(commandBuffer, renderPass,renderMaterial,explicitClear);
+		s_RendererAPI->BeginRenderMaterialRenderPass(commandBuffer, renderPass, explicitClear);
 	}
 
 	void Renderer::EndRenderPass(Count<RenderPass> renderPass)
@@ -48,20 +51,29 @@ namespace Proof {
 		s_RendererAPI->EndRenderPass(renderPass);
 	}
 
+	void Renderer::RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial)
+	{
+		s_RendererAPI->RenderPassPushRenderMaterial(renderPass, renderMaterial);
+	}
+
 	void Renderer::BeginComputePass(Count<RenderCommandBuffer> commandBuffer, Count<ComputePass> computPass)
 	{
 		s_RendererAPI->BeginComputePass(commandBuffer,computPass);
-
 	}
 
-	void Renderer::BeginComputePass(Count<RenderCommandBuffer> commandBuffer, Count<ComputePass> computPass,Count<RenderMaterial> renderMaterial)
+	void Renderer::BeginRenderMaterialComputePass(Count<RenderCommandBuffer> commandBuffer, Count<ComputePass> computPass)
 	{
-		s_RendererAPI->BeginComputePass(commandBuffer,computPass,renderMaterial);
+		s_RendererAPI->BeginRenderMaterialComputePass(commandBuffer,computPass);
 	}
 
 	void Renderer::EndComputePass(Count<ComputePass> computPass)
 	{
 		s_RendererAPI->EndComputePass(computPass);
+	}
+
+	void Renderer::ComputePassPushRenderMaterial(Count<class ComputePass> computePass, Count<class RenderMaterial> renderMaterial)
+	{
+		s_RendererAPI->ComputePassPushRenderMaterial(computePass, renderMaterial);
 	}
 
 	void Renderer::SubmitCommandBuffer(Count<RenderCommandBuffer> commandBuffer)
@@ -121,6 +133,96 @@ namespace Proof {
 		return RendererBase::s_BaseTextures->BlackTextureCube;
 	}
 
+	std::pair<Count<class TextureCube>, Count<class TextureCube>> Renderer::CreateEnvironmentMap(const std::filesystem::path& path)
+	{
+		Count<TextureCube> environmentMapImageCube;
+
+		const uint32_t imageSize = 256;
+		ImageFormat format = ImageFormat::RGBA16F;
+		{
+			TextureConfiguration baseCubeMapConfig;
+			baseCubeMapConfig.DebugName = Utils::FileDialogs::GetFileName(path)+ " Base CubeMap";
+			baseCubeMapConfig.Height = imageSize;
+			baseCubeMapConfig.Width = imageSize;
+			baseCubeMapConfig.Storage = true;
+			baseCubeMapConfig.GenerateMips = false;
+			baseCubeMapConfig.Format = format;
+			baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
+
+			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig, path);
+		}
+		TextureConfiguration textureConfig;
+		textureConfig.DebugName = "Irradiance map "+ Utils::FileDialogs::GetFileName(path);
+		textureConfig.Height = imageSize;
+		textureConfig.Width = imageSize;
+		textureConfig.Storage = true;
+		textureConfig.Format = format;
+		textureConfig.Wrap = TextureWrap::ClampEdge;
+		textureConfig.GenerateMips = true;
+		
+		Count<TextureCube> irradianceMap = Count<VulkanTextureCube>::Create(textureConfig);
+		
+		{
+			//ComputePipelineConfig computePipelineConfig;
+			//computePipelineConfig.DebugName = "Irradiance Pipline";
+			//computePipelineConfig.Shader = Shader::Get("EnvironmentIrradiance");
+			//
+			//Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
+			//ComputePassConfiguration computePassConfig;
+			//computePassConfig.DebugName = "EnvironmentIrradiance Pass";
+			//computePassConfig.Pipeline = computePipeline;
+			//
+			//auto computePass = ComputePass::Create(computePassConfig);
+			//computePass->SetInput("inputTexture", environmentMapImageCube);
+			//computePass->SetInput("outputTexture", irradianceMap);
+			//Renderer::SubmitCommand([&](CommandBuffer* buffer) {
+			//
+			//	Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
+			//	Renderer::BeginComputePass(renderCommandBuffer, computePass);
+			//	computePass->Dispatch(imageSize / 32, imageSize / 32, 6);
+			//	Renderer::EndComputePass(computePass);
+			//
+			//});
+			//irradianceMap.As<VulkanTextureCube>()->GenerateMips();
+
+		}
+		textureConfig.DebugName = "Prefilter map " + Utils::FileDialogs::GetFileName(path);
+		Count<TextureCube> prefilterMap = Count<VulkanTextureCube>::Create(textureConfig);
+	
+		{
+		
+			ComputePipelineConfig computePipelineConfig;
+			computePipelineConfig.DebugName = "Prefilter Pipline";
+			computePipelineConfig.Shader = Shader::Get("EnvironmentPrefilter");
+		
+			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
+			ComputePassConfiguration computePassConfig;
+			computePassConfig.DebugName = "EnvironmentPrefilter Pass";
+			computePassConfig.Pipeline = computePipeline;
+		
+			auto computePass = ComputePass::Create(computePassConfig);
+			computePass->SetInput("u_EnvironmentMap", environmentMapImageCube);
+			computePass->SetInput("u_PrefilterMap", prefilterMap);
+			uint32_t maxMip = prefilterMap->GetMipLevelCount();
+			Renderer::SubmitCommand([&](CommandBuffer* buffer) {
+				Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
+				Renderer::BeginRenderMaterialComputePass(renderCommandBuffer, computePass);
+				const float deltaRoughness = 1.f / glm::max((float)(maxMip - 1), 1.0f);
+		
+				for (uint32_t mip = 0, mipsize = imageSize; mip < maxMip; mip++, mipsize /=2)
+				{
+					uint32_t numGroups = glm::max(mipsize / 32, 1u); // Ensure numGroups is at least 1
+					float roughness = deltaRoughness * mip;
+					roughness = glm::max(roughness, 0.05f);
+					computePass->PushData("Input", &roughness);
+					computePass->Dispatch(numGroups, numGroups, 6);
+				}
+				Renderer::EndComputePass(computePass);
+			});
+			prefilterMap.As<VulkanTextureCube>()->GenerateMips();
+		}
+		return std::make_pair(irradianceMap, prefilterMap);
+	}
 	Count<Texture2D> Renderer::GenerateBRDFLut()
 	{
 		const uint32_t imageSize = 1024;
@@ -154,7 +256,7 @@ namespace Proof {
 		Renderer::SubmitCommand([&](CommandBuffer* buffer) {
 
 			Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
-			Renderer::BeginComputePass(renderCommandBuffer, computePass);
+			Renderer::BeginRenderMaterialComputePass(renderCommandBuffer, computePass);
 			computePass->Dispatch(imageSize/16 , imageSize/16 , 1);
 			Renderer::EndComputePass(computePass);
 

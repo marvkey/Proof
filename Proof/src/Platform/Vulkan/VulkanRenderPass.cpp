@@ -353,13 +353,15 @@ namespace Proof
         }
     }
     
-    void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, Count<class RenderMaterial>material, Viewport vieport, ViewportScissor scisscor, bool explicitClear)
+    void VulkanRenderPass::BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, Viewport vieport, ViewportScissor scisscor, bool explicitClear)
     {
         BeginRenderPassBase(command, vieport, scisscor);
+        PF_CORE_ASSERT(m_MaterialRenderPass == false, "cannot start material render pass if previous material render pass not disabled");
+
+        m_MaterialRenderPass = true;
         const auto vulkanPipeline = GetPipeline().As<VulkanGraphicsPipeline>();
         vulkanPipeline->Bind( m_CommandBuffer);
         Count<VulkanRenderPass> pass = this;
-        material.As<VulkanRenderMaterial>()->Bind(command.As<VulkanRenderCommandBuffer>(), pass);
         m_DescritptorSetManager->Bind();
 
         auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
@@ -454,39 +456,9 @@ namespace Proof
                 reactClear.size(),
                 reactClear.data());
         }
-        /*
-        const VkClearAttachment clearAttachements[2] = {
-              {
-                VK_IMAGE_ASPECT_COLOR_BIT,
-                0,
-                { 0.0f,0.0f,0.0f,1.0f },
-              },
-              {
-                VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
-                0,
-                { 1.0f,0},
-              }
-        };
-
-        const VkClearRect rects[1] = {
-          {
-            {
-              {0,0},
-              {(uint32_t)vieport.Width,(uint32_t)vieport.Height},
-            },
-            0,1
-          }
-        };
-
-        vkCmdClearAttachments(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
-            2, // attachmentCount
-            clearAttachements,
-            1, // rectCount
-            rects);
-            */
     }
 
-    void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, Count<class RenderMaterial> material, bool explicitClear )
+    void VulkanRenderPass::BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear )
     {
         Viewport viewport;
         ViewportScissor scissor;
@@ -500,7 +472,7 @@ namespace Proof
         scissor.Offset = { 0, 0 };
         scissor.Extent = { viewport.Width,viewport.Height };
 
-        BeginRenderPass(command, material,viewport, scissor, explicitClear);
+        BeginRenderMaterialRenderPass(command, viewport, scissor, explicitClear);
 
     }
   void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command,Viewport vieport, ViewportScissor scisscor, bool explicitClear)
@@ -605,6 +577,15 @@ namespace Proof
   
 
     }
+    void VulkanRenderPass::RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial)
+    {
+        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot Push material fi render pass not enabled");
+        PF_CORE_ASSERT(m_MaterialRenderPass == true, "cannot Push if not a material Render Pass");
+
+        Count< VulkanRenderPass> pass = this;
+        renderMaterial.As<VulkanRenderMaterial>()->Bind(m_CommandBuffer.As<VulkanRenderCommandBuffer>(), pass);
+
+    }
     void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear)
     {
         Viewport viewport;
@@ -628,6 +609,7 @@ namespace Proof
         vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
         m_CommandBuffer = nullptr;
         m_RenderPassEnabled = false;
+        m_MaterialRenderPass = false;
     }
 
     void VulkanRenderPass::SetInput(std::string_view name, Count<class StorageBuffer> buffer)

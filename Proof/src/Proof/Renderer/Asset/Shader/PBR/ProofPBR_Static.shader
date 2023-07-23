@@ -40,11 +40,11 @@ layout(location = 3) in vec3 in_CameraPosition;
 
 layout(location = 0) out vec4 out_FragColor;
 
-//layout(set = 0, binding = 5) uniform sampler2D u_AlbedoMap;
-//layout(set = 0, binding = 6) uniform sampler2D u_NormalMap;
-//layout(set = 0, binding = 7) uniform sampler2D u_MetallicMap;
-//layout(set = 0, binding = 8) uniform sampler2D u_RoughnessMap;
-//
+layout(set = 0, binding = 5) uniform sampler2D u_AlbedoMap;
+layout(set = 0, binding = 6) uniform sampler2D u_NormalMap;
+layout(set = 0, binding = 7) uniform sampler2D u_MetallicMap;
+layout(set = 0, binding = 8) uniform sampler2D u_RoughnessMap;
+
 //layout(set = 1, binding = 1) uniform samplerCube u_IrradianceMap;
 //layout(set = 1, binding = 2) uniform samplerCube u_PrefilterMap;
 //layout(set = 1, binding = 3) uniform sampler2D u_BRDFLUT;
@@ -65,7 +65,7 @@ layout(push_constant) uniform Material
 
 void main()
 {
-    vec3 albedo = u_MaterialUniform.Albedo;
-    
+    vec3 albedo = texture(u_AlbedoMap, in_TexCoords).rgb * u_MaterialUniform.Albedo;
+
     out_FragColor = vec4(albedo,1.0);
 }

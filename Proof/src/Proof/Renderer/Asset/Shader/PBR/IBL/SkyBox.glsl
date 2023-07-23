@@ -17,11 +17,19 @@ layout(set = 0, binding = 0) uniform CameraData
 
 void main()
 {
-    outWorldPos = aPos;
+   //Combine the projection and view matrices
+    mat4 inverseProjectionViewMatrix = inverse(CameraUBO.Projection * CameraUBO.View);
+    
+    vec4 position = vec4(aPos.xy,1.0,1.0);
+    gl_Position = position;
+    
+    outWorldPos = (inverseProjectionViewMatrix * position).xyz;
 
-    mat4 rotView = mat4(mat3(CameraUBO.View));
-    vec4 clipPos = CameraUBO.Projection * rotView * vec4(outWorldPos, 1.0);
-    gl_Position = clipPos.xyww;
+    //outWorldPos = aPos;
+    //
+    //mat4 rotView = mat4(mat3(CameraUBO.View));
+    //vec4 clipPos = CameraUBO.Projection * rotView * vec4(outWorldPos, 1.0);
+    //gl_Position = clipPos.xyww;
 }
 
 #Fragment Shader
@@ -38,11 +46,11 @@ void main()
 {
 
     vec3 envColor = textureLod(u_EnvironmentMap, WorldPos,0).rgb;
-    envColor *= tintColor;
-    envColor *= exposure;
-    // HDR tonemap and gamma correct
-    envColor = envColor / (envColor + vec3(1.0));
-    envColor = pow(envColor, vec3(1.0 / 2.2));
+    //envColor *= tintColor; 
+    //envColor *= exposure;
+    //// HDR tonemap and gamma correct
+    //envColor = envColor / (envColor + vec3(1.0));
+    //envColor = pow(envColor, vec3(1.0 / 2.2));
     outFragColor = vec4(envColor,  1.0);
 }
 

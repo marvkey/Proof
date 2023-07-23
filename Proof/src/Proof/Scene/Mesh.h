@@ -13,17 +13,11 @@ namespace Proof
     class Material;
     class MaterialTable;
     struct SubMesh {
-        SubMesh() {
-     
-        }
-        SubMesh(const std::vector<Vertex>& Vertices, const std::vector<uint32_t>& Indices, const std::string& name, uint32_t materialIndex=0);
-        uint32_t MaterialIndex=0;
-        std::vector<Vertex> Vertices;
-        std::vector<uint32_t> Indices;
         std::string Name;
-
-        Count<class VertexBuffer> VertexBuffer = nullptr;
-        Count<class IndexBuffer> IndexBuffer = nullptr;
+        uint32_t BaseVertex;
+        uint32_t BaseIndex;
+        uint32_t IndexCount;
+        uint32_t MaterialIndex;
         glm::mat4 Transform;
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
@@ -45,8 +39,16 @@ namespace Proof
             return m_SubMeshes;
         }
         ASSET_CLASS_TYPE(MeshSourceFile);
+        Count<class VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
+        Count<class IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
     private:
+        // gets cleard after mesh has been created
+        std::vector<Vertex> m_Vertices;
+        // gets cleard after mesh has been created
+        std::vector<uint32_t> m_Indices;
 
+        Count<class VertexBuffer> m_VertexBuffer = nullptr;
+        Count<class IndexBuffer> m_IndexBuffer = nullptr;
         void ProcessNode(void* node, const void* scene, const glm::mat4& parentTransform);
         SubMesh ProcessMesh(void* mesh, const void* scene, const glm::mat4& transform) ;
 

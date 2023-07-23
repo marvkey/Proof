@@ -6,9 +6,9 @@ namespace Proof{
 
 	class RefCounted {
 	public:
-		RefCounted() {}; // non-atomic initializations
+		RefCounted() : m_StrongRefCount(0), m_WeakRefCount(0){}; // non-atomic initializations
 
-		RefCounted(const RefCounted& other)
+		RefCounted(const RefCounted& other) : m_StrongRefCount(0), m_WeakRefCount(0)
 		{
 		}
 		RefCounted& operator=(const RefCounted& other)
@@ -65,18 +65,12 @@ namespace Proof{
 	{
 	public:
 		using element_type = std::remove_extent_t<T>;
-		//template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
-		constexpr Count() noexcept
+		constexpr Count() noexcept : m_Ptr (nullptr)
 		{
-			m_Ptr = nullptr;
-			//static_assert(std::is_base_of<RefCounted, class T>::value, "Has to be a base of RefCount" );
 		}
 
-		//template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
-		constexpr Count(nullptr_t) noexcept 
+		constexpr Count(nullptr_t) noexcept : m_Ptr(nullptr)
 		{ 
-			m_Ptr = nullptr;
-			//static_assert(std::is_base_of<RefCounted, class T>::value, "Has to be a base of RefCount"); 
 		} 
 
 		template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
@@ -173,7 +167,7 @@ namespace Proof{
 
 		static Count<T> CreateFrom(Count<T>&& other) {
 			if (!other)return nullptr;
-			T* data = new T(other.m_Ptr);
+			T* data = new T(*other.m_Ptr);
 			Count<T> t(data);
 			return t;
 		}

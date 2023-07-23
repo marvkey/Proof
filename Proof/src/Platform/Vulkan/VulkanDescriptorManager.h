@@ -142,6 +142,8 @@ namespace Proof
 
 		void Init();
 		bool m_Build = false;
+		// hasnt bind to a frame yet
+		uint32_t m_LastFrameBinned = -1;
 		void Release();
 	};
 }

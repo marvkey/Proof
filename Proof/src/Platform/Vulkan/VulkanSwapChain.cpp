@@ -5,7 +5,7 @@
 #include "VulkanSwapChain.h"
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanGraphicsContext.h"
-
+#include "Vulkan.h"
 #include <array>
 #include <cstdlib>
 #include <cstring>
@@ -130,10 +130,14 @@ namespace Proof
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[Renderer::GetCurrentFrame().FrameinFlight]) !=
-            VK_SUCCESS) {
-            PF_CORE_ASSERT(false, "failed to submit draw command buffer!");
-        }
+        //if (vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[Renderer::GetCurrentFrame().FrameinFlight]) !=
+        //    VK_SUCCESS) {
+        //    PF_CORE_ASSERT(false, "failed to submit draw command buffer!");
+        //}
+
+
+        VK_CHECK_RESULT(vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[Renderer::GetCurrentFrame().FrameinFlight]),
+            "Failed to submit draw command Buffer");
         VkSwapchainKHR swapChains[] = { m_SwapChain };
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -147,6 +151,8 @@ namespace Proof
         vkDeviceWaitIdle(graphicsContext->GetDevice());
         for(int i =0; i<submitCommandBuffers.size(); i++)
             vkResetCommandBuffer(submitCommandBuffers[i], 0);
+
+
     }
 
     ImageLayouts2D VulkanSwapChain::GetImageLayout()
@@ -471,7 +477,10 @@ namespace Proof
     }
 
     void VulkanSwapChain::WaitFences(uint32_t frameIndex) {
-        vkWaitForFences(VulkanRenderer::GetGraphicsContext()->GetDevice(), 1, &m_InFlightFences[frameIndex], VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
+        if (vkGetFenceStatus(VulkanRenderer::GetGraphicsContext()->GetDevice(), m_InFlightFences[frameIndex]) == VK_NOT_READY)
+        {
+            vkWaitForFences(VulkanRenderer::GetGraphicsContext()->GetDevice(), 1, &m_InFlightFences[frameIndex], VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
+        }
     }
 
     void VulkanSwapChain::ResetFences(uint32_t frameIndex) {
