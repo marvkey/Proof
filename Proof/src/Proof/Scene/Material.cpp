@@ -25,7 +25,7 @@ namespace Proof {
         SetRoughness(0.4f);
 
         SetAlbedoTextureToggle(true);
-        SetNormalTextureToggle(true);
+        SetNormalTextureToggle(false);
         SetRoughnessTextureToggle(false);
         SetMetalnessTextureToggle(false);
 

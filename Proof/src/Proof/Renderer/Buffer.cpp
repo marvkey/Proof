@@ -28,6 +28,15 @@ namespace Proof
 			case Renderer::API::Vulkan: return Count<VulkanIndexBuffer>::Create(Data,count);
 		}
 		return nullptr;
-
+	}
+	Count<IndexBuffer> IndexBuffer::Create(uint32_t count)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None:  PF_CORE_ASSERT(false, "Index Buffer None it needs an api "); return nullptr;
+			case Renderer::API::OpenGL: return  nullptr;// CreateCount< OpenGLIndexBuffer>(Data, Count);
+			case Renderer::API::Vulkan: return Count<VulkanIndexBuffer>::Create(count);
+		}
+		return nullptr;
 	}
 }

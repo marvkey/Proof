@@ -37,8 +37,17 @@ namespace Proof
 		bool ViewColliders = false;
 	};
 
+	//used in shader don't change variable ordering
+	struct DirectionalLight {
+		Vector Color = { 1 };
+		float Intensity = 1.0f;
+		Vector Direction;
+	};
 	
-
+	struct LightScene
+	{
+		std::vector<DirectionalLight> DirectionalLights;
+	};
 	struct MeshDrawInfo
 	{
 		Count<Mesh> Mesh = nullptr;
@@ -82,8 +91,9 @@ namespace Proof
 			return m_ScreenFrameBuffer->GetImage();
 		}
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
-	private:
 
+	private:
+		LightScene m_LightScene;
 		Special<Renderer3DPBR> m_Renderer3D;
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
 		Special<class Renderer2D>  m_Renderer2D;
@@ -95,6 +105,7 @@ namespace Proof
 
 		Count<class Texture2D> m_BRDFLUT;
 
+		Count<class StorageBuffer> m_DirectionalLights;
 		void SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform);
 
 		void MeshPass();

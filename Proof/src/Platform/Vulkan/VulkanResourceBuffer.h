@@ -26,6 +26,10 @@ namespace Proof{
             };
             return m_BufferInfo;
         }
+
+        void Resize(uint32_t size);
+        void Resize(const void * data, uint32_t size);
+        virtual uint32_t GetSize() { return m_Size; }
         virtual ResourceDescriptorInfo GetResourceDescriptorInfo(uint32_t  frameIndex = Renderer::GetCurrentFrame().FrameinFlight)const { return (ResourceDescriptorInfo)&GetDescriptorInfoVulkan(frameIndex); }
     private:
         // multiple of this cause of frames in flight
@@ -34,6 +38,8 @@ namespace Proof{
         std::vector<VulkanBuffer> m_UniformBuffers;
         mutable VkDescriptorBufferInfo m_BufferInfo;
         uint32_t m_Size = 0;
+        void Release();
+        void Build();
     };
 
     class VulkanStorageBuffer : public StorageBuffer {
@@ -52,12 +58,19 @@ namespace Proof{
         void SetData(const void* data, uint32_t size, uint32_t offset = 0) {
             SetData(data, size, offset, Renderer::GetCurrentFrame().FrameinFlight);
         }
+        void Resize(uint32_t size);
+        void Resize(const void* data, uint32_t size);
+        virtual uint32_t GetSize() { return m_Size; }
+
         virtual void SetData(const void* data, uint32_t size, uint32_t offset,uint32_t frameIndex);
         virtual ResourceDescriptorInfo GetResourceDescriptorInfo(uint32_t  frameIndex = Renderer::GetCurrentFrame().FrameinFlight)const { return (ResourceDescriptorInfo)&GetDescriptorInfoVulkan(frameIndex); }
     private:
         uint32_t m_Size = 0;
         mutable VkDescriptorBufferInfo m_BufferInfo;
         std::vector<VulkanBuffer> m_StorageBuffer;
+        
+        void Release();
+        void Build();
     };
 
 }

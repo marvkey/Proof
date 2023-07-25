@@ -23,6 +23,8 @@ namespace Proof {
 		static Count<VertexBuffer>Create(const void* Data,uint32_t Size);
 
 		virtual void Resize(uint32_t size) = 0;
+		virtual void Resize(const void* data, uint32_t size) = 0;
+
 		//virtual void Resize(const void* data, uint32_t size) = 0;
 		/**
 		* creates Dynamic vertex Buffer
@@ -67,7 +69,8 @@ namespace Proof {
 		* @parm Data, dat to be sent
 		* @param Count in uint32_t,the vertecices to be drawn by index buffer
 		*/
-		static Count<IndexBuffer>Create(const void* Data,uint32_t Count);
+		static Count<IndexBuffer>Create(const void* Data, uint32_t count);
+		static Count<IndexBuffer>Create(uint32_t count);
 		/**
 		* deletes the Index Buffer
 		*/
@@ -78,6 +81,10 @@ namespace Proof {
 		virtual uint32_t GetCount()const = 0;
 		virtual uint32_t GetSize()const = 0;
 		virtual std::vector<uint32_t> GetData()const = 0;
+
+		virtual void SetData(const void* data, uint32_t count, uint32_t offsetCount = 0) = 0;
+		virtual void Resize(uint32_t count) = 0;
+		virtual void Resize(const void* data, uint32_t count) = 0;
 
 
 	};

@@ -199,7 +199,7 @@ namespace Proof{
         if (material->Name.empty())
             material->Name = "UnnamedMaterial";
         aiColor3D color;
-        if(aimat->Get(AI_MATKEY_COLOR_AMBIENT, color) == aiReturn_SUCCESS)
+        if (aimat->Get(AI_MATKEY_COLOR_AMBIENT, color) == aiReturn_SUCCESS)
         {
             material->SetAlbedo(Vector(color.r, color.g, color.b));
         }
@@ -260,6 +260,18 @@ namespace Proof{
         material->SetNormalMap(LoadTextures(aiTextureType_NORMALS, aiMaterialCast, this));
         material->SetMetalnessMap(LoadTextures(aiTextureType_METALNESS, aiMaterialCast, this));
         material->SetRoughnessMap(LoadTextures(aiTextureType_DIFFUSE_ROUGHNESS, aiMaterialCast, this));
+
+       // if (material->GetAlbedoMap() == Renderer::GetWhiteTexture())
+       //     material->SetAlbedoTextureToggle(false);
+        
+        if (material->GetNormalMap() != Renderer::GetWhiteTexture())
+            material->SetNormalTextureToggle(true);
+        
+        if (material->GetRoughnessMap() != Renderer::GetWhiteTexture())
+            material->SetRoughnessTextureToggle(true);
+       
+        if (material->GetMetalnessMap() != Renderer::GetWhiteTexture())
+            material->SetMetalnessTextureToggle(true);
     }
 
     Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& submeshes)

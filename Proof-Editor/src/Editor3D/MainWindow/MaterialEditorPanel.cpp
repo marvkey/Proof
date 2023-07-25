@@ -10,6 +10,7 @@
 #include "SceneHierachyPanel.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Renderer/WorldRenderer.h"
+#include "../EditorResources.h"
 #include "Proof/Renderer/RenderMaterial.h"
 namespace Proof
 {
@@ -31,7 +32,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		if (!m_Material)return;
 		ImGui::PushID((MemoryAddress) & *m_Material.Get());
-		std::string name = "No name";
+		std::string name = m_Material->Name;
 		if (AssetManager::HasAsset(m_Material))
 		{
 			name = AssetManager::GetAssetInfo(m_Material).GetName();
@@ -39,159 +40,151 @@ namespace Proof
 		Count<RenderMaterial> renderMaterial = m_Material->GetRenderMaterial();
 		ImGui::Begin(name.c_str(), &m_ShowWindow);
 		{
-			if (ImGui::ColorEdit3("Albedo", m_Material->GetAlbedoColor().GetValue_Ptr()))
+			auto shaderName = fmt::format("Shader: {}", renderMaterial->GetConfig().Shader->GetName());
+			ImGui::Text(shaderName.c_str());
+			//Albedo
 			{
-				//renderMaterial->Set("u_MaterialUniform.Color", Vector(0,0.5,0.1));
-				shouldSave = true;
+				bool renderToggle = true;
+				if (m_Material->GetAlbedoMap() != nullptr && m_Material->GetAlbedoMap() != Renderer::GetWhiteTexture())
+					UI::Image(m_Material->GetAlbedoMap(), { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+				else
+				{
+					UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+					renderToggle = false;
+					
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+					{
+						uint64_t Data = *(const uint64_t*)payload->Data;
+						if (AssetManager::HasAsset(Data))
+						{
+							shouldSave = true;
+							m_Material->GetAlbedoMap() = AssetManager::GetAsset<Texture2D>(Data);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				if (renderToggle)
+				{
+					ImGui::SameLine();
+					ImGui::Checkbox("Use", &m_Material->GetAlbedoTextureToggle());
+				}
+				ImGui::SameLine();
+				if (ImGui::ColorEdit3("Albedo", m_Material->GetAlbedoColor().GetValue_Ptr()))
+					shouldSave = true;
 			}
-			/*
-			if (ImGui::ColorEdit3("Colour", m_Material->Colour.GetValue_Ptr()))
+
+			ImGui::NewLine();
+			//Normal
 			{
-				shouldSave = true;
+				bool renderToggle = true;
+				if (m_Material->GetNormalMap() != nullptr && m_Material->GetNormalMap() != Renderer::GetWhiteTexture())
+					UI::Image(m_Material->GetNormalMap(), { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+				else
+				{
+					UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+					renderToggle = false;
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+					{
+						uint64_t Data = *(const uint64_t*)payload->Data;
+						if (AssetManager::HasAsset(Data))
+						{
+							shouldSave = true;
+							m_Material->GetNormalMap() = AssetManager::GetAsset<Texture2D>(Data);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				if (renderToggle)
+				{
+					ImGui::SameLine();
+					ImGui::Checkbox("Use", &m_Material->GetNormalTextureToggle());
+				}
 			}
 			ImGui::NewLine();
-
-			if (ImGui::SliderFloat("Metallnes", &m_Material->Metallness, 0, 1))
+			//Metallic
 			{
-				shouldSave = true;
+				bool renderToggle = true;
+				if (m_Material->GetMetalnessMap() != nullptr && m_Material->GetMetalnessMap() != Renderer::GetWhiteTexture())
+					UI::Image(m_Material->GetMetalnessMap(), { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+				else
+				{
+					UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+					renderToggle = false;
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+					{
+						uint64_t Data = *(const uint64_t*)payload->Data;
+						if (AssetManager::HasAsset(Data))
+						{
+							shouldSave = true;
+							m_Material->GetMetalnessMap() = AssetManager::GetAsset<Texture2D>(Data);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				if (renderToggle)
+				{
+					ImGui::SameLine();
+					ImGui::Checkbox("Use", &m_Material->GetMetalnessTextureToggle());
+				}
+				ImGui::SameLine();
+				if (ImGui::SliderFloat("Metallness", &m_Material->GetMetalness(), 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp));
+					shouldSave = true;
 			}
+
 			ImGui::NewLine();
-
-			if (ImGui::SliderFloat("Roughness", &m_Material->Roughness, 0, 1))
+			//Roughness
 			{
+				bool renderToggle = true;
+				if (m_Material->GetRoughnessMap() != nullptr && m_Material->GetRoughnessMap() != Renderer::GetWhiteTexture())
+					UI::Image(m_Material->GetRoughnessMap(), { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+				else
+				{
+					UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+					renderToggle = false;
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+					{
+						uint64_t Data = *(const uint64_t*)payload->Data;
+						if (AssetManager::HasAsset(Data))
+						{
+							shouldSave = true;
+							m_Material->GetRoughnessMap() = AssetManager::GetAsset<Texture2D>(Data);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+
+				if (renderToggle)
+				{
+					ImGui::SameLine();
+					ImGui::Checkbox("Use", &m_Material->GetRoughnessTextureToggle());
+				}
+				ImGui::SameLine();
+				if (ImGui::SliderFloat("Roughness", &m_Material->GetRoughness(), 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp));
 				shouldSave = true;
 			}
-
-			SceneHierachyPanel::DrawVector2Control("Tiling", m_Material->Tiling);
-			SceneHierachyPanel::DrawVector2Control("Offset", m_Material->Offset);
-			*/
-			/*
-			{
-				ImGui::Text("Albedo");
-				ImGui::SameLine();
-				if (AssetManager::HasAsset(m_Material->AlbedoTexture))
-				{
-					//auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
-					//ImGui::Image((ImTextureID)m_Material->AlbedoTexture->GetImage().SourceImage, { 30,30 });
-					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
-					ImGui::SameLine();
-					bool val = true;
-					ImGui::Checkbox("##n", &val);
-				}
-				else
-				{
-					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
-				}
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-					{
-						uint64_t Data = *(const uint64_t*)payload->Data;
-						if (AssetManager::HasAsset(Data))
-						{
-							m_Material->AlbedoTexture = AssetManager::GetAsset<Texture2D>(Data);
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
-			}
-
-			{
-				ImGui::Text("Normal");
-				ImGui::SameLine();
-				if (AssetManager::HasAsset(m_Material->NormalTexture))
-				{
-					//auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
-					//ImGui::Image((ImTextureID)m_Material->NormalTexture->GetImage().SourceImage, { 30,30 });
-					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
-					ImGui::SameLine();
-					bool val = true;
-					ImGui::Checkbox("##n", &val);
-				}
-				else
-				{
-					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
-				}
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-					{
-						uint64_t Data = *(const uint64_t*)payload->Data;
-						if (AssetManager::HasAsset(Data))
-						{
-							m_Material->NormalTexture = AssetManager::GetAsset<Texture2D>(Data);
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
-			}
-
-			{
-				ImGui::Text("Mettallic");
-				ImGui::SameLine();
-				if (AssetManager::HasAsset(m_Material->MetallicTexture))
-				{
-
-					//auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
-					//ImGui::Image((ImTextureID)m_Material->MetallicTexture->GetImage().SourceImage, { 30,30 });
-					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
-					ImGui::SameLine();
-					bool val = true;
-					ImGui::Checkbox("##n", &val);
-				}
-				else
-				{
-					UI::Image(Renderer::GetWhiteTexture()->GetImage(), { 30,30 });
-				}
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-					{
-						uint64_t Data = *(const uint64_t*)payload->Data;
-						if (AssetManager::HasAsset(Data))
-						{
-							m_Material->MetallicTexture = AssetManager::GetAsset<Texture2D>(Data);
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
-			}
-
-
-			{
-				ImGui::Text("Roughness");
-				ImGui::SameLine();
-				if (AssetManager::HasAsset(m_Material->RoughnessTexture))
-				{
-					//auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
-					//ImGui::Image((ImTextureID)m_Material->RoughnessTexture->GetImage().SourceImage, { 30,30 });
-					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
-					ImGui::SameLine();
-					bool val = true;
-					ImGui::Checkbox("##n", &val);
-				}
-				else
-				{
-					UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
-				}
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-					{
-						uint64_t Data = *(const uint64_t*)payload->Data;
-						if (AssetManager::HasAsset(Data))
-						{
-							m_Material->RoughnessTexture = AssetManager::GetAsset<Texture2D>(Data);
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
-			}
-			if (ImGui::Checkbox("Use Pbr", &m_Material->UsePBR)){
-				shouldSave = true;
-			}
-		}
-		*/
+			
+			//SceneHierachyPanel::DrawVector2Control("Tiling", m_Material->GetTiling());
+			//SceneHierachyPanel::DrawVector2Control("Offset", m_Material->Offset);
+			
 			ImGui::End();
 			ImGui::PopID();
 			contdown -= deltaTime;

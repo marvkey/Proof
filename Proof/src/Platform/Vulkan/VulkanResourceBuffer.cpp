@@ -9,26 +9,19 @@ namespace Proof{
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size) :
 		m_Size(size)
 	{
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-
-		m_UniformBuffers.resize(Renderer::GetConfig().FramesFlight);
-		VkBufferCreateInfo uniformBufferInfo = {};
-		uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		uniformBufferInfo.pNext = nullptr;
-
-		uniformBufferInfo.size = m_Size;
-		uniformBufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-		for (int i = 0; i < m_UniformBuffers.size(); i++)
-		{
-			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_UniformBuffers[i]);
-		}
+		Build();
 	}
 	VulkanUniformBuffer::VulkanUniformBuffer(const void* data, uint32_t size)
 		:m_Size(size)
 	{
+		Build();
+		PF_CORE_ASSERT(data, "cannot be nullptr");
+		SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
+	}
+
+	void VulkanUniformBuffer::Build()
+	{
+		PF_CORE_ASSERT(m_Size != 0, "Vulkan uniform buffer cannot have a size less than or equal to 0");
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
 		m_UniformBuffers.resize(Renderer::GetConfig().FramesFlight);
@@ -45,17 +38,10 @@ namespace Proof{
 		{
 			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_UniformBuffers[i]);
 		}
-		if (data != nullptr)
-			SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
 	}
-	VulkanUniformBuffer::~VulkanUniformBuffer() {
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-		for (int i = 0; i < m_UniformBuffers.size(); i++)
-		{
-			Renderer::SubmitDatafree([context = graphicsContext, buffer = m_UniformBuffers[i]]() {
-				vmaDestroyBuffer(context->GetVMA_Allocator(), buffer.Buffer, buffer.Allocation);
-			});
-		}
+	VulkanUniformBuffer::~VulkanUniformBuffer() 
+	{
+		Release();
 	}
 	void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex) {
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
@@ -90,37 +76,59 @@ namespace Proof{
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
 
+	void VulkanUniformBuffer::Resize(uint32_t size)
+	{
+		Release();
+		m_Size = size;
+		Build();
+	}
+
+	void VulkanUniformBuffer::Resize(const void* data, uint32_t size)
+	{
+		//TODO WORKING EXPECTED
+		//if (m_Size == m_Size)
+		//{
+		//	SetData(data, size, 0);
+		//	return;
+		//}
+		Release();
+		m_Size = size;
+
+		Build();
+		SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
+	}
+
+	void VulkanUniformBuffer::Release()
+	{
+		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+		for (int i = 0; i < m_UniformBuffers.size(); i++)
+		{
+			Renderer::SubmitDatafree([context = graphicsContext, buffer = m_UniformBuffers[i]]() {
+				vmaDestroyBuffer(context->GetVMA_Allocator(), buffer.Buffer, buffer.Allocation);
+			});
+		}
+		m_UniformBuffers.clear();
+	}
 	
 
 	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size)
 		:m_Size(size)
 
 	{
-		PF_CORE_ASSERT(m_Size == 0, "Cannot create storageBuffer with a size of 0");
-		
-		m_StorageBuffer.resize(Renderer::GetConfig().FramesFlight);
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-		VkBufferCreateInfo uniformBufferInfo = {};
-		uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		uniformBufferInfo.pNext = nullptr;
-
-		uniformBufferInfo.size = m_Size;
-		uniformBufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-		for (int i = 0; i < m_StorageBuffer.size(); i++)
-		{
-			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_StorageBuffer[i]);
-		}
-
+		Build();
 	}
 
 	VulkanStorageBuffer::VulkanStorageBuffer(const void* data, uint32_t size)
 		:m_Size(size)
 
 	{
-		PF_CORE_ASSERT(m_Size == 0, "Cannot create storageBuffer with a size of 0");
+		Build();
+		SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
+
+	}
+	void VulkanStorageBuffer::Build()
+	{
+		PF_CORE_ASSERT(m_Size != 0, "Cannot create storageBuffer with a size of 0");
 
 		m_StorageBuffer.resize(Renderer::GetConfig().FramesFlight);
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
@@ -137,20 +145,30 @@ namespace Proof{
 		{
 			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_StorageBuffer[i]);
 		}
-		SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
-
 	}
 	VulkanStorageBuffer::~VulkanStorageBuffer()
 	{
-		auto allocator = VulkanRenderer::GetGraphicsContext()->GetVMA_Allocator();
-
-		for (int i = 0; i < m_StorageBuffer.size(); i++)
-		{
-			Renderer::SubmitDatafree([allocator = allocator, buffer = m_StorageBuffer[i]]() {
-				vmaDestroyBuffer(allocator, buffer.Buffer, buffer.Allocation);
-			});
-		}
+		Release();
 	}	
+	void VulkanStorageBuffer::Resize(uint32_t size)
+	{
+		Release();
+		m_Size = size;
+		Build();
+	}
+	void VulkanStorageBuffer::Resize(const void* data, uint32_t size)
+	{
+		if (m_Size == size)
+		{
+			SetData(data, size);
+			return;
+		}
+		Release();
+		m_Size = size;
+
+		Build();
+		SetData(data, size);
+	}
 	void VulkanStorageBuffer::SetData(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex)
 	{
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
@@ -184,4 +202,17 @@ namespace Proof{
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
+	void VulkanStorageBuffer::Release()
+	{
+		auto allocator = VulkanRenderer::GetGraphicsContext()->GetVMA_Allocator();
+
+		for (int i = 0; i < m_StorageBuffer.size(); i++)
+		{
+			Renderer::SubmitDatafree([allocator = allocator, buffer = m_StorageBuffer[i]]() {
+				vmaDestroyBuffer(allocator, buffer.Buffer, buffer.Allocation);
+			});
+		}
+		m_StorageBuffer.clear();
+	}
+	
 }

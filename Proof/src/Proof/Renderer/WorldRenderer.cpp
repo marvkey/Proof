@@ -119,6 +119,9 @@ namespace Proof
 			renderPassConfig.Pipeline = m_MeshPipeline.Pipline;
 			m_MeshPipeline.RenderPass = RenderPass::Create(renderPassConfig);
 			m_MeshPipeline.RenderPass->SetInput("CameraData", cameraBuffer);
+
+			m_DirectionalLights = StorageBuffer::Create(sizeof(DirectionalLight));
+			m_MeshPipeline.RenderPass->SetInput("DirectionalLightStorageBuffer", m_DirectionalLights);
 		}
 
 		TextureConfiguration cubeTextureConfig;
@@ -155,59 +158,6 @@ namespace Proof
 			skyBoxPass->SetInput("u_EnvironmentMap", Renderer::GetWhiteTextureCube());
 		}
 		Cube = MeshWorkShop::GenerateCube();
-
-		#if 0
-		m_Renderer3D = CreateSpecial< Renderer3DPBR>(m_RenderPass);
-		m_UIRenderer = CreateSpecial < Renderer2D>(m_RenderPass, true);
-		m_ParticleSystemRenderer = CreateSpecial< Renderer2D>(m_RenderPass, ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/ParticleSystem.shader");
-		m_DebugMeshRenderer = CreateSpecial<DebugMeshRenderer>(m_RenderPass);
-
-		if (textureCubeMap != nullptr)
-			return;
-		{
-			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-				.AddBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.AddBinding(1, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.Build();
-
-
-			Descriptors.insert({ DescriptorSets::Zero,descriptor });
-
-
-			PipelineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
-			GraphicsPipelineConfig pipelineConfig;
-			pipelineConfig.DebugName = "HDR create";
-			pipelineConfig.Shader = Shader::GetOrCreate("BackgroundShader.Shader",
-				ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/BackgroundShader.Shader");
-
-			pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
-			pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-			pipelineConfig.VertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-			pipelineConfig.VertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
-			pipelineConfig.VertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
-			pipelineConfig.VertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-			//pipelineConfig.PipelineLayout = PipelineLayout;
-			pipelineConfig.RenderPass = m_RenderPass;
-			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
-			RenderPipline = GraphicsPipeline::Create(pipelineConfig);
-		}
-		{
-
-			Count<Shader> shader = Shader::GetOrCreate("IrradinceCubeMap",
-				{ {ShaderStage::Vertex,ProofCurrentDirectorySrc +
-				"Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/CubeMap.vs"},
-				{ShaderStage::Fragment,ProofCurrentDirectorySrc +
-				"Proof/Renderer/Asset/Shader/PBR/PBRCubeMap/Irradiance.Frag"} });
-
-			uint32_t grey = ConvertToBytes(Vector(169, 169, 169));
-			uint32_t white = ConvertToBytes(Vector4(1, 1, 1, 1));
-			//textureCubeMap = CubeMap::Create("Assets/qwantani_puresky_4k.hdr", 1024, true);
-			textureCubeMap = TextureCube::Create(Texture2D::Create(1, 1, ImageFormat::RGBA, &white), 512, false);
-			iradianceCubeMap = TextureCube::Create(textureCubeMap, shader, 64, false);
-			prefilterCubeMap = TextureCube::GeneratePrefiltered(textureCubeMap);
-			brdfTexture = Texture2D::GenerateBRDF();
-		}
-		#endif
 	}
 	void WorldRenderer::Clear() {
 		
@@ -246,36 +196,6 @@ namespace Proof
 			Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, 1, subMesh.BaseIndex, subMesh.BaseVertex);
 		}
 		Renderer::EndRenderPass(skyBoxPass);
-		/*
-		{
-			const auto& entitiyView = m_World->m_Registry.view<MeshComponent>();
-			for (auto& entity : entitiyView)
-			{
-				Entity created{ entity,m_World.Get() };
-				MeshComponent& meshcomp = created.GetComponent<MeshComponent>();
-				if (meshcomp.GetMesh() == nullptr)continue;
-				m_MeshPipeline.Transforms[0] = m_World->GetWorldTransform(created);
-				m_MeshPipeline.TransformsBuffer->SetData(m_MeshPipeline.Transforms.data(), m_MeshPipeline.Transforms.size() * sizeof(glm::mat4));
-				Count<Mesh> mesh = meshcomp.GetMesh();
-
-				Count<MeshSource> meshSource = mesh->GetMeshSource();
-				for (uint32_t index : mesh->GetSubMeshes())
-				{
-					const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
-					auto renderMaterial = meshcomp.MaterialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
-
-					Renderer::BeginRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass, renderMaterial);
-					subMesh.VertexBuffer->Bind(m_CommandBuffer);
-					subMesh.IndexBuffer->Bind(m_CommandBuffer);
-					m_MeshPipeline.TransformsBuffer->Bind(m_CommandBuffer, 1);
-					Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexBuffer->GetCount(), 1, 0);
-					Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
-				}
-				break;
-			}
-
-		}
-		*/
 		const auto& entityView = m_World->m_Registry.view<MeshComponent>();
 		for (auto& entityID : entityView)
 		{
@@ -288,8 +208,25 @@ namespace Proof
 				SubmitStaticMesh(mesh, meshComponent.MaterialTable, m_World->GetWorldTransform(entity));
 			}
 		}
+
+		{
+			const auto& directionalLightView = m_World->m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
+			m_LightScene.DirectionalLights.resize(directionalLightView.size());
+			int index = 0;
+			for (auto& entityID : directionalLightView)
+			{
+				Entity entity(entityID, m_World.Get());
+				const auto& dirLightComponent = directionalLightView.get<DirectionalLightComponent>(entityID);
+				m_LightScene.DirectionalLights[index] =
+				{
+					dirLightComponent.Color,
+					dirLightComponent.Intensity,
+					dirLightComponent.OffsetDirection + m_World->GetWorldRotation(entity),
+				};
+				index++;
+			}
+		}
 		MeshPass();
-		#if 1
 
 		{
 			//PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
@@ -329,7 +266,6 @@ namespace Proof
 			m_Renderer2D->EndContext();
 
 		}
-		#endif
 
 		Renderer::EndCommandBuffer(m_CommandBuffer);
 
@@ -595,6 +531,21 @@ namespace Proof
 	{
 		//TODO FASTER HASH FUNCTION FOR MESHKEY
 		PF_PROFILE_FUNC();
+		//set pass
+		{
+
+			if (m_LightScene.DirectionalLights.size() == 0)
+			{
+				DirectionalLight light;
+				light.Color = Vector(0);
+				light.Direction = Vector(0);
+				m_DirectionalLights->Resize(&light,sizeof(DirectionalLight));
+			}
+			else
+			{
+				m_DirectionalLights->Resize(m_LightScene.DirectionalLights.data(), m_LightScene.DirectionalLights.size()*sizeof(DirectionalLight));
+			}
+		}
 
 		if (m_MeshDrawList.empty())return;
 		Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass);
@@ -602,8 +553,7 @@ namespace Proof
 		for (auto& [meshKey, meshDrawInfo] : m_MeshDrawList)
 		{
 
-			m_MeshPipeline.TransformsBuffer->Resize(meshDrawInfo.InstanceCount * sizeof(glm::mat4));
-			m_MeshPipeline.TransformsBuffer->SetData(m_MeshTransformMap[meshKey].data(), meshDrawInfo.InstanceCount * sizeof(glm::mat4));
+			m_MeshPipeline.TransformsBuffer->Resize(m_MeshTransformMap[meshKey].data(),meshDrawInfo.InstanceCount * sizeof(glm::mat4));
 			Count<Mesh> mesh = meshDrawInfo.Mesh;
 			Count<MeshSource> meshSource = mesh->GetMeshSource();
 			Count<MaterialTable> materialTable = meshDrawInfo.MaterialTable;

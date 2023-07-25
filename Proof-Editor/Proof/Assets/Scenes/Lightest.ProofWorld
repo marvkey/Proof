@@ -14,7 +14,7 @@ World:
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 1
+        Intensity: 5
     - Entity: 7190488896897433375
       TagComponent:
         Tag: face
@@ -48,7 +48,7 @@ World:
         Tag: sphere
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [0, 37, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -102,7 +102,7 @@ World:
         Tag: sponza
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [0.100000001, 16.8999996, 9.69999981]
         Rotation: [0, 0, 0]
         Scale: [0.0900000036, 0.0900000036, 0.0900000036]
       ChildComponent:
