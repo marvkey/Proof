@@ -15,7 +15,7 @@ namespace Proof
 		void Resize(const void* data, uint32_t size);
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset=0);
 		uint32_t GetVertexSize()const { return m_VertexSize; }
-		virtual void Bind(Count<RenderCommandBuffer> commandBuffer,uint32_t binding=0)const override;
+		virtual void Bind(Count<RenderCommandBuffer> commandBuffer,uint32_t binding=0,uint64_t offset =0)const override;
 
 		static VmaAllocator GetGraphicsAllocator();
 		template<typename T>

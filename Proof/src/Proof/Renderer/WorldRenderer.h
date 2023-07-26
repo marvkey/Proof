@@ -2,6 +2,8 @@
 #include "FrameBuffer.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Scene/World.h"
+#include <map>
+
 namespace Proof
 {
 	struct MeshKey
@@ -11,6 +13,36 @@ namespace Proof
 		 // Define the equality operator
 		bool operator==(const MeshKey& other) const {
 			return MeshID == other.MeshID && *MaterialTable == *other.MaterialTable;
+		}
+
+		 // Define the less than operator
+		bool operator<(const MeshKey& other) const {
+
+			// Calculate the hash value using the memory location of MaterialTable and the AssetID (uint64_t).
+			size_t hashValue = std::hash<uint64_t>()((uint64_t)MeshID);
+			for (const auto& [index, material] : MaterialTable->GetMaterials())
+			{
+				uint64_t location = (uint64_t)material->GetID();
+				hashValue ^= std::hash< uint64_t>()(location);
+			}
+
+			size_t otherHashValue = std::hash<uint64_t>()((uint64_t)other.MeshID);
+			for (const auto& [index, material] : other.MaterialTable->GetMaterials())
+			{
+				uint64_t location = (uint64_t)material->GetID();
+				otherHashValue ^= std::hash< uint64_t>()(location);
+			}
+
+
+
+			if (hashValue < otherHashValue) return true;
+			if (hashValue > otherHashValue) return false;
+			return false;
+		}
+
+		// Define the greater than operator
+		bool operator>(const MeshKey& other) const {
+			return other < *this;
 		}
 	};
 }
@@ -109,9 +141,10 @@ namespace Proof
 		void SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform);
 
 		void MeshPass();
-		std::unordered_map<MeshKey, std::vector<glm::mat4>> m_MeshTransformMap;
-		std::unordered_map<MeshKey, MeshDrawInfo> m_MeshDrawList;
+		std::map<MeshKey, std::vector<glm::mat4>> m_MeshTransformMap;
+		std::map<MeshKey, MeshDrawInfo> m_MeshDrawList;
 		MeshRenderPipline m_MeshPipeline;
+		Count<class Environment> m_Environment;
 
 		void Reset();
 	};	

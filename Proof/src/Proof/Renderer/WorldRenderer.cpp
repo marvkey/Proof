@@ -70,7 +70,8 @@ namespace Proof
 		m_World(world)
 	{
 		cameraBuffer = UniformBuffer::Create(sizeof(CameraData));
-		
+		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
+
 		//if(Application::Get()->GetConfig().EnableImgui == false)
 		//	config.Attachments.Attachments[0].SetOverrideLayout(Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout()); // this line basically makes us able to render to window
 		FrameBufferConfig config;
@@ -122,6 +123,9 @@ namespace Proof
 
 			m_DirectionalLights = StorageBuffer::Create(sizeof(DirectionalLight));
 			m_MeshPipeline.RenderPass->SetInput("DirectionalLightStorageBuffer", m_DirectionalLights);
+			m_MeshPipeline.RenderPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
+			m_MeshPipeline.RenderPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
+			m_MeshPipeline.RenderPass->SetInput("u_BRDFLUT", m_BRDFLUT);
 		}
 
 		TextureConfiguration cubeTextureConfig;
@@ -135,6 +139,7 @@ namespace Proof
 		//textureCubeMap = Renderer::GetWhiteTextureCube();
 		//auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap("Assets/qwantani_puresky_4k.hdr");
 		//environment = Count<Environment>::Create(irradiance, prefilter);
+
 		{
 			GraphicsPipelineConfig pipelineConfig;
 			pipelineConfig.DebugName = "SKy box";
@@ -155,7 +160,7 @@ namespace Proof
 			renderPassConfig.Pipeline = skyBoxRenderPipeline;
 			skyBoxPass = RenderPass::Create(renderPassConfig);
 			skyBoxPass->SetInput("CameraData", cameraBuffer);
-			skyBoxPass->SetInput("u_EnvironmentMap", Renderer::GetWhiteTextureCube());
+			skyBoxPass->SetInput("u_EnvironmentMap", m_Environment->IrradianceMap);
 		}
 		Cube = MeshWorkShop::GenerateCube();
 	}
@@ -548,18 +553,30 @@ namespace Proof
 		}
 
 		if (m_MeshDrawList.empty())return;
+		uint32_t currentDrawOffset = 0;
+		//set mesh transfomr
+		{
+			std::vector<glm::mat4> sceneTransforms;
+			for (auto& [meshKey, transforms] : m_MeshTransformMap)
+			{
+				// dont use std::end instead back inserter because using std::end can resulst in undefinded behavior
+				std::move(transforms.begin(), transforms.end(), std::back_inserter(sceneTransforms));
+			}
+			m_MeshPipeline.TransformsBuffer->Resize(sceneTransforms.data(), sceneTransforms.size() * sizeof(glm::mat4));
+
+		}
 		Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass);
 
 		for (auto& [meshKey, meshDrawInfo] : m_MeshDrawList)
 		{
 
-			m_MeshPipeline.TransformsBuffer->Resize(m_MeshTransformMap[meshKey].data(),meshDrawInfo.InstanceCount * sizeof(glm::mat4));
+			//m_MeshPipeline.TransformsBuffer->Resize(m_MeshTransformMap[meshKey].data(),meshDrawInfo.InstanceCount * sizeof(glm::mat4));
 			Count<Mesh> mesh = meshDrawInfo.Mesh;
 			Count<MeshSource> meshSource = mesh->GetMeshSource();
 			Count<MaterialTable> materialTable = meshDrawInfo.MaterialTable;
 			meshSource->GetVertexBuffer()->Bind(m_CommandBuffer);
 			meshSource->GetIndexBuffer()->Bind(m_CommandBuffer);
-			m_MeshPipeline.TransformsBuffer->Bind(m_CommandBuffer, 1);
+			m_MeshPipeline.TransformsBuffer->Bind(m_CommandBuffer, 1, currentDrawOffset * sizeof(glm::mat4));
 			for (uint32_t index : mesh->GetSubMeshes())
 			{
 				//TODO REMOVE MESH MATERIAL ABLE FROM MESH CLASS, ONLY MESH SOURCE SHOULD HAVE A MATERIAL TABLE
@@ -570,6 +587,7 @@ namespace Proof
 				Renderer::RenderPassPushRenderMaterial(m_MeshPipeline.RenderPass, renderMaterial);
 				Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, meshDrawInfo.InstanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 			}
+			currentDrawOffset += meshDrawInfo.InstanceCount;
 		}
 		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
 

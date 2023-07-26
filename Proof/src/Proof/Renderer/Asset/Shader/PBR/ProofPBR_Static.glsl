@@ -49,9 +49,9 @@ layout(set = 0, binding = 6) uniform sampler2D u_NormalMap;
 layout(set = 0, binding = 7) uniform sampler2D u_MetallicMap;
 layout(set = 0, binding = 8) uniform sampler2D u_RoughnessMap;
 
-//layout(set = 1, binding = 1) uniform samplerCube u_IrradianceMap;
-//layout(set = 1, binding = 2) uniform samplerCube u_PrefilterMap;
-//layout(set = 1, binding = 3) uniform sampler2D u_BRDFLUT;
+layout(set = 1, binding = 2) uniform samplerCube u_IrradianceMap;
+layout(set = 1, binding = 3) uniform samplerCube u_PrefilterMap;
+layout(set = 1, binding = 4) uniform sampler2D u_BRDFLUT;
 
 layout(location = 0) in Vertex
 {
@@ -91,7 +91,7 @@ layout(push_constant) uniform Material
 vec3 CalculateNormal()
 {
     if (u_MaterialUniform.NormalTexToggle == false)
-        return Fs_in.Normal;
+        return normalize(Fs_in.Normal);
     vec3 tangentNormal = texture(u_NormalMap, Fs_in.TexCoords).xyz*2.0 -1.0f;
     vec3 Q1 = dFdx(Fs_in.WorldPos);
     vec3 Q2 = dFdy(Fs_in.WorldPos);
@@ -151,18 +151,21 @@ float GeometrySmith(vec3 n, vec3 wo, vec3 wi, float roughness)
     return ggx1 * ggx2;
 }
 
-
 // Constant normal incidence Fresnel factor for all dielectrics.
-const vec3  F0 = vec3(0.04);
+const vec3  Fidelectric = vec3(0.04);
 void main()
 {
     vec3 albedo = u_MaterialUniform.AlbedoTexToggle == true ? texture(u_AlbedoMap, Fs_in.TexCoords).rgb * u_MaterialUniform.Albedo : u_MaterialUniform.Albedo;
     float metallic = u_MaterialUniform.MetallnesTexToggle == true ? texture(u_MetallicMap, Fs_in.TexCoords).r * u_MaterialUniform.Metalness : u_MaterialUniform.Metalness;
-    float roughness = u_MaterialUniform.RoghnessTexToggle == true ? texture(u_RoughnessMap, Fs_in.TexCoords).r * u_MaterialUniform.Roughness : u_MaterialUniform.Roughness;
+    float roughness = u_MaterialUniform.RoghnessTexToggle == true ? texture(u_RoughnessMap, Fs_in.TexCoords).r * max(u_MaterialUniform.Roughness,0.001) : max(u_MaterialUniform.Roughness,0.001); // max to keep specular
     vec3 normal = CalculateNormal();
 
     vec3 view = normalize(Fs_in.CameraPosition - Fs_in.WorldPos);
     vec3 reflection = reflect(-view, normal);
+    vec3 F0 = mix(Fidelectric, albedo, metallic);
+    
+    // Angle between surface normal and outgoing view Direction.
+	float cosView = max(0.0, dot(normal, view));
 
     int numDirectionalLights = DirectionalLightData.Lights.length();
     vec3 directLighting = vec3(0);
@@ -174,9 +177,8 @@ void main()
         vec3 halfwayVector = normalize(view + wi);
         vec3 radiance = currentLight.Color * currentLight.Intensity;
 
-        vec3 f0Copy = F0 ;
-        f0Copy = mix(F0, albedo, metallic);
-        vec3 F  = FresnelSchlick(max(dot(halfwayVector, view), 0.0), f0Copy);
+      
+        vec3 F  = FresnelSchlick(max(dot(halfwayVector, view), 0.0), F0);
 
       // cook-torrance brdf
         float NDF = DistributionGGX(normal, halfwayVector, roughness);
@@ -184,16 +186,45 @@ void main()
 
         float NdotL    = max(dot(normal, wi), 0.0);
         vec3  num      = NDF * G * F;
-        float denom    = 4.0 * max(dot(normal, view), 0.0) * NdotL;
+        float denom    = 4.0 * cosView * NdotL;
         vec3  specular = num / max(denom, 0.00001); // avoid dividing by zero
 
-        vec3 ks = F;
-        vec3 kd = 1.0 - ks;
-             kd = kd * (1.0 - metallic);
+     
+
+        vec3 kd = (1.0 - F) * (1.0 - metallic);
 
        directLighting += (kd * albedo / PI + specular) * radiance * NdotL;
     }
+    
+    vec3 iblEfeect = vec3(0);
+    //IBL
+    {
+        //https://github.com/kidrigger/Blaze/blob/canon/Blaze/shaders/forward/fPBR.frag
+        //https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
 
+        // fresnel reflectance
+       
+        vec3 F= FresnelSchlickRoughness(cosView, F0, roughness);
+        vec3 kd = (1.0 - F) * (1.0 - metallic);
 
-    out_FragColor = vec4(directLighting ,1.0);
+        int specularTextureLevels = textureQueryLevels(u_PrefilterMap);
+		vec3 prefilteredColor = texture(u_PrefilterMap, reflection * specularTextureLevels).rgb;
+        vec2 envBRDF  = texture(u_BRDFLUT, vec2(cosView, roughness)).rg;
+		vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
+        
+        vec3 diffuse = texture(u_IrradianceMap, normal).rgb * albedo;
+
+        float emmision = 0.0f;
+        float ao= 1.0f;
+        iblEfeect =  (kd * diffuse + specular) * ao + emmision;
+        //iblEfeect*= vec3(0.025); // maybe for effect
+    }
+    
+    vec3 finalColor = iblEfeect + directLighting;
+
+    // HDR tonemapping
+    finalColor = finalColor / (finalColor + vec3(1.0));
+    // gamma correct
+    finalColor = pow(finalColor, vec3(1.0/2.2)); 
+    out_FragColor = vec4(finalColor ,1.0);
 }

@@ -68,9 +68,9 @@ namespace Proof
 		Build();
 		SetData(data, size, 0);
 	}
-	VkDeviceSize offset[1] = { 0 };
-	void VulkanVertexBuffer::Bind(Count<RenderCommandBuffer> commandBuffer, uint32_t binding )const {
-		vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), binding,1, &m_VertexBuffer.Buffer, offset);
+	void VulkanVertexBuffer::Bind(Count<RenderCommandBuffer> commandBuffer, uint32_t binding, uint64_t offset )const {
+		VkDeviceSize instanceOffset[1] = {(VkDeviceSize) offset };
+		vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), binding,1, &m_VertexBuffer.Buffer, instanceOffset);
 	}
 	void VulkanVertexBuffer::SetData(const void* data, uint32_t size,uint32_t offset){
 		if (size == 0)
