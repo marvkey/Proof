@@ -28,6 +28,7 @@ void main() {
     Vout.Tangent = aTangent;
     Vout.Bitangent = aBitangent;
     Vout.TexCoords = aTexCoords;
+    //Vout.TexCoords = vec2(aTexCoords.x,1 - aTexCoords.y);
     Vout.WorldPos = vec3(aTransform * vec4(aPosition, 1.0));
     Vout.Normal = mat3(aTransform) * aNormal;
     Vout.CameraPosition = u_Camera.Position;
@@ -99,7 +100,6 @@ vec3 CalculateNormal()
 {
     if (u_MaterialUniform.NormalTexToggle == false)
         return normalize(Fs_in.Normal);
-    return normalize(Fs_in.Normal);
     vec3 tangentNormal = texture(u_NormalMap, Fs_in.TexCoords).xyz*2.0 -1.0f;
     vec3 Q1 = dFdx(Fs_in.WorldPos);
     vec3 Q2 = dFdy(Fs_in.WorldPos);
@@ -115,28 +115,25 @@ vec3 CalculateNormal()
 }
 vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
-        float val = 1.0 - cosTheta;
-    return F0 + (1.0 - F0) * (val*val*val*val*val); //Faster than pow
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
-{
-    float val = 1.0 - cosTheta;
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * (val*val*val*val*val); //Faster than pow
+{   
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
-float DistributionGGX(vec3 N, vec3 H, float rough){
-    float a  = rough * rough;
-    float a2 = a * a;
+float DistributionGGX(vec3 N, vec3 H, float roughness){
+   float a = roughness*roughness;
+    float a2 = a*a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
 
-    float nDotH  = max(dot(N, H), 0.0);
-    float nDotH2 = nDotH * nDotH;
+    float nom   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
 
-    float num = a2; 
-    float denom = (nDotH2 * (a2 - 1.0) + 1.0);
-    denom = 1 / (PI * denom * denom);
-
-    return num * denom;
+    return nom / denom;
 }
 
 float GeometrySchlickGGX(float nDotV, float rough){
@@ -162,7 +159,7 @@ void main()
 {
     vec3 albedo = u_MaterialUniform.AlbedoTexToggle == true ? texture(u_AlbedoMap, Fs_in.TexCoords).rgb * u_MaterialUniform.Albedo : u_MaterialUniform.Albedo;
     float metallic = u_MaterialUniform.MetallnesTexToggle == true ? texture(u_MetallicMap, Fs_in.TexCoords).r * u_MaterialUniform.Metalness : u_MaterialUniform.Metalness;
-    float roughness = u_MaterialUniform.RoghnessTexToggle == true ? texture(u_RoughnessMap, Fs_in.TexCoords).r * max(u_MaterialUniform.Roughness,0.001) : max(u_MaterialUniform.Roughness,0.001); // max to keep specular
+    float roughness = u_MaterialUniform.RoghnessTexToggle == true ? texture(u_RoughnessMap, Fs_in.TexCoords).r * max(u_MaterialUniform.Roughness,0.00) : max(u_MaterialUniform.Roughness,0.00); // max to keep specular
     vec3 normal = CalculateNormal();
 
     vec3 view = normalize(Fs_in.CameraPosition - Fs_in.WorldPos);
@@ -172,7 +169,6 @@ void main()
     // Angle between surface normal and outgoing view Direction.
 	float cosView = max(0.0, dot(normal, view));
 
-    vec3 Lr = 2.0 * cosView * normal - view;
     int numDirectionalLights = DirectionalLightData.Lights.length();
     vec3 directLighting = vec3(0);
     for (int i = 0; i < 1; i++)
@@ -189,21 +185,21 @@ void main()
         float G   = GeometrySmith(nDotV, nDotL, roughness);
         vec3  F   = FresnelSchlick(max(dot(halfway,view), 0.0), F0);
 
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
+        vec3 kD = 1.0 - F;
         kD *= 1.0 - metallic;
 
         vec3 numerator = NDF * G * F;
         float denominator = 4.0 * nDotV * nDotL;
         vec3 specular = numerator / max (denominator, 0.0001);
 
-        vec3 lightEffect = (kD * (albedo / PI) + specular ) * radiance * nDotL;
+        vec3 lightEffect = (kD * albedo / PI + specular )  * radiance * nDotL;
         directLighting +=lightEffect;
     }
     
     vec3 iblEfeect = vec3(0);
     //IBL
     {
+        vec3 Lr = 2.0 * cosView * normal - view;
         //https://github.com/kidrigger/Blaze/blob/canon/Blaze/shaders/forward/fPBR.frag
         //https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
 
@@ -221,7 +217,6 @@ void main()
 		vec3 specularIBL = specularIrradiance * (F0* specularBRDF.x + specularBRDF.y) ; 
 
         iblEfeect = specularIBL + diffuseIBL;
-        //iblEfeect = texture(u_BRDFLUT, Fs_in.TexCoords).rgb;
     }
     
     vec3 finalColor = directLighting + iblEfeect ;

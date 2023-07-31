@@ -191,7 +191,7 @@ namespace Proof{
         aiMaterial* aimat = (aiMaterial*)mat;
         Count<Material> material = Count<Material>::Create();
         float metallness = 0.0;
-        float roghness = 0.5;
+        float roghness = 0.4;
         //aiGetMaterialString(aimat,mat, AI_MATKEY_NAME, &name);
         aiString name;
         aimat->Get(AI_MATKEY_NAME, name);
@@ -203,11 +203,15 @@ namespace Proof{
         {
             material->SetAlbedo(Vector(color.r, color.g, color.b));
         }
-        aimat->Get(AI_MATKEY_METALLIC_FACTOR, metallness);
-        aimat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roghness);
+        if (aimat->Get(AI_MATKEY_METALLIC_FACTOR, metallness) == aiReturn_SUCCESS)
+        {
+            material->GetMetalness() = metallness;
+        }
+        if (aimat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roghness) == aiReturn_SUCCESS)
+        {
+            material->GetRoughness() = roghness;
+        }
 
-        material->GetMetalness() = metallness;
-        material->GetRoughness() = roghness;
         LoadMaterialTextures(material, aimat);
         return material;
     }
