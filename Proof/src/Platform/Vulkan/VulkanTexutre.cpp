@@ -75,9 +75,11 @@ namespace Proof
 
 	void VulkanTexture2D::GenerateMips()
 	{
+		m_Config.GenerateMips = true;
+		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+		VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
 		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-			uint32_t mipCount = GetMipLevelCount();
-			VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+
 			VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer();
 			VkImageMemoryBarrier barrier{};
 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -204,6 +206,20 @@ namespace Proof
 		//render Thread
 		Build();
 	}
+	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config)
+		:m_Config(config)
+
+	{
+		ImageConfiguration imageConfig;
+		imageConfig.Format = m_Config.Format;
+		imageConfig.Width = m_Config.Width;
+		imageConfig.Height = m_Config.Height;
+		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
+		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
+		m_Image = Image2D::Create(imageConfig);
+		//render Thread
+		Build();
+	}
 	ResourceDescriptorInfo VulkanTexture2D::GetResourceDescriptorInfo() const
 	{
 		return m_Image.As<VulkanImage2D>()->GetResourceDescriptorInfo();
@@ -239,8 +255,10 @@ namespace Proof
 
 				VkImageSubresourceRange subresourceRange = {};
 				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				subresourceRange.layerCount = 1;
+				subresourceRange.layerCount = mipCount;
+				subresourceRange.baseMipLevel = 0;
 				subresourceRange.levelCount = GetMipLevelCount();
+				subresourceRange.baseArrayLayer = 0;
 
 				Utils::SetImageLayout(cmdBuffer, imageInfo.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout, subresourceRange);
 
@@ -504,9 +522,35 @@ namespace Proof
 		m_Image = Image2D::Create(imageConfig);
 		Build();
 	}
+	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config, Count<Texture2D> texture)
+		:m_Config(config)
+	{
+		uint32_t mipCount = m_Config.GenerateMips ? GetMipLevelCount() : 1;
+
+		m_Texture = texture.As<VulkanTexture2D>();
+
+		ImageConfiguration imageConfig;
+		imageConfig.DebugName = "TextureCubeImage";
+		imageConfig.Format = config.Format;
+		imageConfig.Height = config.Height;
+		imageConfig.Width = config.Width;
+		imageConfig.Layers = 6;
+		imageConfig.Mips = mipCount;
+
+		if (m_Config.Storage)
+			imageConfig.Usage = ImageUsage::Storage;
+		else
+			imageConfig.Usage = ImageUsage::Attachment;
+		imageConfig.Transfer = true;
+		m_Image = Image2D::Create(imageConfig);
+		Build();
+	}
 	void VulkanTextureCube::GenerateMips()
 	{
+		m_Config.GenerateMips = true;
+
 		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+		m_Image.As<VulkanImage2D>()->GetSpecificationRef().Mips = mipCount;
 		const uint32_t faces = 6;
 
 		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
@@ -676,7 +720,6 @@ namespace Proof
 				subresourceRange.layerCount = 6;
 				subresourceRange.levelCount = mipCount;
 				subresourceRange.baseMipLevel = 0;
-				//auto layout = vk_Image->GetDescriptorInfoVulkan().imageLayout;
 				Utils::SetImageLayout(cmdBuffer, imageInfoRef.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout, subresourceRange);
 
 			});

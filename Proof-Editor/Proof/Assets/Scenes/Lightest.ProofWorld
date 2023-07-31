@@ -29,7 +29,7 @@ World:
       SkyLightComponent:
         TintColor: [1, 1, 1]
         Exposure: 1
-        SkyBoxLod: 0
+        SkyBoxLod: 1.22399998
         MapRotation: 0
         Intensity: 1
         Image: 2700444414993608762
@@ -38,9 +38,9 @@ World:
         Tag: Sphere
         tags: []
       TransformComponent:
-        Location: [0, 0, 2.70000005]
+        Location: [0, 13.5, 2.70000005]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
+        Scale: [10, 10, 10]
       ChildComponent:
         OwnerID: 0
         Children: []
@@ -50,3 +50,16 @@ World:
           - Material: ""
             AssetID: 17275110330326612509
             Index: 0
+    - Entity: 17966671247337900809
+      TagComponent:
+        Tag: Sponza
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [0.100000001, 0.100000001, 0.100000001]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 705200552008804468

@@ -151,12 +151,15 @@ namespace Proof
 		Image = 0;
 		Environment = nullptr;
 	}
-	void SkyLightComponent::LoadMap(const std::filesystem::path& path)
+	void SkyLightComponent::LoadMap(AssetID asset)
 	{
-		auto[irradiance, prefilter] = Renderer::CreateEnvironmentMap(path);
+		if (!AssetManager::HasAsset(asset))
+			return;
+
+		auto[irradiance, prefilter] = Renderer::CreateEnvironmentMap(AssetManager::GetAsset<Texture2D>(asset)->GetPath());
 
 		Environment = Count<class Environment>::Create(irradiance, prefilter);
 
-		Image = AssetManager::GetAssetInfo(path).ID;
+		Image = asset;
 	}
 }

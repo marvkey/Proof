@@ -80,7 +80,7 @@ namespace Proof{
             PF_EC_WARN("ERROR::ASSIMP {}", importer.GetErrorString());
             return;
         }
-        
+        PF_ENGINE_INFO("MeshSource:{}", path);
         ProcessNode(scene->mRootNode, scene, AIMatrixToGLM(scene->mRootNode->mTransformation));
        
         
@@ -211,7 +211,7 @@ namespace Proof{
         {
             material->GetRoughness() = roghness;
         }
-
+        PF_ENGINE_TRACE("   Loaded Material:{} Color:{} Roughness:{} Metalness:{}", material->Name, material->GetAlbedoColor().ToString(), material->GetRoughness(), material->GetMetalness());
         LoadMaterialTextures(material, aimat);
         return material;
     }
@@ -265,17 +265,27 @@ namespace Proof{
         material->SetMetalnessMap(LoadTextures(aiTextureType_METALNESS, aiMaterialCast, this));
         material->SetRoughnessMap(LoadTextures(aiTextureType_DIFFUSE_ROUGHNESS, aiMaterialCast, this));
 
-       // if (material->GetAlbedoMap() == Renderer::GetWhiteTexture())
-       //     material->SetAlbedoTextureToggle(false);
+        if (material->GetAlbedoMap() != Renderer::GetWhiteTexture())
+            PF_ENGINE_TRACE("       Albedo Map:{} ",material->GetAlbedoMap()->GetPath().string());
         
         if (material->GetNormalMap() != Renderer::GetWhiteTexture())
+        {
             material->SetNormalTextureToggle(true);
+            PF_ENGINE_TRACE("       Normal Map:{} ", material->GetNormalMap()->GetPath().string());
+        }
         
         if (material->GetRoughnessMap() != Renderer::GetWhiteTexture())
+        {
             material->SetRoughnessTextureToggle(true);
+            PF_ENGINE_TRACE("       Roughness Map:{} ", material->GetRoughnessMap()->GetPath().string());
+        }
        
         if (material->GetMetalnessMap() != Renderer::GetWhiteTexture())
+        {
             material->SetMetalnessTextureToggle(true);
+            PF_ENGINE_TRACE("       Metalness Map:{} ", material->GetMetalnessMap()->GetPath().string());
+        }
+
     }
 
     Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& submeshes)

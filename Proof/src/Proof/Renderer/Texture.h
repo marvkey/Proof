@@ -84,7 +84,10 @@ namespace Proof {
 		virtual void SetData(const void* data)= 0;
 
 		static Count<Texture2D> Create(const TextureConfiguration& config, const std::filesystem::path& path);
-		static Count<Texture2D> Create(const void* data,const TextureConfiguration& config);
+		static Count<Texture2D> Create(const void* data, const TextureConfiguration& config);
+		virtual void GenerateMips() = 0;
+
+		static Count<Texture2D> Create(const TextureConfiguration& config);
 		virtual Count<Image2D> GetImage() = 0;
 
 	};
@@ -100,9 +103,12 @@ namespace Proof {
 		virtual void Resize(uint32_t width, uint32_t height) =0;
 		virtual void Resize(Vector2U size) = 0;
 		virtual uint32_t GetMipLevelCount() = 0;
-			
+		virtual void GenerateMips() = 0;
 		virtual Count<Image2D> GetImage()const =0 ;
 		static Count<TextureCube> Create(const TextureConfiguration& config, const std::filesystem::path& path);
+		static Count<TextureCube> Create(const TextureConfiguration& config);
+		// (TODO)make sure its hdr format
+		static Count<TextureCube> Create(const TextureConfiguration& config, Count<Texture2D> texture);
 		static Count<TextureCube> Create(const void* data,const TextureConfiguration& config);
 	};
 

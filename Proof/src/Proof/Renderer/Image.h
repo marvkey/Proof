@@ -182,7 +182,16 @@ namespace Proof
 		virtual ~Image2D() = default;
 		static Count<Image2D>Create(const ImageConfiguration& specification);
 	};
-
+	enum class ImageViewType {
+		None = 0,
+		View1D,
+		View2D,
+		View3D,
+		ViewCube,
+		View1DArray,
+		View2DArray,
+		ViewCubeArray
+	};
 	struct ImageViewConfiguration
 	{
 		std::string DebugName;
@@ -193,6 +202,8 @@ namespace Proof
 
 		uint32_t LayerCount = 1;
 		uint32_t MipCount = 1;
+
+		ImageViewType View = ImageViewType::View2D;
 	};
 	class ImageView : public RendererViewResource {
 	public:

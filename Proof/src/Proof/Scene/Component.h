@@ -330,7 +330,7 @@ namespace Proof
 		float Intensity = 1.0f;
 
 		void RemoveImage();
-		void LoadMap(const std::filesystem::path& path);
+		void LoadMap(AssetID asset);
 		Count<Environment> Environment;
 	private:
 		AssetID Image;

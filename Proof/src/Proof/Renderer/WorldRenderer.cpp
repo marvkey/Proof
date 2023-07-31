@@ -300,7 +300,6 @@ namespace Proof
 				}
 			});
 
-			m_Renderer2D->DrawQuad({ 0,1,1 }, m_BRDFLUT);
 			m_Renderer2D->EndContext();
 
 		}

@@ -9,7 +9,6 @@
 #include "ComputePipeline.h"
 #include "Shader.h"
 #include "RenderMaterial.h"
-#include "Platform/Vulkan/VulkanTexutre.h"
 #include "FrameBuffer.h"
 #include "RenderPass.h"
 #include "GraphicsPipeLine.h"
@@ -162,7 +161,6 @@ namespace Proof {
 			baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
 
 			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig, path);
-			environmentMapImageCube.As<VulkanTextureCube>()->GenerateMips();
 		}
 		const uint32_t irradianceFilterRate = 32;
 		Count<TextureCube> irradianceMap; 
@@ -175,7 +173,7 @@ namespace Proof {
 			irradianceTextureConfig.Format = format;
 			irradianceTextureConfig.Wrap = TextureWrap::ClampEdge;
 			irradianceTextureConfig.GenerateMips = true;
-			irradianceMap = Count<VulkanTextureCube>::Create(irradianceTextureConfig);
+			irradianceMap = TextureCube::Create(irradianceTextureConfig);
 		}
 		
 		{
@@ -205,7 +203,7 @@ namespace Proof {
 				Renderer::EndComputePass(computePass);
 			
 			});
-			irradianceMap.As<VulkanTextureCube>()->GenerateMips();
+			irradianceMap->GenerateMips();
 
 		}
 
@@ -288,7 +286,7 @@ namespace Proof {
 			prefilterTextureConfig.Wrap = TextureWrap::ClampEdge;
 			prefilterTextureConfig.GenerateMips = true;
 
-			prefilterMap = Count<VulkanTextureCube>::Create(prefilterTextureConfig,path);
+			prefilterMap = TextureCube::Create(prefilterTextureConfig,path);
 
 		}
 	
@@ -311,6 +309,7 @@ namespace Proof {
 				imageViewConfig.LayerCount = 6;
 				imageViewConfig.Mip = mip;
 				imageViewConfig.MipCount = 1;
+				imageViewConfig.View = ImageViewType::ViewCube;
 				imageViewConfig.Image = prefilterMap->GetImage();
 
 				Count<ImageView> view = ImageView::Create(imageViewConfig);

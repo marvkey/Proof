@@ -29,6 +29,17 @@ namespace Proof {
 		return nullptr;
 	}
 
+	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config);
+		}
+		return nullptr;
+	}
+
 	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, const std::filesystem::path& path)
 	{
 		switch (Renderer::GetAPI())
@@ -36,6 +47,26 @@ namespace Proof {
 			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, path);
+		}
+		return nullptr;
+	}
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config);
+		}
+		return nullptr;
+	}
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, Count<Texture2D> texture)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, texture);
 		}
 		return nullptr;
 	}

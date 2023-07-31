@@ -35,6 +35,38 @@ namespace Proof {
 			}
 
 		}
+
+		static VkImageViewType ProofToVulkanFormat(ImageViewType view)
+		{
+			switch (view)
+			{
+				case Proof::ImageViewType::View1D:
+					return VK_IMAGE_VIEW_TYPE_1D;
+					break;
+				case Proof::ImageViewType::View2D:
+					return VK_IMAGE_VIEW_TYPE_2D;
+					break;
+				case Proof::ImageViewType::View3D:
+					return VK_IMAGE_VIEW_TYPE_3D;
+					break;
+				case Proof::ImageViewType::ViewCube:
+					return VK_IMAGE_VIEW_TYPE_CUBE;
+					break;
+				case Proof::ImageViewType::View1DArray:
+					return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+					break;
+				case Proof::ImageViewType::View2DArray:
+					return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+					break;
+				case Proof::ImageViewType::ViewCubeArray:
+					return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+					break;
+				default:
+					break;
+			}
+			PF_CORE_ASSERT(false);
+			return VK_IMAGE_VIEW_TYPE_MAX_ENUM;
+		}
 	}
 	VulkanImage2D::VulkanImage2D(const ImageConfiguration& imageSpec)
 		:
@@ -372,8 +404,7 @@ namespace Proof {
 
 		VkImageViewCreateInfo imageViewCreateInfo = {};
 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		//tempory for prefilter map
-		imageViewCreateInfo.viewType = m_Specification.LayerCount == 6 ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
+		imageViewCreateInfo.viewType = Utils::ProofToVulkanFormat(m_Specification.View);
 		imageViewCreateInfo.format = vulkanFormat;
 		imageViewCreateInfo.subresourceRange = {};
 		imageViewCreateInfo.subresourceRange.aspectMask = aspectMask;

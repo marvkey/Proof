@@ -499,7 +499,7 @@ namespace Proof
 					uint64_t Data = *(const uint64_t*)payload->Data;
 					if (AssetManager::HasAsset(Data))
 					{
-						skylight.LoadMap(AssetManager::GetAsset<Texture2D>(Data)->GetPath());
+						skylight.LoadMap(Data);
 					}
 				}
 				ImGui::EndDragDropTarget();

@@ -97,6 +97,7 @@ namespace Proof
 
 		VulkanTexture2D(const TextureConfiguration& config, const void* data);
 		VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config);
+		VulkanTexture2D(const TextureConfiguration& config);
 		virtual ~VulkanTexture2D();
 
 		virtual Count<Image2D> GetImage() { return m_Image; };
@@ -140,6 +141,7 @@ namespace Proof
 		VulkanTextureCube(const TextureConfiguration& config, const std::filesystem::path& path);
 		VulkanTextureCube(const void* data, const TextureConfiguration& config);
 		VulkanTextureCube(const TextureConfiguration& config);
+		VulkanTextureCube(const TextureConfiguration& config,Count<Texture2D> texture);
 		~VulkanTextureCube();
 		virtual Count<Image2D> GetImage()const { return m_Image; };
 		const VkDescriptorImageInfo& GetDescriptorInfoVulkan()const { return *(VkDescriptorImageInfo*)GetResourceDescriptorInfo(); };

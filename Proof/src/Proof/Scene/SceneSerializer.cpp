@@ -628,8 +628,7 @@ namespace Proof
 						src.Intensity = skyLight["Intensity"].as<float>();
 						if (AssetManager::HasAsset(src.Image))
 						{
-							Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(src.Image);
-							src.LoadMap(texture->GetPath());
+							src.LoadMap(src.Image);
 						}
 					}
 				}
