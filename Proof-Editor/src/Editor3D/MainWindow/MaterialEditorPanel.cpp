@@ -45,11 +45,28 @@ namespace Proof
 			//Albedo
 			{
 				bool renderToggle = true;
-				if (m_Material->GetAlbedoMap() != nullptr && m_Material->GetAlbedoMap() != Renderer::GetWhiteTexture())
-					UI::Image(m_Material->GetAlbedoMap(), { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+				Count<Texture2D> albedoMap = m_Material->GetAlbedoMap();
+				if (albedoMap != nullptr && albedoMap != Renderer::GetWhiteTexture())
+				{
+					UI::Image(albedoMap , { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+					if (ImGui::BeginPopupContextItem("Albedo Texture Settings"))
+					{
+						ImGui::EndPopup();
+					}
+
+					if (ImGui::BeginPopup("Albedo Texture Settings"))
+					{
+						if (ImGui::MenuItem("Remove"))
+						{
+							m_Material->SetAlbedoMap(Renderer::GetWhiteTexture());
+						}
+						ImGui::EndPopup();
+					}
+				}
 				else
 				{
 					UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+					
 					renderToggle = false;
 					
 				}
@@ -62,7 +79,7 @@ namespace Proof
 						if (AssetManager::HasAsset(Data))
 						{
 							shouldSave = true;
-							m_Material->GetAlbedoMap() = AssetManager::GetAsset<Texture2D>(Data);
+							m_Material->SetAlbedoMap(AssetManager::GetAsset<Texture2D>(Data));
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -82,11 +99,30 @@ namespace Proof
 			//Normal
 			{
 				bool renderToggle = true;
-				if (m_Material->GetNormalMap() != nullptr && m_Material->GetNormalMap() != Renderer::GetWhiteTexture())
-					UI::Image(m_Material->GetNormalMap(), { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+				Count<Texture2D> normalMap = m_Material->GetNormalMap();
+
+				if (normalMap != nullptr && normalMap != Renderer::GetWhiteTexture())
+				{
+
+					UI::Image(normalMap, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+					if (ImGui::BeginPopupContextItem("Normal Texture Settings"))
+					{
+						ImGui::EndPopup();
+					}
+
+					if (ImGui::BeginPopup("Normal Texture Settings"))
+					{
+						if (ImGui::MenuItem("Remove"))
+						{
+							m_Material->SetNormalMap(Renderer::GetWhiteTexture());
+						}
+						ImGui::EndPopup();
+					}
+				}
 				else
 				{
 					UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+					
 					renderToggle = false;
 				}
 
@@ -98,7 +134,7 @@ namespace Proof
 						if (AssetManager::HasAsset(Data))
 						{
 							shouldSave = true;
-							m_Material->GetNormalMap() = AssetManager::GetAsset<Texture2D>(Data);
+							m_Material->SetNormalMap(AssetManager::GetAsset<Texture2D>(Data));
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -114,8 +150,25 @@ namespace Proof
 			//Metallic
 			{
 				bool renderToggle = true;
-				if (m_Material->GetMetalnessMap() != nullptr && m_Material->GetMetalnessMap() != Renderer::GetWhiteTexture())
-					UI::Image(m_Material->GetMetalnessMap(), { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+				Count<Texture2D> metallnesMap = m_Material->GetMetalnessMap();
+
+				if (metallnesMap != nullptr && metallnesMap != Renderer::GetWhiteTexture())
+				{
+					UI::Image(metallnesMap, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+					if (ImGui::BeginPopupContextItem("Metallness Texture Settings"))
+					{
+						ImGui::EndPopup();
+					}
+
+					if (ImGui::BeginPopup("Metallness Texture Settings"))
+					{
+						if (ImGui::MenuItem("Remove"))
+						{
+							m_Material->SetMetalnessMap(Renderer::GetWhiteTexture());
+						}
+						ImGui::EndPopup();
+					}
+				}
 				else
 				{
 					UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
@@ -130,7 +183,7 @@ namespace Proof
 						if (AssetManager::HasAsset(Data))
 						{
 							shouldSave = true;
-							m_Material->GetMetalnessMap() = AssetManager::GetAsset<Texture2D>(Data);
+							m_Material->SetMetalnessMap(AssetManager::GetAsset<Texture2D>(Data));
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -150,8 +203,27 @@ namespace Proof
 			//Roughness
 			{
 				bool renderToggle = true;
-				if (m_Material->GetRoughnessMap() != nullptr && m_Material->GetRoughnessMap() != Renderer::GetWhiteTexture())
-					UI::Image(m_Material->GetRoughnessMap(), { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+				Count<Texture2D> roughnessMap = m_Material->GetRoughnessMap();
+
+				if (roughnessMap != nullptr && roughnessMap != Renderer::GetWhiteTexture())
+				{
+					UI::Image(roughnessMap, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
+
+					if (ImGui::BeginPopupContextItem("Roughness Texture Settings"))
+					{
+						ImGui::EndPopup();
+					}
+
+					if (ImGui::BeginPopup("Roughness Texture Settings"))
+					{
+						if (ImGui::MenuItem("Remove"))
+						{
+							m_Material->SetRoughnessMap(Renderer::GetWhiteTexture());
+						}
+						ImGui::EndPopup();
+					}
+
+				}
 				else
 				{
 					UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
@@ -166,7 +238,7 @@ namespace Proof
 						if (AssetManager::HasAsset(Data))
 						{
 							shouldSave = true;
-							m_Material->GetRoughnessMap() = AssetManager::GetAsset<Texture2D>(Data);
+							m_Material->SetRoughnessMap( AssetManager::GetAsset<Texture2D>(Data));
 						}
 					}
 					ImGui::EndDragDropTarget();

@@ -14,7 +14,10 @@ namespace Proof
 		Texture2D,
 		TextureCube,
 		Image2D,
+		Image2DSet,
 		Texture2DSet,
+		ImageView,
+		ImageViewSet,
 	};
 
 	enum class RenderPassInputType {
@@ -54,6 +57,37 @@ namespace Proof
 		{
 
 		}
+		RenderPassInput(Count<class Image2D> resource) :
+			Type(RenderPassResourceType::Image2D), Input(std::vector<Count<RefCounted>>(1, resource))
+		{
+
+		}
+		RenderPassInput(const std::vector<Count<class Image2D>>& images) :
+			Type(RenderPassResourceType::Image2DSet)
+		{
+			Input.reserve(images.size());
+
+			for (auto& data : images)
+			{
+				Input.push_back(data);
+			}
+		}
+
+		RenderPassInput(Count<class ImageView> resource) :
+			Type(RenderPassResourceType::ImageView), Input(std::vector<Count<RefCounted>>(1, resource))
+		{
+
+		}
+		RenderPassInput(const std::vector<Count<class ImageView>>& images) :
+			Type(RenderPassResourceType::ImageViewSet)
+		{
+			Input.reserve(images.size());
+
+			for (auto& data : images)
+			{
+				Input.push_back(data);
+			}
+		}
 
 		RenderPassInput(const std::initializer_list<Count<class Texture2D>>& images ) :
 			Type(RenderPassResourceType::Texture2DSet)
@@ -76,28 +110,7 @@ namespace Proof
 				Input.push_back(data);
 			}
 		}
-		//RenderPassInput(Count<class Vulk> resource) :
-		//	Type(RenderPassResourceType::UniformBuffer), Input(std::vector<Count<VulkanResource>>(1, resource))
-		//{
-		//
-		//}
-		/*
-		void Set(Count< VulkanUniformBuffer> uniformBuffer, uint32_t index = 0)
-		{
-			Type = RenderPassResourceType::UniformBuffer;
-			/Input = std::vector<Count<VulkanResource>>(1, uniformBuffer);
-		}
-		void Set(Count< VulkanStorageBuffer> buffer, uint32_t index = 0)
-		{
-			Type = RenderPassResourceType::StorageBuffer;
-			Input = std::vector<Count<VulkanResource>>(1, buffer);
-		}
-		void Set(Count< VulkanTexture2D> texture, uint32_t index = 0)
-		{
-			Type = RenderPassResourceType::Texture2D;
-			Input = std::vector<Count<VulkanResource>>(1, texture);
-		}
-		*/
+		
 	};
 	struct VulkanDescriptorManagerConfig
 	{
@@ -117,6 +130,13 @@ namespace Proof
 		void SetInput(std::string_view name, Count<class TextureCube> buffer);
 		void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images);
 		void SetInput(std::string_view name, Count<class Texture2D> iamge);
+
+		void SetInput(std::string_view name, Count<class ImageView> imageView);
+		void SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews);
+
+		void SetInput(std::string_view name, Count<class Image2D>image);
+		void SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images );
+
 
 		void Bind();
 		//void SetInput(std::string_view name, Count<class > buffer);

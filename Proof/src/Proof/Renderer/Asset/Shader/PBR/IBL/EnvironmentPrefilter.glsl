@@ -3,19 +3,28 @@
 //http://alinloghin.com/articles/compute_ibl.html
 //https://github.com/Nadrin/PBR/blob/master/data/shaders/hlsl/pbr.hlsl
 //https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
-//https://github.com/Nadrin/PBR/blob/master/data/shaders/glsl/irmap_cs.glsl
 #version 450
 
+//https://github.com/Nadrin/PBR/blob/master/data/shaders/glsl/spmap_cs.glsl
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
+
 layout(set = 0, binding = 0) uniform samplerCube u_EnvironmentMap;
-layout(set = 0, binding = 1, rgba16f) uniform imageCube u_PrefilterMap;
+
+const int NumMipLevels = 11-1;
+// thera are more than 1 sent to the shader but due to vulkan not lettign set an array wth just [], 
+//we set it to one but we set it to be 11-1 because the image (1024,1024) has 11 mips
+// but we are only going ot write to mip 1-10 not writing not to mip 0
+//but we going to set it to be 32 in the shader in case in the future we change the iamge size to be bigger t
+layout(set = 0, binding = 1, rgba16f) uniform imageCube u_PrefilterMap[NumMipLevels];
 
 layout(push_constant) uniform CubeMapData
 {
+    int Level;
     float Roughness;
 }Input;
-
+#define PARAM_LEVEL     Input.Level
+#define PARAM_ROUGHNESS Input.Roughness
 const float PI = 3.1415926535897932384626433832795;
 const float TWO_PI = 2* PI;
 const float NumSamples = 1024; 
@@ -60,7 +69,7 @@ float NdfGGX(float cosLh, float roughness)
 }
 vec3 GetCubeMapTexCoord()
 {
-    vec2 st = gl_GlobalInvocationID.xy/ vec2(imageSize(u_PrefilterMap));
+    vec2 st = gl_GlobalInvocationID.xy/ vec2(imageSize(u_PrefilterMap[PARAM_LEVEL]));
     vec2 uv = 2.0 * vec2(st.x,1.0-st.y) - vec2(1.0);
 
 
@@ -116,7 +125,7 @@ vec3 TangentToWorld(const vec3 tangentSpaceVector, const vec3 worldNormal, const
 
 void main()
 {
-     ivec2 outputSize = imageSize(u_PrefilterMap);
+     ivec2 outputSize = imageSize(u_PrefilterMap[PARAM_LEVEL]);
     //dont write past the texture 
     if(gl_GlobalInvocationID.x >= outputSize.x || gl_GlobalInvocationID.y >= outputSize.y)
     {
@@ -138,7 +147,7 @@ void main()
     for(uint i =0; i<NumSamples; i++)
     {
         vec2 u = SampleHammersley(i,InvNumSamples);
-        vec3 lh = TangentToWorld(SampleGGX(u.x,u.y,Input.Roughness),N,S,T);
+        vec3 lh = TangentToWorld(SampleGGX(u.x,u.y,PARAM_ROUGHNESS),N,S,T);
 
         vec3 li = 2.0 *dot(lo,lh) * lh-lo;
         float NdotL = dot(N, li);
@@ -148,7 +157,7 @@ void main()
             //https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-20-gpu-based-importance-sampling (section 20.4)
             float cosLh = max(dot(N,lh),0.0);
 
-            float pdf = NdfGGX(cosLh, Input.Roughness) * 0.25;
+            float pdf = NdfGGX(cosLh, PARAM_ROUGHNESS) * 0.25;
 
             // solid angle 
             float ws = 1.0 / (NumSamples * pdf);
@@ -162,5 +171,5 @@ void main()
         }
     }
     prefillterColor /=weight;
-    imageStore(u_PrefilterMap, ivec3(gl_GlobalInvocationID), vec4(prefillterColor, 1.0));
+    imageStore(u_PrefilterMap[PARAM_LEVEL], ivec3(gl_GlobalInvocationID), vec4(prefillterColor, 1.0));
 }

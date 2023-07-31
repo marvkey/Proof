@@ -5,6 +5,7 @@
 #include "VulkanResourceBuffer.h"
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanTexutre.h"
+#include "VulkanImage.h"
 namespace Proof 
 {
 	VulkanDescriptorManager::VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config)
@@ -26,16 +27,7 @@ namespace Proof
         const SahderInputDeclaration* decl =  shader->GetInputDeclaration(name.data());
         if (decl)
         {
-           /// if (!m_Inputs.contains(decl->Set))
-           /// {
-           ///     PF_ENGINE_ERROR("Descriptor Manager {}, Input {} Descriptro Manager does not contain the set ", m_Config.DebugName, name, decl->Set);
-           ///     return;
-           /// }
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
-
-           // VkWriteDescriptorSet& write = m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight][decl->Set][decl->Binding];
-           // write.dstSet = m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight][decl->Set].Set;
-           // write.pBufferInfo = &buffer.As<VulkanUniformBuffer>()->GetDescriptorInfo(Renderer::GetCurrentFrame().FrameinFlight);
         }
         else
         {
@@ -49,15 +41,7 @@ namespace Proof
         const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
         if (decl)
         {
-            //if (!m_Inputs.contains(decl->Set))
-            //{
-            //    PF_ENGINE_ERROR("Descriptor Manager {}, Input {} Descriptro Manager does not contain the set ", m_Config.DebugName, name, decl->Set);
-            //    return;
-            //}
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
-            //VkWriteDescriptorSet& write = m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight][decl->Set][decl->Binding];
-            //write.dstSet = m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight][decl->Set].Set;
-            //write.pImageInfo = &buffer.As<VulkanTexture2D>()->GetImageBufferInfo();
         }
         else
         {
@@ -73,16 +57,7 @@ namespace Proof
         const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
         if (decl)
         {
-            //if (!m_Inputs.contains(decl->Set))
-            //{
-            //    PF_ENGINE_ERROR("Descriptor Manager {}, Input {} Descriptro Manager does not contain the set ", m_Config.DebugName, name, decl->Set);
-            //    return;
-            //}
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
-
-            //VkWriteDescriptorSet& write = m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight][decl->Set][decl->Binding];
-            //write.dstSet = m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight][decl->Set].Set;
-            //write.pBufferInfo = &buffer.As<VulkanStorageBuffer>()->GetDescriptorInfo(Renderer::GetCurrentFrame().FrameinFlight);
         }
         else
         {
@@ -96,11 +71,6 @@ namespace Proof
         const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
         if (decl)
         {
-            //if (!m_Inputs.contains(decl->Set))
-            //{
-            //    PF_ENGINE_ERROR("Descriptor Manager {}, Input {} Descriptro Manager does not contain the set ", m_Config.DebugName, name, decl->Set);
-            //    return;
-            //}
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(images);
         }
         else
@@ -115,28 +85,71 @@ namespace Proof
         const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
         if (decl)
         {
-            //if (!m_Inputs.contains(decl->Set))
-            //{
-            //    PF_ENGINE_ERROR("Descriptor Manager {}, Input {} Descriptro Manager does not contain the set ", m_Config.DebugName, name, decl->Set);
-            //    return;
-            //}
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
-            //VkWriteDescriptorSet& write = m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight][decl->Set][decl->Binding];
-            //write.dstSet = m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight][decl->Set].Set;
-            //write.pImageInfo = &buffer.As<VulkanTexture2D>()->GetImageBufferInfo();
         }
         else
         {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
         }
     }
+
+   
+    void VulkanDescriptorManager::SetInput(std::string_view name, Count<Image2D>image)
+    {
+        m_Build = false;
+        auto shader = m_Config.Shader;
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+
+        if (decl)
+            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(image);
+        else
+            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+    }
+    void VulkanDescriptorManager::SetInput(std::string_view name, Count<ImageView> imageView)
+    {
+        m_Build = false;
+        auto shader = m_Config.Shader;
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+
+        if (decl)
+            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageView);
+        else
+            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+    }
+    void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images)
+    {
+        m_Build = false;
+        auto shader = m_Config.Shader;
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+
+        if (decl)
+            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(images);
+        else
+            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+    }
+
+    void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews)
+    {
+        m_Build = false;
+        auto shader = m_Config.Shader;
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+
+        if (decl)
+            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageViews);
+        else
+            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+    }
+    
     void VulkanDescriptorManager::Bind()
     {
        
         auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
         auto& descriptorSets= m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight];
+        // need this to hold images so taht when them in descriptor they dont loose data
+        //last 
         std::unordered_map<uint32_t, std::vector<VkDescriptorImageInfo>> imageInfos;
-        uint32_t lastImageInfo = 0;
+        // a unique pos in the list for the image
+        uint32_t imageUniquePos = 0;
 
         if (m_Build == true && m_LastFrameBinned == Renderer::GetCurrentFrame().FrameinFlight)
         {
@@ -171,29 +184,65 @@ namespace Proof
                             write.descriptorCount = 1;
                         }
                         break;
-                    case Proof::RenderPassResourceType::TextureCube:
-                        {
-                            write.pImageInfo = &resource.Input[0].As<VulkanTextureCube>()->GetDescriptorInfoVulkan();
-                        }
-                        break;
-                    case Proof::RenderPassResourceType::Image2D:
-                        {
-                           //write.pBufferInfo = resource.Input[0].As<VulkanI>()->GetDescriptorInfo();
-                        }
-                        break;
                     case Proof::RenderPassResourceType::Texture2DSet:
                         {
-                            lastImageInfo++;
+                            imageUniquePos++;
                             std::vector<VkDescriptorImageInfo> info;
                             //info.resize(resource.Input.size());
                             for (auto& image : resource.Input)
                             {
                                 info.push_back(image.As<VulkanTexture2D>()->GetDescriptorInfoVulkan());
                             }
-                            imageInfos[lastImageInfo] = info;
-                            write.pImageInfo = imageInfos[lastImageInfo].data();
+                            imageInfos[imageUniquePos] = info;
+                            write.pImageInfo = imageInfos[imageUniquePos].data();
                             write.descriptorCount = resource.Input.size();
 
+                        }
+                        break;
+                    case Proof::RenderPassResourceType::TextureCube:
+                        {
+                            write.pImageInfo = &resource.Input[0].As<VulkanTextureCube>()->GetDescriptorInfoVulkan();
+                            write.descriptorCount = 1;
+                        }
+                        break;
+                    case Proof::RenderPassResourceType::Image2D:
+                        {
+                            write.pImageInfo = &resource.Input[0].As<VulkanImage2D>()->GetDescriptorInfoVulkan();
+                            write.descriptorCount = 1;
+                        }
+                        break;
+                    case Proof::RenderPassResourceType::Image2DSet:
+                        {
+                            imageUniquePos++;
+                            std::vector<VkDescriptorImageInfo> info;
+                            //info.resize(resource.Input.size());
+                            for (auto& image : resource.Input)
+                            {
+                                info.push_back(image.As<VulkanImage2D>()->GetDescriptorInfoVulkan());
+                            }
+                            imageInfos[imageUniquePos] = info;
+                            write.pImageInfo = imageInfos[imageUniquePos].data();
+                            write.descriptorCount = resource.Input.size();
+                        }
+                        break;
+                    case Proof::RenderPassResourceType::ImageView:
+                        {
+                            write.pImageInfo = &resource.Input[0].As<VulkanImageView>()->GetDescriptorInfoVulkan();
+                            write.descriptorCount = 1;
+                        }
+                        break;
+                    case Proof::RenderPassResourceType::ImageViewSet:
+                        {
+                            imageUniquePos++;
+                            std::vector<VkDescriptorImageInfo> info;
+                            //info.resize(resource.Input.size());
+                            for (auto& image : resource.Input)
+                            {
+                                info.push_back(image.As<VulkanImageView>()->GetDescriptorInfoVulkan());
+                            }
+                            imageInfos[imageUniquePos] = info;
+                            write.pImageInfo = imageInfos[imageUniquePos].data();
+                            write.descriptorCount = resource.Input.size();
                         }
                         break;
                     default:
@@ -220,7 +269,6 @@ namespace Proof
                 uint32_t index = 0;
                 for (auto& [binding, write] : setData)
                 {
-                 //   write.dstSet = m_DescriptorSets[Renderer::GetCurrentFrame().FrameinFlight][set].Set;
                     writes[index] = descriptorSets[set][binding];
                     index++;
                 }

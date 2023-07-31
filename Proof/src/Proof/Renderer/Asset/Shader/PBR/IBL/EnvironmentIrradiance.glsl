@@ -1,12 +1,17 @@
 ﻿
 #Compute Shader
-
 #version 450 core
-const float PI = 3.141592;
+//https://github.com/Nadrin/PBR/blob/master/data/shaders/glsl/irmap_cs.glsl
+layout(local_size_x=32, local_size_y =32, local_size_z=1) in;
+
+const float PI = 3.1415926535897932384626433832795f;
 const float TwoPI = 2 * PI;
 const float Epsilon = 0.00001;
 
-const uint NumSamples = 64 *256;
+//const uint NumSamples = 64 *1024;
+//const uint NumSamples = 64 *512;
+//const uint NumSamples = 64 *256;
+const uint NumSamples = 64 *128;
 const float InvNumSamples = 1.0 / float(NumSamples);
 
 layout(set=0, binding=0) uniform samplerCube inputTexture;
@@ -77,10 +82,9 @@ vec3 tangentToWorld(const vec3 v, const vec3 N, const vec3 S, const vec3 T)
 	return S * v.x + T * v.y + N * v.z;
 }
 
-layout(local_size_x=32, local_size_y =32, local_size_z=1) in;
-void main(void)
+void main()
 {
-		ivec2 outputSize = imageSize(outputTexture);
+	ivec2 outputSize = imageSize(outputTexture);
     //dont write past the texture 
     if(gl_GlobalInvocationID.x >= outputSize.x || gl_GlobalInvocationID.y >= outputSize.y)
     {
@@ -95,7 +99,7 @@ void main(void)
 	// As a small optimization this also includes Lambertian BRDF assuming perfectly white surface (albedo of 1.0)
 	// so we don't need to normalize in PBR fragment shader (so technically it encodes exitant radiance rather than irradiance).
 	vec3 irradiance = vec3(0);
-	for(uint i=0; i<NumSamples; ++i) {
+	for(uint i=0; i<NumSamples; i++) {
 		vec2 u  = sampleHammersley(i);
 		vec3 Li = tangentToWorld(sampleHemisphere(u.x, u.y), N, S, T);
 		float cosTheta = max(0.0, dot(Li, N));

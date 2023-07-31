@@ -124,7 +124,22 @@ namespace Proof
 			}
 		}
 		{
+			{
 			
+				if (registry.any_of<SkyLightComponent>(entityID))
+				{
+					SkyLightComponent& skylight = registry.get<SkyLightComponent>(entityID);
+					out << YAML::Key << "SkyLightComponent";
+					out << YAML::BeginMap; // SkyLightComponentComponent
+					out << YAML::Key << "TintColor" << skylight.ColorTint;
+					out << YAML::Key << "Exposure" << skylight.Exposure;
+					out << YAML::Key << "SkyBoxLod" << skylight.SkyBoxLoad;
+					out << YAML::Key << "MapRotation" << skylight.MapRotation;
+					out << YAML::Key << "Intensity" << skylight.Intensity;
+					out << YAML::Key << "Image" << skylight.Image;
+					out << YAML::EndMap; // SkyLightComponentComponent
+				}
+			}
 			{
 				if (registry.any_of<DirectionalLightComponent>(entityID)) {
 					DirectionalLightComponent& directonalLight = registry.get<DirectionalLightComponent>(entityID);
@@ -599,6 +614,25 @@ namespace Proof
 			}
 			// LIGHT
 			{
+
+				{
+					auto skyLight = entity["SkyLightComponent"];
+					if (skyLight)
+					{
+						auto& src = NewEntity.AddComponent<SkyLightComponent>();
+						src.Image = skyLight["Image"].as<uint64_t>();
+						src.ColorTint = skyLight["TintColor"].as<Vector>();
+						src.Exposure = skyLight["Exposure"].as<float>();
+						src.SkyBoxLoad = skyLight["SkyBoxLod"].as<float>();
+						src.MapRotation = skyLight["MapRotation"].as<float>();
+						src.Intensity = skyLight["Intensity"].as<float>();
+						if (AssetManager::HasAsset(src.Image))
+						{
+							Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(src.Image);
+							src.LoadMap(texture->GetPath());
+						}
+					}
+				}
 
 				{
 					auto directionalLight = entity["DirectionalLightComponent"];

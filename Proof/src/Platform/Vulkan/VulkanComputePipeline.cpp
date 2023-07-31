@@ -13,6 +13,7 @@ namespace Proof {
 	}
 	VulkanComputePipeline::~VulkanComputePipeline()
 	{
+		Release();
 	}
 	
 	void VulkanComputePipeline::Build()
@@ -21,6 +22,13 @@ namespace Proof {
 
 		BuildPipeline();
 		auto vulkanShader = m_Config.Shader.As<VulkanShader>();
+		VkPipelineCacheCreateInfo pipelineCacheCreateinfo;
+		pipelineCacheCreateinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+		pipelineCacheCreateinfo.pNext = nullptr;
+		pipelineCacheCreateinfo.flags = 0;
+		pipelineCacheCreateinfo.pInitialData = nullptr;
+		pipelineCacheCreateinfo.initialDataSize = 0;
+		VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateinfo, nullptr, &m_PipelineCache));
 
 		VkComputePipelineCreateInfo pipelineCreateInfo = {};
 		pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -73,11 +81,16 @@ namespace Proof {
 	}
 	void VulkanComputePipeline::Release()
 	{
-		Renderer::SubmitDatafree([pipline = m_ComputePipeline, piplinelayout = m_PipeLineLayout]() {
+		if (m_ComputePipeline == nullptr)
+			return;
+
+		Renderer::SubmitDatafree([pipline = m_ComputePipeline, piplinelayout = m_PipeLineLayout,piplineCache =m_PipelineCache]() {
 			vkDestroyPipeline(VulkanRenderer::GetGraphicsContext()->GetDevice(), pipline, nullptr);
 			vkDestroyPipelineLayout(VulkanRenderer::GetGraphicsContext()->GetDevice(), piplinelayout, nullptr);
+			vkDestroyPipelineCache(VulkanRenderer::GetGraphicsContext()->GetDevice(), piplineCache, nullptr);
 		});
 		m_ComputePipeline = nullptr;
 		m_PipeLineLayout = nullptr;
+		m_PipelineCache = nullptr;
 	}
 }

@@ -63,12 +63,26 @@ namespace Proof {
 	{
 		m_DescritptorSetManager->SetInput(name, images);
 	}
-	void VulkanRenderMaterial::Set(std::string_view name, Count<class Image2D> image)
+	void VulkanRenderMaterial::Set(std::string_view name, Count<class TextureCube> texture)
 	{
-		PF_CORE_ASSERT(false);
-		//m_DescritptorSetManager->SetInput(name, image);
+		m_DescritptorSetManager->SetInput(name, texture);
 	}
-
+	void VulkanRenderMaterial::Set(std::string_view name, Count<class ImageView> imageView)
+	{
+		m_DescritptorSetManager->SetInput(name, imageView);
+	}
+	void VulkanRenderMaterial::Set(std::string_view name, const std::vector< Count<class ImageView>>& imageViews)
+	{
+		m_DescritptorSetManager->SetInput(name, imageViews);
+	}
+	void VulkanRenderMaterial::Set(std::string_view name, Count<class Image2D>image)
+	{
+		m_DescritptorSetManager->SetInput(name, image);
+	}
+	void VulkanRenderMaterial::Set(std::string_view name, const std::vector< Count<class Image2D>>& images)
+	{
+		m_DescritptorSetManager->SetInput(name, images);
+	}
 	void VulkanRenderMaterial::Set(const std::string& name, float value)
 	{
 		SetInternal<float>(name,value);

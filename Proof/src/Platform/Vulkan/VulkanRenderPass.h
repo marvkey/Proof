@@ -28,6 +28,12 @@ namespace Proof{
 		virtual void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images);
 		virtual void SetInput(std::string_view name, Count<class TextureCube> buffer);
 		virtual void SetInput(std::string_view name, Count<class StorageBuffer> buffer);
+
+		void virtual SetInput(std::string_view name, Count<class ImageView> imageView);
+		void virtual SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews);
+		void virtual SetInput(std::string_view name, Count<class Image2D>image);
+		void virtual SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images);
+
 		virtual void PushData(std::string_view name, const void* data);
 		Count< class GraphicsPipeline> GetPipeline() {return m_Config.Pipeline;};
 		Count<class FrameBuffer> GetTargetFrameBuffer();

@@ -13,9 +13,13 @@ namespace Proof{
 	{
 	public:virtual void Set(std::string_view name, Count<class UniformBuffer> buffer0) = 0;
 		  virtual void Set(std::string_view name, Count<class Texture2D> texture) = 0;
-		  virtual void Set(std::string_view name, Count<class Image2D> image) = 0;
+		  virtual void Set(std::string_view name, Count<class TextureCube> texture) = 0;
 		  virtual void Set(std::string_view name, const std::vector<Count<class Texture2D>>& images) = 0;
 		  virtual void Set(std::string_view name, Count<class StorageBuffer> buffer) = 0;
+		  void virtual Set(std::string_view name, Count<class ImageView> imageView) = 0;
+		  void virtual Set(std::string_view name, const std::vector< Count<class ImageView>>& imageViews) = 0;
+		  void virtual Set(std::string_view name, Count<class Image2D>image) = 0;
+		  void virtual Set(std::string_view name, const std::vector< Count<class Image2D>>& images) = 0;
 
 		  virtual void Set(const std::string& name, float value) = 0;
 		  virtual void Set(const std::string& name, bool value) = 0;

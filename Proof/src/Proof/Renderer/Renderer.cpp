@@ -10,6 +10,15 @@
 #include "Shader.h"
 #include "RenderMaterial.h"
 #include "Platform/Vulkan/VulkanTexutre.h"
+#include "FrameBuffer.h"
+#include "RenderPass.h"
+#include "GraphicsPipeLine.h"
+#include "VertexArray.h"
+#include "UniformBuffer.h"
+#include "MeshWorkShop.h"
+#include "Vertex.h"
+#include "Proof/Scene/Mesh.h"
+#include "Buffer.h"
 namespace Proof {
 	RendererAPI* Renderer::s_RendererAPI;
 	static std::vector<CommandQueue*> s_RenderCommandQueue;
@@ -135,106 +144,227 @@ namespace Proof {
 
 	std::pair<Count<class TextureCube>, Count<class TextureCube>> Renderer::CreateEnvironmentMap(const std::filesystem::path& path)
 	{
+		//Refrecnce
+		//https://github.com/Nadrin/PBR/blob/master/src/vulkan.cpp
+
 		Count<TextureCube> environmentMapImageCube;
 
-		const uint32_t imageSize = 256;
 		ImageFormat format = ImageFormat::RGBA16F;
 		{
+			const uint32_t imageSize = 1024;
 			TextureConfiguration baseCubeMapConfig;
 			baseCubeMapConfig.DebugName = Utils::FileDialogs::GetFileName(path)+ " Base CubeMap";
 			baseCubeMapConfig.Height = imageSize;
 			baseCubeMapConfig.Width = imageSize;
 			baseCubeMapConfig.Storage = true;
-			baseCubeMapConfig.GenerateMips = false;
+			baseCubeMapConfig.GenerateMips = true;
 			baseCubeMapConfig.Format = format;
 			baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
 
 			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig, path);
+			environmentMapImageCube.As<VulkanTextureCube>()->GenerateMips();
 		}
-		TextureConfiguration textureConfig;
-		textureConfig.DebugName = "Irradiance map "+ Utils::FileDialogs::GetFileName(path);
-		textureConfig.Height = imageSize;
-		textureConfig.Width = imageSize;
-		textureConfig.Storage = true;
-		textureConfig.Format = format;
-		textureConfig.Wrap = TextureWrap::ClampEdge;
-		textureConfig.GenerateMips = true;
-		
-		Count<TextureCube> irradianceMap = Count<VulkanTextureCube>::Create(textureConfig);
+		const uint32_t irradianceFilterRate = 32;
+		Count<TextureCube> irradianceMap; 
+		{
+			TextureConfiguration irradianceTextureConfig;
+			irradianceTextureConfig.DebugName = "Irradiance map " + Utils::FileDialogs::GetFileName(path);
+			irradianceTextureConfig.Width = irradianceFilterRate;
+			irradianceTextureConfig.Height = irradianceFilterRate;
+			irradianceTextureConfig.Storage = true;
+			irradianceTextureConfig.Format = format;
+			irradianceTextureConfig.Wrap = TextureWrap::ClampEdge;
+			irradianceTextureConfig.GenerateMips = true;
+			irradianceMap = Count<VulkanTextureCube>::Create(irradianceTextureConfig);
+		}
 		
 		{
-			//ComputePipelineConfig computePipelineConfig;
-			//computePipelineConfig.DebugName = "Irradiance Pipline";
-			//computePipelineConfig.Shader = Shader::Get("EnvironmentIrradiance");
-			//
-			//Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
-			//ComputePassConfiguration computePassConfig;
-			//computePassConfig.DebugName = "EnvironmentIrradiance Pass";
-			//computePassConfig.Pipeline = computePipeline;
-			//
-			//auto computePass = ComputePass::Create(computePassConfig);
-			//computePass->SetInput("inputTexture", environmentMapImageCube);
-			//computePass->SetInput("outputTexture", irradianceMap);
-			//Renderer::SubmitCommand([&](CommandBuffer* buffer) {
-			//
-			//	Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
-			//	Renderer::BeginComputePass(renderCommandBuffer, computePass);
-			//	computePass->Dispatch(imageSize / 32, imageSize / 32, 6);
-			//	Renderer::EndComputePass(computePass);
-			//
-			//});
-			//irradianceMap.As<VulkanTextureCube>()->GenerateMips();
+			/*
+			* The size of the irradiance map, usually a cubemap, is typically much smaller than the original environment map from which it is derived.
+			* Common sizes for irradiance maps are 32x32, 64x64, 128x128, or 256x256 pixels per face.
+			* Smaller sizes offer better performance but may result in lower quality, while larger sizes provide better quality but consume more memory and processing power.
+			*/
+			
+			ComputePipelineConfig computePipelineConfig;
+			computePipelineConfig.DebugName = "Irradiance Pipline";
+			computePipelineConfig.Shader = Shader::Get("EnvironmentIrradiance");
+			
+			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
+			ComputePassConfiguration computePassConfig;
+			computePassConfig.DebugName = "EnvironmentIrradiance Pass";
+			computePassConfig.Pipeline = computePipeline;
+			
+			auto computePass = ComputePass::Create(computePassConfig);
+			computePass->SetInput("inputTexture", environmentMapImageCube);
+			computePass->SetInput("outputTexture", irradianceMap);
+			Renderer::SubmitCommand([&](CommandBuffer* buffer) {
+			
+				Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
+				Renderer::BeginComputePass(renderCommandBuffer, computePass);
+				computePass->Dispatch(irradianceFilterRate / 32, irradianceFilterRate / 32, 6);
+				Renderer::EndComputePass(computePass);
+			
+			});
+			irradianceMap.As<VulkanTextureCube>()->GenerateMips();
 
 		}
-		textureConfig.DebugName = "Prefilter map " + Utils::FileDialogs::GetFileName(path);
-		Count<TextureCube> prefilterMap = Count<VulkanTextureCube>::Create(textureConfig);
+
+		{
+			//FrameBufferConfig frameConfig;
+			//frameConfig.DebugName = "Texture-CubeIrradiance";
+			//frameConfig.Size.X = irradianceFilterRate;
+			//frameConfig.Size.Y = irradianceFilterRate;
+			//frameConfig.Attachments = { format};
+			//frameConfig.Attachments.Attachments[0].ExistingImage = irradianceMap->GetImage();
+			//
+			//Count<FrameBuffer> frameBuffer = FrameBuffer::Create(frameConfig);
+			//
+			//GraphicsPipelineConfig pipelineConfig;
+			//pipelineConfig.DebugName = "generate cubemap create";
+			//pipelineConfig.Shader = Shader::Get("EnvironmentIrradianceNonCompute");
+			//
+			//pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
+			//pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
+			//pipelineConfig.TargetBuffer = frameBuffer;
+			//Count<GraphicsPipeline> renderPipeline = GraphicsPipeline::Create(pipelineConfig);
+			//
+			//RenderPassConfig renderPassConfig;
+			//renderPassConfig.DebugName = "Irradiance Map Non compute";
+			//renderPassConfig.MultiView = true;
+			//renderPassConfig.Pipeline = renderPipeline;
+			//renderPassConfig.Attachments = { format };
+			//Count<RenderPass> renderPass = RenderPass::Create(renderPassConfig);
+			//
+			//struct UboData {
+			//	/// Projection matrix common to each face of the cubemap.
+			//	alignas(16) glm::mat4 projection;
+			//
+			//	/// View matrix to look at the direction of each cubemap face.
+			//	alignas(16) glm::mat4 view[6];
+			//};
+			//UboData uboData = {
+			//glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f),
+			//	{
+			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f),  glm::vec3(0.0f, -1.0f,  0.0f)),
+			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+			//	}
+			//};
+			//
+			//Count<UniformBuffer> ubuffer = UniformBuffer::Create(&uboData, sizeof(UboData));
+			//auto cube = MeshWorkShop::GenerateCube();
+			//
+			//renderPass->SetInput("ProjView", ubuffer);
+			//renderPass->SetInput("u_EnvironmentMap", environmentMapImageCube);
+			//Renderer::SubmitCommand([&](CommandBuffer* buffer) {
+			//	Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(buffer);
+			//
+			//	Renderer::BeginRenderPass(renderCmd, renderPass);
+			//	cube->GetMeshSource()->GetVertexBuffer()->Bind(renderCmd);
+			//	cube->GetMeshSource()->GetIndexBuffer()->Bind(renderCmd);
+			//
+			//	for (const auto& subMesh : cube->GetMeshSource()->GetSubMeshes())
+			//	{
+			//		Renderer::DrawElementIndexed(renderCmd, subMesh.IndexCount, 1, subMesh.BaseIndex, subMesh.BaseVertex);
+			//	}
+			//
+			//	Renderer::EndRenderPass(renderPass);
+			//});
+			//irradianceMap.As<VulkanTextureCube>()->GenerateMips();
+		}
+		const uint32_t prefilterFilterRate = 1024;
+
+		Count<TextureCube> prefilterMap;
+		{
+			TextureConfiguration prefilterTextureConfig;
+			prefilterTextureConfig.DebugName = "Prefilter map" + Utils::FileDialogs::GetFileName(path);
+			prefilterTextureConfig.Width = prefilterFilterRate;
+			prefilterTextureConfig.Height = prefilterFilterRate;
+			prefilterTextureConfig.Storage = true;
+			prefilterTextureConfig.Format = format;
+			prefilterTextureConfig.Wrap = TextureWrap::ClampEdge;
+			prefilterTextureConfig.GenerateMips = true;
+
+			prefilterMap = Count<VulkanTextureCube>::Create(prefilterTextureConfig,path);
+
+		}
 	
 		{
-		
+			//https://github.com/Nadrin/PBR/blob/master/src/vulkan.cpp
+			/*
+			
+			Prefiltered maps have higher resolution than irradiance maps to capture finer details of specular reflections.
+			Common sizes for prefiltered environment maps range from 128x128 to 1024x1024 pixels per face for cubemaps.
+			Larger sizes can be used for better quality, but it comes at the cost of increased memory usage and longer precomputing times
+
+			*/
+			uint32_t maxMip = prefilterMap->GetMipLevelCount();
+			std::vector<Count<ImageView>> prefilterImageViews;
+			for (uint32_t mip = 1; mip < maxMip; mip++)
+			{
+				ImageViewConfiguration imageViewConfig;
+				imageViewConfig.DebugName = fmt::format("Prefilter View mip: {}", mip);
+				imageViewConfig.Layer = 0;
+				imageViewConfig.LayerCount = 6;
+				imageViewConfig.Mip = mip;
+				imageViewConfig.MipCount = 1;
+				imageViewConfig.Image = prefilterMap->GetImage();
+
+				Count<ImageView> view = ImageView::Create(imageViewConfig);
+				prefilterImageViews.push_back(view);
+			}
+
 			ComputePipelineConfig computePipelineConfig;
 			computePipelineConfig.DebugName = "Prefilter Pipline";
 			computePipelineConfig.Shader = Shader::Get("EnvironmentPrefilter");
-		
+			
 			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
 			ComputePassConfiguration computePassConfig;
 			computePassConfig.DebugName = "EnvironmentPrefilter Pass";
 			computePassConfig.Pipeline = computePipeline;
-		
+
+			Count<RenderMaterial> prefilterMaterial = RenderMaterial::Create(RenderMaterialConfiguration("PrefilterMap Material", Shader::Get("EnvironmentPrefilter")));
+			prefilterMaterial->Set("u_EnvironmentMap", environmentMapImageCube);
+			prefilterMaterial->Set("u_PrefilterMap", prefilterImageViews);
 			auto computePass = ComputePass::Create(computePassConfig);
-			computePass->SetInput("u_EnvironmentMap", environmentMapImageCube);
-			computePass->SetInput("u_PrefilterMap", prefilterMap);
-			uint32_t maxMip = prefilterMap->GetMipLevelCount();
+
 			Renderer::SubmitCommand([&](CommandBuffer* buffer) {
 				Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
+
 				Renderer::BeginRenderMaterialComputePass(renderCommandBuffer, computePass);
-				const float deltaRoughness = 1.f / glm::max((float)(maxMip - 1), 1.0f);
-		
-				for (uint32_t mip = 0, mipsize = imageSize; mip < maxMip; mip++, mipsize /=2)
+				const float deltaRoughness = 1.f / glm::max((float)(maxMip-1), 1.0f);
+
+				for (uint32_t mip = 1, mipsize = prefilterFilterRate/2; mip < maxMip; mip++, mipsize /=2)
 				{
 					uint32_t numGroups = glm::max(mipsize / 32, 1u); // Ensure numGroups is at least 1
 					float roughness = deltaRoughness * mip;
 					roughness = glm::max(roughness, 0.05f);
-					computePass->PushData("Input", &roughness);
+					prefilterMaterial->Set("Input.Level", mip-1);
+					prefilterMaterial->Set("Input.Roughness", roughness);
+
+					Renderer::ComputePassPushRenderMaterial(computePass, prefilterMaterial);
 					computePass->Dispatch(numGroups, numGroups, 6);
 				}
 				Renderer::EndComputePass(computePass);
 			});
-			prefilterMap.As<VulkanTextureCube>()->GenerateMips();
 		}
 		return std::make_pair(irradianceMap, prefilterMap);
 	}
 	Count<Texture2D> Renderer::GenerateBRDFLut()
 	{
-		const uint32_t imageSize = 1024;
+		const uint32_t imageSize = 512;
 		TextureConfiguration textureConfig;
 		textureConfig.DebugName = "BrdfLut";
 		textureConfig.Height = imageSize;
 		textureConfig.Width = imageSize;
 		textureConfig.Storage = true;
-		textureConfig.Format = ImageFormat::RGBA16F;
+		textureConfig.Format = ImageFormat::RG16F;
 		
 		// widht* height * bytes per pixel
-		uint8_t* data = new uint8_t[imageSize * imageSize * 8];
+		uint8_t* data = new uint8_t[imageSize * imageSize * Utils::BytesPerPixel(ImageFormat::RG16F)];
 		//memset(data, 0xFF000000, imageSize * imageSize * 8);
 		Count<Texture2D> brdfLut = Texture2D::Create(data,textureConfig);
 		
@@ -256,8 +386,8 @@ namespace Proof {
 		Renderer::SubmitCommand([&](CommandBuffer* buffer) {
 
 			Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
-			Renderer::BeginRenderMaterialComputePass(renderCommandBuffer, computePass);
-			computePass->Dispatch(imageSize/16 , imageSize/16 , 1);
+			Renderer::BeginComputePass(renderCommandBuffer, computePass);
+			computePass->Dispatch(imageSize/32 , imageSize/32 , 1);
 			Renderer::EndComputePass(computePass);
 
 		});

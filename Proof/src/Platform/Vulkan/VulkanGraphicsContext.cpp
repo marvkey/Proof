@@ -211,6 +211,10 @@ namespace Proof
 			queueCreateInfo.pQueuePriorities = &queuePriority;
 			queueCreateInfos.push_back(queueCreateInfo);
 		}
+		VkPhysicalDeviceMultiviewFeatures multiviewFeatures = {};
+		multiviewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+		multiviewFeatures.multiview = VK_TRUE; // Enable the multiview feature
+
 
 		VkPhysicalDeviceFeatures deviceFeatures = {};
 		deviceFeatures.samplerAnisotropy = VK_TRUE;
@@ -219,12 +223,10 @@ namespace Proof
 		VkDeviceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
-
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
-
 		createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(m_DeviceExtensions.size());
+		createInfo.enabledExtensionCount  = m_DeviceExtensions.size();
 		createInfo.ppEnabledExtensionNames = m_DeviceExtensions.data();
 		// might not really be necessary anymore because device specific validation layers
 		// have been deprecated
@@ -237,17 +239,43 @@ namespace Proof
 		}
 		//explains this
 		//https://www.reddit.com/r/vulkan/comments/or8e8u/comment/h6hdwyr/
-		//VkPhysicalDeviceVulkan11Features features;
-		//features.multiview = true;
-		//features.shaderDrawParameters = true;
-		//features.pNext = nullptr;
-		//createInfo.pNext = &features;
+		VkPhysicalDeviceVulkan11Features features;
+		features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+		features.pNext = nullptr;
+		features.storageBuffer16BitAccess = VK_FALSE;
+		features.uniformAndStorageBuffer16BitAccess = VK_FALSE;
+		features.storagePushConstant16 = VK_FALSE;
+		features.storageInputOutput16 = VK_FALSE;
+		features.multiview = VK_TRUE;
+		features.multiviewGeometryShader = VK_TRUE;
+		features.multiviewTessellationShader = VK_TRUE;
+		features.variablePointersStorageBuffer = VK_FALSE	;
+		features.variablePointers = VK_FALSE;
+		features.protectedMemory = VK_FALSE;
+		features.samplerYcbcrConversion = VK_FALSE;
+		features.shaderDrawParameters = VK_TRUE;
+
+		createInfo.pNext = &features;
+		//createInfo.pNext = nullptr;
 		
 		if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
 			PF_CORE_ASSERT(false, "failed to create logical device!");
 		}
 		vkGetDeviceQueue(m_Device, indices.graphicsAndComputeFamily.value(), 0, &m_GraphicsQueue);
 		vkGetDeviceQueue(m_Device, indices.presentFamily.value(), 0, &m_PresentQueue);
+
+		uint32_t deviceExtenison = 0;
+		vkEnumerateDeviceExtensionProperties(m_PhysicalDevice,nullptr, &deviceExtenison, nullptr);
+		std::vector<VkExtensionProperties> deviceExtensionsList(deviceExtenison);
+		vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &deviceExtenison, deviceExtensionsList.data());
+
+		PF_ENGINE_TRACE("avalaible Device extensions:");
+		std::unordered_set<std::string> availableDeviceExtension;
+		for (const auto& extension : deviceExtensionsList)
+		{
+			PF_ENGINE_TRACE("\t {}", extension.extensionName);
+			availableDeviceExtension.insert(extension.extensionName);
+		}
 	}
 
 	void VulkanGraphicsContext::CreateCommandPool()
@@ -383,6 +411,8 @@ namespace Proof
 		if (enableValidationLayers) {
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
+		for (auto extensina : m_InstanceExtension)
+			extensions.push_back(extensina);
 
 		return extensions;
 	}
@@ -393,7 +423,9 @@ namespace Proof
 		std::vector<VkExtensionProperties> extensions(extensionCount);
 		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-		PF_ENGINE_TRACE("avalaible extensions:");
+		
+
+		PF_ENGINE_TRACE("avalaible Instance extensions:");
 		std::unordered_set<std::string> available;
 		for (const auto& extension : extensions) {
 			PF_ENGINE_TRACE("\t {}", extension.extensionName);
@@ -408,7 +440,7 @@ namespace Proof
 				PF_CORE_ASSERT(false, "Missing required glfw extension");
 			}
 		}
-	}
+ 	}
 
 	bool VulkanGraphicsContext::CheckDeviceExtensionSupport(VkPhysicalDevice device) {
 		uint32_t extensionCount;

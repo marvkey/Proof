@@ -1,10 +1,5 @@
 #pragma once
-#include <unordered_map>
-#include <vector>
-#include "Proof/Scene/Component.h"
-#include "Proof/Core/Core.h"
-#include "Proof/Core/Log.h"
-#include "Proof/Core/UUID.h"
+
 /*
 namespace Proof{
 	class MeshComponent;

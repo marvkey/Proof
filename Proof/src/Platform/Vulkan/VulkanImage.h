@@ -21,7 +21,7 @@ namespace Proof
 		VkImageView ImageView = nullptr;
 		VkSampler Sampler = nullptr;
 	};
-
+	
 	class VulkanImage2D : public Image2D
 	{
 	public:
@@ -95,10 +95,16 @@ namespace Proof
 	class VulkanImageView : public ImageView {
 	public:
 		VulkanImageView(const ImageViewConfiguration& spec);
+		~VulkanImageView();
+		const VkDescriptorImageInfo& GetDescriptorInfoVulkan()const { return *(VkDescriptorImageInfo*)GetResourceDescriptorInfo(); };
+		virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const { return (ResourceDescriptorInfo)&m_DescriptorImageInfo; }
+		void UpdateDescriptor();
+		virtual const ImageViewConfiguration& GetSpecification()const { return m_Specification; }
+		virtual Count<Image2D> GetImage()const { return m_Specification.Image; };
 	private:
+		VulkanImageInfo m_Info;
 		void Init();
 		void Release();
-		void UpdataDescriptor();
 		ImageViewConfiguration m_Specification;
 		VkImageView m_ImageView;
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};

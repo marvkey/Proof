@@ -165,7 +165,7 @@ namespace Proof
 	class Image : public RendererViewResource
 	{
 	public:
-		virtual ~Image()=default;
+		virtual ~Image() = default;
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void Resize(Vector2U size) = 0;
 
@@ -175,7 +175,7 @@ namespace Proof
 		virtual const ImageConfiguration& GetSpecification()const = 0;
 		virtual uint32_t GetWidth() = 0;
 		virtual uint32_t GetHeight() = 0;
-		
+
 	};
 	class Image2D : public Image {
 	public:
@@ -185,15 +185,22 @@ namespace Proof
 
 	struct ImageViewConfiguration
 	{
-		Count<Image2D> Image;
-		uint32_t Mip = 0;
-		uint32_t Layer = 0;
 		std::string DebugName;
+		Count<Image2D> Image;
+
+		uint32_t Layer = 0;
+		uint32_t Mip = 0;
+
+		uint32_t LayerCount = 1;
+		uint32_t MipCount = 1;
 	};
-	class ImageView : public RefCounted{
+	class ImageView : public RendererViewResource {
 	public:
 		virtual ~ImageView() = default;
 		static Count<ImageView>Create(const ImageViewConfiguration& specification);
+		virtual const ImageViewConfiguration& GetSpecification()const = 0;
+		virtual Count<Image2D> GetImage()const = 0;
+
 	};
 
 	// basiclly for framebuffers and swapchain which store 3 iamges

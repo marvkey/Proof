@@ -10,7 +10,6 @@
 #include "Proof/Scene//Camera/OrthagraphicCamera.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
 // scene
-#include "Proof/Scene/Component.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Script.h"
 #include "Proof/Scene//World.h"

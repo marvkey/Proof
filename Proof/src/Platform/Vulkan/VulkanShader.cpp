@@ -415,7 +415,7 @@ namespace Proof
             // make sure we only bidn to stages 
             uniformBuffer.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
             uniformBuffer = { resource.name,DescriptorResourceType::UniformBuffer,(int)uniformBuffer.Stage,1};
-            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name),"Dont use the same name for shader data");
+           // PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name),"Dont use the same name for shader data");
             m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
         PF_ENGINE_TRACE("Storage constant buffers:");

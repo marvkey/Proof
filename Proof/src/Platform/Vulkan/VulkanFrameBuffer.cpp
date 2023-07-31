@@ -295,143 +295,8 @@ namespace Proof
         }
         m_ColorImages.emplace_back(colorImage);
 
-        /*
-        for (int i = 0; i < imageCount; i++)
-        {
-           
-            if (imageAttach.GetImagelayout().HasImages())
-            {
-                if (imageAttach.GetImagelayout().Images.size() >= i)
-                {
-                    VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImagelayout().Images[i];
-                    image.Images[i].Image = vkImage.GetImage();
-                }
-                else
-                {
-                    VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImagelayout().Images.back();
-                    image.Images[i].Image = vkImage.GetImage();
-                }
-                continue;
-            }
-            if (imageAttach.GetImage().HasImage())
-            {
-                VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImage();
-                image.Images[i].Image = vkImage.GetImage();
-                image.ImageSampler[i] = vkImage.GetImageSampler();
-                continue;
-            }
-            if (image.Images[i].Image != nullptr)
-                continue;
-            VkImageCreateInfo info = {};
-            info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            info.imageType = VK_IMAGE_TYPE_2D;
-            info.format = imageFormat;
-            info.extent.width = m_Config.Size.X;
-            info.extent.height = m_Config.Size.Y;
-            info.extent.depth = 1;
-            info.mipLevels = 1;
-            info.arrayLayers = 1;
-            info.samples = VK_SAMPLE_COUNT_1_BIT;
-            info.tiling = VK_IMAGE_TILING_OPTIMAL;
-            info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-            info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-                VmaAllocationCreateInfo vmaallocInfo = {};
-                vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-                graphicsContext->CreateVmaImage(info, vmaallocInfo, image.Images[i]);
-            });
-
-            Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-                VkImageMemoryBarrier imageMemoryBarrier{};
-                imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-                imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-                imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageMemoryBarrier.image = image.Images[i].Image;
-                imageMemoryBarrier.subresourceRange = VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
-                vkCmdPipelineBarrier(
-                    cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
-                    VK_PIPELINE_STAGE_TRANSFER_BIT,
-                    VK_PIPELINE_STAGE_TRANSFER_BIT,
-                    0,
-                    0, nullptr,
-                    0, nullptr,
-                    1, &imageMemoryBarrier);
-
-            });
-        }
-        for (size_t i = 0; i < image.ImageViews.size(); i++)
-        {
-            if (imageAttach.GetImagelayout().HasImages())
-            {
-                if (imageAttach.GetImagelayout().Images.size() >= i)
-                {
-                    VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImagelayout().Images[i];
-                    image.ImageViews[i] = vkImage.GetImageView();
-                    image.ImageSampler[i] = vkImage.GetImageSampler();
-                }
-                else
-                {
-                    VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImagelayout().Images.back();
-                    image.ImageViews[i] = vkImage.GetImageView();
-                    image.ImageSampler[i] = vkImage.GetImageSampler();
-                }
-                continue;
-            }
-            if (imageAttach.GetImage().HasImage())
-            {
-                VulkanImage& vkImage = (VulkanImage&)imageAttach.GetImage();
-                image.ImageViews[i] = vkImage.GetImageView();
-                image.ImageSampler[i] = vkImage.GetImageSampler();
-                continue;
-            }
-            VkImageViewCreateInfo viewInfo{};
-            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.image = image.Images[i].Image;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = imageFormat;
-            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            viewInfo.subresourceRange.baseMipLevel = 0;
-            viewInfo.subresourceRange.levelCount = 1;
-            viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
-
-            if (vkCreateImageView(VulkanRenderer::GetGraphicsContext()->GetDevice(), &viewInfo, nullptr, &image.ImageViews[i]) !=
-                VK_SUCCESS)
-            {
-                PF_CORE_ASSERT(false, "failed to create texture image view!");
-            }
-        }
-
-        for (size_t i = 0; i < image.ImageSampler.size(); i++)
-        {
-            if (image.ImageSampler[i] != nullptr)
-                continue;
-            VkSamplerCreateInfo info = {};
-            info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-            info.magFilter = VK_FILTER_LINEAR;
-            info.minFilter = VK_FILTER_LINEAR;
-            info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-            info.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-            info.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-            info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-            info.minLod = -1000;
-            info.maxLod = 1000;
-            info.maxAnisotropy = 1.0f;
-            if (vkCreateSampler(graphicsContext->GetDevice(), &info, nullptr, &image.ImageSampler[i]) !=
-                VK_SUCCESS)
-            {
-                PF_CORE_ASSERT(false, "failed to create texture image sampler");
-            }
-
-        }
-        */
+        
+   
     }
     void VulkanFrameBuffer::CreateFramebuffer()
     {
@@ -442,7 +307,19 @@ namespace Proof
         auto swapchain = graphicsContext->GetSwapChain();
 
         m_Framebuffers.resize(swapchain->GetImageCount());
-        VulkanRenderPass renderPass(RenderPassConfig("compatible renderPass", m_Config));
+        bool multiView = false;
+
+        // for texturecube
+        if (m_ColorImages.size() > 0)
+        {
+            if (m_ColorImages[0].RefImages[0]->GetSpecification().Layers == 6)
+                multiView = true;
+        }
+        RenderPassConfig renderPassCofnig("compatible renderPass",m_Config);
+        renderPassCofnig.DebugName = "compatible renderPass";
+        renderPassCofnig.Pipeline = nullptr;
+        renderPassCofnig.MultiView = multiView;
+        VulkanRenderPass renderPass(renderPassCofnig);
         
         for (size_t i = 0; i < swapchain->GetImageCount(); i++)
         {
@@ -451,14 +328,14 @@ namespace Proof
 
             for (auto& coloredImage : m_ColorImages)
             {
-                attachments.emplace_back(coloredImage.RefImages[i].As<VulkanImage2D>()->Getinfo().ImageView);
+                attachments.emplace_back(coloredImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageView);
             }
             // has depth
             if (m_DepthFormat != ImageFormat::None)
             {
-                attachments.emplace_back(m_DepthImage.RefImages[i].As<VulkanImage2D>()->Getinfo().ImageView);
+                attachments.emplace_back(m_DepthImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageView);
             }
-
+            
             
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

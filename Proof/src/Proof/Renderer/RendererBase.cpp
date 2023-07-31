@@ -37,6 +37,7 @@ namespace Proof {
 		AllShaders->LoadShader("EquirectangularToCubemap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EquirectangularToCubemap.glsl");
 		AllShaders->LoadShader("SkyBox", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/SkyBox.glsl");
 		AllShaders->LoadShader("EnvironmentIrradiance", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradiance.glsl");
+		AllShaders->LoadShader("EnvironmentIrradianceNonCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradianceNonCompute.glsl");
 		AllShaders->LoadShader("EnvironmentPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentPrefilter.glsl");
 
 		s_BaseTextures = new  BaseTextures();
@@ -63,7 +64,7 @@ namespace Proof {
 
 
 		TextureConfiguration cubeTextureConfig;
-		cubeTextureConfig.GenerateMips = false;
+		cubeTextureConfig.GenerateMips = true;
 		cubeTextureConfig.Height = 1024;
 		cubeTextureConfig.Width = 1024;
 		cubeTextureConfig.Storage = true;

@@ -146,4 +146,17 @@ namespace Proof
 		return GlmVecToProof( up);
 		
 	}
+	void SkyLightComponent::RemoveImage()
+	{
+		Image = 0;
+		Environment = nullptr;
+	}
+	void SkyLightComponent::LoadMap(const std::filesystem::path& path)
+	{
+		auto[irradiance, prefilter] = Renderer::CreateEnvironmentMap(path);
+
+		Environment = Count<class Environment>::Create(irradiance, prefilter);
+
+		Image = AssetManager::GetAssetInfo(path).ID;
+	}
 }

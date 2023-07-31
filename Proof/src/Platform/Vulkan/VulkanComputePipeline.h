@@ -19,6 +19,7 @@ namespace Proof
 		void BuildPipeline();
 		VkPipelineLayout m_PipeLineLayout = nullptr;
 		VkPipeline m_ComputePipeline;
+		VkPipelineCache m_PipelineCache = NULL;
 		ComputePipelineConfig m_Config;
 		void Release();
 	};

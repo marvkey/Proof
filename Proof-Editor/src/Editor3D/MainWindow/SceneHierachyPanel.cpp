@@ -173,6 +173,11 @@ namespace Proof
 				newEntity = m_CurrentWorld->CreateEntity("Directional Light");
 				newEntity.AddComponent<DirectionalLightComponent>();
 			}
+			if (ImGui::MenuItem("SKyLight"))
+			{
+				newEntity = m_CurrentWorld->CreateEntity("Sky Light");
+				newEntity.AddComponent<SkyLightComponent>();
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::MenuItem("Mesh")) {
@@ -326,6 +331,8 @@ namespace Proof
 			AddComponentGui<MeshComponent>(entity, "Mesh");
 			AddComponentGui<SpriteComponent>(entity, "Sprite");
 			AddComponentGui<NativeScriptComponent>(entity, "Native Script");
+
+			AddComponentGui<SkyLightComponent>(entity, "Sky Light");
 			AddComponentGui<DirectionalLightComponent>(entity, "Directional Light");
 			AddComponentGui<PointLightComponent>(entity, "Point Light");
 			AddComponentGui<SpotLightComponent>(entity, "Spot Light");
@@ -455,13 +462,56 @@ namespace Proof
 				}
 				ImGui::EndDragDropTarget();
 			}
-
+			ImGui::SameLine();
 			ImGui::ColorEdit4("##Colour", glm::value_ptr(spriteComp.Colour));
 		});
 		DrawComponents<NativeScriptComponent>("Native Script", entity, [](NativeScriptComponent& NativeScriptComp) {
 			ExternalAPI::ImGUIAPI::TextBar("Sript", NativeScriptComp.GetScriptName());
 		});
-		
+		DrawComponents<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& skylight) {
+			bool hasImage = false;
+			if (AssetManager::HasAsset(skylight.Image) && skylight.Environment != nullptr)
+				hasImage = true;
+
+			if (hasImage)
+			{
+				ExternalAPI::ImGUIAPI::TextBar("HDR Map", AssetManager::GetAssetInfo(skylight.Image).GetName());
+			}
+			else
+				ExternalAPI::ImGUIAPI::TextBar("HDR Map");
+			if (ImGui::BeginPopupContextItem("Remove HDR"))
+			{
+				ImGui::EndPopup();
+			}
+			if (ImGui::BeginPopup("Remove HDR"))
+			{
+				if (ImGui::MenuItem("Remove HDR"))
+				{
+					skylight.RemoveImage();
+				}
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+				{
+					uint64_t Data = *(const uint64_t*)payload->Data;
+					if (AssetManager::HasAsset(Data))
+					{
+						skylight.LoadMap(AssetManager::GetAsset<Texture2D>(Data)->GetPath());
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+			if (!hasImage)
+				return;
+			ImGui::SliderFloat("SkyBoxLoad", &skylight.SkyBoxLoad, 0, skylight.Environment->PrefilterMap->GetMipLevelCount());
+			ImGui::DragFloat("Exposure", &skylight.Exposure,0.25,0,500,"%.3f",ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("Rotation", &skylight.MapRotation,0.25);
+			ImGui::ColorEdit3("TintColor", skylight.ColorTint.GetValue_Ptr());
+			//ImGui::DragFloat("Intensity", &drl.Intensity, 0.01, 0.0f, 100);
+		});
 		DrawComponents<DirectionalLightComponent>("Directonal Light", entity, [](DirectionalLightComponent& drl) {
 			ImGui::ColorEdit3("Ambient", drl.Color.GetValue_Ptr());
 			ImGui::DragFloat("Intensity", &drl.Intensity, 0.01, 0.0f, 100);

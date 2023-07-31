@@ -41,7 +41,7 @@ void main() {
 //https://learnopengl.com/code_viewer_gh.php?code=src/6.pbr/2.2.2.ibl_specular_textured/2.2.2.pbr.fs
 //https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
 //https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
-
+//https://github.com/Angelo1211/HybridRenderingEngine/blob/master/assets/shaders/PBRClusteredShader.frag
 layout(location = 0) out vec4 out_FragColor;
 
 layout(set = 0, binding = 5) uniform sampler2D u_AlbedoMap;
@@ -49,9 +49,9 @@ layout(set = 0, binding = 6) uniform sampler2D u_NormalMap;
 layout(set = 0, binding = 7) uniform sampler2D u_MetallicMap;
 layout(set = 0, binding = 8) uniform sampler2D u_RoughnessMap;
 
-layout(set = 1, binding = 2) uniform samplerCube u_IrradianceMap;
-layout(set = 1, binding = 3) uniform samplerCube u_PrefilterMap;
-layout(set = 1, binding = 4) uniform sampler2D u_BRDFLUT;
+layout(set = 2, binding = 2) uniform samplerCube u_IrradianceMap;
+layout(set = 2, binding = 3) uniform samplerCube u_PrefilterMap;
+layout(set = 2, binding = 4) uniform sampler2D u_BRDFLUT;
 
 layout(location = 0) in Vertex
 {
@@ -72,6 +72,13 @@ layout(std140, set = 1, binding = 1) buffer DirectionalLightStorageBuffer {
 
     DirectionalLight Lights[];
 } DirectionalLightData;
+layout(set = 3, binding = 1) uniform SkyBoxData
+{
+    vec3 TintColor;
+    float Lod;
+    float Exposure;
+    float Roation;
+}u_SkyBoxInfo;
 const float PI = 3.1415926535897932384626433832795f;
 const float Epsilon = 0.00001;
 layout(push_constant) uniform Material
@@ -92,6 +99,7 @@ vec3 CalculateNormal()
 {
     if (u_MaterialUniform.NormalTexToggle == false)
         return normalize(Fs_in.Normal);
+    return normalize(Fs_in.Normal);
     vec3 tangentNormal = texture(u_NormalMap, Fs_in.TexCoords).xyz*2.0 -1.0f;
     vec3 Q1 = dFdx(Fs_in.WorldPos);
     vec3 Q2 = dFdy(Fs_in.WorldPos);
@@ -105,48 +113,45 @@ vec3 CalculateNormal()
 
     return normalize(TBN * tangentNormal);
 }
-vec3 FresnelSchlick(float cos_theta, vec3 F0)
+vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
-    return F0 + (1.0 - F0) * pow(max(1.0 - cos_theta, 0.0), 5.0);
+        float val = 1.0 - cosTheta;
+    return F0 + (1.0 - F0) * (val*val*val*val*val); //Faster than pow
 }
 
 vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
+    float val = 1.0 - cosTheta;
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * (val*val*val*val*val); //Faster than pow
 }
 
-float DistributionGGX(vec3 n, vec3 h, float roughness)
-{
-    float a = roughness * roughness;
+float DistributionGGX(vec3 N, vec3 H, float rough){
+    float a  = rough * rough;
     float a2 = a * a;
-    float NdotH = max(dot(n, h), 0.0);
-    float NdotH2 = NdotH * NdotH;
 
-    float num = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = PI * denom * denom;
+    float nDotH  = max(dot(N, H), 0.0);
+    float nDotH2 = nDotH * nDotH;
 
-    return num / max(denom, 1e-5);
+    float num = a2; 
+    float denom = (nDotH2 * (a2 - 1.0) + 1.0);
+    denom = 1 / (PI * denom * denom);
+
+    return num * denom;
 }
 
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
+float GeometrySchlickGGX(float nDotV, float rough){
+    float r = (rough + 1.0);
+    float k = r*r / 8.0;
 
-    float num = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
+    float num = nDotV;
+    float denom = 1 / (nDotV * (1.0 - k) + k);
 
-    return num / max(denom, 1e-5);
+    return num * denom;
 }
 
-float GeometrySmith(vec3 n, vec3 wo, vec3 wi, float roughness)
-{
-    float NdotV = max(dot(n, wo), 0.0);
-    float NdotL = max(dot(n, wi), 0.0);
-
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+float GeometrySmith(float nDotV, float nDotL, float rough){
+    float ggx2  = GeometrySchlickGGX(nDotV, rough);
+    float ggx1  = GeometrySchlickGGX(nDotL, rough);
 
     return ggx1 * ggx2;
 }
@@ -162,38 +167,38 @@ void main()
 
     vec3 view = normalize(Fs_in.CameraPosition - Fs_in.WorldPos);
     vec3 reflection = reflect(-view, normal);
-    vec3 F0 = mix(Fidelectric, albedo, metallic);
+    const vec3 F0 = mix(Fidelectric, albedo, metallic);
     
     // Angle between surface normal and outgoing view Direction.
 	float cosView = max(0.0, dot(normal, view));
 
+    vec3 Lr = 2.0 * cosView * normal - view;
     int numDirectionalLights = DirectionalLightData.Lights.length();
     vec3 directLighting = vec3(0);
     for (int i = 0; i < 1; i++)
     {
-        //https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
+        //https://github.com/Angelo1211/HybridRenderingEngine/blob/master/assets/shaders/PBRClusteredShader.frag
         DirectionalLight currentLight= DirectionalLightData.Lights[i];
-        vec3 wi= normalize(currentLight.Direction);
-        vec3 halfwayVector = normalize(view + wi);
+        vec3 lightDirection = normalize(currentLight.Direction);
+        vec3 halfway = normalize(view + lightDirection);
+        float nDotV = max(dot(normal, view), 0.0);
+        float nDotL = max(dot(normal, lightDirection), 0.0);
         vec3 radiance = currentLight.Color * currentLight.Intensity;
+        
+        float NDF = DistributionGGX(normal, halfway, roughness);
+        float G   = GeometrySmith(nDotV, nDotL, roughness);
+        vec3  F   = FresnelSchlick(max(dot(halfway,view), 0.0), F0);
 
-      
-        vec3 F  = FresnelSchlick(max(dot(halfwayVector, view), 0.0), F0);
+        vec3 kS = F;
+        vec3 kD = vec3(1.0) - kS;
+        kD *= 1.0 - metallic;
 
-      // cook-torrance brdf
-        float NDF = DistributionGGX(normal, halfwayVector, roughness);
-        float G   = GeometrySmith(normal, view, wi, roughness);
+        vec3 numerator = NDF * G * F;
+        float denominator = 4.0 * nDotV * nDotL;
+        vec3 specular = numerator / max (denominator, 0.0001);
 
-        float NdotL    = max(dot(normal, wi), 0.0);
-        vec3  num      = NDF * G * F;
-        float denom    = 4.0 * cosView * NdotL;
-        vec3  specular = num / max(denom, 0.00001); // avoid dividing by zero
-
-     
-
-        vec3 kd = (1.0 - F) * (1.0 - metallic);
-
-       directLighting += (kd * albedo / PI + specular) * radiance * NdotL;
+        vec3 lightEffect = (kD * (albedo / PI) + specular ) * radiance * nDotL;
+        directLighting +=lightEffect;
     }
     
     vec3 iblEfeect = vec3(0);
@@ -203,24 +208,23 @@ void main()
         //https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
 
         // fresnel reflectance
-       
         vec3 F= FresnelSchlickRoughness(cosView, F0, roughness);
-        vec3 kd = (1.0 - F) * (1.0 - metallic);
+        vec3 irradiance = texture(u_IrradianceMap, normal).rgb * albedo ;
+        vec3 kd = (1 - F) * (1.0 - metallic);
+
+        vec3 diffuseIBL = kd * albedo * irradiance;
 
         int specularTextureLevels = textureQueryLevels(u_PrefilterMap);
-		vec3 prefilteredColor = texture(u_PrefilterMap, reflection * specularTextureLevels).rgb;
-        vec2 envBRDF  = texture(u_BRDFLUT, vec2(cosView, roughness)).rg;
-		vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
-        
-        vec3 diffuse = texture(u_IrradianceMap, normal).rgb * albedo;
+		vec3 specularIrradiance = textureLod(u_PrefilterMap, Lr,specularTextureLevels * roughness).rgb;
 
-        float emmision = 0.0f;
-        float ao= 1.0f;
-        iblEfeect =  (kd * diffuse + specular) * ao + emmision;
-        //iblEfeect*= vec3(0.025); // maybe for effect
+        vec2 specularBRDF  = texture(u_BRDFLUT, vec2(cosView, roughness)).rg;
+		vec3 specularIBL = specularIrradiance * (F0* specularBRDF.x + specularBRDF.y) ; 
+
+        iblEfeect = specularIBL + diffuseIBL;
+        //iblEfeect = texture(u_BRDFLUT, Fs_in.TexCoords).rgb;
     }
     
-    vec3 finalColor = iblEfeect + directLighting;
+    vec3 finalColor = directLighting + iblEfeect ;
 
     // HDR tonemapping
     finalColor = finalColor / (finalColor + vec3(1.0));

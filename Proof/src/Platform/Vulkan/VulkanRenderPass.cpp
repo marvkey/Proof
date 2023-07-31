@@ -126,6 +126,7 @@ namespace Proof
         }
 
         VkSubpassDescription subpass;
+
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
         VkSubpassDependency dependency = {};
@@ -163,7 +164,7 @@ namespace Proof
         subpass.preserveAttachmentCount = 0;
         subpass.pResolveAttachments = 0;
         subpass.flags = 0;
-        // create render pass
+      // create render pass
         VkRenderPassCreateInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderPassInfo.attachmentCount = attachmentDescriptions.size();
@@ -182,12 +183,15 @@ namespace Proof
         */
         // default broadcast to all layers
         //https://anishbhobe.site/post/vulkan-render-to-cubemap-using-multiview/#3-attaching-the-cubemap-to-the-framebuffer
+        //const uint32_t viewMask = 0b11111111;
+        //const uint32_t viewMask = 0b111111;
         const uint32_t viewMask = 0b11111111;
         //const uint32_t viewMask = 0;
-        /*
-            Bit mask that specifies correlation between views
-            An implementation may use this for optimizations (concurrent render)
-        */
+
+            /*
+                Bit mask that specifies correlation between views
+                An implementation may use this for optimizations (concurrent render)
+            */
         const uint32_t correlationMask = 0;
 
         VkRenderPassMultiviewCreateInfo renderPassMultiviewCI{};
@@ -198,11 +202,12 @@ namespace Proof
         renderPassMultiviewCI.pCorrelationMasks = nullptr;
         renderPassMultiviewCI.pNext = nullptr;
         renderPassMultiviewCI.pViewOffsets = NULL;
+        renderPassMultiviewCI.dependencyCount = 0;
         if (m_Config.MultiView)
         {
             renderPassInfo.pNext = &renderPassMultiviewCI;
         }
-        if (vkCreateRenderPass(VulkanRenderer::GetGraphicsContext()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS)
+        if (vkCreateRenderPass(Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice(), &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS)
         {
             PF_CORE_ASSERT(false, "failed to create render pass!");
         }
@@ -545,6 +550,22 @@ namespace Proof
     void VulkanRenderPass::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
     {
         m_DescritptorSetManager->SetInput(name, buffer);
+    }
+    void VulkanRenderPass::SetInput(std::string_view name, Count<class ImageView> imageView)
+    {
+        m_DescritptorSetManager->SetInput(name, imageView);
+    }
+    void VulkanRenderPass::SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews)
+    {
+        m_DescritptorSetManager->SetInput(name, imageViews);
+    }
+    void VulkanRenderPass::SetInput(std::string_view name, Count<class Image2D>image)
+    {
+        m_DescritptorSetManager->SetInput(name, image);
+    }
+    void VulkanRenderPass::SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images)
+    {
+        m_DescritptorSetManager->SetInput(name, images);
     }
     void VulkanRenderPass::PushData(std::string_view name, const void* data)
     {

@@ -103,9 +103,11 @@ namespace Proof {
 		imageCreateInfo.extent.depth = 1;
 		imageCreateInfo.mipLevels = m_Specification.Mips;
 		imageCreateInfo.arrayLayers = m_Specification.Layers;
+		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageCreateInfo.tiling = m_Specification.Usage == ImageUsage::HostRead ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
 		imageCreateInfo.usage = usage;
+		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 		VmaAllocationCreateInfo vmaallocInfo = {};
 		vmaallocInfo.usage = memoryUsage;
@@ -160,7 +162,7 @@ namespace Proof {
 		}
 		//vkCreateSampler(graphicsContext->GetDevice(), &samplerCreateInfo, nullptr, &m_Info.Sampler);
 	//	Utils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_SAMPLER, std::format("{} Sampler", m_Specification.DebugName), m_Info.Sampler);
-
+	
 		if (m_Specification.Usage == ImageUsage::Storage)
 		{
 			Renderer::SubmitCommand([&](CommandBuffer* cmd)
@@ -354,6 +356,11 @@ namespace Proof {
 		Init();
 	}
 
+	VulkanImageView::~VulkanImageView()
+	{
+		Release();
+	}
+
 	void VulkanImageView::Init()
 	{   
 		Count<VulkanImage2D> image = m_Specification.Image.As<VulkanImage2D>();
@@ -365,20 +372,21 @@ namespace Proof {
 
 		VkImageViewCreateInfo imageViewCreateInfo = {};
 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		//imageViewCreateInfo.viewType = image->GetSpecification().Layers > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
+		//tempory for prefilter map
+		imageViewCreateInfo.viewType = m_Specification.LayerCount == 6 ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
 		imageViewCreateInfo.format = vulkanFormat;
 		imageViewCreateInfo.subresourceRange = {};
 		imageViewCreateInfo.subresourceRange.aspectMask = aspectMask;
 		imageViewCreateInfo.subresourceRange.baseMipLevel = m_Specification.Mip;
-		imageViewCreateInfo.subresourceRange.levelCount = image->GetSpecification().Mips;
+		imageViewCreateInfo.subresourceRange.levelCount = m_Specification.MipCount;
 		imageViewCreateInfo.subresourceRange.baseArrayLayer = m_Specification.Layer;
-		imageViewCreateInfo.subresourceRange.layerCount = 1;
+		imageViewCreateInfo.subresourceRange.layerCount = m_Specification.LayerCount;
 		imageViewCreateInfo.image = image->Getinfo().ImageAlloc.Image;
 		vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_ImageView);
 
-		VulkanRenderer::GetGraphicsContext()->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View Layer {} MIp", image->GetSpecification().DebugName, m_Specification.Layer,m_Specification.Mip), m_ImageView);
-		UpdataDescriptor();
+		VulkanRenderer::GetGraphicsContext()->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View Layer:{} LayerCount:{} Mip:{} MipCount:{}", image->GetSpecification().DebugName, 
+			m_Specification.Layer, m_Specification.LayerCount, m_Specification.Mip, m_Specification.MipCount), m_ImageView);
+		UpdateDescriptor();
 	}
 	void VulkanImageView::Release()
 	{
@@ -391,7 +399,7 @@ namespace Proof {
 		});
 		m_ImageView = nullptr;
 	}
-	void VulkanImageView::UpdataDescriptor()
+	void VulkanImageView::UpdateDescriptor()
 	{
 		auto textureSpec = m_Specification.Image->GetSpecification();
 		if (Utils::IsDepthFormat(textureSpec.Format))

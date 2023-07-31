@@ -76,6 +76,14 @@ namespace Proof
 		Vector Direction;
 	};
 	
+	struct SkyLight 
+	{
+		Vector TintColor = { 1 };
+		float Lod = 0;
+		float Exposure = 1;
+		float Rotation = 0;
+
+	};
 	struct LightScene
 	{
 		std::vector<DirectionalLight> DirectionalLights;
@@ -145,7 +153,7 @@ namespace Proof
 		std::map<MeshKey, MeshDrawInfo> m_MeshDrawList;
 		MeshRenderPipline m_MeshPipeline;
 		Count<class Environment> m_Environment;
-
+		Count<UniformBuffer> m_SkyBoxUniformInfo;
 		void Reset();
 	};	
 }

@@ -130,8 +130,9 @@ namespace Proof
 
 		m_Config = config;
 		PF_CORE_ASSERT(m_Config.TargetBuffer);
-		RenderPassConfig redfdfdasfaConfig("Graphics pipline compatibility renderPass",m_Config.TargetBuffer);
-
+		RenderPassConfig redfdfdasfaConfig ("Graphics pipline compatibility renderPass", m_Config.TargetBuffer);
+		if(config.Shader != NULL && config.Shader->GetName() == "EnvironmentIrradianceNonCompute")
+			redfdfdasfaConfig.MultiView = true;
 		CreatePipelineLayout();
 		PipelineConfigInfo pipelineConfig;
 		DefaultPipelineConfigInfo(pipelineConfig, config);
@@ -194,7 +195,7 @@ namespace Proof
 		// can be used for performance increase
 		pipelineInfo.basePipelineIndex = -1;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
+		
 		if (vkCreateGraphicsPipelines((VulkanRenderer::GetGraphicsContext()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to Create Graphics Pipeline");
 

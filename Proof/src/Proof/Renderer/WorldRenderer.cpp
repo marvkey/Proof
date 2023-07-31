@@ -51,7 +51,6 @@ namespace Proof
 	Count<RenderPass> skyBoxPass;
 	Count<Mesh> Cube; 
 	Count< UniformBuffer> cameraBuffer;
-	Count<Environment> environment;
 	//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 	WorldRenderer::~WorldRenderer() {
 		textureCubeMap = nullptr;
@@ -70,6 +69,8 @@ namespace Proof
 		m_World(world)
 	{
 		cameraBuffer = UniformBuffer::Create(sizeof(CameraData));
+		m_SkyBoxUniformInfo = UniformBuffer::Create(sizeof(SkyLight));
+
 		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
 
 		//if(Application::Get()->GetConfig().EnableImgui == false)
@@ -88,6 +89,9 @@ namespace Proof
 
 		m_CommandBuffer = RenderCommandBuffer::Create();
 		m_Renderer2D = CreateSpecial< Renderer2D>(m_ScreenFrameBuffer);
+
+		//auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap("Assets/Arches_E_PineTree_3k.hdr");
+		//m_Environment = Count<Environment>::Create(irradiance, prefilter);
 		// init mesh
 		{
 
@@ -126,19 +130,10 @@ namespace Proof
 			m_MeshPipeline.RenderPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
 			m_MeshPipeline.RenderPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
 			m_MeshPipeline.RenderPass->SetInput("u_BRDFLUT", m_BRDFLUT);
-		}
+			m_MeshPipeline.RenderPass->SetInput("SkyBoxData", m_SkyBoxUniformInfo);
 
-		TextureConfiguration cubeTextureConfig;
-		cubeTextureConfig.GenerateMips = false;
-		cubeTextureConfig.Height = 1024;
-		cubeTextureConfig.Width = 1024;
-		cubeTextureConfig.Storage = true;
-		cubeTextureConfig.Format = ImageFormat::RGBA32F;
-		cubeTextureConfig.Wrap = TextureWrap::ClampEdge;
-		//textureCubeMap = TextureCube::Create(cubeTextureConfig, "Assets/qwantani_puresky_4k.hdr");
-		//textureCubeMap = Renderer::GetWhiteTextureCube();
-		//auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap("Assets/qwantani_puresky_4k.hdr");
-		//environment = Count<Environment>::Create(irradiance, prefilter);
+		}
+		
 
 		{
 			GraphicsPipelineConfig pipelineConfig;
@@ -160,7 +155,8 @@ namespace Proof
 			renderPassConfig.Pipeline = skyBoxRenderPipeline;
 			skyBoxPass = RenderPass::Create(renderPassConfig);
 			skyBoxPass->SetInput("CameraData", cameraBuffer);
-			skyBoxPass->SetInput("u_EnvironmentMap", m_Environment->IrradianceMap);
+			skyBoxPass->SetInput("u_EnvironmentMap", m_Environment->PrefilterMap);
+			skyBoxPass->SetInput("SkyBoxData", m_SkyBoxUniformInfo);
 		}
 		Cube = MeshWorkShop::GenerateCube();
 	}
@@ -185,35 +181,10 @@ namespace Proof
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
+
 		cmaeraData = { projection, view, location };
 		cameraBuffer->SetData(&cmaeraData, sizeof(CameraData));
 		Reset();
-		// clear screen
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
-		Renderer::BeginRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass,true);
-		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
-
-		Renderer::BeginRenderPass(m_CommandBuffer, skyBoxPass);
-		Cube->GetMeshSource()->GetVertexBuffer()->Bind(m_CommandBuffer);
-		Cube->GetMeshSource()->GetIndexBuffer()->Bind(m_CommandBuffer);
-		for (const auto& subMesh : Cube->GetMeshSource()->GetSubMeshes())
-		{
-			Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, 1, subMesh.BaseIndex, subMesh.BaseVertex);
-		}
-		Renderer::EndRenderPass(skyBoxPass);
-		const auto& entityView = m_World->m_Registry.view<MeshComponent>();
-		for (auto& entityID : entityView)
-		{
-			Entity entity{ entityID,m_World.Get() };
-			MeshComponent& meshComponent = entity.GetComponent<MeshComponent>();
-		
-			if (AssetManager::HasAsset(meshComponent.GetMesh()))
-			{
-				Count<Mesh> mesh = meshComponent.GetMesh();
-				SubmitStaticMesh(mesh, meshComponent.MaterialTable, m_World->GetWorldTransform(entity));
-			}
-		}
-
 		{
 			const auto& directionalLightView = m_World->m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
 			m_LightScene.DirectionalLights.resize(directionalLightView.size());
@@ -230,7 +201,69 @@ namespace Proof
 				};
 				index++;
 			}
+			const auto& skyLightView = m_World->m_Registry.view<SkyLightComponent>();
+			if (skyLightView.size() > 0)
+			{
+				auto entityID = skyLightView.back();
+				Entity entity(entityID, m_World.Get());
+				auto& skyLightComponent = entity.GetComponent<SkyLightComponent>();
+
+				if (skyLightComponent.Environment == nullptr)
+				{
+					goto nonExistEnvrironment;
+				}
+				m_Environment = skyLightComponent.Environment;
+				SkyLight skyLightInfo;
+				skyLightInfo.TintColor = skyLightComponent.ColorTint;
+				skyLightInfo.Lod = skyLightComponent.SkyBoxLoad;
+				skyLightInfo.Rotation = skyLightComponent.MapRotation;
+				skyLightInfo.Exposure = skyLightComponent.Exposure;
+				m_SkyBoxUniformInfo->SetData(&skyLightInfo,sizeof(SkyLight));
+			}
+			else
+			{
+				nonExistEnvrironment:
+				SkyLight light = {};
+				m_SkyBoxUniformInfo->SetData(&light, sizeof(SkyLight));
+				m_Environment->IrradianceMap = Renderer::GetBlackTextureCube();
+				m_Environment->PrefilterMap = Renderer::GetBlackTextureCube();
+
+			}
 		}
+		{
+			const auto& entityView = m_World->m_Registry.view<MeshComponent>();
+			for (auto& entityID : entityView)
+			{
+				Entity entity{ entityID,m_World.Get() };
+				MeshComponent& meshComponent = entity.GetComponent<MeshComponent>();
+
+				if (AssetManager::HasAsset(meshComponent.GetMesh()))
+				{
+					Count<Mesh> mesh = meshComponent.GetMesh();
+					SubmitStaticMesh(mesh, meshComponent.MaterialTable, m_World->GetWorldTransform(entity));
+				}
+			}
+		}
+		
+		// clear screen
+		Renderer::BeginCommandBuffer(m_CommandBuffer);
+		Renderer::BeginRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass,true);
+		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
+		// remember there are shard s if i change then it would not stay constnt
+		skyBoxPass->SetInput("u_EnvironmentMap", m_Environment->PrefilterMap);
+		m_MeshPipeline.RenderPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
+		m_MeshPipeline.RenderPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
+
+		Renderer::BeginRenderPass(m_CommandBuffer, skyBoxPass);
+		Cube->GetMeshSource()->GetVertexBuffer()->Bind(m_CommandBuffer);
+		Cube->GetMeshSource()->GetIndexBuffer()->Bind(m_CommandBuffer);
+		for (const auto& subMesh : Cube->GetMeshSource()->GetSubMeshes())
+		{
+			Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, 1, subMesh.BaseIndex, subMesh.BaseVertex);
+		}
+		Renderer::EndRenderPass(skyBoxPass);
+		
+		
 		MeshPass();
 
 		{

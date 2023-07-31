@@ -323,15 +323,17 @@ namespace Proof
 	public:
 		SkyLightComponent(const SkyLightComponent&) = default;
 		SkyLightComponent() = default;
-		float BoxLoad = 1.0f;;
-		Vector OffsetDirection;
-		Vector Color{1};
-		float Intensity = 1;
+		Vector ColorTint{1};
+		float SkyBoxLoad = 0.0f;
 		float Exposure = 1.f;
-		float MapRotation = 0;
+		float MapRotation = 0.0f;
+		float Intensity = 1.0f;
+
+		void RemoveImage();
+		void LoadMap(const std::filesystem::path& path);
+		Count<Environment> Environment;
 	private:
-		void Generate();
-		std::filesystem::path m_HDRPath;
+		AssetID Image;
 		friend class Entity;
 		friend class World;
 		friend class ECS;
@@ -613,10 +615,13 @@ namespace Proof
 	};
 	using AllComponents =
 		ComponentGroup<IDComponent, TagComponent, ChildComponent, TransformComponent,
-		MeshComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
+		MeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
 		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent>;
 	
 
-	using LightComponnet =ComponentGroup< DirectionalLightComponent, PointLightComponent, SpotLightComponent>;
+	using LightComponnet =ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;
 }
+
+
+

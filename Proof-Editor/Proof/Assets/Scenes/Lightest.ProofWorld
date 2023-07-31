@@ -15,40 +15,30 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 5
-    - Entity: 7190488896897433375
+    - Entity: 15765233332795142875
       TagComponent:
-        Tag: face
+        Tag: Sky Light
         tags: []
       TransformComponent:
-        Location: [1.60000002, 0, 0]
+        Location: [0, 0, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
-      SpriteComponent:
-        TextureAssetPointerID: 96342634762984
-        Colour: [0.95161289, 0, 0, 1]
-    - Entity: 6705386667073181123
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        Exposure: 1
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        Image: 2700444414993608762
+    - Entity: 14542799149913085375
       TagComponent:
-        Tag: Checkerboard
+        Tag: Sphere
         tags: []
       TransformComponent:
-        Location: [-3.20000005, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      SpriteComponent:
-        TextureAssetPointerID: 11525937089847687162
-        Colour: [1, 1, 1, 1]
-    - Entity: 13691445616343316490
-      TagComponent:
-        Tag: sphere
-        tags: []
-      TransformComponent:
-        Location: [0, 37, 0]
+        Location: [0, 0, 2.70000005]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -60,53 +50,3 @@ World:
           - Material: ""
             AssetID: 17275110330326612509
             Index: 0
-    - Entity: 4595272546706949817
-      TagComponent:
-        Tag: sphere
-        tags: []
-      TransformComponent:
-        Location: [-3.20000005, 43.2999992, -0.5]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 566574579191162934
-        MaterialTable:
-          - Material: ""
-            AssetID: 17275110330326612509
-            Index: 0
-    - Entity: 13293338259905764331
-      TagComponent:
-        Tag: Terrain
-        tags: []
-      TransformComponent:
-        Location: [0, 22, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 17647221892499275640
-        MaterialTable:
-          - Material: ""
-            AssetID: 0
-            Index: 0
-          - Material: ""
-            AssetID: 5634022354863745560
-            Index: 1
-    - Entity: 15928522035645735356
-      TagComponent:
-        Tag: sponza
-        tags: []
-      TransformComponent:
-        Location: [0.100000001, 16.8999996, 9.69999981]
-        Rotation: [0, 0, 0]
-        Scale: [0.0900000036, 0.0900000036, 0.0900000036]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 1268230648810223079

@@ -155,7 +155,7 @@ namespace Proof
 		virtual float GetAspectRatio()const { return (float)GetWidth() / (float)GetHeight(); };
 		uint32_t GetMipLevelCount() {
 			if (m_Config.GenerateMips)
-				Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+				return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
 			else
 				return 1;
 		};
