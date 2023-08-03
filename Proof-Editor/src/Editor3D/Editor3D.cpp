@@ -525,6 +525,7 @@ namespace Proof
 			//}
 
 			RendererBase::GetShaderLibrary()->ForEachShader([&](Count<Shader> shader) {
+				UI::ScopedID id(shader->GetName().c_str());
 				ImGui::Text(shader->GetName().c_str());
 				ImGui::SameLine();
 				if (ImGui::Button("Reload"))

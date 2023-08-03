@@ -116,7 +116,9 @@ namespace Proof {
         m_IsRunning = false;
     }
 
-    Application::~Application() {
+    Application::~Application() 
+    {
+        m_ImGuiMainLayer = nullptr;
         MainLayerStack.Empty();
     // remove the swpchain so it cna be deleted in the queue
         FileSystem::ClearEnvironmentVariables();

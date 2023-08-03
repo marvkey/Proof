@@ -2,6 +2,7 @@
 #include "VulkanShader.h"
 
 #include <fstream>
+#include "Proof/Math/Random.h"
 #include "VulkanGraphicsContext.h"
 #include "Proof/Renderer/RendererBase.h"
 
@@ -14,6 +15,7 @@
 #include "VulkanUtils/VulkanConvert.h"
 
 #include <fmt/format.h>
+
 namespace Proof
 {
     namespace Utils
@@ -139,8 +141,9 @@ namespace Proof
                 m_SourceCode.insert({ stage,source });
         });
         Utils::CreateCacheDirectoryIfNeeded();
-        Compile();
+        Compile(m_SourceCode);
         CreateShader();
+        m_InitialCompile = false;
     }
 
     VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders) {
@@ -164,14 +167,17 @@ namespace Proof
             m_SourceCode.insert({ stage,source });
         }
         Utils::CreateCacheDirectoryIfNeeded();
-        Compile();
+        Compile(m_SourceCode);
         CreateShader();
+        m_InitialCompile = false;
     }
     VulkanShader::~VulkanShader() {
         Release();
     }
     void VulkanShader::CompileOrGetBinaries(const std::filesystem::path& filePath) {
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+
+        PF_CORE_ASSERT(false, "Function may not be fineshes yet");		
+        auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
         shaderc::Compiler compiler;
         shaderc::CompileOptions compilerOptions;
@@ -279,7 +285,8 @@ namespace Proof
             return sourceCode;
         }
     };
-    void VulkanShader::Compile() {
+    bool VulkanShader::Compile(const std::unordered_map<ShaderStage, std::string>& sourceCode) {
+
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
         shaderc::Compiler compiler;
@@ -291,13 +298,15 @@ namespace Proof
             compilerOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
 
 
-        Special<shaderc::CompileOptions::IncluderInterface> inclue = CreateSpecial< ShaderIncluder>();
-        compilerOptions.SetIncluder(std::move(inclue));
+        Special<shaderc::CompileOptions::IncluderInterface> include = CreateSpecial< ShaderIncluder>();
+        compilerOptions.SetIncluder(std::move(include));
+        // do not want to change any of the current shader properteis excpet if the shader has been compiled properly
+        std::unordered_map<ShaderStage, shaderc::SpvCompilationResult> shaderModules;
+        for (auto& [stage, source] : sourceCode) {
+            
+            shaderModules[stage] = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_Name.c_str(), compilerOptions);
+            auto& shaderModule = shaderModules[stage];
 
-        auto& shaderData = m_VulkanSPIRV;
-        shaderData.clear();
-        for (auto& [stage, source] : m_SourceCode) {
-            shaderc::SpvCompilationResult shaderModule = compiler.CompileGlslToSpv(source, Utils::ShaderStageToShaderC(stage), m_Name.c_str(), compilerOptions);
             if (shaderModule.GetCompilationStatus() != shaderc_compilation_status_success) {
                 uint32_t num = 1;
                 PF_ENGINE_ERROR("Shader Stage:: {}  Error:: {}", EnumReflection::EnumString<ShaderStage>(stage), shaderModule.GetErrorMessage());
@@ -307,13 +316,24 @@ namespace Proof
                     PF_ENGINE_TRACE("{} {}", num, line);
                     num++;
                 }
-                PF_CORE_ASSERT(false);
+                if(m_InitialCompile)
+                    PF_CORE_ASSERT(false);
+                
+                return false;
             }
-            shaderData[stage]; 
+           
+        }
+
+        auto& shaderData = m_VulkanSPIRV;
+        shaderData.clear();
+        for (auto& [stage, shaderModule] : shaderModules)
+        {
             shaderData[stage] = std::vector<uint32_t>(shaderModule.cbegin(), shaderModule.cend());
         }
+        m_InputDeclaration.clear();
         for (auto&& [stage, data] : m_VulkanSPIRV)
             Reflect(stage);
+        return true;
     }
 
     
@@ -322,15 +342,28 @@ namespace Proof
     {
         if (m_ConstructorSamePaths)
         {
-            m_SourceCode.clear();
+            std::unordered_map<ShaderStage, std::string> shaderCode;
             magic_enum::enum_for_each<ShaderStage>([&](ShaderStage stage) {
                 std::string source = ProcessStage(stage, m_Paths[stage]);
                 if (source.empty() == false)
-                    m_SourceCode.insert({ stage,source });
+                    shaderCode.insert({ stage,source });
             });
             Utils::CreateCacheDirectoryIfNeeded();
-            Compile();
-            CreateShader();
+            if (Compile(shaderCode))
+            {
+                // if shader is succesful then we can copy the source doe
+                m_SourceCode = shaderCode;
+                CreateShader();
+                PF_ENGINE_INFO("Succesfully Compiled {} Shader", m_Name);
+
+                for (auto& [index,callback] : m_ShaderReloads)
+                    callback();
+            }
+            else
+            {
+                PF_ENGINE_ERROR("Failed Compiled {} Shader", m_Name);
+            }
+
             return;
         }
         PF_CORE_ASSERT(false, "cannot reload because you did not use path constructuro");
@@ -365,6 +398,28 @@ namespace Proof
             }
         }
         return nullptr;
+    }
+
+    uint32_t VulkanShader::AddShaderReloadCallback(const ShaderReloadCallback& callback)
+    {
+        if (m_ShaderReloads.size() == 0)
+        {
+            m_ShaderReloads[1] = callback;
+            return 1;
+        }
+        // map ordered larges to smallest so basically we are getting the largest by going to the back
+        uint32_t index = m_ShaderReloads.rbegin()->first + 1;
+        m_ShaderReloads[index] = callback;
+        return index;
+    }
+
+    void VulkanShader::RemoveShaderReloadCallback(uint32_t index)
+    {
+        if (m_ShaderReloads.contains(index))
+        {
+            m_ShaderReloads[index] = nullptr;
+            m_ShaderReloads.erase(index);
+        }
     }
 
     void VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code, VkShaderModule* shaderModule) {

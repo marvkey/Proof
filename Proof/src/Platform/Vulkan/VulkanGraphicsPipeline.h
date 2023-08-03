@@ -32,11 +32,17 @@ namespace Proof
 		const GraphicsPipelineConfig& GetConfig()const { return m_Config; };
 		VkPipelineLayout GetPipelineLayout() { return m_PipeLineLayout; }
 		VkPipeline GetPipeline() { return m_GraphicsPipeline; }
+
+		void Build();
+		void Release();
 	private:
 		void CreatePipelineLayout();
 		VkPipelineLayout m_PipeLineLayout  = nullptr;
 		GraphicsPipelineConfig m_Config;
 		VkPipeline m_GraphicsPipeline = nullptr;
+
+		uint32_t m_ShaderReloadCallbackIndex;
+
 		friend class VulkanRenderPass;
 	};
 }

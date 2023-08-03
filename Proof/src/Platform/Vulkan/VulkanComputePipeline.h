@@ -14,13 +14,15 @@ namespace Proof
 		VkPipelineLayout GetPipelinelayout() const { return m_PipeLineLayout; }
 		VkPipeline GetComputePipeline() const { return m_ComputePipeline; };
 		const ComputePipelineConfig& GetConfig()const override { return m_Config; }
-	private:
+
 		void Build();
+		void Release();
+	private:
 		void BuildPipeline();
 		VkPipelineLayout m_PipeLineLayout = nullptr;
 		VkPipeline m_ComputePipeline;
 		VkPipelineCache m_PipelineCache = NULL;
 		ComputePipelineConfig m_Config;
-		void Release();
+		uint32_t m_ShaderReloadCallbackIndex;
 	};
 }

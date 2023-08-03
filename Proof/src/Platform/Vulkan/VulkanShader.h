@@ -50,11 +50,18 @@ namespace Proof
         // storageBufferName, (totalSizeofBuffer)(name, data)
         const std::unordered_map<std::string, std::pair<uint32_t, std::unordered_map<std::string, ShaderResourceBufferInfo>>>& GetStorageInfo()const { return m_StorageBufferResourceInfo; }
         const std::unordered_map<std::string, std::pair<uint32_t, std::unordered_map<std::string, ShaderResourceBufferInfo>>>& GetPushConstantInfo()const { return m_PushConstantResourceInfo; }
+
+        virtual uint32_t AddShaderReloadCallback(const ShaderReloadCallback& callback);
+        virtual void RemoveShaderReloadCallback(uint32_t index);
     private:
+
+        std::map<uint32_t,ShaderReloadCallback> m_ShaderReloads;
         static void CreateShaderModule(const std::vector<uint32_t>& code, VkShaderModule* shaderModule);
         void CreateShader();
         void CompileOrGetBinaries(const std::filesystem::path& filePath);
-        void Compile();
+
+        // if compile was a success
+        bool Compile(const std::unordered_map<ShaderStage, std::string>& sourceCode);
         void Release();
         std::string ProcessStage(ShaderStage stage, const std::filesystem::path& path);
 
@@ -80,6 +87,9 @@ namespace Proof
         std::unordered_map<std::string, std::pair<uint32_t,std::unordered_map<std::string, ShaderResourceBufferInfo>>> m_PushConstantResourceInfo;
         const VkWriteDescriptorSet* GetDescriptorSet(uint32_t set = 0)const ;
         bool m_ConstructorSamePaths = false;
+
+        // the first compile of the shader
+        bool m_InitialCompile = true;
         friend class VulkanGraphicsPipeline;
 
 

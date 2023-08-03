@@ -22,5 +22,7 @@ namespace Proof
 		virtual void Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) = 0;
 		virtual const ComputePassConfiguration& GetConfig()const = 0;
 		virtual Count<class ComputePipeline> GetComputePipeline()const = 0;
+		virtual Count<class Shader> GetShader()const = 0;
+
 	};
 }

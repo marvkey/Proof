@@ -137,6 +137,9 @@ namespace Proof
 		void SetInput(std::string_view name, Count<class Image2D>image);
 		void SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images );
 
+		void Build();
+		// does not clear the m_Inputs
+		void Release();
 
 		void Bind();
 		//void SetInput(std::string_view name, Count<class > buffer);
@@ -153,17 +156,16 @@ namespace Proof
 		std::vector<std::map<uint32_t, std::map<uint32_t, VkWriteDescriptorSet>>> m_WriteDescriptorMap;
 		//std::vector<std::map<uint32_t, std::vector<VkDescriptorSet>>>m_DescriptorSets;
 
-		
+		uint32_t m_ShaderReloadCallbackIndex;
+
 		std::vector<std::map<uint32_t, DescriptorResource>>m_DescriptorSets;
 
 		//set,binding,
 		std::map<uint32_t, std::map<uint32_t, RenderPassInput>> m_Inputs ;
 		VkDescriptorPool m_DescriptorPool;
 
-		void Init();
 		bool m_Build = false;
 		// hasnt bind to a frame yet
 		uint32_t m_LastFrameBinned = -1;
-		void Release();
 	};
 }

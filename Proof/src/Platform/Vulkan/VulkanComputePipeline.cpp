@@ -4,16 +4,28 @@
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanGraphicsContext.h"
 
-#
-
 namespace Proof {
 	VulkanComputePipeline::VulkanComputePipeline(const ComputePipelineConfig& config):m_Config(config)
 	{
+
 		Build();
+		
+		// not using count because we dont want this fucntion keeping a reference count therefore not letting this object being able to be deleted
+		WeakCount<VulkanComputePipeline> instanceWeakCount = this;
+		m_ShaderReloadCallbackIndex = GetShader()->AddShaderReloadCallback([instanceWeakCount] 
+		{
+			if (!instanceWeakCount.IsValid())
+				return;
+			auto computePipeline = instanceWeakCount.Lock();
+
+			computePipeline->Release();
+			computePipeline->Build();
+		});
 	}
 	VulkanComputePipeline::~VulkanComputePipeline()
 	{
 		Release();
+		GetShader()->RemoveShaderReloadCallback(m_ShaderReloadCallbackIndex);
 	}
 	
 	void VulkanComputePipeline::Build()

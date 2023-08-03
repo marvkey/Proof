@@ -40,11 +40,11 @@ namespace Proof {
 	}
 	void LayerStack::Empty()
 	{
-		for (auto& layer : V_LayerStack)
+		// going backwards to empty the stack
+		for (auto layer = V_LayerStack.rbegin(); layer != V_LayerStack.rend(); layer++)
 		{
-			layer->OnDetach();
-			PF_ENGINE_TRACE("{} Detach ", layer->GetName().c_str());
-			layer = nullptr;
+			layer->Get()->OnDetach();
+			PF_ENGINE_TRACE("{} Detach ", layer->Get()->GetName().c_str());
 		}
 		V_LayerStack.clear();
 		LayerStackIndex = 0;

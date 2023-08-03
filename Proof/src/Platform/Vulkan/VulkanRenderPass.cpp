@@ -72,11 +72,20 @@ namespace Proof
         m_Config(config)
     {
         //PF_CORE_ASSERT(m_Config.TargetBuffer == nullptr, "Render pass needs a frameBuffer");
-        Init();
-        CreateRenderPass();
+          // for comaptbile rener pass
+        if (GetPipeline() != nullptr)
+        {
+            VulkanDescriptorManagerConfig descr;
+            descr.DebugName = m_Config.DebugName + " Descriptor Manager";
+            descr.Shader = GetPipeline()->GetShader().As<VulkanShader>();
+            m_DescritptorSetManager = Count<VulkanDescriptorManager>::Create(descr);
+        }
+
+        Build();
     }
    
-    void VulkanRenderPass::Init()
+  
+    void VulkanRenderPass::Build()
     {
         //https://developer.samsung.com/galaxy-gamedev/resources/articles/renderpasses.html
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
@@ -100,13 +109,11 @@ namespace Proof
                 SetDepthAttachment(imageConfig);
                 continue;
             }
-            PF_CORE_ASSERT(false,fmt::format("{} {} does not image format", m_Config.DebugName, EnumReflection::EnumString(imageConfig.Format)).c_str());
+            PF_CORE_ASSERT(false, fmt::format("{} {} does not image format", m_Config.DebugName, EnumReflection::EnumString(imageConfig.Format)).c_str());
         }
 
-     
-    }
-    void VulkanRenderPass::CreateRenderPass()
-    {
+
+
         std::vector<VkAttachmentDescription> attachmentDescriptions;
 
        // compiler deleteing this for some reason before the functions is finsed 
@@ -212,17 +219,7 @@ namespace Proof
             PF_CORE_ASSERT(false, "failed to create render pass!");
         }
 
-        {
-            // for comaptbile rener pass
-            if (GetPipeline() != nullptr)
-            {
-                VulkanDescriptorManagerConfig descr;
-                descr.DebugName = m_Config.DebugName + " Descriptor Manager";
-                descr.Shader = GetPipeline()->GetShader().As<VulkanShader>();
-                m_DescritptorSetManager = Count<VulkanDescriptorManager>::Create(descr);
-            }
-
-        }
+        
     }
     void VulkanRenderPass::Release()
     {
@@ -235,11 +232,11 @@ namespace Proof
 
             vkDestroyRenderPass(graphicsContext->GetDevice(), renderPass, nullptr);
         });
-
         m_RenderPass = nullptr;
     }
    
-    VulkanRenderPass::~VulkanRenderPass() {
+    VulkanRenderPass::~VulkanRenderPass() 
+    {
         Release();
     }
     

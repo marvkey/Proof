@@ -8,17 +8,26 @@
 #include "VulkanImage.h"
 namespace Proof 
 {
-	VulkanDescriptorManager::VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config)
+	VulkanDescriptorManager::VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config):
+        m_Config(config)
 	{
-        m_WriteDescriptorMap.resize(Renderer::GetConfig().FramesFlight);
-        m_DescriptorSets.resize(Renderer::GetConfig().FramesFlight);
-		m_Config = config;
+        
+        Build();
+        WeakCount<VulkanDescriptorManager> instanceWeakCount = this;
+        m_ShaderReloadCallbackIndex = m_Config.Shader->AddShaderReloadCallback([instanceWeakCount]
+        {
+            if (!instanceWeakCount.IsValid())
+                return;
+            auto descriptorManager = instanceWeakCount.Lock();
 
-        Init();
+            descriptorManager->Release();
+            descriptorManager->Build();
+        });
 	}
     VulkanDescriptorManager::~VulkanDescriptorManager()
     {
         Release();
+        m_Config.Shader->RemoveShaderReloadCallback(m_ShaderReloadCallbackIndex);
     }
 	void VulkanDescriptorManager::SetInput(std::string_view name, Count<UniformBuffer> buffer)
 	{
@@ -140,6 +149,8 @@ namespace Proof
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
     }
     
+  
+
     void VulkanDescriptorManager::Bind()
     {
        
@@ -278,8 +289,11 @@ namespace Proof
         m_Build = true;
         m_LastFrameBinned = Renderer::GetCurrentFrame().FrameinFlight;
     }
-    void VulkanDescriptorManager::Init()
+    void VulkanDescriptorManager::Build()
     {
+        m_WriteDescriptorMap.resize(Renderer::GetConfig().FramesFlight);
+        m_DescriptorSets.resize(Renderer::GetConfig().FramesFlight);
+
         auto shader = m_Config.Shader;
         auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
         #if 1

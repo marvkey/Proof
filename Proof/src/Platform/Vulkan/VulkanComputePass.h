@@ -17,6 +17,7 @@ namespace Proof
 		void Dispatch(uint32_t groupCountX,uint32_t groupCountY,uint32_t groupCountZ);
 		virtual const ComputePassConfiguration& GetConfig()const { return m_Config; }
 		virtual Count<class ComputePipeline> GetComputePipeline()const { return m_Config.Pipeline; }
+		virtual Count<Shader> GetShader()const;
 		VulkanComputePass(const ComputePassConfiguration& config);
 		~VulkanComputePass();
 	private:
@@ -25,15 +26,15 @@ namespace Proof
 		void BeginComputePass(Count<class RenderCommandBuffer> command);
 		void BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> command);
 		void ComputePassPushRenderMaterial(Count<class RenderMaterial> renderMaterial);
-
 		void EndComputePass();
-
+		
 		ComputePassConfiguration m_Config;
 		bool m_RenderPassEnabled = false;
 		bool m_MaterialRenderPass = false;
-
+		
 		Count<VulkanDescriptorManager> m_DescritptorSetManager;
 		Count<class RenderCommandBuffer> m_CommandBuffer= nullptr;
+		
 		friend class VulkanRenderer;
 		friend class VulkanRendererAPI;
 	};

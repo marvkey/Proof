@@ -36,10 +36,18 @@ namespace Proof
 		vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 			pushRange.stageFlags, pushRange.offset, pushRange.size, data);
 	}
+	Count<Shader> VulkanComputePass::GetShader()const
+	{
+		return m_Config.Pipeline->GetShader();
+	}
 	VulkanComputePass::VulkanComputePass(const ComputePassConfiguration& config)
 		:m_Config(config)
 	{
 		Build();
+		VulkanDescriptorManagerConfig descriptorConfig;
+		descriptorConfig.DebugName = m_Config.DebugName + "Descriptor Manager";
+		descriptorConfig.Shader = m_Config.Pipeline->GetShader().As<VulkanShader>();
+		m_DescritptorSetManager = Count<VulkanDescriptorManager>::Create(descriptorConfig);
 	}
 	VulkanComputePass::~VulkanComputePass()
 	{
@@ -52,11 +60,6 @@ namespace Proof
 	}
 	void VulkanComputePass::Build()
 	{
-
-		VulkanDescriptorManagerConfig descriptorConfig;
-		descriptorConfig.DebugName = m_Config.DebugName + "Descriptor Manager";
-		descriptorConfig.Shader = m_Config.Pipeline->GetShader().As<VulkanShader>();
-		m_DescritptorSetManager = Count<VulkanDescriptorManager>::Create(descriptorConfig);
 	}
 	void VulkanComputePass::BeginComputePassBase(Count<class RenderCommandBuffer> command)
 	{

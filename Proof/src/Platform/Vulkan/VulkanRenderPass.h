@@ -37,11 +37,12 @@ namespace Proof{
 		virtual void PushData(std::string_view name, const void* data);
 		Count< class GraphicsPipeline> GetPipeline() {return m_Config.Pipeline;};
 		Count<class FrameBuffer> GetTargetFrameBuffer();
+
+		void Build();
+		void Release();
 	private:
 		void AddColorAttachment(const RenderPassImageConfig& config);
 		void SetDepthAttachment(const RenderPassImageConfig& config);
-		void Init();
-		void CreateRenderPass();
 
 		void BeginRenderPassBase(Count<class RenderCommandBuffer> command, Viewport vieport, ViewportScissor scisscor);
 		
@@ -53,7 +54,6 @@ namespace Proof{
 		void BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear = false);
 		void RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial);
 
-		void Release();
 		void SetViewPorts(Viewport vieport, ViewportScissor scisscor, bool explicitClear);
 		Count<RenderCommandBuffer> m_CommandBuffer;
 		RenderPassConfig m_Config;

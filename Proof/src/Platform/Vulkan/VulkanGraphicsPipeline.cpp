@@ -109,46 +109,53 @@ namespace Proof
 
 		}
 	}
-	VulkanGraphicsPipeline::~VulkanGraphicsPipeline() {
-		Renderer::SubmitDatafree([pipline = m_GraphicsPipeline, piplinelayout =  m_PipeLineLayout]() {
-			vkDestroyPipeline(VulkanRenderer::GetGraphicsContext()->GetDevice(), pipline, nullptr);
-			vkDestroyPipelineLayout(VulkanRenderer::GetGraphicsContext()->GetDevice(), piplinelayout, nullptr);
-		});
-		m_GraphicsPipeline = nullptr;
-		m_PipeLineLayout = nullptr;
-	}
-	void VulkanGraphicsPipeline::Bind(Count<class RenderCommandBuffer> commandBuffer)
-	{
-		vkCmdBindPipeline(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
-			VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
-
-	}
-
 	
-	VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineConfig& config)
-	{
+	
 
-		m_Config = config;
+	VulkanGraphicsPipeline::VulkanGraphicsPipeline(const GraphicsPipelineConfig& config) :
+		m_Config(config)
+	{
+		Build();
+		WeakCount<VulkanGraphicsPipeline> instanceWeakCount = this;
+		m_ShaderReloadCallbackIndex = GetShader()->AddShaderReloadCallback([instanceWeakCount]
+		{
+			if (!instanceWeakCount.IsValid())
+				return;
+			auto graphicsPipeline = instanceWeakCount.Lock();
+
+			graphicsPipeline->Release();
+			graphicsPipeline->Build();
+		});
+	}
+	
+	VulkanGraphicsPipeline::~VulkanGraphicsPipeline()
+	{
+		Release();
+		GetShader()->RemoveShaderReloadCallback(m_ShaderReloadCallbackIndex);
+	}
+	void VulkanGraphicsPipeline::Build()
+	{
 		PF_CORE_ASSERT(m_Config.TargetBuffer);
-		RenderPassConfig redfdfdasfaConfig ("Graphics pipline compatibility renderPass", m_Config.TargetBuffer);
-		if(config.Shader != NULL && config.Shader->GetName() == "EnvironmentIrradianceNonCompute")
+		RenderPassConfig redfdfdasfaConfig("Graphics pipline compatibility renderPass", m_Config.TargetBuffer);
+		if (m_Config.Shader != NULL && m_Config.Shader->GetName() == "EnvironmentIrradianceNonCompute")
 			redfdfdasfaConfig.MultiView = true;
+
 		CreatePipelineLayout();
 		PipelineConfigInfo pipelineConfig;
-		DefaultPipelineConfigInfo(pipelineConfig, config);
+		DefaultPipelineConfigInfo(pipelineConfig, m_Config);
 		//pipelineConfig.RenderPass = config.RenderPass.As<VulkanRenderPass>()->GetRenderPass();;
 		pipelineConfig.RenderPass = Count<VulkanRenderPass>::Create(redfdfdasfaConfig)->GetRenderPass();;
 		pipelineConfig.PipelineLayout = m_PipeLineLayout;
-		auto vulkanShader = config.Shader.As<VulkanShader>();
+		auto vulkanShader = m_Config.Shader.As<VulkanShader>();
 		PF_CORE_ASSERT(pipelineConfig.PipelineLayout, "Cannot create Graphics Pipeline:: no pipelineLayout provided in configInfo");
 		//PF_CORE_ASSERT(pipelineConfig.RenderPass, "Cannot create Graphics Pipeline:: no renderpass provided in configInfo");
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		// we are hardcoding values into the vertex data
 		VulkanVertexInput vertexInput;
-		if (config.VertexArray != nullptr)
+		if (m_Config.VertexArray != nullptr)
 		{
-			vertexInput = config.VertexArray.As<VulkanVertexArray>()->GetData();
+			vertexInput = m_Config.VertexArray.As<VulkanVertexArray>()->GetData();
 			vertexInputInfo.vertexAttributeDescriptionCount = vertexInput.GetAttributes().size();
 			vertexInputInfo.vertexBindingDescriptionCount = vertexInput.GetDescriptions().size();
 
@@ -195,22 +202,78 @@ namespace Proof
 		// can be used for performance increase
 		pipelineInfo.basePipelineIndex = -1;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-		
+
 		if (vkCreateGraphicsPipelines((VulkanRenderer::GetGraphicsContext()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to Create Graphics Pipeline");
 
 		VulkanDescriptorManagerConfig descriptorConfig;
 		descriptorConfig.DebugName = m_Config.DebugName + " Pipeline DescritporManager";
 		descriptorConfig.Shader = m_Config.Shader.As<VulkanShader>();
+	}
+	void VulkanGraphicsPipeline::Release()
+	{
+		Renderer::SubmitDatafree([pipline = m_GraphicsPipeline, piplinelayout = m_PipeLineLayout]() {
+			vkDestroyPipeline(VulkanRenderer::GetGraphicsContext()->GetDevice(), pipline, nullptr);
+			vkDestroyPipelineLayout(VulkanRenderer::GetGraphicsContext()->GetDevice(), piplinelayout, nullptr);
+		});
+		m_GraphicsPipeline = nullptr;
+		m_PipeLineLayout = nullptr;
+	}
+
+	void VulkanGraphicsPipeline::Bind(Count<class RenderCommandBuffer> commandBuffer)
+	{
+		vkCmdBindPipeline(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+			VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
 	}
 	
+	void VulkanGraphicsPipeline::CreatePipelineLayout()
+	{
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+
+		auto shader = m_Config.Shader.As<VulkanShader>();
+		std::vector< VkDescriptorSetLayout> descriptorLayout;
+		std::vector< VkPushConstantRange> pushConstantsRange;
+
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.pNext = nullptr;
+
+		for (auto& [set, resource] : shader->GetDescriptorResource())
+		{
+			descriptorLayout.emplace_back(resource.Layout);
+		}
+		if (!descriptorLayout.empty())
+		{
+			pipelineLayoutInfo.pSetLayouts = descriptorLayout.data();
+			pipelineLayoutInfo.setLayoutCount = descriptorLayout.size();
+		}
+		else
+		{
+			pipelineLayoutInfo.pSetLayouts = nullptr;
+			pipelineLayoutInfo.setLayoutCount = 0;
+		}
+		for (auto& [name, range] : shader->GetPushConstants())
+			pushConstantsRange.emplace_back(range);
+		if (!pushConstantsRange.empty())
+		{
+			pipelineLayoutInfo.pushConstantRangeCount = pushConstantsRange.size();
+			pipelineLayoutInfo.pPushConstantRanges = pushConstantsRange.data();
+		}
+		else
+		{
+			pipelineLayoutInfo.pushConstantRangeCount = 0;
+			pipelineLayoutInfo.pPushConstantRanges = nullptr;
+		}
+		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipeLineLayout));
+	}
+
 	#define IM_ARRAYSIZEERE(_ARR)          ((int)(sizeof(_ARR) / sizeof(*(_ARR))))     // Size of a static C-style array. Don't use on pointers!
 	void VulkanGraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo, const GraphicsPipelineConfig& graphicsConfig)
 	{
-		
+
 		configInfo.InputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		configInfo.InputAssemblyInfo.topology =Utils::ProofTopologyToVulkanTopology(graphicsConfig.DrawMode);
+		configInfo.InputAssemblyInfo.topology = Utils::ProofTopologyToVulkanTopology(graphicsConfig.DrawMode);
 		configInfo.InputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 		configInfo.InputAssemblyInfo.pNext = nullptr;
 		configInfo.InputAssemblyInfo.flags = 0;
@@ -232,7 +295,7 @@ namespace Proof
 		// so in teh renderpeass when we set the width we can do a check to see if not 1 then 
 		// we can change teh width
 		// because most of the times it will be 1.f
-		configInfo.RasterizationInfo.lineWidth =  graphicsConfig.LineWidth;
+		configInfo.RasterizationInfo.lineWidth = graphicsConfig.LineWidth;
 		configInfo.RasterizationInfo.cullMode = Utils::ProofFormatToVulkanFormat(graphicsConfig.CullMode);
 		configInfo.RasterizationInfo.frontFace = Utils::ProofFormatToVulkanFormat(graphicsConfig.FrontFace);
 		configInfo.RasterizationInfo.depthBiasEnable = VK_FALSE;
@@ -285,7 +348,7 @@ namespace Proof
 		configInfo.ColorBlendInfo.blendConstants[3] = 0.0f;  // Optional
 		configInfo.ColorBlendInfo.pNext = nullptr;
 		configInfo.ColorBlendInfo.flags = 0;
-		
+
 		configInfo.DepthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		configInfo.DepthStencilInfo.depthTestEnable = graphicsConfig.DepthTest;
 		configInfo.DepthStencilInfo.depthWriteEnable = graphicsConfig.WriteDepth;
@@ -307,45 +370,5 @@ namespace Proof
 		configInfo.DynamicSate.pNext = nullptr;
 		configInfo.DynamicSate.flags = 0;
 		configInfo.DynamicSate.pDynamicStates = dynamicState.data();
-	}
-	void VulkanGraphicsPipeline::CreatePipelineLayout()
-	{
-		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
-
-		auto shader = m_Config.Shader.As<VulkanShader>();
-		std::vector< VkDescriptorSetLayout> descriptorLayout;
-		std::vector< VkPushConstantRange> pushConstantsRange;
-
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.pNext = nullptr;
-
-		for (auto& [set, resource] : shader->GetDescriptorResource())
-		{
-			descriptorLayout.emplace_back(resource.Layout);
-		}
-		if (!descriptorLayout.empty())
-		{
-			pipelineLayoutInfo.pSetLayouts = descriptorLayout.data();
-			pipelineLayoutInfo.setLayoutCount = descriptorLayout.size();
-		}
-		else
-		{
-			pipelineLayoutInfo.pSetLayouts = nullptr;
-			pipelineLayoutInfo.setLayoutCount = 0;
-		}
-		for (auto& [name, range] : shader->GetPushConstants())
-			pushConstantsRange.emplace_back(range);
-		if (!pushConstantsRange.empty())
-		{
-			pipelineLayoutInfo.pushConstantRangeCount = pushConstantsRange.size();
-			pipelineLayoutInfo.pPushConstantRanges = pushConstantsRange.data();
-		}
-		else
-		{
-			pipelineLayoutInfo.pushConstantRangeCount = 0;
-			pipelineLayoutInfo.pPushConstantRanges = nullptr;
-		}
-		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipeLineLayout));
 	}
 }
