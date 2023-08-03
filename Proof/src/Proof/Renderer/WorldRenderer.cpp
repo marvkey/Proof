@@ -197,7 +197,7 @@ namespace Proof
 				{
 					dirLightComponent.Color,
 					dirLightComponent.Intensity,
-					dirLightComponent.OffsetDirection + m_World->GetWorldRotation(entity),
+					-Vector{dirLightComponent.OffsetDirection + m_World->GetWorldRotation(entity)} ,
 				};
 				index++;
 			}
@@ -602,7 +602,6 @@ namespace Proof
 		for (auto& [meshKey, meshDrawInfo] : m_MeshDrawList)
 		{
 
-			//m_MeshPipeline.TransformsBuffer->Resize(m_MeshTransformMap[meshKey].data(),meshDrawInfo.InstanceCount * sizeof(glm::mat4));
 			Count<Mesh> mesh = meshDrawInfo.Mesh;
 			Count<MeshSource> meshSource = mesh->GetMeshSource();
 			Count<MaterialTable> materialTable = meshDrawInfo.MaterialTable;

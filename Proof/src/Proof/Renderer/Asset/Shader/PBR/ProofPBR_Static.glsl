@@ -175,7 +175,7 @@ void main()
     {
         //https://github.com/Angelo1211/HybridRenderingEngine/blob/master/assets/shaders/PBRClusteredShader.frag
         DirectionalLight currentLight= DirectionalLightData.Lights[i];
-        vec3 lightDirection = normalize(currentLight.Direction);
+        vec3 lightDirection = -normalize(currentLight.Direction);
         vec3 halfway = normalize(view + lightDirection);
         float nDotV = max(dot(normal, view), 0.0);
         float nDotL = max(dot(normal, lightDirection), 0.0);

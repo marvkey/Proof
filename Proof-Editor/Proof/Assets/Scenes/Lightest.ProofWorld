@@ -7,14 +7,14 @@ World:
         tags: []
       TransformComponent:
         Location: [0.271118194, 0, -1.95475864]
-        Rotation: [34, 188.399994, -7.80000019]
+        Rotation: [13, 6.80000019, 20.6000004]
         Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 5
+        Intensity: 1
     - Entity: 15765233332795142875
       TagComponent:
         Tag: Sky Light
@@ -63,3 +63,23 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 705200552008804468
+    - Entity: 11074883166607061457
+      TagComponent:
+        Tag: Terrain
+        tags: []
+      TransformComponent:
+        Location: [0, 26, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 17647221892499275640
+        MaterialTable:
+          - Material: ""
+            AssetID: 0
+            Index: 0
+          - Material: ""
+            AssetID: 5634022354863745560
+            Index: 1

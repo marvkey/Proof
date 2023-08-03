@@ -158,7 +158,11 @@ namespace Proof
         VectorTemplate<T> Temp(Other1.X - Other2.X, Other1.Y - Other2.Y, Other1.Z - Other2.Z);
         return Temp;
     }
-
+    template<typename T>
+    VectorTemplate<T> operator -(const VectorTemplate<T>& Other1) {
+        VectorTemplate<T> Temp(-Other1.X , -Other1.Y , -Other1.Z );
+        return Temp;
+    }
     template<typename T>
     VectorTemplate<T> operator +=(VectorTemplate<T>& other1, const VectorTemplate<T>& other2) {
         other1.X += other2.X;

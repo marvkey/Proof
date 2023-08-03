@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_set>
 #include <atomic>
 #include <compare>
 namespace Proof{
@@ -6,9 +7,9 @@ namespace Proof{
 
 	class RefCounted {
 	public:
-		RefCounted() : m_StrongRefCount(0), m_WeakRefCount(0){}; // non-atomic initializations
+		RefCounted() {}; // non-atomic initializations
 
-		RefCounted(const RefCounted& other) : m_StrongRefCount(0), m_WeakRefCount(0)
+		RefCounted(const RefCounted& other)
 		{
 		}
 		RefCounted& operator=(const RefCounted& other)
@@ -21,9 +22,6 @@ namespace Proof{
 			return m_StrongRefCount;
 		}
 
-		uint32_t GetWeakCount() {
-			return m_WeakRefCount;
-		}
 	protected:
 		virtual void Delete()const {
 			delete this;
@@ -39,22 +37,48 @@ namespace Proof{
 				Delete();
 			}
 		}
-
-		void IncreaseWeakRef()
-		{
-			m_WeakRefCount++;
-		}
-
-		void DecreaseWeakRef()
-		{
-			m_WeakRefCount--;
-		}
 		mutable std::atomic<uint32_t>  m_StrongRefCount = 0;
-		mutable std::atomic<uint32_t>  m_WeakRefCount = 0;
 		template <class T>
 		friend class Count;
 	};
+	namespace RefUtils {
 
+		class RefCountManager
+		{
+		public:
+			static void AddToLiveReference(void* instance)
+			{
+				uintptr_t memoryAddress = uintptr_t(instance);
+				s_LiveReferences.insert(memoryAddress);
+			};
+			static void RemoveFromLiveReference(void* instance)
+			{
+				uintptr_t memoryAddress = uintptr_t(instance);
+				s_LiveReferences.erase(memoryAddress);
+			}
+			static bool IsLive(void* instance)
+			{
+				uintptr_t memoryAddress = uintptr_t(instance);
+
+				return s_LiveReferences.contains(memoryAddress);
+			}
+		private:
+			static inline std::unordered_set<uintptr_t> s_LiveReferences;
+		};
+
+		static void AddToLiveReference(void* instance)
+		{
+			RefCountManager::AddToLiveReference(instance);
+		}
+		static void RemoveFromLiveReference(void* instance)
+		{
+			RefCountManager::RemoveFromLiveReference(instance);
+		}
+		static bool IsLive(void* instance)
+		{
+			return RefCountManager::IsLive(instance);
+		}
+	}
 	template <class _Yty, class _Ty>
 	struct Is_Compatible : std::is_convertible<_Yty*, _Ty*>::type {
 		// N4659 [util.smartptr.shared]/5 "a pointer type Y* is said to be compatible
@@ -146,8 +170,8 @@ namespace Proof{
 		}
 		template <class... Args, std::enable_if_t<std::is_constructible<T, Args...>::value, int> = 0>
 		static Count Create(Args&&... args) {
-				T* data = new T(args...);
-				Count<T> t(data);
+			T* data = new T(args...);
+			Count<T> t(data);
 			return t;
 		}
 		template<class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
@@ -227,16 +251,25 @@ namespace Proof{
 				void* cast = m_Ptr;
 				RefCounted* refCast = static_cast<RefCounted*>(cast);
 				refCast->IncreaseStrongRef();
+				// first count to hold onto it
+				if(refCast->GetStrongCount() ==1)
+					RefUtils::AddToLiveReference((void*)refCast);
 				//m_Ptr->IncreaseStrongRef();
 			}
 		}
-		//template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
 
 		void DecrementStrongRef()const { // decrement reference count
 			if (m_Ptr)
 			{
 				void* cast = m_Ptr;
 				RefCounted* refCast = static_cast<RefCounted*>(cast);
+				bool remoeMemory = false;
+				// means its goig to get released from memoery
+				if (refCast->GetStrongCount() == 1)
+				{
+					RefUtils::RemoveFromLiveReference((void*)refCast);
+				}
+
 				refCast->ReleaseStrongRef();
 				//m_Ptr->ReleaseStrongRef();
 			}
@@ -288,6 +321,86 @@ namespace Proof{
 	{
 		return Dynamic_Count_cast<U>(*this);
 	}
+
+	template<class T>
+	class WeakCount
+	{
+	public:
+		WeakCount() :m_Instance(nullptr) {	};
+
+		constexpr WeakCount(nullptr_t) noexcept : m_Instance(nullptr) {	}
+
+		template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
+		WeakCount(T* instance)
+			: m_Instance(instance)
+		{
+		}
+
+		WeakCount(const WeakCount& _Other) noexcept {
+			this->CopyConstructor(_Other); // same type, no conversion
+		}
+
+		template <class _Ty2, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0>
+		WeakCount(const Count<_Ty2>& _Other) noexcept {
+			this->CopyConstructor(_Other.Get()); // shared_ptr keeps resource alive during conversion
+		}
+
+		template <class _Ty2, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0>
+		WeakCount(const WeakCount<_Ty2>& _Other) noexcept {
+			this->CopyConstructor(_Other); // same type, no conversion
+		}
+
+		WeakCount(WeakCount&& _Other) noexcept {
+			this->CopyConstructor(_STD move(_Other));
+		}
+		
+		template <class _Ty2, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0>
+		WeakCount(WeakCount<_Ty2>&& _Other) noexcept {
+			this->CopyConstructor(_STD move(_Other));
+		}
+
+		WeakCount& operator=(const WeakCount& _Right) noexcept {
+			WeakCount(_Right).Swap(*this);
+			return *this;
+		}
+
+		template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+		WeakCount& operator=(const WeakCount<Type>& _Right) noexcept {
+			WeakCount(_Right).Swap(*this);
+			return *this;
+		}
+
+		WeakCount& operator=(WeakCount&& _Right) noexcept {
+			WeakCount(_STD move(_Right)).Swap(*this);
+			return *this;
+		}
+
+		template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+		WeakCount& operator=(WeakCount<Type>&& _Right) noexcept {
+			WeakCount(_STD move(_Right)).Swap(*this);
+			return *this;
+		}
+
+		bool IsValid()const { return m_Instance ? RefUtils::IsLive((void*)m_Instance) : false; }
+		operator bool()const { return IsValid(); };
+
+		Count<T> Lock() const { // convert to shared_ptr
+			if (!IsValid())
+				return nullptr;
+			return Count<T>(m_Instance);
+		}
+	private:
+		template <class _Ty2>
+		void CopyConstructor(const WeakCount<_Ty2>& other) noexcept {
+			m_Instance = other.m_Instance;
+		}
+		void Swap(WeakCount& _Right) noexcept { // swap pointers
+			std::swap(m_Instance, _Right.m_Instance);
+		}
+		friend class WeakCount;
+
+		T* m_Instance = nullptr;
+	};
 	#if 0 
 	/**
  * a lot of this code was taken from the visual studio representiaon of shared poitner
