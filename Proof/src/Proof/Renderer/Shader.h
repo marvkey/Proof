@@ -3,6 +3,7 @@
 #include "glm/glm.hpp"
 #include <unordered_map>
 #include <iostream>
+#include <functional>
 namespace Proof
 {
     enum class ShaderStage {

@@ -50,7 +50,7 @@ namespace Proof
 	//Count<PipeLineLayout> PipelineLayout;
 	Count<RenderPass> skyBoxPass;
 	Count<Mesh> Cube; 
-	Count< UniformBuffer> cameraBuffer;
+	Count< UniformBufferSet> cameraBuffer;
 	//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 	WorldRenderer::~WorldRenderer() {
 		textureCubeMap = nullptr;
@@ -68,8 +68,8 @@ namespace Proof
 	WorldRenderer::WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight) :
 		m_World(world)
 	{
-		cameraBuffer = UniformBuffer::Create(sizeof(CameraData));
-		m_SkyBoxUniformInfo = UniformBuffer::Create(sizeof(SkyLight));
+		cameraBuffer = UniformBufferSet::Create(sizeof(CameraData));
+		m_SkyBoxUniformInfo = UniformBufferSet::Create(sizeof(SkyLight));
 
 		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
 
@@ -125,7 +125,7 @@ namespace Proof
 			m_MeshPipeline.RenderPass = RenderPass::Create(renderPassConfig);
 			m_MeshPipeline.RenderPass->SetInput("CameraData", cameraBuffer);
 
-			m_DirectionalLights = StorageBuffer::Create(sizeof(DirectionalLight));
+			m_DirectionalLights = StorageBufferSet::Create(sizeof(DirectionalLight));
 			m_MeshPipeline.RenderPass->SetInput("DirectionalLightStorageBuffer", m_DirectionalLights);
 			m_MeshPipeline.RenderPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
 			m_MeshPipeline.RenderPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
@@ -176,14 +176,15 @@ namespace Proof
 		Renderer::EndCommandBuffer(m_CommandBuffer);
 		Renderer::SubmitCommandBuffer(m_CommandBuffer);
 	}
-	CameraData cmaeraData;
-	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame, Count<UITable> uiTable)
+	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, float nearPlane, float farPlane,Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame, Count<UITable> uiTable)
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
 
-		cmaeraData = { projection, view, location };
-		cameraBuffer->SetData(&cmaeraData, sizeof(CameraData));
+		m_CameraData = { projection, view, location, nearPlane, farPlane };
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		cameraBuffer->SetData(frameIndex,Buffer( &m_CameraData, sizeof(CameraData)));
 		Reset();
 		{
 			const auto& directionalLightView = m_World->m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
@@ -217,14 +218,14 @@ namespace Proof
 				skyLightInfo.TintColor = skyLightComponent.ColorTint;
 				skyLightInfo.Lod = skyLightComponent.SkyBoxLoad;
 				skyLightInfo.Rotation = skyLightComponent.MapRotation;
-				skyLightInfo.Exposure = skyLightComponent.Exposure;
-				m_SkyBoxUniformInfo->SetData(&skyLightInfo,sizeof(SkyLight));
+				skyLightInfo.Intensity = skyLightComponent.Intensity;
+				m_SkyBoxUniformInfo->SetData(frameIndex,Buffer((uint8_t*)&skyLightInfo, sizeof(SkyLight)));
 			}
 			else
 			{
 				nonExistEnvrironment:
 				SkyLight light = {};
-				m_SkyBoxUniformInfo->SetData(&light, sizeof(SkyLight));
+				m_SkyBoxUniformInfo->SetData(frameIndex,Buffer((uint8_t*)&light, sizeof(SkyLight)));
 				m_Environment->IrradianceMap = Renderer::GetBlackTextureCube();
 				m_Environment->PrefilterMap = Renderer::GetBlackTextureCube();
 
@@ -564,8 +565,50 @@ namespace Proof
 
 		m_MeshTransformMap[meshKey].emplace_back(transform);
 	}
+	#define SHADOWMAP_DIM  2048
+	
+	void WorldRenderer::CreateShadowMap()
+	{
+		PF_PROFILE_FUNC();
+
+		const uint32_t shadowMapCascade = 4;
+
+		FrameBufferConfig framebufferConfig;
+		framebufferConfig.DebugName = "Shadow Depth Fraembuffer";
+		framebufferConfig.Attachments = { ImageFormat::DEPTH24STENCIL8UI };
+
+		m_DepthFrameBuffer = FrameBuffer::Create(framebufferConfig);
+		//RenderPassConfig renderPassConfig;
+		//renderPassConfig.
+
+		ImageConfiguration depthImageConfig;
+		depthImageConfig.DebugName = "Shadow Pass Image";
+		depthImageConfig.Format = ImageFormat::DEPTH24STENCIL8UI;
+		depthImageConfig.Usage = ImageUsage::Attachment;
+		depthImageConfig.Layers = shadowMapCascade;
+		Count<Image2D> depthImage = Image2D::Create(depthImageConfig);
+		for (uint32_t i = 0; i < shadowMapCascade; i++)
+		{
+			ImageViewConfiguration imageViewConfig;
+			imageViewConfig.DebugName = fmt::format("Shadow Cascade: {}", i);
+			imageViewConfig.Layer = 0;
+			imageViewConfig.LayerCount = i;
+			imageViewConfig.Mip = 0;
+			imageViewConfig.MipCount = 0;
+			imageViewConfig.View = ImageViewType::View2DArray;
+			imageViewConfig.Image = depthImage;
+
+			Count<ImageView> view = ImageView::Create(imageViewConfig);
+			
+			Count<VulkanFrameBuffer> shadowMapPass;
+
+		}
+
+	}
 	void WorldRenderer::MeshPass()
 	{
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
 		//TODO FASTER HASH FUNCTION FOR MESHKEY
 		PF_PROFILE_FUNC();
 		//set pass
@@ -576,11 +619,11 @@ namespace Proof
 				DirectionalLight light;
 				light.Color = Vector(0);
 				light.Direction = Vector(0);
-				m_DirectionalLights->Resize(&light,sizeof(DirectionalLight));
+				m_DirectionalLights->Resize(frameIndex,Buffer((uint8_t*)&light,sizeof(DirectionalLight)));
 			}
 			else
 			{
-				m_DirectionalLights->Resize(m_LightScene.DirectionalLights.data(), m_LightScene.DirectionalLights.size()*sizeof(DirectionalLight));
+				m_DirectionalLights->Resize(frameIndex,Buffer((uint8_t*)m_LightScene.DirectionalLights.data(), m_LightScene.DirectionalLights.size()*sizeof(DirectionalLight)));
 			}
 		}
 
@@ -623,6 +666,107 @@ namespace Proof
 		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
 
 	}
+	struct CascadeData
+	{
+		glm::mat4 ViewPorjection;
+		//glm::mat4 View;
+		float SplitDepth;
+
+	};
+	static void UpdateCascades(CascadeData* cascades, const Vector& lightDirection, CameraData& cameraData)
+	{
+		//https://github.com/SaschaWillems/Vulkan/blob/master/examples/shadowmappingcascade/shadowmappingcascade.cpp
+		float cascadeSplitLambda = 0.95f; // editabel variable
+
+		const int shadowMapCascadeCount = 4;
+
+		float cascadeSplits[shadowMapCascadeCount];
+		float nearClip = 0.1f;
+		float farClip = 1000.f;
+		float clipRange = farClip - nearClip;
+
+		float minZ = nearClip;
+		float maxZ = nearClip + clipRange;
+
+		float range = maxZ - minZ;
+		float ratio = maxZ / minZ;
+
+		for (uint32_t i = 0; i < shadowMapCascadeCount; i++)
+		{
+			float p = (i + 1) / static_cast<float>(shadowMapCascadeCount);
+			float log = minZ * std::pow(ratio, p);
+			float uniform = minZ + range * p;
+			float d = cascadeSplitLambda * (log - uniform) + uniform;
+			cascadeSplits[i] = (d - nearClip) / clipRange;
+		}
+
+		// Calculate orthographic projection matrix for each cascade
+		float lastSplitDist = 0.0;
+		for (uint32_t i = 0; i < shadowMapCascadeCount; i++)
+		{
+			float splitDist = cascadeSplits[i];
+
+			glm::vec3 frustumCorners[8] = {
+				glm::vec3(-1.0f,  1.0f, 0.0f),
+				glm::vec3(1.0f,  1.0f, 0.0f),
+				glm::vec3(1.0f, -1.0f, 0.0f),
+				glm::vec3(-1.0f, -1.0f, 0.0f),
+				glm::vec3(-1.0f,  1.0f,  1.0f),
+				glm::vec3(1.0f,  1.0f,  1.0f),
+				glm::vec3(1.0f, -1.0f,  1.0f),
+				glm::vec3(-1.0f, -1.0f,  1.0f),
+			};
+
+			// Project frustum corners into world space
+			glm::mat4 invCam = glm::inverse(cameraData.Projection * cameraData.ProjectionView);
+			for (uint32_t i = 0; i < 8; i++)
+			{
+				glm::vec4 invCorner = invCam * glm::vec4(frustumCorners[i], 1.0f);
+				frustumCorners[i] = invCorner / invCorner.w;
+			}
+
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				glm::vec3 dist = frustumCorners[i + 4] - frustumCorners[i];
+				frustumCorners[i + 4] = frustumCorners[i] + (dist * splitDist);
+				frustumCorners[i] = frustumCorners[i] + (dist * lastSplitDist);
+			}
+
+			// Get frustum center
+			glm::vec3 frustumCenter = glm::vec3(0.0f);
+			for (uint32_t i = 0; i < 8; i++)
+			{
+				frustumCenter += frustumCorners[i];
+			}
+			frustumCenter /= 8.0f;
+
+			float radius = 0.0f;
+			for (uint32_t i = 0; i < 8; i++)
+			{
+				float distance = glm::length(frustumCorners[i] - frustumCenter);
+				radius = glm::max(radius, distance);
+			}
+			radius = std::ceil(radius * 16.0f) / 16.0f;
+
+			glm::vec3 maxExtents = glm::vec3(radius);
+			glm::vec3 minExtents = -maxExtents;
+
+			glm::vec3 lightDir = normalize(-glm::vec3{ lightDirection.X,lightDirection.Y,lightDirection.Z });
+			glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * -minExtents.z, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
+			glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, maxExtents.z - minExtents.z);
+
+			// Store split distance and matrix in cascade
+			cascades[i].SplitDepth = (nearClip + splitDist * clipRange) * -1.0f;
+			cascades[i].ViewPorjection = lightOrthoMatrix * lightViewMatrix;
+
+			lastSplitDist = cascadeSplits[i];
+		}
+	}
+	void WorldRenderer::ShadowPass()
+	{
+		PF_PROFILE_FUNC();
+		
+	}
 	void WorldRenderer::Reset()
 	{
 		//mesh Pass
@@ -644,7 +788,7 @@ namespace Proof
 		ViewportScissor scissor;
 		scissor.Offset = { 0,0 };
 		scissor.Extent = { (float)m_ScreenFrameBuffer->GetFrameWidth(),(float)m_ScreenFrameBuffer->GetFrameHeight() };
-		Render(camera.m_Projection, camera.m_View, { camera.m_Positon.x,camera.m_Positon.y,camera.m_Positon.z }, viewPort,scissor,renderSettings);
+		Render(camera.m_Projection, camera.m_View, { camera.m_Positon.x,camera.m_Positon.y,camera.m_Positon.z }, camera.m_NearPlane, camera.m_FarPlane,viewPort,scissor,renderSettings);
 	}
 	void WorldRenderer::Render(CameraComponent& camera, Vector& location, RenderSettings renderSettings,Count<UITable> uiTable) {
 		Viewport viewPort;
@@ -658,10 +802,14 @@ namespace Proof
 		ViewportScissor scissor;
 		scissor.Offset = { 0,0 };
 		scissor.Extent = {(float) m_ScreenFrameBuffer->GetFrameWidth(),(float)m_ScreenFrameBuffer->GetFrameHeight() };
-		Render(camera.Projection, camera.View, location,viewPort,scissor, renderSettings,true, uiTable);
+		Render(camera.Projection, camera.View, location, camera.NearPlane, camera.FarPlane,viewPort,scissor, renderSettings,true, uiTable);
 	}
 	void WorldRenderer::Render(CameraComponent& camera, Vector& location, Viewport viewport, ViewportScissor scissor, RenderSettings renderSettings,bool clearOnLoad, Count<UITable> uiTable )
 	{
-		Render(camera.Projection, camera.View, location, viewport, scissor, renderSettings, clearOnLoad, uiTable);
+		Render(camera.Projection, camera.View, location, camera.NearPlane, camera.FarPlane,viewport, scissor, renderSettings, clearOnLoad, uiTable);
+	}
+	Count<Image2D> WorldRenderer::GetImage()
+	{
+		return m_ScreenFrameBuffer->GetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().FrameinFlight,0).As<Image2D>();
 	}
 }

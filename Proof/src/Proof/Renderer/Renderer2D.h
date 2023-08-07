@@ -21,7 +21,7 @@ namespace Proof {
 	struct SpriteComponent;
 	struct TransformComponent;
 	struct Renderer2DStorage {
-		Count<UniformBuffer> CameraBuffer = nullptr;
+		Count<UniformBufferSet> CameraBuffer = nullptr;
 		Count<class VertexBuffer> VertexBuffer;
 		Count<class IndexBuffer> IndexBuffer;	
 		Count<class RenderCommandBuffer>CommandBuffer;

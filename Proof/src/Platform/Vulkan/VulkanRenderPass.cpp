@@ -342,7 +342,7 @@ namespace Proof
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = m_RenderPass;
             // teh frameBuffer we are writing
-            renderPassInfo.framebuffer = GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetFrameBuffer();
+            renderPassInfo.framebuffer = GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetFrameBuffer(Renderer::GetCurrentFrame().ImageIndex);
 
             // the area shader loads and 
             // for high displays swap chain extent could be higher than windows extent
@@ -593,5 +593,12 @@ namespace Proof
     {
         m_DescritptorSetManager->SetInput(name, imageCube);
     }
-
+    void VulkanRenderPass::SetInput(std::string_view name, Count<class UniformBufferSet> buffer)
+    {
+        m_DescritptorSetManager->SetInput(name, buffer);
+    }
+    void VulkanRenderPass::SetInput(std::string_view name, Count<class StorageBufferSet> buffer)
+    {
+        m_DescritptorSetManager->SetInput(name, buffer);
+    }
 }

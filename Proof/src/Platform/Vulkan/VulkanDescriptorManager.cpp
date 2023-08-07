@@ -73,6 +73,37 @@ namespace Proof
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
         }
     }
+
+    void VulkanDescriptorManager::SetInput(std::string_view name, Count<class UniformBufferSet> buffer)
+    {
+        m_Build = false;
+        auto shader = m_Config.Shader;
+
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+        if (decl)
+        {
+            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+        }
+        else
+        {
+            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+        }
+    }
+    void VulkanDescriptorManager::SetInput(std::string_view name, Count<class StorageBufferSet> buffer)
+    {
+        m_Build = false;
+        auto shader = m_Config.Shader;
+
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+        if (decl)
+        {
+            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+        }
+        else
+        {
+            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+        }
+    }
     void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images)
     {
         m_Build = false;
@@ -183,9 +214,21 @@ namespace Proof
                             write.descriptorCount = 1;
                         }
                         break;
+                    case Proof::RenderPassResourceType::UniformBufferSet:
+                        {
+                            write.pBufferInfo = &resource.Input[0].As<VulkanUniformBufferSet>()->GetBuffer(Renderer::GetCurrentFrame().FrameinFlight).As< VulkanUniformBuffer>()->GetDescriptorInfoVulkan();
+                            write.descriptorCount = 1;
+                        }
+                        break;
                     case Proof::RenderPassResourceType::StorageBuffer:
                         {
                             write.pBufferInfo = &resource.Input[0].As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan();
+                            write.descriptorCount = 1;
+                        }
+                        break;
+                    case Proof::RenderPassResourceType::StorageBufferSet:
+                        {
+                            write.pBufferInfo = &resource.Input[0].As<VulkanStorageBufferSet>()->GetBuffer(Renderer::GetCurrentFrame().FrameinFlight).As< VulkanStorageBuffer>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
                         }
                         break;

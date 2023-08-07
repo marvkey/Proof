@@ -49,6 +49,8 @@ namespace Proof{
 		virtual void SetInput(std::string_view name, Count<class UniformBuffer> buffer) = 0;
 		virtual void SetInput(std::string_view name, Count<class Texture2D> iamge) = 0;
 		virtual void SetInput(std::string_view name, Count<class StorageBuffer> buffer) = 0;
+		virtual void SetInput(std::string_view name, Count<class UniformBufferSet> buffer) = 0;
+		virtual void SetInput(std::string_view name, Count<class StorageBufferSet> buffer) = 0;
 		virtual void SetInput(std::string_view name, Count<class TextureCube> buffer) = 0;
 		virtual void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images) = 0;
 		void virtual SetInput(std::string_view name, Count<class ImageView> imageView) = 0;

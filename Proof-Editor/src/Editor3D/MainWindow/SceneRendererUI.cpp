@@ -7,6 +7,7 @@
 #include "SceneHierachyPanel.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Scene/Component.h"
+#include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Renderer/RenderPass.h"
 namespace Proof{

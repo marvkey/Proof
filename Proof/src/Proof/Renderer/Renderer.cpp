@@ -386,7 +386,7 @@ namespace Proof {
 
 			Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
 			Renderer::BeginComputePass(renderCommandBuffer, computePass);
-			computePass->Dispatch(imageSize/32 , imageSize/32 , 1);
+			computePass->Dispatch(imageSize/16 , imageSize/16 , 1);
 			Renderer::EndComputePass(computePass);
 
 		});

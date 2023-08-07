@@ -98,7 +98,7 @@ namespace Proof
         //Renderer3DInstance->m_Shader->SetMat4("u_View",EditorCamera.m_View);
         Position = EditorCamera.m_Positon;
         OldCmaerData temp(Projection, EditorCamera.m_View);
-        s_CameraBuffer->SetData(&temp, sizeof(OldCmaerData));
+       // s_CameraBuffer->SetData(&temp, sizeof(OldCmaerData));
 
     }
     void Renderer3D::BeginContext(const OrthagraphicCamera& camera) {

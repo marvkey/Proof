@@ -3,7 +3,7 @@
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Scene/World.h"
 #include <map>
-
+#include "Viewport.h"
 namespace Proof
 {
 	struct MeshKey
@@ -64,6 +64,7 @@ namespace std {
 }
 namespace Proof
 {
+	class RenderMaterial;
 	struct RenderSettings 
 	{
 		bool ViewColliders = false;
@@ -80,10 +81,11 @@ namespace Proof
 	{
 		Vector TintColor = { 1 };
 		float Lod = 0;
-		float Exposure = 1;
+		float Intensity = 1;
 		float Rotation = 0;
 
 	};
+	
 	struct LightScene
 	{
 		std::vector<DirectionalLight> DirectionalLights;
@@ -108,15 +110,23 @@ namespace Proof
 		Count<class VertexBuffer> TransformsBuffer;
 		std::vector<glm::mat4> Transforms;
 	};
+
+	struct ShadowSetting
+	{
+		float Near = -15.0f;
+		float Far = -15.0f;
+	};
+	
 	class WorldRenderer : public RefCounted {
 	public:
+
 		//WorldRenderer()=default;
 		virtual ~WorldRenderer();
 
 
 		void BeginContext();
 		void EndContext();
-		void Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, Viewport viewport, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame = true, Count<UITable> uiTable = nullptr);
+		void Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, float nearPlane, float farPlane,Viewport viewport, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame = true, Count<UITable> uiTable = nullptr);
 		WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight);
 		void Resize(ScreenSize windowSize);
 		void SetContext(Count<World>world) {
@@ -127,12 +137,20 @@ namespace Proof
 		void Render(EditorCamera& camera, RenderSettings renderSettings);
 		void Render(CameraComponent& comp, Vector& location, RenderSettings renderSettings,Count<UITable> uiTable =nullptr);
 		void Render(CameraComponent& comp, Vector& location, Viewport viewport, ViewportScissor scissor, RenderSettings renderSettings,bool clearPreviousFrame = true, Count<UITable> uiTable = nullptr);
-		Count<Image2D> GetImage(){
-			return m_ScreenFrameBuffer->GetImage();
-		}
+		Count<Image2D> GetImage();
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
+		void SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform);
 
 	private:
+		Count<FrameBuffer> m_DepthFrameBuffer;
+		Count<class GraphicsPipeline> m_DepthPipeline;
+		Count<class RenderPass> m_DepthRenderPass;
+		std::array<Count<RenderPass>, 4> m_ShadowMapPasses; // for cascades
+		Count<RenderMaterial> m_ShadowPassMaterial;
+		void CreateShadowMap();
+		void MeshPass();
+		void ShadowPass();
+
 		LightScene m_LightScene;
 		Special<Renderer3DPBR> m_Renderer3D;
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
@@ -140,21 +158,20 @@ namespace Proof
 		Special<class Renderer2D>  m_UIRenderer;
 		Special<class Renderer2D>  m_ParticleSystemRenderer;
 		Count<RenderCommandBuffer> m_CommandBuffer;
-		//Count<class RenderPass> m_RenderPass;
 		Count<World>m_World=nullptr;
 
 		Count<class Texture2D> m_BRDFLUT;
 
-		Count<class StorageBuffer> m_DirectionalLights;
-		void SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform);
+		Count<class StorageBufferSet> m_DirectionalLights;
 
-		void MeshPass();
 		std::map<MeshKey, std::vector<glm::mat4>> m_MeshTransformMap;
 		std::map<MeshKey, MeshDrawInfo> m_MeshDrawList;
 		MeshRenderPipline m_MeshPipeline;
 		Count<class Environment> m_Environment;
-		Count<UniformBuffer> m_SkyBoxUniformInfo;
+		Count<UniformBufferSet> m_SkyBoxUniformInfo;
 		void Reset();
+		CameraData m_CameraData;
+
 	};	
 }
 

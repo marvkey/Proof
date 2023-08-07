@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.h>
 
 #include "VulkanDescriptorManager.h"
-
+#include "Proof/Renderer/Viewport.h"
 namespace Proof{
 	struct VulkanRenderPassAttach {
 		VkAttachmentDescription AttchmentDescription;
@@ -28,6 +28,8 @@ namespace Proof{
 		virtual void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images);
 		virtual void SetInput(std::string_view name, Count<class TextureCube> buffer);
 		virtual void SetInput(std::string_view name, Count<class StorageBuffer> buffer);
+		void SetInput(std::string_view name, Count<class UniformBufferSet> buffer);
+		void SetInput(std::string_view name, Count<class StorageBufferSet> buffer);
 
 		void virtual SetInput(std::string_view name, Count<class ImageView> imageView);
 		void virtual SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews);

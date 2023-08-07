@@ -1,7 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Image.h"
-#include "Renderer.h"
 namespace Proof {
 	struct FrameBufferImageConfig {
 		FrameBufferImageConfig() = default;
@@ -39,8 +38,11 @@ namespace Proof {
 	public:
 		static Count<FrameBuffer> Create(const FrameBufferConfig& config);
 		// index is hte framebuffer image index
-		virtual Count <Image2D> GetColorAttachmentImage(uint32_t index, uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex) = 0;
-		virtual Count <Image2D> GetDepthImage(uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex) = 0;
+		// iamge is only goign to be type iamge2D and imageView
+		virtual Count <Image> GetColorAttachmentImage(uint32_t swapchainImageIndex,uint32_t index) = 0;
+		// iamge is only goign to be type iamge2D and imageView
+		virtual Count <Image> GetDepthImage(uint32_t swapchainImageIndex) = 0;
+
 		virtual ImageLayouts2D GetColorAttachmentImageLayout(uint32_t index) = 0;
 		virtual ImageLayouts2D GetDepthImageLayout() = 0;
 
@@ -62,7 +64,7 @@ namespace Proof {
 		}
 		virtual uint32_t GetFrameWidth();
 		virtual uint32_t GetFrameHeight();
-		virtual Count<Image2D> GetImage(uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex);
+		virtual Count<Image> GetImage(uint32_t imageIndex);
 	private:
 		Count<FrameBuffer> m_FrameBuffer;
 	};

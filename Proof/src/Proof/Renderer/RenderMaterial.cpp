@@ -3,6 +3,7 @@
 #include "VertexArray.h"
 #include "Vertex.h"
 #include "Platform/Vulkan/VulkanRenderMaterial.h"
+#include "Renderer.h"
 namespace Proof {
 
 	Count<RenderMaterial> RenderMaterial::Create(const RenderMaterialConfiguration& config)

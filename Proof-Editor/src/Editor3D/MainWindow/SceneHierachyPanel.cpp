@@ -507,10 +507,9 @@ namespace Proof
 			if (!hasImage)
 				return;
 			ImGui::SliderFloat("SkyBoxLoad", &skylight.SkyBoxLoad, 0, skylight.Environment->PrefilterMap->GetMipLevelCount());
-			ImGui::DragFloat("Exposure", &skylight.Exposure,0.25,0,500,"%.3f",ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("Intensity", &skylight.Intensity,0.25,0,1000,"%.3f",ImGuiSliderFlags_AlwaysClamp);
 			ImGui::DragFloat("Rotation", &skylight.MapRotation,0.25);
 			ImGui::ColorEdit3("TintColor", skylight.ColorTint.GetValue_Ptr());
-			//ImGui::DragFloat("Intensity", &drl.Intensity, 0.01, 0.0f, 100);
 		});
 		DrawComponents<DirectionalLightComponent>("Directonal Light", entity, [](DirectionalLightComponent& drl) {
 			ImGui::ColorEdit3("Ambient", drl.Color.GetValue_Ptr());

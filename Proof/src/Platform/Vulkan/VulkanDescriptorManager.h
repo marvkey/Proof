@@ -11,6 +11,8 @@ namespace Proof
 		None =0,
 		UniformBuffer,
 		StorageBuffer,
+		UniformBufferSet,
+		StorageBufferSet,
 		Texture2D,
 		TextureCube,
 		Image2D,
@@ -19,11 +21,13 @@ namespace Proof
 		ImageView,
 		ImageViewSet,
 	};
-
+	/*
 	enum class RenderPassInputType {
 		None =0,
 		UniformBuffer,
 		Storagebuffer,
+		UniformBufferSet,
+		StorageBufferSet,
 		ImageSampler1D,
 		ImageSampler2D,
 		ImageSampler3D,//(CUBE)
@@ -31,6 +35,7 @@ namespace Proof
 		StorageSampler2D,
 		StorageSampler3D
 	};
+	*/
 	
 	struct RenderPassInput
 	{
@@ -42,11 +47,22 @@ namespace Proof
 		{
 
 		}
+		RenderPassInput(Count<class UniformBufferSet> resource) :
+			Type(RenderPassResourceType::UniformBufferSet), Input(std::vector<Count<RefCounted>>(1, resource))
+		{
+
+		}
 		RenderPassInput(Count<class StorageBuffer> resource) :
 			Type(RenderPassResourceType::StorageBuffer), Input(std::vector<Count<RefCounted>>(1, resource))
 		{
 
 		}
+		RenderPassInput(Count<class StorageBufferSet> resource) :
+			Type(RenderPassResourceType::StorageBufferSet), Input(std::vector<Count<RefCounted>>(1, resource))
+		{
+
+		}
+		
 		RenderPassInput(Count<Texture2D> resource) :
 			Type(RenderPassResourceType::Texture2D), Input(std::vector<Count<RefCounted>>(1, resource))
 		{
@@ -127,6 +143,8 @@ namespace Proof
 		~VulkanDescriptorManager();
 		void SetInput(std::string_view name, Count<class UniformBuffer> buffer);
 		void SetInput(std::string_view name, Count<class StorageBuffer> buffer);
+		void SetInput(std::string_view name, Count<class UniformBufferSet> buffer);
+		void SetInput(std::string_view name, Count<class StorageBufferSet> buffer);
 		void SetInput(std::string_view name, Count<class TextureCube> buffer);
 		void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images);
 		void SetInput(std::string_view name, Count<class Texture2D> iamge);

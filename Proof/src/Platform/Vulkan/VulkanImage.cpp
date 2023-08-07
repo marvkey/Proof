@@ -68,15 +68,17 @@ namespace Proof {
 			return VK_IMAGE_VIEW_TYPE_MAX_ENUM;
 		}
 	}
-	VulkanImage2D::VulkanImage2D(const ImageConfiguration& imageSpec)
+	VulkanImage2D::VulkanImage2D(const ImageConfiguration& imageSpec, VkSampleCountFlagBits sampleFlags )
 		:
-		m_Specification(imageSpec)
+		m_Specification(imageSpec),
+		m_SampleFlags(sampleFlags)
 	{
 		PF_CORE_ASSERT(m_Specification.Height > 0 && m_Specification.Width > 0);
 		Build();
 	}
 	VulkanImage2D::VulkanImage2D(const ImageConfiguration& imageSpec, VulkanImageInfo info, uint64_t samplerHash)
 	{
+		m_SampleFlags = VK_SAMPLE_COUNT_1_BIT;
 		m_Specification = imageSpec;
 		m_Info = info;
 		m_SamplerHash = samplerHash;
@@ -136,7 +138,7 @@ namespace Proof {
 		imageCreateInfo.mipLevels = m_Specification.Mips;
 		imageCreateInfo.arrayLayers = m_Specification.Layers;
 		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageCreateInfo.samples = m_SampleFlags;
 		imageCreateInfo.tiling = m_Specification.Usage == ImageUsage::HostRead ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
 		imageCreateInfo.usage = usage;
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -448,6 +450,7 @@ namespace Proof {
 		m_DescriptorImageInfo.imageView = m_ImageView;
 		m_DescriptorImageInfo.sampler = m_Specification.Image.As<VulkanImage2D>()->Getinfo().Sampler;
 	}
+
 	void GetMaxImageDimensions(VkPhysicalDevice physicalDevice, uint32_t& maxWidth, uint32_t& maxHeight) {
 		VkPhysicalDeviceProperties deviceProperties;
 		vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);

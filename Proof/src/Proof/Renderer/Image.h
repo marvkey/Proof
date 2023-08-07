@@ -162,17 +162,12 @@ namespace Proof
 	};
 
 
-	class Image : public RendererViewResource
+	class Image : public RendererResource
 	{
 	public:
 		virtual ~Image() = default;
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
-		virtual void Resize(Vector2U size) = 0;
-
 		virtual Vector2U GetSize() = 0;
 		virtual float GetAspectRatio() = 0;;
-
-		virtual const ImageConfiguration& GetSpecification()const = 0;
 		virtual uint32_t GetWidth() = 0;
 		virtual uint32_t GetHeight() = 0;
 
@@ -180,7 +175,11 @@ namespace Proof
 	class Image2D : public Image {
 	public:
 		virtual ~Image2D() = default;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
+		virtual void Resize(Vector2U size) = 0;
+		virtual const ImageConfiguration& GetSpecification()const = 0;
 		static Count<Image2D>Create(const ImageConfiguration& specification);
+		RENDER_VIEW_RESOURCE_CLASS_TYPE(Image2D);
 	};
 	enum class ImageViewType {
 		None = 0,
@@ -205,12 +204,13 @@ namespace Proof
 
 		ImageViewType View = ImageViewType::View2D;
 	};
-	class ImageView : public RendererViewResource {
+	class ImageView : public Image {
 	public:
 		virtual ~ImageView() = default;
 		static Count<ImageView>Create(const ImageViewConfiguration& specification);
 		virtual const ImageViewConfiguration& GetSpecification()const = 0;
 		virtual Count<Image2D> GetImage()const = 0;
+		RENDER_VIEW_RESOURCE_CLASS_TYPE(ImageView);
 
 	};
 
@@ -219,38 +219,25 @@ namespace Proof
 	struct ImageLayouts2D {
 
 		ImageLayouts2D(const ImageLayouts2D&) = default;
-		ImageLayouts2D(Count<Image2D> image)
-		{
-			Images.resize(Renderer::GetConfig().MaxImageCount);
-			for (int i = 0; i < Renderer::GetConfig().MaxImageCount; i++)
-				Images[i] = image;
-		}
-
-		ImageLayouts2D(std::initializer_list<Count<Image2D>> images) :
-			Images(images)
-		{
-			PF_CORE_ASSERT(images.size() == Renderer::GetConfig().MaxImageCount, "Initilizer list must equalt image count");
-		}
-
-		ImageLayouts2D(const std::vector<Count<Image2D>>& images) :
-			Images(images)
-		{
-			PF_CORE_ASSERT(images.size() == Renderer::GetConfig().MaxImageCount, "Vector must equalt image count");
-		}
-		ImageLayouts2D() {
-
-		}
+		ImageLayouts2D(Count<Image2D> image);
+		ImageLayouts2D(std::initializer_list<Count<Image2D>> images);
+		ImageLayouts2D(const std::vector<Count<Image2D>>& images);
+		ImageLayouts2D(Count<ImageView> image);
+		ImageLayouts2D(std::initializer_list<Count<ImageView>> images);
+		ImageLayouts2D(const std::vector<Count<ImageView>>& images);
+		ImageLayouts2D();
 
 		bool HasImages()const {
 			return Images.size() > 0;
 		}
 
-		Count<Image2D> GetImageIndex(uint32_t index)const
+		Count<Image> GetImageIndex(uint32_t index)const
 		{
 			PF_CORE_ASSERT(index < Images.size(), " Does not contain image Index");
 			return Images[index];
 		}
-		std::vector<Count<Image2D>> Images;
+		// only image2D AND ImageView
+		std::vector<Count<Image>> Images;
 	};
 
 	namespace Utils

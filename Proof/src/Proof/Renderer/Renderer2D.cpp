@@ -355,11 +355,11 @@ namespace Proof {
 		PF_PROFILE_FUNC();
 
 		CameraData screnData;
-		screnData.m_Positon = s_CurrentCamera.m_Positon;
-		screnData.m_Projection = glm::mat4(1.0f);
-		screnData.m_View = glm::mat4(1.0f);
+		screnData.Position = s_CurrentCamera.Position;
+		screnData.Projection = glm::mat4(1.0f);
+		screnData.ProjectionView = glm::mat4(1.0f);
 		
-		m_Storage2DData->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+		m_Storage2DData->CameraBuffer->SetData(1,Buffer(((uint8_t*)&s_CurrentCamera, sizeof(CameraData))));
 
 		if (m_Storage2DData->IndexCount > 0) // nothing to draw
 		{
@@ -479,7 +479,7 @@ namespace Proof {
 
 		VertexBuffer = VertexBuffer::Create(c_MaxVertexCount*sizeof(Vertex2D));
 		IndexBuffer = IndexBuffer::Create(QuadIndices.data(), c_MaxIndexCount);
-		CameraBuffer = UniformBuffer::Create(sizeof(CameraData));
+		CameraBuffer = UniformBufferSet::Create(sizeof(CameraData));
 
 		TextVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(TextVertex));
 		uint32_t whiteTextureData = 0xffffffff;

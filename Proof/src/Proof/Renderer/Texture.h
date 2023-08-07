@@ -54,7 +54,7 @@ namespace Proof {
 		bool GenerateMips = false;
 		bool Storage = false;
 	};
-	class Texture : public RendererViewResource
+	class Texture : public RendererResource
 	{
 	public:
 		Texture()
@@ -65,11 +65,13 @@ namespace Proof {
 		virtual ~Texture() {};
 
 		ASSET_CLASS_TYPE(Texture);
+
 	};
 	
 	class Texture2D : public Texture {
 	public:
 		virtual ~Texture2D() {};
+		RENDER_VIEW_RESOURCE_CLASS_TYPE(Texture2D);
 
 		virtual const TextureConfiguration& GetSpecification()const = 0;
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
@@ -94,6 +96,8 @@ namespace Proof {
 
 	class TextureCube : public Texture {
 	public:
+		RENDER_VIEW_RESOURCE_CLASS_TYPE(TextureCube);
+
 		virtual ~TextureCube() {};
 		virtual uint32_t GetWidth()const = 0;
 		virtual float GetAspectRatio()const = 0;

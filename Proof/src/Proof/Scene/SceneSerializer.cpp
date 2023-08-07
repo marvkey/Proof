@@ -132,7 +132,6 @@ namespace Proof
 					out << YAML::Key << "SkyLightComponent";
 					out << YAML::BeginMap; // SkyLightComponentComponent
 					out << YAML::Key << "TintColor" << skylight.ColorTint;
-					out << YAML::Key << "Exposure" << skylight.Exposure;
 					out << YAML::Key << "SkyBoxLod" << skylight.SkyBoxLoad;
 					out << YAML::Key << "MapRotation" << skylight.MapRotation;
 					out << YAML::Key << "Intensity" << skylight.Intensity;
@@ -622,7 +621,6 @@ namespace Proof
 						auto& src = NewEntity.AddComponent<SkyLightComponent>();
 						src.Image = skyLight["Image"].as<uint64_t>();
 						src.ColorTint = skyLight["TintColor"].as<Vector>();
-						src.Exposure = skyLight["Exposure"].as<float>();
 						src.SkyBoxLoad = skyLight["SkyBoxLod"].as<float>();
 						src.MapRotation = skyLight["MapRotation"].as<float>();
 						src.Intensity = skyLight["Intensity"].as<float>();

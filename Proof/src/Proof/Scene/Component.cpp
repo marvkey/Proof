@@ -19,6 +19,7 @@
 #include "Proof/Scene/Physics/PhysicsEngine.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Scene/Material.h"
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
 

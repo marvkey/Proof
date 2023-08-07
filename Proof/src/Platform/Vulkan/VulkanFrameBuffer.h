@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.h>
 #include "VulkanUtils/VulkanBufferBase.h"
 #include "Proof/Renderer/FrameBuffer.h"
-#include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Texture.h"
 namespace Proof
 {
@@ -21,20 +20,22 @@ namespace Proof
 		VulkanFrameBufferImages& operator=(const VulkanFrameBufferImages& right) {
 			return *this;
 		}
-		std::vector<Count<Image2D>> RefImages;
+		std::vector<Count<Image>> RefImages;
 	};
 	class VulkanFrameBuffer : public FrameBuffer {
 	public:
 		VulkanFrameBuffer(const FrameBufferConfig& attachments);
 		virtual ~VulkanFrameBuffer();
-		VkFramebuffer GetFrameBuffer(uint32_t index = Renderer::GetCurrentFrame().ImageIndex);
+		VkFramebuffer GetFrameBuffer(uint32_t swapchainImageIndex);
 		const FrameBufferConfig& GetConfig() const  {
 			return m_Config;
 		}
-
+		const FrameBufferConfig& GetConfig() {
+			return m_Config;
+		}
 		// index is the image attachment
-		virtual Count<Image2D> GetColorAttachmentImage(uint32_t index, uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex);
-		virtual Count<Image2D> GetDepthImage(uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex);
+		virtual Count<Image> GetColorAttachmentImage(uint32_t swapchainImageIndex, uint32_t index);
+		virtual Count<Image> GetDepthImage(uint32_t swapchainImageIndex);
 
 		// index is the image attachment
 		virtual ImageLayouts2D GetColorAttachmentImageLayout(uint32_t index);

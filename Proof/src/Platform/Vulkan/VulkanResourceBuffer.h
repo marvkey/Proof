@@ -1,76 +1,95 @@
 #pragma once
 #include "Proof/Renderer/UniformBuffer.h"
-#include "Proof/Renderer/Renderer.h"
 #include "Vulkan.h"
 #include "VulkanUtils/VulkanBufferBase.h"
 
 namespace Proof{
     class VulkanUniformBuffer : public UniformBuffer {
     public:
-        VulkanUniformBuffer(uint32_t size);
-        VulkanUniformBuffer(const  void* data, uint32_t size);
+        VulkanUniformBuffer(uint64_t size);
+        VulkanUniformBuffer(Buffer data);
         virtual ~VulkanUniformBuffer();
-        VkBuffer GetBuffer(int index) {
-            return m_UniformBuffers[index].Buffer;
-        }
-        //for unifrm bufffer configuribity stuff
-        void SetData(const void* data, uint32_t size, uint32_t offset = 0) {
-            SetData(data, size, offset, Renderer::GetCurrentFrame().FrameinFlight);
-        }
-        void SetData(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex);
-        const VkDescriptorBufferInfo& GetDescriptorInfoVulkan(uint32_t frmaeIndex = Renderer::GetCurrentFrame().FrameinFlight)const {
+        VkBuffer GetBuffer() { return m_UniformBuffers.Buffer; }
+        
+        void SetData(Buffer data, uint64_t offset = 0);
+        const VkDescriptorBufferInfo& GetDescriptorInfoVulkan()const {
             m_BufferInfo = {
-                m_UniformBuffers[frmaeIndex].Buffer,
+                m_UniformBuffers.Buffer,
                 0,
                 m_Size,
             };
             return m_BufferInfo;
         }
-
-        void Resize(uint32_t size);
-        void Resize(const void * data, uint32_t size);
-        virtual uint32_t GetSize() { return m_Size; }
-        virtual ResourceDescriptorInfo GetResourceDescriptorInfo(uint32_t  frameIndex = Renderer::GetCurrentFrame().FrameinFlight)const { return (ResourceDescriptorInfo)&GetDescriptorInfoVulkan(frameIndex); }
+        void Resize(uint64_t size);
+        void Resize(Buffer data);
+        virtual uint64_t GetSize() { return m_Size; }
+        virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const { return (ResourceDescriptorInfo)&GetDescriptorInfoVulkan(); }
     private:
-        // multiple of this cause of frames in flight
-        // we do not want to right to a uniform for the next frame
-        // while a uniform is still being read by the gpu on the current frame
-        std::vector<VulkanBuffer> m_UniformBuffers;
+        VulkanBuffer m_UniformBuffers;
         mutable VkDescriptorBufferInfo m_BufferInfo;
-        uint32_t m_Size = 0;
+        uint64_t m_Size = 0;
         void Release();
         void Build();
+    };
+
+    class VulkanUniformBufferSet : public UniformBufferSet
+    {
+    public:
+        VulkanUniformBufferSet(uint64_t size);
+        VulkanUniformBufferSet(Buffer data);
+        virtual ~VulkanUniformBufferSet();
+        Count<UniformBuffer> GetBuffer(uint32_t index);
+
+        void Resize(uint32_t index, uint64_t size);
+        void Resize(uint32_t index,Buffer data);
+        void SetData(uint32_t index,Buffer data, uint64_t offset = 0);
+
+    private:
+        std::map<uint32_t, Count<UniformBuffer>> m_Buffers;
     };
 
     class VulkanStorageBuffer : public StorageBuffer {
     public:
         virtual ~VulkanStorageBuffer();
-        VulkanStorageBuffer(uint32_t size);
-        VulkanStorageBuffer(const void* data, uint32_t size);
-        const VkDescriptorBufferInfo& GetDescriptorInfoVulkan(uint32_t frmaeIndex = Renderer::GetCurrentFrame().FrameinFlight)const {
+        VulkanStorageBuffer(uint64_t size);
+        VulkanStorageBuffer(Buffer data);
+        const VkDescriptorBufferInfo& GetDescriptorInfoVulkan()const {
             m_BufferInfo = {
-                m_StorageBuffer[frmaeIndex].Buffer,
+                m_StorageBuffer.Buffer,
                 0,
                 m_Size,
             };
             return m_BufferInfo;
         }
-        void SetData(const void* data, uint32_t size, uint32_t offset = 0) {
-            SetData(data, size, offset, Renderer::GetCurrentFrame().FrameinFlight);
-        }
-        void Resize(uint32_t size);
-        void Resize(const void* data, uint32_t size);
-        virtual uint32_t GetSize() { return m_Size; }
+        void SetData(Buffer data, uint64_t offset = 0);
 
-        virtual void SetData(const void* data, uint32_t size, uint32_t offset,uint32_t frameIndex);
-        virtual ResourceDescriptorInfo GetResourceDescriptorInfo(uint32_t  frameIndex = Renderer::GetCurrentFrame().FrameinFlight)const { return (ResourceDescriptorInfo)&GetDescriptorInfoVulkan(frameIndex); }
+        void Resize(uint64_t size);
+        void Resize(Buffer data);
+        virtual uint64_t GetSize() { return m_Size; }
+        virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const { return (ResourceDescriptorInfo)&GetDescriptorInfoVulkan(); }
+    
     private:
-        uint32_t m_Size = 0;
+        uint64_t m_Size = 0;
         mutable VkDescriptorBufferInfo m_BufferInfo;
-        std::vector<VulkanBuffer> m_StorageBuffer;
+        VulkanBuffer m_StorageBuffer;
         
         void Release();
         void Build();
     };
 
+    class VulkanStorageBufferSet : public StorageBufferSet
+    {
+    public:
+        VulkanStorageBufferSet(uint64_t size);
+        VulkanStorageBufferSet(Buffer data);
+        virtual ~VulkanStorageBufferSet();
+        Count<StorageBuffer> GetBuffer(uint32_t index);
+
+        void Resize(uint32_t index, uint64_t size);
+        void Resize(uint32_t index, Buffer data);
+        void SetData(uint32_t index, Buffer data, uint64_t offset = 0);
+
+    private:
+        std::map<uint32_t, Count<StorageBuffer>> m_Buffers;
+    };
 }

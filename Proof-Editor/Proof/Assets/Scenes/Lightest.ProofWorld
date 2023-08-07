@@ -7,14 +7,14 @@ World:
         tags: []
       TransformComponent:
         Location: [0.271118194, 0, -1.95475864]
-        Rotation: [13, 6.80000019, 20.6000004]
+        Rotation: [13, 147.600006, 20.6000004]
         Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 1
+        Intensity: 33.5499992
     - Entity: 15765233332795142875
       TagComponent:
         Tag: Sky Light
@@ -29,7 +29,7 @@ World:
       SkyLightComponent:
         TintColor: [1, 1, 1]
         Exposure: 1
-        SkyBoxLod: 1.22399998
+        SkyBoxLod: 0
         MapRotation: 0
         Intensity: 1
         Image: 2700444414993608762
@@ -40,7 +40,7 @@ World:
       TransformComponent:
         Location: [0, 13.5, 2.70000005]
         Rotation: [0, 0, 0]
-        Scale: [10, 10, 10]
+        Scale: [12.5, 10, 10]
       ChildComponent:
         OwnerID: 0
         Children: []
@@ -83,3 +83,16 @@ World:
           - Material: ""
             AssetID: 5634022354863745560
             Index: 1
+    - Entity: 14031512044906894714
+      TagComponent:
+        Tag: cube
+        tags: []
+      TransformComponent:
+        Location: [0, 32.2000008, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733

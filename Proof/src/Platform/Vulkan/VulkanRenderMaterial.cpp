@@ -55,6 +55,16 @@ namespace Proof {
 	{
 		m_DescritptorSetManager->SetInput(name, buffer);
 	}
+
+	void VulkanRenderMaterial::Set(std::string_view name, Count<class UniformBufferSet> buffer)
+	{
+		m_DescritptorSetManager->SetInput(name, buffer);
+	}
+
+	void VulkanRenderMaterial::Set(std::string_view name, Count<class StorageBufferSet> buffer)
+	{
+		m_DescritptorSetManager->SetInput(name, buffer);
+	}
 	void VulkanRenderMaterial::Set(std::string_view name, Count<class Texture2D> texture)
 	{
 		m_DescritptorSetManager->SetInput(name, texture);

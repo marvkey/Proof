@@ -58,7 +58,7 @@ namespace Proof
 		LightPass LightPass;
 		Count<class TextureCube> IrradianceMap;
 		Count<class TextureCube> PrefilterMap;
-		Count<Texture2D> BRDf;
+		Count<class Texture2D> BRDf;
 
 		
 		void Reset() {
@@ -92,10 +92,10 @@ namespace Proof
 
 
 	struct MaterialTextureData {
-		Count<Texture2D>Color;
-		Count<Texture2D>Normal;
-		Count<Texture2D>Metallic;
-		Count<Texture2D>Roughness;
+		Count<class Texture2D>Color;
+		Count<class Texture2D>Normal;
+		Count<class Texture2D>Metallic;
+		Count<class Texture2D>Roughness;
 	};
 	// takes from mesh pipline
 	// make 
@@ -148,7 +148,7 @@ namespace Proof
 		void Init();
 		void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<RenderCommandBuffer>& commandBuffer);
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
-		void SetPbrMaps(Count<class TextureCube> irrdianceMap, Count<class TextureCube> prefilterMap,Count<Texture2D> brdf);
+		void SetPbrMaps(Count<class TextureCube> irrdianceMap, Count<class TextureCube> prefilterMap,Count<class Texture2D> brdf);
 
 		void SubmitMesh(Count<Mesh> mesh, const glm::mat4& transform);
 		void SubmitMeshWithMaterial(Count<Mesh> mesh, Count<MaterialTable> table, const glm::mat4& transform);

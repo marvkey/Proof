@@ -1,7 +1,8 @@
-#include "Proofprch.h"
+#include "Proofprch.h"	
 #include "ComputePass.h"
 #include "Platform/Vulkan/VulkanComputePass.h"
 #include "RenderPass.h"
+#include "Renderer.h"
 namespace Proof
 {
 	Count<ComputePass> ComputePass::Create(const ComputePassConfiguration& config)

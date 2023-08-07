@@ -6,17 +6,17 @@
 #include "VulkanRenderer/VulkanRenderer.h"
 namespace Proof{
 
-	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size) :
+	VulkanUniformBuffer::VulkanUniformBuffer(uint64_t size) :
 		m_Size(size)
 	{
 		Build();
 	}
-	VulkanUniformBuffer::VulkanUniformBuffer(const void* data, uint32_t size)
-		:m_Size(size)
+	VulkanUniformBuffer::VulkanUniformBuffer(Buffer data)
+		:m_Size(data.GetSize())
 	{
 		Build();
 		PF_CORE_ASSERT(data, "cannot be nullptr");
-		SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
+		SetData(data, 0);
 	}
 
 	void VulkanUniformBuffer::Build()
@@ -24,7 +24,6 @@ namespace Proof{
 		PF_CORE_ASSERT(m_Size != 0, "Vulkan uniform buffer cannot have a size less than or equal to 0");
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
-		m_UniformBuffers.resize(Renderer::GetConfig().FramesFlight);
 		VkBufferCreateInfo uniformBufferInfo = {};
 		uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		uniformBufferInfo.pNext = nullptr;
@@ -34,16 +33,13 @@ namespace Proof{
 
 		VmaAllocationCreateInfo vmaallocInfo = {};
 		vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-		for (int i = 0; i < m_UniformBuffers.size(); i++)
-		{
-			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_UniformBuffers[i]);
-		}
+		graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_UniformBuffers);
 	}
 	VulkanUniformBuffer::~VulkanUniformBuffer() 
 	{
 		Release();
 	}
-	void VulkanUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex) {
+	void VulkanUniformBuffer::SetData(Buffer data, uint64_t offset) {
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		VulkanBuffer stagingBuffer;
 
@@ -51,7 +47,7 @@ namespace Proof{
 		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		stagingBufferInfo.pNext = nullptr;
 
-		stagingBufferInfo.size = size;
+		stagingBufferInfo.size = data.GetSize();
 		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
 		//let the VMA library know that this data should be on CPU RAM
@@ -62,7 +58,7 @@ namespace Proof{
 		void* stagingData;
 		vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
 
-		memcpy(stagingData, data, size);
+		memcpy(stagingData, data.Get(), data.GetSize());
 
 		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
 
@@ -70,20 +66,20 @@ namespace Proof{
 			VkBufferCopy copy;
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
-			copy.size = size;
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_UniformBuffers[frameIndex].Buffer, 1, &copy);
+			copy.size = data.GetSize();
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_UniformBuffers.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
 
-	void VulkanUniformBuffer::Resize(uint32_t size)
+	void VulkanUniformBuffer::Resize(uint64_t size)
 	{
 		Release();
 		m_Size = size;
 		Build();
 	}
 
-	void VulkanUniformBuffer::Resize(const void* data, uint32_t size)
+	void VulkanUniformBuffer::Resize(Buffer data)
 	{
 		//TODO WORKING EXPECTED
 		//if (m_Size == m_Size)
@@ -92,45 +88,86 @@ namespace Proof{
 		//	return;
 		//}
 		Release();
-		m_Size = size;
+		m_Size = data.GetSize();
 
 		Build();
-		SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
+		SetData(data, 0);
 	}
 
 	void VulkanUniformBuffer::Release()
 	{
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-		for (int i = 0; i < m_UniformBuffers.size(); i++)
-		{
-			Renderer::SubmitDatafree([context = graphicsContext, buffer = m_UniformBuffers[i]]() {
-				vmaDestroyBuffer(context->GetVMA_Allocator(), buffer.Buffer, buffer.Allocation);
-			});
-		}
-		m_UniformBuffers.clear();
+		Renderer::SubmitDatafree([context = graphicsContext, buffer = m_UniformBuffers]() {
+			vmaDestroyBuffer(context->GetVMA_Allocator(), buffer.Buffer, buffer.Allocation);
+		});
+		m_UniformBuffers.Allocation = nullptr;
+		m_UniformBuffers.Buffer = nullptr;
 	}
 	
+	VulkanUniformBufferSet::VulkanUniformBufferSet(uint64_t size)
+	{
+		for (uint32_t frameIndex = 0; frameIndex < Renderer::GetConfig().FramesFlight; frameIndex++)
+		{
+			m_Buffers[frameIndex] = UniformBuffer::Create(size);
+		}
+	}
 
-	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size)
+	VulkanUniformBufferSet::VulkanUniformBufferSet(Buffer data)
+	{
+		for (uint32_t frameIndex = 0; frameIndex < Renderer::GetConfig().FramesFlight; frameIndex++)
+		{
+			m_Buffers[frameIndex] = UniformBuffer::Create(data);
+		}
+	}
+
+	VulkanUniformBufferSet::~VulkanUniformBufferSet()
+	{
+		m_Buffers.clear();
+	}
+
+	void VulkanUniformBufferSet::Resize(uint32_t index, uint64_t size)
+	{
+		PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
+		m_Buffers[index]->Resize(size);
+	}
+
+	void VulkanUniformBufferSet::Resize(uint32_t index,Buffer data)
+	{
+		PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
+		m_Buffers[index]->Resize(data);
+	}
+
+	void VulkanUniformBufferSet::SetData(uint32_t index, Buffer data, uint64_t offset)
+	{
+		PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
+		m_Buffers[index]->SetData(data,offset);
+	}
+
+	Count<UniformBuffer> VulkanUniformBufferSet::GetBuffer(uint32_t index)
+	{
+		PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
+		return m_Buffers[index];
+	}
+
+	VulkanStorageBuffer::VulkanStorageBuffer(uint64_t size)
 		:m_Size(size)
 
 	{
 		Build();
 	}
 
-	VulkanStorageBuffer::VulkanStorageBuffer(const void* data, uint32_t size)
-		:m_Size(size)
+	VulkanStorageBuffer::VulkanStorageBuffer(Buffer data)
+		:m_Size(data.GetSize())
 
 	{
 		Build();
-		SetData(data, size, 0, Renderer::GetCurrentFrame().FrameinFlight);
+		SetData(data, 0);
 
 	}
 	void VulkanStorageBuffer::Build()
 	{
 		PF_CORE_ASSERT(m_Size != 0, "Cannot create storageBuffer with a size of 0");
 
-		m_StorageBuffer.resize(Renderer::GetConfig().FramesFlight);
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		VkBufferCreateInfo uniformBufferInfo = {};
 		uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -141,35 +178,32 @@ namespace Proof{
 
 		VmaAllocationCreateInfo vmaallocInfo = {};
 		vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-		for (int i = 0; i < m_StorageBuffer.size(); i++)
-		{
-			graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_StorageBuffer[i]);
-		}
+		graphicsContext->CreateVmaBuffer(uniformBufferInfo, vmaallocInfo, m_StorageBuffer);
 	}
 	VulkanStorageBuffer::~VulkanStorageBuffer()
 	{
 		Release();
 	}	
-	void VulkanStorageBuffer::Resize(uint32_t size)
+	void VulkanStorageBuffer::Resize(uint64_t size)
 	{
 		Release();
 		m_Size = size;
 		Build();
 	}
-	void VulkanStorageBuffer::Resize(const void* data, uint32_t size)
+	void VulkanStorageBuffer::Resize(Buffer data)
 	{
-		if (m_Size == size)
-		{
-			SetData(data, size);
-			return;
-		}
+		//if (m_Size == data.GetSize())
+		//{
+		//	SetData(data);
+		//	return;
+		//}
 		Release();
-		m_Size = size;
+		m_Size = data.GetSize();
 
 		Build();
-		SetData(data, size);
+		SetData(data);
 	}
-	void VulkanStorageBuffer::SetData(const void* data, uint32_t size, uint32_t offset, uint32_t frameIndex)
+	void VulkanStorageBuffer::SetData(Buffer data, uint64_t offset)
 	{
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		VulkanBuffer stagingBuffer;
@@ -178,7 +212,7 @@ namespace Proof{
 		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		stagingBufferInfo.pNext = nullptr;
 
-		stagingBufferInfo.size = size;
+		stagingBufferInfo.size = data.GetSize();
 		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
 		//let the VMA library know that this data should be on CPU RAM
@@ -189,7 +223,7 @@ namespace Proof{
 		void* stagingData;
 		vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
 
-		memcpy(stagingData, data, size);
+		memcpy(stagingData, data.Get(), data.GetSize());
 
 		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
 
@@ -197,8 +231,8 @@ namespace Proof{
 			VkBufferCopy copy;
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
-			copy.size = size;
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_StorageBuffer[frameIndex].Buffer, 1, &copy);
+			copy.size = data.GetSize();
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_StorageBuffer.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
@@ -206,13 +240,56 @@ namespace Proof{
 	{
 		auto allocator = VulkanRenderer::GetGraphicsContext()->GetVMA_Allocator();
 
-		for (int i = 0; i < m_StorageBuffer.size(); i++)
-		{
-			Renderer::SubmitDatafree([allocator = allocator, buffer = m_StorageBuffer[i]]() {
-				vmaDestroyBuffer(allocator, buffer.Buffer, buffer.Allocation);
-			});
-		}
-		m_StorageBuffer.clear();
+		Renderer::SubmitDatafree([allocator = allocator, buffer = m_StorageBuffer]() {
+			vmaDestroyBuffer(allocator, buffer.Buffer, buffer.Allocation);
+		});
+		m_StorageBuffer.Allocation = nullptr;
+		m_StorageBuffer.Buffer = nullptr;
 	}
-	
+
+	VulkanStorageBufferSet::VulkanStorageBufferSet(uint64_t size)
+	{
+		for (uint32_t frameIndex = 0; frameIndex < Renderer::GetConfig().FramesFlight; frameIndex++)
+		{
+			m_Buffers[frameIndex] = StorageBuffer::Create(size);
+		}
+	}
+
+	VulkanStorageBufferSet::VulkanStorageBufferSet(Buffer data)
+	{
+		for (uint32_t frameIndex = 0; frameIndex < Renderer::GetConfig().FramesFlight; frameIndex++)
+		{
+			m_Buffers[frameIndex] = StorageBuffer::Create(data);
+		}
+	}
+
+	VulkanStorageBufferSet::~VulkanStorageBufferSet()
+	{
+		m_Buffers.clear();
+	}
+
+	Count<StorageBuffer> VulkanStorageBufferSet::GetBuffer(uint32_t index)
+	{
+		PF_CORE_ASSERT(m_Buffers.contains(index), "Storage Buffer set does not contain index");
+		return m_Buffers[index];
+	}
+
+	void VulkanStorageBufferSet::Resize(uint32_t index, uint64_t size)
+	{
+		PF_CORE_ASSERT(m_Buffers.contains(index), "Storage Buffer set does not contain index");
+		m_Buffers[index]->Resize(size);
+	}
+
+	void VulkanStorageBufferSet::Resize(uint32_t index, Buffer data)
+	{
+		PF_CORE_ASSERT(m_Buffers.contains(index), "Storage Buffer set does not contain index");
+		m_Buffers[index]->Resize(data);
+	}
+
+	void VulkanStorageBufferSet::SetData(uint32_t index, Buffer data, uint64_t offset)
+	{
+		PF_CORE_ASSERT(m_Buffers.contains(index), "Storage Buffer set does not contain index");
+		m_Buffers[index]->SetData(data,offset);
+	}
+
 }

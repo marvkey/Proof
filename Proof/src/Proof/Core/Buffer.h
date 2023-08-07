@@ -12,7 +12,8 @@ namespace Proof{
 			Allocate(size);
 		}
 		Buffer(const Buffer&) = default;
-		Buffer(uint8_t* data, uint64_t size, bool copyData = false):
+		//data is in (uint8_t*) just using void* so user can avoid casitng
+		Buffer(void* data, uint64_t size, bool copyData = false):
 			m_Size(size)
 		{
 			if (copyData && data && size > 0)
@@ -22,7 +23,7 @@ namespace Proof{
 			}
 			else
 			{
-				m_Data = data;
+				m_Data = (uint8_t*)data;
 			}
 		}
 		void Copy(const void* data, uint32_t size)

@@ -325,7 +325,6 @@ namespace Proof
 		SkyLightComponent() = default;
 		Vector ColorTint{1};
 		float SkyBoxLoad = 0.0f;
-		float Exposure = 1.f;
 		float MapRotation = 0.0f;
 		float Intensity = 1.0f;
 

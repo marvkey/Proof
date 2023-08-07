@@ -72,7 +72,13 @@ namespace Proof
         {
             PF_CORE_ASSERT(imageAttach.ExistingImage.Images.size() == swapchain->GetImageCount(), "Not equal to image count ");
             for (int i = 0; i < imageAttach.ExistingImage.Images.size(); i++)
-                m_DepthImage.RefImages[i] = imageAttach.ExistingImage.Images[i];
+            {
+                auto image = imageAttach.ExistingImage.Images[i];
+                if (image->GetRendererResourceType() == RendererResourceType::ImageView || image->GetRendererResourceType() == RendererResourceType::Image2D)
+                    m_DepthImage.RefImages[i] = image;
+                else
+                    PF_CORE_ASSERT(false, "Framebuffer only takes an imageView and Image2D");
+            }
             return;
         }
 
@@ -86,7 +92,11 @@ namespace Proof
             imageConfig.Usage = ImageUsage::Attachment;
             imageConfig.Width = m_Config.Size.X;
             imageConfig.Height = m_Config.Size.Y;
-            m_DepthImage.RefImages[i] = Image2D::Create(imageConfig);
+            m_DepthImage.RefImages[i] = Count<VulkanImage2D>::Create(imageConfig,VK_SAMPLE_COUNT_1_BIT);
+            {
+
+             
+            }
             Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
 
                 VkImageMemoryBarrier barrier{};
@@ -161,8 +171,14 @@ namespace Proof
 
             PF_CORE_ASSERT(imageAttach.ExistingImage.Images.size() == swapchain->GetImageCount(), "Not equal to image count ");
             for (int i = 0; i < imageAttach.ExistingImage.Images.size(); i++)
-                colorImage.RefImages[i] = imageAttach.ExistingImage.Images[i];
-
+            {
+                auto image = imageAttach.ExistingImage.Images[i];
+                if (image->GetRendererResourceType() == RendererResourceType::ImageView || image->GetRendererResourceType() == RendererResourceType::Image2D)
+                    colorImage.RefImages[i] = imageAttach.ExistingImage.Images[i];
+                else
+                    PF_CORE_ASSERT(false, "Framebuffer only takes an imageView and Image2D");
+            }
+            
             m_ColorImages.emplace_back(colorImage);
             return;
         }
@@ -175,6 +191,7 @@ namespace Proof
             imageConfig.Width = m_Config.Size.X;
             imageConfig.Height = m_Config.Size.Y;
             colorImage.RefImages[i] = Image2D::Create(imageConfig);
+            //m_DepthImage.RefImages[i] = Count<VulkanImage2D>::Create(imageConfig,VK_SAMPLE_COUNT_8_BIT);
 
             Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
                 VkImageMemoryBarrier imageMemoryBarrier{};
@@ -237,8 +254,12 @@ namespace Proof
         // for texturecube
         if (m_ColorImages.size() > 0)
         {
-            if (m_ColorImages[0].RefImages[0]->GetSpecification().Layers == 6)
-                multiView = true;
+            if (m_ColorImages[0].RefImages[0].As<Image2D>())
+            {
+                if (m_ColorImages[0].RefImages[0].As<Image2D>()->GetSpecification().Layers == 6)
+                    multiView = true;
+
+            }
         }
         RenderPassConfig renderPassCofnig("compatible renderPass",m_Config);
         renderPassCofnig.DebugName = "compatible renderPass";
@@ -285,26 +306,50 @@ namespace Proof
     {
         return m_Framebuffers[index];
     }
-    Count<Image2D> VulkanFrameBuffer::GetColorAttachmentImage(uint32_t colorIndex, uint32_t imageIndex)
+    Count<Image> VulkanFrameBuffer::GetColorAttachmentImage(uint32_t swapchainImageIndex, uint32_t index)
     {
-        return m_ColorImages[colorIndex].RefImages[imageIndex];
+        return m_ColorImages[index].RefImages[swapchainImageIndex];
     }
 
-    Count<Image2D> VulkanFrameBuffer::GetDepthImage(uint32_t imageIndex )
+    Count<Image> VulkanFrameBuffer::GetDepthImage(uint32_t swapchainImageIndex)
     {
         if(m_DepthFormat == ImageFormat::None)
             return nullptr;
-        return m_DepthImage.RefImages[imageIndex];
+        return m_DepthImage.RefImages[swapchainImageIndex];
     }
     ImageLayouts2D VulkanFrameBuffer::GetColorAttachmentImageLayout(uint32_t index)
     {
-        return ImageLayouts2D(m_ColorImages[index].RefImages);
+        ImageLayouts2D layout;
+        layout.Images.resize(Renderer::GetConfig().MaxImageCount);
+        int i =  0;
+        for (auto image : m_ColorImages[index].RefImages)
+        {
+            if (image->GetRendererResourceType() == RendererResourceType::ImageView)
+                layout.Images[i] = image.As<ImageView>();
+            else
+                layout.Images[i] = image.As<Image>();
+
+            i++;
+        }
+        return layout;
     }
     ImageLayouts2D VulkanFrameBuffer::GetDepthImageLayout()
     {
         if (HasDepthImage() == false)
             return ImageLayouts2D();
-        return ImageLayouts2D(m_DepthImage.RefImages);
+        ImageLayouts2D layout;
+        layout.Images.resize(Renderer::GetConfig().MaxImageCount);
+        int index = 0;
+        for (auto image : m_DepthImage.RefImages)
+        {
+            if (image->GetRendererResourceType() == RendererResourceType::ImageView)
+                layout.Images[index] = image.As<ImageView>();
+            else
+                layout.Images[index] = image.As<Image>();
+
+            index++;
+        }
+        return layout;
     }
     bool VulkanFrameBuffer::HasDepthImage()
     {

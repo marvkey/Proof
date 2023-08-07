@@ -11,14 +11,6 @@ namespace Proof
 			Compute = BIT(2),
 		};
 	};
-	enum class RendererResourceType
-	{
-		None,
-		Texture2D,
-		CubeTexture,
-		UniformBuffer,
-		StorageBuffer
-	};
 
 	enum class DescriptorResourceType
 	{

@@ -25,7 +25,7 @@ namespace Proof
 	class VulkanImage2D : public Image2D
 	{
 	public:
-		VulkanImage2D(const ImageConfiguration& imageSpec);
+		VulkanImage2D(const ImageConfiguration& imageSpec, VkSampleCountFlagBits sampleFlags = VK_SAMPLE_COUNT_1_BIT);
 
 		//TOdo remove this, sttrictly for the swapchain
 		VulkanImage2D(const ImageConfiguration& imageSpec, VulkanImageInfo imageinfo, uint64_t samplerHash);
@@ -81,6 +81,7 @@ namespace Proof
 		void Build();
 
 	private:
+		VkSampleCountFlagBits m_SampleFlags;
 		ImageConfiguration m_Specification;
 		Buffer m_ImageData;
 		VulkanImageInfo m_Info;
@@ -101,6 +102,11 @@ namespace Proof
 		void UpdateDescriptor();
 		virtual const ImageViewConfiguration& GetSpecification()const { return m_Specification; }
 		virtual Count<Image2D> GetImage()const { return m_Specification.Image; };
+
+		virtual Vector2U GetSize() { return GetImage()->GetSize(); }
+		virtual float GetAspectRatio() { return GetImage()->GetAspectRatio(); }
+		virtual uint32_t GetWidth() {return GetImage()->GetWidth();};
+		virtual uint32_t GetHeight() { return GetImage()->GetHeight(); };
 	private:
 		VulkanImageInfo m_Info;
 		void Init();

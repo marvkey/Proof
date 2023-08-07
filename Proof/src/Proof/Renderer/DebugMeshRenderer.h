@@ -20,7 +20,7 @@ namespace Proof{
 		Count<class VertexBuffer> MeshesVertexBuffer;
 		//Count<class PushConstant> PushConstantColor;
 		//Count <class PipeLineLayout> PipeLineLayout;
-		std::unordered_map<DescriptorSets, Count<class DescriptorSet>> Descriptors;
+		//std::unordered_map<DescriptorSets, Count<class DescriptorSet>> Descriptors;
 
 
 		std::unordered_map < uint64_t, std::vector< MeshVertex>> MeshesTransforms;

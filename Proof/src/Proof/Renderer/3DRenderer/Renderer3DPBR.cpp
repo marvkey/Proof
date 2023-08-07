@@ -205,7 +205,7 @@ namespace Proof
 	{
 		PF_PROFILE_FUNC();
 		// camera data
-		m_RenderStorage->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
+		//m_RenderStorage->CameraBuffer->SetData(&s_CurrentCamera, sizeof(CameraData));
 
 		SetMeshPass();
 
@@ -221,14 +221,14 @@ namespace Proof
 
 		if (m_MeshPipeLine->LightPass.DirLights.size() > 0)
 		{
-			m_MeshPipeLine->LightPass.DirLightsBuffer->SetData(&m_MeshPipeLine->LightPass.DirLights[0], sizeof(DirLight));
+			//m_MeshPipeLine->LightPass.DirLightsBuffer->SetData(&m_MeshPipeLine->LightPass.DirLights[0], sizeof(DirLight));
 		}
 		else
 		{
-			DirLight base;
-			base.Color = Vector{ 0 };
-			m_MeshPipeLine->LightPass.DirLights.push_back(base);
-			m_MeshPipeLine->LightPass.DirLightsBuffer->SetData(&m_MeshPipeLine->LightPass.DirLights[0], sizeof(DirLight));
+			//DirLight base;
+			//base.Color = Vector{ 0 };
+			//m_MeshPipeLine->LightPass.DirLights.push_back(base);
+			//m_MeshPipeLine->LightPass.DirLightsBuffer->SetData(&m_MeshPipeLine->LightPass.DirLights[0], sizeof(DirLight));
 		}
 		//descriptor0->WriteBuffer((uint32_t)DescriptorSet0::CameraData, m_RenderStorage->CameraBuffer);
 		//descriptor0->WriteBuffer((uint32_t)DescriptorSet0::DirectionalLight, m_MeshPipeLine->LightPass.DirLightsBuffer);

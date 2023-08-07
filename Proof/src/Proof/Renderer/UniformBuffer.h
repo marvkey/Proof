@@ -1,35 +1,24 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "RendererResouce.h"
-#include "Renderer.h"
-#include "Shader.h"
+#include "Buffer.h"
 namespace Proof
 {
-	enum class DescriptorSets {
-		Zero = 0,
-		One,
-		Two,
-		Three
-	};
-	enum class DescriptorType{
-		ImageSampler,
-		UniformBuffer,
-		StorageBuffer
-	} ;
-	class StorageBuffer : public RendererBufferResource {
+	class StorageBuffer : public RendererResource {
 	public:
 		virtual ~StorageBuffer() = default;
-		//static Count<StorageBuffer>Create(const void* data, uint32_t size, uint32_t offset = 0, uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-		static Count<StorageBuffer>Create(uint32_t size);
-		static Count<StorageBuffer>Create(const void* data, uint32_t size);
+		static Count<StorageBuffer>Create(uint64_t size);
+		static Count<StorageBuffer>Create(Buffer data);
+		virtual void SetData(Buffer data, uint64_t offset = 0) = 0;
 
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void Resize(uint64_t size) = 0;
+		virtual void Resize(Buffer data) = 0;
+		virtual uint64_t GetSize() = 0;
 
-		virtual void Resize(uint32_t size) = 0;
-		virtual void Resize(const void* data, uint32_t size) = 0;
-		virtual uint32_t GetSize() = 0;
+		RENDER_VIEW_RESOURCE_CLASS_TYPE(StorageBuffer);
+
 	};
-	class UniformBuffer : public RendererBufferResource {
+	class UniformBuffer : public RendererResource {
 	public:
 		virtual ~UniformBuffer() = default;
 		/*
@@ -38,8 +27,8 @@ namespace Proof
 		* @param size = the size of the uniform buffer in bytes
 		* @param biningPoint = the binding point of the uniform buffer
 		*/
-		static Count<UniformBuffer>Create(uint32_t binding);
-		static Count<UniformBuffer>Create(const void* data,uint32_t size) ;
+		static Count<UniformBuffer>Create(uint64_t size);
+		static Count<UniformBuffer>Create(Buffer data) ;
 
 		/**
 		* changes the data of a set data in the uniform buffer
@@ -47,10 +36,38 @@ namespace Proof
 		* @param Size of element in bytes
 		* @param the offset in the uniform buffer from the stating point in bytes if it is the last element just use the current size of the uniform buffer
 		*/
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void SetData(Buffer data,uint64_t offset = 0) = 0;
 
-		virtual void Resize(uint32_t size) = 0;
-		virtual void Resize(const void* data, uint32_t size) = 0;
-		virtual uint32_t GetSize() = 0;
+		virtual void Resize(uint64_t size) = 0;
+		virtual void Resize(Buffer data) = 0;
+		virtual uint64_t GetSize() = 0;
+		RENDER_VIEW_RESOURCE_CLASS_TYPE(UniformBuffer);
+	};
+
+
+	class UniformBufferSet : public RefCounted
+	{
+	public:
+
+		static Count<UniformBufferSet>Create(uint64_t size);
+		static Count<UniformBufferSet>Create(Buffer data);
+		virtual Count<UniformBuffer> GetBuffer(uint32_t index) = 0;
+
+		virtual void Resize(uint32_t index, uint64_t size) = 0;
+		virtual void Resize(uint32_t index, Buffer data) = 0;
+		virtual void SetData(uint32_t index, Buffer data, uint64_t offset = 0) = 0;
+	};
+
+	class StorageBufferSet : public RefCounted
+	{
+	public:
+
+		static Count<StorageBufferSet>Create(uint64_t size);
+		static Count<StorageBufferSet>Create(Buffer data);
+		virtual Count<StorageBuffer> GetBuffer(uint32_t index) = 0;
+
+		virtual void Resize(uint32_t index, uint64_t size) = 0;
+		virtual void Resize(uint32_t index, Buffer data) = 0;
+		virtual void SetData(uint32_t index, Buffer data, uint64_t offset = 0) = 0;
 	};
 }

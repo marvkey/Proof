@@ -9,6 +9,7 @@
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Scene/SceneSerializer.h"
 #include "Proof/Resources/ExternalCreations.h"
+#include "Proof/Renderer/Renderer.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
 	{

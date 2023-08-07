@@ -41,13 +41,11 @@ namespace Proof
     };
 
     struct CameraData {
-        CameraData() {};
-        CameraData(const glm::mat4& projection, const glm::mat4& view, const Vector& pos) :
-            m_Projection(projection), m_View(view), m_Positon(pos) {
-        };
-        glm::mat4 m_Projection;
-        glm::mat4 m_View;
-        Vector m_Positon;
+        glm::mat4 Projection;
+        glm::mat4 ProjectionView;
+        Vector Position;
+        float NearPlane;
+        float FarPlane;
     };
 
     struct MeshInstance {

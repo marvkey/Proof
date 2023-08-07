@@ -13,6 +13,9 @@ namespace Proof
 		virtual ~VulkanRenderMaterial(){Release(); }
 		virtual void Set(std::string_view name, Count<class UniformBuffer> buffer);
 		virtual void Set(std::string_view name, Count<class StorageBuffer> buffer);
+		virtual void Set(std::string_view name, Count<class UniformBufferSet> buffer);
+		virtual void Set(std::string_view name, Count<class StorageBufferSet> buffer);
+
 		virtual void Set(std::string_view name, Count<class Texture2D> texture);
 		virtual void Set(std::string_view name, const std::vector< Count<class Texture2D>>& images);
 		virtual void Set(std::string_view name, Count<class TextureCube> texture);

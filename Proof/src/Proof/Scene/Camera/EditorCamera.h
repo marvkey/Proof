@@ -18,7 +18,7 @@ namespace Proof
 		glm::mat4 m_CameraMatrix= glm::mat4(1.0f);
 		float m_FovDeg =45.f;
 		float m_NearPlane =0.1;
-		float m_FarPlane =200;
+		float m_FarPlane =500;
 
 		void OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height);
 		void OnUpdate(FrameTime DeltaTime);
