@@ -219,7 +219,7 @@ namespace Proof {
 				barrier.subresourceRange = subResourceRange;
 				barrier.pNext = nullptr;
 
-				vkCmdPipelineBarrier(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+				vkCmdPipelineBarrier(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 			});
 
@@ -249,7 +249,7 @@ namespace Proof {
 				barrier.subresourceRange = subResourceRange;
 				barrier.pNext = nullptr;
 
-				vkCmdPipelineBarrier(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(), srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+				vkCmdPipelineBarrier(cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 			});
 		}

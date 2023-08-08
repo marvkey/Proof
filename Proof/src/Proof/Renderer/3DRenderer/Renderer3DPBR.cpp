@@ -472,7 +472,7 @@ namespace Proof
 		shaders[ShaderStage::Fragment] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Mesh-PBRMaterial.frag";
 		//shaders[ShaderStage::Fragment] = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/MaterialShader2.shader";
 
-		Shader = Shader::GetOrCreate("Mesh-PBRShader", shaders);
+		///Shader = Shader::GetOrCreate("Mesh-PBRShader", shaders);
 		//MaterialPushConstant = PushConstant::Create(sizeof(MaterialData), 0, ShaderStage::Fragment);
 		////PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero],Descriptors[DescriptorSets::One] }, MaterialPushConstant);
 		//PipeLineLayout = PipeLineLayout::Create(std::vector{ meshpipline.Descriptors[DescriptorSets::Zero],meshpipline.Descriptors[DescriptorSets::One] }, MaterialPushConstant);

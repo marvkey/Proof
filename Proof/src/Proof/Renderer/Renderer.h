@@ -52,6 +52,9 @@ namespace Proof {
 		static Count<class TextureCube> GetWhiteTextureCube();
 		static Count<class TextureCube> GetBlackTextureCube();
 		
+		static Count<class Shader> GetShader(const std::string& name);
+		static const std::unordered_map<std::string, std::string>& GetShaderDefines();
+		static Count<class ShaderLibrary> GetShaderLibrary();
 		//environment and prefilter
 		static std::pair<Count<class TextureCube>, Count<class TextureCube>>CreateEnvironmentMap(const std::filesystem::path& path);
 		//submit to render thread
@@ -74,10 +77,19 @@ namespace Proof {
 		static void OnWindowResize(WindowResizeEvent& e);
 		static void BeginFrame();
 		static void EndFrame();
-		static void Init();
-		static void Unit();
-		static class RendererAPI* s_RendererAPI;
+		static void Init(Window* window);
+		static void Shutdown();
 		friend class RendererBase;
 		friend class Application;
+	};
+
+	struct BaseTextures 
+	{
+		Count<class Texture2D> WhiteTexture;
+		Count<class Texture2D> BlackTexture;
+		Count<class Texture2D> NullTexture;
+		Count<class TextureCube> WhiteTextureCube;
+		Count<class TextureCube> BlackTextureCube;
+		BaseTextures();
 	};
 }

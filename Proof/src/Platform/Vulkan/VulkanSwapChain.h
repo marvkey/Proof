@@ -1,15 +1,11 @@
 #pragma once
-
-// vulkan headers
-#include <vulkan/vulkan.h>
-// std lib headers
-#include <string>
-#include <vector>
-#include "Proof/Renderer/Renderer.h"
-#include "VulkanCommandBuffer.h"
 #include "Proof/Core/Core.h"
 #include "Proof/Renderer/SwapChain.h"
 #include "VulkanUtils/VulkanBufferBase.h"
+
+#include <vulkan/vulkan.h>
+#include <string>
+#include <vector>
 namespace Proof
 {
     class VulkanSwapChain : public SwapChain {
@@ -29,11 +25,11 @@ namespace Proof
             return static_cast<float>(m_SwapChainExtent.X) / static_cast<float>(m_SwapChainExtent.Y);
         }
 
-        void AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-        void WaitAndResetFences(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-        void WaitFences(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-        void ResetFences(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-        void SubmitCommandBuffers(std::vector<Count<RenderCommandBuffer>> buffers, uint32_t* imageIndex);
+        void AcquireNextImage(uint32_t* imageIndex, uint32_t frameInfllight);
+        void WaitAndResetFences(uint32_t frameInfllight);
+        void WaitFences(uint32_t frameInfllight);
+        void ResetFences(uint32_t frameInfllight);
+        void SubmitCommandBuffers(std::vector<Count<class RenderCommandBuffer>> buffers, uint32_t* imageIndex);
 
         bool CompareSwapFormats(const VulkanSwapChain& swapChain) {
             return swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat && swapChain.m_ImageFormat == m_ImageFormat;
@@ -48,7 +44,7 @@ namespace Proof
             return m_PresentMode;
         }
         virtual ImageLayouts2D GetImageLayout();
-        virtual Count<Image2D>  GetImage(uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex);
+        virtual Count<Image2D>  GetImage(uint32_t imageIndex);
 
     private:
         VkFormat FindDepthFormat();

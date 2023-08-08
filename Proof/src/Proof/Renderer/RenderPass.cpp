@@ -1,6 +1,5 @@
 #include "Proofprch.h"
 #include "RenderPass.h"
-#include "Proof/Renderer/RendererBase.h"
 #include "Platform/Vulkan/VulkanRenderPass.h"
 #include "Renderer.h"
 namespace Proof

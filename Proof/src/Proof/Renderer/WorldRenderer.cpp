@@ -111,7 +111,7 @@ namespace Proof
 
 			GraphicsPipelineConfig graphicsPipelineConfig;
 			graphicsPipelineConfig.DebugName = "MeshPipeline";
-			graphicsPipelineConfig.Shader = Shader::Get("ProofPBR_Static");
+			graphicsPipelineConfig.Shader = Renderer::GetShader("ProofPBR_Static");
 			graphicsPipelineConfig.VertexArray = meshVertexArray;
 			graphicsPipelineConfig.TargetBuffer = m_ScreenFrameBuffer->GetFrameBuffer();
 			m_MeshPipeline.Pipline = GraphicsPipeline::Create(graphicsPipelineConfig);
@@ -138,7 +138,7 @@ namespace Proof
 		{
 			GraphicsPipelineConfig pipelineConfig;
 			pipelineConfig.DebugName = "SKy box";
-			pipelineConfig.Shader = Shader::Get("SkyBox");
+			pipelineConfig.Shader = Renderer::GetShader("SkyBox");
 			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
 			pipelineConfig.TargetBuffer = m_ScreenFrameBuffer->GetFrameBuffer();
 			pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
@@ -619,11 +619,11 @@ namespace Proof
 				DirectionalLight light;
 				light.Color = Vector(0);
 				light.Direction = Vector(0);
-				m_DirectionalLights->Resize(frameIndex,Buffer((uint8_t*)&light,sizeof(DirectionalLight)));
+				m_DirectionalLights->Resize(frameIndex,Buffer(&light,sizeof(DirectionalLight)));
 			}
 			else
 			{
-				m_DirectionalLights->Resize(frameIndex,Buffer((uint8_t*)m_LightScene.DirectionalLights.data(), m_LightScene.DirectionalLights.size()*sizeof(DirectionalLight)));
+				m_DirectionalLights->Resize(frameIndex,Buffer(m_LightScene.DirectionalLights.data(), m_LightScene.DirectionalLights.size()*sizeof(DirectionalLight)));
 			}
 		}
 

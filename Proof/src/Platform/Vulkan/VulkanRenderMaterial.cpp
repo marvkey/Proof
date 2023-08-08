@@ -7,7 +7,7 @@
 #include "VulkanComputePass.h"
 #include "VulkanComputePipeline.h"
 #include "VulkanRenderPass.h"
-
+#include "VulkanRenderer/VulkanRenderer.h"
 namespace Proof {
 	VulkanRenderMaterial::VulkanRenderMaterial(const RenderMaterialConfiguration& config)
 		:m_Config(config)
@@ -252,7 +252,7 @@ namespace Proof {
 			// but some set may not have data and we do note creata a descriptor set for it
 			// so we basically just seeing if thats teh case we dont bind it
 			vkCmdBindDescriptorSets(
-				commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+				commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
 				VK_PIPELINE_BIND_POINT_COMPUTE,
 				computePass->GetConfig().Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 				(int)set,
@@ -289,7 +289,7 @@ namespace Proof {
 			// but some set may not have data and we do note creata a descriptor set for it
 			// so we basically just seeing if thats teh case we dont bind it
 			vkCmdBindDescriptorSets(
-				commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+				commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
 				VK_PIPELINE_BIND_POINT_GRAPHICS,
 				renderPass->GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
 				(int)set,

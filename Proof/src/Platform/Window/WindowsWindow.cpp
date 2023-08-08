@@ -11,10 +11,10 @@
 #include "Proof/Renderer/GraphicsContext.h"
 #include "Proof/Renderer/SwapChain.h"
 #include "Proof/Core/Core.h"
-#include "Proof/Renderer/RendererBase.h"
 #include <GLFW/glfw3.h>
 #include <Glad/glad.h>
 
+#include "Proof/Renderer/Renderer.h"
 namespace Proof {
 
     static uint8_t s_GLFWWindowCount = 0;

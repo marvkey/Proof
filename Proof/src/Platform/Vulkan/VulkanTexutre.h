@@ -1,7 +1,6 @@
 #pragma once
 #include "Proof/Renderer/Texture.h"
-#include "Proof/Core/Buffer.h"
-#include "Proof/Renderer/Shader.h"
+#include "Proof/Core/Buffer.h" 
 #include "VulkanUtils/VulkanBufferBase.h"
 
 #include <vulkan/vulkan.h>

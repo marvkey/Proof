@@ -1,6 +1,5 @@
 #include "Proofprch.h"
 #include "Renderer.h"
-#include "RendererBase.h"
 #include "CommandQueue.h"
 #include "Texture.h"
 #include "RendererAPI.h"
@@ -18,10 +17,70 @@
 #include "Vertex.h"
 #include "Proof/Scene/Mesh.h"
 #include "Buffer.h"
+#include "SwapChain.h"
+#include "Platform/Vulkan/VulkanRendererAPI.h"
+#include "GraphicsContext.h"
 namespace Proof {
-	RendererAPI* Renderer::s_RendererAPI;
 	static std::vector<CommandQueue*> s_RenderCommandQueue;
 	static uint32_t s_CommandQueueIndex = 1; // so we start with 0 command qeue index
+	static class RendererAPI* s_RendererAPI;
+	static Count<class GraphicsContext> GraphicsContext;
+
+	static Count<class ShaderLibrary> ShaderLibrary;
+	static BaseTextures* s_BaseTextures;
+
+	static std::unordered_map<std::string, std::string> s_ShaderDefines;
+	void Renderer::Init(Window* window)
+	{
+		if (RendererAPI::ActiveAPI == Renderer::API::Vulkan)
+			s_RendererAPI = new VulkanRendererAPI();
+
+		GraphicsContext = GraphicsContext::Create(window);
+		s_RendererAPI->SetGraphicsContext(GraphicsContext);
+		window->m_SwapChain = SwapChain::Create(ScreenSize{ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() });
+		s_RendererAPI->Init();
+
+		ShaderLibrary = Count<class ShaderLibrary>::Create();
+
+		ShaderLibrary->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl");
+		ShaderLibrary->LoadShader("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.shader");
+		ShaderLibrary->LoadShader("BRDFLUT", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/BRDFLut.glsl");
+		ShaderLibrary->LoadShader("EquirectangularToCubemap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EquirectangularToCubemap.glsl");
+		ShaderLibrary->LoadShader("SkyBox", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/SkyBox.glsl");
+		ShaderLibrary->LoadShader("EnvironmentIrradiance", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradiance.glsl");
+		ShaderLibrary->LoadShader("EnvironmentIrradianceNonCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradianceNonCompute.glsl");
+		ShaderLibrary->LoadShader("EnvironmentPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentPrefilter.glsl");
+
+		s_BaseTextures = new  BaseTextures();
+		s_RenderCommandQueue.resize(2);
+		s_RenderCommandQueue[0] = new CommandQueue();
+		s_RenderCommandQueue[1] = new CommandQueue();
+
+		PF_ENGINE_TRACE("Renderer Initialized");
+
+	}
+
+	void Renderer::Shutdown()
+	{
+		delete s_RenderCommandQueue[0];
+		delete s_RenderCommandQueue[1];
+		s_RenderCommandQueue.clear();
+
+		delete s_BaseTextures;
+		ShaderLibrary = nullptr;
+		GraphicsContext = nullptr;
+		delete s_RendererAPI;
+	}
+	const std::unordered_map<std::string, std::string>& Renderer::GetShaderDefines()
+	{
+		return s_ShaderDefines;
+	}
+
+	Count<class ShaderLibrary> Renderer::GetShaderLibrary()
+	{
+		return ShaderLibrary;
+	}
+
 	void Renderer::DrawElementIndexed(Count<RenderCommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
 	{
 		s_RendererAPI->DrawElementIndexed(commandBuffer, indexCount, instanceCount, firstIndex,vertexOffset,firstInstance);
@@ -99,9 +158,9 @@ namespace Proof {
 		return s_RendererAPI->GetConfig();
 	}
 
-	Count<GraphicsContext> Renderer::GetGraphicsContext()
+	Count<class GraphicsContext> Renderer::GetGraphicsContext()
 	{
-		return RendererBase::GetGraphicsContext();
+		return GraphicsContext;
 	}
 
 	void Renderer::SubmitCommand(std::function<void(CommandBuffer*)> func)
@@ -123,22 +182,27 @@ namespace Proof {
 	}
 
 	Count<Texture2D>Renderer::GetWhiteTexture(){
-		return RendererBase::s_BaseTextures->WhiteTexture;
+		return s_BaseTextures->WhiteTexture;
 	}
 
 	Count<class Texture2D> Renderer::GetBlackTexture()
 	{
-		return RendererBase::s_BaseTextures->BlackTexture;
+		return s_BaseTextures->BlackTexture;
 	}
 
 	Count<class TextureCube> Renderer::GetWhiteTextureCube()
 	{
-		return RendererBase::s_BaseTextures->WhiteTextureCube;
+		return s_BaseTextures->WhiteTextureCube;
 	}
 
 	Count<class TextureCube> Renderer::GetBlackTextureCube()
 	{
-		return RendererBase::s_BaseTextures->BlackTextureCube;
+		return s_BaseTextures->BlackTextureCube;
+	}
+
+	Count<class Shader> Renderer::GetShader(const std::string& name)
+	{
+		return ShaderLibrary->GetShader(name);
 	}
 
 	std::pair<Count<class TextureCube>, Count<class TextureCube>> Renderer::CreateEnvironmentMap(const std::filesystem::path& path)
@@ -185,7 +249,7 @@ namespace Proof {
 			
 			ComputePipelineConfig computePipelineConfig;
 			computePipelineConfig.DebugName = "Irradiance Pipline";
-			computePipelineConfig.Shader = Shader::Get("EnvironmentIrradiance");
+			computePipelineConfig.Shader = GetShader("EnvironmentIrradiance");
 			
 			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
 			ComputePassConfiguration computePassConfig;
@@ -318,14 +382,14 @@ namespace Proof {
 
 			ComputePipelineConfig computePipelineConfig;
 			computePipelineConfig.DebugName = "Prefilter Pipline";
-			computePipelineConfig.Shader = Shader::Get("EnvironmentPrefilter");
+			computePipelineConfig.Shader = GetShader("EnvironmentPrefilter");
 			
 			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
 			ComputePassConfiguration computePassConfig;
 			computePassConfig.DebugName = "EnvironmentPrefilter Pass";
 			computePassConfig.Pipeline = computePipeline;
 
-			Count<RenderMaterial> prefilterMaterial = RenderMaterial::Create(RenderMaterialConfiguration("PrefilterMap Material", Shader::Get("EnvironmentPrefilter")));
+			Count<RenderMaterial> prefilterMaterial = RenderMaterial::Create(RenderMaterialConfiguration("PrefilterMap Material", GetShader("EnvironmentPrefilter")));
 			prefilterMaterial->Set("u_EnvironmentMap", environmentMapImageCube);
 			prefilterMaterial->Set("u_PrefilterMap", prefilterImageViews);
 			auto computePass = ComputePass::Create(computePassConfig);
@@ -369,7 +433,7 @@ namespace Proof {
 		
 		ComputePipelineConfig computePipelineConfig;
 		computePipelineConfig.DebugName = "BRDFLUT Pipeline";
-		computePipelineConfig.Shader = Shader::Get("BRDFLUT");
+		computePipelineConfig.Shader = GetShader("BRDFLUT");
 		
 		Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
 
@@ -415,18 +479,31 @@ namespace Proof {
 		s_RendererAPI->EndFrame();
 	}
 
-	void Renderer::Init()
-	{
-		s_RenderCommandQueue.resize(2);
-		s_RenderCommandQueue[0] = new CommandQueue();
-		s_RenderCommandQueue[1] = new CommandQueue();
-	}
+	BaseTextures::BaseTextures() {
+		uint32_t whiteTexturedata = 0xffffffff;
+		WhiteTexture = Texture2D::Create(&whiteTexturedata, TextureConfiguration("White Texture"));
 
-	void Renderer::Unit()
-	{
-		delete s_RenderCommandQueue[0];
-		delete s_RenderCommandQueue[1];
-		s_RenderCommandQueue.clear();
+
+		uint32_t blackTexturedata = 0xFF000000;
+		BlackTexture = Texture2D::Create(&blackTexturedata, TextureConfiguration("Black Texture"));
+
+
+		TextureConfiguration cubeTextureConfig;
+		cubeTextureConfig.GenerateMips = true;
+		cubeTextureConfig.Height = 1024;
+		cubeTextureConfig.Width = 1024;
+		cubeTextureConfig.Storage = true;
+		cubeTextureConfig.Format = ImageFormat::RGBA16F;
+		cubeTextureConfig.Wrap = TextureWrap::ClampEdge;
+
+		uint8_t* data = new uint8_t[cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F)];
+		// since image is in format is a float we use 0x3F to normalize for floating poitn for white
+		std::memset(data, 0x3F, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F));
+		WhiteTextureCube = TextureCube::Create(data, cubeTextureConfig);
+
+		std::memset(data, 0, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F));
+		BlackTextureCube = TextureCube::Create(data, cubeTextureConfig);
+		delete[] data;
 	}
 
 }

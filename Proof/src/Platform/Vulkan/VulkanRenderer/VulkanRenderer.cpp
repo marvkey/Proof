@@ -4,7 +4,6 @@
 
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Renderer/VertexArray.h"
-#include "Proof/Renderer/RendererBase.h"
 
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Component.h"
@@ -33,6 +32,9 @@
 #include "Proof/Renderer/FrameBuffer.h"
 #include "Platform/Vulkan/VulkanGraphicsPipeline.h"
 #include "Platform/Vulkan/VulkanSwapChain.h"
+
+#include "Proof/Renderer/Renderer.h"
+
 namespace Proof
 {
 
@@ -59,9 +61,10 @@ namespace Proof
 			s_CurrentFrame.FrameinFlight = 0;
 			s_IsWindowResised = false;
 		}
-		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->WaitFences();
-		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->AcquireNextImage(&s_CurrentFrame.ImageIndex);
-		graphicsContext->GetSwapChain()->ResetFences();
+		uint32_t frameInflight = Renderer::GetCurrentFrame().FrameinFlight;
+		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->WaitFences(frameInflight);
+		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->AcquireNextImage(&s_CurrentFrame.ImageIndex, frameInflight);
+		graphicsContext->GetSwapChain()->ResetFences(frameInflight);
 	}
 	void VulkanRenderer::EndFrame() {
 		PF_PROFILE_FUNC();

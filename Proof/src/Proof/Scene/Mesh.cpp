@@ -14,7 +14,6 @@
 #include "Material.h"
 #include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Math/Vector.h"
-#include "Proof/Renderer/RendererBase.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Buffer.h"
 namespace Proof{

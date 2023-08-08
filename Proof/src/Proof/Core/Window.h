@@ -115,6 +115,7 @@ namespace Proof {
 		// controller ID
 		inline static std::map<int, Controller> s_Controllers;
 		friend class RendererBase;
+		friend class Renderer;
 		friend class InputManager;
 	};
 }

@@ -5,7 +5,6 @@
 #include<set>
 #include <vector>
 #include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
-#include "Proof/Renderer/RendererBase.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Vulkan.h"
 namespace Proof

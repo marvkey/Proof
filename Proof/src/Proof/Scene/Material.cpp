@@ -10,8 +10,8 @@ namespace Proof {
         :Name(name)
     {
         // means it is using pbr shader
-        m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration(name, Shader::Get("ProofPBR_Static")));
-        if (m_RenderMaterial->GetConfig().Shader == Shader::Get("ProofPBR_Static"))
+        m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration(name, Renderer::GetShader("ProofPBR_Static")));
+        if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static"))
             m_DefaultShader = true;   
         SetDefault();
     }

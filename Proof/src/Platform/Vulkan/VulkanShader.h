@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Vulkan.h"
 #include "Proof/Renderer/Shader.h"
+#include "Vulkan.h"
 #include "VulkanShaderResource.h"
 namespace Proof
 {

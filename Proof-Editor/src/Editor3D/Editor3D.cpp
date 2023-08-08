@@ -58,7 +58,6 @@
 #include "MainWindow/SceneHierachyPanel.h"
 #include "MainWindow/ContentBrowserPanel.h"
 
-#include "Proof/Renderer/RendererBase.h"
 
 #include "Proof/Scene/Mesh.h"
 namespace Proof
@@ -524,7 +523,7 @@ namespace Proof
 			//	RendererBase::GetShaderLibrary().ReloadeShaders();
 			//}
 
-			RendererBase::GetShaderLibrary()->ForEachShader([&](Count<Shader> shader) {
+			Renderer::GetShaderLibrary()->ForEachShader([&](Count<Shader> shader) {
 				UI::ScopedID id(shader->GetName().c_str());
 				ImGui::Text(shader->GetName().c_str());
 				ImGui::SameLine();

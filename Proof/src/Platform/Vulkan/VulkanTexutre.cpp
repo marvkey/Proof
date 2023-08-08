@@ -1,6 +1,5 @@
 #include "Proofprch.h"
 #include "VulkanTexutre.h"
-#include "Proof/Renderer/RendererBase.h"
 #include "VulkanGraphicsContext.h"
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanUtils/VulkanConvert.h"
@@ -80,7 +79,7 @@ namespace Proof
 		VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
 		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
 
-			VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer();
+			VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 			VkImageMemoryBarrier barrier{};
 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			barrier.image = image;
@@ -251,7 +250,7 @@ namespace Proof
 		if (!m_ImageData)
 		{
 			Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer();
+				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 
 				VkImageSubresourceRange subresourceRange = {};
 				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -295,7 +294,7 @@ namespace Proof
 				vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
 			}
 			Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer();
+				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 				VkImageSubresourceRange subresourceRange = {};
 				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				subresourceRange.baseMipLevel = 0;
@@ -556,7 +555,7 @@ namespace Proof
 		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
 			VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
 			VkDescriptorImageInfo  vk_ImageDescriporInfo =m_Image.As<VulkanImage2D>()->GetDescriptorInfoVulkan();
-			VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer();
+			VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 			
 			VkImageSubresourceRange subresourceRange{};
 			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -712,7 +711,7 @@ namespace Proof
 
 
 			Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer();
+				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 
 				VkImageSubresourceRange subresourceRange = {};
 				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -784,7 +783,7 @@ namespace Proof
 
 			ComputePipelineConfig computePipelineConfig;
 			computePipelineConfig.DebugName = "EquirectangularToCubemap Pipeline";
-			computePipelineConfig.Shader = Shader::Get("EquirectangularToCubemap");
+			computePipelineConfig.Shader = Renderer::GetShader("EquirectangularToCubemap");
 
 			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
 

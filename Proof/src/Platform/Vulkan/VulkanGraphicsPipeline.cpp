@@ -222,7 +222,7 @@ namespace Proof
 
 	void VulkanGraphicsPipeline::Bind(Count<class RenderCommandBuffer> commandBuffer)
 	{
-		vkCmdBindPipeline(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+		vkCmdBindPipeline(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
 			VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
 	}

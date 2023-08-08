@@ -3,6 +3,7 @@
 #include "VulkanComputePipeline.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanRenderMaterial.h"
+#include "VulkanRenderer/VulkanRenderer.h"
 namespace Proof
 {
 	void VulkanComputePass::SetInput(std::string_view name, Count<class UniformBuffer> buffer)
@@ -33,7 +34,7 @@ namespace Proof
 		std::string str = std::string(name);
 		PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
 		const auto& pushRange = vkShader->GetPushConstants().at(str);
-		vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
+		vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 			pushRange.stageFlags, pushRange.offset, pushRange.size, data);
 	}
 	Count<Shader> VulkanComputePass::GetShader()const
@@ -56,7 +57,7 @@ namespace Proof
 	void VulkanComputePass::Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
 		PF_CORE_ASSERT(m_RenderPassEnabled, "Cannot dispatch unless start a compute pass");
-		vkCmdDispatch(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), groupCountX, groupCountY, groupCountZ);
+		vkCmdDispatch(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), groupCountX, groupCountY, groupCountZ);
 	}
 	void VulkanComputePass::Build()
 	{
@@ -67,7 +68,7 @@ namespace Proof
 		m_CommandBuffer = command;
 		m_RenderPassEnabled = true;
 
-		vkCmdBindPipeline(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_Config.Pipeline.As<VulkanComputePipeline>()->GetComputePipeline());
+		vkCmdBindPipeline(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), VK_PIPELINE_BIND_POINT_COMPUTE, m_Config.Pipeline.As<VulkanComputePipeline>()->GetComputePipeline());
 	}
 	void VulkanComputePass::BeginComputePass(Count<class RenderCommandBuffer> command)
 	{
@@ -82,7 +83,7 @@ namespace Proof
 			if (setInfo.Set == nullptr)
 				continue;
 			vkCmdBindDescriptorSets(
-				m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+				m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
 				VK_PIPELINE_BIND_POINT_COMPUTE,
 				m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 				(int)set,
@@ -110,7 +111,7 @@ namespace Proof
 			// so we basically just seeing if thats teh case we dont bind it
 			if (set == 0 || setInfo.Set == nullptr)continue;
 			vkCmdBindDescriptorSets(
-				m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+				m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
 				VK_PIPELINE_BIND_POINT_COMPUTE,
 				m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 				(int)set,

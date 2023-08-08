@@ -67,7 +67,7 @@ namespace Proof{
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
 			copy.size = data.GetSize();
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_UniformBuffers.Buffer, 1, &copy);
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), stagingBuffer.Buffer, m_UniformBuffers.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
@@ -81,12 +81,11 @@ namespace Proof{
 
 	void VulkanUniformBuffer::Resize(Buffer data)
 	{
-		//TODO WORKING EXPECTED
-		//if (m_Size == m_Size)
-		//{
-		//	SetData(data, size, 0);
-		//	return;
-		//}
+		if (m_Size == data.GetSize())
+		{
+			SetData(data);
+			return;
+		}
 		Release();
 		m_Size = data.GetSize();
 
@@ -192,11 +191,11 @@ namespace Proof{
 	}
 	void VulkanStorageBuffer::Resize(Buffer data)
 	{
-		//if (m_Size == data.GetSize())
-		//{
-		//	SetData(data);
-		//	return;
-		//}
+		if (m_Size == data.GetSize())
+		{
+			SetData(data);
+			return;
+		}
 		Release();
 		m_Size = data.GetSize();
 
@@ -232,7 +231,7 @@ namespace Proof{
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
 			copy.size = data.GetSize();
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_StorageBuffer.Buffer, 1, &copy);
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), stagingBuffer.Buffer, m_StorageBuffer.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}

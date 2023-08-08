@@ -506,7 +506,7 @@ namespace Proof {
 		vertexArray->AddData(6, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
 		vertexArray->AddData(7, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
 
-		auto shader = Shader::GetOrCreate("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.shader");
+		Count<Shader > shader = Renderer::GetShader("Base2D");
 		//{
 		//	auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
 		//		.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)

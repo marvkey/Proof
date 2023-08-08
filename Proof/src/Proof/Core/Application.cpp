@@ -3,7 +3,6 @@
 #include "Application.h"
 #include "Proof/ImGui/ImGuiLayer.h"
 #include "Proof/Events/Event.h"
-#include "Proof/Renderer/RendererBase.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Asset/AssetManager.h"
@@ -51,7 +50,7 @@ namespace Proof {
         m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
         m_Window->SetEventCallback([this](Event& e) {OnEvent(e); });
 
-        RendererBase::Init(static_cast<Window*>(m_Window.get()));
+        Renderer::Init(static_cast<Window*>(m_Window.get()));
         if (m_ApplicationConfiguration.EnableImgui)
         {
             m_ImGuiMainLayer = ImGuiLayer::Create();
@@ -129,7 +128,7 @@ namespace Proof {
         m_Window = nullptr;
 
         AssetManager::UnInizilize();
-        RendererBase::Destroy();
+        Renderer::Shutdown();
         InputManager::Destroy();
     }
 

@@ -28,10 +28,9 @@ World:
         Children: []
       SkyLightComponent:
         TintColor: [1, 1, 1]
-        Exposure: 1
         SkyBoxLod: 0
         MapRotation: 0
-        Intensity: 1
+        Intensity: 0.300000012
         Image: 2700444414993608762
     - Entity: 14542799149913085375
       TagComponent:

@@ -11,6 +11,8 @@
 #include "VulkanImage.h"
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "Vulkan.h"
+
+#include "VulkanCommandBuffer.h"
 namespace Proof {
 	static ImGui_ImplVulkanH_Window g_MainWindowData;
 	static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface, int width, int height) {
@@ -140,7 +142,7 @@ namespace Proof {
 		// Upload Fonts
 		{
 			Renderer::SubmitCommand([&](CommandBuffer* buffer) {
-				ImGui_ImplVulkan_CreateFontsTexture(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer());
+				ImGui_ImplVulkan_CreateFontsTexture(buffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight));
 			});
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 		}
@@ -194,6 +196,7 @@ namespace Proof {
 	}
 	void VulkanImguiLayer::End()
 	{
+		uint32_t frameinFlight = Renderer::GetCurrentFrame().FrameinFlight;
 		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
 		ImGuiIO& io = ImGui::GetIO();
@@ -232,12 +235,12 @@ namespace Proof {
 			vk_scissor.offset = { (int)0, (int)0 };
 
 			vk_scissor.extent = { (uint32_t)wd->Width, (uint32_t)wd->Height };
-			vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &vk_viewport);
+			vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight), 0, 1, &vk_viewport);
 
-			vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &vk_scissor);
+			vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight), 0, 1, &vk_scissor);
 
 		
-			vkCmdBeginRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), &info, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBeginRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight), &info, VK_SUBPASS_CONTENTS_INLINE);
 			std::vector< VkClearAttachment> clears;
 			std::vector< VkClearRect> reactClear;
 			{
@@ -249,14 +252,14 @@ namespace Proof {
 				clearRect.layerCount = 1;
 				clearRect.rect = vk_scissor;
 				reactClear.emplace_back(clearRect);
-				vkCmdClearAttachments(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+				vkCmdClearAttachments(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight),
 					clears.size(),
 					clears.data(),
 					reactClear.size(),
 					reactClear.data());
 			}
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
-			vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight));
+			vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight));
 
 			Renderer::EndCommandBuffer(m_CommandBuffer);
 			Renderer::SubmitCommandBuffer(m_CommandBuffer);

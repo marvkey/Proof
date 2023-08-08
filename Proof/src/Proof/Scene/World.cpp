@@ -3,7 +3,6 @@
 #include "Component.h"
 #include "Entity.h"
 #include "Script.h"
-#include "Proof/Renderer/RendererBase.h"
 #include "Mesh.h"
 #include "Proof/Core/FrameTime.h"
 #include "Component.h"

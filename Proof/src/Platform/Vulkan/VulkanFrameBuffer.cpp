@@ -11,6 +11,8 @@
 #include "VulkanTexutre.h"
 #include "VulkanImage.h"
 #include <vector>
+
+#include "VulkanCommandBuffer.h"
 namespace Proof
 {
     static bool hasStencilComponent(VkFormat format) {
@@ -127,7 +129,7 @@ namespace Proof
                 destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 
                 vkCmdPipelineBarrier(
-                    cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+                    cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
                     sourceStage, destinationStage,
                     0,
                     0, nullptr,
@@ -206,7 +208,7 @@ namespace Proof
                 imageMemoryBarrier.subresourceRange = VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
                 vkCmdPipelineBarrier(
-                    cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(),
+                    cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
                     VK_PIPELINE_STAGE_TRANSFER_BIT,
                     VK_PIPELINE_STAGE_TRANSFER_BIT,
                     0,

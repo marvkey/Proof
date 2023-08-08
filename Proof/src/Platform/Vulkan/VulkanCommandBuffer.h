@@ -2,7 +2,6 @@
 #include<vulkan/vulkan.h>
 #include "Proof/Renderer/CommandBuffer.h"
 #include<vector>
-#include "Proof/Renderer/Renderer.h"
 #include <glm/glm.hpp>
 namespace Proof
 {
@@ -13,8 +12,8 @@ namespace Proof
 	public:
 		VulkanCommandBuffer();
 		virtual ~VulkanCommandBuffer();
-		VkCommandBuffer GetCommandBuffer(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight){
-			return m_CommandBuffer[frameIndex];
+		VkCommandBuffer GetCommandBuffer(uint32_t frameInFlight){
+			return m_CommandBuffer[frameInFlight];
 		}
 	private:
 		friend class VulkanSwapChain;
@@ -29,10 +28,10 @@ namespace Proof
 	public:
 		VulkanRenderCommandBuffer(CommandBuffer* commandBuffer = nullptr);
 		virtual ~VulkanRenderCommandBuffer();
-		VkCommandBuffer GetCommandBuffer(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
+		VkCommandBuffer GetCommandBuffer(uint32_t frameInFlight );
 	private:
-		void BeginRecord(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
-		void EndRecord(uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight);
+		void BeginRecord(uint32_t frameIndex );
+		void EndRecord(uint32_t frameIndex );
 		CommandBuffer* m_NormalCommandBuffer =nullptr;
 		void Init();
 		void Release();

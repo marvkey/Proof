@@ -16,15 +16,15 @@ namespace Proof {
 	//{
 	//}
 	void VulkanRendererAPI::DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex , uint32_t firstInstance) {
-		vkCmdDraw(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), vertexCount, instanceCount, firstVertex, firstInstance);
+		vkCmdDraw(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), vertexCount, instanceCount, firstVertex, firstInstance);
 	}
 	void VulkanRendererAPI::DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstInstance) {
-		vkCmdDrawIndexed(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, 0, 0, firstInstance);
+		vkCmdDrawIndexed(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), indexCount, instanceCount, 0, 0, firstInstance);
 	}
 
 	void VulkanRendererAPI::DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
 	{
-		vkCmdDrawIndexed(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+		vkCmdDrawIndexed(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
 
 	void VulkanRendererAPI::BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear )
@@ -101,7 +101,7 @@ namespace Proof {
 		VulkanRenderer::SubmitDatafree(func);
 	}
 	void VulkanRendererAPI::Submit(std::function<void(CommandBuffer*)> func) {
-		auto graphicsContext = RendererBase::GetGraphicsContext().As<VulkanGraphicsContext>();
+		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		VulkanCommandBuffer* commandBufferContainer = new VulkanCommandBuffer();
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -139,11 +139,11 @@ namespace Proof {
 	}
 	void VulkanRendererAPI::BeginCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)
 	{
-		commandBuffer.As<VulkanRenderCommandBuffer>()->BeginRecord();
+		commandBuffer.As<VulkanRenderCommandBuffer>()->BeginRecord(Renderer::GetCurrentFrame().FrameinFlight);
 	}
 	void VulkanRendererAPI::EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)
 	{
-		commandBuffer.As<VulkanRenderCommandBuffer>()->EndRecord();
+		commandBuffer.As<VulkanRenderCommandBuffer>()->EndRecord(Renderer::GetCurrentFrame().FrameinFlight);
 	}
 	CurrentFrame VulkanRendererAPI::GetCurrentFrame() {
 		return VulkanRenderer::s_CurrentFrame;

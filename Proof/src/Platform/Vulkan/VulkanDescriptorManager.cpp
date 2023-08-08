@@ -180,8 +180,6 @@ namespace Proof
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
     }
     
-  
-
     void VulkanDescriptorManager::Bind()
     {
        

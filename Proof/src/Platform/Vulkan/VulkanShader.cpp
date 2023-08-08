@@ -4,7 +4,6 @@
 #include <fstream>
 #include "Proof/Math/Random.h"
 #include "VulkanGraphicsContext.h"
-#include "Proof/Renderer/RendererBase.h"
 
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_cross.hpp>
@@ -300,6 +299,10 @@ namespace Proof
 
         Special<shaderc::CompileOptions::IncluderInterface> include = CreateSpecial< ShaderIncluder>();
         compilerOptions.SetIncluder(std::move(include));
+
+        for(auto [name, value] : Renderer::GetShaderDefines())
+            compilerOptions.AddMacroDefinition(name.c_str(), name.size(), value.c_str(),value.size());
+
         // do not want to change any of the current shader properteis excpet if the shader has been compiled properly
         std::unordered_map<ShaderStage, shaderc::SpvCompilationResult> shaderModules;
         for (auto& [stage, source] : sourceCode) {

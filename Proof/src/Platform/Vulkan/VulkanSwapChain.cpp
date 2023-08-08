@@ -6,6 +6,8 @@
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanGraphicsContext.h"
 #include "Vulkan.h"
+#include "VulkanCommandBuffer.h"
+
 #include <array>
 #include <cstdlib>
 #include <cstring>
@@ -23,7 +25,6 @@
 #define VMA_IMPLEMENTATION
 
 #include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
-
 // images for vulkan swapchaing
 /*
 #include <vulkan/vulkan.h>

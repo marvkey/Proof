@@ -1,6 +1,5 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "RendererBase.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Renderer/Renderer.h"
 namespace Proof {

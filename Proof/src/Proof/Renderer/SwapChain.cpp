@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "SwapChain.h"
 #include "Platform/Vulkan/VulkanSwapChain.h"
-
+#include "Renderer.h"
 namespace Proof
 {
     Count<SwapChain> SwapChain::Create(ScreenSize size) {

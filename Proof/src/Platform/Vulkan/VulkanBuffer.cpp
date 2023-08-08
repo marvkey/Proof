@@ -1,6 +1,5 @@
 #include "Proofprch.h"
 #include "VulkanBuffer.h"
-#include "Proof/Renderer/RendererBase.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Vertex.h"
 #include "VulkanGraphicsContext.h"
@@ -70,7 +69,7 @@ namespace Proof
 	}
 	void VulkanVertexBuffer::Bind(Count<RenderCommandBuffer> commandBuffer, uint32_t binding, uint64_t offset )const {
 		VkDeviceSize instanceOffset[1] = {(VkDeviceSize) offset };
-		vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), binding,1, &m_VertexBuffer.Buffer, instanceOffset);
+		vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), binding,1, &m_VertexBuffer.Buffer, instanceOffset);
 	}
 	void VulkanVertexBuffer::SetData(const void* data, uint32_t size,uint32_t offset){
 		if (size == 0)
@@ -106,7 +105,7 @@ namespace Proof
 			copy.dstOffset = offset;
 			copy.srcOffset = 0;
 			copy.size = size;
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
@@ -179,7 +178,7 @@ namespace Proof
 		Release();
 	}
 	void VulkanIndexBuffer::Bind(Count<RenderCommandBuffer>commandBuffer)const {
-		vkCmdBindIndexBuffer(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), m_IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), m_IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
 	}
 	void VulkanIndexBuffer::SetData(const void* data, uint32_t count, uint32_t offsetCount )
 	{
@@ -217,7 +216,7 @@ namespace Proof
 			copy.dstOffset = offsetCount * sizeof(uint32_t);
 			copy.srcOffset = 0;
 			copy.size = dataSize;
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), stagingBuffer.Buffer, m_IndexBuffer.Buffer, 1, &copy);
+			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), stagingBuffer.Buffer, m_IndexBuffer.Buffer, 1, &copy);
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}

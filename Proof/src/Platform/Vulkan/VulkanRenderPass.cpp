@@ -349,7 +349,7 @@ namespace Proof
             renderPassInfo.renderArea = vk_scissor;
             renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
             renderPassInfo.pClearValues = clearValues.data();
-            vkCmdBeginRenderPass(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBeginRenderPass(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         }
     }
     
@@ -373,7 +373,7 @@ namespace Proof
             // so we basically just seeing if thats teh case we dont bind it
             if (set == 0 || setInfo.Set == nullptr)continue;
             vkCmdBindDescriptorSets(
-                m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+                m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
                 (int)set,
@@ -419,7 +419,7 @@ namespace Proof
             // so we basically just seeing if thats teh case we dont bind it
             if (setInfo.Set == nullptr)continue;
             vkCmdBindDescriptorSets(
-                m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+                m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
                 (int)set,
@@ -459,7 +459,7 @@ namespace Proof
     
     void VulkanRenderPass::EndRenderPass() {
         PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
-        vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer());
+        vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight));
         m_CommandBuffer = nullptr;
         m_RenderPassEnabled = false;
         m_MaterialRenderPass = false;
@@ -482,8 +482,8 @@ namespace Proof
         const FrameBufferConfig frameBufferConfig = GetTargetFrameBuffer()->GetConfig();
         VkClearValue colorValue{ frameBufferConfig.ClearColor.X, frameBufferConfig.ClearColor.Y, frameBufferConfig.ClearColor.Z, frameBufferConfig.ClearColor.W };
 
-        vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &vk_viewport);
-        vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), 0, 1, &vk_scissor);
+        vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), 0, 1, &vk_viewport);
+        vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), 0, 1, &vk_scissor);
         if (frameBufferConfig.ClearFrameBufferOnLoad || explicitClear)
         {
             std::vector< VkClearAttachment> clears;
@@ -537,7 +537,7 @@ namespace Proof
                 clearRect.rect = vk_scissor;
                 reactClear.push_back(clearRect);
             }
-            vkCmdClearAttachments(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(),
+            vkCmdClearAttachments(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
                 clears.size(),
                 clears.data(),
                 reactClear.size(),
@@ -570,7 +570,7 @@ namespace Proof
         std::string str = std::string(name);
         PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
         const auto& pushRange = vkShader->GetPushConstants().at(str);
-        vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(), GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
+        vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
             pushRange.stageFlags, pushRange.offset, pushRange.size, data);
     }
     Count<class FrameBuffer> VulkanRenderPass::GetTargetFrameBuffer()
