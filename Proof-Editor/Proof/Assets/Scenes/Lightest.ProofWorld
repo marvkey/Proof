@@ -6,68 +6,21 @@ World:
         Tag: Directional Light
         tags: []
       TransformComponent:
-        Location: [0.271118194, 0, -1.95475864]
-        Rotation: [13, 147.600006, 20.6000004]
+        Location: [0.271118194, 2, 4.44500017]
+        Rotation: [80, 10, 0]
         Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
       DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 33.5499992
-    - Entity: 15765233332795142875
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 0.300000012
-        Image: 2700444414993608762
-    - Entity: 14542799149913085375
-      TagComponent:
-        Tag: Sphere
-        tags: []
-      TransformComponent:
-        Location: [0, 13.5, 2.70000005]
-        Rotation: [0, 0, 0]
-        Scale: [12.5, 10, 10]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 566574579191162934
-        MaterialTable:
-          - Material: ""
-            AssetID: 17275110330326612509
-            Index: 0
-    - Entity: 17966671247337900809
-      TagComponent:
-        Tag: Sponza
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [0.100000001, 0.100000001, 0.100000001]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 705200552008804468
+        Color: [0.911290348, 0.87454474, 0.87454474]
+        Intensity: 1
     - Entity: 11074883166607061457
       TagComponent:
         Tag: Terrain
         tags: []
       TransformComponent:
-        Location: [0, 26, 0]
+        Location: [10.6999998, 13.1999998, 8.60000038]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -87,11 +40,58 @@ World:
         Tag: cube
         tags: []
       TransformComponent:
-        Location: [0, 32.2000008, 0]
+        Location: [65.0999985, 11.3000002, -5.19999981]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
+        Scale: [4, 4, 4]
       ChildComponent:
         OwnerID: 0
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
+    - Entity: 602875950813510215
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 0.300000012
+        Image: 8647765685116841534
+    - Entity: 2765403552176170010
+      TagComponent:
+        Tag: plane
+        tags: []
+      TransformComponent:
+        Location: [0, -50, 0]
+        Rotation: [0, 0, 0]
+        Scale: [100, 1, 100]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 4645041025570573733
+        MaterialTable:
+          - Material: ""
+            AssetID: 13329416995872930766
+            Index: 0
+    - Entity: 8298100064692961820
+      TagComponent:
+        Tag: Sponza2
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [0.100000001, 0.100000001, 0.100000001]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 705200552008804468

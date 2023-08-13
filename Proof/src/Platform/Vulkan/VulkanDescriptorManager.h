@@ -183,6 +183,9 @@ namespace Proof
 		VkDescriptorPool m_DescriptorPool;
 
 		bool m_Build = false;
+		//so we dont have to have every input in shader be bind if not needed 
+		//(set, number of valid inputs)
+		std::map<uint32_t,uint32_t> m_SizeInputsData ;
 		// hasnt bind to a frame yet
 		uint32_t m_LastFrameBinned = -1;
 	};

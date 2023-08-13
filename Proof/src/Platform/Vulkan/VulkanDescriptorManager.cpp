@@ -41,6 +41,7 @@ namespace Proof
         else
         {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
         }
 	}
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<class TextureCube> buffer)
@@ -55,6 +56,7 @@ namespace Proof
         else
         {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
         }
     }
 
@@ -71,6 +73,7 @@ namespace Proof
         else
         {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
         }
     }
 
@@ -87,6 +90,7 @@ namespace Proof
         else
         {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
         }
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<class StorageBufferSet> buffer)
@@ -102,6 +106,7 @@ namespace Proof
         else
         {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
         }
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images)
@@ -116,6 +121,7 @@ namespace Proof
         else
         {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
         }
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<class Texture2D> buffer)
@@ -130,6 +136,7 @@ namespace Proof
         else
         {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
         }
     }
 
@@ -143,7 +150,10 @@ namespace Proof
         if (decl)
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(image);
         else
+        {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
+        }
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<ImageView> imageView)
     {
@@ -154,7 +164,10 @@ namespace Proof
         if (decl)
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageView);
         else
+        {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
+        }
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images)
     {
@@ -165,7 +178,10 @@ namespace Proof
         if (decl)
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(images);
         else
+        {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
+        }
     }
 
     void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews)
@@ -177,24 +193,31 @@ namespace Proof
         if (decl)
             m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageViews);
         else
+        {
             PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
+        }
     }
     
     void VulkanDescriptorManager::Bind()
     {
        
         auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
-        auto& descriptorSets= m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight];
+        auto& descriptorSets = m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight];
         // need this to hold images so taht when them in descriptor they dont loose data
         //last 
         std::unordered_map<uint32_t, std::vector<VkDescriptorImageInfo>> imageInfos;
         // a unique pos in the list for the image
         uint32_t imageUniquePos = 0;
-
+        
+      
         if (m_Build == true && m_LastFrameBinned == Renderer::GetCurrentFrame().FrameinFlight)
         {
             goto updataDescriptor;
         }
+        //reset to 0 and recalcualte 
+        for (auto& [set, data] : m_SizeInputsData)
+            data = 0;
         for (auto& [set, SetInfo] : m_Inputs)
         {
             for (auto& [binding, resource] : SetInfo)
@@ -210,30 +233,35 @@ namespace Proof
                         {
                             write.pBufferInfo = &resource.Input[0].As<VulkanUniformBuffer>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::UniformBufferSet:
                         {
                             write.pBufferInfo = &resource.Input[0].As<VulkanUniformBufferSet>()->GetBuffer(Renderer::GetCurrentFrame().FrameinFlight).As< VulkanUniformBuffer>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::StorageBuffer:
                         {
                             write.pBufferInfo = &resource.Input[0].As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::StorageBufferSet:
                         {
                             write.pBufferInfo = &resource.Input[0].As<VulkanStorageBufferSet>()->GetBuffer(Renderer::GetCurrentFrame().FrameinFlight).As< VulkanStorageBuffer>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::Texture2D:
                         {
                             write.pImageInfo = &resource.Input[0].As<VulkanTexture2D>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::Texture2DSet:
@@ -248,19 +276,21 @@ namespace Proof
                             imageInfos[imageUniquePos] = info;
                             write.pImageInfo = imageInfos[imageUniquePos].data();
                             write.descriptorCount = resource.Input.size();
-
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::TextureCube:
                         {
                             write.pImageInfo = &resource.Input[0].As<VulkanTextureCube>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::Image2D:
                         {
                             write.pImageInfo = &resource.Input[0].As<VulkanImage2D>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::Image2DSet:
@@ -275,12 +305,14 @@ namespace Proof
                             imageInfos[imageUniquePos] = info;
                             write.pImageInfo = imageInfos[imageUniquePos].data();
                             write.descriptorCount = resource.Input.size();
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::ImageView:
                         {
                             write.pImageInfo = &resource.Input[0].As<VulkanImageView>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::ImageViewSet:
@@ -295,6 +327,7 @@ namespace Proof
                             imageInfos[imageUniquePos] = info;
                             write.pImageInfo = imageInfos[imageUniquePos].data();
                             write.descriptorCount = resource.Input.size();
+                            m_SizeInputsData[set]++;
                         }
                         break;
                     default:
@@ -317,11 +350,14 @@ namespace Proof
                 if (!m_Inputs.contains(set))continue;
 
                 std::vector< VkWriteDescriptorSet> writes;
-                writes.resize(setData.size());
+                writes.resize(m_SizeInputsData[set]);
                 uint32_t index = 0;
                 for (auto& [binding, write] : setData)
                 {
-                    writes[index] = descriptorSets[set][binding];
+                    auto writeData = descriptorSets[set][binding];
+                    if (writeData.pBufferInfo == VK_NULL_HANDLE && writeData.pImageInfo == VK_NULL_HANDLE && writeData.pTexelBufferView == VK_NULL_HANDLE)
+                        continue;
+                    writes[index] = writeData;
                     index++;
                 }
                 vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
@@ -332,6 +368,7 @@ namespace Proof
     }
     void VulkanDescriptorManager::Build()
     {
+        auto graphicsContext = VulkanRenderer::GetGraphicsContext();
         m_WriteDescriptorMap.resize(Renderer::GetConfig().FramesFlight);
         m_DescriptorSets.resize(Renderer::GetConfig().FramesFlight);
 
@@ -557,6 +594,7 @@ namespace Proof
             for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
             {
                 VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayoutInfo, nullptr, &m_DescriptorSets[frame][set].Layout));
+                graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, fmt::format("{} descriptorLayout frame: {}", m_Config.DebugName, frame), m_DescriptorSets[frame][set].Layout);
             }
             VkDescriptorSetAllocateInfo allocInfo = {};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -568,6 +606,7 @@ namespace Proof
                 allocInfo.pSetLayouts = &m_DescriptorSets[frame][set].Layout;
 
                 vkAllocateDescriptorSets(device, &allocInfo, &m_DescriptorSets[frame][set].Set);
+                graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_DESCRIPTOR_SET, fmt::format("{} descriptorSet frame: {}", m_Config.DebugName, frame), m_DescriptorSets[frame][set].Set);
             }
         }
 

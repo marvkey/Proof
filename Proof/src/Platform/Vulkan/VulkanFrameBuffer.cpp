@@ -17,7 +17,7 @@ namespace Proof
 {
     static bool hasStencilComponent(VkFormat format) {
         return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT
-            || format == VK_FORMAT_D16_UNORM_S8_UINT;
+            || format == VK_FORMAT_D16_UNORM_S8_UINT ;
     }
     VulkanFrameBuffer::VulkanFrameBuffer(const FrameBufferConfig& attachments)
         :
@@ -42,7 +42,8 @@ namespace Proof
         else
             graphicsContext->GetSwapChain().As<VulkanSwapChain>()->FrameBuffers.emplace_back(this);
 
-        PF_ENGINE_TRACE("FrameBuffer {} created with {} ImageAttachment", m_Config.DebugName, m_ColorImages.size());
+        PF_ENGINE_TRACE("FrameBuffer {} created with Color: {} ImageAttachment and Depth:{} Attachment", m_Config.DebugName, m_ColorImages.size(), 
+            0 ? m_DepthImage.RefImages.size() ==0 : 1);
     }
     void VulkanFrameBuffer::SetUpAttachments()
     {
@@ -67,9 +68,12 @@ namespace Proof
     {
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
         auto swapchain = graphicsContext->GetSwapChain();
+        m_DepthFormat = imageAttach.Format;
+
         VkFormat depthFormat = Utils::ProofFormatToVulkanFormat(imageAttach.Format);
         bool hasImage = true ? imageAttach.ExistingImage.HasImages() : false;
         m_DepthImage.RefImages.resize(swapchain->GetImageCount());
+
         if (hasImage)
         {
             PF_CORE_ASSERT(imageAttach.ExistingImage.Images.size() == swapchain->GetImageCount(), "Not equal to image count ");
@@ -83,8 +87,8 @@ namespace Proof
             }
             return;
         }
-
         m_DepthFormat = imageAttach.Format;
+
         for (int i = 0; i < swapchain->GetImageCount(); i++)
         {
 
@@ -118,7 +122,7 @@ namespace Proof
                 VkPipelineStageFlags destinationStage;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-                if (hasStencilComponent(depthFormat))
+                if (Utils::ContainStencilFormat(m_DepthFormat))
                 {
                     barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
                 }
@@ -276,12 +280,14 @@ namespace Proof
 
             for (auto& coloredImage : m_ColorImages)
             {
-                attachments.emplace_back(coloredImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageView);
+                VkDescriptorImageInfo* infoRef = (VkDescriptorImageInfo* )coloredImage.RefImages[i]->GetResourceDescriptorInfo();
+                attachments.emplace_back(infoRef->imageView);
             }
             // has depth
             if (m_DepthFormat != ImageFormat::None)
             {
-                attachments.emplace_back(m_DepthImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageView);
+                VkDescriptorImageInfo* infoRef = (VkDescriptorImageInfo*)m_DepthImage.RefImages[i]->GetResourceDescriptorInfo();
+                attachments.emplace_back(infoRef->imageView);
             }
             
             

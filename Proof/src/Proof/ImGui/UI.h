@@ -4,13 +4,13 @@
 #include "Proof/Renderer/Texture.h"
 namespace Proof::HeaderFileOnly {
 	struct TextureUI {
-		static ImTextureID GetTexture(Count<Image2D> image);
+		static ImTextureID GetTexture(Count<class Image> image);
 	};
 
 }
 namespace Proof::UI {
 
-	inline void Image(Count<Image2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0))
+	inline void Image(Count<class Image> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0))
 	{
 		ImGui::Image(HeaderFileOnly::TextureUI::GetTexture(image), size, uv0, uv1, tint_col, border_col);
 	}

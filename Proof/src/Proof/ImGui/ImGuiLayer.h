@@ -16,7 +16,7 @@ namespace Proof {
         virtual void End() = 0;
         void SetDarkTheme();
         static Count<class ImGuiLayer> Create();
-        virtual ImTextureID ToImguiImage(Count<class Image2D> iamge) = 0;
+        virtual ImTextureID ToImguiImage(Count<class Image> iamge) = 0;
         virtual ImTextureID ToImguiImage(Count<class Texture2D> texture) = 0;
 
     };

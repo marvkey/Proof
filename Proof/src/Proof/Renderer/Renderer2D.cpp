@@ -41,7 +41,7 @@ namespace Proof {
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commdandBuffer) {
 		PF_PROFILE_FUNC()
 		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
-		s_CurrentCamera = CameraData{ projection,view,Position };
+		s_CurrentCamera = CameraData{ projection,view,glm::mat4(1),Position };
 		m_Storage2DData->CurrentFrameBuffer = frameBuffer;
 		m_Storage2DData->CommandBuffer = commdandBuffer;
 	}

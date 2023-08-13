@@ -28,7 +28,8 @@ namespace Proof {
 
 		for (auto& [pushName, pushData] : vk_Shader->GetPushConstants())
 		{
-			if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT || pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT)
+			if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT || pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT || pushData.stageFlags | VK_SHADER_STAGE_GEOMETRY_BIT ||
+				pushData.stageFlags | VK_SHADER_STAGE_VERTEX_BIT)
 			{
 				m_UniformName = pushName;
 				allocateSize = pushData.size;
@@ -160,7 +161,6 @@ namespace Proof {
 	bool& VulkanRenderMaterial::GetBool(const std::string& name)
 	{
 		return GetInternal<bool>(name);
-
 	}
 	int& VulkanRenderMaterial::GetInt(const std::string& name) 
 	{
@@ -233,8 +233,6 @@ namespace Proof {
 		PF_CORE_ASSERT(false);
 		return nullptr;
 	}
-	
-
 
 	void VulkanRenderMaterial::Bind(Count<class VulkanRenderCommandBuffer> commandBuffer, Count<VulkanComputePass> computePass)
 	{
@@ -301,7 +299,7 @@ namespace Proof {
 
 		for (auto& [pushName, pushData] : vk_Shader->GetPushConstants())
 		{
-			if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT || pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT)
+			if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT || pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT || pushData.stageFlags | VK_SHADER_STAGE_VERTEX_BIT)
 			{
 				renderPass->PushData(pushName, m_UniformBufferStorage.Get());
 			}

@@ -10,7 +10,10 @@
 #include "VulkanSwapChain.h"
 #include "VulkanImage.h"
 #include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanImage.h"
+#include "VulkanTexutre.h"
 #include "Vulkan.h"
+#include "VulkanCommandBuffer.h"
 
 #include "VulkanCommandBuffer.h"
 namespace Proof {
@@ -203,7 +206,6 @@ namespace Proof {
 		if (m_Resize == true)
 			OnResize();
 		
-
 		io.DisplaySize = ImVec2((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 		wd->FrameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 
@@ -272,28 +274,36 @@ namespace Proof {
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent((GLFWwindow*)backup_current_context);
 		}
+		
 	}
 	ImTextureID VulkanImguiLayer::ToImguiImage(Count<Texture2D> texture)
 	{
 		return ToImguiImage(texture->GetImage());
 	}
 
-	ImTextureID VulkanImguiLayer::ToImguiImage(Count<Image2D> image)
+	ImTextureID VulkanImguiLayer::ToImguiImage(Count<Image> image)
 	{
 		// passing this as a pointer so we can get hte location easier 
-		const VkDescriptorImageInfo* imageDescriptorInfo = (VkDescriptorImageInfo*)image.As<VulkanImage2D>()->GetResourceDescriptorInfo();
+		const VkDescriptorImageInfo* imageDescriptorInfo = (VkDescriptorImageInfo*)image->GetResourceDescriptorInfo();
 		if (imageDescriptorInfo == nullptr || imageDescriptorInfo->imageView == nullptr || imageDescriptorInfo->sampler == nullptr)
 			return ToImguiImage(Renderer::GetWhiteTexture());
-		VkImage imageVK = image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
 
 		uint64_t memLocation = (uint64_t)(image.Get());
-		if (m_ImagesDescriptors.contains(memLocation))
-			return (ImTextureID)m_ImagesDescriptors[memLocation];
 
-		m_ImagesDescriptors[memLocation] = ImGui_ImplVulkan_AddTexture(imageDescriptorInfo->sampler, imageDescriptorInfo->imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		return (ImTextureID)m_ImagesDescriptors[memLocation];
+		VkDescriptorImageInfo* infoRef = (VkDescriptorImageInfo*)image->GetResourceDescriptorInfo();
+		if (m_ImagesDescriptors.contains(memLocation))
+		{
+			// in case maybe the image holding it wa deleted but another image is holding the data 
+			m_ImagesDescriptors[memLocation].second = image.Get();
+			
+			return (ImTextureID)m_ImagesDescriptors[memLocation].first;
+		}
+
+		m_ImagesDescriptors[memLocation].first = ImGui_ImplVulkan_AddTexture(imageDescriptorInfo->sampler, imageDescriptorInfo->imageView, imageDescriptorInfo->imageLayout);
+		m_ImagesDescriptors[memLocation].second = image.Get();
+		return (ImTextureID)m_ImagesDescriptors[memLocation].first;
 	}
-	void VulkanImguiLayer::UpdateImageDescriptor(const VulkanImage2D* image)
+	void VulkanImguiLayer::UpdateImageDescriptor(const Image* image)
 	{
 		const VkDescriptorImageInfo* imageDescriptorInfo = (VkDescriptorImageInfo*)image->GetResourceDescriptorInfo();
 		if (imageDescriptorInfo == nullptr || imageDescriptorInfo->imageView == nullptr || imageDescriptorInfo->sampler == nullptr)
@@ -302,9 +312,9 @@ namespace Proof {
 		uint64_t memLocation = (uint64_t)(image);
 		if (!m_ImagesDescriptors.contains(memLocation))
 			return;
-		ImGui_ImplVulkan_UpdateTextureProof(m_ImagesDescriptors[memLocation], imageDescriptorInfo->sampler, imageDescriptorInfo->imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		ImGui_ImplVulkan_UpdateTextureProof(m_ImagesDescriptors[memLocation].first, imageDescriptorInfo->sampler, imageDescriptorInfo->imageView, imageDescriptorInfo->imageLayout);
 	}
-	void VulkanImguiLayer::RemoveImageDescriptor(const VulkanImage2D* image)
+	void VulkanImguiLayer::RemoveImageDescriptor(const Image* image)
 	{
 		const VkDescriptorImageInfo* imageDescriptorInfo = (VkDescriptorImageInfo*)image->GetResourceDescriptorInfo();
 		uint64_t memLocation = (uint64_t)(image);
@@ -312,7 +322,8 @@ namespace Proof {
 		if (!m_ImagesDescriptors.contains(memLocation))
 			return;
 
-		VkDescriptorSet set = m_ImagesDescriptors[memLocation];
+		VkDescriptorSet set = m_ImagesDescriptors[memLocation].first;
+
 		ImGui_ImplVulkan_RemoveTexture(set);
 		m_ImagesDescriptors.erase(memLocation);
 	}

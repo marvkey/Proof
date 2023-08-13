@@ -22,7 +22,6 @@ namespace Proof{
 		OnUpdate(DeltaTime);
 	}
 	void EditorCamera::OnUpdate(FrameTime DeltaTime) {
-		Recalculate();
 
 		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight)) {
 			m_FirstClick = true;
@@ -101,6 +100,7 @@ namespace Proof{
 				PF_ENGINE_INFO("Mouse Speed {}", m_Speed);
 			}
 		}
+		Recalculate();
 	}
 	void EditorCamera::Recalculate() {
 		m_View = glm::lookAt(m_Positon,m_Positon + m_Direction,m_Up);

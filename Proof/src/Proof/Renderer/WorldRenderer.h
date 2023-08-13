@@ -65,6 +65,14 @@ namespace std {
 namespace Proof
 {
 	class RenderMaterial;
+
+	struct CascadeData
+	{
+		//glm::mat4 Projection;
+		glm::mat4 ViewProjection;
+		float SplitDepth;
+	};
+
 	struct RenderSettings 
 	{
 		bool ViewColliders = false;
@@ -75,6 +83,7 @@ namespace Proof
 		Vector Color = { 1 };
 		float Intensity = 1.0f;
 		Vector Direction;
+		float ShadowAmount = 0.5;
 	};
 	
 	struct SkyLight 
@@ -83,7 +92,6 @@ namespace Proof
 		float Lod = 0;
 		float Intensity = 1;
 		float Rotation = 0;
-
 	};
 	
 	struct LightScene
@@ -96,7 +104,6 @@ namespace Proof
 		Count<MaterialTable> MaterialTable = nullptr;
 		//Count<RenderMaterial> OvverrideMaterial;
 		uint32_t InstanceCount = 0;
-
 	};
 	struct SubMeshKey
 	{
@@ -113,8 +120,8 @@ namespace Proof
 
 	struct ShadowSetting
 	{
-		float Near = -15.0f;
-		float Far = -15.0f;
+		float Near = -50.0f;
+		float Far = 50.0f;
 	};
 	
 	class WorldRenderer : public RefCounted {
@@ -141,12 +148,20 @@ namespace Proof
 		Count<ScreenFrameBuffer>m_ScreenFrameBuffer;
 		void SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform);
 
+		ShadowSetting ShadowSettings;
+
+		int debugCascade = 0;
 	private:
-		Count<FrameBuffer> m_DepthFrameBuffer;
-		Count<class GraphicsPipeline> m_DepthPipeline;
-		Count<class RenderPass> m_DepthRenderPass;
+		//Count<class RenderPass> m_ShadowDepthRenderPass;
 		std::array<Count<RenderPass>, 4> m_ShadowMapPasses; // for cascades
+		//Count<RenderMaterial> m_ShadowPassMaterial;
+		//Count<GraphicsPipeline> m_ShadowPassPipeline;
+		Count<GraphicsPipeline> m_ShadowDebugPipeline;
+		Count<RenderPass> m_ShadowDebugPass;
+		Count<UniformBufferSet> m_ShadowPassBuffer;
+		Count<class Image2D> m_ShadowPassImage;
 		Count<RenderMaterial> m_ShadowPassMaterial;
+		Count<RenderMaterial> m_ShadowPassDebugMaterial;
 		void CreateShadowMap();
 		void MeshPass();
 		void ShadowPass();
@@ -169,8 +184,11 @@ namespace Proof
 		MeshRenderPipline m_MeshPipeline;
 		Count<class Environment> m_Environment;
 		Count<UniformBufferSet> m_SkyBoxUniformInfo;
+
+		void UpdateCascades(CascadeData* cascades, const glm::vec3& lightDirection);
 		void Reset();
 		CameraData m_CameraData;
+		friend class Editore3D;
 
 	};	
 }

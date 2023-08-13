@@ -35,7 +35,7 @@ namespace Proof
     {
         if (!std::filesystem::exists(path))
         {
-            PF_ENGINE_ERROR("Failed to load Shader: {}, Path {}", name, path.string());
+            PF_CORE_ASSERT(false,fmt::format("Failed to load Shader: {}, Path {}", name, path.string()).c_str());
             return;
         }
         if (HasShader(name))return;

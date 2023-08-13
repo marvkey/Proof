@@ -129,7 +129,7 @@ namespace Proof {
 		VkImageCreateInfo imageCreateInfo = {};
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-		if(m_Specification.Layers  >1)
+		if(m_Specification.Layers  ==6 && m_Specification.Height == m_Specification.Width)
 			imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 		imageCreateInfo.format = vulkanFormat;
 		imageCreateInfo.extent.width = m_Specification.Width;
@@ -430,6 +430,10 @@ namespace Proof {
 			vkDestroyImageView(vulkanDevice, imageView, nullptr);
 
 		});
+		if (Application::Get()->GetImguiLayer() != nullptr)
+		{
+			Application::Get()->GetImguiLayer().As<VulkanImguiLayer>()->RemoveImageDescriptor(this);
+		}
 		m_ImageView = nullptr;
 	}
 	void VulkanImageView::UpdateDescriptor()
@@ -449,6 +453,11 @@ namespace Proof {
 
 		m_DescriptorImageInfo.imageView = m_ImageView;
 		m_DescriptorImageInfo.sampler = m_Specification.Image.As<VulkanImage2D>()->Getinfo().Sampler;
+
+		if (Application::Get()->GetImguiLayer() != nullptr)
+		{
+			Application::Get()->GetImguiLayer().AsRaw<VulkanImguiLayer>()->UpdateImageDescriptor(this);
+		}
 	}
 
 	void GetMaxImageDimensions(VkPhysicalDevice physicalDevice, uint32_t& maxWidth, uint32_t& maxHeight) {

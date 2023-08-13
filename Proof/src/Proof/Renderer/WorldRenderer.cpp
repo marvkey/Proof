@@ -27,9 +27,20 @@
 #include"Vertex.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "Platform/Vulkan/VulkanImage.h"
+#include "Proof/Math/MathConvert.h"	
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
+#include<glm/glm.hpp>
+#include<glm/gtc/matrix_transform.hpp>
+#include<glm/gtc/type_ptr.hpp>
+#include<glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include<glm/gtx/compatibility.hpp>
+#include <glm/gtc/matrix_inverse.hpp> 
 namespace Proof
 {
-	
+	#define SHADOWMAP_DIM  2048
+	#define SHADOWMAP_CASCADE_COUNT  4
+
 	glm::vec3 convertRotationToVec3(float rotation) {
 		// Convert rotation from degrees to radians
 		float rotationRadians = glm::radians(rotation);
@@ -51,6 +62,8 @@ namespace Proof
 	Count<RenderPass> skyBoxPass;
 	Count<Mesh> Cube; 
 	Count< UniformBufferSet> cameraBuffer;
+	Count<UniformBufferSet> s_CascadeProjectionBuffer;
+	Count<UniformBufferSet> s_CascadeSplitsBuffer;
 	//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 	WorldRenderer::~WorldRenderer() {
 		textureCubeMap = nullptr;
@@ -159,6 +172,13 @@ namespace Proof
 			skyBoxPass->SetInput("SkyBoxData", m_SkyBoxUniformInfo);
 		}
 		Cube = MeshWorkShop::GenerateCube();
+		s_CascadeProjectionBuffer = UniformBufferSet::Create(sizeof(glm::mat4) * 4);
+		s_CascadeSplitsBuffer = UniformBufferSet::Create(sizeof(float) * 4);
+		CreateShadowMap();
+		m_MeshPipeline.RenderPass->SetInput("u_ShadowMap", m_ShadowPassImage);
+		m_MeshPipeline.RenderPass->SetInput("ShadowMapProjections", s_CascadeProjectionBuffer);
+		m_MeshPipeline.RenderPass->SetInput("CascadeSplits", s_CascadeSplitsBuffer);
+
 	}
 	void WorldRenderer::Clear() {
 		
@@ -180,8 +200,11 @@ namespace Proof
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
-
-		m_CameraData = { projection, view, location, nearPlane, farPlane };
+		{
+			//https://github.com/InCloudsBelly/X2_RenderingEngine/blob/739ff016ad2a23e3843517c4866dda09ce5d112f/Engine/X2/Renderer/Camera.cpp
+			static glm::mat4 unreversedProjectionMatrix (glm::perspectiveFov(glm::radians(45.0f),(float) m_ScreenFrameBuffer->GetFrameWidth(), (float)m_ScreenFrameBuffer->GetFrameHeight(), nearPlane,farPlane));
+			m_CameraData = { projection, view, unreversedProjectionMatrix,location, nearPlane, farPlane };
+		}
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
 		cameraBuffer->SetData(frameIndex,Buffer( &m_CameraData, sizeof(CameraData)));
@@ -194,11 +217,13 @@ namespace Proof
 			{
 				Entity entity(entityID, m_World.Get());
 				const auto& dirLightComponent = directionalLightView.get<DirectionalLightComponent>(entityID);
+				glm::vec3 direction = ProofToglmVec(dirLightComponent.OffsetDirection) + ProofToglmVec(m_World->GetWorldRotation(entity));
+				direction = glm::normalize(direction);
 				m_LightScene.DirectionalLights[index] =
 				{
 					dirLightComponent.Color,
 					dirLightComponent.Intensity,
-					-Vector{dirLightComponent.OffsetDirection + m_World->GetWorldRotation(entity)} ,
+					-GlmVecToProof(direction),
 				};
 				index++;
 			}
@@ -266,7 +291,62 @@ namespace Proof
 		
 		
 		MeshPass();
-
+		//Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+		//	VkImageMemoryBarrier imageMemoryBarrier{};
+		//	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		//	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		//	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		//	imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		//	imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		//	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+		//	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		//	imageMemoryBarrier.image = m_ShadowPassImage.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+		//	VkImageSubresourceRange range;
+		//	range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		//	range.baseArrayLayer = 0;
+		//	range.baseMipLevel = 0;
+		//	range.layerCount = 4;
+		//	range.levelCount = 1;
+		//	imageMemoryBarrier.subresourceRange = range;
+		//
+		//	vkCmdPipelineBarrier(
+		//		cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
+		//		VK_PIPELINE_STAGE_TRANSFER_BIT,
+		//		VK_PIPELINE_STAGE_TRANSFER_BIT,
+		//		0,
+		//		0, nullptr,
+		//		0, nullptr,
+		//		1, &imageMemoryBarrier);
+		//});
+		ShadowPass();
+		
+		//Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+		//	VkImageMemoryBarrier imageMemoryBarrier{};
+		//	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		//	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		//	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		//	imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		//	imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		//	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+		//	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		//	imageMemoryBarrier.image = m_ShadowPassImage.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+		//	VkImageSubresourceRange range;
+		//	range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		//	range.baseArrayLayer = 0;
+		//	range.baseMipLevel = 0;
+		//	range.layerCount = 4;
+		//	range.levelCount = 1;
+		//	imageMemoryBarrier.subresourceRange = range;
+		//
+		//	vkCmdPipelineBarrier(
+		//		cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
+		//		VK_PIPELINE_STAGE_TRANSFER_BIT,
+		//		VK_PIPELINE_STAGE_TRANSFER_BIT,
+		//		0,
+		//		0, nullptr,
+		//		0, nullptr,
+		//		1, &imageMemoryBarrier);
+		//});
 		{
 			//PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
 			m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
@@ -565,50 +645,159 @@ namespace Proof
 
 		m_MeshTransformMap[meshKey].emplace_back(transform);
 	}
-	#define SHADOWMAP_DIM  2048
+
 	
 	void WorldRenderer::CreateShadowMap()
 	{
 		PF_PROFILE_FUNC();
-
-		const uint32_t shadowMapCascade = 4;
-
-		FrameBufferConfig framebufferConfig;
-		framebufferConfig.DebugName = "Shadow Depth Fraembuffer";
-		framebufferConfig.Attachments = { ImageFormat::DEPTH24STENCIL8UI };
-
-		m_DepthFrameBuffer = FrameBuffer::Create(framebufferConfig);
-		//RenderPassConfig renderPassConfig;
-		//renderPassConfig.
-
+		ImageFormat depthFormat = ImageFormat::DEPTH32F;
+		const uint32_t shadowMapCascade = SHADOWMAP_CASCADE_COUNT;
 		ImageConfiguration depthImageConfig;
 		depthImageConfig.DebugName = "Shadow Pass Image";
-		depthImageConfig.Format = ImageFormat::DEPTH24STENCIL8UI;
+		depthImageConfig.Format = depthFormat;
 		depthImageConfig.Usage = ImageUsage::Attachment;
 		depthImageConfig.Layers = shadowMapCascade;
-		Count<Image2D> depthImage = Image2D::Create(depthImageConfig);
+		depthImageConfig.Width = SHADOWMAP_DIM;
+		depthImageConfig.Height = SHADOWMAP_DIM;
+
+		m_ShadowPassImage = Image2D::Create(depthImageConfig);
+
+
+		Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+			VkImageMemoryBarrier imageMemoryBarrier{};
+			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+			imageMemoryBarrier.image = m_ShadowPassImage.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+			VkImageSubresourceRange range;
+			range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+			range.baseArrayLayer = 0;
+			range.baseMipLevel = 0;
+			range.layerCount = 4;
+			range.levelCount = 1;
+			imageMemoryBarrier.subresourceRange = range;
+
+			vkCmdPipelineBarrier(
+				cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1, &imageMemoryBarrier);
+		});
+
+		{
+
+			//FrameBufferConfig framebufferConfig;
+			//framebufferConfig.DebugName = "Shadow Depth Fraembuffer";
+			//framebufferConfig.Attachments = { ImageFormat::RGBA32F };
+			//framebufferConfig.Size = { SHADOWMAP_DIM,SHADOWMAP_DIM };
+			//
+			//auto shadowDepthFramebuffer = FrameBuffer::Create(framebufferConfig);
+			//
+			//GraphicsPipelineConfig shadowMapPipelineConfig;
+			//shadowMapPipelineConfig.DebugName = "ShadowDepthPipeline";
+			//shadowMapPipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+			//shadowMapPipelineConfig.Shader = Renderer::GetShader("ShadowDepthPass");
+			//shadowMapPipelineConfig.TargetBuffer = shadowDepthFramebuffer;
+			//
+			//auto shadowpipeline= GraphicsPipeline::Create(shadowMapPipelineConfig);
+			//
+			//RenderPassConfig renderpassConfig;
+			//renderpassConfig.Attachments = { ImageFormat::RGBA32F };
+			//renderpassConfig.DebugName = fmt::format("Shadow Pass");
+			//m_DebugShadowPass = RenderPass::Create(renderpassConfig);
+			//
+			//m_ShadowPassDebugMaterial = RenderMaterial::Create(RenderMaterialConfiguration("Debug Shadow Pass Debug Material", Renderer::GetShader("DebugShadowMap")));
+
+		}
+
+		{
+			FrameBufferConfig framebufferConfig;
+			framebufferConfig.DebugName = "Shadow Debug Fraembuffer";
+			framebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH24STENCIL8UI };
+			//framebufferConfig.Attachments.Attachments[0].ExistingImage = m_ShadowPassImage;
+			framebufferConfig.Size = { SHADOWMAP_DIM,SHADOWMAP_DIM };
+
+			auto shadowDebugShader = FrameBuffer::Create(framebufferConfig);
+
+			GraphicsPipelineConfig shadowMapPipelineConfig;
+			shadowMapPipelineConfig.DebugName = "DebugShadowMapPipeline";
+			shadowMapPipelineConfig.CullMode = CullMode::Back;
+			shadowMapPipelineConfig.Shader = Renderer::GetShader("DebugShadowMap");
+			shadowMapPipelineConfig.TargetBuffer = shadowDebugShader;
+
+			m_ShadowDebugPipeline = GraphicsPipeline::Create(shadowMapPipelineConfig);
+
+			RenderPassConfig renderpassConfig;
+			renderpassConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH24STENCIL8UI };
+			renderpassConfig.DebugName = fmt::format("DebugShadowPass");
+			renderpassConfig.Pipeline = m_ShadowDebugPipeline;
+			m_ShadowDebugPass = RenderPass::Create(renderpassConfig);
+
+		}
+		m_ShadowPassDebugMaterial = RenderMaterial::Create(RenderMaterialConfiguration("Shadow Pass Debug Material", Renderer::GetShader("DebugShadowMap")));
+		m_ShadowPassDebugMaterial->Set("u_ShadowMap", m_ShadowPassImage);
+
+	//	m_ShadowPassBuffer = UniformBufferSet::Create(sizeof(CascadeData) * SHADOWMAP_CASCADE_COUNT);
 		for (uint32_t i = 0; i < shadowMapCascade; i++)
 		{
 			ImageViewConfiguration imageViewConfig;
 			imageViewConfig.DebugName = fmt::format("Shadow Cascade: {}", i);
-			imageViewConfig.Layer = 0;
-			imageViewConfig.LayerCount = i;
-			imageViewConfig.Mip = 0;
-			imageViewConfig.MipCount = 0;
-			imageViewConfig.View = ImageViewType::View2DArray;
-			imageViewConfig.Image = depthImage;
+			imageViewConfig.Layer = i;
+			imageViewConfig.LayerCount = 1;
+			imageViewConfig.View = ImageViewType::View2D;
+			imageViewConfig.Image = m_ShadowPassImage;
 
-			Count<ImageView> view = ImageView::Create(imageViewConfig);
-			
-			Count<VulkanFrameBuffer> shadowMapPass;
+			Count<ImageView> imageView = ImageView::Create(imageViewConfig);
+			FrameBufferConfig framebufferConfig;
+			framebufferConfig.DebugName = fmt::format("Shadow map cascade {}", i);
+			framebufferConfig.Attachments = { depthFormat };
+			framebufferConfig.Attachments.Attachments[0].ExistingImage = imageView;
+			framebufferConfig.Size = { SHADOWMAP_DIM,SHADOWMAP_DIM };
+			Count<FrameBuffer> shadowMapPass = FrameBuffer::Create(framebufferConfig);
 
+			GraphicsPipelineConfig pipelineConfig;
+			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+			pipelineConfig.CullMode =  CullMode::Back;
+			pipelineConfig.Shader = Renderer::GetShader("ShadowDepthPass");
+			pipelineConfig.TargetBuffer = shadowMapPass;
+			pipelineConfig.VertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
+			pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
+			pipelineConfig.VertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
+			pipelineConfig.VertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
+			pipelineConfig.VertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
+			pipelineConfig.VertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
+
+			pipelineConfig.VertexArray->AddData(5, DataType::Vec4, 0, 1);
+			pipelineConfig.VertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
+			pipelineConfig.VertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
+			pipelineConfig.VertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
+
+
+			auto pipleine = GraphicsPipeline::Create(pipelineConfig);
+			RenderPassConfig renderpassConfig;
+			renderpassConfig.Attachments = { depthFormat };
+			renderpassConfig.DebugName = fmt::format("Shadow render pass Cascade {}",i);
+			renderpassConfig.Pipeline = pipleine;
+
+			auto renderPass = RenderPass::Create(renderpassConfig);
+			m_ShadowMapPasses[i] = renderPass;
 		}
-
+		m_ShadowPassMaterial = RenderMaterial::Create(RenderMaterialConfiguration("Shadow Pass Material", Renderer::GetShader("ShadowDepthPass")));
+		//m_ShadowPassMaterial->Set("colorMap", m_ShadowPassImage);
+  		m_ShadowPassMaterial->Set("ShadowCascadesProjection", s_CascadeProjectionBuffer);
 	}
 	void WorldRenderer::MeshPass()
 	{
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		
 		//TODO FASTER HASH FUNCTION FOR MESHKEY
 		PF_PROFILE_FUNC();
 		//set pass
@@ -666,23 +855,25 @@ namespace Proof
 		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
 
 	}
-	struct CascadeData
+	
+	void WorldRenderer::UpdateCascades(CascadeData* cascades, const glm::vec3& lightDirection)
 	{
-		glm::mat4 ViewPorjection;
-		//glm::mat4 View;
-		float SplitDepth;
-
-	};
-	static void UpdateCascades(CascadeData* cascades, const Vector& lightDirection, CameraData& cameraData)
-	{
+		float cascAdSplitLabmda = 0.92;
+		float m_ScaleShadowCascadesToOrigin = 0;
 		//https://github.com/SaschaWillems/Vulkan/blob/master/examples/shadowmappingcascade/shadowmappingcascade.cpp
-		float cascadeSplitLambda = 0.95f; // editabel variable
+		float scaleToOrigin = m_ScaleShadowCascadesToOrigin;
 
-		const int shadowMapCascadeCount = 4;
+		glm::mat4 viewMatrix = m_CameraData.ProjectionView;
+		constexpr glm::vec4 origin = glm::vec4(glm::vec3(0.0f), 1.0f);
+		viewMatrix[3] = glm::lerp(viewMatrix[3], origin, scaleToOrigin);
 
-		float cascadeSplits[shadowMapCascadeCount];
-		float nearClip = 0.1f;
-		float farClip = 1000.f;
+		auto viewProjection = m_CameraData.UnreversedProjectionMatrix * viewMatrix;
+
+		const int SHADOW_MAP_CASCADE_COUNT = 4;
+		float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
+
+		float nearClip = m_CameraData.NearPlane;
+		float farClip = m_CameraData.FarPlane;
 		float clipRange = farClip - nearClip;
 
 		float minZ = nearClip;
@@ -691,26 +882,37 @@ namespace Proof
 		float range = maxZ - minZ;
 		float ratio = maxZ / minZ;
 
-		for (uint32_t i = 0; i < shadowMapCascadeCount; i++)
+		// Calculate split depths based on view camera frustum
+		// Based on method presented in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
+		for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
 		{
-			float p = (i + 1) / static_cast<float>(shadowMapCascadeCount);
+			float p = (i + 1) / static_cast<float>(SHADOW_MAP_CASCADE_COUNT);
 			float log = minZ * std::pow(ratio, p);
 			float uniform = minZ + range * p;
-			float d = cascadeSplitLambda * (log - uniform) + uniform;
+			float d = cascAdSplitLabmda * (log - uniform) + uniform;
 			cascadeSplits[i] = (d - nearClip) / clipRange;
 		}
 
+		cascadeSplits[3] = 0.3f;
+
+		// Manually set cascades here
+		// cascadeSplits[0] = 0.05f;
+		// cascadeSplits[1] = 0.15f;
+		// cascadeSplits[2] = 0.3f;
+		// cascadeSplits[3] = 1.0f;
+
 		// Calculate orthographic projection matrix for each cascade
 		float lastSplitDist = 0.0;
-		for (uint32_t i = 0; i < shadowMapCascadeCount; i++)
+		for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
 		{
 			float splitDist = cascadeSplits[i];
 
-			glm::vec3 frustumCorners[8] = {
-				glm::vec3(-1.0f,  1.0f, 0.0f),
-				glm::vec3(1.0f,  1.0f, 0.0f),
-				glm::vec3(1.0f, -1.0f, 0.0f),
-				glm::vec3(-1.0f, -1.0f, 0.0f),
+			glm::vec3 frustumCorners[8] =
+			{
+				glm::vec3(-1.0f,  1.0f, -1.0f),
+				glm::vec3(1.0f,  1.0f, -1.0f),
+				glm::vec3(1.0f, -1.0f, -1.0f),
+				glm::vec3(-1.0f, -1.0f, -1.0f),
 				glm::vec3(-1.0f,  1.0f,  1.0f),
 				glm::vec3(1.0f,  1.0f,  1.0f),
 				glm::vec3(1.0f, -1.0f,  1.0f),
@@ -718,7 +920,7 @@ namespace Proof
 			};
 
 			// Project frustum corners into world space
-			glm::mat4 invCam = glm::inverse(cameraData.Projection * cameraData.ProjectionView);
+			glm::mat4 invCam = glm::inverse(viewProjection);
 			for (uint32_t i = 0; i < 8; i++)
 			{
 				glm::vec4 invCorner = invCam * glm::vec4(frustumCorners[i], 1.0f);
@@ -735,10 +937,11 @@ namespace Proof
 			// Get frustum center
 			glm::vec3 frustumCenter = glm::vec3(0.0f);
 			for (uint32_t i = 0; i < 8; i++)
-			{
 				frustumCenter += frustumCorners[i];
-			}
+
 			frustumCenter /= 8.0f;
+
+			//frustumCenter *= 0.01f;
 
 			float radius = 0.0f;
 			for (uint32_t i = 0; i < 8; i++)
@@ -747,25 +950,101 @@ namespace Proof
 				radius = glm::max(radius, distance);
 			}
 			radius = std::ceil(radius * 16.0f) / 16.0f;
-
+			float CascadeFarPlaneOffset = 50.0f, CascadeNearPlaneOffset = -50.0f;
 			glm::vec3 maxExtents = glm::vec3(radius);
 			glm::vec3 minExtents = -maxExtents;
 
-			glm::vec3 lightDir = normalize(-glm::vec3{ lightDirection.X,lightDirection.Y,lightDirection.Z });
-			glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * -minExtents.z, frustumCenter, glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, maxExtents.z - minExtents.z);
+			glm::vec3 up = std::abs(glm::dot(lightDirection, glm::vec3(0.f, 1.0f, 0.0f))) > 0.9 ? glm::normalize(glm::vec3(0.01f, 1.0f, 0.01f)) : glm::vec3(0.f, 1.0f, 0.0f);
+
+			glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDirection * radius, frustumCenter, up);
+			glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, -radius + CascadeNearPlaneOffset - CascadeFarPlaneOffset, 2 * radius);
+
+			// Offset to texel space to avoid shimmering (from https://stackoverflow.com/questions/33499053/cascaded-shadow-map-shimmering)
+			glm::mat4 shadowMatrix = lightOrthoMatrix * lightViewMatrix;
+			float ShadowMapResolution = (float)m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Size.Y;
+			glm::vec4 shadowOrigin = (shadowMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)) * ShadowMapResolution / 2.0f;
+			glm::vec4 roundedOrigin = glm::round(shadowOrigin);
+			glm::vec4 roundOffset = roundedOrigin - shadowOrigin;
+			roundOffset = roundOffset * 2.0f / ShadowMapResolution;
+			roundOffset.z = 0.0f;
+			roundOffset.w = 0.0f;
+
+			lightOrthoMatrix[3] += roundOffset;
 
 			// Store split distance and matrix in cascade
 			cascades[i].SplitDepth = (nearClip + splitDist * clipRange) * -1.0f;
-			cascades[i].ViewPorjection = lightOrthoMatrix * lightViewMatrix;
+			cascades[i].ViewProjection = lightOrthoMatrix * lightViewMatrix;
+			//cascades[i].View = lightViewMatrix;
 
 			lastSplitDist = cascadeSplits[i];
 		}
 	}
 	void WorldRenderer::ShadowPass()
 	{
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
 		PF_PROFILE_FUNC();
+		auto& directionalights = m_LightScene.DirectionalLights;
+
+		if (directionalights[0].Intensity == 0.f /* || !directionalights[0].CastShadow */ )
+			return;
+		CascadeData cascades[SHADOWMAP_CASCADE_COUNT];
+		UpdateCascades(cascades, ProofToglmVec( directionalights[0].Direction));
+
+		struct CascadeProjection
+		{
+			glm::mat4 ViewProjection[4];
+		};
+		CascadeProjection projections;
+		glm::vec4 Splits;
+		for (int i = 0; i < 4; i++)
+		{
+			projections.ViewProjection[i] = cascades[i].ViewProjection ;
+			Splits[i] = cascades[i].SplitDepth;
+		}
 		
+		//m_ShadowPassBuffer->SetData(frameIndex,Buffer(cascades, sizeof(CascadeData) * SHADOWMAP_CASCADE_COUNT));
+
+		s_CascadeProjectionBuffer->SetData(frameIndex, Buffer(&projections, sizeof(CascadeProjection)));
+		s_CascadeSplitsBuffer->SetData(frameIndex, Buffer(&Splits, sizeof(glm::vec4)));
+		for (uint32_t cascade = 0; cascade < SHADOWMAP_CASCADE_COUNT; cascade++)
+		{
+			//PF_ENGINE_TRACE("Cascade {} split:{} and view: {}", cascade, cascades[cascade].SplitDepth,glm::to_string(cascades[cascade].ViewProjection));
+			uint32_t currentDrawOffset = 0;
+
+			glm::mat4 shadowMapVp = cascades[cascade].ViewProjection;
+			auto shaderPass = m_ShadowMapPasses[cascade];
+
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, shaderPass);
+			m_ShadowPassMaterial->Set("u_CascadeInfo.CascadeIndex", cascade);
+			for (auto& [meshKey, meshDrawInfo] : m_MeshDrawList)
+			{
+				Count<Mesh> mesh = meshDrawInfo.Mesh;
+				Count<MeshSource> meshSource = mesh->GetMeshSource();
+				Count<MaterialTable> materialTable = meshDrawInfo.MaterialTable;
+				meshSource->GetVertexBuffer()->Bind(m_CommandBuffer);
+				meshSource->GetIndexBuffer()->Bind(m_CommandBuffer);
+
+				m_MeshPipeline.TransformsBuffer->Bind(m_CommandBuffer, 1, currentDrawOffset * sizeof(glm::mat4));
+				for (uint32_t index : mesh->GetSubMeshes())
+				{
+					Renderer::RenderPassPushRenderMaterial(shaderPass, m_ShadowPassMaterial);
+					const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+					Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, meshDrawInfo.InstanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+				}
+				currentDrawOffset += meshDrawInfo.InstanceCount;
+			}
+			Renderer::EndRenderPass(shaderPass);
+		}
+
+		{
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_ShadowDebugPass);
+			m_ShadowPassDebugMaterial->Set("u_CascadeInfo.CascadeIndex", debugCascade);
+			Renderer::RenderPassPushRenderMaterial(m_ShadowDebugPass,m_ShadowPassDebugMaterial);
+			Renderer::DrawArrays(m_CommandBuffer, 3, 1, 0, 0);
+			Renderer::EndRenderPass(m_ShadowDebugPass);
+		}
+
 	}
 	void WorldRenderer::Reset()
 	{

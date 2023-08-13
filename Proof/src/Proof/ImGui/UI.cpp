@@ -5,7 +5,7 @@
 
 namespace Proof::HeaderFileOnly {
 
-    ImTextureID TextureUI::GetTexture(Count<Image2D> image)
+    ImTextureID TextureUI::GetTexture(Count<Image> image)
     {
         return Application::Get()->GetImguiLayer()->ToImguiImage(image);
     }

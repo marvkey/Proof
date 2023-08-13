@@ -1,8 +1,52 @@
-//https://learnopengl.com/code_viewer_gh.php?code=src/6.pbr/2.2.1.ibl_specular/2.2.1.pbr.fs
-//https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/shaders/forward/fPBR.frag
 #ifndef PBR_FUNCTIONS
 #define PBR_FUNCTIONS
-const float PI = 3.1415926535897932384626433832795f;
+#include <Common.glslh>
+
+//https://learnopengl.com/code_viewer_gh.php?code=src/6.pbr/2.2.1.ibl_specular/2.2.1.pbr.fs
+//https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/shaders/forward/fPBR.frag
+//https://github.com/HighLo-Engine/HighLo-Engine/blob/master/HighLo/assets/shaders/Include/GLSL/Buffers.glslh
+
+layout(set = 2, binding = 1) uniform SkyBoxData
+{
+    vec3 TintColor;
+    float Lod;
+    float Intensity;
+    float Roation;
+}u_SkyBoxInfo;
+struct DirectionalLight 
+{
+    vec3 Color;
+    float Intensity;
+    vec3 Direction;
+    float ShadowAmount;
+};
+layout(std140, set = 2, binding = 2) buffer DirectionalLightStorageBuffer {
+
+    DirectionalLight Lights[];
+} u_DirectionalLightData;
+
+struct PointLight
+{
+	vec3 Position;
+	float Intensity;
+	vec3 Radiance;
+	float MinRadius;
+	float Radius;
+	float Falloff;
+	float LightSize;
+	bool CastsShadows;
+};
+
+struct PBRParameters
+{
+	vec3 AlbedoColor;
+	float Metalness;
+	float Roughness;
+
+	vec3 Normal;
+	vec3 View;
+	float NdotV;
+} m_Params;
 
 vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {

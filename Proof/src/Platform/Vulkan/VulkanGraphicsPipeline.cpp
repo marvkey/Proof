@@ -136,6 +136,7 @@ namespace Proof
 	void VulkanGraphicsPipeline::Build()
 	{
 		PF_CORE_ASSERT(m_Config.TargetBuffer);
+		// need for combaitible render pass layout
 		RenderPassConfig redfdfdasfaConfig("Graphics pipline compatibility renderPass", m_Config.TargetBuffer);
 		if (m_Config.Shader != NULL && m_Config.Shader->GetName() == "EnvironmentIrradianceNonCompute")
 			redfdfdasfaConfig.MultiView = true;

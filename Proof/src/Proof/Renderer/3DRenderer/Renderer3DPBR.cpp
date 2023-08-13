@@ -74,7 +74,7 @@ namespace Proof
 		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
 		PF_CORE_ASSERT(s_InContext ==false, "Cannot begin context if already in a context");
 		s_InContext = true;
-		s_CurrentCamera = CameraData{ projection,view,Position };
+		s_CurrentCamera = CameraData{ projection,view,glm::mat4(1),Position };
 		m_RenderStorage->CurrentFrameBuffer = frameBuffer;
 		m_RenderStorage->CommandBuffer = commandBuffer;
 		m_Performance = {};

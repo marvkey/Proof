@@ -9,6 +9,7 @@
 #include "ImGuizmo.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Renderer/WorldRenderer.h"
+#include "Proof/Renderer/RenderPass.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Math/Vector.h"
 #include "EditorResources.h"
@@ -454,7 +455,7 @@ namespace Proof
 				break;
 		}
 	}
-
+	int viewCascade = 0;
 	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 
@@ -532,7 +533,9 @@ namespace Proof
 					shader->Reload();
 				}
 			});
-		
+			UI::Image(m_WorldRenderer->m_ShadowDebugPass->GetTargetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().ImageIndex,0),
+				{ ImGui::GetWindowWidth(),ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			ImGui::SliderInt("Cascade Index",&m_WorldRenderer->debugCascade, 0, 3);
 		}
 		ImGui::End();
 	}

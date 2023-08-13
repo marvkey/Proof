@@ -8,6 +8,7 @@ layout(set = 0, binding = 0) uniform CameraData
 {
     mat4 Projection;
     mat4 ViewProjection;
+    mat4 UnreversedProjectionMatrix;
     vec3 Position;
     float NearPlane;
     float FarPlane;
@@ -21,13 +22,16 @@ layout(set = 0, binding = 2) uniform SkyBoxData
     float Exposure;
     float Roation;
 }u_SkyBoxInfo;
-vec4 RotateAroundYInDegrees(vec4 vertex, float degrees) 
+vec3 Rotate(float angle, vec3 axis)
 {
-  float angle = degrees * 3.141593 / 180.0;
-	float sina=sin(angle);
-	float cosa=cos(angle);
-	mat2 m = mat2(cosa, -sina, sina, cosa);
-	return vec4(m*vertex.xz, vertex.yw);
+	float rad = radians(angle);
+	mat3x3 rotationMatrix = {
+		vec3(cos(rad), 0.0, sin(rad)),
+		vec3(0.0, 1.0, 0.0),
+		vec3(-sin(rad), 0.0, cos(rad))
+	};
+	
+	return rotationMatrix * axis;
 }
 vec4 remapSkyPositionZ(in vec4 position)
 {
@@ -36,18 +40,10 @@ vec4 remapSkyPositionZ(in vec4 position)
 }
 void main()
 {
-    mat4 inverseProjectionViewMatrix = inverse(CameraUBO.Projection * CameraUBO.ViewProjection);
-    //
-    vec4 position = vec4(aPos.xy,1.0,1.0);
-    gl_Position = position;
-    //
-    outWorldPos = (inverseProjectionViewMatrix * position).xyz;
-    //outWorldPos = RotateAroundYInDegrees(vec4 vertex, float degrees)xz;
-
-    //vec4 position2 = RotateAroundYInDegrees(vec4(aPos,0), 360);
-	//gl_Position = inverseProjectionViewMatrix * position2;
-    //outWorldPos = vec3(-aPos.x,aPos.yz);
-    //gl_Position = remapSkyPositionZ(gl_Position);
+    outWorldPos = aPos;
+    mat4 rotView = mat4(mat3(CameraUBO.ViewProjection));
+    vec4 clipPos = CameraUBO.Projection* rotView *vec4(outWorldPos,1.0);
+    gl_Position = clipPos.xyww;
 }
 
 #Fragment Shader

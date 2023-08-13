@@ -56,6 +56,7 @@ namespace Proof{
 		void virtual SetInput(std::string_view name, Count<class ImageView> imageView) = 0;
 		void virtual SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews) = 0;
 		void virtual SetInput(std::string_view name, Count<class Image2D>image) = 0;
+		virtual void PushData(std::string_view name, const void* data) = 0;
 		void virtual SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images) = 0;
 		//virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) = 0;
 		virtual Count< class GraphicsPipeline> GetPipeline() = 0;
