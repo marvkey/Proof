@@ -76,6 +76,8 @@ namespace Proof
 		prefilterCubeMap = nullptr;
 		iradianceCubeMap = nullptr;
 		Cube = nullptr;
+		for (auto& transformBuffer : m_SubmeshTransformBuffers)
+			delete[] transformBuffer.Data;
 		//PipelineLayout = nullptr;
 	}
 	WorldRenderer::WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight) :
@@ -179,6 +181,14 @@ namespace Proof
 		m_MeshPipeline.RenderPass->SetInput("ShadowMapProjections", s_CascadeProjectionBuffer);
 		m_MeshPipeline.RenderPass->SetInput("CascadeSplits", s_CascadeSplitsBuffer);
 
+
+		const size_t TransformBufferCount = 10 * 1024; // 10240 transforms
+		m_SubmeshTransformBuffers.resize(Renderer::GetConfig().FramesFlight);
+		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
+		{
+			m_SubmeshTransformBuffers[i].Buffer = VertexBuffer::Create(sizeof(TransformVertexData) * TransformBufferCount);
+			m_SubmeshTransformBuffers[i].Data = new TransformVertexData[TransformBufferCount];
+		}
 	}
 	void WorldRenderer::Clear() {
 		
@@ -230,20 +240,30 @@ namespace Proof
 			const auto& skyLightView = m_World->m_Registry.view<SkyLightComponent>();
 			if (skyLightView.size() > 0)
 			{
-				auto entityID = skyLightView.back();
+				auto entityID = skyLightView.front();
 				Entity entity(entityID, m_World.Get());
 				auto& skyLightComponent = entity.GetComponent<SkyLightComponent>();
+				SkyLight skyLightInfo;
+				skyLightInfo.TintColor = skyLightComponent.ColorTint;
+				skyLightInfo.Rotation = skyLightComponent.MapRotation;
+				skyLightInfo.Intensity = skyLightComponent.Intensity;
+				skyLightInfo.Lod = skyLightComponent.SkyBoxLoad;
 
+
+				if (skyLightComponent.DynamicSky)
+				{
+					goto nonExistEnvrironment; // just for now
+					skyLightComponent.RemoveImage();
+					auto environment = Renderer::CreatePreethamSky(skyLightComponent.Turbidity, skyLightComponent.Azimuth, skyLightComponent.Inclination);
+					skyLightComponent.Environment = Count<Environment>::Create(environment, environment);
+				}
 				if (skyLightComponent.Environment == nullptr)
 				{
 					goto nonExistEnvrironment;
 				}
 				m_Environment = skyLightComponent.Environment;
-				SkyLight skyLightInfo;
-				skyLightInfo.TintColor = skyLightComponent.ColorTint;
-				skyLightInfo.Lod = skyLightComponent.SkyBoxLoad;
-				skyLightInfo.Rotation = skyLightComponent.MapRotation;
-				skyLightInfo.Intensity = skyLightComponent.Intensity;
+
+
 				m_SkyBoxUniformInfo->SetData(frameIndex,Buffer((uint8_t*)&skyLightInfo, sizeof(SkyLight)));
 			}
 			else
@@ -289,64 +309,11 @@ namespace Proof
 		}
 		Renderer::EndRenderPass(skyBoxPass);
 		
-		
+		PrePass();
 		MeshPass();
-		//Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-		//	VkImageMemoryBarrier imageMemoryBarrier{};
-		//	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		//	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		//	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		//	imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-		//	imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-		//	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-		//	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		//	imageMemoryBarrier.image = m_ShadowPassImage.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
-		//	VkImageSubresourceRange range;
-		//	range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-		//	range.baseArrayLayer = 0;
-		//	range.baseMipLevel = 0;
-		//	range.layerCount = 4;
-		//	range.levelCount = 1;
-		//	imageMemoryBarrier.subresourceRange = range;
-		//
-		//	vkCmdPipelineBarrier(
-		//		cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
-		//		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		//		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		//		0,
-		//		0, nullptr,
-		//		0, nullptr,
-		//		1, &imageMemoryBarrier);
-		//});
+		
 		ShadowPass();
 		
-		//Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-		//	VkImageMemoryBarrier imageMemoryBarrier{};
-		//	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		//	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		//	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		//	imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-		//	imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-		//	imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-		//	imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		//	imageMemoryBarrier.image = m_ShadowPassImage.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
-		//	VkImageSubresourceRange range;
-		//	range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-		//	range.baseArrayLayer = 0;
-		//	range.baseMipLevel = 0;
-		//	range.layerCount = 4;
-		//	range.levelCount = 1;
-		//	imageMemoryBarrier.subresourceRange = range;
-		//
-		//	vkCmdPipelineBarrier(
-		//		cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
-		//		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		//		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		//		0,
-		//		0, nullptr,
-		//		0, nullptr,
-		//		1, &imageMemoryBarrier);
-		//});
 		{
 			//PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
 			m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
@@ -632,18 +599,57 @@ namespace Proof
 		m_ScreenFrameBuffer->Resize(Vector2{ (float)windowSize.X, (float)windowSize.Y });
 	}
 
-	void WorldRenderer::SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform)
+	void WorldRenderer::SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws )
 	{
 		//TODO FASTER HASH FUNCTION FOR MESHKEY
 		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+		
 
-		MeshKey meshKey = { mesh->GetID(),materialTable };
-		auto& dc = m_MeshDrawList[meshKey];
-		dc.InstanceCount++;
-		dc.MaterialTable = materialTable;
-		dc.Mesh = mesh;
+		AssetID meshID = mesh->GetID();
+		MeshKey meshKey = { meshID,materialTable, true,0,false };
+		auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
 
-		m_MeshTransformMap[meshKey].emplace_back(transform);
+		transformStorage.Transform = transform;
+		
+		// geo pass
+		{
+			auto& dc = m_MeshDrawList[meshKey];
+			dc.MaterialTable = materialTable;
+			dc.Mesh = mesh;
+			dc.InstanceCount++;
+		}
+		if (CastShadowws)
+		{
+			auto& dc = m_MeshShadowDrawList[meshKey];
+			dc.Mesh = mesh;
+			dc.MaterialTable = materialTable;
+			dc.InstanceCount++;
+		}
+	}
+
+	void WorldRenderer::PrePass()
+	{
+		PF_PROFILE_FUNC();
+
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		// set up mesh passes
+		{
+			uint32_t offset = 0;
+			uint64_t submeshTransformSize = m_SubmeshTransformBuffers[frameIndex].Buffer->GetVertexSize() / sizeof(TransformVertexData);
+			for (auto& [key, transformData] : m_MeshTransformMap)
+			{
+				transformData.TransformOffset = offset * sizeof(TransformVertexData);
+				for (const auto& transform : transformData.Transforms)
+				{
+					if (offset >= submeshTransformSize)
+						PF_CORE_ASSERT(false, "Need to resize submeshTransforms to small");
+					m_SubmeshTransformBuffers[frameIndex].Data[offset] = transform;
+					offset++;
+				}
+
+			}
+			m_SubmeshTransformBuffers[frameIndex].Buffer->SetData(m_SubmeshTransformBuffers[frameIndex].Data, offset * sizeof(TransformVertexData));
+		}
 	}
 
 	
@@ -690,32 +696,6 @@ namespace Proof
 				0, nullptr,
 				1, &imageMemoryBarrier);
 		});
-
-		{
-
-			//FrameBufferConfig framebufferConfig;
-			//framebufferConfig.DebugName = "Shadow Depth Fraembuffer";
-			//framebufferConfig.Attachments = { ImageFormat::RGBA32F };
-			//framebufferConfig.Size = { SHADOWMAP_DIM,SHADOWMAP_DIM };
-			//
-			//auto shadowDepthFramebuffer = FrameBuffer::Create(framebufferConfig);
-			//
-			//GraphicsPipelineConfig shadowMapPipelineConfig;
-			//shadowMapPipelineConfig.DebugName = "ShadowDepthPipeline";
-			//shadowMapPipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
-			//shadowMapPipelineConfig.Shader = Renderer::GetShader("ShadowDepthPass");
-			//shadowMapPipelineConfig.TargetBuffer = shadowDepthFramebuffer;
-			//
-			//auto shadowpipeline= GraphicsPipeline::Create(shadowMapPipelineConfig);
-			//
-			//RenderPassConfig renderpassConfig;
-			//renderpassConfig.Attachments = { ImageFormat::RGBA32F };
-			//renderpassConfig.DebugName = fmt::format("Shadow Pass");
-			//m_DebugShadowPass = RenderPass::Create(renderpassConfig);
-			//
-			//m_ShadowPassDebugMaterial = RenderMaterial::Create(RenderMaterialConfiguration("Debug Shadow Pass Debug Material", Renderer::GetShader("DebugShadowMap")));
-
-		}
 
 		{
 			FrameBufferConfig framebufferConfig;
@@ -817,6 +797,7 @@ namespace Proof
 		}
 
 		if (m_MeshDrawList.empty())return;
+		/*
 		uint32_t currentDrawOffset = 0;
 		//set mesh transfomr
 		{
@@ -853,10 +834,19 @@ namespace Proof
 			currentDrawOffset += meshDrawInfo.InstanceCount;
 		}
 		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
-
+		*/
+		auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
+		Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass);
+		for (auto& [meshKey, dc] : m_MeshDrawList)
+		{
+			const auto& transformData = m_MeshTransformMap.at(meshKey);
+			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+			RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, m_MeshPipeline.RenderPass, dc.MaterialTable, transformBuffer, transformOffset, dc.InstanceCount);
+		}
+		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
 	}
 	
-	void WorldRenderer::UpdateCascades(CascadeData* cascades, const glm::vec3& lightDirection)
+	void WorldRenderer::CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection)
 	{
 		float cascAdSplitLabmda = 0.92;
 		float m_ScaleShadowCascadesToOrigin = 0;
@@ -989,7 +979,7 @@ namespace Proof
 		if (directionalights[0].Intensity == 0.f /* || !directionalights[0].CastShadow */ )
 			return;
 		CascadeData cascades[SHADOWMAP_CASCADE_COUNT];
-		UpdateCascades(cascades, ProofToglmVec( directionalights[0].Direction));
+		CalculateCascades(cascades, ProofToglmVec( directionalights[0].Direction));
 
 		struct CascadeProjection
 		{
@@ -1003,38 +993,22 @@ namespace Proof
 			Splits[i] = cascades[i].SplitDepth;
 		}
 		
-		//m_ShadowPassBuffer->SetData(frameIndex,Buffer(cascades, sizeof(CascadeData) * SHADOWMAP_CASCADE_COUNT));
 
 		s_CascadeProjectionBuffer->SetData(frameIndex, Buffer(&projections, sizeof(CascadeProjection)));
 		s_CascadeSplitsBuffer->SetData(frameIndex, Buffer(&Splits, sizeof(glm::vec4)));
 		for (uint32_t cascade = 0; cascade < SHADOWMAP_CASCADE_COUNT; cascade++)
 		{
-			//PF_ENGINE_TRACE("Cascade {} split:{} and view: {}", cascade, cascades[cascade].SplitDepth,glm::to_string(cascades[cascade].ViewProjection));
-			uint32_t currentDrawOffset = 0;
+			auto cascadePass = m_ShadowMapPasses[cascade];
 
-			glm::mat4 shadowMapVp = cascades[cascade].ViewProjection;
-			auto shaderPass = m_ShadowMapPasses[cascade];
-
-			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, shaderPass);
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, cascadePass);
 			m_ShadowPassMaterial->Set("u_CascadeInfo.CascadeIndex", cascade);
-			for (auto& [meshKey, meshDrawInfo] : m_MeshDrawList)
+			for (auto& [meshKey, dc] : m_MeshShadowDrawList)
 			{
-				Count<Mesh> mesh = meshDrawInfo.Mesh;
-				Count<MeshSource> meshSource = mesh->GetMeshSource();
-				Count<MaterialTable> materialTable = meshDrawInfo.MaterialTable;
-				meshSource->GetVertexBuffer()->Bind(m_CommandBuffer);
-				meshSource->GetIndexBuffer()->Bind(m_CommandBuffer);
-
-				m_MeshPipeline.TransformsBuffer->Bind(m_CommandBuffer, 1, currentDrawOffset * sizeof(glm::mat4));
-				for (uint32_t index : mesh->GetSubMeshes())
-				{
-					Renderer::RenderPassPushRenderMaterial(shaderPass, m_ShadowPassMaterial);
-					const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
-					Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, meshDrawInfo.InstanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
-				}
-				currentDrawOffset += meshDrawInfo.InstanceCount;
+				const auto& transformData = m_MeshTransformMap.at(meshKey);
+				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_ShadowPassMaterial,cascadePass,m_SubmeshTransformBuffers[frameIndex].Buffer, transformOffset, dc.InstanceCount);
 			}
-			Renderer::EndRenderPass(shaderPass);
+			Renderer::EndRenderPass(cascadePass);
 		}
 
 		{
@@ -1046,12 +1020,45 @@ namespace Proof
 		}
 
 	}
+	void WorldRenderer::RenderMeshWithMaterial(Count<RenderCommandBuffer> commandBuffer,Count<Mesh>mesh, Count<RenderMaterial> material, Count<RenderPass> renderPass,Count<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
+	{
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		meshSource->GetVertexBuffer()->Bind(commandBuffer);
+		meshSource->GetIndexBuffer()->Bind(commandBuffer);
+		transformBuffer->Bind(commandBuffer, 1, transformOffset);
+		for (uint32_t index : mesh->GetSubMeshes())
+		{
+			Renderer::RenderPassPushRenderMaterial(renderPass, material);
+			const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		}
+
+	}
+	void WorldRenderer::RenderMeshWithMaterialTable(Count<RenderCommandBuffer> commandBuffer,Count<Mesh>mesh, Count<RenderPass> renderPass, Count<MaterialTable> materialTable,Count<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
+	{
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		meshSource->GetVertexBuffer()->Bind(commandBuffer);
+		transformBuffer->Bind(commandBuffer, 1, transformOffset);
+
+		meshSource->GetIndexBuffer()->Bind(commandBuffer);
+		for (uint32_t index : mesh->GetSubMeshes())
+		{
+			const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+			Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex) ? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
+				: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
+
+			Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
+			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		}
+	}
+
 	void WorldRenderer::Reset()
 	{
 		//mesh Pass
 		{
 			m_MeshTransformMap.clear();
 			m_MeshDrawList.clear();
+			m_MeshShadowDrawList.clear();
 		}
 	}
 	void WorldRenderer::Render(EditorCamera& camera, RenderSettings renderSettings)

@@ -20,6 +20,10 @@
 #include "SwapChain.h"
 #include "Platform/Vulkan/VulkanRendererAPI.h"
 #include "GraphicsContext.h"
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
+#include "Platform/Vulkan/VulkanImage.h"
+#include "Platform/Vulkan/VulkanTexutre.h"
+#include "vulkan/vulkan.h"
 namespace Proof {
 	static std::vector<CommandQueue*> s_RenderCommandQueue;
 	static uint32_t s_CommandQueueIndex = 1; // so we start with 0 command qeue index
@@ -27,6 +31,7 @@ namespace Proof {
 	static Count<class GraphicsContext> GraphicsContext;
 
 	static Count<class ShaderLibrary> ShaderLibrary;
+	static Count<ComputePass> PrethamSkyPass;
 	static BaseTextures* s_BaseTextures;
 
 	static std::unordered_map<std::string, std::string> s_ShaderDefines;
@@ -54,6 +59,7 @@ namespace Proof {
 		ShaderLibrary->LoadShader("EnvironmentIrradiance", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradiance.glsl");
 		ShaderLibrary->LoadShader("EnvironmentIrradianceNonCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradianceNonCompute.glsl");
 		ShaderLibrary->LoadShader("EnvironmentPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentPrefilter.glsl");
+		ShaderLibrary->LoadShader("PreethamSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/PreethamSky.glsl");
 
 		//Shadows
 		ShaderLibrary->LoadShader("DebugShadowMap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/DebugShadowMap.glsl");
@@ -64,12 +70,29 @@ namespace Proof {
 		s_RenderCommandQueue[0] = new CommandQueue();
 		s_RenderCommandQueue[1] = new CommandQueue();
 
-		PF_ENGINE_TRACE("Renderer Initialized");
+		// set up basic piplines		
+		{
+			ComputePipelineConfig config;
+			config.DebugName = "Pretham Pipeline";
+			config.Shader = Renderer::GetShader("PreethamSky");
+			auto prethamPipeline = ComputePipeline::Create(config);
 
+			ComputePassConfiguration computeePassConfig;
+			computeePassConfig.DebugName = "Pretham SKy pass";
+			computeePassConfig.Pipeline = prethamPipeline;
+			PrethamSkyPass = ComputePass::Create(computeePassConfig);
+		}
+
+		PF_ENGINE_TRACE("Renderer Initialized");
 	}
 
 	void Renderer::Shutdown()
 	{
+		// shut down piplines
+		{
+			PrethamSkyPass = nullptr;
+		}
+
 		delete s_RenderCommandQueue[0];
 		delete s_RenderCommandQueue[1];
 		s_RenderCommandQueue.clear();
@@ -186,6 +209,131 @@ namespace Proof {
 	void Renderer::OnWindowResize(WindowResizeEvent& e)
 	{
 		s_RendererAPI->OnWindowResize(e);
+	}
+
+	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination, uint32_t imageDimension)
+	{
+		imageDimension = 512;
+
+		const uint32_t irradianceFilterRate = 32;
+		ImageFormat format = ImageFormat::RGBA32F;
+		TextureConfiguration baseCubeMapConfig;
+		baseCubeMapConfig.DebugName = "Pretham Cube";
+		baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
+		baseCubeMapConfig.Height = imageDimension;
+		baseCubeMapConfig.Width = imageDimension;
+		baseCubeMapConfig.Storage = true;
+		baseCubeMapConfig.GenerateMips = true;
+		baseCubeMapConfig.Format = format;
+
+		uint32_t mipLevels = Utils::GetMipLevelCount(imageDimension, imageDimension);
+		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig);
+		PrethamSkyPass->SetInput("o_CubeMap", environmentMap);
+		Renderer::SubmitCommand([&](CommandBuffer* cmdBufer) {
+			glm::vec3 params = { turbidity, azimuth, inclination };
+			Count<RenderCommandBuffer> commandBuffer = RenderCommandBuffer::Create(cmdBufer);
+			Renderer::BeginComputePass(commandBuffer, PrethamSkyPass);
+			PrethamSkyPass->PushData("u_Uniforms", &params);
+			PrethamSkyPass->Dispatch(imageDimension / 32, imageDimension / 32, 6);
+			Renderer::EndComputePass(PrethamSkyPass);
+
+			// boit 
+			auto blitCmd = cmdBufer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+			bool readonly = false;
+			auto image=environmentMap.As<VulkanTextureCube>()->GetImage().As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+			{
+				for (uint32_t face = 0; face < 6; face++)
+				{
+					VkImageSubresourceRange mipSubRange = {};
+					mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					mipSubRange.baseMipLevel = 0;
+					mipSubRange.baseArrayLayer = face;
+					mipSubRange.levelCount = 1;
+					mipSubRange.layerCount = 1;
+
+					// Prepare current mip level as image blit destination
+					Utils::InsertImageMemoryBarrier(blitCmd, image,
+						0, VK_ACCESS_TRANSFER_WRITE_BIT,
+						VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+						mipSubRange);
+				}
+
+				for (uint32_t i = 1; i < mipLevels; i++)
+				{
+					for (uint32_t face = 0; face < 6; face++)
+					{
+						VkImageBlit imageBlit{};
+
+						// Source
+						imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+						imageBlit.srcSubresource.layerCount = 1;
+						imageBlit.srcSubresource.mipLevel = i - 1;
+						imageBlit.srcSubresource.baseArrayLayer = face;
+						imageBlit.srcOffsets[1].x = int32_t(imageDimension >> (i - 1));
+						imageBlit.srcOffsets[1].y = int32_t(imageDimension >> (i - 1));
+						imageBlit.srcOffsets[1].z = 1;
+
+						// Destination
+						imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+						imageBlit.dstSubresource.layerCount = 1;
+						imageBlit.dstSubresource.mipLevel = i;
+						imageBlit.dstSubresource.baseArrayLayer = face;
+						imageBlit.dstOffsets[1].x = int32_t(imageDimension >> i);
+						imageBlit.dstOffsets[1].y = int32_t(imageDimension >> i);
+						imageBlit.dstOffsets[1].z = 1;
+
+						VkImageSubresourceRange mipSubRange = {};
+						mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+						mipSubRange.baseMipLevel = i;
+						mipSubRange.baseArrayLayer = face;
+						mipSubRange.levelCount = 1;
+						mipSubRange.layerCount = 1;
+
+						// Prepare current mip level as image blit destination
+						Utils::InsertImageMemoryBarrier(blitCmd, image,
+							0, VK_ACCESS_TRANSFER_WRITE_BIT,
+							VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+							VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+							mipSubRange);
+
+						// Blit from previous level
+						vkCmdBlitImage(
+							blitCmd,
+							image,
+							VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+							image,
+							VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+							1,
+							&imageBlit,
+							VK_FILTER_LINEAR);
+
+						// Prepare current mip level as image blit source for next level
+						Utils::InsertImageMemoryBarrier(blitCmd, image,
+							VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+							VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+							VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+							mipSubRange);
+					}
+				}
+
+				// After the loop, all mip layers are in TRANSFER_SRC layout, so transition all to SHADER_READ
+				VkImageSubresourceRange subresourceRange = {};
+				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				subresourceRange.layerCount = 6;
+				subresourceRange.levelCount = mipLevels;
+
+				Utils::InsertImageMemoryBarrier(blitCmd, image ,
+					VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
+					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readonly ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+					subresourceRange);
+
+			}
+		});
+		//environmentMap->GenerateMips();
+
+		return environmentMap;
 	}
 
 	Count<Texture2D>Renderer::GetWhiteTexture(){

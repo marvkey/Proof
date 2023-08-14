@@ -7,30 +7,30 @@ namespace Proof {
 		/*
 		* sets as current vertex Buffer
 		*/
-		virtual void Bind(Count<class RenderCommandBuffer> commandBuffer, uint32_t binding = 0, uint64_t offset =0)const =0;
+		virtual void Bind(Count<class RenderCommandBuffer> commandBuffer, uint64_t binding = 0, uint64_t offset =0)const =0;
 		/**
 		* sets the data for the vertex buffer
 		* @param Data the location of the first element in the array or vector
 		* @parm Size the size of element in vertex buffer
 		*/
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void SetData(const void* data, uint64_t size, uint64_t offset = 0) = 0;
 	
 		/**
 		* creates static vertex Buffer
 		* @param Data, the data to be supplied to vertex buffer
 		* @parm Size the size of the vertex Buffer
 		*/
-		static Count<VertexBuffer>Create(const void* Data,uint32_t Size);
+		static Count<VertexBuffer>Create(const void* Data,uint64_t Size);
 
-		virtual void Resize(uint32_t size) = 0;
-		virtual void Resize(const void* data, uint32_t size) = 0;
+		virtual void Resize(uint64_t size) = 0;
+		virtual void Resize(const void* data, uint64_t size) = 0;
 
-		//virtual void Resize(const void* data, uint32_t size) = 0;
+		//virtual void Resize(const void* data, uint64_t size) = 0;
 		/**
 		* creates Dynamic vertex Buffer
 		* @parm amount the size of the vertex Buffer
 		*/
-		static Count<VertexBuffer>Create(uint32_t Size);
+		static Count<VertexBuffer>Create(uint64_t Size);
 		/**
 		* deletes the vertex buffer
 		*/
@@ -51,7 +51,7 @@ namespace Proof {
 		}
 
 		virtual Buffer GetDataRaw() = 0;
-		virtual uint32_t GetVertexSize()const = 0;
+		virtual uint64_t GetVertexSize()const = 0;
 	protected:
 	};
 
@@ -67,10 +67,10 @@ namespace Proof {
 		/**
 		* creats Index Buffer
 		* @parm Data, dat to be sent
-		* @param Count in uint32_t,the vertecices to be drawn by index buffer
+		* @param Count in uint64_t,the vertecices to be drawn by index buffer
 		*/
-		static Count<IndexBuffer>Create(const void* Data, uint32_t count);
-		static Count<IndexBuffer>Create(uint32_t count);
+		static Count<IndexBuffer>Create(const void* Data, uint64_t count);
+		static Count<IndexBuffer>Create(uint64_t count);
 		/**
 		* deletes the Index Buffer
 		*/
@@ -78,13 +78,13 @@ namespace Proof {
 		/*
 		* returns the count of the IndexBuffer
 		*/
-		virtual uint32_t GetCount()const = 0;
-		virtual uint32_t GetSize()const = 0;
-		virtual std::vector<uint32_t> GetData()const = 0;
+		virtual uint64_t GetCount()const = 0;
+		virtual uint64_t GetSize()const = 0;
+		virtual std::vector<uint64_t> GetData()const = 0;
 
-		virtual void SetData(const void* data, uint32_t count, uint32_t offsetCount = 0) = 0;
-		virtual void Resize(uint32_t count) = 0;
-		virtual void Resize(const void* data, uint32_t count) = 0;
+		virtual void SetData(const void* data, uint64_t count, uint64_t offsetCount = 0) = 0;
+		virtual void Resize(uint64_t count) = 0;
+		virtual void Resize(const void* data, uint64_t count) = 0;
 
 
 	};

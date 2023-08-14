@@ -135,6 +135,10 @@ namespace Proof
 					out << YAML::Key << "SkyBoxLod" << skylight.SkyBoxLoad;
 					out << YAML::Key << "MapRotation" << skylight.MapRotation;
 					out << YAML::Key << "Intensity" << skylight.Intensity;
+					out << YAML::Key << "DynamicSky" << skylight.DynamicSky;
+					out << YAML::Key << "Turbidity" << skylight.Turbidity;
+					out << YAML::Key << "Azimuth" << skylight.Azimuth;
+					out << YAML::Key << "Inclination" << skylight.Inclination;
 					out << YAML::Key << "Image" << skylight.Image;
 					out << YAML::EndMap; // SkyLightComponentComponent
 				}
@@ -624,6 +628,10 @@ namespace Proof
 						src.SkyBoxLoad = skyLight["SkyBoxLod"].as<float>();
 						src.MapRotation = skyLight["MapRotation"].as<float>();
 						src.Intensity = skyLight["Intensity"].as<float>();
+						//src.DynamicSky = skyLight["DynamicSky"].as<bool>();
+						//src.Turbidity = skyLight["Turbidity"].as<float>();
+						//src.Azimuth = skyLight["Azimuth"].as<float>();
+						//src.Inclination = skyLight["Inclination"].as<float>();
 						if (AssetManager::HasAsset(src.Image))
 						{
 							src.LoadMap(src.Image);

@@ -206,4 +206,41 @@ namespace Proof {
                 other1.GetMaterials().begin());
     }
 
+    bool operator<(const MaterialTable& other, const MaterialTable& other2)
+    {
+        /*
+        * CHATGPT lexicographical_compare
+        Comparing Word by Word: Lexicographical_compare looks at the first words in both lists. It checks which word comes first in the dictionary. That gives it the order for those words.
+
+        If First Words Are Equal: If the first words are the same in both lists, it moves on to the second words and compares them. It continues doing this for each word in the lists.
+
+        Finding the Difference: The moment it finds a pair of words that are different, it decides which word would come first in a dictionary. That tells it the order of the whole lists.
+
+        List Length: If one list is shorter but identical to a certain point, it's considered smaller in comparison.
+
+        No Clear Winner: If it reaches the end of one list and both lists are identical up to that point, the shorter list is considered smaller.
+
+        So, lexicographical_compare is like how you'd arrange a list of words if you were looking them up in a dictionary, comparing them word by word until you find the first difference.
+        */
+        return std::lexicographical_compare(
+            other.GetMaterials().begin(), other.GetMaterials().end(),
+            other2.GetMaterials().begin(), other2.GetMaterials().end(),
+            [](const std::pair<const uint32_t, Count<Material>>& a, const std::pair<const uint32_t, Count<Material>>& b) {
+                return a.second->GetID() < b.second->GetID();
+            }
+        );
+    }
+
+    // rewriteing because if we do the oposite manner if it is eual poperator< will return false therefore this will return true even though its false
+    bool operator>(const MaterialTable& other, const MaterialTable& other2)
+    {
+        return std::lexicographical_compare(
+            other.GetMaterials().begin(), other.GetMaterials().end(),
+            other2.GetMaterials().begin(), other2.GetMaterials().end(),
+            [](const std::pair<const uint32_t, Count<Material>>& a, const std::pair<const uint32_t, Count<Material>>& b) {
+            return a.second->GetID() > b.second->GetID();
+        }
+        );
+    }
+
 }

@@ -469,46 +469,60 @@ namespace Proof
 			ExternalAPI::ImGUIAPI::TextBar("Sript", NativeScriptComp.GetScriptName());
 		});
 		DrawComponents<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& skylight) {
-			bool hasImage = false;
-			if (AssetManager::HasAsset(skylight.Image) && skylight.Environment != nullptr)
-				hasImage = true;
+			if (skylight.DynamicSky == false)
+			{
 
-			if (hasImage)
-			{
-				ExternalAPI::ImGUIAPI::TextBar("HDR Map", AssetManager::GetAssetInfo(skylight.Image).GetName());
-			}
-			else
-				ExternalAPI::ImGUIAPI::TextBar("HDR Map");
-			if (ImGui::BeginPopupContextItem("Remove HDR"))
-			{
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginPopup("Remove HDR"))
-			{
-				if (ImGui::MenuItem("Remove HDR"))
+				bool hasImage = false;
+				if (AssetManager::HasAsset(skylight.Image) && skylight.Environment != nullptr)
+					hasImage = true;
+
+				if (hasImage)
 				{
-					skylight.RemoveImage();
+					ExternalAPI::ImGUIAPI::TextBar("HDR Map", AssetManager::GetAssetInfo(skylight.Image).GetName());
 				}
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+				else
+					ExternalAPI::ImGUIAPI::TextBar("HDR Map");
+				if (ImGui::BeginPopupContextItem("Remove HDR"))
 				{
-					uint64_t Data = *(const uint64_t*)payload->Data;
-					if (AssetManager::HasAsset(Data))
+					ImGui::EndPopup();
+				}
+				if (ImGui::BeginPopup("Remove HDR"))
+				{
+					if (ImGui::MenuItem("Remove HDR"))
 					{
-						skylight.LoadMap(Data);
+						skylight.RemoveImage();
 					}
+					ImGui::EndPopup();
 				}
-				ImGui::EndDragDropTarget();
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+					{
+						uint64_t Data = *(const uint64_t*)payload->Data;
+						if (AssetManager::HasAsset(Data))
+						{
+							skylight.LoadMap(Data);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
 			}
-			if (!hasImage)
-				return;
-			ImGui::SliderFloat("SkyBoxLoad", &skylight.SkyBoxLoad, 0, skylight.Environment->PrefilterMap->GetMipLevelCount());
+			if(skylight.Environment)
+
+				ImGui::SliderFloat("SkyBoxLoad", &skylight.SkyBoxLoad, 0, skylight.Environment->PrefilterMap->GetMipLevelCount());
+			else
+				ImGui::SliderFloat("SkyBoxLoad", &skylight.SkyBoxLoad, 0, 11);
 			ImGui::DragFloat("Intensity", &skylight.Intensity,0.25,0,1000,"%.3f",ImGuiSliderFlags_AlwaysClamp);
-			ImGui::DragFloat("Rotation", &skylight.MapRotation,0.25);
+			ImGui::DragFloat("Rotation", &skylight.MapRotation, 0.25);
+			ExternalAPI::ImGUIAPI::CheckBox("DynamicSky", &skylight.DynamicSky);
+			if (skylight.DynamicSky)
+			{
+				ImGui::DragFloat("Turbidity", &skylight.Turbidity, 0.01,1.8f,Math::GetMaxType<float>(),"%.3f", ImGuiSliderFlags_AlwaysClamp);
+				ImGui::DragFloat("Azimuth", &skylight.Azimuth, 0.01);
+				ImGui::DragFloat("Inclination", &skylight.Inclination, 0.01);
+			}
+			
 			ImGui::ColorEdit3("TintColor", skylight.ColorTint.GetValue_Ptr());
 		});
 		DrawComponents<DirectionalLightComponent>("Directonal Light", entity, [](DirectionalLightComponent& drl) {

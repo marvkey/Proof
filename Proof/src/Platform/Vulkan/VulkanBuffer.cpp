@@ -9,13 +9,13 @@
 namespace Proof
 {
 	
-	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint32_t size): 
+	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint64_t size): 
 		m_VertexSize(size)
 	{
 		Build();
 		SetData(data, size);
 	}
-	VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size):
+	VulkanVertexBuffer::VulkanVertexBuffer(uint64_t size):
 		m_VertexSize(size)
 	{
 		Build();
@@ -45,7 +45,7 @@ namespace Proof
 			graphicsContext->CreateVmaBuffer(vertexBufferInfo, vmaallocInfo, m_VertexBuffer);
 		});
 	}
-	void VulkanVertexBuffer::Resize(uint32_t size)
+	void VulkanVertexBuffer::Resize(uint64_t size)
 	{
 		Release();
 
@@ -53,7 +53,7 @@ namespace Proof
 		Build();
 	}
 
-	void VulkanVertexBuffer::Resize(const void* data, uint32_t size)
+	void VulkanVertexBuffer::Resize(const void* data, uint64_t size)
 	{
 		//TODO WORKING EXPECTED
 		//if (m_VertexSize == size)
@@ -67,11 +67,11 @@ namespace Proof
 		Build();
 		SetData(data, size, 0);
 	}
-	void VulkanVertexBuffer::Bind(Count<RenderCommandBuffer> commandBuffer, uint32_t binding, uint64_t offset )const {
+	void VulkanVertexBuffer::Bind(Count<RenderCommandBuffer> commandBuffer, uint64_t binding, uint64_t offset )const {
 		VkDeviceSize instanceOffset[1] = {(VkDeviceSize) offset };
 		vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), binding,1, &m_VertexBuffer.Buffer, instanceOffset);
 	}
-	void VulkanVertexBuffer::SetData(const void* data, uint32_t size,uint32_t offset){
+	void VulkanVertexBuffer::SetData(const void* data, uint64_t size,uint64_t offset){
 		if (size == 0)
 		{
 			PF_ENGINE_ERROR("Vertex Cannot set Data with a size of 0");
@@ -139,14 +139,14 @@ namespace Proof
 	}
 
 
-	VulkanIndexBuffer::VulkanIndexBuffer(uint32_t count)
+	VulkanIndexBuffer::VulkanIndexBuffer(uint64_t count)
 		:
 		m_Count(count)
 	{
 		Build();
 	}
 
-	VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint32_t count)
+	VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint64_t count)
 	:
 		m_Count(count)
 	{
@@ -180,14 +180,14 @@ namespace Proof
 	void VulkanIndexBuffer::Bind(Count<RenderCommandBuffer>commandBuffer)const {
 		vkCmdBindIndexBuffer(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), m_IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
 	}
-	void VulkanIndexBuffer::SetData(const void* data, uint32_t count, uint32_t offsetCount )
+	void VulkanIndexBuffer::SetData(const void* data, uint64_t count, uint64_t offsetCount )
 	{
 		if (count == 0)
 		{
 			PF_ENGINE_ERROR("Vertex Cannot set Data with a size of 0");
 			return;
 		}
-		uint32_t dataSize = count * sizeof(uint32_t);
+		uint64_t dataSize = count * sizeof(uint32_t);
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
 		VkBufferCreateInfo stagingBufferInfo = {};
@@ -220,14 +220,14 @@ namespace Proof
 		});
 		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
 	}
-	void VulkanIndexBuffer::Resize(uint32_t count)
+	void VulkanIndexBuffer::Resize(uint64_t count)
 	{
 		Release();
 
 		m_Count = count;
 		Build();
 	}
-	void VulkanIndexBuffer::Resize(const void* data, uint32_t count)
+	void VulkanIndexBuffer::Resize(const void* data, uint64_t count)
 	{
 
 		//TODO WORKING EXPECTED
@@ -242,12 +242,12 @@ namespace Proof
 		Build();
 		SetData(data, count, 0);
 	}
-	std::vector<uint32_t> VulkanIndexBuffer::GetData()const
+	std::vector<uint64_t> VulkanIndexBuffer::GetData()const
 	{
-		std::vector<uint32_t> data;
+		std::vector<uint64_t> data;
 		void* vertexData;
 		vmaMapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_IndexBuffer.Allocation, &vertexData);
-		uint32_t* indices = static_cast<uint32_t*>(vertexData);
+		uint64_t* indices = static_cast<uint64_t*>(vertexData);
 		for (size_t i = 0; i < m_Count; i++)
 		{
 			data.emplace_back(indices[i]);

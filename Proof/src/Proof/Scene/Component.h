@@ -323,14 +323,24 @@ namespace Proof
 	public:
 		SkyLightComponent(const SkyLightComponent&) = default;
 		SkyLightComponent() = default;
-		Vector ColorTint{1};
-		float SkyBoxLoad = 0.0f;
-		float MapRotation = 0.0f;
-		float Intensity = 1.0f;
-
+		//hdr maps
 		void RemoveImage();
 		void LoadMap(AssetID asset);
+	public:
+		// Hdr Maps
+		float SkyBoxLoad = 0.0f;
 		Count<Environment> Environment;
+
+		//dynamic sky
+		bool DynamicSky = true;
+		float Turbidity = 2.0f;//min(1.8f)
+		float Azimuth = 0;
+		float Inclination = 0;
+		
+		//for all 
+		Vector ColorTint{1};
+		float MapRotation = 0.0f;
+		float Intensity = 1.0f;
 	private:
 		AssetID Image;
 		friend class Entity;
@@ -343,10 +353,17 @@ namespace Proof
 	struct DirectionalLightComponent {
 		DirectionalLightComponent(const DirectionalLightComponent&) = default;
 		DirectionalLightComponent() = default;
-		float Intensity = 1;
 
 		Vector Color = { 1 };
 		Vector OffsetDirection;
+		float Intensity = 1;
+
+		bool CastShadow = true;
+		float ShadowStrength = 1.0f; // 0.0 to 1.0 how dark sahdow is 
+		
+		//soft shadows
+		bool CastSoftShadow = true;
+		float ShadowSoftness = 0.5f; //how soft the shadow is from 0.0 to 1.0f 
 	};
 
 	struct PointLightComponent {

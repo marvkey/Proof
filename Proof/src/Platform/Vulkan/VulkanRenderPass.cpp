@@ -437,7 +437,7 @@ namespace Proof
         m_MaterialRenderPass = true;
         const auto vulkanPipeline = GetPipeline().As<VulkanGraphicsPipeline>();
         vulkanPipeline->Bind( m_CommandBuffer);
-        Count<VulkanRenderPass> pass = this;
+        //Count<VulkanRenderPass> pass = this;
         m_DescritptorSetManager->Bind();
 
         auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];

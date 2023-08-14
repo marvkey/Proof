@@ -1,21 +1,36 @@
+//https://github.com/InCloudsBelly/X2_RenderingEngine/blob/739ff016ad2a23e3843517c4866dda09ce5d112f/Resources/Shaders/PreethamSky.glsl
 #Compute Shader
-layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-layout(binding = 0, rgba16f) uniform writeonly image2D ouputTexture;
+#version 450 core
 
+const float PI = 3.141592;
 
-const float PI = 3.1415926535897932384626433832795;
+layout(binding = 0, rgba32f) uniform imageCube o_CubeMap;
 
+layout (push_constant) uniform Uniforms
+{
+	vec3 TurbidityAzimuthInclination;
+} u_Uniforms;
+
+vec3 GetCubeMapTexCoord()
+{
+    vec2 st = gl_GlobalInvocationID.xy / vec2(imageSize(o_CubeMap));
+    vec2 uv = 2.0 * vec2(st.x, 1.0-st.y) - vec2(1.0);
+
+       vec3 ret;
+    if(gl_GlobalInvocationID.z == 0)      ret = vec3(1.0,  uv.y, -uv.x);
+    else if(gl_GlobalInvocationID.z == 1) ret = vec3(-1.0, uv.y,  uv.x);     
+    else if(gl_GlobalInvocationID.z == 2) ret = vec3(uv.x, 1.0, -uv.y);
+    else if(gl_GlobalInvocationID.z == 3) ret = vec3(uv.x, -1.0, uv.y);
+    else if(gl_GlobalInvocationID.z == 4) ret = vec3(uv.x, uv.y, 1.0);
+    else if(gl_GlobalInvocationID.z == 5) ret = vec3(-uv.x, uv.y, -1.0);
+    return normalize(ret);
+}
+
+#define PI 3.14159265359
 
 float saturatedDot( in vec3 a, in vec3 b )
 {
 	return max( dot( a, b ), 0.0 );   
-}
-
-vec3 computeSphericalCoordinates( in vec2 uv )
-{
-	float theta = uv.x * 2.0 * PI;
-	float phi   = uv.y * PI;
-	return vec3(cos(theta) * sin(phi), sin(theta) * sin(phi), cos(phi));
 }
 
 vec3 YxyToXYZ( in vec3 Yxy )
@@ -43,6 +58,7 @@ vec3 XYZToRGB( in vec3 XYZ )
 	return XYZ * M;
 }
 
+
 vec3 YxyToRGB( in vec3 Yxy )
 {
 	vec3 XYZ = YxyToXYZ( Yxy );
@@ -50,16 +66,16 @@ vec3 YxyToRGB( in vec3 Yxy )
 	return RGB;
 }
 
-void CalculatePerezDistribution( in float turbinity, out vec3 A, out vec3 B, out vec3 C, out vec3 D, out vec3 E )
+void calculatePerezDistribution( in float t, out vec3 A, out vec3 B, out vec3 C, out vec3 D, out vec3 E )
 {
-	A = vec3(  0.1787 * turbinity - 1.4630, -0.0193 * turbinity - 0.2592, -0.0167 * turbinity - 0.2608 );
-	B = vec3( -0.3554 * turbinity + 0.4275, -0.0665 * turbinity + 0.0008, -0.0950 * turbinity + 0.0092 );
-	C = vec3( -0.0227 * turbinity + 5.3251, -0.0004 * turbinity + 0.2125, -0.0079 * turbinity + 0.2102 );
-	D = vec3(  0.1206 * turbinity - 2.5771, -0.0641 * turbinity - 0.8989, -0.0441 * turbinity - 1.6537 );
-	E = vec3( -0.0670 * turbinity + 0.3703, -0.0033 * turbinity + 0.0452, -0.0109 * turbinity + 0.0529 );
+	A = vec3(  0.1787 * t - 1.4630, -0.0193 * t - 0.2592, -0.0167 * t - 0.2608 );
+	B = vec3( -0.3554 * t + 0.4275, -0.0665 * t + 0.0008, -0.0950 * t + 0.0092 );
+	C = vec3( -0.0227 * t + 5.3251, -0.0004 * t + 0.2125, -0.0079 * t + 0.2102 );
+	D = vec3(  0.1206 * t - 2.5771, -0.0641 * t - 0.8989, -0.0441 * t - 1.6537 );
+	E = vec3( -0.0670 * t + 0.3703, -0.0033 * t + 0.0452, -0.0109 * t + 0.0529 );
 }
 
-vec3 CalculateZenithLuminanceYxy( in float t, in float thetaS )
+vec3 calculateZenithLuminanceYxy( in float t, in float thetaS )
 {
 	float chi  	 	= ( 4.0 / 9.0 - t / 120.0 ) * ( PI - 2.0 * thetaS );
 	float Yz   	 	= ( 4.0453 * t - 4.9710 ) * tan( chi ) - 0.2155 * t + 2.4192;
@@ -82,40 +98,44 @@ vec3 CalculateZenithLuminanceYxy( in float t, in float thetaS )
 	return vec3( Yz, xz, yz );
 }
 
-vec3 CalculatePerezLuminanceYxy( in float theta, in float gamma, in vec3 A, in vec3 B, in vec3 C, in vec3 D, in vec3 E )
+vec3 calculatePerezLuminanceYxy( in float theta, in float gamma, in vec3 A, in vec3 B, in vec3 C, in vec3 D, in vec3 E )
 {
 	return ( 1.0 + A * exp( B / cos( theta ) ) ) * ( 1.0 + C * exp( D * gamma ) + E * cos( gamma ) * cos( gamma ) );
 }
 
-vec3 CalculateSkyLuminanceRGB( in vec3 s, in vec3 e, in float t )
+vec3 calculateSkyLuminanceRGB( in vec3 s, in vec3 e, in float t )
 {
 	vec3 A, B, C, D, E;
-	CalculatePerezDistribution( t, A, B, C, D, E );
+	calculatePerezDistribution( t, A, B, C, D, E );
 
 	float thetaS = acos( saturatedDot( s, vec3(0,1,0) ) );
 	float thetaE = acos( saturatedDot( e, vec3(0,1,0) ) );
 	float gammaE = acos( saturatedDot( s, e )		   );
 
-	vec3 Yz = CalculateZenithLuminanceYxy( t, thetaS );
+	vec3 Yz = calculateZenithLuminanceYxy( t, thetaS );
 
-	vec3 fThetaGamma = CalculatePerezLuminanceYxy( thetaE, gammaE, A, B, C, D, E );
-	vec3 fZeroThetaS = CalculatePerezLuminanceYxy( 0.0,    thetaS, A, B, C, D, E );
+	vec3 fThetaGamma = calculatePerezLuminanceYxy( thetaE, gammaE, A, B, C, D, E ); // this the problem it has black and brown but in other shader it is the same value
+	vec3 fZeroThetaS = calculatePerezLuminanceYxy( 0.0,    thetaS, A, B, C, D, E );
 
-	vec3 Yp = Yz * ( fThetaGamma / fZeroThetaS );
-
+	vec3 Yp = Yz * ( fThetaGamma * fZeroThetaS );  
+	
 	return YxyToRGB( Yp );
 }
 
-
-void mainImage( out vec4 fragColor)
+layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+void main()
 {
-    
-    float turbidity     = 2.0;
-    float azimuth       = 1;
-    float inclination   = 1;
-    vec3 sunDir     	= normalize( vec3( sin( inclination ) * cos( azimuth ), cos( inclination ), sin( inclination ) * sin(azimuth) ) );
-    vec3 viewDir  		= -computeSphericalCoordinates( uv ).xzy;
+	vec3 cubeTC = GetCubeMapTexCoord();
+
+	
+	float turbidity     =  u_Uniforms.TurbidityAzimuthInclination.x;
+    float azimuth       = u_Uniforms.TurbidityAzimuthInclination.y;;
+    float inclination   = u_Uniforms.TurbidityAzimuthInclination.z;
+    vec3 sunDir     	= normalize( vec3( sin(inclination) * cos(azimuth), cos(inclination), sin(inclination) * sin(azimuth) ) );
+    vec3 viewDir  		= cubeTC;
     vec3 skyLuminance 	= calculateSkyLuminanceRGB( sunDir, viewDir, turbidity );
     
-	imageStore(ouputTexture, ivec2(gl_GlobalInvocationID), vec4( skyLuminance * 0.05, 1.0 ));
+    vec4 color = vec4(skyLuminance * 0.05, 1.0);
+	//color = vec4(1.0)-exp(-color*2.0);
+	imageStore(o_CubeMap, ivec3(gl_GlobalInvocationID), color);
 }

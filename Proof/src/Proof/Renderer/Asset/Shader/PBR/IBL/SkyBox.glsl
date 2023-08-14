@@ -40,10 +40,14 @@ vec4 remapSkyPositionZ(in vec4 position)
 }
 void main()
 {
-    outWorldPos = aPos;
-    mat4 rotView = mat4(mat3(CameraUBO.ViewProjection));
-    vec4 clipPos = CameraUBO.Projection* rotView *vec4(outWorldPos,1.0);
-    gl_Position = clipPos.xyww;
+    //outWorldPos = aPos;
+    //mat4 rotView = mat4(mat3(CameraUBO.ViewProjection));
+    //vec4 clipPos = CameraUBO.Projection* rotView *vec4(outWorldPos,1.0);
+    //gl_Position = clipPos.xyww;
+
+    vec4 position = vec4(aPos.xy, 0.0, 1.0);
+	gl_Position = position;
+    outWorldPos = mat3(inverse(CameraUBO.ViewProjection )) * vec3(inverse(CameraUBO.Projection) * position);
 }
 
 #Fragment Shader
@@ -71,6 +75,6 @@ void main()
     //// HDR tonemap and gamma correct
     envColor = envColor / (envColor + vec3(1.0));
     envColor = pow(envColor, vec3(1.0 / 2.2));
-    outFragColor = vec4(envColor,  1.0);
+    outFragColor = vec4(envColor,  envColor.x);
 }
 

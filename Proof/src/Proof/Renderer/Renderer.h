@@ -47,6 +47,7 @@ namespace Proof {
 		static Count<class GraphicsContext> GetGraphicsContext();
 		static Renderer::API GetAPI();
 
+		static Count<class TextureCube> CreatePreethamSky(float turbidity, float azimuth, float inclination, uint32_t imageDimension = 1048);
 		static Count<class Texture2D> GetWhiteTexture();
 		static Count<class Texture2D> GetBlackTexture();
 		static Count<class TextureCube> GetWhiteTextureCube();

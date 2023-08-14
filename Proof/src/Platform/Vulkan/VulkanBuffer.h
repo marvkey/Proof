@@ -8,14 +8,14 @@ namespace Proof
 	class VulkanVertexBuffer : public VertexBuffer {
 	public:
 		~VulkanVertexBuffer();
-		VulkanVertexBuffer(const void* data, uint32_t size);
-		VulkanVertexBuffer(uint32_t size);
+		VulkanVertexBuffer(const void* data, uint64_t size);
+		VulkanVertexBuffer(uint64_t size);
 
-		void Resize(uint32_t size);
-		void Resize(const void* data, uint32_t size);
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset=0);
-		uint32_t GetVertexSize()const { return m_VertexSize; }
-		virtual void Bind(Count<RenderCommandBuffer> commandBuffer,uint32_t binding=0,uint64_t offset =0)const override;
+		void Resize(uint64_t size);
+		void Resize(const void* data, uint64_t size);
+		virtual void SetData(const void* data, uint64_t size, uint64_t offset=0);
+		uint64_t GetVertexSize()const { return m_VertexSize; }
+		virtual void Bind(Count<RenderCommandBuffer> commandBuffer,uint64_t binding=0,uint64_t offset =0)const override;
 
 		static VmaAllocator GetGraphicsAllocator();
 		template<typename T>
@@ -25,25 +25,25 @@ namespace Proof
 		void Release();
 		void Build();
 		VulkanBuffer m_VertexBuffer;
-		uint32_t m_VertexSize;
+		uint64_t m_VertexSize;
 	};
 
 	class VulkanIndexBuffer : public IndexBuffer {
 	public:
-		VulkanIndexBuffer(uint32_t count);
-		VulkanIndexBuffer(const void* data, uint32_t count);
+		VulkanIndexBuffer(uint64_t count);
+		VulkanIndexBuffer(const void* data, uint64_t count);
 		~VulkanIndexBuffer();
 		virtual void Bind(Count<RenderCommandBuffer> commandBuffer)const;
-		virtual void SetData(const void* data, uint32_t count, uint32_t offsetCount = 0);
+		virtual void SetData(const void* data, uint64_t count, uint64_t offsetCount = 0);
 
-		void Resize(uint32_t count);
-		void Resize(const void* data, uint32_t count);
-		uint32_t GetCount()const override{ return m_Count;}
-		uint32_t GetSize()const override { return m_Count* sizeof(uint32_t);}
+		void Resize(uint64_t count);
+		void Resize(const void* data, uint64_t count);
+		uint64_t GetCount()const override{ return m_Count;}
+		uint64_t GetSize()const override { return m_Count* sizeof(uint64_t);}
 
-		std::vector<uint32_t> GetData()const ;
+		std::vector<uint64_t> GetData()const ;
 	private:
-		uint32_t m_Count;
+		uint64_t m_Count;
 		VulkanBuffer m_IndexBuffer;
 
 		void Build();

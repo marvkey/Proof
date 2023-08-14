@@ -1,4 +1,4 @@
-﻿
+﻿	
 #Compute Shader
 #version 450 core
 //https://github.com/Nadrin/PBR/blob/master/data/shaders/glsl/irmap_cs.glsl
@@ -55,7 +55,6 @@ vec3 getSamplingVector()
     vec2 uv = 2.0 * vec2(st.x, 1.0-st.y) - vec2(1.0);
 
     vec3 ret;
-    // Sadly 'switch' doesn't seem to work, at least on NVIDIA.
     if(gl_GlobalInvocationID.z == 0)      ret = vec3(1.0,  uv.y, -uv.x);
     else if(gl_GlobalInvocationID.z == 1) ret = vec3(-1.0, uv.y,  uv.x);
     else if(gl_GlobalInvocationID.z == 2) ret = vec3(uv.x, 1.0, -uv.y);

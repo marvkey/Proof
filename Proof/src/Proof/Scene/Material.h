@@ -140,6 +140,8 @@ namespace Proof{
 	};
 
 	bool operator==(const MaterialTable& other, const MaterialTable& other1);
+	bool operator<(const MaterialTable& other, const MaterialTable& other1);
+	bool operator>(const MaterialTable& other, const MaterialTable& other1);
 	enum class CombineMode 
 	{
 		Average =0,
