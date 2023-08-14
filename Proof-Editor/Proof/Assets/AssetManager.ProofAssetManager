@@ -185,18 +185,18 @@ Assets:
   - Asset: 2922325940131240013
     Type: Texture
     Path: Models\sponza\8750083169368950601.Texture.ProofAsset
-  - Asset: 7525996125266057618
-    Type: Texture
-    Path: Models\Wood04_4K_BaseColor.Texture.ProofAsset
   - Asset: 7710757506262579628
     Type: Texture
     Path: Models\sponza\11968150294050148237.Texture.ProofAsset
-  - Asset: 9530217476629553935
-    Type: TextureSourceFile
-    Path: Models\sponza\755318871556304029.jpg
+  - Asset: 7525996125266057618
+    Type: Texture
+    Path: Models\Wood04_4K_BaseColor.Texture.ProofAsset
   - Asset: 2788287483101954566
     Type: Texture
     Path: Images\particlePack\PNG (Black background)\light_03.Texture.ProofAsset
+  - Asset: 9530217476629553935
+    Type: TextureSourceFile
+    Path: Models\sponza\755318871556304029.jpg
   - Asset: 13385113021977325518
     Type: TextureSourceFile
     Path: Models\sponza\5792855332885324923.jpg

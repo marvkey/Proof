@@ -6,17 +6,22 @@
 #include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanCommandBuffer.h"
+#include "VulkanAllocator.h"
 namespace Proof
 {
-	
+
+
+	// cpu to gpu is better for data that is updated ofen
+	// gpu only is bettter for data that is updated once
 	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint64_t size): 
-		m_VertexSize(size)
+		m_VertexSize(size), m_Usage (VulkanMemmoryUsage::GpuOnly)
 	{
+		
 		Build();
 		SetData(data, size);
 	}
 	VulkanVertexBuffer::VulkanVertexBuffer(uint64_t size):
-		m_VertexSize(size)
+		m_VertexSize(size), m_Usage(VulkanMemmoryUsage::CpuToGpU)
 	{
 		Build();
 	}
@@ -26,24 +31,17 @@ namespace Proof
 	}
 	void VulkanVertexBuffer::Build()
 	{
-		PF_CORE_ASSERT(m_VertexSize, "Vertex Size cannot equal to zero")
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-		Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-			VkBufferCreateInfo vertexBufferInfo = {};
-			vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			vertexBufferInfo.pNext = nullptr;
-			//this is the total size, in bytes, of the buffer we are allocating
-			vertexBufferInfo.size = m_VertexSize;
-			//this buffer is going to be used as a Vertex Buffer
-			// ad goign to be a desitination bit
-			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT ;
+		VulkanAllocator allocator("VertexBufferBuild");
 
-			VmaAllocationCreateInfo vmaallocInfo = {};
-				//let the VMA library know that this data should be GPU native
-			vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-			graphicsContext->CreateVmaBuffer(vertexBufferInfo, vmaallocInfo, m_VertexBuffer);
-		});
+		VkBufferCreateInfo vertexBufferInfo = {};
+		vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		vertexBufferInfo.pNext = nullptr;
+		vertexBufferInfo.size = m_VertexSize;
+		if(m_Usage == VulkanMemmoryUsage::CpuToGpU)
+			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		else
+			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		allocator.AllocateBuffer(vertexBufferInfo, Utils::ProofVulkanMemmoryUsageToVMAMemoryUsage(m_Usage), m_VertexBuffer);
 	}
 	void VulkanVertexBuffer::Resize(uint64_t size)
 	{
@@ -55,12 +53,11 @@ namespace Proof
 
 	void VulkanVertexBuffer::Resize(const void* data, uint64_t size)
 	{
-		//TODO WORKING EXPECTED
-		//if (m_VertexSize == size)
-		//{
-		//	SetData(data, m_VertexSize, 0);
-		//	return;
-		//}
+		if (m_VertexSize == size)
+		{
+			SetData(data, m_VertexSize, 0);
+			return;
+		}
 		Release();
 
 		m_VertexSize = size;
@@ -72,42 +69,41 @@ namespace Proof
 		vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), binding,1, &m_VertexBuffer.Buffer, instanceOffset);
 	}
 	void VulkanVertexBuffer::SetData(const void* data, uint64_t size,uint64_t offset){
-		if (size == 0)
+		 
+		if (m_Usage == VulkanMemmoryUsage::GpuOnly)
 		{
-			PF_ENGINE_ERROR("Vertex Cannot set Data with a size of 0");
-			return;
+			VkBufferCreateInfo stagingBufferInfo = {};
+			stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			stagingBufferInfo.pNext = nullptr;
+			stagingBufferInfo.size = size;
+			stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+			VulkanBuffer stagingBuffer;
+
+			VulkanAllocator statingBufferAllocator("VulkanVertexBufferStagingBuffer");
+			statingBufferAllocator.AllocateBuffer(stagingBufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
+
+			uint8_t* stagingData = statingBufferAllocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
+			memcpy(stagingData, (void*)data, size);
+			statingBufferAllocator.UnmapMemory(stagingBuffer.Allocation);
+
+			Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+				VkCommandBuffer copyCmd = cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+				VkBufferCopy copy;
+				copy.dstOffset = offset;
+				copy.srcOffset = 0;
+				copy.size = size;
+				vkCmdCopyBuffer(copyCmd, stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
+			});
+			statingBufferAllocator.DestroyBuffer(stagingBuffer);
 		}
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-
-		VkBufferCreateInfo stagingBufferInfo = {};
-		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		stagingBufferInfo.pNext = nullptr;
-
-		stagingBufferInfo.size = size;
-		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-		//let the VMA library know that this data should be on CPU RAM
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-
-		VulkanBuffer stagingBuffer;
-
-		graphicsContext->CreateVmaBuffer(stagingBufferInfo, vmaallocInfo, stagingBuffer);
-		void* stagingData;
-		vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
-
-		memcpy(stagingData, data, size);
-
-		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
-
-		Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-			VkBufferCopy copy;
-			copy.dstOffset = offset;
-			copy.srcOffset = 0;
-			copy.size = size;
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), stagingBuffer.Buffer, m_VertexBuffer.Buffer, 1, &copy);
-		});
-		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
+		else if (m_Usage == VulkanMemmoryUsage::CpuToGpU)
+		{
+			VulkanAllocator allocator("VulkanVertexBufferSetData");
+			uint8_t* pData = allocator.MapMemory<uint8_t>(m_VertexBuffer.Allocation);
+			memcpy(pData, (uint8_t*)data + offset, size);
+			allocator.UnmapMemory(m_VertexBuffer.Allocation);
+		}
 	}
 	Buffer VulkanVertexBuffer::GetDataRaw()
 	{
@@ -124,8 +120,8 @@ namespace Proof
 		if (m_VertexBuffer.Buffer == nullptr)
 			return;
 		Renderer::SubmitDatafree([vertexBuffer = m_VertexBuffer]() {
-			auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-			vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), vertexBuffer.Buffer, vertexBuffer.Allocation);
+			VulkanAllocator allocator("VertexBufferRelease");
+			allocator.DestroyBuffer(vertexBuffer);
 		});
 		m_VertexBuffer.Buffer = nullptr;
 		m_VertexBuffer.Allocation = nullptr;
@@ -133,46 +129,39 @@ namespace Proof
 
 	VmaAllocator VulkanVertexBuffer::GetGraphicsAllocator()
 	{
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-
-		return graphicsContext->GetVMA_Allocator();
+		return VulkanAllocator::GetVmaAllocator();
 	}
 
 
-	VulkanIndexBuffer::VulkanIndexBuffer(uint64_t count)
+	VulkanIndexBuffer::VulkanIndexBuffer(uint32_t count)
 		:
-		m_Count(count)
+		m_Count(count), m_Usage(VulkanMemmoryUsage::CpuToGpU)
 	{
 		Build();
 	}
 
-	VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint64_t count)
+	VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint32_t count)
 	:
-		m_Count(count)
+		m_Count(count),m_Usage(VulkanMemmoryUsage::GpuOnly)
 	{
 		Build();
 		SetData(data, m_Count, 0);
 	}
 	void VulkanIndexBuffer::Build()
 	{
-		PF_CORE_ASSERT(GetSize(), "Index Size cannot equal to zero");
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-		Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-			VkBufferCreateInfo vertexBufferInfo = {};
-			vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			vertexBufferInfo.pNext = nullptr;
-			//this is the total size, in bytes, of the buffer we are allocating
-			vertexBufferInfo.size = GetSize();
-			//this buffer is going to be used as a Vertex Buffer
-			// ad goign to be a desitination bit
-			vertexBufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		VulkanAllocator allocator("VulkanIndexBufferBuild");
 
-			VmaAllocationCreateInfo vmaallocInfo = {};
-				//let the VMA library know that this data should be GPU native
-			vmaallocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		VkBufferCreateInfo indexBufferInfo = {};
+		indexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		indexBufferInfo.pNext = nullptr;
+		indexBufferInfo.size = GetSize();
+		indexBufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		if (m_Usage == VulkanMemmoryUsage::CpuToGpU)
+			indexBufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		else
+			indexBufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
-			graphicsContext->CreateVmaBuffer(vertexBufferInfo, vmaallocInfo, m_IndexBuffer);
-		});
+		allocator.AllocateBuffer(indexBufferInfo, Utils::ProofVulkanMemmoryUsageToVMAMemoryUsage(m_Usage), m_IndexBuffer);
 	}
 	VulkanIndexBuffer::~VulkanIndexBuffer() {
 		Release();
@@ -180,74 +169,73 @@ namespace Proof
 	void VulkanIndexBuffer::Bind(Count<RenderCommandBuffer>commandBuffer)const {
 		vkCmdBindIndexBuffer(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), m_IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
 	}
-	void VulkanIndexBuffer::SetData(const void* data, uint64_t count, uint64_t offsetCount )
+	void VulkanIndexBuffer::SetData(const void* data, uint32_t count, uint32_t offsetCount)
 	{
-		if (count == 0)
-		{
-			PF_ENGINE_ERROR("Vertex Cannot set Data with a size of 0");
-			return;
-		}
-		uint64_t dataSize = count * sizeof(uint32_t);
+		uint32_t dataSize = count * sizeof(uint32_t);
+		uint32_t offset = offsetCount * sizeof(uint32_t);
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+		if (m_Usage == VulkanMemmoryUsage::GpuOnly)
+		{
+			VkBufferCreateInfo stagingBufferInfo = {};
+			stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			stagingBufferInfo.pNext = nullptr;
+			stagingBufferInfo.size = dataSize;
+			stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-		VkBufferCreateInfo stagingBufferInfo = {};
-		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		stagingBufferInfo.pNext = nullptr;
+			VulkanBuffer stagingBuffer;
 
-		stagingBufferInfo.size = dataSize;
-		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			VulkanAllocator statingBufferAllocator("VulkanIndexBufferStagingBuffer");
+			statingBufferAllocator.AllocateBuffer(stagingBufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
 
-		//let the VMA library know that this data should be on CPU RAM
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+			uint8_t* stagingData =  statingBufferAllocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
+			memcpy(stagingData,(void*)data, dataSize);
+			statingBufferAllocator.UnmapMemory(stagingBuffer.Allocation);
 
-		VulkanBuffer stagingBuffer;
-
-		graphicsContext->CreateVmaBuffer(stagingBufferInfo, vmaallocInfo, stagingBuffer);
-		void* stagingData;
-		vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
-
-		memcpy(stagingData, data, dataSize);
-
-		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
-
-		Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-			VkBufferCopy copy;
-			copy.dstOffset = offsetCount * sizeof(uint32_t);
-			copy.srcOffset = 0;
-			copy.size = dataSize;
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), stagingBuffer.Buffer, m_IndexBuffer.Buffer, 1, &copy);
-		});
-		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
+			Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+				VkCommandBuffer copyCmd = cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+				VkBufferCopy copy;
+				copy.dstOffset = offset;
+				copy.srcOffset = 0;
+				copy.size = dataSize;
+				vkCmdCopyBuffer(copyCmd, stagingBuffer.Buffer, m_IndexBuffer.Buffer, 1, &copy);
+			});
+			statingBufferAllocator.DestroyBuffer(stagingBuffer);
+		}
+		else if (m_Usage == VulkanMemmoryUsage::CpuToGpU)
+		{
+			VulkanAllocator allocator("VulkanIndexBufferSetData");
+			uint8_t* pData = allocator.MapMemory<uint8_t>(m_IndexBuffer.Allocation);
+			memcpy(pData, (uint8_t*)data + offset, dataSize);
+			allocator.UnmapMemory(m_IndexBuffer.Allocation);
+		}
 	}
-	void VulkanIndexBuffer::Resize(uint64_t count)
+	void VulkanIndexBuffer::Resize(uint32_t count)
 	{
 		Release();
 
 		m_Count = count;
 		Build();
 	}
-	void VulkanIndexBuffer::Resize(const void* data, uint64_t count)
+	void VulkanIndexBuffer::Resize(const void* data, uint32_t count)
 	{
 
-		//TODO WORKING EXPECTED
-		//if (m_Count == count)
-		//{
-		//	SetData(data, count, 0);
-		//	return;
-		//}
+		if (m_Count == count)
+		{
+			SetData(data, count, 0);
+			return;
+		}
 		Release();
 
 		m_Count = count;
 		Build();
 		SetData(data, count, 0);
 	}
-	std::vector<uint64_t> VulkanIndexBuffer::GetData()const
+	std::vector<uint32_t> VulkanIndexBuffer::GetData()const
 	{
-		std::vector<uint64_t> data;
+		std::vector<uint32_t> data;
 		void* vertexData;
 		vmaMapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_IndexBuffer.Allocation, &vertexData);
-		uint64_t* indices = static_cast<uint64_t*>(vertexData);
+		uint32_t* indices = static_cast<uint32_t*>(vertexData);
 		for (size_t i = 0; i < m_Count; i++)
 		{
 			data.emplace_back(indices[i]);
@@ -261,8 +249,8 @@ namespace Proof
 		if (m_IndexBuffer.Buffer == nullptr)
 			return;
 		Renderer::SubmitDatafree([indexBuffer = m_IndexBuffer]() {
-			auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-			vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), indexBuffer.Buffer, indexBuffer.Allocation);
+			VulkanAllocator allocator("VertexIndexRelease");
+			allocator.DestroyBuffer(indexBuffer);
 		});
 		m_IndexBuffer.Buffer = nullptr;
 		m_IndexBuffer.Allocation = nullptr;

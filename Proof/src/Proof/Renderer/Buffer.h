@@ -67,10 +67,10 @@ namespace Proof {
 		/**
 		* creats Index Buffer
 		* @parm Data, dat to be sent
-		* @param Count in uint64_t,the vertecices to be drawn by index buffer
+		* @param Count in uint32_t,the vertecices to be drawn by index buffer
 		*/
-		static Count<IndexBuffer>Create(const void* Data, uint64_t count);
-		static Count<IndexBuffer>Create(uint64_t count);
+		static Count<IndexBuffer>Create(const void* Data, uint32_t count);
+		static Count<IndexBuffer>Create(uint32_t count);
 		/**
 		* deletes the Index Buffer
 		*/
@@ -78,13 +78,13 @@ namespace Proof {
 		/*
 		* returns the count of the IndexBuffer
 		*/
-		virtual uint64_t GetCount()const = 0;
-		virtual uint64_t GetSize()const = 0;
-		virtual std::vector<uint64_t> GetData()const = 0;
+		virtual uint32_t GetCount()const = 0;
+		virtual uint32_t GetSize()const = 0;
+		virtual std::vector<uint32_t> GetData()const = 0;
 
-		virtual void SetData(const void* data, uint64_t count, uint64_t offsetCount = 0) = 0;
-		virtual void Resize(uint64_t count) = 0;
-		virtual void Resize(const void* data, uint64_t count) = 0;
+		virtual void SetData(const void* data, uint32_t count, uint32_t offsetCount = 0) = 0;
+		virtual void Resize(uint32_t count) = 0;
+		virtual void Resize(const void* data, uint32_t count) = 0;
 
 
 	};

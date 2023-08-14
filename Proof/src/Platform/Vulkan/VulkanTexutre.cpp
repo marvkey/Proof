@@ -19,6 +19,7 @@
 #include "Proof/Renderer/GraphicsContext.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanImage.h"
+#include "VulkanAllocator.h"
 #include "Vulkan.h"
 #include  "Proof/Utils/FileSystem.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -268,30 +269,22 @@ namespace Proof
 
 			size_t uploadSize = m_ImageData.GetSize();
 			VulkanBuffer stagingBuffer;
-		// Create the Upload Buffer
-			{
+			VulkanAllocator statingBufferAllocator("VulkanTexture2DStagingBuffer");
 
+			{
 				VkBufferCreateInfo stagingBufferInfo = {};
 				stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 				stagingBufferInfo.pNext = nullptr;
-
 				stagingBufferInfo.size = uploadSize;
 				stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-				//let the VMA library know that this data should be on CPU RAM
-				VmaAllocationCreateInfo vmaallocInfo = {};
-				vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-				graphicsContext->CreateVmaBuffer(stagingBufferInfo, vmaallocInfo, stagingBuffer);
 
-			}
-			//upload to buffer
-			{
-				void* stagingData;
-				vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
+				statingBufferAllocator.AllocateBuffer(stagingBufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
 
-				memcpy(stagingData, m_ImageData.Get(), uploadSize);
+				uint8_t* stagingData = statingBufferAllocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
+				memcpy(stagingData, (void*)m_ImageData.Get(), uploadSize);
+				statingBufferAllocator.UnmapMemory(stagingBuffer.Allocation);
 
-				vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
 			}
 			Renderer::SubmitCommand([&](CommandBuffer* cmd) {
 				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
@@ -358,8 +351,7 @@ namespace Proof
 						subresourceRange);
 				}
 			});
-
-			vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
+			statingBufferAllocator.DestroyBuffer(stagingBuffer);
 		}
 
 		// sampler

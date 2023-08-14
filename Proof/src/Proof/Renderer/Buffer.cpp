@@ -21,7 +21,7 @@ namespace Proof
 		}
 	}
 
-	Count<IndexBuffer>IndexBuffer::Create(const void* Data, uint64_t count) {
+	Count<IndexBuffer>IndexBuffer::Create(const void* Data, uint32_t count) {
 		switch (Renderer::GetAPI()) {
 			case Renderer::API::None:  PF_CORE_ASSERT(false, "Index Buffer None it needs an api "); return nullptr;
 			case Renderer::API::OpenGL: return  nullptr;// CreateCount< OpenGLIndexBuffer>(Data, Count);
@@ -29,7 +29,7 @@ namespace Proof
 		}
 		return nullptr;
 	}
-	Count<IndexBuffer> IndexBuffer::Create(uint64_t count)
+	Count<IndexBuffer> IndexBuffer::Create(uint32_t count)
 	{
 		switch (Renderer::GetAPI())
 		{

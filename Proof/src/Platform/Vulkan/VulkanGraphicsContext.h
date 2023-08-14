@@ -1,8 +1,6 @@
 #pragma once
 #include"Proof/Renderer/GraphicsContext.h"
-#include "VulkanUtils/VulkanBufferBase.h"
 #include <vulkan/vulkan.h>
-//#include "Vulkan.h"
 namespace Proof
 {
 
@@ -51,8 +49,6 @@ namespace Proof
 		VkFormat FindSupportedFormat(
 			const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
-		bool CreateVmaBuffer(VkBufferCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanBuffer& buffer);
-		bool CreateVmaImage(VkImageCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanImageAlloc& image);
 		Count<class SwapChain> GetSwapChain();
 		VkSampleCountFlagBits GetMaxSampleCount();
 		VkSampleCountFlagBits GetSampleCount();
@@ -81,35 +77,7 @@ namespace Proof
 			return alignedSize;
 		}
 
-
-		VulkanBuffer CreateBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage) {
-	//allocate vertex buffer
-			VkBufferCreateInfo bufferInfo = {};
-			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			bufferInfo.pNext = nullptr;
-			bufferInfo.size = allocSize;
-
-			bufferInfo.usage = usage;
-
-
-			//let the VMA library know that this data should be writeable by CPU, but also readable by GPU
-			VmaAllocationCreateInfo vmaallocInfo = {};
-			vmaallocInfo.usage = memoryUsage;
-
-			VulkanBuffer newBuffer;
-
-			//allocate the buffer
-			vmaCreateBuffer(m_VMA_Allocator, &bufferInfo, &vmaallocInfo,
-				&newBuffer.Buffer,
-				&newBuffer.Allocation,
-				nullptr);
-
-			return newBuffer;
-		}
-		
 		VkPhysicalDeviceProperties m_GPUProperties;
-	
-
 		uint32_t GetVulkanVersion() {
 			return m_VulkanVersion;
 		}
@@ -121,10 +89,6 @@ namespace Proof
 				alignedSize = (alignedSize + minUboAlignment - 1) & ~(minUboAlignment - 1);
 			}
 			return alignedSize;
-		}
-
-		VmaAllocator GetVMA_Allocator() {
-			return m_VMA_Allocator;
 		}
 		//Count<class VulkanDescriptorPool> GetGlobalPool() {
 		//	return m_GlobalPool;
@@ -182,11 +146,7 @@ namespace Proof
 		const std::vector<const char*> m_DeviceExtensions = { VK_KHR_MULTIVIEW_EXTENSION_NAME,VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		const std::vector<const char*> m_InstanceExtension = { VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME };
 
-		VmaAllocator m_VMA_Allocator;
 		friend class VulkanRenderer;
-
-		
-
 		// sampler has, sampler ref count, sampler
 		std::unordered_map<uint64_t, std::pair<uint32_t,VkSampler>> m_Samplers;
 	};

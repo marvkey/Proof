@@ -7,6 +7,7 @@
 #include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
 #include "Proof/Renderer/Renderer.h"
 #include "Vulkan.h"
+#include "VulkanAllocator.h"
 namespace Proof
 {
 	
@@ -75,7 +76,7 @@ namespace Proof
 		CreateCommandPool();
 		InitDescriptors();
 		InitVMA();
-		
+		VulkanAllocator::Init(this);
 	}
 
 	VulkanGraphicsContext::~VulkanGraphicsContext() {
@@ -90,6 +91,7 @@ namespace Proof
 			vkDestroySurfaceKHR(instance, surface, nullptr);
 			vkDestroyInstance(instance, nullptr);
 		});
+		VulkanAllocator::ShutDown();
 	}
 
 	std::pair<VkSampler, uint64_t> VulkanGraphicsContext::GetOrCreateSampler(VkSamplerCreateInfo samplerInfo)
@@ -297,36 +299,9 @@ namespace Proof
 
 
 	void VulkanGraphicsContext::InitVMA() {
-		//initialize the memory allocator
-		VmaAllocatorCreateInfo allocatorInfo = {};
-		allocatorInfo.physicalDevice = m_PhysicalDevice;
-		allocatorInfo.device = m_Device;
-		allocatorInfo.instance = m_Instance;
-		vmaCreateAllocator(&allocatorInfo, &m_VMA_Allocator);
 	}
 
 	void VulkanGraphicsContext::InitDescriptors() {
-		uint32_t size = 1000; 
-			//auto& build= VulkanDescriptorPool::Builder()
-			//.SetMaxSets(1000)
-			//.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000);
-			////.Build(m_Device);
-			//VkDescriptorPoolCreateFlags PoolFlags = 0;
-		//std::vector<VkDescriptorPoolSize> PoolSizes{};
-		//
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 });
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 });
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 });
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 });
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 });
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 });
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 });
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 });
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 });
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 });
-		//PoolSizes.push_back({ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 });
-		//m_GlobalPool = Count<VulkanDescriptorPool>::Create(size, VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT, PoolSizes, m_Device);
-
 	}
 
 	void VulkanGraphicsContext::CreateSurface() {
@@ -533,23 +508,6 @@ namespace Proof
 		}
 		PF_CORE_ASSERT(false, "failed to find supported format!");
 	}
-
-	bool VulkanGraphicsContext::CreateVmaBuffer(VkBufferCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanBuffer& buffer) {
-		VkResult result =  vmaCreateBuffer(m_VMA_Allocator, &bufferInfo, &vmaInfo, &buffer.Buffer, &buffer.Allocation, nullptr);
-		if (result == false)
-			return false;
-
-		return true;
-	}
-
-	bool VulkanGraphicsContext::CreateVmaImage(VkImageCreateInfo bufferInfo, VmaAllocationCreateInfo vmaInfo, VulkanImageAlloc& image) {
-		VkResult result = vmaCreateImage(m_VMA_Allocator, &bufferInfo, &vmaInfo, &image.Image, &image.Allocation, nullptr);
-		if (result == false)
-			return false;
-
-		return true;
-	}
-
 	Count<class SwapChain> VulkanGraphicsContext::GetSwapChain()
 	{
 		return Application::Get()->GetWindow()->GetSwapChain();
@@ -557,17 +515,6 @@ namespace Proof
 
 	VkSampleCountFlagBits VulkanGraphicsContext::GetMaxSampleCount()
 	{
-		//VkPhysicalDeviceProperties physicalDeviceProperties;
-		//vkGetPhysicalDeviceProperties(m_PhysicalDevice, &physicalDeviceProperties);
-		//
-		//VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
-		//if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
-		//if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
-		//if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
-		//if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
-		//if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
-		//if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
-
 		return VK_SAMPLE_COUNT_1_BIT;
 	}
 

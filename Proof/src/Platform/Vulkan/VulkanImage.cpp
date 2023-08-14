@@ -9,6 +9,7 @@
 #include "VulkanImage.h"
 #include "VulkanUtils/VulkanConvert.h"
 #include "VulkanImguiLayer.h"
+#include "VulkanAllocator.h"
 namespace Proof {
 	
 
@@ -143,9 +144,8 @@ namespace Proof {
 		imageCreateInfo.usage = usage;
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = memoryUsage;
-		graphicsContext->CreateVmaImage(imageCreateInfo, vmaallocInfo, m_Info.ImageAlloc);
+		VulkanAllocator allocator("VulkanImage2DBuild");
+		allocator.AllocateImage(imageCreateInfo, memoryUsage, m_Info.ImageAlloc);
 
 		graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE, m_Specification.DebugName, m_Info.ImageAlloc.Image);
 
@@ -329,14 +329,14 @@ namespace Proof {
 		}
 		if (m_Info.ImageAlloc.Image == nullptr)return;
 
-		const VulkanImageInfo& info = m_Info;
-		Renderer::SubmitDatafree([info ]()
+		Renderer::SubmitDatafree([info  = m_Info]()
 		{
 			auto vulkanDevice = VulkanRenderer::GetGraphicsContext()->GetDevice();
 			auto graphics = VulkanRenderer::GetGraphicsContext();
 			vkDestroyImageView(vulkanDevice, info.ImageView, nullptr);
-			vmaDestroyImage(VulkanRenderer::GetGraphicsContext()->GetVMA_Allocator(), info.ImageAlloc.Image, info.ImageAlloc.Allocation);
-		
+
+			VulkanAllocator allocator("VulkanImage2DRelease");
+			allocator.DestroyImage(info.ImageAlloc);
 		});
 		if (Application::Get()->GetImguiLayer() != nullptr)
 		{
@@ -352,6 +352,7 @@ namespace Proof {
 
 	void VulkanImage2D::CopyToHost(Buffer& data)
 	{
+		/*
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
 		size_t bufferSize = m_Specification.Width * m_Specification.Height * Utils::BytesPerPixel(m_Specification.Format) * m_Specification.Layers;
@@ -382,6 +383,7 @@ namespace Proof {
 
 			vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
 		}
+		*/
 	}
 	
 	VulkanImageView::VulkanImageView(const ImageViewConfiguration& spec)

@@ -5,6 +5,7 @@
 #include "VulkanUtils/VulkanBufferBase.h"
 namespace Proof
 {
+	
 	class VulkanVertexBuffer : public VertexBuffer {
 	public:
 		~VulkanVertexBuffer();
@@ -24,26 +25,29 @@ namespace Proof
 	private:
 		void Release();
 		void Build();
+		VulkanMemmoryUsage m_Usage;
 		VulkanBuffer m_VertexBuffer;
 		uint64_t m_VertexSize;
+		Buffer m_LocalBuffer;
 	};
 
 	class VulkanIndexBuffer : public IndexBuffer {
 	public:
-		VulkanIndexBuffer(uint64_t count);
-		VulkanIndexBuffer(const void* data, uint64_t count);
+		VulkanIndexBuffer(uint32_t count);
+		VulkanIndexBuffer(const void* data, uint32_t count);
 		~VulkanIndexBuffer();
 		virtual void Bind(Count<RenderCommandBuffer> commandBuffer)const;
-		virtual void SetData(const void* data, uint64_t count, uint64_t offsetCount = 0);
+		virtual void SetData(const void* data, uint32_t count, uint32_t offsetCount = 0);
 
-		void Resize(uint64_t count);
-		void Resize(const void* data, uint64_t count);
-		uint64_t GetCount()const override{ return m_Count;}
-		uint64_t GetSize()const override { return m_Count* sizeof(uint64_t);}
+		void Resize(uint32_t count);
+		void Resize(const void* data, uint32_t count);
+		uint32_t GetCount()const override{ return m_Count;}
+		uint32_t GetSize()const override { return m_Count* sizeof(uint32_t);}
 
-		std::vector<uint64_t> GetData()const ;
+		std::vector<uint32_t> GetData()const ;
 	private:
-		uint64_t m_Count;
+		VulkanMemmoryUsage m_Usage;
+		uint32_t m_Count;
 		VulkanBuffer m_IndexBuffer;
 
 		void Build();

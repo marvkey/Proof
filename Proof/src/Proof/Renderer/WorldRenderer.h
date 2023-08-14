@@ -153,8 +153,6 @@ namespace Proof
 	{
 		Count<class GraphicsPipeline> Pipline;
 		Count<class RenderPass> RenderPass;
-		Count<class VertexBuffer> TransformsBuffer;
-		std::vector<glm::mat4> Transforms;
 	};
 
 	struct ShadowSetting

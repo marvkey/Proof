@@ -25,6 +25,7 @@
 #define VMA_IMPLEMENTATION
 
 #include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
+#include "VulkanAllocator.h"
 // images for vulkan swapchaing
 /*
 #include <vulkan/vulkan.h>
@@ -287,7 +288,7 @@ namespace Proof
             allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
             // Allocate memory for the image
-            vmaAllocateMemoryForImage(graphicsContext->GetVMA_Allocator(), m_SwapChainImages[i], &allocationCreateInfo, &m_SwapChainImageAllocation[i], nullptr);
+            vmaAllocateMemoryForImage(VulkanAllocator::GetVmaAllocator(), m_SwapChainImages[i], &allocationCreateInfo, &m_SwapChainImageAllocation[i], nullptr);
             // Bind the allocated memory to the image
             vkBindImageMemory(graphicsContext->GetDevice(), m_SwapChainImages[i], m_SwapChainImageAllocation[i]->GetMemory(), m_SwapChainImageAllocation[i]->GetOffset());
         }

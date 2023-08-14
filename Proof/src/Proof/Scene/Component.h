@@ -280,6 +280,7 @@ namespace Proof
 		Count<MaterialTable> MaterialTable = Count<class MaterialTable>::Create();
 		Count<class Mesh> GetMesh();
 		bool Visible = true;
+		bool CastShadow = true;
 	private:
 		friend class Entity;
 		friend class World;

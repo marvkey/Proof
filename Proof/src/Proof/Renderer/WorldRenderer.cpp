@@ -130,8 +130,6 @@ namespace Proof
 			graphicsPipelineConfig.VertexArray = meshVertexArray;
 			graphicsPipelineConfig.TargetBuffer = m_ScreenFrameBuffer->GetFrameBuffer();
 			m_MeshPipeline.Pipline = GraphicsPipeline::Create(graphicsPipelineConfig);
-			m_MeshPipeline.TransformsBuffer = VertexBuffer::Create(sizeof(glm::mat4));
-			m_MeshPipeline.Transforms.resize(1);
 
 			RenderPassConfig renderPassConfig;
 			renderPassConfig.DebugName = "Mesh Render Pass";
@@ -310,20 +308,15 @@ namespace Proof
 		Renderer::EndRenderPass(skyBoxPass);
 		
 		PrePass();
-		MeshPass();
-		
 		ShadowPass();
+		
+		MeshPass();
 		
 		{
 			//PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
 			m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
 
-			glm::mat4 identity =
-				glm::translate(glm::mat4(1.0f), glm::vec3{ 0,0,0 }) *
-				glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 1,0,0 })
-				* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,1,0 })
-				* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })
-				* glm::scale(glm::mat4(1.0f), glm::vec3{ 0,0,0 });
+			
 			m_World->ForEachComponent<SpriteComponent, TransformComponent>([&](SpriteComponent& sprite, TransformComponent& transform) {
 				m_Renderer2D->DrawQuad(sprite, transform);
 			});
