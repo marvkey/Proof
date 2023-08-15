@@ -25,7 +25,6 @@ struct VertexOutput
     mat3 CameraView; 
 
     vec3 ShadowMapCoords[4];
-    vec4 CascadeSplits;
 
     vec3 ViewPosition;
 };
@@ -36,20 +35,10 @@ layout(std140, set = 1, binding = 0) uniform ShadowMapProjections {
 
     mat4 ViewProjections[4];
 } u_CascadePositions;
-layout(std140, set = 1, binding = 1) uniform CascadeSplits {
-    
-    // each input is a cascade splti
-    vec4 CascadSplit;
-} u_CascadeSplits;
+
 //https://computergraphics.stackexchange.com/questions/8979/strange-dark-spot-when-lighting-in-deferred-rendering-pbr-shaders
 //https://github.com/InCloudsBelly/X2_RenderingEngine/blob/739ff016ad2a23e3843517c4866dda09ce5d112f/Resources/Shaders/PBR_Static.glsl
 void main() {
-	//mat4 aTransform = mat4(
-	//	vec4(a_MRow0.x, a_MRow1.x, a_MRow2.x, 0.0),
-	//	vec4(a_MRow0.y, a_MRow1.y, a_MRow2.y, 0.0),
-	//	vec4(a_MRow0.z, a_MRow1.z, a_MRow2.z, 0.0),
-	//	vec4(a_MRow0.w, a_MRow1.w, a_MRow2.w, 1.0)
-	//);
 
     Output.Tangent = aTangent;
     Output.Bitangent = aBitangent;
@@ -68,11 +57,6 @@ void main() {
 	Output.ShadowMapCoords[1] = vec3(shadowCoords[1].xyz / shadowCoords[1].w);
 	Output.ShadowMapCoords[2] = vec3(shadowCoords[2].xyz / shadowCoords[2].w);
 	Output.ShadowMapCoords[3] = vec3(shadowCoords[3].xyz / shadowCoords[3].w);
-
-    Output.CascadeSplits[0] =  u_CascadeSplits.CascadSplit[0];
-    Output.CascadeSplits[1] =  u_CascadeSplits.CascadSplit[1];
-    Output.CascadeSplits[2] =  u_CascadeSplits.CascadSplit[2];
-    Output.CascadeSplits[3] =  u_CascadeSplits.CascadSplit[3];
 
     mat3 normalMatrix = transpose(inverse(mat3(aTransform)));
     Output.Normal = normalMatrix * aNormal;
@@ -127,7 +111,6 @@ struct VertexOutput
     mat3 CameraView; 
 
     vec3 ShadowMapCoords[4];
-    vec4 CascadeSplits;
 
     vec3 ViewPosition;
 };
@@ -232,29 +215,82 @@ void main()
         iblEfeect += (specularIBL + diffuseIBL) ;
         //iblEfeect = iblEfeect * (u_SkyBoxInfo.Intensity);  
     }
+
+    DirectionalLight currentLight = u_DirectionalLightData.Lights[0];
+
+    vec3 lightDirection = currentLight.Direction;
     const int SHADOW_MAP_CASCADE_COUNT = 4;
     uint cascadeIndex = 0;
 	for (uint i = 0; i < SHADOW_MAP_CASCADE_COUNT - 1; i++)
 	{
-		if (Input.ViewPosition.z < Input.CascadeSplits[i])
+		if (Input.ViewPosition.z < u_RendererData.CascadeSplits[i])
 			cascadeIndex = i + 1;
 	}
 
-	float shadowDistance = 4500; // controll
-	float transitionDistance = 50.0f; // expos
+	float shadowDistance = u_RendererData.MaxShadowDistance; 
+	float transitionDistance = u_RendererData.ShadowFade; // expos
 	float distance = length(Input.ViewPosition);
 	float shadowFade = distance - (shadowDistance - transitionDistance);
 	shadowFade /= transitionDistance;
 	shadowFade = clamp(1.0 - shadowFade, 0.0, 1.0);
 
 	float shadowScale;
-    
-    vec3 shadowMapCoords = Input.ShadowMapCoords[cascadeIndex];
+    bool castSoftShadow = false;
+    if(u_RendererData.SoftShadows == true && currentLight.CastSoftShadow == true)
+        castSoftShadow = true;
 
-   shadowScale  = HardShadows_DirectionalLight(u_ShadowMap, 1, cascadeIndex, shadowMapCoords);
-   shadowScale = 1.0 - clamp(0.5 - shadowScale, 0.0f, 1.0f);
+    bool fadeCascades = u_RendererData.CascadeFading;
+	if (fadeCascades)
+	{
+		float cascadeTransitionFade = u_RendererData.CascadeTransitionFade;
 
-    vec3 finalColor =  iblEfeect + (directLighting * shadowScale);
+		float c0 = smoothstep(u_RendererData.CascadeSplits[0] + cascadeTransitionFade * 0.5f, u_RendererData.CascadeSplits[0] - cascadeTransitionFade * 0.5f, Input.ViewPosition.z);
+		float c1 = smoothstep(u_RendererData.CascadeSplits[1] + cascadeTransitionFade * 0.5f, u_RendererData.CascadeSplits[1] - cascadeTransitionFade * 0.5f, Input.ViewPosition.z);
+		float c2 = smoothstep(u_RendererData.CascadeSplits[2] + cascadeTransitionFade * 0.5f, u_RendererData.CascadeSplits[2] - cascadeTransitionFade * 0.5f, Input.ViewPosition.z);
+		if (c0 > 0.0 && c0 < 1.0)
+		{
+			// Sample 0 & 1
+			vec3 shadowMapCoords = GetShadowMapCoords(Input.ShadowMapCoords, 0);
+			float shadowAmount0 = castSoftShadow ? PCSS_DirectionalLight(u_ShadowMap, 0, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, 0, shadowMapCoords,lightDirection);
+			shadowMapCoords = GetShadowMapCoords(Input.ShadowMapCoords, 1);
+			float shadowAmount1 = castSoftShadow ? PCSS_DirectionalLight(u_ShadowMap, 1, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, 1, shadowMapCoords,lightDirection);
+
+			shadowScale = mix(shadowAmount0, shadowAmount1, c0);
+		}
+		else if (c1 > 0.0 && c1 < 1.0)
+		{
+			// Sample 1 & 2
+			vec3 shadowMapCoords = GetShadowMapCoords(Input.ShadowMapCoords, 1); 
+			float shadowAmount1 = castSoftShadow ? PCSS_DirectionalLight(u_ShadowMap, 1, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, 1, shadowMapCoords,lightDirection);
+			shadowMapCoords = GetShadowMapCoords(Input.ShadowMapCoords, 2);
+			float shadowAmount2 = castSoftShadow ? PCSS_DirectionalLight(u_ShadowMap, 2, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, 2, shadowMapCoords,lightDirection);
+
+			shadowScale = mix(shadowAmount1, shadowAmount2, c1);
+		}
+		else if (c2 > 0.0 && c2 < 1.0)
+		{
+			// Sample 2 & 3
+			vec3 shadowMapCoords = GetShadowMapCoords(Input.ShadowMapCoords, 2);
+			float shadowAmount2 = castSoftShadow ? PCSS_DirectionalLight(u_ShadowMap, 2, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, 2, shadowMapCoords,lightDirection);
+			shadowMapCoords = GetShadowMapCoords(Input.ShadowMapCoords, 3);
+			float shadowAmount3 = castSoftShadow ? PCSS_DirectionalLight(u_ShadowMap, 3, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, 3, shadowMapCoords,lightDirection);
+
+			shadowScale = mix(shadowAmount2, shadowAmount3, c2);
+		}
+		else
+		{
+			vec3 shadowMapCoords = GetShadowMapCoords(Input.ShadowMapCoords, cascadeIndex);
+			shadowScale = castSoftShadow ? PCSS_DirectionalLight(u_ShadowMap, cascadeIndex, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, cascadeIndex, shadowMapCoords,lightDirection);
+		}
+	}
+	else
+	{
+		vec3 shadowMapCoords = GetShadowMapCoords(Input.ShadowMapCoords, cascadeIndex);
+		shadowScale = castSoftShadow ? PCSS_DirectionalLight(u_ShadowMap, cascadeIndex, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, cascadeIndex, shadowMapCoords,lightDirection);
+	}
+
+	shadowScale = 1.0 - clamp(currentLight.ShadowStrength - shadowScale, 0.0f, 1.0f);
+    vec3 finalColor =  iblEfeect + (directLighting * shadowScale );
     
     //finalColor = vec3(1) * shadowScale * 0.2f;
     // HDR tonemapping
@@ -262,18 +298,21 @@ void main()
     // gamma correct
     finalColor = pow(finalColor, vec3(1.0/2.2)); 
     out_FragColor = vec4(finalColor ,1.0);
-    //switch(cascadeIndex) {
-	//		case 0 : 
-	//			out_FragColor.rgb *= vec3(1.0f, 0.25f, 0.25f);
-	//			break;
-	//		case 1 : 
-	//			out_FragColor.rgb *= vec3(0.25f, 1.0f, 0.25f);
-	//			break;
-	//		case 2 : 
-	//			out_FragColor.rgb *= vec3(0.25f, 0.25f, 1.0f);
-	//			break;
-	//		case 3 : 
-	//			out_FragColor.rgb *= vec3(1.0f, 1.0f, 0.25f);
-	//			break;
-	//	}
+    if(u_RendererData.ShowCascades)
+    {
+        switch(cascadeIndex) {
+			    case 0 : 
+				    out_FragColor.rgb *= vec3(1.0f, 0.25f, 0.25f);
+				    break;
+			    case 1 : 
+				    out_FragColor.rgb *= vec3(0.25f, 1.0f, 0.25f);
+				    break;
+			    case 2 : 
+				    out_FragColor.rgb *= vec3(0.25f, 0.25f, 1.0f);
+				    break;
+			    case 3 : 
+				    out_FragColor.rgb *= vec3(1.0f, 1.0f, 0.25f);
+				    break;
+		    }
+        }
 }   

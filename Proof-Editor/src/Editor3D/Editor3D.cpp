@@ -533,9 +533,37 @@ namespace Proof
 					shader->Reload();
 				}
 			});
+			ImGui::Text("Shadow Settings");
+
 			UI::Image(m_WorldRenderer->m_ShadowDebugPass->GetTargetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().ImageIndex,0),
 				{ ImGui::GetWindowWidth(),ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			ImGui::SliderInt("Cascade Index",&m_WorldRenderer->debugCascade, 0, 3);
+
+			ShadowSetting& shadowSetting = m_WorldRenderer->ShadowSetting;
+			ImGui::Checkbox("ShowCascades", &shadowSetting.ShowCascades);
+			ImGui::Checkbox("Soft Shadows", &shadowSetting.SoftShadows);
+			ImGui::DragFloat("Max Shadow Distance", &shadowSetting.MaxShadowDistance);
+			ImGui::DragFloat("Shadow Fade", &shadowSetting.ShadowFade,5.0f);
+			
+			// cascade settings tre node
+			ImGui::Checkbox("CascadeFading", &shadowSetting.CascadeFading);
+			if(shadowSetting.CascadeFading)
+				ImGui::DragFloat("CascadeTransitionFade", &shadowSetting.CascadeTransitionFade,0.05,0.0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+
+			ImGui::DragFloat("CascadeSplitLambda", &shadowSetting.CascadeSplitLambda, 0.01, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("CascadeNearPlaneOffset", &shadowSetting.CascadeNearPlaneOffset, 0.1, Math::GetMinType<float>(), 0, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("CascadeFarPlaneOffset", &shadowSetting.CascadeFarPlaneOffset, 0.1, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("ScaleShadowCascadesToOrigin", &shadowSetting.ScaleShadowCascadesToOrigin, 0.1, 0,Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+
+			ImGui::Checkbox("UseManualCascadeSplits", &shadowSetting.UseManualCascadeSplits);
+
+			if (shadowSetting.UseManualCascadeSplits)
+			{
+				ImGui::DragFloat("Cascade 0", &shadowSetting.CascadeSplits[0], 0.025, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+				ImGui::DragFloat("Cascade 1", &shadowSetting.CascadeSplits[1], 0.025, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+				ImGui::DragFloat("Cascade 2", &shadowSetting.CascadeSplits[2], 0.025, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+				ImGui::DragFloat("Cascade 3", &shadowSetting.CascadeSplits[3], 0.025, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			}
 		}
 		ImGui::End();
 	}

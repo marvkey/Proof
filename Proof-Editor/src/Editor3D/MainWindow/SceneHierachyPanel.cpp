@@ -528,6 +528,18 @@ namespace Proof
 		DrawComponents<DirectionalLightComponent>("Directonal Light", entity, [](DirectionalLightComponent& drl) {
 			ImGui::ColorEdit3("Ambient", drl.Color.GetValue_Ptr());
 			ImGui::DragFloat("Intensity", &drl.Intensity, 0.01, 0.0f, 100);
+
+			ImGui::Checkbox("CastShadows", &drl.CastShadow);
+			if (drl.CastShadow)
+			{
+				ImGui::SliderFloat("ShadowStrength", &drl.ShadowStrength, 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+				ImGui::Checkbox("CastSoftShadows", &drl.CastSoftShadow);
+
+				if (drl.CastSoftShadow)
+				{
+					ImGui::SliderFloat("ShadowSoftness", &drl.ShadowSoftness, 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+				}
+			}
 		});
 
 		DrawComponents<PointLightComponent>("Directonal Light", entity, [](PointLightComponent& pl) {

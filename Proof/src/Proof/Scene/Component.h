@@ -360,7 +360,7 @@ namespace Proof
 		float Intensity = 1;
 
 		bool CastShadow = true;
-		float ShadowStrength = 1.0f; // 0.0 to 1.0 how dark sahdow is 
+		float ShadowStrength =0.5f; // 0.0 to 1.0 how dark sahdow is 
 		
 		//soft shadows
 		bool CastSoftShadow = true;

@@ -63,7 +63,6 @@ namespace Proof
 	Count<Mesh> Cube; 
 	Count< UniformBufferSet> cameraBuffer;
 	Count<UniformBufferSet> s_CascadeProjectionBuffer;
-	Count<UniformBufferSet> s_CascadeSplitsBuffer;
 	//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 	WorldRenderer::~WorldRenderer() {
 		textureCubeMap = nullptr;
@@ -83,6 +82,8 @@ namespace Proof
 	WorldRenderer::WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight) :
 		m_World(world)
 	{
+		m_UBRenderDataBuffer = UniformBufferSet::Create(sizeof(UBRenderData));
+		m_UBSceneDataBuffer = UniformBufferSet::Create(sizeof(UBSceneData));
 		cameraBuffer = UniformBufferSet::Create(sizeof(CameraData));
 		m_SkyBoxUniformInfo = UniformBufferSet::Create(sizeof(SkyLight));
 
@@ -173,11 +174,11 @@ namespace Proof
 		}
 		Cube = MeshWorkShop::GenerateCube();
 		s_CascadeProjectionBuffer = UniformBufferSet::Create(sizeof(glm::mat4) * 4);
-		s_CascadeSplitsBuffer = UniformBufferSet::Create(sizeof(float) * 4);
 		CreateShadowMap();
 		m_MeshPipeline.RenderPass->SetInput("u_ShadowMap", m_ShadowPassImage);
+		m_MeshPipeline.RenderPass->SetInput("RendererData", m_UBRenderDataBuffer);
+		m_MeshPipeline.RenderPass->SetInput("SceneData", m_UBSceneDataBuffer);
 		m_MeshPipeline.RenderPass->SetInput("ShadowMapProjections", s_CascadeProjectionBuffer);
-		m_MeshPipeline.RenderPass->SetInput("CascadeSplits", s_CascadeSplitsBuffer);
 
 
 		const size_t TransformBufferCount = 10 * 1024; // 10240 transforms
@@ -187,6 +188,8 @@ namespace Proof
 			m_SubmeshTransformBuffers[i].Buffer = VertexBuffer::Create(sizeof(TransformVertexData) * TransformBufferCount);
 			m_SubmeshTransformBuffers[i].Data = new TransformVertexData[TransformBufferCount];
 		}
+
+		
 	}
 	void WorldRenderer::Clear() {
 		
@@ -227,12 +230,15 @@ namespace Proof
 				const auto& dirLightComponent = directionalLightView.get<DirectionalLightComponent>(entityID);
 				glm::vec3 direction = ProofToglmVec(dirLightComponent.OffsetDirection) + ProofToglmVec(m_World->GetWorldRotation(entity));
 				direction = glm::normalize(direction);
-				m_LightScene.DirectionalLights[index] =
-				{
-					dirLightComponent.Color,
-					dirLightComponent.Intensity,
-					-GlmVecToProof(direction),
-				};
+				m_LightScene.DirectionalLights[index];
+				m_LightScene.DirectionalLights[index].Color = dirLightComponent.Color;
+				m_LightScene.DirectionalLights[index].Intensity = dirLightComponent.Intensity;
+				m_LightScene.DirectionalLights[index].Direction = -GlmVecToProof(direction);
+				m_LightScene.DirectionalLights[index].ShadowSoftness = dirLightComponent.ShadowSoftness;
+				m_LightScene.DirectionalLights[index].ShadowStrength = dirLightComponent.ShadowStrength;
+				m_LightScene.DirectionalLights[index].bCastShadows= dirLightComponent.CastShadow;
+				m_LightScene.DirectionalLights[index].bCastSoftShadows = dirLightComponent.CastSoftShadow;
+
 				index++;
 			}
 			const auto& skyLightView = m_World->m_Registry.view<SkyLightComponent>();
@@ -625,6 +631,21 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		//scene data
+		{
+			m_UBSceneData.CameraPosition =ProofToglmVec( m_CameraData.Position);
+			m_UBSceneDataBuffer->SetData(frameIndex, Buffer(&m_UBSceneData, sizeof(m_UBSceneData)));
+		}
+		// set up shadow pass
+		{
+			// NOTE not everyting is set here because we are not sure yet about if they are ture
+			m_UBRenderData.bShowCascades = ShadowSetting.ShowCascades;
+			m_UBRenderData.bSoftShadows = ShadowSetting.SoftShadows;
+			m_UBRenderData.MaxShadowDistance = ShadowSetting.MaxShadowDistance;
+			m_UBRenderData.ShadowFade = ShadowSetting.ShadowFade;
+			m_UBRenderData.bCascadeFading = ShadowSetting.CascadeFading;
+			m_UBRenderData.CascadeTransitionFade = ShadowSetting.CascadeTransitionFade;
+		}
 		// set up mesh passes
 		{
 			uint32_t offset = 0;
@@ -789,45 +810,6 @@ namespace Proof
 			}
 		}
 
-		if (m_MeshDrawList.empty())return;
-		/*
-		uint32_t currentDrawOffset = 0;
-		//set mesh transfomr
-		{
-			std::vector<glm::mat4> sceneTransforms;
-			for (auto& [meshKey, transforms] : m_MeshTransformMap)
-			{
-				// dont use std::end instead back inserter because using std::end can resulst in undefinded behavior
-				std::move(transforms.begin(), transforms.end(), std::back_inserter(sceneTransforms));
-			}
-			m_MeshPipeline.TransformsBuffer->Resize(sceneTransforms.data(), sceneTransforms.size() * sizeof(glm::mat4));
-
-		}
-		Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass);
-
-		for (auto& [meshKey, meshDrawInfo] : m_MeshDrawList)
-		{
-
-			Count<Mesh> mesh = meshDrawInfo.Mesh;
-			Count<MeshSource> meshSource = mesh->GetMeshSource();
-			Count<MaterialTable> materialTable = meshDrawInfo.MaterialTable;
-			meshSource->GetVertexBuffer()->Bind(m_CommandBuffer);
-			meshSource->GetIndexBuffer()->Bind(m_CommandBuffer);
-			m_MeshPipeline.TransformsBuffer->Bind(m_CommandBuffer, 1, currentDrawOffset * sizeof(glm::mat4));
-			for (uint32_t index : mesh->GetSubMeshes())
-			{
-				//TODO REMOVE MESH MATERIAL ABLE FROM MESH CLASS, ONLY MESH SOURCE SHOULD HAVE A MATERIAL TABLE
-				const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
-				Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex)? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
-					: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
-
-				Renderer::RenderPassPushRenderMaterial(m_MeshPipeline.RenderPass, renderMaterial);
-				Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, meshDrawInfo.InstanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
-			}
-			currentDrawOffset += meshDrawInfo.InstanceCount;
-		}
-		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
-		*/
 		auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
 		Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass);
 		for (auto& [meshKey, dc] : m_MeshDrawList)
@@ -838,13 +820,111 @@ namespace Proof
 		}
 		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
 	}
-	
+	void WorldRenderer::CalculateCascadesManualSplit(CascadeData* cascades, const glm::vec3& lightDirection)
+	{
+		float scaleToOrigin = ShadowSetting.ScaleShadowCascadesToOrigin;
+
+		glm::mat4 viewMatrix = m_CameraData.ProjectionView;
+		constexpr glm::vec4 origin = glm::vec4(glm::vec3(0.0f), 1.0f);
+		viewMatrix[3] = glm::lerp(viewMatrix[3], origin, scaleToOrigin);
+
+		auto viewProjection = m_CameraData.UnreversedProjectionMatrix * viewMatrix;
+
+		const int SHADOW_MAP_CASCADE_COUNT = 4;
+
+		float nearClip = m_CameraData.NearPlane;
+		float farClip = m_CameraData.FarPlane;
+		float clipRange = farClip - nearClip;
+
+		float minZ = nearClip;
+		float maxZ = nearClip + clipRange;
+
+		float range = maxZ - minZ;
+		float ratio = maxZ / minZ;
+
+		// Calculate orthographic projection matrix for each cascade
+		float lastSplitDist = 0.0;
+		for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
+		{
+			float splitDist = ShadowSetting.CascadeSplits[i];
+			lastSplitDist = 0.0;
+
+			glm::vec3 frustumCorners[8] =
+			{
+				glm::vec3(-1.0f,  1.0f, -1.0f),
+				glm::vec3(1.0f,  1.0f, -1.0f),
+				glm::vec3(1.0f, -1.0f, -1.0f),
+				glm::vec3(-1.0f, -1.0f, -1.0f),
+				glm::vec3(-1.0f,  1.0f,  1.0f),
+				glm::vec3(1.0f,  1.0f,  1.0f),
+				glm::vec3(1.0f, -1.0f,  1.0f),
+				glm::vec3(-1.0f, -1.0f,  1.0f),
+			};
+
+			// Project frustum corners into world space
+			glm::mat4 invCam = glm::inverse(viewProjection);
+			for (uint32_t i = 0; i < 8; i++)
+			{
+				glm::vec4 invCorner = invCam * glm::vec4(frustumCorners[i], 1.0f);
+				frustumCorners[i] = invCorner / invCorner.w;
+			}
+
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				glm::vec3 dist = frustumCorners[i + 4] - frustumCorners[i];
+				frustumCorners[i + 4] = frustumCorners[i] + (dist * splitDist);
+				frustumCorners[i] = frustumCorners[i] + (dist * lastSplitDist);
+			}
+
+			// Get frustum center
+			glm::vec3 frustumCenter = glm::vec3(0.0f);
+			for (uint32_t i = 0; i < 8; i++)
+				frustumCenter += frustumCorners[i];
+
+			frustumCenter /= 8.0f;
+
+			//frustumCenter *= 0.01f;
+
+			float radius = 0.0f;
+			for (uint32_t i = 0; i < 8; i++)
+			{
+				float distance = glm::length(frustumCorners[i] - frustumCenter);
+				radius = glm::max(radius, distance);
+			}
+			radius = std::ceil(radius * 16.0f) / 16.0f;
+			radius *= ShadowSetting.CascadeSplits[1];
+
+			glm::vec3 maxExtents = glm::vec3(radius);
+			glm::vec3 minExtents = -maxExtents;
+
+			glm::vec3 up = std::abs(glm::dot(lightDirection, glm::vec3(0.f, 1.0f, 0.0f))) > 0.9 ? glm::normalize(glm::vec3(0.01f, 1.0f, 0.01f)) : glm::vec3(0.f, 1.0f, 0.0f);
+			glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDirection * radius, frustumCenter, up);
+			glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, -radius + ShadowSetting.CascadeNearPlaneOffset - ShadowSetting.CascadeFarPlaneOffset, 2 * radius);
+
+			// Offset to texel space to avoid shimmering (from https://stackoverflow.com/questions/33499053/cascaded-shadow-map-shimmering)
+			glm::mat4 shadowMatrix = lightOrthoMatrix * lightViewMatrix;
+			float ShadowMapResolution = (float)m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Size.X;
+			glm::vec4 shadowOrigin = (shadowMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)) * ShadowMapResolution / 2.0f;
+			glm::vec4 roundedOrigin = glm::round(shadowOrigin);
+			glm::vec4 roundOffset = roundedOrigin - shadowOrigin;
+			roundOffset = roundOffset * 2.0f / ShadowMapResolution;
+			roundOffset.z = 0.0f;
+			roundOffset.w = 0.0f;
+
+			lightOrthoMatrix[3] += roundOffset;
+
+			// Store split distance and matrix in cascade
+			cascades[i].SplitDepth = (nearClip + splitDist * clipRange) * -1.0f;
+			cascades[i].ViewProjection = lightOrthoMatrix * lightViewMatrix;
+			//cascades[i].View = lightViewMatrix;
+
+			lastSplitDist = ShadowSetting.CascadeSplits[i];
+		}
+	}
 	void WorldRenderer::CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection)
 	{
-		float cascAdSplitLabmda = 0.92;
-		float m_ScaleShadowCascadesToOrigin = 0;
 		//https://github.com/SaschaWillems/Vulkan/blob/master/examples/shadowmappingcascade/shadowmappingcascade.cpp
-		float scaleToOrigin = m_ScaleShadowCascadesToOrigin;
+		float scaleToOrigin = ShadowSetting.ScaleShadowCascadesToOrigin;
 
 		glm::mat4 viewMatrix = m_CameraData.ProjectionView;
 		constexpr glm::vec4 origin = glm::vec4(glm::vec3(0.0f), 1.0f);
@@ -872,7 +952,7 @@ namespace Proof
 			float p = (i + 1) / static_cast<float>(SHADOW_MAP_CASCADE_COUNT);
 			float log = minZ * std::pow(ratio, p);
 			float uniform = minZ + range * p;
-			float d = cascAdSplitLabmda * (log - uniform) + uniform;
+			float d = ShadowSetting.CascadeSplitLambda * (log - uniform) + uniform;
 			cascadeSplits[i] = (d - nearClip) / clipRange;
 		}
 
@@ -933,18 +1013,18 @@ namespace Proof
 				radius = glm::max(radius, distance);
 			}
 			radius = std::ceil(radius * 16.0f) / 16.0f;
-			float CascadeFarPlaneOffset = 50.0f, CascadeNearPlaneOffset = -50.0f;
+
 			glm::vec3 maxExtents = glm::vec3(radius);
 			glm::vec3 minExtents = -maxExtents;
 
 			glm::vec3 up = std::abs(glm::dot(lightDirection, glm::vec3(0.f, 1.0f, 0.0f))) > 0.9 ? glm::normalize(glm::vec3(0.01f, 1.0f, 0.01f)) : glm::vec3(0.f, 1.0f, 0.0f);
 
 			glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDirection * radius, frustumCenter, up);
-			glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, -radius + CascadeNearPlaneOffset - CascadeFarPlaneOffset, 2 * radius);
+			glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, -radius + ShadowSetting.CascadeNearPlaneOffset - ShadowSetting.CascadeFarPlaneOffset, 2 * radius);
 
 			// Offset to texel space to avoid shimmering (from https://stackoverflow.com/questions/33499053/cascaded-shadow-map-shimmering)
 			glm::mat4 shadowMatrix = lightOrthoMatrix * lightViewMatrix;
-			float ShadowMapResolution = (float)m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Size.Y;
+			float ShadowMapResolution = (float)m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Size.X;
 			glm::vec4 shadowOrigin = (shadowMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)) * ShadowMapResolution / 2.0f;
 			glm::vec4 roundedOrigin = glm::round(shadowOrigin);
 			glm::vec4 roundOffset = roundedOrigin - shadowOrigin;
@@ -972,7 +1052,18 @@ namespace Proof
 		if (directionalights[0].Intensity == 0.f /* || !directionalights[0].CastShadow */ )
 			return;
 		CascadeData cascades[SHADOWMAP_CASCADE_COUNT];
-		CalculateCascades(cascades, ProofToglmVec( directionalights[0].Direction));
+		if (ShadowSetting.UseManualCascadeSplits)
+			CalculateCascadesManualSplit(cascades, ProofToglmVec(directionalights[0].Direction));
+		else
+			CalculateCascades(cascades, ProofToglmVec( directionalights[0].Direction));
+
+		{
+			m_UBRenderData.cascadeSplit[0] = cascades[0].SplitDepth;
+			m_UBRenderData.cascadeSplit[1] = cascades[1].SplitDepth;
+			m_UBRenderData.cascadeSplit[2] = cascades[2].SplitDepth;
+			m_UBRenderData.cascadeSplit[3] = cascades[3].SplitDepth;
+		}
+		m_UBRenderDataBuffer->SetData(frameIndex, Buffer(&m_UBRenderData, sizeof(m_UBRenderData)));
 
 		struct CascadeProjection
 		{
@@ -988,7 +1079,6 @@ namespace Proof
 		
 
 		s_CascadeProjectionBuffer->SetData(frameIndex, Buffer(&projections, sizeof(CascadeProjection)));
-		s_CascadeSplitsBuffer->SetData(frameIndex, Buffer(&Splits, sizeof(glm::vec4)));
 		for (uint32_t cascade = 0; cascade < SHADOWMAP_CASCADE_COUNT; cascade++)
 		{
 			auto cascadePass = m_ShadowMapPasses[cascade];

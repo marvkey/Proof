@@ -3,25 +3,65 @@
 #include <PBR/PBR.glslh>
 
 //https://github.com/HighLo-Engine/HighLo-Engine/blob/master/HighLo/assets/shaders/Include/GLSL/ShadowMapping.glslh
-const float ShadowFade = 1.0;
+const float ShadowFade = 1.0f;
+vec3 GetShadowMapCoords(vec3 shadowMapCoords[4], uint cascade)
+{
+	switch (cascade)
+	{
+		case 0: return shadowMapCoords[0];
+		case 1: return shadowMapCoords[1];
+		case 2: return shadowMapCoords[2];
+		case 3: return shadowMapCoords[3];
+	}
+	return vec3(0.0f);
+}
+float GetDirShadowBias(vec3 lightDirection)
+{
+	const float MINIMUM_SHADOW_BIAS = 0.002;
+	float bias = max(MINIMUM_SHADOW_BIAS * (1.0 - dot(m_Params.Normal, -lightDirection)), MINIMUM_SHADOW_BIAS);
+	return bias;
+}
+
+float HardShadows_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords,vec3 lightDirection)
+{
+	float bias = GetDirShadowBias(lightDirection);
+	float shadowMapDepth = texture(shadowMap, vec3(shadowCoords.xy * 0.5 + 0.5, cascade)).x;
+	return step(shadowCoords.z, shadowMapDepth + bias) * ShadowFade;
+}
+
+// Penumbra
+// this search area estimation comes from the following article: 
+// http://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
+float SearchWidth(float shadowSoftness, float receiverDistance)
+{
+	const float NEAR = 0.1;
+	return shadowSoftness * (receiverDistance - NEAR) / u_Scene.CameraPosition.z;
+}
+
+float SearchRegionRadiusUV(float zWorld)
+{
+	const float light_zNear = 0.0; // 0.01 gives artifacts? maybe because of ortho proj?
+	const float lightRadiusUV = 0.05;
+	return lightRadiusUV * (zWorld - light_zNear) / zWorld;
+}
 
 const vec2 PoissonDistribution[64] = vec2[](
-	vec2(-0.884081, 0.124488),
-	vec2(-0.714377, 0.027940),
-	vec2(-0.747945, 0.227922),
-	vec2(-0.939609, 0.243634),
-	vec2(-0.985465, 0.045534),
-	vec2(-0.861367, -0.136222),
-	vec2(-0.881934, 0.396908),
-	vec2(-0.466938, 0.014526),
-	vec2(-0.558207, 0.212662),
-	vec2(-0.578447, -0.095822),
-	vec2(-0.740266, -0.095631),
-	vec2(-0.751681, 0.472604),
-	vec2(-0.553147, -0.243177),
-	vec2(-0.674762, -0.330730),
-	vec2(-0.402765, -0.122087),
-	vec2(-0.319776, -0.312166),
+	vec2(-0.94201624, -0.39906216),
+	vec2(0.94558609, -0.76890725),
+	vec2(-0.094184101, -0.92938870),
+	vec2(0.34495938, 0.29387760),
+	vec2(-0.91588581, 0.45771432),
+	vec2(-0.81544232, -0.87912464),
+	vec2(-0.38277543, 0.27676845),
+	vec2(0.97484398, 0.75648379),
+	vec2(0.44323325, -0.97511554),
+	vec2(0.53742981, -0.47373420),
+	vec2(-0.26496911, -0.41893023),
+	vec2(0.79197514, 0.19090188),
+	vec2(-0.24188840, 0.99706507),
+	vec2(-0.81409955, 0.91437590),
+	vec2(0.19984126, 0.78641367),
+	vec2(0.14383161, -0.14100790),
 	vec2(-0.413923, -0.439757),
 	vec2(-0.979153, -0.201245),
 	vec2(-0.865579, -0.288695),
@@ -91,111 +131,83 @@ const vec2 poissonDisk[16] = vec2[](
 	vec2(0.14383161, -0.14100790)
 	);
 
-float GetShadowBias()
-{
-	const float MINIMUM_SHADOW_BIAS = 0.002;
-	return max(MINIMUM_SHADOW_BIAS * (1.0 - dot(m_Params.Normal, u_DirectionalLightData.Lights[0].Direction)), MINIMUM_SHADOW_BIAS);
-}
-
-float HardShadows_DirectionalLight(sampler2DArray shadowMap, float shadowFade, uint cascade, vec3 shadowCoords)
-{
-	float bias = GetShadowBias();
-	float shadowMapDepth = texture(shadowMap, vec3(shadowCoords.xy * 0.5 + 0.5, cascade)).x;
-	return step(shadowCoords.z, shadowMapDepth + bias) * shadowFade;
-}
-
-float SearchWidth(float uvLightSize, float receiverDistance)
-{
-	const float NEAR = 0.1;
-	//return uvLightSize * (receiverDistance - NEAR) / u_Scene.CameraPosition.z;
-	return 0;
-}
-
-float SearchRegionRadiusUV(float zWorld)
-{
-	const float LIGHT_ZNEAR = 0.0;
-	const float LIGHT_RADIUS_UV = 0.05;
-	return LIGHT_RADIUS_UV * (zWorld - LIGHT_ZNEAR) / zWorld;
-}
-
 vec2 SamplePoisson(int index)
 {
 	return PoissonDistribution[index % 64];
 }
 
-float FindBlockerDistance_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float uvLightSize)
+/////////////////////////////////////////////
+// Directional Shadows
+/////////////////////////////////////////////
+
+float FindBlockerDistance_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float shadowSoftness,vec3 lightDirection)
 {
-	float bias = GetShadowBias();
-	
+	float bias = GetDirShadowBias(lightDirection);
+
 	int numBlockerSearchSamples = 64;
 	int blockers = 0;
-	float avgBlockerDistance = 0.0;
-	
+	float avgBlockerDistance = 0;
+
 	float searchWidth = SearchRegionRadiusUV(shadowCoords.z);
-	for (int i = 0; i < numBlockerSearchSamples; ++i)
+	for (int i = 0; i < numBlockerSearchSamples; i++)
 	{
-		float z = textureLod(
-			shadowMap, 
-			vec3((shadowCoords.xy * 0.5 + 0.5) + SamplePoisson(i) * searchWidth, cascade),
-			0).r;
-		
+		float z = textureLod(shadowMap, vec3((shadowCoords.xy * 0.5 + 0.5) + SamplePoisson(i) * searchWidth, cascade), 0).r;
 		if (z < (shadowCoords.z - bias))
 		{
-			++blockers;
+			blockers++;
 			avgBlockerDistance += z;
 		}
 	}
-	
+
 	if (blockers > 0)
 		return avgBlockerDistance / float(blockers);
-	
-	return -1;
-}
 
-float PCF_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float uvRadius)
+	return -1;
+} 
+
+float PCF_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float uvRadius,vec3 lightDirection)
 {
-	float bias = GetShadowBias();
+	float bias = GetDirShadowBias(lightDirection);
 	int numPCFSamples = 64;
-	
-	float sum = 0.0;
-	for (int i = 0; i < numPCFSamples; ++i)
+
+	float sum = 0;
+	for (int i = 0; i < numPCFSamples; i++)
 	{
 		vec2 offset = SamplePoisson(i) * uvRadius;
 		float z = textureLod(shadowMap, vec3((shadowCoords.xy * 0.5 + 0.5) + offset, cascade), 0).r;
 		sum += step(shadowCoords.z - bias, z);
 	}
-	
 	return sum / numPCFSamples;
 }
 
-float NV_PCF_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float uvRadius)
+float NV_PCF_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float uvRadius,vec3 lightDirection)
 {
-	float bias = GetShadowBias();
-	int numSamples = 16;
-	
-	float sum = 0.0;
-	for (int i = 0; i < numSamples; ++i)
+	float bias = GetDirShadowBias(lightDirection);
+
+	float sum = 0;
+	for (int i = 0; i < 16; i++)
 	{
 		vec2 offset = poissonDisk[i] * uvRadius;
 		float z = textureLod(shadowMap, vec3((shadowCoords.xy * 0.5 + 0.5) + offset, cascade), 0).r;
 		sum += step(shadowCoords.z - bias, z);
 	}
-	
-	return sum / numSamples;
+	return sum / 16.0f;
 }
 
-float PCSS_DirectionalLight(sampler2DArray shadowMap, float shadowFade, uint cascade, vec3 shadowCoords, float uvLightSize)
+float PCSS_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float shadowSoftness,vec3 lightDirection)
 {
-	float blockerDistance = FindBlockerDistance_DirectionalLight(shadowMap, cascade, shadowCoords, uvLightSize);
-	if (blockerDistance == -1)
+	float blockerDistance = FindBlockerDistance_DirectionalLight(shadowMap, cascade, shadowCoords, shadowSoftness,lightDirection);
+	if (blockerDistance == -1) // No occlusion
 		return 1.0f;
-	
-	const float NEAR = 0.01;
+
 	float penumbraWidth = (shadowCoords.z - blockerDistance) / blockerDistance;
-	
-	float uvRadius = penumbraWidth * uvLightSize * NEAR / shadowCoords.z;
+
+	float NEAR = 0.01; // Should this value be tweakable?
+	float uvRadius = penumbraWidth * shadowSoftness * NEAR / shadowCoords.z; // Do we need to divide by shadowCoords.z?
 	uvRadius = min(uvRadius, 0.002f);
-	return PCF_DirectionalLight(shadowMap, cascade, shadowCoords, uvRadius) * shadowFade;
-}
+	return PCF_DirectionalLight(shadowMap, cascade, shadowCoords, uvRadius,lightDirection) * ShadowFade;
+} 
+
+
 
 #endif //SHADOW_MAPPING_FUNCTIONS

@@ -213,6 +213,9 @@ namespace Proof
       
         if (m_Build == true && m_LastFrameBinned == Renderer::GetCurrentFrame().FrameinFlight)
         {
+            //TODO IF a storage buffer is resized or unifrom buffer
+            // will we not have to bind it all again 
+            // 
             goto updataDescriptor;
         }
         //reset to 0 and recalcualte 

@@ -6,21 +6,40 @@
 //https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/shaders/forward/fPBR.frag
 //https://github.com/HighLo-Engine/HighLo-Engine/blob/master/HighLo/assets/shaders/Include/GLSL/Buffers.glslh
 
-layout(set = 2, binding = 1) uniform SkyBoxData
+layout(std140, set=2, binding = 0) uniform SceneData
+{
+	vec3 CameraPosition; 
+} u_Scene;
+layout(std140, set=2,binding = 1) uniform RendererData
+{
+		vec4 CascadeSplits;
+		bool ShowCascades;
+		bool SoftShadows;
+		float MaxShadowDistance;
+		float ShadowFade;
+		bool CascadeFading; 
+		float CascadeTransitionFade;
+}u_RendererData;
+
+layout(std140, set = 2, binding = 2) uniform SkyBoxData
 {
     vec3 TintColor;
     float Lod;
     float Intensity;
     float Roation;
 }u_SkyBoxInfo;
+
 struct DirectionalLight 
 {
     vec3 Color;
     float Intensity;
     vec3 Direction;
-    float ShadowAmount;
+    bool CastShadows;
+    bool CastSoftShadow;
+    float ShadowStrength;
+    float ShadowSoftness;
 };
-layout(std140, set = 2, binding = 2) buffer DirectionalLightStorageBuffer {
+layout(std140, set = 2, binding = 3) buffer DirectionalLightStorageBuffer {
 
     DirectionalLight Lights[];
 } u_DirectionalLightData;

@@ -61,29 +61,6 @@ namespace Proof
 	};
 }
 
-// std map does not use a hash it uses 
-/*
-	Here's how std::map uses the comparison to maintain the order:
-
-	When you insert a new element, the map compares it with existing elements using the comparison operator < (or your custom comparison function).
-	When you retrieve an element using its key, the map uses the same comparison operator to find the corresponding element efficiently.
-	The elements in a std::map are always sorted according to their keys based on the comparison operator.
-*/
-//namespace std {
-//	template <>
-//	struct hash < Proof::MeshKey > {
-//		size_t operator()(const Proof::MeshKey& key) const {
-//			// Calculate the hash value using the memory location of MaterialTable and the AssetID (uint64_t).
-//			size_t hashValue = std::hash<uint64_t>()((uint64_t)key.MeshID);
-//			for (const auto& [index, material] : key.MaterialTable->GetMaterials())
-//			{
-//				uint64_t location = (uint64_t)material->GetID();
-//				hashValue ^= std::hash< uint64_t>()(location);
-//			}
-//			return hashValue;
-//		}
-//	};
-//}
 namespace Proof
 {
 	class RenderMaterial;
@@ -107,10 +84,10 @@ namespace Proof
 		float Intensity = 0.0f;
 		Vector Direction; // Make sure TO NORMALIZED
 
-		int CastShadows = 1;//bool
-		int CastSoftShadows = 1;// bool
-		float ShadowStrength = 0.0f;
-		float ShadowSoftness = 0.0f;
+		int bCastShadows = 1;//bool
+		int bCastSoftShadows = 1;// bool
+		float ShadowStrength = 0.0f; // between 0 and 1 or shadow amount how dark the shadow is
+		float ShadowSoftness = 0.0f; // penubra size or light size between 0 and 1
 	};
 	
 	struct SkyLight 
@@ -154,23 +131,6 @@ namespace Proof
 		Count<class GraphicsPipeline> Pipline;
 		Count<class RenderPass> RenderPass;
 	};
-
-	struct ShadowSetting
-	{
-		//casde fading
-		bool CascadeFading = true;
-		float TransitionFade = 1.0f; // min 0, max (Float Max)
-
-		float CascadeSplitLambda = 0.92f; // (min 0.0 max 1.0)
-		float CascadeNearPlaneOffset = -50.0f; // min - Floatmax, max 0
-		float CascadeFarPlaneOffset = 50.0f; // min 0, max Float Max
-		float ScaleShadowCascadesToOrigin = 0.f; //min 0.0f max 1.0f
-		
-
-		//use Manual cascadeSPlits
-		bool UseManualCascadeSplits;
-		float CascadeSplits[4] = { 0.1,0.2,0.3,1.0 }; // min 0, max Flt max
-	};
 	struct TransformVertexData
 	{
 		//glm::mat4 not using that because the last row of a transform buffer is always 0,0,0,1 so we are saving data and we wll just set that in the shader
@@ -188,6 +148,43 @@ namespace Proof
 	{
 		std::vector<TransformVertexData> Transforms;
 		uint32_t TransformOffset = 0;
+	};
+	struct ShadowSetting
+	{
+		//casde fading
+		bool CascadeFading = true;
+		float CascadeTransitionFade = 1.0f; // min 0, max (Float Max)
+
+		float CascadeSplitLambda = 0.92f; // (min 0.0 max 1.0)
+		float CascadeNearPlaneOffset = -50.0f; // min - Floatmax, max 0
+		float CascadeFarPlaneOffset = 50.0f; // min 0, max Float Max
+		float ScaleShadowCascadesToOrigin = 0.f; //min 0.0f max 1.0f
+		float MaxShadowDistance = 200.f; // how far away the shadow can be seen
+		float ShadowFade = 50.0f; // the distnace the shader goes from opaque to transperant
+
+		//use Manual cascadeSPlits
+		bool UseManualCascadeSplits = false;
+		float CascadeSplits[4] = { 0.1,0.2,0.3,1.0 }; // min 0, max Flt max
+
+		bool ShowCascades =false;
+		bool SoftShadows = false; // temporarily set to false for performance reasons
+	};
+	
+
+	struct UBRenderData
+	{
+		glm::vec4 cascadeSplit;
+		int bShowCascades = false; // bools in glsl are 4 ytes
+		int bSoftShadows =(int)true;
+		float MaxShadowDistance = 200.f;
+		float ShadowFade = 1.0f;
+		int bCascadeFading = true; 
+		float CascadeTransitionFade = 1.0f;
+	};
+
+	struct UBSceneData
+	{
+		glm::vec3 CameraPosition;
 	};
 	class WorldRenderer : public RefCounted {
 	public:
@@ -217,6 +214,11 @@ namespace Proof
 
 		int debugCascade = 0;
 	private:
+		UBRenderData m_UBRenderData;
+		UBSceneData m_UBSceneData;
+
+		Count<UniformBufferSet> m_UBRenderDataBuffer;
+		Count<UniformBufferSet> m_UBSceneDataBuffer;
 
 		// set up all the passes for current render
 		void PrePass();
@@ -224,15 +226,16 @@ namespace Proof
 		std::vector< TransformBuffer>  m_SubmeshTransformBuffers; // vector because of frame in flight
 
 		//Count<class RenderPass> m_ShadowDepthRenderPass;
-		std::array<Count<RenderPass>, 4> m_ShadowMapPasses; // for cascades
+		std::array<Count<class RenderPass>, 4> m_ShadowMapPasses; // for cascades
 		//Count<RenderMaterial> m_ShadowPassMaterial;
 		//Count<GraphicsPipeline> m_ShadowPassPipeline;
-		Count<GraphicsPipeline> m_ShadowDebugPipeline;
-		Count<RenderPass> m_ShadowDebugPass;
+		Count<class GraphicsPipeline> m_ShadowDebugPipeline;
+		Count<class RenderPass> m_ShadowDebugPass;
 		Count<UniformBufferSet> m_ShadowPassBuffer;
 		Count<class Image2D> m_ShadowPassImage;
 		Count<RenderMaterial> m_ShadowPassMaterial;
 		Count<RenderMaterial> m_ShadowPassDebugMaterial;
+
 		void CreateShadowMap();
 		void MeshPass();
 		void ShadowPass();
