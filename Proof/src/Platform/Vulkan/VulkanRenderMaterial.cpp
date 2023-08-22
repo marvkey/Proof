@@ -236,6 +236,8 @@ namespace Proof {
 
 	void VulkanRenderMaterial::Bind(Count<class VulkanRenderCommandBuffer> commandBuffer, Count<VulkanComputePass> computePass)
 	{
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("",m_Config.DebugName.c_str());
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
 		m_DescritptorSetManager->Bind();
 
@@ -271,8 +273,8 @@ namespace Proof {
 
 	void VulkanRenderMaterial::Bind(Count<VulkanRenderCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass)
 	{
-		
-
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("", m_Config.DebugName.c_str());
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
 		m_DescritptorSetManager->Bind();
 
@@ -299,7 +301,7 @@ namespace Proof {
 
 		for (auto& [pushName, pushData] : vk_Shader->GetPushConstants())
 		{
-			if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT || pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT || pushData.stageFlags | VK_SHADER_STAGE_VERTEX_BIT)
+			//if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT || pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT || pushData.stageFlags | VK_SHADER_STAGE_VERTEX_BIT)
 			{
 				renderPass->PushData(pushName, m_UniformBufferStorage.Get());
 			}

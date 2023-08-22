@@ -7,7 +7,7 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 2, 4.44500017]
-        Rotation: [4, 10, 3.70000005]
+        Rotation: [-5.9000001, 8.39999962, 15.1999998]
         Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
@@ -20,9 +20,9 @@ World:
         Tag: Terrain
         tags: []
       TransformComponent:
-        Location: [14.1000004, -42.9000015, 8.60000038]
+        Location: [-3.5, -3.9000001, 0]
         Rotation: [0, 0, 0]
-        Scale: [23.5, 57.5999985, 29.8999996]
+        Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
@@ -40,31 +40,14 @@ World:
         Tag: cube
         tags: []
       TransformComponent:
-        Location: [181.600006, 85.5, -97.0999985]
+        Location: [0, 0, 0]
         Rotation: [0, 0, 0]
-        Scale: [60, 50, 50]
+        Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
       MeshComponent:
         MeshAssetPointerID: 4645041025570573733
-    - Entity: 10906536614379399469
-      TagComponent:
-        Tag: cube
-        tags: []
-      TransformComponent:
-        Location: [5.80000019, 193.399994, 86.6999969]
-        Rotation: [0, 0, 0]
-        Scale: [50, 50, 50]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
-        MaterialTable:
-          - Material: ""
-            AssetID: 6008439512829965240
-            Index: 0
     - Entity: 8731679343243984340
       TagComponent:
         Tag: Sky Light
@@ -91,9 +74,9 @@ World:
         Tag: Sphere
         tags: []
       TransformComponent:
-        Location: [242.600006, 66, 17]
+        Location: [-5, 2.70000005, 0]
         Rotation: [0, 19.7999992, 0]
-        Scale: [50, 50, 50]
+        Scale: [1, 1, 1]
       ChildComponent:
         OwnerID: 0
         Children: []
@@ -103,3 +86,16 @@ World:
           - Material: ""
             AssetID: 9010836309271670693
             Index: 0
+    - Entity: 12535944321822136189
+      TagComponent:
+        Tag: Sponza2
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [0.100000001, 0.100000001, 0.100000001]
+      ChildComponent:
+        OwnerID: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 705200552008804468

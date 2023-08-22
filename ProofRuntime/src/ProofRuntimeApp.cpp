@@ -3,6 +3,7 @@
 #include <filesystem>
 #include "Runtime/RuntimeLayer.h"
 #include "Proof/Project/Project.h"
+#include "Proof/Utils/FileSystem.h"
 namespace Proof {
     class ProofEditor : public Application {
     public:
@@ -23,12 +24,12 @@ namespace Proof {
             projectPath = argv[1];
 
         ApplicationConfiguration configuration;
-        configuration.Name = "Proof Rntime";
-        configuration.EnableImgui = true;
+        configuration.Name = "Proof Runtime";
+        configuration.EnableImgui = false;
         configuration.ProjectPath = projectPath;
         configuration.WindowConfiguration.Height = 500;
         configuration.WindowConfiguration.Width = 800;
-        configuration.WindowConfiguration.Vsync = false;
+        configuration.WindowConfiguration.Vsync = true;
         configuration.WindowConfiguration.Title = "Proof";
 
         //when set to true

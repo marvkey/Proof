@@ -193,7 +193,6 @@ namespace Proof {
 		}
 		m_PhysicsWorld->OnFixedUpdate(DeltaTime);
 
-		Entity{ 12,this }.GetComponent<TransformComponent>();
 		DeleteEntitiesfromQeue();
 	}
 

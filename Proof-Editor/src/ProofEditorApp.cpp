@@ -34,7 +34,7 @@ namespace Proof {
         configuration.ProjectPath = projectPath;
         configuration.WindowConfiguration.Height = 500;
         configuration.WindowConfiguration.Width = 800;
-        configuration.WindowConfiguration.Vsync = true;
+        configuration.WindowConfiguration.Vsync = false;
         configuration.WindowConfiguration.Title = "Proof";
         
         //when set to true

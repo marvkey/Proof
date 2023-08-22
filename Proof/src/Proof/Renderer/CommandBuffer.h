@@ -16,7 +16,8 @@ namespace Proof
 
 	class RenderCommandBuffer : public RefCounted{
 	public:
-		static Count<RenderCommandBuffer >Create(CommandBuffer* buffer =nullptr);
+		static Count<RenderCommandBuffer >Create(const std::string&debugName);
+		static Count<RenderCommandBuffer >Create(CommandBuffer* buffer );
 		virtual ~RenderCommandBuffer() = default;
 	};
 }

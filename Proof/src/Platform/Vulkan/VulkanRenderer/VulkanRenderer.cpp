@@ -34,7 +34,7 @@
 #include "Platform/Vulkan/VulkanSwapChain.h"
 
 #include "Proof/Renderer/Renderer.h"
-
+#include "../VulkanCommandBuffer.h"
 namespace Proof
 {
 
@@ -62,9 +62,16 @@ namespace Proof
 			s_IsWindowResised = false;
 		}
 		uint32_t frameInflight = Renderer::GetCurrentFrame().FrameinFlight;
-		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->WaitFences(frameInflight);
 		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->AcquireNextImage(&s_CurrentFrame.ImageIndex, frameInflight);
-		graphicsContext->GetSwapChain()->ResetFences(frameInflight);
+		//graphicsContext->GetSwapChain()->ResetFences(frameInflight);
+
+		VkCommandBufferBeginInfo drawCmdBufInfo = {};
+		drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		drawCmdBufInfo.pNext = nullptr;
+		VkCommandBuffer drawCommandBuffer = GetGraphicsContext()->GetSwapChain().As<VulkanSwapChain>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo));
+
 	}
 	void VulkanRenderer::EndFrame() {
 		PF_PROFILE_FUNC();
@@ -83,8 +90,11 @@ namespace Proof
 	}
 	void VulkanRenderer::DrawFrame() {
 		PF_PROFILE_FUNC();
+
+		VkCommandBuffer drawCommandBuffer = GetGraphicsContext()->GetSwapChain().As<VulkanSwapChain>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+		VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
-		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->SubmitCommandBuffers(s_RenderData->CommandBuffers, &s_CurrentFrame.ImageIndex);
+		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->Present(& s_CurrentFrame.ImageIndex);
 		s_RenderData->CommandBuffers.clear();
 	}
 
@@ -111,8 +121,9 @@ namespace Proof
 	void VulkanRenderer::SubmitCommandBuffer(Count<RenderCommandBuffer> commandBuffer) {
 		if (commandBuffer == nullptr)
 			return;
-		if(std::find(s_RenderData->CommandBuffers.begin(), s_RenderData->CommandBuffers.end(), commandBuffer) ==s_RenderData->CommandBuffers.end() )
-			s_RenderData->CommandBuffers.emplace_back(commandBuffer);
+		commandBuffer.As<VulkanRenderCommandBuffer>()->Submit();
+		//if(std::find(s_RenderData->CommandBuffers.begin(), s_RenderData->CommandBuffers.end(), commandBuffer) ==s_RenderData->CommandBuffers.end() )
+		//	s_RenderData->CommandBuffers.emplace_back(commandBuffer);
 	}
 	
 	void VulkanRenderer::SubmitDatafree(std::function<void()> func) {

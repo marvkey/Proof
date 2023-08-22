@@ -22,6 +22,7 @@ namespace Proof{
 		Count<class RenderCommandBuffer>  GetCurrentCommandBuffer() {
 			return m_CommandBuffer;
 		}
+		virtual const RenderPassConfig& GetConfig() const { return m_Config; };
 
 		virtual void SetInput(std::string_view name, Count<class UniformBuffer> buffer);
 		virtual void SetInput(std::string_view name, Count<class Texture2D> iamge);

@@ -42,7 +42,7 @@ namespace Proof {
 
 		GraphicsContext = GraphicsContext::Create(window);
 		s_RendererAPI->SetGraphicsContext(GraphicsContext);
-		window->m_SwapChain = SwapChain::Create(ScreenSize{ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() });
+		window->m_SwapChain = SwapChain::Create(ScreenSize{ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() }, window->IsVsync());
 		s_RendererAPI->Init();
 
 		ShaderLibrary = Count<class ShaderLibrary>::Create();
@@ -213,6 +213,7 @@ namespace Proof {
 
 	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination, uint32_t imageDimension)
 	{
+		PF_PROFILE_FUNC();
 		imageDimension = 512;
 
 		const uint32_t irradianceFilterRate = 32;

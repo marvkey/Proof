@@ -5,6 +5,7 @@
 #include "VulkanSwapChain.h"
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanGraphicsPipeline.h"
+#include "Vulkan.h"
 #include "VulkanRenderer/VulkanRenderer.h"
 namespace Proof
 {
@@ -28,15 +29,20 @@ namespace Proof
 		}
 		*/
 	}
-	
 
-	VulkanRenderCommandBuffer::VulkanRenderCommandBuffer(CommandBuffer* commandBuffer )
+
+	VulkanRenderCommandBuffer::VulkanRenderCommandBuffer(std::string debugName, bool swapchaing)
+		:
+		m_DebugName(debugName), m_Swapcahin(swapchaing)
+	{
+		if (m_Swapcahin == true)return;
+		Init();
+	}
+
+	VulkanRenderCommandBuffer::VulkanRenderCommandBuffer(CommandBuffer* commandBuffer)
 		:m_NormalCommandBuffer(commandBuffer)
 	{
-		if (m_NormalCommandBuffer)
-			return;
-		Init();
-		
+
 	}
 
 	VulkanRenderCommandBuffer::~VulkanRenderCommandBuffer()
@@ -45,8 +51,16 @@ namespace Proof
 	}
 	void VulkanRenderCommandBuffer::Init()
 	{
+		if (m_Swapcahin == true)return;
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		m_CommandBuffers.resize(Renderer::GetConfig().FramesFlight);
+
+		VkCommandPoolCreateInfo cmdPoolInfo = {};
+		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		cmdPoolInfo.queueFamilyIndex = graphicsContext->FindPhysicalQueueFamilies().graphicsAndComputeFamily.value();
+		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		VK_CHECK_RESULT(vkCreateCommandPool(graphicsContext->GetDevice(), &cmdPoolInfo, nullptr, &m_CommandPool));
+		graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_COMMAND_POOL, fmt::format("{} Command Pool", m_DebugName), m_CommandPool);
 
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -57,6 +71,20 @@ namespace Proof
 
 		if (vkAllocateCommandBuffers(graphicsContext->GetDevice(), &allocInfo, m_CommandBuffers.data()) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to allocate command buffer");
+
+		for (uint32_t i = 0; i < m_CommandBuffers.size(); ++i)
+			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_COMMAND_BUFFER, fmt::format("{} (frame in flight: {})", m_DebugName, i), m_CommandBuffers[i]);
+
+
+		VkFenceCreateInfo fenceCreateInfo{};
+		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		m_WaitFences.resize(Renderer::GetConfig().FramesFlight);
+		for (size_t i = 0; i < m_WaitFences.size(); ++i)
+		{
+			VK_CHECK_RESULT(vkCreateFence(graphicsContext->GetDevice(), &fenceCreateInfo, nullptr, &m_WaitFences[i]));
+			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_FENCE, fmt::format("{} (frame in flight: {}) fence", m_DebugName, i), m_WaitFences[i]);
+		}
 	}
 
 	void VulkanRenderCommandBuffer::Release()
@@ -66,27 +94,65 @@ namespace Proof
 			m_NormalCommandBuffer = nullptr;
 			return;
 		}
+		if (m_Swapcahin)
+			return;
 		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 		{
-			Renderer::SubmitDatafree([buffer = m_CommandBuffers[i]](){
+			Renderer::SubmitDatafree([buffer = m_CommandBuffers[i], fence = m_WaitFences[i]]() {
 				auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 				vkFreeCommandBuffers(
 					graphicsContext->GetDevice(),
 					graphicsContext->GetCommandPool(),
 					1,
 					&buffer);
+
+				vkDestroyFence(graphicsContext->GetDevice(), fence, nullptr);
+
 			});
 		}
+
+		Renderer::SubmitDatafree([commandPool = m_CommandPool]() {
+			auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+			vkDestroyCommandPool(graphicsContext->GetDevice(), commandPool, nullptr);
+		});
 	}
 	VkCommandBuffer VulkanRenderCommandBuffer::GetCommandBuffer(uint32_t frameIndex)
 	{
 		if (m_NormalCommandBuffer != nullptr)
-			return m_NormalCommandBuffer->As<VulkanCommandBuffer>()-> GetCommandBuffer(frameIndex);
+			return m_NormalCommandBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(frameIndex);
+
+		if (m_Swapcahin)
+			return VulkanRenderer::GetGraphicsContext()->GetSwapChain().As<VulkanSwapChain>()->GetCommandBuffer(frameIndex);
 		return m_CommandBuffers[frameIndex];
+	}
+
+	void VulkanRenderCommandBuffer::Submit()
+	{
+		if (m_Swapcahin == true || m_NormalCommandBuffer != nullptr)
+			return;
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("{}", m_DebugName.c_str());
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
+		submitInfo.pCommandBuffers = &commandBuffer;
+
+		VK_CHECK_RESULT(vkWaitForFences(device, 1, &m_WaitFences[frameIndex], VK_TRUE, UINT64_MAX));
+		VK_CHECK_RESULT(vkResetFences(device, 1, &m_WaitFences[frameIndex]));
+
+
+		VK_CHECK_RESULT(vkQueueSubmit(VulkanRenderer::GetGraphicsContext()->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[frameIndex]));
 	}
 
 	void VulkanRenderCommandBuffer::BeginRecord(uint32_t frameIndex)
 	{
+		if (m_Swapcahin == true || m_NormalCommandBuffer != nullptr)
+			return;
 		PF_CORE_ASSERT(m_Recording == false, "cannot start recoridng when command buffer is still recording");
 		m_Recording = true;
 		VkCommandBufferBeginInfo beginInfo{};
@@ -99,6 +165,9 @@ namespace Proof
 
 	void VulkanRenderCommandBuffer::EndRecord(uint32_t frameIndex)
 	{
+
+		if (m_Swapcahin == true || m_NormalCommandBuffer != nullptr)
+			return;
 		PF_CORE_ASSERT(m_Recording == true, "cannot End recording when recoring never started");
 		if (vkEndCommandBuffer(m_CommandBuffers[frameIndex]) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Faied to record command Buffers");

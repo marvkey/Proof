@@ -53,10 +53,6 @@ namespace Proof {
 	struct SpritePipeline {
 		Count<class GraphicsPipeline> GraphicsPipeline;
 		Count<class RenderPass> RenderPass;
-		//Count<class Shader> Shader;
-		//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
-		//Count <class PipeLineLayout> PipeLineLayout;
-		//SpritePipeline(Count <class RenderPass > renderPass);
 		SpritePipeline(Count<FrameBuffer> frameBuffer,const std::string& shaderPath);
 		SpritePipeline(Count<FrameBuffer> frameBuffer);
 	};
@@ -64,9 +60,6 @@ namespace Proof {
 	struct TextPipeline {
 		Count<class GraphicsPipeline> GraphicsPipeline;
 		Count<class RenderPass> RenderPass;
-	//	Count<class Shader> Shader;
-		//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
-//		Count <class PipeLineLayout> PipeLineLayout;
 		TextPipeline(Count<FrameBuffer> frameBuffer);
 	};
 	

@@ -26,10 +26,13 @@ namespace Proof
 
 	class VulkanRenderCommandBuffer : public RenderCommandBuffer {
 	public:
-		VulkanRenderCommandBuffer(CommandBuffer* commandBuffer = nullptr);
+		VulkanRenderCommandBuffer(std::string debugName = "", bool swapchaing = false);
+		VulkanRenderCommandBuffer(CommandBuffer* buffer);
 		virtual ~VulkanRenderCommandBuffer();
 		VkCommandBuffer GetCommandBuffer(uint32_t frameInFlight );
 	private:
+		bool m_Swapcahin = false;
+		void Submit();
 		void BeginRecord(uint32_t frameIndex );
 		void EndRecord(uint32_t frameIndex );
 		CommandBuffer* m_NormalCommandBuffer =nullptr;
@@ -38,8 +41,12 @@ namespace Proof
 		bool m_Recording = false;
 
 		std::vector<VkCommandBuffer> m_CommandBuffers;
+		std::vector<VkFence> m_WaitFences;
+		std::string m_DebugName;
+		VkCommandPool m_CommandPool = nullptr;
 		friend class VulkanRenderPass;
 		friend class VulkanSwapChain;
+		friend class VulkanRenderer;
 		friend class VulkanRendererAPI;
 	};
 }

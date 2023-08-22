@@ -42,7 +42,7 @@ namespace Proof {
         End();
     }
     void WindowsWindow::WindowUpdate() {
-
+        PF_PROFILE_FUNC();
         KeyboardClicked.clear();
         KeyboardReleased.clear();
         KeyboardKeyDoubleClicked.clear();
@@ -765,6 +765,7 @@ namespace Proof {
             proofWindow->ControllerCallbackConnect(cID, event);
         });
 
+        SetVsync(m_WindowConfiguration.Vsync);
         PF_ENGINE_INFO("Window created widht {} height {}", m_WindowConfiguration.Width, m_WindowConfiguration.Height);
         return 0;
     }
@@ -778,6 +779,8 @@ namespace Proof {
     void WindowsWindow::SetVsync(bool vsync) {
         m_WindowConfiguration.Vsync = vsync;
         glfwSwapInterval((int)m_WindowConfiguration.Vsync);
+        if (m_SwapChain)
+            m_SwapChain->SetVsync(vsync);
     }
 
     Vector2 WindowsWindow::GetMousePosition() {

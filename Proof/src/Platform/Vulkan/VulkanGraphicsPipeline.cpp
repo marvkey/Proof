@@ -16,7 +16,7 @@ namespace Proof
 		{
 			switch (type)
 			{
-				case Proof::DrawType::TriangleList:
+				case Proof::DrawType::Triangle:
 					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 					break;
 				case Proof::DrawType::TriangleStrip:
@@ -25,13 +25,13 @@ namespace Proof
 				case Proof::DrawType::TriangleFan:
 					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
 					break;
-				case Proof::DrawType::LineList:
+				case Proof::DrawType::Line:
 					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 					break;
 				case Proof::DrawType::LineStrip:
 					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
 					break;
-				case Proof::DrawType::PointList:
+				case Proof::DrawType::Point:
 					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 					break;
 				default:
@@ -83,7 +83,7 @@ namespace Proof
 					break;
 				case Proof::CullMode::Back:
 					return VK_CULL_MODE_BACK_BIT;
-					break;
+					break; 
 				case Proof::CullMode::FrontAndBck:
 					return VK_CULL_MODE_FRONT_AND_BACK;
 					break;

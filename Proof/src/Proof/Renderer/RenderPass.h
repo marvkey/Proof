@@ -13,6 +13,20 @@ namespace Proof{
 	};
 	struct RenderPassAttachment {
 		RenderPassAttachment() = default;
+		RenderPassAttachment(Count<FrameBuffer> buffer) 
+		{
+			for (const auto& attach : buffer->GetConfig().Attachments.Attachments)
+			{
+				Attachments.emplace_back(attach.Format);
+			}
+		}
+		RenderPassAttachment(const FrameBufferConfig& config)
+		{
+			for (const auto& attach : config.Attachments.Attachments)
+			{
+				Attachments.emplace_back(attach.Format);
+			}
+		}
 		RenderPassAttachment(std::initializer_list<RenderPassImageConfig> attahcments)
 			:
 			Attachments(attahcments)
@@ -61,7 +75,7 @@ namespace Proof{
 		//virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) = 0;
 		virtual Count< class GraphicsPipeline> GetPipeline() = 0;
 		virtual Count<class FrameBuffer> GetTargetFrameBuffer() = 0;
-
+		virtual const RenderPassConfig& GetConfig() const = 0;
 		virtual ~RenderPass() =default;
 		static	Count<RenderPass> Create(const RenderPassConfig& config);
 	};

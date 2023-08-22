@@ -237,8 +237,9 @@ void main()
 	float shadowScale;
     bool castSoftShadow = false;
     if(u_RendererData.SoftShadows == true && currentLight.CastSoftShadow == true)
+    {
         castSoftShadow = true;
-
+    }
     bool fadeCascades = u_RendererData.CascadeFading;
 	if (fadeCascades)
 	{
@@ -286,7 +287,8 @@ void main()
 	else
 	{
 		vec3 shadowMapCoords = GetShadowMapCoords(Input.ShadowMapCoords, cascadeIndex);
-		shadowScale = castSoftShadow ? PCSS_DirectionalLight(u_ShadowMap, cascadeIndex, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, cascadeIndex, shadowMapCoords,lightDirection);
+		//shadowScale = castSoftShadow ? PCSS_DirectionalLight(u_ShadowMap, cascadeIndex, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, cascadeIndex, shadowMapCoords,lightDirection);
+		shadowScale = castSoftShadow ? PCF_DirectionalLight(u_ShadowMap, cascadeIndex, shadowMapCoords, currentLight.ShadowSoftness,lightDirection) : HardShadows_DirectionalLight(u_ShadowMap, cascadeIndex, shadowMapCoords,lightDirection);
 	}
 
 	shadowScale = 1.0 - clamp(currentLight.ShadowStrength - shadowScale, 0.0f, 1.0f);

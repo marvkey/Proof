@@ -266,8 +266,9 @@ namespace Proof
 
 		// tehse are static so basically when wer are writng code we avoid errors of 
 		// writing code to a speicif world rendere class
-		static void RenderMeshWithMaterial(Count<RenderCommandBuffer> commandBuffer, Count<Mesh>, Count<RenderMaterial> material, Count<RenderPass> renderPass, Count<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount);
-		static void RenderMeshWithMaterialTable(Count<RenderCommandBuffer> commandBuffer,Count<Mesh>, Count<RenderPass> renderPass, Count<MaterialTable> materialTable, Count<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount);
+		static void RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount, const Buffer& pushData = Buffer(), const std::string& pushName ="");
+		static void RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount);
+		static void RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer,Count<Mesh>&mesh, Count<RenderPass>& renderPass, Count<MaterialTable>& materialTable, Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount);
 		CameraData m_CameraData;
 		friend class Editore3D;
 

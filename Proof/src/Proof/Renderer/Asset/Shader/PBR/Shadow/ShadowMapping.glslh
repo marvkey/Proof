@@ -3,6 +3,7 @@
 #include <PBR/PBR.glslh>
 
 //https://github.com/HighLo-Engine/HighLo-Engine/blob/master/HighLo/assets/shaders/Include/GLSL/ShadowMapping.glslh
+//https://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
 const float ShadowFade = 1.0f;
 vec3 GetShadowMapCoords(vec3 shadowMapCoords[4], uint cascade)
 {
@@ -165,7 +166,7 @@ float FindBlockerDistance_DirectionalLight(sampler2DArray shadowMap, uint cascad
 	return -1;
 } 
 
-float PCF_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float uvRadius,vec3 lightDirection)
+float PCF_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float shadowSoftness,vec3 lightDirection)
 {
 	float bias = GetDirShadowBias(lightDirection);
 	int numPCFSamples = 64;
@@ -173,39 +174,39 @@ float PCF_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCo
 	float sum = 0;
 	for (int i = 0; i < numPCFSamples; i++)
 	{
-		vec2 offset = SamplePoisson(i) * uvRadius;
+		vec2 offset = SamplePoisson(i) * shadowSoftness;
 		float z = textureLod(shadowMap, vec3((shadowCoords.xy * 0.5 + 0.5) + offset, cascade), 0).r;
 		sum += step(shadowCoords.z - bias, z);
 	}
 	return sum / numPCFSamples;
 }
 
-float NV_PCF_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float uvRadius,vec3 lightDirection)
+float NV_PCF_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float shadowSoftness,vec3 lightDirection)
 {
 	float bias = GetDirShadowBias(lightDirection);
 
 	float sum = 0;
 	for (int i = 0; i < 16; i++)
 	{
-		vec2 offset = poissonDisk[i] * uvRadius;
+		vec2 offset = poissonDisk[i] * shadowSoftness;
 		float z = textureLod(shadowMap, vec3((shadowCoords.xy * 0.5 + 0.5) + offset, cascade), 0).r;
 		sum += step(shadowCoords.z - bias, z);
 	}
 	return sum / 16.0f;
 }
 
-float PCSS_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float shadowSoftness,vec3 lightDirection)
+float PCSS_DirectionalLight(sampler2DArray shadowMap, uint cascade, vec3 shadowCoords, float shadowSoftnessLightRadius,vec3 lightDirection)
 {
-	float blockerDistance = FindBlockerDistance_DirectionalLight(shadowMap, cascade, shadowCoords, shadowSoftness,lightDirection);
+	float blockerDistance = FindBlockerDistance_DirectionalLight(shadowMap, cascade, shadowCoords, shadowSoftnessLightRadius,lightDirection);
 	if (blockerDistance == -1) // No occlusion
 		return 1.0f;
 
 	float penumbraWidth = (shadowCoords.z - blockerDistance) / blockerDistance;
 
 	float NEAR = 0.01; // Should this value be tweakable?
-	float uvRadius = penumbraWidth * shadowSoftness * NEAR / shadowCoords.z; // Do we need to divide by shadowCoords.z?
-	uvRadius = min(uvRadius, 0.002f);
-	return PCF_DirectionalLight(shadowMap, cascade, shadowCoords, uvRadius,lightDirection) * ShadowFade;
+	float shadowSoftness = penumbraWidth * shadowSoftnessLightRadius * NEAR / shadowCoords.z; // Do we need to divide by shadowCoords.z?
+	shadowSoftness = min(shadowSoftness, 0.002f);
+	return PCF_DirectionalLight(shadowMap, cascade, shadowCoords, shadowSoftness,lightDirection) * ShadowFade;
 } 
 
 

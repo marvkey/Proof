@@ -2,16 +2,20 @@
 #include "Proof/Core/Core.h"
 
 namespace Proof{
-	enum class DrawType {
-		TriangleList = 0,
+	enum class DrawType 
+	{
+		None =0,
+		Triangle,
 		TriangleStrip,
 		TriangleFan,
-		LineList,
+		Line,
 		LineStrip,
-		PointList
+		Point
 	};
-	enum class DepthCompareOperator {
-		Never = 0,
+	enum class DepthCompareOperator 
+	{
+		None = 0,
+		Never,
 		Less,
 		Equal,
 		LessOrEqual,
@@ -41,10 +45,10 @@ namespace Proof{
 		bool WriteDepth = true;
 		bool DepthTest = true;
 		bool Blend = false;
-		CullMode CullMode = CullMode::None;
+		CullMode CullMode = CullMode::Back;
 		FrontFace FrontFace = FrontFace::ClockWise;
-		DepthCompareOperator DepthCompareOperator = DepthCompareOperator::Less;
-		DrawType DrawMode = DrawType::TriangleList;
+		DepthCompareOperator DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+		DrawType DrawMode = DrawType::Triangle;
 		Count<class FrameBuffer> TargetBuffer;
 
 	};

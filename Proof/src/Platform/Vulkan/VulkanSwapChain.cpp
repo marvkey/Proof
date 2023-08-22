@@ -77,14 +77,38 @@ vmaDestroyAllocator(allocator);*/
 namespace Proof
 {
 
-    VulkanSwapChain::VulkanSwapChain(ScreenSize extent)
-        : m_WindowSize{ extent } {
+    VulkanSwapChain::VulkanSwapChain(ScreenSize extent, bool vysnc)
+        : m_WindowSize{ extent }, m_Vsync(vysnc) {
         Init();
        
     }
     void VulkanSwapChain::Init() {
         CreateSwapChain();
         CreateSyncObjects();
+
+        auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+        // Create command buffers
+        {
+            VkCommandPoolCreateInfo cmdPoolInfo = {};
+            cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            cmdPoolInfo.queueFamilyIndex = VulkanRenderer::GetGraphicsContext()->FindPhysicalQueueFamilies().graphicsAndComputeFamily.value();
+            cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+            VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
+            commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            commandBufferAllocateInfo.commandBufferCount = 1;
+
+            m_CommandBuffers.resize(Renderer::GetConfig().FramesFlight);
+            for (auto& commandBuffer : m_CommandBuffers)
+            {
+                VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &commandBuffer.CommandPool));
+
+                commandBufferAllocateInfo.commandPool = commandBuffer.CommandPool;
+                VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &commandBuffer.CommandBuffer));
+
+            }
+        }
     }
 
     VulkanSwapChain::~VulkanSwapChain() {
@@ -102,13 +126,21 @@ namespace Proof
     }
 
     void VulkanSwapChain::AcquireNextImage(uint32_t* imageIndex, uint32_t frameIndex) {
-            const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
+        const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
+        {
+            PF_PROFILE_FUNC("VulkanSwapChain::AcquireNextImage")
             vkAcquireNextImageKHR(graphicsContext->GetDevice(), m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, imageIndex);
-
+        }
+        {
+            PF_PROFILE_FUNC("VulkanSwapChain::ResetCommandPool")
+            VK_CHECK_RESULT(vkResetCommandPool(graphicsContext->GetDevice(), m_CommandBuffers[frameIndex].CommandPool, 0));
+        }
     }
 
     void VulkanSwapChain::SubmitCommandBuffers(std::vector<Count<RenderCommandBuffer>> buffers, uint32_t* imageIndex) {
         
+        PF_CORE_ASSERT(false, "funciton not exist");
+        PF_PROFILE_FUNC();
         auto graphicsContext= VulkanRenderer::GetGraphicsContext();
         
         std::vector<VkCommandBuffer> submitCommandBuffers;
@@ -157,6 +189,70 @@ namespace Proof
 
     }
 
+    void VulkanSwapChain::Present(uint32_t* imageIndex)
+    {
+        PF_PROFILE_FUNC();
+
+        uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+        auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+
+        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
+        VkSwapchainKHR swapChains[] = { m_SwapChain };
+        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[Renderer::GetCurrentFrame().FrameinFlight] };
+
+
+        VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+        VkSubmitInfo submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.pWaitDstStageMask = &waitStageMask;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pCommandBuffers = &m_CommandBuffers[frameIndex].CommandBuffer;
+        submitInfo.commandBufferCount = 1;
+
+        VK_CHECK_RESULT(vkResetFences(graphicsContext->GetDevice(), 1, &m_InFlightFences[frameIndex]));
+        VK_CHECK_RESULT(vkQueueSubmit(graphicsContext->GetGraphicsQueue(), 1, &submitInfo, m_InFlightFences[frameIndex]));
+
+        // Present the current buffer to the swap chain
+        // Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
+        // This ensures that the image is not presented to the windowing system until all commands have been submitted
+        VkResult result;
+        {
+            PF_PROFILE_FUNC("VulkanSwapChain::Present - QueuePresent");
+
+            VkPresentInfoKHR presentInfo = {};
+            presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+            presentInfo.pNext = NULL;
+            presentInfo.swapchainCount = 1;
+            presentInfo.pSwapchains = &m_SwapChain;
+            presentInfo.pImageIndices = imageIndex;
+
+            presentInfo.pWaitSemaphores = signalSemaphores;
+            presentInfo.waitSemaphoreCount = 1;
+            VK_CHECK_RESULT(vkQueuePresentKHR(graphicsContext->GetPresentQueue(), &presentInfo));
+        }
+        if (result != VK_SUCCESS)
+        {
+            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+            {
+                Resize(m_WindowSize);
+            }
+            else
+            {
+                VK_CHECK_RESULT(result);
+            }
+        }
+        {
+            PF_PROFILE_FUNC("VulkanSwapChain::Present - WaitForFences");
+            auto currentIndex = (Renderer::GetCurrentFrame().FrameinFlight + 1) % Renderer::GetConfig().FramesFlight;
+            // Make sure the frame we're requesting has finished rendering for the next frame
+            VK_CHECK_RESULT(vkWaitForFences(graphicsContext->GetDevice(), 1, &m_InFlightFences[currentIndex], VK_TRUE, UINT64_MAX));
+        }
+    }
+
     ImageLayouts2D VulkanSwapChain::GetImageLayout()
     {
         /*
@@ -181,6 +277,12 @@ namespace Proof
     Count<Image2D> VulkanSwapChain::GetImage(uint32_t imageIndex)
     {
         return m_ImagesRefs[imageIndex];
+    }
+
+    void VulkanSwapChain::SetVsync(bool vsync)
+    {
+        m_Vsync = vsync;
+        Resize(m_WindowSize);
     }
 
     void VulkanSwapChain::CreateSwapChain() {
@@ -373,6 +475,15 @@ namespace Proof
                 //vkDestroyImageView(device, m_SwapChainImageViews[i], nullptr);
                 //vmaFreeMemory()
             }
+            for (auto& commandBuffer : m_CommandBuffers)
+            {
+                vkFreeCommandBuffers(
+                    device,
+                    commandBuffer.CommandPool,
+                    1,
+                    &commandBuffer.CommandBuffer);
+                vkDestroyCommandPool(device, commandBuffer.CommandPool, nullptr);
+            }
             m_ImagesRefs.clear();
             vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
             m_SwapChainImageViews.clear();
@@ -382,12 +493,6 @@ namespace Proof
         }
 
         CreateSwapChain();
-        //for (auto i : FrameBuffers)
-        //{
-        //    if(i->m_DepthImage)
-        //    i->Release();
-        //    i->Init();
-        //}
     }
 
     void VulkanSwapChain::CleanUp() {
@@ -406,7 +511,15 @@ namespace Proof
             Renderer::SubmitDatafree([swapchain = m_SwapChain,device = device] {
                 vkDestroySwapchainKHR(device, swapchain, nullptr);
             });
-
+            for (auto& commandBuffer : m_CommandBuffers)
+            {
+                vkFreeCommandBuffers(
+                    device,
+                    commandBuffer.CommandPool,
+                    1,
+                    &commandBuffer.CommandBuffer);
+                vkDestroyCommandPool(device, commandBuffer.CommandPool, nullptr);
+            }
             m_SwapChainImageViews.clear();
             m_SwapChainImages.clear();
             m_SwapChain = nullptr;
@@ -443,13 +556,22 @@ namespace Proof
     }
 
     VkPresentModeKHR VulkanSwapChain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
-        #if 1
-        PF_ENGINE_INFO("Present mode: V-Sync");
-        return VK_PRESENT_MODE_FIFO_KHR;
-        #else 
-        PF_ENGINE_INFO("Present mode: Immediate");
-        return VK_PRESENT_MODE_IMMEDIATE_KHR;
-        #endif
+
+        if (m_Vsync)
+            return VK_PRESENT_MODE_FIFO_KHR;
+
+        // It's the lowest latency non-tearing present mode available
+        VkPresentModeKHR swapchainPresentMode;
+        for (size_t i = 0; i < availablePresentModes.size(); i++)
+        {
+            if (availablePresentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
+            {
+                return  VK_PRESENT_MODE_MAILBOX_KHR;
+            }
+            if (availablePresentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR)
+                swapchainPresentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+        }
+        return swapchainPresentMode;
     }
 
    
@@ -479,15 +601,14 @@ namespace Proof
     }
 
     void VulkanSwapChain::WaitFences(uint32_t frameIndex) {
-        if (vkGetFenceStatus(VulkanRenderer::GetGraphicsContext()->GetDevice(), m_InFlightFences[frameIndex]) == VK_NOT_READY)
-        {
-            vkWaitForFences(VulkanRenderer::GetGraphicsContext()->GetDevice(), 1, &m_InFlightFences[frameIndex], VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
-        }
+            vkWaitForFences(VulkanRenderer::GetGraphicsContext()->GetDevice(), 1, &m_InFlightFences[frameIndex], VK_TRUE, UINT64_MAX);  
     }
 
     void VulkanSwapChain::ResetFences(uint32_t frameIndex) {
         vkResetFences(VulkanRenderer::GetGraphicsContext()->GetDevice(), 1, &m_InFlightFences[frameIndex]);
     }
+
+    
 
     VkFormat VulkanSwapChain::FindDepthFormat() {
         return 

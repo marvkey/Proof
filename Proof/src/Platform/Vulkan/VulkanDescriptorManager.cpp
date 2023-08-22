@@ -201,7 +201,8 @@ namespace Proof
     
     void VulkanDescriptorManager::Bind()
     {
-       
+        PF_PROFILE_FUNC();
+        PF_PROFILE_TAG("",m_Config.DebugName.c_str());
         auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
         auto& descriptorSets = m_WriteDescriptorMap[Renderer::GetCurrentFrame().FrameinFlight];
         // need this to hold images so taht when them in descriptor they dont loose data

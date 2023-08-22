@@ -11,7 +11,7 @@ namespace Proof
     class VulkanSwapChain : public SwapChain {
     public:
 
-        VulkanSwapChain(ScreenSize windowExtent);
+        VulkanSwapChain(ScreenSize windowExtent, bool vsync);
         ~VulkanSwapChain();
         friend class ImGuiLayer;
         VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
@@ -30,7 +30,7 @@ namespace Proof
         void WaitFences(uint32_t frameInfllight);
         void ResetFences(uint32_t frameInfllight);
         void SubmitCommandBuffers(std::vector<Count<class RenderCommandBuffer>> buffers, uint32_t* imageIndex);
-
+        void Present(uint32_t* imageIndex);
         bool CompareSwapFormats(const VulkanSwapChain& swapChain) {
             return swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat && swapChain.m_ImageFormat == m_ImageFormat;
         }
@@ -46,7 +46,21 @@ namespace Proof
         virtual ImageLayouts2D GetImageLayout();
         virtual Count<Image2D>  GetImage(uint32_t imageIndex);
 
+        VkCommandBuffer GetCommandBuffer(uint32_t frameInFlight)
+        {
+            return m_CommandBuffers[frameInFlight].CommandBuffer;
+        }
+
+        virtual void SetVsync(bool vsync);
+        virtual bool GetVsync() { return m_Vsync; }
     private:
+        bool m_Vsync;
+        struct SwapchainCommandBuffer
+        {
+            VkCommandPool CommandPool = nullptr;
+            VkCommandBuffer CommandBuffer = nullptr;
+        };
+        std::vector<SwapchainCommandBuffer> m_CommandBuffers;
         VkFormat FindDepthFormat();
 
         VkSurfaceFormatKHR m_SurfaceFormat;

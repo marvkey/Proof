@@ -89,11 +89,15 @@ namespace Proof
 
 		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
 
-		//if(Application::Get()->GetConfig().EnableImgui == false)
-		//	config.Attachments.Attachments[0].SetOverrideLayout(Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout()); // this line basically makes us able to render to window
+		
 		FrameBufferConfig config;
 		config.DebugName = "Screen FrameBuffer";
 		config.Attachments = { ImageFormat::RGBA32F,ImageFormat::DEPTH32FSTENCIL8UI };
+		if (Application::Get()->GetConfig().EnableImgui == false)
+		{
+			config.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat(),Application::Get()->GetWindow()->GetSwapChain()->GetDepthFormat() };
+			config.Attachments.Attachments[0].ExistingImage = Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout(); // this line basically makes us able to render to window
+		}		
 		config.ClearColor = { 0,0,0,1 };
 		config.ClearFrameBufferOnLoad = false;
 		config.Size = { (float)textureWidth,(float)textureHeight };
@@ -103,7 +107,7 @@ namespace Proof
 
 		m_BRDFLUT = Renderer::GenerateBRDFLut();
 
-		m_CommandBuffer = RenderCommandBuffer::Create();
+		m_CommandBuffer = RenderCommandBuffer::Create("Scene Renderer Renderer");
 		m_Renderer2D = CreateSpecial< Renderer2D>(m_ScreenFrameBuffer);
 
 		//auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap("Assets/Arches_E_PineTree_3k.hdr");
@@ -130,11 +134,16 @@ namespace Proof
 			graphicsPipelineConfig.Shader = Renderer::GetShader("ProofPBR_Static");
 			graphicsPipelineConfig.VertexArray = meshVertexArray;
 			graphicsPipelineConfig.TargetBuffer = m_ScreenFrameBuffer->GetFrameBuffer();
+			graphicsPipelineConfig.CullMode = CullMode::Back;
 			m_MeshPipeline.Pipline = GraphicsPipeline::Create(graphicsPipelineConfig);
 
 			RenderPassConfig renderPassConfig;
 			renderPassConfig.DebugName = "Mesh Render Pass";
-			renderPassConfig.Attachments = { ImageFormat::RGBA32F,ImageFormat::DEPTH32FSTENCIL8UI };
+			renderPassConfig.Attachments = m_ScreenFrameBuffer->GetFrameBuffer();
+			if (Application::Get()->GetConfig().EnableImgui == false)
+			{
+				renderPassConfig.Attachments.Attachments[0].PresentKHr = true;
+			}
 			renderPassConfig.Pipeline = m_MeshPipeline.Pipline;
 			m_MeshPipeline.RenderPass = RenderPass::Create(renderPassConfig);
 			m_MeshPipeline.RenderPass->SetInput("CameraData", cameraBuffer);
@@ -165,7 +174,11 @@ namespace Proof
 
 			RenderPassConfig renderPassConfig;
 			renderPassConfig.DebugName = "skyBoxPass Pass";
-			renderPassConfig.Attachments = { ImageFormat::RGBA32F,ImageFormat::DEPTH32FSTENCIL8UI };
+			renderPassConfig.Attachments = m_ScreenFrameBuffer->GetFrameBuffer();
+			if (Application::Get()->GetConfig().EnableImgui == false)
+			{
+				renderPassConfig.Attachments.Attachments[0].PresentKHr = true;
+			}
 			renderPassConfig.Pipeline = skyBoxRenderPipeline;
 			skyBoxPass = RenderPass::Create(renderPassConfig);
 			skyBoxPass->SetInput("CameraData", cameraBuffer);
@@ -209,8 +222,6 @@ namespace Proof
 	}
 	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, float nearPlane, float farPlane,Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame, Count<UITable> uiTable)
 	{
-		PF_PROFILE_FUNC();
-		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
 		{
 			//https://github.com/InCloudsBelly/X2_RenderingEngine/blob/739ff016ad2a23e3843517c4866dda09ce5d112f/Engine/X2/Renderer/Camera.cpp
 			static glm::mat4 unreversedProjectionMatrix (glm::perspectiveFov(glm::radians(45.0f),(float) m_ScreenFrameBuffer->GetFrameWidth(), (float)m_ScreenFrameBuffer->GetFrameHeight(), nearPlane,farPlane));
@@ -295,6 +306,9 @@ namespace Proof
 			}
 		}
 		
+
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
 		// clear screen
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
 		Renderer::BeginRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass,true);
@@ -319,7 +333,7 @@ namespace Proof
 		MeshPass();
 		
 		{
-			//PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
+			PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
 			m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
 
 			
@@ -343,7 +357,7 @@ namespace Proof
 						* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
 						* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Z), { 0,0,1 })
 						* glm::scale(glm::mat4(1.0f), { ProofToglmVec(m_World->GetWorldScale(entity)) });
-					//m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, mat);
+					m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, mat);
 				}
 			});
 
@@ -600,6 +614,8 @@ namespace Proof
 
 	void WorldRenderer::SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws )
 	{
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("{}",mesh->GetName().c_str());
 		//TODO FASTER HASH FUNCTION FOR MESHKEY
 		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
 		
@@ -718,18 +734,18 @@ namespace Proof
 			//framebufferConfig.Attachments.Attachments[0].ExistingImage = m_ShadowPassImage;
 			framebufferConfig.Size = { SHADOWMAP_DIM,SHADOWMAP_DIM };
 
-			auto shadowDebugShader = FrameBuffer::Create(framebufferConfig);
+			auto shadowDebugframeBuffer = FrameBuffer::Create(framebufferConfig);
 
 			GraphicsPipelineConfig shadowMapPipelineConfig;
 			shadowMapPipelineConfig.DebugName = "DebugShadowMapPipeline";
 			shadowMapPipelineConfig.CullMode = CullMode::Back;
 			shadowMapPipelineConfig.Shader = Renderer::GetShader("DebugShadowMap");
-			shadowMapPipelineConfig.TargetBuffer = shadowDebugShader;
+			shadowMapPipelineConfig.TargetBuffer = shadowDebugframeBuffer;
 
 			m_ShadowDebugPipeline = GraphicsPipeline::Create(shadowMapPipelineConfig);
 
 			RenderPassConfig renderpassConfig;
-			renderpassConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH24STENCIL8UI };
+			renderpassConfig.Attachments = shadowDebugframeBuffer;
 			renderpassConfig.DebugName = fmt::format("DebugShadowPass");
 			renderpassConfig.Pipeline = m_ShadowDebugPipeline;
 			m_ShadowDebugPass = RenderPass::Create(renderpassConfig);
@@ -1044,9 +1060,9 @@ namespace Proof
 	}
 	void WorldRenderer::ShadowPass()
 	{
+		PF_PROFILE_FUNC();
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
-		PF_PROFILE_FUNC();
 		auto& directionalights = m_LightScene.DirectionalLights;
 
 		if (directionalights[0].Intensity == 0.f /* || !directionalights[0].CastShadow */ )
@@ -1081,35 +1097,65 @@ namespace Proof
 		s_CascadeProjectionBuffer->SetData(frameIndex, Buffer(&projections, sizeof(CascadeProjection)));
 		for (uint32_t cascade = 0; cascade < SHADOWMAP_CASCADE_COUNT; cascade++)
 		{
-			auto cascadePass = m_ShadowMapPasses[cascade];
+			PF_PROFILE_FUNC("ShadowPass Cascade");
+			PF_PROFILE_TAG("Cascade ", cascade);
 
-			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, cascadePass);
-			m_ShadowPassMaterial->Set("u_CascadeInfo.CascadeIndex", cascade);
+			auto cascadePass = m_ShadowMapPasses[cascade];
+			cascadePass->SetInput("ShadowCascadesProjection", s_CascadeProjectionBuffer);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, cascadePass);
 			for (auto& [meshKey, dc] : m_MeshShadowDrawList)
 			{
 				const auto& transformData = m_MeshTransformMap.at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-				RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_ShadowPassMaterial,cascadePass,m_SubmeshTransformBuffers[frameIndex].Buffer, transformOffset, dc.InstanceCount);
+				RenderMesh(m_CommandBuffer, dc.Mesh,cascadePass,m_SubmeshTransformBuffers[frameIndex].Buffer, transformOffset, dc.InstanceCount, Buffer(&cascade,sizeof(uint32_t)),"u_CascadeInfo");
 			}
 			Renderer::EndRenderPass(cascadePass);
 		}
 
+
+		// the same funtion but it is extremely slow
+		//{
+		//	Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_ShadowDebugPass);
+		//	m_ShadowPassDebugMaterial->Set("u_CascadeInfo.CascadeIndex", debugCascade);
+		//	Renderer::RenderPassPushRenderMaterial(m_ShadowDebugPass,m_ShadowPassDebugMaterial);
+		//	Renderer::DrawArrays(m_CommandBuffer, 3, 1, 0, 0);
+		//	Renderer::EndRenderPass(m_ShadowDebugPass);
+		//}
 		{
-			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_ShadowDebugPass);
-			m_ShadowPassDebugMaterial->Set("u_CascadeInfo.CascadeIndex", debugCascade);
-			Renderer::RenderPassPushRenderMaterial(m_ShadowDebugPass,m_ShadowPassDebugMaterial);
-			Renderer::DrawArrays(m_CommandBuffer, 3, 1, 0, 0);
-			Renderer::EndRenderPass(m_ShadowDebugPass);
+			//Renderer::BeginRenderPass(m_CommandBuffer, m_ShadowDebugPass);
+			//m_ShadowDebugPass->PushData("u_CascadeInfo",&debugCascade);
+			//m_ShadowDebugPass->SetInput("u_ShadowMap", m_ShadowPassImage);
+			//Renderer::DrawArrays(m_CommandBuffer, 3, 1, 0, 0);
+			//Renderer::EndRenderPass(m_ShadowDebugPass);
 		}
 
 	}
-	void WorldRenderer::RenderMeshWithMaterial(Count<RenderCommandBuffer> commandBuffer,Count<Mesh>mesh, Count<RenderMaterial> material, Count<RenderPass> renderPass,Count<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
+	void WorldRenderer::RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
 	{
+		PF_PROFILE_FUNC();
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		meshSource->GetVertexBuffer()->Bind(commandBuffer);
 		meshSource->GetIndexBuffer()->Bind(commandBuffer);
 		transformBuffer->Bind(commandBuffer, 1, transformOffset);
 		for (uint32_t index : mesh->GetSubMeshes())
+		{
+			if (pushData)
+			{
+				renderPass->PushData(pushName, pushData.Get());
+			}
+			const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		}
+	}
+	void WorldRenderer::RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer,Count<Mesh>&mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass,Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
+	{
+		PF_PROFILE_FUNC();
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		meshSource->GetVertexBuffer()->Bind(commandBuffer);
+		meshSource->GetIndexBuffer()->Bind(commandBuffer);
+		transformBuffer->Bind(commandBuffer, 1, transformOffset);
+		for (const uint32_t& index : mesh->GetSubMeshes())
 		{
 			Renderer::RenderPassPushRenderMaterial(renderPass, material);
 			const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
@@ -1117,14 +1163,15 @@ namespace Proof
 		}
 
 	}
-	void WorldRenderer::RenderMeshWithMaterialTable(Count<RenderCommandBuffer> commandBuffer,Count<Mesh>mesh, Count<RenderPass> renderPass, Count<MaterialTable> materialTable,Count<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
+	void WorldRenderer::RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer,Count<Mesh>&mesh, Count<RenderPass>& renderPass, Count<MaterialTable>& materialTable,Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
 	{
+		PF_PROFILE_FUNC();
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		meshSource->GetVertexBuffer()->Bind(commandBuffer);
 		transformBuffer->Bind(commandBuffer, 1, transformOffset);
 
 		meshSource->GetIndexBuffer()->Bind(commandBuffer);
-		for (uint32_t index : mesh->GetSubMeshes())
+		for (const uint32_t& index : mesh->GetSubMeshes())
 		{
 			const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
 			Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex) ? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
@@ -1137,6 +1184,8 @@ namespace Proof
 
 	void WorldRenderer::Reset()
 	{
+		PF_PROFILE_FUNC();
+
 		//mesh Pass
 		{
 			m_MeshTransformMap.clear();

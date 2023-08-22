@@ -96,6 +96,7 @@ namespace Proof
 		Layer("Editor3D Layer") {
 		s_Instance = this;
 		s_EditorData = new EditorData();
+		s_EditorData->ContentBrowserPanel.m_ShowWindow = false;
 	}
 	Editore3D::~Editore3D() {
 		delete s_EditorData;
@@ -128,7 +129,6 @@ namespace Proof
 		dispatcher.Dispatch<ControllerDisconnectEvent>([](auto& e) {
 			PF_INFO(e.ToString());
 		});
-
 		// KEYBOARD
 		{
 			if (m_ShowAllKeyBoardEvents.ShowOne == true && e.IsInCategory(EventCategory::EventKeyBoard)) {
@@ -479,29 +479,20 @@ namespace Proof
 
 		s_EditorData->WorldHierachy.ImGuiRender(DeltaTime);
 		s_EditorData->ContentBrowserPanel.ImGuiRender(DeltaTime);
-		s_EditorData->AssetManagerPanel.ImGuiRender(DeltaTime);
+		//s_EditorData->AssetManagerPanel.ImGuiRender(DeltaTime);
 		s_EditorData->InputPanel.ImGuiRender(DeltaTime);
 		s_EditorData->PerformancePanel.ImGuiRender(DeltaTime);
 		for (auto& a : m_AllPanels)
 		{
+			PF_PROFILE_FUNC("Render Panels");
 			a.second->ImGuiRender(DeltaTime);
 		}
-		if (s_EditorData->ShowWorldEditor == false)
-			goto a;
-		if (ImGui::Begin("Active World", &s_EditorData->ShowWorldEditor)) {
-			if (ImGui::Button("Choose HDR")) {
-				std::string file = Utils::FileDialogs::OpenFile("Texture (*.hdr)\0");
-				if (file.empty() == false) {
-					//m_ActiveWorld->CreateIBlTexture(file);
-				}
-			}
-		}
-		ImGui::End();
 		a:
 		if (s_EditorData->ShowRendererStats == false)
 			return;
 		ImGui::Begin("Renderer Stastitics", &s_EditorData->ShowRendererStats);
 		{
+			PF_PROFILE_FUNC("Renderer Stastitics");
 
 			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER SPECS");
 
@@ -535,9 +526,9 @@ namespace Proof
 			});
 			ImGui::Text("Shadow Settings");
 
-			UI::Image(m_WorldRenderer->m_ShadowDebugPass->GetTargetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().ImageIndex,0),
-				{ ImGui::GetWindowWidth(),ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-			ImGui::SliderInt("Cascade Index",&m_WorldRenderer->debugCascade, 0, 3);
+			//UI::Image(m_WorldRenderer->m_ShadowDebugPass->GetTargetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().ImageIndex,0),
+			//	{ ImGui::GetWindowWidth(),ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			//ImGui::SliderInt("Cascade Index",&m_WorldRenderer->debugCascade, 0, 3);
 
 			ShadowSetting& shadowSetting = m_WorldRenderer->ShadowSetting;
 			ImGui::Checkbox("ShowCascades", &shadowSetting.ShowCascades);
@@ -734,6 +725,8 @@ namespace Proof
 	void Editore3D::Logger() {
 		if (s_EditorData->ShowLogger == false)
 			return;
+		PF_PROFILE_FUNC();
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		if (ImGui::Begin("Log", &s_EditorData->ShowLogger, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
 			ImGui::BeginMenuBar();
@@ -1236,6 +1229,8 @@ namespace Proof
 	}
 
 	void Editore3D::MainToolBar() {
+		PF_PROFILE_FUNC();
+
 		ImGui::Begin("##MainToolBar", nullptr,ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse  /* | ImGuiWindowFlags_NoMove*/);
 
 		Count<Texture2D> icon;
@@ -1297,6 +1292,7 @@ namespace Proof
 
 	void Editore3D::SetDocking(bool* p_open) {
 		// code taken form walnut https://github.com/TheCherno/Walnut/blob/master/Walnut/src/Walnut/Application.cpp
+		PF_PROFILE_FUNC();
 
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 

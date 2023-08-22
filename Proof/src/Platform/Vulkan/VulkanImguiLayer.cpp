@@ -17,6 +17,7 @@
 
 #include "VulkanCommandBuffer.h"
 namespace Proof {
+	static std::vector<VkCommandBuffer> s_ImGuiCommandBuffers;
 	static ImGui_ImplVulkanH_Window g_MainWindowData;
 	static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface, int width, int height) {
 		const auto& graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
@@ -70,16 +71,9 @@ namespace Proof {
 	}
 	void VulkanImguiLayer::OnAttach()
 	{
-		#if 0 
-		FrameBufferConfig frameBuffferconfig;
-		frameBuffferconfig.DebugName = "Imgui-FrameBuffer";
-		frameBuffferconfig.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat() };
-		frameBuffferconfig.Attachments.Attachments[0].ExistingImage = Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout();
-		frameBuffferconfig.Size = { (float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight() };
-		m_FrameBuffer = FrameBuffer::Create(frameBuffferconfig);
-		#endif
-
-		m_CommandBuffer = RenderCommandBuffer::Create();
+	
+		PF_PROFILE_FUNC();
+		m_CommandBuffer = Count<VulkanRenderCommandBuffer>::Create("Imgui Command Buffer",true);
 		const auto& graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -140,7 +134,7 @@ namespace Proof {
 		init_info.Allocator = nullptr;
 		init_info.CheckVkResultFn = check_vk_result;
 		ImGui_ImplVulkan_Init(&init_info, wd->RenderPass );
-		ImGui_ImplVulkan_SetMinImageCount(graphicsContext->GetSwapChain()->GetImageCount());
+	//	ImGui_ImplVulkan_SetMinImageCount(graphicsContext->GetSwapChain()->GetImageCount());
 
 		// Upload Fonts
 		{
@@ -163,9 +157,24 @@ namespace Proof {
 			info.layers = 1;
 			vkCreateFramebuffer(graphicsContext->GetDevice(), &info, nullptr, &m_FrameBuffers[i]);
 		}
+		uint32_t framesInFlight = Renderer::GetConfig().FramesFlight;
+		s_ImGuiCommandBuffers.resize(framesInFlight);
+		for (uint32_t i = 0; i < framesInFlight; i++)
+		{
+			VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
+			cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			cmdBufAllocateInfo.commandPool = graphicsContext->GetCommandPool();
+			cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+			cmdBufAllocateInfo.commandBufferCount = 1;
+			VK_CHECK_RESULT(vkAllocateCommandBuffers(graphicsContext->GetDevice(), &cmdBufAllocateInfo, &s_ImGuiCommandBuffers[i]));
+			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_COMMAND_BUFFER, "ImGuiSecondaryCommandBuffer", s_ImGuiCommandBuffers[i]);
+
+		}
 	}
 	void VulkanImguiLayer::OnDetach()
 	{
+		PF_PROFILE_FUNC();
+
 		const auto& graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 
 		ImGui_ImplVulkan_Shutdown();
@@ -183,11 +192,12 @@ namespace Proof {
 	}
 	void VulkanImguiLayer::Begin()
 	{
+		PF_PROFILE_FUNC();
+
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
-
 	}
 	void VulkanImguiLayer::OnEvent(Event& e)
 	{
@@ -199,7 +209,10 @@ namespace Proof {
 	}
 	void VulkanImguiLayer::End()
 	{
+		PF_PROFILE_FUNC();
+
 		uint32_t frameinFlight = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t currentImageIndex = Renderer::GetCurrentFrame().ImageIndex;
 		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
 		ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
 		ImGuiIO& io = ImGui::GetIO();
@@ -212,67 +225,77 @@ namespace Proof {
 		ImGui_ImplVulkanH_Frame* fd = &wd->Frames[wd->FrameIndex];
 		ImGui::Render();
 		ImDrawData* drawData = ImGui::GetDrawData();
-		{
-			//vkResetCommandPool(graphicsContext->GetDevice(), fd->CommandPool, 0);
-			Renderer::BeginCommandBuffer(m_CommandBuffer);
-			VkRenderPassBeginInfo info = {};
-			info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			info.renderPass = wd->RenderPass;
-			info.framebuffer = m_FrameBuffers[Renderer::GetCurrentFrame().ImageIndex];
-			info.renderArea.extent.width = wd->Width;
-			info.renderArea.extent.height = wd->Height;
-			info.clearValueCount = 1;
-			info.pClearValues = &wd->ClearValue;
+		VkCommandBufferBeginInfo drawCmdBufInfo = {};
+		drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		drawCmdBufInfo.pNext = nullptr;
 
-			VkViewport vk_viewport;
-			VkRect2D vk_scissor;
-			vk_viewport.x = 0;
-			vk_viewport.y = 0;
-			vk_viewport.width = (float)wd->Width;
-			vk_viewport.height = (float)wd->Height;
-			vk_viewport.minDepth = 0;
-			vk_viewport.maxDepth = 1;
+		VkCommandBuffer drawCommandBuffer = graphicsContext->GetSwapChain().As<VulkanSwapChain>()->GetCommandBuffer(frameinFlight);
+		//VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo));
+		VkClearValue clearValues[2];
+		clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.pNext = nullptr;
+		renderPassBeginInfo.renderPass = wd->RenderPass;
+		renderPassBeginInfo.renderArea.offset.x = 0;
+		renderPassBeginInfo.renderArea.offset.y = 0;
+		renderPassBeginInfo.renderArea.extent.width = io.DisplaySize.x;
+		renderPassBeginInfo.renderArea.extent.height = io.DisplaySize.y;
+		renderPassBeginInfo.clearValueCount = 2; // Color + depth
+		renderPassBeginInfo.pClearValues = clearValues;
+		renderPassBeginInfo.framebuffer = m_FrameBuffers[currentImageIndex];
 
+		vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-			vk_scissor.offset = { (int)0, (int)0 };
+		VkCommandBufferInheritanceInfo inheritanceInfo = {};
+		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+		inheritanceInfo.renderPass = wd->RenderPass;
+		inheritanceInfo.framebuffer = m_FrameBuffers[currentImageIndex];
 
-			vk_scissor.extent = { (uint32_t)wd->Width, (uint32_t)wd->Height };
-			vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight), 0, 1, &vk_viewport);
+		VkCommandBufferBeginInfo cmdBufInfo = {};
+		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+		cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
 
-			vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight), 0, 1, &vk_scissor);
+		VK_CHECK_RESULT(vkBeginCommandBuffer(s_ImGuiCommandBuffers[frameinFlight], &cmdBufInfo));
 
-		
-			vkCmdBeginRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight), &info, VK_SUBPASS_CONTENTS_INLINE);
-			std::vector< VkClearAttachment> clears;
-			std::vector< VkClearRect> reactClear;
-			{
-				clears.resize(1);
-				clears[0].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				clears[0].clearValue = wd->ClearValue;
-				clears[0].colorAttachment = 0;
-				VkClearRect clearRect = {};
-				clearRect.layerCount = 1;
-				clearRect.rect = vk_scissor;
-				reactClear.emplace_back(clearRect);
-				vkCmdClearAttachments(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight),
-					clears.size(),
-					clears.data(),
-					reactClear.size(),
-					reactClear.data());
-			}
-			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight));
-			vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameinFlight));
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = (float)wd->Height;
+		viewport.height = -(float)wd->Height;
+		viewport.width = (float)wd->Width;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(s_ImGuiCommandBuffers[frameinFlight], 0, 1, &viewport);
 
-			Renderer::EndCommandBuffer(m_CommandBuffer);
-			Renderer::SubmitCommandBuffer(m_CommandBuffer);
-		}
+		VkRect2D scissor = {};
+		scissor.extent.width = wd->Height;
+		scissor.extent.height = wd->Height;
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		vkCmdSetScissor(s_ImGuiCommandBuffers[frameinFlight], 0, 1, &scissor);
 
+		ImDrawData* main_draw_data = ImGui::GetDrawData();
+		ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffers[frameinFlight]);
+
+		VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffers[frameinFlight]));
+
+		std::vector<VkCommandBuffer> commandBuffers;
+		commandBuffers.push_back(s_ImGuiCommandBuffers[frameinFlight]);
+
+		vkCmdExecuteCommands(drawCommandBuffer, uint32_t(commandBuffers.size()), commandBuffers.data());
+
+		vkCmdEndRenderPass(drawCommandBuffer);
+
+		//VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
+
+		// Update and Render additional Platform Windows
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
-			void* backup_current_context = Application::Get()->GetWindow()->GetWindow();
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent((GLFWwindow*)backup_current_context);
 		}
 		
 	}
