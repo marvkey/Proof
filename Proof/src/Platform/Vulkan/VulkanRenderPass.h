@@ -5,6 +5,7 @@
 
 #include "VulkanDescriptorManager.h"
 #include "Proof/Renderer/Viewport.h"
+#include "Proof/Renderer/GraphicsPipeLine.h"
 namespace Proof{
 	struct VulkanRenderPassAttach {
 		VkAttachmentDescription AttchmentDescription;
@@ -16,9 +17,7 @@ namespace Proof{
 		virtual ~VulkanRenderPass();
 		//virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) { PF_CORE_ASSERT(frame, "Cannot be null"); m_Config.TargetBuffer = frame; }
 
-		VkRenderPass GetRenderPass() {
-			return m_RenderPass;
-		}
+		VkRenderPass GetRenderPass();
 		Count<class RenderCommandBuffer>  GetCurrentCommandBuffer() {
 			return m_CommandBuffer;
 		}
@@ -39,13 +38,14 @@ namespace Proof{
 
 		virtual void PushData(std::string_view name, const void* data);
 		Count< class GraphicsPipeline> GetPipeline() {return m_Config.Pipeline;};
+		virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) { m_Config.TargetFrameBuffer = frame; }
 		Count<class FrameBuffer> GetTargetFrameBuffer();
 
 		void Build();
 		void Release();
 	private:
-		void AddColorAttachment(const RenderPassImageConfig& config);
-		void SetDepthAttachment(const RenderPassImageConfig& config);
+		void AddColorAttachment(const GraphicsPipelineImageConfig& config);
+		void SetDepthAttachment(const GraphicsPipelineImageConfig& config);
 
 		void BeginRenderPassBase(Count<class RenderCommandBuffer> command, Viewport vieport, ViewportScissor scisscor);
 		
@@ -57,13 +57,13 @@ namespace Proof{
 		void BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear = false);
 		void RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial);
 
-		void SetViewPorts(Viewport vieport, ViewportScissor scisscor, bool explicitClear);
+		void SetDynamicStates(Viewport vieport, ViewportScissor scisscor, bool explicitClear);
 		Count<RenderCommandBuffer> m_CommandBuffer;
 		RenderPassConfig m_Config;
 		VulkanRenderPassAttach m_DepthAttachment;
 		std::vector< VulkanRenderPassAttach> m_ColorAttachments;
-		ImageFormat m_DepthFormat = ImageFormat::None;
-		VkRenderPass m_RenderPass = nullptr;
+		//ImageFormat m_DepthFormat = ImageFormat::None;
+		//VkRenderPass m_RenderPass = nullptr;
 		bool m_RenderPassEnabled = false;
 		bool m_MaterialRenderPass = false;
 		Count<VulkanDescriptorManager> m_DescritptorSetManager;

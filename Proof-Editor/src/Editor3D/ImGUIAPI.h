@@ -17,14 +17,17 @@ namespace Proof
 			static void SetKeyboardFocusOff();
 			//needs to be edited cause eneums who don thave value 1,2,3 or maybe like 2,4,6 there will be a problem
 			template<typename E>
-			static bool EnumCombo(const std::string& name, E& enumVar) {
+			static bool EnumCombo(const std::string& name, E& enumVar, std::unordered_set<E> exludeValues={}) {
 				ImGui::PushID(name.c_str());
 				void* val = &enumVar;
 				int* valNum = (int*)val;
 				auto enumNames = EnumReflection::GetNames<E>();
-				std::vector<const char*> charVec(enumNames.size(), nullptr);
+				std::vector<const char*> charVec;
 				for (int i = 0; i < enumNames.size(); i++) {
-					charVec[i] = enumNames[i].c_str();
+					E toEnum = EnumReflection::StringEnum<E>(enumNames[i]);
+					if (exludeValues.contains(toEnum))
+						continue;
+					charVec.push_back(enumNames[i].c_str());
 				}
 				ImGui::Text(name.c_str());
 				ImGui::SameLine();

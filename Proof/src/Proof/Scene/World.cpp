@@ -20,7 +20,9 @@
 #include "Physics/PhysicsEngine.h"
 #include "Physics/PhysicsWorld.h"
 #include "Proof/Input/InputManager.h"
+#include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Scene/Prefab.h"
+#include "Proof/Renderer/Renderer.h"
 namespace Proof {
 	World::World(const std::string& name, UUID ID)
 		:
@@ -69,6 +71,95 @@ namespace Proof {
 				}
 			}
 		}
+	}
+	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const Vector& cameraLocation, float nearPlane, float farPlane)
+	{
+		PF_PROFILE_FUNC();
+
+		worldRenderer->SetContext(this);
+		worldRenderer->BeginScene(camera, cameraLocation, nearPlane, farPlane);
+
+		// lighting
+		{
+			//directional lights
+			{
+				auto dirLights = m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
+				SBDirectionalLightsScene directionaLightScene;
+				directionaLightScene.DirectionalLights.resize(dirLights.size());
+				int index = 0;
+				for (auto& entityID : dirLights)
+				{
+					Entity entity(entityID, this);
+					const auto& dirLightComponent = dirLights.get<DirectionalLightComponent>(entityID);
+					glm::vec3 direction = ProofToglmVec(dirLightComponent.OffsetDirection) + ProofToglmVec(GetWorldRotation(entity));
+					direction = glm::normalize(direction);
+					directionaLightScene.DirectionalLights[index].Color = dirLightComponent.Color;
+					directionaLightScene.DirectionalLights[index].Intensity = dirLightComponent.Intensity;
+					directionaLightScene.DirectionalLights[index].Direction = -GlmVecToProof(direction);
+					directionaLightScene.DirectionalLights[index].ShadowSoftness = dirLightComponent.ShadowSoftness;
+					directionaLightScene.DirectionalLights[index].ShadowStrength = dirLightComponent.ShadowStrength;
+					directionaLightScene.DirectionalLights[index].bCastShadows = dirLightComponent.CastShadow;
+					directionaLightScene.DirectionalLights[index].bCastSoftShadows = dirLightComponent.CastSoftShadow;
+
+					index++;
+				}
+				if(!dirLights.empty())
+					worldRenderer->SubmitDirectionalLight(directionaLightScene);
+			}
+
+			// sky Light
+			{
+				auto skylights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
+				if (!skylights.empty())
+				{
+					auto entityID = skylights.front();
+					Entity entity(entityID, this);
+					auto& skyLightComponent = entity.GetComponent<SkyLightComponent>();
+					UBSkyLight skyLightInfo;
+					skyLightInfo.TintColor = skyLightComponent.ColorTint;
+					skyLightInfo.Rotation = skyLightComponent.MapRotation;
+					skyLightInfo.Intensity = skyLightComponent.Intensity;
+					skyLightInfo.Lod = skyLightComponent.SkyBoxLoad;
+
+
+					if (skyLightComponent.DynamicSky)
+					{
+						//skyLightComponent.RemoveImage();
+						//auto environment = Renderer::CreatePreethamSky(skyLightComponent.Turbidity, skyLightComponent.Azimuth, skyLightComponent.Inclination);
+						//skyLightComponent.Environment = Count<Environment>::Create(environment, environment);
+					}
+					if (skyLightComponent.Environment != nullptr)
+					{
+						worldRenderer->SubmitSkyLight(skyLightInfo, skyLightComponent.Environment);
+					}
+				}
+			}
+		}
+
+		// render meshes
+		{
+			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+			for (auto entity : group)
+			{
+				auto [transformComponent, staticMeshComponent] = group.get<TransformComponent, MeshComponent>(entity);
+				if (!staticMeshComponent.Visible)
+					continue;
+
+				auto mesh = staticMeshComponent.GetMesh();
+				if (mesh)
+				{
+					Entity e = Entity(entity, this);
+					glm::mat4 transform = GetWorldTransform(e);
+
+					//if (SelectionManager::IsEntityOrAncestorSelected(e))
+					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
+					//else
+					worldRenderer->SubmitStaticMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
+				}
+			}
+		}
+
+		worldRenderer->EndScene();
 	}
 	void World::Init()
 	{
@@ -224,6 +315,11 @@ namespace Proof {
 		{
 			return Entity{ entity,this };
 		}
+	}
+
+	void World::OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const EditorCamera& camera)
+	{
+		OnRender(renderer, time, camera,GlmVecToProof( camera.GetPosition()), camera.GetNearPlane(), camera.GetFarPlane());
 	}
 
 

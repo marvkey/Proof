@@ -4,6 +4,7 @@
 #include "Proof/Math/Vector.h" 
 #include "Proof/Events/WindowEvent.h"
 #include <filesystem>
+#include "Proof/Core/Buffer.h"
 namespace Proof {
 	struct  RendererConfig {
 		uint32_t FramesFlight = 2;
@@ -20,6 +21,8 @@ namespace Proof {
 		enum class API {
 			None =0, OpenGL =1, Vulkan=2
 		};
+
+		
 		static void DrawElementIndexed(Count<class RenderCommandBuffer> commandBuffer, uint32_t indexCount, uint32_t instanceCount=1, uint32_t firstIndex = 0, int32_t vertexOffset = 0, uint32_t firstInstance = 0);
 		static void DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex = 0, uint32_t firstInstance = 0);
 
@@ -56,6 +59,10 @@ namespace Proof {
 		static Count<class Shader> GetShader(const std::string& name);
 		static const std::unordered_map<std::string, std::string>& GetShaderDefines();
 		static Count<class ShaderLibrary> GetShaderLibrary();
+
+		static void SubmitFullScreenQuad(Count<RenderCommandBuffer> renderCOmmandBuffer, Count<RenderPass> pass, std::unordered_map<std::string, Buffer> pushBuffer = {});
+		static void SubmitFullScreenQuad(Count<RenderCommandBuffer> renderCOmmandBuffer, Count<RenderPass> pass, Count<RenderMaterial> material);
+
 		//environment and prefilter
 		static std::pair<Count<class TextureCube>, Count<class TextureCube>>CreateEnvironmentMap(const std::filesystem::path& path);
 		//submit to render thread

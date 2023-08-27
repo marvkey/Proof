@@ -94,6 +94,16 @@ namespace Proof {
 	{
 		m_DescritptorSetManager->SetInput(name, images);
 	}
+
+	void VulkanRenderMaterial::Set(std::string_view name, Count<class Image>image) 
+	{
+		m_DescritptorSetManager->SetInput(name, image);
+
+	}
+	void VulkanRenderMaterial::Set(std::string_view name, const std::vector< Count<class Image>>& images)
+	{
+		m_DescritptorSetManager->SetInput(name, images);
+	}
 	void VulkanRenderMaterial::Set(const std::string& name, float value)
 	{
 		SetInternal<float>(name,value);

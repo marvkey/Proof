@@ -35,11 +35,19 @@ namespace Proof {
 	static BaseTextures* s_BaseTextures;
 
 	static std::unordered_map<std::string, std::string> s_ShaderDefines;
+
+	struct RendererData
+	{
+		Count<VertexBuffer> QuadVertexBuffer;
+		Count<IndexBuffer> QuadIndexBuffer;
+	};
+	RendererData* s_Data = nullptr;
 	void Renderer::Init(Window* window)
 	{
 		if (RendererAPI::ActiveAPI == Renderer::API::Vulkan)
 			s_RendererAPI = new VulkanRendererAPI();
 
+		s_Data = new RendererData();
 		GraphicsContext = GraphicsContext::Create(window);
 		s_RendererAPI->SetGraphicsContext(GraphicsContext);
 		window->m_SwapChain = SwapChain::Create(ScreenSize{ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() }, window->IsVsync());
@@ -49,9 +57,15 @@ namespace Proof {
 
 		//PBR
 		ShaderLibrary->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl");
-		//2D
-		ShaderLibrary->LoadShader("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.shader");
 
+		// predepth
+		ShaderLibrary->LoadShader("PreDepth_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PreDepth/PreDepth_Static.glsl");
+
+
+		//Shadows
+		ShaderLibrary->LoadShader("DebugShadowMap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/DebugShadowMap.glsl");
+		ShaderLibrary->LoadShader("ShadowDepthPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/ShadowDepthPass.glsl");
+		
 		//IBL
 		ShaderLibrary->LoadShader("BRDFLUT", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/BRDFLut.glsl");
 		ShaderLibrary->LoadShader("EquirectangularToCubemap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EquirectangularToCubemap.glsl");
@@ -61,26 +75,78 @@ namespace Proof {
 		ShaderLibrary->LoadShader("EnvironmentPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentPrefilter.glsl");
 		ShaderLibrary->LoadShader("PreethamSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/PreethamSky.glsl");
 
-		//Shadows
-		ShaderLibrary->LoadShader("DebugShadowMap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/DebugShadowMap.glsl");
-		ShaderLibrary->LoadShader("ShadowDepthPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/ShadowDepthPass.glsl");
+		// postprocess
+
+		ShaderLibrary->LoadShader("WorldComposite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/WorldComposite.glsl");
+
+		//2D
+		ShaderLibrary->LoadShader("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.glsl");
+		ShaderLibrary->LoadShader("Text2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text2D.glsl");
 
 		s_BaseTextures = new  BaseTextures();
 		s_RenderCommandQueue.resize(2);
 		s_RenderCommandQueue[0] = new CommandQueue();
 		s_RenderCommandQueue[1] = new CommandQueue();
 
-		// set up basic piplines		
 		{
-			ComputePipelineConfig config;
-			config.DebugName = "Pretham Pipeline";
-			config.Shader = Renderer::GetShader("PreethamSky");
-			auto prethamPipeline = ComputePipeline::Create(config);
 
-			ComputePassConfiguration computeePassConfig;
-			computeePassConfig.DebugName = "Pretham SKy pass";
-			computeePassConfig.Pipeline = prethamPipeline;
-			PrethamSkyPass = ComputePass::Create(computeePassConfig);
+			/**
+			* 
+				In the code snippet you provided, the width and height are both set to 2 for the following reason:
+
+				A full-screen quad in normalized device coordinates (NDC) ranges from -1 to 1 along both the x and y axes. By setting x to -1 and y to -1, and width and height both to 2, you are effectively defining a quad that spans the entire screen.
+
+				Here's a breakdown of the logic:
+
+				x and y are set to -1, which corresponds to the bottom left corner of the screen in NDC.
+				width and height are set to 2. Since NDC ranges from -1 to 1 along both axes, a width and height of 2 will result in a quad that extends from -1 to 1 in both directions. This covers the entire screen.
+				The four vertices of the quad are defined based on the x, y, width, and height values, along with the texture coordinates. The texture coordinates are set to (0, 0) for the bottom left, (1, 0) for the bottom right, (1, 1) for the top right, and (0, 1) for the top left. 
+				This maps the quad to the full extent of a texture, making it suitable for rendering fullscreen effects.
+				So, the choice of width and height as 2 is to ensure that the quad spans the entire screen in NDC, allowing you to render fullscreen effects or post-processing operations.
+
+				NDC stands for "Normalized Device Coordinates." It is a coordinate system used in computer graphics to represent positions and vertices in a normalized and device-independent manner. 
+				NDC coordinates are a crucial concept in graphics programming, as they provide a standardized way to describe positions on the screen or in a rendering pipeline.
+				In NDC, the visible portion of the screen or rendering area is defined by a square or rectangle with corners at (-1, -1) and (1, 1). This square represents the "viewport" and serves as a reference for mapping positions from the 3D world space to the 2D screen space. 
+				The range of NDC coordinates along both the x and y axes is from -1 to 1.
+				The process of transforming vertices from 3D world coordinates to NDC involves several stages, including model transformation (local to world space), view transformation (world to camera space), and projection transformation (camera to NDC space). 
+				The resulting NDC coordinates are then further processed in the rendering pipeline to eventually generate the 2D image that is displayed on the screen.
+				Using NDC coordinates allows graphics programmers to write code that is independent of the specific screen dimensions or resolution of the display device, making it easier to create graphics that work consistently across various platforms and screen sizes.
+			*/
+			// Create fullscreen quad
+			float x = -1;
+			float y = -1;
+			float width = 2, height = 2;
+
+			// set up basic piplines		
+			{
+				ComputePipelineConfig config;
+				config.DebugName = "Pretham Pipeline";
+				config.Shader = Renderer::GetShader("PreethamSky");
+				auto prethamPipeline = ComputePipeline::Create(config);
+
+				ComputePassConfiguration computeePassConfig;
+				computeePassConfig.DebugName = "Pretham SKy pass";
+				computeePassConfig.Pipeline = prethamPipeline;
+				PrethamSkyPass = ComputePass::Create(computeePassConfig);
+			}
+
+			QuadVertex data[4];
+
+			data[0].Position = glm::vec3(x, y, 0.0f);
+			data[0].TexCoord = glm::vec2(0, 0);
+
+			data[1].Position = glm::vec3(x + width, y, 0.0f);
+			data[1].TexCoord = glm::vec2(1, 0);
+
+			data[2].Position = glm::vec3(x + width, y + height, 0.0f);
+			data[2].TexCoord = glm::vec2(1, 1);
+
+			data[3].Position = glm::vec3(x, y + height, 0.0f);
+			data[3].TexCoord = glm::vec2(0, 1);
+
+			s_Data->QuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+			uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
+			s_Data->QuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 		}
 
 		PF_ENGINE_TRACE("Renderer Initialized");
@@ -100,6 +166,7 @@ namespace Proof {
 		delete s_BaseTextures;
 		ShaderLibrary = nullptr;
 		GraphicsContext = nullptr;
+		delete s_Data;
 		delete s_RendererAPI;
 	}
 	const std::unordered_map<std::string, std::string>& Renderer::GetShaderDefines()
@@ -112,6 +179,66 @@ namespace Proof {
 		return ShaderLibrary;
 	}
 
+	void Renderer::SubmitFullScreenQuad(Count<RenderCommandBuffer> renderCOmmandBuffer, Count<RenderPass> pass, std::unordered_map<std::string, Buffer> pushBuffer)
+	{
+		/**
+		* 
+			Think of a full-screen quad like a big piece of paper that covers your entire computer screen. When you're done drawing the main picture (your game scene) on this paper, you might want to add some extra touches to make it look cooler, like coloring some parts or making things blurry.
+			But instead of coloring or blurring each tiny part separately, you can do it all at once by shading the whole paper. This is faster because your computer can work on many things at the same time. This paper is your full-screen quad.
+			This technique also helps make sure that everything looks the same all over the screen. It's like applying makeup evenly to your face. Plus, you can use this big paper to put other things on top, like stickers (UI elements) or notes.
+			So, a full-screen quad is like a big canvas where you apply finishing touches to your game scene quickly, evenly, and with the ability to add extra stuff on top.
+		*/
+
+		/**
+		*
+		* 
+			A full-screen quad is a simple and effective technique used in computer graphics to apply post-processing effects and perform certain rendering tasks that involve the entire screen. 
+			It might seem counterintuitive to render a quad that covers the entire screen, but it serves some important purposes in modern graphics pipelines:
+			Post-Processing Effects:
+			After the main scene is rendered, you might want to apply various post-processing effects like bloom, depth of field, motion blur, color correction, and more. These effects typically involve applying shaders that sample from the scene's rendered textures (color and depth buffers) and generate the final output. 
+			By rendering a full-screen quad, you provide a canvas for these shaders to process the entire scene.
+
+			Efficiency:
+			Modern GPUs are optimized for parallel processing. By rendering a full-screen quad, you can leverage the GPU's parallelism to process pixels concurrently, which is more efficient than applying effects individually to each pixel. 
+			This is especially important for effects that require multiple samples or complex calculations.
+
+			Consistency:
+			Applying post-processing effects uniformly across the entire screen helps maintain a consistent look throughout the scene. If you applied effects to individual objects or regions, the visual coherence might be compromised.
+
+			Custom Rendering Operations:
+			Beyond post-processing, full-screen quads can be used for other operations. For instance, you might want to render a texture onto the screen, display debug information, or execute custom shader-based operations across the entire screen.
+
+			Integration with UI:
+			As you mentioned earlier, full-screen quads are often used to integrate UI elements like menus, health bars, crosshairs, and more. By rendering these UI elements on top of the full-screen quad, they can easily overlay the rendered scene.
+
+			In summary, a full-screen quad is a versatile and efficient tool in modern graphics programming. It provides a canvas for applying post-processing effects, rendering UI elements, and performing other operations that involve the entire screen. 
+			By leveraging the parallel processing power of GPUs, this technique contributes to the overall visual quality and performance of real-time graphics applications.
+		*/
+		PF_PROFILE_FUNC();
+		auto pipeline = pass->GetPipeline();
+
+		s_Data->QuadVertexBuffer->Bind(renderCOmmandBuffer);
+		s_Data->QuadIndexBuffer->Bind(renderCOmmandBuffer);
+
+		for (auto& [name, buffer] : pushBuffer)
+		{
+			if(buffer)
+				pass->PushData(name, buffer.Get());
+		}
+		Renderer::DrawElementIndexed(renderCOmmandBuffer, s_Data->QuadIndexBuffer->GetCount());
+	}
+
+	void Renderer::SubmitFullScreenQuad(Count<RenderCommandBuffer> renderCOmmandBuffer, Count<RenderPass> pass, Count<RenderMaterial> material)
+	{
+		PF_PROFILE_FUNC();
+		auto pipeline = pass->GetPipeline();
+
+		s_Data->QuadVertexBuffer->Bind(renderCOmmandBuffer);
+		s_Data->QuadIndexBuffer->Bind(renderCOmmandBuffer);
+
+		Renderer::RenderPassPushRenderMaterial(pass, material);
+		Renderer::DrawElementIndexed(renderCOmmandBuffer, s_Data->QuadIndexBuffer->GetCount());
+	}
 	void Renderer::DrawElementIndexed(Count<RenderCommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
 	{
 		s_RendererAPI->DrawElementIndexed(commandBuffer, indexCount, instanceCount, firstIndex,vertexOffset,firstInstance);
@@ -237,7 +364,7 @@ namespace Proof {
 			PrethamSkyPass->PushData("u_Uniforms", &params);
 			PrethamSkyPass->Dispatch(imageDimension / 32, imageDimension / 32, 6);
 			Renderer::EndComputePass(PrethamSkyPass);
-
+			return;
 			// boit 
 			auto blitCmd = cmdBufer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 			bool readonly = false;

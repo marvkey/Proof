@@ -94,7 +94,7 @@ namespace Proof {
 		void PauseWorld();
 
 		void NewWorld();
-		Special<class WorldRenderer> m_WorldRenderer;
+		Count<class WorldRenderer> m_WorldRenderer;
 
 		std::unordered_map<Players, Count<class WorldRenderer>> m_MultiplayerRender;
 

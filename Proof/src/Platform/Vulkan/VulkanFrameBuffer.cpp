@@ -23,16 +23,22 @@ namespace Proof
         :
         m_Config(attachments)
     {
+        if (m_Config.Height == 100 || m_Config.Width == 100)
+        {
+            auto size = VulkanRenderer::GetGraphicsContext()->GetSwapChain()->GetSwapChainExtent();
+            m_Config.Width = size.X;
+            m_Config.Height = size.Y;
+        }
+        SetUpAttachments();
 
-        Init();
+        Build();
     }
     VulkanFrameBuffer::~VulkanFrameBuffer()
     {
         Release();
     }
-    void VulkanFrameBuffer::Init()
+    void VulkanFrameBuffer::Build()
     {
-        SetUpAttachments();
         CreateFramebuffer();
         auto graphicsContext = Renderer::GetGraphicsContext().As <VulkanGraphicsContext>();
 
@@ -96,11 +102,11 @@ namespace Proof
             imageConfig.DebugName = fmt::format("{} DepthImage ",m_Config.DebugName);
             imageConfig.Format = m_DepthFormat;
             imageConfig.Usage = ImageUsage::Attachment;
-            imageConfig.Width = m_Config.Size.X;
-            imageConfig.Height = m_Config.Size.Y;
+            imageConfig.Transfer = m_Config.Transfer;
+            imageConfig.Width = m_Config.Width;
+            imageConfig.Height = m_Config.Height;
             m_DepthImage.RefImages[i] = Count<VulkanImage2D>::Create(imageConfig,VK_SAMPLE_COUNT_1_BIT);
             {
-
              
             }
             Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
@@ -108,7 +114,7 @@ namespace Proof
                 VkImageMemoryBarrier barrier{};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
                 barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                 barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                 barrier.image = m_DepthImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
@@ -194,10 +200,10 @@ namespace Proof
             imageConfig.DebugName = fmt::format("{} ColorAttachment Index: {} ", m_Config.DebugName, m_ColorImages.size());
             imageConfig.Format = imageAttach.Format;
             imageConfig.Usage = ImageUsage::Attachment;
-            imageConfig.Width = m_Config.Size.X;
-            imageConfig.Height = m_Config.Size.Y;
+            imageConfig.Transfer = m_Config.Transfer;
+            imageConfig.Width = m_Config.Width;
+            imageConfig.Height = m_Config.Height;
             colorImage.RefImages[i] = Image2D::Create(imageConfig);
-            //m_DepthImage.RefImages[i] = Count<VulkanImage2D>::Create(imageConfig,VK_SAMPLE_COUNT_8_BIT);
 
             Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
                 VkImageMemoryBarrier imageMemoryBarrier{};
@@ -255,29 +261,139 @@ namespace Proof
         auto swapchain = graphicsContext->GetSwapChain();
 
         m_Framebuffers.resize(swapchain->GetImageCount());
-        bool multiView = false;
-
-        // for texturecube
-        if (m_ColorImages.size() > 0)
+       
         {
-            if (m_ColorImages[0].RefImages[0].As<Image2D>())
+            uint32_t attachmentIndex = 0;
+            std::vector<VkAttachmentReference> colorAttachmentReferences;
+            std::vector<VkAttachmentDescription> attachmentDescriptions;
+            VkAttachmentReference depthAttachmentReference;
+            bool depthImage = false;
+            for (const auto& attachmentSpec : m_Config.Attachments.Attachments)
             {
-                if (m_ColorImages[0].RefImages[0].As<Image2D>()->GetSpecification().Layers == 6)
-                    multiView = true;
+                if (Utils::IsDepthFormat(attachmentSpec.Format))
+                {
 
+
+                    VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();
+                    attachmentDescription.flags = 0;
+                    attachmentDescription.format = Utils::ProofFormatToVulkanFormat(attachmentSpec.Format);
+                    attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+                    attachmentDescription.loadOp = m_Config.ClearDepthOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+                    attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE; 
+                    attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                    attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                    attachmentDescription.initialLayout = m_Config.ClearDepthOnLoad ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+                    //dont usupport seperate stencil and depth yet
+                  //  if (Utils::ContainStencilFormat(attachmentSpec.Format) )
+                    //{
+                        attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; 
+                        attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; 
+                        depthAttachmentReference = { attachmentIndex, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+                   // }
+                   // else
+                   // {
+                   //     attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL; 
+                   //     attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL; 
+                   //     depthAttachmentReference = { attachmentIndex, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL };
+                   // }
+                    depthImage = true;
+                }
+                else
+                {
+
+                    VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();
+                    attachmentDescription.flags = 0;
+                    attachmentDescription.format = Utils::ProofFormatToVulkanFormat(attachmentSpec.Format);
+                    attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+                    attachmentDescription.loadOp = m_Config.ClearColorOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;;
+                    attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE; 
+                    attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                    attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                    attachmentDescription.initialLayout = m_Config.ClearColorOnLoad ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    colorAttachmentReferences.emplace_back(VkAttachmentReference{ attachmentIndex, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+                }
+                attachmentIndex++;
             }
+
+
+            VkSubpassDescription subpassDescription = {};
+            subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            subpassDescription.colorAttachmentCount = uint32_t(colorAttachmentReferences.size());
+            subpassDescription.pColorAttachments = colorAttachmentReferences.data();
+            if (depthImage)
+                subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
+
+
+            std::vector<VkSubpassDependency> dependencies;
+
+            if (colorAttachmentReferences.size())
+            {
+                {
+                    VkSubpassDependency& depedency = dependencies.emplace_back();
+                    depedency.srcSubpass = VK_SUBPASS_EXTERNAL;
+                    depedency.dstSubpass = 0;
+                    depedency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                    depedency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                    depedency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                    depedency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                    depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+                }
+                {
+                    VkSubpassDependency& depedency = dependencies.emplace_back();
+                    depedency.srcSubpass = 0;
+                    depedency.dstSubpass = VK_SUBPASS_EXTERNAL;
+                    depedency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                    depedency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                    depedency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                    depedency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                    depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+                }
+            }
+
+            if (depthImage)
+            {
+                {
+                    VkSubpassDependency& depedency = dependencies.emplace_back();
+                    depedency.srcSubpass = VK_SUBPASS_EXTERNAL;
+                    depedency.dstSubpass = 0;
+                    depedency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                    depedency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+                    depedency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                    depedency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                    depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+                }
+
+                {
+                    VkSubpassDependency& depedency = dependencies.emplace_back();
+                    depedency.srcSubpass = 0;
+                    depedency.dstSubpass = VK_SUBPASS_EXTERNAL;
+                    depedency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+                    depedency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                    depedency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                    depedency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                    depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+                }
+            }
+
+            VkRenderPassCreateInfo renderPassInfo = {};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+            renderPassInfo.attachmentCount = static_cast<uint32_t>(attachmentDescriptions.size());
+            renderPassInfo.pAttachments = attachmentDescriptions.data();
+            renderPassInfo.subpassCount = 1;
+            renderPassInfo.pSubpasses = &subpassDescription;
+            renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+            renderPassInfo.pDependencies = dependencies.data();
+
+            VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_CompatibilityRenderPass));
+            graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_RENDER_PASS, m_Config.DebugName + "Compatitbility render pass", m_CompatibilityRenderPass);
         }
-        RenderPassConfig renderPassCofnig("compatible renderPass",m_Config);
-        renderPassCofnig.DebugName = "compatible renderPass";
-        renderPassCofnig.Pipeline = nullptr;
-        renderPassCofnig.MultiView = multiView;
-        VulkanRenderPass renderPass(renderPassCofnig);
-        
-        for (size_t i = 0; i < swapchain->GetImageCount(); i++)
+        for (size_t i = 0; i < m_Framebuffers.size(); i++)
         {
 
             std::vector<VkImageView> attachments;
 
+           
             for (auto& coloredImage : m_ColorImages)
             {
                 VkDescriptorImageInfo* infoRef = (VkDescriptorImageInfo* )coloredImage.RefImages[i]->GetResourceDescriptorInfo();
@@ -296,11 +412,11 @@ namespace Proof
             // this is just to check if compatible wit renderPass
 
             // i dont wanna do this but it needs a compatible render to create for some reason
-            framebufferInfo.renderPass = renderPass.GetRenderPass();
+            framebufferInfo.renderPass = m_CompatibilityRenderPass;
             framebufferInfo.attachmentCount = attachments.size();
             framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = m_Config.Size.X;
-            framebufferInfo.height = m_Config.Size.Y;
+            framebufferInfo.width = m_Config.Width;
+            framebufferInfo.height = m_Config.Height;
             framebufferInfo.layers = 1;
             framebufferInfo.pNext = nullptr;
             if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_Framebuffers[i]))
@@ -367,11 +483,15 @@ namespace Proof
     {
         return m_ColorImages.size()>0;
     }
-    void VulkanFrameBuffer::Resize(Vector2 imageSize)
+    void VulkanFrameBuffer::Resize(uint32_t width, uint32_t height)
     {
+        if (m_Config.Width == width && m_Config.Height == height)
+            return;
+
         Release();
-        m_Config.Size = imageSize;
-        Init();
+        m_Config.Width = width;
+        m_Config.Height = height;
+        Build();
     }
     void VulkanFrameBuffer::Copy(Count<FrameBuffer> copyFrameBuffer)
     {
@@ -445,67 +565,17 @@ namespace Proof
     {
         auto swapchain = VulkanRenderer::GetGraphicsContext()->GetSwapChain()    ;
 
-        for (size_t i = 0; i < swapchain->GetImageCount(); i++)
+        // dont destroy images and depth images attached because we may need to resize
+        for (size_t i = 0; i < m_Framebuffers.size(); i++)
         {
-            for (auto& coloredimage : m_ColorImages)
-            {
-                coloredimage.RefImages.clear();
-                /*
-                Renderer::SubmitDatafree([images = coloredimage.Images[i], imageViews = coloredimage.ImageViews[i],imageSampler = coloredimage.ImageSampler[i]]()
-                {
-                    auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-                    const auto& device = graphicsContext->GetDevice();
-                    vkDestroyImageView(device, imageViews, nullptr);
-                    vkDestroySampler(device, imageSampler, nullptr);
-                    vmaDestroyImage(graphicsContext->GetVMA_Allocator(), images.Image, images.Allocation);
-                });
-                */
-            }
-
-            if (HasDepthImage())
-            {
-                if (!HasDepthImage())
-                    continue;
-                m_DepthImage.RefImages.clear();
-                /*
-                Renderer::SubmitDatafree([images = m_DepthImage.Images[i], imageViews = m_DepthImage.ImageViews[i], imageSampler = m_DepthImage.ImageSampler[i]]()
-                {
-                    auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-                    const auto& device = graphicsContext->GetDevice();
-                    vkDestroyImageView(device, imageViews, nullptr);
-                    vkDestroySampler(device, imageSampler, nullptr);
-                    vmaDestroyImage(graphicsContext->GetVMA_Allocator(), images.Image, images.Allocation);
-                });
-                */
-            }
-
             Renderer::SubmitDatafree([buffer = m_Framebuffers[i]]() {
                 const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice();
                 vkDestroyFramebuffer(device, buffer, nullptr);
             });
         }
-        m_DepthFormat = ImageFormat::None;
-        m_DepthImage = {};
-        m_ColorImages.clear();
-        m_Framebuffers.clear();
-
-         // remove from index if this mesh was in there before 
-        auto graphicsContext = Renderer::GetGraphicsContext().As <VulkanGraphicsContext>();
-        int index = -1;
-        int iterator = 0;
-        for (auto i : graphicsContext->GetSwapChain().As<VulkanSwapChain>()->FrameBuffers)
-        {
-            if (i == this)
-            {
-                index = iterator;
-                break;
-            }
-            iterator++;
-        }
-        if (index != -1)
-        {
-            graphicsContext->GetSwapChain().As<VulkanSwapChain>()->FrameBuffers.erase(
-                graphicsContext->GetSwapChain().As<VulkanSwapChain>()->FrameBuffers.begin() + index);
-        }
+        Renderer::SubmitDatafree([renderPass = m_CompatibilityRenderPass]() {
+            vkDestroyRenderPass(VulkanRenderer::GetGraphicsContext()->GetDevice(), renderPass, nullptr);
+        });
+        m_CompatibilityRenderPass = nullptr;
     }
 }

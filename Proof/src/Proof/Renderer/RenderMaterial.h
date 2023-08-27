@@ -23,6 +23,9 @@ namespace Proof{
 		  void virtual Set(std::string_view name, Count<class Image2D>image) = 0;
 		  void virtual Set(std::string_view name, const std::vector< Count<class Image2D>>& images) = 0;
 
+		  void virtual Set(std::string_view name, Count<class Image>image) = 0;
+		  void virtual Set(std::string_view name, const std::vector< Count<class Image>>& images) = 0;
+
 		  virtual void Set(const std::string& name, float value) = 0;
 		  virtual void Set(const std::string& name, bool value) = 0;
 		  virtual void Set(const std::string& name, int value) = 0;

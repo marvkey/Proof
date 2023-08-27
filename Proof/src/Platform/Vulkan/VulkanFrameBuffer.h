@@ -43,11 +43,18 @@ namespace Proof
 
 		virtual bool HasDepthImage();
 		virtual bool HasColorAttachment();
-		virtual void Resize(Vector2 imageSize);
+		virtual void Resize(uint32_t width, uint32_t height);
+		virtual void Resize(const glm::uvec2 size) { Resize(size.x, size.y); }
 
 		virtual void Copy(Count<FrameBuffer> framebUFFer);
+
+		VkRenderPass GetRenderPass() { return m_CompatibilityRenderPass; }
+
+		ImageFormat GetDepthFormat() { return m_DepthFormat; }
 	private:
-		void Init();
+		VkRenderPass m_CompatibilityRenderPass;
+
+		void Build();
 		void SetUpAttachments();
 		std::vector<VulkanFrameBufferImages> m_ColorImages;
 		// can only have one depth image thats how vulkan works

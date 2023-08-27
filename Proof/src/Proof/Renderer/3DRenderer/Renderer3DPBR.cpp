@@ -66,19 +66,19 @@ namespace Proof
 		m_MeshPipeLine->LightPass.DirLightsBuffer = UniformBuffer::Create(sizeof(DirLight));
 
 	}
-	void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {
-		BeginContext(editorCamera.m_Projection, editorCamera.m_View, GlmVecToProof(editorCamera.m_Positon), frameBuffer,commandBuffer);
-	}
-	void Renderer3DPBR::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {
-		PF_PROFILE_FUNC()
-		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
-		PF_CORE_ASSERT(s_InContext ==false, "Cannot begin context if already in a context");
-		s_InContext = true;
-		s_CurrentCamera = CameraData{ projection,view,glm::mat4(1),Position };
-		m_RenderStorage->CurrentFrameBuffer = frameBuffer;
-		m_RenderStorage->CommandBuffer = commandBuffer;
-		m_Performance = {};
-	}
+	//void Renderer3DPBR::BeginContext(EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {
+	//	BeginContext(editorCamera.m_Projection, editorCamera.m_View, GlmVecToProof(editorCamera.m_Positon), frameBuffer,commandBuffer);
+	//}
+	//void Renderer3DPBR::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer) {
+	//	PF_PROFILE_FUNC()
+	//	PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
+	//	PF_CORE_ASSERT(s_InContext ==false, "Cannot begin context if already in a context");
+	//	s_InContext = true;
+	//	s_CurrentCamera = CameraData{ projection,view,glm::mat4(1),Position };
+	//	m_RenderStorage->CurrentFrameBuffer = frameBuffer;
+	//	m_RenderStorage->CommandBuffer = commandBuffer;
+	//	m_Performance = {};
+	//}
 
 
 	void Renderer3DPBR::SetPbrMaps(Count<class TextureCube> irrdianceMap, Count<class TextureCube> prefilterMap, Count<Texture2D> brdf)
@@ -194,7 +194,6 @@ namespace Proof
 		m_MeshPipeLine->Reset();
 		m_MeshMaterialPipeline->Reset();
 
-		m_RenderStorage->CurrentFrameBuffer = nullptr;
 		m_RenderStorage->CommandBuffer = nullptr;
 	}
 
@@ -434,14 +433,14 @@ namespace Proof
 		meshVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
 		meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
 		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
-		GraphicsPipelineConfig graphicsPipelineConfig;
-		graphicsPipelineConfig.DebugName = "Mesh";
-		graphicsPipelineConfig.Shader = Shader;
-		graphicsPipelineConfig.VertexArray = meshVertexArray;
-		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
-		//graphicsPipelineConfig.RenderPass = renderPass;
-
-		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+		//GraphicsPipelineConfig graphicsPipelineConfig;
+		//graphicsPipelineConfig.DebugName = "Mesh";
+		//graphicsPipelineConfig.Shader = Shader;
+		//graphicsPipelineConfig.VertexArray = meshVertexArray;
+		////graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		////graphicsPipelineConfig.RenderPass = renderPass;
+		//
+		//GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
 	MeshMaterialPipeline::MeshMaterialPipeline(Count<RenderPass> renderPass, MeshPipeLine& meshpipline)
 	{

@@ -38,7 +38,7 @@ namespace Proof
             PF_CORE_ASSERT(false,fmt::format("Failed to load Shader: {}, Path {}", name, path.string()).c_str());
             return;
         }
-        if (HasShader(name))return;
+        PF_CORE_ASSERT(HasShader(name) ==false, "Canot load shader with thesame name");
 
         auto shader = Shader::Create(name, path.string());
         AddShader(shader);

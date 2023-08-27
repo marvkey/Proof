@@ -2,7 +2,8 @@
 
 #version 450
 //https://gist.github.com/keijiro/01dc44ad440623a5d30c
-layout(location = 0) in vec3 aPos;
+layout(location = 0) in vec3 a_Position;
+layout(location = 1) in vec2 a_TexCoord;
 layout(location = 0) out vec3 outWorldPos;
 layout(set = 0, binding = 0) uniform CameraData
 {
@@ -45,7 +46,7 @@ void main()
     //vec4 clipPos = CameraUBO.Projection* rotView *vec4(outWorldPos,1.0);
     //gl_Position = clipPos.xyww;
 
-    vec4 position = vec4(aPos.xy, 0.0, 1.0);
+    vec4 position = vec4(a_Position.xy, 0.0, 1.0);
 	gl_Position = position;
     outWorldPos = mat3(inverse(CameraUBO.ViewProjection )) * vec3(inverse(CameraUBO.Projection) * position);
 }
@@ -73,8 +74,8 @@ void main()
     envColor *= u_SkyBoxInfo.TintColor; 
     envColor *= u_SkyBoxInfo.Intensity;
     //// HDR tonemap and gamma correct
-    envColor = envColor / (envColor + vec3(1.0));
-    envColor = pow(envColor, vec3(1.0 / 2.2));
-    outFragColor = vec4(envColor,  envColor.x);
+   // envColor = envColor / (envColor + vec3(1.0));
+   // envColor = pow(envColor, vec3(1.0 / 2.2));
+    outFragColor = vec4(envColor,  1.0);
 }
 

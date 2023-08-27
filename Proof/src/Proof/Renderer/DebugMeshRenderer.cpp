@@ -19,16 +19,16 @@ namespace Proof{
 		m_CameraBuffer = UniformBuffer::Create(sizeof(CameraData));
 	}
 
-	void DebugMeshRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer)
-	{
-		PF_PROFILE_FUNC()
-		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
-		PF_CORE_ASSERT(m_InContext == false, "Cannot begin context if already in a context");
-		m_InContext = true;
-		s_CurrentCamera = CameraData{ projection,view,glm::mat4(1),Position };
-		m_CurrentFrameBuffer = frameBuffer;
-		m_CommandBuffer = commandBuffer;
-	}
+	//void DebugMeshRenderer::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer)
+	//{
+	//	PF_PROFILE_FUNC()
+	//	PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
+	//	PF_CORE_ASSERT(m_InContext == false, "Cannot begin context if already in a context");
+	//	m_InContext = true;
+	//	s_CurrentCamera = CameraData{ projection,view,glm::mat4(1),Position };
+	//	m_CurrentFrameBuffer = frameBuffer;
+	//	m_CommandBuffer = commandBuffer;
+	//}
 	void DebugMeshRenderer::SubmitMesh(Count<class Mesh> mesh, const glm::mat4& transform)
 	{
 		PF_PROFILE_FUNC();
@@ -126,14 +126,14 @@ namespace Proof{
 		meshVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
 		meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
 		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
-		GraphicsPipelineConfig graphicsPipelineConfig;
-		graphicsPipelineConfig.DebugName = "Debug-Mesh";
-		graphicsPipelineConfig.Shader = Shader;
-		graphicsPipelineConfig.VertexArray = meshVertexArray;
-		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
-		//graphicsPipelineConfig.RenderPass = renderPass;
-		graphicsPipelineConfig.DrawMode = DrawType::LineStrip;
-		graphicsPipelineConfig.LineWidth =5;
-		//GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+		//GraphicsPipelineConfig graphicsPipelineConfig;
+		//graphicsPipelineConfig.DebugName = "Debug-Mesh";
+		//graphicsPipelineConfig.Shader = Shader;
+		//graphicsPipelineConfig.VertexArray = meshVertexArray;
+		////graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
+		////graphicsPipelineConfig.RenderPass = renderPass;
+		//graphicsPipelineConfig.DrawMode = DrawType::LineStrip;
+		//graphicsPipelineConfig.LineWidth =5;
+		////GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 	}
 }

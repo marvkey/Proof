@@ -38,8 +38,8 @@ namespace Proof
 		*/
 		virtual void SetData(Buffer data,uint64_t offset = 0) = 0;
 
-		virtual void Resize(uint64_t size) = 0;
-		virtual void Resize(Buffer data) = 0;
+		//virtual void Resize(uint64_t size) = 0;
+		//virtual void Resize(Buffer data) = 0;
 		virtual uint64_t GetSize() = 0;
 		RENDER_VIEW_RESOURCE_CLASS_TYPE(UniformBuffer);
 	};
@@ -53,8 +53,8 @@ namespace Proof
 		static Count<UniformBufferSet>Create(Buffer data);
 		virtual Count<UniformBuffer> GetBuffer(uint32_t index) = 0;
 
-		virtual void Resize(uint32_t index, uint64_t size) = 0;
-		virtual void Resize(uint32_t index, Buffer data) = 0;
+		//virtual void Resize(uint32_t index, uint64_t size) = 0;
+		//virtual void Resize(uint32_t index, Buffer data) = 0;
 		virtual void SetData(uint32_t index, Buffer data, uint64_t offset = 0) = 0;
 	};
 

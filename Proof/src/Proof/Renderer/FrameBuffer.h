@@ -1,6 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Image.h"
+#include <glm/glm.hpp>
 namespace Proof {
 	struct FrameBufferImageConfig {
 		FrameBufferImageConfig() = default;
@@ -8,7 +9,6 @@ namespace Proof {
 			: Format(format) {}
 
 		ImageFormat Format = ImageFormat::None;
-	//	bool Blend = true;
 		bool ClearOnLoad = true;
 		
 		ImageLayouts2D ExistingImage;
@@ -24,15 +24,21 @@ namespace Proof {
 	// this helped a lot
 	struct FrameBufferConfig {
 		std::string DebugName;
-		Vector2 Size = { 100.f,100.f };
-		float Samples = 1;
+		uint32_t Width = 100;
+		uint32_t Height = 100;
+		uint32_t Samples = 1; // multisampling
+
 		mutable Vector4 ClearColor = { 0,0,0,1.0f };
 		FrameBufferAttachments Attachments;
-		float DepthClearValue = 1.0f;
+		float DepthClearValue = 0.0f;
 		uint32_t StencilClearValue = 0;
+
+		// used for transfer 
+		bool Transfer = false;
+
 		// clear when getting drawn from a render pass
 		bool ClearDepthOnLoad = true;
-		bool ClearFrameBufferOnLoad = true;
+		bool ClearColorOnLoad = true;
 	};
 	class FrameBuffer : public RefCounted {
 	public:
@@ -45,28 +51,14 @@ namespace Proof {
 
 		virtual ImageLayouts2D GetColorAttachmentImageLayout(uint32_t index) = 0;
 		virtual ImageLayouts2D GetDepthImageLayout() = 0;
-
+		virtual void Resize(const glm::uvec2 size) =0;
 		virtual ~FrameBuffer() = default;
 
 		virtual bool HasDepthImage() = 0;
 		virtual bool HasColorAttachment() = 0;
 		virtual const FrameBufferConfig& GetConfig() const = 0;
-		virtual void Resize(Vector2 imageSize) = 0;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-	};
-	class ScreenFrameBuffer : public RefCounted {
-	public:
-		static Count<ScreenFrameBuffer> Create(uint32_t Width, uint32_t Height);
-		static Count<ScreenFrameBuffer> Create(const FrameBufferConfig& config);
-		virtual void Resize(Vector2 imageSize);
-		const Count<FrameBuffer> const GetFrameBuffer() {
-			return m_FrameBuffer;
-		}
-		virtual uint32_t GetFrameWidth();
-		virtual uint32_t GetFrameHeight();
-		virtual Count<Image> GetImage(uint32_t imageIndex);
-	private:
-		Count<FrameBuffer> m_FrameBuffer;
 	};
 }
 

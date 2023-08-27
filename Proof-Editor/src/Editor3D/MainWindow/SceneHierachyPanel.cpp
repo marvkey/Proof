@@ -252,10 +252,10 @@ namespace Proof
 			ImGui::EndPopup();
 		}
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
-			Editore3D::Get()->m_EditorCamera.m_Positon = ProofToglmVec(m_CurrentWorld->GetWorldLocation(m_SelectedEntity));
+			Editore3D::Get()->m_EditorCamera.SetPosition( ProofToglmVec(m_CurrentWorld->GetWorldLocation(m_SelectedEntity)));
 		}
 		if (m_SelectedEntity && ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::F)) {
-			Editore3D::Get()->m_EditorCamera.m_Positon = ProofToglmVec(m_CurrentWorld->GetWorldLocation(m_SelectedEntity));
+			Editore3D::Get()->m_EditorCamera.SetPosition (ProofToglmVec(m_CurrentWorld->GetWorldLocation(m_SelectedEntity)));
 		}
 
 		if (opened) {
@@ -575,7 +575,7 @@ namespace Proof
 				ImGui::Text("Setting to 0 means you can see any object no matter how far away it is");
 				ImGui::EndTooltip();
 			}
-			ExternalAPI::ImGUIAPI::EnumCombo("Type", cameraComp.Type);
+			ExternalAPI::ImGUIAPI::EnumCombo("Type", cameraComp.Projection);
 			ExternalAPI::ImGUIAPI::CheckBox("Local Rotation", &cameraComp.UseLocalRotation);
 			/*
 			if (cameraComp.m_AutoSetDimension == false) {

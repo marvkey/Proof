@@ -30,38 +30,75 @@ namespace Proof {
 	
 	static CameraData s_CurrentCamera;
 	void Renderer2D::Init() {
+		FrameBufferConfig framebufferSpec;
+		framebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+		framebufferSpec.Samples = 1;
+		framebufferSpec.ClearColorOnLoad= false;
+		framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+		framebufferSpec.DebugName = "Renderer2D Framebuffer";
+		m_FrameBuffer = FrameBuffer::Create(framebufferSpec);
 		m_Storage2DData = CreateSpecial <Renderer2DStorage>();
-		//if(m_SpritePipeline == nullptr)
-		//	m_SpritePipeline= CreateSpecial<SpritePipeline>();
-		//m_TextPipeline = CreateSpecial<TextPipeline>();
+		m_CommandBuffer = RenderCommandBuffer::Create("Rendere2D");
 
-		m_SpritePipeline->RenderPass->SetInput("CameraData", m_Storage2DData->CameraBuffer);
+		{
+			auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
+			vertexArray->AddData(0, DataType::Vec3, offsetof(Vertex2D, Vertex2D::Position));
+			vertexArray->AddData(1, DataType::Vec4, offsetof(Vertex2D, Vertex2D::Color));
+			vertexArray->AddData(2, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
+			vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
+
+			GraphicsPipelineConfiguration graphicsPipelineConfig;
+			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			graphicsPipelineConfig.DebugName = "Sprite Pipeline";
+			graphicsPipelineConfig.Shader = Renderer::GetShader("Base2D");
+			graphicsPipelineConfig.VertexArray = vertexArray;
+			graphicsPipelineConfig.CullMode = CullMode::None;
+			//graphicsPipelineConfig.DepthCompareOperator = DepthCompareOperator::Less;
+			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+			RenderPassConfig rednerPassConfig;
+			rednerPassConfig.DebugName = "Sprite RenderPass";
+			rednerPassConfig.Pipeline = graphicsPipeline;
+			rednerPassConfig.TargetFrameBuffer = m_FrameBuffer;
+			m_QuadPass = RenderPass::Create(rednerPassConfig);
+			m_QuadPass->SetInput("CameraData", m_Storage2DData->CameraBuffer);
+		}
+
+		{
+		
+			auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
+			vertexArray->AddData(0, DataType::Vec3, offsetof(Vertex2D, Vertex2D::Position));
+			vertexArray->AddData(1, DataType::Vec4, offsetof(Vertex2D, Vertex2D::Color));
+			vertexArray->AddData(2, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
+			vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
+
+			GraphicsPipelineConfiguration graphicsPipelineConfig;
+			graphicsPipelineConfig.DebugName = "Text Pipeline";
+			graphicsPipelineConfig.Shader = Renderer::GetShader("Text2D");
+			graphicsPipelineConfig.VertexArray = vertexArray;
+			graphicsPipelineConfig.CullMode = CullMode::None;
+			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+			RenderPassConfig rednerPassConfig("Text RenderPass");
+			rednerPassConfig.Pipeline = graphicsPipeline;
+			rednerPassConfig.TargetFrameBuffer = m_FrameBuffer;
+			m_TextPass = RenderPass::Create(rednerPassConfig);
+			m_TextPass->SetInput("CameraData", m_Storage2DData->CameraBuffer);
+		}
 	}
 	
-	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commdandBuffer) {
+	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position) {
 		PF_PROFILE_FUNC()
 		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
 		s_CurrentCamera = CameraData{ projection,view,glm::mat4(1),Position };
-		m_Storage2DData->CurrentFrameBuffer = frameBuffer;
-		m_Storage2DData->CommandBuffer = commdandBuffer;
-	}
-	Renderer2D::Renderer2D(Count<ScreenFrameBuffer>& frameBuffer,bool screenSpace)
-	{
-		m_ScreenSpace = screenSpace;
-		if (m_SpritePipeline == nullptr)
-			m_SpritePipeline = CreateSpecial<SpritePipeline>(frameBuffer->GetFrameBuffer());
 
-		m_TextPipeline = CreateSpecial<TextPipeline>(frameBuffer->GetFrameBuffer());
-		Init();
+		m_Storage2DData->CameraBuffer->SetData(Renderer::GetCurrentFrame().FrameinFlight, Buffer((&s_CurrentCamera, sizeof(CameraData))));
+		m_Stats = {};
+		Renderer::BeginCommandBuffer(m_CommandBuffer);
 	}
-	Renderer2D::Renderer2D(Count<ScreenFrameBuffer>& frameBuffer,const std::string& spriteRenderShaderPath)
+	Renderer2D::Renderer2D()
 	{
-		m_ScreenSpace = false;
-		m_SpritePipeline = CreateSpecial<SpritePipeline>(frameBuffer->GetFrameBuffer(), spriteRenderShaderPath);
-		m_TextPipeline = CreateSpecial<TextPipeline>(frameBuffer->GetFrameBuffer());
-		
 		Init();
-
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1,1,1},{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());
@@ -100,7 +137,6 @@ namespace Proof {
 		}
 		else
 		{
-
 			DrawQuad( ProofToglmVec(transform.Location),ProofToglmVec(transform.Rotation),ProofToglmVec(transform.Scale),glm::vec4{Sprite.Colour}, nullptr);
 		}
 	}
@@ -129,74 +165,34 @@ namespace Proof {
 		}
 		if (TextureIndex == -1)
 			TextureIndex = 0;
-		s_Transform = glm::mat4(1.0f);
-		if (m_ScreenSpace == false)
-		{
 
-			s_Transform = glm::translate(glm::mat4(1.0f), { Location.x,Location.y,Location.z }) *
-				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.x), { 1.0f,0.0f,0.0f }) *
-				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.y), { 0.0f,1.0f,0.0f }) *
-				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.z), { 0.0f,0.0f,1.0f }) *
-				glm::scale(glm::mat4(1.0f), { Size.x,Size.y,Size.z });
+		s_Transform = glm::translate(glm::mat4(1.0f), { Location.x,Location.y,Location.z }) *
+			glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.x), { 1.0f,0.0f,0.0f }) *
+			glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.y), { 0.0f,1.0f,0.0f }) *
+			glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.z), { 0.0f,0.0f,1.0f }) *
+			glm::scale(glm::mat4(1.0f), { Size.x,Size.y,Size.z });
 
-			Vertex1.model = s_Transform;
-			Vertex2.model = s_Transform;
-			Vertex3.model = s_Transform;
-			Vertex4.model = s_Transform;
 
-			Vertex1.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f));
-			Vertex1.Color = Color;
-			Vertex1.TexCoords = { 1.0f,1.0f };
-			Vertex1.TexSlot = TextureIndex;
+		Vertex1.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f));
+		Vertex1.Color = Color;
+		Vertex1.TexCoords = { 1.0f,1.0f };
+		Vertex1.TexSlot = TextureIndex;
 
-			Vertex2.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, -0.5f, 0.0, 1.0f));
-			Vertex2.Color = Color;
-			Vertex2.TexCoords = { 1.0f,0.0f };
-			Vertex2.TexSlot = TextureIndex;
+		Vertex2.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, -0.5f, 0.0, 1.0f));
+		Vertex2.Color = Color;
+		Vertex2.TexCoords = { 1.0f,0.0f };
+		Vertex2.TexSlot = TextureIndex;
 
-			Vertex3.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, -0.5f, 0.0, 1.0f));
-			Vertex3.Color = Color;
-			Vertex3.TexCoords = { 0.0f,0.0f };
-			Vertex3.TexSlot = TextureIndex;
+		Vertex3.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, -0.5f, 0.0, 1.0f));
+		Vertex3.Color = Color;
+		Vertex3.TexCoords = { 0.0f,0.0f };
+		Vertex3.TexSlot = TextureIndex;
 
-			Vertex4.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, 0.5f, 0.0, 1.0f));
-			Vertex4.Color = Color;
-			Vertex4.TexCoords = { 0.0f,1.0f };
-			Vertex4.TexSlot = TextureIndex;
-		}
-		else
-		{
-
-			s_Transform = glm::translate(glm::mat4(1.0f), { Location.x,Location.y,0 })*
-				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.x), { 1.0f,0.0f,0.0f }) *
-				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.y), { 0.0f,1.0f,0.0f }) *
-				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.z), { 0.0f,0.0f,1.0f }) *
-				glm::scale(glm::mat4(1.0f), { Size.x,Size.y,Size.z });
-			Vertex1.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f));
-
-			Vertex1.model = s_Transform;
-			Vertex2.model = s_Transform;
-			Vertex3.model = s_Transform;
-			Vertex4.model = s_Transform;
-			Vertex1.Color = Color;
-			Vertex1.TexCoords = { 1.0f,1.0f };
-			Vertex1.TexSlot = TextureIndex;
-
-			Vertex2.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, -0.5f, 0.0, 1.0f));
-			Vertex2.Color = Color;
-			Vertex2.TexCoords = { 1.0f,0.0f };
-			Vertex2.TexSlot = TextureIndex;
-
-			Vertex3.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, -0.5f, 0.0, 1.0f));
-			Vertex3.Color = Color;
-			Vertex3.TexCoords = { 0.0f,0.0f };
-			Vertex3.TexSlot = TextureIndex;
-
-			Vertex4.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, 0.5f, 0.0, 1.0f));
-			Vertex4.Color = Color;
-			Vertex4.TexCoords = { 0.0f,1.0f };
-			Vertex4.TexSlot = TextureIndex;
-		}
+		Vertex4.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, 0.5f, 0.0, 1.0f));
+		Vertex4.Color = Color;
+		Vertex4.TexCoords = { 0.0f,1.0f };
+		Vertex4.TexSlot = TextureIndex;
+	
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize] = Vertex1;
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+1] = Vertex2;
 		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+2] = Vertex3;
@@ -290,10 +286,7 @@ namespace Proof {
 			texCoordMax *= glm::vec2(texelWidth, texelHeight);
 
 			glm::mat4 copyTransfrom = transform;
-			//if (m_ScreenSpace == true)
-			//{
-			//	copyTransfrom = glm::mat4(1.0f);
-			//}
+			
 			TextVertex textVertex1, textVertex2, textVertex3, textVertex4;
 			textVertex1.Positon = copyTransfrom * glm::vec4(quadMin, 0.0f, 1.0f);
 			textVertex1.Color = textParam.Color ;
@@ -332,6 +325,7 @@ namespace Proof {
 	void Renderer2D::EndContext() {
 		Render();
 		Reset();
+		Renderer::EndCommandBuffer(m_CommandBuffer);
 	}
 
 	void Renderer2D::Reset() {
@@ -342,9 +336,6 @@ namespace Proof {
 		m_Storage2DData->QuadArraySize = 0;
 		m_Storage2DData->IndexCount = 0;
 
-		m_Storage2DData->CurrentFrameBuffer = nullptr;
-		m_Storage2DData->CommandBuffer = nullptr;
-
 		// reseting every textures back to white that has been changed
 		for (uint32_t i = 1; i < m_Storage2DData->TextureSlotIndex; i++)
 			m_Storage2DData->Textures[i] = m_Storage2DData->Textures[0];
@@ -354,27 +345,45 @@ namespace Proof {
 	void Renderer2D::Render() {
 		PF_PROFILE_FUNC();
 
-		CameraData screnData;
-		screnData.Position = s_CurrentCamera.Position;
-		screnData.Projection = glm::mat4(1.0f);
-		screnData.ProjectionView = glm::mat4(1.0f);
+		Timer renderTime;
 		
-		m_Storage2DData->CameraBuffer->SetData(1,Buffer(((uint8_t*)&s_CurrentCamera, sizeof(CameraData))));
-
 		if (m_Storage2DData->IndexCount > 0) // nothing to draw
 		{
+			Timer quadTime;
+
 			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
 			m_Storage2DData->VertexBuffer->SetData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
-			m_SpritePipeline->RenderPass->SetInput("u_Textures", m_Storage2DData->Textures);
+			m_QuadPass->SetInput("u_Textures", m_Storage2DData->Textures);
 
-			Renderer::BeginRenderPass(m_Storage2DData->CommandBuffer, m_SpritePipeline->RenderPass);
-			m_Storage2DData->VertexBuffer->Bind(m_Storage2DData->CommandBuffer);
-			m_Storage2DData->IndexBuffer->Bind(m_Storage2DData->CommandBuffer);
-			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
-			Renderer::EndRenderPass(m_SpritePipeline->RenderPass);
+			Renderer::BeginRenderPass(m_CommandBuffer, m_QuadPass);
+			m_Storage2DData->IndexBuffer->Bind(m_CommandBuffer);
+			m_Storage2DData->VertexBuffer->Bind(m_CommandBuffer);
+			Renderer::DrawElementIndexed(m_CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize);
+			Renderer::EndRenderPass(m_QuadPass);
+
+			m_Stats.QuadDrawTime += quadTime.ElapsedMillis();
 		}
-		//}
 
+		if (m_Storage2DData->TextIndexCount > 0)
+		{
+			PF_PROFILE_FUNC("Renderer2D::String Draw");
+
+			Timer textTime;
+			m_Storage2DData->TextVertexBuffer->SetData(m_Storage2DData->TextArray.data(), m_Storage2DData->TextArraySize * sizeof(TextVertex));
+			m_TextPass->SetInput("u_Textures", m_Storage2DData->Textures);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_TextPass);
+			m_Storage2DData->IndexBuffer->Bind(m_CommandBuffer);
+			m_Storage2DData->TextVertexBuffer->Bind(m_CommandBuffer);
+
+			Renderer::DrawElementIndexed(m_CommandBuffer, m_Storage2DData->TextIndexCount, m_Storage2DData->TextArraySize);
+			Renderer::EndRenderPass(m_TextPass);
+
+			m_Stats.TextDrawTime += textTime.ElapsedMillis();
+
+		}
+
+		m_Stats.TotalRenderTime += renderTime.ElapsedMillis();
 		#if 0
 		if(m_Storage2DData->TextIndexCount > 0){
 			PF_PROFILE_FUNC("Renderer2D::String Draw");
@@ -409,6 +418,8 @@ namespace Proof {
 			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
 		}
 		#endif
+
+
 	}
 	
 	
@@ -461,6 +472,16 @@ namespace Proof {
 		Count<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size());
 		return std::make_pair(buffer, indexBuffer);
 	}
+	void Renderer2D::SetTargetFrameBuffer(Count<class FrameBuffer> framebuffer)
+	{
+		if (m_FrameBuffer == framebuffer)
+			return;
+		m_FrameBuffer = framebuffer;
+		{
+			m_QuadPass->SetTargetFrameBuffer(m_FrameBuffer);
+			m_TextPass->SetTargetFrameBuffer(m_FrameBuffer);
+		}
+	}
 	Renderer2DStorage::Renderer2DStorage() {
 		QuadIndices.resize(c_MaxIndexCount);
 		QuadArray.resize(c_MaxVertexCount);
@@ -489,108 +510,5 @@ namespace Proof {
 
 		for(uint32_t i=0; i < Renderer2DStorage::c_MaxTextureSlot;i++)
 			Textures[i] = WhiteTexture;
-
 	}
-	SpritePipeline::SpritePipeline(Count<FrameBuffer> frameBuffer)
-	{
-		auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
-
-
-		vertexArray->AddData(0, DataType::Vec4, 0);
-		vertexArray->AddData(1, DataType::Vec4, (sizeof(glm::vec4) * 1));
-		vertexArray->AddData(2, DataType::Vec4, (sizeof(glm::vec4) * 2));
-		vertexArray->AddData(3, DataType::Vec4, (sizeof(glm::vec4) * 3));
-
-		vertexArray->AddData(4, DataType::Vec3, offsetof(Vertex2D, Vertex2D::Position));
-		vertexArray->AddData(5, DataType::Vec4, offsetof(Vertex2D, Vertex2D::Color));
-		vertexArray->AddData(6, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
-		vertexArray->AddData(7, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
-
-		Count<Shader > shader = Renderer::GetShader("Base2D");
-		//{
-		//	auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-		//		.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-		//		.AddBinding((int)1, DescriptorType::ImageSampler, ShaderStage::Fragment, 32)
-		//		.Build();
-		//	Descriptors.insert({ DescriptorSets::Zero,descriptor });
-		//}
-		//PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
-
-		
-
-
-		GraphicsPipelineConfig graphicsPipelineConfig;
-		graphicsPipelineConfig.DebugName = "Sprite Pipeline";
-		graphicsPipelineConfig.Shader = shader;
-		graphicsPipelineConfig.VertexArray = vertexArray;
-		graphicsPipelineConfig.TargetBuffer = frameBuffer;
-		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
-
-		RenderPassConfig rednerPassConfig("Sprite RenderPass", frameBuffer);
-		rednerPassConfig.Pipeline = GraphicsPipeline;
-		RenderPass = RenderPass::Create(rednerPassConfig);
-	}
-
-	SpritePipeline::SpritePipeline(Count<FrameBuffer> frameBuffer, const std::string& shaderPath)
-	{
-		/*
-		auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
-		vertexArray->AddData(0, DataType::Vec4, 0);
-		vertexArray->AddData(1, DataType::Vec4, (sizeof(glm::vec4) * 1));
-		vertexArray->AddData(2, DataType::Vec4, (sizeof(glm::vec4) * 2));
-		vertexArray->AddData(3, DataType::Vec4, (sizeof(glm::vec4) * 3));
-
-		vertexArray->AddData(4, DataType::Vec3, offsetof(Vertex2D, Vertex2D::Position));
-		vertexArray->AddData(5, DataType::Vec4, offsetof(Vertex2D, Vertex2D::Color));
-		vertexArray->AddData(6, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
-		vertexArray->AddData(7, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
-
-
-		Shader = Shader::GetOrCreate(Utils::FileDialogs::GetFileName(shaderPath), shaderPath);
-		{
-			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.AddBinding((int)1, DescriptorType::ImageSampler, ShaderStage::Fragment, 32)
-				.Build();
-			Descriptors.insert({ DescriptorSets::Zero,descriptor });
-		}
-		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
-		GraphicsPipelineConfig graphicsPipelineConfig;
-		graphicsPipelineConfig.DebugName = "Sprite";
-		graphicsPipelineConfig.Shader = Shader;
-		graphicsPipelineConfig.VertexArray = vertexArray;
-		graphicsPipelineConfig.RenderPass = renderPass;
-		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
-		//blendign is very expensive for rendierng 
-		//graphicsPipelineConfig.Blend = true;
-		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
-		*/
-	}
-
-	TextPipeline::TextPipeline(Count<FrameBuffer> frameBuffer)
-	{
-		/*
-		auto vertexArray = VertexArray::Create({ sizeof(TextVertex) });
-		vertexArray->AddData(0, DataType::Vec3, offsetof(TextVertex, TextVertex::Positon));
-		vertexArray->AddData(1, DataType::Vec4, offsetof(TextVertex, TextVertex::Color));
-		vertexArray->AddData(2, DataType::Vec3, offsetof(TextVertex, TextVertex::TexCoord));
-		Shader = Shader::GetOrCreate("Text", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text.shader");
-		{
-			auto descriptor = DescriptorSet::Builder(DescriptorSets::Zero)
-				.AddBinding((int)DescriptorSet0::CameraData, DescriptorType::UniformBuffer, ShaderStage::Vertex)
-				.AddBinding(1, DescriptorType::ImageSampler, ShaderStage::Fragment)
-				.Build();
-			Descriptors.insert({ DescriptorSets::Zero,descriptor });
-		}
-		PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero] });
-		GraphicsPipelineConfig graphicsPipelineConfig;
-		graphicsPipelineConfig.DebugName = "Text Vertex";
-		graphicsPipelineConfig.Shader = Shader;
-		graphicsPipelineConfig.VertexArray = vertexArray;
-		graphicsPipelineConfig.RenderPass = renderPass;
-		//graphicsPipelineConfig.PipelineLayout = PipeLineLayout;
-		GraphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
-		*/
-	}
-
 }

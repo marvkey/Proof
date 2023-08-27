@@ -312,7 +312,7 @@ namespace Proof
 
 
 		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
-		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_ActiveWorld, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
+		m_WorldRenderer = Count<WorldRenderer>::Create();
 		// cannot be setting it to window size and stuff innit
 		m_EditorWorld = m_ActiveWorld;
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
@@ -342,7 +342,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
 		if (m_IsViewPortResize && m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
-			m_WorldRenderer->Resize({(uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y });
+			m_WorldRenderer->SetViewportSize((uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y );
 			// so the camera can be edited while beig resized
 			Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
@@ -352,7 +352,7 @@ namespace Proof
 		switch (m_ActiveWorld->GetState()) {
 			case Proof::WorldState::Play:
 				{
-
+					#if 0
 					int player = 1;
 					if (m_PlayersCount > 1 && s_DetachPlayer == false && m_ActiveWorld->GetNumComponents<PlayerInputComponent>() > 0)
 					{
@@ -423,6 +423,7 @@ namespace Proof
 						m_WorldRenderer->Render(m_EditorCamera, s_EditorData->RenderSettings);
 					}
 					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
+					#endif
 
 					break;
 				}
@@ -434,10 +435,12 @@ namespace Proof
 				}
 			case Proof::WorldState::Simulate:
 				{
+					#if 0
 					m_ActiveWorld->OnSimulatePhysics(DeltaTime);
 					if (m_ViewPortFocused)
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 					m_WorldRenderer->Render(m_EditorCamera, s_EditorData->RenderSettings);
+					#endif
 					break;
 				}
 			case Proof::WorldState::Edit:
@@ -448,14 +451,13 @@ namespace Proof
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 						Application::Get()->GetWindow()->SetWindowInputEvent(false);
 					}
-					m_WorldRenderer->Render(m_EditorCamera, s_EditorData->RenderSettings);
+					m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
 					break;
 				}
 			default:
 				break;
 		}
 	}
-	int viewCascade = 0;
 	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 
@@ -526,9 +528,15 @@ namespace Proof
 			});
 			ImGui::Text("Shadow Settings");
 
-			//UI::Image(m_WorldRenderer->m_ShadowDebugPass->GetTargetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().ImageIndex,0),
-			//	{ ImGui::GetWindowWidth(),ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-			//ImGui::SliderInt("Cascade Index",&m_WorldRenderer->debugCascade, 0, 3);
+
+			ImGui::Checkbox("DebugPass", &m_WorldRenderer->ShadowSetting.RenderDebugPass);
+			if (m_WorldRenderer->ShadowSetting.RenderDebugPass)
+			{
+
+				UI::Image(m_WorldRenderer->GetShadowPassDebugImage(),
+					{ ImGui::GetWindowWidth(),ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+				ImGui::SliderInt("Cascade Index", &m_WorldRenderer->ShadowSetting.DebugCascade, 0, 3);
+			}
 
 			ShadowSetting& shadowSetting = m_WorldRenderer->ShadowSetting;
 			ImGui::Checkbox("ShowCascades", &shadowSetting.ShowCascades);
@@ -1047,6 +1055,7 @@ namespace Proof
 				m_ViewPortFocused = false;
 				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
+			#if 0
 			if (m_ActiveWorld->IsPlaying() && m_PlayersCount > 1 && s_DetachPlayer == false && m_ActiveWorld->GetNumComponents<PlayerInputComponent>() >0 )
 			{
 				//(input, entity ID)
@@ -1087,10 +1096,14 @@ namespace Proof
 			else
 			{
 
-				UI::Image(m_WorldRenderer->GetImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			}
+			#endif
+			auto swapchain = Renderer::GetCurrentFrame().ImageIndex;
+			///UI::Image(m_WorldRenderer->m_ExternalCompositeFrameBuffer->GetColorAttachmentImage(swapchain, 0), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			//UI::Image(m_WorldRenderer->m_GeometryPass->GetTargetFrameBuffer()->GetColorAttachmentImage(swapchain,0), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
-
+			//UI::Image(Renderer::GetWhiteTexture(), ImVec2{m_ViewPortSize.x,m_ViewPortSize.y}, ImVec2{0,1}, ImVec2{1,0});
 			// GUIZMOS
 
 			// cherno game engein reveiw 22 minutes 48 seconds reference
@@ -1108,8 +1121,8 @@ namespace Proof
 				ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
 
-				const glm::mat4& cameraProjection = m_EditorCamera.m_Projection;
-				glm::mat4 cameraView = m_EditorCamera.m_View;
+				const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();
+				glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 				auto& selectedentityTc = selectedEntity.GetComponent<TransformComponent>();
 				glm::mat4 selectedEntitytransform = selectedentityTc.GetLocalTransform();
@@ -1165,7 +1178,6 @@ namespace Proof
 
 					m_EditorWorld = Count<World>::Create();
 					m_ActiveWorld = m_EditorWorld;
-					m_WorldRenderer->SetContext(m_ActiveWorld);
 					s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
 					SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 					s_EditorData->WorldHierachy.m_SelectedEntity = {};
@@ -1425,19 +1437,18 @@ namespace Proof
 	{
 		m_EditorWorld = Count<World>::Create();
 		m_ActiveWorld = m_EditorWorld;
-		m_WorldRenderer->SetContext(m_EditorWorld);
 		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 		s_EditorData->WorldHierachy.m_SelectedEntity = {};
 	}
 	void Editore3D::PlayWorld() {
+		#if 0
 		m_ActiveWorld = World::Copy(m_EditorWorld);
 		s_DetachPlayer = false;
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
 		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
-		m_WorldRenderer->SetContext(m_ActiveWorld);
 
 		if (s_EditorData->ClearLogOnPlay)
 			Log::Logs.clear();
@@ -1456,6 +1467,7 @@ namespace Proof
 					m_MultiplayerRender[(Players)(i + 1)]->SetContext(m_ActiveWorld);
 			}
 		}
+		#endif
 		//Mouse::CaptureMouse(true);
 	}
 	void Editore3D::SimulateWorld() {
@@ -1463,11 +1475,11 @@ namespace Proof
 		m_ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
 	void Editore3D::SetWorldEdit() {
+
 		//s_EditorData->GuizmoType = 0;
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;
 		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
-		m_WorldRenderer->SetContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 		s_DetachPlayer = false;
 	}

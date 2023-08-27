@@ -20,6 +20,8 @@ namespace Proof
 		Texture2DSet,
 		ImageView,
 		ImageViewSet,
+		Image,		//temporyarr 
+		ImageSet	//temporyarr 
 	};
 	/*
 	enum class RenderPassInputType {
@@ -104,6 +106,21 @@ namespace Proof
 				Input.push_back(data);
 			}
 		}
+		RenderPassInput(Count<class Image> resource) :
+			Type(RenderPassResourceType::Image), Input(std::vector<Count<RefCounted>>(1, resource))
+		{
+
+		}
+		RenderPassInput(const std::vector<Count<class Image>>& images) :
+			Type(RenderPassResourceType::ImageSet)
+		{
+			Input.reserve(images.size());
+
+			for (auto& data : images)
+			{
+				Input.push_back(data);
+			}
+		}
 
 		RenderPassInput(const std::initializer_list<Count<class Texture2D>>& images ) :
 			Type(RenderPassResourceType::Texture2DSet)
@@ -154,6 +171,9 @@ namespace Proof
 
 		void SetInput(std::string_view name, Count<class Image2D>image);
 		void SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images );
+
+		void SetInput(std::string_view name, Count<class Image> imageView);
+		void SetInput(std::string_view name, const std::vector< Count<class Image>>& imageViews);
 
 		void Build();
 		// does not clear the m_Inputs

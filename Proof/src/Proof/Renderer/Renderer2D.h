@@ -24,8 +24,6 @@ namespace Proof {
 		Count<UniformBufferSet> CameraBuffer = nullptr;
 		Count<class VertexBuffer> VertexBuffer;
 		Count<class IndexBuffer> IndexBuffer;	
-		Count<class RenderCommandBuffer>CommandBuffer;
-		Count<ScreenFrameBuffer> CurrentFrameBuffer ;
 		Count<Texture2D> WhiteTexture;
 		const uint32_t c_MaxQuadCount = 2000;
 		const uint32_t c_MaxVertexCount = c_MaxQuadCount *4; // times 4 cause each quad holds 4 vertices
@@ -40,8 +38,6 @@ namespace Proof {
 		std::vector<Vertex2D> QuadArray;
 
 		Count<class VertexBuffer> TextVertexBuffer;
-
-
 		uint32_t TextIndexCount = 0;
 		uint32_t TextArraySize= 0;
 		std::vector<TextVertex> TextArray;
@@ -49,27 +45,18 @@ namespace Proof {
 		Count<Texture2D> FontTexture;
 		Renderer2DStorage();
 	};
-
-	struct SpritePipeline {
-		Count<class GraphicsPipeline> GraphicsPipeline;
-		Count<class RenderPass> RenderPass;
-		SpritePipeline(Count<FrameBuffer> frameBuffer,const std::string& shaderPath);
-		SpritePipeline(Count<FrameBuffer> frameBuffer);
+	struct Rendered2DStatistics
+	{
+		float QuadDrawTime = 0.0f;
+		float TextDrawTime = 0.0f;
+		float TotalRenderTime = 0.0f;
 	};
-
-	struct TextPipeline {
-		Count<class GraphicsPipeline> GraphicsPipeline;
-		Count<class RenderPass> RenderPass;
-		TextPipeline(Count<FrameBuffer> frameBuffer);
-	};
-	
 	class Renderer2D {
 		friend class Camera;
 	public:
-		Renderer2D(Count<ScreenFrameBuffer>& frameBuffer,bool screenSpace = false);
-		Renderer2D(Count<ScreenFrameBuffer>& frameBuffer,const std::string& spriteRenderShaderPath);
+		Renderer2D();
 		~Renderer2D() {};
-		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commdandBuffer);
+		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position);
 		void DrawQuad(const glm::vec3& Location);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& Size);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec4& Color);
@@ -89,17 +76,18 @@ namespace Proof {
 
 		static std::pair<Count<VertexBuffer>, Count<IndexBuffer>> CreateQuad();
 
-		struct Renderer2DStats{
-			uint32_t m_QuadCount;
-			uint32_t m_DrawCalls;
-		};
+		void SetTargetFrameBuffer(Count<class FrameBuffer> framebuffer);
+		Rendered2DStatistics GetStats() { return m_Stats; }
 	private:
-		bool m_ScreenSpace = false;
+		Count<RenderCommandBuffer> m_CommandBuffer;
+		Count<FrameBuffer> m_FrameBuffer;
+		Rendered2DStatistics m_Stats;
+		Count<class RenderPass> m_TextPass;
+		Count<class RenderPass> m_QuadPass;
+
 		void Render();
 		void Reset();
 		void Init();
-		Special<SpritePipeline> m_SpritePipeline;
-		Special<TextPipeline> m_TextPipeline;
 		Special< Renderer2DStorage> m_Storage2DData;
 		/* Not using as default rendeer cause it allocates to the heap and we dont need taht waste in performance */
 	};

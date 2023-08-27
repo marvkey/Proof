@@ -38,7 +38,6 @@
 #include <glm/gtc/matrix_inverse.hpp> 
 namespace Proof
 {
-	#define SHADOWMAP_DIM  2048
 	#define SHADOWMAP_CASCADE_COUNT  4
 
 	glm::vec3 convertRotationToVec3(float rotation) {
@@ -53,147 +52,20 @@ namespace Proof
 		glm::vec3 rotationVec(x, 0.0f, z);
 		return rotationVec;
 	}
-	Count<TextureCube> textureCubeMap;
-	Count<Texture2D> brdfTexture;
-	Count<TextureCube> iradianceCubeMap;
-	Count<TextureCube> prefilterCubeMap;
-	Count<GraphicsPipeline> skyBoxRenderPipeline;
-	//Count<PipeLineLayout> PipelineLayout;
-	Count<RenderPass> skyBoxPass;
-	Count<Mesh> Cube; 
-	Count< UniformBufferSet> cameraBuffer;
-	Count<UniformBufferSet> s_CascadeProjectionBuffer;
-	//std::unordered_map<DescriptorSets, Count<DescriptorSet>> Descriptors;
 	WorldRenderer::~WorldRenderer() {
-		textureCubeMap = nullptr;
-		skyBoxRenderPipeline = nullptr;
-	//	PipelineLayout = nullptr;
-		Cube = nullptr; 
-		cameraBuffer = nullptr;
-		//Descriptors.clear();
-		brdfTexture = nullptr;
-		prefilterCubeMap = nullptr;
-		iradianceCubeMap = nullptr;
-		Cube = nullptr;
 		for (auto& transformBuffer : m_SubmeshTransformBuffers)
 			delete[] transformBuffer.Data;
 		//PipelineLayout = nullptr;
 	}
-	WorldRenderer::WorldRenderer(Count<World>world, uint32_t textureWidth, uint32_t textureHeight) :
-		m_World(world)
+	WorldRenderer::WorldRenderer()
+		:
+		m_Timers(m_Stats.Timers), m_LightScene(m_Stats.LightSene)
 	{
-		m_UBRenderDataBuffer = UniformBufferSet::Create(sizeof(UBRenderData));
-		m_UBSceneDataBuffer = UniformBufferSet::Create(sizeof(UBSceneData));
-		cameraBuffer = UniformBufferSet::Create(sizeof(CameraData));
-		m_SkyBoxUniformInfo = UniformBufferSet::Create(sizeof(SkyLight));
-
-		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
-
-		
-		FrameBufferConfig config;
-		config.DebugName = "Screen FrameBuffer";
-		config.Attachments = { ImageFormat::RGBA32F,ImageFormat::DEPTH32FSTENCIL8UI };
-		if (Application::Get()->GetConfig().EnableImgui == false)
-		{
-			config.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetImageFormat(),Application::Get()->GetWindow()->GetSwapChain()->GetDepthFormat() };
-			config.Attachments.Attachments[0].ExistingImage = Application::Get()->GetWindow()->GetSwapChain()->GetImageLayout(); // this line basically makes us able to render to window
-		}		
-		config.ClearColor = { 0,0,0,1 };
-		config.ClearFrameBufferOnLoad = false;
-		config.Size = { (float)textureWidth,(float)textureHeight };
-		// last attachment is depth so it is not added as a base attachmetn
-		config.Attachments.Attachments[0].ClearOnLoad = false;
-		m_ScreenFrameBuffer = ScreenFrameBuffer::Create(config);
-
-		m_BRDFLUT = Renderer::GenerateBRDFLut();
-
-		m_CommandBuffer = RenderCommandBuffer::Create("Scene Renderer Renderer");
-		m_Renderer2D = CreateSpecial< Renderer2D>(m_ScreenFrameBuffer);
-
-		//auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap("Assets/Arches_E_PineTree_3k.hdr");
-		//m_Environment = Count<Environment>::Create(irradiance, prefilter);
-		// init mesh
-		{
-
-
-			Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
-			meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-			meshVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-			meshVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
-			meshVertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
-			meshVertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-
-
-			meshVertexArray->AddData(5, DataType::Vec4, 0, 1);
-			meshVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
-			meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
-			meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
-
-			GraphicsPipelineConfig graphicsPipelineConfig;
-			graphicsPipelineConfig.DebugName = "MeshPipeline";
-			graphicsPipelineConfig.Shader = Renderer::GetShader("ProofPBR_Static");
-			graphicsPipelineConfig.VertexArray = meshVertexArray;
-			graphicsPipelineConfig.TargetBuffer = m_ScreenFrameBuffer->GetFrameBuffer();
-			graphicsPipelineConfig.CullMode = CullMode::Back;
-			m_MeshPipeline.Pipline = GraphicsPipeline::Create(graphicsPipelineConfig);
-
-			RenderPassConfig renderPassConfig;
-			renderPassConfig.DebugName = "Mesh Render Pass";
-			renderPassConfig.Attachments = m_ScreenFrameBuffer->GetFrameBuffer();
-			if (Application::Get()->GetConfig().EnableImgui == false)
-			{
-				renderPassConfig.Attachments.Attachments[0].PresentKHr = true;
-			}
-			renderPassConfig.Pipeline = m_MeshPipeline.Pipline;
-			m_MeshPipeline.RenderPass = RenderPass::Create(renderPassConfig);
-			m_MeshPipeline.RenderPass->SetInput("CameraData", cameraBuffer);
-
-			m_DirectionalLights = StorageBufferSet::Create(sizeof(DirectionalLight));
-			m_MeshPipeline.RenderPass->SetInput("DirectionalLightStorageBuffer", m_DirectionalLights);
-			m_MeshPipeline.RenderPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
-			m_MeshPipeline.RenderPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
-			m_MeshPipeline.RenderPass->SetInput("u_BRDFLUT", m_BRDFLUT);
-			m_MeshPipeline.RenderPass->SetInput("SkyBoxData", m_SkyBoxUniformInfo);
-
-		}
-		
-
-		{
-			GraphicsPipelineConfig pipelineConfig;
-			pipelineConfig.DebugName = "SKy box";
-			pipelineConfig.Shader = Renderer::GetShader("SkyBox");
-			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
-			pipelineConfig.TargetBuffer = m_ScreenFrameBuffer->GetFrameBuffer();
-			pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
-			pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-			pipelineConfig.VertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-			pipelineConfig.VertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
-			pipelineConfig.VertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
-			pipelineConfig.VertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-			skyBoxRenderPipeline  = GraphicsPipeline::Create(pipelineConfig);
-
-			RenderPassConfig renderPassConfig;
-			renderPassConfig.DebugName = "skyBoxPass Pass";
-			renderPassConfig.Attachments = m_ScreenFrameBuffer->GetFrameBuffer();
-			if (Application::Get()->GetConfig().EnableImgui == false)
-			{
-				renderPassConfig.Attachments.Attachments[0].PresentKHr = true;
-			}
-			renderPassConfig.Pipeline = skyBoxRenderPipeline;
-			skyBoxPass = RenderPass::Create(renderPassConfig);
-			skyBoxPass->SetInput("CameraData", cameraBuffer);
-			skyBoxPass->SetInput("u_EnvironmentMap", m_Environment->PrefilterMap);
-			skyBoxPass->SetInput("SkyBoxData", m_SkyBoxUniformInfo);
-		}
-		Cube = MeshWorkShop::GenerateCube();
-		s_CascadeProjectionBuffer = UniformBufferSet::Create(sizeof(glm::mat4) * 4);
-		CreateShadowMap();
-		m_MeshPipeline.RenderPass->SetInput("u_ShadowMap", m_ShadowPassImage);
-		m_MeshPipeline.RenderPass->SetInput("RendererData", m_UBRenderDataBuffer);
-		m_MeshPipeline.RenderPass->SetInput("SceneData", m_UBSceneDataBuffer);
-		m_MeshPipeline.RenderPass->SetInput("ShadowMapProjections", s_CascadeProjectionBuffer);
-
-
+		Init();
+	}
+	
+	void WorldRenderer::Init()
+	{
 		const size_t TransformBufferCount = 10 * 1024; // 10240 transforms
 		m_SubmeshTransformBuffers.resize(Renderer::GetConfig().FramesFlight);
 		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
@@ -201,451 +73,504 @@ namespace Proof
 			m_SubmeshTransformBuffers[i].Buffer = VertexBuffer::Create(sizeof(TransformVertexData) * TransformBufferCount);
 			m_SubmeshTransformBuffers[i].Data = new TransformVertexData[TransformBufferCount];
 		}
+		m_CommandBuffer = RenderCommandBuffer::Create("WorldRenderer");
+		m_Renderer2D = CreateSpecial< Renderer2D>();
 
-		
-	}
-	void WorldRenderer::Clear() {
-		
-	}
-
-	void WorldRenderer::BeginContext()
-	{
-		PF_PROFILE_FUNC();
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
-	}
-
-	void WorldRenderer::EndContext()
-	{
-		PF_PROFILE_FUNC();
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);
-	}
-	void WorldRenderer::Render(const glm::mat4& projection, const glm::mat4& view, const Vector& location, float nearPlane, float farPlane,Viewport viewPort, ViewportScissor scissor, RenderSettings renderSettings, bool clearPreviousFrame, Count<UITable> uiTable)
-	{
 		{
-			//https://github.com/InCloudsBelly/X2_RenderingEngine/blob/739ff016ad2a23e3843517c4866dda09ce5d112f/Engine/X2/Renderer/Camera.cpp
-			static glm::mat4 unreversedProjectionMatrix (glm::perspectiveFov(glm::radians(45.0f),(float) m_ScreenFrameBuffer->GetFrameWidth(), (float)m_ScreenFrameBuffer->GetFrameHeight(), nearPlane,farPlane));
-			m_CameraData = { projection, view, unreversedProjectionMatrix,location, nearPlane, farPlane };
+			uint32_t width, height = 100;
+			m_UBScreenData.FullResolution = { width, height };
+			m_UBScreenData.InverseFullResolution = { 1 / width,  1 / height };
+			m_UBScreenData.HalfResolution = glm::ivec2{ m_UBScreenData.FullResolution } / 2;
+			m_UBScreenData.InverseHalfResolution = glm::ivec2{ m_UBScreenData.InverseFullResolution } *2;
 		}
+
+		m_BRDFLUT = Renderer::GenerateBRDFLut();
+
+		m_UBScreenBuffer = UniformBufferSet::Create(sizeof(UBScreenData));
+		m_UBRenderDataBuffer = UniformBufferSet::Create(sizeof(UBRenderData));
+		m_UBSceneDataBuffer = UniformBufferSet::Create(sizeof(UBSceneData));
+		m_UBCameraBuffer = UniformBufferSet::Create(sizeof(CameraData));
+		m_UBSKyBoxBuffer = UniformBufferSet::Create(sizeof(UBSkyLight));
+		m_SBDirectionalLights = StorageBufferSet::Create(sizeof(DirectionalLight));
+		m_UBCascadeProjectionBuffer = UniformBufferSet::Create(sizeof(glm::mat4) * 4);
+
+		m_Cube = MeshWorkShop::GenerateCube();
+
+
+		
+		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
+		switch (ShadowSetting.ShadowResolution)
+		{
+			
+			case Proof::ShadowResolution::Low:
+				m_ShadowMapResolution = 512;
+				break;
+			case Proof::ShadowResolution::Mediuim:
+				m_ShadowMapResolution = 1024;
+				break;
+			case Proof::ShadowResolution::High:
+				m_ShadowMapResolution = 2048;
+				break;
+			case Proof::ShadowResolution::Extreme:
+				m_ShadowMapResolution = 4096;
+				break;
+			default:
+				PF_CORE_ASSERT(false);
+				break;
+		}
+
+		Count<VertexArray> staticVertexArray= VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
+		staticVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
+		staticVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
+		staticVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
+		staticVertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
+		staticVertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
+
+
+		staticVertexArray->AddData(5, DataType::Vec4, 0, 1);
+		staticVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
+		staticVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
+		staticVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
+
+		Count<VertexArray> quadVertexArray = VertexArray::Create({ sizeof(QuadVertex) });
+		quadVertexArray->AddData(0, DataType::Vec3, offsetof(QuadVertex, QuadVertex::Position));
+		quadVertexArray->AddData(1, DataType::Vec2, offsetof(QuadVertex, QuadVertex::TexCoord));
+
+		//pre depth pass
+		{
+		
+			FrameBufferConfig preDepthFramebufferSpec;
+			preDepthFramebufferSpec.DebugName = "PreDepth";
+			//Linear depth, reversed device depth
+			preDepthFramebufferSpec.Attachments = { ImageFormat::DEPTH32FSTENCIL8UI };
+			preDepthFramebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+			preDepthFramebufferSpec.DepthClearValue = 1.0f;
+			
+			GraphicsPipelineConfiguration pipelinelineConfig;
+			pipelinelineConfig.Attachments = { ImageFormat::DEPTH32FSTENCIL8UI };
+			pipelinelineConfig.DebugName = "PreDepth";
+			pipelinelineConfig.Shader = Renderer::GetShader("PreDepth_Static");
+			pipelinelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+			pipelinelineConfig.VertexArray = staticVertexArray;
+			
+			auto preDepthStaticPipeline = GraphicsPipeline::Create(pipelinelineConfig);
+			
+			RenderPassConfig renderPassConfig;
+			renderPassConfig.DebugName = "PreDepth_Static";
+			renderPassConfig.Pipeline = preDepthStaticPipeline;
+			renderPassConfig.TargetFrameBuffer = FrameBuffer::Create(preDepthFramebufferSpec);
+			
+			m_PreDepthPass = RenderPass::Create(renderPassConfig);
+			m_PreDepthPass->SetInput("CameraData", m_UBCameraBuffer);
+
+		}
+
+		{
+			ImageFormat depthFormat = ImageFormat::DEPTH32F;
+			const uint32_t shadowMapCascade = SHADOWMAP_CASCADE_COUNT;
+			ImageConfiguration depthImageConfig;
+			depthImageConfig.DebugName = "Shadow Pass Image";
+			depthImageConfig.Format = depthFormat;
+			depthImageConfig.Usage = ImageUsage::Attachment;
+			depthImageConfig.Layers = shadowMapCascade;
+			depthImageConfig.Width = m_ShadowMapResolution;
+			depthImageConfig.Height = m_ShadowMapResolution;
+
+			m_ShadowPassImage = Image2D::Create(depthImageConfig);
+
+
+			Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+				VkImageMemoryBarrier imageMemoryBarrier{};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+				imageMemoryBarrier.image = m_ShadowPassImage.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+				VkImageSubresourceRange range;
+				range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+				range.baseArrayLayer = 0;
+				range.baseMipLevel = 0;
+				range.layerCount = 4;
+				range.levelCount = 1;
+				imageMemoryBarrier.subresourceRange = range;
+
+				vkCmdPipelineBarrier(
+					cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
+					VK_PIPELINE_STAGE_TRANSFER_BIT,
+					VK_PIPELINE_STAGE_TRANSFER_BIT,
+					0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+			});
+
+			{
+				FrameBufferConfig framebufferConfig;
+				framebufferConfig.DebugName = "Shadow Debug Fraembuffer";
+				framebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH24STENCIL8UI };
+				framebufferConfig.Width = m_ShadowMapResolution;
+				framebufferConfig.Height = m_ShadowMapResolution;
+				framebufferConfig.DepthClearValue = 1.0f;
+
+				auto shadowDebugframeBuffer = FrameBuffer::Create(framebufferConfig);
+
+				GraphicsPipelineConfiguration shadowMapPipelineConfig;
+				shadowMapPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH24STENCIL8UI };
+				shadowMapPipelineConfig.DebugName = "DebugShadowMapPipeline";
+				shadowMapPipelineConfig.Shader = Renderer::GetShader("DebugShadowMap");
+
+				m_ShadowDebugPipeline = GraphicsPipeline::Create(shadowMapPipelineConfig);
+
+				RenderPassConfig renderpassConfig;
+				renderpassConfig.DebugName = fmt::format("DebugShadowPass");
+				renderpassConfig.TargetFrameBuffer = shadowDebugframeBuffer;
+				renderpassConfig.Pipeline = m_ShadowDebugPipeline;
+				m_ShadowDebugPass = RenderPass::Create(renderpassConfig);
+				m_ShadowDebugPass->SetInput("u_ShadowMap", m_ShadowPassImage);
+
+			}
+			GraphicsPipelineConfiguration pipelineConfig;
+			pipelineConfig.DebugName = "ShadowMapCascade";
+			pipelineConfig.Attachments = { depthFormat };
+			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+			pipelineConfig.CullMode = CullMode::Back;
+			pipelineConfig.Shader = Renderer::GetShader("ShadowDepthPass");
+			pipelineConfig.VertexArray = staticVertexArray;
+
+			auto pipleine = GraphicsPipeline::Create(pipelineConfig);
+			for (uint32_t i = 0; i < shadowMapCascade; i++)
+			{
+				ImageViewConfiguration imageViewConfig;
+				imageViewConfig.DebugName = fmt::format("Shadow Cascade: {}", i);
+				imageViewConfig.Layer = i;
+				imageViewConfig.LayerCount = 1;
+				imageViewConfig.View = ImageViewType::View2D;
+				imageViewConfig.Image = m_ShadowPassImage;
+
+				Count<ImageView> imageView = ImageView::Create(imageViewConfig);
+				FrameBufferConfig framebufferConfig;
+				framebufferConfig.DebugName = fmt::format("Shadow map cascade {}", i);
+				framebufferConfig.Attachments = { depthFormat };
+				framebufferConfig.Attachments.Attachments[0].ExistingImage = imageView;
+				framebufferConfig.Width = m_ShadowMapResolution;
+				framebufferConfig.Height = m_ShadowMapResolution;
+				framebufferConfig.DepthClearValue = 1.0f;
+
+				Count<FrameBuffer> shadowMapPassFrameBuffer = FrameBuffer::Create(framebufferConfig);
+
+				RenderPassConfig renderpassConfig;
+				renderpassConfig.TargetFrameBuffer = shadowMapPassFrameBuffer;
+				renderpassConfig.DebugName = fmt::format("Shadow render pass Cascade {}", i);
+				renderpassConfig.Pipeline = pipleine;
+
+				auto renderPass = RenderPass::Create(renderpassConfig);
+				m_ShadowMapPasses[i] = renderPass;
+			}
+		}
+	
+		//geometry pass
+		{
+			FrameBufferConfig geoFramebufferConfig;
+			geoFramebufferConfig.DebugName = "Geometry";
+			geoFramebufferConfig.ClearDepthOnLoad = false;
+			geoFramebufferConfig.ClearColorOnLoad = false;
+			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			geoFramebufferConfig.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+			geoFramebufferConfig.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetConfig().TargetFrameBuffer->GetDepthImageLayout();
+
+			auto frameBuffer = FrameBuffer::Create(geoFramebufferConfig);
+
+			GraphicsPipelineConfiguration pipelinelineConfig;
+			pipelinelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			pipelinelineConfig.DebugName = "Geometry_Static";
+			pipelinelineConfig.Shader = Renderer::GetShader("ProofPBR_Static");
+			pipelinelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
+			pipelinelineConfig.VertexArray = staticVertexArray;
+			pipelinelineConfig.WriteDepth = false;
+
+			Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelinelineConfig);
+
+			RenderPassConfig geopassConfig;
+			geopassConfig.DebugName = "GeometryPass";
+			geopassConfig.Pipeline = pipeline;
+			geopassConfig.TargetFrameBuffer = frameBuffer;
+
+			m_GeometryPass = RenderPass::Create(geopassConfig);
+
+
+			m_GeometryPass->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLights);
+			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
+			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
+			m_GeometryPass->SetInput("u_BRDFLUT", m_BRDFLUT);
+			m_GeometryPass->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
+			m_GeometryPass->SetInput("u_ShadowMap", m_ShadowPassImage);
+			m_GeometryPass->SetInput("RendererData", m_UBRenderDataBuffer);
+			m_GeometryPass->SetInput("SceneData", m_UBSceneDataBuffer);
+			m_GeometryPass->SetInput("ShadowMapProjections", m_UBCascadeProjectionBuffer);
+			m_GeometryPass->SetInput("CameraData", m_UBCameraBuffer);
+
+		}
+
+		// skybox
+		{
+			GraphicsPipelineConfiguration skyBoxPipelineConfig;
+			skyBoxPipelineConfig.DebugName = "Sky box";
+			skyBoxPipelineConfig.DepthTest = false;
+			skyBoxPipelineConfig.WriteDepth = false;
+			skyBoxPipelineConfig.Attachments = m_GeometryPass->GetPipeline()->GetConfig().Attachments;
+			skyBoxPipelineConfig.Shader = Renderer::GetShader("SkyBox");
+			skyBoxPipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+			skyBoxPipelineConfig.VertexArray = quadVertexArray;
+			auto skyBoxPipeline = GraphicsPipeline::Create(skyBoxPipelineConfig);
+
+			RenderPassConfig renderPassConfig;
+			renderPassConfig.DebugName = "skyBoxPass Pass";
+			renderPassConfig.Pipeline = skyBoxPipeline;
+			renderPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+			m_SkyBoxPass = RenderPass::Create(renderPassConfig);
+			m_SkyBoxPass->SetInput("CameraData", m_UBCameraBuffer);
+			m_SkyBoxPass->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
+		}
+
+		//composite pass
+		{
+			/**
+			A composite pass, also known as a "final render pass" or "post-processing pass," is a stage in the rendering pipeline where the final image is generated by combining various elements produced in earlier stages. 
+			This pass involves taking the output from previous rendering passes (such as geometry, shading, and lighting) and applying post-processing effects, color correction, tone mapping, depth of field, motion blur, and more to create the final visual result.
+			The composite pass is where all the individual elements are blended and combined to produce the image that will be presented to the user.
+			*/
+			FrameBufferConfig compFramebufferSpec;
+			compFramebufferSpec.DebugName = "WorldComposite";
+			compFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+			compFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			//compFramebufferSpec.Transfer = true;
+			Count<FrameBuffer> framebuffer = FrameBuffer::Create(compFramebufferSpec);
+		
+			GraphicsPipelineConfiguration pipelineSpecification;
+			pipelineSpecification.DebugName = "WorldComposite";
+			pipelineSpecification.VertexArray = quadVertexArray;
+			pipelineSpecification.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			pipelineSpecification.CullMode = CullMode::None;
+			pipelineSpecification.WriteDepth = false;
+			pipelineSpecification.DepthTest = false;
+			pipelineSpecification.Shader = Renderer::GetShader("WorldComposite");
+
+			Count<GraphicsPipeline> compositePipeline = GraphicsPipeline::Create(pipelineSpecification);
+
+			RenderPassConfig renderPassSpec;
+			renderPassSpec.DebugName = "WorldComposite";
+			renderPassSpec.Pipeline = compositePipeline;
+			renderPassSpec.TargetFrameBuffer = framebuffer;
+			
+			m_CompositePass = RenderPass::Create(renderPassSpec);
+			m_CompositeMaterial = RenderMaterial::Create({ "Composite", Renderer::GetShader("WorldComposite") });
+		}
+
+		//External Composite 
+		{
+			/*
+			External Composite Pass:
+			An external composite pass refers to a composite pass that is performed outside of the main rendering pipeline, often in a separate step or even in a different rendering context. This can be useful for certain scenarios, such as when you want to apply post-processing effects using a different graphics library, perform specialized image manipulation, or utilize a different shader program for the final composition. 
+			An external composite pass allows for more flexibility and control over how the final image is generated and processed.
+
+			In summary, the key difference between a composite pass and an external composite pass lies in where and how the final image is generated and post-processed. 
+			The composite pass is a standard stage in the rendering pipeline where various rendering elements are combined to create the final image. An external composite pass refers to performing this final composition step outside of the main pipeline, 
+			providing more flexibility in how the image is generated and processed.
+
+			User
+			so the external pass is that for basically like applying ui elements
+			ChatGPT
+			Yes, that's one common use case for an external composite pass. Applying UI elements, like user interface overlays, HUD elements, or text, on top of the rendered scene is typically done in a separate step after the main rendering pipeline. 
+			This allows for greater control over the composition of UI elements with the 3D scene.
+			Here's how it might work:
+			
+			Main Rendering Pipeline:
+			The main rendering pipeline focuses on rendering the 3D scene, including geometry, materials, lighting, and shading. It produces the 3D scene's output in the form of color and depth buffers.
+			
+			External Composite Pass:
+			After the main rendering is complete, an external composite pass is performed. This pass involves taking the color buffer produced by the main pipeline and applying additional effects and UI elements.
+			UI Elements: This is where UI elements, such as buttons, menus, health bars, crosshairs, etc., are drawn on top of the rendered scene. UI elements are often 2D and can be drawn using textures, images, or text rendering techniques.
+			Post-Processing Effects: Additionally, post-processing effects like color grading, bloom, vignette, and other visual enhancements can also be applied during the external composite pass.
+			By performing the UI rendering and post-processing in a separate pass after the main rendering pipeline, developers can have better control over the order of operations and ensure that UI elements appear on top of the 3D scene. 
+			It also allows for flexibility in how UI elements are handled, especially if the UI system uses different rendering techniques or libraries than the main rendering pipeline. 
+			*/
+
+			FrameBufferConfig extCompFramebufferSpec;
+			extCompFramebufferSpec.DebugName = "External-Composite";
+			extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			extCompFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+			extCompFramebufferSpec.ClearColorOnLoad = false;
+			extCompFramebufferSpec.ClearDepthOnLoad = false;
+			// Use the color buffer from the final compositing pass, but the depth buffer from
+			// the actual 3D geometry pass, in case we want to composite elements behind meshes
+			// in the scene
+			extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_CompositePass->GetTargetFrameBuffer()->GetColorAttachmentImageLayout(0);
+			extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetTargetFrameBuffer()->GetDepthImageLayout();
+
+			m_ExternalCompositeFrameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
+		}
+
+	}
+	void WorldRenderer::SetContext(Count<class World> world)
+	{
+		PF_CORE_ASSERT(!m_InContext, "Can't change world while rendering");
+		m_ActiveWorld = world;
+
+	}
+	void WorldRenderer::BeginScene(const Camera& camera, const Vector& location, float nearPlane, float farPlane)
+	{
+		PF_PROFILE_FUNC();
+		PF_CORE_ASSERT(!m_InContext);
+		PF_CORE_ASSERT(m_ActiveWorld);
+		PF_PROFILE_TAG("Renderer", m_ActiveWorld->GetName().c_str());
+
+		
+		m_InContext = true;
+
+		//reset stats
+		m_Stats = {};
+
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
-		cameraBuffer->SetData(frameIndex,Buffer( &m_CameraData, sizeof(CameraData)));
-		Reset();
+
+		if (m_NeedResize)
 		{
-			const auto& directionalLightView = m_World->m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
-			m_LightScene.DirectionalLights.resize(directionalLightView.size());
-			int index = 0;
-			for (auto& entityID : directionalLightView)
-			{
-				Entity entity(entityID, m_World.Get());
-				const auto& dirLightComponent = directionalLightView.get<DirectionalLightComponent>(entityID);
-				glm::vec3 direction = ProofToglmVec(dirLightComponent.OffsetDirection) + ProofToglmVec(m_World->GetWorldRotation(entity));
-				direction = glm::normalize(direction);
-				m_LightScene.DirectionalLights[index];
-				m_LightScene.DirectionalLights[index].Color = dirLightComponent.Color;
-				m_LightScene.DirectionalLights[index].Intensity = dirLightComponent.Intensity;
-				m_LightScene.DirectionalLights[index].Direction = -GlmVecToProof(direction);
-				m_LightScene.DirectionalLights[index].ShadowSoftness = dirLightComponent.ShadowSoftness;
-				m_LightScene.DirectionalLights[index].ShadowStrength = dirLightComponent.ShadowStrength;
-				m_LightScene.DirectionalLights[index].bCastShadows= dirLightComponent.CastShadow;
-				m_LightScene.DirectionalLights[index].bCastSoftShadows = dirLightComponent.CastSoftShadow;
+			m_NeedResize = false;
+			const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
 
-				index++;
-			}
-			const auto& skyLightView = m_World->m_Registry.view<SkyLightComponent>();
-			if (skyLightView.size() > 0)
-			{
-				auto entityID = skyLightView.front();
-				Entity entity(entityID, m_World.Get());
-				auto& skyLightComponent = entity.GetComponent<SkyLightComponent>();
-				SkyLight skyLightInfo;
-				skyLightInfo.TintColor = skyLightComponent.ColorTint;
-				skyLightInfo.Rotation = skyLightComponent.MapRotation;
-				skyLightInfo.Intensity = skyLightComponent.Intensity;
-				skyLightInfo.Lod = skyLightComponent.SkyBoxLoad;
+			// predepth
+			m_PreDepthPass->GetTargetFrameBuffer()->Resize(viewportSize);
 
+			//geometrypass
+			m_GeometryPass->GetTargetFrameBuffer()->Resize(viewportSize);
 
-				if (skyLightComponent.DynamicSky)
-				{
-					goto nonExistEnvrironment; // just for now
-					skyLightComponent.RemoveImage();
-					auto environment = Renderer::CreatePreethamSky(skyLightComponent.Turbidity, skyLightComponent.Azimuth, skyLightComponent.Inclination);
-					skyLightComponent.Environment = Count<Environment>::Create(environment, environment);
-				}
-				if (skyLightComponent.Environment == nullptr)
-				{
-					goto nonExistEnvrironment;
-				}
-				m_Environment = skyLightComponent.Environment;
+			// compoiste 
+			m_CompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
 
-
-				m_SkyBoxUniformInfo->SetData(frameIndex,Buffer((uint8_t*)&skyLightInfo, sizeof(SkyLight)));
-			}
-			else
-			{
-				nonExistEnvrironment:
-				SkyLight light = {};
-				m_SkyBoxUniformInfo->SetData(frameIndex,Buffer((uint8_t*)&light, sizeof(SkyLight)));
-				m_Environment->IrradianceMap = Renderer::GetBlackTextureCube();
-				m_Environment->PrefilterMap = Renderer::GetBlackTextureCube();
-
-			}
+			m_ExternalCompositeFrameBuffer->Resize(viewportSize);
 		}
-		{
-			const auto& entityView = m_World->m_Registry.view<MeshComponent>();
-			for (auto& entityID : entityView)
-			{
-				Entity entity{ entityID,m_World.Get() };
-				MeshComponent& meshComponent = entity.GetComponent<MeshComponent>();
 
-				if (AssetManager::HasAsset(meshComponent.GetMesh()))
-				{
-					Count<Mesh> mesh = meshComponent.GetMesh();
-					SubmitStaticMesh(mesh, meshComponent.MaterialTable, m_World->GetWorldTransform(entity));
-				}
-			}
-		}
 		
+		switch (ShadowSetting.ShadowResolution)
+		{
+			case Proof::ShadowResolution::None:
+				PF_CORE_ASSERT(false);
+				break;
+			case Proof::ShadowResolution::Low:
+				m_ShadowMapResolution = 512;
+				break;
+			case Proof::ShadowResolution::Mediuim:
+				m_ShadowMapResolution = 1024;
+				break;
+			case Proof::ShadowResolution::High:
+				m_ShadowMapResolution = 2048;
+				break;
+			case Proof::ShadowResolution::Extreme:
+				m_ShadowMapResolution = 4096;
+				break;
+		}
 
+		if (m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Width != m_ShadowMapResolution)
+		{
+			for (uint32_t i = 0; i < m_ShadowMapPasses.size(); i++)
+			{
+				m_ShadowMapPasses[i]->GetTargetFrameBuffer()->Resize(m_ShadowMapResolution, m_ShadowMapResolution);
+			}
+		}
+
+		// set buffers
+
+		// camera buffer
+		{
+			m_CameraData = { camera.GetProjectionMatrix(), camera.GetViewMatrix(), camera.GetUnReversedProjectionMatrix(),location, nearPlane, farPlane };
+			m_UBCameraBuffer->SetData(frameIndex, Buffer(&m_CameraData, sizeof(m_CameraData)));
+		}
+	}
+	
+	void WorldRenderer::EndScene()
+	{
 		PF_PROFILE_FUNC();
-		PF_PROFILE_TAG("Renderer", m_World->GetName().c_str());
-		// clear screen
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
-		Renderer::BeginRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass,true);
-		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
-		// remember there are shard s if i change then it would not stay constnt
-		skyBoxPass->SetInput("u_EnvironmentMap", m_Environment->PrefilterMap);
-		m_MeshPipeline.RenderPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
-		m_MeshPipeline.RenderPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
-
-		Renderer::BeginRenderPass(m_CommandBuffer, skyBoxPass);
-		Cube->GetMeshSource()->GetVertexBuffer()->Bind(m_CommandBuffer);
-		Cube->GetMeshSource()->GetIndexBuffer()->Bind(m_CommandBuffer);
-		for (const auto& subMesh : Cube->GetMeshSource()->GetSubMeshes())
-		{
-			Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexCount, 1, subMesh.BaseIndex, subMesh.BaseVertex);
-		}
-		Renderer::EndRenderPass(skyBoxPass);
-		
-		PrePass();
-		ShadowPass();
-		
-		MeshPass();
-		
-		{
-			PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
-			m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
-
-			
-			m_World->ForEachComponent<SpriteComponent, TransformComponent>([&](SpriteComponent& sprite, TransformComponent& transform) {
-				m_Renderer2D->DrawQuad(sprite, transform);
-			});
-			TextParams parms;
-
-			m_World->ForEachEnitityWith<TextComponent>([&](Entity& entity) {
-				TextComponent& text = entity.GetComponent<TextComponent>();
-				parms.Color = text.Colour;
-				parms.Kerning = text.Kerning;
-				parms.LineSpacing = text.LineSpacing;
-				if (text.UseLocalRotation == false)
-					m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, m_World->GetWorldTransform(entity));
-				else
-				{
-					auto rotation = entity.GetComponent<TransformComponent>().Rotation;
-					auto mat = glm::translate(glm::mat4(1.0f), { ProofToglmVec(m_World->GetWorldLocation(entity)) }) *
-						glm::rotate(glm::mat4(1.0f), glm::radians(rotation.X), { 1,0,0 })
-						* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
-						* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Z), { 0,0,1 })
-						* glm::scale(glm::mat4(1.0f), { ProofToglmVec(m_World->GetWorldScale(entity)) });
-					m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, mat);
-				}
-			});
-
-			m_Renderer2D->EndContext();
-
-		}
-
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);
-
-		
-		#if  0
-		m_ScreenFrameBuffer->GetFrameBuffer()->GetConfig().ClearFrameBufferOnLoad = clearPreviousFrame;
-		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, m_ScreenFrameBuffer->GetFrameBuffer(), viewPort, scissor);
-		cmaeraData = { projection, view, location };
-		cameraBuffer->SetData(&cmaeraData, sizeof(CameraData));
-		{
-
-			Renderer::RecordRenderPass(m_RenderPass, RenderPipline);
-				auto descriptor0 = Descriptors[DescriptorSets::Zero];
-				descriptor0->WriteBuffer(0, cameraBuffer);
-				//descriptor0->WriteImage(1, prefilterCubeMap);
-				descriptor0->WriteImage(1, textureCubeMap);
-				descriptor0->Bind(m_CommandBuffer, PipelineLayout);
-				for (const auto& subMesh : Cube->GetMeshSource()->GetSubMeshes())
-				{
-					subMesh.VertexBuffer->Bind(m_CommandBuffer);
-					subMesh.IndexBuffer->Bind(m_CommandBuffer);
-					Renderer::DrawElementIndexed(m_CommandBuffer, subMesh.IndexBuffer->GetCount());
-				}
-		}
-
-		m_Renderer3D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
-
-		m_Renderer3D->SetPbrMaps(iradianceCubeMap, prefilterCubeMap, brdfTexture);
-		// MESHES
-		{
-			PF_PROFILE_FUNC("WorldRenderer::Mesh Pass");
-			m_World->ForEachEnitityWith<MeshComponent>([&](Entity entity) {
-				auto& meshComponent = entity.GetComponent<MeshComponent>();
-				if (meshComponent.Visible == false)
-					return;
-				if (AssetManager::HasAsset(meshComponent.GetMesh()))
-				{
-					Count<Mesh> mesh = meshComponent.GetMesh();
-					 //if material equls meshMaterial
-					if (*meshComponent.MaterialTable == *mesh->GetMaterialTable())
-						m_Renderer3D->SubmitMesh(mesh, m_World->GetWorldTransform(entity));
-					else
-						m_Renderer3D->SubmitMeshWithMaterial(mesh, meshComponent.MaterialTable, m_World->GetWorldTransform(entity));
-				}
-			});
-		}
-		// light
-		{
-			m_World->ForEachEnitityWith<DirectionalLightComponent>([&](Entity entity) {
-				auto& lightComp = entity.GetComponent<DirectionalLightComponent>();
-				Vector rotation = m_World->GetWorldRotation(entity) + lightComp.OffsetDirection;
-				DirLight dirLight{ lightComp.Color,lightComp.Intensity,rotation };
-				m_Renderer3D->SubmitDirectionalLight(dirLight);
-			});
-		}
-		m_Renderer3D->EndContext();
-
-
-		{
-			{
-				PF_PROFILE_FUNC("WorldRenderer::Renderer2D Pass");
-				m_Renderer2D->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
-
-				glm::mat4 identity =
-					glm::translate(glm::mat4(1.0f), glm::vec3{ 0,0,0 }) *
-					glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 1,0,0 })
-					* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,1,0 })
-					* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })
-					* glm::scale(glm::mat4(1.0f), glm::vec3{ 0,0,0 });
-				m_World->ForEachComponent<SpriteComponent, TransformComponent>([&](SpriteComponent& sprite, TransformComponent& transform) {
-					m_Renderer2D->DrawQuad(sprite, transform);
-				});
-				TextParams parms;
-
-				m_World->ForEachEnitityWith<TextComponent>([&](Entity& entity) {
-					TextComponent& text = entity.GetComponent<TextComponent>();
-					parms.Color = text.Colour;
-					parms.Kerning = text.Kerning;
-					parms.LineSpacing = text.LineSpacing;
-					if (text.UseLocalRotation == false)
-						m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, m_World->GetWorldTransform(entity));
-					else
-					{
-						auto rotation = entity.GetComponent<TransformComponent>().Rotation;
-						auto mat = glm::translate(glm::mat4(1.0f), { ProofToglmVec(m_World->GetWorldLocation(entity)) }) *
-							glm::rotate(glm::mat4(1.0f), glm::radians(rotation.X), { 1,0,0 })
-							* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
-							* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Z), { 0,0,1 })
-							* glm::scale(glm::mat4(1.0f), { ProofToglmVec(m_World->GetWorldScale(entity)) });
-						m_Renderer2D->DrawString(text.Text, Font::GetDefault(), parms, mat);
-					}
-				});
-				m_Renderer2D->EndContext();
-			}
-			PF_PROFILE_FUNC("WorldRenderer::Paricle Pass");
-			m_ParticleSystemRenderer->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
-
-			m_World->ForEachEnitityWith<ParticleSystemComponent>([&](Entity& entity) {
-				ParticleSystemComponent& particleSystem = entity.GetComponent<ParticleSystemComponent>();
-				Vector scale = m_World->GetWorldScale(entity);
-				Vector enittyrotation = m_World->GetWorldRotation(entity);
-				if (particleSystem.ParticleHandlerTable == nullptr)return;
-				for (auto& [index, handler] : particleSystem.ParticleHandlerTable->GetHandlers())
-				{
-					if (handler == nullptr)continue;
-					if (handler->Visible == false)continue;
-					auto texture = handler->GetParticleSystem()->Texture != nullptr ? handler->GetParticleSystem()->Texture : Renderer::GetWhiteTexture();
-
-					//reverse order for transperancy
-					for (auto it = handler->GetParticles().rbegin(); it != handler->GetParticles().rend(); it++)
-					{
-						auto& particle = *it;
-						if (particle.Active == false)continue;
-						Vector size;
-						glm::vec3 rotation;
-						if (handler->GetParticleSystem()->Use3D)
-						{
-							rotation = ProofToglmVec(particle.Rotation3D)/* + ProofToglmVec(enittyrotation)*/;
-							size = scale.X * particle.Size3D;
-						}
-						else
-						{
-							rotation = convertRotationToVec3(particle.Rotation) + ProofToglmVec(enittyrotation);
-
-							size = { scale.X * particle.Size, scale.Y * particle.Size, scale.Z * particle.Size };
-						}
-						// no need for scale on the z axis just doing it in case for future
-
-						m_ParticleSystemRenderer->DrawQuad(particle.Position, rotation,
-							ProofToglmVec(size), particle.Color, texture);
-					}
-				}
-			});
-			m_ParticleSystemRenderer->EndContext();
-		}
-
-		if (renderSettings.ViewColliders)
-		{
-			m_DebugMeshRenderer->BeginContext(projection, view, location, m_ScreenFrameBuffer, m_CommandBuffer);
-
-			{
-				m_World->ForEachEnitityWith<CubeColliderComponent>([&](Entity entity) {
-					glm::mat4 transform = m_World->GetWorldTransform(entity);
-					auto& collider = entity.GetComponent<CubeColliderComponent>();
-
-					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
-						glm::scale(glm::mat4(1.0f), ProofToglmVec(collider.OffsetScale));
-
-					m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetCubeColliderMesh(), transform * colliderTransform);
-				});
-
-				m_World->ForEachEnitityWith<SphereColliderComponent>([&](Entity entity) {
-					glm::mat4 transform = m_World->GetWorldTransform(entity);
-					auto& collider = entity.GetComponent<SphereColliderComponent>();
-
-					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
-						glm::scale(glm::mat4(1.0f), ProofToglmVec(collider.Radius * 1.0f));
-
-					m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetSphereColliderMesh(), transform * colliderTransform);
-				});
-
-				m_World->ForEachEnitityWith<CapsuleColliderComponent>([&](Entity entity) {
-					glm::mat4 transform = m_World->GetWorldTransform(entity);
-					auto& collider = entity.GetComponent<CapsuleColliderComponent>();
-
-					glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), ProofToglmVec(collider.OffsetLocation)) *
-						glm::scale(glm::mat4(1.0f), glm::vec3{ collider.Radius * 0.5f,collider.Height,collider.Radius * 0.5f });
-
-					m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetCapsuleColliderMesh(), transform * colliderTransform);
-				});
-
-				m_World->ForEachEnitityWith<MeshColliderComponent>([&](Entity entity) {
-					glm::mat4 transform = m_World->GetWorldTransform(entity);
-					auto& collider = entity.GetComponent<MeshColliderComponent>();
-
-					if (PhysicsMeshCooker::HasMesh(collider.GetMeshSource()))
-					{
-						m_DebugMeshRenderer->SubmitMesh(PhysicsMeshCooker::GetConvexMeshAsMesh(collider.GetMeshSource()), transform);
-					}
-					else
-					{
-						m_DebugMeshRenderer->SubmitMesh(collider.GetMesh(), transform);
-					}
-				});
-			}
-			m_DebugMeshRenderer->EndContext();
-		}
-
-		// uiPass
-		if (uiTable != nullptr)
-		{
-			PF_PROFILE_FUNC("WorldRenderer::UI Pass");
-			m_UIRenderer->BeginContext(glm::mat4(1.0), glm::mat4(1.0), location, m_ScreenFrameBuffer, m_CommandBuffer);
-			for (auto [panelId, Hud] : uiTable->GetPanels())
-			{
-				if (Hud != nullptr && Hud->Visible == false)
-					continue;
-				for (auto& [Id, button] : Hud->GetImageButtons())
-				{
-
-					if (button.Visible == false)
-						continue;
-					glm::vec2 copy = { button.Postion.x / 4,button.Postion.y / 4 };
-					m_UIRenderer->DrawQuad({ copy,0 }, { button.Rotation,0 }, { button.Size.x / 4,button.Size.y / 4,1 }, button.TintColour, button.Texture);
-				}
-				// render order
-				for (auto& [Id, button] : Hud->GetButtons())
-				{
-					if (button.Visible == false)
-						continue;
-					glm::vec2 copy = { button.Postion.x / 4,button.Postion.y / 4 };
-					m_UIRenderer->DrawQuad({ copy,0 }, { button.Rotation,0 }, { button.Size.x / 4,button.Size.y / 4,1 }, button.TintColour, nullptr);
-				}
-
-
-				TextParams textParam;
-				glm::mat4 textTransform;
-				for (auto& [Id, text] : Hud->GetTexts())
-				{
-
-					if (text.Visible == false)
-						continue;
-					textParam.Color = text.Param.Color;
-					textParam.Kerning = text.Param.Kerning;
-					textParam.LineSpacing = text.Param.LineSpacing;
-					glm::vec2 copy = { text.Postion.x / 4,text.Postion.y / 4 };
-
-					textTransform = glm::translate(glm::mat4(1.0f), { copy,0 }) *
-						glm::rotate(glm::mat4(1.0f), glm::radians(text.Rotation.x), { 1,0,0 })
-						* glm::rotate(glm::mat4(1.0f), glm::radians(text.Rotation.y), { 0,1,0 })
-						* glm::rotate(glm::mat4(1.0f), glm::radians(0.f), { 0,0,1 })
-						* glm::scale(glm::mat4(1.0f), { text.Size.x / 8,text.Size.y / 8,1 / 8 });
-					m_UIRenderer->DrawString(text.Text, text.Font, textParam, textTransform);
-				}
-			}
-			m_UIRenderer->EndContext();
-		}
-		Renderer::EndRenderPass(m_RenderPass);
-		#endif // 
+		PF_PROFILE_TAG("Renderer", m_ActiveWorld->GetName().c_str());
+		DrawScene();
+		m_InContext = false;
+		m_ActiveWorld = nullptr;
 	}
 
 	
-	void WorldRenderer::Resize(ScreenSize windowSize) {
-		m_ScreenFrameBuffer->Resize(Vector2{ (float)windowSize.X, (float)windowSize.Y });
+	void WorldRenderer::DrawScene()
+	{
+
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("Renderer", m_ActiveWorld->GetName().c_str());
+
+		Timer drawSceneTimer;
+		// clear screen
+		Renderer::BeginCommandBuffer(m_CommandBuffer);
+
+		//Renderer::BeginRenderPass(m_CommandBuffer,m_GeometryPass, true);
+		//Renderer::EndRenderPass(m_GeometryPass);
+		
+		if (m_UBScreenData.FullResolution.x > 0 && m_UBScreenData.FullResolution.y > 0)
+		{
+
+			SetPasses();
+			ShadowPass();
+			PreDepthPass();
+			GeometryPass();
+			CompositePass();
+		}
+		Renderer::EndCommandBuffer(m_CommandBuffer);
+		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		// clear data
+		//mesh Pass
+		{
+			m_MeshTransformMap.clear();
+			m_MeshDrawList.clear();
+			m_MeshShadowDrawList.clear();
+		}
+
+		m_Timers.TotalDrawScene	= drawSceneTimer.ElapsedMillis();
 	}
 
-	void WorldRenderer::SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws )
+
+	
+	void WorldRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		PF_PROFILE_FUNC();
-		PF_PROFILE_TAG("{}",mesh->GetName().c_str());
-		//TODO FASTER HASH FUNCTION FOR MESHKEY
-		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
-		
+		if (m_UBScreenData.FullResolution == glm::vec2{ width,height })
+			return;
+		return; //for now
+		m_UBScreenData.FullResolution = { width, height };
+		m_UBScreenData.InverseFullResolution = {1/ width,  1/height };
+		m_UBScreenData.HalfResolution = glm::ivec2{ m_UBScreenData.FullResolution } / 2;
+		m_UBScreenData.InverseHalfResolution = glm::ivec2{ m_UBScreenData.InverseFullResolution } * 2;
 
-		AssetID meshID = mesh->GetID();
-		MeshKey meshKey = { meshID,materialTable, true,0,false };
-		auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
-
-		transformStorage.Transform = transform;
-		
-		// geo pass
+		Buffer buffer(&m_UBScreenData, sizeof(m_UBScreenData));
+		for (int i =0; i<Renderer::GetConfig().FramesFlight; i++)
 		{
-			auto& dc = m_MeshDrawList[meshKey];
-			dc.MaterialTable = materialTable;
-			dc.Mesh = mesh;
-			dc.InstanceCount++;
+			m_UBScreenBuffer->SetData(i, buffer);
 		}
-		if (CastShadowws)
-		{
-			auto& dc = m_MeshShadowDrawList[meshKey];
-			dc.Mesh = mesh;
-			dc.MaterialTable = materialTable;
-			dc.InstanceCount++;
-		}
+		m_NeedResize = true;
 	}
 
-	void WorldRenderer::PrePass()
+	Count<Image2D> WorldRenderer::GetShadowPassDebugImage()
+	{
+		return m_ShadowDebugPass->GetTargetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().ImageIndex, 0).As<Image2D>();
+	}
+
+
+	Count<Image2D> WorldRenderer::GetFinalPassImage()
+	{
+		return m_CompositePass->GetTargetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().ImageIndex,0).As<Image2D>();
+	}
+
+	void WorldRenderer::SetPasses()
 	{
 		PF_PROFILE_FUNC();
 
+		Timer setPassesTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		//scene data
 		{
@@ -661,6 +586,31 @@ namespace Proof
 			m_UBRenderData.ShadowFade = ShadowSetting.ShadowFade;
 			m_UBRenderData.bCascadeFading = ShadowSetting.CascadeFading;
 			m_UBRenderData.CascadeTransitionFade = ShadowSetting.CascadeTransitionFade;
+		}
+		// light scene 
+		{
+			//skylight
+			{
+				if (m_LightScene.SkyLightCount == 0 || m_Environment == nullptr)
+				{
+					UBSkyLight skyLight;
+					Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
+					m_UBSKyBoxBuffer->SetData(frameIndex, buffer);
+					m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
+				}
+			}
+
+			//directionalLight
+			{
+				if (m_LightScene.DirectionalLightCount == 0)
+				{
+					DirectionalLight directlLight = DirectionalLight();
+
+					Buffer buffer{ &directlLight,sizeof(DirectionalLight) };
+					m_SBDirectionalLights->Resize(frameIndex, buffer);
+					m_MainDirectionllLight = directlLight;
+				}
+			}
 		}
 		// set up mesh passes
 		{
@@ -680,161 +630,8 @@ namespace Proof
 			}
 			m_SubmeshTransformBuffers[frameIndex].Buffer->SetData(m_SubmeshTransformBuffers[frameIndex].Data, offset * sizeof(TransformVertexData));
 		}
-	}
 
-	
-	void WorldRenderer::CreateShadowMap()
-	{
-		PF_PROFILE_FUNC();
-		ImageFormat depthFormat = ImageFormat::DEPTH32F;
-		const uint32_t shadowMapCascade = SHADOWMAP_CASCADE_COUNT;
-		ImageConfiguration depthImageConfig;
-		depthImageConfig.DebugName = "Shadow Pass Image";
-		depthImageConfig.Format = depthFormat;
-		depthImageConfig.Usage = ImageUsage::Attachment;
-		depthImageConfig.Layers = shadowMapCascade;
-		depthImageConfig.Width = SHADOWMAP_DIM;
-		depthImageConfig.Height = SHADOWMAP_DIM;
-
-		m_ShadowPassImage = Image2D::Create(depthImageConfig);
-
-
-		Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-			VkImageMemoryBarrier imageMemoryBarrier{};
-			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-			imageMemoryBarrier.image = m_ShadowPassImage.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
-			VkImageSubresourceRange range;
-			range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-			range.baseArrayLayer = 0;
-			range.baseMipLevel = 0;
-			range.layerCount = 4;
-			range.levelCount = 1;
-			imageMemoryBarrier.subresourceRange = range;
-
-			vkCmdPipelineBarrier(
-				cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
-				VK_PIPELINE_STAGE_TRANSFER_BIT,
-				VK_PIPELINE_STAGE_TRANSFER_BIT,
-				0,
-				0, nullptr,
-				0, nullptr,
-				1, &imageMemoryBarrier);
-		});
-
-		{
-			FrameBufferConfig framebufferConfig;
-			framebufferConfig.DebugName = "Shadow Debug Fraembuffer";
-			framebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH24STENCIL8UI };
-			//framebufferConfig.Attachments.Attachments[0].ExistingImage = m_ShadowPassImage;
-			framebufferConfig.Size = { SHADOWMAP_DIM,SHADOWMAP_DIM };
-
-			auto shadowDebugframeBuffer = FrameBuffer::Create(framebufferConfig);
-
-			GraphicsPipelineConfig shadowMapPipelineConfig;
-			shadowMapPipelineConfig.DebugName = "DebugShadowMapPipeline";
-			shadowMapPipelineConfig.CullMode = CullMode::Back;
-			shadowMapPipelineConfig.Shader = Renderer::GetShader("DebugShadowMap");
-			shadowMapPipelineConfig.TargetBuffer = shadowDebugframeBuffer;
-
-			m_ShadowDebugPipeline = GraphicsPipeline::Create(shadowMapPipelineConfig);
-
-			RenderPassConfig renderpassConfig;
-			renderpassConfig.Attachments = shadowDebugframeBuffer;
-			renderpassConfig.DebugName = fmt::format("DebugShadowPass");
-			renderpassConfig.Pipeline = m_ShadowDebugPipeline;
-			m_ShadowDebugPass = RenderPass::Create(renderpassConfig);
-
-		}
-		m_ShadowPassDebugMaterial = RenderMaterial::Create(RenderMaterialConfiguration("Shadow Pass Debug Material", Renderer::GetShader("DebugShadowMap")));
-		m_ShadowPassDebugMaterial->Set("u_ShadowMap", m_ShadowPassImage);
-
-	//	m_ShadowPassBuffer = UniformBufferSet::Create(sizeof(CascadeData) * SHADOWMAP_CASCADE_COUNT);
-		for (uint32_t i = 0; i < shadowMapCascade; i++)
-		{
-			ImageViewConfiguration imageViewConfig;
-			imageViewConfig.DebugName = fmt::format("Shadow Cascade: {}", i);
-			imageViewConfig.Layer = i;
-			imageViewConfig.LayerCount = 1;
-			imageViewConfig.View = ImageViewType::View2D;
-			imageViewConfig.Image = m_ShadowPassImage;
-
-			Count<ImageView> imageView = ImageView::Create(imageViewConfig);
-			FrameBufferConfig framebufferConfig;
-			framebufferConfig.DebugName = fmt::format("Shadow map cascade {}", i);
-			framebufferConfig.Attachments = { depthFormat };
-			framebufferConfig.Attachments.Attachments[0].ExistingImage = imageView;
-			framebufferConfig.Size = { SHADOWMAP_DIM,SHADOWMAP_DIM };
-			Count<FrameBuffer> shadowMapPass = FrameBuffer::Create(framebufferConfig);
-
-			GraphicsPipelineConfig pipelineConfig;
-			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
-			pipelineConfig.CullMode =  CullMode::Back;
-			pipelineConfig.Shader = Renderer::GetShader("ShadowDepthPass");
-			pipelineConfig.TargetBuffer = shadowMapPass;
-			pipelineConfig.VertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
-			pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-			pipelineConfig.VertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-			pipelineConfig.VertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
-			pipelineConfig.VertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
-			pipelineConfig.VertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-
-			pipelineConfig.VertexArray->AddData(5, DataType::Vec4, 0, 1);
-			pipelineConfig.VertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
-			pipelineConfig.VertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
-			pipelineConfig.VertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
-
-
-			auto pipleine = GraphicsPipeline::Create(pipelineConfig);
-			RenderPassConfig renderpassConfig;
-			renderpassConfig.Attachments = { depthFormat };
-			renderpassConfig.DebugName = fmt::format("Shadow render pass Cascade {}",i);
-			renderpassConfig.Pipeline = pipleine;
-
-			auto renderPass = RenderPass::Create(renderpassConfig);
-			m_ShadowMapPasses[i] = renderPass;
-		}
-		m_ShadowPassMaterial = RenderMaterial::Create(RenderMaterialConfiguration("Shadow Pass Material", Renderer::GetShader("ShadowDepthPass")));
-		//m_ShadowPassMaterial->Set("colorMap", m_ShadowPassImage);
-  		m_ShadowPassMaterial->Set("ShadowCascadesProjection", s_CascadeProjectionBuffer);
-	}
-	void WorldRenderer::MeshPass()
-	{
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
-		
-		//TODO FASTER HASH FUNCTION FOR MESHKEY
-		PF_PROFILE_FUNC();
-		//set pass
-		{
-
-			if (m_LightScene.DirectionalLights.size() == 0)
-			{
-				DirectionalLight light;
-				light.Color = Vector(0);
-				light.Direction = Vector(0);
-				m_DirectionalLights->Resize(frameIndex,Buffer(&light,sizeof(DirectionalLight)));
-			}
-			else
-			{
-				m_DirectionalLights->Resize(frameIndex,Buffer(m_LightScene.DirectionalLights.data(), m_LightScene.DirectionalLights.size()*sizeof(DirectionalLight)));
-			}
-		}
-
-		auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
-		Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_MeshPipeline.RenderPass);
-		for (auto& [meshKey, dc] : m_MeshDrawList)
-		{
-			const auto& transformData = m_MeshTransformMap.at(meshKey);
-			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-			RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, m_MeshPipeline.RenderPass, dc.MaterialTable, transformBuffer, transformOffset, dc.InstanceCount);
-		}
-		Renderer::EndRenderPass(m_MeshPipeline.RenderPass);
+		m_Timers.SetPasses = setPassesTimer.ElapsedMillis();
 	}
 	void WorldRenderer::CalculateCascadesManualSplit(CascadeData* cascades, const glm::vec3& lightDirection)
 	{
@@ -919,7 +716,7 @@ namespace Proof
 
 			// Offset to texel space to avoid shimmering (from https://stackoverflow.com/questions/33499053/cascaded-shadow-map-shimmering)
 			glm::mat4 shadowMatrix = lightOrthoMatrix * lightViewMatrix;
-			float ShadowMapResolution = (float)m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Size.X;
+			float ShadowMapResolution = (float)m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Width;
 			glm::vec4 shadowOrigin = (shadowMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)) * ShadowMapResolution / 2.0f;
 			glm::vec4 roundedOrigin = glm::round(shadowOrigin);
 			glm::vec4 roundOffset = roundedOrigin - shadowOrigin;
@@ -1040,7 +837,7 @@ namespace Proof
 
 			// Offset to texel space to avoid shimmering (from https://stackoverflow.com/questions/33499053/cascaded-shadow-map-shimmering)
 			glm::mat4 shadowMatrix = lightOrthoMatrix * lightViewMatrix;
-			float ShadowMapResolution = (float)m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Size.X;
+			float ShadowMapResolution = (float)m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Width;
 			glm::vec4 shadowOrigin = (shadowMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)) * ShadowMapResolution / 2.0f;
 			glm::vec4 roundedOrigin = glm::round(shadowOrigin);
 			glm::vec4 roundOffset = roundedOrigin - shadowOrigin;
@@ -1061,17 +858,17 @@ namespace Proof
 	void WorldRenderer::ShadowPass()
 	{
 		PF_PROFILE_FUNC();
+		Timer shadowPassTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
-		auto& directionalights = m_LightScene.DirectionalLights;
 
-		if (directionalights[0].Intensity == 0.f /* || !directionalights[0].CastShadow */ )
+		if (m_MainDirectionllLight.Intensity == 0.f  || !m_MainDirectionllLight.bCastShadows)
 			return;
 		CascadeData cascades[SHADOWMAP_CASCADE_COUNT];
 		if (ShadowSetting.UseManualCascadeSplits)
-			CalculateCascadesManualSplit(cascades, ProofToglmVec(directionalights[0].Direction));
+			CalculateCascadesManualSplit(cascades, ProofToglmVec(m_MainDirectionllLight.Direction));
 		else
-			CalculateCascades(cascades, ProofToglmVec( directionalights[0].Direction));
+			CalculateCascades(cascades, ProofToglmVec(m_MainDirectionllLight.Direction));
 
 		{
 			m_UBRenderData.cascadeSplit[0] = cascades[0].SplitDepth;
@@ -1094,14 +891,14 @@ namespace Proof
 		}
 		
 
-		s_CascadeProjectionBuffer->SetData(frameIndex, Buffer(&projections, sizeof(CascadeProjection)));
+		m_UBCascadeProjectionBuffer->SetData(frameIndex, Buffer(&projections, sizeof(CascadeProjection)));
 		for (uint32_t cascade = 0; cascade < SHADOWMAP_CASCADE_COUNT; cascade++)
 		{
 			PF_PROFILE_FUNC("ShadowPass Cascade");
 			PF_PROFILE_TAG("Cascade ", cascade);
 
 			auto cascadePass = m_ShadowMapPasses[cascade];
-			cascadePass->SetInput("ShadowCascadesProjection", s_CascadeProjectionBuffer);
+			cascadePass->SetInput("ShadowCascadesProjection", m_UBCascadeProjectionBuffer);
 
 			Renderer::BeginRenderPass(m_CommandBuffer, cascadePass);
 			for (auto& [meshKey, dc] : m_MeshShadowDrawList)
@@ -1122,14 +919,175 @@ namespace Proof
 		//	Renderer::DrawArrays(m_CommandBuffer, 3, 1, 0, 0);
 		//	Renderer::EndRenderPass(m_ShadowDebugPass);
 		//}
+		if(ShadowSetting.RenderDebugPass)
 		{
-			//Renderer::BeginRenderPass(m_CommandBuffer, m_ShadowDebugPass);
-			//m_ShadowDebugPass->PushData("u_CascadeInfo",&debugCascade);
-			//m_ShadowDebugPass->SetInput("u_ShadowMap", m_ShadowPassImage);
-			//Renderer::DrawArrays(m_CommandBuffer, 3, 1, 0, 0);
-			//Renderer::EndRenderPass(m_ShadowDebugPass);
+			PF_PROFILE_FUNC("ShadowPass::DebugCascade ");
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_ShadowDebugPass);
+			m_ShadowDebugPass->PushData("u_CascadeInfo",&ShadowSetting.DebugCascade);
+			m_ShadowDebugPass->SetInput("u_ShadowMap", m_ShadowPassImage);
+			Renderer::DrawArrays(m_CommandBuffer, 3, 1, 0, 0);
+			Renderer::EndRenderPass(m_ShadowDebugPass);
 		}
 
+		m_Timers.ShadowPass = shadowPassTimer.ElapsedMillis();
+	}
+	void WorldRenderer::PreDepthPass()
+	{
+		PF_PROFILE_FUNC();
+
+		Timer preDepthTimer;
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+
+		Renderer::BeginRenderPass(m_CommandBuffer, m_PreDepthPass, true);
+
+		for (auto& [meshKey, dc] : m_MeshDrawList)
+		{
+			const auto& transformData = m_MeshTransformMap.at(meshKey);
+			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+			RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, transformOffset, dc.InstanceCount);
+		}
+		Renderer::EndRenderPass(m_PreDepthPass);
+
+		m_Stats.Timers.PreDepthPass = preDepthTimer.ElapsedMillis();
+
+	}
+	void WorldRenderer::GeometryPass()
+	{
+		PF_PROFILE_FUNC();
+
+		Timer geometryPassTimer;
+
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
+	
+
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		//set pass
+		{
+			PF_PROFILE_FUNC("GeometryPass::SkyBoxPass");
+
+			Timer timer;
+			m_SkyBoxPass->SetInput("u_EnvironmentMap", m_Environment->PrefilterMap);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_SkyBoxPass);
+			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_SkyBoxPass);
+			Renderer::EndRenderPass(m_SkyBoxPass);
+
+			m_Timers.GeometrySkyBoxPass = timer.ElapsedMillis();
+		}
+
+		{
+			PF_PROFILE_FUNC("GeometryPass::MeshPass");
+
+			Timer timer;
+			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
+			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_GeometryPass);
+			for (auto& [meshKey, dc] : m_MeshDrawList)
+			{
+				const auto& transformData = m_MeshTransformMap.at(meshKey);
+				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, m_GeometryPass, dc.MaterialTable, transformBuffer, transformOffset, dc.InstanceCount);
+			}
+			Renderer::EndRenderPass(m_GeometryPass);
+
+			m_Timers.GeometryMeshPass = timer.ElapsedMillis();
+		}
+
+		m_Timers.GeometryPass = geometryPassTimer.ElapsedMillis();
+	}
+	void WorldRenderer::CompositePass()
+	{
+		PF_PROFILE_FUNC();
+
+		Timer compositeTimer;
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+
+		Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_CompositePass, true);
+		//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
+
+		auto inputImage = m_GeometryPass->GetTargetFrameBuffer()->GetColorAttachmentImage(imageIndex, 0);
+		m_CompositeMaterial->Set("u_WorldTexture", inputImage);
+
+		Renderer::SubmitFullScreenQuad(m_CommandBuffer,m_CompositePass,m_CompositeMaterial);
+
+		Renderer::EndRenderPass(m_CompositePass);
+
+		m_Timers.CompositePass = compositeTimer.ElapsedMillis();
+	}
+	void WorldRenderer::SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws)
+	{
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("{}", mesh->GetName().c_str());
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+
+
+		AssetID meshID = mesh->GetID();
+		MeshKey meshKey = { meshID,materialTable, true,0,false };
+		auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
+
+		transformStorage.Transform = transform;
+
+		// geo pass
+		{
+			auto& dc = m_MeshDrawList[meshKey];
+			dc.MaterialTable = materialTable;
+			dc.Mesh = mesh;
+			dc.InstanceCount++;
+		}
+		if (CastShadowws)
+		{
+			auto& dc = m_MeshShadowDrawList[meshKey];
+			dc.Mesh = mesh;
+			dc.MaterialTable = materialTable;
+			dc.InstanceCount++;
+		}
+	}
+	void WorldRenderer::SubmitDirectionalLight(const SBDirectionalLightsScene& directionaLights)
+	{
+		PF_PROFILE_FUNC();
+
+		if (directionaLights.DirectionalLights.empty())
+		{
+			PF_ENGINE_WARN("{} Dont submit empty directionalLights", m_ActiveWorld->GetName());
+			return;
+		}
+
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		m_MainDirectionllLight = directionaLights.DirectionalLights[0];
+
+		Buffer buffer{(void*) directionaLights.DirectionalLights.data(), directionaLights.DirectionalLights.size() * sizeof(DirectionalLight)};
+		m_SBDirectionalLights->Resize(frameIndex, buffer);
+
+		m_LightScene.DirectionalLightCount = directionaLights.DirectionalLights.size();
+	}
+	void WorldRenderer::SubmitSkyLight(const UBSkyLight& skyLight, Count<class Environment> environment)
+	{
+		PF_PROFILE_FUNC();
+
+		if (environment == nullptr)
+		{
+			PF_ENGINE_WARN("{} Submitting SKy light with null environment", m_ActiveWorld->GetName());
+			return;
+		}
+		if(m_LightScene.SkyLightCount ==1)
+			PF_ENGINE_WARN("{} Submiting mulitple sky light only the last one will be used, submit 1 to save performance", m_ActiveWorld->GetName());
+
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+
+		
+		Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
+		m_UBSKyBoxBuffer->SetData(frameIndex, buffer);
+
+		m_Environment = environment;
+		m_LightScene.SkyLightCount = 1;
 	}
 	void WorldRenderer::RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
 	{
@@ -1180,54 +1138,5 @@ namespace Proof
 			Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
 			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 		}
-	}
-
-	void WorldRenderer::Reset()
-	{
-		PF_PROFILE_FUNC();
-
-		//mesh Pass
-		{
-			m_MeshTransformMap.clear();
-			m_MeshDrawList.clear();
-			m_MeshShadowDrawList.clear();
-		}
-	}
-	void WorldRenderer::Render(EditorCamera& camera, RenderSettings renderSettings)
-	{
-		Viewport viewPort;
-		viewPort.X = 0.0f;
-		viewPort.Y = 0.0f;
-		viewPort.Height = m_ScreenFrameBuffer->GetFrameHeight();
-		viewPort.Width = m_ScreenFrameBuffer->GetFrameWidth();
-		viewPort.MinDepth = 0;
-		viewPort.MaxDepth = 1;
-
-		ViewportScissor scissor;
-		scissor.Offset = { 0,0 };
-		scissor.Extent = { (float)m_ScreenFrameBuffer->GetFrameWidth(),(float)m_ScreenFrameBuffer->GetFrameHeight() };
-		Render(camera.m_Projection, camera.m_View, { camera.m_Positon.x,camera.m_Positon.y,camera.m_Positon.z }, camera.m_NearPlane, camera.m_FarPlane,viewPort,scissor,renderSettings);
-	}
-	void WorldRenderer::Render(CameraComponent& camera, Vector& location, RenderSettings renderSettings,Count<UITable> uiTable) {
-		Viewport viewPort;
-		viewPort.X = 0.0f;
-		viewPort.Y = 0;
-		viewPort.Width = m_ScreenFrameBuffer->GetFrameWidth();
-		viewPort.Height = m_ScreenFrameBuffer->GetFrameHeight();
-		viewPort.MinDepth = 0;
-		viewPort.MaxDepth = 1;
-
-		ViewportScissor scissor;
-		scissor.Offset = { 0,0 };
-		scissor.Extent = {(float) m_ScreenFrameBuffer->GetFrameWidth(),(float)m_ScreenFrameBuffer->GetFrameHeight() };
-		Render(camera.Projection, camera.View, location, camera.NearPlane, camera.FarPlane,viewPort,scissor, renderSettings,true, uiTable);
-	}
-	void WorldRenderer::Render(CameraComponent& camera, Vector& location, Viewport viewport, ViewportScissor scissor, RenderSettings renderSettings,bool clearOnLoad, Count<UITable> uiTable )
-	{
-		Render(camera.Projection, camera.View, location, camera.NearPlane, camera.FarPlane,viewport, scissor, renderSettings, clearOnLoad, uiTable);
-	}
-	Count<Image2D> WorldRenderer::GetImage()
-	{
-		return m_ScreenFrameBuffer->GetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().FrameinFlight,0).As<Image2D>();
 	}
 }

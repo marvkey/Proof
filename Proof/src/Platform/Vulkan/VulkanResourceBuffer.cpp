@@ -82,26 +82,26 @@ namespace Proof{
 
 	}
 
-	void VulkanUniformBuffer::Resize(uint64_t size)
-	{
-		Release();
-		m_Size = size;
-		Build();
-	}
-
-	void VulkanUniformBuffer::Resize(Buffer data)
-	{
-		if (m_Size == data.GetSize())
-		{
-			SetData(data);
-			return;
-		}
-		Release();
-		m_Size = data.GetSize();
-
-		Build();
-		SetData(data, 0);
-	}
+	//void VulkanUniformBuffer::Resize(uint64_t size)
+	//{
+	//	Release();
+	//	m_Size = size;
+	//	Build();
+	//}
+	//
+	//void VulkanUniformBuffer::Resize(Buffer data)
+	//{
+	//	if (m_Size == data.GetSize())
+	//	{
+	//		SetData(data);
+	//		return;
+	//	}
+	//	Release();
+	//	m_Size = data.GetSize();
+	//
+	//	Build();
+	//	SetData(data, 0);
+	//}
 
 	void VulkanUniformBuffer::Release()
 	{
@@ -134,17 +134,17 @@ namespace Proof{
 		m_Buffers.clear();
 	}
 
-	void VulkanUniformBufferSet::Resize(uint32_t index, uint64_t size)
-	{
-		PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
-		m_Buffers[index]->Resize(size);
-	}
-
-	void VulkanUniformBufferSet::Resize(uint32_t index,Buffer data)
-	{
-		PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
-		m_Buffers[index]->Resize(data);
-	}
+	//void VulkanUniformBufferSet::Resize(uint32_t index, uint64_t size)
+	//{
+	//	PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
+	//	m_Buffers[index]->Resize(size);
+	//}
+	//
+	//void VulkanUniformBufferSet::Resize(uint32_t index,Buffer data)
+	//{
+	//	PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
+	//	m_Buffers[index]->Resize(data);
+	//}
 
 	void VulkanUniformBufferSet::SetData(uint32_t index, Buffer data, uint64_t offset)
 	{

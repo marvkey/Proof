@@ -1,6 +1,5 @@
 #pragma once
 #include "Proof/ProofCore.h"
-#include "Proof/Scene/World.h"
 #include "Panel.h"
 
 namespace Proof
@@ -20,7 +19,7 @@ namespace Proof
 		void MeshSourceAssetSetUp();
 		void MeshSourceAssetUI();
 		ScreenSize m_ScreenSize;
-		Count<World> m_World = nullptr;
+		Count<class World> m_World = nullptr;
 		AssetID m_ID;
 		Special<class WorldRenderer> m_WorldRenderer;
 		enum class SceneRendererType {

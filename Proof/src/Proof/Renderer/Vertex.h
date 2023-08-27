@@ -33,11 +33,17 @@ namespace Proof
     }; 
 
     struct Vertex2D {
-        glm::mat4 model;
         Vector Position;
         glm::vec4 Color;
         glm::vec2 TexCoords;
         float TexSlot;
+    };
+
+    //primarily used for fullscreen quad
+    struct QuadVertex
+    {
+        glm::vec3 Position;
+        glm::vec2 TexCoord;
     };
 
     struct CameraData {

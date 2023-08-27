@@ -340,7 +340,7 @@ namespace Proof
 		m_ParticleHandler = Count<ParticleHandler>::Create(m_ParticleSystem);
 		entity.AddComponent<ParticleSystemComponent>().ParticleHandlerTable->SetHandler(0, m_ParticleHandler);
 		entity.GetComponent<TransformComponent>().Location.Z -= 20.0f;
-		m_WorldRenderer = Count<WorldRenderer>::Create(m_World, 10, 10);
+		//m_WorldRenderer = Count<WorldRenderer>::Create(m_World, 10, 10);
 	}
 	void ParticleSystemPanel::ImGuiRender(FrameTime deltaTime)
 	{
@@ -457,7 +457,7 @@ namespace Proof
 			{
 				m_Camera.OnUpdate(deltaTime, ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
 				m_Size = Vector2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y };
-				m_WorldRenderer->Resize(ScreenSize{ (uint32_t)m_Size.X,(uint32_t)m_Size.Y });
+				//m_WorldRenderer->Resize(ScreenSize{ (uint32_t)m_Size.X,(uint32_t)m_Size.Y });
 			}
 			if (ImGui::IsWindowFocused())
 			{
@@ -466,9 +466,9 @@ namespace Proof
 				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
 
-			m_WorldRenderer->Render(m_Camera, RenderSettings());
-
-			UI::Image(m_WorldRenderer->GetImage(), ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			//m_WorldRenderer->Render(m_Camera, RenderSettings());
+			//
+			//UI::Image(m_WorldRenderer->GetImage(), ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			ImGui::EndChild();
 		}
 		ImGui::End();

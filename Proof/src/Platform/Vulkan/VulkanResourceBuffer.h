@@ -20,8 +20,8 @@ namespace Proof{
             };
             return m_BufferInfo;
         }
-        void Resize(uint64_t size);
-        void Resize(Buffer data);
+        //void Resize(uint64_t size);
+        //void Resize(Buffer data);
         virtual uint64_t GetSize() { return m_Size; }
         virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const { return (ResourceDescriptorInfo)&GetDescriptorInfoVulkan(); }
     private:
@@ -41,8 +41,8 @@ namespace Proof{
         virtual ~VulkanUniformBufferSet();
         Count<UniformBuffer> GetBuffer(uint32_t index);
 
-        void Resize(uint32_t index, uint64_t size);
-        void Resize(uint32_t index,Buffer data);
+        //void Resize(uint32_t index, uint64_t size);
+        //void Resize(uint32_t index,Buffer data);
         void SetData(uint32_t index,Buffer data, uint64_t offset = 0);
 
     private:

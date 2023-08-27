@@ -9,6 +9,7 @@
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer//ParticleSystem.h"
 #include "Proof/Math/Vector.h"
+#include "Camera/SceneCamera.h"
 #include "Proof/Math/MathConvert.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -402,31 +403,13 @@ namespace Proof
 
 	struct Proof_API CameraComponent{
 	public:
+		ProjectionType Projection = ProjectionType::Perspective;
 		CameraComponent(const CameraComponent&) = default;
 
 		CameraComponent() = default;
-		enum class CameraType { Orthographic = 0,Perspective = 1 };
-		Vector UPVector = {0,1,0};
-		
-		CameraType Type = CameraType::Perspective;
-		float NearPlane = 0.1;
-		float FarPlane = 1000;
+		float NearPlane = 0.1f;
+		float FarPlane = 2000.f;
 		float FovDeg = 45;
-		uint32_t Width = 250,Height = 250;
-		glm::mat4 View = glm::mat4(1.0f);
-		glm::mat4 Projection = glm::mat4(1.0f);
-		glm::mat4 CameraMatrix = glm::mat4(1.0f);
-
-		void CalculateProjection(const Proof::Vector& position, const Vector& rotation) {
-			glm::vec3 CameraDirection;
-			CameraDirection.x = cos(glm::radians(rotation.Z)) * cos(glm::radians(rotation.Y));
-			CameraDirection.y = sin(glm::radians(rotation.Y));
-			CameraDirection.z = sin(glm::radians(rotation.Z)) * cos(glm::radians(rotation.Y));
-			Vector direction = GlmVecToProof(glm::normalize(CameraDirection));
-			View = glm::lookAt(ProofToglmVec(position), ProofToglmVec(position) + ProofToglmVec(direction), ProofToglmVec(UPVector));
-			Projection = glm::perspective(glm::radians(FovDeg), (float)Width / (float)Height, NearPlane, FarPlane);
-			CameraMatrix = View * Projection;
-		}
 
 		bool UseLocalRotation = false;
 		friend class World;

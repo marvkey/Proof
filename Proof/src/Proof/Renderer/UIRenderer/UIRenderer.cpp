@@ -8,7 +8,6 @@ namespace Proof {
 
     static Count<Renderer2D> s_Renderer2D = nullptr;
     static Count<RenderPass> s_RenderPass = nullptr;
-    Count<ScreenFrameBuffer> s_ScreenFrameBuffer;
     Count<RenderCommandBuffer> s_CommandBuffer;
     #if 0
     Image UiRenderer::DrawUI(Count<class UIPanel> panel, glm::vec3 cameraLocaion, glm::mat4 projectionMatrix, glm::mat4 viewProjection, uint32_t width, uint32_t height)

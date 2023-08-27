@@ -198,7 +198,34 @@ namespace Proof
             PF_CORE_ASSERT(false);
         }
     }
-    
+    void VulkanDescriptorManager::SetInput(std::string_view name, Count<class Image> imageView)
+    {
+        m_Build = false;
+        auto shader = m_Config.Shader;
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+
+        if (decl)
+            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageView);
+        else
+        {
+            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
+        }
+    }
+    void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class Image>>& imageViews)
+    {
+        m_Build = false;
+        auto shader = m_Config.Shader;
+        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+
+        if (decl)
+            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageViews);
+        else
+        {
+            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+            PF_CORE_ASSERT(false);
+        }
+    }
     void VulkanDescriptorManager::Bind()
     {
         PF_PROFILE_FUNC();
@@ -327,6 +354,28 @@ namespace Proof
                             for (auto& image : resource.Input)
                             {
                                 info.push_back(image.As<VulkanImageView>()->GetDescriptorInfoVulkan());
+                            }
+                            imageInfos[imageUniquePos] = info;
+                            write.pImageInfo = imageInfos[imageUniquePos].data();
+                            write.descriptorCount = resource.Input.size();
+                            m_SizeInputsData[set]++;
+                        }
+                        break;
+                    case Proof::RenderPassResourceType::Image:
+                        {
+                            write.pImageInfo = (VkDescriptorImageInfo*) resource.Input[0].As<RendererResource>()->GetResourceDescriptorInfo();
+                            write.descriptorCount = 1;
+                            m_SizeInputsData[set]++;
+                        }
+                        break;
+                    case Proof::RenderPassResourceType::ImageSet:
+                        {
+                            imageUniquePos++;
+                            std::vector<VkDescriptorImageInfo> info;
+                            //info.resize(resource.Input.size());
+                            for (auto& image : resource.Input)
+                            {
+                                info.push_back(*(VkDescriptorImageInfo*)resource.Input[0].As<RendererResource>()->GetResourceDescriptorInfo());
                             }
                             imageInfos[imageUniquePos] = info;
                             write.pImageInfo = imageInfos[imageUniquePos].data();

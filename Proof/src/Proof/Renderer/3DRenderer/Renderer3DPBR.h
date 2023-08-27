@@ -131,7 +131,7 @@ namespace Proof
 	struct RenderStorage {
 		Count<RenderCommandBuffer> CommandBuffer;
 		Count<UniformBuffer> CameraBuffer = nullptr;
-		Count<ScreenFrameBuffer> CurrentFrameBuffer = nullptr;
+	//	Count<ScreenFrameBuffer> CurrentFrameBuffer = nullptr;
 	};
 	class Mesh;
 	struct RenderPBRPerformance {
@@ -146,8 +146,8 @@ namespace Proof
 
 		}
 		void Init();
-		void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<RenderCommandBuffer>& commandBuffer);
-		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
+		//void BeginContext(class EditorCamera& editorCamera, Count<ScreenFrameBuffer>& frameBuffer,Count<RenderCommandBuffer>& commandBuffer);
+		//void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
 		void SetPbrMaps(Count<class TextureCube> irrdianceMap, Count<class TextureCube> prefilterMap,Count<class Texture2D> brdf);
 
 		void SubmitMesh(Count<Mesh> mesh, const glm::mat4& transform);

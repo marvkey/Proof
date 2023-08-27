@@ -1,8 +1,6 @@
 #pragma once
 #include <yaml-cpp/yaml.h>
 #include <set>
-#include "World.h"
-
 #include <entt/entt.hpp>
 namespace Proof
 {
@@ -24,7 +22,7 @@ namespace Proof
 		}
 
 		// for prefab 
-		static void SerilizeEntity(YAML::Emitter& out, entt::registry64& registry, UUID entityID);
+		static void SerilizeEntity(YAML::Emitter& out, entt::basic_registry<uint64_t>& registry, UUID entityID);
 		// for prefab 
 		static void DeSerilizeEntity(YAML::Node& entities, World* world, std::set<AssetID>* assetLoad = nullptr, bool prefab = false);
 	private:

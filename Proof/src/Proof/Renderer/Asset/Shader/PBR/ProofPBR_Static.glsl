@@ -213,7 +213,7 @@ void main()
 		//vec3 specularIBL = specularIrradiance * (F0) ; 
 
         iblEfeect += (specularIBL + diffuseIBL) ;
-        //iblEfeect = iblEfeect * (u_SkyBoxInfo.Intensity);  
+        iblEfeect = iblEfeect * (u_SkyBoxInfo.Intensity);  
     }
 
     DirectionalLight currentLight = u_DirectionalLightData.Lights[0];
@@ -293,12 +293,7 @@ void main()
 
 	shadowScale = 1.0 - clamp(currentLight.ShadowStrength - shadowScale, 0.0f, 1.0f);
     vec3 finalColor =  iblEfeect + (directLighting * shadowScale );
-    
-    //finalColor = vec3(1) * shadowScale * 0.2f;
-    // HDR tonemapping
-    finalColor = finalColor / (finalColor + vec3(1.0));
-    // gamma correct
-    finalColor = pow(finalColor, vec3(1.0/2.2)); 
+  
     out_FragColor = vec4(finalColor ,1.0);
     if(u_RendererData.ShowCascades)
     {

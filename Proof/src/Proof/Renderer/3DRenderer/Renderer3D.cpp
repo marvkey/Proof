@@ -96,8 +96,8 @@ namespace Proof
     void Renderer3D::BeginContext(glm::mat4 Projection, EditorCamera& EditorCamera) {
         //Renderer3DInstance->m_Shader->SetMat4("u_Projection",Projection);
         //Renderer3DInstance->m_Shader->SetMat4("u_View",EditorCamera.m_View);
-        Position = EditorCamera.m_Positon;
-        OldCmaerData temp(Projection, EditorCamera.m_View);
+        //Position = EditorCamera.m_Positon;
+        //OldCmaerData temp(Projection, EditorCamera.m_View);
        // s_CameraBuffer->SetData(&temp, sizeof(OldCmaerData));
 
     }

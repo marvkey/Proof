@@ -1,28 +1,11 @@
 #pragma once
-#include "Proof/Math/Math.h"
+#include "Camera.h"
 namespace Proof
 {
-	class EditorCamera {
+	class EditorCamera : public Camera{
 	public:
-		glm::vec3 m_Positon {0,0,0};
-		glm::vec3 m_Direction{0,0,-1};
-		glm::vec3 m_Up {0,1,0};
-
-		uint32_t m_Width, m_Height;
-		float m_Speed =5;
-		float m_Sensitivity =25;
-		EditorCamera(uint32_t width,uint32_t height,float fovDeg=45,float nearPlane = 0.1,float farplane = 2000,glm::vec3 position ={0,0,0});
-
-		glm::mat4 m_View =glm::mat4(1.0f);
-		glm::mat4 m_Projection= glm::mat4(1.0f);
-		glm::mat4 m_CameraMatrix= glm::mat4(1.0f);
-		float m_FovDeg =45.f;
-		float m_NearPlane =0.1;
-		float m_FarPlane =500;
-
+		EditorCamera(uint32_t width,uint32_t height,float fovDeg=45,float nearPlane = 0.1,float farplane = 2000,glm::vec3 position ={-5,-5,-5});
 		void OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height);
-		void OnUpdate(FrameTime DeltaTime);
-		void Recalculate();
 		glm::mat4 GetTransform() const {
 			glm::mat4 rotation = glm::toMat4(glm::quat({0.0f,0.0f,0.0f}));
 
@@ -30,13 +13,41 @@ namespace Proof
 				* rotation
 				* glm::scale(glm::mat4(1.0f),{1,1,1});
 		}
-		float MouseLastPosX;
-		float MouseLastPosY;
-		float Xoffset;
-		float Yoffset;
-		float Yaw = -90.f;
-		float Pitch = 0.f;
+
+		void SetPosition(glm::vec3 position)
+		{
+			m_Positon = position;
+		}
+
+		glm::vec3 GetPosition()const
+		{
+			return m_Positon;
+		}
+
+		float GetNearPlane()const { return m_NearPlane; }
+		float GetFarPlane()const { return m_FarPlane; }
+	private:
+		float m_FovDeg = 45.f;
+		float m_NearPlane = 0.1;
+		float m_FarPlane = 2000;
+		float m_Speed = 5;
+		float m_Sensitivity = 25;
+
+		glm::vec3 m_Positon{ 0,0,0 };
+		glm::vec3 m_Direction{ 0,0,-1 };
+		glm::vec3 m_Up{ 0,1,0 };
+
+		float m_MouseLastPosX;
+		float m_MouseLastPosY;
+		float m_Xoffset;
+		float m_Yoffset;
+		float m_Yaw = -90.f;
+		float m_Pitch = 0.f;
 		bool m_FirstClick = true;
+		uint32_t m_Width, m_Height;
+	private:
+		void Recalculate();
+
 	};
 
 

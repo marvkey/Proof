@@ -5,7 +5,7 @@
 namespace Proof
 {
   
-	Count<GraphicsPipeline> GraphicsPipeline::Create(const GraphicsPipelineConfig& piplineConfig)
+	Count<GraphicsPipeline> GraphicsPipeline::Create(const GraphicsPipelineConfiguration& piplineConfig)
 	{
 		switch (Renderer::GetAPI())
 		{

@@ -232,7 +232,7 @@ namespace Proof
 
             presentInfo.pWaitSemaphores = signalSemaphores;
             presentInfo.waitSemaphoreCount = 1;
-            VK_CHECK_RESULT(vkQueuePresentKHR(graphicsContext->GetPresentQueue(), &presentInfo));
+            result = vkQueuePresentKHR(graphicsContext->GetPresentQueue(), &presentInfo);
         }
         if (result != VK_SUCCESS)
         {

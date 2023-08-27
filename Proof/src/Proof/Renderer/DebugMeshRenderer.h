@@ -44,7 +44,7 @@ namespace Proof{
 
 		DebugMeshRenderer(Count<class RenderPass> renderPass);
 
-		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
+		//void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Count<ScreenFrameBuffer>& frameBuffer, Count<RenderCommandBuffer>& commandBuffer);
 		void SubmitMesh(Count<class Mesh> mesh, const glm::mat4& transform);
 		void EndContext();
 	private:
@@ -53,7 +53,7 @@ namespace Proof{
 		bool m_InContext =false;
 		Count<RenderCommandBuffer> m_CommandBuffer;
 		Count<UniformBuffer> m_CameraBuffer = nullptr;
-		Count<ScreenFrameBuffer> m_CurrentFrameBuffer = nullptr;
+		//Count<ScreenFrameBuffer> m_CurrentFrameBuffer = nullptr;
 		Count <class RenderPass > m_RenderPass;
 
 		Special< DebugMeshPipeLine> m_Pipeline;

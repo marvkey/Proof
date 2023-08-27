@@ -81,17 +81,18 @@ namespace Proof
             m_DescritptorSetManager = Count<VulkanDescriptorManager>::Create(descr);
         }
 
-        Build();
+        //Build();
     }
    
   
     void VulkanRenderPass::Build()
     {
+        #if 0
         //https://developer.samsung.com/galaxy-gamedev/resources/articles/renderpasses.html
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
         auto swapChain = graphicsContext->GetSwapChain().As<VulkanSwapChain>();
 
-        for (auto& imageConfig : m_Config.Attachments.Attachments)
+        for (auto& imageConfig :GetPipeline()->GetConfig().Attachments.Attachments)
         {
             if (Utils::IsColorFormat(imageConfig.Format))
             {
@@ -207,7 +208,7 @@ namespace Proof
             renderPassMultiviewCI.pNext = nullptr;
             renderPassMultiviewCI.pViewOffsets = NULL;
             renderPassMultiviewCI.dependencyCount = 0;
-            if (m_Config.MultiView)
+            if (GetPipeline()->GetConfig().Multiview)
             {
                 renderPassInfo.pNext = &renderPassMultiviewCI;
             }
@@ -282,7 +283,7 @@ namespace Proof
             renderPassMultiviewCI.pNext = nullptr;
             renderPassMultiviewCI.pViewOffsets = NULL;
             renderPassMultiviewCI.dependencyCount = 0;
-            if (m_Config.MultiView)
+            if (GetPipeline()->GetConfig().Multiview)
             {
                 renderPassInfo.pNext = &renderPassMultiviewCI;
             }
@@ -291,7 +292,7 @@ namespace Proof
                 PF_CORE_ASSERT(false, "failed to create render pass!");
             }
         }
-
+        #endif
         
       
 
@@ -299,32 +300,37 @@ namespace Proof
     }
     void VulkanRenderPass::Release()
     {
-        m_DepthAttachment = {};
-        m_ColorAttachments = {};
-        m_DepthFormat = ImageFormat::None;
-
+        #if 0
         Renderer::SubmitDatafree([renderPass = m_RenderPass] {
             auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-
+        
             vkDestroyRenderPass(graphicsContext->GetDevice(), renderPass, nullptr);
         });
-        m_RenderPass = nullptr;
+       m_RenderPass = nullptr;
+       #endif
     }
    
     VulkanRenderPass::~VulkanRenderPass() 
     {
         Release();
     }
+
+    VkRenderPass VulkanRenderPass::GetRenderPass()
+    {
+        return GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetRenderPass();
+    }
     
 
-    void VulkanRenderPass::SetDepthAttachment(const RenderPassImageConfig& config)
+    void VulkanRenderPass::SetDepthAttachment(const GraphicsPipelineImageConfig& config)
     {
+        #if  0
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
         VkAttachmentDescription depthAttachment{};
         depthAttachment.format = Utils::ProofFormatToVulkanFormat(config.Format);
-        depthAttachment.samples = graphicsContext->GetSampleCount();
-        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // we want to control these ourself
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -338,9 +344,12 @@ namespace Proof
         m_DepthAttachment = { depthAttachment,depthAttachmentRef };
 
         m_DepthFormat = config.Format;
+        #endif
     }
-    void VulkanRenderPass::AddColorAttachment(const RenderPassImageConfig& config)
+    void VulkanRenderPass::AddColorAttachment(const GraphicsPipelineImageConfig& config)
     {
+        #if  0
+
         uint32_t attachIndex = m_ColorAttachments.size();
         if (m_DepthFormat != ImageFormat::None)
         {
@@ -380,6 +389,8 @@ namespace Proof
         }
 
         m_ColorAttachments.emplace_back(VulkanRenderPassAttach{ attachment,attachmentRef });
+        #endif
+
     }
     void VulkanRenderPass::BeginRenderPassBase(Count<class RenderCommandBuffer>command, Viewport vieport, ViewportScissor scisscor)
     {
@@ -416,7 +427,7 @@ namespace Proof
         {
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = m_RenderPass;
+            renderPassInfo.renderPass = GetRenderPass();
             // teh frameBuffer we are writing
             renderPassInfo.framebuffer = GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetFrameBuffer(Renderer::GetCurrentFrame().ImageIndex);
 
@@ -458,7 +469,7 @@ namespace Proof
                 0,
                 nullptr);
         }
-        SetViewPorts(vieport, scisscor, explicitClear);
+        SetDynamicStates(vieport, scisscor, explicitClear);
         
     }
     void VulkanRenderPass::BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear )
@@ -467,8 +478,8 @@ namespace Proof
         ViewportScissor scissor;
         viewport.X = 0.0f;
         viewport.Y = 0.0f;
-        viewport.Width = (float)GetTargetFrameBuffer()->GetConfig().Size.X;
-        viewport.Height = (float)GetTargetFrameBuffer()->GetConfig().Size.Y;
+        viewport.Width = (float)GetTargetFrameBuffer()->GetConfig().Width;
+        viewport.Height = (float)GetTargetFrameBuffer()->GetConfig().Height;
         viewport.MinDepth = 0.0f;
         viewport.MaxDepth = 1.0f;
 
@@ -504,16 +515,16 @@ namespace Proof
                 0,
                 nullptr);
         }
-        SetViewPorts(vieport, scisscor, explicitClear);
+        SetDynamicStates(vieport, scisscor, explicitClear);
     }
     void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear)
-    {
+    {   
         Viewport viewport;
         ViewportScissor scissor;
         viewport.X = 0.0f;
         viewport.Y = 0.0f;
-        viewport.Width = (float)GetTargetFrameBuffer()->GetConfig().Size.X;
-        viewport.Height = (float)GetTargetFrameBuffer()->GetConfig().Size.Y;
+        viewport.Width = (float)GetTargetFrameBuffer()->GetConfig().Width;
+        viewport.Height = (float)GetTargetFrameBuffer()->GetConfig().Height;
         viewport.MinDepth = 0.0f;
         viewport.MaxDepth = 1.0f;
 
@@ -540,9 +551,10 @@ namespace Proof
         m_RenderPassEnabled = false;
         m_MaterialRenderPass = false;
     }
-    void VulkanRenderPass::SetViewPorts(Viewport vieport, ViewportScissor scisscor, bool explicitClear)
+    void VulkanRenderPass::SetDynamicStates(Viewport vieport, ViewportScissor scisscor, bool explicitClear)
     {
-        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot Set viewports if render pass not started");
+        PF_PROFILE_FUNC();
+        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot Set dynamic staes if render pass not started");
 
         VkViewport vk_viewport;
         VkRect2D vk_scissor;
@@ -558,9 +570,7 @@ namespace Proof
         const FrameBufferConfig frameBufferConfig = GetTargetFrameBuffer()->GetConfig();
         VkClearValue colorValue{ frameBufferConfig.ClearColor.X, frameBufferConfig.ClearColor.Y, frameBufferConfig.ClearColor.Z, frameBufferConfig.ClearColor.W };
 
-        vkCmdSetViewport(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), 0, 1, &vk_viewport);
-        vkCmdSetScissor(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), 0, 1, &vk_scissor);
-        if (frameBufferConfig.ClearFrameBufferOnLoad || explicitClear)
+        if (explicitClear)
         {
             std::vector< VkClearAttachment> clears;
             std::vector< VkClearRect> reactClear;
@@ -570,7 +580,7 @@ namespace Proof
             int depthIndex = -1;
             for (auto& attach : frameBufferConfig.Attachments.Attachments)
             {
-               
+
                 VkClearAttachment clearAttach;
 
                 if ((attach.ClearOnLoad || explicitClear) && Utils::IsColorFormat(attach.Format))
@@ -602,7 +612,9 @@ namespace Proof
                 VkClearAttachment clearAttach;
                 //config.Attachments.Attachments[depthIdex];
                 clearAttach.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                if (Utils::ContainStencilFormat(m_DepthFormat))
+
+
+                if (Utils::ContainStencilFormat(GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetDepthFormat()))
                     clearAttach.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
                 clearAttach.clearValue.depthStencil = { frameBufferConfig.DepthClearValue,frameBufferConfig.StencilClearValue };
                // clearAttach.clearValue = colorValue;
@@ -619,6 +631,53 @@ namespace Proof
                 reactClear.size(),
                 reactClear.data());
         }
+
+
+        VkCommandBuffer cmdBuffer = m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+        vkCmdSetViewport(cmdBuffer, 0, 1, &vk_viewport);
+        vkCmdSetScissor(cmdBuffer, 0, 1, &vk_scissor);
+
+        auto vk_pipeline = GetPipeline().As<VulkanGraphicsPipeline>();
+
+        if (vk_pipeline->GetConfig().EditLineWidth)
+        {
+            float lineWidth;
+            if (vk_pipeline->GetLineWidthStack().size())
+                lineWidth = vk_pipeline->GetLineWidthStack().back();
+            else
+                lineWidth = vk_pipeline->GetConfig().LineWidth;
+
+            PF_CORE_ASSERT(false, "not found ");
+
+            //vkCmdSetLineWidth(cmdBuffer, lineWidth);
+        }
+
+        if (vk_pipeline->GetConfig().EditDrawType)
+        {
+            DrawType drawType;
+            if (vk_pipeline->GetDrawTypeStack().size())
+                drawType = vk_pipeline->GetDrawTypeStack().back();
+            else
+                drawType = vk_pipeline->GetConfig().DrawMode;
+
+            PF_CORE_ASSERT(false, "not found ");
+
+            //vkCmdSetPrimitiveTopology(cmdBuffer, Utils::ProofTopologyToVulkanTopology(drawType));
+        }
+
+        if (vk_pipeline->GetConfig().EditCullMode)
+        {
+            CullMode mode;
+            if (vk_pipeline->GetCullModeStack().size())
+                mode = vk_pipeline->GetCullModeStack().back();
+            else
+                mode = vk_pipeline->GetConfig().CullMode;
+
+            PF_CORE_ASSERT(false, "cull mode not found ");
+            //vkCmdSetCullMode(cmdBuffer, Utils::ProofFormatToVulkanFormat(mode));
+        }
+     
+
     }
     void VulkanRenderPass::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
     {
@@ -654,7 +713,7 @@ namespace Proof
     }
     Count<class FrameBuffer> VulkanRenderPass::GetTargetFrameBuffer()
     {
-        return m_Config.Pipeline->GetTargetBuffer();
+        return m_Config.TargetFrameBuffer;
     }
     void VulkanRenderPass::SetInput(std::string_view name, Count<class UniformBuffer> buffer)
     {

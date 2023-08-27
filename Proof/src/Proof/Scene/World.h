@@ -63,6 +63,8 @@ namespace Proof {
 		bool HasWorldCamera();
 		class Entity GetWorldCameraEntity();
 
+		virtual void OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const EditorCamera& camera);
+		
 		// using scripts
 		virtual void StartRuntime();
 		// using scripts
@@ -132,6 +134,8 @@ namespace Proof {
 		}
 		bool EnableRestart = false;
 	private:
+
+		void OnRender(Count<class WorldRenderer> renderer, FrameTime timestep,const Camera& camera, const Vector& cameraLocation, float nearPlane, float farPlane);
 		void Init();
 		void DeleteEntitiesfromQeue();
 		

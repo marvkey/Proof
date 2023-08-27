@@ -10,6 +10,8 @@
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Mesh.h"
 #include "Prefab.h"
+#include "Proof/Scene/World.h"
+
 #include "Material.h"
 namespace Proof
 {
@@ -278,9 +280,6 @@ namespace Proof
 				out << YAML::Key << "NearPlane" << cameraComponent.NearPlane;
 				out << YAML::Key << "FarPlane" << cameraComponent.FarPlane;
 				out << YAML::Key << "FOV" << cameraComponent.FovDeg;
-				out << YAML::Key << "Width" << cameraComponent.Width;
-				out << YAML::Key << "Height" << cameraComponent.Height;
-				out << YAML::Key << "UpVector" << cameraComponent.UPVector;
 				out << YAML::Key << "UseLocalRotation" << cameraComponent.UseLocalRotation;
 				out << YAML::EndMap; // CameraComponet
 			}
@@ -705,8 +704,6 @@ namespace Proof
 					src.NearPlane = cameraComponent["NearPlane"].as<float>();
 					src.FarPlane = cameraComponent["FarPlane"].as<float>();
 					src.FovDeg = cameraComponent["FOV"].as<float>();
-					src.Width = cameraComponent["Width"].as<uint32_t>();
-					src.Height = cameraComponent["Height"].as<uint32_t>();
 					src.UseLocalRotation = cameraComponent["UseLocalRotation"].as<bool>();
 
 				}

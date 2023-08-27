@@ -64,17 +64,17 @@ World:
         SkyBoxLod: 0
         MapRotation: 0
         Intensity: 1
-        DynamicSky: true
+        DynamicSky: false
         Turbidity: 2
         Azimuth: 0
         Inclination: 0
-        Image: 7570646464564919083
+        Image: 2700444414993608762
     - Entity: 17444644887703936264
       TagComponent:
         Tag: Sphere
         tags: []
       TransformComponent:
-        Location: [-5, 2.70000005, 0]
+        Location: [-8.10000038, 2.70000005, 4.5999999]
         Rotation: [0, 19.7999992, 0]
         Scale: [1, 1, 1]
       ChildComponent:
@@ -86,16 +86,17 @@ World:
           - Material: ""
             AssetID: 9010836309271670693
             Index: 0
-    - Entity: 12535944321822136189
+    - Entity: 14443135344696818912
       TagComponent:
-        Tag: Sponza2
+        Tag: square
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [0, 3.9000001, 0]
         Rotation: [0, 0, 0]
-        Scale: [0.100000001, 0.100000001, 0.100000001]
+        Scale: [6.5, 9.10000038, 9.10000038]
       ChildComponent:
         OwnerID: 0
         Children: []
-      MeshComponent:
-        MeshAssetPointerID: 705200552008804468
+      SpriteComponent:
+        TextureAssetPointerID: 96342634762984
+        Colour: [0.939516127, 0.0795557797, 0.0795557797, 1]

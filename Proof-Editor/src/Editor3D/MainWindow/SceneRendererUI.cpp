@@ -46,7 +46,6 @@ namespace Proof{
 		m_SceneEntity.AddComponent<DirectionalLightComponent>().Color = Vector{ 1,1,1 };
 		m_SceneEntity.GetComponent<TransformComponent>().Location.Z -= 10;
 		m_SceneEntity.AddComponent<MeshComponent>().SetMesh(m_ID);
-		m_WorldRenderer = CreateSpecial<WorldRenderer>(m_World, Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() );
 	}
 	
 	void SceneRendererUI::MeshAssetUI() {
