@@ -6,9 +6,9 @@
 #include "Proof/Renderer/Renderer.h"
 #include "VulkanUtils/VulkanConvert.h"
 #include "VulkanCommandBuffer.h"
-#include "VulkanImage.h"
 #include "VulkanUtils/VulkanConvert.h"
 #include "VulkanImguiLayer.h"
+#include "VulkanTexutre.h"
 #include "VulkanAllocator.h"
 namespace Proof {
 	
@@ -90,28 +90,194 @@ namespace Proof {
 	{
 		Release();
 	}
+	void VulkanImage2D::AddResizeCallback(const Image2DResizeCallback& func)
+	{
+		m_ResizeCallbacks.push_back(func);
+	}
 	void VulkanImage2D::Resize(uint32_t width, uint32_t height)
 	{
-		Release();
-		Build();
-		for (auto& [layer, layerImage] : m_ImageViews)
+		if (m_Specification.Usage == ImageUsage::SwapChain)
 		{
-			for (auto& [mip, image] : layerImage)
-			{
-				// recreate
-				image.As<VulkanImageView>()->Init();
-			}
+			PF_ENGINE_ERROR(" {} Cannot resize swaphcain image directly cannot resize",m_Specification.DebugName);
+			return;
 		}
+
+		if (m_Specification.Usage == ImageUsage::Texture)
+		{
+			PF_ENGINE_ERROR("{} Texture images have to handle image resize manually cannot resize", m_Specification.DebugName);
+			return;
+		}
+		if (m_Specification.Width == width && m_Specification.Height == height)
+			return;
+		uint32_t oldWIdht   = m_Specification.Width, oldHeight  = m_Specification.Height;
+
+		m_Specification.Width = width;
+		m_Specification.Height = height;
+		uint32_t oldSamplerHash = m_SamplerHash;
+		VulkanImageInfo oldImageInfo = m_Info;
+		auto oldDescriptorInfo = m_DescriptorImageInfo;
+
+		Build();
+		Renderer::SubmitCommand([&](CommandBuffer* cmd)
+		{
+			VkImageAspectFlags aspectMask;
+			if (Utils::IsDepthFormat(m_Specification.Format))
+			{
+				aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+				if (Utils::ContainStencilFormat(m_Specification.Format))
+					aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			}
+			else
+			{
+				aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+			}
+			VkCommandBuffer vulkanCommandBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+			auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+			VkImage srcImage = oldImageInfo.ImageAlloc.Image;
+			VkImage dstImage = m_Info.ImageAlloc.Image;
+			glm::uvec2 srcSize = { oldWIdht,oldHeight };
+			glm::uvec2 dstSize = { width,height };
+
+			VkImageCopy region;
+			region.srcOffset = { 0, 0, 0 };
+			region.dstOffset = { 0, 0, 0 };
+			region.extent = { srcSize.x, srcSize.y, 1 };
+			region.srcSubresource.aspectMask = aspectMask;
+			region.srcSubresource.baseArrayLayer = 0;
+			region.srcSubresource.mipLevel = 0;
+			region.srcSubresource.layerCount = 1;
+			region.dstSubresource = region.srcSubresource;
+
+			// Adjust x-dimension offset and extent for the copy operation
+			if (region.dstOffset.x + region.extent.width > dstSize.x)
+			{
+				region.extent.width = dstSize.x - region.dstOffset.x;
+			}
+
+			// Adjust y-dimension offset and extent for the copy operation
+			if (region.dstOffset.y + region.extent.height > dstSize.y)
+			{
+				region.extent.height = dstSize.y - region.dstOffset.y;
+			}
+			VkImageLayout srcImageLayout = oldDescriptorInfo.imageLayout;
+			VkImageLayout dstImageLayout = m_DescriptorImageInfo.imageLayout;
+
+			{
+				VkImageMemoryBarrier imageMemoryBarrier{};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				imageMemoryBarrier.oldLayout = srcImageLayout;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				imageMemoryBarrier.image = srcImage;
+
+				imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
+				imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+				imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+				imageMemoryBarrier.subresourceRange.layerCount = 1;
+				imageMemoryBarrier.subresourceRange.levelCount = 1;
+
+				vkCmdPipelineBarrier(vulkanCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+			}
+
+			{
+				VkImageMemoryBarrier imageMemoryBarrier{};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				imageMemoryBarrier.oldLayout = dstImageLayout;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				imageMemoryBarrier.image = dstImage;
+
+				imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
+				imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+				imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+				imageMemoryBarrier.subresourceRange.layerCount = 1;
+				imageMemoryBarrier.subresourceRange.levelCount = 1;
+
+				vkCmdPipelineBarrier(vulkanCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+			}
+
+			vkCmdCopyImage(vulkanCommandBuffer, srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+
+			{
+				VkImageMemoryBarrier imageMemoryBarrier{};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				imageMemoryBarrier.newLayout = srcImageLayout;
+				imageMemoryBarrier.image = srcImage;
+
+				imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
+				imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+				imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+				imageMemoryBarrier.subresourceRange.layerCount = 1;
+				imageMemoryBarrier.subresourceRange.levelCount = 1;
+
+				vkCmdPipelineBarrier(vulkanCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+			}
+
+			{
+				VkImageMemoryBarrier imageMemoryBarrier{};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				imageMemoryBarrier.newLayout = dstImageLayout;
+				imageMemoryBarrier.image = dstImage;
+
+				imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
+				imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+				imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+				imageMemoryBarrier.subresourceRange.layerCount = 1;
+				imageMemoryBarrier.subresourceRange.levelCount = 1;
+
+				vkCmdPipelineBarrier(vulkanCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+			}
+		});
+	
+		Renderer::SubmitDatafree([info = oldImageInfo]()
+		{
+			auto vulkanDevice = VulkanRenderer::GetGraphicsContext()->GetDevice();
+			auto graphics = VulkanRenderer::GetGraphicsContext();
+			vkDestroyImageView(vulkanDevice, info.ImageView, nullptr);
+
+			VulkanAllocator allocator("VulkanImage2DRelease");
+			allocator.DestroyImage(info.ImageAlloc);
+		});
+		auto graphics = VulkanRenderer::GetGraphicsContext();
+		graphics->DeleteSampler(oldSamplerHash);
+
+		for (auto& callback : m_ResizeCallbacks)
+			callback(this);
+		
+		PF_ENGINE_TRACE("Resized image {} width {} height {}", m_Specification.DebugName, m_Specification.Width, m_Specification.Height);
 	}
 	void VulkanImage2D::Build()
 	{
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
-		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;//for copy image
 		if (m_Specification.Usage == ImageUsage::Attachment)
 		{
 			if (Utils::IsDepthFormat(m_Specification.Format))
-				usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+				usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 			else
 				usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 		}
@@ -253,29 +419,43 @@ namespace Proof {
 
 			});
 		}
+		else if (m_Specification.Usage == ImageUsage::Attachment)
+		{
+			Renderer::SubmitCommand([&](CommandBuffer* cmd)
+			{
+				VkImageLayout newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				if (Utils::IsDepthFormat(m_Specification.Format))
+				{
+					newLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+				}
+
+				VkCommandBuffer commandBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+				//  Transition image to TransferDst 
+
+				VkImageMemoryBarrier imageMemoryBarrier{};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				imageMemoryBarrier.newLayout = newLayout;
+				imageMemoryBarrier.image = m_Info.ImageAlloc.Image ;
+				imageMemoryBarrier.subresourceRange = VkImageSubresourceRange{ aspectMask, 0, 1, 0, 1 };
+
+				vkCmdPipelineBarrier(
+					commandBuffer,
+					VK_PIPELINE_STAGE_TRANSFER_BIT,
+					VK_PIPELINE_STAGE_TRANSFER_BIT,
+					0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+
+			});
+		}
 
 		UpdateDescriptor();
-	}
-
-	Count<ImageView> VulkanImage2D::GetImageView(Count<Image2D> image,uint32_t layer, uint32_t mip)
-	{
-		PF_CORE_ASSERT(m_Specification.Layers > layer);
-		PF_CORE_ASSERT(m_Specification.Mips > mip);
-		ImageViewConfiguration spec;
-		spec.Image = image;
-		spec.Layer = layer;
-		spec.Mip = mip;
-		spec.DebugName = std::format("{} ImageView Layer {} Mip {}", m_Specification.DebugName, layer, mip);
-		if (m_ImageViews.contains(layer))
-		{
-			auto& imageLayers = m_ImageViews[layer];
-			if (imageLayers.contains(mip))
-				return imageLayers[mip];
-			imageLayers[mip] = ImageView::Create(spec);
-			return imageLayers[mip];
-		}
-		m_ImageViews[layer][mip] = ImageView::Create(spec);
-		return m_ImageViews[layer][mip];
 	}
 
 	void VulkanImage2D::UpdateDescriptor()
@@ -389,7 +569,17 @@ namespace Proof {
 	VulkanImageView::VulkanImageView(const ImageViewConfiguration& spec)
 		:m_Specification(spec)
 	{
-		Init();
+		WeakCount<VulkanImageView> instanceWeakCount = this;
+
+		m_Specification.Image.As<VulkanImage2D>()->AddResizeCallback([instanceWeakCount](Count<Image2D> image) mutable
+		{
+			if (!instanceWeakCount)
+				return;
+
+			instanceWeakCount.Lock()->Release();
+			instanceWeakCount.Lock()->Build();
+		});
+		Build();
 	}
 
 	VulkanImageView::~VulkanImageView()
@@ -397,7 +587,7 @@ namespace Proof {
 		Release();
 	}
 
-	void VulkanImageView::Init()
+	void VulkanImageView::Build()
 	{   
 		Count<VulkanImage2D> image = m_Specification.Image.As<VulkanImage2D>();
 		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();

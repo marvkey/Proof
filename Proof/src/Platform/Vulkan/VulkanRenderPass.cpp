@@ -394,6 +394,8 @@ namespace Proof
     }
     void VulkanRenderPass::BeginRenderPassBase(Count<class RenderCommandBuffer>command, Viewport vieport, ViewportScissor scisscor)
     {
+        PF_PROFILE_FUNC();
+        PF_PROFILE_TAG("", m_Config.DebugName.c_str());
         PF_CORE_ASSERT(m_RenderPassEnabled == false, fmt::format("cannot start {} render pass when previous render pass is not closed", m_Config.DebugName).c_str());
         m_CommandBuffer = command;
         m_RenderPassEnabled = true;
@@ -519,6 +521,7 @@ namespace Proof
     }
     void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear)
     {   
+       
         Viewport viewport;
         ViewportScissor scissor;
         viewport.X = 0.0f;
@@ -545,6 +548,8 @@ namespace Proof
     }
     
     void VulkanRenderPass::EndRenderPass() {
+        PF_PROFILE_FUNC();
+        PF_PROFILE_TAG("", m_Config.DebugName.c_str());
         PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
         vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight));
         m_CommandBuffer = nullptr;

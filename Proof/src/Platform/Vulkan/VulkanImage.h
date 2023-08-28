@@ -21,7 +21,7 @@ namespace Proof
 		VkImageView ImageView = nullptr;
 		VkSampler Sampler = nullptr;
 	};
-	
+	using Image2DResizeCallback = std::function<void(Count< Image2D>image)>;
 	class VulkanImage2D : public Image2D
 	{
 	public:
@@ -30,7 +30,7 @@ namespace Proof
 		//TOdo remove this, sttrictly for the swapchain
 		VulkanImage2D(const ImageConfiguration& imageSpec, VulkanImageInfo imageinfo, uint64_t samplerHash);
 		virtual ~VulkanImage2D();
-
+		virtual void AddResizeCallback(const Image2DResizeCallback& func);
 		virtual void Resize(uint32_t width, uint32_t height);
 		virtual void Resize(Vector2U size) { Resize(size.X, size.Y); };
 
@@ -51,8 +51,6 @@ namespace Proof
 		const Buffer& GetBuffer()const { return m_ImageData; }
 
 		// do on the render thread
-		Count<ImageView> GetImageView(Count<Image2D> image,uint32_t layer=0, uint32_t mip=0);
-
 		const VkDescriptorImageInfo& GetDescriptorInfoVulkan()const { return *(VkDescriptorImageInfo*)GetResourceDescriptorInfo(); };
 		virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const { return (ResourceDescriptorInfo)&m_DescriptorImageInfo; }
 		void UpdateDescriptor();
@@ -81,12 +79,13 @@ namespace Proof
 		void Build();
 
 	private:
+		std::vector<Image2DResizeCallback > m_ResizeCallbacks;
+
 		VkSampleCountFlagBits m_SampleFlags;
 		ImageConfiguration m_Specification;
 		Buffer m_ImageData;
 		VulkanImageInfo m_Info;
 		VkDeviceSize m_GPUAllocationSize;
-		std::map<uint32_t, std::map<uint32_t, Count<ImageView>>> m_ImageViews;
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
 		uint64_t m_SamplerHash;
 		bool m_SwapchainImage = false;
@@ -109,7 +108,7 @@ namespace Proof
 		virtual uint32_t GetHeight() { return GetImage()->GetHeight(); };
 	private:
 		VulkanImageInfo m_Info;
-		void Init();
+		void Build();
 		void Release();
 		ImageViewConfiguration m_Specification;
 		VkImageView m_ImageView;

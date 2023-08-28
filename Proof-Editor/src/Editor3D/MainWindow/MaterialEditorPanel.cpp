@@ -4,7 +4,6 @@
 #include "../ImGUIAPI.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "Editor3D/Editor3D.h"
-#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Scene/Material.h"
 #include "SceneHierachyPanel.h"
@@ -12,6 +11,8 @@
 #include "Proof/Renderer/WorldRenderer.h"
 #include "../EditorResources.h"
 #include "Proof/Renderer/RenderMaterial.h"
+
+#include "Proof/Renderer/Shader.h"
 namespace Proof
 {
 

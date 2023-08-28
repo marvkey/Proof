@@ -23,7 +23,7 @@ namespace Proof
         :
         m_Config(attachments)
     {
-        if (m_Config.Height == 100 || m_Config.Width == 100)
+        if (m_Config.Height == 0 || m_Config.Width == 0)
         {
             auto size = VulkanRenderer::GetGraphicsContext()->GetSwapChain()->GetSwapChainExtent();
             m_Config.Width = size.X;
@@ -99,7 +99,7 @@ namespace Proof
         {
 
             ImageConfiguration imageConfig;
-            imageConfig.DebugName = fmt::format("{} DepthImage ",m_Config.DebugName);
+            imageConfig.DebugName = fmt::format("{} FrameBuffer DepthImage {}",m_Config.DebugName,i);
             imageConfig.Format = m_DepthFormat;
             imageConfig.Usage = ImageUsage::Attachment;
             imageConfig.Transfer = m_Config.Transfer;
@@ -109,8 +109,9 @@ namespace Proof
             {
              
             }
-            Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
 
+            Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+                /*
                 VkImageMemoryBarrier barrier{};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -145,6 +146,7 @@ namespace Proof
                     0, nullptr,
                     0, nullptr,
                     1, &barrier);
+                    */
                 /*
                 VkClearColorValue clearColor = {};
                 clearColor.float32[0] = 0.0f; // Red
@@ -197,15 +199,15 @@ namespace Proof
         for (int i = 0; i < imageCount; i++)
         {
             ImageConfiguration imageConfig;
-            imageConfig.DebugName = fmt::format("{} ColorAttachment Index: {} ", m_Config.DebugName, m_ColorImages.size());
+            imageConfig.DebugName = fmt::format("{} FrameBuffer ColorAttachment Index: {} ", m_Config.DebugName, i);
             imageConfig.Format = imageAttach.Format;
             imageConfig.Usage = ImageUsage::Attachment;
             imageConfig.Transfer = m_Config.Transfer;
             imageConfig.Width = m_Config.Width;
             imageConfig.Height = m_Config.Height;
             colorImage.RefImages[i] = Image2D::Create(imageConfig);
-
             Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+                /*
                 VkImageMemoryBarrier imageMemoryBarrier{};
                 imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -225,6 +227,7 @@ namespace Proof
                     0, nullptr,
                     0, nullptr,
                     1, &imageMemoryBarrier);
+                    */
                 /*
                 VkClearColorValue clearColor = {};
                 clearColor.float32[0] = 0.0f; // Red
@@ -491,7 +494,23 @@ namespace Proof
         Release();
         m_Config.Width = width;
         m_Config.Height = height;
+        for (auto& framebufferImageAttach : m_ColorImages)
+        {
+            for (auto& image : framebufferImageAttach.RefImages)
+            {
+                if (image->GetRendererResourceType() == RendererResourceType::Image2D)
+                    image.As<VulkanImage2D>()->Resize(width, height);
+            }
+        }
+
+        for (auto& dpethImage : m_DepthImage.RefImages)
+        {
+            if (dpethImage->GetRendererResourceType() == RendererResourceType::Image2D)
+                dpethImage.As<VulkanImage2D>()->Resize(width, height);
+        }
         Build();
+
+        PF_ENGINE_TRACE("Resized {} FrameBuffer {} {}", m_Config.DebugName, width, height);
     }
     void VulkanFrameBuffer::Copy(Count<FrameBuffer> copyFrameBuffer)
     {

@@ -9,14 +9,11 @@
 #include "ImGuizmo.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Renderer/WorldRenderer.h"
-#include "Proof/Renderer/RenderPass.h"
-#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/Shader.h"
 #include "Proof/Math/Vector.h"
-#include "EditorResources.h"
 #include "Proof/Math/MathResource.h"
-#include "Proof/Scene/Material.h"
+#include "EditorResources.h"
 #include "Proof/Scene/Script.h"
-#include "ImGui/imgui_impl_vulkan.h"
 #include <thread>
 #include <future>
 #include <algorithm>
@@ -25,10 +22,11 @@
 #include <Windows.h>
 #include <stdio.h> 
 #include "ImGUIAPI.h"
-#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "MainWindow/SceneRendererUI.h"
 #include "MainWindow/MaterialEditorPanel.h"
+
+#include "Proof/Renderer/Renderer.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Math/Random.h"
 #include <string>

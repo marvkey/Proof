@@ -1,10 +1,11 @@
 #pragma once
 #include "FrameBuffer.h"
-#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
-#include <map>
+#include "Proof/Core/Buffer.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Scene/Camera/Camera.h"
 #include "Viewport.h"
+
+#include <map>
 namespace Proof
 {
 	struct MeshKey
@@ -65,7 +66,10 @@ namespace Proof
 namespace Proof
 {
 	class RenderMaterial;
-
+	class UniformBufferSet;
+	class Mesh;
+	class VertexBuffer;
+	class StorageBufferSet;
 	struct CascadeData
 	{
 		//glm::mat4 Projection;
@@ -180,7 +184,15 @@ namespace Proof
 		int DebugCascade = 0; // min 0 max 3
 	};
 	
-
+	struct UBCameraData
+	{
+		glm::mat4 Projection;
+		glm::mat4 ProjectionView;
+		glm::mat4 UnreversedProjectionMatrix;
+		Vector Position;
+		float NearPlane;
+		float FarPlane;
+	};
 	struct UBRenderData
 	{
 		glm::vec4 cascadeSplit;
@@ -298,12 +310,11 @@ namespace Proof
 
 		//meshes
 		Count<Mesh> m_Cube;
-		Special<Renderer3DPBR> m_Renderer3D;
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
 		Special<class Renderer2D>  m_Renderer2D;
 		Special<class Renderer2D>  m_UIRenderer;
 		Special<class Renderer2D>  m_ParticleSystemRenderer;
-		Count<RenderCommandBuffer> m_CommandBuffer;
+		Count<class RenderCommandBuffer> m_CommandBuffer;
 
 		Count<class Texture2D> m_BRDFLUT;
 
@@ -314,7 +325,7 @@ namespace Proof
 		std::map<MeshKey, MeshDrawInfo> m_MeshShadowDrawList;
 		Count<class Environment> m_Environment;
 		bool m_InContext = false;
-		CameraData m_CameraData;
+		UBCameraData m_CameraData;
 		uint32_t m_ShadowMapResolution;
 		// geometry pass
 		Count<RenderPass> m_GeometryPass;

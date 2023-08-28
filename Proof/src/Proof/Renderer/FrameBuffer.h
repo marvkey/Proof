@@ -24,8 +24,8 @@ namespace Proof {
 	// this helped a lot
 	struct FrameBufferConfig {
 		std::string DebugName;
-		uint32_t Width = 100;
-		uint32_t Height = 100;
+		uint32_t Width = 0;//if 0 will use swapchiann size
+		uint32_t Height = 0;//if 0 will use swapchiann size
 		uint32_t Samples = 1; // multisampling
 
 		mutable Vector4 ClearColor = { 0,0,0,1.0f };

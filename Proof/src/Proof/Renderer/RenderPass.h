@@ -1,7 +1,5 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof/Renderer/Texture.h"
-#include "FrameBuffer.h"
 namespace Proof{
 	struct RenderPassConfig {
 	

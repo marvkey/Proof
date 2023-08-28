@@ -1,11 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Camera/EditorCamera.h"
-#include "Camera/OrthagraphicCamera.h"
-#include "Proof/Renderer/Shader.h"
-#include "Proof/Renderer/VertexArray.h"
-#include "Proof/Renderer/FrameBuffer.h"
-#include "Component.h"
 #define ENTT_ID_TYPE uint64_t
 #include "entt/entt.hpp"	
 #include "entt/entity/group.hpp"
@@ -19,6 +14,9 @@ namespace entt {
 	using registry64 = basic_registry<uint64_t>;
 };
 namespace Proof {
+	struct MeshColliderComponent;
+	struct TransformComponent;
+
 	enum class WorldState
 	{
 		Play,
@@ -149,7 +147,7 @@ namespace Proof {
 		void OnScriptAdded(entt::registry64& component, uint64_t entityID);
 		void OnScriptDelete(entt::registry64& component,uint64_t entityID);
 
-		void OnChildComponentDestroy(ChildComponent& childComponent	);
+		void OnChildComponentDestroy(struct ChildComponent& childComponent	);
 		std::vector< EntityID> m_EntityDeleteQueue;
 		entt::registry64 m_Registry;
 		class PhysicsWorld* m_PhysicsWorld =nullptr;

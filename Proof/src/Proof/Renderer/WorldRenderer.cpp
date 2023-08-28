@@ -1,6 +1,5 @@
 #include "Proofprch.h"
 #include "WorldRenderer.h"
-#include "Proof/Renderer/3DRenderer/Renderer3DPBR.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Renderer/RenderPass.h"
 #include "Proof/Renderer/Buffer.h"
@@ -29,6 +28,8 @@
 #include "Platform/Vulkan/VulkanImage.h"
 #include "Proof/Math/MathConvert.h"	
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
+
+#include "VertexArray.h"
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
@@ -38,6 +39,10 @@
 #include <glm/gtc/matrix_inverse.hpp> 
 namespace Proof
 {
+	struct MeshInstanceVertex {
+
+		glm::mat4 Transform;
+	};
 	#define SHADOWMAP_CASCADE_COUNT  4
 
 	glm::vec3 convertRotationToVec3(float rotation) {
@@ -89,7 +94,7 @@ namespace Proof
 		m_UBScreenBuffer = UniformBufferSet::Create(sizeof(UBScreenData));
 		m_UBRenderDataBuffer = UniformBufferSet::Create(sizeof(UBRenderData));
 		m_UBSceneDataBuffer = UniformBufferSet::Create(sizeof(UBSceneData));
-		m_UBCameraBuffer = UniformBufferSet::Create(sizeof(CameraData));
+		m_UBCameraBuffer = UniformBufferSet::Create(sizeof(UBCameraData));
 		m_UBSKyBoxBuffer = UniformBufferSet::Create(sizeof(UBSkyLight));
 		m_SBDirectionalLights = StorageBufferSet::Create(sizeof(DirectionalLight));
 		m_UBCascadeProjectionBuffer = UniformBufferSet::Create(sizeof(glm::mat4) * 4);
@@ -119,7 +124,7 @@ namespace Proof
 				break;
 		}
 
-		Count<VertexArray> staticVertexArray= VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshPipeLine::MeshVertex), VertexInputRate::Instance} });
+		Count<VertexArray> staticVertexArray= VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshInstanceVertex), VertexInputRate::Instance} });
 		staticVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
 		staticVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
 		staticVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
@@ -177,35 +182,6 @@ namespace Proof
 			depthImageConfig.Height = m_ShadowMapResolution;
 
 			m_ShadowPassImage = Image2D::Create(depthImageConfig);
-
-
-			Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-				VkImageMemoryBarrier imageMemoryBarrier{};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-				imageMemoryBarrier.image = m_ShadowPassImage.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
-				VkImageSubresourceRange range;
-				range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-				range.baseArrayLayer = 0;
-				range.baseMipLevel = 0;
-				range.layerCount = 4;
-				range.levelCount = 1;
-				imageMemoryBarrier.subresourceRange = range;
-
-				vkCmdPipelineBarrier(
-					cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
-					VK_PIPELINE_STAGE_TRANSFER_BIT,
-					VK_PIPELINE_STAGE_TRANSFER_BIT,
-					0,
-					0, nullptr,
-					0, nullptr,
-					1, &imageMemoryBarrier);
-			});
 
 			{
 				FrameBufferConfig framebufferConfig;
@@ -541,7 +517,7 @@ namespace Proof
 	{
 		if (m_UBScreenData.FullResolution == glm::vec2{ width,height })
 			return;
-		return; //for now
+		///return; //for now
 		m_UBScreenData.FullResolution = { width, height };
 		m_UBScreenData.InverseFullResolution = {1/ width,  1/height };
 		m_UBScreenData.HalfResolution = glm::ivec2{ m_UBScreenData.FullResolution } / 2;
@@ -966,6 +942,7 @@ namespace Proof
 
 		//TODO FASTER HASH FUNCTION FOR MESHKEY
 		//set pass
+
 		{
 			PF_PROFILE_FUNC("GeometryPass::SkyBoxPass");
 
