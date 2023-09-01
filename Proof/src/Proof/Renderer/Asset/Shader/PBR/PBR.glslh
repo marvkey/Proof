@@ -1,7 +1,7 @@
 #ifndef PBR_FUNCTIONS
 #define PBR_FUNCTIONS
 #include <Common.glslh>
-
+#include <PBR/Lights.glslh>
 //https://learnopengl.com/code_viewer_gh.php?code=src/6.pbr/2.2.1.ibl_specular/2.2.1.pbr.fs
 //https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/shaders/forward/fPBR.frag
 //https://github.com/HighLo-Engine/HighLo-Engine/blob/master/HighLo/assets/shaders/Include/GLSL/Buffers.glslh
@@ -20,41 +20,6 @@ layout(std140, set=2,binding = 1) uniform RendererData
 		bool CascadeFading; 
 		float CascadeTransitionFade;
 }u_RendererData;
-
-layout(std140, set = 2, binding = 2) uniform SkyBoxData
-{
-    vec3 TintColor;
-    float Lod;
-    float Intensity;
-    float Roation;
-}u_SkyBoxInfo;
-
-struct DirectionalLight 
-{
-    vec3 Color;
-    float Intensity;
-    vec3 Direction;
-    bool CastShadows;
-    bool CastSoftShadow;
-    float ShadowStrength;
-    float ShadowSoftness;
-};
-layout(std140, set = 2, binding = 3) buffer DirectionalLightStorageBuffer {
-
-    DirectionalLight Lights[];
-} u_DirectionalLightData;
-
-struct PointLight
-{
-	vec3 Position;
-	float Intensity;
-	vec3 Radiance;
-	float MinRadius;
-	float Radius;
-	float Falloff;
-	float LightSize;
-	bool CastsShadows;
-};
 
 struct PBRParameters
 {
@@ -100,10 +65,119 @@ float GeometrySchlickGGX(float nDotV, float rough){
     return num * denom;
 }
 
-float GeometrySmith(float nDotV, float nDotL, float rough){
+float GeometrySmith(float nDotV, float nDotL, float rough)
+{
     float ggx2  = GeometrySchlickGGX(nDotV, rough);
     float ggx1  = GeometrySchlickGGX(nDotL, rough);
 
     return ggx1 * ggx2;
+}
+float NdfGGX(float cosLh, float roughness)
+{
+	float alpha = roughness * roughness;
+	float alphaSq = alpha * alpha;
+
+	float denom = (cosLh * cosLh) * (alphaSq - 1.0) + 1.0;
+	return alphaSq / (PI * denom * denom);
+}
+// Single term for separable Schlick-GGX below.
+float GaSchlickG1(float cosTheta, float k)
+{
+	return cosTheta / (cosTheta * (1.0 - k) + k);
+}
+
+// Schlick-GGX approximation of geometric attenuation function using Smith's method.
+float GaSchlickGGX(float cosLi, float NdotV, float roughness)
+{
+	float r = roughness + 1.0;
+	float k = (r * r) / 8.0; // Epic suggests using this roughness remapping for analytic lights.
+	return GaSchlickG1(cosLi, k) * GaSchlickG1(NdotV, k);
+}
+vec3 CalculatePointLights(in vec3 F0, vec3 worldPos)
+{
+	vec3 result = vec3(0.0);
+
+    uvec2 tileIndex = uvec2( floor(gl_FragCoord.xy / 16) );
+    uint startOffset = imageLoad(u_PointLightGrid, ivec2(tileIndex)).x;
+	uint lightCount = imageLoad(u_PointLightGrid, ivec2(tileIndex)).y;
+    for ( uint i = 0; i < lightCount; i++ )
+	{
+        uint lightIndex = s_PointLightIndexList[startOffset + i];
+		PointLight light = s_PointLights.Lights[lightIndex];
+
+		//if(light.Intensity == 0)
+		//	continue;
+		vec3 Li = normalize(light.Position - worldPos);
+		float lightDistance = length(light.Position - worldPos);
+		vec3 Lh = normalize(Li + m_Params.View);
+
+		float attenuation = clamp(1.0 - (lightDistance * lightDistance) / (light.Radius * light.Radius), 0.0, 1.0);
+		attenuation *= mix(attenuation, 1.0, light.Falloff);
+
+		vec3 Lradiance = light.Colour * light.Intensity * attenuation;
+
+		// Calculate angles between surface normal and various light vectors.
+		float cosLi = max(0.0, dot(m_Params.Normal, Li));
+		float cosLh = max(0.0, dot(m_Params.Normal, Lh));
+
+		vec3 F = FresnelSchlickRoughness(max(0.0, dot(Lh, m_Params.View)), F0,m_Params.Roughness);
+		float D = NdfGGX(cosLh, m_Params.Roughness);
+		float G = GaSchlickGGX(cosLi, m_Params.NdotV, m_Params.Roughness);
+
+		vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+		vec3 diffuseBRDF = kd * m_Params.AlbedoColor;
+
+		// Cook-Torrance
+		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
+		specularBRDF = clamp(specularBRDF, vec3(0.0f), vec3(10.0f));
+		result += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+	}
+	return result;
+}
+
+vec3 CalculateSpotLights(in vec3 F0, vec3 worldPos)
+{
+	vec3 result = vec3(0.0);
+    uvec2 tileIndex = uvec2( floor(gl_FragCoord.xy / 16) );
+    uint startOffset = imageLoad(u_SpotLightGrid, ivec2(tileIndex)).x;
+	uint lightCount = imageLoad(u_SpotLightGrid, ivec2(tileIndex)).y;
+
+    for ( uint i = 0; i < lightCount; i++ )
+	{
+	
+        uint lightIndex = s_SpotLightIndexList[startOffset + i];
+		SpotLight light = s_SpotLights.Lights[lightIndex];
+
+		vec3 Li = normalize(light.Position - worldPos);
+		float lightDistance = length(light.Position - worldPos);
+
+		float cutoff = cos(radians(light.Angle * 0.5f));
+		float scos = max(dot(Li, light.Direction), cutoff);
+		float rim = (1.0 - scos) / (1.0 - cutoff);
+
+		float attenuation = clamp(1.0 - (lightDistance * lightDistance) / (light.Range * light.Range), 0.0, 1.0);
+		attenuation *= mix(attenuation, 1.0, light.Falloff);
+		attenuation *= 1.0 - pow(max(rim, 0.001), light.AngleAttenuation);
+
+		vec3 Lradiance = light.Colour * light.Intensity * attenuation;
+		vec3 Lh = normalize(Li + m_Params.View);
+
+		// Calculate angles between surface normal and various light vectors.
+		float cosLi = max(0.0, dot(m_Params.Normal, Li));
+		float cosLh = max(0.0, dot(m_Params.Normal, Lh));
+
+		vec3 F = FresnelSchlickRoughness(max(0.0, dot(Lh, m_Params.View)),F0, m_Params.Roughness);
+		float D = NdfGGX(cosLh, m_Params.Roughness);
+		float G = GaSchlickGGX(cosLi, m_Params.NdotV, m_Params.Roughness);
+
+		vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+		vec3 diffuseBRDF = kd * m_Params.AlbedoColor;
+
+		// Cook-Torrance
+		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
+		specularBRDF = clamp(specularBRDF, vec3(0.0f), vec3(10.0f));
+		result += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+	}
+	return result;
 }
 #endif

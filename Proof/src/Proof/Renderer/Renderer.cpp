@@ -61,6 +61,9 @@ namespace Proof {
 		// predepth
 		ShaderLibrary->LoadShader("PreDepth_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PreDepth/PreDepth_Static.glsl");
 
+		// lightculling
+		ShaderLibrary->LoadShader("FrustrumGrid", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/LightCulling/FrustrumGrid.glsl");
+		ShaderLibrary->LoadShader("LightCulling", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/LightCulling/LightCulling.glsl");
 
 		//Shadows
 		ShaderLibrary->LoadShader("DebugShadowMap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/DebugShadowMap.glsl");

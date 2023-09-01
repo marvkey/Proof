@@ -370,33 +370,38 @@ namespace Proof
 
 	struct PointLightComponent {
 		PointLightComponent(const PointLightComponent&) = default;
-
 		PointLightComponent() = default;
-		Vector Color = { 1 };
-		
-		float Intensity = 1;
-		float Constant = 1;
-		float Linear = 1;
-		float Quadratic = 1;
-		float Radius = 10;
+		glm::vec3 Color { 1 };
+		float Intensity =1; // min =0, max = 500f;
+		float MinRadius =1; // min  = 0,maximum should be Radius
+		float Radius =10;// min is 0, max max float
+		float Falloff =1.0f; //min is 0, represent how far before the light becomes weaker
+		glm::vec3 OffsetLocation { 0 };
+		bool CastsShadows = false;
+		bool SoftShadows = false;
+		float ShadowStrength =0.5f;// 0.0 to 1.0 how dark sahdow is
+		float ShadowSoftness = 0.5f;//how soft the shadow is from 0.0 to 1.0f 
 	};
 
 	struct SpotLightComponent {
 		SpotLightComponent(const SpotLightComponent&) = default;
-
-		
 		SpotLightComponent() = default;
-
-		
-		Vector Color = { 1 };
-		
-		float Intensity = 1;
-		float Constant = 1;
-		float Linear = 1;
-		float Quadratic = 1;
-		float Radius = 10;
-		float CutOff = 1; // gets put in cos and radias before use
-		float OuterCutOff = 2; // gets put in cos and radias before use
+		glm::vec3 Color{ 1.0f };
+		float Intensity = 1.0f; // Range: 0.0 to positive infinity.
+		float Range = 10.0f;// Range: 0.0 to positive infinity.
+		float Angle = 60.0f;// Range: 0.0 to 180.0 degrees. // Angle of the spot light cone (in degrees).
+		// Attenuation factor for the spotlight cone's light intensity
+		// as the angle between the light direction and surface normal increases.
+		// A higher value results in a more rapid decrease in intensity
+		// as the angle deviates from the spotlight's central direction.
+		float AngleAttenuation = 5.0f; // Range: 0.0 to positive infinity.
+		float Falloff = 1.0f;// Range: 0.0 to positive infinity.  factor that affects how the light intensity diminishes.
+		glm::vec3 OffsetLocation{ 0 };
+		glm::vec3 OffsetDirection{ 0 };
+		bool CastsShadows = false;
+		bool SoftShadows = false;
+		float ShadowStrength = 0.5f;// 0.0 to 1.0 how dark sahdow is
+		float ShadowSoftness = 0.5f;//how soft the shadow is from 0.0 to 1.0f 
 	};
 
 

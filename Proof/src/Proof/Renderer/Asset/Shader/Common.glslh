@@ -6,13 +6,28 @@ const float TWO_PI = 2 * PI;
 const float Epsilon = 0.00001;
 layout(set = 3, binding = 0) uniform CameraData
 {
-    mat4 ProjectionMatrix;
-    mat4 ViewMatrix;
+  	mat4 Projection;
+	mat4 InverseProjection;
 	mat4 UnreversedProjectionMatrix;
-    vec3 Position;
-    float NearPlane;
-    float FarPlane;
+	mat4 View;
+	mat4 InverseView;
+	mat4 ViewProjectionMatrix;// projection * view
+	mat4 InverseViewProjectionMatrix;  //inversProjection * view
+
+	vec3 Position;
+	float NearPlane;
+	float FarPlane;
 }u_Camera;
+
+layout (set = 3, binding = 1) uniform ScreenData
+{
+	vec2 FullResolution;
+	vec2 InverseFullResolution;
+	vec2 HalfResolution;
+	vec2 InverseHalfResolution;
+	float AspectRatio;
+	float ResolutionScaling;
+} u_ScreenData;
 
 vec3 GetGradient(float value)
 {
@@ -52,7 +67,28 @@ vec3 RotateAroundYAxis(float angle, vec3 axis)
 	
 	return rotationMatrix * axis;
 }
+// Convert clip space coordinates to view space
+vec4 ClipToView(vec4 clip)
+{
+    // View space position.
+    vec4 view = u_Camera.InverseProjection * clip;
+    // Perspective division.
+    view /= view.w;
 
+    return view;
+}
+
+// Convert screen space coordinates to view space.
+vec4 ScreenToView(vec4 screen)
+{
+    // Convert to normalized texture coordinates
+    vec2 texCoord = screen.xy / u_ScreenData.FullResolution;
+
+    // Convert to clip space
+    vec4 clip = vec4(vec2(texCoord.x, 1.0 - texCoord.y) * 2.0 - 1.0, screen.z, screen.w);
+
+    return ClipToView(clip);
+}
 
 
 #endif // COMMON_GLSL_H

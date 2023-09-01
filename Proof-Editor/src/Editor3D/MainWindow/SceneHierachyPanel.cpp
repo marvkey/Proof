@@ -542,28 +542,37 @@ namespace Proof
 			}
 		});
 
-		DrawComponents<PointLightComponent>("Directonal Light", entity, [](PointLightComponent& pl) {
-			ImGui::ColorEdit3("Ambient", pl.Color.GetValue_Ptr());
-			ImGui::DragFloat("Intensity", &pl.Intensity, 0.01, 0.0f, 100);
-			ImGui::DragFloat("Intensity", &pl.Intensity, 0.01, 0.0f, 100);
-			ImGui::DragFloat("Radius", &pl.Radius, 0.01, 0.0f, 100);
-			ImGui::DragFloat("Constant", &pl.Constant, 0.001);
-			ImGui::DragFloat("Linear", &pl.Linear, 0.001);
-			ImGui::DragFloat("Quadratic", &pl.Quadratic, 0.001);
+		DrawComponents<PointLightComponent>("Point Light", entity, [](PointLightComponent& pl) {
+			
+			ImGui::ColorEdit3("Color", glm::value_ptr(pl.Color));
+			ImGui::DragFloat("Intensity", &pl.Intensity, 0.01, 0.0f, Math::GetMaxType<float>(), "%.3f",ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("MinRadius", &pl.MinRadius, 0.01, 0.0f, pl.Radius,"%.3f", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("Radius", &pl.Radius, 0.01, 0.0f,Math::GetMaxType<float>(), "%.3f",ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("Falloff", &pl.Falloff, 0.005,0,1.0,"%.3f", ImGuiSliderFlags_AlwaysClamp);
+			//ImGui::DragFloat("Constant", &pl.Constant, 0.001);
+			//ImGui::DragFloat("Linear", &pl.Linear, 0.001);
+			//ImGui::DragFloat("Quadratic", &pl.Quadratic, 0.001);
 		});
 
-		DrawComponents<SpotLightComponent>("Directonal Light", entity, [](SpotLightComponent& sl) {
-			ImGui::ColorEdit3("Ambient", sl.Color.GetValue_Ptr());
-			ImGui::DragFloat("Intensity", &sl.Intensity, 0.01, 0.0f, 100);
+		DrawComponents<SpotLightComponent>("Spot Light", entity, [](SpotLightComponent& sl) {
 
-			ImGui::DragFloat("Radius", &sl.Radius, 0.01, 0.0f, 100);
-
-			ImGui::NewLine();
-			ImGui::DragFloat("Constant", &sl.Constant, 0.001);
-			ImGui::DragFloat("Linear", &sl.Linear, 0.001);
-			ImGui::DragFloat("Quadratic", &sl.Quadratic, 0.001);
-			ImGui::DragFloat("CutOff", &sl.CutOff, 0.001);
-			ImGui::DragFloat("Outer-Cutoff", &sl.OuterCutOff, 0.001);
+			ImGui::ColorEdit3("Color", glm::value_ptr(sl.Color));
+			ImGui::DragFloat("Intensity", &sl.Intensity, 0.01, 0.0f, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("AngleAttenuation", &sl.AngleAttenuation, 0.25, 0.0f, Math::GetMaxType<float>(), "%.3f");
+			ImGui::DragFloat("Falloff", &sl.Falloff, 0.005, 0, Math::GetMaxType<float>(), "%.3f");
+			ImGui::DragFloat("Range", &sl.Range, 0.25, 0, Math::GetMaxType<float>(), "%.3f");
+			ImGui::DragFloat("Angle", &sl.Angle, 0.25, 0, 180, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			//ImGui::ColorEdit3("Ambient", sl.Color.GetValue_Ptr());
+			//ImGui::DragFloat("Intensity", &sl.Intensity, 0.01, 0.0f, 100);
+			//
+			//ImGui::DragFloat("Radius", &sl.Radius, 0.01, 0.0f, 100);
+			//
+			//ImGui::NewLine();
+			//ImGui::DragFloat("Constant", &sl.Constant, 0.001);
+			//ImGui::DragFloat("Linear", &sl.Linear, 0.001);
+			//ImGui::DragFloat("Quadratic", &sl.Quadratic, 0.001);
+			//ImGui::DragFloat("CutOff", &sl.CutOff, 0.001);
+			//ImGui::DragFloat("Outer-Cutoff", &sl.OuterCutOff, 0.001);
 		});
 
 		DrawComponents<CameraComponent>("Camera", entity, [](CameraComponent& cameraComp) {

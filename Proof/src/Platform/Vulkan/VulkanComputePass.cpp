@@ -6,37 +6,9 @@
 #include "VulkanRenderer/VulkanRenderer.h"
 namespace Proof
 {
-	void VulkanComputePass::SetInput(std::string_view name, Count<class UniformBuffer> buffer)
-	{
-		m_DescritptorSetManager->SetInput(name, buffer);
-	}
-	void VulkanComputePass::SetInput(std::string_view name, Count<class Texture2D> image)
-	{
-		m_DescritptorSetManager->SetInput(name, image);
-	}
+	
 
-	void VulkanComputePass::SetInput(std::string_view name, const std::vector<Count<class Texture2D>>& images)
-	{
-		m_DescritptorSetManager->SetInput(name, images);
-	}
-	void VulkanComputePass::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
-	{
-		m_DescritptorSetManager->SetInput(name, buffer);
-	}
-	void VulkanComputePass::SetInput(std::string_view name, Count<class TextureCube> buffer)
-	{
-		m_DescritptorSetManager->SetInput(name, buffer);
-	}
-
-	void VulkanComputePass::PushData(std::string_view name, const void* data)
-	{
-		auto vkShader = m_Config.Pipeline->GetShader().As<VulkanShader>();
-		std::string str = std::string(name);
-		PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
-		const auto& pushRange = vkShader->GetPushConstants().at(str);
-		vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
-			pushRange.stageFlags, pushRange.offset, pushRange.size, data);
-	}
+	
 	Count<Shader> VulkanComputePass::GetShader()const
 	{
 		return m_Config.Pipeline->GetShader();
@@ -135,5 +107,59 @@ namespace Proof
 		m_CommandBuffer =nullptr;
 		m_MaterialRenderPass = false;
 		m_RenderPassEnabled = false;
+	}
+	void VulkanComputePass::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
+	{
+		m_DescritptorSetManager->SetInput(name, buffer);
+	}
+	void VulkanComputePass::SetInput(std::string_view name, Count<class ImageView> imageView)
+	{
+		m_DescritptorSetManager->SetInput(name, imageView);
+	}
+	void VulkanComputePass::SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews)
+	{
+		m_DescritptorSetManager->SetInput(name, imageViews);
+	}
+	void VulkanComputePass::SetInput(std::string_view name, Count<class Image2D>image)
+	{
+		m_DescritptorSetManager->SetInput(name, image);
+	}
+	void VulkanComputePass::SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images)
+	{
+		m_DescritptorSetManager->SetInput(name, images);
+	}
+	void VulkanComputePass::SetInput(std::string_view name, Count<class UniformBuffer> buffer)
+	{
+		m_DescritptorSetManager->SetInput(name, buffer);
+	}
+	void VulkanComputePass::SetInput(std::string_view name, Count<class Texture2D> image)
+	{
+		m_DescritptorSetManager->SetInput(name, image);
+	}
+	void VulkanComputePass::SetInput(std::string_view name, const std::vector<Count<class Texture2D>>& images)
+	{
+		m_DescritptorSetManager->SetInput(name, images);
+	}
+	void VulkanComputePass::SetInput(std::string_view name, Count<class TextureCube> imageCube)
+	{
+		m_DescritptorSetManager->SetInput(name, imageCube);
+	}
+	void VulkanComputePass::SetInput(std::string_view name, Count<class UniformBufferSet> buffer)
+	{
+		m_DescritptorSetManager->SetInput(name, buffer);
+	}
+	void VulkanComputePass::SetInput(std::string_view name, Count<class StorageBufferSet> buffer)
+	{
+		m_DescritptorSetManager->SetInput(name, buffer);
+	}
+
+	void VulkanComputePass::PushData(std::string_view name, const void* data)
+	{
+		auto vkShader = m_Config.Pipeline->GetShader().As<VulkanShader>();
+		std::string str = std::string(name);
+		PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
+		const auto& pushRange = vkShader->GetPushConstants().at(str);
+		vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
+			pushRange.stageFlags, pushRange.offset, pushRange.size, data);
 	}
 }

@@ -14,7 +14,7 @@ precise invariant gl_Position;
 void main()
 {
     vec4 worldPos = aTransform * vec4(aPosition, 1.0);
-    gl_Position = u_Camera.ProjectionMatrix * u_Camera.ViewMatrix * worldPos;
+    gl_Position = u_Camera.Projection * u_Camera.View * worldPos;
 	
 }
 #Fragment Shader

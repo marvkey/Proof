@@ -162,13 +162,13 @@ namespace Proof
 					PointLightComponent& pointLight = registry.get<PointLightComponent>(entityID);
 					out << YAML::Key << "PointLightComponent";
 					out << YAML::BeginMap; // PointLightComponent
-					out << YAML::Key << "Color" << pointLight.Color;
-					out << YAML::Key << "Intensity" << pointLight.Intensity;
-
-					out << YAML::Key << "Constant" << pointLight.Constant;
-					out << YAML::Key << "Linear" << pointLight.Linear;
-					out << YAML::Key << "Quadratic" << pointLight.Quadratic;
-					out << YAML::Key << "Radius" << pointLight.Radius;
+					//out << YAML::Key << "Color" << pointLight.Color;
+					//out << YAML::Key << "Intensity" << pointLight.Intensity;
+					//
+					//out << YAML::Key << "Constant" << pointLight.Constant;
+					//out << YAML::Key << "Linear" << pointLight.Linear;
+					//out << YAML::Key << "Quadratic" << pointLight.Quadratic;
+					//out << YAML::Key << "Radius" << pointLight.Radius;
 
 					out << YAML::EndMap; // PointLightComponent
 				}
@@ -241,16 +241,16 @@ namespace Proof
 					SpotLightComponent& spotLight = registry.get<SpotLightComponent>(entityID);
 
 					out << YAML::Key << "SpotLightComponent";
-					out << YAML::BeginMap; // PointLightComponent
-					out << YAML::Key << "Color" << spotLight.Color;
-
-					out << YAML::Key << "Intensity" << spotLight.Intensity;
-					out << YAML::Key << "Constant" <<spotLight.Constant;
-					out << YAML::Key << "Linear" << spotLight.Linear;
-					out << YAML::Key << "Quadratic" << spotLight.Quadratic;
-					out << YAML::Key << "Radius" << spotLight.Radius;
-					out << YAML::Key << "OuterCutoff" << spotLight.OuterCutOff;
-					out << YAML::Key << "CutOff" << spotLight.CutOff;
+					//out << YAML::BeginMap; // PointLightComponent
+					//out << YAML::Key << "Color" << spotLight.Color;
+					//
+					//out << YAML::Key << "Intensity" << spotLight.Intensity;
+					//out << YAML::Key << "Constant" <<spotLight.Constant;
+					//out << YAML::Key << "Linear" << spotLight.Linear;
+					//out << YAML::Key << "Quadratic" << spotLight.Quadratic;
+					//out << YAML::Key << "Radius" << spotLight.Radius;
+					//out << YAML::Key << "OuterCutoff" << spotLight.OuterCutOff;
+					//out << YAML::Key << "CutOff" << spotLight.CutOff;
 
 					out << YAML::EndMap; // PointLightComponent
 				}
@@ -653,12 +653,12 @@ namespace Proof
 					if (pointLight)
 					{
 						auto& src = NewEntity.AddComponent<PointLightComponent>();
-						src.Color = pointLight["Color"].as<Vector>();
-						src.Intensity = pointLight["Intensity"].as<float>();
-						src.Constant = pointLight["Constant"].as<float>();
-						src.Linear = pointLight["Linear"].as<float>();
-						src.Quadratic = pointLight["Quadratic"].as<float>();
-						src.Radius = pointLight["Radius"].as<float>();
+						//src.Color = pointLight["Color"].as<Vector>();
+						//src.Intensity = pointLight["Intensity"].as<float>();
+						//src.Constant = pointLight["Constant"].as<float>();
+						//src.Linear = pointLight["Linear"].as<float>();
+						//src.Quadratic = pointLight["Quadratic"].as<float>();
+						//src.Radius = pointLight["Radius"].as<float>();
 
 					}
 				}
@@ -668,15 +668,15 @@ namespace Proof
 					if (spotLight)
 					{
 						auto& src = NewEntity.AddComponent<SpotLightComponent>();
-						src.Color = spotLight["Color"].as<Vector>();
-						src.Intensity = spotLight["Intensity"].as<float>();
-						src.Constant = spotLight["Constant"].as<float>();
-						src.Linear = spotLight["Linear"].as<float>();
-						src.Quadratic = spotLight["Quadratic"].as<float>();
-						src.Radius = spotLight["Radius"].as<float>();
-
-						src.CutOff = spotLight["CutOff"].as<float>();
-						src.OuterCutOff = spotLight["OuterCutOff"].as<float>();
+						//src.Color = spotLight["Color"].as<Vector>();
+						//src.Intensity = spotLight["Intensity"].as<float>();
+						//src.Constant = spotLight["Constant"].as<float>();
+						//src.Linear = spotLight["Linear"].as<float>();
+						//src.Quadratic = spotLight["Quadratic"].as<float>();
+						//src.Radius = spotLight["Radius"].as<float>();
+						//
+						//src.CutOff = spotLight["CutOff"].as<float>();
+						//src.OuterCutOff = spotLight["OuterCutOff"].as<float>();
 					}
 				}
 			}

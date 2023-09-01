@@ -104,9 +104,49 @@ namespace Proof
 		float Rotation = 0;
 	};
 	
-	struct SBDirectionalLightsScene
+	struct PointLight
+	{
+		glm::vec3 Location{ 0 };
+		float Intensity = 1; // min =0, max = 500f;
+		glm::vec3 Color{ 1 };
+		float MinRadius = 1; // min  = 0,maximum should be Radius
+		float Radius = 10;// min is 0, max max float
+		float Falloff = 1.0f; //min is 0, represent how far before the light becomes weaker
+		int bCastsShadows;
+		int bSoftShadows;
+		float ShadowStrength = 0.5f;// 0.0 to 1.0 how dark sahdow is
+		float ShadowSoftness = 0.5f;//how soft the shadow is from 0.0 to 1.0f 
+	};
+	struct SpotLight
+	{
+		glm::vec3 Location{ 0 };
+		float Intensity = 1.0f; // Range: 0.0 to positive infinity.
+		glm::vec3 Direction{ 0 }; //NORMALIZE It
+		// Attenuation factor for the spotlight cone's light intensity
+		// as the angle between the light direction and surface normal increases.
+		// A higher value results in a more rapid decrease in intensity
+		// as the angle deviates from the spotlight's central direction.
+		float AngleAttenuation = 5.0f; // Range: 0.0 to positive infinity.
+		glm::vec3 Color{ 1.0f };
+		float Range = 10.0f;// Range: 0.0 to positive infinity.
+		float Angle = 60.0f;// Range: 0.0 to 180.0 degrees. // Angle of the spot light cone (in degrees).
+		float Falloff = 1.0f;// Range: 0.0 to positive infinity.  factor that affects how the light intensity diminishes.
+		int bCastsShadows = false;
+		int bSoftShadows = false;
+		float ShadowStrength = 0.5f;// 0.0 to 1.0 how dark sahdow is
+		float ShadowSoftness = 0.5f;//how soft the shadow is from 0.0 to 1.0f 
+	};
+	struct SBDirectionalLightsSceneData
 	{
 		std::vector<DirectionalLight> DirectionalLights;
+	};
+	struct SBPointLightSceneData
+	{
+		std::vector<PointLight> PointLights;
+	};
+	struct SBSpotLightSceneData
+	{
+		std::vector<SpotLight> SpotLights;
 	};
 	struct MeshDrawInfo
 	{
@@ -187,8 +227,13 @@ namespace Proof
 	struct UBCameraData
 	{
 		glm::mat4 Projection;
-		glm::mat4 ProjectionView;
+		glm::mat4 InverseProjection;
 		glm::mat4 UnreversedProjectionMatrix;
+		glm::mat4 View;
+		glm::mat4 InverseView;
+		glm::mat4 ViewProjection;// projection * view
+		glm::mat4 InverseViewProjection; 
+
 		Vector Position;
 		float NearPlane;
 		float FarPlane;
@@ -232,6 +277,9 @@ namespace Proof
 		float GeometryDynamicMeshPass = 0.0f;
 		float GeometrySkyBoxPass = 0.0f;
 
+		//lighting
+		float LightCalculateGridFrustum = 0.0f;
+		float LightCulling = 0.0f;
 		//composite
 		float CompositePass =0.0f;
 
@@ -239,16 +287,18 @@ namespace Proof
 		float TotalDrawScene = 0.0f;
 	};
 
-	struct LightScene
+	struct UBLightScene
 	{
-		uint32_t DirectionalLightCount = 0;
 		uint32_t SkyLightCount = 0;
+		uint32_t DirectionalLightCount = 0;
+		uint32_t PointLightCount = 0;
+		uint32_t SpotLightCount= 0;
 	};
 
 	struct WorldRendererStatistics
 	{
 		WorldRendererTimers Timers;
-		LightScene LightSene;
+		UBLightScene LightSene;
 	};
 	class WorldRenderer : public RefCounted {
 	public:
@@ -265,8 +315,10 @@ namespace Proof
 		void BeginScene(const Camera& camera, const Vector& location, float nearPlane, float farPlane);
 		void EndScene();
 
-		void SubmitDirectionalLight(const SBDirectionalLightsScene& directionaLights);
 		void SubmitSkyLight(const UBSkyLight& skyLight, Count<class Environment> environment);
+		void SubmitDirectionalLight(const SBDirectionalLightsSceneData& directionaLights);
+		void SubmitPointLight(const SBPointLightSceneData& pointLights);
+		void SubmitSpotLight(const SBSpotLightSceneData& spotLights);
 		void SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform, bool CastShadowws = true);
 
 		// if the same size is passed it will not resize
@@ -285,14 +337,22 @@ namespace Proof
 		UBRenderData m_UBRenderData;
 		UBSceneData m_UBSceneData;
 		UBScreenData m_UBScreenData;
+		UBCameraData m_UBCameraData;
+		UBLightScene m_UBLightData;
+
 		//buffer sts
 		Count<UniformBufferSet> m_UBRenderDataBuffer;
 		Count<UniformBufferSet> m_UBSceneDataBuffer;
 		Count<UniformBufferSet> m_UBCameraBuffer;
 		Count<UniformBufferSet> m_UBSKyBoxBuffer;
-		Count< UniformBufferSet>m_UBCascadeProjectionBuffer;
+		Count<UniformBufferSet>m_UBCascadeProjectionBuffer;
 		Count<UniformBufferSet> m_UBScreenBuffer;
+		Count<UniformBufferSet> m_UBLightSceneBuffer;
+
+		//storagebuffer
 		Count<StorageBufferSet> m_SBDirectionalLightsBuffer;
+		Count<StorageBufferSet> m_SBPointLightsBuffer;
+		Count<StorageBufferSet> m_SBSpotLightsBuffer;
 		
 		// mesh data
 		std::vector< TransformBuffer>  m_SubmeshTransformBuffers; // vector because of frame in flight
@@ -325,7 +385,6 @@ namespace Proof
 		std::map<MeshKey, MeshDrawInfo> m_MeshShadowDrawList;
 		Count<class Environment> m_Environment;
 		bool m_InContext = false;
-		UBCameraData m_CameraData;
 		uint32_t m_ShadowMapResolution;
 		// geometry pass
 		Count<RenderPass> m_GeometryPass;
@@ -346,7 +405,22 @@ namespace Proof
 		WorldRendererStatistics m_Stats;
 
 		WorldRendererTimers& m_Timers;
-		LightScene& m_LightScene;
+		UBLightScene& m_LightScene;
+
+		// fowardplus
+		Count<StorageBufferSet> m_FrustrumsBuffer;
+		Count<class ComputePass> m_FrustrumPass;
+		Count<class ComputePass> m_LightCullingPass;
+		Count<Image2D> m_PointLightGrid;
+		Count<Image2D> m_SpotLightGrid;
+
+		Count<StorageBufferSet> m_PointLightIndexCounterBuffer;
+		Count<StorageBufferSet> m_SpotLightIndexCounterBuffer;
+
+		Count<StorageBufferSet> m_PointLightIndexListBuffer;
+		Count<StorageBufferSet> m_SpotLightIndexListBuffer;
+		glm::uvec3 m_LightCullingWorkGroups;
+		glm::uvec3 m_LightCullingNumThreads;
 	private:
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);
@@ -357,6 +431,7 @@ namespace Proof
 		void ShadowPass();
 		void PreDepthPass();
 		void GeometryPass();
+		void LightFrustrumAndCullingPass();
 		void CompositePass();
 
 

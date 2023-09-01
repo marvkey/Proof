@@ -681,8 +681,10 @@ namespace Proof
             PF_CORE_ASSERT(false, "cull mode not found ");
             //vkCmdSetCullMode(cmdBuffer, Utils::ProofFormatToVulkanFormat(mode));
         }
-     
-
+    }
+    Count<class FrameBuffer> VulkanRenderPass::GetTargetFrameBuffer()
+    {
+        return m_Config.TargetFrameBuffer;
     }
     void VulkanRenderPass::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
     {
@@ -704,22 +706,8 @@ namespace Proof
     {
         m_DescritptorSetManager->SetInput(name, images);
     }
-    void VulkanRenderPass::PushData(std::string_view name, const void* data)
-    {
-        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot push render pass if not render pass started");
-       // PF_CORE_ASSERT(m_MaterialRenderPass == false, "cannot push Data render pass if material render pass");
-
-        auto vkShader = GetPipeline()->GetShader().As<VulkanShader>();
-        std::string str = std::string(name);
-        PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
-        const auto& pushRange = vkShader->GetPushConstants().at(str);
-        vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
-            pushRange.stageFlags, pushRange.offset, pushRange.size, data);
-    }
-    Count<class FrameBuffer> VulkanRenderPass::GetTargetFrameBuffer()
-    {
-        return m_Config.TargetFrameBuffer;
-    }
+   
+   
     void VulkanRenderPass::SetInput(std::string_view name, Count<class UniformBuffer> buffer)
     {
         m_DescritptorSetManager->SetInput(name, buffer);
@@ -743,5 +731,17 @@ namespace Proof
     void VulkanRenderPass::SetInput(std::string_view name, Count<class StorageBufferSet> buffer)
     {
         m_DescritptorSetManager->SetInput(name, buffer);
+    }
+    void VulkanRenderPass::PushData(std::string_view name, const void* data)
+    {
+        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot push render pass if not render pass started");
+       // PF_CORE_ASSERT(m_MaterialRenderPass == false, "cannot push Data render pass if material render pass");
+
+        auto vkShader = GetPipeline()->GetShader().As<VulkanShader>();
+        std::string str = std::string(name);
+        PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
+        const auto& pushRange = vkShader->GetPushConstants().at(str);
+        vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
+            pushRange.stageFlags, pushRange.offset, pushRange.size, data);
     }
 }

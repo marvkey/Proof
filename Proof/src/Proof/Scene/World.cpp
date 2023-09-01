@@ -78,7 +78,7 @@ namespace Proof {
 			//directional lights
 			{
 				auto dirLights = m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
-				SBDirectionalLightsScene directionaLightScene;
+				SBDirectionalLightsSceneData directionaLightScene;
 				directionaLightScene.DirectionalLights.resize(dirLights.size());
 				int index = 0;
 				for (auto& entityID : dirLights)
@@ -126,6 +126,78 @@ namespace Proof {
 					{
 						worldRenderer->SubmitSkyLight(skyLightInfo, skyLightComponent.Environment);
 					}
+				}
+			}
+			//point light
+			{
+				SBPointLightSceneData pointLightScene;
+				auto pointLights = m_Registry.group<PointLightComponent>(entt::get<TransformComponent>);
+				pointLightScene.PointLights.resize(pointLights.size());
+
+				uint32_t pointLightIndex = 0;
+				for (auto e : pointLights)
+				{
+					Entity entity(e, this);
+					auto [transformComponent, pointLight] = pointLights.get<TransformComponent, PointLightComponent>(e);
+					auto transform = GetWorldTransformComponent(entity);
+					pointLightScene.PointLights[pointLightIndex] =
+					{
+							ProofToglmVec( transform.Location),
+							pointLight.Intensity,
+							pointLight.Color,
+							pointLight.MinRadius,
+							pointLight.Radius,
+							pointLight.Falloff,
+							pointLight.CastsShadows,
+							pointLight.SoftShadows,
+							pointLight.ShadowStrength,
+							pointLight.ShadowSoftness,
+					};
+					pointLightIndex++;
+					if (pointLightIndex > 1)
+						PF_ENGINE_INFO("{}",pointLightIndex);
+				}
+				if (!pointLights.empty())
+				{
+					worldRenderer->SubmitPointLight(pointLightScene);
+				}
+			}
+
+			//spot lights
+			{
+				SBSpotLightSceneData spotLightSceneData;
+				auto spotLights = m_Registry.group<SpotLightComponent>(entt::get<TransformComponent>);
+				spotLightSceneData.SpotLights.resize(spotLights.size());
+				uint32_t spotLightIndex = 0;
+				for (auto e : spotLights)
+				{
+					Entity entity(e, this);
+					auto [transformComponent, spotLight] = spotLights.get<TransformComponent, SpotLightComponent>(e);
+					auto transform = GetWorldTransformComponent(entity);
+					//auto transform = GetWorldSpaceTransform(entity);
+					glm::vec3 direction = spotLight.OffsetDirection + ProofToglmVec(GetWorldRotation(entity));
+					direction = glm::rotate(glm::quat(direction), glm::vec3(1.0f, 0.0f, 0.0f));
+					direction = glm::normalize(direction);
+					//glm::vec3 direction = glm::normalize(glm::rotate(transform.GetRotation(), glm::vec3(1.0f, 0.0f, 0.0f)));
+
+					spotLightSceneData.SpotLights[spotLightIndex++] = {
+						ProofToglmVec(transform.Location),
+						spotLight.Intensity,
+						direction,
+						spotLight.AngleAttenuation,
+						spotLight.Color,
+						spotLight.Range,
+						spotLight.Angle,
+						spotLight.Falloff,
+						spotLight.CastsShadows,
+						spotLight.SoftShadows,
+						spotLight.ShadowStrength,
+						spotLight.ShadowSoftness,
+					};
+				}
+				if (!spotLights.empty())
+				{
+					worldRenderer->SubmitSpotLight(spotLightSceneData);
 				}
 			}
 		}

@@ -1,0 +1,90 @@
+
+#ifndef LIGHT_FUNCTIONS
+#define LIGHT_FUNCTIONS
+
+layout(std140, set = 2, binding = 2) uniform SkyBoxData
+{
+    vec3 TintColor;
+    float Lod;
+    float Intensity;
+    float Roation;
+}u_SkyBoxInfo;
+
+struct DirectionalLight 
+{
+    vec3 Color;
+    float Intensity;
+    vec3 Direction;
+    bool CastShadows;
+    bool CastSoftShadow;
+    float ShadowStrength;
+    float ShadowSoftness;
+};
+layout(std140, set = 2, binding = 3) buffer DirectionalLightStorageBuffer {
+
+    DirectionalLight Lights[];
+} u_DirectionalLightData;
+
+struct PointLight
+{
+	vec3 Position;
+	float Intensity;
+	vec3 Colour;
+	float MinRadius;
+	float Radius;
+	float Falloff;
+	bool CastsShadows;
+	bool SoftShadows;
+	float ShadowStrength;
+	float ShadowSoftness;
+};
+layout(std140, set = 2, binding = 4) buffer PointLightBuffer
+{
+	PointLight Lights[];
+} s_PointLights;
+
+struct SpotLight
+{
+	vec3 Position;
+	float Intensity;
+	vec3 Direction;
+	float AngleAttenuation; // refers to how the intensity of the light decreases as you move away from the center of the spotlight's con
+	vec3 Colour;
+	float Range;
+	float Angle;
+	float Falloff;
+	bool CastsShadows;
+	bool SoftShadows;
+	float ShadowStrength;
+	float ShadowSoftness;
+};
+
+layout(std140, set = 2, binding = 5) buffer SpotLightBuffer
+{
+	SpotLight Lights[];
+} s_SpotLights;
+
+
+layout(std140, set = 2, binding = 6) uniform LightInformationBuffer
+{
+	uint SkyLightCount;
+	uint DirectionalLightCount;
+	uint PointLightCount;
+	uint SpotLightCount;
+} u_LightData;
+
+
+layout(set = 2, binding = 7) buffer PointLightIndexListBuffer
+{
+    uint s_PointLightIndexList[];
+};
+
+layout(set = 2, binding = 8) buffer SpotLightIndexListBuffer
+{
+    uint s_SpotLightIndexList[];
+};
+
+layout(set = 2, binding = 9,rg32ui) uniform uimage2D u_PointLightGrid;
+layout(set = 2, binding = 10,rg32ui) uniform uimage2D u_SpotLightGrid;
+
+#endif //LIGHT_FUNCTIONS

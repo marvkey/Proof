@@ -524,8 +524,9 @@ namespace Proof
 					shader->Reload();
 				}
 			});
-			ImGui::Text("Shadow Settings");
 
+			
+			ImGui::Text("Shadow Settings");
 
 			ImGui::Checkbox("DebugPass", &m_WorldRenderer->ShadowSetting.RenderDebugPass);
 			if (m_WorldRenderer->ShadowSetting.RenderDebugPass)

@@ -37,6 +37,24 @@
 #include <glm/gtx/quaternion.hpp>
 #include<glm/gtx/compatibility.hpp>
 #include <glm/gtc/matrix_inverse.hpp> 
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/compatibility.hpp>
+
+/**
+* set 3 (Common.glslh)
+	*0: CameraData
+	*1: ScreenData
+* Set2  (Pbr.glslh)
+	*0:SceneData
+	*1:RendererData
+	* (Lights.glslh)
+	*2:SkyBoxData
+	*3:DirectionalLightStorageBuffer 
+	* 4:PointLightBuffer
+	* 5:SpotLightBuffer
+	* 6:LightInformationBuffer
+*/
 namespace Proof
 {
 	struct MeshInstanceVertex {
@@ -78,32 +96,28 @@ namespace Proof
 			m_SubmeshTransformBuffers[i].Buffer = VertexBuffer::Create(sizeof(TransformVertexData) * TransformBufferCount);
 			m_SubmeshTransformBuffers[i].Data = new TransformVertexData[TransformBufferCount];
 		}
-		m_CommandBuffer = RenderCommandBuffer::Create("WorldRenderer");
-		m_Renderer2D = CreateSpecial< Renderer2D>();
-
-		{
-			uint32_t width, height = 100;
-			m_UBScreenData.FullResolution = { width, height };
-			m_UBScreenData.InverseFullResolution = { 1 / width,  1 / height };
-			m_UBScreenData.HalfResolution = glm::ivec2{ m_UBScreenData.FullResolution } / 2;
-			m_UBScreenData.InverseHalfResolution = glm::ivec2{ m_UBScreenData.InverseFullResolution } *2;
-		}
-
-		m_BRDFLUT = Renderer::GenerateBRDFLut();
+		
 
 		m_UBScreenBuffer = UniformBufferSet::Create(sizeof(UBScreenData));
 		m_UBRenderDataBuffer = UniformBufferSet::Create(sizeof(UBRenderData));
 		m_UBSceneDataBuffer = UniformBufferSet::Create(sizeof(UBSceneData));
 		m_UBCameraBuffer = UniformBufferSet::Create(sizeof(UBCameraData));
 		m_UBSKyBoxBuffer = UniformBufferSet::Create(sizeof(UBSkyLight));
-		m_SBDirectionalLights = StorageBufferSet::Create(sizeof(DirectionalLight));
 		m_UBCascadeProjectionBuffer = UniformBufferSet::Create(sizeof(glm::mat4) * 4);
+		m_UBLightSceneBuffer = UniformBufferSet::Create(sizeof(UBLightScene) * 4);
 
+		//storage images
+		m_SBDirectionalLightsBuffer = StorageBufferSet::Create(sizeof(DirectionalLight));
+		m_SBPointLightsBuffer = StorageBufferSet::Create(sizeof(PointLight)); // set to one light because we cant actaully set a buffer to size 0
+		m_SBSpotLightsBuffer = StorageBufferSet::Create(sizeof(SpotLight));// set to one light because we cant actaully set a buffer to size 0
+
+		SetViewportSize(100, 100);
+		m_CommandBuffer = RenderCommandBuffer::Create("WorldRenderer");
+		m_Renderer2D = CreateSpecial< Renderer2D>();
+		m_BRDFLUT = Renderer::GenerateBRDFLut();
 		m_Cube = MeshWorkShop::GenerateCube();
-
-
-		
 		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
+
 		switch (ShadowSetting.ShadowResolution)
 		{
 			
@@ -147,12 +161,14 @@ namespace Proof
 			FrameBufferConfig preDepthFramebufferSpec;
 			preDepthFramebufferSpec.DebugName = "PreDepth";
 			//Linear depth, reversed device depth
-			preDepthFramebufferSpec.Attachments = { ImageFormat::DEPTH32FSTENCIL8UI };
+			//preDepthFramebufferSpec.Attachments = { ImageFormat::DEPTH32FSTENCIL8UI };
+			preDepthFramebufferSpec.Attachments = { ImageFormat::DEPTH32F };
 			preDepthFramebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 			preDepthFramebufferSpec.DepthClearValue = 1.0f;
 			
 			GraphicsPipelineConfiguration pipelinelineConfig;
-			pipelinelineConfig.Attachments = { ImageFormat::DEPTH32FSTENCIL8UI };
+			//pipelinelineConfig.Attachments = { ImageFormat::DEPTH32FSTENCIL8UI };
+			pipelinelineConfig.Attachments = { ImageFormat::DEPTH32F };
 			pipelinelineConfig.DebugName = "PreDepth";
 			pipelinelineConfig.Shader = Renderer::GetShader("PreDepth_Static");
 			pipelinelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
@@ -167,6 +183,76 @@ namespace Proof
 			
 			m_PreDepthPass = RenderPass::Create(renderPassConfig);
 			m_PreDepthPass->SetInput("CameraData", m_UBCameraBuffer);
+
+		}
+		//foward plus
+		{
+
+			//https://www.3dgep.com/forward-plus/#Forward
+			// look at the bottom for the zip to all code
+			//https://drive.google.com/uc?export=download&id=1zCU3ahVYXOoZ3PPdsE6mYtJbHZgLmKOh
+
+			constexpr uint32_t TILE_SIZE = 16u;
+			glm::uvec2 size = m_UBScreenData.FullResolution;
+			m_LightCullingWorkGroups = glm::ceil(glm::vec3(size.x / (float)TILE_SIZE, size.y / (float)TILE_SIZE, 1));
+			m_LightCullingNumThreads = m_LightCullingWorkGroups * glm::uvec3{ TILE_SIZE , TILE_SIZE ,1 };
+
+			// plane {vec3 normal, float distnace} = sizeof(float) *4
+			//Frustrum{ Plane[4]] (sizeof(float) *4 ) * 4
+			const float frusturmSize = (sizeof(float) * 4) * 4;
+			m_FrustrumsBuffer = StorageBufferSet::Create(frusturmSize * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * m_LightCullingNumThreads.z);
+
+			ComputePipelineConfig pipeline;
+			pipeline.DebugName = "FrustrumGrid";
+			pipeline.Shader = Renderer::GetShader("FrustrumGrid");
+			m_FrustrumPass = ComputePass::Create({ "frustrumPass",ComputePipeline::Create(pipeline) });
+			m_FrustrumPass->SetInput("OutFrustums", m_FrustrumsBuffer);
+			m_FrustrumPass->SetInput("CameraData", m_UBCameraBuffer);
+			m_FrustrumPass->SetInput("ScreenData", m_UBScreenBuffer);
+
+			ImageConfiguration imageConfig;
+			imageConfig.DebugName = "PointLightGrid";
+			imageConfig.Format = ImageFormat::RG32UI;
+			imageConfig.Transfer = true;
+			imageConfig.Usage = ImageUsage::Storage;
+			
+			imageConfig.Width = m_LightCullingNumThreads.x;
+			imageConfig.Height = m_LightCullingNumThreads.y;
+			imageConfig.Layers = m_LightCullingNumThreads.z;
+
+			m_PointLightGrid = Image2D::Create(imageConfig);
+			imageConfig.DebugName = "SpotLightGrid";
+			m_SpotLightGrid = Image2D::Create(imageConfig);
+
+			m_PointLightIndexCounterBuffer = StorageBufferSet::Create(sizeof(uint32_t));
+			m_SpotLightIndexCounterBuffer = StorageBufferSet::Create(sizeof(uint32_t));
+
+			// 
+			m_PointLightIndexListBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
+			m_SpotLightIndexListBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
+
+			ComputePipelineConfig lightCullingpipeline;
+			lightCullingpipeline.DebugName = "LightCulling";
+			lightCullingpipeline.Shader = Renderer::GetShader("LightCulling");
+			m_LightCullingPass = ComputePass::Create({ "LightCulling",ComputePipeline::Create(lightCullingpipeline) });
+
+			m_LightCullingPass->SetInput("Frustrums", m_FrustrumsBuffer);
+			m_LightCullingPass->SetInput("PointLightIndexCounterBuffer", m_PointLightIndexCounterBuffer);
+			m_LightCullingPass->SetInput("SpotLightIndexCounterBuffer", m_SpotLightIndexCounterBuffer);
+			m_LightCullingPass->SetInput("PointLightIndexListBuffer", m_PointLightIndexListBuffer);
+			m_LightCullingPass->SetInput("SpotLightIndexListBuffer", m_SpotLightIndexListBuffer);
+
+			m_LightCullingPass->SetInput("u_ImagePointLightGrid", m_PointLightGrid);
+			m_LightCullingPass->SetInput("u_ImageSpotLightGrid", m_SpotLightGrid);
+			m_LightCullingPass->SetInput("u_PointLightGrid", m_PointLightGrid);
+			m_LightCullingPass->SetInput("u_SpotLightGrid", m_SpotLightGrid);
+
+			m_LightCullingPass->SetInput("CameraData", m_UBCameraBuffer);
+			m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
+			m_LightCullingPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
+			m_LightCullingPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
+			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
+			m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
 
 		}
 
@@ -186,7 +272,7 @@ namespace Proof
 			{
 				FrameBufferConfig framebufferConfig;
 				framebufferConfig.DebugName = "Shadow Debug Fraembuffer";
-				framebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH24STENCIL8UI };
+				framebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 				framebufferConfig.Width = m_ShadowMapResolution;
 				framebufferConfig.Height = m_ShadowMapResolution;
 				framebufferConfig.DepthClearValue = 1.0f;
@@ -194,7 +280,7 @@ namespace Proof
 				auto shadowDebugframeBuffer = FrameBuffer::Create(framebufferConfig);
 
 				GraphicsPipelineConfiguration shadowMapPipelineConfig;
-				shadowMapPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH24STENCIL8UI };
+				shadowMapPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 				shadowMapPipelineConfig.DebugName = "DebugShadowMapPipeline";
 				shadowMapPipelineConfig.Shader = Renderer::GetShader("DebugShadowMap");
 
@@ -253,14 +339,15 @@ namespace Proof
 			geoFramebufferConfig.DebugName = "Geometry";
 			geoFramebufferConfig.ClearDepthOnLoad = false;
 			geoFramebufferConfig.ClearColorOnLoad = false;
-			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			//geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			geoFramebufferConfig.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 			geoFramebufferConfig.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetConfig().TargetFrameBuffer->GetDepthImageLayout();
 
 			auto frameBuffer = FrameBuffer::Create(geoFramebufferConfig);
 
 			GraphicsPipelineConfiguration pipelinelineConfig;
-			pipelinelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			pipelinelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			pipelinelineConfig.DebugName = "Geometry_Static";
 			pipelinelineConfig.Shader = Renderer::GetShader("ProofPBR_Static");
 			pipelinelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
@@ -277,7 +364,9 @@ namespace Proof
 			m_GeometryPass = RenderPass::Create(geopassConfig);
 
 
-			m_GeometryPass->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLights);
+			m_GeometryPass->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
+			m_GeometryPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
+			m_GeometryPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
 			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
 			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
 			m_GeometryPass->SetInput("u_BRDFLUT", m_BRDFLUT);
@@ -287,7 +376,13 @@ namespace Proof
 			m_GeometryPass->SetInput("SceneData", m_UBSceneDataBuffer);
 			m_GeometryPass->SetInput("ShadowMapProjections", m_UBCascadeProjectionBuffer);
 			m_GeometryPass->SetInput("CameraData", m_UBCameraBuffer);
+			m_GeometryPass->SetInput("ScreenData", m_UBScreenBuffer);
+			m_GeometryPass->SetInput("u_PointLightGrid", m_PointLightGrid);
+			m_GeometryPass->SetInput("u_SpotLightGrid", m_SpotLightGrid);
+			m_GeometryPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
 
+			m_GeometryPass->SetInput("PointLightIndexListBuffer", m_PointLightIndexListBuffer);
+			m_GeometryPass->SetInput("SpotLightIndexListBuffer", m_SpotLightIndexListBuffer);
 		}
 
 		// skybox
@@ -310,6 +405,7 @@ namespace Proof
 			m_SkyBoxPass->SetInput("CameraData", m_UBCameraBuffer);
 			m_SkyBoxPass->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
 		}
+		
 
 		//composite pass
 		{
@@ -321,14 +417,14 @@ namespace Proof
 			FrameBufferConfig compFramebufferSpec;
 			compFramebufferSpec.DebugName = "WorldComposite";
 			compFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-			compFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			compFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			//compFramebufferSpec.Transfer = true;
 			Count<FrameBuffer> framebuffer = FrameBuffer::Create(compFramebufferSpec);
 		
 			GraphicsPipelineConfiguration pipelineSpecification;
 			pipelineSpecification.DebugName = "WorldComposite";
 			pipelineSpecification.VertexArray = quadVertexArray;
-			pipelineSpecification.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			pipelineSpecification.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			pipelineSpecification.CullMode = CullMode::None;
 			pipelineSpecification.WriteDepth = false;
 			pipelineSpecification.DepthTest = false;
@@ -376,7 +472,7 @@ namespace Proof
 
 			FrameBufferConfig extCompFramebufferSpec;
 			extCompFramebufferSpec.DebugName = "External-Composite";
-			extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			extCompFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
 			extCompFramebufferSpec.ClearColorOnLoad = false;
 			extCompFramebufferSpec.ClearDepthOnLoad = false;
@@ -390,6 +486,7 @@ namespace Proof
 		}
 
 	}
+
 	void WorldRenderer::SetContext(Count<class World> world)
 	{
 		PF_CORE_ASSERT(!m_InContext, "Can't change world while rendering");
@@ -411,11 +508,30 @@ namespace Proof
 
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
-
 		if (m_NeedResize)
 		{
 			m_NeedResize = false;
 			const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
+
+			
+			{
+				//foward plus
+				constexpr uint32_t TILE_SIZE = 16u;
+				m_LightCullingWorkGroups = glm::ceil(glm::vec3(viewportSize.x / (float)TILE_SIZE, viewportSize.y / (float)TILE_SIZE, 1));
+				m_LightCullingNumThreads = m_LightCullingWorkGroups * glm::uvec3{ TILE_SIZE , TILE_SIZE ,1 };
+
+				// plane {vec3 normal, float distnace} = sizeof(float) *4
+				//Frustrum{ Plane[4]] (sizeof(float) *4 ) * 4
+				const uint32_t frusturmSize = (sizeof(float) * 4) * 4;
+				for (uint32_t index = 0; index < Renderer::GetConfig().FramesFlight; index++)
+				{
+					m_FrustrumsBuffer->Resize(index,frusturmSize * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * m_LightCullingNumThreads.z);
+					m_PointLightIndexListBuffer->Resize(index,m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
+					m_SpotLightIndexListBuffer->Resize(index,m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
+				}
+				m_PointLightGrid->Resize(m_LightCullingNumThreads.x, m_LightCullingNumThreads.y);
+				m_SpotLightGrid->Resize(m_LightCullingNumThreads.x, m_LightCullingNumThreads.y);
+			}
 
 			// predepth
 			m_PreDepthPass->GetTargetFrameBuffer()->Resize(viewportSize);
@@ -461,8 +577,17 @@ namespace Proof
 
 		// camera buffer
 		{
-			m_CameraData = { camera.GetProjectionMatrix(), camera.GetViewMatrix(), camera.GetUnReversedProjectionMatrix(),location, nearPlane, farPlane };
-			m_UBCameraBuffer->SetData(frameIndex, Buffer(&m_CameraData, sizeof(m_CameraData)));
+			m_UBCameraData.Projection = camera.GetProjectionMatrix();
+			m_UBCameraData.InverseProjection = glm::inverse(m_UBCameraData.Projection);
+			m_UBCameraData.UnreversedProjectionMatrix = camera.GetUnReversedProjectionMatrix();
+			m_UBCameraData.View = camera.GetViewMatrix();
+			m_UBCameraData.InverseView = glm::inverse(m_UBCameraData.View);
+			m_UBCameraData.ViewProjection = m_UBCameraData.Projection * m_UBCameraData.View;
+			m_UBCameraData.InverseViewProjection = m_UBCameraData.InverseProjection * m_UBCameraData.InverseView;
+			m_UBCameraData.Position = location;
+			m_UBCameraData.NearPlane = nearPlane;
+			m_UBCameraData.FarPlane = farPlane;
+			m_UBCameraBuffer->SetData(frameIndex, Buffer(&m_UBCameraData, sizeof(UBCameraData)));
 		}
 	}
 	
@@ -495,6 +620,7 @@ namespace Proof
 			SetPasses();
 			ShadowPass();
 			PreDepthPass();
+			LightFrustrumAndCullingPass();
 			GeometryPass();
 			CompositePass();
 		}
@@ -517,11 +643,17 @@ namespace Proof
 	{
 		if (m_UBScreenData.FullResolution == glm::vec2{ width,height })
 			return;
-		///return; //for now
+
+		if (width == 0 or height == 0)
+		{
+			width = 1;
+			height = 1;
+		}
 		m_UBScreenData.FullResolution = { width, height };
 		m_UBScreenData.InverseFullResolution = {1/ width,  1/height };
 		m_UBScreenData.HalfResolution = glm::ivec2{ m_UBScreenData.FullResolution } / 2;
 		m_UBScreenData.InverseHalfResolution = glm::ivec2{ m_UBScreenData.InverseFullResolution } * 2;
+		m_UBScreenData.AspectRatio = m_UBScreenData.FullResolution.x / m_UBScreenData.FullResolution.y;
 
 		Buffer buffer(&m_UBScreenData, sizeof(m_UBScreenData));
 		for (int i =0; i<Renderer::GetConfig().FramesFlight; i++)
@@ -550,7 +682,7 @@ namespace Proof
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		//scene data
 		{
-			m_UBSceneData.CameraPosition =ProofToglmVec( m_CameraData.Position);
+			m_UBSceneData.CameraPosition =ProofToglmVec( m_UBCameraData.Position);
 			m_UBSceneDataBuffer->SetData(frameIndex, Buffer(&m_UBSceneData, sizeof(m_UBSceneData)));
 		}
 		// set up shadow pass
@@ -567,12 +699,14 @@ namespace Proof
 		{
 			//skylight
 			{
+				m_UBLightData = m_LightScene;
 				if (m_LightScene.SkyLightCount == 0 || m_Environment == nullptr)
 				{
 					UBSkyLight skyLight;
 					Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
 					m_UBSKyBoxBuffer->SetData(frameIndex, buffer);
 					m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
+					m_UBLightData.SkyLightCount = 1;
 				}
 			}
 
@@ -583,10 +717,22 @@ namespace Proof
 					DirectionalLight directlLight = DirectionalLight();
 
 					Buffer buffer{ &directlLight,sizeof(DirectionalLight) };
-					m_SBDirectionalLights->Resize(frameIndex, buffer);
+					m_SBDirectionalLightsBuffer->Resize(frameIndex, buffer);
 					m_MainDirectionllLight = directlLight;
+					m_UBLightData.DirectionalLightCount = 1;
 				}
 			}
+			//point light
+			{
+				if (m_LightScene.PointLightCount == 0)
+					m_SBPointLightsBuffer->Resize(frameIndex, sizeof(PointLight));
+			}
+			//spot light
+			{
+				if (m_LightScene.SpotLightCount == 0)
+					m_SBSpotLightsBuffer->Resize(frameIndex, sizeof(SpotLight));
+			}
+			m_UBLightSceneBuffer->SetData(frameIndex, Buffer(&m_UBLightData, sizeof(m_UBLightData)));
 		}
 		// set up mesh passes
 		{
@@ -613,16 +759,16 @@ namespace Proof
 	{
 		float scaleToOrigin = ShadowSetting.ScaleShadowCascadesToOrigin;
 
-		glm::mat4 viewMatrix = m_CameraData.ProjectionView;
+		glm::mat4 viewMatrix = m_UBCameraData.View;
 		constexpr glm::vec4 origin = glm::vec4(glm::vec3(0.0f), 1.0f);
 		viewMatrix[3] = glm::lerp(viewMatrix[3], origin, scaleToOrigin);
 
-		auto viewProjection = m_CameraData.UnreversedProjectionMatrix * viewMatrix;
+		auto viewProjection = m_UBCameraData.UnreversedProjectionMatrix * viewMatrix;
 
 		const int SHADOW_MAP_CASCADE_COUNT = 4;
 
-		float nearClip = m_CameraData.NearPlane;
-		float farClip = m_CameraData.FarPlane;
+		float nearClip = m_UBCameraData.NearPlane;
+		float farClip = m_UBCameraData.FarPlane;
 		float clipRange = farClip - nearClip;
 
 		float minZ = nearClip;
@@ -715,17 +861,17 @@ namespace Proof
 		//https://github.com/SaschaWillems/Vulkan/blob/master/examples/shadowmappingcascade/shadowmappingcascade.cpp
 		float scaleToOrigin = ShadowSetting.ScaleShadowCascadesToOrigin;
 
-		glm::mat4 viewMatrix = m_CameraData.ProjectionView;
+		glm::mat4 viewMatrix = m_UBCameraData.View;
 		constexpr glm::vec4 origin = glm::vec4(glm::vec3(0.0f), 1.0f);
 		viewMatrix[3] = glm::lerp(viewMatrix[3], origin, scaleToOrigin);
 
-		auto viewProjection = m_CameraData.UnreversedProjectionMatrix * viewMatrix;
+		auto viewProjection = m_UBCameraData.UnreversedProjectionMatrix * viewMatrix;
 
 		const int SHADOW_MAP_CASCADE_COUNT = 4;
 		float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
 
-		float nearClip = m_CameraData.NearPlane;
-		float farClip = m_CameraData.FarPlane;
+		float nearClip = m_UBCameraData.NearPlane;
+		float farClip = m_UBCameraData.FarPlane;
 		float clipRange = farClip - nearClip;
 
 		float minZ = nearClip;
@@ -929,6 +1075,72 @@ namespace Proof
 		m_Stats.Timers.PreDepthPass = preDepthTimer.ElapsedMillis();
 
 	}
+	void WorldRenderer::LightFrustrumAndCullingPass()
+	{
+		if (m_LightScene.SpotLightCount == 0 && m_LightScene.PointLightCount == 0)
+			return;
+
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+
+		uint32_t screenWidth = m_UBScreenData.FullResolution.x;
+		uint32_t screenHeight = m_UBScreenData.FullResolution.y;
+		PF_PROFILE_FUNC();
+		{
+			PF_PROFILE_FUNC("CalcalateFrustrumGrid");
+			
+			Timer timer;
+
+			glm::uvec3 numThreads = glm::ceil(glm::vec3(screenWidth / (float)16, screenHeight / (float)16, 1));
+			glm::uvec3 numThreadGroups = glm::ceil(glm::vec3(numThreads.x / (float)16, numThreads.y / (float)16, 1));
+
+			m_FrustrumsBuffer->Resize(frameIndex,64 * (numThreads.x * numThreads.y * numThreads.z));
+			Renderer::BeginComputePass(m_CommandBuffer, m_FrustrumPass);
+			m_FrustrumPass->PushData("u_PushData", &numThreads);
+			m_FrustrumPass->Dispatch(numThreadGroups);
+			Renderer::EndComputePass(m_FrustrumPass);
+
+			m_Timers.LightCalculateGridFrustum = timer.ElapsedMillis();
+		}
+
+		{
+			
+			PF_PROFILE_FUNC("LightCulling");
+			Timer timer;
+
+			glm::uvec3 numThreadGroups = glm::ceil(glm::vec3(screenWidth / (float)16, screenHeight / (float)16, 1));
+			glm::uvec3 numThreads = numThreadGroups * glm::uvec3(16, 16, 1);
+
+			m_PointLightIndexListBuffer->Resize(frameIndex, numThreadGroups.x * numThreadGroups.y * sizeof(uint32_t) * 1024);
+			m_SpotLightIndexListBuffer->Resize(frameIndex, numThreadGroups.x * numThreadGroups.y * sizeof(uint32_t) * 1024);
+
+			m_PointLightGrid->Resize(numThreadGroups.x, numThreadGroups.y);
+			m_SpotLightGrid->Resize(numThreadGroups.x, numThreadGroups.y);
+
+			m_LightCullingPass->SetInput("u_DpethTexture", m_PreDepthPass->GetTargetFrameBuffer()->GetDepthImage(imageIndex).As<Image2D>());
+			Renderer::BeginComputePass(m_CommandBuffer, m_LightCullingPass);
+			m_LightCullingPass->PushData("u_PushData", &numThreads);
+			//m_LightCullingPass->PushData("u_PushData", &m_LightCullingNumThreads);
+			m_LightCullingPass->Dispatch(numThreadGroups);
+			VkMemoryBarrier barrier = {};
+			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+			barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			vkCmdPipelineBarrier(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameIndex),
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				0,
+				1, &barrier,
+				0, nullptr,
+				0, nullptr);
+			Renderer::EndComputePass(m_LightCullingPass);
+
+			m_Timers.LightCulling = timer.ElapsedMillis();
+		}
+
+		
+	}
 	void WorldRenderer::GeometryPass()
 	{
 		PF_PROFILE_FUNC();
@@ -976,6 +1188,7 @@ namespace Proof
 
 		m_Timers.GeometryPass = geometryPassTimer.ElapsedMillis();
 	}
+	
 	void WorldRenderer::CompositePass()
 	{
 		PF_PROFILE_FUNC();
@@ -1025,7 +1238,30 @@ namespace Proof
 			dc.InstanceCount++;
 		}
 	}
-	void WorldRenderer::SubmitDirectionalLight(const SBDirectionalLightsScene& directionaLights)
+	void WorldRenderer::SubmitSkyLight(const UBSkyLight& skyLight, Count<class Environment> environment)
+	{
+		PF_PROFILE_FUNC();
+
+		if (environment == nullptr)
+		{
+			PF_ENGINE_WARN("{} Submitting SKy light with null environment", m_ActiveWorld->GetName());
+			return;
+		}
+		if (m_LightScene.SkyLightCount == 1)
+			PF_ENGINE_WARN("{} Submiting mulitple sky light only the last one will be used, submit 1 to save performance", m_ActiveWorld->GetName());
+
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+
+
+		Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
+		m_UBSKyBoxBuffer->SetData(frameIndex, buffer);
+
+		m_Environment = environment;
+		m_LightScene.SkyLightCount = 1;
+	}
+
+	void WorldRenderer::SubmitDirectionalLight(const SBDirectionalLightsSceneData& directionaLights)
 	{
 		PF_PROFILE_FUNC();
 
@@ -1040,31 +1276,44 @@ namespace Proof
 		m_MainDirectionllLight = directionaLights.DirectionalLights[0];
 
 		Buffer buffer{(void*) directionaLights.DirectionalLights.data(), directionaLights.DirectionalLights.size() * sizeof(DirectionalLight)};
-		m_SBDirectionalLights->Resize(frameIndex, buffer);
+		m_SBDirectionalLightsBuffer->Resize(frameIndex, buffer);
 
 		m_LightScene.DirectionalLightCount = directionaLights.DirectionalLights.size();
 	}
-	void WorldRenderer::SubmitSkyLight(const UBSkyLight& skyLight, Count<class Environment> environment)
+
+	void WorldRenderer::SubmitPointLight(const SBPointLightSceneData& pointLights)
 	{
 		PF_PROFILE_FUNC();
 
-		if (environment == nullptr)
+		if (pointLights.PointLights.empty())
 		{
-			PF_ENGINE_WARN("{} Submitting SKy light with null environment", m_ActiveWorld->GetName());
+			PF_ENGINE_WARN("{} Dont submit empty Point Lights", m_ActiveWorld->GetName());
 			return;
 		}
-		if(m_LightScene.SkyLightCount ==1)
-			PF_ENGINE_WARN("{} Submiting mulitple sky light only the last one will be used, submit 1 to save performance", m_ActiveWorld->GetName());
-
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
 
-		
-		Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
-		m_UBSKyBoxBuffer->SetData(frameIndex, buffer);
+		Buffer buffer{ (void*)pointLights.PointLights.data(), pointLights.PointLights.size() * sizeof(PointLight) };
+		m_SBPointLightsBuffer->Resize(frameIndex, buffer);
 
-		m_Environment = environment;
-		m_LightScene.SkyLightCount = 1;
+		m_LightScene.PointLightCount = pointLights.PointLights.size();
+	}
+	void WorldRenderer::SubmitSpotLight(const SBSpotLightSceneData& spotLights)
+	{
+		PF_PROFILE_FUNC();
+
+		if (spotLights.SpotLights.empty())
+		{
+			PF_ENGINE_WARN("{} Dont submit empty Spot Lights", m_ActiveWorld->GetName());
+			return;
+		}
+		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+
+		Buffer buffer{ (void*)spotLights.SpotLights.data(), spotLights.SpotLights.size() * sizeof(SpotLight) };
+		m_SBSpotLightsBuffer->Resize(frameIndex, buffer);
+
+		m_LightScene.SpotLightCount = spotLights.SpotLights.size();
 	}
 	void WorldRenderer::RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
 	{

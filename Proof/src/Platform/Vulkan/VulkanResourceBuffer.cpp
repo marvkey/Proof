@@ -193,6 +193,14 @@ namespace Proof{
 	}	
 	void VulkanStorageBuffer::Resize(uint64_t size)
 	{
+		if (m_Size == size)
+		{
+			VulkanAllocator allocator("VulkanStorageBufferSetData");
+			uint8_t* pData = allocator.MapMemory<uint8_t>(m_StorageBuffer.Allocation);
+			memset(pData, 0, static_cast<size_t>(size));
+			allocator.UnmapMemory(m_StorageBuffer.Allocation);
+			return;
+		}
 		Release();
 		m_Size = size;
 		Build();

@@ -62,10 +62,10 @@ void main() {
     Output.Normal = normalMatrix * aNormal;
     Output.CameraPosition = u_Camera.Position;
 
-    Output.ViewPosition = vec3(u_Camera.ViewMatrix * vec4(Output.WorldPosition, 1.0));
-    Output.CameraView = mat3(u_Camera.ViewMatrix);
+    Output.ViewPosition = vec3(u_Camera.View * vec4(Output.WorldPosition, 1.0));
+    Output.CameraView = mat3(u_Camera.View);
 
-    gl_Position = u_Camera.ProjectionMatrix * u_Camera.ViewMatrix * vec4(Output.WorldPosition, 1.0);
+    gl_Position =  u_Camera.Projection * u_Camera.View * vec4(Output.WorldPosition, 1.0);
 }
 
 #Fragment Shader
@@ -292,9 +292,12 @@ void main()
 	}
 
 	shadowScale = 1.0 - clamp(currentLight.ShadowStrength - shadowScale, 0.0f, 1.0f);
-    vec3 finalColor =  iblEfeect + (directLighting * shadowScale );
-  
-    out_FragColor = vec4(finalColor ,1.0);
+    vec3 finalColor = directLighting * shadowScale ;
+    finalColor += CalculatePointLights(F0, Input.WorldPosition);
+    finalColor += CalculateSpotLights(F0, Input.WorldPosition); //* sahdow
+
+
+    out_FragColor = vec4(finalColor + iblEfeect ,1.0);
     if(u_RendererData.ShowCascades)
     {
         switch(cascadeIndex) {

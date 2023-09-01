@@ -12,10 +12,22 @@ namespace Proof
 		{
 			switch (format)
 			{
-				case ImageFormat::R16UI:
-				case ImageFormat::R32UI:
 				case ImageFormat::R8UI:
-				case ImageFormat::DEPTH32FSTENCIL8UI:
+				case ImageFormat::RG8UI:
+				case ImageFormat::RGB8UI:
+				case ImageFormat::RGBA8UI:
+				case ImageFormat::R16UI:
+				case ImageFormat::RG16UI:
+				case ImageFormat::RGB16UI:
+				case ImageFormat::RGBA16UI:
+				case ImageFormat::R32UI:
+				case ImageFormat::RG32UI:
+				case ImageFormat::RGB32UI:
+				case ImageFormat::RGBA32UI:
+				case ImageFormat::STENCIL8UI:
+				case ImageFormat::DEPTH16STENCIL8UI:
+				case ImageFormat::DEPTH24STENCIL8UI:
+				case ImageFormat::X8DEPTH24PACK32:
 					return true;
 				default:
 					return false;

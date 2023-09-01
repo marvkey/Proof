@@ -285,7 +285,7 @@ namespace Proof {
 		if (m_Specification.Transfer || m_Specification.Usage == ImageUsage::Texture)
 			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 		if (m_Specification.Usage == ImageUsage::Storage)
-			usage |= VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+			usage |= VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT ;
 
 		VkImageAspectFlags aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		if (Utils::ContainStencilFormat(m_Specification.Format))
@@ -370,7 +370,7 @@ namespace Proof {
 				VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 				VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 				VkImageSubresourceRange subResourceRange = {};
-				subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				subResourceRange.aspectMask = aspectMask;
 				subResourceRange.baseMipLevel = 0;
 				subResourceRange.levelCount = m_Specification.Mips;
 				subResourceRange.layerCount = m_Specification.Layers;
@@ -400,7 +400,7 @@ namespace Proof {
 				VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
 				VkImageSubresourceRange subResourceRange = {};
-				subResourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				subResourceRange.aspectMask = aspectMask;
 				subResourceRange.baseMipLevel = 0;
 				subResourceRange.levelCount = m_Specification.Mips;
 				subResourceRange.layerCount = m_Specification.Layers;
