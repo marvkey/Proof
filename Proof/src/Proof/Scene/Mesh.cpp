@@ -15,6 +15,7 @@
 #include "Proof/Math/Vector.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Buffer.h"
+#include "Proof/Asset/AssetManager.h"
 namespace Proof{
     static glm::mat4 AIMatrixToGLM(const aiMatrix4x4& aiMatrix) {
         glm::mat4 glmMatrix;

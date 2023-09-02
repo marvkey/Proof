@@ -72,7 +72,22 @@ void o_AppendSpotLight(uint lightIndex)
         o_SpotLightList[index] = lightIndex;
     }
 }
+vec4 ScreenToViewVulkan(vec4 screen)
+{
+    // Convert to clip space
+    vec4 clip = vec4(screen.xy * 2.0 - 1.0, screen.z, screen.w);
 
+    // In Vulkan, the depth range is typically [0.0, 1.0].
+    // So, we need to remap it to [-1.0, 1.0] in view space.
+    clip.z = clip.z * 2.0 - 1.0;
+
+    // View space position.
+    vec4 view = u_Camera.InverseProjection * clip;
+    // Perspective projection.
+    view = view / view.w;
+
+    return view;
+}
 // Add the light to the visible light list for transparent geometry.
 //void t_AppendLight(uint lightIndex)
 //{
@@ -91,18 +106,15 @@ void o_AppendSpotLight(uint lightIndex)
 //        t_LightList[index] = lightIndex;
 //    }
 //}
-float ScreenSpaceToViewSpaceDepth(const float screenDepth)
-{
-	return -u_Camera.Projection[3][2] / (screenDepth+ u_Camera.Projection[2][2] );
-}
+
 layout (local_size_x = TILE_SIZE,local_size_y = TILE_SIZE) in;
 void main()
 {
 	
     uvec2 texCoord = gl_GlobalInvocationID.xy;
-    //float floatDepth = texelFetch(u_DpethTexture, ivec2(texCoord), 0).z;
-    vec2 tc = vec2(texCoord) / u_ScreenData.FullResolution;
-    float floatDepth = ScreenSpaceToViewSpaceDepth(textureLod(u_DpethTexture, tc,0).r);
+    float floatDepth = textureLod(u_DpethTexture, texCoord,0).r;
+    //vec2 tc = vec2(texCoord) / u_ScreenData.FullResolution;
+    //float floatDepth = ScreenSpaceToViewSpaceDepth(textureLod(u_DpethTexture, tc,0).r);
     uint unsignedDepth = floatBitsToUint(-floatDepth );
 
     if (gl_LocalInvocationIndex == 0)
@@ -112,7 +124,7 @@ void main()
         o_PointLightCount = 0;
         o_SpotLightCount = 0;
        // t_LightCount = 0;
-        GroupFrustum = u_Frustrums[gl_WorkGroupID.x + (gl_WorkGroupID.y * u_PushData.NumThreads.x)];
+        GroupFrustum = u_Frustrums[gl_WorkGroupID.x + (gl_WorkGroupID.y * gl_NumWorkGroups.x)];
     }
 
     barrier(); 
@@ -140,13 +152,13 @@ void main()
         Which implies that (0,0,zmin)
          is a point on the minimum depth clipping plane.
     */
-    float fMinDepth = -100000;
-    float fMaxDepth = 1000000;
+    float fMinDepth = uintBitsToFloat(uMinDepth);
+    float fMaxDepth = uintBitsToFloat(uMaxDepth);
 
     // Convert depth values to view space.
-    float minDepthVS = ScreenToView(vec4(0.0, 0.0, fMinDepth, 1.0)).z;
-    float maxDepthVS = ScreenToView(vec4(0.0, 0.0, fMaxDepth, 1.0)).z;
-    float nearClipVS = ScreenToView(vec4(0.0, 0.0, 0.0, 1.0)).z;
+    float minDepthVS = ScreenToViewVulkan(vec4(0.0, 0.0, fMinDepth,1 )).z;
+    float maxDepthVS = ScreenToViewVulkan(vec4(0.0, 0.0, fMaxDepth,1 )).z;
+    float nearClipVS = ScreenToViewVulkan(vec4(0.0, 0.0, 0.0, 1.0)).z;
 
     // Clipping plane for minimum depth value 
     // (used for testing lights within the bounds of opaque geometry).
@@ -156,8 +168,8 @@ void main()
      for ( uint i = gl_LocalInvocationIndex; i < u_LightData.PointLightCount; i += TILE_SIZE * TILE_SIZE )
      {
         PointLight pointLight = s_PointLights.Lights[i];
-        vec4 viewPos = vec4(pointLight.Position,1) * u_Camera.View;
-        Sphere sphere = { viewPos.xyz, pointLight.Radius *  (1.0f) };
+        vec3 viewPos =( vec4(pointLight.Position,1) * u_Camera.View).xyz;
+        Sphere sphere = { viewPos, pointLight.Radius };
 
         if ( SphereInsideFrustum( sphere, GroupFrustum, nearClipVS, maxDepthVS ) )
         {
@@ -197,15 +209,15 @@ void main()
      }
      barrier();
 
-    if (gl_LocalInvocationIndex == 0)
-    {
+  //  if (gl_LocalInvocationIndex == 0)
+  //  {
         // Update light grid for opaque geometry.
         o_PointLightIndexStartOffset = atomicAdd(o_PointLightIndexCounter[0], o_PointLightCount);
         imageStore(u_ImagePointLightGrid, ivec2(gl_WorkGroupID.xy), uvec4(o_PointLightIndexStartOffset, o_PointLightCount,0,0));
 
         o_SpotLightIndexStartOffset = atomicAdd(o_SpotLightIndexCounter[0], o_SpotLightCount);
         imageStore(u_ImageSpotLightGrid, ivec2(gl_WorkGroupID.xy), uvec4(o_SpotLightIndexStartOffset, o_SpotLightCount,0,0));
-    }
+  //  }
 
     barrier(); 
 

@@ -2,6 +2,8 @@
 #include "Input.h"
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Input/Mouse.h"
+#include "Proof/Core/Application.h"
+
 #include <GLFW/glfw3.h>
 namespace Proof
 {
@@ -121,7 +123,8 @@ namespace Proof
 		return { controllerHodler[ID].LeftJoystick.Axis.X,controllerHodler[ID].LeftJoystick.Axis.Y };
 	}
 	std::pair<float, float> Input::GetControllerLeftJoystickAxisDistance(int ID) {
-		auto& controllerHodler = Application::Get()->GetWindow()->s_Controllers;
+		auto& controllerHodler = Application::
+			Get()->GetWindow()->s_Controllers;
 		if (!controllerHodler.contains(ID))
 			return { 0,0 };
 		return { controllerHodler[ID].LeftJoystick.Distance.X,controllerHodler[ID].LeftJoystick.Distance.Y };

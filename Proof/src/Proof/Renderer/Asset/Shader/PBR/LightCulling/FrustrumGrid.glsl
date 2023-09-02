@@ -3,7 +3,22 @@
 #include <Common.glslh>
 #include <PBR/LightCulling/LightCulling.glslh>
 //https://www.3dgep.com/forward-plus/#Forward
+vec4 ScreenToViewVulkan(vec4 screen)
+{
+    // Convert to clip space
+    vec4 clip = vec4(screen.xy * 2.0 - 1.0, screen.z, screen.w);
 
+    // In Vulkan, the depth range is typically [0.0, 1.0].
+    // So, we need to remap it to [-1.0, 1.0] in view space.
+    clip.z = clip.z * 2.0 - 1.0;
+
+    // View space position.
+    vec4 view = u_Camera.InverseProjection * clip;
+    // Perspective projection.
+    view = view / view.w;
+
+    return view;
+}
 layout(push_constant) uniform PushConstants
 {
     uvec3 NumThreads;
@@ -16,11 +31,8 @@ layout(set = 1, binding = 5) buffer OutFrustums
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main()
 {
-   //if (!(gl_GlobalInvocationID.x < u_PushData.NumThreads.x && gl_GlobalInvocationID.y < u_PushData.NumThreads.y)) 
-   //{
-	//	return;
-	//}
-// View space eye position is always at the origin.
+   
+    // View space eye position is always at the origin.
     const vec3 eyePos = vec3(0.0, 0.0, 0.0);
 
     // Compute the 4 corner points on the far clipping plane to use as the 
@@ -39,7 +51,7 @@ void main()
     // Now convert the screen space points to view space
     for (int i = 0; i < 4; i++)
     {
-        viewSpace[i] = ScreenToView(screenSpace[i]).xyz;
+        viewSpace[i] = ScreenToViewVulkan(screenSpace[i]).xyz;
     }
 
     // Now build the frustum planes from the view space points
@@ -58,7 +70,7 @@ void main()
     //uint index = gl_GlobalInvocationID.x + (gl_GlobalInvocationID.y * numThreads.x);
     if (gl_GlobalInvocationID.x < u_PushData.NumThreads.x && gl_GlobalInvocationID.y < u_PushData.NumThreads.y) 
     {
-        uint index = (gl_GlobalInvocationID.y * uint(u_PushData.NumThreads.x)) + gl_GlobalInvocationID.x;
+        uint index = gl_GlobalInvocationID.x + ( gl_GlobalInvocationID.y * u_PushData.NumThreads.x );
         out_Frustrums[index] = frustum;
     
     }

@@ -4,14 +4,14 @@
 #
 #include "Proof/Renderer/WorldRenderer.h"
 namespace Proof{
-	std::unordered_map<AssetID, uint32_t> AssetThumbnailGenerator::AssetThumbnails;
+	std::unordered_map<UUID, uint32_t> AssetThumbnailGenerator::AssetThumbnails;
 	AssetThumbnailGenerator::AssetThumbnailGenerator() {
 		//m_World = Count<World>::Create("Thumbmnail World");
 		//m_WorldRenderer = Count<WorldRenderer>::Create(m_World,100,100);
 	}
 	AssetThumbnailGenerator::~AssetThumbnailGenerator() {
 	}
-	void AssetThumbnailGenerator::CreateThumbnail(AssetID ID) {
+	void AssetThumbnailGenerator::CreateThumbnail(UUID ID) {
 		auto info = AssetManager::GetAssetInfo(ID);
 		if (info.State == AssetState::Ready)return;
 
@@ -26,7 +26,7 @@ namespace Proof{
 		//}
 		//AssetThumbnails.insert({ ID, m_WorldRenderer->Renderer() });
 	}
-	void AssetThumbnailGenerator::GenerateThumbnail(AssetID ID) {
+	void AssetThumbnailGenerator::GenerateThumbnail(UUID ID) {
 		AssetThumbnailGenerator generator;
 		generator.CreateThumbnail(ID);
 	}

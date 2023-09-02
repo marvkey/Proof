@@ -11,6 +11,8 @@
 #include <thread>
 #include  <algorithm>
 #include <execution>
+#include "Proof/Core/Application.h"
+#include "Proof/Project/Project.h"
 #include "Proof/Renderer/Texture.h"
 #include <future>
 namespace Proof

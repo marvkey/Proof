@@ -14,6 +14,9 @@
 #include <glm/gtx/euler_angles.hpp>
 #include "Proof/Input/Mouse.h"
 #include "Proof/Math/MathInclude.h"
+#include "Proof/Core/Application.h"
+
+#include "Proof/Asset/AssetManager.h"
 //(IMPORTANT)
 /*
 *WHEN PASSING A MONO TYPE MAKE SURE ITS A SRUCT BECAUSE WHEN ITS A CLASS IT GETS SOME UNDEFNIED BEHAVIOR

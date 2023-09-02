@@ -85,7 +85,7 @@ namespace Proof {
 		static void OnWindowResize(WindowResizeEvent& e);
 		static void BeginFrame();
 		static void EndFrame();
-		static void Init(Window* window);
+		static void Init(class Window* window);
 		static void Shutdown();
 		friend class RendererBase;
 		friend class Application;

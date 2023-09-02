@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Log.h"
 #include "FrameTime.h"
-
+#include "Proof/Events/Event.h"
 #include "Imgui/imgui.h"
 #include <iostream>
 namespace Proof {

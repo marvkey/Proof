@@ -441,7 +441,6 @@ namespace Proof
 
 	private:
 		mutable UUID m_PhysicsMaterialPointerID = 0;
-		void* m_RuntimeBody = nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -465,7 +464,6 @@ namespace Proof
 		Count<class PhysicsMaterial> GetPhysicsMaterial();
 	private:
 		UUID m_PhysicsMaterialPointerID = 0;
-		void* m_RuntimeBody = nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -494,7 +492,6 @@ namespace Proof
 		}
 		Count<class PhysicsMaterial> GetPhysicsMaterial();
 	private:
-		void* m_RuntimeBody = nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -525,8 +522,6 @@ namespace Proof
 		}
 	private:
 		mutable UUID m_MeshAssetPointerID = 0;// POINTS TO THE MESH ASSET
-		void* m_RuntimeBody = nullptr;
-		void* m_ConvexMeshRuntimeBody = nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;

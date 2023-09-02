@@ -24,6 +24,8 @@
 #include "Platform/Vulkan/VulkanImage.h"
 #include "Platform/Vulkan/VulkanTexutre.h"
 #include "vulkan/vulkan.h"
+#include "Proof/Core/Application.h"
+#include "Platform/Window/WindowsWindow.h"
 namespace Proof {
 	static std::vector<CommandQueue*> s_RenderCommandQueue;
 	static uint32_t s_CommandQueueIndex = 1; // so we start with 0 command qeue index

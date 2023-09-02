@@ -1,6 +1,8 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Camera/EditorCamera.h"
+#include "Proof/Asset/Asset.h"
+
 #define ENTT_ID_TYPE uint64_t
 #include "entt/entt.hpp"	
 #include "entt/entity/group.hpp"
@@ -25,7 +27,7 @@ namespace Proof {
 		Edit
 	};
 
-	class Proof_API World : public RefCounted {
+	class Proof_API World : public Asset{
 	public:
 		using EntityID = UUID;
 
@@ -88,6 +90,8 @@ namespace Proof {
 		TransformComponent GetWorldTransformComponent(Entity entity) const;
 		glm::mat4 GetWorldTransform(Entity entity) const;
 
+		ASSET_CLASS_TYPE(World);
+
 		WorldState GetState() {
 			return m_CurrentState;
 		}
@@ -143,6 +147,7 @@ namespace Proof {
 		void OnMeshColliderComponentDelete(MeshColliderComponent& component);
 
 		void OnRigidBodyComponentCreate(entt::registry64& component, uint64_t entityID);
+		void OnRigidBodyComponentUpdate(entt::registry64& component, uint64_t entityID);
 		void OnRigidBodyComponentDelete(entt::registry64& component, uint64_t entityID);
 		void OnScriptAdded(entt::registry64& component, uint64_t entityID);
 		void OnScriptDelete(entt::registry64& component,uint64_t entityID);

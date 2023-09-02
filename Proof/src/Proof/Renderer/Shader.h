@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <functional>
+#include <filesystem>
 namespace Proof
 {
     enum class ShaderStage {

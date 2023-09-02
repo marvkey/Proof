@@ -6,8 +6,11 @@
 #include <fstream>
 #include <filesystem>
 #include "Proof/Resources/ExternalCreations.h"
+#include "Proof/Core/Application.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Scripting/ScriptEngine.h"
+#include "Proof/Asset/AssetManager.h"
+#include "Proof/Project/Project.h"
 #include "Mesh.h"
 #include "Prefab.h"
 #include "Proof/Scene/World.h"
@@ -627,10 +630,11 @@ namespace Proof
 						src.SkyBoxLoad = skyLight["SkyBoxLod"].as<float>();
 						src.MapRotation = skyLight["MapRotation"].as<float>();
 						src.Intensity = skyLight["Intensity"].as<float>();
-						//src.DynamicSky = skyLight["DynamicSky"].as<bool>();
-						//src.Turbidity = skyLight["Turbidity"].as<float>();
-						//src.Azimuth = skyLight["Azimuth"].as<float>();
-						//src.Inclination = skyLight["Inclination"].as<float>();
+
+						src.DynamicSky = skyLight["DynamicSky"].as<bool>();
+						src.Turbidity = skyLight["Turbidity"].as<float>();
+						src.Azimuth = skyLight["Azimuth"].as<float>();
+						src.Inclination = skyLight["Inclination"].as<float>();
 						if (AssetManager::HasAsset(src.Image))
 						{
 							src.LoadMap(src.Image);
@@ -913,7 +917,7 @@ namespace Proof
 		}
 	}
 
-	bool SceneSerializer::DeSerilizeText(AssetID ID)
+	bool SceneSerializer::DeSerilizeText(UUID ID)
 	{
 		auto assetInfo = AssetManager::GetAssetInfo(ID);
 		auto path = Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string();

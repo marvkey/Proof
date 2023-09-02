@@ -1095,7 +1095,7 @@ namespace Proof
 			glm::uvec3 numThreadGroups = glm::ceil(glm::vec3(numThreads.x / (float)16, numThreads.y / (float)16, 1));
 
 			m_FrustrumsBuffer->Resize(frameIndex,64 * (numThreads.x * numThreads.y * numThreads.z));
-			Renderer::BeginComputePass(m_CommandBuffer, m_FrustrumPass);
+			Renderer::BeginComputePass(m_CommandBuffer, m_FrustrumPass);	
 			m_FrustrumPass->PushData("u_PushData", &numThreads);
 			m_FrustrumPass->Dispatch(numThreadGroups);
 			Renderer::EndComputePass(m_FrustrumPass);

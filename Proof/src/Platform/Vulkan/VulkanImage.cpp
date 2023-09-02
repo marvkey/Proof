@@ -9,6 +9,7 @@
 #include "VulkanUtils/VulkanConvert.h"
 #include "VulkanImguiLayer.h"
 #include "VulkanTexutre.h"
+#include "Proof/Core/Application.h"
 #include "VulkanAllocator.h"
 namespace Proof {
 	

@@ -19,6 +19,17 @@ namespace Proof
 				triggerActor->OnTriggerEnter(overlappTrigger);
 				overlappTrigger->OnOverlapTriggerEnter(triggerActor);
 			}
+			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
+			{
+				triggerActor->OnTriggerLeave(overlappTrigger);
+				overlappTrigger->OnOverlapTriggerLeave(triggerActor);
+			}
+
+			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
+			{
+				triggerActor->OnTriggerStay(overlappTrigger);
+				overlappTrigger->OnOverlapTriggerStay(triggerActor);
+			}
 		}
 	}
 	void CollisionCallback::onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) {
@@ -38,6 +49,8 @@ namespace Proof
 
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
 		{
+			actor0->OnCollisonStay(actor1);
+			actor1->OnCollisonStay(actor0);
 		}
 		#if 0
 		CollisionInfo collisonInfo1;

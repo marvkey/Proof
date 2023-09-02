@@ -1,6 +1,5 @@
 #pragma once
 #include "Core.h"
-#include "Application.h"
 namespace Proof
 {
     class FrameTime {

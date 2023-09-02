@@ -5,20 +5,12 @@
 namespace Proof {
     class Mouse{
     public:
-        static float GetPosX() {
-            return Application::Get()->GetWindow()->GetMousePosition().X;
-        }
-        static float GetPosY() {
-            return Application::Get()->GetWindow()->GetMousePosition().Y;
-        }
+        static float GetPosX();
+        static float GetPosY();
 
-        static float GetScrollX(){
-            return Application::Get()->GetWindow()->GetMouseScrollWheel().X;
-        }
+        static float GetScrollX();
 
-        static float GetScrollY() {
-            return Application::Get()->GetWindow()->GetMouseScrollWheel().Y;
-        }
+        static float GetScrollY();
 
         static bool IsScroll(){
             return { (IsScrollDown()==true) || (IsScrollUp()==true) };

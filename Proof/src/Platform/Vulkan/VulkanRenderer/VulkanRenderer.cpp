@@ -8,6 +8,7 @@
 #include "Proof/Scene/Component.h"
 #include "Proof/Scene/Camera/OrthagraphicCamera.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
+#include "Proof/Core/Application.h"
 
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Scene/Mesh.h"

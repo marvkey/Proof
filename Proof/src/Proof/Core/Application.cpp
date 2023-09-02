@@ -17,6 +17,13 @@
 
 #include "Proof/Scene/Physics/PhysicsEngine.h"
 #include "Proof/Utils/FileSystem.h"
+
+#include "Proof/Core/Window.h"
+#include "Proof/Core/LayerStack.h"
+#include "Proof/Events/KeyEvent.h"
+#include "Proof/Events/MouseEvent.h"
+#include "Proof/Events/WindowEvent.h"
+#include "Proof/Project/Project.h"
 namespace Proof {
     Application* Application::s_Instance = nullptr;
     float Application::FPS = 60.0f;
@@ -26,6 +33,7 @@ namespace Proof {
     Application::Application(const ApplicationConfiguration& config):
         m_ApplicationConfiguration(config) 
     {
+        m_LayerStack = Count<LayerStack>::Create();
         srand(time(NULL));
         Proof::Log::Init();
         s_Instance = this;
@@ -54,7 +62,7 @@ namespace Proof {
         if (m_ApplicationConfiguration.EnableImgui)
         {
             m_ImGuiMainLayer = ImGuiLayer::Create();
-            MainLayerStack.PushLayer(m_ImGuiMainLayer);
+            m_LayerStack->PushLayer(m_ImGuiMainLayer);
 
         }
 
@@ -74,7 +82,7 @@ namespace Proof {
         PF_PROFILE_FUNC();
         Timer time;
         m_ImGuiMainLayer->Begin();
-        for (Count<Layer>& layer : MainLayerStack.V_LayerStack)
+        for (Count<Layer>& layer : m_LayerStack->V_LayerStack)
             layer->OnImGuiDraw(deltaTime);
         m_ImGuiMainLayer->End();
         m_ImguiFrameTime = time.ElapsedMillis();
@@ -93,7 +101,7 @@ namespace Proof {
         /// WHEN WE GET UI WE MIGHT WANT TO ONLY RESPODN TO UI FIRST
          if (m_IsRunning == false)
             return;
-         for (Count<Layer>& layer : MainLayerStack.V_LayerStack)
+         for (Count<Layer>& layer : m_LayerStack->V_LayerStack)
             layer->OnEvent(e);
     }
 
@@ -118,7 +126,7 @@ namespace Proof {
     Application::~Application() 
     {
         m_ImGuiMainLayer = nullptr;
-        MainLayerStack.Empty();
+        m_LayerStack->Empty();
     // remove the swpchain so it cna be deleted in the queue
         FileSystem::ClearEnvironmentVariables();
         ScriptEngine::Shutdown();
@@ -148,7 +156,7 @@ namespace Proof {
 
             if (WindowMinimized == false) {
                 PF_PROFILE_FUNC("Layer OnUpdate");
-                for (Count<Layer>& layer : MainLayerStack.V_LayerStack)
+                for (Count<Layer>& layer : m_LayerStack->V_LayerStack)
                     layer->OnUpdate(DeltaTime);
             }
             if (m_ApplicationConfiguration.EnableImgui == true)
@@ -176,11 +184,11 @@ namespace Proof {
     }
 
     void Application::PushLayer(Count<Layer> layer) {
-        MainLayerStack.PushLayer(layer);
+        m_LayerStack->PushLayer(layer);
     }
 
     void Application::PushOverlay(Count<Layer> layer) {
-        MainLayerStack.PushOverlay(layer);
+        m_LayerStack->PushOverlay(layer);
     }
 
     void Application::OpenProject(const std::filesystem::path& path)

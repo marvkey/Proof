@@ -13,6 +13,7 @@
 #include "Proof/Utils/PlatformUtils.h"
 #include <vector>
 #include "Proof/Scene/Mesh.h"
+#include "Proof/Core/Application.h"
 
 
 #include <yaml-cpp/yaml.h>
@@ -26,6 +27,10 @@
 #include "Proof/Asset/AssetSupport.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Scene/Prefab.h"
+
+#include "Proof/Core/Application.h"
+#include "Proof/Project/Project.h"
+
 namespace Proof
 {
 	struct CurrentFileInfo {

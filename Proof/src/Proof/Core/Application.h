@@ -1,11 +1,7 @@
 #pragma once
 #include "Core.h"
 #include "Proof/Core/Window.h"
-#include "Proof/Core/LayerStack.h"
-#include "Proof/Events/KeyEvent.h"
-#include "Proof/Events/MouseEvent.h"
-#include "Proof/Events/WindowEvent.h"
-#include "Proof/Project/Project.h"
+#include <filesystem>
     namespace Proof {
     class Layer;
     class ImGuiLayer;
@@ -27,7 +23,7 @@
         static Application* Get() {
             return s_Instance;
         }
-       Project* GetProject() {
+       class Project* GetProject() {
             return m_Project.get();
         }
         static float GetFPS() {return FPS;}
@@ -62,11 +58,11 @@
         void ImguiUpdate(float deltaTime);
         static float m_ImguiFrameTime;
         void OnEvent(Event& e);
-        void OnWindowMinimizeEvent(WindowMinimizeEvent& e);
-        void OnMouseScrollEVent(MouseScrollEvent& e);
-        void OnKeyClicked(KeyClickedEvent& e);
-        void OnWindowCloseEvent(WindowCloseEvent& e);
-        LayerStack MainLayerStack;
+        void OnWindowMinimizeEvent(class WindowMinimizeEvent& e);
+        void OnMouseScrollEVent(class MouseScrollEvent& e);
+        void OnKeyClicked(class KeyClickedEvent& e);
+        void OnWindowCloseEvent(class WindowCloseEvent& e);
+        Count<LayerStack> m_LayerStack;
         Count<class ImGuiLayer> m_ImGuiMainLayer;
         Special<Window>m_Window;
         friend class CurrentWindow;

@@ -20,7 +20,8 @@
 #include <fmt/format.h>
 #include "Proof/Core/Buffer.h"
 #include "Proof/Utils/FileSystem.h"
-
+#include "Proof/Core/Application.h"
+#include "Proof/Project/Project.h"
 namespace Proof
 {
 

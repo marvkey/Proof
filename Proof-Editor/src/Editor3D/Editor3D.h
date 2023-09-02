@@ -1,6 +1,8 @@
 #pragma once
 #include "Proof/Core/Layer.h"
 #include "Proof/Scene/Entity.h"
+#include "Proof/Input/KeyCodes.h"
+#include "Proof/Events/KeyEvent.h"
 namespace Proof {
 	
 	class Editore3D : public Layer {

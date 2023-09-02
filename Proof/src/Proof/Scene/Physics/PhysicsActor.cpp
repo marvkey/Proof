@@ -2,8 +2,10 @@
 #include "PhysicsActor.h"
 #include "Proof/Scene/Component.h"
 #include "PhysicsWorld.h"
+#include "../Entity.h"
 #include "PhysicsEngine.h"
 #include "Proof/Scene/Material.h"
+#include "Proof/Scene/Entity.h"
 
 #include "Proof/Scripting/ScriptEngine.h"
 namespace Proof {
@@ -58,33 +60,65 @@ namespace Proof {
 			PF_CORE_ASSERT(false, "Not Valid");
 		}
 	}
-	PhysicsActor::PhysicsActor(PhysicsWorld* physicsWorld, Entity entity)
+	PhysicsActor::PhysicsActor(PhysicsWorld* physicsWorld, UUID entityId)
 		:
-		m_PhysicsWorld(physicsWorld),
-		m_Entity(entity)
+		m_PhysicsWorld(physicsWorld)
 	{
+		m_Entity = { entityId ,m_PhysicsWorld->GetWorld(), };
+
 		if (!m_Entity.HasComponent<RigidBodyComponent>())
 			PF_CORE_ASSERT(false, "Needs rigid body to be a physics Actor");
+		
+		Build();
+	}
+	PhysicsActor::~PhysicsActor()
+	{
+		Release();
+	}
+	void PhysicsActor::Build()
+	{
 		AddRigidBody();
 
 		if (m_Entity.HasComponent<CubeColliderComponent>()) AddCubeCollider();
 		if (m_Entity.HasComponent<SphereColliderComponent>())AddSphereCollider();
 		if (m_Entity.HasComponent<CapsuleColliderComponent>()) AddCapsuleCollider();
 		if (m_Entity.HasComponent<MeshColliderComponent>()) AddMeshCollider();
-
 	}
-	PhysicsActor::~PhysicsActor()
+	void PhysicsActor::Release()
 	{
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 
-		if (m_Entity.HasComponent<CubeColliderComponent>())
+		if (m_Entity.HasComponent<CubeColliderComponent>() )
 		{
-			physx::PxShape* shape = (physx::PxShape*)m_Entity.GetComponent<CubeColliderComponent>().m_RuntimeBody;
+			physx::PxShape* shape = (physx::PxShape*)m_CapsuleColliderBody;
 			rigidBody->detachShape(*shape);
 			shape->release();
 		}
+		if (m_Entity.HasComponent<SphereColliderComponent>())
+		{
+			physx::PxShape* shape = (physx::PxShape*)m_SphereColliderBody;
+			rigidBody->detachShape(*shape);
+			shape->release();
+		}
+		if (m_Entity.HasComponent<CapsuleColliderComponent>())
+		{
+			physx::PxShape* shape = (physx::PxShape*)m_CapsuleColliderBody;
+			rigidBody->detachShape(*shape);
+			shape->release();
+		}
+		if (m_Entity.HasComponent<MeshColliderComponent>())
+		{
+			physx::PxShape* shape = (physx::PxShape*)m_MeshColliderBody;
+			rigidBody->detachShape(*shape);
+			shape->release();
+		}
+		// shoudl the next paremter be false
+		m_PhysicsWorld->GetPhysicsScene()->removeActor(*rigidBody);
+
 		rigidBody->release();
 	}
+
+	
 	void PhysicsActor::AddForce(Vector force, ForceMode mode, bool autoWake)
 	{
 		if (m_RigidBodyType == RigidBodyType::Static)return;
@@ -128,24 +162,32 @@ namespace Proof {
 	{
 		// posibbly calling fixed update on scripts maybe we add it or maybe not
 
+			
+		UpdateRigidBody(deltaTime);
+		// adjusting the new size	
+		if (m_Entity.HasComponent<CubeColliderComponent>())
 		{
-			physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
-
-			TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldTransformComponent(m_Entity);
-			physx::PxTransform newPos(PhysxUtils::VectorToPhysxVector(transform.Location), PhysxUtils::VectorToPhysxQuat(transform.Rotation));
-			rigidBody->setGlobalPose(newPos,false);
-			rigidBody->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, Math::InverseBool(m_Entity.GetComponent<RigidBodyComponent>().Gravity));
-
-			// adjusting the new size	
-			if (m_Entity.HasComponent<CubeColliderComponent>())
-			{
-				physx::PxShape* colliderShape =(physx::PxShape *) m_Entity.GetComponent<CubeColliderComponent>().m_RuntimeBody;
-
-				const Vector colliderScalePositive = m_Entity.GetComponent<CubeColliderComponent>().OffsetScale.GetPositive();
-
-				Vector size = m_PhysicsWorld->GetWorld()->GetWorldScale(m_Entity).GetPositive() * colliderScalePositive;
-				colliderShape->setGeometry(physx::PxBoxGeometry(PhysxUtils::VectorToPhysxVector(size)));
-			}
+			if (m_CubeColliderBody == nullptr)
+				AddCubeCollider();
+			UpdateCubeCollider(deltaTime);
+		}
+		if (m_Entity.HasComponent<SphereColliderComponent>())
+		{
+			if (m_CubeColliderBody == nullptr)
+				AddSphereCollider();
+			UpdateSphereCollider(deltaTime);
+		}
+		if (m_Entity.HasComponent<CapsuleColliderComponent>())
+		{
+			if (m_CubeColliderBody == nullptr)
+				AddCapsuleCollider();
+			UpdateCapsuleCollider(deltaTime);
+		}
+		if (m_Entity.HasComponent<MeshColliderComponent>())
+		{
+			if (m_CubeColliderBody == nullptr)
+				AddMeshCollider();
+			UpdateMeshCollider(deltaTime);
 		}
 	}
 
@@ -155,6 +197,10 @@ namespace Proof {
 		{
 			ScriptMeathod::OnCollisionEnter(m_Entity, actor->m_Entity);
 		}
+	}
+	void PhysicsActor::OnCollisonStay(const PhysicsActor* actor)
+	{
+		PF_CORE_ASSERT(false);
 	}
 	void PhysicsActor::OnCollisonLeave(const PhysicsActor* actor)
 	{
@@ -206,6 +252,7 @@ namespace Proof {
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
 		rigidBody->setAngularVelocity(PhysxUtils::VectorToPhysxVector(velocity), wakeUp);
 	}
+	
 	void PhysicsActor::OnTriggerEnter(const PhysicsActor* actor)
 	{
 		if (ScriptEngine::EntityHasScripts(m_Entity))
@@ -214,12 +261,30 @@ namespace Proof {
 		}
 	}
 
+	void PhysicsActor::OnTriggerStay(const PhysicsActor* actor)
+	{
+	}
+
+	void PhysicsActor::OnTriggerLeave(const PhysicsActor* actor)
+	{
+	}
+
 	void PhysicsActor::OnOverlapTriggerEnter(const PhysicsActor* actor)
 	{
 		if (ScriptEngine::EntityHasScripts(m_Entity))
 		{
 			ScriptMeathod::OnOverlapTriggerEnter(m_Entity, actor->m_Entity);
 		}
+	}
+
+	void PhysicsActor::OnOverlapTriggerStay(const PhysicsActor* actor)
+	{
+
+	}
+
+	void PhysicsActor::OnOverlapTriggerLeave(const PhysicsActor* actor)
+	{
+
 	}
 
 
@@ -295,7 +360,7 @@ namespace Proof {
 		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(cubeCollider.IsTrigger));
 		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, cubeCollider.IsTrigger);
 
-		cubeCollider.m_RuntimeBody = body;
+		m_CubeColliderBody = body;
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 		rigidBody->attachShape(*body);
 	}
@@ -315,7 +380,7 @@ namespace Proof {
 		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(sphereCollider.IsTrigger));
 		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, sphereCollider.IsTrigger);
 
-		sphereCollider.m_RuntimeBody = body;
+		m_SphereColliderBody = body;
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 		rigidBody->attachShape(*body);
 	}
@@ -325,7 +390,7 @@ namespace Proof {
 		CapsuleColliderComponent& capsuleCollider = m_Entity.GetComponent<CapsuleColliderComponent>();
 		const Vector worldScalePositive = m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetPositive();
 		physx::PxMaterial* colliderMaterial = capsuleCollider.HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)capsuleCollider.GetPhysicsMaterial()->m_RuntimeBody;
-		float radius = capsuleCollider.Radius * worldScalePositive.GetMaxAbsolute()*2.35;
+		float radius = capsuleCollider.Radius * worldScalePositive.GetMaxAbsolute();
 		float height = capsuleCollider.Height;
 		Vector capsuleRotation = { 0,0,0 };// originial local pos is {0,0,0}
 		switch (capsuleCollider.Direction)
@@ -361,14 +426,13 @@ namespace Proof {
 		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(capsuleCollider.IsTrigger));
 		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, capsuleCollider.IsTrigger);
 
-		capsuleCollider.m_RuntimeBody = body;
+		m_CapsuleColliderBody = body;
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 		rigidBody->attachShape(*body);
 	}
 
 	void PhysicsActor::AddMeshCollider()
 	{
-		
 		MeshColliderComponent& meshCollider = m_Entity.GetComponent<MeshColliderComponent>();
 		if (!AssetManager::HasAsset(meshCollider.GetMeshSource()))return;
 		if (PhysicsMeshCooker::HasMesh(meshCollider.GetMeshSource()) == false)
@@ -383,13 +447,135 @@ namespace Proof {
 		//ADD CONVEX MESH TO ASSET
 		PF_CORE_ASSERT(body, "Body is not created");
 
-		meshCollider.m_RuntimeBody = body;
+		m_MeshColliderBody = body;
 		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(meshCollider.IsTrigger));
 		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, meshCollider.IsTrigger);
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 		rigidBody->attachShape(*body);
 	}
 
+	void PhysicsActor::UpdateRigidBody(float deltatime)
+	{
+
+		auto& rigidBodyComponent = m_Entity.GetComponent<RigidBodyComponent>();
+		physx::PxRigidActor* defaultRigidBody = (physx::PxRigidActor*)m_RuntimeBody;
+
+		bool updateBodyType = false;
+		if (rigidBodyComponent.m_RigidBodyType == RigidBodyType::Dynamic)
+		{
+			if (!defaultRigidBody->is<physx::PxRigidDynamic>())
+				updateBodyType = true;
+		}
+
+		if (rigidBodyComponent.m_RigidBodyType == RigidBodyType::Static)
+		{
+			if (!defaultRigidBody->is<physx::PxRigidStatic>())
+				updateBodyType = true;
+		}
+
+		if (updateBodyType)
+		{
+			Release();
+			Build();
+		}
+
+		TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldTransformComponent(m_Entity);
+		physx::PxTransform newPos(PhysxUtils::VectorToPhysxVector(transform.Location), PhysxUtils::VectorToPhysxQuat(transform.Rotation));
+
+		defaultRigidBody->setGlobalPose(newPos, false);
+		defaultRigidBody->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, Math::InverseBool(m_Entity.GetComponent<RigidBodyComponent>().Gravity));
+
+		if (rigidBodyComponent.m_RigidBodyType == RigidBodyType::Dynamic)
+		{
+			physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+			rigidBody->setMass(rigidBodyComponent.Mass);
+			rigidBody->setAngularDamping(rigidBodyComponent.AngularDrag);
+			rigidBody->setLinearDamping(rigidBodyComponent.LinearDrag);
+			rigidBody->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, Math::InverseBool(rigidBodyComponent.Gravity));
+			rigidBody->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidBodyComponent.Kinimatic);
+			rigidBody->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, rigidBodyComponent.FreezeLocation.X);
+			rigidBody->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, rigidBodyComponent.FreezeLocation.Y);
+			rigidBody->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, rigidBodyComponent.FreezeLocation.Z);
+
+			rigidBody->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.X);
+			rigidBody->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.Y);
+			rigidBody->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.Z);
+		}
+
+	}
+
+	void PhysicsActor::UpdateCubeCollider(float deltatime)
+	{
+		auto& cubeCollider = m_Entity.GetComponent<CubeColliderComponent>();
+		physx::PxShape* colliderShape = (physx::PxShape*)m_CubeColliderBody;
+
+		const Vector colliderScalePositive = cubeCollider.OffsetScale.GetPositive();
+
+		Vector size = m_PhysicsWorld->GetWorld()->GetWorldScale(m_Entity).GetPositive() * colliderScalePositive;
+		colliderShape->setGeometry(physx::PxBoxGeometry(PhysxUtils::VectorToPhysxVector(size)));
+		colliderShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(cubeCollider.IsTrigger));
+		colliderShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, cubeCollider.IsTrigger);
+	}
+
+	void PhysicsActor::UpdateSphereCollider(float deltatime)
+	{
+		auto& sphereCollider = m_Entity.GetComponent<SphereColliderComponent>();
+		physx::PxShape* colliderShape = (physx::PxShape*)m_SphereColliderBody;
+
+		float radius = sphereCollider.Radius * m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetMaxAbsolute();
+		colliderShape->setGeometry(physx::PxSphereGeometry(radius));
+		colliderShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(sphereCollider.IsTrigger));
+		colliderShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, sphereCollider.IsTrigger);
+	}
+
+	void PhysicsActor::UpdateCapsuleCollider(float deltatime)
+	{
+		auto& capsuleCollider = m_Entity.GetComponent<CapsuleColliderComponent>();
+		physx::PxShape* colliderShape = (physx::PxShape*)m_CapsuleColliderBody;
+		const Vector worldScalePositive = m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetPositive();
+
+		float radius = capsuleCollider.Radius * worldScalePositive.GetMaxAbsolute();
+		float height =glm::abs( capsuleCollider.Height);
+		Vector capsuleRotation = { 0,0,0 };// originial local pos is {0,0,0}
+		switch (capsuleCollider.Direction)
+		{
+			case CapsuleDirection::X:
+				{
+					height *= worldScalePositive.X;
+					capsuleRotation.X += 0;// default is facing X direction
+				}
+				break;
+			case CapsuleDirection::Y:
+				{
+					height *= worldScalePositive.Y;
+					capsuleRotation.Y += 90; // have to swap ssicne starting is facing X direction
+					break;
+				}
+			case CapsuleDirection::Z:
+				{
+					height *= worldScalePositive.Z;
+					capsuleRotation.Z += 90; // have to swap ssicne starting is facing X direction
+					break;
+				}
+		}
+
+		colliderShape->setGeometry(physx::PxCapsuleGeometry(radius,height));
+		colliderShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(capsuleCollider.IsTrigger));
+		colliderShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, capsuleCollider.IsTrigger);
+	}
+
+	void PhysicsActor::UpdateMeshCollider(float deltatime)
+	{
+		MeshColliderComponent& meshCollider = m_Entity.GetComponent<MeshColliderComponent>();
+		if (!AssetManager::HasAsset(meshCollider.GetMeshSource()))return;
+		if (PhysicsMeshCooker::HasMesh(meshCollider.GetMeshSource()) == false)
+		{
+			PhysicsMeshCooker::CookMesh(meshCollider.GetMeshSource());
+		}
+		physx::PxShape* colliderShape = (physx::PxShape*)m_MeshColliderBody;
+		colliderShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(meshCollider.IsTrigger));
+		colliderShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, meshCollider.IsTrigger);
+	}
 	void PhysicsActor::SyncTransform()
 	{
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;

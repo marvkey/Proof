@@ -5,6 +5,8 @@
 #include "ImGuizmo.h"
 #include "VulkanGraphicsContext.h"
 #include "Proof/Renderer/Renderer.h"
+#include "Proof/Core/Application.h"
+
 #include <GLFW/glfw3.h>
 #include "VulkanFrameBuffer.h"
 #include "VulkanSwapChain.h"

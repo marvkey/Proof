@@ -7,6 +7,7 @@
 #include "misc/cpp/imgui_stdlib.h"
 #include "SceneHierachyPanel.h"
 #include "Proof/Renderer/Renderer.h"
+#include "Proof/Asset/AssetManager.h"
 namespace Proof
 {
 	GuiPanel::GuiPanel(Count<class UIPanel> panel)

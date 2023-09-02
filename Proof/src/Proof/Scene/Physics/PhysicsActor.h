@@ -1,11 +1,11 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Proof/Scene/Entity.h"
+#include "../Entity.h"
 namespace Proof{
-
+	class Entity;
 	class PhysicsActor : public RefCounted {
 	public:
-		PhysicsActor(class PhysicsWorld* physicsWorld,Entity entity);
+		PhysicsActor(class PhysicsWorld* physicsWorld,UUID entity);
 		virtual ~PhysicsActor();
 
 		void AddForce(Vector force, ForceMode mode = ForceMode::Force, bool autoWake = true);
@@ -18,15 +18,20 @@ namespace Proof{
 		void OnFixedUpdate(float deltaTime);
 
 		void OnCollisonEnter(const PhysicsActor* actor);
+		void OnCollisonStay(const PhysicsActor* actor);
 		void OnCollisonLeave(const PhysicsActor* actor);
 
 		void ClearForce(ForceMode mode = ForceMode::Force);
 		void ClearTorque(ForceMode mode = ForceMode::Force);
 		// actor enters a trigger box, current actor gets told actor has overlappe
 		void OnTriggerEnter(const PhysicsActor* actor);
+		void OnTriggerStay(const PhysicsActor* actor);
+		void OnTriggerLeave(const PhysicsActor* actor);
 
 		// current acotr overlaps another trigger box
 		void OnOverlapTriggerEnter(const PhysicsActor* actor);
+		void OnOverlapTriggerStay(const PhysicsActor* actor);
+		void OnOverlapTriggerLeave(const PhysicsActor* actor);
 
 		// veclocity in a straight line
 		Vector GetLinearVelocity();
@@ -35,17 +40,35 @@ namespace Proof{
 
 		void SetLinearVelocity(Vector velocity, bool wakeUp = true);
 		void SetAngularVelocity(Vector velocity, bool wakeUp = true);
+
+		
 	private:
-		friend class PhysicsWorld;
 		// not sure how we gonna treat this yet
 		enum class RigidBodyType m_RigidBodyType;
 		class PhysicsWorld* m_PhysicsWorld =nullptr;
-		Entity m_Entity;
-		void* m_RuntimeBody;
+		class Entity m_Entity;
+		void* m_RuntimeBody = nullptr;
+		void* m_CubeColliderBody = nullptr;
+		void* m_SphereColliderBody = nullptr;
+		void* m_CapsuleColliderBody = nullptr;
+		void* m_MeshColliderBody = nullptr;
+
+		friend class PhysicsWorld;
+
+	private:
 		void AddRigidBody();
 		void AddCubeCollider();
 		void AddSphereCollider();
 		void AddCapsuleCollider();
 		void AddMeshCollider();
+
+		void UpdateRigidBody(float deltatime);
+		void UpdateCubeCollider(float deltatime);
+		void UpdateSphereCollider(float deltatime);
+		void UpdateCapsuleCollider(float deltatime);
+		void UpdateMeshCollider(float deltatime);
+
+		void Release();
+		void Build();
 	};
 }

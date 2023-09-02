@@ -15,6 +15,8 @@ namespace Proof{
 		std::filesystem::path ScriptModuleDirectory = {};
 
 		uint64_t StartWorld = 0;
+		uint64_t StartWorldEdit = 0;
+		bool OnCloseStartWorldEditLastOpen = true;
 		ProjectConfig(std::filesystem::path project, const std::string& name = "Untitled"):
 			Project(project), Name(name)
 		{

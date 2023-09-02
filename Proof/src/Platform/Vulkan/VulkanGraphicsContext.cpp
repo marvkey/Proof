@@ -8,6 +8,8 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Vulkan.h"
 #include "VulkanAllocator.h"
+#include "Proof/Core/Application.h"
+
 namespace Proof
 {
 	

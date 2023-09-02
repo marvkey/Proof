@@ -8,7 +8,10 @@
 #include "Proof/Scene/Material.h"
 #include "SceneHierachyPanel.h"
 #include "Proof/Scene/Entity.h"
+#include "Proof/Core/Core.h"
 #include "Proof/Renderer/WorldRenderer.h"
+#include "Proof/Asset/AssetManager.h"
+#include "Proof/Core/Application.h"
 #include "../EditorResources.h"
 #include "Proof/Renderer/RenderMaterial.h"
 

@@ -2,7 +2,14 @@
 #include "InputManager.h"
 #include "Proof/Input/InputManager.h"
 #include "Proof/Input/Controller.h"
+#include "Proof/Input/KeyBoard.h"
 #include "Proof/Events/Event.h"
+#include "Proof/Events/KeyEvent.h"
+#include "Proof/Events/MouseEvent.h"
+#include "Proof/Events/ControllerEvent.h"
+#include "Proof/Events/WindowEvent.h"
+
+#include "Proof/Core/Application.h"
 namespace Proof {
 
 

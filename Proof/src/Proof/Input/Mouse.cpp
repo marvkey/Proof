@@ -3,6 +3,8 @@
 #include <Imgui/imgui.h>
 #include <GLFW/glfw3.h>
 #include "Platform/Window/WindowsWindow.h"
+#include "Proof/Core/Application.h"
+
 namespace Proof {
 	static bool s_MouseCaptured = false;
 	bool Mouse::IsMouseCaptured()
@@ -14,14 +16,30 @@ namespace Proof {
 		s_MouseCaptured = caputure;
 		if (caputure) {
 			glfwSetInputMode((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			if(Application::Get()->GetConfig().EnableImgui == true)
+			if(Application::Get()->GetImguiLayer() != nullptr)
 				ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse; // no mouse capture
 		}
 		else {
 			glfwSetInputMode((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			if (Application::Get()->GetConfig().EnableImgui == true)
+			if (Application::Get()->GetImguiLayer() != nullptr)
 				ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse; // alllows mouse capture
 		}
+	}
+	float Mouse::GetPosX()
+	{
+		return Application::Get()->GetWindow()->GetMousePosition().X;
+	}
+	float Mouse::GetPosY()
+	{
+		return Application::Get()->GetWindow()->GetMousePosition().Y;
+	}
+	float Mouse::GetScrollX()
+	{
+		return Application::Get()->GetWindow()->GetMouseScrollWheel().X;
+	}
+	float Mouse::GetScrollY()
+	{
+		return Application::Get()->GetWindow()->GetMouseScrollWheel().Y;
 	}
 	void Mouse::GetScreenSpace(glm::vec2 windwoPos, glm::vec2 windowSize)
 	{

@@ -17,6 +17,8 @@
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Renderer/Renderer.h"
+#include "Proof/Core/Application.h"
+
 namespace Proof {
 	World::World(const std::string& name, UUID ID)
 		:
@@ -275,6 +277,11 @@ namespace Proof {
 	void World::OnRigidBodyComponentCreate(entt::registry64& component, uint64_t entityID)
 	{
 		m_PhysicsWorld->NewActor(entityID);
+	}
+
+	void World::OnRigidBodyComponentUpdate(entt::registry64& component, uint64_t entityID)
+	{
+		PF_CORE_ASSERT(false);
 	}
 
 	void World::OnRigidBodyComponentDelete(entt::registry64& component, uint64_t entityID)

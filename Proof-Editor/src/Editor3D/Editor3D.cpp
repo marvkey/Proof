@@ -56,7 +56,9 @@
 #include "MainWindow/SceneHierachyPanel.h"
 #include "MainWindow/SceneHierachyPanel.h"
 #include "MainWindow/ContentBrowserPanel.h"
-
+#include "Proof/Core/Application.h"
+#include "Proof/Project/Project.h"
+#include "Proof/Input/Input.h"
 
 #include "Proof/Scene/Mesh.h"
 namespace Proof
@@ -94,7 +96,7 @@ namespace Proof
 		Layer("Editor3D Layer") {
 		s_Instance = this;
 		s_EditorData = new EditorData();
-		s_EditorData->ContentBrowserPanel.m_ShowWindow = false;
+	//	s_EditorData->ContentBrowserPanel.m_ShowWindow = false;
 	}
 	Editore3D::~Editore3D() {
 		delete s_EditorData;

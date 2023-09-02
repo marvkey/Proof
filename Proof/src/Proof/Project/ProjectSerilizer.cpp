@@ -24,6 +24,8 @@ namespace Proof
 				out << YAML::Key << "AssetManager" << m_Project->m_ProjectConfig.AssetManager.string();
 				out << YAML::Key << "StartWorld" << m_Project->m_ProjectConfig.StartWorld;
 				out << YAML::Key << "ScriptModuleDirectory" << m_Project->m_ProjectConfig.ScriptModuleDirectory.string();
+				out << YAML::Key << "OnCloseStartWorldEditLastOpen" << m_Project->m_ProjectConfig.OnCloseStartWorldEditLastOpen;
+				out << YAML::Key << "StartWorldEdit" << m_Project->m_ProjectConfig.StartWorldEdit;
 			}
 			//input
 			{
@@ -134,6 +136,12 @@ namespace Proof
 		if(projectData["ScriptModuleDirectory"])
 			m_Project->m_ProjectConfig.ScriptModuleDirectory = projectData["ScriptModuleDirectory"].as<std::string>();
 		m_Project->m_ProjectConfig.StartWorld = projectData["StartWorld"].as<uint64_t>();
+
+		if (projectData["OnCloseStartWorldEditLastOpen"])
+			m_Project->m_ProjectConfig.OnCloseStartWorldEditLastOpen = projectData["OnCloseStartWorldEditLastOpen"].as<uint64_t>();
+		if (projectData["StartWorldEdit"])
+			m_Project->m_ProjectConfig.StartWorldEdit = projectData["StartWorldEdit"].as<uint64_t>();
+
 		//Input ScriptModuleDirectory: Resources/Scripts/Binaries
 		if (projectData["Input"])
 		{
