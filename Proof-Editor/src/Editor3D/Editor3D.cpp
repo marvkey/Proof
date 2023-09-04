@@ -629,7 +629,7 @@ namespace Proof
 
 			case KeyBoardKey::D:
 				{
-					if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetEntityID() != 0)
+					if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0)
 						s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(s_EditorData->WorldHierachy.m_SelectedEntity);
 					break;
 
@@ -637,7 +637,7 @@ namespace Proof
 			case KeyBoardKey::Delete:
 			case KeyBoardKey::Backspace:
 				{
-					if (s_EditorData->WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
+					if (s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
 
 						if (m_ActiveWorld->GetState() == WorldState::Edit) {
 							/*
@@ -650,7 +650,7 @@ namespace Proof
 											uint64_t* data = field.Data._Cast<uint64_t>();
 											if (data == nullptr)
 												return;
-											if (*data == s_EditorData->WorldHierachy.m_SelectedEntity.GetEntityID())
+											if (*data == s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID())
 												*data = 0;
 										}
 									}
@@ -666,7 +666,7 @@ namespace Proof
 				// copy entity
 			case KeyBoardKey::C:
 				{
-					if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetEntityID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
+					if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
 						m_CopyEntity = s_EditorData->WorldHierachy.m_SelectedEntity;
 					}
 					break;
@@ -674,7 +674,7 @@ namespace Proof
 				// paste entity 
 			case KeyBoardKey::V:
 				{
-					if (control && m_CopyEntity.GetEntityID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
+					if (control && m_CopyEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
 						s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(m_CopyEntity);
 					}
 					break;
@@ -710,22 +710,23 @@ namespace Proof
 					Entity selected = s_EditorData->WorldHierachy.m_SelectedEntity;
 					if (shift == true) {
 						if (selected.HasChildren()) {
-							s_EditorData->WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>().m_Children[0],m_ActiveWorld.Get() };
+							auto entity = m_ActiveWorld->GetEntity(selected.GetComponent<HierarchyComponent>().Children[0]);
+							s_EditorData->WorldHierachy.m_SelectedEntity = entity;
 						}
 					}
 
-					else if (selected.HasOwner()) {
-						int childIndex = selected.GetOwner().GetComponent<ChildComponent>().GetChildIndex(selected.GetComponent<ChildComponent>());
-						int numChildren = selected.GetOwner().GetComponent<ChildComponent>().GetNumChildren() - 1;
+					else if (selected.HasParent()) {
+						int childIndex = selected.GetParent().GetComponent<HierarchyComponent>().GetChildIndex(selected.GetUUID());
+						int numChildren = selected.GetParent().GetComponent<HierarchyComponent>().Children.size() - 1;
 						int childIndexAdd = 0;
 						childIndexAdd += childIndex;
 						if (childIndex >= numChildren)
-							s_EditorData->WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>().m_Children[0],m_ActiveWorld.Get() };
+							s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->GetEntity(selected.GetComponent<HierarchyComponent>().Children[0]);
 						else if (childIndex < numChildren)
-							s_EditorData->WorldHierachy.m_SelectedEntity = Entity{ selected.GetOwner().GetComponent<ChildComponent>().m_Children[childIndexAdd],m_ActiveWorld.Get() };
+							s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->GetEntity(selected.GetComponent<HierarchyComponent>().Children[childIndexAdd]);
 					}
 					else if (selected.HasChildren()) {
-						s_EditorData->WorldHierachy.m_SelectedEntity = { selected.GetComponent<ChildComponent>().m_Children[0],m_ActiveWorld.Get() };
+						s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->GetEntity(selected.GetComponent<HierarchyComponent>().Children[0]);
 					}
 					break;
 				}
@@ -1064,7 +1065,7 @@ namespace Proof
 				m_ActiveWorld->ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
 					PlayerInputComponent& input = entity.GetComponent<PlayerInputComponent>();
 					if (!m_MultiplayerRender.contains(input.InputPlayer))return;
-					inputs[(int)input.InputPlayer] = entity.GetEntityID();
+					inputs[(int)input.InputPlayer] = entity.GetUUID();
 				});
 				switch (m_PlayersCount)
 				{
@@ -1126,7 +1127,7 @@ namespace Proof
 				glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 				auto& selectedentityTc = selectedEntity.GetComponent<TransformComponent>();
-				glm::mat4 selectedEntitytransform = selectedentityTc.GetLocalTransform();
+				glm::mat4 selectedEntitytransform = selectedentityTc.GetTransform();
 
 				bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
 				float snapValue = 0.5f; // Snap to 0.5m for translation/scale
@@ -1141,19 +1142,19 @@ namespace Proof
 					nullptr, snap ? snapValues : nullptr);
 
 				if (ImGuizmo::IsUsing()) {
-					Entity parent = m_ActiveWorld->TryGetEntity(selectedEntity.GetOwnerUUID());
+					Entity parent = m_ActiveWorld->TryGetEntityWithUUID(selectedEntity.GetParentUUID());
 
 					if (parent)
 					{
-						glm::mat4 parentTransform = m_ActiveWorld->GetWorldTransform(parent);
+						glm::mat4 parentTransform = m_ActiveWorld->GetWorldSpaceTransform(parent);
 						selectedEntitytransform = glm::inverse(parentTransform) * selectedEntitytransform;
 						glm::vec3 translation, rotation, scale;
 						MathResource::DecomposeTransform(selectedEntitytransform, translation, rotation, scale);
 
-						glm::vec3 deltaRotation = rotation - ProofToglmVec(  selectedentityTc.Rotation );
-						selectedentityTc.Location =GlmVecToProof( translation);
-						selectedentityTc.Rotation += Vector{Math::Degrees(deltaRotation).x, Math::Degrees(deltaRotation).y, Math::Degrees(deltaRotation).z};
-						selectedentityTc.Scale =GlmVecToProof( scale);
+						glm::vec3 deltaRotation = rotation - selectedentityTc.GetRotationEuler();
+						selectedentityTc.Location = translation;
+						selectedentityTc.SetRotation(selectedentityTc.GetRotationEuler() += deltaRotation);
+						selectedentityTc.Scale =scale;
 
 					}
 					else
@@ -1161,10 +1162,10 @@ namespace Proof
 						glm::vec3 translation, rotation, scale;
 						MathResource::DecomposeTransform(selectedEntitytransform, translation, rotation, scale);
 
-						glm::vec3 deltaRotation = rotation - ProofToglmVec(selectedentityTc.Rotation);
-						selectedentityTc.Location =GlmVecToProof( translation);
-						selectedentityTc.Rotation += Vector{ Math::Degrees(deltaRotation).x, Math::Degrees(deltaRotation).y, Math::Degrees(deltaRotation).z };
-						selectedentityTc.Scale = GlmVecToProof(scale);
+						glm::vec3 deltaRotation = rotation - selectedentityTc.GetRotationEuler();
+						selectedentityTc.Location =translation;
+						selectedentityTc.SetRotation(selectedentityTc.GetRotationEuler() += deltaRotation);
+						selectedentityTc.Scale = scale;
 					}
 				
 				}

@@ -113,40 +113,7 @@ namespace Proof
 		}
 		return nullptr;
 	}
-	Vector TransformComponent::GetFowardVector() const
-	{
-			// Extract the rotation matrix from the transform matrix
-		glm::mat3 rotationMatrix = glm::mat3(GetLocalTransform());
-
-		// Get the forward vector from the rotation matrix
-		glm::vec3 forward = glm::normalize(rotationMatrix * glm::vec3(0.0f, 0.0f, 1.0f));
-
-		// origininally how it was
-		//glm::vec3 forward = glm::normalize(rotationMatrix * glm::vec3(0.0f, 0.0f, -1.0f));
-
-		return GlmVecToProof(forward);
-	}
-	Vector TransformComponent::GetRightVector() const
-	{
-			// Extract the rotation matrix from the transform matrix
-		glm::mat3 rotationMatrix = glm::mat3(GetLocalTransform());
-
-		// Get the right vector from the rotation matrix
-		glm::vec3 right = glm::normalize(rotationMatrix * glm::vec3(1.0f, 0.0f, 0.0f));
-
-		return GlmVecToProof(right);
-	}
-	Vector TransformComponent::GetUpVector() const
-	{
-		// Extract the rotation matrix from the transform matrix
-		glm::mat3 rotationMatrix = glm::mat3(GetLocalTransform());
-
-		// Get the up vector from the rotation matrix
-		glm::vec3 up = glm::normalize(rotationMatrix * glm::vec3(0.0f, 1.0f, 0.0f));
-
-		return GlmVecToProof( up);
-		
-	}
+	
 	void SkyLightComponent::RemoveImage()
 	{
 		Image = 0;

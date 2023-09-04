@@ -1,53 +1,36 @@
 World:
   ID: 6477593735195019013
   Entities:
-    - Entity: 57711761597188142
+    - Entity: 14958216905718719550
       TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 2, 4.44500017]
-        Rotation: [-5.9000001, 8.39999962, 15.1999998]
-        Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [0.911290348, 0.87454474, 0.87454474]
-        Intensity: 3
-    - Entity: 11074883166607061457
-      TagComponent:
-        Tag: Terrain
-        tags: []
-      TransformComponent:
-        Location: [-3.5, -3.9000001, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 17647221892499275640
-        MaterialTable:
-          - Material: ""
-            AssetID: 0
-            Index: 0
-          - Material: ""
-            AssetID: 5634022354863745560
-            Index: 1
-    - Entity: 14031512044906894714
-      TagComponent:
-        Tag: cube
+        Tag: Sponza2
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
+        Scale: [0.100000001, 0.100000001, 0.100000001]
+      HierarchyComponent:
+        ParentHandle: 0
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
+        MeshAssetPointerID: 705200552008804468
+    - Entity: 17444644887703936264
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [-8.10000038, 2.70000005, 4.5999999]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 566574579191162934
+        MaterialTable:
+          - Material: ""
+            AssetID: 9010836309271670693
+            Index: 0
     - Entity: 8731679343243984340
       TagComponent:
         Tag: Sky Light
@@ -56,36 +39,32 @@ World:
         Location: [0, 0, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
+      HierarchyComponent:
+        ParentHandle: 0
         Children: []
       SkyLightComponent:
         TintColor: [1, 1, 1]
         SkyBoxLod: 0
         MapRotation: 0
-        Intensity: 1
+        Intensity: 2.5
         DynamicSky: false
         Turbidity: 2
         Azimuth: 0
         Inclination: 0
         Image: 2700444414993608762
-    - Entity: 17444644887703936264
+    - Entity: 14031512044906894714
       TagComponent:
-        Tag: Sphere
+        Tag: cube
         tags: []
       TransformComponent:
-        Location: [-8.10000038, 2.70000005, 4.5999999]
-        Rotation: [0, 19.7999992, 0]
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
+      HierarchyComponent:
+        ParentHandle: 0
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 566574579191162934
-        MaterialTable:
-          - Material: ""
-            AssetID: 9010836309271670693
-            Index: 0
+        MeshAssetPointerID: 4645041025570573733
     - Entity: 14443135344696818912
       TagComponent:
         Tag: square
@@ -94,9 +73,23 @@ World:
         Location: [0, 3.9000001, 0]
         Rotation: [0, 0, 0]
         Scale: [6.5, 9.10000038, 9.10000038]
-      ChildComponent:
-        OwnerID: 0
+      HierarchyComponent:
+        ParentHandle: 0
         Children: []
       SpriteComponent:
         TextureAssetPointerID: 96342634762984
         Colour: [0.939516127, 0.0795557797, 0.0795557797, 1]
+    - Entity: 57711761597188142
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 2, 4.44500017]
+        Rotation: [-0.00463018473, 0.0203484446, -0.000121846962]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 5.09000015

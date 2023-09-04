@@ -64,7 +64,8 @@ namespace Proof {
 		:
 		m_PhysicsWorld(physicsWorld)
 	{
-		m_Entity = { entityId ,m_PhysicsWorld->GetWorld(), };
+		
+		m_Entity = m_PhysicsWorld->GetWorld()->GetEntity(entityId);
 
 		if (!m_Entity.HasComponent<RigidBodyComponent>())
 			PF_CORE_ASSERT(false, "Needs rigid body to be a physics Actor");
@@ -293,24 +294,19 @@ namespace Proof {
 		if (defauultMaterial == nullptr)
 			defauultMaterial = PhysicsEngine::GetPhysics()->createMaterial(0.6f, 0.6f, 0.6f);
 
-		const auto& transformComponent = m_Entity.GetComponent<TransformComponent>();
-		const auto worldLocation = m_PhysicsWorld->GetWorld()->GetWorldLocation(m_Entity);
-		const auto worldRotation = m_PhysicsWorld->GetWorld()->GetWorldRotation(m_Entity);
+		const auto& transformComponent = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
 
 		auto& rigidBodyComponent = m_Entity.GetComponent<RigidBodyComponent>();
-
-		glm::quat myquaternion = glm::quat(glm::vec3(glm::radians(worldRotation.X), glm::radians(worldRotation.Y), 
-			glm::radians( worldRotation.Z)));
 		
 		
-		physx::PxTransform physxTransform{ PhysxUtils::VectorToPhysxVector(worldLocation),
-				PhysxUtils::VectorToPhysxQuat(worldRotation)};
+		physx::PxTransform physxTransform{ PhysxUtils::GlmVectorToPhysxVector(transformComponent.Location),
+				PhysxUtils::QuatTophysxQuat(transformComponent.GetRotation())};
 		physx::PxActor* rigidBodyBase = nullptr;
 		if (rigidBodyComponent.m_RigidBodyType == RigidBodyType::Dynamic)
 		{
 
 			physx::PxRigidDynamic* body = PhysicsEngine::GetPhysics()->createRigidDynamic(physxTransform);
-			body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
+			body->setName(fmt::to_string(m_Entity.GetUUID()).c_str()); // we can easily rigidBodyComponent After collsion
 			body->setMass(rigidBodyComponent.Mass);
 			body->setAngularDamping(rigidBodyComponent.AngularDrag);
 			body->setLinearDamping(rigidBodyComponent.LinearDrag);
@@ -347,15 +343,15 @@ namespace Proof {
 		auto& rigidBodyComponent = m_Entity.GetComponent<RigidBodyComponent>();
 		physx::PxMaterial* colliderMaterial = cubeCollider.HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)cubeCollider.GetPhysicsMaterial()->m_RuntimeBody;
 		
-		const Vector worldScalePositive = m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetPositive();
-		const Vector colliderScalePositive = cubeCollider.OffsetScale.GetPositive();
+		const glm::vec3 worldScalePositive =glm::abs( m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity));
+		const glm::vec3 colliderScalePositive = glm::abs(cubeCollider.OffsetScale);
 		
-		Vector size = worldScalePositive * colliderScalePositive;
-		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxBoxGeometry(PhysxUtils::VectorToPhysxVector(size)), *colliderMaterial, true);
+		glm::vec3 size = worldScalePositive * colliderScalePositive;
+		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxBoxGeometry(PhysxUtils::GlmVectorToPhysxVector(size)), *colliderMaterial, true);
 		PF_CORE_ASSERT(body, "Body is not created");
-		//body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
+		//body->setName(fmt::to_string(m_Entity.GetUUID()).c_str()); // we can easily rigidBodyComponent After collsion
 		auto localtransform = body->getLocalPose();
-		localtransform.p += PhysxUtils::VectorToPhysxVector(cubeCollider.OffsetLocation);
+		localtransform.p += PhysxUtils::GlmVectorToPhysxVector(cubeCollider.OffsetLocation);
 		body->setLocalPose(localtransform);
 		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(cubeCollider.IsTrigger));
 		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, cubeCollider.IsTrigger);
@@ -368,8 +364,9 @@ namespace Proof {
 	void PhysicsActor::AddSphereCollider()
 	{
 		SphereColliderComponent& sphereCollider = m_Entity.GetComponent<SphereColliderComponent>();
-		float size = sphereCollider.Radius * m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetMaxAbsolute();
+		const glm::vec3 worldScalePositive = glm::abs(m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity));
 
+		float size = sphereCollider.Radius * glm::max(glm::max(worldScalePositive.x, worldScalePositive.y), worldScalePositive.z);
 		physx::PxMaterial* colliderMaterial = sphereCollider.HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)sphereCollider.GetPhysicsMaterial()->m_RuntimeBody;
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxSphereGeometry(size), *colliderMaterial, true);
 		PF_CORE_ASSERT(body, "Body is not created");
@@ -388,28 +385,29 @@ namespace Proof {
 	void PhysicsActor::AddCapsuleCollider()
 	{
 		CapsuleColliderComponent& capsuleCollider = m_Entity.GetComponent<CapsuleColliderComponent>();
-		const Vector worldScalePositive = m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetPositive();
+		const glm::vec3 worldScalePositive = glm::abs(m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity));
+
 		physx::PxMaterial* colliderMaterial = capsuleCollider.HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)capsuleCollider.GetPhysicsMaterial()->m_RuntimeBody;
-		float radius = capsuleCollider.Radius * worldScalePositive.GetMaxAbsolute();
+		float radius = capsuleCollider.Radius * glm::max(glm::max(worldScalePositive.x, worldScalePositive.y), worldScalePositive.z);
 		float height = capsuleCollider.Height;
 		Vector capsuleRotation = { 0,0,0 };// originial local pos is {0,0,0}
 		switch (capsuleCollider.Direction)
 		{
 			case CapsuleDirection::X:
 				{
-					height *= worldScalePositive.X;
+					height *= worldScalePositive.x;
 					capsuleRotation.X += 0;// default is facing X direction
 				}
 				break;
 			case CapsuleDirection::Y:
 				{
-					height *= worldScalePositive.Y;
+					height *= worldScalePositive.y;
 					capsuleRotation.Y += 90; // have to swap ssicne starting is facing X direction
 					break;
 				}
 			case CapsuleDirection::Z:
 				{
-					height *= worldScalePositive.Z;
+					height *= worldScalePositive.z;
 					capsuleRotation.Z += 90; // have to swap ssicne starting is facing X direction
 					break;
 				}
@@ -417,7 +415,7 @@ namespace Proof {
 		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(physx::PxCapsuleGeometry(radius, height), *colliderMaterial, true);
 		PF_CORE_ASSERT(body, "Body is not created");
 
-		body->setName(fmt::to_string(m_Entity.GetEntityID()).c_str()); // we can easily rigidBodyComponent After collsion
+		body->setName(fmt::to_string(m_Entity.GetUUID()).c_str()); // we can easily rigidBodyComponent After collsion
 
 		physx::PxTransform localtransform = body->getLocalPose();
 		localtransform.p += PhysxUtils::VectorToPhysxVector(capsuleCollider.OffsetLocation);
@@ -440,18 +438,18 @@ namespace Proof {
 			PhysicsMeshCooker::CookMesh(meshCollider.GetMeshSource());	
 		}
 		physx::PxMaterial* colliderMaterial = meshCollider.HasPhysicsMaterial() == false ? defauultMaterial : (physx::PxMaterial*)meshCollider.GetPhysicsMaterial()->m_RuntimeBody;
-		physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(
-			physx::PxTriangleMeshGeometry(PhysicsMeshCooker::GetConvexMesh(meshCollider.GetMeshSource()),PhysxUtils::VectorToPhysxVector(m_Entity.GetComponent<TransformComponent>().Scale)),*colliderMaterial, true);
+		//physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(
+		//	physx::PxTriangleMeshGeometry(PhysicsMeshCooker::GetConvexMesh(meshCollider.GetMeshSource()),PhysxUtils::GlmVectorToPhysxVector(glm::abs(m_PhysicsWorld->GetWorld()->GetWorldSpaceScale(m_Entity))),*colliderMaterial, true);
 				//physx::PxShape* body = PhysicsEngine::GetPhysics()->createShape(
 		//physx::PxConvexMeshGeometry(PhysicsMeshCooker::GetConvexMesh(meshCollider->GetMeshSource())), *colliderMaterial, true);
 		//ADD CONVEX MESH TO ASSET
-		PF_CORE_ASSERT(body, "Body is not created");
-
-		m_MeshColliderBody = body;
-		body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(meshCollider.IsTrigger));
-		body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, meshCollider.IsTrigger);
-		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
-		rigidBody->attachShape(*body);
+	//	PF_CORE_ASSERT(body, "Body is not created");
+	//
+	//	m_MeshColliderBody = body;
+	//	body->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(meshCollider.IsTrigger));
+	//	body->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, meshCollider.IsTrigger);
+	//	physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
+	//	rigidBody->attachShape(*body);
 	}
 
 	void PhysicsActor::UpdateRigidBody(float deltatime)
@@ -479,8 +477,8 @@ namespace Proof {
 			Build();
 		}
 
-		TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldTransformComponent(m_Entity);
-		physx::PxTransform newPos(PhysxUtils::VectorToPhysxVector(transform.Location), PhysxUtils::VectorToPhysxQuat(transform.Rotation));
+		TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
+		physx::PxTransform newPos(PhysxUtils::GlmVectorToPhysxVector(transform.Location), PhysxUtils::QuatTophysxQuat(transform.GetRotation()));
 
 		defaultRigidBody->setGlobalPose(newPos, false);
 		defaultRigidBody->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, Math::InverseBool(m_Entity.GetComponent<RigidBodyComponent>().Gravity));
@@ -509,10 +507,10 @@ namespace Proof {
 		auto& cubeCollider = m_Entity.GetComponent<CubeColliderComponent>();
 		physx::PxShape* colliderShape = (physx::PxShape*)m_CubeColliderBody;
 
-		const Vector colliderScalePositive = cubeCollider.OffsetScale.GetPositive();
+		const glm::vec3 colliderScalePositive = glm::abs(cubeCollider.OffsetScale);
 
-		Vector size = m_PhysicsWorld->GetWorld()->GetWorldScale(m_Entity).GetPositive() * colliderScalePositive;
-		colliderShape->setGeometry(physx::PxBoxGeometry(PhysxUtils::VectorToPhysxVector(size)));
+		glm::vec3 size = glm::abs(m_PhysicsWorld->GetWorld()->GetWorldSpaceScale(m_Entity)) * colliderScalePositive;
+		colliderShape->setGeometry(physx::PxBoxGeometry(PhysxUtils::GlmVectorToPhysxVector(size)));
 		colliderShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(cubeCollider.IsTrigger));
 		colliderShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, cubeCollider.IsTrigger);
 	}
@@ -522,7 +520,8 @@ namespace Proof {
 		auto& sphereCollider = m_Entity.GetComponent<SphereColliderComponent>();
 		physx::PxShape* colliderShape = (physx::PxShape*)m_SphereColliderBody;
 
-		float radius = sphereCollider.Radius * m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetMaxAbsolute();
+		glm::vec3 worldScale = glm::abs(m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity));
+		float radius = sphereCollider.Radius * glm::max(glm::max(worldScale.x, worldScale.y), worldScale.z); ;
 		colliderShape->setGeometry(physx::PxSphereGeometry(radius));
 		colliderShape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, Math::InverseBool(sphereCollider.IsTrigger));
 		colliderShape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, sphereCollider.IsTrigger);
@@ -532,28 +531,28 @@ namespace Proof {
 	{
 		auto& capsuleCollider = m_Entity.GetComponent<CapsuleColliderComponent>();
 		physx::PxShape* colliderShape = (physx::PxShape*)m_CapsuleColliderBody;
-		const Vector worldScalePositive = m_Entity.GetCurrentWorld()->GetWorldScale(m_Entity).GetPositive();
+		const glm::vec3 worldScalePositive = glm::abs(m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity));
 
-		float radius = capsuleCollider.Radius * worldScalePositive.GetMaxAbsolute();
+		float radius = capsuleCollider.Radius * glm::max(glm::max(worldScalePositive.x, worldScalePositive.y), worldScalePositive.z);;
 		float height =glm::abs( capsuleCollider.Height);
 		Vector capsuleRotation = { 0,0,0 };// originial local pos is {0,0,0}
 		switch (capsuleCollider.Direction)
 		{
 			case CapsuleDirection::X:
 				{
-					height *= worldScalePositive.X;
+					height *= worldScalePositive.x;
 					capsuleRotation.X += 0;// default is facing X direction
 				}
 				break;
 			case CapsuleDirection::Y:
 				{
-					height *= worldScalePositive.Y;
+					height *= worldScalePositive.y;
 					capsuleRotation.Y += 90; // have to swap ssicne starting is facing X direction
 					break;
 				}
 			case CapsuleDirection::Z:
 				{
-					height *= worldScalePositive.Z;
+					height *= worldScalePositive.z;
 					capsuleRotation.Z += 90; // have to swap ssicne starting is facing X direction
 					break;
 				}
@@ -582,7 +581,7 @@ namespace Proof {
 
 		TransformComponent& transform = m_Entity.GetComponent<TransformComponent>();
 		auto actorPos = rigidBody->getGlobalPose();
-		transform.Location = PhysxUtils::PhysxToVector(actorPos.p);
-		transform.Rotation = PhysxUtils::PhysxQuatToVector(actorPos.q);
+		transform.Location = PhysxUtils::PhysxVectorToGlmVector(actorPos.p);
+		transform.SetRotation(PhysxUtils::PhysxQuatToQuat(actorPos.q));
 	}
 }

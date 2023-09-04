@@ -31,7 +31,22 @@ namespace Proof {
 
 			return vec;
 		}
+		static physx::PxVec3 GlmVectorToPhysxVector(const glm::vec3& vector) {
+			physx::PxVec3 physxVector;
+			physxVector.x = vector.x;
+			physxVector.y = vector.y;
+			physxVector.z = vector.z;
 
+			return physxVector;
+		}
+		static glm::vec3 PhysxVectorToGlmVector(const physx::PxVec3& physxVector) {
+			glm::vec3 vec;
+			vec.x = physxVector.x;
+			vec.y = physxVector.y;
+			vec.z = physxVector.z;
+
+			return vec;
+		}
 		static physx::PxVec3 VectorToPhysxVector(const Vector& vector) {
 			physx::PxVec3 physxVector;
 			physxVector.x = vector.X;
@@ -49,12 +64,6 @@ namespace Proof {
 		}
 		// values are changed to radians
 		// make sure vector values are in degrees
-		static physx::PxQuat VectorToPhysxQuat(const Vector& vector) {
-			glm::quat vectorToQuat = glm::quat(glm::vec3(glm::radians(vector.X), glm::radians(vector.Y),
-				glm::radians(vector.Z)));
-
-			return QuatTophysxQuat(vectorToQuat);
-		}
 
 		// make sure quatiernion has values in radians
 		// returns vector values in degrees

@@ -9,8 +9,8 @@ World:
         Location: [0, 0, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
+      HierarchyComponent:
+        ParentHandle: 0
         Children: []
       ScriptComponent:
         Scripts:

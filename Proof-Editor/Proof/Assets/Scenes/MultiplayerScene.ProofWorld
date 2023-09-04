@@ -9,8 +9,8 @@ World:
         Location: [75, 5, 0]
         Rotation: [0, 0, 0]
         Scale: [2, 2, 2]
-      ChildComponent:
-        OwnerID: 0
+      HierarchyComponent:
+        ParentHandle: 0
         Children: []
       PlayerInputComponent:
         InputPlayer: Player0
@@ -23,8 +23,8 @@ World:
         Location: [25, 5, 0]
         Rotation: [0, 0, 0]
         Scale: [2, 2, 2]
-      ChildComponent:
-        OwnerID: 0
+      HierarchyComponent:
+        ParentHandle: 0
         Children: []
       PlayerInputComponent:
         InputPlayer: Player1
@@ -37,8 +37,8 @@ World:
         Location: [0, 0, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
-      ChildComponent:
-        OwnerID: 0
+      HierarchyComponent:
+        ParentHandle: 0
         Children: []
       ScriptComponent:
         Scripts:
@@ -88,8 +88,8 @@ World:
         Location: [-25, 5, 0]
         Rotation: [0, 0, 0]
         Scale: [2, 2, 2]
-      ChildComponent:
-        OwnerID: 0
+      HierarchyComponent:
+        ParentHandle: 0
         Children: []
       PlayerInputComponent:
         InputPlayer: Player2
@@ -102,8 +102,8 @@ World:
         Location: [-75, 5, 0]
         Rotation: [0, 0, 0]
         Scale: [2, 2, 2]
-      ChildComponent:
-        OwnerID: 0
+      HierarchyComponent:
+        ParentHandle: 0
         Children: []
       PlayerInputComponent:
         InputPlayer: Player3

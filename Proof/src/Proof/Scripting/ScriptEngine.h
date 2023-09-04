@@ -225,9 +225,10 @@ namespace Proof
 		// scirpt name, instnace
 		static std::unordered_map<std::string, Count<ScriptInstance>>const& GetScriptInstnace(Entity enitty);
 		static bool EntityHasScripts(Entity enitty);
-		static const std::unordered_map<EntityID, std::unordered_map<std::string, Count<ScriptInstance>>>& EachEntityScript();
+		static const std::unordered_map<UUID, std::unordered_map<std::string, Count<ScriptInstance>>>& EachEntityScript();
 		// class name, field, data
 		static std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& GetScriptFieldMap(Entity entity);
+		static std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& GetScriptFieldMap(UUID id);
 		static bool HasScriptFieldMap(Entity entity);
 		static void CreateScriptFieldMap(Entity entity);
 		static std::string MonoToString(MonoString* monoString);

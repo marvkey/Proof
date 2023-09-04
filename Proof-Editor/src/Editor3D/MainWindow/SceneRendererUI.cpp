@@ -10,6 +10,7 @@
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Renderer/RenderPass.h"
+#include "Proof/Math/Math.h"
 namespace Proof{
 
 	void SceneRendererUI::ImGuiRender(FrameTime deltaTime) {
@@ -44,7 +45,7 @@ namespace Proof{
 		auto assetInfo= AssetManager::GetAssetInfo(m_ID);
 		m_SceneEntity = m_World->CreateEntity(assetInfo.GetName());
 		m_SceneEntity.AddComponent<DirectionalLightComponent>().Color = Vector{ 1,1,1 };
-		m_SceneEntity.GetComponent<TransformComponent>().Location.Z -= 10;
+		m_SceneEntity.GetComponent<TransformComponent>().Location.z -= 10;
 		m_SceneEntity.AddComponent<MeshComponent>().SetMesh(m_ID);
 	}
 	

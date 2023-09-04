@@ -16,7 +16,7 @@ namespace Proof{
 		void SetEntity(Entity entity);
 		ASSET_CLASS_TYPE(Prefab);
 
-		const entt::registry64& GetRegistry() {
+		const entt::registry& GetRegistry() {
 			return m_Registry;
 		}
 
@@ -24,7 +24,7 @@ namespace Proof{
 			return m_BaseEntityID;
 		}
 	private:
-		entt::registry64 m_Registry;
+		entt::registry m_Registry;
 		UUID m_BaseEntityID= 0;
 		friend class PrefabAssetSerilizer;
 	};

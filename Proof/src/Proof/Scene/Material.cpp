@@ -15,6 +15,16 @@ namespace Proof {
             m_DefaultShader = true;   
         SetDefault();
     }
+    Material::Material()
+        :Name("UnnamedMaterial")
+
+    {
+          // means it is using pbr shader
+        m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration(Name, Renderer::GetShader("ProofPBR_Static")));
+        if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static"))
+            m_DefaultShader = true;
+        SetDefault();
+    }
     void Material::SetDefault()
     {
         if (!m_DefaultShader)

@@ -8,6 +8,7 @@
 #include "Material.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer//ParticleSystem.h"
+#include "Proof/Math/MathResource.h"
 #include "Proof/Math/Vector.h"
 #include "Camera/SceneCamera.h"
 #include "Proof/Math/MathConvert.h"
@@ -74,136 +75,36 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 	};
-	struct Proof_API ChildComponent { 
+	struct HierarchyComponent {
 	public:
-		ChildComponent(const ChildComponent& other) = default;
-		ChildComponent() = default;
-		uint64_t GetNumChildren()const { return m_Children.size(); }
-		bool HasOwner()const {
-			return m_OwnerID != 0;
-		}
-		bool HasChildren()const {
-			return m_Children.size() > 0;
-		}
-		UUID GetOwnerID()const {
-			return m_OwnerID;
-		}
-		const ChildComponent* GetOwner() {
-			if (HasOwner() == false)return nullptr;
-			return m_OwnerPointer;
-		}
-		bool HasChild(UUID ID) {
-			return std::find(m_Children.begin(), m_Children.end(), ID.Get()) != m_Children.end();
-		}
-		bool HasChild(const ChildComponent& other) {
-			return HasChild(other.m_CurrentID);
-		}
-		const std::vector<UUID>& GetChildren()const {
-			return m_Children;
-		}
-		bool SetOwnerEmpty() {
-			if (HasOwner()) {
-				return m_OwnerPointer->RemoveChild(*this);
-			}
-			m_OwnerID = 0;
-			m_OwnerPointer = nullptr;
-			return true;
-		}
-		bool SetOwner(ChildComponent& newOwner) {
-			if (newOwner == *this) {
-				PF_EC_WARN("cannot add enity as owenr of entity");
-				return false;
-			}
-			if (m_OwnerID == newOwner.m_CurrentID) // if we are already poiting to the new owenr as it already our owner
-				return true;
+		UUID ParentHandle = 0;
+		std::vector<UUID> Children;
 
-			if (newOwner.GetOwnerID() == m_CurrentID) {// if the owner of the newowenr is htis we have to return fals
-				return false;
-			}
-
-			if (HasOwner()) {
-				m_OwnerPointer->RemoveChild(*this);
-			}
-			m_OwnerID = newOwner.m_CurrentID; // poitn to the enitty of that child
-			m_OwnerPointer = &newOwner;
-			newOwner.m_Children.emplace_back(m_CurrentID);
-			return true;
+		bool HasChild(UUID id) {
+			return std::find(Children.begin(), Children.end(), id) != Children.end();
 		}
-		bool SetOwner(UUID newOwner) {
-			m_OwnerID = newOwner; // poitn to the enitty of that child
-			return true;
-		}
-
-		bool AddChild(ChildComponent& child) {
-			if (child == *this) {
-				PF_EC_WARN("cannot add enity as owenr of entity");
-				return false;
-			}
-			if (HasChild(child) == true)return true;
-			if (child.HasOwner())
-				child.SetOwnerEmpty();
-
-			m_Children.emplace_back(child.m_CurrentID);
-			child.m_OwnerID = m_CurrentID;
-			child.m_OwnerPointer = this;
-			return true;
-		}
-
-		bool AddChild(UUID child) {
-			if (HasChild(child) == true)return true;
-			m_Children.emplace_back(child);
-			return true;
-		}
-
-		bool RemoveChild(ChildComponent& child) {
-			if (HasChildren() == false)return false;
-			auto it = std::find(m_Children.begin(), m_Children.end(), child.m_CurrentID);
-			if (it == m_Children.end())// checking if we have the child
-				return false;
-			child.m_OwnerID = 0;
-			child.m_OwnerPointer = nullptr;// we should not rely on this because an entity can be deleted and the pointer could
-			// still be poiting to that empty memeoory block
-			m_Children.erase(it);
-			return true;
-		}
-
-		bool RemoveChild(UUID id) {
-			if (HasChildren() == false)return false;
-			auto it = std::find(m_Children.begin(), m_Children.end(), id);
-			if (it == m_Children.end())// checking if we have the child
-				return false;
-			m_Children.erase(it);
-			return true;
-		}
-		bool operator==(const ChildComponent& other)const {
-			return other.m_CurrentID == m_CurrentID && other.m_OwnerID == m_OwnerID;
-		}
-		bool operator!=(const ChildComponent& other) const {
-			return !(*this == other);
-		}
-
-		int GetChildIndex(ChildComponent& child)const {
-			for (int i = 0; i < m_Children.size(); i++) {
-				if (m_Children[i].Get() == child.m_CurrentID.Get())return i;
+		 // Return -1 if the child was not found
+		int GetChildIndex(UUID id) {
+			auto& children = Children;
+			for (uint32_t index = 0; index < children.size(); ++index)
+			{
+				if (children[index] == id)
+				{
+					return index;
+				}
 			}
 			return -1;
 		}
+		HierarchyComponent() = default;
+		HierarchyComponent(const HierarchyComponent& other) = default;
+		HierarchyComponent(UUID parent)
+			: ParentHandle(parent) {}
 	private:
 
-		UUID m_CurrentID = 0; // entity its attached to ID
-		UUID m_OwnerID = 0; // owner of the entity its attahced to
-		std::vector<UUID>m_Children;
-		ChildComponent* m_OwnerPointer = nullptr;
-		friend class World;
-		friend class SceneSerializer;
-		friend class SceneHierachyPanel;
-		friend class Entity;
-		friend class Editore3D;
 	};
-	struct Proof_API TransformComponent {
-		Vector Location = {0.0f,0.0f,0.0f};
-		Vector Rotation = {0.0f,0.0f,0.0f};
-		Vector Scale = {1.0f,1.0f,1.0f};
+	struct TransformComponent {
+		glm::vec3 Location = {0.0f,0.0f,0.0f};
+		glm::vec3 Scale = {1.0f,1.0f,1.0f};
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& other) {
 			Location = other.Location;
@@ -217,21 +118,98 @@ namespace Proof
 			temp.Scale = this->Scale + other.Scale;
 			return temp;
 		}
-		
-		glm::mat4 GetLocalTransform() const {
-			return glm::translate(glm::mat4(1.0f), ProofToglmVec(Location)) *
-				glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.X), { 1,0,0 })
-				* glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.Y), { 0,1,0 })
-				* glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.Z), { 0,0,1 })
-				* glm::scale(glm::mat4(1.0f), ProofToglmVec(Scale));
+		// returns as radians
+		glm::vec3 GetRotationEuler() const
+		{
+			return RotationEuler;
 		}
-		Vector GetFowardVector()const;
-		Vector GetRightVector()const;
-		Vector GetUpVector()const;
-		friend class World;
-		friend class SceneSerializer;
-		friend class SceneHierachyPanel;
-		friend class Entity;
+		// pass as radians
+		void SetRotationEuler(const glm::vec3& euler)
+		{
+			RotationEuler = euler;
+			Rotation = glm::quat(RotationEuler);
+		}
+		glm::mat4 GetRotationMatrix() const
+		{
+			return glm::toMat4(GetRotation());
+		}
+		// returns as radians
+		glm::quat GetRotation() const
+		{
+			return Rotation;
+		}
+		// pass as radians
+		void SetRotation(const glm::quat& quat)
+		{
+			Rotation = quat;
+			RotationEuler = glm::eulerAngles(Rotation);
+		}
+		glm::mat4 GetTransform() const {
+			return glm::translate(glm::mat4(1.0f), Location) 
+				* glm::toMat4(Rotation)
+				* glm::scale(glm::mat4(1.0f), Scale);
+		}
+
+		glm::vec3 GetFowardVector() const
+		{
+				// Extract the rotation matrix from the transform matrix
+
+			// Get the forward vector from the rotation matrix
+			glm::vec3 forward = glm::normalize(GetRotationMatrix() * glm::vec4(0.0f, 0.0f, 1.0f,1));
+
+			// origininally how it was
+			//glm::vec3 forward = glm::normalize(rotationMatrix * glm::vec3(0.0f, 0.0f, -1.0f));
+
+			return forward;
+		}
+		glm::vec3 GetRightVector() const
+		{
+
+			// Get the right vector from the rotation matrix
+			glm::vec3 right = glm::normalize(GetRotationMatrix() * glm::vec4(1.0f, 0.0f, 0.0f,1.0f));
+
+			return right;
+		}
+		glm::vec3 GetUpVector() const
+		{
+
+			// Get the up vector from the rotation matrix
+			glm::vec3 up = glm::normalize(GetRotationMatrix() * glm::vec4(0.0f, 1.0f, 0.0f,1.0f));
+
+			return up;
+		}
+
+		void SetTransform(const glm::mat4& transform)
+		{
+			MathResource::DecomposeTransform(transform, Location, Rotation, Scale);
+			RotationEuler = glm::eulerAngles(Rotation);
+		}
+	private:
+
+		//from cherno
+		// These are private so that you are forced to set them via
+		// SetRotation() or SetRotationEuler()
+		// This avoids situation where one of them gets set and the other is forgotten.
+		//
+		// Why do we need both a quat and Euler angle representation for rotation?
+		// Because Euler suffers from gimbal lock -> rotations should be stored as quaternions.
+		//
+		// BUT: quaternions are confusing, and humans like to work with Euler angles.
+		// We cannot store just the quaternions and translate to/from Euler because the conversion
+		// Euler -> quat -> Euler is not invariant.
+		//
+		// It's also sometimes useful to be able to store rotations > 360 degrees which
+		// quats do not support.
+		//
+		// Accordingly, we store Euler for "editor" stuff that humans work with, 
+		// and quats for everything else.  The two are maintained in-sync via the SetRotation()
+		// methods.
+		glm::vec3 RotationEuler = { 0.0f, 0.0f, 0.0f };
+		glm::quat Rotation = { 1.0f, 0.0f, 0.0f, 0.0f };
+		//friend class World;
+		//friend class SceneSerializer;
+		//friend class SceneHierachyPanel;
+		//friend class Entity;
 	};
 	
 	struct Proof_API NativeScriptComponent{
@@ -357,7 +335,6 @@ namespace Proof
 		DirectionalLightComponent() = default;
 
 		Vector Color = { 1 };
-		Vector OffsetDirection;
 		float Intensity = 1;
 
 		bool CastShadow = true;
@@ -396,8 +373,6 @@ namespace Proof
 		// as the angle deviates from the spotlight's central direction.
 		float AngleAttenuation = 5.0f; // Range: 0.0 to positive infinity.
 		float Falloff = 1.0f;// Range: 0.0 to positive infinity.  factor that affects how the light intensity diminishes.
-		glm::vec3 OffsetLocation{ 0 };
-		glm::vec3 OffsetDirection{ 0 };
 		bool CastsShadows = false;
 		bool SoftShadows = false;
 		float ShadowStrength = 0.5f;// 0.0 to 1.0 how dark sahdow is
@@ -426,8 +401,8 @@ namespace Proof
 	struct Proof_API CubeColliderComponent {
 		CubeColliderComponent(const CubeColliderComponent&) = default;
 		CubeColliderComponent() = default;
-		Vector OffsetLocation = { 0,0,0 };
-		Vector OffsetScale= { 1,1,1 };
+		glm::vec3 OffsetLocation = { 0,0,0 };
+		glm::vec3 OffsetScale= { 1,1,1 };
 		bool IsTrigger = false;
 
 		void RemovePhysicsMaterial() {
@@ -614,7 +589,7 @@ namespace Proof
 
 	};
 	using AllComponents =
-		ComponentGroup<IDComponent, TagComponent, ChildComponent, TransformComponent,
+		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent,
 		MeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
 		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent>;

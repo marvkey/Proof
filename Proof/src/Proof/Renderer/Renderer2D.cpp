@@ -12,6 +12,7 @@
 #include "Proof/Scene/Entity.h"
 #include "RenderPass.h"
 #include "GraphicsPipeLine.h"
+#include "Shader.h"
 #include "CommandBuffer.h"
 #include "Font.h"
 #include "MSDFData.h"
@@ -132,12 +133,12 @@ namespace Proof {
 	void Renderer2D::DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform){
 		if (Sprite.Texture != nullptr)
 		{
-			DrawQuad(ProofToglmVec(transform.Location), ProofToglmVec(transform.Rotation), ProofToglmVec(transform.Scale),
+			DrawQuad(transform.Location, transform.GetRotationEuler(), transform.Scale,
 				glm::vec4{ Sprite.Colour }, Sprite.Texture);
 		}
 		else
 		{
-			DrawQuad( ProofToglmVec(transform.Location),ProofToglmVec(transform.Rotation),ProofToglmVec(transform.Scale),glm::vec4{Sprite.Colour}, nullptr);
+			DrawQuad( transform.Location,transform.GetRotationEuler(), transform.Scale, glm::vec4{Sprite.Colour}, nullptr);
 		}
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D) {
@@ -167,9 +168,9 @@ namespace Proof {
 			TextureIndex = 0;
 
 		s_Transform = glm::translate(glm::mat4(1.0f), { Location.x,Location.y,Location.z }) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.x), { 1.0f,0.0f,0.0f }) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.y), { 0.0f,1.0f,0.0f }) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.z), { 0.0f,0.0f,1.0f }) *
+			glm::rotate(glm::mat4(1.0f), Rotation.x, { 1.0f,0.0f,0.0f }) *
+			glm::rotate(glm::mat4(1.0f), Rotation.y, { 0.0f,1.0f,0.0f }) *
+			glm::rotate(glm::mat4(1.0f), Rotation.z, { 0.0f,0.0f,1.0f }) *
 			glm::scale(glm::mat4(1.0f), { Size.x,Size.y,Size.z });
 
 

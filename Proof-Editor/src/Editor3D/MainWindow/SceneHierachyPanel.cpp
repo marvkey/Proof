@@ -92,34 +92,12 @@ namespace Proof
 			}
 			{
 				m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
-				// when copying ot temporayr since copies backwards have to do this
-				if (m_CurrentWorld->m_CurrentState == WorldState::Edit) {
-					for (uint64_t i = 0; i < m_CurrentWorld->m_Registry.size(); i++) {
-						Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld.Get()};
-						if (entity.HasOwner() == false)
-							DrawEntityNode(entity);
-					}
-				}
-				else {
-					for (uint64_t i = 0; i < m_CurrentWorld->m_Registry.size(); i++)
-					{
-						Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld.Get()};
-						if (entity.HasOwner() == false)
-							DrawEntityNode(entity);
-					}
-					//for (uint64_t i = m_CurrentWorld->m_Registry.size()-1; i >=0; i--)
-					//{
-					//	Entity entity = { m_CurrentWorld->m_Registry.entities[i],m_CurrentWorld };
-					//	IDComponent* comp = entity.GetComponent<IDComponent>();
-					//	uint64_t iereewrsdfasfd = comp->GetID().Get();
-					//	if (entity.HasOwner() == false)
-					//		DrawEntityNode(entity);
-					//}
-					//m_CurrentWorld->ForEachEntityBackwards([&](Entity entity) {
-					//	if (entity.HasOwner() == false)
-					//		DrawEntityNode(entity);
-					//});
-				}
+				m_CurrentWorld->m_Registry.each([&](auto entityID)
+				{
+					Entity entity = { entityID,m_CurrentWorld.Get() };
+					if (entity.HasParent() == false)
+						DrawEntityNode(entity);
+				});
 
 				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
 					m_SelectedEntity = {};
@@ -131,7 +109,7 @@ namespace Proof
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
 
 					Entity Data = *(const Entity*)payload->Data;
-					Data.SetOwner(Entity{});
+					Data.Unparent();
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -156,7 +134,7 @@ namespace Proof
 	}
 
 	bool  SceneHierachyPanel::CreateEntityMenu(Entity owner) {
-		uint64_t selectedPreviousEntityID = m_SelectedEntity.GetEntityID();// we are doing this inncase we created a child entity
+		uint64_t selectedPreviousEntityID = m_SelectedEntity.GetUUID();// we are doing this inncase we created a child entity
 		Entity newEntity;
 		if (ImGui::MenuItem("Entity"))
 			newEntity = m_CurrentWorld->CreateEntity();
@@ -188,24 +166,24 @@ namespace Proof
 			newEntity = m_CurrentWorld->CreateEntity("Camera");
 			newEntity.AddComponent<CameraComponent>();
 		}
-		if (owner && newEntity.GetEntityID() != 0) {
-			newEntity.SetOwner(owner);
+		if (owner && newEntity.GetUUID() != 0) {
+			owner.AddChild(newEntity);
 		}
-		if (newEntity.GetEntityID() != 0)
+		if (newEntity.GetUUID() != 0)
 			return true;
 		return false;
 	}
 	void SceneHierachyPanel::DrawEntityNode(Entity entity) {
 		auto& tc = entity.GetComponent<TagComponent>().Tag;
-		ImGui::PushID(entity.GetEntityID());
+		ImGui::PushID(entity.GetUUID());
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 
-		if (entity.GetComponent<ChildComponent>().HasChildren() == false) {
+		if (entity.GetComponent<HierarchyComponent>().Children.empty()) {
 			flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
 		}
 
 		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity.GetEntityID(), flags, tc.c_str());
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity.GetUUID(), flags, tc.c_str());
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity")) {
 
@@ -252,15 +230,16 @@ namespace Proof
 			ImGui::EndPopup();
 		}
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
-			Editore3D::Get()->m_EditorCamera.SetPosition( ProofToglmVec(m_CurrentWorld->GetWorldLocation(m_SelectedEntity)));
+			Editore3D::Get()->m_EditorCamera.SetPosition( m_CurrentWorld->GetWorldSpaceLocation(m_SelectedEntity));
 		}
 		if (m_SelectedEntity && ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::F)) {
-			Editore3D::Get()->m_EditorCamera.SetPosition (ProofToglmVec(m_CurrentWorld->GetWorldLocation(m_SelectedEntity)));
+			Editore3D::Get()->m_EditorCamera.SetPosition (m_CurrentWorld->GetWorldSpaceLocation(m_SelectedEntity));
 		}
 
 		if (opened) {
-			for (const UUID& I : entity.GetComponent<ChildComponent>().m_Children) {
-				DrawEntityNode(Entity{ I,m_CurrentWorld.Get()});
+			for (const UUID& I : entity.GetComponent<HierarchyComponent>().Children) {
+				;
+				DrawEntityNode(m_CurrentWorld->GetEntity(I));
 			}
 			ImGui::TreePop();
 		}
@@ -380,7 +359,9 @@ namespace Proof
 		});
 		DrawComponents<TransformComponent>("Transform", entity, [](auto& transformComp) {
 			DrawVectorControl("Location", transformComp.Location);
-			DrawVectorControl("Rotation", transformComp.Rotation);
+			glm::vec3 rotationdeg = glm::degrees(transformComp.GetRotationEuler());
+			DrawVectorControl("Rotation", rotationdeg);
+			transformComp.SetRotationEuler(glm::radians(rotationdeg));
 			DrawVectorControl("Scale", transformComp.Scale, 1.0f);
 		});
 		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp) {
@@ -971,7 +952,7 @@ namespace Proof
 									{
 										Entity ent = m_CurrentWorld->GetEntity(scriptField.GetValue<uint64_t>());
 										ExternalAPI::ImGUIAPI::TextBar(field.Name, ent.GetName());
-										scriptField.SetValue<uint64_t>(ent.GetEntityID().Get());
+										scriptField.SetValue<uint64_t>(ent.GetUUID().Get());
 									}
 									else
 									{
@@ -983,7 +964,7 @@ namespace Proof
 										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
 										{
 											Entity ent = *(Entity*)payload->Data;
-											scriptField.SetValue<uint64_t>(ent.GetEntityID());
+											scriptField.SetValue<uint64_t>(ent.GetUUID());
 										}
 										ImGui::EndDragDropTarget();
 									}
@@ -1246,6 +1227,78 @@ namespace Proof
 
 		ImGui::SameLine();
 		ImGui::DragFloat("##Z", &Vec.Z, Speed, 0, 0, "%.3f"); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::PopStyleColor(3);
+
+		ImGui::GetStyle().FrameRounding = 6;
+
+		ImGui::PopStyleVar(1);
+		ImGui::Columns(1);
+		ImGui::PopID();
+	}
+	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel, glm::vec3& Vec, float ResetValue, float columnWidth, float Speed)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+		ImGui::PushID(UniqeLabel.c_str());// this id is for everything here so imgui does not assign something to the value that we have here
+		ImGui::Columns(2); // distance between label and edits
+		ImGui::SetColumnWidth(0, columnWidth);
+		ImGui::Text(UniqeLabel.c_str());
+		ImGui::NextColumn();
+
+		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0,0 });
+		ImGui::GetStyle().FrameRounding = 0;
+
+		float LineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f; // comes from IMGUI
+		ImVec2 buttonSize = { LineHeight + 3.0f,LineHeight };
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 1.0f,0.0f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 1.0f,0.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 1.0f,0.0f,0.0f,1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("X", buttonSize))
+		{
+			Vec.x = ResetValue;
+		}
+		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::DragFloat("##x", &Vec.x, Speed, 0, 0, "%.3f"); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f,.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 1.0f,0.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.0f,.5f,0.0f,1.0f });
+
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Y", buttonSize))
+		{
+			Vec.y = ResetValue;
+		}
+		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::DragFloat("##Y", &Vec.y, Speed, 0, 0, "%.3f"); // does not show ## as label
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::PopStyleColor(3);
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.0f,0.0f,1.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 1.0f,0.5f,0.0f,1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.0f,0.0f,1.0f,1.0f });
+
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Z", buttonSize))
+		{
+			Vec.z = ResetValue;
+		}
+		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::DragFloat("##Z", &Vec.z, Speed, 0, 0, "%.3f"); // does not show ## as label
 		ImGui::PopItemWidth();
 		ImGui::PopStyleColor(3);
 

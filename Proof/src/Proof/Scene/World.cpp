@@ -33,18 +33,12 @@ namespace Proof {
 	{
 		m_Registry = {};
 	}
-	bool World::HasEntity(EntityID ID)const {
-		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
-		if (it == m_Registry.entities.end())
+	bool World::HasEntity(UUID ID)const {
+		if (ID == 0)
 			return false;
-		return true;
+		return m_EntitiesMap.contains(ID);
 	}
-	bool World::HasEntity(EntityID ID) {
-		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
-		if (it == m_Registry.entities.end())
-			return false;
-		return true;
-	}
+	
 	void World::OnUpdateEditor(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		DeleteEntitiesfromQeue();
@@ -62,7 +56,7 @@ namespace Proof {
 					if (handler != nullptr)
 					{
 						if(handler->Visible == true)
-							handler->Update(DeltaTime, GetWorldLocation(wfadfas));
+							handler->Update(DeltaTime,GlmVecToProof( GetWorldSpaceLocation(wfadfas)));
 					}
 				}
 			}
@@ -87,7 +81,7 @@ namespace Proof {
 				{
 					Entity entity(entityID, this);
 					const auto& dirLightComponent = dirLights.get<DirectionalLightComponent>(entityID);
-					glm::vec3 direction = ProofToglmVec(dirLightComponent.OffsetDirection) + ProofToglmVec(GetWorldRotation(entity));
+					glm::vec3 direction =GetWorldSpaceRotation(entity);
 					direction = glm::normalize(direction);
 					directionaLightScene.DirectionalLights[index].Color = dirLightComponent.Color;
 					directionaLightScene.DirectionalLights[index].Intensity = dirLightComponent.Intensity;
@@ -141,10 +135,10 @@ namespace Proof {
 				{
 					Entity entity(e, this);
 					auto [transformComponent, pointLight] = pointLights.get<TransformComponent, PointLightComponent>(e);
-					auto transform = GetWorldTransformComponent(entity);
+					auto transform = GetWorldSpaceTransformComponent(entity);
 					pointLightScene.PointLights[pointLightIndex] =
 					{
-							ProofToglmVec( transform.Location),
+							transform.Location,
 							pointLight.Intensity,
 							pointLight.Color,
 							pointLight.MinRadius,
@@ -175,15 +169,13 @@ namespace Proof {
 				{
 					Entity entity(e, this);
 					auto [transformComponent, spotLight] = spotLights.get<TransformComponent, SpotLightComponent>(e);
-					auto transform = GetWorldTransformComponent(entity);
+					auto transform = GetWorldSpaceTransformComponent(entity);
 					//auto transform = GetWorldSpaceTransform(entity);
-					glm::vec3 direction = spotLight.OffsetDirection + ProofToglmVec(GetWorldRotation(entity));
-					direction = glm::rotate(glm::quat(direction), glm::vec3(1.0f, 0.0f, 0.0f));
-					direction = glm::normalize(direction);
+					glm::vec3 direction = glm::normalize(glm::rotate(transform.GetRotation(), glm::vec3(1.0f, 0.0f, 0.0f)));
 					//glm::vec3 direction = glm::normalize(glm::rotate(transform.GetRotation(), glm::vec3(1.0f, 0.0f, 0.0f)));
 
 					spotLightSceneData.SpotLights[spotLightIndex++] = {
-						ProofToglmVec(transform.Location),
+						transform.Location,
 						spotLight.Intensity,
 						direction,
 						spotLight.AngleAttenuation,
@@ -217,7 +209,7 @@ namespace Proof {
 				if (mesh)
 				{
 					Entity e = Entity(entity, this);
-					glm::mat4 transform = GetWorldTransform(e);
+					glm::mat4 transform = GetWorldSpaceTransform(e);
 
 					//if (SelectionManager::IsEntityOrAncestorSelected(e))
 					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
@@ -238,27 +230,20 @@ namespace Proof {
 		// job to remove entites does not care if has child or not
 		for (auto& ID : m_EntityDeleteQueue)
 		{
-			auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ID.Get());
-			if (it == m_Registry.entities.end())
-				return;
 			// incase we only deleting the head enitty
-			Entity entity{ ID,this };
+			Entity entity = GetEntity(ID);
 			entity.EachChild([&](Entity childEntity) {
-				childEntity.SetOwner(Entity{});
+				childEntity.Unparent();
 			});
-			if (entity.HasOwner())
+			if (entity.HasParent())
 			{
-				if (TryGetEntity(entity.GetOwner().GetEntityID()))
+				if (TryGetEntityWithUUID(entity.GetParentUUID()))
 				{
-					entity.GetOwner().RemoveChild(entity);
+					GetEntity((entity.GetParentUUID())).RemoveChild(entity);
 				}
 			}
-
-			for (auto&& pdata : m_Registry.pools)
-			{
-				pdata.pool&& pdata.pool->remove(ID.Get(), &m_Registry);
-			}
-			m_Registry.entities.erase(it);
+			m_Registry.destroy((entt::entity)entity);
+			m_EntitiesMap.erase(ID);
 		}
 
 		m_EntityDeleteQueue.clear();
@@ -274,27 +259,26 @@ namespace Proof {
 
 	}
 
-	void World::OnRigidBodyComponentCreate(entt::registry64& component, uint64_t entityID)
+	void World::OnRigidBodyComponentCreate(entt::registry& component, entt::entity entityID)
 	{
-		m_PhysicsWorld->NewActor(entityID);
+		Entity e = { entityID, this };
+		m_PhysicsWorld->NewActor(e.GetUUID());
 	}
 
-	void World::OnRigidBodyComponentUpdate(entt::registry64& component, uint64_t entityID)
+
+	void World::OnRigidBodyComponentDelete(entt::registry& component, entt::entity entityID)
 	{
-		PF_CORE_ASSERT(false);
+		Entity e = { entityID, this };
+
+		m_PhysicsWorld->RemoveActor(e.GetUUID());
 	}
 
-	void World::OnRigidBodyComponentDelete(entt::registry64& component, uint64_t entityID)
-	{
-		m_PhysicsWorld->RemoveActor(entityID);
-	}
-
-	void World::OnScriptAdded(entt::registry64& component, uint64_t entityID)
+	void World::OnScriptAdded(entt::registry& component, entt::entity entityID)
 	{
 		ScriptMeathod::OnCreate({ entityID,this });
 	}
 
-	void World::OnScriptDelete(entt::registry64& component, uint64_t entityID)
+	void World::OnScriptDelete(entt::registry& component, entt::entity entityID)
 	{
 		ScriptMeathod::OnDestroy({ entityID,this }); 
 	}
@@ -336,7 +320,7 @@ namespace Proof {
 					if (handler != nullptr)
 					{
 						if(handler->Visible == true)
-							handler->Update(DeltaTime, GetWorldLocation(wfadfas));
+							handler->Update(DeltaTime, GlmVecToProof( GetWorldSpaceLocation(wfadfas)));
 					}
 				}
 			}
@@ -360,16 +344,15 @@ namespace Proof {
 		DeleteEntitiesfromQeue();
 	}
 
-	Entity World::TryGetEntity(UUID id) {
-		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), id.Get());
-		if (it == m_Registry.entities.end())
-			return Entity{};
-
-		return Entity{ *it,this };
+	Entity World::TryGetEntityWithUUID(UUID id)const {
+		if (const auto iter = m_EntitiesMap.find(id); iter != m_EntitiesMap.end())
+			return iter->second;
+		return Entity{};
 	}
 	Entity World::GetEntity(UUID id)
 	{
-		return Entity{ id,this };
+		PF_CORE_ASSERT(m_EntitiesMap.find(id) != m_EntitiesMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
+		return m_EntitiesMap.at(id);
 	}
 
 	void World::OnSimulatePhysics(FrameTime DeltaTime) {
@@ -382,7 +365,7 @@ namespace Proof {
 	}
 
 	Entity World::GetWorldCameraEntity() {
-		if (HasWorldCamera() == false)return Entity{ 0,nullptr };
+		if (HasWorldCamera() == false)return Entity{};
 		const auto& cameraGroup = m_Registry.group<TransformComponent>(entt::get<CameraComponent>);
 		for (auto entity : cameraGroup)
 		{
@@ -395,22 +378,21 @@ namespace Proof {
 		OnRender(renderer, time, camera,GlmVecToProof( camera.GetPosition()), camera.GetNearPlane(), camera.GetFarPlane());
 	}
 
-
-
 	Entity World::CreateEntity(const std::string& EntName) {
-		return CreateEntity(EntName, EntityID());
+		return CreateEntity(EntName, UUID());
 	}
 
-	Entity World::CreateEntity(const std::string& EntName, EntityID ID) {
+	Entity World::CreateEntity(const std::string& EntName, UUID ID) {
 		/* we have to do some custmization of entt because when we pass an ID the entities create a vecot of the size of ID*/
 
-		m_Registry.entities.emplace_back(ID.Get()); // not the correct way but it works there is some bugs with ent so we have to do this
-		Entity entity = { ID,this };
+		Entity entity = { m_Registry.create(),this };
 
 		entity.AddComponent<IDComponent>(ID);
 		entity.AddComponent<TagComponent>().Tag = EntName;
-		entity.AddComponent<ChildComponent>().m_CurrentID = ID;
+		entity.AddComponent<HierarchyComponent>();
 		entity.AddComponent<TransformComponent>();
+
+		m_EntitiesMap[ID] = entity;
 		return entity;
 	}
 
@@ -419,7 +401,7 @@ namespace Proof {
 	{
 		([&]()
 		{
-			if (typeid(Componnents) == typeid(IDComponent) || typeid(Componnents) == typeid(ChildComponent))
+			if (typeid(Componnents) == typeid(IDComponent) || typeid(Componnents) == typeid(HierarchyComponent))
 			{
 				return;
 			}
@@ -448,9 +430,9 @@ namespace Proof {
 		}
 		return newEntity;
 	}
-
+	#if 0
 	template<typename... Component>
-	static void CopyComponentSinglPrefab(Entity dstEntity, entt::registry64& dstMap,const entt::registry64& src, UUID srcID,const std::unordered_map<UUID, uint64_t>& enttMap)
+	static void CopyComponentSinglPrefab(Entity dstEntity, entt::registry& dstMap,const entt::registry& src, UUID srcID,const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
 		([&]()
 		{
@@ -459,8 +441,8 @@ namespace Proof {
 				return;
 			}
 
-			uint64_t destinationID = dstEntity.GetEntityID();
-			if (!src.any_of<Component>(srcID))
+			entt::entity destinationID = (entt::entity)dstEntity;
+			if (!src.all_of<Component>(srcID))
 				return;
 
 			const auto& srcComponent = src.get<Component>(srcID);
@@ -470,11 +452,12 @@ namespace Proof {
 	}
 
 	template<typename... Component>
-	static void CopyComponentPrefab(ComponentGroup<Component...>, Entity dst, entt::registry64& dstMap,const entt::registry64& src,UUID srcID, const std::unordered_map<UUID, uint64_t>& enttMap)
+	static void CopyComponentPrefab(ComponentGroup<Component...>, Entity dst, entt::registry& dstMap,const entt::registry& src,UUID srcID, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
 		CopyComponentSinglPrefab<Component...>(dst, dstMap, src, srcID, enttMap);
 	}
-	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, TransformComponent transfom, EntityID id)
+	#endif
+	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, TransformComponent transfom, UUID id)
 	{
 		/**
 		 * when an entity with sub children has rigid body this fucntions crahses 
@@ -483,48 +466,37 @@ namespace Proof {
 		 */
 		Entity newEntity = CreateEntity(name, id);
 		
-		std::unordered_map<UUID, uint64_t> enttMap;
+		std::unordered_map<UUID, entt::entity> enttMap;
 		{
 
 
-			enttMap[prefab->GetBaseEntity()] = newEntity.GetEntityID();
+			enttMap[prefab->GetBaseEntity()] = (entt::entity)newEntity;
 
-			CopyComponentPrefab(AllComponents{}, newEntity, m_Registry, prefab->GetRegistry(), prefab->GetBaseEntity(), enttMap);
+			//CopyComponentPrefab(AllComponents{}, newEntity, m_Registry, prefab->GetRegistry(), prefab->GetBaseEntity(), enttMap);
 			newEntity.GetComponent<TransformComponent>() = transfom;
-
-
-			newEntity.GetComponent<ChildComponent>().m_Children = {};
-			newEntity.GetComponent<ChildComponent>().m_OwnerPointer = nullptr;
-			newEntity.GetComponent<ChildComponent>().m_OwnerID = 0;
-			newEntity.GetComponent<ChildComponent>().m_CurrentID = newEntity.GetEntityID();
+			
 
 			if (prefab->GetRegistry().size() == 1)
 				return newEntity;
 		}
-
+		#if 0
 		auto& prefaRegistry = prefab->GetRegistry();
-		std::function<Entity(UUID)> createEntity = [&](UUID registryEntityId)->Entity
+		std::function<Entity(entt::entity)> createEntity = [&](entt::entity registryEntityId)->Entity
 		{
-			if (prefaRegistry.get<ChildComponent>(registryEntityId).HasOwner())
+			if (prefaRegistry.get<HierarchyComponent>(registryEntityId).ParentHandle != 0)
 			{
 				Entity owner;
-				UUID owenrID = prefaRegistry.get<ChildComponent>(registryEntityId).GetOwnerID();
+				UUID owenrID = prefaRegistry.get<HierarchyComponent>(registryEntityId).ParentHandle;
 				if (!enttMap.contains(owenrID))
 					owner = createEntity(owenrID);
 				else
 					owner = { enttMap[owenrID],this };
 
 				Entity thisEntity = CreateEntity();
-				enttMap[registryEntityId] = thisEntity.GetEntityID();
-				CopyComponentPrefab(AllComponents{}, thisEntity, m_Registry, prefab->GetRegistry(), registryEntityId, enttMap);
-
-				thisEntity.GetComponent<ChildComponent>().m_Children = {};
-				thisEntity.GetComponent<ChildComponent>().m_OwnerPointer = nullptr;
-				thisEntity.GetComponent<ChildComponent>().m_OwnerID = 0;
-				thisEntity.GetComponent<ChildComponent>().m_CurrentID = thisEntity.GetEntityID();
-				
+				enttMap[registryEntityId] = thisEntity.GetUUID();
+				CopyComponentPrefab(AllComponents{}, thisEntity, m_Registry, prefab->GetRegistry(), prefaRegistry.get<IDComponent>(registryEntityId).GetID(), enttMap);
 			
-				for (UUID id : prefaRegistry.get<ChildComponent>(registryEntityId).GetChildren())
+				for (UUID id : prefaRegistry.get<HierarchyComponent>(registryEntityId).Children)
 				{
 					if (enttMap.contains(registryEntityId))
 					{
@@ -537,20 +509,20 @@ namespace Proof {
 					}
 				}
 				if(owner)
-					owner.GetComponent<ChildComponent>().AddChild(thisEntity.GetComponent<ChildComponent>());
+					owner.GetComponent<HierarchyComponent>().Children.push_back(thisEntity.GetUUID());
 				return thisEntity;
 			}
 			else
 			{
 				Entity basicEntity = CreateEntity();
-				enttMap[registryEntityId] = basicEntity.GetEntityID();
+				enttMap[registryEntityId] = basicEntity.GetUUID();
 				CopyComponentPrefab(AllComponents{}, basicEntity, m_Registry, prefab->GetRegistry(), registryEntityId, enttMap);
 
 				return basicEntity;
 			}
 		};
 		
-		for (UUID registryEntityID : prefab->GetRegistry().entities)
+		for (UUID registryEntityID : prefab->GetRegistry().)
 		{
 			if (registryEntityID == prefab->GetBaseEntity())continue;
 			if (enttMap.contains(registryEntityID))
@@ -558,11 +530,11 @@ namespace Proof {
 
 			createEntity(registryEntityID);
 		}
-
+		#endif
 		return newEntity;
 	}
 	template<typename... Component>
-	static void CopyComponentSingleWorld(entt::registry64& dst, entt::registry64& src, const std::unordered_map<UUID, uint64_t>& enttMap)
+	static void CopyComponentSingleWorld(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
 		([&]()
 		{
@@ -574,7 +546,7 @@ namespace Proof {
 			for (auto srcEntity : view)
 			{
 				UUID id = src.get<IDComponent>(srcEntity).GetID();
-				uint64_t dstEntity = enttMap.at(id);
+				entt::entity dstEntity = enttMap.at(id);
 
 				auto& srcComponent = src.get<Component>(srcEntity);
 				dst.emplace_or_replace<Component>(dstEntity, srcComponent);
@@ -583,7 +555,7 @@ namespace Proof {
 	}
 
 	template<typename... Component>
-	static void CopyComponent(ComponentGroup<Component...>, entt::registry64& dst, entt::registry64& src, const std::unordered_map<UUID, uint64_t>& enttMap)
+	static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
 	{
 		CopyComponentSingleWorld<Component...>(dst, src, enttMap);
 	}
@@ -597,7 +569,7 @@ namespace Proof {
 	
 		auto& srcSceneRegistry = worldToCopy->m_Registry;
 		auto& dstSceneRegistry = newWorld->m_Registry;
-		std::unordered_map<UUID, uint64_t> enttMap;
+		std::unordered_map<UUID, entt::entity> enttMap;
 
 		// Create entities in new scene
 		// in reverse order
@@ -606,7 +578,7 @@ namespace Proof {
 			EntityID uuid = srcSceneRegistry.get<IDComponent>(e).GetID();
 			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
 			Entity newEntity = newWorld->CreateEntity(name, uuid);
-			enttMap.insert({ uuid,newEntity.GetEntityID() });
+			enttMap[uuid] = (entt::entity)newEntity;
 		});
 
 		// Copy components (except IDComponent )
@@ -630,12 +602,12 @@ namespace Proof {
 			if (!AssetManager::HasAsset(inputCopy.Player))return;
 			if ((int)inputCopy.InputPlayer > numPlayrs)
 			{
-				UUID playerID = entity.GetEntityID();
+				UUID playerID = entity.GetUUID();
 				DeleteEntity(entity);
 				DeleteEntitiesfromQeue();
 				return;
 			}
-			UUID playerID = entity.GetEntityID();
+			UUID playerID = entity.GetUUID();
 			DeleteEntity(entity);
 			DeleteEntitiesfromQeue();
 
@@ -689,7 +661,7 @@ namespace Proof {
 		///
 		///
 		PhysicsWorldConfig config;
-		config.Gravity = { 0,-500.8f,0 };// for multiplayer scene
+		config.Gravity = { 0,-9.8f,0 };// for multiplayer scene
 		m_PhysicsWorld = new PhysicsWorld(this, config);
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
 		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
@@ -709,10 +681,9 @@ namespace Proof {
 		delete m_PhysicsWorld;
 	}
 	void World::DeleteEntity(Entity ent, bool deleteChildren) {
-		auto it = std::find(m_Registry.entities.begin(), m_Registry.entities.end(), ent.m_ID.Get());
-		if (it == m_Registry.entities.end())
+		if(!m_EntitiesMap.contains(ent.GetUUID()))
 			return;
-		m_EntityDeleteQueue.emplace_back(ent.GetEntityID());
+		m_EntityDeleteQueue.insert(ent.GetUUID());
 		if (deleteChildren)
 		{
 			ent.EachChild([&](Entity childEntity) {
@@ -722,62 +693,109 @@ namespace Proof {
 
 	}
 
-	Entity World::FindEntityByTag(const std::string& tag) {
-		Entity returnEntity;
-		ForEachEnitityWith<TagComponent>([&](Entity& entity) {
-			if (entity.GetComponent<TagComponent>().Tag == tag)
-			{
-				returnEntity = entity;
-				return;
-			}
-
-		});
-		return returnEntity;
-	}
-
-	Vector World::GetWorldLocation(Entity entity) const {
-		auto& transformComp = entity.GetComponent<TransformComponent>();
-		if (entity.HasOwner())
-			return transformComp.Location + World::GetWorldLocation(entity.GetOwner());
-		return transformComp.Location;
-	}
-
-	Vector World::GetWorldRotation(Entity entity) const {
-		auto& transformComp = entity.GetComponent<TransformComponent>();
-		if (entity.HasOwner())
-			return transformComp.Rotation + World::GetWorldRotation(entity.GetOwner());
-		return transformComp.Rotation;
-	}
-
-	Vector World::GetWorldScale(Entity entity) const {
-		auto& transformComp = entity.GetComponent<TransformComponent>();
-		if (entity.HasOwner())
-			return transformComp.Scale * World::GetWorldScale(entity.GetOwner());
-		return transformComp.Scale;
-	}
-
-	TransformComponent World::GetWorldTransformComponent(Entity entity) const
+	void World::ConvertToWorldSpaceTransform(Entity entity)
 	{
-		TransformComponent transform;
-		transform.Location = GetWorldLocation(entity);
-		transform.Rotation = GetWorldRotation(entity);
-		transform.Scale = GetWorldScale(entity);
+		PF_PROFILE_FUNC();
 
-		return transform;
+		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
+
+		if (!parent)
+			return;
+
+		glm::mat4 transform = GetWorldSpaceTransform(entity);
+		auto& entityTransform = entity.GetComponent<TransformComponent>();
+		entityTransform.SetTransform(transform);
+	}
+
+	Entity World::TryGetEntityByTag(const std::string& tag) {
+		Entity returnEntity;
+		auto entities = GetAllEntitiesWith<TagComponent>();
+		for (auto e : entities)
+		{
+			if (entities.get<TagComponent>(e).Tag == tag)
+				return Entity(e, const_cast<World*>(this));
+		}
+
+		return Entity{};
+	}
+
+	glm::vec3 World::GetWorldSpaceLocation(Entity entity) const {
+		return GetWorldSpaceTransformComponent(entity).Location;
+	}
+
+	glm::vec3 World::GetWorldSpaceRotation(Entity entity) const {
+		return GetWorldSpaceTransformComponent(entity).GetRotationEuler();
+	}
+
+	glm::vec3 World::GetWorldSpaceScale(Entity entity) const 
+	{
+		return GetWorldSpaceTransformComponent(entity).Scale;
+	}
+
+	TransformComponent World::GetWorldSpaceTransformComponent(Entity entity) const
+	{
+		glm::mat4 transform = GetWorldSpaceTransform(entity);
+		TransformComponent transformComponent;
+		transformComponent.SetTransform(transform);
+		return transformComponent;
 	}
 	
-	glm::mat4 World::GetWorldTransform(Entity entity) const {
-		auto rotation = GetWorldRotation(entity);
-		return glm::translate(glm::mat4(1.0f), { ProofToglmVec(GetWorldLocation(entity)) }) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(rotation.X), { 1,0,0 })
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Y), { 0,1,0 })
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation.Z), { 0,0,1 })
-			* glm::scale(glm::mat4(1.0f), { ProofToglmVec(GetWorldScale(entity)) });
+	glm::mat4 World::GetWorldSpaceTransform(Entity entity) const {
+		glm::mat4 transform(1.0f);
+		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
+		if (parent)
+			transform = GetWorldSpaceTransform(parent);
+
+		return transform * entity.Transform().GetTransform();
 	}
 
-	// need to fix this
-	void World::OnChildComponentDestroy(ChildComponent& childComponent)
+	void World::ParentEntity(Entity entity, Entity parent)
 	{
+		PF_PROFILE_FUNC();
+		if (entity.GetParent() == parent)
+			return;
 
+		if (!parent)
+			return;
+		if (parent.IsDescendantOf(entity))
+		{
+			UnparentEntity(parent);
+
+			Entity newParent = TryGetEntityWithUUID(entity.GetParentUUID());
+			if (newParent)
+			{
+				UnparentEntity(entity);
+				ParentEntity(parent, newParent);
+			}
+		}
+		else
+		{
+			Entity previousParent = TryGetEntityWithUUID(entity.GetParentUUID());
+
+			if (previousParent)
+				UnparentEntity(entity);
+		}
+		entity.GetComponent<HierarchyComponent>().ParentHandle = parent.GetUUID();
+		parent.Children().push_back(entity.GetUUID());
+
+		ConvertToWorldSpaceTransform(entity);
 	}
+
+	
+
+	void World::UnparentEntity(Entity entity, bool convertToWorldSpace)
+	{
+		PF_PROFILE_FUNC();
+		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
+		if (!parent)
+			return;
+		auto& parentChildren = parent.Children();
+		parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), entity.GetUUID()), parentChildren.end());
+
+		if (convertToWorldSpace)
+			ConvertToWorldSpaceTransform(entity);
+
+		entity.GetComponent<HierarchyComponent>().ParentHandle = 0;
+	}
+
 }

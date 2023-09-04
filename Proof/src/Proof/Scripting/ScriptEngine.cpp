@@ -145,11 +145,11 @@ namespace Proof
         Count<ScriptClass> EntityClass;
 
         //(ENitty ID), (class name,{script name, script inctance)
-        std::unordered_map<EntityID, std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>> EntityScriptFields;
+        std::unordered_map<UUID, std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>> EntityScriptFields;
         std::unordered_map<std::string, Count<ScriptClass>> ScriptEntityClasses;
 
         // entity id, (name of class, instance of it)
-        std::unordered_map<EntityID, std::unordered_map<std::string,Count<ScriptInstance>>> EntityInstances;
+        std::unordered_map<UUID, std::unordered_map<std::string,Count<ScriptInstance>>> EntityInstances;
         
         World* CurrentWorld = nullptr;
         //(scirpt name) (script direct Parent name, script subclasses)
@@ -242,7 +242,7 @@ namespace Proof
         m_OnDestroy = scriptClass->GetMethod("OnDestroy", 0);
         // Call Entity constructor
         {
-            uint64_t entityID = entity.GetEntityID();
+            uint64_t entityID = entity.GetUUID();
             void* param = &entityID;
             m_ScriptClass->CallMethod(m_Instance, m_Constructor, &param);
         }
@@ -273,7 +273,7 @@ namespace Proof
     void ScriptInstance::CallOnCollisionEnter(Entity otherEntity)
     {
         if (!m_OnCollisionEnter)return;
-        uint64_t enittyID = otherEntity.GetEntityID();
+        uint64_t enittyID = otherEntity.GetUUID();
         void* param = &enittyID;
 
         {
@@ -288,7 +288,7 @@ namespace Proof
     void ScriptInstance::CallOnCollissionLeave(Entity otherEntity)
     {
         if (!m_OnCollisionLeave)return;
-        uint64_t enittyID = otherEntity.GetEntityID();
+        uint64_t enittyID = otherEntity.GetUUID();
         void* param = &enittyID;
 
         {
@@ -304,7 +304,7 @@ namespace Proof
     void ScriptInstance::CallOnTriggerEnter(Entity otherEntity)
     {
         if (!m_OnTriggerEnter)return;
-        UUID enittyID = otherEntity.GetEntityID();
+        UUID enittyID = otherEntity.GetUUID();
         void* param = &enittyID;
 
         {
@@ -319,7 +319,7 @@ namespace Proof
     void ScriptInstance::CallOnOverllapTriggerEnter(Entity otherEntity)
     {
         if (!m_OnOverlapTriggerEnter)return;
-        UUID enittyID = otherEntity.GetEntityID();
+        UUID enittyID = otherEntity.GetUUID();
         void* param = &enittyID;
 
         {
@@ -579,29 +579,33 @@ namespace Proof
     }
     std::unordered_map<std::string, Count<ScriptInstance>> const& ScriptEngine::GetScriptInstnace(Entity entity)
     {
-        return s_Data->EntityInstances[entity.GetEntityID()];
+        return s_Data->EntityInstances[entity.GetUUID()];
     }
     bool ScriptEngine::EntityHasScripts(Entity entity)
     {
-        return s_Data->EntityInstances.contains(entity.GetEntityID());
+        return s_Data->EntityInstances.contains(entity.GetUUID());
     }
 
-    const std::unordered_map<EntityID, std::unordered_map<std::string, Count<ScriptInstance>>>& ScriptEngine::EachEntityScript()
+    const std::unordered_map<UUID, std::unordered_map<std::string, Count<ScriptInstance>>>& ScriptEngine::EachEntityScript()
     {
         return s_Data->EntityInstances;
     }
     
     std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& ScriptEngine::GetScriptFieldMap(Entity entity)
     {
-        UUID entityID = entity.GetEntityID();
+        UUID entityID = entity.GetUUID();
         return s_Data->EntityScriptFields[entityID];
     }
+    std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& ScriptEngine::GetScriptFieldMap(UUID id)
+    {
+        return s_Data->EntityScriptFields[id];
+    }
     bool ScriptEngine::HasScriptFieldMap(Entity entity) {
-        return s_Data->EntityScriptFields.contains(entity.GetEntityID());
+        return s_Data->EntityScriptFields.contains(entity.GetUUID());
     }
 
     void ScriptEngine::CreateScriptFieldMap(Entity entity) {
-        s_Data->EntityScriptFields[entity.GetEntityID()] = {};
+        s_Data->EntityScriptFields[entity.GetUUID()] = {};
     }
     std::string ScriptEngine::MonoToString(MonoString* monoString){
         if (monoString == nullptr || mono_string_length(monoString) == 0)
@@ -673,12 +677,12 @@ namespace Proof
         {
             if (ScriptEngine::EntityClassExists(className))
             {
-                UUID entityID = entity.GetEntityID();
+                UUID entityID = entity.GetUUID();
 
                 Count<ScriptInstance> instance = Count<ScriptInstance>::Create(s_Data->ScriptEntityClasses[className], entity);
                 if (instance == nullptr)
                     continue;
-                s_Data->EntityInstances[entity.GetEntityID()][className] = instance;
+                s_Data->EntityInstances[entity.GetUUID()][className] = instance;
 
 
                 if (s_Data->EntityScriptFields.contains(entityID))
@@ -734,7 +738,7 @@ namespace Proof
     {
         const auto& sc = entity.GetComponent<ScriptComponent>();
 
-        UUID entityUUID = entity.GetEntityID();
+        UUID entityUUID = entity.GetUUID();
 
         if (s_Data->EntityInstances.contains(entityUUID))
         {
@@ -749,7 +753,7 @@ namespace Proof
     void ScriptMeathod::OnUpdate(Entity entity, FrameTime time)
     {
         PF_PROFILE_FUNC();
-        UUID entityUUID = entity.GetEntityID();
+        UUID entityUUID = entity.GetUUID();
         if (s_Data->EntityInstances.contains(entityUUID))
         {
             for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
@@ -771,7 +775,7 @@ namespace Proof
     
     void ScriptMeathod::OnCollisionEnter(Entity currentEntity, Entity collidingEntity)
     {
-        UUID entityUUID = currentEntity.GetEntityID();
+        UUID entityUUID = currentEntity.GetUUID();
         if (s_Data->EntityInstances.contains(entityUUID))
         {
             for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
@@ -787,7 +791,7 @@ namespace Proof
     void ScriptMeathod::OnCollisionLeave(Entity currentEntity, Entity leavingEntity)
     {
 
-        UUID entityUUID = currentEntity.GetEntityID();
+        UUID entityUUID = currentEntity.GetUUID();
         if (s_Data->EntityInstances.contains(entityUUID))
         {
             for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
@@ -802,7 +806,7 @@ namespace Proof
     }
     void ScriptMeathod::OnTriggerEnter(Entity currentEntity, Entity triggerEntity)
     {
-        UUID entityUUID = currentEntity.GetEntityID();
+        UUID entityUUID = currentEntity.GetUUID();
         if (s_Data->EntityInstances.contains(entityUUID))
         {
             for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
@@ -818,7 +822,7 @@ namespace Proof
     void ScriptMeathod::OnOverlapTriggerEnter(Entity currentEntity, Entity entityWithTriggerBox)
     {
 
-        UUID entityUUID = currentEntity.GetEntityID();
+        UUID entityUUID = currentEntity.GetUUID();
         if (s_Data->EntityInstances.contains(entityUUID))
         {
             for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])

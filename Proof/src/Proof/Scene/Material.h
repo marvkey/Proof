@@ -8,7 +8,8 @@
 namespace Proof{
 	// thse data only work if using Proofpbr_shader
 	struct Material : public Asset {
-		Material(const std::string& name = "");
+		Material(const std::string& name);
+		Material();
 		ASSET_CLASS_TYPE(Material);
 		std::string Name;
 

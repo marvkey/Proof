@@ -193,9 +193,9 @@ namespace Proof
 		if (AssetManager::HasAsset(m_UIPanel))
 			AssetManager::SaveAsset(m_UIPanel->GetID());
 		ImGui::ColorEdit4("TintColor", glm::value_ptr(button.TintColour));
-		SceneHierachyPanel::DrawVector2Control("Position", button.Postion);
-		SceneHierachyPanel::DrawVector2Control("Rotation", button.Rotation, 0.0f);
-		SceneHierachyPanel::DrawVector2Control("Size", button.Size, 1.0f);
+		//SceneHierachyPanel::DrawVector2Control("Position", button.Postion);
+		//SceneHierachyPanel::DrawVector2Control("Rotation", button.Rotation, 0.0f);
+		//SceneHierachyPanel::DrawVector2Control("Size", button.Size, 1.0f);
 		ImGui::Checkbox("Visible", &button.Visible);
 		ImGui::InputTextMultiline("Text", &button.Text);
 	}
@@ -204,9 +204,9 @@ namespace Proof
 		if (AssetManager::HasAsset(m_UIPanel))
 			AssetManager::SaveAsset(m_UIPanel->GetID());
 		ImGui::ColorEdit4("TintCOlor", glm::value_ptr(button.TintColour));
-		SceneHierachyPanel::DrawVector2Control("Position", button.Postion);
-		SceneHierachyPanel::DrawVector2Control("Rotation", button.Rotation, 0.0f);
-		SceneHierachyPanel::DrawVector2Control("Size", button.Size, 1.0f);
+		//SceneHierachyPanel::DrawVector2Control("Position", button.Postion);
+		//SceneHierachyPanel::DrawVector2Control("Rotation", button.Rotation, 0.0f);
+		//SceneHierachyPanel::DrawVector2Control("Size", button.Size, 1.0f);
 		ImGui::Checkbox("Visible", &button.Visible);
 
 		if (button.Texture != nullptr)
@@ -239,9 +239,9 @@ namespace Proof
 	{
 		if (AssetManager::HasAsset(m_UIPanel))
 			AssetManager::SaveAsset(m_UIPanel->GetID());
-		SceneHierachyPanel::DrawVector2Control("Position", text.Postion);
-		SceneHierachyPanel::DrawVector2Control("Rotation", text.Rotation, 0.0f);
-		SceneHierachyPanel::DrawVector2Control("Size", text.Size, 1.0f);
+		//SceneHierachyPanel::DrawVector2Control("Position", text.Postion);
+		//SceneHierachyPanel::DrawVector2Control("Rotation", text.Rotation, 0.0f);
+		//SceneHierachyPanel::DrawVector2Control("Size", text.Size, 1.0f);
 		ImGui::DragFloat("Kernng", &text.Param.Kerning, 0.025);
 		ImGui::DragFloat("Line Spacing", &text.Param.LineSpacing, 0.025);
 		ImGui::ColorEdit4("Color", glm::value_ptr(text.Param.Color));

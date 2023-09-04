@@ -4,8 +4,9 @@
 namespace Proof {
 
 	template<typename... Component>
-	static void CopyComponentSinglePrefab(entt::registry64& dst, Entity srcEntity, const std::unordered_map<UUID, uint64_t>& enttMap)
+	static void CopyComponentSinglePrefab(entt::registry& dst, Entity srcEntity, const std::unordered_map<UUID, uint64_t>& enttMap)
 	{
+		#if 0
 		([&]()
 		{
 			if (typeid(Component) == typeid(IDComponent))
@@ -22,10 +23,11 @@ namespace Proof {
 			dst.emplace_or_replace<Component>(dstComponent, srcComponent);
 			
 		}(), ...);
+		#endif
 	}
 
 	template<typename... Component>
-	static void CopyComponent(ComponentGroup<Component...>, entt::registry64& dst, Entity srcEntity, const std::unordered_map<UUID, uint64_t>& enttMap)
+	static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, Entity srcEntity, const std::unordered_map<UUID, uint64_t>& enttMap)
 	{
 		CopyComponentSinglePrefab<Component...>(dst, srcEntity, enttMap);
 	}
@@ -44,6 +46,7 @@ namespace Proof {
 	}
 	void Prefab::SetEntity(Entity srcEntity)
 	{
+		#if 0
 		if (!srcEntity)return;
 		//m_Registry.clear();
 		std::unordered_map<UUID, uint64_t> enttMap;
@@ -94,6 +97,6 @@ namespace Proof {
 			if (!enttMap.contains(childEntity.GetEntityID()))
 				createEntity(childEntity.GetEntityID());
 		});
-
+		#endif
 	}
 }

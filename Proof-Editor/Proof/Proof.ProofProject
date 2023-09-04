@@ -4,28 +4,30 @@ Project:
   AssetManager: Assets/AssetManager.ProofAssetManager
   StartWorld: 6477593735195019013
   ScriptModuleDirectory: Resources/Scripts/Binaries
+  OnCloseStartWorldEditLastOpen: true
+  StartWorldEdit: 0
   Input:
     ActionMapping:
+      - Action: Pause
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [256]
       - Action: Jump
         InputDevices:
           - InputDevice: KeyBoard
             Keys: [32]
           - InputDevice: ControllerButton
             Keys: [0]
-      - Action: Pause
+      - Action: Play
         InputDevices:
           - InputDevice: KeyBoard
-            Keys: [256]
+            Keys: [82]
       - Action: DecreaseInventory
         InputDevices:
           - InputDevice: MouseMovement
             Keys: [4]
           - InputDevice: ControllerButton
             Keys: [4]
-      - Action: Play
-        InputDevices:
-          - InputDevice: KeyBoard
-            Keys: [82]
       - Action: IncreaseInventory
         InputDevices:
           - InputDevice: MouseMovement
@@ -47,14 +49,11 @@ Project:
           - InputDevice: ControllerButton
             Keys: [1]
     MotionMapping:
-      - Motion: MoveX
+      - Motion: RMouyseotateX
         InputDevices:
-          - InputDevice: KeyBoard
-            Keys: [65, 68]
-            MotionValues: [1, -1]
-          - InputDevice: ControllerAxis
-            Keys: [0]
-            MotionValues: [-1]
+          - InputDevice: MouseMovement
+            Keys: [1]
+            MotionValues: [1]
       - Motion: DecreaseSpeed
         InputDevices:
           - InputDevice: KeyBoard
@@ -63,11 +62,14 @@ Project:
           - InputDevice: ControllerAxis
             Keys: [4]
             MotionValues: [1]
-      - Motion: RMouyseotateX
+      - Motion: MoveX
         InputDevices:
-          - InputDevice: MouseMovement
-            Keys: [1]
-            MotionValues: [1]
+          - InputDevice: KeyBoard
+            Keys: [65, 68]
+            MotionValues: [1, -1]
+          - InputDevice: ControllerAxis
+            Keys: [0]
+            MotionValues: [-1]
       - Motion: IncreaseSpeed
         InputDevices:
           - InputDevice: KeyBoard

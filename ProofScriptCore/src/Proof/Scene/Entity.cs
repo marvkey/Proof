@@ -71,7 +71,7 @@ namespace Proof
 		}
         public Entity GetOwner()
         {
-			InternalCalls.Entity_GetOwner(ID, out ulong owenrId);
+			InternalCalls.Entity_GetParent(ID, out ulong owenrId);
 			if (owenrId == 0)	
 				return null;
 

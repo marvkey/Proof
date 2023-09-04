@@ -59,20 +59,20 @@ namespace Proof {
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position);
 		void DrawQuad(const glm::vec3& Location);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& Size);
-		void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec4& Color);
+		void DrawQuad(const glm::vec3& Location,const glm::vec3& RotationRadians,const glm::vec4& Color);
 		void DrawQuad(const glm::vec3& Location, const glm::vec4& Color);
 		void DrawQuad(const glm::vec3& Location, Count<class Texture2D> texture);
 		void DrawQuad(const glm::vec3& Location, const glm::vec4& TintColor,Count<Texture2D> texture);
 		void DrawQuad(const glm::vec3& Location, const glm::vec3& Size, const glm::vec4& TintColor, Count<Texture2D>& texture);
-		void DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Size,const glm::vec4& Color);
+		void DrawQuad(const glm::vec3& Location,const glm::vec3& RotationRadians,const glm::vec3& Size,const glm::vec4& Color);
 
-		void DrawQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D);
+		void DrawQuad(const glm::vec3& Location, const glm::vec3& RotationRadians, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D);
 		void DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform);
 
 		// chagne to u32stirng in the future
 		void DrawString(const std::string& text, Count<class Font> font,const TextParams& textparams, const glm::mat4& transform);
 		void EndContext();
-		static std::vector<Vertex2D> CreateQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec3& Scale, const glm::vec4& Color, float TexIndex);
+		static std::vector<Vertex2D> CreateQuad(const glm::vec3& Location, const glm::vec3& RotationRadians, const glm::vec3& Scale, const glm::vec4& Color, float TexIndex);
 
 		static std::pair<Count<VertexBuffer>, Count<IndexBuffer>> CreateQuad();
 

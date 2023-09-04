@@ -22,7 +22,7 @@ namespace Proof
 		}
 
 		// for prefab 
-		static void SerilizeEntity(YAML::Emitter& out, entt::basic_registry<uint64_t>& registry, UUID entityID);
+		static void SerilizeEntity(YAML::Emitter& out, entt::registry& registry, UUID entityID, entt::entity enttID);
 		// for prefab 
 		static void DeSerilizeEntity(YAML::Node& entities, World* world, std::set<UUID>* assetLoad = nullptr, bool prefab = false);
 	private:
