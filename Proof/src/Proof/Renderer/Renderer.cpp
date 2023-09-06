@@ -343,23 +343,23 @@ namespace Proof {
 		s_RendererAPI->OnWindowResize(e);
 	}
 
-	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination, uint32_t imageDimension)
+	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination, uint32_t imageDimensionadfa)
 	{
 		PF_PROFILE_FUNC();
-		imageDimension = 512;
+		const uint32_t cubemapSize = 512;
+		const uint32_t irradianceMap = 32;
 
-		const uint32_t irradianceFilterRate = 32;
 		ImageFormat format = ImageFormat::RGBA32F;
 		TextureConfiguration baseCubeMapConfig;
 		baseCubeMapConfig.DebugName = "Pretham Cube";
 		baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
-		baseCubeMapConfig.Height = imageDimension;
-		baseCubeMapConfig.Width = imageDimension;
+		baseCubeMapConfig.Height = cubemapSize;
+		baseCubeMapConfig.Width = cubemapSize;
 		baseCubeMapConfig.Storage = true;
 		baseCubeMapConfig.GenerateMips = true;
 		baseCubeMapConfig.Format = format;
 
-		uint32_t mipLevels = Utils::GetMipLevelCount(imageDimension, imageDimension);
+		uint32_t mipLevels = Utils::GetMipLevelCount(cubemapSize, cubemapSize);
 		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig);
 		PrethamSkyPass->SetInput("o_CubeMap", environmentMap);
 		Renderer::SubmitCommand([&](CommandBuffer* cmdBufer) {
@@ -367,9 +367,9 @@ namespace Proof {
 			Count<RenderCommandBuffer> commandBuffer = RenderCommandBuffer::Create(cmdBufer);
 			Renderer::BeginComputePass(commandBuffer, PrethamSkyPass);
 			PrethamSkyPass->PushData("u_Uniforms", &params);
-			PrethamSkyPass->Dispatch(imageDimension / 32, imageDimension / 32, 6);
+			PrethamSkyPass->Dispatch(cubemapSize / irradianceMap, cubemapSize / irradianceMap, 6);
 			Renderer::EndComputePass(PrethamSkyPass);
-			return;
+			//return;
 			// boit 
 			auto blitCmd = cmdBufer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 			bool readonly = false;
@@ -403,8 +403,8 @@ namespace Proof {
 						imageBlit.srcSubresource.layerCount = 1;
 						imageBlit.srcSubresource.mipLevel = i - 1;
 						imageBlit.srcSubresource.baseArrayLayer = face;
-						imageBlit.srcOffsets[1].x = int32_t(imageDimension >> (i - 1));
-						imageBlit.srcOffsets[1].y = int32_t(imageDimension >> (i - 1));
+						imageBlit.srcOffsets[1].x = int32_t(cubemapSize >> (i - 1));
+						imageBlit.srcOffsets[1].y = int32_t(cubemapSize >> (i - 1));
 						imageBlit.srcOffsets[1].z = 1;
 
 						// Destination
@@ -412,8 +412,8 @@ namespace Proof {
 						imageBlit.dstSubresource.layerCount = 1;
 						imageBlit.dstSubresource.mipLevel = i;
 						imageBlit.dstSubresource.baseArrayLayer = face;
-						imageBlit.dstOffsets[1].x = int32_t(imageDimension >> i);
-						imageBlit.dstOffsets[1].y = int32_t(imageDimension >> i);
+						imageBlit.dstOffsets[1].x = int32_t(cubemapSize >> i);
+						imageBlit.dstOffsets[1].y = int32_t(cubemapSize >> i);
 						imageBlit.dstOffsets[1].z = 1;
 
 						VkImageSubresourceRange mipSubRange = {};

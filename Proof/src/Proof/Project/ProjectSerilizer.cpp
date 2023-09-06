@@ -138,7 +138,7 @@ namespace Proof
 		m_Project->m_ProjectConfig.StartWorld = projectData["StartWorld"].as<uint64_t>();
 
 		if (projectData["OnCloseStartWorldEditLastOpen"])
-			m_Project->m_ProjectConfig.OnCloseStartWorldEditLastOpen = projectData["OnCloseStartWorldEditLastOpen"].as<uint64_t>();
+			m_Project->m_ProjectConfig.OnCloseStartWorldEditLastOpen = projectData["OnCloseStartWorldEditLastOpen"].as<bool>();
 		if (projectData["StartWorldEdit"])
 			m_Project->m_ProjectConfig.StartWorldEdit = projectData["StartWorldEdit"].as<uint64_t>();
 

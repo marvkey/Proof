@@ -61,7 +61,7 @@ namespace Proof
 			out << YAML::Key << "TransformComponent";
 			out << YAML::BeginMap; // transform component
 			out << YAML::Key << "Location" << YAML::Value << transfrom.Location;
-			out << YAML::Key << "Rotation" << YAML::Value << glm::radians(transfrom.GetRotationEuler());
+			out << YAML::Key << "Rotation" << YAML::Value << transfrom.GetRotationEuler();
 			out << YAML::Key << "Scale" << YAML::Value << transfrom.Scale;
 			out << YAML::EndMap; // transform component
 		}
@@ -450,7 +450,7 @@ namespace Proof
 			out << YAML::Key << "World";
 			out << YAML::BeginMap;
 			{
-				out << YAML::Key << "ID" << m_Scene->m_WorldID;
+				out << YAML::Key << "ID" << m_Scene->GetID();
 
 				out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 				m_Scene->m_Registry.each([&](auto entityID) {
@@ -482,7 +482,7 @@ namespace Proof
 		m_Scene->Name = Utils::FileDialogs::GetFileName(filePath);
 		PF_EC_WARN("Deserilizing World {}", m_Scene->Name.c_str());
 
-		m_Scene->m_WorldID = worldData["ID"].as<uint64_t>();
+		m_Scene->m_ID = worldData["ID"].as<uint64_t>();
 		m_Scene->m_Registry.each([&](auto enttiy) {
 			Entity entity = { enttiy ,m_Scene };
 			m_Scene->DeleteEntity(entity);
@@ -534,10 +534,11 @@ namespace Proof
 				auto transformComponet = entity["TransformComponent"];
 				if (transformComponet)
 				{
-					auto& tc = NewEntity.GetComponent<TransformComponent>();
+					TransformComponent& tc = NewEntity.GetComponent<TransformComponent>();
 					tc.Location = transformComponet["Location"].as<glm::vec3>();
 
-					tc.SetRotationEuler(glm::radians(transformComponet["Rotation"].as<glm::vec3>()));
+					tc.SetRotationEuler(transformComponet["Rotation"].as<glm::vec3>());
+
 					tc.Scale = transformComponet["Scale"].as<glm::vec3>();
 
 				}
@@ -557,7 +558,7 @@ namespace Proof
 							uint64_t childID = entityID.as<uint64_t>();
 							tc.Children.emplace_back(childID);
 						}
-					}
+					}	 
 
 				}
 			}

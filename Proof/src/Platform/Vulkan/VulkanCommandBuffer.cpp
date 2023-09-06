@@ -147,6 +147,8 @@ namespace Proof
 
 
 		VK_CHECK_RESULT(vkQueueSubmit(VulkanRenderer::GetGraphicsContext()->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[frameIndex]));
+		vkDeviceWaitIdle(VulkanRenderer::GetGraphicsContext()->GetDevice());
+		vkResetCommandBuffer(m_CommandBuffers[frameIndex], 0);
 	}
 
 	void VulkanRenderCommandBuffer::BeginRecord(uint32_t frameIndex)

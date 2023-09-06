@@ -516,21 +516,21 @@ namespace Proof
 			
 			{
 				//foward plus
-				constexpr uint32_t TILE_SIZE = 16u;
-				m_LightCullingWorkGroups = glm::ceil(glm::vec3(viewportSize.x / (float)TILE_SIZE, viewportSize.y / (float)TILE_SIZE, 1));
-				m_LightCullingNumThreads = m_LightCullingWorkGroups * glm::uvec3{ TILE_SIZE , TILE_SIZE ,1 };
-
-				// plane {vec3 normal, float distnace} = sizeof(float) *4
-				//Frustrum{ Plane[4]] (sizeof(float) *4 ) * 4
-				const uint32_t frusturmSize = (sizeof(float) * 4) * 4;
-				for (uint32_t index = 0; index < Renderer::GetConfig().FramesFlight; index++)
-				{
-					m_FrustrumsBuffer->Resize(index,frusturmSize * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * m_LightCullingNumThreads.z);
-					m_PointLightIndexListBuffer->Resize(index,m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
-					m_SpotLightIndexListBuffer->Resize(index,m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
-				}
-				m_PointLightGrid->Resize(m_LightCullingNumThreads.x, m_LightCullingNumThreads.y);
-				m_SpotLightGrid->Resize(m_LightCullingNumThreads.x, m_LightCullingNumThreads.y);
+				//constexpr uint32_t TILE_SIZE = 16u;
+				//m_LightCullingWorkGroups = glm::ceil(glm::vec3(viewportSize.x / (float)TILE_SIZE, viewportSize.y / (float)TILE_SIZE, 1));
+				//m_LightCullingNumThreads = m_LightCullingWorkGroups * glm::uvec3{ TILE_SIZE , TILE_SIZE ,1 };
+				//
+				//// plane {vec3 normal, float distnace} = sizeof(float) *4
+				////Frustrum{ Plane[4]] (sizeof(float) *4 ) * 4
+				//const uint32_t frusturmSize = (sizeof(float) * 4) * 4;
+				//for (uint32_t index = 0; index < Renderer::GetConfig().FramesFlight; index++)
+				//{
+				//	m_FrustrumsBuffer->Resize(index,frusturmSize * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * m_LightCullingNumThreads.z);
+				//	m_PointLightIndexListBuffer->Resize(index,m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
+				//	m_SpotLightIndexListBuffer->Resize(index,m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
+				//}
+				//m_PointLightGrid->Resize(m_LightCullingNumThreads.x, m_LightCullingNumThreads.y);
+				//m_SpotLightGrid->Resize(m_LightCullingNumThreads.x, m_LightCullingNumThreads.y);
 			}
 
 			// predepth
@@ -643,8 +643,7 @@ namespace Proof
 	{
 		if (m_UBScreenData.FullResolution == glm::vec2{ width,height })
 			return;
-
-		if (width == 0 or height == 0)
+		if (width <= 0 || height <= 0)
 		{
 			width = 1;
 			height = 1;
@@ -1079,7 +1078,7 @@ namespace Proof
 	{
 		if (m_LightScene.SpotLightCount == 0 && m_LightScene.PointLightCount == 0)
 			return;
-
+		#if 0
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
 
@@ -1138,7 +1137,7 @@ namespace Proof
 
 			m_Timers.LightCulling = timer.ElapsedMillis();
 		}
-
+		#endif
 		
 	}
 	void WorldRenderer::GeometryPass()

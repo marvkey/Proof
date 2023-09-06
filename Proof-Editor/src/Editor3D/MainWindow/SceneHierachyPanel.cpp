@@ -175,6 +175,9 @@ namespace Proof
 	}
 	void SceneHierachyPanel::DrawEntityNode(Entity entity) {
 		auto& tc = entity.GetComponent<TagComponent>().Tag;
+		//PF_ENGINE_TRACE("Name:{} X:{} Y:{} Z:{}", tc, entity.GetComponent<TransformComponent>().GetRotationEuler().x,
+		//	entity.GetComponent<TransformComponent>().GetRotationEuler().y, entity.GetComponent<TransformComponent>().GetRotationEuler().z);
+
 		ImGui::PushID(entity.GetUUID());
 		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 
@@ -361,7 +364,7 @@ namespace Proof
 			DrawVectorControl("Location", transformComp.Location);
 			glm::vec3 rotationdeg = glm::degrees(transformComp.GetRotationEuler());
 			DrawVectorControl("Rotation", rotationdeg);
-			transformComp.SetRotationEuler(glm::radians(rotationdeg));
+			//transformComp.SetRotationEuler(transformComp.GetRotationEuler() + glm::radians(rotationdeg));
 			DrawVectorControl("Scale", transformComp.Scale, 1.0f);
 		});
 		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp) {

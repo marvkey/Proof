@@ -1,30 +1,10 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Utils/PlatformUtils.h"
+#include "AssetTypes.h"
 namespace Proof
 {
-	enum class AssetType {
-		None =0,// for items that just need asset or not
-		Mesh,
-		Texture,
-		Material,
-		World,				// NOT TREATED THE SAME AS OTHER ASSETS
-		MeshSourceFile,
-		PhysicsMaterial,
-		TextureSourceFile,
-		Font,
-		FontSource,
-		Prefab,
-		UIPanel,
-		ParticleSystem
-	};
-	enum class AssetState {
-		None = 0,
-		Unloaded,
-		Ready,
-		Loading,
-		Invalid
-	};
+
 
 	#define ASSET_CLASS_TYPE(type) static AssetType GetStaticType() { return AssetType::type; }\
 								virtual AssetType GetAssetType() const override { return GetStaticType(); }
@@ -43,6 +23,7 @@ namespace Proof
 		friend class ContentBrowserPanel;
 		friend class AssetSerializer;
 		friend class AssetManager;
+		friend class SceneSerializer;
 	};
 }
 

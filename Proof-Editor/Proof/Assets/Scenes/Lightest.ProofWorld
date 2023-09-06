@@ -6,9 +6,9 @@ World:
         Tag: Sponza2
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [1, -2.89971948, -1.45410144]
         Rotation: [0, 0, 0]
-        Scale: [0.100000001, 0.100000001, 0.100000001]
+        Scale: [0.0979299024, 0.0999998301, 0.0999997333]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
@@ -21,7 +21,7 @@ World:
       TransformComponent:
         Location: [-8.10000038, 2.70000005, 4.5999999]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
+        Scale: [0.999999881, 1, 0.999999881]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
@@ -46,7 +46,7 @@ World:
         TintColor: [1, 1, 1]
         SkyBoxLod: 0
         MapRotation: 0
-        Intensity: 2.5
+        Intensity: 0.5
         DynamicSky: false
         Turbidity: 2
         Azimuth: 0
@@ -57,9 +57,9 @@ World:
         Tag: cube
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [0, 5.3692956, 0]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
+        Scale: [1.00000012, 1.00000024, 1.00000012]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
@@ -85,11 +85,11 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 2, 4.44500017]
-        Rotation: [-0.00463018473, 0.0203484446, -0.000121846962]
-        Scale: [1, 1, 1]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1.00000012, 0.999997973]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 5.09000015
+        Intensity: 5

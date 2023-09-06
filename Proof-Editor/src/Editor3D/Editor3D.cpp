@@ -341,12 +341,8 @@ namespace Proof
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
+		//m_WorldRenderer->SetViewportSize((uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y );
 		if (m_IsViewPortResize && m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
-			m_WorldRenderer->SetViewportSize((uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y );
-			// so the camera can be edited while beig resized
-			Application::Get()->GetWindow()->SetWindowInputEvent(false);
-			m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-			Application::Get()->GetWindow()->SetWindowInputEvent(true);
 			m_IsViewPortResize = false;
 		}
 		switch (m_ActiveWorld->GetState()) {
@@ -1141,7 +1137,7 @@ namespace Proof
 					(ImGuizmo::OPERATION)s_EditorData->GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(selectedEntitytransform),
 					nullptr, snap ? snapValues : nullptr);
 
-				if (ImGuizmo::IsUsing()) {
+				if (false) {
 					Entity parent = m_ActiveWorld->TryGetEntityWithUUID(selectedEntity.GetParentUUID());
 
 					if (parent)
@@ -1232,7 +1228,7 @@ namespace Proof
 				std::tie(SaveSceneDialouge,id ) = s_EditorData->ContentBrowserPanel.AddWorld(m_ActiveWorld);
 				if (SaveSceneDialouge == false)
 				{
-					m_ActiveWorld->m_WorldID = id;
+					//m_ActiveWorld->m_WorldID = id;
 				}
 			}
 			/*----------------------------------------------------------------------------------------------------------------------------*/

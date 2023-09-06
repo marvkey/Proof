@@ -24,7 +24,6 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/AssetThumbnailGenerator.h"
 
-#include "Proof/Asset/AssetSupport.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Scene/Prefab.h"
 
@@ -203,9 +202,11 @@ namespace Proof
 		SceneSerializer serilizer(world.Get());
 		serilizer.SerilizeText(finalPath);
 
-		AssetID ID = world->GetID();
-		AssetManager::AddWorldAsset(ID, finalPath);
-		return ID;
+		//AssetID ID = world->GetID();
+		Count<Asset> asset = world.Get(); 
+		AssetManager::NewAsset(asset, std::filesystem::path(finalPath));
+		//AssetManager::AddWorldAsset(ID, finalPath);
+		return world->GetID();
 	}
 	std::pair<bool, AssetID> ContentBrowserPanel::AddWorld(Count<World> world)
 	{
@@ -306,9 +307,9 @@ namespace Proof
 			}
 			else {
 				std::string extension = Utils::FileDialogs::GetFileExtension(path);
-				if (TextureHasFormat(extension))
+				if (Utils::TextureHasFormat(extension))
 					currentFileInfo.AssetType = AssetType::TextureSourceFile;
-				else if (MeshHasFormat(extension))
+				else if (Utils::MeshHasFormat(extension))
 					currentFileInfo.AssetType = AssetType::MeshSourceFile;
 				currentFileInfo.HasAsset = false;
 			}
@@ -330,7 +331,7 @@ namespace Proof
 				std::string fileDragSourcePath = path.string();
 				// we doingthis becausefor loop and dragsurce may change
 				if (AssetManager::HasAsset(fileDragSourcePath) == false) {
-					AssetManager::NewAssetSource(fileDragSourcePath,AssetManager::GetAssetTypeFromFilePath(fileDragSourcePath));
+					AssetManager::NewAssetSource(fileDragSourcePath,Utils::GetAssetTypeFromPath (fileDragSourcePath));
 				}
 				auto staticAssetInfo = AssetManager::GetAssetInfo(fileDragSourcePath);
 				UUID staticID = AssetManager::GetAssetInfo(fileDragSourcePath).ID;

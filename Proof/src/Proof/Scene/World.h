@@ -30,9 +30,6 @@ namespace Proof {
 		World(const std::string& name = "Default World", UUID ID = UUID());
 		virtual ~World();
 
-		AssetID GetID() {
-			return m_WorldID;
-		}
 		const std::string& GetName()const { return Name; };
 		static Count<World> Copy(Count<World> worldToCopy);
 		class PhysicsWorld* GetPhysicsEngine()const { return m_PhysicsWorld; };
@@ -86,7 +83,7 @@ namespace Proof {
 		glm::vec3 GetWorldSpaceScale(Entity entity) const;
 		TransformComponent GetWorldSpaceTransformComponent(Entity entity) const;
 		glm::mat4 GetWorldSpaceTransform(Entity entity) const;
-
+		void ConvertToLocalSpace(Entity entity);
 		void ParentEntity(Entity child, Entity parent);
 
 		// checks if ansestor is an ansestor of entity
@@ -140,7 +137,6 @@ namespace Proof {
 		entt::registry m_Registry;
 		class PhysicsWorld* m_PhysicsWorld =nullptr;
 		WorldState m_CurrentState = WorldState::Edit;
-		UUID m_WorldID;
 		std::string Name = "DefaultWorld";
 		std::unordered_map<UUID, Entity>m_EntitiesMap ;
 		friend class SceneHierachyPanel;

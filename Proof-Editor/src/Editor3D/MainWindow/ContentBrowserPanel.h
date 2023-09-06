@@ -65,13 +65,13 @@ namespace Proof
 
 			fileDefaultName = assetName;
 			fileName = fileDefaultName;
-			fileFullName = fileName + "." + AssetManager::GetExtension(T::GetStaticType());
+			fileFullName = fileName + "." + Utils::GetAssetExtensionString(T::GetStaticType());
 			uint32_t endIndex = 0; // the ending index of a file like file(0) or file(1)
 			while (std::filesystem::exists(m_CurrentDirectory.string() + "\\" + fileFullName))
 			{
 				endIndex++;
 				fileName = fileDefaultName + "(" + std::to_string(endIndex) + ")";
-				fileFullName = fileName + "." + AssetManager::GetExtension(T::GetStaticType());
+				fileFullName = fileName + "." + Utils::GetAssetExtensionString(T::GetStaticType());
 			}
 			std::ofstream({ m_CurrentDirectory.string() + "\\" + fileFullName });
 

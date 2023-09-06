@@ -65,14 +65,13 @@ namespace Proof {
             m_LayerStack->PushLayer(m_ImGuiMainLayer);
 
         }
+        PhysicsEngine::Init();
+        ScriptEngine::Init();
 
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
         assetManagerconfig.AssetManager = m_Project->GetFromSystemProjectDirectory(m_Project->GetConfig().AssetManager);
         AssetManager::Init(assetManagerconfig);
-
-        PhysicsEngine::Init();
-        ScriptEngine::Init();
 
         PF_ENGINE_TRACE("Engine Load Done");
     }
@@ -127,6 +126,7 @@ namespace Proof {
     {
         m_ImGuiMainLayer = nullptr;
         m_LayerStack->Empty();
+        m_LayerStack = nullptr;
     // remove the swpchain so it cna be deleted in the queue
         FileSystem::ClearEnvironmentVariables();
         ScriptEngine::Shutdown();
@@ -135,7 +135,7 @@ namespace Proof {
         m_Window->m_SwapChain = nullptr;
         m_Window = nullptr;
 
-        AssetManager::UnInizilize();
+        AssetManager::ShutDown();
         Renderer::Shutdown();
         InputManager::Destroy();
     }
