@@ -223,7 +223,7 @@ namespace Proof{
             std::string textureFilePath = (meshSource->GetPath().parent_path() /= strFilePath.C_Str()).string();
             //textureFilePath = std::filesystem::(textureFilePath, Application::).string();
             //AssetManager::GetAssetFileSystemPath
-            std::string textureName = Utils::FileDialogs::GetFileName(textureFilePath);
+            std::string textureName = FileSystem::GetFileName(textureFilePath);
             // checking if has the texturer source file
 
             if (AssetManager::HasAsset(textureFilePath))
@@ -238,7 +238,7 @@ namespace Proof{
                 {
 
                     AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
-                    Count<Asset> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(path)), textureFilePath);
+                    Count<Asset> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(path)), textureFilePath);
                     AssetManager::NewAsset(asset, path);
                     return AssetManager::GetAsset<Texture2D>(path);
                    // PF_EC_CRITICAL("Proof Should not be using raw texture file to create meshes causes an error for invalid descript set");
@@ -250,7 +250,7 @@ namespace Proof{
                 std::string path = std::filesystem::relative(meshSource->GetPath().parent_path() /= textureName).string();
                 path += ".Texture.ProofAsset";
                 AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
-                Count<Asset> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(textureFilePath)), textureFilePath);
+                Count<Asset> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(textureFilePath)), textureFilePath);
                 AssetManager::NewAsset(asset, path);
                 return AssetManager::GetAsset<Texture2D>(path);
             }
@@ -292,7 +292,7 @@ namespace Proof{
         :m_MeshSource(meshSource)
     {
         m_MaterialTable = meshSource->GenerateMaterialTable();
-        m_Name = Utils::FileDialogs::GetFileName(m_MeshSource->GetPath());
+        m_Name = FileSystem::GetFileName(m_MeshSource->GetPath());
         SetSubMeshes(submeshes);
     }
     Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices)

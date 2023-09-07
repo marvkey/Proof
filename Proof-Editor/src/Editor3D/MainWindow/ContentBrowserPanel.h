@@ -2,7 +2,7 @@
 //#include "Proof/Core/Core.h"
 #include "Panel.h"
 #include "Proof/Asset/Asset.h"
-#include "Proof/Utils/PlatformUtils.h"
+#include "Proof/Utils/FileSystem.h"
 
 #include <fstream>
 #include <string>
@@ -45,9 +45,9 @@ namespace Proof
 		template <typename T>
 		bool AddAssetPopupMenuItem(const std::string& name, const char* filter, std::string& setFileToRename) {
 			if (ImGui::MenuItem(name.c_str())) {
-				std::string extensionFilePathSource = Utils::FileDialogs::OpenFile(filter);
+				std::string extensionFilePathSource = FileSystem::OpenFileDialog(filter).string();
 				if (extensionFilePathSource.empty())return false;
-				//	setFileToRename = Utils::FileDialogs::GetFileName(AddAssetSource<T>(extensionFilePathSource));
+				//	setFileToRename = FileSystem::GetFileName(AddAssetSource<T>(extensionFilePathSource));
 				return true;
 			}
 			return false;
@@ -86,7 +86,7 @@ namespace Proof
 		template <typename T>
 		bool AddAssetPopupMenuItem(const std::string& name, std::string& setFileToRename) {
 			if (ImGui::MenuItem(name.c_str())) {
-				setFileToRename = Utils::FileDialogs::GetFileName(AddAssetName<T>(name));
+				setFileToRename = FileSystem::GetFileName(AddAssetName<T>(name));
 				return true;
 			}
 			return false;

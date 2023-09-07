@@ -72,6 +72,9 @@
         static float FrameMS;
         Special<class Project> m_Project;
         ApplicationConfiguration m_ApplicationConfiguration;
+    private:
+        void Build();
+        void Release();
     };
     Application* CreateApplication(int argc, char** argv);
 }

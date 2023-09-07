@@ -1,36 +1,47 @@
 World:
   ID: 6477593735195019013
   Entities:
-    - Entity: 14958216905718719550
+    - Entity: 57711761597188142
       TagComponent:
-        Tag: Sponza2
+        Tag: Directional Light
         tags: []
       TransformComponent:
-        Location: [1, -2.89971948, -1.45410144]
+        Location: [0, 2, 4.44500017]
         Rotation: [0, 0, 0]
-        Scale: [0.0979299024, 0.0999998301, 0.0999997333]
+        Scale: [1, 1.00000012, 0.999997973]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 5
+    - Entity: 14443135344696818912
+      TagComponent:
+        Tag: square
+        tags: []
+      TransformComponent:
+        Location: [0, 3.9000001, 0]
+        Rotation: [0, 0, 0]
+        Scale: [6.5, 9.10000038, 9.10000038]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SpriteComponent:
+        TextureAssetPointerID: 96342634762984
+        Colour: [0.939516127, 0.0795557797, 0.0795557797, 1]
+    - Entity: 14031512044906894714
+      TagComponent:
+        Tag: cube
+        tags: []
+      TransformComponent:
+        Location: [0, 5.3692956, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1.00000012, 1.00000024, 1.00000012]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 705200552008804468
-    - Entity: 17444644887703936264
-      TagComponent:
-        Tag: Sphere
-        tags: []
-      TransformComponent:
-        Location: [-8.10000038, 2.70000005, 4.5999999]
-        Rotation: [0, 0, 0]
-        Scale: [0.999999881, 1, 0.999999881]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 566574579191162934
-        MaterialTable:
-          - Material: ""
-            AssetID: 9010836309271670693
-            Index: 0
+        MeshAssetPointerID: 4645041025570573733
     - Entity: 8731679343243984340
       TagComponent:
         Tag: Sky Light
@@ -51,45 +62,34 @@ World:
         Turbidity: 2
         Azimuth: 0
         Inclination: 0
-        Image: 2700444414993608762
-    - Entity: 14031512044906894714
+        Image: 10788682619300248180
+    - Entity: 17444644887703936264
       TagComponent:
-        Tag: cube
+        Tag: Sphere
         tags: []
       TransformComponent:
-        Location: [0, 5.3692956, 0]
+        Location: [-8.10000038, 2.70000005, 4.5999999]
         Rotation: [0, 0, 0]
-        Scale: [1.00000012, 1.00000024, 1.00000012]
+        Scale: [0.999999881, 1, 0.999999881]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 4645041025570573733
-    - Entity: 14443135344696818912
+        MeshAssetPointerID: 566574579191162934
+        MaterialTable:
+          - Material: ""
+            AssetID: 9010836309271670693
+            Index: 0
+    - Entity: 14958216905718719550
       TagComponent:
-        Tag: square
+        Tag: Sponza2
         tags: []
       TransformComponent:
-        Location: [0, 3.9000001, 0]
+        Location: [1, -2.89971948, -1.45410144]
         Rotation: [0, 0, 0]
-        Scale: [6.5, 9.10000038, 9.10000038]
+        Scale: [0.0979299024, 0.0999998301, 0.0999997333]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      SpriteComponent:
-        TextureAssetPointerID: 96342634762984
-        Colour: [0.939516127, 0.0795557797, 0.0795557797, 1]
-    - Entity: 57711761597188142
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 2, 4.44500017]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1.00000012, 0.999997973]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 5
+      MeshComponent:
+        MeshAssetPointerID: 705200552008804468

@@ -31,6 +31,8 @@ namespace Proof
 	static Special< AssetManagerData> s_AssetManagerData;
 
 	void AssetManager::Init(AssetManagerConfiguration& assetManagerConfiguration) {
+		Timer time;
+
 		s_AssetManagerData =CreateSpecial< AssetManagerData>();
 
 		s_AssetManagerData->AssetDirectory = assetManagerConfiguration.AssetDirectory;
@@ -84,15 +86,20 @@ namespace Proof
 				s_AssetManagerData->AssetPath.insert({ path,assetID });
 			}
 		}
+
+		PF_ENGINE_INFO("Asset Manager Initialized {}m/s", time.ElapsedMillis());
 	}
 	void AssetManager::ShutDown() {
+		Timer time;
+
 		//SaveAllAssets();
 		s_AssetManagerData->Assets.clear();
 		s_AssetManagerData = nullptr;
+		PF_ENGINE_INFO("Asset Manager Shutdown {}m/s", time.ElapsedMillis());
 	}
 	void AssetManager::InternalAddAsset(AssetInfo assetInfo, Count<Asset> asset)
 	{
-		PF_CORE_ASSERT(assetInfo.Type == AssetType::None, "Cannot add asset with assetType none");
+		PF_CORE_ASSERT(assetInfo.Type != AssetType::None, "Cannot add asset with assetType none");
 		s_AssetManagerData->Assets.insert({ assetInfo.ID,{assetInfo,asset} });
 		s_AssetManagerData->AllAssetTypes[assetInfo.Type].insert({ assetInfo.ID });
 		s_AssetManagerData->AssetPath.insert({ assetInfo.Path.string(),assetInfo.ID });
@@ -132,7 +139,7 @@ namespace Proof
 
 	void AssetManager::NewAssetSource(const std::filesystem::path& path, AssetType type)
 	{
-		const std::string extension = Utils::FileDialogs::GetFileExtension(path);
+		const std::string extension = FileSystem::GetFileExtension(path);
 
 		// mesh source file actually have a mesh source so we keeping it
 		if (type == AssetType::MeshSourceFile && Utils::MeshHasFormat(extension))
@@ -187,9 +194,9 @@ namespace Proof
 
 			if (Utils::TextureHasFormat(extension)) {
 				NewAssetSource(it.path(), AssetType::TextureSourceFile);
-				std::string path = std::filesystem::relative(it.path().parent_path() /= Utils::FileDialogs::GetFileName(it.path())).string();
+				std::string path = std::filesystem::relative(it.path().parent_path() /= FileSystem::GetFileName(it.path())).string();
 				path += ".Texture.ProofAsset";
-				Count<Asset> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(it.path())), it.path());
+				Count<Asset> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(it.path())), it.path());
 				AssetManager::NewAsset(asset, path);
 				continue;
 			}

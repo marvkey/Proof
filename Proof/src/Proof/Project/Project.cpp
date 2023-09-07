@@ -25,16 +25,22 @@ namespace Proof
 
 	Special<Project> Project::New(const ProjectConfig& projectconfig)
 	{
-		PF_CORE_ASSERT(std::filesystem::is_directory(projectconfig.Project) == false, "Pass direcoty as a directory");
 
 		Special<Project> project =CreateSpecial<Project>();
-		//std::ofstream outfile(projectconfig.Project);
-		//outfile.close();
-		//
-		//ProjectSerilizer projectserilizer(project.get());
-		//projectserilizer.SerilizeText(projectconfig.Project.string());
-		
+		ProjectSerilizer projectserilizer(project.get());
+		projectserilizer.SerilizeText(projectconfig.Project.string());
 		return project;
 	}
 	
+	ProjectConfig::ProjectConfig(const std::string& name, std::filesystem::path directory):
+		Name(name)
+	{
+		PF_CORE_ASSERT(FileSystem::IsDirectory(directory)," Has to be directory");
+		Project += directory.string() + "/" + FileSystem::GetFileName(name) +"/" + FileSystem::GetFileName(name); // dir/ project dir(NAME)/ PROject Name.prrofPRoject
+		Project += ".ProofProject";
+		AssetDirectory = "Assets";
+		AssetManager = AssetDirectory / "AssetManager.ProofAssetManager";
+		ScriptModuleDirectory = "Resources/Scripts/Binaries";
+	}
+
 }

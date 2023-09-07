@@ -70,7 +70,7 @@ namespace Proof
 				if (entity)
 				{
 					std::string path = AddAssetName<Prefab>(entity.GetName());
-					FileRenameName = Utils::FileDialogs::GetFileName(path);
+					FileRenameName = FileSystem::GetFileName(path);
 
 					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(path);
 					prefab->SetEntity(entity);
@@ -108,7 +108,7 @@ namespace Proof
 			if (std::filesystem::exists(savePath) == false)
 				std::filesystem::create_directory(savePath);
 			// making it a file
-			savePath /= Utils::FileDialogs::GetFileName(savePath);
+			savePath /= FileSystem::GetFileName(savePath);
 		}
 		else {
 			//fix / backlash issue
@@ -178,7 +178,7 @@ namespace Proof
 			if (std::filesystem::exists(savePath) == false)
 				std::filesystem::create_directory(savePath);
 			// making it a file
-			savePath = std::filesystem::relative(savePath /= Utils::FileDialogs::GetFileName(savePath));
+			savePath = std::filesystem::relative(savePath /= FileSystem::GetFileName(savePath));
 		}
 		else
 		{
@@ -225,9 +225,10 @@ namespace Proof
 			strcpy_s(buffer, sizeof(buffer), worldAddedSavePath.c_str());
 			ImGui::SameLine();
 			ImGui::Text(s_AssetsDir.string().c_str());
+
 			if (ImGui::InputText("##Path", buffer, sizeof(buffer))) // do not remove text callback
 				worldAddedSavePath = buffer;
-			ImGui::SetItemDefaultFocus();
+			ImGui::SetItemDefaultFocus();	
 
 			ImGui::Separator();
 
@@ -269,7 +270,7 @@ namespace Proof
 
 		if (ImGui::BeginPopupContextWindow(0, 1)) { // right click 
 			if (ImGui::MenuItem("Folder")) {
-				NameofFileRename = Utils::FileDialogs::GetFileName(NewFolder("folder"));
+				NameofFileRename = FileSystem::GetFileName(NewFolder("folder"));
 				FileRenameName = NameofFileRename;
 			}
 
@@ -306,7 +307,7 @@ namespace Proof
 				currentFileInfo.ID = info.ID;
 			}
 			else {
-				std::string extension = Utils::FileDialogs::GetFileExtension(path);
+				std::string extension = FileSystem::GetFileExtension(path);
 				if (Utils::TextureHasFormat(extension))
 					currentFileInfo.AssetType = AssetType::TextureSourceFile;
 				else if (Utils::MeshHasFormat(extension))
@@ -339,7 +340,7 @@ namespace Proof
 				ImGui::SetDragDropPayload(assetTypestring.c_str(), &staticID, sizeof(UUID));
 
 				//ImGui::Image((ImTextureID)m_FileIcon->GetID(), { 60,60 });
-				ImGui::Button(Utils::FileDialogs::GetFileName(fileDragSourcePath).c_str(), { 60,60 });
+				ImGui::Button(FileSystem::GetFileName(fileDragSourcePath).c_str(), { 60,60 });
 				ImGui::EndDragDropSource();
 			}
 
@@ -351,7 +352,7 @@ namespace Proof
 			FolderorFile:
 			if (ImGui::BeginPopupContextItem(path.string().c_str())) {
 				if (ImGui::MenuItem("Rename")) {
-					NameofFileRename = Utils::FileDialogs::GetFileName(path);
+					NameofFileRename = FileSystem::GetFileName(path);
 					FileRenameName = NameofFileRename;
 				}
 				if (currentFileInfo.AssetType != AssetType::MeshSourceFile && currentFileInfo.AssetType != AssetType::TextureSourceFile && It.is_directory() == false) {
@@ -372,7 +373,7 @@ namespace Proof
 				if (ImGui::MenuItem("Delete")) {
 					if (It.is_directory() == false) {
 						AssetManager::Remove(currentFileInfo.ID);
-						std::filesystem::remove_all(m_CurrentDirectory.string() + "\\" + Utils::FileDialogs::GetFullFileName(path));
+						std::filesystem::remove_all(m_CurrentDirectory.string() + "\\" + FileSystem::GetFullFileName(path));
 					}
 					else {
 						DeleteFolder(path.string());
@@ -381,18 +382,18 @@ namespace Proof
 				ImGui::EndPopup();
 			}
 
-			if (NameofFileRename != Utils::FileDialogs::GetFileName(path))// file renamed
+			if (NameofFileRename != FileSystem::GetFileName(path))// file renamed
 			{	
 				if (currentFileInfo.AssetType == AssetType::MeshSourceFile || currentFileInfo.AssetType == AssetType::TextureSourceFile) {
-					ImGui::TextWrapped(Utils::FileDialogs::GetFullFileName(path).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
+					ImGui::TextWrapped(FileSystem::GetFullFileName(path).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
 				
 				}
 				else {
-					ImGui::TextWrapped(Utils::FileDialogs::GetFileName(path).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
+					ImGui::TextWrapped(FileSystem::GetFileName(path).c_str());// HAS TO BE HERE BECAUSE it will mess up item hovered
 				}
 			}
 			else
-				Rename(Utils::FileDialogs::GetFileName(path), Utils::FileDialogs::GetFullFileExtension(path), It.is_directory());
+				Rename(FileSystem::GetFileName(path), FileSystem::GetFullFileExtension(path), It.is_directory());
 
 			
 			ImGui::NextColumn();
@@ -423,7 +424,7 @@ namespace Proof
 				flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
 			flags |= ImGuiTreeNodeFlags_SpanFullWidth;
 
-			std::string fileFullName = Utils::FileDialogs::GetFullFileName(It.path());
+			std::string fileFullName = FileSystem::GetFullFileName(It.path());
 			bool opened = ImGui::TreeNodeEx((void*)fileFullName.c_str(), flags, fileFullName.c_str()); // ID is the path cause it is unique
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 				m_CurrentDirectory = s_AssetsDir; // reseting before adding a new path

@@ -64,7 +64,7 @@ namespace Proof
 
         static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false)
         {
-            Buffer fileData = FileSystem::ReadFileBinary(assemblyPath);
+            Buffer fileData = FileSystem::ReadBytes(assemblyPath);
 
             // NOTE: We can't use this image for anything other than loading the assembly because this image doesn't have a reference to the assembly
             MonoImageOpenStatus status;
@@ -84,7 +84,7 @@ namespace Proof
 
                 if (std::filesystem::exists(pdbPath))
                 {
-                    Buffer pdbFileData = FileSystem::ReadFileBinary(pdbPath);
+                    Buffer pdbFileData = FileSystem::ReadBytes(pdbPath);
                     mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.GetSize());
                     PF_ENGINE_INFO("Loaded PDB {}", pdbPath.string());
                 }
@@ -355,6 +355,8 @@ namespace Proof
         return true;
     }
     void ScriptEngine::Init() {
+
+        Timer time;
         s_Data = new MonoData();
 
         InitMono();
@@ -372,8 +374,14 @@ namespace Proof
         ScriptFunc::RegisterAllComponents();
 
         s_Data->EntityClass = Count<ScriptClass>::Create("Proof", "Entity", true);
+
+        PF_ENGINE_INFO("Script Engine Initialized {}m/s", time.ElapsedMillis());
+
     }
-    void ScriptEngine::Shutdown() {
+    void ScriptEngine::Shutdown() 
+    {
+        Timer time;
+
         mono_domain_set(mono_get_root_domain(), false);
 
         mono_domain_unload(s_Data->AppDomain);
@@ -382,6 +390,8 @@ namespace Proof
         mono_jit_cleanup(s_Data->RootDomain);
         s_Data->RootDomain = nullptr;
         delete s_Data;
+
+        PF_ENGINE_INFO("Script Engine Shutdown {}m/s", time.ElapsedMillis());
     }
 
     void ScriptEngine::BeginRuntime(World* world) {

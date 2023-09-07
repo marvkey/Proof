@@ -5,7 +5,7 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
-#include "Proof/Utils/PlatformUtils.h"
+#include "Proof/Utils/FileSystem.h"
 #include "Asset.h"
 namespace Proof
 {
@@ -23,7 +23,7 @@ namespace Proof
 
 		bool RuntimeAsset = false;
 		std::string GetName()const {
-			return Utils::FileDialogs::GetFileName(Path);
+			return FileSystem::GetFileName(Path);
 		}
 		bool IsAssetSource()const  {
 			return Utils::IsAssetSource(Type);

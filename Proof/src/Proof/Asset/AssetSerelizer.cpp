@@ -43,7 +43,7 @@ namespace Proof {
 		auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(source).Path);
 		//m_Texture = Texture2D::Create(path.string());
 
-		Count<Texture2D> asset = Texture2D::Create(TextureConfiguration(Utils::FileDialogs::GetFileName(path)),path.string());
+		Count<Texture2D> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(path)),path.string());
 		SetID(assetData, asset);
 		return asset;
 	}

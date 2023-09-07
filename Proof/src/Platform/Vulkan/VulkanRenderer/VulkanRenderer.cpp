@@ -95,6 +95,8 @@ namespace Proof
 		VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
 		graphicsContext->GetSwapChain().As<VulkanSwapChain>()->Present(& s_CurrentFrame.ImageIndex);
+		vkDeviceWaitIdle(VulkanRenderer::GetGraphicsContext()->GetDevice());
+		vkResetCommandBuffer(drawCommandBuffer, 0);
 		s_RenderData->CommandBuffers.clear();
 	}
 
@@ -115,6 +117,7 @@ namespace Proof
 		}
 		s_RenderData->ResourceFreeQueue.clear();
 		delete s_RenderData;
+		s_RenderData = nullptr;
 	}
 
 

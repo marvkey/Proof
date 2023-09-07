@@ -24,38 +24,62 @@
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Project/Project.h"
+
+
+#ifdef CreateDirectory
+#undef CreateDirectory
+#undef DeleteFile
+#undef MoveFile
+#undef CopyFile
+#undef SetEnvironmentVariable
+#undef GetEnvironmentVariable
+#endif
 namespace Proof {
     Application* Application::s_Instance = nullptr;
     float Application::FPS = 60.0f;
     float Application::FrameMS = 2.0f;
     float Application::m_ImguiFrameTime;
    
+    bool CallReset = false;
     Application::Application(const ApplicationConfiguration& config):
         m_ApplicationConfiguration(config) 
     {
+        Build();
+    }
+    Application::~Application()
+    {
+        Release();
+    }
+    void Application::Build()
+    {
+        Timer buildTimer;
         m_LayerStack = Count<LayerStack>::Create();
         srand(time(NULL));
         Proof::Log::Init();
         s_Instance = this;
         InputManager::Init();
 
-        if (m_ApplicationConfiguration.ProjectPath.empty()) {
-            if(std::filesystem::exists("Proof")==false)
+        if (m_ApplicationConfiguration.ProjectPath.empty())
+        {
+            if (std::filesystem::exists("Proof") == false)
                 std::filesystem::create_directory("Proof");
-            (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", "Proof");
             m_ApplicationConfiguration.ProjectPath = "Proof/Proof.ProofProject";
-            ProjectConfig config("Proof/Proof.ProofProject","Proof");
+            ProjectConfig config(std::filesystem::path("Proof/Proof.ProofProject"), "Proof");
             m_Project = Project::New(config);
             // we would scerilize when we save the project
             //ProjectSerilizer projectSerilizer(m_Project.get());
             //projectSerilizer.SerilizeText(m_ProjectPath);
         }
-        else {
+        else
+        {
             m_Project = Project::Load(m_ApplicationConfiguration.ProjectPath);
-            (FileSystem::SetAnEnvironmentVariable)("PROOF_PROJECT_DIR", m_Project->GetProjectDirectory().string());
         }
-       
-        m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration); 
+        PF_ENGINE_INFO("Loaded Project {}", m_Project->GetConfig().Name);
+        PF_ENGINE_TRACE("     Path {}", m_Project->GetConfig().Project.string());
+        PF_ENGINE_TRACE("     AssetManager {}", m_Project->GetConfig().AssetManager.string());
+        PF_ENGINE_TRACE("     PROOF_DIR {}", (FileSystem::GetEnvironmentVariable)("PROOF_DIR"));
+        
+        m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration);
         m_Window->SetEventCallback([this](Event& e) {OnEvent(e); });
 
         Renderer::Init(static_cast<Window*>(m_Window.get()));
@@ -66,16 +90,39 @@ namespace Proof {
 
         }
         PhysicsEngine::Init();
-        ScriptEngine::Init();
+       // ScriptEngine::Init();
 
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
         assetManagerconfig.AssetManager = m_Project->GetFromSystemProjectDirectory(m_Project->GetConfig().AssetManager);
         AssetManager::Init(assetManagerconfig);
 
-        PF_ENGINE_TRACE("Engine Load Done");
+        PF_ENGINE_INFO("Engine Systems Load {}m/s", buildTimer.ElapsedMillis());
+
     }
 
+    void Application::Release()
+    {
+        PF_ENGINE_INFO("UnLoaded Project {}", m_Project->GetConfig().Name);
+        PF_ENGINE_TRACE("     Path {}", m_Project->GetConfig().Project.string());
+        PF_ENGINE_TRACE("     AssetManager {}", m_Project->GetConfig().AssetManager.string());
+        PF_ENGINE_TRACE("     PROOF_DIR  {}", (FileSystem::GetEnvironmentVariable)("PROOF_DIR"));
+
+        m_ImGuiMainLayer = nullptr;
+        m_LayerStack->Empty();
+        m_LayerStack = nullptr;
+      //  ScriptEngine::Shutdown();
+        PhysicsEngine::Release();
+        m_Project = nullptr;
+        m_Window->m_SwapChain = nullptr;
+        m_Window = nullptr;
+
+        AssetManager::ShutDown();
+        Renderer::Shutdown();
+        InputManager::Destroy();
+
+        
+    }
 
     void Application::ImguiUpdate(float deltaTime) {
         PF_PROFILE_FUNC();
@@ -122,23 +169,7 @@ namespace Proof {
         m_IsRunning = false;
     }
 
-    Application::~Application() 
-    {
-        m_ImGuiMainLayer = nullptr;
-        m_LayerStack->Empty();
-        m_LayerStack = nullptr;
-    // remove the swpchain so it cna be deleted in the queue
-        FileSystem::ClearEnvironmentVariables();
-        ScriptEngine::Shutdown();
-        PhysicsEngine::Release();
-        m_Project = nullptr;
-        m_Window->m_SwapChain = nullptr;
-        m_Window = nullptr;
-
-        AssetManager::ShutDown();
-        Renderer::Shutdown();
-        InputManager::Destroy();
-    }
+    
 
     void Application::Run() {
         uint64_t FrameCount = 0;
@@ -181,6 +212,11 @@ namespace Proof {
         {
             m_ApplicationShouldShutdown = true;
         }
+        if (CallReset)
+        {
+            Release();
+            Build();
+        }
     }
 
     void Application::PushLayer(Count<Layer> layer) {
@@ -193,6 +229,11 @@ namespace Proof {
 
     void Application::OpenProject(const std::filesystem::path& path)
     {
+        // closes project
+        m_IsRunning = false;
+        // autmatically call everythign 
+        m_ApplicationConfiguration.ProjectPath = path.string();
+        CallReset = true;
     }
     void Application::Save()
     {

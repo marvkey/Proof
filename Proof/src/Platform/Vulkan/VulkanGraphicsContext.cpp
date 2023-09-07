@@ -86,6 +86,14 @@ namespace Proof
 		{
 			DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 		}
+		for (auto [hash, hashData] : m_Samplers)
+		{
+			auto [refCount, sampler] = hashData;
+			Renderer::SubmitDatafree([sampler = sampler, device = m_Device] {
+				vkDestroySampler(device, sampler, nullptr);
+			});
+		}
+		m_Samplers.clear();
 		Renderer::SubmitDatafree([device = m_Device,instance = m_Instance, surface = m_Surface,commandPool = m_CommandPool]()mutable {
 			vkDestroyCommandPool(device, commandPool, nullptr);
 			vkDestroyDevice(device, nullptr);
@@ -119,10 +127,10 @@ namespace Proof
 		refCount--;
 		if (refCount == 0)
 		{
-			m_Samplers.erase(samplerHash);
 			Renderer::SubmitDatafree([sampler = sampler, device = m_Device] {
 				vkDestroySampler(device, sampler, nullptr);
 			});
+			m_Samplers.erase(samplerHash);
 		}
 	}
 

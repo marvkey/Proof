@@ -102,7 +102,7 @@ namespace Proof
 
 		inline AssetType GetAssetTypeFromPath(const std::filesystem::path& path)
 		{
-			const std::string fileFullExtension = Utils::FileDialogs::GetFullFileExtension(path);
+			const std::string fileFullExtension = FileSystem::GetFullFileExtension(path);
 
 			if (MeshHasFormat(fileFullExtension))return AssetType::MeshSourceFile;
 			if (TextureHasFormat(fileFullExtension))return AssetType::TextureSourceFile;

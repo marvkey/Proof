@@ -24,6 +24,10 @@ namespace Proof{
 			AssetManager = AssetDirectory / "AssetManager.ProofAssetManager";
 			ScriptModuleDirectory = "Resources/Scripts/Binaries";
 		}
+
+		// name and the direcotyr, it creates a sub directory with the name then sotres the 
+		ProjectConfig(const std::string& name, std::filesystem::path directory);
+
 		ProjectConfig()
 		{
 

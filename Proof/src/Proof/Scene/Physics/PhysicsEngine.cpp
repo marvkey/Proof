@@ -39,6 +39,7 @@ namespace Proof {
 		return s_Dispatcher;
 	}
 	void PhysicsEngine::Init() {
+		Timer time;
 		s_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_DefaultAllocatorCallback,
 			s_DefaultErrorCallback);
 		if (!s_Foundation)
@@ -55,14 +56,18 @@ namespace Proof {
 		s_Dispatcher = physx::PxDefaultCpuDispatcherCreate(2);
 
 		PhysicsMeshCooker::Init();
+
+		PF_ENGINE_INFO("Physics Engine Initialized {}m/s", time.ElapsedMillis());
 	}
 	void PhysicsEngine::Release()
 	{
+		Timer time;
 		PhysicsMeshCooker::Release();
 		s_Physics->release();
 		s_Dispatcher->release();
 		s_Pvd->release();
 		s_Foundation->release();
+		PF_ENGINE_INFO("Physics Engine Shutdown {}m/s", time.ElapsedMillis());
 	}
 	void PhysicsErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
 	{

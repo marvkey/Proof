@@ -61,6 +61,9 @@
 #include "Proof/Input/Input.h"
 
 #include "Proof/Scene/Mesh.h"
+
+#include "misc/cpp/imgui_stdlib.h"
+
 namespace Proof
 {
 	struct EditorData
@@ -88,10 +91,78 @@ namespace Proof
 
 
 	};
+	enum class PopupState
+	{
+		None = 0,
+		Rendering,
+		Ok,
+		Cancel
+	};
+	
+	static PopupState PopModel(const std::string& ID, const std::string& label,std::string& editableText, const std::string& hint = "", const std::string& nonEditable = "", 
+		ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsNoBlank, ImGuiViewport* viewport = ImGui::GetMainViewport())
+	{
+		UI::ScopedID scopedId(ID.c_str());
+		PopupState State = PopupState::Rendering;
+		ImVec2 center = viewport->GetCenter();
+
+		if (ImGui::IsPopupOpen(ID.c_str()) == false)
+			ImGui::OpenPopup(ID.c_str());
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		if (ImGui::BeginPopupModal(ID.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+
+			if (!nonEditable.empty())
+			{
+				ImGui::Text(nonEditable.c_str());
+				ImGui::SameLine();
+			}
+
+			ImGui::Text(label.c_str());
+			ImGui::SameLine();
+			char buffer[1024];
+			memset(buffer, 0, sizeof(buffer));
+			strcpy_s(buffer, sizeof(buffer), editableText.c_str());
+			if (!hint.empty())
+			{
+				if (ImGui::InputTextWithHint("##Hash", hint.c_str(), buffer, sizeof(buffer)), flags, ImGuiInputTextFlags_CallbackAlways)
+				{
+					editableText = buffer;
+				}
+			}
+			else
+			{
+				if (ImGui::InputText("##Hash", buffer, sizeof(buffer)), flags)
+				{
+					editableText = buffer;
+				}
+			}
+			ImGui::SetItemDefaultFocus();
+			ImGui::Separator();
+			if (ImGui::Button("OK", ImVec2(120, 0)))
+			{
+				State = PopupState::Ok;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SetItemDefaultFocus();
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel", ImVec2(120, 0)))
+			{
+				State = PopupState::Cancel;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+
+		return State;
+	}
 	static EditorData* s_EditorData = nullptr;
 	static bool s_DetachPlayer = false;
 	static bool SaveSceneDialouge = false;
 	Editore3D* Editore3D::s_Instance =  nullptr;
+	PopupState NewProjectState = PopupState::None;
+	std::filesystem::path NewProjectDir;
+	std::string NewProjectName;
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") {
 		s_Instance = this;
@@ -466,6 +537,29 @@ namespace Proof
 
 		ViewPort();
 	
+		// handlepop
+		{
+		
+			if (NewProjectState == PopupState::Rendering)
+			{
+				NewProjectState = PopModel("New Project", "", NewProjectName, "Name", NewProjectDir.string()+"/" + NewProjectName);
+				if (NewProjectState == PopupState::Ok)
+				{
+					if (!NewProjectName.empty())
+					{
+
+						ProjectConfig config(NewProjectName,NewProjectDir);
+						Special<Project> newProject = Project::New(config);
+					}
+				}
+				if (NewProjectState != PopupState::Rendering)
+				{
+					NewProjectName = "";
+					NewProjectDir = "";
+					NewProjectState = PopupState::None;
+				}
+			}		
+		}
 
 		{
 			//ImGui::Begin("Render Speed Panel");
@@ -761,7 +855,7 @@ namespace Proof
 					ImGui::TextColored({ 1.0,0.0,0.0,1.0 }, it.second.second.c_str());
 					if (ImGui::BeginPopupContextWindow(0, 1)) {
 						if (ImGui::MenuItem("Copy"))
-							Utils::ShortCutDialogs::Copy(it.second.second);
+							ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
 					}
 					ImGui::EndChildFrame();
@@ -779,7 +873,7 @@ namespace Proof
 					ImGui::TextColored({ 1.0,0.635,0.0,1.0 }, it.second.second.c_str());
 					if (ImGui::BeginPopupContextWindow(0, 1)) {
 						if (ImGui::MenuItem("Copy"))
-							Utils::ShortCutDialogs::Copy(it.second.second);
+							ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
 					}
 					ImGui::EndChildFrame();
@@ -795,7 +889,7 @@ namespace Proof
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
 					if (ImGui::BeginPopupContextWindow(0, 1)) {
 						if (ImGui::MenuItem("Copy"))
-							Utils::ShortCutDialogs::Copy(it.second.second);
+							ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
 					}
 					ImGui::TextColored({ 0.0,1.0,0.0,1.0 }, it.second.second.c_str());
@@ -812,7 +906,7 @@ namespace Proof
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
 					if (ImGui::BeginPopupContextWindow(0, 1)) {
 						if (ImGui::MenuItem("Copy"))
-							Utils::ShortCutDialogs::Copy(it.second.second);
+							ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
 					}
 					ImGui::TextColored({ 1.0,1.0,1.0,1.0 }, it.second.second.c_str());
@@ -829,7 +923,7 @@ namespace Proof
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
 					if (ImGui::BeginPopupContextWindow(0, 1)) {
 						if (ImGui::MenuItem("Copy"))
-							Utils::ShortCutDialogs::Copy(it.second.second);
+							ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
 					}
 					ImGui::TextColored({ 1,0,0,1 }, it.second.second.c_str());
@@ -1228,7 +1322,7 @@ namespace Proof
 				std::tie(SaveSceneDialouge,id ) = s_EditorData->ContentBrowserPanel.AddWorld(m_ActiveWorld);
 				if (SaveSceneDialouge == false)
 				{
-					//m_ActiveWorld->m_WorldID = id;
+					Save();
 				}
 			}
 			/*----------------------------------------------------------------------------------------------------------------------------*/
@@ -1351,10 +1445,20 @@ namespace Proof
 			if (ImGui::BeginMenu("File")) {
 
 				if (ImGui::MenuItem("New Project")) { // gonna be implemented later
-					// gonna be implemented later
+					std::filesystem::path director= FileSystem::OpenFolderDialog();
+					if (!director.empty())
+					{
+						NewProjectName = "NewProject";
+						NewProjectDir = director;
+						NewProjectState = PopupState::Rendering;
+					}
 				}
 				if (ImGui::MenuItem("Open Project")) {
-					// gonna be implemented later
+					std::filesystem::path file = FileSystem::OpenFileDialog("Proof Project (*.ProofProject)\0*.ProofProject\0");
+					if (!file.empty())
+					{
+						Application::Get()->OpenProject(file);
+					}
 				}
 				if (ImGui::MenuItem("New Scene"))
 				{

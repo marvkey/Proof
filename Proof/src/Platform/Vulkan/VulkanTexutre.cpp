@@ -415,7 +415,8 @@ namespace Proof
 		m_ImageData.Release();
 	}
 
-	VulkanTexture2D::~VulkanTexture2D() {
+	VulkanTexture2D::~VulkanTexture2D() 
+	{
 		Release();
 	}
 
@@ -447,7 +448,7 @@ namespace Proof
 		m_Texture = Texture2D::Create(textureConfig, path).As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
-		imageConfig.DebugName = fmt::format("{} TextureCubeImage", Utils::FileDialogs::GetFileName(path));
+		imageConfig.DebugName = fmt::format("{} TextureCubeImage",FileSystem::GetFileName(path));
 		imageConfig.Format = config.Format;
 		imageConfig.Height = config.Height;
 		imageConfig.Width = config.Width;
@@ -478,7 +479,7 @@ namespace Proof
 		m_Texture = Texture2D::Create(data, textureConfig).As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
-		imageConfig.DebugName = "TextureCubeImage";
+		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);
 		imageConfig.Format = config.Format;
 		imageConfig.Height = config.Height;
 		imageConfig.Width = config.Width;
@@ -499,6 +500,7 @@ namespace Proof
 		uint32_t mipCount = m_Config.GenerateMips ? GetMipLevelCount() : 1;
 
 		ImageConfiguration imageConfig;
+		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);
 		imageConfig.DebugName = "TextureCubeImage";
 		imageConfig.Format = config.Format;
 		imageConfig.Height = config.Height;
@@ -522,6 +524,7 @@ namespace Proof
 
 		ImageConfiguration imageConfig;
 		imageConfig.DebugName = "TextureCubeImage";
+		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);
 		imageConfig.Format = config.Format;
 		imageConfig.Height = config.Height;
 		imageConfig.Width = config.Width;

@@ -58,7 +58,7 @@ namespace Proof{
 		{
 			auto mesh = AssetManager::GetAsset<Mesh>(m_ID);
 			if(ImGui::Button("Renstate mesh")){
-				std::string filePath = Utils::FileDialogs::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
+				std::string filePath = FileSystem::OpenFile("Mesh (*.obj)\0 *.obj\0 (*.gltf)\0 *.gltf\0 (*.fbx)\0 *.fbx\0");
 				if (filePath.empty() == false) {
 					mesh->LoadModel(filePath);
 				}

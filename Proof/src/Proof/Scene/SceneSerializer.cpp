@@ -463,7 +463,7 @@ namespace Proof
 		}
 		out << YAML::EndMap;
 		auto parentDir = std::filesystem::path(filePath).parent_path();
-		auto savePath = parentDir /= {Utils::FileDialogs::GetFileName(filePath) + "." + "ProofWorld"};
+		auto savePath = parentDir /= {FileSystem::GetFileName(filePath) + "." + "ProofWorld"};
 		std::ofstream foud(savePath.string());
 		foud << out.c_str();
 	}
@@ -479,7 +479,7 @@ namespace Proof
 
 		auto worldData = data["World"];
 
-		m_Scene->Name = Utils::FileDialogs::GetFileName(filePath);
+		m_Scene->Name = FileSystem::GetFileName(filePath);
 		PF_EC_WARN("Deserilizing World {}", m_Scene->Name.c_str());
 
 		m_Scene->m_ID = worldData["ID"].as<uint64_t>();

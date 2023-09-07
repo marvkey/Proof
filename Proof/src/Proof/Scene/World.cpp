@@ -30,7 +30,7 @@ namespace Proof {
 	}
 	World::~World()
 	{
-		m_Registry = {};
+		m_Registry.clear();
 	}
 	bool World::HasEntity(UUID ID)const {
 		if (ID == 0)

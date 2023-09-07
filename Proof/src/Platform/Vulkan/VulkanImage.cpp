@@ -89,6 +89,7 @@ namespace Proof {
 	}
 	VulkanImage2D::~VulkanImage2D()
 	{
+
 		Release();
 	}
 	void VulkanImage2D::AddResizeCallback(const Image2DResizeCallback& func)

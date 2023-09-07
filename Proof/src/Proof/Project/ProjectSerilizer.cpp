@@ -6,6 +6,15 @@
 #include <yaml-cpp/yaml.h>
 #include "Proof/Input/InputManager.h"
 #include <fstream>
+
+#ifdef CreateDirectory
+#undef CreateDirectory
+#undef DeleteFile
+#undef MoveFile
+#undef CopyFile
+#undef SetEnvironmentVariable
+#undef GetEnvironmentVariable
+#endif
 namespace Proof
 {
 	ProjectSerilizer::ProjectSerilizer(Project* project) {
@@ -113,6 +122,11 @@ namespace Proof
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
+		std::filesystem::path path = filePath;
+		if (!FileSystem::Exists(path.parent_path()))
+		{
+			FileSystem::CreateDirectory(path.parent_path());
+		}
 		std::ofstream foud(filePath);
 		foud << out.c_str();
 		foud.close();

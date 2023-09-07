@@ -46,6 +46,7 @@ namespace Proof {
 	RendererData* s_Data = nullptr;
 	void Renderer::Init(Window* window)
 	{
+		Timer time;
 		if (RendererAPI::ActiveAPI == Renderer::API::Vulkan)
 			s_RendererAPI = new VulkanRendererAPI();
 
@@ -154,11 +155,13 @@ namespace Proof {
 			s_Data->QuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 		}
 
-		PF_ENGINE_TRACE("Renderer Initialized");
+		PF_ENGINE_INFO("Renderer Initialized {}m/s",time.ElapsedMillis());
 	}
 
 	void Renderer::Shutdown()
 	{
+		Timer time;
+
 		// shut down piplines
 		{
 			PrethamSkyPass = nullptr;
@@ -172,7 +175,10 @@ namespace Proof {
 		ShaderLibrary = nullptr;
 		GraphicsContext = nullptr;
 		delete s_Data;
+		s_RendererAPI->Destroy();
 		delete s_RendererAPI;
+
+		PF_ENGINE_INFO("Renderer Shutdown {}m/s", time.ElapsedMillis());
 	}
 	const std::unordered_map<std::string, std::string>& Renderer::GetShaderDefines()
 	{
@@ -504,7 +510,7 @@ namespace Proof {
 		{
 			const uint32_t imageSize = 1024;
 			TextureConfiguration baseCubeMapConfig;
-			baseCubeMapConfig.DebugName = Utils::FileDialogs::GetFileName(path)+ " Base CubeMap";
+			baseCubeMapConfig.DebugName = FileSystem::GetFileName(path)+ " Base CubeMap";
 			baseCubeMapConfig.Height = imageSize;
 			baseCubeMapConfig.Width = imageSize;
 			baseCubeMapConfig.Storage = true;
@@ -518,7 +524,7 @@ namespace Proof {
 		Count<TextureCube> irradianceMap; 
 		{
 			TextureConfiguration irradianceTextureConfig;
-			irradianceTextureConfig.DebugName = "Irradiance map " + Utils::FileDialogs::GetFileName(path);
+			irradianceTextureConfig.DebugName = "Irradiance map " + FileSystem::GetFileName(path);
 			irradianceTextureConfig.Width = irradianceFilterRate;
 			irradianceTextureConfig.Height = irradianceFilterRate;
 			irradianceTextureConfig.Storage = true;
@@ -630,7 +636,7 @@ namespace Proof {
 		Count<TextureCube> prefilterMap;
 		{
 			TextureConfiguration prefilterTextureConfig;
-			prefilterTextureConfig.DebugName = "Prefilter map" + Utils::FileDialogs::GetFileName(path);
+			prefilterTextureConfig.DebugName = "Prefilter map" + FileSystem::GetFileName(path);
 			prefilterTextureConfig.Width = prefilterFilterRate;
 			prefilterTextureConfig.Height = prefilterFilterRate;
 			prefilterTextureConfig.Storage = true;
@@ -701,6 +707,7 @@ namespace Proof {
 				}
 				Renderer::EndComputePass(computePass);
 			});
+			prefilterImageViews.clear();
 		}
 		return std::make_pair(irradianceMap, prefilterMap);
 	}
@@ -777,6 +784,7 @@ namespace Proof {
 
 
 		TextureConfiguration cubeTextureConfig;
+		cubeTextureConfig.DebugName = "White Texture";
 		cubeTextureConfig.GenerateMips = true;
 		cubeTextureConfig.Height = 1024;
 		cubeTextureConfig.Width = 1024;
@@ -788,6 +796,8 @@ namespace Proof {
 		// since image is in format is a float we use 0x3F to normalize for floating poitn for white
 		std::memset(data, 0x3F, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F));
 		WhiteTextureCube = TextureCube::Create(data, cubeTextureConfig);
+
+		cubeTextureConfig.DebugName = "Black Texture";
 
 		std::memset(data, 0, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F));
 		BlackTextureCube = TextureCube::Create(data, cubeTextureConfig);
