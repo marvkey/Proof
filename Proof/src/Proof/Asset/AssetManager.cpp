@@ -13,6 +13,9 @@
 #include "Proof/Core/Application.h"
 #include "Proof/Project/Project.h"
 #include "Proof/Renderer/Texture.h"
+#include "Proof/Renderer/MeshWorkShop.h"
+#include "Proof/Scene/Mesh.h"
+#include "Proof/Scene/Material.h"
 #include <future>
 namespace Proof
 {
@@ -86,7 +89,80 @@ namespace Proof
 				s_AssetManagerData->AssetPath.insert({ path,assetID });
 			}
 		}
+		EnumReflection::ForEach< DefaultRuntimeAssets>([](DefaultRuntimeAssets currentEnum) {
 
+			// not loading every single mesh runtime asset bacause we may not need them at all in startup
+			uint64_t ID = (uint64_t)currentEnum;
+
+			switch (currentEnum)
+			{
+				case DefaultRuntimeAssets::Cube:
+					{
+						Count<Mesh> mesh = MeshWorkShop::GenerateCube();
+						Count<Asset> asset = mesh;
+						CreateRuntimeAsset(ID, asset, "Cube");
+					}
+					break;
+				case DefaultRuntimeAssets::Sphere:
+					{
+						Count<Mesh> mesh = MeshWorkShop::GenerateSphere();
+						Count<Asset> asset = mesh;
+						CreateRuntimeAsset(ID, asset, "Sphere");
+					}
+					break;
+				case DefaultRuntimeAssets::Capsule:
+					{
+						Count<Mesh> mesh = MeshWorkShop::GenerateCapsule();
+						Count<Asset> asset = mesh;
+						CreateRuntimeAsset(ID, asset, "Capsule");
+					}
+					break;
+				case DefaultRuntimeAssets::Cylinder:
+					{
+						Count<Mesh> mesh = MeshWorkShop::GenerateCylinder();
+						Count<Asset> asset = mesh;
+						CreateRuntimeAsset(ID, asset, "Cylinder");
+					}
+					break;
+				case DefaultRuntimeAssets::Cone:
+					{
+						Count<Mesh> mesh = MeshWorkShop::GenerateCone();
+						Count<Asset> asset = mesh;
+						CreateRuntimeAsset(ID, asset, "Cone");
+
+					}
+					break;
+				case DefaultRuntimeAssets::Torus:
+					{
+						Count<Mesh> mesh = MeshWorkShop::GenerateTorus(50, 50);
+						Count<Asset> asset = mesh;
+						CreateRuntimeAsset(ID, asset, "Torus");
+					}
+					break;
+				case DefaultRuntimeAssets::Plane:
+					{
+						
+						Count<Mesh> mesh = MeshWorkShop::GeneratePlane();
+						Count<Asset> asset = mesh;
+						CreateRuntimeAsset(ID, asset, "Plane");
+					}
+					break;
+				case DefaultRuntimeAssets::Material:
+					{
+						Count<Material> material = Count<Material>::Create("DefaultMaterial");
+						Count<Asset> asset = material.Get();
+						CreateRuntimeAsset(ID, asset,"DefaultMaterial");
+					}
+					break;
+				case DefaultRuntimeAssets::PhysicsMaterial:
+					{
+						Count<PhysicsMaterial> material = Count<PhysicsMaterial>::Create();
+						Count<Asset> asset = material.Get();
+						CreateRuntimeAsset(ID, asset, "DefaultPhysicsMaterial");
+					}
+					break;
+			}
+		});
 		PF_ENGINE_INFO("Asset Manager Initialized {}m/s", time.ElapsedMillis());
 	}
 	void AssetManager::ShutDown() {
@@ -100,9 +176,14 @@ namespace Proof
 	void AssetManager::InternalAddAsset(AssetInfo assetInfo, Count<Asset> asset)
 	{
 		PF_CORE_ASSERT(assetInfo.Type != AssetType::None, "Cannot add asset with assetType none");
+		PF_CORE_ASSERT(!HasAsset(assetInfo.ID), "Already has assetId");
 		s_AssetManagerData->Assets.insert({ assetInfo.ID,{assetInfo,asset} });
 		s_AssetManagerData->AllAssetTypes[assetInfo.Type].insert({ assetInfo.ID });
 		s_AssetManagerData->AssetPath.insert({ assetInfo.Path.string(),assetInfo.ID });
+		if (asset)
+		{
+			asset->m_ID = assetInfo.ID;
+		}
 		if (asset && assetInfo.RuntimeAsset == false && !assetInfo.IsAssetSource() && assetInfo.Type != AssetType::World)
 			SaveAsset(asset->GetID());
 	}
@@ -134,7 +215,8 @@ namespace Proof
 	
 	Count<Asset> AssetManager::GetDefaultAsset(DefaultRuntimeAssets asset)
 	{
-		return Count<Asset>();
+		uint64_t ID = (uint64_t)asset;
+		return InternalGetAsset((uint64_t)asset);
 	}
 
 	void AssetManager::NewAssetSource(const std::filesystem::path& path, AssetType type)

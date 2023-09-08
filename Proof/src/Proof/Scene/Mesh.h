@@ -70,6 +70,11 @@ namespace Proof
         const std::string& GetName()const{
             return m_Name;
         }
+
+        void SetName(const std::string& name)
+        {
+            m_Name = name;
+        }
         UUID GetMeshSpecificID() {
             return m_UiuqeMeshID;
         }

@@ -57,6 +57,7 @@ namespace Proof {
 
 		PhysicsMeshCooker::Init();
 
+
 		PF_ENGINE_INFO("Physics Engine Initialized {}m/s", time.ElapsedMillis());
 	}
 	void PhysicsEngine::Release()

@@ -9,6 +9,9 @@
 namespace  Proof {
 	std::unordered_map<AssetID, Count<class Mesh>> s_Meshes;
 	std::unordered_map<AssetID, physx::PxTriangleMesh*> s_ConvexMeshes;
+	Count<Mesh> PhysicsDebugCube;
+	Count<Mesh> PhysicsDebugSphere;
+	Count<Mesh> PhysicsDebugCapsule;
 	static class physx::PxCooking* s_MeshCooker = nullptr;
 	bool PhysicsMeshCooker::HasMesh(AssetID ID)
 	{
@@ -175,19 +178,22 @@ namespace  Proof {
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetCubeColliderMesh()
 	{
-		static auto mesh = MeshWorkShop::GenerateCube();
-		return mesh;
+		if(!PhysicsDebugCube)
+			PhysicsDebugCube = MeshWorkShop::GenerateCube();
+		return PhysicsDebugCube;
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetCapsuleColliderMesh()
 	{
-		static auto capsule = MeshWorkShop::GenerateCapsule();
-		return capsule;
+		if(!PhysicsDebugCapsule)
+			PhysicsDebugCapsule = MeshWorkShop::GenerateCapsule();
+		return PhysicsDebugCapsule;
 
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetSphereColliderMesh()
 	{
-		static auto sphere = MeshWorkShop::GenerateUVSphere();
-		return sphere;
+		if(!PhysicsDebugSphere)
+			PhysicsDebugSphere = MeshWorkShop::GenerateSphere();
+		return PhysicsDebugSphere;
 	}
 
 	void PhysicsMeshCooker::Init()
@@ -208,5 +214,8 @@ namespace  Proof {
 	void PhysicsMeshCooker::Release()
 	{
 		s_MeshCooker->release();
+		PhysicsDebugSphere = nullptr;
+		PhysicsDebugCapsule = nullptr;
+		PhysicsDebugCube = nullptr;
 	}
 }

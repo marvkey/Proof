@@ -331,7 +331,8 @@ namespace Proof {
 		imageViewCreateInfo.subresourceRange.layerCount = m_Specification.Layers;
 		imageViewCreateInfo.image = m_Info.ImageAlloc.Image;
 		vkCreateImageView(graphicsContext->GetDevice(), &imageViewCreateInfo, nullptr, &m_Info.ImageView);
-		graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW,std::format("{} Image View", m_Specification.DebugName), m_Info.ImageView);
+		if(m_Info.ImageView)
+			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW,std::format("{} Image View", m_Specification.DebugName), m_Info.ImageView);
 
 		VkSamplerCreateInfo samplerCreateInfo = {};
 		samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;

@@ -29,6 +29,21 @@ namespace Proof
             m_Config.Width = size.X;
             m_Config.Height = size.Y;
         }
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(VulkanRenderer::GetGraphicsContext()->GetGPU(), &deviceProperties);
+
+        // Get the maximum framebuffer dimensions
+        uint32_t maxWidth = deviceProperties.limits.maxFramebufferWidth;
+        uint32_t maxHeight = deviceProperties.limits.maxFramebufferHeight;
+
+        // Check if the current dimensions exceed the maximum supported dimensions
+        if (m_Config.Width > maxWidth || m_Config.Height> maxHeight)
+        {
+            // Adjust the dimensions to fit within the maximum supported dimensions
+            m_Config.Width = std::min(m_Config.Width, maxWidth);
+            m_Config.Height = std::min(m_Config.Height, maxHeight);
+            PF_ENGINE_INFO("FrameBuffer {} Dimension Exceed device Property new Width:{} Height:{}", m_Config.DebugName, m_Config.Width, m_Config.Height);
+        }
         SetUpAttachments();
 
         Build();
@@ -258,6 +273,7 @@ namespace Proof
     void VulkanFrameBuffer::CreateFramebuffer()
     {
 
+       
         const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice();
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
@@ -490,27 +506,43 @@ namespace Proof
     {
         if (m_Config.Width == width && m_Config.Height == height)
             return;
-
+        
         Release();
         m_Config.Width = width;
         m_Config.Height = height;
+
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(VulkanRenderer::GetGraphicsContext()->GetGPU(), &deviceProperties);
+
+        // Get the maximum framebuffer dimensions
+        uint32_t maxWidth = deviceProperties.limits.maxFramebufferWidth;
+        uint32_t maxHeight = deviceProperties.limits.maxFramebufferHeight;
+
+        // Check if the current dimensions exceed the maximum supported dimensions
+        if (m_Config.Width > maxWidth || m_Config.Height > maxHeight)
+        {
+            // Adjust the dimensions to fit within the maximum supported dimensions
+            m_Config.Width = std::min(m_Config.Width, maxWidth);
+            m_Config.Height = std::min(m_Config.Height, maxHeight);
+            PF_ENGINE_INFO("FrameBuffer {} Dimension Exceed device Property new Width:{} Height:{}", m_Config.DebugName, m_Config.Width, m_Config.Height);
+        }
         for (auto& framebufferImageAttach : m_ColorImages)
         {
             for (auto& image : framebufferImageAttach.RefImages)
             {
                 if (image->GetRendererResourceType() == RendererResourceType::Image2D)
-                    image.As<VulkanImage2D>()->Resize(width, height);
+                    image.As<VulkanImage2D>()->Resize(m_Config.Width, m_Config.Height);
             }
         }
 
         for (auto& dpethImage : m_DepthImage.RefImages)
         {
             if (dpethImage->GetRendererResourceType() == RendererResourceType::Image2D)
-                dpethImage.As<VulkanImage2D>()->Resize(width, height);
+                dpethImage.As<VulkanImage2D>()->Resize(m_Config.Width, m_Config.Height);
         }
         Build();
 
-        PF_ENGINE_TRACE("Resized {} FrameBuffer {} {}", m_Config.DebugName, width, height);
+        PF_ENGINE_TRACE("Resized {} FrameBuffer {} {}", m_Config.DebugName, m_Config.Width, m_Config.Height);
     }
     void VulkanFrameBuffer::Copy(Count<FrameBuffer> copyFrameBuffer)
     {

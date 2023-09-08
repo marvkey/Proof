@@ -395,7 +395,7 @@ namespace Proof
 
 		m_PlayersCount = 4;
 
-		
+		m_ViewPortSize = { 100,100 };
 
 	}
 	void Editore3D::OnDetach() {
@@ -412,7 +412,7 @@ namespace Proof
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
-		//m_WorldRenderer->SetViewportSize((uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y );
+		m_WorldRenderer->SetViewportSize((uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y );
 		if (m_IsViewPortResize && m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
 			m_IsViewPortResize = false;
 		}

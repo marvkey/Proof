@@ -61,6 +61,13 @@ namespace Proof
 				}								\
 				break;							\
 			}	
+
+	#define DEFAULT_MESH_SET(Type) \
+		if (ImGui::MenuItem(#Type))\
+		{\
+			newEntity = m_CurrentWorld->CreateEntity(#Type);\
+			newEntity.AddComponent<MeshComponent>().SetMesh(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Type)->GetID());\
+		}
 	template<class T>
 	static void AddComponentGui(Entity entity, const std::string& name) {
 		if (ImGui::MenuItem(name.c_str()))
@@ -158,9 +165,22 @@ namespace Proof
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::MenuItem("Mesh")) {
-			newEntity = m_CurrentWorld->CreateEntity("Mesh");
-			newEntity.AddComponent<MeshComponent>();
+		if (ImGui::BeginMenu("Mesh")) {
+			DEFAULT_MESH_SET(Cube);
+			DEFAULT_MESH_SET(Sphere);
+			DEFAULT_MESH_SET(Capsule);
+			DEFAULT_MESH_SET(Cylinder);
+			DEFAULT_MESH_SET(Cone);
+			DEFAULT_MESH_SET(Torus);
+			DEFAULT_MESH_SET(Plane);
+			
+			if (ImGui::MenuItem("Empty Mesh"))
+			{
+				newEntity = m_CurrentWorld->CreateEntity("Mesh");
+				newEntity.AddComponent<MeshComponent>();
+			}
+
+			ImGui::EndMenu();
 		}
 		if (ImGui::MenuItem("Camera")) {
 			newEntity = m_CurrentWorld->CreateEntity("Camera");
@@ -364,7 +384,7 @@ namespace Proof
 			DrawVectorControl("Location", transformComp.Location);
 			glm::vec3 rotationdeg = glm::degrees(transformComp.GetRotationEuler());
 			DrawVectorControl("Rotation", rotationdeg);
-			//transformComp.SetRotationEuler(transformComp.GetRotationEuler() + glm::radians(rotationdeg));
+			transformComp.SetRotationEuler(glm::radians(rotationdeg));
 			DrawVectorControl("Scale", transformComp.Scale, 1.0f);
 		});
 		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp) {

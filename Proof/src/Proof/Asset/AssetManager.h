@@ -94,21 +94,20 @@ namespace Proof
 			CreateRuntimeAsset(CreateID(), asset);
 		}
 
-		static void CreateRuntimeAsset(AssetID ID,Count<Asset>& asset)
+		static void CreateRuntimeAsset(AssetID ID,Count<Asset>& asset,const std::string& name = "")
 		{
-			asset->m_ID = AssetManager::CreateID();
 			AssetInfo assetInfo;
 			assetInfo.State = AssetState::Ready;
-			assetInfo.ID = asset->GetID();
+			assetInfo.ID = ID;
 			assetInfo.Type = asset->GetAssetType();
 			assetInfo.RuntimeAsset = true;
-			assetInfo.Path = fmt::format("RuntimeAsset/{}", assetInfo.ID.Get());
+			assetInfo.Path = fmt::format("RuntimeAsset/{}/{}", assetInfo.ID.Get(), name);
 
 			InternalAddAsset(assetInfo, asset);
 		}
 		// cannot access this asset by path only by its id
 		template<class AssetType, typename ... Args, std::enable_if_t<Is_Compatible<AssetType, Asset>::value, int> = 0>
-		static Count<AssetType> CreateRuntimeAsset(Args&&... args) 
+		static Count<AssetType> CreateRuntimeAsset(Args&&... args, const std::string& name = "")
 		{
 			static_assert(!std::is_same<AssetType, class World>::value, "Cannot craet  a world like this");
 			Count<Asset> asset = Count<AssetType>::Create(std::forward<Args>(args)...);
@@ -118,12 +117,12 @@ namespace Proof
 			assetInfo.ID = asset->GetID();
 			assetInfo.Type = asset->GetAssetType();
 			assetInfo.RuntimeAsset = true;
-			assetInfo.Path = fmt::format("RuntimeAsset/{}",assetInfo.ID.Get());
+			assetInfo.Path = fmt::format("RuntimeAsset/{}/{}",assetInfo.ID.Get(), name);
 
 			InternalAddAsset(assetInfo, asset);
 			return asset.As<AssetType>();
 		}
-		Count<Asset> GetDefaultAsset(DefaultRuntimeAssets asset);
+		static Count<Asset> GetDefaultAsset(DefaultRuntimeAssets asset);
 		/*
 		*path Pass the full path
 		*/

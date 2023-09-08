@@ -216,6 +216,7 @@ namespace Proof {
         {
             Release();
             Build();
+            CallReset = false;
         }
     }
 
