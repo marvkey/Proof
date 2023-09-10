@@ -20,7 +20,6 @@ namespace Proof
 		public void ApplyCameraRotate()
 		{
 			InternalCalls.ApplyCameraRotate(ID);
-
         }
 		public Entity[] GetChildren()
 		{

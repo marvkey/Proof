@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Proof;
 
 namespace Game
@@ -13,6 +14,8 @@ namespace Game
 
     public class Player : Entity
     {
+        public List<Entity> entity;
+        public Entity[] EntityArray;
         private bool m_Movement = true;
         private TransformComponent m_Transform;
         private RigidBodyComponent m_RigidBody;

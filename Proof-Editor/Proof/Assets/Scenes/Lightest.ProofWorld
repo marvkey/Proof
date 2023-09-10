@@ -1,46 +1,6 @@
 World:
   ID: 6477593735195019013
   Entities:
-    - Entity: 736792398951339601
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0.0331612565, -0.0506145507]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 9.73999977
-    - Entity: 11529972234107103668
-      TagComponent:
-        Tag: Plane
-        tags: []
-      TransformComponent:
-        Location: [0, -2.70000005, 0]
-        Rotation: [0, 0, 0]
-        Scale: [34.5999985, 1, 71.8000031]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 56
-    - Entity: 16748686897685717419
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
     - Entity: 15054335619324677679
       TagComponent:
         Tag: Sky Light
@@ -62,3 +22,50 @@ World:
         Azimuth: 0
         Inclination: 0
         Image: 2700444414993608762
+    - Entity: 16748686897685717419
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+      ScriptComponent:
+        Scripts:
+          - Script: Demos.PhysicsCube
+            ScriptFields:
+              - Name: code
+                Type: Enum
+                Data
+    - Entity: 11529972234107103668
+      TagComponent:
+        Tag: Plane
+        tags: []
+      TransformComponent:
+        Location: [0, -2.70000005, 0]
+        Rotation: [0, 0, 0]
+        Scale: [34.5999985, 1, 71.8000031]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 56
+    - Entity: 736792398951339601
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 9.73999977

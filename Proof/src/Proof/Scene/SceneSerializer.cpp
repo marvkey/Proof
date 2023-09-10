@@ -26,7 +26,7 @@ namespace Proof
 	#define READ_SCRIPT_FIELD(FieldType, Type)             \
 		case ScriptFieldType::FieldType:                   \
 		{                                                  \
-			Type data = scriptField["Data"].as<Type>();    \
+			Type data = scriptField["Data"].as<Type>(None);    \
 			fieldInstance.SetValue(data);                  \
 			break;                                         \
 	}
@@ -227,7 +227,7 @@ namespace Proof
 								//WRITE_SCRIPT_FIELD(Vector4, glm::vec4);
 								WRITE_SCRIPT_FIELD(Entity, uint64_t);
 								WRITE_SCRIPT_FIELD(Prefab, uint64_t);
-								WRITE_SCRIPT_FIELD(ImageAsset, uint64_t);
+								WRITE_SCRIPT_FIELD(Texture, uint64_t);
 							}
 							out << YAML::EndMap; // ScriptField
 						}
@@ -911,7 +911,7 @@ namespace Proof
 								//READ_SCRIPT_FIELD(Vector4, glm::vec4);
 								READ_SCRIPT_FIELD(Entity, uint64_t);
 								READ_SCRIPT_FIELD(Prefab, uint64_t);
-								READ_SCRIPT_FIELD(ImageAsset, uint64_t);
+								READ_SCRIPT_FIELD(Texture, uint64_t);
 							}
 						}
 					}

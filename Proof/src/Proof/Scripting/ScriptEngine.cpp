@@ -47,9 +47,12 @@ namespace Proof
 
         { "Proof.Entity", ScriptFieldType::Entity },
         { "Proof.Prefab", ScriptFieldType::Prefab },
-        { "Proof.ImageAsset", ScriptFieldType::ImageAsset },
+        { "Proof.Texture", ScriptFieldType::Texture },
     };
-   
+    namespace Utils
+    {
+       
+   }
     bool CheckMonoError(MonoError& error) {
         bool hasError = !mono_error_ok(&error);
         if (hasError) {
@@ -113,10 +116,43 @@ namespace Proof
                 PF_ENGINE_TRACE("{}.{}", nameSpace, name);
             }
         }
+        ScriptFieldType MonoTypeToScriptFieldTypeInt(MonoTypeEnum monoType) {
+            switch (monoType)
+            {
+                case MONO_TYPE_VOID: return ScriptFieldType::None;
+                case MONO_TYPE_BOOLEAN: return ScriptFieldType::Bool;
+                case MONO_TYPE_CHAR: return ScriptFieldType::Char;
+                case MONO_TYPE_I1: return ScriptFieldType::Int8_t;
+                case MONO_TYPE_U1: return ScriptFieldType::Uint8_t;
+                case MONO_TYPE_I2: return ScriptFieldType::Int16_t;
+                case MONO_TYPE_U2: return ScriptFieldType::Uint16_t;
+                case MONO_TYPE_I4: return ScriptFieldType::Int32_t;
+                case MONO_TYPE_U4: return ScriptFieldType::Uint32_t;
+                case MONO_TYPE_I8: return ScriptFieldType::Int64_t;
+                case MONO_TYPE_U8: return ScriptFieldType::Uint64_t;
+                case MONO_TYPE_R4: return ScriptFieldType::Float;
+                case MONO_TYPE_R8: return ScriptFieldType::Double;
+                case MONO_TYPE_ENUM: return ScriptFieldType::Enum;
+               // case MONO_TYPE_STRING: return ScriptFieldType::String;
+               // case MONO_TYPE_CLASS: return ScriptFieldType::Class; // Modify this to match your enum.
+                // Add more cases for the other enum values as needed.
+                default: return ScriptFieldType::None; break;
+            }
+            PF_CORE_ASSERT(false);
+        };
 
-        ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType)
+        ScriptFieldType MonoTypeToScriptFieldTypeString(MonoType* monoType)
         {
+            
             std::string typeName = mono_type_get_name(monoType);
+            //if (typeName == "Demos.PhysicsCube.ErrorCode")
+            //    PF_CORE_ASSERT(false);
+            MonoClass* monoClass = mono_class_from_mono_type(monoType);
+            if (monoClass != nullptr && mono_class_is_enum(monoClass))
+            {
+                return ScriptFieldType::Enum;
+            }
+
 
             auto it = s_ScriptFieldTypeMap.find(typeName);
             if (it == s_ScriptFieldTypeMap.end())
@@ -133,6 +169,8 @@ namespace Proof
         std::string ParentName;
         std::set<std::string> SubClasses;
     };
+
+    
     struct MonoData {
         MonoDomain* RootDomain = nullptr;
         MonoDomain* AppDomain = nullptr;
@@ -148,6 +186,10 @@ namespace Proof
         std::unordered_map<UUID, std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>> EntityScriptFields;
         std::unordered_map<std::string, Count<ScriptClass>> ScriptEntityClasses;
 
+        //in a vector because we want to have teh order in wich the enum properties are in
+
+        // enum name, enum type of int, enum values
+        std::unordered_map<std::string, std::pair<ScriptFieldType,std::vector<ScriptEnumData>>> EnumClasses;
         // entity id, (name of class, instance of it)
         std::unordered_map<UUID, std::unordered_map<std::string,Count<ScriptInstance>>> EntityInstances;
         
@@ -155,13 +197,16 @@ namespace Proof
         //(scirpt name) (script direct Parent name, script subclasses)
         std::unordered_map<std::string, ScriptSubclassData> ScriptSubClasses;
 
+
+        //prefab Id, (Prefab Entity ID), class Name, {field name, field
+        std::unordered_map<AssetID, std::unordered_map<UUID,std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>>> PrefabScriptFields;
         void Clear () {
             EntityClass = nullptr;
             EntityScriptFields.clear();
             ScriptEntityClasses.clear();
             EntityInstances.clear();
             ScriptSubClasses.clear();
-
+            EnumClasses.clear();
         }
         #ifdef PF_ENABLE_DEBUG 
             bool EnableDebugging = true;
@@ -202,6 +247,7 @@ namespace Proof
         if (method != nullptr)
             return method;
         
+        // if parent class has the meathod
         MonoClass* parentClass = mono_class_get_parent(monoClass);
         if (parentClass)
         {
@@ -494,64 +540,142 @@ namespace Proof
             mono_debug_domain_create(s_Data->RootDomain);
 
         mono_thread_set_main(mono_thread_current());
+    }
 
+    static void ReflectEnums(const std::string& fullname, MonoClass* enumClass,MonoDomain* domain)
+    {
+        MonoClassField* classFields;
+        void* fieldsIter = nullptr;
+        int index = 0;
+
+        //GONNA HAVE A LIST OF ALL ENUMS AND their possible values 
+        // the enums will have to be labelled public though
+        MonoObject* enumObject = mono_object_new(domain, enumClass);
+        PF_ENGINE_INFO("Added To Enums {} ", fullname);
+        while (classFields = mono_class_get_fields(enumClass, &fieldsIter))
+        {
+// the first field is some wierd "value_" probably a built in variable for the enums
+            if (index == 0)
+            {
+               // PF_CORE_ASSERT(false);
+                index++;
+                continue;
+            }
+            const std::string enumName = mono_field_get_name(classFields);
+
+            ScriptEnumData enumData;
+            enumData.Name = enumName;
+            enumData.EnumType = Utils::MonoTypeToScriptFieldTypeInt((MonoTypeEnum)mono_type_get_type(mono_class_enum_basetype(enumClass))); // using int cause i am 100% sure it is an enum
+
+            //int value;
+            mono_field_static_get_value(mono_class_vtable(domain, enumClass), classFields, enumData.Value);
+
+            std::string data = mono_field_get_data(classFields);
+            PF_ENGINE_TRACE("   {} ", enumName);
+
+            s_Data->EnumClasses[fullname].first = enumData.EnumType;
+            s_Data->EnumClasses[fullname].second.emplace_back(enumData);
+        }
     }
     void ScriptEngine::LoadAssemblyClasses() {
+
         s_Data->ScriptEntityClasses.clear();
+        s_Data->EnumClasses.clear();
+        {
+            const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_Data->AppAssemblyImage, MONO_TABLE_TYPEDEF);
+            int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+            MonoClass* entityClass = mono_class_from_name(s_Data->CoreAssemblyImage, "Proof", "Entity");
 
-        const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_Data->AppAssemblyImage, MONO_TABLE_TYPEDEF);
-        int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-        MonoClass* entityClass = mono_class_from_name(s_Data->CoreAssemblyImage, "Proof", "Entity");
-
-        PF_ENGINE_TRACE("C# Script Classes");
-        for (int32_t i = 0; i < numTypes; i++) {
-            uint32_t cols[MONO_TYPEDEF_SIZE];
-            mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
-            const char* nameSpace = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
-            const char* className = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
-
-            //one reason it would be null is bcause it is an enum and the namespace kindd affects it
-            std::string fullName;
-            if (strlen(nameSpace) != 0)
-                fullName = fmt::format("{}.{}", nameSpace, className);
-            else
-                fullName = className;
-
-            MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, className);
-
-            if (monoClass == entityClass || monoClass == nullptr)
-                continue;
-            MonoImage* monoImage = mono_class_get_image(monoClass);
-
-            bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
-            if (!isEntity) continue;
-
-            s_Data->ScriptEntityClasses[fullName] = Count<ScriptClass>::Create(nameSpace, className);
-            s_Data->ScriptSubClasses[fullName];
-
-            auto scriptClass = s_Data->ScriptEntityClasses[fullName];
-            PF_ENGINE_TRACE("   Added To Script Class {}", fullName);
-
-            int fieldCount = mono_class_num_fields(monoClass);
-            PF_ENGINE_WARN("{} has {} fields:", className, fieldCount);
-
-            MonoClass* parent = mono_class_get_parent(monoClass);
-
-            if (parent != nullptr && parent != entityClass && mono_class_is_subclass_of(parent, entityClass, false))
+            PF_ENGINE_TRACE("C# Script Classes");
+            for (int32_t i = 0; i < numTypes; i++)
             {
-                const char* nameSpace = mono_class_get_namespace(parent);
-                const char* name = mono_class_get_name(parent);
+                uint32_t cols[MONO_TYPEDEF_SIZE];
+                mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+                const char* nameSpace = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
+                const char* className = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
 
-                // Combine the namespace and name to form the full class name
-                std::string parentfullName = nameSpace;
-                parentfullName += ".";
-                parentfullName += name;
+                //one reason it would be null is bcause it is an enum and the namespace kindd affects it
+                std::string fullName;
+                if (strlen(nameSpace) != 0)
+                    fullName = fmt::format("{}.{}", nameSpace, className);
+                else
+                    fullName = className;
 
-                s_Data->ScriptSubClasses[fullName].ParentName = parentfullName;
-                s_Data->ScriptSubClasses[parentfullName].SubClasses.insert(fullName);
+                MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, className);
+
+                if (monoClass == entityClass || monoClass == nullptr)
+                    continue;
+                MonoImage* monoImage = mono_class_get_image(monoClass);
+
+                if (mono_class_is_enum(monoClass))
+                {
+                    ReflectEnums(fullName, monoClass, s_Data->AppDomain);
+                }
+                bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
+
+                if (!isEntity) continue;
+
+                s_Data->ScriptEntityClasses[fullName] = Count<ScriptClass>::Create(nameSpace, className);
+                s_Data->ScriptSubClasses[fullName];
+
+                auto scriptClass = s_Data->ScriptEntityClasses[fullName];
+                PF_ENGINE_TRACE("   Added To Script Class {}", fullName);
+
+                int fieldCount = mono_class_num_fields(monoClass);
+                PF_ENGINE_WARN("{} has {} fields:", className, fieldCount);
+
+                MonoClass* parent = mono_class_get_parent(monoClass);
+
+                if (parent != nullptr && parent != entityClass && mono_class_is_subclass_of(parent, entityClass, false))
+                {
+                    const char* nameSpace = mono_class_get_namespace(parent);
+                    const char* name = mono_class_get_name(parent);
+
+                    // Combine the namespace and name to form the full class name
+                    std::string parentfullName = nameSpace;
+                    parentfullName += ".";
+                    parentfullName += name;
+
+                    s_Data->ScriptSubClasses[fullName].ParentName = parentfullName;
+                    s_Data->ScriptSubClasses[parentfullName].SubClasses.insert(fullName);
+                }
+
+                AssemblyLoadFields(scriptClass, monoClass);
             }
-            
-            AssemblyLoadFields(scriptClass, monoClass);
+
+        }
+        return;
+        // just laoding enums
+        {
+            const MonoTableInfo* coreTypeDefinitionsTable = mono_image_get_table_info(s_Data->CoreAssemblyImage, MONO_TABLE_TYPEDEF);
+            int32_t coreNumTypes = mono_table_info_get_rows(coreTypeDefinitionsTable);
+
+            PF_ENGINE_TRACE("C# Core Script Enums");
+            for (int32_t i = 0; i < coreNumTypes; i++)
+            {
+                uint32_t cols[MONO_TYPEDEF_SIZE];
+                mono_metadata_decode_row(coreTypeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+                const char* nameSpace = mono_metadata_string_heap(s_Data->CoreAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
+                const char* className = mono_metadata_string_heap(s_Data->CoreAssemblyImage, cols[MONO_TYPEDEF_NAME]);
+                 //one reason it would be null is bcause it is an enum and the namespace kindd affects it
+                std::string fullName;
+                if (strlen(nameSpace) != 0)
+                    fullName = fmt::format("{}.{}", nameSpace, className);
+                else
+                    fullName = className;
+
+                MonoClass* monoClass = mono_class_from_name(s_Data->CoreAssemblyImage, nameSpace, className);
+
+                if (monoClass == nullptr)
+                    continue;
+                MonoImage* monoImage = mono_class_get_image(monoClass);
+
+                if (mono_class_enum_basetype(monoClass))
+                {
+                    ReflectEnums(fullName, monoClass, s_Data->RootDomain);
+                    continue;
+                }
+            }
         }
     }
     void ScriptEngine::AssemblyLoadFields(Count<ScriptClass> scriptClass, MonoClass* monoClass)
@@ -565,7 +689,7 @@ namespace Proof
             if (flags & MONO_FIELD_ATTR_PUBLIC )
             {
                 MonoType* type = mono_field_get_type(field);
-                ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldType(type);
+                ScriptFieldType fieldType = Utils::MonoTypeToScriptFieldTypeString(type); //using string because i am not sure if it is an enum or an array or so n
                 if (fieldType == ScriptFieldType::None)
                     continue;
                 PF_ENGINE_WARN("  {} ({})", fieldName, Utils::ScriptFieldTypeToString(fieldType));
@@ -610,12 +734,36 @@ namespace Proof
     {
         return s_Data->EntityScriptFields[id];
     }
+    std::unordered_map<AssetID, std::unordered_map<UUID, std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>>>& ScriptEngine::GetPrefabFieldMap(AssetID ID)
+    {
+        return s_Data->PrefabScriptFields;
+    }
+    const std::unordered_map<std::string, std::pair<ScriptFieldType, std::vector<ScriptEnumData>>>& ScriptEngine::GetEnumClasses()
+    {
+        return s_Data->EnumClasses;
+    }
     bool ScriptEngine::HasScriptFieldMap(Entity entity) {
         return s_Data->EntityScriptFields.contains(entity.GetUUID());
     }
-
     void ScriptEngine::CreateScriptFieldMap(Entity entity) {
         s_Data->EntityScriptFields[entity.GetUUID()] = {};
+    }
+
+    std::string ScriptEngine::GetFieldEnumName(ScriptField field)
+    {
+
+        MonoType* fieldType = mono_field_get_type(field.ClassField);
+
+        MonoClass* fieldClass = mono_type_get_class(fieldType);
+        bool isEnum = (fieldClass);
+        if (isEnum)
+        {
+
+            std::string name = mono_type_get_name(fieldType);
+            return name;
+        }
+        return "";
+        PF_CORE_ASSERT(false);
     }
     std::string ScriptEngine::MonoToString(MonoString* monoString){
         if (monoString == nullptr || mono_string_length(monoString) == 0)
@@ -766,9 +914,32 @@ namespace Proof
         UUID entityUUID = entity.GetUUID();
         if (s_Data->EntityInstances.contains(entityUUID))
         {
+            ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+
+            for (auto& scriptName : scriptComponent.ScriptsNames)
+            {
+                auto it = s_Data->EntityInstances[entityUUID].find(scriptName);
+
+                // means that in script component
+                //this script is found on script meathod 
+
+
+                if (it != s_Data->EntityInstances[entityUUID].end())
+                {
+                    it->second->CallOnUpdate(time);
+                }
+                else 
+                {
+                    // TODO CALL ON CREATE ON THE NEW SCRIPT ADDED TO SCRIPT COMPONENT
+                }
+            }
+
             for (auto& [scriptName, instance] : s_Data->EntityInstances[entityUUID])
             {
-                instance->CallOnUpdate(time);
+                if (!scriptComponent.ScriptsNames.contains(scriptName))
+                {
+                    // CALL ON DELETE ON THESE Scripts
+                }
             }
         }
         else

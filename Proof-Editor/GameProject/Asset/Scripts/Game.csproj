@@ -21,7 +21,8 @@
     <OutputPath>..\..\..\Proof\Resources\Scripts\Binaries\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -33,7 +34,8 @@
     <OutputPath>..\..\..\Proof\Resources\Scripts\Binaries\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -45,7 +47,8 @@
     <OutputPath>..\..\..\Proof\Resources\Scripts\Binaries\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -59,6 +62,7 @@
     <Reference Include="ProofScriptCore" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Demos\PhysicsCube.cs" />
     <Compile Include="src\Enemy.cs" />
     <Compile Include="src\Menu\MainMenuController.cs" />
     <Compile Include="src\Multiplayer\MPlayer.cs" />

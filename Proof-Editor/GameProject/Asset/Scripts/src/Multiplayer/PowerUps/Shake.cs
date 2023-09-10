@@ -12,7 +12,7 @@ namespace Game
         private float m_Timer = 0;
         protected void OnCreate()
         {
-            Image = new ImageAsset(7247838432740145550);
+            Image = new Texture(7247838432740145550);
             GetComponent<TransformComponent>().Scale = new Vector(100);
             GetComponent<TransformComponent>().Location = new Vector(GetComponent<TransformComponent>().Location.X, GetComponent<TransformComponent>().Location.Y + 8, GetComponent<TransformComponent>().Location.Z);
         }

@@ -7,7 +7,7 @@ namespace Game
         public float ForceStrentght = 3000.0f;
         protected void OnCreate()
         {
-            Image = new ImageAsset(13596771993452602895);
+            Image = new Texture(13596771993452602895);
 
             GetComponent<TransformComponent>().Scale = new Vector(10);
             GetComponent<TransformComponent>().Location = new Vector(GetComponent<TransformComponent>().Location.X, GetComponent<TransformComponent>().Location.Y + 8, GetComponent<TransformComponent>().Location.Z);

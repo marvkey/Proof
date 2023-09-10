@@ -27,12 +27,24 @@ namespace Proof
 		None = 0,
 		Float, Double,
 		Bool, Char, 
-		Int8_t, Int16_t, Int32_t, Int64_t,Enum,
+		Int8_t, Int16_t, Int32_t, Int64_t,Enum, //suports only integer types, they are basically integers,
 		Uint8_t,Uint16_t, Uint32_t, Uint64_t,
 		Vector2, Vector3, Vector4,
 		Entity,
 		Prefab,
-		ImageAsset
+		Texture,
+	};
+	struct ScriptEnumData
+	{
+		std::string Name;
+		uint8_t Value[16];
+		ScriptFieldType EnumType; // can only be integer values
+		template<typename T>
+		T GetValue()const
+		{
+			static_assert(sizeof(T) <= 16, "Type too large!");
+			return *(T*)Value;
+		}
 	};
 	struct ScriptField {
 		ScriptFieldType Type;
@@ -62,6 +74,11 @@ namespace Proof
 		{
 			static_assert(sizeof(T) <= 16, "Type too large!");
 			memcpy(m_Buffer, &value, sizeof(T));
+		}
+
+		void SetValueRaw(uint8_t buffer[16])
+		{
+			memcpy(m_Buffer, buffer, sizeof(buffer));
 		}
 	private:
 		uint8_t m_Buffer[16];
@@ -96,6 +113,17 @@ namespace Proof
 
 			return *(T*)buffer;
 		}
+
+		std::array<uint8_t, 16> GetFieldDefaultValueRaw(const std::string& name)
+		{
+			std::array<uint8_t, 16> buffer;
+			bool success = GetFieldDefaultValueInternal(name, buffer.data());
+			if (!success)
+				return {};
+
+			return buffer;
+		}
+
 		bool GetFieldDefaultValueInternal(const std::string& name, void* buffer);
 
 		const std::unordered_map<std::string, ScriptField>& GetFields() const { return m_Fields; }
@@ -229,6 +257,12 @@ namespace Proof
 		// class name, field, data
 		static std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& GetScriptFieldMap(Entity entity);
 		static std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>& GetScriptFieldMap(UUID id);
+		//prefab Id, (Prefab Entity ID), class Name, {field name, field
+		static std::unordered_map<AssetID, std::unordered_map<UUID, std::unordered_map<std::string, std::unordered_map<std::string, ScriptFieldInstance>>>>& GetPrefabFieldMap(AssetID ID);
+
+		static const std::unordered_map<std::string,std::pair<ScriptFieldType, std::vector<ScriptEnumData>>>& GetEnumClasses();
+
+		static std::string GetFieldEnumName(ScriptField field);
 		static bool HasScriptFieldMap(Entity entity);
 		static void CreateScriptFieldMap(Entity entity);
 		static std::string MonoToString(MonoString* monoString);
@@ -272,7 +306,8 @@ namespace Proof
 				case ScriptFieldType::Vector4: return "Vector4";
 				case ScriptFieldType::Entity:  return "Entity";
 				case ScriptFieldType::Prefab:  return "Prefab";
-				case ScriptFieldType::ImageAsset:  return "ImageAsset";
+				case ScriptFieldType::Texture:  return "ImageAsset";
+				case ScriptFieldType::Enum:  return "Enum";
 			}
 			PF_CORE_ASSERT(false, "Unknown ScriptFieldType");
 			return "None";
@@ -298,7 +333,8 @@ namespace Proof
 			if (fieldType == "Vector4") return ScriptFieldType::Vector4;
 			if (fieldType == "Entity")  return ScriptFieldType::Entity;
 			if (fieldType == "Prefab")  return ScriptFieldType::Prefab;
-			if (fieldType == "ImageAsset")  return ScriptFieldType::ImageAsset;
+			if (fieldType == "Image")  return ScriptFieldType::Texture;
+			if (fieldType == "Enum")  return ScriptFieldType::Enum;
 
 			PF_CORE_ASSERT(false, "Unknown ScriptFieldType");
 			return ScriptFieldType::None;

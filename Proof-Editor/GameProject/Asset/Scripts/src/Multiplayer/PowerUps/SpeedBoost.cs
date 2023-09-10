@@ -15,7 +15,7 @@ namespace Game
         }
         protected void OnCreate()
         {
-            Image = new ImageAsset(10460736942826054302);
+            Image = new Texture(10460736942826054302);
         }
 
         protected override void ApplyPowerUp()

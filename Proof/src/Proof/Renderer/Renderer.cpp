@@ -373,7 +373,7 @@ namespace Proof {
 			Count<RenderCommandBuffer> commandBuffer = RenderCommandBuffer::Create(cmdBufer);
 			Renderer::BeginComputePass(commandBuffer, PrethamSkyPass);
 			PrethamSkyPass->PushData("u_Uniforms", &params);
-			PrethamSkyPass->Dispatch(cubemapSize / irradianceMap, cubemapSize / irradianceMap, 6);
+			PrethamSkyPass->Dispatch(cubemapSize/irradianceMap, cubemapSize/irradianceMap, 6);
 			Renderer::EndComputePass(PrethamSkyPass);
 			//return;
 			// boit 

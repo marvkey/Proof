@@ -365,7 +365,7 @@ namespace Game
                     }
                     else
                     {
-                        slot.Image =new ImageAsset( 0);
+                        slot.Image =new Texture( 0);
                     }
 
                 }

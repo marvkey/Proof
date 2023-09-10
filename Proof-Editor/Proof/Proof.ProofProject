@@ -8,26 +8,26 @@ Project:
   StartWorldEdit: 0
   Input:
     ActionMapping:
-      - Action: Pause
-        InputDevices:
-          - InputDevice: KeyBoard
-            Keys: [256]
       - Action: Jump
         InputDevices:
           - InputDevice: KeyBoard
             Keys: [32]
           - InputDevice: ControllerButton
             Keys: [0]
-      - Action: Play
+      - Action: Pause
         InputDevices:
           - InputDevice: KeyBoard
-            Keys: [82]
+            Keys: [256]
       - Action: DecreaseInventory
         InputDevices:
           - InputDevice: MouseMovement
             Keys: [4]
           - InputDevice: ControllerButton
             Keys: [4]
+      - Action: Play
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [82]
       - Action: IncreaseInventory
         InputDevices:
           - InputDevice: MouseMovement
@@ -49,19 +49,6 @@ Project:
           - InputDevice: ControllerButton
             Keys: [1]
     MotionMapping:
-      - Motion: RMouyseotateX
-        InputDevices:
-          - InputDevice: MouseMovement
-            Keys: [1]
-            MotionValues: [1]
-      - Motion: DecreaseSpeed
-        InputDevices:
-          - InputDevice: KeyBoard
-            Keys: [83]
-            MotionValues: [1]
-          - InputDevice: ControllerAxis
-            Keys: [4]
-            MotionValues: [1]
       - Motion: MoveX
         InputDevices:
           - InputDevice: KeyBoard
@@ -70,6 +57,19 @@ Project:
           - InputDevice: ControllerAxis
             Keys: [0]
             MotionValues: [-1]
+      - Motion: DecreaseSpeed
+        InputDevices:
+          - InputDevice: KeyBoard
+            Keys: [83]
+            MotionValues: [1]
+          - InputDevice: ControllerAxis
+            Keys: [4]
+            MotionValues: [1]
+      - Motion: RMouyseotateX
+        InputDevices:
+          - InputDevice: MouseMovement
+            Keys: [1]
+            MotionValues: [1]
       - Motion: IncreaseSpeed
         InputDevices:
           - InputDevice: KeyBoard

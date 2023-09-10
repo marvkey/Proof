@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 namespace Proof
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct ImageAsset
+    public struct Texture
     {
         private ulong AssetID;
         //tempory
-        public ImageAsset(ulong assetID)
+        public Texture(ulong assetID)
         {
             AssetID = assetID;
         }

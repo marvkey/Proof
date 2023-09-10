@@ -100,7 +100,7 @@ namespace Proof
     struct UiImageButtonData
     {
         public UIBaseData BaseData;
-        public ImageAsset ImageAssetID;
+        public Texture ImageAssetID;
     }
     struct UITextData
     {
@@ -179,7 +179,7 @@ namespace Proof
                 ButtonData = copy;
             }
         }
-        public ImageAsset Image
+        public Texture Image
         {
             get { return ButtonData.ImageAssetID; }
 

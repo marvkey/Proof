@@ -10,7 +10,7 @@ namespace Game
         bool m_InitialApply = false;
         protected void OnCreate()
         {
-            Image = new ImageAsset(8483207687212316686);
+            Image = new Texture(8483207687212316686);
         }
         protected override void ApplyPowerUp()
         {

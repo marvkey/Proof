@@ -90,7 +90,7 @@ namespace Proof {
 
         }
         PhysicsEngine::Init();
-       // ScriptEngine::Init();
+        ScriptEngine::Init();
 
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
@@ -111,7 +111,7 @@ namespace Proof {
         m_ImGuiMainLayer = nullptr;
         m_LayerStack->Empty();
         m_LayerStack = nullptr;
-      //  ScriptEngine::Shutdown();
+        ScriptEngine::Shutdown();
         PhysicsEngine::Release();
         m_Project = nullptr;
         m_Window->m_SwapChain = nullptr;

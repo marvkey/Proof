@@ -112,9 +112,9 @@ namespace Proof {
 
 					if (skyLightComponent.DynamicSky)
 					{
-						//skyLightComponent.RemoveImage();
-						//auto environment = Renderer::CreatePreethamSky(skyLightComponent.Turbidity, skyLightComponent.Azimuth, skyLightComponent.Inclination);
-						//skyLightComponent.Environment = Count<Environment>::Create(environment, environment);
+						skyLightComponent.RemoveImage();
+						auto environment = Renderer::CreatePreethamSky(skyLightComponent.Turbidity, skyLightComponent.Azimuth, skyLightComponent.Inclination);
+						skyLightComponent.Environment = Count<Environment>::Create(environment, environment);
 					}
 					if (skyLightComponent.Environment != nullptr)
 					{

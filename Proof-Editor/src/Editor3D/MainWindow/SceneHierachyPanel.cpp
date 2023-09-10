@@ -40,7 +40,7 @@ namespace Proof
 			case ScriptFieldType::FieldType:          \
 				scriptInstance.SetValue<Type>(entityClass->GetFieldDefaultValue<Type>(fieldName));  \
 				break
-	
+
 	#define SET_FIELD_NUMERICAL_VALUE(FieldType, Type, name, ImguiDataType)           \
 			case ScriptFieldType::FieldType:          \
 			{												\
@@ -51,6 +51,49 @@ namespace Proof
 				}								\
 				break;							\
 			}
+
+	#define Set_FIELD_ENUM_NUMERICAL_VALUE(FieldType,Type) \
+			case ScriptFieldType::FieldType:          \
+			{																													\
+				UI::ScopedID id(fmt::format("{}{}", field.Name.c_str(), sizeof(Type)).c_str());									\
+					std::string currentSeelct = "";																				\
+					Type currentSelectValue = 0;																				\
+					const auto& enumDatas = ScriptEngine::GetEnumClasses().at(enumTypeName).second;								\
+					Type value = scriptField.GetValue<Type>();																	\
+					for (const auto& enumInfo : enumDatas)																		\
+					{																											\
+						if (enumInfo.GetValue<Type>() == value)																	\
+						{																										\
+							currentSeelct = enumInfo.Name;																		\
+							currentSelectValue = enumInfo.GetValue<Type>();														\
+							break;																								\
+						}																										\
+					}																											\
+					ImGui::Text(fieldName.c_str());																				\
+						ImGui::SameLine();																						\
+						if (ImGui::BeginCombo("##CurrentEnumVal", currentSeelct.c_str()))										\
+						{																										\
+							for (size_t i = 0; i < enumDatas.size(); i++)														\
+							{																									\
+								bool isSelected = (currentSeelct == enumDatas[i].Name);											\
+								PF_ENGINE_INFO("Name {} value {}", enumDatas[i].Name, enumDatas[i].GetValue<Type>());			\
+								if (ImGui::Selectable(enumDatas[i].Name.c_str(), isSelected))									\
+								{																								\
+									currentSelectValue = enumDatas[i].GetValue<Type>();											\
+								}																								\
+									if (isSelected)																				\
+									{																							\
+										ImGui::SetItemDefaultFocus();															\
+									}																							\
+							}																									\
+								ImGui::EndCombo();																				\
+						}																										\
+						scriptField.SetValue<Type>(currentSelectValue);\
+						break;																									\
+				}
+
+
+
 	#define SET_FIELD_NUMERICAL_VALUE_RUNTIME(FieldType, Type, name, ImguiDataType)           \
 			case ScriptFieldType::FieldType:          \
 			{												\
@@ -62,6 +105,45 @@ namespace Proof
 				break;							\
 			}	
 
+	#define Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(FieldType, Type)                    \
+    case ScriptFieldType::FieldType:                                              \
+    {                                                                             \
+        UI::ScopedID id(fmt::format("{}{}", field.Name.c_str(), sizeof(Type)).c_str()); \
+        std::string currentSeelct = "";                                           \
+        Type currentSelectValue = 0;                                              \
+        const auto& enumDatas = ScriptEngine::GetEnumClasses().at(enumTypeName).second; \
+        Type value = instance->GetFieldValue<Type>(name);                         \
+        for (const auto& enumInfo : enumDatas)                                     \
+        {                                                                         \
+            if (enumInfo.GetValue<Type>() == value)                                \
+            {                                                                     \
+                currentSeelct = enumInfo.Name;                                     \
+                currentSelectValue = enumInfo.GetValue<Type>();                     \
+                break;                                                            \
+            }                                                                     \
+        }                                                                         \
+        ImGui::Text(field.Name.c_str());                                          \
+        ImGui::SameLine();                                                        \
+        if (ImGui::BeginCombo("##CurrentEnumVal", currentSeelct.c_str()))          \
+        {                                                                         \
+            for (size_t i = 0; i < enumDatas.size(); i++)                          \
+            {                                                                     \
+                bool isSelected = (currentSeelct == enumDatas[i].Name);            \
+                PF_ENGINE_INFO("Name {} value {}", enumDatas[i].Name, enumDatas[i].GetValue<Type>()); \
+                if (ImGui::Selectable(enumDatas[i].Name.c_str(), isSelected))      \
+                {                                                                 \
+                    currentSelectValue = enumDatas[i].GetValue<Type>();             \
+                }                                                                 \
+                if (isSelected)                                                   \
+                {                                                                 \
+                    ImGui::SetItemDefaultFocus();                                   \
+                }                                                                 \
+            }                                                                     \
+            ImGui::EndCombo();                                                    \
+        }                                                                         \
+        instance->SetFieldValue<Type>(name, currentSelectValue);                   \
+        break;                                                                    \
+    }
 	#define DEFAULT_MESH_SET(Type) \
 		if (ImGui::MenuItem(#Type))\
 		{\
@@ -880,14 +962,19 @@ namespace Proof
 							SET_FEILD_DEFAULT(Vector3, Vector);
 							SET_FEILD_DEFAULT(Vector4, Vector4);
 
+							case ScriptFieldType::Enum:
+								{
+									scriptInstance.SetValueRaw(entityClass->GetFieldDefaultValueRaw(fieldName).data()); // use the largest type to set the enum as 0
+									break;
+								}
 							// these typs are clses so its weird getting ther data
 							case ScriptFieldType::Entity:
 							case ScriptFieldType::Prefab:
-							case ScriptFieldType::ImageAsset:
+							case ScriptFieldType::Texture:
 								scriptInstance.SetValue<uint64_t>(0);
 								break;
 							default:
-								PF_CORE_ASSERT(false);
+								//PF_CORE_ASSERT(false);
 								break;
 						}
 					}
@@ -908,7 +995,29 @@ namespace Proof
 							SET_FIELD_NUMERICAL_VALUE(Uint16_t, uint16_t, fieldName, ImGuiDataType_U16);
 							SET_FIELD_NUMERICAL_VALUE(Uint32_t, uint32_t, fieldName, ImGuiDataType_U32);
 							SET_FIELD_NUMERICAL_VALUE(Uint64_t, uint64_t, fieldName, ImGuiDataType_U64);
-							case ScriptFieldType::ImageAsset:
+							case ScriptFieldType::Enum:
+								{
+									const std::string enumTypeName = ScriptEngine::GetFieldEnumName(field);
+									if(!ScriptEngine::GetEnumClasses().contains(enumTypeName))
+										break;
+
+									switch (ScriptEngine::GetEnumClasses().at(enumTypeName).first)
+									{
+										Set_FIELD_ENUM_NUMERICAL_VALUE(Int8_t, int8_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE(Int16_t, int16_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE(Int32_t, int32_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE(Int64_t, int64_t);
+
+										Set_FIELD_ENUM_NUMERICAL_VALUE(Uint8_t, uint8_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE(Uint16_t, uint16_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE(Uint32_t, uint32_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE(Uint64_t, uint64_t);
+										default:
+											break;
+									}
+									break;
+								}
+							case ScriptFieldType::Texture:
 								{
 									ImGui::Text(fieldName.c_str());
 									ImGui::SameLine();
@@ -1034,7 +1143,31 @@ namespace Proof
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint16_t, uint16_t, name, ImGuiDataType_U16);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint32_t, uint32_t, name, ImGuiDataType_U32);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint64_t, uint64_t, name, ImGuiDataType_U64);
-							case ScriptFieldType::ImageAsset:
+
+							case ScriptFieldType::Enum:
+								{
+									const std::string enumTypeName = ScriptEngine::GetFieldEnumName(field);
+									if (!ScriptEngine::GetEnumClasses().contains(enumTypeName))
+										break;
+
+									switch (ScriptEngine::GetEnumClasses().at(enumTypeName).first)
+									{
+										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int8_t, int8_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int16_t, int16_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int32_t, int32_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int64_t, int64_t);
+
+										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint8_t, uint8_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint16_t, uint16_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint32_t, uint32_t);
+										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint64_t, uint64_t);
+										default:
+											break;
+									}
+									
+									break;
+								}
+							case ScriptFieldType::Texture:
 								{
 									ImGui::Text(field.Name.c_str());
 									ImGui::SameLine();

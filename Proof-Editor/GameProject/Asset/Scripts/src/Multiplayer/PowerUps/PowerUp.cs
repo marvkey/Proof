@@ -11,7 +11,7 @@ namespace Game
 
         }
        
-        public ImageAsset Image;
+        public Texture Image;
 
         public float Speed = 400.0f;
         protected MPlayer m_Owner = null;

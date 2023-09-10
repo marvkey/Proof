@@ -213,7 +213,7 @@ void main()
 		//vec3 specularIBL = specularIrradiance * (F0) ; 
 
         iblEfeect += (specularIBL + diffuseIBL) ;
-        iblEfeect = iblEfeect * (u_SkyBoxInfo.Intensity);  
+        iblEfeect = iblEfeect * (u_SkyBoxInfo.Intensity) * (u_SkyBoxInfo.TintColor);  
     }
 
     DirectionalLight currentLight = u_DirectionalLightData.Lights[0];

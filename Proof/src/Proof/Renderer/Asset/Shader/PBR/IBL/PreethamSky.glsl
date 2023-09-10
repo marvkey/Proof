@@ -4,7 +4,7 @@
 
 const float PI = 3.141592;
 
-layout(binding = 0, rgba32f) uniform imageCube o_CubeMap;
+layout(binding = 0, rgba32f) restrict writeonly uniform imageCube o_CubeMap;
 
 layout (push_constant) uniform Uniforms
 {
@@ -14,18 +14,18 @@ layout (push_constant) uniform Uniforms
 vec3 GetCubeMapTexCoord()
 {
     vec2 st = gl_GlobalInvocationID.xy / vec2(imageSize(o_CubeMap));
-    vec2 uv = 2.0 * vec2(st.x, 1.0-st.y) - vec2(1.0);
+    vec2 uv = 2.0 * vec2(st.x, 1.0 - st.y) - vec2(1.0);
 
-       vec3 ret;
-    if(gl_GlobalInvocationID.z == 0)      ret = vec3(1.0,  uv.y, -uv.x);
-    else if(gl_GlobalInvocationID.z == 1) ret = vec3(-1.0, uv.y,  uv.x);     
-    else if(gl_GlobalInvocationID.z == 2) ret = vec3(uv.x, 1.0, -uv.y);
-    else if(gl_GlobalInvocationID.z == 3) ret = vec3(uv.x, -1.0, uv.y);
-    else if(gl_GlobalInvocationID.z == 4) ret = vec3(uv.x, uv.y, 1.0);
-    else if(gl_GlobalInvocationID.z == 5) ret = vec3(-uv.x, uv.y, -1.0);
+    vec3 ret;
+    if (gl_GlobalInvocationID.z == 0)      ret = vec3(  1.0, uv.y, -uv.x);
+    else if (gl_GlobalInvocationID.z == 1) ret = vec3( -1.0, uv.y,  uv.x);
+    else if (gl_GlobalInvocationID.z == 2) ret = vec3( uv.x,  1.0, -uv.y);
+    else if (gl_GlobalInvocationID.z == 3) ret = vec3( uv.x, -1.0,  uv.y);
+    else if (gl_GlobalInvocationID.z == 4) ret = vec3( uv.x, uv.y,   1.0);
+    else if (gl_GlobalInvocationID.z == 5) ret = vec3(-uv.x, uv.y,  -1.0);
     return normalize(ret);
 }
-
+ 
 #define PI 3.14159265359
 
 float saturatedDot( in vec3 a, in vec3 b )
@@ -114,20 +114,25 @@ vec3 calculateSkyLuminanceRGB( in vec3 s, in vec3 e, in float t )
 
 	vec3 Yz = calculateZenithLuminanceYxy( t, thetaS );
 
-	vec3 fThetaGamma = calculatePerezLuminanceYxy( thetaE, gammaE, A, B, C, D, E ); // this the problem it has black and brown but in other shader it is the same value
+	vec3 fThetaGamma = calculatePerezLuminanceYxy( thetaE, gammaE, A, B, C, D, E );
 	vec3 fZeroThetaS = calculatePerezLuminanceYxy( 0.0,    thetaS, A, B, C, D, E );
 
-	vec3 Yp = Yz * ( fThetaGamma * fZeroThetaS );  
-	
+	vec3 Yp = Yz * ( fThetaGamma / fZeroThetaS );
+
 	return YxyToRGB( Yp );
 }
-
+vec3 computeSphericalCoordinates( in vec2 uv )
+{
+    float theta = uv.x * 2.0 * PI;
+    float phi   = uv.y * PI;
+    return vec3(cos(theta) * sin(phi), sin(theta) * sin(phi), cos(phi));
+}
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main()
 {
+
 	vec3 cubeTC = GetCubeMapTexCoord();
 
-	
 	float turbidity     =  u_Uniforms.TurbidityAzimuthInclination.x;
     float azimuth       = u_Uniforms.TurbidityAzimuthInclination.y;;
     float inclination   = u_Uniforms.TurbidityAzimuthInclination.z;
@@ -136,6 +141,5 @@ void main()
     vec3 skyLuminance 	= calculateSkyLuminanceRGB( sunDir, viewDir, turbidity );
     
     vec4 color = vec4(skyLuminance * 0.05, 1.0);
-	//color = vec4(1.0)-exp(-color*2.0);
 	imageStore(o_CubeMap, ivec3(gl_GlobalInvocationID), color);
 }
