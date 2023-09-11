@@ -116,7 +116,11 @@ namespace Proof {
 			return group.size();
 		}
 		bool EnableRestart = false;
+
+		
 	private:
+		// the parent entity shoudl be the prefab base entity 
+		void PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren = true);
 
 		void OnRender(Count<class WorldRenderer> renderer, FrameTime timestep,const Camera& camera, const Vector& cameraLocation, float nearPlane, float farPlane);
 		void Init();
@@ -146,5 +150,6 @@ namespace Proof {
 		friend class RendererBase;
 		friend class WorldRenderer;
 		friend class PrefabAssetSerilizer;
+		friend class Prefab;
 	};
 }

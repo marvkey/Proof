@@ -2,30 +2,24 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Asset/Asset.h"
 #include "Entity.h"
-
-#include "World.h"
 namespace Proof{
-
+	class Entity;
 	class Prefab : public Asset {
 	public: 
-		Prefab(Entity entity);
-
 		Prefab();
 
 		~Prefab();
 		void SetEntity(Entity entity);
 		ASSET_CLASS_TYPE(Prefab);
+		
+		bool KeepLinkedOnSpawn = true;
 
-		const entt::registry& GetRegistry() {
-			return m_Registry;
-		}
-
-		UUID GetBaseEntity() {
-			return m_BaseEntityID;
-		}
+		Count<class World> GetWorld() { return m_World;}
+		Entity GetBaseEntity() { return m_BaseEntity; }
 	private:
-		entt::registry m_Registry;
-		UUID m_BaseEntityID= 0;
+		Entity m_BaseEntity;
+		Count<class World> m_World;
 		friend class PrefabAssetSerilizer;
+		friend class World;
 	};
 }

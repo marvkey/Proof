@@ -61,6 +61,8 @@ namespace Proof {
 			}
 		}
 	}
+	
+
 	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const Vector& cameraLocation, float nearPlane, float farPlane)
 	{
 		PF_PROFILE_FUNC();
@@ -395,25 +397,63 @@ namespace Proof {
 	}
 
 	template<typename... Componnents>
-	static void CopyComponentIfExistEntitySingle(Entity dst, Entity src)
+	static void CopyComponentIfExistEntitySingle(Entity dst, Entity src, bool isdstPrefab = false, bool isSrcPrefab = false)
 	{
 		([&]()
 		{
-			if (typeid(Componnents) == typeid(IDComponent) || typeid(Componnents) == typeid(HierarchyComponent))
+			if ((typeid(Componnents) == typeid(IDComponent) || typeid(Componnents) == typeid(HierarchyComponent)) )
 			{
 				return;
 			}
 
 			if (src.HasComponent<Componnents>())
 				dst.AddorReplaceComponent<Componnents>(src.GetComponent<Componnents>());
+			if (typeid(Componnents) == typeid(ScriptComponent) && (isdstPrefab == false || isSrcPrefab == false))
+			{
+				if (!src.HasComponent<ScriptComponent>()) return;
+
+				auto& scriptComponent = src.GetComponent<ScriptComponent>();
+				for (auto& scripts : scriptComponent.ScriptsNames)
+				{
+					if (ScriptEngine::HasScriptFieldMap(src) == false)continue;
+					if(!ScriptEngine::HasScriptFieldMap(dst))
+						ScriptEngine::CreateScriptFieldMap(dst);
+
+					ScriptEngine::GetScriptFieldMap(dst) = ScriptEngine::GetScriptFieldMap(src);
+				}
+			}
 		}(), ...);
 	}
 	template<typename... Component>
-	static void CopyComponentIfExistsEntity(ComponentGroup<Component...>, Entity dst, Entity src)
+	static void CopyComponentIfExistsEntity(ComponentGroup<Component...>, Entity dst, Entity src, bool isdstPrefab = false, bool isSrcPrefab = false)
 	{
-		CopyComponentIfExistEntitySingle<Component...>(dst, src);
+		if (isdstPrefab == true && isSrcPrefab == true)
+		{
+			PF_CORE_ASSERT(false);
+		}
+		CopyComponentIfExistEntitySingle<Component...>(dst, src, isdstPrefab, isSrcPrefab);
 	}
 
+	//src entity is used as childenitty in resurio
+	void World::PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren)
+	{
+		// first function call for base has to be null
+		// handle it
+
+		CopyComponentIfExistsEntity(AllComponents{}, parentEntity, srcEntity, true);
+
+		if (includeChildren )
+		{
+			srcEntity.EachChild([&](Entity childEntity)
+			{
+				Entity newEntity;
+				newEntity = prefab->m_World->CreateEntity();
+				newEntity.SetParent(parentEntity);
+				//Entity newChild = prefab->m_World->CreateEntity(childEntity, true);
+				PrefabCopyEntity(prefab, childEntity, newEntity,true);
+			});
+		}
+	}
 
 	Entity World::CreateEntity(Entity entity, bool includeChildren) {
 		Entity newEntity = CreateEntity(entity.GetName());
@@ -455,28 +495,51 @@ namespace Proof {
 		CopyComponentSinglPrefab<Component...>(dst, dstMap, src, srcID, enttMap);
 	}
 	#endif
+
+	static Entity CreateEntityPrefabStatic(Count<Prefab> prefab, World* world, Entity prefabSource, bool includeChildren = true)
+	{
+		Entity newEntity = world->CreateEntity();
+		CopyComponentIfExistsEntity(AllComponents{}, newEntity, prefabSource, false, true);
+		newEntity.AddComponent<PrefabComponent>();
+		newEntity.GetComponent<PrefabComponent>().PrefabID = prefab->GetID();
+		newEntity.GetComponent<PrefabComponent>().PrefabEntityID = prefabSource.GetUUID();
+
+		if (includeChildren)
+		{
+			prefabSource.EachChild([&](Entity child) {
+				Entity newChild = CreateEntityPrefabStatic(prefab, world, child, true);
+				newChild.SetParent(newEntity);
+			});
+		}
+		return newEntity;
+	}
 	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, TransformComponent transfom, UUID id)
 	{
+		PF_PROFILE_FUNC();
 		/**
 		 * when an entity with sub children has rigid body this fucntions crahses 
 		 * it could be a problem with the emplace or replace in the copy compoentnt single
 		 * 
 		 */
-		Entity newEntity = CreateEntity(name, id);
-		
-		std::unordered_map<UUID, entt::entity> enttMap;
-		{
-
-
-			enttMap[prefab->GetBaseEntity()] = (entt::entity)newEntity;
-
-			//CopyComponentPrefab(AllComponents{}, newEntity, m_Registry, prefab->GetRegistry(), prefab->GetBaseEntity(), enttMap);
-			newEntity.GetComponent<TransformComponent>() = transfom;
-			
-
-			if (prefab->GetRegistry().size() == 1)
-				return newEntity;
-		}
+		Entity prefabBaseEntity = prefab->m_BaseEntity;
+		if (!prefabBaseEntity)return {};
+		Entity newEntity = CreateEntityPrefabStatic(prefab, this, prefabBaseEntity, true);
+		newEntity.SetName(name);
+		return newEntity;
+		//
+		//std::unordered_map<UUID, entt::entity> enttMap;
+		//{
+		//
+		//
+		//	enttMap[prefab->GetBaseEntity()] = (entt::entity)newEntity;
+		//
+		//	//CopyComponentPrefab(AllComponents{}, newEntity, m_Registry, prefab->GetRegistry(), prefab->GetBaseEntity(), enttMap);
+		//	newEntity.GetComponent<TransformComponent>() = transfom;
+		//	
+		//
+		//	if (prefab->GetRegistry().size() == 1)
+		//		return newEntity;
+		//}
 		#if 0
 		auto& prefaRegistry = prefab->GetRegistry();
 		std::function<Entity(entt::entity)> createEntity = [&](entt::entity registryEntityId)->Entity
@@ -529,7 +592,6 @@ namespace Proof {
 			createEntity(registryEntityID);
 		}
 		#endif
-		return newEntity;
 	}
 	template<typename... Component>
 	static void CopyComponentSingleWorld(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)

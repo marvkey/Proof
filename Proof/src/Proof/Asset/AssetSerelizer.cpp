@@ -6,6 +6,8 @@
 #include "Proof/Resources/ExternalCreations.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Prefab.h"
+#include "Proof/Scene/World.h"
+#include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Scene/SceneSerializer.h"
 #include "Proof/Renderer/Renderer.h"
@@ -239,13 +241,13 @@ namespace Proof {
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(prefab->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << prefab->GetID();
-		out << YAML::Key << "EntityOwner" << YAML::Value << prefab->m_BaseEntityID;
+		out << YAML::Key << "EntityOwner" << YAML::Value << prefab->m_BaseEntity.GetUUID();
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-		PF_CORE_ASSERT(false);
-		//prefab->GetRegistry().each([&](auto entityID) {
-		//	Entity entity{ entityID , prefab->get}
-		//	SceneSerializer::SerilizeEntity(out, prefab->m_Registry, , entityID);
-		//});
+
+		prefab->m_World->m_Registry.each([&](auto entityID) {
+			Entity entity{ entityID , prefab->m_World.Get() };
+			SceneSerializer::SerilizeEntity(out, prefab->m_World->m_Registry, entity.GetUUID(), entityID,true);
+		});
 		out << YAML::Flow;
 		out << YAML::EndMap;
 		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());

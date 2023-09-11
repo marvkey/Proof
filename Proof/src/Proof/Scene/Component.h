@@ -211,7 +211,14 @@ namespace Proof
 		//friend class SceneHierachyPanel;
 		//friend class Entity;
 	};
-	
+	struct PrefabComponent
+	{
+		AssetID PrefabID = 0;
+		UUID PrefabEntityID = 0; // wich enitty this prefab matches to int eh prefab asset
+
+		PrefabComponent() = default;
+		PrefabComponent(const PrefabComponent& other) = default;
+	};
 	struct Proof_API NativeScriptComponent{
 		NativeScriptComponent(const NativeScriptComponent& other) {
 			this->Instance = other.Instance;
@@ -589,7 +596,7 @@ namespace Proof
 
 	};
 	using AllComponents =
-		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent,
+		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
 		MeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
 		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent>;

@@ -745,6 +745,10 @@ namespace Proof
     bool ScriptEngine::HasScriptFieldMap(Entity entity) {
         return s_Data->EntityScriptFields.contains(entity.GetUUID());
     }
+    bool ScriptEngine::HasScriptFieldMap(UUID Id)
+    {
+        return s_Data->EntityScriptFields.contains(Id);
+    }
     void ScriptEngine::CreateScriptFieldMap(Entity entity) {
         s_Data->EntityScriptFields[entity.GetUUID()] = {};
     }

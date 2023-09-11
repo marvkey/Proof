@@ -41,7 +41,7 @@ World:
             ScriptFields:
               - Name: code
                 Type: Enum
-                Data
+                Data: 0
     - Entity: 11529972234107103668
       TagComponent:
         Tag: Plane

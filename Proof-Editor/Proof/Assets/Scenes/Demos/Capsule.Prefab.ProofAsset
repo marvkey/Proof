@@ -1,0 +1,69 @@
+AssetType: Prefab
+ID: 8272833673037158605
+EntityOwner: 8560876974852626892
+Entities:
+  - Entity: 16613655084464694038
+    TagComponent:
+      Tag: Sphere
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 17413370002612185457
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 51
+  - Entity: 17413370002612185457
+    TagComponent:
+      Tag: Cube
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 8922129752021630170
+      Children: [16613655084464694038]
+    MeshComponent:
+      MeshAssetPointerID: 50
+  - Entity: 8922129752021630170
+    TagComponent:
+      Tag: Torus
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 8560876974852626892
+      Children: [17413370002612185457]
+    MeshComponent:
+      MeshAssetPointerID: 55
+  - Entity: 4655789640214423230
+    TagComponent:
+      Tag: Sphere
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 8560876974852626892
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 51
+  - Entity: 8560876974852626892
+    TagComponent:
+      Tag: Capsule
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [4655789640214423230, 8922129752021630170]
+    MeshComponent:
+      MeshAssetPointerID: 52

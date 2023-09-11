@@ -264,6 +264,7 @@ namespace Proof
 
 		static std::string GetFieldEnumName(ScriptField field);
 		static bool HasScriptFieldMap(Entity entity);
+		static bool HasScriptFieldMap(UUID Id);
 		static void CreateScriptFieldMap(Entity entity);
 		static std::string MonoToString(MonoString* monoString);
 		static MonoString* StringToMono(const std::string& data);

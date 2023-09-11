@@ -1,5 +1,7 @@
 #include "Proofprch.h"
 #include "Prefab.h"
+#include "World.h"
+#include "Entity.h"
 
 namespace Proof {
 
@@ -31,21 +33,26 @@ namespace Proof {
 	{
 		CopyComponentSinglePrefab<Component...>(dst, srcEntity, enttMap);
 	}
-	Prefab::Prefab(Entity entity)
-	{
-		if (!entity)
-			return;
-		SetEntity(entity);
-	}
 	Prefab::Prefab() {
-
+		m_World = Count<class World>::Create(fmt::format("Prefab {} world", GetID()));
+		m_BaseEntity = m_World->CreateEntity("Base Prefab");
 	}
 	Prefab::~Prefab()
 	{
+		m_World = nullptr;
 		//m_Registry = {};
 	}
 	void Prefab::SetEntity(Entity srcEntity)
 	{
+		if (!srcEntity)return;
+		if (m_World->HasEntity(m_BaseEntity.GetUUID()))
+		{
+			m_World->DeleteEntity(m_BaseEntity);
+			m_World->DeleteEntitiesfromQeue();
+		}
+		m_BaseEntity = m_World->CreateEntity();
+
+		srcEntity.GetCurrentWorld()->PrefabCopyEntity(this, srcEntity, m_BaseEntity);
 		#if 0
 		if (!srcEntity)return;
 		//m_Registry.clear();

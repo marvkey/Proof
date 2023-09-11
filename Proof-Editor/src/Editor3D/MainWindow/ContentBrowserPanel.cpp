@@ -67,7 +67,7 @@ namespace Proof
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
 			{
 				Entity entity = *(const Entity*)payload->Data;
-				if (entity)
+				if (entity && entity.HasComponent<PrefabComponent>() == false)
 				{
 					std::string path = AddAssetName<Prefab>(entity.GetName());
 					FileRenameName = FileSystem::GetFileName(path);

@@ -26,7 +26,7 @@ namespace Proof
 	#define READ_SCRIPT_FIELD(FieldType, Type)             \
 		case ScriptFieldType::FieldType:                   \
 		{                                                  \
-			Type data = scriptField["Data"].as<Type>(None);    \
+			Type data = scriptField["Data"].as<Type>(0);    \
 			fieldInstance.SetValue(data);                  \
 			break;                                         \
 	}
@@ -34,7 +34,8 @@ namespace Proof
 		PF_CORE_ASSERT(Scene, "Scene cannot be nulltptr");
 		m_Scene = Scene;
 	}
-	void SceneSerializer::SerilizeEntity(YAML::Emitter& out, entt::registry& registry, UUID entityID, entt::entity enttID) {
+	void SceneSerializer::SerilizeEntity(YAML::Emitter& out, entt::registry& registry, UUID entityID, entt::entity enttID, bool ispPrefab )
+	{
 		out << YAML::BeginMap;// entity
 		out << YAML::Key << "Entity" << YAML::Value << entityID;
 		{
@@ -186,10 +187,16 @@ namespace Proof
 					out << YAML::Key << "Scripts" << YAML::BeginSeq; //scriptSeq
 					for (const std::string& scriptName : scriptComponent.ScriptsNames)
 					{
+						if (!ScriptEngine::EntityClassExists(scriptName))
+							continue;
 						out << YAML::BeginMap;// Script
 						out << YAML::Key << "Script" << scriptName;
-						PF_ENGINE_INFO("Saving script {}", scriptName);
 
+						if (ScriptEngine::HasScriptFieldMap(entityID) == false || ispPrefab == true)
+						{
+							out << YAML::EndMap;//script
+							continue;
+						}
 						out << YAML::Key << "ScriptFields" << YAML::Value;
 						out << YAML::BeginSeq; // scriptfields
 						Count<ScriptClass> entityClass = ScriptEngine::GetScriptClass(scriptName);
@@ -228,6 +235,29 @@ namespace Proof
 								WRITE_SCRIPT_FIELD(Entity, uint64_t);
 								WRITE_SCRIPT_FIELD(Prefab, uint64_t);
 								WRITE_SCRIPT_FIELD(Texture, uint64_t);
+
+								case ScriptFieldType::Enum:
+									{
+										const std::string enumTypeName = ScriptEngine::GetFieldEnumName(field);
+										if (!ScriptEngine::GetEnumClasses().contains(enumTypeName))
+										{
+											out << 0;
+											break;
+										}
+										switch (ScriptEngine::GetEnumClasses().at(enumTypeName).first)
+										{
+											WRITE_SCRIPT_FIELD(Int8_t, int8_t);
+											WRITE_SCRIPT_FIELD(Int16_t, int16_t);
+											WRITE_SCRIPT_FIELD(Int32_t, int32_t);
+											WRITE_SCRIPT_FIELD(Int64_t, int64_t);
+											WRITE_SCRIPT_FIELD(Uint8_t, uint8_t);
+											WRITE_SCRIPT_FIELD(Uint16_t, uint16_t);
+											WRITE_SCRIPT_FIELD(Uint32_t, uint32_t);
+											WRITE_SCRIPT_FIELD(Uint64_t, uint64_t);
+											default: break;
+										}
+										break;
+									}
 							}
 							out << YAML::EndMap; // ScriptField
 						}
@@ -501,7 +531,7 @@ namespace Proof
 		return true;
 	}
 
-	void SceneSerializer::DeSerilizeEntity(YAML::Node& entities, World* world, std::set<AssetID>* assetLoad, bool prefab)
+	void SceneSerializer::DeSerilizeEntity(YAML::Node& entities, World* world, std::set<AssetID>* assetLoad, bool isPrefab)
 	{
 		for (auto entity : entities)
 		{
@@ -868,8 +898,10 @@ namespace Proof
 							continue;
 
 						scp.ScriptsNames.insert(scriptName);
-						if (prefab)
+						if (isPrefab)
 							continue;
+						if (!script["ScriptFields"])continue;
+
 						Count<ScriptClass> scriptClass = ScriptEngine::GetScriptClass(scriptName);
 						const auto& fields = scriptClass->GetFields();
 						auto& entityFields = ScriptEngine::GetScriptFieldMap(NewEntity);
@@ -912,6 +944,28 @@ namespace Proof
 								READ_SCRIPT_FIELD(Entity, uint64_t);
 								READ_SCRIPT_FIELD(Prefab, uint64_t);
 								READ_SCRIPT_FIELD(Texture, uint64_t);
+								case ScriptFieldType::Enum:
+									{
+										const std::string enumTypeName = ScriptEngine::GetFieldEnumName(fieldInstance.Field);
+										if (!ScriptEngine::GetEnumClasses().contains(enumTypeName))
+										{
+											fieldInstance.SetValue<uint64_t>(0);
+											break;
+										}
+										switch (ScriptEngine::GetEnumClasses().at(enumTypeName).first)
+										{
+											READ_SCRIPT_FIELD(Int8_t, int8_t);
+											READ_SCRIPT_FIELD(Int16_t, int16_t);
+											READ_SCRIPT_FIELD(Int32_t, int32_t);
+											READ_SCRIPT_FIELD(Int64_t, int64_t);
+											READ_SCRIPT_FIELD(Uint8_t, uint8_t);
+											READ_SCRIPT_FIELD(Uint16_t, uint16_t);
+											READ_SCRIPT_FIELD(Uint32_t, uint32_t);
+											READ_SCRIPT_FIELD(Uint64_t, uint64_t);
+											default: break;
+										}
+										break;
+									}
 							}
 						}
 					}
