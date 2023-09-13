@@ -33,10 +33,11 @@ namespace Proof
 	}
 	void ParticleSystemEditorPanel::OnImGuiRender()
 	{
+		if (!m_ParticleSystem)return;
 		if (m_SaveTimer <= 0.0f)
 		{
 			AssetManager::SaveAsset(m_ParticleSystem->GetID());
-			m_SaveTimer = 10.0f;
+			m_SaveTimer = 100.0f;
 		}
 		UI::ScopedStyleVar padding(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		ImGui::BeginChild("Particle Data", { ImGui::GetContentRegionAvail().x / 3, ImGui::GetContentRegionAvail().y });

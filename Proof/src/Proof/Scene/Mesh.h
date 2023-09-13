@@ -28,6 +28,9 @@ namespace Proof
         MeshSource(const std::string& path);
         MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 
+        void Reset(const std::string& path);
+        void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+
         std::filesystem::path GetPath() {
             return m_Path;
         }
@@ -70,6 +73,8 @@ namespace Proof
         const std::string& GetName()const{
             return m_Name;
         }
+        void Reset(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
+        void Reset(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices);
 
         void SetName(const std::string& name)
         {

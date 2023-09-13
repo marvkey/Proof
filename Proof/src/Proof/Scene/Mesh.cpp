@@ -71,6 +71,19 @@ namespace Proof{
     }
     MeshSource::MeshSource(const std::string & path)
     {
+        Reset(path);
+    }
+    MeshSource::MeshSource()
+    {
+        m_MaterialTable = Count<MaterialTable>::Create();
+    }
+    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) :
+        m_Vertices(vertices), m_Indices(indices)
+    {
+        Reset(name, vertices, indices);
+    }
+    void MeshSource::Reset(const std::string& path)
+    {
         PF_PROFILE_FUNC();
         m_Path = path;
         Assimp::Importer importer;
@@ -82,8 +95,8 @@ namespace Proof{
         }
         PF_ENGINE_INFO("MeshSource:{}", path);
         ProcessNode(scene->mRootNode, scene, AIMatrixToGLM(scene->mRootNode->mTransformation));
-       
-        
+
+
         m_MaterialTable = Count<MaterialTable>::Create(scene->mNumMaterials > 0 ? false : true);
         for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; materialIndex++)
         {
@@ -96,13 +109,7 @@ namespace Proof{
         m_Indices.clear();
         m_Vertices.clear();
     }
-    MeshSource::MeshSource()
-    {
-        m_MaterialTable = Count<MaterialTable>::Create();
-
-    }
-    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) :
-        m_Vertices(vertices), m_Indices(indices)
+    void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
     {
         m_MaterialTable = Count<MaterialTable>::Create();
         SubMesh subMesh;
@@ -291,17 +298,24 @@ namespace Proof{
     Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& submeshes)
         :m_MeshSource(meshSource)
     {
-        m_MaterialTable = meshSource->GenerateMaterialTable();
-        m_Name = FileSystem::GetFileName(m_MeshSource->GetPath());
-        SetSubMeshes(submeshes);
+        Reset(meshSource, submeshes);
     }
     Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices)
     {
-        m_MeshSource = Count<MeshSource>::Create(name,vertices, indices);
+        Reset(name,vertices,indices);
+    }
+    void Mesh::Reset(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes)
+    {
+        m_MaterialTable = meshSource->GenerateMaterialTable();
+        m_Name = FileSystem::GetFileName(m_MeshSource->GetPath());
+        SetSubMeshes(subMeshes);
+    }
+    void Mesh::Reset(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices)
+    {
+        m_MeshSource = Count<MeshSource>::Create(name, vertices, indices);
         m_MaterialTable = m_MeshSource->GenerateMaterialTable();
         SetSubMeshes({});
     }
-
     void Mesh::SetSubMeshes(const std::vector<uint32_t>& submesh)
     {
         if (!submesh.empty())

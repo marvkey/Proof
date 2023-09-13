@@ -5,6 +5,7 @@
 #include "Proof/ImGui/UI.h"
 #include "MaterialEditorPanel.h"
 #include "ParticleSystemEditorPanel.h"
+#include "MeshEditorPanel.h"
 namespace Proof 
 {
 	AssetEditor::AssetEditor(const char* id)
@@ -78,6 +79,7 @@ namespace Proof
 		RegisterEditor(AssetType::Material);
 		RegisterEditor(AssetType::PhysicsMaterial);
 		RegisterEditor(AssetType::ParticleSystem);
+		RegisterEditor(AssetType::Mesh);
 		//RegisterEditor<TextureViewer>(AssetType::Texture);
 		//RegisterEditor<MeshViewerPanel>(AssetType::MeshSource);
 		//RegisterEditor<PrefabEditor>(AssetType::Prefab);
@@ -149,6 +151,7 @@ namespace Proof
 			switch (asset->GetAssetType())
 			{
 				case Proof::AssetType::Mesh:
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<MeshEditorPanel>::Create();
 					break;
 				case Proof::AssetType::Texture:
 					break;

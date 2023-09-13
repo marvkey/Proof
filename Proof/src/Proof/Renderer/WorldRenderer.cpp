@@ -268,7 +268,6 @@ namespace Proof
 			depthImageConfig.Height = m_ShadowMapResolution;
 
 			m_ShadowPassImage = Image2D::Create(depthImageConfig);
-
 			{
 				FrameBufferConfig framebufferConfig;
 				framebufferConfig.DebugName = "Shadow Debug Fraembuffer";

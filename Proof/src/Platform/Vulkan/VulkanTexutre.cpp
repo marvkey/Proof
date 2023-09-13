@@ -665,6 +665,7 @@ namespace Proof
 			imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 			imageViewCreateInfo.subresourceRange.layerCount = 6;
 			imageViewCreateInfo.image = imageInfoRef.ImageAlloc.Image;
+			imageViewCreateInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
 			if (imageInfoRef.ImageView)
 				vkDestroyImageView(device, imageInfoRef.ImageView, nullptr);
 

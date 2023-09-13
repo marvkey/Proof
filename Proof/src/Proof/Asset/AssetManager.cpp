@@ -84,9 +84,9 @@ namespace Proof
 					assetInfo.State = AssetState::Ready;
 				else
 					assetInfo.State = AssetState::Unloaded;
-
-				s_AssetManagerData->Assets.insert({ assetID,{assetInfo,nullptr} });// setting the asset as null as we will load it in another thread
-				s_AssetManagerData->AssetPath.insert({ path,assetID });
+				InternalAddAsset(assetInfo, nullptr);
+				//s_AssetManagerData->Assets.insert({ assetID,{assetInfo,nullptr} });// setting the asset as null as we will load it in another thread
+				//s_AssetManagerData->AssetPath.insert({ path,assetID });
 			}
 		}
 		EnumReflection::ForEach< DefaultRuntimeAssets>([](DefaultRuntimeAssets currentEnum) {

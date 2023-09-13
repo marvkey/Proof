@@ -77,7 +77,6 @@ namespace Proof
 							for (size_t i = 0; i < enumDatas.size(); i++)														\
 							{																									\
 								bool isSelected = (currentSeelct == enumDatas[i].Name);											\
-								PF_ENGINE_INFO("Name {} value {}", enumDatas[i].Name, enumDatas[i].GetValue<Type>());			\
 								if (ImGui::Selectable(enumDatas[i].Name.c_str(), isSelected))									\
 								{																								\
 									currentSelectValue = enumDatas[i].GetValue<Type>();											\
@@ -130,7 +129,6 @@ namespace Proof
             for (size_t i = 0; i < enumDatas.size(); i++)                          \
             {                                                                     \
                 bool isSelected = (currentSeelct == enumDatas[i].Name);            \
-                PF_ENGINE_INFO("Name {} value {}", enumDatas[i].Name, enumDatas[i].GetValue<Type>()); \
                 if (ImGui::Selectable(enumDatas[i].Name.c_str(), isSelected))      \
                 {                                                                 \
                     currentSelectValue = enumDatas[i].GetValue<Type>();             \
