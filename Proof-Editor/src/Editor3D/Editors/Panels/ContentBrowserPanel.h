@@ -16,7 +16,7 @@ namespace Proof
 	class ContentBrowserPanel :public Panel {
 	public:
 		ContentBrowserPanel();
-		void ImGuiRender(class FrameTime deltaTime);
+		void OnImGuiRender(const char* dsiplayName, bool& isOpen);
 		//returns false when done rendering
 		// when the window pop up context is done	
 		// returns true if still need rendering
@@ -33,6 +33,9 @@ namespace Proof
 		Count<Texture2D> m_FileIcon;
 		Count<Texture2D> m_MeshIcon;
 		Count<Texture2D> m_ArrowIcon;
+
+	private:
+
 		void GetAllSubFolders(const std::filesystem::path& path);
 
 		/**

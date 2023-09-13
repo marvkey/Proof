@@ -1,6 +1,9 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include<iostream>
+#define PF_BIND_FN(fn) std::bind(&fn, this, std::placeholders::_1)
+#define PF_BIND_ACTION(fn)  std::bind(&fn, this)
+#define PF_BIND_MOTION(fn) std::bind(&fn, this, std::placeholders::_1)
 namespace Proof{
 	enum class EventType {
 		None = 0,

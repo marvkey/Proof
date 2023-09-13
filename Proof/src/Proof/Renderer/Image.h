@@ -2,6 +2,8 @@
 #include "Proof/Core/Core.h"
 #include "RendererResouce.h"
 #include "Proof/Math/Vector.h"
+#include "Proof/Core/Assert.h"
+#include "Proof/Resources/EnumReflection.h"
 
 namespace Proof
 {

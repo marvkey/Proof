@@ -33,11 +33,7 @@ namespace Proof {
     };
     struct Controller
     {
-        Controller() {
-            EnumReflection::ForEach<ControllerButton>([&](ControllerButton& button){
-                Buttons[button] = InputEvent::None;
-            });
-        }
+        Controller();
         std::string Name;
         uint32_t ID = 0;
         ControllerBrand Brand = ControllerBrand::None;

@@ -1,19 +1,21 @@
 #include"InputPanel.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-#include "../ImGUIAPI.h"
+#include "../../ImGUIAPI.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "Editor3D/Editor3D.h"
 #include "Proof/Input/InputManager.h"
+#include "Proof/Core/Profile.h"
+
 #include <unordered_map>
 namespace Proof {
-	void InputPanel::ImGuiRender(FrameTime deltaTime) {
-		if (m_ShowWindow == false)
+	void InputPanel::OnImGuiRender(const char* dsiplayName, bool& isOpen) {
+		if (isOpen == false)
 			return;
 
 		PF_PROFILE_FUNC();
 
-		ImGui::Begin("Input Panel", &m_ShowWindow);
+		ImGui::Begin(dsiplayName, &isOpen);
 		{
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 

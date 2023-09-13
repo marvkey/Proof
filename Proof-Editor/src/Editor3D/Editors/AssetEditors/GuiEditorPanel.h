@@ -1,14 +1,17 @@
 #pragma once
-#include "Panel.h"
-#include "Proof/Scene/Camera/EditorCamera.h"
+#include "AssetEditor.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Scene/Camera/EditorCamera.h"
 
 namespace Proof
 {
-	class GuiPanel : public Panel {
+	class GuiEditorPanel : public AssetEditor 
+	{
 	public:
-		GuiPanel(Count<class UIPanel> panel);
-		virtual void ImGuiRender(FrameTime deltaTime)override;
+		GuiEditorPanel();
+		virtual void OnImGuiRender()override;
+		virtual void OnUpdate(FrameTime deltaTime);
+		virtual void SetAsset(const Count<class Asset>& asset);
 
 	private:
 		Count<class UIPanel> m_UIPanel;
@@ -20,7 +23,9 @@ namespace Proof
 		void DrawImageButtonComponent(const std::string& name, UIButtonImage& button);
 		void DrawTextComponent(const std::string& name, UIText& text);
 		bool AddElementMenu();
+	private:
 		EditorCamera2D m_Camera;
+		bool m_IsViewportFocused = false;
 		std::string m_SelectedName;
 		enum class Selected{
 			None, 

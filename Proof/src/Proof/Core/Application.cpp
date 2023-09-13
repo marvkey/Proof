@@ -24,8 +24,8 @@
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Project/Project.h"
-
-
+#include "Timer.h"
+#include "Profile.h"
 #ifdef CreateDirectory
 #undef CreateDirectory
 #undef DeleteFile
@@ -196,9 +196,6 @@ namespace Proof {
             }
             m_Window->WindowUpdate();
             Renderer::EndFrame();
-
-            FrameTimersControll::s_FrameTimers.clear();
-
             if (CurrentTime - PreviousTime >= 1.0) {
                 PreviousTime = CurrentTime;
                 FrameCount = 0;
@@ -207,6 +204,7 @@ namespace Proof {
             FPS = (1.0 / (CurrentTime - PreviousTime)) * FrameCount;
             FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
             LastFrameTime = time;
+            ScopePerformanceTimer::ClearTimers();
         };
         if (glfwWindowShouldClose((GLFWwindow*) m_Window->GetWindow()) == GLFW_TRUE)
         {

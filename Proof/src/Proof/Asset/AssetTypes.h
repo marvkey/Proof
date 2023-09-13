@@ -1,8 +1,11 @@
 #pragma once
-#include "Proof/Core/Core.h"
 #include <iostream>
 #include <vector>
 #include<filesystem>
+#include "Proof/Utils/FileSystem.h"
+#include <unordered_map>
+#include "Proof/Core/Assert.h"
+
 namespace Proof
 {
 	enum class AssetType 
@@ -59,7 +62,8 @@ namespace Proof
 		{
 			if (AssetTypeMap.contains(type))
 				return AssetTypeMap.at(type);
-			PF_CORE_ASSERT(false, fmt::format("Asset Type {} does not have extension", EnumReflection::EnumString(type)).c_str());
+			PF_CORE_ASSERT(false, "Unkown asset type");
+			return "";
 		}
 		// checks the file extension
 		

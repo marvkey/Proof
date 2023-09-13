@@ -10,7 +10,7 @@
 #include "Proof/Asset/Asset.h"
 #include "ContentBrowserPanel.h"
 #include <vector>
-#include "../ImGUIAPI.h"
+#include "../../ImGUIAPI.h"
 #include "Proof/Scene/ExampleSccripts.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Scene/Script.h"
@@ -28,6 +28,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 #include "Proof/Scene/Prefab.h"
+#include "Proof/Math/Random.h"
 //include those before stdlig.h
 
 #include "misc/cpp/imgui_stdlib.h"
@@ -147,7 +148,7 @@ namespace Proof
 	#define DEFAULT_MESH_SET(Type) \
 		if (ImGui::MenuItem(#Type))\
 		{\
-			newEntity = m_CurrentWorld->CreateEntity(#Type);\
+			newEntity = m_ActiveWorld->CreateEntity(#Type);\
 			newEntity.AddComponent<MeshComponent>().SetMesh(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Type)->GetID());\
 		}
 	template<class T>
@@ -158,32 +159,38 @@ namespace Proof
 			ImGui::CloseCurrentPopup();
 		}
 	};
-	void SceneHierachyPanel::ImGuiRender(class FrameTime deltaTime) {
+	SceneHierachyPanel::SceneHierachyPanel()
+	{
+		
+	}
+	void SceneHierachyPanel::OnImGuiRender(const char* dsiplayName, bool& isOpen) {
 
-		if (m_ShowWindow == false)
+		if (isOpen == false)
 			return;
 		PF_PROFILE_FUNC();
-
+		UI::ScopedID customID(GetCustomPushID().Get());
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
-		if (ImGui::Begin("Herieachy", &m_ShowWindow));
+		if (ImGui::Begin(dsiplayName, &isOpen));
 		{
 			/*
-			auto &a =m_CurrentWorld->m_Registry.view<>();
+			auto &a =m_ActiveWorld->m_Registry.view<>();
 			for (auto& g : a) {
 
 			}
 			*/
+			if (!m_SelectedEntity)m_SelectedEntity = {};
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
 			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvail().x,ImGui::GetWindowHeight() / 2 });
 			if (ImGui::BeginPopupContextWindow(0)) { // right click adn open a new entitiy
 				CreateEntityMenu();
 				ImGui::EndPopup();
 			}
+			
 			{
 				m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
-				m_CurrentWorld->m_Registry.each([&](auto entityID)
+				m_ActiveWorld->m_Registry.each([&](auto entityID)
 				{
-					Entity entity = { entityID,m_CurrentWorld.Get() };
+					Entity entity = { entityID,m_ActiveWorld.Get() };
 					if (entity.HasParent() == false)
 						DrawEntityNode(entity);
 				});
@@ -226,23 +233,23 @@ namespace Proof
 		uint64_t selectedPreviousEntityID = m_SelectedEntity.GetUUID();// we are doing this inncase we created a child entity
 		Entity newEntity;
 		if (ImGui::MenuItem("Entity"))
-			newEntity = m_CurrentWorld->CreateEntity();
+			newEntity = m_ActiveWorld->CreateEntity();
 		if (ImGui::BeginMenu("Light")) {
 			if (ImGui::MenuItem("Point ")) {
-				newEntity = m_CurrentWorld->CreateEntity("Point Light");
+				newEntity = m_ActiveWorld->CreateEntity("Point Light");
 				newEntity.AddComponent<PointLightComponent>();
 			}
 			if (ImGui::MenuItem("Spot")) {
-				newEntity = m_CurrentWorld->CreateEntity("Spot Light");
+				newEntity = m_ActiveWorld->CreateEntity("Spot Light");
 				newEntity.AddComponent<SpotLightComponent>();
 			}
 			if (ImGui::MenuItem("Directional")) {
-				newEntity = m_CurrentWorld->CreateEntity("Directional Light");
+				newEntity = m_ActiveWorld->CreateEntity("Directional Light");
 				newEntity.AddComponent<DirectionalLightComponent>();
 			}
 			if (ImGui::MenuItem("SKyLight"))
 			{
-				newEntity = m_CurrentWorld->CreateEntity("Sky Light");
+				newEntity = m_ActiveWorld->CreateEntity("Sky Light");
 				newEntity.AddComponent<SkyLightComponent>();
 			}
 			ImGui::EndMenu();
@@ -258,14 +265,14 @@ namespace Proof
 			
 			if (ImGui::MenuItem("Empty Mesh"))
 			{
-				newEntity = m_CurrentWorld->CreateEntity("Mesh");
+				newEntity = m_ActiveWorld->CreateEntity("Mesh");
 				newEntity.AddComponent<MeshComponent>();
 			}
 
 			ImGui::EndMenu();
 		}
 		if (ImGui::MenuItem("Camera")) {
-			newEntity = m_CurrentWorld->CreateEntity("Camera");
+			newEntity = m_ActiveWorld->CreateEntity("Camera");
 			newEntity.AddComponent<CameraComponent>();
 		}
 		if (owner && newEntity.GetUUID() != 0) {
@@ -321,7 +328,7 @@ namespace Proof
 				ImGui::EndMenu();
 			}
 			if (ImGui::MenuItem("Delete")) {
-				m_CurrentWorld->DeleteEntity(m_SelectedEntity, true);
+				m_ActiveWorld->DeleteEntity(m_SelectedEntity, true);
 
 				m_SelectedEntity = {};
 
@@ -335,16 +342,16 @@ namespace Proof
 			ImGui::EndPopup();
 		}
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
-			Editore3D::Get()->m_EditorCamera.SetPosition( m_CurrentWorld->GetWorldSpaceLocation(m_SelectedEntity));
+			//Editore3D::Get()->m_EditorCamera.SetPosition( m_ActiveWorld->GetWorldSpaceLocation(m_SelectedEntity));
 		}
 		if (m_SelectedEntity && ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::F)) {
-			Editore3D::Get()->m_EditorCamera.SetPosition (m_CurrentWorld->GetWorldSpaceLocation(m_SelectedEntity));
+			//Editore3D::Get()->m_EditorCamera.SetPosition (m_ActiveWorld->GetWorldSpaceLocation(m_SelectedEntity));
 		}
 
 		if (opened) {
 			for (const UUID& I : entity.GetComponent<HierarchyComponent>().Children) {
 				;
-				DrawEntityNode(m_CurrentWorld->GetEntity(I));
+				DrawEntityNode(m_ActiveWorld->GetEntity(I));
 			}
 			ImGui::TreePop();
 		}
@@ -917,7 +924,7 @@ namespace Proof
 					scriptComp.ScriptsNames.erase(scriptname);
 			}
 			*/
-			if (m_CurrentWorld->IsPlaying() == false)
+			if (m_ActiveWorld->IsPlaying() == false)
 			{
 				for (const auto& scriptName : scriptComp.ScriptsNames)
 				{
@@ -1080,9 +1087,9 @@ namespace Proof
 								}
 							case ScriptFieldType::Entity:
 								{
-									if (m_CurrentWorld->HasEntity(scriptField.GetValue<uint64_t>()))
+									if (m_ActiveWorld->HasEntity(scriptField.GetValue<uint64_t>()))
 									{
-										Entity ent = m_CurrentWorld->GetEntity(scriptField.GetValue<uint64_t>());
+										Entity ent = m_ActiveWorld->GetEntity(scriptField.GetValue<uint64_t>());
 										ExternalAPI::ImGUIAPI::TextBar(field.Name, ent.GetName());
 										scriptField.SetValue<uint64_t>(ent.GetUUID().Get());
 									}
@@ -1223,9 +1230,9 @@ namespace Proof
 								}
 							case ScriptFieldType::Entity:
 								{
-									if (m_CurrentWorld->HasEntity(instance->GetFieldValue<uint64_t>(name)))
+									if (m_ActiveWorld->HasEntity(instance->GetFieldValue<uint64_t>(name)))
 									{
-										Entity ent = m_CurrentWorld->GetEntity(instance->GetFieldValue<uint64_t>(name));
+										Entity ent = m_ActiveWorld->GetEntity(instance->GetFieldValue<uint64_t>(name));
 										ExternalAPI::ImGUIAPI::TextBar(field.Name, ent.GetName());
 
 									}

@@ -3,6 +3,9 @@
 #include "Vulkan.h"
 #include "VulkanUtils/VulkanBufferBase.h"
 
+#include <map>
+
+
 namespace Proof{
     class VulkanUniformBuffer : public UniformBuffer {
     public:

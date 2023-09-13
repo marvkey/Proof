@@ -5,7 +5,6 @@ Roughness: 0
 Metallness: 0
 Tiling: [15, 15]
 Offset: [0, 0]
-UsePBR: false
 AlbedoTexture: 11525937089847687162
 NormalTexture: 0
 MetallicTexture: 0

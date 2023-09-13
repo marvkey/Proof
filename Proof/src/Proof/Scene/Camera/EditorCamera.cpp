@@ -15,7 +15,7 @@ namespace Proof{
 		m_NearPlane =nearPlane;
 		m_FarPlane =farplane;
 	}
-	void EditorCamera::OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height) {
+	void EditorCamera::OnUpdate(float DeltaTime,uint32_t width,uint32_t height) {
 		m_Width=width;
 		m_Height=height;
 		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight))
@@ -160,7 +160,7 @@ namespace Proof{
 		return speed;
 	}
 
-	void EditorCamera2D::OnUpdate(FrameTime ts)
+	void EditorCamera2D::OnUpdate(float ts)
 	{
 		if (Input::IsKeyPressed(KeyBoardKey::LeftAlt))
 		{

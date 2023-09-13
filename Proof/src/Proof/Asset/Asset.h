@@ -2,6 +2,7 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "AssetTypes.h"
+#include "Proof/Core/UUID.h"
 namespace Proof
 {
 

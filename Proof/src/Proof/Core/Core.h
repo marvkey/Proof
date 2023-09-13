@@ -1,36 +1,7 @@
 #pragma once
 #include <memory>
 #include <iostream>
-#include<chrono>
 #include "SmartPointer.h"
-
-#include "UUID.h"
-#include "Proof/utils/FileSystem.h"
-//#include "Proof/Math/MathInclude.h"
-#include <vector>
-#include "Log.h"
-#define PF_BIND_FN(fn) std::bind(&fn, this, std::placeholders::_1)
-#define PF_BIND_ACTION(fn)  std::bind(&fn, this)
-#define PF_BIND_MOTION(fn) std::bind(&fn, this, std::placeholders::_1)
-#include <unordered_map>
-#include <map>
-#include <optick.h>
-#include "Proof/Resources/EnumReflection.h"
-//#include "ProofTypes.h"
-#define PF_ENABLE_PROFILING 1
-#if PF_ENABLE_PROFILING
-#define PF_PROFILE_FRAME(...)           OPTICK_FRAME(__VA_ARGS__)
-#define PF_PROFILE_FUNC(...)            OPTICK_EVENT(__VA_ARGS__)
-#define PF_PROFILE_TAG(NAME,...)        OPTICK_TAG(NAME,__VA_ARGS__)
-#define PF_PROFILE_SCOPE_DYNAMIC(NAME)  OPTICK_EVENT_DYNAMIC(NAME)
-#define PF_PROFILE_THREAD(...)          OPTICK_THREAD(__VA_ARGS__)
-#else
-#define PF_PROFILE_FRAME(...)    
-#define PF_PROFILE_FUNC(...) 
-#define PF_PROFILE_TAG(NAME,...)
-#define PF_PROFILE_SCOPE_DYNAMIC(NAME)
-#define PF_PROFILE_THREAD(...) 
-#endif
 
 #define PROOF_EXPAND_MACRO(x) x
 #define PROOF_STRINGIFY_MACRO(x) #x
@@ -39,36 +10,12 @@
 inline const std::string ProofCurrentDirectorySrc = "../Proof/src/";
 inline const std::string ProofCurrentDirectory = "../Proof/";
 #define BIT(x) (1 << x)
-#ifdef PF_ENABLE_ASSERT
-    #define PF_INTERNAL_ASSERT_IMPL(type, check, msg, ...) { if(!(check)) { PF##type##ERROR(msg, __VA_ARGS__);  __debugbreak(); } }
-    #define PF_INTERNAL_ASSERT_WITH_MSG(type, check, ...) PF_INTERNAL_ASSERT_IMPL(type, check, "Assertion failed: {0}", __VA_ARGS__)
-    #define PF_INTERNAL_ASSERT_NO_MSG(type, check) PF_INTERNAL_ASSERT_IMPL(type, check, "Assertion '{0}' failed at {1}:{2}", PROOF_STRINGIFY_MACRO(check), std::filesystem::path(__FILE__).filename().string(), __LINE__)
-
-    #define PF_INTERNAL_ASSERT_GET_MACRO_NAME(arg1, arg2, macro, ...) macro
-    #define PF_INTERNAL_ASSERT_GET_MACRO(...) PROOF_EXPAND_MACRO( PF_INTERNAL_ASSERT_GET_MACRO_NAME(__VA_ARGS__, PF_INTERNAL_ASSERT_WITH_MSG, PF_INTERNAL_ASSERT_NO_MSG) )
-    
-    #define PF_ASSERT(X,...){ if((!X)) {PF_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak();  } }
-    #define PF_CORE_ASSERT(...) PROOF_EXPAND_MACRO( PF_INTERNAL_ASSERT_GET_MACRO(__VA_ARGS__)(_ENGINE_, __VA_ARGS__) )
-#else
-    #define PF_ASSERT(X,...)
-    #define PF_CORE_ASSERT(X,...)
-#endif
-
-
 #define GetVariableName(X)#X
 #define PF_ARRAYSIZE(_ARR)          ((int)(sizeof(_ARR) / sizeof(*(_ARR))))     // Size of a static C-style array. does not work on pointers
 
 namespace Proof
 {
-    enum class Players {
-        None = 0,
-        Player0,
-        Player1,
-        Player2,
-        Player3,
-        Player4,
-        Player5,
-    };
+    
     using MemoryAddress = uintptr_t;
 
     template<typename T>
@@ -77,99 +24,4 @@ namespace Proof
     inline constexpr Special<T> CreateSpecial(Args&&... args) {
         return std::make_unique<T>(std::forward<Args>(args)...);
     }
-    struct Proof_API Timer {
-        Timer() {
-            Reset();
-        }
-        // returns the time passed in nanoseconds
-        float Elapsed() {
-            // using nano seconds to get a more accurate answer when minusing to get seconds
-            return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
-        }
-        float ElapsedMillis() {
-            return Elapsed() * 1000.0f;
-        }
-
-        float ElapsedSeconds() {
-            return ElapsedMillis() * 1000.0f;
-        }
-        void Reset() {
-            m_Start = std::chrono::high_resolution_clock::now();
-        }
-    private:
-        std::chrono::time_point<std::chrono::steady_clock>m_Start;
-    };
-
-    struct Proof_API RangeTimer {
-    public:
-        RangeTimer(const std::string& name)
-            : m_Name(name) {
-        }
-        ~RangeTimer();
-    private:
-        std::string m_Name;
-        Timer m_Timer;
-
-    };
-    enum class TimerTypes {
-        CPUTimer = 0,
-        RendererBase
-    };
-    struct FrameTimersControll {
-    public:
-
-        static void Add(const std::string& name, float time, float maxTime = 0.0f, TimerTypes type = TimerTypes::CPUTimer) {
-            for (FrameTimeManage& timerManage : s_FrameTimers) {
-                if (timerManage.FunctionName == name) {
-                    timerManage.TimerManage.Time += time;
-                    timerManage.Times.emplace_back(time);
-                    return;
-                }
-            }
-            s_FrameTimers.emplace_back(name, TimeManage( time,maxTime,type ) );
-        }
-        struct TimeManage {
-            float Time = 0;
-            float MaxTime = 0;
-            TimerTypes TimerType;
-        };
-        struct FrameTimeManage {
-            std::string FunctionName;
-            TimeManage TimerManage;
-            std::vector<float> Times;
-            FrameTimeManage(const std::string& functionName, const TimeManage& timeManage) :
-                FunctionName(functionName), TimerManage(timeManage) {
-                Times.emplace_back(timeManage.Time);
-            }
-        };
-    private:
-        static void Reset() {
-            for (FrameTimeManage& frameTime : s_FrameTimers) {
-                frameTime.TimerManage.Time = 0;
-                frameTime.Times.clear();
-            }
-        }
-        // name and time
-        static std::vector<FrameTimeManage> s_FrameTimers;
-        friend class Application;
-        friend class PerformancePanel;
-    };
-
-
-    struct RangeTimerMacro {
-    public:
-        RangeTimerMacro(const std::string& name, float maxTime = 0, TimerTypes types = TimerTypes::CPUTimer)
-            : m_Name(name), m_MaxTime(maxTime), m_Type(types) {
-        }
-        ~RangeTimerMacro();
-    private:
-        std::string m_Name;
-        float m_MaxTime = 0.0f;
-        Timer m_Timer;
-        TimerTypes  m_Type;
-    };
-#define PF_SCOPE_TIME(name) RangeTimerMacro ONLYUSEDONCEPERSCOPE(name); 
-#define PF_SCOPE_TIME_THRESHHOLD(name,X) RangeTimerMacro ONLYUSEDONCEPERSCOPETHRESHOLD(name,X);
-#define PF_SCOPE_TIME_THRESHHOLD_TYPE(name,X, Y) RangeTimerMacro ONLYUSEDONCEPERSCOPETHRESHOLDTYPE(name, X,Y)
-
 }

@@ -12,6 +12,8 @@
 #include "Proof/Math/Vector.h"
 #include "Camera/SceneCamera.h"
 #include "Proof/Math/MathConvert.h"
+#include "Proof/Core/UUID.h"
+#include "Proof/Input/KeyCodes.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>

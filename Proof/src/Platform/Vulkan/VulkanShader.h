@@ -3,6 +3,8 @@
 #include "Proof/Renderer/Shader.h"
 #include "Vulkan.h"
 #include "VulkanShaderResource.h"
+
+#include <map>
 namespace Proof
 {
     

@@ -32,8 +32,6 @@ namespace Proof
 
 		void SetOrthoProjectionMatrix(const float width, const float height, const float nearP, const float farP)
 		{
-			PF_CORE_ASSERT(false);
-			// may not be riht
 			m_ProjectionMatrix = glm::ortho(-width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, farP, nearP);
 			m_UnReversedProjectionMatrix = glm::ortho(-width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, nearP, farP);
 		}

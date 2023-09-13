@@ -45,7 +45,7 @@ namespace Proof {
 		auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(source).Path);
 		//m_Texture = Texture2D::Create(path.string());
 
-		Count<Texture2D> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(path)),path.string());
+		Count<Texture2D> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(path)), path.string());
 		SetID(assetData, asset);
 		return asset;
 	}
@@ -63,7 +63,7 @@ namespace Proof {
 		out << YAML::Key << "Tiling" << YAML::Value << material->GetTiling();
 		out << YAML::Key << "Offset" << YAML::Value << material->GetOffset();
 
-		if(material->GetAlbedoMap() && material->GetAlbedoMap()  != Renderer::GetWhiteTexture())
+		if (material->GetAlbedoMap() && material->GetAlbedoMap() != Renderer::GetWhiteTexture())
 			out << YAML::Key << "AlbedoTexture" << YAML::Value << material->GetAlbedoMap()->GetID();
 		else
 			out << YAML::Key << "AlbedoTexture" << YAML::Value << 0;
@@ -111,7 +111,7 @@ namespace Proof {
 			uint64_t id = data["AlbedoTexture"].as<uint64_t>();
 			if (AssetManager::HasAsset(id))
 			{
-				material->SetAlbedoMap (AssetManager::GetAsset<Texture2D>(id));
+				material->SetAlbedoMap(AssetManager::GetAsset<Texture2D>(id));
 			}
 		}
 		if (data["NormalTexture"])
@@ -142,7 +142,7 @@ namespace Proof {
 			}
 		}
 
-		
+
 		material->Name = assetData.GetName();
 		SetID(assetData, material);
 		return material;
@@ -201,7 +201,7 @@ namespace Proof {
 		out << YAML::Key << "AssetSource" << YAML::Value << AssetManager::GetAssetInfo(mesh->GetMeshSource()->GetPath()).ID;
 		out << YAML::Key << "SubMeshes";
 		out << YAML::Flow;
-	
+
 		out << YAML::EndMap;
 		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		found << out.c_str();
@@ -214,7 +214,7 @@ namespace Proof {
 		if (!data["AssetType"]) // if there is no scene no
 			return nullptr;
 		uint64_t source = data["AssetSource"].as<uint64_t>();
-		
+
 		PF_CORE_ASSERT(AssetManager::HasAsset(source), "Trying to load mesh with meshSource that does not exist");
 		Count<Mesh> mesh = Count<Mesh>::Create(AssetManager::GetAsset<MeshSource>(source));
 		SetID(assetData, mesh);
@@ -246,7 +246,7 @@ namespace Proof {
 
 		prefab->m_World->m_Registry.each([&](auto entityID) {
 			Entity entity{ entityID , prefab->m_World.Get() };
-			SceneSerializer::SerilizeEntity(out, prefab->m_World->m_Registry, entity.GetUUID(), entityID,true);
+			SceneSerializer::SerilizeEntity(out, prefab->m_World->m_Registry, entity.GetUUID(), entityID, true);
 		});
 		out << YAML::Flow;
 		out << YAML::EndMap;
@@ -261,12 +261,12 @@ namespace Proof {
 		if (!data["AssetType"])
 			return nullptr;
 		Count<Prefab> prefab = Count<Prefab>::Create();
-		UUID owernID= data["EntityOwner"].as<uint64_t>();
+		UUID owernID = data["EntityOwner"].as<uint64_t>();
 		auto entities = data["Entities"];
 
 		Count<World> world = Count<World>::Create("prefab world");
 
-		SceneSerializer::DeSerilizeEntity(entities, world.Get(), nullptr,true);
+		SceneSerializer::DeSerilizeEntity(entities, world.Get(), nullptr, true);
 
 		prefab->SetEntity(world->GetEntity(owernID));
 		SetID(assetData, prefab);
@@ -296,7 +296,7 @@ namespace Proof {
 		out << YAML::Key << "SizeEnd3D" << YAML::Value << particleSystem->SizeEnd3D;
 		out << YAML::Key << "SizeVariation3D" << YAML::Value << particleSystem->SizeVariation3D;
 		out << YAML::Key << "Rotation3D" << YAML::Value << particleSystem->Rotation3D;
-		if(particleSystem->Texture != nullptr)
+		if (particleSystem->Texture != nullptr)
 			out << YAML::Key << "TextureID" << YAML::Value << (uint64_t)particleSystem->Texture->GetID();
 		else
 			out << YAML::Key << "TextureID" << YAML::Value << 0;
@@ -318,7 +318,7 @@ namespace Proof {
 		if (!data["AssetType"])
 			return nullptr;
 		Count<ParticleSystem> particleSystem = Count<ParticleSystem>::Create();
-		
+
 		particleSystem->Velocity = data["Velocity"].as<Vector>();
 		particleSystem->VelocityVariation = data["VelocityVariation"].as<Vector>();
 		particleSystem->ColorBegin = data["ColorBegin"].as<glm::vec4>();
@@ -358,7 +358,7 @@ namespace Proof {
 	}
 	void UIPanelAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
 	{
-		Count<UIPanel>uiPanel  = asset.As<UIPanel>();
+		Count<UIPanel>uiPanel = asset.As<UIPanel>();
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -398,7 +398,7 @@ namespace Proof {
 				out << YAML::Key << "Visible" << imageButton.Visible;
 
 				AssetID id = (imageButton.Texture == nullptr) ? AssetID(0) : imageButton.Texture->GetID();
-				out << YAML::Key << "ImageAssetID" <<(uint64_t) id;
+				out << YAML::Key << "ImageAssetID" << (uint64_t)id;
 				out << YAML::EndMap;// Button
 			}
 			out << YAML::EndSeq;
@@ -415,7 +415,7 @@ namespace Proof {
 				out << YAML::Key << "Position" << texts.Postion;
 				out << YAML::Key << "Size" << texts.Size;
 				out << YAML::Key << "Rotation" << texts.Rotation;
-				out << YAML::Key << "Color" << texts.Param.Color ;
+				out << YAML::Key << "Color" << texts.Param.Color;
 				out << YAML::Key << "Input" << texts.Text;
 				out << YAML::Key << "Kerning" << texts.Param.Kerning;
 				out << YAML::Key << "LineSpacing" << texts.Param.LineSpacing;

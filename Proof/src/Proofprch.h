@@ -2,10 +2,12 @@
 //Proof defined
 #include "Proof/Core/Log.h"
 #include "Proof/Core/Core.h"
-#include "Proof/Input/Input.h"
 #include "Proof/Core/FrameTime.h"
-#include "Proof/Core/Debug/Instrumentor.h"
 #include "Proof/Resources/EnumReflection.h"
+#include "Proof/Core/Timer.h"
+#include "Proof/Core/Profile.h"
+#include "Proof/Core/Assert.h"
+#include "Proof/Core/UUID.h"
 
 #include <iostream>
 #include <vector>
@@ -29,4 +31,3 @@
 	#include <windows.h>
 #endif
 
-#include "Proof/Core/SceneCoreClasses.h"

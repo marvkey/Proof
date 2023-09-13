@@ -7,7 +7,9 @@
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Asset/Asset.h"
+#include "Proof/Math/Math.h"
 
+#include "../AssetEditors/AssetEditor.h"
 #include "Proof/Scene/SceneSerializer.h"
 
 #include "Proof/Utils/PlatformUtils.h"
@@ -54,13 +56,15 @@ namespace Proof
 		m_MeshIcon = Texture2D::Create(TextureConfiguration(),"Resources/Icons/ContentBrowser/MeshComponentIcon.png");
 		m_ArrowIcon = Texture2D::Create(TextureConfiguration(),"Resources/Icons/ContentBrowser/ArrowIcon.png");
 	}
-	void ContentBrowserPanel::ImGuiRender(FrameTime deltaTime) {
-		if (m_ShowWindow == false)
+	void ContentBrowserPanel::OnImGuiRender(const char* dsiplayName, bool& isOpen) {
+		if (isOpen == false)
 			return;
+		UI::ScopedID customID(GetCustomPushID().Get());
+
 		PF_PROFILE_FUNC();
 		//auto relativePath = std::filesystem::relative(path, g_AssetPath);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
-		ImGui::Begin("Content Browser", &m_ShowWindow);
+		ImGui::Begin(dsiplayName, &isOpen);
 		ImGui::Button("Drag dropereere");
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -203,7 +207,7 @@ namespace Proof
 		serilizer.SerilizeText(finalPath);
 
 		//AssetID ID = world->GetID();
-		Count<Asset> asset = world.Get(); 
+		Count<Asset> asset = world.As<Asset>(); 
 		AssetManager::NewAsset(asset, std::filesystem::path(finalPath));
 		//AssetManager::AddWorldAsset(ID, finalPath);
 		return world->GetID();
@@ -347,7 +351,8 @@ namespace Proof
 			
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
 				UUID staticID = AssetManager::GetAssetInfo(path).ID;
-				Editore3D::Get()->CreateAssetEditor(staticID);
+				Count<Asset>movedAsset = AssetManager::GetAsset<Asset>(staticID);
+				AssetEditorPanel::OpenEditor(movedAsset);
 			}
 			FolderorFile:
 			if (ImGui::BeginPopupContextItem(path.string().c_str())) {

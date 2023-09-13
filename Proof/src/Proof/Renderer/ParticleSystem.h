@@ -3,6 +3,8 @@
 #include"Proof/Asset/Asset.h"
 #include "Proof/Math/Math.h"
 #include <glm/glm.hpp>
+#include <map>
+
 namespace Proof {
 
 	struct ParticleEmission {

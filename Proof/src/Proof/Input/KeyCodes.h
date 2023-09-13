@@ -1,6 +1,22 @@
 #pragma once
 namespace Proof
 {
+	// we support more players
+	enum class Players
+	{
+		None = 0,
+		Player0,
+		Player1,
+		Player2,
+		Player3,
+		Player4,
+		Player5,
+		Player6,
+		Player7,
+		Player8,
+		Player9,
+		Player10,
+	};
 	enum class InputDevice {
 		None = 0,
 		KeyBoard =1,

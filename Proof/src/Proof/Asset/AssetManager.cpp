@@ -199,6 +199,13 @@ namespace Proof
 			return nullptr;
 		return it.Asset;
 	}
+	Count<Asset> AssetManager::InternalGetAsset(const std::filesystem::path& path)
+	{
+		PF_CORE_ASSERT(HasAsset(path), "Path does not exist");
+		auto info = AssetManager::GetAssetInfo(path);
+		
+		return InternalGetAsset(info.ID);
+	}
 	const AssetInfo& AssetManager::GetAssetInfo(AssetID ID) 
 	{
 		PF_CORE_ASSERT(HasAsset(ID), "Does not contian assetID");
@@ -213,6 +220,19 @@ namespace Proof
 		return {};
 	}
 	
+	void AssetManager::NewAsset(Count<Asset>& asset, const std::filesystem::path& savePath)
+	{
+		PF_CORE_ASSERT(asset);
+		asset->m_ID = AssetManager::CreateID();
+		AssetInfo assetInfo;
+		assetInfo.Path = std::filesystem::relative(savePath, AssetManager::GetDirectory());
+		assetInfo.State = AssetState::Ready;
+		assetInfo.ID = asset->GetID();
+		assetInfo.Type = asset->GetAssetType();
+
+		InternalAddAsset(assetInfo, asset);
+	}
+
 	Count<Asset> AssetManager::GetDefaultAsset(DefaultRuntimeAssets asset)
 	{
 		uint64_t ID = (uint64_t)asset;
@@ -248,6 +268,13 @@ namespace Proof
 			return;
 		}
 	
+	}
+	bool AssetManager::IsAssetLoaded(AssetID ID)
+	{
+		PF_CORE_ASSERT(HasAsset(ID), "ID does not exist");
+		auto info = GetAssetInfo(ID);
+		return info.State == AssetState::Ready;
+		return false;
 	}
 	bool AssetManager::HasAsset(AssetID ID) {
 		if (ID == 0)return false;

@@ -1,129 +1,141 @@
-#include "GuiPanel.h"
+#include "GuiEditorPanel.h"
 #include "Proof/Utils/PlatformUtils.h"
 
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/UIRenderer/UIRenderer.h"
 #include "Proof/Core/FrameTime.h"
 #include "misc/cpp/imgui_stdlib.h"
-#include "SceneHierachyPanel.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Asset/AssetManager.h"
+
+#include "Proof/ImGui/UI.h"
 namespace Proof
 {
-	GuiPanel::GuiPanel(Count<class UIPanel> panel)
+	GuiEditorPanel::GuiEditorPanel()
 		:
+		AssetEditor("GuiEditorPanel"),
 		m_Camera(45)
-	{
-		m_UIPanel = panel;
 
+	{
 	}
-	void GuiPanel::ImGuiRender(FrameTime deltaTime)
+	void GuiEditorPanel::OnImGuiRender()
 	{
-		if (m_ShowWindow == false)
-			return;
-
-		std::string guiPanelName = fmt::format("{} Panel", AssetManager::GetAssetInfo(m_UIPanel).GetName());
-		UI::ScopedStyleVar padding(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
-
-		ImGui::Begin(guiPanelName.c_str(), &m_ShowWindow);
-		/*
-		if (ImGui::IsWindowFocused())
+		ImGui::BeginChild("UiData", { ImGui::GetContentRegionAvail().x/3, ImGui::GetContentRegionAvail().y});
 		{
-			Application::Get()->GetWindow()->SetWindowInputEvent(true);
-			m_Camera.SetViewportSize(ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
-			m_Camera.OnUpdate(deltaTime);
-			Application::Get()->GetWindow()->SetWindowInputEvent(false);
-		}
-		*/
-		{
-			ImGui::BeginChild("UiData", { ImGui::GetContentRegionAvail().x/3, ImGui::GetContentRegionAvail().y});
+
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
+			ImGui::BeginChild("Heriechy", { ImGui::GetContentRegionAvail().x,ImGui::GetContentRegionAvail().y/2 });
 			{
-
-				ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
-				ImGui::BeginChild("Heriechy", { ImGui::GetContentRegionAvail().x,ImGui::GetContentRegionAvail().y/2 });
+				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false)
 				{
-					if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false)
-					{
-						m_SelectedType = Selected::None;
-						m_SelectedName = "";
-					}
-					if (ImGui::BeginPopupContextWindow(0))
-					{ // right click adn open a new entitiy
-						AddElementMenu();
-						ImGui::EndPopup();
-					}
-					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
-					flags |= ImGuiTreeNodeFlags_SpanFullWidth;
-					{
-						bool imageOpen = ImGui::TreeNodeEx((void*)"buttons", flags, "Buttons");
-						if (imageOpen)
-						{
-							for (auto& element : m_UIPanel->GetButtons())
-							{
-								DrawButtonNode(element.first, m_UIPanel->ButtonGet(element.first));
-							}
-							ImGui::TreePop();
-						}
-					}
-					{
-						bool imageOpen = ImGui::TreeNodeEx((void*)"imageButtons", flags, "ImageButtons");
-						if (imageOpen)
-						{
-							for (auto& element : m_UIPanel->GetImageButtons())
-							{
-								DrawImageButtonNode(element.first, m_UIPanel->GetImageButton(element.first));
-							}
-							ImGui::TreePop();
-						}
-					}
-					{
-						bool imageOpen = ImGui::TreeNodeEx((void*)"Texts", flags, "Text");
-						if (imageOpen)
-						{
-							for (auto& element : m_UIPanel->GetTexts())
-							{
-								DrawTextNode(element.first, m_UIPanel->TextGet(element.first));
-							}
-							ImGui::TreePop();
-						}
-					}
-					ImGui::EndChild();
+					m_SelectedType = Selected::None;
+					m_SelectedName = "";
 				}
-				ImGui::PopStyleColor();
-				ImGui::BeginChild("Properties", { ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y  });
+				if (ImGui::BeginPopupContextWindow(0))
+				{ // right click adn open a new entitiy
+					AddElementMenu();
+					ImGui::EndPopup();
+				}
+				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+				flags |= ImGuiTreeNodeFlags_SpanFullWidth;
 				{
-					if (m_SelectedType == Selected::Button && m_UIPanel->ButtonHas(m_SelectedName)) 
+					bool imageOpen = ImGui::TreeNodeEx((void*)"buttons", flags, "Buttons");
+					if (imageOpen)
 					{
-						DrawButtonComponent(m_SelectedName, m_UIPanel->ButtonGet(m_SelectedName));
+						for (auto& element : m_UIPanel->GetButtons())
+						{
+							DrawButtonNode(element.first, m_UIPanel->ButtonGet(element.first));
+						}
+						ImGui::TreePop();
 					}
-					if (m_SelectedType == Selected::ImageButton && m_UIPanel->ImageButtonHas(m_SelectedName))
-					{
-						DrawImageButtonComponent(m_SelectedName, m_UIPanel->GetImageButton(m_SelectedName));
-					}
-					if (m_SelectedType == Selected::Text && m_UIPanel->TextHas(m_SelectedName))
-					{
-						DrawTextComponent(m_SelectedName, m_UIPanel->TextGet(m_SelectedName));
-					}
-					ImGui::EndChild();
 				}
-
+				{
+					bool imageOpen = ImGui::TreeNodeEx((void*)"imageButtons", flags, "ImageButtons");
+					if (imageOpen)
+					{
+						for (auto& element : m_UIPanel->GetImageButtons())
+						{
+							DrawImageButtonNode(element.first, m_UIPanel->GetImageButton(element.first));
+						}
+						ImGui::TreePop();
+					}
+				}
+				{
+					bool imageOpen = ImGui::TreeNodeEx((void*)"Texts", flags, "Text");
+					if (imageOpen)
+					{
+						for (auto& element : m_UIPanel->GetTexts())
+						{
+							DrawTextNode(element.first, m_UIPanel->TextGet(element.first));
+						}
+						ImGui::TreePop();
+					}
+				}
 				ImGui::EndChild();
 			}
+			ImGui::PopStyleColor();
+			ImGui::BeginChild("Properties", { ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y  });
+			{
+				if (m_SelectedType == Selected::Button && m_UIPanel->ButtonHas(m_SelectedName)) 
+				{
+					DrawButtonComponent(m_SelectedName, m_UIPanel->ButtonGet(m_SelectedName));
+				}
+				if (m_SelectedType == Selected::ImageButton && m_UIPanel->ImageButtonHas(m_SelectedName))
+				{
+					DrawImageButtonComponent(m_SelectedName, m_UIPanel->GetImageButton(m_SelectedName));
+				}
+				if (m_SelectedType == Selected::Text && m_UIPanel->TextHas(m_SelectedName))
+				{
+					DrawTextComponent(m_SelectedName, m_UIPanel->TextGet(m_SelectedName));
+				}
+				ImGui::EndChild();
+			}
+
+			ImGui::EndChild();
 		}
 		ImGui::SameLine();
 		{
 			UI::ScopedStyleColor bgColor(ImGuiCol_ChildBg, { 0,0,0,1 });
-			ImGui::BeginChild("WIndow", ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y });
+			ImGui::BeginChild("Window", ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y });
+
+			if (ImGui::IsWindowFocused())
+			{
+				m_IsViewportFocused = true;
+			}
+			else
+			{
+				m_IsViewportFocused = false;
+			}
 			//const void* Text = UiRenderer::DrawUI(m_UIPanel, m_Camera.GetPosition(), glm::mat4(1.0f), glm::mat4(1.0f),
 			//	ImGui::GetWindowWidth(), ImGui::GetWindowHeight()).SourceImage;
 			//
 			//ImGui::Image((ImTextureID)Text, ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			ImGui::EndChild();
 		}
-		ImGui::End();
 	}
 
-	void GuiPanel::DrawButtonNode(const std::string& name, UIButton& button) {
+	void GuiEditorPanel::OnUpdate(FrameTime deltaTime)
+	{
+		if (m_IsViewportFocused)
+		{
+			//Application::Get()->GetWindow()->SetWindowInputEvent(true);
+			////m_Camera.OnUpdate(deltaTime,GetWindowSize());
+			//Application::Get()->GetWindow()->SetWindowInputEvent(false);
+		}
+	
+	}
+
+	void GuiEditorPanel::SetAsset(const Count<class Asset>& asset)
+	{
+		if (asset->GetAssetType() != AssetType::UIPanel)
+		{
+			PF_ENGINE_ERROR("Cannot pass {} Asset to GuiEditorPanel {}", EnumReflection::EnumString(asset->GetAssetType()), m_TitleAndId);
+			return;
+		}
+		m_UIPanel = asset.As<UIPanel>();
+	}
+
+	void GuiEditorPanel::DrawButtonNode(const std::string& name, UIButton& button) {
 		UI::ScopedID id(name);
 		bool selcted = false;
 		if (name == m_SelectedName && m_SelectedType == Selected::Button)
@@ -144,7 +156,7 @@ namespace Proof
 			ImGui::TreePop();
 		}
 	}
-	void GuiPanel::DrawImageButtonNode(const std::string& name, UIButtonImage& button)
+	void GuiEditorPanel::DrawImageButtonNode(const std::string& name, UIButtonImage& button)
 	{
 		UI::ScopedID id(name);
 		bool selcted = false;
@@ -166,7 +178,7 @@ namespace Proof
 			ImGui::TreePop();
 		}
 	}
-	void GuiPanel::DrawTextNode(const std::string& name, UIText& text)
+	void GuiEditorPanel::DrawTextNode(const std::string& name, UIText& text)
 	{
 		UI::ScopedID id(name);
 		bool selcted = false;
@@ -188,7 +200,7 @@ namespace Proof
 			ImGui::TreePop();
 		}
 	}
-	void GuiPanel::DrawButtonComponent(const std::string& name, UIButton& button)
+	void GuiEditorPanel::DrawButtonComponent(const std::string& name, UIButton& button)
 	{
 		if (AssetManager::HasAsset(m_UIPanel))
 			AssetManager::SaveAsset(m_UIPanel->GetID());
@@ -199,7 +211,7 @@ namespace Proof
 		ImGui::Checkbox("Visible", &button.Visible);
 		ImGui::InputTextMultiline("Text", &button.Text);
 	}
-	void GuiPanel::DrawImageButtonComponent(const std::string& name, UIButtonImage& button)
+	void GuiEditorPanel::DrawImageButtonComponent(const std::string& name, UIButtonImage& button)
 	{
 		if (AssetManager::HasAsset(m_UIPanel))
 			AssetManager::SaveAsset(m_UIPanel->GetID());
@@ -235,7 +247,7 @@ namespace Proof
 		}
 
 	}
-	void GuiPanel::DrawTextComponent(const std::string& name, UIText& text)
+	void GuiEditorPanel::DrawTextComponent(const std::string& name, UIText& text)
 	{
 		if (AssetManager::HasAsset(m_UIPanel))
 			AssetManager::SaveAsset(m_UIPanel->GetID());
@@ -250,7 +262,7 @@ namespace Proof
 		ImGui::InputTextMultiline("Text", &text.Text);
 
 	}
-	bool GuiPanel::AddElementMenu()
+	bool GuiEditorPanel::AddElementMenu()
 	{
 		if (ImGui::MenuItem("Button"))
 		{

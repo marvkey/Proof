@@ -23,8 +23,6 @@
 #include <stdio.h> 
 #include "ImGUIAPI.h"
 #include "Proof/Utils/PlatformUtils.h"
-#include "MainWindow/SceneRendererUI.h"
-#include "MainWindow/MaterialEditorPanel.h"
 
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Scene/Material.h"
@@ -45,27 +43,45 @@
 #include "Proof/Renderer/Font.h"
 #include "Proof/Scene/Prefab.h"
 
-#include "MainWindow/GuiPanel.h"
 #include "Proof/Project/ProjectSerilizer.h"
 #include "Proof/Renderer/ParticleSystem.h"
 
+#include "Proof/Core/Profile.h"
 
-#include "MainWindow/AssetManagerPanel.h"
-#include "MainWindow/InputPanel.h"
-#include "MainWindow/Performance/PerformancePanel.h"
-#include "MainWindow/SceneHierachyPanel.h"
-#include "MainWindow/SceneHierachyPanel.h"
-#include "MainWindow/ContentBrowserPanel.h"
+
 #include "Proof/Core/Application.h"
 #include "Proof/Project/Project.h"
 #include "Proof/Input/Input.h"
 
+#include "Editors/Panels/PanelManager.h"
+#include "Editors/Panels/AssetManagerPanel.h"
+#include "Editors/Panels/InputPanel.h"
+#include "Editors/Panels/SceneHierachyPanel.h"
+#include "Editors/Panels/ContentBrowserPanel.h"
+
+#include "Editors/AssetEditors/AssetEditor.h"
 #include "Proof/Scene/Mesh.h"
-
+#include "Proof/Core/Timer.h"
 #include "misc/cpp/imgui_stdlib.h"
-
+#define SCENE_HIERARCHY_PANEL_ID "SceneHierarchyPanel"
+#define ECS_DEBUG_PANEL_ID "ECSDebugPanel"
+#define CONSOLE_PANEL_ID "EditorConsolePanel"
+#define CONTENT_BROWSER_PANEL_ID "ContentBrowserPanel"
+#define INPUT_PANEL_ID "InputPanel"
+#define ASSET_MANAGER_PANEL_ID "AssetManagerPanel"
+#define SCENE_RENDERER_PANEL_ID "SceneRendererPanel"
 namespace Proof
 {
+	// you can do this
+	enum class ConsoleMessageFlags : int16_t
+	{
+		None = -1,
+		Info = BIT(0),
+		Warning = BIT(1),
+		Error = BIT(2),
+
+		All = Info | Warning | Error
+	};
 	struct EditorData
 	{
 
@@ -77,12 +93,13 @@ namespace Proof
 		bool ShowWorldEditor = false;
 
 		int GuizmoType = (1u << 0) | (1u << 1) | (1u << 2);// imguizmo bit stuff
-		SceneHierachyPanel WorldHierachy;
-		ContentBrowserPanel ContentBrowserPanel;
-		AssetManagerPanel AssetManagerPanel;
-		PerformancePanel PerformancePanel = { false };
-		InputPanel InputPanel;
+		//SceneHierachyPanel WorldHierachy;
+		//ContentBrowserPanel ContentBrowserPanel;
+		//AssetManagerPanel AssetManagerPanel;
+		//PerformancePanel PerformancePanel = { false };
+		//InputPanel InputPanel;
 
+		Special<PanelManager> PanelManager = CreateSpecial<class PanelManager>();
 		Count<Texture2D> PlayButtonTexture;
 		Count<Texture2D> PauseButtonTexture;
 		Count<Texture2D> SimulateButtonTexture;
@@ -200,6 +217,9 @@ namespace Proof
 		dispatcher.Dispatch<ControllerDisconnectEvent>([](auto& e) {
 			PF_INFO(e.ToString());
 		});
+
+		s_EditorData->PanelManager->OnEvent(e);
+		AssetEditorPanel::OnEvent(e);
 		// KEYBOARD
 		{
 			if (m_ShowAllKeyBoardEvents.ShowOne == true && e.IsInCategory(EventCategory::EventKeyBoard)) {
@@ -374,18 +394,23 @@ namespace Proof
 			SceneSerializer scerelizer(m_ActiveWorld.Get());
 			auto path = Application::Get()->GetProject()->GetAssetFileSystemPath(Info.Path);
 			if (scerelizer.DeSerilizeText(path.string()) == true) {
-				s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
 				AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
 			}
 		}
 		//ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
 		SceneSerializer scerelizer(m_ActiveWorld.Get());
-
-
-		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
-		m_WorldRenderer = Count<WorldRenderer>::Create();
-		// cannot be setting it to window size and stuff innit
 		m_EditorWorld = m_ActiveWorld;
+
+		s_EditorData->PanelManager->AddPanel< SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID, "Scene Hierarchy", true);
+		s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
+		s_EditorData->PanelManager->AddPanel<AssetManagerPanel>(ASSET_MANAGER_PANEL_ID, "Asset Manager", false);
+		s_EditorData->PanelManager->AddPanel<InputPanel>(INPUT_PANEL_ID, "Input Panel", false);
+		s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
+
+		AssetEditorPanel::RegisterDefaultEditors();
+		m_WorldRenderer = Count<WorldRenderer>::Create();
+
+		// cannot be setting it to window size and stuff innit
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		s_EditorData->PlayButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PlayButton.png");
@@ -393,18 +418,19 @@ namespace Proof
 		s_EditorData->SimulateButtonTexture = Texture2D::Create(TextureConfiguration(),"Resources/Icons/MainPanel/SimulateButton.png");
 		s_EditorData->StopButtonTexture = Texture2D::Create(TextureConfiguration(),"Resources/Icons/MainPanel/StopButton.png");
 
-		m_PlayersCount = 4;
+		m_PlayersCount = 1;
 
 		m_ViewPortSize = { 100,100 };
 
 	}
 	void Editore3D::OnDetach() {
-		m_AllPanels.clear();
-		if (m_EditorWorld != nullptr) { // using editor world in case active world is on play
+		if (m_EditorWorld != nullptr) // using editor world in case active world is on play 
+		{ 
 			SceneSerializer scerelizer(m_EditorWorld.Get());
 			auto assetInfo = AssetManager::GetAssetInfo(m_EditorWorld->GetID());
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 		}
+		AssetEditorPanel::UnregisterAllEditors();
 		AssetManager::SaveAllAssets();
 		EditorResources::Unizilize();
 	}
@@ -416,6 +442,8 @@ namespace Proof
 		if (m_IsViewPortResize && m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
 			m_IsViewPortResize = false;
 		}
+		AssetEditorPanel::OnUpdate(DeltaTime);
+
 		switch (m_ActiveWorld->GetState()) {
 			case Proof::WorldState::Play:
 				{
@@ -535,8 +563,10 @@ namespace Proof
 		MainToolBar();
 		Logger();
 
+		
 		ViewPort();
-	
+		s_EditorData->PanelManager->OnImGuiRender();
+		AssetEditorPanel::OnImGuiRender();
 		// handlepop
 		{
 		
@@ -569,16 +599,6 @@ namespace Proof
 			//ImGui::End();
 		}
 
-		s_EditorData->WorldHierachy.ImGuiRender(DeltaTime);
-		s_EditorData->ContentBrowserPanel.ImGuiRender(DeltaTime);
-		//s_EditorData->AssetManagerPanel.ImGuiRender(DeltaTime);
-		s_EditorData->InputPanel.ImGuiRender(DeltaTime);
-		s_EditorData->PerformancePanel.ImGuiRender(DeltaTime);
-		for (auto& a : m_AllPanels)
-		{
-			PF_PROFILE_FUNC("Render Panels");
-			a.second->ImGuiRender(DeltaTime);
-		}
 		a:
 		if (s_EditorData->ShowRendererStats == false)
 			return;
@@ -684,8 +704,8 @@ namespace Proof
 			}
 			case KeyBoardKey::P:
 			{
-				if(control)
-					Math::ChangeBool(s_EditorData->WorldHierachy.m_ShowWindow);
+				//if(control)
+				//	Math::ChangeBool(s_EditorData->WorldHierachy.m_ShowWindow);
 				break;
 			}
 			case KeyBoardKey::L:
@@ -696,8 +716,8 @@ namespace Proof
 			}
 			case KeyBoardKey::B:
 			{
-				if (control)
-					Math::ChangeBool(s_EditorData->ContentBrowserPanel.m_ShowWindow);
+				//if (control)
+				//	Math::ChangeBool(s_EditorData->ContentBrowserPanel.m_ShowWindow);
 				break;
 			}
 			case KeyBoardKey::R:
@@ -719,15 +739,17 @@ namespace Proof
 
 			case KeyBoardKey::D:
 				{
-					if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0)
-						s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(s_EditorData->WorldHierachy.m_SelectedEntity);
+					//if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0)
+					//	s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(s_EditorData->WorldHierachy.m_SelectedEntity);
 					break;
 
 				}
 			case KeyBoardKey::Delete:
 			case KeyBoardKey::Backspace:
 				{
-					if (s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
+					/*
+					if (s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) 
+					{
 
 						if (m_ActiveWorld->GetState() == WorldState::Edit) {
 							/*
@@ -746,27 +768,27 @@ namespace Proof
 									}
 								}
 							});
-							*/
 						}
 						m_ActiveWorld->DeleteEntity(s_EditorData->WorldHierachy.m_SelectedEntity);
 						s_EditorData->WorldHierachy.m_SelectedEntity = {};
 					}
+					*/
 					break;
 				}
 				// copy entity
 			case KeyBoardKey::C:
 				{
-					if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
-						m_CopyEntity = s_EditorData->WorldHierachy.m_SelectedEntity;
-					}
+					//if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
+					//	m_CopyEntity = s_EditorData->WorldHierachy.m_SelectedEntity;
+					//}
 					break;
 				}
 				// paste entity 
 			case KeyBoardKey::V:
 				{
-					if (control && m_CopyEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
-						s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(m_CopyEntity);
-					}
+					//if (control && m_CopyEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
+					//	s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(m_CopyEntity);
+					//}
 					break;
 				}
 
@@ -795,6 +817,7 @@ namespace Proof
 				}
 			case KeyBoardKey::Tab:
 				{
+					/*
 					if (m_ViewPortFocused == false || s_EditorData->WorldHierachy.m_SelectedEntity == false)
 						break;
 					Entity selected = s_EditorData->WorldHierachy.m_SelectedEntity;
@@ -818,6 +841,7 @@ namespace Proof
 					else if (selected.HasChildren()) {
 						s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->GetEntity(selected.GetComponent<HierarchyComponent>().Children[0]);
 					}
+					*/
 					break;
 				}
 		}
@@ -1199,7 +1223,7 @@ namespace Proof
 			// GUIZMOS
 
 			// cherno game engein reveiw 22 minutes 48 seconds reference
-			Entity selectedEntity = s_EditorData->WorldHierachy.GetSelectedEntity();
+			Entity selectedEntity = s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity();
 			if (selectedEntity) {
 
 				//ImGuizmo::SetOrthographic(true);
@@ -1270,9 +1294,8 @@ namespace Proof
 
 					m_EditorWorld = Count<World>::Create();
 					m_ActiveWorld = m_EditorWorld;
-					s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
+					s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
 					SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
-					s_EditorData->WorldHierachy.m_SelectedEntity = {};
 
 					SceneSerializer ScerilizerNewWorld(m_ActiveWorld.Get());
 					ScerilizerNewWorld.DeSerilizeText(ID);
@@ -1284,7 +1307,7 @@ namespace Proof
 
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
 					newentt.AddComponent<MeshComponent>().SetMesh(meshID);
-					s_EditorData->WorldHierachy.m_SelectedEntity = newentt;
+					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
 				}
 
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::MeshSourceFile).c_str())) {
@@ -1301,25 +1324,25 @@ namespace Proof
 					std::string name = AssetManager::GetAssetInfo(prefabId).GetName();
 
 					Entity newentt = m_ActiveWorld->CreateEntity(name, prefab, TransformComponent());
-					s_EditorData->WorldHierachy.m_SelectedEntity = newentt;
+					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
 				}
 				ImGui::EndDragDropTarget();
 			}
 
 			if (meshSourceAdded) {
 				AssetID id;
-				std::tie(meshSourceAdded, id) = s_EditorData->ContentBrowserPanel.AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
+				std::tie(meshSourceAdded, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
 				// basically add mesh is done with its operation and no longer renderng
 				if (meshSourceAdded == false) {
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
 					newentt.AddComponent<MeshComponent>().SetMesh(id);
-					s_EditorData->WorldHierachy.m_SelectedEntity = newentt;
+					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
 				}
 			}
 			if (SaveSceneDialouge)
 			{
 				AssetID id;
-				std::tie(SaveSceneDialouge,id ) = s_EditorData->ContentBrowserPanel.AddWorld(m_ActiveWorld);
+				std::tie(SaveSceneDialouge,id ) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddWorld(m_ActiveWorld);
 				if (SaveSceneDialouge == false)
 				{
 					Save();
@@ -1475,14 +1498,16 @@ namespace Proof
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("View")) {
-				ImGui::MenuItem("Heirachy", nullptr, &s_EditorData->WorldHierachy.m_ShowWindow);
+				for (auto& [id, panelData] : s_EditorData->PanelManager->GetPanels())
+				{
+					if (ImGui::MenuItem(panelData.Name, nullptr, &panelData.IsOpen))
+					{
+						//m_PanelManager->Serialize();
+					}
+				}
 				ImGui::MenuItem("Log", nullptr, &s_EditorData->ShowLogger);
-				ImGui::MenuItem("Content Browser", nullptr, &s_EditorData->ContentBrowserPanel.m_ShowWindow);
-				ImGui::MenuItem("Asset Manager ", nullptr, &s_EditorData->AssetManagerPanel.m_ShowWindow);
 				ImGui::MenuItem("Render Stats", nullptr, &s_EditorData->ShowRendererStats);
 				ImGui::MenuItem("World Editor", nullptr, &s_EditorData->ShowWorldEditor);
-				ImGui::MenuItem("Input Panel", nullptr, &s_EditorData->InputPanel.m_ShowWindow);
-				ImGui::MenuItem("Performance Browser", nullptr, &s_EditorData->PerformancePanel.m_ShowWindow);
 				ImGui::EndMenu();
 			}
 
@@ -1501,6 +1526,10 @@ namespace Proof
 		ImGui::End();
 	}
 
+	void Editore3D::OpenWorld(Count<World> world)
+	{
+	}
+
 	void Editore3D::Save() {
 		if (m_ActiveWorld == nullptr)
 			return;
@@ -1513,23 +1542,19 @@ namespace Proof
 			SaveSceneDialouge = true;
 			return;
 		}
-		float timeSave;
 		{
-			Timer time;
+			ScopeTimer scopeTime(fmt::format("{} Saved", m_ActiveWorld->GetName()));
 			SceneSerializer scerelizer(m_ActiveWorld.Get());
 			auto assetInfo = AssetManager::GetAssetInfo(m_ActiveWorld->GetID());
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 
-			timeSave = time.ElapsedMillis();
 		}
-		PF_EC_TRACE("{} Saved  in {} m/s", m_ActiveWorld->GetName().c_str(), timeSave);
 
 		{
-			Timer time;
+			ScopeTimer scopeTime(fmt::format("AssetManager Saved"));
+
 			AssetManager::SaveAssetManager();
-			timeSave = time.ElapsedMillis();
 		}
-		PF_EC_TRACE("AssetManager Saved {} m/s", timeSave);
 
 		ProjectSerilizer serilizer(Application::Get()->GetProject());
 		serilizer.SerilizeText(Application::Get()->GetProject()->GetConfig().Project.string());
@@ -1539,9 +1564,8 @@ namespace Proof
 	{
 		m_EditorWorld = Count<World>::Create();
 		m_ActiveWorld = m_EditorWorld;
-		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
+		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
-		s_EditorData->WorldHierachy.m_SelectedEntity = {};
 	}
 	void Editore3D::PlayWorld() {
 		#if 0
@@ -1581,65 +1605,11 @@ namespace Proof
 		//s_EditorData->GuizmoType = 0;
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;
-		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
+		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 		s_DetachPlayer = false;
 	}
 	void Editore3D::PauseWorld() {
 		m_ActiveWorld->m_CurrentState = WorldState::Pause;
-	}
-
-	
-
-	bool Editore3D::CreateAssetEditor(AssetID ID) {
-		auto it = m_AllPanels.find(ID);
-		if (it != m_AllPanels.end()) {
-			it->second->SetWindowVisibile(true);
-			return false;
-		}
-		auto assetInfo = AssetManager::GetAssetInfo(ID);
-		switch (assetInfo.Type) {
-			case Proof::AssetType::Mesh:
-			case Proof::AssetType::MeshSourceFile:
-				{
-					//Count<SceneRendererUI> panel= Count<SceneRendererUI>::Create(ID);
-					//m_AllPanels.insert({ ID,panel});
-					return true;
-				}
-			case Proof::AssetType::Texture:
-				{
-					break;
-				}
-			case Proof::AssetType::Material:
-				{
-
-					Count<Panel> panel= Count<MaterialEditorPanel>::Create(AssetManager::GetAsset<Material>(ID));
-					m_AllPanels.insert({ ID,panel });
-					return true;
-				}
-			case Proof::AssetType::World:
-				break;
-			case Proof::AssetType::PhysicsMaterial:
-				{
-					Count<Panel> panel = Count<PhysicsMaterialEditorPanel>::Create (AssetManager::GetAsset<PhysicsMaterial>(ID));
-					m_AllPanels.insert({ ID,panel });
-					return true;
-				}
-			case AssetType::UIPanel:
-				{
-					Count<Panel> panel = Count<GuiPanel>::Create(AssetManager::GetAsset<UIPanel>(ID));
-					m_AllPanels.insert({ ID,panel });
-					return true;
-				}
-			case AssetType::ParticleSystem:
-				{
-					Count<ParticleSystemPanel> panel = Count<ParticleSystemPanel>::Create(AssetManager::GetAsset<ParticleSystem>(ID));
-					m_AllPanels.insert({ ID,panel });
-					return true;
-				}
-			default:
-				break;
-		}
-		return false;
 	}
 }

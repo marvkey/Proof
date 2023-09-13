@@ -7,4 +7,9 @@ namespace Proof
     Special <Window> Window::Create(const WindowConfiguration& configuration) {
         return CreateSpecial<WindowsWindow>(configuration);
     }
+    Controller& Window::GetController(int index)
+    {
+        PF_CORE_ASSERT(HasController(index), "Does not contain controller");
+        return s_Controllers.at(index);
+    }
 }

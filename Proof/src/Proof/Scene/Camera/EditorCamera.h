@@ -5,7 +5,7 @@ namespace Proof
 	class EditorCamera : public Camera{
 	public:
 		EditorCamera(uint32_t width,uint32_t height,float fovDeg=45,float nearPlane = 0.1,float farplane = 2000,glm::vec3 position ={-5,-5,-5});
-		void OnUpdate(FrameTime DeltaTime,uint32_t width,uint32_t height);
+		void OnUpdate(float DeltaTime,uint32_t width,uint32_t height);
 		glm::mat4 GetTransform() const {
 			glm::mat4 rotation = glm::toMat4(glm::quat({0.0f,0.0f,0.0f}));
 
@@ -57,7 +57,7 @@ namespace Proof
 		EditorCamera2D() = default;
 		EditorCamera2D(float fov=30.0f, float aspectRatio = 1.778f, float nearClip = 0.1, float farClip=2000);
 
-		void OnUpdate(FrameTime ts);
+		void OnUpdate(float ts);
 
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }

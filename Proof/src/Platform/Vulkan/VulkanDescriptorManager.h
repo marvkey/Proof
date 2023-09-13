@@ -4,6 +4,9 @@
 #include "VulkanShader.h"
 #include "VulkanResourceBuffer.h"
 #include "VulkanTexutre.h"
+
+#include <map>
+
 namespace Proof
 {
 

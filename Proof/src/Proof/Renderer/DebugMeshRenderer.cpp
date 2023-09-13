@@ -51,7 +51,6 @@ namespace Proof{
 	{
 		PF_CORE_ASSERT(m_InContext == true, "Cannot end context if already n a context");
 		PF_PROFILE_FUNC()
-		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 0, TimerTypes::RendererBase);
 		Draw();
 		m_Pipeline->Reset();
 

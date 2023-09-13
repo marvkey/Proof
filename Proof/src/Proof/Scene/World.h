@@ -2,7 +2,7 @@
 #include "Proof/Core/Core.h"
 #include "Camera/EditorCamera.h"
 #include "Proof/Asset/Asset.h"
-
+#include "Proof/Core/UUID.h"
 #include "entt/entt.hpp"	
 #include <tuple>
 #include <variant>

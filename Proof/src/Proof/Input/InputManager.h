@@ -7,7 +7,9 @@
 #include "Proof/Events/ControllerEvent.h"
 
 #include<unordered_set>
+
 namespace Proof {
+	
 	struct InputType {
 		InputType(InputDevice inputDevice, int key) {
 			Device = inputDevice;

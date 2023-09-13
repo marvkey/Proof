@@ -1,7 +1,9 @@
+#include "Proof/Resources/EnumReflection.h"
 #pragma once
 #include "Proof/Core/Core.h"
 #include <ImGui/imgui.h>
 #include <imgui/imgui_internal.h>
+#include "Proof/Resources/EnumReflection.h"
 namespace Proof
 {
 	namespace ExternalAPI

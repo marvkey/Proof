@@ -17,7 +17,6 @@ namespace Proof {
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		// returns if assetEditorWasCreated
-		bool CreateAssetEditor(AssetID ID);
 		static bool IsKeyPressedEditor(KeyBoardKey Key);
 		static bool IsKeyClickedEditor(KeyBoardKey Key);
 		bool m_ViewPortFocused = false;
@@ -81,11 +80,11 @@ namespace Proof {
 		glm::vec2 m_ViewportBounds[2];
 		glm::vec2 m_ViewPortSize;
 		void SetDocking(bool *p_open);
+		void OpenWorld(Count<World> world);
 		glm::vec2 _ViewPortLocation;
 		bool m_IsViewPortResize = false;
 		Count<class World>m_ActiveWorld =nullptr;
 		Count<class World>m_EditorWorld =nullptr;
-		std::unordered_map<UUID,Count<class Panel>>m_AllPanels;
 
 		friend class Renderer3D;
 		friend class RendererBase;

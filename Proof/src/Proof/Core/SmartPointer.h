@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include <atomic>
 #include <compare>
+#include <stdint.h>
 namespace Proof{
 
 
@@ -170,7 +171,7 @@ namespace Proof{
 		}
 		template <class... Args, std::enable_if_t<std::is_constructible<T, Args...>::value, int> = 0>
 		static Count Create(Args&&... args) {
-			T* data = new T(args...);
+			T* data = new T(std::forward<Args>(args)...);
 			Count<T> t(data);
 			return t;
 		}
@@ -208,7 +209,7 @@ namespace Proof{
 				return m_Ptr->GetWeakCount();
 			return 0;
 		}
-		template<class U, std::enable_if_t<Is_Compatible<U, T>::value, int> = 0>
+		template<class U>
 		inline constexpr Count<U> As()const;
 
 	private:
@@ -316,7 +317,7 @@ namespace Proof{
 		return {};
 	}
 	template<typename T>
-	template <class U, std::enable_if_t<Is_Compatible<U, T>::value, int>>
+	template <class U>
 	inline constexpr Count<U> Count<T>::As()const
 	{
 		return Dynamic_Count_cast<U>(*this);

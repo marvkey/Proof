@@ -1,14 +1,13 @@
 #pragma once
 #include "Panel.h"
 namespace Proof {
-	class Proof_API InputPanel :public Panel {
+	class InputPanel :public Panel {
 	public:
-		InputPanel(): 
-			Panel(false) 
+		InputPanel() 
 		{
 			
 		}
-		virtual void ImGuiRender(FrameTime deltaTime)override;
+		virtual void OnImGuiRender(const char* dsiplayName, bool& isOpen)override;
 	private:
 		void Action();
 		void MotionInput();

@@ -90,7 +90,6 @@ namespace Proof {
 	
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position) {
 		PF_PROFILE_FUNC()
-		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 1.0f, TimerTypes::RendererBase);
 		s_CurrentCamera = CameraData{ projection,view,glm::mat4(1),Position };
 
 		m_Storage2DData->CameraBuffer->SetData(Renderer::GetCurrentFrame().FrameinFlight, Buffer((&s_CurrentCamera, sizeof(CameraData))));

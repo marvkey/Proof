@@ -185,7 +185,6 @@ namespace Proof
 	void Renderer3DPBR::EndContext() {
 		PF_CORE_ASSERT(s_InContext == true, "Cannot end context if already n a context");
 		PF_PROFILE_FUNC()
-		PF_SCOPE_TIME_THRESHHOLD_TYPE(__FUNCTION__, 0, TimerTypes::RendererBase);
 		DrawContext();
 		Reset();
 		s_InContext = false;

@@ -5,6 +5,9 @@
 #include "Proof/Events/Event.h"
 #include "Proof/Input/Controller.h"
 #include "Proof/Math/Vector.h"
+
+#include <map>
+
 namespace Proof {
 	struct WindowConfiguration {
 		uint32_t Width = 0;
@@ -78,10 +81,7 @@ namespace Proof {
 			return s_Controllers.contains(index);
 		}
 
-		static class Controller& GetController(int index) {
-			PF_CORE_ASSERT(HasController(index), "Does not contain controller");
-			return s_Controllers.at(index);
-		}
+		static class Controller& GetController(int index);
 
 		static std::map<int, Controller>& GetControllers() {
 			return s_Controllers;

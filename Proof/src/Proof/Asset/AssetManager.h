@@ -55,18 +55,7 @@ namespace Proof
 	public:
 
 		// PATH (PASS THE FULL PATH)
-		static void NewAsset(Count<Asset>& asset, const std::filesystem::path& savePath) 
-		{
-			PF_CORE_ASSERT(asset);
-			asset->m_ID = AssetManager::CreateID();
-			AssetInfo assetInfo;
-			assetInfo.Path = std::filesystem::relative(savePath, AssetManager::GetDirectory());
-			assetInfo.State = AssetState::Ready;
-			assetInfo.ID = asset->GetID();
-			assetInfo.Type = asset->GetAssetType();
-
-			InternalAddAsset(assetInfo, asset);
-		}
+		static void NewAsset(Count<Asset>& asset, const std::filesystem::path& savePath);
 		/**
 		 * .
 		 *
@@ -127,12 +116,7 @@ namespace Proof
 		*path Pass the full path
 		*/
 		static void NewAssetSource(const std::filesystem::path& path, AssetType type);
-		static bool IsAssetLoaded(AssetID ID) 
-		{
-			PF_CORE_ASSERT(HasAsset(ID), "ID does not exist");
-			auto info = GetAssetInfo(ID);
-			return info.State == AssetState::Ready;
-		}
+		static bool IsAssetLoaded(AssetID ID);
 		template<class T>
 		static Count<T>GetAsset(AssetID ID) 
 		{
@@ -147,9 +131,7 @@ namespace Proof
 		template<class T>
 		static Count<T>GetAsset(const std::filesystem::path& path) 
 		{
-			PF_CORE_ASSERT(AssetManager::HasAsset(path));
-			auto info = AssetManager::GetAssetInfo(path);
-			return GetAsset<T>(info.ID);
+			return InternalGetAsset(path).As<T>();
 		}
 		static bool HasAsset(AssetID ID);
 		/**
@@ -213,6 +195,7 @@ namespace Proof
 		// asset can be nullptr
 		static void InternalAddAsset(AssetInfo info, Count<Asset> asset);
 		static Count<Asset> InternalGetAsset(AssetID Id);
+		static Count<Asset> InternalGetAsset(const std::filesystem::path& path);
 		static void Init(AssetManagerConfiguration& assetManagerConfiguration);
 		static void ShutDown();
 		friend class Application;
