@@ -93,25 +93,25 @@ namespace Proof {
 		{
 			physx::PxShape* shape = (physx::PxShape*)m_CapsuleColliderBody;
 			rigidBody->detachShape(*shape);
-			shape->release();
+			///shape->release();
 		}
 		if (m_Entity.HasComponent<SphereColliderComponent>())
 		{
 			physx::PxShape* shape = (physx::PxShape*)m_SphereColliderBody;
 			rigidBody->detachShape(*shape);
-			shape->release();
+			//shape->release();
 		}
 		if (m_Entity.HasComponent<CapsuleColliderComponent>())
 		{
 			physx::PxShape* shape = (physx::PxShape*)m_CapsuleColliderBody;
 			rigidBody->detachShape(*shape);
-			shape->release();
+			//shape->release();
 		}
 		if (m_Entity.HasComponent<MeshColliderComponent>())
 		{
 			physx::PxShape* shape = (physx::PxShape*)m_MeshColliderBody;
 			rigidBody->detachShape(*shape);
-			shape->release();
+			//shape->release();
 		}
 		// shoudl the next paremter be false
 		m_PhysicsWorld->GetPhysicsScene()->removeActor(*rigidBody);
@@ -201,7 +201,7 @@ namespace Proof {
 	}
 	void PhysicsActor::OnCollisonStay(const PhysicsActor* actor)
 	{
-		PF_CORE_ASSERT(false);
+		//PF_CORE_ASSERT(false);
 	}
 	void PhysicsActor::OnCollisonLeave(const PhysicsActor* actor)
 	{

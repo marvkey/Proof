@@ -447,6 +447,14 @@ namespace Proof
 		switch (m_ActiveWorld->GetState()) {
 			case Proof::WorldState::Play:
 				{
+					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
+					if (m_ViewPortFocused)
+					{
+						Application::Get()->GetWindow()->SetWindowInputEvent(true);
+						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+						Application::Get()->GetWindow()->SetWindowInputEvent(false);
+					}
+					m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
 					#if 0
 					int player = 1;
 					if (m_PlayersCount > 1 && s_DetachPlayer == false && m_ActiveWorld->GetNumComponents<PlayerInputComponent>() > 0)
@@ -637,6 +645,7 @@ namespace Proof
 				}
 			});
 
+			ExternalAPI::ImGUIAPI::EnumCombo<WorldRendererOptions::PhysicsColliderView>("Physics Collider", m_WorldRenderer->Options.ShowPhysicsColliders);
 			
 			ImGui::Text("Shadow Settings");
 
@@ -1380,18 +1389,18 @@ namespace Proof
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.4f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 		if (ImGui::Button(state.c_str(), ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
-			//if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
-			//	PlayWorld();
-			//else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
-			//	SetWorldEdit();
+			if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
+				PlayWorld();
+			else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
+				SetWorldEdit();
 		}
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
 		
 		if (UI::ImageButton(s_EditorData->PlayButtonTexture->GetImage(), ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
-			//if (m_ActiveWorld->m_CurrentState == WorldState::Play)
-			//	PauseWorld();
+			if (m_ActiveWorld->m_CurrentState == WorldState::Play)
+				PauseWorld();
 		}
 		//ImGui::SameLine();
 		//ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.6f);
@@ -1526,9 +1535,7 @@ namespace Proof
 		ImGui::End();
 	}
 
-	void Editore3D::OpenWorld(Count<World> world)
-	{
-	}
+	
 
 	void Editore3D::Save() {
 		if (m_ActiveWorld == nullptr)
@@ -1567,33 +1574,31 @@ namespace Proof
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 	}
+	void Editore3D::SetActiveWorld(Count<World> world)
+	{
+	}
 	void Editore3D::PlayWorld() {
-		#if 0
 		m_ActiveWorld = World::Copy(m_EditorWorld);
 		s_DetachPlayer = false;
+		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
-		s_EditorData->WorldHierachy.SetContext(m_ActiveWorld);
-
 		if (s_EditorData->ClearLogOnPlay)
 			Log::Logs.clear();
-		//s_EditorData->GuizmoType = 0;
-		s_EditorData->WorldHierachy.m_SelectedEntity = {};
 
 		m_ActiveWorld->StartRuntime();
 			
-		{
-			
-			for (int i = 0; i < m_PlayersCount; i++)
-			{
-				if (m_MultiplayerRender[(Players)(i + 1)] == nullptr)
-					m_MultiplayerRender[(Players)(i + 1)] = Count<WorldRenderer>::Create(m_ActiveWorld, m_ViewPortSize.x, m_ViewPortSize.y);
-				else
-					m_MultiplayerRender[(Players)(i + 1)]->SetContext(m_ActiveWorld);
-			}
-		}
-		#endif
+		//{
+		//	
+		//	for (int i = 0; i < m_PlayersCount; i++)
+		//	{
+		//		if (m_MultiplayerRender[(Players)(i + 1)] == nullptr)
+		//			m_MultiplayerRender[(Players)(i + 1)] = Count<WorldRenderer>::Create(m_ActiveWorld, m_ViewPortSize.x, m_ViewPortSize.y);
+		//		else
+		//			m_MultiplayerRender[(Players)(i + 1)]->SetContext(m_ActiveWorld);
+		//	}
+		//}
 		//Mouse::CaptureMouse(true);
 	}
 	void Editore3D::SimulateWorld() {

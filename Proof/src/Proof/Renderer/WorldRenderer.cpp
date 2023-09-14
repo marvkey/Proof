@@ -438,6 +438,8 @@ namespace Proof
 			
 			m_CompositePass = RenderPass::Create(renderPassSpec);
 			m_CompositeMaterial = RenderMaterial::Create({ "Composite", Renderer::GetShader("WorldComposite") });
+
+
 		}
 
 		//External Composite 
@@ -482,6 +484,29 @@ namespace Proof
 			extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetTargetFrameBuffer()->GetDepthImageLayout();
 
 			m_ExternalCompositeFrameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
+
+			GraphicsPipelineConfiguration pipelineConfig;
+			pipelineConfig.DebugName = "WireFrame";
+			pipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+			pipelineConfig.CullMode = CullMode::None;
+			pipelineConfig.DepthTest = true;
+			pipelineConfig.LineWidth = 2.0f;
+			pipelineConfig.VertexArray = staticVertexArray;
+			pipelineConfig.FillMode = PolygonFillMode::Line;
+			pipelineConfig.Shader  = Renderer::GetShader("Wireframe");
+			auto geomWireframepass = GraphicsPipeline::Create(pipelineConfig);
+			m_GeometryWireFramePass = RenderPass::Create(RenderPassConfig("WireFrame", geomWireframepass, m_ExternalCompositeFrameBuffer));
+
+			pipelineConfig.DepthTest = false;
+			pipelineConfig.DebugName = "Wireframe-OnTop";
+			geomWireframepass = GraphicsPipeline::Create(pipelineConfig);
+			m_GeometryWireFrameOnTopPass = RenderPass::Create(RenderPassConfig("WireFrameOnTop", geomWireframepass, m_ExternalCompositeFrameBuffer));
+
+			m_GeometryWireFramePassMaterial = RenderMaterial::Create(RenderMaterialConfiguration{ "WireFrame", Renderer::GetShader("Wireframe") });
+			
+			m_GeometryWireFramePass->SetInput("CameraData", m_UBCameraBuffer);
+			m_GeometryWireFrameOnTopPass->SetInput("CameraData", m_UBCameraBuffer);
+
 		}
 
 	}
@@ -631,6 +656,7 @@ namespace Proof
 			m_MeshTransformMap.clear();
 			m_MeshDrawList.clear();
 			m_MeshShadowDrawList.clear();
+			m_ColliderDrawList.clear();
 		}
 
 		m_Timers.TotalDrawScene	= drawSceneTimer.ElapsedMillis();
@@ -1205,6 +1231,32 @@ namespace Proof
 
 		Renderer::EndRenderPass(m_CompositePass);
 
+
+		if(Options.ShowPhysicsColliders != WorldRendererOptions::PhysicsColliderView::None)
+		{
+			PF_PROFILE_FUNC("PhysicsDebugMeshes");
+			Timer physicsDebugMesh;
+
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").X = Options.PhysicsColliderColor.x;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Y = Options.PhysicsColliderColor.y;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Z = Options.PhysicsColliderColor.z;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").W = Options.PhysicsColliderColor.w;
+
+			auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
+
+			auto wireFramePass = Options.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::Normal ? m_GeometryWireFramePass : m_GeometryWireFrameOnTopPass;
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, wireFramePass);
+			for (auto& [meshKey, dc] : m_ColliderDrawList)
+			{
+				const auto& transformData = m_MeshTransformMap.at(meshKey);
+				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_GeometryWireFramePassMaterial, 
+					wireFramePass,
+					transformBuffer, transformOffset, dc.InstanceCount);
+			}
+			Renderer::EndRenderPass(wireFramePass);
+			m_Timers.DrawPhysicsColliders = physicsDebugMesh.Elapsed();
+		}
 		m_Timers.CompositePass = compositeTimer.ElapsedMillis();
 	}
 	void WorldRenderer::SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws)
@@ -1236,6 +1288,25 @@ namespace Proof
 			dc.InstanceCount++;
 		}
 	}
+	void WorldRenderer::SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform)
+	{
+
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("{}", mesh->GetName().c_str());
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+
+		AssetID meshID = mesh->GetID();
+		MeshKey meshKey = { meshID,mesh->GetMaterialTable(), true,0,false};
+		auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
+		transformStorage.Transform = transform;
+
+		auto& dc = m_ColliderDrawList[meshKey];
+		dc.MaterialTable = mesh->GetMaterialTable();
+		dc.Mesh = mesh;
+		dc.InstanceCount++;
+	}
+
 	void WorldRenderer::SubmitSkyLight(const UBSkyLight& skyLight, Count<class Environment> environment)
 	{
 		PF_PROFILE_FUNC();

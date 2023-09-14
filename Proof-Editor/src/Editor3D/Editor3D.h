@@ -80,7 +80,7 @@ namespace Proof {
 		glm::vec2 m_ViewportBounds[2];
 		glm::vec2 m_ViewPortSize;
 		void SetDocking(bool *p_open);
-		void OpenWorld(Count<World> world);
+		void SetActiveWorld(Count<World> world);
 		glm::vec2 _ViewPortLocation;
 		bool m_IsViewPortResize = false;
 		Count<class World>m_ActiveWorld =nullptr;

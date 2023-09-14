@@ -25,10 +25,14 @@ namespace Proof
 			//uint64_t memlocation1 = (uint64_t)MaterialTable.Get();
 			//uint64_t memlocation2 = (uint64_t)other.MaterialTable.Get();
 
-			if (MaterialTable->GetMaterialCount() < other.MaterialTable->GetMaterialCount())
-				return true;
-			if (MaterialTable->GetMaterialCount() > other.MaterialTable->GetMaterialCount())
-				return false;
+			if (MaterialTable != nullptr)
+			{
+				if (MaterialTable->GetMaterialCount() < other.MaterialTable->GetMaterialCount())
+					return true;
+				if (MaterialTable->GetMaterialCount() > other.MaterialTable->GetMaterialCount())
+					return false;
+			}
+			
 
 			if (MeshID < other.MeshID)
 				return true;
@@ -44,14 +48,15 @@ namespace Proof
 				if (SubmeshIndex > other.SubmeshIndex)
 					return true;
 			}
-
-			// this here because it would do an operotr over ach materials in the table 
+			if (MaterialTable != nullptr)
+			{
+				// this here because it would do an operotr over ach materials in the table 
 			// a little expensive if the material tabel has oaver liek a 1000 eleemtns wich prolly will never happen
-			if (*MaterialTable < *other.MaterialTable)
-				return true;
-			if (*MaterialTable > *other.MaterialTable)
-				return false;
-
+				if (*MaterialTable < *other.MaterialTable)
+					return true;
+				if (*MaterialTable > *other.MaterialTable)
+					return false;
+			}
 
 			return IsSelected < other.IsSelected;
 		}
@@ -191,6 +196,15 @@ namespace Proof
 		uint32_t TransformOffset = 0;
 	};
 
+	struct WorldRendererOptions
+	{
+		enum class PhysicsColliderView
+		{
+			None = 0, Normal = 1, OnTop = 2
+		};
+		PhysicsColliderView ShowPhysicsColliders = PhysicsColliderView::None;
+		glm::vec4 PhysicsColliderColor = glm::vec4{ 0.2f, 1.0f, 0.2f, 1.0f };
+	};
 	enum class ShadowResolution
 	{
 		None = 0,
@@ -282,6 +296,7 @@ namespace Proof
 		float LightCulling = 0.0f;
 		//composite
 		float CompositePass =0.0f;
+		float DrawPhysicsColliders = 0.0f;
 
 		// totla render time
 		float TotalDrawScene = 0.0f;
@@ -306,6 +321,7 @@ namespace Proof
 
 		virtual ~WorldRenderer();
 		ShadowSetting ShadowSetting;
+		WorldRendererOptions Options;
 
 	public:
 
@@ -321,6 +337,7 @@ namespace Proof
 		void SubmitSpotLight(const SBSpotLightSceneData& spotLights);
 		void SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform, bool CastShadowws = true);
 
+		void SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform);
 		// if the same size is passed it will not resize
 		void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -383,6 +400,9 @@ namespace Proof
 		std::map<MeshKey, TransformMapData> m_MeshTransformMap;
 		std::map<MeshKey, MeshDrawInfo> m_MeshDrawList;
 		std::map<MeshKey, MeshDrawInfo> m_MeshShadowDrawList;
+
+		//debg 
+		std::map<MeshKey, MeshDrawInfo> m_ColliderDrawList;
 		Count<class Environment> m_Environment;
 		bool m_InContext = false;
 		uint32_t m_ShadowMapResolution;
@@ -395,6 +415,10 @@ namespace Proof
 		Count<RenderPass> m_CompositePass;
 		Count<FrameBuffer> m_ExternalCompositeFrameBuffer;
 
+		// debug
+		Count<RenderPass> m_GeometryWireFramePass;
+		Count<RenderPass> m_GeometryWireFrameOnTopPass;
+		Count<RenderMaterial> m_GeometryWireFramePassMaterial;
 		// compoiste pass
 		Count<RenderMaterial> m_CompositeMaterial;
 		bool m_NeedResize = false;
