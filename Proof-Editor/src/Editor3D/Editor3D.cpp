@@ -1264,7 +1264,7 @@ namespace Proof
 					(ImGuizmo::OPERATION)s_EditorData->GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(selectedEntitytransform),
 					nullptr, snap ? snapValues : nullptr);
 
-				if (false) {
+				if (ImGuizmo::IsUsing()) {
 					Entity parent = m_ActiveWorld->TryGetEntityWithUUID(selectedEntity.GetParentUUID());
 
 					if (parent)

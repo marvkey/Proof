@@ -11,12 +11,12 @@ namespace Proof
 	struct MeshKey
 	{
 		AssetID MeshID;
-		Count<class MaterialTable> MaterialTable;
-
+		Count<class MaterialTable> MaterialTable = nullptr;
 		bool AllSubMeshes;
 		uint32_t SubmeshIndex;// all submeshes has to be set to false before this is uses
 		bool IsSelected;
-		
+
+		Count<class RenderMaterial> Material = nullptr; // temporary for now 
 		bool operator<(const MeshKey& other) const {
 
 			// have to use everythign to make sure we are keeping unique
@@ -25,14 +25,31 @@ namespace Proof
 			//uint64_t memlocation1 = (uint64_t)MaterialTable.Get();
 			//uint64_t memlocation2 = (uint64_t)other.MaterialTable.Get();
 
-			if (MaterialTable != nullptr)
+			if (MaterialTable != nullptr && other.MaterialTable != nullptr)
 			{
 				if (MaterialTable->GetMaterialCount() < other.MaterialTable->GetMaterialCount())
 					return true;
 				if (MaterialTable->GetMaterialCount() > other.MaterialTable->GetMaterialCount())
 					return false;
 			}
+			if (MaterialTable != nullptr && other.MaterialTable == nullptr)
+				return false;
+			if (MaterialTable == nullptr && other.MaterialTable != nullptr )
+				return true;
+
+			if (Material != nullptr && other.Material != nullptr)
+			{
+				if (Material.Get() < other.Material.Get())
+					return true;
+				if (Material.Get() > other.Material.Get())
+					return false;
+			}
 			
+			if (Material != nullptr && other.Material == nullptr)
+				return false;
+
+			if (Material == nullptr && other.Material != nullptr )
+				return true;
 
 			if (MeshID < other.MeshID)
 				return true;
@@ -48,7 +65,7 @@ namespace Proof
 				if (SubmeshIndex > other.SubmeshIndex)
 					return true;
 			}
-			if (MaterialTable != nullptr)
+			if (MaterialTable != nullptr && other.MaterialTable != nullptr)
 			{
 				// this here because it would do an operotr over ach materials in the table 
 			// a little expensive if the material tabel has oaver liek a 1000 eleemtns wich prolly will never happen
@@ -157,7 +174,7 @@ namespace Proof
 	{
 		Count<Mesh> Mesh = nullptr;
 		Count<MaterialTable> MaterialTable = nullptr;
-		//Count<RenderMaterial> OvverrideMaterial;
+		Count<RenderMaterial> OverrideMaterial;
 		uint32_t InstanceCount = 0;
 		uint32_t InstanceOffset = 0; // for selected mesh
 	};

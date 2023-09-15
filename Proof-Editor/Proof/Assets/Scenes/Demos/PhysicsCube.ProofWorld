@@ -1,9 +1,9 @@
 World:
   ID: 3822883297058897129
   Entities:
-    - Entity: 9532767571022656311
+    - Entity: 10149006870315256086
       TagComponent:
-        Tag: Plane
+        Tag: Level Manager
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
@@ -12,12 +12,47 @@ World:
       HierarchyComponent:
         ParentHandle: 0
         Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: Demos.PhysicsCube
+            ScriptFields:
+              - Name: Level
+                Type: Enum
+                Data: 0
+              - Name: SpawnObject
+                Type: Prefab
+                Data: 14615929225736297421
+    - Entity: 12625560458118287892
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0226892792, 0.04363323, 0.0802851468]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+    - Entity: 9532767571022656311
+      TagComponent:
+        Tag: Plane
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [100, 1, 100]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
       MeshComponent:
         MeshAssetPointerID: 56
       CubeColliderComponent:
         IsTrigger: false
         OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 1, 1]
+        OffsetScale: [1, 0.100000001, 1]
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
@@ -53,7 +88,7 @@ World:
         Tag: (Prefab)PhysicsCube
         tags: []
       TransformComponent:
-        Location: [0, 6, 0]
+        Location: [0, 7.5, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:

@@ -131,6 +131,14 @@ namespace Proof {
 
             Vertex& vertex = vertices.emplace_back();
             vertex.Vertices = Vector(actualRadius * x, actualRadius * y + height * dy, actualRadius * z);
+            float texCoordX = static_cast<float>(s) / (segments - 1); // Calculate texture coordinate X
+            float texCoordY = static_cast<float>(y + dy + 0.5f) / height; // Calculate texture coordinate Y
+
+            vertex.TexCoords = Vector2(texCoordX, texCoordY); // Store texture coordinates
+
+       // Calculate normals using the vertex position
+            glm::vec3 normal = glm::normalize(glm::vec3(x, y, z));
+            vertex.Normal= Vector(normal.x, normal.y, normal.z);
         }
     }
     Count<class Mesh> MeshWorkShop::GenerateCapsule(float radius, float height, uint32_t segments, uint32_t subdivisionsHeight)

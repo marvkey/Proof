@@ -7,24 +7,18 @@ using System.Threading.Tasks;
 
 namespace Demos
 {
-    public enum ErrorCode : int
+    public enum TestLevel: int
     {
-        None = 0,
-        Unknown = 2,
-        ConnectionLost = 100,
-        OutlierReading = 200
+        Low = 0,
+        Medium = 1,
+        High = 100,
     }
 
-    public enum ErrorCodeafds : ulong
-    {
-        None = 0,
-        Unknown = 2,
-        ConnectionLost = 100,
-        OutlierReading = 200
-    }
+    
     class PhysicsCube : Entity
     {
       
-        public ErrorCode code;
+        public TestLevel Level;
+        public Prefab SpawnObject;
     }
 }

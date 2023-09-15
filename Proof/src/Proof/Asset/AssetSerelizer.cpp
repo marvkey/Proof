@@ -12,6 +12,7 @@
 #include "Proof/Scene/SceneSerializer.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Asset/AssetManager.h"
+#include "Proof/Physics/PhysicsMaterial.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
 	{

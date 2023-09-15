@@ -15,7 +15,7 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/SwapChain.h"
 
-#include "Proof/Scene/Physics/PhysicsEngine.h"
+#include "Proof/Physics/PhysicsEngine.h"
 #include "Proof/Utils/FileSystem.h"
 
 #include "Proof/Core/Window.h"

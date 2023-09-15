@@ -16,9 +16,10 @@
 #include "script.h"
 #include "Proof/Renderer/MeshWorkShop.h"
 #include "Proof/Asset/AssetManager.h"
-#include "Proof/Scene/Physics/PhysicsEngine.h"
+#include "Proof/Physics/PhysicsEngine.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Scene/Material.h"
+#include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Renderer/Renderer.h"
 namespace Proof
 {

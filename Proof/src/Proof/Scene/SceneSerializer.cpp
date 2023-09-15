@@ -325,8 +325,8 @@ namespace Proof
 				out << YAML::Key << "CubeColliderComponent";
 				out << YAML::BeginMap; // CubeColliderComponent
 				out << YAML::Key << "IsTrigger" << cubeCollider.IsTrigger;
-				out << YAML::Key << "OffsetLocation" << cubeCollider.OffsetLocation;
-				out << YAML::Key << "OffsetScale" << cubeCollider.OffsetScale;
+				out << YAML::Key << "Center" << cubeCollider.Center;
+				out << YAML::Key << "Size" << cubeCollider.Size;
 				out << YAML::Key << "PhysicsMaterialPointerID" << cubeCollider.m_PhysicsMaterialPointerID;
 				out << YAML::EndMap; // CubeColliderComponent
 			}
@@ -338,7 +338,7 @@ namespace Proof
 				out << YAML::Key << "SphereColliderComponent";
 				out << YAML::BeginMap; // SphereColliderComponent
 				out << YAML::Key << "IsTrigger" << sphereCollider.IsTrigger;
-				out << YAML::Key << "Offset" << sphereCollider.OffsetLocation;
+				out << YAML::Key << "Center" << sphereCollider.Center;
 				out << YAML::Key << "Radius" << sphereCollider.Radius;
 				out << YAML::Key << "PhysicsMaterialPointerID" << sphereCollider.m_PhysicsMaterialPointerID;
 				out << YAML::EndMap; // SphereColliderComponent
@@ -351,7 +351,7 @@ namespace Proof
 				out << YAML::Key << "CapsuleColliderComponent";
 				out << YAML::BeginMap; // CapsuleColliderComponent
 				out << YAML::Key << "IsTrigger" << CapsuleCollider.IsTrigger;
-				out << YAML::Key << "Offset" << CapsuleCollider.OffsetLocation;
+				out << YAML::Key << "Center" << CapsuleCollider.Center;
 				out << YAML::Key << "Radius" << CapsuleCollider.Radius;
 				out << YAML::Key << "Height" << CapsuleCollider.Height;
 				out << YAML::Key << "Direction" << EnumReflection::EnumString<CapsuleDirection>(CapsuleCollider.Direction);
@@ -752,8 +752,8 @@ namespace Proof
 				{
 					auto& src = NewEntity.AddComponent<CubeColliderComponent>();
 					src.IsTrigger = cubeColliderComponent["IsTrigger"].as<bool>();
-					src.OffsetLocation = cubeColliderComponent["OffsetLocation"].as<glm::vec3>();
-					src.OffsetScale = cubeColliderComponent["OffsetScale"].as<glm::vec3>();
+					src.Center = cubeColliderComponent["Center"].as<glm::vec3>(src.Center);
+					src.Size = cubeColliderComponent["Size"].as<glm::vec3>(src.Size);
 					src.m_PhysicsMaterialPointerID = cubeColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
 				}
 			}
@@ -765,7 +765,7 @@ namespace Proof
 				{
 					auto& src = NewEntity.AddComponent<SphereColliderComponent>();
 					src.IsTrigger = sphereColliderComponent["IsTrigger"].as<bool>();
-					src.OffsetLocation = sphereColliderComponent["Offset"].as<Vector>();
+					src.Center = sphereColliderComponent["Offset"].as<glm::vec3>(src.Center);
 					src.Radius = sphereColliderComponent["Radius"].as<float>();
 					src.m_PhysicsMaterialPointerID = sphereColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
 				}
@@ -778,7 +778,7 @@ namespace Proof
 				{
 					auto& src = NewEntity.AddComponent<CapsuleColliderComponent>();
 					src.IsTrigger = capsuleColliderComponent["IsTrigger"].as<bool>();
-					src.OffsetLocation = capsuleColliderComponent["Offset"].as<Vector>();
+					src.Center = capsuleColliderComponent["Offset"].as<glm::vec3>(src.Center);
 					src.Radius = capsuleColliderComponent["Radius"].as<float>();
 					src.Height = capsuleColliderComponent["Height"].as<float>();
 					src.Direction = EnumReflection::StringEnum<CapsuleDirection>(capsuleColliderComponent["Direction"].as<std::string>());

@@ -4,7 +4,7 @@
 #include "mono/metadata/object.h"
 #include "mono/metadata/reflection.h"
 #include "ScriptEngine.h"
-#include "Proof/Scene/Physics/PhysicsWorld.h"
+#include "Proof/Physics/PhysicsWorld.h"
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Input/InputManager.h"
 #include <mono/metadata/appdomain.h>

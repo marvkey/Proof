@@ -4,7 +4,6 @@
 #include "Proof/Core/Assert.h"
 #include "Proof/Math/Math.h"
 #include "Proof/Asset/Asset.h"
-
 #include <map>
 namespace Proof{
 	// thse data only work if using Proofpbr_shader
@@ -144,51 +143,6 @@ namespace Proof{
 	bool operator==(const MaterialTable& other, const MaterialTable& other1);
 	bool operator<(const MaterialTable& other, const MaterialTable& other1);
 	bool operator>(const MaterialTable& other, const MaterialTable& other1);
-	enum class CombineMode 
-	{
-		Average =0,
-		Min = 1,
-		Mutltiply = 2,
-		Max =3
-	};
-	struct PhysicsMaterial: public Asset
-	{
-		PhysicsMaterial(float staticFriction =0.6f, float dynamicFriction = 0.6f, float bounciness = 0.0f);
-		float GetStaticFriction() {
-			return m_StaticFriction;
-		}
-		float GetDynamicFriction() {
-			return m_DynamicFriction;
-		}
-		float GetBounciness() {
-			return m_Bounciness;
-		}
 
-		void SetStaticFriction(float friciono);
-		void SetDynamicFriction(float friction);
-		void SetBounciness(float bounciness);
-
-		CombineMode GetFrictionCombineMode() {
-			return m_FrictionCombineMode;
-		}
-
-		CombineMode GetBouncinessCombineMode() {
-			return m_BouncinessCombineMode;
-		}
-
-		void SetFrictionCombineMode(CombineMode mode);
-		void SetBouncinessCombineMode(CombineMode mode);
-
-		ASSET_CLASS_TYPE(PhysicsMaterial);
-	private:
-		float m_StaticFriction = 0.6f;
-		float m_DynamicFriction = 0.6f;
-		float m_Bounciness = 0.0f;
-
-		CombineMode m_FrictionCombineMode = CombineMode::Average;
-		CombineMode m_BouncinessCombineMode = CombineMode::Average;
-		void* m_RuntimeBody = nullptr;
-		friend class PhysicsEngine;
-		friend class PhysicsActor;
-	};
+	
 }

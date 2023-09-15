@@ -11,6 +11,7 @@
 
 #include "../AssetEditors/AssetEditor.h"
 #include "Proof/Scene/SceneSerializer.h"
+#include "Proof/Physics/PhysicsMaterial.h"
 
 #include "Proof/Utils/PlatformUtils.h"
 #include <vector>

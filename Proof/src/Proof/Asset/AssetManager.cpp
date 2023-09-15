@@ -16,6 +16,7 @@
 #include "Proof/Renderer/MeshWorkShop.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Material.h"
+#include "Proof/Physics/PhysicsMaterial.h"
 #include <future>
 namespace Proof
 {
@@ -157,7 +158,7 @@ namespace Proof
 				case DefaultRuntimeAssets::PhysicsMaterial:
 					{
 						Count<PhysicsMaterial> material = Count<PhysicsMaterial>::Create();
-						Count<Asset> asset = material.Get();
+						Count<Asset> asset = material.As<Asset>();
 						CreateRuntimeAsset(ID, asset, "DefaultPhysicsMaterial");
 					}
 					break;

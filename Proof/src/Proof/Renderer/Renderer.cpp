@@ -353,7 +353,7 @@ namespace Proof {
 	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination, uint32_t imageDimensionadfa)
 	{
 		PF_PROFILE_FUNC();
-		const uint32_t cubemapSize = 512;
+		const uint32_t cubemapSize = 256;
 		const uint32_t irradianceMap = 32;
 
 		ImageFormat format = ImageFormat::RGBA32F;
@@ -374,7 +374,7 @@ namespace Proof {
 			Count<RenderCommandBuffer> commandBuffer = RenderCommandBuffer::Create(cmdBufer);
 			Renderer::BeginComputePass(commandBuffer, PrethamSkyPass);
 			PrethamSkyPass->PushData("u_Uniforms", &params);
-			PrethamSkyPass->Dispatch(cubemapSize/irradianceMap, cubemapSize/irradianceMap, 6);
+			PrethamSkyPass->Dispatch(cubemapSize/irradianceMap, cubemapSize/irradianceMap, 12);
 			Renderer::EndComputePass(PrethamSkyPass);
 			//return;
 			// boit 

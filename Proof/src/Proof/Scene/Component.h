@@ -123,13 +123,13 @@ namespace Proof
 		// returns as radians
 		glm::vec3 GetRotationEuler() const
 		{
-			return RotationEuler;
+			return glm::eulerAngles(Rotation);
 		}
 		// pass as radians
 		void SetRotationEuler(const glm::vec3& euler)
 		{
-			RotationEuler = euler;
-			Rotation = glm::quat(RotationEuler);
+			///RotationEuler = euler;
+			Rotation = glm::quat(euler);
 		}
 		glm::mat4 GetRotationMatrix() const
 		{
@@ -144,7 +144,7 @@ namespace Proof
 		void SetRotation(const glm::quat& quat)
 		{
 			Rotation = quat;
-			RotationEuler = glm::eulerAngles(Rotation);
+			//RotationEuler = glm::eulerAngles(Rotation);
 		}
 		glm::mat4 GetTransform() const {
 			return glm::translate(glm::mat4(1.0f), Location) 
@@ -184,7 +184,7 @@ namespace Proof
 		void SetTransform(const glm::mat4& transform)
 		{
 			MathResource::DecomposeTransform(transform, Location, Rotation, Scale);
-			RotationEuler = glm::eulerAngles(Rotation);
+			//RotationEuler = glm::eulerAngles(Rotation);
 		}
 	private:
 
@@ -206,7 +206,7 @@ namespace Proof
 		// Accordingly, we store Euler for "editor" stuff that humans work with, 
 		// and quats for everything else.  The two are maintained in-sync via the SetRotation()
 		// methods.
-		glm::vec3 RotationEuler = { 0.0f, 0.0f, 0.0f };
+	//	glm::vec3 RotationEuler = { 0.0f, 0.0f, 0.0f };
 		glm::quat Rotation = { 1.0f, 0.0f, 0.0f, 0.0f };
 		//friend class World;
 		//friend class SceneSerializer;
@@ -410,8 +410,8 @@ namespace Proof
 	struct Proof_API CubeColliderComponent {
 		CubeColliderComponent(const CubeColliderComponent&) = default;
 		CubeColliderComponent() = default;
-		glm::vec3 OffsetLocation = { 0,0,0 };
-		glm::vec3 OffsetScale= { 1,1,1 };
+		glm::vec3 Center = { 0,0,0 };
+		glm::vec3 Size= { 1,1,1 };
 		bool IsTrigger = false;
 
 		void RemovePhysicsMaterial() {
@@ -436,7 +436,7 @@ namespace Proof
 	struct Proof_API SphereColliderComponent {
 		SphereColliderComponent(const SphereColliderComponent&) = default;
 		SphereColliderComponent() = default;
-		Vector OffsetLocation = { 0,0,0 };
+		glm::vec3 Center = { 0,0,0 };
 		float Radius = 1.0f;
 		bool IsTrigger = false;
 		void RemovePhysicsMaterial() {
@@ -456,14 +456,14 @@ namespace Proof
 		friend class PhysicsEngine;
 	};
 	enum class CapsuleDirection {
-		X=1,
-		Y = 0,
-		Z =2
+		X = 0,
+		Y = 1,
+		Z = 2
 	};
 	struct Proof_API CapsuleColliderComponent {
 		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
 		CapsuleColliderComponent() = default;
-		Vector OffsetLocation = { 0,0,0 };
+		glm::vec3 Center = { 0,0,0 };
 		float Radius = 0.5f;
 		float Height = 2.0f;
 		CapsuleDirection Direction = CapsuleDirection::Y;

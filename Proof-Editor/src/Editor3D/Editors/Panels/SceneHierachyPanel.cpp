@@ -692,8 +692,8 @@ namespace Proof
 
 		DrawComponents<CubeColliderComponent>("Cube Collider", entity, [](CubeColliderComponent& cubeCollider) {
 			ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &cubeCollider.IsTrigger);
-			DrawVectorControl("Offset Location", cubeCollider.OffsetLocation);
-			DrawVectorControl("Offset Scale", cubeCollider.OffsetScale, 1.0f);
+			DrawVectorControl("Center", cubeCollider.Center);
+			DrawVectorControl("Size", cubeCollider.Size, 1.0f);
 
 			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", cubeCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(cubeCollider.m_PhysicsMaterialPointerID).GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
@@ -717,7 +717,7 @@ namespace Proof
 		DrawComponents<SphereColliderComponent>("Sphere Collider", entity, [](SphereColliderComponent& sphereCollider) {
 			ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &sphereCollider.IsTrigger);
 			ImGui::DragFloat("Radius", &sphereCollider.Radius, 0.5);
-			DrawVectorControl("Offset Location", sphereCollider.OffsetLocation);
+			DrawVectorControl("Center", sphereCollider.Center);
 
 			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", sphereCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(sphereCollider.m_PhysicsMaterialPointerID).GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
@@ -743,7 +743,7 @@ namespace Proof
 			ImGui::DragFloat("Radius", &capsuleCollider.Radius, 0.5);
 			ImGui::DragFloat("Height", &capsuleCollider.Height, 0.5);
 			ExternalAPI::ImGUIAPI::EnumCombo("Direction", capsuleCollider.Direction);
-			DrawVectorControl("Offset Location", capsuleCollider.OffsetLocation);
+			DrawVectorControl("Offset Location", capsuleCollider.Center);
 
 			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", capsuleCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(capsuleCollider.m_PhysicsMaterialPointerID).GetName() : "null");
 			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {

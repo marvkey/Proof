@@ -15,7 +15,7 @@
 #include "GraphicsPipeLine.h"
 #include "Proof/Scene/Mesh.h"
 #include "Shader.h"
-#include "Proof/Scene/Physics/PhysicsMeshCooker.h"
+#include "Proof/Physics/PhysicsMeshCooker.h"
 #include"DebugMeshRenderer.h"
 #include"Font.h"
 #include "ParticleSystem.h"
@@ -1234,7 +1234,7 @@ namespace Proof
 
 		if(Options.ShowPhysicsColliders != WorldRendererOptions::PhysicsColliderView::None)
 		{
-			PF_PROFILE_FUNC("PhysicsDebugMeshes");
+			PF_PROFILE_FUNC("CompositePass::PhysicsDebugMeshes");
 			Timer physicsDebugMesh;
 
 			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").X = Options.PhysicsColliderColor.x;
@@ -1297,12 +1297,13 @@ namespace Proof
 		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
 
 		AssetID meshID = mesh->GetID();
-		MeshKey meshKey = { meshID,mesh->GetMaterialTable(), true,0,false};
+		MeshKey meshKey = { meshID,nullptr, true,0,false,m_GeometryWireFramePassMaterial};
 		auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
 		transformStorage.Transform = transform;
 
 		auto& dc = m_ColliderDrawList[meshKey];
 		dc.MaterialTable = mesh->GetMaterialTable();
+		dc.OverrideMaterial = m_GeometryWireFramePassMaterial;
 		dc.Mesh = mesh;
 		dc.InstanceCount++;
 	}
