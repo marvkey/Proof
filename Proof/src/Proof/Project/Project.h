@@ -70,6 +70,7 @@ namespace Proof{
 		std::filesystem::path m_ProjectDirectory;
 		friend class ProjectSerilizer;
 		friend class Application;
+		friend class Editore3D;
 	};
 
 }

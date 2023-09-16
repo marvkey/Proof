@@ -245,7 +245,7 @@ namespace Proof
 				newEntity = m_ActiveWorld->CreateEntity("Directional Light");
 				newEntity.AddComponent<DirectionalLightComponent>();
 			}
-			if (ImGui::MenuItem("SKyLight"))
+			if (ImGui::MenuItem("SkyLight"))
 			{
 				newEntity = m_ActiveWorld->CreateEntity("Sky Light");
 				newEntity.AddComponent<SkyLightComponent>();
@@ -606,7 +606,7 @@ namespace Proof
 				ImGui::SliderFloat("SkyBoxLoad", &skylight.SkyBoxLoad, 0, 11);
 			ImGui::DragFloat("Intensity", &skylight.Intensity,0.25,0,1000,"%.3f",ImGuiSliderFlags_AlwaysClamp);
 			ImGui::DragFloat("Rotation", &skylight.MapRotation, 0.25);
-			ExternalAPI::ImGUIAPI::CheckBox("DynamicSky", &skylight.DynamicSky);
+			if(ExternalAPI::ImGUIAPI::CheckBox("DynamicSky", &skylight.DynamicSky));
 			if (skylight.DynamicSky)
 			{
 				ImGui::DragFloat("Turbidity", &skylight.Turbidity, 0.01,1.8f,Math::GetMaxType<float>(),"%.3f", ImGuiSliderFlags_AlwaysClamp);

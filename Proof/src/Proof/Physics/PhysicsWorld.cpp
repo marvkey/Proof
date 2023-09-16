@@ -35,6 +35,7 @@ namespace Proof {
 		m_World(world),
 		m_Config(sceneConfig)
 	{
+		ScopeTimer copeTimer("Initilized physics world ");
 		physx::PxSceneDesc sceneDesc(PhysicsEngine::GetPhysics()->getTolerancesScale());
 		sceneDesc.gravity = physx::PxVec3(m_Config.Gravity.X, m_Config.Gravity.Y, m_Config.Gravity.Z);
 		sceneDesc.cpuDispatcher = PhysicsEngine::GetCpuDispatcher();
@@ -42,15 +43,29 @@ namespace Proof {
 		sceneDesc.filterShader = shaderControl;
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-
-		m_Scene = PhysicsEngine::GetPhysics()->createScene(sceneDesc);
-
 		if (m_Config.PvdClient)
 		{
-			m_Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 100);
+			m_Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
 			PhysicsEngine::GetPVD()->connect(*m_Transport, physx::PxPvdInstrumentationFlag::eALL);
-			physx::PxPvdSceneClient* pvdClient = m_Scene->getScenePvdClient();
 		}
+		m_Scene = PhysicsEngine::GetPhysics()->createScene(sceneDesc);
+		physx::PxPvdSceneClient* pvdClient = m_Scene->getScenePvdClient();
+
+		if (PhysicsEngine::GetPVD()->isConnected())
+		{
+			PF_ENGINE_INFO("Physics Engine Visual debugger connected");
+		}
+		else
+		{
+			PF_ENGINE_INFO("Physics Engine Visual debugger not connected");
+		}
+		if (pvdClient)
+		{
+			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+		}
+		
 		StartWorld();
 	}
 
@@ -125,9 +140,9 @@ namespace Proof {
 		m_Actors.clear();
 		if (m_Config.PvdClient)
 		{
+			PhysicsEngine::GetPVD()->disconnect();
 			m_Transport->disconnect();
 			m_Transport->release();
-			//PhysicsEngine::GetPVD()->disconnect();
 		}
 		m_Scene->release();
 	}
@@ -137,7 +152,7 @@ namespace Proof {
 		if (m_Accumulator < m_SubStepSize)
 			return false;
 		m_Accumulator -= m_SubStepSize;
-		PF_PROFILE_FUNC("PhysicsWorld::Simulate");
+		PF_PROFILE_FUNC("PhysicsWorld::Advance");
 		for (uint32_t i = 0; i < m_SubStepSize; i++)
 		{
 			m_Scene->simulate(m_SubStepSize);

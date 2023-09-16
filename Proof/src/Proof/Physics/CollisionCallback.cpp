@@ -1,10 +1,10 @@
 #include "Proofprch.h"
 #include "CollisonCallback.h"
-#include "../CollisionInfo.h"
-#include "../Script.h"
-#include "../Component.h"
-#include "../Entity.h"
-#include "../World.h"
+//#include "../CollisionInfo.h"
+#include "Proof/Scene/Script.h"
+#include "Proof/Scene/Component.h"
+#include "Proof/Scene/Entity.h"
+#include "Proof/Scene/World.h" 
 
 #include "PhysicsActor.h"
 namespace Proof

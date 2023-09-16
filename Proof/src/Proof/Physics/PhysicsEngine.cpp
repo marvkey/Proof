@@ -39,7 +39,7 @@ namespace Proof {
 			PF_CORE_ASSERT(false, "PxCreateFoundation failed!");
 		s_Pvd = physx::PxCreatePvd(*s_Foundation);
 		physx::PxTolerancesScale scale;
-		//scale.length = 100;
+		//scale.length = 100;						// when these 2 are set physics stop randomly
 		//scale.speed = 981;
 		//s_ToleranceScale.length = 100;        // typical length of an object one meter
 		//s_ToleranceScale.speed = 981;         // typical speed of an object, gravity*1s is a reasonable choice

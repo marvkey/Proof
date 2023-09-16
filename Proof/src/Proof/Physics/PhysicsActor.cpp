@@ -85,34 +85,38 @@ namespace Proof {
 		if (m_Entity.HasComponent<CapsuleColliderComponent>()) PhysxShapesInternal::UpdateOrAddCapsuleCollider(*this);
 		//if (m_Entity.HasComponent<MeshColliderComponent>()) AddMeshCollider();
 	}
+
 	void PhysicsActor::Release()
 	{
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 
 		if (m_Entity.HasComponent<CubeColliderComponent>() )
 		{
-			physx::PxShape* shape = (physx::PxShape*)m_CapsuleColliderBody;
+			physx::PxShape* shape = (physx::PxShape*)m_CubeColliderBody;
 			rigidBody->detachShape(*shape);
-			///shape->release();
+			shape->release();
+			m_CubeColliderBody = nullptr;
 		}
 		if (m_Entity.HasComponent<SphereColliderComponent>())
 		{
 			physx::PxShape* shape = (physx::PxShape*)m_SphereColliderBody;
 			rigidBody->detachShape(*shape);
-			//shape->release();
+			shape->release();
+			m_SphereColliderBody = nullptr;
 		}
 		if (m_Entity.HasComponent<CapsuleColliderComponent>())
 		{
 			physx::PxShape* shape = (physx::PxShape*)m_CapsuleColliderBody;
 			rigidBody->detachShape(*shape);
-			//shape->release();
+			shape->release();
+			m_CapsuleColliderBody = nullptr;
 		}
-		if (m_Entity.HasComponent<MeshColliderComponent>())
-		{
-			physx::PxShape* shape = (physx::PxShape*)m_MeshColliderBody;
-			rigidBody->detachShape(*shape);
-			//shape->release();
-		}
+		//if (m_Entity.HasComponent<MeshColliderComponent>())
+		//{
+		//	physx::PxShape* shape = (physx::PxShape*)m_MeshColliderBody;
+		//	rigidBody->detachShape(*shape);
+		//	//shape->release();
+		//}
 		// shoudl the next paremter be false
 		m_PhysicsWorld->GetPhysicsScene()->removeActor(*rigidBody);
 

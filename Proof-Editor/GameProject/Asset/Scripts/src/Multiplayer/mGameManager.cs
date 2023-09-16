@@ -44,7 +44,7 @@ namespace Game
 
         private List<Prefab> PowerUps = new List<Prefab>();
 
-        public void OnCreate()
+        public void OnCreate()  
         {
             if (Obstacle == null)
                 return;

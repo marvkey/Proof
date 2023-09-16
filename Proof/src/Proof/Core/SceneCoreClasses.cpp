@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "SceneCoreClasses.h"
 #include "Proof/Scene/World.h"
-#include "Proof/Scene/Physics/PhysicsEngine.h"
+#include "Proof/Physics/PhysicsEngine.h"
 namespace Proof
 {
     World* SceneCoreClasses::s_CurrentWorld = nullptr;

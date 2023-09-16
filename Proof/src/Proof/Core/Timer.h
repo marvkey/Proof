@@ -31,10 +31,16 @@ namespace Proof
         ScopeTimer(const std::string& name)
             : m_Name(name) {
         }
+        //does not log
+        ScopeTimer(float& time)
+        {
+            m_TimerRef = &time;
+        }
         ~ScopeTimer();
     private:
         std::string m_Name;
         Timer m_Timer;
+        float* m_TimerRef = nullptr;
     };
 
     struct ScopePerformanceTimer {

@@ -4,8 +4,16 @@ namespace Proof
 {
 	std::unordered_map<std::string, std::pair<float, uint32_t>> ScopePerformanceTimer::s_Timers = {};
 	ScopeTimer::~ScopeTimer() {
-		float time = m_Timer.ElapsedMillis();
-		PF_EC_TRACE("TIMER {} - {}ms", m_Name, time);
+		if (m_TimerRef == nullptr)
+		{
+			float time = m_Timer.ElapsedMillis();
+
+			PF_EC_TRACE("TIMER {} - {}ms", m_Name, time);
+		}
+		else
+		{
+			*m_TimerRef = m_Timer.ElapsedMillis();
+		}
 	}
 	
 	ScopePerformanceTimer::~ScopePerformanceTimer()

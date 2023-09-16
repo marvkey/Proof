@@ -1,49 +1,49 @@
 World:
   ID: 3822883297058897129
   Entities:
-    - Entity: 10149006870315256086
-      TagComponent:
-        Tag: Level Manager
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      ScriptComponent:
-        Scripts:
-          - Script: Demos.PhysicsCube
-            ScriptFields:
-              - Name: Level
-                Type: Enum
-                Data: 0
-              - Name: SpawnObject
-                Type: Prefab
-                Data: 14615929225736297421
-    - Entity: 12625560458118287892
+    - Entity: 17447832231488950328
       TagComponent:
         Tag: Directional Light
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [0.0226892792, 0.04363323, 0.0802851468]
+        Rotation: [0.0401426814, 0.0558508374, -0.0523599088]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 1
+        Intensity: 4
+    - Entity: 2349845909412653282
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0.5
+        MapRotation: 0
+        Intensity: 1.60000002
+        DynamicSky: false
+        Turbidity: 2
+        Azimuth: 0
+        Inclination: 0
+        Image: 4373174173013626620
     - Entity: 9532767571022656311
       TagComponent:
         Tag: Plane
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [100, 1, 100]
+        Rotation: [0, -0, 0]
+        Scale: [300, 1, 300]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
@@ -51,8 +51,8 @@ World:
         MeshAssetPointerID: 56
       CubeColliderComponent:
         IsTrigger: false
-        OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 0.100000001, 1]
+        Center: [0, 0, 0]
+        Size: [1, 0.100000001, 1]
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
@@ -62,50 +62,27 @@ World:
         Type: Static
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
-    - Entity: 2349845909412653282
+    - Entity: 10149006870315256086
       TagComponent:
-        Tag: Sky Light
+        Tag: CubeSpawner
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
+        Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 1
-        DynamicSky: true
-        Turbidity: 2
-        Azimuth: 0
-        Inclination: 0
-        Image: 0
-    - Entity: 14039817678081092088
-      TagComponent:
-        Tag: (Prefab)PhysicsCube
-        tags: []
-      TransformComponent:
-        Location: [0, 7.5, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-      CubeColliderComponent:
-        IsTrigger: false
-        OffsetLocation: [0, 0, 0]
-        OffsetScale: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Dynamic
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
+      ScriptComponent:
+        Scripts:
+          - Script: Demos.PhysicsCube
+            ScriptFields:
+              - Name: Type
+                Type: Enum
+                Data: 1
+              - Name: Level
+                Type: Enum
+                Data: 100
+              - Name: SpawnObject
+                Type: Prefab
+                Data: 14615929225736297421

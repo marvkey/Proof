@@ -388,7 +388,7 @@ namespace Proof
 	void Editore3D::OnAttach() {
 		EditorResources::Init();
 		m_ActiveWorld = Count<World>::Create();
-		auto startworld = Application::Get()->GetProject()->GetConfig().StartWorld;
+		auto startworld = Application::Get()->GetProject()->GetConfig().StartWorldEdit;
 		if (AssetManager::HasAsset(startworld)) {
 			auto Info = AssetManager::GetAssetInfo(startworld);
 			SceneSerializer scerelizer(m_ActiveWorld.Get());
@@ -1564,6 +1564,8 @@ namespace Proof
 		}
 
 		ProjectSerilizer serilizer(Application::Get()->GetProject());
+		if(Application::Get()->GetProject()->GetConfig().OnCloseStartWorldEditLastOpen)
+			Application::Get()->GetProject()->m_ProjectConfig.StartWorldEdit = m_ActiveWorld->GetID();
 		serilizer.SerilizeText(Application::Get()->GetProject()->GetConfig().Project.string());
 
 	}

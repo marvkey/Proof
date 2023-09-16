@@ -119,6 +119,10 @@ namespace Proof {
 						auto environment = Renderer::CreatePreethamSky(skyLightComponent.Turbidity, skyLightComponent.Azimuth, skyLightComponent.Inclination);
 						skyLightComponent.Environment = Count<Environment>::Create(environment, environment);
 					}
+
+					if (skyLightComponent.Image == 0 && skyLightComponent.Environment != nullptr && skyLightComponent.DynamicSky == false)
+						skyLightComponent.Environment = nullptr;
+
 					if (skyLightComponent.Environment != nullptr)
 					{
 						worldRenderer->SubmitSkyLight(skyLightInfo, skyLightComponent.Environment);
@@ -593,6 +597,7 @@ namespace Proof {
 		if (!prefabBaseEntity)return {};
 		Entity newEntity = CreateEntityPrefabStatic(prefab, this, prefabBaseEntity, true);
 		newEntity.SetName(name);
+		newEntity.GetComponent<TransformComponent>() = transfom;
 		return newEntity;
 		//
 		//std::unordered_map<UUID, entt::entity> enttMap;
@@ -773,7 +778,7 @@ namespace Proof {
 					script.Instance->m_World = this;
 					script.Instance->OnCreate();
 					script.Instance->OnPlaced();
-				}
+				}			
 			}
 			{
 				ScriptEngine::BeginRuntime(this);
@@ -789,6 +794,7 @@ namespace Proof {
 		///
 		///
 		PhysicsWorldConfig config;
+		config.PvdClient = true;
 		config.Gravity = { 0,-9.8f,0 };// for multiplayer scene
 		m_PhysicsWorld = new PhysicsWorld(this, config);
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);

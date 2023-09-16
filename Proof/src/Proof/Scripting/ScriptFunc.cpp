@@ -23,7 +23,12 @@
 */
 namespace Proof
 {
-
+	struct Transform
+	{
+		glm::vec3 Location;
+		glm::vec3 Rotation;
+		glm::vec3 Scale;
+	};
 	
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
 	namespace ScriptFuncUtils
@@ -136,7 +141,7 @@ namespace Proof
 		world->Play();
 	}
 	//retutnrs entity ID
-	static uint64_t  World_Instanciate(uint64_t prefabID, TransformComponent transform)
+	static uint64_t  World_Instanciate(uint64_t prefabID, Transform transform)
 	{
 		if (!AssetManager::HasAsset(prefabID))
 		{
@@ -147,7 +152,12 @@ namespace Proof
 		World* world = ScriptEngine::GetWorldContext();
 		AssetInfo info = AssetManager::GetAssetInfo(prefabID);
 		Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabID);
-		Entity entity = world->CreateEntity(info.GetName(), prefab, transform,UUID());
+
+		TransformComponent componet;
+		componet.Location = transform.Location;
+		componet.SetRotationEuler(glm::radians(transform.Rotation));
+		componet.Scale = transform.Scale;
+		Entity entity = world->CreateEntity(info.GetName(), prefab, componet,UUID());
 		return entity.GetUUID().Get();
 	}
 
