@@ -56,7 +56,7 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 8.39999962, 0]
-        Rotation: [-0.0190873798, 0.00125164201, 0.599225283]
+        Rotation: [-0.0190873817, 0.00125164201, 0.599225283]
         Scale: [1.00000012, 0.999999881, 0.999999881]
       HierarchyComponent:
         ParentHandle: 0
@@ -108,7 +108,7 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [0.0226892959, 0.0436332077, 0.0802851468]
+        Rotation: [0.0226893071, 0.0436331928, 0.0802851468]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
@@ -142,3 +142,14 @@ World:
         Type: Dynamic
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
+    - Entity: 5471887703780627036
+      TagComponent:
+        Tag: AUdio
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []

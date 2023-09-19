@@ -465,6 +465,15 @@ namespace Proof
 				out << YAML::EndSeq; // ParticleHandlerTable
 				out << YAML::EndMap; // ParticleSystemComponent
 			}
+
+			{
+				//if (registry.all_of<AudioComponent>(entityID))
+				//{
+				//	AudioComponent& audioComponent = registry.get<AudioComponent>(enttID);
+				//	out <<YAML::ke
+				//
+				//}
+			}
 		}
 		out << YAML::EndMap; // entity
 	}

@@ -17,6 +17,7 @@
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Physics/PhysicsMaterial.h"
+#include "Proof/Audio/Audio.h"
 #include <future>
 namespace Proof
 {
@@ -50,6 +51,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::Prefab] = CreateSpecial<PrefabAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::UIPanel] = CreateSpecial<UIPanelAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::ParticleSystem] = CreateSpecial<ParticleSystemSerilizer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::Audio] = CreateSpecial<AudioAssetSerilizer>();
 		}
 
 		{
@@ -192,12 +194,12 @@ namespace Proof
 	{
 		PF_CORE_ASSERT(HasAsset(ID), "ID does not exist");
 		auto& it = s_AssetManagerData->Assets[ID];
-		if (it.Info.Type == AssetType::TextureSourceFile || it.Info.Type == AssetType::FontSourceFile)
+		if (Utils::IsAssetSource( it.Info.Type) && it.Info.Type != AssetType::MeshSourceFile)
+			return nullptr;
+		if (it.Info.Type == AssetType::World)
 			return nullptr;
 		if (it.Info.State == AssetState::Unloaded)
 			LoadAsset(ID);
-		if (it.Info.Type == AssetType::World)
-			return nullptr;
 		return it.Asset;
 	}
 	Count<Asset> AssetManager::InternalGetAsset(const std::filesystem::path& path)
@@ -307,6 +309,16 @@ namespace Proof
 				std::string path = std::filesystem::relative(it.path().parent_path() /= FileSystem::GetFileName(it.path())).string();
 				path += ".Texture.ProofAsset";
 				Count<Asset> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(it.path())), it.path());
+				AssetManager::NewAsset(asset, path);
+				continue;
+			}
+
+			if (Utils::AudioHasFormat(extension))
+			{
+				NewAssetSource(it.path(), AssetType::AudioSourceFile);
+				std::string path = std::filesystem::relative(it.path().parent_path() /= FileSystem::GetFileName(it.path())).string();
+				Count<Asset> asset = Count<Audio>::Create(it.path());
+				path += ".Audio.ProofAsset";
 				AssetManager::NewAsset(asset, path);
 				continue;
 			}

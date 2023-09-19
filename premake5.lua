@@ -34,6 +34,7 @@ IncludeDir["entt"] = "%{wks.location}/Proof/vendor/entt"
 IncludeDir["ktx"] = "%{wks.location}/Proof/vendor/ktx"
 IncludeDir["msdfgen"] = "%{wks.location}/Proof/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["msdf_atlas_gen"] = "%{wks.location}/Proof/vendor/msdf-atlas-gen"
+IncludeDir["MiniAudio"] = "%{wks.location}/Proof/vendor/MiniAudio"
 
 LibraryDir = {}
 LibraryDir["ProofOuputDir"] =  "%{wks.location}/Proof/bin/".. OutputDirectory .. "/Proof"

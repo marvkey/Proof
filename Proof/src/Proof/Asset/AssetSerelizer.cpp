@@ -13,6 +13,7 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Physics/PhysicsMaterial.h"
+#include "Proof/Audio/Audio.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
 	{
@@ -427,6 +428,8 @@ namespace Proof {
 			}
 			out << YAML::EndSeq;
 		}
+		out << YAML::EndMap;
+
 		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		found << out.c_str();
 		found.close();
@@ -508,6 +511,49 @@ namespace Proof {
 		SetID(assetData, uiPanel);
 		return uiPanel;
 
+	}
+
+	void AudioAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+		Count<Audio>audio = asset.As<Audio>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(audio->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << audio->GetID();
+		if (AssetManager::HasAsset(audio->GetPath()))
+		{
+			out << YAML::Key << "AudioSource" << YAML::Value << AssetManager::GetAssetInfo(audio->GetPath()).ID;
+		}
+		else
+		{
+			out << YAML::Key << "AudioSource" << YAML::Value << 0;
+		}
+		out << YAML::EndMap;
+		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		found << out.c_str();
+	}
+
+	Count<class Asset> AudioAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!data["AssetType"])
+			return nullptr;
+
+		Count<Audio> audio;
+		
+		uint64_t sourceID = data["AudioSource"].as<uint64_t>();
+		
+		if (AssetManager::HasAsset(sourceID))
+		{
+			audio = Count<Audio>::Create(AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(sourceID).Path));
+		}
+		else
+		{
+			return nullptr;
+		}
+		
+		SetID(assetData, audio);
+		return audio;
 	}
 
 }

@@ -49,6 +49,7 @@ project "Proof"
 		"%{IncludeDir.ktx}",
 		"%{IncludeDir.msdfgen}",
 		"%{IncludeDir.msdf_atlas_gen}",
+		"%{IncludeDir.MiniAudio}",
 
     }
 	libdirs{

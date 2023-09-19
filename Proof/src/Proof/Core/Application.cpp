@@ -26,6 +26,7 @@
 #include "Proof/Project/Project.h"
 #include "Timer.h"
 #include "Profile.h"
+#include "Proof/Audio/AudioEngine.h"
 #ifdef CreateDirectory
 #undef CreateDirectory
 #undef DeleteFile
@@ -91,6 +92,7 @@ namespace Proof {
         }
         PhysicsEngine::Init();
         ScriptEngine::Init();
+        AudioEngine::Init();
 
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
@@ -111,8 +113,11 @@ namespace Proof {
         m_ImGuiMainLayer = nullptr;
         m_LayerStack->Empty();
         m_LayerStack = nullptr;
+
         ScriptEngine::Shutdown();
         PhysicsEngine::Release();
+        AudioEngine::ShutDown();
+
         m_Project = nullptr;
         m_Window->m_SwapChain = nullptr;
         m_Window = nullptr;
@@ -179,6 +184,10 @@ namespace Proof {
             PF_PROFILE_FRAME("Application::Update");
             Renderer::BeginFrame();
             
+            if (Input::IsKeyClicked(KeyBoardKey::O))
+            {
+                AudioEngine::PlaySoundByPath("Proof/Assets/Sounds/hitHurt.wav");
+            }
             float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
             FrameCount++;

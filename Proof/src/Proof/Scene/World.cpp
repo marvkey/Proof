@@ -19,7 +19,7 @@
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Core/Application.h"
-
+#include "Proof/Audio/AudioEngine.h"
 namespace Proof {
 	World::World(const std::string& name, UUID ID):
 		Name(name)
@@ -799,8 +799,9 @@ namespace Proof {
 		m_PhysicsWorld = new PhysicsWorld(this, config);
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
 		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
-
-
+		
+		Count<World> instance = this;
+		AudioEngine::BeginContext(instance);
 	}
 	void World::EndRuntime() {
 		InputManager::EndRuntime();
@@ -810,7 +811,8 @@ namespace Proof {
 
 		m_Registry.on_construct<ScriptComponent>().disconnect(this);
 		m_Registry.on_destroy<ScriptComponent>().disconnect(this);
-
+		
+		AudioEngine::EndContext();
 		ScriptEngine::EndRuntime();
 		delete m_PhysicsWorld;
 	}

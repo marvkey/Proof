@@ -317,6 +317,8 @@ namespace Proof
 					currentFileInfo.AssetType = AssetType::TextureSourceFile;
 				else if (Utils::MeshHasFormat(extension))
 					currentFileInfo.AssetType = AssetType::MeshSourceFile;
+				else if (Utils::AudioHasFormat(extension))
+					currentFileInfo.AssetType = AssetType::AudioSourceFile;
 				currentFileInfo.HasAsset = false;
 			}
 			// has to be an assettype

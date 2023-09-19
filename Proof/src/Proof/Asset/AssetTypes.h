@@ -22,7 +22,9 @@ namespace Proof
 		FontSourceFile,
 		Prefab,
 		UIPanel,
-		ParticleSystem
+		ParticleSystem,
+		Audio,
+		AudioSourceFile,
 	};
 	enum class AssetState 
 	{
@@ -40,6 +42,7 @@ namespace Proof
 				case AssetType::TextureSourceFile:
 				case AssetType::MeshSourceFile:
 				case AssetType::FontSourceFile:
+				case AssetType::AudioSourceFile:
 					return true;
 			}
 			return false;
@@ -56,7 +59,8 @@ namespace Proof
 			{AssetType::TextureSourceFile, ""},
 			{AssetType::UIPanel, "UIPanel.ProofAsset"},
 			{AssetType::ParticleSystem, "ParticleSystem.ProofAsset"},
-			{AssetType::Font, "Font.ProofAsset" }
+			{AssetType::Font, "Font.ProofAsset" },
+			{AssetType::Audio, "Audio.ProofAsset" },
 		};
 		inline std::string GetAssetExtensionString(AssetType type) 
 		{
@@ -104,6 +108,16 @@ namespace Proof
 			return FontSourceFormats.contains(format);
 		}
 
+		static const std::unordered_set< std::string> AudioSourceFormat =
+		{
+			"wav",
+			"mp3",
+			"flac"
+		};
+		inline bool AudioHasFormat(const std::string& format) 
+		{
+			return AudioSourceFormat.contains(format);
+		}
 		inline AssetType GetAssetTypeFromPath(const std::filesystem::path& path)
 		{
 			const std::string fileFullExtension = FileSystem::GetFullFileExtension(path);
@@ -111,6 +125,7 @@ namespace Proof
 			if (MeshHasFormat(fileFullExtension))return AssetType::MeshSourceFile;
 			if (TextureHasFormat(fileFullExtension))return AssetType::TextureSourceFile;
 			if (FontHasFormat(fileFullExtension))return AssetType::FontSourceFile;
+			if (AudioHasFormat(fileFullExtension))return AssetType::AudioSourceFile;
 
 			// Iterate through AssetTypeMap to find a match for the file extension
 			for (const auto& pair : AssetTypeMap)

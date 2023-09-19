@@ -14,6 +14,7 @@
 #include "Proof/Math/MathConvert.h"
 #include "Proof/Core/UUID.h"
 #include "Proof/Input/KeyCodes.h"
+#include "Proof/Audio/AudioTools.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
@@ -157,7 +158,7 @@ namespace Proof
 				// Extract the rotation matrix from the transform matrix
 
 			// Get the forward vector from the rotation matrix
-			glm::vec3 forward = glm::normalize(GetRotationMatrix() * glm::vec4(0.0f, 0.0f, 1.0f,1));
+			glm::vec3 forward = glm::normalize(GetRotationMatrix() * glm::vec4(Math::GetFowardVector(), 1));
 
 			// origininally how it was
 			//glm::vec3 forward = glm::normalize(rotationMatrix * glm::vec3(0.0f, 0.0f, -1.0f));
@@ -168,7 +169,7 @@ namespace Proof
 		{
 
 			// Get the right vector from the rotation matrix
-			glm::vec3 right = glm::normalize(GetRotationMatrix() * glm::vec4(1.0f, 0.0f, 0.0f,1.0f));
+			glm::vec3 right = glm::normalize(GetRotationMatrix() * glm::vec4(Math::GetRightVector(), 1.0f));
 
 			return right;
 		}
@@ -176,7 +177,7 @@ namespace Proof
 		{
 
 			// Get the up vector from the rotation matrix
-			glm::vec3 up = glm::normalize(GetRotationMatrix() * glm::vec4(0.0f, 1.0f, 0.0f,1.0f));
+			glm::vec3 up = glm::normalize(GetRotationMatrix() * glm::vec4(Math::GetUpVector(), 1.0f));
 
 			return up;
 		}
@@ -593,6 +594,41 @@ namespace Proof
 	struct PlayerHUDComponent {
 		Count< UITable> HudTable = Count<class UITable>::Create();
 	};
+
+	struct AudioComponent
+	{
+		float VolumeMultiplier = 1.0f;
+		float PitchMultiplier = 1.0f;
+		bool Looping = false;
+		bool PlayOnAwake = false;
+
+		float MasterReverbSend = 0.0f;
+		float LowPassFilter = 1.0f;
+		float HighPassFilterValue = 0.0f;
+
+		bool SpatializationEnabled = false;
+
+		AttenuationModel AttenuationMod{ AttenuationModel::Inverse };   // Distance attenuation function
+		float MinGain{ 0.0f };                                            // Minumum volume muliplier
+		float MaxGain{ 1.0f };                                            // Maximum volume multiplier
+		float MinDistance{ 1.0f };                                        // Distance where to start attenuation
+		float MaxDistance{ 1000.0f };                                     // Distance where to end attenuation
+		float ConeInnerAngleInRadians{ 6.283185f };                     // Defines the angle where no directional attenuation occurs 
+		float ConeOuterAngleInRadians{ 6.283185f };                     // Defines the angle where directional attenuation is at max value (lowest multiplier)
+		float ConeOuterGain{ 0.0f };                                      // Attenuation multiplier when direction of the emmiter falls outside of the ConeOuterAngle
+		float DopplerFactor{ 1.0f };                                      // The amount of doppler effect to apply. Set to 0 to disables doppler effect. 
+		float Rolloff{ 0.6f };                                            // Affects steepness of the attenuation curve. At 1.0 Inverse model is the same as Exponential
+
+		bool AirAbsorptionEnabled{ true };                            // TODO Enable Air Absorption filter 
+
+		bool SpreadFromSourceSize{ true };                             // If this option is enabled, spread of a sound source automatically calculated from the source size.
+		float SourceSize{ 1.0f };                                       // Diameter of the sound source in game world.
+		float Spread{ 1.0f };
+		float Focus{ 1.0f };
+
+		AssetID AudioAsset = { 0 };
+
+	};
 	template<class ... Component>
 	struct ComponentGroup {
 
@@ -601,7 +637,7 @@ namespace Proof
 		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
 		MeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
-		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent>;
+		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent>;
 	
 
 	using LightComponnet =ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

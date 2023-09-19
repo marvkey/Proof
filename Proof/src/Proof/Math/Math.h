@@ -12,7 +12,24 @@ namespace Proof
 {
 	struct Math {
 
+
+		
 		Math(const Math&) = delete;
+
+		inline static glm::vec3 GetFowardVector()
+		{
+			return { 0.0f, 0.0f, -1.0f };
+		}
+
+		inline static glm::vec3 GetUpVector()
+		{
+			return { 0.0f, 1.0f, 0.0f };
+		}
+
+		inline static glm::vec3 GetRightVector()
+		{
+			return { 1.0f, 0.0f, 0.0f };
+		}
 		/**
 		* @param Number
 		* @return the square root of the Number

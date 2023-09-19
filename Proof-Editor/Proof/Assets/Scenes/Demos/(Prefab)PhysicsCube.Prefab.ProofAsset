@@ -21,7 +21,7 @@ Entities:
       OffsetScale: [1, 1, 1]
       PhysicsMaterialPointerID: 0
     RigidBodyComponent:
-      Mass: 1
+      Mass: 72
       LinearDrag: 0
       AngularDrag: 0.0500000007
       Gravity: true

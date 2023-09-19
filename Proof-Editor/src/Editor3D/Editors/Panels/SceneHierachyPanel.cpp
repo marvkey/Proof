@@ -440,6 +440,8 @@ namespace Proof
 			AddComponentGui<PlayerHUDComponent>(entity, "Player HUD");
 
 			AddComponentGui<ParticleSystemComponent>(entity, "Particle System");
+
+			AddComponentGui<AudioComponent>(entity, "Audio");
 			ImGui::EndPopup();
 		}
 		DrawComponents<TagComponent>("Tag", entity, [](TagComponent& subTag) {
@@ -1326,6 +1328,35 @@ namespace Proof
 				}
 			}
 			ImGui::TreePop();
+		});
+
+
+		DrawComponents<AudioComponent>("Audio", entity, [](AudioComponent& audio) 
+		{
+			if (AssetManager::HasAsset(audio.AudioAsset))
+			{
+
+				ExternalAPI::ImGUIAPI::TextBar("Audio", AssetManager::GetAssetInfo(audio.AudioAsset).GetName());
+			}
+			else
+			{
+				ExternalAPI::ImGUIAPI::TextBar("Audio", "null");
+			}
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Audio).c_str()))
+				{
+					uint64_t Data = *(const uint64_t*)payload->Data;
+					if (AssetManager::HasAsset(Data))
+					{
+						audio.AudioAsset = Data;
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}		
+			ExternalAPI::ImGUIAPI::CheckBox("Looping", &audio.Looping);
+			
 		});
 	}
 

@@ -1,23 +1,9 @@
 World:
   ID: 3822883297058897129
   Entities:
-    - Entity: 17447832231488950328
+    - Entity: 10149006870315256086
       TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0.0401426814, 0.0558508374, -0.0523599088]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 4
-    - Entity: 2349845909412653282
-      TagComponent:
-        Tag: Sky Light
+        Tag: CubeSpawner
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
@@ -26,16 +12,19 @@ World:
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0.5
-        MapRotation: 0
-        Intensity: 1.60000002
-        DynamicSky: false
-        Turbidity: 2
-        Azimuth: 0
-        Inclination: 0
-        Image: 4373174173013626620
+      ScriptComponent:
+        Scripts:
+          - Script: Demos.PhysicsCube
+            ScriptFields:
+              - Name: Type
+                Type: Enum
+                Data: 1
+              - Name: Level
+                Type: Enum
+                Data: 100
+              - Name: SpawnObject
+                Type: Prefab
+                Data: 14615929225736297421
     - Entity: 9532767571022656311
       TagComponent:
         Tag: Plane
@@ -62,9 +51,9 @@ World:
         Type: Static
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
-    - Entity: 10149006870315256086
+    - Entity: 2349845909412653282
       TagComponent:
-        Tag: CubeSpawner
+        Tag: Sky Light
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
@@ -73,16 +62,27 @@ World:
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      ScriptComponent:
-        Scripts:
-          - Script: Demos.PhysicsCube
-            ScriptFields:
-              - Name: Type
-                Type: Enum
-                Data: 1
-              - Name: Level
-                Type: Enum
-                Data: 100
-              - Name: SpawnObject
-                Type: Prefab
-                Data: 14615929225736297421
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0.5
+        MapRotation: 0
+        Intensity: 1.60000002
+        DynamicSky: false
+        Turbidity: 2
+        Azimuth: 0
+        Inclination: 0
+        Image: 4373174173013626620
+    - Entity: 17447832231488950328
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0401426814, 0.0558508374, -0.0523599088]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 4
