@@ -6,6 +6,8 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Math/Math.h"
 #include "Proof/Core/Profile.h"
+#include "Proof/ImGui/UI.h"
+
 #include <fmt/format.h>
 namespace Proof {
 

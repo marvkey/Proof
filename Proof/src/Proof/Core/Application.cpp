@@ -199,6 +199,7 @@ namespace Proof {
                 for (Count<Layer>& layer : m_LayerStack->V_LayerStack)
                     layer->OnUpdate(DeltaTime);
             }
+            AudioEngine::OnUpdate(DeltaTime);
             if (m_ApplicationConfiguration.EnableImgui == true)
             {
                 ImguiUpdate(DeltaTime);

@@ -8,8 +8,9 @@ namespace Proof{
 		PhysicsActor(class PhysicsWorld* physicsWorld,UUID entity);
 		virtual ~PhysicsActor();
 
-		void AddForce(Vector force, ForceMode mode = ForceMode::Force, bool autoWake = true);
-		void AddTorque(Vector force, ForceMode mode = ForceMode::Force, bool autoWake = true);
+		bool IsDynamic();
+		void AddForce(glm::vec3 force, ForceMode mode = ForceMode::Force, bool autoWake = true);
+		void AddTorque(glm::vec3 force, ForceMode mode = ForceMode::Force, bool autoWake = true);
 		void PutToSleep();
 		void WakeUp();
 
@@ -34,12 +35,12 @@ namespace Proof{
 		void OnOverlapTriggerLeave(const PhysicsActor* actor);
 
 		// veclocity in a straight line
-		Vector GetLinearVelocity();
+		glm::vec3 GetLinearVelocity();
 		// veclocity in an angle
-		Vector GetAngularVelocity();
+		glm::vec3 GetAngularVelocity();
 
-		void SetLinearVelocity(Vector velocity, bool wakeUp = true);
-		void SetAngularVelocity(Vector velocity, bool wakeUp = true);
+		void SetLinearVelocity(glm::vec3 velocity, bool wakeUp = true);
+		void SetAngularVelocity(glm::vec3 velocity, bool wakeUp = true);
 
 		
 	private:

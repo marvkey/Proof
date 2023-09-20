@@ -20,6 +20,7 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Core/Application.h"
 #include "Proof/Audio/AudioEngine.h"
+#include "Proof/Audio/AudioUtils.h"
 namespace Proof {
 	World::World(const std::string& name, UUID ID):
 		Name(name)
@@ -67,6 +68,7 @@ namespace Proof {
 	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const Vector& cameraLocation, float nearPlane, float farPlane)
 	{
 		PF_PROFILE_FUNC();
+		m_Camera = camera;
 		worldRenderer->SetContext(this);
 		worldRenderer->BeginScene(camera, cameraLocation, nearPlane, farPlane);
 
@@ -354,7 +356,8 @@ namespace Proof {
 	{
 		ScriptMeathod::OnDestroy({ entityID,this }); 
 	}
-	void World::OnUpdateRuntime(FrameTime DeltaTime) {
+	void World::OnUpdateRuntime(FrameTime DeltaTime) 
+	{
 		PF_PROFILE_FUNC();
 		/*
 		// Scripts
@@ -397,8 +400,9 @@ namespace Proof {
 				}
 			}
 		}
+
 		{
-			PF_PROFILE_FUNC("World::OnUpdateEditor - C# OnUpdate");
+			PF_PROFILE_FUNC("World::OnUpdate - C# OnUpdate");
 
 			const auto& scriptView = m_Registry.view<ScriptComponent>();
 			for (auto entity : scriptView)
@@ -408,6 +412,85 @@ namespace Proof {
 			}
 		}
 		
+
+		{
+			PF_PROFILE_FUNC("World::OnUpdate - Audio");
+			{
+				PF_PROFILE_FUNC("World::OnUpdate - AudioListener");
+				//m_Camera
+
+				Entity listener;
+				auto view = m_Registry.view<AudioListenerComponent>();
+				for (auto e : view)
+				{
+					Entity check = { e,this };
+					auto& listenerComponent = check.GetComponent<AudioListenerComponent>();
+
+					if (listenerComponent.Active)
+					{
+						listener = check;
+
+						auto transform = Utils::TransformToAudioTransform(GetWorldSpaceTransformComponent(listener));
+						
+						AudioEngine::UpdateListenerPosition(transform);
+						AudioEngine::UpdateListenerConeAttenuation(listenerComponent.ConeInnerAngleInRadians, listenerComponent.ConeOuterAngleInRadians, listenerComponent.ConeOuterGain);
+						auto physicsActor = m_PhysicsWorld->TryGetActor(listener.GetUUID());
+						if (physicsActor)
+						{
+
+							if(physicsActor->IsDynamic())
+								AudioEngine::UpdateAudioListenerVelocity( physicsActor->GetLinearVelocity());
+						}
+						else
+						{
+							AudioEngine::UpdateAudioListenerVelocity(glm::vec3{ 0 });
+						}
+						break;
+
+					}
+				}
+
+				// we are going to remove this soon just for now testing
+				if (!listener)
+				{
+					TransformComponent comp;
+					comp.Location = m_CameraPositon;
+					auto transform = Utils::TransformToAudioTransform(comp);
+					AudioEngine::UpdateListenerPosition(transform);
+
+					AudioListenerComponent defaultSettings;
+					AudioEngine::UpdateListenerConeAttenuation(defaultSettings.ConeInnerAngleInRadians, defaultSettings.ConeOuterAngleInRadians, defaultSettings.ConeOuterGain);
+				}
+			}
+
+
+			{
+				PF_PROFILE_FUNC("World::OnUpdate - Audio");
+				auto view = m_Registry.view<AudioComponent>();
+
+				for (auto e : view)
+				{
+
+					Entity audioEntity = { e,this };
+					auto& audioComponent = audioEntity.GetComponent<AudioComponent>();
+					auto transform = Utils::TransformToAudioTransform(GetWorldSpaceTransformComponent(audioEntity));
+
+					AudioEngine::UpdateAudio(audioEntity.GetUUID(), Utils::AudioComponentToSoundConfig(audioComponent));
+					AudioEngine::UpdateAudioTransform(audioEntity.GetUUID(), transform);
+					auto physicsActor = m_PhysicsWorld->TryGetActor(audioEntity.GetUUID());
+
+					if (physicsActor)
+					{
+						if(physicsActor->IsDynamic())
+							AudioEngine::UpdateAudioVelocity(audioEntity.GetUUID(), physicsActor->GetLinearVelocity());
+					}
+					else
+					{
+						AudioEngine::UpdateAudioVelocity(audioEntity.GetUUID(), glm::vec3{ 0 });
+					}
+				}
+			}
+		}
 		if (HasWorldCamera())
 		{
 		}
@@ -447,6 +530,7 @@ namespace Proof {
 
 	void World::OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const EditorCamera& camera)
 	{
+		
 		OnRender(renderer, time, camera,GlmVecToProof( camera.GetPosition()), camera.GetNearPlane(), camera.GetFarPlane());
 	}
 

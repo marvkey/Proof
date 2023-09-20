@@ -18,6 +18,10 @@ namespace Proof
 		static void UpdateListenerPosition(const AudioTransform& transform);
 		static void UpdateListenerConeAttenuation(float innerAngleRadians = 6.283185f, float outerAngleRadians = 6.283185f, float outerGrain = 0.0);
 		static void UpdateAudioListenerVelocity(const glm::vec3& velocity = {});
+
+		static void UpdateAudio(UUID soundId, const SoundConfiguration& soundCOnfiguration);
+		static void UpdateAudioTransform(UUID soundId, const AudioTransform& transform);
+		static void UpdateAudioVelocity(UUID soundId,const glm::vec3& velocity);
 	private:
 		static void Init();
 		static void ShutDown();

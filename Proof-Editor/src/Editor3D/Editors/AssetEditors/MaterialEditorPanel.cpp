@@ -15,6 +15,7 @@
 #include "Proof/Renderer/RenderMaterial.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Physics/PhysicsMaterial.h"
+#include "Proof/ImGui/UI.h"
 
 #include "Proof/Core/Profile.h"
 namespace Proof

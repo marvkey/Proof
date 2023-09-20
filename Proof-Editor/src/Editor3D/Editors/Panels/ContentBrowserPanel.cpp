@@ -32,6 +32,7 @@
 
 #include "Proof/Core/Application.h"
 #include "Proof/Project/Project.h"
+#include "Proof/ImGui/UI.h"
 
 namespace Proof
 {

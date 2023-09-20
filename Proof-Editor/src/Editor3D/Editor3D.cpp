@@ -63,6 +63,8 @@
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Core/Timer.h"
 #include "misc/cpp/imgui_stdlib.h"
+#include "Proof/ImGui/UI.h"
+
 #define SCENE_HIERARCHY_PANEL_ID "SceneHierarchyPanel"
 #define ECS_DEBUG_PANEL_ID "ECSDebugPanel"
 #define CONSOLE_PANEL_ID "EditorConsolePanel"

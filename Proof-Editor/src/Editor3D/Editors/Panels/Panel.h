@@ -2,7 +2,6 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Core/UUID.h"
 #include <Imgui/Imgui.h>
-#include "Proof/Imgui/UI.h"
 namespace Proof{
 
 	class Panel : public RefCounted 

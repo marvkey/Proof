@@ -1,8 +1,8 @@
 VM start event not sent yet: dropping APPDOMAIN_CREATE
-[0000000000006818] Thread started, obj=000001D33FB20130, tls=000001D31071F4B0.
+[0000000000004C80] Thread started, obj=0000023E33BB0130, tls=0000023E312D2490.
 VM start event not sent yet: dropping THREAD_START
-[0000000000006818] Suspended.
-[0000000000006818] Resumed.
+[0000000000004C80] Suspended.
+[0000000000004C80] Resumed.
 VM start event not sent yet: dropping ASSEMBLY_LOAD
 VM start event not sent yet: dropping TYPE_LOAD
 VM start event not sent yet: dropping TYPE_LOAD
@@ -12,12 +12,12 @@ VM start event not sent yet: dropping TYPE_LOAD
 VM start event not sent yet: dropping TYPE_LOAD
 VM start event not sent yet: dropping TYPE_LOAD
 VM start event not sent yet: dropping TYPE_LOAD
-[000000000000265C] Thread started, obj=000001D33FB20278, tls=000001D3158D2310.
+[0000000000005ED8] Thread started, obj=0000023E33BB0278, tls=0000023E312FEAA0.
 VM start event not sent yet: dropping THREAD_START
 Debugger client is not connected: dropping VM_START
-[000000000000265C] Suspended.
-[000000000000265C] Resumed.
-[dbg] Agent thread started, pid=00000000000067B4
+[0000000000005ED8] Suspended.
+[0000000000005ED8] Resumed.
+[dbg] Agent thread started, pid=0000000000001AF8
 VM start event not sent yet: dropping APPDOMAIN_CREATE
 VM start event not sent yet: dropping TYPE_LOAD
 VM start event not sent yet: dropping TYPE_LOAD

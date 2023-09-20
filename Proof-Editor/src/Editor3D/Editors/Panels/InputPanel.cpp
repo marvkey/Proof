@@ -6,6 +6,7 @@
 #include "Editor3D/Editor3D.h"
 #include "Proof/Input/InputManager.h"
 #include "Proof/Core/Profile.h"
+#include "Proof/ImGui/UI.h"
 
 #include <unordered_map>
 namespace Proof {

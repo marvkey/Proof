@@ -26,6 +26,7 @@ namespace Proof {
 
 		Count<PhysicsActor> NewActor(UUID id);
 		Count<PhysicsActor> GetActor(UUID id);
+		Count<PhysicsActor> TryGetActor(UUID id);
 		void RemoveActor(UUID id);
 	private:
 		void StartWorld();

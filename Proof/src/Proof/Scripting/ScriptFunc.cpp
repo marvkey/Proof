@@ -513,7 +513,7 @@ namespace Proof
 		#endif
 		entity.GetComponent<RigidBodyComponent>().Mass = *mass;
 	}
-	static void RigidBody_AddForce(UUID entityID, Vector force, int forceMode, bool autoAwake) {
+	static void RigidBody_AddForce(UUID entityID, glm::vec3 force, int forceMode, bool autoAwake) {
 		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
 		{
 			PF_ERROR("RigidBody.AddForce - entity is invalid  or does not have rigid body");
@@ -523,7 +523,7 @@ namespace Proof
 		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
 		actor->AddForce(force, (ForceMode)forceMode, autoAwake);
 	}
-	static void RigidBody_AddTorque(UUID entityID, Vector force, int forceMode, bool autoAwake) {
+	static void RigidBody_AddTorque(UUID entityID, glm::vec3 force, int forceMode, bool autoAwake) {
 		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
 		{
 			PF_ERROR("RigidBody.AddTorque - entity is invalid  or does not have rigid body");
@@ -557,7 +557,7 @@ namespace Proof
 		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
 		actor->ClearTorque((ForceMode)forceMode);
 	}
-	static void RigidBody_GetLinearVelocity(UUID entityID, Vector* force) 
+	static void RigidBody_GetLinearVelocity(UUID entityID, glm::vec3* force)
 	{
 		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
 		{
@@ -568,7 +568,7 @@ namespace Proof
 		*force = actor->GetLinearVelocity();
 	}
 
-	static void RigidBody_SetLinearVelocity(UUID entityID, Vector* force, bool wakeUP)
+	static void RigidBody_SetLinearVelocity(UUID entityID, glm::vec3* force, bool wakeUP)
 	{
 		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
 		{
@@ -578,7 +578,7 @@ namespace Proof
 		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
 		 actor->SetLinearVelocity(*force, wakeUP);
 	}
-	static void RigidBody_SetAngularVelocity(UUID entityID, Vector* force, bool wakeUP)
+	static void RigidBody_SetAngularVelocity(UUID entityID, glm::vec3* force, bool wakeUP)
 	{
 		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
 		{
@@ -589,7 +589,7 @@ namespace Proof
 		actor->SetAngularVelocity(*force, wakeUP);
 	}
 
-	static void RigidBody_GetAngularVelocity(UUID entityID, Vector* force)
+	static void RigidBody_GetAngularVelocity(UUID entityID, glm::vec3* force)
 	{
 
 		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))

@@ -119,6 +119,8 @@ namespace Proof {
 
 		
 	private:
+		Camera m_Camera;
+		glm::vec3 m_CameraPositon;
 		// the parent entity shoudl be the prefab base entity 
 		void PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren = true);
 

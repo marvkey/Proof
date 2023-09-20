@@ -124,17 +124,22 @@ namespace Proof {
 	}
 
 	
-	void PhysicsActor::AddForce(Vector force, ForceMode mode, bool autoWake)
+	bool PhysicsActor::IsDynamic()
 	{
-		if (m_RigidBodyType == RigidBodyType::Static)return;
-		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		rigidBody->addForce({ force.X,force.Y,force.Z }, Utils::ToPhysxForce(mode), autoWake);
+		return m_RigidBodyType == RigidBodyType::Dynamic;
 	}
-	void PhysicsActor::AddTorque(Vector force, ForceMode mode, bool autoWake)
+
+	void PhysicsActor::AddForce(glm::vec3 force, ForceMode mode, bool autoWake)
 	{
 		if (m_RigidBodyType == RigidBodyType::Static)return;
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		rigidBody->addTorque({ force.X,force.Y,force.Z }, Utils::ToPhysxForce(mode), autoWake);
+		rigidBody->addForce({ force.x,force.y,force.z }, Utils::ToPhysxForce(mode), autoWake);
+	}
+	void PhysicsActor::AddTorque(glm::vec3 force, ForceMode mode, bool autoWake)
+	{
+		if (m_RigidBodyType == RigidBodyType::Static)return;
+		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
+		rigidBody->addTorque({ force.x,force.y,force.z }, Utils::ToPhysxForce(mode), autoWake);
 	}
 
 	void PhysicsActor::PutToSleep()
@@ -209,33 +214,33 @@ namespace Proof {
 		rigidBody->clearTorque(Utils::ToPhysxForce(mode));
 	}
 
-	Vector PhysicsActor::GetLinearVelocity()
+	glm::vec3 PhysicsActor::GetLinearVelocity()
 	{
-		if (m_RigidBodyType == RigidBodyType::Static)return  Vector(0);
+		if (m_RigidBodyType == RigidBodyType::Static)return  glm::vec3(0);
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
 
-		return PhysxUtils::PhysxToVector(rigidBody->getLinearVelocity());
+		return PhysxUtils::PhysxVectorToGlmVector(rigidBody->getLinearVelocity());
 	}
 
-	Vector PhysicsActor::GetAngularVelocity()
+	glm::vec3 PhysicsActor::GetAngularVelocity()
 	{
-		if (m_RigidBodyType == RigidBodyType::Static)return  Vector(0);
+		if (m_RigidBodyType == RigidBodyType::Static)return  glm::vec3(0);
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
 
-		return PhysxUtils::PhysxToVector(rigidBody->getAngularVelocity());
+		return PhysxUtils::PhysxVectorToGlmVector(rigidBody->getAngularVelocity());
 	}
-	void PhysicsActor::SetLinearVelocity(Vector velocity, bool wakeUp )
+	void PhysicsActor::SetLinearVelocity(glm::vec3 velocity, bool wakeUp )
 	{
 		if (m_RigidBodyType == RigidBodyType::Static)return;
 
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		rigidBody->setLinearVelocity(PhysxUtils::VectorToPhysxVector(velocity), wakeUp);
+		rigidBody->setLinearVelocity(PhysxUtils::GlmVectorToPhysxVector(velocity), wakeUp);
 	}
-	void PhysicsActor::SetAngularVelocity(Vector velocity, bool wakeUp)
+	void PhysicsActor::SetAngularVelocity(glm::vec3 velocity, bool wakeUp)
 	{
 		if (m_RigidBodyType == RigidBodyType::Static)return;
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
-		rigidBody->setAngularVelocity(PhysxUtils::VectorToPhysxVector(velocity), wakeUp);
+		rigidBody->setAngularVelocity(PhysxUtils::GlmVectorToPhysxVector(velocity), wakeUp);
 	}
 	
 	void PhysicsActor::OnTriggerEnter(const PhysicsActor* actor)

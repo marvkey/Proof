@@ -6,13 +6,20 @@
 namespace Proof
 {
 
-	Sound::Sound(Count<class Audio> audio, const SoundConfiguration& soundConfig)
-		:m_Audio(audio)
+	Sound::Sound(const SoundConfiguration& soundConfig)
 	{
-		InitializeDataSource(audio, soundConfig);
+		UpdateDataSource(soundConfig);
 	}
 	Sound::~Sound()
 	{
+		Release();
+	}
+	void Sound::Release()
+	{
+
+		if (m_Initialized)
+			ma_sound_uninit(&m_Sound);
+		m_Initialized = false;
 	}
 	bool Sound::Play()
 	{
@@ -205,31 +212,60 @@ namespace Proof
 		}
 	}
 
-	bool Sound::InitializeDataSource(const Count<class Audio>& audio, const SoundConfiguration& config)
+	void Sound::UpdateDataSource(const SoundConfiguration& config)
 	{
-		ma_result result;
-		std::filesystem::path path = audio->GetPath();
-		//PF_ENGINE_INFO("{}", path.string());
-		result = ma_sound_init_from_file(&AudioEngine::GetEngine(), path.string().c_str(), 0, NULL, NULL, &m_Sound);
-		PF_CORE_ASSERT(result == MA_SUCCESS, "Failed to load sound from filepath");
-
 		
+
+		if (m_Config.Aduio != config.Aduio )
+		{
+			if (m_Initialized)
+				Release();
+			ma_result result;
+			std::filesystem::path path = config.Aduio->GetPath();
+			//PF_ENGINE_INFO("{}", path.string());
+			result = ma_sound_init_from_file(&AudioEngine::GetEngine(), path.string().c_str(), 0, NULL, NULL, &m_Sound);
+			PF_CORE_ASSERT(result == MA_SUCCESS, "Failed to load sound from filepath");
+
+
+			ma_sound_set_volume(&m_Sound, config.VolumeMultiplier);
+			ma_sound_set_pitch(&m_Sound, config.PitchMultiplier);
+
+			ma_sound_set_looping(&m_Sound, config.Looping);
+			ma_sound_set_spatialization_enabled(&m_Sound, config.SpatializationEnabled);
+			{
+				ma_sound_get_length_in_pcm_frames(&m_Sound, &m_TotalLength);
+			}
+
+
+			m_Config = config;
+
+			m_Initialized = true;
+		}
+		if (m_Initialized == false)return;
+		if (m_Config == config)return;
+		m_Config = config;
+
 		ma_sound_set_volume(&m_Sound, config.VolumeMultiplier);
 		ma_sound_set_pitch(&m_Sound, config.PitchMultiplier);
 
-		ma_sound_set_looping(&m_Sound,config.Looping);
+		ma_sound_set_looping(&m_Sound, config.Looping);
 		ma_sound_set_spatialization_enabled(&m_Sound, config.SpatializationEnabled);
-		{
-			ma_sound_get_length_in_pcm_frames(&m_Sound, &m_TotalLength);
-		}
 
-		m_IsSpecialized = config.SpatializationEnabled;
+		if (config.SpatializationEnabled == false)
+			return;
 
-		m_Config = config;
+		ma_sound_set_min_gain(&m_Sound, config.MinGain);
+		ma_sound_set_max_gain(&m_Sound, config.MaxGain);
 
-		m_Initialized = true;
+		ma_sound_set_min_distance(&m_Sound, config.MinDistance);
+		ma_sound_set_max_distance(&m_Sound, config.MaxDistance);
 
-		return true;
+		ma_sound_set_cone(&m_Sound, config.ConeInnerAngleInRadians, config.ConeOuterAngleInRadians, config.ConeOuterGain);
+		ma_sound_set_doppler_factor(&m_Sound, config.DopplerFactor);
+
+		ma_sound_set_rolloff(&m_Sound, config.Rolloff);
+
+
 	}
 	float Sound::GetPlaybackPercentage()
 	{
@@ -249,6 +285,7 @@ namespace Proof
 	{
 		return m_TotalLength;
 	}
+	
 	bool Sound::StopFade(uint64_t numSamples)
 	{
 		constexpr double stopFadeTime = (double)STOPPING_FADE_MS * 1.1 / 1000.0;
@@ -289,19 +326,23 @@ namespace Proof
 		if (notifyPlaybackComplete && m_OnPlaybackComplete)
 			m_OnPlaybackComplete();
 	}
-	void Sound::SetLocation(const glm::vec3& location, const glm::vec3& orientation)
+	void Sound::SetTransform(const AudioTransform& transform)
 	{
-		if (!m_IsSpecialized)
+		if (!m_Config.SpatializationEnabled)
 		{
-			PF_ENGINE_ERROR("Cannot call {} because it is not specialized", __FUNCTION__);
 			return;
 		}
 
+		ma_sound_set_position(&m_Sound, transform.Position.x, transform.Position.y, transform.Position.z);
+		ma_sound_set_direction(&m_Sound,transform.Orientation.x, transform.Orientation.y, transform.Orientation.z);
+		//ma_sound_set_up(&AudioEngine::GetEngine(), 0, transform.Up.x, transform.Up.y, transform.Up.z);
 	}
 	void Sound::SetVelocity(const glm::vec3& velocity)
 	{
 		if (m_Initialized == false)
 			return;
+
+		ma_sound_set_velocity(&m_Sound, velocity.x, velocity.y, velocity.z);
 	}
 }
 

@@ -120,6 +120,10 @@ namespace Proof {
 		PF_CORE_ASSERT(HasActor(id), " Does not contain actor");
 		return m_Actors.at(id);
 	}
+	Count<PhysicsActor> PhysicsWorld::TryGetActor(UUID id)
+	{
+		if (HasActor(id))return m_Actors.at(id);
+	}
 	void PhysicsWorld::RemoveActor(UUID id)
 	{
 		PF_CORE_ASSERT(HasActor(id), " Does not contain actor");

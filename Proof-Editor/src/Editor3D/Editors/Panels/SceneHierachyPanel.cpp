@@ -1354,9 +1354,42 @@ namespace Proof
 					}
 				}
 				ImGui::EndDragDropTarget();
-			}		
+			}
+
+			UI::AttributeSlider("VolumeMultiplier", audio.VolumeMultiplier, 0,1);
+			UI::AttributeSlider("PitchMultiplier", audio.PitchMultiplier,0,24);
+
 			ExternalAPI::ImGUIAPI::CheckBox("Looping", &audio.Looping);
-			
+			ExternalAPI::ImGUIAPI::CheckBox("Play On Awake", &audio.PlayOnAwake);
+			ExternalAPI::ImGUIAPI::CheckBox("Specialization", &audio.SpatializationEnabled);
+
+			if (audio.SpatializationEnabled == false)return;
+
+			if (auto [changed,newValue] = UI::EnumCombo("Attenuation Model", EnumReflection::GetNames<AttenuationModel>(), EnumReflection::EnumString(audio.AttenuationModel)); changed)
+			{
+				audio.AttenuationModel = EnumReflection::StringEnum<AttenuationModel>(newValue);
+			}
+
+			UI::AttributeDrag("Min Gain", audio.MinGain, 0.025f, 0, 1);
+			UI::AttributeDrag("Max Gain", audio.MaxGain, 0.025f, 0, 1);
+
+			UI::AttributeDrag("Min Distance", audio.MinDistance, 0.025f, 0, audio.MaxDistance);
+			UI::AttributeDrag("Max Distance", audio.MaxDistance, 0.025f, audio.MinDistance, Math::GetMaxType<float>());
+
+			{
+				float degrees= glm::degrees(audio.ConeInnerAngleInRadians);
+				if (UI::AttributeSlider("Cone Inner Angle", degrees,0, 360))
+					audio.ConeInnerAngleInRadians = glm::radians(degrees);
+
+				degrees = glm::degrees(audio.ConeOuterAngleInRadians);
+				if (UI::AttributeSlider("Cone Outer Angle", degrees, 0, 360))
+					audio.ConeOuterAngleInRadians = glm::radians(degrees);
+
+				UI::AttributeSlider("ConeOuterGain", audio.ConeOuterGain, 0, 1);
+			}
+
+			UI::AttributeSlider("Doppler Factor", audio.DopplerFactor, 0, 1);
+			UI::AttributeSlider("RollOff", audio.Rolloff,0, 1);
 		});
 	}
 

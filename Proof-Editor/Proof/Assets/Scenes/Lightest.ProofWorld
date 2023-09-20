@@ -76,6 +76,26 @@ World:
         Type: Dynamic
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
+      AudioComponent:
+        VolumeMultiplier: 1
+        PitchMultiplier: 1
+        Looping: true
+        PlayOnAwake: true
+        MasterReverbSend: 0
+        LowPassFilter: 1
+        HighPassFilter: 0
+        SpatializationEnabled: true
+        AudioAsset: 18176033785060577625
+        AttenuationModel: Inverse
+        MinGain: 0
+        MaxGain: 1
+        MinDistance: 1
+        MaxDistance: 10
+        ConeInnerAngleInRadians: 6.28318501
+        ConeOuterAngleInRadians: 6.28318501
+        ConeOuterGain: 0
+        DopplerFactor: 1
+        Rolloff: 1
     - Entity: 11529972234107103668
       TagComponent:
         Tag: Plane
@@ -108,7 +128,7 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [0.0226893071, 0.0436331928, 0.0802851468]
+        Rotation: [0.0226893537, 0.043633081, 0.0802851468]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
@@ -147,9 +167,29 @@ World:
         Tag: AUdio
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [0, 1.29999995, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
+      AudioComponent:
+        VolumeMultiplier: 0.386000007
+        PitchMultiplier: 1
+        Looping: false
+        PlayOnAwake: false
+        MasterReverbSend: 0
+        LowPassFilter: 1
+        HighPassFilter: 0
+        SpatializationEnabled: true
+        AudioAsset: 18176033785060577625
+        AttenuationModel: Inverse
+        MinGain: 0
+        MaxGain: 1
+        MinDistance: 2.32500005
+        MaxDistance: 8.30000019
+        ConeInnerAngleInRadians: 2.84090734
+        ConeOuterAngleInRadians: 6.28318501
+        ConeOuterGain: 0.363000005
+        DopplerFactor: 1
+        Rolloff: 0.600000024

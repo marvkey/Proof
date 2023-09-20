@@ -1,4 +1,5 @@
 #pragma once
+#include "Proof/Core/Log.h"
 #include "Panel.h"
 #include "Proof/Core/Hash.h"
 #include <unordered_map>

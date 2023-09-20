@@ -10,7 +10,7 @@ namespace Proof
 	class Sound : public RefCounted
 	{
     public:
-        Sound(Count<class Audio> audio, const SoundConfiguration& soundConfig);
+        Sound(const SoundConfiguration& soundConfig);
         Sound() {};
         ~Sound();
         virtual bool Play();
@@ -22,9 +22,9 @@ namespace Proof
         void Update(float ts);
 
         bool IsReadyToPlay() const { return m_Initialized; }
-        void SetLocation(const glm::vec3& location, const glm::vec3& orientation);
+        void SetTransform(const AudioTransform& transform);
         void SetVelocity(const glm::vec3& velocity = { 0.0f, 0.0f, 0.0f });
-        bool InitializeDataSource(const Count<class Audio>&audio, const SoundConfiguration& soundConfig);
+        void UpdateDataSource(const SoundConfiguration& soundConfig);
         virtual bool IsLooping() const { return m_IsLooping; };
 
         float GetPlaybackPercentage();
@@ -32,6 +32,8 @@ namespace Proof
         uint64_t GetCurrentPCMFrame();
         uint64_t GetTotalPCmFrame();
     private:
+
+        void Release();
         bool StopFade(uint64_t numSamples);
 
        /* Stop playback with short fade-out to prevent click.
@@ -46,7 +48,6 @@ namespace Proof
 
         UUID m_UUID = { 0 };
         std::function<void()> m_OnPlaybackComplete;
-        Count<class Audio> m_Audio;
         ma_sound m_Sound;
             
         SoundState m_State{ SoundState::Stopped };
@@ -54,7 +55,6 @@ namespace Proof
         bool m_IsLooping = false;
         bool m_IsFinished = false;
 
-        bool m_IsSpecialized = false;
         bool m_Initialized = false;
 
         float m_StoredFaderValue = 1.0f;

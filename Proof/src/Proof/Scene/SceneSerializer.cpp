@@ -466,19 +466,61 @@ namespace Proof
 				out << YAML::EndMap; // ParticleSystemComponent
 			}
 
+		
+		}
+		{
+			if (registry.all_of<AudioComponent>(enttID))
 			{
-				//if (registry.all_of<AudioComponent>(entityID))
-				//{
-				//	AudioComponent& audioComponent = registry.get<AudioComponent>(enttID);
-				//	out <<YAML::ke
-				//
-				//}
+				AudioComponent& audioComponent = registry.get<AudioComponent>(enttID);
+				out << YAML::Key << "AudioComponent";
+				out << YAML::BeginMap; // AudioComponent
+
+				out << YAML::Key << "VolumeMultiplier" << YAML::Key << audioComponent.VolumeMultiplier;
+				out << YAML::Key << "PitchMultiplier" << YAML::Key << audioComponent.PitchMultiplier;
+				out << YAML::Key << "Looping" << YAML::Key << audioComponent.Looping;
+				out << YAML::Key << "PlayOnAwake" << YAML::Key << audioComponent.PlayOnAwake;
+				out << YAML::Key << "MasterReverbSend" << YAML::Key << audioComponent.MasterReverbSend;
+				out << YAML::Key << "LowPassFilter" << YAML::Key << audioComponent.LowPassFilter;
+				out << YAML::Key << "HighPassFilter" << YAML::Key << audioComponent.HighPassFilter;
+				out << YAML::Key << "SpatializationEnabled" << YAML::Key << audioComponent.SpatializationEnabled;
+				out << YAML::Key << "AudioAsset" << YAML::Key << audioComponent.AudioAsset;
+
+				if (audioComponent.SpatializationEnabled)
+				{
+					out << YAML::Key << "AttenuationModel" << YAML::Key << EnumReflection::EnumString(audioComponent.AttenuationModel);
+					out << YAML::Key << "MinGain" << YAML::Key << audioComponent.MinGain;
+					out << YAML::Key << "MaxGain" << YAML::Key << audioComponent.MaxGain;
+					out << YAML::Key << "MinDistance" << YAML::Key << audioComponent.MinDistance;
+					out << YAML::Key << "MaxDistance" << YAML::Key << audioComponent.MaxDistance;
+					out << YAML::Key << "ConeInnerAngleInRadians" << YAML::Key << audioComponent.ConeInnerAngleInRadians;
+					out << YAML::Key << "ConeOuterAngleInRadians" << YAML::Key << audioComponent.ConeOuterAngleInRadians;
+					out << YAML::Key << "ConeOuterGain" << YAML::Key << audioComponent.ConeOuterGain;
+					out << YAML::Key << "DopplerFactor" << YAML::Key << audioComponent.DopplerFactor;
+					out << YAML::Key << "Rolloff" << YAML::Key << audioComponent.Rolloff;
+				}
+
+				out << YAML::EndMap; // AudioComponent
+
 			}
+		}
+		{
+			if (registry.all_of<AudioListenerComponent>(enttID))
+			{
+				AudioListenerComponent& audioListenerComponent = registry.get<AudioListenerComponent>(enttID);
+				out << YAML::Key << "AudioListenerComponent";
+				out << YAML::BeginMap; // AudioListenerComponent
+
+				out << YAML::Key << "Active" << YAML::Key << audioListenerComponent.Active;
+				out << YAML::Key << "ConeInnerAngleInRadians" << YAML::Key << audioListenerComponent.ConeInnerAngleInRadians;
+				out << YAML::Key << "ConeOuterAngleInRadians" << YAML::Key << audioListenerComponent.ConeOuterAngleInRadians;
+				out << YAML::Key << "ConeOuterGain" << YAML::Key << audioListenerComponent.ConeOuterGain;
+
+				out << YAML::EndMap; // AudioListenerComponent
+			}
+
 		}
 		out << YAML::EndMap; // entity
 	}
-
-	
 
 	void SceneSerializer::SerilizeText(const std::string& filePath) {
 		PF_PROFILE_FUNC();
@@ -862,6 +904,42 @@ namespace Proof
 					}
 					phc.HudTable = table;
 				}
+			}
+			// audio compoennt
+			{
+				auto audioComponent = entity["AudioComponent"];
+				if (audioComponent)
+				{
+					auto& ac = NewEntity.AddComponent<AudioComponent>();
+
+					ac.VolumeMultiplier = audioComponent["VolumeMultiplier"].as<float>();
+					ac.PitchMultiplier = audioComponent["PitchMultiplier"].as<float>();
+					ac.Looping = audioComponent["Looping"].as<bool>();
+					ac.PlayOnAwake = audioComponent["PlayOnAwake"].as<bool>();
+					ac.MasterReverbSend = audioComponent["MasterReverbSend"].as<float>();
+					ac.LowPassFilter = audioComponent["LowPassFilter"].as<float>();
+					ac.HighPassFilter = audioComponent["HighPassFilter"].as<float>();
+					ac.SpatializationEnabled = audioComponent["SpatializationEnabled"].as<bool>();
+					ac.AudioAsset = audioComponent["AudioAsset"].as<uint64_t>();
+
+					if (ac.SpatializationEnabled)
+					{
+						ac.AttenuationModel = EnumReflection::StringEnum<AttenuationModel>(audioComponent["AttenuationModel"].as<std::string>());
+						ac.MinGain = audioComponent["MinGain"].as<float>();
+						ac.MaxGain = audioComponent["MaxGain"].as<float>();
+
+						ac.MinDistance = audioComponent["MinDistance"].as<float>();
+						ac.MaxDistance = audioComponent["MaxDistance"].as<float>();
+
+						ac.ConeInnerAngleInRadians = audioComponent["ConeInnerAngleInRadians"].as<float>();
+						ac.ConeOuterAngleInRadians = audioComponent["ConeOuterAngleInRadians"].as<float>();
+						ac.ConeOuterGain = audioComponent["ConeOuterGain"].as<float>();
+
+						ac.DopplerFactor = audioComponent["DopplerFactor"].as<float>();
+						ac.Rolloff = audioComponent["Rolloff"].as<float>();
+					}
+				}
+
 			}
 			// ParticleSystemComponent
 			{

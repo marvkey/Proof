@@ -597,18 +597,20 @@ namespace Proof
 
 	struct AudioComponent
 	{
-		float VolumeMultiplier = 1.0f;
-		float PitchMultiplier = 1.0f;
+		AssetID AudioAsset = { 0 };
+
+		float VolumeMultiplier = 1.0f; // 0-1
+		float PitchMultiplier = 1.0f;//0,24
 		bool Looping = false;
 		bool PlayOnAwake = false;
 
 		float MasterReverbSend = 0.0f;
 		float LowPassFilter = 1.0f;
-		float HighPassFilterValue = 0.0f;
+		float HighPassFilter = 0.0f;
 
 		bool SpatializationEnabled = false;
 
-		AttenuationModel AttenuationMod{ AttenuationModel::Inverse };   // Distance attenuation function
+		AttenuationModel AttenuationModel{ AttenuationModel::Inverse };   // Distance attenuation function
 		float MinGain{ 0.0f };                                            // Minumum volume muliplier
 		float MaxGain{ 1.0f };                                            // Maximum volume multiplier
 		float MinDistance{ 1.0f };                                        // Distance where to start attenuation
@@ -619,15 +621,16 @@ namespace Proof
 		float DopplerFactor{ 1.0f };                                      // The amount of doppler effect to apply. Set to 0 to disables doppler effect. 
 		float Rolloff{ 0.6f };                                            // Affects steepness of the attenuation curve. At 1.0 Inverse model is the same as Exponential
 
-		bool AirAbsorptionEnabled{ true };                            // TODO Enable Air Absorption filter 
+	};
 
-		bool SpreadFromSourceSize{ true };                             // If this option is enabled, spread of a sound source automatically calculated from the source size.
-		float SourceSize{ 1.0f };                                       // Diameter of the sound source in game world.
-		float Spread{ 1.0f };
-		float Focus{ 1.0f };
-
-		AssetID AudioAsset = { 0 };
-
+	struct AudioListenerComponent
+	{
+		bool Active = true; /// can only have 1
+		float ConeInnerAngleInRadians = 6.283185f; /* 360 degrees. */;
+		float ConeOuterAngleInRadians = 6.283185f; /* 360 degrees. */;
+		float ConeOuterGain = 0.0f;
+		AudioListenerComponent() = default;
+		AudioListenerComponent(const AudioListenerComponent& other) = default;
 	};
 	template<class ... Component>
 	struct ComponentGroup {
@@ -637,7 +640,7 @@ namespace Proof
 		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
 		MeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
-		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent>;
+		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent>;
 	
 
 	using LightComponnet =ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

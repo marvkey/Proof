@@ -10,6 +10,7 @@
 #include "Proof/Scene/Component.h"
 
 #include "Proof/Asset/AssetManager.h"
+#include "AudioUtils.h"
 namespace Proof
 {
     void AudioLogCallBack(void* pUserData, ma_uint32 level, const char* pMessage) {
@@ -57,19 +58,10 @@ namespace Proof
         Count<Sound> sound;
         if (AssetManager::HasAsset(audioComp.AudioAsset))
         {
-            SoundConfiguration config;
-            
-            config.VolumeMultiplier = audioComp.VolumeMultiplier;
-            config.PitchMultiplier = audioComp.PitchMultiplier;
-            config.Looping = audioComp.Looping;
-            config.HighPassFilterValue = audioComp.HighPassFilterValue;
-            config.LowPassFilter = audioComp.LowPassFilter;
-            config.MasterReverbSend = audioComp.MasterReverbSend;
+           SoundConfiguration soundConfig = Utils::AudioComponentToSoundConfig(audioComp);
+            sound = Count<Sound>::Create(soundConfig);
 
-            Count<Audio> audio = AssetManager::GetAsset<Audio>(audioComp.AudioAsset);
-            sound = Count<Sound>::Create(audio, config);
-
-           // if (audioComp.PlayOnAwake)
+            if (audioComp.PlayOnAwake)
                 sound->Play();
         }
         else
@@ -163,6 +155,44 @@ namespace Proof
     {
         PF_CORE_ASSERT(s_Data->WorldContext);
         s_Data->AudioListeners[0]->UpdateVelocity(velocity);
+    }
+    void AudioEngine::UpdateAudio(UUID soundId, const SoundConfiguration& soundConfiguration)
+    {
+        PF_CORE_ASSERT(s_Data->WorldContext);
+
+        if (!s_Data->WorldSounds.contains(soundId))
+        {
+            PF_ENGINE_ERROR("Trying to update entity {} doesnt have sound ", s_Data->WorldContext->GetEntity(soundId).GetName());
+            return;
+        }
+
+        auto sound = s_Data->WorldSounds[soundId];
+        sound->UpdateDataSource(soundConfiguration);
+    }
+    void AudioEngine::UpdateAudioTransform(UUID soundId, const AudioTransform& transform)
+    {
+        PF_CORE_ASSERT(s_Data->WorldContext);
+
+        if (!s_Data->WorldSounds.contains(soundId))
+        {
+            PF_ENGINE_ERROR("Trying to update entity {} doesnt have sound ", s_Data->WorldContext->GetEntity(soundId).GetName());
+            return;
+        }
+
+        auto sound = s_Data->WorldSounds[soundId];
+        sound->SetTransform(transform);
+    }
+    void AudioEngine::UpdateAudioVelocity(UUID soundId, const glm::vec3& velocity)
+    {
+        PF_CORE_ASSERT(s_Data->WorldContext);
+
+        if (!s_Data->WorldSounds.contains(soundId))
+        {
+            PF_ENGINE_ERROR("Trying to update entity {} doesnt have sound ", s_Data->WorldContext->GetEntity(soundId).GetName());
+            return;
+        }
+        auto sound = s_Data->WorldSounds[soundId];
+        sound->SetVelocity(velocity);
     }
 }
 

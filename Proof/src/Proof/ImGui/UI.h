@@ -36,6 +36,60 @@ namespace Proof::UI {
 	{
 		return ImageButton(image->GetImage(), size, uv0, uv1, frame_padding, bg_col, tint_col);
 	}
+
+	// returns the [changed,eum selected]
+	inline std::pair<bool, std::string> EnumCombo(const std::string& name, const std::vector<std::string>& names, const std::string& currentSelected)
+	{
+		ImGui::Text(name.c_str());
+		std::string id= fmt::format("##{}", name);
+
+		std::string returnValue = currentSelected;
+		bool isChanged = false;
+		if (ImGui::BeginCombo(id.c_str(), currentSelected.c_str()))
+		{
+			for (auto& containerName : names)
+			{
+				bool isSelected = (currentSelected == containerName);
+				if (ImGui::Selectable(containerName.c_str(), isSelected))
+				{
+					returnValue = containerName;
+					isChanged = true;
+				}
+				if (isSelected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		return { isChanged, returnValue };
+	}
+
+	inline bool AttributeSlider(const std::string& label,float& value, float min = 0, float max = 0, ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f")
+	{
+		if(min == 0 && max ==0)
+			flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
+
+		bool modfified = false;
+		std::string id = fmt::format("##{}", label);
+		ImGui::Text(label.c_str());
+		ImGui::SameLine();
+		modfified = ImGui::SliderFloat(id.c_str(), &value, min, max,format, flags);
+		return modfified;
+	}
+
+	inline bool AttributeDrag(const std::string& label, float& value, float speed =1.f , float min = 0, float max = 0, ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f")
+	{
+		if (min == 0 && max == 0 )
+			flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
+
+		bool modfified = false;
+		std::string id = fmt::format("##{}", label);
+		ImGui::Text(label.c_str());
+		ImGui::SameLine();
+		modfified = ImGui::DragFloat(id.c_str(), &value, speed, min, max, format, flags);
+		return modfified;
+	}
 	struct ScopedStyleColor {
 		ScopedStyleColor() = default;
 		ScopedStyleColor(ImGuiCol idx, ImVec4 color, bool predicate = true)
