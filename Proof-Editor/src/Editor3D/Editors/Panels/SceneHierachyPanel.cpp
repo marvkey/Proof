@@ -1266,7 +1266,7 @@ namespace Proof
 			ImGui::InputTextMultiline("ither", &textComponent.Text);
 			ImGui::ColorEdit4("##Colour", glm::value_ptr(textComponent.Colour));
 
-			ImGui::DragFloat("Kernng", &textComponent.Kerning,0.025);
+			ImGui::DragFloat("Kernng", &textComponent.Kerning, 0.025);
 			ImGui::DragFloat("Line Spacing", &textComponent.LineSpacing, 0.025);
 		});
 

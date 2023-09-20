@@ -113,7 +113,7 @@ namespace Proof
 
 		SetViewportSize(100, 100);
 		m_CommandBuffer = RenderCommandBuffer::Create("WorldRenderer");
-		m_Renderer2D = CreateSpecial< Renderer2D>();
+		m_Renderer2D = Count<Renderer2D>::Create();
 		m_BRDFLUT = Renderer::GenerateBRDFLut();
 		m_Cube = MeshWorkShop::GenerateCube();
 		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
@@ -660,6 +660,7 @@ namespace Proof
 		}
 
 		m_Timers.TotalDrawScene	= drawSceneTimer.ElapsedMillis();
+
 	}
 
 
@@ -1256,6 +1257,14 @@ namespace Proof
 			}
 			Renderer::EndRenderPass(wireFramePass);
 			m_Timers.DrawPhysicsColliders = physicsDebugMesh.Elapsed();
+		}
+		{
+
+			//m_Renderer2D->BeginContext(m_UBCameraData.Projection, m_UBCameraData.View, m_UBCameraData.Position);
+			//
+			//m_Renderer2D->DrawQuad({ 0,0,0 }, { 1,1,1 }, { 0,0,0,1 });
+			//
+			//m_Renderer2D->EndContext();
 		}
 		m_Timers.CompositePass = compositeTimer.ElapsedMillis();
 	}

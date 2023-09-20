@@ -32,14 +32,14 @@ namespace Proof {
 	static CameraData s_CurrentCamera;
 	void Renderer2D::Init() {
 		FrameBufferConfig framebufferSpec;
-		framebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+		framebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 		framebufferSpec.Samples = 1;
 		framebufferSpec.ClearColorOnLoad= false;
 		framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 		framebufferSpec.DebugName = "Renderer2D Framebuffer";
 		m_FrameBuffer = FrameBuffer::Create(framebufferSpec);
 		m_Storage2DData = CreateSpecial <Renderer2DStorage>();
-		m_CommandBuffer = RenderCommandBuffer::Create("Rendere2D");
+		m_CommandBuffer = RenderCommandBuffer::Create("Renderer2D");
 
 		{
 			auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
@@ -49,19 +49,18 @@ namespace Proof {
 			vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
-			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
+			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			graphicsPipelineConfig.DebugName = "Sprite Pipeline";
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Base2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.CullMode = CullMode::None;
-			//graphicsPipelineConfig.DepthCompareOperator = DepthCompareOperator::Less;
 			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 
-			RenderPassConfig rednerPassConfig;
-			rednerPassConfig.DebugName = "Sprite RenderPass";
-			rednerPassConfig.Pipeline = graphicsPipeline;
-			rednerPassConfig.TargetFrameBuffer = m_FrameBuffer;
-			m_QuadPass = RenderPass::Create(rednerPassConfig);
+			RenderPassConfig renderPassConfig;
+			renderPassConfig.DebugName = "Sprite RenderPass";
+			renderPassConfig.Pipeline = graphicsPipeline;
+			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
+			m_QuadPass = RenderPass::Create(renderPassConfig);
 			m_QuadPass->SetInput("CameraData", m_Storage2DData->CameraBuffer);
 		}
 
@@ -75,15 +74,16 @@ namespace Proof {
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
 			graphicsPipelineConfig.DebugName = "Text Pipeline";
+			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Text2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.CullMode = CullMode::None;
 			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 
-			RenderPassConfig rednerPassConfig("Text RenderPass");
-			rednerPassConfig.Pipeline = graphicsPipeline;
-			rednerPassConfig.TargetFrameBuffer = m_FrameBuffer;
-			m_TextPass = RenderPass::Create(rednerPassConfig);
+			RenderPassConfig renderPassConfig("Text RenderPass");
+			renderPassConfig.Pipeline = graphicsPipeline;
+			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
+			m_TextPass = RenderPass::Create(renderPassConfig);
 			m_TextPass->SetInput("CameraData", m_Storage2DData->CameraBuffer);
 		}
 	}
@@ -326,6 +326,8 @@ namespace Proof {
 		Render();
 		Reset();
 		Renderer::EndCommandBuffer(m_CommandBuffer);
+		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+
 	}
 
 	void Renderer2D::Reset() {
@@ -349,15 +351,16 @@ namespace Proof {
 		
 		if (m_Storage2DData->IndexCount > 0) // nothing to draw
 		{
+			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
+			
 			Timer quadTime;
 
-			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
 			m_Storage2DData->VertexBuffer->SetData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
 			m_QuadPass->SetInput("u_Textures", m_Storage2DData->Textures);
-
-			Renderer::BeginRenderPass(m_CommandBuffer, m_QuadPass);
 			m_Storage2DData->IndexBuffer->Bind(m_CommandBuffer);
 			m_Storage2DData->VertexBuffer->Bind(m_CommandBuffer);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_QuadPass);
 			Renderer::DrawElementIndexed(m_CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize);
 			Renderer::EndRenderPass(m_QuadPass);
 
@@ -370,7 +373,8 @@ namespace Proof {
 
 			Timer textTime;
 			m_Storage2DData->TextVertexBuffer->SetData(m_Storage2DData->TextArray.data(), m_Storage2DData->TextArraySize * sizeof(TextVertex));
-			m_TextPass->SetInput("u_Textures", m_Storage2DData->Textures);
+			//m_TextPass->SetInput("u_Textures", m_Storage2DData->Textures);
+			m_TextPass->SetInput("u_FontAtlas", m_Storage2DData->FontTexture);
 
 			Renderer::BeginRenderPass(m_CommandBuffer, m_TextPass);
 			m_Storage2DData->IndexBuffer->Bind(m_CommandBuffer);

@@ -32,6 +32,8 @@ namespace Proof {
 		config.DebugName = "Font " + fontName;
 		config.Width = bitmap.width;
 		config.Height = bitmap.height;
+		config.Format = ImageFormat::RGB;
+		
 		Count<Texture2D> texture = Texture2D::Create((void*)bitmap.pixels,config);
 		return texture;
 	}
@@ -116,6 +118,8 @@ namespace Proof {
 		m_AtlasTexture = CreateTextureAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>("Test", (float)emSize, m_Data->Glyphs, m_Data->FontGeometry, width, height);
 		msdfgen::destroyFont(font);
 		msdfgen::deinitializeFreetype(ft);
+
+		PF_ENGINE_INFO("Loaded font Path: {}", fullPath.string());
 	}
 	Font::~Font() {
 		delete m_Data;	

@@ -128,7 +128,7 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [0.0226893537, 0.043633081, 0.0802851468]
+        Rotation: [0.0226893555, 0.0436330736, 0.0802851468]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
@@ -193,3 +193,23 @@ World:
         ConeOuterGain: 0.363000005
         DopplerFactor: 1
         Rolloff: 0.600000024
+    - Entity: 5537171712021527136
+      TagComponent:
+        Tag: Empty Entity
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SpriteComponent:
+        TextureAssetPointerID: 0
+        Colour: [1, 1, 1, 1]
+      TextComponent:
+        Color: [1, 1, 1, 1]
+        Kerning: 0
+        LineSpacing: 1
+        Text: "Hello World"
+        UseLocalRotation: false

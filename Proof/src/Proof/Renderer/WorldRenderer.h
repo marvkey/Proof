@@ -332,6 +332,8 @@ namespace Proof
 		WorldRendererTimers Timers;
 		UBLightScene LightSene;
 	};
+
+	class RenderPass;
 	class WorldRenderer : public RefCounted {
 	public:
 		WorldRenderer();
@@ -360,7 +362,10 @@ namespace Proof
 
 		Count<Image2D> GetFinalPassImage();
 		Count<Image2D> GetShadowPassDebugImage();
-
+		
+		//external can use this to drw to
+		Count<FrameBuffer> GetExternalCompositePassFrameBuffer() { return m_ExternalCompositeFrameBuffer; }
+		Count<class Renderer2D> GetRenderer2D() { return m_Renderer2D; }
 		const WorldRendererStatistics& GetStats() const
 		{
 			return m_Stats;
@@ -405,7 +410,7 @@ namespace Proof
 		//meshes
 		Count<Mesh> m_Cube;
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
-		Special<class Renderer2D>  m_Renderer2D;
+		Count<class Renderer2D>  m_Renderer2D;
 		Special<class Renderer2D>  m_UIRenderer;
 		Special<class Renderer2D>  m_ParticleSystemRenderer;
 		Count<class RenderCommandBuffer> m_CommandBuffer;

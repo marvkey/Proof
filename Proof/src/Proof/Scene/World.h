@@ -83,6 +83,10 @@ namespace Proof {
 		glm::vec3 GetWorldSpaceScale(Entity entity) const;
 		TransformComponent GetWorldSpaceTransformComponent(Entity entity) const;
 		glm::mat4 GetWorldSpaceTransform(Entity entity) const;
+
+		glm::mat4 GetWorldSpaceTransformUsingLocalRotation(Entity entity) const;
+		TransformComponent GetWorldSpaceTransformComponentUsingLocalRotation(Entity entity) const;
+
 		void ConvertToLocalSpace(Entity entity);
 		void ParentEntity(Entity child, Entity parent);
 

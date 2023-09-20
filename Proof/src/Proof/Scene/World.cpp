@@ -21,6 +21,7 @@
 #include "Proof/Core/Application.h"
 #include "Proof/Audio/AudioEngine.h"
 #include "Proof/Audio/AudioUtils.h"
+#include "Proof/Renderer/Renderer2D.h"
 namespace Proof {
 	World::World(const std::string& name, UUID ID):
 		Name(name)
@@ -69,6 +70,7 @@ namespace Proof {
 	{
 		PF_PROFILE_FUNC();
 		m_Camera = camera;
+		#if 0
 		worldRenderer->SetContext(this);
 		worldRenderer->BeginScene(camera, cameraLocation, nearPlane, farPlane);
 
@@ -228,6 +230,48 @@ namespace Proof {
 		RenderPhysicsDebug(worldRenderer, false);
 
 		worldRenderer->EndScene();
+		#endif
+		// render 2d
+
+		Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
+		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), cameraLocation);
+
+		renderer2D->SetTargetFrameBuffer(worldRenderer->GetExternalCompositePassFrameBuffer());
+
+		auto view = m_Registry.view<TransformComponent, SpriteComponent>();
+		for (auto entity : view)
+		{
+			Entity e = Entity(entity, this);
+			auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteComponent>(entity);
+			if (spriteRendererComponent.Texture)
+			{
+					//Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(spriteRendererComponent.Texture);
+					renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
+				
+			}
+			else
+			{
+				renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
+			}
+		}
+		auto group = m_Registry.group<TransformComponent>(entt::get<TextComponent>);
+		for (auto entity : group)
+		{
+			auto [transformComponent, textComponent] = group.get<TransformComponent, TextComponent>(entity);
+			Entity e = Entity(entity, this);
+			auto font = Font::GetDefault();
+
+			TextParams params;
+			params.Color = textComponent.Colour;
+			params.Kerning = textComponent.LineSpacing;
+			params.LineSpacing = textComponent.Kerning;
+			if(textComponent.UseLocalRotation)
+				renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransformUsingLocalRotation(e));
+			else
+				renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
+		}
+
+		renderer2D->EndContext();
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)
 	{
@@ -683,72 +727,6 @@ namespace Proof {
 		newEntity.SetName(name);
 		newEntity.GetComponent<TransformComponent>() = transfom;
 		return newEntity;
-		//
-		//std::unordered_map<UUID, entt::entity> enttMap;
-		//{
-		//
-		//
-		//	enttMap[prefab->GetBaseEntity()] = (entt::entity)newEntity;
-		//
-		//	//CopyComponentPrefab(AllComponents{}, newEntity, m_Registry, prefab->GetRegistry(), prefab->GetBaseEntity(), enttMap);
-		//	newEntity.GetComponent<TransformComponent>() = transfom;
-		//	
-		//
-		//	if (prefab->GetRegistry().size() == 1)
-		//		return newEntity;
-		//}
-		#if 0
-		auto& prefaRegistry = prefab->GetRegistry();
-		std::function<Entity(entt::entity)> createEntity = [&](entt::entity registryEntityId)->Entity
-		{
-			if (prefaRegistry.get<HierarchyComponent>(registryEntityId).ParentHandle != 0)
-			{
-				Entity owner;
-				UUID owenrID = prefaRegistry.get<HierarchyComponent>(registryEntityId).ParentHandle;
-				if (!enttMap.contains(owenrID))
-					owner = createEntity(owenrID);
-				else
-					owner = { enttMap[owenrID],this };
-
-				Entity thisEntity = CreateEntity();
-				enttMap[registryEntityId] = thisEntity.GetUUID();
-				CopyComponentPrefab(AllComponents{}, thisEntity, m_Registry, prefab->GetRegistry(), prefaRegistry.get<IDComponent>(registryEntityId).GetID(), enttMap);
-			
-				for (UUID id : prefaRegistry.get<HierarchyComponent>(registryEntityId).Children)
-				{
-					if (enttMap.contains(registryEntityId))
-					{
-						Entity subChild = Entity{ enttMap[registryEntityId], this };
-						thisEntity.AddChild(subChild);
-					}
-					else
-					{
-						createEntity(id);
-					}
-				}
-				if(owner)
-					owner.GetComponent<HierarchyComponent>().Children.push_back(thisEntity.GetUUID());
-				return thisEntity;
-			}
-			else
-			{
-				Entity basicEntity = CreateEntity();
-				enttMap[registryEntityId] = basicEntity.GetUUID();
-				CopyComponentPrefab(AllComponents{}, basicEntity, m_Registry, prefab->GetRegistry(), registryEntityId, enttMap);
-
-				return basicEntity;
-			}
-		};
-		
-		for (UUID registryEntityID : prefab->GetRegistry().)
-		{
-			if (registryEntityID == prefab->GetBaseEntity())continue;
-			if (enttMap.contains(registryEntityID))
-				continue;
-
-			createEntity(registryEntityID);
-		}
-		#endif
 	}
 	template<typename... Component>
 	static void CopyComponentSingleWorld(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
@@ -940,7 +918,7 @@ namespace Proof {
 	}
 
 	glm::vec3 World::GetWorldSpaceLocation(Entity entity) const {
-		//return GetWorldSpaceTransformComponent(entity).Location;
+		return GetWorldSpaceTransformComponent(entity).Location;
 
 		auto& transformComp = entity.GetComponent<TransformComponent>();
 		if (entity.HasParent())
@@ -949,49 +927,55 @@ namespace Proof {
 	}
 
 	glm::vec3 World::GetWorldSpaceRotation(Entity entity) const {
-		//return GetWorldSpaceTransformComponent(entity).GetRotationEuler();
-		auto& transformComp = entity.GetComponent<TransformComponent>();
-		if (entity.HasParent())
-			return transformComp.GetRotationEuler() + GetWorldSpaceRotation(entity.GetParent());
-		return transformComp.GetRotationEuler();
+		return GetWorldSpaceTransformComponent(entity).GetRotationEuler();
 	}
 
 	glm::vec3 World::GetWorldSpaceScale(Entity entity) const 
 	{
-		auto& transformComp = entity.GetComponent<TransformComponent>();
-		if (entity.HasParent())
-			return transformComp.Scale * World::GetWorldSpaceScale(entity.GetParent());
-		return transformComp.Scale;
+		return GetWorldSpaceTransformComponent(entity).Scale;
 	}
 
 	TransformComponent World::GetWorldSpaceTransformComponent(Entity entity) const
 	{
-		TransformComponent transform;
-		transform.Location = GetWorldSpaceLocation(entity);
-		transform.SetRotationEuler(GetWorldSpaceRotation(entity));
-		transform.Scale = GetWorldSpaceScale(entity);
-
-		return transform;
-		//glm::mat4 transform = GetWorldSpaceTransform(entity);
-		//TransformComponent transformComponent;
-		//transformComponent.SetTransform(transform);
-		//return transformComponent;
+		glm::mat4 transform = GetWorldSpaceTransform(entity);
+		TransformComponent transformComponent;
+		transformComponent.SetTransform(transform);
+		return transformComponent;
 	}
 	
 	glm::mat4 World::GetWorldSpaceTransform(Entity entity) const {
 
-		auto rotation = GetWorldSpaceRotation(entity);
+		//auto rotation = GetWorldSpaceRotation(entity);
+		//return glm::translate(glm::mat4(1.0f), { GetWorldSpaceLocation(entity) }) *
+		//	glm::rotate(glm::mat4(1.0f), rotation.x, { 1,0,0 })
+		//	* glm::rotate(glm::mat4(1.0f), rotation.y, { 0,1,0 })
+		//	* glm::rotate(glm::mat4(1.0f), rotation.z, { 0,0,1 })
+		//	* glm::scale(glm::mat4(1.0f), { GetWorldSpaceScale(entity)});
+		glm::mat4 transform(1.0f);
+		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
+		if (parent)
+			transform = GetWorldSpaceTransform(parent);
+		
+		return transform * entity.Transform().GetTransform();
+	}
+
+	glm::mat4 World::GetWorldSpaceTransformUsingLocalRotation(Entity entity) const
+	{
+		auto rotation = entity.GetComponent<TransformComponent>().GetRotation();
 		return glm::translate(glm::mat4(1.0f), { GetWorldSpaceLocation(entity) }) *
 			glm::rotate(glm::mat4(1.0f), rotation.x, { 1,0,0 })
 			* glm::rotate(glm::mat4(1.0f), rotation.y, { 0,1,0 })
 			* glm::rotate(glm::mat4(1.0f), rotation.z, { 0,0,1 })
-			* glm::scale(glm::mat4(1.0f), { GetWorldSpaceScale(entity)});
-		//glm::mat4 transform(1.0f);
-		//Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
-		//if (parent)
-		//	transform = GetWorldSpaceTransform(parent);
-		//
-		//return transform * entity.Transform().GetTransform();
+			* glm::scale(glm::mat4(1.0f), { GetWorldSpaceScale(entity) });
+	}
+
+	TransformComponent World::GetWorldSpaceTransformComponentUsingLocalRotation(Entity entity) const
+	{
+
+		glm::mat4 transform = GetWorldSpaceTransformUsingLocalRotation(entity);
+		TransformComponent transformComponent;
+		transformComponent.SetTransform(transform);
+		return transformComponent;
 	}
 
 	void World::ConvertToLocalSpace(Entity entity)

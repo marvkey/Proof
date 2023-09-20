@@ -44,6 +44,7 @@ namespace Proof {
 		//s_ToleranceScale.length = 100;        // typical length of an object one meter
 		//s_ToleranceScale.speed = 981;         // typical speed of an object, gravity*1s is a reasonable choice
 		s_Physics = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Foundation, scale, true, s_Pvd);
+		
 		if (!s_Physics)
 			PF_CORE_ASSERT(false, "PxCreateFoundation failed!");
 		s_Dispatcher = physx::PxDefaultCpuDispatcherCreate(2);

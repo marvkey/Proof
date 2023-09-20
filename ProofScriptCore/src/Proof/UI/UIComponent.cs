@@ -14,7 +14,7 @@ namespace Proof
         public uint TableIndex { get; internal set; }
 
         
-    }
+    } 
 
     struct UIBaseData
     {

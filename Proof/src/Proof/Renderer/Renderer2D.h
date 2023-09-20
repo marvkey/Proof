@@ -51,7 +51,7 @@ namespace Proof {
 		float TextDrawTime = 0.0f;
 		float TotalRenderTime = 0.0f;
 	};
-	class Renderer2D {
+	class Renderer2D : RefCounted {
 		friend class Camera;
 	public:
 		Renderer2D();
@@ -79,7 +79,7 @@ namespace Proof {
 		void SetTargetFrameBuffer(Count<class FrameBuffer> framebuffer);
 		Rendered2DStatistics GetStats() { return m_Stats; }
 	private:
-		Count<RenderCommandBuffer> m_CommandBuffer;
+		Count<class RenderCommandBuffer> m_CommandBuffer;
 		Count<FrameBuffer> m_FrameBuffer;
 		Rendered2DStatistics m_Stats;
 		Count<class RenderPass> m_TextPass;
