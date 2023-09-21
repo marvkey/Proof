@@ -15,6 +15,16 @@ namespace Proof
 		}
 		return nullptr;
 	}
+	PanelData* PanelManager::GetPanelData(const char* strID) 
+	{
+		uint32_t id = Hash::GenerateFNVHash(strID);
+
+		if (m_Panels.contains(id))
+		{
+			return &m_Panels.at(id);
+		}
+		return nullptr;;
+	}
 	void PanelManager::RemovePanel(const char* strID)
 	{
 		uint32_t id = Hash::GenerateFNVHash(strID);

@@ -142,36 +142,53 @@ namespace Proof {
     void Application::OnEvent(Event& e) {
         PF_PROFILE_FUNC();
         EventDispatcher dispatcher(e);
-        dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
-        dispatcher.Dispatch<WindowCloseEvent>(PF_BIND_FN(Application::OnWindowCloseEvent));
-        dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e) {
-            if(e.GetWhidt() != 0 or e.GetHeight()!=0)
-                Renderer::OnWindowResize(e);
-        });
         /// PUSH LAYERS BACKWARDS
         /// WHEN WE GET UI WE MIGHT WANT TO ONLY RESPODN TO UI FIRST
          if (m_IsRunning == false)
             return;
+
+         dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e) {
+             if (e.GetWhidt() != 0 or e.GetHeight() != 0)
+             {
+                 Renderer::OnWindowResize(e);
+                 return false;
+             }
+             return false;
+         });
          for (Count<Layer>& layer : m_LayerStack->V_LayerStack)
-            layer->OnEvent(e);
+         {
+             if (e.Handled)
+                 break;
+             layer->OnEvent(e);
+         }
+
+         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
+         dispatcher.Dispatch<WindowCloseEvent>(PF_BIND_FN(Application::OnWindowCloseEvent));
+    
     }
 
-    void Application::OnWindowMinimizeEvent(WindowMinimizeEvent& e) {
+    bool Application::OnWindowMinimizeEvent(WindowMinimizeEvent& e) {
         if(e.IsWIndowMinimized())
             WindowMinimized = true;
         else
             WindowMinimized = false;
+
+        return true;
+
     }
 
-    void Application::OnMouseScrollEVent(MouseScrollEvent& e) {
+    bool Application::OnMouseScrollEVent(MouseScrollEvent& e) {
+        return false;
+    }
+
+    bool Application::OnKeyClicked(KeyClickedEvent& e) {
+        return false;
 
     }
 
-    void Application::OnKeyClicked(KeyClickedEvent& e) {
-    }
-
-    void Application::OnWindowCloseEvent(WindowCloseEvent& e) {
+    bool Application::OnWindowCloseEvent(WindowCloseEvent& e) {
         m_IsRunning = false;
+        return true;
     }
 
     

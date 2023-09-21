@@ -175,10 +175,12 @@ namespace Proof {
 	}
 
 
-	void OnKeyHold(KeyHoldEvent& e){
+	bool OnKeyHold(KeyHoldEvent& e) {
+		bool state = false;
 
-		for (const auto& [name, action] : s_Data->ActionMapping) {
-			// checking if key hold is an available format
+		for (const auto& [name, action] : s_Data->ActionMapping)
+		{
+// Checking if keyboard key hold is an available format
 			if (!action.Inputs.contains(InputDevice::KeyBoard))
 				continue;
 
@@ -187,15 +189,21 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetKey())
 				{
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyHold);
 				}
 			}
 		}
+
+		return state;
 	}
-	void OnKeyDoubleClicked(KeyDoubleClickEvent& e){
-  		for (const auto& [name, action] : s_Data->ActionMapping)
+
+	bool OnKeyDoubleClicked(KeyDoubleClickEvent& e) {
+		bool state = false;
+
+		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
-			// checking if key hold is an available format
+			// Checking if keyboard key hold is an available format
 			if (!action.Inputs.contains(InputDevice::KeyBoard))
 				continue;
 
@@ -204,29 +212,42 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetKey())
 				{
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyDouble);
 				}
 			}
 		}
+
+		return state;
 	}
-	void OnKeyReleased(KeyReleasedEvent& e){
+
+	bool OnKeyReleased(KeyReleasedEvent& e) {
+		bool state = false;
+
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
-			// checking if key hold is an available format
+			// Checking if keyboard key hold is an available format
 			if (!action.Inputs.contains(InputDevice::KeyBoard))
 				continue;
+
 			auto& data = action.Inputs.at(InputDevice::KeyBoard);
 			for (auto& inputs : data)
 			{
 				if (inputs.Key == (int)e.GetKey())
 				{
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyReleased);
 				}
 			}
 		}
+
+		return state;
 	}
+
 	
-	void OnKeyClicked(KeyClickedEvent& e){
+	bool OnKeyClicked(KeyClickedEvent& e){
+
+		bool state = false;
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
 			// checking if key hold is an available format
@@ -237,12 +258,16 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetKey())
 				{
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyClicked);
 				}
 			}
 		}
+		return state;
 	}
-	void OnKeyPressed(KeyPressedEvent& e){
+	bool OnKeyPressed(KeyPressedEvent& e){
+		bool state = false;
+
 		// Motion movement
 		{
 			for (const auto& [name, action] : s_Data->MotionMapping)
@@ -255,6 +280,7 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetKey())
 					{
+						state = true;
 						InputManagerMeathods::CallMotion(name, (uint32_t)Players::Player0, inputs.MotionValue);
 					}
 				}
@@ -273,14 +299,20 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetKey())
 					{
+						state = true;
 						InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyPressed);
 					}
 				}
 			}
 		}
+
+		return state;
 	}
 
-	void OnMouseClicked(MouseButtonClickedEvent& e){
+	bool OnMouseClicked(MouseButtonClickedEvent& e)
+	{
+		bool state = false;
+
 		for (const auto& [name, action] : s_Data->ActionMapping) {
 			// checking if key hold is an available format
 			if (!action.Inputs.contains(InputDevice::MouseButton))
@@ -290,45 +322,40 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
+					state  = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyClicked);
 				}
 			}
 		}
+		return state;
 	}
 
-	void OnMousePressed(MouseButtonPressedEvent& e){
+	bool OnMousePressed(MouseButtonPressedEvent& e) {
+		bool state = false;
+
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
 			// checking if key hold is an available format
 			if (!action.Inputs.contains(InputDevice::MouseButton))
 				continue;
+
 			auto& data = action.Inputs.at(InputDevice::MouseButton);
 			for (auto& inputs : data)
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyPressed);
 				}
 			}
 		}
-		// Motion movement
-		{
-			for (const auto& [name, motion] : s_Data->MotionMapping) {
-				if (!motion.Inputs.contains(InputDevice::MouseMovement))
-					continue;
-				auto& data = motion.Inputs.at(InputDevice::MouseMovement);
-				for (auto& inputs : data)
-				{
-					if (inputs.Key == (int)e.GetButton())
-					{
-						InputManagerMeathods::CallMotion(name, (uint32_t)Players::Player0, inputs.MotionValue);
-					}
-				}
-			}
-		}
+
+		return state;
 	}
 
-	void OnMouseReleased(MouseButtonReleasedEvent& e){
+	bool OnMouseReleased(MouseButtonReleasedEvent& e) {
+		bool state = false;
+
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
 			// checking if key hold is an available format
@@ -340,13 +367,18 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyReleased);
 				}
 			}
 		}
+
+		return state;
 	}
 
-	void OnMouseScroll(MouseScrollEvent& e) {
+	bool OnMouseScroll(MouseScrollEvent& e) {
+		bool state = false;
+
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
 			// checking if key hold is an available format
@@ -358,21 +390,29 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetAxis())
 				{
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyPressed);
-					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0,InputEvent::KeyClicked);
+					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyClicked);
 				}
-				else if(inputs.Key == (int)e.GetAxis())
+				else if (inputs.Key == (int)e.GetAxis())
 				{
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyClicked);
 					InputManagerMeathods::CallAction(name, (uint32_t)Players::Player0, InputEvent::KeyPressed);
 				}
 			}
 		}
+
+		return state;
 	}
-	void OnMouseMoved(MouseMoveEvent& e){
+
+	bool OnMouseMoved(MouseMoveEvent& e) {
 		float movedX = e.GetMovedX();
 		float movedY = e.GetMovedY();
+
 		// Motion Movement
+		bool state = false;
+
 		for (const auto& [name, motion] : s_Data->MotionMapping)
 		{
 			if (motion.Inputs.contains(InputDevice::MouseMovement))
@@ -382,23 +422,31 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)MouseAxis::X)
 					{
+						state = true;
 						InputManagerMeathods::CallMotion(name, (uint32_t)Players::Player0, inputs.MotionValue * movedX);
 					}
 					else if (inputs.Key == (int)MouseAxis::Y)
 					{
-						InputManagerMeathods::CallMotion(name, (uint32_t)Players::Player0, inputs.MotionValue* movedY);
+						state = true;
+						InputManagerMeathods::CallMotion(name, (uint32_t)Players::Player0, inputs.MotionValue * movedY);
 					}
 				}
 			}
 		}
+
+		return state;
 	}
-	void OnControllerClicked(ControllerButtonClickedEvent& e) {
+
+	bool OnControllerClicked(ControllerButtonClickedEvent& e) {
+		bool state = false;
 		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
 		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
-			return;
+			return state;
+
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
-				// checking if key hold is an available format
+			// Checking if controller button is an available format
 			if (!action.Inputs.contains(InputDevice::ControllerButton))
 				continue;
 
@@ -407,20 +455,27 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyClicked);
 				}
 			}
 		}
+
+		return state;
 	}
-	void OnControllerPressed(ControllerButtonPressedEvent& e){
+
+	bool OnControllerPressed(ControllerButtonPressedEvent& e) {
+		bool state = false;
 		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
 		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
-			return;
+			return state;
+
 		// ACTION
 		{
 			for (const auto& [name, action] : s_Data->ActionMapping)
 			{
-					// checking if key hold is an available format
+				// Checking if controller button is an available format
 				if (!action.Inputs.contains(InputDevice::ControllerButton))
 					continue;
 
@@ -429,15 +484,18 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetButton())
 					{
+						state = true;
 						InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyPressed);
 					}
 				}
 			}
 		}
-		// M0TIION
+
+		// MOTION
 		{
-			for (const auto& [name, motion] : s_Data->MotionMapping) {
-					// checking if key hold is an available format
+			for (const auto& [name, motion] : s_Data->MotionMapping)
+			{
+				// Checking if controller button is an available format
 				if (!motion.Inputs.contains(InputDevice::ControllerButton))
 					continue;
 
@@ -446,19 +504,26 @@ namespace Proof {
 				{
 					if (inputs.Key == (int)e.GetButton())
 					{
+						state = true;
 						InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue);
 					}
 				}
 			}
 		}
+
+		return state;
 	}
-	void OnControllerReleased(ControllerButtonReleasedEvent& e){
+
+	bool OnControllerReleased(ControllerButtonReleasedEvent& e) {
+		bool state = false;
 		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
 		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
-			return;
+			return state;
+
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
-				// checking if key hold is an available format
+			// Checking if controller button is an available format
 			if (!action.Inputs.contains(InputDevice::ControllerButton))
 				continue;
 
@@ -467,20 +532,25 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
-
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyReleased);
 				}
 			}
 		}
+
+		return state;
 	}
 
-	void OnControllerDoubleClick(ControllerButtonDoubleClickEvent& e) {
+	bool OnControllerDoubleClick(ControllerButtonDoubleClickEvent& e) {
+		bool state = false;
 		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
 		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
-			return;
+			return state;
+
 		for (const auto& [name, action] : s_Data->ActionMapping)
 		{
-				// checking if key hold is an available format
+			// Checking if controller button is an available format
 			if (!action.Inputs.contains(InputDevice::ControllerButton))
 				continue;
 
@@ -489,18 +559,25 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetButton())
 				{
+					state = true;
 					InputManagerMeathods::CallAction(name, (uint32_t)controller.Player, InputEvent::KeyDouble);
 				}
 			}
 		}
+
+		return state;
 	}
-	void ControllerTriggerAxis(ControllerTriggerAxisEvent& e){
+
+	bool ControllerTriggerAxis(ControllerTriggerAxisEvent& e) {
+		bool state = false;
 		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
 		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
-			return;
+			return state;
+
 		for (const auto& [name, motion] : s_Data->MotionMapping)
 		{
-			// checking if key hold is an available format
+			// Checking if controller axis is an available format
 			if (!motion.Inputs.contains(InputDevice::ControllerAxis))
 				continue;
 
@@ -509,65 +586,80 @@ namespace Proof {
 			{
 				if (inputs.Key == (int)e.GetTriggerAxis())
 				{
-
+					state = true;
 					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetAxis());
 				}
 			}
 		}
+
+		return state;
 	}
-	void ControllerLeftJoystickAxis(ControllerLeftJoystickAxisEvent& e){
+
+	bool ControllerLeftJoystickAxis(ControllerLeftJoystickAxisEvent& e) {
+		bool state = false;
 		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
 		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
-			return;
+			return state;
+
 		for (const auto& [name, motion] : s_Data->MotionMapping)
 		{
-			// checking if key hold is an available format
+			// Checking if controller axis is an available format
 			if (!motion.Inputs.contains(InputDevice::ControllerAxis))
 				continue;
 
 			auto& data = motion.Inputs.at(InputDevice::ControllerAxis);
 			for (auto& inputs : data)
 			{
-				Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
-
 				if (inputs.Key == (int)ControllerAxis::LeftX)
 				{
-
+					state = true;
 					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetX());
 				}
 				else if (inputs.Key == (int)ControllerAxis::LeftY)
 				{
+					state = true;
 					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetY());
 				}
 			}
 		}
+
+		return state;
 	}
-	void ControllerRightJoystickAxis(ControllerRightJoystickAxisEvent& e)
+
+	bool ControllerRightJoystickAxis(ControllerRightJoystickAxisEvent& e)
 	{
-			Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+		bool state = false;
+		Controller& controller = Application::Get()->GetWindow()->GetController(e.GetIndex());
+
 		if (!InputManagerMeathods::HasPlayer((uint32_t)controller.Player))
-			return;
+			return state;
+
 		for (const auto& [name, motion] : s_Data->MotionMapping)
 		{
-			// checking if key hold is an available format
+			// Checking if controller axis is an available format
 			if (!motion.Inputs.contains(InputDevice::ControllerAxis))
 				continue;
 
 			auto& data = motion.Inputs.at(InputDevice::ControllerAxis);
 			for (auto& inputs : data)
 			{
-
 				if (inputs.Key == (int)ControllerAxis::RightX)
 				{
+					state = true;
 					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetX());
 				}
 				else if (inputs.Key == (int)ControllerAxis::RightX)
 				{
+					state = true;
 					InputManagerMeathods::CallMotion(name, (uint32_t)controller.Player, inputs.MotionValue * e.GetY());
 				}
 			}
 		}
+
+		return state;
 	}
+
 	void InputManager::OnEvent(Event& e) {
 		if (s_Data->Runtime == false)
 			return;

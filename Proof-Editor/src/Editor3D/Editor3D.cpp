@@ -209,19 +209,17 @@ namespace Proof
 
 	void Editore3D::OnEvent(Event& e) {
 		EventDispatcher dispatcher(e);
-		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
-			InputManager::OnEvent(e);
 
-		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 		dispatcher.Dispatch<ControllerConnectEvent>([](auto& e) {
 			PF_INFO(e.ToString());
+			return false;
 		});
 		dispatcher.Dispatch<ControllerDisconnectEvent>([](auto& e) {
 			PF_INFO(e.ToString());
+			return false;
 		});
 
-		s_EditorData->PanelManager->OnEvent(e);
-		AssetEditorPanel::OnEvent(e);
+	
 		// KEYBOARD
 		{
 			if (m_ShowAllKeyBoardEvents.ShowOne == true && e.IsInCategory(EventCategory::EventKeyBoard)) {
@@ -231,24 +229,30 @@ namespace Proof
 				if (m_ShowAllKeyBoardEvents.Clicked) {
 					dispatcher.Dispatch<KeyClickedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
+
 					});
 				}
 
 				if (m_ShowAllKeyBoardEvents.Released) {
 					dispatcher.Dispatch<KeyReleasedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
+
 					});
 				}
 
 				if (m_ShowAllKeyBoardEvents.DoubleClicked) {
 					dispatcher.Dispatch<KeyDoubleClickEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllKeyBoardEvents.Pressed) {
 					dispatcher.Dispatch<KeyPressedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 				return;
@@ -265,35 +269,41 @@ namespace Proof
 				if (m_ShowAllMouseEvents.Movement) {
 					dispatcher.Dispatch<MouseMoveEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 				if (m_ShowAllMouseEvents.Clicked) {
 					dispatcher.Dispatch<MouseButtonClickedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllMouseEvents.Released) {
 					dispatcher.Dispatch<MouseButtonReleasedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllMouseEvents.DoubleClicked) {
 					dispatcher.Dispatch<MouseButtonDoubleClickEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllMouseEvents.Pressed) {
 					dispatcher.Dispatch<MouseButtonPressedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllMouseEvents.Scroll) {
 					dispatcher.Dispatch<MouseScrollEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 				return;
@@ -310,29 +320,34 @@ namespace Proof
 				if (m_ShowAllWindowEvents.Resize) {
 					dispatcher.Dispatch<WindowResizeEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 				if (m_ShowAllWindowEvents.Minimize) {
 					dispatcher.Dispatch<WindowMinimizeEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllWindowEvents.Move) {
 					dispatcher.Dispatch<WindowMoveEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllWindowEvents.Close) {
 					dispatcher.Dispatch<WindowCloseEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllWindowEvents.Focus) {
 					dispatcher.Dispatch<WindowFocusEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 				return;
@@ -349,43 +364,61 @@ namespace Proof
 				if (m_ShowAllControllerEvents.Clicked) {
 					dispatcher.Dispatch<ControllerButtonClickedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 				if (m_ShowAllControllerEvents.Released) {
 					dispatcher.Dispatch<ControllerButtonReleasedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllControllerEvents.Pressed) {
 					dispatcher.Dispatch<ControllerButtonPressedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllControllerEvents.DoubleClicked) {
 					dispatcher.Dispatch<ControllerButtonDoubleClickEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllControllerEvents.Joystick) {
 					dispatcher.Dispatch<ControllerLeftJoystickAxisEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 					dispatcher.Dispatch<ControllerRightJoystickAxisEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 
 				if (m_ShowAllControllerEvents.Trigger) {
 					dispatcher.Dispatch<ControllerTriggerAxisEvent>([](auto& e) {
 						PF_INFO(e.ToString());
+						return false;
 					});
 				}
 				return;
 			}
 		}
+	
+
+
+		s_EditorData->PanelManager->OnEvent(e);
+		AssetEditorPanel::OnEvent(e);
+
+		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
+			InputManager::OnEvent(e);
+
+		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
+
 	}
 	void Editore3D::OnAttach() {
 		EditorResources::Init();
@@ -689,7 +722,7 @@ namespace Proof
 		ImGui::End();
 	}
 
-	void Editore3D::OnKeyClicked(KeyClickedEvent& e) {
+	bool Editore3D::OnKeyClicked(KeyClickedEvent& e) {
 		// Shortcuts
 
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
@@ -697,7 +730,7 @@ namespace Proof
 		
 		//basically means that m_editor camera is beign used 
 		if (m_ViewPortFocused and Input::IsMouseButtonPressed(MouseButton::ButtonRight))
-			return;
+			return false;
 		switch (e.GetKey()) {
 			case KeyBoardKey::Escape:
 			{
@@ -705,6 +738,7 @@ namespace Proof
 					{
 						Mouse::CaptureMouse(false);
 						s_DetachPlayer = true;
+						return true;
 						break;
 					}
 					//if (Mouse::IsMouseCaptured())
@@ -715,8 +749,11 @@ namespace Proof
 			}
 			case KeyBoardKey::P:
 			{
-				//if(control)
-				//	Math::ChangeBool(s_EditorData->WorldHierachy.m_ShowWindow);
+					if (control)
+					{
+						Math::ChangeBool(s_EditorData->PanelManager->GetPanelData(SCENE_HIERARCHY_PANEL_ID)->IsOpen);
+						return true;
+					}
 				break;
 			}
 			case KeyBoardKey::L:
@@ -727,8 +764,11 @@ namespace Proof
 			}
 			case KeyBoardKey::B:
 			{
-				//if (control)
-				//	Math::ChangeBool(s_EditorData->ContentBrowserPanel.m_ShowWindow);
+					if (control)
+					{
+						Math::ChangeBool(s_EditorData->PanelManager->GetPanelData(CONTENT_BROWSER_PANEL_ID)->IsOpen);
+						return true;;
+					}
 				break;
 			}
 			case KeyBoardKey::R:
@@ -816,46 +856,25 @@ namespace Proof
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					{
 						s_EditorData->GuizmoType = ImGuizmo::OPERATION::ROTATE;
+						return true;
+					}
 						break;
 				}
 			case KeyBoardKey::E:
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					{
 						s_EditorData->GuizmoType = ImGuizmo::OPERATION::SCALE;
-						break;
-				}
-			case KeyBoardKey::Tab:
-				{
-					/*
-					if (m_ViewPortFocused == false || s_EditorData->WorldHierachy.m_SelectedEntity == false)
-						break;
-					Entity selected = s_EditorData->WorldHierachy.m_SelectedEntity;
-					if (shift == true) {
-						if (selected.HasChildren()) {
-							auto entity = m_ActiveWorld->GetEntity(selected.GetComponent<HierarchyComponent>().Children[0]);
-							s_EditorData->WorldHierachy.m_SelectedEntity = entity;
-						}
+						return true;
 					}
-
-					else if (selected.HasParent()) {
-						int childIndex = selected.GetParent().GetComponent<HierarchyComponent>().GetChildIndex(selected.GetUUID());
-						int numChildren = selected.GetParent().GetComponent<HierarchyComponent>().Children.size() - 1;
-						int childIndexAdd = 0;
-						childIndexAdd += childIndex;
-						if (childIndex >= numChildren)
-							s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->GetEntity(selected.GetComponent<HierarchyComponent>().Children[0]);
-						else if (childIndex < numChildren)
-							s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->GetEntity(selected.GetComponent<HierarchyComponent>().Children[childIndexAdd]);
-					}
-					else if (selected.HasChildren()) {
-						s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->GetEntity(selected.GetComponent<HierarchyComponent>().Children[0]);
-					}
-					*/
 					break;
 				}
+		
 		}
+		return false;
 	}
 	void Editore3D::Logger() {
 		if (s_EditorData->ShowLogger == false)

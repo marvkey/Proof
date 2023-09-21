@@ -109,7 +109,7 @@ namespace Proof
 		{
 			for (auto& [id, panel] : kv.second)
 			{
-				if (panel->m_IsOpen == true)
+				if (panel->m_IsOpen == true && panel->IsFocused())
 					panel->OnEvent(e);
 			}
 		}

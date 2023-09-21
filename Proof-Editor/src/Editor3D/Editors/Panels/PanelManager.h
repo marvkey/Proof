@@ -19,6 +19,7 @@ namespace Proof
 		PanelManager() = default;
 		~PanelManager();
 		const PanelData* GetPanelData(uint32_t panelID) const;
+		PanelData* GetPanelData(const char* strID) ;
 
 		void RemovePanel(const char* strID);
 		void OnImGuiRender();

@@ -207,6 +207,7 @@ namespace Proof {
 		dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e) {
 			if (e.GetWhidt() != 0 or e.GetHeight() != 0)
 				m_Resize = true;
+			return false;
 		});
 	}
 	void VulkanImguiLayer::End()

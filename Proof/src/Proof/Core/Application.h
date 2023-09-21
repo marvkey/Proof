@@ -58,10 +58,10 @@
         void ImguiUpdate(float deltaTime);
         static float m_ImguiFrameTime;
         void OnEvent(Event& e);
-        void OnWindowMinimizeEvent(class WindowMinimizeEvent& e);
-        void OnMouseScrollEVent(class MouseScrollEvent& e);
-        void OnKeyClicked(class KeyClickedEvent& e);
-        void OnWindowCloseEvent(class WindowCloseEvent& e);
+        bool OnWindowMinimizeEvent(class WindowMinimizeEvent& e);
+        bool OnMouseScrollEVent(class MouseScrollEvent& e);
+        bool OnKeyClicked(class KeyClickedEvent& e);
+        bool OnWindowCloseEvent(class WindowCloseEvent& e);
         Count<LayerStack> m_LayerStack;
         Count<class ImGuiLayer> m_ImGuiMainLayer;
         Special<Window>m_Window;

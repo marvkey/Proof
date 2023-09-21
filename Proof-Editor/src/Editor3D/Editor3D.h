@@ -72,7 +72,7 @@ namespace Proof {
 		WindowShowEvent m_ShowAllWindowEvents;
 		ControllerEvent m_ShowAllControllerEvents;
 		virtual void OnEvent(Event& e);
-		void OnKeyClicked(KeyClickedEvent& e);
+		bool OnKeyClicked(KeyClickedEvent& e);
 		Entity m_CopyEntity;
 		void Logger();
 		void ViewPort();
