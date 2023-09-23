@@ -1,7 +1,6 @@
 #include "Proofprch.h"
 #include "RenderMaterial.h"
 #include "VertexArray.h"
-#include "Vertex.h"
 #include "Platform/Vulkan/VulkanRenderMaterial.h"
 #include "Renderer.h"
 namespace Proof {

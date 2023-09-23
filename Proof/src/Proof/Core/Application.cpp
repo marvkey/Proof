@@ -155,13 +155,12 @@ namespace Proof {
              }
              return false;
          });
-         for (Count<Layer>& layer : m_LayerStack->V_LayerStack)
+         for (auto it = m_LayerStack->rbegin(); it != m_LayerStack->rend(); ++it)
          {
              if (e.Handled)
                  break;
-             layer->OnEvent(e);
+             (*it)->OnEvent(e);
          }
-
          dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
          dispatcher.Dispatch<WindowCloseEvent>(PF_BIND_FN(Application::OnWindowCloseEvent));
     

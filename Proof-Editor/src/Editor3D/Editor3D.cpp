@@ -45,6 +45,7 @@
 
 #include "Proof/Project/ProjectSerilizer.h"
 #include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Renderer/Renderer2D.h"
 
 #include "Proof/Core/Profile.h"
 
@@ -117,8 +118,8 @@ namespace Proof
 		Ok,
 		Cancel
 	};
-	
-	static PopupState PopModel(const std::string& ID, const std::string& label,std::string& editableText, const std::string& hint = "", const std::string& nonEditable = "", 
+
+	static PopupState PopModel(const std::string& ID, const std::string& label, std::string& editableText, const std::string& hint = "", const std::string& nonEditable = "",
 		ImGuiInputTextFlags flags = ImGuiInputTextFlags_CharsNoBlank, ImGuiViewport* viewport = ImGui::GetMainViewport())
 	{
 		UI::ScopedID scopedId(ID.c_str());
@@ -178,7 +179,7 @@ namespace Proof
 	static EditorData* s_EditorData = nullptr;
 	static bool s_DetachPlayer = false;
 	static bool SaveSceneDialouge = false;
-	Editore3D* Editore3D::s_Instance =  nullptr;
+	Editore3D* Editore3D::s_Instance = nullptr;
 	PopupState NewProjectState = PopupState::None;
 	std::filesystem::path NewProjectDir;
 	std::string NewProjectName;
@@ -205,7 +206,7 @@ namespace Proof
 		//	Application::Get()->GetWindow()->KeyboardClicked.end();
 		return Input::IsKeyClicked(key);
 	}
-	
+
 
 	void Editore3D::OnEvent(Event& e) {
 		EventDispatcher dispatcher(e);
@@ -219,14 +220,17 @@ namespace Proof
 			return false;
 		});
 
-	
+
 		// KEYBOARD
 		{
-			if (m_ShowAllKeyBoardEvents.ShowOne == true && e.IsInCategory(EventCategory::EventKeyBoard)) {
-				if (m_ShowAllKeyBoardEvents.ShowAll == true) {
+			if (m_ShowAllKeyBoardEvents.ShowOne == true && e.IsInCategory(EventCategory::EventKeyBoard))
+			{
+				if (m_ShowAllKeyBoardEvents.ShowAll == true)
+				{
 					PF_INFO(e.ToString());
 				}
-				if (m_ShowAllKeyBoardEvents.Clicked) {
+				if (m_ShowAllKeyBoardEvents.Clicked)
+				{
 					dispatcher.Dispatch<KeyClickedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
@@ -234,7 +238,8 @@ namespace Proof
 					});
 				}
 
-				if (m_ShowAllKeyBoardEvents.Released) {
+				if (m_ShowAllKeyBoardEvents.Released)
+				{
 					dispatcher.Dispatch<KeyReleasedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
@@ -242,14 +247,16 @@ namespace Proof
 					});
 				}
 
-				if (m_ShowAllKeyBoardEvents.DoubleClicked) {
+				if (m_ShowAllKeyBoardEvents.DoubleClicked)
+				{
 					dispatcher.Dispatch<KeyDoubleClickEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllKeyBoardEvents.Pressed) {
+				if (m_ShowAllKeyBoardEvents.Pressed)
+				{
 					dispatcher.Dispatch<KeyPressedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
@@ -261,46 +268,54 @@ namespace Proof
 
 		// MOUSE
 		{
-			if (m_ShowAllMouseEvents.ShowOne == true && e.IsInCategory(EventCategory::EventMouse)) {
-				if (m_ShowAllMouseEvents.ShowAll == true) {
+			if (m_ShowAllMouseEvents.ShowOne == true && e.IsInCategory(EventCategory::EventMouse))
+			{
+				if (m_ShowAllMouseEvents.ShowAll == true)
+				{
 					PF_INFO(e.ToString());
 					return;
 				}
-				if (m_ShowAllMouseEvents.Movement) {
+				if (m_ShowAllMouseEvents.Movement)
+				{
 					dispatcher.Dispatch<MouseMoveEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
-				if (m_ShowAllMouseEvents.Clicked) {
+				if (m_ShowAllMouseEvents.Clicked)
+				{
 					dispatcher.Dispatch<MouseButtonClickedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllMouseEvents.Released) {
+				if (m_ShowAllMouseEvents.Released)
+				{
 					dispatcher.Dispatch<MouseButtonReleasedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllMouseEvents.DoubleClicked) {
+				if (m_ShowAllMouseEvents.DoubleClicked)
+				{
 					dispatcher.Dispatch<MouseButtonDoubleClickEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllMouseEvents.Pressed) {
+				if (m_ShowAllMouseEvents.Pressed)
+				{
 					dispatcher.Dispatch<MouseButtonPressedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllMouseEvents.Scroll) {
+				if (m_ShowAllMouseEvents.Scroll)
+				{
 					dispatcher.Dispatch<MouseScrollEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
@@ -312,39 +327,46 @@ namespace Proof
 
 		// WINDOW
 		{
-			if (m_ShowAllWindowEvents.ShowOne == true && e.IsInCategory(EventCategory::EventCategoryWindow)) {
-				if (m_ShowAllWindowEvents.ShowAll == true) {
+			if (m_ShowAllWindowEvents.ShowOne == true && e.IsInCategory(EventCategory::EventCategoryWindow))
+			{
+				if (m_ShowAllWindowEvents.ShowAll == true)
+				{
 					PF_INFO(e.ToString());
 					return;
 				}
-				if (m_ShowAllWindowEvents.Resize) {
+				if (m_ShowAllWindowEvents.Resize)
+				{
 					dispatcher.Dispatch<WindowResizeEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
-				if (m_ShowAllWindowEvents.Minimize) {
+				if (m_ShowAllWindowEvents.Minimize)
+				{
 					dispatcher.Dispatch<WindowMinimizeEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllWindowEvents.Move) {
+				if (m_ShowAllWindowEvents.Move)
+				{
 					dispatcher.Dispatch<WindowMoveEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllWindowEvents.Close) {
+				if (m_ShowAllWindowEvents.Close)
+				{
 					dispatcher.Dispatch<WindowCloseEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllWindowEvents.Focus) {
+				if (m_ShowAllWindowEvents.Focus)
+				{
 					dispatcher.Dispatch<WindowFocusEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
@@ -356,39 +378,46 @@ namespace Proof
 
 		// Controller
 		{
-			if (m_ShowAllControllerEvents.ShowOne == true && e.IsInCategory(EventCategory::EventController)) {
-				if (m_ShowAllMouseEvents.ShowAll == true) {
+			if (m_ShowAllControllerEvents.ShowOne == true && e.IsInCategory(EventCategory::EventController))
+			{
+				if (m_ShowAllMouseEvents.ShowAll == true)
+				{
 					PF_INFO(e.ToString());
 					return;
 				}
-				if (m_ShowAllControllerEvents.Clicked) {
+				if (m_ShowAllControllerEvents.Clicked)
+				{
 					dispatcher.Dispatch<ControllerButtonClickedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
-				if (m_ShowAllControllerEvents.Released) {
+				if (m_ShowAllControllerEvents.Released)
+				{
 					dispatcher.Dispatch<ControllerButtonReleasedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllControllerEvents.Pressed) {
+				if (m_ShowAllControllerEvents.Pressed)
+				{
 					dispatcher.Dispatch<ControllerButtonPressedEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllControllerEvents.DoubleClicked) {
+				if (m_ShowAllControllerEvents.DoubleClicked)
+				{
 					dispatcher.Dispatch<ControllerButtonDoubleClickEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
 					});
 				}
 
-				if (m_ShowAllControllerEvents.Joystick) {
+				if (m_ShowAllControllerEvents.Joystick)
+				{
 					dispatcher.Dispatch<ControllerLeftJoystickAxisEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
@@ -399,7 +428,8 @@ namespace Proof
 					});
 				}
 
-				if (m_ShowAllControllerEvents.Trigger) {
+				if (m_ShowAllControllerEvents.Trigger)
+				{
 					dispatcher.Dispatch<ControllerTriggerAxisEvent>([](auto& e) {
 						PF_INFO(e.ToString());
 						return false;
@@ -408,7 +438,7 @@ namespace Proof
 				return;
 			}
 		}
-	
+
 
 
 		s_EditorData->PanelManager->OnEvent(e);
@@ -424,11 +454,13 @@ namespace Proof
 		EditorResources::Init();
 		m_ActiveWorld = Count<World>::Create();
 		auto startworld = Application::Get()->GetProject()->GetConfig().StartWorldEdit;
-		if (AssetManager::HasAsset(startworld)) {
+		if (AssetManager::HasAsset(startworld))
+		{
 			auto Info = AssetManager::GetAssetInfo(startworld);
 			SceneSerializer scerelizer(m_ActiveWorld.Get());
 			auto path = Application::Get()->GetProject()->GetAssetFileSystemPath(Info.Path);
-			if (scerelizer.DeSerilizeText(path.string()) == true) {
+			if (scerelizer.DeSerilizeText(path.string()) == true)
+			{
 				AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
 			}
 		}
@@ -449,9 +481,9 @@ namespace Proof
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		s_EditorData->PlayButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PlayButton.png");
-		s_EditorData->PauseButtonTexture = Texture2D::Create(TextureConfiguration(),"Resources/Icons/MainPanel/PauseButton .png");
-		s_EditorData->SimulateButtonTexture = Texture2D::Create(TextureConfiguration(),"Resources/Icons/MainPanel/SimulateButton.png");
-		s_EditorData->StopButtonTexture = Texture2D::Create(TextureConfiguration(),"Resources/Icons/MainPanel/StopButton.png");
+		s_EditorData->PauseButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PauseButton .png");
+		s_EditorData->SimulateButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/SimulateButton.png");
+		s_EditorData->StopButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/StopButton.png");
 
 		m_PlayersCount = 1;
 
@@ -460,7 +492,7 @@ namespace Proof
 	}
 	void Editore3D::OnDetach() {
 		if (m_EditorWorld != nullptr) // using editor world in case active world is on play 
-		{ 
+		{
 			SceneSerializer scerelizer(m_EditorWorld.Get());
 			auto assetInfo = AssetManager::GetAssetInfo(m_EditorWorld->GetID());
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
@@ -473,13 +505,15 @@ namespace Proof
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
-		m_WorldRenderer->SetViewportSize((uint32_t) m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y );
-		if (m_IsViewPortResize && m_ViewPortSize.x>0 && m_ViewPortSize.y>0) {
+		m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+		if (m_IsViewPortResize && m_ViewPortSize.x > 0 && m_ViewPortSize.y > 0)
+		{
 			m_IsViewPortResize = false;
 		}
 		AssetEditorPanel::OnUpdate(DeltaTime);
 
-		switch (m_ActiveWorld->GetState()) {
+		switch (m_ActiveWorld->GetState())
+		{
 			case Proof::WorldState::Play:
 				{
 					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
@@ -502,9 +536,9 @@ namespace Proof
 								Entity cameraEntity = entity.GetCamera();
 								if (cameraEntity)
 								{
-									auto& camera =cameraEntity.GetComponent<CameraComponent>();
-									uint32_t windowWIdth = m_ViewPortSize.x ;
-									uint32_t windowHeight = m_ViewPortSize.y ;
+									auto& camera = cameraEntity.GetComponent<CameraComponent>();
+									uint32_t windowWIdth = m_ViewPortSize.x;
+									uint32_t windowHeight = m_ViewPortSize.y;
 									auto location = m_ActiveWorld->GetWorldLocation(cameraEntity);
 									Vector rotation;
 									if (camera.UseLocalRotation)
@@ -518,19 +552,19 @@ namespace Proof
 									std::vector<std::future<void>> renders;
 									if (m_MultiplayerRender.contains(input.InputPlayer))
 									{
-										if(m_IsViewPortResize)
+										if (m_IsViewPortResize)
 											m_MultiplayerRender[input.InputPlayer]->Resize({ windowWIdth, windowHeight });
 										if (entity.HasComponent<PlayerHUDComponent>())
 										{
 											//renders.push_back(std::async(std::launch::async, [&]() {
-												m_MultiplayerRender[input.InputPlayer]->Render(camera, location, s_EditorData->RenderSettings,entity.GetComponent<PlayerHUDComponent>().HudTable);
-											//}));
+											m_MultiplayerRender[input.InputPlayer]->Render(camera, location, s_EditorData->RenderSettings, entity.GetComponent<PlayerHUDComponent>().HudTable);
+										//}));
 										}
 										else
 										{
 											//renders.push_back(std::async(std::launch::async, [&]() {
-												m_MultiplayerRender[input.InputPlayer]->Render(camera, location, s_EditorData->RenderSettings);
-											//}));
+											m_MultiplayerRender[input.InputPlayer]->Render(camera, location, s_EditorData->RenderSettings);
+										//}));
 
 										}
 										//if(renders)
@@ -539,7 +573,8 @@ namespace Proof
 							}
 						});
 					}
-					else if (m_ActiveWorld->HasWorldCamera() && s_DetachPlayer == false) {
+					else if (m_ActiveWorld->HasWorldCamera() && s_DetachPlayer == false)
+					{
 						auto entity = m_ActiveWorld->GetWorldCameraEntity();
 						auto location = m_ActiveWorld->GetWorldLocation(entity);
 						Vector rotation;
@@ -584,7 +619,8 @@ namespace Proof
 			case Proof::WorldState::Edit:
 				{
 					m_ActiveWorld->OnUpdateEditor(DeltaTime);
-					if (m_ViewPortFocused) {
+					if (m_ViewPortFocused)
+					{
 						Application::Get()->GetWindow()->SetWindowInputEvent(true);
 						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 						Application::Get()->GetWindow()->SetWindowInputEvent(false);
@@ -606,22 +642,22 @@ namespace Proof
 		MainToolBar();
 		Logger();
 
-		
+
 		ViewPort();
 		s_EditorData->PanelManager->OnImGuiRender();
 		AssetEditorPanel::OnImGuiRender();
 		// handlepop
 		{
-		
+
 			if (NewProjectState == PopupState::Rendering)
 			{
-				NewProjectState = PopModel("New Project", "", NewProjectName, "Name", NewProjectDir.string()+"/" + NewProjectName);
+				NewProjectState = PopModel("New Project", "", NewProjectName, "Name", NewProjectDir.string() + "/" + NewProjectName);
 				if (NewProjectState == PopupState::Ok)
 				{
 					if (!NewProjectName.empty())
 					{
 
-						ProjectConfig config(NewProjectName,NewProjectDir);
+						ProjectConfig config(NewProjectName, NewProjectDir);
 						Special<Project> newProject = Project::New(config);
 					}
 				}
@@ -631,7 +667,7 @@ namespace Proof
 					NewProjectDir = "";
 					NewProjectState = PopupState::None;
 				}
-			}		
+			}
 		}
 
 		{
@@ -656,7 +692,7 @@ namespace Proof
 			//ImGui::Text("Graphics Card: %s", RendererBase::GetGraphicsCard().c_str());
 			//ImGui::Text("Graphics Card Verison: %s", RendererBase::GetGraphicsCardVersion().c_str());
 			ImGui::Text("%.3f ms/frame ", FrameTime::GetFrameMS());
-			ImGui::Text("%.3f FPS",FrameTime::GetFrameFPS());
+			ImGui::Text("%.3f FPS", FrameTime::GetFrameFPS());
 
 			//ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER 3D");
 			//ImGui::Text("DrawCalls %i", m_WorldRenderer.RenderData.Stats.DrawCalls);
@@ -681,7 +717,7 @@ namespace Proof
 			});
 
 			ExternalAPI::ImGUIAPI::EnumCombo<WorldRendererOptions::PhysicsColliderView>("Physics Collider", m_WorldRenderer->Options.ShowPhysicsColliders);
-			
+
 			ImGui::Text("Shadow Settings");
 
 			ImGui::Checkbox("DebugPass", &m_WorldRenderer->ShadowSetting.RenderDebugPass);
@@ -697,17 +733,17 @@ namespace Proof
 			ImGui::Checkbox("ShowCascades", &shadowSetting.ShowCascades);
 			ImGui::Checkbox("Soft Shadows", &shadowSetting.SoftShadows);
 			ImGui::DragFloat("Max Shadow Distance", &shadowSetting.MaxShadowDistance);
-			ImGui::DragFloat("Shadow Fade", &shadowSetting.ShadowFade,5.0f);
-			
+			ImGui::DragFloat("Shadow Fade", &shadowSetting.ShadowFade, 5.0f);
+
 			// cascade settings tre node
 			ImGui::Checkbox("CascadeFading", &shadowSetting.CascadeFading);
-			if(shadowSetting.CascadeFading)
-				ImGui::DragFloat("CascadeTransitionFade", &shadowSetting.CascadeTransitionFade,0.05,0.0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			if (shadowSetting.CascadeFading)
+				ImGui::DragFloat("CascadeTransitionFade", &shadowSetting.CascadeTransitionFade, 0.05, 0.0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
 			ImGui::DragFloat("CascadeSplitLambda", &shadowSetting.CascadeSplitLambda, 0.01, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
 			ImGui::DragFloat("CascadeNearPlaneOffset", &shadowSetting.CascadeNearPlaneOffset, 0.1, Math::GetMinType<float>(), 0, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 			ImGui::DragFloat("CascadeFarPlaneOffset", &shadowSetting.CascadeFarPlaneOffset, 0.1, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
-			ImGui::DragFloat("ScaleShadowCascadesToOrigin", &shadowSetting.ScaleShadowCascadesToOrigin, 0.1, 0,Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("ScaleShadowCascadesToOrigin", &shadowSetting.ScaleShadowCascadesToOrigin, 0.1, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
 			ImGui::Checkbox("UseManualCascadeSplits", &shadowSetting.UseManualCascadeSplits);
 
@@ -727,13 +763,14 @@ namespace Proof
 
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
 		bool shift = IsKeyPressedEditor(KeyBoardKey::LeftShift) || IsKeyPressedEditor(KeyBoardKey::RightShift);
-		
+
 		//basically means that m_editor camera is beign used 
-		if (m_ViewPortFocused and Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+		if (m_ViewPortFocused == false || Input::IsMouseButtonPressed(MouseButton::ButtonRight) == true)
 			return false;
-		switch (e.GetKey()) {
+		switch (e.GetKey())
+		{
 			case KeyBoardKey::Escape:
-			{
+				{
 					if (m_ActiveWorld->IsPlaying())
 					{
 						Mouse::CaptureMouse(false);
@@ -741,49 +778,60 @@ namespace Proof
 						return true;
 						break;
 					}
-					//if (Mouse::IsMouseCaptured())
-					//{
-					//	Mouse::CaptureMouse(false);
-					//}
 					break;
-			}
+				}
+			case KeyBoardKey::F:
+				{
+					m_EditorCamera.SetPosition(	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity().Transform().Location);
+					return true;
+				}
 			case KeyBoardKey::P:
-			{
+				{
 					if (control)
 					{
 						Math::ChangeBool(s_EditorData->PanelManager->GetPanelData(SCENE_HIERARCHY_PANEL_ID)->IsOpen);
 						return true;
 					}
-				break;
-			}
+					break;
+				}
 			case KeyBoardKey::L:
-			{
-				if (control)
-					Math::ChangeBool(s_EditorData->ShowLogger);
-				break;
-			}
+				{
+					if (control)
+					{
+						Math::ChangeBool(s_EditorData->ShowLogger);
+						return true;
+					}
+					break;
+				}
 			case KeyBoardKey::B:
-			{
+				{
 					if (control)
 					{
 						Math::ChangeBool(s_EditorData->PanelManager->GetPanelData(CONTENT_BROWSER_PANEL_ID)->IsOpen);
-						return true;;
+						return true;
 					}
-				break;
-			}
+					break;
+				}
 			case KeyBoardKey::R:
-			{
-				if (control)
-					Math::ChangeBool(s_EditorData->ShowRendererStats);
+				{
+					if (control)
+					{
+
+						Math::ChangeBool(s_EditorData->ShowRendererStats);
+						return true;
+					}
 				// no right button pressed that means that we are using the editor camera
-				if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
-					s_EditorData->GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
-				break;
-			}
+					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+						s_EditorData->GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
+					break;
+				}
 			case KeyBoardKey::S:
 				{
 					if (control)
+					{
 						Save();
+						return true;
+					}
 
 					break;
 				}
@@ -799,7 +847,7 @@ namespace Proof
 			case KeyBoardKey::Backspace:
 				{
 					/*
-					if (s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) 
+					if (s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus))
 					{
 
 						if (m_ActiveWorld->GetState() == WorldState::Edit) {
@@ -849,7 +897,7 @@ namespace Proof
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
 						s_EditorData->GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-						break;
+					break;
 				}
 
 			case KeyBoardKey::W:
@@ -860,7 +908,7 @@ namespace Proof
 						s_EditorData->GuizmoType = ImGuizmo::OPERATION::ROTATE;
 						return true;
 					}
-						break;
+					break;
 				}
 			case KeyBoardKey::E:
 				{
@@ -872,7 +920,7 @@ namespace Proof
 					}
 					break;
 				}
-		
+
 		}
 		return false;
 	}
@@ -882,17 +930,20 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
-		if (ImGui::Begin("Log", &s_EditorData->ShowLogger, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
+		if (ImGui::Begin("Log", &s_EditorData->ShowLogger, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar))
+		{
 			ImGui::BeginMenuBar();
 			{
 				ExternalAPI::ImGUIAPI::CheckBox("pause logging", &Log::m_PauseLog);
 				ExternalAPI::ImGUIAPI::CheckBox("Clear On Play", &s_EditorData->ClearLogOnPlay);
 				ImGui::SameLine();
-				if (ImGui::Button("Clear log")) {
+				if (ImGui::Button("Clear log"))
+				{
 					Log::Logs.clear();
 					ImGui::SetScrollHereY();
 				}
-				if (ImGui::Button("Settings")) {
+				if (ImGui::Button("Settings"))
+				{
 
 					Math::ChangeBool(s_EditorData->ShowLogSettings);
 				}
@@ -900,14 +951,17 @@ namespace Proof
 			ImGui::EndMenuBar();
 			int pos = 0;
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 1);
-			for (auto& it : Log::Logs) {
-				if (it.second.first == 0) {// ERROR
+			for (auto& it : Log::Logs)
+			{
+				if (it.second.first == 0)
+				{// ERROR
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
 						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 0.15f,0.15f,0.15f,1.0f });
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
 					ImGui::TextColored({ 1.0,0.0,0.0,1.0 }, it.second.second.c_str());
-					if (ImGui::BeginPopupContextWindow(0, 1)) {
+					if (ImGui::BeginPopupContextWindow(0, 1))
+					{
 						if (ImGui::MenuItem("Copy"))
 							ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
@@ -919,13 +973,15 @@ namespace Proof
 					ImGui::PopID();
 
 				}
-				else if (it.second.first == 1) {// warn
+				else if (it.second.first == 1)
+				{// warn
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
 						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 0.15f,0.15f,0.15f,1.0f });
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
 					ImGui::TextColored({ 1.0,0.635,0.0,1.0 }, it.second.second.c_str());
-					if (ImGui::BeginPopupContextWindow(0, 1)) {
+					if (ImGui::BeginPopupContextWindow(0, 1))
+					{
 						if (ImGui::MenuItem("Copy"))
 							ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
@@ -936,12 +992,14 @@ namespace Proof
 
 					ImGui::PopID();
 				}
-				else if (it.second.first == 2) {// INFO
+				else if (it.second.first == 2)
+				{// INFO
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
 						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 0.15f,0.15f,0.15f,1.0f });
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
-					if (ImGui::BeginPopupContextWindow(0, 1)) {
+					if (ImGui::BeginPopupContextWindow(0, 1))
+					{
 						if (ImGui::MenuItem("Copy"))
 							ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
@@ -953,12 +1011,14 @@ namespace Proof
 
 					ImGui::PopID();
 				}
-				else if (it.second.first == 3) { // trace
+				else if (it.second.first == 3)
+				{ // trace
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
 						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 0.15f,0.15f,0.15f,1.0f });
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
-					if (ImGui::BeginPopupContextWindow(0, 1)) {
+					if (ImGui::BeginPopupContextWindow(0, 1))
+					{
 						if (ImGui::MenuItem("Copy"))
 							ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
@@ -970,12 +1030,14 @@ namespace Proof
 
 					ImGui::PopID();
 				}
-				else { // CRITITCAL
+				else
+				{ // CRITITCAL
 					ImGui::PushID(pos);
 
 					ImGui::PushStyleColor(ImGuiCol_FrameBg, { 1,1,0,1 });
 					ImGui::BeginChildFrame(pos + 1, { ImGui::GetWindowWidth(),27 });
-					if (ImGui::BeginPopupContextWindow(0, 1)) {
+					if (ImGui::BeginPopupContextWindow(0, 1))
+					{
 						if (ImGui::MenuItem("Copy"))
 							ShortCutDialogs::Copy(it.second.second);
 						ImGui::EndPopup();
@@ -989,7 +1051,8 @@ namespace Proof
 				pos += 1;
 			}
 			ImGui::PopStyleVar();
-			if (Log::NewLog == true && ImGui::IsWindowFocused() == false) {
+			if (Log::NewLog == true && ImGui::IsWindowFocused() == false)
+			{
 				ImGui::SetScrollHereY();
 				Log::NewLog = false;
 			}
@@ -1000,21 +1063,27 @@ namespace Proof
 		if (s_EditorData->ShowLogSettings == false)
 			return;
 
-		if (ImGui::Begin("Log Settings", &s_EditorData->ShowLogSettings)) {
-			// KEYBOARD
+		if (ImGui::Begin("Log Settings", &s_EditorData->ShowLogSettings))
+		{
+// KEYBOARD
 			{
-				if (ImGui::Button("KeyBoard Log Settings")) {
+				if (ImGui::Button("KeyBoard Log Settings"))
+				{
 					ImGui::OpenPopup("KeyBoard Log");
 				}
-				if (ImGui::BeginPopup("KeyBoard Log")) {
-					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllKeyBoardEvents.ShowAll)) {
-						if (m_ShowAllKeyBoardEvents.ShowAll == false) {
+				if (ImGui::BeginPopup("KeyBoard Log"))
+				{
+					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllKeyBoardEvents.ShowAll))
+					{
+						if (m_ShowAllKeyBoardEvents.ShowAll == false)
+						{
 							m_ShowAllKeyBoardEvents.Clicked = false;
 							m_ShowAllKeyBoardEvents.Released = false;
 							m_ShowAllKeyBoardEvents.Pressed = false;
 							m_ShowAllKeyBoardEvents.DoubleClicked = false;
 						}
-						else {
+						else
+						{
 							m_ShowAllKeyBoardEvents.Clicked = true;
 							m_ShowAllKeyBoardEvents.Released = true;
 							m_ShowAllKeyBoardEvents.Pressed = true;
@@ -1040,12 +1109,16 @@ namespace Proof
 
 			// Mouse
 			{
-				if (ImGui::Button("Mouse Log Settings")) {
+				if (ImGui::Button("Mouse Log Settings"))
+				{
 					ImGui::OpenPopup("Mouse Log");
 				}
-				if (ImGui::BeginPopup("Mouse Log")) {
-					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllMouseEvents.ShowAll)) {
-						if (m_ShowAllMouseEvents.ShowAll == false) {
+				if (ImGui::BeginPopup("Mouse Log"))
+				{
+					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllMouseEvents.ShowAll))
+					{
+						if (m_ShowAllMouseEvents.ShowAll == false)
+						{
 							m_ShowAllMouseEvents.Clicked = false;
 							m_ShowAllMouseEvents.Released = false;
 							m_ShowAllMouseEvents.Pressed = false;
@@ -1053,7 +1126,8 @@ namespace Proof
 							m_ShowAllMouseEvents.Scroll = false;
 							m_ShowAllMouseEvents.Movement = false;
 						}
-						else {
+						else
+						{
 							m_ShowAllMouseEvents.Clicked = true;
 							m_ShowAllMouseEvents.Released = true;
 							m_ShowAllMouseEvents.Pressed = true;
@@ -1086,19 +1160,24 @@ namespace Proof
 
 			// Window
 			{
-				if (ImGui::Button("Window Log Settings")) {
+				if (ImGui::Button("Window Log Settings"))
+				{
 					ImGui::OpenPopup("Window Log");
 				}
-				if (ImGui::BeginPopup("Window Log")) {
-					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllWindowEvents.ShowAll)) {
-						if (m_ShowAllWindowEvents.ShowAll == false) {
+				if (ImGui::BeginPopup("Window Log"))
+				{
+					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllWindowEvents.ShowAll))
+					{
+						if (m_ShowAllWindowEvents.ShowAll == false)
+						{
 							m_ShowAllWindowEvents.Resize = false;
 							m_ShowAllWindowEvents.Minimize = false;
 							m_ShowAllWindowEvents.Move = false;
 							m_ShowAllWindowEvents.Close = false;
 							m_ShowAllWindowEvents.Focus = false;
 						}
-						else {
+						else
+						{
 							m_ShowAllWindowEvents.Resize = true;
 							m_ShowAllWindowEvents.Minimize = true;
 							m_ShowAllWindowEvents.Move = true;
@@ -1127,12 +1206,16 @@ namespace Proof
 
 			// Controller
 			{
-				if (ImGui::Button("Controller Log Settings")) {
+				if (ImGui::Button("Controller Log Settings"))
+				{
 					ImGui::OpenPopup("Controller Log");
 				}
-				if (ImGui::BeginPopup("Controller Log")) {
-					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllControllerEvents.ShowAll)) {
-						if (m_ShowAllControllerEvents.ShowAll == false) {
+				if (ImGui::BeginPopup("Controller Log"))
+				{
+					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllControllerEvents.ShowAll))
+					{
+						if (m_ShowAllControllerEvents.ShowAll == false)
+						{
 							m_ShowAllControllerEvents.Clicked = false;
 							m_ShowAllControllerEvents.Released = false;
 							m_ShowAllControllerEvents.Pressed = false;
@@ -1140,7 +1223,8 @@ namespace Proof
 							m_ShowAllControllerEvents.Joystick = false;
 							m_ShowAllControllerEvents.Trigger = false;
 						}
-						else {
+						else
+						{
 							m_ShowAllControllerEvents.Clicked = true;
 							m_ShowAllControllerEvents.Released = true;
 							m_ShowAllControllerEvents.Pressed = true;
@@ -1176,7 +1260,8 @@ namespace Proof
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		static bool Open = true;
-		if (ImGui::Begin("ViewPort", &Open, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar)) {
+		if (ImGui::Begin("ViewPort", &Open, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar))
+		{
 
 			m_ViewPortFocused = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 			m_ViewPortFocused = ImGui::IsWindowFocused();
@@ -1187,22 +1272,25 @@ namespace Proof
 			m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x,viewportMaxRegion.y + viewportOffset.y };
 
 			ImVec2 currentviewPortPanelSize = ImGui::GetContentRegionAvail();
-			if (m_ViewPortSize != *((glm::vec2*)&currentviewPortPanelSize)) {
+			if (m_ViewPortSize != *((glm::vec2*)&currentviewPortPanelSize))
+			{
 				m_ViewPortSize = { currentviewPortPanelSize.x,currentviewPortPanelSize.y };
 				m_IsViewPortResize = true;
 			}
 
 
-			if (ImGui::IsWindowFocused()) {
+			if (ImGui::IsWindowFocused())
+			{
 				m_ViewPortFocused = true;
 				Application::Get()->GetWindow()->SetWindowInputEvent(true);
 			}
-			else {
+			else
+			{
 				m_ViewPortFocused = false;
 				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
 			#if 0
-			if (m_ActiveWorld->IsPlaying() && m_PlayersCount > 1 && s_DetachPlayer == false && m_ActiveWorld->GetNumComponents<PlayerInputComponent>() >0 )
+			if (m_ActiveWorld->IsPlaying() && m_PlayersCount > 1 && s_DetachPlayer == false && m_ActiveWorld->GetNumComponents<PlayerInputComponent>() > 0)
 			{
 				//(input, entity ID)
 				std::map<int, uint64_t> inputs;
@@ -1216,7 +1304,7 @@ namespace Proof
 					case 4:
 						{
 							auto element = inputs.begin();
-							UI::Image( m_MultiplayerRender[(Players)inputs.begin()->first]->GetImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y  }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+							UI::Image(m_MultiplayerRender[(Players)inputs.begin()->first]->GetImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 							//element++;
 							//ImGui::SameLine();
 							//ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x/2,m_ViewPortSize.y/2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
@@ -1231,8 +1319,8 @@ namespace Proof
 					case 2:
 						{
 							auto element = inputs.begin();
-							UI::Image(m_MultiplayerRender[(Players)element->first]->GetImage(), ImVec2{m_ViewPortSize.x / 2,m_ViewPortSize.y}, ImVec2{0,1}, ImVec2{1,0});
-							
+							UI::Image(m_MultiplayerRender[(Players)element->first]->GetImage(), ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+
 							ImGui::SameLine();
 							element++;
 							UI::Image(m_MultiplayerRender[(Players)element->first]->GetImage(), ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
@@ -1247,6 +1335,7 @@ namespace Proof
 			auto swapchain = Renderer::GetCurrentFrame().ImageIndex;
 			///UI::Image(m_WorldRenderer->m_ExternalCompositeFrameBuffer->GetColorAttachmentImage(swapchain, 0), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			//UI::Image(m_WorldRenderer->GetRenderer2D()->GetTargetFrameBuffer()->GetColorAttachmentImage(swapchain,0), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			//UI::Image(m_WorldRenderer->m_GeometryPass->GetTargetFrameBuffer()->GetColorAttachmentImage(swapchain,0), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
 			//UI::Image(Renderer::GetWhiteTexture(), ImVec2{m_ViewPortSize.x,m_ViewPortSize.y}, ImVec2{0,1}, ImVec2{1,0});
@@ -1254,13 +1343,14 @@ namespace Proof
 
 			// cherno game engein reveiw 22 minutes 48 seconds reference
 			Entity selectedEntity = s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity();
-			if (selectedEntity) {
+			if (selectedEntity)
+			{
 
-				//ImGuizmo::SetOrthographic(true);
-				//ImGuizmo::SetDrawlist();
-				//
-				//ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y,
-				//	ImGui::GetWindowHeight(), ImGui::GetWindowWidth());
+//ImGuizmo::SetOrthographic(true);
+//ImGuizmo::SetDrawlist();
+//
+//ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y,
+//	ImGui::GetWindowHeight(), ImGui::GetWindowWidth());
 				ImGuizmo::SetOrthographic(true);
 				ImGuizmo::SetDrawlist();
 
@@ -1285,7 +1375,8 @@ namespace Proof
 					(ImGuizmo::OPERATION)s_EditorData->GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(selectedEntitytransform),
 					nullptr, snap ? snapValues : nullptr);
 
-				if (ImGuizmo::IsUsing()) {
+				if (ImGuizmo::IsUsing())
+				{
 					Entity parent = m_ActiveWorld->TryGetEntityWithUUID(selectedEntity.GetParentUUID());
 
 					if (parent)
@@ -1298,7 +1389,7 @@ namespace Proof
 						glm::vec3 deltaRotation = rotation - selectedentityTc.GetRotationEuler();
 						selectedentityTc.Location = translation;
 						selectedentityTc.SetRotation(selectedentityTc.GetRotationEuler() += deltaRotation);
-						selectedentityTc.Scale =scale;
+						selectedentityTc.Scale = scale;
 
 					}
 					else
@@ -1307,19 +1398,20 @@ namespace Proof
 						MathResource::DecomposeTransform(selectedEntitytransform, translation, rotation, scale);
 
 						glm::vec3 deltaRotation = rotation - selectedentityTc.GetRotationEuler();
-						selectedentityTc.Location =translation;
+						selectedentityTc.Location = translation;
 						selectedentityTc.SetRotation(selectedentityTc.GetRotationEuler() += deltaRotation);
 						selectedentityTc.Scale = scale;
 					}
-				
+
 				}
 			}
 			static bool meshSourceAdded = false;
-			static std::filesystem::path meshSourcePath;	
+			static std::filesystem::path meshSourcePath;
 			/* putting this underneath image because a window only accpet drop tarGet to when item is bound so and image has been bound */
-			if (ImGui::BeginDragDropTarget()) 
+			if (ImGui::BeginDragDropTarget())
 			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::World).c_str())) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::World).c_str()))
+				{
 					UUID ID = *(UUID*)payload->Data;
 
 					m_EditorWorld = Count<World>::Create();
@@ -1332,7 +1424,8 @@ namespace Proof
 
 				}
 
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Mesh).c_str())) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Mesh).c_str()))
+				{
 					UUID meshID = *(UUID*)payload->Data;
 
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
@@ -1340,10 +1433,11 @@ namespace Proof
 					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
 				}
 
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::MeshSourceFile).c_str())) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::MeshSourceFile).c_str()))
+				{
 					UUID meshSourceId = *(UUID*)payload->Data;
 					meshSourceAdded = true;
-					meshSourcePath =AssetManager::GetAssetFileSystemPath( AssetManager::GetAssetInfo(meshSourceId).Path);
+					meshSourcePath = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(meshSourceId).Path);
 				}
 
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
@@ -1359,11 +1453,13 @@ namespace Proof
 				ImGui::EndDragDropTarget();
 			}
 
-			if (meshSourceAdded) {
+			if (meshSourceAdded)
+			{
 				AssetID id;
 				std::tie(meshSourceAdded, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
 				// basically add mesh is done with its operation and no longer renderng
-				if (meshSourceAdded == false) {
+				if (meshSourceAdded == false)
+				{
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
 					newentt.AddComponent<MeshComponent>().SetMesh(id);
 					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
@@ -1372,7 +1468,7 @@ namespace Proof
 			if (SaveSceneDialouge)
 			{
 				AssetID id;
-				std::tie(SaveSceneDialouge,id ) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddWorld(m_ActiveWorld);
+				std::tie(SaveSceneDialouge, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddWorld(m_ActiveWorld);
 				if (SaveSceneDialouge == false)
 				{
 					Save();
@@ -1388,7 +1484,7 @@ namespace Proof
 	void Editore3D::MainToolBar() {
 		PF_PROFILE_FUNC();
 
-		ImGui::Begin("##MainToolBar", nullptr,ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse  /* | ImGuiWindowFlags_NoMove*/);
+		ImGui::Begin("##MainToolBar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse  /* | ImGuiWindowFlags_NoMove*/);
 
 		Count<Texture2D> icon;
 		std::string state;
@@ -1409,7 +1505,8 @@ namespace Proof
 
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.4f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
-		if (ImGui::Button(state.c_str(), ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
+		if (ImGui::Button(state.c_str(), ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f }))
+		{
 			if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
 				PlayWorld();
 			else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
@@ -1418,8 +1515,9 @@ namespace Proof
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.5f);
 		ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
-		
-		if (UI::ImageButton(s_EditorData->PlayButtonTexture->GetImage(), ImVec2{ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f})) {
+
+		if (UI::ImageButton(s_EditorData->PlayButtonTexture->GetImage(), ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f }))
+		{
 			if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 				PauseWorld();
 		}
@@ -1491,14 +1589,18 @@ namespace Proof
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
 
-		if (ImGui::BeginMenuBar()) {
-			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+			{
 
 			}
-			if (ImGui::BeginMenu("File")) {
+			if (ImGui::BeginMenu("File"))
+			{
 
-				if (ImGui::MenuItem("New Project")) { // gonna be implemented later
-					std::filesystem::path director= FileSystem::OpenFolderDialog();
+				if (ImGui::MenuItem("New Project"))
+				{ // gonna be implemented later
+					std::filesystem::path director = FileSystem::OpenFolderDialog();
 					if (!director.empty())
 					{
 						NewProjectName = "NewProject";
@@ -1506,7 +1608,8 @@ namespace Proof
 						NewProjectState = PopupState::Rendering;
 					}
 				}
-				if (ImGui::MenuItem("Open Project")) {
+				if (ImGui::MenuItem("Open Project"))
+				{
 					std::filesystem::path file = FileSystem::OpenFileDialog("Proof Project (*.ProofProject)\0*.ProofProject\0");
 					if (!file.empty())
 					{
@@ -1518,16 +1621,19 @@ namespace Proof
 					Save();
 					NewWorld();
 				}
-				if (ImGui::MenuItem("Save", "ctrl+s")) {
+				if (ImGui::MenuItem("Save", "ctrl+s"))
+				{
 					Save();
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginMenu("Edit")) {
+			if (ImGui::BeginMenu("Edit"))
+			{
 
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginMenu("View")) {
+			if (ImGui::BeginMenu("View"))
+			{
 				for (auto& [id, panelData] : s_EditorData->PanelManager->GetPanels())
 				{
 					if (ImGui::MenuItem(panelData.Name, nullptr, &panelData.IsOpen))
@@ -1541,8 +1647,10 @@ namespace Proof
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Debug")) {
-				if (ImGui::MenuItem("Reload C# Scripts")) {
+			if (ImGui::BeginMenu("Debug"))
+			{
+				if (ImGui::MenuItem("Reload C# Scripts"))
+				{
 					if (m_ActiveWorld->GetState() == WorldState::Edit)
 						ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
 					else
@@ -1556,12 +1664,13 @@ namespace Proof
 		ImGui::End();
 	}
 
-	
+
 
 	void Editore3D::Save() {
 		if (m_ActiveWorld == nullptr)
 			return;
-		if (m_ActiveWorld->m_CurrentState != WorldState::Edit){
+		if (m_ActiveWorld->m_CurrentState != WorldState::Edit)
+		{
 			PF_ERROR("Cannot save when in runtime mode");
 			return;
 		}
@@ -1585,7 +1694,7 @@ namespace Proof
 		}
 
 		ProjectSerilizer serilizer(Application::Get()->GetProject());
-		if(Application::Get()->GetProject()->GetConfig().OnCloseStartWorldEditLastOpen)
+		if (Application::Get()->GetProject()->GetConfig().OnCloseStartWorldEditLastOpen)
 			Application::Get()->GetProject()->m_ProjectConfig.StartWorldEdit = m_ActiveWorld->GetID();
 		serilizer.SerilizeText(Application::Get()->GetProject()->GetConfig().Project.string());
 
@@ -1611,7 +1720,7 @@ namespace Proof
 			Log::Logs.clear();
 
 		m_ActiveWorld->StartRuntime();
-			
+
 		//{
 		//	
 		//	for (int i = 0; i < m_PlayersCount; i++)

@@ -70,7 +70,7 @@ namespace Proof {
 	{
 		PF_PROFILE_FUNC();
 		m_Camera = camera;
-		#if 0
+		#if 1
 		worldRenderer->SetContext(this);
 		worldRenderer->BeginScene(camera, cameraLocation, nearPlane, farPlane);
 

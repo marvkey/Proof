@@ -10,16 +10,15 @@ layout(location = 1) out vec2 outTexCoords;
 layout(location = 2) out float outTextureIndex;
 layout(set = 0, binding = 0) uniform CameraData
 {
-	mat4 ProjectionMatrix;
-	mat4 ViewMatrix;
+	mat4 Projection;
+	mat4 View;
 	vec3 Position;
-
-}Camera;
+}u_Camera;
 void main() {
 	outColor = aColor;
 	outTexCoords = aTexCoord;
 	outTextureIndex = aTextureIndex;
-	gl_Position = Camera.ProjectionMatrix * Camera.ViewMatrix * vec4(aPos, 1.0);
+	gl_Position =u_Camera.Projection * u_Camera.View * vec4(aPos, 1.0);
 }
 
 #Fragment Shader

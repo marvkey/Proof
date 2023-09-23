@@ -19,34 +19,58 @@
 #include "Proof/Math/MathInclude.h"
 namespace Proof {
 
-	static glm::mat4 s_Transform;
-	static Vertex2D Vertex1,Vertex2,Vertex3,Vertex4;
-	enum class DescriptorSet0 {
-	//struct
-		CameraData = 0,
-		//struct
-		WorldData = 1,
-
-	};
-	
 	static CameraData s_CurrentCamera;
 	void Renderer2D::Init() {
 		FrameBufferConfig framebufferSpec;
 		framebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
-		framebufferSpec.Samples = 1;
-		framebufferSpec.ClearColorOnLoad= false;
+		framebufferSpec.ClearColorOnLoad = false;
 		framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 		framebufferSpec.DebugName = "Renderer2D Framebuffer";
 		m_FrameBuffer = FrameBuffer::Create(framebufferSpec);
-		m_Storage2DData = CreateSpecial <Renderer2DStorage>();
-		m_CommandBuffer = RenderCommandBuffer::Create("Renderer2D");
 
+
+		m_CommandBuffer = RenderCommandBuffer::Create("Renderer2D");
+		m_UBCamera = UniformBufferSet::Create(sizeof(CameraData));
+
+		m_QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
+
+		m_WhiteTexture = Renderer::GetWhiteTexture();
+
+		for(int index = 0; index < c_MaxTextureSlots; index++)
+			m_QuadTextures[index] = m_WhiteTexture;
 		{
 			auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
 			vertexArray->AddData(0, DataType::Vec3, offsetof(Vertex2D, Vertex2D::Position));
 			vertexArray->AddData(1, DataType::Vec4, offsetof(Vertex2D, Vertex2D::Color));
 			vertexArray->AddData(2, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
 			vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
+
+			m_QuadVertexBufferBase = new Vertex2D[c_MaxVertexCount];
+			m_QuadVertexBufferPtr = m_QuadVertexBufferBase;
+
+			m_QuadVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(Vertex2D));
+
+			uint32_t* quadIndices = new uint32_t[c_MaxIndexCount];
+
+			uint32_t offset = 0;
+			for (uint32_t i = 0; i < c_MaxIndexCount; i += 6)
+			{
+				quadIndices[i + 0] = offset + 0;
+				quadIndices[i + 1] = offset + 1;
+				quadIndices[i + 2] = offset + 2;
+
+				quadIndices[i + 3] = offset + 2;
+				quadIndices[i + 4] = offset + 3;
+				quadIndices[i + 5] = offset + 0;
+
+				offset += 4;
+			}
+
+			m_IndexBuffer = IndexBuffer::Create(quadIndices, c_MaxIndexCount);
+			delete[] quadIndices;
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
 			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
@@ -54,6 +78,8 @@ namespace Proof {
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Base2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.CullMode = CullMode::None;
+			//graphicsPipelineConfig.DepthTest = false;
+			//graphicsPipelineConfig.WriteDepth = false;
 			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 
 			RenderPassConfig renderPassConfig;
@@ -61,16 +87,18 @@ namespace Proof {
 			renderPassConfig.Pipeline = graphicsPipeline;
 			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
 			m_QuadPass = RenderPass::Create(renderPassConfig);
-			m_QuadPass->SetInput("CameraData", m_Storage2DData->CameraBuffer);
+			m_QuadPass->SetInput("CameraData", m_UBCamera);
+
 		}
+		
 
 		{
 		
-			auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
-			vertexArray->AddData(0, DataType::Vec3, offsetof(Vertex2D, Vertex2D::Position));
-			vertexArray->AddData(1, DataType::Vec4, offsetof(Vertex2D, Vertex2D::Color));
-			vertexArray->AddData(2, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
-			vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
+			auto vertexArray = VertexArray::Create({ sizeof(TextVertex) });
+			vertexArray->AddData(0, DataType::Vec3, offsetof(TextVertex, TextVertex::Positon));
+			vertexArray->AddData(1, DataType::Vec4, offsetof(TextVertex, TextVertex::Color));
+			vertexArray->AddData(2, DataType::Vec3, offsetof(TextVertex, TextVertex::TexCoord));
+			vertexArray->AddData(3, DataType::Float, offsetof(TextVertex, TextVertex::TexIndex));
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
 			graphicsPipelineConfig.DebugName = "Text Pipeline";
@@ -84,21 +112,27 @@ namespace Proof {
 			renderPassConfig.Pipeline = graphicsPipeline;
 			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
 			m_TextPass = RenderPass::Create(renderPassConfig);
-			m_TextPass->SetInput("CameraData", m_Storage2DData->CameraBuffer);
+			m_TextPass->SetInput("CameraData", m_UBCamera);
 		}
 	}
 	
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position) {
 		PF_PROFILE_FUNC()
-		s_CurrentCamera = CameraData{ projection,view,glm::mat4(1),Position };
+		CameraData camera = CameraData{ projection,view,Position };
+		//CameraData camera = CameraData{ glm::mat4(1),glm::mat4(1)};
 
-		m_Storage2DData->CameraBuffer->SetData(Renderer::GetCurrentFrame().FrameinFlight, Buffer((&s_CurrentCamera, sizeof(CameraData))));
+		Buffer buffer(&camera, sizeof(CameraData));
+		m_UBCamera->SetData(Renderer::GetCurrentFrame().FrameinFlight, buffer);
 		m_Stats = {};
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
+
 	}
 	Renderer2D::Renderer2D()
 	{
 		Init();
+	}
+	Renderer2D::~Renderer2D()
+	{
+		delete[] m_QuadVertexBufferBase;
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1,1,1},{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());
@@ -137,73 +171,71 @@ namespace Proof {
 		}
 		else
 		{
-			DrawQuad( transform.Location,transform.GetRotationEuler(), transform.Scale, glm::vec4{Sprite.Colour}, nullptr);
+			DrawQuad( transform.Location,transform.GetRotationEuler(), transform.Scale, glm::vec4{Sprite.Colour}, m_WhiteTexture);
 		}
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D) {
-		if (m_Storage2DData->IndexCount >= m_Storage2DData->c_MaxIndexCount){ // reached maxed index size
+	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D)
+	{
+		glm::mat4 transform =glm::translate(glm::mat4(1.0f), Location)
+			* glm::toMat4(glm::quat(Rotation))
+			* glm::scale(glm::mat4(1.0f), { Size.x,Size.y,1.0 });
+
+		DrawQuad(transform,Color,texture2D);
+		
+	}
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& Color, const Count<Texture2D>& texture)
+	{
+		constexpr size_t quadVertexCount = 4;
+		//constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+		constexpr glm::vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f }, { 0.0f, 0.0f } };
+
+		if (m_QuadIndexCount >= c_MaxIndexCount)
+		{ // reached maxed index size
 			Render();
 			Reset();
 		}
-		float TextureIndex =-1.0f; // no texture index
-		if (texture2D != nullptr)
+
+		float textureIndex = 0.0f;
+		for (uint32_t i = 1; i < m_QuadTextureSlotIndex; i++)
 		{
-			for (uint32_t i = 0; i < m_Storage2DData->TextureSlotIndex; i++)
+			if (m_QuadTextures[i] == texture)
 			{
-				if (m_Storage2DData->Textures[i] == texture2D)
-				{
-					TextureIndex = (float)i;
-					break;
-				}
-			}
-			if (TextureIndex == -1.0f)
-			{ /// if the texture does not exist, then we are just going to assing a new texture
-				TextureIndex = (float)m_Storage2DData->TextureSlotIndex; // assinging new
-				m_Storage2DData->Textures[m_Storage2DData->TextureSlotIndex] =texture2D ;
-				m_Storage2DData->TextureSlotIndex++;
+				textureIndex = (float)i;
+				break;
 			}
 		}
-		if (TextureIndex == -1)
-			TextureIndex = 0;
 
-		s_Transform = glm::translate(glm::mat4(1.0f), { Location.x,Location.y,Location.z }) *
-			glm::rotate(glm::mat4(1.0f), Rotation.x, { 1.0f,0.0f,0.0f }) *
-			glm::rotate(glm::mat4(1.0f), Rotation.y, { 0.0f,1.0f,0.0f }) *
-			glm::rotate(glm::mat4(1.0f), Rotation.z, { 0.0f,0.0f,1.0f }) *
-			glm::scale(glm::mat4(1.0f), { Size.x,Size.y,Size.z });
+		if (textureIndex == 0.0f)
+		{
+			if (m_QuadTextureSlotIndex >= c_MaxTextureSlots)
+			{
+				Render();
+				Reset();
+			}
 
+			textureIndex = (float)m_QuadTextureSlotIndex;
+			m_QuadTextures[m_QuadTextureSlotIndex] = texture;
+			m_QuadTextureSlotIndex++;
+		}
 
-		Vertex1.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, 0.5f, 0.0f, 1.0f));
-		Vertex1.Color = Color;
-		Vertex1.TexCoords = { 1.0f,1.0f };
-		Vertex1.TexSlot = TextureIndex;
+		for (size_t i = 0; i < quadVertexCount; i++)
+		{
+			glm::vec3 pos = transform * m_QuadVertexPositions[i];
+			m_QuadVertexBufferPtr->Position = GlmVecToProof( pos);
+			m_QuadVertexBufferPtr->Color = Color;
+			m_QuadVertexBufferPtr->TexCoords = textureCoords[i];
+			m_QuadVertexBufferPtr->TexSlot = textureIndex;
+			//m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			//m_QuadVertexBufferPtr->EntityID = entityID;
+			m_QuadVertexBufferPtr++;
+		}
 
-		Vertex2.Position = GlmVecToProof(s_Transform * glm::vec4(0.5f, -0.5f, 0.0, 1.0f));
-		Vertex2.Color = Color;
-		Vertex2.TexCoords = { 1.0f,0.0f };
-		Vertex2.TexSlot = TextureIndex;
+		m_QuadIndexCount += 6;
 
-		Vertex3.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, -0.5f, 0.0, 1.0f));
-		Vertex3.Color = Color;
-		Vertex3.TexCoords = { 0.0f,0.0f };
-		Vertex3.TexSlot = TextureIndex;
-
-		Vertex4.Position = GlmVecToProof(s_Transform * glm::vec4(-0.5f, 0.5f, 0.0, 1.0f));
-		Vertex4.Color = Color;
-		Vertex4.TexCoords = { 0.0f,1.0f };
-		Vertex4.TexSlot = TextureIndex;
-	
-		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize] = Vertex1;
-		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+1] = Vertex2;
-		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+2] = Vertex3;
-		m_Storage2DData->QuadArray[m_Storage2DData->QuadArraySize+3] = Vertex4;
-
-		m_Storage2DData->IndexCount+=6; 
-		m_Storage2DData->QuadArraySize += 4;
-		
 	}
 	void Renderer2D::DrawString(const std::string& text, Count<class Font> font, const TextParams& textParam, const glm::mat4& transform)
 	{
+		#if 0
 		if (m_Storage2DData->TextIndexCount >= m_Storage2DData->c_MaxIndexCount)
 		{ // reached maxed index size
 			Render();
@@ -321,52 +353,60 @@ namespace Proof {
 				x += fsScale * advance + textParam.Kerning;
 			}
 		}
+		#endif
 	}
 	void Renderer2D::EndContext() {
 		Render();
 		Reset();
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		
 
 	}
 
 	void Renderer2D::Reset() {
-
-		m_Storage2DData->TextIndexCount = 0;
-		m_Storage2DData->TextArraySize =  0;
-
-		m_Storage2DData->QuadArraySize = 0;
-		m_Storage2DData->IndexCount = 0;
-
+		m_QuadIndexCount = 0;
+		m_QuadVertexBufferPtr = m_QuadVertexBufferBase;
 		// reseting every textures back to white that has been changed
-		for (uint32_t i = 1; i < m_Storage2DData->TextureSlotIndex; i++)
-			m_Storage2DData->Textures[i] = m_Storage2DData->Textures[0];
-		m_Storage2DData->TextureSlotIndex = 1;
+		for (uint32_t i = 1; i < m_QuadTextureSlotIndex; i++)
+			m_QuadTextures[i] = m_WhiteTexture;
+		m_QuadTextureSlotIndex = 1;
 	}
 	
 	void Renderer2D::Render() {
 		PF_PROFILE_FUNC();
+		Renderer::BeginCommandBuffer(m_CommandBuffer);
 
 		Timer renderTime;
 		
-		if (m_Storage2DData->IndexCount > 0) // nothing to draw
+		if (m_QuadIndexCount > 0) // nothing to draw
 		{
 			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
 			
 			Timer quadTime;
+			uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr - (uint8_t*)m_QuadVertexBufferBase);
+			PF_ENGINE_ERROR("datasize {}",dataSize);
+			m_QuadVertexBuffer->SetData(m_QuadVertexBufferBase, dataSize);
+			m_QuadPass->SetInput("CameraData", m_UBCamera);
 
-			m_Storage2DData->VertexBuffer->SetData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
-			m_QuadPass->SetInput("u_Textures", m_Storage2DData->Textures);
-			m_Storage2DData->IndexBuffer->Bind(m_CommandBuffer);
-			m_Storage2DData->VertexBuffer->Bind(m_CommandBuffer);
+			std::vector<Count<Texture2D>> textureVec;
+			textureVec.resize(m_QuadTextures.size());
+			for (uint32_t i = 0; i < m_QuadTextures.size(); i++)
+			{
+				textureVec[i] = m_QuadTextures[i];
+			}
+			//std::vector<Count<Texture2D>> textureVec(m_QuadTextures.begin(), m_QuadTextures.end());
+
+			m_QuadPass->SetInput("u_Textures", textureVec);
+		
 
 			Renderer::BeginRenderPass(m_CommandBuffer, m_QuadPass);
-			Renderer::DrawElementIndexed(m_CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize);
+			m_IndexBuffer->Bind(m_CommandBuffer);
+			m_QuadVertexBuffer->Bind(m_CommandBuffer);
+			Renderer::DrawElementIndexed(m_CommandBuffer, m_QuadIndexCount, 1);
 			Renderer::EndRenderPass(m_QuadPass);
 
 			m_Stats.QuadDrawTime += quadTime.ElapsedMillis();
 		}
-
+		#if 0
 		if (m_Storage2DData->TextIndexCount > 0)
 		{
 			PF_PROFILE_FUNC("Renderer2D::String Draw");
@@ -386,7 +426,7 @@ namespace Proof {
 			m_Stats.TextDrawTime += textTime.ElapsedMillis();
 
 		}
-
+		#endif
 		m_Stats.TotalRenderTime += renderTime.ElapsedMillis();
 		#if 0
 		if(m_Storage2DData->TextIndexCount > 0){
@@ -422,7 +462,8 @@ namespace Proof {
 			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
 		}
 		#endif
-
+		Renderer::EndCommandBuffer(m_CommandBuffer);
+		Renderer::SubmitCommandBuffer(m_CommandBuffer);	
 
 	}
 	

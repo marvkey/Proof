@@ -36,15 +36,15 @@ namespace Proof{
 		MemoryAddress meshPointerId = (MemoryAddress) &*mesh.Get();
 		DebugMeshPipeLine::MeshVertex vertex(transform);
 
-		if (m_Pipeline->Meshes.contains(meshPointerId))
-			m_Pipeline->Meshes[meshPointerId].Count += 1;
-		else
-		{
-			m_Pipeline->Meshes[meshPointerId].Mesh = mesh;
-			m_Pipeline->Meshes[meshPointerId].Count += 1;
-		}
-
-		m_Pipeline->MeshesTransforms[meshPointerId].emplace_back(vertex);
+		//if (m_Pipeline->Meshes.contains(meshPointerId))
+		//	m_Pipeline->Meshes[meshPointerId].Count += 1;
+		//else
+		//{
+		//	m_Pipeline->Meshes[meshPointerId].Mesh = mesh;
+		//	m_Pipeline->Meshes[meshPointerId].Count += 1;
+		//}
+		//
+		//m_Pipeline->MeshesTransforms[meshPointerId].emplace_back(vertex);
 		m_Pipeline->NumberMeshes++;
 	}
 	void DebugMeshRenderer::EndContext()

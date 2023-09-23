@@ -49,10 +49,7 @@ namespace Proof
     struct CameraData {
         glm::mat4 Projection;
         glm::mat4 ProjectionView;
-        glm::mat4 UnreversedProjectionMatrix;
         Vector Position;
-        float NearPlane;
-        float FarPlane;
     };
 
     struct MeshInstance {

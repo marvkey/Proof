@@ -336,7 +336,7 @@ namespace Proof
 		{
 			FrameBufferConfig geoFramebufferConfig;
 			geoFramebufferConfig.DebugName = "Geometry";
-			geoFramebufferConfig.ClearDepthOnLoad = false;
+			geoFramebufferConfig.ClearDepthOnLoad = false;	
 			geoFramebufferConfig.ClearColorOnLoad = false;
 			//geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
 			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };

@@ -300,8 +300,9 @@ namespace Proof
                             imageUniquePos++;
                             std::vector<VkDescriptorImageInfo> info;
                             //info.resize(resource.Input.size());
-                            for (auto& image : resource.Input)
+                            for (auto image : resource.Input)
                             {
+                                //image = resource.Input[0];
                                 info.push_back(image.As<VulkanTexture2D>()->GetDescriptorInfoVulkan());
                             }
                             imageInfos[imageUniquePos] = info;

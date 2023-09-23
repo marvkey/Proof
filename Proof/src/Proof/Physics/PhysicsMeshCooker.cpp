@@ -5,6 +5,7 @@
 #include "Proof/Scene/Mesh.h"
 
 #include "Proof/Renderer/MeshWorkShop.h"
+#include "Proof/Renderer/Vertex.h"
 
 namespace  Proof {
 	std::unordered_map<AssetID, Count<class Mesh>> s_Meshes;

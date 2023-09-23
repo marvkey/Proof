@@ -2,6 +2,8 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Scene/Mesh.h"
 #include "MeshWorkShop.h"
+#include "Proof/Renderer/Vertex.h"
+
 #include<vector>
 namespace Proof {
     //https://danielsieger.com/blog/2021/05/03/generating-primitive-shapes.html (//View in the fute to develo better)

@@ -4,7 +4,6 @@
 #include "Proof/Renderer/FrameBuffer.h"
 #include "Proof/Renderer/CommandBuffer.h"
 #include "Proof/Renderer/UniformBuffer.h"
-#include "Vertex.h"
 namespace Proof{
 
 	struct DebugMeshPipeLine {
@@ -23,16 +22,16 @@ namespace Proof{
 		//std::unordered_map<DescriptorSets, Count<class DescriptorSet>> Descriptors;
 
 
-		std::unordered_map < uint64_t, std::vector< MeshVertex>> MeshesTransforms;
-		std::unordered_map < uint64_t, MeshInstance> Meshes;
+		//std::unordered_map < uint64_t, std::vector< MeshVertex>> MeshesTransforms;
+		//std::unordered_map < uint64_t, MeshInstance> Meshes;
 		uint32_t OffsetBegin = 0;
 		uint32_t NumberMeshes;
 		// order teh meshes are pushed intehvector that stores all transforms
 		std::vector<uint64_t> ElementsImplaced;
 		DebugMeshPipeLine(Count<class RenderPass> renderPass);
 		void Reset() {
-			MeshesTransforms.clear();
-			Meshes.clear();
+			//MeshesTransforms.clear();
+			//Meshes.clear();
 			ElementsImplaced.clear();
 			NumberMeshes = 0;
 			OffsetBegin = 0;

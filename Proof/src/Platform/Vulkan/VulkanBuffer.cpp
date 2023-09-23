@@ -1,7 +1,6 @@
 #include "Proofprch.h"
 #include "VulkanBuffer.h"
 #include "Proof/Renderer/Renderer.h"
-#include "Proof/Renderer/Vertex.h"
 #include "VulkanGraphicsContext.h"
 #include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
 #include "VulkanRenderer/VulkanRenderer.h"

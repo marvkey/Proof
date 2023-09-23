@@ -8,7 +8,22 @@
 #include "Texture.h"
 #include "UniformBuffer.h"
 namespace Proof {
-	struct TextVertex {
+
+	struct LineVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+	};
+
+	struct CircleVertex
+	{
+		glm::vec3 WorldPosition;
+		float Thickness;
+		glm::vec2 LocalPosition;
+		glm::vec4 Color;
+	};
+	struct TextVertex 
+	{
 		glm::vec3 Positon;
 		glm::vec4 Color;
 		glm::vec2 TexCoord;
@@ -25,7 +40,7 @@ namespace Proof {
 		Count<class VertexBuffer> VertexBuffer;
 		Count<class IndexBuffer> IndexBuffer;	
 		Count<Texture2D> WhiteTexture;
-		const uint32_t c_MaxQuadCount = 2000;
+		const uint32_t c_MaxQuadCount = 10000;
 		const uint32_t c_MaxVertexCount = c_MaxQuadCount *4; // times 4 cause each quad holds 4 vertices
 		const uint32_t c_MaxIndexCount = c_MaxQuadCount * 6;
 		std::vector<uint32_t>QuadIndices;
@@ -55,7 +70,7 @@ namespace Proof {
 		friend class Camera;
 	public:
 		Renderer2D();
-		~Renderer2D() {};
+		~Renderer2D();
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position);
 		void DrawQuad(const glm::vec3& Location);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& Size);
@@ -67,6 +82,7 @@ namespace Proof {
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& RotationRadians,const glm::vec3& Size,const glm::vec4& Color);
 
 		void DrawQuad(const glm::vec3& Location, const glm::vec3& RotationRadians, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D);
+		void DrawQuad(const glm::mat4& transform, const glm::vec4& Color, const Count<Texture2D>& texture2D);
 		void DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform);
 
 		// chagne to u32stirng in the future
@@ -77,19 +93,40 @@ namespace Proof {
 		static std::pair<Count<VertexBuffer>, Count<IndexBuffer>> CreateQuad();
 
 		void SetTargetFrameBuffer(Count<class FrameBuffer> framebuffer);
+		Count<class FrameBuffer> GetTargetFrameBuffer() {
+			return m_FrameBuffer;
+		};
 		Rendered2DStatistics GetStats() { return m_Stats; }
 	private:
 		Count<class RenderCommandBuffer> m_CommandBuffer;
 		Count<FrameBuffer> m_FrameBuffer;
 		Rendered2DStatistics m_Stats;
 		Count<class RenderPass> m_TextPass;
-		Count<class RenderPass> m_QuadPass;
 
 		void Render();
 		void Reset();
 		void Init();
-		Special< Renderer2DStorage> m_Storage2DData;
-		/* Not using as default rendeer cause it allocates to the heap and we dont need taht waste in performance */
+
+		Count<class Texture2D> m_WhiteTexture;
+
+		Count<class IndexBuffer> m_IndexBuffer;
+		glm::vec4 m_QuadVertexPositions[4];
+		const uint32_t c_MaxQuadCount = 10000;
+		const uint32_t c_MaxVertexCount = c_MaxQuadCount * 4; // times 4 cause each quad holds 4 vertices
+		const uint32_t c_MaxIndexCount = c_MaxQuadCount * 6;
+
+		static inline const uint32_t c_MaxTextureSlots = 32; //1-31slots
+
+		std::array<Count<Texture2D>, c_MaxTextureSlots> m_QuadTextures;
+		Count<class VertexBuffer> m_QuadVertexBuffer;
+		float m_QuadTextureSlotIndex = 1; //0 white texture
+		Count<class RenderPass> m_QuadPass;
+
+		uint32_t m_QuadIndexCount = 0;
+		Vertex2D* m_QuadVertexBufferBase = nullptr;
+		Vertex2D* m_QuadVertexBufferPtr = nullptr;
+		Count<UniformBufferSet> m_UBCamera = nullptr;
+
 	};
 }
 
