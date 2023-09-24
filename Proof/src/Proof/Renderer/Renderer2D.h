@@ -27,7 +27,7 @@ namespace Proof {
 		glm::vec3 Positon;
 		glm::vec4 Color;
 		glm::vec2 TexCoord;
-
+		float FontIndex;
 		// we can render multiple fonts so that means multiple textures (0,32)
 
 		//(tex background)
@@ -101,7 +101,6 @@ namespace Proof {
 		Count<class RenderCommandBuffer> m_CommandBuffer;
 		Count<FrameBuffer> m_FrameBuffer;
 		Rendered2DStatistics m_Stats;
-		Count<class RenderPass> m_TextPass;
 
 		void Render();
 		void Reset();
@@ -125,6 +124,17 @@ namespace Proof {
 		uint32_t m_QuadIndexCount = 0;
 		Vertex2D* m_QuadVertexBufferBase = nullptr;
 		Vertex2D* m_QuadVertexBufferPtr = nullptr;
+
+
+		uint32_t m_TextIndexCount = 0;
+		TextVertex* m_TextVertexBufferBase = nullptr;
+		TextVertex* m_TextVertexBufferPtr = nullptr;
+		Count<class RenderPass> m_TextPass;
+		std::array<Count<Font>, c_MaxTextureSlots> m_FontTextures;
+		Count<class VertexBuffer> m_TextVertexBuffer;
+		float m_TextFontSlotIndex = 1; //0 default font
+
+
 		Count<UniformBufferSet> m_UBCamera = nullptr;
 
 	};

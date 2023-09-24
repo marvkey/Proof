@@ -93,12 +93,22 @@ namespace Proof {
 		
 
 		{
+
+			for (int index = 0; index < c_MaxTextureSlots; index++)
+				m_FontTextures[index] = Font::GetDefault();
 		
 			auto vertexArray = VertexArray::Create({ sizeof(TextVertex) });
 			vertexArray->AddData(0, DataType::Vec3, offsetof(TextVertex, TextVertex::Positon));
 			vertexArray->AddData(1, DataType::Vec4, offsetof(TextVertex, TextVertex::Color));
 			vertexArray->AddData(2, DataType::Vec3, offsetof(TextVertex, TextVertex::TexCoord));
-			vertexArray->AddData(3, DataType::Float, offsetof(TextVertex, TextVertex::TexIndex));
+			vertexArray->AddData(3, DataType::Float, offsetof(TextVertex, TextVertex::FontIndex));
+			vertexArray->AddData(4, DataType::Float, offsetof(TextVertex, TextVertex::TexIndex));
+
+
+			m_TextVertexBufferBase = new TextVertex[c_MaxVertexCount];
+			m_TextVertexBufferPtr = m_TextVertexBufferBase;
+
+			m_TextVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(Vertex2D));
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
 			graphicsPipelineConfig.DebugName = "Text Pipeline";
@@ -133,6 +143,7 @@ namespace Proof {
 	Renderer2D::~Renderer2D()
 	{
 		delete[] m_QuadVertexBufferBase;
+		delete[] m_TextVertexBufferBase;
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1,1,1},{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());
@@ -195,8 +206,8 @@ namespace Proof {
 			Reset();
 		}
 
-		float textureIndex = 0.0f;
-		for (uint32_t i = 1; i < m_QuadTextureSlotIndex; i++)
+		float textureIndex = -1.f;
+		for (uint32_t i = 0; i < m_QuadTextureSlotIndex; i++)
 		{
 			if (m_QuadTextures[i] == texture)
 			{
@@ -205,7 +216,7 @@ namespace Proof {
 			}
 		}
 
-		if (textureIndex == 0.0f)
+		if (textureIndex == -1.f)
 		{
 			if (m_QuadTextureSlotIndex >= c_MaxTextureSlots)
 			{
@@ -235,8 +246,7 @@ namespace Proof {
 	}
 	void Renderer2D::DrawString(const std::string& text, Count<class Font> font, const TextParams& textParam, const glm::mat4& transform)
 	{
-		#if 0
-		if (m_Storage2DData->TextIndexCount >= m_Storage2DData->c_MaxIndexCount)
+		if (m_TextIndexCount>= c_MaxIndexCount)
 		{ // reached maxed index size
 			Render();
 			Reset();
@@ -246,7 +256,29 @@ namespace Proof {
 		const auto& metrics = fontGeometry.getMetrics();
 		Count<Texture2D> fontAtlas = font->GetAtlasTexture();
 
-		m_Storage2DData->FontTexture = fontAtlas;
+		//m_Storage2DData->FontTexture = fontAtlas;
+		float fontIndex= -1.f;
+		for (uint32_t i = 0; i < m_TextFontSlotIndex; i++)
+		{
+			if (m_FontTextures[i] == font)
+			{
+				fontIndex = (float)i;
+				break;
+			}
+		}
+
+		if (fontIndex == -1.f)
+		{
+			if (m_TextFontSlotIndex >= c_MaxTextureSlots)
+			{
+				Render();
+				Reset();
+			}
+
+			fontIndex = (float)m_TextFontSlotIndex;
+			m_FontTextures[m_TextFontSlotIndex] = font;
+			m_TextFontSlotIndex++;
+		}
 
 		double x = 0.0;
 		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
@@ -254,7 +286,7 @@ namespace Proof {
 		const float spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
 		for (size_t i = 0; i < text.size(); i++)
 		{
-			char32_t character = text[i];
+			char character = text[i];
 
 			if (character == '\r')
 				continue;
@@ -317,32 +349,31 @@ namespace Proof {
 			texCoordMin *= glm::vec2(texelWidth, texelHeight);
 			texCoordMax *= glm::vec2(texelWidth, texelHeight);
 
-			glm::mat4 copyTransfrom = transform;
-			
-			TextVertex textVertex1, textVertex2, textVertex3, textVertex4;
-			textVertex1.Positon = copyTransfrom * glm::vec4(quadMin, 0.0f, 1.0f);
-			textVertex1.Color = textParam.Color ;
-			textVertex1.TexCoord = texCoordMin;
+			m_TextVertexBufferPtr->Positon = transform * glm::vec4(quadMin, 0.0f, 1.0f);
+			m_TextVertexBufferPtr->Color = textParam.Color ;
+			m_TextVertexBufferPtr->TexCoord = texCoordMin;
+			m_TextVertexBufferPtr->FontIndex = fontIndex;
+			m_TextVertexBufferPtr++;
 
-			textVertex2.Positon = copyTransfrom * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
-			textVertex2.Color = textParam.Color;
-			textVertex2.TexCoord = { texCoordMin.x, texCoordMax.y };
+			m_TextVertexBufferPtr->Positon = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+			m_TextVertexBufferPtr->Color = textParam.Color;
+			m_TextVertexBufferPtr->TexCoord = { texCoordMin.x, texCoordMax.y };
+			m_TextVertexBufferPtr->FontIndex = fontIndex;
+			m_TextVertexBufferPtr++;
 
-			textVertex3.Positon = copyTransfrom * glm::vec4(quadMax, 0.0f, 1.0f);
-			textVertex3.Color = textParam.Color;
-			textVertex3.TexCoord = texCoordMax;
+			m_TextVertexBufferPtr->Positon = transform * glm::vec4(quadMax, 0.0f, 1.0f);
+			m_TextVertexBufferPtr->Color = textParam.Color;
+			m_TextVertexBufferPtr->TexCoord = texCoordMax;
+			m_TextVertexBufferPtr->FontIndex = fontIndex;
+			m_TextVertexBufferPtr++;
 
-			textVertex4.Positon = copyTransfrom * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
-			textVertex4.Color = textParam.Color;
-			textVertex4.TexCoord = { texCoordMax.x, texCoordMin.y };
+			m_TextVertexBufferPtr->Positon = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+			m_TextVertexBufferPtr->Color = textParam.Color;
+			m_TextVertexBufferPtr->TexCoord = { texCoordMax.x, texCoordMin.y };
+			m_TextVertexBufferPtr->FontIndex = fontIndex;
+			m_TextVertexBufferPtr++;
 
-			m_Storage2DData->TextArray[m_Storage2DData->TextArraySize] = textVertex1;
-			m_Storage2DData->TextArray[m_Storage2DData->TextArraySize+1] = textVertex2;
-			m_Storage2DData->TextArray[m_Storage2DData->TextArraySize+2] = textVertex3;
-			m_Storage2DData->TextArray[m_Storage2DData->TextArraySize+3] = textVertex4;
-
-			m_Storage2DData->TextArraySize+=4;
-			m_Storage2DData->TextIndexCount += 6;
+			m_TextIndexCount += 6;
 
 			if (i < text.size() - 1)
 			{
@@ -353,22 +384,35 @@ namespace Proof {
 				x += fsScale * advance + textParam.Kerning;
 			}
 		}
-		#endif
 	}
 	void Renderer2D::EndContext() {
 		Render();
 		Reset();
-		
 
 	}
 
 	void Renderer2D::Reset() {
-		m_QuadIndexCount = 0;
-		m_QuadVertexBufferPtr = m_QuadVertexBufferBase;
-		// reseting every textures back to white that has been changed
-		for (uint32_t i = 1; i < m_QuadTextureSlotIndex; i++)
-			m_QuadTextures[i] = m_WhiteTexture;
-		m_QuadTextureSlotIndex = 1;
+		//qud
+		{
+
+			m_QuadIndexCount = 0;
+			m_QuadVertexBufferPtr = m_QuadVertexBufferBase;
+			// reseting every textures back to white that has been changed
+			for (uint32_t i = 1; i < m_QuadTextureSlotIndex; i++)
+				m_QuadTextures[i] = m_WhiteTexture;
+			m_QuadTextureSlotIndex = 1;
+		}
+
+		// text
+		{
+			m_TextIndexCount = 0;
+			m_TextVertexBufferPtr = m_TextVertexBufferBase;
+			for (uint32_t i = 1; i < m_TextFontSlotIndex; i++)
+			{
+				m_FontTextures[i] = Font::GetDefault();
+			}
+			m_TextFontSlotIndex = 1;
+		}
 	}
 	
 	void Renderer2D::Render() {
@@ -383,9 +427,7 @@ namespace Proof {
 			
 			Timer quadTime;
 			uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr - (uint8_t*)m_QuadVertexBufferBase);
-			PF_ENGINE_ERROR("datasize {}",dataSize);
 			m_QuadVertexBuffer->SetData(m_QuadVertexBufferBase, dataSize);
-			m_QuadPass->SetInput("CameraData", m_UBCamera);
 
 			std::vector<Count<Texture2D>> textureVec;
 			textureVec.resize(m_QuadTextures.size());
@@ -401,32 +443,36 @@ namespace Proof {
 			Renderer::BeginRenderPass(m_CommandBuffer, m_QuadPass);
 			m_IndexBuffer->Bind(m_CommandBuffer);
 			m_QuadVertexBuffer->Bind(m_CommandBuffer);
-			Renderer::DrawElementIndexed(m_CommandBuffer, m_QuadIndexCount, 1);
+			Renderer::DrawElementIndexed(m_CommandBuffer, m_QuadIndexCount);
 			Renderer::EndRenderPass(m_QuadPass);
 
 			m_Stats.QuadDrawTime += quadTime.ElapsedMillis();
 		}
-		#if 0
-		if (m_Storage2DData->TextIndexCount > 0)
+		if (m_TextIndexCount > 0)
 		{
 			PF_PROFILE_FUNC("Renderer2D::String Draw");
-
 			Timer textTime;
-			m_Storage2DData->TextVertexBuffer->SetData(m_Storage2DData->TextArray.data(), m_Storage2DData->TextArraySize * sizeof(TextVertex));
-			//m_TextPass->SetInput("u_Textures", m_Storage2DData->Textures);
-			m_TextPass->SetInput("u_FontAtlas", m_Storage2DData->FontTexture);
+			uint32_t dataSize = (uint32_t)((uint8_t*)m_TextVertexBufferPtr - (uint8_t*)m_TextVertexBufferBase);
+			m_TextVertexBuffer->SetData(m_TextVertexBufferBase, dataSize);
+
+			std::vector<Count<Texture2D>> textureVec;
+			textureVec.resize(m_FontTextures.size());
+			for (uint32_t i = 0; i < textureVec.size(); i++)
+			{
+				textureVec[i] = m_FontTextures[i]->GetAtlasTexture();
+			}
+			m_TextPass->SetInput("u_FontAtlas", textureVec);
 
 			Renderer::BeginRenderPass(m_CommandBuffer, m_TextPass);
-			m_Storage2DData->IndexBuffer->Bind(m_CommandBuffer);
-			m_Storage2DData->TextVertexBuffer->Bind(m_CommandBuffer);
+			m_IndexBuffer->Bind(m_CommandBuffer);
+			m_TextVertexBuffer->Bind(m_CommandBuffer);
 
-			Renderer::DrawElementIndexed(m_CommandBuffer, m_Storage2DData->TextIndexCount, m_Storage2DData->TextArraySize);
+			Renderer::DrawElementIndexed(m_CommandBuffer, m_TextIndexCount);
 			Renderer::EndRenderPass(m_TextPass);
 
 			m_Stats.TextDrawTime += textTime.ElapsedMillis();
 
 		}
-		#endif
 		m_Stats.TotalRenderTime += renderTime.ElapsedMillis();
 		#if 0
 		if(m_Storage2DData->TextIndexCount > 0){

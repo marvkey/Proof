@@ -263,8 +263,8 @@ namespace Proof {
 
 			TextParams params;
 			params.Color = textComponent.Colour;
-			params.Kerning = textComponent.LineSpacing;
-			params.LineSpacing = textComponent.Kerning;
+			params.Kerning = textComponent.Kerning;
+			params.LineSpacing = textComponent.LineSpacing;
 			if(textComponent.UseLocalRotation)
 				renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransformUsingLocalRotation(e));
 			else

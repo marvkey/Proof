@@ -90,6 +90,8 @@ namespace Proof::UI {
 		modfified = ImGui::DragFloat(id.c_str(), &value, speed, min, max, format, flags);
 		return modfified;
 	}
+
+	bool AttributeInputTextMultiline(const std::string& label, std::string& value, ImGuiInputTextFlags flags);
 	struct ScopedStyleColor {
 		ScopedStyleColor() = default;
 		ScopedStyleColor(ImGuiCol idx, ImVec4 color, bool predicate = true)

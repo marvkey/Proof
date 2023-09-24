@@ -1263,7 +1263,8 @@ namespace Proof
 		});
 
 		DrawComponents<TextComponent>("Text Component", entity, [](TextComponent& textComponent) {
-			ImGui::InputTextMultiline("ither", &textComponent.Text);
+			//ImGui::InputTextMultiline("Text", (char*)textComponent.Text.c_str(), textComponent.Text.capacity() + 1);
+			UI::AttributeInputTextMultiline("ither", textComponent.Text,0);
 			ImGui::ColorEdit4("##Colour", glm::value_ptr(textComponent.Colour));
 
 			ImGui::DragFloat("Kernng", &textComponent.Kerning, 0.025);
