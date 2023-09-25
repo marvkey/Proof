@@ -16,6 +16,7 @@ namespace Proof{
 		VulkanRenderPass(const RenderPassConfig& config);
 		virtual ~VulkanRenderPass();
 		//virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) { PF_CORE_ASSERT(frame, "Cannot be null"); m_Config.TargetBuffer = frame; }
+		Count<class Image> GetOutput(uint32_t imageIndex);
 
 		VkRenderPass GetRenderPass();
 		Count<class RenderCommandBuffer>  GetCurrentCommandBuffer() {

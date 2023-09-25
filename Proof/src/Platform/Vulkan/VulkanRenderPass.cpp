@@ -431,7 +431,7 @@ namespace Proof
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = GetRenderPass();
             // teh frameBuffer we are writing
-            renderPassInfo.framebuffer = GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetFrameBuffer(Renderer::GetCurrentFrame().ImageIndex);
+            renderPassInfo.framebuffer = GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetFrameBuffer();
 
             // the area shader loads and 
             // for high displays swap chain extent could be higher than windows extent
@@ -441,7 +441,10 @@ namespace Proof
             vkCmdBeginRenderPass(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         }
     }
-    
+    Count<Image> VulkanRenderPass::GetOutput(uint32_t imageIndex)
+    {
+        return GetTargetFrameBuffer()->GetOutput(imageIndex);
+    }
     void VulkanRenderPass::BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, Viewport vieport, ViewportScissor scisscor, bool explicitClear)
     {
         BeginRenderPassBase(command, vieport, scisscor);
@@ -581,14 +584,12 @@ namespace Proof
             std::vector< VkClearRect> reactClear;
             uint32_t iterate = 0;
 
-            // has depth, in framebuffer creat depth buffer is always the last attachment
-            int depthIndex = -1;
             for (auto& attach : frameBufferConfig.Attachments.Attachments)
             {
 
                 VkClearAttachment clearAttach;
 
-                if ((attach.ClearOnLoad || explicitClear) && Utils::IsColorFormat(attach.Format))
+                if (Utils::IsColorFormat(attach.Format))
                 {
                     clearAttach.colorAttachment = iterate;
                     clearAttach.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -601,35 +602,28 @@ namespace Proof
                     clearRect.rect = vk_scissor;
                     reactClear.push_back(clearRect);
                 }
-                //depth always ccomes last in the order
-                else if ((frameBufferConfig.ClearDepthOnLoad || explicitClear) && GetTargetFrameBuffer()->HasDepthImage())
+                else if (Utils::IsDepthFormat(attach.Format))
                 {
-                    // basically no need to check if it is depth
-                    // it would be a depth or stencil format 
-                    // if it not a color formats
-                    depthIndex = iterate;
+                    VkClearAttachment clearAttach;
+                //config.Attachments.Attachments[depthIdex];
+                    clearAttach.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+
+                    if (Utils::ContainStencilFormat(GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetDepthFormat()))
+                        clearAttach.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+
+                    clearAttach.clearValue.depthStencil = { frameBufferConfig.DepthClearValue,frameBufferConfig.StencilClearValue };
+                   // clearAttach.clearValue = colorValue;
+                    clears.push_back(clearAttach);
+
+                    VkClearRect clearRect = {};
+                    clearRect.layerCount = 1;
+                    clearRect.rect = vk_scissor;
+                    reactClear.push_back(clearRect);
                 }
                 iterate++;
-
             }
-            if (depthIndex != -1)
-            {
-                VkClearAttachment clearAttach;
-                //config.Attachments.Attachments[depthIdex];
-                clearAttach.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-
-                if (Utils::ContainStencilFormat(GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetDepthFormat()))
-                    clearAttach.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-                clearAttach.clearValue.depthStencil = { frameBufferConfig.DepthClearValue,frameBufferConfig.StencilClearValue };
-               // clearAttach.clearValue = colorValue;
-                clears.push_back(clearAttach);
-
-                VkClearRect clearRect = {};
-                clearRect.layerCount = 1;
-                clearRect.rect = vk_scissor;
-                reactClear.push_back(clearRect);
-            }
+           
             vkCmdClearAttachments(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
                 clears.size(),
                 clears.data(),

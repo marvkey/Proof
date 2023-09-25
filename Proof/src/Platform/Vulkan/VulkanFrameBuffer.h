@@ -6,67 +6,52 @@
 #include "Proof/Renderer/Texture.h"
 namespace Proof
 {
-	struct VulkanFrameBufferImages {
-
-		VulkanFrameBufferImages()
-		{
-			RefImages = {};
-		}
-
-		VulkanFrameBufferImages(const VulkanFrameBufferImages& other)
-		{
-			RefImages = other.RefImages;
-		}
-		VulkanFrameBufferImages& operator=(const VulkanFrameBufferImages& right) {
-			return *this;
-		}
-		std::vector<Count<Image>> RefImages;
-	};
+	
 	class VulkanFrameBuffer : public FrameBuffer {
 	public:
 		VulkanFrameBuffer(const FrameBufferConfig& attachments);
 		virtual ~VulkanFrameBuffer();
-		VkFramebuffer GetFrameBuffer(uint32_t swapchainImageIndex);
-		const FrameBufferConfig& GetConfig() const  {
+		VkFramebuffer GetFrameBuffer();
+		const FrameBufferConfig& GetConfig() const  
+		{
 			return m_Config;
 		}
-		const FrameBufferConfig& GetConfig() {
+		const FrameBufferConfig& GetConfig() 
+		{
 			return m_Config;
 		}
-		// index is the image attachment
-		virtual Count<Image> GetColorAttachmentImage(uint32_t swapchainImageIndex, uint32_t index);
-		virtual Count<Image> GetDepthImage(uint32_t swapchainImageIndex);
-
-		// index is the image attachment
-		virtual ImageLayouts2D GetColorAttachmentImageLayout(uint32_t index);
-		virtual ImageLayouts2D GetDepthImageLayout();
+		virtual Count<Image> GetOutput(uint32_t imageIndex);
+		virtual Count<Image> GetDepthOutput();
 
 		virtual bool HasDepthImage();
-		virtual bool HasColorAttachment();
 		virtual void Resize(uint32_t width, uint32_t height);
 		virtual void Resize(const glm::uvec2 size) { Resize(size.x, size.y); }
 
 		virtual void Copy(Count<FrameBuffer> framebUFFer);
 
 		VkRenderPass GetRenderPass() { return m_CompatibilityRenderPass; }
-
 		ImageFormat GetDepthFormat() { return m_DepthFormat; }
 	private:
-		VkRenderPass m_CompatibilityRenderPass;
 
 		void Build();
 		void SetUpAttachments();
-		std::vector<VulkanFrameBufferImages> m_ColorImages;
-		// can only have one depth image thats how vulkan works
-		VulkanFrameBufferImages m_DepthImage;
-		FrameBufferConfig m_Config;
-		ImageFormat m_DepthFormat = ImageFormat::None;
+
 		void SetDepth(const FrameBufferImageConfig& imageAttach);
 		void AddImage(const FrameBufferImageConfig& imageAttach);
 
 		void CreateFramebuffer();
 		void Release();
-		std::vector<VkFramebuffer> m_Framebuffers;
+	private:
+		FrameBufferConfig m_Config;
+
+		//only one depth buffer allowed
+		ImageFormat m_DepthFormat = ImageFormat::None;
+		Count<Image> m_DepthImage =nullptr;
+		std::vector<Count<Image>> m_Images;
+
+		VkFramebuffer m_FrameBuffer;
+		VkRenderPass m_CompatibilityRenderPass;
+		
 		friend class VulkanSwapChain;
 	};
 	

@@ -11,7 +11,7 @@ namespace Proof {
 		ImageFormat Format = ImageFormat::None;
 		bool ClearOnLoad = true;
 		
-		ImageLayouts2D ExistingImage;
+		Count<class Image> ExistingImage = nullptr;
 	};
 	struct FrameBufferAttachments {
 		FrameBufferAttachments() = default;
@@ -43,22 +43,18 @@ namespace Proof {
 	class FrameBuffer : public RefCounted {
 	public:
 		static Count<FrameBuffer> Create(const FrameBufferConfig& config);
-		// index is hte framebuffer image index
-		// iamge is only goign to be type iamge2D and imageView
-		virtual Count <Image> GetColorAttachmentImage(uint32_t swapchainImageIndex,uint32_t index) = 0;
-		// iamge is only goign to be type iamge2D and imageView
-		virtual Count <Image> GetDepthImage(uint32_t swapchainImageIndex) = 0;
-
-		virtual ImageLayouts2D GetColorAttachmentImageLayout(uint32_t index) = 0;
-		virtual ImageLayouts2D GetDepthImageLayout() = 0;
-		virtual void Resize(const glm::uvec2 size) =0;
 		virtual ~FrameBuffer() = default;
 
-		virtual bool HasDepthImage() = 0;
-		virtual bool HasColorAttachment() = 0;
 		virtual const FrameBufferConfig& GetConfig() const = 0;
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
+		virtual Count<Image> GetOutput(uint32_t imageIndex) = 0;
 
+		//uses getoutput to get find the depth index and returns it
+		virtual Count<Image> GetDepthOutput() = 0;
+
+		virtual void Resize(const glm::uvec2 size) =0;
+
+		virtual bool HasDepthImage() = 0;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 	};
 }
 

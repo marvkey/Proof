@@ -42,7 +42,7 @@ namespace Proof
             // Adjust the dimensions to fit within the maximum supported dimensions
             m_Config.Width = std::min(m_Config.Width, maxWidth);
             m_Config.Height = std::min(m_Config.Height, maxHeight);
-            PF_ENGINE_INFO("FrameBuffer {} Dimension Exceed device Property new Width:{} Height:{}", m_Config.DebugName, m_Config.Width, m_Config.Height);
+            PF_ENGINE_ERROR("FrameBuffer {} Dimension Exceed device Property new Width:{} Height:{} automatically resized it to correct dimension", m_Config.DebugName, m_Config.Width, m_Config.Height);
         }
         SetUpAttachments();
 
@@ -63,8 +63,7 @@ namespace Proof
         else
             graphicsContext->GetSwapChain().As<VulkanSwapChain>()->FrameBuffers.emplace_back(this);
 
-        PF_ENGINE_TRACE("FrameBuffer {} created with Color: {} ImageAttachment and Depth:{} Attachment", m_Config.DebugName, m_ColorImages.size(), 
-            0 ? m_DepthImage.RefImages.size() ==0 : 1);
+        PF_ENGINE_TRACE("FrameBuffer {} created imagesCount: {} ", m_Config.DebugName, m_Images.size());
     }
     void VulkanFrameBuffer::SetUpAttachments()
     {
@@ -76,7 +75,7 @@ namespace Proof
                 // depth alrread has been set
                 if (m_DepthFormat != ImageFormat::None)
                 {
-                    PF_CORE_ASSERT(false, fmt::format("{} frameBuffer has multiple depth format passed in image Foramt ", m_Config.DebugName).c_str());
+                    PF_CORE_ASSERT(false, fmt::format("{} frameBuffer has multiple depth format passed in image Format ", m_Config.DebugName).c_str());
                 }
                 SetDepth(frameImageConfig);
             }
@@ -87,46 +86,33 @@ namespace Proof
     }
     void VulkanFrameBuffer::SetDepth(const FrameBufferImageConfig& imageAttach)
     {
-        auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-        auto swapchain = graphicsContext->GetSwapChain();
         m_DepthFormat = imageAttach.Format;
 
         VkFormat depthFormat = Utils::ProofFormatToVulkanFormat(imageAttach.Format);
-        bool hasImage = true ? imageAttach.ExistingImage.HasImages() : false;
-        m_DepthImage.RefImages.resize(swapchain->GetImageCount());
+        bool hasImage = true ? imageAttach.ExistingImage != nullptr : false;
 
+        
         if (hasImage)
         {
-            PF_CORE_ASSERT(imageAttach.ExistingImage.Images.size() == swapchain->GetImageCount(), "Not equal to image count ");
-            for (int i = 0; i < imageAttach.ExistingImage.Images.size(); i++)
-            {
-                auto image = imageAttach.ExistingImage.Images[i];
-                if (image->GetRendererResourceType() == RendererResourceType::ImageView || image->GetRendererResourceType() == RendererResourceType::Image2D)
-                    m_DepthImage.RefImages[i] = image;
-                else
-                    PF_CORE_ASSERT(false, "Framebuffer only takes an imageView and Image2D");
-            }
-            return;
+            if (imageAttach.ExistingImage->GetRendererResourceType() == RendererResourceType::ImageView || imageAttach.ExistingImage->GetRendererResourceType() == RendererResourceType::Image2D)
+                m_DepthImage = imageAttach.ExistingImage;
+            else
+                PF_CORE_ASSERT(false, "Framebuffer only takes an imageView and Image2D");
         }
-        m_DepthFormat = imageAttach.Format;
-
-        for (int i = 0; i < swapchain->GetImageCount(); i++)
+        else
         {
-
             ImageConfiguration imageConfig;
-            imageConfig.DebugName = fmt::format("{} FrameBuffer DepthImage {}",m_Config.DebugName,i);
+            imageConfig.DebugName = fmt::format("{} FrameBuffer DepthImage", m_Config.DebugName);
             imageConfig.Format = m_DepthFormat;
             imageConfig.Usage = ImageUsage::Attachment;
             imageConfig.Transfer = m_Config.Transfer;
             imageConfig.Width = m_Config.Width;
             imageConfig.Height = m_Config.Height;
-            m_DepthImage.RefImages[i] = Count<VulkanImage2D>::Create(imageConfig,VK_SAMPLE_COUNT_1_BIT);
-            {
-             
-            }
+
+            m_DepthImage = Count<VulkanImage2D>::Create(imageConfig, VK_SAMPLE_COUNT_1_BIT);
+            #if  0
 
             Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-                /*
                 VkImageMemoryBarrier barrier{};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -161,68 +147,59 @@ namespace Proof
                     0, nullptr,
                     0, nullptr,
                     1, &barrier);
-                    */
-                /*
-                VkClearColorValue clearColor = {};
-                clearColor.float32[0] = 0.0f; // Red
-                clearColor.float32[1] = 0.0f; // Green
-                clearColor.float32[2] = 0.0f; // Blue
-                clearColor.float32[3] = 1.0f; // Alpha
-                // Specify the range of the image to clear
-                VkImageSubresourceRange subresourceRange = {};
-                subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; // Set the aspect mask for color image
-                subresourceRange.baseMipLevel = 0;                       // Set the base mip level
-                subresourceRange.levelCount = 1;                         // Set the number of mip levels
-                subresourceRange.baseArrayLayer = 0;                     // Set the base array layer
-                subresourceRange.layerCount = 1;                         // Set the number of layers
+                */
+            /*
+            VkClearColorValue clearColor = {};
+            clearColor.float32[0] = 0.0f; // Red
+            clearColor.float32[1] = 0.0f; // Green
+            clearColor.float32[2] = 0.0f; // Blue
+            clearColor.float32[3] = 1.0f; // Alpha
+            // Specify the range of the image to clear
+            VkImageSubresourceRange subresourceRange = {};
+            subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT; // Set the aspect mask for color image
+            subresourceRange.baseMipLevel = 0;                       // Set the base mip level
+            subresourceRange.levelCount = 1;                         // Set the number of mip levels
+            subresourceRange.baseArrayLayer = 0;                     // Set the base array layer
+            subresourceRange.layerCount = 1;                         // Set the number of layers
 
-                // Clear the image to the specified color
-                vkCmdClearColorImage(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_DepthImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 
-                    &clearColor, 1, &subresourceRange);
-                    */
-
+            // Clear the image to the specified color
+            vkCmdClearColorImage(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), m_DepthImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                &clearColor, 1, &subresourceRange);
+                */
             });
-            m_DepthImage.RefImages[i].As<VulkanImage2D>()->UpdateDescriptor();
+            #endif 
+            m_DepthImage.As<VulkanImage2D>()->UpdateDescriptor();
         }
+
+        m_Images.emplace_back(m_DepthImage);
     }
     void VulkanFrameBuffer::AddImage(const FrameBufferImageConfig& imageAttach)
     {
-        auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-        auto swapchain = graphicsContext->GetSwapChain();
-        uint32_t imageCount = swapchain->GetImageCount();
         auto imageFormat = Utils::ProofFormatToVulkanFormat(imageAttach.Format);
-        bool hasImage = true ? imageAttach.ExistingImage.HasImages() : false;
+        bool hasImage = true ? imageAttach.ExistingImage != nullptr : false;
         
-        VulkanFrameBufferImages colorImage;
-        colorImage.RefImages.resize(imageCount);
+        Count<Image> image;
         if (hasImage)
         {
-
-            PF_CORE_ASSERT(imageAttach.ExistingImage.Images.size() == swapchain->GetImageCount(), "Not equal to image count ");
-            for (int i = 0; i < imageAttach.ExistingImage.Images.size(); i++)
-            {
-                auto image = imageAttach.ExistingImage.Images[i];
-                if (image->GetRendererResourceType() == RendererResourceType::ImageView || image->GetRendererResourceType() == RendererResourceType::Image2D)
-                    colorImage.RefImages[i] = imageAttach.ExistingImage.Images[i];
-                else
-                    PF_CORE_ASSERT(false, "Framebuffer only takes an imageView and Image2D");
-            }
-            
-            m_ColorImages.emplace_back(colorImage);
-            return;
+            if (imageAttach.ExistingImage->GetRendererResourceType() == RendererResourceType::ImageView || imageAttach.ExistingImage->GetRendererResourceType() == RendererResourceType::Image2D)
+                image = imageAttach.ExistingImage;
+            else
+                PF_CORE_ASSERT(false, "Framebuffer only takes an imageView and Image2D");
         }
-        for (int i = 0; i < imageCount; i++)
+        else
         {
             ImageConfiguration imageConfig;
-            imageConfig.DebugName = fmt::format("{} FrameBuffer ColorAttachment Index: {} ", m_Config.DebugName, i);
+            imageConfig.DebugName = fmt::format("{} FrameBuffer Image Index: {} ", m_Config.DebugName, m_Images.size());
             imageConfig.Format = imageAttach.Format;
             imageConfig.Usage = ImageUsage::Attachment;
             imageConfig.Transfer = m_Config.Transfer;
             imageConfig.Width = m_Config.Width;
             imageConfig.Height = m_Config.Height;
-            colorImage.RefImages[i] = Image2D::Create(imageConfig);
+
+            image = Image2D::Create(imageConfig);
+
+            #if 0
             Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-                /*
                 VkImageMemoryBarrier imageMemoryBarrier{};
                 imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -242,7 +219,6 @@ namespace Proof
                     0, nullptr,
                     0, nullptr,
                     1, &imageMemoryBarrier);
-                    */
                 /*
                 VkClearColorValue clearColor = {};
                 clearColor.float32[0] = 0.0f; // Red
@@ -256,18 +232,18 @@ namespace Proof
                 subresourceRange.levelCount = 1;                         // Set the number of mip levels
                 subresourceRange.baseArrayLayer = 0;                     // Set the base array layer
                 subresourceRange.layerCount = 1;                         // Set the number of layers
-                
+
                 // Clear the image to the specified color
                 vkCmdClearColorImage(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(), colorImage.RefImages[i].As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                     &clearColor, 1, &subresourceRange);
                 */
 
             });
-            colorImage.RefImages[i].As<VulkanImage2D>()->UpdateDescriptor();
-        }
-        m_ColorImages.emplace_back(colorImage);
+            #endif
+            image.As<VulkanImage2D>()->UpdateDescriptor();
 
-        
+        }
+        m_Images.emplace_back(image);
    
     }
     void VulkanFrameBuffer::CreateFramebuffer()
@@ -278,8 +254,6 @@ namespace Proof
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
         auto swapchain = graphicsContext->GetSwapChain();
-
-        m_Framebuffers.resize(swapchain->GetImageCount());
        
         {
             uint32_t attachmentIndex = 0;
@@ -287,11 +261,13 @@ namespace Proof
             std::vector<VkAttachmentDescription> attachmentDescriptions;
             VkAttachmentReference depthAttachmentReference;
             bool depthImage = false;
+            bool depthFirst = false;
             for (const auto& attachmentSpec : m_Config.Attachments.Attachments)
             {
                 if (Utils::IsDepthFormat(attachmentSpec.Format))
                 {
-
+                    if (attachmentIndex == 0)
+                        depthFirst = true;
 
                     VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();
                     attachmentDescription.flags = 0;
@@ -373,7 +349,8 @@ namespace Proof
             if (depthImage)
             {
                 {
-                    VkSubpassDependency& depedency = dependencies.emplace_back();
+                    
+                    VkSubpassDependency depedency;
                     depedency.srcSubpass = VK_SUBPASS_EXTERNAL;
                     depedency.dstSubpass = 0;
                     depedency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
@@ -381,10 +358,19 @@ namespace Proof
                     depedency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
                     depedency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
                     depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+                    if (depthFirst)
+                    {
+                        dependencies.insert(dependencies.begin(), depedency);
+                    }
+                    else
+                    {
+                        dependencies.emplace_back(depedency);
+                    }
                 }
 
                 {
-                    VkSubpassDependency& depedency = dependencies.emplace_back();
+                    VkSubpassDependency depedency;
                     depedency.srcSubpass = 0;
                     depedency.dstSubpass = VK_SUBPASS_EXTERNAL;
                     depedency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
@@ -392,6 +378,15 @@ namespace Proof
                     depedency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
                     depedency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                     depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+                    if (depthFirst)
+                    {
+                        dependencies.insert(dependencies.begin()+1, depedency);
+                    }
+                    else
+                    {
+                        dependencies.emplace_back(depedency);
+                    }
                 }
             }
 
@@ -407,101 +402,51 @@ namespace Proof
             VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_CompatibilityRenderPass));
             graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_RENDER_PASS, m_Config.DebugName + "Compatitbility render pass", m_CompatibilityRenderPass);
         }
-        for (size_t i = 0; i < m_Framebuffers.size(); i++)
+
+        std::vector<VkImageView> attachments;
+        for (auto& coloredImage : m_Images )
         {
-
-            std::vector<VkImageView> attachments;
-
-           
-            for (auto& coloredImage : m_ColorImages)
-            {
-                VkDescriptorImageInfo* infoRef = (VkDescriptorImageInfo* )coloredImage.RefImages[i]->GetResourceDescriptorInfo();
-                attachments.emplace_back(infoRef->imageView);
-            }
-            // has depth
-            if (m_DepthFormat != ImageFormat::None)
-            {
-                VkDescriptorImageInfo* infoRef = (VkDescriptorImageInfo*)m_DepthImage.RefImages[i]->GetResourceDescriptorInfo();
-                attachments.emplace_back(infoRef->imageView);
-            }
+            VkDescriptorImageInfo* infoRef = (VkDescriptorImageInfo* )coloredImage->GetResourceDescriptorInfo();
+            attachments.emplace_back(infoRef->imageView);
+        }
             
-            
-            VkFramebufferCreateInfo framebufferInfo = {};
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            // this is just to check if compatible wit renderPass
+        VkFramebufferCreateInfo framebufferInfo = {};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        // this is just to check if compatible wit renderPass
 
-            // i dont wanna do this but it needs a compatible render to create for some reason
-            framebufferInfo.renderPass = m_CompatibilityRenderPass;
-            framebufferInfo.attachmentCount = attachments.size();
-            framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = m_Config.Width;
-            framebufferInfo.height = m_Config.Height;
-            framebufferInfo.layers = 1;
-            framebufferInfo.pNext = nullptr;
-            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_Framebuffers[i]))
-            {
-                PF_CORE_ASSERT(false, fmt::format("failed to create {} Framebuffer", m_Config.DebugName));
-            }
-        }
-    }
-
-    VkFramebuffer VulkanFrameBuffer::GetFrameBuffer(uint32_t index)
-    {
-        return m_Framebuffers[index];
-    }
-    Count<Image> VulkanFrameBuffer::GetColorAttachmentImage(uint32_t swapchainImageIndex, uint32_t index)
-    {
-        return m_ColorImages[index].RefImages[swapchainImageIndex];
-    }
-
-    Count<Image> VulkanFrameBuffer::GetDepthImage(uint32_t swapchainImageIndex)
-    {
-        if(m_DepthFormat == ImageFormat::None)
-            return nullptr;
-        return m_DepthImage.RefImages[swapchainImageIndex];
-    }
-    ImageLayouts2D VulkanFrameBuffer::GetColorAttachmentImageLayout(uint32_t index)
-    {
-        ImageLayouts2D layout;
-        layout.Images.resize(Renderer::GetConfig().MaxImageCount);
-        int i =  0;
-        for (auto image : m_ColorImages[index].RefImages)
+        // i dont wanna do this but it needs a compatible render to create for some reason
+        framebufferInfo.renderPass = m_CompatibilityRenderPass;
+        framebufferInfo.attachmentCount = attachments.size();
+        framebufferInfo.pAttachments = attachments.data();
+        framebufferInfo.width = m_Config.Width;
+        framebufferInfo.height = m_Config.Height;
+        framebufferInfo.layers = 1;
+        framebufferInfo.pNext = nullptr;
+        if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_FrameBuffer))
         {
-            if (image->GetRendererResourceType() == RendererResourceType::ImageView)
-                layout.Images[i] = image.As<ImageView>();
-            else
-                layout.Images[i] = image.As<Image>();
-
-            i++;
+            PF_CORE_ASSERT(false, fmt::format("failed to create {} Framebuffer", m_Config.DebugName));
         }
-        return layout;
     }
-    ImageLayouts2D VulkanFrameBuffer::GetDepthImageLayout()
+
+    VkFramebuffer VulkanFrameBuffer::GetFrameBuffer()
     {
-        if (HasDepthImage() == false)
-            return ImageLayouts2D();
-        ImageLayouts2D layout;
-        layout.Images.resize(Renderer::GetConfig().MaxImageCount);
-        int index = 0;
-        for (auto image : m_DepthImage.RefImages)
-        {
-            if (image->GetRendererResourceType() == RendererResourceType::ImageView)
-                layout.Images[index] = image.As<ImageView>();
-            else
-                layout.Images[index] = image.As<Image>();
-
-            index++;
-        }
-        return layout;
+        return m_FrameBuffer;
     }
+    Count<Image> VulkanFrameBuffer::GetOutput(uint32_t imageIndex)
+    {
+        return m_Images[imageIndex];
+    }
+
+    Count<Image> VulkanFrameBuffer::GetDepthOutput()
+    {
+        return m_DepthImage;
+    }
+
     bool VulkanFrameBuffer::HasDepthImage()
     {
         return m_DepthFormat != ImageFormat::None;
     }
-    bool VulkanFrameBuffer::HasColorAttachment()
-    {
-        return m_ColorImages.size()>0;
-    }
+    
     void VulkanFrameBuffer::Resize(uint32_t width, uint32_t height)
     {
         if (m_Config.Width == width && m_Config.Height == height)
@@ -526,20 +471,12 @@ namespace Proof
             m_Config.Height = std::min(m_Config.Height, maxHeight);
             PF_ENGINE_INFO("FrameBuffer {} Dimension Exceed device Property new Width:{} Height:{}", m_Config.DebugName, m_Config.Width, m_Config.Height);
         }
-        for (auto& framebufferImageAttach : m_ColorImages)
+        for (auto& image : m_Images)
         {
-            for (auto& image : framebufferImageAttach.RefImages)
-            {
-                if (image->GetRendererResourceType() == RendererResourceType::Image2D)
-                    image.As<VulkanImage2D>()->Resize(m_Config.Width, m_Config.Height);
-            }
+            if (image->GetRendererResourceType() == RendererResourceType::Image2D)
+                image.As<VulkanImage2D>()->Resize(m_Config.Width, m_Config.Height);
         }
-
-        for (auto& dpethImage : m_DepthImage.RefImages)
-        {
-            if (dpethImage->GetRendererResourceType() == RendererResourceType::Image2D)
-                dpethImage.As<VulkanImage2D>()->Resize(m_Config.Width, m_Config.Height);
-        }
+        
         Build();
 
         PF_ENGINE_TRACE("Resized {} FrameBuffer {} {}", m_Config.DebugName, m_Config.Width, m_Config.Height);
@@ -617,13 +554,10 @@ namespace Proof
         auto swapchain = VulkanRenderer::GetGraphicsContext()->GetSwapChain()    ;
 
         // dont destroy images and depth images attached because we may need to resize
-        for (size_t i = 0; i < m_Framebuffers.size(); i++)
-        {
-            Renderer::SubmitDatafree([buffer = m_Framebuffers[i]]() {
-                const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice();
-                vkDestroyFramebuffer(device, buffer, nullptr);
-            });
-        }
+        Renderer::SubmitDatafree([buffer = m_FrameBuffer]() {
+            const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+            vkDestroyFramebuffer(device, buffer, nullptr);
+        });
         Renderer::SubmitDatafree([renderPass = m_CompatibilityRenderPass]() {
             vkDestroyRenderPass(VulkanRenderer::GetGraphicsContext()->GetDevice(), renderPass, nullptr);
         });

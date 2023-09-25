@@ -352,7 +352,7 @@ namespace Proof
 			//geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
 			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			geoFramebufferConfig.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-			geoFramebufferConfig.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetConfig().TargetFrameBuffer->GetDepthImageLayout();
+			geoFramebufferConfig.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
 
 			auto frameBuffer = FrameBuffer::Create(geoFramebufferConfig);
 
@@ -496,8 +496,8 @@ namespace Proof
 			// Use the color buffer from the final compositing pass, but the depth buffer from
 			// the actual 3D geometry pass, in case we want to composite elements behind meshes
 			// in the scene
-			extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_CompositePass->GetTargetFrameBuffer()->GetColorAttachmentImageLayout(0);
-			extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetTargetFrameBuffer()->GetDepthImageLayout();
+			extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_CompositePass->GetOutput(0);
+			extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
 
 			m_ExternalCompositeFrameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
 
@@ -709,13 +709,13 @@ namespace Proof
 
 	Count<Image2D> WorldRenderer::GetShadowPassDebugImage()
 	{
-		return m_ShadowDebugPass->GetTargetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().ImageIndex, 0).As<Image2D>();
+		return m_ShadowDebugPass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>();
 	}
 
 
 	Count<Image2D> WorldRenderer::GetFinalPassImage()
 	{
-		return m_CompositePass->GetTargetFrameBuffer()->GetColorAttachmentImage(Renderer::GetCurrentFrame().ImageIndex,0).As<Image2D>();
+		return m_CompositePass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>(); 
 	}
 
 	void WorldRenderer::SetPasses()
@@ -1244,7 +1244,7 @@ namespace Proof
 		Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_CompositePass, true);
 		//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
 
-		auto inputImage = m_GeometryPass->GetTargetFrameBuffer()->GetColorAttachmentImage(imageIndex, 0);
+		auto inputImage = m_GeometryPass->GetOutput(0);
 		m_CompositeMaterial->Set("u_WorldTexture", inputImage);
 
 		Renderer::SubmitFullScreenQuad(m_CommandBuffer,m_CompositePass,m_CompositeMaterial);

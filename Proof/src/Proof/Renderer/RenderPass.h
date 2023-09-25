@@ -21,6 +21,7 @@ namespace Proof{
 		void virtual SetInput(std::string_view name, Count<class Image2D>image) = 0;
 		void virtual SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images) = 0;
 
+		virtual Count<class Image> GetOutput(uint32_t imageIndex) = 0;
 		void virtual AddGlobalInput(Count<class GlobalBufferSet> globalInputs) = 0;
 		virtual void PushData(std::string_view name, const void* data) = 0;
 		virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) = 0;
