@@ -35,6 +35,8 @@ namespace Proof {
 	};
 	struct SpriteComponent;
 	struct TransformComponent;
+	struct AABB;
+
 	struct Renderer2DStorage {
 		Count<UniformBufferSet> CameraBuffer = nullptr;
 		Count<class VertexBuffer> VertexBuffer;
@@ -85,6 +87,11 @@ namespace Proof {
 		void DrawQuad(const glm::mat4& transform, const glm::vec4& Color, const Count<Texture2D>& texture2D);
 		void DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform);
 
+		void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawAABB(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawAABBSubMeshes(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+
 		// chagne to u32stirng in the future
 		void DrawString(const std::string& text, Count<class Font> font,const TextParams& textparams, const glm::mat4& transform);
 		void EndContext();
@@ -114,6 +121,9 @@ namespace Proof {
 		const uint32_t c_MaxVertexCount = c_MaxQuadCount * 4; // times 4 cause each quad holds 4 vertices
 		const uint32_t c_MaxIndexCount = c_MaxQuadCount * 6;
 
+		const uint32_t c_MaxLines = 2000;
+		const uint32_t c_MaxLineVertices = c_MaxLines * 2;
+		const uint32_t c_MaxLineIndices = c_MaxLines * 6;
 		static inline const uint32_t c_MaxTextureSlots = 32; //1-31slots
 
 		std::array<Count<Texture2D>, c_MaxTextureSlots> m_QuadTextures;
@@ -133,6 +143,14 @@ namespace Proof {
 		std::array<Count<Font>, c_MaxTextureSlots> m_FontTextures;
 		Count<class VertexBuffer> m_TextVertexBuffer;
 		float m_TextFontSlotIndex = 1; //0 default font
+
+
+		Count<RenderPass> m_LinePass;
+		Count<VertexBuffer> m_LineVertexBuffer;
+		Count<IndexBuffer> m_LineIndexBuffer;
+		uint32_t m_LineIndexCount = 0;
+		LineVertex* m_LineVertexBufferBase;
+		LineVertex* m_LineVertexBufferPtr;
 
 
 		Count<UniformBufferSet> m_UBCamera = nullptr;

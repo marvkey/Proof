@@ -15,6 +15,7 @@
 #include "Shader.h"
 #include "CommandBuffer.h"
 #include "Font.h"
+#include "Proof/Scene/Mesh.h"
 #include "MSDFData.h"
 #include "Proof/Math/MathInclude.h"
 namespace Proof {
@@ -124,6 +125,38 @@ namespace Proof {
 			m_TextPass = RenderPass::Create(renderPassConfig);
 			m_TextPass->SetInput("CameraData", m_UBCamera);
 		}
+		//
+		{
+			auto vertexArray = VertexArray::Create({ sizeof(LineVertex) });
+			vertexArray->AddData(0, DataType::Vec3, offsetof(LineVertex, LineVertex::Position));
+			vertexArray->AddData(1, DataType::Vec4, offsetof(LineVertex, LineVertex::Color));
+
+			GraphicsPipelineConfiguration graphicsPipelineConfig;
+			graphicsPipelineConfig.DebugName = "Line";
+			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+			graphicsPipelineConfig.Shader = Renderer::GetShader("Line2D");
+			graphicsPipelineConfig.VertexArray = vertexArray;
+			graphicsPipelineConfig.DrawMode = DrawType::Line;
+			graphicsPipelineConfig.LineWidth = 2.0f;
+			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+			RenderPassConfig renderPassConfig("Line");
+			renderPassConfig.Pipeline = graphicsPipeline;
+			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
+			m_LinePass = RenderPass::Create(renderPassConfig);
+			m_LinePass->SetInput("CameraData", m_UBCamera);
+
+			uint32_t* lineIndices = new uint32_t[c_MaxLineIndices];
+			for (uint32_t i = 0; i < c_MaxLineIndices; i++)
+				lineIndices[i] = i;
+			m_LineIndexBuffer = IndexBuffer::Create(lineIndices, c_MaxLineIndices);
+			delete[] lineIndices;
+
+			m_LineVertexBufferBase = new LineVertex[c_MaxLineVertices];
+			m_LineVertexBufferPtr = m_LineVertexBufferBase;
+
+			m_LineVertexBuffer = VertexBuffer::Create(c_MaxLineVertices * sizeof(LineVertex));
+		}
 	}
 	
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position) {
@@ -144,6 +177,7 @@ namespace Proof {
 	{
 		delete[] m_QuadVertexBufferBase;
 		delete[] m_TextVertexBufferBase;
+		delete[] m_LineVertexBufferBase;
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1,1,1},{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());
@@ -183,6 +217,72 @@ namespace Proof {
 		else
 		{
 			DrawQuad( transform.Location,transform.GetRotationEuler(), transform.Scale, glm::vec4{Sprite.Colour}, m_WhiteTexture);
+		}
+	}
+	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
+	{
+		if (m_LineIndexCount >= c_MaxLineIndices)
+		{
+			Render();
+			Reset();
+		}
+
+		m_LineVertexBufferPtr->Position = p0;
+		m_LineVertexBufferPtr->Color = color;
+		m_LineVertexBufferPtr++;
+
+		m_LineVertexBufferPtr->Position = p1;
+		m_LineVertexBufferPtr->Color = color;
+		m_LineVertexBufferPtr++;
+
+		m_LineIndexCount += 2;
+
+	}
+	void Renderer2D::DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color)
+	{
+		glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
+		glm::vec4 max = { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f };
+
+		glm::vec4 corners[8] =
+		{
+			transform * glm::vec4 { aabb.Min.x, aabb.Min.y, aabb.Max.z, 1.0f },
+			transform * glm::vec4 { aabb.Min.x, aabb.Max.y, aabb.Max.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Min.y, aabb.Max.z, 1.0f },
+
+			transform * glm::vec4 { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f },
+			transform * glm::vec4 { aabb.Min.x, aabb.Max.y, aabb.Min.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Max.y, aabb.Min.z, 1.0f },
+			transform * glm::vec4 { aabb.Max.x, aabb.Min.y, aabb.Min.z, 1.0f }
+		};
+
+		for (uint32_t i = 0; i < 4; i++)
+			DrawLine(corners[i], corners[(i + 1) % 4], color);
+
+		for (uint32_t i = 0; i < 4; i++)
+			DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
+
+		for (uint32_t i = 0; i < 4; i++)
+			DrawLine(corners[i], corners[i + 4], color);
+	
+	}
+	void Renderer2D::DrawAABB(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color)
+	{
+		AABB box = mesh->GetMeshSource()->GetBoundingBox();
+		DrawAABB(box, transform);
+	}
+
+	void Renderer2D::DrawAABBSubMeshes(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color)
+	{
+		const auto& meshAssetSubmeshes = mesh->GetMeshSource()->GetSubMeshes();
+		auto& submeshes = mesh->GetSubMeshes();
+		for (uint32_t submeshIndex : submeshes)
+		{
+			const SubMesh& submesh = meshAssetSubmeshes[submeshIndex];
+			auto& aabb = submesh.BoundingBox;
+			//auto aabbTransform = transform * submesh.Transform;
+			auto aabbTransform = transform;
+			DrawAABB(aabb, aabbTransform);
 		}
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D)
@@ -413,6 +513,13 @@ namespace Proof {
 			}
 			m_TextFontSlotIndex = 1;
 		}
+
+		//line
+		{
+			m_LineIndexCount = 0;
+			m_LineVertexBufferPtr = m_LineVertexBufferBase;
+
+		}
 	}
 	
 	void Renderer2D::Render() {
@@ -473,6 +580,23 @@ namespace Proof {
 			m_Stats.TextDrawTime += textTime.ElapsedMillis();
 
 		}
+
+		if (m_LineIndexCount > 0)
+		{
+			PF_PROFILE_FUNC("Renderer2D::Line Draw");
+			Timer lineTime;
+			uint32_t dataSize = (uint32_t)((uint8_t*)m_LineVertexBufferPtr - (uint8_t*)m_LineVertexBufferBase);
+
+			m_LineVertexBuffer->SetData(m_LineVertexBufferBase, dataSize);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_LinePass);
+			m_LineIndexBuffer->Bind(m_CommandBuffer);
+			m_LineVertexBuffer->Bind(m_CommandBuffer);
+			
+			Renderer::DrawElementIndexed(m_CommandBuffer, m_LineIndexCount);
+			Renderer::EndRenderPass(m_LinePass);
+		}
+
 		m_Stats.TotalRenderTime += renderTime.ElapsedMillis();
 		#if 0
 		if(m_Storage2DData->TextIndexCount > 0){
@@ -571,6 +695,7 @@ namespace Proof {
 		{
 			m_QuadPass->SetTargetFrameBuffer(m_FrameBuffer);
 			m_TextPass->SetTargetFrameBuffer(m_FrameBuffer);
+			m_LinePass->SetTargetFrameBuffer(m_FrameBuffer);
 		}
 	}
 	Renderer2DStorage::Renderer2DStorage() {

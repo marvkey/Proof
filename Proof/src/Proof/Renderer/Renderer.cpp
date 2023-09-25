@@ -89,6 +89,7 @@ namespace Proof {
 		//2D
 		ShaderLibrary->LoadShader("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.glsl");
 		ShaderLibrary->LoadShader("Text2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text2D.glsl");
+		ShaderLibrary->LoadShader("Line2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Line2D.glsl");
 
 		s_BaseTextures = new  BaseTextures();
 		s_RenderCommandQueue.resize(2);

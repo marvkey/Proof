@@ -7,6 +7,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "Material.h"
+#include "Proof/Math/AABB.h"
 #include <algorithm>
 namespace Proof
 {
@@ -18,7 +19,9 @@ namespace Proof
         uint32_t BaseIndex;
         uint32_t IndexCount;
         uint32_t MaterialIndex;
+        glm::mat4 LocalTransform;
         glm::mat4 Transform;
+        AABB BoundingBox;
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
     };
@@ -37,14 +40,16 @@ namespace Proof
         Count<MaterialTable> GenerateMaterialTable(){
             return Count<MaterialTable>::CreateFrom(m_MaterialTable);
         }
-
+        AABB GetBoundingBox() {return m_BoundingBox;}
         const std::vector<SubMesh>& GetSubMeshes()const  {
             return m_SubMeshes;
         }
+
         ASSET_CLASS_TYPE(MeshSourceFile);
         Count<class VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
         Count<class IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
     private:
+        AABB m_BoundingBox;
         // gets cleard after mesh has been created
         std::vector<Vertex> m_Vertices;
         // gets cleard after mesh has been created

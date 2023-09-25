@@ -97,6 +97,21 @@ namespace Proof{
         ProcessNode(scene->mRootNode, scene, AIMatrixToGLM(scene->mRootNode->mTransformation));
 
 
+        for (auto& subMesh : m_SubMeshes)
+        {
+            AABB transformedSubmeshAABB = subMesh.BoundingBox;
+           // glm::vec3 min = glm::vec3(subMesh.Transform * glm::vec4(transformedSubmeshAABB.Min, 1.0f));
+           // glm::vec3 max = glm::vec3(subMesh.Transform * glm::vec4(transformedSubmeshAABB.Max, 1.0f));
+
+            glm::vec3 min = transformedSubmeshAABB.Min;
+            glm::vec3 max = transformedSubmeshAABB.Max;
+            m_BoundingBox.Min.x = glm::min(m_BoundingBox.Min.x, min.x);
+            m_BoundingBox.Min.y = glm::min(m_BoundingBox.Min.y, min.y);
+            m_BoundingBox.Min.z = glm::min(m_BoundingBox.Min.z, min.z);
+            m_BoundingBox.Max.x = glm::max(m_BoundingBox.Max.x, max.x);
+            m_BoundingBox.Max.y = glm::max(m_BoundingBox.Max.y, max.y);
+            m_BoundingBox.Max.z = glm::max(m_BoundingBox.Max.z, max.z);
+        }
         m_MaterialTable = Count<MaterialTable>::Create(scene->mNumMaterials > 0 ? false : true);
         for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; materialIndex++)
         {
@@ -151,9 +166,11 @@ namespace Proof{
     SubMesh MeshSource::ProcessMesh(void* mesh, const void* scene, const glm::mat4& transform)
     {
         aiMesh* aimesh = (aiMesh*)mesh;
+        
         aiScene* aiscene = (aiScene*)scene;
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
+        AABB aabb = { glm::vec3{std::numeric_limits<float>::infinity()},glm::vec3{-std::numeric_limits<float>::infinity()} };
 
         SubMesh subMesh;
         subMesh.BaseIndex = m_Indices.size();
@@ -173,6 +190,15 @@ namespace Proof{
             }
             else
                 vertex.TexCoords = Vector2(0.0f, 0.0f);
+
+            aabb.Min.x = std::min(aabb.Min.x, vertex.Vertices.X);
+            aabb.Min.y = std::min(aabb.Min.y, vertex.Vertices.Y);
+            aabb.Min.z = std::min(aabb.Min.z, vertex.Vertices.Z);
+
+            aabb.Max.x = std::max(aabb.Max.x, vertex.Vertices.X);
+            aabb.Max.y = std::max(aabb.Max.y, vertex.Vertices.Y);
+            aabb.Max.z = std::max(aabb.Max.z, vertex.Vertices.Z);
+
             m_Vertices.emplace_back(vertex);
         }
         uint32_t indexCount = 0;
@@ -189,6 +215,7 @@ namespace Proof{
         subMesh.Name = aimesh->mName.C_Str();
         subMesh.Transform = transform;
         subMesh.IndexCount = indexCount;
+        subMesh.BoundingBox = aabb;
         subMesh.MaterialIndex = aimesh->mMaterialIndex;
         return subMesh;
     }

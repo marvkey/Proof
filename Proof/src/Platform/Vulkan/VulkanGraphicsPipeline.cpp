@@ -60,14 +60,14 @@ namespace Proof
 			{
 				if (Utils::IsDepthFormat(attachmentSpec.Format))
 				{
-					
+
 					PF_CORE_ASSERT(depthImage == false, "Cannot have more than one depth image");
 					VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();
 					attachmentDescription.flags = 0;
 					attachmentDescription.format = Utils::ProofFormatToVulkanFormat(attachmentSpec.Format);
 					attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
 					attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE; 
+					attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 					attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -94,7 +94,7 @@ namespace Proof
 					attachmentDescription.format = Utils::ProofFormatToVulkanFormat(attachmentSpec.Format);
 					attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
 					attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE; 
+					attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 					attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -316,7 +316,7 @@ namespace Proof
 
 		pipelineConfig.DepthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		pipelineConfig.DepthStencilInfo.depthTestEnable = m_Config.DepthTest ? VK_TRUE : VK_FALSE;
-		pipelineConfig.DepthStencilInfo.depthWriteEnable = m_Config.WriteDepth ? VK_TRUE :VK_FALSE;
+		pipelineConfig.DepthStencilInfo.depthWriteEnable = m_Config.WriteDepth ? VK_TRUE : VK_FALSE;
 		pipelineConfig.DepthStencilInfo.depthCompareOp = Utils::ProofCompareOpToVulkanCompareOp(m_Config.DepthCompareOperator);
 		pipelineConfig.DepthStencilInfo.depthBoundsTestEnable = VK_FALSE;
 		pipelineConfig.DepthStencilInfo.minDepthBounds = 0.0f;  // Optional
@@ -329,11 +329,11 @@ namespace Proof
 
 
 		std::vector<VkDynamicState> dynamicState{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
-		if (m_Config.EditCullMode)
+		if (m_Config.EditCullMode )
 			dynamicState.push_back(VK_DYNAMIC_STATE_CULL_MODE);
-		if (m_Config.EditDrawType)
+		if (m_Config.EditDrawType )
 			dynamicState.push_back(VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY);
-		if (m_Config.EditLineWidth)
+		if (m_Config.EditLineWidth )
 			dynamicState.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
 
 		pipelineConfig.DynamicSate.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
