@@ -97,6 +97,7 @@ namespace Proof
 			m_SubmeshTransformBuffers[i].Data = new TransformVertexData[TransformBufferCount];
 		}
 		
+		m_GlobalInputs = Count<GlobalBufferSet>::Create();
 
 		m_UBScreenBuffer = UniformBufferSet::Create(sizeof(UBScreenData));
 		m_UBRenderDataBuffer = UniformBufferSet::Create(sizeof(UBRenderData));
@@ -138,6 +139,12 @@ namespace Proof
 				break;
 		}
 
+
+		// set global input 
+		{
+			m_GlobalInputs->SetData("CameraData", m_UBCameraBuffer);
+			m_GlobalInputs->SetData("ScreenData", m_UBScreenBuffer);
+		}
 		Count<VertexArray> staticVertexArray= VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshInstanceVertex), VertexInputRate::Instance} });
 		staticVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
 		staticVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
@@ -182,7 +189,9 @@ namespace Proof
 			renderPassConfig.TargetFrameBuffer = FrameBuffer::Create(preDepthFramebufferSpec);
 			
 			m_PreDepthPass = RenderPass::Create(renderPassConfig);
-			m_PreDepthPass->SetInput("CameraData", m_UBCameraBuffer);
+			m_PreDepthPass->AddGlobalInput(m_GlobalInputs);
+
+			//m_PreDepthPass->SetInput("CameraData", m_UBCameraBuffer);
 
 		}
 		//foward plus
@@ -207,8 +216,8 @@ namespace Proof
 			pipeline.Shader = Renderer::GetShader("FrustrumGrid");
 			m_FrustrumPass = ComputePass::Create({ "frustrumPass",ComputePipeline::Create(pipeline) });
 			m_FrustrumPass->SetInput("OutFrustums", m_FrustrumsBuffer);
-			m_FrustrumPass->SetInput("CameraData", m_UBCameraBuffer);
-			m_FrustrumPass->SetInput("ScreenData", m_UBScreenBuffer);
+			//m_FrustrumPass->SetInput("CameraData", m_UBCameraBuffer);
+			//m_FrustrumPass->SetInput("ScreenData", m_UBScreenBuffer);
 
 			ImageConfiguration imageConfig;
 			imageConfig.DebugName = "PointLightGrid";
@@ -247,12 +256,14 @@ namespace Proof
 			m_LightCullingPass->SetInput("u_PointLightGrid", m_PointLightGrid);
 			m_LightCullingPass->SetInput("u_SpotLightGrid", m_SpotLightGrid);
 
-			m_LightCullingPass->SetInput("CameraData", m_UBCameraBuffer);
-			m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
+			m_LightCullingPass->AddGlobalInput(m_GlobalInputs);
+
+			//m_LightCullingPass->SetInput("CameraData", m_UBCameraBuffer);
+			//m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
 			m_LightCullingPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
 			m_LightCullingPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
 			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
-			m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
+			//m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
 
 		}
 
@@ -374,8 +385,11 @@ namespace Proof
 			m_GeometryPass->SetInput("RendererData", m_UBRenderDataBuffer);
 			m_GeometryPass->SetInput("SceneData", m_UBSceneDataBuffer);
 			m_GeometryPass->SetInput("ShadowMapProjections", m_UBCascadeProjectionBuffer);
-			m_GeometryPass->SetInput("CameraData", m_UBCameraBuffer);
-			m_GeometryPass->SetInput("ScreenData", m_UBScreenBuffer);
+			//m_GeometryPass->SetInput("CameraData", m_UBCameraBuffer);
+			//m_GeometryPass->SetInput("ScreenData", m_UBScreenBuffer);
+
+			m_GeometryPass->AddGlobalInput(m_GlobalInputs);
+
 			m_GeometryPass->SetInput("u_PointLightGrid", m_PointLightGrid);
 			m_GeometryPass->SetInput("u_SpotLightGrid", m_SpotLightGrid);
 			m_GeometryPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
@@ -401,8 +415,10 @@ namespace Proof
 			renderPassConfig.Pipeline = skyBoxPipeline;
 			renderPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
 			m_SkyBoxPass = RenderPass::Create(renderPassConfig);
-			m_SkyBoxPass->SetInput("CameraData", m_UBCameraBuffer);
+			//m_SkyBoxPass->SetInput("CameraData", m_UBCameraBuffer);
 			m_SkyBoxPass->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
+			m_SkyBoxPass->AddGlobalInput(m_GlobalInputs);
+
 		}
 		
 
@@ -503,9 +519,12 @@ namespace Proof
 			m_GeometryWireFrameOnTopPass = RenderPass::Create(RenderPassConfig("WireFrameOnTop", geomWireframepass, m_ExternalCompositeFrameBuffer));
 
 			m_GeometryWireFramePassMaterial = RenderMaterial::Create(RenderMaterialConfiguration{ "WireFrame", Renderer::GetShader("Wireframe") });
-			
-			m_GeometryWireFramePass->SetInput("CameraData", m_UBCameraBuffer);
-			m_GeometryWireFrameOnTopPass->SetInput("CameraData", m_UBCameraBuffer);
+
+			m_GeometryWireFramePass->AddGlobalInput(m_GlobalInputs);
+			m_GeometryWireFrameOnTopPass->AddGlobalInput(m_GlobalInputs);
+
+			//m_GeometryWireFramePass->SetInput("CameraData", m_UBCameraBuffer);
+			//m_GeometryWireFrameOnTopPass->SetInput("CameraData", m_UBCameraBuffer);
 
 		}
 

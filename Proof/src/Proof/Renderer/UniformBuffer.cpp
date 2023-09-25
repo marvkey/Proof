@@ -98,6 +98,14 @@ namespace Proof
 
 
 
+	void GlobalBufferSet::SetData(const std::string& name, Count<StorageBufferSet> set)
+	{
+		m_Buffers[name] = { RendererResourceType::StorageBufferSet, set };
+	}
+	void GlobalBufferSet::SetData(const std::string& name, Count<UniformBufferSet> set)
+	{
+		m_Buffers[name] = { RendererResourceType::UniformBufferSet, set };
+	}
 }
 
 

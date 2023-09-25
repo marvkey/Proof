@@ -273,6 +273,7 @@ namespace Proof {
 		}
 
 		// render AABB
+		/*
 		{
 			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
 			for (auto entity : group)
@@ -292,13 +293,15 @@ namespace Proof {
 					//else
 					//renderer2D->DrawAABB(mesh,  transform);
 					//renderer2D->DrawAABB(mesh, transform);
-					AABB bouding = { { -1.0f, -1.0f, -1.0f} ,{1.0f, 1.0f, 1.0f} };
-					renderer2D->DrawAABB(bouding, transform);
+					//AABB bouding = { { -1.0f, -1.0f, -1.0f} ,{1.0f, 1.0f, 1.0f} };
+					//renderer2D->DrawAABB(bouding, transform);
 
 				}
 			}
 		}
 		renderer2D->DrawLine({ 0,0,0 }, { 0,0,10 });
+		*/
+
 		renderer2D->EndContext();
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)

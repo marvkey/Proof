@@ -11,9 +11,9 @@ namespace Proof{
 		Texture2D,
 		TextureCube,
 		UniformBuffer,
-		//UniformBufferSet,
+		UniformBufferSet,
 		StorageBuffer,
-	//	StorageBufferSet
+		StorageBufferSet
 	};
 	#define RENDER_VIEW_RESOURCE_CLASS_TYPE(type) static RendererResourceType GetStaticRendererResourceType() { return RendererResourceType::type; }\
 								virtual RendererResourceType GetRendererResourceType() const override { return GetStaticRendererResourceType(); }

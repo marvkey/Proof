@@ -128,6 +128,10 @@ namespace Proof
 	{
 		m_DescritptorSetManager->SetInput(name, images);
 	}
+	void VulkanComputePass::AddGlobalInput(Count<class GlobalBufferSet> globalInputs)
+	{
+		m_DescritptorSetManager->SetGoalballInputs(globalInputs);
+	}
 	void VulkanComputePass::SetInput(std::string_view name, Count<class UniformBuffer> buffer)
 	{
 		m_DescritptorSetManager->SetInput(name, buffer);

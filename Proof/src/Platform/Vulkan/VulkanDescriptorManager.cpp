@@ -420,6 +420,60 @@ namespace Proof
         m_Build = true;
         m_LastFrameBinned = Renderer::GetCurrentFrame().FrameinFlight;
     }
+    void VulkanDescriptorManager::SetGlobalInput(Count<GlobalBufferSet> globalInputs)
+    {
+        auto shader = m_Config.Shader;
+
+        for (auto& [name, inputData] : globalInputs->GetBuffers())
+        {
+            const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+            if (!decl)continue;
+
+            RendererResourceType type = inputData.first;
+
+            switch (type)
+            {
+                case Proof::RendererResourceType::None:
+                    break;
+                case Proof::RendererResourceType::Image2D:
+                    break;
+                case Proof::RendererResourceType::ImageView:
+                    break;
+                case Proof::RendererResourceType::Texture2D:
+                    break;
+                case Proof::RendererResourceType::TextureCube:
+                    break;
+                case Proof::RendererResourceType::UniformBuffer:
+                    break;
+                case Proof::RendererResourceType::UniformBufferSet:
+                    {
+                        Count<UniformBufferSet> storageBufferSet = inputData.second.As<UniformBufferSet>();
+                        m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
+                    }
+                    break;
+                case Proof::RendererResourceType::StorageBuffer:
+                    break;
+                case Proof::RendererResourceType::StorageBufferSet:
+                    {
+                        Count<StorageBufferSet> storageBufferSet = inputData.second.As<StorageBufferSet>();
+                        m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    void VulkanDescriptorManager::SetGoalballInputs(Count<GlobalBufferSet> uniformData)
+    {
+        for (auto set : m_GlobalSets)
+        {
+            if (set == uniformData)
+                return;
+        }
+        m_GlobalSets.emplace_back(uniformData);
+        SetGlobalInput(uniformData);
+    }
     void VulkanDescriptorManager::Build()
     {
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
@@ -664,7 +718,10 @@ namespace Proof
             }
         }
 
-      
+        for (auto globalInputs : m_GlobalSets)
+        {
+            SetGlobalInput(globalInputs);
+        }
     }
     void VulkanDescriptorManager::Release()
     {

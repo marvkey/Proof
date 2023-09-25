@@ -2,6 +2,7 @@
 #include "Proof/Core/Core.h"
 #include "RendererResouce.h"
 #include "Buffer.h"
+#include <unordered_map>
 namespace Proof
 {
 	class StorageBuffer : public RendererResource {
@@ -69,5 +70,16 @@ namespace Proof
 		virtual void Resize(uint32_t index, uint64_t size) = 0;
 		virtual void Resize(uint32_t index, Buffer data) = 0;
 		virtual void SetData(uint32_t index, Buffer data, uint64_t offset = 0) = 0;
+	};
+
+
+	class GlobalBufferSet : public RefCounted
+	{
+	public:
+		void SetData(const std::string& name, Count<StorageBufferSet> set);
+		void SetData(const std::string& name, Count<UniformBufferSet> set);
+		const std::unordered_map<std::string, std::pair<RendererResourceType, Count<RefCounted>>>& GetBuffers() { return m_Buffers; }
+	private:
+		std::unordered_map<std::string, std::pair<RendererResourceType, Count<RefCounted>>> m_Buffers;
 	};
 }

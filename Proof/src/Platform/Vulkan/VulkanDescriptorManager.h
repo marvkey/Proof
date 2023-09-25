@@ -178,6 +178,7 @@ namespace Proof
 		void SetInput(std::string_view name, Count<class Image> imageView);
 		void SetInput(std::string_view name, const std::vector< Count<class Image>>& imageViews);
 
+		void SetGoalballInputs(Count< GlobalBufferSet> uniformData);
 		void Build();
 		// does not clear the m_Inputs
 		void Release();
@@ -211,5 +212,9 @@ namespace Proof
 		std::map<uint32_t,uint32_t> m_SizeInputsData ;
 		// hasnt bind to a frame yet
 		uint32_t m_LastFrameBinned = -1;
+
+		std::vector<Count< GlobalBufferSet>> m_GlobalSets;
+
+		void SetGlobalInput(Count<GlobalBufferSet> set);
 	};
 }

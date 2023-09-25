@@ -393,6 +393,7 @@ namespace Proof
 		Count<StorageBufferSet> m_SBPointLightsBuffer;
 		Count<StorageBufferSet> m_SBSpotLightsBuffer;
 		
+		Count<class GlobalBufferSet> m_GlobalInputs;
 		// mesh data
 		std::vector< TransformBuffer>  m_SubmeshTransformBuffers; // vector because of frame in flight
 

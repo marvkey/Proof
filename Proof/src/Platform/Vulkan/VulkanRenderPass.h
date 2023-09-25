@@ -30,6 +30,7 @@ namespace Proof{
 		virtual void SetInput(std::string_view name, Count<class StorageBuffer> buffer);
 		void SetInput(std::string_view name, Count<class UniformBufferSet> buffer);
 		void SetInput(std::string_view name, Count<class StorageBufferSet> buffer);
+		void virtual AddGlobalInput(Count<class GlobalBufferSet> globalInputs);
 
 		void virtual SetInput(std::string_view name, Count<class ImageView> imageView);
 		void virtual SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews);

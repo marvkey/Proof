@@ -732,6 +732,10 @@ namespace Proof
     {
         m_DescritptorSetManager->SetInput(name, buffer);
     }
+    void VulkanRenderPass::AddGlobalInput(Count<class GlobalBufferSet> globalInputs)
+    {
+        m_DescritptorSetManager->SetGoalballInputs(globalInputs);
+    }
     void VulkanRenderPass::PushData(std::string_view name, const void* data)
     {
         PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot push render pass if not render pass started");
