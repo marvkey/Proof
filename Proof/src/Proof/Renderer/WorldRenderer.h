@@ -332,8 +332,31 @@ namespace Proof
 		WorldRendererTimers Timers;
 		UBLightScene LightSene;
 	};
+	struct AmbientOcclusion
+	{
+		bool Enabled = true;
+		enum class AmbientOcclusionType
+		{
+			None = 0,
+			SSAO, // Scren space Ambient Occlusion
+			HBAO, // High 
+			GTAO //Ground Truth Ambient Occlusion
+		};
 
+		AmbientOcclusionType Type = AmbientOcclusionType::SSAO;
+
+		struct SSAOSettings
+		{
+			float Radius = 0.5f;
+			float Bias = 0.25f;
+			int KernelSize = 64;
+			int NoiseSize = 4;
+		};
+
+		SSAOSettings SSAO;
+	};
 	class RenderPass;
+	class ComputePass;
 	class WorldRenderer : public RefCounted {
 	public:
 		WorldRenderer();
@@ -341,6 +364,7 @@ namespace Proof
 		virtual ~WorldRenderer();
 		ShadowSetting ShadowSetting;
 		WorldRendererOptions Options;
+		AmbientOcclusion AmbientOcclusion;
 
 	public:
 
@@ -434,16 +458,30 @@ namespace Proof
 
 		// pre pass
 		Count<RenderPass> m_PreDepthPass;
-		Count<RenderPass> m_SkyBoxPass;
-		Count<RenderPass> m_CompositePass;
-		Count<FrameBuffer> m_ExternalCompositeFrameBuffer;
+
+		
 
 		// debug
 		Count<RenderPass> m_GeometryWireFramePass;
 		Count<RenderPass> m_GeometryWireFrameOnTopPass;
 		Count<RenderMaterial> m_GeometryWireFramePassMaterial;
+
 		// compoiste pass
+		Count<RenderPass> m_SkyBoxPass;
+		Count<RenderPass> m_CompositePass;
 		Count<RenderMaterial> m_CompositeMaterial;
+		Count<FrameBuffer> m_ExternalCompositeFrameBuffer;
+		//AO
+		Count<ComputePass> m_SSAOPass;
+		Count<RenderMaterial> m_SSAOMaterial;
+		Count<StorageBufferSet> m_SSAOSampleBuffer;
+		Count<RenderPass> m_SSAOBlurPass;
+		Count<Texture2D> m_SSAOImage;
+		Count<Texture2D> m_SSAONoiseImage;
+		Count<StorageBufferSet> m_SBSSAOSampleKernalBuffer;
+
+		Count<RenderPass> m_AmbientOcclusionCompositePass;
+		
 		bool m_NeedResize = false;
 
 		DirectionalLight m_MainDirectionllLight;
@@ -468,6 +506,8 @@ namespace Proof
 		Count<StorageBufferSet> m_SpotLightIndexListBuffer;
 		glm::uvec3 m_LightCullingWorkGroups;
 		glm::uvec3 m_LightCullingNumThreads;
+
+
 	private:
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);
@@ -481,6 +521,8 @@ namespace Proof
 		void LightFrustrumAndCullingPass();
 		void CompositePass();
 
+		//post processing passes
+		void AmbientOcclusionPass();
 
 		void DrawScene();
 		// tehse are static so basically when wer are writng code we avoid errors of 

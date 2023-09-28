@@ -75,6 +75,7 @@ namespace Proof {
 
 		virtual const TextureConfiguration& GetSpecification()const = 0;
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
+		virtual void Resize(uint32_t width, uint32_t height, const void* data) = 0;
 		virtual void Resize(Vector2U size) = 0;
 		virtual uint32_t GetMipLevelCount() = 0;
 
@@ -104,7 +105,7 @@ namespace Proof {
 		virtual uint32_t GetHeight()const = 0;
 		virtual Vector2U GetSize()const = 0;
 
-		virtual void Resize(uint32_t width, uint32_t height) =0;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		virtual void Resize(Vector2U size) = 0;
 		virtual uint32_t GetMipLevelCount() = 0;
 		virtual void GenerateMips() = 0;

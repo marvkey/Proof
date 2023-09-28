@@ -83,7 +83,15 @@ void main() {
 
 //ouputs
 layout(location = 0) out vec4 out_FragColor;
-
+// `out_ViewNormalsLuminance` is an output variable used to store view-space normals
+// and potentially luminance information during rendering. It's a part of a more
+// complex rendering pipeline, likely involving lighting calculations, screen-space
+// effects, or post-processing. View-space normals are necessary for lighting, while
+// luminance could represent brightness or intensity used for various purposes
+// such as tone mapping or color grading. The exact role of this variable depends
+// on the specific rendering pipeline and shader's purpose within it.
+layout(location = 1) out vec4 out_ViewNormalsLuminance;
+layout(location = 2) out vec4 out_MetalnessRoughness;
 // pbr map
 layout(set = 0, binding = 5) uniform sampler2D u_AlbedoMap;
 layout(set = 0, binding = 6) uniform sampler2D u_NormalMap;
@@ -155,6 +163,7 @@ void main()
     m_Params.Metalness = u_MaterialUniform.MetallnesTexToggle == true ? texture(u_MetallicMap, Input.TexCoords).r * u_MaterialUniform.Metalness : u_MaterialUniform.Metalness;
     m_Params.Roughness = u_MaterialUniform.RoghnessTexToggle == true ? texture(u_RoughnessMap, Input.TexCoords).r * max(u_MaterialUniform.Roughness,0.00) : max(u_MaterialUniform.Roughness,0.00); // max to keep specular
     m_Params.Normal = CalculateNormal();
+    out_MetalnessRoughness = vec4(m_Params.Metalness, m_Params.Roughness, 0.f, 1.f);
 
     m_Params.View = normalize(Input.CameraPosition - Input.WorldPosition);
     vec3 reflection = reflect(-m_Params.View , m_Params.Normal);
@@ -163,6 +172,8 @@ void main()
     // Angle between surface normal and outgoing view Direction.
 	m_Params.NdotV = max(dot(m_Params.Normal, m_Params.View),0.0);
 
+    // View normals
+    out_ViewNormalsLuminance.xyz = Input.CameraView * normalize(Input.Normal);
     vec3 directLighting = vec3(0);
     for (int i = 0; i < 1; i++)
     {
@@ -292,12 +303,27 @@ void main()
 	}
 
 	shadowScale = 1.0 - clamp(currentLight.ShadowStrength - shadowScale, 0.0f, 1.0f);
+
+    // Shadow mask with respect to bright surfaces.
+    // Calculate the alpha component of out_ViewNormalsLuminance, likely for shading or rendering effects.
+    // 1. shadowScale represents the shadow intensity at the current fragment.
+    // 2. color.rgb is the RGB color of the fragment, indicating its final color.
+    // 3. vec3(0.2125f, 0.7154f, 0.0721f) are weights for converting RGB to grayscale, 
+    //    reflecting human perception of brightness for red, green, and blue channels.
+    // 4. dot(color.rgb, vec3(0.2125f, 0.7154f, 0.0721f)) calculates the luminance (brightness) of the color.
+    // 5. shadowScale + dot(color.rgb, vec3(0.2125f, 0.7154f, 0.0721f)) combines shadow intensity and luminance.
+    // 6. clamp(...) ensures the result remains within the valid alpha value range [0.0, 1.0].
+
+
     vec3 finalColor = directLighting * shadowScale ;
     finalColor += CalculatePointLights(F0, Input.WorldPosition);
     finalColor += CalculateSpotLights(F0, Input.WorldPosition); //* sahdow
 
 
     out_FragColor = vec4(finalColor + iblEfeect ,1.0);
+
+    out_ViewNormalsLuminance.a = clamp(shadowScale + dot(out_FragColor.rgb, vec3(0.2125f, 0.7154f, 0.0721f)), 0.0f, 1.0f);
+
     if(u_RendererData.ShowCascades)
     {
         switch(cascadeIndex) {

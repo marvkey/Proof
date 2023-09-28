@@ -17,7 +17,14 @@ namespace Proof {
 		FrameBufferAttachments() = default;
 		FrameBufferAttachments(std::initializer_list<FrameBufferImageConfig> attachments)
 			: Attachments(attachments) {}
+		std::vector<ImageFormat> GetAttachmentsImages()const
+		{
+			std::vector<ImageFormat> imagesFormats;
+			for (auto& attach : Attachments)
+				imagesFormats.emplace_back(attach.Format);
 
+			return imagesFormats;
+		}
 		std::vector<FrameBufferImageConfig> Attachments;
 	};
 	// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLFramebuffer.cpp

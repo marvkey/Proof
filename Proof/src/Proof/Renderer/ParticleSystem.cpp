@@ -3,40 +3,7 @@
 #include "Proof/Math/MathInclude.h"
 
 namespace Proof {
-	static glm::vec4 Lerp(const glm::vec4& start, const glm::vec4& end, float t)
-	{
-		t = std::clamp(t, 0.0f, 1.0f);  // Ensure t is clamped between 0 and 1
-		glm::vec4 result;
-		result.x = start.x + (end.x - start.x) * t;
-		result.y = start.y + (end.y - start.y) * t;
-		result.z = start.z + (end.z - start.z) * t;
-		result.w = start.w + (end.w - start.w) * t;
-		return result;
-	}
-
-	static glm::vec3 Lerp(const glm::vec3& a, const glm::vec3& b, float t)
-	{
-		t = std::clamp(t, 0.0f, 1.0f);  // Ensure t is clamped between 0 and 1
-		glm::vec4 result;
-		result.x = a.x + (b.x - a.x) * t;
-		result.y = a.y + (b.y - a.y) * t;
-		result.z = a.z + (b.z - a.z) * t;
-		return result;
-	}
-
-	static Vector Lerp(const Vector& a, const Vector& b, float t)
-	{
-		t = std::clamp(t, 0.0f, 1.0f);  // Ensure t is clamped between 0 and 1
-		Vector result;
-		result.X = a.X + (b.X - a.X) * t;
-		result.Y = a.Y + (b.Y - a.Y) * t;
-		result.Z = a.Z + (b.Z - a.Z) * t;
-		return result;
-	}
-	static float Lerp(float start, float end, float t) {
-		t = std::clamp(t, 0.0f, 1.0f);  // Ensure t is clamped between 0 and 1
-		return start + (end - start) * t;
-	}
+	
 	void ParticleHandler::Play()
 	{
 		m_State = ParticleHandlerState::Play;
@@ -165,15 +132,15 @@ namespace Proof {
 
 		if (m_ParticleSystem->Use3D)
 		{
-			particle.Size3D = Lerp(m_ParticleSystem->SizeEnd3D, m_ParticleSystem->SizeBegin3D, life);
+			particle.Size3D = Math::Lerp(m_ParticleSystem->SizeEnd3D, m_ParticleSystem->SizeBegin3D, life);
 			return;
 		}
-		particle.Size = Lerp(m_ParticleSystem->SizeEnd, m_ParticleSystem->SizeBegin , life);
+		particle.Size = Math::Lerp(m_ParticleSystem->SizeEnd, m_ParticleSystem->SizeBegin , life);
 	}
 	void ParticleHandler::UpdateColor(Particle& particle,float ts)
 	{
 		float life = particle.Life/ m_ParticleSystem->LifeTime ;
-		particle.Color = Lerp(m_ParticleSystem->ColorEnd, m_ParticleSystem->ColorBegin, life);
+		particle.Color = Math::Lerp(m_ParticleSystem->ColorEnd, m_ParticleSystem->ColorBegin, life);
 		//particle.Color.a = particle.Color.a*life;
 	}
 }

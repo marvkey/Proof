@@ -52,22 +52,24 @@ namespace Proof
 	namespace Utils {
 		static void ValidateConfiguration(TextureConfiguration& config)
 		{
-			if (config.Height == 0)config.Height = 1;
-			if (config.Width == 0)config.Width = 1;
-			auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
-			VkImageFormatProperties info;
-			vkGetPhysicalDeviceImageFormatProperties(graphicsContext->GetGPU(), Utils::ProofFormatToVulkanFormat(config.Format), VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT, 0, &info);
-			if (config.Width > info.maxExtent.width)
+			if (config.Height == 0) config.Height = 1;
+			if (config.Width == 0) config.Width = 1;
+
+			auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+			VkPhysicalDeviceProperties deviceProperties;
+			vkGetPhysicalDeviceProperties(graphicsContext->GetGPU(), &deviceProperties);
+
+			if (config.Width > deviceProperties.limits.maxImageDimension2D)
 			{
-				PF_ENGINE_WARN("Image is to wide, made smaller to be support");
-				config.Height = info.maxExtent.width;
+				PF_ENGINE_WARN("Texture is too wide, making it smaller to be supported");
+				config.Width = deviceProperties.limits.maxImageDimension2D;
 			}
 
-			if (config.Height > info.maxExtent.height)
+			if (config.Height > deviceProperties.limits.maxImageDimension2D)
 			{
-				PF_ENGINE_WARN("Image is to tall, made smaller to be support");
-				config.Height = info.maxExtent.height;
+				PF_ENGINE_WARN("Texture is too tall, making it smaller to be supported");
+				config.Height = deviceProperties.limits.maxImageDimension2D;
 			}
 
 		}
@@ -189,8 +191,8 @@ namespace Proof
 	VulkanTexture2D::VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config)
 		:m_Path(path), m_Config(config)
 	{
-		m_ImageData = TextureImporter::ToBufferFromFile(path, m_Config.Format, m_Config.Width, m_Config.Height);
 		Utils::ValidateConfiguration(m_Config);
+		m_ImageData = TextureImporter::ToBufferFromFile(path, m_Config.Format, m_Config.Width, m_Config.Height);
 		if (!m_ImageData)
 		{
 			PF_EC_ERROR("Texture: {} could not Image Path: {}", m_Config.DebugName, path.string());
@@ -365,7 +367,8 @@ namespace Proof
 			samplerCreateInfo.maxAnisotropy = 1.0f;
 			samplerCreateInfo.magFilter = Utils::VulkanSamplerFilter(m_Config.Filter);
 			samplerCreateInfo.minFilter = Utils::VulkanSamplerFilter(m_Config.Filter);
-			samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			//samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
 			samplerCreateInfo.addressModeU = Utils::VulkanSamplerWrap(m_Config.Wrap);
 			samplerCreateInfo.addressModeV = Utils::VulkanSamplerWrap(m_Config.Wrap);
 			samplerCreateInfo.addressModeW = Utils::VulkanSamplerWrap(m_Config.Wrap);
@@ -422,14 +425,26 @@ namespace Proof
 
 	void VulkanTexture2D::Resize(uint32_t width, uint32_t height)
 	{
+		if (m_Config.Width != width && m_Config.Height != height)
+			return;
 		m_Config.Width = width;
 		m_Config.Height = height;
 
 		Build();
 	}
 
+	void VulkanTexture2D::Resize(uint32_t width, uint32_t height, const void* data)
+	{
+		Release();
+		m_Config.Width = width;
+		m_Config.Height = height;
+		SetData(data);
+		//Utils::ValidateConfiguration(m_Config);
+		//m_ImageData = TextureImporter::ToBufferFromMemory(data, m_Config.Format, m_Config.Width, m_Config.Height);
+		//Build();
+	}
+
 	void VulkanTexture2D::Release() {
-		m_Image = nullptr;
 		m_ImageData.Release();
 	}
 

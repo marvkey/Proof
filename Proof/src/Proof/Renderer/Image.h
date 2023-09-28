@@ -484,5 +484,10 @@ namespace Proof
 			PF_CORE_ASSERT(false, fmt::format("not supported yet {}", EnumReflection::EnumString(format)));
 
 		}
+
+		inline uint64_t GetImageMemorySize(ImageFormat format, uint32_t width, uint32_t height)
+		{
+			return width * height * BytesPerPixel(format);
+		}
 	}
 }

@@ -18,22 +18,23 @@ namespace Proof {
 		// dont use this becaue framebuffer sizes are different
 		static void ValidateConfiguration(ImageConfiguration& config)
 		{
-			if (config.Height == 0)config.Height = 1;
-			if (config.Width == 0)config.Width = 1;
-			auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+			if (config.Height == 0) config.Height = 1;
+			if (config.Width == 0) config.Width = 1;
 
-			VkImageFormatProperties info;
-			vkGetPhysicalDeviceImageFormatProperties(graphicsContext->GetGPU(), Utils::ProofFormatToVulkanFormat(config.Format), VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_SAMPLED_BIT, 0, &info);
-			if (config.Width > info.maxExtent.width)
+			auto graphicsContext = VulkanRenderer::GetGraphicsContext();
+			VkPhysicalDeviceProperties deviceProperties;
+			vkGetPhysicalDeviceProperties(graphicsContext->GetGPU(), &deviceProperties);
+
+			if (config.Width > deviceProperties.limits.maxImageDimension2D)
 			{
-				PF_ENGINE_WARN("Image is to wide, made smaller to be support");
-				config.Height = info.maxExtent.width;
+				PF_ENGINE_WARN("Image is too wide, making it smaller to be supported");
+				config.Width = deviceProperties.limits.maxImageDimension2D;
 			}
 
-			if (config.Height > info.maxExtent.height)
+			if (config.Height > deviceProperties.limits.maxImageDimension2D)
 			{
-				PF_ENGINE_WARN("Image is to tall, made smaller to be support");
-				config.Height = info.maxExtent.height;
+				PF_ENGINE_WARN("Image is too tall, making it smaller to be supported");
+				config.Height = deviceProperties.limits.maxImageDimension2D;
 			}
 
 		}
@@ -76,6 +77,7 @@ namespace Proof {
 		m_SampleFlags(sampleFlags)
 	{
 		PF_CORE_ASSERT(m_Specification.Height > 0 && m_Specification.Width > 0);
+		Utils::ValidateConfiguration(m_Specification);
 		Build();
 	}
 	VulkanImage2D::VulkanImage2D(const ImageConfiguration& imageSpec, VulkanImageInfo info, uint64_t samplerHash)
@@ -115,6 +117,8 @@ namespace Proof {
 
 		m_Specification.Width = width;
 		m_Specification.Height = height;
+		Utils::ValidateConfiguration(m_Specification);
+
 		uint32_t oldSamplerHash = m_SamplerHash;
 		VulkanImageInfo oldImageInfo = m_Info;
 		auto oldDescriptorInfo = m_DescriptorImageInfo;
@@ -459,6 +463,83 @@ namespace Proof {
 		}
 
 		UpdateDescriptor();
+	}
+
+	void VulkanImage2D::CopyToHostBuffer(Buffer& buffer)
+	{
+		VulkanAllocator allocator("CopyToHostBuffer");
+
+		uint64_t bufferSize = m_Specification.Width * m_Specification.Height * Utils::BytesPerPixel(m_Specification.Format);
+		VkBufferCreateInfo bufferCreateInfo{};
+		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferCreateInfo.size = bufferSize;
+		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		VulkanBuffer stagingBuffer;
+		allocator.AllocateBuffer(bufferCreateInfo, VMA_MEMORY_USAGE_GPU_TO_CPU, stagingBuffer);
+
+
+		Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
+			uint32_t mipCount = 1;
+			uint32_t mipWidth = m_Specification.Width, mipHeight = m_Specification.Height;
+			VkCommandBuffer copyCmd = cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+
+			VkImageSubresourceRange subresourceRange = {};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = mipCount;
+			subresourceRange.layerCount = 1;
+
+			uint64_t mipDataOffset = 0;
+
+			Utils::InsertImageMemoryBarrier(copyCmd, m_Info.ImageAlloc.Image,
+				VK_ACCESS_TRANSFER_READ_BIT, 0,
+				m_DescriptorImageInfo.imageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				subresourceRange);
+
+			for (uint32_t mip = 0; mip < mipCount; mip++)
+			{
+				VkBufferImageCopy bufferCopyRegion = {};
+				bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				bufferCopyRegion.imageSubresource.mipLevel = mip;
+				bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
+				bufferCopyRegion.imageSubresource.layerCount = 1;
+				bufferCopyRegion.imageExtent.width = mipWidth;
+				bufferCopyRegion.imageExtent.height = mipHeight;
+				bufferCopyRegion.imageExtent.depth = 1;
+				bufferCopyRegion.bufferOffset = mipDataOffset;
+
+				vkCmdCopyImageToBuffer(
+					copyCmd,
+					m_Info.ImageAlloc.Image,
+					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					stagingBuffer.Buffer,
+					1,
+					&bufferCopyRegion);
+
+				uint64_t mipDataSize = mipWidth * mipHeight * sizeof(float) * 4 * 6;
+				mipDataOffset += mipDataSize;
+				mipWidth /= 2;
+				mipHeight /= 2;
+			}
+
+			Utils::InsertImageMemoryBarrier(copyCmd, m_Info.ImageAlloc.Image,
+				VK_ACCESS_TRANSFER_READ_BIT, 0,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_DescriptorImageInfo.imageLayout,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+				subresourceRange);
+		});
+
+		// Copy data from staging buffer
+		uint8_t* srcData = allocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
+		buffer.Allocate(bufferSize);
+		memcpy(buffer.Get(), srcData, bufferSize);
+		allocator.UnmapMemory(stagingBuffer.Allocation);
+
+		allocator.DestroyBuffer(stagingBuffer);
+
 	}
 
 	void VulkanImage2D::UpdateDescriptor()

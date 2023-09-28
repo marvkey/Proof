@@ -90,5 +90,18 @@ vec4 ScreenToView(vec4 screen)
     return ClipToView(clip);
 }
 
-
+float LinearizeDepth(float z)
+{
+	return u_Camera.FarPlane / (u_Camera.FarPlane + z * (u_Camera.NearPlane - u_Camera.FarPlane));
+}
+vec3 GetViewPosition(vec2 texcoord, float depth)
+{
+	vec4 clipSpaceLocation;
+	clipSpaceLocation.xy = texcoord * 2.0f - 1.0f;
+	clipSpaceLocation.y *= -1;
+	clipSpaceLocation.z = depth;
+	clipSpaceLocation.w = 1.0f;
+	vec4 homogenousLocation = clipSpaceLocation * u_Camera.InverseProjection;
+	return homogenousLocation.xyz / homogenousLocation.w;
+}
 #endif // COMMON_GLSL_H

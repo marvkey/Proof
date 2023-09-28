@@ -9,11 +9,15 @@ namespace Proof {
 	{
 		switch (Renderer::GetAPI())
 		{
-			case Renderer::API::None:  PF_CORE_ASSERT(false, "Vertex Buffer None it needs an api"); return nullptr;
+			case Renderer::API::None:  PF_CORE_ASSERT(false, "RenderMaterial None it needs an api"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count< VulkanRenderMaterial>::Create(config);
 		}
 		return nullptr;
 
+	}
+	Count<RenderMaterial> RenderMaterial::Create(const std::string& debugName, Count<Shader> shader)
+	{
+		return Create({ debugName,shader });
 	}
 }

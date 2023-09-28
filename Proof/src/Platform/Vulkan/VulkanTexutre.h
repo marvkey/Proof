@@ -103,7 +103,8 @@ namespace Proof
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual void Resize(Vector2U size) override { Resize(size.X, size.Y); }
-		
+		virtual void Resize(uint32_t width, uint32_t height, const void* data)override;
+
 		virtual uint32_t GetWidth()const override { return m_Config.Width; };
 		virtual uint32_t GetHeight() const override { return m_Config.Height; };
 		virtual Vector2U GetSize()const override { return {m_Config.Width, m_Config.Height }; }

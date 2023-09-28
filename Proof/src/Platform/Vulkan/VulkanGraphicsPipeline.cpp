@@ -263,42 +263,40 @@ namespace Proof
 		//	blendAttachmentStates[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 		//}
 		//else
+		for (size_t i = 0; i < colorAttachmentCount; i++)
 		{
-			for (size_t i = 0; i < colorAttachmentCount; i++)
+			if (!m_Config.Blend)
+				break;
+
+			blendAttachmentStates[i].colorWriteMask = 0xf;
+			const auto& attachmentSpec = m_Config.Attachments.Attachments[i];
+
+			blendAttachmentStates[i].blendEnable = attachmentSpec.Blend ? VK_TRUE : VK_FALSE;
+
+			blendAttachmentStates[i].colorBlendOp = VK_BLEND_OP_ADD;
+			blendAttachmentStates[i].alphaBlendOp = VK_BLEND_OP_ADD;
+			blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+
+			switch (m_Config.BlendMode)
 			{
-				if (!m_Config.Blend)
+				case BlendMode::SrcAlphaOneMinusSrcAlpha:
+					blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+					blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+					blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+					blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+					break;
+				case BlendMode::OneZero:
+					blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+					blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+					break;
+				case BlendMode::Zero_SrcColor:
+					blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;	
+					blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
 					break;
 
-				blendAttachmentStates[i].colorWriteMask = 0xf;
-				const auto& attachmentSpec = m_Config.Attachments.Attachments[i];
-
-				blendAttachmentStates[i].blendEnable = attachmentSpec.Blend ? VK_TRUE : VK_FALSE;
-
-				blendAttachmentStates[i].colorBlendOp = VK_BLEND_OP_ADD;
-				blendAttachmentStates[i].alphaBlendOp = VK_BLEND_OP_ADD;
-				blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-				blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-
-				switch (m_Config.BlendMode)
-				{
-					case BlendMode::SrcAlphaOneMinusSrcAlpha:
-						blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-						blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-						blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-						blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-						break;
-					case BlendMode::OneZero:
-						blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-						blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-						break;
-					case BlendMode::Zero_SrcColor:
-						blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-						blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
-						break;
-
-					default:
-						PF_CORE_ASSERT(false);
-				}
+				default:
+					PF_CORE_ASSERT(false);
 			}
 		}
 		pipelineConfig.ColorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -333,7 +331,7 @@ namespace Proof
 			dynamicState.push_back(VK_DYNAMIC_STATE_CULL_MODE);
 		if (m_Config.EditDrawType )
 			dynamicState.push_back(VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY);
-		if (m_Config.EditLineWidth )
+		if (m_Config.EditLineWidth || m_Config.LineWidth >1)
 			dynamicState.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
 
 		pipelineConfig.DynamicSate.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;

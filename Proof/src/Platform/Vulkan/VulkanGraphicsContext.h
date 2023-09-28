@@ -142,9 +142,6 @@ namespace Proof
 		VkQueue m_GraphicsQueue;
 		VkQueue m_PresentQueue;
 		//VmaAllocator m_VMA_Allocator; 
-		const std::vector<const char*> m_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
-		const std::vector<const char*> m_DeviceExtensions = { VK_KHR_MULTIVIEW_EXTENSION_NAME,VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-		const std::vector<const char*> m_InstanceExtension = { VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME };
 
 		friend class VulkanRenderer;
 		// sampler has, sampler ref count, sampler

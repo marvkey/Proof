@@ -385,7 +385,7 @@ namespace Proof
                     }
                     else
                     {
-                        dependencies.emplace_back(depedency);
+                        dependencies.emplace_back(depedency);   
                     }
                 }
             }
@@ -434,6 +434,7 @@ namespace Proof
     }
     Count<Image> VulkanFrameBuffer::GetOutput(uint32_t imageIndex)
     {
+        PF_CORE_ASSERT(imageIndex <= m_Images.size(),"FrameBuffer does not contain imageIndex");
         return m_Images[imageIndex];
     }
 

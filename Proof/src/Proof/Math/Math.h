@@ -5,7 +5,7 @@
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtx/rotate_vector.hpp>
 #include<glm/gtx/vector_angle.hpp>
-
+#include  <algorithm>
 #include <limits>
 #include "Vector.h"
 namespace Proof
@@ -45,7 +45,40 @@ namespace Proof
 			else
 				val = true;
 		}
+		inline static glm::vec4 Lerp(const glm::vec4& start, const glm::vec4& end, float t)
+		{
+			t = std::clamp(t, 0.0f, 1.0f);  // Ensure t is clamped between 0 and 1
+			glm::vec4 result;
+			result.x = start.x + (end.x - start.x) * t;
+			result.y = start.y + (end.y - start.y) * t;
+			result.z = start.z + (end.z - start.z) * t;
+			result.w = start.w + (end.w - start.w) * t;
+			return result;
+		}
 
+		inline static glm::vec3 Lerp(const glm::vec3& a, const glm::vec3& b, float t)
+		{
+			t = std::clamp(t, 0.0f, 1.0f);  // Ensure t is clamped between 0 and 1
+			glm::vec4 result;
+			result.x = a.x + (b.x - a.x) * t;
+			result.y = a.y + (b.y - a.y) * t;
+			result.z = a.z + (b.z - a.z) * t;
+			return result;
+		}
+
+		inline static Vector Lerp(const Vector& a, const Vector& b, float t)
+		{
+			t = std::clamp(t, 0.0f, 1.0f);  // Ensure t is clamped between 0 and 1
+			Vector result;
+			result.X = a.X + (b.X - a.X) * t;
+			result.Y = a.Y + (b.Y - a.Y) * t;
+			result.Z = a.Z + (b.Z - a.Z) * t;
+			return result;
+		}
+		static float Lerp(float start, float end, float t) {
+			t = std::clamp(t, 0.0f, 1.0f);  // Ensure t is clamped between 0 and 1
+			return start + (end - start) * t;
+		}
 		// returns teh opposite of a boleaon values
 		inline static bool InverseBool(bool val) {
 			if (val == true)return false;

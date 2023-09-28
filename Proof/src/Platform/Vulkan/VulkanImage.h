@@ -78,6 +78,7 @@ namespace Proof
 		//virtual RawImage GetRawImage() { return m_Info.ImageView; };
 		void Build();
 
+		void CopyToHostBuffer(Buffer& buffer);
 	private:
 		std::vector<Image2DResizeCallback > m_ResizeCallbacks;
 

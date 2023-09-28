@@ -12,7 +12,10 @@
 
 namespace Proof
 {
-	
+
+	static const std::vector<const char*> s_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+	static const std::vector<const char*> s_DeviceExtensions = { VK_KHR_MULTIVIEW_EXTENSION_NAME,VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	static const std::vector<const char*> s_InstanceExtension = { VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME };
 	// local callback functions
 	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,VkDebugUtilsMessageTypeFlagsEXT messageType,const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,void* pUserData) {
 		if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
@@ -157,8 +160,8 @@ namespace Proof
 
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
 		if (enableValidationLayers) {
-			createInfo.enabledLayerCount = static_cast<uint32_t>(m_ValidationLayers.size());
-			createInfo.ppEnabledLayerNames = m_ValidationLayers.data();
+			createInfo.enabledLayerCount = static_cast<uint32_t>(s_ValidationLayers.size());
+			createInfo.ppEnabledLayerNames = s_ValidationLayers.data();
 
 			PopulateDebugMessengerCreateInfo(debugCreateInfo);
 			createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
@@ -231,19 +234,21 @@ namespace Proof
 		deviceFeatures.samplerAnisotropy = VK_TRUE;
 		deviceFeatures.depthClamp = VK_TRUE;
 		deviceFeatures.geometryShader = VK_TRUE;
+		deviceFeatures.fillModeNonSolid = VK_TRUE;
+		deviceFeatures.independentBlend = VK_TRUE;
 		VkDeviceCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
 		createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.enabledExtensionCount  = m_DeviceExtensions.size();
-		createInfo.ppEnabledExtensionNames = m_DeviceExtensions.data();
+		createInfo.enabledExtensionCount  = s_DeviceExtensions.size();
+		createInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
 		// might not really be necessary anymore because device specific validation layers
 		// have been deprecated
 		if (enableValidationLayers) {
-			createInfo.enabledLayerCount = static_cast<uint32_t>(m_ValidationLayers.size());
-			createInfo.ppEnabledLayerNames = m_ValidationLayers.data();
+			createInfo.enabledLayerCount = static_cast<uint32_t>(s_ValidationLayers.size());
+			createInfo.ppEnabledLayerNames = s_ValidationLayers.data();
 		}
 		else {
 			createInfo.enabledLayerCount = 0;
@@ -367,7 +372,7 @@ namespace Proof
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-		for (const char* layerName : m_ValidationLayers) {
+		for (const char* layerName : s_ValidationLayers) {
 			bool layerFound = false;
 
 			for (const auto& layerProperties : availableLayers) {
@@ -395,7 +400,7 @@ namespace Proof
 		if (enableValidationLayers) {
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
-		for (auto extensina : m_InstanceExtension)
+		for (auto extensina : s_InstanceExtension)
 			extensions.push_back(extensina);
 
 		return extensions;
@@ -437,7 +442,7 @@ namespace Proof
 			&extensionCount,
 			availableExtensions.data());
 
-		std::set<std::string> requiredExtensions(m_DeviceExtensions.begin(), m_DeviceExtensions.end());
+		std::set<std::string> requiredExtensions(s_DeviceExtensions.begin(), s_DeviceExtensions.end());
 
 		for (const auto& extension : availableExtensions) {
 			requiredExtensions.erase(extension.extensionName);

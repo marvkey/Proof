@@ -78,6 +78,14 @@ namespace Proof{
 		{
 
 		}
+		std::vector<ImageFormat> GetAttachmentsImages()const
+		{
+			std::vector<ImageFormat> imagesFormats;
+			for (auto& attach : Attachments)
+				imagesFormats.emplace_back(attach.Format);
+
+			return imagesFormats;
+		}
 		std::vector<GraphicsPipelineImageConfig> Attachments;
 	};
 	struct GraphicsPipelineConfiguration

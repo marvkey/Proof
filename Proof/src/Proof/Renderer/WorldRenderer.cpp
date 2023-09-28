@@ -23,6 +23,7 @@
 #include "RenderMaterial.h"
 #include "ComputePass.h"
 #include "Proof/Scene/Material.h"
+#include "Proof/Math/Random.h"
 #include"Vertex.h"
 #include "Platform/Vulkan/VulkanFrameBuffer.h"
 #include "Platform/Vulkan/VulkanImage.h"
@@ -55,8 +56,63 @@
 	* 5:SpotLightBuffer
 	* 6:LightInformationBuffer
 */
+
 namespace Proof
 {
+	namespace Utils
+	{
+
+		// does not chekc if same size need to check
+		inline void GenerateSSAOSampleKernal(Count<StorageBufferSet> set, uint32_t kernalSize)
+		{
+				//https://learnopengl.com/code_viewer_gh.php?code=src/5.advanced_lighting/9.ssao/ssao.cpp
+			//https://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
+
+			//Generating the Sample Kernel
+			std::vector<glm::vec3> ssaoKernel;
+			ssaoKernel.resize(kernalSize);
+			for (uint32_t i = 0; i < ssaoKernel.size(); i++)
+			{
+				// generate sample hemisphere
+				glm::vec3& vec = ssaoKernel[i];
+				vec = { Random::Real<float>(-1,1),Random::Real<float>(-1,1),Random::Real<float>(0,1) };
+				vec = glm::normalize(vec);
+
+				// disturbute this across the hemisphere
+				vec *= Random::Real<float>(0, 1);
+
+				// What we actually want is for the distance from the origin to falloff as we generate more points, according to a curve like this
+				//We can use an accelerating interpolation function to achieve this
+				float scale = float(i) / float(kernalSize);
+				scale = Math::Lerp(0.1f, 1.0f, scale * scale);
+				vec *= scale;
+			}
+			Buffer data(ssaoKernel.data(), ssaoKernel.size() * sizeof(glm::vec3));
+			for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
+			{
+				set->Resize(i, data);
+			}
+
+		}
+
+		// does not check if it same size so you need to chekc
+		inline void GenerateSSAONoise(Count<Texture2D>& texture, uint32_t noiseScale)
+		{
+			// generating noise 
+
+			int fullNoiseSize = noiseScale * noiseScale ;
+			std::vector<glm::vec3> noise;
+			noise.resize(fullNoiseSize);
+			for (uint32_t i = 0; i < fullNoiseSize; i++)
+			{
+				glm::vec3& vec = noise[i];
+				vec = { Random::Real<float>(-1,1),Random::Real<float>(-1,1),0 };
+				vec = glm::normalize(vec);
+			}
+			texture->Resize(noiseScale, noiseScale, noise.data());
+
+		}
+	}
 	struct MeshInstanceVertex {
 
 		glm::mat4 Transform;
@@ -89,6 +145,7 @@ namespace Proof
 	
 	void WorldRenderer::Init()
 	{
+		AmbientOcclusion.Enabled = true;
 		const size_t TransformBufferCount = 10 * 1024; // 10240 transforms
 		m_SubmeshTransformBuffers.resize(Renderer::GetConfig().FramesFlight);
 		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
@@ -350,14 +407,17 @@ namespace Proof
 			geoFramebufferConfig.ClearDepthOnLoad = false;	
 			geoFramebufferConfig.ClearColorOnLoad = false;
 			//geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
-			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA, ImageFormat::DEPTH32F }; // color, view limuncance, metallnessroughness
 			geoFramebufferConfig.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-			geoFramebufferConfig.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
+			geoFramebufferConfig.Attachments.Attachments[3].ExistingImage = m_PreDepthPass->GetOutput(0);
 
 			auto frameBuffer = FrameBuffer::Create(geoFramebufferConfig);
 
 			GraphicsPipelineConfiguration pipelinelineConfig;
-			pipelinelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+			pipelinelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA, ImageFormat::DEPTH32F }; // color, view limuncance, metallness, roughness
+			// Don't blend with luminance in the alpha channel.
+			//pipelinelineConfig.Attachments.Attachments[1].Blend = false;
+
 			pipelinelineConfig.DebugName = "Geometry_Static";
 			pipelinelineConfig.Shader = Renderer::GetShader("ProofPBR_Static");
 			pipelinelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
@@ -400,11 +460,10 @@ namespace Proof
 
 		// skybox
 		{
-			GraphicsPipelineConfiguration skyBoxPipelineConfig;
+			GraphicsPipelineConfiguration skyBoxPipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
 			skyBoxPipelineConfig.DebugName = "Sky box";
 			skyBoxPipelineConfig.DepthTest = false;
 			skyBoxPipelineConfig.WriteDepth = false;
-			skyBoxPipelineConfig.Attachments = m_GeometryPass->GetPipeline()->GetConfig().Attachments;
 			skyBoxPipelineConfig.Shader = Renderer::GetShader("SkyBox");
 			skyBoxPipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
 			skyBoxPipelineConfig.VertexArray = quadVertexArray;
@@ -421,7 +480,6 @@ namespace Proof
 
 		}
 		
-
 		//composite pass
 		{
 			/**
@@ -434,28 +492,134 @@ namespace Proof
 			compFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 			compFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			//compFramebufferSpec.Transfer = true;
-			Count<FrameBuffer> framebuffer = FrameBuffer::Create(compFramebufferSpec);
-		
-			GraphicsPipelineConfiguration pipelineSpecification;
-			pipelineSpecification.DebugName = "WorldComposite";
-			pipelineSpecification.VertexArray = quadVertexArray;
-			pipelineSpecification.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
-			pipelineSpecification.CullMode = CullMode::None;
-			pipelineSpecification.WriteDepth = false;
-			pipelineSpecification.DepthTest = false;
-			pipelineSpecification.Shader = Renderer::GetShader("WorldComposite");
+			Count<FrameBuffer> worldCompoiteframebuffer = FrameBuffer::Create(compFramebufferSpec);
+			{
+				GraphicsPipelineConfiguration pipelineSpecification;
+				pipelineSpecification.DebugName = "WorldComposite";
+				pipelineSpecification.VertexArray = quadVertexArray;
+				pipelineSpecification.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+				pipelineSpecification.CullMode = CullMode::None;
+				pipelineSpecification.WriteDepth = false;
+				pipelineSpecification.DepthTest = false;
+				pipelineSpecification.Shader = Renderer::GetShader("WorldComposite");
 
-			Count<GraphicsPipeline> compositePipeline = GraphicsPipeline::Create(pipelineSpecification);
+				Count<GraphicsPipeline> compositePipeline = GraphicsPipeline::Create(pipelineSpecification);
 
-			RenderPassConfig renderPassSpec;
-			renderPassSpec.DebugName = "WorldComposite";
-			renderPassSpec.Pipeline = compositePipeline;
-			renderPassSpec.TargetFrameBuffer = framebuffer;
-			
-			m_CompositePass = RenderPass::Create(renderPassSpec);
-			m_CompositeMaterial = RenderMaterial::Create({ "Composite", Renderer::GetShader("WorldComposite") });
+				RenderPassConfig renderPassSpec;
+				renderPassSpec.DebugName = "WorldComposite";
+				renderPassSpec.Pipeline = compositePipeline;
+				renderPassSpec.TargetFrameBuffer = worldCompoiteframebuffer;
 
+				m_CompositePass = RenderPass::Create(renderPassSpec);
+				m_CompositeMaterial = RenderMaterial::Create({ "Composite", Renderer::GetShader("WorldComposite") });
+			}
 
+			// Ambient occlusion
+			{
+				//SAO
+				{
+
+					ComputePipelineConfig pipelineConfig;
+					pipelineConfig.DebugName = "SSAO";
+					pipelineConfig.Shader = Renderer::GetShader("SSAO");
+
+					Count<ComputePipeline> pipeline = ComputePipeline::Create(pipelineConfig);
+
+					ComputePassConfiguration computePassConfig;
+					computePassConfig.DebugName = "SSAO";
+					computePassConfig.Pipeline = pipeline;
+
+					m_SSAOPass = ComputePass::Create(computePassConfig);
+					m_SSAOPass->AddGlobalInput(m_GlobalInputs);
+
+					{
+						TextureConfiguration textureConfig;
+						textureConfig.DebugName = "SSAO ";
+						textureConfig.Format = ImageFormat::R;
+						textureConfig.Width = m_UBScreenData.FullResolution.x;
+						textureConfig.Height = m_UBScreenData.FullResolution.y;
+						textureConfig.Storage = true;
+
+						m_SSAOImage = Texture2D::Create(textureConfig);
+
+						textureConfig.DebugName = "Noise SSAO";
+						textureConfig.Format = ImageFormat::RGB32F;
+						textureConfig.Filter = TextureFilter::Nearest;
+						textureConfig.Width = AmbientOcclusion.SSAO.NoiseSize;
+						textureConfig.Height = AmbientOcclusion.SSAO.NoiseSize;
+
+						m_SSAONoiseImage = Texture2D::Create(textureConfig);
+
+						Utils::GenerateSSAONoise(m_SSAONoiseImage, AmbientOcclusion.SSAO.NoiseSize);
+
+						m_SBSSAOSampleKernalBuffer = StorageBufferSet::Create(sizeof(glm::vec3) * AmbientOcclusion.SSAO.KernelSize);
+						Utils::GenerateSSAOSampleKernal(m_SBSSAOSampleKernalBuffer, AmbientOcclusion.SSAO.KernelSize);
+					}
+					m_SSAOMaterial = RenderMaterial::Create("SSAO", Renderer::GetShader("SSAO"));
+					m_SSAOMaterial->Set("u_DepthMap", m_PreDepthPass->GetOutput(0));
+					m_SSAOMaterial->Set("u_ViewNormalMap", m_GeometryPass->GetOutput(1));
+					m_SSAOMaterial->Set("o_SSAOImage", m_SSAOImage);
+					m_SSAOMaterial->Set("KernalBuffer", m_SBSSAOSampleKernalBuffer);
+					m_SSAOMaterial->Set("u_NoiseImage", m_SSAONoiseImage);
+
+					FrameBufferConfig blurFrameBuffer;
+					blurFrameBuffer.Attachments = { ImageFormat::R16UI };
+					blurFrameBuffer.DebugName = "SSAOBlur";
+					blurFrameBuffer.Width = m_UBScreenData.FullResolution.x;
+					blurFrameBuffer.Width = m_UBScreenData.FullResolution.y;
+					blurFrameBuffer.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+					auto ssaoFrameBuffer = FrameBuffer::Create(blurFrameBuffer);
+
+					GraphicsPipelineConfiguration pipelineSpecification;
+					pipelineSpecification.DebugName = "SSAOBlur";
+					pipelineSpecification.VertexArray = quadVertexArray;
+					pipelineSpecification.Attachments = { ImageFormat::R16UI };
+					pipelineSpecification.CullMode = CullMode::None;
+					pipelineSpecification.WriteDepth = false;
+					pipelineSpecification.DepthTest = false;
+					//	pipelineSpecification.Blend = false;
+					pipelineSpecification.Shader = Renderer::GetShader("SSAOBlur");
+					auto blurPipeline = GraphicsPipeline::Create(pipelineSpecification);
+
+					RenderPassConfig blurPassConfig;
+					blurPassConfig.DebugName = "SSAOBlur";
+					blurPassConfig.Pipeline = blurPipeline;
+					blurPassConfig.TargetFrameBuffer = ssaoFrameBuffer;
+
+					m_SSAOBlurPass = RenderPass::Create(blurPassConfig);
+					m_SSAOBlurPass->SetInput("u_SSAOTexture", m_SSAOImage);
+					m_SSAOBlurPass->AddGlobalInput(m_GlobalInputs);
+				}
+				//AO-compoiste
+				{
+					FrameBufferConfig framebufferSpec;
+					framebufferSpec.DebugName = "AO-Composite";
+					framebufferSpec.Attachments = { ImageFormat::RGBA32F };
+					framebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+					//framebufferSpec.Blend = true;
+					framebufferSpec.ClearColorOnLoad = false;
+					//framebufferSpec.BlendMode = FramebufferBlendMode::Zero_SrcColor;
+					
+					auto aoframeBuffer = FrameBuffer::Create(framebufferSpec);
+
+					GraphicsPipelineConfiguration pipelineConfig;
+					pipelineConfig.DebugName = "AO-Composite";
+					pipelineConfig.VertexArray = quadVertexArray;
+					pipelineConfig.Attachments = { ImageFormat::RGBA32F };
+					//pipelineConfig.BlendMode = BlendMode::Zero_SrcColor ;
+					pipelineConfig.Blend = true;
+					pipelineConfig.DepthTest = false;
+					pipelineConfig.Shader = Renderer::GetShader("AO-Composite");
+
+					auto aoPipeline = GraphicsPipeline::Create(pipelineConfig);
+
+					RenderPassConfig renderPassConfig;
+					renderPassConfig.DebugName = "AO-Composite";
+					renderPassConfig.Pipeline = aoPipeline;
+					renderPassConfig.TargetFrameBuffer = aoframeBuffer;
+					m_AmbientOcclusionCompositePass = RenderPass::Create(renderPassConfig);
+				}
+			}
 		}
 
 		//External Composite 
@@ -523,8 +687,6 @@ namespace Proof
 			m_GeometryWireFramePass->AddGlobalInput(m_GlobalInputs);
 			m_GeometryWireFrameOnTopPass->AddGlobalInput(m_GlobalInputs);
 
-			//m_GeometryWireFramePass->SetInput("CameraData", m_UBCameraBuffer);
-			//m_GeometryWireFrameOnTopPass->SetInput("CameraData", m_UBCameraBuffer);
 
 		}
 
@@ -542,7 +704,7 @@ namespace Proof
 		PF_CORE_ASSERT(!m_InContext);
 		PF_CORE_ASSERT(m_ActiveWorld);
 		PF_PROFILE_TAG("Renderer", m_ActiveWorld->GetName().c_str());
-
+		m_NeedResize = false;
 		
 		m_InContext = true;
 
@@ -585,6 +747,11 @@ namespace Proof
 			// compoiste 
 			m_CompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
 
+			//AO
+			{
+				m_SSAOImage->Resize(m_UBScreenData.FullResolution.x, m_UBScreenData.FullResolution.y);
+				m_SSAOBlurPass->GetTargetFrameBuffer()->Resize(m_UBScreenData.FullResolution.x, m_UBScreenData.FullResolution.y);
+			}
 			m_ExternalCompositeFrameBuffer->Resize(viewportSize);
 		}
 
@@ -644,6 +811,8 @@ namespace Proof
 	}
 
 	
+	
+
 	void WorldRenderer::DrawScene()
 	{
 
@@ -1241,17 +1410,6 @@ namespace Proof
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
 
-		Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_CompositePass, true);
-		//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
-
-		auto inputImage = m_GeometryPass->GetOutput(0);
-		m_CompositeMaterial->Set("u_WorldTexture", inputImage);
-
-		Renderer::SubmitFullScreenQuad(m_CommandBuffer,m_CompositePass,m_CompositeMaterial);
-
-		Renderer::EndRenderPass(m_CompositePass);
-
-
 		if(Options.ShowPhysicsColliders != WorldRendererOptions::PhysicsColliderView::None)
 		{
 			PF_PROFILE_FUNC("CompositePass::PhysicsDebugMeshes");
@@ -1277,15 +1435,66 @@ namespace Proof
 			Renderer::EndRenderPass(wireFramePass);
 			m_Timers.DrawPhysicsColliders = physicsDebugMesh.Elapsed();
 		}
-		{
+		AmbientOcclusionPass();
 
-			//m_Renderer2D->BeginContext(m_UBCameraData.Projection, m_UBCameraData.View, m_UBCameraData.Position);
-			//
-			//m_Renderer2D->DrawQuad({ 0,0,0 }, { 1,1,1 }, { 0,0,0,1 });
-			//
-			//m_Renderer2D->EndContext();
+		// this has to be the last thgn called
+		{
+			PF_PROFILE_FUNC("WorldRenderer::WorldComposite");
+
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_CompositePass, true);
+			//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
+			auto inputImage = m_GeometryPass->GetOutput(0);
+			m_CompositeMaterial->Set("u_WorldTexture", inputImage);
+			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_CompositePass, m_CompositeMaterial);
+			Renderer::EndRenderPass(m_CompositePass);
 		}
 		m_Timers.CompositePass = compositeTimer.ElapsedMillis();
+	}
+	void WorldRenderer::AmbientOcclusionPass()
+	{
+		if (AmbientOcclusion.Enabled == false)
+			return;
+		PF_PROFILE_FUNC();
+		
+		if (AmbientOcclusion.Type == AmbientOcclusion::AmbientOcclusionType::SSAO)
+		{
+			
+			auto& ssao = AmbientOcclusion.SSAO;
+
+			if (m_SBSSAOSampleKernalBuffer->GetBuffer(0)->GetSize() != sizeof(glm::vec3) * ssao.KernelSize)
+			{
+				Utils::GenerateSSAOSampleKernal(m_SBSSAOSampleKernalBuffer, ssao.KernelSize);
+			}
+
+			if (m_SSAONoiseImage->GetWidth() != ssao.NoiseSize)
+			{
+				Utils::GenerateSSAONoise(m_SSAONoiseImage, ssao.NoiseSize);
+			}
+
+			Renderer::BeginRenderMaterialComputePass(m_CommandBuffer, m_SSAOPass);
+			m_SSAOMaterial->Set("u_Uniforms.Radius", ssao.Radius);
+			m_SSAOMaterial->Set("u_Uniforms.Bias", ssao.Bias);
+			m_SSAOMaterial->Set("u_Uniforms.KernelSize", ssao.KernelSize);
+			m_SSAOMaterial->Set("u_Uniforms.NoiseScale", ssao.NoiseSize);
+
+			Renderer::ComputePassPushRenderMaterial(m_SSAOPass,m_SSAOMaterial);
+			m_SSAOPass->Dispatch({ m_UBScreenData.FullResolution.x / 16,m_UBScreenData.FullResolution.y / 16,1 });
+			Renderer::EndComputePass(m_SSAOPass);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_SSAOBlurPass);
+			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_SSAOBlurPass);
+			Renderer::EndRenderPass(m_SSAOBlurPass);
+
+			{
+				PF_PROFILE_FUNC("AOComposite");
+				m_AmbientOcclusionCompositePass->SetInput("u_InputAOTexture", m_SSAOBlurPass->GetOutput(0).As<Image2D>());
+				Renderer::BeginRenderPass(m_CommandBuffer, m_AmbientOcclusionCompositePass);
+				Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_AmbientOcclusionCompositePass);
+				Renderer::EndRenderPass(m_AmbientOcclusionCompositePass);
+			}
+		}
+
+		
 	}
 	void WorldRenderer::SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws)
 	{

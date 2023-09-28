@@ -39,8 +39,8 @@ namespace Proof{
 		void virtual SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images);
 
 		virtual void PushData(std::string_view name, const void* data);
-		Count< class GraphicsPipeline> GetPipeline() {return m_Config.Pipeline;};
-		virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) { m_Config.TargetFrameBuffer = frame; }
+		Count< class GraphicsPipeline> GetPipeline() { return m_Config.Pipeline; };
+		virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame);
 		Count<class FrameBuffer> GetTargetFrameBuffer();
 
 		void Build();
