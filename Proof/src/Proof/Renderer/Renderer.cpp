@@ -731,7 +731,7 @@ namespace Proof {
 		// widht* height * bytes per pixel
 		uint8_t* data = new uint8_t[imageSize * imageSize * Utils::BytesPerPixel(ImageFormat::RG16F)];
 		//memset(data, 0xFF000000, imageSize * imageSize * 8);
-		Count<Texture2D> brdfLut = Texture2D::Create(data,textureConfig);
+		Count<Texture2D> brdfLut = Texture2D::Create(textureConfig,Buffer(data, imageSize * imageSize * Utils::BytesPerPixel(ImageFormat::RG16F)));
 		
 		ComputePipelineConfig computePipelineConfig;
 		computePipelineConfig.DebugName = "BRDFLUT Pipeline";
@@ -783,11 +783,11 @@ namespace Proof {
 
 	BaseTextures::BaseTextures() {
 		uint32_t whiteTexturedata = 0xffffffff;
-		WhiteTexture = Texture2D::Create(&whiteTexturedata, TextureConfiguration("White Texture"));
+		WhiteTexture = Texture2D::Create(TextureConfiguration("White Texture"), Buffer(&whiteTexturedata, sizeof(uint32_t)));
 
 
 		uint32_t blackTexturedata = 0xFF000000;
-		BlackTexture = Texture2D::Create(&blackTexturedata, TextureConfiguration("Black Texture"));
+		BlackTexture = Texture2D::Create(TextureConfiguration("Black Texture"), Buffer(&blackTexturedata, sizeof(uint32_t)));
 
 
 		TextureConfiguration cubeTextureConfig;

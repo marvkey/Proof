@@ -109,7 +109,8 @@ namespace Proof
 				vec = { Random::Real<float>(-1,1),Random::Real<float>(-1,1),0 };
 				vec = glm::normalize(vec);
 			}
-			texture->Resize(noiseScale, noiseScale, noise.data());
+			Buffer buffer(noise.data(), Utils::GetImageMemorySize(texture->GetSpecification().Format, noiseScale, noiseScale));
+			texture->Resize(noiseScale, noiseScale, buffer);
 
 		}
 	}
@@ -145,7 +146,7 @@ namespace Proof
 	
 	void WorldRenderer::Init()
 	{
-		AmbientOcclusion.Enabled = true;
+		//AmbientOcclusion.Enabled = true;
 		const size_t TransformBufferCount = 10 * 1024; // 10240 transforms
 		m_SubmeshTransformBuffers.resize(Renderer::GetConfig().FramesFlight);
 		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
@@ -203,9 +204,9 @@ namespace Proof
 			m_GlobalInputs->SetData("ScreenData", m_UBScreenBuffer);
 		}
 		Count<VertexArray> staticVertexArray= VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshInstanceVertex), VertexInputRate::Instance} });
-		staticVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
+		staticVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Position));
 		staticVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-		staticVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
+		staticVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoord));
 		staticVertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
 		staticVertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
 
@@ -513,7 +514,7 @@ namespace Proof
 				m_CompositePass = RenderPass::Create(renderPassSpec);
 				m_CompositeMaterial = RenderMaterial::Create({ "Composite", Renderer::GetShader("WorldComposite") });
 			}
-
+			#if 0
 			// Ambient occlusion
 			{
 				//SAO
@@ -620,6 +621,7 @@ namespace Proof
 					m_AmbientOcclusionCompositePass = RenderPass::Create(renderPassConfig);
 				}
 			}
+			#endif
 		}
 
 		//External Composite 
@@ -704,7 +706,6 @@ namespace Proof
 		PF_CORE_ASSERT(!m_InContext);
 		PF_CORE_ASSERT(m_ActiveWorld);
 		PF_PROFILE_TAG("Renderer", m_ActiveWorld->GetName().c_str());
-		m_NeedResize = false;
 		
 		m_InContext = true;
 
@@ -747,11 +748,13 @@ namespace Proof
 			// compoiste 
 			m_CompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
 
+			#if 0
 			//AO
 			{
 				m_SSAOImage->Resize(m_UBScreenData.FullResolution.x, m_UBScreenData.FullResolution.y);
 				m_SSAOBlurPass->GetTargetFrameBuffer()->Resize(m_UBScreenData.FullResolution.x, m_UBScreenData.FullResolution.y);
 			}
+			#endif
 			m_ExternalCompositeFrameBuffer->Resize(viewportSize);
 		}
 
@@ -1392,6 +1395,7 @@ namespace Proof
 			{
 				const auto& transformData = m_MeshTransformMap.at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				//transformData.Transforms
 				RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, m_GeometryPass, dc.MaterialTable, transformBuffer, transformOffset, dc.InstanceCount);
 			}
 			Renderer::EndRenderPass(m_GeometryPass);
@@ -1454,6 +1458,8 @@ namespace Proof
 	{
 		if (AmbientOcclusion.Enabled == false)
 			return;
+
+		return;
 		PF_PROFILE_FUNC();
 		
 		if (AmbientOcclusion.Type == AmbientOcclusion::AmbientOcclusionType::SSAO)

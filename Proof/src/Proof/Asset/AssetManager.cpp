@@ -185,6 +185,7 @@ namespace Proof
 		s_AssetManagerData->AssetPath.insert({ assetInfo.Path.string(),assetInfo.ID });
 		if (asset)
 		{
+			PF_CORE_ASSERT(!HasAsset(asset->m_ID), "Asset has alrady been added");
 			asset->m_ID = assetInfo.ID;
 		}
 		if (asset && assetInfo.RuntimeAsset == false && !assetInfo.IsAssetSource() && assetInfo.Type != AssetType::World)

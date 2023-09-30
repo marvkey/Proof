@@ -14,10 +14,11 @@ namespace Proof
     class Material;
     class MaterialTable;
     struct SubMesh {
-        std::string Name;
+        std::string Name,NodeName;
         uint32_t BaseVertex;
         uint32_t BaseIndex;
         uint32_t IndexCount;
+        uint32_t VertexCount;
         uint32_t MaterialIndex;
         glm::mat4 LocalTransform;
         glm::mat4 Transform;
@@ -25,46 +26,66 @@ namespace Proof
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
     };
+
+    struct MeshNode
+    {
+        uint32_t Parent = 0xffffffff;
+        std::vector<uint32_t> Children;
+        std::vector<uint32_t> Submeshes;
+
+        std::string Name;
+        glm::mat4 LocalTransform;
+
+        inline bool IsRoot() const { return Parent == 0xffffffff; }
+
+        //static void Serialize(StreamWriter* serializer, const MeshNode& instance)
+        //{
+        //    serializer->WriteRaw(instance.Parent);
+        //    serializer->WriteArray(instance.Children);
+        //    serializer->WriteArray(instance.Submeshes);
+        //    serializer->WriteString(instance.Name);
+        //    serializer->WriteRaw(instance.LocalTransform);
+        //}
+        //
+        //static void Deserialize(StreamReader* deserializer, MeshNode& instance)
+        //{
+        //    deserializer->ReadRaw(instance.Parent);
+        //    deserializer->ReadArray(instance.Children);
+        //    deserializer->ReadArray(instance.Submeshes);
+        //    deserializer->ReadString(instance.Name);
+        //    deserializer->ReadRaw(instance.LocalTransform);
+        //}
+    };
     class MeshSource : public Asset{
     public:
         MeshSource();
-        MeshSource(const std::string& path);
         MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+        MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SubMesh>& subMeshes,const std::vector<MeshNode>& nodes, Count<MaterialTable>, AABB boundingBox);
 
-        void Reset(const std::string& path);
         void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
-
-        std::filesystem::path GetPath() {
-            return m_Path;
-        }
-        Count<MaterialTable> GenerateMaterialTable(){
-            return Count<MaterialTable>::CreateFrom(m_MaterialTable);
-        }
+        void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials,AABB boundingBox);
         AABB GetBoundingBox() {return m_BoundingBox;}
-        const std::vector<SubMesh>& GetSubMeshes()const  {
+        const std::vector<SubMesh>& GetSubMeshes()const  
+        {
             return m_SubMeshes;
         }
 
         ASSET_CLASS_TYPE(MeshSourceFile);
         Count<class VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
         Count<class IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
-    private:
-        AABB m_BoundingBox;
-        // gets cleard after mesh has been created
-        std::vector<Vertex> m_Vertices;
-        // gets cleard after mesh has been created
-        std::vector<uint32_t> m_Indices;
 
+        const std::string& GetName()const { return m_Name; };
+        Count<MaterialTable> GetMaterials()const { return m_Materials; };
+    private:
+        std::string m_Name;
+        AABB m_BoundingBox;
+
+        std::vector<MeshNode> m_Nodes;
         Count<class VertexBuffer> m_VertexBuffer = nullptr;
         Count<class IndexBuffer> m_IndexBuffer = nullptr;
-        void ProcessNode(void* node, const void* scene, const glm::mat4& parentTransform);
-        SubMesh ProcessMesh(void* mesh, const void* scene, const glm::mat4& transform) ;
-
-        Count<Material> GetMaterial(void* material);
-        void LoadMaterialTextures(Count<Material> material, void* aiMat);
         std::vector<SubMesh> m_SubMeshes;   
-        Count<MaterialTable> m_MaterialTable;
-        std::filesystem::path m_Path;
+        Count<MaterialTable> m_Materials;
+        friend class MeshImporter;
     };
     
     class Mesh : public Asset

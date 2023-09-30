@@ -13,42 +13,47 @@ namespace Proof{
 		}
 		Buffer(const Buffer&) = default;
 		//data is in (uint8_t*) just using void* so user can avoid casitng
-		Buffer(void* data, uint64_t size, bool copyData = false):
-			m_Size(size)
+		Buffer(const void* data, uint64_t size, bool copyData = false):
+			Size(size)
 		{
 			if (copyData && data && size > 0)
 			{
 				Allocate(size);
-				memcpy(m_Data, data, m_Size);
+				memcpy(Data, data, Size);
 			}
 			else
 			{
-				m_Data = (uint8_t*)data;
+				Data = (uint8_t*)data;
 			}
 		}
 		void Copy(const void* data, uint32_t size)
 		{
 			Release();
 			Allocate(size);
-			memcpy(m_Data, data, size);
+			memcpy(Data, data, size);
+		}
+		void ZeroInitialize()
+		{
+			if (Data)
+				memset(Data, 0, Size);
 		}
 		static Buffer Copy(Buffer other)
 		{
-			Buffer result(other.m_Size);
-			memcpy(result.m_Data, other.m_Data, other.m_Size);
+			Buffer result(other.Size);
+			memcpy(result.Data, other.Data, other.Size);
 			return result;
 		}
 		// copy to specif region of the buffer
 		void SetData(const void* data, uint32_t size, uint32_t offset)
 		{
-			uint8_t* newData = m_Data;
+			uint8_t* newData = Data;
 			newData += offset;
 			memcpy(newData, data, size);
 		}
 		// copy to specif region of the buffer
 		void SetData(const Buffer& buffer,uint32_t offset)
 		{
-			uint8_t* newData = m_Data;
+			uint8_t* newData = Data;
 			newData += offset;
 			memcpy(newData, buffer.Get(), buffer.GetSize());
 		}
@@ -57,46 +62,45 @@ namespace Proof{
 			if (size == 0)
 				return;
 			Release();
-			m_Data = new uint8_t[size];
-			m_Size = size;
+			Data = new uint8_t[size];
+			Size = size;
 		}
 	
 		uint8_t* Get()const
 		{
-			return m_Data;
+			return Data;
 		}
 		uint64_t GetSize()const {
-			return m_Size;
+			return Size;
 		}
 		template<typename T>
 		T* As()
 		{
-			return (T*)m_Data;
+			return (T*)Data;
 		}
 
 		void Fill(uint8_t value)
 		{
-			if(m_Size >0)
-				std::memset(m_Data, value, m_Size*sizeof(uint8_t));
+			if(Size >0)
+				std::memset(Data, value, Size*sizeof(uint8_t));
 		}
 
 		template<typename T>
 		T& Read(uint64_t offset)
 		{
-			return *static_cast<T*>(static_cast<void*>(m_Data + offset));
+			return *static_cast<T*>(static_cast<void*>(Data + offset));
 		}
 		operator bool() const
 		{
-			return (bool)m_Data;
+			return (bool)Data;
 		}
 		void Release()
 		{
-			delete[] m_Data;
-			m_Data = nullptr;
-			m_Size = 0;
+			delete[] Data;
+			Data = nullptr;
+			Size = 0;
 		}
-	private:
-		uint8_t* m_Data = nullptr;
-		uint64_t m_Size = 0;
+		uint8_t* Data = nullptr;
+		uint64_t Size = 0;
 	};
 }

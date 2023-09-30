@@ -720,9 +720,12 @@ namespace Proof {
 
 		TextVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(TextVertex));
 		uint32_t whiteTextureData = 0xffffffff;
+		TextureConfiguration textrureConfig;
 
+		//Buffer buffer()
 		Textures.resize(Renderer2DStorage::c_MaxTextureSlot);
-		WhiteTexture = Texture2D::Create(&whiteTextureData,TextureConfiguration( ));
+
+		WhiteTexture = Renderer::GetWhiteTexture();
 
 		for(uint32_t i=0; i < Renderer2DStorage::c_MaxTextureSlot;i++)
 			Textures[i] = WhiteTexture;

@@ -15,6 +15,14 @@ namespace Proof {
 		Build();
 	}
 
+	VulkanRenderMaterial::VulkanRenderMaterial(const VulkanRenderMaterial& other)
+	{
+		m_Config = other.m_Config;
+		Build();
+		m_UniformBufferStorage = Buffer::Copy(other.m_UniformBufferStorage);
+
+	}
+
 	void VulkanRenderMaterial::Build()
 	{
 		VulkanDescriptorManagerConfig descriptorConfig;

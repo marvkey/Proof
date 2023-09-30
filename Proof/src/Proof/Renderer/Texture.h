@@ -75,7 +75,7 @@ namespace Proof {
 
 		virtual const TextureConfiguration& GetSpecification()const = 0;
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
-		virtual void Resize(uint32_t width, uint32_t height, const void* data) = 0;
+		virtual void Resize(uint32_t width, uint32_t height, Buffer buffer) = 0;
 		virtual void Resize(Vector2U size) = 0;
 		virtual uint32_t GetMipLevelCount() = 0;
 
@@ -84,10 +84,10 @@ namespace Proof {
 		virtual uint32_t GetHeight()const = 0;
 		virtual Vector2U GetSize()const = 0;
 		virtual const std::filesystem::path& GetPath()const = 0;
-		virtual void SetData(const void* data)= 0;
+		virtual void SetData(Buffer buffer)= 0;
 
 		static Count<Texture2D> Create(const TextureConfiguration& config, const std::filesystem::path& path);
-		static Count<Texture2D> Create(const void* data, const TextureConfiguration& config);
+		static Count<Texture2D> Create(const TextureConfiguration& config, Buffer data);
 		virtual void GenerateMips() = 0;
 
 		static Count<Texture2D> Create(const TextureConfiguration& config);
@@ -142,8 +142,9 @@ namespace Proof {
 	class TextureImporter
 	{
 	public:
-		static Buffer ToBufferFromFile(const std::filesystem::path& path, ImageFormat format, uint32_t& width, uint32_t& height);
-		static Buffer ToBufferFromMemory(const void* data,ImageFormat format, uint32_t width, uint32_t height);
+		static Buffer ToBufferFromFile(const std::filesystem::path& path, ImageFormat& outFormat, uint32_t& width, uint32_t& height);
+		//static Buffer ToBufferFromMemory(const void* data, ImageFormat format, uint32_t width, uint32_t height);
+		static Buffer ToBufferFromMemory(Buffer buffer,ImageFormat& outFormat, uint32_t& outwidth, uint32_t& outheight);
 	};
 
 }

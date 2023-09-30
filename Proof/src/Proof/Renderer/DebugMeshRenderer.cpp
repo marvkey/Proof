@@ -114,17 +114,17 @@ namespace Proof{
 		//PipeLineLayout = PipeLineLayout::Create(std::vector{ Descriptors[DescriptorSets::Zero]}, PushConstantColor);
 
 		Count<VertexArray> meshVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshVertex), VertexInputRate::Instance} });
-		meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-		meshVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-		meshVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
-		meshVertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
-		meshVertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-
-
-		meshVertexArray->AddData(5, DataType::Vec4, 0, 1);
-		meshVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
-		meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
-		meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
+		//meshVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
+		//meshVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
+		//meshVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoords));
+		//meshVertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
+		//meshVertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
+		//
+		//
+		//meshVertexArray->AddData(5, DataType::Vec4, 0, 1);
+		//meshVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
+		//meshVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
+		//meshVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
 		//GraphicsPipelineConfig graphicsPipelineConfig;
 		//graphicsPipelineConfig.DebugName = "Debug-Mesh";
 		//graphicsPipelineConfig.Shader = Shader;

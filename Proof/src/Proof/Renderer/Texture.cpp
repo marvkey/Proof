@@ -18,7 +18,7 @@ namespace Proof {
 		}
 		return nullptr;
 	}
-	Count<Texture2D> Texture2D::Create(const void* data,const TextureConfiguration& config)
+	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, Buffer data)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -123,65 +123,65 @@ namespace Proof {
 		}
 		PF_CORE_ASSERT(false);
 	}
-	Buffer TextureImporter::ToBufferFromFile(const std::filesystem::path& path, ImageFormat format, uint32_t& width,  uint32_t& height)
+	Buffer TextureImporter::ToBufferFromFile(const std::filesystem::path& path, ImageFormat& outFormat, uint32_t& outWidth, uint32_t& outHeight)
 	{
-		int channels;
-		int widthint;
-		int heightInt;
+		Buffer imageBuffer;
+		std::string pathString = path.string();
 
-		//stbi_set_flip_vertically_on_load(true);
-		if (IsImageFormatFloat(format))
+		int width, height, channels;
+
+		if (stbi_is_hdr(pathString.c_str()))
 		{
-			float* data = stbi_loadf(path.string().c_str(), &widthint, &heightInt, &channels, 0);
-			if (data == nullptr)
-			{
-				PF_ENGINE_ERROR("Texture passed is Invalid {}", path.string().c_str());
-				return Buffer();
-			}
-			// prrety sure flaot is already 4 so it is the smae as width * height * 4 *4 im guessing i forgot
-			float* data_rgba = new float[size_t(widthint) * size_t(heightInt) * 4];
-			if (channels == 3)
-			{
-				for (size_t i = 0; i < size_t(widthint) * size_t(heightInt); i++)
-				{
-					for (size_t c = 0; c < 3; c++)
-					{
-						data_rgba[4 * i + c] = data[3 * i + c];
-					}
-					data_rgba[4 * i + 3] = 1.0f;
-				}
-			}
-			else
-			{
-				memcpy(data_rgba, data, size_t(widthint) * size_t(heightInt) * 4 * 4);
-			}
-			stbi_image_free(data);
-			width = widthint;
-			height = heightInt;
-			uint32_t imageSize = width * height * 4 * sizeof(float);
-			Buffer buffer((uint8_t*)data_rgba, imageSize,true);
-			
-			delete[] data_rgba;
-			return buffer;
+			outFormat = ImageFormat::RGBA32F;
+			imageBuffer.Data = (byte*)stbi_loadf(pathString.c_str(), &width, &height, &channels, 4);
+			//imageBuffer.Size = width * height * 4 * sizeof(float);
+			imageBuffer.Size = width * height * Utils::BytesPerPixel(outFormat);
+
+		}
+		else 
+		{
+			//stbi_set_flip_vertically_on_load(1);
+			outFormat = ImageFormat::RGBA;
+			imageBuffer.Data = stbi_load(pathString.c_str(), &width, &height, &channels, 4);
+			imageBuffer.Size = width * height * Utils::BytesPerPixel(outFormat);
 		}
 
-		uint8_t* data = stbi_load(path.string().c_str(), &widthint, &heightInt, &channels, 4);
-		if (data == nullptr)
-		{
-			PF_ENGINE_ERROR("Texture passed is Invalid {}", path.string().c_str());
-			return Buffer();
-		}
-		int imageSize = widthint * heightInt * Utils::BytesPerPixel(format);
-		Buffer buffer(data, imageSize,true);
-		stbi_image_free(data);
-		width = widthint;
-		height = heightInt;
-		return buffer;
+		if (!imageBuffer.Data)
+			return {};
+
+		outWidth = width;
+		outHeight = height;
+		return imageBuffer;
 	}
-	Buffer TextureImporter::ToBufferFromMemory(const void* data, ImageFormat format, uint32_t width, uint32_t height)
+	//Buffer TextureImporter::ToBufferFromMemory(const void* data, ImageFormat format, uint32_t width, uint32_t height)
+	//{
+	//	size_t bufferSize = width * height * Utils::BytesPerPixel(format);
+	//	return Buffer((uint8_t*)data,bufferSize,true);
+	//}
+
+	Buffer TextureImporter::ToBufferFromMemory(Buffer buffer, ImageFormat& outFormat, uint32_t& outWidth, uint32_t& outHeight)
 	{
-		size_t bufferSize = width * height * Utils::BytesPerPixel(format);
-		return Buffer((uint8_t*)data,bufferSize,true);
+		Buffer imageBuffer;
+
+		int width, height, channels;
+		if (stbi_is_hdr_from_memory((const stbi_uc*)buffer.Get(), (int)buffer.GetSize()))
+		{
+			const void* rawData = (byte*)stbi_loadf_from_memory((const stbi_uc*)buffer.Get(), (int)buffer.GetSize(), &width, &height, &channels, STBI_rgb_alpha);
+			const auto size= width * height * 4 * sizeof(float);
+			outFormat = ImageFormat::RGBA32F;
+			imageBuffer.SetData(rawData, size,0);
+		}
+		else
+		{
+			imageBuffer.SetData(stbi_load_from_memory((const stbi_uc*)buffer.Get(), (int)buffer.GetSize(), &width, &height, &channels, STBI_rgb_alpha), width * height * 4,0);
+		}
+
+		if (!imageBuffer.Get())
+			return {};
+
+		outWidth = width;
+		outHeight = height;
+		return imageBuffer;
 	}
 
 

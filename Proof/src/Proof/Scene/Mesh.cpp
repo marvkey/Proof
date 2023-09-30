@@ -69,64 +69,20 @@ namespace Proof{
 
         return aiMatrix;
     }
-    MeshSource::MeshSource(const std::string & path)
-    {
-        Reset(path);
-    }
     MeshSource::MeshSource()
     {
-        m_MaterialTable = Count<MaterialTable>::Create();
+        m_Materials = Count<MaterialTable>::Create();
     }
-    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) :
-        m_Vertices(vertices), m_Indices(indices)
+    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) 
     {
         Reset(name, vertices, indices);
     }
-    void MeshSource::Reset(const std::string& path)
+    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials, AABB boundingBox)
     {
-        PF_PROFILE_FUNC();
-        m_Path = path;
-        Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
-        {
-            PF_EC_WARN("ERROR::ASSIMP {}", importer.GetErrorString());
-            return;
-        }
-        PF_ENGINE_INFO("MeshSource:{}", path);
-        ProcessNode(scene->mRootNode, scene, AIMatrixToGLM(scene->mRootNode->mTransformation));
-
-
-        for (auto& subMesh : m_SubMeshes)
-        {
-            AABB transformedSubmeshAABB = subMesh.BoundingBox;
-           // glm::vec3 min = glm::vec3(subMesh.Transform * glm::vec4(transformedSubmeshAABB.Min, 1.0f));
-           // glm::vec3 max = glm::vec3(subMesh.Transform * glm::vec4(transformedSubmeshAABB.Max, 1.0f));
-
-            glm::vec3 min = transformedSubmeshAABB.Min;
-            glm::vec3 max = transformedSubmeshAABB.Max;
-            m_BoundingBox.Min.x = glm::min(m_BoundingBox.Min.x, min.x);
-            m_BoundingBox.Min.y = glm::min(m_BoundingBox.Min.y, min.y);
-            m_BoundingBox.Min.z = glm::min(m_BoundingBox.Min.z, min.z);
-            m_BoundingBox.Max.x = glm::max(m_BoundingBox.Max.x, max.x);
-            m_BoundingBox.Max.y = glm::max(m_BoundingBox.Max.y, max.y);
-            m_BoundingBox.Max.z = glm::max(m_BoundingBox.Max.z, max.z);
-        }
-        m_MaterialTable = Count<MaterialTable>::Create(scene->mNumMaterials > 0 ? false : true);
-        for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; materialIndex++)
-        {
-            m_MaterialTable->SetMaterial(materialIndex, GetMaterial(scene->mMaterials[materialIndex]));
-        }
-
-        m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex));
-        m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
-
-        m_Indices.clear();
-        m_Vertices.clear();
+        Reset(name, vertices, indices, subMeshes, nodes,materials, boundingBox);
     }
     void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
     {
-        m_MaterialTable = Count<MaterialTable>::Create();
         SubMesh subMesh;
         subMesh.BaseVertex = 0;
         subMesh.BaseIndex = 0;
@@ -140,186 +96,31 @@ namespace Proof{
             glm::scale(glm::mat4(1.0f), ProofToglmVec({ 1,1,1 }));
 
         m_SubMeshes.emplace_back(subMesh);
-        m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex));
-        m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
+        m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
+        m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
 
-        m_Indices.clear();
-        m_Vertices.clear();
-    }
-    void MeshSource::ProcessNode(void* node, const void* scene, const glm::mat4& parentTransform)
-    {
-        aiNode* ainode = (aiNode*)node;
-        aiScene* aiscene = (aiScene*)scene;
-        glm::mat4 transform = parentTransform * AIMatrixToGLM(ainode->mTransformation);
-
-        for (uint32_t i = 0; i < ainode->mNumMeshes; i++)
-        {
-            aiMesh* mesh = aiscene->mMeshes[ainode->mMeshes[i]];
-            m_SubMeshes.emplace_back(ProcessMesh(mesh, aiscene, transform));
-        }
-        for (uint32_t i = 0; i < ainode->mNumChildren; i++)
-        {
-            ProcessNode(ainode->mChildren[i], aiscene, transform);
-        }
+        m_Materials = Count<MaterialTable>::Create();
     }
 
-    SubMesh MeshSource::ProcessMesh(void* mesh, const void* scene, const glm::mat4& transform)
+    void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials,AABB boundingBox)
     {
-        aiMesh* aimesh = (aiMesh*)mesh;
-        
-        aiScene* aiscene = (aiScene*)scene;
-        std::vector<Vertex> vertices;
-        std::vector<uint32_t> indices;
-        AABB aabb = { glm::vec3{std::numeric_limits<float>::infinity()},glm::vec3{-std::numeric_limits<float>::infinity()} };
+        m_Name = name;
 
-        SubMesh subMesh;
-        subMesh.BaseIndex = m_Indices.size();
-        subMesh.BaseVertex = m_Vertices.size();
+        m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
+        m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
+        m_SubMeshes = subMeshes;
+        m_Nodes = nodes;
+        m_BoundingBox = boundingBox;
+        m_Materials = Count<MaterialTable>::CreateFrom(materials);
 
-        for (uint32_t i = 0; i < aimesh->mNumVertices; i++)
+        // maybe each mesh might have its own material asset maybe
+        for (auto& [index, material] : m_Materials->GetMaterials())
         {
-            Vertex vertex;
-            vertex.Vertices = Vector(aimesh->mVertices[i].x, aimesh->mVertices[i].y, aimesh->mVertices[i].z);
-            if (aimesh->HasNormals())
-                vertex.Normal = Vector(aimesh->mNormals[i].x, aimesh->mNormals[i].y, aimesh->mNormals[i].z);
-            if (aimesh->mTextureCoords[0])
-            {
-                vertex.TexCoords = Vector2(aimesh->mTextureCoords[0][i].x, aimesh->mTextureCoords[0][i].y);
-                vertex.Tangent = Vector(aimesh->mTangents[i].x, aimesh->mTangents[i].y, aimesh->mTangents[i].z);
-                vertex.Bitangent = Vector(aimesh->mBitangents[i].x, aimesh->mBitangents[i].y, aimesh->mBitangents[i].z);
-            }
-            else
-                vertex.TexCoords = Vector2(0.0f, 0.0f);
-
-            aabb.Min.x = std::min(aabb.Min.x, vertex.Vertices.X);
-            aabb.Min.y = std::min(aabb.Min.y, vertex.Vertices.Y);
-            aabb.Min.z = std::min(aabb.Min.z, vertex.Vertices.Z);
-
-            aabb.Max.x = std::max(aabb.Max.x, vertex.Vertices.X);
-            aabb.Max.y = std::max(aabb.Max.y, vertex.Vertices.Y);
-            aabb.Max.z = std::max(aabb.Max.z, vertex.Vertices.Z);
-
-            m_Vertices.emplace_back(vertex);
+            if (AssetManager::HasAsset(material))
+                continue;
+            Count<Asset> asset = material;
+            AssetManager::CreateRuntimeAsset(asset);
         }
-        uint32_t indexCount = 0;
-        for (uint32_t i = 0; i < aimesh->mNumFaces; i++)
-        {
-            aiFace& face = aimesh->mFaces[i];
-            for (uint32_t j = 0; j < face.mNumIndices; j++)
-            {
-                indexCount++;
-                m_Indices.emplace_back(face.mIndices[j]);
-            }
-        }
-
-        subMesh.Name = aimesh->mName.C_Str();
-        subMesh.Transform = transform;
-        subMesh.IndexCount = indexCount;
-        subMesh.BoundingBox = aabb;
-        subMesh.MaterialIndex = aimesh->mMaterialIndex;
-        return subMesh;
-    }
-
-    Count<Material> MeshSource::GetMaterial(void* mat)
-    {
-        aiMaterial* aimat = (aiMaterial*)mat;
-        Count<Material> material = Count<Material>::Create();
-        float metallness = 0.0;
-        float roghness = 0.4;
-        //aiGetMaterialString(aimat,mat, AI_MATKEY_NAME, &name);
-        aiString name;
-        aimat->Get(AI_MATKEY_NAME, name);
-        material->Name = name.C_Str();
-        if (material->Name.empty())
-            material->Name = "UnnamedMaterial";
-        aiColor3D color;
-        if (aimat->Get(AI_MATKEY_COLOR_AMBIENT, color) == aiReturn_SUCCESS)
-        {
-            material->SetAlbedo(Vector(color.r, color.g, color.b));
-        }
-        if (aimat->Get(AI_MATKEY_METALLIC_FACTOR, metallness) == aiReturn_SUCCESS)
-        {
-            material->GetMetalness() = metallness;
-        }
-        if (aimat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roghness) == aiReturn_SUCCESS)
-        {
-            material->GetRoughness() = roghness;
-        }
-        PF_ENGINE_TRACE("   Loaded Material:{} Color:{} Roughness:{} Metalness:{}", material->Name, material->GetAlbedoColor().ToString(), material->GetRoughness(), material->GetMetalness());
-        LoadMaterialTextures(material, aimat);
-        return material;
-    }
-    static Count<Texture2D> LoadTextures(aiTextureType textureType, aiMaterial* aimat,MeshSource* meshSource)
-    {
-        aiString strFilePath;
-        if (aimat->GetTexture(textureType, 0, &strFilePath) == aiReturn_SUCCESS)
-        {
-            std::string textureFilePath = (meshSource->GetPath().parent_path() /= strFilePath.C_Str()).string();
-            //textureFilePath = std::filesystem::(textureFilePath, Application::).string();
-            //AssetManager::GetAssetFileSystemPath
-            std::string textureName = FileSystem::GetFileName(textureFilePath);
-            // checking if has the texturer source file
-
-            if (AssetManager::HasAsset(textureFilePath))
-            {
-                // changing the path to a proof asset path
-               // PF_EC_WARN("Getting mehs texture this way is risky what if the name changes");
-                std::string path = std::filesystem::relative(meshSource->GetPath().parent_path() /= textureName).string();
-                path += ".Texture.ProofAsset";
-                if (AssetManager::HasAsset(path))
-                    return AssetManager::GetAsset<Texture2D>(path);
-                else
-                {
-
-                    AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
-                    Count<Asset> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(path)), textureFilePath);
-                    AssetManager::NewAsset(asset, path);
-                    return AssetManager::GetAsset<Texture2D>(path);
-                   // PF_EC_CRITICAL("Proof Should not be using raw texture file to create meshes causes an error for invalid descript set");
-                    //texture = Texture2D::Create(textureFilePath);
-                }
-            }
-            else
-            {
-                std::string path = std::filesystem::relative(meshSource->GetPath().parent_path() /= textureName).string();
-                path += ".Texture.ProofAsset";
-                AssetManager::NewAssetSource(textureFilePath, AssetType::TextureSourceFile);
-                Count<Asset> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(textureFilePath)), textureFilePath);
-                AssetManager::NewAsset(asset, path);
-                return AssetManager::GetAsset<Texture2D>(path);
-            }
-        }
-        return Renderer::GetWhiteTexture();
-    }
-    void MeshSource::LoadMaterialTextures(Count<Material> material, void* mat)
-    {
-        aiMaterial* aiMaterialCast = (aiMaterial*)mat;
-        material->SetAlbedoMap(LoadTextures(aiTextureType_DIFFUSE, aiMaterialCast, this));
-        material->SetNormalMap(LoadTextures(aiTextureType_NORMALS, aiMaterialCast, this));
-        material->SetMetalnessMap(LoadTextures(aiTextureType_METALNESS, aiMaterialCast, this));
-        material->SetRoughnessMap(LoadTextures(aiTextureType_DIFFUSE_ROUGHNESS, aiMaterialCast, this));
-
-        if (material->GetAlbedoMap() != Renderer::GetWhiteTexture())
-            PF_ENGINE_TRACE("       Albedo Map:{} ",material->GetAlbedoMap()->GetPath().string());
-        
-        if (material->GetNormalMap() != Renderer::GetWhiteTexture())
-        {
-            material->SetNormalTextureToggle(true);
-            PF_ENGINE_TRACE("       Normal Map:{} ", material->GetNormalMap()->GetPath().string());
-        }
-        
-        if (material->GetRoughnessMap() != Renderer::GetWhiteTexture())
-        {
-            material->SetRoughnessTextureToggle(true);
-            PF_ENGINE_TRACE("       Roughness Map:{} ", material->GetRoughnessMap()->GetPath().string());
-        }
-       
-        if (material->GetMetalnessMap() != Renderer::GetWhiteTexture())
-        {
-            material->SetMetalnessTextureToggle(true);
-            PF_ENGINE_TRACE("       Metalness Map:{} ", material->GetMetalnessMap()->GetPath().string());
-        }
-
     }
 
     Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& submeshes)
@@ -333,15 +134,17 @@ namespace Proof{
     }
     void Mesh::Reset(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes)
     {
-        m_MaterialTable = meshSource->GenerateMaterialTable();
-        m_Name = FileSystem::GetFileName(m_MeshSource->GetPath());
+        m_MeshSource = meshSource;
+        m_Name = m_MeshSource->GetName();
         SetSubMeshes(subMeshes);
+        m_MaterialTable = Count<MaterialTable>::CreateFrom(meshSource->GetMaterials());
     }
     void Mesh::Reset(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices)
     {
         m_MeshSource = Count<MeshSource>::Create(name, vertices, indices);
-        m_MaterialTable = m_MeshSource->GenerateMaterialTable();
+        m_MaterialTable = Count<MaterialTable>::Create();
         SetSubMeshes({});
+        m_MaterialTable = Count<MaterialTable>::CreateFrom(m_MeshSource->GetMaterials());
     }
     void Mesh::SetSubMeshes(const std::vector<uint32_t>& submesh)
     {

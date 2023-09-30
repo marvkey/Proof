@@ -81,7 +81,7 @@ namespace Proof {
                 // vertex position
                 x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
                 y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
-                vertex.Vertices = { x,y,z };
+                vertex.Position = { x,y,z };
                 // normalized vertex normal
                 nx = x * lengthInv;
                 ny = y * lengthInv;
@@ -90,7 +90,7 @@ namespace Proof {
                 // vertex tex coord between [0, 1]
                 s = (float)j / sectors;
                 t = (float)i / stacks;
-                vertex.TexCoords = { s,t };
+                vertex.TexCoord = { s,t };
             }
         }
 
@@ -132,15 +132,15 @@ namespace Proof {
             float z = glm::sin(float(Math::PIE() * 2) * s * segIncr) * radius;
 
             Vertex& vertex = vertices.emplace_back();
-            vertex.Vertices = Vector(actualRadius * x, actualRadius * y + height * dy, actualRadius * z);
+            vertex.Position = glm::vec3(actualRadius * x, actualRadius * y + height * dy, actualRadius * z);
             float texCoordX = static_cast<float>(s) / (segments - 1); // Calculate texture coordinate X
             float texCoordY = static_cast<float>(y + dy + 0.5f) / height; // Calculate texture coordinate Y
 
-            vertex.TexCoords = Vector2(texCoordX, texCoordY); // Store texture coordinates
+            vertex.TexCoord = glm::vec2(texCoordX, texCoordY); // Store texture coordinates
 
        // Calculate normals using the vertex position
             glm::vec3 normal = glm::normalize(glm::vec3(x, y, z));
-            vertex.Normal= Vector(normal.x, normal.y, normal.z);
+            vertex.Normal= glm::vec3(normal.x, normal.y, normal.z);
         }
     }
     Count<class Mesh> MeshWorkShop::GenerateCapsule(float radius, float height, uint32_t segments, uint32_t subdivisionsHeight)
@@ -248,22 +248,22 @@ namespace Proof {
         for (i = 0; i < count; i++)
         {
             // transform vertices
-            vx = vertices[i].Vertices.X;
-            vy = vertices[i].Vertices.Y;
-            vz = vertices[i].Vertices.Z;
+            vx = vertices[i].Position.x;
+            vy = vertices[i].Position.y;
+            vz = vertices[i].Position.z;
 
-            vertices[i].Vertices.X = tx[0] * vx + ty[0] * vy + tz[0] * vz;   // x
-            vertices[i].Vertices.Y = tx[1] * vx + ty[1] * vy + tz[1] * vz;   // y
-            vertices[i].Vertices.Z = tx[2] * vx + ty[2] * vy + tz[2] * vz;   // z
+            vertices[i].Position.x = tx[0] * vx + ty[0] * vy + tz[0] * vz;   // x
+            vertices[i].Position.y = tx[1] * vx + ty[1] * vy + tz[1] * vz;   // y
+            vertices[i].Position.z = tx[2] * vx + ty[2] * vy + tz[2] * vz;   // z
 
             // transform normals
-            nx = vertices[i].Normal.X;
-            ny = vertices[i].Normal.Y;
-            nz = vertices[i].Normal.Z;
+            nx = vertices[i].Normal.x;
+            ny = vertices[i].Normal.y;
+            nz = vertices[i].Normal.z;
 
-            vertices[i].Normal.X = tx[0] * nx + ty[0] * ny + tz[0] * nz;   // nx
-            vertices[i].Normal.Y = tx[1] * nx + ty[1] * ny + tz[1] * nz;   // ny
-            vertices[i].Normal.Z = tx[2] * nx + ty[2] * ny + tz[2] * nz;   // nz
+            vertices[i].Normal.x = tx[0] * nx + ty[0] * ny + tz[0] * nz;   // nx
+            vertices[i].Normal.y = tx[1] * nx + ty[1] * ny + tz[1] * nz;   // ny
+            vertices[i].Normal.z = tx[2] * nx + ty[2] * ny + tz[2] * nz;   // nz
         }
     }
     std::vector<CylinderGeneratorSpecificVertex> GetUnitCircleVertices(uint32_t sectorCount, float baseRadius, float topRadius, float height)
@@ -310,16 +310,16 @@ namespace Proof {
                 float x = unitCircleVertices[j].Position.x;
                 float y = unitCircleVertices[j].Position.y;
                 Vertex vertex;
-                vertex.Vertices.X = x * radius;
-                vertex.Vertices.Y = y * radius;
-                vertex.Vertices.Z = z;
+                vertex.Position.x = x * radius;
+                vertex.Position.y = y * radius;
+                vertex.Position.z = z;
 
-                vertex.Normal.X = unitCircleVertices[j].Normal.x;
-                vertex.Normal.Y = unitCircleVertices[j].Normal.y;
-                vertex.Normal.Z = unitCircleVertices[j].Normal.z;
+                vertex.Normal.x = unitCircleVertices[j].Normal.x;
+                vertex.Normal.y = unitCircleVertices[j].Normal.y;
+                vertex.Normal.z = unitCircleVertices[j].Normal.z;
 
-                vertex.TexCoords.X = j / sectorCount;
-                vertex.TexCoords.Y = t;
+                vertex.TexCoord.x = j / sectorCount;
+                vertex.TexCoord.y = t;
 
                 vertices.push_back(vertex);
             }
@@ -332,18 +332,18 @@ namespace Proof {
         {
 
             Vertex& vertex = vertices.emplace_back();
-            vertex.Vertices = { 0,0,z };
+            vertex.Position = { 0,0,z };
             vertex.Normal = { 0,0,-1 };
-            vertex.TexCoords = { 0.5f,0.5f };
+            vertex.TexCoord = { 0.5f,0.5f };
         }
         for (int i = 0; i < sectorCount; ++i)
         {
             float x = unitCircleVertices[i].Position.x;
             float y = unitCircleVertices[i].Position.y;
             Vertex& vertex = vertices.emplace_back();
-            vertex.Vertices = { x * baseRadius, y * baseRadius, z };
+            vertex.Position = { x * baseRadius, y * baseRadius, z };
             vertex.Normal = { 0, 0, -1 };
-            vertex.TexCoords = { -x * 0.5f + 0.5f, -y * 0.5f + 0.5f }; // flip horizontal
+            vertex.TexCoord = { -x * 0.5f + 0.5f, -y * 0.5f + 0.5f }; // flip horizontal
         }
         // put indices for base
         for (uint32_t i = 0, k = baseVertexIndex + 1; i < sectorCount; ++i, ++k)
@@ -360,18 +360,18 @@ namespace Proof {
         {
 
             Vertex& vertex = vertices.emplace_back();
-            vertex.Vertices = { 0,0,z };
+            vertex.Position = { 0,0,z };
             vertex.Normal = { 0,0,1 };
-            vertex.TexCoords = { 0.5f,0.5f };
+            vertex.TexCoord = { 0.5f,0.5f };
         }
         for (int i = 0; i < sectorCount; ++i)
         {
             float x = unitCircleVertices[i].Position.x;
             float y = unitCircleVertices[i].Position.y;
             Vertex& vertex = vertices.emplace_back();
-            vertex.Vertices = { x * topRadius, y * topRadius, z };
+            vertex.Position = { x * topRadius, y * topRadius, z };
             vertex.Normal = { 0, 0, 1 };
-            vertex.TexCoords = { x * 0.5f + 0.5f, -y * 0.5f + 0.5f }; // flip horizontal
+            vertex.TexCoord = { x * 0.5f + 0.5f, -y * 0.5f + 0.5f }; // flip horizontal
         }
 
          // put indices for sides
@@ -430,9 +430,9 @@ namespace Proof {
                 float cosTheta = cos(theta);
 
                 Vertex vertex;
-                vertex.Vertices.X = (majorRadius + minorRadius * cosTheta) * cosPhi;
-                vertex.Vertices.Y = (majorRadius + minorRadius * cosTheta) * sinPhi;
-                vertex.Vertices.Z = minorRadius * sinTheta;
+                vertex.Position.x = (majorRadius + minorRadius * cosTheta) * cosPhi;
+                vertex.Position.y = (majorRadius + minorRadius * cosTheta) * sinPhi;
+                vertex.Position.z = minorRadius * sinTheta;
 
                 bool smoothNormals = true;
                 if (smoothNormals)
@@ -441,20 +441,20 @@ namespace Proof {
                     float nx = cosTheta * cosPhi;
                     float ny = cosTheta * sinPhi;
                     float nz = sinTheta;
-                    vertex.Normal.X = nx;
-                    vertex.Normal.Y = ny;
-                    vertex.Normal.Z = nz;
+                    vertex.Normal.x = nx;
+                    vertex.Normal.y = ny;
+                    vertex.Normal.z = nz;
                 }
                 else
                 {
                     // Use a constant normal (flat shading)
-                    vertex.Normal.X = 0.0f;
-                    vertex.Normal.Y = 0.0f;
-                    vertex.Normal.Z = 1.0f;
+                    vertex.Normal.x = 0.0f;
+                    vertex.Normal.y = 0.0f;
+                    vertex.Normal.z = 1.0f;
                 }
 
-                vertex.TexCoords.X = static_cast<float>(segment) / static_cast<float>(numSegments);
-                vertex.TexCoords.Y = static_cast<float>(ring) / static_cast<float>(numRings);
+                vertex.TexCoord.x = static_cast<float>(segment) / static_cast<float>(numSegments);
+                vertex.TexCoord.y = static_cast<float>(ring) / static_cast<float>(numRings);
 
                 // You may compute tangent and bitangent vectors later
 
@@ -499,18 +499,18 @@ namespace Proof {
                 Vertex vertex;
 
                 // Vertex positions
-                vertex.Vertices.X = static_cast<float>(i) * segmentSize - (planeSize / 2.0f);
-                vertex.Vertices.Y = static_cast<float>(j) * segmentSize - (planeSize / 2.0f);
-                vertex.Vertices.Z = 0;; // Adjust the Z-coordinate as needed
+                vertex.Position.x = static_cast<float>(i) * segmentSize - (planeSize / 2.0f);
+                vertex.Position.y = static_cast<float>(j) * segmentSize - (planeSize / 2.0f);
+                vertex.Position.z = 0;; // Adjust the Z-coordinate as needed
 
                 // Normals (for a one-sided plane, all normals point in the same direction)
-                vertex.Normal.X = 0.0f;
-                vertex.Normal.Y = 0.0f;// Normal points along the positive Y-axis
-                vertex.Normal.Z = 1.0f;
+                vertex.Normal.x = 0.0f;
+                vertex.Normal.y = 0.0f;// Normal points along the positive Y-axis
+                vertex.Normal.z = 1.0f;
 
                 // Texture coordinates (you can adjust these as needed)
-                vertex.TexCoords.X = static_cast<float>(i) / static_cast<float>(numSegments);
-                vertex.TexCoords.Y = static_cast<float>(j) / static_cast<float>(numSegments);
+                vertex.TexCoord.x = static_cast<float>(i) / static_cast<float>(numSegments);
+                vertex.TexCoord.y = static_cast<float>(j) / static_cast<float>(numSegments);
 
                 // You may compute tangent and bitangent vectors later
 

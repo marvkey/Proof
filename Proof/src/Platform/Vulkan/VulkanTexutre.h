@@ -94,7 +94,7 @@ namespace Proof
 	class VulkanTexture2D : public Texture2D{
 	public:
 
-		VulkanTexture2D(const TextureConfiguration& config, const void* data);
+		VulkanTexture2D(const TextureConfiguration& config, Buffer buffer);
 		VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config);
 		VulkanTexture2D(const TextureConfiguration& config);
 		virtual ~VulkanTexture2D();
@@ -103,7 +103,7 @@ namespace Proof
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual void Resize(Vector2U size) override { Resize(size.X, size.Y); }
-		virtual void Resize(uint32_t width, uint32_t height, const void* data)override;
+		virtual void Resize(uint32_t width, uint32_t height, Buffer buffer)override;
 
 		virtual uint32_t GetWidth()const override { return m_Config.Width; };
 		virtual uint32_t GetHeight() const override { return m_Config.Height; };
@@ -126,7 +126,7 @@ namespace Proof
 		//bool Loaded()const { return m_ImageData; }
 		virtual uint64_t GetHash();
 		void GenerateMips();
-		virtual void SetData(const void* data);
+		virtual void SetData(Buffer buffer);
 
 	private:
 		void Build();

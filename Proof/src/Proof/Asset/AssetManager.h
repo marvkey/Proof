@@ -67,7 +67,6 @@ namespace Proof
 		{
 			static_assert(!std::is_same<AssetType, class World>::value, "Cannot craet  a world like this");
 			Count<Asset> asset = Count<AssetType>::Create(std::forward<Args>(args)...);
-			asset->m_ID = AssetManager::CreateID();
 			AssetInfo assetInfo;
 			assetInfo.Path = std::filesystem::relative(savePath, AssetManager::GetDirectory());
 			assetInfo.State = AssetState::Ready;
@@ -83,7 +82,7 @@ namespace Proof
 			CreateRuntimeAsset(CreateID(), asset);
 		}
 
-		static void CreateRuntimeAsset(AssetID ID,Count<Asset>& asset,const std::string& name = "")
+		static void CreateRuntimeAsset(AssetID ID,Count<Asset> asset,const std::string& name = "")
 		{
 			AssetInfo assetInfo;
 			assetInfo.State = AssetState::Ready;
@@ -96,14 +95,13 @@ namespace Proof
 		}
 		// cannot access this asset by path only by its id
 		template<class AssetType, typename ... Args, std::enable_if_t<Is_Compatible<AssetType, Asset>::value, int> = 0>
-		static Count<AssetType> CreateRuntimeAsset(Args&&... args, const std::string& name = "")
+		static Count<AssetType> CreateRuntimeAsset(const std::string& name ,Args&&... args)
 		{
 			static_assert(!std::is_same<AssetType, class World>::value, "Cannot craet  a world like this");
 			Count<Asset> asset = Count<AssetType>::Create(std::forward<Args>(args)...);
-			asset->m_ID = AssetManager::CreateID();
 			AssetInfo assetInfo;
 			assetInfo.State = AssetState::Ready;
-			assetInfo.ID = asset->GetID();
+			assetInfo.ID = CreateID();
 			assetInfo.Type = asset->GetAssetType();
 			assetInfo.RuntimeAsset = true;
 			assetInfo.Path = fmt::format("RuntimeAsset/{}/{}",assetInfo.ID.Get(), name);
@@ -111,6 +109,25 @@ namespace Proof
 			InternalAddAsset(assetInfo, asset);
 			return asset.As<AssetType>();
 		}
+		template <class AssetType, class... Args,std::enable_if_t<Is_Compatible<AssetType, Asset>::value, int> = 0>
+		static Count<AssetType> CreateRuntimeOnlyRendererAsset(const std::string& name, Args&&... args)
+		{
+			static_assert(!std::is_same<AssetType, class World>::value, "Cannot create a world like this");
+
+			// Use a fold expression to discard the first argument (name) and forward the rest
+			Count<Asset> asset = AssetType::Create(std::forward<Args>(args)...);
+
+			AssetInfo assetInfo;
+			assetInfo.State = AssetState::Ready;
+			assetInfo.ID = CreateID();
+			assetInfo.Type = asset->GetAssetType();
+			assetInfo.RuntimeAsset = true;
+			assetInfo.Path = fmt::format("RuntimeAsset/{}/{}", assetInfo.ID.Get(), name);
+
+			InternalAddAsset(assetInfo, asset);
+			return asset.As<AssetType>();
+		}
+
 		static Count<Asset> GetDefaultAsset(DefaultRuntimeAssets asset);
 		/*
 		*path Pass the full path

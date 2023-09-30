@@ -146,10 +146,12 @@ namespace Proof
 				0, nullptr, 0, nullptr, 1, &barrier);
 		});
 	}
-	void VulkanTexture2D::SetData(const void* data)
+	void VulkanTexture2D::SetData(Buffer buffer)
 	{
+		Release();
 		Utils::ValidateConfiguration(m_Config);
-		m_ImageData = TextureImporter::ToBufferFromMemory(data, m_Config.Format, m_Config.Width, m_Config.Height);
+		m_ImageData = buffer;
+
 		if (!m_ImageData)
 		{
 			PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
@@ -167,16 +169,35 @@ namespace Proof
 	}
 
 
-	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, const void* data)
+	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, Buffer data)
 		:m_Config(config)
 
 	{
-		Utils::ValidateConfiguration(m_Config);
-		m_ImageData = TextureImporter::ToBufferFromMemory(data, m_Config.Format, m_Config.Width, m_Config.Height);
-		if (!m_ImageData)
+		// because assimp whe height is zero it has some weird thign
+		if (m_Config.Height == 0)
 		{
-			PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
-			m_ImageData = TextureImporter::ToBufferFromFile("Assets/Textures/NullTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
+			m_ImageData = TextureImporter::ToBufferFromMemory(Buffer(data.Data, m_Config.Width), m_Config.Format, m_Config.Width, m_Config.Height);
+			if (!m_ImageData)
+			{
+				PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
+				// TODO: move this to asset manager
+				m_ImageData = TextureImporter::ToBufferFromFile("Resources/Textures/ErrorTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
+			}
+
+			Utils::ValidateConfiguration(m_Config);
+		}
+		else if (data)
+		{
+			Utils::ValidateConfiguration(m_Config);
+			auto size = (uint32_t)Utils::GetImageMemorySize(m_Config.Format, m_Config.Width, m_Config.Height);
+			m_ImageData.Copy(data.Data, size);
+		}
+		else
+		{
+			Utils::ValidateConfiguration(m_Config);
+			auto size = (uint32_t)Utils::GetImageMemorySize(m_Config.Format, m_Config.Width, m_Config.Height);
+			m_ImageData.Allocate(size);
+			m_ImageData.ZeroInitialize();
 		}
 		ImageConfiguration imageConfig;
 		imageConfig.Format = m_Config.Format;
@@ -433,12 +454,12 @@ namespace Proof
 		Build();
 	}
 
-	void VulkanTexture2D::Resize(uint32_t width, uint32_t height, const void* data)
+	void VulkanTexture2D::Resize(uint32_t width, uint32_t height, Buffer buffer)
 	{
 		Release();
 		m_Config.Width = width;
 		m_Config.Height = height;
-		SetData(data);
+		SetData(buffer);
 		//Utils::ValidateConfiguration(m_Config);
 		//m_ImageData = TextureImporter::ToBufferFromMemory(data, m_Config.Format, m_Config.Width, m_Config.Height);
 		//Build();
@@ -491,7 +512,9 @@ namespace Proof
 		textureConfig.Height = m_Config.Height;
 		textureConfig.Width = m_Config.Width;
 		textureConfig.Storage = true;
-		m_Texture = Texture2D::Create(data, textureConfig).As<VulkanTexture2D>();
+
+		Buffer buffer(data, Utils::GetImageMemorySize(m_Config.Format, m_Config.Height, m_Config.Height));
+		m_Texture = Texture2D::Create(textureConfig).As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
 		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);

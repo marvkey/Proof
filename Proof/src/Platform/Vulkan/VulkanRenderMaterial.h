@@ -9,7 +9,9 @@ namespace Proof
 	class VulkanRenderMaterial : public RenderMaterial
 	{
 	public:
+
 		VulkanRenderMaterial(const RenderMaterialConfiguration& config);
+		VulkanRenderMaterial(const VulkanRenderMaterial& other);
 		virtual ~VulkanRenderMaterial(){Release(); }
 		virtual void Set(std::string_view name, Count<class UniformBuffer> buffer);
 		virtual void Set(std::string_view name, Count<class StorageBuffer> buffer);

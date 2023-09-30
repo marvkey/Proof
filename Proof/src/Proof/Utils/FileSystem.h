@@ -60,6 +60,12 @@ namespace Proof
 			return "";
 		}
 
+		static std::string GetFileFullNameWithoutExtension(const std::filesystem::path& path)
+		{
+			std::string temp = path.string();
+				temp = temp.substr(0, temp.find_first_of(".")); 
+				return temp;
+		}
 	public:
 		static bool HasEnvironmentVariable(const std::string& key);
 		static bool SetEnvironmentVariable(const std::string& key, const std::string& value);

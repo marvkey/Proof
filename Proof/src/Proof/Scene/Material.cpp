@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "Material.h"
 #include "Proof/Renderer/RenderMaterial.h"
+#include "Platform/Vulkan/VulkanRenderMaterial.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Shader.h"
 namespace Proof {
@@ -12,6 +13,16 @@ namespace Proof {
         m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration(name, Renderer::GetShader("ProofPBR_Static")));
         if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static"))
             m_DefaultShader = true;   
+        SetDefault();
+    }
+    Material::Material(const std::string& name, Count<RenderMaterial> material)
+        :
+        Name(name)
+    {
+        ///m_RenderMaterial = Count<VulkanRenderMaterial>::CreateFrom(material.As<VulkanRenderMaterial>()).As<RenderMaterial>();
+        m_RenderMaterial = material;
+        if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static"))
+            m_DefaultShader = true;
         SetDefault();
     }
     Material::Material()

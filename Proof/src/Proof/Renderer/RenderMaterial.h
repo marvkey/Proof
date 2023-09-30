@@ -56,6 +56,6 @@ namespace Proof {
 		virtual Count<class Texture2D> TryGetTexture2D(std::string_view name) = 0;
 		virtual const RenderMaterialConfiguration& GetConfig()const = 0;
 		static Count<RenderMaterial> Create(const RenderMaterialConfiguration& config);
-		static Count<RenderMaterial> Create(const std::string& debugName, Count<class Shader> Shader );
+		static Count<RenderMaterial> Create(const std::string& debugame, Count<class Shader> Shader );
 	};
 }

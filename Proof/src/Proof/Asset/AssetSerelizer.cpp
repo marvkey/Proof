@@ -14,6 +14,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Audio/Audio.h"
+#include "MeshImpoter.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
 	{
@@ -200,7 +201,7 @@ namespace Proof {
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(mesh->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << mesh->GetID();
-		out << YAML::Key << "AssetSource" << YAML::Value << AssetManager::GetAssetInfo(mesh->GetMeshSource()->GetPath()).ID;
+		out << YAML::Key << "AssetSource" << YAML::Value << mesh->GetMeshSource()->GetID();
 		out << YAML::Key << "SubMeshes";
 		out << YAML::Flow;
 
@@ -220,7 +221,6 @@ namespace Proof {
 		PF_CORE_ASSERT(AssetManager::HasAsset(source), "Trying to load mesh with meshSource that does not exist");
 		Count<Mesh> mesh = Count<Mesh>::Create(AssetManager::GetAsset<MeshSource>(source));
 		SetID(assetData, mesh);
-
 		return mesh;
 	}
 
@@ -230,7 +230,8 @@ namespace Proof {
 	}
 	Count<class Asset> MeshSourceAssetSerializer::TryLoadAsset(const AssetInfo& data) const
 	{
-		Count<MeshSource> source = Count<MeshSource>::Create(AssetManager::GetAssetFileSystemPath(data.Path).string());
+		MeshImporter importer(AssetManager::GetAssetFileSystemPath(data.Path));
+		Count<MeshSource> source = importer.ImportToMeshSource();
 		SetID(data, source);
 		return source;
 	}

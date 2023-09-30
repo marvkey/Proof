@@ -6,6 +6,7 @@
 #include "msdf-atlas-gen/msdf-atlas-gen.h"
 #include "msdf-atlas-gen/FontGeometry.h"
 #include "msdf-atlas-gen/GlyphGeometry.h"
+#include "Proof/Core/Buffer.h"
 
 #include "MSDFData.h"
 namespace Proof {
@@ -33,8 +34,9 @@ namespace Proof {
 		config.Width = bitmap.width;
 		config.Height = bitmap.height;
 		config.Format = ImageFormat::RGB;
-		
-		Count<Texture2D> texture = Texture2D::Create((void*)bitmap.pixels,config);
+		uint32_t size = Utils::GetImageMemorySize(config.Format, config.Width, config.Height);
+		Buffer buffer((const void*) bitmap.pixels, size);
+		Count<Texture2D> texture = Texture2D::Create(config, buffer);
 		return texture;
 	}
 	Font::Font(const std::filesystem::path& fullPath)

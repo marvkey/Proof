@@ -153,7 +153,7 @@ namespace  Proof {
 				{
 					auto pos = vertices[vertexPosIndex];
 					Vertex vertex;
-					vertex.Vertices = Vector{ pos.x,pos.y,pos.z };
+					vertex.Position = glm::vec3{ pos.x,pos.y,pos.z };
 					meshVertices.emplace_back(vertex);
 				}
 				for (uint32_t indexPos = 0; indexPos < triangelMesh->getNbTriangles()*3; indexPos++)

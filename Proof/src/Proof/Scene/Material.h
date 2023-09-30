@@ -7,8 +7,11 @@
 #include <map>
 namespace Proof{
 	// thse data only work if using Proofpbr_shader
-	struct Material : public Asset {
+	class Material : public Asset {
+	public:
+
 		Material(const std::string& name);
+		Material(const std::string& name,Count<class RenderMaterial> material);
 		Material();
 		ASSET_CLASS_TYPE(Material);
 		std::string Name;
