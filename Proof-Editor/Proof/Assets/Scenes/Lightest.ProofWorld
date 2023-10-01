@@ -1,9 +1,9 @@
 World:
   ID: 6477593735195019013
   Entities:
-    - Entity: 15054335619324677679
+    - Entity: 18281480707174972118
       TagComponent:
-        Tag: Sky Light
+        Tag: DynamicSPonza2
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
@@ -12,16 +12,128 @@ World:
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      SkyLightComponent:
-        TintColor: [0.937487483, 0.991935492, 0.147990346]
-        SkyBoxLod: 1.27600002
-        MapRotation: 0
-        Intensity: 0.200000003
-        DynamicSky: false
-        Turbidity: 2
-        Azimuth: 0
-        Inclination: 0
-        Image: 2700444414993608762
+      DynamicMeshComponent:
+        DynamicMeshAssetPointerID: 1650200470397952944
+        CastShadow: true
+        Visible: true
+        SubMeshIndex: 10
+    - Entity: 5537171712021527136
+      TagComponent:
+        Tag: Empty Entity
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SpriteComponent:
+        TextureAssetPointerID: 96342634762984
+        Colour: [1, 1, 1, 1]
+      TextComponent:
+        Color: [1, 1, 1, 1]
+        Kerning: 0
+        LineSpacing: 1
+        Text: Hello World
+        UseLocalRotation: false
+    - Entity: 5471887703780627036
+      TagComponent:
+        Tag: AUdio
+        tags: []
+      TransformComponent:
+        Location: [0, 1.29999995, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      AudioComponent:
+        VolumeMultiplier: 0.386000007
+        PitchMultiplier: 1
+        Looping: false
+        PlayOnAwake: false
+        MasterReverbSend: 0
+        LowPassFilter: 1
+        HighPassFilter: 0
+        SpatializationEnabled: true
+        AudioAsset: 18176033785060577625
+        AttenuationModel: Inverse
+        MinGain: 0
+        MaxGain: 1
+        MinDistance: 2.32500005
+        MaxDistance: 8.30000019
+        ConeInnerAngleInRadians: 2.84090734
+        ConeOuterAngleInRadians: 6.28318501
+        ConeOuterGain: 0.363000005
+        DopplerFactor: 1
+        Rolloff: 0.600000024
+    - Entity: 2123198408327739867
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [4.19999981, -0.699999988, 25.7999992]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 51
+      SphereColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 1
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+    - Entity: 736792398951339601
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0226893611, 0.0436330624, 0.0802851468]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 9.73999977
+    - Entity: 11529972234107103668
+      TagComponent:
+        Tag: Plane
+        tags: []
+      TransformComponent:
+        Location: [0, -36.2000008, 0]
+        Rotation: [0, -0, 0]
+        Scale: [39, 1, 89]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 56
+      CubeColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 0.100000001, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
     - Entity: 16748686897685717419
       TagComponent:
         Tag: Cube
@@ -68,106 +180,9 @@ World:
         ConeOuterGain: 0
         DopplerFactor: 1
         Rolloff: 1
-    - Entity: 11529972234107103668
+    - Entity: 15054335619324677679
       TagComponent:
-        Tag: Plane
-        tags: []
-      TransformComponent:
-        Location: [0, -36.2000008, 0]
-        Rotation: [0, -0, 0]
-        Scale: [39, 1, 89]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 56
-      CubeColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 0.100000001, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-    - Entity: 736792398951339601
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0.0226893593, 0.0436330661, 0.0802851468]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 9.73999977
-    - Entity: 2123198408327739867
-      TagComponent:
-        Tag: Sphere
-        tags: []
-      TransformComponent:
-        Location: [4.19999981, -0.699999988, 25.7999992]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 51
-      SphereColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Radius: 1
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Dynamic
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-    - Entity: 5471887703780627036
-      TagComponent:
-        Tag: AUdio
-        tags: []
-      TransformComponent:
-        Location: [0, 1.29999995, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      AudioComponent:
-        VolumeMultiplier: 0.386000007
-        PitchMultiplier: 1
-        Looping: false
-        PlayOnAwake: false
-        MasterReverbSend: 0
-        LowPassFilter: 1
-        HighPassFilter: 0
-        SpatializationEnabled: true
-        AudioAsset: 18176033785060577625
-        AttenuationModel: Inverse
-        MinGain: 0
-        MaxGain: 1
-        MinDistance: 2.32500005
-        MaxDistance: 8.30000019
-        ConeInnerAngleInRadians: 2.84090734
-        ConeOuterAngleInRadians: 6.28318501
-        ConeOuterGain: 0.363000005
-        DopplerFactor: 1
-        Rolloff: 0.600000024
-    - Entity: 5537171712021527136
-      TagComponent:
-        Tag: Empty Entity
+        Tag: Sky Light
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
@@ -176,12 +191,13 @@ World:
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      SpriteComponent:
-        TextureAssetPointerID: 96342634762984
-        Colour: [1, 1, 1, 1]
-      TextComponent:
-        Color: [1, 1, 1, 1]
-        Kerning: 0
-        LineSpacing: 1
-        Text: Hello World
-        UseLocalRotation: false
+      SkyLightComponent:
+        TintColor: [0.937487483, 0.991935492, 0.147990346]
+        SkyBoxLod: 1.27600002
+        MapRotation: 0
+        Intensity: 0.200000003
+        DynamicSky: false
+        Turbidity: 2
+        Azimuth: 0
+        Inclination: 0
+        Image: 2700444414993608762

@@ -283,7 +283,24 @@ namespace Proof
 
 	struct DynamicMeshComponent {
 	public:
+		DynamicMeshComponent() = default;
+		DynamicMeshComponent(const DynamicMeshComponent& other) :
+			m_MeshID(other.m_MeshID)
+			, MaterialTable(Count<class MaterialTable>::CreateFrom(other.MaterialTable))
+		{
+		}
+		Count<MaterialTable> MaterialTable = Count<class MaterialTable>::Create();
+		void SetMesh(UUID ID, bool takeMaterialTable = true);
+		void RemoveMesh();
 
+		Count<class DynamicMesh> GetMesh();
+		uint32_t GetSubMeshIndex();
+		void SetSubMeshIndex(uint32_t setSubMeshIndex);
+
+		uint32_t GetSubMeshMaterialIndex();
+	public:
+		bool Visible = true;
+		bool CastShadow = true;
 	private:
 		friend class Entity;
 		friend class World;
@@ -638,7 +655,7 @@ namespace Proof
 	};
 	using AllComponents =
 		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
-		MeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
+		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
 		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
 		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent>;
 	

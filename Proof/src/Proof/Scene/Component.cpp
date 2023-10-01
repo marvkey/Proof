@@ -87,23 +87,77 @@ namespace Proof
 	void MeshComponent::RemoveMesh()
 	{
 		m_MeshID = 0;
+		MaterialTable = Count<class MaterialTable>::Create();
 	}
 
 	Count<Mesh> MeshComponent::GetMesh()
 	{
 		if (m_MeshID == 0)return nullptr;
-		#ifdef PF_ENABLE_DEBUG
+	//	#ifdef PF_ENABLE_DEBUG
 			if (!AssetManager::HasAsset(m_MeshID)) { m_MeshID = 0; return nullptr; };
-		#endif 
+		//#endif 
 		return AssetManager::GetAsset<Mesh>(m_MeshID);
 	}
 	
+
+
+	void DynamicMeshComponent::SetMesh(UUID ID, bool copyMaterialTable)
+	{
+		//#ifdef PF_ENABLE_DEBUG
+		if (!AssetManager::HasAsset(ID))return;
+		//#endif // 
+
+		m_MeshID = ID;
+		if (copyMaterialTable)
+			MaterialTable = Count<class MaterialTable>::CreateFrom(AssetManager::GetAsset<DynamicMesh>(m_MeshID)->GetMaterialTable());
+	}
+	void DynamicMeshComponent::RemoveMesh()
+	{
+		m_MeshID = 0;
+		m_SubmeshIndex = 0;
+		MaterialTable = Count<class MaterialTable>::Create();
+	}
+	uint32_t DynamicMeshComponent::GetSubMeshMaterialIndex()
+	{
+		auto mesh =GetMesh();
+		if (mesh)
+		{
+			auto& subMesh = mesh->GetMeshSource()->GetSubMeshes().at(m_SubmeshIndex);
+			return subMesh.MaterialIndex;
+		}
+		return 0;
+	}
+	Count<class DynamicMesh> DynamicMeshComponent::GetMesh()
+	{
+		if (m_MeshID == 0)return nullptr;
+//	#ifdef PF_ENABLE_DEBUG
+		if (!AssetManager::HasAsset(m_MeshID)) { m_MeshID = 0; return nullptr; };
+	//#endif 
+		return AssetManager::GetAsset<DynamicMesh>(m_MeshID);
+	}
+	uint32_t DynamicMeshComponent::GetSubMeshIndex()
+	{
+
+		return m_SubmeshIndex;
+	}
+	void DynamicMeshComponent::SetSubMeshIndex(uint32_t setSubMeshIndex)
+	{
+		auto mesh = GetMesh();
+		if (mesh == nullptr)
+		{
+			m_SubmeshIndex = setSubMeshIndex;
+			return;
+		}
+
+		if (mesh->HasSubMesh(setSubMeshIndex))
+			m_SubmeshIndex = setSubMeshIndex;
+	}
 
 	Count<Mesh> MeshColliderComponent::GetMesh()
 	{
 		if (m_MeshAssetPointerID == 0)return nullptr;
 
-		
+
 		if (AssetManager::HasAsset(m_MeshAssetPointerID))
 		{
 			if (PhysicsMeshCooker::HasMesh(m_MeshAssetPointerID))
@@ -114,7 +168,6 @@ namespace Proof
 		}
 		return nullptr;
 	}
-	
 	void SkyLightComponent::RemoveImage()
 	{
 		Image = 0;
@@ -131,4 +184,5 @@ namespace Proof
 
 		Image = asset;
 	}
+
 }

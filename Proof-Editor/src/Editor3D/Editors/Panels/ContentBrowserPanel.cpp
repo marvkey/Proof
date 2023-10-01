@@ -108,7 +108,7 @@ namespace Proof
 		ImGui::End();
 		ImGui::PopStyleVar();
 	}
-
+	bool DynamicMesh = false;
 	AssetID AddMeshFunc(Count<MeshSource> meshSource, std::filesystem::path savePath, const std::vector<uint32_t>& excludeIndex) {
 		if (std::filesystem::is_directory(savePath)) {
 			if (std::filesystem::exists(savePath) == false)
@@ -131,6 +131,8 @@ namespace Proof
 		}
 		if (endIndex != 0)
 			finalPath += fmt::format("({})", endIndex);
+		if(DynamicMesh)
+			return AssetManager::NewAsset<class DynamicMesh>(finalPath, meshSource)->GetID();
 
 		return AssetManager::NewAsset<Mesh>(finalPath, meshSource)->GetID();
 	}
@@ -144,6 +146,10 @@ namespace Proof
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 		if (ImGui::BeginPopupModal("Add Mesh", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
+
+			ExternalAPI::ImGUIAPI::CheckBox("Dynamic", &DynamicMesh);
+			ImGui::Separator();
+
 			returnValue = true;
 			char buffer[1024];
 			memset(buffer, 0, sizeof(buffer));

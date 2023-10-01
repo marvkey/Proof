@@ -1,7 +1,6 @@
 #pragma once
 #include "FrameBuffer.h"
 #include "Proof/Core/Buffer.h"
-#include "Proof/Scene/Material.h"
 #include "Proof/Scene/Camera/Camera.h"
 #include "Viewport.h"
 
@@ -11,10 +10,10 @@ namespace Proof
 	struct MeshKey
 	{
 		AssetID MeshID;
-		Count<class MaterialTable> MaterialTable = nullptr;
-		bool AllSubMeshes;
-		uint32_t SubmeshIndex;// all submeshes has to be set to false before this is uses
+		AssetID MaterialID;
+		uint32_t SubmeshIndex;
 		bool IsSelected;
+
 
 		Count<class RenderMaterial> Material = nullptr; // temporary for now 
 		bool operator<(const MeshKey& other) const {
@@ -25,55 +24,23 @@ namespace Proof
 			//uint64_t memlocation1 = (uint64_t)MaterialTable.Get();
 			//uint64_t memlocation2 = (uint64_t)other.MaterialTable.Get();
 
-			if (MaterialTable != nullptr && other.MaterialTable != nullptr)
-			{
-				if (MaterialTable->GetMaterialCount() < other.MaterialTable->GetMaterialCount())
-					return true;
-				if (MaterialTable->GetMaterialCount() > other.MaterialTable->GetMaterialCount())
-					return false;
-			}
-			if (MaterialTable != nullptr && other.MaterialTable == nullptr)
-				return false;
-			if (MaterialTable == nullptr && other.MaterialTable != nullptr )
-				return true;
-
-			if (Material != nullptr && other.Material != nullptr)
-			{
-				if (Material.Get() < other.Material.Get())
-					return true;
-				if (Material.Get() > other.Material.Get())
-					return false;
-			}
-			
-			if (Material != nullptr && other.Material == nullptr)
-				return false;
-
-			if (Material == nullptr && other.Material != nullptr )
-				return true;
-
 			if (MeshID < other.MeshID)
 				return true;
 
 			if (MeshID > other.MeshID)
 				return false;
 
-			if (AllSubMeshes)
-			{
-				if (SubmeshIndex < other.SubmeshIndex)
-					return true;
+			if (SubmeshIndex < other.SubmeshIndex)
+				return true;
 
-				if (SubmeshIndex > other.SubmeshIndex)
-					return true;
-			}
-			if (MaterialTable != nullptr && other.MaterialTable != nullptr)
-			{
-				// this here because it would do an operotr over ach materials in the table 
-			// a little expensive if the material tabel has oaver liek a 1000 eleemtns wich prolly will never happen
-				if (*MaterialTable < *other.MaterialTable)
-					return true;
-				if (*MaterialTable > *other.MaterialTable)
-					return false;
-			}
+			if (SubmeshIndex > other.SubmeshIndex)
+				return false;
+
+			if (MaterialID < other.MaterialID)
+				return true;
+
+			if (MaterialID > other.MaterialID)
+				return false;
 
 			return IsSelected < other.IsSelected;
 		}
@@ -173,15 +140,16 @@ namespace Proof
 	struct MeshDrawInfo
 	{
 		Count<Mesh> Mesh = nullptr;
-		Count<MaterialTable> MaterialTable = nullptr;
-		Count<RenderMaterial> OverrideMaterial;
+		uint32_t SubMeshIndex = 0;
+		Count<class MaterialTable> MaterialTable = nullptr;
+		Count<class RenderMaterial> OverrideMaterial;
 		uint32_t InstanceCount = 0;
 		uint32_t InstanceOffset = 0; // for selected mesh
 	};
 	struct DynamicMeshDrawInfo
 	{
 		Count<Mesh> Mesh = nullptr;
-		uint32_t SubmeshIndex;
+		uint32_t SubmMeshIndex = 0;
 		Count<MaterialTable> MaterialTable;
 		//Ref<VulkanMaterial> OverrideMaterial;
 
@@ -378,7 +346,7 @@ namespace Proof
 		void SubmitDirectionalLight(const SBDirectionalLightsSceneData& directionaLights);
 		void SubmitPointLight(const SBPointLightSceneData& pointLights);
 		void SubmitSpotLight(const SBSpotLightSceneData& spotLights);
-		void SubmitStaticMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform, bool CastShadowws = true);
+		void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform, bool CastShadowws = true);
 
 		void SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform);
 		// if the same size is passed it will not resize
@@ -464,7 +432,8 @@ namespace Proof
 		// debug
 		Count<RenderPass> m_GeometryWireFramePass;
 		Count<RenderPass> m_GeometryWireFrameOnTopPass;
-		Count<RenderMaterial> m_GeometryWireFramePassMaterial;
+		Count<class Material> m_GeometryWireFramePassMaterialAsset;
+		Count<RenderMaterial> m_GeometryWireFramePassMaterial;// points to the render material of m_GeometryWireFramePassMaterialAsset
 
 		// compoiste pass
 		Count<RenderPass> m_SkyBoxPass;
@@ -527,9 +496,10 @@ namespace Proof
 		void DrawScene();
 		// tehse are static so basically when wer are writng code we avoid errors of 
 		// writing code to a speicif world rendere class
-		static void RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount, const Buffer& pushData = Buffer(), const std::string& pushName ="");
-		static void RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount);
-		static void RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer,Count<Mesh>&mesh, Count<RenderPass>& renderPass, Count<MaterialTable>& materialTable, Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t instanceCount);
+
+		static void RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer,  uint32_t transformOffset, uint32_t subMeshIndex, uint32_t instanceCount, const Buffer& pushData = Buffer(), const std::string& pushName ="");
+		static void RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex,uint32_t transformOffset, uint32_t instanceCount);
+		static void RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer,Count<Mesh>&mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass , Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
 		friend class Editore3D;
 
 	};	

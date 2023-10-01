@@ -99,6 +99,9 @@ namespace Proof
 					out << YAML::BeginSeq;//MaterialTbale 
 					for (auto& [index, material] : meshComponent.MaterialTable->GetMaterials())
 					{
+
+						if (AssetManager::HasAsset(material) == false || AssetManager::GetAssetInfo(material).RuntimeAsset == true)
+							continue;
 						out << YAML::BeginMap;// material
 
 						// we nned th "" for some reason 
@@ -115,6 +118,47 @@ namespace Proof
 				}
 				leave:
 				out << YAML::EndMap; // Mesh component
+			}
+		}
+		//dynamic Mesh
+		{
+
+			if (registry.all_of<DynamicMeshComponent>(enttID))
+			{
+				DynamicMeshComponent& dynamicMeshComponent = registry.get<DynamicMeshComponent>(enttID);
+
+				out << YAML::Key << "DynamicMeshComponent";
+				out << YAML::BeginMap; // DynamicMesh component
+				out << YAML::Key << "DynamicMeshAssetPointerID" << YAML::Value << dynamicMeshComponent.m_MeshID;
+				out << YAML::Key << "CastShadow" << YAML::Value << dynamicMeshComponent.CastShadow;
+				out << YAML::Key << "Visible" << YAML::Value << dynamicMeshComponent.Visible;
+				out << YAML::Key << "SubMeshIndex" << YAML::Value << dynamicMeshComponent.m_SubmeshIndex;
+				if (AssetManager::HasAsset(dynamicMeshComponent.GetMesh()))
+				{
+					if (*dynamicMeshComponent.GetMesh()->GetMaterialTable() == *dynamicMeshComponent.MaterialTable)
+						goto leavedynamic;
+					out << YAML::Key << "MaterialTable";
+					out << YAML::BeginSeq;//MaterialTbale 
+					for (auto& [index, material] : dynamicMeshComponent.MaterialTable->GetMaterials())
+					{
+						if (AssetManager::HasAsset(material) == false || AssetManager::GetAssetInfo(material).RuntimeAsset == true)
+							continue;
+						out << YAML::BeginMap;// material
+
+						// we nned th "" for some reason 
+						out << YAML::Key << "Material" << YAML::Key << "";
+
+						//id of 0 means default material
+						out << YAML::Key << "AssetID" << YAML::Value << material->GetID();
+						out << YAML::Key << "Index" << YAML::Value << index;
+
+						out << YAML::EndMap;// material
+
+					}
+					out << YAML::EndSeq; // matrailTable
+				}
+				leavedynamic:
+				out << YAML::EndMap; // DynamicMesh component
 			}
 		}
 		{
@@ -650,6 +694,7 @@ namespace Proof
 				{
 					auto& src = NewEntity.AddComponent<MeshComponent>();
 					src.m_MeshID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
+					//src.SetMesh( meshComponent["MeshAssetPointerID"].as<uint64_t>());
 					if (meshComponent["MaterialTable"])
 					{
 						Count<MaterialTable> matTable = Count<MaterialTable>::Create();
@@ -661,11 +706,11 @@ namespace Proof
 							{
 								matTable->SetMaterial(index, AssetManager::GetAsset<Material>(id));
 							}
-							else
-							{
-								matTable->SetMaterial(index, Count<Material>::Create("Default"));
-
-							}
+							//else
+							//{
+							//	matTable->SetMaterial(index, Count<Material>::Create("Default"));
+							//
+							//}
 						}
 						src.MaterialTable = matTable;
 					}
@@ -682,6 +727,52 @@ namespace Proof
 					}
 				}
 			}
+
+			//DYNAMIC MESH
+			{
+				auto dynamicMeshComponent = entity["DynamicMeshComponent"];
+
+				if (dynamicMeshComponent)
+				{
+					auto& src = NewEntity.AddComponent<DynamicMeshComponent>();
+					src.m_MeshID = dynamicMeshComponent["DynamicMeshAssetPointerID"].as<uint64_t>();
+					src.CastShadow = dynamicMeshComponent["CastShadow"].as<bool>();
+					src.Visible = dynamicMeshComponent["Visible"].as<bool>();
+					src.m_SubmeshIndex = dynamicMeshComponent["SubMeshIndex"].as<uint32_t>();
+
+					if (dynamicMeshComponent["MaterialTable"])
+					{
+						Count<MaterialTable> matTable = Count<MaterialTable>::Create();
+						for (auto mat : dynamicMeshComponent["MaterialTable"])
+						{
+							AssetID id = mat["AssetID"].as<uint64_t>();
+							uint32_t index = mat["Index"].as<uint32_t>();
+							if (AssetManager::HasAsset(id))
+							{
+								matTable->SetMaterial(index, AssetManager::GetAsset<Material>(id));
+							}
+							//else
+							//{
+							//	matTable->SetMaterial(index, Count<Material>::Create("Default"));
+							//
+							//}
+						}
+						src.MaterialTable = matTable;
+					}
+					else
+					{
+						if (AssetManager::HasAsset(src.m_MeshID))
+						{
+							src.MaterialTable = Count<MaterialTable>::CreateFrom(AssetManager::GetAsset<DynamicMesh>(src.m_MeshID)->GetMaterialTable());
+						}
+						else
+						{
+							src.MaterialTable = Count<MaterialTable>::Create();
+						}
+					}
+				}
+			}
+
 			// SPRITE
 			{
 				auto spriteRendererComponent = entity["SpriteComponent"];

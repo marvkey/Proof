@@ -1432,6 +1432,14 @@ namespace Proof
 					newentt.AddComponent<MeshComponent>().SetMesh(meshID);
 					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
 				}
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::DynamicMesh).c_str()))
+				{
+					UUID meshID = *(UUID*)payload->Data;
+
+					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
+					newentt.AddComponent<DynamicMeshComponent>().SetMesh(meshID);
+					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
+				}
 
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::MeshSourceFile).c_str()))
 				{
@@ -1460,9 +1468,20 @@ namespace Proof
 				// basically add mesh is done with its operation and no longer renderng
 				if (meshSourceAdded == false)
 				{
-					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
-					newentt.AddComponent<MeshComponent>().SetMesh(id);
-					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
+					if (AssetManager::GetAssetInfo(id).Type == AssetType::Mesh)
+					{
+
+						Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
+						newentt.AddComponent<MeshComponent>().SetMesh(id);
+						s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
+					}
+					else if (AssetManager::GetAssetInfo(id).Type == AssetType::DynamicMesh)
+					{
+
+						Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
+						newentt.AddComponent<DynamicMeshComponent>().SetMesh(id);
+						s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
+					}
 				}
 			}
 			if (SaveSceneDialouge)

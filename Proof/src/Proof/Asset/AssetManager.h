@@ -70,7 +70,7 @@ namespace Proof
 			AssetInfo assetInfo;
 			assetInfo.Path = std::filesystem::relative(savePath, AssetManager::GetDirectory());
 			assetInfo.State = AssetState::Ready;
-			assetInfo.ID = asset->GetID();
+			assetInfo.ID = CreateID();
 			assetInfo.Type = asset->GetAssetType();
 
 			InternalAddAsset(assetInfo, asset);

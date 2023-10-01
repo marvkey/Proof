@@ -142,12 +142,11 @@ namespace Proof
 		{
 			uint32_t vertexCount = 0;
 			uint32_t indexCount = 0;
-			subMeshes.reserve(scene->mNumMeshes);
 
-			
 			meshSourceBoundingBox.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
 			meshSourceBoundingBox.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
+			subMeshes.reserve(scene->mNumMeshes);
 			for (unsigned m = 0; m < scene->mNumMeshes; m++)
 			{
 				aiMesh* mesh = scene->mMeshes[m];

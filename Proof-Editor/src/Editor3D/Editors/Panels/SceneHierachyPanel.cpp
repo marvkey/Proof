@@ -418,6 +418,7 @@ namespace Proof
 		if (ImGui::BeginPopup("AddComponent")) {
 
 			AddComponentGui<MeshComponent>(entity, "Mesh");
+			AddComponentGui<DynamicMeshComponent>(entity, "DynamicMesh");
 			AddComponentGui<SpriteComponent>(entity, "Sprite");
 			AddComponentGui<NativeScriptComponent>(entity, "Native Script");
 
@@ -529,6 +530,87 @@ namespace Proof
 			ImGui::TreePop();
 
 			ExternalAPI::ImGUIAPI::CheckBox("Visible", &meshComp.Visible);
+		});
+
+		DrawComponents<DynamicMeshComponent>("Dynamic Mesh", entity, [](DynamicMeshComponent& meshComp)
+		{
+			const uint32_t currentIndexMaterial = meshComp.GetSubMeshMaterialIndex();
+			auto mesh = meshComp.GetMesh();
+			if (AssetManager::HasAsset(meshComp.GetMesh()))
+			{
+				auto assetInfo = AssetManager::GetAssetInfo(meshComp.GetMesh());
+				ExternalAPI::ImGUIAPI::TextBar("Mesh", assetInfo.GetName());
+			}
+			else
+			{
+				ExternalAPI::ImGUIAPI::TextBar("Mesh", "Null");
+			}
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::DynamicMesh).c_str()))
+				{
+					UUID Data = *(const UUID*)payload->Data;
+					meshComp.SetMesh(Data);
+				}
+				ImGui::EndDragDropTarget();
+			}
+			if (ImGui::BeginPopupContextItem("RemoveMesh"))
+			{
+				ImGui::EndPopup();
+			}
+			if (ImGui::BeginPopup("RemoveMesh"))
+			{
+				if (ImGui::MenuItem("Remove Mesh"))
+				{
+					meshComp.RemoveMesh();
+				}
+
+				ImGui::EndPopup();
+			}
+
+			if (mesh)
+			{
+				auto submeshIndex = meshComp.GetSubMeshIndex();
+				if (UI::AttributeDrag("Submesh Index", submeshIndex, 1,0, (uint32_t)mesh->GetMeshSource()->GetSubMeshes().size() - 1))
+				{
+					meshComp.SetSubMeshIndex(submeshIndex);
+				}
+			}
+			ExternalAPI::ImGUIAPI::CheckBox("Visible", &meshComp.Visible);
+
+			ImGui::Separator();
+			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
+			bool open = ImGui::TreeNodeEx("MaterialTablerwrs", treeNodeFlags, "Material Table");
+			if (!open)return;
+			for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
+			{
+				std::string name = material != nullptr ? material->Name : "null";
+				{
+					UI::ScopedStyleColor borderCOlor(ImGuiCol_Border, ImVec4(0.0f, .8f, 0.0f, 1.0f), true);
+					UI::ScopedStyleColor borderSHaodw (ImGuiCol_BorderShadow, ImVec4(0.0f, .8f, 0.0f, 1.0f), true);
+
+					ExternalAPI::ImGUIAPI::TextBar(fmt::format("Index {}", index), name);
+				}
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Material).c_str()))
+					{
+						uint64_t Data = *(const uint64_t*)payload->Data;
+						if (AssetManager::HasAsset(Data))
+						{
+							auto material = AssetManager::GetAsset<Material>(Data);
+							meshComp.MaterialTable->SetMaterial(index, material);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+			}
+
+			ImGui::TreePop();
+
+			
+
 		});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
 			if (spriteComp.Texture != nullptr)

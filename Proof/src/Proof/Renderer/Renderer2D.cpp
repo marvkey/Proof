@@ -280,8 +280,8 @@ namespace Proof {
 		{
 			const SubMesh& submesh = meshAssetSubmeshes[submeshIndex];
 			auto& aabb = submesh.BoundingBox;
-			//auto aabbTransform = transform * submesh.Transform;
-			auto aabbTransform = transform;
+			auto aabbTransform = transform * submesh.Transform;
+			//auto aabbTransform = transform;
 			DrawAABB(aabb, aabbTransform);
 		}
 	}

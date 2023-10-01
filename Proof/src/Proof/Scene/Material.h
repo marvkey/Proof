@@ -10,9 +10,10 @@ namespace Proof{
 	class Material : public Asset {
 	public:
 
-		Material(const std::string& name);
-		Material(const std::string& name,Count<class RenderMaterial> material);
 		Material();
+		Material(const std::string& name);
+		Material(const std::string& name, Count<class Shader> shader);
+		Material(const std::string& name,Count<class RenderMaterial> material);
 		ASSET_CLASS_TYPE(Material);
 		std::string Name;
 
@@ -64,7 +65,7 @@ namespace Proof{
 	private:
 		const UUID m_UniqeMaterialID = UUID();
 		void SetDefault();
-		bool m_DefaultShader;
+		bool m_DefaultShader = false;
 		Count<class RenderMaterial> m_RenderMaterial;
 		#if  0
 		/*

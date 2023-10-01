@@ -223,7 +223,7 @@ namespace Proof {
 					//if (SelectionManager::IsEntityOrAncestorSelected(e))
 					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
 					//else
-					worldRenderer->SubmitStaticMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
+					worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
 				}
 			}
 		}
@@ -273,7 +273,7 @@ namespace Proof {
 		}
 
 		// render AABB
-		/*
+		#if 0
 		{
 			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
 			for (auto entity : group)
@@ -291,7 +291,7 @@ namespace Proof {
 					//if (SelectionManager::IsEntityOrAncestorSelected(e))
 					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
 					//else
-					//renderer2D->DrawAABB(mesh,  transform);
+					renderer2D->DrawAABB(mesh,  transform);
 					//renderer2D->DrawAABB(mesh, transform);
 					//AABB bouding = { { -1.0f, -1.0f, -1.0f} ,{1.0f, 1.0f, 1.0f} };
 					//renderer2D->DrawAABB(bouding, transform);
@@ -299,9 +299,8 @@ namespace Proof {
 				}
 			}
 		}
-		renderer2D->DrawLine({ 0,0,0 }, { 0,0,10 });
-		*/
-
+		//renderer2D->DrawLine({ 0,0,0 }, { 0,0,10 });
+		#endif
 		renderer2D->EndContext();
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)

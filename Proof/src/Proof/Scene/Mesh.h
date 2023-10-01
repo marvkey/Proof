@@ -116,7 +116,7 @@ namespace Proof
             return m_MeshSource;
         }
         const std::vector<uint32_t>& GetSubMeshes()const { return m_SubMeshes; };
-        void SetSubMeshes(const std::vector<uint32_t>& submeshes);
+        void SetSubMeshes(const std::vector<uint32_t>& submeshes = {});
     private:
         Count<MeshSource> m_MeshSource;
         std::string m_Name; 
@@ -128,6 +128,35 @@ namespace Proof
         friend class Renderer3DPBR;
         friend class SceneRendererUI;
         friend class MeshWorkShop;
+
+    };
+
+
+    class DynamicMesh : public Asset
+    {
+    public:
+        ASSET_CLASS_TYPE(DynamicMesh);
+
+        DynamicMesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
+        ~DynamicMesh() {};
+
+        void Reset(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
+        void SetSubMeshes(const std::vector<uint32_t>& submeshes = {});
+        Count<MeshSource> GetMeshSource() {return m_MeshSource;}
+
+        Count<MaterialTable> GetMaterialTable() { return m_MaterialTable; }
+        const std::vector<uint32_t>& GetSubMeshes()const { return m_SubMeshes; };
+
+        bool HasSubMesh(uint32_t subMeshIndex) 
+        {
+            return std::find(m_SubMeshes.begin(), m_SubMeshes.end(), subMeshIndex) != m_SubMeshes.end();
+        }
+    private:
+
+        std::string m_Name;
+        std::vector<uint32_t> m_SubMeshes;
+        Count<MaterialTable> m_MaterialTable;
+        Count<MeshSource> m_MeshSource;
 
     };
 }

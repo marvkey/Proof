@@ -12,6 +12,7 @@ namespace Proof
 	{
 		None = 0,// for items that 
 		Mesh,
+		DynamicMesh,
 		Texture,
 		Material,
 		World,				// NOT TREATED THE SAME AS OTHER ASSETS
@@ -50,6 +51,7 @@ namespace Proof
 		static inline const std::unordered_map<AssetType, std::string> AssetTypeMap = {
 			{AssetType::None, ""},
 			{AssetType::Mesh, "Mesh.ProofAsset"},
+			{AssetType::DynamicMesh, "DynamicMesh.ProofAsset"},
 			{AssetType::Texture, "Texture.ProofAsset"},
 			{AssetType::Material, "Material.ProofAsset"},
 			{AssetType::World, "ProofWorld"},

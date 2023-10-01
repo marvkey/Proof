@@ -205,7 +205,12 @@ namespace Proof {
 		out << YAML::Key << "SubMeshes";
 		out << YAML::Flow;
 
+		if (mesh->GetSubMeshes().size() == mesh->GetMeshSource()->GetSubMeshes().size())
+			out << YAML::Value << std::vector<uint32_t>();
+		else
+			out << YAML::Value << mesh->GetSubMeshes();
 		out << YAML::EndMap;
+
 		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		found << out.c_str();
 		found.close();
@@ -219,11 +224,48 @@ namespace Proof {
 		uint64_t source = data["AssetSource"].as<uint64_t>();
 
 		PF_CORE_ASSERT(AssetManager::HasAsset(source), "Trying to load mesh with meshSource that does not exist");
-		Count<Mesh> mesh = Count<Mesh>::Create(AssetManager::GetAsset<MeshSource>(source));
+
+		auto submeshIndices = data["SubMeshes"].as<std::vector<uint32_t>>(std::vector<uint32_t>());
+
+		Count<Mesh> mesh = Count<Mesh>::Create(AssetManager::GetAsset<MeshSource>(source), submeshIndices);
 		SetID(assetData, mesh);
 		return mesh;
 	}
+	void DynamicMeshAssetSerializer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
 
+		Count<DynamicMesh> mesh = asset.As<DynamicMesh>();
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(mesh->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << mesh->GetID();
+		out << YAML::Key << "AssetSource" << YAML::Value << mesh->GetMeshSource()->GetID();
+		out << YAML::Key << "SubMeshes";
+		out << YAML::Flow;
+		if (mesh->GetSubMeshes().size() == mesh->GetMeshSource()->GetSubMeshes().size())
+			out << YAML::Value << std::vector<uint32_t>();
+		else
+			out << YAML::Value << mesh->GetSubMeshes();
+		out << YAML::EndMap;
+		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		found << out.c_str();
+		found.close();
+	}
+
+	Count<class Asset> DynamicMeshAssetSerializer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!data["AssetType"]) // if there is no scene no
+			return nullptr;
+		uint64_t source = data["AssetSource"].as<uint64_t>();
+
+		PF_CORE_ASSERT(AssetManager::HasAsset(source), "Trying to load mesh with meshSource that does not exist");
+		auto submeshIndices = data["SubMeshes"].as<std::vector<uint32_t>>(std::vector<uint32_t>());
+		Count<DynamicMesh> mesh = Count<DynamicMesh>::Create(AssetManager::GetAsset<MeshSource>(source), submeshIndices);
+		SetID(assetData, mesh);
+		return mesh;
+	}
 	void MeshSourceAssetSerializer::Save(const AssetInfo& data, const Count<class Asset>& asset) const
 	{
 
@@ -556,5 +598,7 @@ namespace Proof {
 		SetID(assetData, audio);
 		return audio;
 	}
+
+	
 
 }

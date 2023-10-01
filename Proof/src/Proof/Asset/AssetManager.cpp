@@ -46,6 +46,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::Material] = CreateSpecial<MaterialAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::PhysicsMaterial] = CreateSpecial<PhysicsMaterialAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Mesh] = CreateSpecial<MeshAssetSerializer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::DynamicMesh] = CreateSpecial<DynamicMeshAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Texture] = CreateSpecial<TextureAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::MeshSourceFile] = CreateSpecial<MeshSourceAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Prefab] = CreateSpecial<PrefabAssetSerilizer>();

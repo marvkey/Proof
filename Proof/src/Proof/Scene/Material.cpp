@@ -25,6 +25,13 @@ namespace Proof {
             m_DefaultShader = true;
         SetDefault();
     }
+    Material::Material(const std::string& name, Count<class Shader> shader)
+    {
+        m_RenderMaterial = RenderMaterial::Create(name, shader);
+        if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static"))
+            m_DefaultShader = true;
+        SetDefault();
+    }
     Material::Material()
         :Name("UnnamedMaterial")
 

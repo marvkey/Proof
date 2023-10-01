@@ -87,6 +87,7 @@ namespace Proof{
         subMesh.BaseVertex = 0;
         subMesh.BaseIndex = 0;
         subMesh.IndexCount = indices.size();
+        subMesh.VertexCount = vertices.size();
         subMesh.MaterialIndex = 0;
         subMesh.Name = name;
         subMesh.Transform = glm::translate(glm::mat4(1.0f), ProofToglmVec(0)) *
@@ -100,6 +101,14 @@ namespace Proof{
         m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
 
         m_Materials = Count<MaterialTable>::Create();
+
+        for (auto& [index, material] : m_Materials->GetMaterials())
+        {
+            if (AssetManager::HasAsset(material))
+                continue;
+            Count<Asset> asset = material;
+            AssetManager::CreateRuntimeAsset(asset);
+        }
     }
 
     void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials,AABB boundingBox)
@@ -147,6 +156,33 @@ namespace Proof{
         m_MaterialTable = Count<MaterialTable>::CreateFrom(m_MeshSource->GetMaterials());
     }
     void Mesh::SetSubMeshes(const std::vector<uint32_t>& submesh)
+    {
+        if (!submesh.empty())
+        {
+            m_SubMeshes = submesh;
+            return;
+        }
+        const auto& submeshes = m_MeshSource->GetSubMeshes();
+        m_SubMeshes.resize(submeshes.size());
+        for (uint32_t i = 0; i < submeshes.size(); i++)
+            m_SubMeshes[i] = i;
+    }
+
+    DynamicMesh::DynamicMesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes)
+        :m_MeshSource(meshSource)
+
+    {
+        Reset(meshSource, subMeshes);
+    }
+    void DynamicMesh::Reset(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes)
+    {
+
+        m_MeshSource = meshSource;
+        m_Name = m_MeshSource->GetName();
+        SetSubMeshes(subMeshes);
+        m_MaterialTable = Count<MaterialTable>::CreateFrom(meshSource->GetMaterials());
+    }
+    void DynamicMesh::SetSubMeshes(const std::vector<uint32_t>& submesh)
     {
         if (!submesh.empty())
         {

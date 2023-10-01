@@ -78,6 +78,19 @@ namespace Proof::UI {
 		return modfified;
 	}
 
+	inline bool AttributeDrag(const std::string& label, uint32_t& value, float speed = 1, uint32_t min = 0, uint32_t max = 0, ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d")
+	{
+		if (min == 0 && max == 0)
+			flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
+
+		bool modfified = false;
+		std::string id = fmt::format("##{}", label);
+		ImGui::Text(label.c_str());
+		ImGui::SameLine();
+		modfified = ImGui::DragScalar(id.c_str(),ImGuiDataType_U32, &value, speed, &min, &max, format, flags);
+		return modfified;
+	}
+
 	inline bool AttributeDrag(const std::string& label, float& value, float speed =1.f , float min = 0, float max = 0, ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f")
 	{
 		if (min == 0 && max == 0 )
