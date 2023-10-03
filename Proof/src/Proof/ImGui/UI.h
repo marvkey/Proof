@@ -41,6 +41,7 @@ namespace Proof::UI {
 	inline std::pair<bool, std::string> EnumCombo(const std::string& name, const std::vector<std::string>& names, const std::string& currentSelected)
 	{
 		ImGui::Text(name.c_str());
+		ImGui::SameLine();
 		std::string id= fmt::format("##{}", name);
 
 		std::string returnValue = currentSelected;

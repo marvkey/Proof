@@ -65,10 +65,9 @@ namespace Proof
         void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
         void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials,AABB boundingBox);
         AABB GetBoundingBox() {return m_BoundingBox;}
-        const std::vector<SubMesh>& GetSubMeshes()const  
-        {
-            return m_SubMeshes;
-        }
+        const std::vector<SubMesh>& GetSubMeshes()const  { return m_SubMeshes;}
+
+        const SubMesh& GetSubMesh(uint32_t index)const { return m_SubMeshes.at(index); };
 
         ASSET_CLASS_TYPE(MeshSourceFile);
         Count<class VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
@@ -76,6 +75,9 @@ namespace Proof
 
         const std::string& GetName()const { return m_Name; };
         Count<MaterialTable> GetMaterials()const { return m_Materials; };
+        const std::vector<MeshNode>& GetNodes()const { return m_Nodes; }
+        const MeshNode& GetRootNode()const { return m_Nodes[0]; };
+
     private:
         std::string m_Name;
         AABB m_BoundingBox;
@@ -117,6 +119,8 @@ namespace Proof
         }
         const std::vector<uint32_t>& GetSubMeshes()const { return m_SubMeshes; };
         void SetSubMeshes(const std::vector<uint32_t>& submeshes = {});
+        bool HasSubMesh(uint32_t subMeshIndex);
+
     private:
         Count<MeshSource> m_MeshSource;
         std::string m_Name; 
@@ -131,7 +135,6 @@ namespace Proof
 
     };
 
-
     class DynamicMesh : public Asset
     {
     public:
@@ -145,12 +148,9 @@ namespace Proof
         Count<MeshSource> GetMeshSource() {return m_MeshSource;}
 
         Count<MaterialTable> GetMaterialTable() { return m_MaterialTable; }
-        const std::vector<uint32_t>& GetSubMeshes()const { return m_SubMeshes; };
 
-        bool HasSubMesh(uint32_t subMeshIndex) 
-        {
-            return std::find(m_SubMeshes.begin(), m_SubMeshes.end(), subMeshIndex) != m_SubMeshes.end();
-        }
+        const std::vector<uint32_t>& GetSubMeshes()const { return m_SubMeshes; };
+        bool HasSubMesh(uint32_t subMeshIndex);
     private:
 
         std::string m_Name;

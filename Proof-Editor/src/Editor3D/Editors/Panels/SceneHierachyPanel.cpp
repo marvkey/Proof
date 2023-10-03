@@ -355,7 +355,7 @@ namespace Proof
 		}
 		ImGui::PopID();
 	}
-
+	static bool DynamicMeshUseSlider = false;
 	template<typename T, typename UIFunction>
 	void SceneHierachyPanel::DrawComponents(const std::string& name, Entity& entity, UIFunction Uifunction, const std::string& toolTip) {
 		if (entity.HasComponent<T>() == false)
@@ -570,11 +570,35 @@ namespace Proof
 
 			if (mesh)
 			{
-				auto submeshIndex = meshComp.GetSubMeshIndex();
-				if (UI::AttributeDrag("Submesh Index", submeshIndex, 1,0, (uint32_t)mesh->GetMeshSource()->GetSubMeshes().size() - 1))
+				ExternalAPI::ImGUIAPI::CheckBox("SubMeshIndexUseSlider", &DynamicMeshUseSlider);
+				if (DynamicMeshUseSlider)
 				{
-					meshComp.SetSubMeshIndex(submeshIndex);
+					auto submeshIndex = meshComp.GetSubMeshIndex();
+					if (UI::AttributeDrag("Submesh Index", submeshIndex, 1,0, (uint32_t)mesh->GetMeshSource()->GetSubMeshes().size() - 1))
+					{
+						meshComp.SetSubMeshIndex(submeshIndex);
+					}
 				}
+				else
+				{
+					const SubMesh& currentSubMesh = mesh->GetMeshSource()->GetSubMeshes().at( meshComp.GetSubMeshIndex());
+
+					std::vector<std::string> subMeshes;
+					subMeshes.resize(mesh->GetSubMeshes().size());
+
+					for (auto& index : mesh->GetSubMeshes())
+					{
+						subMeshes[index] = mesh->GetMeshSource()->GetSubMeshes().at(index).Name;
+					}
+					auto [changed, currentSelect] = UI::EnumCombo("SubMesh", subMeshes, currentSubMesh.Name);
+					if (changed)
+					{
+						auto it = std::find(subMeshes.begin(), subMeshes.end(), currentSelect);
+						if (it != subMeshes.end())
+							meshComp.SetSubMeshIndex(std::distance(subMeshes.begin(), it)); // index
+					}
+				}
+
 			}
 			ExternalAPI::ImGUIAPI::CheckBox("Visible", &meshComp.Visible);
 
@@ -587,8 +611,8 @@ namespace Proof
 			{
 				std::string name = material != nullptr ? material->Name : "null";
 				{
-					UI::ScopedStyleColor borderCOlor(ImGuiCol_Border, ImVec4(0.0f, .8f, 0.0f, 1.0f), true);
-					UI::ScopedStyleColor borderSHaodw (ImGuiCol_BorderShadow, ImVec4(0.0f, .8f, 0.0f, 1.0f), true);
+
+					UI::ScopedStyleColor addfs(ImGuiCol_Text, ImVec4(0.0f, .8f, 0.0f, 1.0f), index == currentIndexMaterial);
 
 					ExternalAPI::ImGUIAPI::TextBar(fmt::format("Index {}", index), name);
 				}

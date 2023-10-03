@@ -150,6 +150,8 @@ namespace Proof
 			for (unsigned m = 0; m < scene->mNumMeshes; m++)
 			{
 				aiMesh* mesh = scene->mMeshes[m];
+				if (mesh->mName.length == 0)
+					mesh->mName.Set("UnnamedMesh");
 
 				SubMesh& submesh = subMeshes.emplace_back();
 				submesh.BaseVertex = vertexCount;

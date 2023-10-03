@@ -167,6 +167,8 @@ namespace Proof {
 		Buffer buffer(&camera, sizeof(CameraData));
 		m_UBCamera->SetData(Renderer::GetCurrentFrame().FrameinFlight, buffer);
 		m_Stats = {};
+		Renderer::BeginCommandBuffer(m_CommandBuffer);
+
 
 	}
 	Renderer2D::Renderer2D()
@@ -269,7 +271,8 @@ namespace Proof {
 	void Renderer2D::DrawAABB(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
 		AABB box = mesh->GetMeshSource()->GetBoundingBox();
-		DrawAABB(box, transform);
+
+		DrawAABB(box, transform,color);
 	}
 
 	void Renderer2D::DrawAABBSubMeshes(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color)
@@ -282,7 +285,7 @@ namespace Proof {
 			auto& aabb = submesh.BoundingBox;
 			auto aabbTransform = transform * submesh.Transform;
 			//auto aabbTransform = transform;
-			DrawAABB(aabb, aabbTransform);
+			DrawAABB(aabb, aabbTransform,color);
 		}
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D)
@@ -489,6 +492,8 @@ namespace Proof {
 		Render();
 		Reset();
 
+		Renderer::EndCommandBuffer(m_CommandBuffer);
+		Renderer::SubmitCommandBuffer(m_CommandBuffer);
 	}
 
 	void Renderer2D::Reset() {
@@ -524,7 +529,6 @@ namespace Proof {
 	
 	void Renderer2D::Render() {
 		PF_PROFILE_FUNC();
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
 
 		Timer renderTime;
 		
@@ -632,8 +636,6 @@ namespace Proof {
 			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
 		}
 		#endif
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);	
 
 	}
 	

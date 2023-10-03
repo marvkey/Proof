@@ -90,17 +90,22 @@ namespace Proof{
         subMesh.VertexCount = vertices.size();
         subMesh.MaterialIndex = 0;
         subMesh.Name = name;
-        subMesh.Transform = glm::translate(glm::mat4(1.0f), ProofToglmVec(0)) *
-            glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 1,0,0 }) *
-            glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 0,1,0 }) *
-            glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 0,0,1 }) *
-            glm::scale(glm::mat4(1.0f), ProofToglmVec({ 1,1,1 }));
+        subMesh.Transform = glm::mat4(1.0f);
+        subMesh.LocalTransform = glm::mat4(1.0f);
 
+        m_SubMeshes = {};
         m_SubMeshes.emplace_back(subMesh);
         m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
         m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
 
         m_Materials = Count<MaterialTable>::Create();
+
+        MeshNode node;
+        node.Name = "name";
+        node.Submeshes.emplace_back(0);
+        node.LocalTransform = glm::mat4(1.0f);
+        m_Nodes = {};
+        m_Nodes.emplace_back(node);
 
         for (auto& [index, material] : m_Materials->GetMaterials())
         {
@@ -160,12 +165,33 @@ namespace Proof{
         if (!submesh.empty())
         {
             m_SubMeshes = submesh;
+            /*
+            // Use std::remove_if to move elements that meet the condition to the end
+            auto removeIt = std::remove_if(m_SubMeshes.begin(), m_SubMeshes.end(), [&](uint32_t num) {
+                if (num >= m_MeshSource->GetSubMeshes().size())return true;
+                return false;
+            });
+            // Erase elements from the end to remove them
+            m_SubMeshes.erase(removeIt, m_SubMeshes.end());
+
+            auto uniqueEnd = std::unique(m_SubMeshes.begin(), m_SubMeshes.end());
+            // Erase the duplicates from the vector
+            m_SubMeshes.erase(uniqueEnd, m_SubMeshes.end());
+
+            std::sort(m_SubMeshes.begin(), m_SubMeshes.end());
+            */
+
             return;
         }
         const auto& submeshes = m_MeshSource->GetSubMeshes();
         m_SubMeshes.resize(submeshes.size());
         for (uint32_t i = 0; i < submeshes.size(); i++)
             m_SubMeshes[i] = i;
+    }
+
+    bool Mesh::HasSubMesh(uint32_t subMeshIndex)
+    {
+        return std::find(m_SubMeshes.begin(), m_SubMeshes.end(), subMeshIndex) != m_SubMeshes.end();
     }
 
     DynamicMesh::DynamicMesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes)
@@ -187,11 +213,30 @@ namespace Proof{
         if (!submesh.empty())
         {
             m_SubMeshes = submesh;
+            /*
+            // Use std::remove_if to move elements that meet the condition to the end
+            auto removeIt = std::remove_if(m_SubMeshes.begin(), m_SubMeshes.end(), [&](uint32_t num) {
+                if (num >= m_MeshSource->GetSubMeshes().size())return true;
+                return false;
+            });
+            // Erase elements from the end to remove them
+            m_SubMeshes.erase(removeIt, m_SubMeshes.end());
+
+            auto uniqueEnd = std::unique(m_SubMeshes.begin(), m_SubMeshes.end());
+            // Erase the duplicates from the vector
+            m_SubMeshes.erase(uniqueEnd, m_SubMeshes.end());
+
+            std::sort(m_SubMeshes.begin(), m_SubMeshes.end());
+            */
             return;
         }
         const auto& submeshes = m_MeshSource->GetSubMeshes();
         m_SubMeshes.resize(submeshes.size());
         for (uint32_t i = 0; i < submeshes.size(); i++)
             m_SubMeshes[i] = i;
+    }
+    bool DynamicMesh::HasSubMesh(uint32_t subMeshIndex)
+    {
+        return std::find(m_SubMeshes.begin(), m_SubMeshes.end(), subMeshIndex) != m_SubMeshes.end();
     }
 }

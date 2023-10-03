@@ -14,7 +14,8 @@ class FrameTime;
 namespace Proof {
 	struct MeshColliderComponent;
 	struct TransformComponent;
-
+	struct DynamicMeshComponent;
+	struct MeshNode;
 	enum class WorldState
 	{
 		Play,
@@ -70,6 +71,8 @@ namespace Proof {
 		class Entity CreateEntity(const std::string& EntName = "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName, EntityID ID);
 		class Entity CreateEntity(Entity entity, bool includeChildren = true);
+		Entity CreateEntity(Count<class DynamicMesh> mesh, bool generateCollider = true);
+		Entity CreateChildEntity(Entity parent, const std::string& name);
 		Entity TryGetEntityWithUUID(UUID id)const;
 		Entity GetEntity(UUID id);
 		Entity TryGetEntityByTag(const std::string& tag);
@@ -121,7 +124,7 @@ namespace Proof {
 		}
 		bool EnableRestart = false;
 
-		
+		const std::unordered_map<UUID, Entity>& GetEntities() { return m_EntitiesMap; };
 	private:
 		Camera m_Camera;
 		glm::vec3 m_CameraPositon;
@@ -144,6 +147,13 @@ namespace Proof {
 		void OnScriptAdded(entt::registry& component, entt::entity entityID);
 		void OnScriptDelete(entt::registry& component, entt::entity entityID);
 
+		//https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/Ant/src/Ant/Scene/Scene.h
+		void BuildDynamicMeshEntityHierarchy(Entity parent, Count<DynamicMesh> mesh, const MeshNode& node, bool generateColliders);
+		//void BuildBoneEntityIds(Entity entity);
+		//void BuildMeshBoneEntityIds(Entity entity, Entity rootEntity);
+		//void BuildAnimationBoneEntityIds(Entity entity, Entity rootEntity);
+
+	private:
 		std::unordered_set< UUID> m_EntityDeleteQueue;
 
 		entt::registry m_Registry;

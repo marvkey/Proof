@@ -58,6 +58,7 @@ namespace Proof
 	class UniformBufferSet;
 	class Mesh;
 	class VertexBuffer;
+	class DynamicMesh;
 	class StorageBufferSet;
 	struct CascadeData
 	{
@@ -148,10 +149,10 @@ namespace Proof
 	};
 	struct DynamicMeshDrawInfo
 	{
-		Count<Mesh> Mesh = nullptr;
-		uint32_t SubmMeshIndex = 0;
+		Count<DynamicMesh> Mesh = nullptr;
+		uint32_t SubMeshIndex = 0;
 		Count<MaterialTable> MaterialTable;
-		//Ref<VulkanMaterial> OverrideMaterial;
+		Count<class RenderMaterial> OverrideMaterial;
 
 		uint32_t InstanceCount = 0;
 		uint32_t InstanceOffset = 0;
@@ -346,7 +347,8 @@ namespace Proof
 		void SubmitDirectionalLight(const SBDirectionalLightsSceneData& directionaLights);
 		void SubmitPointLight(const SBPointLightSceneData& pointLights);
 		void SubmitSpotLight(const SBSpotLightSceneData& spotLights);
-		void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& trnasform, bool CastShadowws = true);
+		void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws = true);
+		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex,const glm::mat4& transform, bool CastShadowws = true);
 
 		void SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform);
 		// if the same size is passed it will not resize
@@ -413,11 +415,17 @@ namespace Proof
 		Count<class StorageBufferSet> m_SBDirectionalLights;
 
 		std::map<MeshKey, TransformMapData> m_MeshTransformMap;
+
 		std::map<MeshKey, MeshDrawInfo> m_MeshDrawList;
+		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicMeshDrawList;
+
 		std::map<MeshKey, MeshDrawInfo> m_MeshShadowDrawList;
+		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicMeshShadowDrawList;
 
 		//debg 
 		std::map<MeshKey, MeshDrawInfo> m_ColliderDrawList;
+		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicColliderDrawList;
+
 		Count<class Environment> m_Environment;
 		bool m_InContext = false;
 		uint32_t m_ShadowMapResolution;
@@ -497,9 +505,14 @@ namespace Proof
 		// tehse are static so basically when wer are writng code we avoid errors of 
 		// writing code to a speicif world rendere class
 
-		static void RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer,  uint32_t transformOffset, uint32_t subMeshIndex, uint32_t instanceCount, const Buffer& pushData = Buffer(), const std::string& pushName ="");
-		static void RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex,uint32_t transformOffset, uint32_t instanceCount);
+		static void RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset,  uint32_t instanceCount, const Buffer& pushData = Buffer(), const std::string& pushName = "");
+		static void RenderDynamicMesh(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset,  uint32_t instanceCount, const Buffer& pushData = Buffer(), const std::string& pushName ="");
+
+		static void RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
+		static void RenderDynamicMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex,uint32_t transformOffset, uint32_t instanceCount);
+		
 		static void RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer,Count<Mesh>&mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass , Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
+		static void RenderDynamicMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
 		friend class Editore3D;
 
 	};	

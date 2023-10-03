@@ -1436,8 +1436,7 @@ namespace Proof
 				{
 					UUID meshID = *(UUID*)payload->Data;
 
-					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
-					newentt.AddComponent<DynamicMeshComponent>().SetMesh(meshID);
+					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAsset<DynamicMesh>(meshID));
 					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
 				}
 

@@ -448,7 +448,12 @@ namespace Proof {
 				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				imageMemoryBarrier.newLayout = newLayout;
 				imageMemoryBarrier.image = m_Info.ImageAlloc.Image ;
-				imageMemoryBarrier.subresourceRange = VkImageSubresourceRange{ aspectMask, 0, 1, 0, 1 };
+				VkImageSubresourceRange subResourceRange = {};
+				subResourceRange.aspectMask = aspectMask;
+				subResourceRange.baseMipLevel = 0;
+				subResourceRange.levelCount = m_Specification.Mips;
+				subResourceRange.layerCount = m_Specification.Layers;
+				imageMemoryBarrier.subresourceRange = subResourceRange;
 
 				vkCmdPipelineBarrier(
 					commandBuffer,

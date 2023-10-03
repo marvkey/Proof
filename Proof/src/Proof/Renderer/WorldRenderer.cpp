@@ -338,6 +338,7 @@ namespace Proof
 			depthImageConfig.Height = m_ShadowMapResolution;
 
 			m_ShadowPassImage = Image2D::Create(depthImageConfig);
+
 			{
 				FrameBufferConfig framebufferConfig;
 				framebufferConfig.DebugName = "Shadow Debug Fraembuffer";
@@ -786,6 +787,8 @@ namespace Proof
 
 		if (m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Width != m_ShadowMapResolution)
 		{
+			// framebuffer cannot reszize image views for now
+			m_ShadowPassImage->Resize(m_ShadowMapResolution, m_ShadowMapResolution);
 			for (uint32_t i = 0; i < m_ShadowMapPasses.size(); i++)
 			{
 				m_ShadowMapPasses[i]->GetTargetFrameBuffer()->Resize(m_ShadowMapResolution, m_ShadowMapResolution);
@@ -819,9 +822,6 @@ namespace Proof
 		m_ActiveWorld = nullptr;
 	}
 
-	
-	
-
 	void WorldRenderer::DrawScene()
 	{
 
@@ -851,9 +851,15 @@ namespace Proof
 		//mesh Pass
 		{
 			m_MeshTransformMap.clear();
+
 			m_MeshDrawList.clear();
+			m_DynamicMeshDrawList.clear();
+
 			m_MeshShadowDrawList.clear();
+			m_DynamicMeshShadowDrawList.clear();
+
 			m_ColliderDrawList.clear();
+			m_DynamicColliderDrawList.clear();
 		}
 
 		m_Timers.TotalDrawScene	= drawSceneTimer.ElapsedMillis();
@@ -1249,7 +1255,13 @@ namespace Proof
 			{
 				const auto& transformData = m_MeshTransformMap.at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-				RenderMesh(m_CommandBuffer, dc.Mesh,cascadePass,m_SubmeshTransformBuffers[frameIndex].Buffer,transformOffset, dc.SubMeshIndex,dc.InstanceCount, Buffer(&cascade,sizeof(uint32_t)),"u_CascadeInfo");
+				RenderMesh(m_CommandBuffer, dc.Mesh,cascadePass,m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount, Buffer(&cascade,sizeof(uint32_t)),"u_CascadeInfo");
+			}
+			for (auto& [meshKey, dc] : m_DynamicMeshShadowDrawList)
+			{
+				const auto& transformData = m_MeshTransformMap.at(meshKey);
+				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				RenderDynamicMesh(m_CommandBuffer, dc.Mesh, cascadePass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset,  dc.InstanceCount, Buffer(&cascade, sizeof(uint32_t)), "u_CascadeInfo");
 			}
 			Renderer::EndRenderPass(cascadePass);
 		}
@@ -1290,7 +1302,13 @@ namespace Proof
 		{
 			const auto& transformData = m_MeshTransformMap.at(meshKey);
 			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-			RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, transformOffset,dc.SubMeshIndex, dc.InstanceCount);
+			RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+		}
+		for (auto& [meshKey, dc] : m_DynamicMeshDrawList)
+		{
+			const auto& transformData = m_MeshTransformMap.at(meshKey);
+			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+			RenderDynamicMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset,  dc.InstanceCount);
 		}
 		Renderer::EndRenderPass(m_PreDepthPass);
 
@@ -1374,8 +1392,6 @@ namespace Proof
 		auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
 	
 
-		//TODO FASTER HASH FUNCTION FOR MESHKEY
-		//set pass
 
 		{
 			PF_PROFILE_FUNC("GeometryPass::SkyBoxPass");
@@ -1397,12 +1413,28 @@ namespace Proof
 			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
 			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_GeometryPass);
-			for (auto& [meshKey, dc] : m_MeshDrawList)
+
 			{
-				const auto& transformData = m_MeshTransformMap.at(meshKey);
-				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-				//transformData.Transforms
-				RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable,m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+				PF_PROFILE_FUNC("GeometryPass::Static");
+
+				for (auto& [meshKey, dc] : m_MeshDrawList)
+				{
+					const auto& transformData = m_MeshTransformMap.at(meshKey);
+					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+					//transformData.Transforms
+					RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+				}
+			}
+			{
+				PF_PROFILE_FUNC("GeometryPass::Dynamic");
+
+				for (auto& [meshKey, dc] : m_DynamicMeshDrawList)
+				{
+					const auto& transformData = m_MeshTransformMap.at(meshKey);
+					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+					//transformData.Transforms
+					RenderDynamicMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+				}
 			}
 			Renderer::EndRenderPass(m_GeometryPass);
 
@@ -1517,7 +1549,6 @@ namespace Proof
 
 		AssetID meshID = mesh->GetID();
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
-		const auto& submeshData = meshSource->GetSubMeshes();
 		for (uint32_t submeshIndex : mesh->GetSubMeshes())
 		{
 			const auto& subMesh = meshSource->GetSubMeshes().at(submeshIndex);
@@ -1531,7 +1562,7 @@ namespace Proof
 
 			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
 			auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
-			transformStorage.Transform = transform;
+			transformStorage.Transform = subMeshTransform;
 
 			// geo pass
 			{
@@ -1545,14 +1576,57 @@ namespace Proof
 			if (CastShadowws)
 			{
 				auto& dc = m_MeshShadowDrawList[meshKey];
-				//dc.MaterialTable = materialTable;
+				dc.MaterialTable = materialTable;
 				dc.Mesh = mesh;
 				dc.SubMeshIndex = submeshIndex;
 				dc.InstanceCount++;
-				//dc.OverrideMaterial = nullptr;
+				dc.OverrideMaterial = nullptr;
 			}
 		}
 	}
+	void WorldRenderer::SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadows)
+	{
+		PF_PROFILE_FUNC();
+		//PF_PROFILE_TAG("{}", mesh->GetName().c_str());
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+
+		AssetID meshID = mesh->GetID();
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		const auto& submeshData = meshSource->GetSubMeshes();
+		const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
+
+		glm::mat4 subMeshTransform = transform * subMesh.Transform;
+
+		uint32_t materialIndex = subMesh.MaterialIndex;
+
+		AssetID materialHandle = materialTable->HasMaterial(materialIndex) ? materialTable->GetMaterial(materialIndex)->GetID() : mesh->GetMaterialTable()->GetMaterial(materialIndex)->GetID();
+		PF_CORE_ASSERT(materialHandle, "Material ID cannot be zero");
+
+		MeshKey meshKey = { meshID, materialHandle, subMeshIndex, false };
+		auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
+		transformStorage.Transform = subMeshTransform;
+
+		// geo pass
+		{
+			auto& dc = m_DynamicMeshDrawList[meshKey];
+			dc.MaterialTable = materialTable;
+			dc.Mesh = mesh;
+			dc.SubMeshIndex = subMeshIndex;
+			dc.InstanceCount++;
+			dc.OverrideMaterial = nullptr;
+		}
+		if (CastShadows)
+		{
+			auto& dc = m_DynamicMeshShadowDrawList[meshKey];
+			dc.MaterialTable = materialTable;
+			dc.Mesh = mesh;
+			dc.SubMeshIndex = subMeshIndex;
+			dc.InstanceCount++;
+			dc.OverrideMaterial = nullptr;
+		}
+	}
+
 	void WorldRenderer::SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform)
 	{
 
@@ -1577,7 +1651,7 @@ namespace Proof
 
 			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
 			auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
-			transformStorage.Transform = transform;
+			transformStorage.Transform = subMeshTransform;
 
 			// geo pass
 			{
@@ -1667,7 +1741,7 @@ namespace Proof
 
 		m_LightScene.SpotLightCount = spotLights.SpotLights.size();
 	}
-	void WorldRenderer::RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t transformOffset, uint32_t subMeshIndex, uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
+	void WorldRenderer::RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset,  uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
 	{
 		PF_PROFILE_FUNC();
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
@@ -1681,6 +1755,21 @@ namespace Proof
 		const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
 		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 	}
+	void WorldRenderer::RenderDynamicMesh(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset,  uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
+	{
+		PF_PROFILE_FUNC();
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		meshSource->GetVertexBuffer()->Bind(commandBuffer);
+		meshSource->GetIndexBuffer()->Bind(commandBuffer);
+		transformBuffer->Bind(commandBuffer, 1, transformOffset);
+		if (pushData)
+		{
+			renderPass->PushData(pushName, pushData.Get());
+		}
+		const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
+		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+	}
+
 	void WorldRenderer::RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer,Count<Mesh>&mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass,Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
 	{
 		PF_PROFILE_FUNC();
@@ -1694,9 +1783,56 @@ namespace Proof
 
 		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
 		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
-
 	}
+
+	void WorldRenderer::RenderDynamicMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
+	{
+		PF_PROFILE_FUNC();
+
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		meshSource->GetVertexBuffer()->Bind(commandBuffer);
+		transformBuffer->Bind(commandBuffer, 1, transformOffset);
+		meshSource->GetIndexBuffer()->Bind(commandBuffer);
+		const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
+		Count<RenderMaterial> renderMaterial = material;
+
+		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
+		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+	}
+
 	void WorldRenderer::RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
+	{
+		PF_PROFILE_FUNC();
+		#if 0
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		meshSource->GetVertexBuffer()->Bind(commandBuffer);
+		transformBuffer->Bind(commandBuffer, 1, transformOffset);
+
+		meshSource->GetIndexBuffer()->Bind(commandBuffer);
+		for (const uint32_t& index : mesh->GetSubMeshes())
+		{
+			const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+			Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex) ? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
+				: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
+
+			Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
+			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		}
+		#endif
+
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		meshSource->GetVertexBuffer()->Bind(commandBuffer);
+		transformBuffer->Bind(commandBuffer, 1, transformOffset);
+		meshSource->GetIndexBuffer()->Bind(commandBuffer);
+		const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
+		Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex) ? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
+			: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
+
+		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
+		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+	}
+
+	void WorldRenderer::RenderDynamicMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
 	{
 		PF_PROFILE_FUNC();
 		#if 0

@@ -226,6 +226,26 @@ namespace Proof {
 					worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
 				}
 			}
+
+			auto dynamicGroup = m_Registry.group<DynamicMeshComponent>(entt::get<TransformComponent>);
+			for (auto entity : dynamicGroup)
+			{
+				auto [transformComponent, dynamicMeshComponent] = dynamicGroup.get<TransformComponent, DynamicMeshComponent>(entity);
+				if (!dynamicMeshComponent.Visible)
+					continue;
+
+				Count<DynamicMesh> mesh = dynamicMeshComponent.GetMesh();
+				if (mesh)
+				{
+					Entity e = Entity(entity, this);
+					glm::mat4 transform = GetWorldSpaceTransform(e);
+
+					//if (SelectionManager::IsEntityOrAncestorSelected(e))
+					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
+					//else
+					worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform,dynamicMeshComponent.CastShadow);
+				}
+			}
 		}
 		#endif
 		RenderPhysicsDebug(worldRenderer, false);
@@ -233,7 +253,7 @@ namespace Proof {
 		worldRenderer->EndScene();
 		#endif
 		// render 2d
-
+		#if 0
 		Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
 		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), cameraLocation);
 
@@ -248,7 +268,6 @@ namespace Proof {
 			{
 					//Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(spriteRendererComponent.Texture);
 					renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
-				
 			}
 			else
 			{
@@ -273,7 +292,6 @@ namespace Proof {
 		}
 
 		// render AABB
-		#if 0
 		{
 			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
 			for (auto entity : group)
@@ -291,7 +309,8 @@ namespace Proof {
 					//if (SelectionManager::IsEntityOrAncestorSelected(e))
 					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
 					//else
-					renderer2D->DrawAABB(mesh,  transform);
+					//renderer2D->DrawAABB(mesh,  transform);
+					//renderer2D->DrawAABBSubMeshes(mesh, transform);
 					//renderer2D->DrawAABB(mesh, transform);
 					//AABB bouding = { { -1.0f, -1.0f, -1.0f} ,{1.0f, 1.0f, 1.0f} };
 					//renderer2D->DrawAABB(bouding, transform);
@@ -300,8 +319,9 @@ namespace Proof {
 			}
 		}
 		//renderer2D->DrawLine({ 0,0,0 }, { 0,0,10 });
-		#endif
 		renderer2D->EndContext();
+		#endif
+
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)
 	{
@@ -429,6 +449,76 @@ namespace Proof {
 	void World::OnScriptDelete(entt::registry& component, entt::entity entityID)
 	{
 		ScriptMeathod::OnDestroy({ entityID,this }); 
+	}
+	void World::BuildDynamicMeshEntityHierarchy(Entity parent, Count<DynamicMesh> mesh, const MeshNode& node, bool generateColliders)
+	{
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		const auto& nodes = meshSource->GetNodes();
+
+		// Skip empty root node
+		if (node.IsRoot() && node.Submeshes.size() == 0)
+		{
+			for (uint32_t child : node.Children)
+				BuildDynamicMeshEntityHierarchy(parent, mesh, nodes[child], generateColliders);
+
+			return;
+		}
+
+		Entity nodeEntity = CreateChildEntity(parent, node.Name);
+		nodeEntity.Transform().SetTransform(node.LocalTransform);
+
+		if (node.Submeshes.size() == 1)
+		{
+			// Node == Mesh in this case
+			uint32_t submeshIndex = node.Submeshes[0];
+
+			nodeEntity.AddComponent<DynamicMeshComponent>();
+			DynamicMeshComponent& component = nodeEntity.GetComponent< DynamicMeshComponent>();
+			component.SetMesh(mesh->GetID());
+			component.SetSubMeshIndex(submeshIndex);
+
+			/*
+			if (generateColliders)
+			{
+				auto& colliderComponent = nodeEntity.AddComponent<MeshColliderComponent>();
+				Ref<MeshColliderAsset> colliderAsset = PhysicsSystem::GetOrCreateColliderAsset(nodeEntity, colliderComponent);
+				colliderComponent.ColliderAsset = colliderAsset->Handle;
+				colliderComponent.SubmeshIndex = submeshIndex;
+				colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
+				nodeEntity.AddComponent<RigidBodyComponent>();
+			}
+			*/
+		}
+		else if (node.Submeshes.size() > 1)
+		{
+			// Create one entity per child mesh, parented under node
+			for (uint32_t i = 0; i < node.Submeshes.size(); i++)
+			{
+				
+				uint32_t submeshIndex = node.Submeshes[i];
+				Entity childEntity = CreateChildEntity(nodeEntity, meshSource->GetSubMesh(submeshIndex).Name);
+
+				childEntity.AddComponent<DynamicMeshComponent>();
+				DynamicMeshComponent& component = childEntity.GetComponent< DynamicMeshComponent>();
+				component.SetMesh(mesh->GetID());
+				component.SetSubMeshIndex(submeshIndex);
+				/*
+				if (generateColliders)
+				{
+					auto& colliderComponent = childEntity.AddComponent<MeshColliderComponent>();
+					Ref<MeshColliderAsset> colliderAsset = PhysicsSystem::GetOrCreateColliderAsset(childEntity, colliderComponent);
+					colliderComponent.ColliderAsset = colliderAsset->Handle;
+					colliderComponent.SubmeshIndex = submeshIndex;
+					colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
+					childEntity.AddComponent<RigidBodyComponent>();
+				}
+				*/
+			}
+
+		}
+
+		for (uint32_t child : node.Children)
+			BuildDynamicMeshEntityHierarchy(nodeEntity, mesh, nodes[child], generateColliders);
 	}
 	void World::OnUpdateRuntime(FrameTime DeltaTime) 
 	{
@@ -697,6 +787,22 @@ namespace Proof {
 			});
 		}
 		return newEntity;
+	}
+	Entity World::CreateEntity(Count<class DynamicMesh> mesh, bool generateCollider)
+	{
+		PF_CORE_ASSERT(mesh->GetID());
+		auto info = AssetManager::GetAssetInfo(mesh);
+		Entity root = CreateEntity(info.GetName());
+		BuildDynamicMeshEntityHierarchy(root, mesh, mesh->GetMeshSource()->GetRootNode(), generateCollider);
+		return root;
+	}
+	Entity World::CreateChildEntity(Entity parent, const std::string& name)
+	{
+		PF_PROFILE_FUNC();
+		Entity entity = CreateEntity(name);
+		if (parent)
+			entity.SetParent(parent);
+		return entity;
 	}
 	#if 0
 	template<typename... Component>
@@ -1053,9 +1159,7 @@ namespace Proof {
 		parent.Children().push_back(entity.GetUUID());
 
 		ConvertToLocalSpace(entity);
-	}
-
-	
+	}	
 
 	void World::UnparentEntity(Entity entity, bool convertToWorldSpace)
 	{
