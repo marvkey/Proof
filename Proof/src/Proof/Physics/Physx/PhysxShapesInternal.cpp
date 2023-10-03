@@ -11,7 +11,7 @@ namespace Proof
 	void PhysxShapesInternal::UpdateOrAddCubeCollider(PhysicsActor& actor)
 	{
 		Entity actorEntity = actor.m_Entity;
-		auto& cubeCollider = actorEntity.GetComponent<CubeColliderComponent>();
+		auto& cubeCollider = actorEntity.GetComponent<BoxColliderComponent>();
 		auto& rigidBodyComponent = actorEntity.GetComponent<RigidBodyComponent>();
 		physx::PxMaterial* colliderMaterial = (physx::PxMaterial*) (cubeCollider.HasPhysicsMaterial() == false ?
 			AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>()->GetRuntimeBody() : (physx::PxMaterial*)cubeCollider.GetPhysicsMaterial()->GetRuntimeBody());

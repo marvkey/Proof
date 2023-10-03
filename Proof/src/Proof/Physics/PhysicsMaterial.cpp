@@ -42,6 +42,13 @@ namespace Proof
         m_RuntimeBody = PhysicsEngine::GetPhysics()->createMaterial(staticFriction, dynamicFriction, bounciness);
     }
 
+    PhysicsMaterial::~PhysicsMaterial()
+    {
+        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
+        material->release(); // make sure
+
+    }
+
     float PhysicsMaterial::GetStaticFriction()
     {
         physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
@@ -98,5 +105,24 @@ namespace Proof
     {
         physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
         material->setRestitutionCombineMode(Utils::ConvertPhysixCombineMode(mode));
+    }
+    void PhysicsMaterial::Release()
+    {
+        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
+        // materails will always have by default always 1 thign pointing
+        if (material->getReferenceCount() == 1)return;
+        material->release(); // make sure
+        /*
+        if (GetID() == (uint64_t)DefaultRuntimeAssets::PhysicsMaterial)
+        {
+            // basically the default physics material will awlays have somethign pointing to it 
+            if (material->getReferenceCount() == 1)return;// we dont want to delete it 
+            material->release(); // make sure
+        }
+        else
+        {
+            material->release();
+        }
+        */
     }
 }

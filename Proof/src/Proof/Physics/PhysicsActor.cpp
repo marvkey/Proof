@@ -80,7 +80,7 @@ namespace Proof {
 	{
 		AddRigidBody();
 
-		if (m_Entity.HasComponent<CubeColliderComponent>()) PhysxShapesInternal::UpdateOrAddCubeCollider(*this);
+		if (m_Entity.HasComponent<BoxColliderComponent>()) PhysxShapesInternal::UpdateOrAddCubeCollider(*this);
 		if (m_Entity.HasComponent<SphereColliderComponent>()) PhysxShapesInternal::UpdateOrAddSphereCollider(*this);
 		if (m_Entity.HasComponent<CapsuleColliderComponent>()) PhysxShapesInternal::UpdateOrAddCapsuleCollider(*this);
 		//if (m_Entity.HasComponent<MeshColliderComponent>()) AddMeshCollider();
@@ -90,7 +90,7 @@ namespace Proof {
 	{
 		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RuntimeBody;
 
-		if (m_Entity.HasComponent<CubeColliderComponent>() )
+		if (m_Entity.HasComponent<BoxColliderComponent>() )
 		{
 			physx::PxShape* shape = (physx::PxShape*)m_CubeColliderBody;
 			rigidBody->detachShape(*shape);
@@ -175,7 +175,7 @@ namespace Proof {
 			
 		UpdateRigidBody(deltaTime);
 		// adjusting the new size	
-		if (m_Entity.HasComponent<CubeColliderComponent>()) PhysxShapesInternal::UpdateOrAddCubeCollider(*this);
+		if (m_Entity.HasComponent<BoxColliderComponent>()) PhysxShapesInternal::UpdateOrAddCubeCollider(*this);
 		if (m_Entity.HasComponent<SphereColliderComponent>()) PhysxShapesInternal::UpdateOrAddSphereCollider(*this);
 		if (m_Entity.HasComponent<CapsuleColliderComponent>()) PhysxShapesInternal::UpdateOrAddCapsuleCollider(*this);
 		//if (m_Entity.HasComponent<MeshColliderComponent>()) AddMeshCollider();
@@ -241,6 +241,11 @@ namespace Proof {
 		if (m_RigidBodyType == RigidBodyType::Static)return;
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RuntimeBody;
 		rigidBody->setAngularVelocity(PhysxUtils::GlmVectorToPhysxVector(velocity), wakeUp);
+	}
+
+	Entity PhysicsActor::GetEntity()
+	{
+		return m_Entity;
 	}
 	
 	void PhysicsActor::OnTriggerEnter(const PhysicsActor* actor)

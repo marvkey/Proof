@@ -363,16 +363,16 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.all_of<CubeColliderComponent>(enttID)) {
+			if (registry.all_of<BoxColliderComponent>(enttID)) {
 			
-				CubeColliderComponent& cubeCollider = registry.get<CubeColliderComponent>(enttID);
-				out << YAML::Key << "CubeColliderComponent";
-				out << YAML::BeginMap; // CubeColliderComponent
+				BoxColliderComponent& cubeCollider = registry.get<BoxColliderComponent>(enttID);
+				out << YAML::Key << "BoxColliderComponent";
+				out << YAML::BeginMap; // BoxColliderComponent
 				out << YAML::Key << "IsTrigger" << cubeCollider.IsTrigger;
 				out << YAML::Key << "Center" << cubeCollider.Center;
 				out << YAML::Key << "Size" << cubeCollider.Size;
 				out << YAML::Key << "PhysicsMaterialPointerID" << cubeCollider.m_PhysicsMaterialPointerID;
-				out << YAML::EndMap; // CubeColliderComponent
+				out << YAML::EndMap; // BoxColliderComponent
 			}
 		}
 		{
@@ -889,10 +889,10 @@ namespace Proof
 			}
 			// CUBE COLLIDER
 			{
-				auto cubeColliderComponent = entity["CubeColliderComponent"];
+				auto cubeColliderComponent = entity["BoxColliderComponent"];
 				if (cubeColliderComponent)
 				{
-					auto& src = NewEntity.AddComponent<CubeColliderComponent>();
+					auto& src = NewEntity.AddComponent<BoxColliderComponent>();
 					src.IsTrigger = cubeColliderComponent["IsTrigger"].as<bool>();
 					src.Center = cubeColliderComponent["Center"].as<glm::vec3>(src.Center);
 					src.Size = cubeColliderComponent["Size"].as<glm::vec3>(src.Size);

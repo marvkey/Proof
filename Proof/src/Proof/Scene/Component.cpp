@@ -24,7 +24,7 @@
 namespace Proof
 {
 
-	Count<PhysicsMaterial> CubeColliderComponent::GetPhysicsMaterial(){
+	Count<PhysicsMaterial> BoxColliderComponent::GetPhysicsMaterial(){
 		if (m_PhysicsMaterialPointerID == 0)
 		{
 			return nullptr;

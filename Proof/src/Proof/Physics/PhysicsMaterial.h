@@ -10,9 +10,11 @@ namespace Proof
 		Mutltiply = 2,
 		Max = 3
 	};
-	struct PhysicsMaterial : public Asset
+	class PhysicsMaterial : public Asset
 	{
+	public:
 		PhysicsMaterial(float staticFriction = 0.6f, float dynamicFriction = 0.6f, float bounciness = 0.0f);
+		~PhysicsMaterial();
 		float GetStaticFriction();
 		float GetDynamicFriction();
 		float GetBounciness();
@@ -29,10 +31,13 @@ namespace Proof
 
 		ASSET_CLASS_TYPE(PhysicsMaterial);
 
-		void* GetRuntimeBody()const { return m_RuntimeBody; }
+		void* GetPhysicsBody()const { return m_RuntimeBody; }
+	private:
+		void Release();
 	private:
 		void* m_RuntimeBody = nullptr;
 		friend class PhysicsEngine;
 		friend class PhysicsActor;
+		friend class ColliderShape;
 	};
 }

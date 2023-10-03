@@ -425,9 +425,9 @@ namespace Proof
 		friend class WorldRenderer;
 	};
 
-	struct Proof_API CubeColliderComponent {
-		CubeColliderComponent(const CubeColliderComponent&) = default;
-		CubeColliderComponent() = default;
+	struct Proof_API BoxColliderComponent {
+		BoxColliderComponent(const BoxColliderComponent&) = default;
+		BoxColliderComponent() = default;
 		glm::vec3 Center = { 0,0,0 };
 		glm::vec3 Size= { 1,1,1 };
 		bool IsTrigger = false;
@@ -656,7 +656,7 @@ namespace Proof
 	using AllComponents =
 		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
 		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
-		CubeColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
+		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
 		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent>;
 	
 

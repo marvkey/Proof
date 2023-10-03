@@ -25,6 +25,8 @@ vec3 GetCubeMapTexCoord()
     else if (gl_GlobalInvocationID.z == 5) ret = vec3(-uv.x, uv.y,  -1.0);
     return normalize(ret);
 }
+ 
+#define PI 3.14159265359
 
 float saturatedDot( in vec3 a, in vec3 b )
 {
@@ -121,19 +123,17 @@ vec3 calculateSkyLuminanceRGB( in vec3 s, in vec3 e, in float t )
 }
 
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
-void main() 
+void main()
 {
 	vec3 cubeTC = GetCubeMapTexCoord();
 
-	float turbidity = u_Uniforms.TurbidityAzimuthInclination.x;
-	float azimuth = u_Uniforms.TurbidityAzimuthInclination.y;
-	float inclination = u_Uniforms.TurbidityAzimuthInclination.z;
-
-	vec3 sunDir     	= normalize( vec3( sin(inclination) * cos(azimuth), cos(inclination), sin(inclination) * sin(azimuth) ) );
+	float turbidity     =  u_Uniforms.TurbidityAzimuthInclination.x;
+    float azimuth       = u_Uniforms.TurbidityAzimuthInclination.y;;
+    float inclination   = u_Uniforms.TurbidityAzimuthInclination.z;
+    vec3 sunDir     	= normalize( vec3( sin(inclination) * cos(azimuth), cos(inclination), sin(inclination) * sin(azimuth) ) );
     vec3 viewDir  		= cubeTC;
     vec3 skyLuminance 	= calculateSkyLuminanceRGB( sunDir, viewDir, turbidity );
-
-	vec4 FinalColor = vec4( skyLuminance * 0.05, 1.0 );
-
-	imageStore(o_CubeMap, ivec3(gl_GlobalInvocationID), FinalColor);
+    
+    vec4 color = vec4(skyLuminance * 0.05, 1.0);
+	imageStore(o_CubeMap, ivec3(gl_GlobalInvocationID), color);
 }

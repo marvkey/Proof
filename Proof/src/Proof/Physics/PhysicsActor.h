@@ -42,7 +42,9 @@ namespace Proof{
 		void SetLinearVelocity(glm::vec3 velocity, bool wakeUp = true);
 		void SetAngularVelocity(glm::vec3 velocity, bool wakeUp = true);
 
-		
+		void* GetActorBody()const { return m_RuntimeBody; };
+
+		Entity GetEntity();
 	private:
 		// not sure how we gonna treat this yet
 		enum class RigidBodyType m_RigidBodyType;

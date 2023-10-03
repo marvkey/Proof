@@ -428,7 +428,7 @@ namespace Proof
 			AddComponentGui<SpotLightComponent>(entity, "Spot Light");
 			AddComponentGui<CameraComponent>(entity, "Camera");
 
-			AddComponentGui<CubeColliderComponent>(entity, "Cube Collider");
+			AddComponentGui<BoxColliderComponent>(entity, "Cube Collider");
 			AddComponentGui<SphereColliderComponent>(entity, "Sphere Collider");
 			AddComponentGui<CapsuleColliderComponent>(entity, "Capsule Collider");
 			AddComponentGui<MeshColliderComponent>(entity, "Mesh Collider");
@@ -798,7 +798,7 @@ namespace Proof
 
 		}, "if nothing visible set roation of z axis to 1");
 
-		DrawComponents<CubeColliderComponent>("Cube Collider", entity, [](CubeColliderComponent& cubeCollider) {
+		DrawComponents<BoxColliderComponent>("Cube Collider", entity, [](BoxColliderComponent& cubeCollider) {
 			ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &cubeCollider.IsTrigger);
 			DrawVectorControl("Center", cubeCollider.Center);
 			DrawVectorControl("Size", cubeCollider.Size, 1.0f);

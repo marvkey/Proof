@@ -330,14 +330,14 @@ namespace Proof {
 
 		{
 		
-			auto view = m_Registry.view<CubeColliderComponent>();
+			auto view = m_Registry.view<BoxColliderComponent>();
 			Count<Mesh> cubeMesh = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Cube).As<Mesh>();
 
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
 				glm::mat4 transform = GetWorldSpaceTransform(e);
-				const auto& collider = e.GetComponent<CubeColliderComponent>();
+				const auto& collider = e.GetComponent<BoxColliderComponent>();
 				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), collider.Center) * glm::scale(glm::mat4(1.0f), collider.Size);
 				glm::mat4 finalTransform = transform * colliderTransform;
 				renderer->SubmitPhysicsDebugMesh(cubeMesh, finalTransform);
