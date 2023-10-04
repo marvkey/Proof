@@ -345,7 +345,7 @@ namespace Proof
 		float Inclination = 0;
 		
 		//for all 
-		Vector ColorTint{1};
+		glm::vec3 ColorTint{1};
 		float MapRotation = 0.0f;
 		float Intensity = 1.0f;
 	private:
@@ -361,7 +361,7 @@ namespace Proof
 		DirectionalLightComponent(const DirectionalLightComponent&) = default;
 		DirectionalLightComponent() = default;
 
-		Vector Color = { 1 };
+		glm::vec3 Color = glm::vec3{ 1 };
 		float Intensity = 1;
 
 		bool CastShadow = true;

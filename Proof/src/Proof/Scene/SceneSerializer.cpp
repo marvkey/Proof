@@ -803,7 +803,7 @@ namespace Proof
 					{
 						auto& src = NewEntity.AddComponent<SkyLightComponent>();
 						src.Image = skyLight["Image"].as<uint64_t>();
-						src.ColorTint = skyLight["TintColor"].as<Vector>();
+						src.ColorTint = skyLight["TintColor"].as<glm::vec3>();
 						src.SkyBoxLoad = skyLight["SkyBoxLod"].as<float>();
 						src.MapRotation = skyLight["MapRotation"].as<float>();
 						src.Intensity = skyLight["Intensity"].as<float>();
@@ -824,7 +824,7 @@ namespace Proof
 					if (directionalLight)
 					{
 						auto& src = NewEntity.AddComponent<DirectionalLightComponent>();
-						src.Color = directionalLight["Color"].as<Vector>();
+						src.Color = directionalLight["Color"].as<glm::vec3>();
 						src.Intensity = directionalLight["Intensity"].as<float>();
 					}
 				}

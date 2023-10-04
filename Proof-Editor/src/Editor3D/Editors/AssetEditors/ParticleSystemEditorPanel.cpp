@@ -1,7 +1,6 @@
 #include "ParticleSystemEditorPanel.h"
 #include "Proof/Renderer/Renderer.h"
 #include "../Panels/SceneHierachyPanel.h"
-#include "../../ImGUIAPI.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Renderer/ParticleSystem.h"
@@ -93,8 +92,8 @@ namespace Proof
 		}
 		ImGui::Separator();
 
-		ExternalAPI::ImGUIAPI::CheckBox("Loop", &m_ParticleSystem->Loop);
-		ExternalAPI::ImGUIAPI::CheckBox("PlayOnAwake", &m_ParticleSystem->PlayOnAwake);
+		UI::AttributeBool("Loop", m_ParticleSystem->Loop);
+		UI::AttributeBool("PlayOnAwake", m_ParticleSystem->PlayOnAwake);
 		ImGui::DragFloat("Life", &m_ParticleSystem->LifeTime, 0.5, 0);
 		ImGui::DragScalar("MaxParticles", ImGuiDataType_U32, &m_ParticleSystem->MaxParticles, 4, 0);
 		{

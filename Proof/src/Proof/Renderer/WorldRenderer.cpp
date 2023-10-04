@@ -1216,9 +1216,9 @@ namespace Proof
 			return;
 		CascadeData cascades[SHADOWMAP_CASCADE_COUNT];
 		if (ShadowSetting.UseManualCascadeSplits)
-			CalculateCascadesManualSplit(cascades, ProofToglmVec(m_MainDirectionllLight.Direction));
+			CalculateCascadesManualSplit(cascades, m_MainDirectionllLight.Direction);
 		else
-			CalculateCascades(cascades, ProofToglmVec(m_MainDirectionllLight.Direction));
+			CalculateCascades(cascades, m_MainDirectionllLight.Direction);
 
 		{
 			m_UBRenderData.cascadeSplit[0] = cascades[0].SplitDepth;

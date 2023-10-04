@@ -4,6 +4,7 @@
 #define MAGIC_ENUM_RANGE_MAX 5000
 #include <magic_enum.hpp>
 #include <vector>
+#include <unordered_set>
 namespace Proof
 {
 	
@@ -27,12 +28,16 @@ namespace Proof
 		}
 
 		template<typename E>
-		static std::vector<std::string> GetNames() {
+		static std::vector<std::string> GetNames(const std::unordered_set<E>& unused = {}) {
 			std::vector<std::string> temp;
 			magic_enum::enum_for_each<E>([&](auto val) {
-				auto name = magic_enum::enum_name<E>(val);
-				std::string s = std::string(name);
-				temp.emplace_back(std::string(name));
+				if (!unused.contains(val))
+				{
+					auto name = magic_enum::enum_name<E>(val);
+					std::string s = std::string(name);
+					temp.emplace_back(std::string(name));
+				}
+				
 			});
 			return temp;
 		}

@@ -1,7 +1,6 @@
 #include "MaterialEditorPanel.h"
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
-#include "../../ImGUIAPI.h"
 #include "../../EditorResources.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Scene/Material.h"
@@ -290,34 +289,37 @@ namespace Proof
 		float dynamicFrction = m_Material->GetDynamicFriction();
 		float bounciness = m_Material->GetBounciness();
 
-		if (ImGui::DragFloat("StaticFriction", &staticFriction, 0, FLT_MAX))
+		UI::BeginPropertyGrid("PhysicsMaterialGrid");
+		if (UI::AttributeDrag("StaticFriction", staticFriction))
 		{
 
 			m_Material->SetStaticFriction(staticFriction);
 			shouldSave = true;
 		}
-		if (ImGui::DragFloat("DynamicFriction", &dynamicFrction, 0, FLT_MAX))
+		if (UI::AttributeDrag("DynamicFriction", dynamicFrction))
 		{
 			shouldSave = true;
 			m_Material->SetDynamicFriction(dynamicFrction);
 		}
-		if (ImGui::DragFloat("Bounciness", &bounciness, 0, 1))
+		if (UI::AttributeDrag("Bounciness", bounciness, 1,0, 1))
 		{
 			shouldSave = true;
 			m_Material->SetBounciness(bounciness);
 		}
 		CombineMode frictionMode = m_Material->GetFrictionCombineMode();
 		CombineMode	bounceMode = m_Material->GetBouncinessCombineMode();
-		if (ExternalAPI::ImGUIAPI::EnumCombo("FrictionCombine", frictionMode))
+		if (UI::EnumCombo("FrictionCombine", frictionMode))
 		{
 			shouldSave = true;
 			m_Material->SetFrictionCombineMode(frictionMode);
 		}
-		if (ExternalAPI::ImGUIAPI::EnumCombo("BouncinessCombine", bounceMode))
+		if (UI::EnumCombo("BouncinessCombine", bounceMode))
 		{
 			shouldSave = true;
 			m_Material->SetBouncinessCombineMode(bounceMode);
 		}
+
+		UI::EndPropertyGrid();
 
 		if (shouldSave)
 		{

@@ -240,7 +240,6 @@ namespace Proof {
 
 		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(capsuleData.radiusScale * radius, oldGeometry.halfHeight);
 		m_Shape->setGeometry(geometry);
-		m_Shape->setGeometry(geometry);
 
 		auto& component = m_Entity.GetComponent<CapsuleColliderComponent>();
 		component.Radius = radius;

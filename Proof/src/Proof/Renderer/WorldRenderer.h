@@ -75,9 +75,9 @@ namespace Proof
 	//used in shader don't change variable ordering
 	struct DirectionalLight 
 	{
-		Vector Color = { 1 };
+		glm::vec3 Color = glm::vec3{ 1 };
 		float Intensity = 0.0f;
-		Vector Direction; // Make sure TO NORMALIZED
+		glm::vec3 Direction; // Make sure TO NORMALIZED
 
 		int bCastShadows = 1;//bool
 		int bCastSoftShadows = 1;// bool
@@ -87,7 +87,7 @@ namespace Proof
 	
 	struct UBSkyLight 
 	{
-		Vector TintColor = { 1 };
+		glm::vec3 TintColor = glm::vec3{ 1 };
 		float Lod = 0;
 		//float Intensity = 1;
 		float Intensity = 0;

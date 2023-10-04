@@ -21,7 +21,6 @@
 #include <vector>
 #include <Windows.h>
 #include <stdio.h> 
-#include "ImGUIAPI.h"
 #include "Proof/Utils/PlatformUtils.h"
 
 #include "Proof/Renderer/Renderer.h"
@@ -685,76 +684,72 @@ namespace Proof
 		{
 			PF_PROFILE_FUNC("Renderer Stastitics");
 
-			ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER SPECS");
+			UI::BeginPropertyGrid("Rendere Stats");
+			{
+				UI::AttributeText("Shadow Settings");
+			}
 
-			ImGui::Checkbox("View COlliders", &s_EditorData->RenderSettings.ViewColliders);
-			//ImGui::Text("Renderer Company: %s", RendererBase::GetRenderCompany().c_str());
-			//ImGui::Text("Graphics Card: %s", RendererBase::GetGraphicsCard().c_str());
-			//ImGui::Text("Graphics Card Verison: %s", RendererBase::GetGraphicsCardVersion().c_str());
-			ImGui::Text("%.3f ms/frame ", FrameTime::GetFrameMS());
-			ImGui::Text("%.3f FPS", FrameTime::GetFrameFPS());
+			UI::AttributeBool("View COlliders", s_EditorData->RenderSettings.ViewColliders);
 
-			//ImGui::TextColored({ 1.0,0,0,1 }, "RENDERER 3D");
-			//ImGui::Text("DrawCalls %i", m_WorldRenderer.RenderData.Stats.DrawCalls);
-			//ImGui::Text("Number Of MeshInstances %i", m_WorldRenderer.RenderData.Stats.Instances);
-			//
-			//ImGui::Text("Amount Of Directional Light %i", m_WorldRenderer.RenderData.Stats.AmountDirectionalLight);
-			//ImGui::Text("Amount Of Point Light%i", m_WorldRenderer.RenderData.Stats.AmountPointLight);
-			//ImGui::Text("Amount Of Spot Light %i", m_WorldRenderer.RenderData.Stats.AmountSpotLight);
-			//
-			//if (ImGui::Button("Reload Shader")) {
-			//	RendererBase::GetShaderLibrary().ReloadeShaders();
-			//}
+			UI::AttributeTextBar("##Frame",fmt::format("{} ms/frame", FrameTime::GetFrameMS()));
+			UI::AttributeTextBar("##FPS", fmt::format("{} FPS", FrameTime::GetFrameFPS()));
+
 
 			Renderer::GetShaderLibrary()->ForEachShader([&](Count<Shader> shader) {
 				UI::ScopedID id(shader->GetName().c_str());
-				ImGui::Text(shader->GetName().c_str());
-				ImGui::SameLine();
-				if (ImGui::Button("Reload"))
-				{
+
+				if(UI::AttributeButton(shader->GetName(),"Reload"))
 					shader->Reload();
-				}
 			});
+			{
+				UI::EnumCombo("Collider View", m_WorldRenderer->Options.ShowPhysicsColliders);
+			}
+			//ExternalAPI::ImGUIAPI::EnumCombo<WorldRendererOptions::PhysicsColliderView>("Physics Collider", m_WorldRenderer->Options.ShowPhysicsColliders);
+			UI::EndPropertyGrid();
 
-			ExternalAPI::ImGUIAPI::EnumCombo<WorldRendererOptions::PhysicsColliderView>("Physics Collider", m_WorldRenderer->Options.ShowPhysicsColliders);
+			UI::BeginPropertyGrid("Shadow settign grid");
 
-			ImGui::Text("Shadow Settings");
+			
+			UI::AttributeText("Shadow Settings");
 
-			ImGui::Checkbox("DebugPass", &m_WorldRenderer->ShadowSetting.RenderDebugPass);
+			UI::AttributeBool("DebugPass", m_WorldRenderer->ShadowSetting.RenderDebugPass);
 			if (m_WorldRenderer->ShadowSetting.RenderDebugPass)
 			{
 
 				UI::Image(m_WorldRenderer->GetShadowPassDebugImage(),
 					{ ImGui::GetWindowWidth(),ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-				ImGui::SliderInt("Cascade Index", &m_WorldRenderer->ShadowSetting.DebugCascade, 0, 3);
+				UI::AttributeSlider("Cascade Index", m_WorldRenderer->ShadowSetting.DebugCascade, 0, 3);
 			}
 
 			ShadowSetting& shadowSetting = m_WorldRenderer->ShadowSetting;
-			ImGui::Checkbox("ShowCascades", &shadowSetting.ShowCascades);
-			ImGui::Checkbox("Soft Shadows", &shadowSetting.SoftShadows);
-			ImGui::DragFloat("Max Shadow Distance", &shadowSetting.MaxShadowDistance);
-			ImGui::DragFloat("Shadow Fade", &shadowSetting.ShadowFade, 5.0f);
+			UI::AttributeBool("ShowCascades", shadowSetting.ShowCascades);
+			UI::AttributeBool("Soft Shadows", shadowSetting.SoftShadows);
+			UI::AttributeDrag("Max Shadow Distance", shadowSetting.MaxShadowDistance);
+			UI::AttributeDrag("Shadow Fade", shadowSetting.ShadowFade, 5.0f);
 
 			// cascade settings tre node
-			ImGui::Checkbox("CascadeFading", &shadowSetting.CascadeFading);
+			UI::AttributeBool("CascadeFading", shadowSetting.CascadeFading);
 			if (shadowSetting.CascadeFading)
-				ImGui::DragFloat("CascadeTransitionFade", &shadowSetting.CascadeTransitionFade, 0.05, 0.0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+				UI::AttributeDrag("CascadeTransitionFade", shadowSetting.CascadeTransitionFade, 0.05);
 
-			ImGui::DragFloat("CascadeSplitLambda", &shadowSetting.CascadeSplitLambda, 0.01, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
-			ImGui::DragFloat("CascadeNearPlaneOffset", &shadowSetting.CascadeNearPlaneOffset, 0.1, Math::GetMinType<float>(), 0, "%.3f", ImGuiSliderFlags_AlwaysClamp);
-			ImGui::DragFloat("CascadeFarPlaneOffset", &shadowSetting.CascadeFarPlaneOffset, 0.1, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
-			ImGui::DragFloat("ScaleShadowCascadesToOrigin", &shadowSetting.ScaleShadowCascadesToOrigin, 0.1, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			UI::AttributeDrag("CascadeSplitLambda", shadowSetting.CascadeSplitLambda, 0.01);
+			UI::AttributeDrag("CascadeNearPlaneOffset", shadowSetting.CascadeNearPlaneOffset, 0.1, Math::GetMinType<float>(), 0, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			UI::AttributeDrag("CascadeFarPlaneOffset", shadowSetting.CascadeFarPlaneOffset, 0.1, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			UI::AttributeDrag("ScaleShadowCascadesToOrigin", shadowSetting.ScaleShadowCascadesToOrigin, 0.1, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
 			ImGui::Checkbox("UseManualCascadeSplits", &shadowSetting.UseManualCascadeSplits);
 
 			if (shadowSetting.UseManualCascadeSplits)
 			{
-				ImGui::DragFloat("Cascade 0", &shadowSetting.CascadeSplits[0], 0.025, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
-				ImGui::DragFloat("Cascade 1", &shadowSetting.CascadeSplits[1], 0.025, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
-				ImGui::DragFloat("Cascade 2", &shadowSetting.CascadeSplits[2], 0.025, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
-				ImGui::DragFloat("Cascade 3", &shadowSetting.CascadeSplits[3], 0.025, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
+				UI::AttributeDrag("Cascade 0", shadowSetting.CascadeSplits[0], 0.025);
+				UI::AttributeDrag("Cascade 1", shadowSetting.CascadeSplits[1], 0.025);
+				UI::AttributeDrag("Cascade 2", shadowSetting.CascadeSplits[2], 0.025);
+				UI::AttributeDrag("Cascade 3", shadowSetting.CascadeSplits[3], 0.025);
 			}
+			UI::EndPropertyGrid();
+
 		}
+
 		ImGui::End();
 	}
 
@@ -934,8 +929,8 @@ namespace Proof
 		{
 			ImGui::BeginMenuBar();
 			{
-				ExternalAPI::ImGUIAPI::CheckBox("pause logging", &Log::m_PauseLog);
-				ExternalAPI::ImGUIAPI::CheckBox("Clear On Play", &s_EditorData->ClearLogOnPlay);
+				UI::AttributeBool("pause logging", Log::m_PauseLog);
+				UI::AttributeBool("Clear On Play", s_EditorData->ClearLogOnPlay);
 				ImGui::SameLine();
 				if (ImGui::Button("Clear log"))
 				{
@@ -1073,7 +1068,7 @@ namespace Proof
 				}
 				if (ImGui::BeginPopup("KeyBoard Log"))
 				{
-					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllKeyBoardEvents.ShowAll))
+					if (UI::AttributeBool("All Events", m_ShowAllKeyBoardEvents.ShowAll))
 					{
 						if (m_ShowAllKeyBoardEvents.ShowAll == false)
 						{
@@ -1090,10 +1085,10 @@ namespace Proof
 							m_ShowAllKeyBoardEvents.DoubleClicked = true;
 						}
 					}
-					ExternalAPI::ImGUIAPI::CheckBox("Clicked", &m_ShowAllKeyBoardEvents.Clicked);
-					ExternalAPI::ImGUIAPI::CheckBox("Released", &m_ShowAllKeyBoardEvents.Released);
-					ExternalAPI::ImGUIAPI::CheckBox("Pressed", &m_ShowAllKeyBoardEvents.Pressed);
-					ExternalAPI::ImGUIAPI::CheckBox("DoubleClicked", &m_ShowAllKeyBoardEvents.DoubleClicked);
+					UI::AttributeBool("Clicked", m_ShowAllKeyBoardEvents.Clicked);
+					UI::AttributeBool("Released", m_ShowAllKeyBoardEvents.Released);
+					UI::AttributeBool("Pressed", m_ShowAllKeyBoardEvents.Pressed);
+					UI::AttributeBool("DoubleClicked", m_ShowAllKeyBoardEvents.DoubleClicked);
 					if (m_ShowAllKeyBoardEvents.DoubleClicked == false || m_ShowAllKeyBoardEvents.Pressed == false
 						|| m_ShowAllKeyBoardEvents.Released == false || m_ShowAllKeyBoardEvents.Clicked == false)
 						m_ShowAllKeyBoardEvents.ShowAll = false;
@@ -1115,7 +1110,7 @@ namespace Proof
 				}
 				if (ImGui::BeginPopup("Mouse Log"))
 				{
-					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllMouseEvents.ShowAll))
+					if (UI::AttributeBool("All Events", m_ShowAllMouseEvents.ShowAll))
 					{
 						if (m_ShowAllMouseEvents.ShowAll == false)
 						{
@@ -1137,12 +1132,12 @@ namespace Proof
 						}
 					}
 
-					ExternalAPI::ImGUIAPI::CheckBox("Clicked", &m_ShowAllMouseEvents.Clicked);
-					ExternalAPI::ImGUIAPI::CheckBox("Released", &m_ShowAllMouseEvents.Released);
-					ExternalAPI::ImGUIAPI::CheckBox("Pressed", &m_ShowAllMouseEvents.Pressed);
-					ExternalAPI::ImGUIAPI::CheckBox("DoubleClicked", &m_ShowAllMouseEvents.DoubleClicked);
-					ExternalAPI::ImGUIAPI::CheckBox("Move", &m_ShowAllMouseEvents.Movement);
-					ExternalAPI::ImGUIAPI::CheckBox("Scroll", &m_ShowAllMouseEvents.Scroll);
+					UI::AttributeBool("Clicked", m_ShowAllMouseEvents.Clicked);
+					UI::AttributeBool("Released", m_ShowAllMouseEvents.Released);
+					UI::AttributeBool("Pressed", m_ShowAllMouseEvents.Pressed);
+					UI::AttributeBool("DoubleClicked", m_ShowAllMouseEvents.DoubleClicked);
+					UI::AttributeBool("Move", m_ShowAllMouseEvents.Movement);
+					UI::AttributeBool("Scroll", m_ShowAllMouseEvents.Scroll);
 					if (m_ShowAllMouseEvents.DoubleClicked == false || m_ShowAllMouseEvents.Pressed == false
 						|| m_ShowAllMouseEvents.Released == false || m_ShowAllMouseEvents.Clicked == false ||
 						m_ShowAllMouseEvents.Scroll == false || m_ShowAllMouseEvents.Movement == false)
@@ -1166,7 +1161,7 @@ namespace Proof
 				}
 				if (ImGui::BeginPopup("Window Log"))
 				{
-					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllWindowEvents.ShowAll))
+					if (UI::AttributeBool("All Events", m_ShowAllWindowEvents.ShowAll))
 					{
 						if (m_ShowAllWindowEvents.ShowAll == false)
 						{
@@ -1185,11 +1180,11 @@ namespace Proof
 							m_ShowAllWindowEvents.Focus = true;
 						}
 					}
-					ExternalAPI::ImGUIAPI::CheckBox("Resize", &m_ShowAllWindowEvents.Resize);
-					ExternalAPI::ImGUIAPI::CheckBox("Minimize", &m_ShowAllWindowEvents.Minimize);
-					ExternalAPI::ImGUIAPI::CheckBox("Move", &m_ShowAllWindowEvents.Move);
-					ExternalAPI::ImGUIAPI::CheckBox("Close", &m_ShowAllWindowEvents.Close);
-					ExternalAPI::ImGUIAPI::CheckBox("Focus", &m_ShowAllWindowEvents.Focus);
+					UI::AttributeBool("Resize", m_ShowAllWindowEvents.Resize);
+					UI::AttributeBool("Minimize", m_ShowAllWindowEvents.Minimize);
+					UI::AttributeBool("Move", m_ShowAllWindowEvents.Move);
+					UI::AttributeBool("Close", m_ShowAllWindowEvents.Close);
+					UI::AttributeBool("Focus", m_ShowAllWindowEvents.Focus);
 
 					if (m_ShowAllWindowEvents.Resize == false || m_ShowAllWindowEvents.Minimize == false
 						|| m_ShowAllWindowEvents.Move == false || m_ShowAllWindowEvents.Close == false ||
@@ -1212,7 +1207,7 @@ namespace Proof
 				}
 				if (ImGui::BeginPopup("Controller Log"))
 				{
-					if (ExternalAPI::ImGUIAPI::CheckBox("All Events", &m_ShowAllControllerEvents.ShowAll))
+					if (UI::AttributeBool("All Events", m_ShowAllControllerEvents.ShowAll))
 					{
 						if (m_ShowAllControllerEvents.ShowAll == false)
 						{
@@ -1233,12 +1228,12 @@ namespace Proof
 							m_ShowAllControllerEvents.Trigger = true;
 						}
 					}
-					ExternalAPI::ImGUIAPI::CheckBox("Clicked", &m_ShowAllControllerEvents.Clicked);
-					ExternalAPI::ImGUIAPI::CheckBox("Released", &m_ShowAllControllerEvents.Released);
-					ExternalAPI::ImGUIAPI::CheckBox("Pressed", &m_ShowAllControllerEvents.Pressed);
-					ExternalAPI::ImGUIAPI::CheckBox("DoubleClicked", &m_ShowAllControllerEvents.DoubleClicked);
-					ExternalAPI::ImGUIAPI::CheckBox("Joystick", &m_ShowAllControllerEvents.Joystick);
-					ExternalAPI::ImGUIAPI::CheckBox("Trigger", &m_ShowAllControllerEvents.Trigger);
+					UI::AttributeBool("Clicked", m_ShowAllControllerEvents.Clicked);
+					UI::AttributeBool("Released", m_ShowAllControllerEvents.Released);
+					UI::AttributeBool("Pressed", m_ShowAllControllerEvents.Pressed);
+					UI::AttributeBool("DoubleClicked", m_ShowAllControllerEvents.DoubleClicked);
+					UI::AttributeBool("Joystick", m_ShowAllControllerEvents.Joystick);
+					UI::AttributeBool("Trigger", m_ShowAllControllerEvents.Trigger);
 
 					if (m_ShowAllControllerEvents.DoubleClicked == false || m_ShowAllControllerEvents.Pressed == false
 						|| m_ShowAllMouseEvents.Released == false || m_ShowAllControllerEvents.Clicked == false ||

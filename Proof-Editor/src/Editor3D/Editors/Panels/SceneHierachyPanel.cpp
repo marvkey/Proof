@@ -10,7 +10,6 @@
 #include "Proof/Asset/Asset.h"
 #include "ContentBrowserPanel.h"
 #include <vector>
-#include "../../ImGUIAPI.h"
 #include "Proof/Scene/ExampleSccripts.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Scene/Script.h"
@@ -471,79 +470,56 @@ namespace Proof
 			}
 		});
 		DrawComponents<TransformComponent>("Transform", entity, [](auto& transformComp) {
+
 			DrawVectorControl("Location", transformComp.Location);
 			glm::vec3 rotationdeg = glm::degrees(transformComp.GetRotationEuler());
 			DrawVectorControl("Rotation", rotationdeg);
 			transformComp.SetRotationEuler(glm::radians(rotationdeg));
 			DrawVectorControl("Scale", transformComp.Scale, 1.0f);
 		});
-		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp) {
-			if (AssetManager::HasAsset(meshComp.GetMesh())) {
-				auto assetInfo= AssetManager::GetAssetInfo(meshComp.GetMesh());
-				ExternalAPI::ImGUIAPI::TextBar("Mesh", assetInfo.GetName());
-			}
-			else
-			{
-				ExternalAPI::ImGUIAPI::TextBar("Mesh", "null");
-			}
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Mesh).c_str())) {
-					UUID Data = *(const UUID*)payload->Data;
-					meshComp.SetMesh(Data);
-				}
-				ImGui::EndDragDropTarget();
-			}
-			if (ImGui::BeginPopupContextItem("RemoveMesh")) {
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginPopup("RemoveMesh")) {
-				if (ImGui::MenuItem("Remove Mesh")) {
-					meshComp.RemoveMesh();
-				}
+		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp) 
+		{
+			UI::BeginPropertyGrid("MeshComponentGrid");
 
-				ImGui::EndPopup();
-			}
+			UI::AttributeAssetTextBar("Mesh", meshComp.m_MeshID, AssetType::Mesh);
+			UI::AttributeBool("Visible", meshComp.Visible);
+
 			ImGui::Separator();
+			UI::EndPropertyGrid();
+
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
 			bool open = ImGui::TreeNodeEx("MaterialTablerwrs", treeNodeFlags, "Material Table");
-			if (!open)return;
-			for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
+			if (open)
 			{
-				std::string name = material != nullptr ? material->Name : "null";
-				ExternalAPI::ImGUIAPI::TextBar(fmt::format("Index {}",index), name);
-				if (ImGui::BeginDragDropTarget())
+				UI::BeginPropertyGrid("MeshComponentMaterialTableGrid");
+
+				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Material).c_str()))
-					{
-						uint64_t Data = *(const uint64_t*)payload->Data;
-						if (AssetManager::HasAsset(Data))
-						{
-							auto material = AssetManager::GetAsset<Material>(Data);
-							meshComp.MaterialTable->SetMaterial(index, material);
-						}
-					}
-					ImGui::EndDragDropTarget();
+					std::string name = material != nullptr ? material->Name : "null";
+					UI::AttributeAssetTextBar(fmt::format("Index {}", index), material, AssetType::Material);
 				}
+				UI::EndPropertyGrid();
+
+				ImGui::TreePop();
 			}
-
-			ImGui::TreePop();
-
-			ExternalAPI::ImGUIAPI::CheckBox("Visible", &meshComp.Visible);
 		});
 
 		DrawComponents<DynamicMeshComponent>("Dynamic Mesh", entity, [](DynamicMeshComponent& meshComp)
 		{
+			UI::BeginPropertyGrid("DynamicMeshComponentGrid");
+
 			const uint32_t currentIndexMaterial = meshComp.GetSubMeshMaterialIndex();
 			auto mesh = meshComp.GetMesh();
+
 			if (AssetManager::HasAsset(meshComp.GetMesh()))
 			{
 				auto assetInfo = AssetManager::GetAssetInfo(meshComp.GetMesh());
-				ExternalAPI::ImGUIAPI::TextBar("Mesh", assetInfo.GetName());
+				UI::AttributeTextBar("Mesh", assetInfo.GetName());
 			}
 			else
 			{
-				ExternalAPI::ImGUIAPI::TextBar("Mesh", "Null");
+				UI::AttributeTextBar("Mesh", "Null");
 			}
 			if (ImGui::BeginDragDropTarget())
 			{
@@ -570,7 +546,7 @@ namespace Proof
 
 			if (mesh)
 			{
-				ExternalAPI::ImGUIAPI::CheckBox("SubMeshIndexUseSlider", &DynamicMeshUseSlider);
+				UI::AttributeBool("SubMeshIndexUseSlider", DynamicMeshUseSlider);
 				if (DynamicMeshUseSlider)
 				{
 					auto submeshIndex = meshComp.GetSubMeshIndex();
@@ -590,7 +566,7 @@ namespace Proof
 					{
 						subMeshes[index] = mesh->GetMeshSource()->GetSubMeshes().at(index).Name;
 					}
-					auto [changed, currentSelect] = UI::EnumCombo("SubMesh", subMeshes, currentSubMesh.Name);
+					auto [changed, currentSelectIndex,currentSelect] = UI::Combo("SubMesh", subMeshes, currentSubMesh.Name);
 					if (changed)
 					{
 						auto it = std::find(subMeshes.begin(), subMeshes.end(), currentSelect);
@@ -600,43 +576,47 @@ namespace Proof
 				}
 
 			}
-			ExternalAPI::ImGUIAPI::CheckBox("Visible", &meshComp.Visible);
+			UI::AttributeBool("Visible", meshComp.Visible);
 
 			ImGui::Separator();
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
 			bool open = ImGui::TreeNodeEx("MaterialTablerwrs", treeNodeFlags, "Material Table");
-			if (!open)return;
-			for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
+			if (!open)
 			{
-				std::string name = material != nullptr ? material->Name : "null";
+				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
 				{
-
-					UI::ScopedStyleColor addfs(ImGuiCol_Text, ImVec4(0.0f, .8f, 0.0f, 1.0f), index == currentIndexMaterial);
-
-					ExternalAPI::ImGUIAPI::TextBar(fmt::format("Index {}", index), name);
-				}
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Material).c_str()))
+					std::string name = material != nullptr ? material->Name : "null";
 					{
-						uint64_t Data = *(const uint64_t*)payload->Data;
-						if (AssetManager::HasAsset(Data))
-						{
-							auto material = AssetManager::GetAsset<Material>(Data);
-							meshComp.MaterialTable->SetMaterial(index, material);
-						}
+
+						UI::ScopedStyleColor addfs(ImGuiCol_Text, ImVec4(0.0f, .8f, 0.0f, 1.0f), index == currentIndexMaterial);
+
+						UI::AttributeTextBar(fmt::format("Index {}", index), name);
 					}
-					ImGui::EndDragDropTarget();
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Material).c_str()))
+						{
+							uint64_t Data = *(const uint64_t*)payload->Data;
+							if (AssetManager::HasAsset(Data))
+							{
+								auto material = AssetManager::GetAsset<Material>(Data);
+								meshComp.MaterialTable->SetMaterial(index, material);
+							}
+						}
+						ImGui::EndDragDropTarget();
+					}
 				}
+
+				ImGui::TreePop();
 			}
-
-			ImGui::TreePop();
-
-			
+			UI::EndPropertyGrid();
 
 		});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
+
+			UI::BeginPropertyGrid("SpriteComponentGrid");
+
 			if (spriteComp.Texture != nullptr)
 				UI::Image(spriteComp.Texture, {30,30});
 			else 
@@ -662,12 +642,19 @@ namespace Proof
 				ImGui::EndDragDropTarget();
 			}
 			ImGui::SameLine();
-			ImGui::ColorEdit4("##Colour", glm::value_ptr(spriteComp.Colour));
+			UI::AttributeColor("##Colour", spriteComp.Colour);
+
+			UI::EndPropertyGrid();
+
 		});
 		DrawComponents<NativeScriptComponent>("Native Script", entity, [](NativeScriptComponent& NativeScriptComp) {
-			ExternalAPI::ImGUIAPI::TextBar("Sript", NativeScriptComp.GetScriptName());
+			UI::AttributeTextBar("Sript", NativeScriptComp.GetScriptName());
 		});
-		DrawComponents<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& skylight) {
+		DrawComponents<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& skylight) 
+		{
+
+			UI::BeginPropertyGrid("SkyLightComponentGrid");
+
 			if (skylight.DynamicSky == false)
 			{
 
@@ -677,10 +664,10 @@ namespace Proof
 
 				if (hasImage)
 				{
-					ExternalAPI::ImGUIAPI::TextBar("HDR Map", AssetManager::GetAssetInfo(skylight.Image).GetName());
+					UI::AttributeTextBar("HDR Map", AssetManager::GetAssetInfo(skylight.Image).GetName());
 				}
 				else
-					ExternalAPI::ImGUIAPI::TextBar("HDR Map");
+					UI::AttributeTextBar("HDR Map","Null(EnvironmentMap)");
 				if (ImGui::BeginPopupContextItem("Remove HDR"))
 				{
 					ImGui::EndPopup();
@@ -709,58 +696,72 @@ namespace Proof
 			}
 			if(skylight.Environment)
 
-				ImGui::SliderFloat("SkyBoxLoad", &skylight.SkyBoxLoad, 0, skylight.Environment->PrefilterMap->GetMipLevelCount());
+				UI::AttributeSlider("SkyBoxLoad", skylight.SkyBoxLoad, 0, skylight.Environment->PrefilterMap->GetMipLevelCount());
 			else
-				ImGui::SliderFloat("SkyBoxLoad", &skylight.SkyBoxLoad, 0, 11);
-			ImGui::DragFloat("Intensity", &skylight.Intensity,0.25,0,1000,"%.3f",ImGuiSliderFlags_AlwaysClamp);
-			ImGui::DragFloat("Rotation", &skylight.MapRotation, 0.25);
-			if(ExternalAPI::ImGUIAPI::CheckBox("DynamicSky", &skylight.DynamicSky));
+				UI::AttributeSlider("SkyBoxLoad", skylight.SkyBoxLoad, 0, 11);
+
+			UI::AttributeDrag("Intensity", skylight.Intensity,0.25,0,1000);
+			UI::AttributeDrag("Rotation", skylight.MapRotation, 0.25);
+			UI::AttributeBool("DynamicSky", skylight.DynamicSky);
+
 			if (skylight.DynamicSky)
 			{
-				ImGui::DragFloat("Turbidity", &skylight.Turbidity, 0.01,1.8f,Math::GetMaxType<float>(),"%.3f", ImGuiSliderFlags_AlwaysClamp);
-				ImGui::DragFloat("Azimuth", &skylight.Azimuth, 0.01);
-				ImGui::DragFloat("Inclination", &skylight.Inclination, 0.01);
+				UI::AttributeDrag("Turbidity", skylight.Turbidity, 0.01,1.8f,Math::GetMaxType<float>());
+				UI::AttributeDrag("Azimuth", skylight.Azimuth, 0.01);
+				UI::AttributeDrag("Inclination", skylight.Inclination, 0.01);
 			}
 			
-			ImGui::ColorEdit3("TintColor", skylight.ColorTint.GetValue_Ptr());
+			UI::AttributeColor("TintColor", skylight.ColorTint);
+			UI::EndPropertyGrid();
+
+
 		});
 		DrawComponents<DirectionalLightComponent>("Directonal Light", entity, [](DirectionalLightComponent& drl) {
-			ImGui::ColorEdit3("Ambient", drl.Color.GetValue_Ptr());
-			ImGui::DragFloat("Intensity", &drl.Intensity, 0.01, 0.0f, 100);
 
-			ImGui::Checkbox("CastShadows", &drl.CastShadow);
+			UI::BeginPropertyGrid("DirectionalLightGrid");
+
+			UI::AttributeColor("Ambient", drl.Color);
+			UI::AttributeDrag("Intensity", drl.Intensity, 0.01, 0.0f, 100);
+
+			UI::AttributeBool("CastShadows", drl.CastShadow);
 			if (drl.CastShadow)
 			{
-				ImGui::SliderFloat("ShadowStrength", &drl.ShadowStrength, 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp);
-				ImGui::Checkbox("CastSoftShadows", &drl.CastSoftShadow);
+				UI::AttributeSlider("ShadowStrength", drl.ShadowStrength);
+				UI::AttributeBool("CastSoftShadows", drl.CastSoftShadow);
 
 				if (drl.CastSoftShadow)
 				{
-					ImGui::SliderFloat("ShadowSoftness", &drl.ShadowSoftness, 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+					UI::AttributeSlider("ShadowSoftness", drl.ShadowSoftness, 0, 1);
 				}
 			}
+
+			UI::EndPropertyGrid();
+
 		});
 
-		DrawComponents<PointLightComponent>("Point Light", entity, [](PointLightComponent& pl) {
-			
-			ImGui::ColorEdit3("Color", glm::value_ptr(pl.Color));
-			ImGui::DragFloat("Intensity", &pl.Intensity, 0.01, 0.0f, Math::GetMaxType<float>(), "%.3f",ImGuiSliderFlags_AlwaysClamp);
-			ImGui::DragFloat("MinRadius", &pl.MinRadius, 0.01, 0.0f, pl.Radius,"%.3f", ImGuiSliderFlags_AlwaysClamp);
-			ImGui::DragFloat("Radius", &pl.Radius, 0.01, 0.0f,Math::GetMaxType<float>(), "%.3f",ImGuiSliderFlags_AlwaysClamp);
-			ImGui::DragFloat("Falloff", &pl.Falloff, 0.005,0,1.0,"%.3f", ImGuiSliderFlags_AlwaysClamp);
-			//ImGui::DragFloat("Constant", &pl.Constant, 0.001);
-			//ImGui::DragFloat("Linear", &pl.Linear, 0.001);
-			//ImGui::DragFloat("Quadratic", &pl.Quadratic, 0.001);
+		DrawComponents<PointLightComponent>("Point Light", entity, [](PointLightComponent& pl) 
+		{
+			UI::BeginPropertyGrid("PointLightGrid");
+
+			UI::AttributeColor("Color", pl.Color);
+			UI::AttributeDrag("Intensity", pl.Intensity, 0.01, 0.0f, Math::GetMaxType<float>());
+			UI::AttributeDrag("MinRadius", pl.MinRadius, 0.01, 0.0f, pl.Radius);
+			UI::AttributeDrag("Radius", pl.Radius, 0.01, 0.0f);
+			UI::AttributeDrag("Falloff", pl.Falloff, 0.005,0,1.0);
+
+			UI::EndPropertyGrid();
+
 		});
 
 		DrawComponents<SpotLightComponent>("Spot Light", entity, [](SpotLightComponent& sl) {
+			UI::BeginPropertyGrid("SpotLightComponentGrid");
 
-			ImGui::ColorEdit3("Color", glm::value_ptr(sl.Color));
-			ImGui::DragFloat("Intensity", &sl.Intensity, 0.01, 0.0f, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
-			ImGui::DragFloat("AngleAttenuation", &sl.AngleAttenuation, 0.25, 0.0f, Math::GetMaxType<float>(), "%.3f");
-			ImGui::DragFloat("Falloff", &sl.Falloff, 0.005, 0, Math::GetMaxType<float>(), "%.3f");
-			ImGui::DragFloat("Range", &sl.Range, 0.25, 0, Math::GetMaxType<float>(), "%.3f");
-			ImGui::DragFloat("Angle", &sl.Angle, 0.25, 0, 180, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+			UI::AttributeColor("Color", sl.Color);
+			UI::AttributeDrag("Intensity", sl.Intensity, 0.01, 0.0f);
+			UI::AttributeDrag("AngleAttenuation", sl.AngleAttenuation, 0.25, 0.0f);
+			UI::AttributeDrag("Falloff", sl.Falloff, 0.005, 0);
+			UI::AttributeDrag("Range", sl.Range, 0.25, 0);
+			UI::AttributeDrag("Angle", sl.Angle, 0.25, 0, 180);
 			//ImGui::ColorEdit3("Ambient", sl.Color.GetValue_Ptr());
 			//ImGui::DragFloat("Intensity", &sl.Intensity, 0.01, 0.0f, 100);
 			//
@@ -772,19 +773,26 @@ namespace Proof
 			//ImGui::DragFloat("Quadratic", &sl.Quadratic, 0.001);
 			//ImGui::DragFloat("CutOff", &sl.CutOff, 0.001);
 			//ImGui::DragFloat("Outer-Cutoff", &sl.OuterCutOff, 0.001);
+
+			UI::EndPropertyGrid();
+
 		});
 
 		DrawComponents<CameraComponent>("Camera", entity, [](CameraComponent& cameraComp) {
-			ImGui::SliderFloat("Field ov fiew", &cameraComp.FovDeg, 0, 360);
-			ImGui::SliderFloat("Near plane", &cameraComp.NearPlane, -1, 1);
-			ImGui::SliderFloat("Far plane", &cameraComp.FarPlane, 0, 10000);
+			UI::BeginPropertyGrid("CameraComponentGrid");
+
+			UI::AttributeSlider("Field ov view", cameraComp.FovDeg, 0, 360);
+			UI::AttributeSlider("Near plane", cameraComp.NearPlane, -1, 1);
+			UI::AttributeSlider("Far plane", cameraComp.FarPlane, 0, 10000);
+
 			if (ImGui::IsItemHovered()) {
 				ImGui::BeginTooltip();
 				ImGui::Text("Setting to 0 means you can see any object no matter how far away it is");
 				ImGui::EndTooltip();
 			}
-			ExternalAPI::ImGUIAPI::EnumCombo("Type", cameraComp.Projection);
-			ExternalAPI::ImGUIAPI::CheckBox("Local Rotation", &cameraComp.UseLocalRotation);
+			UI::EnumCombo< ProjectionType>("ProjectionType", cameraComp.Projection,{ ProjectionType::None });
+
+			UI::AttributeBool("UseLocalRotation", cameraComp.UseLocalRotation);
 			/*
 			if (cameraComp.m_AutoSetDimension == false) {
 				int tempWidth = (int)cameraComp.m_Width;
@@ -795,139 +803,76 @@ namespace Proof
 				cameraComp.m_Height = tempHeight;
 			}
 			*/
+			UI::EndPropertyGrid();
 
 		}, "if nothing visible set roation of z axis to 1");
 
-		DrawComponents<BoxColliderComponent>("Cube Collider", entity, [](BoxColliderComponent& cubeCollider) {
-			ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &cubeCollider.IsTrigger);
-			DrawVectorControl("Center", cubeCollider.Center);
-			DrawVectorControl("Size", cubeCollider.Size, 1.0f);
+		DrawComponents<BoxColliderComponent>("Box Collider", entity, [](BoxColliderComponent& cubeCollider) {
+			UI::BeginPropertyGrid("BoxColliderComponentGrid");
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", cubeCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(cubeCollider.m_PhysicsMaterialPointerID).GetName() : "null");
-			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginPopup("Remove Physics Material")) {
-				if (ImGui::MenuItem("Remove Material")) {
-					cubeCollider.RemovePhysicsMaterial();
-				}
+			UI::AttributeBool("IsTrigger", cubeCollider.IsTrigger);
+			UI::DrawVec3Control("Size", cubeCollider.Size, glm::vec3{1});
+			UI::DrawVec3Control("Center", cubeCollider.Center);
 
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::PhysicsMaterial).c_str())) {
-					UUID Data = *(const UUID*)payload->Data;
-					cubeCollider.m_PhysicsMaterialPointerID = Data;
-				}
-				ImGui::EndDragDropTarget();
-			}
+			UI::AttributeAssetTextBar("Material", cubeCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+
+			UI::EndPropertyGrid();
+
 		});
 		DrawComponents<SphereColliderComponent>("Sphere Collider", entity, [](SphereColliderComponent& sphereCollider) {
-			ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &sphereCollider.IsTrigger);
-			ImGui::DragFloat("Radius", &sphereCollider.Radius, 0.5);
-			DrawVectorControl("Center", sphereCollider.Center);
+			UI::BeginPropertyGrid("SphereColliderComponentGrid");
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", sphereCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(sphereCollider.m_PhysicsMaterialPointerID).GetName() : "null");
-			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginPopup("Remove Physics Material")) {
-				if (ImGui::MenuItem("Remove Material")) {
-					sphereCollider.RemovePhysicsMaterial();
-				}
+			UI::AttributeBool("IsTrigger",sphereCollider.IsTrigger);
+			UI::AttributeDrag("Radius", sphereCollider.Radius, 0.5);
+			UI::DrawVec3Control("Center", sphereCollider.Center);
 
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::PhysicsMaterial).c_str())) {
-					UUID Data = *(const UUID*)payload->Data;
-					sphereCollider.m_PhysicsMaterialPointerID = Data;
-				}
-				ImGui::EndDragDropTarget();
-			}
+			UI::AttributeAssetTextBar("Material", sphereCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+			UI::EndPropertyGrid();
+
 		});
 		DrawComponents<CapsuleColliderComponent>("Capsule Collider", entity, [](CapsuleColliderComponent& capsuleCollider) {
-			ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &capsuleCollider.IsTrigger);
-			ImGui::DragFloat("Radius", &capsuleCollider.Radius, 0.5);
-			ImGui::DragFloat("Height", &capsuleCollider.Height, 0.5);
-			ExternalAPI::ImGUIAPI::EnumCombo("Direction", capsuleCollider.Direction);
-			DrawVectorControl("Offset Location", capsuleCollider.Center);
+			UI::BeginPropertyGrid("CapsuleColliderGrid");
 
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", capsuleCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(capsuleCollider.m_PhysicsMaterialPointerID).GetName() : "null");
-			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginPopup("Remove Physics Material")) {
-				if (ImGui::MenuItem("Remove Material")) {
-					capsuleCollider.RemovePhysicsMaterial();
-				}
+			UI::AttributeBool("IsTrigger", capsuleCollider.IsTrigger);
+			UI::AttributeDrag("Radius", capsuleCollider.Radius, 0.5);
+			UI::AttributeDrag("Height", capsuleCollider.Height, 0.5);
+			UI::EnumCombo("Direction", capsuleCollider.Direction);
+			UI::DrawVec3Control("Center", capsuleCollider.Center);
 
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::PhysicsMaterial).c_str())) {
-					UUID Data = *(const UUID*)payload->Data;
+			UI::AttributeAssetTextBar("Material", capsuleCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
 
-					capsuleCollider.m_PhysicsMaterialPointerID = Data;
-				}
-				ImGui::EndDragDropTarget();
-			}
+			UI::EndPropertyGrid();
 		});
 		DrawComponents<MeshColliderComponent>("Mesh Collider", entity, [](MeshColliderComponent& meshCollider) {
-			ExternalAPI::ImGUIAPI::CheckBox("IsTrigger", &meshCollider.IsTrigger);
+			UI::BeginPropertyGrid("MeshColliderGrid");
 
-			ExternalAPI::ImGUIAPI::TextBar("Mesh", meshCollider.GetMesh() != nullptr ? meshCollider.GetMesh()->GetName() : "null");
-			if (ImGui::BeginPopupContextItem("RemoveMesh")) {
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginPopup("RemoveMesh")) {
-				if (ImGui::MenuItem("Remove Mesh")) {
-					meshCollider.RemoveMeshSource();
-				}
-
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Mesh).c_str())) {
-					UUID Data = *(const UUID*)payload->Data;
-					meshCollider.m_MeshAssetPointerID = Data;
-				}
-				ImGui::EndDragDropTarget();
-			}
-
-
-			ExternalAPI::ImGUIAPI::TextBar("PhysicsMaterial", meshCollider.HasPhysicsMaterial() != false ? AssetManager::GetAssetInfo(meshCollider.m_PhysicsMaterialPointerID).GetName() : "null");
-			if (ImGui::BeginPopupContextItem("Remove Physics Material")) {
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginPopup("Remove Physics Material")) {
-				if (ImGui::MenuItem("Remove Material")) {
-					meshCollider.RemovePhysicsMaterial();
-				}
-
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::PhysicsMaterial).c_str())) {
-					UUID Data = *(const UUID*)payload->Data;
-					meshCollider.m_PhysicsMaterialPointerID = Data;
-				}
-				ImGui::EndDragDropTarget();
-			}
+			UI::AttributeBool("IsTrigger", meshCollider.IsTrigger);
+			UI::AttributeAssetTextBar("Mesh", meshCollider.m_MeshAssetPointerID, AssetType::Mesh);
+			
+			UI::AttributeAssetTextBar("Material", meshCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+			UI::EndPropertyGrid();
 		});
 		
 		DrawComponents<RigidBodyComponent>("RigidBody", entity, [](RigidBodyComponent& rigidBody) {
-			ExternalAPI::ImGUIAPI::EnumCombo<RigidBodyType>("Type", rigidBody.m_RigidBodyType);
-			if (rigidBody.m_RigidBodyType == RigidBodyType::Static)return;
 
-			ImGui::DragFloat("Mass", &rigidBody.Mass, 0.5, 0);
-			ImGui::DragFloat("LinearDrag", &rigidBody.LinearDrag, 0.5, 0);
-			ImGui::DragFloat("AngularDrag", &rigidBody.AngularDrag, 0.5);
-			ExternalAPI::ImGUIAPI::CheckBox("Gravity", &rigidBody.Gravity);
-			ExternalAPI::ImGUIAPI::CheckBox("Kinematic", &rigidBody.Kinematic);
+			UI::BeginPropertyGrid("RigidBodyGrid");
 
-			DrawVectorControl("Freeze Location", rigidBody.FreezeLocation, false);
-			DrawVectorControl("Freeze Rotation", rigidBody.FreezeRotation, false);
+			UI::EnumCombo("RigidType", rigidBody.m_RigidBodyType);
+
+			if (rigidBody.m_RigidBodyType == RigidBodyType::Static)
+			{
+
+				UI::AttributeDrag("Mass", rigidBody.Mass, 0.5, 0);
+				UI::AttributeDrag("LinearDrag", rigidBody.LinearDrag, 0.5, 0);
+				UI::AttributeDrag("AngularDrag", rigidBody.AngularDrag, 0.5);
+
+				UI::AttributeBool("Gravity", rigidBody.Gravity);
+				UI::AttributeBool("Kinematic", rigidBody.Kinematic);
+
+				DrawVectorControl("Freeze Location", rigidBody.FreezeLocation, false);
+				DrawVectorControl("Freeze Rotation", rigidBody.FreezeRotation, false);
+			}
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponents<ParticleSystemComponent>("Particle System",entity, [&](ParticleSystemComponent& particleSystem) {
@@ -952,7 +897,7 @@ namespace Proof
 				{
 					name = "null";
 				}
-				ExternalAPI::ImGUIAPI::TextBar(fmt::format("Index {}", index), name);
+				UI::AttributeTextBar(fmt::format("Index {}", index), name);
 				if (particleHandler != nullptr)
 				{
 					ImGui::SameLine();
@@ -1161,7 +1106,7 @@ namespace Proof
 							case ScriptFieldType::Bool:
 								{
 									bool var = scriptField.GetValue<bool>();
-									ExternalAPI::ImGUIAPI::CheckBox(fieldName, &var);
+									UI::AttributeBool(fieldName, var);
 									scriptField.SetValue<bool>(var);
 									break;
 								}
@@ -1170,14 +1115,14 @@ namespace Proof
 									if (AssetManager::HasAsset(scriptField.GetValue<uint64_t>()))
 									{
 										auto assetInfo =AssetManager::GetAssetInfo(scriptField.GetValue<uint64_t>());
-										ExternalAPI::ImGUIAPI::TextBar(field.Name, assetInfo.GetName());
+										UI::AttributeTextBar(field.Name, assetInfo.GetName());
 
 									}
 									else
 									{
 										scriptField.SetValue<uint64_t>(0);
 
-										ExternalAPI::ImGUIAPI::TextBar(field.Name, "null (Prefab)");
+										UI::AttributeTextBar(field.Name, "null (Prefab)");
 									}
 									if (ImGui::BeginDragDropTarget())
 									{
@@ -1196,13 +1141,13 @@ namespace Proof
 									if (m_ActiveWorld->HasEntity(scriptField.GetValue<uint64_t>()))
 									{
 										Entity ent = m_ActiveWorld->GetEntity(scriptField.GetValue<uint64_t>());
-										ExternalAPI::ImGUIAPI::TextBar(field.Name, ent.GetName());
+										UI::AttributeTextBar(field.Name, ent.GetName());
 										scriptField.SetValue<uint64_t>(ent.GetUUID().Get());
 									}
 									else
 									{
 										scriptField.SetValue<uint64_t>(0);
-										ExternalAPI::ImGUIAPI::TextBar(field.Name, "null (Entity)");
+										UI::AttributeTextBar(field.Name, "null (Entity)");
 									}
 									if (ImGui::BeginDragDropTarget())
 									{
@@ -1313,14 +1258,14 @@ namespace Proof
 									if (AssetManager::HasAsset(instance->GetFieldValue<uint64_t>(name)))
 									{
 										auto assetInfo = AssetManager::GetAssetInfo(instance->GetFieldValue<uint64_t>(name));
-										ExternalAPI::ImGUIAPI::TextBar(field.Name, assetInfo.GetName());
+										UI::AttributeTextBar(field.Name, assetInfo.GetName());
 
 									}
 									else
 									{
 										instance->SetFieldValue<uint64_t>(name,0);
 
-										ExternalAPI::ImGUIAPI::TextBar(field.Name, "null (Prefab)");
+										UI::AttributeTextBar(field.Name, "null (Prefab)");
 									}
 									if (ImGui::BeginDragDropTarget())
 									{
@@ -1339,13 +1284,13 @@ namespace Proof
 									if (m_ActiveWorld->HasEntity(instance->GetFieldValue<uint64_t>(name)))
 									{
 										Entity ent = m_ActiveWorld->GetEntity(instance->GetFieldValue<uint64_t>(name));
-										ExternalAPI::ImGUIAPI::TextBar(field.Name, ent.GetName());
+										UI::AttributeTextBar(field.Name, ent.GetName());
 
 									}
 									else
 									{
 										instance->SetFieldValue<uint64_t>(name,0);
-										ExternalAPI::ImGUIAPI::TextBar(field.Name, "null (Entity)");
+										UI::AttributeTextBar(field.Name, "null (Entity)");
 									}
 									if (ImGui::BeginDragDropTarget())
 									{
@@ -1370,34 +1315,22 @@ namespace Proof
 
 		DrawComponents<TextComponent>("Text Component", entity, [](TextComponent& textComponent) {
 			//ImGui::InputTextMultiline("Text", (char*)textComponent.Text.c_str(), textComponent.Text.capacity() + 1);
-			UI::AttributeInputTextMultiline("ither", textComponent.Text,0);
-			ImGui::ColorEdit4("##Colour", glm::value_ptr(textComponent.Colour));
+			UI::BeginPropertyGrid("TextComponentGrid");
 
-			ImGui::DragFloat("Kernng", &textComponent.Kerning, 0.025);
-			ImGui::DragFloat("Line Spacing", &textComponent.LineSpacing, 0.025);
+			UI::AttributeInputTextMultiline("ither", textComponent.Text,0);
+			UI::AttributeColor("Colour", textComponent.Colour);
+
+			UI::AttributeDrag("Kernng", textComponent.Kerning, 0.025);
+			UI::AttributeDrag("Line Spacing", textComponent.LineSpacing, 0.025);
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponents<PlayerInputComponent>("Player Input", entity, [](PlayerInputComponent& player) {
-			ExternalAPI::ImGUIAPI::EnumCombo("Player", player.InputPlayer);
-			if (AssetManager::HasAsset(player.Player))
-			{
-				auto assetInfo = AssetManager::GetAssetInfo(player.Player);
-				ExternalAPI::ImGUIAPI::TextBar("PlayerPrefab", assetInfo.GetName());
-			}
-			else
-			{
-				ExternalAPI::ImGUIAPI::TextBar("PlayerPrefab", "null (Prefab)");
-			}
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
-				{
-					UUID prefabId = *(UUID*)payload->Data;
-					if (AssetManager::HasAsset(prefabId))
-						player.Player = AssetManager::GetAsset<Prefab>(prefabId);
-				}
-				ImGui::EndDragDropTarget();
-			}
+			UI::BeginPropertyGrid("PlayerInputComponentGrid");
+
+			UI::EnumCombo("Player", player.InputPlayer);
+			UI::AttributeAssetTextBar("Player", player.Player, AssetType::Prefab);
+			UI::EndPropertyGrid();
 		});
 
 
@@ -1414,7 +1347,7 @@ namespace Proof
 			{
 				UI::ScopedID scope(&index);
 				std::string name = hud != nullptr ? hud->Name : "null";
-				ExternalAPI::ImGUIAPI::TextBar(fmt::format("Index {}", index), name);
+				UI::AttributeTextBar(fmt::format("Index {}", index), name);
 				if (hud != nullptr)
 				{
 					ImGui::SameLine();
@@ -1438,65 +1371,47 @@ namespace Proof
 		});
 
 
-		DrawComponents<AudioComponent>("Audio", entity, [](AudioComponent& audio) 
+		DrawComponents<AudioComponent>("Audio", entity, [](AudioComponent& audio)
 		{
-			if (AssetManager::HasAsset(audio.AudioAsset))
+			UI::BeginPropertyGrid("AudioComponentGrid");
+
+			UI::AttributeAssetTextBar("Audio", audio.AudioAsset,AssetType::Audio);
+
+			UI::AttributeSlider("VolumeMultiplier", audio.VolumeMultiplier, 0, 1);
+			UI::AttributeSlider("PitchMultiplier", audio.PitchMultiplier, 0, 24);
+
+			UI::AttributeBool("Looping", audio.Looping);
+			UI::AttributeBool("Play On Awake", audio.PlayOnAwake);
+			UI::AttributeBool("Specialization", audio.SpatializationEnabled);
+
+			if (audio.SpatializationEnabled == false)
 			{
 
-				ExternalAPI::ImGUIAPI::TextBar("Audio", AssetManager::GetAssetInfo(audio.AudioAsset).GetName());
-			}
-			else
-			{
-				ExternalAPI::ImGUIAPI::TextBar("Audio", "null");
-			}
+				UI::EnumCombo("Attenuation Model", audio.AttenuationModel);
 
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Audio).c_str()))
+				UI::AttributeDrag("Min Gain", audio.MinGain, 0.025f, 0, 1);
+				UI::AttributeDrag("Max Gain", audio.MaxGain, 0.025f, 0, 1);
+
+				UI::AttributeDrag("Min Distance", audio.MinDistance, 0.025f, 0, audio.MaxDistance);
+				UI::AttributeDrag("Max Distance", audio.MaxDistance, 0.025f, audio.MinDistance, Math::GetMaxType<float>());
+
 				{
-					uint64_t Data = *(const uint64_t*)payload->Data;
-					if (AssetManager::HasAsset(Data))
-					{
-						audio.AudioAsset = Data;
-					}
+					float degrees = glm::degrees(audio.ConeInnerAngleInRadians);
+					if (UI::AttributeSlider("Cone Inner Angle", degrees, 0, 360))
+						audio.ConeInnerAngleInRadians = glm::radians(degrees);
+
+					degrees = glm::degrees(audio.ConeOuterAngleInRadians);
+					if (UI::AttributeSlider("Cone Outer Angle", degrees, 0, 360))
+						audio.ConeOuterAngleInRadians = glm::radians(degrees);
+
+					UI::AttributeSlider("ConeOuterGain", audio.ConeOuterGain, 0, 1);
 				}
-				ImGui::EndDragDropTarget();
+
+				UI::AttributeSlider("Doppler Factor", audio.DopplerFactor, 0, 1);
+				UI::AttributeSlider("RollOff", audio.Rolloff, 0, 1);
 			}
 
-			UI::AttributeSlider("VolumeMultiplier", audio.VolumeMultiplier, 0,1);
-			UI::AttributeSlider("PitchMultiplier", audio.PitchMultiplier,0,24);
-
-			ExternalAPI::ImGUIAPI::CheckBox("Looping", &audio.Looping);
-			ExternalAPI::ImGUIAPI::CheckBox("Play On Awake", &audio.PlayOnAwake);
-			ExternalAPI::ImGUIAPI::CheckBox("Specialization", &audio.SpatializationEnabled);
-
-			if (audio.SpatializationEnabled == false)return;
-
-			if (auto [changed,newValue] = UI::EnumCombo("Attenuation Model", EnumReflection::GetNames<AttenuationModel>(), EnumReflection::EnumString(audio.AttenuationModel)); changed)
-			{
-				audio.AttenuationModel = EnumReflection::StringEnum<AttenuationModel>(newValue);
-			}
-
-			UI::AttributeDrag("Min Gain", audio.MinGain, 0.025f, 0, 1);
-			UI::AttributeDrag("Max Gain", audio.MaxGain, 0.025f, 0, 1);
-
-			UI::AttributeDrag("Min Distance", audio.MinDistance, 0.025f, 0, audio.MaxDistance);
-			UI::AttributeDrag("Max Distance", audio.MaxDistance, 0.025f, audio.MinDistance, Math::GetMaxType<float>());
-
-			{
-				float degrees= glm::degrees(audio.ConeInnerAngleInRadians);
-				if (UI::AttributeSlider("Cone Inner Angle", degrees,0, 360))
-					audio.ConeInnerAngleInRadians = glm::radians(degrees);
-
-				degrees = glm::degrees(audio.ConeOuterAngleInRadians);
-				if (UI::AttributeSlider("Cone Outer Angle", degrees, 0, 360))
-					audio.ConeOuterAngleInRadians = glm::radians(degrees);
-
-				UI::AttributeSlider("ConeOuterGain", audio.ConeOuterGain, 0, 1);
-			}
-
-			UI::AttributeSlider("Doppler Factor", audio.DopplerFactor, 0, 1);
-			UI::AttributeSlider("RollOff", audio.Rolloff,0, 1);
+			UI::EndPropertyGrid();
 		});
 	}
 

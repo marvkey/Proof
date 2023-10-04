@@ -43,6 +43,8 @@ namespace Proof {
 		sceneDesc.filterShader = shaderControl;
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
+		//sceneDesc.ad
 		if (m_Config.PvdClient)
 		{
 			m_Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
@@ -51,6 +53,7 @@ namespace Proof {
 		m_Scene = PhysicsEngine::GetPhysics()->createScene(sceneDesc);
 		physx::PxPvdSceneClient* pvdClient = m_Scene->getScenePvdClient();
 
+		//m_Scene->()
 		if (PhysicsEngine::GetPVD()->isConnected())
 		{
 			PF_ENGINE_INFO("Physics Engine Visual debugger connected");

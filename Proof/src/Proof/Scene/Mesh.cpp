@@ -107,12 +107,15 @@ namespace Proof{
         m_Nodes = {};
         m_Nodes.emplace_back(node);
 
+        
+
         for (auto& [index, material] : m_Materials->GetMaterials())
         {
             if (AssetManager::HasAsset(material))
                 continue;
             Count<Asset> asset = material;
-            AssetManager::CreateRuntimeAsset(asset);
+            const std::string materialname = material->Name.empty() ? "UnnamedMaterial" : material->Name;
+            AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), asset, materialname);
         }
     }
 
@@ -133,7 +136,8 @@ namespace Proof{
             if (AssetManager::HasAsset(material))
                 continue;
             Count<Asset> asset = material;
-            AssetManager::CreateRuntimeAsset(asset);
+            const std::string materialname = material->Name.empty() ? "UnnamedMaterial" : material->Name;
+            AssetManager::CreateRuntimeAsset(AssetManager::CreateID(),asset, materialname);
         }
     }
 

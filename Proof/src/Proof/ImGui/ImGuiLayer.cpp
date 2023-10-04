@@ -269,10 +269,10 @@ namespace Proof
 		colors[ImGuiCol_TitleBg] = ImVec4{ 0.1f,0.1f,0.121f,1.0f };
 		colors[ImGuiCol_TitleBgActive] = ImVec4{ 0.10f,0.12f,0.2f,1.0f };
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.1095f,0.10f,0.1f,1.0f };
+		//colors[ImGuiCol_TextDisabled]
 		style.FrameRounding = 12;
 		style.PopupRounding = 12;
 		style.TabBorderSize = 1;
-		style.PopupRounding = 12;
 		style.GrabRounding = 12;
 		style.PopupBorderSize = 0;
 		style.ScrollbarSize = 15;

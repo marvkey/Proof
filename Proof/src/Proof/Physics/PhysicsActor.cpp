@@ -444,6 +444,7 @@ namespace Proof {
 			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.Y);
 			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.Z);
 
+			//body->setSleepThreshold();
 			m_RigidActor = body;
 		}
 		else

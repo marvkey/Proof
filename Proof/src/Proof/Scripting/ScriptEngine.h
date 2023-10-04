@@ -53,35 +53,35 @@ namespace Proof
 		MonoClassField* ClassField;
 	};
 	// ScriptField + data storage
-	struct ScriptFieldInstance
-	{
-		ScriptField Field;
-
-		ScriptFieldInstance()
+		struct ScriptFieldInstance
 		{
-			memset(m_Buffer, 0, sizeof(m_Buffer));
-		}
+			ScriptField Field;
 
-		template<typename T>
-		T GetValue()
-		{
-			static_assert(sizeof(T) <= 16, "Type too large!");
-			return *(T*)m_Buffer;
-		}
+			ScriptFieldInstance()
+			{
+				memset(m_Buffer, 0, sizeof(m_Buffer));
+			}
 
-		template<typename T>
-		void SetValue(T value)
-		{
-			static_assert(sizeof(T) <= 16, "Type too large!");
-			memcpy(m_Buffer, &value, sizeof(T));
-		}
+			template<typename T>
+			T GetValue()
+			{
+				static_assert(sizeof(T) <= 16, "Type too large!");
+				return *(T*)m_Buffer;
+			}
 
-		void SetValueRaw(uint8_t buffer[16])
-		{
-			memcpy(m_Buffer, buffer, sizeof(buffer));
-		}
-	private:
-		uint8_t m_Buffer[16];
+			template<typename T>
+			void SetValue(T value)
+			{
+				static_assert(sizeof(T) <= 16, "Type too large!");
+				memcpy(m_Buffer, &value, sizeof(T));
+			}
+
+			void SetValueRaw(uint8_t buffer[16])
+			{
+				memcpy(m_Buffer, buffer, sizeof(buffer));
+			}
+		private:
+			uint8_t m_Buffer[16];
 
 		friend class ScriptEngine;
 		friend class ScriptInstance;

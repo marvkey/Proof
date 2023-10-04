@@ -2,7 +2,6 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 #include "Proof/Imgui/ImguiLayer.h"
-#include "../../ImGUIAPI.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Math/Math.h"
 #include "Proof/Core/Profile.h"
@@ -24,19 +23,25 @@ namespace Proof {
 
 		ImGui::Begin(dsiplayName, &isOpen);
 		{
+			UI::BeginPropertyGrid("AssetManagerPanelGrid");
+			
 			for (auto [ID,assetContainer] : AssetManager::GetAssets()) {
 				ImGui::BeginChildFrame((ImGuiID)ID,{ImGui::GetContentRegionAvail().x,100}, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
-				ExternalAPI::ImGUIAPI::TextBar("Asset ID", std::to_string(assetContainer.Info.ID));
+
+				UI::BeginPropertyGrid(fmt::format("{}Grid",assetContainer.Info.GetName()));
+				UI::AttributeTextBar("Asset ID", std::to_string(assetContainer.Info.ID));
 				if(assetContainer.Info.State== AssetState::Ready)
-					ExternalAPI::ImGUIAPI::TextBar("Loaded", "False");
+					UI::AttributeTextBar("Loaded", "False");
 				else
-					ExternalAPI::ImGUIAPI::TextBar("Loaded", "True");
+					UI::AttributeTextBar("Loaded", "True");
 
-				ExternalAPI::ImGUIAPI::TextBar("Path", assetContainer.Info.Path.string());
+				UI::AttributeTextBar("Path", AssetManager::GetAssetFileSystemPath(assetContainer.Info.Path).string());
 
-				ExternalAPI::ImGUIAPI::TextBar("Type", fmt::format("{}{}",EnumReflection::EnumString(assetContainer.Info.Type),"Asset"));
+				UI::AttributeTextBar("Type", fmt::format("{}{}",EnumReflection::EnumString(assetContainer.Info.Type),"Asset"));
 				ImGui::EndChild();
+				UI::EndPropertyGrid();
 			}
+			UI::EndPropertyGrid();
 		}
 		ImGui::End();
 	}

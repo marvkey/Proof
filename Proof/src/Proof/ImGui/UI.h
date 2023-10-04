@@ -2,6 +2,12 @@
 #include <Imgui/imgui.h>
 #include "Proof/Core/SmartPointer.h"
 #include "Proof/Renderer/Texture.h"
+#include "Proof/Resources/EnumReflection.h"
+#include "Proof/Math/Math.h"
+#include "Proof/Asset/AssetTypes.h"
+#include <glm/glm.hpp>
+#include <unordered_set>
+#define EG_HOVER_THRESHOLD 0.5f
 namespace Proof::HeaderFileOnly {
 	struct TextureUI {
 		static ImTextureID GetTexture(Count<class Image> image);
@@ -36,77 +42,63 @@ namespace Proof::UI {
 	{
 		return ImageButton(image->GetImage(), size, uv0, uv1, frame_padding, bg_col, tint_col);
 	}
+	//Grid Name needs to be unique
+	void BeginPropertyGrid(const std::string& gridName);
+	void EndPropertyGrid();
 
-	// returns the [changed,eum selected]
-	inline std::pair<bool, std::string> EnumCombo(const std::string& name, const std::vector<std::string>& names, const std::string& currentSelected)
+	bool DrawVec3Control(const std::string& label, glm::vec3& values, const glm::vec3 resetValues = glm::vec3{ 0.f }, float columnWidth = 100.f);
+	// returns the [is changed,seleection index, out of stirng]
+	std::tuple<bool, int, std::string> Combo(const std::string& label, const std::vector<std::string>& options, const std::string& currentSelected, const std::vector<std::string>& tooltips = {}, const std::string& helpMessage ="");
+
+	template<class TEnum>
+	bool EnumCombo(const std::string& label, TEnum& value, const std::unordered_set<TEnum>& excludedValues = {},const std::vector<std::string>&tooltips = {}, const std::string & helpMessage = "")
 	{
-		ImGui::Text(name.c_str());
-		ImGui::SameLine();
-		std::string id= fmt::format("##{}", name);
+		auto [changed, outSelectionIndex, outSelectiongString] =
+			UI::Combo(label, EnumReflection::GetNames<TEnum>(excludedValues), EnumReflection::EnumString(value),
+				tooltips,helpMessage);
 
-		std::string returnValue = currentSelected;
-		bool isChanged = false;
-		if (ImGui::BeginCombo(id.c_str(), currentSelected.c_str()))
-		{
-			for (auto& containerName : names)
-			{
-				bool isSelected = (currentSelected == containerName);
-				if (ImGui::Selectable(containerName.c_str(), isSelected))
-				{
-					returnValue = containerName;
-					isChanged = true;
-				}
-				if (isSelected)
-				{
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-		return { isChanged, returnValue };
+		if(changed)
+			value = EnumReflection::StringEnum< TEnum>(outSelectiongString);
+
 	}
 
-	inline bool AttributeSlider(const std::string& label,float& value, float min = 0, float max = 0, ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f")
-	{
-		if(min == 0 && max ==0)
-			flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
+	bool AttributeInputText(const std::string& label, std::string& value, const std::string& helpMessage = "");
+	bool AttributeBool(const std::string& label, bool& value, const std::string& helpMessage = "");
+	bool AttributeLabels(const std::string& label, const std::vector<std::string>& customLabels, bool* values, const std::string& helpMessage = "");
 
-		bool modfified = false;
-		std::string id = fmt::format("##{}", label);
-		ImGui::Text(label.c_str());
-		ImGui::SameLine();
-		modfified = ImGui::SliderFloat(id.c_str(), &value, min, max,format, flags);
-		return modfified;
-	}
+	bool AttributeTextBar(const std::string& label, const std::string& text);
+	bool AttributeText(const std::string& text);
 
-	inline bool AttributeDrag(const std::string& label, uint32_t& value, float speed = 1, uint32_t min = 0, uint32_t max = 0, ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d")
-	{
-		if (min == 0 && max == 0)
-			flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
+	// does the drag adn drop
+	bool AttributeAssetTextBar(const std::string& label, AssetID& ID, AssetType type, bool includeRemove = true);
+	bool AttributeAssetTextBar(const std::string& label, Count<class Asset> asset, AssetType type, bool includeRemove = true);
 
-		bool modfified = false;
-		std::string id = fmt::format("##{}", label);
-		ImGui::Text(label.c_str());
-		ImGui::SameLine();
-		modfified = ImGui::DragScalar(id.c_str(),ImGuiDataType_U32, &value, speed, &min, &max, format, flags);
-		return modfified;
-	}
+	bool AttributeSlider(const std::string& label, int& value, int min = Math::GetMinType<int>(), int max = Math::GetMaxType<int>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+	bool AttributeSlider(const std::string& label, float& value, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage ="", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+	bool AttributeSlider(const std::string& label, glm::vec2& value, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+	bool AttributeSlider(const std::string& label, glm::vec3& value, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+	bool AttributeSlider(const std::string& label, glm::vec4& value, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "",ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f")	;
 
-	inline bool AttributeDrag(const std::string& label, float& value, float speed =1.f , float min = 0, float max = 0, ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f")
-	{
-		if (min == 0 && max == 0 )
-			flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
+	bool AttributeDrag(const std::string& label, uint32_t& value, float speed = 1, uint32_t min = Math::GetMinType<uint32_t>(), uint32_t max = Math::GetMaxType<uint32_t>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d");
+	bool AttributeDrag(const std::string& label, float& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "",ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+	bool AttributeDrag(const std::string& label, glm::vec2& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+	bool AttributeDrag(const std::string& label, glm::vec3& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+	bool AttributeDrag(const std::string& label, glm::vec4& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "",ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
 
-		bool modfified = false;
-		std::string id = fmt::format("##{}", label);
-		ImGui::Text(label.c_str());
-		ImGui::SameLine();
-		modfified = ImGui::DragFloat(id.c_str(), &value, speed, min, max, format, flags);
-		return modfified;
-	}
+	bool AttributeColor(const std::string& label, glm::vec3& value, const std::string& helpMessage = "");
+	bool AttributeColor(const std::string& label, glm::vec4& value, const std::string& helpMessage = "");
+
+	bool AttributeButton(const std::string& label, const std::string& buttonText, const ImVec2& size = ImVec2(0, 0));
 
 	bool AttributeInputTextMultiline(const std::string& label, std::string& value, ImGuiInputTextFlags flags);
-	struct ScopedStyleColor {
+	void PushItemDisabled();
+	void PopItemDisabled();
+
+	void Tooltip(const std::string& tooltip, float treshHold = EG_HOVER_THRESHOLD);
+	void HelpMarker(const std::string& text);
+
+	struct ScopedStyleColor 
+	{
 		ScopedStyleColor() = default;
 		ScopedStyleColor(ImGuiCol idx, ImVec4 color, bool predicate = true)
 			: m_Set(predicate)
@@ -131,7 +123,8 @@ namespace Proof::UI {
 		bool m_Set = false;
 	};
 
-	struct ScopedStyleVar {
+	struct ScopedStyleVar 
+	{
 		ScopedStyleVar() = default;
 		ScopedStyleVar(ImGuiStyleVar idx, float val, bool predicate = true)
 			: m_Set(predicate)

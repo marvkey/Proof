@@ -23,7 +23,6 @@
 
 #include "Editor3D/Editor3D.h"
 #include "Proof/Core/FrameTime.h"
-#include "Editor3D/ImGUIAPI.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/AssetThumbnailGenerator.h"
 
@@ -147,7 +146,7 @@ namespace Proof
 		if (ImGui::BeginPopupModal("Add Mesh", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 
-			ExternalAPI::ImGUIAPI::CheckBox("Dynamic", &DynamicMesh);
+			UI::AttributeBool("Dynamic", DynamicMesh);
 			ImGui::Separator();
 
 			returnValue = true;
@@ -485,7 +484,7 @@ namespace Proof
 			a:
 			if (nameExist == true) { // so basically if it is the same name do not change anything
 				FileRenameName = "";
-				ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
+				//ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
 				NameofFileRename = "";
 				return;
 			}
@@ -498,7 +497,7 @@ namespace Proof
 					AssetManager::ChangeAssetPath(assetInfo.ID, dirEntry.path().string());
 				}
 			}
-			ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
+			//ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
 			NameofFileRename = "";
 			FileRenameName = "";
 			return;
@@ -530,7 +529,7 @@ namespace Proof
 			a:
 			if (nameExist == true) {// so basically if it is the same name do not change anything
 				FileRenameName = "";
-				ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
+				//ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
 				NameofFileRename = "";
 				return;
 			}
@@ -545,7 +544,7 @@ namespace Proof
 				AssetManager::SaveAsset(assetInfo.ID);
 			}
 			FileRenameName = "";
-			ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
+			//ExternalAPI::ImGUIAPI::SetKeyboardFocusOff();
 			NameofFileRename = "";
 			return;
 		}

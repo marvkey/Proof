@@ -90,7 +90,7 @@ namespace Proof {
 					direction = glm::normalize(direction);
 					directionaLightScene.DirectionalLights[index].Color = dirLightComponent.Color;
 					directionaLightScene.DirectionalLights[index].Intensity = dirLightComponent.Intensity;
-					directionaLightScene.DirectionalLights[index].Direction = -GlmVecToProof(direction);
+					directionaLightScene.DirectionalLights[index].Direction = -direction;
 					directionaLightScene.DirectionalLights[index].ShadowSoftness = dirLightComponent.ShadowSoftness;
 					directionaLightScene.DirectionalLights[index].ShadowStrength = dirLightComponent.ShadowStrength;
 					directionaLightScene.DirectionalLights[index].bCastShadows = dirLightComponent.CastShadow;
