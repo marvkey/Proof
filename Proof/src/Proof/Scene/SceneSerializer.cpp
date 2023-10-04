@@ -426,6 +426,8 @@ namespace Proof
 				out << YAML::Key << "Type" << EnumReflection::EnumString<RigidBodyType>(rigidBody.m_RigidBodyType);
 				out << YAML::Key << "FreezeLocation" <<  rigidBody.FreezeLocation;
 				out << YAML::Key << "FreezeRotation" <<  rigidBody.FreezeRotation;
+				out << YAML::Key <<"Kinematic"<< rigidBody.Kinematic; 
+
 				out << YAML::EndMap; // RigidBodyComponent
 			}
 		}
@@ -951,6 +953,7 @@ namespace Proof
 					rgb.Gravity = rigidBodyComponent["Gravity"].as<bool>();
 					rgb.FreezeLocation = rigidBodyComponent["FreezeLocation"].as<VectorTemplate<bool>>();
 					rgb.FreezeRotation = rigidBodyComponent["FreezeRotation"].as<VectorTemplate<bool>>();
+					rgb.Kinematic = rigidBodyComponent["Kinematic"].as<bool>(rgb.Kinematic);
 					rgb.m_RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
 				}
 			}

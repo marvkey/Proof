@@ -576,7 +576,7 @@ namespace Proof
 			return;
 		}
 		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
-		 actor->SetLinearVelocity(*force, wakeUP);
+		 actor->SetLinearVelocity(*force);
 	}
 	static void RigidBody_SetAngularVelocity(UUID entityID, glm::vec3* force, bool wakeUP)
 	{
@@ -586,7 +586,7 @@ namespace Proof
 			return;
 		}
 		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
-		actor->SetAngularVelocity(*force, wakeUP);
+		actor->SetAngularVelocity(*force);
 	}
 
 	static void RigidBody_GetAngularVelocity(UUID entityID, glm::vec3* force)

@@ -924,7 +924,7 @@ namespace Proof
 			ImGui::DragFloat("LinearDrag", &rigidBody.LinearDrag, 0.5, 0);
 			ImGui::DragFloat("AngularDrag", &rigidBody.AngularDrag, 0.5);
 			ExternalAPI::ImGUIAPI::CheckBox("Gravity", &rigidBody.Gravity);
-			ExternalAPI::ImGUIAPI::CheckBox("Kinematic", &rigidBody.Kinimatic);
+			ExternalAPI::ImGUIAPI::CheckBox("Kinematic", &rigidBody.Kinematic);
 
 			DrawVectorControl("Freeze Location", rigidBody.FreezeLocation, false);
 			DrawVectorControl("Freeze Rotation", rigidBody.FreezeRotation, false);

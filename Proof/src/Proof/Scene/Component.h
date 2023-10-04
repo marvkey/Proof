@@ -552,7 +552,7 @@ namespace Proof
 		float AngularDrag = 0.05f;
 		float LinearDrag = 0.0f;
 		bool Gravity = true;
-		bool Kinimatic = false;
+		bool Kinematic = false;
 		
 		VectorTemplate<bool>FreezeLocation = { false,false,false };
 		VectorTemplate<bool>FreezeRotation = { false,false,false };
@@ -562,7 +562,6 @@ namespace Proof
 		}
 	private:
 		RigidBodyType m_RigidBodyType = RigidBodyType::Static;
-		void* m_RuntimeBody = nullptr;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;

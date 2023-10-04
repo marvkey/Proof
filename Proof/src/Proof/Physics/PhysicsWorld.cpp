@@ -111,7 +111,7 @@ namespace Proof {
 		Entity ent = m_World->GetEntity(id);;
 		if (!ent.HasComponent<RigidBodyComponent>())
 			return nullptr;
-		auto actor= Count<PhysicsActor>::Create(this,ent.GetUUID());
+		auto actor= Count<PhysicsActor>::Create(this,ent);
 		m_Actors[id] = actor;
 		return actor;
 	}
@@ -135,7 +135,7 @@ namespace Proof {
 		
 		m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity) {
 			auto id =entity.GetUUID();
-			m_Actors.insert({ id, Count<PhysicsActor>::Create(this, entity.GetUUID()) });
+			m_Actors.insert({ id, Count<PhysicsActor>::Create(this, entity) });
 		});
 	}
 	void PhysicsWorld::EndWorld()

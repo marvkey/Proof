@@ -16,19 +16,19 @@ namespace Proof
 			PhysicsActor* overlappTrigger = (PhysicsActor*)pairs[actorIndex].otherActor->userData;
 			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 			{
-				triggerActor->OnTriggerEnter(overlappTrigger);
-				overlappTrigger->OnOverlapTriggerEnter(triggerActor);
+				//triggerActor->OnTriggerEnter(overlappTrigger);
+				//overlappTrigger->OnOverlapTriggerEnter(triggerActor);
 			}
 			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
-				triggerActor->OnTriggerLeave(overlappTrigger);
-				overlappTrigger->OnOverlapTriggerLeave(triggerActor);
+				//triggerActor->OnTriggerLeave(overlappTrigger);
+				//overlappTrigger->OnOverlapTriggerLeave(triggerActor);
 			}
 
 			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
 			{
-				triggerActor->OnTriggerStay(overlappTrigger);
-				overlappTrigger->OnOverlapTriggerStay(triggerActor);
+				//triggerActor->OnTriggerStay(overlappTrigger);
+				//overlappTrigger->OnOverlapTriggerStay(triggerActor);
 			}
 		}
 	}
@@ -38,19 +38,19 @@ namespace Proof
 		
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 		{
-			actor0->OnCollisonEnter(actor1);
-			actor1->OnCollisonEnter(actor0);
+			//actor0->OnCollisonEnter(actor1);
+			//actor1->OnCollisonEnter(actor0);
 		}
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 		{
-			actor0->OnCollisonLeave(actor1);
-			actor1->OnCollisonLeave(actor0);
+			//actor0->OnCollisonLeave(actor1);
+			//actor1->OnCollisonLeave(actor0);
 		}
 
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
 		{
-			actor0->OnCollisonStay(actor1);
-			actor1->OnCollisonStay(actor0);
+			//actor0->OnCollisonStay(actor1);
+			//actor1->OnCollisonStay(actor0);
 		}
 		#if 0
 		CollisionInfo collisonInfo1;

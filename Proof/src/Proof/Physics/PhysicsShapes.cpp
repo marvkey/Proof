@@ -30,10 +30,9 @@ namespace Proof {
 		glm::vec3 colliderSize = glm::abs(worldTransform.Scale * component.Size);
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(colliderSize.x, colliderSize.y, colliderSize.z);
 		
-		physx::PxRigidActor* physxActor =(physx::PxRigidActor *) actor.GetActorBody();
 		physx::PxMaterial* physxMaterial = (physx::PxMaterial*)m_Material->GetPhysicsBody();
 
-		m_Shape = physx::PxRigidActorExt::createExclusiveShape(*physxActor, geometry, *physxMaterial);
+		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, *physxMaterial);
 
 		//m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
@@ -103,13 +102,12 @@ namespace Proof {
 
 		worldTransform.Scale = glm::abs(worldTransform.Scale);
 
-		physx::PxRigidActor* physxActor = (physx::PxRigidActor*)actor.GetActorBody();
 		physx::PxMaterial* physxMaterial = (physx::PxMaterial*)m_Material->GetPhysicsBody();
 
 		float largestComponent = glm::max(worldTransform.Scale.x, glm::max(worldTransform.Scale.y, worldTransform.Scale.z));
 		physx::PxSphereGeometry geometry = physx::PxSphereGeometry(largestComponent * component.Radius);
 
-		m_Shape = physx::PxRigidActorExt::createExclusiveShape(*physxActor, geometry, *physxMaterial);
+		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, *physxMaterial);
 		//m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
@@ -207,13 +205,13 @@ namespace Proof {
 		World* world = entity.GetCurrentWorld();
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
 
-		physx::PxRigidActor* physxActor = (physx::PxRigidActor*)actor.GetActorBody();
 		physx::PxMaterial* physxMaterial = (physx::PxMaterial*)m_Material->GetPhysicsBody();
 
 		auto capsuleData = GetCapsuleData(component.Direction, worldTransform);
 
 		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * capsuleData.radiusScale, (component.Height / 2.0f) * capsuleData.scaleDirection);
 	//	m_Shape->setSimulationFilterData(actor.GetFilterData());
+		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, *physxMaterial);
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(component.Center, capsuleData.offsetRotation));
