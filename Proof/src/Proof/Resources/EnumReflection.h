@@ -47,7 +47,13 @@ namespace Proof
 			auto type = magic_enum::enum_cast<E>(name);
 			if (type.has_value())
 				return type.value();
-			
+			for (int i = MAGIC_ENUM_RANGE_MIN; i < MAGIC_ENUM_RANGE_MAX + 1; i++)
+			{
+				if (magic_enum::enum_contains<E>(i))
+				{
+					return (E)i;
+				}
+			}
 			return (E)0;
 		}
 

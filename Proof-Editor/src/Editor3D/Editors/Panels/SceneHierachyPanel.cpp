@@ -859,9 +859,9 @@ namespace Proof
 
 			UI::EnumCombo("RigidType", rigidBody.m_RigidBodyType);
 
-			if (rigidBody.m_RigidBodyType == RigidBodyType::Static)
+			if (rigidBody.m_RigidBodyType == RigidBodyType::Dynamic)
 			{
-
+				UI::EnumCombo("CollisionDetection", rigidBody.CollisionDetection);
 				UI::AttributeDrag("Mass", rigidBody.Mass, 0.5, 0);
 				UI::AttributeDrag("LinearDrag", rigidBody.LinearDrag, 0.5, 0);
 				UI::AttributeDrag("AngularDrag", rigidBody.AngularDrag, 0.5);

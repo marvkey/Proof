@@ -3,6 +3,7 @@
 #include "PhysicsEngine.h"
 #include "Proof/Scene/World.h"
 #include "Proof/Scene/Entity.h"
+#include "PhysicsUtils.h"
 namespace Proof {
 	physx::PxFilterFlags shaderControl(
 		physx::PxFilterObjectAttributes attributes0,
@@ -30,26 +31,35 @@ namespace Proof {
 		return physx::PxFilterFlags();
 	
 	}
-	PhysicsWorld::PhysicsWorld(World* world, const PhysicsWorldConfig& sceneConfig)
+	PhysicsWorld::PhysicsWorld(World* world)
 		:
-		m_World(world),
-		m_Config(sceneConfig)
+		m_World(world)
 	{
 		ScopeTimer copeTimer("Initilized physics world ");
 		physx::PxSceneDesc sceneDesc(PhysicsEngine::GetPhysics()->getTolerancesScale());
-		sceneDesc.gravity = physx::PxVec3(m_Config.Gravity.X, m_Config.Gravity.Y, m_Config.Gravity.Z);
-		sceneDesc.cpuDispatcher = PhysicsEngine::GetCpuDispatcher();
-		sceneDesc.simulationEventCallback = &m_CollisionCallback;
-		sceneDesc.filterShader = shaderControl;
+		
+
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
+
+		const PhysicsSettings& engineSettings = PhysicsEngine::GetSettings();
+		sceneDesc.gravity = PhysXUtils::ToPhysXVector(engineSettings.Gravity);
+		sceneDesc.broadPhaseType = PhysXUtils::ProofToPhysXBroadphaseType(engineSettings.BroadPhaseType);
+		sceneDesc.frictionType = PhysXUtils::ProofToPhysXFrictionType(engineSettings.FrictionModel);
+
+		sceneDesc.cpuDispatcher = PhysicsEngine::GetCpuDispatcher();
+		sceneDesc.simulationEventCallback = &m_CollisionCallback;
+		sceneDesc.filterShader = shaderControl;
+
+		PF_CORE_ASSERT(sceneDesc.isValid());
+
 		//sceneDesc.ad
-		if (m_Config.PvdClient)
-		{
-			m_Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
-			PhysicsEngine::GetPVD()->connect(*m_Transport, physx::PxPvdInstrumentationFlag::eALL);
-		}
+		//if (m_Config.PvdClient)
+		//{
+		//	m_Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
+		//	PhysicsEngine::GetPVD()->connect(*m_Transport, physx::PxPvdInstrumentationFlag::eALL);
+		//}
 		m_Scene = PhysicsEngine::GetPhysics()->createScene(sceneDesc);
 		physx::PxPvdSceneClient* pvdClient = m_Scene->getScenePvdClient();
 
@@ -68,7 +78,8 @@ namespace Proof {
 			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
 			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
 		}
-		
+		CreateRegions();
+
 		StartWorld();
 	}
 
@@ -145,13 +156,17 @@ namespace Proof {
 	{
 		// release all rigid bodies before we release teh scene
 		m_Actors.clear();
-		if (m_Config.PvdClient)
-		{
-			PhysicsEngine::GetPVD()->disconnect();
-			m_Transport->disconnect();
-			m_Transport->release();
-		}
+		//if (m_Config.PvdClient)
+		//{
+		//	PhysicsEngine::GetPVD()->disconnect();
+		//	m_Transport->disconnect();
+		//	m_Transport->release();
+		//}
 		m_Scene->release();
+		m_World = nullptr;
+
+		if (m_RegionBounds)
+			delete[] m_RegionBounds;
 	}
 	bool PhysicsWorld::Advance(float deltaTime)
 	{
@@ -166,5 +181,26 @@ namespace Proof {
 			m_Scene->fetchResults(true);
 		}
 		return true;
+	}
+	void PhysicsWorld::CreateRegions()
+	{
+		const PhysicsSettings& settings = PhysicsEngine::GetSettings();
+
+		if (settings.BroadPhaseType == BroadphaseType::AutomaticBoxPrune)
+			return;
+		if(m_RegionBounds)
+			delete[] m_RegionBounds;
+
+		m_RegionBounds = new physx::PxBounds3[settings.WorldBoundsSubdivisions * settings.WorldBoundsSubdivisions];
+		physx::PxBounds3 globalBounds(PhysXUtils::ToPhysXVector(settings.WorldBoundsMin), PhysXUtils::ToPhysXVector(settings.WorldBoundsMax));
+		uint32_t regionCount = physx::PxBroadPhaseExt::createRegionsFromWorldBounds(m_RegionBounds, globalBounds, settings.WorldBoundsSubdivisions);
+
+		for (uint32_t i = 0; i < regionCount; i++)
+		{
+			physx::PxBroadPhaseRegion region;
+			region.bounds = m_RegionBounds[i];
+			m_Scene->addBroadPhaseRegion(region);
+		}
+
 	}
 }

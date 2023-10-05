@@ -67,6 +67,7 @@ namespace Proof {
 		for (auto& collider : m_Colliders)
 			collider->DetachFromActor(m_RigidActor);
 		m_Colliders.clear();
+		m_RigidActor->getScene()->removeActor(*m_RigidActor);
 		m_RigidActor->release();
 	}
 
@@ -444,8 +445,16 @@ namespace Proof {
 			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.Y);
 			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.Z);
 
+
 			//body->setSleepThreshold();
 			m_RigidActor = body;
+
+			const PhysicsSettings& settings = PhysicsEngine::GetSettings();
+			//m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags((physx::PxRigidDynamicLockFlags)m_LockFlags);
+			m_RigidActor->is<physx::PxRigidDynamic>()->setSolverIterationCounts(settings.SolverIterations, settings.SolverVelocityIterations);
+			m_RigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::Continuous);
+			m_RigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::ContinuousSpeculative);
+			m_RigidActor->is<physx::PxRigidDynamic>()->setSleepThreshold(settings.SleepThreshold);
 		}
 		else
 		{

@@ -31,7 +31,9 @@ namespace Proof {
 	{
 		return s_Dispatcher;
 	}
-	void PhysicsEngine::Init() {
+	void PhysicsEngine::Init(PhysicsSettings settings)
+	{
+		s_Settings = settings;
 		Timer time;
 		s_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_DefaultAllocatorCallback,
 			s_DefaultErrorCallback);

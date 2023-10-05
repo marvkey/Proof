@@ -2,6 +2,7 @@
 #include "PhysicsUtils.h"
 #include "Proof/Math/MathResource.h"
 #include "Proof/Scene/Component.h"
+#include "PhysicsTypes.h"
 
 namespace Proof::PhysXUtils {
 
@@ -88,31 +89,31 @@ namespace Proof::PhysXUtils {
 		ANT_CORE_ASSERT(false);
 		return "";
 	}
-
-	physx::PxBroadPhaseType::Enum AntToPhysXBroadphaseType(BroadphaseType type)
+	*/
+	physx::PxBroadPhaseType::Enum ProofToPhysXBroadphaseType(BroadphaseType type)
 	{
 		switch (type)
 		{
-			case Ant::BroadphaseType::SweepAndPrune: return physx::PxBroadPhaseType::eSAP;
-			case Ant::BroadphaseType::MultiBoxPrune: return physx::PxBroadPhaseType::eMBP;
-			case Ant::BroadphaseType::AutomaticBoxPrune: return physx::PxBroadPhaseType::eABP;
+			case Proof::BroadphaseType::SweepAndPrune: return physx::PxBroadPhaseType::eSAP;
+			case Proof::BroadphaseType::MultiBoxPrune: return physx::PxBroadPhaseType::eMBP;
+			case Proof::BroadphaseType::AutomaticBoxPrune: return physx::PxBroadPhaseType::eABP;
 		}
 
 		return physx::PxBroadPhaseType::eABP;
 	}
 
-	physx::PxFrictionType::Enum AntToPhysXFrictionType(FrictionType type)
+	physx::PxFrictionType::Enum ProofToPhysXFrictionType(FrictionType type)
 	{
 		switch (type)
 		{
-			case Ant::FrictionType::Patch:			return physx::PxFrictionType::ePATCH;
-			case Ant::FrictionType::OneDirectional:	return physx::PxFrictionType::eONE_DIRECTIONAL;
-			case Ant::FrictionType::TwoDirectional:	return physx::PxFrictionType::eTWO_DIRECTIONAL;
+			case Proof::FrictionType::Patch:			return physx::PxFrictionType::ePATCH;
+			case Proof::FrictionType::OneDirectional:	return physx::PxFrictionType::eONE_DIRECTIONAL;
+			case Proof::FrictionType::TwoDirectional:	return physx::PxFrictionType::eTWO_DIRECTIONAL;
 		}
 
 		return physx::PxFrictionType::ePATCH;
 	}
-
+	/*
 	physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection)
 	{
 		physx::PxFilterData filterData;

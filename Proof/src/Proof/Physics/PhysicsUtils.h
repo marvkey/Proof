@@ -2,7 +2,7 @@
 
 #include <PxPhysicsAPI.h>
 #include <glm/gtc/type_ptr.hpp>
-
+#include "PhysicsTypes.h"
 namespace Proof {
 	struct TransformComponent;
 	namespace PhysXUtils
@@ -27,8 +27,8 @@ namespace Proof {
 		//CookingResult FromPhysXCookingResult(physx::PxTriangleMeshCookingResult::Enum cookingResult);
 		//const char* CookingResultToString(CookingResult cookingResult);
 		//
-		//physx::PxBroadPhaseType::Enum AntToPhysXBroadphaseType(BroadphaseType type);
-		//physx::PxFrictionType::Enum AntToPhysXFrictionType(FrictionType type);
+		physx::PxBroadPhaseType::Enum ProofToPhysXBroadphaseType(BroadphaseType type);
+		physx::PxFrictionType::Enum ProofToPhysXFrictionType(FrictionType type);
 		//
 		//physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection);
 

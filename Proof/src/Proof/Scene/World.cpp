@@ -991,10 +991,10 @@ namespace Proof {
 		}
 		///
 		///
-		PhysicsWorldConfig config;
-		config.PvdClient = true;
-		config.Gravity = { 0,-9.8f,0 };// for multiplayer scene
-		m_PhysicsWorld = new PhysicsWorld(this, config);
+		//PhysicsWorldConfig config;
+		//config.PvdClient = true;
+		//config.Gravity = { 0,-9.8f,0 };// for multiplayer scene
+		m_PhysicsWorld = new PhysicsWorld(this);
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
 		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
 		

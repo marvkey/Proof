@@ -15,6 +15,7 @@
 #include "Proof/Core/UUID.h"
 #include "Proof/Input/KeyCodes.h"
 #include "Proof/Audio/AudioTools.h"
+#include "Proof/Physics/PhysicsTypes.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
@@ -553,7 +554,8 @@ namespace Proof
 		float LinearDrag = 0.0f;
 		bool Gravity = true;
 		bool Kinematic = false;
-		
+		CollisionDetectionType CollisionDetection = CollisionDetectionType::Discrete;
+
 		VectorTemplate<bool>FreezeLocation = { false,false,false };
 		VectorTemplate<bool>FreezeRotation = { false,false,false };
 

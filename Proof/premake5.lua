@@ -93,6 +93,8 @@ project "Proof"
 		"IMGUI_IMPL_OPENGL_LOADER_GLAD2",
 		"GLFW_INCLUDE_NONE",
 		"_CRT_SECURE_NO_WARNINGS",
+		"PX_PHYSX_STATIC_LIB",
+		
 	}
 	filter "files:vendor/ImGui/**.cpp"
 	flags { "NoPCH" }
