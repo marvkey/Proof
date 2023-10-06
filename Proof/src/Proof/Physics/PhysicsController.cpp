@@ -1,0 +1,150 @@
+#include "Proofprch.h"
+#include "PhysicsController.h"
+#include "Proof/Scene/Entity.h"
+#include "PhysicsEngine.h"
+#include "PhysicsWorld.h"
+#include "PhysicsMaterial.h"
+namespace Proof
+{
+	PhysicsController::PhysicsController(Count<class PhysicsWorld> world, Entity entity)
+		:
+		PhysicsActorBase(world, PhysicsControllerType::Controller,entity)
+	{
+		Init();
+	}
+
+	PhysicsController::~PhysicsController()
+	{
+
+	}
+	void PhysicsController::Init()
+	{
+
+		if (m_Material == nullptr)
+			m_Material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
+		GenerateCapsule();
+	}
+	void PhysicsController::GenerateCapsule()
+	{
+		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
+		auto& transform = m_Entity.GetComponent<TransformComponent>();
+		float radiusScale = glm::max(transform.Scale.x, transform.Scale.z);
+		physx::PxCapsuleControllerDesc desc;
+		desc.position = PhysXUtils::ToPhysXExtendedVector(m_Entity.Transform().Location + controller.Center); // not convinced this is correct.  (e.g. it needs to be world space, not local)
+		desc.height = controller.Height * transform.Scale.y;
+		desc.radius = controller.Radius * radiusScale;
+		//desc.radius = controller.Radius;
+		desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;  // TODO: get from component
+		desc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
+		desc.slopeLimit = std::max(0.0f, cos(controller.SlopeLimitRadians));
+		desc.stepOffset = controller.StepOffset;
+		desc.contactOffset = controller.SkinOffset;                                                     // TODO: get from component
+		desc.material = (physx::PxMaterial*) m_Material->GetPhysicsBody();
+		desc.upDirection = { 0.0f, 1.0f, 0.0f };
+
+		m_Controller = m_PhysicsWorld->GetPhysXControllerManager()->createController(desc);
+
+		m_Controller->getActor()->userData = this;
+	}
+	void PhysicsController::SetGravityEnabled(const bool enableGravity)
+	{
+		m_Entity.GetComponent<CharacterControllerComponent>().GravityEnabled = enableGravity;
+	}
+	bool PhysicsController::IsGravityEnabled() const
+	{
+		return m_Entity.GetComponent<CharacterControllerComponent>().GravityEnabled;
+	}
+	void PhysicsController::SetSlopeLimit(const float slopeLimitRadians)
+	{
+		m_Controller->setSlopeLimit(std::max(0.0f, cos(slopeLimitRadians)));
+		m_Entity.GetComponent<CharacterControllerComponent>().SlopeLimitRadians = slopeLimitRadians;
+	}
+	void PhysicsController::SetStepOffset(const float stepOffset)
+	{
+		m_Controller->setStepOffset(stepOffset);
+		m_Entity.GetComponent<CharacterControllerComponent>().StepOffset = stepOffset;
+	}
+	glm::vec3 PhysicsController::GetLocation() const
+	{
+		const auto& pxPos = m_Controller->getPosition();
+		glm::vec3 pos = { pxPos.x, pxPos.y, pxPos.z };
+
+		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
+		pos -= controller.Center;
+		return pos;
+	}
+	void PhysicsController::SetLocation(const glm::vec3& translation, const bool autowake)
+	{
+		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
+
+		glm::vec3 newPosition = translation + controller.Center;
+
+		// Set the new position for the character controller
+		m_Controller->setPosition(PhysXUtils::ToPhysXExtendedVector(newPosition));
+	}
+	float PhysicsController::GetSpeedDown() const
+	{
+		return m_SpeedDown;
+	}
+	bool PhysicsController::IsGrounded() const
+	{
+		return m_CollisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN;
+	}
+	void PhysicsController::Move(glm::vec3 displacement)
+	{
+		m_Displacement += displacement;
+	}
+	void PhysicsController::Jump(float jumpPower)
+	{
+		m_SpeedDown = -1.0f * jumpPower;
+	}
+	bool PhysicsController::IsCapsuleController() const
+	{
+		return m_Entity.GetComponent<CharacterControllerComponent>().ColliderType == CharacterControllerType::Capsule;
+	}
+	float PhysicsController::GetMinMoveDistance() const
+	{
+		return m_Entity.GetComponent<CharacterControllerComponent>().MinMoveDistance;
+	}
+	void PhysicsController::SetMinMoveDistance(float distance)
+	{
+		float actualDistance = glm::max<float>(0, distance);
+		m_Entity.GetComponent<CharacterControllerComponent>().MinMoveDistance = distance;
+	}
+	void PhysicsController::OnUpdate(float dt)
+	{
+		float gravity = glm::length(PhysicsEngine::GetSettings().Gravity);            // acceleration due to gravity (in direction opposite to controllers "up" vector)
+
+		physx::PxControllerFilters filters;
+
+		if(IsGravityEnabled())
+			m_SpeedDown += gravity * dt;
+
+		glm::vec3 displacement = m_Displacement - PhysXUtils::FromPhysXVector(m_Controller->getUpDirection()) * m_SpeedDown * dt;
+
+		m_CollisionFlags = m_Controller->move(PhysXUtils::ToPhysXVector(displacement), 0.0, static_cast<physx::PxF32>(dt), filters);
+
+		if (IsGrounded())
+			m_SpeedDown = gravity * 0.01f; // setting speed back to zero here would be more technically correct,
+		// but a small non-zero gives better results (e.g. lessens jerkyness when walking down a slope)
+		m_Displacement = {};
+	}
+	void PhysicsController::SyncTransform()
+	{
+		TransformComponent& transform = m_Entity.Transform();
+		transform.Location = GetLocation();
+		/*
+		TransformComponent& transform = m_Entity.Transform();
+		glm::vec3 scale = transform.Scale;
+		physx::PxTransform actorPose = m_Controller->get;
+		transform.Location = PhysXUtils::FromPhysXVector(actorPose.p);
+		//if (!IsAllRotationLocked())
+			transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPose.q));
+
+		auto scene = m_Entity.GetCurrentWorld();
+		scene->ConvertToLocalSpace(m_Entity);
+		transform.Scale = scale;
+		*/
+	}
+}
+

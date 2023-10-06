@@ -434,6 +434,31 @@ namespace Proof
 		}
 
 		{
+			if (registry.all_of<CharacterControllerComponent>(enttID))
+			{
+				CharacterControllerComponent& characterController = registry.get<CharacterControllerComponent>(enttID);
+				out << YAML::Key << "CharacterControllerComponent";
+				out << YAML::BeginMap; // CharacterControllerComponent
+				out << YAML::Key << "SlopeLimitRadians" << characterController.SlopeLimitRadians;
+				out << YAML::Key << "StepOffset" << characterController.StepOffset;
+				out << YAML::Key << "SkinOffset" << characterController.SkinOffset;
+				out << YAML::Key << "GravityEnabled" << characterController.GravityEnabled;
+				out << YAML::Key << "GravityScale" << characterController.GravityScale;
+				out << YAML::Key << "MinMoveDistance" << characterController.MinMoveDistance;
+				out << YAML::Key << "WalkableMode" <<  EnumReflection::EnumString(characterController.WalkableMode);
+				out << YAML::Key << "PhysicsMaterialID" << characterController.PhysicsMaterialID;
+
+				out << YAML::Key << "ColliderType" << EnumReflection::EnumString(characterController.ColliderType);
+				out << YAML::Key << "Center" << characterController.Center;
+				out << YAML::Key << "Radius" << characterController.Radius;
+				out << YAML::Key << "Height" << characterController.Height;
+				out << YAML::Key << "Direction" <<EnumReflection::EnumString( characterController.Direction);
+
+				out << YAML::Key << "Size" << characterController.Size;
+				out << YAML::EndMap; // CharacterControllerComponent
+			}
+		}
+		{
 			if (registry.all_of<PlayerInputComponent>(enttID))
 			{
 				PlayerInputComponent& playerInput = registry.get<PlayerInputComponent>(enttID);
@@ -960,7 +985,35 @@ namespace Proof
 						as<std::string>(EnumReflection::EnumString(CollisionDetectionType::Discrete)));
 				}
 			}
+			//Character Controller
+			{
+				auto characterControllerComponent = entity["CharacterControllerComponent"];
 
+				if (characterControllerComponent)
+				{
+					auto& ccc = NewEntity.AddComponent<CharacterControllerComponent>();
+
+					ccc.SlopeLimitRadians = characterControllerComponent["SlopeLimitRadians"].as<float>();
+					ccc.StepOffset = characterControllerComponent["StepOffset"].as<float>();
+					ccc.SkinOffset = characterControllerComponent["SkinOffset"].as<float>();
+
+					ccc.GravityEnabled = characterControllerComponent["GravityEnabled"].as<bool>();
+					ccc.GravityScale = characterControllerComponent["GravityScale"].as<float>();
+
+					ccc.MinMoveDistance = characterControllerComponent["MinMoveDistance"].as<float>();
+					ccc.WalkableMode = EnumReflection::StringEnum<CharacterControllerNonWalkableMode>( characterControllerComponent["GravityScale"].as<std::string>());
+
+					ccc.PhysicsMaterialID = characterControllerComponent["PhysicsMaterialID"].as<uint64_t>();
+
+					ccc.ColliderType = EnumReflection::StringEnum<CharacterControllerType>(characterControllerComponent["ColliderType"].as<std::string>());
+					ccc.Center = characterControllerComponent["Center"].as<glm::vec3>();
+					ccc.Radius = characterControllerComponent["Radius"].as<float>();
+					ccc.Height = characterControllerComponent["Height"].as<float>();
+					ccc.Direction = EnumReflection::StringEnum<CapsuleDirection>(characterControllerComponent["Direction"].as<std::string>());
+
+					ccc.Size = characterControllerComponent["Size"].as<glm::vec3>();
+				}
+			}
 			//PlayerInputComponent
 			{
 				auto playerInputComponent = entity["PlayerInputComponent"];

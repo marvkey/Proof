@@ -3,6 +3,8 @@
 #include "PhysicsEngine.h"
 #include "Proof/Scene/World.h"
 #include "Proof/Scene/Entity.h"
+#include "PhysicsActor.h"
+#include "PhysicsController.h"
 #include "PhysicsUtils.h"
 namespace Proof {
 	physx::PxFilterFlags shaderControl(
@@ -31,7 +33,7 @@ namespace Proof {
 		return physx::PxFilterFlags();
 	
 	}
-	PhysicsWorld::PhysicsWorld(World* world)
+	PhysicsWorld::PhysicsWorld(Count<class World> world)
 		:
 		m_World(world)
 	{
@@ -78,6 +80,8 @@ namespace Proof {
 			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
 			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
 		}
+
+		m_PhysXControllerManager = PxCreateControllerManager(*m_Scene);
 		CreateRegions();
 
 		StartWorld();
@@ -88,16 +92,14 @@ namespace Proof {
 		EndWorld();
 	}
 
-	void PhysicsWorld::OnFixedUpdate(float deltaTime)
+	void PhysicsWorld::Simulate(float deltaTime)
 	{
 		PF_PROFILE_FUNC();
 		if (m_World->IsPlaying())
 		{
+			// not actually on update
 			for (auto& [Id, actor] : m_Actors)
-			{
-				// right now just updating transform
-				actor->OnFixedUpdate(deltaTime);
-			}
+				actor->OnFixedUpdate(m_SubStepSize);
 		}
 		bool advance = Advance(deltaTime);
 
@@ -108,61 +110,117 @@ namespace Proof {
 
 			for (uint32_t i = 0; i < numberActors; i++)
 			{
+				// NOTE: We can guarantee that this is a PhysicsActor, because controllers aren't included in active actors
 				Count<PhysicsActor> actor = (PhysicsActor*)activeActors[i]->userData;
-				if (!actor->IsSleeping())
+				if (actor && !actor->IsSleeping())
 				{
 					actor->SyncTransform();
 				}
 			}
+
+			// NOTE: SynchronizeTransform for controllers HAVE to be done explicitly because controller actors aren't included in the Active Actors list
+
+			for (auto& [entityID, controller] : m_Controllers)
+				controller->SyncTransform();
 		}
 	}
-	bool PhysicsWorld::HasActor(UUID id)
+	bool PhysicsWorld::HasActor(Entity entity)
 	{
-		return m_Actors.contains(id);
+		return m_Actors.contains(entity.GetUUID());
 	}
-	Count<PhysicsActor> PhysicsWorld::NewActor(UUID id)
+	Count<PhysicsActor> PhysicsWorld::CreateActor(Entity entity)
 	{
-		Entity ent = m_World->GetEntity(id);;
-		if (!ent.HasComponent<RigidBodyComponent>())
+		PF_PROFILE_FUNC();
+		auto existingActor = GetActor(entity);
+		if (existingActor)
+			return existingActor;
+
+		if (!entity.HasComponent<RigidBodyComponent>())
+		{
+			PF_ENGINE_ERROR("Cannot add Physics Actor without RigidBody");
 			return nullptr;
-		auto actor= Count<PhysicsActor>::Create(this,ent);
-		m_Actors[id] = actor;
+		}
+		Count<PhysicsWorld> instance = this;
+		Count<PhysicsActor> actor = Count<PhysicsActor>::Create(instance,entity);
+		m_Actors[entity.GetUUID()] = actor;
 		return actor;
 	}
-	Count<PhysicsActor> PhysicsWorld::GetActor(UUID id)
+	Count<PhysicsActor> PhysicsWorld::GetActor(Entity entity)
 	{
-		PF_CORE_ASSERT(HasActor(id), " Does not contain actor");
-		return m_Actors.at(id);
+		UUID entityID = entity.GetUUID();
+		if (const auto iter = m_Actors.find(entityID); iter != m_Actors.end())
+			return iter->second;
+
+		return nullptr;
 	}
-	Count<PhysicsActor> PhysicsWorld::TryGetActor(UUID id)
+	
+	void PhysicsWorld::RemoveActor(Entity entity)
 	{
-		if (HasActor(id))return m_Actors.at(id);
+		PF_CORE_ASSERT(HasActor(entity), " Does not contain actor");
+		m_Actors.erase(entity.GetUUID());
 	}
-	void PhysicsWorld::RemoveActor(UUID id)
+	bool PhysicsWorld::HasController(Entity entity)
 	{
-		PF_CORE_ASSERT(HasActor(id), " Does not contain actor");
-		m_Actors.erase(id);
+		return m_Controllers.contains(entity.GetUUID());
+	}
+	Count<class PhysicsController> PhysicsWorld::CreateController(Entity entity)
+	{
+		PF_PROFILE_FUNC();
+		auto existingController = GetController(entity);
+		if (existingController)
+			return existingController;
+
+		if (!entity.HasComponent<CharacterControllerComponent>())
+		{
+			PF_ENGINE_ERROR("Cannot add Physics Actor without CharacterController");
+			return nullptr;
+		}
+		Count<PhysicsWorld> instance = this;
+		Count<PhysicsController> controller = Count<PhysicsController>::Create(instance, entity);
+		m_Controllers[entity.GetUUID()] = controller;
+		return controller;
+	}
+	Count<class PhysicsController> PhysicsWorld::GetController(Entity entity)
+	{
+		UUID entityID = entity.GetUUID();
+		if (const auto iter = m_Controllers.find(entityID); iter != m_Controllers.end())
+			return iter->second;
+
+		return nullptr;
+	}
+	void PhysicsWorld::RemoveController(Entity entity)
+	{
+		PF_CORE_ASSERT(HasController(entity), " Does not contain actor");
+		m_Controllers.erase(entity.GetUUID());
 	}
 	void PhysicsWorld::StartWorld()
 	{
 		PF_PROFILE_FUNC();
 		
-		m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity) {
-			auto id =entity.GetUUID();
-			m_Actors.insert({ id, Count<PhysicsActor>::Create(this, entity) });
+		m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity) 
+		{
+			CreateActor(entity);
+		});
+
+		m_World->ForEachEnitityWith<CharacterControllerComponent>([&](Entity entity)
+		{
+			CreateController(entity);
 		});
 	}
 	void PhysicsWorld::EndWorld()
 	{
 		// release all rigid bodies before we release teh scene
 		m_Actors.clear();
+		m_Controllers.clear();
 		//if (m_Config.PvdClient)
 		//{
 		//	PhysicsEngine::GetPVD()->disconnect();
 		//	m_Transport->disconnect();
 		//	m_Transport->release();
 		//}
+		m_PhysXControllerManager->release();
 		m_Scene->release();
+		m_Scene = nullptr;
 		m_World = nullptr;
 
 		if (m_RegionBounds)

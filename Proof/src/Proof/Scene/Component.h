@@ -571,6 +571,29 @@ namespace Proof
 		friend class PhysicsActor;
 	};
 
+	struct CharacterControllerComponent
+	{
+		
+		float SlopeLimitRadians = 0.707; //45 degree
+		float StepOffset = 0.3f; // min 0 max max float 
+		float SkinOffset = 0.1f; // min shoul dbe non zero positive and maximum should be max flaot
+		bool GravityEnabled = true;
+		float GravityScale = 1.0f;
+		float MinMoveDistance = 0.0f; //min 0
+		// only valid if slopelimit is 0
+		CharacterControllerNonWalkableMode WalkableMode = CharacterControllerNonWalkableMode::PreventClimbing;
+		AssetID PhysicsMaterialID = 0;
+
+		CharacterControllerType ColliderType = CharacterControllerType::Capsule; // only supports box and capusle
+		glm::vec3 Center = { 0,0,0 };
+		// capsule info
+		float Radius = 0.5f;
+		float Height = 2.0f;
+		CapsuleDirection Direction = CapsuleDirection::Y;
+
+		// Box Info
+		glm::vec3 Size = glm::vec3 { 1,1,1 };
+	};
 	struct ScriptComponent {
 	public:
 		ScriptComponent(const ScriptComponent& other) = default;
@@ -656,8 +679,8 @@ namespace Proof
 	};
 	using AllComponents =
 		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
-		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent,
-		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,RigidBodyComponent,
+		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, RigidBodyComponent,
+		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,
 		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent>;
 	
 

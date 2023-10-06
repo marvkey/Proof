@@ -373,6 +373,7 @@ namespace Proof::UI
         }
         else
         {
+            ID = 0;
             UI::AttributeTextBar(label, fmt::format("Null ({})",EnumReflection::EnumString(type)));
         }
 
@@ -421,6 +422,7 @@ namespace Proof::UI
         }
         else
         {
+            asset = nullptr;
             UI::AttributeTextBar(label, fmt::format("Null ({})", EnumReflection::EnumString(type)));
         }
         if (includeRemove)

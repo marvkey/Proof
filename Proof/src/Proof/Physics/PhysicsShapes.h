@@ -5,10 +5,7 @@
 
 namespace Proof
 {
-	enum class ColliderType
-	{
-		Box, Sphere, Capsule, Plane, Heightfield, ConvexMesh, TriangleMesh
-	};
+	
 
 	class ColliderShape : public RefCounted
 	{

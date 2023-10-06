@@ -22,6 +22,7 @@
 #include "Proof/Audio/AudioEngine.h"
 #include "Proof/Audio/AudioUtils.h"
 #include "Proof/Renderer/Renderer2D.h"
+#include "Proof/Physics/PhysicsActor.h"
 namespace Proof {
 	World::World(const std::string& name, UUID ID):
 		Name(name)
@@ -430,7 +431,7 @@ namespace Proof {
 	void World::OnRigidBodyComponentCreate(entt::registry& component, entt::entity entityID)
 	{
 		Entity e = { entityID, this };
-		m_PhysicsWorld->NewActor(e.GetUUID());
+		m_PhysicsWorld->CreateActor(e);
 	}
 
 
@@ -438,7 +439,7 @@ namespace Proof {
 	{
 		Entity e = { entityID, this };
 
-		m_PhysicsWorld->RemoveActor(e.GetUUID());
+		m_PhysicsWorld->RemoveActor(e);
 	}
 
 	void World::OnScriptAdded(entt::registry& component, entt::entity entityID)
@@ -598,7 +599,7 @@ namespace Proof {
 						
 						AudioEngine::UpdateListenerPosition(transform);
 						AudioEngine::UpdateListenerConeAttenuation(listenerComponent.ConeInnerAngleInRadians, listenerComponent.ConeOuterAngleInRadians, listenerComponent.ConeOuterGain);
-						auto physicsActor = m_PhysicsWorld->TryGetActor(listener.GetUUID());
+						auto physicsActor = m_PhysicsWorld->GetActor(listener);
 						if (physicsActor)
 						{
 
@@ -641,7 +642,7 @@ namespace Proof {
 
 					AudioEngine::UpdateAudio(audioEntity.GetUUID(), Utils::AudioComponentToSoundConfig(audioComponent));
 					AudioEngine::UpdateAudioTransform(audioEntity.GetUUID(), transform);
-					auto physicsActor = m_PhysicsWorld->TryGetActor(audioEntity.GetUUID());
+					auto physicsActor = m_PhysicsWorld->GetActor(audioEntity);
 
 					if (physicsActor)
 					{
@@ -658,7 +659,7 @@ namespace Proof {
 		if (HasWorldCamera())
 		{
 		}
-		m_PhysicsWorld->OnFixedUpdate(DeltaTime);
+		m_PhysicsWorld->Simulate(DeltaTime);
 
 		DeleteEntitiesfromQeue();
 	}
@@ -994,7 +995,7 @@ namespace Proof {
 		//PhysicsWorldConfig config;
 		//config.PvdClient = true;
 		//config.Gravity = { 0,-9.8f,0 };// for multiplayer scene
-		m_PhysicsWorld = new PhysicsWorld(this);
+		m_PhysicsWorld = Count<PhysicsWorld>::Create (this);
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
 		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
 		
@@ -1012,7 +1013,7 @@ namespace Proof {
 		
 		AudioEngine::EndContext();
 		ScriptEngine::EndRuntime();
-		delete m_PhysicsWorld;
+		m_PhysicsWorld =nullptr;
 	}
 	void World::DeleteEntity(Entity ent, bool deleteChildren) {
 		if(!m_EntitiesMap.contains(ent.GetUUID()))

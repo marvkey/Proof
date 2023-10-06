@@ -1,8 +1,9 @@
 #pragma once
 
-#include <PxPhysicsAPI.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "PhysicsTypes.h"
+
+#include <PxPhysicsAPI.h>
 namespace Proof {
 	struct TransformComponent;
 	namespace PhysXUtils

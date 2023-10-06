@@ -10,6 +10,7 @@ namespace Proof
     }
     PhysicsEngine* SceneCoreClasses::GetCurrentPhysicsEngine() {
         if (s_CurrentWorld == nullptr)return  nullptr;
-        s_CurrentWorld->GetPhysicsEngine();
+       // s_CurrentWorld->GetPhysicsEngine();
+        return nullptr;
     }
 }

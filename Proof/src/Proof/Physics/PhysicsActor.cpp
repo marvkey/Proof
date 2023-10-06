@@ -32,14 +32,11 @@ namespace Proof {
 			PF_CORE_ASSERT(false, "Not Valid");
 		}
 	}
-	PhysicsActor::PhysicsActor(PhysicsWorld* physicsWorld, Entity entity)
+	PhysicsActor::PhysicsActor(Count<class PhysicsWorld> world, Entity entity)
 		:
-		m_PhysicsWorld(physicsWorld),
-		m_RigidBody(entity.GetComponent<RigidBodyComponent>())
+		PhysicsActorBase(world, PhysicsControllerType::Actor,entity)
 	{
 		
-		m_Entity = entity;
-
 		if (!m_Entity.HasComponent<RigidBodyComponent>())
 			PF_CORE_ASSERT(false, "Needs rigid body to be a physics Actor");
 		
@@ -73,7 +70,8 @@ namespace Proof {
 
 	bool PhysicsActor::IsDynamic()const
 	{
-		return m_RigidBody.m_RigidBodyType == RigidBodyType::Dynamic;
+		
+		return m_Entity.GetComponent<RigidBodyComponent>().m_RigidBodyType == RigidBodyType::Dynamic;
 	}
 
 	void PhysicsActor::AddForce(glm::vec3 force, ForceMode mode, bool autoWake)
@@ -105,10 +103,11 @@ namespace Proof {
 	}
 	void PhysicsActor::SetRigidType(RigidBodyType type)
 	{
-		if (m_RigidBody.m_RigidBodyType == type)
+		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
+		if (rigidBody.m_RigidBodyType == type)
 			return;
 		Release();
-		m_RigidBody.m_RigidBodyType = type;
+		rigidBody.m_RigidBodyType = type;
 		Build();
 	}
 	bool PhysicsActor::IsSleeping()
@@ -127,6 +126,16 @@ namespace Proof {
 
 	}
 	
+	void PhysicsActor::SetLocation(const glm::vec3& translation, const bool autowake)
+	{
+		physx::PxTransform transform = m_RigidActor->getGlobalPose();
+		transform.p = PhysXUtils::ToPhysXVector(translation);
+		m_RigidActor->setGlobalPose(transform, autowake);
+
+		if (!IsDynamic())
+			SyncTransform();
+	}
+
 	void PhysicsActor::ClearForce(ForceMode mode )
 	{
 		if (!IsDynamic())return;
@@ -331,8 +340,9 @@ namespace Proof {
 			PF_ENGINE_WARN("Static PhysicsActor can't be kinematic.");
 			return;
 		}
+		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
 
-		m_RigidBody.Kinematic = isKinematic;
+		rigidBody.Kinematic = isKinematic;
 		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, isKinematic);
 	}
 
@@ -345,7 +355,9 @@ namespace Proof {
 		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, location.Y);
 		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, location.Z);
 
-		m_RigidBody.FreezeLocation = location;
+		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
+
+		rigidBody.FreezeLocation = location;
 	}
 
 	void PhysicsActor::SetLockRotaion(const VectorTemplate<bool>& rotation)
@@ -356,7 +368,9 @@ namespace Proof {
 		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rotation.Y);
 		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rotation.Z);
 
-		m_RigidBody.FreezeRotation = rotation;
+		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
+
+		rigidBody.FreezeRotation = rotation;
 	}
 
 	void PhysicsActor::SetGravityEnabled(const bool enableGravity)
@@ -406,7 +420,9 @@ namespace Proof {
 
 	float PhysicsActor::GetMass() const
 	{
-		return !IsDynamic() ? m_RigidBody.Mass : m_RigidActor->is<physx::PxRigidDynamic>()->getMass();
+		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
+
+		return !IsDynamic() ? rigidBody.Mass : m_RigidActor->is<physx::PxRigidDynamic>()->getMass();
 	}
 
 	void PhysicsActor::SetMass(float mass)
@@ -417,7 +433,9 @@ namespace Proof {
 		physx::PxRigidDynamic* actor = m_RigidActor->is<physx::PxRigidDynamic>();
 		PF_CORE_ASSERT(actor);
 		physx::PxRigidBodyExt::setMassAndUpdateInertia(*actor, mass);
-		m_RigidBody.Mass = mass;
+		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
+
+		rigidBody.Mass = mass;
 	}
 	
 	void PhysicsActor::AddRigidBody()
@@ -466,11 +484,15 @@ namespace Proof {
 
 	void PhysicsActor::SyncTransform()
 	{
-		physx::PxRigidActor* rigidBody = (physx::PxRigidActor*)m_RigidActor;
+		TransformComponent& transform = m_Entity.Transform();
+		glm::vec3 scale = transform.Scale;
+		physx::PxTransform actorPose = m_RigidActor->getGlobalPose();
+		transform.Location = PhysXUtils::FromPhysXVector(actorPose.p);
+		if (!IsAllRotationLocked())
+			transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPose.q));
 
-		TransformComponent& transform = m_Entity.GetComponent<TransformComponent>();
-		auto actorPos = rigidBody->getGlobalPose();
-		transform.Location = PhysXUtils::FromPhysXVector(actorPos.p);
-		transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPos.q));
+		auto scene = m_Entity.GetCurrentWorld();
+		scene->ConvertToLocalSpace(m_Entity);
+		transform.Scale = scale;
 	}
 }

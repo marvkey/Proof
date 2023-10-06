@@ -1,13 +1,15 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "PhysicsActorBase.h"
 #include "PhysicsUtils.h"
 
-#include "Proof/Scene/Entity.h"
-namespace Proof{
+namespace Proof
+{
 	class Entity;
-	class PhysicsActor : public RefCounted {
+	class PhysicsActor : public PhysicsActorBase
+	{
 	public:
-		PhysicsActor(class PhysicsWorld* physicsWorld,Entity entity);
+		PhysicsActor(Count<class PhysicsWorld> world, Entity entity);
 		virtual ~PhysicsActor();
 
 		bool IsDynamic()const;
@@ -16,6 +18,9 @@ namespace Proof{
 		void PutToSleep();
 		void WakeUp();
 		void SetRigidType(RigidBodyType type);
+
+		virtual glm::vec3 GetLocation() const { return PhysXUtils::FromPhysXVector(m_RigidActor->getGlobalPose().p); }
+		virtual void SetLocation(const glm::vec3& translation, const bool autowake = true);
 
 		void ClearForce(ForceMode mode);
 		void ClearTorque(ForceMode mode);
@@ -30,7 +35,7 @@ namespace Proof{
 		void AddCollider(SphereColliderComponent& collider);
 		void AddCollider(CapsuleColliderComponent& collider);
 		void AddCollider(MeshColliderComponent& collider);
-	
+
 		glm::quat GetRotation() const { return PhysXUtils::FromPhysXQuat(m_RigidActor->getGlobalPose().q); }
 		glm::vec3 GetRotationEuler() const { return glm::eulerAngles(GetRotation()); }
 
@@ -60,14 +65,29 @@ namespace Proof{
 		glm::vec3 GetKinematicTargetRotationEuler() const;
 		void SetKinematicTarget(const glm::vec3& targetPosition, const glm::quat& targetRotation) const;
 
-		bool IsKinematic() const { return IsDynamic() && m_RigidBody.Kinematic; }
+		bool IsKinematic() const 
+		{
+			RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
+			return IsDynamic() && rigidBody.Kinematic;
+		}
 		void SetKinematic(bool isKinematic);
 
 		void SetLockLocation(const VectorTemplate<bool>& location);
 		void SetLockRotaion(const VectorTemplate<bool>& rotation);
 
-		virtual bool IsGravityEnabled() const { return m_RigidBody.Gravity; }
-		virtual void SetGravityEnabled(const bool state) ;
+		VectorTemplate<bool> GetLockRotation()const { return m_Entity.GetComponent<RigidBodyComponent>().FreezeRotation; }
+		bool IsAllRotationLocked() const 
+		{
+			auto freezeRotation = GetLockRotation();
+			if (freezeRotation.X == true && freezeRotation.Y  == true && freezeRotation.Z == true)return true;
+			return false;
+		}
+		virtual bool IsGravityEnabled() const 
+		{ 
+			RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
+			return rigidBody.Gravity;
+		}
+		virtual void SetGravityEnabled(const bool state);
 
 		template<typename TShapeType>
 		Count<TShapeType> GetCollider()
@@ -80,18 +100,12 @@ namespace Proof{
 
 			return nullptr;
 		}
-
 		physx::PxRigidActor& GetPhysXActor() const { return *m_RigidActor; }
 		const std::vector<Count<class ColliderShape>>& GetCollisionShapes() const { return m_Colliders; }
 	private:
-		class Entity m_Entity;
 		physx::PxRigidActor* m_RigidActor = nullptr;
-		RigidBodyComponent& m_RigidBody;
-		class PhysicsWorld* m_PhysicsWorld =nullptr;
-
 		friend class PhysicsWorld;
 		friend class PhysxShapesInternal;
-
 		std::vector<Count<class ColliderShape>> m_Colliders;
 	private:
 

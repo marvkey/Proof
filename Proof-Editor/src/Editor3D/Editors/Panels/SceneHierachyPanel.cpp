@@ -432,6 +432,7 @@ namespace Proof
 			AddComponentGui<CapsuleColliderComponent>(entity, "Capsule Collider");
 			AddComponentGui<MeshColliderComponent>(entity, "Mesh Collider");
 			AddComponentGui<RigidBodyComponent>(entity, "Rigid Body");
+			AddComponentGui<CharacterControllerComponent>(entity, "Character Controller");
 
 			AddComponentGui<TextComponent>(entity, "Text");
 
@@ -871,6 +872,43 @@ namespace Proof
 
 				DrawVectorControl("Freeze Location", rigidBody.FreezeLocation, false);
 				DrawVectorControl("Freeze Rotation", rigidBody.FreezeRotation, false);
+			}
+			UI::EndPropertyGrid();
+		});
+
+
+		DrawComponents<CharacterControllerComponent>("CharacterController", entity, [](CharacterControllerComponent& controller) {
+
+			UI::BeginPropertyGrid("CharacterControllerComponentGrid");
+
+			{
+				float slopdeg = glm::degrees(controller.SlopeLimitRadians);
+				if (UI::AttributeDrag("SlopeLimitDeg", slopdeg))
+					controller.SlopeLimitRadians = glm::radians(slopdeg);
+			}
+
+			UI::AttributeDrag("SkinOffset", controller.SkinOffset, 0);
+			UI::AttributeBool("GravityEnabled", controller.GravityEnabled);
+			UI::AttributeDrag("GravityScale", controller.GravityScale);
+			UI::AttributeDrag("MinMoveDistance", controller.MinMoveDistance, 0);
+
+			UI::AttributeAssetTextBar("PhysicsMaterial", controller.PhysicsMaterialID, AssetType::PhysicsMaterial);
+			UI::EnumCombo("WalkableMode", controller.WalkableMode, {}, {},"only valid if slopelimit is 0");
+			
+			ImGui::Separator();
+
+			UI::EnumCombo("ColliderType", controller.ColliderType);
+			UI::AttributeDrag("Center", controller.Center);
+
+			if (controller.ColliderType == CharacterControllerType::Capsule)
+			{
+				UI::AttributeDrag("Radius", controller.Radius);
+				UI::AttributeDrag("Height", controller.Height);
+				UI::EnumCombo("Direction", controller.Direction);
+			}
+			else
+			{
+				UI::AttributeDrag("Size", controller.Size);
 			}
 			UI::EndPropertyGrid();
 		});

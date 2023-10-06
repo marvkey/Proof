@@ -46,7 +46,6 @@ namespace Proof
     {
         physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
         material->release(); // make sure
-
     }
 
     float PhysicsMaterial::GetStaticFriction()
@@ -59,6 +58,7 @@ namespace Proof
         physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
         return material->getDynamicFriction();
     }
+
 
     float PhysicsMaterial::GetBounciness()
     {

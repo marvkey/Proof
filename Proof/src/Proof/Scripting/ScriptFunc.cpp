@@ -15,6 +15,8 @@
 #include "Proof/Input/Mouse.h"
 #include "Proof/Math/MathInclude.h"
 #include "Proof/Core/Application.h"
+#include "Proof/Physics/PhysicsWorld.h"
+#include "Proof/Physics/PhysicsActor.h"
 
 #include "Proof/Asset/AssetManager.h"
 //(IMPORTANT)
@@ -29,7 +31,21 @@ namespace Proof
 		glm::vec3 Rotation;
 		glm::vec3 Scale;
 	};
-	
+	static inline Entity GetEntity(uint64_t entityID)
+	{
+		Count<World> scene = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(scene, "No active World!");
+		return scene->TryGetEntityWithUUID(entityID);
+	};
+
+	static inline Count<PhysicsActor> GetPhysicsActor(Entity entity)
+	{
+		Count<World> scene = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(scene, "No active World!");
+		Count<PhysicsWorld> physicsScene = scene->GetPhysicsWorld();
+		PF_CORE_ASSERT(physicsScene, "No physics scene world!");
+		return physicsScene->GetActor(entity);
+	}
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
 	namespace ScriptFuncUtils
 	{
@@ -513,91 +529,147 @@ namespace Proof
 		#endif
 		entity.GetComponent<RigidBodyComponent>().Mass = *mass;
 	}
-	static void RigidBody_AddForce(UUID entityID, glm::vec3 force, int forceMode, bool autoAwake) {
-		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
-		{
-			PF_ERROR("RigidBody.AddForce - entity is invalid  or does not have rigid body");
-			return;
-		}
-
-		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
-		actor->AddForce(force, (ForceMode)forceMode, autoAwake);
-	}
-	static void RigidBody_AddTorque(UUID entityID, glm::vec3 force, int forceMode, bool autoAwake) {
-		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
-		{
-			PF_ERROR("RigidBody.AddTorque - entity is invalid  or does not have rigid body");
-			return;
-		}
-
-		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
-		actor->AddTorque(force, (ForceMode)forceMode, autoAwake);
-	}
-
-	static void RigidBody_ClearForce(UUID entityID, int forceMode)
+	static void RigidBody_AddForce(UUID entityID, glm::vec3* force, int forceMode, bool autoAwake) 
 	{
-		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		auto entity = GetEntity(entityID);
+		if (!entity)
 		{
-			PF_ERROR("RigidBody.ClearForce - entity is invalid  or does not have rigid body");
+			PF_ERROR("RigidBody.AddForce - entity is not valid");
+			return;
+		}
+		auto actor = GetPhysicsActor(entity);
+		if (!actor)
+		{
+			PF_ERROR("RigidBody.AddForce - physics actor not found");
+			return;
+		}
+		actor->AddForce(*force, (ForceMode)forceMode, autoAwake);
+	}
+	static void RigidBody_AddTorque(UUID entityID, glm::vec3* force, int forceMode, bool autoAwake) 
+	{
+		auto entity = GetEntity(entityID);
+		if (!entity)
+		{
+			PF_ERROR("RigidBody.AddTorque - entity is not valid");
 			return;
 		}
 
-		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
-		actor->ClearForce((ForceMode)forceMode);
+		auto actor = GetPhysicsActor(entity);
+		if (!actor)
+		{
+			PF_ERROR("RigidBody.AddTorque - physics actor not found");
+			return;
+		}
+		actor->AddTorque(*force, (ForceMode)forceMode, autoAwake);
 	}
 
-	static void RigidBody_ClearTorque(UUID entityID, int forceMode)
+	static void RigidBody_ClearForce(UUID entityID, int* forceMode)
 	{
-		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		auto entity = GetEntity(entityID);
+		if (!entity)
 		{
-			PF_ERROR("RigidBody.ClearTorque - entity is invalid  or does not have rigid body");
+			PF_ERROR("RigidBody.ClearForce - entity is not valid");
 			return;
 		}
 
-		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
-		actor->ClearTorque((ForceMode)forceMode);
+		auto actor = GetPhysicsActor(entity);
+		if (!actor)
+		{
+			PF_ERROR("RigidBody.ClearForce - physics actor not found");
+			return;
+		}
+		actor->ClearForce((ForceMode)*forceMode);
+	}
+
+	static void RigidBody_ClearTorque(UUID entityID, int* forceMode)
+	{
+		auto entity = GetEntity(entityID);
+		if (!entity)
+		{
+			PF_ERROR("RigidBody.ClearTorque - entity is not valid");
+			return;
+		}
+
+		auto actor = GetPhysicsActor(entity);
+		if (!actor)
+		{
+			PF_ERROR("RigidBody.ClearTorque - physics actor not found");
+			return;
+		}
+		actor->ClearTorque((ForceMode)*forceMode);
 	}
 	static void RigidBody_GetLinearVelocity(UUID entityID, glm::vec3* force)
 	{
-		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		auto entity = GetEntity(entityID);
+		if (!entity)
 		{
-			PF_ERROR("RigidBody.GetLinearVelocity - entity is invalid  or does not have rigid body");
+			PF_ERROR("RigidBody.GetLinearVelocity - entity is not valid");
 			return;
 		}
-		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+
+		auto actor = GetPhysicsActor(entity);
+		if (!actor)
+		{
+			PF_ERROR("RigidBody.GetLinearVelocity - physics actor not found");
+			return;
+		}
 		*force = actor->GetLinearVelocity();
 	}
 
 	static void RigidBody_SetLinearVelocity(UUID entityID, glm::vec3* force, bool wakeUP)
 	{
-		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		auto entity = GetEntity(entityID);
+		if (!entity)
 		{
-			PF_ERROR("RigidBody.SetLinearVelocity - entity is invalid  or does not have rigid body");
+			PF_ERROR("RigidBody.SetLinearVelocity - entity is not valid");
 			return;
 		}
-		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
-		 actor->SetLinearVelocity(*force);
+
+		auto actor = GetPhysicsActor(entity);
+		if (!actor)
+		{
+			PF_ERROR("RigidBody.SetLinearVelocity - physics actor not found");
+			return;
+		}
+
+		actor->SetLinearVelocity(*force);
 	}
 	static void RigidBody_SetAngularVelocity(UUID entityID, glm::vec3* force, bool wakeUP)
 	{
-		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		auto entity = GetEntity(entityID);
+		if (!entity)
 		{
-			PF_ERROR("RigidBody.SetAngularVelocity - entity is invalid  or does not have rigid body");
+			PF_ERROR("RigidBody.SetAngularVelocity - entity is not valid");
 			return;
 		}
-		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+
+		auto actor = GetPhysicsActor(entity);
+		if (!actor)
+		{
+			PF_ERROR("RigidBody.SetAngularVelocity - physics actor not found");
+			return;
+		}
+
 		actor->SetAngularVelocity(*force);
 	}
 
 	static void RigidBody_GetAngularVelocity(UUID entityID, glm::vec3* force)
 	{
 
-		if (!ScriptEngine::GetWorldContext()->GetPhysicsEngine()->HasActor(entityID))
+		auto entity = GetEntity(entityID);
+		if (!entity)
 		{
-			PF_ERROR("RigidBody.GetAngularVelocity - entity is invalid  or does not have rigid body");
+			PF_ERROR("RigidBody.GetAngularVelocity - entity is not valid");
 			return;
 		}
-		Count<PhysicsActor> actor = ScriptEngine::GetWorldContext()->GetPhysicsEngine()->GetActor(entityID);
+
+		auto actor = GetPhysicsActor(entity);
+		if (!actor)
+		{
+			PF_ERROR("RigidBody.GetAngularVelocity - physics actor not found");
+			return;
+		}
+
 		*force = actor->GetAngularVelocity();
 	}
 #pragma endregion

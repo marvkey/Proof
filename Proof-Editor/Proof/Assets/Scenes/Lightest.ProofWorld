@@ -1,6 +1,34 @@
 World:
   ID: 6477593735195019013
   Entities:
+    - Entity: 13521505007611337014
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+      CharacterControllerComponent:
+        SlopeLimitRadians: 0.707000017
+        StepOffset: 0.300000012
+        SkinOffset: 0.100000001
+        GravityEnabled: true
+        GravityScale: 1
+        MinMoveDistance: 0
+        WalkableMode: PreventClimbing
+        PhysicsMaterialID: 0
+        ColliderType: Capsule
+        Center: [0, 0, 0]
+        Radius: 0.5
+        Height: 2
+        Direction: Y
+        Size: [1, 1, 1]
     - Entity: 8006671976315113426
       TagComponent:
         Tag: Sky Light
@@ -22,16 +50,3 @@ World:
         Azimuth: 0
         Inclination: 0
         Image: 4373174173013626620
-    - Entity: 13521505007611337014
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50

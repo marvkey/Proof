@@ -91,7 +91,7 @@ namespace Proof {
 
         }
         PhysicsEngine::Init();
-       // ScriptEngine::Init();
+        ScriptEngine::Init();
         AudioEngine::Init();
 
         AssetManagerConfiguration assetManagerconfig;
@@ -114,7 +114,7 @@ namespace Proof {
         m_LayerStack->Empty();
         m_LayerStack = nullptr;
 
-      //  ScriptEngine::Shutdown();
+        ScriptEngine::Shutdown();
         PhysicsEngine::Release();
         AudioEngine::ShutDown();
 

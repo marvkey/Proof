@@ -2,6 +2,22 @@
 #include <glm/glm.hpp>
 namespace Proof
 {
+	enum class ColliderType
+	{
+		Box, Sphere, Capsule, Plane, Heightfield, ConvexMesh, TriangleMesh
+	};
+
+	enum class CharacterControllerType
+	{
+		Box,
+		Capsule
+	};
+
+	enum class CharacterControllerNonWalkableMode
+	{
+		PreventClimbing,						//!< Stops character from climbing up non-walkable slopes, but doesn't move it otherwise
+		PreventClimbingForceSliding		//!< Stops character from climbing up non-walkable slopes, and forces it to slide down those slopes
+	};
 	enum class BroadphaseType
 	{
 		SweepAndPrune,
