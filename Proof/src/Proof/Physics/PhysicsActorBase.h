@@ -16,7 +16,7 @@ namespace Proof
 
 		virtual bool IsGravityEnabled() const = 0;
 		virtual void SetGravityEnabled(const bool enableGravity) = 0;
-
+		virtual bool IsSleeping() = 0;
 		PhysicsControllerType GetType() const { return m_Type; }
 	private:
 		virtual void SyncTransform() = 0;
@@ -29,6 +29,6 @@ namespace Proof
 	private:
 		PhysicsControllerType m_Type = PhysicsControllerType::None;
 
-		friend class PhysicsScene;
+		friend class PhysicsWorld;
 	};
 }

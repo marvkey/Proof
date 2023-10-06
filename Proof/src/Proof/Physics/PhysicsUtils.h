@@ -8,7 +8,6 @@ namespace Proof {
 	struct TransformComponent;
 	namespace PhysXUtils
 	{
-
 		physx::PxTransform ToPhysXTransform(const TransformComponent& transform);
 		physx::PxTransform ToPhysXTransform(const glm::mat4& transform);
 		physx::PxTransform ToPhysXTransform(const glm::vec3& translation, const glm::quat& rotation);
@@ -30,6 +29,8 @@ namespace Proof {
 		//
 		physx::PxBroadPhaseType::Enum ProofToPhysXBroadphaseType(BroadphaseType type);
 		physx::PxFrictionType::Enum ProofToPhysXFrictionType(FrictionType type);
+		physx::PxControllerNonWalkableMode::Enum ToPhysXPxControllerNonWalkableMode(CharacterControllerNonWalkableMode mode);
+
 		//
 		//physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection);
 

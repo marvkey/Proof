@@ -478,8 +478,9 @@ namespace Proof {
 		{
 			m_RigidActor = PhysicsEngine::GetPhysics()->createRigidStatic(physxTransform);
 		}
-		m_PhysicsWorld->GetPhysicsScene()->addActor(*m_RigidActor);
 		m_RigidActor->userData = this;
+
+		m_PhysicsWorld->GetPhysicsScene()->addActor(*m_RigidActor);
 	}
 
 	void PhysicsActor::SyncTransform()

@@ -40,6 +40,8 @@ namespace Proof
     PhysicsMaterial::PhysicsMaterial(float staticFriction, float dynamicFriction, float bounciness)
     {
         m_RuntimeBody = PhysicsEngine::GetPhysics()->createMaterial(staticFriction, dynamicFriction, bounciness);
+        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
+        material->userData = this;
     }
 
     PhysicsMaterial::~PhysicsMaterial()

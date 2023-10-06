@@ -101,27 +101,28 @@ namespace Proof {
 			for (auto& [Id, actor] : m_Actors)
 				actor->OnFixedUpdate(m_SubStepSize);
 		}
+
+		for (auto& [entityID, controller] : m_Controllers)
+			controller->OnUpdate(deltaTime);
+
 		bool advance = Advance(deltaTime);
 
 		if (advance)
 		{
-			uint32_t numberActors;
+			uint32_t numberActors = 0;
 			physx::PxActor** activeActors = m_Scene->getActiveActors(numberActors);
 
 			for (uint32_t i = 0; i < numberActors; i++)
 			{
-				// NOTE: We can guarantee that this is a PhysicsActor, because controllers aren't included in active actors
-				Count<PhysicsActor> actor = (PhysicsActor*)activeActors[i]->userData;
+				// NOTE: controller is in physics scene is this right 
+				Count<PhysicsActorBase> actor = (PhysicsActorBase*)activeActors[i]->userData;
 				if (actor && !actor->IsSleeping())
 				{
 					actor->SyncTransform();
 				}
 			}
 
-			// NOTE: SynchronizeTransform for controllers HAVE to be done explicitly because controller actors aren't included in the Active Actors list
 
-			for (auto& [entityID, controller] : m_Controllers)
-				controller->SyncTransform();
 		}
 	}
 	bool PhysicsWorld::HasActor(Entity entity)

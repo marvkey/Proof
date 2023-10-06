@@ -19,6 +19,7 @@ namespace Proof
 
 		virtual glm::vec3 GetLocation() const override;
 		virtual void SetLocation(const glm::vec3& translation, const bool autowake = true) override;
+		virtual bool IsSleeping() { return false; };
 
 		float GetSpeedDown() const;
 		bool IsGrounded() const;
@@ -36,7 +37,7 @@ namespace Proof
 	private:
 		physx::PxController* m_Controller = nullptr;
 		physx::PxControllerCollisionFlags m_CollisionFlags = {};
-		float m_SpeedDown = 0.0f;        // speed of controller in down direction at last update
+		glm::vec3 m_Speed;        // speed of controller in down direction at last update
 		glm::vec3 m_Displacement = {};   // displacement (if any) for next update (comes from Move() calls)
 		Count<class PhysicsMaterial> m_Material;
 
@@ -45,6 +46,7 @@ namespace Proof
 		virtual void SyncTransform() override;
 		void Init();
 		void GenerateCapsule();
+		void GenerateCube();
 		void Release();
 		friend class PhysicsWorld;
 	};

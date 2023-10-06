@@ -573,7 +573,8 @@ namespace Proof
 
 	struct CharacterControllerComponent
 	{
-		
+		CharacterControllerComponent(const CharacterControllerComponent&) = default;
+		CharacterControllerComponent() = default;
 		float SlopeLimitRadians = 0.707; //45 degree
 		float StepOffset = 0.3f; // min 0 max max float 
 		float SkinOffset = 0.1f; // min shoul dbe non zero positive and maximum should be max flaot
@@ -679,7 +680,7 @@ namespace Proof
 	};
 	using AllComponents =
 		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
-		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, RigidBodyComponent,
+		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, CharacterControllerComponent, RigidBodyComponent,
 		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,
 		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent>;
 	

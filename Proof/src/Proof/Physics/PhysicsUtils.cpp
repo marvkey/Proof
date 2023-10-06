@@ -113,6 +113,19 @@ namespace Proof::PhysXUtils {
 
 		return physx::PxFrictionType::ePATCH;
 	}
+	physx::PxControllerNonWalkableMode::Enum ToPhysXPxControllerNonWalkableMode(CharacterControllerNonWalkableMode mode)
+	{
+		switch (mode)
+		{
+			case Proof::CharacterControllerNonWalkableMode::PreventClimbing:
+				return physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;
+				break;
+			case Proof::CharacterControllerNonWalkableMode::PreventClimbingForceSliding:
+				return physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING_AND_FORCE_SLIDING;
+				break;
+		}
+		PF_CORE_ASSERT(false);
+	}
 	/*
 	physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection)
 	{

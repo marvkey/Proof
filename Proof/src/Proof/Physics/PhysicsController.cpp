@@ -4,6 +4,7 @@
 #include "PhysicsEngine.h"
 #include "PhysicsWorld.h"
 #include "PhysicsMaterial.h"
+#include "PhysicsUtils.h"
 namespace Proof
 {
 	PhysicsController::PhysicsController(Count<class PhysicsWorld> world, Entity entity)
@@ -19,11 +20,26 @@ namespace Proof
 	}
 	void PhysicsController::Init()
 	{
+		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
+		if (AssetManager::HasAsset(controller.PhysicsMaterialID))
+			m_Material = AssetManager::GetAsset<PhysicsMaterial>(controller.PhysicsMaterialID);
+		else
+			controller.PhysicsMaterialID = 0;
 
 		if (m_Material == nullptr)
 			m_Material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
-		GenerateCapsule();
+
+		if (IsCapsuleController())
+			GenerateCapsule();
+		else
+			GenerateCube();
+
 	}
+	void PhysicsController::Release()
+	{
+		m_Controller->release();
+	}
+
 	void PhysicsController::GenerateCapsule()
 	{
 		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
@@ -34,13 +50,34 @@ namespace Proof
 		desc.height = controller.Height * transform.Scale.y;
 		desc.radius = controller.Radius * radiusScale;
 		//desc.radius = controller.Radius;
-		desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;  // TODO: get from component
+		desc.nonWalkableMode = PhysXUtils::ToPhysXPxControllerNonWalkableMode(controller.WalkableMode);  // TODO: get from component
 		desc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
 		desc.slopeLimit = std::max(0.0f, cos(controller.SlopeLimitRadians));
 		desc.stepOffset = controller.StepOffset;
 		desc.contactOffset = controller.SkinOffset;                                                     // TODO: get from component
 		desc.material = (physx::PxMaterial*) m_Material->GetPhysicsBody();
-		desc.upDirection = { 0.0f, 1.0f, 0.0f };
+		desc.upDirection = PhysXUtils::ToPhysXVector(Math::GetUpVector());
+
+		m_Controller = m_PhysicsWorld->GetPhysXControllerManager()->createController(desc);
+
+		m_Controller->getActor()->userData = this;
+	}
+	void PhysicsController::GenerateCube()
+	{
+		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
+		auto& transform = m_Entity.GetComponent<TransformComponent>();
+
+		physx::PxBoxControllerDesc desc;
+		desc.position = PhysXUtils::ToPhysXExtendedVector(m_Entity.Transform().Location + controller.Center); // not convinced this is correct.  (e.g. it needs to be world space, not local)
+		desc.halfHeight = (controller.Size.y * transform.Scale.y);
+		desc.halfSideExtent = (controller.Size.x * transform.Scale.x);
+		desc.halfForwardExtent = (controller.Size.z * transform.Scale.z);
+		desc.nonWalkableMode = PhysXUtils::ToPhysXPxControllerNonWalkableMode(controller.WalkableMode);  // TODO: get from component
+		desc.slopeLimit = std::max(0.0f, cos(controller.SlopeLimitRadians));
+		desc.stepOffset = controller.StepOffset;
+		desc.contactOffset = controller.SkinOffset;                                                     // TODO: get from component
+		desc.material = (physx::PxMaterial*)m_Material->GetPhysicsBody();
+		desc.upDirection = PhysXUtils::ToPhysXVector(Math::GetUpVector());
 
 		m_Controller = m_PhysicsWorld->GetPhysXControllerManager()->createController(desc);
 
@@ -53,6 +90,16 @@ namespace Proof
 	bool PhysicsController::IsGravityEnabled() const
 	{
 		return m_Entity.GetComponent<CharacterControllerComponent>().GravityEnabled;
+	}
+	void PhysicsController::SetGravityScale(float scale)
+	{
+		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
+		controller.GravityScale = scale;
+	}
+	float PhysicsController::GetGravityScale()
+	{
+		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
+		return controller.GravityScale;
 	}
 	void PhysicsController::SetSlopeLimit(const float slopeLimitRadians)
 	{
@@ -82,10 +129,7 @@ namespace Proof
 		// Set the new position for the character controller
 		m_Controller->setPosition(PhysXUtils::ToPhysXExtendedVector(newPosition));
 	}
-	float PhysicsController::GetSpeedDown() const
-	{
-		return m_SpeedDown;
-	}
+	
 	bool PhysicsController::IsGrounded() const
 	{
 		return m_CollisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN;
@@ -94,9 +138,13 @@ namespace Proof
 	{
 		m_Displacement += displacement;
 	}
+	float PhysicsController::GetSpeedDown() const
+	{
+		return m_Speed.y;
+	}
 	void PhysicsController::Jump(float jumpPower)
 	{
-		m_SpeedDown = -1.0f * jumpPower;
+		m_Speed.y = -1.0f * jumpPower;
 	}
 	bool PhysicsController::IsCapsuleController() const
 	{
@@ -113,19 +161,19 @@ namespace Proof
 	}
 	void PhysicsController::OnUpdate(float dt)
 	{
-		float gravity = glm::length(PhysicsEngine::GetSettings().Gravity);            // acceleration due to gravity (in direction opposite to controllers "up" vector)
+		//float gravity = glm::length(PhysicsEngine::GetSettings().Gravity);            // acceleration due to gravity (in direction opposite to controllers "up" vector)
 
 		physx::PxControllerFilters filters;
 
 		if(IsGravityEnabled())
-			m_SpeedDown += gravity * dt;
+			m_Speed += PhysicsEngine::GetSettings().Gravity * dt *GetGravityScale() ;
 
-		glm::vec3 displacement = m_Displacement - PhysXUtils::FromPhysXVector(m_Controller->getUpDirection()) * m_SpeedDown * dt;
+		glm::vec3 displacement = m_Displacement - PhysXUtils::FromPhysXVector(m_Controller->getUpDirection()) * m_Speed * dt;
 
 		m_CollisionFlags = m_Controller->move(PhysXUtils::ToPhysXVector(displacement), 0.0, static_cast<physx::PxF32>(dt), filters);
 
 		if (IsGrounded())
-			m_SpeedDown = gravity * 0.01f; // setting speed back to zero here would be more technically correct,
+			m_Speed = PhysicsEngine::GetSettings().Gravity * 0.01f; // setting speed back to zero here would be more technically correct,
 		// but a small non-zero gives better results (e.g. lessens jerkyness when walking down a slope)
 		m_Displacement = {};
 	}
@@ -133,6 +181,7 @@ namespace Proof
 	{
 		TransformComponent& transform = m_Entity.Transform();
 		transform.Location = GetLocation();
+
 		/*
 		TransformComponent& transform = m_Entity.Transform();
 		glm::vec3 scale = transform.Scale;

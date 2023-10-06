@@ -414,6 +414,7 @@ namespace Proof::UI
     }
     bool AttributeAssetTextBar(const std::string& label, Count<class Asset> asset, AssetType type, bool includeRemove )
     {
+        static char  searchCharacters[512];
         if (AssetManager::HasAsset(asset))
         {
 
@@ -455,7 +456,12 @@ namespace Proof::UI
             }
             ImGui::EndDragDropTarget();
         }
-      
+        
+     //   if (ImGui::BeginPopupContextItem("SearchAsset",ImGuiPopupFlags_MouseButtonLeft))
+     //   {
+     //       ImGui::EndPopup();
+     //   }
+
         
         return false;
     }
