@@ -14,23 +14,38 @@ namespace Proof {
     //https://www.songho.ca/opengl/gl_cylinder.html (//for cone and cylinder, sphere) download the zip file  com
 
     //TODO ADD ALready have smooth shading implement flat shading https://www.songho.ca/opengl/gl_cylinder.html  already has flat shaidng for cylinder, cone and sphere
-    Count<Mesh> MeshWorkShop::GenerateCube()
+    Count<Mesh> MeshWorkShop::GenerateCube(const glm::vec3& size)
     {
 
         //https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/Primitives.cpp
-        std::vector<Vertex> vertices = {
-            {{1.0f, 1.0f, -1.0f}, {1.0f, 1.0f, 0.2f}, {1.0f, 1.0f}},
-            {{1.0f, -1.0f, -1.0f}, {1.0f, 0.2f, 0.2f}, {1.0f, 0.0f}},
-            {{-1.0f, -1.0f, -1.0f}, {0.2f, 0.2f, 0.2f}, {0.0f, 0.0f}},
-            {{-1.0f, 1.0f, -1.0f}, {0.2f, 1.0f, 0.2f}, {0.0f, 1.0f}},
-            {{-1.0f, -1.0f, 1.0f}, {0.2f, 0.2f, 1.0f}, {0.0f, 0.0f}},
-            {{1.0f, -1.0f, 1.0f}, {1.0f, 0.2f, 1.0f}, {1.0f, 0.0f}},
-            {{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-            {{-1.0f, 1.0f, 1.0f}, {0.2f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-        };
+        std::vector<Vertex> vertices;
+        vertices.resize(8);
+        vertices[0].Position = { -size.x , -size.y ,  size.z  };
+        vertices[1].Position = { size.x , -size.y ,  size.z  };
+        vertices[2].Position = { size.x ,  size.y ,  size.z  };
+        vertices[3].Position = { -size.x ,  size.y ,  size.z  };
+        vertices[4].Position = { -size.x , -size.y , -size.z  };
+        vertices[5].Position = { size.x , -size.y , -size.z  };
+        vertices[6].Position = { size.x ,  size.y , -size.z  };
+        vertices[7].Position = { -size.x ,  size.y , -size.z  };
 
-        std::vector<uint32_t> indices = {
-        0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 1, 0, 6, 1, 6, 5, 7, 6, 0, 7, 0, 3, 7, 3, 2, 7, 2, 4, 4, 2, 1, 4, 1, 5,
+        vertices[0].Normal = { -1.0F, -1.0F,  1.0F };
+        vertices[1].Normal = { 1.0F, -1.0F,  1.0F };
+        vertices[2].Normal = { 1.0F,  1.0F,  1.0F };
+        vertices[3].Normal = { -1.0F,  1.0F,  1.0F };
+        vertices[4].Normal = { -1.0F, -1.0F, -1.0F };
+        vertices[5].Normal = { 1.0F, -1.0F, -1.0F };
+        vertices[6].Normal = { 1.0F,  1.0F, -1.0F };
+        vertices[7].Normal = { -1.0F,  1.0F, -1.0F };
+
+        std::vector<Index> indices =
+        {
+            {0, 1, 2,}, {2, 3, 0,},
+            {1, 5, 6,}, { 6, 2, 1,},
+            {7, 6, 5,}, {5, 4, 7,},
+            {4, 0, 3,}, {3, 7, 4,},
+            {4, 5, 1,}, {1, 0, 4,},
+            {3, 2, 6,}, {6, 7, 3},
         };
         return Count<Mesh>::Create("Cube", vertices, indices);
 
@@ -56,7 +71,7 @@ namespace Proof {
         // this is generating a smooth surace sphere 
         // in the future go to the site to generate a sphere wich surface is not smooth
         std::vector<Vertex> vertices;
-        std::vector<uint32_t> indices;
+        std::vector<Index> indices;
 
         float x, y, z, xy;                              // vertex position
         float nx, ny, nz, lengthInv = 1.0f / radius;    // normal
@@ -110,12 +125,12 @@ namespace Proof {
                 // 2 triangles per sector excluding 1st and last stacks
                 if (i != 0)
                 {
-                    indices.insert(indices.end(), { k1, k2, k1 + 1 });// k1---k2---k1+1
+                    indices.insert(indices.end(), Index{ k1, k2, k1 + 1 });// k1---k2---k1+1
                 }
 
                 if (i != (stacks - 1))
                 {
-                    indices.insert(indices.end(), { k1 + 1, k2, k2 + 1 });  // k1+1---k2---k2+1
+                    indices.insert(indices.end(), Index{ k1 + 1, k2, k2 + 1 });  // k1+1---k2---k2+1
                 }
             }
         }
@@ -151,7 +166,7 @@ namespace Proof {
         constexpr float radiusModifier = 0.021f; // Needed to ensure that the wireframe is always visible
 
         std::vector<Vertex> vertices;
-        std::vector<uint32_t> indices;
+        std::vector<Index> indices;
 
         vertices.reserve(numSegments * ringsTotal);
         indices.reserve((numSegments - 1) * (ringsTotal - 1) * 2);
@@ -172,8 +187,8 @@ namespace Proof {
         {
             for (uint32_t s = 0; s < numSegments - 1; s++)
             {
-                indices.insert(indices.end(), { (uint32_t)(r * numSegments + s + 1) ,(uint32_t)(r * numSegments + s + 0),(uint32_t)((r + 1) * numSegments + s + 1) });
-                indices.insert(indices.end(), { (uint32_t)((r + 1) * numSegments + s + 0) ,(uint32_t)((r + 1) * numSegments + s + 1),(uint32_t)(r * numSegments + s) });
+                indices.insert(indices.end(), Index{ (uint32_t)(r * numSegments + s + 1) ,(uint32_t)(r * numSegments + s + 0),(uint32_t)((r + 1) * numSegments + s + 1) });
+                indices.insert(indices.end(), Index{ (uint32_t)((r + 1) * numSegments + s + 0) ,(uint32_t)((r + 1) * numSegments + s + 1),(uint32_t)(r * numSegments + s) });
             }
         }
 
@@ -295,7 +310,7 @@ namespace Proof {
     Count<class Mesh> MeshWorkShop::GenerateCylinder(uint32_t sectorCount, uint32_t stackCount ,float topRadius,float baseRadius, float height)
     {
            //chatgpt
-        std::vector<Vertex> vertices; std::vector<uint32_t> indices;
+        std::vector<Vertex> vertices; std::vector<Index> indices;
 
         float radius;
         std::vector<CylinderGeneratorSpecificVertex> unitCircleVertices = GetUnitCircleVertices(sectorCount, baseRadius, topRadius, height);
@@ -349,9 +364,9 @@ namespace Proof {
         for (uint32_t i = 0, k = baseVertexIndex + 1; i < sectorCount; ++i, ++k)
         {
             if (i < sectorCount - 1)
-                indices.insert(indices.end(), { baseVertexIndex, k + 1, k });
+                indices.insert(indices.end(), Index{ baseVertexIndex, k + 1, k });
             else
-                indices.insert(indices.end(), { baseVertexIndex, baseVertexIndex + 1, k });
+                indices.insert(indices.end(), Index{ baseVertexIndex, baseVertexIndex + 1, k });
         }
         // put vertices of top of cylinder
         unsigned int topVertexIndex = (unsigned int)vertices.size();
@@ -384,8 +399,8 @@ namespace Proof {
             for (int j = 0; j < sectorCount; ++j, ++k1, ++k2)
             {
                 // 2 trianles per sector
-                indices.insert(indices.end(), { k1, k1 + 1, k2 });
-                indices.insert(indices.end(), { k2, k1 + 1, k2 + 1 });
+                indices.insert(indices.end(), Index{ k1, k1 + 1, k2 });
+                indices.insert(indices.end(), Index{ k2, k1 + 1, k2 + 1 });
 
             }
         }
@@ -396,18 +411,18 @@ namespace Proof {
         for (uint32_t i = 0, k = baseVertexIndex + 1; i < sectorCount; ++i, ++k)
         {
             if (i < (sectorCount - 1))
-                indices.insert(indices.end(), { baseVertexIndex, k + 1, k });
+                indices.insert(indices.end(), Index{ baseVertexIndex, k + 1, k });
             else    // last triangle
-                indices.insert(indices.end(), { baseVertexIndex, baseVertexIndex + 1, k });
+                indices.insert(indices.end(), Index{ baseVertexIndex, baseVertexIndex + 1, k });
         }
 
 
         for (uint32_t i = 0, k = topVertexIndex + 1; i < sectorCount; ++i, ++k)
         {
             if (i < (sectorCount - 1))
-                indices.insert(indices.end(), { topVertexIndex, k, k + 1 });
+                indices.insert(indices.end(), Index{ topVertexIndex, k, k + 1 });
             else
-                indices.insert(indices.end(), { topVertexIndex, k, topVertexIndex + 1 });
+                indices.insert(indices.end(), Index{ topVertexIndex, k, topVertexIndex + 1 });
         }
         ChangeUpAxis(3, 2,vertices);
         return Count<class Mesh>::Create("Cylinder", vertices, indices);
@@ -416,7 +431,7 @@ namespace Proof {
     Count<class Mesh> MeshWorkShop::GenerateTorus(uint32_t numSegments, uint32_t numRings, float majorRadius, float minorRadius)
     {
              //chatgpt
-        std::vector<Vertex> vertices; std::vector<uint32_t> indices;
+        std::vector<Vertex> vertices; std::vector<Index> indices;
         for (int ring = 0; ring <= numRings; ++ring)
         {
             float phi = static_cast<float>(ring) * (2.0f * 3.1415926f) / static_cast<float>(numRings);
@@ -474,13 +489,17 @@ namespace Proof {
                 int bottom1 = (ring + 1) * (numSegments + 1) + segment;
                 int bottom2 = (ring + 1) * (numSegments + 1) + nextSegment;
 
-                indices.push_back(top1);
-                indices.push_back(bottom1);
-                indices.push_back(bottom2);
+                Index index1{ top1,bottom1,bottom2 };
+                indices.push_back(index1);
+                //indices.push_back(top1);
+                //indices.push_back(bottom1);
+                //indices.push_back(bottom2);
 
-                indices.push_back(top1);
-                indices.push_back(bottom2);
-                indices.push_back(top2);
+                Index index2{ top1,bottom2,top2 };
+                indices.push_back(index2);
+                //indices.push_back(top1);
+                //indices.push_back(bottom2);
+                //indices.push_back(top2);
             }
         }
         return Count<class Mesh>::Create("Torus", vertices, indices);
@@ -489,7 +508,7 @@ namespace Proof {
     Count<class Mesh> MeshWorkShop::GeneratePlane(uint32_t numSegments, float planeSize)
     {
           //chatgpt
-        std::vector<Vertex> vertices; std::vector<uint32_t> indices;
+        std::vector<Vertex> vertices; std::vector<Index> indices;
         float segmentSize = planeSize / static_cast<float>(numSegments);
 
         for (int i = 0; i <= numSegments; ++i)
@@ -527,13 +546,17 @@ namespace Proof {
                 int bottomLeft = ((i + 1) * (numSegments + 1)) + j;
                 int bottomRight = bottomLeft + 1;
 
-                indices.push_back(topLeft);
-                indices.push_back(bottomLeft);
-                indices.push_back(topRight);
+                Index index1{ topLeft,bottomLeft,topRight };
+                indices.push_back(index1);
+                //indices.push_back(topLeft);
+                //indices.push_back(bottomLeft);
+                //indices.push_back(topRight);
 
-                indices.push_back(topRight);
-                indices.push_back(bottomLeft);
-                indices.push_back(bottomRight);
+                Index index2{ topRight,bottomLeft,bottomRight };
+                indices.push_back(index2);
+               // indices.push_back(topRight);
+               // indices.push_back(bottomLeft);
+               // indices.push_back(bottomRight);
             }
         }
         ChangeUpAxis(3, 2, vertices);

@@ -24,7 +24,10 @@ namespace Proof
         glm::vec3 Tangent{0,0,0};
         glm::vec3 Bitangent{0,0,0};
     }; 
-
+    struct Index
+    {
+        uint32_t V1, V2, V3;
+    };
     struct Vertex2D {
         Vector Position;
         glm::vec4 Color;

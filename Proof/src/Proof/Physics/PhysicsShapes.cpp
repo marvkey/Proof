@@ -56,6 +56,7 @@ namespace Proof {
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
 
 		glm::vec3 colliderSize = worldTransform.Scale * size; // should be negative
+		//colliderSize /= 2;
 
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(colliderSize.x, colliderSize.y, colliderSize.z);
 		m_Shape->setGeometry(geometry);

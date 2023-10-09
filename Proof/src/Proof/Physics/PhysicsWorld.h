@@ -42,7 +42,6 @@ namespace Proof {
 		float m_SubStepSize = 1.0f / 60.0f;
 		
 		class physx::PxScene* m_Scene = nullptr;
-		class physx::PxPvdTransport* m_Transport = nullptr;
 		class CollisionCallback m_CollisionCallback;
 		// inserting an element with this technique makes 
 		// creates a copy nd uses desctrocture

@@ -73,20 +73,20 @@ namespace Proof{
     {
         m_Materials = Count<MaterialTable>::Create();
     }
-    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) 
+    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices)
     {
         Reset(name, vertices, indices);
     }
-    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials, AABB boundingBox)
+    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials, AABB boundingBox)
     {
         Reset(name, vertices, indices, subMeshes, nodes,materials, boundingBox);
     }
-    void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
+    void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices)
     {
         SubMesh subMesh;
         subMesh.BaseVertex = 0;
         subMesh.BaseIndex = 0;
-        subMesh.IndexCount = indices.size();
+        subMesh.IndexCount = indices.size() * 3u;
         subMesh.VertexCount = vertices.size();
         subMesh.MaterialIndex = 0;
         subMesh.Name = name;
@@ -96,7 +96,7 @@ namespace Proof{
         m_SubMeshes = {};
         m_SubMeshes.emplace_back(subMesh);
         m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
-        m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
+        m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size() * sizeof(Index));
 
         m_Materials = Count<MaterialTable>::Create();
 
@@ -119,12 +119,12 @@ namespace Proof{
         }
     }
 
-    void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials,AABB boundingBox)
+    void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials,AABB boundingBox)
     {
         m_Name = name;
 
         m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
-        m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size());
+        m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size() * sizeof(Index));
         m_SubMeshes = subMeshes;
         m_Nodes = nodes;
         m_BoundingBox = boundingBox;
@@ -141,12 +141,28 @@ namespace Proof{
         }
     }
 
+    std::vector<Vertex> MeshSource::GetVertices() const
+    {
+        if(m_VertexBuffer ==nullptr)
+            return std::vector<Vertex>();
+
+        return m_VertexBuffer->GetDataAs<Vertex>();
+    }
+
+    std::vector<uint32_t> MeshSource::GetIndices() const
+    {
+        if(m_IndexBuffer ==nullptr)
+            return std::vector<uint32_t>();
+
+        return m_IndexBuffer->GetData();
+    }
+
     Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& submeshes)
         :m_MeshSource(meshSource)
     {
         Reset(meshSource, submeshes);
     }
-    Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices)
+    Mesh::Mesh(const std::string& name, std::vector<Vertex> vertices, std::vector<Index>indices)
     {
         Reset(name,vertices,indices);
     }
@@ -157,7 +173,7 @@ namespace Proof{
         SetSubMeshes(subMeshes);
         m_MaterialTable = Count<MaterialTable>::CreateFrom(meshSource->GetMaterials());
     }
-    void Mesh::Reset(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices)
+    void Mesh::Reset(const std::string& name, std::vector<Vertex> vertices, std::vector<Index>indices)
     {
         m_MeshSource = Count<MeshSource>::Create(name, vertices, indices);
         m_MaterialTable = Count<MaterialTable>::Create();

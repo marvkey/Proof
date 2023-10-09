@@ -30,6 +30,7 @@
 #include "Proof/Math/MathConvert.h"	
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Proof/Scene/Material.h"
+#include "Proof/Asset/AssetManager.h"
 
 #include "VertexArray.h"
 #include<glm/glm.hpp>
@@ -419,7 +420,7 @@ namespace Proof
 			GraphicsPipelineConfiguration pipelinelineConfig;
 			pipelinelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA, ImageFormat::DEPTH32F }; // color, view limuncance, metallness, roughness
 			// Don't blend with luminance in the alpha channel.
-			//pipelinelineConfig.Attachments.Attachments[1].Blend = false;
+			pipelinelineConfig.Attachments.Attachments[1].Blend = false;
 
 			pipelinelineConfig.DebugName = "Geometry_Static";
 			pipelinelineConfig.Shader = Renderer::GetShader("ProofPBR_Static");
@@ -1421,10 +1422,11 @@ namespace Proof
 				{
 					const auto& transformData = m_MeshTransformMap.at(meshKey);
 					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-					//transformData.Transforms
 					RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 				}
 			}
+			Renderer::EndRenderPass(m_GeometryPass);
+			/*
 			{
 				PF_PROFILE_FUNC("GeometryPass::Dynamic");
 
@@ -1436,8 +1438,7 @@ namespace Proof
 					RenderDynamicMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 				}
 			}
-			Renderer::EndRenderPass(m_GeometryPass);
-
+			*/
 			m_Timers.GeometryMeshPass = timer.ElapsedMillis();
 		}
 
@@ -1452,7 +1453,22 @@ namespace Proof
 		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
 		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
 
-		if(Options.ShowPhysicsColliders != WorldRendererOptions::PhysicsColliderView::None)
+		
+		//AmbientOcclusionPass();
+
+		// this has to be the last thgn called
+		{
+			PF_PROFILE_FUNC("WorldRenderer::WorldComposite");
+
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_CompositePass, true);
+			//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
+			auto inputImage = m_GeometryPass->GetOutput(0);
+			m_CompositeMaterial->Set("u_WorldTexture", inputImage);
+			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_CompositePass, m_CompositeMaterial);
+			Renderer::EndRenderPass(m_CompositePass);
+		}
+
+		if (Options.ShowPhysicsColliders != WorldRendererOptions::PhysicsColliderView::None)
 		{
 			PF_PROFILE_FUNC("CompositePass::PhysicsDebugMeshes");
 			Timer physicsDebugMesh;
@@ -1472,23 +1488,10 @@ namespace Proof
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 				RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_GeometryWireFramePassMaterial,
 					wireFramePass,
-					transformBuffer,dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+					transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 			}
 			Renderer::EndRenderPass(wireFramePass);
 			m_Timers.DrawPhysicsColliders = physicsDebugMesh.Elapsed();
-		}
-		AmbientOcclusionPass();
-
-		// this has to be the last thgn called
-		{
-			PF_PROFILE_FUNC("WorldRenderer::WorldComposite");
-
-			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_CompositePass, true);
-			//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
-			auto inputImage = m_GeometryPass->GetOutput(0);
-			m_CompositeMaterial->Set("u_WorldTexture", inputImage);
-			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_CompositePass, m_CompositeMaterial);
-			Renderer::EndRenderPass(m_CompositePass);
 		}
 		m_Timers.CompositePass = compositeTimer.ElapsedMillis();
 	}
@@ -1497,7 +1500,6 @@ namespace Proof
 		if (AmbientOcclusion.Enabled == false)
 			return;
 
-		return;
 		PF_PROFILE_FUNC();
 		
 		if (AmbientOcclusion.Type == AmbientOcclusion::AmbientOcclusionType::SSAO)
@@ -1655,7 +1657,7 @@ namespace Proof
 
 			// geo pass
 			{
-				auto& dc = m_MeshDrawList[meshKey];
+				auto& dc = m_ColliderDrawList[meshKey];
 				dc.Mesh = mesh;
 				dc.SubMeshIndex = submeshIndex;
 				dc.InstanceCount++;
@@ -1824,6 +1826,7 @@ namespace Proof
 		meshSource->GetVertexBuffer()->Bind(commandBuffer);
 		transformBuffer->Bind(commandBuffer, 1, transformOffset);
 		meshSource->GetIndexBuffer()->Bind(commandBuffer);
+
 		const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
 		Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex) ? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
 			: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();

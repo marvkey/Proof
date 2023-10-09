@@ -37,6 +37,17 @@ namespace Proof
 		Continuous,
 		ContinuousSpeculative
 	};
+	enum class CookingResult
+	{
+		Success,
+		ZeroAreaTestFailed,
+		PolygonLimitReached,
+		LargeTriangle,
+		InvalidMesh,
+		Failure,
+		None
+	};
+
 	struct PhysicsSettings
 	{
 		glm::vec3 Gravity = { 0.0f, -9.81f, 0.0f };

@@ -303,7 +303,6 @@ void main()
 	}
 
 	shadowScale = 1.0 - clamp(currentLight.ShadowStrength - shadowScale, 0.0f, 1.0f);
-
     // Shadow mask with respect to bright surfaces.
     // Calculate the alpha component of out_ViewNormalsLuminance, likely for shading or rendering effects.
     // 1. shadowScale represents the shadow intensity at the current fragment.
@@ -316,8 +315,8 @@ void main()
 
 
     vec3 finalColor = directLighting * shadowScale ;
-    finalColor += CalculatePointLights(F0, Input.WorldPosition);
-    finalColor += CalculateSpotLights(F0, Input.WorldPosition); //* sahdow
+    //finalColor += CalculatePointLights(F0, Input.WorldPosition);
+    //finalColor += CalculateSpotLights(F0, Input.WorldPosition); //* sahdow
 
 
     out_FragColor = vec4(finalColor + iblEfeect ,1.0);

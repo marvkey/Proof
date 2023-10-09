@@ -15,7 +15,6 @@ namespace Proof {
 	public:
 		static physx::PxFoundation* GetFoundation();
 		static physx::PxPhysics* GetPhysics();
-		static physx::PxPvd* GetPVD();
 		static physx::PxDefaultCpuDispatcher* GetCpuDispatcher();
 		static PhysicsSettings& GetSettings() { return s_Settings; }
 	private:

@@ -185,12 +185,12 @@ namespace Proof
 			
 			{
 				m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
-				m_ActiveWorld->m_Registry.each([&](auto entityID)
+
+				for (auto [id,entity] : m_ActiveWorld->GetEntities())
 				{
-					Entity entity = { entityID,m_ActiveWorld.Get() };
 					if (entity.HasParent() == false)
 						DrawEntityNode(entity);
-				});
+				}
 
 				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
 					m_SelectedEntity = {};
@@ -722,12 +722,12 @@ namespace Proof
 			UI::BeginPropertyGrid("DirectionalLightGrid");
 
 			UI::AttributeColor("Ambient", drl.Color);
-			UI::AttributeDrag("Intensity", drl.Intensity, 0.01, 0.0f, 100);
+			UI::AttributeDrag("Intensity", drl.Intensity, 0.01, 0.0f, 500);
 
 			UI::AttributeBool("CastShadows", drl.CastShadow);
 			if (drl.CastShadow)
 			{
-				UI::AttributeSlider("ShadowStrength", drl.ShadowStrength);
+				UI::AttributeSlider("ShadowStrength", drl.ShadowStrength,0,1);
 				UI::AttributeBool("CastSoftShadows", drl.CastSoftShadow);
 
 				if (drl.CastSoftShadow)

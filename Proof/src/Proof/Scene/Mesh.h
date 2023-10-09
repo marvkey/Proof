@@ -59,11 +59,11 @@ namespace Proof
     class MeshSource : public Asset{
     public:
         MeshSource();
-        MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
-        MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SubMesh>& subMeshes,const std::vector<MeshNode>& nodes, Count<MaterialTable>, AABB boundingBox);
+        MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices);
+        MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes,const std::vector<MeshNode>& nodes, Count<MaterialTable>, AABB boundingBox);
 
-        void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
-        void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials,AABB boundingBox);
+        void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices);
+        void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials,AABB boundingBox);
         AABB GetBoundingBox() {return m_BoundingBox;}
         const std::vector<SubMesh>& GetSubMeshes()const  { return m_SubMeshes;}
 
@@ -78,6 +78,8 @@ namespace Proof
         const std::vector<MeshNode>& GetNodes()const { return m_Nodes; }
         const MeshNode& GetRootNode()const { return m_Nodes[0]; };
 
+        std::vector<Vertex> GetVertices()const;
+        std::vector<uint32_t> GetIndices()const;
     private:
         std::string m_Name;
         AABB m_BoundingBox;
@@ -96,13 +98,13 @@ namespace Proof
         ASSET_CLASS_TYPE(Mesh);
         // can leave submeshes empty automaticallly goign to get all meshSOurce aset
         Mesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
-        Mesh(const std::string& name,std::vector<Vertex> vertices, std::vector<uint32_t>indices);
+        Mesh(const std::string& name,std::vector<Vertex> vertices, std::vector<Index>indices);
         ~Mesh() {};
         const std::string& GetName()const{
             return m_Name;
         }
         void Reset(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
-        void Reset(const std::string& name, std::vector<Vertex> vertices, std::vector<uint32_t>indices);
+        void Reset(const std::string& name, std::vector<Vertex> vertices, std::vector<Index>indices);
 
         void SetName(const std::string& name)
         {

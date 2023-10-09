@@ -4,7 +4,7 @@
 namespace Proof {
 	class MeshWorkShop {
 	public:
-		static Count<class Mesh> GenerateCube();
+		static Count<class Mesh> GenerateCube(const glm::vec3& size =glm::vec3{1});
 		static Count<class Mesh> GenerateSphere(float radius = 1.0f, float sectors = 36.f, float stacks = 18);
 		static Count<class Mesh> GenerateCapsule(float radius =0.5, float height=2.0f,uint32_t segments = 12, uint32_t subdivisionsHeight =8);
 

@@ -4,7 +4,8 @@
 #include "Proof/Scene/Component.h"
 #include "PhysicsTypes.h"
 
-namespace Proof::PhysXUtils {
+namespace Proof::PhysXUtils 
+{
 
 	physx::PxTransform ToPhysXTransform(const TransformComponent& transform)
 	{
@@ -48,7 +49,6 @@ namespace Proof::PhysXUtils {
 	glm::vec4 FromPhysXVector(const physx::PxVec4& vector) { return *(glm::vec4*)&vector; }
 	glm::quat FromPhysXQuat(const physx::PxQuat& quat) { return *(glm::quat*)&quat; }
 
-	/*
 	CookingResult FromPhysXCookingResult(physx::PxConvexMeshCookingResult::Enum cookingResult)
 	{
 		switch (cookingResult)
@@ -73,7 +73,7 @@ namespace Proof::PhysXUtils {
 
 		return CookingResult::Failure;
 	}
-
+	/*
 	const char* CookingResultToString(CookingResult cookingResult)
 	{
 		switch (cookingResult)

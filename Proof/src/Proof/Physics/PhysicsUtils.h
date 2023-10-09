@@ -23,8 +23,8 @@ namespace Proof {
 		glm::vec4 FromPhysXVector(const physx::PxVec4& vector);
 		glm::quat FromPhysXQuat(const physx::PxQuat& quat);
 
-		//CookingResult FromPhysXCookingResult(physx::PxConvexMeshCookingResult::Enum cookingResult);
-		//CookingResult FromPhysXCookingResult(physx::PxTriangleMeshCookingResult::Enum cookingResult);
+		CookingResult FromPhysXCookingResult(physx::PxConvexMeshCookingResult::Enum cookingResult);
+		CookingResult FromPhysXCookingResult(physx::PxTriangleMeshCookingResult::Enum cookingResult);
 		//const char* CookingResultToString(CookingResult cookingResult);
 		//
 		physx::PxBroadPhaseType::Enum ProofToPhysXBroadphaseType(BroadphaseType type);

@@ -31,23 +31,24 @@ namespace Proof
 		Buffer m_LocalBuffer;
 	};
 
-	class VulkanIndexBuffer : public IndexBuffer {
+	class VulkanIndexBuffer : public IndexBuffer 
+	{
 	public:
-		VulkanIndexBuffer(uint32_t count);
-		VulkanIndexBuffer(const void* data, uint32_t count);
+		VulkanIndexBuffer(uint32_t size);
+		VulkanIndexBuffer(const void* data, uint32_t size);
 		~VulkanIndexBuffer();
 		virtual void Bind(Count<RenderCommandBuffer> commandBuffer)const;
-		virtual void SetData(const void* data, uint32_t count, uint32_t offsetCount = 0);
+		virtual void SetData(const void* data, uint32_t size, uint32_t offsetSize = 0);
 
-		void Resize(uint32_t count);
-		void Resize(const void* data, uint32_t count);
-		uint32_t GetCount()const override{ return m_Count;}
-		uint32_t GetSize()const override { return m_Count* sizeof(uint32_t);}
-
+		void Resize(uint32_t size);
+		void Resize(const void* data, uint32_t size);
+		uint32_t GetSize()const override { return m_Size; }
 		std::vector<uint32_t> GetData()const ;
+		virtual Buffer GetDataRaw();
+
 	private:
 		VulkanMemmoryUsage m_Usage;
-		uint32_t m_Count;
+		uint32_t m_Size;
 		VulkanBuffer m_IndexBuffer;
 
 		void Build();

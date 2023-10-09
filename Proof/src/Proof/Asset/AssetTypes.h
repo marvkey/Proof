@@ -5,6 +5,7 @@
 #include "Proof/Utils/FileSystem.h"
 #include <unordered_map>
 #include "Proof/Core/Assert.h"
+#include "Proof/Core/UUID.h"
 
 namespace Proof
 {
@@ -26,6 +27,7 @@ namespace Proof
 		ParticleSystem,
 		Audio,
 		AudioSourceFile,
+		MeshCollider
 	};
 	enum class AssetState 
 	{
@@ -35,6 +37,8 @@ namespace Proof
 		Loading,
 		Invalid
 	};
+	using AssetID = UUID;
+
 	namespace Utils {
 		inline bool IsAssetSource(AssetType type)
 		{
@@ -63,6 +67,7 @@ namespace Proof
 			{AssetType::ParticleSystem, "ParticleSystem.ProofAsset"},
 			{AssetType::Font, "Font.ProofAsset" },
 			{AssetType::Audio, "Audio.ProofAsset" },
+			{AssetType::MeshCollider, "MeshCollider.ProofAsset" },
 		};
 		inline std::string GetAssetExtensionString(AssetType type) 
 		{

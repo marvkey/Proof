@@ -70,7 +70,7 @@ namespace Proof {
 				offset += 4;
 			}
 
-			m_IndexBuffer = IndexBuffer::Create(quadIndices, c_MaxIndexCount);
+			m_IndexBuffer = IndexBuffer::Create(quadIndices, c_MaxIndexCount * sizeof(uint32_t));
 			delete[] quadIndices;
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
@@ -686,7 +686,7 @@ namespace Proof {
 			0, 1, 2, 0, 2, 3,
 		};
 		Count<VertexBuffer> buffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
-		Count<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size());
+		Count<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size() * sizeof(uint32_t));
 		return std::make_pair(buffer, indexBuffer);
 	}
 	void Renderer2D::SetTargetFrameBuffer(Count<class FrameBuffer> framebuffer)
@@ -717,7 +717,7 @@ namespace Proof {
 		}
 
 		VertexBuffer = VertexBuffer::Create(c_MaxVertexCount*sizeof(Vertex2D));
-		IndexBuffer = IndexBuffer::Create(QuadIndices.data(), c_MaxIndexCount);
+		IndexBuffer = IndexBuffer::Create(QuadIndices.data(), c_MaxIndexCount * sizeof(uint32_t));
 		CameraBuffer = UniformBufferSet::Create(sizeof(CameraData));
 
 		TextVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(TextVertex));

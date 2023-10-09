@@ -4,6 +4,13 @@
 #include "PhysicsUtils.h"
 namespace Proof
 {
+	enum class CollisionFlags : uint8_t
+	{
+		None = 0,
+		Sides = BIT(0),
+		Above = BIT(1),
+		Below = BIT(2)
+	};
 	class Entity;
 	class PhysicsController : public PhysicsActorBase
 	{
@@ -13,6 +20,9 @@ namespace Proof
 
 		virtual void SetGravityEnabled(const bool enableGravity) override;
 		virtual bool IsGravityEnabled() const override;
+
+		void SetGravityScale(float scale);
+		float GetGravityScale();
 		//virtual bool SetSimulationData(uint32_t layerId) override;
 		void SetSlopeLimit(const float slopeLimitRadians);
 		void SetStepOffset(const float stepOffset);
@@ -23,7 +33,7 @@ namespace Proof
 
 		float GetSpeedDown() const;
 		bool IsGrounded() const;
-		//CollisionFlags GetCollisionFlags() const;
+		CollisionFlags GetCollisionFlags() const;
 
 		void Move(glm::vec3 displacement);
 		void Jump(float jumpPower);

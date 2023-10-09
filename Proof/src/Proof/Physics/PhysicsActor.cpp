@@ -112,6 +112,7 @@ namespace Proof {
 	}
 	bool PhysicsActor::IsSleeping()
 	{
+
 		if (!IsDynamic())return true;
 	
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RigidActor;
@@ -119,11 +120,14 @@ namespace Proof {
 	}
 	void PhysicsActor::OnFixedUpdate(float deltaTime)
 	{
+		//TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
+		//physx::PxTransform newPos(PhysXUtils::ToPhysXVector(transform.Location), PhysXUtils::ToPhysXQuat(transform.GetRotation()));
+		//m_RigidActor->setGlobalPose(newPos, false);
+
 		//if (!ScriptEngine::IsEntityInstantiated(m_Entity))
 		//	return;
 		//
 		//ScriptEngine::CallMethod(m_Entity.GetComponent<ScriptComponent>().ManagedInstance, "OnPhysicsUpdate", fixedDeltaTime);
-
 	}
 	
 	void PhysicsActor::SetLocation(const glm::vec3& translation, const bool autowake)
@@ -443,7 +447,7 @@ namespace Proof {
 		const auto& transformComponent = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
 		auto& rigidBodyComponent = m_Entity.GetComponent<RigidBodyComponent>();
 
-		physx::PxTransform physxTransform = PhysXUtils::ToPhysXTransform( m_PhysicsWorld->GetWorld()->GetWorldSpaceTransform(m_Entity));
+		physx::PxTransform physxTransform = PhysXUtils::ToPhysXTransform( m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity));
 
 		if (rigidBodyComponent.m_RigidBodyType == RigidBodyType::Dynamic)
 		{

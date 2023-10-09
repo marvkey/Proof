@@ -5,6 +5,7 @@
 #include "PhysicsWorld.h"
 #include "PhysicsMaterial.h"
 #include "PhysicsUtils.h"
+#include "Proof/Asset/AssetManager.h"
 namespace Proof
 {
 	PhysicsController::PhysicsController(Count<class PhysicsWorld> world, Entity entity)
@@ -133,6 +134,10 @@ namespace Proof
 	bool PhysicsController::IsGrounded() const
 	{
 		return m_CollisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN;
+	}
+	CollisionFlags PhysicsController::GetCollisionFlags() const
+	{
+		return static_cast<CollisionFlags>((physx::PxU8)m_CollisionFlags);;
 	}
 	void PhysicsController::Move(glm::vec3 displacement)
 	{

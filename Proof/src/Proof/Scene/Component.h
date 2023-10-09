@@ -16,6 +16,8 @@
 #include "Proof/Input/KeyCodes.h"
 #include "Proof/Audio/AudioTools.h"
 #include "Proof/Physics/PhysicsTypes.h"
+#include "Proof/Asset/AssetTypes.h"
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
@@ -507,7 +509,6 @@ namespace Proof
 	struct Proof_API MeshColliderComponent {
 		MeshColliderComponent(const MeshColliderComponent&) = default;
 		MeshColliderComponent() = default;
-		bool IsTrigger = false;
 		void RemovePhysicsMaterial() {
 			m_PhysicsMaterialPointerID = 0;
 		}
@@ -523,6 +524,13 @@ namespace Proof
 		void RemoveMeshSource() {
 			m_MeshAssetPointerID = 0;
 		}
+		bool UseSharedShape = false;
+		bool IsTrigger = false;
+
+		bool OverrideCollider = false;
+		AssetID ColliderID = 0; // even if its a memory asset it will be saved on disk by the physics system 
+		bool UseSubMesh = false;
+		uint32_t SubMeshIndex = 0;
 	private:
 		mutable UUID m_MeshAssetPointerID = 0;// POINTS TO THE MESH ASSET
 		friend class World;

@@ -2,15 +2,14 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "AssetTypes.h"
-#include "Proof/Core/UUID.h"
 namespace Proof
 {
 
 
 	#define ASSET_CLASS_TYPE(type) static AssetType GetStaticType() { return AssetType::type; }\
 								virtual AssetType GetAssetType() const override { return GetStaticType(); }
-	using AssetID = UUID;
-	class Asset : public RefCounted {
+	class Asset : public RefCounted
+	{
 	public:
 		virtual ~Asset() {
 
@@ -20,7 +19,7 @@ namespace Proof
 		}
 		virtual AssetType GetAssetType() const = 0;
 	private:
-		AssetID m_ID{0};
+		AssetID m_ID{ 0 };
 		friend class ContentBrowserPanel;
 		friend class AssetSerializer;
 		friend class AssetManager;

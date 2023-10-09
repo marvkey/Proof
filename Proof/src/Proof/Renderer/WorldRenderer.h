@@ -3,7 +3,7 @@
 #include "Proof/Core/Buffer.h"
 #include "Proof/Scene/Camera/Camera.h"
 #include "Viewport.h"
-
+#include "Proof/Asset/AssetTypes.h"
 #include <map>
 namespace Proof
 {
@@ -79,8 +79,8 @@ namespace Proof
 		float Intensity = 0.0f;
 		glm::vec3 Direction; // Make sure TO NORMALIZED
 
-		int bCastShadows = 1;//bool
-		int bCastSoftShadows = 1;// bool
+		int bCastShadows = 0;//bool
+		int bCastSoftShadows = 0;// bool
 		float ShadowStrength = 0.0f; // between 0 and 1 or shadow amount how dark the shadow is
 		float ShadowSoftness = 0.0f; // penubra size or light size between 0 and 1
 	};
@@ -424,7 +424,7 @@ namespace Proof
 
 		//debg 
 		std::map<MeshKey, MeshDrawInfo> m_ColliderDrawList;
-		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicColliderDrawList;
+			std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicColliderDrawList;
 
 		Count<class Environment> m_Environment;
 		bool m_InContext = false;

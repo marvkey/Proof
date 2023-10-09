@@ -289,10 +289,10 @@ namespace Proof {
 		out << YAML::Key << "EntityOwner" << YAML::Value << prefab->m_BaseEntity.GetUUID();
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
-		prefab->m_World->m_Registry.each([&](auto entityID) {
-			Entity entity{ entityID , prefab->m_World.Get() };
-			SceneSerializer::SerilizeEntity(out, prefab->m_World->m_Registry, entity.GetUUID(), entityID, true);
-		});
+		for (auto [id, entity] : prefab->m_World->GetEntities())
+		{
+			SceneSerializer::SerilizeEntity(out, prefab->m_World->m_Registry, entity.GetUUID(),(entt::entity)entity, true);
+		}
 		out << YAML::Flow;
 		out << YAML::EndMap;
 		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());

@@ -5,11 +5,11 @@
 #include "Renderer.h"
 namespace Proof
 {
-	Count<VertexBuffer>VertexBuffer::Create(const void* Data, uint64_t amount) {
+	Count<VertexBuffer>VertexBuffer::Create(const void* Data, uint64_t size) {
 		switch (Renderer::GetAPI()) {
 			case Renderer::API::None:  PF_CORE_ASSERT(false, "Vertex Buffer None it needs an api"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;// CreateCount< OpenGLVertexBuffer>(Data, amount);
-			case Renderer::API::Vulkan: return Count< VulkanVertexBuffer>::Create(Data, amount);
+			case Renderer::API::Vulkan: return Count< VulkanVertexBuffer>::Create(Data, size);
 		}
 	}
 
@@ -21,21 +21,21 @@ namespace Proof
 		}
 	}
 
-	Count<IndexBuffer>IndexBuffer::Create(const void* Data, uint32_t count) {
+	Count<IndexBuffer>IndexBuffer::Create(const void* Data, uint32_t Size) {
 		switch (Renderer::GetAPI()) {
 			case Renderer::API::None:  PF_CORE_ASSERT(false, "Index Buffer None it needs an api "); return nullptr;
 			case Renderer::API::OpenGL: return  nullptr;// CreateCount< OpenGLIndexBuffer>(Data, Count);
-			case Renderer::API::Vulkan: return Count<VulkanIndexBuffer>::Create(Data,count);
+			case Renderer::API::Vulkan: return Count<VulkanIndexBuffer>::Create(Data, Size);
 		}
 		return nullptr;
 	}
-	Count<IndexBuffer> IndexBuffer::Create(uint32_t count)
+	Count<IndexBuffer> IndexBuffer::Create(uint32_t Size)
 	{
 		switch (Renderer::GetAPI())
 		{
 			case Renderer::API::None:  PF_CORE_ASSERT(false, "Index Buffer None it needs an api "); return nullptr;
 			case Renderer::API::OpenGL: return  nullptr;// CreateCount< OpenGLIndexBuffer>(Data, Count);
-			case Renderer::API::Vulkan: return Count<VulkanIndexBuffer>::Create(count);
+			case Renderer::API::Vulkan: return Count<VulkanIndexBuffer>::Create(Size);
 		}
 		return nullptr;
 	}

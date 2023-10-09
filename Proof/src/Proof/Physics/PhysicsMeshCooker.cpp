@@ -6,26 +6,61 @@
 
 #include "Proof/Renderer/MeshWorkShop.h"
 #include "Proof/Renderer/Vertex.h"
+#include "Proof/Core/Application.h"
+#include "Proof/Project/Project.h"
+#include "MeshCollider.h"
+#include "Proof/Core/Buffer.h"
+namespace  Proof 
+{
 
-namespace  Proof {
-	std::unordered_map<AssetID, Count<class Mesh>> s_Meshes;
-	std::unordered_map<AssetID, physx::PxTriangleMesh*> s_ConvexMeshes;
+	namespace Utils {
+
+		static std::filesystem::path GetCacheDirectory()
+		{
+			return Application::Get()->GetProject()->GetCacheDirectory() / "PhysicsColliders";
+		}
+
+		static void CreateCacheDirectoryIfNeeded()
+		{
+			std::filesystem::path cacheDirectory = GetCacheDirectory();
+			if (!std::filesystem::exists(cacheDirectory))
+				std::filesystem::create_directories(cacheDirectory);
+		}
+	}
+	struct CookingData
+	{
+		physx::PxCooking* CookingSDK;
+		physx::PxCookingParams DefaultCookingParameters;
+
+		CookingData(const physx::PxTolerancesScale& scale)
+			: CookingSDK(nullptr), DefaultCookingParameters(scale)
+		{
+		}
+	};
+	struct AntPhysicsMesh
+	{
+		const char Header[11] = "ProofMCRaw";
+		MeshColliderType Type;
+		uint32_t SubmeshCount;
+	};
+
 	Count<Mesh> PhysicsDebugCube;
 	Count<Mesh> PhysicsDebugSphere;
 	Count<Mesh> PhysicsDebugCapsule;
-	static class physx::PxCooking* s_MeshCooker = nullptr;
+	static CookingData* s_CookingData = nullptr;
+
 	bool PhysicsMeshCooker::HasMesh(AssetID ID)
 	{
-		return s_Meshes.contains(ID);
+		return false;
 	}
 	const Count<class Mesh> PhysicsMeshCooker::GetConvexMeshAsMesh(AssetID ID)
 	{
-		return s_Meshes.at(ID);
+		return nullptr;
 	}
 
 	physx::PxTriangleMesh* PhysicsMeshCooker::GetConvexMesh(AssetID ID)
 	{
-		return s_ConvexMeshes.at(ID);
+		return nullptr;
 	}
 	void PhysicsMeshCooker::CookMesh(AssetID ID)
 	{
@@ -113,6 +148,8 @@ namespace  Proof {
 		}
 		return;
 		*/
+
+		/*
 		{
 			physx::PxTriangleMeshDesc meshDesc;
 			meshDesc.points.count = vertices.size();
@@ -164,59 +201,199 @@ namespace  Proof {
 			Count<Mesh> newMesh = Count<Mesh>::Create(AssetManager::GetAsset<Mesh>(ID)->GetName(),
 				meshVertices, meshIndices);
 
-			s_Meshes[mesh->GetID()] = newMesh;
+			//s_Meshes[mesh->GetID()] = newMesh;
 		}
+		*/
 	}
 
 	void PhysicsMeshCooker::DeleteMesh(AssetID ID)
 	{
 		PF_CORE_ASSERT(HasMesh(ID), "Mesh does not exist");
 
-		auto cooker = s_ConvexMeshes.at(ID);
-		cooker->release();
-		s_ConvexMeshes.erase(ID);
-		s_Meshes.erase(ID);
+		//auto cooker = s_ConvexMeshes.at(ID);
+		//cooker->release();
+		//s_ConvexMeshes.erase(ID);
+		//s_Meshes.erase(ID);
 	}
-	Count<class Mesh> PhysicsMeshCooker::GetCubeColliderMesh()
+	Count<class Mesh> PhysicsMeshCooker::GetBoxColliderMesh()
 	{
-		if(!PhysicsDebugCube)
-			PhysicsDebugCube = MeshWorkShop::GenerateCube();
+		if (!PhysicsDebugCube)
+		{
+			PhysicsDebugCube = MeshWorkShop::GenerateCube(glm::vec3{0.5});
+			AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), PhysicsDebugCube, "PhysicsDebugCube");
+		}
 		return PhysicsDebugCube;
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetCapsuleColliderMesh()
 	{
-		if(!PhysicsDebugCapsule)
-			PhysicsDebugCapsule = MeshWorkShop::GenerateCapsule();
+		if (!PhysicsDebugCapsule)
+		{
+			PhysicsDebugCapsule = MeshWorkShop::GenerateCapsule(0.5);
+			AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), PhysicsDebugCapsule, "PhysicsDebugCapsule");
+		}
 		return PhysicsDebugCapsule;
 
 	}
 	Count<class Mesh> PhysicsMeshCooker::GetSphereColliderMesh()
 	{
-		if(!PhysicsDebugSphere)
+		if (!PhysicsDebugSphere)
+		{
 			PhysicsDebugSphere = MeshWorkShop::GenerateSphere();
+			AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), PhysicsDebugSphere, "PhysicsDebugSphere");
+		}
 		return PhysicsDebugSphere;
 	}
 
 	void PhysicsMeshCooker::Init()
 	{
-		physx::PxCookingParams params = physx::PxCookingParams(PhysicsEngine::GetPhysics()->getTolerancesScale());
-		params.meshWeldTolerance = 0.1f;
-		params.buildTriangleAdjacencies = true;
-		// disable mesh cleaning - perform mesh validation on development configurations
-		//params.meshPreprocessParams |= physx::PxMeshPreprocessingFlag::eDISABLE_CLEAN_MESH;
-		// disable edge precompute, edges are set for each triangle, slows contact generation
-		//params.meshPreprocessParams |= physx::PxMeshPreprocessingFlag::eDISABLE_ACTIVE_EDGES_PRECOMPUTE;
+		s_CookingData = new CookingData(PhysicsEngine::GetPhysics()->getTolerancesScale());
+		s_CookingData->DefaultCookingParameters.midphaseDesc = physx::PxMeshMidPhase::eBVH34;
 
-
-		s_MeshCooker = PxCreateCooking(PX_PHYSICS_VERSION, *PhysicsEngine::GetFoundation(), params);
-		PF_CORE_ASSERT(s_MeshCooker, "Physics failed to create MeshCooker failed!");
-
+		s_CookingData->CookingSDK = PxCreateCooking(PX_PHYSICS_VERSION, *PhysicsEngine::GetFoundation(), s_CookingData->DefaultCookingParameters);
+		PF_CORE_ASSERT(s_CookingData->CookingSDK, "Couldn't initialize PhysX Cooking SDK!");
 	}
 	void PhysicsMeshCooker::Release()
 	{
-		s_MeshCooker->release();
+		s_CookingData->CookingSDK->release();
+		s_CookingData->CookingSDK = nullptr;
+		delete s_CookingData;
+
 		PhysicsDebugSphere = nullptr;
 		PhysicsDebugCapsule = nullptr;
 		PhysicsDebugCube = nullptr;
+	}
+	CookingResult PhysicsMeshCooker::CookConvexMesh(const Count<MeshCollider>& colliderAsset, const Count<class MeshSource>& meshSource, const std::vector<uint32_t>& submeshIndices, MeshColliderData& outData)
+	{
+		physx::PxConvexMeshDesc convexDesc;
+		convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
+
+		// Update cooking parameters
+		physx::PxCookingParams cookingParams(s_CookingData->DefaultCookingParameters);
+		if (colliderAsset->EnableVertexWelding)
+		{
+			cookingParams.meshPreprocessParams = physx::PxMeshPreprocessingFlag::eWELD_VERTICES;
+			cookingParams.meshWeldTolerance = colliderAsset->VertexWeldTolerance;
+		}
+		if (colliderAsset->CheckZeroAreaTriangles)
+		{
+			convexDesc.flags |= physx::PxConvexFlag::eCHECK_ZERO_AREA_TRIANGLES;
+			float zeroAreaTriangleThreshold = colliderAsset->AreaTestEpsilon;
+
+			if (zeroAreaTriangleThreshold <= 0.0f)
+			{
+				PF_EC_WARN("Attempting to cook convex mesh collider with a zero-area threshold of {}! Zero-Area Threshold has to be greater than 0! Using 0.01 instead.", zeroAreaTriangleThreshold);
+				zeroAreaTriangleThreshold = 0.01f;
+			}
+
+			cookingParams.areaTestEpsilon = zeroAreaTriangleThreshold;
+		}
+
+		if (colliderAsset->ShiftVerticesToOrigin)
+			convexDesc.flags |= physx::PxConvexFlag::eSHIFT_VERTICES;
+
+		s_CookingData->CookingSDK->setParams(cookingParams);
+
+		const auto& vertices = meshSource->GetVertices();
+		const auto& indices = meshSource->GetIndices();
+		const auto& submeshes = meshSource->GetSubMeshes();
+
+		CookingResult cookingResult = CookingResult::Failure;
+
+		for (auto submeshIndex : submeshIndices)
+		{
+			const auto& submesh = submeshes[submeshIndex];
+
+			convexDesc.points.count = submesh.VertexCount;
+			convexDesc.points.stride = sizeof(Vertex);
+			convexDesc.points.data = &vertices[submesh.BaseVertex];
+			convexDesc.indices.count = submesh.IndexCount / 3;
+			convexDesc.indices.data = &indices[submesh.BaseIndex / 3];
+			//convexDesc.indices.stride = sizeof(Index);
+			convexDesc.indices.stride = sizeof(uint32_t) * 3;
+
+			if (vertices.size() >= convexDesc.vertexLimit)
+			{
+				PF_ENGINE_INFO("Attempting to cook a convex submesh that has more than {0} vertices! Switching to quantizing the input vertices.", convexDesc.vertexLimit);
+				convexDesc.flags |= physx::PxConvexFlag::eQUANTIZE_INPUT | physx::PxConvexFlag::eSHIFT_VERTICES;
+				convexDesc.quantizedCount = (physx::PxU16)vertices.size(); // TODO: This should be the vertex count for this submesh, not the entire mesh hierarchy
+			}
+			else
+			{
+				// Disable input quantization
+				convexDesc.flags &= ~physx::PxConvexFlag::eQUANTIZE_INPUT;
+			}
+
+			physx::PxDefaultMemoryOutputStream buf;
+			physx::PxConvexMeshCookingResult::Enum oldResult = physx::PxConvexMeshCookingResult::eSUCCESS;
+			physx::PxConvexMeshCookingResult::Enum result;
+
+			if (!s_CookingData->CookingSDK->cookConvexMesh(convexDesc, buf, &result))
+			{
+
+				bool fatalError = true;
+
+				if (result == physx::PxConvexMeshCookingResult::eZERO_AREA_TEST_FAILED)
+				{
+					//if (!Application::IsRuntime())
+					//{
+					//	const auto& meshMetadata = Project::GetEditorAssetManager()->GetMetadata(colliderAsset->ColliderMesh);
+					//	ANT_CONSOLE_LOG_WARN("Failed to cook submesh '{}' in mesh '{}'! Triangle with an area of 0 detected! Attempting to cook submesh without checking for zero-area triangles. If you experience issues with this mesh collider you should make sure your mesh doesn't have small triangles!", submesh.MeshName, meshMetadata.FilePath.string());
+					//}
+
+					float previousZeroAreaThreshold = cookingParams.areaTestEpsilon;
+					convexDesc.flags &= ~physx::PxConvexFlag::eCHECK_ZERO_AREA_TRIANGLES;
+					// Don't set to 0 here, it's invalid
+					cookingParams.areaTestEpsilon = 0.00001f;
+					s_CookingData->CookingSDK->setParams(cookingParams);
+
+					// Attempt to cook without checking zero-area triangles
+					oldResult = result;
+					fatalError = !s_CookingData->CookingSDK->cookConvexMesh(convexDesc, buf, &result);
+
+					cookingParams.areaTestEpsilon = previousZeroAreaThreshold;
+					convexDesc.flags |= physx::PxConvexFlag::eCHECK_ZERO_AREA_TRIANGLES;
+					s_CookingData->CookingSDK->setParams(cookingParams);
+				}
+
+				if (fatalError)
+				{
+					std::string errorMessage = "Unknown Error!";
+
+					switch (result)
+					{
+						case physx::PxConvexMeshCookingResult::ePOLYGONS_LIMIT_REACHED:
+							{
+								errorMessage = fmt::format("Submesh has more than {} vertices! This shouldn't have been a problem because Ant should've detected this prior to cooking this submesh!", convexDesc.quantizedCount);
+								break;
+							}
+					}
+
+					//if (!Application::IsRuntime())
+					//{
+					//	const auto& meshMetadata = Project::GetEditorAssetManager()->GetMetadata(colliderAsset->ColliderMesh);
+					//	ANT_CONSOLE_LOG_ERROR("Failed to cook submesh '{}' in mesh '{}'! Error: {}", submesh.MeshName, meshMetadata.FilePath.string(), errorMessage);
+					//}
+
+					for (auto& existingSubmesh : outData.Submeshes)
+						existingSubmesh.ColliderData.Release();
+					outData.Submeshes.clear();
+					cookingResult = PhysXUtils::FromPhysXCookingResult(result);
+					break;
+				}
+			}
+
+			SubmeshColliderData& data = outData.Submeshes.emplace_back();
+			data.ColliderData.Copy(buf.getData(), buf.getSize());
+			data.Transform = submesh.Transform * glm::scale(glm::mat4(1.0f), colliderAsset->ColliderScale);
+			cookingResult = CookingResult::Success;
+		}
+
+		s_CookingData->CookingSDK->setParams(s_CookingData->DefaultCookingParameters);
+		outData.Type = MeshColliderType::Convex;
+		return cookingResult;
+	}
+	CookingResult PhysicsMeshCooker::CookTriangleMesh(const Count<MeshCollider>& colliderAsset, const Count<class MeshSource>& meshSource, const std::vector<uint32_t>& submeshIndices, MeshColliderData& outData)
+	{
+		return CookingResult();
 	}
 }

@@ -606,10 +606,10 @@ namespace Proof
 				out << YAML::Key << "ID" << m_Scene->GetID();
 
 				out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-				m_Scene->m_Registry.each([&](auto entityID) {
-					Entity entity = { entityID,m_Scene };
-					SerilizeEntity(out,m_Scene->m_Registry, entity.GetUUID(),entityID);
-				});
+				for (auto [id, entity] : m_Scene->GetEntities())
+				{
+					SerilizeEntity(out, m_Scene->m_Registry, entity.GetUUID(),(entt::entity)entity );
+				}
 				out << YAML::EndSeq;
 			}
 			out << YAML::EndMap;

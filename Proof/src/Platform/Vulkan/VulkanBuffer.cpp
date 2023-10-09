@@ -132,19 +132,19 @@ namespace Proof
 	}
 
 
-	VulkanIndexBuffer::VulkanIndexBuffer(uint32_t count)
+	VulkanIndexBuffer::VulkanIndexBuffer(uint32_t size)
 		:
-		m_Count(count), m_Usage(VulkanMemmoryUsage::CpuToGpU)
+		m_Size(size), m_Usage(VulkanMemmoryUsage::CpuToGpU)
 	{
 		Build();
 	}
 
-	VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint32_t count)
+	VulkanIndexBuffer::VulkanIndexBuffer(const void* data, uint32_t size)
 	:
-		m_Count(count),m_Usage(VulkanMemmoryUsage::GpuOnly)
+		m_Size(size),m_Usage(VulkanMemmoryUsage::GpuOnly)
 	{
 		Build();
-		SetData(data, m_Count, 0);
+		SetData(data, size, 0);
 	}
 	void VulkanIndexBuffer::Build()
 	{
@@ -168,17 +168,15 @@ namespace Proof
 	void VulkanIndexBuffer::Bind(Count<RenderCommandBuffer>commandBuffer)const {
 		vkCmdBindIndexBuffer(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), m_IndexBuffer.Buffer, 0, VK_INDEX_TYPE_UINT32);
 	}
-	void VulkanIndexBuffer::SetData(const void* data, uint32_t count, uint32_t offsetCount)
+	void VulkanIndexBuffer::SetData(const void* data, uint32_t size, uint32_t offsetSize)
 	{
-		uint32_t dataSize = count * sizeof(uint32_t);
-		uint32_t offset = offsetCount * sizeof(uint32_t);
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		if (m_Usage == VulkanMemmoryUsage::GpuOnly)
 		{
 			VkBufferCreateInfo stagingBufferInfo = {};
 			stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			stagingBufferInfo.pNext = nullptr;
-			stagingBufferInfo.size = dataSize;
+			stagingBufferInfo.size = size;
 			stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
 			VulkanBuffer stagingBuffer;
@@ -187,15 +185,15 @@ namespace Proof
 			statingBufferAllocator.AllocateBuffer(stagingBufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
 
 			uint8_t* stagingData =  statingBufferAllocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
-			memcpy(stagingData,(void*)data, dataSize);
+			memcpy(stagingData,(void*)data, size);
 			statingBufferAllocator.UnmapMemory(stagingBuffer.Allocation);
 
 			Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
 				VkCommandBuffer copyCmd = cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 				VkBufferCopy copy;
-				copy.dstOffset = offset;
+				copy.dstOffset = offsetSize;
 				copy.srcOffset = 0;
-				copy.size = dataSize;
+				copy.size = size;
 				vkCmdCopyBuffer(copyCmd, stagingBuffer.Buffer, m_IndexBuffer.Buffer, 1, &copy);
 			});
 			statingBufferAllocator.DestroyBuffer(stagingBuffer);
@@ -204,43 +202,57 @@ namespace Proof
 		{
 			VulkanAllocator allocator("VulkanIndexBufferSetData");
 			uint8_t* pData = allocator.MapMemory<uint8_t>(m_IndexBuffer.Allocation);
-			memcpy(pData, (uint8_t*)data + offset, dataSize);
+			memcpy(pData, (uint8_t*)data + offsetSize, size);
 			allocator.UnmapMemory(m_IndexBuffer.Allocation);
 		}
 	}
-	void VulkanIndexBuffer::Resize(uint32_t count)
+	void VulkanIndexBuffer::Resize(uint32_t size)
 	{
 		Release();
 
-		m_Count = count;
+		m_Size = size;
 		Build();
 	}
-	void VulkanIndexBuffer::Resize(const void* data, uint32_t count)
+	void VulkanIndexBuffer::Resize(const void* data, uint32_t size)
 	{
 
-		if (m_Count == count)
+		if (m_Size == size)
 		{
-			SetData(data, count, 0);
+			SetData(data, size, 0);
 			return;
 		}
 		Release();
 
-		m_Count = count;
+		m_Size = size;
 		Build();
-		SetData(data, count, 0);
+		SetData(data, m_Size, 0);
 	}
 	std::vector<uint32_t> VulkanIndexBuffer::GetData()const
 	{
-		std::vector<uint32_t> data;
+		void* mappedData;
+		vmaMapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_IndexBuffer.Allocation, &mappedData);
+
+		size_t numIndices = m_Size / sizeof(uint32_t);
+
+		// Create a std::vector to store the indices.
+		std::vector<uint32_t> indices(numIndices);
+
+		// Copy the data from the mapped memory to the vector.
+		std::memcpy(indices.data(), mappedData, m_Size);
+
+		// Unmap the index buffer memory.
+		vmaUnmapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_IndexBuffer.Allocation);
+		return indices;
+	}
+
+	Buffer VulkanIndexBuffer::GetDataRaw()
+	{
+		Buffer buffer(m_Size);
 		void* vertexData;
 		vmaMapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_IndexBuffer.Allocation, &vertexData);
-		uint32_t* indices = static_cast<uint32_t*>(vertexData);
-		for (size_t i = 0; i < m_Count; i++)
-		{
-			data.emplace_back(indices[i]);
-		}
+		std::memcpy(buffer.Get(), vertexData, m_Size); // so we can use delte
 		vmaUnmapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_IndexBuffer.Allocation);
-		return data;
+		return buffer;
 	}
 
 	void VulkanIndexBuffer::Release()

@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "PhysicsEngine.h"
 #include "Proof/Asset/AssetManager.h"
-
+#include "PhysicsDebugger.h"
 namespace Proof {
 	namespace Utils {
 		
@@ -23,36 +23,42 @@ namespace Proof {
 	{
 		return s_Physics;
 	}
-	physx::PxPvd* PhysicsEngine::GetPVD()
-	{
-		return s_Pvd;
-	}
+	
 	physx::PxDefaultCpuDispatcher* PhysicsEngine::GetCpuDispatcher()
 	{
 		return s_Dispatcher;
 	}
 	void PhysicsEngine::Init(PhysicsSettings settings)
 	{
-		s_Settings = settings;
 		Timer time;
-		s_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_DefaultAllocatorCallback,
-			s_DefaultErrorCallback);
-		if (!s_Foundation)
-			PF_CORE_ASSERT(false, "PxCreateFoundation failed!");
+
+		s_Settings = settings;
+
+		s_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_DefaultAllocatorCallback, s_DefaultErrorCallback);
+
+		PF_CORE_ASSERT(s_Foundation, "PxCreateFoundation failed!");
 		s_Pvd = physx::PxCreatePvd(*s_Foundation);
+
 		physx::PxTolerancesScale scale;
-		//scale.length = 100;						// when these 2 are set physics stop randomly
-		//scale.speed = 981;
-		//s_ToleranceScale.length = 100;        // typical length of an object one meter
-		//s_ToleranceScale.speed = 981;         // typical speed of an object, gravity*1s is a reasonable choice
-		s_Physics = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Foundation, scale, true, s_Pvd);
-		
-		if (!s_Physics)
-			PF_CORE_ASSERT(false, "PxCreateFoundation failed!");
-		s_Dispatcher = physx::PxDefaultCpuDispatcherCreate(2);
+		scale.length = 1.0f;
+		scale.speed = 100.0f;
+		PhysicsDebugger::Initialize();
+
+		#ifdef PF_ENABLE_DEBUG
+		static bool s_TrackMemoryAllocations = true;
+		#else
+		static bool s_TrackMemoryAllocations = false;
+		#endif
+
+		s_Physics = PxCreatePhysics(PX_PHYSICS_VERSION, *s_Foundation, scale, s_TrackMemoryAllocations, s_Pvd);
+		PF_CORE_ASSERT(s_Physics, "PxCreatePhysics failed.");
+
+		bool extentionsLoaded = PxInitExtensions(*s_Physics, PhysicsDebugger::GetDebugger());
+		PF_CORE_ASSERT(extentionsLoaded, "Failed to initialize PhysX Extensions.");
+
+		s_Dispatcher = physx::PxDefaultCpuDispatcherCreate(1);
 
 		PhysicsMeshCooker::Init();
-
 
 		PF_ENGINE_INFO("Physics Engine Initialized {}m/s", time.ElapsedMillis());
 	}
@@ -60,6 +66,8 @@ namespace Proof {
 	{
 		Timer time;
 		PhysicsMeshCooker::Release();
+		PhysicsDebugger::Shutdown();
+
 		s_Physics->release();
 		s_Dispatcher->release();
 		s_Pvd->release();

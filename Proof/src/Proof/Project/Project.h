@@ -61,6 +61,10 @@ namespace Proof{
 		{
 			return GetProjectDirectory() / path;
 		}
+		std::filesystem::path GetCacheDirectory()
+		{
+			return std::filesystem::path(GetProjectDirectory()) / "Cache";
+		}
 		const ProjectConfig& GetConfig() {
 			return m_ProjectConfig;
 		};

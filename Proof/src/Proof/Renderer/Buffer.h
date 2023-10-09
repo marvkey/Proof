@@ -1,26 +1,28 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Core/Buffer.h"
+#include <vector>
 namespace Proof {
-	class VertexBuffer : public RefCounted {
+	class VertexBuffer : public RefCounted
+	{
 	public:
 		/*
 		* sets as current vertex Buffer
 		*/
-		virtual void Bind(Count<class RenderCommandBuffer> commandBuffer, uint64_t binding = 0, uint64_t offset =0)const =0;
+		virtual void Bind(Count<class RenderCommandBuffer> commandBuffer, uint64_t binding = 0, uint64_t offset = 0)const = 0;
 		/**
 		* sets the data for the vertex buffer
 		* @param Data the location of the first element in the array or vector
 		* @parm Size the size of element in vertex buffer
 		*/
 		virtual void SetData(const void* data, uint64_t size, uint64_t offset = 0) = 0;
-	
+
 		/**
 		* creates static vertex Buffer
 		* @param Data, the data to be supplied to vertex buffer
 		* @parm Size the size of the vertex Buffer
 		*/
-		static Count<VertexBuffer>Create(const void* Data,uint64_t Size);
+		static Count<VertexBuffer>Create(const void* Data, uint64_t Size);
 
 		virtual void Resize(uint64_t size) = 0;
 		virtual void Resize(const void* data, uint64_t size) = 0;
@@ -37,16 +39,13 @@ namespace Proof {
 		virtual ~VertexBuffer() = default;
 
 		template<typename T>
-		std::vector<T> GetData()
+		std::vector<T> GetDataAs()
 		{
-			std::vector<T> data;
+			size_t count = GetVertexSize() / sizeof(T);
+			std::vector<T> data(count);
 			Buffer buffer = GetDataRaw();
-			T* vertices = reinterpret_cast<T*>(buffer.Get());
-
-			for (size_t i = 0; i < GetVertexSize() / sizeof(T); i++)
-			{
-				data.emplace_back(vertices[i]);
-			}
+			std::memcpy(data.data(), buffer.Data, buffer.Size);
+			buffer.Release();
 			return data;
 		}
 
@@ -55,7 +54,8 @@ namespace Proof {
 	protected:
 	};
 
-	class IndexBuffer : public RefCounted {
+	class IndexBuffer : public RefCounted
+	{
 	public:
 		/**
 		*set as Current Index Buffer
@@ -69,8 +69,8 @@ namespace Proof {
 		* @parm Data, dat to be sent
 		* @param Count in uint32_t,the vertecices to be drawn by index buffer
 		*/
-		static Count<IndexBuffer>Create(const void* Data, uint32_t count);
-		static Count<IndexBuffer>Create(uint32_t count);
+		static Count<IndexBuffer>Create(const void* Data, uint32_t size);
+		static Count<IndexBuffer>Create(uint32_t size);
 		/**
 		* deletes the Index Buffer
 		*/
@@ -78,13 +78,23 @@ namespace Proof {
 		/*
 		* returns the count of the IndexBuffer
 		*/
-		virtual uint32_t GetCount()const = 0;
+		template<typename T>
+		std::vector<T> GetDataAs()
+		{
+			size_t count = GetSize() / sizeof(T);
+			std::vector<T> data(count);
+			Buffer buffer = GetDataRaw();
+			std::memcpy(data.data(), buffer.Data, buffer.Size);
+			buffer.Release();
+			return data;
+		}
 		virtual uint32_t GetSize()const = 0;
 		virtual std::vector<uint32_t> GetData()const = 0;
+		virtual Buffer GetDataRaw() = 0;
 
-		virtual void SetData(const void* data, uint32_t count, uint32_t offsetCount = 0) = 0;
-		virtual void Resize(uint32_t count) = 0;
-		virtual void Resize(const void* data, uint32_t count) = 0;
+		virtual void SetData(const void* data, uint32_t size, uint32_t offsetSize = 0) = 0;
+		virtual void Resize(uint32_t sizet) = 0;
+		virtual void Resize(const void* data, uint32_t size) = 0;
 
 
 	};

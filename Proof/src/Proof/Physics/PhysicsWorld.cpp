@@ -6,6 +6,7 @@
 #include "PhysicsActor.h"
 #include "PhysicsController.h"
 #include "PhysicsUtils.h"
+#include "PhysicsDebugger.h"
 namespace Proof {
 	physx::PxFilterFlags shaderControl(
 		physx::PxFilterObjectAttributes attributes0,
@@ -37,7 +38,7 @@ namespace Proof {
 		:
 		m_World(world)
 	{
-		ScopeTimer copeTimer("Initilized physics world ");
+		ScopeTimer copeTimer("Initialized physics world ");
 		physx::PxSceneDesc sceneDesc(PhysicsEngine::GetPhysics()->getTolerancesScale());
 		
 
@@ -56,30 +57,8 @@ namespace Proof {
 
 		PF_CORE_ASSERT(sceneDesc.isValid());
 
-		//sceneDesc.ad
-		//if (m_Config.PvdClient)
-		//{
-		//	m_Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
-		//	PhysicsEngine::GetPVD()->connect(*m_Transport, physx::PxPvdInstrumentationFlag::eALL);
-		//}
 		m_Scene = PhysicsEngine::GetPhysics()->createScene(sceneDesc);
 		physx::PxPvdSceneClient* pvdClient = m_Scene->getScenePvdClient();
-
-		//m_Scene->()
-		if (PhysicsEngine::GetPVD()->isConnected())
-		{
-			PF_ENGINE_INFO("Physics Engine Visual debugger connected");
-		}
-		else
-		{
-			PF_ENGINE_INFO("Physics Engine Visual debugger not connected");
-		}
-		if (pvdClient)
-		{
-			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
-			pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-		}
 
 		m_PhysXControllerManager = PxCreateControllerManager(*m_Scene);
 		CreateRegions();
@@ -197,7 +176,7 @@ namespace Proof {
 	void PhysicsWorld::StartWorld()
 	{
 		PF_PROFILE_FUNC();
-		
+
 		m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity) 
 		{
 			CreateActor(entity);
@@ -207,9 +186,12 @@ namespace Proof {
 		{
 			CreateController(entity);
 		});
+
+		//PhysicsDebugger::StartDebugging("worldScene",true);
 	}
 	void PhysicsWorld::EndWorld()
 	{
+		//PhysicsDebugger::StopDebugging();
 		// release all rigid bodies before we release teh scene
 		m_Actors.clear();
 		m_Controllers.clear();

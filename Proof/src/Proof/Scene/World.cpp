@@ -332,21 +332,21 @@ namespace Proof {
 		{
 		
 			auto view = m_Registry.view<BoxColliderComponent>();
-			Count<Mesh> cubeMesh = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Cube).As<Mesh>();
+			Count<Mesh> cubeMesh = PhysicsMeshCooker::GetBoxColliderMesh();
 
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
 				glm::mat4 transform = GetWorldSpaceTransform(e);
 				const auto& collider = e.GetComponent<BoxColliderComponent>();
-				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), collider.Center) * glm::scale(glm::mat4(1.0f), collider.Size);
+				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), collider.Center) * glm::scale(glm::mat4(1.0f), collider.Size *2.0f);
 				glm::mat4 finalTransform = transform * colliderTransform;
 				renderer->SubmitPhysicsDebugMesh(cubeMesh, finalTransform);
 			}
 		}
 		{
 			auto view = m_Registry.view<SphereColliderComponent>();
-			Count<Mesh> sphereDebugMesh = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Sphere).As<Mesh>();
+			Count<Mesh> sphereDebugMesh = PhysicsMeshCooker::GetSphereColliderMesh();
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
@@ -359,7 +359,7 @@ namespace Proof {
 		{
 			{
 				auto view = m_Registry.view<CapsuleColliderComponent>();
-				Count<Mesh> capsuleDebugMesh = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Capsule).As<Mesh>();
+				Count<Mesh> capsuleDebugMesh = PhysicsMeshCooker::GetCapsuleColliderMesh();
 				for (auto entity : view)
 				{
 					Entity e = { entity, this };

@@ -134,7 +134,7 @@ namespace Proof
 		AABB meshSourceBoundingBox;
 		std::vector<SubMesh> subMeshes;
 		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
+		std::vector<Index> indices;
 		std::vector<MeshNode> nodes;
 		Count<MaterialTable> materialTable = Count<MaterialTable>::Create();
 
@@ -199,10 +199,8 @@ namespace Proof
 				for (size_t i = 0; i < mesh->mNumFaces; i++)
 				{
 					PF_CORE_ASSERT(mesh->mFaces[i].mNumIndices == 3, "Must have 3 indices.");
-					//Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
-					indices.push_back(mesh->mFaces[i].mIndices[0]);
-					indices.push_back(mesh->mFaces[i].mIndices[1]);
-					indices.push_back(mesh->mFaces[i].mIndices[2]);
+					Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
+					indices.push_back(index);
 
 					//meshSource->m_TriangleCache[m].emplace_back(meshSource->m_Vertices[index.V1 + submesh.BaseVertex], meshSource->m_Vertices[index.V2 + submesh.BaseVertex], meshSource->m_Vertices[index.V3 + submesh.BaseVertex]);
 				}

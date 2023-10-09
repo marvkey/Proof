@@ -243,7 +243,7 @@ namespace Proof {
 			if(buffer)
 				pass->PushData(name, buffer.Get());
 		}
-		Renderer::DrawElementIndexed(renderCOmmandBuffer, s_Data->QuadIndexBuffer->GetCount());
+		Renderer::DrawElementIndexed(renderCOmmandBuffer, s_Data->QuadIndexBuffer->GetSize() /sizeof(uint32_t));
 	}
 
 	void Renderer::SubmitFullScreenQuad(Count<RenderCommandBuffer> renderCOmmandBuffer, Count<RenderPass> pass, Count<RenderMaterial> material)
@@ -255,7 +255,7 @@ namespace Proof {
 		s_Data->QuadIndexBuffer->Bind(renderCOmmandBuffer);
 
 		Renderer::RenderPassPushRenderMaterial(pass, material);
-		Renderer::DrawElementIndexed(renderCOmmandBuffer, s_Data->QuadIndexBuffer->GetCount());
+		Renderer::DrawElementIndexed(renderCOmmandBuffer, s_Data->QuadIndexBuffer->GetSize() / sizeof(uint32_t));
 	}
 	void Renderer::DrawElementIndexed(Count<RenderCommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
 	{
