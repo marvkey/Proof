@@ -156,16 +156,6 @@ namespace Proof
 	Count<Mesh> MeshColliderComponent::GetMesh()
 	{
 		if (m_MeshAssetPointerID == 0)return nullptr;
-
-
-		if (AssetManager::HasAsset(m_MeshAssetPointerID))
-		{
-			if (PhysicsMeshCooker::HasMesh(m_MeshAssetPointerID))
-			{
-				return PhysicsMeshCooker::GetConvexMeshAsMesh(m_MeshAssetPointerID);
-			}
-			return AssetManager::GetAsset<Mesh>(m_MeshAssetPointerID);
-		}
 		return nullptr;
 	}
 	void SkyLightComponent::RemoveImage()

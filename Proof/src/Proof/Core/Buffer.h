@@ -74,7 +74,7 @@ namespace Proof{
 			return Size;
 		}
 		template<typename T>
-		T* As()
+		T* As()const
 		{
 			return (T*)Data;
 		}

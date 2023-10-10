@@ -1,7 +1,7 @@
 #include "Proofprch.h"
-#include "PhysicsEngine.h"
-
 #include "PhysicsMeshCooker.h"
+
+#include "PhysicsEngine.h"
 #include "Proof/Scene/Mesh.h"
 
 #include "Proof/Renderer/MeshWorkShop.h"
@@ -10,6 +10,8 @@
 #include "Proof/Project/Project.h"
 #include "MeshCollider.h"
 #include "Proof/Core/Buffer.h"
+
+#include "PhysicsMeshCache.h"
 namespace  Proof 
 {
 
@@ -37,11 +39,11 @@ namespace  Proof
 		{
 		}
 	};
-	struct AntPhysicsMesh
+	struct ProofPhysicsMesh
 	{
 		const char Header[11] = "ProofMCRaw";
 		MeshColliderType Type;
-		uint32_t SubmeshCount;
+		uint32_t SubMeshCount;
 	};
 
 	Count<Mesh> PhysicsDebugCube;
@@ -49,199 +51,125 @@ namespace  Proof
 	Count<Mesh> PhysicsDebugCapsule;
 	static CookingData* s_CookingData = nullptr;
 
-	bool PhysicsMeshCooker::HasMesh(AssetID ID)
+	std::pair<CookingResult, CookingResult> PhysicsMeshCooker::CookMesh(AssetID colliderHandle, bool invalidateOld)
 	{
-		return false;
-	}
-	const Count<class Mesh> PhysicsMeshCooker::GetConvexMeshAsMesh(AssetID ID)
-	{
-		return nullptr;
+		return CookMesh(AssetManager::GetAsset<MeshCollider>(colliderHandle), invalidateOld);
 	}
 
-	physx::PxTriangleMesh* PhysicsMeshCooker::GetConvexMesh(AssetID ID)
+	std::pair<CookingResult, CookingResult> PhysicsMeshCooker::CookMesh(Count<class MeshCollider> colliderAsset, bool invalidateOld)
 	{
-		return nullptr;
-	}
-	void PhysicsMeshCooker::CookMesh(AssetID ID)
-	{
-		PF_CORE_ASSERT(AssetManager::HasAsset(ID), "Asset Manager does not have asset");
+		ScopeTimer scopeTimer("Cooking::MeshCooking");
 
-		Count<Mesh> mesh = AssetManager::GetAsset<Mesh>(ID);
-		if (mesh == nullptr)
-			return;
-		std::vector<physx::PxVec3> vertices;
-		std::vector<uint32_t> indices;
-		uint32_t index = 0;
-		for (const SubMesh& subMesh : mesh->GetMeshSource()->GetSubMeshes())
+		Utils::CreateCacheDirectoryIfNeeded();
+
+		AssetID colliderHandle = colliderAsset->GetID();
+
+		if (!AssetManager::HasAsset(colliderHandle))
 		{
-			//if (mesh->IsMeshExcluded(index))continue;
-			//for (const auto& vertex : subMesh.Vertices)
-			//	vertices.emplace_back(PhysxUtils::VectorToPhysxVector(vertex.Vertices));
-			//for (const auto& val : subMesh.Indices)
-			//	indices.emplace_back(val);
-			//index++;
+			PF_ENGINE_ERROR("Invalid mesh");
+			return { CookingResult::InvalidMesh, CookingResult::InvalidMesh };
 		}
-		/*
+
+
+		if (AssetManager::HasAsset(colliderAsset->ColliderMesh))
 		{
-			physx::PxConvexMeshDesc convexDesc;
-			convexDesc.points.count = vertices.size();
-			convexDesc.points.stride = sizeof(physx::PxVec3);
-			convexDesc.points.data = vertices.data();
-			convexDesc.flags = physx::PxConvexFlag::eCOMPUTE_CONVEX;
+			PF_ENGINE_ERROR("Cooking Factory Failed to cook mesh collider because mesh can't be found!");
+			return { CookingResult::InvalidMesh, CookingResult::InvalidMesh };
+		}
 
-			//convexDesc.indices.count = indices.size();
-			//convexDesc.indices.stride = sizeof(uint32_t);
-			//convexDesc.indices.data = indices.data();
+		Count<MeshBase> meshBase = AssetManager::GetAsset<MeshBase>(colliderAsset->ColliderMesh);
 
-			physx::PxDefaultMemoryOutputStream buf;
-			physx::PxConvexMeshCookingResult::Enum result;
-			if (!s_MeshCooker->cookConvexMesh(convexDesc, buf, &result))
+
+		// Runtime:
+		std::string baseFileName = fmt::format("{0}-{1}", "Mesh", meshBase->GetID());
+
+		const bool isPhysicalAsset = !AssetManager::GetAssetInfo(colliderHandle).RuntimeAsset;
+
+		// use collider handle if the collider is not a runtime asset
+		if (isPhysicalAsset)
+		{
+			baseFileName = fmt::format("{0}-{1}", "Mesh", colliderHandle);
+		}
+
+		std::filesystem::path simpleColliderFilePath = Utils::GetCacheDirectory() / fmt::format("{0}-Simple.ProofMcRaw", baseFileName);
+
+		CachedColliderData colliderData;
+		CookingResult simpleMeshResult = CookingResult::Failure;
+		CookingResult complexMeshResult = CookingResult::Failure;
+
+		Count<MeshSource> meshSource = meshBase->GetMeshSource();
+		const auto& submeshIndices = meshBase->GetSubMeshes();
+
+		// Cook or load the simple collider
+		{
+			if (invalidateOld || !std::filesystem::exists(simpleColliderFilePath))
 			{
-				switch (result)
+				simpleMeshResult = CookConvexMesh(colliderAsset, meshSource, submeshIndices, colliderData.SimpleColliderData);
+
+				if (simpleMeshResult == CookingResult::Success && !SerializeMeshCollider(simpleColliderFilePath, colliderData.SimpleColliderData))
 				{
-					case physx::PxConvexMeshCookingResult::eSUCCESS:
-						break;
-					case physx::PxConvexMeshCookingResult::ePOLYGONS_LIMIT_REACHED:
-						PF_EC_ERROR("Convex Mesh plygons limit reached");
-						break;
-					case physx::PxConvexMeshCookingResult::eZERO_AREA_TEST_FAILED:
-						PF_EC_ERROR("Zero area test failed");
-						break;
-					default:
-						break;
+					PF_ENGINE_WARN("Physics Failed to cook simple collider mesh, aborting...");
+					simpleMeshResult = CookingResult::Failure;
 				}
 			}
-			physx::PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
-			physx::PxConvexMesh* convexMesh = PhysicsEngine::GetPhysics()->createConvexMesh(input);
-			s_ConvexMeshes[ID] = convexMesh;
-			std::vector<Vertex> meshVertices;
-			std::vector<uint32_t> indexVector;
+			else
 			{
+				colliderData.SimpleColliderData = DeserializeMeshCollider(simpleColliderFilePath);
+				simpleMeshResult = CookingResult::Success;
+			}
 
-				auto vertices = convexMesh->getVertices();
-				for (uint32_t vertexPosIndex = 0; vertexPosIndex < convexMesh->getNbVertices(); vertexPosIndex++)
+			if (simpleMeshResult == CookingResult::Success)
+				GenerateDebugMesh(colliderAsset, colliderData.SimpleColliderData);
+		}
+
+		// Cook or load complex collider mesh
+		{
+			if (colliderAsset->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex || simpleMeshResult == CookingResult::Failure)
+			{
+				std::filesystem::path complexColliderFilePath = Utils::GetCacheDirectory() / fmt::format("{0}-Complex.ProofMcRaw", baseFileName);
+
+				if (invalidateOld || !std::filesystem::exists(complexColliderFilePath))
 				{
-					auto pos = vertices[vertexPosIndex];
-					Vertex vertex;
-					vertex.Vertices = Vector{ pos.x,pos.y,pos.z };
-					meshVertices.emplace_back(vertex);
-				}
-				uint32_t indexCount;
-				indexVector.resize(convexMesh->getNbPolygons() * 3);
-				for (uint32_t indexPos = 0; indexPos < convexMesh->getNbPolygons(); indexPos++)
-				{
-					physx::PxHullPolygon poly;
-					convexMesh->getPolygonData(indexPos, poly);
-					for (uint32_t j = 0; j < poly.mNbVerts - 2; j++)
+					complexMeshResult = CookTriangleMesh(colliderAsset, meshSource, submeshIndices, colliderData.ComplexColliderData);
+
+					if (complexMeshResult == CookingResult::Success && !SerializeMeshCollider(complexColliderFilePath, colliderData.ComplexColliderData))
 					{
-						indexVector[indexCount++] = poly.mIndexBase;
-						indexVector[indexCount++] = poly.mIndexBase + j + 1;
-						indexVector[indexCount++] = poly.mIndexBase + j + 2;
+						PF_ENGINE_WARN("Physics Failed to cook complex collider mesh, using simple for everything");
+						complexMeshResult = CookingResult::Failure;
+					}
+				}
+				else
+				{
+					colliderData.ComplexColliderData = DeserializeMeshCollider(complexColliderFilePath);
+					complexMeshResult = CookingResult::Success;
+				}
+
+				if (complexMeshResult == CookingResult::Success)
+				{
+					GenerateDebugMesh(colliderAsset, colliderData.ComplexColliderData);
+
+					if (simpleMeshResult != CookingResult::Success)
+					{
+						colliderAsset->CollisionComplexity = ECollisionComplexity::UseComplexAsSimple;
+
+						if (isPhysicalAsset)
+							AssetManager::SaveAsset(colliderAsset->GetID());
 					}
 				}
 			}
-			Count<Mesh> newMesh = Count<Mesh>::Create(AssetManager::GetAsset<Mesh>(ID)->GetName(),
-				meshVertices, indexVector);
-
-			s_Meshes[mesh->GetID()] = newMesh;
-			
 		}
-		return;
-		*/
 
-		/*
+		if (simpleMeshResult == CookingResult::Success || complexMeshResult == CookingResult::Success)
 		{
-			physx::PxTriangleMeshDesc meshDesc;
-			meshDesc.points.count = vertices.size();
-			meshDesc.points.stride = sizeof(physx::PxVec3);
-			meshDesc.points.data = vertices.data();
-
-			meshDesc.triangles.count = indices.size();
-			meshDesc.triangles.stride = 3 * sizeof(uint32_t);
-			meshDesc.triangles.data = indices.data();
-
-			physx::PxDefaultMemoryOutputStream buf;
-			physx::PxTriangleMeshCookingResult::Enum error;
-
-			if (!s_MeshCooker->cookTriangleMesh(meshDesc, buf, &error))
-			{
-				switch (error)
-				{
-					case physx::PxTriangleMeshCookingResult::eSUCCESS:
-						break;
-					case physx::PxTriangleMeshCookingResult::eLARGE_TRIANGLE:
-						PF_EC_ERROR("Large traingle convex triangel mesh cooking");
-						break;
-					case physx::PxConvexMeshCookingResult::eFAILURE:
-						PF_EC_ERROR("Physx mesh cooking failed");
-						break;
-				}
-			}
-			physx::PxDefaultMemoryInputData input(buf.getData(), buf.getSize());
-			physx::PxTriangleMesh* triangelMesh = PhysicsEngine::GetPhysics()->createTriangleMesh(input);
-			s_ConvexMeshes[ID] = triangelMesh;
-			std::vector<Vertex> meshVertices;
-			std::vector<uint32_t> meshIndices;
-			{
-			
-				auto vertices = triangelMesh->getVertices();
-				uint32_t* indices =(uint32_t*) triangelMesh->getTriangles();
-				for (uint32_t vertexPosIndex = 0; vertexPosIndex < triangelMesh->getNbVertices(); vertexPosIndex++)
-				{
-					auto pos = vertices[vertexPosIndex];
-					Vertex vertex;
-					vertex.Position = glm::vec3{ pos.x,pos.y,pos.z };
-					meshVertices.emplace_back(vertex);
-				}
-				for (uint32_t indexPos = 0; indexPos < triangelMesh->getNbTriangles()*3; indexPos++)
-				{
-					meshIndices.emplace_back(indices[indexPos]);
-				}
-			}
-			Count<Mesh> newMesh = Count<Mesh>::Create(AssetManager::GetAsset<Mesh>(ID)->GetName(),
-				meshVertices, meshIndices);
-
-			//s_Meshes[mesh->GetID()] = newMesh;
+			// Add to cache
+			auto& meshCache = PhysicsMeshCache::GetMeshDataRef();
+			if (isPhysicalAsset)
+				meshCache[colliderAsset->ColliderMesh][colliderHandle] = colliderData;
+			else
+				meshCache[colliderAsset->ColliderMesh][0] = colliderData; // only one default of runtiem mesh should exist as a collider 
 		}
-		*/
-	}
 
-	void PhysicsMeshCooker::DeleteMesh(AssetID ID)
-	{
-		PF_CORE_ASSERT(HasMesh(ID), "Mesh does not exist");
-
-		//auto cooker = s_ConvexMeshes.at(ID);
-		//cooker->release();
-		//s_ConvexMeshes.erase(ID);
-		//s_Meshes.erase(ID);
-	}
-	Count<class Mesh> PhysicsMeshCooker::GetBoxColliderMesh()
-	{
-		if (!PhysicsDebugCube)
-		{
-			PhysicsDebugCube = MeshWorkShop::GenerateCube(glm::vec3{0.5});
-			AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), PhysicsDebugCube, "PhysicsDebugCube");
-		}
-		return PhysicsDebugCube;
-	}
-	Count<class Mesh> PhysicsMeshCooker::GetCapsuleColliderMesh()
-	{
-		if (!PhysicsDebugCapsule)
-		{
-			PhysicsDebugCapsule = MeshWorkShop::GenerateCapsule(0.5);
-			AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), PhysicsDebugCapsule, "PhysicsDebugCapsule");
-		}
-		return PhysicsDebugCapsule;
-
-	}
-	Count<class Mesh> PhysicsMeshCooker::GetSphereColliderMesh()
-	{
-		if (!PhysicsDebugSphere)
-		{
-			PhysicsDebugSphere = MeshWorkShop::GenerateSphere();
-			AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), PhysicsDebugSphere, "PhysicsDebugSphere");
-		}
-		return PhysicsDebugSphere;
+		return { simpleMeshResult, complexMeshResult };
 	}
 
 	void PhysicsMeshCooker::Init()
@@ -252,7 +180,7 @@ namespace  Proof
 		s_CookingData->CookingSDK = PxCreateCooking(PX_PHYSICS_VERSION, *PhysicsEngine::GetFoundation(), s_CookingData->DefaultCookingParameters);
 		PF_CORE_ASSERT(s_CookingData->CookingSDK, "Couldn't initialize PhysX Cooking SDK!");
 	}
-	void PhysicsMeshCooker::Release()
+	void PhysicsMeshCooker::ShutDown()
 	{
 		s_CookingData->CookingSDK->release();
 		s_CookingData->CookingSDK = nullptr;
@@ -261,6 +189,64 @@ namespace  Proof
 		PhysicsDebugSphere = nullptr;
 		PhysicsDebugCapsule = nullptr;
 		PhysicsDebugCube = nullptr;
+	}
+	bool PhysicsMeshCooker::SerializeMeshCollider(const std::filesystem::path& filepath, MeshColliderData& meshData)
+	{
+		ProofPhysicsMesh amc;
+		amc.Type = meshData.Type;
+		amc.SubMeshCount = (uint32_t)meshData.SubMeshes.size();
+
+		std::ofstream stream(filepath, std::ios::binary | std::ios::trunc);
+		if (!stream)
+		{
+			stream.close();
+			PF_ENGINE_ERROR("Failed to write collider to {0}", filepath.string());
+			for (auto& submesh : meshData.SubMeshes)
+				submesh.ColliderData.Release();
+			meshData.SubMeshes.clear();
+			return false;
+		}
+
+		stream.write((char*)&amc, sizeof(ProofPhysicsMesh));
+		for (auto& submesh : meshData.SubMeshes)
+		{
+			stream.write((char*)glm::value_ptr(submesh.Transform), sizeof(submesh.Transform));
+			stream.write((char*)&submesh.ColliderData.Size, sizeof(submesh.ColliderData.Size));
+			stream.write((char*)submesh.ColliderData.Data, submesh.ColliderData.Size);
+		}
+
+		return true;
+	}
+	MeshColliderData PhysicsMeshCooker::DeserializeMeshCollider(const std::filesystem::path& filepath)
+	{
+		// Deserialize
+		Buffer colliderBuffer = FileSystem::ReadBytes(filepath);
+		ProofPhysicsMesh& amc = *(ProofPhysicsMesh*)colliderBuffer.Data;
+		PF_CORE_ASSERT(strcmp(amc.Header, ProofPhysicsMesh().Header) == 0);
+
+		MeshColliderData meshData;
+		meshData.Type = amc.Type;
+		meshData.SubMeshes.resize(amc.SubMeshCount);
+
+		uint8_t* buffer = colliderBuffer.As<uint8_t>() + sizeof(ProofPhysicsMesh);
+		for (uint32_t i = 0; i < amc.SubMeshCount; i++)
+		{
+			SubMeshColliderData& submeshData = meshData.SubMeshes[i];
+
+			// Transform
+			memcpy(glm::value_ptr(submeshData.Transform), buffer, sizeof(glm::mat4));
+			buffer += sizeof(glm::mat4);
+
+			// Data
+			uint64_t size = *(uint64_t*)buffer;
+			buffer += sizeof(uint64_t);
+			submeshData.ColliderData.Release();
+			submeshData.ColliderData.Copy(buffer, size);// = Buffer::Copy(buffer, size);
+			buffer += size;
+		}
+
+		colliderBuffer.Release();
+		return meshData;
 	}
 	CookingResult PhysicsMeshCooker::CookConvexMesh(const Count<MeshCollider>& colliderAsset, const Count<class MeshSource>& meshSource, const std::vector<uint32_t>& submeshIndices, MeshColliderData& outData)
 	{
@@ -310,6 +296,7 @@ namespace  Proof
 			convexDesc.indices.data = &indices[submesh.BaseIndex / 3];
 			//convexDesc.indices.stride = sizeof(Index);
 			convexDesc.indices.stride = sizeof(uint32_t) * 3;
+			//convexDesc.polygons.
 
 			if (vertices.size() >= convexDesc.vertexLimit)
 			{
@@ -374,15 +361,15 @@ namespace  Proof
 					//	ANT_CONSOLE_LOG_ERROR("Failed to cook submesh '{}' in mesh '{}'! Error: {}", submesh.MeshName, meshMetadata.FilePath.string(), errorMessage);
 					//}
 
-					for (auto& existingSubmesh : outData.Submeshes)
+					for (auto& existingSubmesh : outData.SubMeshes)
 						existingSubmesh.ColliderData.Release();
-					outData.Submeshes.clear();
+					outData.SubMeshes.clear();
 					cookingResult = PhysXUtils::FromPhysXCookingResult(result);
 					break;
 				}
 			}
 
-			SubmeshColliderData& data = outData.Submeshes.emplace_back();
+			SubMeshColliderData& data = outData.SubMeshes.emplace_back();
 			data.ColliderData.Copy(buf.getData(), buf.getSize());
 			data.Transform = submesh.Transform * glm::scale(glm::mat4(1.0f), colliderAsset->ColliderScale);
 			cookingResult = CookingResult::Success;
@@ -394,6 +381,202 @@ namespace  Proof
 	}
 	CookingResult PhysicsMeshCooker::CookTriangleMesh(const Count<MeshCollider>& colliderAsset, const Count<class MeshSource>& meshSource, const std::vector<uint32_t>& submeshIndices, MeshColliderData& outData)
 	{
-		return CookingResult();
+		// Update cooking parameters
+		physx::PxCookingParams cookingParams(s_CookingData->DefaultCookingParameters);
+
+		if (colliderAsset->EnableVertexWelding)
+		{
+			cookingParams.meshPreprocessParams = physx::PxMeshPreprocessingFlag::eWELD_VERTICES;
+			cookingParams.meshWeldTolerance = colliderAsset->VertexWeldTolerance;
+		}
+		s_CookingData->CookingSDK->setParams(cookingParams);
+
+		physx::PxTriangleMeshDesc triangleDesc;
+
+		if (colliderAsset->FlipNormals)
+			triangleDesc.flags = physx::PxMeshFlag::eFLIPNORMALS;
+
+		CookingResult cookingResult = CookingResult::Failure;
+
+		const auto& vertices = meshSource->GetVertices();
+		const auto& indices = meshSource->GetIndices();
+		const auto& submeshes = meshSource->GetSubMeshes();
+
+		for (auto submeshIndex : submeshIndices)
+		{
+			const auto& submesh = submeshes[submeshIndex];
+
+			triangleDesc.points.stride = sizeof(Vertex);
+			triangleDesc.points.count = submesh.VertexCount;
+			triangleDesc.points.data = &vertices[submesh.BaseVertex];
+			triangleDesc.triangles.stride = sizeof(Index);
+			triangleDesc.triangles.count = submesh.IndexCount / 3;
+			triangleDesc.triangles.data = &indices[submesh.BaseIndex / 3];
+
+			physx::PxDefaultMemoryOutputStream buf;
+			physx::PxTriangleMeshCookingResult::Enum result;
+			if (!s_CookingData->CookingSDK->cookTriangleMesh(triangleDesc, buf, &result))
+			{
+
+				if (AssetManager::HasAsset(meshSource))
+				{
+					PF_EC_ERROR("Failed to cook static mesh {0}", AssetManager::GetAssetInfo(meshSource).Path.string());
+				}
+				else
+				{
+					PF_EC_ERROR("Failed to cook static mesh {0}", meshSource->GetName());
+				}
+				for (auto& existingSubmesh : outData.SubMeshes)
+					existingSubmesh.ColliderData.Release();
+				outData.SubMeshes.clear();
+				cookingResult = PhysXUtils::FromPhysXCookingResult(result);
+				break;
+			}
+
+			SubMeshColliderData& data = outData.SubMeshes.emplace_back();
+			data.ColliderData.Copy(buf.getData(), buf.getSize()); 
+			data.Transform = submesh.Transform * glm::scale(glm::mat4(1.0f), colliderAsset->ColliderScale);
+			cookingResult = CookingResult::Success;
+		}
+
+		s_CookingData->CookingSDK->setParams(s_CookingData->DefaultCookingParameters);
+		outData.Type = MeshColliderType::Triangle;
+		return cookingResult;
+	}
+	void PhysicsMeshCooker::GenerateDebugMesh(const Count<MeshCollider>& colliderAsset, const MeshColliderData& colliderData)
+	{
+		if (colliderData.Type == MeshColliderType::Triangle && colliderAsset->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex)
+		{
+			std::vector<Vertex> vertices;
+			std::vector<Index> indices;
+			std::vector<SubMesh> submeshes;
+			for (size_t i = 0; i < colliderData.SubMeshes.size(); i++)
+			{
+				const SubMeshColliderData& submeshData = colliderData.SubMeshes[i];
+
+				physx::PxDefaultMemoryInputData input(submeshData.ColliderData.As<physx::PxU8>(), submeshData.ColliderData.Size);
+				physx::PxTriangleMesh* trimesh = PhysicsEngine::GetPhysics()->createTriangleMesh(input);
+
+				if (!trimesh)
+					continue;
+
+				const uint32_t nbVerts = trimesh->getNbVertices();
+				const physx::PxVec3* triangleVertices = trimesh->getVertices();
+				const uint32_t nbTriangles = trimesh->getNbTriangles();
+				const physx::PxU16* tris = (const physx::PxU16*)trimesh->getTriangles();
+
+				vertices.reserve(vertices.size() + nbVerts);
+				indices.reserve(indices.size() + nbTriangles);
+
+				SubMesh& submesh = submeshes.emplace_back();
+				submesh.BaseVertex = static_cast<uint32_t>(vertices.size());
+				submesh.VertexCount = nbVerts;
+				submesh.BaseIndex = static_cast<uint32_t>(indices.size()) * 3;
+				submesh.IndexCount = nbTriangles * 3;
+				submesh.MaterialIndex = 0;
+				submesh.Transform = submeshData.Transform;
+
+				for (uint32_t v = 0; v < nbVerts; v++)
+				{
+					Vertex& v1 = vertices.emplace_back();
+					v1.Position = PhysXUtils::FromPhysXVector(triangleVertices[v]);
+				}
+
+				for (uint32_t tri = 0; tri < nbTriangles; tri++)
+				{
+					Index& index = indices.emplace_back();
+					index.V1 = tris[3 * tri + 0];
+					index.V2 = tris[3 * tri + 1];
+					index.V3 = tris[3 * tri + 2];
+				}
+
+				trimesh->release();
+			}
+
+			if (vertices.size() > 0)
+			{
+				std::string name = "UnnamedMesh";
+				if (AssetManager::HasAsset(colliderAsset->ColliderMesh))
+				{
+					name = fmt::format("{} DebugCollider", AssetManager::GetAssetInfo(colliderAsset->ColliderMesh).GetName());
+				}
+				Count<MeshSource> meshAsset = Count<MeshSource>::Create(name,vertices, indices, submeshes);
+				PhysicsMeshCache::AddDebugMesh(colliderAsset, Count<Mesh>::Create(meshAsset));
+			}
+		}
+		else
+		{
+			std::vector<Vertex> vertices;
+			std::vector<Index> indices;
+			std::vector<SubMesh> submeshes;
+
+			for (size_t i = 0; i < colliderData.SubMeshes.size(); i++)
+			{
+				const SubMeshColliderData& submeshData = colliderData.SubMeshes[i];
+
+				physx::PxDefaultMemoryInputData input(submeshData.ColliderData.As<physx::PxU8>(), submeshData.ColliderData.Size);
+				physx::PxConvexMesh* convexMesh = PhysicsEngine::GetPhysics()->createConvexMesh(input);
+
+				if (!convexMesh)
+					continue;
+
+				// Based On: https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/ThirdParty/PhysX3/NvCloth/samples/SampleBase/renderer/ConvexRenderMesh.cpp
+				const uint32_t nbPolygons = convexMesh->getNbPolygons();
+				const physx::PxVec3* convexVertices = convexMesh->getVertices();
+				const physx::PxU8* convexIndices = convexMesh->getIndexBuffer();
+
+				uint32_t nbVertices = 0;
+				uint32_t nbFaces = 0;
+				uint32_t vertCounter = 0;
+				uint32_t indexCounter = 0;
+
+				SubMesh& submesh = submeshes.emplace_back();
+				submesh.BaseVertex = static_cast<uint32_t>(vertices.size());
+				submesh.BaseIndex = static_cast<uint32_t>(indices.size()) * 3;
+
+				for (uint32_t i = 0; i < nbPolygons; i++)
+				{
+					physx::PxHullPolygon polygon;
+					convexMesh->getPolygonData(i, polygon);
+					nbVertices += polygon.mNbVerts;
+					nbFaces += (polygon.mNbVerts - 2) * 3;
+
+					uint32_t vI0 = vertCounter;
+					for (uint32_t vI = 0; vI < polygon.mNbVerts; vI++)
+					{
+						Vertex& v = vertices.emplace_back();
+						v.Position = PhysXUtils::FromPhysXVector(convexVertices[convexIndices[polygon.mIndexBase + vI]]);
+						vertCounter++;
+					}
+
+					for (uint32_t vI = 1; vI < uint32_t(polygon.mNbVerts) - 1; vI++)
+					{
+						Index& index = indices.emplace_back();
+						index.V1 = uint32_t(vI0);
+						index.V2 = uint32_t(vI0 + vI + 1);
+						index.V3 = uint32_t(vI0 + vI);
+						indexCounter++;
+					}
+				}
+
+				submesh.VertexCount = vertCounter;
+				submesh.IndexCount = indexCounter * 3;
+				submesh.MaterialIndex = 0;
+				submesh.Transform = submeshData.Transform;
+
+				convexMesh->release();
+			}
+
+			if (vertices.size() > 0)
+			{
+				std::string name = "UnnamedMesh";
+				if (AssetManager::HasAsset(colliderAsset->ColliderMesh))
+				{
+					name = fmt::format("{} DebugCollider", AssetManager::GetAssetInfo(colliderAsset->ColliderMesh).GetName());
+				}
+				Count<MeshSource> meshAsset = Count<MeshSource>::Create(name,vertices, indices, submeshes);
+				PhysicsMeshCache::AddDebugMesh(colliderAsset, Count<DynamicMesh>::Create(meshAsset));
+			}
+		}
 	}
 }

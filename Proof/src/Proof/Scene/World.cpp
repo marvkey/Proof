@@ -23,6 +23,7 @@
 #include "Proof/Audio/AudioUtils.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Physics/PhysicsActor.h"
+#include "Proof/Physics/PhysicsMeshCache.h"
 namespace Proof {
 	World::World(const std::string& name, UUID ID):
 		Name(name)
@@ -332,7 +333,7 @@ namespace Proof {
 		{
 		
 			auto view = m_Registry.view<BoxColliderComponent>();
-			Count<Mesh> cubeMesh = PhysicsMeshCooker::GetBoxColliderMesh();
+			Count<Mesh> cubeMesh = PhysicsMeshCache::GetBoxColliderMesh();
 
 			for (auto entity : view)
 			{
@@ -346,7 +347,7 @@ namespace Proof {
 		}
 		{
 			auto view = m_Registry.view<SphereColliderComponent>();
-			Count<Mesh> sphereDebugMesh = PhysicsMeshCooker::GetSphereColliderMesh();
+			Count<Mesh> sphereDebugMesh = PhysicsMeshCache::GetSphereColliderMesh();
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
@@ -359,7 +360,7 @@ namespace Proof {
 		{
 			{
 				auto view = m_Registry.view<CapsuleColliderComponent>();
-				Count<Mesh> capsuleDebugMesh = PhysicsMeshCooker::GetCapsuleColliderMesh();
+				Count<Mesh> capsuleDebugMesh = PhysicsMeshCache::GetCapsuleColliderMesh();
 				for (auto entity : view)
 				{
 					Entity e = { entity, this };

@@ -2,6 +2,7 @@
 #include "PhysicsEngine.h"
 #include "Proof/Asset/AssetManager.h"
 #include "PhysicsDebugger.h"
+#include "PhysicsMeshCache.h"
 namespace Proof {
 	namespace Utils {
 		
@@ -58,14 +59,17 @@ namespace Proof {
 
 		s_Dispatcher = physx::PxDefaultCpuDispatcherCreate(1);
 
-		PhysicsMeshCooker::Init();
+		PhysicsMeshCache::Init();
 
+		PhysicsMeshCooker::Init();
+		
 		PF_ENGINE_INFO("Physics Engine Initialized {}m/s", time.ElapsedMillis());
 	}
 	void PhysicsEngine::Release()
 	{
 		Timer time;
-		PhysicsMeshCooker::Release();
+		PhysicsMeshCooker::ShutDown();
+		PhysicsMeshCache::ShutDown();
 		PhysicsDebugger::Shutdown();
 
 		s_Physics->release();

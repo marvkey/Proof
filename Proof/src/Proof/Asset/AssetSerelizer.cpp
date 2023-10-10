@@ -14,6 +14,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Audio/Audio.h"
+#include "Proof/Physics/MeshCollider.h"
 #include "MeshImpoter.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
@@ -600,5 +601,51 @@ namespace Proof {
 	}
 
 	
+
+	void MeshColliderAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+		Count<MeshCollider> meshCollider = asset.As<MeshCollider>();
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(meshCollider->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << meshCollider->GetID();
+		out << YAML::Key << "ColliderMesh" << YAML::Value << meshCollider->ColliderMesh;
+		out << YAML::Key << "EnableVertexWelding" << YAML::Value << meshCollider->EnableVertexWelding;
+		out << YAML::Key << "VertexWeldTolerance" << YAML::Value << meshCollider->VertexWeldTolerance;
+		out << YAML::Key << "FlipNormals" << YAML::Value << meshCollider->FlipNormals;
+		out << YAML::Key << "CheckZeroAreaTriangles" << YAML::Value << meshCollider->CheckZeroAreaTriangles;
+		out << YAML::Key << "AreaTestEpsilon" << YAML::Value << meshCollider->AreaTestEpsilon;
+		out << YAML::Key << "ShiftVerticesToOrigin" << YAML::Value << meshCollider->ShiftVerticesToOrigin;
+		out << YAML::Key << "AlwaysShareShape" << YAML::Value << meshCollider->AlwaysShareShape;
+		out << YAML::Key << "CollisionComplexity" << YAML::Value << EnumReflection::EnumString(meshCollider->CollisionComplexity);
+
+		out << YAML::EndMap;
+		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		found << out.c_str();
+	}
+
+	Count<class Asset> MeshColliderAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!data["AssetType"])
+			return nullptr;
+
+		Count<MeshCollider> meshCollider = Count<MeshCollider>::Create();
+
+		meshCollider->ColliderMesh = data["ColliderMesh"].as<uint64_t>();
+		meshCollider->EnableVertexWelding = data["EnableVertexWelding"].as<bool>();
+		meshCollider->VertexWeldTolerance = data["VertexWeldTolerance"].as<float>();
+		meshCollider->FlipNormals = data["FlipNormals"].as<bool>();
+		meshCollider->CheckZeroAreaTriangles = data["CheckZeroAreaTriangles"].as<bool>();
+		meshCollider->AreaTestEpsilon = data["AreaTestEpsilon"].as<float>();
+		meshCollider->ShiftVerticesToOrigin = data["ShiftVerticesToOrigin"].as<bool>();
+		meshCollider->AlwaysShareShape = data["AlwaysShareShape"].as<bool>();
+		meshCollider->CollisionComplexity = EnumReflection::StringEnum<ECollisionComplexity>( data["CollisionComplexity"].as<std::string>());
+
+		SetID(assetData, meshCollider);
+		return meshCollider;
+	}
 
 }

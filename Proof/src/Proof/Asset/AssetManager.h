@@ -77,7 +77,7 @@ namespace Proof
 			return asset.As<AssetType>();
 		}
 
-		static void CreateRuntimeAsset(Count<Asset>& asset, const std::string& name = "")
+		static void CreateRuntimeAsset(Count<Asset> asset, const std::string& name = "")
 		{
 			CreateRuntimeAsset(CreateID(), asset);
 		}

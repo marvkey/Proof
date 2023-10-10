@@ -81,6 +81,13 @@ namespace Proof{
     {
         Reset(name, vertices, indices, subMeshes, nodes,materials, boundingBox);
     }
+    MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& submeshes)
+    {
+        m_Name = name;
+        m_SubMeshes = submeshes;
+        m_VertexBuffer = VertexBuffer::Create(vertices.data(), (uint32_t)(vertices.size() * sizeof(Vertex)));
+        m_IndexBuffer = IndexBuffer::Create(indices.data(), (uint32_t)(indices.size() * sizeof(Index)));
+    }
     void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices)
     {
         SubMesh subMesh;
@@ -149,12 +156,12 @@ namespace Proof{
         return m_VertexBuffer->GetDataAs<Vertex>();
     }
 
-    std::vector<uint32_t> MeshSource::GetIndices() const
+    std::vector<Index> MeshSource::GetIndices() const
     {
         if(m_IndexBuffer ==nullptr)
-            return std::vector<uint32_t>();
+            return std::vector<Index>();
 
-        return m_IndexBuffer->GetData();
+        return m_IndexBuffer->GetDataAs<Index>();
     }
 
     Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& submeshes)

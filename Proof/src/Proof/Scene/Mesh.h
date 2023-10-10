@@ -56,16 +56,18 @@ namespace Proof
         //    deserializer->ReadRaw(instance.LocalTransform);
         //}
     };
-    class MeshSource : public Asset{
+    class MeshSource : public Asset
+    {
     public:
         MeshSource();
         MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices);
-        MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes,const std::vector<MeshNode>& nodes, Count<MaterialTable>, AABB boundingBox);
+        MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable>, AABB boundingBox);
+        MeshSource(const std::string& name,const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& submeshes);
 
         void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices);
-        void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials,AABB boundingBox);
-        AABB GetBoundingBox() {return m_BoundingBox;}
-        const std::vector<SubMesh>& GetSubMeshes()const  { return m_SubMeshes;}
+        void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials, AABB boundingBox);
+        AABB GetBoundingBox() { return m_BoundingBox; }
+        const std::vector<SubMesh>& GetSubMeshes()const { return m_SubMeshes; }
 
         const SubMesh& GetSubMesh(uint32_t index)const { return m_SubMeshes.at(index); };
 
@@ -79,7 +81,7 @@ namespace Proof
         const MeshNode& GetRootNode()const { return m_Nodes[0]; };
 
         std::vector<Vertex> GetVertices()const;
-        std::vector<uint32_t> GetIndices()const;
+        std::vector<Index> GetIndices()const;
     private:
         std::string m_Name;
         AABB m_BoundingBox;
@@ -87,12 +89,20 @@ namespace Proof
         std::vector<MeshNode> m_Nodes;
         Count<class VertexBuffer> m_VertexBuffer = nullptr;
         Count<class IndexBuffer> m_IndexBuffer = nullptr;
-        std::vector<SubMesh> m_SubMeshes;   
+        std::vector<SubMesh> m_SubMeshes;
         Count<MaterialTable> m_Materials;
         friend class MeshImporter;
     };
-    
-    class Mesh : public Asset
+
+    class MeshBase : public Asset
+    {
+    public:
+        virtual Count<MaterialTable> GetMaterialTable() = 0;
+        virtual const std::vector<uint32_t>& GetSubMeshes()const= 0;;
+        virtual void SetSubMeshes(const std::vector<uint32_t>& submeshes = {})= 0;
+        virtual Count<MeshSource> GetMeshSource() = 0;
+    };
+    class Mesh : public MeshBase
     {
     public:
         ASSET_CLASS_TYPE(Mesh);
@@ -137,7 +147,7 @@ namespace Proof
 
     };
 
-    class DynamicMesh : public Asset
+    class DynamicMesh : public MeshBase
     {
     public:
         ASSET_CLASS_TYPE(DynamicMesh);

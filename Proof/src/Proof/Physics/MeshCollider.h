@@ -16,15 +16,20 @@ namespace Proof
 	{
 	public:
 		AssetID ColliderMesh = 0;
+		ECollisionComplexity CollisionComplexity = ECollisionComplexity::Default;
+		glm::vec3 ColliderScale = glm::vec3(1.0f);
+		bool AlwaysShareShape = false;
+
+		// collison 
 		bool EnableVertexWelding = true;
 		float VertexWeldTolerance = 0.1f;
+
+		// triangle collision
 		bool FlipNormals = false;
+		//convex
 		bool CheckZeroAreaTriangles = true;
 		float AreaTestEpsilon = 0.06f;
 		bool ShiftVerticesToOrigin = false;
-		bool AlwaysShareShape = false;
-		glm::vec3 ColliderScale = glm::vec3(1.0f);
-		ECollisionComplexity CollisionComplexity = ECollisionComplexity::Default;
 
 		MeshCollider() {};
 		MeshCollider(AssetID colliderMesh)
