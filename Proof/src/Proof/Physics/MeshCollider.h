@@ -16,6 +16,7 @@ namespace Proof
 	{
 	public:
 		AssetID ColliderMesh = 0;
+		AssetID PhysicsMaterial = 0;
 		ECollisionComplexity CollisionComplexity = ECollisionComplexity::Default;
 		glm::vec3 ColliderScale = glm::vec3(1.0f);
 		bool AlwaysShareShape = false;

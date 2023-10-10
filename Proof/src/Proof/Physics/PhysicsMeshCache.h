@@ -15,14 +15,14 @@ namespace Proof
 		static Count<class Mesh> GetCapsuleColliderMesh();
 		static Count<class Mesh> GetSphereColliderMesh();
 
-		const CachedColliderData& GetMeshData(const Count<class MeshCollider>& colliderAsset);
-		Count<Mesh> GetDebugMesh(const Count<class MeshCollider>& colliderAsset);
-		Count<class DynamicMesh> GetDebugDynamicMesh(const Count<class MeshCollider>& colliderAsset);
+		static const CachedColliderData& GetMeshData(const Count<class MeshCollider>& colliderAsset);
+		static Count<Mesh> GetDebugMesh(const Count<class MeshCollider>& colliderAsset);
+		static Count<class DynamicMesh> GetDebugDynamicMesh(const Count<class MeshCollider>& colliderAsset);
 
-		bool Exists(const Count<class MeshCollider>& colliderAsset) const;
-		void Rebuild();
-		void Clear();
-		static const std::map<AssetID, std::map<AssetID, CachedColliderData>>& GetMeshData();
+		static bool Exists(const Count<class MeshCollider>& colliderAsset) ;
+		static void Rebuild();
+		static void Clear();
+		static const std::map<AssetID, std::map<AssetID, CachedColliderData>>& GetMeshData(); // collision mesh, collider ID, collider data
 	private:
 		static void AddDebugMesh(const Count<class MeshCollider>& colliderAsset, const Count<class Mesh>& debugMesh);
 		static void AddDebugMesh(const Count<class MeshCollider>& colliderAsset, const Count<class DynamicMesh>& debugMesh);

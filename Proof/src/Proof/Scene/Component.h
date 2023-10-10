@@ -506,7 +506,8 @@ namespace Proof
 		mutable UUID m_PhysicsMaterialPointerID= 0;
 	};
 
-	struct Proof_API MeshColliderComponent {
+	struct MeshColliderComponent
+	{
 		MeshColliderComponent(const MeshColliderComponent&) = default;
 		MeshColliderComponent() = default;
 		void RemovePhysicsMaterial() {
@@ -516,23 +517,14 @@ namespace Proof
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
 		Count<class PhysicsMaterial> GetPhysicsMaterial();
-		Count<class Mesh> GetMesh();
 
-		UUID GetMeshSource() {
-			return m_MeshAssetPointerID;
-		}
-		void RemoveMeshSource() {
-			m_MeshAssetPointerID = 0;
-		}
 		bool UseSharedShape = false;
 		bool IsTrigger = false;
 
 		bool OverrideCollider = false;
 		AssetID ColliderID = 0; // even if its a memory asset it will be saved on disk by the physics system 
-		bool UseSubMesh = false;
-		uint32_t SubMeshIndex = 0;
+		uint32_t SubMeshIndex = 0;//only if collider id is a dynamic mesh 
 	private:
-		mutable UUID m_MeshAssetPointerID = 0;// POINTS TO THE MESH ASSET
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -540,7 +532,7 @@ namespace Proof
 		friend class PhysicsActor;
 		friend class PhysicsEngine;
 		mutable UUID m_PhysicsMaterialPointerID = 0;
-	};	
+	};
 	enum class RigidBodyType {
 		Static,
 		Dynamic

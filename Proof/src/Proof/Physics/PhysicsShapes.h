@@ -2,7 +2,7 @@
 #include "Proof/Core/Core.h"
 #include "PhysicsUtils.h"
 #include "Proof/Scene/Entity.h"
-
+#include "MeshCollider.h"
 namespace Proof
 {
 	
@@ -139,5 +139,84 @@ namespace Proof
 		physx::PxShape* m_Shape;
 	};
 
+	class ConvexMeshShape : public ColliderShape
+	{
+	public:
+		ConvexMeshShape(MeshColliderComponent& component, const PhysicsActor& actor, Entity entity);
+		virtual ~ConvexMeshShape();
 
+		AssetID GetColliderHandle() const { return m_Entity.GetComponent<MeshColliderComponent>().ColliderID; }
+
+		virtual const glm::vec3& GetOffset() const
+		{
+			static glm::vec3 defaultOffset = glm::vec3(0.0f);
+			return defaultOffset;
+		}
+		virtual void SetOffset(const glm::vec3& offset) {}
+
+		virtual bool IsTrigger() const override { return m_Entity.GetComponent<MeshColliderComponent>().IsTrigger; }
+		virtual void SetTrigger(bool isTrigger) override;
+
+		virtual void SetFilterData(const physx::PxFilterData& filterData) override;
+
+		virtual void DetachFromActor(physx::PxRigidActor* actor) override;
+
+		virtual const char* GetShapeName() const override { return "ConvexMeshCollider"; }
+		virtual bool IsValid() const override { return ColliderShape::IsValid() && !m_Shapes.empty(); }
+
+		static ColliderType GetStaticType() { return ColliderType::ConvexMesh; }
+
+		const glm::vec3& GetCenter() const override { return glm::vec3{ 0 }; }
+		void SetCenter(const glm::vec3& offset) override {};
+	private:
+		std::vector<physx::PxShape*> m_Shapes;
+	};
+
+	class TriangleMeshShape : public ColliderShape
+	{
+	public:
+		TriangleMeshShape(MeshColliderComponent& component, const PhysicsActor& actor, Entity entity);
+		~TriangleMeshShape();
+
+		AssetID GetColliderHandle() const { return m_Entity.GetComponent<MeshColliderComponent>().ColliderID; }
+
+		const glm::vec3& GetCenter() const override { return glm::vec3{ 0 }; }
+		void SetCenter(const glm::vec3& offset) override {};
+
+		virtual bool IsTrigger() const override { return m_Entity.GetComponent<MeshColliderComponent>().IsTrigger; }
+		virtual void SetTrigger(bool isTrigger) override;
+
+		virtual void SetFilterData(const physx::PxFilterData& filterData) override;
+
+		virtual void DetachFromActor(physx::PxRigidActor* actor) override;
+
+		virtual const char* GetShapeName() const override { return "TriangleMeshCollider"; }
+		virtual bool IsValid() const override { return ColliderShape::IsValid() && !m_Shapes.empty(); }
+
+		static ColliderType GetStaticType() { return ColliderType::TriangleMesh; }
+
+	private:
+		std::vector<physx::PxShape*> m_Shapes;
+	};
+
+	class SharedShapeManager
+	{
+	public:
+		struct SharedShapeData
+		{
+			ECollisionComplexity Usage = ECollisionComplexity::Default; // collider complexity
+			std::unordered_map<uint32_t, physx::PxShape*> Shapes; // every submesh shape of the mesh collider
+		};
+
+		using SharedShapeMap = std::unordered_map<ColliderType, std::unordered_map<AssetID, std::vector<SharedShapeData*>>>;// collider type, collider handle, 
+
+	public:
+		static SharedShapeData* CreateSharedShapeData(ColliderType colliderType, AssetID colliderHandle);
+		static SharedShapeData* FindSuitableSharedShape(ColliderType colliderType, const Count<class MeshCollider>& collider, const bool checkSubmeshIndex = false, const uint32_t submeshIndex = 0);
+		static void RemoveSharedShapeData(ColliderType colliderType, const Count<class MeshCollider>& collider, const bool checkSubmeshIndex = false, const uint32_t submeshIndex = 0);
+		static void ClearSharedShapes();
+
+	private:
+		static SharedShapeMap s_SharedShapes;
+	};
 }

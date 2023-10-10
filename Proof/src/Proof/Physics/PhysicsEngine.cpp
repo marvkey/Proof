@@ -3,6 +3,9 @@
 #include "Proof/Asset/AssetManager.h"
 #include "PhysicsDebugger.h"
 #include "PhysicsMeshCache.h"
+#include "MeshCollider.h"
+#include "Proof/Scene/Entity.h"
+#include "Proof/Scene/Mesh.h"
 namespace Proof {
 	namespace Utils {
 		
@@ -28,6 +31,39 @@ namespace Proof {
 	physx::PxDefaultCpuDispatcher* PhysicsEngine::GetCpuDispatcher()
 	{
 		return s_Dispatcher;
+	}
+	Count<MeshCollider> PhysicsEngine::GetOrCreateColliderAsset(Entity entity, MeshColliderComponent& component)
+	{
+		Count<MeshCollider> colliderAsset;
+		if(AssetManager::HasAsset(component.ColliderID))
+			colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+
+		if (colliderAsset)
+			return colliderAsset;
+
+		if (entity.HasComponent<DynamicMeshComponent>())
+		{
+			auto& mc = entity.GetComponent<DynamicMeshComponent>();
+			if (mc.GetMesh() != nullptr)
+			{
+				component.ColliderID = AssetManager::CreateRuntimeAsset<MeshCollider>("",mc.GetMesh()->GetID())->GetID();
+				component.SubMeshIndex = mc.GetSubMeshIndex();
+			}
+		}
+		else if (entity.HasComponent<MeshComponent>())
+		{
+			auto& mc = entity.GetComponent<MeshComponent>();
+			if(mc.GetMesh()!= nullptr)
+				component.ColliderID = AssetManager::CreateRuntimeAsset<MeshCollider>("", mc.GetMesh()->GetID())->GetID();
+		}
+
+		if(AssetManager::HasAsset(component.ColliderID))
+			colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+
+		if (colliderAsset && !PhysicsMeshCache::Exists(colliderAsset))
+			PhysicsMeshCooker::CookMesh(component.ColliderID);
+
+		return colliderAsset;
 	}
 	void PhysicsEngine::Init(PhysicsSettings settings)
 	{

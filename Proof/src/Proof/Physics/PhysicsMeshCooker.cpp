@@ -71,7 +71,7 @@ namespace  Proof
 		}
 
 
-		if (AssetManager::HasAsset(colliderAsset->ColliderMesh))
+		if (!AssetManager::HasAsset(colliderAsset->ColliderMesh))
 		{
 			PF_ENGINE_ERROR("Cooking Factory Failed to cook mesh collider because mesh can't be found!");
 			return { CookingResult::InvalidMesh, CookingResult::InvalidMesh };

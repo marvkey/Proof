@@ -1,33 +1,12 @@
 World:
   ID: 6477593735195019013
   Entities:
-    - Entity: 8006671976315113426
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 0.5
-        DynamicSky: false
-        Turbidity: 2
-        Azimuth: 0
-        Inclination: 0
-        Image: 4373174173013626620
     - Entity: 13521505007611337014
       TagComponent:
         Tag: Cube
         tags: []
       TransformComponent:
-        Location: [-8.60000038, -12.1000004, 0]
+        Location: [-8.60000038, -16.8999996, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 7.80000019, 7.4000001]
       HierarchyComponent:
@@ -50,20 +29,27 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 13784379914823608826
+    - Entity: 8006671976315113426
       TagComponent:
-        Tag: Directional Light
+        Tag: Sky Light
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [0, 1.04719758, -2.38418522e-07]
+        Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 3
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 0.5
+        DynamicSky: false
+        Turbidity: 2
+        Azimuth: 0
+        Inclination: 0
+        Image: 4373174173013626620
     - Entity: 14978476594823408362
       TagComponent:
         Tag: planCube
@@ -92,6 +78,20 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 13784379914823608826
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [-0.228638247, 1.04718995, -0.0174530353]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 3
     - Entity: 17196338287825808833
       TagComponent:
         Tag: Sphere
@@ -120,3 +120,55 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 14679575243082582269
+      TagComponent:
+        Tag: Sponza2
+        tags: []
+      TransformComponent:
+        Location: [0.800000012, 0, -210.199997]
+        Rotation: [0, -0, 0]
+        Scale: [10, 10, 10]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 705200552008804468
+      MeshColliderComponent:
+        IsTrigger: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 8197159807922337689
+      TagComponent:
+        Tag: meshcolliderCube
+        tags: []
+      TransformComponent:
+        Location: [0, 42.7999992, -208.632004]
+        Rotation: [0, -0, 0]
+        Scale: [12.6000004, 3.5, 5.80000019]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+      MeshColliderComponent:
+        IsTrigger: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Continuous

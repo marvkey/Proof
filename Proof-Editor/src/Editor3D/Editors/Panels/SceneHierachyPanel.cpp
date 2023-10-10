@@ -848,7 +848,7 @@ namespace Proof
 			UI::BeginPropertyGrid("MeshColliderGrid");
 
 			UI::AttributeBool("IsTrigger", meshCollider.IsTrigger);
-			UI::AttributeAssetTextBar("Mesh", meshCollider.m_MeshAssetPointerID, AssetType::Mesh);
+			//UI::AttributeAssetTextBar("Mesh", meshCollider.m_MeshAssetPointerID, AssetType::Mesh);
 			
 			UI::AttributeAssetTextBar("Material", meshCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
 			UI::EndPropertyGrid();

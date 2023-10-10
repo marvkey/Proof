@@ -153,11 +153,6 @@ namespace Proof
 			m_SubmeshIndex = setSubMeshIndex;
 	}
 
-	Count<Mesh> MeshColliderComponent::GetMesh()
-	{
-		if (m_MeshAssetPointerID == 0)return nullptr;
-		return nullptr;
-	}
 	void SkyLightComponent::RemoveImage()
 	{
 		Image = 0;

@@ -410,7 +410,7 @@ namespace Proof
 				out << YAML::BeginMap; // MeshColliderComponent
 				out << YAML::Key << "IsTrigger" << meshCollider.IsTrigger;
 				out << YAML::Key << "PhysicsMaterialPointerID" << meshCollider.m_PhysicsMaterialPointerID;
-				out << YAML::Key << "MeshAssetPointerID" << meshCollider.m_MeshAssetPointerID;
+				//out << YAML::Key << "MeshAssetPointerID" << meshCollider.m_MeshAssetPointerID;
 				out << YAML::EndMap; // MeshColliderComponent
 			}
 		}
@@ -964,7 +964,7 @@ namespace Proof
 					auto& src = NewEntity.AddComponent<MeshColliderComponent>();
 					src.IsTrigger = mehsCollider["IsTrigger"].as<bool>();
 					src.m_PhysicsMaterialPointerID = mehsCollider["PhysicsMaterialPointerID"].as<uint64_t>();
-					src.m_MeshAssetPointerID = mehsCollider["MeshAssetPointerID"].as<uint64_t>();
+					//src.m_MeshAssetPointerID = mehsCollider["MeshAssetPointerID"].as<uint64_t>();
 				}
 			}
 			// RIGID BODY

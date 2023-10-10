@@ -7,6 +7,10 @@
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "PhysicsShapes.h"
+#include "PhysicsMeshCache.h"
+#include "MeshCollider.h"
+#include "Proof/Scene/Mesh.h"
+#include "Proof/Asset/AssetManager.h"
 namespace Proof {
 
 	
@@ -53,6 +57,7 @@ namespace Proof {
 		if (m_Entity.HasComponent<BoxColliderComponent>())	AddCollider(m_Entity.GetComponent<BoxColliderComponent>());
 		if (m_Entity.HasComponent<CapsuleColliderComponent>()) AddCollider(m_Entity.GetComponent<CapsuleColliderComponent>());
 		if (m_Entity.HasComponent<SphereColliderComponent>()) AddCollider(m_Entity.GetComponent<SphereColliderComponent>());
+		if (m_Entity.HasComponent<MeshColliderComponent>()) AddCollider(m_Entity.GetComponent<MeshColliderComponent>());
 		//if (m_Entity.HasComponent<MeshColliderComponent>()) AddMeshCollider();
 	}
 	Entity PhysicsActor::GetEntity()
@@ -400,6 +405,52 @@ namespace Proof {
 
 	void PhysicsActor::AddCollider(MeshColliderComponent& collider)
 	{
+		PF_PROFILE_FUNC();
+
+		Count<MeshCollider> colliderAsset;
+		if (collider.OverrideCollider == false)
+		{
+			colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(m_Entity, collider);
+		}
+		else
+		{
+
+			if(AssetManager::HasAsset(collider.ColliderID))
+				colliderAsset = AssetManager::GetAsset<MeshCollider>(collider.ColliderID);
+		}
+		if (colliderAsset == nullptr)
+			return;
+
+
+		if (!PhysicsMeshCache::Exists(colliderAsset))
+		{
+			PF_ENGINE_WARN("Physics Tried to add an Mesh Collider with an invalid collider asset. Please make sure your collider has been cooked.");
+			return;
+		}
+
+		const CachedColliderData& colliderData = PhysicsMeshCache::GetMeshData(colliderAsset);
+
+		if (colliderAsset->CollisionComplexity == ECollisionComplexity::UseComplexAsSimple && IsDynamic())
+		{
+			PF_EC_ERROR("Entity '{0}' ({1}) has a dynamic RigidBodyComponent along with a Complex MeshColliderComponent! This isn't allowed.", m_Entity.GetName(), m_Entity.GetUUID());
+			return;
+		}
+
+		// Create and add simple collider
+		if (colliderData.SimpleColliderData.SubMeshes.size() > 0)
+		{
+			Count<ConvexMeshShape> convexShape = Count<ConvexMeshShape>::Create(collider, *this, m_Entity);
+			if (convexShape->IsValid())
+				m_Colliders.push_back(convexShape);
+		}
+
+		// Create and add complex collider
+		if (colliderData.ComplexColliderData.SubMeshes.size() > 0 && colliderAsset->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex)
+		{
+			Count<TriangleMeshShape> triangleShape = Count<TriangleMeshShape>::Create(collider, *this, m_Entity);
+			if (triangleShape->IsValid())
+				m_Colliders.push_back(triangleShape);
+		}
 	}
 
 	void PhysicsActor::SetRotation(const glm::quat& rotation, bool autowake)

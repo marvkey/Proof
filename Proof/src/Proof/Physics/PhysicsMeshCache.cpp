@@ -29,7 +29,7 @@ namespace Proof
         Count<Mesh> CapsuleCache = nullptr;
         Count<Mesh> SphereCache = nullptr;
 
-        std::map<AssetID, std::map<AssetID, CachedColliderData>> MeshData;
+        std::map<AssetID, std::map<AssetID, CachedColliderData>> MeshData;// collision mesh, collider ID, collider data
 
         // Editor-only
         std::map<AssetID, std::map<AssetID, Count<Mesh>>> DebugMeshes;
@@ -136,7 +136,7 @@ namespace Proof
         return nullptr;
     }
 
-    bool PhysicsMeshCache::Exists(const Count<class MeshCollider>& colliderAsset) const
+    bool PhysicsMeshCache::Exists(const Count<class MeshCollider>& colliderAsset) 
     {
         AssetID collisionMesh = colliderAsset->ColliderMesh;
 

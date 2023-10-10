@@ -24,6 +24,7 @@
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Physics/PhysicsActor.h"
 #include "Proof/Physics/PhysicsMeshCache.h"
+#include "Proof/Physics/MeshCollider.h"
 namespace Proof {
 	World::World(const std::string& name, UUID ID):
 		Name(name)
@@ -390,6 +391,38 @@ namespace Proof {
 				}
 			}
 		}
+
+		{
+
+			auto view = m_Registry.view<MeshColliderComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				const auto& collider = e.GetComponent<MeshColliderComponent>();
+				Count<MeshCollider> colliderAsset;
+				if (AssetManager::HasAsset(collider.ColliderID))
+				{
+					colliderAsset = AssetManager::GetAsset<MeshCollider>(collider.ColliderID);
+				}
+				if (!colliderAsset && collider.OverrideCollider == false)
+				{
+					if (e.HasComponent<MeshComponent>() && e.GetComponent<MeshComponent>().GetMesh() != nullptr)
+					{
+						colliderAsset = AssetManager::CreateRuntimeAsset<MeshCollider>("", e.GetComponent<MeshComponent>().GetMesh()->GetID());
+						PhysicsMeshCooker::CookMesh(colliderAsset);
+					}
+				}
+				if (colliderAsset)
+				{
+					Count<Mesh> simpleDebugMesh = PhysicsMeshCache::GetDebugMesh(colliderAsset);
+					if (simpleDebugMesh && colliderAsset->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex)
+					{
+						glm::mat4 transform = GetWorldSpaceTransform(e);
+						renderer->SubmitPhysicsDebugMesh(simpleDebugMesh, transform);
+					}
+				}
+			}
+		}
 	}
 	void World::Init()
 	{
@@ -421,7 +454,7 @@ namespace Proof {
 
 	void World::OnMeshColliderComponentCreate(MeshColliderComponent& component)
 	{
-		PF_CORE_ASSERT(false);
+		//PF_CORE_ASSERT(false);
 	}
 
 	void World::OnMeshColliderComponentDelete(MeshColliderComponent& component)

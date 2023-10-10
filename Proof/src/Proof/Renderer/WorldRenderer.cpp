@@ -1635,9 +1635,9 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("{}", mesh->GetName().c_str());
 		//TODO FASTER HASH FUNCTION FOR MESHKEY
-		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+		//PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
 
-		AssetID meshID = mesh->GetID();
+		AssetID meshID = mesh->GetMeshSpecificID();
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		const auto& submeshData = meshSource->GetSubMeshes();
 		for (uint32_t submeshIndex : mesh->GetSubMeshes())
