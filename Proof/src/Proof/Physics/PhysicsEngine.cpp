@@ -34,7 +34,7 @@ namespace Proof {
 	}
 	Count<MeshCollider> PhysicsEngine::GetOrCreateColliderAsset(Entity entity, MeshColliderComponent& component)
 	{
-		Count<MeshCollider> colliderAsset;
+		Count<MeshCollider> colliderAsset =nullptr;
 		if(AssetManager::HasAsset(component.ColliderID))
 			colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
 
@@ -46,7 +46,7 @@ namespace Proof {
 			auto& mc = entity.GetComponent<DynamicMeshComponent>();
 			if (mc.GetMesh() != nullptr)
 			{
-				component.ColliderID = AssetManager::CreateRuntimeAsset<MeshCollider>("",mc.GetMesh()->GetID())->GetID();
+				component.ColliderID = AssetManager::CreateRuntimeAsset<MeshCollider>(mc.GetMesh()->GetID())->GetID();
 				component.SubMeshIndex = mc.GetSubMeshIndex();
 			}
 		}
@@ -54,7 +54,7 @@ namespace Proof {
 		{
 			auto& mc = entity.GetComponent<MeshComponent>();
 			if(mc.GetMesh()!= nullptr)
-				component.ColliderID = AssetManager::CreateRuntimeAsset<MeshCollider>("", mc.GetMesh()->GetID())->GetID();
+				component.ColliderID = AssetManager::CreateRuntimeAsset<MeshCollider>(mc.GetMesh()->GetID())->GetID();
 		}
 
 		if(AssetManager::HasAsset(component.ColliderID))

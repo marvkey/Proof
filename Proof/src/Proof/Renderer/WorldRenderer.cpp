@@ -1637,7 +1637,7 @@ namespace Proof
 		//TODO FASTER HASH FUNCTION FOR MESHKEY
 		//PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
 
-		AssetID meshID = mesh->GetMeshSpecificID();
+		AssetID meshID = mesh->GetID();
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		const auto& submeshData = meshSource->GetSubMeshes();
 		for (uint32_t submeshIndex : mesh->GetSubMeshes())

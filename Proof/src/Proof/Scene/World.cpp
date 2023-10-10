@@ -398,20 +398,9 @@ namespace Proof {
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
-				const auto& collider = e.GetComponent<MeshColliderComponent>();
-				Count<MeshCollider> colliderAsset;
-				if (AssetManager::HasAsset(collider.ColliderID))
-				{
-					colliderAsset = AssetManager::GetAsset<MeshCollider>(collider.ColliderID);
-				}
-				if (!colliderAsset && collider.OverrideCollider == false)
-				{
-					if (e.HasComponent<MeshComponent>() && e.GetComponent<MeshComponent>().GetMesh() != nullptr)
-					{
-						colliderAsset = AssetManager::CreateRuntimeAsset<MeshCollider>("", e.GetComponent<MeshComponent>().GetMesh()->GetID());
-						PhysicsMeshCooker::CookMesh(colliderAsset);
-					}
-				}
+				auto& collider = e.GetComponent<MeshColliderComponent>();
+				Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(e, collider);
+
 				if (colliderAsset)
 				{
 					Count<Mesh> simpleDebugMesh = PhysicsMeshCache::GetDebugMesh(colliderAsset);

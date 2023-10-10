@@ -109,6 +109,22 @@ namespace Proof
 			InternalAddAsset(assetInfo, asset);
 			return asset.As<AssetType>();
 		}
+
+		template<class AssetType, typename ... Args, std::enable_if_t<Is_Compatible<AssetType, Asset>::value, int> = 0>
+		static Count<AssetType> CreateRuntimeAsset(Args&&... args)
+		{
+			static_assert(!std::is_same<AssetType, class World>::value, "Cannot craet  a world like this");
+			Count<Asset> asset = Count<AssetType>::Create(std::forward<Args>(args)...);
+			AssetInfo assetInfo;
+			assetInfo.State = AssetState::Ready;
+			assetInfo.ID = CreateID();
+			assetInfo.Type = asset->GetAssetType();
+			assetInfo.RuntimeAsset = true;
+			assetInfo.Path = fmt::format("RuntimeAsset/{}/{}",assetInfo.ID.Get(),fmt::format("UnnamedAsset {}", assetInfo.ID.Get()));
+
+			InternalAddAsset(assetInfo, asset);
+			return asset.As<AssetType>();
+		}
 		template <class AssetType, class... Args,std::enable_if_t<Is_Compatible<AssetType, Asset>::value, int> = 0>
 		static Count<AssetType> CreateRuntimeOnlyRendererAsset(const std::string& name, Args&&... args)
 		{

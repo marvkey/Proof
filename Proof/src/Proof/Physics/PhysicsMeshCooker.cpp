@@ -501,7 +501,7 @@ namespace  Proof
 					name = fmt::format("{} DebugCollider", AssetManager::GetAssetInfo(colliderAsset->ColliderMesh).GetName());
 				}
 				Count<MeshSource> meshAsset = Count<MeshSource>::Create(name,vertices, indices, submeshes);
-				PhysicsMeshCache::AddDebugMesh(colliderAsset, Count<Mesh>::Create(meshAsset));
+				PhysicsMeshCache::AddDebugMesh(colliderAsset, AssetManager::CreateRuntimeAsset<Mesh>(meshAsset));
 			}
 		}
 		else
@@ -574,8 +574,8 @@ namespace  Proof
 				{
 					name = fmt::format("{} DebugCollider", AssetManager::GetAssetInfo(colliderAsset->ColliderMesh).GetName());
 				}
-				Count<MeshSource> meshAsset = Count<MeshSource>::Create(name,vertices, indices, submeshes);
-				PhysicsMeshCache::AddDebugMesh(colliderAsset, Count<DynamicMesh>::Create(meshAsset));
+				Count<MeshSource> meshAsset = AssetManager::CreateRuntimeAsset<MeshSource>(name, vertices, indices, submeshes);
+				PhysicsMeshCache::AddDebugMesh(colliderAsset, AssetManager::CreateRuntimeAsset<DynamicMesh>(meshAsset));
 			}
 		}
 	}
