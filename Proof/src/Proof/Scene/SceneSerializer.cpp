@@ -223,24 +223,26 @@ namespace Proof
 				}
 			}
 			{
+				#if 0
 				if (registry.all_of<ScriptComponent>(enttID))
 				{
 					ScriptComponent& scriptComponent = registry.get<ScriptComponent>(enttID);
 					out << YAML::Key << "ScriptComponent";
 					out << YAML::BeginMap; //ScriptComponent
 					out << YAML::Key << "Scripts" << YAML::BeginSeq; //scriptSeq
+
 					for (const std::string& scriptName : scriptComponent.ScriptsNames)
 					{
-						if (!ScriptEngine::EntityClassExists(scriptName))
+						//if (!ScriptEngine::EntityClassExists(scriptName))
 							continue;
 						out << YAML::BeginMap;// Script
 						out << YAML::Key << "Script" << scriptName;
 
-						if (ScriptEngine::HasScriptFieldMap(entityID) == false || ispPrefab == true)
-						{
-							out << YAML::EndMap;//script
-							continue;
-						}
+						//if (ScriptEngine::HasScriptFieldMap(entityID) == false || ispPrefab == true)
+						//{
+						//	out << YAML::EndMap;//script
+						//	continue;
+						//}
 						out << YAML::Key << "ScriptFields" << YAML::Value;
 						out << YAML::BeginSeq; // scriptfields
 						Count<ScriptClass> entityClass = ScriptEngine::GetScriptClass(scriptName);
@@ -307,10 +309,13 @@ namespace Proof
 						}
 						out << YAML::EndSeq; // scriptfields
 						out << YAML::EndMap;//script
+
 					}
 					out << YAML::EndSeq;//scriptSeq
 					out << YAML::EndMap; // ScriptComponent
 				}
+				#endif
+
 			}
 
 			{
@@ -1122,6 +1127,7 @@ namespace Proof
 			}
 			//Script Component
 			{
+				#if 0
 				auto scriptComponent = entity["ScriptComponent"];
 				if (scriptComponent)
 				{
@@ -1207,6 +1213,7 @@ namespace Proof
 						}
 					}
 				}
+				#endif
 			}
 		}
 	}

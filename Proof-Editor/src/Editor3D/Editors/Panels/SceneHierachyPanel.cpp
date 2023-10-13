@@ -959,6 +959,8 @@ namespace Proof
 			ImGui::TreePop();
 		});
 		DrawComponents<ScriptComponent>("Scripts", entity, [&](ScriptComponent& scriptComp) {
+
+			# if 0
 			if (ImGui::Button("Add Script")) {
 				ImGui::OpenPopup("Open Scripts");
 			}
@@ -1015,6 +1017,7 @@ namespace Proof
 			*/
 			if (m_ActiveWorld->IsPlaying() == false)
 			{
+
 				for (const auto& scriptName : scriptComp.ScriptsNames)
 				{
 					const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
@@ -1349,6 +1352,7 @@ namespace Proof
 					ImGui::TreePop();
 				}
 			}
+			#endif
 		});
 
 		DrawComponents<TextComponent>("Text Component", entity, [](TextComponent& textComponent) {

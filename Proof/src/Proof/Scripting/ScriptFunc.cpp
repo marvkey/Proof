@@ -228,7 +228,7 @@ namespace Proof
 
 		std::vector<uint64_t> objects;
 		std::string className = ScriptEngine::MonoToString(classFullName);
-
+		#if 0
 		for (auto& [entityID, scripts] : ScriptEngine::EachEntityScript())
 		{
 			if (scripts.contains(className))
@@ -238,6 +238,7 @@ namespace Proof
 			return;
 		*theArray = mono_array_new(ScriptEngine::GetDomain(), mono_get_uint64_class(), objects.size());
 		memcpy(mono_array_addr(*theArray, uint64_t, 0), objects.data(), objects.size() * sizeof(uint64_t));
+		#endif
 	}
 	static void World_DeleteEntity(uint64_t entityID, bool deleteChildren) 
 	{
@@ -279,8 +280,10 @@ namespace Proof
 		});
 		if (objects.size() == 0)
 			return;
+		#if 0
 		*theArray = mono_array_new(ScriptEngine::GetDomain(), mono_get_uint64_class(), objects.size());
 		memcpy(mono_array_addr(*theArray, uint64_t, 0), objects.data(), objects.size() * sizeof(uint64_t));
+		#endif
 	}
 	static bool Entity_HasComponent(uint64_t entityID, MonoReflectionType* componentType) {
 		if (entityID == 0)return false;
@@ -297,9 +300,9 @@ namespace Proof
 
 	static MonoObject* GetScriptInstance(UUID entityID, MonoString* classFullName)
 	{
-		if (!ScriptEngine::EntityHasScripts(ScriptEngine::GetWorldContext()->GetEntity(entityID)))
+	//	if (!ScriptEngine::EntityHasScripts(ScriptEngine::GetWorldContext()->GetEntity(entityID)))
 			return nullptr;
-		return ScriptEngine::GetMonoManagedObject(entityID,ScriptEngine::MonoToString(classFullName));
+		//return ScriptEngine::GetMonoManagedObject(entityID,ScriptEngine::MonoToString(classFullName));
 	}
 
 	static void Entity_GetParent(uint64_t entityID, uint64_t* owenerId)
@@ -777,7 +780,7 @@ namespace Proof
 
 		if (!entity.HasComponent<PlayerInputComponent>())
 			return;
-
+		#if 0
 		PlayerInputComponent& playerInput = entity.GetComponent <PlayerInputComponent>();
 		
 		auto entityScripts = ScriptEngine::GetScriptInstnace(entity);
@@ -793,6 +796,8 @@ namespace Proof
 			ScriptMeathod::CallMeathod(script, meathod, nullptr);
 		};
 		InputManagerMeathods::BindAction(ScriptEngine::MonoToString(ActionName), (uint32_t)playerInput.InputPlayer, (InputEvent) inputState,call);
+
+		#endif
 	}
 
 	static void PlayerInputComponent_SetMotion(uint64_t entityID, MonoString* className, MonoString* motionName, MonoString* meathodName)
@@ -810,7 +815,7 @@ namespace Proof
 			return;
 
 		PlayerInputComponent& playerInput = entity.GetComponent <PlayerInputComponent>();
-
+		#if 0
 		auto entityScripts = ScriptEngine::GetScriptInstnace(entity);
 
 		std::string classAsString = ScriptEngine::MonoToString(className);
@@ -824,6 +829,7 @@ namespace Proof
 			ScriptMeathod::CallMeathod(script, meathod, &param);
 		};
 		InputManagerMeathods::BindMotion(ScriptEngine::MonoToString(motionName), (uint32_t)playerInput.InputPlayer, call);
+		#endif
 	}
 	
 	static void PlayerInputComponent_SetInputState(uint64_t entityID,int inputState)
@@ -1086,11 +1092,12 @@ namespace Proof
 		{
 			objects.emplace_back(part.first);
 		}
-
+		#if 0
 		if (objects.size() == 0)
 			return;
 		*theArray = mono_array_new(ScriptEngine::GetDomain(), mono_get_uint32_class(), objects.size());
 		memcpy(mono_array_addr(*theArray, uint64_t, 0), objects.data(), objects.size() * sizeof(uint64_t));
+		#endif
 	}
 	#pragma endregion
 
@@ -1565,6 +1572,7 @@ namespace Proof
 
 	template<typename... Component>
 	static void RegisterComponent() {
+		#if 0
 		//iterate over templates list
 		PF_ENGINE_INFO("C# Register Components");
 		([]()
@@ -1582,6 +1590,7 @@ namespace Proof
 				s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
 				PF_ENGINE_TRACE("	C# Component Registered {}", managedTypename);
 			}(), ...); //... keep expanding templates
+		#endif
 	}
 
 	template<typename... Component>

@@ -533,7 +533,7 @@ namespace Proof
 				NameofFileRename = "";
 				return;
 			}
-			const auto fileOldFullName = m_CurrentDirectory.string() + "\\" + fileName + "." + fileFullExension; // includes path
+			const auto fileOldFullName = m_CurrentDirectory.string() + "\\" + fileName + fileFullExension; // includes path
 			const auto fileNewFullName = m_CurrentDirectory.string() + "\\" + newFullName; // includes path
 			std::filesystem::rename(fileOldFullName, fileNewFullName);
 			if (AssetManager::HasAsset(fileOldFullName)) {

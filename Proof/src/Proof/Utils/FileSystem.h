@@ -18,7 +18,7 @@ namespace Proof
 	{
 		inline std::string RemoveExtension(const std::string& filename)
 		{
-			return filename.substr(0, filename.find_last_of('.'));
+			return filename.substr(0, filename.find_first_of('.'));
 		}
 	}
 	class FileSystem

@@ -54,20 +54,20 @@ namespace Proof
 		}
 		static inline const std::unordered_map<AssetType, std::string> AssetTypeMap = {
 			{AssetType::None, ""},
-			{AssetType::Mesh, "Mesh.ProofAsset"},
-			{AssetType::DynamicMesh, "DynamicMesh.ProofAsset"},
-			{AssetType::Texture, "Texture.ProofAsset"},
-			{AssetType::Material, "Material.ProofAsset"},
-			{AssetType::World, "ProofWorld"},
+			{AssetType::Mesh, ".Mesh.ProofAsset"},
+			{AssetType::DynamicMesh, ".DynamicMesh.ProofAsset"},
+			{AssetType::Texture, ".Texture.ProofAsset"},
+			{AssetType::Material, ".Material.ProofAsset"},
+			{AssetType::World, ".ProofWorld"},
 			{AssetType::MeshSourceFile, ""},
-			{AssetType::PhysicsMaterial, "PhysicsMaterial.ProofAsset"},
-			{AssetType::Prefab, "Prefab.ProofAsset"},
+			{AssetType::PhysicsMaterial, ".PhysicsMaterial.ProofAsset"},
+			{AssetType::Prefab, ".Prefab.ProofAsset"},
 			{AssetType::TextureSourceFile, ""},
-			{AssetType::UIPanel, "UIPanel.ProofAsset"},
-			{AssetType::ParticleSystem, "ParticleSystem.ProofAsset"},
-			{AssetType::Font, "Font.ProofAsset" },
-			{AssetType::Audio, "Audio.ProofAsset" },
-			{AssetType::MeshCollider, "MeshCollider.ProofAsset" },
+			{AssetType::UIPanel, ".UIPanel.ProofAsset"},
+			{AssetType::ParticleSystem, ".ParticleSystem.ProofAsset"},
+			{AssetType::Font, ".Font.ProofAsset" },
+			{AssetType::Audio, ".Audio.ProofAsset" },
+			{AssetType::MeshCollider, ".MeshCollider.ProofAsset" },
 		};
 		inline std::string GetAssetExtensionString(AssetType type) 
 		{
@@ -81,12 +81,12 @@ namespace Proof
 	// more formats come in the future
 		static const std::unordered_set<std::string> MeshSourceFormats =
 		{
-			"fbx",
-			"obj",
-			"blend",
-			"gltf",
-			"glb",
-			"blend",
+			".fbx",
+			".obj",
+			".blend",
+			".gltf",
+			".glb",
+			".blend",
 		};
 
 		inline bool MeshHasFormat(const std::string& format) {
@@ -96,12 +96,12 @@ namespace Proof
 		// more formats to come in the future
 		static const std::unordered_set< std::string> TextureSourceFormats =
 		{
-			"jpeg",
-			"jpg",
-			"png",
-			"tga",
-			"big",
-			"hdr"
+			".jpeg",
+			".jpg",
+			".png",
+			".tga",
+			".big",
+			".hdr"
 		};
 
 		inline bool TextureHasFormat(const std::string& format) {
@@ -109,7 +109,7 @@ namespace Proof
 		}
 		static const std::unordered_set< std::string> FontSourceFormats =
 		{
-			"ttf",
+			".ttf",
 		};
 		inline bool FontHasFormat(const std::string& format) {
 			return FontSourceFormats.contains(format);
@@ -117,9 +117,9 @@ namespace Proof
 
 		static const std::unordered_set< std::string> AudioSourceFormat =
 		{
-			"wav",
-			"mp3",
-			"flac"
+			".wav",
+			".mp3",
+			".flac"
 		};
 		inline bool AudioHasFormat(const std::string& format) 
 		{

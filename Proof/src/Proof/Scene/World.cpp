@@ -467,12 +467,12 @@ namespace Proof {
 
 	void World::OnScriptAdded(entt::registry& component, entt::entity entityID)
 	{
-		ScriptMeathod::OnCreate({ entityID,this });
+		//ScriptMeathod::OnCreate({ entityID,this });
 	}
 
 	void World::OnScriptDelete(entt::registry& component, entt::entity entityID)
 	{
-		ScriptMeathod::OnDestroy({ entityID,this }); 
+		//ScriptMeathod::OnDestroy({ entityID,this }); 
 	}
 	void World::BuildDynamicMeshEntityHierarchy(Entity parent, Count<DynamicMesh> mesh, const MeshNode& node, bool generateColliders)
 	{
@@ -596,7 +596,7 @@ namespace Proof {
 			for (auto entity : scriptView)
 			{
 				auto& script = scriptView.get<ScriptComponent>(entity);
-				ScriptMeathod::OnUpdate(Entity{ entity,this }, DeltaTime);
+				//ScriptMeathod::OnUpdate(Entity{ entity,this }, DeltaTime);
 			}
 		}
 		
@@ -759,11 +759,11 @@ namespace Proof {
 				auto& scriptComponent = src.GetComponent<ScriptComponent>();
 				for (auto& scripts : scriptComponent.ScriptsNames)
 				{
-					if (ScriptEngine::HasScriptFieldMap(src) == false)continue;
-					if(!ScriptEngine::HasScriptFieldMap(dst))
-						ScriptEngine::CreateScriptFieldMap(dst);
-
-					ScriptEngine::GetScriptFieldMap(dst) = ScriptEngine::GetScriptFieldMap(src);
+					//if (ScriptEngine::HasScriptFieldMap(src) == false)continue;
+					//if(!ScriptEngine::HasScriptFieldMap(dst))
+					//	ScriptEngine::CreateScriptFieldMap(dst);
+					//
+					//ScriptEngine::GetScriptFieldMap(dst) = ScriptEngine::GetScriptFieldMap(src);
 				}
 			}
 		}(), ...);
@@ -1008,7 +1008,7 @@ namespace Proof {
 				for (auto e : view)
 				{
 					Entity entity = { e, this };
-					ScriptMeathod::OnCreate(entity);
+					//ScriptMeathod::OnCreate(entity);
 					//ScriptEngine::OnPlace(entity);
 				}
 			}

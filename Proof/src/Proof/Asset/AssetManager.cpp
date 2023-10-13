@@ -175,6 +175,7 @@ namespace Proof
 
 		//SaveAllAssets();
 		s_AssetManagerData->Assets.clear();
+		
 		s_AssetManagerData = nullptr;
 		PF_ENGINE_INFO("Asset Manager Shutdown {}m/s", time.ElapsedMillis());
 	}

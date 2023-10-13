@@ -635,7 +635,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Layer::OnImGuiDraw(DeltaTime);
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
 		MainToolBar();
@@ -1664,10 +1664,12 @@ namespace Proof
 			{
 				if (ImGui::MenuItem("Reload C# Scripts"))
 				{
+					/*
 					if (m_ActiveWorld->GetState() == WorldState::Edit)
 						ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
 					else
 						PF_ERROR("Can only reload c# assembly in Edit state");
+						*/
 				}
 				ImGui::EndMenu();
 			}

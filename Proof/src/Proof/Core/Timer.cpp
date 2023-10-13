@@ -8,7 +8,7 @@ namespace Proof
 		{
 			float time = m_Timer.ElapsedMillis();
 
-			PF_EC_TRACE("TIMER {} - {}ms", m_Name, time);
+			PF_EC_INFO("TIMER {} - {}ms", m_Name, time);
 		}
 		else
 		{

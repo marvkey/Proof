@@ -114,7 +114,7 @@ namespace Proof {
         m_LayerStack->Empty();
         m_LayerStack = nullptr;
 
-        ScriptEngine::Shutdown();
+        ScriptEngine::ShutDown();
         PhysicsEngine::Release();
         AudioEngine::ShutDown();
 
