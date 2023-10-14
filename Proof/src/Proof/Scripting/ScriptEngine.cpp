@@ -9,6 +9,7 @@
 #include "ScriptTypes.h"
 #include "ScriptGCManager.h"
 #include "ScriptFunc.h"
+#include "ScriptRegistry.h"
 
 #include <fstream>
 #include <sstream>
@@ -128,11 +129,16 @@ namespace Proof
         InitMono();
 
         ScriptGCManager::Init();
+
+        LoadCoreAssembly();
     }
     void ScriptEngine::ShutDown()
     {
         ScopeTimer scopeTime("ScriptEngine::ShutDown");
         ScriptGCManager::Shutdown();
+        ScriptRegistry::ShutDown();
+
+        ScriptEngine::ShutDownMono();
     }
 
     void ScriptEngine::InitMono()
@@ -192,6 +198,7 @@ namespace Proof
         s_ScriptEngineData->CoreAssemblyInfo->Metadata = GetMetadataForImage(s_ScriptEngineData->CoreAssemblyInfo->AssemblyImage);
         s_ScriptEngineData->CoreAssemblyInfo->ReferencedAssemblies = GetReferencedAssembliesMetadata(s_ScriptEngineData->CoreAssemblyInfo->AssemblyImage);
 
+        ScriptRegistry::Init();
     }
     std::string ScriptEngine::MonoToString(MonoString* monoString) {
         if (monoString == nullptr || mono_string_length(monoString) == 0)
@@ -301,5 +308,13 @@ namespace Proof
         mono_image_close(image);
         return assembly;
     }
-  
+    Count<AssemblyInfo> ScriptEngine::GetCoreAssemblyInfo()
+    {
+        return s_ScriptEngineData->CoreAssemblyInfo;
+    }
+    Count<AssemblyInfo> ScriptEngine::GetAppAssemblyInfo()
+    {
+        return s_ScriptEngineData->AppAssemblyInfo;
+
+    }
 }

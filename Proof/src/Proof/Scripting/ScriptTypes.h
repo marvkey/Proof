@@ -30,7 +30,7 @@ namespace Proof
 	}
 	struct ManagedMethod
 	{
-		uint64_t ID = 0;
+		//uint64_t ID = 0;
 		std::string FullName = "";
 		bool IsVirtual = false;
 		bool IsStatic = false;
@@ -46,18 +46,20 @@ namespace Proof
 
 	struct ManagedClass
 	{
-		uint64_t ID = 0;
+		//uint64_t ID = 0;
 		std::string FullName = "";
-		std::vector<uint64_t> Fields;
-		std::vector<uint64_t> Methods;
+		//std::vector<uint64_t> Fields;
+		//std::vector<uint64_t> Methods;
+		std::vector<std::string> Fields;
+		std::vector<std::string> Methods;
 		uint32_t Size = 0;
 
 		// Will also be true if class is static
 		bool IsAbstract = false;
 		bool IsStruct = false;
 
-		uint64_t ParentID = 0;
-
+		//uint64_t ParentID = 0;
+		std::string ParentName = "";
 		MonoClass* Class = nullptr;
 
 		~ManagedClass()
@@ -82,8 +84,9 @@ namespace Proof
 		bool operator!=(const AssemblyMetadata& other) const { return !(*this == other); }
 	};
 
-	struct AssemblyInfo : public RefCounted
+	class AssemblyInfo : public RefCounted
 	{
+	public:
 		std::filesystem::path FilePath = "";
 		MonoAssembly* Assembly = nullptr;
 		MonoImage* AssemblyImage = nullptr;

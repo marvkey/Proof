@@ -26,17 +26,17 @@ namespace Proof
 		None = 0,
 		Void,
 		Float, Double,
-		Bool, Char,
+		Bool, Char,String,
 		Int8, Int16, Int32, Int64, Enum, //suports only integer types, they are basically integers,
 		UInt8, UInt16, UInt32, UInt64,
 		Vector2, Vector3, Vector4,
 		Entity,
-		Prefab,Texture2D, Mesh,AssetID,DynamicMesh,Material,PhysicsMaterial,//asset
+		Prefab,Texture2D, AssetID,Mesh,DynamicMesh,Material,PhysicsMaterial,//asset
 	};
 
-	struct FieldInfo
+	struct ScriptField
 	{
-		uint64_t ID = 0;
+		//uint64_t ID = 0;
 		std::string Name;
 		ScriptFieldType Type;
 		uint32_t Size;
@@ -92,7 +92,7 @@ namespace Proof
 	class FieldStorageBase : public RefCounted
 	{
 	public:
-		FieldStorageBase(FieldInfo* fieldInfo)
+		FieldStorageBase(ScriptField* fieldInfo)
 			: m_FieldInfo(fieldInfo) {}
 
 		virtual void SetRuntimeInstance(ScriptGCHandle instance) = 0;
@@ -101,16 +101,16 @@ namespace Proof
 		virtual Buffer GetValueBuffer() const = 0;
 		virtual void SetValueBuffer(const Buffer& buffer) = 0;
 
-		const FieldInfo* GetFieldInfo() const { return m_FieldInfo; }
+		const ScriptField* GetFieldInfo() const { return m_FieldInfo; }
 
 	protected:
-		FieldInfo* m_FieldInfo = nullptr;
+		ScriptField* m_FieldInfo = nullptr;
 	};
 
 	class FieldStorage : public FieldStorageBase
 	{
 	public:
-		FieldStorage(FieldInfo* fieldInfo)
+		FieldStorage(ScriptField* fieldInfo)
 			: FieldStorageBase(fieldInfo)
 		{
 			m_DataBuffer = Buffer::Copy(fieldInfo->DefaultValueBuffer);

@@ -66,7 +66,7 @@ project "Proof-Editor"
         defines{
 			"PF_ENABLE_ASSERT",
 			"PF_ENABLE_DEBUG",
-            "NDEBUG" -- PhysX Requires This
+            "NDEBUG" -- PhysX Requires This 
 		}
 
     filter "configurations:Dist"

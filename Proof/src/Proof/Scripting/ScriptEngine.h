@@ -3,6 +3,7 @@
 //https://github.com/TheCherno/Hazel/blob/scripting/Hazel/src/Hazel/Scripting/ScriptEngine.h
 #include "Proof/Core/Core.h"
 #include "proof/Scene/Entity.h"
+#include "ScriptTypes.h"
 #include <any>
 #include <functional>
 #include <filesystem>
@@ -20,7 +21,7 @@ extern "C" {
 }
 namespace Proof
 {
-	struct AssemblyMetadata;
+	//struct AssemblyMetadata;
 
 	class ScriptEngine {
 	public:
@@ -35,6 +36,9 @@ namespace Proof
 		static MonoString* StringToMono(const std::string& data);
 		static AssemblyMetadata GetMetadataForImage(MonoImage* image);
 		static std::vector<AssemblyMetadata> GetReferencedAssembliesMetadata(MonoImage* image);
+
+		static Count<AssemblyInfo> GetCoreAssemblyInfo();
+		static Count<AssemblyInfo> GetAppAssemblyInfo();
 	private:
 		static void InitMono();
 		static void ShutDownMono();
