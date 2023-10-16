@@ -1,10 +1,13 @@
 #include "Proofprch.h"
 #include "ScriptUtils.h"
 #include "ScriptRegistry.h"
+#include "ScriptEngine.h"
 #include "ScriptField.h"
 #include "ScriptTypes.h"
 #include "Proof/Utils/StringUtils.h"
 
+#include "Proof/Asset/AssetManager.h"
+#include <glm/glm.hpp>
 #include <mono/metadata/appdomain.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/class.h>
@@ -125,6 +128,230 @@ namespace Proof::ScriptUtils
 			Utils::String::Erase(className, "[]");
 
 		return className;
+	}
+
+	Buffer GetFieldValue(MonoObject* classInstance, const std::string& fieldName, ScriptFieldType fieldType, bool isProperty)
+	{
+		PF_PROFILE_FUNC();
+		MonoObject* object =  GetFieldValueObject(classInstance, fieldName, isProperty);
+		return MonoObjectToValue(object, fieldType);
+	}
+
+	MonoObject* GetFieldValueObject(MonoObject* classInstance, const std::string& fieldName, bool isProperty)
+	{
+		PF_PROFILE_FUNC();
+		
+		MonoClass* objectClass = mono_object_get_class(classInstance);
+
+		MonoObject* valueObject = nullptr;
+
+		if (isProperty)
+		{
+			MonoProperty* classProperty = mono_class_get_property_from_name(objectClass, fieldName.c_str());
+			valueObject = mono_property_get_value(classProperty, classInstance, nullptr, nullptr);
+		}
+		else
+		{
+			MonoClassField* classField = mono_class_get_field_from_name(objectClass, fieldName.c_str());
+			PF_CORE_ASSERT(classField);
+			valueObject = mono_field_get_value_object(mono_domain_get(), classField, classInstance);
+		}
+
+		return valueObject;
+	}
+
+	Buffer MonoObjectToValue(MonoObject* obj, ScriptFieldType fieldType)
+	{
+		PF_PROFILE_FUNC();
+
+		if (obj == nullptr)
+			return Buffer();
+
+		Buffer result;
+		result.Allocate(GetFieldTypeSize(fieldType));
+		result.ZeroInitialize();
+
+		switch (fieldType)
+		{
+			case ScriptFieldType::Bool:
+				{
+					bool value = (bool)Unbox<MonoBoolean>(obj);
+					result.Write(&value, sizeof(bool));
+					break;
+				}
+			case ScriptFieldType::Int8:
+				{
+					int8_t value = Unbox<int8_t>(obj);
+					result.Write(&value, sizeof(int8_t));
+					break;
+				}
+			case ScriptFieldType::Int16:
+				{
+					int16_t value = Unbox<int16_t>(obj);
+					result.Write(&value, sizeof(int16_t));
+					break;
+				}
+			case ScriptFieldType::Int32:
+				{
+					int32_t value = Unbox<int32_t>(obj);
+					result.Write(&value, sizeof(int32_t));
+					break;
+				}
+			case ScriptFieldType::Int64:
+				{
+					int64_t value = Unbox<int64_t>(obj);
+					result.Write(&value, sizeof(int64_t));
+					break;
+				}
+			case ScriptFieldType::UInt8:
+				{
+					uint8_t value = Unbox<uint8_t>(obj);
+					result.Write(&value, sizeof(uint8_t));
+					break;
+				}
+			case ScriptFieldType::UInt16:
+				{
+					uint16_t value = Unbox<uint16_t>(obj);
+					result.Write(&value, sizeof(uint16_t));
+					break;
+				}
+			case ScriptFieldType::UInt32:
+				{
+					uint32_t value = Unbox<uint32_t>(obj);
+					result.Write(&value, sizeof(uint32_t));
+					break;
+				}
+			case ScriptFieldType::UInt64:
+				{
+					uint64_t value = Unbox<uint64_t>(obj);
+					result.Write(&value, sizeof(uint64_t));
+					break;
+				}
+			case ScriptFieldType::Float:
+				{
+					float value = Unbox<float>(obj);
+					result.Write(&value, sizeof(float));
+					break;
+				}
+			case ScriptFieldType::Double:
+				{
+					double value = Unbox<double>(obj);
+					result.Write(&value, sizeof(double));
+					break;
+				}
+			case ScriptFieldType::String:
+				{
+					std::string str = MonoStringToUTF8((MonoString*)obj);
+					result.Allocate(str.size() + 1);
+					result.ZeroInitialize();
+					result.Write(str.data(), str.size());
+					break;
+				}
+			case ScriptFieldType::Vector2:
+				{
+					glm::vec2 value = Unbox<glm::vec2>(obj);
+					result.Write(glm::value_ptr(value), sizeof(glm::vec2));
+					break;
+				}
+			case ScriptFieldType::Vector3:
+				{
+					glm::vec3 value = Unbox<glm::vec3>(obj);
+					result.Write(glm::value_ptr(value), sizeof(glm::vec3));
+					break;
+				}
+			case ScriptFieldType::Vector4:
+				{
+					glm::vec4 value = Unbox<glm::vec4>(obj);
+					result.Write(glm::value_ptr(value), sizeof(glm::vec4));
+					break;
+				}
+			case ScriptFieldType::AssetID:
+				{
+					AssetID value = Unbox<AssetID>(obj);
+					result.Write(&value, sizeof(AssetID));
+					break;
+				}
+			case ScriptFieldType::Entity:
+				{
+					Buffer idBuffer = GetFieldValue(obj, "ID", ScriptFieldType::UInt64, false);
+					result.Write(idBuffer.Data, sizeof(UUID));
+					idBuffer.Release();
+					break;
+				}
+			case ScriptFieldType::Prefab:
+			case ScriptFieldType::Mesh:
+			case ScriptFieldType::DynamicMesh:
+			case ScriptFieldType::Material:
+			case ScriptFieldType::PhysicsMaterial:
+			case ScriptFieldType::Texture2D:
+				{
+					Buffer handleBuffer = GetFieldValue(obj, "m_Handle", ScriptFieldType::AssetID, false);
+					result.Write(handleBuffer.Data, sizeof(AssetID));
+					handleBuffer.Release();
+					break;
+				}
+			default:
+				PF_ENGINE_ERROR("Does not support {}", EnumReflection::EnumString(fieldType));
+				PF_CORE_ASSERT(false);
+				break;
+		}
+
+		return result;
+	}
+
+	MonoString* EmptyMonoString(bool appDomain)
+	{
+
+		MonoDomain* domain;
+		if (appDomain)
+			domain = ScriptEngine::GetAppDomain();
+		else
+			domain = ScriptEngine::GetCoreDomain();
+		return mono_string_empty(domain);
+	}
+
+	std::string MonoStringToUTF8(MonoString* monoString)
+	{
+		if (monoString == nullptr || mono_string_length(monoString) == 0)
+			return "";
+
+		MonoError error;
+		char* utf8 = mono_string_to_utf8_checked(monoString, &error);
+		if (ScriptUtils::CheckMonoError(error))
+			return "";
+		std::string result(utf8);
+		mono_free(utf8);
+		return result;
+	}
+
+	MonoString* UTF8StringToMono(const std::string& str)
+	{
+		return mono_string_new(ScriptEngine::GetAppDomain(), str.c_str());
+	}
+
+	bool CheckMonoError(MonoError& error)
+	{
+		bool hasError = !mono_error_ok(&error);
+
+		if (hasError)
+		{
+			unsigned short errorCode = mono_error_get_error_code(&error);
+			const char* errorMessage = mono_error_get_message(&error);
+
+
+			PF_ENGINE_ERROR("ScriptEngine Mono Error!");
+			PF_ENGINE_ERROR("ScriptEngine\tError Code: {0}", errorCode);
+			PF_ENGINE_ERROR("ScriptEngine\tError Message: {0}", errorMessage);
+			mono_error_cleanup(&error);
+			PF_CORE_ASSERT(false);
+		}
+
+		return hasError;
+	}
+
+	void* UnBoxInternal(MonoObject* obj)
+	{
+		return mono_object_unbox(obj);
 	}
 	
 }

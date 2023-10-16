@@ -17,7 +17,7 @@ namespace Proof
 {
     
     using MemoryAddress = uintptr_t;
-
+    using byte = uint8_t;
     template<typename T>
     using Special = std::unique_ptr<T>;
     template<typename T, typename ... Args>

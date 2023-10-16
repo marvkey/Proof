@@ -68,6 +68,8 @@ namespace Proof
 		}
 	};
 
+
+
 	struct AssemblyMetadata
 	{
 		std::string Name;
@@ -90,7 +92,8 @@ namespace Proof
 		std::filesystem::path FilePath = "";
 		MonoAssembly* Assembly = nullptr;
 		MonoImage* AssemblyImage = nullptr;
-		std::vector<uint32_t> Classes;
+		//std::vector<uint32_t> Classes;
+		std::vector<std::string> Classes;
 		bool IsCoreAssembly = false;
 		AssemblyMetadata Metadata;
 		std::vector<AssemblyMetadata> ReferencedAssemblies;

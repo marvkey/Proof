@@ -14,6 +14,17 @@
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
 #include "mono/metadata/attrdefs.h"
+
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/class.h>
+#include <mono/metadata/object.h>
+#include <mono/metadata/attrdefs.h>
+#include <mono/metadata/tokentype.h>
+#include <mono/metadata/debug-helpers.h>
+#include <mono/metadata/appdomain.h>
+
+#define PF_CACHED_CLASS_RAW(clazz) ScriptRegistry::GetManagedClassByName(clazz)->Class
+
 namespace Proof
 {
 	
@@ -23,6 +34,8 @@ namespace Proof
 		std::unordered_map<std::string, ManagedClass> Classes;
 		std::unordered_map<std::string, ScriptField> Fields;
 		std::unordered_map<std::string, std::vector<ManagedMethod>> Methods;
+		//app assembly
+		std::unordered_map<std::string, Count<ScriptClass>> EntityScripts;
 	};
 	ScriptRegistryData* s_ScriptRegistryData = nullptr;
 	void ScriptRegistry::Init()
@@ -58,9 +71,125 @@ namespace Proof
 
 		return GetManagedClassByName(ScriptUtils::ResolveMonoClassName(monoClass));
 	}
+	ManagedClass* ScriptRegistry::GetMonoObjectClass(MonoObject* monoObject)
+	{
+		PF_PROFILE_FUNC();
+
+		if (!IsInitialized())
+			return nullptr;
+
+		MonoClass* objectClass = mono_object_get_class(monoObject);
+		if (objectClass == nullptr)
+			return nullptr;
+
+		return GetManagedClassByName(ScriptUtils::ResolveMonoClassName(objectClass));
+	}
 	bool ScriptRegistry::IsInitialized()
 	{
 		return s_ScriptRegistryData != nullptr;
+	}
+	void ScriptRegistry::GenerateRegistryForAppAssembly(Count<AssemblyInfo> assemblyInfo)
+	{
+		ScopeTimer scopeTimer(__FUNCTION__);
+
+		const MonoTableInfo* tableInfo = mono_image_get_table_info(assemblyInfo->AssemblyImage, MONO_TABLE_TYPEDEF);
+		int32_t tableRowCount = mono_table_info_get_rows(tableInfo);
+		for (int32_t i = 1; i < tableRowCount; i++)
+		{
+			MonoClass* monoClass = mono_class_get(assemblyInfo->AssemblyImage, (i + 1) | MONO_TOKEN_TYPE_DEF);
+			BuildClassMetadata(assemblyInfo, monoClass);
+		}
+
+		// Process fields and properties after all classes have been parsed.
+		for (auto classID : assemblyInfo->Classes)
+		{
+			ManagedClass& managedClass = s_ScriptRegistryData->Classes.at(classID);
+
+			RegisterClassMethods(assemblyInfo, managedClass);
+
+			MonoObject* tempInstance = ScriptEngine::CreateManagedObject_Internal(&managedClass,true);
+			if (tempInstance == nullptr)
+				continue;
+
+			RegisterClassFields(assemblyInfo, managedClass);
+			RegisterClassProperties(assemblyInfo, managedClass);
+
+			if (mono_class_is_subclass_of(managedClass.Class, PF_CACHED_CLASS_RAW("Proof.Entity"), false))
+			{
+				//AssetID handle = AssetManager::CreateMemoryOnlyAssetWithHandle<ScriptAsset>(Hash::GenerateFNVHash(managedClass.FullName), classID);
+
+
+				s_ScriptRegistryData->EntityScripts[managedClass.FullName] = Count<ScriptClass>::Create(managedClass.FullName);
+			}
+		}
+
+		for (auto className : assemblyInfo->Classes)
+		{
+			ManagedClass& managedClass = s_ScriptRegistryData->Classes.at(className);
+
+			if (!mono_class_is_subclass_of(managedClass.Class, PF_CACHED_CLASS_RAW("Proof.Entity"), false))
+				continue;
+
+			MonoObject* tempInstance = ScriptEngine::CreateManagedObject_Internal(&managedClass,true);
+
+			for (auto fieldName : managedClass.Fields)
+			{
+				ScriptField& fieldInfo = s_ScriptRegistryData->Fields.at(fieldName);
+				if (!fieldInfo.IsArray())
+				{
+					fieldInfo.DefaultValueBuffer = ScriptUtils::GetFieldValue(tempInstance, fieldInfo.Name, fieldInfo.Type, fieldInfo.IsProperty);
+				}
+				else
+				{
+					MonoArray* arr = (MonoArray*)ScriptUtils::GetFieldValueObject(tempInstance, fieldInfo.Name, fieldInfo.IsProperty);
+
+					if (arr != nullptr)
+					{
+						fieldInfo.DefaultValueBuffer.Allocate(mono_array_length(arr) * fieldInfo.Size);
+						fieldInfo.DefaultValueBuffer.ZeroInitialize();
+					}
+				}
+			}
+		}
+	}
+	ManagedMethod* ScriptRegistry::GetSpecificManagedMethod(ManagedClass* managedClass, const std::string& name, uint32_t parameterCount, bool ignoreParent)
+	{
+		PF_PROFILE_FUNC();
+
+		if (!IsInitialized())
+			return nullptr;
+
+		if (managedClass == nullptr)
+		{
+			PF_ENGINE_ERROR("ScriptEngine Attempting to get method {0} from a nullptr class!", name);
+			return nullptr;
+		}
+
+		ManagedMethod* method = nullptr;
+
+		//uint32_t methodID = Hash::GenerateFNVHash(managedClass->FullName + ":" + name);
+		std::string methodName = managedClass->FullName + ":" + name;
+		if (s_ScriptRegistryData->Methods.find(methodName) != s_ScriptRegistryData->Methods.end())
+		{
+			for (auto& methodCandiate : s_ScriptRegistryData->Methods.at(methodName))
+			{
+				if (methodCandiate.ParameterCount == parameterCount)
+				{
+					method = &methodCandiate;
+					break;
+				}
+			}
+		}
+
+		//if (method == nullptr && !ignoreParent && managedClass->ParentID != 0)
+		//	method = GetSpecificManagedMethod(&s_Cache->Classes.at(managedClass->ParentID), name, parameterCount);
+
+		if (method == nullptr && !ignoreParent && managedClass->ParentName.size() > 0)
+			method = GetSpecificManagedMethod(&s_ScriptRegistryData->Classes.at(managedClass->ParentName), name, parameterCount);
+		if (method == nullptr)
+			PF_ENGINE_WARN("ScriptEngine Failed to find method with name: {0} and parameter count: {1} in class {2}", name, parameterCount, managedClass->FullName);
+
+		return method;
 	}
 	void ScriptRegistry::RegisterClasss(std::string_view className, MonoClass* monoClass)
 	{
@@ -262,8 +391,8 @@ namespace Proof
 				//	managedClass.Fields.push_back(managedField.ID);
 
 
-				if (std::find(managedClass.Fields.begin(), managedClass.Fields.end(), name) == managedClass.Fields.end())
-					managedClass.Fields.push_back(name);
+				if (std::find(managedClass.Fields.begin(), managedClass.Fields.end(), realName) == managedClass.Fields.end())
+					managedClass.Fields.push_back(realName);
 
 				PF_ENGINE_TRACE("	Register Field {}", realName);
 
@@ -296,30 +425,7 @@ namespace Proof
 		REGISTER_CORELIB_CLASS("String");
 
 
-		#define REGISTER_PF_CORE_CLASS(name) RegisterClasss("Proof." ##name, mono_class_from_name(ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage, "Proof", name))
 
-		//CACHE_ANT_CORE_CLASS("ShowInEditorAttribute");
-		//CACHE_ANT_CORE_CLASS("HideFromEditorAttribute");
-		//CACHE_ANT_CORE_CLASS("ClampValueAttribute");
-		#if 0
-		MonoClass* klass = nullptr;
-		void* iter = nullptr;
-		while ((klass = mono_class_get_next(ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage, &iter)))
-		{
-			const char* className = mono_class_get_name(klass);
-			const char* namespaceName = mono_class_get_namespace(klass);
-
-			//std::string 
-			if (mono_class_is_enum(klass))
-				continue;
-			std::string fullName;
-			if (strlen(namespaceName) != 0)
-				fullName = fmt::format("{}.{}", namespaceName, className);
-			else
-				fullName = className;
-			RegisterClasss(fullName,klass);
-		}
-		#endif
 		PF_ENGINE_TRACE("Registering Script Core classes");
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
@@ -347,6 +453,36 @@ namespace Proof
 
 			RegisterClasss(fullName, monoClass);
 		}
+	}
+	void ScriptRegistry::BuildClassMetadata(Count<AssemblyInfo>& assemblyInfo, MonoClass* monoClass)
+	{
+		PF_CORE_ASSERT(monoClass);
+
+		const std::string fullName = ScriptUtils::ResolveMonoClassName(monoClass);
+
+		// C# adds a .<PrivateImplementationDetails> class for some reason?
+		if (fullName.find("<PrivateImpl") != std::string::npos)
+			return;
+
+		//uint32_t classID = Hash::GenerateFNVHash(fullName);
+		ManagedClass& managedClass = s_ScriptRegistryData->Classes[fullName];
+		managedClass.FullName = fullName;
+		//managedClass.ID = classID;
+		managedClass.Class = monoClass;
+		uint32_t classFlags = mono_class_get_flags(monoClass);
+		managedClass.IsAbstract = classFlags & MONO_TYPE_ATTR_ABSTRACT;
+		managedClass.IsStruct = mono_class_is_valuetype(monoClass);
+
+		MonoClass* parentClass = mono_class_get_parent(monoClass);
+		if (parentClass != nullptr && parentClass != PF_CACHED_CLASS_RAW("System.Object"))
+		{
+			std::string parentName = ScriptUtils::ResolveMonoClassName(parentClass);
+			//managedClass.ParentID = Hash::GenerateFNVHash(parentName);
+			managedClass.ParentName = parentName;
+		}
+
+		//assemblyInfo->Classes.push_back(managedClass.ID);
+		assemblyInfo->Classes.push_back(managedClass.FullName);
 	}
 }
 

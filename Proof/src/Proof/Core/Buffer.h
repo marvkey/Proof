@@ -90,6 +90,25 @@ namespace Proof{
 		{
 			return *static_cast<T*>(static_cast<void*>(Data + offset));
 		}
+		template<typename T>
+		const T& Read(uint64_t offset = 0) const
+		{
+			return *(T*)((byte*)Data + offset);
+		}
+
+		byte* ReadBytes(uint64_t size, uint64_t offset) const
+		{
+			PF_CORE_ASSERT(offset + size <= Size, "Buffer overflow!");
+			byte* buffer = new byte[size];
+			memcpy(buffer, (byte*)Data + offset, size);
+			return buffer;
+		}
+
+		void Write(const void* data, uint64_t size, uint64_t offset = 0)
+		{
+			PF_CORE_ASSERT(offset + size <= Size, "Buffer overflow!");
+			memcpy((byte*)Data + offset, data, size);
+		}
 		operator bool() const
 		{
 			return (bool)Data;

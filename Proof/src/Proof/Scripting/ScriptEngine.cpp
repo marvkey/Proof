@@ -131,6 +131,7 @@ namespace Proof
         ScriptGCManager::Init();
 
         LoadCoreAssembly();
+        LoadAppAssembly();
     }
     void ScriptEngine::ShutDown()
     {
@@ -186,9 +187,16 @@ namespace Proof
 
         std::string domainName = "ProofScriptRuntime";
         s_ScriptEngineData->CoreDomain = mono_domain_create_appdomain(domainName.data(), nullptr);
-        mono_domain_set(s_ScriptEngineData->CoreDomain, true);
+       // mono_domain_set(s_ScriptEngineData->CoreDomain, true);
         //mono_domain_set_config(s_ScriptEngineData->CoreDomain, ".", "");
 
+        {
+            std::string appDomainname = "ProofScriptRuntime";
+
+            s_ScriptEngineData->AppDomain = mono_domain_create_appdomain(appDomainname.data(), nullptr);
+            mono_domain_set(s_ScriptEngineData->AppDomain, true);
+            //mono_domain_set_config(s_State->ScriptsDomain, ".", "");
+        }
         s_ScriptEngineData->CoreAssemblyInfo->FilePath = corePath;
         s_ScriptEngineData->CoreAssemblyInfo->Assembly = LoadMonoAssembly(s_ScriptEngineData->CoreAssemblyInfo->FilePath);
         s_ScriptEngineData->CoreAssemblyInfo->Classes.clear();
@@ -199,6 +207,32 @@ namespace Proof
         s_ScriptEngineData->CoreAssemblyInfo->ReferencedAssemblies = GetReferencedAssembliesMetadata(s_ScriptEngineData->CoreAssemblyInfo->AssemblyImage);
 
         ScriptRegistry::Init();
+    }
+
+    bool ScriptEngine::LoadAppAssembly()
+    {
+        auto appPath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/Game.dll";
+
+        if (!FileSystem::Exists(appPath))
+        {
+            PF_ENGINE_ERROR("ScriptEngine, Failed to load app assembly! Invalid filepath");
+            PF_ENGINE_ERROR("ScriptEngine, Filepath = {}", appPath);
+            return false;
+        }
+
+        auto appAssemblyInfo = s_ScriptEngineData->AppAssemblyInfo;
+
+        appAssemblyInfo->FilePath = appPath;
+        appAssemblyInfo->Assembly = LoadMonoAssembly(appPath);
+        appAssemblyInfo->Classes.clear();
+
+        appAssemblyInfo->AssemblyImage = mono_assembly_get_image(appAssemblyInfo->Assembly);
+        appAssemblyInfo->IsCoreAssembly = false;
+        appAssemblyInfo->Metadata = GetMetadataForImage(appAssemblyInfo->AssemblyImage);
+        appAssemblyInfo->ReferencedAssemblies = GetReferencedAssembliesMetadata(appAssemblyInfo->AssemblyImage);
+
+        ScriptRegistry::GenerateRegistryForAppAssembly(appAssemblyInfo);
+
     }
     std::string ScriptEngine::MonoToString(MonoString* monoString) {
         if (monoString == nullptr || mono_string_length(monoString) == 0)
@@ -308,6 +342,34 @@ namespace Proof
         mono_image_close(image);
         return assembly;
     }
+   
+    MonoObject* ScriptEngine::CreateManagedObject(ManagedClass* managedClass, bool appDomain)
+    {
+        MonoDomain* domain;
+        if (appDomain)
+            domain = s_ScriptEngineData->AppDomain;
+        else
+            domain = s_ScriptEngineData->CoreDomain;
+        MonoObject* monoObject = mono_object_new(domain, managedClass->Class);
+        PF_CORE_ASSERT(monoObject, "Failed to create MonoObject!");
+        return monoObject;
+    }
+    void ScriptEngine::InitRuntimeObject(MonoObject* monoObject)
+    {
+        /// calles default runtime constroctor
+        mono_runtime_object_init(monoObject);
+    }
+
+    MonoDomain* ScriptEngine::GetAppDomain()
+    {
+        return s_ScriptEngineData->AppDomain ;
+    }
+    MonoDomain* ScriptEngine::GetCoreDomain()
+    {
+        return s_ScriptEngineData->CoreDomain;
+    }
+    
+
     Count<AssemblyInfo> ScriptEngine::GetCoreAssemblyInfo()
     {
         return s_ScriptEngineData->CoreAssemblyInfo;
