@@ -8,42 +8,42 @@ using System.Threading.Tasks;
 namespace Proof
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct Vector
+    public struct Vector3
     {
         public float X,Y,Z;
-        public static Vector Zero => new Vector(0.0f);
-        public Vector(Vector other)
+        public static Vector3 Zero => new Vector3(0.0f);
+        public Vector3(Vector3 other)
         {
             X = other.X;
             Y = other.Y;
             Z = other.Z;
         }
-        public Vector(float x, float y, float z)
+        public Vector3(float x, float y, float z)
         {
             X = x;
             Y = y;  
             Z = z;  
         }
-        public Vector(float scalar)
+        public Vector3(float scalar)
         {
             X = scalar;
             Y = scalar;
             Z = scalar;
         }
-        public static Vector operator +(Vector a) => a;
-        public static Vector operator -(Vector a) => new Vector(-a.X, -a.Y, -a.Z);
-        public static Vector operator -(Vector a, Vector b) {
+        public static Vector3 operator +(Vector3 a) => a;
+        public static Vector3 operator -(Vector3 a) => new Vector3(-a.X, -a.Y, -a.Z);
+        public static Vector3 operator -(Vector3 a, Vector3 b) {
 
-           return new Vector(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+           return new Vector3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
-        public static Vector operator +(Vector a, Vector b)
+        public static Vector3 operator +(Vector3 a, Vector3 b)
         {
-            return new Vector(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+            return new Vector3(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
         }
 
-        public static Vector operator +(Vector a, float b)
+        public static Vector3 operator +(Vector3 a, float b)
         {
-            return new Vector(a.X + b, a.Y + b, a.Z + b);
+            return new Vector3(a.X + b, a.Y + b, a.Z + b);
         }
 
         public override string ToString()
@@ -54,20 +54,20 @@ namespace Proof
         {
             return (float)Math.Sqrt(X*X + Y*Y + Z*Z);
         }
-        public Vector Normalize()
+        public Vector3 Normalize()
         {
             float length = GetLength();
-            return new Vector(X/length, Y/length, Z/length);
+            return new Vector3(X/length, Y/length, Z/length);
         }
 
-        public float GetDot(Vector vec)
+        public float GetDot(Vector3 vec)
         {
             return (X * vec.X + Y * vec.Y + Z * vec.Z);
         }
 
-        public static Vector operator *(Vector a,float sclar)
+        public static Vector3 operator *(Vector3 a,float sclar)
         {
-            return new Vector(a.X *sclar, a.Y * sclar, a.Z * sclar);
+            return new Vector3(a.X *sclar, a.Y * sclar, a.Z * sclar);
         }
     }
 

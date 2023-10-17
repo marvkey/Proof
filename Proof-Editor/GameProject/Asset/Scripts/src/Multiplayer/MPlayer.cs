@@ -179,7 +179,7 @@ namespace Game
         {
             if (m_CameraEntity == null) return;
             return;
-                Vector rotation = GetComponent<TransformComponent>().Rotation;
+                Vector3 rotation = GetComponent<TransformComponent>().Rotation;
             rotation.Z += m_MouseSensitivity * World.GetTimeStep() * axis;
           GetComponent<TransformComponent>().Rotation = rotation;
 
@@ -187,7 +187,7 @@ namespace Game
         // original (0,0,90)
         void UpdateCamera(float ts)
         {
-            Vector rotation = m_CameraEntity.GetComponent<TransformComponent>().Rotation;
+            Vector3 rotation = m_CameraEntity.GetComponent<TransformComponent>().Rotation;
             if (rotation.Z > 180)
             {
                 rotation.Z = 179;
@@ -285,20 +285,20 @@ namespace Game
             if (GetComponent<TransformComponent>().Location.Y < -10000)
             {
                 Dead = true;
-                GetComponent<TransformComponent>().Location = new Vector(0, -10000, 0);
+                GetComponent<TransformComponent>().Location = new Vector3(0, -10000, 0);
             }
             if (Finished == true)
             {
                 if (GetComponent<TransformComponent>().Location.Y >= -100)
                     m_InitalFinisehdLast = true;
                 if (m_InitalFinisehdLast)
-                    GetComponent<TransformComponent>().Location = new Vector(GetComponent<TransformComponent>().Location.X, -30, GetComponent<TransformComponent>().Location.Z);
+                    GetComponent<TransformComponent>().Location = new Vector3(GetComponent<TransformComponent>().Location.X, -30, GetComponent<TransformComponent>().Location.Z);
                 GameOver(ts);
                 return;
             }
             if (Dead)
                 return;
-            GetComponent<TransformComponent>().Rotation = new Vector(0, 0, 0);
+            GetComponent<TransformComponent>().Rotation = new Vector3(0, 0, 0);
 
             ApplyCameraRotate();
             //{
@@ -306,7 +306,7 @@ namespace Game
             //    float xOffset = Mouse.GetPositon().X - m_MouseLastPositon.X;
             //    float yOffset = m_MouseLastPositon.Y - Mouse.GetPositon().Y;
             //
-            //    Vector rotation = m_CameraEntity.GetComponent<TransformComponent>().Rotation;
+            //    Vector3 rotation = m_CameraEntity.GetComponent<TransformComponent>().Rotation;
             //
             //    xOffset *= m_MouseSensitivity * World.GetTimeStep();
             //    m_Pitch *= m_MouseSensitivity * World.GetTimeStep();
@@ -318,7 +318,7 @@ namespace Game
             //        rotation.X = (float)Math.Cos(ConvertDegreesToRadians(m_Yaw)) * (float)Math.Cos(ConvertDegreesToRadians(m_Pitch));
             //        rotation.Y = (float)Math.Sin(ConvertDegreesToRadians(m_Pitch));
             //        rotation.Z = (float)Math.Sin(ConvertDegreesToRadians(m_Yaw)) * (float)Math.Cos(ConvertDegreesToRadians(m_Pitch));
-            //        //m_CameraEntity.GetComponent<TransformComponent>().Rotation = new Vector(m_CameraEntity.GetComponent<TransformComponent>().Rotation.X, m_CameraEntity.GetComponent<TransformComponent>().Rotation.Y,
+            //        //m_CameraEntity.GetComponent<TransformComponent>().Rotation = new Vector3(m_CameraEntity.GetComponent<TransformComponent>().Rotation.X, m_CameraEntity.GetComponent<TransformComponent>().Rotation.Y,
             //        //rotation.Z);
             //        m_CameraEntity.GetComponent<TransformComponent>().Rotation = rotation;
             //        m_MouseLastPositon = Mouse.GetPositon();
@@ -372,7 +372,7 @@ namespace Game
             }
 
             if (m_RigidBody == null || DisableFowardForce == true) return;
-            Vector velocity = new Vector(m_RigidBody.GetLinearVelocity().X, m_RigidBody.GetLinearVelocity().Y,FowardForce* ts);
+            Vector3 velocity = new Vector3(m_RigidBody.GetLinearVelocity().X, m_RigidBody.GetLinearVelocity().Y,FowardForce* ts);
             m_RigidBody.SetLinearVelocity(velocity);
            // m_RigidBody.SetLinearVelocity(m_RigidBody.GetLinearVelocity()*0.095f);// add bit of friction
             if (m_IncreaseSpeedChange == true)
@@ -388,7 +388,7 @@ namespace Game
             }
             if (m_Jumping == true)
             {
-                //m_RigidBody.SetLinearVelocity(new Vector(m_RigidBody.GetLinearVelocity().X, m_RigidBody.GetLinearVelocity().Y - 8, m_RigidBody.GetLinearVelocity().Z));
+                //m_RigidBody.SetLinearVelocity(new Vector3(m_RigidBody.GetLinearVelocity().X, m_RigidBody.GetLinearVelocity().Y - 8, m_RigidBody.GetLinearVelocity().Z));
             }
             if (m_Inventory[m_CurrentInventory] != null)
             {
@@ -446,11 +446,11 @@ namespace Game
         {
             if (Dead)
                 return;
-                Vector velocity = new Vector(SideWayForce*World.GetTimeStep()*motionValue, m_RigidBody.GetLinearVelocity().Y, m_RigidBody.GetLinearVelocity().Z);
+                Vector3 velocity = new Vector3(SideWayForce*World.GetTimeStep()*motionValue, m_RigidBody.GetLinearVelocity().Y, m_RigidBody.GetLinearVelocity().Z);
 
            // m_RigidBody.SetLinearVelocity(velocity);
 
-            m_RigidBody.AddForce(new Vector(SideWayForce * World.GetTimeStep()* motionValue, 0, 0), ForceMode.VelocityChange);
+            m_RigidBody.AddForce(new Vector3(SideWayForce * World.GetTimeStep()* motionValue, 0, 0), ForceMode.VelocityChange);
         }
 
         // vaue (0,1)
@@ -485,7 +485,7 @@ namespace Game
                 return;
             m_Jumping = true;
             m_TouchingPlane = false;
-            m_RigidBody.AddForce(new Vector(0, 100,0), ForceMode.Impule);
+            m_RigidBody.AddForce(new Vector3(0, 100,0), ForceMode.Impule);
         }
         void OnCollisionEnter(Entity otherEntity)
         { 
@@ -503,7 +503,7 @@ namespace Game
                 {
                     m_TouchingPlane = true;
                     m_Jumping = false;
-                   // m_RigidBody.SetLinearVelocity(new Vector(m_RigidBody.GetLinearVelocity().X, 0, m_RigidBody.GetLinearVelocity().Z));
+                   // m_RigidBody.SetLinearVelocity(new Vector3(m_RigidBody.GetLinearVelocity().X, 0, m_RigidBody.GetLinearVelocity().Z));
 
                 }
                 return;
@@ -524,7 +524,7 @@ namespace Game
                     World.TryFindEntityByTag("GameManager").As<mGameManager>().CurrentPositon += 1;
                     Position -= 1;
                 }
-                m_RigidBody.SetLinearVelocity(new Vector(0));
+                m_RigidBody.SetLinearVelocity(new Vector3(0));
                 SetInputState(PlayerInputState.Disabled);
                 MPlayer[] players = World.GetEntityWithType<MPlayer>();
                 if (players.Length == Position)

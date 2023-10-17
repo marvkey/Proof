@@ -88,7 +88,31 @@ namespace Proof
 		PF_CORE_ASSERT(false);
 		return 0;
 	}
+	inline bool IsPrimitiveType(ScriptFieldType type)
+	{
+		switch (type)
+		{
 
+			case ScriptFieldType::Bool:
+			case ScriptFieldType::Int8:
+			case ScriptFieldType::Int16:
+			case ScriptFieldType::Int32:
+			case ScriptFieldType::Int64:
+			case ScriptFieldType::UInt8:
+			case ScriptFieldType::UInt16:
+			case ScriptFieldType::UInt32:
+			case ScriptFieldType::UInt64:
+			case ScriptFieldType::Float:
+			case ScriptFieldType::Double:
+			case ScriptFieldType::Char:
+			case ScriptFieldType::Vector2:
+			case ScriptFieldType::Vector3:
+			case ScriptFieldType::Vector4:
+				return true;
+		}
+
+		return false;
+	}
 	class FieldStorageBase : public RefCounted
 	{
 	public:
@@ -161,6 +185,98 @@ namespace Proof
 			return std::string((char*)m_DataBuffer.Data, m_DataBuffer.Size / sizeof(char));
 		}
 
+		template<typename T>
+		void SetValue(const T& value)
+		{
+			PF_CORE_ASSERT(sizeof(T) == m_FieldInfo->Size);
+
+			if (m_RuntimeInstance != nullptr)
+			{
+				SetValueRuntime(&value);
+			}
+			else
+			{
+				if (!m_DataBuffer)
+					m_DataBuffer.Allocate(m_FieldInfo->Size);
+				m_DataBuffer.Write(&value, sizeof(T));
+			}
+		}
+
+		template<>
+		void SetValue<std::string>(const std::string& value)
+		{
+			if (m_RuntimeInstance != nullptr)
+			{
+				SetValueRuntime(&value);
+			}
+			else
+			{
+				if (m_DataBuffer.Size <= value.length() * sizeof(char))
+				{
+					m_DataBuffer.Release();
+					m_DataBuffer.Allocate((value.length() * 2) * sizeof(char));
+				}
+
+				m_DataBuffer.ZeroInitialize();
+				memcpy(m_DataBuffer.Data, value.c_str(), value.length() * sizeof(char));
+			}
+		}
+
+		virtual void SetRuntimeInstance(ScriptGCHandle instance) override
+		{
+			m_RuntimeInstance = instance;
+
+			if (m_RuntimeInstance)
+			{
+				if (m_FieldInfo->Type == ScriptFieldType::String)
+				{
+					std::string str((char*)m_DataBuffer.Data, m_DataBuffer.Size / sizeof(char));
+					SetValueRuntime(&str);
+				}
+				else
+				{
+					SetValueRuntime(m_DataBuffer.Data);
+				}
+			}
+		}
+
+		virtual void CopyFrom(const Count<FieldStorageBase>& other)
+		{
+			Count<FieldStorage> fieldStorage = other.As<FieldStorage>();
+
+			if (m_RuntimeInstance != nullptr)
+			{
+				Buffer valueBuffer;
+				if (fieldStorage->GetValueRuntime(valueBuffer))
+				{
+					SetValueRuntime(valueBuffer.Data);
+					valueBuffer.Release();
+				}
+			}
+			else
+			{
+				m_DataBuffer.Release();
+				m_DataBuffer = Buffer::Copy(fieldStorage->m_DataBuffer);
+			}
+		}
+
+		virtual Buffer GetValueBuffer() const override
+		{
+			if (m_RuntimeInstance == nullptr)
+				return m_DataBuffer;
+
+			Buffer result;
+			GetValueRuntime(result);
+			return result;
+		}
+
+		virtual void SetValueBuffer(const Buffer& buffer)
+		{
+			if (m_RuntimeInstance != nullptr)
+				SetValueRuntime(buffer.Data);
+			else
+				m_DataBuffer = Buffer::Copy(buffer);
+		}
 	private:
 		bool GetValueRuntime(Buffer& outBuffer) const;
 		void SetValueRuntime(const void* data);

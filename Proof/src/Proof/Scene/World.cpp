@@ -757,6 +757,7 @@ namespace Proof {
 				if (!src.HasComponent<ScriptComponent>()) return;
 
 				auto& scriptComponent = src.GetComponent<ScriptComponent>();
+				#if 0
 				for (auto& scripts : scriptComponent.ScriptsNames)
 				{
 					//if (ScriptEngine::HasScriptFieldMap(src) == false)continue;
@@ -765,6 +766,7 @@ namespace Proof {
 					//
 					//ScriptEngine::GetScriptFieldMap(dst) = ScriptEngine::GetScriptFieldMap(src);
 				}
+				#endif
 			}
 		}(), ...);
 	}

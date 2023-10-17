@@ -9,7 +9,7 @@ namespace Game
             if (m_Throw == false && m_Owner != null)
             {
                 GetComponent<TransformComponent>().Location = m_Owner.GetComponent<TransformComponent>().Location;
-                GetComponent<TransformComponent>().Rotation = new Vector(GetComponent<TransformComponent>().Rotation.X, GetComponent<TransformComponent>().Location.Y, m_Owner.GetComponent<TransformComponent>().Rotation.Z);
+                GetComponent<TransformComponent>().Rotation = new Vector3(GetComponent<TransformComponent>().Rotation.X, GetComponent<TransformComponent>().Location.Y, m_Owner.GetComponent<TransformComponent>().Rotation.Z);
             }
             if (m_Throw)
             {

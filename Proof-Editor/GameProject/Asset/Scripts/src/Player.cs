@@ -44,20 +44,20 @@ namespace Game
             if (m_Movement == false)
                 return;
 
-            m_RigidBody.AddForce(new Vector(0, 0, FowardForce * ts));
+            m_RigidBody.AddForce(new Vector3(0, 0, FowardForce * ts));
 
             if (Input.IsKeyPressed(KeyBoardKey.D) || Input.IsKeyPressed(KeyBoardKey.RightArrow))
-                m_RigidBody.AddForce(new Vector(-SideWayForce * ts, 0, 0), ForceMode.VelocityChange);
+                m_RigidBody.AddForce(new Vector3(-SideWayForce * ts, 0, 0), ForceMode.VelocityChange);
 
             if (Input.IsKeyPressed(KeyBoardKey.A) || Input.IsKeyPressed(KeyBoardKey.LeftArrow))
-                m_RigidBody.AddForce(new Vector(SideWayForce * ts, 0, 0), ForceMode.VelocityChange);
+                m_RigidBody.AddForce(new Vector3(SideWayForce * ts, 0, 0), ForceMode.VelocityChange);
 
             if (Input.IsKeyPressed(KeyBoardKey.Space) || Input.IsKeyPressed(KeyBoardKey.UpArrow))
                 Jump();
 
             if(m_State == PlayerState.Jumpin)
             {
-                m_RigidBody.SetLinearVelocity(new Vector(m_RigidBody.GetLinearVelocity().X, m_RigidBody.GetLinearVelocity().Y-1, m_RigidBody.GetLinearVelocity().Z));
+                m_RigidBody.SetLinearVelocity(new Vector3(m_RigidBody.GetLinearVelocity().X, m_RigidBody.GetLinearVelocity().Y-1, m_RigidBody.GetLinearVelocity().Z));
             }
 
             if(m_Transform.Location.Z % 100 == 0)
@@ -77,7 +77,7 @@ namespace Game
             if (m_State == PlayerState.Jumpin)
                 return;
             m_State = PlayerState.Jumpin;
-            m_RigidBody.SetLinearVelocity(new Vector(m_RigidBody.GetLinearVelocity().X, JumpSpeed, m_RigidBody.GetLinearVelocity().Z));
+            m_RigidBody.SetLinearVelocity(new Vector3(m_RigidBody.GetLinearVelocity().X, JumpSpeed, m_RigidBody.GetLinearVelocity().Z));
             m_TouchingPlane = false;
         }
 

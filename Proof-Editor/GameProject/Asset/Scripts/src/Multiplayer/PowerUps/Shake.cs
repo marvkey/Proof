@@ -13,8 +13,8 @@ namespace Game
         protected void OnCreate()
         {
             Image = new Texture(7247838432740145550);
-            GetComponent<TransformComponent>().Scale = new Vector(100);
-            GetComponent<TransformComponent>().Location = new Vector(GetComponent<TransformComponent>().Location.X, GetComponent<TransformComponent>().Location.Y + 8, GetComponent<TransformComponent>().Location.Z);
+            GetComponent<TransformComponent>().Scale = new Vector3(100);
+            GetComponent<TransformComponent>().Location = new Vector3(GetComponent<TransformComponent>().Location.X, GetComponent<TransformComponent>().Location.Y + 8, GetComponent<TransformComponent>().Location.Z);
         }
         protected override void ApplyPowerUp()
         {
@@ -31,7 +31,7 @@ namespace Game
                 ApplyShake();
             else
             {
-                m_CollidedPlayer.GetComponent<TransformComponent>().Translate(new Vector(0, 0.1f, 0));
+                m_CollidedPlayer.GetComponent<TransformComponent>().Translate(new Vector3(0, 0.1f, 0));
                 m_CollidedPlayer.GetComponent<RigidBodyComponent>().Gravity = false;
                 m_CollidedPlayer.DisableFowardForce = true;
 
@@ -44,20 +44,20 @@ namespace Game
         }
 
         bool add = true;
-        Vector pos = new Vector(0, 30, 0);
+        Vector3 pos = new Vector3(0, 30, 0);
         void ApplyShake()
         {
             if(add == true)
             {
                 add = false;
-                Vector val = m_CollidedPlayer.GetComponent<TransformComponent>().Location;
+                Vector3 val = m_CollidedPlayer.GetComponent<TransformComponent>().Location;
                 val.X += Proof.Random.Float(1, 5);
                 val.Y += Proof.Random.Float(0.5f, 2.5f);
                 m_CollidedPlayer.GetComponent<TransformComponent>().Location = val;
             }
             else
             {
-                Vector val = m_CollidedPlayer.GetComponent<TransformComponent>().Location;
+                Vector3 val = m_CollidedPlayer.GetComponent<TransformComponent>().Location;
                 val.X -= Proof.Random.Float(1, 5);
                 val.Y -= Proof.Random.Float(0.5f, 2.5f);
                 m_CollidedPlayer.GetComponent<TransformComponent>().Location = val;
@@ -70,18 +70,18 @@ namespace Game
                 m_CollidedPlayer.GetComponent<RigidBodyComponent>().ClearTorque((ForceMode)i);
             }
             m_Timer += World.GetTimeStep();
-            m_CollidedPlayer.GetComponent<RigidBodyComponent>().SetLinearVelocity(new Vector(0));
-            m_CollidedPlayer.GetComponent<RigidBodyComponent>().SetAngularVelocity(new Vector(0));
+            m_CollidedPlayer.GetComponent<RigidBodyComponent>().SetLinearVelocity(new Vector3(0));
+            m_CollidedPlayer.GetComponent<RigidBodyComponent>().SetAngularVelocity(new Vector3(0));
 
             if (m_Timer >= ShakeDuration)
             {
                 Log.Info("Done shaking");
-                m_CollidedPlayer.GetComponent<TransformComponent>().Rotation = new Vector(0);
-               // m_CollidedPlayer.GetComponent<TransformComponent>().Rotation = new Vector(0);
+                m_CollidedPlayer.GetComponent<TransformComponent>().Rotation = new Vector3(0);
+               // m_CollidedPlayer.GetComponent<TransformComponent>().Rotation = new Vector3(0);
                 m_CollidedPlayer.DisableFowardForce = false;
                 m_CollidedPlayer.GetComponent<RigidBodyComponent>().Gravity = true;
 
-                Vector val = m_CollidedPlayer.GetComponent<TransformComponent>().Location;
+                Vector3 val = m_CollidedPlayer.GetComponent<TransformComponent>().Location;
                 val.X = m_PlayerInitialPosX;
                 val.Y = m_PlayerInitialPosY;
                 m_CollidedPlayer.GetComponent<TransformComponent>().Location = val;

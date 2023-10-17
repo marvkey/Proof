@@ -14,6 +14,11 @@ namespace Proof::HeaderFileOnly {
 	};
 
 }
+namespace Proof
+{
+	class FieldStorage;
+	class World;
+}
 namespace Proof::UI {
 
 	inline void Image(Count<class Image> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0))
@@ -72,6 +77,7 @@ namespace Proof::UI {
 	// does the drag adn drop
 	bool AttributeAssetTextBar(const std::string& label, AssetID& ID, AssetType type, bool includeRemove = true);
 	bool AttributeAssetTextBar(const std::string& label, Count<class Asset> asset, AssetType type, bool includeRemove = true);
+	bool AttributeEntity(const std::string& label,Count < class World > worldContext, UUID& entityID);
 
 	//sliders dont work well with max type and min type they need a smaller range
 	bool AttributeSlider(const std::string& label, int& value, int min, int max, const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
@@ -80,8 +86,20 @@ namespace Proof::UI {
 	bool AttributeSlider(const std::string& label, glm::vec3& value, float min, float max, const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
 	bool AttributeSlider(const std::string& label, glm::vec4& value, float min, float max, const std::string& helpMessage = "",ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f")	;
 
+	bool AttributeDrag(const std::string& label, int8_t& value, float speed = 1, int8_t min = Math::GetMinType<int8_t>(), int8_t max = Math::GetMaxType<int8_t>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d");
+	bool AttributeDrag(const std::string& label, int16_t& value, float speed = 1, int16_t min = Math::GetMinType<int16_t>(), int16_t max = Math::GetMaxType<int16_t>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d");
+	bool AttributeDrag(const std::string& label, int32_t& value, float speed = 1, int32_t min = Math::GetMinType<int32_t>(), int32_t max = Math::GetMaxType<int32_t>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d");
+	bool AttributeDrag(const std::string& label, int64_t& value, float speed = 1, int64_t min = Math::GetMinType<int64_t>(), int64_t max = Math::GetMaxType<int64_t>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d");
+
+
+	bool AttributeDrag(const std::string& label, uint8_t& value, float speed = 1, uint8_t min = Math::GetMinType<uint8_t>(), uint8_t max = Math::GetMaxType<uint8_t>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d");
+	bool AttributeDrag(const std::string& label, uint16_t& value, float speed = 1, uint16_t min = Math::GetMinType<uint16_t>(), uint16_t max = Math::GetMaxType<uint16_t>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d");
 	bool AttributeDrag(const std::string& label, uint32_t& value, float speed = 1, uint32_t min = Math::GetMinType<uint32_t>(), uint32_t max = Math::GetMaxType<uint32_t>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d");
-	bool AttributeDrag(const std::string& label, float& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "",ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+	bool AttributeDrag(const std::string& label, uint64_t& value, float speed = 1, uint64_t min = Math::GetMinType<uint64_t>(), uint64_t max = Math::GetMaxType<uint64_t>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d");
+
+	bool AttributeDrag(const std::string& label, float& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+	bool AttributeDrag(const std::string& label, double& value, float speed = 1.f, double min = Math::GetMinType<double>(), double max = Math::GetMaxType<double>(), const std::string& helpMessage = "",ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+
 	bool AttributeDrag(const std::string& label, glm::vec2& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
 	bool AttributeDrag(const std::string& label, glm::vec3& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
 	bool AttributeDrag(const std::string& label, glm::vec4& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "",ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
@@ -97,6 +115,7 @@ namespace Proof::UI {
 
 	void Tooltip(const std::string& tooltip, float treshHold = EG_HOVER_THRESHOLD);
 	void HelpMarker(const std::string& text);
+	bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName, Count<FieldStorage>& storage);
 
 	struct ScopedStyleColor 
 	{

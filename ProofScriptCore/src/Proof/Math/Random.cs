@@ -24,9 +24,9 @@ namespace Proof
             return InternalCalls.Random_RandomInt32(min, max);
         }
 
-        public static Vector Vector(float min, float max)
+        public static Vector3 Vector3(float min, float max)
         {
-            Vector vec ;
+            Vector3 vec ;
             vec.X=Float(min,max);
             vec.Y=Float(min,max);
             vec.Z = Float(min,max);

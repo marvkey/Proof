@@ -73,7 +73,7 @@ namespace Demos
             {
                 if (m_MaxCubeSpawn < m_CubeRained)
                     return;
-                Vector position = new Vector(Proof.Random.Float(-100,100), Proof.Random.Float(50, 1000), Proof.Random.Float(-100, 100));
+                Vector3 position = new Vector3(Proof.Random.Float(-100,100), Proof.Random.Float(50, 1000), Proof.Random.Float(-100, 100));
                 World.Instanciate(SpawnObject, position);
                 m_CubeRained++;
             }
@@ -87,7 +87,7 @@ namespace Demos
 
                 for (int y = 0; y < m_WallHeight; y++)
                 {
-                    Vector position = new Vector(x *m_Spacing, y * m_Spacing, zPos);
+                    Vector3 position = new Vector3(x *m_Spacing, y * m_Spacing, zPos);
                     World.Instanciate(SpawnObject, position);
                 }
             }
@@ -100,7 +100,7 @@ namespace Demos
 
                 for (int y = 0; y < m_WallHeight; y++)
                 {
-                    Vector position = new Vector(xPos , y * m_Spacing, z * m_Spacing);
+                    Vector3 position = new Vector3(xPos , y * m_Spacing, z * m_Spacing);
                     World.Instanciate(SpawnObject, position);
                 }
             }

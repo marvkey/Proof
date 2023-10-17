@@ -173,15 +173,18 @@ Assets:
   - Asset: 3921054448758108169
     Type: TextureSourceFile
     Path: Models\sponza\2969916736137545357.jpg
-  - Asset: 14460076666082601164
-    Type: TextureSourceFile
-    Path: Models\sponza\8750083169368950601.jpg
   - Asset: 14819094423925877552
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8503262930880235456.jpg
+  - Asset: 14460076666082601164
+    Type: TextureSourceFile
+    Path: Models\sponza\8750083169368950601.jpg
   - Asset: 5478984544963386083
     Type: TextureSourceFile
     Path: Models\sponza\15295713303328085182.jpg
+  - Asset: 16840660230308837158
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8773302468495022225.Texture.ProofAsset
   - Asset: 1650200470397952944
     Type: DynamicMesh
     Path: Mesh\DynamicSPonza2
@@ -191,9 +194,6 @@ Assets:
   - Asset: 3958084378202558542
     Type: TextureSourceFile
     Path: Models\sponza\9916269861720640319.jpg
-  - Asset: 16840660230308837158
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8773302468495022225.Texture.ProofAsset
   - Asset: 2922325940131240013
     Type: Texture
     Path: Models\sponza\8750083169368950601.Texture.ProofAsset

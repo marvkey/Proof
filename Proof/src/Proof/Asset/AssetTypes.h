@@ -27,7 +27,8 @@ namespace Proof
 		ParticleSystem,
 		Audio,
 		AudioSourceFile,
-		MeshCollider
+		MeshCollider,
+		ScriptFile
 	};
 	enum class AssetState 
 	{
@@ -68,6 +69,7 @@ namespace Proof
 			{AssetType::Font, ".Font.ProofAsset" },
 			{AssetType::Audio, ".Audio.ProofAsset" },
 			{AssetType::MeshCollider, ".MeshCollider.ProofAsset" },
+			{AssetType::ScriptFile, ".cs" },
 		};
 		inline std::string GetAssetExtensionString(AssetType type) 
 		{

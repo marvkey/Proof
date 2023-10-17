@@ -11,13 +11,13 @@ namespace ProofScriptCore.src.Proof.Math
     [StructLayout(LayoutKind.Sequential)]
     public struct Transform
     {
-        public static Transform Zero => new Transform(new Vector(0.0f),new Vector( 0.0f),new Vector(1.0f));
+        public static Transform Zero => new Transform(new Vector3(0.0f),new Vector3( 0.0f),new Vector3(1.0f));
 
-        public Vector Location;
-        public Vector Rotation;
-        public Vector Scale;
+        public Vector3 Location;
+        public Vector3 Rotation;
+        public Vector3 Scale;
 
-        public Transform(Vector location, Vector rotation, Vector scale)
+        public Transform(Vector3 location, Vector3 rotation, Vector3 scale)
         {
             Location = location; Rotation = rotation; Scale = scale;
         }

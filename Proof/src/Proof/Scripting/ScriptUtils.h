@@ -16,6 +16,9 @@ namespace Proof::ScriptUtils
 	std::string ResolveMonoClassName(MonoClass* monoClass);
 	Buffer GetFieldValue(MonoObject* classInstance, const std::string& fieldName, ScriptFieldType fieldType, bool isProperty);
 	MonoObject* GetFieldValueObject(MonoObject* classInstance, const std::string& fieldName, bool isProperty);
+	void SetFieldValue(MonoObject* classInstance, const ScriptField* fieldInfo, const void* data);
+
+
 	Buffer MonoObjectToValue(MonoObject* obj, ScriptFieldType fieldType);
 	void* UnBoxInternal(MonoObject* obj);
 
@@ -23,11 +26,14 @@ namespace Proof::ScriptUtils
 	TValueType Unbox(MonoObject* obj) { return *(TValueType*)UnBoxInternal(obj); }
 	template<typename TValueType>
 	TValueType UnboxAddress(MonoObject* obj) { return (TValueType*)UnBoxInternal(obj); }
+	MonoObject* BoxValue(MonoClass* valueClass, const void* value);
 
 	MonoString* EmptyMonoString(bool appDomain = true);
 	std::string MonoStringToUTF8(MonoString* monoString);
 	MonoString* UTF8StringToMono(const std::string& str);
 
 	bool CheckMonoError(MonoError& error);
+
+	MonoObject* ValueToMonoObject(const void* data, ScriptFieldType dataType);
 
 }

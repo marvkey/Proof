@@ -13,6 +13,7 @@ extern "C" {
 }
 namespace Proof
 {
+	enum class ScriptFieldType;
 	class AssemblyInfo;
 
 	class ScriptClass : public RefCounted
@@ -30,6 +31,8 @@ namespace Proof
 		//uint32_t GetClassID() const { return m_ClassID; }
 
 		const std::string& GetFullName() const { return m_FullName; }
+		const std::string GetName() const;
+		const std::string GetNameSpace() const;
 	private:
 		//uint32_t m_ClassID = 0;
 
@@ -45,12 +48,14 @@ namespace Proof
 		static ManagedClass* GetManagedClassByName(const std::string& className);
 		static ManagedClass* GetManagedClass(MonoClass* monoClass);
 		static ManagedClass* GetMonoObjectClass(MonoObject* monoObject);
-
+		static MonoClass* GetFieldTypeClass(ScriptFieldType fieldType);
+		static struct ScriptField* GetFieldByName(const std::string& fieldName);
 		static bool IsInitialized();
 
 		static void GenerateRegistryForAppAssembly(Count<AssemblyInfo> assemblyInfo);
 
 		static ManagedMethod* GetSpecificManagedMethod(ManagedClass* managedClass, const std::string& name, uint32_t parameterCount, bool ignoreParent = false);
+		static const std::unordered_map<std::string, Count<ScriptClass>>&  GetEntityScripts();
 
 	private:
 		static void RegisterClasss(std::string_view className, MonoClass* monoClass);

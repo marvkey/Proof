@@ -159,6 +159,70 @@ namespace Proof::ScriptUtils
 
 		return valueObject;
 	}
+	MonoObject* ValueToMonoObject(const void* data, ScriptFieldType dataType)
+	{
+		PF_PROFILE_FUNC();
+
+		if (IsPrimitiveType(dataType))
+		{
+			return BoxValue(ScriptRegistry::GetFieldTypeClass(dataType), data);
+		}
+		else
+		{
+			switch (dataType)
+			{
+				case ScriptFieldType::String: return (MonoObject*)UTF8StringToMono(*(std::string*)data);
+				case ScriptFieldType::Prefab: return ScriptEngine::CreateManagedObject("Proof.Prefab", *(AssetID*)data);
+				case ScriptFieldType::Entity: return ScriptEngine::CreateManagedObject("Proof.Entity", *(UUID*)data);
+				case ScriptFieldType::Mesh: return ScriptEngine::CreateManagedObject("Proof.Mesh", *(AssetID*)data);
+				case ScriptFieldType::DynamicMesh: return ScriptEngine::CreateManagedObject("Proof.DynamicMesh", *(AssetID*)data);
+				case ScriptFieldType::Material: return ScriptEngine::CreateManagedObject("Proof.Material", *(AssetID*)data);
+				case ScriptFieldType::PhysicsMaterial: return ScriptEngine::CreateManagedObject("Proof.PhysicsMaterial", *(AssetID*)data);
+				case ScriptFieldType::Texture2D: return ScriptEngine::CreateManagedObject("Proof.Texture2D", *(AssetID*)data);
+			}
+		}
+
+		PF_CORE_ASSERT(false, "Unsupported value type!");
+		return nullptr;
+	}
+
+	void SetFieldValue(MonoObject* classInstance, const ScriptField* fieldInfo, const void* data)
+	{
+		PF_PROFILE_FUNC();
+
+		if (classInstance == nullptr || fieldInfo == nullptr || data == nullptr)
+			return;
+
+		if (!fieldInfo->IsWritable())
+			return;
+
+		MonoClass* objectClass = mono_object_get_class(classInstance);
+
+		if (fieldInfo->IsProperty)
+		{
+			MonoProperty* classProperty = mono_class_get_property_from_name(objectClass, fieldInfo->Name.c_str());
+			void* propertyData = nullptr;
+
+			if (fieldInfo->IsArray() || IsPrimitiveType(fieldInfo->Type))
+				propertyData = const_cast<void*>(data);
+			else
+				propertyData = ValueToMonoObject(data, fieldInfo->Type);
+
+			mono_property_set_value(classProperty, classInstance, &propertyData, nullptr);
+		}
+		else
+		{
+			MonoClassField* classField = mono_class_get_field_from_name(objectClass, fieldInfo->Name.c_str());
+			void* fieldData = nullptr;
+
+			if (fieldInfo->IsArray() || IsPrimitiveType(fieldInfo->Type))
+				fieldData = (void*)data;
+			else
+				fieldData = ValueToMonoObject(data, fieldInfo->Type);
+
+			mono_field_set_value(classInstance, classField, fieldData);
+		}
+	}
 
 	Buffer MonoObjectToValue(MonoObject* obj, ScriptFieldType fieldType)
 	{
@@ -297,6 +361,29 @@ namespace Proof::ScriptUtils
 		}
 
 		return result;
+	}
+
+	MonoObject* BoxValue(MonoClass* valueClass, const void* value)
+	{
+		/*
+		In the context of Mono, when you have a value (like a number) that's normally not an object but you need to treat it like one, you "box" it. 
+		Boxing means putting that value into a special container, like a box. This allows you to use the value where objects (or references to objects) are expected.
+		Here's how you might use `mono_value_box`:
+
+		1. You have some value (e.g., an integer) that you want to work with in a Mono-based application.
+
+		2. You call `mono_value_box` and provide:
+		   - The type of the value (e.g., `int`).
+		   - The actual value you want to box (e.g., the number 42).
+
+		3. Mono takes that value, puts it in a box (a special object), and hands you back a reference to that box.
+
+		4. Now, you can use that reference as if it were an object, even though it originally wasn't.
+
+		In short, `mono_value_box` lets you work with non-object values in an environment where objects are expected, like in many .NET and Mono applications. 
+		It's a way of making different types of data look like objects when you need them to.
+		*/
+		return mono_value_box(ScriptEngine::GetAppDomain(), valueClass, const_cast<void*>(value));
 	}
 
 	MonoString* EmptyMonoString(bool appDomain)

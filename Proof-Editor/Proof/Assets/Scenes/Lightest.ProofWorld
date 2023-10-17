@@ -14,9 +14,9 @@ World:
         Children: []
       SkyLightComponent:
         TintColor: [1, 1, 1]
-        SkyBoxLod: 0
+        SkyBoxLod: 2.27600002
         MapRotation: 0
-        Intensity: 0.5
+        Intensity: 0.200000003
         DynamicSky: false
         Turbidity: 2
         Azimuth: 0
@@ -50,6 +50,17 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 8248471627549548587
+      TagComponent:
+        Tag: ScriptEntityTest
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
     - Entity: 13784379914823608826
       TagComponent:
         Tag: Directional Light

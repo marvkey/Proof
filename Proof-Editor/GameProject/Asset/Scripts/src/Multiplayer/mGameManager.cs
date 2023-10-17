@@ -64,7 +64,7 @@ namespace Game
                 WorldLenght = 1800;
             }
             Transform spawnTransform = new Transform();
-            spawnTransform.Scale = new Vector(100, 1, WorldLenght);
+            spawnTransform.Scale = new Vector3(100, 1, WorldLenght);
             World.Instanciate(Plane, spawnTransform);
 
             PowerUps.Add(PowerUp1);
@@ -166,7 +166,7 @@ namespace Game
             spawnTransform = new Transform();
             spawnTransform.Location.Z = WorldLenght+100;
             spawnTransform.Location.Y = -50f;
-            spawnTransform.Scale = new Vector(100, 0.5f, 100);
+            spawnTransform.Scale = new Vector3(100, 0.5f, 100);
 
             World.Instanciate(FinishLevel, spawnTransform);
 
@@ -267,7 +267,7 @@ namespace Game
                 powerUPTransform.Location.Y = spawnTransform.Location.Y +7.5f;
                 powerUPTransform.Location.Z = spawnTransform.Location.Z;
 
-                powerUPTransform.Scale = new Vector(3);
+                powerUPTransform.Scale = new Vector3(3);
 
                 SpawnPowerUp(powerUPTransform);
             }
@@ -364,7 +364,7 @@ namespace Game
                     return null;
             }
             Prefab powerup = PowerUps[Proof.Random.Int(0, PowerUps.Count - 1)];
-            spawnTransform.Scale = new Vector(2);
+            spawnTransform.Scale = new Vector3(2);
             spawnTransform.Location.Z = locationZ;
             spawnTransform.Location.Y = 4;
             Entity entity = World.Instanciate(powerup, spawnTransform);
@@ -378,7 +378,7 @@ namespace Game
             if (Proof.Random.Int(0, 3) == 3)
                 return null;
             Prefab powerup = PowerUps[Proof.Random.Int(0,PowerUps.Count-1)];
-             transform.Scale = new Vector(2);
+             transform.Scale = new Vector3(2);
              Entity entity = World.Instanciate(powerup, transform);
              return entity.As<PowerUp>();
         }
@@ -420,7 +420,7 @@ namespace Game
                 powerUPTransform.Location.Y = spawnTransform.Location.Y + 5.5f;
                 powerUPTransform.Location.Z = spawnTransform.Location.Z;
 
-                powerUPTransform.Scale = new Vector(3);
+                powerUPTransform.Scale = new Vector3(3);
 
                 SpawnPowerUp(powerUPTransform);
             }
@@ -468,7 +468,7 @@ namespace Game
                     powerUPTransform.Location.Y = 32.5f;
                     powerUPTransform.Location.Z = cubeTransform.Location.Z-6.8f;
 
-                    powerUPTransform.Scale = new Vector(3);
+                    powerUPTransform.Scale = new Vector3(3);
                     SpawnPowerUp(powerUPTransform);
                 }
             }

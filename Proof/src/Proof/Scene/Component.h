@@ -17,7 +17,7 @@
 #include "Proof/Audio/AudioTools.h"
 #include "Proof/Physics/PhysicsTypes.h"
 #include "Proof/Asset/AssetTypes.h"
-
+#include "Proof/Scripting/ScriptGCManager.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
@@ -595,11 +595,23 @@ namespace Proof
 		// Box Info
 		glm::vec3 Size = glm::vec3 { 1,1,1 };
 	};
-	struct ScriptComponent {
+	struct ScriptComponentMetaData
+	{
+		AssetID ScriptClassID;
+		ScriptGCHandle Instance =nullptr;
+		//std::vector<uint32_t> FieldID;
+		std::vector<std::string> FieldNames;
+	};
+	struct ScriptComponent 
+	{
 	public:
 		ScriptComponent(const ScriptComponent& other) = default;
 		ScriptComponent() = default;
-		std::unordered_set<std::string> ScriptsNames;
+		friend class ScriptEngine;
+		friend class SceneSerializer;
+		friend class SceneHierachyPanel;
+	private:
+		std::vector<ScriptComponentMetaData>ScriptMetadates = {};
 	};
 
 	struct TextComponent {

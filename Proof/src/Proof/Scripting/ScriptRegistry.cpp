@@ -24,6 +24,7 @@
 #include <mono/metadata/appdomain.h>
 
 #define PF_CACHED_CLASS_RAW(clazz) ScriptRegistry::GetManagedClassByName(clazz)->Class
+#define PF_REGISTERED_CLASS(clazz) ScriptRegistry::GetManagedClassByName(clazz)
 
 namespace Proof
 {
@@ -58,8 +59,10 @@ namespace Proof
 
 		//uint32_t classID = Hash::GenerateFNVHash(className);
 		if (s_ScriptRegistryData->Classes.find(className) == s_ScriptRegistryData->Classes.end())
+		{
+			PF_ENGINE_ERROR("Script Registry does not contain {}", className);
 			return nullptr;
-
+		}
 		return &s_ScriptRegistryData->Classes[className];
 	}
 	ManagedClass* ScriptRegistry::GetManagedClass(MonoClass* monoClass)
@@ -83,6 +86,47 @@ namespace Proof
 			return nullptr;
 
 		return GetManagedClassByName(ScriptUtils::ResolveMonoClassName(objectClass));
+	}
+	MonoClass* ScriptRegistry::GetFieldTypeClass(ScriptFieldType fieldType)
+	{
+		switch (fieldType)
+		{
+			case ScriptFieldType::Bool: return PF_REGISTERED_CLASS("System.Bool")->Class;
+			case ScriptFieldType::Int8: return PF_REGISTERED_CLASS("System.SByte")->Class;
+			case ScriptFieldType::Int16: return PF_REGISTERED_CLASS("System.Int16")->Class;
+			case ScriptFieldType::Int32: return PF_REGISTERED_CLASS("System.Int32")->Class;
+			case ScriptFieldType::Int64: return PF_REGISTERED_CLASS("System.Int64")->Class;
+			case ScriptFieldType::UInt8: return PF_REGISTERED_CLASS("System.Byte")->Class;
+			case ScriptFieldType::UInt16: return PF_REGISTERED_CLASS("System.UInt16")->Class;
+			case ScriptFieldType::UInt32: return PF_REGISTERED_CLASS("System.UInt32")->Class;
+			case ScriptFieldType::UInt64: return PF_REGISTERED_CLASS("System.UInt64")->Class;
+			case ScriptFieldType::Float: return PF_REGISTERED_CLASS("System.Single")->Class;
+			case ScriptFieldType::Double: return PF_REGISTERED_CLASS("System.Double")->Class;
+			case ScriptFieldType::String: return PF_REGISTERED_CLASS("System.String")->Class;
+			case ScriptFieldType::Vector2: return PF_REGISTERED_CLASS("PF.Vector2")->Class;
+			case ScriptFieldType::Vector3: return PF_REGISTERED_CLASS("PF.Vector3")->Class;
+			case ScriptFieldType::Vector4: return PF_REGISTERED_CLASS("PF.Vector4")->Class;
+			case ScriptFieldType::AssetID: return PF_REGISTERED_CLASS("PF.AssetID")->Class;
+			case ScriptFieldType::Prefab: return PF_REGISTERED_CLASS("PF.Prefab")->Class;
+			case ScriptFieldType::Entity: return PF_REGISTERED_CLASS("PF.Entity")->Class;
+			case ScriptFieldType::Mesh: return PF_REGISTERED_CLASS("PF.Mesh")->Class;
+			case ScriptFieldType::DynamicMesh: return PF_REGISTERED_CLASS("PF.DynamicMesh")->Class;
+			case ScriptFieldType::Material: return PF_REGISTERED_CLASS("PF.Material")->Class;
+			case ScriptFieldType::PhysicsMaterial: return PF_REGISTERED_CLASS("PF.PhysicsMaterial")->Class;
+			case ScriptFieldType::Texture2D: return PF_REGISTERED_CLASS("PF.Texture2D")->Class;
+		}
+		PF_ENGINE_ERROR("NOt supported type {}", EnumReflection::EnumString(fieldType));
+		PF_CORE_ASSERT(false);
+		return nullptr;
+	}
+	ScriptField* ScriptRegistry::GetFieldByName(const std::string& fieldName)
+	{
+		if (s_ScriptRegistryData == nullptr)
+			return nullptr;
+
+		if (s_ScriptRegistryData->Fields.find(fieldName) == s_ScriptRegistryData->Fields.end())
+			return nullptr;
+		return &s_ScriptRegistryData->Fields.at(fieldName);
 	}
 	bool ScriptRegistry::IsInitialized()
 	{
@@ -190,6 +234,12 @@ namespace Proof
 			PF_ENGINE_WARN("ScriptEngine Failed to find method with name: {0} and parameter count: {1} in class {2}", name, parameterCount, managedClass->FullName);
 
 		return method;
+	}
+	const std::unordered_map<std::string, Count<ScriptClass>>& ScriptRegistry::GetEntityScripts()
+	{
+		if (s_ScriptRegistryData == nullptr)
+			return {};
+		return s_ScriptRegistryData->EntityScripts;
 	}
 	void ScriptRegistry::RegisterClasss(std::string_view className, MonoClass* monoClass)
 	{
@@ -369,6 +419,7 @@ namespace Proof
 					if (isReadOnly)
 						managedField.Flags |= (uint64_t)FieldFlag::ReadOnly;
 				}
+				#endif
 
 				if (managedField.IsArray())
 				{
@@ -384,7 +435,6 @@ namespace Proof
 					int align;
 					managedField.Size = mono_type_size(monoType, &align);
 				}
-				#endif
 				managedClass.Size += managedField.Size;
 
 				//if (std::find(managedClass.Fields.begin(), managedClass.Fields.end(), fieldID) == managedClass.Fields.end())
@@ -483,6 +533,22 @@ namespace Proof
 
 		//assemblyInfo->Classes.push_back(managedClass.ID);
 		assemblyInfo->Classes.push_back(managedClass.FullName);
+	}
+	const std::string ScriptClass::GetName() const
+	{
+		const auto first = m_FullName.find_first_of(':');
+		if (first == std::string_view::npos)
+			return m_FullName;
+
+		return m_FullName.substr(first + 1);
+	}
+	const std::string ScriptClass::GetNameSpace() const
+	{
+		const auto first = m_FullName.find_first_of(':');
+		if (first == std::string_view::npos)
+			return "";
+
+		return m_FullName.substr(0, first);
 	}
 }
 

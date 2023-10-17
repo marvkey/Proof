@@ -4,6 +4,8 @@
 #include "Proof/ImGui/ImGuiLayer.h"
 #include <imgui/imgui_internal.h>
 #include "Proof/Asset/AssetManager.h"
+#include "Proof/Scripting/ScriptEngine.h"
+#include "Proof/Scripting/ScriptField.h"
 #include <regex>
 //https://github.com/InCloudsBelly/X2_RenderingEngine/blob/e7c349b70bd95af3ab673556cdb56cb2cc40b48e/Engine/X2/ImGui/ImGuiUtilities.h#L285
 // have 
@@ -366,6 +368,7 @@ namespace Proof::UI
 
     bool AttributeAssetTextBar(const std::string& label, AssetID& ID, AssetType type, bool includeRemove )
     {
+        bool changeState = false;
         if (AssetManager::HasAsset(ID))
         {
             auto assetInfo = AssetManager::GetAssetInfo(ID);
@@ -373,6 +376,7 @@ namespace Proof::UI
         }
         else
         {
+            changeState = true;
             ID = 0;
             UI::AttributeTextBar(label, fmt::format("Null ({})",EnumReflection::EnumString(type)));
         }
@@ -405,15 +409,20 @@ namespace Proof::UI
                 ImGui::GetWindowDrawList()->AddRect(targetMin, targetMax, IM_COL32(255, 255, 255, 255)); // Green border
                 UUID assetID = *(UUID*)payload->Data;
                 if (AssetManager::HasAsset(assetID) && AssetManager::GetAssetInfo(assetID).Type == type)
+                {
                     ID = assetID;
+                    changeState = true;
+                }
             }
             ImGui::EndDragDropTarget();
         }
 
-        return false;
+        return changeState;
     }
     bool AttributeAssetTextBar(const std::string& label, Count<class Asset> asset, AssetType type, bool includeRemove )
     {
+        bool changeState = false;
+
         static char  searchCharacters[512];
         if (AssetManager::HasAsset(asset))
         {
@@ -424,6 +433,7 @@ namespace Proof::UI
         else
         {
             asset = nullptr;
+            changeState = true;
             UI::AttributeTextBar(label, fmt::format("Null ({})", EnumReflection::EnumString(type)));
         }
         if (includeRemove)
@@ -452,17 +462,21 @@ namespace Proof::UI
                 ImGui::GetWindowDrawList()->AddRect(targetMin, targetMax, IM_COL32(0, 255, 0, 255)); // Green border
                 UUID assetID = *(UUID*)payload->Data;
                 if (AssetManager::HasAsset(assetID) && AssetManager::GetAssetInfo(assetID).Type == type)
+                {
+                    changeState = false;
                     asset = AssetManager::GetAsset<Asset>(assetID);
+                }
             }
             ImGui::EndDragDropTarget();
         }
         
-     //   if (ImGui::BeginPopupContextItem("SearchAsset",ImGuiPopupFlags_MouseButtonLeft))
-     //   {
-     //       ImGui::EndPopup();
-     //   }
+
 
         
+        return changeState;
+    }
+    bool AttributeEntity(const std::string& label, Count<class World> worldContext, UUID& entityID)
+    {
         return false;
     }
     bool AttributeText(const std::string& text)
@@ -646,13 +660,11 @@ namespace Proof::UI
         ImGui::NextColumn();
         return bModified; 
     }
-
-    bool AttributeDrag(const std::string& label, uint32_t& value, float speed, uint32_t min, uint32_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    template<class ValueType>
+    bool AttributeDragBase(const std::string& label, ValueType& value, float speed, ValueType min, ValueType max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format, ImGuiDataType_ dataType)
     {
         if (min == 0 && max == 0)
             flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
-
-
         bool bModified = false;
 
         UpdateIDBuffer(label);
@@ -665,34 +677,53 @@ namespace Proof::UI
         }
         ImGui::NextColumn();
         ImGui::PushItemWidth(-1);
-        bModified = ImGui::DragScalar(s_IDBuffer, ImGuiDataType_U32, &value, speed, &min, &max, format, flags);
+        bModified = ImGui::DragScalar(s_IDBuffer, dataType, &value, speed, &min, &max, format, flags);
+
         ImGui::PopItemWidth();
         ImGui::NextColumn();
         return bModified;
     }
+    bool AttributeDrag(const std::string& label, int8_t& value, float speed, int8_t min, int8_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_S8);
+    }
+    bool AttributeDrag(const std::string& label, int16_t& value, float speed, int16_t min, int16_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_S16);
+    }
+    bool AttributeDrag(const std::string& label, int32_t& value, float speed, int32_t min, int32_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_S32);
+    }
+    bool AttributeDrag(const std::string& label, int64_t& value, float speed, int64_t min, int64_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_S64);
+    }
+
+    bool AttributeDrag(const std::string& label, uint8_t& value, float speed, uint8_t min, uint8_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_U8);
+    }
+    bool AttributeDrag(const std::string& label, uint16_t& value, float speed, uint16_t min, uint16_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_U16);
+    }
+    bool AttributeDrag(const std::string& label, uint32_t& value, float speed, uint32_t min, uint32_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_U32);
+    }
+    bool AttributeDrag(const std::string& label, uint64_t& value, float speed, uint64_t min, uint64_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_U64);
+    }
 
     bool AttributeDrag(const std::string& label, float& value, float speed, float min, float max, const std::string& helpMessage , ImGuiSliderFlags flags, const char* format)
     {
-        if (min == 0 && max == 0)
-            flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
-
-        bool bModified = false;
-
-        UpdateIDBuffer(label);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
-        if (helpMessage.size())
-        {
-            ImGui::SameLine();
-            UI::HelpMarker(helpMessage);
-        }
-        ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
-
-        bModified = ImGui::DragFloat(s_IDBuffer, &value, speed,min,max,format, flags);
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
-        return bModified;
+        return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_Float);
+    }
+    bool AttributeDrag(const std::string& label, double& value, float speed, double min, double max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_Double);
     }
 
     bool AttributeDrag(const std::string& label, glm::vec2& value, float speed, float min, float max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
@@ -878,5 +909,253 @@ namespace Proof::UI
         }
     }
 
+    bool DrawFieldValue(Count<class World> worldContext, const std::string& fieldName, Count<Proof::FieldStorage>& storage)
+    {
+        if (!storage)
+            return false;
+
+        const ScriptField* field = storage->GetFieldInfo();
+
+        float min = 0.0f;
+        float max = 0.0f;
+        float delta = 0.1f;
+
+        std::string id = fmt::format("{0}-{1}", fieldName, field->Name);
+        ImGui::PushID(id.c_str());
+
+
+        bool result = false;
+
+        switch (field->Type)
+        {
+            case ScriptFieldType::Bool:
+                {
+                    bool value = storage->GetValue<bool>();
+                    if (AttributeBool(fieldName.c_str(), value))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Int8:
+                {
+                    int8_t value = storage->GetValue<int8_t>();
+                    if (AttributeDrag(fieldName, value, delta,(int8_t)min, (int8_t)max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Int16:
+                {
+                    int16_t value = storage->GetValue<int16_t>();
+                    if (AttributeDrag(fieldName.c_str(), value, delta, (int16_t)min, (int16_t)max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Int32:
+                {
+                    int32_t value = storage->GetValue<int32_t>();
+                    if (AttributeDrag(fieldName.c_str(), value, delta, (int32_t)min, (int32_t)max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Int64:
+                {
+                    int64_t value = storage->GetValue<int64_t>();
+                    if (AttributeDrag(fieldName.c_str(), value, delta, (int64_t)min, (int64_t)max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::UInt8:
+                {
+                    uint8_t value = storage->GetValue<uint8_t>();
+                    if (AttributeDrag(fieldName.c_str(), value, delta, (uint8_t)min, (uint8_t)max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::UInt16:
+                {
+                    uint16_t value = storage->GetValue<uint16_t>();
+                    if (AttributeDrag(fieldName.c_str(), value, delta, (uint16_t)min, (uint16_t)max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::UInt32:
+                {
+                    uint32_t value = storage->GetValue<uint32_t>();
+                    if (AttributeDrag(fieldName.c_str(), value, delta, (uint32_t)min, (uint32_t)max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::UInt64:
+                {
+                    uint64_t value = storage->GetValue<uint64_t>();
+                    if (AttributeDrag(fieldName.c_str(), value, delta, (uint64_t)min, (uint64_t)max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Float:
+                {
+                    float value = storage->GetValue<float>();
+                    if (AttributeDrag(fieldName.c_str(), value, delta, min, max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Double:
+                {
+                    double value = storage->GetValue<double>();
+                    if (AttributeDrag(fieldName.c_str(), value, delta, (double)min, (double)max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::String:
+                {
+                    std::string value = storage->GetValue<std::string>();
+                    char buffer[256];
+                    memset(buffer, 0, 256);
+                    memcpy(buffer, value.c_str(), value.length());
+                    if (AttributeInputText(fieldName.c_str(), value))
+                    {
+                        storage->SetValue<std::string>(buffer);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Vector2:
+                {
+                    glm::vec2 value = storage->GetValue<glm::vec2>();
+                    if (AttributeDrag(fieldName.c_str(), value, min, max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Vector3:
+                {
+                    glm::vec3 value = storage->GetValue<glm::vec3>();
+                    if (AttributeDrag(fieldName.c_str(), value, min, max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Vector4:
+                {
+                    glm::vec4 value = storage->GetValue<glm::vec4>();
+                    if (AttributeDrag(fieldName.c_str(), value, min, max))
+                    {
+                        storage->SetValue(value);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Prefab:
+                {
+                    AssetID handle = storage->GetValue<AssetID>();
+                    if ((fieldName.c_str(), handle))
+                    {
+                        storage->SetValue(handle);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Entity:
+                {
+                    UUID uuid = storage->GetValue<UUID>();
+                    //if (AttributeEntity(fieldName.c_str(), uuid, sceneContext))
+                    //{
+                    //    storage->SetValue(uuid);
+                    //    result = true;
+                    //}
+                    break;
+                }
+            case ScriptFieldType::Mesh:
+                {
+                    AssetID handle = storage->GetValue<AssetID>();
+                    if (AttributeAssetTextBar(fieldName.c_str(), handle,AssetType::Mesh))
+                    {
+                        storage->SetValue(handle);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::DynamicMesh:
+                {
+                    AssetID handle = storage->GetValue<AssetID>();
+                    if (AttributeAssetTextBar(fieldName.c_str(), handle, AssetType::DynamicMesh))
+                    {
+                        storage->SetValue(handle);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Material:
+                {
+                    AssetID handle = storage->GetValue<AssetID>();
+                    if (AttributeAssetTextBar(fieldName.c_str(), handle, AssetType::Material))
+                    {
+                        storage->SetValue(handle);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::PhysicsMaterial:
+                {
+                    AssetID handle = storage->GetValue<AssetID>();
+                    if (AttributeAssetTextBar(fieldName.c_str(), handle, AssetType::PhysicsMaterial))
+                    {
+                        storage->SetValue(handle);
+                        result = true;
+                    }
+                    break;
+                }
+            case ScriptFieldType::Texture2D:
+                {
+                    AssetID handle = storage->GetValue<AssetID>();
+                    if (AttributeAssetTextBar(fieldName.c_str(), handle, AssetType::Texture))
+                    {
+                        storage->SetValue(handle);
+                        result = true;
+                    }
+                    break;
+                }
+        }
+
+        ImGui::PopID();
+
+        return result;
+    }
 }
 

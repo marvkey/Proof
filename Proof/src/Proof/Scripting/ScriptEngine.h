@@ -4,6 +4,7 @@
 #include "Proof/Core/Core.h"
 #include "proof/Scene/Entity.h"
 #include "ScriptTypes.h"
+#include "ScriptRegistry.h"
 #include <any>
 #include <functional>
 #include <filesystem>
@@ -22,7 +23,11 @@ extern "C" {
 namespace Proof
 {
 	//struct AssemblyMetadata;
-
+	struct EntityClassMetaData
+	{
+		std::string className;
+		std::unordered_map<std::string, Count<class FieldStorageBase>> Fields;
+	};
 	class ScriptEngine {
 	public:
 		static void Init();
@@ -36,7 +41,20 @@ namespace Proof
 		static MonoString* StringToMono(const std::string& data);
 		static AssemblyMetadata GetMetadataForImage(MonoImage* image);
 		static std::vector<AssemblyMetadata> GetReferencedAssembliesMetadata(MonoImage* image);
+		static const std::unordered_map<std::string, Count<ScriptClass>>& GetEntityScripts();
 
+		// vecotr of classes, adn its fields for an entity
+		static const std::vector<EntityClassMetaData >* GetEntityFields(Entity entity);
+		static bool IsModuleValid(AssetID id);
+		static bool IsModuleValid(Count<class ScriptFile> file);
+
+		static bool IsEntityScriptInstantiated(Entity entity);
+
+		// called once the entity has a script component
+		static void InstantiateScriptEntity(Entity entity);
+
+		// called when a scirpt watns to add a new scirpt
+		static void ScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
 		template<typename... TArgs>
 		static void CallMethod(MonoObject* managedObject, const std::string& methodName, TArgs&&... args)
 		{
@@ -91,6 +109,12 @@ namespace Proof
 
 		static MonoDomain* GetAppDomain();
 		static MonoDomain* GetCoreDomain();
+
+		template<typename... TConstructorArgs>
+		static MonoObject* CreateManagedObject(const std::string& className, TConstructorArgs&&... args)
+		{
+			return CreateManagedObject_Internal(GetManagedClass(className), std::forward<TConstructorArgs>(args)...);
+		}
 	private:
 		static void InitMono();
 		static void ShutDownMono();
@@ -98,8 +122,14 @@ namespace Proof
 		static bool LoadAppAssembly();
 		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath);
 
-		static MonoObject* CreateManagedObject(ManagedClass* managedClass, bool appDomain );
+		static MonoObject* CreateManagedObject(ManagedClass* managedClass, bool appDomain =true);
+		static MonoObject* CreateManagedObject(const std::string& className, bool appDomain = true);
+		static ManagedClass* GetManagedClass(const std::string& className);
+
 		static void InitRuntimeObject(MonoObject* monoObject);
+
+		static void SetScriptEntityEditor(Entity entity);
+
 	private:
 
 		template<typename... TConstructorArgs>

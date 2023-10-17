@@ -89,7 +89,7 @@ namespace Game
 
         private void SpawnObstacle1()
         {
-            Vector playerLocation = Player.GetComponent<TransformComponent>().Location;
+            Vector3 playerLocation = Player.GetComponent<TransformComponent>().Location;
             Transform spawnTransform = new Transform();
             spawnTransform.Location.Z = playerLocation.Z + spawnDistanceZ;
 
@@ -111,7 +111,7 @@ namespace Game
 
         private void SpawnObstacle2()
         {
-            Vector playerLocation = Player.GetComponent<TransformComponent>().Location;
+            Vector3 playerLocation = Player.GetComponent<TransformComponent>().Location;
             Transform spawnTransform = new Transform();
 
             spawnTransform.Scale.Y = 1;
@@ -152,7 +152,7 @@ namespace Game
 
         private void SpawnObstacle3()
         {
-            Vector playerLocation = Player.GetComponent<TransformComponent>().Location;
+            Vector3 playerLocation = Player.GetComponent<TransformComponent>().Location;
             Transform spawnTransform = new Transform();
             spawnTransform.Location.Z = playerLocation.Z + spawnDistanceZ;
 
@@ -170,7 +170,7 @@ namespace Game
 
         private void SpawnObstacle4()
         {
-            Vector playerLocation = Player.GetComponent<TransformComponent>().Location;
+            Vector3 playerLocation = Player.GetComponent<TransformComponent>().Location;
             Transform spawnTransform = new Transform();
             float SpawnTransformz = playerLocation.Z + spawnDistanceZ;
 

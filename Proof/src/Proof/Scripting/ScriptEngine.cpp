@@ -9,7 +9,9 @@
 #include "ScriptTypes.h"
 #include "ScriptGCManager.h"
 #include "ScriptFunc.h"
+#include "ScriptField.h"
 #include "ScriptRegistry.h"
+#include "ScriptFile.h"
 
 #include <fstream>
 #include <sstream>
@@ -104,6 +106,8 @@ namespace Proof
         Count<AssemblyInfo> AppAssemblyInfo = nullptr;
 
         bool IsMonoInitialized = false;
+        // entity id, vecotr of all the scripts and its fields
+        std::unordered_map < UUID, std::vector<EntityClassMetaData>> EntityFieldMap;
        // std::unordered_map<UUID, std::unordered_map<uint32_t, Coun<FieldStorageBase>>> EntityFieldMap;
         //std::unordered_map<AssetID, std::unordered_map<uint32_t, Coun<FieldStorageBase>>> PrefabFieldMap;
 
@@ -171,7 +175,7 @@ namespace Proof
 
         s_ScriptEngineData->IsMonoInitialized = false;
     }
-
+   
     bool ScriptEngine::LoadCoreAssembly()
     {
         auto corePath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/ProofScriptCore.dll";
@@ -343,6 +347,8 @@ namespace Proof
         return assembly;
     }
    
+  
+
     MonoObject* ScriptEngine::CreateManagedObject(ManagedClass* managedClass, bool appDomain)
     {
         MonoDomain* domain;
@@ -368,7 +374,118 @@ namespace Proof
     {
         return s_ScriptEngineData->CoreDomain;
     }
+    MonoObject* ScriptEngine::CreateManagedObject(const std::string& className, bool appDomain)
+    {
+        ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(className);
+        
+        PF_CORE_ASSERT(managedClass);
+
+        return CreateManagedObject(managedClass, appDomain);
+    }
+    bool ScriptEngine::IsEntityScriptInstantiated(Entity entity)
+    {
+        return s_ScriptEngineData->EntityFieldMap.contains(entity.GetUUID());
+    }
+
+    void ScriptEngine::InstantiateScriptEntity(Entity entity)
+    {
+        if (!entity.HasComponent<ScriptComponent>())
+            return;
+        ScriptComponent& script = entity.GetComponent<ScriptComponent>();
+
+        
+        bool hasScripts = false;
+        for (ScriptComponentMetaData& scriptMetadata : script.ScriptMetadates)
+        {
+            if (AssetManager::HasAsset(scriptMetadata.ScriptClassID))
+            {
+                hasScripts = true;
+                s_ScriptEngineData->EntityFieldMap[entity.GetUUID()] = {};
+            }
+        }
+
+        if (!hasScripts)
+        {
+            PF_ENGINE_WARN("Entity {} contains no valid ScriptModule ", entity.GetName());
+            return;
+        }
+        for (ScriptComponentMetaData& scriptMetadata : script.ScriptMetadates)
+        {
+            if (AssetManager::HasAsset(scriptMetadata.ScriptClassID))
+            {
+                ScriptEntityPushScript(entity, AssetManager::GetAsset<ScriptFile>(scriptMetadata.ScriptClassID));
+            }
+        }
+
+    }
+    void ScriptEngine::ScriptEntityPushScript(Entity entity, Count<class ScriptFile> scriptFile)
+    {
+        PF_CORE_ASSERT(s_ScriptEngineData->EntityFieldMap.contains(entity.GetUUID()), fmt::format("Entity {} is not contained in Script Engine ", entity.GetName()));
+
+        ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+
+        if (!IsModuleValid(scriptFile))
+        {
+            PF_ENGINE_ERROR("Trying to add invalid script to Entity {}", entity.GetName());
+            return;
+        }
+
+        ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(scriptFile->GetFullName());
+        if (!managedClass)
+            return;
+        
+        ScriptComponentMetaData metadata;
+        metadata.ScriptClassID = scriptFile->GetID();
+        auto& scriptEngineData = s_ScriptEngineData->EntityFieldMap[entity.GetUUID()].emplace_back();
+
+        scriptEngineData.className = scriptFile->GetFullName();
+
+        for (auto fieldName : managedClass->Fields)
+        {
+            ScriptField* scriptField = ScriptRegistry::GetFieldByName(fieldName);
+
+            if (!scriptField->HasFlag(FieldFlag::Public))
+                continue;
+
+            if (!scriptField->IsArray())
+            {
+                scriptEngineData.Fields[fieldName] = Count<FieldStorage>::Create(scriptField);
+            }
+            else
+            {
+                
+            }
+            metadata.FieldNames.push_back(fieldName);
+        }
+
+        if(scriptComponent.ScriptMetadates.size() != s_ScriptEngineData->EntityFieldMap[entity.GetUUID()].size())
+            scriptComponent.ScriptMetadates.emplace_back(metadata);
+    }
+    const std::vector<EntityClassMetaData>* ScriptEngine::GetEntityFields(Entity entity)
+    {
+        if (!s_ScriptEngineData->EntityFieldMap.contains(entity.GetUUID()))
+            return nullptr;
+
+        return &s_ScriptEngineData->EntityFieldMap.at(entity.GetUUID());
+    }
+
+    bool ScriptEngine::IsModuleValid(AssetID id)
+    {
+        return IsModuleValid(AssetManager::GetAsset<ScriptFile>(id));
+    }
+    bool ScriptEngine::IsModuleValid(Count<ScriptFile>  file)
+    {
+        if (!AssetManager::HasAsset(file))
+            return false;
+
+        return GetEntityScripts().contains(file->GetFullName());
+    }
     
+    ManagedClass* ScriptEngine::GetManagedClass(const std::string& className)
+    {
+        return ScriptRegistry::GetManagedClassByName(className);
+    }
+
 
     Count<AssemblyInfo> ScriptEngine::GetCoreAssemblyInfo()
     {
@@ -378,5 +495,9 @@ namespace Proof
     {
         return s_ScriptEngineData->AppAssemblyInfo;
 
+    }
+    const std::unordered_map<std::string, Count<ScriptClass>>& ScriptEngine::GetEntityScripts()
+    {
+        return ScriptRegistry::GetEntityScripts();
     }
 }

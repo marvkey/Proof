@@ -32,11 +32,11 @@ namespace Proof
 	}
 	public class TransformComponent : Component
 	{
-		public Vector Location
+		public Vector3 Location
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetLocation(Entity.ID, out Vector loc);
+				InternalCalls.TransformComponent_GetLocation(Entity.ID, out Vector3 loc);
 				return loc;
 			}
 			set
@@ -45,11 +45,11 @@ namespace Proof
 			}
 		}
 
-		public Vector Rotation
+		public Vector3 Rotation
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetRotation(Entity.ID, out Vector rotation);
+				InternalCalls.TransformComponent_GetRotation(Entity.ID, out Vector3 rotation);
 				return rotation;
 			}
 			set
@@ -58,11 +58,11 @@ namespace Proof
 			}
 		}
 
-		public Vector Scale
+		public Vector3 Scale
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetScale(Entity.ID, out Vector scale);
+				InternalCalls.TransformComponent_GetScale(Entity.ID, out Vector3 scale);
 				return scale;
 			}
 			set
@@ -70,13 +70,13 @@ namespace Proof
 				InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
 			}
 		}
-        public Vector GetFowardVector()
+        public Vector3 GetFowardVector()
         {
-            InternalCalls.TransformComponent_GetFowardVector(Entity.ID, out Vector foward);
+            InternalCalls.TransformComponent_GetFowardVector(Entity.ID, out Vector3 foward);
             return foward;
         }
 
-		public void Translate(Vector vec)
+		public void Translate(Vector3 vec)
 		{
 			Location += vec;
 		}
@@ -212,9 +212,9 @@ namespace Proof
 				InternalCalls.RigidBody_SetGravity(Entity.ID, ref value);
 			}
 		}
-		public void AddForce(Vector force, ForceMode mode = ForceMode.Force, bool autoWake = true)=>
+		public void AddForce(Vector3 force, ForceMode mode = ForceMode.Force, bool autoWake = true)=>
 			InternalCalls.RigidBody_AddForce(Entity.ID, force, (int)mode, autoWake);
-		public void AddTorque(Vector force, ForceMode mode = ForceMode.Force, bool autoWake = true) => 
+		public void AddTorque(Vector3 force, ForceMode mode = ForceMode.Force, bool autoWake = true) => 
 			InternalCalls.RigidBody_AddTorque(Entity.ID, force, (int)mode, autoWake);	
 
 
@@ -229,24 +229,24 @@ namespace Proof
         }
 
 
-		public Vector GetLinearVelocity()
+		public Vector3 GetLinearVelocity()
 		{
-			InternalCalls.RigidBody_GetLinearVelocity(Entity.ID, out Vector velocity);
+			InternalCalls.RigidBody_GetLinearVelocity(Entity.ID, out Vector3 velocity);
 			return velocity;
 		}
 
-		public void SetLinearVelocity(Vector velocity, bool wakeUp = true)
+		public void SetLinearVelocity(Vector3 velocity, bool wakeUp = true)
 		{
 			InternalCalls.RigidBody_SetLinearVelocity(Entity.ID, ref velocity, wakeUp);
 		}
 
-        public Vector GetAngularVelocity()
+        public Vector3 GetAngularVelocity()
         {
-            InternalCalls.RigidBody_GetAngularVelocity(Entity.ID, out Vector velocity);
+            InternalCalls.RigidBody_GetAngularVelocity(Entity.ID, out Vector3 velocity);
             return velocity;
         }
 
-        public void SetAngularVelocity(Vector velocity, bool wakeUp = true)
+        public void SetAngularVelocity(Vector3 velocity, bool wakeUp = true)
         {
             InternalCalls.RigidBody_SetAngularVelocity(Entity.ID, ref velocity, wakeUp);
         }

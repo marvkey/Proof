@@ -44,8 +44,8 @@ namespace Game
       
             if (m_Owner == null && m_Throw == false && m_HasRUnTrnasform == false)
             {
-                GetComponent<TransformComponent>().Rotation = new Vector(0, 0, 180);
-                GetComponent<TransformComponent>().Location = new Vector(GetComponent<TransformComponent>().Location.X, GetComponent<TransformComponent>().Location.Y + 3,
+                GetComponent<TransformComponent>().Rotation = new Vector3(0, 0, 180);
+                GetComponent<TransformComponent>().Location = new Vector3(GetComponent<TransformComponent>().Location.X, GetComponent<TransformComponent>().Location.Y + 3,
                     GetComponent<TransformComponent>().Location.Z);
                 m_HasRUnTrnasform = true;
 
@@ -53,7 +53,7 @@ namespace Game
             if (m_Throw == false && m_Owner != null)
             {
                 GetComponent<TransformComponent>().Location = m_Owner.GetComponent<TransformComponent>().Location;
-                GetComponent<TransformComponent>().Rotation = new Vector(m_Owner.GetComponent<TransformComponent>().Rotation.X, m_Owner.GetComponent<TransformComponent>().Rotation.Y,
+                GetComponent<TransformComponent>().Rotation = new Vector3(m_Owner.GetComponent<TransformComponent>().Rotation.X, m_Owner.GetComponent<TransformComponent>().Rotation.Y,
                     180);
             }
             if (M_PowerupApplied == true)

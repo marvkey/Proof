@@ -115,25 +115,25 @@ namespace Proof
 
         #region TransformComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetLocation(ulong entityID, out Vector location);
+		internal extern static void TransformComponent_GetLocation(ulong entityID, out Vector3 location);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetLocation(ulong entityID, ref Vector location);
+		internal extern static void TransformComponent_SetLocation(ulong entityID, ref Vector3 location);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetRotation(ulong entityID, out Vector rotation);
+		internal extern static void TransformComponent_GetRotation(ulong entityID, out Vector3 rotation);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector rotation);
+		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector3 rotation);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetScale(ulong entityID, out Vector scale);
+		internal extern static void TransformComponent_GetScale(ulong entityID, out Vector3 scale);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector Scale);
+		internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector3 Scale);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_GetFowardVector(ulong entityID, out Vector vec);
+        internal extern static void TransformComponent_GetFowardVector(ulong entityID, out Vector3 vec);
         #endregion
 
         #region RigidBody
@@ -149,10 +149,10 @@ namespace Proof
 		internal extern static void RigidBody_SetMass(ulong entityID, ref float mass);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBody_AddForce(ulong entityID, Vector force, int forceMode, bool autoAwake);
+		internal extern static void RigidBody_AddForce(ulong entityID, Vector3 force, int forceMode, bool autoAwake);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBody_AddTorque(ulong entityID, Vector force, int forceMode, bool autoAwake);
+		internal extern static void RigidBody_AddTorque(ulong entityID, Vector3 force, int forceMode, bool autoAwake);
 
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -163,16 +163,16 @@ namespace Proof
 
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBody_GetLinearVelocity(ulong entityID, out Vector linearVelocity);
+        internal extern static void RigidBody_GetLinearVelocity(ulong entityID, out Vector3 linearVelocity);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBody_SetLinearVelocity(ulong entityID, ref Vector linearVelocity, bool autoAwake);
+        internal extern static void RigidBody_SetLinearVelocity(ulong entityID, ref Vector3 linearVelocity, bool autoAwake);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBody_GetAngularVelocity(ulong entityID, out Vector linearVelocity);
+        internal extern static void RigidBody_GetAngularVelocity(ulong entityID, out Vector3 linearVelocity);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBody_SetAngularVelocity(ulong entityID, ref Vector linearVelocity, bool autoAwake);
+        internal extern static void RigidBody_SetAngularVelocity(ulong entityID, ref Vector3 linearVelocity, bool autoAwake);
         #endregion
 
         #region TextComponent

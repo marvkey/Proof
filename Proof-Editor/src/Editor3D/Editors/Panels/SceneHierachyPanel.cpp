@@ -28,6 +28,9 @@
 #include <imgui/imgui_internal.h>
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Math/Random.h"
+#include "Proof/Scripting/ScriptFile.h"
+#include "Proof/Utils/StringUtils.h"
+#include "Proof/Scripting/ScriptField.h"
 //include those before stdlig.h
 
 #include "misc/cpp/imgui_stdlib.h"
@@ -959,7 +962,68 @@ namespace Proof
 			ImGui::TreePop();
 		});
 		DrawComponents<ScriptComponent>("Scripts", entity, [&](ScriptComponent& scriptComp) {
+			#if 1
+			if (ImGui::Button("Add Script"))
+			{
+				ImGui::OpenPopup("Open Scripts");
+			}
+			if (ImGui::BeginPopup("Open Scripts"))
+			{
+				for (const auto [scriptName, script] : ScriptEngine::GetEntityScripts())
+				{
+					if (ImGui::MenuItem(scriptName.c_str()))
+					{
+						Count<ScriptFile> scriptFile = AssetManager::CreateRuntimeAsset<ScriptFile>(script->GetNameSpace(), script->GetName());
+						if (ScriptEngine::IsEntityScriptInstantiated(entity))
+						{
+							ScriptEngine::ScriptEntityPushScript(entity, scriptFile);
+						}
+						else
+						{
+							ScriptComponentMetaData metadata;
+							metadata.ScriptClassID= scriptFile->GetID();
+							scriptComp.ScriptMetadates.push_back(metadata);
 
+							ScriptEngine::InstantiateScriptEntity(entity);
+						}
+						
+						ImGui::CloseCurrentPopup();
+					}
+				}
+				ImGui::EndPopup();
+			}
+
+			if (!ScriptEngine::IsEntityScriptInstantiated(entity))
+				return;
+
+
+
+
+			auto& classFields = *ScriptEngine::GetEntityFields(entity);
+			for (const EntityClassMetaData& classMetaData : classFields)
+			{
+				const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+				UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
+				bool open = ImGui::TreeNodeEx(classMetaData.className.c_str(), treeNodeFlags, classMetaData.className.c_str());
+				if (!open)continue;
+				UI::BeginPropertyGrid(fmt::format("ScriptComponent::Grid {}",classMetaData.className));
+
+				for (const auto& [fieldName,field] : classMetaData.Fields)
+				{
+					if (!field->GetFieldInfo()->IsArray())
+					{
+						std::string fieldName = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
+
+						Count<FieldStorage> storage = field.As<FieldStorage>();
+						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
+					}
+				}
+				UI::EndPropertyGrid();
+				ImGui::TreePop();
+			}
+
+
+			#endif
 			# if 0
 			if (ImGui::Button("Add Script")) {
 				ImGui::OpenPopup("Open Scripts");
