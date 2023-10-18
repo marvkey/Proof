@@ -27,8 +27,8 @@ namespace Proof
     }
     ManageEnumClass* EnumFieldStorage::ManageEnum() const
     {
-        
-        //m_FieldInfo->
+        PF_CORE_ASSERT(false);
+       //m_FieldInfo->
         return nullptr;
     }
     bool EnumFieldStorage::GetValueRuntime(Buffer& outBuffer) const

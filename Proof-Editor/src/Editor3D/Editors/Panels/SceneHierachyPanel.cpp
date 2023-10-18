@@ -1000,6 +1000,7 @@ namespace Proof
 
 
 			auto& classFields = *ScriptEngine::GetEntityFields(entity);
+
 			for (const EntityClassMetaData& classMetaData : classFields)
 			{
 				const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
@@ -1008,6 +1009,36 @@ namespace Proof
 				if (!open)continue;
 				UI::BeginPropertyGrid(fmt::format("ScriptComponent::Grid {}",classMetaData.className));
 
+				//usign this becuase it stores the field in order form top to bottom
+				ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(classMetaData.className);
+				if (managedClass == nullptr)
+					continue;
+				for (const auto& fieldName : managedClass->Fields)
+				{
+					if (!classMetaData.Fields.contains(fieldName))
+						continue;
+
+					Count<FieldStorageBase> field = classMetaData.Fields.at(fieldName);
+
+					std::string fieldName = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
+
+					if (field->GetFieldInfo()->IsArray())
+					{
+
+
+					}
+					else if (field->GetFieldInfo()->IsEnum())
+					{
+						Count<EnumFieldStorage> storage = field.As<EnumFieldStorage>();
+						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
+					}
+					else
+					{
+						Count<FieldStorage> storage = field.As<FieldStorage>();
+						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
+					}
+				}
+				#if 0
 				for (const auto& [fieldName,field] : classMetaData.Fields)
 				{
 					std::string fieldName = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
@@ -1028,6 +1059,7 @@ namespace Proof
 						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
 					}
 				}
+				#endif
 				UI::EndPropertyGrid();
 				ImGui::TreePop();
 			}

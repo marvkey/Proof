@@ -25,6 +25,40 @@
 
 #define PF_CACHED_CLASS_RAW(clazz) ScriptRegistry::GetManagedClassByName(clazz)->Class
 #define PF_REGISTERED_CLASS(clazz) ScriptRegistry::GetManagedClassByName(clazz)
+//dont use for strings
+#define PF_TRY_GET_ATTRIBUTE(refValue,className,fieldName,attributeObject)\
+{\
+	 MonoClass* classType = ScriptRegistry::GetManagedClassByName(className)->Class; \
+    if (classType) { \
+        MonoClassField* field = mono_class_get_field_from_name(classType, fieldName); \
+        if (field) { \
+            mono_field_get_value(attributeObject, field, &refValue); \
+        } else { \
+            PF_ENGINE_ERROR("AttributeClass: {} Does not have Field: {}",className,fieldName);\
+			PF_CORE_ASSERT(false);\
+        } \
+    } else { \
+        PF_ENGINE_ERROR("Script Registry does not contain AttributeClass: {} ",className);\
+		PF_CORE_ASSERT(false);\
+    } \
+}\
+
+#define PF_TRY_GET_ATTRIBUTE_STRING(refValue,className,fieldName,attributeObject)\
+{\
+	 MonoClass* classType = ScriptRegistry::GetManagedClassByName(className)->Class; \
+    if (classType) { \
+        MonoClassField* field = mono_class_get_field_from_name(classType, fieldName); \
+        if (field) { \
+            refValue = ScriptUtils::MonoStringToUTF8( (MonoString*)mono_field_get_value_object(ScriptEngine::GetAppDomain(), field, attrib));\
+        } else { \
+            PF_ENGINE_ERROR("AttributeClass: {} Does not have Field: {}",className,fieldName);\
+			PF_CORE_ASSERT(false);\
+        } \
+    } else { \
+        PF_ENGINE_ERROR("Script Registry does not contain AttributeClass: {} ",className);\
+		PF_CORE_ASSERT(false);\
+    } \
+}\
 
 namespace Proof
 {
@@ -395,6 +429,19 @@ namespace Proof
 			mono_free(fullName);
 		}
 	}
+	static bool HasAttribute(MonoCustomAttrInfo* attributes, const char* className) {
+		ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(className);
+		if (managedClass)
+		{
+			return mono_custom_attrs_has_attr(attributes, managedClass->Class);
+		}
+		else
+		{
+			PF_ENGINE_ERROR("Script Registry does not contain AttributeClass: {}", className);
+			PF_CORE_ASSERT(false);
+			return false;
+		}
+	}
 	void ScriptRegistry::RegisterClassFields(Count<AssemblyInfo> assemblyInfo, ManagedClass& managedClass)
 	{
 		MonoClass* currentClass = managedClass.Class;
@@ -424,7 +471,6 @@ namespace Proof
 				if (fieldType == ScriptFieldType::Void)
 					continue;
 
-				MonoCustomAttrInfo* attributes = mono_custom_attrs_from_field(currentClass, field);
 
 				//uint32_t fieldID = Hash::GenerateFNVHash(fmt::format("{0}:{1}", managedClass.FullName, name));
 
@@ -488,24 +534,65 @@ namespace Proof
 							break;
 						}
 				}
-				#if 0
-				if (attributes && mono_custom_attrs_has_attr(attributes, GetManagedClassByName("Proof.ShowInEditorAttribute")->Class))
+
+
+				MonoCustomAttrInfo* attributes = mono_custom_attrs_from_field(currentClass, field);
+
+				if (attributes)
 				{
-					managedField.Flags &= ~(uint64_t)FieldFlag::Protected;
-					managedField.Flags &= ~(uint64_t)FieldFlag::Internal;
-					managedField.Flags &= ~(uint64_t)FieldFlag::Private;
-					managedField.Flags |= (uint64_t)FieldFlag::Public;
+					if (HasAttribute(attributes, "Proof.ShowInEditorAttribute"))
+					{
+						managedField.Flags &= ~(uint64_t)FieldFlag::Protected;
+						managedField.Flags &= ~(uint64_t)FieldFlag::Internal;
+						managedField.Flags &= ~(uint64_t)FieldFlag::Private;
+						managedField.Flags |= (uint64_t)FieldFlag::Public;
+						MonoObject* attrib = mono_custom_attrs_get_attr(attributes, GetManagedClassByName("Proof.ShowInEditorAttribute")->Class);
+						#if 0
+						MonoClassField* field = mono_class_get_field_from_name(GetManagedClassByName("Proof.ShowInEditorAttribute")->Class, "DisplayName");
+						if (field)
+						{
+							managedField.DisplayName = ScriptUtils::MonoStringToUTF8( (MonoString*)mono_field_get_value_object(ScriptEngine::GetAppDomain(), field, attrib));
+						}
+						#endif
 
-					MonoObject* attrib = mono_custom_attrs_get_attr(attributes, GetManagedClassByName("Proof.ShowInEditorAttribute")->Class);
-					//ANT_TRY_GET_FIELD_VALUE(managedField.DisplayName, "Ant.ShowInEditorAttribute", "DisplayName", attrib);
+						PF_TRY_GET_ATTRIBUTE_STRING(managedField.DisplayName, "Proof.ShowInEditorAttribute", "DisplayName", attrib);
 
-					bool isReadOnly = false;
-					//ANT_TRY_GET_FIELD_VALUE(isReadOnly, "Ant.ShowInEditorAttribute", "IsReadOnly", attrib);
+						bool isReadOnly = false;
+						PF_TRY_GET_ATTRIBUTE(isReadOnly, "Proof.ShowInEditorAttribute", "IsReadOnly", attrib);
 
-					if (isReadOnly)
-						managedField.Flags |= (uint64_t)FieldFlag::ReadOnly;
+						if (isReadOnly == true)
+							managedField.Flags |= (uint64_t)FieldFlag::ReadOnly;
+					}
+
+					if (HasAttribute(attributes, "Proof.ClampValueAttribute"))
+					{
+						MonoObject* attrib = mono_custom_attrs_get_attr(attributes, GetManagedClassByName("Proof.ClampValueAttribute")->Class);
+
+						managedField.FieldRangeAttribute.RangeFlags |= ScriptFieldRangeAttribute::RangeSet::All;
+						PF_TRY_GET_ATTRIBUTE(managedField.FieldRangeAttribute.MinValue, "Proof.ClampValueAttribute", "Min", attrib);
+						PF_TRY_GET_ATTRIBUTE(managedField.FieldRangeAttribute.MaxValue, "Proof.ClampValueAttribute", "Max", attrib);
+					}
+
+					if (HasAttribute(attributes, "Proof.MaxAttribute"))
+					{
+						MonoObject* attrib = mono_custom_attrs_get_attr(attributes, GetManagedClassByName("Proof.MaxAttribute")->Class);
+						managedField.FieldRangeAttribute.RangeFlags |= ScriptFieldRangeAttribute::RangeSet::Max;
+						PF_TRY_GET_ATTRIBUTE(managedField.FieldRangeAttribute.MaxValue, "Proof.MaxAttribute", "Max", attrib);
+					}
+
+					if (HasAttribute(attributes, "Proof.MinAttribute"))
+					{
+						MonoObject* attrib = mono_custom_attrs_get_attr(attributes, GetManagedClassByName("Proof.MinAttribute")->Class);
+						managedField.FieldRangeAttribute.RangeFlags |= ScriptFieldRangeAttribute::RangeSet::Min;
+						PF_TRY_GET_ATTRIBUTE(managedField.FieldRangeAttribute.MaxValue, "Proof.MinAttribute", "Min", attrib);
+					}
+
+					if (HasAttribute(attributes, "Proof.ToolTipAttribute"))
+					{
+						MonoObject* attrib = mono_custom_attrs_get_attr(attributes, GetManagedClassByName("Proof.ToolTipAttribute")->Class);
+						PF_TRY_GET_ATTRIBUTE_STRING(managedField.ToolTip, "Proof.ToolTipAttribute", "ToolTip", attrib);
+					}
 				}
-				#endif
 
 				if (managedField.IsArray())
 				{

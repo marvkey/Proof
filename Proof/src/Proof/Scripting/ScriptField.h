@@ -34,9 +34,30 @@ namespace Proof
 		Entity,
 		Prefab,Texture2D, AssetID,Mesh,DynamicMesh,Material,PhysicsMaterial,//asset
 	};
+	struct ScriptFieldRangeAttribute
+	{
+		enum RangeSet
+		{
+			None =-1,
+			Min = BIT(0),
+			Max = BIT(1),
+			All = Min | Max
+		};
 
+		int RangeFlags = 0;
+		float MinValue, MaxValue;
+		bool IsSet()
+		{
+			return !(RangeFlags &  RangeSet::None);
+		}
+
+		bool IsAllSet()const { return RangeFlags & RangeSet::All; }
+		bool IsMinSet()const { return RangeFlags & RangeSet::Min; }
+		bool IsMaxSet()const {	return RangeFlags & RangeSet::Max; }
+	};
 	struct ScriptField
 	{
+
 		//uint64_t ID = 0;
 		std::string Name;
 		ScriptFieldType Type;
@@ -46,6 +67,7 @@ namespace Proof
 
 		uint64_t Flags = 0;
 		std::string DisplayName = "";
+		std::string ToolTip ="";
 		bool HasFlag(FieldFlag flag) const { return Flags & (uint64_t)flag; }
 
 		bool IsWritable() const
@@ -56,6 +78,8 @@ namespace Proof
 		bool IsArray() const { return HasFlag(FieldFlag::IsArray); }
 		bool IsEnum()const { return HasFlag(FieldFlag::IsEnum); };
 		std::string RegistryClassName =	"";// 
+
+		ScriptFieldRangeAttribute FieldRangeAttribute;
 	};
 
 	inline uint32_t GetFieldTypeSize(ScriptFieldType type)

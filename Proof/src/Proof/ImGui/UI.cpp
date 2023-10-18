@@ -538,8 +538,8 @@ namespace Proof::UI
 
         return { bModified,currentSelection,returnValue };
     }
-
-    bool AttributeSlider(const std::string& label, int& value, int min, int max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    template<class ValueType>
+    bool AttributeSliderBase(const std::string& label, ValueType& value, ValueType min, ValueType max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format,ImGuiDataType_ type)
     {
         if (min == 0 && max == 0)
             flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
@@ -557,18 +557,68 @@ namespace Proof::UI
         ImGui::NextColumn();
         ImGui::PushItemWidth(-1);
 
-        bModified = ImGui::SliderInt(s_IDBuffer, &value, min, max,format,flags);
+        bModified = ImGui::SliderScalar(s_IDBuffer, type, &value, &min, &max, format, flags);
         ImGui::PopItemWidth();
         ImGui::NextColumn();
         return bModified;
-
     }
 
-    bool AttributeSlider(const std::string& label, float& value, float min, float max, const std::string& helpMessage,ImGuiSliderFlags flags, const char* format)
+    bool AttributeSlider(const std::string& label, uint8_t& value, uint8_t min, uint8_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeSliderBase<uint8_t>(label, value, min, max, helpMessage, flags, format, ImGuiDataType_U8);
+    }
+
+    bool AttributeSlider(const std::string& label, uint16_t& value, uint16_t min, uint16_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeSliderBase<uint16_t>(label, value, min, max, helpMessage, flags, format, ImGuiDataType_U16);
+    }
+
+    bool AttributeSlider(const std::string& label, uint32_t& value, uint32_t min, uint32_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeSliderBase<uint32_t>(label, value, min, max, helpMessage, flags, format, ImGuiDataType_U32);
+    }
+    bool AttributeSlider(const std::string& label, uint64_t& value, uint64_t min, uint64_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeSliderBase<uint64_t>(label, value, min, max, helpMessage, flags, format, ImGuiDataType_U64);
+    }
+
+    // For signed data types
+    bool AttributeSlider(const std::string& label, int8_t& value, int8_t min, int8_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeSliderBase<int8_t>(label, value, min, max, helpMessage, flags, format, ImGuiDataType_S8);
+    }
+
+    bool AttributeSlider(const std::string& label, int16_t& value, int16_t min, int16_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeSliderBase<int16_t>(label, value, min, max, helpMessage, flags, format, ImGuiDataType_S16);
+    }
+
+    bool AttributeSlider(const std::string& label, int32_t& value, int32_t min, int32_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeSliderBase<int32_t>(label, value, min, max, helpMessage, flags, format, ImGuiDataType_S32);
+    }
+
+    bool AttributeSlider(const std::string& label, int64_t& value, int64_t min, int64_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeSliderBase<int64_t>(label, value, min, max, helpMessage, flags, format, ImGuiDataType_S64);
+    }
+
+    // For floating-point data types
+    bool AttributeSlider(const std::string& label, float& value, float min, float max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeSliderBase<float>(label, value, min, max, helpMessage, flags, format, ImGuiDataType_Float);
+    }
+
+    bool AttributeSlider(const std::string& label, double& value, double min, double max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeSliderBase<double>(label, value, min, max, helpMessage, flags, format, ImGuiDataType_Double);
+    }
+    template<class ValueType>
+    bool AttributeSliderNBase(const std::string& label, ValueType& value, ValueType min, ValueType max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format,ImGuiDataType_  dataType, uint32_t count)
     {
         if (min == 0 && max == 0)
             flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
-         
+
         bool bModified = false;
 
         UpdateIDBuffer(label);
@@ -582,7 +632,7 @@ namespace Proof::UI
         ImGui::NextColumn();
         ImGui::PushItemWidth(-1);
 
-        bModified = ImGui::SliderFloat(s_IDBuffer, &value, min, max, format, flags);
+        bModified = ImGui::SliderScalarN(s_IDBuffer, dataType, &value,(int)count,&min, &max, format, flags);
         ImGui::PopItemWidth();
         ImGui::NextColumn();
         return bModified;
@@ -590,76 +640,19 @@ namespace Proof::UI
 
     bool AttributeSlider(const std::string& label, glm::vec2& value, float min, float max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
     {
-        if (min == 0 && max == 0)
-            flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
-
-        bool bModified = false;
-
-        UpdateIDBuffer(label);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
-        if (helpMessage.size())
-        {
-            ImGui::SameLine();
-            UI::HelpMarker(helpMessage);
-        }
-        ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
-
-        bModified = ImGui::SliderFloat2(s_IDBuffer, &value.x, min, max,format, flags);
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
-        return bModified;
-
+        return AttributeSliderNBase<float>(label, value.x, min, max, helpMessage, flags, format, ImGuiDataType_Float, 2);
     }
 
     bool AttributeSlider(const std::string& label, glm::vec3& value, float min, float max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
     {
-        if (min == 0 && max == 0)
-            flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
-
-        bool bModified = false;
-
-        UpdateIDBuffer(label);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
-        if (helpMessage.size())
-        {
-            ImGui::SameLine();
-            UI::HelpMarker(helpMessage);
-        }
-        ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
-
-        bModified = ImGui::SliderFloat3(s_IDBuffer, &value.x, min, max, format, flags);
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
-        return bModified;
+        return AttributeSliderNBase<float>(label, value.x, min, max, helpMessage, flags, format, ImGuiDataType_Float, 3);
     }
 
     bool AttributeSlider(const std::string& label, glm::vec4& value, float min, float max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
     {
-        if (min == 0 && max == 0)
-            flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
-
-        bool bModified = false;
-
-        UpdateIDBuffer(label);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
-        if (helpMessage.size())
-        {
-            ImGui::SameLine();
-            UI::HelpMarker(helpMessage);
-        }
-        ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
-
-        bModified = ImGui::SliderFloat4(s_IDBuffer, &value.x, min, max, format, flags);
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
-        return bModified; 
+        return AttributeSliderNBase<float>(label, value.x, min, max, helpMessage, flags, format, ImGuiDataType_Float, 4);
     }
+
     template<class ValueType>
     bool AttributeDragBase(const std::string& label, ValueType& value, float speed, ValueType min, ValueType max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format, ImGuiDataType_ dataType)
     {
@@ -683,6 +676,7 @@ namespace Proof::UI
         ImGui::NextColumn();
         return bModified;
     }
+
     bool AttributeDrag(const std::string& label, int8_t& value, float speed, int8_t min, int8_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
     {
         return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_S8);
@@ -702,18 +696,26 @@ namespace Proof::UI
 
     bool AttributeDrag(const std::string& label, uint8_t& value, float speed, uint8_t min, uint8_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
     {
+        if (min == 0 && max == 0)
+            max = Math::GetMaxType<uint8_t>();
         return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_U8);
     }
     bool AttributeDrag(const std::string& label, uint16_t& value, float speed, uint16_t min, uint16_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
     {
+        if (min == 0 && max == 0)
+            max = Math::GetMaxType<uint16_t>();
         return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_U16);
     }
     bool AttributeDrag(const std::string& label, uint32_t& value, float speed, uint32_t min, uint32_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
     {
+        if (min == 0 && max == 0)
+            max = Math::GetMaxType<uint32_t>();
         return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_U32);
     }
     bool AttributeDrag(const std::string& label, uint64_t& value, float speed, uint64_t min, uint64_t max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
     {
+        if (min == 0 && max == 0)
+            max = Math::GetMaxType<uint64_t>();
         return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_U64);
     }
 
@@ -726,7 +728,8 @@ namespace Proof::UI
         return AttributeDragBase(label, value, speed, min, max, helpMessage, flags, format, ImGuiDataType_Double);
     }
 
-    bool AttributeDrag(const std::string& label, glm::vec2& value, float speed, float min, float max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    template<class ValueType>
+    bool AttributeDragNBase(const std::string& label, ValueType& value, float speed, ValueType min, ValueType max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format, ImGuiDataType_ dataType, uint32_t count)
     {
         if (min == 0 && max == 0)
             flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
@@ -743,58 +746,24 @@ namespace Proof::UI
         ImGui::NextColumn();
         ImGui::PushItemWidth(-1);
 
-        bModified = ImGui::DragFloat2(s_IDBuffer, &value.x, speed, min, max, format, flags);
+        bModified = ImGui::DragScalarN(s_IDBuffer, dataType, &value,(int)count, speed, &min, &max, format, flags);
         ImGui::PopItemWidth();
         ImGui::NextColumn();
         return bModified;
+    }
+    bool AttributeDrag(const std::string& label, glm::vec2& value, float speed, float min, float max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
+    {
+        return AttributeDragNBase<float>(label, value.x, speed, min, max, helpMessage, flags, format, ImGuiDataType_Float, 2);
     }
 
     bool AttributeDrag(const std::string& label, glm::vec3& value, float speed, float min, float max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
     {
-        if (min == 0 && max == 0)
-            flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
-
-        bool bModified = false;
-
-        UpdateIDBuffer(label);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
-        if (helpMessage.size())
-        {
-            ImGui::SameLine();
-            UI::HelpMarker(helpMessage);
-        }
-        ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
-
-        bModified = ImGui::DragFloat3(s_IDBuffer, &value.x, speed, min, max, format, flags);
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
-        return bModified;
+        return AttributeDragNBase<float>(label, value.x, speed, min, max, helpMessage, flags, format, ImGuiDataType_Float, 3);
     }
 
     bool AttributeDrag(const std::string& label, glm::vec4& value, float speed, float min, float max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
     {
-        if (min == 0 && max == 0)
-            flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
-
-        bool bModified = false;
-
-        UpdateIDBuffer(label);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
-        if (helpMessage.size())
-        {
-            ImGui::SameLine();
-            UI::HelpMarker(helpMessage);
-        }
-        ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
-
-        bModified = ImGui::DragFloat4(s_IDBuffer, &value.x, speed, min, max, format, flags);
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
-        return bModified;
+        return AttributeDragNBase<float>(label, value.x, speed, min, max, helpMessage, flags, format, ImGuiDataType_Float, 4);
     }
 
     bool AttributeColor(const std::string& label, glm::vec3& value, const std::string& helpMessage)
@@ -871,15 +840,17 @@ namespace Proof::UI
         return ImGui::InputTextMultiline(label.c_str(), (char*)value.c_str(), value.capacity() + 1, ImVec2(0,0),flags, InputTextCallback, &cb_user_data);
 
     }
-
+    static bool isDisabledSet = false;
     void PushItemDisabled()
     {
+        isDisabledSet = true;
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
     }
 
     void PopItemDisabled()
     {
+        isDisabledSet = false;
         ImGui::PopItemFlag();
         ImGui::PopStyleVar();
     }
@@ -898,6 +869,9 @@ namespace Proof::UI
 
     void HelpMarker(const std::string& text)
     {
+        bool localisDisabledSet = isDisabledSet;
+        if (localisDisabledSet)
+            UI::PopItemDisabled();
         ImGui::TextDisabled("(?)");
         if (ImGui::IsItemHovered())
         {
@@ -907,6 +881,25 @@ namespace Proof::UI
             ImGui::PopTextWrapPos();
             ImGui::EndTooltip();
         }
+        if (localisDisabledSet)
+            UI::PushItemDisabled();
+
+    }
+    #define ATTRIBUTE_FIELD_VALUE(storage,fieldName,DataType, delta, min, max, toolTip, useSlider,result ) \
+    { \
+        DataType value = storage->GetValue<DataType>(); \
+        if(useSlider){\
+            if (AttributeSlider(fieldName, value, (DataType) min, (DataType) max, toolTip)) \
+            { \
+                storage->SetValue(value); \
+                result = true; \
+            } \
+        }\
+        else if (AttributeDrag(fieldName, value, delta, (DataType) min, (DataType) max, toolTip)) \
+        { \
+            storage->SetValue(value); \
+            result = true; \
+        } \
     }
 
     bool DrawFieldValue(Count<class World> worldContext, const std::string& fieldName, Count<Proof::FieldStorage>& storage)
@@ -920,10 +913,41 @@ namespace Proof::UI
         float max = 0.0f;
         float delta = 0.1f;
 
+        bool useSlider = false;
+        const std::string& toolTip = field->ToolTip;
+
+        //field range attribute
+        {
+            const auto& fieldRangeAttribute = field->FieldRangeAttribute;
+
+            if (fieldRangeAttribute.IsAllSet())
+            {
+                useSlider = true;
+                min = fieldRangeAttribute.MinValue;
+                max = fieldRangeAttribute.MaxValue;
+            }
+
+            else if (fieldRangeAttribute.IsMinSet())
+            {
+                useSlider = true;
+                min = fieldRangeAttribute.MinValue;
+            }
+            else if (fieldRangeAttribute.IsMaxSet())
+            {
+                useSlider = true;
+                max = fieldRangeAttribute.MaxValue;
+            }
+
+            if (useSlider == true)
+                delta = 0.5f;
+        }
+
+        
         std::string id = fmt::format("{0}-{1}", fieldName, field->Name);
         ImGui::PushID(id.c_str());
 
-
+        if (field->HasFlag(FieldFlag::ReadOnly))
+            UI::PushItemDisabled();
         bool result = false;
 
         switch (field->Type)
@@ -931,7 +955,7 @@ namespace Proof::UI
             case ScriptFieldType::Bool:
                 {
                     bool value = storage->GetValue<bool>();
-                    if (AttributeBool(fieldName.c_str(), value))
+                    if (AttributeBool(fieldName.c_str(), value, toolTip))
                     {
                         storage->SetValue(value);
                         result = true;
@@ -940,102 +964,52 @@ namespace Proof::UI
                 }
             case ScriptFieldType::Int8:
                 {
-                    int8_t value = storage->GetValue<int8_t>();
-                    if (AttributeDrag(fieldName, value, delta,(int8_t)min, (int8_t)max))
-                    {
-                        storage->SetValue(value);
-                        result = true;
-                    }
+                    ATTRIBUTE_FIELD_VALUE(storage, fieldName, int8_t, delta, min, max, toolTip, useSlider, result);
                     break;
                 }
             case ScriptFieldType::Int16:
                 {
-                    int16_t value = storage->GetValue<int16_t>();
-                    if (AttributeDrag(fieldName.c_str(), value, delta, (int16_t)min, (int16_t)max))
-                    {
-                        storage->SetValue(value);
-                        result = true;
-                    }
+                    ATTRIBUTE_FIELD_VALUE(storage, fieldName, int16_t, delta, min, max, toolTip, useSlider, result);
                     break;
                 }
             case ScriptFieldType::Int32:
                 {
-                    int32_t value = storage->GetValue<int32_t>();
-                    if (AttributeDrag(fieldName.c_str(), value, delta, (int32_t)min, (int32_t)max))
-                    {
-                        storage->SetValue(value);
-                        result = true;
-                    }
+                    ATTRIBUTE_FIELD_VALUE(storage, fieldName, int32_t, delta, min, max, toolTip, useSlider, result);
                     break;
                 }
             case ScriptFieldType::Int64:
                 {
-                    int64_t value = storage->GetValue<int64_t>();
-                    if (AttributeDrag(fieldName.c_str(), value, delta, (int64_t)min, (int64_t)max))
-                    {
-                        storage->SetValue(value);
-                        result = true;
-                    }
+                    ATTRIBUTE_FIELD_VALUE(storage, fieldName, int64_t, delta, min, max, toolTip, useSlider, result);
                     break;
                 }
             case ScriptFieldType::UInt8:
                 {
-                    uint8_t value = storage->GetValue<uint8_t>();
-                    if (AttributeDrag(fieldName.c_str(), value, delta, (uint8_t)min, (uint8_t)max))
-                    {
-                        storage->SetValue(value);
-                        result = true;
-                    }
+                    ATTRIBUTE_FIELD_VALUE(storage, fieldName, uint8_t, delta, min, max, toolTip, useSlider, result);
                     break;
                 }
             case ScriptFieldType::UInt16:
                 {
-                    uint16_t value = storage->GetValue<uint16_t>();
-                    if (AttributeDrag(fieldName.c_str(), value, delta, (uint16_t)min, (uint16_t)max))
-                    {
-                        storage->SetValue(value);
-                        result = true;
-                    }
+                    ATTRIBUTE_FIELD_VALUE(storage, fieldName, uint16_t, delta, min, max, toolTip, useSlider, result);
                     break;
                 }
             case ScriptFieldType::UInt32:
                 {
-                    uint32_t value = storage->GetValue<uint32_t>();
-                    if (AttributeDrag(fieldName.c_str(), value, delta, (uint32_t)min, (uint32_t)max))
-                    {
-                        storage->SetValue(value);
-                        result = true;
-                    }
+                    ATTRIBUTE_FIELD_VALUE(storage, fieldName, uint32_t, delta, min, max, toolTip, useSlider, result);
                     break;
                 }
             case ScriptFieldType::UInt64:
                 {
-                    uint64_t value = storage->GetValue<uint64_t>();
-                    if (AttributeDrag(fieldName.c_str(), value, delta, (uint64_t)min, (uint64_t)max))
-                    {
-                        storage->SetValue(value);
-                        result = true;
-                    }
+                    ATTRIBUTE_FIELD_VALUE(storage, fieldName, uint64_t, delta, min, max, toolTip, useSlider, result);
                     break;
                 }
             case ScriptFieldType::Float:
                 {
-                    float value = storage->GetValue<float>();
-                    if (AttributeDrag(fieldName.c_str(), value, delta, min, max))
-                    {
-                        storage->SetValue(value);
-                        result = true;
-                    }
+                    ATTRIBUTE_FIELD_VALUE(storage, fieldName, float, delta, min, max, toolTip, useSlider, result);
                     break;
                 }
             case ScriptFieldType::Double:
                 {
-                    double value = storage->GetValue<double>();
-                    if (AttributeDrag(fieldName.c_str(), value, delta, (double)min, (double)max))
-                    {
-                        storage->SetValue(value);
-                        result = true;
-                    }
+                    ATTRIBUTE_FIELD_VALUE(storage, fieldName, double, delta, min, max, toolTip, useSlider, result);
                     break;
                 }
             case ScriptFieldType::String:
@@ -1044,7 +1018,7 @@ namespace Proof::UI
                     char buffer[256];
                     memset(buffer, 0, 256);
                     memcpy(buffer, value.c_str(), value.length());
-                    if (AttributeInputText(fieldName.c_str(), value))
+                    if (AttributeInputText(fieldName.c_str(), value, toolTip))
                     {
                         storage->SetValue<std::string>(buffer);
                         result = true;
@@ -1054,7 +1028,7 @@ namespace Proof::UI
             case ScriptFieldType::Vector2:
                 {
                     glm::vec2 value = storage->GetValue<glm::vec2>();
-                    if (AttributeDrag(fieldName.c_str(), value, min, max))
+                    if (AttributeDrag(fieldName.c_str(), value))
                     {
                         storage->SetValue(value);
                         result = true;
@@ -1064,7 +1038,7 @@ namespace Proof::UI
             case ScriptFieldType::Vector3:
                 {
                     glm::vec3 value = storage->GetValue<glm::vec3>();
-                    if (AttributeDrag(fieldName.c_str(), value, min, max))
+                    if (AttributeDrag(fieldName.c_str(), value))
                     {
                         storage->SetValue(value);
                         result = true;
@@ -1074,7 +1048,7 @@ namespace Proof::UI
             case ScriptFieldType::Vector4:
                 {
                     glm::vec4 value = storage->GetValue<glm::vec4>();
-                    if (AttributeDrag(fieldName.c_str(), value, min, max))
+                    if (AttributeDrag(fieldName.c_str(), value))
                     {
                         storage->SetValue(value);
                         result = true;
@@ -1154,6 +1128,8 @@ namespace Proof::UI
         }
 
         ImGui::PopID();
+        if (field->HasFlag(FieldFlag::ReadOnly))
+            UI::PopItemDisabled();
 
         return result;
     }
@@ -1175,6 +1151,11 @@ namespace Proof::UI
 
         bool result = false;
 
+        if (managedEnumClass->EnumFields.empty())
+        {
+            ImGui::Text("Empty Enum");
+            return result;
+        }
         {
             std::vector<std::string> options;
             options.reserve(managedEnumClass->EnumFields.size());

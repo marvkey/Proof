@@ -62,6 +62,8 @@
     <Compile Include="src\Proof\Asset\AssetID.cs" />
     <Compile Include="src\Proof\Asset\Assets.cs" />
     <Compile Include="src\Proof\Asset\ParticleSystem.cs" />
+    <Compile Include="src\Proof\Attributes\ClampValueAttribute.cs" />
+    <Compile Include="src\Proof\Attributes\EditorAttributes .cs" />
     <Compile Include="src\Proof\Core\Application.cs" />
     <Compile Include="src\Proof\Core\Log.cs" />
     <Compile Include="src\Proof\Input\Input.cs" />
@@ -71,6 +73,7 @@
     <Compile Include="src\Proof\Math\Timer.cs" />
     <Compile Include="src\Proof\Math\Transform.cs" />
     <Compile Include="src\Proof\Math\Vector3.cs" />
+    <Compile Include="src\Proof\Renderer\Material.cs" />
     <Compile Include="src\Proof\Scene\Component.cs" />
     <Compile Include="src\Proof\Scene\Entity.cs" />
     <Compile Include="src\Proof\Scene\Prefab.cs" />
