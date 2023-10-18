@@ -1010,10 +1010,20 @@ namespace Proof
 
 				for (const auto& [fieldName,field] : classMetaData.Fields)
 				{
-					if (!field->GetFieldInfo()->IsArray())
-					{
-						std::string fieldName = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
+					std::string fieldName = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
 
+					if (field->GetFieldInfo()->IsArray())
+					{
+
+					
+					}
+					else if (field->GetFieldInfo()->IsEnum())
+					{
+						Count<EnumFieldStorage> storage = field.As<EnumFieldStorage>();
+						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
+					}
+					else
+					{
 						Count<FieldStorage> storage = field.As<FieldStorage>();
 						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
 					}

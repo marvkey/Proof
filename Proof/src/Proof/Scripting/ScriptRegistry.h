@@ -40,6 +40,7 @@ namespace Proof
 	};
 	struct ManagedClass;
 	struct ManagedMethod;
+	struct ManageEnumClass;
 	class ScriptRegistry
 	{
 	public:
@@ -47,6 +48,7 @@ namespace Proof
 		static void ShutDown();
 		static ManagedClass* GetManagedClassByName(const std::string& className);
 		static ManagedClass* GetManagedClass(MonoClass* monoClass);
+		static ManageEnumClass* GetManagedEnumClassByName(const std::string& className);
 		static ManagedClass* GetMonoObjectClass(MonoObject* monoObject);
 		static MonoClass* GetFieldTypeClass(ScriptFieldType fieldType);
 		static struct ScriptField* GetFieldByName(const std::string& fieldName);
@@ -63,6 +65,7 @@ namespace Proof
 		static void RegisterClassFields(Count<AssemblyInfo> assemblyInfo, ManagedClass& managedClass);
 		static void RegisterClassProperties(Count<AssemblyInfo> assemblyInfo, ManagedClass& managedClass);
 
+		static void RegisterEnums(Count<AssemblyInfo> assemblyInfo);
 		static void RegisterCoreClasses();
 		static void BuildClassMetadata(Count<AssemblyInfo>& assemblyInfo, MonoClass* monoClass);
 	};

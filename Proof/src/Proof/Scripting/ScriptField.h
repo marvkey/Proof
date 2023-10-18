@@ -19,6 +19,7 @@ namespace Proof
 		Protected = BIT(4),
 		Internal = BIT(5),
 		IsArray = BIT(6),
+		IsEnum = BIT(7),
 	};
 
 	enum class ScriptFieldType
@@ -27,7 +28,7 @@ namespace Proof
 		Void,
 		Float, Double,
 		Bool, Char,String,
-		Int8, Int16, Int32, Int64, Enum, //suports only integer types, they are basically integers,
+		Int8, Int16, Int32, Int64,
 		UInt8, UInt16, UInt32, UInt64,
 		Vector2, Vector3, Vector4,
 		Entity,
@@ -53,6 +54,8 @@ namespace Proof
 		}
 
 		bool IsArray() const { return HasFlag(FieldFlag::IsArray); }
+		bool IsEnum()const { return HasFlag(FieldFlag::IsEnum); };
+		std::string RegistryClassName =	"";// 
 	};
 
 	inline uint32_t GetFieldTypeSize(ScriptFieldType type)
@@ -283,5 +286,117 @@ namespace Proof
 	private:
 		Buffer m_DataBuffer;
 		ScriptGCHandle m_RuntimeInstance = nullptr;
+	};
+
+	class EnumFieldStorage : public FieldStorageBase
+	{
+	public:
+		EnumFieldStorage(ScriptField* fieldInfo)
+			: FieldStorageBase(fieldInfo)
+		{
+			m_DataBuffer = Buffer::Copy(fieldInfo->DefaultValueBuffer);
+			m_EnumType = fieldInfo->Type;
+		}
+		ScriptFieldType GetType() 
+		{
+			return m_EnumType;
+		}
+
+		struct ManageEnumClass* ManageEnum()const;
+		template<typename T>
+		T GetValue() const
+		{
+			PF_CORE_ASSERT(sizeof(T) == m_FieldInfo->Size);
+
+			if (IsRuntime())
+			{
+				Buffer valueBuffer;
+				bool success = GetValueRuntime(valueBuffer);
+
+				if (!success)
+					return T();
+
+				T value = T();
+				memcpy(&value, valueBuffer.Data, valueBuffer.Size);
+				valueBuffer.Release();
+				return value;
+			}
+
+			if (!m_DataBuffer)
+				return T();
+
+			return *(m_DataBuffer.As<T>());
+		}
+
+		template<typename T>
+		void SetValue(const T& value)
+		{
+			PF_CORE_ASSERT(sizeof(T) == m_FieldInfo->Size);
+
+			if (m_RuntimeInstance != nullptr)
+			{
+				SetValueRuntime(&value);
+			}
+			else
+			{
+				if (!m_DataBuffer)
+					m_DataBuffer.Allocate(m_FieldInfo->Size);
+				m_DataBuffer.Write(&value, sizeof(T));
+			}
+		}
+
+		virtual void CopyFrom(const Count<FieldStorageBase>& other)
+		{
+			Count<EnumFieldStorage> fieldStorage = other.As<EnumFieldStorage>();
+
+			if (m_RuntimeInstance != nullptr)
+			{
+				Buffer valueBuffer;
+				if (fieldStorage->GetValueRuntime(valueBuffer))
+				{
+					SetValueRuntime(valueBuffer.Data);
+					valueBuffer.Release();
+				}
+			}
+			else
+			{
+				m_DataBuffer.Release();
+				m_DataBuffer = Buffer::Copy(fieldStorage->m_DataBuffer);
+			}
+		}
+
+		virtual Buffer GetValueBuffer() const override
+		{
+			if (m_RuntimeInstance == nullptr)
+				return m_DataBuffer;
+
+			Buffer result;
+			GetValueRuntime(result);
+			return result;
+		}
+
+		virtual void SetValueBuffer(const Buffer& buffer)
+		{
+			if (m_RuntimeInstance != nullptr)
+				SetValueRuntime(buffer.Data);
+			else
+				m_DataBuffer = Buffer::Copy(buffer);
+		}
+
+		virtual void SetRuntimeInstance(ScriptGCHandle instance) override
+		{
+			m_RuntimeInstance = instance;
+
+			if (m_RuntimeInstance)
+				SetValueRuntime(m_DataBuffer.Data);
+		}
+	private:
+		bool GetValueRuntime(Buffer& outBuffer) const;
+		void SetValueRuntime(const void* data);
+		bool IsRuntime() { return m_RuntimeInstance != nullptr; }
+	private:
+		Buffer m_DataBuffer;
+		ScriptGCHandle m_RuntimeInstance = nullptr;
+		ScriptFieldType m_EnumType;
 	};
 }

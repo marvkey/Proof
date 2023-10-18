@@ -1,5 +1,4 @@
-﻿using ProofScriptCore.src.Proof.Math;
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
 
 namespace Proof
@@ -278,6 +277,12 @@ namespace Proof
         //returns all particle indexes
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void ParticleSystemComponent_GetParticles(ulong entityID, ref uint[] types);
+        #endregion
+
+        #region AssetID
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool AssetID_IsValid(ref AssetID assetHandle);
         #endregion
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Proof;
-using ProofScriptCore.src.Proof.Math;
 using System;
 using System.Collections.Generic;
 using System.Linq;

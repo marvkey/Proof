@@ -7,7 +7,7 @@
     <ProjectGuid>{49FAD7F9-B585-45BE-BE96-C8B22AA1A1BE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ProofScriptCore</RootNamespace>
+    <RootNamespace>Proof</RootNamespace>
     <AssemblyName>ProofScriptCore</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -59,6 +59,7 @@
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Proof\Asset\AssetID.cs" />
     <Compile Include="src\Proof\Asset\Assets.cs" />
     <Compile Include="src\Proof\Asset\ParticleSystem.cs" />
     <Compile Include="src\Proof\Core\Application.cs" />

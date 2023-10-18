@@ -1,5 +1,4 @@
 ﻿using Proof;
-using ProofScriptCore.src.Proof.Asset;
 using System;
 using System.Collections.Generic;
 using System.Security.AccessControl;

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProofScriptCore.src.Proof.Asset
+namespace Proof
 {
     struct ParticleSystemProps
     {

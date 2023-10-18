@@ -1157,5 +1157,59 @@ namespace Proof::UI
 
         return result;
     }
+
+    bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName,Count<EnumFieldStorage>& storage)
+    {
+        if (!storage)
+            return false;
+
+        const ScriptField* field = storage->GetFieldInfo();
+
+        ManageEnumClass* managedEnumClass = ScriptRegistry::GetManagedEnumClassByName(field->RegistryClassName);
+
+        if (managedEnumClass == nullptr)
+            return false;
+
+        std::string id = fmt::format("{0}-{1}", fieldName, field->Name);
+        ImGui::PushID(id.c_str());
+
+        bool result = false;
+
+        {
+            std::vector<std::string> options;
+            options.reserve(managedEnumClass->EnumFields.size());
+            int selectionIndex = -1;
+            
+            for (uint32_t i =0; i< managedEnumClass->EnumFields.size(); i++)
+            {
+                const auto& enumMetaData = managedEnumClass->EnumFields[i];
+                options.emplace_back(enumMetaData.Name);
+                if (*storage->GetValueBuffer().Data == *enumMetaData.GetValueBuffer().Data)
+                {
+                    selectionIndex = i;
+                }
+            }
+
+            if (selectionIndex == -1)
+            {
+                const auto& enumMetaData = managedEnumClass->EnumFields[0];
+                storage->SetValueBuffer(enumMetaData.GetValueBuffer());
+                selectionIndex = 0;
+                result = true;
+            }
+            auto [changed, outIndex, outSelectionString] = UI::Combo(fieldName, options,managedEnumClass->EnumFields[selectionIndex].Name);
+
+            if (changed)
+            {
+                const auto& enumMetaData = managedEnumClass->EnumFields[outIndex];
+                storage->SetValueBuffer(enumMetaData.GetValueBuffer());
+                result = true;
+            }
+        }
+        ImGui::PopID();
+
+        return result;
+    }
+
 }
 

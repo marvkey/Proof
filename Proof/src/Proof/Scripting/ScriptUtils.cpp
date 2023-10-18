@@ -42,8 +42,21 @@ namespace Proof::ScriptUtils
 			case MONO_TYPE_R4:			return ScriptFieldType::Float;
 			case MONO_TYPE_R8:			return ScriptFieldType::Double;
 			case MONO_TYPE_STRING:		return ScriptFieldType::String;
+			case MONO_TYPE_ENUM:
+				{
+					MonoType* enumType = mono_class_enum_basetype(typeClass);
+					return ScriptUtils::GetFieldTypeFromMonoType(enumType);
+					break;
+
+				}
 			case MONO_TYPE_VALUETYPE:
 				{
+					if (mono_class_is_enum(typeClass))
+					{
+						MonoType* enumType = mono_class_enum_basetype(typeClass);
+						return ScriptUtils::GetFieldTypeFromMonoType(enumType);
+						break;
+					}
 					if (PF_CORE_CLASS(AssetID) && typeClass == PF_CORE_CLASS(AssetID)->Class)
 						return ScriptFieldType::AssetID;
 
@@ -98,6 +111,7 @@ namespace Proof::ScriptUtils
 
 					return GetFieldTypeFromMonoType(mono_class_get_type(elementClass));
 				}
+		
 		}
 
 		return ScriptFieldType::Void;
@@ -349,7 +363,7 @@ namespace Proof::ScriptUtils
 			case ScriptFieldType::PhysicsMaterial:
 			case ScriptFieldType::Texture2D:
 				{
-					Buffer handleBuffer = GetFieldValue(obj, "m_Handle", ScriptFieldType::AssetID, false);
+					Buffer handleBuffer = GetFieldValue(obj, "m_ID", ScriptFieldType::AssetID, false);
 					result.Write(handleBuffer.Data, sizeof(AssetID));
 					handleBuffer.Release();
 					break;

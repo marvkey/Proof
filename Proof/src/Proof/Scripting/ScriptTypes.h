@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "Proof/Core/Buffer.h"
 
 #include <string>
 #include <unordered_map>
@@ -67,8 +68,51 @@ namespace Proof
 			Class = nullptr;
 		}
 	};
+	
+	struct ManageEnumFieldData
+	{
+		std::string Name;
+		ManageEnumFieldData()
+		{
+			m_Buffer = Buffer(8);//maximum bit of an integer uint64_t or int64_t
+		}
+		template<typename T>
+		T GetValue()const
+		{
+			static_assert(sizeof(T) <= 8, "Type too large!");
+			return *(m_Buffer.As<T>());
+		}
 
+		template<typename T>
+		void SetValue(const T& value)
+		{
+			static_assert(sizeof(T) <= 8, "Type too large!");
+			m_Buffer.Write(&value, sizeof(T));
+		}
 
+		virtual void SetValueBuffer(const Buffer& buffer)
+		{
+			m_Buffer = Buffer::Copy(buffer);
+		}
+		virtual Buffer GetValueBuffer() const 
+		{
+			return m_Buffer;
+		}
+	private:
+		Buffer m_Buffer;
+
+	};
+	struct ManageEnumClass
+	{
+		std::string FullName = "";
+		std::vector<ManageEnumFieldData> EnumFields;
+		MonoClass* Class = nullptr;
+
+		~ManageEnumClass()
+		{
+			Class = nullptr;
+		}
+	};
 
 	struct AssemblyMetadata
 	{

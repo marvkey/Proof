@@ -34,9 +34,12 @@ namespace Proof
 		// maybe change the string here to a hash number 
 		std::unordered_map<std::string, ManagedClass> Classes;
 		std::unordered_map<std::string, ScriptField> Fields;
+		// meathod name and its overlaod
 		std::unordered_map<std::string, std::vector<ManagedMethod>> Methods;
 		//app assembly
 		std::unordered_map<std::string, Count<ScriptClass>> EntityScripts;
+
+		std::unordered_map<std::string, ManageEnumClass> EnumClasses;
 	};
 	ScriptRegistryData* s_ScriptRegistryData = nullptr;
 	void ScriptRegistry::Init()
@@ -73,6 +76,12 @@ namespace Proof
 			return nullptr;
 
 		return GetManagedClassByName(ScriptUtils::ResolveMonoClassName(monoClass));
+	}
+	ManageEnumClass* ScriptRegistry::GetManagedEnumClassByName(const std::string& className)
+	{
+		if (s_ScriptRegistryData->EnumClasses.contains(className))
+			return &s_ScriptRegistryData->EnumClasses.at(className);
+		return nullptr;
 	}
 	ManagedClass* ScriptRegistry::GetMonoObjectClass(MonoObject* monoObject)
 	{
@@ -136,6 +145,8 @@ namespace Proof
 	{
 		ScopeTimer scopeTimer(__FUNCTION__);
 
+		RegisterEnums(assemblyInfo);
+
 		const MonoTableInfo* tableInfo = mono_image_get_table_info(assemblyInfo->AssemblyImage, MONO_TABLE_TYPEDEF);
 		int32_t tableRowCount = mono_table_info_get_rows(tableInfo);
 		for (int32_t i = 1; i < tableRowCount; i++)
@@ -166,7 +177,7 @@ namespace Proof
 				s_ScriptRegistryData->EntityScripts[managedClass.FullName] = Count<ScriptClass>::Create(managedClass.FullName);
 			}
 		}
-
+		
 		for (auto className : assemblyInfo->Classes)
 		{
 			ManagedClass& managedClass = s_ScriptRegistryData->Classes.at(className);
@@ -194,6 +205,72 @@ namespace Proof
 					}
 				}
 			}
+		}
+	}
+	static void ReflectEnumFields(const std::string& enumName, MonoClass* enumClass, Count<AssemblyInfo> assemblyInfo)
+	{
+		MonoClassField* classFields;
+		void* fieldsIter = nullptr;
+		int index = 0;
+		while (classFields = mono_class_get_fields(enumClass, &fieldsIter))
+		{
+			// the first field is some wierd "value_" probably a built in variable for the enums
+			if (index == 0)
+			{
+				index++;
+				continue;
+			}
+			const std::string fieldName = mono_field_get_name(classFields);
+			
+			auto& enumField = s_ScriptRegistryData->EnumClasses[enumName].EnumFields.emplace_back();
+			enumField.Name = fieldName;
+			
+			uint8_t value[16];
+			mono_field_static_get_value(mono_class_vtable(ScriptEngine::GetAppDomain(), enumClass), classFields, value);
+
+			Buffer buffer(value, sizeof(value) , true);
+			enumField.SetValueBuffer(buffer);
+			buffer.Release();
+			std::string data = mono_field_get_data(classFields);
+			PF_ENGINE_TRACE("		{} ", fieldName);
+
+		}
+	}
+	void ScriptRegistry::RegisterEnums(Count<AssemblyInfo> assemblyInfo)
+	{
+		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(assemblyInfo->AssemblyImage, MONO_TABLE_TYPEDEF);
+		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+
+		for (int32_t i = 0; i < numTypes; i++)
+		{
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+			const char* nameSpace = mono_metadata_string_heap(assemblyInfo->AssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
+			const char* className = mono_metadata_string_heap(assemblyInfo->AssemblyImage, cols[MONO_TYPEDEF_NAME]);
+
+			std::string fullName;
+			if (strlen(nameSpace) != 0)
+				fullName = fmt::format("{}.{}", nameSpace, className);
+			else
+				fullName = className;
+
+			MonoClass* monoClass = mono_class_from_name(assemblyInfo->AssemblyImage, nameSpace, className);
+
+			if (monoClass == nullptr)
+				continue;
+
+			if (!mono_class_is_enum(monoClass))
+				continue;
+			auto& managedEnumClass = s_ScriptRegistryData->EnumClasses[fullName];
+
+			MonoType* enumType = mono_class_enum_basetype(monoClass);
+			managedEnumClass.Class = monoClass;
+			managedEnumClass.FullName = fullName;
+			//managedEnumClass.
+
+			auto type = ScriptUtils::GetFieldTypeFromMonoType(enumType);
+			PF_ENGINE_INFO("	Registering Enums Fields{} Type: {}", fullName,EnumReflection::EnumString( type));
+			ReflectEnumFields(fullName, monoClass, assemblyInfo);
 		}
 	}
 	ManagedMethod* ScriptRegistry::GetSpecificManagedMethod(ManagedClass* managedClass, const std::string& name, uint32_t parameterCount, bool ignoreParent)
@@ -341,9 +418,7 @@ namespace Proof
 				// Properties have a backing field called <PropertyName>k__BackingField. We don't want to include those in the class fields list.
 				if (name.find("k__BackingField") != std::string::npos)
 					continue;
-
 				MonoType* monoType = mono_field_get_type(field);
-				//ScriptFieldType fieldType = ScriptUtils::GetFieldTypeFromMonoType(monoType);
 				ScriptFieldType fieldType = ScriptUtils::GetFieldTypeFromMonoType(monoType);
 
 				if (fieldType == ScriptFieldType::Void)
@@ -353,7 +428,7 @@ namespace Proof
 
 				//uint32_t fieldID = Hash::GenerateFNVHash(fmt::format("{0}:{1}", managedClass.FullName, name));
 
-				std::string realName = fmt::format("{0}:{1}", managedClass.FullName, name);
+				std::string realName = fmt::format("{0}.{1}", managedClass.FullName, name);
 				int32_t typeEncoding = mono_type_get_type(monoType);
 
 				//ScriptField& managedField = s_ScriptRegistryData->Fields[fieldID];
@@ -365,6 +440,17 @@ namespace Proof
 
 				if (typeEncoding == MONO_TYPE_ARRAY || typeEncoding == MONO_TYPE_SZARRAY)
 					managedField.Flags |= (uint64_t)FieldFlag::IsArray;
+
+				if (typeEncoding == MONO_TYPE_VALUETYPE)
+				{
+					if (mono_class_is_enum(mono_type_get_class(monoType)))
+					{
+						managedField.Flags |= (uint64_t)FieldFlag::IsEnum;
+					}
+				}
+				if (typeEncoding == MONO_TYPE_ENUM)
+					managedField.Flags |= (uint64_t)FieldFlag::IsEnum;
+
 
 				uint32_t visibility = mono_field_get_flags(field) & MONO_FIELD_ATTR_FIELD_ACCESS_MASK;
 				switch (visibility)
@@ -440,11 +526,28 @@ namespace Proof
 				//if (std::find(managedClass.Fields.begin(), managedClass.Fields.end(), fieldID) == managedClass.Fields.end())
 				//	managedClass.Fields.push_back(managedField.ID);
 
+				//registyr name
+				{
+					MonoClass* fieldClass = mono_type_get_class(monoType);
+					if (fieldClass != nullptr)
+					{
+						const char* name = mono_class_get_name(fieldClass);
+						const char* nameSpace = mono_class_get_namespace(fieldClass);
 
+						managedField.RegistryClassName = fmt::format("{}.{}", nameSpace, name);
+					}
+					
+					
+				}
 				if (std::find(managedClass.Fields.begin(), managedClass.Fields.end(), realName) == managedClass.Fields.end())
 					managedClass.Fields.push_back(realName);
 
-				PF_ENGINE_TRACE("	Register Field {}", realName);
+				if(managedField.IsEnum())
+					PF_ENGINE_TRACE("	Register Field {} Enum Type:{}, RawType: {}", realName, managedField.RegistryClassName, EnumReflection::EnumString(fieldType));
+				else if(managedField.IsArray())
+					PF_ENGINE_TRACE("	Register Field {} Array Type: {}", realName, EnumReflection::EnumString(fieldType));
+				else 
+					PF_ENGINE_TRACE("	Register Field {} Type: {}", realName, EnumReflection::EnumString(fieldType));
 
 			}
 
@@ -454,6 +557,8 @@ namespace Proof
 	void ScriptRegistry::RegisterClassProperties(Count<AssemblyInfo> assemblyInfo, ManagedClass& managedClass)
 	{
 	}
+	
+
 	void ScriptRegistry::RegisterCoreClasses()
 	{
 		#define REGISTER_CORELIB_CLASS(name) RegisterClasss("System." ##name, mono_class_from_name(mono_get_corlib(), "System", name))
@@ -503,6 +608,8 @@ namespace Proof
 
 			RegisterClasss(fullName, monoClass);
 		}
+
+		RegisterEnums(ScriptEngine::GetCoreAssemblyInfo());
 	}
 	void ScriptRegistry::BuildClassMetadata(Count<AssemblyInfo>& assemblyInfo, MonoClass* monoClass)
 	{

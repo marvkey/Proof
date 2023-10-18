@@ -447,13 +447,16 @@ namespace Proof
             if (!scriptField->HasFlag(FieldFlag::Public))
                 continue;
 
-            if (!scriptField->IsArray())
+            if (scriptField->IsArray())
             {
-                scriptEngineData.Fields[fieldName] = Count<FieldStorage>::Create(scriptField);
+            }
+            else if(scriptField->IsEnum())
+            {
+                scriptEngineData.Fields[fieldName] = Count<EnumFieldStorage>::Create(scriptField);
             }
             else
             {
-                
+                scriptEngineData.Fields[fieldName] = Count<FieldStorage>::Create(scriptField);
             }
             metadata.FieldNames.push_back(fieldName);
         }

@@ -17,6 +17,7 @@ namespace Proof::HeaderFileOnly {
 namespace Proof
 {
 	class FieldStorage;
+	class EnumFieldStorage;
 	class World;
 }
 namespace Proof::UI {
@@ -116,6 +117,7 @@ namespace Proof::UI {
 	void Tooltip(const std::string& tooltip, float treshHold = EG_HOVER_THRESHOLD);
 	void HelpMarker(const std::string& text);
 	bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName, Count<FieldStorage>& storage);
+	bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName,Count<EnumFieldStorage>& storage);
 
 	struct ScopedStyleColor 
 	{
