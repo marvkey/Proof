@@ -12,6 +12,7 @@
 #include "ScriptField.h"
 #include "ScriptRegistry.h"
 #include "ScriptFile.h"
+#include "ScriptWorld.h"
 
 #include <fstream>
 #include <sstream>
@@ -186,13 +187,33 @@ namespace Proof
 
         s_ScriptEngineData->IsMonoInitialized = false;
     }
-   
+    static bool CanLoadCoreAssembly()
+    {
+        auto corePath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/ProofScriptCore.dll";
+
+        if (!FileSystem::Exists(corePath))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    static bool CanLoadAppAssembly()
+    {
+        auto appPath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/ProofScriptCore.dll";
+
+        if (!FileSystem::Exists(appPath))
+        {
+            return false;
+        }
+        return true;
+    }
+
     bool ScriptEngine::LoadCoreAssembly()
     {
         auto corePath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/ProofScriptCore.dll";
 
-        PF_ENGINE_INFO("ScriptEngine Trying to load core assembly: {}", corePath);
-        if (!FileSystem::Exists(corePath))
+        if (!CanLoadCoreAssembly())
         {
             PF_ENGINE_ERROR("ScriptEngine Could not load core assembly! Path: {}", corePath);
             return false;
@@ -228,7 +249,7 @@ namespace Proof
     {
         auto appPath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/Game.dll";
 
-        if (!FileSystem::Exists(appPath))
+        if (!CanLoadAppAssembly())
         {
             PF_ENGINE_ERROR("ScriptEngine, Failed to load app assembly! Invalid filepath");
             PF_ENGINE_ERROR("ScriptEngine, Filepath = {}", appPath);
@@ -342,10 +363,13 @@ namespace Proof
     struct EntityClassReloadMetadata
     {
         std::string ClassName;
+        AssetID ScriptAssetID;
         std::unordered_map<std::string, Buffer> Fields;
     };
+
     void ScriptEngine::ReloadppAssembly()
     {
+        ScopeTimer scopeTimer(__FUNCTION__);
         #if 0
         PF_PROFILE_FUNC();
 
@@ -376,6 +400,90 @@ namespace Proof
 
         }
         #endif
+
+
+        if (!CanLoadAppAssembly() && !CanLoadCoreAssembly())
+        {
+            PF_ENGINE_ERROR("Cannot reload because cannot find app or core assembly");
+            return;
+        }
+        // scirptWOrldID, entity id, entity list of entity class with fields
+        std::unordered_map<UUID, std::unordered_map<UUID, std::vector<EntityClassReloadMetadata>>> oldFieldValues;
+
+        for (const auto& [scriptWorldID, weakScriptWorld] : ScriptWorld::GetScriptWorlds())
+        {
+            if (!weakScriptWorld.IsValid())continue;
+
+            Count<ScriptWorld> scriptWorld = weakScriptWorld.Lock();
+
+            for (auto& [entityID, scriptClasses] : scriptWorld->m_EntityClassesStorage)
+            {
+                Entity entity = scriptWorld->GetWorld()->TryGetEntityWithUUID(entityID);
+                if (!entity.HasComponent<ScriptComponent>())
+                    continue;
+
+                oldFieldValues[scriptWorldID][entityID] = std::vector<EntityClassReloadMetadata>();
+
+                for (auto& [className, classMetaData] : scriptClasses.Classes)
+                {
+                    ManagedClass* managedClass = ScriptEngine::GetManagedClass(className);
+
+                    auto& oldFieldClassData = oldFieldValues[scriptWorldID][entityID].emplace_back(EntityClassReloadMetadata{ className,classMetaData.ScriptAssetID });
+
+                    for (auto& [fieldName, fieldStorage] : classMetaData.Fields)
+                    {
+                        if (!fieldStorage)continue;
+
+                        if (!fieldStorage->GetFieldInfo()->IsWritable())
+                            continue;
+
+                        oldFieldClassData.Fields[fieldName] = Buffer::Copy(fieldStorage->GetValueBuffer());
+                    }
+                }
+
+                scriptWorld->DestroyEntityScript(entity,false);
+            }
+        }
+        ScriptRegistry::ShutDown();
+        LoadCoreAssembly();
+        LoadAppAssembly();
+
+        for (auto& [scriptWorldID, entityList] : oldFieldValues)
+        {
+            auto weakScriptWorld = ScriptWorld::GetScriptWorlds().at(scriptWorldID);
+            if (!weakScriptWorld.IsValid())continue;
+
+            Count<ScriptWorld> scriptWorld = weakScriptWorld.Lock();
+
+            Count<World> world = scriptWorld->GetWorld();
+            for (auto& [entityID, classes] : entityList)
+            {
+                Entity entity = world->GetEntity(entityID);
+                scriptWorld->InstantiateScriptEntity(entity);
+
+                const auto& sc = entity.GetComponent<ScriptComponent>();
+                for (auto& eachClass: classes)
+                {
+                    if (!IsModuleValid(eachClass.ScriptAssetID))
+                        continue;
+
+                    for (auto& [fieldName, fieldBuffer] : eachClass.Fields)
+                    {
+                        if (ScriptRegistry::GetFieldByName(fieldName) == nullptr)
+                            continue;
+
+                        Count<FieldStorageBase> storage = scriptWorld->m_EntityClassesStorage[entityID].Classes[eachClass.ClassName].Fields[fieldName];
+                        if (!storage)
+                            continue;
+
+                        storage->SetValueBuffer(fieldBuffer);
+                    }
+                }
+            }
+        }
+
+        ScriptGCManager::CollectGarbage();
+        PF_INFO("ScriptEngine Done!");
     }
 
     MonoObject* ScriptEngine::CreateManagedObject(ManagedClass* managedClass, bool appDomain)

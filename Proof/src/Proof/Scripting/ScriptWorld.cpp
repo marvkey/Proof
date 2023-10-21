@@ -64,7 +64,7 @@ namespace Proof
         }
         for (int i = 0; i < script.ScriptMetadates.size(); i++)
         {
-            if (AssetManager::HasAsset(script.ScriptMetadates[i].ScriptClassID))
+            if (AssetManager::HasAsset(script.ScriptMetadates[i].ScriptClassID) && ScriptEngine::IsModuleValid(AssetManager::GetAsset<ScriptFile>(script.ScriptMetadates[i].ScriptClassID)))
             {
                 ScriptEntityPushScript(entity, AssetManager::GetAsset<ScriptFile>(script.ScriptMetadates[i].ScriptClassID));
             }
@@ -108,6 +108,7 @@ namespace Proof
         auto& scriptEngineData = m_EntityClassesStorage[entity.GetUUID()].Classes[(scriptFile->GetFullName())];
 
         scriptEngineData.className = scriptFile->GetFullName();
+        scriptEngineData.ScriptAssetID = scriptFile->GetID();
 
         for (auto fieldName : managedClass->Fields)
         {
@@ -140,6 +141,8 @@ namespace Proof
     {
         return EditorIsEntityScriptInstantiated(entity);
     }
+
+   
    
     bool ScriptWorld::EditorIsEntityScriptInstantiated(Entity entity)
     {
@@ -148,6 +151,33 @@ namespace Proof
     bool ScriptWorld::RuntimeIsEntityScriptInstantiated(Entity entity)
     {
         return false;
+    }
+    void ScriptWorld::DestroyEntityScript(Entity entity, bool clear )
+    {
+        EditorDestroyEntityScript(entity,clear);
+    }
+    void ScriptWorld::DestroyEntityScript(Entity entity)
+    {
+        DestroyEntityScript(entity, true);
+    }
+    void ScriptWorld::EditorDestroyEntityScript(Entity entity, bool clear)
+    {
+        PF_PROFILE_FUNC()
+        if (!entity.HasComponent<ScriptComponent>())
+            return;
+
+        if (!m_EntityClassesStorage.contains(entity.GetUUID()))
+        {
+            PF_ENGINE_ERROR("Cannot Script Entity: {}", entity.GetName());
+            return;
+        }
+
+        if(clear)
+            entity.GetComponent<ScriptComponent>().ScriptMetadates.clear();
+        m_EntityClassesStorage.erase(entity.GetUUID());
+    }
+    void ScriptWorld::RuntimeDestroyEntityScript(Entity entity, bool clear)
+    {
     }
     const std::map<UUID, WeakCount<ScriptWorld>>& ScriptWorld::GetScriptWorlds()
     {

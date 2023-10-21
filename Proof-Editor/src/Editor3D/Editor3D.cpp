@@ -1664,6 +1664,10 @@ namespace Proof
 			{
 				if (ImGui::MenuItem("Reload C# Scripts"))
 				{
+					//s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity({});
+
+					ScriptEngine::ReloadppAssembly();
+
 					/*
 					if (m_ActiveWorld->GetState() == WorldState::Edit)
 						ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());

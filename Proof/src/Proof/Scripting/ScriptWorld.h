@@ -2,11 +2,13 @@
 #include "Proof/Core/Core.h"
 #include "ScriptGCManager.h"
 #include <map>
+#include "Proof/Asset/AssetTypes.h"
 namespace Proof
 {
 	struct ScriptClassMetaData
 	{
 		std::string className;
+		AssetID ScriptAssetID;
 		ScriptGCHandle ScriptHandle = nullptr;
 		bool IsExistOnlyRuntime = true;
 		std::unordered_map<std::string, Count<class FieldStorageBase>> Fields;
@@ -48,8 +50,13 @@ namespace Proof
 		void InstantiateScriptEntity(Entity entity);
 		void ScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
 		bool IsEntityScriptInstantiated(Entity entity);
+		void DestroyEntityScript(Entity entity);
 		ScriptClassesContainerMetaData* GetEntityFields(Entity entity) const;
 
+		Count <class World> GetWorld()const
+		{
+			return m_World;
+		}
 	private:
 
 		void EditorInstantiateScriptEntity(Entity entity);
@@ -60,6 +67,11 @@ namespace Proof
 
 		bool EditorIsEntityScriptInstantiated(Entity entity);
 		bool RuntimeIsEntityScriptInstantiated(Entity entity);
+
+		void DestroyEntityScript(Entity entity, bool clear );
+		void EditorDestroyEntityScript(Entity entity, bool clear);
+		void RuntimeDestroyEntityScript(Entity entity, bool clear);
+
 	private:
 		bool m_IsRuntime = false;
 		Count<class World> m_World;

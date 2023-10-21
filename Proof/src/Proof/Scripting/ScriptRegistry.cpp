@@ -87,7 +87,7 @@ namespace Proof
 	}
 	void ScriptRegistry::ShutDown()
 	{
-		delete s_ScriptRegistryData;
+		delete s_ScriptRegistryData; s_ScriptRegistryData = nullptr;
 	}
 	ManagedClass* ScriptRegistry::GetManagedClassByName(const std::string& className)
 	{
