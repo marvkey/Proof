@@ -23,38 +23,7 @@ extern "C" {
 namespace Proof
 {
 	//struct AssemblyMetadata;
-	struct ScriptClassMetaData
-	{
-		std::string className;
-		ScriptGCHandle ScriptHandle = nullptr;
-		bool IsExistOnlyRuntime = true;
-		std::unordered_map<std::string, Count<class FieldStorageBase>> Fields;
-	};
 	
-	struct ScriptClassesContainerMetaData
-	{
-		const std::unordered_map<std::string, ScriptClassMetaData>& GetClassesMetaData()const
-		{
-			return Classes;
-		}
-		ScriptClassMetaData* GetClassMetaData(const std::string& classname)const
-		{
-			if (!Classes.contains(classname))
-				return nullptr;
-
-			return &Classes.at(classname);
-		}
-			
-		
-		bool HasClassMetaData(const std::string& className)
-		{
-			return Classes.contains(className);
-		}
-	private:
-		// class name,, class metaData
-		mutable std::unordered_map<std::string,ScriptClassMetaData> Classes;
-		friend class ScriptEngine;
-	};
 	class ScriptEngine {
 	public:
 		static void Init();
@@ -71,18 +40,9 @@ namespace Proof
 		static void ReloadppAssembly();
 
 		// vecotr of classes, adn its fields for an entity
-		static const ScriptClassesContainerMetaData* GetEntityFields(Entity entity);
 		static bool IsModuleValid(AssetID id);
 		static bool IsModuleValid(Count<class ScriptFile> file);
 
-		static bool IsEntityScriptInstantiated(Entity entity);
-
-		// called once the entity has a script component
-		static void InstantiateScriptEntity(Entity entity);
-		static void DestroyScriptEntity(Entity entity);
-
-		// called when a scirpt watns to add a new scirpt
-		static void ScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
 		template<typename... TArgs>
 		static void CallMethod(MonoObject* managedObject, const std::string& methodName, TArgs&&... args)
 		{

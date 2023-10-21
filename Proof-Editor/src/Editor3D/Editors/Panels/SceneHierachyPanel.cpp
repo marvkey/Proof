@@ -36,6 +36,7 @@
 #include "misc/cpp/imgui_stdlib.h"
 #include "Proof/ProofCore.h"
 #include "Proof/Scene/Mesh.h"
+#include "Proof/Scripting/ScriptWorld.h"
 
 namespace Proof
 {
@@ -963,6 +964,8 @@ namespace Proof
 		});
 		DrawComponents<ScriptComponent>("Scripts", entity, [&](ScriptComponent& scriptComp) {
 			#if 1
+
+			auto scriptWorld = m_ActiveWorld->GetScriptWorld();
 			if (ImGui::Button("Add Script"))
 			{
 				ImGui::OpenPopup("Open Scripts");
@@ -974,14 +977,14 @@ namespace Proof
 					if (ImGui::MenuItem(scriptName.c_str()))
 					{
 						Count<ScriptFile> scriptFile = AssetManager::CreateRuntimeAsset<ScriptFile>(script->GetNameSpace(), script->GetName());
-						if (ScriptEngine::IsEntityScriptInstantiated(entity))
+						if (scriptWorld->IsEntityScriptInstantiated(entity))
 						{
-							ScriptEngine::ScriptEntityPushScript(entity, scriptFile);
+							scriptWorld->ScriptEntityPushScript(entity, scriptFile);
 						}
 						else
 						{
 							scriptComp.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ scriptFile->GetID() });
-							ScriptEngine::InstantiateScriptEntity(entity);
+							scriptWorld->InstantiateScriptEntity(entity);
 						}
 						
 						ImGui::CloseCurrentPopup();
@@ -990,13 +993,13 @@ namespace Proof
 				ImGui::EndPopup();
 			}
 
-			if (!ScriptEngine::IsEntityScriptInstantiated(entity))
+			if (!scriptWorld->IsEntityScriptInstantiated(entity))
 				return;
 
 
 
 
-			auto& classFields = *ScriptEngine::GetEntityFields(entity);
+			auto& classFields = *scriptWorld->GetEntityFields(entity);
 
 			for (auto& [className, classMetaData] : classFields.GetClassesMetaData())
 			{

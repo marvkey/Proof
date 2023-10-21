@@ -113,7 +113,7 @@ namespace Proof
     void ScriptGCManager::CollectGarbage(bool blockUntilFinalized)
     {
         PF_PROFILE_FUNC();
-        PF_ENGINE_INFO("Collecting garbage...");
+        PF_ENGINE_INFO("Collecting Garbage...");
         mono_gc_collect(mono_gc_max_generation());
         if (blockUntilFinalized)
         {

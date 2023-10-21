@@ -610,7 +610,7 @@ namespace Proof
 		friend class ScriptEngine;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
-
+		friend class ScriptWorld;
 		bool HasScript(AssetID scriptClassID)
 		{
 			return std::find_if(ScriptMetadates.begin(), ScriptMetadates.end(), [&](const ScriptComponentsClassesData& x) { return x.ScriptClassID == scriptClassID; }) != ScriptMetadates.end();

@@ -34,6 +34,7 @@ namespace Proof {
 		const std::string& GetName()const { return Name; };
 		static Count<World> Copy(Count<World> worldToCopy);
 		class Count<class PhysicsWorld> GetPhysicsWorld()const { return m_PhysicsWorld; };
+		class Count<class ScriptWorld> GetScriptWorld()const { return m_ScriptWorld; };
 
 
 		// if the scene is on play or pause 
@@ -155,7 +156,7 @@ namespace Proof {
 
 	private:
 		std::unordered_set< UUID> m_EntityDeleteQueue;
-
+		Count<class ScriptWorld> m_ScriptWorld;
 		entt::registry m_Registry;
 		Count<class PhysicsWorld> m_PhysicsWorld = nullptr;
 		WorldState m_CurrentState = WorldState::Edit;

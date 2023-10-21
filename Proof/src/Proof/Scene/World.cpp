@@ -25,10 +25,13 @@
 #include "Proof/Physics/PhysicsActor.h"
 #include "Proof/Physics/PhysicsMeshCache.h"
 #include "Proof/Physics/MeshCollider.h"
+
+#include "Proof/Scripting/ScriptWorld.h"
 namespace Proof {
 	World::World(const std::string& name, UUID ID):
 		Name(name)
 	{
+		m_ScriptWorld = Count<ScriptWorld>::Create(this);
 		Init();
 
 		//m_Registry.on_destroy<ChildComponent>().connect<&World::OnChildComponentDestroy>(this);
