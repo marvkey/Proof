@@ -17,6 +17,7 @@ namespace Proof::ScriptUtils
 	Buffer GetFieldValue(MonoObject* classInstance, const std::string& fieldName, ScriptFieldType fieldType, bool isProperty);
 	MonoObject* GetFieldValueObject(MonoObject* classInstance, const std::string& fieldName, bool isProperty);
 	void SetFieldValue(MonoObject* classInstance, const ScriptField* fieldInfo, const void* data);
+	void HandleException(MonoObject* exception);
 
 
 	Buffer MonoObjectToValue(MonoObject* obj, ScriptFieldType fieldType);

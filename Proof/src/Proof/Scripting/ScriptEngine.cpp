@@ -28,6 +28,7 @@
 #include <mono/metadata/debug-helpers.h>
 #include "mono/metadata/attrdefs.h"
 
+#include "ScriptUtils.h"
 
 namespace Proof
 {
@@ -97,6 +98,11 @@ namespace Proof
         }
     }
 
+    // Scirpt Engien during runtiem will not create any new field map for 
+    // entities taht where not aroudn during eidtor time
+    //but if an entity ask fo r a field map and it only exist during runtime
+    // we will generate a storage for its field
+    using FieldMap = std::unordered_map < UUID, ScriptClassesContainerMetaData>;
     struct ScriptEngineData
     {
         MonoDomain* CoreDomain = nullptr;
@@ -107,7 +113,7 @@ namespace Proof
 
         bool IsMonoInitialized = false;
         // entity id, vecotr of all the scripts and its fields
-        std::unordered_map < UUID, std::vector<EntityClassMetaData>> EntityFieldMap;
+        FieldMap EntityFieldMap;
        // std::unordered_map<UUID, std::unordered_map<uint32_t, Coun<FieldStorageBase>>> EntityFieldMap;
         //std::unordered_map<AssetID, std::unordered_map<uint32_t, Coun<FieldStorageBase>>> PrefabFieldMap;
 
@@ -115,10 +121,13 @@ namespace Proof
 
     struct ScriptEngineRuntimeData
     {
-
+        Count<World> WorldContext =nullptr;
+        std::unordered_map<UUID, std::vector<ScriptGCHandle>> InstanceScripts;
     };
 
     ScriptEngineData* s_ScriptEngineData = nullptr;
+    ScriptEngineRuntimeData* s_ScriptEngineRuntimeData = nullptr;
+
     void ScriptEngine::Init() {
 
         PF_CORE_ASSERT(!s_ScriptEngineData, "[ScriptEngine]: Trying to call ScriptEngine::Init multiple times!");
@@ -136,6 +145,8 @@ namespace Proof
 
         LoadCoreAssembly();
         LoadAppAssembly();
+        ScriptFunc::RegisterFunctions();
+        ScriptFunc::RegisterAllComponents();
     }
     void ScriptEngine::ShutDown()
     {
@@ -238,24 +249,6 @@ namespace Proof
         ScriptRegistry::GenerateRegistryForAppAssembly(appAssemblyInfo);
 
     }
-    std::string ScriptEngine::MonoToString(MonoString* monoString) {
-        if (monoString == nullptr || mono_string_length(monoString) == 0)
-            return "";
-
-        MonoError error;
-        char* utf8 = mono_string_to_utf8_checked(monoString, &error);
-        if (CheckMonoError(error))
-            return "";
-        std::string result(utf8);
-        mono_free(utf8);
-        return result;
-
-    }
-    MonoString* ScriptEngine::StringToMono(const std::string& data) {
-       // MonoString* string = mono_string_new(s_Data->AppDomain, data.c_str());
-        MonoString* string = nullptr;
-        return string;
-    }
 
     AssemblyMetadata ScriptEngine::GetMetadataForImage(MonoImage* image)
     {
@@ -346,8 +339,44 @@ namespace Proof
         mono_image_close(image);
         return assembly;
     }
-   
-  
+    struct EntityClassReloadMetadata
+    {
+        std::string ClassName;
+        std::unordered_map<std::string, Buffer> Fields;
+    };
+    void ScriptEngine::ReloadppAssembly()
+    {
+        #if 0
+        PF_PROFILE_FUNC();
+
+        ScopeTimer scopeTimer(__FUNCTION__);
+        PF_ENGINE_INFO("ScriptEngine Reloading App: {}", s_ScriptEngineData->CoreAssemblyInfo->FilePath.string(), s_ScriptEngineData->AppAssemblyInfo->FilePath.string());
+
+        std::unordered_map<UUID, std::vector<EntityClassReloadMetadata>> oldFieldValues;
+
+        for (auto& [entityId, enittyclassMetadata] : s_ScriptEngineData->EntityFieldMap)
+        {
+            auto& fieldsclassReloadMetadata = oldFieldValues[entityId];
+            
+            for (auto& savedMetaData : enittyclassMetadata)
+            {
+                auto& fieldReloadMetaData = fieldsclassReloadMetadata.emplace_back();
+                fieldReloadMetaData.ClassName = savedMetaData.className;
+                for (auto& [field, fieldStorage] : savedMetaData.Fields)
+                {
+                    if (!fieldStorage)
+                        continue;
+
+                    if (!fieldStorage->GetFieldInfo()->IsWritable())continue;
+
+                    fieldReloadMetaData.Fields[field] = Buffer::Copy(fieldStorage->GetValueBuffer());
+                }
+            }
+           // DestroyScriptEntity(y, false);
+
+        }
+        #endif
+    }
 
     MonoObject* ScriptEngine::CreateManagedObject(ManagedClass* managedClass, bool appDomain)
     {
@@ -382,6 +411,26 @@ namespace Proof
 
         return CreateManagedObject(managedClass, appDomain);
     }
+    void ScriptEngine::DestroyScriptEntity(Entity entity)
+    {
+        DestroyScriptEntity(entity, true);
+    }
+
+    void ScriptEngine::DestroyScriptEntity(Entity entity, bool erase)
+    {
+        PF_PROFILE_FUNC();
+
+        if (!entity.HasComponent<ScriptComponent>())
+            return;
+        auto& sc = entity.GetComponent<ScriptComponent>();
+
+        if (s_ScriptEngineData->EntityFieldMap.contains(entity.GetUUID()) && erase)
+        {
+            s_ScriptEngineData->EntityFieldMap.erase(entity.GetUUID());
+            sc.ScriptMetadates.clear();
+        }
+    }
+
     bool ScriptEngine::IsEntityScriptInstantiated(Entity entity)
     {
         return s_ScriptEngineData->EntityFieldMap.contains(entity.GetUUID());
@@ -392,31 +441,77 @@ namespace Proof
         if (!entity.HasComponent<ScriptComponent>())
             return;
         ScriptComponent& script = entity.GetComponent<ScriptComponent>();
-
         
         bool hasScripts = false;
-        for (ScriptComponentMetaData& scriptMetadata : script.ScriptMetadates)
+        for (int i = 0; i < script.ScriptMetadates.size(); i++)
         {
-            if (AssetManager::HasAsset(scriptMetadata.ScriptClassID))
+            if (AssetManager::HasAsset(script.ScriptMetadates[i].ScriptClassID))
             {
                 hasScripts = true;
                 s_ScriptEngineData->EntityFieldMap[entity.GetUUID()] = {};
+                break;
             }
         }
 
         if (!hasScripts)
         {
             PF_ENGINE_WARN("Entity {} contains no valid ScriptModule ", entity.GetName());
+            script.ScriptMetadates.clear();
             return;
         }
-        for (ScriptComponentMetaData& scriptMetadata : script.ScriptMetadates)
+        for (int i = 0; i < script.ScriptMetadates.size(); i++)
         {
-            if (AssetManager::HasAsset(scriptMetadata.ScriptClassID))
+            if (AssetManager::HasAsset(script.ScriptMetadates[i].ScriptClassID))
             {
-                ScriptEntityPushScript(entity, AssetManager::GetAsset<ScriptFile>(scriptMetadata.ScriptClassID));
+                ScriptEntityPushScript(entity, AssetManager::GetAsset<ScriptFile>(script.ScriptMetadates[i].ScriptClassID));
+            }
+            else
+            {
+                script.ScriptMetadates.erase(script.ScriptMetadates.begin() + i);
             }
         }
 
+    }
+
+    void ScriptEngine::RuntimeInstantiateScriptEntity(Entity entity)
+    {
+        PF_PROFILE_FUNC();
+
+        auto scriptComponent = entity.GetComponent<ScriptComponent>();
+
+        if (!entity.HasComponent<ScriptComponent>())
+            return;
+        ScriptComponent& script = entity.GetComponent<ScriptComponent>();
+
+
+        bool hasScripts = false;
+        for (int i = 0; i < script.ScriptMetadates.size(); i++)
+        {
+            if (AssetManager::HasAsset(script.ScriptMetadates[i].ScriptClassID))
+            {
+                hasScripts = true;
+                s_ScriptEngineData->EntityFieldMap[entity.GetUUID()] = {};
+                break;
+            }
+        }
+
+        if (!hasScripts)
+        {
+            PF_ENGINE_WARN("Entity {} contains no valid ScriptModule ", entity.GetName());
+            script.ScriptMetadates.clear();
+            return;
+        }
+        for (int i = 0; i < script.ScriptMetadates.size(); i++)
+        {
+            if (AssetManager::HasAsset(script.ScriptMetadates[i].ScriptClassID))
+            {
+                RuntimeScriptEntityPushScript(entity, AssetManager::GetAsset<ScriptFile>(script.ScriptMetadates[i].ScriptClassID));
+            }
+            else
+            {
+                script.ScriptMetadates.erase(script.ScriptMetadates.begin() + i);
+            }
+        }
     }
     void ScriptEngine::ScriptEntityPushScript(Entity entity, Count<class ScriptFile> scriptFile)
     {
@@ -430,13 +525,16 @@ namespace Proof
             return;
         }
 
+        if (s_ScriptEngineData->EntityFieldMap[entity.GetUUID()].HasClassMetaData(scriptFile->GetFullName()))
+        {
+            PF_ENGINE_ERROR("Trying to Script: {} to Entity:{} that already contains script",scriptFile->GetFullName(), entity.GetName());
+            return;
+        }
         ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(scriptFile->GetFullName());
         if (!managedClass)
             return;
         
-        ScriptComponentMetaData metadata;
-        metadata.ScriptClassID = scriptFile->GetID();
-        auto& scriptEngineData = s_ScriptEngineData->EntityFieldMap[entity.GetUUID()].emplace_back();
+        auto& scriptEngineData = s_ScriptEngineData->EntityFieldMap[entity.GetUUID()].Classes[(scriptFile->GetFullName())];
 
         scriptEngineData.className = scriptFile->GetFullName();
 
@@ -458,18 +556,107 @@ namespace Proof
             {
                 scriptEngineData.Fields[fieldName] = Count<FieldStorage>::Create(scriptField);
             }
-            metadata.FieldNames.push_back(fieldName);
         }
 
-        if(scriptComponent.ScriptMetadates.size() != s_ScriptEngineData->EntityFieldMap[entity.GetUUID()].size())
-            scriptComponent.ScriptMetadates.emplace_back(metadata);
+        if (!scriptComponent.HasScript(scriptFile->GetID()))
+            scriptComponent.ScriptMetadates.emplace_back(scriptFile->GetID());
     }
-    const std::vector<EntityClassMetaData>* ScriptEngine::GetEntityFields(Entity entity)
+
+    void ScriptEngine::RuntimeScriptEntityPushScript(Entity entity, Count<class ScriptFile> scriptFile)
+    {
+        PF_CORE_ASSERT(s_ScriptEngineData->EntityFieldMap.contains(entity.GetUUID()), fmt::format("Entity {} is not contained in Script Engine ", entity.GetName()));
+
+        ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+
+        if (!IsModuleValid(scriptFile))
+        {
+            PF_ENGINE_ERROR("Trying to add invalid script to Entity {}", entity.GetName());
+            return;
+        }
+
+
+        if (!scriptComponent.HasScript(scriptFile->GetID()))
+        {
+            PF_ENGINE_ERROR("Trying to Script:{} to Entity:{} that already contains script", scriptFile->GetFullName(), entity.GetName());
+            return;
+        }
+        ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(scriptFile->GetFullName());
+        if (!managedClass)
+            return;
+
+        MonoObject* runtimeInstance = CreateManagedObject(managedClass, entity.GetUUID());
+        ScriptGCHandle instanceHandle = ScriptGCManager::CreateObjectReference(runtimeInstance, false);
+
+        for (auto fieldName : managedClass->Fields)
+        {
+            if (s_ScriptEngineData->EntityFieldMap.contains(entity.GetUUID()))
+            {
+                auto& fields = s_ScriptEngineData->EntityFieldMap[entity.GetUUID()].Classes[fieldName].Fields;
+                for (auto& [name, field] : fields)
+                {
+                    if (field)
+                        field->SetRuntimeInstance(instanceHandle);
+                }
+            }
+        }
+        CallMethod(instanceHandle, "OnCreate");
+
+        if (!scriptComponent.HasScript(scriptFile->GetID()))
+            scriptComponent.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ scriptFile->GetID(),instanceHandle });
+        else
+            scriptComponent.ScriptMetadates.back() = ScriptComponentsClassesData{ scriptFile->GetID(),instanceHandle };
+    }
+
+    const ScriptClassesContainerMetaData* ScriptEngine::GetEntityFields(Entity entity)
     {
         if (!s_ScriptEngineData->EntityFieldMap.contains(entity.GetUUID()))
             return nullptr;
 
         return &s_ScriptEngineData->EntityFieldMap.at(entity.GetUUID());
+    }
+    void ScriptEngine::BeginRuntime(Count<World> world)
+    {
+        PF_PROFILE_FUNC();
+
+        s_ScriptEngineRuntimeData = new ScriptEngineRuntimeData();
+        s_ScriptEngineRuntimeData->WorldContext = world;
+        PF_CORE_ASSERT(s_ScriptEngineRuntimeData->WorldContext->IsPlaying(), "Don't call ScriptEngine::BeginRuntime if the scene isn't being played!");
+        auto view = s_ScriptEngineRuntimeData->WorldContext->GetAllEntitiesWith<ScriptComponent>();
+        for (auto enttID : view)
+        {
+            Entity entity{ enttID,s_ScriptEngineRuntimeData->WorldContext.Get() };
+            RuntimeInstantiateScriptEntity(entity);
+        }
+        // copying all the values 
+        // it uses shared pointer so the 
+
+        
+    }
+    void ScriptEngine::EndRuntime()
+    {
+        
+        delete s_ScriptEngineRuntimeData;
+    }
+    bool ScriptEngine::IsRuntime()
+    {
+        return s_ScriptEngineRuntimeData != nullptr;
+    }
+    Count<World> ScriptEngine::GetWorldContext()
+    {
+        if(IsRuntime())
+            return s_ScriptEngineRuntimeData->WorldContext;
+
+        return nullptr;
+    }
+
+    void ScriptEngine::CallMethod(MonoObject* monoObject, ManagedMethod* managedMethod, const void** parameters)
+    {
+        PF_PROFILE_FUNC();
+
+        MonoObject* exception = NULL;
+        mono_runtime_invoke(managedMethod->Method, monoObject, const_cast<void**>(parameters), &exception);
+        
+        ScriptUtils::HandleException(exception);
     }
 
     bool ScriptEngine::IsModuleValid(AssetID id)

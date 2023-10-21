@@ -19,6 +19,9 @@
 #include "Proof/Physics/PhysicsActor.h"
 
 #include "Proof/Asset/AssetManager.h"
+
+
+#include "ScriptUtils.h"
 //(IMPORTANT)
 /*
 *WHEN PASSING A MONO TYPE MAKE SURE ITS A SRUCT BECAUSE WHEN ITS A CLASS IT GETS SOME UNDEFNIED BEHAVIOR
@@ -54,13 +57,13 @@ namespace Proof
 	}
 	#define PF_ADD_INTERNAL_CALL(Name){\
 		mono_add_internal_call("Proof.InternalCalls::" #Name, (void*)Name);\
-		PF_ENGINE_TRACE("	C# registered function {}", #Name);\
+		PF_ENGINE_TRACE("	ScriptFuncs registered function {}", #Name);\
 	}
 
 	static void ApplyCameraRotate(uint64_t entityID) 
 	{
 		return;
-		World* world = ScriptEngine::GetWorldContext();
+		Count<World> world = ScriptEngine::GetWorldContext();
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 
 		#if PF_ENABLE_DEBUG
@@ -145,14 +148,14 @@ namespace Proof
 	#pragma region World
 	static void World_Pause() 
 	{
-		World* world = ScriptEngine::GetWorldContext();
+		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
 		world->Pause();
 		
 	}
 
 	static void World_Play() {
-		World* world = ScriptEngine::GetWorldContext();
+		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
 		world->Play();
 	}
@@ -165,7 +168,7 @@ namespace Proof
 			return 0;
 		}
 
-		World* world = ScriptEngine::GetWorldContext();
+		Count<World> world = ScriptEngine::GetWorldContext();
 		AssetInfo info = AssetManager::GetAssetInfo(prefabID);
 		Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabID);
 
@@ -179,7 +182,7 @@ namespace Proof
 
 	static bool World_OpenWorld(uint64_t worldID) 
 	{
-		World* world = ScriptEngine::GetWorldContext();
+		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
 		if (!AssetManager::HasAsset(worldID))
 		{
@@ -200,10 +203,10 @@ namespace Proof
 	}
 	static void World_Restart()
 	{
-		World* world = ScriptEngine::GetWorldContext();
+		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
 		world->EnableRestart = true;
-		///World* world = ScriptEngine::GetWorldContext();
+		///Count<World> world = ScriptEngine::GetWorldContext();
 		///PF_CORE_ASSERT(world, "world is nullptr");
 		///SceneSerializer scerelizer(world);
 		///auto path = AssetManager::GetAssetInfo(world->GetID()).Path;
@@ -215,19 +218,19 @@ namespace Proof
 	}
 	static uint64_t World_TryFindEntityByTag(MonoString* classFullName)
 	{ 
-		World* world = ScriptEngine::GetWorldContext();
+		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
-		std::string tag = ScriptEngine::MonoToString(classFullName);
+		std::string tag = ScriptUtils::MonoStringToUTF8(classFullName);
 		Entity entity = world->TryGetEntityByTag(tag);
 		return entity.GetUUID();
 	}
 	static void World_ForEachEntityWith(MonoString* classFullName, MonoArray** theArray)
 	{
-		World* world = ScriptEngine::GetWorldContext();
+		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
 
 		std::vector<uint64_t> objects;
-		std::string className = ScriptEngine::MonoToString(classFullName);
+		std::string className = ScriptUtils::MonoStringToUTF8(classFullName);
 		#if 0
 		for (auto& [entityID, scripts] : ScriptEngine::EachEntityScript())
 		{
@@ -242,7 +245,7 @@ namespace Proof
 	}
 	static void World_DeleteEntity(uint64_t entityID, bool deleteChildren) 
 	{
-		World* world = ScriptEngine::GetWorldContext();
+		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
 
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
@@ -268,7 +271,7 @@ namespace Proof
 	#pragma region Entity
 	static void Entity_GetChildren(uint64_t entityID,MonoArray** theArray)
 	{
-		World* world = ScriptEngine::GetWorldContext();
+		Count <World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
 		Entity entity = world->GetEntity(entityID);
 
@@ -287,7 +290,7 @@ namespace Proof
 	}
 	static bool Entity_HasComponent(uint64_t entityID, MonoReflectionType* componentType) {
 		if (entityID == 0)return false;
-		World* world = ScriptEngine::GetWorldContext();
+		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world,"world is nullptr");
 		Entity entity = world->GetEntity(entityID);
 		PF_CORE_ASSERT(entity,"Entity is null");
@@ -302,7 +305,7 @@ namespace Proof
 	{
 	//	if (!ScriptEngine::EntityHasScripts(ScriptEngine::GetWorldContext()->GetEntity(entityID)))
 			return nullptr;
-		//return ScriptEngine::GetMonoManagedObject(entityID,ScriptEngine::MonoToString(classFullName));
+		//return ScriptEngine::GetMonoManagedObject(entityID,ScriptUtils::MonoStringToUTF8(classFullName));
 	}
 
 	static void Entity_GetParent(uint64_t entityID, uint64_t* owenerId)
@@ -340,7 +343,7 @@ namespace Proof
 		}
 
 		#endif
-		*tag = ScriptEngine::StringToMono(entity.GetComponent<TagComponent>().Tag);
+		*tag = ScriptUtils::UTF8StringToMono(entity.GetComponent<TagComponent>().Tag);
 	}
 	static void TagComponent_SetTag(uint64_t entityID, MonoString** tag)
 	{
@@ -356,7 +359,7 @@ namespace Proof
 		}
 		#endif
 
-		std::string newTag = ScriptEngine::MonoToString(*tag);
+		std::string newTag = ScriptUtils::MonoStringToUTF8(*tag);
 		entity.GetComponent<TagComponent>().Tag  = newTag;
 	}
 #pragma endregion 
@@ -463,7 +466,7 @@ namespace Proof
 			PF_EC_ERROR("TextComponent.GetText - Does not have TextComponent");
 			return;
 		}
-		* text = ScriptEngine::StringToMono(entity.GetComponent<TextComponent>().Text);
+		* text = ScriptUtils::UTF8StringToMono(entity.GetComponent<TextComponent>().Text);
 	}
 
 	static void TextComponent_SetText(uint64_t entityID, MonoString** text)
@@ -482,7 +485,7 @@ namespace Proof
 			PF_EC_ERROR("TextComponent.SetText - Does not have TextComponent");
 			return;
 		}
-		entity.GetComponent<TextComponent>().Text = ScriptEngine::MonoToString(*text);
+		entity.GetComponent<TextComponent>().Text = ScriptUtils::MonoStringToUTF8(*text);
 	}
 #pragma endregion
 
@@ -785,17 +788,17 @@ namespace Proof
 		
 		auto entityScripts = ScriptEngine::GetScriptInstnace(entity);
 
-		std::string classAsString = ScriptEngine::MonoToString(className);
+		std::string classAsString = ScriptUtils::MonoStringToUTF8(className);
 		if(!entityScripts.contains(classAsString))return;
 
 		Count<ScriptInstance> script = entityScripts.at(classAsString);
 
-		std::string meathodNameStr = ScriptEngine::MonoToString(meathodName);
+		std::string meathodNameStr = ScriptUtils::MonoStringToUTF8(meathodName);
 		MonoMethod* meathod = mono_class_get_method_from_name(script->GetScriptClass()->GetMonoClass(), meathodNameStr.c_str(), 0);
 		auto call = [script = script, meathod = meathod]() {
 			ScriptMeathod::CallMeathod(script, meathod, nullptr);
 		};
-		InputManagerMeathods::BindAction(ScriptEngine::MonoToString(ActionName), (uint32_t)playerInput.InputPlayer, (InputEvent) inputState,call);
+		InputManagerMeathods::BindAction(ScriptUtils::MonoStringToUTF8(ActionName), (uint32_t)playerInput.InputPlayer, (InputEvent) inputState,call);
 
 		#endif
 	}
@@ -818,17 +821,17 @@ namespace Proof
 		#if 0
 		auto entityScripts = ScriptEngine::GetScriptInstnace(entity);
 
-		std::string classAsString = ScriptEngine::MonoToString(className);
+		std::string classAsString = ScriptUtils::MonoStringToUTF8(className);
 		if (!entityScripts.contains(classAsString))return;
 
 		Count<ScriptInstance> script = entityScripts.at(classAsString);
-		std::string meathodNameStr = ScriptEngine::MonoToString(meathodName);
+		std::string meathodNameStr = ScriptUtils::MonoStringToUTF8(meathodName);
 		MonoMethod* meathod = mono_class_get_method_from_name(script->GetScriptClass()->GetMonoClass(), meathodNameStr.c_str(), 1);
 		auto call = [script = script, meathod = meathod](float motionValue) {
 			void* param = &motionValue;
 			ScriptMeathod::CallMeathod(script, meathod, &param);
 		};
-		InputManagerMeathods::BindMotion(ScriptEngine::MonoToString(motionName), (uint32_t)playerInput.InputPlayer, call);
+		InputManagerMeathods::BindMotion(ScriptUtils::MonoStringToUTF8(motionName), (uint32_t)playerInput.InputPlayer, call);
 		#endif
 	}
 	
@@ -1241,7 +1244,7 @@ namespace Proof
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
 			if (panel->ButtonHas(buttonNamestr))
 			{
 				return true;
@@ -1270,7 +1273,7 @@ namespace Proof
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
 			if (!panel->ButtonHas(buttonNamestr))
 			{
 				PF_ERROR("PlayerHUDComponent.SetButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
@@ -1310,7 +1313,7 @@ namespace Proof
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
 			if (!panel->ButtonHas(buttonNamestr))
 			{
 				PF_ERROR("PlayerHUDComponent.GetButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
@@ -1351,7 +1354,7 @@ namespace Proof
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
 			if (panel->ImageButtonHas(buttonNamestr))
 			{
 				return true;
@@ -1381,7 +1384,7 @@ namespace Proof
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
 			if (!panel->ImageButtonHas(buttonNamestr))
 			{
 				PF_ERROR("PlayerHUDComponent.GetImageButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
@@ -1422,7 +1425,7 @@ namespace Proof
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptEngine::MonoToString(buttonName);
+			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
 			if (!panel->ImageButtonHas(buttonNamestr))
 			{
 				PF_ERROR("PlayerHUDComponent.SetImageButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
@@ -1478,7 +1481,7 @@ namespace Proof
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptEngine::MonoToString(textName);
+			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(textName);
 			if (panel->TextHas(buttonNamestr))
 			{
 				return true;
@@ -1506,7 +1509,7 @@ namespace Proof
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptEngine::MonoToString(textName);
+			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(textName);
 			if (!panel->TextHas(buttonNamestr))
 			{
 				PF_ERROR("PlayerHUDComponent.GetTextData index {} does not contain button {}", tableIndex, buttonNamestr);
@@ -1521,7 +1524,7 @@ namespace Proof
 			data->Base.Rotation = text.Rotation;
 			data->Base.Size = text.Size;
 			data->Base.Visible = text.Visible;
-			*textData =ScriptEngine::StringToMono( text.Text);
+			*textData = ScriptUtils::UTF8StringToMono(text.Text);
 			return;
 		}
 		PF_ERROR("PlayerHUDComponent.GetTextData entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
@@ -1546,7 +1549,7 @@ namespace Proof
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
 			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptEngine::MonoToString(textName);
+			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(textName);
 			if (!panel->TextHas(buttonNamestr))
 			{
 				PF_ERROR("PlayerHUDComponent.SetTextData index {} does not contain button {}", tableIndex, buttonNamestr);
@@ -1561,7 +1564,7 @@ namespace Proof
 			text.Rotation = data->Base.Rotation ;
 			text.Size = data->Base.Size;
 			text.Visible =data->Base.Visible;
-			text.Text = ScriptEngine::MonoToString(*textData);
+			text.Text = ScriptUtils::MonoStringToUTF8(*textData);
 			return;
 		}
 		PF_ERROR("PlayerHUDComponent.SetTextData entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
@@ -1572,9 +1575,8 @@ namespace Proof
 
 	template<typename... Component>
 	static void RegisterComponent() {
-		#if 0
 		//iterate over templates list
-		PF_ENGINE_INFO("C# Register Components");
+		PF_ENGINE_INFO("ScriptFuncs Register Components");
 		([]()
 			{
 				std::string_view typeName = typeid(Component).name();
@@ -1582,15 +1584,14 @@ namespace Proof
 				std::string_view structName = typeName.substr(pos + 1);
 				std::string managedTypename = fmt::format("Proof.{}", structName);
 
-				MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyImage());
+				MonoType* managedType = mono_reflection_type_from_name(managedTypename.data(), ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage);
 				if (!managedType) {
-					PF_ENGINE_ERROR("	C# Could not find component type {}", managedTypename);
+					PF_ENGINE_ERROR("	ScriptFuncs Could not find component type {}", managedTypename);
 					return;
 				}
 				s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
-				PF_ENGINE_TRACE("	C# Component Registered {}", managedTypename);
+				PF_ENGINE_TRACE("	ScriptFuncs Component Registered {}", managedTypename);
 			}(), ...); //... keep expanding templates
-		#endif
 	}
 
 	template<typename... Component>
@@ -1598,7 +1599,10 @@ namespace Proof
 		RegisterComponent<Component...>();
 	}
 
-	void ScriptFunc::RegisterAllComponents() {
+	void ScriptFunc::RegisterAllComponents() 
+	{
+		ScopeTimer timer(__FUNCTION__);
+
 		s_EntityHasComponentFuncs.clear();
 		RegisterComponent(AllComponents{});
 
@@ -1606,7 +1610,9 @@ namespace Proof
 #pragma endregion 
 
 	void ScriptFunc::RegisterFunctions() {
-		PF_ENGINE_INFO("C# Register Functions");
+		ScopeTimer scopeTimer(__FUNCTION__);
+
+		PF_ENGINE_INFO("ScriptFuncs Register Functions");
 
 		{
 			PF_ADD_INTERNAL_CALL(ApplyCameraRotate);

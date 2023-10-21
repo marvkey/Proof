@@ -595,12 +595,12 @@ namespace Proof
 		// Box Info
 		glm::vec3 Size = glm::vec3 { 1,1,1 };
 	};
-	struct ScriptComponentMetaData
+	struct ScriptComponentsClassesData
 	{
 		AssetID ScriptClassID;
 		ScriptGCHandle Instance =nullptr;
 		//std::vector<uint32_t> FieldID;
-		std::vector<std::string> FieldNames;
+		//std::vector<std::string> FieldNames;
 	};
 	struct ScriptComponent 
 	{
@@ -610,8 +610,13 @@ namespace Proof
 		friend class ScriptEngine;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
+
+		bool HasScript(AssetID scriptClassID)
+		{
+			return std::find_if(ScriptMetadates.begin(), ScriptMetadates.end(), [&](const ScriptComponentsClassesData& x) { return x.ScriptClassID == scriptClassID; }) != ScriptMetadates.end();
+		}
 	private:
-		std::vector<ScriptComponentMetaData>ScriptMetadates = {};
+		std::vector<ScriptComponentsClassesData> ScriptMetadates = {};
 	};
 
 	struct TextComponent {

@@ -238,6 +238,7 @@ namespace Proof::ScriptUtils
 		}
 	}
 
+
 	Buffer MonoObjectToValue(MonoObject* obj, ScriptFieldType fieldType)
 	{
 		PF_PROFILE_FUNC();
@@ -454,6 +455,45 @@ namespace Proof::ScriptUtils
 	{
 		return mono_object_unbox(obj);
 	}
-	
+	struct MonoExceptionInfo
+	{
+		std::string TypeName;
+		std::string Source;
+		std::string Message;
+		std::string StackTrace;
+	};
+
+	static MonoExceptionInfo GetExceptionInfo(MonoObject* exception)
+	{
+		MonoClass* exceptionClass = mono_object_get_class(exception);
+		MonoType* exceptionType = mono_class_get_type(exceptionClass);
+
+		auto GetExceptionString = [exception, exceptionClass](const char* stringName) -> std::string
+		{
+			MonoProperty* property = mono_class_get_property_from_name(exceptionClass, stringName);
+
+			if (property == nullptr)
+				return "";
+
+			MonoMethod* getterMethod = mono_property_get_get_method(property);
+
+			if (getterMethod == nullptr)
+				return "";
+
+			MonoString* string = (MonoString*)mono_runtime_invoke(getterMethod, exception, NULL, NULL);
+			return ScriptUtils::MonoStringToUTF8(string);
+		};
+
+		return { mono_type_get_name(exceptionType), GetExceptionString("Source"), GetExceptionString("Message"), GetExceptionString("StackTrace") };
+	}
+	void HandleException(MonoObject* exception)
+	{
+		if (exception == nullptr)
+			return;
+
+		MonoExceptionInfo exceptionInfo = GetExceptionInfo(exception);
+		PF_ENGINE_ERROR("{0}: {1}. Source: {2}, Stack Trace: {3}", exceptionInfo.TypeName, exceptionInfo.Message, exceptionInfo.Source, exceptionInfo.StackTrace);
+	}
+
 }
 

@@ -1,5 +1,6 @@
 #include "Proofprch.h"
 #include "Timer.h"
+#include "Proof/Utils/StringUtils.h"
 namespace Proof
 {
 	std::unordered_map<std::string, std::pair<float, uint32_t>> ScopePerformanceTimer::s_Timers = {};
@@ -8,7 +9,8 @@ namespace Proof
 		{
 			float time = m_Timer.ElapsedMillis();
 
-			PF_EC_INFO("TIMER {} - {}ms", m_Name, time);
+			//PF_EC_INFO("TIMER {} - {}ms", m_Name, time);
+			PF_EC_INFO("TIMER {} - {}", m_Name, Utils::String::DurationToString( time));
 		}
 		else
 		{

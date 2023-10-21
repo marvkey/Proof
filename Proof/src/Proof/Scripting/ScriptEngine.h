@@ -23,28 +23,55 @@ extern "C" {
 namespace Proof
 {
 	//struct AssemblyMetadata;
-	struct EntityClassMetaData
+	struct ScriptClassMetaData
 	{
 		std::string className;
+		ScriptGCHandle ScriptHandle = nullptr;
+		bool IsExistOnlyRuntime = true;
 		std::unordered_map<std::string, Count<class FieldStorageBase>> Fields;
+	};
+	
+	struct ScriptClassesContainerMetaData
+	{
+		const std::unordered_map<std::string, ScriptClassMetaData>& GetClassesMetaData()const
+		{
+			return Classes;
+		}
+		ScriptClassMetaData* GetClassMetaData(const std::string& classname)const
+		{
+			if (!Classes.contains(classname))
+				return nullptr;
+
+			return &Classes.at(classname);
+		}
+			
+		
+		bool HasClassMetaData(const std::string& className)
+		{
+			return Classes.contains(className);
+		}
+	private:
+		// class name,, class metaData
+		mutable std::unordered_map<std::string,ScriptClassMetaData> Classes;
+		friend class ScriptEngine;
 	};
 	class ScriptEngine {
 	public:
 		static void Init();
 		static void ShutDown();
 
-		static void BeginRuntime(World* world) {};
-		static void EndRuntime() {};
+		static void BeginRuntime(Count<World> world);
+		static void EndRuntime();
+		static bool IsRuntime();
 
-		static World* GetWorldContext() { return NULL; }
-		static std::string MonoToString(MonoString* monoString);
-		static MonoString* StringToMono(const std::string& data);
+		static Count<World> GetWorldContext();
 		static AssemblyMetadata GetMetadataForImage(MonoImage* image);
 		static std::vector<AssemblyMetadata> GetReferencedAssembliesMetadata(MonoImage* image);
 		static const std::unordered_map<std::string, Count<ScriptClass>>& GetEntityScripts();
+		static void ReloadppAssembly();
 
 		// vecotr of classes, adn its fields for an entity
-		static const std::vector<EntityClassMetaData >* GetEntityFields(Entity entity);
+		static const ScriptClassesContainerMetaData* GetEntityFields(Entity entity);
 		static bool IsModuleValid(AssetID id);
 		static bool IsModuleValid(Count<class ScriptFile> file);
 
@@ -52,6 +79,7 @@ namespace Proof
 
 		// called once the entity has a script component
 		static void InstantiateScriptEntity(Entity entity);
+		static void DestroyScriptEntity(Entity entity);
 
 		// called when a scirpt watns to add a new scirpt
 		static void ScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
@@ -115,6 +143,19 @@ namespace Proof
 		{
 			return CreateManagedObject_Internal(GetManagedClass(className), std::forward<TConstructorArgs>(args)...);
 		}
+		template<typename... TArgs>
+		static void CallMethod(ScriptGCHandle instance, const std::string& methodName, TArgs&&... args)
+		{
+			if (instance == nullptr)
+			{
+				PF_ENGINE_WARN("ScriptEngine", "Attempting to call method {0} on an invalid instance!", methodName);
+				return;
+			}
+
+			CallMethod(ScriptGCManager::GetReferencedObject(instance), methodName, std::forward<TArgs>(args)...);
+		}
+
+
 	private:
 		static void InitMono();
 		static void ShutDownMono();
@@ -129,6 +170,12 @@ namespace Proof
 		static void InitRuntimeObject(MonoObject* monoObject);
 
 		static void SetScriptEntityEditor(Entity entity);
+
+		static void RuntimeInstantiateScriptEntity(Entity entity);
+		static void RuntimeScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
+
+		static void DestroyScriptEntity(Entity entity, bool erase);
+		static void CallMethod(MonoObject* monoObject, ManagedMethod* managedMethod, const void** parameters);
 
 	private:
 

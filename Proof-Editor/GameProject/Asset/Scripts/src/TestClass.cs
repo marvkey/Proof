@@ -32,6 +32,7 @@ namespace Game
         public UInt32 testUint32;
         public UInt64 testUint64;
 
+        [ClampValueAttribute(-10,10)]
         public float testFloat;
         public double testDouble;
 

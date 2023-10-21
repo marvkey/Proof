@@ -980,10 +980,7 @@ namespace Proof
 						}
 						else
 						{
-							ScriptComponentMetaData metadata;
-							metadata.ScriptClassID= scriptFile->GetID();
-							scriptComp.ScriptMetadates.push_back(metadata);
-
+							scriptComp.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ scriptFile->GetID() });
 							ScriptEngine::InstantiateScriptEntity(entity);
 						}
 						
@@ -1001,7 +998,7 @@ namespace Proof
 
 			auto& classFields = *ScriptEngine::GetEntityFields(entity);
 
-			for (const EntityClassMetaData& classMetaData : classFields)
+			for (auto& [className, classMetaData] : classFields.GetClassesMetaData())
 			{
 				const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 				UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
