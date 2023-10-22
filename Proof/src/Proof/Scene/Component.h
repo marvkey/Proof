@@ -605,7 +605,13 @@ namespace Proof
 	struct ScriptComponent 
 	{
 	public:
-		ScriptComponent(const ScriptComponent& other) = default;
+		ScriptComponent(const ScriptComponent& other)
+		{
+			ScriptMetadates = other.ScriptMetadates;
+			//cannot copy the same instnace
+			for (auto& data : ScriptMetadates)
+				data.Instance = nullptr;
+		}
 		ScriptComponent() = default;
 		friend class ScriptEngine;
 		friend class SceneSerializer;

@@ -755,31 +755,20 @@ namespace Proof {
 
 			if (src.HasComponent<Componnents>())
 				dst.AddorReplaceComponent<Componnents>(src.GetComponent<Componnents>());
-			if (typeid(Componnents) == typeid(ScriptComponent) && (isdstPrefab == false || isSrcPrefab == false))
-			{
-				if (!src.HasComponent<ScriptComponent>()) return;
+			else
+				return;
+			if(typeid(Componnents) == typeid(ScriptComponent))
+				dst.GetCurrentWorld()->GetScriptWorld()->DuplicateScriptInstance(src, dst);
 
-				auto& scriptComponent = src.GetComponent<ScriptComponent>();
-				#if 0
-				for (auto& scripts : scriptComponent.ScriptsNames)
-				{
-					//if (ScriptEngine::HasScriptFieldMap(src) == false)continue;
-					//if(!ScriptEngine::HasScriptFieldMap(dst))
-					//	ScriptEngine::CreateScriptFieldMap(dst);
-					//
-					//ScriptEngine::GetScriptFieldMap(dst) = ScriptEngine::GetScriptFieldMap(src);
-				}
-				#endif
-			}
 		}(), ...);
 	}
 	template<typename... Component>
 	static void CopyComponentIfExistsEntity(ComponentGroup<Component...>, Entity dst, Entity src, bool isdstPrefab = false, bool isSrcPrefab = false)
 	{
-		if (isdstPrefab == true && isSrcPrefab == true)
-		{
-			PF_CORE_ASSERT(false);
-		}
+		//if (isdstPrefab == true && isSrcPrefab == true)
+		//{
+		//	PF_CORE_ASSERT(false);
+		//}
 		CopyComponentIfExistEntitySingle<Component...>(dst, src, isdstPrefab, isSrcPrefab);
 	}
 
@@ -910,6 +899,8 @@ namespace Proof {
 
 				auto& srcComponent = src.get<Component>(srcEntity);
 				dst.emplace_or_replace<Component>(dstEntity, srcComponent);
+
+				//dst.GetCurrentWorld()->GetScriptWorld()->DuplicateScriptInstance(src, dst);
 			}
 		}(), ...);
 	}
@@ -943,6 +934,9 @@ namespace Proof {
 
 		// Copy components (except IDComponent )
 		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		newWorld->m_ScriptWorld = ScriptWorld::CopyScriptWorld(worldToCopy->GetScriptWorld(), newWorld);
+
 		return newWorld;
 	}
 

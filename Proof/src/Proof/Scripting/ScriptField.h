@@ -377,7 +377,7 @@ namespace Proof
 			{
 				Buffer valueBuffer;
 				if (fieldStorage->GetValueRuntime(valueBuffer))
-				{
+				{	
 					SetValueRuntime(valueBuffer.Data);
 					valueBuffer.Release();
 				}

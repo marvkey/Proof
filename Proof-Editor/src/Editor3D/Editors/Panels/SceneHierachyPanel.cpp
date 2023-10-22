@@ -340,6 +340,14 @@ namespace Proof
 					return;
 				}
 			}
+
+			if (m_ActiveWorld->HasEntity(m_SelectedEntity.GetUUID()))
+			{
+				if (ImGui::MenuItem("Duplicate"))
+				{
+					m_ActiveWorld->CreateEntity(m_SelectedEntity);
+				}
+			}
 			ImGui::EndPopup();
 		}
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {

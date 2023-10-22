@@ -168,7 +168,7 @@ namespace Proof
 
         if (!m_EntityClassesStorage.contains(entity.GetUUID()))
         {
-            PF_ENGINE_ERROR("Cannot Script Entity: {}", entity.GetName());
+            PF_ENGINE_ERROR("Cannot Deleta Script Entity: {} Does not exist", entity.GetName());
             return;
         }
 
@@ -179,9 +179,70 @@ namespace Proof
     void ScriptWorld::RuntimeDestroyEntityScript(Entity entity, bool clear)
     {
     }
+    Count<ScriptWorld> ScriptWorld::CopyScriptWorld(Count<ScriptWorld> world, Count<World> newWorld, bool useSameMemmory)
+    {
+        Count<ScriptWorld> newScirptWorld = Count<ScriptWorld>::Create(newWorld);
+        if (useSameMemmory)
+        {
+            newScirptWorld->m_EntityClassesStorage = world->m_EntityClassesStorage;
+            return newScirptWorld;
+        }
+
+        newScirptWorld->m_EntityClassesStorage = world->m_EntityClassesStorage;
+
+        for (auto& [entityUUID, classes] : newScirptWorld->m_EntityClassesStorage)
+        {
+            for (auto& [className, classMetaData] : classes.Classes)
+            {
+                for (auto& [fieldName, fieldStorage] : classMetaData.Fields)
+                {
+                    if (fieldStorage)
+                    {
+                        fieldStorage->SetRuntimeInstance(nullptr);
+                        fieldStorage->CopyFrom(fieldStorage);
+                    }
+                }
+            }
+        }
+        return newScirptWorld;
+    }
     const std::map<UUID, WeakCount<ScriptWorld>>& ScriptWorld::GetScriptWorlds()
     {
         return s_ScriptWorldReferences;
     }
+
+    void ScriptWorld::DuplicateScriptInstance(Entity srcEntity, Entity dstEntity)
+    {
+        PF_PROFILE_FUNC();
+        if (!srcEntity.HasComponent<ScriptComponent>() || !dstEntity.HasComponent<ScriptComponent>())
+            return;
+        Count<ScriptWorld> srcScriptWorld = srcEntity.GetCurrentWorld()->GetScriptWorld();
+
+        if (!srcScriptWorld->IsEntityScriptInstantiated(srcEntity))
+            return;
+
+        const auto& srcScriptComp = srcEntity.GetComponent<ScriptComponent>();
+        auto& dstScriptComp = dstEntity.GetComponent<ScriptComponent>();
+
+
+        DestroyEntityScript(dstEntity);
+        dstScriptComp = srcScriptComp;
+
+        InstantiateScriptEntity(dstEntity);
+        if (!IsEntityScriptInstantiated(dstEntity))return;
+        ScriptClassesContainerMetaData* srcClassesMetaData =  srcScriptWorld->GetEntityFields(srcEntity);
+        if (!srcClassesMetaData)
+            return;
+
+        for (auto& [className, classMetaData] : srcClassesMetaData->Classes)
+        {
+            for (auto& [fieldName, fieldStorage] : classMetaData.Fields)
+            {
+                if(fieldStorage)
+                    m_EntityClassesStorage[dstEntity.GetUUID()].Classes[className].Fields[fieldName]->CopyFrom(fieldStorage);
+            }
+        }
+    }
+
 }
 

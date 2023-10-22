@@ -54,7 +54,7 @@ namespace Proof {
 
 		srcEntity.GetCurrentWorld()->PrefabCopyEntity(this, srcEntity, m_BaseEntity);
 		#if 0
-		if (!srcEntity)return;
+		if (!srcEntity)return;	
 		//m_Registry.clear();
 		std::unordered_map<UUID, uint64_t> enttMap;
 		{

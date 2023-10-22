@@ -52,6 +52,7 @@ namespace Proof
 		bool IsEntityScriptInstantiated(Entity entity);
 		void DestroyEntityScript(Entity entity);
 		ScriptClassesContainerMetaData* GetEntityFields(Entity entity) const;
+		void DuplicateScriptInstance(Entity srcEntity, Entity dstEntity);
 
 		Count <class World> GetWorld()const
 		{
@@ -73,11 +74,14 @@ namespace Proof
 		void RuntimeDestroyEntityScript(Entity entity, bool clear);
 
 	private:
+		static Count<ScriptWorld>CopyScriptWorld(Count<ScriptWorld> scirptWorld, Count<World> newWorld, bool useSameMemmory = false);
+	private:
 		bool m_IsRuntime = false;
 		Count<class World> m_World;
 		mutable ScriptEntityClassStorage m_EntityClassesStorage;
 		UUID m_SpecificID;
 		friend class ScriptEngine;
+		friend class World;
 
 		static const std::map<UUID, WeakCount<ScriptWorld>>& GetScriptWorlds();
 	};
