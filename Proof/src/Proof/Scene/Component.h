@@ -621,6 +621,17 @@ namespace Proof
 		{
 			return std::find_if(ScriptMetadates.begin(), ScriptMetadates.end(), [&](const ScriptComponentsClassesData& x) { return x.ScriptClassID == scriptClassID; }) != ScriptMetadates.end();
 		}
+
+		int GetScriptIndex(AssetID scriptClassID)
+		{
+			for (int i = 0; i < ScriptMetadates.size(); i++)
+			{
+				if (ScriptMetadates[i].ScriptClassID == scriptClassID)
+					return i;
+			}
+
+			return -1;
+		}
 	private:
 		std::vector<ScriptComponentsClassesData> ScriptMetadates = {};
 	};

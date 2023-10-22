@@ -20,6 +20,10 @@ namespace Game
         {
             Log.Trace("we are running ");
         }
+        void OnDestroy()
+        {
+            Log.Trace("we are Off");
+        }
         private int age = 10;
         public bool Available = true;
         public TestState statejadshlajdla = (TestState)12;
@@ -44,5 +48,17 @@ namespace Game
         public Vector2 COlorChange2;
         public Vector3 COlorChange3;
         public Vector4 COlorChange;
+    }
+
+    class TestEntity : Entity
+    {
+        void OnCreate()
+        {
+            Log.Trace("TestEntity runnign ");
+        }
+        void OnDestroy()
+        {
+            Log.Trace("TestEntity off");
+        }
     }
 }

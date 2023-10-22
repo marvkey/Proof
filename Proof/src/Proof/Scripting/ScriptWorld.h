@@ -82,8 +82,11 @@ namespace Proof
 	public:
 		ScriptWorld(Count<class World> world);
 		~ScriptWorld();
+
 		void InstantiateScriptEntity(Entity entity);
 		void ScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
+		void ScriptEntityDeleteScript(Entity entity, Count<class ScriptFile> script);
+		void ScriptEntityDeleteScript(Entity entity, AssetID script);
 		bool IsEntityScriptInstantiated(Entity entity);
 		void DestroyEntityScript(Entity entity);
 		ScriptClassesContainerMetaData* GetEntityFields(Entity entity) const;
@@ -95,11 +98,12 @@ namespace Proof
 		void EndRuntime();
 	private:
 
-		//void EditorInstantiateScriptEntity(Entity entity);
-		//void RuntimeInstantiateScriptEntity(Entity entity);
 
 		void EditorScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
 		void RuntimeScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
+
+		void EditorScriptEntityDeleteScript(Entity entity, Count<class ScriptFile> script);
+		void RuntimeScriptEntityDeleteScript(Entity entity, Count<class ScriptFile> script);
 
 		bool EditorIsEntityScriptInstantiated(Entity entity);
 		bool RuntimeIsEntityScriptInstantiated(Entity entity);

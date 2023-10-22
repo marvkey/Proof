@@ -230,6 +230,71 @@ namespace Proof
         ScriptEngine::CallMethod(instanceHandle, "OnCreate");
 
 	}
+    void ScriptWorld::ScriptEntityDeleteScript(Entity entity, Count<class ScriptFile> script)
+    {
+        if (m_IsRuntime)
+            RuntimeScriptEntityDeleteScript(entity, script);
+        else
+            EditorScriptEntityDeleteScript(entity, script);
+    }
+    void ScriptWorld::ScriptEntityDeleteScript(Entity entity, AssetID script)
+    {
+        if (AssetManager::HasAsset(script))
+            ScriptEntityDeleteScript(entity, AssetManager::GetAsset<ScriptFile>(script));
+    }
+
+    void ScriptWorld::EditorScriptEntityDeleteScript(Entity entity, Count<class ScriptFile> script)
+    {
+        if (!entity.HasComponent<ScriptComponent>())
+            return;
+        ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+
+        if (!EditorIsEntityScriptInstantiated(entity))
+            return;
+
+        ScriptClassesContainerMetaData* entityClassContainer = GetEntityFields(entity);
+
+        if(!entityClassContainer->HasClassMetaData(script->GetFullName()))
+            return;
+
+
+        if (m_IsRuntime)
+        {
+            if (entityClassContainer->Classes.at(script->GetFullName()).IsExistOnlyRuntime == false)
+                return;
+        }
+
+        entityClassContainer->Classes.erase(script->GetFullName());
+
+        int index = scriptComponent.GetScriptIndex(script->GetID());
+        if (index != -1)
+            scriptComponent.ScriptMetadates.erase(scriptComponent.ScriptMetadates.begin() + index);
+    }
+
+    void ScriptWorld::RuntimeScriptEntityDeleteScript(Entity entity, Count<class ScriptFile> script)
+    {
+        if (!entity.HasComponent<ScriptComponent>())
+            return;
+        ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+
+        if (!RuntimeIsEntityScriptInstantiated(entity))
+            return;
+
+        RuntimeScriptClassesContainerMetaData* entityClassContainer = &m_RuntimeEntityClassStorage.at(entity.GetUUID());
+
+        ScriptEngine::CallMethod(entityClassContainer->Classes.at(script->GetFullName()).ScriptHandle, "OnDestroy");
+        entityClassContainer->Classes.erase(script->GetFullName());
+
+        int index = scriptComponent.GetScriptIndex(script->GetID());
+        if (index != -1)
+            scriptComponent.ScriptMetadates.erase(scriptComponent.ScriptMetadates.begin() + index);
+
+        if (m_EntityClassesStorage.contains(entity.GetUUID()))
+        {
+            if(m_EntityClassesStorage.at(entity.GetUUID()).Classes.contains(script->GetFullName()))
+                EditorScriptEntityDeleteScript(entity, script);
+        }
+    }
 
     bool ScriptWorld::IsEntityScriptInstantiated(Entity entity)
     {
@@ -269,12 +334,17 @@ namespace Proof
 
         if (!m_EntityClassesStorage.contains(entity.GetUUID()))
         {
-            PF_ENGINE_ERROR("Cannot Deleta Script Entity: {} Does not exist", entity.GetName());
+            PF_ENGINE_ERROR("Cannot Delete Script Entity: {} Does not exist", entity.GetName());
             return;
         }
 
-        if(clear)
-            entity.GetComponent<ScriptComponent>().ScriptMetadates.clear();
+        if (clear)
+        {
+            auto& sc = entity.GetComponent<ScriptComponent>();
+            for (auto& metadata : sc.ScriptMetadates)
+                ScriptEntityDeleteScript(entity, metadata.ScriptClassID);
+            sc.ScriptMetadates.clear();
+        }
         m_EntityClassesStorage.erase(entity.GetUUID());
     }
     void ScriptWorld::RuntimeDestroyEntityScript(Entity entity, bool clear)
@@ -284,15 +354,22 @@ namespace Proof
         if (!entity.HasComponent<ScriptComponent>())
             return;
 
-        if (RuntimeIsEntityScriptInstantiated(entity))
+        if (!RuntimeIsEntityScriptInstantiated(entity))
         {
-            PF_ENGINE_ERROR("Cannot Deleta Script Entity: {} Does not exist", entity.GetName());
+            PF_ENGINE_ERROR("Runtime Cannot Delete Script Entity: {} Does not exist", entity.GetName());
             return;
         }
+        if (clear)
+        {
+            auto& sc = entity.GetComponent<ScriptComponent>();
+            for (auto& metadata : sc.ScriptMetadates)
+                ScriptEntityDeleteScript(entity, metadata.ScriptClassID);
+            sc.ScriptMetadates.clear();
+        }
+        m_RuntimeEntityClassStorage.erase(entity.GetUUID());
 
-        if(clear)
-            entity.GetComponent<ScriptComponent>().ScriptMetadates.clear();
 
+        #if 0
         if (EditorIsEntityScriptInstantiated(entity))
         {
             #if 0
@@ -321,7 +398,8 @@ namespace Proof
             m_EntityClassesStorage.erase(entity.GetUUID());
 
         }
-        m_RuntimeEntityClassStorage.erase(entity.GetUUID());
+        #endif
+
     }
     Count<ScriptWorld> ScriptWorld::CopyScriptWorld(Count<ScriptWorld> world, Count<World> newWorld, bool useSameMemmory)
     {
@@ -411,11 +489,13 @@ namespace Proof
 
     void ScriptWorld::EndRuntime()
     {
-        m_IsRuntime = false;
 
         // we make a copy when we are going to run the scen
-        m_EntityClassesStorage.clear();
-        m_RuntimeEntityClassStorage.clear();
+        m_World->ForEachEnitityWith<ScriptComponent>([&](Entity entity)
+        {
+            RuntimeDestroyEntityScript(entity,true);
+        });
+        m_IsRuntime = false;
         ScriptEngine::EndRuntime();
     }
 

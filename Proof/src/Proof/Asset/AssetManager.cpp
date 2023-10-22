@@ -206,7 +206,7 @@ namespace Proof
 		if (it.Info.State == AssetState::Unloaded)
 			LoadAsset(ID);
 		return it.Asset;
-	}
+	}	
 	Count<Asset> AssetManager::InternalGetAsset(const std::filesystem::path& path)
 	{
 		PF_CORE_ASSERT(HasAsset(path), "Path does not exist");

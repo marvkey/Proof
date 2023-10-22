@@ -1015,6 +1015,13 @@ namespace Proof
 				UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
 				bool open = ImGui::TreeNodeEx(classMetaData.className.c_str(), treeNodeFlags, classMetaData.className.c_str());
 				if (!open)continue;
+				ImGui::SameLine();
+				if (ImGui::Button("-"))
+				{
+					scriptWorld->ScriptEntityDeleteScript(entity, classMetaData.ScriptAssetID);
+					ImGui::TreePop();
+					continue;
+				}
 				UI::BeginPropertyGrid(fmt::format("ScriptComponent::Grid {}",classMetaData.className));
 
 				//usign this becuase it stores the field in order form top to bottom
