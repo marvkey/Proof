@@ -64,6 +64,7 @@
     <Compile Include="src\Proof\Asset\ParticleSystem.cs" />
     <Compile Include="src\Proof\Attributes\ClampValueAttribute.cs" />
     <Compile Include="src\Proof\Attributes\EditorAttributes .cs" />
+    <Compile Include="src\Proof\Attributes\RegisterClassesAndStructAttributes.cs" />
     <Compile Include="src\Proof\Core\Application.cs" />
     <Compile Include="src\Proof\Core\Log.cs" />
     <Compile Include="src\Proof\Input\Input.cs" />

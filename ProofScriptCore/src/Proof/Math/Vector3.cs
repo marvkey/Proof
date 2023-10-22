@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
+    [RegisterCoreClassStruct]
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector3
     {
@@ -70,7 +71,7 @@ namespace Proof
             return new Vector3(a.X *sclar, a.Y * sclar, a.Z * sclar);
         }
     }
-
+    [RegisterCoreClassStruct]
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector2
     {
@@ -123,6 +124,7 @@ namespace Proof
         }
     }
 
+    [RegisterCoreClassStruct]
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector4
     {

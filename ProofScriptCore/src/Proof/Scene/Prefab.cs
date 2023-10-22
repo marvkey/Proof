@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
+    [RegisterCoreClassStruct]
     public class Prefab
     {
         protected Prefab() { ID = 0; }

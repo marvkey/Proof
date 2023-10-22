@@ -7,10 +7,6 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
-    struct ParticleSystemProps
-    {
-
-    }
     public enum ParticleHandlerState
     {
         None,
@@ -18,6 +14,8 @@ namespace Proof
 		Pause,
 		End
     };
+    [RegisterCoreClassStruct]
+
     public class ParticleSystem
     {
         public uint TableIndex { get; internal set; }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
+    [RegisterCoreClassStruct]
     [AttributeUsage(AttributeTargets.Field)]
     public class ClampValueAttribute : Attribute
     {
@@ -18,7 +19,7 @@ namespace Proof
             Max = max;
         }
     }
-
+    [RegisterCoreClassStruct]
     [AttributeUsage(AttributeTargets.Field)]
     public class MaxAttribute : Attribute
     {
@@ -29,6 +30,7 @@ namespace Proof
             Max = max;
         }
     }
+    [RegisterCoreClassStruct]
     [AttributeUsage(AttributeTargets.Field)]
     public class MinAttribute : Attribute
     {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
-
+    [RegisterCoreClassStruct]
     public static class Application
     {
         public static void Shutdown()

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
+    [RegisterCoreClassStruct]
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class ShowInEditorAttribute : Attribute
     {
@@ -27,6 +28,7 @@ namespace Proof
         }
     }
 
+    [RegisterCoreClassStruct]
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class ToolTipAttribute : Attribute
     {

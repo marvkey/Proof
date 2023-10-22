@@ -21,7 +21,5 @@ namespace Proof
         {
             Location = location; Rotation = rotation; Scale = scale;
         }
-
-     
     }
 }

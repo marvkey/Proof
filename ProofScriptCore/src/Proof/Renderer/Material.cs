@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
+    [RegisterCoreClassStruct]
     public class Material
     {
         internal AssetID m_ID;

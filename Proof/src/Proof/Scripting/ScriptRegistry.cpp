@@ -667,13 +667,46 @@ namespace Proof
 		REGISTER_CORELIB_CLASS("String");
 
 
+		#if 0
+		#define REGISTER_PF_CORE_CLASS(name) \
+		MonoClass* klass = mono_class_from_name(ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage, "Proof", name)\
+			if(klass  != nullptr)\
+				RegisterClasss("Proof." ##name,klass );\
+			else\
+				PF_ENGINE_ERROR("Class {} does not exist ", "Proof"##name)
+
+		REGISTER_PF_CORE_CLASS("ShowInEditorAttribute");
+		REGISTER_PF_CORE_CLASS("HideFromEditorAttribute");
+		REGISTER_PF_CORE_CLASS("ClampValueAttribute");
+
+		REGISTER_PF_CORE_CLASS("AssetHandle");
+		REGISTER_PF_CORE_CLASS("Vector2");
+		REGISTER_PF_CORE_CLASS("Vector3");
+		REGISTER_PF_CORE_CLASS("Vector4");
+		REGISTER_PF_CORE_CLASS("Entity");
+		REGISTER_PF_CORE_CLASS("Prefab");
+		REGISTER_PF_CORE_CLASS("Mesh");
+		REGISTER_PF_CORE_CLASS("StaticMesh");
+		REGISTER_PF_CORE_CLASS("Material");
+		REGISTER_PF_CORE_CLASS("Collider");
+		REGISTER_PF_CORE_CLASS("BoxCollider");
+		REGISTER_PF_CORE_CLASS("SphereCollider");
+		REGISTER_PF_CORE_CLASS("CapsuleCollider");
+		REGISTER_PF_CORE_CLASS("MeshCollider");
+		REGISTER_PF_CORE_CLASS("PhysicsMaterial");
+		REGISTER_PF_CORE_CLASS("RaycastHit2D");
+		REGISTER_PF_CORE_CLASS("Texture2D");
+
+		#endif
 
 		PF_ENGINE_TRACE("Registering Script Core classes");
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
 
+		MonoClass* registerCoreAttribute = mono_class_from_name(ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage, "Proof", "RegisterCoreClassStruct");
 		for (int32_t i = 0; i < numTypes; i++)
 		{
+			
 			uint32_t cols[MONO_TYPEDEF_SIZE];
 			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
 			const char* nameSpace = mono_metadata_string_heap(ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
@@ -686,16 +719,29 @@ namespace Proof
 				fullName = className;
 
 			MonoClass* monoClass = mono_class_from_name(ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage, nameSpace, className);
-
+			
+			if (fullName == "<Module>")continue;
 			if (monoClass == nullptr)
 				continue;
 
+
 			if (mono_class_is_enum(monoClass))
 				continue;
+			MonoCustomAttrInfo* customAttrs = mono_custom_attrs_from_class( monoClass);
 
-			RegisterClasss(fullName, monoClass);
+			PF_ENGINE_TRACE("Checking  class {} Attributes", fullName);
+
+			if (customAttrs == nullptr)
+			{
+				PF_ENGINE_WARN("	{} attributes it null", fullName);
+				continue;
+			}
+			if (mono_custom_attrs_has_attr(customAttrs, registerCoreAttribute))
+			{
+				PF_ENGINE_TRACE("	{} Has RegisterCoreAttribute", fullName);
+				RegisterClasss(fullName, monoClass);
+			}
 		}
-
 		RegisterEnums(ScriptEngine::GetCoreAssemblyInfo());
 	}
 	void ScriptRegistry::BuildClassMetadata(Count<AssemblyInfo>& assemblyInfo, MonoClass* monoClass)
