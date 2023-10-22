@@ -10,7 +10,7 @@ namespace Proof
 			float time = m_Timer.ElapsedMillis();
 
 			//PF_EC_INFO("TIMER {} - {}ms", m_Name, time);
-			PF_EC_INFO("TIMER {} - {}", m_Name, Utils::String::DurationToString( time));
+			PF_ENGINE_INFO("TIMER {} - {}", m_Name, Utils::String::DurationToString( time));
 		}
 		else
 		{

@@ -1,12 +1,11 @@
 #pragma once
-
+#include "Proof/Scripting/ScriptRawTypes.h"
 extern "C" {
 	typedef struct _MonoObject MonoObject;
 }
 
 namespace Proof
 {
-	using ScriptGCHandle = void*;
 	// script garabage collector manager
 	class ScriptGCManager
 	{

@@ -604,15 +604,11 @@ namespace Proof
     {
         PF_PROFILE_FUNC();
 
+        PF_CORE_ASSERT(!s_ScriptEngineRuntimeData, "Can only have one instance running ");
+
         s_ScriptEngineRuntimeData = new ScriptEngineRuntimeData();
         s_ScriptEngineRuntimeData->WorldContext = world;
         PF_CORE_ASSERT(s_ScriptEngineRuntimeData->WorldContext->IsPlaying(), "Don't call ScriptEngine::BeginRuntime if the scene isn't being played!");
-        auto view = s_ScriptEngineRuntimeData->WorldContext->GetAllEntitiesWith<ScriptComponent>();
-        for (auto enttID : view)
-        {
-            Entity entity{ enttID,s_ScriptEngineRuntimeData->WorldContext.Get() };
-            RuntimeInstantiateScriptEntity(entity);
-        }
         // copying all the values 
         // it uses shared pointer so the 
 
@@ -620,8 +616,12 @@ namespace Proof
     }
     void ScriptEngine::EndRuntime()
     {
-        
+        PF_PROFILE_FUNC();
+
+        ScriptGCManager::CollectGarbage();
+
         delete s_ScriptEngineRuntimeData;
+        s_ScriptEngineRuntimeData = nullptr;
     }
     bool ScriptEngine::IsRuntime()
     {

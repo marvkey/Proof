@@ -1,6 +1,7 @@
 ﻿using Proof;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,10 @@ namespace Game
     }
     class TestClass : Entity
     {
+        void OnCreate()
+        {
+            Log.Trace("we are running ");
+        }
         private int age = 10;
         public bool Available = true;
         public TestState statejadshlajdla = (TestState)12;

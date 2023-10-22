@@ -5,6 +5,7 @@
 #include "proof/Scene/Entity.h"
 #include "ScriptTypes.h"
 #include "ScriptRegistry.h"
+#include "ScriptGCManager.h"
 #include <any>
 #include <functional>
 #include <filesystem>

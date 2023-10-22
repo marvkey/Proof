@@ -39,7 +39,42 @@ namespace Proof
 		friend class ScriptEngine;
 		friend class ScriptWorld;
 	};
+
 	using ScriptEntityClassStorage = std::unordered_map < UUID, ScriptClassesContainerMetaData>;
+
+
+	struct RuntimeScriptClassMetaData
+	{
+		std::string ClassName;
+		AssetID ScriptAssetID;
+		ScriptGCHandle ScriptHandle = nullptr;
+	};
+	struct RuntimeScriptClassesContainerMetaData
+	{
+		const std::unordered_map<std::string, RuntimeScriptClassMetaData>& GetClassesMetaData()const
+		{
+			return Classes;
+		}
+		RuntimeScriptClassMetaData* GetClassMetaData(const std::string& classname)const
+		{
+			if (!Classes.contains(classname))
+				return nullptr;
+
+			return &Classes.at(classname);
+		}
+
+
+		bool HasClassMetaData(const std::string& className)
+		{
+			return Classes.contains(className);
+		}
+	private:
+		mutable std::unordered_map<std::string, RuntimeScriptClassMetaData> Classes;
+		friend class ScriptEngine;
+		friend class ScriptWorld;	
+	};
+
+	using ScriptInstanceMap = std::unordered_map<UUID, RuntimeScriptClassesContainerMetaData>;
 
 	class Entity;
 	class ScriptWorld : RefCounted
@@ -54,14 +89,14 @@ namespace Proof
 		ScriptClassesContainerMetaData* GetEntityFields(Entity entity) const;
 		void DuplicateScriptInstance(Entity srcEntity, Entity dstEntity);
 
-		Count <class World> GetWorld()const
-		{
-			return m_World;
-		}
+		Count <class World> GetWorld()const { return m_World; }
+
+		void BeginRuntime();
+		void EndRuntime();
 	private:
 
-		void EditorInstantiateScriptEntity(Entity entity);
-		void RuntimeInstantiateScriptEntity(Entity entity);
+		//void EditorInstantiateScriptEntity(Entity entity);
+		//void RuntimeInstantiateScriptEntity(Entity entity);
 
 		void EditorScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
 		void RuntimeScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
@@ -71,7 +106,7 @@ namespace Proof
 
 		void DestroyEntityScript(Entity entity, bool clear );
 		void EditorDestroyEntityScript(Entity entity, bool clear);
-		void RuntimeDestroyEntityScript(Entity entity, bool clear);
+		void RuntimeDestroyEntityScript(Entity entity, bool clear);	
 
 	private:
 		static Count<ScriptWorld>CopyScriptWorld(Count<ScriptWorld> scirptWorld, Count<World> newWorld, bool useSameMemmory = false);
@@ -79,6 +114,7 @@ namespace Proof
 		bool m_IsRuntime = false;
 		Count<class World> m_World;
 		mutable ScriptEntityClassStorage m_EntityClassesStorage;
+		mutable ScriptInstanceMap m_RuntimeEntityClassStorage;
 		UUID m_SpecificID;
 		friend class ScriptEngine;
 		friend class World;

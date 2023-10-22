@@ -17,7 +17,7 @@
 #include "Proof/Audio/AudioTools.h"
 #include "Proof/Physics/PhysicsTypes.h"
 #include "Proof/Asset/AssetTypes.h"
-#include "Proof/Scripting/ScriptGCManager.h"
+#include "Proof/Scripting/ScriptRawTypes.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>

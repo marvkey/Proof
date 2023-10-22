@@ -1002,14 +1002,14 @@ namespace Proof {
 				}			
 			}
 			{
-				ScriptEngine::BeginRuntime(this);
-				auto view = m_Registry.view<ScriptComponent>();
-				for (auto e : view)
-				{
-					Entity entity = { e, this };
-					//ScriptMeathod::OnCreate(entity);
-					//ScriptEngine::OnPlace(entity);
-				}
+				m_ScriptWorld->BeginRuntime();
+				//auto view = m_Registry.view<ScriptComponent>();
+				//for (auto e : view)
+				//{
+				//	Entity entity = { e, this };
+				//	//ScriptMeathod::OnCreate(entity);
+				//	//ScriptEngine::OnPlace(entity);
+				//}
 			}
 		}
 		///
@@ -1025,7 +1025,10 @@ namespace Proof {
 		AudioEngine::BeginContext(instance);
 	}
 	void World::EndRuntime() {
+
 		InputManager::EndRuntime();
+
+		m_ScriptWorld->EndRuntime();
 
 		m_Registry.on_construct<RigidBodyComponent>().disconnect(this);
 		m_Registry.on_destroy<RigidBodyComponent>().disconnect(this);
