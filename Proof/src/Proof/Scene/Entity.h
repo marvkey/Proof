@@ -203,6 +203,8 @@ namespace Proof{
 				return 0;
 			return GetComponent<IDComponent>().GetID(); 
 		}
+
+		entt::entity GetenttID() { return m_EntityHandle; }
 		operator entt::entity() const { return m_EntityHandle; }
 	private:
 		

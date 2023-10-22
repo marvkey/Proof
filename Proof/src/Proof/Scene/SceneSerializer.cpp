@@ -15,6 +15,8 @@
 #include "Mesh.h"
 #include "Prefab.h"
 #include "Proof/Scene/World.h"
+#include "Proof/Asset/AssetManager.h"
+#include "Proof/Scene/Material.h"
 
 #include "Material.h"
 namespace Proof
@@ -30,17 +32,46 @@ namespace Proof
 			fieldInstance.SetValue(data);                  \
 			break;                                         \
 	}
-	SceneSerializer::SceneSerializer(World* Scene) {
-		PF_CORE_ASSERT(Scene, "Scene cannot be nulltptr");
-		m_Scene = Scene;
+
+	static bool CanSaveAsset(AssetID id)
+	{
+		if (!AssetManager::HasAsset(id))
+			return false;
+
+		if (AssetManager::GetAssetInfo(id).RuntimeAsset)
+		{
+			if (!AssetManager::IsDefaultAsset(id))
+				return false;
+		}
+
+		return true;
 	}
-	void SceneSerializer::SerilizeEntity(YAML::Emitter& out, entt::registry& registry, UUID entityID, entt::entity enttID, bool ispPrefab )
+
+
+	static bool CanSaveAsset(Count<Asset> asset)
+	{
+		if (!AssetManager::HasAsset(asset))
+			return false;
+
+		if (AssetManager::GetAssetInfo(asset).RuntimeAsset)
+		{
+			if (!AssetManager::IsDefaultAsset(asset->GetID()))
+				return false;
+		}
+
+		return true;
+	}
+	SceneSerializer::SceneSerializer(Count<World> world) {
+		PF_CORE_ASSERT(world, "Scene cannot be nulltptr");
+		m_World = world;
+	}
+	void SceneSerializer::SerilizeEntity(YAML::Emitter& out, Entity entity)
 	{
 		out << YAML::BeginMap;// entity
-		out << YAML::Key << "Entity" << YAML::Value << entityID;
+		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID();
 		{
-			PF_CORE_ASSERT(registry.all_of< TagComponent>(enttID), "Does not contian Tag Componnet");
-			TagComponent& Tag = registry.get< TagComponent>(enttID);
+			PF_CORE_ASSERT(entity.HasComponent< TagComponent>(), "Does not contian Tag Componnet");
+			TagComponent& Tag = entity.GetComponent<TagComponent>();
 			auto& tag = Tag.Tag;
 			out << YAML::Key << "TagComponent";
 			out << YAML::BeginMap; // tag component
@@ -56,9 +87,9 @@ namespace Proof
 		}
 		{
 
-			PF_CORE_ASSERT(registry.all_of< TransformComponent>(enttID), "Does not contian Transform Component");
+			PF_CORE_ASSERT(entity.HasComponent<TransformComponent>(), "Does not contian Transform Component");
 
-			TransformComponent& transfrom = registry.get<TransformComponent>(enttID);
+			TransformComponent& transfrom = entity.GetComponent<TransformComponent>();
 			out << YAML::Key << "TransformComponent";
 			out << YAML::BeginMap; // transform component
 			out << YAML::Key << "Location" << YAML::Value << transfrom.Location;
@@ -67,9 +98,9 @@ namespace Proof
 			out << YAML::EndMap; // transform component
 		}
 		{
-			PF_CORE_ASSERT(registry.all_of< HierarchyComponent>(enttID), "Does not contian HierarchyComponent Component");
+			PF_CORE_ASSERT(entity.HasComponent<HierarchyComponent>(), "Does not contian HierarchyComponent Component");
 
-			HierarchyComponent& hierachyComponent = registry.get<HierarchyComponent>(enttID);
+			HierarchyComponent& hierachyComponent = entity.GetComponent<HierarchyComponent>();
 			out << YAML::Key << "HierarchyComponent";
 			out << YAML::BeginMap; //HierarchyComponent
 			out << YAML::Key << "ParentHandle" << YAML::Value << hierachyComponent.ParentHandle ;
@@ -85,8 +116,8 @@ namespace Proof
 			out << YAML::EndMap; // HierarchyComponent
 		}
 		{
-			if (registry.all_of<MeshComponent>(enttID)) {
-				MeshComponent& meshComponent = registry.get<MeshComponent>(enttID);
+			if (entity.HasComponent<MeshComponent>()) {
+				MeshComponent& meshComponent = entity.GetComponent<MeshComponent>();
 
 				out << YAML::Key << "MeshComponent";
 				out << YAML::BeginMap; // Mesh component
@@ -100,7 +131,7 @@ namespace Proof
 					for (auto& [index, material] : meshComponent.MaterialTable->GetMaterials())
 					{
 
-						if (AssetManager::HasAsset(material) == false || AssetManager::GetAssetInfo(material).RuntimeAsset == true)
+						if (!CanSaveAsset(material.As<Asset>()))
 							continue;
 						out << YAML::BeginMap;// material
 
@@ -108,7 +139,7 @@ namespace Proof
 						out << YAML::Key << "Material" << YAML::Key << "";
 							
 						//id of 0 means default material
-						out << YAML::Key << "AssetID" << YAML::Value << material->GetID();
+						out << YAML::Key << "AssetID" << YAML::Value << material.As<Asset>()->GetID();
 						out << YAML::Key << "Index" << YAML::Value << index;
 
 						out << YAML::EndMap;// material
@@ -123,9 +154,9 @@ namespace Proof
 		//dynamic Mesh
 		{
 
-			if (registry.all_of<DynamicMeshComponent>(enttID))
+			if (entity.HasComponent<DynamicMeshComponent>())
 			{
-				DynamicMeshComponent& dynamicMeshComponent = registry.get<DynamicMeshComponent>(enttID);
+				DynamicMeshComponent& dynamicMeshComponent = entity.GetComponent<DynamicMeshComponent>();
 
 				out << YAML::Key << "DynamicMeshComponent";
 				out << YAML::BeginMap; // DynamicMesh component
@@ -141,7 +172,7 @@ namespace Proof
 					out << YAML::BeginSeq;//MaterialTbale 
 					for (auto& [index, material] : dynamicMeshComponent.MaterialTable->GetMaterials())
 					{
-						if (AssetManager::HasAsset(material) == false || AssetManager::GetAssetInfo(material).RuntimeAsset == true)
+						if (!CanSaveAsset(material.As<Asset>()))
 							continue;
 						out << YAML::BeginMap;// material
 
@@ -149,7 +180,7 @@ namespace Proof
 						out << YAML::Key << "Material" << YAML::Key << "";
 
 						//id of 0 means default material
-						out << YAML::Key << "AssetID" << YAML::Value << material->GetID();
+						out << YAML::Key << "AssetID" << YAML::Value << material.As<Asset>()->GetID();
 						out << YAML::Key << "Index" << YAML::Value << index;
 
 						out << YAML::EndMap;// material
@@ -162,8 +193,8 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.try_get<SpriteComponent>(enttID)!= nullptr) {
-				SpriteComponent& sprite = registry.get<SpriteComponent>(enttID);
+			if (entity.HasComponent<SpriteComponent>()) {
+				SpriteComponent& sprite = entity.GetComponent<SpriteComponent>();
 				out << YAML::Key << "SpriteComponent";
 				out << YAML::BeginMap; // Sprite component
 				if(sprite.Texture != nullptr)
@@ -177,9 +208,9 @@ namespace Proof
 		{
 			{
 			
-				if (registry.all_of<SkyLightComponent>(enttID))
+				if (entity.HasComponent<SkyLightComponent>())
 				{
-					SkyLightComponent& skylight = registry.get<SkyLightComponent>(enttID);
+					SkyLightComponent& skylight = entity.GetComponent<SkyLightComponent>();
 					out << YAML::Key << "SkyLightComponent";
 					out << YAML::BeginMap; // SkyLightComponentComponent
 					out << YAML::Key << "TintColor" << skylight.ColorTint;
@@ -195,8 +226,8 @@ namespace Proof
 				}
 			}
 			{
-				if (registry.all_of<DirectionalLightComponent>(enttID)) {
-					DirectionalLightComponent& directonalLight = registry.get<DirectionalLightComponent>(enttID);
+				if (entity.HasComponent<DirectionalLightComponent>()) {
+					DirectionalLightComponent& directonalLight = entity.GetComponent<DirectionalLightComponent>();
 					out << YAML::Key << "DirectionalLightComponent";
 					out << YAML::BeginMap; // DirectionalLightComponent
 					out << YAML::Key << "Color" << directonalLight.Color;
@@ -206,9 +237,9 @@ namespace Proof
 			}
 
 			{
-				if (registry.all_of<PointLightComponent>(enttID))
+				if (entity.HasComponent<PointLightComponent>())
 				{
-					PointLightComponent& pointLight = registry.get<PointLightComponent>(enttID);
+					PointLightComponent& pointLight = entity.GetComponent<PointLightComponent>();
 					out << YAML::Key << "PointLightComponent";
 					out << YAML::BeginMap; // PointLightComponent
 					//out << YAML::Key << "Color" << pointLight.Color;
@@ -319,9 +350,9 @@ namespace Proof
 			}
 
 			{
-				if (registry.all_of<SpotLightComponent>(enttID))
+				if (entity.HasComponent<SpotLightComponent>())
 				{
-					SpotLightComponent& spotLight = registry.get<SpotLightComponent>(enttID);
+					SpotLightComponent& spotLight = entity.GetComponent<SpotLightComponent>();
 
 					out << YAML::Key << "SpotLightComponent";
 					//out << YAML::BeginMap; // PointLightComponent
@@ -340,9 +371,9 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.all_of<TextComponent>(enttID))
+			if (entity.HasComponent<TextComponent>())
 			{
-				TextComponent& textComponent = registry.get<TextComponent>(enttID);
+				TextComponent& textComponent = entity.GetComponent<TextComponent>();
 
 				out << YAML::Key << "TextComponent";
 				out << YAML::BeginMap; // Text Component
@@ -355,8 +386,8 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.all_of<CameraComponent>(enttID)) {
-				CameraComponent& cameraComponent = registry.get<CameraComponent>(enttID);
+			if (entity.HasComponent<CameraComponent>()) {
+				CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
 
 				out << YAML::Key << "CameraComponent";
 				out << YAML::BeginMap; // Camera Componet
@@ -368,9 +399,9 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.all_of<BoxColliderComponent>(enttID)) {
+			if (entity.HasComponent<BoxColliderComponent>()) {
 			
-				BoxColliderComponent& cubeCollider = registry.get<BoxColliderComponent>(enttID);
+				BoxColliderComponent& cubeCollider = entity.GetComponent<BoxColliderComponent>();
 				out << YAML::Key << "BoxColliderComponent";
 				out << YAML::BeginMap; // BoxColliderComponent
 				out << YAML::Key << "IsTrigger" << cubeCollider.IsTrigger;
@@ -381,9 +412,9 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.all_of<SphereColliderComponent>(enttID)) {
+			if (entity.HasComponent<SphereColliderComponent>()) {
 
-				SphereColliderComponent& sphereCollider = registry.get<SphereColliderComponent>(enttID);
+				SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
 				out << YAML::Key << "SphereColliderComponent";
 				out << YAML::BeginMap; // SphereColliderComponent
 				out << YAML::Key << "IsTrigger" << sphereCollider.IsTrigger;
@@ -394,9 +425,9 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.all_of<CapsuleColliderComponent>(enttID)) {
+			if (entity.HasComponent<CapsuleColliderComponent>()) {
 
-				CapsuleColliderComponent& CapsuleCollider = registry.get<CapsuleColliderComponent>(enttID);
+				CapsuleColliderComponent& CapsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
 				out << YAML::Key << "CapsuleColliderComponent";
 				out << YAML::BeginMap; // CapsuleColliderComponent
 				out << YAML::Key << "IsTrigger" << CapsuleCollider.IsTrigger;
@@ -409,8 +440,8 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.all_of<MeshColliderComponent>(enttID)) {
-				MeshColliderComponent& meshCollider = registry.get<MeshColliderComponent>(enttID);
+			if (entity.HasComponent<MeshColliderComponent>()) {
+				MeshColliderComponent& meshCollider = entity.GetComponent<MeshColliderComponent>();
 				out << YAML::Key << "MeshColliderComponent";
 				out << YAML::BeginMap; // MeshColliderComponent
 				out << YAML::Key << "IsTrigger" << meshCollider.IsTrigger;
@@ -420,8 +451,8 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.all_of<RigidBodyComponent>(enttID)) {
-				RigidBodyComponent& rigidBody = registry.get<RigidBodyComponent>(enttID);
+			if (entity.HasComponent<RigidBodyComponent>()) {
+				RigidBodyComponent& rigidBody = entity.GetComponent<RigidBodyComponent>();
 				out << YAML::Key << "RigidBodyComponent";
 				out << YAML::BeginMap; // RigidBodyComponent
 				out << YAML::Key << "Mass" << rigidBody.Mass;
@@ -439,9 +470,9 @@ namespace Proof
 		}
 
 		{
-			if (registry.all_of<CharacterControllerComponent>(enttID))
+			if (entity.HasComponent<CharacterControllerComponent>())
 			{
-				CharacterControllerComponent& characterController = registry.get<CharacterControllerComponent>(enttID);
+				CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
 				out << YAML::Key << "CharacterControllerComponent";
 				out << YAML::BeginMap; // CharacterControllerComponent
 				out << YAML::Key << "SlopeLimitRadians" << characterController.SlopeLimitRadians;
@@ -464,24 +495,26 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.all_of<PlayerInputComponent>(enttID))
+			if (entity.HasComponent<PlayerInputComponent>())
 			{
-				PlayerInputComponent& playerInput = registry.get<PlayerInputComponent>(enttID);
+				PlayerInputComponent& playerInput = entity.GetComponent<PlayerInputComponent>();
 				out << YAML::Key << "PlayerInputComponent";
 				out << YAML::BeginMap; // PlayerInputComponent
 				out << YAML::Key << "InputPlayer" << EnumReflection::EnumString(playerInput.InputPlayer);
-				if(playerInput.Player)
-					out << YAML::Key << "PrefabID" << playerInput.Player->GetID();
-				else
+
+				if (CanSaveAsset(playerInput.Player))
 					out << YAML::Key << "PrefabID" << 0;
+				else
+					out << YAML::Key << "PrefabID" << (uint64_t)playerInput.Player->GetID();
+
 				out << YAML::EndMap; // PlayerInputComponent
 			}
 		}
 		
 		{
-			if (registry.all_of<PlayerHUDComponent>(enttID))
+			if (entity.HasComponent<PlayerHUDComponent>())
 			{
-				PlayerHUDComponent& hud = registry.get<PlayerHUDComponent>(enttID);
+				PlayerHUDComponent& hud = entity.GetComponent<PlayerHUDComponent>();
 				out << YAML::Key << "PlayerHUDComponent";
 				out << YAML::BeginMap; // PlayerHudComponent
 
@@ -510,9 +543,9 @@ namespace Proof
 		}
 
 		{
-			if (registry.all_of<ParticleSystemComponent>(enttID))
+			if (entity.HasComponent<ParticleSystemComponent>())
 			{
-				ParticleSystemComponent& particleSystemComponent = registry.get<ParticleSystemComponent>(enttID);
+				ParticleSystemComponent& particleSystemComponent = entity.GetComponent<ParticleSystemComponent>();
 				out << YAML::Key << "ParticleSystemComponent";
 				out << YAML::BeginMap; // ParticleSystemComponent
 
@@ -546,9 +579,9 @@ namespace Proof
 		
 		}
 		{
-			if (registry.all_of<AudioComponent>(enttID))
+			if (entity.HasComponent<AudioComponent>())
 			{
-				AudioComponent& audioComponent = registry.get<AudioComponent>(enttID);
+				AudioComponent& audioComponent = entity.GetComponent<AudioComponent>();
 				out << YAML::Key << "AudioComponent";
 				out << YAML::BeginMap; // AudioComponent
 
@@ -581,9 +614,9 @@ namespace Proof
 			}
 		}
 		{
-			if (registry.all_of<AudioListenerComponent>(enttID))
+			if (entity.HasComponent<AudioListenerComponent>())
 			{
-				AudioListenerComponent& audioListenerComponent = registry.get<AudioListenerComponent>(enttID);
+				AudioListenerComponent& audioListenerComponent = entity.GetComponent<AudioListenerComponent>();
 				out << YAML::Key << "AudioListenerComponent";
 				out << YAML::BeginMap; // AudioListenerComponent
 
@@ -608,12 +641,12 @@ namespace Proof
 			out << YAML::Key << "World";
 			out << YAML::BeginMap;
 			{
-				out << YAML::Key << "ID" << m_Scene->GetID();
+				out << YAML::Key << "ID" << m_World->GetID();
 
 				out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-				for (auto [id, entity] : m_Scene->GetEntities())
+				for (auto [id, entity] : m_World->GetEntities())
 				{
-					SerilizeEntity(out, m_Scene->m_Registry, entity.GetUUID(),(entt::entity)entity );
+					SerilizeEntity(out, entity);
 				}
 				out << YAML::EndSeq;
 			}
@@ -637,29 +670,25 @@ namespace Proof
 
 		auto worldData = data["World"];
 
-		m_Scene->Name = FileSystem::GetFileName(filePath);
-		PF_EC_WARN("Deserilizing World {}", m_Scene->Name.c_str());
+		m_World->Name = FileSystem::GetFileName(filePath);
+		PF_EC_WARN("Deserilizing World {}", m_World->Name.c_str());
 
-		m_Scene->m_ID = worldData["ID"].as<uint64_t>();
-		m_Scene->m_Registry.each([&](auto enttiy) {
-			Entity entity = { enttiy ,m_Scene };
-			m_Scene->DeleteEntity(entity);
-		});
-		m_Scene->DeleteEntitiesfromQeue();
-		//for (auto entity : m_Scene->m_Registry.view<entt::entity>())
-		//{
-		//	m_Scene->m_Registry.destroy(entity);
-		//}
+		m_World->m_ID = worldData["ID"].as<uint64_t>();
+
+		for(auto [id, entity] :m_World->GetEntities())
+			m_World->DeleteEntity(entity);
+
+		m_World->DeleteEntitiesfromQeue();
+
 		auto entities = worldData["Entities"];
-
 		if (!entities)
 			return false;
 
-		DeSerilizeEntity(entities, m_Scene, &m_AssetLoadID);
+		DeSerilizeEntity(entities, m_World);
 		return true;
 	}
 
-	void SceneSerializer::DeSerilizeEntity(YAML::Node& entities, World* world, std::set<AssetID>* assetLoad, bool isPrefab)
+	void SceneSerializer::DeSerilizeEntity(YAML::Node& entities, Count<World> world)
 	{
 		for (auto entity : entities)
 		{
@@ -816,8 +845,7 @@ namespace Proof
 					src.Colour = spriteRendererComponent["Colour"].as<glm::vec4>();
 					if (id != 0)
 					{
-						if (assetLoad)
-							assetLoad->emplace((UUID)id);
+							//m_AssetLoadID.emplace((UUID)id);
 						if (AssetManager::HasAsset(id))
 						{
 							src.Texture = AssetManager::GetAsset<Texture2D>(id);

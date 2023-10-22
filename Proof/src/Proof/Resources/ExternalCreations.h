@@ -2,6 +2,7 @@
 #include "Proof/Math/Math.h"
 #include <yaml-cpp/yaml.h>
 #include "Proof/Math/Vector.h"
+#include "Proof/Asset/AssetTypes.h"
 
 namespace YAML
 {
@@ -130,6 +131,50 @@ namespace YAML
 			return true;
 		}
 	};
+
+	template<>
+	struct convert<glm::quat>
+	{
+		static Node encode(const glm::quat& rhs)
+		{
+			Node node;
+			node.push_back(rhs.w);
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			return node;
+		}
+
+		static bool decode(const Node& node, glm::quat& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 4)
+				return false;
+
+			rhs.w = node[0].as<float>();
+			rhs.x = node[1].as<float>();
+			rhs.y = node[2].as<float>();
+			rhs.z = node[3].as<float>();
+			return true;
+		}
+	};
+
+	template<>
+	struct convert<Proof::AssetID>
+	{
+		static Node encode(const Proof::AssetID& rhs)
+		{
+			Node node;
+			node.push_back((uint64_t)rhs);
+			return node;
+		}
+
+		static bool decode(const Node& node, Proof::AssetID& rhs)
+		{
+			rhs = node.as<uint64_t>();
+			return true;
+		}
+	};
+
 
 }
 namespace Proof

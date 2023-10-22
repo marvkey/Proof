@@ -370,37 +370,6 @@ namespace Proof
     void ScriptEngine::ReloadppAssembly()
     {
         ScopeTimer scopeTimer(__FUNCTION__);
-        #if 0
-        PF_PROFILE_FUNC();
-
-        ScopeTimer scopeTimer(__FUNCTION__);
-        PF_ENGINE_INFO("ScriptEngine Reloading App: {}", s_ScriptEngineData->CoreAssemblyInfo->FilePath.string(), s_ScriptEngineData->AppAssemblyInfo->FilePath.string());
-
-        std::unordered_map<UUID, std::vector<EntityClassReloadMetadata>> oldFieldValues;
-
-        for (auto& [entityId, enittyclassMetadata] : s_ScriptEngineData->EntityFieldMap)
-        {
-            auto& fieldsclassReloadMetadata = oldFieldValues[entityId];
-            
-            for (auto& savedMetaData : enittyclassMetadata)
-            {
-                auto& fieldReloadMetaData = fieldsclassReloadMetadata.emplace_back();
-                fieldReloadMetaData.ClassName = savedMetaData.className;
-                for (auto& [field, fieldStorage] : savedMetaData.Fields)
-                {
-                    if (!fieldStorage)
-                        continue;
-
-                    if (!fieldStorage->GetFieldInfo()->IsWritable())continue;
-
-                    fieldReloadMetaData.Fields[field] = Buffer::Copy(fieldStorage->GetValueBuffer());
-                }
-            }
-           // DestroyScriptEntity(y, false);
-
-        }
-        #endif
-
 
         if (!CanLoadAppAssembly() && !CanLoadCoreAssembly())
         {

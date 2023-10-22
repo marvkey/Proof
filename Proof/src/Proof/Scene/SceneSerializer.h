@@ -5,9 +5,10 @@
 namespace Proof
 {
 	class World;
+	class Entity;
 	class Proof_API SceneSerializer {
 	public:
-		SceneSerializer(World* Scene);
+		SceneSerializer(Count<World> world);
 		/* saving world data into a file*/
 		void SerilizeText(const std::string& filePath);
 		void SerilizeBinary(const std::string& filepath);
@@ -22,11 +23,11 @@ namespace Proof
 		}
 
 		// for prefab 
-		static void SerilizeEntity(YAML::Emitter& out, entt::registry& registry, UUID entityID, entt::entity enttID, bool ispPrefab = false);
+		static void SerilizeEntity(YAML::Emitter& out, Entity entity);
 		// for prefab 
-		static void DeSerilizeEntity(YAML::Node& entities, World* world, std::set<UUID>* assetLoad = nullptr, bool prefab = false);
+		static void DeSerilizeEntity(YAML::Node& entities, Count<World> world);
 	private:
-		World* m_Scene;
+		Count<World> m_World;
 		std::set<UUID> m_AssetLoadID;
 	};
 }

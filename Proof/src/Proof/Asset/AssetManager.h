@@ -145,6 +145,8 @@ namespace Proof
 		}
 
 		static Count<Asset> GetDefaultAsset(DefaultRuntimeAssets asset);
+
+		static bool IsDefaultAsset(AssetID ID);
 		/*
 		*path Pass the full path
 		*/

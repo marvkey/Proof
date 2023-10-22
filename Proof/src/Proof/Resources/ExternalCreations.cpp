@@ -1,6 +1,5 @@
 #include "Proofprch.h"
 #include "ExternalCreations.h"
-
 namespace Proof
 {
 	//YAML::Emitter& operator<<(YAML::Emitter& out,const Vector<>& v) {
@@ -25,4 +24,5 @@ namespace Proof
 		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
 		return out;
 	}
+
 }

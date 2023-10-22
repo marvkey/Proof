@@ -25,6 +25,7 @@ namespace Proof
 	struct AssetManagerData {
 		std::unordered_map<AssetID, AssetContainer> Assets;// path
 		std::unordered_map<AssetType, std::unordered_set<AssetID>> AllAssetTypes;
+		std::unordered_set<AssetID> DefaultRuntimeAssets;
 
 		//temporay 
 		//std::unordered_map< AssetType,std::unordered_map<AssetID, 
@@ -98,7 +99,7 @@ namespace Proof
 
 			// not loading every single mesh runtime asset bacause we may not need them at all in startup
 			uint64_t ID = (uint64_t)currentEnum;
-
+			s_AssetManagerData->DefaultRuntimeAssets.insert({ ID });
 			switch (currentEnum)
 			{
 				case DefaultRuntimeAssets::Cube:
@@ -244,6 +245,12 @@ namespace Proof
 	{
 		uint64_t ID = (uint64_t)asset;
 		return InternalGetAsset((uint64_t)asset);
+	}
+
+	bool AssetManager::IsDefaultAsset(AssetID ID)
+	{
+		uint64_t castedId = ID;
+		return s_AssetManagerData->DefaultRuntimeAssets.contains(ID);
 	}
 
 	void AssetManager::NewAssetSource(const std::filesystem::path& path, AssetType type)

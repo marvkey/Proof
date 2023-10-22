@@ -20,8 +20,8 @@ namespace Game
         public TestState statejadshlajdla = (TestState)12;
         public Material ChangeMaterial;
 
-        //[ShowInEditorAttribute("ue;;;pp",true)]
-        [ToolTipAttribute("Just a test")]
+        [ShowInEditorAttribute("ue;;;pp",true)]
+        //[ToolTipAttribute("Just a test")]
         public SByte testint8;
         public Int16 testint16;
         public Int32 testint32;

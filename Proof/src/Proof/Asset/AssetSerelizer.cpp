@@ -292,7 +292,7 @@ namespace Proof {
 
 		for (auto [id, entity] : prefab->m_World->GetEntities())
 		{
-			SceneSerializer::SerilizeEntity(out, prefab->m_World->m_Registry, entity.GetUUID(),(entt::entity)entity, true);
+			SceneSerializer::SerilizeEntity(out, entity);
 		}
 		out << YAML::Flow;
 		out << YAML::EndMap;
@@ -312,7 +312,7 @@ namespace Proof {
 
 		Count<World> world = Count<World>::Create("prefab world");
 
-		SceneSerializer::DeSerilizeEntity(entities, world.Get(), nullptr, true);
+		SceneSerializer::DeSerilizeEntity(entities, world);
 
 		prefab->SetEntity(world->GetEntity(owernID));
 		SetID(assetData, prefab);
