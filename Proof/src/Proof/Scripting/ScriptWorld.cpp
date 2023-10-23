@@ -44,6 +44,8 @@ namespace Proof
 
             for (const auto& [className, classMetaData] : m_RuntimeEntityClassStorage[entity.GetUUID()].Classes)
             {
+                if (m_EntityClassesStorage[entity.GetUUID()].Classes.contains(className))
+                    continue;
                 // call a non const in const
                 const_cast<ScriptWorld*>(this)->EditorScriptEntityPushScript(entity, AssetManager::GetAsset< ScriptFile>(classMetaData.ScriptAssetID));
                 //EditorScriptEntityPushScript(entity, AssetManager::GetAsset< ScriptFile>(classMetaData.ScriptAssetID));
@@ -126,7 +128,7 @@ namespace Proof
 
         if (m_EntityClassesStorage[entity.GetUUID()].HasClassMetaData(scriptFile->GetFullName()))
         {
-            PF_ENGINE_ERROR("Trying to Script: {} to Entity:{} that already contains script", scriptFile->GetFullName(), entity.GetName());
+            PF_ENGINE_ERROR("Trying to add Script: {} to Entity:{} that already contains script", scriptFile->GetFullName(), entity.GetName());
             return;
         }
         ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(scriptFile->GetFullName());
@@ -188,13 +190,13 @@ namespace Proof
 
         if (!ScriptEngine::IsModuleValid(scriptFile))
         {
-            PF_ENGINE_ERROR("Trying to add invalid script to Entity {}", entity.GetName());
+            PF_ENGINE_ERROR("Runtime Trying to add invalid script to Entity {}", entity.GetName());
             return;
         }
 
         if (m_RuntimeEntityClassStorage[entity.GetUUID()].HasClassMetaData(scriptFile->GetFullName()))
         {
-            PF_ENGINE_ERROR("Trying to Script: {} to Entity:{} that already contains script", scriptFile->GetFullName(), entity.GetName());
+            PF_ENGINE_ERROR("Runtime Trying to add Script: {} to Entity:{} that already contains script", scriptFile->GetFullName(), entity.GetName());
             return;
         }
         ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(scriptFile->GetFullName());
@@ -426,6 +428,8 @@ namespace Proof
 
         for (auto& [entityID, classData] : world->m_EntityClassesStorage)
         {
+            newScirptWorld->m_EntityClassesStorage[entityID] = {};
+
             Entity srcentity = world->GetWorld()->TryGetEntityWithUUID(entityID);
             Entity dstentity = newWorld->TryGetEntityWithUUID(entityID);
             newScirptWorld->DuplicateScriptInstance(srcentity,dstentity);
