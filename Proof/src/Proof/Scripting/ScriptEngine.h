@@ -41,8 +41,7 @@ namespace Proof
 		static void ReloadppAssembly();
 
 		// vecotr of classes, adn its fields for an entity
-		static bool IsModuleValid(AssetID id);
-		static bool IsModuleValid(Count<class ScriptFile> file);
+		static bool IsModuleValid(const std::string& classFullName);
 
 		template<typename... TArgs>
 		static void CallMethod(MonoObject* managedObject, const std::string& methodName, TArgs&&... args)
@@ -130,12 +129,6 @@ namespace Proof
 
 		static void InitRuntimeObject(MonoObject* monoObject);
 
-		static void SetScriptEntityEditor(Entity entity);
-
-		static void RuntimeInstantiateScriptEntity(Entity entity);
-		static void RuntimeScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
-
-		static void DestroyScriptEntity(Entity entity, bool erase);
 		static void CallMethod(MonoObject* monoObject, ManagedMethod* managedMethod, const void** parameters);
 
 	private:

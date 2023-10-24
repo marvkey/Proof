@@ -17,6 +17,9 @@
 #include "Proof/Scene/World.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Scene/Material.h"
+#include "Proof/Scripting/ScriptWorld.h"
+#include "Proof/Scripting/ScriptField.h"
+#include "Proof/Scripting/ScriptFile.h"
 
 #include "Material.h"
 namespace Proof
@@ -33,6 +36,342 @@ namespace Proof
 			break;                                         \
 	}
 
+	static void LoadScriptFieldEnum(YAML::iterator::value_type& scriptField, Count<EnumFieldStorage> enumFieldStorage, ScriptFieldType savedScriptFieldType)
+	{
+		auto dataNode = scriptField["Data"];
+		switch (enumFieldStorage->GetFieldInfo()->Type)
+		{
+			case ScriptFieldType::Int8:
+				{
+					enumFieldStorage->SetValue(static_cast<int8_t>(dataNode.as<int16_t>()));
+					break;
+				}
+			case ScriptFieldType::Int16:
+				{
+					enumFieldStorage->SetValue(dataNode.as<int16_t>());
+					break;
+				}
+			case ScriptFieldType::Int32:
+				{
+					enumFieldStorage->SetValue(dataNode.as<int32_t>());
+					break;
+				}
+			case ScriptFieldType::Int64:
+				{
+					enumFieldStorage->SetValue(dataNode.as<int64_t>());
+					break;
+				}
+			case ScriptFieldType::UInt8:
+				{
+					enumFieldStorage->SetValue(dataNode.as<uint8_t>());
+					break;
+				}
+			case ScriptFieldType::UInt16:
+				{
+					enumFieldStorage->SetValue(dataNode.as<uint16_t>());
+					break;
+				}
+			case ScriptFieldType::UInt32:
+				{
+					enumFieldStorage->SetValue(dataNode.as<uint32_t>());
+					break;
+				}
+			case ScriptFieldType::UInt64:
+				{
+					enumFieldStorage->SetValue(dataNode.as<uint64_t>());
+					break;
+				}
+		}
+	}
+
+	static void LoadScriptFieldStorage(YAML::iterator::value_type& scriptField, Count<FieldStorage> fieldStorage, ScriptFieldType savedScriptFieldType)
+	{
+		auto dataNode = scriptField["Data"];
+		switch (fieldStorage->GetFieldInfo()->Type)
+		{
+			case ScriptFieldType::Bool:
+				{
+					fieldStorage->SetValue(dataNode.as<bool>());
+					break;
+				}
+			case ScriptFieldType::Int8:
+				{
+					fieldStorage->SetValue(static_cast<int8_t>(dataNode.as<int16_t>()));
+					break;
+				}
+			case ScriptFieldType::Int16:
+				{
+					fieldStorage->SetValue(dataNode.as<int16_t>());
+					break;
+				}
+			case ScriptFieldType::Int32:
+				{
+					fieldStorage->SetValue(dataNode.as<int32_t>());
+					break;
+				}
+			case ScriptFieldType::Int64:
+				{
+					fieldStorage->SetValue(dataNode.as<int64_t>());
+					break;
+				}
+			case ScriptFieldType::UInt8:
+				{
+					fieldStorage->SetValue(dataNode.as<uint8_t>());
+					break;
+				}
+			case ScriptFieldType::UInt16:
+				{
+					fieldStorage->SetValue(dataNode.as<uint16_t>());
+					break;
+				}
+			case ScriptFieldType::UInt32:
+				{
+					fieldStorage->SetValue(dataNode.as<uint32_t>());
+					break;
+				}
+			case ScriptFieldType::UInt64:
+				{
+					fieldStorage->SetValue(dataNode.as<uint64_t>());
+					break;
+				}
+			case ScriptFieldType::Float:
+				{
+					fieldStorage->SetValue(dataNode.as<float>());
+					break;
+				}
+			case ScriptFieldType::Double:
+				{
+					fieldStorage->SetValue(dataNode.as<double>());
+					break;
+				}
+			case ScriptFieldType::String:
+				{
+					fieldStorage->SetValue(dataNode.as<std::string>());
+					break;
+				}
+			case ScriptFieldType::Vector2:
+				{
+					fieldStorage->SetValue(dataNode.as<glm::vec2>());
+					break;
+				}
+			case ScriptFieldType::Vector3:
+				{
+					fieldStorage->SetValue(dataNode.as<glm::vec3>());
+					break;
+				}
+			case ScriptFieldType::Vector4:
+				{
+					fieldStorage->SetValue(dataNode.as<glm::vec4>());
+					break;
+				}
+			case ScriptFieldType::Prefab:
+			case ScriptFieldType::Entity:
+			case ScriptFieldType::Mesh:
+			case ScriptFieldType::DynamicMesh:
+			case ScriptFieldType::Material:
+			case ScriptFieldType::PhysicsMaterial:
+			case ScriptFieldType::Texture2D:
+				{
+					fieldStorage->SetValue(dataNode.as<UUID>());
+					break;
+				}
+		}
+	}
+
+	static void LoadScriptField(YAML::iterator::value_type& scriptField, Count<ScriptWorld>& scriptWorld, const std::string& classModule, Entity entity)
+	{
+		std::string fieldNameID = scriptField["NameID"].as<std::string>();
+		ScriptFieldType scriptFieldType =EnumReflection::StringEnum<ScriptFieldType>( scriptField["Type"].as<std::string>());
+
+		Count<FieldStorageBase> fieldStorage = scriptWorld->GetEntityClassField(entity, classModule, fieldNameID);
+
+		if (!fieldStorage)
+			return;
+
+		if (fieldStorage->GetFieldInfo()->IsArray())
+		{
+
+		}
+		else if (fieldStorage->GetFieldInfo()->IsEnum())
+		{
+			
+			LoadScriptFieldEnum(scriptField, fieldStorage.As<EnumFieldStorage>(), scriptFieldType);
+		}
+		else
+		{
+			LoadScriptFieldStorage(scriptField, fieldStorage.As<FieldStorage>(), scriptFieldType);
+		}
+	}
+	static void SaveScriptFieldEnum(YAML::Emitter& out, Count<EnumFieldStorage> fieldStorage)
+	{
+		out << YAML::Key << "Data" << YAML::Value;
+		switch (fieldStorage->GetFieldInfo()->Type)
+		{
+			case ScriptFieldType::Int8:
+				{
+					out << fieldStorage->GetValue<int8_t>();
+					break;
+				}
+			case ScriptFieldType::Int16:
+				{
+					out << fieldStorage->GetValue<int16_t>();
+					break;
+				}
+			case ScriptFieldType::Int32:
+				{
+					out << fieldStorage->GetValue<int32_t>();
+					break;
+				}
+			case ScriptFieldType::Int64:
+				{
+					out << fieldStorage->GetValue<int64_t>();
+					break;
+				}
+			case ScriptFieldType::UInt8:
+				{
+					out << fieldStorage->GetValue<uint8_t>();
+					break;
+				}
+			case ScriptFieldType::UInt16:
+				{
+					out << fieldStorage->GetValue<uint16_t>();
+					break;
+				}
+			case ScriptFieldType::UInt32:
+				{
+					out << fieldStorage->GetValue<uint32_t>();
+					break;
+				}
+			case ScriptFieldType::UInt64:
+				{
+					out << fieldStorage->GetValue<uint64_t>();
+					break;
+				}
+
+				out << "";
+				break;
+		}
+	}
+
+	static void SaveScriptFieldStorage(YAML::Emitter& out, Count<FieldStorage> fieldStorage)
+	{
+		out << YAML::Key << "Data" << YAML::Value;
+		switch (fieldStorage->GetFieldInfo()->Type)
+		{
+			case ScriptFieldType::Bool:
+				{
+					out << fieldStorage->GetValue<bool>();
+					break;
+				}
+			case ScriptFieldType::Int8:
+				{
+					out << fieldStorage->GetValue<int8_t>();
+					break;
+				}
+			case ScriptFieldType::Int16:
+				{
+					out << fieldStorage->GetValue<int16_t>();
+					break;
+				}
+			case ScriptFieldType::Int32:
+				{
+					out << fieldStorage->GetValue<int32_t>();
+					break;
+				}
+			case ScriptFieldType::Int64:
+				{
+					out << fieldStorage->GetValue<int64_t>();
+					break;
+				}
+			case ScriptFieldType::UInt8:
+				{
+					out << fieldStorage->GetValue<uint8_t>();
+					break;
+				}
+			case ScriptFieldType::UInt16:
+				{
+					out << fieldStorage->GetValue<uint16_t>();
+					break;
+				}
+			case ScriptFieldType::UInt32:
+				{
+					out << fieldStorage->GetValue<uint32_t>();
+					break;
+				}
+			case ScriptFieldType::UInt64:
+				{
+					out << fieldStorage->GetValue<uint64_t>();
+					break;
+				}
+			case ScriptFieldType::Float:
+				{
+					out << fieldStorage->GetValue<float>();
+					break;
+				}
+			case ScriptFieldType::Double:
+				{
+					out << fieldStorage->GetValue<double>();
+					break;
+				}
+			case ScriptFieldType::String:
+				{
+					out << fieldStorage->GetValue<std::string>();
+					break;
+				}
+			case ScriptFieldType::Vector2:
+				{
+					out << fieldStorage->GetValue<glm::vec2>();
+					break;
+				}
+			case ScriptFieldType::Vector3:
+				{
+					out << fieldStorage->GetValue<glm::vec3>();
+					break;
+				}
+			case ScriptFieldType::Vector4:
+				{
+					out << fieldStorage->GetValue<glm::vec4>();
+					break;
+				}
+			case ScriptFieldType::Prefab:
+			case ScriptFieldType::Entity:
+			case ScriptFieldType::Mesh:
+			case ScriptFieldType::DynamicMesh:
+			case ScriptFieldType::Material:
+			case ScriptFieldType::PhysicsMaterial:
+			case ScriptFieldType::Texture2D:
+				{
+					out << fieldStorage->GetValue<UUID>();
+					break;
+				}
+			default:
+				out << "";
+				break;
+		}
+	}
+
+	static void SaveScriptField(YAML::Emitter& out,Count<FieldStorageBase> fieldStorage)
+	{
+		if (fieldStorage == nullptr)
+			return;
+
+		out << YAML::BeginMap; // ScriptField
+		out << YAML::Key << "NameID" << YAML::Value << fieldStorage->GetFieldInfo()->FullName;
+		out << YAML::Key << "Type" << YAML::Value << EnumReflection::EnumString( fieldStorage->GetFieldInfo()->Type);
+		if (fieldStorage->GetFieldInfo()->IsArray())
+		{
+			
+		}
+		else if(fieldStorage->GetFieldInfo()->IsEnum())
+		{
+			SaveScriptFieldEnum(out, fieldStorage.As<EnumFieldStorage>());
+		}
+		else
+		{
+			SaveScriptFieldStorage(out, fieldStorage.As<FieldStorage>());
+		}
+		out << YAML::EndMap; // ScriptField
+	}
 	static bool CanSaveAsset(AssetID id)
 	{
 		if (!AssetManager::HasAsset(id))
@@ -254,6 +593,48 @@ namespace Proof
 				}
 			}
 			{
+				#if 1
+				if (entity.HasComponent<ScriptComponent>())
+				{
+					ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+					Count<ScriptWorld> scriptWorld = entity.GetCurrentWorld()->GetScriptWorld();
+
+					if (scriptWorld->IsEntityScriptInstantiated(entity))
+					{
+						ScriptClassesContainerMetaData* classesContainer = scriptWorld->GetEntityClassesContainer(entity);
+						if (classesContainer->GetClassesMetaData().size() > 0)
+						{
+
+							out << YAML::Key << "ScriptComponent";
+							out << YAML::BeginMap; //ScriptComponent
+
+							out << YAML::Key << "Scripts" << YAML::BeginSeq; //scriptSeq
+
+							for (const auto& [scriptName, scritpMetaData] : classesContainer->GetClassesMetaData())
+							{
+								out << YAML::BeginMap;// Script
+								out << YAML::Key << "Script" << scriptName;
+
+								out << YAML::Key << "ScriptClassName" << scritpMetaData.className;
+								out << YAML::Key << "ScriptName" << scriptName;
+								out << YAML::Key << "Fields" << YAML::Value;
+								out << YAML::BeginSeq; // scriptfields
+								for (const auto& [fieldName, fieldStorage] : scritpMetaData.Fields)
+								{
+									SaveScriptField(out, fieldStorage);
+								}
+								out << YAML::EndSeq; // ScriptField
+
+								out << YAML::EndMap;//script
+
+							}
+							out << YAML::EndSeq;//scriptSeq
+							out << YAML::EndMap; // ScriptComponent
+						}
+					}
+				}
+				#endif
+
 				#if 0
 				if (registry.all_of<ScriptComponent>(enttID))
 				{
@@ -1155,6 +1536,51 @@ namespace Proof
 			}
 			//Script Component
 			{
+				#if 1
+				Count<ScriptWorld> scriptWorld = world->GetScriptWorld();
+				auto scriptComponent = entity["ScriptComponent"];
+				if (scriptComponent)
+				{
+					if (scriptComponent["Scripts"])
+					{
+						auto& scp = NewEntity.AddComponent<ScriptComponent>();
+						auto scripts = scriptComponent["Scripts"];
+						for (auto script : scripts)
+						{
+							const std::string scriptClassModule = script["ScriptClassName"].as<std::string>("");
+
+							if (!ScriptEngine::IsModuleValid(scriptClassModule))
+								continue;
+
+							if (!scriptWorld->IsEntityScriptInstantiated(NewEntity))
+							{
+								scp.ScriptMetadates.push_back({ scriptClassModule,nullptr });
+								scriptWorld->InstantiateScriptEntity(NewEntity);
+								if (!scriptWorld->IsEntityScriptInstantiated(NewEntity))
+								{
+									scp.ScriptMetadates.pop_back();
+									continue;
+								}
+									
+							}
+							else
+							{
+								scriptWorld->ScriptEntityPushScript(NewEntity, scriptClassModule);
+							}
+
+
+							if (!script["Fields"])continue;
+							auto scriptFields = script["Fields"];
+
+							for (auto field : scriptFields)
+							{
+								// might change to an uint64_t keep i nmind
+								LoadScriptField(field, scriptWorld, scriptClassModule, NewEntity);
+							}
+						}
+					}
+				}
+				#endif
 				#if 0
 				auto scriptComponent = entity["ScriptComponent"];
 				if (scriptComponent)

@@ -480,6 +480,7 @@ namespace Proof
 				//ScriptField& managedField = s_ScriptRegistryData->Fields[fieldID];
 				ScriptField& managedField = s_ScriptRegistryData->Fields[realName];
 				managedField.Name = name;
+				managedField.FullName = realName;
 				//managedField.ID = fieldID;
 				managedField.Type = fieldType;
 				managedField.IsProperty = false;

@@ -32,7 +32,7 @@ namespace Proof
 
 			auto& panelMap = m_Panels;
 
-			uint32_t id = Hash::GenerateFNVHash(panelData.ID);
+			uint32_t id = Hash::GenerateFNVHash32(panelData.ID);
 			if (panelMap.find(id) != panelMap.end())
 			{
 				PF_EC_ERROR("A panel with the id '{0}' has already been added.", panelData.ID);
@@ -60,7 +60,7 @@ namespace Proof
 		{
 			static_assert(std::is_base_of<Panel, TPanel>::value, "PanelManager::AddPanel requires TPanel to inherit from EditorPanel");
 
-			uint32_t id = Hash::GenerateFNVHash(strID);
+			uint32_t id = Hash::GenerateFNVHash32(strID);
 
 			if (m_Panels.find(id) != m_Panels.end())
 				return m_Panels.at(id).Panel.As<TPanel>();

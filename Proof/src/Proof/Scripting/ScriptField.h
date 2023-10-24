@@ -60,6 +60,7 @@ namespace Proof
 
 		//uint64_t ID = 0;
 		std::string Name;
+		std::string FullName;
 		ScriptFieldType Type;
 		uint32_t Size;
 		bool IsProperty;
@@ -339,7 +340,7 @@ namespace Proof
 
 				if (!success)
 					return T();
-
+					
 				T value = T();
 				memcpy(&value, valueBuffer.Data, valueBuffer.Size);
 				valueBuffer.Release();
@@ -417,7 +418,7 @@ namespace Proof
 	private:
 		bool GetValueRuntime(Buffer& outBuffer) const;
 		void SetValueRuntime(const void* data);
-		bool IsRuntime() { return m_RuntimeInstance != nullptr; }
+		bool IsRuntime()const { return m_RuntimeInstance != nullptr; }
 	private:
 		Buffer m_DataBuffer;
 		ScriptGCHandle m_RuntimeInstance = nullptr;

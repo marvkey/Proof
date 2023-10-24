@@ -13,7 +13,11 @@ namespace Proof {
         {
             // filesyste
             {
+
                 std::filesystem::path workingDirectory = std::filesystem::current_path();
+                const std::string stemOfdire = workingDirectory.stem().string();
+                //if (stemOfdire == "Proof-Editor")
+                    workingDirectory = workingDirectory.parent_path();
                 FileSystem::SetEnvironmentVariable("PROOF_DIR", workingDirectory.string());
             }
             m_Editor =Count<Editore3D>::Create();
@@ -27,7 +31,7 @@ namespace Proof {
         std::string_view projectPath = "Proof/Proof.ProofProject";
         if (argc > 1)
             projectPath = argv[1];
-
+            
         ApplicationConfiguration configuration;
         configuration.Name = "Proof Editor";
         configuration.EnableImgui = true;

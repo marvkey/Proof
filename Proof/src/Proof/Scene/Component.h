@@ -597,7 +597,7 @@ namespace Proof
 	};
 	struct ScriptComponentsClassesData
 	{
-		AssetID ScriptClassID;
+		std::string ClassName;
 		ScriptGCHandle Instance =nullptr;
 		//std::vector<uint32_t> FieldID;
 		//std::vector<std::string> FieldNames;
@@ -617,16 +617,16 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
 		friend class ScriptWorld;
-		bool HasScript(AssetID scriptClassID)
+		bool HasScript(const std::string& fullClassName)
 		{
-			return std::find_if(ScriptMetadates.begin(), ScriptMetadates.end(), [&](const ScriptComponentsClassesData& x) { return x.ScriptClassID == scriptClassID; }) != ScriptMetadates.end();
+			return std::find_if(ScriptMetadates.begin(), ScriptMetadates.end(), [&](const ScriptComponentsClassesData& x) { return x.ClassName == fullClassName; }) != ScriptMetadates.end();
 		}
 
-		int GetScriptIndex(AssetID scriptClassID)
+		int GetScriptIndex(const std::string& fullClassName)
 		{
 			for (int i = 0; i < ScriptMetadates.size(); i++)
 			{
-				if (ScriptMetadates[i].ScriptClassID == scriptClassID)
+				if (ScriptMetadates[i].ClassName == fullClassName)
 					return i;
 			}
 

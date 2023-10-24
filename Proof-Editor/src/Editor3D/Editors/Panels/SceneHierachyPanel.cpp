@@ -980,18 +980,17 @@ namespace Proof
 			}
 			if (ImGui::BeginPopup("Open Scripts"))
 			{
-				for (const auto [scriptName, script] : ScriptEngine::GetEntityScripts())
+				for (const auto& [scriptName, script] : ScriptEngine::GetEntityScripts())
 				{
 					if (ImGui::MenuItem(scriptName.c_str()))
 					{
-						Count<ScriptFile> scriptFile = AssetManager::CreateRuntimeAsset<ScriptFile>(script->GetNameSpace(), script->GetName());
 						if (scriptWorld->IsEntityScriptInstantiated(entity))
 						{
-							scriptWorld->ScriptEntityPushScript(entity, scriptFile);
+							scriptWorld->ScriptEntityPushScript(entity, scriptName);
 						}
 						else
 						{
-							scriptComp.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ scriptFile->GetID() });
+							scriptComp.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ scriptName });
 							scriptWorld->InstantiateScriptEntity(entity);
 						}
 						
@@ -1007,7 +1006,7 @@ namespace Proof
 
 
 
-			auto& classFields = *scriptWorld->GetEntityFields(entity);
+			auto& classFields = *scriptWorld->GetEntityClassesContainer(entity);
 
 			for (auto& [className, classMetaData] : classFields.GetClassesMetaData())
 			{
@@ -1018,7 +1017,7 @@ namespace Proof
 				ImGui::SameLine();
 				if (ImGui::Button("-"))
 				{
-					scriptWorld->ScriptEntityDeleteScript(entity, classMetaData.ScriptAssetID);
+					scriptWorld->ScriptEntityDeleteScript(entity, classMetaData.className);
 					ImGui::TreePop();
 					continue;
 				}

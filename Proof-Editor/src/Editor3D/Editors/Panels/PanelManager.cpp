@@ -17,7 +17,7 @@ namespace Proof
 	}
 	PanelData* PanelManager::GetPanelData(const char* strID) 
 	{
-		uint32_t id = Hash::GenerateFNVHash(strID);
+		uint32_t id = Hash::GenerateFNVHash32(strID);
 
 		if (m_Panels.contains(id))
 		{
@@ -27,7 +27,7 @@ namespace Proof
 	}
 	void PanelManager::RemovePanel(const char* strID)
 	{
-		uint32_t id = Hash::GenerateFNVHash(strID);
+		uint32_t id = Hash::GenerateFNVHash32(strID);
 
 		if (m_Panels.contains(id))
 		{

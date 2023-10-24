@@ -2,6 +2,7 @@
 #include "Proof/Asset/Asset.h"
 namespace Proof
 {
+	#if 0
 	class ScriptFile : public Asset
 	{
 	public:
@@ -25,4 +26,5 @@ namespace Proof
 		std::string m_ClassNamespace = "";
 		std::string m_ClassName = "";
 	};
+	#endif
 }

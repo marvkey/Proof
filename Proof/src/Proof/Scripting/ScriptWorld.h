@@ -8,7 +8,7 @@ namespace Proof
 	struct ScriptClassMetaData
 	{
 		std::string className;
-		AssetID ScriptAssetID;
+		//AssetID ScriptAssetID;
 		ScriptGCHandle ScriptHandle = nullptr;
 		bool IsExistOnlyRuntime = true;
 		std::unordered_map<std::string, Count<class FieldStorageBase>> Fields;
@@ -46,7 +46,6 @@ namespace Proof
 	struct RuntimeScriptClassMetaData
 	{
 		std::string ClassName;
-		AssetID ScriptAssetID;
 		ScriptGCHandle ScriptHandle = nullptr;
 	};
 	struct RuntimeScriptClassesContainerMetaData
@@ -84,12 +83,15 @@ namespace Proof
 		~ScriptWorld();
 
 		void InstantiateScriptEntity(Entity entity);
-		void ScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
-		void ScriptEntityDeleteScript(Entity entity, Count<class ScriptFile> script);
-		void ScriptEntityDeleteScript(Entity entity, AssetID script);
+		void ScriptEntityPushScript(Entity entity, const std::string& classFullName);
+		void ScriptEntityDeleteScript(Entity entity, const std::string& classFullName);
 		bool IsEntityScriptInstantiated(Entity entity);
 		void DestroyEntityScript(Entity entity);
-		ScriptClassesContainerMetaData* GetEntityFields(Entity entity) const;
+
+		ScriptClassesContainerMetaData* GetEntityClassesContainer(Entity entity) const;
+		ScriptClassMetaData* GetEntityClass(Entity entity, const std::string& classFullName) const;
+		Count<FieldStorageBase> GetEntityClassField(Entity entity, const std::string& classFullName, const std::string& fieldName);
+
 		void DuplicateScriptInstance(Entity srcEntity, Entity dstEntity);
 
 		Count <class World> GetWorld()const { return m_World; }
@@ -99,11 +101,11 @@ namespace Proof
 	private:
 
 
-		void EditorScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
-		void RuntimeScriptEntityPushScript(Entity entity, Count<class ScriptFile> script);
+		void EditorScriptEntityPushScript(Entity entity, const std::string& classFullName);
+		void RuntimeScriptEntityPushScript(Entity entity, const std::string& classFullName);
 
-		void EditorScriptEntityDeleteScript(Entity entity, Count<class ScriptFile> script);
-		void RuntimeScriptEntityDeleteScript(Entity entity, Count<class ScriptFile> script);
+		void EditorScriptEntityDeleteScript(Entity entity, const std::string& classFullName);
+		void RuntimeScriptEntityDeleteScript(Entity entity, const std::string& classFullName);
 
 		bool EditorIsEntityScriptInstantiated(Entity entity);
 		bool RuntimeIsEntityScriptInstantiated(Entity entity);

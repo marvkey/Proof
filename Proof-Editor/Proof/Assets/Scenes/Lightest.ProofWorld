@@ -61,6 +61,65 @@ World:
       HierarchyComponent:
         ParentHandle: 0
         Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: Game.TestClass
+            ScriptClassName: Game.TestClass
+            ScriptName: Game.TestClass
+            Fields:
+              - NameID: Game.TestClass.ChangeMaterial
+                Type: Material
+                Data: 0
+              - NameID: Game.TestClass.statejadshlajdla
+                Type: Int32
+                Data: 0
+              - NameID: Game.TestClass.Available
+                Type: Bool
+                Data: true
+              - NameID: Game.TestClass.testint8
+                Type: Int8
+                Data: 0
+              - NameID: Game.TestClass.testint16
+                Type: Int16
+                Data: 0
+              - NameID: Game.TestClass.testint32
+                Type: Int32
+                Data: 0
+              - NameID: Game.TestClass.testint64
+                Type: Int64
+                Data: 0
+              - NameID: Game.TestClass.testUint8
+                Type: UInt8
+                Data: "\x00"
+              - NameID: Game.TestClass.testUint16
+                Type: UInt16
+                Data: 0
+              - NameID: Game.TestClass.testUint32
+                Type: UInt32
+                Data: 0
+              - NameID: Game.TestClass.testUint64
+                Type: UInt64
+                Data: 0
+              - NameID: Game.TestClass.testFloat
+                Type: Float
+                Data: 0
+              - NameID: Game.TestClass.testDouble
+                Type: Double
+                Data: 0
+              - NameID: Game.TestClass.COlorChange2
+                Type: Vector2
+                Data: [0, 0]
+              - NameID: Game.TestClass.COlorChange3
+                Type: Vector3
+                Data: [0, 0, 0]
+              - NameID: Game.TestClass.COlorChange
+                Type: Vector4
+                Data: [0, 0, 0, 0]
+          - Script: Game.TestEntity
+            ScriptClassName: Game.TestEntity
+            ScriptName: Game.TestEntity
+            Fields:
+              []
     - Entity: 13784379914823608826
       TagComponent:
         Tag: Directional Light
