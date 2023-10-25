@@ -18,7 +18,7 @@ namespace Proof
     {
         PF_CORE_ASSERT(!s_ScriptGCStateData, "Trying to initialize ScriptGC Manager multiple times!");
 
-        s_ScriptGCStateData = new ScriptGCState();
+        s_ScriptGCStateData = pnew ScriptGCState();
     }
     void ScriptGCManager::Shutdown()
     {
@@ -48,7 +48,7 @@ namespace Proof
         mono_gc_collect(mono_gc_max_generation());
         while (mono_gc_pending_finalizers());
 
-        delete s_ScriptGCStateData;
+        pdelete s_ScriptGCStateData;
         s_ScriptGCStateData = nullptr;
     }
     ScriptGCHandle ScriptGCManager::CreateObjectReference(MonoObject* managedObject, bool weakReference, bool pinned, bool track)

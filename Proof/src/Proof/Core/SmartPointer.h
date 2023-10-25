@@ -3,6 +3,8 @@
 #include <atomic>
 #include <compare>
 #include <stdint.h>
+#include "MemoryAllocator.h"
+
 namespace Proof{
 
 
@@ -171,9 +173,11 @@ namespace Proof{
 		}
 		template <class... Args, std::enable_if_t<std::is_constructible<T, Args...>::value, int> = 0>
 		static Count Create(Args&&... args) {
-			T* data = new T(std::forward<Args>(args)...);
-			Count<T> t(data);
-			return t;
+			#if PF_TRACK_MEMORY
+				return Count<T>(new(typeid(T).name()) T(std::forward<Args>(args)...));
+			#else
+				return Count<T>(new T(std::forward<Args>(args)...));
+			#endif
 		}
 		template<class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
 		inline Type* AsRaw()const

@@ -116,7 +116,8 @@ project "Proof"
 		runtime "Debug"
 		defines{
 			"PF_ENABLE_ASSERT",
-			"PF_ENABLE_DEBUG"
+			"PF_ENABLE_DEBUG",
+			"PF_TRACK_MEMORY"
 		}
 		links
 		{
@@ -131,7 +132,8 @@ project "Proof"
 		defines{
 			"PF_ENABLE_ASSERT",
 			"PF_ENABLE_DEBUG",
-			"NDEBUG"
+			"NDEBUG",
+			"PF_TRACK_MEMORY"
 		}
 		links
 		{

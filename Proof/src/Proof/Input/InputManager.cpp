@@ -710,12 +710,12 @@ namespace Proof {
 	}
 	void InputManager::Init()
 	{
-		s_Data = new InputManagerData();
+		s_Data = pnew InputManagerData();
 	}
 
 	void InputManager::Destroy()
 	{
-		delete s_Data;
+		pdelete s_Data;
 	}
 
 }

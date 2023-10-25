@@ -112,7 +112,7 @@ namespace Proof
     void AudioEngine::Init()
 	{
         ScopeTimer timer(__FUNCTION__);
-        s_Data = new AudioEngineData();
+        s_Data = pnew AudioEngineData();
         ma_result result;
 
         ma_engine_config engineConfig;
@@ -137,7 +137,7 @@ namespace Proof
 	{
         ScopeTimer timer(__FUNCTION__);
         ma_engine_uninit(&s_Data->Engine);
-        delete s_Data;
+        pdelete s_Data;
 	}
 
 

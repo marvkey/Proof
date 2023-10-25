@@ -62,7 +62,7 @@ namespace Proof{
 			if (size == 0)
 				return;
 			Release();
-			Data = new uint8_t[size];
+			Data = pnew uint8_t[size];
 			Size = size;
 		}
 	
@@ -99,7 +99,7 @@ namespace Proof{
 		byte* ReadBytes(uint64_t size, uint64_t offset) const
 		{
 			PF_CORE_ASSERT(offset + size <= Size, "Buffer overflow!");
-			byte* buffer = new byte[size];
+			byte* buffer = pnew byte[size];
 			memcpy(buffer, (byte*)Data + offset, size);
 			return buffer;
 		}
@@ -115,7 +115,7 @@ namespace Proof{
 		}
 		void Release()
 		{
-			delete[] Data;
+			pdelete[] Data;
 			Data = nullptr;
 			Size = 0;
 		}

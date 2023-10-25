@@ -8,7 +8,7 @@
 #include "Proof/Core/Profile.h"
 #include "Proof/Core/Assert.h"
 #include "Proof/Core/UUID.h"
-
+#include "Proof/Core/MemoryAllocator.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>

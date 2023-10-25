@@ -49,12 +49,12 @@ namespace Proof {
 			vertexArray->AddData(2, DataType::Vec3, offsetof(Vertex2D, Vertex2D::TexCoords));
 			vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
 
-			m_QuadVertexBufferBase = new Vertex2D[c_MaxVertexCount];
+			m_QuadVertexBufferBase = pnew Vertex2D[c_MaxVertexCount];
 			m_QuadVertexBufferPtr = m_QuadVertexBufferBase;
 
 			m_QuadVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(Vertex2D));
 
-			uint32_t* quadIndices = new uint32_t[c_MaxIndexCount];
+			uint32_t* quadIndices = pnew uint32_t[c_MaxIndexCount];
 
 			uint32_t offset = 0;
 			for (uint32_t i = 0; i < c_MaxIndexCount; i += 6)
@@ -71,7 +71,7 @@ namespace Proof {
 			}
 
 			m_IndexBuffer = IndexBuffer::Create(quadIndices, c_MaxIndexCount * sizeof(uint32_t));
-			delete[] quadIndices;
+			pdelete[] quadIndices;
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
 			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
@@ -106,7 +106,7 @@ namespace Proof {
 			vertexArray->AddData(4, DataType::Float, offsetof(TextVertex, TextVertex::TexIndex));
 
 
-			m_TextVertexBufferBase = new TextVertex[c_MaxVertexCount];
+			m_TextVertexBufferBase = pnew TextVertex[c_MaxVertexCount];
 			m_TextVertexBufferPtr = m_TextVertexBufferBase;
 
 			m_TextVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(Vertex2D));
@@ -146,13 +146,13 @@ namespace Proof {
 			m_LinePass = RenderPass::Create(renderPassConfig);
 			m_LinePass->SetInput("CameraData", m_UBCamera);
 
-			uint32_t* lineIndices = new uint32_t[c_MaxLineIndices];
+			uint32_t* lineIndices = pnew uint32_t[c_MaxLineIndices];
 			for (uint32_t i = 0; i < c_MaxLineIndices; i++)
 				lineIndices[i] = i;
 			m_LineIndexBuffer = IndexBuffer::Create(lineIndices, c_MaxLineIndices);
-			delete[] lineIndices;
+			pdelete[] lineIndices;
 
-			m_LineVertexBufferBase = new LineVertex[c_MaxLineVertices];
+			m_LineVertexBufferBase = pnew LineVertex[c_MaxLineVertices];
 			m_LineVertexBufferPtr = m_LineVertexBufferBase;
 
 			m_LineVertexBuffer = VertexBuffer::Create(c_MaxLineVertices * sizeof(LineVertex));
@@ -177,9 +177,9 @@ namespace Proof {
 	}
 	Renderer2D::~Renderer2D()
 	{
-		delete[] m_QuadVertexBufferBase;
-		delete[] m_TextVertexBufferBase;
-		delete[] m_LineVertexBufferBase;
+		pdelete[] m_QuadVertexBufferBase;
+		pdelete[] m_TextVertexBufferBase;
+		pdelete[] m_LineVertexBufferBase;
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
 		DrawQuad(Location,{0.0,0.0,0.0},{1,1,1},{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());

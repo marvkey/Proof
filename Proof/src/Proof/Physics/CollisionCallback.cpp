@@ -107,7 +107,7 @@ namespace Proof
 			collisonInfo1.ContactPoints.emplace_back(contactInfo);
 			collisonInfo2.ContactPoints.emplace_back(contactInfo);
 		}
-		delete points;
+		pdelete points;
 		#endif
 	}
 }

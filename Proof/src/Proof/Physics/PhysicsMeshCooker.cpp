@@ -174,7 +174,7 @@ namespace  Proof
 
 	void PhysicsMeshCooker::Init()
 	{
-		s_CookingData = new CookingData(PhysicsEngine::GetPhysics()->getTolerancesScale());
+		s_CookingData = pnew CookingData(PhysicsEngine::GetPhysics()->getTolerancesScale());
 		s_CookingData->DefaultCookingParameters.midphaseDesc = physx::PxMeshMidPhase::eBVH34;
 
 		s_CookingData->CookingSDK = PxCreateCooking(PX_PHYSICS_VERSION, *PhysicsEngine::GetFoundation(), s_CookingData->DefaultCookingParameters);
@@ -184,7 +184,7 @@ namespace  Proof
 	{
 		s_CookingData->CookingSDK->release();
 		s_CookingData->CookingSDK = nullptr;
-		delete s_CookingData;
+		pdelete s_CookingData;
 
 		PhysicsDebugSphere = nullptr;
 		PhysicsDebugCapsule = nullptr;

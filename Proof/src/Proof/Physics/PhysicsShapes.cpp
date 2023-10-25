@@ -603,7 +603,7 @@ namespace Proof {
 
 	SharedShapeManager::SharedShapeData* SharedShapeManager::CreateSharedShapeData(ColliderType colliderType, AssetID colliderHandle)
 	{
-		SharedShapeData* sharedData = new SharedShapeData();
+		SharedShapeData* sharedData = pnew SharedShapeData();
 		s_SharedShapes[colliderType][colliderHandle].push_back(sharedData);
 		return sharedData;
 	}
@@ -641,7 +641,7 @@ namespace Proof {
 
 		auto& sharedShapes = s_SharedShapes[colliderType][collider->ColliderMesh];
 		sharedShapes.erase(std::find(sharedShapes.begin(), sharedShapes.end(), shapeData));
-		delete shapeData;
+		pdelete shapeData;
 	}
 
 	void SharedShapeManager::ClearSharedShapes()
@@ -651,7 +651,7 @@ namespace Proof {
 			for (auto& [colliderHandle, sharedShapes] : colliderShapeMap)
 			{
 				for (auto sharedShapeData : sharedShapes)
-					delete sharedShapeData;
+					pdelete sharedShapeData;
 
 				sharedShapes.clear();
 			}

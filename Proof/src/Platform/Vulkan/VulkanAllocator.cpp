@@ -55,7 +55,7 @@ namespace Proof
 
     void VulkanAllocator::Init(VulkanGraphicsContext* context)
     {
-        s_Data = new VulkanAllocatorData();
+        s_Data = pnew VulkanAllocatorData();
         VmaAllocatorCreateInfo allocatorInfo = {};
         allocatorInfo.physicalDevice = context->GetGPU();
         allocatorInfo.device = context->GetDevice();
@@ -67,7 +67,7 @@ namespace Proof
     {
         vmaDestroyAllocator(s_Data->Allocator);
 
-        delete s_Data;
+        pdelete s_Data;
         s_Data = nullptr;
     }
 }

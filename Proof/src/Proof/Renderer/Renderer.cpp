@@ -48,9 +48,9 @@ namespace Proof {
 	{
 		Timer time;
 		if (RendererAPI::ActiveAPI == Renderer::API::Vulkan)
-			s_RendererAPI = new VulkanRendererAPI();
+			s_RendererAPI = pnew VulkanRendererAPI();
 
-		s_Data = new RendererData();
+		s_Data = pnew RendererData();
 		GraphicsContext = GraphicsContext::Create(window);
 		s_RendererAPI->SetGraphicsContext(GraphicsContext);
 		window->m_SwapChain = SwapChain::Create(ScreenSize{ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() }, window->IsVsync());
@@ -96,10 +96,10 @@ namespace Proof {
 		ShaderLibrary->LoadShader("Text2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text2D.glsl");
 		ShaderLibrary->LoadShader("Line2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Line2D.glsl");
 
-		s_BaseTextures = new  BaseTextures();
+		s_BaseTextures = pnew BaseTextures();
 		s_RenderCommandQueue.resize(2);
-		s_RenderCommandQueue[0] = new CommandQueue();
-		s_RenderCommandQueue[1] = new CommandQueue();
+		s_RenderCommandQueue[0] = pnew CommandQueue();
+		s_RenderCommandQueue[1] = pnew CommandQueue();
 
 		{
 
@@ -174,16 +174,16 @@ namespace Proof {
 			PrethamSkyPass = nullptr;
 		}
 
-		delete s_RenderCommandQueue[0];
-		delete s_RenderCommandQueue[1];
+		pdelete s_RenderCommandQueue[0];
+		pdelete s_RenderCommandQueue[1];
 		s_RenderCommandQueue.clear();
 
-		delete s_BaseTextures;
+		pdelete s_BaseTextures;
 		ShaderLibrary = nullptr;
 		GraphicsContext = nullptr;
-		delete s_Data;
+		pdelete s_Data;
 		s_RendererAPI->Destroy();
-		delete s_RendererAPI;
+		pdelete s_RendererAPI;
 
 		PF_ENGINE_INFO("Renderer Shutdown {}m/s", time.ElapsedMillis());
 	}
@@ -729,7 +729,7 @@ namespace Proof {
 		textureConfig.Format = ImageFormat::RG16F;
 		
 		// widht* height * bytes per pixel
-		uint8_t* data = new uint8_t[imageSize * imageSize * Utils::BytesPerPixel(ImageFormat::RG16F)];
+		uint8_t* data = pnew uint8_t[imageSize * imageSize * Utils::BytesPerPixel(ImageFormat::RG16F)];
 		//memset(data, 0xFF000000, imageSize * imageSize * 8);
 		Count<Texture2D> brdfLut = Texture2D::Create(textureConfig,Buffer(data, imageSize * imageSize * Utils::BytesPerPixel(ImageFormat::RG16F)));
 		
@@ -756,7 +756,7 @@ namespace Proof {
 			Renderer::EndComputePass(computePass);
 
 		});
-		delete[] data;
+		pdelete[] data;
 		return brdfLut;
 	}
 

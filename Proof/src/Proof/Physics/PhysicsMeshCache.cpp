@@ -38,11 +38,11 @@ namespace Proof
     PhysicsMeshCacheData* s_PhysicsMeshCacheData = nullptr;
     void PhysicsMeshCache::Init()
     {
-        s_PhysicsMeshCacheData = new PhysicsMeshCacheData();
+        s_PhysicsMeshCacheData = pnew PhysicsMeshCacheData();
     }
     void PhysicsMeshCache::ShutDown()
     {
-        delete s_PhysicsMeshCacheData;
+        pdelete s_PhysicsMeshCacheData;
     }
     Count<class Mesh> PhysicsMeshCache::GetBoxColliderMesh()
     {

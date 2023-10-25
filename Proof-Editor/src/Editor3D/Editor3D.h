@@ -101,5 +101,7 @@ namespace Proof {
 
 		uint32_t m_PlayersCount = 1;
 		static Editore3D* s_Instance;
+	private:
+		void UI_StatisticsPanel();
 	};
 }

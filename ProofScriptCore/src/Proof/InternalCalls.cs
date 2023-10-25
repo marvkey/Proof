@@ -138,13 +138,13 @@ namespace Proof
         #region RigidBody
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool RigidBody_GetGravity(ulong entityID);
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBody_SetGravity(ulong entityID, ref bool gravity);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)] 
+        internal extern static void RigidBody_SetGravity(ulong entityID, ref bool gravity); 
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void RigidBody_GetMass(ulong entityID, out float outMass);
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		[MethodImplAttribute(MethodImplOptions.InternalCall)] 
 		internal extern static void RigidBody_SetMass(ulong entityID, ref float mass);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]

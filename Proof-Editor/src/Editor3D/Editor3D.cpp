@@ -22,6 +22,7 @@
 #include <Windows.h>
 #include <stdio.h> 
 #include "Proof/Utils/PlatformUtils.h"
+#include "Proof/Utils/StringUtils.h"
 
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Scene/Material.h"
@@ -94,7 +95,7 @@ namespace Proof
 		bool ShowLogger = true;
 		bool ShowRendererStats = true;
 		bool ShowWorldEditor = false;
-
+		bool ShowStatisticsPanel = false;
 		int GuizmoType = (1u << 0) | (1u << 1) | (1u << 2);// imguizmo bit stuff
 		//SceneHierachyPanel WorldHierachy;
 		//ContentBrowserPanel ContentBrowserPanel;
@@ -186,11 +187,11 @@ namespace Proof
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") {
 		s_Instance = this;
-		s_EditorData = new EditorData();
+		s_EditorData = pnew EditorData();
 	//	s_EditorData->ContentBrowserPanel.m_ShowWindow = false;
 	}
 	Editore3D::~Editore3D() {
-		delete s_EditorData;
+		pdelete s_EditorData;
 		s_EditorData = nullptr;
 	}
 	bool Editore3D::IsKeyPressedEditor(KeyBoardKey key) {
@@ -642,6 +643,7 @@ namespace Proof
 		MainToolBar();
 		Logger();
 
+		UI_StatisticsPanel();
 
 		ViewPort();
 		s_EditorData->PanelManager->OnImGuiRender();
@@ -1680,6 +1682,7 @@ namespace Proof
 				ImGui::MenuItem("Log", nullptr, &s_EditorData->ShowLogger);
 				ImGui::MenuItem("Render Stats", nullptr, &s_EditorData->ShowRendererStats);
 				ImGui::MenuItem("World Editor", nullptr, &s_EditorData->ShowWorldEditor);
+				ImGui::MenuItem("Statistics Panel", nullptr, &s_EditorData->ShowStatisticsPanel);
 				ImGui::EndMenu();
 			}
 
@@ -1730,6 +1733,131 @@ namespace Proof
 		m_ActiveWorld = m_EditorWorld;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
+	}
+	void Editore3D::UI_StatisticsPanel()
+	{
+		if (!s_EditorData->ShowStatisticsPanel)
+			return;
+
+		if (ImGui::Begin("Statistics", &s_EditorData->ShowStatisticsPanel))
+		{
+			//ImGui::PushStyleColor(ImGuiCol_WindowBg, Colours::Theme::backgroundDark);
+			//ImGui::PushStyleColor(ImGuiCol_ChildBg, Colours::Theme::backgroundDark);
+
+			ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+			if (ImGui::BeginTabBar("StatisticsTabs", tab_bar_flags))
+			{
+				Application& app = *Application::Get();
+
+				if (ImGui::BeginTabItem("Renderer"))
+				{
+					//auto& caps = Renderer::GetCapabilities();
+					//ImGui::Text("Vendor: %s", caps.Vendor.c_str());
+					//ImGui::Text("Renderer: %s", caps.Device.c_str());
+					//ImGui::Text("Version: %s", caps.Version.c_str());
+					//ImGui::Separator();
+					ImGui::Text("Frame Time: %.2fms\n", FrameTime::GetFrameMS());
+					ImGui::Text("FPS: %.2fms\n", FrameTime::GetFrameFPS());
+
+					#if 0
+					if (RendererAPI::Current() == RendererAPIType::Vulkan)
+					{
+						GPUMemoryStats memoryStats = VulkanAllocator::GetStats();
+						std::string used = Utils::BytesToString(memoryStats.Used);
+						std::string free = Utils::BytesToString(memoryStats.Free);
+						ImGui::Text("Used VRAM: %s", used.c_str());
+						ImGui::Text("Free VRAM: %s", free.c_str());
+						ImGui::Text("Descriptor Allocs: %d", VulkanRenderer::GetDescriptorAllocationCount(Renderer::RT_GetCurrentFrameIndex()));
+					}
+					#endif
+					bool vsync = app.GetWindow()->IsVsync();
+					if (ImGui::Checkbox("Vsync", &vsync))
+						app.GetWindow()->SetVsync(vsync);
+
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("Performance"))
+				{
+					ImGui::Text("Frame Time: %.2fms\n", FrameTime::GetFrameMS());
+					ImGui::Text("FPS: %.2fms\n", FrameTime::GetFrameFPS());
+
+					//const auto& perFrameData = app.GetPerformanceProfiler()->GetPerFrameData();
+					//for (auto&& [name, time] : perFrameData)
+					//{
+					//	ImGui::Text("%s: %.3fms\n", name, time);
+					//}
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("Memory"))
+				{
+					#if PF_TRACK_MEMORY
+					const auto& allocStats = Memory::GetAllocationStats();
+					const auto& allocStatsMap = Allocator::GetAllocationStats();
+
+					{
+						std::string totalAllocatedStr = Utils::String::BytesToString(allocStats.TotalAllocated);
+						std::string totalFreedStr = Utils::String::BytesToString(allocStats.TotalFreed);
+						std::string totalUsedStr = Utils::String::BytesToString(allocStats.TotalAllocated - allocStats.TotalFreed);
+
+						ImGui::Text("Total allocated %s", totalAllocatedStr.c_str());
+						ImGui::Text("Total freed %s", totalFreedStr.c_str());
+						ImGui::Text("Current usage: %s", totalUsedStr.c_str());
+					}
+
+					ImGui::Separator();
+
+					static std::string searchedString;
+
+					struct MemoryRefEntry
+					{
+						const char* Category;
+						size_t Size;
+					};
+					std::vector<MemoryRefEntry> sortedEntries;
+					sortedEntries.reserve(allocStatsMap.size());
+					for (auto& [category, stats] : allocStatsMap)
+					{
+
+						sortedEntries.push_back({ category, stats.TotalAllocated - stats.TotalFreed });
+					}
+
+					std::sort(sortedEntries.begin(), sortedEntries.end(), [](auto& a, auto& b) { return a.Size > b.Size; });
+
+					for (const auto& entry : sortedEntries)
+					{
+						std::string usageStr = Utils::String::BytesToString(entry.Size);
+
+						if (const char* slash = strstr(entry.Category, "\\"))
+						{
+							std::string tag = slash;
+							auto lastSlash = tag.find_last_of("\\");
+							if (lastSlash != std::string::npos)
+								tag = tag.substr(lastSlash + 1, tag.size() - lastSlash);
+
+							ImGui::TextColored(ImVec4(0.3f, 0.4f, 0.9f, 1.0f), "File: %s: %s", tag.c_str(), usageStr.c_str());
+						}
+						else
+						{
+							const char* category = entry.Category;
+							if (category = strstr(entry.Category, "class"))
+								category += 6;
+							ImGui::Text("%s: %s", category, usageStr.c_str());
+
+						}
+					}
+					#else
+					ImGui::TextColored(ImVec4(0.9f, 0.35f, 0.3f, 1.0f), "Memory is not being tracked because PF_TRACK_MEMORY is not defined!");
+					#endif
+
+					ImGui::EndTabItem();
+				}
+				ImGui::EndTabBar();
+			}
+
+			//ImGui::PopStyleColor(2);
+		}
+
+		ImGui::End();
 	}
 	void Editore3D::SetActiveWorld(Count<World> world)
 	{

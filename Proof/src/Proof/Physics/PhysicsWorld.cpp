@@ -207,7 +207,7 @@ namespace Proof {
 		m_World = nullptr;
 
 		if (m_RegionBounds)
-			delete[] m_RegionBounds;
+			pdelete[] m_RegionBounds;
 	}
 	bool PhysicsWorld::Advance(float deltaTime)
 	{
@@ -230,9 +230,9 @@ namespace Proof {
 		if (settings.BroadPhaseType == BroadphaseType::AutomaticBoxPrune)
 			return;
 		if(m_RegionBounds)
-			delete[] m_RegionBounds;
+			pdelete[] m_RegionBounds;
 
-		m_RegionBounds = new physx::PxBounds3[settings.WorldBoundsSubdivisions * settings.WorldBoundsSubdivisions];
+		m_RegionBounds = pnew physx::PxBounds3[settings.WorldBoundsSubdivisions * settings.WorldBoundsSubdivisions];
 		physx::PxBounds3 globalBounds(PhysXUtils::ToPhysXVector(settings.WorldBoundsMin), PhysXUtils::ToPhysXVector(settings.WorldBoundsMax));
 		uint32_t regionCount = physx::PxBroadPhaseExt::createRegionsFromWorldBounds(m_RegionBounds, globalBounds, settings.WorldBoundsSubdivisions);
 

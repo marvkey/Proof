@@ -67,6 +67,6 @@ namespace Proof {
         configuration.WindowConfiguration.startWindowedFullScreen = false;
         configuration.WindowConfiguration.startFullScreen = true;
         configuration.WindowConfiguration.Decorated = true; 
-        return new ProofEditor(configuration, projectPath);
+        return pnew ProofEditor(configuration, projectPath);
     }
 }

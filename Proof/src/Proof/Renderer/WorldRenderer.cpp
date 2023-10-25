@@ -136,7 +136,7 @@ namespace Proof
 	}
 	WorldRenderer::~WorldRenderer() {
 		for (auto& transformBuffer : m_SubmeshTransformBuffers)
-			delete[] transformBuffer.Data;
+			pdelete[] transformBuffer.Data;
 		//PipelineLayout = nullptr;
 	}
 	WorldRenderer::WorldRenderer()
@@ -154,7 +154,7 @@ namespace Proof
 		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 		{
 			m_SubmeshTransformBuffers[i].Buffer = VertexBuffer::Create(sizeof(TransformVertexData) * TransformBufferCount);
-			m_SubmeshTransformBuffers[i].Data = new TransformVertexData[TransformBufferCount];
+			m_SubmeshTransformBuffers[i].Data = pnew TransformVertexData[TransformBufferCount];
 		}
 		
 		m_GlobalInputs = Count<GlobalBufferSet>::Create();

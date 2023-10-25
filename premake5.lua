@@ -7,9 +7,10 @@ workspace "Proof"
 		"Release",
 		"Dist"
 	}
-	
-
-
+	flags
+	{
+		"MultiProcessorCompile"
+	}
 
 OutputDirectory ="%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir={}

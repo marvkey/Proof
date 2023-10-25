@@ -56,7 +56,8 @@ project "Proof-Editor"
         runtime "Debug"
         defines{
 			"PF_ENABLE_ASSERT",
-			"PF_ENABLE_DEBUG"
+			"PF_ENABLE_DEBUG",
+            "PF_TRACK_MEMORY"
 		}
 
     filter "configurations:Release"
@@ -66,8 +67,10 @@ project "Proof-Editor"
         defines{
 			"PF_ENABLE_ASSERT",
 			"PF_ENABLE_DEBUG",
-            "NDEBUG" -- PhysX Requires This 
-		}
+            "NDEBUG", -- PhysX Requires This 
+            "PF_TRACK_MEMORY"
+            
+        }
 
     filter "configurations:Dist"
         defines "PF_DIST"

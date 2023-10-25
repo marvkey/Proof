@@ -145,7 +145,7 @@ namespace Proof
 
 		if (Renderer::GetAPI() == Renderer::API::Vulkan)
 			ImGui_ImplVulkan_Shutdown();
-		delete s_ImguiRenderPass;
+		pdelete s_ImguiRenderPass;
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}

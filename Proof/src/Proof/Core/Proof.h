@@ -12,7 +12,7 @@ namespace Proof
 			Proof::Application* Proof = Proof::CreateApplication(argc, argv);
 			Proof->Run();
 			ApplicationRun = !Proof->GetApplicationShouldShutdown();
-			delete Proof;
+			pdelete Proof;
 		}
 		return 0;
 	}

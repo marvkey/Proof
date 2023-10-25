@@ -3,6 +3,10 @@
 #include <ShlObj.h>
 #include <map>
 #include "Proof/Utils/StringUtils.h"
+#include <iostream>
+#include <string>
+#include <memory>
+#include <array>
 namespace Proof
 {
 	static void GenerateBatchFile(const std::filesystem::path& path)
@@ -142,6 +146,30 @@ project "$PROJECT_NAME$"
 			PF_ENGINE_ERROR("Failed to crate premake file {}", filePath);
 		}
 	}
+	#if 0
+	std::string executeCommandAndGetOutput(const std::string& command) {
+		const int bufferSize = 128;
+		char buffer[bufferSize];
+
+		// Open a pipe to the system command and read its output
+		std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
+		if (!pipe)
+		{
+			return "Error: Failed to execute the command.";
+		}
+
+		std::string result;
+		while (!feof(pipe.get()))
+		{
+			if (fgets(buffer, bufferSize, pipe.get()) != nullptr)
+			{
+				result += buffer;
+			}
+		}
+
+		return result;
+	}
+	#endif
 	void ScriptBuilder::BuildCSProject(const std::filesystem::path& filepath)
 	{
 		ScopeTimer scopeTimer(__FUNCTION__);

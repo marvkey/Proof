@@ -46,7 +46,7 @@ namespace Proof
 	void VulkanRenderer::Init() {
 		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
 		s_IsWindowResised = false;
-		s_RenderData = new VulkanRendererData();
+		s_RenderData = pnew VulkanRendererData();
 		s_RendererConfig = RendererConfig();
 		s_RenderData->ResourceFreeQueue.resize(Renderer::GetConfig().FramesFlight);
 		
@@ -116,7 +116,7 @@ namespace Proof
 			queue.Flush();
 		}
 		s_RenderData->ResourceFreeQueue.clear();
-		delete s_RenderData;
+		pdelete s_RenderData;
 		s_RenderData = nullptr;
 	}
 

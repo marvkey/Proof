@@ -40,7 +40,7 @@ namespace Proof {
 		return texture;
 	}
 	Font::Font(const std::filesystem::path& fullPath)
-		: m_Data(new MSDFData())
+		: m_Data(pnew MSDFData())
 	{
 		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype();
 		PF_CORE_ASSERT(ft);
@@ -124,7 +124,7 @@ namespace Proof {
 		PF_ENGINE_INFO("Loaded font Path: {}", fullPath.string());
 	}
 	Font::~Font() {
-		delete m_Data;	
+		pdelete m_Data;
 	}
 	Count<Font> Font::GetDefault()
 	{

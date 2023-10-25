@@ -81,13 +81,13 @@ namespace Proof
 		ScopeTimer scopeTime("ScriptRegistry::Init");
 		PF_CORE_ASSERT(!s_ScriptRegistryData, "Trying to initialize ScriptCache multiple times!");
 
-		s_ScriptRegistryData = new ScriptRegistryData();
+		s_ScriptRegistryData = pnew ScriptRegistryData();
 
 		RegisterCoreClasses();
 	}
 	void ScriptRegistry::ShutDown()
 	{
-		delete s_ScriptRegistryData; s_ScriptRegistryData = nullptr;
+		pdelete s_ScriptRegistryData; s_ScriptRegistryData = nullptr;
 	}
 	ManagedClass* ScriptRegistry::GetManagedClassByName(const std::string& className)
 	{

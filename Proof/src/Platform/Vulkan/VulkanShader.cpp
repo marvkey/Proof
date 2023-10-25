@@ -236,11 +236,11 @@ namespace Proof
             const std::string name = std::string(requestedSource);
             const std::string contents = ReadFile(name);
 
-            auto container = new std::array<std::string, 2>;
+            auto container = pnew std::array<std::string, 2>;
             (*container)[0] = name;
             (*container)[1] = contents;
 
-            auto data = new shaderc_include_result;
+            auto data = pnew shaderc_include_result;
 
             data->user_data = container;
 
@@ -253,8 +253,8 @@ namespace Proof
             return data;
         }
         void ReleaseInclude(shaderc_include_result* data) override {
-            delete static_cast<std::array<std::string, 2>*>(data->user_data);
-            delete data;
+            pdelete static_cast<std::array<std::string, 2>*>(data->user_data);
+            pdelete data;
         }
         std::string ReadFile(const std::string& filepath)
         {

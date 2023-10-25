@@ -13,7 +13,7 @@ namespace Proof
 
 	void PhysicsDebugger::Initialize()
 	{
-		s_Data = new PhysXData();
+		s_Data = pnew PhysXData();
 
 		s_Data->Debugger = physx::PxCreatePvd(*PhysicsEngine::GetFoundation());
 		PF_CORE_ASSERT(s_Data->Debugger, "PxCreatePvd failed");
@@ -24,7 +24,7 @@ namespace Proof
 		PhysicsDebugger::StopDebugging();
 		s_Data->Debugger->release();
 		// TODO adelete
-		delete s_Data;
+		pdelete s_Data;
 		s_Data = nullptr;
 	}
 	void PhysicsDebugger::StartDebugging(const std::string& filepath, bool networkDebugging)

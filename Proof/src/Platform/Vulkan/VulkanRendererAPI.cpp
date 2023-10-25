@@ -102,7 +102,7 @@ namespace Proof {
 	}
 	void VulkanRendererAPI::Submit(std::function<void(CommandBuffer*)> func) {
 		auto graphicsContext = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>();
-		VulkanCommandBuffer* commandBufferContainer = new VulkanCommandBuffer();
+		VulkanCommandBuffer* commandBufferContainer = pnew VulkanCommandBuffer();
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -135,7 +135,7 @@ namespace Proof {
 		vkFreeCommandBuffers(graphicsContext->GetDevice(), graphicsContext->GetCommandPool(), 1, &commandBuffer);
 		vkQueueWaitIdle(graphicsContext->GetGraphicsQueue());
 
-		delete commandBufferContainer;
+		pdelete commandBufferContainer;
 	}
 	void VulkanRendererAPI::BeginCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)
 	{

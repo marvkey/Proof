@@ -329,7 +329,7 @@ namespace Proof
 		if (lOpenStatus == ERROR_SUCCESS)
 		{
 			DWORD valueType;
-			char* data = new char[512];
+			char* data = pnew char[512];
 			DWORD dataSize = 512;
 			LSTATUS status = RegGetValueA(hKey, NULL, key.c_str(), RRF_RT_ANY, &valueType, (PVOID)data, &dataSize);
 
@@ -338,7 +338,7 @@ namespace Proof
 			if (status == ERROR_SUCCESS)
 			{
 				std::string result(data);
-				delete[] data;
+				pdelete[] data;
 				return result;
 			}
 		}

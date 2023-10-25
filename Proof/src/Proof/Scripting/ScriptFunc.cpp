@@ -328,6 +328,17 @@ namespace Proof
 	}
 #pragma endregion 
 	
+	#pragma region AssetID
+	static bool AssetID_IsValid(AssetID* assetHandle)
+	{
+		if (!assetHandle)
+			return  false;
+
+		return AssetManager::HasAsset(*assetHandle);
+	}
+
+	#pragma endregion 
+	
 	#pragma region TagComponent
 	static void TagComponent_GetTag(uint64_t entityID, MonoString** tag)
 	{
@@ -1663,6 +1674,10 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(GetScriptInstance);
 			PF_ADD_INTERNAL_CALL(Entity_GetParent);
 			PF_ADD_INTERNAL_CALL(Entity_GetChildren);
+		}
+		//AssetID
+		{
+			PF_ADD_INTERNAL_CALL(AssetID_IsValid);
 		}
 		// Tag Componnent
 		{

@@ -135,7 +135,7 @@ namespace Proof
 
         ScopeTimer scopeTime("ScriptEngine::Init");
 
-        s_ScriptEngineData = new ScriptEngineData();
+        s_ScriptEngineData = pnew ScriptEngineData();
 
         s_ScriptEngineData->CoreAssemblyInfo = Count<AssemblyInfo>::Create();
         s_ScriptEngineData->AppAssemblyInfo = Count<AssemblyInfo>::Create();
@@ -494,7 +494,7 @@ namespace Proof
 
         PF_CORE_ASSERT(!s_ScriptEngineRuntimeData, "Can only have one instance running ");
 
-        s_ScriptEngineRuntimeData = new ScriptEngineRuntimeData();
+        s_ScriptEngineRuntimeData = pnew ScriptEngineRuntimeData();
         s_ScriptEngineRuntimeData->WorldContext = world;
         PF_CORE_ASSERT(s_ScriptEngineRuntimeData->WorldContext->IsPlaying(), "Don't call ScriptEngine::BeginRuntime if the scene isn't being played!");
         // copying all the values 
@@ -508,7 +508,7 @@ namespace Proof
 
         ScriptGCManager::CollectGarbage();
 
-        delete s_ScriptEngineRuntimeData;
+        pdelete s_ScriptEngineRuntimeData;
         s_ScriptEngineRuntimeData = nullptr;
     }
     bool ScriptEngine::IsRuntime()

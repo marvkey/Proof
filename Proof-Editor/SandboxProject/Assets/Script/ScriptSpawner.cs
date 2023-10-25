@@ -11,7 +11,7 @@ namespace SandboxProject
 		// is instantiated in the world at runtime
 		void OnCreate()
 		{
-			Log.Info($"AMount of cubes times finally {AmountCubes}");
+			Log.Info($"AMount of cubes times finally {AmountCubes}"); 
 		}
 
 		// OnUpdate is called once every frame while this script is active in the world
@@ -19,5 +19,6 @@ namespace SandboxProject
 		{
 		}
 
-	}
+	} 
 }
+ 
