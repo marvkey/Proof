@@ -41,11 +41,12 @@ namespace Proof {
     float Application::FrameMS = 2.0f;
     float Application::m_ImguiFrameTime;
    
-    bool CallReset = false;
+   // bool CallReset = false;
     Application::Application(const ApplicationConfiguration& config):
         m_ApplicationConfiguration(config) 
     {
         Build();
+
     }
     Application::~Application()
     {
@@ -53,32 +54,24 @@ namespace Proof {
     }
     void Application::Build()
     {
+        srand(time(NULL));
         Timer buildTimer;
         m_LayerStack = Count<LayerStack>::Create();
-        srand(time(NULL));
         Proof::Log::Init();
         s_Instance = this;
-        InputManager::Init();
 
         if (m_ApplicationConfiguration.ProjectPath.empty())
-        {
-            if (std::filesystem::exists("Proof") == false)
-                std::filesystem::create_directory("Proof");
-            m_ApplicationConfiguration.ProjectPath = "Proof/Proof.ProofProject";
-            ProjectConfig config(std::filesystem::path("Proof/Proof.ProofProject"), "Proof");
-            m_Project = Project::New(config);
-            // we would scerilize when we save the project
-            //ProjectSerilizer projectSerilizer(m_Project.get());
-            //projectSerilizer.SerilizeText(m_ProjectPath);
-        }
-        else
-        {
-            m_Project = Project::Load(m_ApplicationConfiguration.ProjectPath);
-        }
+            m_ApplicationConfiguration.ProjectPath = "SandboxProject/SandboxProject.ProofProject";
+        InputManager::Init();
+        m_Project = Project::Load(m_ApplicationConfiguration.ProjectPath);
+
+        //temporayr
+       
+        
+        PF_CORE_ASSERT(m_Project, "Project is not valid");
         PF_ENGINE_INFO("Loaded Project {}", m_Project->GetConfig().Name);
         PF_ENGINE_TRACE("     Path {}", m_Project->GetConfig().Project.string());
         PF_ENGINE_TRACE("     AssetManager {}", m_Project->GetConfig().AssetManager.string());
-        PF_ENGINE_TRACE("     PROOF_DIR {}", (FileSystem::GetEnvironmentVariable)("PROOF_DIR"));
         
         m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration);
         m_Window->SetEventCallback([this](Event& e) {OnEvent(e); });
@@ -147,6 +140,8 @@ namespace Proof {
          if (m_IsRunning == false)
             return;
 
+         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
+
          dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e) {
              if (e.GetWhidt() != 0 or e.GetHeight() != 0)
              {
@@ -161,18 +156,17 @@ namespace Proof {
                  break;
              (*it)->OnEvent(e);
          }
-         dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
          dispatcher.Dispatch<WindowCloseEvent>(PF_BIND_FN(Application::OnWindowCloseEvent));
     
     }
 
     bool Application::OnWindowMinimizeEvent(WindowMinimizeEvent& e) {
         if(e.IsWIndowMinimized())
-            WindowMinimized = true;
+            m_WindowMinimized = true;
         else
-            WindowMinimized = false;
+            m_WindowMinimized = false;
 
-        return true;
+        return false;
 
     }
 
@@ -192,25 +186,29 @@ namespace Proof {
 
     
 
-    void Application::Run() {
+    void Application::Run() 
+    {
+
         uint64_t FrameCount = 0;
         float PreviousTime = glfwGetTime();
         float CurrentTime;
-        while (m_IsRunning == true && m_ApplicationShouldShutdown == false) {
+        while (m_IsRunning == true && m_ApplicationShouldShutdown == false)
+        {
             PF_PROFILE_FRAME("Application::Update");
             Renderer::BeginFrame();
-            
+            #if 0
             if (Input::IsKeyClicked(KeyBoardKey::O))
             {
                 AudioEngine::PlaySoundByPath("Proof/Assets/Sounds/hitHurt.wav");
             }
+            #endif
             float time = (float)glfwGetTime();
             CurrentTime = glfwGetTime();
             FrameCount++;
             const FrameTime DeltaTime = time - LastFrameTime;
             FrameTime::WorldDeltaTime = DeltaTime;
 
-            if (WindowMinimized == false) {
+            if (!m_WindowMinimized) {
                 PF_PROFILE_FUNC("Layer OnUpdate");
                 for (Count<Layer>& layer : m_LayerStack->V_LayerStack)
                     layer->OnUpdate(DeltaTime);
@@ -236,12 +234,6 @@ namespace Proof {
         {
             m_ApplicationShouldShutdown = true;
         }
-        if (CallReset)
-        {
-            Release();
-            Build();
-            CallReset = false;
-        }
     }
 
     void Application::PushLayer(Count<Layer> layer) {
@@ -258,7 +250,6 @@ namespace Proof {
         m_IsRunning = false;
         // autmatically call everythign 
         m_ApplicationConfiguration.ProjectPath = path.string();
-        CallReset = true;
     }
     void Application::Save()
     {

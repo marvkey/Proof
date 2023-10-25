@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8B12E70D-F726-0FBF-C0A8-B21E2C7C0BF0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Proof</RootNamespace>
+    <AssemblyName>Proof</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Binaries\ScriptApp\</OutputPath>
+    <BaseIntermediateOutputPath>..\..\Intermediates\ScriptApp\Debug\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <DefineConstants></DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Binaries\ScriptApp\</OutputPath>
+    <BaseIntermediateOutputPath>..\..\Intermediates\ScriptApp\Release\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <DefineConstants></DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Binaries\ScriptApp\</OutputPath>
+    <BaseIntermediateOutputPath>..\..\Intermediates\ScriptApp\Dist\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <DefineConstants></DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Reference Include="System.Collections.Immutable" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Reference Include="System.Collections.Immutable" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|AnyCPU' ">
+    <Reference Include="System.Collections.Immutable" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Assets\Scripts\Demos\PhysicsCube.cs">
+      <Link>Assets\Scripts\Demos\PhysicsCube.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Enemy.cs">
+      <Link>Assets\Scripts\Enemy.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Menu\MainMenuController.cs">
+      <Link>Assets\Scripts\Menu\MainMenuController.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Multiplayer\MPlayer.cs">
+      <Link>Assets\Scripts\Multiplayer\MPlayer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Multiplayer\PowerUps\DecreaseSpeed.cs">
+      <Link>Assets\Scripts\Multiplayer\PowerUps\DecreaseSpeed.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Multiplayer\PowerUps\Explosive.cs">
+      <Link>Assets\Scripts\Multiplayer\PowerUps\Explosive.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Multiplayer\PowerUps\OpponentPowerUp.cs">
+      <Link>Assets\Scripts\Multiplayer\PowerUps\OpponentPowerUp.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Multiplayer\PowerUps\PlayerPowerUp.cs">
+      <Link>Assets\Scripts\Multiplayer\PowerUps\PlayerPowerUp.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Multiplayer\PowerUps\PowerUp.cs">
+      <Link>Assets\Scripts\Multiplayer\PowerUps\PowerUp.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Multiplayer\PowerUps\Shake.cs">
+      <Link>Assets\Scripts\Multiplayer\PowerUps\Shake.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Multiplayer\PowerUps\SpeedBoost.cs">
+      <Link>Assets\Scripts\Multiplayer\PowerUps\SpeedBoost.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Multiplayer\mGameManager.cs">
+      <Link>Assets\Scripts\Multiplayer\mGameManager.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Player.cs">
+      <Link>Assets\Scripts\Player.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\Score.cs">
+      <Link>Assets\Scripts\Score.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\SinglePlayer\GameManager.cs">
+      <Link>Assets\Scripts\SinglePlayer\GameManager.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Scripts\TestClass.cs">
+      <Link>Assets\Scripts\TestClass.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

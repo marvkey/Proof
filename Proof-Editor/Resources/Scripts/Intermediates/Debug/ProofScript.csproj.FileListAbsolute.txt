@@ -1,6 +1,0 @@
-C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScript.csproj.CoreCompileInputs.cache
-C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScript.dll
-C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScript.pdb
-C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\Resources\Scripts\ProofScript.dll
-C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\Resources\Scripts\ProofScript.pdb
-C:\Users\marvn\OneDrive\Documents\ProofBranches\Scripting\Proof-Editor\Resources\Scripts\Intermediates\Debug\ProofScript.csproj.AssemblyReference.cache

@@ -1,0 +1,7 @@
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\SandboxProject\Binaries\ScriptApp\SandboxProject.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\SandboxProject\Binaries\ScriptApp\SandboxProject.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\SandboxProject\Intermediates\ScriptApp\Debug\SandboxProject.csproj.AssemblyReference.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\SandboxProject\Intermediates\ScriptApp\Debug\SandboxProject.csproj.CoreCompileInputs.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\SandboxProject\Intermediates\ScriptApp\Debug\SandboxProject.csproj.CopyComplete
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\SandboxProject\Intermediates\ScriptApp\Debug\SandboxProject.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\SandboxProject\Intermediates\ScriptApp\Debug\SandboxProject.pdb

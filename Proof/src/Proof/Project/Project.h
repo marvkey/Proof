@@ -22,7 +22,7 @@ namespace Proof{
 		{
 			AssetDirectory = "Assets";
 			AssetManager = AssetDirectory / "AssetManager.ProofAssetManager";
-			ScriptModuleDirectory = "Resources/Scripts/Binaries";
+			ScriptModuleDirectory = "Binaries/ScriptApp";
 		}
 
 		// name and the direcotyr, it creates a sub directory with the name then sotres the 
@@ -32,32 +32,36 @@ namespace Proof{
 		{
 
 		}
-
+	
 	};
 
-	class Project {
+	class Project : RefCounted
+	{
 	public:
 		Project();
 		virtual ~Project() {};
-		static Special<Project> New(const ProjectConfig& project);
-		static Special<Project> Load(const std::filesystem::path& path);
+		static Count<Project> New(const ProjectConfig& project);
+		static Count<Project> Load(const std::filesystem::path& path);
 		
+		const std::filesystem::path& GetProjectDirectory()const
+		{
+			return m_ProjectDirectory;
+		}
 		const std::filesystem::path& GetProjectDirectory()
 		{
 			return m_ProjectDirectory;
 		}
-
-		std::filesystem::path GetAssetDirectory()
+		std::filesystem::path GetAssetDirectory()const
 		{
 			return GetProjectDirectory() / m_ProjectConfig.AssetDirectory;
 		}
 
-		std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path)
+		std::filesystem::path GetAssetFileSystemPath(const std::filesystem::path& path)const
 		{
 			return GetAssetDirectory() / path;
 		}	
 
-		std::filesystem::path GetFromSystemProjectDirectory(const std::filesystem::path& path)
+		std::filesystem::path GetFromSystemProjectDirectory(const std::filesystem::path& path)const
 		{
 			return GetProjectDirectory() / path;
 		}
@@ -65,10 +69,22 @@ namespace Proof{
 		{
 			return std::filesystem::path(GetProjectDirectory()) / "Cache";
 		}
-		const ProjectConfig& GetConfig() {
+
+		std::filesystem::path GetScriptProjectSolutionPath()const;
+		std::filesystem::path GetScriptCoreDll()const;
+		std::filesystem::path GetScriptAppDll()const;
+		const ProjectConfig& GetConfig()const 
+		{
 			return m_ProjectConfig;
 		};
-
+		const ProjectConfig& GetConfig()
+		{
+			return m_ProjectConfig;
+		};
+		const std::string& GetProjectName()const
+		{
+			return m_ProjectConfig.Name;
+		}
 	private:
 		ProjectConfig m_ProjectConfig;
 		std::filesystem::path m_ProjectDirectory;

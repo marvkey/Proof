@@ -64,6 +64,7 @@
 #include "Proof/Core/Timer.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "Proof/ImGui/UI.h"
+#include "Proof/Scripting/ScriptBuilder.h"
 
 #define SCENE_HIERARCHY_PANEL_ID "SceneHierarchyPanel"
 #define ECS_DEBUG_PANEL_ID "ECSDebugPanel"
@@ -657,7 +658,7 @@ namespace Proof
 					{
 
 						ProjectConfig config(NewProjectName, NewProjectDir);
-						Special<Project> newProject = Project::New(config);
+						Count<Project> newProject = Project::New(config);
 					}
 				}
 				if (NewProjectState != PopupState::Rendering)
@@ -1562,6 +1563,8 @@ namespace Proof
 		// code taken form walnut https://github.com/TheCherno/Walnut/blob/master/Walnut/src/Walnut/Application.cpp
 		PF_PROFILE_FUNC();
 
+
+		Count<Project> activeProject = Application::Get()->GetProject();
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
@@ -1642,6 +1645,26 @@ namespace Proof
 			}
 			if (ImGui::BeginMenu("Edit"))
 			{
+				if (ImGui::BeginMenu("ScriptEngine"))
+				{
+					if (ImGui::MenuItem("Open Visual Studio Solution", nullptr, nullptr, FileSystem::Exists(activeProject->GetScriptProjectSolutionPath())))
+						FileSystem::OpenExternally(activeProject->GetScriptProjectSolutionPath());
+
+					if (ImGui::MenuItem("Regenerate Visual Studio Solution"))
+						ScriptBuilder::RegenerateProjectScriptSolution(activeProject);
+
+					if (ImGui::MenuItem("Build C# Assembly", nullptr, nullptr, FileSystem::Exists(activeProject->GetScriptProjectSolutionPath())))
+						ScriptBuilder::BuildCSProject(activeProject);
+
+					ImGui::EndMenu();
+				}
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Reload C# Assembly"))
+				{
+					ScriptEngine::ReloadppAssembly();
+				}
 
 				ImGui::EndMenu();
 			}
@@ -1660,23 +1683,6 @@ namespace Proof
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Debug"))
-			{
-				if (ImGui::MenuItem("Reload C# Scripts"))
-				{
-					//s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity({});
-
-					ScriptEngine::ReloadppAssembly();
-
-					/*
-					if (m_ActiveWorld->GetState() == WorldState::Edit)
-						ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
-					else
-						PF_ERROR("Can only reload c# assembly in Edit state");
-						*/
-				}
-				ImGui::EndMenu();
-			}
 
 			ImGui::EndMenuBar();
 		}
@@ -1712,7 +1718,7 @@ namespace Proof
 			AssetManager::SaveAssetManager();
 		}
 
-		ProjectSerilizer serilizer(Application::Get()->GetProject());
+		ProjectSerilizer serilizer(Application::Get()->GetProject().Get());
 		if (Application::Get()->GetProject()->GetConfig().OnCloseStartWorldEditLastOpen)
 			Application::Get()->GetProject()->m_ProjectConfig.StartWorldEdit = m_ActiveWorld->GetID();
 		serilizer.SerilizeText(Application::Get()->GetProject()->GetConfig().Project.string());

@@ -1,0 +1,13 @@
+Project:
+  Name: SandboxProject
+  AssetDirectory: Assets
+  AssetManager: Assets/AssetManager.ProofAssetManager
+  StartWorld: 0
+  ScriptModuleDirectory: Binaries/ScriptApp
+  OnCloseStartWorldEditLastOpen: true
+  StartWorldEdit: 2958098095559880186
+  Input:
+    ActionMapping:
+      []
+    MotionMapping:
+      []

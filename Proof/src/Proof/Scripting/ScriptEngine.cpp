@@ -189,7 +189,7 @@ namespace Proof
     }
     static bool CanLoadCoreAssembly()
     {
-        auto corePath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/ProofScriptCore.dll";
+        auto corePath = Application::Get()->GetProject()->GetScriptCoreDll().string();
 
         if (!FileSystem::Exists(corePath))
         {
@@ -200,7 +200,7 @@ namespace Proof
 
     static bool CanLoadAppAssembly()
     {
-        auto appPath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/ProofScriptCore.dll";
+        auto appPath = Application::Get()->GetProject()->GetScriptAppDll().string();
 
         if (!FileSystem::Exists(appPath))
         {
@@ -211,7 +211,7 @@ namespace Proof
 
     bool ScriptEngine::LoadCoreAssembly()
     {
-        auto corePath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/ProofScriptCore.dll";
+        auto corePath = Application::Get()->GetProject()->GetScriptCoreDll().string();
 
         if (!CanLoadCoreAssembly())
         {
@@ -247,8 +247,7 @@ namespace Proof
 
     bool ScriptEngine::LoadAppAssembly()
     {
-        auto appPath = Application::Get()->GetProject()->GetFromSystemProjectDirectory(Application::Get()->GetProject()->GetConfig().ScriptModuleDirectory).string() + "/Game.dll";
-
+        auto appPath = Application::Get()->GetProject()->GetScriptAppDll().string();
         if (!CanLoadAppAssembly())
         {
             PF_ENGINE_ERROR("ScriptEngine, Failed to load app assembly! Invalid filepath");

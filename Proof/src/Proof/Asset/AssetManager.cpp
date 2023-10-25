@@ -55,6 +55,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::ParticleSystem] = CreateSpecial<ParticleSystemSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Audio] = CreateSpecial<AudioAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::MeshCollider] = CreateSpecial<MeshColliderAssetSerilizer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::ScriptFile] = CreateSpecial<ScriptFileAssetSerilizer>();
 		}
 
 		{

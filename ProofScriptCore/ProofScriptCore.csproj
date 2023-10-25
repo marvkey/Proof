@@ -3,83 +3,81 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{49FAD7F9-B585-45BE-BE96-C8B22AA1A1BE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Proof</RootNamespace>
+    <RootNamespace>ProofScriptCore</RootNamespace>
     <AssemblyName>ProofScriptCore</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Platforms>x64</Platforms>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <PlatformTarget>x64</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
-    <OutputPath>..\Proof-Editor\Proof\Resources\Scripts\Binaries\</OutputPath>
-    <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\Debug\</BaseIntermediateOutputPath>
+    <OutputPath>..\Proof-Editor\Resources\Scripts\Binaries\ScriptCore\</OutputPath>
+    <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\ScriptCore\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <PlatformTarget>x64</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\Proof-Editor\Proof\Resources\Scripts\Binaries\</OutputPath>
-    <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\Release\</BaseIntermediateOutputPath>
+    <OutputPath>..\Proof-Editor\Resources\Scripts\Binaries\ScriptCore\</OutputPath>
+    <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\ScriptCore\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
-    <PlatformTarget>x64</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>..\Proof-Editor\Proof\Resources\Scripts\Binaries\</OutputPath>
-    <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\Dist\</BaseIntermediateOutputPath>
+    <OutputPath>..\Proof-Editor\Resources\Scripts\Binaries\ScriptCore\</OutputPath>
+    <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\ScriptCore\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
   </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
   </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|AnyCPU' ">
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\Proof\Asset\AssetID.cs" />
-    <Compile Include="src\Proof\Asset\Assets.cs" />
-    <Compile Include="src\Proof\Asset\ParticleSystem.cs" />
-    <Compile Include="src\Proof\Attributes\ClampValueAttribute.cs" />
-    <Compile Include="src\Proof\Attributes\EditorAttributes .cs" />
-    <Compile Include="src\Proof\Attributes\RegisterClassesAndStructAttributes.cs" />
-    <Compile Include="src\Proof\Core\Application.cs" />
-    <Compile Include="src\Proof\Core\Log.cs" />
-    <Compile Include="src\Proof\Input\Input.cs" />
-    <Compile Include="src\Proof\Input\KeyCodes.cs" />
-    <Compile Include="src\Proof\InternalCalls.cs" />
-    <Compile Include="src\Proof\Math\Random.cs" />
-    <Compile Include="src\Proof\Math\Timer.cs" />
-    <Compile Include="src\Proof\Math\Transform.cs" />
-    <Compile Include="src\Proof\Math\Vector3.cs" />
-    <Compile Include="src\Proof\Renderer\Material.cs" />
-    <Compile Include="src\Proof\Scene\Component.cs" />
-    <Compile Include="src\Proof\Scene\Entity.cs" />
-    <Compile Include="src\Proof\Scene\Prefab.cs" />
-    <Compile Include="src\Proof\Scene\World.cs" />
-    <Compile Include="src\Proof\UI\UIComponent.cs" />
+    <Compile Include="Src\Proof\Asset\AssetID.cs" />
+    <Compile Include="Src\Proof\Asset\Assets.cs" />
+    <Compile Include="Src\Proof\Asset\ParticleSystem.cs" />
+    <Compile Include="Src\Proof\Attributes\ClampValueAttribute.cs" />
+    <Compile Include="Src\Proof\Attributes\EditorAttributes .cs" />
+    <Compile Include="Src\Proof\Attributes\RegisterClassesAndStructAttributes.cs" />
+    <Compile Include="Src\Proof\Core\Application.cs" />
+    <Compile Include="Src\Proof\Core\Log.cs" />
+    <Compile Include="Src\Proof\Input\Input.cs" />
+    <Compile Include="Src\Proof\Input\KeyCodes.cs" />
+    <Compile Include="Src\Proof\InternalCalls.cs" />
+    <Compile Include="Src\Proof\Math\Random.cs" />
+    <Compile Include="Src\Proof\Math\Timer.cs" />
+    <Compile Include="Src\Proof\Math\Transform.cs" />
+    <Compile Include="Src\Proof\Math\Vector3.cs" />
+    <Compile Include="Src\Proof\Renderer\Material.cs" />
+    <Compile Include="Src\Proof\Scene\Component.cs" />
+    <Compile Include="Src\Proof\Scene\Entity.cs" />
+    <Compile Include="Src\Proof\Scene\Prefab.cs" />
+    <Compile Include="Src\Proof\Scene\World.cs" />
+    <Compile Include="Src\Proof\UI\UIComponent.cs" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

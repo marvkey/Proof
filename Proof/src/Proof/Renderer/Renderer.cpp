@@ -793,22 +793,16 @@ namespace Proof {
 		TextureConfiguration cubeTextureConfig;
 		cubeTextureConfig.DebugName = "White Texture";
 		cubeTextureConfig.GenerateMips = true;
-		cubeTextureConfig.Height = 1024;
-		cubeTextureConfig.Width = 1024;
+		cubeTextureConfig.Height = 1;
+		cubeTextureConfig.Width = 1;
 		cubeTextureConfig.Storage = true;
-		cubeTextureConfig.Format = ImageFormat::RGBA16F;
+		cubeTextureConfig.Format = ImageFormat::RGBA;
 		cubeTextureConfig.Wrap = TextureWrap::ClampEdge;
 
-		uint8_t* data = new uint8_t[cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F)];
-		// since image is in format is a float we use 0x3F to normalize for floating poitn for white
-		std::memset(data, 0x3F, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F));
-		WhiteTextureCube = TextureCube::Create(data, cubeTextureConfig);
+		WhiteTextureCube = TextureCube::Create(Buffer(&whiteTexturedata, sizeof(uint32_t)).Data, cubeTextureConfig);
 
 		cubeTextureConfig.DebugName = "Black Texture";
-
-		std::memset(data, 0, cubeTextureConfig.Height * cubeTextureConfig.Width * Utils::BytesPerPixel(ImageFormat::RGBA16F));
-		BlackTextureCube = TextureCube::Create(data, cubeTextureConfig);
-		delete[] data;
+		BlackTextureCube = TextureCube::Create(Buffer(&blackTexturedata, sizeof(uint32_t)).Data, cubeTextureConfig);
 	}
 
 }

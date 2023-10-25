@@ -106,6 +106,7 @@ namespace Proof
 				RenameFile(fileName, fileFullExension);
 		}
 
+		void RenderNewScriptDialogue();
 		void ContentSubWindow();
 		void GenerateThumbnail(UUID ID);
 		void DeleteFolder(const std::string& path);

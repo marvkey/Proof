@@ -4,11 +4,11 @@
 #include "ProjectSerilizer.h" 
 namespace Proof
 {
-	
-	Special<Project> Project::Load(const std::filesystem::path& path) {
-		Special<Project> project = CreateSpecial<Project>();
+		
+	Count<Project> Project::Load(const std::filesystem::path& path) {
+		Count<Project> project = Count<Project>::Create();
 
-		ProjectSerilizer serializer(project.get());
+		ProjectSerilizer serializer(project.Get());
 		if (serializer.DeSerilizeText(path.string()))
 		{
 			project->m_ProjectDirectory = path.parent_path();
@@ -17,18 +17,32 @@ namespace Proof
 
 		return nullptr;
 	}
+	std::filesystem::path Project::GetScriptProjectSolutionPath() const
+	{
+		return GetProjectDirectory() / std::filesystem::path(GetProjectName() + ".sln");
+	}
+	std::filesystem::path Project::GetScriptCoreDll()const
+	{
+		return GetFromSystemProjectDirectory(m_ProjectConfig.ScriptModuleDirectory).string() + "/ProofScriptCore.dll";
 
+	}
+	
+	std::filesystem::path Project::GetScriptAppDll()const
+	{
+		return GetFromSystemProjectDirectory(m_ProjectConfig.ScriptModuleDirectory.string() + fmt::format("/{}.dll", m_ProjectConfig.Name));
+	}
 	Project::Project()
 	{
 		m_ProjectDirectory = m_ProjectDirectory.parent_path();
 	}
 
-	Special<Project> Project::New(const ProjectConfig& projectconfig)
+	Count<Project> Project::New(const ProjectConfig& projectconfig)
 	{
 
-		Special<Project> project =CreateSpecial<Project>();
-		ProjectSerilizer projectserilizer(project.get());
+		Count<Project> project = Count<Project>::Create();
+		ProjectSerilizer projectserilizer(project.Get());
 		projectserilizer.SerilizeText(projectconfig.Project.string());
+		
 		return project;
 	}
 	

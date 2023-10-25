@@ -1,14 +1,15 @@
+
+
 project "ProofScriptCore"
 	kind "SharedLib"
 	language "C#"
 	dotnetframework "4.7.2"
-	targetdir ("../Proof-Editor/Proof/Resources/Scripts/Binaries")
-	objdir ("../Proof-Editor/Resources/Scripts/Intermediates")
+	targetdir ("%{wks.location}/Proof-Editor/Resources/Scripts/Binaries/ScriptCore")
+	objdir ("%{wks.location}/Proof-Editor/Resources/Scripts/Intermediates/ScriptCore")
 
 	files 
 	{
 		"src/**.cs",
-		"Properties/**.cs"
 	}
 	
 	filter "configurations:Debug"

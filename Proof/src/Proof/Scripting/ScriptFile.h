@@ -2,7 +2,7 @@
 #include "Proof/Asset/Asset.h"
 namespace Proof
 {
-	#if 0
+	#if 1
 	class ScriptFile : public Asset
 	{
 	public:

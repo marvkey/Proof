@@ -1,27 +1,6 @@
 World:
   ID: 6477593735195019013
   Entities:
-    - Entity: 8006671976315113426
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 2.27600002
-        MapRotation: 0
-        Intensity: 0.200000003
-        DynamicSky: false
-        Turbidity: 2
-        Azimuth: 0
-        Inclination: 0
-        Image: 4373174173013626620
     - Entity: 13521505007611337014
       TagComponent:
         Tag: Cube
@@ -50,9 +29,9 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 8248471627549548587
+    - Entity: 8006671976315113426
       TagComponent:
-        Tag: ScriptEntityTest
+        Tag: Sky Light
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
@@ -61,79 +40,16 @@ World:
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      ScriptComponent:
-        Scripts:
-          - Script: Game.TestClass
-            ScriptClassName: Game.TestClass
-            ScriptName: Game.TestClass
-            Fields:
-              - NameID: Game.TestClass.ChangeMaterial
-                Type: Material
-                Data: 0
-              - NameID: Game.TestClass.statejadshlajdla
-                Type: Int32
-                Data: 0
-              - NameID: Game.TestClass.Available
-                Type: Bool
-                Data: true
-              - NameID: Game.TestClass.testint8
-                Type: Int8
-                Data: 0
-              - NameID: Game.TestClass.testint16
-                Type: Int16
-                Data: 0
-              - NameID: Game.TestClass.testint32
-                Type: Int32
-                Data: 0
-              - NameID: Game.TestClass.testint64
-                Type: Int64
-                Data: 0
-              - NameID: Game.TestClass.testUint8
-                Type: UInt8
-                Data: "\x00"
-              - NameID: Game.TestClass.testUint16
-                Type: UInt16
-                Data: 0
-              - NameID: Game.TestClass.testUint32
-                Type: UInt32
-                Data: 0
-              - NameID: Game.TestClass.testUint64
-                Type: UInt64
-                Data: 0
-              - NameID: Game.TestClass.testFloat
-                Type: Float
-                Data: 0
-              - NameID: Game.TestClass.testDouble
-                Type: Double
-                Data: 0
-              - NameID: Game.TestClass.COlorChange2
-                Type: Vector2
-                Data: [0, 0]
-              - NameID: Game.TestClass.COlorChange3
-                Type: Vector3
-                Data: [0, 0, 0]
-              - NameID: Game.TestClass.COlorChange
-                Type: Vector4
-                Data: [0, 0, 0, 0]
-          - Script: Game.TestEntity
-            ScriptClassName: Game.TestEntity
-            ScriptName: Game.TestEntity
-            Fields:
-              []
-    - Entity: 13784379914823608826
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [-0.228638247, 1.04718995, -0.0174530353]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 3
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1.95000005
+        DynamicSky: false
+        Turbidity: 2
+        Azimuth: 0
+        Inclination: 0
+        Image: 4373174173013626620
     - Entity: 14978476594823408362
       TagComponent:
         Tag: planCube
@@ -162,32 +78,31 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 14679575243082582269
+    - Entity: 13784379914823608826
       TagComponent:
-        Tag: Sponza2
+        Tag: Directional Light
         tags: []
       TransformComponent:
-        Location: [0.800000012, 0, -210.199997]
-        Rotation: [0, -0, 0]
-        Scale: [10, 10, 10]
+        Location: [0, 0, 0]
+        Rotation: [-0.228638247, 1.04718995, -0.0174530353]
+        Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      MeshComponent:
-        MeshAssetPointerID: 705200552008804468
-      MeshColliderComponent:
-        IsTrigger: false
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 3
+    - Entity: 8248471627549548587
+      TagComponent:
+        Tag: ScriptEntityTest
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
     - Entity: 17196338287825808833
       TagComponent:
         Tag: Sphere
@@ -212,6 +127,32 @@ World:
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 14679575243082582269
+      TagComponent:
+        Tag: Sponza2
+        tags: []
+      TransformComponent:
+        Location: [0.800000012, 0, -210.199997]
+        Rotation: [0, -0, 0]
+        Scale: [10, 10, 10]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 705200552008804468
+      MeshColliderComponent:
+        IsTrigger: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
         Kinematic: false

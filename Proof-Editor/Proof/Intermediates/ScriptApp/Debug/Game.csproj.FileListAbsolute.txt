@@ -1,0 +1,7 @@
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Binaries\ScriptApp\Game.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Binaries\ScriptApp\Game.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Intermediates\ScriptApp\Debug\Game.csproj.AssemblyReference.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Intermediates\ScriptApp\Debug\Game.csproj.CoreCompileInputs.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Intermediates\ScriptApp\Debug\Game.csproj.CopyComplete
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Intermediates\ScriptApp\Debug\Game.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Proof\Intermediates\ScriptApp\Debug\Game.pdb

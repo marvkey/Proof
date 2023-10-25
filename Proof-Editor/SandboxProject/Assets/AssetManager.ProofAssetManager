@@ -1,0 +1,7 @@
+Assets:
+  - Asset: 2958098095559880186
+    Type: World
+    Path: Scenes\LightTest.ProofWorld
+  - Asset: 2403019099758263853
+    Type: ScriptFile
+    Path: Script\ScriptSpawner.cs

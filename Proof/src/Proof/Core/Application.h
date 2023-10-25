@@ -23,8 +23,8 @@
         static Application* Get() {
             return s_Instance;
         }
-       class Project* GetProject() {
-            return m_Project.get();
+       Count<class Project> GetProject() {
+            return m_Project;
         }
         static float GetFPS() {return FPS;}
         static float GetFrameMS() {return FrameMS;};
@@ -49,8 +49,9 @@
         Count<class ImGuiLayer> GetImguiLayer() { return m_ImGuiMainLayer; }
     protected:
         Application(const ApplicationConfiguration& config);
-        bool WindowMinimized = false;
+        bool m_WindowMinimized = false;
         bool m_IsRunning = true;
+        ApplicationConfiguration m_ApplicationConfiguration;
     private:
         bool m_ApplicationShouldShutdown = false;
         static Application* s_Instance;
@@ -70,8 +71,7 @@
         float LastFrameTime;
         static float FPS;
         static float FrameMS;
-        Special<class Project> m_Project;
-        ApplicationConfiguration m_ApplicationConfiguration;
+        Count<class Project> m_Project;
     private:
         void Build();
         void Release();

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include<map>
 #include <chrono>
 namespace Proof::Utils::String
 {
@@ -12,4 +13,6 @@ namespace Proof::Utils::String
 	std::string BytesToString(uint64_t bytes);
 	//std::string DurationToStringFormat(std::chrono::duration<double> duration);
 	std::string DurationToString(float durationMilisecond);
+
+	std::string ReplaceInString(const std::string& templateScript, const std::map<std::string, std::string>& replacements);
 }

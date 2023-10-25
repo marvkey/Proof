@@ -17,7 +17,7 @@
 #include <vector>
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Core/Application.h"
-
+#include "Proof/Scripting/ScriptFile.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -27,6 +27,7 @@
 #include "Proof/Renderer/AssetThumbnailGenerator.h"
 
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Scripting/ScriptBuilder.h"
 #include "Proof/Scene/Prefab.h"
 
 #include "Proof/Core/Application.h"
@@ -35,6 +36,8 @@
 
 namespace Proof
 {
+
+	static bool s_OpenNewScriptPopup = false;
 	struct CurrentFileInfo {
 		AssetType AssetType = AssetType::None;
 		// if assetManager Has asset surce
@@ -266,6 +269,63 @@ namespace Proof
 		return { returnValue,ID };
 	}
 
+	void ContentBrowserPanel::RenderNewScriptDialogue()
+	{
+		static constexpr size_t MaxClassNameLength = 64 + 1;
+		static constexpr size_t MaxClassNamespaceLength = 64 + 1;
+		static char s_ScriptNameBuffer[MaxClassNameLength]{ 0 };
+		static char s_ScriptNamespaceBuffer[MaxClassNamespaceLength]{ 0 };
+
+		UI::ScopedStyleVar framePadding(ImGuiStyleVar_FramePadding, ImVec2(10.0f, 6.0f));
+
+		Count<Project> activeProject = Application::Get()->GetProject();
+		ImGui::SetNextWindowSize(ImVec2(300.0f, 0.0f));
+		if (ImGui::BeginPopupModal("New Script", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+		{
+			ImGui::SetNextItemWidth(-1);
+			ImGui::InputTextWithHint("##ScriptNamespace", activeProject->GetProjectName().c_str(), s_ScriptNamespaceBuffer, MaxClassNamespaceLength);
+
+			ImGui::SetNextItemWidth(-1);
+			ImGui::InputTextWithHint("##ScriptName", "Class Name", s_ScriptNameBuffer, MaxClassNameLength);
+
+			ImGui::Separator();
+
+			//const bool fileAlreadyExists = FileSystem::Exists(Project::GetAssetDirectory() / m_CurrentDirectory->FilePath / (std::string(s_ScriptNameBuffer) + ".cs"));
+			const bool fileAlreadyExists = FileSystem::Exists(activeProject->GetAssetDirectory() / m_CurrentDirectory / (std::string(s_ScriptNameBuffer) + ".cs"));
+			ImGui::BeginDisabled(fileAlreadyExists);
+			if (ImGui::Button("Create"))
+			{
+				if (strlen(s_ScriptNamespaceBuffer) == 0)
+					strcpy(s_ScriptNamespaceBuffer, activeProject->GetProjectName().c_str());
+
+				if (strlen(s_ScriptNameBuffer) > 0)
+				{
+					
+					std::string actualName = std::string(s_ScriptNameBuffer) + ".cs";
+					auto scriptFIle = AssetManager::NewAsset<ScriptFile>(m_CurrentDirectory.string() + "\\" + actualName, s_ScriptNamespaceBuffer,s_ScriptNameBuffer);
+
+					ScriptBuilder::RegenerateProjectScriptSolution(activeProject);
+					//CreateAsset<>(std::string(s_ScriptNameBuffer) + ".cs", s_ScriptNamespaceBuffer, s_ScriptNameBuffer);
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			ImGui::EndDisabled();
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Close"))
+				ImGui::CloseCurrentPopup();
+
+			ImGui::EndPopup();
+		}
+
+		if (!ImGui::IsPopupOpen("New Script") && strlen(s_ScriptNameBuffer) > 0)
+		{
+			memset(s_ScriptNameBuffer, 0, MaxClassNameLength);
+			memset(s_ScriptNamespaceBuffer, 0, MaxClassNamespaceLength);
+		}
+	}
+
 	void ContentBrowserPanel::ContentSubWindow() {
 		ImGui::BeginChild("Sub Window");
 	
@@ -295,8 +355,21 @@ namespace Proof
 				FileRenameName = NameofFileRename;
 			else if (AddAssetPopupMenuItem<Texture2D>("Texture2D", "Texture (*.png)\0 *.png\0 (*.jpg)\0 *.jpg\0", NameofFileRename))
 				FileRenameName = NameofFileRename;
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Script"))
+			{
+				s_OpenNewScriptPopup = true;
+			}
 			ImGui::EndPopup();
 		}
+
+		if (s_OpenNewScriptPopup)
+		{
+			ImGui::OpenPopup("New Script");
+			s_OpenNewScriptPopup = false;
+		}
+		RenderNewScriptDialogue();
 		// ImageButton
 		float cellSize = thumbnailSize + padding;
 		float panelWidth = ImGui::GetContentRegionAvail().x;

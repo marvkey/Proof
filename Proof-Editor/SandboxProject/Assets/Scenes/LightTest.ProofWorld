@@ -1,0 +1,23 @@
+World:
+  ID: 2958098095559880186
+  Entities:
+    - Entity: 11242873672866688860
+      TagComponent:
+        Tag: CubeSpanwer
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: SandboxProject.ScriptSpawner
+            ScriptClassName: SandboxProject.ScriptSpawner
+            ScriptName: SandboxProject.ScriptSpawner
+            Fields:
+              - NameID: SandboxProject.ScriptSpawner.AmountCubes
+                Type: Int32
+                Data: 0

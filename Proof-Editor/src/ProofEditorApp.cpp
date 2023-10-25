@@ -11,6 +11,24 @@ namespace Proof {
         ProofEditor(const ApplicationConfiguration& configuration, std::string_view projectPath):
         Application(configuration)
         {
+            if (m_ApplicationConfiguration.ProjectPath.empty())
+            {
+                const std::string newProjectPath = "SandboxProject/SandboxProject.ProofProject";
+                #if 0
+                if (!std::filesystem::exists("SandboxProject"))
+                {
+                    std::filesystem::create_directory("SandboxProject");
+
+                }
+
+                if (!std::filesystem::exists(newProjectPath))
+                {
+                    ProjectConfig config(std::filesystem::path(newProjectPath), "SandboxProject");
+                    Count<Project> sandBoxProject = Project::New(config);
+                }
+                #endif
+                m_ApplicationConfiguration.ProjectPath = newProjectPath;
+            }
             // filesyste
             {
 
@@ -19,6 +37,8 @@ namespace Proof {
                 //if (stemOfdire == "Proof-Editor")
                     workingDirectory = workingDirectory.parent_path();
                 FileSystem::SetEnvironmentVariable("PROOF_DIR", workingDirectory.string());
+                //PF_ENGINE_TRACE("     PROOF_DIR {}", (FileSystem::GetEnvironmentVariable)("PROOF_DIR"));
+
             }
             m_Editor =Count<Editore3D>::Create();
             PushLayer(m_Editor);
@@ -28,10 +48,10 @@ namespace Proof {
         Count< class Editore3D> m_Editor = nullptr;
     };
     Application* CreateApplication(int argc, char** argv) {
-        std::string_view projectPath = "Proof/Proof.ProofProject";
+
+        std::string_view projectPath;
         if (argc > 1)
             projectPath = argv[1];
-            
         ApplicationConfiguration configuration;
         configuration.Name = "Proof Editor";
         configuration.EnableImgui = true;

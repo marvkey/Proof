@@ -132,6 +132,8 @@ namespace Proof {
 
 		if (stbi_is_hdr(pathString.c_str()))
 		{
+			stbi_set_flip_vertically_on_load(0);
+
 			outFormat = ImageFormat::RGBA32F;
 			imageBuffer.Data = (byte*)stbi_loadf(pathString.c_str(), &width, &height, &channels, 4);
 			//imageBuffer.Size = width * height * 4 * sizeof(float);
@@ -141,6 +143,7 @@ namespace Proof {
 		else 
 		{
 			stbi_set_flip_vertically_on_load(1);
+
 			outFormat = ImageFormat::RGBA;
 			imageBuffer.Data = stbi_load(pathString.c_str(), &width, &height, &channels, 4);
 			imageBuffer.Size = width * height * Utils::BytesPerPixel(outFormat);

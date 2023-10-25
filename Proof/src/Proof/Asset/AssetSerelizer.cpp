@@ -15,6 +15,8 @@
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Audio/Audio.h"
 #include "Proof/Physics/MeshCollider.h"
+#include "Proof/Scripting/ScriptFile.h"
+#include "Proof/Utils/StringUtils.h"
 #include "MeshImpoter.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
@@ -32,9 +34,9 @@ namespace Proof {
 		out << YAML::Key << "AssetSource" << YAML::Value << AssetManager::GetAssetInfo(textureAsset->GetPath()).ID;
 		out << YAML::EndMap;
 
-		std::ofstream found(AssetManager::GetAssetFileSystemPath(data.Path).string());
-		found << out.c_str();
-		found.close();
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(data.Path).string());
+		stream << out.c_str();
+		stream.close();
 	}
 
 	Count<class Asset> TextureAssetSerializer::TryLoadAsset(const AssetInfo& assetData) const
@@ -89,9 +91,9 @@ namespace Proof {
 
 
 		out << YAML::EndMap;
-		std::ofstream found(AssetManager::GetAssetFileSystemPath(data.Path).string());
-		found << out.c_str();
-		found.close();
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(data.Path).string());
+		stream << out.c_str();
+		stream.close();
 	}
 	Count<class Asset> MaterialAssetSerializer::TryLoadAsset(const AssetInfo& assetData) const
 	{
@@ -169,9 +171,9 @@ namespace Proof {
 		out << YAML::Key << "BouncinessCombineMode" << YAML::Value << EnumReflection::EnumString(material->GetBouncinessCombineMode());
 
 		out << YAML::EndMap;
-		std::ofstream found(AssetManager::GetAssetFileSystemPath(data.Path).string());
-		found << out.c_str();
-		found.close();
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(data.Path).string());
+		stream << out.c_str();
+		stream.close();
 	}
 	Count<class Asset> PhysicsMaterialAssetSerializer::TryLoadAsset(const AssetInfo& assetData) const
 	{
@@ -212,9 +214,9 @@ namespace Proof {
 			out << YAML::Value << mesh->GetSubMeshes();
 		out << YAML::EndMap;
 
-		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
-		found << out.c_str();
-		found.close();
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
 	}
 
 	Count<class Asset> MeshAssetSerializer::TryLoadAsset(const AssetInfo& assetData) const
@@ -249,9 +251,9 @@ namespace Proof {
 		else
 			out << YAML::Value << mesh->GetSubMeshes();
 		out << YAML::EndMap;
-		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
-		found << out.c_str();
-		found.close();
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
 	}
 
 	Count<class Asset> DynamicMeshAssetSerializer::TryLoadAsset(const AssetInfo& assetData) const
@@ -296,9 +298,9 @@ namespace Proof {
 		}
 		out << YAML::Flow;
 		out << YAML::EndMap;
-		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
-		found << out.c_str();
-		found.close();
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
 	}
 
 	Count<class Asset> PrefabAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
@@ -354,9 +356,9 @@ namespace Proof {
 
 		}
 		out << YAML::EndMap;
-		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
-		found << out.c_str();
-		found.close();
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
 	}
 	Count<class Asset> ParticleSystemSerilizer::TryLoadAsset(const AssetInfo& assetData)const
 	{
@@ -474,9 +476,9 @@ namespace Proof {
 		}
 		out << YAML::EndMap;
 
-		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
-		found << out.c_str();
-		found.close();
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
 	}
 
 	Count<class Asset> UIPanelAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
@@ -573,8 +575,9 @@ namespace Proof {
 			out << YAML::Key << "AudioSource" << YAML::Value << 0;
 		}
 		out << YAML::EndMap;
-		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
-		found << out.c_str();
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
 	}
 
 	Count<class Asset> AudioAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
@@ -622,8 +625,9 @@ namespace Proof {
 		out << YAML::Key << "CollisionComplexity" << YAML::Value << EnumReflection::EnumString(meshCollider->CollisionComplexity);
 
 		out << YAML::EndMap;
-		std::ofstream found(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
-		found << out.c_str();
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
 	}
 
 	Count<class Asset> MeshColliderAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
@@ -646,6 +650,54 @@ namespace Proof {
 
 		SetID(assetData, meshCollider);
 		return meshCollider;
+	}
+
+	void ScriptFileAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+		auto fullPath = AssetManager::GetAssetFileSystemPath(assetData.Path);
+
+		if (FileSystem::Exists(fullPath))
+			return;
+
+		Count<ScriptFile> scriptFile = asset.As<ScriptFile>();
+		if (scriptFile->GetClasssName().empty())
+			return;
+
+		std::string newClassRawTemplate = R"(
+using System;
+using Proof;
+
+namespace $NAMESPACE_NAME$
+{
+	public class $CLASS_NAME$ : Entity
+	{
+		// OnCreate is called once when the Entity that this script is attached to
+		// is instantiated in the world at runtime
+		void OnCreate()
+		{
+		}
+
+		// OnUpdate is called once every frame while this script is active in the world
+		void OnUpdate(float deltaTime)
+		{
+		}
+
+	}
+}
+)";
+		const std::string finalTemplate = Utils::String::ReplaceInString(newClassRawTemplate, { {"$NAMESPACE_NAME$",scriptFile->GetClassNamespace()} , {"$CLASS_NAME$",scriptFile->GetClasssName()} });
+
+		std::ofstream stream(fullPath.string());
+		stream << finalTemplate;
+		stream.close();
+	}
+
+	Count<class Asset> ScriptFileAssetSerilizer::TryLoadAsset(const AssetInfo& data) const
+	{
+		Count<ScriptFile> file = Count<ScriptFile>::Create();
+
+		SetID(data, file);
+		return file;
 	}
 
 }

@@ -111,6 +111,20 @@ namespace Proof::Utils::String
 
 		return std::string(buffer);
 	}
-	
+	std::string ReplaceInString(const std::string& templateScript, const std::map<std::string, std::string>& replacements)
+	{
+		std::string replacedText = templateScript;
+
+		for (const auto& replacement : replacements)
+		{
+			size_t found = replacedText.find(replacement.first);
+			while (found != std::string::npos)
+			{
+				replacedText.replace(found, replacement.first.length(), replacement.second);
+				found = replacedText.find(replacement.first, found + replacement.second.length());
+			}
+		}
+		return replacedText;
+	}
 }
 
