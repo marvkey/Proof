@@ -144,17 +144,24 @@ project "$PROJECT_NAME$"
 	}
 	void ScriptBuilder::BuildCSProject(const std::filesystem::path& filepath)
 	{
+		ScopeTimer scopeTimer(__FUNCTION__);
+
 		TCHAR programFilesFilePath[MAX_PATH];
 		SHGetSpecialFolderPath(0, programFilesFilePath, CSIDL_PROGRAM_FILES, FALSE);
 		std::filesystem::path msBuildPath = std::filesystem::path(programFilesFilePath) / "Microsoft Visual Studio" / "2022" / "Community" / "Msbuild" / "Current" / "Bin" / "MSBuild.exe";
-
 		std::string command = fmt::format("cd \"{}\" && \"{}\" \"{}\" -property:Configuration=Debug", filepath.parent_path().string(), msBuildPath.string(), filepath.filename().string());
-		system(command.c_str());
+		PF_ENGINE_INFO("command: {}", command);
+
+		bool outPut = system(command.c_str());
+		if (!outPut)
+		{
+			//PF_ENGINE_ERROR("Error Building CS Project  FilePath: {}, msBuildPath: {} command: {}", filepath.string(),msBuildPath.string(), command);
+		}
 	}
 
 	void ScriptBuilder::BuildCSProject(Count<Project> project)
 	{
-		auto projectAssemblyFile = std::filesystem::absolute(project->GetProjectDirectory().string() + project->GetConfig().Name + ".csproj");
+		auto projectAssemblyFile = std::filesystem::absolute(project->GetProjectDirectory().string() +"/Source/ScriptApp/" +  project->GetConfig().Name + ".csproj");
 		BuildCSProject(projectAssemblyFile);
 	}
 	void ScriptBuilder::RegenerateProjectScriptSolution(const std::filesystem::path& projectDir, const std::string& projectName)

@@ -20,4 +20,4 @@ World:
             Fields:
               - NameID: SandboxProject.ScriptSpawner.AmountCubes
                 Type: Int32
-                Data: 0
+                Data: 28
