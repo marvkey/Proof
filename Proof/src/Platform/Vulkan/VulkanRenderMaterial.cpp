@@ -252,14 +252,14 @@ namespace Proof {
 		return nullptr;
 	}
 
-	void VulkanRenderMaterial::Bind(Count<class VulkanRenderCommandBuffer> commandBuffer, Count<VulkanComputePass> computePass)
+	void VulkanRenderMaterial::RT_Bind(Count<class VulkanRenderCommandBuffer> commandBuffer, Count<VulkanComputePass> computePass)
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("",m_Config.DebugName.c_str());
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
 		m_DescritptorSetManager->Bind();
 
-		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
+		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrame().FrameinFlight];
 		for (auto& [set, setInfo] : frameSet)
 		{
 			if (set != 0 || setInfo.Set == nullptr)
@@ -270,7 +270,7 @@ namespace Proof {
 			// but some set may not have data and we do note creata a descriptor set for it
 			// so we basically just seeing if thats teh case we dont bind it
 			vkCmdBindDescriptorSets(
-				commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
+				commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
 				VK_PIPELINE_BIND_POINT_COMPUTE,
 				computePass->GetConfig().Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 				(int)set,
@@ -289,14 +289,14 @@ namespace Proof {
 		}
 	}
 
-	void VulkanRenderMaterial::Bind(Count<VulkanRenderCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass)
+	void VulkanRenderMaterial::RT_Bind(Count<VulkanRenderCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass)
 	{
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("", m_Config.DebugName.c_str());
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
 		m_DescritptorSetManager->Bind();
 
-		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
+		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrame().FrameinFlight];
 		for (auto& [set, setInfo] : frameSet)
 		{
 			if (set != 0 || setInfo.Set == nullptr)
@@ -307,7 +307,7 @@ namespace Proof {
 			// but some set may not have data and we do note creata a descriptor set for it
 			// so we basically just seeing if thats teh case we dont bind it
 			vkCmdBindDescriptorSets(
-				commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
+				commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
 				VK_PIPELINE_BIND_POINT_GRAPHICS,
 				renderPass->GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
 				(int)set,

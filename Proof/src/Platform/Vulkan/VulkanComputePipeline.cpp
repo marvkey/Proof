@@ -7,8 +7,11 @@
 namespace Proof {
 	VulkanComputePipeline::VulkanComputePipeline(const ComputePipelineConfig& config):m_Config(config)
 	{
-
-		Build();
+		Count<VulkanComputePipeline> instance = this;
+		Renderer::Submit([instance] 
+		{
+			instance->Build();
+		});
 		
 		// not using count because we dont want this fucntion keeping a reference count therefore not letting this object being able to be deleted
 		WeakCount<VulkanComputePipeline> instanceWeakCount = this;

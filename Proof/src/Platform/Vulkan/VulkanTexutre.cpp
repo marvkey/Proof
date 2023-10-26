@@ -75,12 +75,130 @@ namespace Proof
 		}
 	}
 
+	
+	void VulkanTexture2D::SetData(Buffer buffer)
+	{
+		Release();
+		Utils::ValidateConfiguration(m_Config);
+		m_ImageData = buffer;
+
+		if (!m_ImageData)
+		{
+			PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
+			m_ImageData = TextureImporter::ToBufferFromFile("Assets/Textures/NullTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
+		}
+		ImageConfiguration imageConfig;
+		imageConfig.Format = m_Config.Format;
+		imageConfig.Width = m_Config.Width;
+		imageConfig.Height = m_Config.Height;
+		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
+		imageConfig.DebugName = m_Config.DebugName + " Image";
+		m_Image = Image2D::Create(imageConfig);
+		// render thread
+		Count<VulkanTexture2D> instance = this;
+		Renderer::Submit([instance]() mutable
+		{
+			instance->Build();
+		});
+	}
+
+
+	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, Buffer data)
+		:m_Config(config)
+
+	{
+		// because assimp whe height is zero it has some weird thign
+		if (m_Config.Height == 0)
+		{
+			m_ImageData = TextureImporter::ToBufferFromMemory(Buffer(data.Data, m_Config.Width), m_Config.Format, m_Config.Width, m_Config.Height);
+			if (!m_ImageData)
+			{
+				PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
+				// TODO: move this to asset manager
+				m_ImageData = TextureImporter::ToBufferFromFile("Resources/Textures/ErrorTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
+			}
+
+			Utils::ValidateConfiguration(m_Config);
+		}
+		else if (data)
+		{
+			Utils::ValidateConfiguration(m_Config);
+			auto size = (uint32_t)Utils::GetImageMemorySize(m_Config.Format, m_Config.Width, m_Config.Height);
+			m_ImageData.Copy(data.Data, size);
+		}
+		else
+		{
+			Utils::ValidateConfiguration(m_Config);
+			auto size = (uint32_t)Utils::GetImageMemorySize(m_Config.Format, m_Config.Width, m_Config.Height);
+			m_ImageData.Allocate(size);
+			m_ImageData.ZeroInitialize();
+		}
+		ImageConfiguration imageConfig;
+		imageConfig.Format = m_Config.Format;
+		imageConfig.Width = m_Config.Width;
+		imageConfig.Height = m_Config.Height;
+		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
+		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
+		m_Image = Image2D::Create(imageConfig);
+		// render thread
+
+
+		Count<VulkanTexture2D> instance = this;
+		Renderer::Submit([instance]() mutable
+		{
+			instance->Build();
+		});
+	}
+	VulkanTexture2D::VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config)
+		:m_Path(path), m_Config(config)
+	{
+		Utils::ValidateConfiguration(m_Config);
+		m_ImageData = TextureImporter::ToBufferFromFile(path, m_Config.Format, m_Config.Width, m_Config.Height);
+		if (!m_ImageData)
+		{
+			PF_EC_ERROR("Texture: {} could not Image Path: {}", m_Config.DebugName, path.string());
+			m_ImageData = TextureImporter::ToBufferFromFile("Assets/Textures/NullTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
+		}
+		ImageConfiguration imageConfig;
+		imageConfig.Format = m_Config.Format;
+		imageConfig.Width = m_Config.Width;
+		imageConfig.Height = m_Config.Height;
+		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
+		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
+		m_Image = Image2D::Create(imageConfig);
+		//render Thread
+		Count<VulkanTexture2D> instance = this;
+		Renderer::Submit([instance]() mutable
+		{
+			instance->Build();
+		});
+	}
+	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config)
+		:m_Config(config)
+
+	{
+		ImageConfiguration imageConfig;
+		imageConfig.Format = m_Config.Format;
+		imageConfig.Width = m_Config.Width;
+		imageConfig.Height = m_Config.Height;
+		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
+		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
+		m_Image = Image2D::Create(imageConfig);
+		//render Thread
+		Count<VulkanTexture2D> instance = this;
+		Renderer::Submit([instance]() mutable
+		{
+			instance->Build();
+		});
+	}
+
 	void VulkanTexture2D::GenerateMips()
 	{
 		m_Config.GenerateMips = true;
 		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
 		VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
-		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
+		Renderer::SubmitCommand([&](CommandBuffer* cmd) 
+		{
 
 			VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 			VkImageMemoryBarrier barrier{};
@@ -146,103 +264,6 @@ namespace Proof
 				0, nullptr, 0, nullptr, 1, &barrier);
 		});
 	}
-	void VulkanTexture2D::SetData(Buffer buffer)
-	{
-		Release();
-		Utils::ValidateConfiguration(m_Config);
-		m_ImageData = buffer;
-
-		if (!m_ImageData)
-		{
-			PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
-			m_ImageData = TextureImporter::ToBufferFromFile("Assets/Textures/NullTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
-		}
-		ImageConfiguration imageConfig;
-		imageConfig.Format = m_Config.Format;
-		imageConfig.Width = m_Config.Width;
-		imageConfig.Height = m_Config.Height;
-		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
-		imageConfig.DebugName = m_Config.DebugName + " Image";
-		m_Image = Image2D::Create(imageConfig);
-		// render thread
-		Build();
-	}
-
-
-	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, Buffer data)
-		:m_Config(config)
-
-	{
-		// because assimp whe height is zero it has some weird thign
-		if (m_Config.Height == 0)
-		{
-			m_ImageData = TextureImporter::ToBufferFromMemory(Buffer(data.Data, m_Config.Width), m_Config.Format, m_Config.Width, m_Config.Height);
-			if (!m_ImageData)
-			{
-				PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
-				// TODO: move this to asset manager
-				m_ImageData = TextureImporter::ToBufferFromFile("Resources/Textures/ErrorTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
-			}
-
-			Utils::ValidateConfiguration(m_Config);
-		}
-		else if (data)
-		{
-			Utils::ValidateConfiguration(m_Config);
-			auto size = (uint32_t)Utils::GetImageMemorySize(m_Config.Format, m_Config.Width, m_Config.Height);
-			m_ImageData.Copy(data.Data, size);
-		}
-		else
-		{
-			Utils::ValidateConfiguration(m_Config);
-			auto size = (uint32_t)Utils::GetImageMemorySize(m_Config.Format, m_Config.Width, m_Config.Height);
-			m_ImageData.Allocate(size);
-			m_ImageData.ZeroInitialize();
-		}
-		ImageConfiguration imageConfig;
-		imageConfig.Format = m_Config.Format;
-		imageConfig.Width = m_Config.Width;
-		imageConfig.Height = m_Config.Height;
-		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
-		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
-		m_Image = Image2D::Create(imageConfig);
-		// render thread
-		Build();
-	}
-	VulkanTexture2D::VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config)
-		:m_Path(path), m_Config(config)
-	{
-		Utils::ValidateConfiguration(m_Config);
-		m_ImageData = TextureImporter::ToBufferFromFile(path, m_Config.Format, m_Config.Width, m_Config.Height);
-		if (!m_ImageData)
-		{
-			PF_EC_ERROR("Texture: {} could not Image Path: {}", m_Config.DebugName, path.string());
-			m_ImageData = TextureImporter::ToBufferFromFile("Assets/Textures/NullTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
-		}
-		ImageConfiguration imageConfig;
-		imageConfig.Format = m_Config.Format;
-		imageConfig.Width = m_Config.Width;
-		imageConfig.Height = m_Config.Height;
-		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
-		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
-		m_Image = Image2D::Create(imageConfig);
-		//render Thread
-		Build();
-	}
-	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config)
-		:m_Config(config)
-
-	{
-		ImageConfiguration imageConfig;
-		imageConfig.Format = m_Config.Format;
-		imageConfig.Width = m_Config.Width;
-		imageConfig.Height = m_Config.Height;
-		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
-		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
-		m_Image = Image2D::Create(imageConfig);
-		//render Thread
-		Build();
-	}
 	ResourceDescriptorInfo VulkanTexture2D::GetResourceDescriptorInfo() const
 	{
 		return m_Image.As<VulkanImage2D>()->GetResourceDescriptorInfo();
@@ -268,7 +289,7 @@ namespace Proof
 		imageConfig.Mips = mipCount;
 		if (!m_ImageData || m_Config.Storage)
 			imageConfig.Usage = ImageUsage::Storage;
-		vk_Image->Build();
+		vk_Image->RT_Build();
 		auto& imageInfo = vk_Image->GetinfoRef();
 
 		if (!m_ImageData)
@@ -466,7 +487,8 @@ namespace Proof
 		//Build();
 	}
 
-	void VulkanTexture2D::Release() {
+	void VulkanTexture2D::Release() 
+	{
 		m_ImageData.Release();
 	}
 
@@ -497,7 +519,13 @@ namespace Proof
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
-		Build();
+		
+		Count<VulkanTextureCube> instance = this;
+
+		Renderer::Submit([instance] 
+		{
+			instance->Build();
+		});
 
 	}
 	VulkanTextureCube::VulkanTextureCube(const void* data, const TextureConfiguration& config)
@@ -531,7 +559,12 @@ namespace Proof
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
-		Build();
+
+		Count<VulkanTextureCube> instance = this;
+		Renderer::Submit([instance]
+		{
+			instance->Build();
+		});
 	}
 	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config)
 		:m_Config(config)
@@ -540,7 +573,6 @@ namespace Proof
 
 		ImageConfiguration imageConfig;
 		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);
-		imageConfig.DebugName = "TextureCubeImage";
 		imageConfig.Format = config.Format;
 		imageConfig.Height = config.Height;
 		imageConfig.Width = config.Width;
@@ -552,7 +584,12 @@ namespace Proof
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
-		Build();
+
+		Count<VulkanTextureCube> instance = this;
+		Renderer::Submit([instance]
+		{
+			instance->Build();
+		});
 	}
 	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config, Count<Texture2D> texture)
 		:m_Config(config)
@@ -562,7 +599,6 @@ namespace Proof
 		m_Texture = texture.As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
-		imageConfig.DebugName = "TextureCubeImage";
 		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);
 		imageConfig.Format = config.Format;
 		imageConfig.Height = config.Height;
@@ -576,7 +612,12 @@ namespace Proof
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
-		Build();
+
+		Count<VulkanTextureCube> instance = this;
+		Renderer::Submit([instance]
+		{
+			instance->Build();
+		});
 	}
 	void VulkanTextureCube::GenerateMips()
 	{
@@ -688,7 +729,7 @@ namespace Proof
 		//need this to generate irradiance map
 		if(m_Config.Storage)
 			imageConfig.Usage = ImageUsage::Storage;
-		vk_Image->Build();
+		vk_Image->RT_Build();
 
 		VulkanImageInfo& imageInfoRef = vk_Image->GetinfoRef();
 		if (!m_Texture)
@@ -738,7 +779,7 @@ namespace Proof
 				 *
 				 */
 				samplerCreateInfo.anisotropyEnable = false;
-				samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+				samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
 
 				auto [sampler, hash] = graphicsContext->GetOrCreateSampler(samplerCreateInfo);
 				vk_Image->GetinfoRef().Sampler = sampler;

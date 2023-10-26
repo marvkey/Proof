@@ -3,6 +3,7 @@
 #include "VulkanRenderer/VulkanRenderer.h"
 #include "VulkanGraphicsContext.h"
 #include "Vulkan.h"
+#include <vulkan/vulkan.h>
 namespace Proof
 {
     struct VulkanAllocatorData
@@ -46,6 +47,33 @@ namespace Proof
         PF_CORE_ASSERT(image.Image);
         PF_CORE_ASSERT(image.Allocation);
         vmaDestroyImage(VulkanAllocator::GetVmaAllocator(), image.Image, image.Allocation);
+    }
+
+    GPUMemoryStats VulkanAllocator::GetStats()
+    {
+        VmaBudget budget;
+        #if 0
+        VulkanRenderer::GetGraphicsContext()->GetGPUProperties()
+        const auto& memoryProps = ::GetCurrentDevice()->GetPhysicalDevice()->GetMemoryProperties();
+        std::vector<VmaBudget> budgets(memoryProps.memoryHeapCount);
+        vmaGetBudget(s_Data->Allocator, budgets.data());
+
+        uint64_t usage = 0;
+        uint64_t budget = 0;
+
+        for (VmaBudget& b : budgets)
+        {
+            usage += b.usage;
+            budget += b.budget;
+        }
+
+        // Ternary because budget can somehow be smaller than usage.
+        return { usage, budget > usage ? budget - usage : 0ull };
+        #endif
+    }
+
+    void VulkanAllocator::DumpStats()
+    {
     }
 
     void VulkanAllocator::UnmapMemory(VmaAllocation allocation)

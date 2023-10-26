@@ -30,7 +30,7 @@ namespace Proof {
 		static void EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer);
 		static void SubmitCommandBuffer(Count<class RenderCommandBuffer> commandBuffer);
 		static void SubmitCommand(std::function<void(class CommandBuffer*)> func);
-		static void SubmitDatafree(std::function<void()> func);
+		//static void SubmitDatafree(std::function<void()> func);
 
 		// explicit clear means the framebuffer will overide its base command and clear all attachemtns when set true
 		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear = false);
@@ -46,6 +46,7 @@ namespace Proof {
 		static Count<class Texture2D> GenerateBRDFLut();
 		static class CommandQueue& GetRenderCommandQueue();
 		static CurrentFrame GetCurrentFrame();
+		static CurrentFrame RT_GetCurrentFrame();
 		static const RendererConfig GetConfig();
 		static Count<class GraphicsContext> GetGraphicsContext();
 		static Renderer::API GetAPI();
@@ -65,22 +66,41 @@ namespace Proof {
 
 		//environment and prefilter
 		static std::pair<Count<class TextureCube>, Count<class TextureCube>>CreateEnvironmentMap(const std::filesystem::path& path);
-		//submit to render thread
-		//template<class FuncT>
-		//static void Submit(FuncT&& func)
-		//{
-		//	//https://www.youtube.com/watch?v=WeqxJeme_88
-		//	//(1:14:02)
-		//	auto renderCommandQueue = [](void* ptr)
-		//	{
-		//		auto pFunc = (FuncT*)ptr;
-		//		(*pFunc)();
-		//
-		//		pFunc->~FuncT();
-		//	};
-		//	auto storageBuffer = GetRenderCommandQueue().Allocate(renderCommandQueue, sizeof(func));
-		//	new (storageBuffer)FuncT(std::forward<FuncT>(func));
-		//};
+
+		template<typename FuncT>
+		static void Submit(FuncT&& func)
+		{
+			auto renderCmd = [](void* ptr) {
+				auto pFunc = (FuncT*)ptr;
+				(*pFunc)();
+
+				// NOTE: Instead of destroying we could try and enforce all items to be trivally destructible
+				// however some items like uniforms which contain std::strings still exist for now
+				// static_assert(std::is_trivially_destructible_v<FuncT>, "FuncT must be trivially destructible");
+				pFunc->~FuncT();
+			};
+			auto storageBuffer = GetRenderCommandQueue().Allocate(renderCmd, sizeof(func));
+			new (storageBuffer) FuncT(std::forward<FuncT>(func));
+		}
+		template<typename FuncT>
+		static void SubmitResourceFree(FuncT&& func)
+		{
+			auto renderCmd = [](void* ptr) {
+				auto pFunc = (FuncT*)ptr;
+				(*pFunc)();
+
+				// NOTE: Instead of destroying we could try and enforce all items to be trivally destructible
+				// however some items like uniforms which contain std::strings still exist for now
+				// static_assert(std::is_trivially_destructible_v<FuncT>, "FuncT must be trivially destructible");
+				pFunc->~FuncT();
+			};
+			Submit([renderCmd, func]()
+			{
+				const uint32_t index = Renderer::RT_GetCurrentFrameIndex();
+				auto storageBuffer = GetRenderResourceReleaseQueue(index).Allocate(renderCmd, sizeof(func));
+				new (storageBuffer) FuncT(std::forward<FuncT>((FuncT&&)func));
+			});
+		}
 	private:
 		static void OnWindowResize(WindowResizeEvent& e);
 		static void BeginFrame();

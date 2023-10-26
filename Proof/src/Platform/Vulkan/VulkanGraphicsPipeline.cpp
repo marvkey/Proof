@@ -39,6 +39,14 @@ namespace Proof
 	}
 	void VulkanGraphicsPipeline::Build()
 	{
+		Count<VulkanGraphicsPipeline> instance = this;
+		Renderer::Submit([instance]() mutable
+		{
+			instance->RT_Build();
+		});
+	}
+	void VulkanGraphicsPipeline::RT_Build()
+	{
 		// need for combaitible render pass layout
 		//RenderPassConfig redfdfdasfaConfig("Graphics pipline compatibility renderPass", m_Config.TargetBuffer);
 		//if (m_Config.Shader != NULL && m_Config.Shader->GetName() == "EnvironmentIrradianceNonCompute")
@@ -407,6 +415,7 @@ namespace Proof
 
 		PF_ENGINE_TRACE("Created GraphicsPipeline {}", m_Config.DebugName);
 	}
+
 	void VulkanGraphicsPipeline::Release()
 	{
 		Renderer::SubmitDatafree([pipline = m_GraphicsPipeline, piplinelayout = m_PipeLineLayout, renderPass = m_CompatibilityRenderPass]() {
@@ -487,9 +496,9 @@ namespace Proof
 		m_CullModeStack.pop_back();
 	}
 
-	void VulkanGraphicsPipeline::Bind(Count<class RenderCommandBuffer> commandBuffer)
+	void VulkanGraphicsPipeline::RT_Bind(Count<class RenderCommandBuffer> commandBuffer)
 	{
-		vkCmdBindPipeline(commandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
+		vkCmdBindPipeline(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
 			VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 	}
 	

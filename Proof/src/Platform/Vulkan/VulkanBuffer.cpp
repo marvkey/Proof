@@ -15,18 +15,26 @@ namespace Proof
 	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint64_t size): 
 		m_VertexSize(size), m_Usage (VulkanMemmoryUsage::GpuOnly)
 	{
-		
 		Build();
 		SetData(data, size);
 	}
 	VulkanVertexBuffer::VulkanVertexBuffer(uint64_t size):
 		m_VertexSize(size), m_Usage(VulkanMemmoryUsage::CpuToGpU)
 	{
-		Build();
+		Count<VulkanVertexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
+		{
+			instance->Build();
+		});
+
 	}
 	VulkanVertexBuffer::~VulkanVertexBuffer() 
 	{
-		Release();
+		Count<VulkanVertexBuffer> instance = this;
+		Renderer::SubmitResourceFree([instance]() 
+{
+			instance->Release();
+		});
 	}
 	void VulkanVertexBuffer::Build()
 	{
@@ -118,10 +126,10 @@ namespace Proof
 	{
 		if (m_VertexBuffer.Buffer == nullptr)
 			return;
-		Renderer::SubmitDatafree([vertexBuffer = m_VertexBuffer]() {
+		//Renderer::SubmitDatafree([vertexBuffer = m_VertexBuffer]() {
 			VulkanAllocator allocator("VertexBufferRelease");
-			allocator.DestroyBuffer(vertexBuffer);
-		});
+			allocator.DestroyBuffer(m_VertexBuffer);
+		//});
 		m_VertexBuffer.Buffer = nullptr;
 		m_VertexBuffer.Allocation = nullptr;
 	}

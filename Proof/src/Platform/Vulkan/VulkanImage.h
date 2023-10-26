@@ -77,6 +77,7 @@ namespace Proof
 		uint32_t GetSamplerHash() { return m_SamplerHash; }
 		//virtual RawImage GetRawImage() { return m_Info.ImageView; };
 		void Build();
+		void RT_Build();
 
 		void CopyToHostBuffer(Buffer& buffer);
 	private:

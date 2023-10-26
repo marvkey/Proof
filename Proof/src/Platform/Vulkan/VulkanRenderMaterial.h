@@ -63,8 +63,8 @@ namespace Proof
 		Count<class Image2D> TryGetImage2D(std::string_view name);
 		virtual const RenderMaterialConfiguration& GetConfig()const { return m_Config; };
 
-		void Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanComputePass> pass);
-		void Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanRenderPass> pass);
+		void RT_Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanComputePass> pass);
+		void RT_Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanRenderPass> pass);
 
 	private:
 		template<typename T>

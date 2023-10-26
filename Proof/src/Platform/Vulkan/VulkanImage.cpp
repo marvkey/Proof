@@ -277,6 +277,16 @@ namespace Proof {
 	}
 	void VulkanImage2D::Build()
 	{
+		Count<VulkanImage2D> instance = this;
+
+		Renderer::Submit([instance]
+		{
+			instance->RT_Build();
+		});
+	}
+
+	void VulkanImage2D::RT_Build()
+	{
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;//for copy image
@@ -291,7 +301,7 @@ namespace Proof {
 		if (m_Specification.Transfer || m_Specification.Usage == ImageUsage::Texture)
 			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 		if (m_Specification.Usage == ImageUsage::Storage)
-			usage |= VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT ;
+			usage |= VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 		VkImageAspectFlags aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		if (Utils::ContainStencilFormat(m_Specification.Format))
@@ -302,8 +312,6 @@ namespace Proof {
 		VkImageCreateInfo imageCreateInfo = {};
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-		if(m_Specification.Layers  ==6 && m_Specification.Height == m_Specification.Width)
-			imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 		imageCreateInfo.format = vulkanFormat;
 		imageCreateInfo.extent.width = m_Specification.Width;
 		imageCreateInfo.extent.height = m_Specification.Height;
@@ -312,20 +320,35 @@ namespace Proof {
 		imageCreateInfo.arrayLayers = m_Specification.Layers;
 		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageCreateInfo.samples = m_SampleFlags;
+
 		imageCreateInfo.tiling = m_Specification.Usage == ImageUsage::HostRead ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
+
+
 		imageCreateInfo.usage = usage;
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
+		if (m_Specification.Layers == 6 && m_Specification.Height == m_Specification.Width)
+		{
+			imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+			imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+			imageCreateInfo.format = vulkanFormat;
+			imageCreateInfo.mipLevels = m_Specification.Mips;
+			imageCreateInfo.arrayLayers = 6;
+			imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+			imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+			imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			imageCreateInfo.extent = { m_Specification.Width, m_Specification.Height, 1 };
+			imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+			imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+		}
 		VulkanAllocator allocator("VulkanImage2DBuild");
 		allocator.AllocateImage(imageCreateInfo, memoryUsage, m_Info.ImageAlloc);
 
 		graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE, m_Specification.DebugName, m_Info.ImageAlloc.Image);
 
-		
-
 		VkImageViewCreateInfo imageViewCreateInfo = {};
 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		imageViewCreateInfo.viewType = m_Specification.Layers > 1 ?  VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
+		imageViewCreateInfo.viewType = m_Specification.Layers > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
 		imageViewCreateInfo.format = vulkanFormat;
 		imageViewCreateInfo.subresourceRange = {};
 		imageViewCreateInfo.subresourceRange.aspectMask = aspectMask;
@@ -335,8 +358,8 @@ namespace Proof {
 		imageViewCreateInfo.subresourceRange.layerCount = m_Specification.Layers;
 		imageViewCreateInfo.image = m_Info.ImageAlloc.Image;
 		vkCreateImageView(graphicsContext->GetDevice(), &imageViewCreateInfo, nullptr, &m_Info.ImageView);
-		if(m_Info.ImageView)
-			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW,std::format("{} Image View", m_Specification.DebugName), m_Info.ImageView);
+		if (m_Info.ImageView)
+			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Specification.DebugName), m_Info.ImageView);
 
 		VkSamplerCreateInfo samplerCreateInfo = {};
 		samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -362,14 +385,14 @@ namespace Proof {
 		samplerCreateInfo.minLod = 0.0f;
 		samplerCreateInfo.maxLod = 100.0f;
 		samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
-		
+
 		{
 			auto [Sampler, hash] = graphicsContext->GetOrCreateSampler(samplerCreateInfo);
 			m_SamplerHash = hash, m_Info.Sampler = Sampler;
 		}
 		//vkCreateSampler(graphicsContext->GetDevice(), &samplerCreateInfo, nullptr, &m_Info.Sampler);
 	//	Utils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_SAMPLER, std::format("{} Sampler", m_Specification.DebugName), m_Info.Sampler);
-	
+
 		if (m_Specification.Usage == ImageUsage::Storage)
 		{
 			Renderer::SubmitCommand([&](CommandBuffer* cmd)
@@ -381,7 +404,7 @@ namespace Proof {
 				subResourceRange.baseMipLevel = 0;
 				subResourceRange.levelCount = m_Specification.Mips;
 				subResourceRange.layerCount = m_Specification.Layers;
-			
+
 				VkImageMemoryBarrier barrier = {};
 				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 				barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -447,7 +470,7 @@ namespace Proof {
 				imageMemoryBarrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
 				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				imageMemoryBarrier.newLayout = newLayout;
-				imageMemoryBarrier.image = m_Info.ImageAlloc.Image ;
+				imageMemoryBarrier.image = m_Info.ImageAlloc.Image;
 				VkImageSubresourceRange subResourceRange = {};
 				subResourceRange.aspectMask = aspectMask;
 				subResourceRange.baseMipLevel = 0;

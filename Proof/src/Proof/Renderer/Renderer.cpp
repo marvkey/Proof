@@ -325,6 +325,11 @@ namespace Proof {
 
 	CurrentFrame Renderer::GetCurrentFrame()
 	{
+	}
+
+	CurrentFrame Renderer::RT_GetCurrentFrame()
+	{
+		PF_CORE_ASSERT(false);
 		return s_RendererAPI->GetCurrentFrame();
 	}
 
@@ -359,13 +364,14 @@ namespace Proof {
 	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination, uint32_t imageDimensionadfa)
 	{
 		PF_PROFILE_FUNC();
-		const uint32_t cubemapSize = 256;
+		const uint32_t cubemapSize = 512;
 		const uint32_t irradianceMap = 32;
 
 		ImageFormat format = ImageFormat::RGBA32F;
 		TextureConfiguration baseCubeMapConfig;
 		baseCubeMapConfig.DebugName = "Pretham Cube";
-		baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
+		baseCubeMapConfig.Wrap = TextureWrap::Repeat;
+		baseCubeMapConfig.Filter = TextureFilter::Nearest;
 		baseCubeMapConfig.Height = cubemapSize;
 		baseCubeMapConfig.Width = cubemapSize;
 		baseCubeMapConfig.Storage = true;
@@ -375,15 +381,19 @@ namespace Proof {
 		uint32_t mipLevels = Utils::GetMipLevelCount(cubemapSize, cubemapSize);
 		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig);
 		PrethamSkyPass->SetInput("o_CubeMap", environmentMap);
+
+
 		Renderer::SubmitCommand([&](CommandBuffer* cmdBufer) {
 			glm::vec3 params = { turbidity, azimuth, inclination };
 			Count<RenderCommandBuffer> commandBuffer = RenderCommandBuffer::Create(cmdBufer);
 			Renderer::BeginComputePass(commandBuffer, PrethamSkyPass);
 			PrethamSkyPass->PushData("u_Uniforms", &params);
-			PrethamSkyPass->Dispatch(cubemapSize/irradianceMap, cubemapSize/irradianceMap, 12);
+			PrethamSkyPass->Dispatch(cubemapSize/32, cubemapSize/32, 6);
 			Renderer::EndComputePass(PrethamSkyPass);
+
 			//return;
 			// boit 
+			#if 0
 			auto blitCmd = cmdBufer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 			bool readonly = false;
 			auto image=environmentMap.As<VulkanTextureCube>()->GetImage().As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
@@ -474,10 +484,11 @@ namespace Proof {
 					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readonly ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL,
 					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 					subresourceRange);
-
 			}
+			#endif
+
 		});
-		//environmentMap->GenerateMips();
+		environmentMap->GenerateMips();
 
 		return environmentMap;
 	}
@@ -777,7 +788,7 @@ namespace Proof {
 
 	void Renderer::EndFrame()
 	{
-		//GetRenderCommandQueue().Execute();
+		GetRenderCommandQueue().Execute();
 		s_RendererAPI->EndFrame();
 	}
 

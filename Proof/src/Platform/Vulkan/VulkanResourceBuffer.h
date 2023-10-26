@@ -15,6 +15,7 @@ namespace Proof{
         VkBuffer GetBuffer() { return m_UniformBuffer.Buffer; }
         
         void SetData(Buffer data, uint64_t offset = 0);
+        void RT_SetData(Buffer data, uint64_t offset = 0);
         const VkDescriptorBufferInfo& GetDescriptorInfoVulkan()const {
             m_BufferInfo = {
                 m_UniformBuffer.Buffer,
@@ -32,8 +33,11 @@ namespace Proof{
         mutable VkDescriptorBufferInfo m_BufferInfo;
         uint64_t m_Size = 0;
         VulkanMemmoryUsage m_MemoryUsage;
+        Buffer m_LocalBuffer;
+
         void Release();
         void Build();
+        void RT_Build();
     };
 
     class VulkanUniformBufferSet : public UniformBufferSet
@@ -66,6 +70,7 @@ namespace Proof{
             return m_BufferInfo;
         }
         void SetData(Buffer data, uint64_t offset = 0);
+        void RT_SetData(Buffer data, uint64_t offset = 0);
 
         void Resize(uint64_t size);
         void Resize(Buffer data);
@@ -78,8 +83,11 @@ namespace Proof{
         mutable VkDescriptorBufferInfo m_BufferInfo;
         VulkanBuffer m_StorageBuffer;
         
+        Buffer m_LocalBuffer;
         void Release();
         void Build();
+
+        void RT_Build();
     };
 
     class VulkanStorageBufferSet : public StorageBufferSet

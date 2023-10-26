@@ -38,6 +38,7 @@ namespace Proof{
 		void virtual SetInput(std::string_view name, Count<class Image2D>image);
 		void virtual SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images);
 
+		virtual void RT_PushData(std::string_view name, const void* data);
 		virtual void PushData(std::string_view name, const void* data);
 		Count< class GraphicsPipeline> GetPipeline() { return m_Config.Pipeline; };
 		virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame);

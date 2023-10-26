@@ -11,7 +11,7 @@ namespace Proof
 	public:
 		//10mb allocated begin size
 		// resizabe
-		CommandQueue(uint32_t size = 10 * 1024 * 1024);
+		CommandQueue(uint32_t size = 10 * 1024 * 1024); //10 mb data
 		~CommandQueue();
 
 		void* Allocate(CommandFn fn, uint32_t size);

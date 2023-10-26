@@ -1,7 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Renderer/Buffer.h"
-#include <glm/glm.hpp>
 #include "VulkanUtils/VulkanBufferBase.h"
 namespace Proof
 {
@@ -23,7 +22,7 @@ namespace Proof
 		std::vector<T> GetData();
 		Buffer GetDataRaw();
 	private:
-		void Release();
+		void RT_Release();
 		void Build();
 		VulkanMemmoryUsage m_Usage;
 		VulkanBuffer m_VertexBuffer;

@@ -155,7 +155,7 @@ namespace Proof
 		uint32_t LastSet = 3; //(set0,set1,set2,set3)  those are 3 sets
 	};
 
-
+	// does not call any funciton to push to render thread 
 	class VulkanDescriptorManager : public RefCounted
 	{
 	public:

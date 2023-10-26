@@ -20,4 +20,25 @@ World:
             Fields:
               - NameID: SandboxProject.ScriptSpawner.AmountCubes
                 Type: Int32
-                Data: 28
+                Data: 0
+    - Entity: 417248771471866783
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        DynamicSky: true
+        Turbidity: 2
+        Azimuth: 0
+        Inclination: 0
+        Image: 0

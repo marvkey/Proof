@@ -21,6 +21,7 @@ namespace Proof
 		friend class VulkanRenderPass;
 		friend class VulkanRendererAPI;
 		friend class VulkanTextureCube;
+		uint32_t m_ActiveCommandBufferIndex = 0;
 	};
 
 
@@ -29,14 +30,16 @@ namespace Proof
 		VulkanRenderCommandBuffer(std::string debugName = "", bool swapchaing = false);
 		VulkanRenderCommandBuffer(CommandBuffer* buffer);
 		virtual ~VulkanRenderCommandBuffer();
-		VkCommandBuffer GetCommandBuffer(uint32_t frameInFlight );
+		//VkCommandBuffer GetCommandBuffer(uint32_t frameInFlight );
+
+		VkCommandBuffer GetActiveCommandBuffer();
 	private:
 		bool m_Swapcahin = false;
 		void Submit();
-		void BeginRecord(uint32_t frameIndex );
-		void EndRecord(uint32_t frameIndex );
+		void BeginRecord();
+		void EndRecord();
 		CommandBuffer* m_NormalCommandBuffer =nullptr;
-		void Init();
+		void Build();
 		void Release();
 		bool m_Recording = false;
 
@@ -48,5 +51,6 @@ namespace Proof
 		friend class VulkanSwapChain;
 		friend class VulkanRenderer;
 		friend class VulkanRendererAPI;
+		uint32_t m_ActiveCommandBufferIndex = 0;
 	};
 }

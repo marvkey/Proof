@@ -28,85 +28,114 @@ namespace Proof
 	}
 	void VulkanComputePass::Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
-		PF_CORE_ASSERT(m_RenderPassEnabled, "Cannot dispatch unless start a compute pass");
-		vkCmdDispatch(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), groupCountX, groupCountY, groupCountZ);
+		Count<VulkanComputePass> instance = this;
+		Renderer::Submit([instance, groupCountX,groupCountY,groupCountZ] ()
+		{
+			PF_CORE_ASSERT(instance->m_RenderPassEnabled, "Cannot dispatch unless start a compute pass");
+			vkCmdDispatch(instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), groupCountX, groupCountY, groupCountZ);
+		});
+
 	}
 	void VulkanComputePass::Build()
 	{
 	}
 	void VulkanComputePass::BeginComputePassBase(Count<class RenderCommandBuffer> command)
 	{
-		PF_CORE_ASSERT(m_RenderPassEnabled == false, fmt::format("cannot start {} render pass when previous render pass is not closed", m_Config.DebugName).c_str());
-		m_CommandBuffer = command;
-		m_RenderPassEnabled = true;
+		Count<VulkanComputePass> instance = this;
+		Renderer::Submit([instance, command]()
+		{
+			PF_CORE_ASSERT(instance->m_RenderPassEnabled == false, fmt::format("cannot start {} render pass when previous render pass is not closed", instance->m_Config.DebugName).c_str());
+			instance->m_CommandBuffer = command;
+			instance->m_RenderPassEnabled = true;
 
-		vkCmdBindPipeline(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), VK_PIPELINE_BIND_POINT_COMPUTE, m_Config.Pipeline.As<VulkanComputePipeline>()->GetComputePipeline());
+			vkCmdBindPipeline(instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, instance->m_Config.Pipeline.As<VulkanComputePipeline>()->GetComputePipeline());
+		});
+
 	}
 	void VulkanComputePass::BeginComputePass(Count<class RenderCommandBuffer> command)
 	{
 		BeginComputePassBase(command);
-		m_DescritptorSetManager->Bind();
-		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
-		for (auto& [set, setInfo] : frameSet)
+
+		Count<VulkanComputePass> instance = this;
+		Renderer::Submit([instance]()
 		{
-			// basically we have to define a set layout for each descriptor set 0-3
-			// but some set may not have data and we do note creata a descriptor set for it
-			// so we basically just seeing if thats teh case we dont bind it
-			if (setInfo.Set == nullptr)
-				continue;
-			vkCmdBindDescriptorSets(
-				m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
-				VK_PIPELINE_BIND_POINT_COMPUTE,
-				m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
-				(int)set,
-				1,
-				&setInfo.Set,
-				0,
-				nullptr);
-		}
+			instance->m_DescritptorSetManager->Bind();
+			auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
+			for (auto& [set, setInfo] : frameSet)
+			{
+				// basically we have to define a set layout for each descriptor set 0-3
+				// but some set may not have data and we do note creata a descriptor set for it
+				// so we basically just seeing if thats teh case we dont bind it
+				if (setInfo.Set == nullptr)
+					continue;
+				vkCmdBindDescriptorSets(
+					instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+					VK_PIPELINE_BIND_POINT_COMPUTE,
+					instance->m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
+					(int)set,
+					1,
+					&setInfo.Set,
+					0,
+					nullptr);
+			}
+		});
 	}
 	void VulkanComputePass::BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> command)
 	{
 		BeginComputePassBase(command);
-		PF_CORE_ASSERT(m_MaterialRenderPass == false, "cannot start material render pass if previous material render pass not disabled");
 
-		m_MaterialRenderPass = true;
-
-		m_DescritptorSetManager->Bind();
-
-		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
-		for (auto& [set, setInfo] : frameSet)
+		Count<VulkanComputePass> instance = this;
+		Renderer::Submit([instance]()
 		{
-			// set0 is for te material to bind to 
-			// basically we have to define a set layout for each descriptor set 0-3
-			// but some set may not have data and we do note creata a descriptor set for it
-			// so we basically just seeing if thats teh case we dont bind it
-			if (set == 0 || setInfo.Set == nullptr)continue;
-			vkCmdBindDescriptorSets(
-				m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
-				VK_PIPELINE_BIND_POINT_COMPUTE,
-				m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
-				(int)set,
-				1,
-				&setInfo.Set,
-				0,
-				nullptr);
-		}
+			PF_CORE_ASSERT(instance->m_MaterialRenderPass == false, "cannot start material render pass if previous material render pass not disabled");
+
+			instance->m_MaterialRenderPass = true;
+
+			
+			instance->m_DescritptorSetManager->Bind();
+
+			auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
+			for (auto& [set, setInfo] : frameSet)
+			{
+				// set0 is for te material to bind to 
+				// basically we have to define a set layout for each descriptor set 0-3
+				// but some set may not have data and we do note creata a descriptor set for it
+				// so we basically just seeing if thats teh case we dont bind it
+				if (set == 0 || setInfo.Set == nullptr)continue;
+				vkCmdBindDescriptorSets(
+					instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+					VK_PIPELINE_BIND_POINT_COMPUTE,
+					instance->m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
+					(int)set,
+					1,
+					&setInfo.Set,
+					0,
+					nullptr);
+			}
+		});
 	}
 	void VulkanComputePass::ComputePassPushRenderMaterial(Count<class RenderMaterial> renderMaterial)
 	{
-		PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot Push material fi render pass not enabled");
-		PF_CORE_ASSERT(m_MaterialRenderPass == true, "cannot Push if not a material Render Pass");
-
-		Count< VulkanComputePass> pass = this;
-		renderMaterial.As<VulkanRenderMaterial>()->Bind(m_CommandBuffer.As<VulkanRenderCommandBuffer>(), pass);
+		
+		Count<VulkanComputePass> instance = this;
+		Renderer::Submit([instance, renderMaterial]()
+		{
+			PF_CORE_ASSERT(instance->m_RenderPassEnabled == true, "cannot Push material fi render pass not enabled");
+			PF_CORE_ASSERT(instance->m_MaterialRenderPass == true, "cannot Push if not a material Render Pass");
+			renderMaterial.As<VulkanRenderMaterial>()->RT_Bind(instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>(), instance);
+		});
 	}
 	void VulkanComputePass::EndComputePass()
 	{
-		PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
-		m_CommandBuffer =nullptr;
-		m_MaterialRenderPass = false;
-		m_RenderPassEnabled = false;
+		Count<VulkanComputePass> instance = this;
+		Renderer::Submit([instance]()
+		{
+			PF_CORE_ASSERT(instance->m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
+			instance->m_CommandBuffer = nullptr;
+			instance->m_MaterialRenderPass = false;
+			instance->m_RenderPassEnabled = false;
+		});
+
 	}
 	void VulkanComputePass::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
 	{
@@ -159,11 +188,26 @@ namespace Proof
 
 	void VulkanComputePass::PushData(std::string_view name, const void* data)
 	{
+		std::string str = std::string(name);
+		auto vkShader = m_Config.Pipeline->GetShader().As<VulkanShader>();
+		PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
+		const auto& pushRange = vkShader->GetPushConstants().at(str);
+			
+		m_LocalStorage.Copy(data, pushRange.size);
+		Count<VulkanComputePass> instance = this;
+		Renderer::Submit([instance,str]() 
+		{
+			instance->RT_PushData(str, instance->m_LocalStorage.Data);
+			instance->m_LocalStorage.Release();
+		});
+	}
+	void VulkanComputePass::RT_PushData(std::string_view name, const void* data)
+	{
 		auto vkShader = m_Config.Pipeline->GetShader().As<VulkanShader>();
 		std::string str = std::string(name);
 		PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
 		const auto& pushRange = vkShader->GetPushConstants().at(str);
-		vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
+		vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 			pushRange.stageFlags, pushRange.offset, pushRange.size, data);
 	}
 }

@@ -42,8 +42,10 @@ namespace Proof
 	CurrentFrame VulkanRenderer::s_CurrentFrame;
 	VulkanRendererData* s_RenderData;
 	static bool s_IsWindowResised;
+
 	Count<class VulkanGraphicsContext> s_GraphicsContext;
-	void VulkanRenderer::Init() {
+	void VulkanRenderer::Init() 
+	{
 		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
 		s_IsWindowResised = false;
 		s_RenderData = pnew VulkanRendererData();
@@ -52,10 +54,12 @@ namespace Proof
 		
 	}
 	
-	void VulkanRenderer::BeginFrame() {
+	void VulkanRenderer::BeginFrame() 
+	{
 		PF_PROFILE_FUNC();
 		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
-		if (s_IsWindowResised) {
+		if (s_IsWindowResised) 
+		{
 			graphicsContext->GetSwapChain()->Resize({ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() });
 
 			s_CurrentFrame.FrameinFlight = 0;
@@ -73,7 +77,8 @@ namespace Proof
 		VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo));
 
 	}
-	void VulkanRenderer::EndFrame() {
+	void VulkanRenderer::EndFrame() 
+	{
 		PF_PROFILE_FUNC();
 		DrawFrame();
 		const auto& graphicsContext = VulkanRenderer::GetGraphicsContext();
@@ -85,7 +90,8 @@ namespace Proof
 	{
 		s_GraphicsContext = graphics.As<VulkanGraphicsContext>();
 	}
-	void VulkanRenderer::OnWindowResize(WindowResizeEvent& e) {
+	void VulkanRenderer::OnWindowResize(WindowResizeEvent& e) 
+	{
 		s_IsWindowResised = true;
 	}
 	void VulkanRenderer::DrawFrame() {
@@ -122,14 +128,11 @@ namespace Proof
 
 
 	void VulkanRenderer::SubmitCommandBuffer(Count<RenderCommandBuffer> commandBuffer) {
-		if (commandBuffer == nullptr)
-			return;
 		commandBuffer.As<VulkanRenderCommandBuffer>()->Submit();
-		//if(std::find(s_RenderData->CommandBuffers.begin(), s_RenderData->CommandBuffers.end(), commandBuffer) ==s_RenderData->CommandBuffers.end() )
-		//	s_RenderData->CommandBuffers.emplace_back(commandBuffer);
 	}
 	
-	void VulkanRenderer::SubmitDatafree(std::function<void()> func) {
+	void VulkanRenderer::SubmitDatafree(std::function<void()> func) 
+	{
 		s_RenderData->ResourceFreeQueue[s_CurrentFrame.FrameinFlight].Deletors.emplace_back(func);
 	}
 	
