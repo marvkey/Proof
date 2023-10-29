@@ -33,7 +33,7 @@ namespace Proof
 		static void DumpStats();
 		void UnmapMemory(VmaAllocation allocation);
 	private:
-		static void Init(class VulkanGraphicsContext* context);
+		static void Init(Count<class VulkanDevice> device);
 		static void ShutDown();
 		friend class VulkanGraphicsContext;
 		std::string m_DebugName ;

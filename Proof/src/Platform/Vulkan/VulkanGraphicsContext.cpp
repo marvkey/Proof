@@ -1,18 +1,284 @@
 #include "Proofprch.h"
 #include "VulkanGraphicsContext.h"
-#include<GLFW/glfw3.h>
-#include<unordered_set>
-#include<set>
-#include <vector>
-#include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
-#include "Proof/Renderer/Renderer.h"
 #include "Vulkan.h"
+#include "VulkanDevice.h"
 #include "VulkanAllocator.h"
 #include "Proof/Core/Application.h"
 
+#include <GLFW/glfw3.h>
 namespace Proof
 {
+	VkInstance VulkanGraphicsContext::m_VulkanInstance;
+	#ifdef  PF_ENABLE_DEBUG 
+	const bool s_Validation = true;
+	#else
+	const bool s_Validation = false;
+	#endif
+	static bool s_Initialized = false;
+	constexpr const char* VkDebugUtilsMessageType(const VkDebugUtilsMessageTypeFlagsEXT type)
+	{
+		switch (type)
+		{
+			case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:		return "General";
+			case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:	return "Validation";
+			case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:	return "Performance";
+			default:												return "Unknown";
+		}
+	}
 
+	constexpr const char* VkDebugUtilsMessageSeverity(const VkDebugUtilsMessageSeverityFlagBitsEXT severity)
+	{
+		switch (severity)
+		{
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:		return "Info";
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:	return "Warning";
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:		return "Error";
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:	return "Critical";
+			default:												return "Unknown";
+		}
+	}
+
+	static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugUtilsMessengerCallback(const VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, const VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+	{
+		(void)pUserData; //Unused argument
+
+		const bool performanceWarnings = false;
+		if (!performanceWarnings)
+		{
+			if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+				return VK_FALSE;
+		}
+
+		std::string labels, objects;
+		if (pCallbackData->cmdBufLabelCount)
+		{
+			labels = fmt::format("\tLabels({}): \n", pCallbackData->cmdBufLabelCount);
+			for (uint32_t i = 0; i < pCallbackData->cmdBufLabelCount; ++i)
+			{
+				const auto& label = pCallbackData->pCmdBufLabels[i];
+				const std::string colorStr = fmt::format("[ {}, {}, {}, {} ]", label.color[0], label.color[1], label.color[2], label.color[3]);
+				labels.append(fmt::format("\t\t- Command Buffer Label[{0}]: name: {1}, color: {2}\n", i, label.pLabelName ? label.pLabelName : "NULL", colorStr));
+			}
+		}
+
+		if (pCallbackData->objectCount)
+		{
+			objects = fmt::format("\tObjects({}): \n", pCallbackData->objectCount);
+			for (uint32_t i = 0; i < pCallbackData->objectCount; ++i)
+			{
+				const auto& object = pCallbackData->pObjects[i];
+				objects.append(fmt::format("\t\t- Object[{0}] name: {1}, type: {2}, handle: {3:#x}\n", i, object.pObjectName ? object.pObjectName : "NULL", Utils::VkObjectTypeToString(object.objectType), object.objectHandle));
+			}
+		}
+
+		const char* severity = VkDebugUtilsMessageSeverity(messageSeverity);
+		if (severity == "Info")
+		{
+			PF_ENGINE_INFO("{0} {1} message: \n\t{2}\n {3} {4}", VkDebugUtilsMessageType(messageType),severity , pCallbackData->pMessage, labels, objects);
+		}
+		else  if (severity == "Warning")
+		{
+			PF_ENGINE_WARN("{0} {1} message: \n\t{2}\n {3} {4}", VkDebugUtilsMessageType(messageType), severity, pCallbackData->pMessage, labels, objects);
+		}
+		else  if (severity == "Error")
+		{
+			PF_ENGINE_ERROR("{0} {1} message: \n\t{2}\n {3} {4}", VkDebugUtilsMessageType(messageType), severity, pCallbackData->pMessage, labels, objects);
+		}
+		else
+		{
+			PF_ENGINE_CRITICAL("{0} {1} message: \n\t{2}\n {3} {4}", VkDebugUtilsMessageType(messageType), severity, pCallbackData->pMessage, labels, objects);
+		}
+		return VK_FALSE;
+	}
+
+	static bool CheckDriverAPIVersionSupport(uint32_t minimumSupportedVersion)
+	{
+		uint32_t instanceVersion;
+		vkEnumerateInstanceVersion(&instanceVersion);
+
+		if (instanceVersion < minimumSupportedVersion)
+		{
+			PF_ENGINE_CRITICAL("Incompatible Vulkan driver version!");
+			PF_ENGINE_CRITICAL("  You have {}.{}.{}", VK_API_VERSION_MAJOR(instanceVersion), VK_API_VERSION_MINOR(instanceVersion), VK_API_VERSION_PATCH(instanceVersion));
+			PF_ENGINE_CRITICAL("  You need at least {}.{}.{}", VK_API_VERSION_MAJOR(minimumSupportedVersion), VK_API_VERSION_MINOR(minimumSupportedVersion), VK_API_VERSION_PATCH(minimumSupportedVersion));
+
+			return false;
+		}
+
+		return true;
+	}
+
+	VulkanGraphicsContext::VulkanGraphicsContext()
+	{
+		PF_ENGINE_INFO("Renderer {}", "VulkanGraphicsContext::Create");
+
+		//PF_CORE_ASSERT(glfwVulkanSupported(), "GLFW must support Vulkan!");
+
+		m_VulkanVersion = VK_API_VERSION_1_2;
+
+		if (!CheckDriverAPIVersionSupport(m_VulkanVersion))
+		{
+			MessageBox(nullptr, L"Incompatible Vulkan driver version.\nUpdate your GPU drivers!", L"Proof Error", MB_OK | MB_ICONERROR);
+			PF_CORE_ASSERT(false);
+		}
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Application Info
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		VkApplicationInfo appInfo = {};
+		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		appInfo.pApplicationName = "Proof";
+		appInfo.pEngineName = "Proof";
+		appInfo.apiVersion = m_VulkanVersion;
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Extensions and Validation
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		#define VK_KHR_WIN32_SURFACE_EXTENSION_NAME "VK_KHR_win32_surface"
+		std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME };
+		instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); // Very little performance hit, can be used in Release.
+		if (s_Validation)
+		{
+			instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+			instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+		}
+
+		VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
+		VkValidationFeaturesEXT features = {};
+		features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+		features.enabledValidationFeatureCount = 1;
+		features.pEnabledValidationFeatures = enables;
+
+		VkInstanceCreateInfo instanceCreateInfo = {};
+		instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		instanceCreateInfo.pNext = nullptr; // &features;
+		instanceCreateInfo.pApplicationInfo = &appInfo;
+		instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
+		instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
+
+		// TODO: Extract all validation into separate class
+		if (s_Validation)
+		{
+			const char* validationLayerName = "VK_LAYER_KHRONOS_validation";
+			// Check if this layer is available at instance level
+			uint32_t instanceLayerCount;
+			vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
+			std::vector<VkLayerProperties> instanceLayerProperties(instanceLayerCount);
+			vkEnumerateInstanceLayerProperties(&instanceLayerCount, instanceLayerProperties.data());
+			bool validationLayerPresent = false;
+			PF_ENGINE_TRACE("Renderer {}", "Vulkan Instance Layers:");
+			for (const VkLayerProperties& layer : instanceLayerProperties)
+			{
+				PF_ENGINE_TRACE("Renderer  {0}", layer.layerName);
+				if (strcmp(layer.layerName, validationLayerName) == 0)
+				{
+					validationLayerPresent = true;
+					break;
+				}
+			}
+			if (validationLayerPresent)
+			{
+				instanceCreateInfo.ppEnabledLayerNames = &validationLayerName;
+				instanceCreateInfo.enabledLayerCount = 1;
+			}
+			else
+			{
+				PF_ENGINE_TRACE("Renderer {}", "Validation layer VK_LAYER_KHRONOS_validation not present, validation is disabled");
+			}
+		}
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Instance and Surface Creation
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		VK_CHECK_RESULT(vkCreateInstance(&instanceCreateInfo, nullptr, &m_VulkanInstance));
+		Utils::VulkanLoadDebugUtilsExtensions(m_VulkanInstance);
+
+		if (s_Validation)
+		{
+
+			auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VulkanInstance, "vkCreateDebugUtilsMessengerEXT");
+			PF_CORE_ASSERT(vkCreateDebugUtilsMessengerEXT != NULL, "");
+			VkDebugUtilsMessengerCreateInfoEXT debugUtilsCreateInfo{};
+			debugUtilsCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+			debugUtilsCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+			debugUtilsCreateInfo.pfnUserCallback = VulkanDebugUtilsMessengerCallback;
+			debugUtilsCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT /*  | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
+				| VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT*/;
+
+			VK_CHECK_RESULT(vkCreateDebugUtilsMessengerEXT(m_VulkanInstance, &debugUtilsCreateInfo, nullptr, &m_DebugUtilsMessenger));
+
+		}
+
+		m_PhysicalDevice = Count<VulkanPhysicalDevice>::Create();
+
+		VkPhysicalDeviceFeatures enabledFeatures;
+		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
+		enabledFeatures.samplerAnisotropy = true;
+		enabledFeatures.wideLines = true;
+		enabledFeatures.fillModeNonSolid = true;
+		enabledFeatures.independentBlend = true;
+		enabledFeatures.pipelineStatisticsQuery = true;
+		m_Device = Count<VulkanDevice>::Create(m_PhysicalDevice, enabledFeatures);
+
+		VulkanAllocator::Init(m_Device);
+
+		// Pipeline Cache
+		VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
+		pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+		VK_CHECK_RESULT(vkCreatePipelineCache(m_Device->GetVulkanDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
+	}
+
+	VulkanGraphicsContext::~VulkanGraphicsContext()
+	{
+		for (auto [hash, hashData] : m_Samplers)
+		{
+			auto [refCount, sampler] = hashData;
+			auto device = GetDevice()->GetVulkanDevice();
+			vkDestroySampler(device, sampler, nullptr);
+		}
+		m_Samplers.clear();
+		vkDestroyPipelineCache(m_Device->GetVulkanDevice(), m_PipelineCache, nullptr);
+
+		m_Device = nullptr;
+		vkDestroyInstance(m_VulkanInstance, nullptr);
+		m_VulkanInstance = nullptr;
+	}
+
+	Count<VulkanGraphicsContext> VulkanGraphicsContext::Get()
+	{
+		return Application::Get()->GetGraphicsContext().As<VulkanGraphicsContext>();
+	}
+	std::pair<VkSampler, uint64_t> VulkanGraphicsContext::GetOrCreateSampler(VkSamplerCreateInfo samplerInfo)
+	{
+		auto device = GetDevice()->GetVulkanDevice();
+
+		auto hash = Utils::GetHashSamplerInfo(samplerInfo);
+		if (m_Samplers.contains(hash))
+		{
+			m_Samplers[hash].first++;
+			return { m_Samplers[hash].second, hash };
+		}
+		VkSampler sampler;
+		vkCreateSampler(device, &samplerInfo, nullptr, &sampler);
+		VulkanUtils::SetDebugUtilsObjectName(device,VK_OBJECT_TYPE_SAMPLER, std::format("{} Sampler", hash), sampler);
+		m_Samplers[hash] = { 1,sampler };
+		return { sampler,hash };
+	}
+
+	void VulkanGraphicsContext::DeleteSampler(uint64_t samplerHash)
+	{
+		if (m_Samplers.contains(samplerHash) == false)return;
+		auto [refCount, sampler] = m_Samplers[samplerHash];
+		refCount--;
+		if (refCount == 0)
+		{
+			auto device = GetDevice()->GetVulkanDevice();
+			vkDestroySampler(device, sampler, nullptr);
+			m_Samplers.erase(samplerHash);
+		}
+	}
+	
+	#if 0 
 	static const std::vector<const char*> s_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 	static const std::vector<const char*> s_DeviceExtensions = { VK_KHR_MULTIVIEW_EXTENSION_NAME,VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	static const std::vector<const char*> s_InstanceExtension = { VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME };
@@ -550,5 +816,5 @@ namespace Proof
 
 		PF_CORE_ASSERT(false, "failed to find suitable memory type!");
 	}
-	
+	#endif
 }

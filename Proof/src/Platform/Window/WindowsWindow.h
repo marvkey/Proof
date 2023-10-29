@@ -11,6 +11,9 @@ namespace Proof {
         inline void SetEventCallback(const std::function<void(Event&)>& callback) { EventCallback = callback; }
         void CenterWindow();
     private:
+
+        virtual void BeginFrame();
+        virtual void EndFrame();
         virtual void SetVsync(bool vsync)override;
         virtual Vector2 GetMousePosition();
 

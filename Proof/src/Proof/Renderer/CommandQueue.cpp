@@ -32,7 +32,7 @@ namespace Proof
 	void CommandQueue::Execute()
 	{
 		byte* buffer = m_Commands.data();
-		for (uint32_t i = 0; i < m_CommandCount++; i++)
+		for (uint32_t i = 0; i < m_CommandCount; i++)
 		{
 			CommandFn function = *(CommandFn*)buffer;
 			buffer += sizeof(CommandFn);

@@ -697,9 +697,9 @@ namespace Proof
 			m_GeometryWireFramePass->AddGlobalInput(m_GlobalInputs);
 			m_GeometryWireFrameOnTopPass->AddGlobalInput(m_GlobalInputs);
 
-
 		}
 
+		PF_ENGINE_TRACE("World Renderer Inititilized");
 	}
 
 	void WorldRenderer::SetContext(Count<class World> world)
@@ -720,8 +720,8 @@ namespace Proof
 		//reset stats
 		m_Stats = {};
 
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
+		//uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
 		if (m_NeedResize)
 		{
 			m_NeedResize = false;
@@ -897,7 +897,6 @@ namespace Proof
 		return m_ShadowDebugPass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>();
 	}
 
-
 	Count<Image2D> WorldRenderer::GetFinalPassImage()
 	{
 		return m_CompositePass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>(); 
@@ -908,7 +907,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Timer setPassesTimer;
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		//scene data
 		{
 			m_UBSceneData.CameraPosition =ProofToglmVec( m_UBCameraData.Position);
@@ -1085,6 +1084,7 @@ namespace Proof
 			lastSplitDist = ShadowSetting.CascadeSplits[i];
 		}
 	}
+
 	void WorldRenderer::CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection)
 	{
 		//https://github.com/SaschaWillems/Vulkan/blob/master/examples/shadowmappingcascade/shadowmappingcascade.cpp
@@ -1206,12 +1206,12 @@ namespace Proof
 			lastSplitDist = cascadeSplits[i];
 		}
 	}
+
 	void WorldRenderer::ShadowPass()
 	{
 		PF_PROFILE_FUNC();
 		Timer shadowPassTimer;
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
 		if (m_MainDirectionllLight.Intensity == 0.f  || !m_MainDirectionllLight.bCastShadows)
 			return;
@@ -1294,8 +1294,8 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Timer preDepthTimer;
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
+		uint32_t imageIndex = Renderer::GetCurrentFrameInFlight();
 
 		Renderer::BeginRenderPass(m_CommandBuffer, m_PreDepthPass, true);
 
@@ -1388,8 +1388,7 @@ namespace Proof
 
 		Timer geometryPassTimer;
 
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
 	
 
@@ -1450,9 +1449,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Timer compositeTimer;
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
-
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		
 		//AmbientOcclusionPass();
 
@@ -1678,8 +1675,7 @@ namespace Proof
 		if (m_LightScene.SkyLightCount == 1)
 			PF_ENGINE_WARN("{} Submiting mulitple sky light only the last one will be used, submit 1 to save performance", m_ActiveWorld->GetName());
 
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
 
 		Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
@@ -1699,8 +1695,8 @@ namespace Proof
 			return;
 		}
 
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
+
 		m_MainDirectionllLight = directionaLights.DirectionalLights[0];
 
 		Buffer buffer{(void*) directionaLights.DirectionalLights.data(), directionaLights.DirectionalLights.size() * sizeof(DirectionalLight)};
@@ -1718,9 +1714,8 @@ namespace Proof
 			PF_ENGINE_WARN("{} Dont submit empty Point Lights", m_ActiveWorld->GetName());
 			return;
 		}
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
-
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
+		
 		Buffer buffer{ (void*)pointLights.PointLights.data(), pointLights.PointLights.size() * sizeof(PointLight) };
 		m_SBPointLightsBuffer->Resize(frameIndex, buffer);
 
@@ -1735,8 +1730,8 @@ namespace Proof
 			PF_ENGINE_WARN("{} Dont submit empty Spot Lights", m_ActiveWorld->GetName());
 			return;
 		}
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
+		
 
 		Buffer buffer{ (void*)spotLights.SpotLights.data(), spotLights.SpotLights.size() * sizeof(SpotLight) };
 		m_SBSpotLightsBuffer->Resize(frameIndex, buffer);

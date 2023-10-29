@@ -22,6 +22,7 @@ namespace Proof {
 	public:
 		virtual void SetEventCallback(const std::function<void(Event&)>& callback) = 0;
 		virtual void WindowUpdate() = 0;
+
 		virtual ~Window(){};
 		Window(const WindowConfiguration& configuration) {
 			m_WindowConfiguration = configuration;
@@ -33,7 +34,7 @@ namespace Proof {
 				MouseButtonPressed[i] = false;
 			}
 		}
-		void* GetWindow() {
+		void* GetWindow()const {
 			return m_Window;
 		}
 		bool IsInputEventEnabled() {
@@ -42,15 +43,15 @@ namespace Proof {
 		bool IsMouseMoved() {
 			return m_MouseMoved;
 		}
-		uint32_t GetHeight() {
+		uint32_t GetHeight()const {
 			return m_WindowConfiguration.Height;
 		}
-		uint32_t GetWidth() {
+		uint32_t GetWidth()const {
 			return m_WindowConfiguration.Width;
 		}
 		virtual Vector2 GetMousePosition() = 0;
 		virtual void SetVsync(bool vsync) = 0;
-		bool IsVsync() {
+		bool IsVsync()const {
 			return m_WindowConfiguration.Vsync;
 		}
 		bool IsFrameBufferResized() { return m_FrameBufferResized; }
@@ -112,10 +113,13 @@ namespace Proof {
 		std::vector<KeyBoardKey> m_KeyPressedEventCheck;
 		std::vector<MouseButton> m_MouseButtonPressedEventCheck;
 
+		virtual void BeginFrame() = 0;
+		virtual void EndFrame() = 0;
 		// controller ID
 		inline static std::map<int, Controller> s_Controllers;
 		friend class RendererBase;
 		friend class Renderer;
 		friend class InputManager;
+		friend class Application;
 	};
 }

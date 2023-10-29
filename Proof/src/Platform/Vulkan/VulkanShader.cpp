@@ -1,18 +1,17 @@
 #include "Proofprch.h"
 #include "VulkanShader.h"
 
-#include <fstream>
+#include "Proof/Renderer/Renderer.h"
+#include "VulkanUtils/VulkanConvert.h"
 #include "Proof/Math/Random.h"
 #include "VulkanGraphicsContext.h"
+#include "VulkanRenderer.h"
+#include "VulkanDevice.h"
 
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
-#include "VulkanRenderer/VulkanRenderer.h"
-
-#include "Proof/Renderer/Renderer.h"
-#include "VulkanUtils/VulkanConvert.h"
-
+#include <fstream>
 #include <fmt/format.h>
 
 namespace Proof
@@ -109,17 +108,18 @@ namespace Proof
     {
         for (auto& [data, shaderModule] : m_ShaderModule)
         {
-            Renderer::SubmitDatafree([shaderModuler =shaderModule] {
+            Renderer::SubmitResourceFree([shaderModuler =shaderModule] {
                 if(shaderModuler)
-                    vkDestroyShaderModule(VulkanRenderer::GetGraphicsContext()->GetDevice(), shaderModuler, nullptr);
+                    vkDestroyShaderModule(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice(), shaderModuler, nullptr);
             });
             shaderModule = nullptr;
         }
-        VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+        VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 
         for (auto& [set, shaderResouce] : m_DescriptorResource)
         {
-            Renderer::SubmitDatafree([shaderResouce = shaderResouce, device = device] {
+            Renderer::SubmitResourceFree([shaderResouce = shaderResouce, device = device]()
+            {
                 if(shaderResouce.Layout)
                     vkDestroyDescriptorSetLayout(device, shaderResouce.Layout, nullptr);
                 if (shaderResouce.Set)
@@ -431,7 +431,7 @@ namespace Proof
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = code.size() * sizeof(uint32_t);// because spirv module needs mutliple of 4
         createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-        if (vkCreateShaderModule(VulkanRenderer::GetGraphicsContext()->GetDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
+        if (vkCreateShaderModule(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
             PF_CORE_ASSERT(false, "Failed To Create Shader Module");
 
     }
@@ -683,7 +683,7 @@ namespace Proof
             m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
         
-        VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+        VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
         m_TypeCounts.clear();
         for (auto& [set, shaderDescriptorSet] : m_ShaderDescriptorSet)
         {

@@ -3,7 +3,7 @@
 #include "VulkanComputePipeline.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanRenderMaterial.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 namespace Proof
 {
 	
@@ -29,10 +29,12 @@ namespace Proof
 	void VulkanComputePass::Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
 		Count<VulkanComputePass> instance = this;
-		Renderer::Submit([instance, groupCountX,groupCountY,groupCountZ] ()
+		Renderer::Submit([instance, groupCountX,groupCountY,groupCountZ] () mutable
 		{
 			PF_CORE_ASSERT(instance->m_RenderPassEnabled, "Cannot dispatch unless start a compute pass");
-			vkCmdDispatch(instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), groupCountX, groupCountY, groupCountZ);
+			VkCommandBuffer buffer = instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
+			PF_CORE_ASSERT(buffer);
+			vkCmdDispatch(buffer, groupCountX, groupCountY, groupCountZ);
 		});
 
 	}
@@ -59,8 +61,8 @@ namespace Proof
 		Count<VulkanComputePass> instance = this;
 		Renderer::Submit([instance]()
 		{
-			instance->m_DescritptorSetManager->Bind();
-			auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
+			instance->m_DescritptorSetManager->RT_Bind();
+			auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
 			for (auto& [set, setInfo] : frameSet)
 			{
 				// basically we have to define a set layout for each descriptor set 0-3
@@ -92,9 +94,9 @@ namespace Proof
 			instance->m_MaterialRenderPass = true;
 
 			
-			instance->m_DescritptorSetManager->Bind();
+			instance->m_DescritptorSetManager->RT_Bind();
 
-			auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
+			auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
 			for (auto& [set, setInfo] : frameSet)
 			{
 				// set0 is for te material to bind to 

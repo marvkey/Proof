@@ -33,6 +33,7 @@ namespace Proof
 		ImageFormat GetDepthFormat() { return m_DepthFormat; }
 	private:
 
+		void RT_Build();
 		void Build();
 		void SetUpAttachments();
 

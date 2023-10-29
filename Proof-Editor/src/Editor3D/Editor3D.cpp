@@ -633,10 +633,11 @@ namespace Proof
 				break;
 		}
 	}
-	void Editore3D::OnImGuiDraw(FrameTime DeltaTime) {
+	void Editore3D::OnImGuiDraw() 
+	{
 		PF_PROFILE_FUNC();
 
-		Layer::OnImGuiDraw(DeltaTime);
+		Layer::OnImGuiDraw();
 		//ImGui::ShowDemoWindow();
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
@@ -1330,7 +1331,6 @@ namespace Proof
 
 			}
 			#endif
-			auto swapchain = Renderer::GetCurrentFrame().ImageIndex;
 			///UI::Image(m_WorldRenderer->m_ExternalCompositeFrameBuffer->GetColorAttachmentImage(swapchain, 0), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			//UI::Image(m_WorldRenderer->GetRenderer2D()->GetTargetFrameBuffer()->GetColorAttachmentImage(swapchain,0), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });

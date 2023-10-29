@@ -1,18 +1,17 @@
 #include "Proofprch.h"
 #include "VulkanFrameBuffer.h"
-#include "Proof/Renderer/Renderer.h"
 #include "VulkanGraphicsContext.h"
-#include "VulkanSwapChain.h"
 #include "VulkanRenderPass.h"
-#include "VulkanRenderer/VulkanRenderer.h"
-#include "VulkanSwapChain.h"
-#include <algorithm>
+#include "VulkanRenderer.h"
 #include "VulkanUtils/VulkanConvert.h"
 #include "VulkanTexutre.h"
+#include "VulkanDevice.h"
 #include "VulkanImage.h"
+#include "VulkanCommandBuffer.h"
+#include "Proof/Core/Application.h"
+
 #include <vector>
 
-#include "VulkanCommandBuffer.h"
 namespace Proof
 {
     static bool hasStencilComponent(VkFormat format) {
@@ -25,12 +24,11 @@ namespace Proof
     {
         if (m_Config.Height == 0 || m_Config.Width == 0)
         {
-            auto size = VulkanRenderer::GetGraphicsContext()->GetSwapChain()->GetSwapChainExtent();
-            m_Config.Width = size.X;
-            m_Config.Height = size.Y;
+            m_Config.Width = Application::Get()->GetWindow()->GetWidth();
+            m_Config.Height = Application::Get()->GetWindow()->GetHeight();
         }
         VkPhysicalDeviceProperties deviceProperties;
-        vkGetPhysicalDeviceProperties(VulkanRenderer::GetGraphicsContext()->GetGPU(), &deviceProperties);
+        vkGetPhysicalDeviceProperties(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetPhysicalDevice()->GetVulkanPhysicalDevice(), &deviceProperties);
 
         // Get the maximum framebuffer dimensions
         uint32_t maxWidth = deviceProperties.limits.maxFramebufferWidth;
@@ -52,18 +50,19 @@ namespace Proof
     {
         Release();
     }
-    void VulkanFrameBuffer::Build()
+    void VulkanFrameBuffer::RT_Build()
     {
         CreateFramebuffer();
         auto graphicsContext = Renderer::GetGraphicsContext().As <VulkanGraphicsContext>();
-
-        if (std::find(graphicsContext->GetSwapChain().As<VulkanSwapChain>()->FrameBuffers.begin(), graphicsContext->GetSwapChain().As<VulkanSwapChain>()->FrameBuffers.end(),
-            this) != graphicsContext->GetSwapChain().As<VulkanSwapChain>()->FrameBuffers.end())
-            return;
-        else
-            graphicsContext->GetSwapChain().As<VulkanSwapChain>()->FrameBuffers.emplace_back(this);
-
         PF_ENGINE_TRACE("FrameBuffer {} created imagesCount: {} ", m_Config.DebugName, m_Images.size());
+    }
+    void VulkanFrameBuffer::Build()
+    {
+        Count<VulkanFrameBuffer> instance = this;
+        Renderer::Submit([instance]()
+            {
+                instance->RT_Build();
+            });
     }
     void VulkanFrameBuffer::SetUpAttachments()
     {
@@ -250,10 +249,9 @@ namespace Proof
     {
 
        
-        const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+        const auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
-        auto swapchain = graphicsContext->GetSwapChain();
        
         {
             uint32_t attachmentIndex = 0;
@@ -400,7 +398,7 @@ namespace Proof
             renderPassInfo.pDependencies = dependencies.data();
 
             VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_CompatibilityRenderPass));
-            graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_RENDER_PASS, m_Config.DebugName + "Compatitbility render pass", m_CompatibilityRenderPass);
+            VulkanUtils::SetDebugUtilsObjectName(device,VK_OBJECT_TYPE_RENDER_PASS, m_Config.DebugName + "Compatitbility render pass", m_CompatibilityRenderPass);
         }
 
         std::vector<VkImageView> attachments;
@@ -458,7 +456,7 @@ namespace Proof
         m_Config.Height = height;
 
         VkPhysicalDeviceProperties deviceProperties;
-        vkGetPhysicalDeviceProperties(VulkanRenderer::GetGraphicsContext()->GetGPU(), &deviceProperties);
+        vkGetPhysicalDeviceProperties(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetPhysicalDevice()->GetVulkanPhysicalDevice(), &deviceProperties);
 
         // Get the maximum framebuffer dimensions
         uint32_t maxWidth = deviceProperties.limits.maxFramebufferWidth;
@@ -552,15 +550,15 @@ namespace Proof
     }
     void VulkanFrameBuffer::Release()
     {
-        auto swapchain = VulkanRenderer::GetGraphicsContext()->GetSwapChain()    ;
-
         // dont destroy images and depth images attached because we may need to resize
-        Renderer::SubmitDatafree([buffer = m_FrameBuffer]() {
-            const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+        Renderer::SubmitResourceFree([buffer = m_FrameBuffer]() 
+            {
+            const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
             vkDestroyFramebuffer(device, buffer, nullptr);
         });
-        Renderer::SubmitDatafree([renderPass = m_CompatibilityRenderPass]() {
-            vkDestroyRenderPass(VulkanRenderer::GetGraphicsContext()->GetDevice(), renderPass, nullptr);
+        Renderer::SubmitResourceFree([renderPass = m_CompatibilityRenderPass]() 
+        {
+            vkDestroyRenderPass(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice(), renderPass, nullptr);
         });
         m_CompatibilityRenderPass = nullptr;
     }

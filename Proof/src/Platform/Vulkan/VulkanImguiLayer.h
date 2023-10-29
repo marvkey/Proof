@@ -23,8 +23,6 @@ namespace Proof
 		//remove image descriptro
 		void RemoveImageDescriptor(const Image* image);
 	private:
-		bool m_Resize = false;
-		void OnResize();
 		VkDescriptorPool m_DescriptorPool;
 		//Count<class FrameBuffer> m_FrameBuffer;
 		Count<class RenderCommandBuffer> m_CommandBuffer;

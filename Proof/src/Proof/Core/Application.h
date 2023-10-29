@@ -2,6 +2,7 @@
 #include "Core.h"
 #include "Proof/Core/Window.h"
 #include <filesystem>
+#include "RenderThread.h"
     namespace Proof {
     class Layer;
     class ImGuiLayer;
@@ -12,6 +13,7 @@
         bool EnableImgui = false;
         std::string ProjectPath;
         WindowConfiguration WindowConfiguration;
+        ThreadingPolicy ThreadingPolicy = ThreadingPolicy::SingleThreaded;
     };
     class Proof_API Application {
     public:
@@ -47,16 +49,18 @@
             return m_ApplicationConfiguration;
         }
         Count<class ImGuiLayer> GetImguiLayer() { return m_ImGuiMainLayer; }
+        Count<class GraphicsContext> GetGraphicsContext() { return m_GraphicsContext; }
+
     protected:
         Application(const ApplicationConfiguration& config);
         bool m_WindowMinimized = false;
         bool m_IsRunning = true;
         ApplicationConfiguration m_ApplicationConfiguration;
+
     private:
         bool m_ApplicationShouldShutdown = false;
         static Application* s_Instance;
-        void LayerUpdate(float deltaTime);
-        void ImguiUpdate(float deltaTime);
+        void ImguiUpdate();
         static float m_ImguiFrameTime;
         void OnEvent(Event& e);
         bool OnWindowMinimizeEvent(class WindowMinimizeEvent& e);
@@ -72,9 +76,17 @@
         static float FPS;
         static float FrameMS;
         Count<class Project> m_Project;
+        Count<class GraphicsContext> m_GraphicsContext;
+        uint32_t m_CurrentFrameIndex = 0;
+
     private:
+        RenderThread m_RenderThread;
+        float m_DeltaTime;
+        float m_LastFrameTime;
+        float m_FrameTime;
         void Build();
         void Release();
+        friend class Renderer;
     };
     Application* CreateApplication(int argc, char** argv);
 }

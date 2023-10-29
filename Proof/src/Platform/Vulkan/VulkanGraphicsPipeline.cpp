@@ -3,13 +3,14 @@
 #include "VulkanShader.h"
 #include "VulkanGraphicsContext.h"
 #include "VulkanBuffer.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 #include "VulkanVertexArray.h"
 #include "VulkanDescriptorManager.h"
 #include "VulkanRenderPass.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanUtils/VulkanConvert.h"
 #include "VulkanFrameBuffer.h"
+#include "VulkanDevice.h"
 namespace Proof
 {
 	
@@ -52,7 +53,7 @@ namespace Proof
 		//if (m_Config.Shader != NULL && m_Config.Shader->GetName() == "EnvironmentIrradianceNonCompute")
 		//	redfdfdasfaConfig.MultiView = true;
 
-		VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+		VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
 		// Create compatibility renderPass
@@ -211,7 +212,7 @@ namespace Proof
 			}
 
 			VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_CompatibilityRenderPass));
-			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_RENDER_PASS, m_Config.DebugName + "Compatitbility render pass", m_CompatibilityRenderPass);
+			VulkanUtils::SetDebugUtilsObjectName(device,VK_OBJECT_TYPE_RENDER_PASS, m_Config.DebugName + "Compatitbility render pass", m_CompatibilityRenderPass);
 		}
 		#endif
 		CreatePipelineLayout();
@@ -410,7 +411,7 @@ namespace Proof
 		pipelineInfo.basePipelineIndex = -1;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 		  
-		if (vkCreateGraphicsPipelines((VulkanRenderer::GetGraphicsContext()->GetDevice()), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
+		if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
 			PF_CORE_ASSERT(false, "Failed to Create Graphics Pipeline");
 
 		PF_ENGINE_TRACE("Created GraphicsPipeline {}", m_Config.DebugName);
@@ -418,11 +419,14 @@ namespace Proof
 
 	void VulkanGraphicsPipeline::Release()
 	{
-		Renderer::SubmitDatafree([pipline = m_GraphicsPipeline, piplinelayout = m_PipeLineLayout, renderPass = m_CompatibilityRenderPass]() {
-			vkDestroyPipeline(VulkanRenderer::GetGraphicsContext()->GetDevice(), pipline, nullptr);
-			vkDestroyPipelineLayout(VulkanRenderer::GetGraphicsContext()->GetDevice(), piplinelayout, nullptr);
+		Renderer::SubmitResourceFree([pipline = m_GraphicsPipeline, piplinelayout = m_PipeLineLayout, renderPass = m_CompatibilityRenderPass]()
+		{
+			auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+
+			vkDestroyPipeline(device, pipline, nullptr);
+			vkDestroyPipelineLayout(device, piplinelayout, nullptr);
 			if(renderPass)
-				vkDestroyRenderPass(VulkanRenderer::GetGraphicsContext()->GetDevice(), renderPass, nullptr);
+				vkDestroyRenderPass(device, renderPass, nullptr);
 		});
 		m_GraphicsPipeline = nullptr;
 		m_PipeLineLayout = nullptr;
@@ -504,7 +508,7 @@ namespace Proof
 	
 	void VulkanGraphicsPipeline::CreatePipelineLayout()
 	{
-		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 
 		auto shader = m_Config.Shader.As<VulkanShader>();
 		std::vector< VkDescriptorSetLayout> descriptorLayout;

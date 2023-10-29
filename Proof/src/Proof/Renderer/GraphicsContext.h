@@ -4,7 +4,7 @@
 namespace Proof {
     class Proof_API GraphicsContext : public RefCounted {
     public:
-        static Count<GraphicsContext> Create(class Window* WindowHandle);
+        static Count<GraphicsContext> Create();
         virtual ~GraphicsContext(){}
     };
 }

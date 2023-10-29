@@ -1,8 +1,10 @@
 #include "Proofprch.h"
 #include "VulkanAllocator.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 #include "VulkanGraphicsContext.h"
 #include "Vulkan.h"
+#include "VulkanDevice.h"
+#include "Proof/Utils/StringUtils.h"
 #include <vulkan/vulkan.h>
 namespace Proof
 {
@@ -51,13 +53,10 @@ namespace Proof
 
     GPUMemoryStats VulkanAllocator::GetStats()
     {
-        VmaBudget budget;
-        #if 0
-        VulkanRenderer::GetGraphicsContext()->GetGPUProperties()
-        const auto& memoryProps = ::GetCurrentDevice()->GetPhysicalDevice()->GetMemoryProperties();
+        const auto& memoryProps = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetPhysicalDevice()->GetMemoryProperties();
         std::vector<VmaBudget> budgets(memoryProps.memoryHeapCount);
-        vmaGetBudget(s_Data->Allocator, budgets.data());
-
+        //vmaGetBudget(s_Data->Allocator, budgets.data());
+        vmaGetHeapBudgets(s_Data->Allocator, budgets.data());
         uint64_t usage = 0;
         uint64_t budget = 0;
 
@@ -69,11 +68,24 @@ namespace Proof
 
         // Ternary because budget can somehow be smaller than usage.
         return { usage, budget > usage ? budget - usage : 0ull };
-        #endif
     }
 
     void VulkanAllocator::DumpStats()
     {
+        const auto& memoryProps = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetPhysicalDevice()->GetMemoryProperties();
+        std::vector<VmaBudget> budgets(memoryProps.memoryHeapCount);
+        //vmaGetBudget(s_Data->Allocator, budgets.data());
+        vmaGetHeapBudgets(s_Data->Allocator, budgets.data());
+
+        PF_ENGINE_WARN("-----------------------------------");
+        for (VmaBudget& b : budgets)
+        {
+            PF_ENGINE_WARN("VmaBudget.allocationBytes = {0}", Utils::String::BytesToString(b.allocationBytes));
+            PF_ENGINE_WARN("VmaBudget.blockBytes = {0}", Utils::String::BytesToString(b.blockBytes));
+            PF_ENGINE_WARN("VmaBudget.usage = {0}", Utils::String::BytesToString(b.usage));
+            PF_ENGINE_WARN("VmaBudget.budget = {0}", Utils::String::BytesToString(b.budget));
+        }
+        PF_ENGINE_WARN("-----------------------------------");
     }
 
     void VulkanAllocator::UnmapMemory(VmaAllocation allocation)
@@ -81,13 +93,15 @@ namespace Proof
         vmaUnmapMemory(VulkanAllocator::GetVmaAllocator(), allocation);
     }
 
-    void VulkanAllocator::Init(VulkanGraphicsContext* context)
+    void VulkanAllocator::Init(Count<class VulkanDevice> device)
     {
         s_Data = pnew VulkanAllocatorData();
+
         VmaAllocatorCreateInfo allocatorInfo = {};
-        allocatorInfo.physicalDevice = context->GetGPU();
-        allocatorInfo.device = context->GetDevice();
-        allocatorInfo.instance = context->GetInstance();
+        allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+        allocatorInfo.physicalDevice = device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
+        allocatorInfo.device = device->GetVulkanDevice();
+        allocatorInfo.instance = VulkanGraphicsContext::GetInstance();
         vmaCreateAllocator(&allocatorInfo, &s_Data->Allocator);
     }
 

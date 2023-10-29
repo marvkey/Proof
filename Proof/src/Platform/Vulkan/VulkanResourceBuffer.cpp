@@ -3,7 +3,7 @@
 #include "Proof/Core/Core.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanGraphicsContext.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 #include "VulkanAllocator.h"
 namespace Proof{
 
@@ -13,22 +13,30 @@ namespace Proof{
 	VulkanUniformBuffer::VulkanUniformBuffer(uint64_t size) :
 		m_Size(size), m_MemoryUsage(VulkanMemmoryUsage::CpuToGpU)
 	{
+		m_LocalBuffer.Allocate(size);
 		Build();
 	}
 	VulkanUniformBuffer::VulkanUniformBuffer(Buffer data)
 		:m_Size(data.GetSize()), m_MemoryUsage(VulkanMemmoryUsage::CpuToGpU)
 	{
-		Build();
-		PF_CORE_ASSERT(data, "cannot be nullptr");
-		SetData(data, 0);
+
+		m_LocalBuffer = Buffer::Copy(data);
+		Count<VulkanUniformBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				instance->RT_Build();
+				instance->RT_SetData(instance->m_LocalBuffer);
+				instance->m_LocalBuffer.Release();
+			});
 	}
 
 	void VulkanUniformBuffer::Build()
 	{
-		Count<VulkanUniformBuffer> instance;
-		Renderer::Submit([instance] 
+		Count<VulkanUniformBuffer> instance = this;
+
+		Renderer::Submit([instance]
 		{
-			instance->RT_Build();
+				instance->RT_Build();
 		});
 	}
 	void VulkanUniformBuffer::RT_Build()
@@ -50,7 +58,13 @@ namespace Proof{
 	}
 	void VulkanUniformBuffer::SetData(Buffer data, uint64_t offset) 
 	{
-		m_LocalBuffer = Buffer::Copy(data);
+		if (m_LocalBuffer.GetSize() != m_Size)
+		{
+			m_LocalBuffer.Allocate(m_Size);
+		}
+		PF_CORE_ASSERT(data.Size <= m_LocalBuffer.Size);
+		memcpy(m_LocalBuffer.Data, (uint8_t*)data.Data + offset, data.Size);
+
 		Count<VulkanUniformBuffer> instance = this;
 		Renderer::Submit([instance, offset]() mutable
 		{
@@ -70,7 +84,7 @@ namespace Proof{
 
 	void VulkanUniformBuffer::Release()
 	{
-		Renderer::SubmitDatafree([buffer = m_UniformBuffer]() {
+		Renderer::SubmitResourceFree([buffer = m_UniformBuffer]() {
 			VulkanAllocator allocator("VulkanUniformBufferRelease");
 			allocator.DestroyBuffer(buffer);
 		});
@@ -117,6 +131,7 @@ namespace Proof{
 		:m_Size(size), m_MemoryUsage(VulkanMemmoryUsage::CpuToGpU)
 
 	{
+		m_LocalBuffer.Allocate(size);
 		Build();
 	}
 
@@ -124,8 +139,15 @@ namespace Proof{
 		:m_Size(data.GetSize()), m_MemoryUsage(VulkanMemmoryUsage::CpuToGpU)
 
 	{
-		Build();
-		SetData(data, 0);
+		m_LocalBuffer = Buffer::Copy(data);
+		Count<VulkanStorageBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				instance->RT_Build();
+				instance->RT_SetData(instance->m_LocalBuffer);
+				instance->m_LocalBuffer.Release();
+			});
+
 	}
 	void VulkanStorageBuffer::Build()
 	{
@@ -160,7 +182,6 @@ namespace Proof{
 		{
 			Renderer::Submit([instance,size]() mutable
 			{
-
 				VulkanAllocator allocator("VulkanStorageBufferSetData");
 				uint8_t* pData = allocator.MapMemory<uint8_t>(instance->m_StorageBuffer.Allocation);
 				memset(pData, 0, static_cast<size_t>(size));
@@ -189,7 +210,13 @@ namespace Proof{
 	}
 	void VulkanStorageBuffer::SetData(Buffer data, uint64_t offset)
 	{
-		m_LocalBuffer = Buffer::Copy(data);
+		if (m_LocalBuffer.GetSize() != m_Size)
+		{
+			m_LocalBuffer.Allocate(m_Size);
+		}
+		PF_CORE_ASSERT(data.Size <= m_LocalBuffer.Size);
+		memcpy(m_LocalBuffer.Data, (uint8_t*)data.Data + offset, data.Size);
+
 		Count<VulkanStorageBuffer> instance = this;
 		Renderer::Submit([instance, offset]() mutable
 		{
@@ -207,10 +234,11 @@ namespace Proof{
 	}
 	void VulkanStorageBuffer::Release()
 	{
-		Renderer::SubmitDatafree([buffer = m_StorageBuffer]() {
-			VulkanAllocator allocator("VulkanStorageBufferRelease");
-			allocator.DestroyBuffer(buffer);
-		});
+		Renderer::SubmitResourceFree([buffer = m_StorageBuffer]() 
+			{
+				VulkanAllocator allocator("VulkanStorageBufferRelease");
+				allocator.DestroyBuffer(buffer);
+			});
 		m_StorageBuffer.Allocation = nullptr;
 		m_StorageBuffer.Buffer = nullptr;
 	}

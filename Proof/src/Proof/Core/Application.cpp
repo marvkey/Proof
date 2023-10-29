@@ -27,6 +27,7 @@
 #include "Timer.h"
 #include "Profile.h"
 #include "Proof/Audio/AudioEngine.h"
+#include "Proof/Renderer/GraphicsContext.h"
 #ifdef CreateDirectory
 #undef CreateDirectory
 #undef DeleteFile
@@ -43,7 +44,7 @@ namespace Proof {
    
    // bool CallReset = false;
     Application::Application(const ApplicationConfiguration& config):
-        m_ApplicationConfiguration(config) 
+        m_ApplicationConfiguration(config) , m_RenderThread(config.ThreadingPolicy)
     {
         Build();
 
@@ -56,18 +57,21 @@ namespace Proof {
     {
         srand(time(NULL));
         Timer buildTimer;
-        m_LayerStack = Count<LayerStack>::Create();
         Proof::Log::Init();
+        
         s_Instance = this;
+        m_RenderThread.Run();
+
+        m_LayerStack = Count<LayerStack>::Create();
 
         if (m_ApplicationConfiguration.ProjectPath.empty())
             m_ApplicationConfiguration.ProjectPath = "SandboxProject/SandboxProject.ProofProject";
+
         InputManager::Init();
         m_Project = Project::Load(m_ApplicationConfiguration.ProjectPath);
 
-        //temporayr
-       
-        
+        //temporary
+        m_GraphicsContext = GraphicsContext::Create();
         PF_CORE_ASSERT(m_Project, "Project is not valid");
         PF_ENGINE_INFO("Loaded Project {}", m_Project->GetConfig().Name);
         PF_ENGINE_TRACE("     Path {}", m_Project->GetConfig().Project.string());
@@ -76,7 +80,8 @@ namespace Proof {
         m_Window = Window::Create(m_ApplicationConfiguration.WindowConfiguration);
         m_Window->SetEventCallback([this](Event& e) {OnEvent(e); });
 
-        Renderer::Init(static_cast<Window*>(m_Window.get()));
+        Renderer::Init();
+        m_RenderThread.Pump();
         if (m_ApplicationConfiguration.EnableImgui)
         {
             m_ImGuiMainLayer = ImGuiLayer::Create();
@@ -107,6 +112,7 @@ namespace Proof {
         m_LayerStack->Empty();
         m_LayerStack = nullptr;
 
+        m_RenderThread.Terminate();
         ScriptEngine::ShutDown();
         PhysicsEngine::Release();
         AudioEngine::ShutDown();
@@ -122,18 +128,18 @@ namespace Proof {
         
     }
 
-    void Application::ImguiUpdate(float deltaTime) {
+    void Application::ImguiUpdate() {
         PF_PROFILE_FUNC();
         Timer time;
         m_ImGuiMainLayer->Begin();
         for (Count<Layer>& layer : m_LayerStack->V_LayerStack)
-            layer->OnImGuiDraw(deltaTime);
+            layer->OnImGuiDraw();
         m_ImGuiMainLayer->End();
         m_ImguiFrameTime = time.ElapsedMillis();
     }
 
     void Application::OnEvent(Event& e) {
-        PF_PROFILE_FUNC();
+        PF_PROFILE_FUNC(); 
         EventDispatcher dispatcher(e);
         /// PUSH LAYERS BACKWARDS
         /// WHEN WE GET UI WE MIGHT WANT TO ONLY RESPODN TO UI FIRST
@@ -141,15 +147,6 @@ namespace Proof {
             return;
 
          dispatcher.Dispatch<WindowMinimizeEvent>(PF_BIND_FN(Application::OnWindowMinimizeEvent));
-
-         dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e) {
-             if (e.GetWhidt() != 0 or e.GetHeight() != 0)
-             {
-                 Renderer::OnWindowResize(e);
-                 return false;
-             }
-             return false;
-         });
          for (auto it = m_LayerStack->rbegin(); it != m_LayerStack->rend(); ++it)
          {
              if (e.Handled)
@@ -188,48 +185,74 @@ namespace Proof {
 
     void Application::Run() 
     {
-
-        uint64_t FrameCount = 0;
-        float PreviousTime = glfwGetTime();
-        float CurrentTime;
         while (m_IsRunning == true && m_ApplicationShouldShutdown == false)
         {
-            PF_PROFILE_FRAME("Application::Update");
-            Renderer::BeginFrame();
-            #if 0
-            if (Input::IsKeyClicked(KeyBoardKey::O))
-            {
-                AudioEngine::PlaySoundByPath("Proof/Assets/Sounds/hitHurt.wav");
-            }
-            #endif
-            float time = (float)glfwGetTime();
-            CurrentTime = glfwGetTime();
-            FrameCount++;
-            const FrameTime DeltaTime = time - LastFrameTime;
-            FrameTime::WorldDeltaTime = DeltaTime;
+            PF_PROFILE_FRAME("MainThread");
 
-            if (!m_WindowMinimized) {
-                PF_PROFILE_FUNC("Layer OnUpdate");
-                for (Count<Layer>& layer : m_LayerStack->V_LayerStack)
-                    layer->OnUpdate(DeltaTime);
-            }
-            AudioEngine::OnUpdate(DeltaTime);
-            if (m_ApplicationConfiguration.EnableImgui == true)
+            // render thread
             {
-                ImguiUpdate(DeltaTime);
+                PF_PROFILE_FUNC("Wait");
+                Timer timer;
+
+                m_RenderThread.BlockUntilRenderComplete();
+
+                //m_PerformanceTimers.MainThreadWaitTime = timer.ElapsedMillis();
+
             }
-            m_Window->WindowUpdate();
-            Renderer::EndFrame();
-            if (CurrentTime - PreviousTime >= 1.0) {
-                PreviousTime = CurrentTime;
-                FrameCount = 0;
+            static uint64_t frameCounter = 0;
+            //ProcessEvents(); // Poll events when both threads are idle
+
+
+            m_RenderThread.NextFrame();
+            // Start rendering previous frame
+
+                m_RenderThread.Kick();
+
+            if (!m_WindowMinimized)
+            {
+                Timer cpuTimer;
+
+                Renderer::Submit([&]()
+                    {
+                        m_Window->BeginFrame();
+                    });
+
+                Renderer::BeginFrame();
+                {
+                    PF_PROFILE_FUNC("Application Layer::OnUpdate");
+                    //PF_SCOPE_PERF("Application Layer::OnUpdate");
+
+                    for (Count<Layer> layer : m_LayerStack->V_LayerStack)
+                        layer->OnUpdate(m_DeltaTime);
+                }
+
+                Application* app = this;
+                if (m_ApplicationConfiguration.EnableImgui)
+                {
+                    Renderer::Submit([app]() { app->ImguiUpdate(); });
+                }
+                Renderer::EndFrame();
+
+                Renderer::Submit([&]() 
+                    {
+                        m_Window->EndFrame();
+                    });
+                m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % Renderer::GetConfig().FramesFlight;
             }
 
-            FPS = (1.0 / (CurrentTime - PreviousTime)) * FrameCount;
-            FrameMS = ((CurrentTime - PreviousTime) / FrameCount) * 1000;
-            LastFrameTime = time;
-            ScopePerformanceTimer::ClearTimers();
-        };
+            float time = glfwGetTime();
+            m_FrameTime = time - m_LastFrameTime;
+            // limiting tehdelta time to about 30fps because we do not want drastic changes to obectusing delta time
+            m_DeltaTime = glm::min<float>(m_FrameTime, 0.0333f);
+            m_LastFrameTime = time;
+
+            FPS = (1.0 / (m_FrameTime - m_LastFrameTime)) * frameCounter;
+            FrameMS = ((m_FrameTime - m_LastFrameTime) / frameCounter) * 1000;
+            frameCounter++;
+
+            FrameTime::WorldDeltaTime = m_DeltaTime;
+        }
+
         if (glfwWindowShouldClose((GLFWwindow*) m_Window->GetWindow()) == GLFW_TRUE)
         {
             m_ApplicationShouldShutdown = true;

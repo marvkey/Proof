@@ -16,7 +16,7 @@ namespace Proof {
 		virtual void OnUpdate(FrameTime DeltaTime) {}
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
-		virtual void OnImGuiDraw(FrameTime DeltaTime) {}
+		virtual void OnImGuiDraw() {}
 		virtual void OnEvent(Event&e) {}
 		virtual const std::string& GetName() const { return m_DebugName; }
 	private:

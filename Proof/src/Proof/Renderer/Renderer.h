@@ -5,9 +5,11 @@
 #include "Proof/Events/WindowEvent.h"
 #include <filesystem>
 #include "Proof/Core/Buffer.h"
+#include "CommandQueue.h"
 namespace Proof {
 	struct  RendererConfig {
 		uint32_t FramesFlight = 2;
+		// set by swapchain not 
 		uint32_t MaxImageCount = 2;
 	};
 
@@ -29,8 +31,6 @@ namespace Proof {
 		static void BeginCommandBuffer(Count<class RenderCommandBuffer> commandBuffer);
 		static void EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer);
 		static void SubmitCommandBuffer(Count<class RenderCommandBuffer> commandBuffer);
-		static void SubmitCommand(std::function<void(class CommandBuffer*)> func);
-		//static void SubmitDatafree(std::function<void()> func);
 
 		// explicit clear means the framebuffer will overide its base command and clear all attachemtns when set true
 		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear = false);
@@ -44,9 +44,8 @@ namespace Proof {
 		static void ComputePassPushRenderMaterial(Count<class ComputePass> computePass, Count<class RenderMaterial> renderMaterial);
 
 		static Count<class Texture2D> GenerateBRDFLut();
-		static class CommandQueue& GetRenderCommandQueue();
-		static CurrentFrame GetCurrentFrame();
-		static CurrentFrame RT_GetCurrentFrame();
+		static uint32_t GetCurrentFrameInFlight();
+		static uint32_t RT_GetCurrentFrameInFlight();
 		static const RendererConfig GetConfig();
 		static Count<class GraphicsContext> GetGraphicsContext();
 		static Renderer::API GetAPI();
@@ -96,19 +95,28 @@ namespace Proof {
 			};
 			Submit([renderCmd, func]()
 			{
-				const uint32_t index = Renderer::RT_GetCurrentFrameIndex();
+				const uint32_t index = Renderer::RT_GetCurrentFrameInFlight();
 				auto storageBuffer = GetRenderResourceReleaseQueue(index).Allocate(renderCmd, sizeof(func));
 				new (storageBuffer) FuncT(std::forward<FuncT>((FuncT&&)func));
 			});
 		}
 	private:
-		static void OnWindowResize(WindowResizeEvent& e);
+		static class CommandQueue& GetRenderCommandQueue();
+		static class CommandQueue& GetRenderResourceReleaseQueue(uint32_t index);
 		static void BeginFrame();
 		static void EndFrame();
-		static void Init(class Window* window);
+		static void Init();
 		static void Shutdown();
+		static void RenderThreadFunc(class RenderThread* renderThread);
+		static void WaitAndRender(class RenderThread* renderThread);
+
+		static void SwapQueues();
+		static uint32_t GetRenderQueueIndex();
+		static uint32_t GetRenderQueueSubmissionIndex();
 		friend class RendererBase;
 		friend class Application;
+		friend class RenderThread;
+		friend class VulkanSwapChain;
 	};
 
 	struct BaseTextures 

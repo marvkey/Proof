@@ -7,7 +7,8 @@
 #include "VulkanComputePass.h"
 #include "VulkanComputePipeline.h"
 #include "VulkanRenderPass.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
+
 namespace Proof {
 	VulkanRenderMaterial::VulkanRenderMaterial(const RenderMaterialConfiguration& config)
 		:m_Config(config)
@@ -257,9 +258,9 @@ namespace Proof {
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("",m_Config.DebugName.c_str());
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
-		m_DescritptorSetManager->Bind();
+		m_DescritptorSetManager->RT_Bind();
 
-		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrame().FrameinFlight];
+		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
 		for (auto& [set, setInfo] : frameSet)
 		{
 			if (set != 0 || setInfo.Set == nullptr)
@@ -294,9 +295,9 @@ namespace Proof {
 		PF_PROFILE_FUNC();
 		PF_PROFILE_TAG("", m_Config.DebugName.c_str());
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
-		m_DescritptorSetManager->Bind();
+		m_DescritptorSetManager->RT_Bind();
 
-		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrame().FrameinFlight];
+		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
 		for (auto& [set, setInfo] : frameSet)
 		{
 			if (set != 0 || setInfo.Set == nullptr)

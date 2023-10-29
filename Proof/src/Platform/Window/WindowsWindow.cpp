@@ -765,6 +765,7 @@ namespace Proof {
             proofWindow->ControllerCallbackConnect(cID, event);
         });
 
+        m_SwapChain = SwapChain::Create(this);
         SetVsync(m_WindowConfiguration.Vsync);
         PF_ENGINE_INFO("Window created widht {} height {}", m_WindowConfiguration.Width, m_WindowConfiguration.Height);
         return 0;
@@ -774,6 +775,16 @@ namespace Proof {
         int maxWidth = GetSystemMetrics(SM_CXSCREEN);
         int maxHeight = GetSystemMetrics(SM_CYSCREEN);
         glfwSetWindowPos((GLFWwindow*)m_Window, (maxWidth / 2) - (m_WindowConfiguration.Width / 2), (maxHeight / 2) - (m_WindowConfiguration.Height / 2));
+    }
+
+    void WindowsWindow::BeginFrame()
+    {
+        m_SwapChain->BeginFrame();
+    }
+
+    void WindowsWindow::EndFrame()
+    {
+        m_SwapChain->EndFrame();
     }
 
     void WindowsWindow::SetVsync(bool vsync) {

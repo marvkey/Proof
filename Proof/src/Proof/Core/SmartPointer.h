@@ -100,8 +100,9 @@ namespace Proof{
 		{ 
 		} 
 
-		template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
-		Count(T* data) {
+		//template <class Type = T, std::enable_if_t<std::is_base_of<RefCounted, Type>::value && std::enable_if_t<Is_Compatible<Type*, T*>::value, int> = 0 >>
+		template <class Type , typename std::enable_if<std::is_base_of<RefCounted, Type>::value&& std::is_convertible<Type*, T*>::value, int>::type = 0>
+		Count(Type* data) {
 			this->m_Ptr = data;
 			AddStrongRef();
 		}

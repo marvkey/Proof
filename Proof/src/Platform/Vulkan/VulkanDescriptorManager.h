@@ -155,7 +155,6 @@ namespace Proof
 		uint32_t LastSet = 3; //(set0,set1,set2,set3)  those are 3 sets
 	};
 
-	// does not call any funciton to push to render thread 
 	class VulkanDescriptorManager : public RefCounted
 	{
 	public:
@@ -179,11 +178,12 @@ namespace Proof
 		void SetInput(std::string_view name, const std::vector< Count<class Image>>& imageViews);
 
 		void SetGoalballInputs(Count< GlobalBufferSet> uniformData);
+		void RT_Build();
 		void Build();
 		// does not clear the m_Inputs
 		void Release();
 
-		void Bind();
+		void RT_Bind();
 		//void SetInput(std::string_view name, Count<class > buffer);
 		struct DescriptorResource {
 			VkDescriptorSet Set  = nullptr;

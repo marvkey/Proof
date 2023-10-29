@@ -1,8 +1,9 @@
 #include "Proofprch.h"
 #include "VulkanComputePipeline.h"
 #include "VulkanShader.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 #include "VulkanGraphicsContext.h"
+#include "VulkanDevice.h"
 
 namespace Proof {
 	VulkanComputePipeline::VulkanComputePipeline(const ComputePipelineConfig& config):m_Config(config)
@@ -33,7 +34,7 @@ namespace Proof {
 	
 	void VulkanComputePipeline::Build()
 	{
-		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 
 		BuildPipeline();
 		auto vulkanShader = m_Config.Shader.As<VulkanShader>();
@@ -56,7 +57,7 @@ namespace Proof {
 	void VulkanComputePipeline::BuildPipeline()
 	{
 
-		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 
 		auto shader = m_Config.Shader.As<VulkanShader>();
 		std::vector< VkDescriptorSetLayout> descriptorLayout;
@@ -99,10 +100,13 @@ namespace Proof {
 		if (m_ComputePipeline == nullptr)
 			return;
 
-		Renderer::SubmitDatafree([pipline = m_ComputePipeline, piplinelayout = m_PipeLineLayout,piplineCache =m_PipelineCache]() {
-			vkDestroyPipeline(VulkanRenderer::GetGraphicsContext()->GetDevice(), pipline, nullptr);
-			vkDestroyPipelineLayout(VulkanRenderer::GetGraphicsContext()->GetDevice(), piplinelayout, nullptr);
-			vkDestroyPipelineCache(VulkanRenderer::GetGraphicsContext()->GetDevice(), piplineCache, nullptr);
+		Renderer::SubmitResourceFree([pipline = m_ComputePipeline, piplinelayout = m_PipeLineLayout,piplineCache =m_PipelineCache]() 
+		{
+			auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+
+			vkDestroyPipeline(device, pipline, nullptr);
+			vkDestroyPipelineLayout(device, piplinelayout, nullptr);
+			vkDestroyPipelineCache(device, piplineCache, nullptr);
 		});
 		m_ComputePipeline = nullptr;
 		m_PipeLineLayout = nullptr;

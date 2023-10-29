@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "Proof/Core/Core.h"
 #include "VulkanRenderPass.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 #include "VulkanFrameBuffer.h"
 #include "VulkanFrameBuffer.h"
 #include "VulkanUtils/VulkanConvert.h"
@@ -463,9 +463,9 @@ namespace Proof
             const auto vulkanPipeline = instance->GetPipeline().As<VulkanGraphicsPipeline>();
             vulkanPipeline->RT_Bind(instance->m_CommandBuffer);
             //Count<VulkanRenderPass> pass = this;
-            instance->m_DescritptorSetManager->Bind();
+            instance->m_DescritptorSetManager->RT_Bind();
 
-            auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrame().FrameinFlight];
+            auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
             for (auto& [set, setInfo] : frameSet)
             {
                 // set0 is for te material to bind to 
@@ -513,9 +513,9 @@ namespace Proof
 
             auto vulkanPipeline = instance->GetPipeline().As<VulkanGraphicsPipeline>();
             vulkanPipeline->RT_Bind(instance->m_CommandBuffer);
-            instance->m_DescritptorSetManager->Bind();
+            instance->m_DescritptorSetManager->RT_Bind();
 
-            auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrame().FrameinFlight];
+            auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
             for (auto& [set, setInfo] : frameSet)
             {
                 // set0 is for te material to bind to 

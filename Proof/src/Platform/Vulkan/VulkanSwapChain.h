@@ -8,94 +8,121 @@
 #include <vector>
 namespace Proof
 {
-    class VulkanSwapChain : public SwapChain {
-    public:
+	class VulkanSwapChain : public SwapChain
+	{
+	public:
 
-        VulkanSwapChain(ScreenSize windowExtent, bool vsync);
-        ~VulkanSwapChain();
-        friend class ImGuiLayer;
-        VkImageView GetImageView(int index) { return m_SwapChainImageViews[index]; }
-        size_t GetImageCount()const { return m_ImageCount; }
-        ImageFormat GetImageFormat();
-        ImageFormat GetDepthFormat();
-        ScreenSize GetSwapChainExtent()const { return m_SwapChainExtent; }
-        ScreenSize GetWindowSize()const { return m_WindowSize; }
+		VulkanSwapChain(const class Window* window);
+		void InitSurface();
+		void Create(uint32_t width, uint32_t height, bool vsync);
+		void Destroy();
 
-        float ExtentAspectRatio() {
-            return static_cast<float>(m_SwapChainExtent.X) / static_cast<float>(m_SwapChainExtent.Y);
-        }
+		void Resize(uint32_t width, uint32_t height);
+		virtual void Resize(glm::uvec2 size) { Resize(size.x, size.y); }
 
-        void AcquireNextImage(uint32_t* imageIndex, uint32_t frameInfllight);
-        void WaitAndResetFences(uint32_t frameInfllight);
-        void WaitFences(uint32_t frameInfllight);
-        void ResetFences(uint32_t frameInfllight);
-        void SubmitCommandBuffers(std::vector<Count<class RenderCommandBuffer>> buffers, uint32_t* imageIndex);
-        void Present(uint32_t* imageIndex);
-        bool CompareSwapFormats(const VulkanSwapChain& swapChain) {
-            return swapChain.m_SwapChainDepthFormat == m_SwapChainDepthFormat && swapChain.m_ImageFormat == m_ImageFormat;
-        }
-        VkSwapchainKHR GetSwapChain() {
-            return m_SwapChain;
-        }
-        VkSurfaceFormatKHR GetSurfaceFormat() {
-            return m_SurfaceFormat;
-        }
-        VkPresentModeKHR GetPresentMode() {
-            return m_PresentMode;
-        }
-        virtual ImageLayouts2D GetImageLayout();
-        virtual Count<Image2D>  GetImage(uint32_t imageIndex);
+		void BeginFrame();
+		void EndFrame();
+		void Present();
 
-        VkCommandBuffer GetCommandBuffer(uint32_t frameInFlight)
-        {
-            return m_CommandBuffers[frameInFlight].CommandBuffer;
-        }
+		RendererConfig GetRenderConfig();
+		virtual uint32_t GetFrameIndex() { return m_CurrentBufferIndex; }
+		virtual uint32_t GetImageIndex() { return m_CurrentImageIndex; }
 
-        virtual void SetVsync(bool vsync);
-        virtual bool GetVsync() { return m_Vsync; }
-    private:
-        bool m_Vsync;
-        struct SwapchainCommandBuffer
-        {
-            VkCommandPool CommandPool = nullptr;
-            VkCommandBuffer CommandBuffer = nullptr;
-        };
-        std::vector<SwapchainCommandBuffer> m_CommandBuffers;
-        VkFormat FindDepthFormat();
+		size_t GetImageCount() const { return m_ImageCount; }
 
-        VkSurfaceFormatKHR m_SurfaceFormat;
-        VkPresentModeKHR m_PresentMode;
-        uint32_t m_ImageCount;
-        void CreateSwapChain();
-        void CreateSyncObjects();
-        void Resize(ScreenSize size);
-        void CleanUp();
+		uint32_t GetWidth() const { return m_Width; }
+		uint32_t GetHeight() const { return m_Height; }
 
-        void Init();
-        // Helper functions
-        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+		VkRenderPass GetRenderPass() { return m_RenderPass; }
 
-        VkFormat m_ImageFormat;
-        VkFormat m_SwapChainDepthFormat;
-        ScreenSize m_WindowSize;
-        ScreenSize m_SwapChainExtent;
-        VkSwapchainKHR m_SwapChain;
+		VkFramebuffer GetCurrentFramebuffer() { return GetFramebuffer(m_CurrentImageIndex); }
+		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentBufferIndex); }
 
-        std::vector<class VulkanFrameBuffer*> FrameBuffers;
-        std::vector<class VulkanGraphicsPipeline*> GraphicsPipelines;
-        std::vector<VkImageView> m_SwapChainImageViews;
-        std::vector<VkImage> m_SwapChainImages;
-        std::vector<VmaAllocation> m_SwapChainImageAllocation;
-        std::vector<VkSemaphore> m_ImageAvailableSemaphores;
-        std::vector<VkSemaphore> m_RenderFinishedSemaphores;
-        std::vector<VkFence> m_InFlightFences;
+		VkFormat GetColorFormatVulkan() { return m_ColorFormat; }
+		VkFormat GetDepthFormatVulkan() { return m_DepthFormat; }
+		ImageFormat GetColorFormat();
+		ImageFormat GetDepthFormat();
 
-        std::vector<Count<class Image2D>> m_ImagesRefs;
-        friend class VulkanRenderer;
-        // temporary
-        friend class VulkanFrameBuffer;
+		VkFramebuffer GetFramebuffer(uint32_t index)
+		{
+			PF_CORE_ASSERT(index < m_Framebuffers.size());
+			return m_Framebuffers[index];
+		}
+		VkCommandBuffer GetDrawCommandBuffer(uint32_t index)
+		{
+			PF_CORE_ASSERT (index < m_CommandBuffers.size());
+			return m_CommandBuffers[index].CommandBuffer;
+		}
+
+		VkSemaphore GetRenderCompleteSemaphore() { return m_Semaphores.RenderComplete; }
+
+		virtual glm::uvec2 GetSize() {return { m_Width,m_Height };}
+
+		virtual void SetVsync(bool vsync);
+		virtual bool GetVsync() { return m_VSync; }
+	private:
+		uint32_t AcquireNextImage();
+
+		void FindImageFormatAndColorSpace();
+		void Build();
+	private:
+		bool m_InFrame = false;
+		VkInstance m_Instance = nullptr;
+		bool m_VSync = false;
+
+		VkFormat m_ColorFormat;
+		VkFormat m_DepthFormat;
+		VkColorSpaceKHR m_ColorSpace;
+
+		VkSwapchainKHR m_SwapChain = nullptr;
+		uint32_t m_ImageCount = 0;
+		std::vector<VkImage> m_VulkanImages;
+
+		struct SwapchainImage
+		{
+			VkImage Image = nullptr;
+			VkImageView ImageView = nullptr;
+		};
+		std::vector<SwapchainImage> m_Images;
+
+		struct
+		{
+			VkImage Image = nullptr;
+			VmaAllocation MemoryAlloc = nullptr;
+			VkImageView ImageView = nullptr;
+		} m_DepthStencil;
+
+		std::vector<VkFramebuffer> m_Framebuffers;
+
+		struct SwapchainCommandBuffer
+		{
+			VkCommandPool CommandPool = nullptr;
+			VkCommandBuffer CommandBuffer = nullptr;
+		};
+		std::vector<SwapchainCommandBuffer> m_CommandBuffers;
+
+		struct
+		{
+			// Swap chain
+			VkSemaphore PresentComplete = nullptr;
+			// Command buffer
+			VkSemaphore RenderComplete = nullptr;
+		} m_Semaphores;
+		VkSubmitInfo m_SubmitInfo;
+
+		std::vector<VkFence> m_WaitFences;
+
+		VkRenderPass m_RenderPass = nullptr;
+		uint32_t m_CurrentBufferIndex = 0;
+		uint32_t m_CurrentImageIndex = 0;
+
+		uint32_t m_QueueNodeIndex = UINT32_MAX;
+		uint32_t m_Width = 0, m_Height = 0;
+
+		VkSurfaceKHR m_Surface;
+
+		const Window* m_Window;
+		friend class VulkanContext;
     };
 
 }  

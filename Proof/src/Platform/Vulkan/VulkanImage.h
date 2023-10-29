@@ -79,7 +79,7 @@ namespace Proof
 		void Build();
 		void RT_Build();
 
-		void CopyToHostBuffer(Buffer& buffer);
+		void CopyFromHostBuffer(Buffer& buffer);
 	private:
 		std::vector<Image2DResizeCallback > m_ResizeCallbacks;
 
@@ -111,6 +111,7 @@ namespace Proof
 	private:
 		VulkanImageInfo m_Info;
 		void Build();
+		void RT_Build();
 		void Release();
 		ImageViewConfiguration m_Specification;
 		VkImageView m_ImageView;

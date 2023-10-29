@@ -126,10 +126,12 @@ namespace Proof
 		//bool Loaded()const { return m_ImageData; }
 		virtual uint64_t GetHash();
 		void GenerateMips();
+		void RT_GenerateMips();
 		virtual void SetData(Buffer buffer);
 
 	private:
 		void Build();
+		void RT_Build();
 		void Release();
 		std::filesystem::path m_Path;
 		TextureConfiguration m_Config;
@@ -161,6 +163,7 @@ namespace Proof
 			else
 				return 1;
 		};
+		void RT_GenerateMips();
 		void GenerateMips();
 	private:
 		TextureConfiguration m_Config;
@@ -170,6 +173,7 @@ namespace Proof
 		Count<VulkanTexture2D> m_Texture;
 		Count<Image2D> m_Image;
 		void Build();
+		void RT_Build();
 		void Release();
 
 	};
