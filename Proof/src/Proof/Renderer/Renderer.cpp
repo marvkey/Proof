@@ -90,7 +90,6 @@ namespace Proof {
 		s_CommandQueue[1] = pnew CommandQueue();
 
 		s_Data = pnew RendererData();
-		s_BaseTextures = pnew BaseTextures();
 		s_ResourceFreeQueue = pnew CommandQueue[GetConfig().FramesFlight];
 		s_RendererAPI->Init();
 
@@ -134,6 +133,9 @@ namespace Proof {
 		ShaderLibrary->LoadShader("Text2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text2D.glsl");
 		ShaderLibrary->LoadShader("Line2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Line2D.glsl");
 
+		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
+		//Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
+		//Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
 		// Compile shaders
 		Application::Get()->m_RenderThread.Pump();
 		{
@@ -196,9 +198,10 @@ namespace Proof {
 			uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 			s_Data->QuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 		}
-		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 		s_Data->CommandBufferRecording = true;
+		s_BaseTextures = pnew BaseTextures();
+
 		PF_ENGINE_INFO("Renderer Initialized {}m/s",time.ElapsedMillis());
 	}
 
@@ -452,8 +455,6 @@ namespace Proof {
 		uint32_t mipLevels = Utils::GetMipLevelCount(cubemapSize, cubemapSize);
 		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig);
 		PrethamSkyPass->SetInput("o_CubeMap", environmentMap);
-
-
 	
 		glm::vec3 params = { turbidity, azimuth, inclination };
 		Count<RenderCommandBuffer> commandBuffer = s_Data->RenderCommandBuffer;
@@ -587,8 +588,11 @@ namespace Proof {
 	{
 		return ShaderLibrary->GetShader(name);
 	}
-
-	std::pair<Count<class TextureCube>, Count<class TextureCube>> Renderer::CreateEnvironmentMap(const std::filesystem::path& path)
+	Count<class RenderCommandBuffer> Renderer::GetRendererCommandBuffer()
+	{
+		return s_Data->RenderCommandBuffer;
+	}
+	std::pair<Count<class TextureCube>, Count<class TextureCube>> Renderer::CreateEnvironmentMap(Count<Texture2D> texture)
 	{
 		//Refrecnce
 		//https://github.com/Nadrin/PBR/blob/master/src/vulkan.cpp
@@ -599,7 +603,7 @@ namespace Proof {
 		{
 			const uint32_t imageSize = 1024;
 			TextureConfiguration baseCubeMapConfig;
-			baseCubeMapConfig.DebugName = FileSystem::GetFileName(path)+ " Base CubeMap";
+			baseCubeMapConfig.DebugName = FileSystem::GetFileName(texture->GetPath()) + " Base CubeMap";
 			baseCubeMapConfig.Height = imageSize;
 			baseCubeMapConfig.Width = imageSize;
 			baseCubeMapConfig.Storage = true;
@@ -607,13 +611,13 @@ namespace Proof {
 			baseCubeMapConfig.Format = format;
 			baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
 
-			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig, path);
+			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig, texture);
 		}
 		const uint32_t irradianceFilterRate = 32;
 		Count<TextureCube> irradianceMap; 
 		{
 			TextureConfiguration irradianceTextureConfig;
-			irradianceTextureConfig.DebugName = "Irradiance map " + FileSystem::GetFileName(path);
+			irradianceTextureConfig.DebugName = "Irradiance map " + FileSystem::GetFileName(texture->GetPath());
 			irradianceTextureConfig.Width = irradianceFilterRate;
 			irradianceTextureConfig.Height = irradianceFilterRate;
 			irradianceTextureConfig.Storage = true;
@@ -648,7 +652,7 @@ namespace Proof {
 			computePass->Dispatch(irradianceFilterRate / 32, irradianceFilterRate / 32, 6);
 			Renderer::EndComputePass(computePass);
 			
-			//irradianceMap->GenerateMips();
+			irradianceMap->GenerateMips();
 
 		}
 
@@ -723,7 +727,7 @@ namespace Proof {
 		Count<TextureCube> prefilterMap;
 		{
 			TextureConfiguration prefilterTextureConfig;
-			prefilterTextureConfig.DebugName = "Prefilter map" + FileSystem::GetFileName(path);
+			prefilterTextureConfig.DebugName = "Prefilter map" + FileSystem::GetFileName(texture->GetPath());
 			prefilterTextureConfig.Width = prefilterFilterRate;
 			prefilterTextureConfig.Height = prefilterFilterRate;
 			prefilterTextureConfig.Storage = true;
@@ -731,7 +735,7 @@ namespace Proof {
 			prefilterTextureConfig.Wrap = TextureWrap::ClampEdge;
 			prefilterTextureConfig.GenerateMips = true;
 
-			prefilterMap = TextureCube::Create(prefilterTextureConfig,path);
+			prefilterMap = TextureCube::Create(prefilterTextureConfig, texture->GetPath());
 
 		}
 	
@@ -848,6 +852,7 @@ namespace Proof {
 		if (s_Data->CommandBufferRecording) 
 		{
 			Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
+			Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
 			s_Data->CommandBufferRecording = false;
 		}
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
@@ -856,6 +861,7 @@ namespace Proof {
 	void Renderer::EndFrame()
 	{
 		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
+		Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
 		s_RendererAPI->EndFrame();
 	}
 
@@ -880,7 +886,11 @@ namespace Proof {
 		WhiteTextureCube = TextureCube::Create(Buffer(&whiteTexturedata, sizeof(uint32_t)).Data, cubeTextureConfig);
 
 		cubeTextureConfig.DebugName = "Black Texture";
-		BlackTextureCube = TextureCube::Create(Buffer(&blackTexturedata, sizeof(uint32_t)).Data, cubeTextureConfig);
+		BlackTextureCube = TextureCube::Create(cubeTextureConfig, WhiteTexture);
+	}
+	const RendererAPI* Renderer::GetRenderAPI()
+	{
+		return s_RendererAPI;
 	}
 
 }

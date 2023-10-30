@@ -25,6 +25,7 @@ namespace Proof {
 
 		virtual void SubmitCommandBuffer(Count<class RenderCommandBuffer>commandBuffer) = 0;
 		inline static Renderer::API GetAPI() { return ActiveAPI; }
+
 	private:
 		virtual void Init() = 0;
 		virtual void ShutDown() =0;

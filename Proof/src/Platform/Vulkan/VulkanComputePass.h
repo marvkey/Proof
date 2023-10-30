@@ -31,13 +31,24 @@ namespace Proof
 		virtual Count<Shader> GetShader()const;
 		VulkanComputePass(const ComputePassConfiguration& config);
 		~VulkanComputePass();
-	private:
-		void Build();
-		void BeginComputePassBase(Count<class RenderCommandBuffer> command);
+
 		void BeginComputePass(Count<class RenderCommandBuffer> command);
 		void BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> command);
 		void ComputePassPushRenderMaterial(Count<class RenderMaterial> renderMaterial);
 		void EndComputePass();
+
+
+		void RT_BeginComputePass(Count<class RenderCommandBuffer> command);
+		void RT_BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> command);
+		void RT_ComputePassPushRenderMaterial(Count<class RenderMaterial> renderMaterial);
+		void RT_EndComputePass();
+
+		void RT_Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
+	private:
+		void Build();
+		void RT_BeginComputePassBase(Count<class RenderCommandBuffer> command);
+		void BeginComputePassBase(Count<class RenderCommandBuffer> command);
+
 		
 		ComputePassConfiguration m_Config;
 		bool m_RenderPassEnabled = false;

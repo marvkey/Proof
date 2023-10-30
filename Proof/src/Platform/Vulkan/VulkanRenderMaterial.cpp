@@ -285,7 +285,7 @@ namespace Proof {
 		{
 			if (pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT)
 			{
-				computePass->PushData(pushName, m_UniformBufferStorage.Get());
+				computePass->RT_PushData(pushName, m_UniformBufferStorage.Get());
 			}
 		}
 	}
@@ -322,7 +322,7 @@ namespace Proof {
 		{
 			//if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT || pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT || pushData.stageFlags | VK_SHADER_STAGE_VERTEX_BIT)
 			{
-				renderPass->PushData(pushName, m_UniformBufferStorage.Get());
+				renderPass->RT_PushData(pushName, m_UniformBufferStorage.Get());
 			}
 		}
 	}

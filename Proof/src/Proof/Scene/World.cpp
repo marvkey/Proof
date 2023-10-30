@@ -122,6 +122,8 @@ namespace Proof {
 					skyLightInfo.Intensity = skyLightComponent.Intensity;
 					skyLightInfo.Lod = skyLightComponent.SkyBoxLoad;
 
+					if (AssetManager::HasAsset(skyLightComponent.Image) && skyLightComponent.Environment == nullptr)
+						skyLightComponent.LoadMap(skyLightComponent.Image);
 
 					if (skyLightComponent.DynamicSky)
 					{

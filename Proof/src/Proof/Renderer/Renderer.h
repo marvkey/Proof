@@ -62,9 +62,9 @@ namespace Proof {
 
 		static void SubmitFullScreenQuad(Count<RenderCommandBuffer> renderCOmmandBuffer, Count<RenderPass> pass, std::unordered_map<std::string, Buffer> pushBuffer = {});
 		static void SubmitFullScreenQuad(Count<RenderCommandBuffer> renderCOmmandBuffer, Count<RenderPass> pass, Count<RenderMaterial> material);
-
+		static Count<class RenderCommandBuffer> GetRendererCommandBuffer();
 		//environment and prefilter
-		static std::pair<Count<class TextureCube>, Count<class TextureCube>>CreateEnvironmentMap(const std::filesystem::path& path);
+		static std::pair<Count<class TextureCube>, Count<class TextureCube>>CreateEnvironmentMap(Count<Texture2D> texture);
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)
@@ -100,6 +100,8 @@ namespace Proof {
 				new (storageBuffer) FuncT(std::forward<FuncT>((FuncT&&)func));
 			});
 		}
+		static const class RendererAPI* GetRenderAPI();
+
 	private:
 		static class CommandQueue& GetRenderCommandQueue();
 		static class CommandQueue& GetRenderResourceReleaseQueue(uint32_t index);

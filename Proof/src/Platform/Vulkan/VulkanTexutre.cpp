@@ -520,6 +520,7 @@ namespace Proof
 
 		Build();
 
+
 	}
 	VulkanTextureCube::VulkanTextureCube(const void* data, const TextureConfiguration& config)
 		:m_Config(config)
@@ -536,7 +537,7 @@ namespace Proof
 		textureConfig.Storage = true;
 
 		Buffer buffer(data, Utils::GetImageMemorySize(m_Config.Format, m_Config.Height, m_Config.Height));
-		m_Texture = Texture2D::Create(textureConfig).As<VulkanTexture2D>();
+		m_Texture = Texture2D::Create(textureConfig,buffer).As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
 		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);
@@ -554,6 +555,7 @@ namespace Proof
 		m_Image = Image2D::Create(imageConfig);
 
 		Build();
+
 	}
 	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config)
 		:m_Config(config)
@@ -600,6 +602,7 @@ namespace Proof
 		m_Image = Image2D::Create(imageConfig);
 
 		Build();
+
 	}
 	void VulkanTextureCube::Build()
 	{
@@ -607,7 +610,15 @@ namespace Proof
 		Renderer::Submit([instance]()
 			{
 				instance->RT_Build();
+				
 			});
+
+		if (instance->m_Texture)
+		{
+			VulkanRenderer* renderer = (VulkanRenderer*)Renderer::GetRenderAPI();
+
+			renderer->PushSetCubeMapImage(instance, instance->m_Texture);
+		}
 	}
 	
 	void VulkanTextureCube::RT_Build()
@@ -784,16 +795,10 @@ namespace Proof
 			};
 
 			// make sure cube does not delete this due to refercne cout
-
-			Count<VulkanTexture2D> instance = this;
-			Renderer::Submit([instance]()
+			Renderer::SubmitDatafree([cube = cube]()
 				{
-					VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
-
-					VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
-
+					auto id = cube->GetHeight();
 				});
-
 			Renderer::SubmitCommand([&](CommandBuffer* buffer) {
 
 				Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
@@ -898,7 +903,7 @@ namespace Proof
 #endif
 			if (m_Texture && m_Config.GenerateMips && mipCount > 1)
 				RT_GenerateMips();
-			m_Texture = nullptr;
+			//m_Texture = nullptr;
 		}
 	}
 	void VulkanTextureCube::GenerateMips()

@@ -36,6 +36,9 @@ namespace Proof
 		virtual void BeginCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)override;
 		virtual void EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)override;
 		virtual ~VulkanRenderer() {};
+
+		// dont use on rener thread
+		virtual void PushSetCubeMapImage(Count<class TextureCube>cubeTexture, Count<class Texture2D> texture);
 	private:
 		friend class VulkanRendererAPI;
 		friend class RendererBase;

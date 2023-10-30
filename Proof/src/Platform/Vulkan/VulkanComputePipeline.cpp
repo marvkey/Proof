@@ -44,7 +44,7 @@ namespace Proof {
 		pipelineCacheCreateinfo.flags = 0;
 		pipelineCacheCreateinfo.pInitialData = nullptr;
 		pipelineCacheCreateinfo.initialDataSize = 0;
-		VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateinfo, nullptr, &m_PipelineCache));
+		//VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateinfo, nullptr, &m_PipelineCache));
 
 		VkComputePipelineCreateInfo pipelineCreateInfo = {};
 		pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -53,6 +53,7 @@ namespace Proof {
 		pipelineCreateInfo.pNext = nullptr;
 
 		VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, & pipelineCreateInfo, nullptr, &m_ComputePipeline));
+		VulkanUtils::SetDebugUtilsObjectName(device,VK_OBJECT_TYPE_PIPELINE, fmt::format("{} ComputePipeline", m_Config.DebugName), m_ComputePipeline);
 	}
 	void VulkanComputePipeline::BuildPipeline()
 	{
@@ -94,6 +95,8 @@ namespace Proof {
 			pipelineLayoutInfo.pPushConstantRanges = nullptr;
 		}
 		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipeLineLayout));
+		VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_PIPELINE_LAYOUT, fmt::format("{} ComputePipelineLayout", m_Config.DebugName), m_PipeLineLayout);
+
 	}
 	void VulkanComputePipeline::Release()
 	{

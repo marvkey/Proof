@@ -701,7 +701,8 @@ namespace Proof
 						uint64_t Data = *(const uint64_t*)payload->Data;
 						if (AssetManager::HasAsset(Data))
 						{
-							skylight.LoadMap(Data);
+							skylight.Image = Data;
+							skylight.DynamicSky = false;
 						}
 					}
 					ImGui::EndDragDropTarget();

@@ -300,6 +300,7 @@ namespace Proof
                     case Proof::RenderPassResourceType::Texture2D:
                         {
                             write.pImageInfo = &resource.Input[0].As<VulkanTexture2D>()->GetDescriptorInfoVulkan();
+                            PF_CORE_ASSERT(write.pImageInfo);
                             write.descriptorCount = 1;
                             m_SizeInputsData[set]++;
                         }
@@ -323,6 +324,7 @@ namespace Proof
                     case Proof::RenderPassResourceType::TextureCube:
                         {
                             write.pImageInfo = &resource.Input[0].As<VulkanTextureCube>()->GetDescriptorInfoVulkan();
+                            PF_CORE_ASSERT(write.pImageInfo);
                             write.descriptorCount = 1;
                             m_SizeInputsData[set]++;
                         }

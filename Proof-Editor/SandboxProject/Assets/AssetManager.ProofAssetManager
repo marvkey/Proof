@@ -5,3 +5,33 @@ Assets:
   - Asset: 2403019099758263853
     Type: ScriptFile
     Path: Script\ScriptSpawner.cs
+  - Asset: 11824846558633893989
+    Type: TextureSourceFile
+    Path: HdrMaps\Arches_E_PineTree_3k.hdr
+  - Asset: 12458148504177203633
+    Type: Texture
+    Path: HdrMaps\Arches_E_PineTree_3k.Texture.ProofAsset
+  - Asset: 9322883649519495229
+    Type: Texture
+    Path: HdrMaps\qwantani_puresky_4k.Texture.ProofAsset
+  - Asset: 2001942831744342266
+    Type: TextureSourceFile
+    Path: HdrMaps\MegaSun4k.hdr
+  - Asset: 1566124166730254362
+    Type: TextureSourceFile
+    Path: HdrMaps\DayInTheClouds4k.hdr
+  - Asset: 4048020241950879645
+    Type: Texture
+    Path: HdrMaps\DayInTheClouds4k.Texture.ProofAsset
+  - Asset: 4460442484181809113
+    Type: Texture
+    Path: HdrMaps\MegaSun4k.Texture.ProofAsset
+  - Asset: 6209785345244531942
+    Type: TextureSourceFile
+    Path: HdrMaps\qwantani_puresky_4k.hdr
+  - Asset: 22939415785848343
+    Type: TextureSourceFile
+    Path: HdrMaps\syferfontein_18d_clear_puresky_4k.hdr
+  - Asset: 14616176251278697894
+    Type: Texture
+    Path: HdrMaps\syferfontein_18d_clear_puresky_4k.Texture.ProofAsset

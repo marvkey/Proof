@@ -181,10 +181,10 @@ namespace Proof {
         return true;
     }
 
-    
-
     void Application::Run() 
     {
+        float PreviousTime = glfwGetTime();
+
         while (m_IsRunning == true && m_ApplicationShouldShutdown == false)
         {
             PF_PROFILE_FRAME("MainThread");
@@ -242,15 +242,24 @@ namespace Proof {
 
             float time = glfwGetTime();
             m_FrameTime = time - m_LastFrameTime;
-            // limiting tehdelta time to about 30fps because we do not want drastic changes to obectusing delta time
             m_DeltaTime = glm::min<float>(m_FrameTime, 0.0333f);
+            // limiting tehdelta time to about 30fps because we do not want drastic changes to obectusing delta time
             m_LastFrameTime = time;
-
-            FPS = (1.0 / (m_FrameTime - m_LastFrameTime)) * frameCounter;
-            FrameMS = ((m_FrameTime - m_LastFrameTime) / frameCounter) * 1000;
             frameCounter++;
 
+            //FrameMS = m_FrameTime * 1000.0f;
+            //FPS = 1000.0f / FrameMS;
+
             FrameTime::WorldDeltaTime = m_DeltaTime;
+
+            if (time - PreviousTime >= 1.0) {
+                PreviousTime = time;
+                frameCounter = 0;
+            }
+
+            FPS = (1.0 / (time - PreviousTime)) * frameCounter;
+            FrameMS = ((time - PreviousTime) / frameCounter) * 1000;
+            m_Window->WindowUpdate();
         }
 
         if (glfwWindowShouldClose((GLFWwindow*) m_Window->GetWindow()) == GLFW_TRUE)

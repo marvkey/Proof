@@ -12,8 +12,12 @@
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
 #include "Proof/Core/Application.h"
+#include "VulkanTexutre.h"
+#include "VulkanComputePass.h"
+#include "VulkanComputePipeline.h"
 namespace Proof
 {
+	std::map < uint32_t, std::pair < Count<TextureCube>, Count<Texture2D>>> setTextreus;
 
 	void VulkanRenderer::Init() 
 	{
@@ -25,7 +29,6 @@ namespace Proof
 
 	void VulkanRenderer::BeginFrame() 
 	{	
-		
 	}
 	void VulkanRenderer::EndFrame() 
 	{
@@ -47,6 +50,43 @@ namespace Proof
 	void VulkanRenderer::EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)
 	{
 		commandBuffer.As<VulkanRenderCommandBuffer>()->EndRecord();
+	}
+	Count<ComputePipeline> computePipeline;
+	Count<ComputePass> computePass;
+	void VulkanRenderer::PushSetCubeMapImage(Count<class TextureCube> cube, Count<class Texture2D> texture)
+	{
+
+		ComputePipelineConfig computePipelineConfig;
+		computePipelineConfig.DebugName = "EquirectangularToCubemap Pipeline";
+		computePipelineConfig.Shader = Renderer::GetShader("EquirectangularToCubemap");
+		if(!computePipeline)
+			computePipeline = ComputePipeline::Create(computePipelineConfig);
+		ComputePassConfiguration computePassConfig;
+		computePassConfig.DebugName = "EquirectangularToCubemap Pass";
+		computePassConfig.Pipeline = computePipeline;
+
+		if(!computePass)
+			computePass = ComputePass::Create(computePassConfig);
+
+		computePass->SetInput("u_EquirectangularMap", texture);
+		computePass->SetInput("u_CubeMap", cube);
+		struct pushData
+		{
+			Vector2U imageSize;
+			Vector2U cubeSize;
+		};
+
+		// make sure cube does not delete this due to refercne cout
+
+		Count<RenderCommandBuffer>renderCommandBuffer = Renderer::GetRendererCommandBuffer();
+		Renderer::BeginComputePass(renderCommandBuffer, computePass);
+
+		pushData pushData;
+		pushData.imageSize = { texture->GetSize() };
+		pushData.cubeSize = cube->GetSize();
+		computePass->PushData("pc", &pushData);
+		computePass->Dispatch(cube->GetWidth() / 32, cube->GetHeight()/ 32, 6);
+		Renderer::EndComputePass(computePass);
 	}
 	void VulkanRenderer::DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 	{
@@ -110,4 +150,5 @@ namespace Proof
 	{
 		computePass.As<VulkanComputePass>()->ComputePassPushRenderMaterial(renderMaterial);
 	}
+
 }
