@@ -462,6 +462,7 @@ namespace Proof {
 		PrethamSkyPass->PushData("u_Uniforms", &params);
 		PrethamSkyPass->Dispatch(cubemapSize/32, cubemapSize/32, 6);
 		Renderer::EndComputePass(PrethamSkyPass);
+		environmentMap->GenerateMips();
 
 		//return;
 		// boit 
@@ -560,7 +561,6 @@ namespace Proof {
 		#endif
 
 		
-		//environmentMap->GenerateMips();
 
 		return environmentMap;
 	}

@@ -100,6 +100,7 @@ namespace Proof {
 	}
 	void VulkanImage2D::Resize(uint32_t width, uint32_t height)
 	{
+
 		if (m_Specification.Usage == ImageUsage::SwapChain)
 		{
 			PF_ENGINE_ERROR(" {} Cannot resize swaphcain image directly cannot resize",m_Specification.DebugName);
@@ -276,6 +277,7 @@ namespace Proof {
 		auto graphics = VulkanRenderer::GetGraphicsContext();
 		graphics->DeleteSampler(oldSamplerHash);
 
+		
 		for (auto& callback : m_ResizeCallbacks)
 			callback(this);
 		

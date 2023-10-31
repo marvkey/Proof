@@ -13,7 +13,9 @@ layout (push_constant) uniform Uniforms
 
 vec3 GetCubeMapTexCoord()
 {
-    vec2 st = gl_GlobalInvocationID.xy / vec2(imageSize(o_CubeMap));
+  //  vec2 st = gl_GlobalInvocationID.xy / vec2(imageSize(o_CubeMap));
+    vec2 st = gl_GlobalInvocationID.xy / vec2(imageSize(o_CubeMap))/2;
+    //vec2 uv = 2.0 * vec2(st.x, 1.0 - st.y) - vec2(1.0);
     vec2 uv = 2.0 * vec2(st.x, 1.0 - st.y) - vec2(1.0);
 
     vec3 ret;

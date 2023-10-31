@@ -867,8 +867,6 @@ namespace Proof
 
 	}
 
-
-	
 	void WorldRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		if (m_UBScreenData.FullResolution == glm::vec2{ width,height })
