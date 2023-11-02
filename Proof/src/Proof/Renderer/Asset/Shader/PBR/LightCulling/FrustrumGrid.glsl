@@ -10,7 +10,7 @@ vec4 ScreenToViewVulkan(vec4 screen)
 
     // In Vulkan, the depth range is typically [0.0, 1.0].
     // So, we need to remap it to [-1.0, 1.0] in view space.
-    clip.z = clip.z * 2.0 - 1.0;
+    //clip.z = clip.z * 2.0 - 1.0;
 
     // View space position.
     vec4 view = u_Camera.InverseProjection * clip;
@@ -39,13 +39,13 @@ void main()
     // frustum vertices.
     vec4 screenSpace[4];
     // Top left point
-    screenSpace[0] = vec4(gl_GlobalInvocationID.xy * TILE_SIZE, -1.0, 1.0);
+    screenSpace[0] = vec4(gl_GlobalInvocationID.xy * TILE_SIZE, 0.0, 1.0);
     // Top right point
-    screenSpace[1] = vec4(vec2(gl_GlobalInvocationID.x + 1, gl_GlobalInvocationID.y) * TILE_SIZE, -1.0, 1.0);
+    screenSpace[1] = vec4(vec2(gl_GlobalInvocationID.x + 1, gl_GlobalInvocationID.y) * TILE_SIZE, 0.0, 1.0);
     // Bottom left point
-    screenSpace[2] = vec4(vec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y + 1) * TILE_SIZE, -1.0, 1.0);
+    screenSpace[2] = vec4(vec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y + 1) * TILE_SIZE, 0.0, 1.0);
     // Bottom right point
-    screenSpace[3] = vec4(vec2(gl_GlobalInvocationID.x + 1, gl_GlobalInvocationID.y + 1) * TILE_SIZE, -1.0, 1.0);
+    screenSpace[3] = vec4(vec2(gl_GlobalInvocationID.x + 1, gl_GlobalInvocationID.y + 1) * TILE_SIZE, 0.0, 1.0);
 
     vec3 viewSpace[4];
     // Now convert the screen space points to view space

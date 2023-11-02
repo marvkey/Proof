@@ -315,7 +315,7 @@ void main()
 
 
     vec3 finalColor = directLighting * shadowScale ;
-    //finalColor += CalculatePointLights(F0, Input.WorldPosition);
+    finalColor += CalculatePointLights(F0, Input.WorldPosition);
     //finalColor += CalculateSpotLights(F0, Input.WorldPosition); //* sahdow
 
 

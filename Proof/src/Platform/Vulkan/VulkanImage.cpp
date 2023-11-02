@@ -100,7 +100,6 @@ namespace Proof {
 	}
 	void VulkanImage2D::Resize(uint32_t width, uint32_t height)
 	{
-
 		if (m_Specification.Usage == ImageUsage::SwapChain)
 		{
 			PF_ENGINE_ERROR(" {} Cannot resize swaphcain image directly cannot resize",m_Specification.DebugName);
@@ -320,6 +319,8 @@ namespace Proof {
 		VkImageCreateInfo imageCreateInfo = {};
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+		if (m_Specification.Layers == 6 && m_Specification.Height == m_Specification.Width)
+			imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 		imageCreateInfo.format = vulkanFormat;
 		imageCreateInfo.extent.width = m_Specification.Width;
 		imageCreateInfo.extent.height = m_Specification.Height;
@@ -328,27 +329,10 @@ namespace Proof {
 		imageCreateInfo.arrayLayers = m_Specification.Layers;
 		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageCreateInfo.samples = m_SampleFlags;
-
 		imageCreateInfo.tiling = m_Specification.Usage == ImageUsage::HostRead ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
-
-
 		imageCreateInfo.usage = usage;
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (m_Specification.Layers == 6 && m_Specification.Height == m_Specification.Width)
-		{
-			imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-			imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-			imageCreateInfo.format = vulkanFormat;
-			imageCreateInfo.mipLevels = m_Specification.Mips;
-			imageCreateInfo.arrayLayers = 6;
-			imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-			imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-			imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-			imageCreateInfo.extent = { m_Specification.Width, m_Specification.Height, 1 };
-			imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
-			imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-		}
 		VulkanAllocator allocator("VulkanImage2DBuild");
 		allocator.AllocateImage(imageCreateInfo, memoryUsage, m_Info.ImageAlloc);
 
@@ -363,7 +347,7 @@ namespace Proof {
 		imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
 		imageViewCreateInfo.subresourceRange.levelCount = m_Specification.Mips;
 		imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-		imageViewCreateInfo.subresourceRange.layerCount = m_Specification.Layers;
+		imageViewCreateInfo.subresourceRange.layerCount = m_Specification.Layers; 
 		imageViewCreateInfo.image = m_Info.ImageAlloc.Image;
 		vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_Info.ImageView);
 		if (m_Info.ImageView)

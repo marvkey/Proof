@@ -163,7 +163,7 @@ namespace Proof
 		if (!AssetManager::HasAsset(asset))
 			return;
 
-		auto[irradiance, prefilter] = Renderer::CreateEnvironmentMap(AssetManager::GetAsset<Texture2D>(asset));
+		auto[irradiance, prefilter] = Renderer::CreateEnvironmentMap(AssetManager::GetAsset<Texture2D>(asset)->GetPath());
 
 		Environment = Count<class Environment>::Create(irradiance, prefilter);
 

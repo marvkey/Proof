@@ -276,6 +276,8 @@ namespace Proof
 			pipeline.Shader = Renderer::GetShader("FrustrumGrid");
 			m_FrustrumPass = ComputePass::Create({ "frustrumPass",ComputePipeline::Create(pipeline) });
 			m_FrustrumPass->SetInput("OutFrustums", m_FrustrumsBuffer);
+			m_FrustrumPass->AddGlobalInput(m_GlobalInputs);
+
 			//m_FrustrumPass->SetInput("CameraData", m_UBCameraBuffer);
 			//m_FrustrumPass->SetInput("ScreenData", m_UBScreenBuffer);
 
@@ -833,8 +835,8 @@ namespace Proof
 		// clear screen
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
 
-		//Renderer::BeginRenderPass(m_CommandBuffer,m_GeometryPass, true);
-		//Renderer::EndRenderPass(m_GeometryPass);
+//Renderer::BeginRenderPass(m_CommandBuffer,m_Dep, true);
+//		Renderer::EndRenderPass(m_GeometryPass);
 		
 		if (m_UBScreenData.FullResolution.x > 0 && m_UBScreenData.FullResolution.y > 0)
 		{
@@ -1293,7 +1295,6 @@ namespace Proof
 
 		Timer preDepthTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
-		uint32_t imageIndex = Renderer::GetCurrentFrameInFlight();
 
 		Renderer::BeginRenderPass(m_CommandBuffer, m_PreDepthPass, true);
 
@@ -1318,9 +1319,8 @@ namespace Proof
 	{
 		if (m_LightScene.SpotLightCount == 0 && m_LightScene.PointLightCount == 0)
 			return;
-		#if 0
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		#if 1
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
 		uint32_t screenWidth = m_UBScreenData.FullResolution.x;
 		uint32_t screenHeight = m_UBScreenData.FullResolution.y;
@@ -1356,23 +1356,29 @@ namespace Proof
 			m_PointLightGrid->Resize(numThreadGroups.x, numThreadGroups.y);
 			m_SpotLightGrid->Resize(numThreadGroups.x, numThreadGroups.y);
 
-			m_LightCullingPass->SetInput("u_DpethTexture", m_PreDepthPass->GetTargetFrameBuffer()->GetDepthImage(imageIndex).As<Image2D>());
+			m_LightCullingPass->SetInput("u_DpethTexture", m_PreDepthPass->GetTargetFrameBuffer()->GetDepthOutput().As<Image2D>());
 			Renderer::BeginComputePass(m_CommandBuffer, m_LightCullingPass);
 			m_LightCullingPass->PushData("u_PushData", &numThreads);
 			//m_LightCullingPass->PushData("u_PushData", &m_LightCullingNumThreads);
 			m_LightCullingPass->Dispatch(numThreadGroups);
-			VkMemoryBarrier barrier = {};
-			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-			barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-			vkCmdPipelineBarrier(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameIndex),
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				0,
-				1, &barrier,
-				0, nullptr,
-				0, nullptr);
+			Renderer::Submit([commandBuffer = m_CommandBuffer ]()
+				{
+
+					VkMemoryBarrier barrier = {};
+					barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+					barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+					vkCmdPipelineBarrier(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+						VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+						VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+						0,
+						1, &barrier,
+						0, nullptr,
+						0, nullptr);
+				});
+
 			Renderer::EndComputePass(m_LightCullingPass);
 
 			m_Timers.LightCulling = timer.ElapsedMillis();

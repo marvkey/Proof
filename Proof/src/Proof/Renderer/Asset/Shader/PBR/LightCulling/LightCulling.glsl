@@ -111,8 +111,13 @@ layout (local_size_x = TILE_SIZE,local_size_y = TILE_SIZE) in;
 void main()
 {
 	
-    uvec2 texCoord = gl_GlobalInvocationID.xy;
-    float floatDepth = textureLod(u_DpethTexture, texCoord,0).r;
+    	ivec2 tile_id = ivec2(gl_WorkGroupID.xy);
+	vec2 texCoord = (vec2(TILE_SIZE, TILE_SIZE) * tile_id  ) / u_ScreenData.FullResolution;
+    float floatDepth = texture(u_DpethTexture, texCoord).x;
+
+
+    //uvec2 texCoord = gl_GlobalInvocationID.xy;
+    //float floatDepth = textureLod(u_DpethTexture, texCoord,0).r;
     //vec2 tc = vec2(texCoord) / u_ScreenData.FullResolution;
     //float floatDepth = ScreenSpaceToViewSpaceDepth(textureLod(u_DpethTexture, tc,0).r);
     uint unsignedDepth = floatBitsToUint(-floatDepth );
@@ -170,17 +175,18 @@ void main()
         PointLight pointLight = s_PointLights.Lights[i];
         vec3 viewPos =( vec4(pointLight.Position,1) * u_Camera.View).xyz;
         Sphere sphere = { viewPos, pointLight.Radius };
+             //   o_AppendPointLight( i );
 
         if ( SphereInsideFrustum( sphere, GroupFrustum, nearClipVS, maxDepthVS ) )
         {
             //Add light to light list for transparent geometry.
             //t_AppendLight( i );
-                o_AppendPointLight( i );
+              //  o_AppendPointLight( i );
 
             if ( !SphereInsidePlane( sphere, minPlane ) )
             {
                 // Add light to light list for opaque geometry.
-                //o_AppendPointLight( i );
+                o_AppendPointLight( i );
            }
         }
      }

@@ -592,10 +592,15 @@ namespace Proof {
 	{
 		return s_Data->RenderCommandBuffer;
 	}
-	std::pair<Count<class TextureCube>, Count<class TextureCube>> Renderer::CreateEnvironmentMap(Count<Texture2D> texture)
+	std::pair<Count<class TextureCube>, Count<class TextureCube>> Renderer::CreateEnvironmentMap(const std::filesystem::path& filepath)
 	{
 		//Refrecnce
 		//https://github.com/Nadrin/PBR/blob/master/src/vulkan.cpp
+
+		{
+
+		}
+		Count<Texture2D> envEquirect = Texture2D::Create(TextureConfiguration(), filepath);
 
 		Count<TextureCube> environmentMapImageCube;
 
@@ -603,21 +608,51 @@ namespace Proof {
 		{
 			const uint32_t imageSize = 1024;
 			TextureConfiguration baseCubeMapConfig;
-			baseCubeMapConfig.DebugName = FileSystem::GetFileName(texture->GetPath()) + " Base CubeMap";
+			baseCubeMapConfig.DebugName = FileSystem::GetFileName(filepath) + " Base CubeMap";
 			baseCubeMapConfig.Height = imageSize;
 			baseCubeMapConfig.Width = imageSize;
 			baseCubeMapConfig.Storage = true;
 			baseCubeMapConfig.GenerateMips = true;
 			baseCubeMapConfig.Format = format;
 			baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
+			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig);
 
-			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig, texture);
+
 		}
+
+		{
+			Count<Shader> equirectangularConversionShader = Renderer::GetShader("EquirectangularToCubemap");
+			Count<ComputePipeline> equirectangularConversionPipeline = ComputePipeline::Create(ComputePipelineConfig{ "equirectangularConversionPipeline",equirectangularConversionShader });
+			Count<ComputePass> computePass = ComputePass::Create({ "equirectangularConversionPipeline", equirectangularConversionPipeline });
+
+			computePass->SetInput("u_EquirectangularMap", envEquirect);
+			computePass->SetInput("u_CubeMap", environmentMapImageCube);
+
+			struct pushData
+			{
+				Vector2U imageSize;
+				Vector2U cubeSize;
+			};
+
+			// make sure cube does not delete this due to refercne cout
+
+			Count<RenderCommandBuffer>renderCommandBuffer = Renderer::GetRendererCommandBuffer();
+			Renderer::BeginComputePass(renderCommandBuffer, computePass);
+
+			pushData pushData;
+			pushData.imageSize = envEquirect->GetSize();
+			pushData.cubeSize = environmentMapImageCube->GetSize();
+			computePass->PushData("pc", &pushData);
+			computePass->Dispatch(environmentMapImageCube->GetWidth() / 32, environmentMapImageCube->GetHeight() / 32, 6);
+			Renderer::EndComputePass(computePass);
+
+		}
+
 		const uint32_t irradianceFilterRate = 32;
 		Count<TextureCube> irradianceMap; 
 		{
 			TextureConfiguration irradianceTextureConfig;
-			irradianceTextureConfig.DebugName = "Irradiance map " + FileSystem::GetFileName(texture->GetPath());
+			irradianceTextureConfig.DebugName = "Irradiance map " + FileSystem::GetFileName(filepath);
 			irradianceTextureConfig.Width = irradianceFilterRate;
 			irradianceTextureConfig.Height = irradianceFilterRate;
 			irradianceTextureConfig.Storage = true;
@@ -656,78 +691,13 @@ namespace Proof {
 
 		}
 
-		{
-			//FrameBufferConfig frameConfig;
-			//frameConfig.DebugName = "Texture-CubeIrradiance";
-			//frameConfig.Size.X = irradianceFilterRate;
-			//frameConfig.Size.Y = irradianceFilterRate;
-			//frameConfig.Attachments = { format};
-			//frameConfig.Attachments.Attachments[0].ExistingImage = irradianceMap->GetImage();
-			//
-			//Count<FrameBuffer> frameBuffer = FrameBuffer::Create(frameConfig);
-			//
-			//GraphicsPipelineConfig pipelineConfig;
-			//pipelineConfig.DebugName = "generate cubemap create";
-			//pipelineConfig.Shader = Shader::Get("EnvironmentIrradianceNonCompute");
-			//
-			//pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
-			//pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-			//pipelineConfig.TargetBuffer = frameBuffer;
-			//Count<GraphicsPipeline> renderPipeline = GraphicsPipeline::Create(pipelineConfig);
-			//
-			//RenderPassConfig renderPassConfig;
-			//renderPassConfig.DebugName = "Irradiance Map Non compute";
-			//renderPassConfig.MultiView = true;
-			//renderPassConfig.Pipeline = renderPipeline;
-			//renderPassConfig.Attachments = { format };
-			//Count<RenderPass> renderPass = RenderPass::Create(renderPassConfig);
-			//
-			//struct UboData {
-			//	/// Projection matrix common to each face of the cubemap.
-			//	alignas(16) glm::mat4 projection;
-			//
-			//	/// View matrix to look at the direction of each cubemap face.
-			//	alignas(16) glm::mat4 view[6];
-			//};
-			//UboData uboData = {
-			//glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f),
-			//	{
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f),  glm::vec3(0.0f, -1.0f,  0.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-			//	}
-			//};
-			//
-			//Count<UniformBuffer> ubuffer = UniformBuffer::Create(&uboData, sizeof(UboData));
-			//auto cube = MeshWorkShop::GenerateCube();
-			//
-			//renderPass->SetInput("ProjView", ubuffer);
-			//renderPass->SetInput("u_EnvironmentMap", environmentMapImageCube);
-			//Renderer::SubmitCommand([&](CommandBuffer* buffer) {
-			//	Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(buffer);
-			//
-			//	Renderer::BeginRenderPass(renderCmd, renderPass);
-			//	cube->GetMeshSource()->GetVertexBuffer()->Bind(renderCmd);
-			//	cube->GetMeshSource()->GetIndexBuffer()->Bind(renderCmd);
-			//
-			//	for (const auto& subMesh : cube->GetMeshSource()->GetSubMeshes())
-			//	{
-			//		Renderer::DrawElementIndexed(renderCmd, subMesh.IndexCount, 1, subMesh.BaseIndex, subMesh.BaseVertex);
-			//	}
-			//
-			//	Renderer::EndRenderPass(renderPass);
-			//});
-			//irradianceMap.As<VulkanTextureCube>()->GenerateMips();
-		}
+		
 		const uint32_t prefilterFilterRate = 1024;
 
 		Count<TextureCube> prefilterMap;
 		{
 			TextureConfiguration prefilterTextureConfig;
-			prefilterTextureConfig.DebugName = "Prefilter map" + FileSystem::GetFileName(texture->GetPath());
+			prefilterTextureConfig.DebugName = "Prefilter map" + FileSystem::GetFileName(filepath);
 			prefilterTextureConfig.Width = prefilterFilterRate;
 			prefilterTextureConfig.Height = prefilterFilterRate;
 			prefilterTextureConfig.Storage = true;
@@ -735,7 +705,7 @@ namespace Proof {
 			prefilterTextureConfig.Wrap = TextureWrap::ClampEdge;
 			prefilterTextureConfig.GenerateMips = true;
 
-			prefilterMap = TextureCube::Create(prefilterTextureConfig, texture->GetPath());
+			prefilterMap = TextureCube::Create(prefilterTextureConfig, envEquirect);
 
 		}
 	
@@ -780,7 +750,7 @@ namespace Proof {
 			auto computePass = ComputePass::Create(computePassConfig);
 
 			Count<RenderCommandBuffer>renderCommandBuffer = s_Data->RenderCommandBuffer;
-
+#if 1
 			Renderer::BeginRenderMaterialComputePass(renderCommandBuffer, computePass);
 			const float deltaRoughness = 1.f / glm::max((float)(maxMip-1), 1.0f);
 
@@ -796,6 +766,7 @@ namespace Proof {
 				computePass->Dispatch(numGroups, numGroups, 6);
 			}
 			Renderer::EndComputePass(computePass);
+#endif
 			prefilterImageViews.clear();
 		}
 		return std::make_pair(irradianceMap, prefilterMap);
@@ -867,7 +838,9 @@ namespace Proof {
 
 	BaseTextures::BaseTextures() {
 		uint32_t whiteTexturedata = 0xffffffff;
-		WhiteTexture = Texture2D::Create(TextureConfiguration("White Texture"), Buffer(&whiteTexturedata, sizeof(uint32_t)));
+		TextureConfiguration textureConfig("White Texture");
+		textureConfig.Storage = true;
+		WhiteTexture = Texture2D::Create(textureConfig, Buffer(&whiteTexturedata, sizeof(uint32_t)));
 
 
 		uint32_t blackTexturedata = 0xFF000000;
@@ -886,7 +859,7 @@ namespace Proof {
 		WhiteTextureCube = TextureCube::Create(Buffer(&whiteTexturedata, sizeof(uint32_t)).Data, cubeTextureConfig);
 
 		cubeTextureConfig.DebugName = "Black Texture";
-		BlackTextureCube = TextureCube::Create(cubeTextureConfig, WhiteTexture);
+		BlackTextureCube = TextureCube::Create(Buffer(&blackTexturedata, sizeof(uint32_t)).Data, cubeTextureConfig);
 	}
 	const RendererAPI* Renderer::GetRenderAPI()
 	{

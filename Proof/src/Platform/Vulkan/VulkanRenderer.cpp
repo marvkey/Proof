@@ -51,21 +51,21 @@ namespace Proof
 	{
 		commandBuffer.As<VulkanRenderCommandBuffer>()->EndRecord();
 	}
-	Count<ComputePipeline> computePipeline;
-	Count<ComputePass> computePass;
+
 	void VulkanRenderer::PushSetCubeMapImage(Count<class TextureCube> cube, Count<class Texture2D> texture)
 	{
+		Count<ComputePipeline> computePipeline;
+		Count<ComputePass> computePass;
 
 		ComputePipelineConfig computePipelineConfig;
 		computePipelineConfig.DebugName = "EquirectangularToCubemap Pipeline";
 		computePipelineConfig.Shader = Renderer::GetShader("EquirectangularToCubemap");
-		if(!computePipeline)
+
 			computePipeline = ComputePipeline::Create(computePipelineConfig);
 		ComputePassConfiguration computePassConfig;
 		computePassConfig.DebugName = "EquirectangularToCubemap Pass";
 		computePassConfig.Pipeline = computePipeline;
 
-		if(!computePass)
 			computePass = ComputePass::Create(computePassConfig);
 
 		computePass->SetInput("u_EquirectangularMap", texture);
@@ -82,11 +82,18 @@ namespace Proof
 		Renderer::BeginComputePass(renderCommandBuffer, computePass);
 
 		pushData pushData;
-		pushData.imageSize = { texture->GetSize() };
+		pushData.imageSize  = texture->GetSize() ;
 		pushData.cubeSize = cube->GetSize();
 		computePass->PushData("pc", &pushData);
-		computePass->Dispatch(cube->GetWidth() / 32, cube->GetHeight()/ 32, 6);
+		computePass->Dispatch(cube->GetWidth() / 32, cube->GetHeight() / 32, 6);
 		Renderer::EndComputePass(computePass);
+
+		// doesnt get destroyed
+		Renderer::SubmitResourceFree([computePipeline, computePass] 
+			{
+				auto pipe = computePipeline;
+				auto pass = computePass;
+			});
 	}
 	void VulkanRenderer::DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 	{

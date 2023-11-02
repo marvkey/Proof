@@ -364,6 +364,8 @@ namespace Proof
 		{
 			return m_Stats;
 		}
+		Count<class Texture2D> m_BRDFLUT;
+
 	private:
 		Count<class World> m_ActiveWorld;
 		//buffer data
@@ -410,7 +412,6 @@ namespace Proof
 		Special<class Renderer2D>  m_ParticleSystemRenderer;
 		Count<class RenderCommandBuffer> m_CommandBuffer;
 
-		Count<class Texture2D> m_BRDFLUT;
 
 		Count<class StorageBufferSet> m_SBDirectionalLights;
 

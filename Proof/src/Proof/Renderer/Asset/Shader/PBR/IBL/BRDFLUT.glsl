@@ -97,5 +97,5 @@ void main(void)
 		}
 	}
 
-	imageStore(brfdLUT, ivec2(gl_GlobalInvocationID), vec4(DFG1, DFG2, 0, 0) * InvNumSamples);
+	imageStore(brfdLUT, ivec2(gl_GlobalInvocationID), vec4(DFG1,DFG2,0, 0) * InvNumSamples);
 }

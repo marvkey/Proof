@@ -261,7 +261,7 @@ namespace Proof {
 		worldRenderer->EndScene();
 		#endif
 		// render 2d
-		#if 0
+		#if 1
 		Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
 		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), cameraLocation);
 
@@ -300,6 +300,7 @@ namespace Proof {
 		}
 
 		// render AABB
+		/*
 		{
 			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
 			for (auto entity : group)
@@ -326,6 +327,10 @@ namespace Proof {
 				}
 			}
 		}
+		*/
+
+		renderer2D->DrawQuad(glm::vec3{0}, worldRenderer->m_BRDFLUT);
+
 		//renderer2D->DrawLine({ 0,0,0 }, { 0,0,10 });
 		renderer2D->EndContext();
 		#endif

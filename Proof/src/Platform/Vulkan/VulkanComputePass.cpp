@@ -41,7 +41,7 @@ namespace Proof
 	void VulkanComputePass::BeginComputePass(Count<class RenderCommandBuffer> command)
 	{
 		Count<VulkanComputePass> instance = this;
-		Renderer::Submit([instance, command]()
+		Renderer::Submit([instance, command]() mutable
 			{
 				instance->RT_BeginComputePass(command);
 			});
@@ -65,7 +65,7 @@ namespace Proof
 	void VulkanComputePass::EndComputePass()
 	{
 		Count<VulkanComputePass> instance = this;
-		Renderer::Submit([instance]()
+		Renderer::Submit([instance]()mutable
 			{
 				instance->RT_EndComputePass();
 			});

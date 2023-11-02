@@ -778,7 +778,7 @@ namespace Proof
         Renderer::Submit([instance, str]()
         {
             instance->RT_PushData(str, instance->m_LocalStorage.Data);
-            instance->m_LocalStorage.Release();
+            //instance->m_LocalStorage.Release();
         });
     }
 }

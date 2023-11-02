@@ -66,6 +66,7 @@ namespace Proof::UI {
 		if(changed)
 			value = EnumReflection::StringEnum< TEnum>(outSelectiongString);
 
+		return changed;
 	}
 
 	bool AttributeInputText(const std::string& label, std::string& value, const std::string& helpMessage = "");
