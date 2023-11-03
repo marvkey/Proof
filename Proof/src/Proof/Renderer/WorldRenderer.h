@@ -294,6 +294,8 @@ namespace Proof
 		uint32_t DirectionalLightCount = 0;
 		uint32_t PointLightCount = 0;
 		uint32_t SpotLightCount= 0;
+		glm::uvec2 LightCullingNumThreads;
+		glm::uvec2 LightCullingNumThreadGroups;
 	};
 
 	struct WorldRendererStatistics
@@ -474,18 +476,18 @@ namespace Proof
 		Count<StorageBufferSet> m_FrustrumsBuffer;
 		Count<class ComputePass> m_FrustrumPass;
 		Count<class ComputePass> m_LightCullingPass;
-		Count<Image2D> m_PointLightGrid;
-		Count<Image2D> m_SpotLightGrid;
+		//Count<Image2D> m_PointLightGrid;
+		//Count<Image2D> m_SpotLightGrid;
 
-		Count<StorageBufferSet> m_PointLightIndexCounterBuffer;
-		Count<StorageBufferSet> m_SpotLightIndexCounterBuffer;
-
+		Count<StorageBufferSet> m_PointLightGrid;
 		Count<StorageBufferSet> m_PointLightIndexListBuffer;
 		Count<StorageBufferSet> m_SpotLightIndexListBuffer;
-		glm::uvec3 m_LightCullingWorkGroups;
-		glm::uvec3 m_LightCullingNumThreads;
+		glm::uvec2 m_LightCullingNumThreads;
+		glm::uvec2 m_LightCullingNumThreadGroups;
 
-
+		inline static const uint32_t TILE_SIZE = 16u;
+		inline static const uint32_t MAX_NUM_LIGHTS_PER_TILE = 16u;
+		inline static const float FRUSTRUM_SIZE = (sizeof(float) * 4) * 4;
 	private:
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);

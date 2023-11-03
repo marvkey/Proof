@@ -256,6 +256,7 @@ namespace Proof
 		}
 		//foward plus
 		{
+#if 0
 
 			//https://www.3dgep.com/forward-plus/#Forward
 			// look at the bottom for the zip to all code
@@ -326,6 +327,34 @@ namespace Proof
 			m_LightCullingPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
 			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
 			//m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
+#endif
+			glm::uvec2 screenSize = m_UBScreenData.FullResolution;
+			m_LightCullingNumThreads = (screenSize  + TILE_SIZE - 1u) / TILE_SIZE;
+			m_LightCullingNumThreadGroups = (m_LightCullingNumThreads + TILE_SIZE - 1u) / TILE_SIZE;
+
+			m_FrustrumsBuffer = StorageBufferSet::Create(FRUSTRUM_SIZE * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * 1);
+			// TODO are these right
+			m_PointLightIndexListBuffer = StorageBufferSet::Create(m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
+			m_PointLightGrid = StorageBufferSet::Create(m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * sizeof(uint32_t));
+
+			ComputePipelineConfig pipeline;
+			pipeline.DebugName = "FrustrumGrid";
+			pipeline.Shader = Renderer::GetShader("FrustrumGrid");
+			m_FrustrumPass = ComputePass::Create({ "frustrumPass",ComputePipeline::Create(pipeline) });
+			m_FrustrumPass->AddGlobalInput(m_GlobalInputs);
+			m_FrustrumPass->SetInput("OutFrustums", m_FrustrumsBuffer);
+
+			ComputePipelineConfig lightCullingpipeline;
+			lightCullingpipeline.DebugName = "LightCulling";
+			lightCullingpipeline.Shader = Renderer::GetShader("LightCulling");
+			m_LightCullingPass = ComputePass::Create({ "LightCulling",ComputePipeline::Create(lightCullingpipeline) });
+			m_LightCullingPass->AddGlobalInput(m_GlobalInputs);
+			m_LightCullingPass->SetInput("u_DepthTexture", m_PreDepthPass->GetOutput(0).As<Image2D>());
+			m_LightCullingPass->SetInput("Frustrums", m_FrustrumsBuffer);
+			m_LightCullingPass->SetInput("PointLightIndexListBuffer", m_PointLightIndexListBuffer);
+			m_LightCullingPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
+			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
+			m_LightCullingPass->SetInput("PointLightGrid", m_PointLightGrid);
 
 		}
 
@@ -456,12 +485,14 @@ namespace Proof
 
 			m_GeometryPass->AddGlobalInput(m_GlobalInputs);
 
-			m_GeometryPass->SetInput("u_PointLightGrid", m_PointLightGrid);
-			m_GeometryPass->SetInput("u_SpotLightGrid", m_SpotLightGrid);
+			//m_GeometryPass->SetInput("u_PointLightGrid", m_PointLightGrid);
+			//m_GeometryPass->SetInput("u_SpotLightGrid", m_SpotLightGrid);
 			m_GeometryPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
 
 			m_GeometryPass->SetInput("PointLightIndexListBuffer", m_PointLightIndexListBuffer);
-			m_GeometryPass->SetInput("SpotLightIndexListBuffer", m_SpotLightIndexListBuffer);
+			m_GeometryPass->SetInput("PointLightGrid", m_PointLightGrid);
+
+			//m_GeometryPass->SetInput("SpotLightIndexListBuffer", m_SpotLightIndexListBuffer);
 		}
 
 		// skybox
@@ -731,22 +762,18 @@ namespace Proof
 
 			
 			{
-				//foward plus
-				//constexpr uint32_t TILE_SIZE = 16u;
-				//m_LightCullingWorkGroups = glm::ceil(glm::vec3(viewportSize.x / (float)TILE_SIZE, viewportSize.y / (float)TILE_SIZE, 1));
-				//m_LightCullingNumThreads = m_LightCullingWorkGroups * glm::uvec3{ TILE_SIZE , TILE_SIZE ,1 };
-				//
-				//// plane {vec3 normal, float distnace} = sizeof(float) *4
-				////Frustrum{ Plane[4]] (sizeof(float) *4 ) * 4
-				//const uint32_t frusturmSize = (sizeof(float) * 4) * 4;
-				//for (uint32_t index = 0; index < Renderer::GetConfig().FramesFlight; index++)
-				//{
-				//	m_FrustrumsBuffer->Resize(index,frusturmSize * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * m_LightCullingNumThreads.z);
-				//	m_PointLightIndexListBuffer->Resize(index,m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
-				//	m_SpotLightIndexListBuffer->Resize(index,m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
-				//}
-				//m_PointLightGrid->Resize(m_LightCullingNumThreads.x, m_LightCullingNumThreads.y);
-				//m_SpotLightGrid->Resize(m_LightCullingNumThreads.x, m_LightCullingNumThreads.y);
+
+				glm::uvec2 screenSize = m_UBScreenData.FullResolution;
+				m_LightCullingNumThreads = (glm::uvec3{ screenSize ,1 } + TILE_SIZE - 1u) / TILE_SIZE;
+				m_LightCullingNumThreadGroups = (m_LightCullingNumThreads + TILE_SIZE - 1u) / TILE_SIZE;
+
+				for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
+				{
+					m_PointLightIndexListBuffer->Resize(i,m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
+					m_FrustrumsBuffer->Resize(i, FRUSTRUM_SIZE * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * 1);
+					m_PointLightGrid->Resize(i,m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * sizeof(uint32_t));
+				}
+
 			}
 
 			// predepth
@@ -880,8 +907,8 @@ namespace Proof
 		}
 		m_UBScreenData.FullResolution = { width, height };
 		m_UBScreenData.InverseFullResolution = {1/ width,  1/height };
-		m_UBScreenData.HalfResolution = glm::ivec2{ m_UBScreenData.FullResolution } / 2;
-		m_UBScreenData.InverseHalfResolution = glm::ivec2{ m_UBScreenData.InverseFullResolution } * 2;
+		m_UBScreenData.HalfResolution = glm::uvec2{ m_UBScreenData.FullResolution } / 2u;
+		m_UBScreenData.InverseHalfResolution = glm::uvec2{ m_UBScreenData.InverseFullResolution } * 2u;
 		m_UBScreenData.AspectRatio = m_UBScreenData.FullResolution.x / m_UBScreenData.FullResolution.y;
 
 		Buffer buffer(&m_UBScreenData, sizeof(m_UBScreenData));
@@ -960,6 +987,8 @@ namespace Proof
 				if (m_LightScene.SpotLightCount == 0)
 					m_SBSpotLightsBuffer->Resize(frameIndex, sizeof(SpotLight));
 			}
+			m_UBLightData.LightCullingNumThreads = m_LightCullingNumThreads;
+			m_UBLightData.LightCullingNumThreadGroups = m_LightCullingNumThreadGroups;
 			m_UBLightSceneBuffer->SetData(frameIndex, Buffer(&m_UBLightData, sizeof(m_UBLightData)));
 		}
 		// set up mesh passes
@@ -1322,23 +1351,15 @@ namespace Proof
 		#if 1
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
-		uint32_t screenWidth = m_UBScreenData.FullResolution.x;
-		uint32_t screenHeight = m_UBScreenData.FullResolution.y;
 		PF_PROFILE_FUNC();
 		{
 			PF_PROFILE_FUNC("CalcalateFrustrumGrid");
 			
 			Timer timer;
-
-			glm::uvec3 numThreads = glm::ceil(glm::vec3(screenWidth / (float)16, screenHeight / (float)16, 1));
-			glm::uvec3 numThreadGroups = glm::ceil(glm::vec3(numThreads.x / (float)16, numThreads.y / (float)16, 1));
-
-			m_FrustrumsBuffer->Resize(frameIndex,64 * (numThreads.x * numThreads.y * numThreads.z));
 			Renderer::BeginComputePass(m_CommandBuffer, m_FrustrumPass);	
-			m_FrustrumPass->PushData("u_PushData", &numThreads);
-			m_FrustrumPass->Dispatch(numThreadGroups);
+			m_FrustrumPass->PushData("u_PushData", &m_LightCullingNumThreads);
+			m_FrustrumPass->Dispatch({ m_LightCullingNumThreadGroups,1 });
 			Renderer::EndComputePass(m_FrustrumPass);
-
 			m_Timers.LightCalculateGridFrustum = timer.ElapsedMillis();
 		}
 
@@ -1347,20 +1368,11 @@ namespace Proof
 			PF_PROFILE_FUNC("LightCulling");
 			Timer timer;
 
-			glm::uvec3 numThreadGroups = glm::ceil(glm::vec3(screenWidth / (float)16, screenHeight / (float)16, 1));
-			glm::uvec3 numThreads = numThreadGroups * glm::uvec3(16, 16, 1);
 
-			m_PointLightIndexListBuffer->Resize(frameIndex, numThreadGroups.x * numThreadGroups.y * sizeof(uint32_t) * 1024);
-			m_SpotLightIndexListBuffer->Resize(frameIndex, numThreadGroups.x * numThreadGroups.y * sizeof(uint32_t) * 1024);
-
-			m_PointLightGrid->Resize(numThreadGroups.x, numThreadGroups.y);
-			m_SpotLightGrid->Resize(numThreadGroups.x, numThreadGroups.y);
-
-			m_LightCullingPass->SetInput("u_DpethTexture", m_PreDepthPass->GetTargetFrameBuffer()->GetDepthOutput().As<Image2D>());
+			m_LightCullingPass->SetInput("u_DepthTexture", m_PreDepthPass->GetTargetFrameBuffer()->GetDepthOutput().As<Image2D>());
 			Renderer::BeginComputePass(m_CommandBuffer, m_LightCullingPass);
-			m_LightCullingPass->PushData("u_PushData", &numThreads);
-			//m_LightCullingPass->PushData("u_PushData", &m_LightCullingNumThreads);
-			m_LightCullingPass->Dispatch(numThreadGroups);
+			m_LightCullingPass->PushData("u_PushData", &m_LightCullingNumThreads);
+			m_LightCullingPass->Dispatch({ m_LightCullingNumThreadGroups,1 });
 
 			Renderer::Submit([commandBuffer = m_CommandBuffer ]()
 				{

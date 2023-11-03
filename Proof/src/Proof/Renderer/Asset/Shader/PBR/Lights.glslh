@@ -71,6 +71,8 @@ layout(std140, set = 2, binding = 6) uniform LightInformationBuffer
 	uint DirectionalLightCount;
 	uint PointLightCount;
 	uint SpotLightCount;
+	uvec2 LightCullingNumThreads;//lastone is 1
+	uvec2 LightCullingNumThreadGroups; // last one is 1
 } u_LightData;
 
 
@@ -84,7 +86,8 @@ layout(set = 2, binding = 8) buffer SpotLightIndexListBuffer
     uint s_SpotLightIndexList[];
 };
 
-layout(set = 2, binding = 9,rg32ui) uniform uimage2D u_PointLightGrid;
-layout(set = 2, binding = 10,rg32ui) uniform uimage2D u_SpotLightGrid;
+layout(set = 2,binding = 9) buffer PointLightGrid {
+	uint s_PointLightGrid[];
+};
 
 #endif //LIGHT_FUNCTIONS

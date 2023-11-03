@@ -73,7 +73,7 @@ vec4 ClipToView(vec4 clip)
     // View space position.
     vec4 view = u_Camera.InverseProjection * clip;
     // Perspective division.
-    view /= view.w;
+     view = view / view.w;
 
     return view;
 }
