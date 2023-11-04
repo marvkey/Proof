@@ -95,26 +95,41 @@ float GaSchlickGGX(float cosLi, float NdotV, float roughness)
 	float k = (r * r) / 8.0; // Epic suggests using this roughness remapping for analytic lights.
 	return GaSchlickG1(cosLi, k) * GaSchlickG1(NdotV, k);
 }
+
+int GetPointLightBufferIndex(int i)
+{
+	ivec2 tileID = ivec2(gl_FragCoord.xy) / ivec2(TILE_SIZE);
+	uint index = tileID.y * u_LightData.LightCullingWorkGroups.x + tileID.x;
+
+	uint offset = index * MAX_NUM_LIGHTS_PER_TILE;
+	return s_PointLightIndexList.Indices[offset + i];
+}
+
+
 vec3 CalculatePointLights(in vec3 F0, vec3 worldPos)
 {
 	vec3 result = vec3(0.0);
 
-    uvec2 tileID = uvec2(gl_FragCoord.x, u_ScreenData.FullResolution.y - gl_FragCoord.y ) / TILE_SIZE;
-	uint tileIndex = tileID.y * u_LightData.LightCullingNumThreads.x + tileID.x;
 
-	uint lightIndexBegin = tileIndex * MAX_NUM_LIGHTS_PER_TILE;
-
-	uint lightNum = s_PointLightGrid[tileIndex];
-	for(int i = 0; i < lightNum; ++i) 
+	for(int i = 0; i <  u_LightData.PointLightCount; i++) 
 	{
-		uint lightIndex = s_PointLightIndexList[i + lightIndexBegin];
-		PointLight light = s_PointLights.Lights[lightIndex];
+		int lightIndex = GetPointLightBufferIndex(i);
+		if (lightIndex == -1)
+			break;
 
+		PointLight light = s_PointLights.Lights[lightIndex];
 		if(light.Intensity <= 0)
 			continue;
 
 		vec3 Li = normalize(light.Position - worldPos);
 		float lightDistance = length(light.Position - worldPos);
+
+		// Add the minimum radius check here
+		if (lightDistance < light.MinRadius) 
+		{
+			// If the distance is less than the minimum radius, assume no light contribution
+			return vec3(0.0);
+		}
 		vec3 Lh = normalize(Li + m_Params.View);
 	
 		float attenuation = clamp(1.0 - (lightDistance * lightDistance) / (light.Radius * light.Radius), 0.0, 1.0);

@@ -71,23 +71,22 @@ layout(std140, set = 2, binding = 6) uniform LightInformationBuffer
 	uint DirectionalLightCount;
 	uint PointLightCount;
 	uint SpotLightCount;
-	uvec2 LightCullingNumThreads;//lastone is 1
-	uvec2 LightCullingNumThreadGroups; // last one is 1
+	uvec3 LightCullingWorkGroups; 
 } u_LightData;
 
 
 layout(set = 2, binding = 7) buffer PointLightIndexListBuffer
 {
-    uint s_PointLightIndexList[];
-};
+    int Indices[];
+}s_PointLightIndexList;
 
 layout(set = 2, binding = 8) buffer SpotLightIndexListBuffer
 {
-    uint s_SpotLightIndexList[];
+    int s_SpotLightIndexList[];
 };
 
 layout(set = 2,binding = 9) buffer PointLightGrid {
-	uint s_PointLightGrid[];
+	int s_PointLightGrid[];
 };
 
 #endif //LIGHT_FUNCTIONS

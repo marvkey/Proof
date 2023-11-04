@@ -294,8 +294,7 @@ namespace Proof
 		uint32_t DirectionalLightCount = 0;
 		uint32_t PointLightCount = 0;
 		uint32_t SpotLightCount= 0;
-		glm::uvec2 LightCullingNumThreads;
-		glm::uvec2 LightCullingNumThreadGroups;
+		glm::uvec3 LightCullingWorkGroups;
 	};
 
 	struct WorldRendererStatistics
@@ -482,8 +481,7 @@ namespace Proof
 		Count<StorageBufferSet> m_PointLightGrid;
 		Count<StorageBufferSet> m_PointLightIndexListBuffer;
 		Count<StorageBufferSet> m_SpotLightIndexListBuffer;
-		glm::uvec2 m_LightCullingNumThreads;
-		glm::uvec2 m_LightCullingNumThreadGroups;
+		glm::uvec3 m_LightCullingWorkGroups;
 
 		inline static const uint32_t TILE_SIZE = 16u;
 		inline static const uint32_t MAX_NUM_LIGHTS_PER_TILE = 16u;

@@ -1,19 +1,19 @@
 World:
   ID: 2958098095559880186
   Entities:
-    - Entity: 16806434247594503258
+    - Entity: 12544472351437169759
       TagComponent:
-        Tag: Sponza
+        Tag: Cube
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
+        Location: [1.5, 0, -6.30000019]
+        Rotation: [0, -0, 0.0401425734]
+        Scale: [11.5, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 18141853162402936448
+        MeshAssetPointerID: 50
     - Entity: 11242873672866688860
       TagComponent:
         Tag: CubeSpanwer
@@ -34,19 +34,19 @@ World:
               - NameID: SandboxProject.ScriptSpawner.AmountCubes
                 Type: Int32
                 Data: 0
-    - Entity: 12544472351437169759
+    - Entity: 16806434247594503258
       TagComponent:
-        Tag: Cube
+        Tag: Sponza
         tags: []
       TransformComponent:
-        Location: [1.5, 0, -6.30000019]
-        Rotation: [0, -0, 0.0401425734]
-        Scale: [11.5, 1, 1]
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 50
+        MeshAssetPointerID: 18141853162402936448
     - Entity: 417248771471866783
       TagComponent:
         Tag: Sky Light
@@ -73,7 +73,7 @@ World:
         Tag: Point Light
         tags: []
       TransformComponent:
-        Location: [0, -0.300000012, 0]
+        Location: [0, 3.4000001, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:

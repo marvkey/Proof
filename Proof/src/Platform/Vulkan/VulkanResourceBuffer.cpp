@@ -145,7 +145,7 @@ namespace Proof{
 			{
 				instance->RT_Build();
 				instance->RT_SetData(instance->m_LocalBuffer);
-				instance->m_LocalBuffer.Release();
+				//instance->m_LocalBuffer.Release();
 			});
 
 	}
@@ -221,7 +221,7 @@ namespace Proof{
 		Renderer::Submit([instance, offset]() mutable
 		{
 			instance->RT_SetData(instance->m_LocalBuffer, offset);
-			instance->m_LocalBuffer.Release();
+			//instance->m_LocalBuffer.Release();
 		});
 
 	}

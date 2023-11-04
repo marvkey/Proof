@@ -173,6 +173,8 @@ namespace Proof
 		m_SBSpotLightsBuffer = StorageBufferSet::Create(sizeof(SpotLight));// set to one light because we cant actaully set a buffer to size 0
 
 		SetViewportSize(100, 100);
+
+		const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
 		m_CommandBuffer = RenderCommandBuffer::Create("WorldRenderer");
 		m_Renderer2D = Count<Renderer2D>::Create();
 		m_BRDFLUT = Renderer::GenerateBRDFLut();
@@ -328,14 +330,16 @@ namespace Proof
 			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
 			//m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
 #endif
-			glm::uvec2 screenSize = m_UBScreenData.FullResolution;
-			m_LightCullingNumThreads = (screenSize  + TILE_SIZE - 1u) / TILE_SIZE;
-			m_LightCullingNumThreadGroups = (m_LightCullingNumThreads + TILE_SIZE - 1u) / TILE_SIZE;
+			//m_LightCullingNumThreads = (viewportSize + TILE_SIZE - 1u) / TILE_SIZE;
 
-			m_FrustrumsBuffer = StorageBufferSet::Create(FRUSTRUM_SIZE * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * 1);
+			glm::uvec2 size = viewportSize;
+			size += TILE_SIZE - viewportSize % TILE_SIZE;
+			m_LightCullingWorkGroups = glm::uvec3{ size / TILE_SIZE, 1u };
+
+			m_FrustrumsBuffer = StorageBufferSet::Create(FRUSTRUM_SIZE * m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * 1);
 			// TODO are these right
-			m_PointLightIndexListBuffer = StorageBufferSet::Create(m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
-			m_PointLightGrid = StorageBufferSet::Create(m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * sizeof(uint32_t));
+			m_PointLightIndexListBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
+			m_PointLightGrid = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t));
 
 			ComputePipelineConfig pipeline;
 			pipeline.DebugName = "FrustrumGrid";
@@ -759,19 +763,19 @@ namespace Proof
 		{
 			m_NeedResize = false;
 			const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
-
-			
 			{
 
-				glm::uvec2 screenSize = m_UBScreenData.FullResolution;
-				m_LightCullingNumThreads = (glm::uvec3{ screenSize ,1 } + TILE_SIZE - 1u) / TILE_SIZE;
-				m_LightCullingNumThreadGroups = (m_LightCullingNumThreads + TILE_SIZE - 1u) / TILE_SIZE;
+				//m_LightCullingNumThreads = (viewportSize + TILE_SIZE - 1u) / TILE_SIZE;
+
+				glm::uvec2 size = viewportSize;
+				size += TILE_SIZE - viewportSize % TILE_SIZE;
+				m_LightCullingWorkGroups = { size / (uint32_t)TILE_SIZE, 1u };
 
 				for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 				{
-					m_PointLightIndexListBuffer->Resize(i,m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
-					m_FrustrumsBuffer->Resize(i, FRUSTRUM_SIZE * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * 1);
-					m_PointLightGrid->Resize(i,m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * sizeof(uint32_t));
+					m_PointLightIndexListBuffer->Resize(i, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
+					m_FrustrumsBuffer->Resize(i, FRUSTRUM_SIZE * m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * 1);
+					m_PointLightGrid->Resize(i, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t));
 				}
 
 			}
@@ -987,8 +991,7 @@ namespace Proof
 				if (m_LightScene.SpotLightCount == 0)
 					m_SBSpotLightsBuffer->Resize(frameIndex, sizeof(SpotLight));
 			}
-			m_UBLightData.LightCullingNumThreads = m_LightCullingNumThreads;
-			m_UBLightData.LightCullingNumThreadGroups = m_LightCullingNumThreadGroups;
+			m_UBLightData.LightCullingWorkGroups = m_LightCullingWorkGroups;
 			m_UBLightSceneBuffer->SetData(frameIndex, Buffer(&m_UBLightData, sizeof(m_UBLightData)));
 		}
 		// set up mesh passes
@@ -1356,10 +1359,10 @@ namespace Proof
 			PF_PROFILE_FUNC("CalcalateFrustrumGrid");
 			
 			Timer timer;
-			Renderer::BeginComputePass(m_CommandBuffer, m_FrustrumPass);	
-			m_FrustrumPass->PushData("u_PushData", &m_LightCullingNumThreads);
-			m_FrustrumPass->Dispatch({ m_LightCullingNumThreadGroups,1 });
-			Renderer::EndComputePass(m_FrustrumPass);
+			//Renderer::BeginComputePass(m_CommandBuffer, m_FrustrumPass);	
+			//m_FrustrumPass->PushData("u_PushData", &m_LightCullingNumThreads);
+			//m_FrustrumPass->Dispatch({ m_LightCullingNumThreadGroups,1 });
+			//Renderer::EndComputePass(m_FrustrumPass);
 			m_Timers.LightCalculateGridFrustum = timer.ElapsedMillis();
 		}
 
@@ -1371,8 +1374,8 @@ namespace Proof
 
 			m_LightCullingPass->SetInput("u_DepthTexture", m_PreDepthPass->GetTargetFrameBuffer()->GetDepthOutput().As<Image2D>());
 			Renderer::BeginComputePass(m_CommandBuffer, m_LightCullingPass);
-			m_LightCullingPass->PushData("u_PushData", &m_LightCullingNumThreads);
-			m_LightCullingPass->Dispatch({ m_LightCullingNumThreadGroups,1 });
+			//m_LightCullingPass->PushData("u_PushData", &m_LightCullingNumThreads);
+			m_LightCullingPass->Dispatch(m_LightCullingWorkGroups);
 
 			Renderer::Submit([commandBuffer = m_CommandBuffer ]()
 				{
