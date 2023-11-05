@@ -484,7 +484,7 @@ namespace Proof
 		glm::uvec3 m_LightCullingWorkGroups;
 
 		inline static const uint32_t TILE_SIZE = 16u;
-		inline static const uint32_t MAX_NUM_LIGHTS_PER_TILE = 16u;
+		inline static const uint32_t MAX_NUM_LIGHTS_PER_TILE = 1024u;
 		inline static const float FRUSTRUM_SIZE = (sizeof(float) * 4) * 4;
 	private:
 		void Init();
