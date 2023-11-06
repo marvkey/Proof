@@ -206,7 +206,7 @@ namespace Proof{
 		m_Size = data.GetSize();
 
 		Build();
-		RT_SetData(data);
+		SetData(data);
 	}
 	void VulkanStorageBuffer::SetData(Buffer data, uint64_t offset)
 	{

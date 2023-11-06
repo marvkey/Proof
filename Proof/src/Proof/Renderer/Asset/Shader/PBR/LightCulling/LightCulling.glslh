@@ -85,8 +85,6 @@ struct Cone
     float  Height;   // Height of the cone.
     vec3 Direction;   // Direction of the cone.
     float  Radius;   // bottom radius of the cone.
-
-    
 };
 bool PointInsidePlane( vec3 p, Plane plane )
 {

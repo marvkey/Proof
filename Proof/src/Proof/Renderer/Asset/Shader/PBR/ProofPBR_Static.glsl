@@ -316,7 +316,7 @@ void main()
 
     vec3 finalColor = directLighting * shadowScale ;
     finalColor += CalculatePointLights(F0, Input.WorldPosition);
-    //finalColor += CalculateSpotLights(F0, Input.WorldPosition); //* sahdow
+    finalColor += CalculateSpotLights(F0, Input.WorldPosition); //* sahdow
 
 
     out_FragColor = vec4(finalColor + iblEfeect ,1.0);

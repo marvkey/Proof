@@ -73,11 +73,63 @@ World:
         Tag: Point Light
         tags: []
       TransformComponent:
-        Location: [0, 3.4000001, 0]
+        Location: [0, 84.0999985, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       PointLightComponent:
-        {}
+        Color: [1, 1, 1]
+        Intensity: 1
+        MinRadius: 0
+        Radius: 5.26999998
+        Falloff: 1
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5
+    - Entity: 12804947512353635165
+      TagComponent:
+        Tag: Spot Light
+        tags: []
+      TransformComponent:
+        Location: [0.017909646, 6.69440746, 3.1184895]
+        Rotation: [0, -0, 1.5254178]
+        Scale: [11.3999987, 0.99999994, 0.999999821]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SpotLightComponent:
+        Color: [1, 0, 0]
+        Intensity: 1
+        Range: 5
+        Angle: 53.25
+        AngleAttenuation: 6.5
+        Falloff: 0
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5
+    - Entity: 4978049912776091587
+      TagComponent:
+        Tag: Spot Light
+        tags: []
+      TransformComponent:
+        Location: [0, 1.49399996, 0.717999995]
+        Rotation: [0, -0, 1.5254178]
+        Scale: [11.3999987, 0.99999994, 0.999999821]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SpotLightComponent:
+        Color: [0, 0.275754362, 0.854838729]
+        Intensity: 3.5
+        Range: 5
+        Angle: 53.25
+        AngleAttenuation: 6.5
+        Falloff: 0
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5

@@ -167,8 +167,6 @@ namespace Proof {
 							pointLight.ShadowSoftness,
 					};
 					pointLightIndex++;
-					if (pointLightIndex > 1)
-						PF_ENGINE_INFO("{}",pointLightIndex);
 				}
 				if (!pointLights.empty())
 				{
@@ -189,9 +187,8 @@ namespace Proof {
 					auto transform = GetWorldSpaceTransformComponent(entity);
 					//auto transform = GetWorldSpaceTransform(entity);
 					glm::vec3 direction = glm::normalize(glm::rotate(transform.GetRotation(), glm::vec3(1.0f, 0.0f, 0.0f)));
-					//glm::vec3 direction = glm::normalize(glm::rotate(transform.GetRotation(), glm::vec3(1.0f, 0.0f, 0.0f)));
 
-					spotLightSceneData.SpotLights[spotLightIndex++] = {
+					spotLightSceneData.SpotLights[spotLightIndex] = {
 						transform.Location,
 						spotLight.Intensity,
 						direction,
@@ -205,6 +202,7 @@ namespace Proof {
 						spotLight.ShadowStrength,
 						spotLight.ShadowSoftness,
 					};
+					spotLightIndex++;
 				}
 				if (!spotLights.empty())
 				{

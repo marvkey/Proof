@@ -262,7 +262,8 @@ namespace Proof
 			glm::uvec2 size = viewportSize;
 			size += TILE_SIZE - viewportSize % TILE_SIZE;
 			m_LightCullingWorkGroups = glm::uvec3{ size / TILE_SIZE, 1u };
-			m_SBVisiblePointLightIndicesBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
+			m_SBVisiblePointLightIndicesBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(int) * MAX_NUM_LIGHTS_PER_TILE);
+			m_SBVisibleSpotLightIndicesBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(int) * MAX_NUM_LIGHTS_PER_TILE);
 
 			ComputePipelineConfig lightCullingpipeline;
 			lightCullingpipeline.DebugName = "LightCulling";
@@ -271,7 +272,9 @@ namespace Proof
 			m_LightCullingPass->AddGlobalInput(m_GlobalInputs);
 			m_LightCullingPass->SetInput("u_DepthTexture", m_PreDepthPass->GetOutput(0).As<Image2D>());
 			m_LightCullingPass->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
+			m_LightCullingPass->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
 			m_LightCullingPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
+			m_LightCullingPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
 			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
 
 		}
@@ -408,6 +411,7 @@ namespace Proof
 			m_GeometryPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
 
 			m_GeometryPass->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
+			m_GeometryPass->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
 
 			//m_GeometryPass->SetInput("SpotLightIndexListBuffer", m_SpotLightIndexListBuffer);
 		}
@@ -686,7 +690,8 @@ namespace Proof
 
 				for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 				{
-					m_SBVisiblePointLightIndicesBuffer->Resize(i, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
+					m_SBVisiblePointLightIndicesBuffer->Resize(i, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(int) * MAX_NUM_LIGHTS_PER_TILE);
+					m_SBVisibleSpotLightIndicesBuffer->Resize(i, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(int) * MAX_NUM_LIGHTS_PER_TILE);
 				}
 
 			}

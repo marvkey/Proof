@@ -761,8 +761,19 @@ namespace Proof
 			UI::AttributeDrag("Intensity", pl.Intensity, 0.01, 0.0f, Math::GetMaxType<float>());
 			UI::AttributeDrag("MinRadius", pl.MinRadius, 0.01, 0.0f, pl.Radius);
 			UI::AttributeDrag("Radius", pl.Radius, 0.01, 0.0f);
-			UI::AttributeDrag("Falloff", pl.Falloff, 0.005,0,1.0);
+			UI::AttributeDrag("Falloff", pl.Falloff, 0.005,0);
+			UI::AttributeBool("Cast Shadows", pl.CastsShadows);
 
+			if (pl.CastsShadows)
+			{
+				UI::AttributeSlider("ShadowStrength", pl.ShadowStrength, 0, 1);
+				UI::AttributeBool("CastSoftShadows", pl.SoftShadows);
+
+				if (pl.SoftShadows)
+				{
+					UI::AttributeSlider("ShadowSoftness", pl.ShadowSoftness, 0, 1);
+				}
+			}
 			UI::EndPropertyGrid();
 
 		});
@@ -772,21 +783,20 @@ namespace Proof
 
 			UI::AttributeColor("Color", sl.Color);
 			UI::AttributeDrag("Intensity", sl.Intensity, 0.01, 0.0f);
-			UI::AttributeDrag("AngleAttenuation", sl.AngleAttenuation, 0.25, 0.0f);
-			UI::AttributeDrag("Falloff", sl.Falloff, 0.005, 0);
 			UI::AttributeDrag("Range", sl.Range, 0.25, 0);
 			UI::AttributeDrag("Angle", sl.Angle, 0.25, 0, 180);
-			//ImGui::ColorEdit3("Ambient", sl.Color.GetValue_Ptr());
-			//ImGui::DragFloat("Intensity", &sl.Intensity, 0.01, 0.0f, 100);
-			//
-			//ImGui::DragFloat("Radius", &sl.Radius, 0.01, 0.0f, 100);
-			//
-			//ImGui::NewLine();
-			//ImGui::DragFloat("Constant", &sl.Constant, 0.001);
-			//ImGui::DragFloat("Linear", &sl.Linear, 0.001);
-			//ImGui::DragFloat("Quadratic", &sl.Quadratic, 0.001);
-			//ImGui::DragFloat("CutOff", &sl.CutOff, 0.001);
-			//ImGui::DragFloat("Outer-Cutoff", &sl.OuterCutOff, 0.001);
+			UI::AttributeDrag("AngleAttenuation", sl.AngleAttenuation, 0.25, 0.0f);
+			UI::AttributeDrag("Falloff", sl.Falloff, 0.005, 0);
+			if (sl.CastsShadows)
+			{
+				UI::AttributeSlider("ShadowStrength", sl.ShadowStrength, 0, 1);
+				UI::AttributeBool("CastSoftShadows", sl.SoftShadows);
+
+				if (sl.SoftShadows)
+				{
+					UI::AttributeSlider("ShadowSoftness", sl.ShadowSoftness, 0, 1);
+				}
+			}
 
 			UI::EndPropertyGrid();
 

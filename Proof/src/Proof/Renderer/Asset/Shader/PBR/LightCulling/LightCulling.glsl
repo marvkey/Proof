@@ -7,10 +7,6 @@
 //https://github.com/bcrusco/Forward-Plus-Renderer/blob/master/Forward-Plus/Forward-Plus/source/shaders/light_culling.comp.glsl
 layout(set = 1, binding = 0) uniform sampler2D u_DepthTexture;
 
-
-
-//https://www.3dgep.com/forward-plus/#Compute_MinMax_Depth_Values
-
 struct Frustum 
 {
     vec4 Planes[6]; // Array to store the six frustum planes
@@ -20,6 +16,39 @@ struct Sphere
     vec3 Center;   // Center point.
     float Radius;   // Radius.
 };
+
+struct Cone
+{
+    vec3 Tip;   // Cone tip.
+    float  Height;   // Height of the cone.
+    vec3 Direction;   // Direction of the cone.
+    float  Radius;   // bottom radius of the cone.
+};
+
+bool IsConeInFrustum(Cone cone, Frustum frustum) 
+{
+   // Define the apex and base of the cone
+    vec3 apex = cone.Tip;
+    vec3 base = cone.Tip + cone.Height * cone.Direction;
+    
+    // Iterate over the frustum planes
+    for (int i = 0; i < 6; i++) 
+    {
+        vec3 normal = frustum.Planes[i].xyz;
+        float distanceToApex = dot(frustum.Planes[i], vec4(apex, 1.0));
+        float distanceToBase = dot(frustum.Planes[i], vec4(base, 1.0));
+
+        // Check if both apex and base are outside the frustum plane
+        if (distanceToApex < 0.0 && distanceToBase < 0.0) 
+        {
+            // The entire cone is outside this frustum plane.
+            return false;
+        }
+    }
+
+    // If the loop completes without returning, the cone is at least partially inside the frustum.
+    return true;
+}
 bool IsSphereInFrustum(Sphere sphere, Frustum frustum) 
 {
 	    for (int i = 0; i < 6; i++) 
@@ -52,8 +81,10 @@ float ScreenSpaceToViewSpaceDepth(const float screenDepth)
 shared uint minDepthInt;
 shared uint maxDepthInt;
 shared uint visiblePointLightCount;
+shared uint visibleSpotLightCount;
 shared Frustum frustrumPlane;
 shared int visiblePointLightIndices[MAX_NUM_LIGHTS_PER_TILE];
+shared int visibleSpotLightIndices[MAX_NUM_LIGHTS_PER_TILE];
 
 layout (local_size_x = TILE_SIZE,local_size_y = TILE_SIZE) in;
 void main()
@@ -71,7 +102,7 @@ void main()
 		minDepthInt = 0xFFFFFFFF;
 		maxDepthInt = 0;
 		visiblePointLightCount = 0;
-		//visibleSpotLightCount = 0;
+		visibleSpotLightCount = 0;
     }
 
     barrier();
@@ -129,7 +160,7 @@ void main()
 		uint lightIndex = i * threadCount + gl_LocalInvocationIndex;
 		if (lightIndex >= u_LightData.PointLightCount)
 		    break;
-
+			
 		Sphere sphere;
 		sphere.Center = s_PointLights.Lights[lightIndex].Position;
 		sphere.Radius = s_PointLights.Lights[lightIndex].Radius;
@@ -139,7 +170,43 @@ void main()
 			visiblePointLightIndices[offset] = int(lightIndex);
 		}
     }
+	passCount = (u_LightData.SpotLightCount + threadCount - 1) / threadCount;
+	for (uint i = 0; i < passCount; i++)
+	{
+		uint lightIndex = i * threadCount + gl_LocalInvocationIndex;
+		if (lightIndex >= u_LightData.SpotLightCount)
+		    break;
+		SpotLight light =s_SpotLights.Lights[lightIndex];
+			float radius = light.Range;
+		// Check if light radius is in frustum
+		float distance = 0.0;
+		for (uint j = 0; j < 6; j++)
+		{
+			distance = dot(vec4(light.Position - light.Direction * (light.Range), 1.0), frustrumPlane.Planes[j]) + radius;
+			if (distance < 0.0) // No intersection
+				break;
+		}
 
+		// If greater than zero, then it is a visible light
+		if (distance > 0.0)
+		{
+			// Add index to the shared array of visible indices
+			uint offset = atomicAdd(visibleSpotLightCount, 1);
+			visibleSpotLightIndices[offset] = int(lightIndex);
+		} 
+		/*
+		float angleRadians = radians(light.Angle);
+		float coneRadius = tan( angleRadians/2 ) * light.Range;
+
+		Cone cone = {light.Position, light.Range,normalize(light.Direction),coneRadius};
+
+		if(IsConeInFrustum(cone,frustrumPlane))
+		{
+			uint offset = atomicAdd(visibleSpotLightCount, 1);
+			visibleSpotLightIndices[offset] = int(lightIndex);
+		}
+		*/
+	}
 	barrier();
 
     // One thread should fill the global light buffer
@@ -158,6 +225,18 @@ void main()
 		    // Unless we have totally filled the entire array, mark it's end with -1
 		    // Final shader step will use this to determine where to stop (without having to pass the light count)
 			s_PointLightIndexList.Indices[offset + visiblePointLightCount] = -1;
+		}
+
+		for (uint i = 0; i < visibleSpotLightCount; i++) 
+		{
+			s_SpotLightIndexList.Indices[offset + i] = visibleSpotLightIndices[i];
+		}
+
+		if (visibleSpotLightCount != MAX_NUM_LIGHTS_PER_TILE)
+		{
+		    // Unless we have totally filled the entire array, mark it's end with -1
+		    // Final shader step will use this to determine where to stop (without having to pass the light count)
+			s_SpotLightIndexList.Indices[offset + visibleSpotLightCount] = -1;
 		}
 
 	}
