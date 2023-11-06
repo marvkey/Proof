@@ -258,95 +258,11 @@ namespace Proof
 		}
 		//foward plus
 		{
-#if 0
-
-			//https://www.3dgep.com/forward-plus/#Forward
-			// look at the bottom for the zip to all code
-			//https://drive.google.com/uc?export=download&id=1zCU3ahVYXOoZ3PPdsE6mYtJbHZgLmKOh
-
-			constexpr uint32_t TILE_SIZE = 16u;
-			glm::uvec2 size = m_UBScreenData.FullResolution;
-			m_LightCullingWorkGroups = glm::ceil(glm::vec3(size.x / (float)TILE_SIZE, size.y / (float)TILE_SIZE, 1));
-			m_LightCullingNumThreads = m_LightCullingWorkGroups * glm::uvec3{ TILE_SIZE , TILE_SIZE ,1 };
-
-			// plane {vec3 normal, float distnace} = sizeof(float) *4
-			//Frustrum{ Plane[4]] (sizeof(float) *4 ) * 4
-			const float frusturmSize = (sizeof(float) * 4) * 4;
-			m_FrustrumsBuffer = StorageBufferSet::Create(frusturmSize * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * m_LightCullingNumThreads.z);
-
-			ComputePipelineConfig pipeline;
-			pipeline.DebugName = "FrustrumGrid";
-			pipeline.Shader = Renderer::GetShader("FrustrumGrid");
-			m_FrustrumPass = ComputePass::Create({ "frustrumPass",ComputePipeline::Create(pipeline) });
-			m_FrustrumPass->SetInput("OutFrustums", m_FrustrumsBuffer);
-			m_FrustrumPass->AddGlobalInput(m_GlobalInputs);
-
-			//m_FrustrumPass->SetInput("CameraData", m_UBCameraBuffer);
-			//m_FrustrumPass->SetInput("ScreenData", m_UBScreenBuffer);
-
-			ImageConfiguration imageConfig;
-			imageConfig.DebugName = "PointLightGrid";
-			imageConfig.Format = ImageFormat::RG32UI;
-			imageConfig.Transfer = true;
-			imageConfig.Usage = ImageUsage::Storage;
-			
-			imageConfig.Width = m_LightCullingNumThreads.x;
-			imageConfig.Height = m_LightCullingNumThreads.y;
-			imageConfig.Layers = m_LightCullingNumThreads.z;
-
-			m_PointLightGrid = Image2D::Create(imageConfig);
-			imageConfig.DebugName = "SpotLightGrid";
-			m_SpotLightGrid = Image2D::Create(imageConfig);
-
-			m_PointLightIndexCounterBuffer = StorageBufferSet::Create(sizeof(uint32_t));
-			m_SpotLightIndexCounterBuffer = StorageBufferSet::Create(sizeof(uint32_t));
-
-			// 
-			m_PointLightIndexListBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
-			m_SpotLightIndexListBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
-
-			ComputePipelineConfig lightCullingpipeline;
-			lightCullingpipeline.DebugName = "LightCulling";
-			lightCullingpipeline.Shader = Renderer::GetShader("LightCulling");
-			m_LightCullingPass = ComputePass::Create({ "LightCulling",ComputePipeline::Create(lightCullingpipeline) });
-
-			m_LightCullingPass->SetInput("Frustrums", m_FrustrumsBuffer);
-			m_LightCullingPass->SetInput("PointLightIndexCounterBuffer", m_PointLightIndexCounterBuffer);
-			m_LightCullingPass->SetInput("SpotLightIndexCounterBuffer", m_SpotLightIndexCounterBuffer);
-			m_LightCullingPass->SetInput("PointLightIndexListBuffer", m_PointLightIndexListBuffer);
-			m_LightCullingPass->SetInput("SpotLightIndexListBuffer", m_SpotLightIndexListBuffer);
-
-			m_LightCullingPass->SetInput("u_ImagePointLightGrid", m_PointLightGrid);
-			m_LightCullingPass->SetInput("u_ImageSpotLightGrid", m_SpotLightGrid);
-			m_LightCullingPass->SetInput("u_PointLightGrid", m_PointLightGrid);
-			m_LightCullingPass->SetInput("u_SpotLightGrid", m_SpotLightGrid);
-
-			m_LightCullingPass->AddGlobalInput(m_GlobalInputs);
-
-			//m_LightCullingPass->SetInput("CameraData", m_UBCameraBuffer);
-			//m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
-			m_LightCullingPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
-			m_LightCullingPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
-			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
-			//m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
-#endif
-			//m_LightCullingNumThreads = (viewportSize + TILE_SIZE - 1u) / TILE_SIZE;
 
 			glm::uvec2 size = viewportSize;
 			size += TILE_SIZE - viewportSize % TILE_SIZE;
 			m_LightCullingWorkGroups = glm::uvec3{ size / TILE_SIZE, 1u };
-
-			m_FrustrumsBuffer = StorageBufferSet::Create(FRUSTRUM_SIZE * m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * 1);
-			// TODO are these right
-			m_PointLightIndexListBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
-			m_PointLightGrid = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t));
-
-			ComputePipelineConfig pipeline;
-			pipeline.DebugName = "FrustrumGrid";
-			pipeline.Shader = Renderer::GetShader("FrustrumGrid");
-			m_FrustrumPass = ComputePass::Create({ "frustrumPass",ComputePipeline::Create(pipeline) });
-			m_FrustrumPass->AddGlobalInput(m_GlobalInputs);
-			m_FrustrumPass->SetInput("OutFrustums", m_FrustrumsBuffer);
+			m_SBVisiblePointLightIndicesBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
 
 			ComputePipelineConfig lightCullingpipeline;
 			lightCullingpipeline.DebugName = "LightCulling";
@@ -354,11 +270,9 @@ namespace Proof
 			m_LightCullingPass = ComputePass::Create({ "LightCulling",ComputePipeline::Create(lightCullingpipeline) });
 			m_LightCullingPass->AddGlobalInput(m_GlobalInputs);
 			m_LightCullingPass->SetInput("u_DepthTexture", m_PreDepthPass->GetOutput(0).As<Image2D>());
-			m_LightCullingPass->SetInput("Frustrums", m_FrustrumsBuffer);
-			m_LightCullingPass->SetInput("PointLightIndexListBuffer", m_PointLightIndexListBuffer);
+			m_LightCullingPass->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
 			m_LightCullingPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
 			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
-			m_LightCullingPass->SetInput("PointLightGrid", m_PointLightGrid);
 
 		}
 
@@ -493,8 +407,7 @@ namespace Proof
 			//m_GeometryPass->SetInput("u_SpotLightGrid", m_SpotLightGrid);
 			m_GeometryPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
 
-			m_GeometryPass->SetInput("PointLightIndexListBuffer", m_PointLightIndexListBuffer);
-			m_GeometryPass->SetInput("PointLightGrid", m_PointLightGrid);
+			m_GeometryPass->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
 
 			//m_GeometryPass->SetInput("SpotLightIndexListBuffer", m_SpotLightIndexListBuffer);
 		}
@@ -773,9 +686,7 @@ namespace Proof
 
 				for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 				{
-					m_PointLightIndexListBuffer->Resize(i, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
-					m_FrustrumsBuffer->Resize(i, FRUSTRUM_SIZE * m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * 1);
-					m_PointLightGrid->Resize(i, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t));
+					m_SBVisiblePointLightIndicesBuffer->Resize(i, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * MAX_NUM_LIGHTS_PER_TILE);
 				}
 
 			}

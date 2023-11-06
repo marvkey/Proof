@@ -380,10 +380,9 @@ namespace Proof
 		PointLightComponent() = default;
 		glm::vec3 Color { 1 };
 		float Intensity =1; // min =0, max = 500f;
-		float MinRadius =1; // min  = 0,maximum should be Radius
+		float MinRadius =0; // min  = 0,maximum should be Radius
 		float Radius =10;// min is 0, max max float
 		float Falloff =1.0f; //min is 0, represent how far before the light becomes weaker
-		glm::vec3 OffsetLocation { 0 };
 		bool CastsShadows = false;
 		bool SoftShadows = false;
 		float ShadowStrength =0.5f;// 0.0 to 1.0 how dark sahdow is

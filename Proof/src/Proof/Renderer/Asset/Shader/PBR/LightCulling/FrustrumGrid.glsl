@@ -2,6 +2,7 @@
 #version 450 core
 #include <Common.glslh>
 #include <PBR/LightCulling/LightCulling.glslh>
+#include <PBR/Lights.glslh>
 
 //https://www.3dgep.com/forward-plus/#Forward
 

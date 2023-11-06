@@ -1,7 +1,5 @@
 #ifndef LIGHT_CULLING_FUNCTIONS
 #define LIGHT_CULLING_FUNCTIONS
-#define TILE_SIZE 16 
-#define MAX_NUM_LIGHTS_PER_TILE 1024
 
 //https://www.3dgep.com/forward-plus/#Forward
 

@@ -471,21 +471,13 @@ namespace Proof
 		WorldRendererTimers& m_Timers;
 		UBLightScene& m_LightScene;
 
-		// fowardplus
-		Count<StorageBufferSet> m_FrustrumsBuffer;
-		Count<class ComputePass> m_FrustrumPass;
-		Count<class ComputePass> m_LightCullingPass;
-		//Count<Image2D> m_PointLightGrid;
-		//Count<Image2D> m_SpotLightGrid;
-
-		Count<StorageBufferSet> m_PointLightGrid;
-		Count<StorageBufferSet> m_PointLightIndexListBuffer;
-		Count<StorageBufferSet> m_SpotLightIndexListBuffer;
 		glm::uvec3 m_LightCullingWorkGroups;
+		Count<class ComputePass> m_LightCullingPass;
+		Count<StorageBufferSet> m_SBVisiblePointLightIndicesBuffer;
+		Count<StorageBufferSet> m_SBVisibleSpotLightIndicesBuffer;
 
 		inline static const uint32_t TILE_SIZE = 16u;
 		inline static const uint32_t MAX_NUM_LIGHTS_PER_TILE = 1024u;
-		inline static const float FRUSTRUM_SIZE = (sizeof(float) * 4) * 4;
 	private:
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);

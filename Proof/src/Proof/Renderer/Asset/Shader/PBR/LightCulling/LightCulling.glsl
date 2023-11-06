@@ -1,43 +1,58 @@
 #Compute Shader
 #version 450 core
 #include <Common.glslh>
-#include <PBR/LightCulling/LightCulling.glslh>
 #include <PBR/Lights.glslh>
 
-//https://www.3dgep.com/forward-plus/#Forward
-//https://anteru.net/blog/2016/mapping-between-HLSL-and-GLSL/
-//https://github.com/snowzurfer/vulkan-forward-plus/blob/master/assets/shaders/light_culling.comp
-//https://github.com/zimengyang/ForwardPlus_Vulkan/blob/master/src/shaders/computeLightList.comp
-//layout(push_constant) uniform PushConstants
-//{
-//    uvec3 NumThreads;
-//} u_PushData;
-// The depth from the screen space texture.
+//https://github.com/InCloudsBelly/X2_RenderingEngine/blob/e7c349b70bd95af3ab673556cdb56cb2cc40b48e/Resources/Shaders/LightCulling.glsl
+//https://github.com/bcrusco/Forward-Plus-Renderer/blob/master/Forward-Plus/Forward-Plus/source/shaders/light_culling.comp.glsl
 layout(set = 1, binding = 0) uniform sampler2D u_DepthTexture;
 
-// Precomputed frustums for the grid.
-layout(set = 1, binding = 1) buffer Frustrums
+
+
+//https://www.3dgep.com/forward-plus/#Compute_MinMax_Depth_Values
+
+struct Frustum 
 {
-    Frustum u_Frustrums[];
+    vec4 Planes[6]; // Array to store the six frustum planes
 };
-layout(push_constant) uniform PushConstants
+struct Sphere
 {
-    uvec2 NumThreads;
-} u_PushData;
+    vec3 Center;   // Center point.
+    float Radius;   // Radius.
+};
+bool IsSphereInFrustum(Sphere sphere, Frustum frustum) 
+{
+	    for (int i = 0; i < 6; i++) 
+		{
+			float distance = dot(frustum.Planes[i], vec4(sphere.Center, 1.0));
+			if (distance < -sphere.Radius) 
+			{
+				// The sphere is completely outside this frustum plane.
+				return false;
+			}
+        }
+    return true;
+}
+bool IsSphereInsidePlane(Sphere sphere, vec4 plane)
+{
+    // Calculate the signed distance from the sphere center to the plane.
+    float distance = dot(vec4(sphere.Center, 1.0), plane);
 
-
+    // If the distance is greater than or equal to the negative radius, the sphere is inside the plane.
+    return distance >= -sphere.Radius;
+}
 float ScreenSpaceToViewSpaceDepth(const float screenDepth)
 {
 	float depthLinearizeMul = -u_Camera.Projection[3][2];
 	float depthLinearizeAdd = u_Camera.Projection[2][2];
 
-	return depthLinearizeMul / (depthLinearizeAdd - screenDepth);
+	return depthLinearizeMul / (screenDepth +depthLinearizeAdd );
 }
 
 shared uint minDepthInt;
 shared uint maxDepthInt;
 shared uint visiblePointLightCount;
-shared vec4 frustumPlanes[6];
+shared Frustum frustrumPlane;
 shared int visiblePointLightIndices[MAX_NUM_LIGHTS_PER_TILE];
 
 layout (local_size_x = TILE_SIZE,local_size_y = TILE_SIZE) in;
@@ -66,7 +81,7 @@ void main()
     float linearDepth = ScreenSpaceToViewSpaceDepth(textureLod(u_DepthTexture, tc, 0).r);
 
     // Convert depth to uint so we can do atomic min and max comparisons between the threads
-    uint depthInt = floatBitsToUint(linearDepth);
+    uint depthInt = floatBitsToUint(-linearDepth);
     atomicMin(minDepthInt, depthInt);
     atomicMax(maxDepthInt, depthInt);
 
@@ -82,25 +97,25 @@ void main()
 		vec2 positiveStep = (2.0 * vec2(tileID + ivec2(1, 1))) / vec2(tileNumber);
 
 		// Set up starting values for planes using steps and min and max z values
-		frustumPlanes[0] = vec4(1.0, 0.0, 0.0, 1.0 - negativeStep.x); // Left
-		frustumPlanes[1] = vec4(-1.0, 0.0, 0.0, -1.0 + positiveStep.x); // Right
-		frustumPlanes[2] = vec4(0.0, 1.0, 0.0, 1.0 - negativeStep.y); // Bottom
-		frustumPlanes[3] = vec4(0.0, -1.0, 0.0, -1.0 + positiveStep.y); // Top
-		frustumPlanes[4] = vec4(0.0, 0.0, -1.0, -minDepth); // Near
-		frustumPlanes[5] = vec4(0.0, 0.0, 1.0, maxDepth); // Far
+		frustrumPlane.Planes[0] = vec4(1.0, 0.0, 0.0, 1.0 - negativeStep.x); // Left
+		frustrumPlane.Planes[1] = vec4(-1.0, 0.0, 0.0, -1.0 + positiveStep.x); // Right
+		frustrumPlane.Planes[2] = vec4(0.0, 1.0, 0.0, 1.0 - negativeStep.y); // Bottom
+		frustrumPlane.Planes[3] = vec4(0.0, -1.0, 0.0, -1.0 + positiveStep.y); // Top
+		frustrumPlane.Planes[4] = vec4(0.0, 0.0, -1.0, -minDepth); // Near
+		frustrumPlane.Planes[5] = vec4(0.0, 0.0, 1.0, maxDepth); // Far
 
 		// Transform the first four planes
 		for (uint i = 0; i < 4; i++)
 		{
-		    frustumPlanes[i] *= u_Camera.ViewProjectionMatrix;
-		    frustumPlanes[i] /= length(frustumPlanes[i].xyz);
+		    frustrumPlane.Planes[i] *= u_Camera.ViewProjectionMatrix;
+		    frustrumPlane.Planes[i] /= length(frustrumPlane.Planes[i].xyz);
 		}
 
 		// Transform the depth planes
-		frustumPlanes[4] *= u_Camera.View;
-		frustumPlanes[4] /= length(frustumPlanes[4].xyz);
-		frustumPlanes[5] *= u_Camera.View;
-		frustumPlanes[5] /= length(frustumPlanes[5].xyz);
+		frustrumPlane.Planes[4] *= u_Camera.View;
+		frustrumPlane.Planes[4] /= length(frustrumPlane.Planes[4].xyz);
+		frustrumPlane.Planes[5] *= u_Camera.View;
+		frustrumPlane.Planes[5] /= length(frustrumPlane.Planes[5].xyz);
     }
 
 	 // Step 3: Cull lights.
@@ -108,7 +123,6 @@ void main()
     // Can handle 256 simultaniously. Anymore lights than that and additional passes are performed
     const uint threadCount = TILE_SIZE * TILE_SIZE;
 	uint passCount = (u_LightData.PointLightCount + threadCount - 1) / threadCount;
-
 	for (uint i = 0; i < passCount; i++)
     {
 		// Get the lightIndex to test for this thread / pass. If the index is >= light count, then this thread can stop testing lights
@@ -116,27 +130,14 @@ void main()
 		if (lightIndex >= u_LightData.PointLightCount)
 		    break;
 
-		vec4 position = vec4(s_PointLights.Lights[lightIndex].Position, 1.0f);
-		float radius = s_PointLights.Lights[lightIndex].Radius;
-		//radius += radius * 0.3f;
-
-		// Check if light radius is in frustum
-		float distance = 0.0;
-		for (uint j = 0; j < 6; j++)
+		Sphere sphere;
+		sphere.Center = s_PointLights.Lights[lightIndex].Position;
+		sphere.Radius = s_PointLights.Lights[lightIndex].Radius;
+		if(IsSphereInFrustum(sphere,frustrumPlane))
 		{
-		    distance = dot(position, frustumPlanes[j]) + radius;
-		    if (distance <= 0.0) // No intersection
-				break;
+			uint offset = atomicAdd(visiblePointLightCount, 1);
+			visiblePointLightIndices[offset] = int(lightIndex);
 		}
-
-		// If greater than zero, then it is a visible light
-		if (distance <= 0.0)
-		{
-		    // Add index to the shared array of visible indices
-		    uint offset = atomicAdd(visiblePointLightCount, 1);
-		    visiblePointLightIndices[offset] = -1;
-		}
-
     }
 
 	barrier();
@@ -149,8 +150,7 @@ void main()
 
 		for (uint i = 0; i < visiblePointLightCount; i++) 
 		{
-			//s_PointLightIndexList[offset + i] = visiblePointLightIndices[i];
-			s_PointLightIndexList.Indices[offset + i] =-1;
+			s_PointLightIndexList.Indices[offset + i] = visiblePointLightIndices[i];
 		}
 
 		if (visiblePointLightCount != MAX_NUM_LIGHTS_PER_TILE)

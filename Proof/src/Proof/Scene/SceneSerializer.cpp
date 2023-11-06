@@ -581,13 +581,38 @@ namespace Proof
 					PointLightComponent& pointLight = entity.GetComponent<PointLightComponent>();
 					out << YAML::Key << "PointLightComponent";
 					out << YAML::BeginMap; // PointLightComponent
-					//out << YAML::Key << "Color" << pointLight.Color;
-					//out << YAML::Key << "Intensity" << pointLight.Intensity;
-					//
-					//out << YAML::Key << "Constant" << pointLight.Constant;
-					//out << YAML::Key << "Linear" << pointLight.Linear;
-					//out << YAML::Key << "Quadratic" << pointLight.Quadratic;
-					//out << YAML::Key << "Radius" << pointLight.Radius;
+					out << YAML::Key << "Color" << pointLight.Color;
+					out << YAML::Key << "Intensity" << pointLight.Intensity;
+					out << YAML::Key << "MinRadius" << pointLight.MinRadius;
+					out << YAML::Key << "Radius" << pointLight.Radius;
+					out << YAML::Key << "Falloff" << pointLight.Falloff;
+					out << YAML::Key << "CastsShadows" << pointLight.CastsShadows;
+					out << YAML::Key << "SoftShadows" << pointLight.SoftShadows;
+					out << YAML::Key << "ShadowStrength" << pointLight.ShadowStrength;
+					out << YAML::Key << "ShadowSoftness" << pointLight.ShadowSoftness;
+					out << YAML::EndMap; // PointLightComponent
+				}
+			}
+
+
+			{
+				if (entity.HasComponent<SpotLightComponent>())
+				{
+					SpotLightComponent& spotLight = entity.GetComponent<SpotLightComponent>();
+
+					out << YAML::Key << "SpotLightComponent";
+					out << YAML::BeginMap; // SpotLightComponent
+
+					out << YAML::Key << "Color" << spotLight.Color;
+					out << YAML::Key << "Intensity" << spotLight.Intensity;
+					out << YAML::Key << "Range" << spotLight.Range;
+					out << YAML::Key << "Angle" << spotLight.Angle;
+					out << YAML::Key << "AngleAttenuation" << spotLight.AngleAttenuation;
+					out << YAML::Key << "Falloff" << spotLight.Falloff;
+					out << YAML::Key << "CastsShadows" << spotLight.CastsShadows;
+					out << YAML::Key << "SoftShadows" << spotLight.SoftShadows;
+					out << YAML::Key << "ShadowStrength" << spotLight.ShadowStrength;
+					out << YAML::Key << "ShadowSoftness" << spotLight.ShadowSoftness;
 
 					out << YAML::EndMap; // PointLightComponent
 				}
@@ -634,122 +659,8 @@ namespace Proof
 					}
 				}
 				#endif
-
-				#if 0
-				if (registry.all_of<ScriptComponent>(enttID))
-				{
-					ScriptComponent& scriptComponent = registry.get<ScriptComponent>(enttID);
-					out << YAML::Key << "ScriptComponent";
-					out << YAML::BeginMap; //ScriptComponent
-					out << YAML::Key << "Scripts" << YAML::BeginSeq; //scriptSeq
-
-					for (const std::string& scriptName : scriptComponent.ScriptsNames)
-					{
-						//if (!ScriptEngine::EntityClassExists(scriptName))
-							continue;
-						out << YAML::BeginMap;// Script
-						out << YAML::Key << "Script" << scriptName;
-
-						//if (ScriptEngine::HasScriptFieldMap(entityID) == false || ispPrefab == true)
-						//{
-						//	out << YAML::EndMap;//script
-						//	continue;
-						//}
-						out << YAML::Key << "ScriptFields" << YAML::Value;
-						out << YAML::BeginSeq; // scriptfields
-						Count<ScriptClass> entityClass = ScriptEngine::GetScriptClass(scriptName);
-						const auto& fields = entityClass->GetFields();
-						auto& entityFields = ScriptEngine::GetScriptFieldMap(entityID);
-						for (const auto& [fieldName, field] : fields)
-						{
-							if (!entityFields.contains(scriptName))
-								continue;
-							if (!entityFields.at(scriptName).contains(fieldName)) continue;
-
-							out << YAML::BeginMap; // ScriptField
-							out << YAML::Key << "Name" << YAML::Value << fieldName;
-							out << YAML::Key << "Type" << YAML::Value << Utils::ScriptFieldTypeToString(field.Type);
-
-							out << YAML::Key << "Data" << YAML::Value;
-							ScriptFieldInstance& scriptField = entityFields.at(scriptName).at(fieldName);
-
-							switch (field.Type)
-							{
-								WRITE_SCRIPT_FIELD(Float, float);
-								WRITE_SCRIPT_FIELD(Double, double);
-								WRITE_SCRIPT_FIELD(Bool, bool);
-								WRITE_SCRIPT_FIELD(Char, char);
-								WRITE_SCRIPT_FIELD(Int8_t, int8_t);
-								WRITE_SCRIPT_FIELD(Int16_t, int16_t);
-								WRITE_SCRIPT_FIELD(Int32_t, int32_t);
-								WRITE_SCRIPT_FIELD(Int64_t, int64_t);
-								WRITE_SCRIPT_FIELD(Uint8_t, uint8_t);
-								WRITE_SCRIPT_FIELD(Uint16_t, uint16_t);
-								WRITE_SCRIPT_FIELD(Uint32_t, uint32_t);
-								WRITE_SCRIPT_FIELD(Uint64_t, uint64_t);
-								//WRITE_SCRIPT_FIELD(Vector2, Vector);
-								//WRITE_SCRIPT_FIELD(Vector3, glm::vec3);
-								//WRITE_SCRIPT_FIELD(Vector4, glm::vec4);
-								WRITE_SCRIPT_FIELD(Entity, uint64_t);
-								WRITE_SCRIPT_FIELD(Prefab, uint64_t);
-								WRITE_SCRIPT_FIELD(Texture, uint64_t);
-
-								case ScriptFieldType::Enum:
-									{
-										const std::string enumTypeName = ScriptEngine::GetFieldEnumName(field);
-										if (!ScriptEngine::GetEnumClasses().contains(enumTypeName))
-										{
-											out << 0;
-											break;
-										}
-										switch (ScriptEngine::GetEnumClasses().at(enumTypeName).first)
-										{
-											WRITE_SCRIPT_FIELD(Int8_t, int8_t);
-											WRITE_SCRIPT_FIELD(Int16_t, int16_t);
-											WRITE_SCRIPT_FIELD(Int32_t, int32_t);
-											WRITE_SCRIPT_FIELD(Int64_t, int64_t);
-											WRITE_SCRIPT_FIELD(Uint8_t, uint8_t);
-											WRITE_SCRIPT_FIELD(Uint16_t, uint16_t);
-											WRITE_SCRIPT_FIELD(Uint32_t, uint32_t);
-											WRITE_SCRIPT_FIELD(Uint64_t, uint64_t);
-											default: break;
-										}
-										break;
-									}
-							}
-							out << YAML::EndMap; // ScriptField
-						}
-						out << YAML::EndSeq; // scriptfields
-						out << YAML::EndMap;//script
-
-					}
-					out << YAML::EndSeq;//scriptSeq
-					out << YAML::EndMap; // ScriptComponent
-				}
-				#endif
-
 			}
 
-			{
-				if (entity.HasComponent<SpotLightComponent>())
-				{
-					SpotLightComponent& spotLight = entity.GetComponent<SpotLightComponent>();
-
-					out << YAML::Key << "SpotLightComponent";
-					//out << YAML::BeginMap; // PointLightComponent
-					//out << YAML::Key << "Color" << spotLight.Color;
-					//
-					//out << YAML::Key << "Intensity" << spotLight.Intensity;
-					//out << YAML::Key << "Constant" <<spotLight.Constant;
-					//out << YAML::Key << "Linear" << spotLight.Linear;
-					//out << YAML::Key << "Quadratic" << spotLight.Quadratic;
-					//out << YAML::Key << "Radius" << spotLight.Radius;
-					//out << YAML::Key << "OuterCutoff" << spotLight.OuterCutOff;
-					//out << YAML::Key << "CutOff" << spotLight.CutOff;
-
-					out << YAML::EndMap; // PointLightComponent
-				}
-			}
 		}
 		{
 			if (entity.HasComponent<TextComponent>())
@@ -1274,12 +1185,15 @@ namespace Proof
 					if (pointLight)
 					{
 						auto& src = NewEntity.AddComponent<PointLightComponent>();
-						//src.Color = pointLight["Color"].as<Vector>();
-						//src.Intensity = pointLight["Intensity"].as<float>();
-						//src.Constant = pointLight["Constant"].as<float>();
-						//src.Linear = pointLight["Linear"].as<float>();
-						//src.Quadratic = pointLight["Quadratic"].as<float>();
-						//src.Radius = pointLight["Radius"].as<float>();
+						src.Color = pointLight["Color"].as<glm::vec3>(src.Color);
+						src.Intensity = pointLight["Intensity"].as<float>(src.Intensity);
+						src.MinRadius = pointLight["MinRadius"].as<float>(src.MinRadius);
+						src.Radius = pointLight["Radius"].as<float>(src.Radius);
+						src.Falloff = pointLight["Falloff"].as<float>(src.Falloff);
+						src.CastsShadows = pointLight["CastsShadows"].as<bool>(src.CastsShadows);
+						src.SoftShadows = pointLight["SoftShadows"].as<bool>(src.SoftShadows);
+						src.ShadowStrength = pointLight["ShadowStrength"].as<float>(src.ShadowStrength);
+						src.ShadowSoftness = pointLight["ShadowSoftness"].as<float>(src.ShadowSoftness);
 
 					}
 				}
@@ -1289,15 +1203,16 @@ namespace Proof
 					if (spotLight)
 					{
 						auto& src = NewEntity.AddComponent<SpotLightComponent>();
-						//src.Color = spotLight["Color"].as<Vector>();
-						//src.Intensity = spotLight["Intensity"].as<float>();
-						//src.Constant = spotLight["Constant"].as<float>();
-						//src.Linear = spotLight["Linear"].as<float>();
-						//src.Quadratic = spotLight["Quadratic"].as<float>();
-						//src.Radius = spotLight["Radius"].as<float>();
-						//
-						//src.CutOff = spotLight["CutOff"].as<float>();
-						//src.OuterCutOff = spotLight["OuterCutOff"].as<float>();
+						src.Color = spotLight["Color"].as<glm::vec3>(src.Color);
+						src.Intensity = spotLight["Intensity"].as<float>(src.Intensity);
+						src.Range = spotLight["Range"].as<float>(src.Range);
+						src.Angle = spotLight["Angle"].as<float>(src.Angle);
+						src.AngleAttenuation = spotLight["AngleAttenuation"].as<float>(src.AngleAttenuation);
+						src.Falloff = spotLight["Falloff"].as<float>(src.Falloff);
+						src.CastsShadows = spotLight["CastsShadows"].as<bool>(src.CastsShadows);
+						src.SoftShadows = spotLight["SoftShadows"].as<bool>(src.SoftShadows);
+						src.ShadowStrength = spotLight["ShadowStrength"].as<float>(src.ShadowStrength);
+						src.ShadowSoftness = spotLight["ShadowSoftness"].as<float>(src.ShadowSoftness);
 					}
 				}
 			}
