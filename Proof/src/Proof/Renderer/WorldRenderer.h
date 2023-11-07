@@ -94,7 +94,7 @@ namespace Proof
 		float Rotation = 0;
 	};
 	
-	struct PointLight
+	struct alignas(16) PointLight // this is what vulkan uses 16 bytes alignemnt
 	{
 		glm::vec3 Location{ 0 };
 		float Intensity = 1; // min =0, max = 500f;
@@ -105,9 +105,9 @@ namespace Proof
 		int bCastsShadows;
 		int bSoftShadows;
 		float ShadowStrength = 0.5f;// 0.0 to 1.0 how dark sahdow is
-		float ShadowSoftness = 0.5f;//how soft the shadow is from 0.0 to 1.0f 
+		float ShadowSoftness = 0.5f;//how soft the shadow is from 0.0 to 1.0f
 	};
-	struct SpotLight
+	struct alignas(16) SpotLight
 	{
 		glm::vec3 Location{ 0 };
 		float Intensity = 1.0f; // Range: 0.0 to positive infinity.
@@ -390,7 +390,7 @@ namespace Proof
 		//storagebuffer
 		Count<StorageBufferSet> m_SBDirectionalLightsBuffer;
 		Count<StorageBufferSet> m_SBPointLightsBuffer;
-		Count<UniformBufferSet> m_UBSpotLightsBuffer;
+		Count<StorageBufferSet> m_SBSpotLightsBuffer;
 		
 		Count<class GlobalBufferSet> m_GlobalInputs;
 		// mesh data

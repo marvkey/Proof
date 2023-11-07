@@ -185,10 +185,10 @@ namespace Proof {
 					Entity entity(e, this);
 					auto [transformComponent, spotLight] = spotLights.get<TransformComponent, SpotLightComponent>(e);
 					auto transform = GetWorldSpaceTransformComponent(entity);
-					//auto transform = GetWorldSpaceTransform(entity);
 					glm::vec3 direction = glm::normalize(glm::rotate(transform.GetRotation(), glm::vec3(1.0f, 0.0f, 0.0f)));
 
-					spotLightSceneData.SpotLights[spotLightIndex] = {
+					spotLightSceneData.SpotLights[spotLightIndex] = 
+					{
 						transform.Location,
 						spotLight.Intensity,
 						direction,

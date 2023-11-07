@@ -61,9 +61,9 @@ struct SpotLight
 
 };
 
-layout(std140, set = 2, binding = 5) uniform SpotLightBuffer
+layout(std140, set = 2, binding = 5) buffer SpotLightBuffer
 {
-	SpotLight Lights[1024];// dont know other not working
+	SpotLight Lights[];
 } s_SpotLights;
 
 

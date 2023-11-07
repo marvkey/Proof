@@ -1,34 +1,37 @@
 Assets:
-  - Asset: 2958098095559880186
-    Type: World
-    Path: Scenes\LightTest.ProofWorld
   - Asset: 5912072901972600252
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8114461559286000061.jpg
+  - Asset: 2958098095559880186
+    Type: World
+    Path: Scenes\LightTest.ProofWorld
   - Asset: 2403019099758263853
     Type: ScriptFile
     Path: Script\ScriptSpawner.cs
-  - Asset: 11824846558633893989
-    Type: TextureSourceFile
-    Path: HdrMaps\Arches_E_PineTree_3k.hdr
-  - Asset: 17631073705728033736
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5061699253647017043.Texture.ProofAsset
   - Asset: 1165648952014580025
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\755318871556304029.jpg
+  - Asset: 17631073705728033736
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5061699253647017043.Texture.ProofAsset
+  - Asset: 11824846558633893989
+    Type: TextureSourceFile
+    Path: HdrMaps\Arches_E_PineTree_3k.hdr
   - Asset: 9322883649519495229
     Type: Texture
     Path: HdrMaps\qwantani_puresky_4k.Texture.ProofAsset
   - Asset: 2001942831744342266
     Type: TextureSourceFile
     Path: HdrMaps\MegaSun4k.hdr
-  - Asset: 16726134267773242065
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16299174074766089871.jpg
   - Asset: 12458148504177203633
     Type: Texture
     Path: HdrMaps\Arches_E_PineTree_3k.Texture.ProofAsset
+  - Asset: 16726134267773242065
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16299174074766089871.jpg
+  - Asset: 367969175621271410
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13982482287905699490.Texture.ProofAsset
   - Asset: 5041168797412189461
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8747919177698443163.Texture.ProofAsset
@@ -38,84 +41,81 @@ Assets:
   - Asset: 8580427426026160747
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13982482287905699490.jpg
-  - Asset: 367969175621271410
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13982482287905699490.Texture.ProofAsset
-  - Asset: 4048020241950879645
-    Type: Texture
-    Path: HdrMaps\DayInTheClouds4k.Texture.ProofAsset
-  - Asset: 10149125587121140796
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3827035219084910048.Texture.ProofAsset
   - Asset: 16104715042887607263
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11968150294050148237.jpg
-  - Asset: 4460442484181809113
+  - Asset: 10149125587121140796
     Type: Texture
-    Path: HdrMaps\MegaSun4k.Texture.ProofAsset
-  - Asset: 9971561450947974296
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14118779221266351425.jpg
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3827035219084910048.Texture.ProofAsset
+  - Asset: 4048020241950879645
+    Type: Texture
+    Path: HdrMaps\DayInTheClouds4k.Texture.ProofAsset
   - Asset: 16858073098250920158
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\15295713303328085182.jpg
+  - Asset: 9971561450947974296
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14118779221266351425.jpg
+  - Asset: 4460442484181809113
+    Type: Texture
+    Path: HdrMaps\MegaSun4k.Texture.ProofAsset
   - Asset: 6209785345244531942
     Type: TextureSourceFile
     Path: HdrMaps\qwantani_puresky_4k.hdr
   - Asset: 22939415785848343
     Type: TextureSourceFile
     Path: HdrMaps\syferfontein_18d_clear_puresky_4k.hdr
+  - Asset: 5621957470200202893
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14650633544276105767.Texture.ProofAsset
   - Asset: 14616176251278697894
     Type: Texture
     Path: HdrMaps\syferfontein_18d_clear_puresky_4k.Texture.ProofAsset
   - Asset: 7852497480329188382
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11490520546946913238.jpg
-  - Asset: 5621957470200202893
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14650633544276105767.Texture.ProofAsset
-  - Asset: 16683417263941019590
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\10388182081421875623.Texture.ProofAsset
   - Asset: 3762551570911030480
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14170708867020035030.jpg
+  - Asset: 16683417263941019590
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\10388182081421875623.Texture.ProofAsset
   - Asset: 7096967779031159665
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11968150294050148237.Texture.ProofAsset
   - Asset: 8383576194530493894
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\1219024358953944284.Texture.ProofAsset
-  - Asset: 14867506812541570569
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11872827283454512094.jpg
-  - Asset: 10561847320339691955
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13196865903111448057.Texture.ProofAsset
   - Asset: 3986457420476580221
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13824894030729245199.jpg
+  - Asset: 10561847320339691955
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13196865903111448057.Texture.ProofAsset
+  - Asset: 14867506812541570569
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11872827283454512094.jpg
   - Asset: 14115455250202332604
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16299174074766089871.Texture.ProofAsset
   - Asset: 14458865356323968917
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11474523244911310074.jpg
-  - Asset: 11428700106094457159
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7815564343179553343.Texture.ProofAsset
-  - Asset: 16257803352274693779
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2051777328469649772.Texture.ProofAsset
-  - Asset: 10539343645759455791
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14170708867020035030.Texture.ProofAsset
   - Asset: 15464233661020318988
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3455394979645218238.Texture.ProofAsset
   - Asset: 6140651827515927471
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14267839433702832875.Texture.ProofAsset
+  - Asset: 10539343645759455791
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14170708867020035030.Texture.ProofAsset
+  - Asset: 11428700106094457159
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7815564343179553343.Texture.ProofAsset
+  - Asset: 16257803352274693779
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2051777328469649772.Texture.ProofAsset
   - Asset: 6033536370732297986
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8006627369776289000.png
@@ -134,12 +134,12 @@ Assets:
   - Asset: 16253474842811728024
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11474523244911310074.Texture.ProofAsset
-  - Asset: 823164998827613969
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11490520546946913238.Texture.ProofAsset
   - Asset: 8575277772925524622
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\15722799267630235092.Texture.ProofAsset
+  - Asset: 823164998827613969
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11490520546946913238.Texture.ProofAsset
   - Asset: 10447425213086114018
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11872827283454512094.Texture.ProofAsset
@@ -149,12 +149,12 @@ Assets:
   - Asset: 18061536522894938835
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\1219024358953944284.jpg
-  - Asset: 2759577586594016257
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16275776544635328252.png
   - Asset: 4452809211143330653
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\12501374198249454378.jpg
+  - Asset: 2759577586594016257
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16275776544635328252.png
   - Asset: 1194083950941112018
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\12501374198249454378.Texture.ProofAsset
@@ -203,48 +203,48 @@ Assets:
   - Asset: 13818559305199672554
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\17876391417123941155.Texture.ProofAsset
-  - Asset: 223673641344993874
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2051777328469649772.jpg
   - Asset: 7249526592278562992
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\759203620573749278.Texture.ProofAsset
-  - Asset: 624095741792499952
+  - Asset: 223673641344993874
     Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2185409758123873465.jpg
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2051777328469649772.jpg
   - Asset: 386691414574337870
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6667038893015345571.jpg
+  - Asset: 624095741792499952
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2185409758123873465.jpg
   - Asset: 13622543370701699107
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2185409758123873465.Texture.ProofAsset
   - Asset: 18238282378879307977
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2299742237651021498.jpg
-  - Asset: 15308191042739205312
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2299742237651021498.Texture.ProofAsset
   - Asset: 3928859883735084305
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7645212358685992005.Texture.ProofAsset
+  - Asset: 15308191042739205312
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2299742237651021498.Texture.ProofAsset
   - Asset: 1952111404058252245
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2374361008830720677.jpg
-  - Asset: 12998050551516981454
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2374361008830720677.Texture.ProofAsset
   - Asset: 15621592644097797435
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7441062115984513793.jpg
+  - Asset: 12998050551516981454
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2374361008830720677.Texture.ProofAsset
   - Asset: 13353594874833611684
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2411100444841994089.jpg
-  - Asset: 13319781120968198693
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2411100444841994089.Texture.ProofAsset
   - Asset: 16184900949756189741
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7268504077753552595.jpg
+  - Asset: 13319781120968198693
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2411100444841994089.Texture.ProofAsset
   - Asset: 15725496820881260148
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2775690330959970771.jpg
@@ -257,12 +257,12 @@ Assets:
   - Asset: 13492362353321493019
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2969916736137545357.Texture.ProofAsset
-  - Asset: 1028768937145540223
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\332936164838540657.jpg
   - Asset: 14240101260595388894
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\9288698199695299068.jpg
+  - Asset: 1028768937145540223
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\332936164838540657.jpg
   - Asset: 9217165227916872247
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\332936164838540657.Texture.ProofAsset
@@ -275,12 +275,12 @@ Assets:
   - Asset: 143466570166328287
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3455394979645218238.jpg
-  - Asset: 15522520637072856793
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3628158980083700836.jpg
   - Asset: 15348306471454356567
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4871783166746854860.jpg
+  - Asset: 15522520637072856793
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3628158980083700836.jpg
   - Asset: 17672214609734919977
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3628158980083700836.Texture.ProofAsset
@@ -290,12 +290,12 @@ Assets:
   - Asset: 17681300293274475846
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4477655471536070370.Texture.ProofAsset
-  - Asset: 3026889248793724264
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4601176305987539675.jpg
   - Asset: 16993180838317966702
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6593109234861095314.jpg
+  - Asset: 3026889248793724264
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4601176305987539675.jpg
   - Asset: 13148666635403575489
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4601176305987539675.Texture.ProofAsset
@@ -353,12 +353,12 @@ Assets:
   - Asset: 11158739721239860957
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6667038893015345571.Texture.ProofAsset
-  - Asset: 6305268411709032434
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6772804448157695701.jpg
   - Asset: 8899875548143611039
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8783994986360286082.Texture.ProofAsset
+  - Asset: 6305268411709032434
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6772804448157695701.jpg
   - Asset: 5014215151378541218
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6772804448157695701.Texture.ProofAsset
@@ -395,12 +395,12 @@ Assets:
   - Asset: 9964343805749144197
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8006627369776289000.Texture.ProofAsset
-  - Asset: 1351607656284687354
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8051790464816141987.jpg
   - Asset: 1394485717622199994
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8114461559286000061.Texture.ProofAsset
+  - Asset: 1351607656284687354
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8051790464816141987.jpg
   - Asset: 13259829077838984661
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8051790464816141987.Texture.ProofAsset

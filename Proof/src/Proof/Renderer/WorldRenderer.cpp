@@ -170,8 +170,7 @@ namespace Proof
 		//storage images
 		m_SBDirectionalLightsBuffer = StorageBufferSet::Create(sizeof(DirectionalLight));
 		m_SBPointLightsBuffer = StorageBufferSet::Create(sizeof(PointLight)); // set to one light because we cant actaully set a buffer to size 0
-		//m_SBSpotLightsBuffer = StorageBufferSet::Create(sizeof(SpotLight));// set to one light because we cant actaully set a buffer to size 0
-		m_UBSpotLightsBuffer = UniformBufferSet::Create(sizeof(SpotLight)*1024);
+		m_SBSpotLightsBuffer = StorageBufferSet::Create(sizeof(SpotLight));// set to one light because we cant actaully set a buffer to size 0
 		SetViewportSize(100, 100);
 
 		const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
@@ -274,7 +273,7 @@ namespace Proof
 			m_LightCullingPass->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
 			m_LightCullingPass->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
 			m_LightCullingPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
-			m_LightCullingPass->SetInput("SpotLightBuffer", m_UBSpotLightsBuffer);
+			m_LightCullingPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
 			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
 
 		}
@@ -392,7 +391,7 @@ namespace Proof
 
 			m_GeometryPass->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
 			m_GeometryPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
-			m_GeometryPass->SetInput("SpotLightBuffer", m_UBSpotLightsBuffer);
+			m_GeometryPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
 			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
 			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
 			m_GeometryPass->SetInput("u_BRDFLUT", m_BRDFLUT);
@@ -899,8 +898,8 @@ namespace Proof
 			}
 			//spot light
 			{
-				//if (m_LightScene.SpotLightCount == 0)
-				//	m_SBSpotLightsBuffer->Resize(frameIndex, sizeof(SpotLight));
+				if (m_LightScene.SpotLightCount == 0)
+					m_SBSpotLightsBuffer->Resize(frameIndex, sizeof(SpotLight));
 			}
 			m_UBLightData.LightCullingWorkGroups = m_LightCullingWorkGroups;
 			m_UBLightSceneBuffer->SetData(frameIndex, Buffer(&m_UBLightData, sizeof(m_UBLightData)));
@@ -1663,7 +1662,7 @@ namespace Proof
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		
 		Buffer buffer{ spotLights.SpotLights.data(), spotLights.SpotLights.size() * sizeof(SpotLight) };
-		m_UBSpotLightsBuffer->SetData(frameIndex, buffer);
+		m_SBSpotLightsBuffer->Resize(frameIndex, buffer);
 
 		m_LightScene.SpotLightCount = spotLights.SpotLights.size();
 	}

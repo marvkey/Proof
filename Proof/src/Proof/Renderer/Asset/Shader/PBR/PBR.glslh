@@ -132,6 +132,7 @@ vec3 CalculatePointLights(in vec3 F0, vec3 worldPos)
 			break;
 
 		PointLight light = s_PointLights.Lights[lightIndex];
+
 		if(light.Intensity <= 0)
 			continue;
 
@@ -206,7 +207,7 @@ vec3 CalculateSpotLights(in vec3 F0, vec3 worldPos)
 		if (lightIndex == -1)
 			break;
 
-		SpotLight light = s_SpotLights.Lights[i];
+		SpotLight light = s_SpotLights.Lights[lightIndex];
 		if(light.Intensity <= 0)
 			continue;
 	
