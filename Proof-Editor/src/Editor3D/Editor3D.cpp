@@ -707,6 +707,7 @@ namespace Proof
 			});
 			{
 				UI::EnumCombo("Collider View", m_WorldRenderer->Options.ShowPhysicsColliders);
+				UI::AttributeBool("View LightGrid", m_WorldRenderer->Options.ShowLightGrid);
 			}
 			//ExternalAPI::ImGUIAPI::EnumCombo<WorldRendererOptions::PhysicsColliderView>("Physics Collider", m_WorldRenderer->Options.ShowPhysicsColliders);
 			UI::EndPropertyGrid();

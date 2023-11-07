@@ -229,7 +229,7 @@ namespace Proof{
 	{
 		VulkanAllocator allocator("VulkanStorageBufferSetData");
 		uint8_t* pData = allocator.MapMemory<uint8_t>(m_StorageBuffer.Allocation);
-		memcpy(pData, data.Get() + offset, data.GetSize());
+		memcpy(pData, data.Data + offset, data.GetSize());
 		allocator.UnmapMemory(m_StorageBuffer.Allocation);
 	}
 	void VulkanStorageBuffer::Release()

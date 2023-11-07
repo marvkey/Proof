@@ -190,6 +190,7 @@ namespace Proof
 		};
 		PhysicsColliderView ShowPhysicsColliders = PhysicsColliderView::None;
 		glm::vec4 PhysicsColliderColor = glm::vec4{ 0.2f, 1.0f, 0.2f, 1.0f };
+		bool ShowLightGrid = false;
 	};
 	enum class ShadowResolution
 	{
@@ -252,6 +253,7 @@ namespace Proof
 	struct UBSceneData
 	{
 		glm::vec3 CameraPosition;
+		int bShowLightGrid = (int)false;
 	};
 	struct UBScreenData
 	{
@@ -388,7 +390,7 @@ namespace Proof
 		//storagebuffer
 		Count<StorageBufferSet> m_SBDirectionalLightsBuffer;
 		Count<StorageBufferSet> m_SBPointLightsBuffer;
-		Count<StorageBufferSet> m_SBSpotLightsBuffer;
+		Count<UniformBufferSet> m_UBSpotLightsBuffer;
 		
 		Count<class GlobalBufferSet> m_GlobalInputs;
 		// mesh data

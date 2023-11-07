@@ -11,6 +11,7 @@
 layout(std140, set=2, binding = 0) uniform SceneData
 {
 	vec3 CameraPosition; 
+	bool ShowLightGrid;
 } u_Scene;
 layout(std140, set=2,binding = 1) uniform RendererData
 {
@@ -104,7 +105,20 @@ int GetPointLightBufferIndex(int i)
 	uint offset = index * 1024;
 	return s_PointLightIndexList.Indices[offset + i];
 }
+int GetPointLightCountForPixel()
+{
+	int result = 0;
+	for (int i = 0; i < u_LightData.PointLightCount; i++)
+	{
+		uint lightIndex = GetPointLightBufferIndex(i);
+		if (lightIndex == -1)
+			break;
 
+		result++;
+	}
+
+	return result;
+}
 
 vec3 CalculatePointLights(in vec3 F0, vec3 worldPos)
 {
@@ -165,6 +179,22 @@ int GetSpotLightBufferIndex(int i)
 	uint offset = index * 1024;
 	return s_SpotLightIndexList.Indices[offset + i];
 }
+
+int GetSpotLightCountForPixel()
+{
+	int result = 0;
+	for (int i = 0; i < u_LightData.SpotLightCount; i++)
+	{
+		uint lightIndex = GetSpotLightBufferIndex(i);
+		if (lightIndex == -1)
+			break;
+
+		result++;
+	}
+
+	return result;
+}
+
 vec3 CalculateSpotLights(in vec3 F0, vec3 worldPos)
 {
 	vec3 result = vec3(0.0);
@@ -176,7 +206,7 @@ vec3 CalculateSpotLights(in vec3 F0, vec3 worldPos)
 		if (lightIndex == -1)
 			break;
 
-		SpotLight light = s_SpotLights.Lights[lightIndex];
+		SpotLight light = s_SpotLights.Lights[i];
 		if(light.Intensity <= 0)
 			continue;
 	

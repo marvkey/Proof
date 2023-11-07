@@ -58,11 +58,12 @@ struct SpotLight
 	bool SoftShadows;
 	float ShadowStrength;
 	float ShadowSoftness;
+
 };
 
-layout(std140, set = 2, binding = 5) buffer SpotLightBuffer
+layout(std140, set = 2, binding = 5) uniform SpotLightBuffer
 {
-	SpotLight Lights[];
+	SpotLight Lights[1024];// dont know other not working
 } s_SpotLights;
 
 

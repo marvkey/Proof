@@ -155,6 +155,35 @@ vec3 CalculateNormal()
 
     return normalize(TBN * tangentNormal);
 }
+
+vec3 GetGradient(float value)
+{
+	vec3 zero = vec3(0.0, 0.0, 0.0);
+	vec3 white = vec3(0.0, 0.1, 0.9);
+	vec3 red = vec3(0.2, 0.9, 0.4);
+	vec3 blue = vec3(0.8, 0.8, 0.3);
+	vec3 green = vec3(0.9, 0.2, 0.3);
+
+	float step0 = 0.0f;
+	float step1 = 2.0f;
+	float step2 = 4.0f;
+	float step3 = 8.0f;
+	float step4 = 16.0f;
+
+    /*
+    When value is in the range [0.0, 2.0), the color transitions from zero to white.
+    When value is in the range [2.0, 4.0), the color transitions from white to red.
+    When value is in the range [4.0, 8.0), the color transitions from red to blue.
+    When value is in the range [8.0, 16.0), the color transitions from blue to green.
+    */
+	vec3 color = mix(zero, white, smoothstep(step0, step1, value));
+	color = mix(color, white, smoothstep(step1, step2, value));
+	color = mix(color, red, smoothstep(step1, step2, value));
+	color = mix(color, blue, smoothstep(step2, step3, value));
+	color = mix(color, green, smoothstep(step3, step4, value));
+
+	return color;
+}
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3  Fidelectric = vec3(0.04);
 void main()
@@ -318,6 +347,14 @@ void main()
     finalColor += CalculatePointLights(F0, Input.WorldPosition);
     finalColor += CalculateSpotLights(F0, Input.WorldPosition); //* sahdow
 
+    if(u_Scene.ShowLightGrid)
+    {
+        int pointLightCount = GetPointLightCountForPixel();
+		int spotLightCount = GetSpotLightCountForPixel();
+
+		float value = float(pointLightCount + spotLightCount);
+		finalColor.rgb = (finalColor.rgb * 0.2) + GetGradient(value);
+    }
 
     out_FragColor = vec4(finalColor + iblEfeect ,1.0);
 
