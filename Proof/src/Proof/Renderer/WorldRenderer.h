@@ -327,6 +327,17 @@ namespace Proof
 
 		SSAOSettings SSAO;
 	};
+
+	struct BloomSettings
+	{
+		bool Enabled = true;
+		float Threshold = 1.0f;
+		float Knee = 0.1f;
+		float UpsampleScale = 1.0f;
+		float Intensity = 1.0f;
+		float DirtIntensity = 1.0f;
+	};
+
 	class RenderPass;
 	class ComputePass;
 	class WorldRenderer : public RefCounted {
@@ -337,7 +348,7 @@ namespace Proof
 		ShadowSetting ShadowSetting;
 		WorldRendererOptions Options;
 		AmbientOcclusion AmbientOcclusion;
-
+		BloomSettings m_BloomSettings;
 	public:
 
 		void SetContext(Count<class World> world);
@@ -480,6 +491,14 @@ namespace Proof
 
 		inline static const uint32_t TILE_SIZE = 16u;
 		inline static const uint32_t MAX_NUM_LIGHTS_PER_TILE = 1024u;
+
+		//bloom
+		const uint32_t m_BloomComputeWorkgroupSize = 4;
+		Count<ComputePass> m_BloomComputePass;
+		Count<Texture2D> m_BloomDirtTexture;
+		std::vector<Count<Texture2D>> m_BloomComputeTextures{ 3 };
+		std::vector<std::vector<Count<ImageView>>> m_BloomComputeImageViews {3};
+
 	private:
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);
@@ -495,6 +514,7 @@ namespace Proof
 
 		//post processing passes
 		void AmbientOcclusionPass();
+		void BloomPass();
 
 		void DrawScene();
 		// tehse are static so basically when wer are writng code we avoid errors of 

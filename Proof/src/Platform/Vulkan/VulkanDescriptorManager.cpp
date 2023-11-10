@@ -40,200 +40,257 @@ namespace Proof
     }
 	void VulkanDescriptorManager::SetInput(std::string_view name, Count<UniformBuffer> buffer)
 	{
-        m_Build = false;
-        auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl =  shader->GetInputDeclaration(name.data());
-        if (decl)
-        {
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
-        }
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, buffer]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
+      
 	}
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<class TextureCube> buffer)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-        if (decl)
-        {
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
-        }
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, buffer]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
+
     }
 
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-        if (decl)
-        {
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
-        }
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, buffer]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
 
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<class UniformBufferSet> buffer)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-        if (decl)
-        {
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
-        }
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, buffer]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<class StorageBufferSet> buffer)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-        if (decl)
-        {
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
-        }
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, buffer]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-        if (decl)
-        {
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(images);
-        }
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, images]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(images);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<class Texture2D> buffer)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-        if (decl)
-        {
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
-        }
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, buffer]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
 
    
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<Image2D>image)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-
-        if (decl)
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(image);
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, image]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(image);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<ImageView> imageView)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-
-        if (decl)
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageView);
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, imageView]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageView);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-
-        if (decl)
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(images);
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, images]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(images);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
 
     void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-
-        if (decl)
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageViews);
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, imageViews ]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageViews);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, Count<class Image> imageView)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-
-        if (decl)
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageView);
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, imageView]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageView);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
     void VulkanDescriptorManager::SetInput(std::string_view name, const std::vector< Count<class Image>>& imageViews)
     {
-        m_Build = false;
-        auto shader = m_Config.Shader;
-        const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
-
-        if (decl)
-            m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageViews);
-        else
-        {
-            PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
-            PF_CORE_ASSERT(false);
-        }
+        Count<VulkanDescriptorManager> instance = this;
+        Renderer::Submit([instance, name, imageViews]
+            {
+                instance->m_Build = false;
+                auto shader = instance->m_Config.Shader;
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                if (decl)
+                {
+                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageViews);
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_CORE_ASSERT(false);
+                }
+            });
     }
     void VulkanDescriptorManager::RT_Bind()
     {

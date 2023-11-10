@@ -94,6 +94,12 @@ namespace Proof {
 
 		Release();
 	}
+	void VulkanImage2D::CallOnResizeFunctions()
+	{
+		for (auto& callback : m_ResizeCallbacks)
+			callback(this);
+	}
+
 	void VulkanImage2D::AddResizeCallback(const Image2DResizeCallback& func)
 	{
 		m_ResizeCallbacks.push_back(func);
@@ -765,6 +771,20 @@ namespace Proof {
 		{
 			Application::Get()->GetImguiLayer().AsRaw<VulkanImguiLayer>()->UpdateImageDescriptor(this);
 		}
+	}
+	glm::uvec2 VulkanImageView::GetMipSize()
+	{
+		uint32_t width = GetWidth();
+		uint32_t height = GetHeight();
+		uint32_t mip = m_Specification.Mip;
+		while (mip != 0)
+		{
+			width /= 2;
+			height /= 2;
+			mip--;
+		}
+
+		return { width, height };
 	}
 
 	void GetMaxImageDimensions(VkPhysicalDevice physicalDevice, uint32_t& maxWidth, uint32_t& maxHeight) {

@@ -34,19 +34,6 @@ World:
               - NameID: SandboxProject.ScriptSpawner.AmountCubes
                 Type: Int32
                 Data: 0
-    - Entity: 12544472351437169759
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [1.5, 0, -6.30000019]
-        Rotation: [0, -0, 0.0401425734]
-        Scale: [11.5, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
     - Entity: 417248771471866783
       TagComponent:
         Tag: Sky Light
@@ -62,12 +49,29 @@ World:
         TintColor: [1, 1, 1]
         SkyBoxLod: 0
         MapRotation: 0
-        Intensity: 0.100000001
-        DynamicSky: true
+        Intensity: 0
+        DynamicSky: false
         Turbidity: 2
         Azimuth: 0
         Inclination: 0
         Image: 0
+    - Entity: 5042990045985491529
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0, 5.0999999, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 14268173759466256543
+            Index: 0
     - Entity: 10634113294251223143
       TagComponent:
         Tag: Spot Light
@@ -95,7 +99,7 @@ World:
         Tag: Point Light
         tags: []
       TransformComponent:
-        Location: [0, 10.1999998, 0]
+        Location: [0, 10, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -116,7 +120,7 @@ World:
         Tag: Point Light
         tags: []
       TransformComponent:
-        Location: [-2.4000001, 6.4000001, 0]
+        Location: [-5.9000001, 10.1999998, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -126,30 +130,8 @@ World:
         Color: [0.128739581, 0.720807016, 0.862903237]
         Intensity: 1
         MinRadius: 0
-        Radius: 10
+        Radius: 5
         Falloff: 1
-        CastsShadows: false
-        SoftShadows: false
-        ShadowStrength: 0.5
-        ShadowSoftness: 0.5
-    - Entity: 4978049912776091587
-      TagComponent:
-        Tag: Spot Light
-        tags: []
-      TransformComponent:
-        Location: [0, 1.49399996, 0.717999995]
-        Rotation: [0, -0, 1.5254178]
-        Scale: [11.3999987, 0.99999994, 0.999999821]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      SpotLightComponent:
-        Color: [0, 0.275754362, 0.854838729]
-        Intensity: 3.5
-        Range: 5
-        Angle: 53.25
-        AngleAttenuation: 6.5
-        Falloff: 0
         CastsShadows: false
         SoftShadows: false
         ShadowStrength: 0.5
@@ -176,6 +158,28 @@ World:
         SoftShadows: false
         ShadowStrength: 0.5
         ShadowSoftness: 0.5
+    - Entity: 4978049912776091587
+      TagComponent:
+        Tag: Spot Light
+        tags: []
+      TransformComponent:
+        Location: [0, 1.49399996, 0.717999995]
+        Rotation: [0, -0, 1.5254178]
+        Scale: [11.3999987, 0.99999994, 0.999999821]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SpotLightComponent:
+        Color: [0, 0.275754362, 0.854838729]
+        Intensity: 3.5
+        Range: 5
+        Angle: 53.25
+        AngleAttenuation: 6.5
+        Falloff: 0
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5
     - Entity: 18241129487293882075
       TagComponent:
         Tag: Point Light
@@ -192,6 +196,27 @@ World:
         Intensity: 1
         MinRadius: 0
         Radius: 5.26999998
+        Falloff: 1
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5
+    - Entity: 4357174864699373602
+      TagComponent:
+        Tag: Point Light
+        tags: []
+      TransformComponent:
+        Location: [0, 8.67360401, -0.253961354]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      PointLightComponent:
+        Color: [0.931451619, 0.929664552, 0.709856272]
+        Intensity: 1
+        MinRadius: 0
+        Radius: 10
         Falloff: 1
         CastsShadows: false
         SoftShadows: false

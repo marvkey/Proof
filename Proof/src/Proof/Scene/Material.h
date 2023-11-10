@@ -38,6 +38,10 @@ namespace Proof{
 		bool& GetMetalnessTextureToggle();
 		void SetMetalnessTextureToggle(bool value);
 
+
+		float& GetEmission()const;
+		void SetEmission(float roghness);
+
 		Vector2& GetTiling()const;
 		void SetTiling(const Vector2& vec);
 

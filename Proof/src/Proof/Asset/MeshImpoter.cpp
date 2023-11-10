@@ -274,6 +274,8 @@ namespace Proof
 				PF_ENGINE_TRACE("    COLOR = {0}, {1}, {2}", aiColor.r, aiColor.g, aiColor.b);
 				PF_ENGINE_TRACE("    ROUGHNESS = {0}", roughness);
 				PF_ENGINE_TRACE("    METALNESS = {0}", metalness);
+				PF_ENGINE_TRACE("    EMISSION = {0}", emission);
+				mi->SetEmission(emission);
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
 				bool fallback = !hasAlbedoMap;
 				if (hasAlbedoMap)

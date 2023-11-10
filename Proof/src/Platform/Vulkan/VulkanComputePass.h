@@ -20,6 +20,8 @@ namespace Proof
 		void virtual SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews);
 		void virtual SetInput(std::string_view name, Count<class Image2D>image);
 		void virtual SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images);
+		void virtual SetInput(std::string_view name, Count<class Image>image);
+
 		virtual void Dispatch(glm::uvec3 group) { Dispatch(group.x, group.y, group.z); }
 		void virtual AddGlobalInput(Count<class GlobalBufferSet> globalInputs);
 

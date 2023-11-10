@@ -122,6 +122,7 @@ namespace Proof {
 
 		ShaderLibrary->LoadShader("WorldComposite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/WorldComposite.glsl");
 		ShaderLibrary->LoadShader("Wireframe", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/Wireframe.glsl");
+		ShaderLibrary->LoadShader("Bloom", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/Bloom.glsl");
 		// ao
 		ShaderLibrary->LoadShader("AO-Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/AO-Composite.glsl");
 		ShaderLibrary->LoadShader("SSAO", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/SSAO.glsl");
@@ -252,13 +253,15 @@ namespace Proof {
 			renderThread->WaitAndSet(RenderThread::State::Kick, RenderThread::State::Busy);
 			//performanceTimers.RenderThreadWaitTime = waitTimer.ElapsedMillis();
 		}
+		{
+			PF_PROFILE_FUNC("Execute RenderCommandQueue");
+			Timer workTimer;
+			s_CommandQueue[GetRenderQueueIndex()]->Execute();
+			// ExecuteRenderCommandQueue();
 
-		Timer workTimer;
-		s_CommandQueue[GetRenderQueueIndex()]->Execute();
-		// ExecuteRenderCommandQueue();
-
-		// Rendering has completed, set state to idle
-		renderThread->Set(RenderThread::State::Idle);
+			// Rendering has completed, set state to idle
+			renderThread->Set(RenderThread::State::Idle);
+		}
 
 		//performanceTimers.RenderThreadWorkTime = workTimer.ElapsedMillis();
 	}

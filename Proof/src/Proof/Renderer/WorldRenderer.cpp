@@ -29,7 +29,9 @@
 #include "Platform/Vulkan/VulkanImage.h"
 #include "Proof/Math/MathConvert.h"	
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
+#include "Platform/Vulkan/VulkanTexutre.h"
 #include "Proof/Scene/Material.h"
+#include "Platform/Vulkan/VulkanComputePass.h"
 #include "Proof/Asset/AssetManager.h"
 
 #include "VertexArray.h"
@@ -550,7 +552,7 @@ namespace Proof
 					//framebufferSpec.Blend = true;
 					framebufferSpec.ClearColorOnLoad = false;
 					//framebufferSpec.BlendMode = FramebufferBlendMode::Zero_SrcColor;
-					
+
 					auto aoframeBuffer = FrameBuffer::Create(framebufferSpec);
 
 					GraphicsPipelineConfiguration pipelineConfig;
@@ -571,9 +573,33 @@ namespace Proof
 					m_AmbientOcclusionCompositePass = RenderPass::Create(renderPassConfig);
 				}
 			}
-			#endif
+#endif
 		}
+		//bloom
+		{
+			m_BloomComputePass = ComputePass::Create({ "Bloom",ComputePipeline::Create({"Bloom",Renderer::GetShader("Bloom")}) });
 
+			TextureConfiguration spec;
+			spec.Format = ImageFormat::RGBA32F;
+			spec.Width = 1;
+			spec.Height = 1;
+			spec.Wrap = TextureWrap::ClampEdge;
+			spec.Storage = true;
+			spec.GenerateMips = true;
+			spec.DebugName = "BloomCompute-0";
+			m_BloomComputeTextures[0] = Texture2D::Create(spec);
+			spec.DebugName = "BloomCompute-1";
+			m_BloomComputeTextures[1] = Texture2D::Create(spec);
+			spec.DebugName = "BloomCompute-2";
+			m_BloomComputeTextures[2] = Texture2D::Create(spec);
+
+
+			glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
+			bloomSize += m_BloomComputeWorkgroupSize - bloomSize % m_BloomComputeWorkgroupSize;
+			m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
+			m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
+			m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
+		}
 		//External Composite 
 		{
 			/*
@@ -675,7 +701,6 @@ namespace Proof
 			const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
 			{
 
-				//m_LightCullingNumThreads = (viewportSize + TILE_SIZE - 1u) / TILE_SIZE;
 
 				glm::uvec2 size = viewportSize;
 				size += TILE_SIZE - viewportSize % TILE_SIZE;
@@ -688,7 +713,14 @@ namespace Proof
 				}
 
 			}
-
+			//bloom
+			{
+				glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
+				bloomSize += m_BloomComputeWorkgroupSize - bloomSize % m_BloomComputeWorkgroupSize;
+				m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
+				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
+				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
+			}
 			// predepth
 			m_PreDepthPass->GetTargetFrameBuffer()->Resize(viewportSize);
 
@@ -727,6 +759,8 @@ namespace Proof
 				m_ShadowMapResolution = 4096;
 				break;
 		}
+
+
 
 		if (m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Width != m_ShadowMapResolution)
 		{
@@ -1380,6 +1414,7 @@ namespace Proof
 		Timer compositeTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		
+		BloomPass();
 		//AmbientOcclusionPass();
 
 		// this has to be the last thgn called
@@ -1390,6 +1425,9 @@ namespace Proof
 			//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
 			auto inputImage = m_GeometryPass->GetOutput(0);
 			m_CompositeMaterial->Set("u_WorldTexture", inputImage);
+			m_CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
+			m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", m_BloomSettings.Intensity);
+
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_CompositePass, m_CompositeMaterial);
 			Renderer::EndRenderPass(m_CompositePass);
 		}
@@ -1465,9 +1503,251 @@ namespace Proof
 				Renderer::EndRenderPass(m_AmbientOcclusionCompositePass);
 			}
 		}
-
 		
 	}
+
+	void WorldRenderer::BloomPass()
+	{
+		PF_PROFILE_FUNC();
+		struct BloomComputePushConstants
+		{
+			glm::vec4 Params;
+			float LOD = 0.0f;
+			int Mode = 0; // 0 = prefilter, 1 = downsample, 2 = firstUpsample, 3 = upsample
+		} bloomComputePushConstants;
+		bloomComputePushConstants.Params = { m_BloomSettings.Threshold, m_BloomSettings.Threshold - m_BloomSettings.Knee, m_BloomSettings.Knee * 2.0f, 0.25f / m_BloomSettings.Knee };
+		Renderer::BeginComputePass(m_CommandBuffer, m_BloomComputePass);
+
+		uint32_t workGroupsX;
+		uint32_t workGroupsY;
+
+		//prefilter
+		{
+
+			bloomComputePushConstants.Mode = 0;
+
+			m_BloomComputePass->SetInput("u_SourceTexture", m_GeometryPass->GetOutput(0));
+			m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
+			m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[0]->GetImageMip(0));
+
+			workGroupsX = m_BloomComputeTextures[0]->GetWidth() / m_BloomComputeWorkgroupSize;
+			workGroupsY = m_BloomComputeTextures[0]->GetHeight() / m_BloomComputeWorkgroupSize;
+
+			{
+				Buffer push(&bloomComputePushConstants, sizeof(bloomComputePushConstants), true);
+				Renderer::Submit([bloomcomputePass = m_BloomComputePass, push]() mutable
+					{
+						bloomcomputePass.As<VulkanComputePass>()->RT_PushData("u_Uniforms", push.Data);
+						push.Release();
+
+					});
+			}
+			//m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+
+			Renderer::Submit([image = m_BloomComputeTextures[0].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(),commandBuffer = m_CommandBuffer]
+				{
+					VkImageMemoryBarrier imageMemoryBarrier = {};
+					imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+					imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+					imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+					imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+					imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1};
+					imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+					imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+					vkCmdPipelineBarrier(
+						commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+						VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+						VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+						0,
+						0, nullptr,
+						0, nullptr,
+						1, &imageMemoryBarrier);
+				});
+		}
+		Renderer::EndComputePass(m_BloomComputePass);
+		Renderer::BeginComputePass(m_CommandBuffer, m_BloomComputePass);
+
+		uint32_t mips = m_BloomComputeTextures[0]->GetMipLevelCount() - 2;
+		{
+			// downsample
+			bloomComputePushConstants.Mode = 1;
+
+			for (uint32_t i = 1; i < mips; i++)
+			{
+				auto imageView = m_BloomComputeTextures[0]->GetImageMip(i);
+				auto mipDimension = imageView->GetMipSize();
+				workGroupsX = (uint32_t)glm::ceil((float)mipDimension.x / (float)m_BloomComputeWorkgroupSize);
+				workGroupsY = (uint32_t)glm::ceil((float)mipDimension.y / (float)m_BloomComputeWorkgroupSize);
+
+				m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[1]->GetImageMip(i));
+				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
+				m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
+				bloomComputePushConstants.LOD = i - 1.0f;
+				{
+					Buffer push(&bloomComputePushConstants, sizeof(bloomComputePushConstants), true);
+					Renderer::Submit([bloomcomputePass = m_BloomComputePass, push]() mutable
+						{
+							bloomcomputePass.As<VulkanComputePass>()->RT_PushData("u_Uniforms", push.Data);
+							push.Release();
+
+						}); 
+				}
+				//m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+				m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+
+				{
+					Renderer::Submit([image = m_BloomComputeTextures[1].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
+						{
+							VkImageMemoryBarrier imageMemoryBarrier = {};
+							imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+							imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+							imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+							imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+							imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+							vkCmdPipelineBarrier(
+								commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								0,
+								0, nullptr,
+								0, nullptr,
+								1, &imageMemoryBarrier);
+						});
+				}
+
+				//Renderer::Submit([computePass = m_BloomComputePass, geometrypass = m_GeometryPass, uoutput = m_BloomComputeTextures[0]->GetImageMip(i), source = m_BloomComputeTextures[1]]() mutable
+				//	{
+				//		computePass->SetInput("o_Image", uoutput);
+				//		computePass->SetInput("u_SourceTexture", source);
+				//		computePass->SetInput("u_BloomTexture", geometrypass->GetOutput(0));
+				//	});
+				//bloomComputePushConstants.LOD = (float)i;
+				//{
+				//	Buffer push(&bloomComputePushConstants, sizeof(bloomComputePushConstants), true);
+				//	Renderer::Submit([bloomcomputePass = m_BloomComputePass, push]() mutable
+				//		{
+				//			bloomcomputePass.As<VulkanComputePass>()->RT_PushData("u_Uniforms", push.Data);
+				//			push.Release();
+				//
+				//		});
+				//}
+				////m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+				//m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+
+
+				{
+					Renderer::Submit([image = m_BloomComputeTextures[1].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
+						{
+							VkImageMemoryBarrier imageMemoryBarrier = {};
+							imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+							imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+							imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+							imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+							imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+							vkCmdPipelineBarrier(
+								commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								0,
+								0, nullptr,
+								0, nullptr,
+								1, &imageMemoryBarrier);
+						});
+				}
+			}
+		}
+		Renderer::EndComputePass(m_BloomComputePass);
+
+#if 0
+
+		//upsample first
+		{
+			bloomComputePushConstants.Mode = 2;
+			workGroupsX *= 2;
+			workGroupsY *= 2;
+			m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[2]->GetImageMip(mips - 2));
+			m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
+			m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0).As<Image2D>());
+			bloomComputePushConstants.LOD--;
+			m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+			auto dimension = m_BloomComputeTextures[2]->GetImageMip(mips - 2)->GetMipSize();
+			workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)m_BloomComputeWorkgroupSize);
+			workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)m_BloomComputeWorkgroupSize);
+			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+
+			{
+				Renderer::Submit([image = m_BloomComputeTextures[2].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
+					{
+						VkImageMemoryBarrier imageMemoryBarrier = {};
+						imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+						imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+						imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+						imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+						imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+						imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+						imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+						vkCmdPipelineBarrier(
+							commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+							VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+							VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+							0,
+							0, nullptr,
+							0, nullptr,
+							1, &imageMemoryBarrier);
+					});
+			}
+		}
+
+		//upsample
+		{
+			bloomComputePushConstants.Mode = 3;
+			// Upsample
+			for (int32_t mip = mips - 3; mip >= 0; mip--)
+			{
+				auto dimension = m_BloomComputeTextures[2]->GetImageMip(mip)->GetMipSize();
+				workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)m_BloomComputeWorkgroupSize);
+				workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)m_BloomComputeWorkgroupSize);
+
+				m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[2]->GetImageMip(mip));
+				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
+				m_BloomComputePass->SetInput("u_BloomTexture", m_BloomComputeTextures[2]);
+
+				bloomComputePushConstants.LOD = (float)mip;
+				m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+				m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+
+				{
+					Renderer::Submit([image = m_BloomComputeTextures[2].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
+						{
+							VkImageMemoryBarrier imageMemoryBarrier = {};
+							imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+							imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+							imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+							imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+							imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+							vkCmdPipelineBarrier(
+								commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								0,
+								0, nullptr,
+								0, nullptr,
+								1, &imageMemoryBarrier);
+						});
+				}
+			}
+		}
+#endif
+
+	}
+
 	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws)
 	{
 		PF_PROFILE_FUNC();

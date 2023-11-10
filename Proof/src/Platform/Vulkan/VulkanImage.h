@@ -80,6 +80,8 @@ namespace Proof
 		void RT_Build();
 
 		void CopyFromHostBuffer(Buffer& buffer);
+
+		void CallOnResizeFunctions();
 	private:
 		std::vector<Image2DResizeCallback > m_ResizeCallbacks;
 
@@ -108,6 +110,8 @@ namespace Proof
 		virtual float GetAspectRatio() { return GetImage()->GetAspectRatio(); }
 		virtual uint32_t GetWidth() {return GetImage()->GetWidth();};
 		virtual uint32_t GetHeight() { return GetImage()->GetHeight(); };
+		virtual glm::uvec2 GetMipSize();
+
 	private:
 		VulkanImageInfo m_Info;
 		void Build();

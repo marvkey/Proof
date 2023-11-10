@@ -128,14 +128,17 @@ layout(push_constant) uniform Material
 {
     vec3 Albedo;
     float Metalness;
+
     float Roughness;
     bool AlbedoTexToggle;
     bool NormalTexToggle;
     bool RoghnessTexToggle;
     bool MetallnesTexToggle;
+
     vec2 Tiling;
     vec2 Offset;
-    //int padding[2]; // Padding to ensure proper alignment
+
+    float Emission;
 }u_MaterialUniform;
 
 vec3 CalculateNormal()
@@ -346,6 +349,7 @@ void main()
     vec3 finalColor = directLighting * shadowScale ;
     finalColor += CalculatePointLights(F0, Input.WorldPosition);
     finalColor += CalculateSpotLights(F0, Input.WorldPosition); //* sahdow
+    finalColor += m_Params.AlbedoColor * u_MaterialUniform.Emission;//emision
 
     if(u_Scene.ShowLightGrid)
     {

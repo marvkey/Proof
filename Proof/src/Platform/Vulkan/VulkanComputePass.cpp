@@ -92,26 +92,6 @@ namespace Proof
 	void VulkanComputePass::RT_BeginComputePass(Count<class RenderCommandBuffer> command)
 	{
 		RT_BeginComputePassBase(command);
-
-		m_DescritptorSetManager->RT_Bind();
-		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
-		for (auto& [set, setInfo] : frameSet)
-		{
-			// basically we have to define a set layout for each descriptor set 0-3
-			// but some set may not have data and we do note creata a descriptor set for it
-			// so we basically just seeing if thats teh case we dont bind it
-			if (setInfo.Set == nullptr)
-				continue;
-			vkCmdBindDescriptorSets(
-				m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
-				VK_PIPELINE_BIND_POINT_COMPUTE,
-				m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
-				(int)set,
-				1,
-				&setInfo.Set,
-				0,
-				nullptr);
-		}
 	}
 	void VulkanComputePass::RT_BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> command)
 	{
@@ -120,28 +100,6 @@ namespace Proof
 		PF_CORE_ASSERT(m_MaterialRenderPass == false, "cannot start material render pass if previous material render pass not disabled");
 
 		m_MaterialRenderPass = true;
-
-			
-		m_DescritptorSetManager->RT_Bind();
-
-		auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
-		for (auto& [set, setInfo] : frameSet)
-		{
-			// set0 is for te material to bind to 
-			// basically we have to define a set layout for each descriptor set 0-3
-			// but some set may not have data and we do note creata a descriptor set for it
-			// so we basically just seeing if thats teh case we dont bind it
-			if (set == 0 || setInfo.Set == nullptr)continue;
-			vkCmdBindDescriptorSets(
-				m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
-				VK_PIPELINE_BIND_POINT_COMPUTE,
-				m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
-				(int)set,
-				1,
-				&setInfo.Set,
-				0,
-				nullptr);
-		}
 	}
 	void VulkanComputePass::RT_ComputePassPushRenderMaterial(Count<class RenderMaterial> renderMaterial)
 	{
@@ -162,6 +120,51 @@ namespace Proof
 		PF_CORE_ASSERT(m_RenderPassEnabled, "Cannot dispatch unless start a compute pass");
 		VkCommandBuffer buffer = m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
 		PF_CORE_ASSERT(buffer);
+		m_DescritptorSetManager->RT_Bind();
+
+
+		if (m_MaterialRenderPass)
+		{
+			auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
+			for (auto& [set, setInfo] : frameSet)
+			{
+				// set0 is for te material to bind to 
+				// basically we have to define a set layout for each descriptor set 0-3
+				// but some set may not have data and we do note creata a descriptor set for it
+				// so we basically just seeing if thats teh case we dont bind it
+				if (set == 0 || setInfo.Set == nullptr)continue;
+				vkCmdBindDescriptorSets(
+					m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+					VK_PIPELINE_BIND_POINT_COMPUTE,
+					m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
+					(int)set,
+					1,
+					&setInfo.Set,
+					0,
+					nullptr);
+			}
+		}
+		else
+		{
+			auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
+			for (auto& [set, setInfo] : frameSet)
+			{
+				// basically we have to define a set layout for each descriptor set 0-3
+				// but some set may not have data and we do note creata a descriptor set for it
+				// so we basically just seeing if thats teh case we dont bind it
+				if (setInfo.Set == nullptr)
+					continue;
+				vkCmdBindDescriptorSets(
+					m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+					VK_PIPELINE_BIND_POINT_COMPUTE,
+					m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
+					(int)set,
+					1,
+					&setInfo.Set,
+					0,
+					nullptr);
+			}
+		}
 		vkCmdDispatch(buffer, groupCountX, groupCountY, groupCountZ);
 	}
 	void VulkanComputePass::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
@@ -188,6 +191,11 @@ namespace Proof
 	{
 		m_DescritptorSetManager->SetGoalballInputs(globalInputs);
 	}
+	void VulkanComputePass::SetInput(std::string_view name, Count<class Image>image)
+	{
+		m_DescritptorSetManager->SetInput(name, image);
+	}
+
 	void VulkanComputePass::SetInput(std::string_view name, Count<class UniformBuffer> buffer)
 	{
 		m_DescritptorSetManager->SetInput(name, buffer);

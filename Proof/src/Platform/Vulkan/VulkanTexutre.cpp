@@ -179,6 +179,15 @@ namespace Proof
 			{
 				instance->RT_Build();
 			});
+			//if (m_Config.GenerateMips)
+			//{
+			//	m_Config.GenerateMips = true;
+			//
+			//	for (int i = 0; i < Utils::GetMipLevelCount(m_Config.Width, m_Config.Height); i++)
+			//	{
+			//		auto view = GetImageMip(i);
+			//	}
+			//}
 	}
 	void VulkanTexture2D::GenerateMips()
 	{
@@ -187,12 +196,13 @@ namespace Proof
 			{
 				instance->RT_GenerateMips();
 			});
+		
 	}
 
 	void VulkanTexture2D::RT_GenerateMips()
 	{
 		m_Config.GenerateMips = true;
-
+		
 		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
 		VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
 		VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
@@ -297,7 +307,7 @@ namespace Proof
 			VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
 			VkImageSubresourceRange subresourceRange = {};
 			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			subresourceRange.layerCount = mipCount;
+			subresourceRange.layerCount = 1;
 			subresourceRange.baseMipLevel = 0;
 			subresourceRange.levelCount = GetMipLevelCount();
 			subresourceRange.baseArrayLayer = 0;
@@ -466,23 +476,37 @@ namespace Proof
 
 	void VulkanTexture2D::Resize(uint32_t width, uint32_t height)
 	{
-		if (m_Config.Width != width && m_Config.Height != height)
+		if (m_Config.Width == width && m_Config.Height == height)
 			return;
 		m_Config.Width = width;
 		m_Config.Height = height;
 
 		Build();
+		m_Image.As<VulkanImage2D>()->CallOnResizeFunctions();
 	}
 
 	void VulkanTexture2D::Resize(uint32_t width, uint32_t height, Buffer buffer)
 	{
-		Release();
-		m_Config.Width = width;
-		m_Config.Height = height;
+		Resize(width, height);
 		SetData(buffer);
-		//Utils::ValidateConfiguration(m_Config);
-		//m_ImageData = TextureImporter::ToBufferFromMemory(data, m_Config.Format, m_Config.Width, m_Config.Height);
-		//Build();
+	}
+	Count<ImageView> VulkanTexture2D::GetImageMip(uint32_t mip, uint32_t layer)
+	{
+		uint32_t mipLevelCount = GetMipLevelCount();
+		if (mip >= mipLevelCount)
+			return nullptr;
+
+		if(m_ImageViews[layer].contains(mip))
+			return m_ImageViews[layer][mip];
+
+		ImageViewConfiguration config;
+		config.DebugName = fmt::format("Texture: {} layer:{} mip: {}", m_Config.DebugName, layer, mip);
+		config.Mip = mip;
+		config.Layer = layer;
+		config.Image = m_Image;
+		Count<ImageView> view = ImageView::Create(config);
+			m_ImageViews[layer][mip] = view;
+		return view;
 	}
 
 	void VulkanTexture2D::Release()

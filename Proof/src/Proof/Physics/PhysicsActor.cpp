@@ -3,8 +3,6 @@
 #include "Proof/Scene/Component.h"
 #include "PhysicsWorld.h"
 #include "PhysicsEngine.h"
-#include "Proof/Scene/Material.h"
-#include "Proof/Scene/Entity.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "PhysicsShapes.h"
 #include "PhysicsMeshCache.h"

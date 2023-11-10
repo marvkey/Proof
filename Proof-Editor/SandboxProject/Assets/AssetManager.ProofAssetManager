@@ -8,6 +8,9 @@ Assets:
   - Asset: 2403019099758263853
     Type: ScriptFile
     Path: Script\ScriptSpawner.cs
+  - Asset: 14268173759466256543
+    Type: Material
+    Path: Materials\Green...Material.ProofAsset
   - Asset: 1165648952014580025
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\755318871556304029.jpg

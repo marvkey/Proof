@@ -399,6 +399,7 @@ namespace Proof
         Count<VulkanRenderPass> instance = this;
         Renderer::Submit([instance, command, vieport, scisscor]()
         {
+            PF_PROFILE_FUNC(fmt::format("VulkanRenderPass::BeginRenderPassBase ({})", instance->GetConfig().DebugName).c_str());
             PF_CORE_ASSERT(instance->m_RenderPassEnabled == false, fmt::format("cannot start {} render pass when previous render pass is not closed", instance->m_Config.DebugName).c_str());
             instance->m_CommandBuffer = command;
             instance->m_RenderPassEnabled = true;
@@ -457,6 +458,8 @@ namespace Proof
         Count<VulkanRenderPass> instance = this;
         Renderer::Submit([instance, command, vieport, scisscor,explicitClear]()
         {
+            const char* profileName = fmt::format("VulkanRenderPass::BeginMaterialRenderPass ({})", instance->GetConfig().DebugName).c_str();
+            PF_PROFILE_FUNC(profileName);
             PF_CORE_ASSERT(instance->m_MaterialRenderPass == false, "cannot start material render pass if previous material render pass not disabled");
 
             instance->m_MaterialRenderPass = true;
@@ -510,7 +513,7 @@ namespace Proof
         Count<VulkanRenderPass> instance = this;
         Renderer::Submit([instance, command, vieport, scisscor, explicitClear]()
         {
-
+            PF_PROFILE_SCOPE_DYNAMIC(fmt::format("VulkanRenderPass::BeginRenderPass ({})", instance->GetConfig().DebugName).c_str());
             auto vulkanPipeline = instance->GetPipeline().As<VulkanGraphicsPipeline>();
             vulkanPipeline->RT_Bind(instance->m_CommandBuffer);
             instance->m_DescritptorSetManager->RT_Bind();
@@ -572,6 +575,7 @@ namespace Proof
         Count<VulkanRenderPass> instance = this;
         Renderer::Submit([instance]()
         {
+            PF_PROFILE_FUNC("VulkanRenderPass::EndRenderPass");
             PF_CORE_ASSERT(instance->m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
             vkCmdEndRenderPass(instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer());
             instance->m_CommandBuffer = nullptr;

@@ -250,6 +250,11 @@ namespace Proof
 			if (ImGui::SliderFloat("Roughness", &m_Material->GetRoughness(), 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp));
 			shouldSave = true;
 		}
+		ImGui::NewLine();
+		//
+		{
+			UI::AttributeDrag("Emission", m_Material->GetEmission(), 0.25f);
+		}
 		//SceneHierachyPanel::DrawVector2Control("Tiling", m_Material->GetTiling());
 		//SceneHierachyPanel::DrawVector2Control("Offset", m_Material->Offset);
 

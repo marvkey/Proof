@@ -712,6 +712,28 @@ namespace Proof
 			//ExternalAPI::ImGUIAPI::EnumCombo<WorldRendererOptions::PhysicsColliderView>("Physics Collider", m_WorldRenderer->Options.ShowPhysicsColliders);
 			UI::EndPropertyGrid();
 
+			UI::BeginPropertyGrid("Bloom");
+			UI::AttributeBool("BloomEnabled", m_WorldRenderer->m_BloomSettings.Enabled);
+			UI::AttributeDrag("Intensity", m_WorldRenderer->m_BloomSettings.Intensity);
+			UI::AttributeDrag("Threshold", m_WorldRenderer->m_BloomSettings.Threshold);
+			UI::AttributeDrag("UpsampleScale", m_WorldRenderer->m_BloomSettings.UpsampleScale);
+			UI::AttributeDrag("Knee", m_WorldRenderer->m_BloomSettings.Knee);
+
+			static bool viewBloomSettnigs = false;
+
+			UI::AttributeBool("Bloom Debugger", viewBloomSettnigs);
+
+			if (viewBloomSettnigs)
+			{
+				static uint32_t bloomDebuggerImage=0;
+				static uint32_t bloomDebuggerMip =0;
+				UI::AttributeSlider("BloomImage", bloomDebuggerImage, 0, m_WorldRenderer->m_BloomComputeTextures.size()-1);
+				UI::AttributeSlider("BloomMip", bloomDebuggerMip, 0, m_WorldRenderer->m_BloomComputeTextures[bloomDebuggerImage]->GetMipLevelCount()-1);
+
+				UI::Image(m_WorldRenderer->m_BloomComputeTextures[bloomDebuggerImage]->GetImageMip(bloomDebuggerMip).As<Image>(), { 100,100 });
+			}
+			UI::EndPropertyGrid();
+
 			UI::BeginPropertyGrid("Shadow settign grid");
 
 			
