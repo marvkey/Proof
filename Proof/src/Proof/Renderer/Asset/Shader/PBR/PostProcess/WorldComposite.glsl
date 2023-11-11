@@ -33,6 +33,7 @@ layout (location = 0) in OutputBlock Input;
 //uniforms
 layout (binding = 5) uniform sampler2D u_WorldTexture;
 layout (binding = 6) uniform sampler2D u_BloomTexture;
+layout (binding =7) uniform sampler2D u_DOFTexture;
 vec3 UpsampleTent9(sampler2D tex, float lod, vec2 uv, vec2 texelSize, float radius)
 {
 	vec4 offset = texelSize.xyxy * vec4(1.0f, 1.0f, -1.0f, 0.0f) * radius;
@@ -93,8 +94,11 @@ void main()
 	vec2 fTexSize = vec2(float(texSize.x), float(texSize.y));
 	vec3 bloom = UpsampleTent9(u_BloomTexture, 0, Input.TexCoord, 1.0f / fTexSize, sampleScale) * u_Uniforms.BloomIntensity;
 
+	vec3 dofTexture = texture(u_DOFTexture, Input.TexCoord).rgb;
+
 	color += bloom;
 	//color += bloom;
+	color += dofTexture;
 	color = ACESTonemap(color);
 	color = GammaCorrect(color.rgb, gamma);
 

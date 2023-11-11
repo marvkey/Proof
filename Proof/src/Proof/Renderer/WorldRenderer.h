@@ -338,6 +338,12 @@ namespace Proof
 		float DirtIntensity = 1.0f;
 	};
 
+	struct DepthOfFieldSettings
+	{
+		bool Enabled = false;
+		float FocusDistance = 0.0f;
+		float BlurSize = 1.0f;
+	};
 	class RenderPass;
 	class ComputePass;
 	class WorldRenderer : public RefCounted {
@@ -379,7 +385,7 @@ namespace Proof
 			return m_Stats;
 		}
 		Count<class Texture2D> m_BRDFLUT;
-
+		DepthOfFieldSettings m_DepthOFFieldSettings;
 	private:
 		Count<class World> m_ActiveWorld;
 		//buffer data
@@ -499,6 +505,10 @@ namespace Proof
 		std::vector<Count<Texture2D>> m_BloomComputeTextures{ 3 };
 		std::vector<std::vector<Count<ImageView>>> m_BloomComputeImageViews {3};
 
+
+		// 
+		Count<ComputePass> m_DOFPass;
+		Count<Texture2D> m_DOFTexture;
 	private:
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);
@@ -515,7 +525,7 @@ namespace Proof
 		//post processing passes
 		void AmbientOcclusionPass();
 		void BloomPass();
-
+		void DOFPass();
 		void DrawScene();
 		// tehse are static so basically when wer are writng code we avoid errors of 
 		// writing code to a speicif world rendere class

@@ -123,6 +123,7 @@ namespace Proof {
 		ShaderLibrary->LoadShader("WorldComposite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/WorldComposite.glsl");
 		ShaderLibrary->LoadShader("Wireframe", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/Wireframe.glsl");
 		ShaderLibrary->LoadShader("Bloom", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/Bloom.glsl");
+		ShaderLibrary->LoadShader("DOF", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/DOF.glsl");
 		// ao
 		ShaderLibrary->LoadShader("AO-Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/AO-Composite.glsl");
 		ShaderLibrary->LoadShader("SSAO", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/SSAO.glsl");

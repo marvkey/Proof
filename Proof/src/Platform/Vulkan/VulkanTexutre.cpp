@@ -483,6 +483,8 @@ namespace Proof
 
 		Build();
 		m_Image.As<VulkanImage2D>()->CallOnResizeFunctions();
+
+		PF_ENGINE_TRACE("Resized {} Texture2D width:{} Height:{}", m_Config.DebugName, width, height);
 	}
 
 	void VulkanTexture2D::Resize(uint32_t width, uint32_t height, Buffer buffer)

@@ -734,6 +734,15 @@ namespace Proof
 			}
 			UI::EndPropertyGrid();
 
+
+			UI::BeginPropertyGrid("DOF");
+			UI::AttributeBool("DOFEnabled", m_WorldRenderer->m_DepthOFFieldSettings.Enabled);
+			UI::AttributeDrag("FocusDistance", m_WorldRenderer->m_DepthOFFieldSettings.FocusDistance,1,0);
+			UI::AttributeDrag("BlurSize", m_WorldRenderer->m_DepthOFFieldSettings.BlurSize, 1, 0);
+			UI::Image(m_WorldRenderer->m_DOFTexture, { 100,100 });
+			UI::EndPropertyGrid();
+
+
 			UI::BeginPropertyGrid("Shadow settign grid");
 
 			

@@ -136,6 +136,8 @@ namespace Proof
 		glm::vec3 rotationVec(x, 0.0f, z);
 		return rotationVec;
 	}
+
+	static const uint32_t DOF_NUM_THREADS =32;
 	WorldRenderer::~WorldRenderer() {
 		for (auto& transformBuffer : m_SubmeshTransformBuffers)
 			pdelete[] transformBuffer.Data;
@@ -574,31 +576,51 @@ namespace Proof
 				}
 			}
 #endif
-		}
-		//bloom
-		{
-			m_BloomComputePass = ComputePass::Create({ "Bloom",ComputePipeline::Create({"Bloom",Renderer::GetShader("Bloom")}) });
+			//bloom
+			{
+				m_BloomComputePass = ComputePass::Create({ "Bloom",ComputePipeline::Create({"Bloom",Renderer::GetShader("Bloom")}) });
 
-			TextureConfiguration spec;
-			spec.Format = ImageFormat::RGBA32F;
-			spec.Width = 1;
-			spec.Height = 1;
-			spec.Wrap = TextureWrap::ClampEdge;
-			spec.Storage = true;
-			spec.GenerateMips = true;
-			spec.DebugName = "BloomCompute-0";
-			m_BloomComputeTextures[0] = Texture2D::Create(spec);
-			spec.DebugName = "BloomCompute-1";
-			m_BloomComputeTextures[1] = Texture2D::Create(spec);
-			spec.DebugName = "BloomCompute-2";
-			m_BloomComputeTextures[2] = Texture2D::Create(spec);
+				TextureConfiguration spec;
+				spec.Format = ImageFormat::RGBA32F;
+				spec.Width = 1;
+				spec.Height = 1;
+				spec.Wrap = TextureWrap::ClampEdge;
+				spec.Storage = true;
+				spec.GenerateMips = true;
+				spec.DebugName = "BloomCompute-0";
+				m_BloomComputeTextures[0] = Texture2D::Create(spec);
+				spec.DebugName = "BloomCompute-1";
+				m_BloomComputeTextures[1] = Texture2D::Create(spec);
+				spec.DebugName = "BloomCompute-2";
+				m_BloomComputeTextures[2] = Texture2D::Create(spec);
 
 
-			glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
-			bloomSize += m_BloomComputeWorkgroupSize - bloomSize % m_BloomComputeWorkgroupSize;
-			m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
-			m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
-			m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
+				glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
+				bloomSize += m_BloomComputeWorkgroupSize - bloomSize % m_BloomComputeWorkgroupSize;
+				m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
+				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
+				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
+			}
+
+			//DOF
+			{
+				m_DOFPass = ComputePass::Create({ "Depth of Field",ComputePipeline::Create({"Depth of Field",Renderer::GetShader("DOF")}) });
+
+				TextureConfiguration config;
+				config.DebugName = "DOF";
+				config.Format = ImageFormat::RGBA32F;
+				config.Width = 1;
+				config.Height = 1;
+				config.Storage = true;
+
+				m_DOFTexture = Texture2D::Create(config);
+
+				m_DOFPass->SetInput("u_DepthTexture", m_PreDepthPass->GetOutput(0));
+				m_DOFPass->SetInput("u_Texture", m_GeometryPass->GetOutput(0));
+				m_DOFPass->SetInput("o_Image", m_DOFTexture);
+				m_DOFPass->AddGlobalInput(m_GlobalInputs);
+			}
+
 		}
 		//External Composite 
 		{
@@ -720,6 +742,13 @@ namespace Proof
 				m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
+			}
+			//size
+			{
+
+				glm::uvec2 size = (viewportSize + 1u) / 2u;
+				size += DOF_NUM_THREADS - size % DOF_NUM_THREADS;
+				m_DOFTexture->Resize(size.x, size.y);
 			}
 			// predepth
 			m_PreDepthPass->GetTargetFrameBuffer()->Resize(viewportSize);
@@ -1416,6 +1445,7 @@ namespace Proof
 		
 		BloomPass();
 		//AmbientOcclusionPass();
+		DOFPass();
 
 		// this has to be the last thgn called
 		{
@@ -1426,6 +1456,7 @@ namespace Proof
 			auto inputImage = m_GeometryPass->GetOutput(0);
 			m_CompositeMaterial->Set("u_WorldTexture", inputImage);
 			m_CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
+			m_CompositeMaterial->Set("u_DOFTexture", m_DOFTexture);
 			m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", m_BloomSettings.Intensity);
 
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_CompositePass, m_CompositeMaterial);
@@ -1746,6 +1777,38 @@ namespace Proof
 		}
 #endif
 
+	}
+
+	void WorldRenderer::DOFPass()
+	{
+		PF_PROFILE_FUNC();
+		glm::uvec2 workgroupCount = (glm::uvec2(m_UBScreenData.FullResolution) + glm::uvec2(DOF_NUM_THREADS) - 1u) / glm::uvec2(DOF_NUM_THREADS);
+
+		Renderer::BeginComputePass(m_CommandBuffer, m_DOFPass);
+		glm::vec2 data{ m_DepthOFFieldSettings.FocusDistance,m_DepthOFFieldSettings.BlurSize };
+		m_DOFPass->PushData("u_Uniforms", &data);
+		m_DOFPass->Dispatch(m_DOFTexture->GetWidth()/DOF_NUM_THREADS, m_DOFTexture->GetHeight() / DOF_NUM_THREADS, 1);
+
+		Renderer::Submit([image = m_DOFTexture.As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
+			{
+				VkImageMemoryBarrier imageMemoryBarrier = {};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+				imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				vkCmdPipelineBarrier(
+					commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+			});
+		Renderer::EndComputePass(m_DOFPass);
 	}
 
 	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws)
