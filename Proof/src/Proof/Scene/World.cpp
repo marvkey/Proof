@@ -72,7 +72,7 @@ namespace Proof {
 	}
 	
 
-	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const Vector& cameraLocation, float nearPlane, float farPlane)
+	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane)
 	{
 		PF_PROFILE_FUNC();
 		m_Camera = camera;
@@ -261,7 +261,7 @@ namespace Proof {
 		// render 2d
 		#if 1
 		Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
-		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), cameraLocation);
+		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(),GlmVecToProof( cameraLocation));
 
 		renderer2D->SetTargetFrameBuffer(worldRenderer->GetExternalCompositePassFrameBuffer());
 
@@ -327,7 +327,7 @@ namespace Proof {
 		}
 		*/
 
-		renderer2D->DrawQuad(glm::vec3{0}, worldRenderer->m_BRDFLUT);
+		//renderer2D->DrawQuad(glm::vec3{0}, worldRenderer->m_BRDFLUT);
 
 		//renderer2D->DrawLine({ 0,0,0 }, { 0,0,10 });
 		renderer2D->EndContext();
@@ -336,7 +336,7 @@ namespace Proof {
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)
 	{
-		if (renderer->Options.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::None)
+		if (renderer->GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::None)
 			return;
 
 		{
@@ -727,7 +727,7 @@ namespace Proof {
 	void World::OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const EditorCamera& camera)
 	{
 		
-		OnRender(renderer, time, camera,GlmVecToProof( camera.GetPosition()), camera.GetNearPlane(), camera.GetFarPlane());
+		OnRender(renderer, time, camera,camera.GetPosition(), camera.GetNearPlane(), camera.GetFarPlane());
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {

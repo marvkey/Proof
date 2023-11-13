@@ -6,6 +6,7 @@
 #include "Proof/Math/Math.h"
 #include "Proof/Core/Profile.h"
 #include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UiUtilities.h"
 
 #include <fmt/format.h>
 namespace Proof {
@@ -23,12 +24,12 @@ namespace Proof {
 
 		ImGui::Begin(dsiplayName, &isOpen);
 		{
-			UI::BeginPropertyGrid("AssetManagerPanelGrid");
+			UI::BeginPropertyGrid();
 			
 			for (auto [ID,assetContainer] : AssetManager::GetAssets()) {
 				ImGui::BeginChildFrame((ImGuiID)ID,{ImGui::GetContentRegionAvail().x,100}, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
 
-				UI::BeginPropertyGrid(fmt::format("{}Grid",assetContainer.Info.GetName()));
+				UI::BeginPropertyGrid();
 				UI::AttributeTextBar("Asset ID", std::to_string(assetContainer.Info.ID));
 				if(assetContainer.Info.State== AssetState::Ready)
 					UI::AttributeTextBar("Loaded", "False");

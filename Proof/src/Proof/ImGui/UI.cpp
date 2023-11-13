@@ -7,6 +7,8 @@
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Scripting/ScriptField.h"
 #include <regex>
+#include "UiUtilities.h"
+#include "Proof/Utils/StringUtils.h"
 //https://github.com/InCloudsBelly/X2_RenderingEngine/blob/e7c349b70bd95af3ab673556cdb56cb2cc40b48e/Engine/X2/ImGui/ImGuiUtilities.h#L285
 // have 
 /*
@@ -90,6 +92,8 @@ namespace Proof::UI
     static constexpr int s_IDBufferSize = 32;
     static uint64_t s_ID = 0;
     static char s_IDBuffer[s_IDBufferSize];
+    static int s_UIContextID = 0;
+    static uint32_t s_Counter = 0;
 
     static void UpdateIDBuffer(const std::string& label)
     {
@@ -108,7 +112,19 @@ namespace Proof::UI
         ImGuiInputTextCallback  ChainCallback;
         void* ChainCallbackUserData;
     };
-     
+
+    void PushID()
+    {
+        s_UIContextID++;
+        ImGui::PushID(s_UIContextID);
+        s_Counter = 0;
+    }
+
+    void PopID()
+    {
+        ImGui::PopID();
+        s_UIContextID--;
+    }
 
     static int InputTextCallback(ImGuiInputTextCallbackData* data)
     {
@@ -129,17 +145,23 @@ namespace Proof::UI
         }
         return 0;
     }
-
-    void BeginPropertyGrid(const std::string& gridName)
+    
+    void BeginPropertyGrid(uint32_t columns )
     {
-        ImGui::PushID(gridName.c_str());
-        ImGui::Columns(2);
+        PushID();
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8.0f, 8.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 4.0f));
+        ImGui::Columns(columns);
     }
 
     void EndPropertyGrid()
     {
+        Draw::Underline();
         ImGui::Columns(1);
-        ImGui::PopID();
+        ImGui::PopStyleVar(2); // ItemSpacing, FramePadding
+        ShiftCursorY(18.0f);
+
+        PopID();
     }
 
     bool DrawVec3Control(const std::string& label, glm::vec3& values, const glm::vec3 resetValues, float columnWidth)
@@ -152,7 +174,7 @@ namespace Proof::UI
 
         ImGui::Columns(2, nullptr, false);
         ImGui::SetColumnWidth(0, columnWidth);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         ImGui::NextColumn();
 
         ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
@@ -225,7 +247,13 @@ namespace Proof::UI
 
         return bValueChanged;
     }
+    void AttributeLabel(const std::string& label)
+    {
+        if (label.empty())
+            return;
 
+        ImGui::Text(label.c_str());
+    }
     bool AttributeInputText(const std::string& label, std::string& value, const std::string& helpMessage)
     {
         static char buffer[256];
@@ -233,7 +261,7 @@ namespace Proof::UI
 
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -262,7 +290,7 @@ namespace Proof::UI
 
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -285,7 +313,7 @@ namespace Proof::UI
 
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -349,7 +377,7 @@ namespace Proof::UI
     }
     bool AttributeTextBar(const std::string& label, const std::string& text)
     {
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         ImGui::NextColumn();
         ImGui::PushItemWidth(-1);
         //UI::PushItemDisabled();
@@ -492,7 +520,7 @@ namespace Proof::UI
         bool bModified = false;
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -548,7 +576,7 @@ namespace Proof::UI
 
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -623,7 +651,7 @@ namespace Proof::UI
 
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -662,7 +690,7 @@ namespace Proof::UI
 
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -737,7 +765,7 @@ namespace Proof::UI
         bool bModified = false;
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -772,7 +800,7 @@ namespace Proof::UI
 
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -793,7 +821,7 @@ namespace Proof::UI
 
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -810,8 +838,9 @@ namespace Proof::UI
 
     bool AttributeButton(const std::string& label, const std::string& buttonText, const ImVec2& size)
     {
+
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         ImGui::NextColumn();
         ImGui::PushItemWidth(-1);
 
@@ -829,7 +858,7 @@ namespace Proof::UI
 
         bool modfified = false;
         std::string id = fmt::format("##{}", label);
-        ImGui::Text(label.c_str());
+        AttributeLabel(label.c_str());
         ImGui::SameLine();
 
 
@@ -1147,7 +1176,7 @@ namespace Proof::UI
             return false;
 
         std::string id = fmt::format("{0}-{1}", fieldName, field->Name);
-        ImGui::PushID(id.c_str());
+        UI::PushID();
 
         bool result = false;
 
@@ -1187,9 +1216,71 @@ namespace Proof::UI
                 result = true;
             }
         }
+        UI::PopID();
+        return result;
+    }
+
+   
+
+    bool AttributeTreeNode(const std::string& label, bool openByDefault)
+    {
+        ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
+            | ImGuiTreeNodeFlags_SpanAvailWidth
+            | ImGuiTreeNodeFlags_AllowItemOverlap
+            | ImGuiTreeNodeFlags_FramePadding;
+
+        if (openByDefault)
+            treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+        bool open = false;
+        const float framePaddingX = 3.0f;
+        const float framePaddingY = 3.0f; // affects height of the header
+
+        UI::ScopedStyleVar headerRounding(ImGuiStyleVar_FrameRounding, 0.0f);
+        UI::ScopedStyleVar headerPaddingAndHeight(ImGuiStyleVar_FramePadding, ImVec2{ framePaddingX, framePaddingY });
+
+        UpdateIDBuffer(label);
+
+        ImGui::PushID(s_IDBuffer);
+
+        open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, Utils::String::ToUpper(label).c_str());
         ImGui::PopID();
 
-        return result;
+        return open;
+    }
+
+    bool AttributeTreeNodeIcon(const std::string& label, const Count<Texture2D>& icon, const ImVec2& size, bool openByDefault)
+    {
+        ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
+            | ImGuiTreeNodeFlags_SpanAvailWidth
+            | ImGuiTreeNodeFlags_AllowItemOverlap
+            | ImGuiTreeNodeFlags_FramePadding;
+
+        if (openByDefault)
+            treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+        bool open = false;
+        const float framePaddingX = 3.0f;
+        const float framePaddingY = 3.0f; // affects height of the header
+
+        UI::ScopedStyleVar headerRounding(ImGuiStyleVar_FrameRounding, 0.0f);
+        UI::ScopedStyleVar headerPaddingAndHeight(ImGuiStyleVar_FramePadding, ImVec2{ framePaddingX, framePaddingY });
+
+        ImGui::PushID(label.c_str());
+        ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+        open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, "");
+
+        float lineHeight = ImGui::GetItemRectMax().y - ImGui::GetItemRectMin().y;
+        ImGui::SameLine();
+        UI::ShiftCursorY(size.y / 2.0f - 1.0f);
+        UI::Image(icon, size);
+        ImGui::SameLine();
+        UI::ShiftCursorY(-(size.y / 2.0f) + 1.0f);
+        ImGui::TextUnformatted(Utils::String::ToUpper(label).c_str());
+
+        ImGui::PopID();
+
+        return open;
     }
 
 }

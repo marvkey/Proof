@@ -6,6 +6,7 @@
 #include "Proof/Input/InputManager.h"
 #include "Proof/Core/Profile.h"
 #include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UiUtilities.h"
 
 #include <unordered_map>
 namespace Proof {

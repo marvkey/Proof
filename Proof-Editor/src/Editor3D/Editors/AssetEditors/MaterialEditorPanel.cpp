@@ -294,7 +294,7 @@ namespace Proof
 		float dynamicFrction = m_Material->GetDynamicFriction();
 		float bounciness = m_Material->GetBounciness();
 
-		UI::BeginPropertyGrid("PhysicsMaterialGrid");
+		UI::BeginPropertyGrid();
 		if (UI::AttributeDrag("StaticFriction", staticFriction))
 		{
 

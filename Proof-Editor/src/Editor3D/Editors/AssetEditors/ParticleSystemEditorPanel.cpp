@@ -8,6 +8,7 @@
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Core/Application.h"
 #include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UiUtilities.h"
 namespace Proof
 {
 	ParticleSystemEditorPanel::ParticleSystemEditorPanel()

@@ -59,12 +59,14 @@
 #include "Editors/Panels/InputPanel.h"
 #include "Editors/Panels/SceneHierachyPanel.h"
 #include "Editors/Panels/ContentBrowserPanel.h"
+#include "Editors/Panels/WorldRendererPanel.h"
 
 #include "Editors/AssetEditors/AssetEditor.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Core/Timer.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UiUtilities.h"
 #include "Proof/Scripting/ScriptBuilder.h"
 
 #define SCENE_HIERARCHY_PANEL_ID "SceneHierarchyPanel"
@@ -73,7 +75,7 @@
 #define CONTENT_BROWSER_PANEL_ID "ContentBrowserPanel"
 #define INPUT_PANEL_ID "InputPanel"
 #define ASSET_MANAGER_PANEL_ID "AssetManagerPanel"
-#define SCENE_RENDERER_PANEL_ID "SceneRendererPanel"
+#define WORLD_RENDERER_PANEL_ID "WorldRendererPanel"
 namespace Proof
 {
 	// you can do this
@@ -108,9 +110,6 @@ namespace Proof
 		Count<Texture2D> PauseButtonTexture;
 		Count<Texture2D> SimulateButtonTexture;
 		Count<Texture2D> StopButtonTexture;
-		RenderSettings RenderSettings;
-
-
 	};
 	enum class PopupState
 	{
@@ -473,6 +472,7 @@ namespace Proof
 		s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 		s_EditorData->PanelManager->AddPanel<AssetManagerPanel>(ASSET_MANAGER_PANEL_ID, "Asset Manager", false);
 		s_EditorData->PanelManager->AddPanel<InputPanel>(INPUT_PANEL_ID, "Input Panel", false);
+		s_EditorData->PanelManager->AddPanel<WorldRendererPanel>(WORLD_RENDERER_PANEL_ID, "Renderer Panel", true);
 		s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
 
 		AssetEditorPanel::RegisterDefaultEditors();
@@ -485,6 +485,7 @@ namespace Proof
 		s_EditorData->PauseButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PauseButton .png");
 		s_EditorData->SimulateButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/SimulateButton.png");
 		s_EditorData->StopButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/StopButton.png");
+		s_EditorData->PanelManager->GetPanel< WorldRendererPanel>(WORLD_RENDERER_PANEL_ID)->SetContext(m_WorldRenderer);
 
 		m_PlayersCount = 1;
 
@@ -673,120 +674,6 @@ namespace Proof
 			}
 		}
 
-		{
-			//ImGui::Begin("Render Speed Panel");
-			//ImGui::Text("SetMeshPass %f", m_WorldRenderer->GetRenderer3DPBR()->GetPorformanceProfiler().SetMeshPass);
-			//ImGui::Text("RenderMesh %f", m_WorldRenderer->GetRenderer3DPBR()->GetPorformanceProfiler().RenderMesh);
-			//ImGui::Text("RenderMeshMaterial %f", m_WorldRenderer->GetRenderer3DPBR()->GetPorformanceProfiler().RenderMeshMaterial);
-			//ImGui::End();
-		}
-
-		a:
-		if (s_EditorData->ShowRendererStats == false)
-			return;
-		ImGui::Begin("Renderer Stastitics", &s_EditorData->ShowRendererStats);
-		{
-			PF_PROFILE_FUNC("Renderer Stastitics");
-
-			UI::BeginPropertyGrid("Rendere Stats");
-			{
-				UI::AttributeText("Shadow Settings");
-			}
-
-			UI::AttributeBool("View COlliders", s_EditorData->RenderSettings.ViewColliders);
-
-			UI::AttributeTextBar("##Frame",fmt::format("{} ms/frame", FrameTime::GetFrameMS()));
-			UI::AttributeTextBar("##FPS", fmt::format("{} FPS", FrameTime::GetFrameFPS()));
-
-
-			Renderer::GetShaderLibrary()->ForEachShader([&](Count<Shader> shader) {
-				UI::ScopedID id(shader->GetName().c_str());
-
-				if(UI::AttributeButton(shader->GetName(),"Reload"))
-					shader->Reload();
-			});
-			{
-				UI::EnumCombo("Collider View", m_WorldRenderer->Options.ShowPhysicsColliders);
-				UI::AttributeBool("View LightGrid", m_WorldRenderer->Options.ShowLightGrid);
-			}
-			//ExternalAPI::ImGUIAPI::EnumCombo<WorldRendererOptions::PhysicsColliderView>("Physics Collider", m_WorldRenderer->Options.ShowPhysicsColliders);
-			UI::EndPropertyGrid();
-
-			UI::BeginPropertyGrid("Bloom");
-			UI::AttributeBool("BloomEnabled", m_WorldRenderer->m_BloomSettings.Enabled);
-			UI::AttributeDrag("Intensity", m_WorldRenderer->m_BloomSettings.Intensity);
-			UI::AttributeDrag("Threshold", m_WorldRenderer->m_BloomSettings.Threshold);
-			UI::AttributeDrag("UpsampleScale", m_WorldRenderer->m_BloomSettings.UpsampleScale);
-			UI::AttributeDrag("Knee", m_WorldRenderer->m_BloomSettings.Knee);
-
-			static bool viewBloomSettnigs = false;
-
-			UI::AttributeBool("Bloom Debugger", viewBloomSettnigs);
-
-			if (viewBloomSettnigs)
-			{
-				static uint32_t bloomDebuggerImage=0;
-				static uint32_t bloomDebuggerMip =0;
-				UI::AttributeSlider("BloomImage", bloomDebuggerImage, 0, m_WorldRenderer->m_BloomComputeTextures.size()-1);
-				UI::AttributeSlider("BloomMip", bloomDebuggerMip, 0, m_WorldRenderer->m_BloomComputeTextures[bloomDebuggerImage]->GetMipLevelCount()-1);
-
-				UI::Image(m_WorldRenderer->m_BloomComputeTextures[bloomDebuggerImage]->GetImageMip(bloomDebuggerMip).As<Image>(), { 100,100 });
-			}
-			UI::EndPropertyGrid();
-
-
-			UI::BeginPropertyGrid("DOF");
-			UI::AttributeBool("DOFEnabled", m_WorldRenderer->m_DepthOFFieldSettings.Enabled);
-			UI::AttributeDrag("FocusDistance", m_WorldRenderer->m_DepthOFFieldSettings.FocusDistance,1,0);
-			UI::AttributeDrag("BlurSize", m_WorldRenderer->m_DepthOFFieldSettings.BlurSize, 1, 0);
-			UI::Image(m_WorldRenderer->m_DOFTexture, { 100,100 });
-			UI::EndPropertyGrid();
-
-
-			UI::BeginPropertyGrid("Shadow settign grid");
-
-			
-			UI::AttributeText("Shadow Settings");
-
-			UI::AttributeBool("DebugPass", m_WorldRenderer->ShadowSetting.RenderDebugPass);
-			if (m_WorldRenderer->ShadowSetting.RenderDebugPass)
-			{
-
-				UI::Image(m_WorldRenderer->GetShadowPassDebugImage(),
-					{ ImGui::GetWindowWidth(),ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-				UI::AttributeSlider("Cascade Index", m_WorldRenderer->ShadowSetting.DebugCascade, 0, 3);
-			}
-
-			ShadowSetting& shadowSetting = m_WorldRenderer->ShadowSetting;
-			UI::AttributeBool("ShowCascades", shadowSetting.ShowCascades);
-			UI::AttributeBool("Soft Shadows", shadowSetting.SoftShadows);
-			UI::AttributeDrag("Max Shadow Distance", shadowSetting.MaxShadowDistance);
-			UI::AttributeDrag("Shadow Fade", shadowSetting.ShadowFade, 5.0f);
-
-			// cascade settings tre node
-			UI::AttributeBool("CascadeFading", shadowSetting.CascadeFading);
-			if (shadowSetting.CascadeFading)
-				UI::AttributeDrag("CascadeTransitionFade", shadowSetting.CascadeTransitionFade, 0.05);
-
-			UI::AttributeDrag("CascadeSplitLambda", shadowSetting.CascadeSplitLambda, 0.01);
-			UI::AttributeDrag("CascadeNearPlaneOffset", shadowSetting.CascadeNearPlaneOffset, 0.1, Math::GetMinType<float>(), 0, "%.3f", ImGuiSliderFlags_AlwaysClamp);
-			UI::AttributeDrag("CascadeFarPlaneOffset", shadowSetting.CascadeFarPlaneOffset, 0.1, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
-			UI::AttributeDrag("ScaleShadowCascadesToOrigin", shadowSetting.ScaleShadowCascadesToOrigin, 0.1, 0, Math::GetMaxType<float>(), "%.3f", ImGuiSliderFlags_AlwaysClamp);
-
-			ImGui::Checkbox("UseManualCascadeSplits", &shadowSetting.UseManualCascadeSplits);
-
-			if (shadowSetting.UseManualCascadeSplits)
-			{
-				UI::AttributeDrag("Cascade 0", shadowSetting.CascadeSplits[0], 0.025);
-				UI::AttributeDrag("Cascade 1", shadowSetting.CascadeSplits[1], 0.025);
-				UI::AttributeDrag("Cascade 2", shadowSetting.CascadeSplits[2], 0.025);
-				UI::AttributeDrag("Cascade 3", shadowSetting.CascadeSplits[3], 0.025);
-			}
-			UI::EndPropertyGrid();
-
-		}
-
-		ImGui::End();
 	}
 
 	bool Editore3D::OnKeyClicked(KeyClickedEvent& e) {

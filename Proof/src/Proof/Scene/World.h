@@ -132,7 +132,7 @@ namespace Proof {
 		// the parent entity shoudl be the prefab base entity 
 		void PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren = true);
 
-		void OnRender(Count<class WorldRenderer> renderer, FrameTime timestep,const Camera& camera, const Vector& cameraLocation, float nearPlane, float farPlane);
+		void OnRender(Count<class WorldRenderer> renderer, FrameTime timestep,const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane);
 
 		void RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime);
 		void Init();

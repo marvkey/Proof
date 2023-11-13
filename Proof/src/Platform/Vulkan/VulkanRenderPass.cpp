@@ -777,12 +777,15 @@ namespace Proof
         PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
         const auto& pushRange = vkShader->GetPushConstants().at(str);
 
-        m_LocalStorage.Copy(data, pushRange.size);
+        Buffer buffer;
+        buffer.Allocate(pushRange.size);
+        buffer.Copy(data, buffer.Size);
+
         Count<VulkanRenderPass> instance = this;
-        Renderer::Submit([instance, str]()
+        Renderer::Submit([instance, str, buffer]() mutable
         {
-            instance->RT_PushData(str, instance->m_LocalStorage.Data);
-            //instance->m_LocalStorage.Release();
+            instance->RT_PushData(str, buffer.Data);
+            buffer.Release();
         });
     }
 }

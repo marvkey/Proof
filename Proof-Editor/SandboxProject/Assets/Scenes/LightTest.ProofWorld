@@ -47,9 +47,9 @@ World:
         Children: []
       SkyLightComponent:
         TintColor: [1, 1, 1]
-        SkyBoxLod: 0
+        SkyBoxLod: 9.34000015
         MapRotation: 0
-        Intensity: 0
+        Intensity: 1
         DynamicSky: false
         Turbidity: 2
         Azimuth: 0
@@ -222,3 +222,17 @@ World:
         SoftShadows: false
         ShadowStrength: 0.5
         ShadowSoftness: 0.5
+    - Entity: 5515585270585972528
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [-0.0925024673, 0.160570443, 0.230384111]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1

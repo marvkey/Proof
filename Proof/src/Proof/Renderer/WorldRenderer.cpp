@@ -145,7 +145,9 @@ namespace Proof
 	}
 	WorldRenderer::WorldRenderer()
 		:
-		m_Timers(m_Stats.Timers), m_LightScene(m_Stats.LightSene)
+		m_Timers(m_Stats.Timers), m_LightScene(m_Stats.LightSene),
+		GeneralOptions(PreProcessSettings.GeneralOptions), ShadowSetting(PreProcessSettings.ShadowSettings),
+		AmbientOcclusionSettings(PostProcessSettings.AmbientOcclusionSettings), BloomSettings(PostProcessSettings.BloomSettings), DOFSettings(PostProcessSettings.DOFSettings)
 	{
 		Init();
 	}
@@ -703,7 +705,7 @@ namespace Proof
 		m_ActiveWorld = world;
 
 	}
-	void WorldRenderer::BeginScene(const Camera& camera, const Vector& location, float nearPlane, float farPlane)
+	void WorldRenderer::BeginScene(const Camera& camera, const glm::vec3& location, float nearPlane, float farPlane)
 	{
 		PF_PROFILE_FUNC();
 		PF_CORE_ASSERT(!m_InContext);
@@ -913,8 +915,8 @@ namespace Proof
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		//scene data
 		{
-			m_UBSceneData.CameraPosition =ProofToglmVec( m_UBCameraData.Position);
-			m_UBSceneData.bShowLightGrid = Options.ShowLightGrid;
+			m_UBSceneData.CameraPosition =m_UBCameraData.Position;
+			m_UBSceneData.bShowLightGrid = GeneralOptions.ShowLightGrid;
 			m_UBSceneDataBuffer->SetData(frameIndex, Buffer(&m_UBSceneData, sizeof(m_UBSceneData)));
 		}
 		// set up shadow pass
@@ -1451,31 +1453,42 @@ namespace Proof
 		{
 			PF_PROFILE_FUNC("WorldRenderer::WorldComposite");
 
+			auto blackTexture = Renderer::GetBlackTexture();
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_CompositePass, true);
 			//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
 			auto inputImage = m_GeometryPass->GetOutput(0);
 			m_CompositeMaterial->Set("u_WorldTexture", inputImage);
+
 			m_CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
-			m_CompositeMaterial->Set("u_DOFTexture", m_DOFTexture);
-			m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", m_BloomSettings.Intensity);
+
+			if (BloomSettings.Enabled)
+				m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", BloomSettings.Intensity);
+			else
+				m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", 0.0f);
+
+			if(DOFSettings.Enabled)
+				m_CompositeMaterial->Set("u_DOFTexture", m_DOFTexture);
+			else
+				m_CompositeMaterial->Set("u_DOFTexture", blackTexture);
+
 
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_CompositePass, m_CompositeMaterial);
 			Renderer::EndRenderPass(m_CompositePass);
 		}
 
-		if (Options.ShowPhysicsColliders != WorldRendererOptions::PhysicsColliderView::None)
+		if (GeneralOptions.ShowPhysicsColliders != WorldRendererOptions::PhysicsColliderView::None)
 		{
 			PF_PROFILE_FUNC("CompositePass::PhysicsDebugMeshes");
 			Timer physicsDebugMesh;
 
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").X = Options.PhysicsColliderColor.x;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Y = Options.PhysicsColliderColor.y;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Z = Options.PhysicsColliderColor.z;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").W = Options.PhysicsColliderColor.w;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").X = GeneralOptions.PhysicsColliderColor.x;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Y = GeneralOptions.PhysicsColliderColor.y;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Z = GeneralOptions.PhysicsColliderColor.z;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").W = GeneralOptions.PhysicsColliderColor.w;
 
 			auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
 
-			auto wireFramePass = Options.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::Normal ? m_GeometryWireFramePass : m_GeometryWireFrameOnTopPass;
+			auto wireFramePass = GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::Normal ? m_GeometryWireFramePass : m_GeometryWireFrameOnTopPass;
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, wireFramePass);
 			for (auto& [meshKey, dc] : m_ColliderDrawList)
 			{
@@ -1492,15 +1505,15 @@ namespace Proof
 	}
 	void WorldRenderer::AmbientOcclusionPass()
 	{
-		if (AmbientOcclusion.Enabled == false)
+		if (AmbientOcclusionSettings.Enabled == false)
 			return;
 
 		PF_PROFILE_FUNC();
 		
-		if (AmbientOcclusion.Type == AmbientOcclusion::AmbientOcclusionType::SSAO)
+		if (AmbientOcclusionSettings.Type == AmbientOcclusion::AmbientOcclusionType::SSAO)
 		{
 			
-			auto& ssao = AmbientOcclusion.SSAO;
+			auto& ssao = AmbientOcclusionSettings.SSAO;
 
 			if (m_SBSSAOSampleKernalBuffer->GetBuffer(0)->GetSize() != sizeof(glm::vec3) * ssao.KernelSize)
 			{
@@ -1540,13 +1553,16 @@ namespace Proof
 	void WorldRenderer::BloomPass()
 	{
 		PF_PROFILE_FUNC();
+
+		if (!BloomSettings.Enabled)
+			return;
 		struct BloomComputePushConstants
 		{
 			glm::vec4 Params;
 			float LOD = 0.0f;
 			int Mode = 0; // 0 = prefilter, 1 = downsample, 2 = firstUpsample, 3 = upsample
 		} bloomComputePushConstants;
-		bloomComputePushConstants.Params = { m_BloomSettings.Threshold, m_BloomSettings.Threshold - m_BloomSettings.Knee, m_BloomSettings.Knee * 2.0f, 0.25f / m_BloomSettings.Knee };
+		bloomComputePushConstants.Params = { BloomSettings.Threshold, BloomSettings.Threshold - BloomSettings.Knee, BloomSettings.Knee * 2.0f, 0.25f / BloomSettings.Knee };
 		Renderer::BeginComputePass(m_CommandBuffer, m_BloomComputePass);
 
 		uint32_t workGroupsX;
@@ -1565,13 +1581,8 @@ namespace Proof
 			workGroupsY = m_BloomComputeTextures[0]->GetHeight() / m_BloomComputeWorkgroupSize;
 
 			{
-				Buffer push(&bloomComputePushConstants, sizeof(bloomComputePushConstants), true);
-				Renderer::Submit([bloomcomputePass = m_BloomComputePass, push]() mutable
-					{
-						bloomcomputePass.As<VulkanComputePass>()->RT_PushData("u_Uniforms", push.Data);
-						push.Release();
+				m_BloomComputePass.As<VulkanComputePass>()->PushData("u_Uniforms", &bloomComputePushConstants);
 
-					});
 			}
 			//m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
 			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
@@ -1615,15 +1626,8 @@ namespace Proof
 				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
 				m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
 				bloomComputePushConstants.LOD = i - 1.0f;
-				{
-					Buffer push(&bloomComputePushConstants, sizeof(bloomComputePushConstants), true);
-					Renderer::Submit([bloomcomputePass = m_BloomComputePass, push]() mutable
-						{
-							bloomcomputePass.As<VulkanComputePass>()->RT_PushData("u_Uniforms", push.Data);
-							push.Release();
+				m_BloomComputePass.As<VulkanComputePass>()->PushData("u_Uniforms", &bloomComputePushConstants);
 
-						}); 
-				}
 				//m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
 				m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
 
@@ -1782,10 +1786,13 @@ namespace Proof
 	void WorldRenderer::DOFPass()
 	{
 		PF_PROFILE_FUNC();
+
+		if (!DOFSettings.Enabled)
+			return;
 		glm::uvec2 workgroupCount = (glm::uvec2(m_UBScreenData.FullResolution) + glm::uvec2(DOF_NUM_THREADS) - 1u) / glm::uvec2(DOF_NUM_THREADS);
 
 		Renderer::BeginComputePass(m_CommandBuffer, m_DOFPass);
-		glm::vec2 data{ m_DepthOFFieldSettings.FocusDistance,m_DepthOFFieldSettings.BlurSize };
+		glm::vec2 data{ DOFSettings.FocusDistance,DOFSettings.BlurSize };
 		m_DOFPass->PushData("u_Uniforms", &data);
 		m_DOFPass->Dispatch(m_DOFTexture->GetWidth()/DOF_NUM_THREADS, m_DOFTexture->GetHeight() / DOF_NUM_THREADS, 1);
 
