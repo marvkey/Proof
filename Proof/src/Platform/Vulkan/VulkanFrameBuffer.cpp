@@ -450,7 +450,99 @@ namespace Proof
     {
         if (m_Config.Width == width && m_Config.Height == height)
             return;
-        
+
+#if 0
+    #if 0
+            Release();
+            Count<VulkanFrameBuffer> instance = this;
+            Renderer::Submit([instance, width, height]() mutable
+                {
+                    //instance->Release();
+
+                    instance->m_Config.Width = width;
+                    instance->m_Config.Height = height;
+
+                    VkPhysicalDeviceProperties deviceProperties;
+                    vkGetPhysicalDeviceProperties(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetPhysicalDevice()->GetVulkanPhysicalDevice(), &deviceProperties);
+
+                    // Get the maximum framebuffer dimensions
+                    uint32_t maxWidth = deviceProperties.limits.maxFramebufferWidth;
+                    uint32_t maxHeight = deviceProperties.limits.maxFramebufferHeight;
+
+                    // Check if the current dimensions exceed the maximum supported dimensions
+                    if (instance->m_Config.Width > maxWidth || instance->m_Config.Height > maxHeight)
+                    {
+                        // Adjust the dimensions to fit within the maximum supported dimensions
+                        instance->m_Config.Width = std::min(instance->m_Config.Width, maxWidth);
+                        instance->m_Config.Height = std::min(instance->m_Config.Height, maxHeight);
+                        PF_ENGINE_INFO("FrameBuffer {} Dimension Exceed device Property new Width:{} Height:{}", instance->m_Config.DebugName, instance->m_Config.Width, instance->m_Config.Height);
+                    }
+
+                    for (auto& image : instance->m_Images)
+                    {
+                        if (image->GetRendererResourceType() == RendererResourceType::Image2D)
+                        {
+                            auto vkImage = image.As<VulkanImage2D>();
+                            vkImage->Release();
+                            vkImage->GetSpecificationRef().Width = instance->m_Config.Width;
+                            vkImage->GetSpecificationRef().Height = instance->m_Config.Height;
+                            vkImage->RT_Build();
+
+                        }
+                    }
+
+                    //instance->RT_Build();
+                    PF_ENGINE_TRACE("Resized {} FrameBuffer {} {}", instance->m_Config.DebugName, instance->m_Config.Width, instance->m_Config.Height);
+                });
+            for (auto& image : m_Images)
+            {
+                if (image->GetRendererResourceType() == RendererResourceType::Image2D)
+                {
+                    auto vkImage = image.As<VulkanImage2D>();
+                    vkImage->CallOnResizeFunctions();
+                }
+            }
+            Build();
+
+    #elif 
+            Release();
+
+            m_Config.Width = width;
+            m_Config.Height = height;
+
+            VkPhysicalDeviceProperties deviceProperties;
+            vkGetPhysicalDeviceProperties(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetPhysicalDevice()->GetVulkanPhysicalDevice(), &deviceProperties);
+
+            // Get the maximum framebuffer dimensions
+            uint32_t maxWidth = deviceProperties.limits.maxFramebufferWidth;
+            uint32_t maxHeight = deviceProperties.limits.maxFramebufferHeight;
+
+            // Check if the current dimensions exceed the maximum supported dimensions
+            if (m_Config.Width > maxWidth || m_Config.Height > maxHeight)
+            {
+                // Adjust the dimensions to fit within the maximum supported dimensions
+                m_Config.Width = std::min(m_Config.Width, maxWidth);
+                m_Config.Height = std::min(m_Config.Height, maxHeight);
+                PF_ENGINE_INFO("FrameBuffer {} Dimension Exceed device Property new Width:{} Height:{}", m_Config.DebugName, m_Config.Width, m_Config.Height);
+            }
+            for (auto& image : m_Images)
+            {
+                if (image->GetRendererResourceType() == RendererResourceType::Image2D)
+                {
+                    auto vkImage = image.As<VulkanImage2D>();
+                    vkImage->Release();
+                    vkImage->GetSpecificationRef().Width = m_Config.Width;
+                    vkImage->GetSpecificationRef().Height = m_Config.Height;
+                    vkImage->Build();
+
+                    vkImage->CallOnResizeFunctions();
+                }
+            }
+            Build();
+    #endif
+#endif
+
+#if 1
         Release();
         m_Config.Width = width;
         m_Config.Height = height;
@@ -475,10 +567,11 @@ namespace Proof
             if (image->GetRendererResourceType() == RendererResourceType::Image2D)
                 image.As<VulkanImage2D>()->Resize(m_Config.Width, m_Config.Height);
         }
-        
+
         Build();
 
         PF_ENGINE_TRACE("Resized {} FrameBuffer {} {}", m_Config.DebugName, m_Config.Width, m_Config.Height);
+#endif
     }
     void VulkanFrameBuffer::Copy(Count<FrameBuffer> copyFrameBuffer)
     {

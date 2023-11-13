@@ -69,8 +69,10 @@ namespace Proof
 			return nullptr;
 		}
 		const std::unordered_map < uint32_t, PanelData>& GetPanels()const { return m_Panels; }
-		const std::unordered_map < uint32_t, PanelData>& GetPanels(){ return m_Panels; }
+		const std::unordered_map < uint32_t, PanelData>& GetPanels() { return m_Panels; }
 	private:
+		friend class Editore3D;
+		std::unordered_map < uint32_t, PanelData>& GetPanelsRef(){ return m_Panels; }
 		std::unordered_map<uint32_t, PanelData> m_Panels;
 	};
 }

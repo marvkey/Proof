@@ -1591,12 +1591,10 @@ namespace Proof
 			}
 			if (ImGui::BeginMenu("View"))
 			{
-				for (auto& [id, panelData] : s_EditorData->PanelManager->GetPanels())
+				for (auto& [id, panelData] : s_EditorData->PanelManager->GetPanelsRef())
 				{
-					if (ImGui::MenuItem(panelData.Name, nullptr, &panelData.IsOpen))
-					{
-						//m_PanelManager->Serialize();
-					}
+					bool* open = &panelData.IsOpen;
+					ImGui::MenuItem(panelData.Name, nullptr, open);
 				}
 				ImGui::MenuItem("Log", nullptr, &s_EditorData->ShowLogger);
 				ImGui::MenuItem("Render Stats", nullptr, &s_EditorData->ShowRendererStats);

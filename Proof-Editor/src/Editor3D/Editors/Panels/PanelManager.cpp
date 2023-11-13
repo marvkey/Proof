@@ -40,6 +40,8 @@ namespace Proof
 	{
 		for (auto& [id, panelData] : m_Panels)
 		{
+			if (!panelData.IsOpen)
+				continue;
 			panelData.Panel->OnImGuiRender(panelData.Name,panelData.IsOpen);
 		}
 	}
