@@ -242,7 +242,22 @@ namespace Proof {
 			ImGui::RenderPlatformWindowsDefault();
 		}
 		
+		std::vector<uint64_t> removeIndexes;
+		for (auto& [Id, setInfo] : m_ImagesDescriptors)
+		{
+			auto [set, image] = setInfo;
+			if (image.IsValid() == false)
+			{
+				if(set)
+					ImGui_ImplVulkan_RemoveTexture(set);
+				removeIndexes.push_back(Id);
+			}
+		}
+
+		for (auto& index : removeIndexes)
+			m_ImagesDescriptors.erase(index);
 	}
+
 	ImTextureID VulkanImguiLayer::ToImguiImage(Count<Texture2D> texture)
 	{
 		return ToImguiImage(texture->GetImage());
@@ -262,7 +277,7 @@ namespace Proof {
 		{
 			// in case maybe the image holding it wa deleted but another image is holding the data 
 			m_ImagesDescriptors[memLocation].second = image.Get();
-			
+			ImGui_ImplVulkan_UpdateTextureProof(m_ImagesDescriptors[memLocation].first, imageDescriptorInfo->sampler, imageDescriptorInfo->imageView, imageDescriptorInfo->imageLayout);
 			return (ImTextureID)m_ImagesDescriptors[memLocation].first;
 		}
 
@@ -270,32 +285,6 @@ namespace Proof {
 		m_ImagesDescriptors[memLocation].second = image.Get();
 		return (ImTextureID)m_ImagesDescriptors[memLocation].first;
 	}
-	void VulkanImguiLayer::UpdateImageDescriptor(const Image* image)
-	{
-		const VkDescriptorImageInfo* imageDescriptorInfo = (VkDescriptorImageInfo*)image->GetResourceDescriptorInfo();
-		if (imageDescriptorInfo == nullptr || imageDescriptorInfo->imageView == nullptr || imageDescriptorInfo->sampler == nullptr)
-		{
-			//PF_CORE_ASSERT(false, "Updating image with null information");
-			return;
-		}
-
-		uint64_t memLocation = (uint64_t)(image);
-		if (!m_ImagesDescriptors.contains(memLocation))
-			return;
-		ImGui_ImplVulkan_UpdateTextureProof(m_ImagesDescriptors[memLocation].first, imageDescriptorInfo->sampler, imageDescriptorInfo->imageView, imageDescriptorInfo->imageLayout);
-	}
-	void VulkanImguiLayer::RemoveImageDescriptor(const Image* image)
-	{
-		const VkDescriptorImageInfo* imageDescriptorInfo = (VkDescriptorImageInfo*)image->GetResourceDescriptorInfo();
-		uint64_t memLocation = (uint64_t)(image);
-
-		if (!m_ImagesDescriptors.contains(memLocation))
-			return;
-
-		VkDescriptorSet set = m_ImagesDescriptors[memLocation].first;
-
-		ImGui_ImplVulkan_RemoveTexture(set);
-		m_ImagesDescriptors.erase(memLocation);
-	}
+	
 }
 

@@ -594,11 +594,6 @@ namespace Proof {
 		}
 		m_DescriptorImageInfo.imageView = m_Info.ImageView;
 		m_DescriptorImageInfo.sampler = m_Info.Sampler;
-		// make this into a callback
-		if (Application::Get()->GetImguiLayer() != nullptr)
-		{
-			Application::Get()->GetImguiLayer().AsRaw<VulkanImguiLayer>()->UpdateImageDescriptor(this);
-		}
 	}
 
 	void VulkanImage2D::Release()
@@ -630,10 +625,6 @@ namespace Proof {
 			VulkanAllocator allocator("VulkanImage2DRelease");
 			allocator.DestroyImage(info.ImageAlloc);
 		});
-		if (Application::Get()->GetImguiLayer() != nullptr)
-		{
-			Application::Get()->GetImguiLayer().As<VulkanImguiLayer>()->RemoveImageDescriptor(this);
-		}
 		m_Info.ImageAlloc.Image = nullptr;
 		m_Info.ImageAlloc.Allocation = nullptr;
 		m_Info.Sampler = nullptr;
@@ -743,10 +734,6 @@ namespace Proof {
 			vkDestroyImageView(vulkanDevice, imageView, nullptr);
 
 		});
-		if (Application::Get()->GetImguiLayer() != nullptr)
-		{
-			Application::Get()->GetImguiLayer().As<VulkanImguiLayer>()->RemoveImageDescriptor(this);
-		}
 		m_ImageView = nullptr;
 	}
 	void VulkanImageView::UpdateDescriptor()
@@ -767,10 +754,6 @@ namespace Proof {
 		m_DescriptorImageInfo.imageView = m_ImageView;
 		m_DescriptorImageInfo.sampler = m_Specification.Image.As<VulkanImage2D>()->Getinfo().Sampler;
 
-		if (Application::Get()->GetImguiLayer() != nullptr)
-		{
-			Application::Get()->GetImguiLayer().AsRaw<VulkanImguiLayer>()->UpdateImageDescriptor(this);
-		}
 	}
 	glm::uvec2 VulkanImageView::GetMipSize()
 	{

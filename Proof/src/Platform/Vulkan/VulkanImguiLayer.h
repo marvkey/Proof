@@ -18,13 +18,7 @@ namespace Proof
 		virtual ImTextureID ToImguiImage(Count<class Texture2D> texture) override;
 
 
-		//todo make this a ref 
-		void UpdateImageDescriptor(const Image* image);
-		//remove image descriptro
-		void RemoveImageDescriptor(const Image* image);
 	private:
-		VkDescriptorPool m_DescriptorPool;
-		//Count<class FrameBuffer> m_FrameBuffer;
 		Count<class RenderCommandBuffer> m_CommandBuffer;
 		std::unordered_map<uint64_t, std::pair<VkDescriptorSet, WeakCount<class Image>>> m_ImagesDescriptors;
 
