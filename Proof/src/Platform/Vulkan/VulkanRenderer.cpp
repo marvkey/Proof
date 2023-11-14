@@ -17,7 +17,7 @@
 #include "VulkanComputePipeline.h"
 namespace Proof
 {
-	std::map < uint32_t, std::pair < Count<TextureCube>, Count<Texture2D>>> setTextreus;
+	std::map < uint32_t, std::tuple < Count<TextureCube>, Count<Texture2D>,Count<ComputePass>>> keepFromDelete;
 
 	void VulkanRenderer::Init() 
 	{
@@ -60,40 +60,35 @@ namespace Proof
 		ComputePipelineConfig computePipelineConfig;
 		computePipelineConfig.DebugName = "EquirectangularToCubemap Pipeline";
 		computePipelineConfig.Shader = Renderer::GetShader("EquirectangularToCubemap");
+		computePipeline = ComputePipeline::Create(computePipelineConfig);
 
-			computePipeline = ComputePipeline::Create(computePipelineConfig);
 		ComputePassConfiguration computePassConfig;
 		computePassConfig.DebugName = "EquirectangularToCubemap Pass";
 		computePassConfig.Pipeline = computePipeline;
+		computePass = ComputePass::Create(computePassConfig);
 
-			computePass = ComputePass::Create(computePassConfig);
 
 		computePass->SetInput("u_EquirectangularMap", texture);
 		computePass->SetInput("u_CubeMap", cube);
-		struct pushData
-		{
-			Vector2U imageSize;
-			Vector2U cubeSize;
-		};
-
 		// make sure cube does not delete this due to refercne cout
 
 		Count<RenderCommandBuffer>renderCommandBuffer = Renderer::GetRendererCommandBuffer();
 		Renderer::BeginComputePass(renderCommandBuffer, computePass);
-
-		pushData pushData;
-		pushData.imageSize  = texture->GetSize() ;
-		pushData.cubeSize = cube->GetSize();
-		computePass->PushData("pc", &pushData);
 		computePass->Dispatch(cube->GetWidth() / 32, cube->GetHeight() / 32, 6);
 		Renderer::EndComputePass(computePass);
 
+#if 0
 		// doesnt get destroyed
 		Renderer::SubmitResourceFree([computePipeline, computePass] 
 			{
 				auto pipe = computePipeline;
 				auto pass = computePass;
 			});
+#else
+		keepFromDelete[keepFromDelete.size()] = { cube,texture,computePass };
+#endif
+
+
 	}
 	void VulkanRenderer::DrawArrays(Count<class RenderCommandBuffer> commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 	{

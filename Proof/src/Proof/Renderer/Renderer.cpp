@@ -445,7 +445,7 @@ namespace Proof {
 		const uint32_t cubemapSize = 512;
 		const uint32_t irradianceMap = 32;
 
-		ImageFormat format = ImageFormat::RGBA32F;
+		ImageFormat format = ImageFormat::RGBA16F;
 		TextureConfiguration baseCubeMapConfig;
 		baseCubeMapConfig.DebugName = "Pretham Cube";
 		baseCubeMapConfig.Wrap = TextureWrap::Repeat;
@@ -604,11 +604,11 @@ namespace Proof {
 		{
 
 		}
+#if 0
 		Count<Texture2D> envEquirect = Texture2D::Create(TextureConfiguration(), filepath);
 
 		Count<TextureCube> environmentMapImageCube;
 
-		ImageFormat format = ImageFormat::RGBA16F;
 		{
 			const uint32_t imageSize = 1024;
 			TextureConfiguration baseCubeMapConfig;
@@ -651,6 +651,23 @@ namespace Proof {
 			Renderer::EndComputePass(computePass);
 
 		}
+#endif
+		Count<TextureCube> environmentMapImageCube;
+
+		ImageFormat format = ImageFormat::RGBA16F;
+		{
+			const uint32_t imageSize = 1024;
+			TextureConfiguration baseCubeMapConfig;
+			baseCubeMapConfig.DebugName = FileSystem::GetFileName(filepath) + " Base CubeMap";
+			baseCubeMapConfig.Height = imageSize;
+			baseCubeMapConfig.Width = imageSize;
+			baseCubeMapConfig.Storage = true;
+			baseCubeMapConfig.GenerateMips = true;
+			baseCubeMapConfig.Format = format;
+			//baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
+
+			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig, filepath);
+		}
 
 		const uint32_t irradianceFilterRate = 32;
 		Count<TextureCube> irradianceMap; 
@@ -661,8 +678,8 @@ namespace Proof {
 			irradianceTextureConfig.Height = irradianceFilterRate;
 			irradianceTextureConfig.Storage = true;
 			irradianceTextureConfig.Format = format;
-			irradianceTextureConfig.Wrap = TextureWrap::ClampEdge;
 			irradianceTextureConfig.GenerateMips = true;
+			//irradianceTextureConfig.Wrap = TextureWrap::ClampEdge;
 			irradianceMap = TextureCube::Create(irradianceTextureConfig);
 		}
 		
@@ -695,7 +712,7 @@ namespace Proof {
 
 		}
 
-		
+		//green comes form generating mip maps in environmentMapImageCube
 		const uint32_t prefilterFilterRate = 1024;
 
 		Count<TextureCube> prefilterMap;
@@ -706,10 +723,10 @@ namespace Proof {
 			prefilterTextureConfig.Height = prefilterFilterRate;
 			prefilterTextureConfig.Storage = true;
 			prefilterTextureConfig.Format = format;
-			prefilterTextureConfig.Wrap = TextureWrap::ClampEdge;
+			//prefilterTextureConfig.Wrap = TextureWrap::ClampEdge;
 			prefilterTextureConfig.GenerateMips = true;
 
-			prefilterMap = TextureCube::Create(prefilterTextureConfig, envEquirect);
+			prefilterMap = TextureCube::Create(prefilterTextureConfig, filepath);
 
 		}
 	
@@ -763,8 +780,12 @@ namespace Proof {
 				uint32_t numGroups = glm::max(mipsize / 32, 1u); // Ensure numGroups is at least 1
 				float roughness = deltaRoughness * mip;
 				roughness = glm::max(roughness, 0.05f);
-				prefilterMaterial->Set("Input.Level", mip-1);
-				prefilterMaterial->Set("Input.Roughness", roughness);
+				Renderer::Submit([prefilterMaterial, mip, roughness]
+					{
+
+						prefilterMaterial->Set("Input.Level", mip - 1);
+						prefilterMaterial->Set("Input.Roughness", roughness);
+					});
 
 				Renderer::ComputePassPushRenderMaterial(computePass, prefilterMaterial);
 				computePass->Dispatch(numGroups, numGroups, 6);

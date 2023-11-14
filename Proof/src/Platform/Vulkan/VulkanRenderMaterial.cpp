@@ -57,6 +57,22 @@ namespace Proof {
 		m_UniformBufferStorage.Release();
 	}
 
+	void VulkanRenderMaterial::SetBufferData(Buffer data, uint32_t offset)
+	{
+		Buffer bufferCopy = data.Copy(data);
+		Count<VulkanRenderMaterial> instance =this;
+		Renderer::Submit([instance, bufferCopy,offset] () mutable
+			{	
+				instance->RT_SetBufferData(bufferCopy, offset);
+				bufferCopy.Release();
+			});
+	}
+	void VulkanRenderMaterial::RT_SetBufferData(Buffer data, uint32_t offset)
+	{
+		Buffer& instanceBuffer = m_UniformBufferStorage;
+		instanceBuffer.SetData(data, offset);
+	}
+
 	void VulkanRenderMaterial::Set(std::string_view name, Count<class UniformBuffer> buffer)
 	{
 		m_DescritptorSetManager->SetInput(name, buffer);

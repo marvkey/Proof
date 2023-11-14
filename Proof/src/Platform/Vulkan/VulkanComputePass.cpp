@@ -13,14 +13,14 @@ namespace Proof
 	{
 		return m_Config.Pipeline->GetShader();
 	}
-	VulkanComputePass::VulkanComputePass(const ComputePassConfiguration& config)
+	VulkanComputePass::VulkanComputePass(const ComputePassConfiguration& config, bool isRenderThread)
 		:m_Config(config)
 	{
 		Build();
 		VulkanDescriptorManagerConfig descriptorConfig;
 		descriptorConfig.DebugName = m_Config.DebugName + "Descriptor Manager";
 		descriptorConfig.Shader = m_Config.Pipeline->GetShader().As<VulkanShader>();
-		m_DescritptorSetManager = Count<VulkanDescriptorManager>::Create(descriptorConfig);
+		m_DescritptorSetManager = Count<VulkanDescriptorManager>::Create(descriptorConfig,isRenderThread);
 	}
 	VulkanComputePass::~VulkanComputePass()
 	{

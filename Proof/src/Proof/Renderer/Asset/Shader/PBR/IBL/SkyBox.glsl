@@ -78,4 +78,3 @@ void main()
    // envColor = pow(envColor, vec3(1.0 / 2.2));
     outFragColor = vec4(envColor,  1.0);
 }
-

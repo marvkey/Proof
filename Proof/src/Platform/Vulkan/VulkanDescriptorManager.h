@@ -158,15 +158,15 @@ namespace Proof
 	class VulkanDescriptorManager : public RefCounted
 	{
 	public:
-		VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config);
+		VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config,bool isRenderTrhead = false);
 		~VulkanDescriptorManager();
 		void SetInput(std::string_view name, Count<class UniformBuffer> buffer);
 		void SetInput(std::string_view name, Count<class StorageBuffer> buffer);
 		void SetInput(std::string_view name, Count<class UniformBufferSet> buffer);
 		void SetInput(std::string_view name, Count<class StorageBufferSet> buffer);
-		void SetInput(std::string_view name, Count<class TextureCube> buffer);
+		void SetInput(std::string_view name, Count<class TextureCube> buffer,bool isRenderThread = false);
 		void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images);
-		void SetInput(std::string_view name, Count<class Texture2D> iamge);
+		void SetInput(std::string_view name, Count<class Texture2D> iamge, bool isRenderThread = false);
 
 		void SetInput(std::string_view name, Count<class ImageView> imageView);
 		void SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews);

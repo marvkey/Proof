@@ -9,11 +9,15 @@
 #include "VulkanImage.h"
 namespace Proof 
 {
-	VulkanDescriptorManager::VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config):
+	VulkanDescriptorManager::VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config, bool isRenderTrhead):
         m_Config(config)
 	{
-        
-        Build();
+        if (isRenderTrhead)
+            RT_Build();
+        else
+        {
+            Build();
+        }
         WeakCount<VulkanDescriptorManager> instanceWeakCount = this;
         m_ShaderReloadCallbackIndex = m_Config.Shader->AddShaderReloadCallback([instanceWeakCount]
         {
@@ -58,8 +62,24 @@ namespace Proof
             });
       
 	}
-    void VulkanDescriptorManager::SetInput(std::string_view name, Count<class TextureCube> buffer)
+    void VulkanDescriptorManager::SetInput(std::string_view name, Count<class TextureCube> buffer, bool isRenderThread)
     {
+        if (isRenderThread)
+        {
+            m_Build = false;
+            auto shader = m_Config.Shader;
+            const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+            if (decl)
+            {
+                m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+            }
+            else
+            {
+                PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+                PF_CORE_ASSERT(false);
+            }
+            return;
+        }
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, buffer]
             {
@@ -156,8 +176,24 @@ namespace Proof
                 }
             });
     }
-    void VulkanDescriptorManager::SetInput(std::string_view name, Count<class Texture2D> buffer)
+    void VulkanDescriptorManager::SetInput(std::string_view name, Count<class Texture2D> buffer,bool isRenderThread)
     {
+        if (isRenderThread)
+        {
+            m_Build = false;
+            auto shader = m_Config.Shader;
+            const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+            if (decl)
+            {
+                m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
+            }
+            else
+            {
+                PF_ENGINE_ERROR("Render pass {}, Input {} not found", m_Config.DebugName, name);
+                PF_CORE_ASSERT(false);
+            }
+            return;
+        }
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, buffer]
             {

@@ -4,7 +4,7 @@
 
 const float PI = 3.141592;
 
-layout(binding = 0, rgba32f) restrict writeonly uniform imageCube o_CubeMap;
+layout(binding = 0, rgba16f) restrict writeonly uniform imageCube o_CubeMap;
 
 layout (push_constant) uniform Uniforms
 {

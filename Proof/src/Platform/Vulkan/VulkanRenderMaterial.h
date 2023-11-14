@@ -75,6 +75,14 @@ namespace Proof
 
 			if (!decl)return;
 
+			{
+				// cannot work because material sets default material and basically
+				// when we load a matrial actually date from diskk when we do htis and push to render thread
+				// that data is then overriden
+
+				//Buffer data(&value, decl->Size);
+				//SetBufferData(data, decl->Offset);
+			}
 			auto& buffer = m_UniformBufferStorage;
 			buffer.SetData(&value, decl->Size, decl->Offset);
 		};
@@ -94,5 +102,9 @@ namespace Proof
 		const ShaderResourceBufferInfo* FindUniformDeclaration(const std::string& name);
 		void Build();
 		void Release();
+
+		//pushes onto render thread
+		void SetBufferData(Buffer data, uint32_t offset);
+		void RT_SetBufferData(Buffer data, uint32_t offset);
 	};
 }

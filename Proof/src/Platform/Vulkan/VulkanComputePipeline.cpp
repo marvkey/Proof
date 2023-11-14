@@ -6,32 +6,40 @@
 #include "VulkanDevice.h"
 
 namespace Proof {
-	VulkanComputePipeline::VulkanComputePipeline(const ComputePipelineConfig& config):m_Config(config)
+	VulkanComputePipeline::VulkanComputePipeline(const ComputePipelineConfig& config, bool isRenderThread) :m_Config(config)
 	{
-		Count<VulkanComputePipeline> instance = this;
-		Renderer::Submit([instance] 
+		if (isRenderThread)
 		{
-			instance->Build();
-		});
-		
+			Build();
+		}
+		else
+		{
+			Count<VulkanComputePipeline> instance = this;
+			Renderer::Submit([instance]
+				{
+					instance->Build();
+				});
+		}
+
+
 		// not using count because we dont want this fucntion keeping a reference count therefore not letting this object being able to be deleted
 		WeakCount<VulkanComputePipeline> instanceWeakCount = this;
-		m_ShaderReloadCallbackIndex = GetShader()->AddShaderReloadCallback([instanceWeakCount] 
-		{
-			if (!instanceWeakCount.IsValid())
-				return;
-			auto computePipeline = instanceWeakCount.Lock();
+		m_ShaderReloadCallbackIndex = GetShader()->AddShaderReloadCallback([instanceWeakCount]
+			{
+				if (!instanceWeakCount.IsValid())
+					return;
+				auto computePipeline = instanceWeakCount.Lock();
 
-			computePipeline->Release();
-			computePipeline->Build();
-		});
+				computePipeline->Release();
+				computePipeline->Build();
+			});
 	}
 	VulkanComputePipeline::~VulkanComputePipeline()
 	{
 		Release();
 		GetShader()->RemoveShaderReloadCallback(m_ShaderReloadCallbackIndex);
 	}
-	
+
 	void VulkanComputePipeline::Build()
 	{
 		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
@@ -52,8 +60,8 @@ namespace Proof {
 		pipelineCreateInfo.layout = m_PipeLineLayout;
 		pipelineCreateInfo.pNext = nullptr;
 
-		VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, & pipelineCreateInfo, nullptr, &m_ComputePipeline));
-		VulkanUtils::SetDebugUtilsObjectName(device,VK_OBJECT_TYPE_PIPELINE, fmt::format("{} ComputePipeline", m_Config.DebugName), m_ComputePipeline);
+		VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, &pipelineCreateInfo, nullptr, &m_ComputePipeline));
+		VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_PIPELINE, fmt::format("{} ComputePipeline", m_Config.DebugName), m_ComputePipeline);
 	}
 	void VulkanComputePipeline::BuildPipeline()
 	{
@@ -103,14 +111,14 @@ namespace Proof {
 		if (m_ComputePipeline == nullptr)
 			return;
 
-		Renderer::SubmitResourceFree([pipline = m_ComputePipeline, piplinelayout = m_PipeLineLayout,piplineCache =m_PipelineCache]() 
-		{
-			auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+		Renderer::SubmitResourceFree([pipline = m_ComputePipeline, piplinelayout = m_PipeLineLayout, piplineCache = m_PipelineCache]()
+			{
+				auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 
-			vkDestroyPipeline(device, pipline, nullptr);
-			vkDestroyPipelineLayout(device, piplinelayout, nullptr);
-			vkDestroyPipelineCache(device, piplineCache, nullptr);
-		});
+				vkDestroyPipeline(device, pipline, nullptr);
+				vkDestroyPipelineLayout(device, piplinelayout, nullptr);
+				vkDestroyPipelineCache(device, piplineCache, nullptr);
+			});
 		m_ComputePipeline = nullptr;
 		m_PipeLineLayout = nullptr;
 		m_PipelineCache = nullptr;

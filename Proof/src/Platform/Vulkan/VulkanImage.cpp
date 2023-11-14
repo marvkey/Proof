@@ -672,6 +672,8 @@ namespace Proof {
 	VulkanImageView::VulkanImageView(const ImageViewConfiguration& spec)
 		:m_Specification(spec)
 	{
+		Build();
+
 		WeakCount<VulkanImageView> instanceWeakCount = this;
 
 		m_Specification.Image.As<VulkanImage2D>()->AddResizeCallback([instanceWeakCount](Count<Image2D> image) mutable
@@ -682,7 +684,6 @@ namespace Proof {
 			instanceWeakCount.Lock()->Release();
 			instanceWeakCount.Lock()->Build();
 		});
-		Build();
 	}
 	void VulkanImageView::Build()
 	{
@@ -738,6 +739,7 @@ namespace Proof {
 	}
 	void VulkanImageView::UpdateDescriptor()
 	{
+		/*
 		auto textureSpec = m_Specification.Image->GetSpecification();
 		if (Utils::IsDepthFormat(textureSpec.Format))
 			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
@@ -750,9 +752,9 @@ namespace Proof {
 			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		else if (textureSpec.Usage == ImageUsage::HostRead)
 			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-
+			*/
+		m_DescriptorImageInfo = m_Specification.Image.As<VulkanImage2D>()->GetDescriptorInfoVulkan();
 		m_DescriptorImageInfo.imageView = m_ImageView;
-		m_DescriptorImageInfo.sampler = m_Specification.Image.As<VulkanImage2D>()->Getinfo().Sampler;
 
 	}
 	glm::uvec2 VulkanImageView::GetMipSize()

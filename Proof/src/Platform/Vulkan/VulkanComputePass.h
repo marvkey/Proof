@@ -31,7 +31,7 @@ namespace Proof
 		virtual const ComputePassConfiguration& GetConfig()const { return m_Config; }
 		virtual Count<class ComputePipeline> GetComputePipeline()const { return m_Config.Pipeline; }
 		virtual Count<Shader> GetShader()const;
-		VulkanComputePass(const ComputePassConfiguration& config);
+		VulkanComputePass(const ComputePassConfiguration& config,bool isRenderThread = false);
 		~VulkanComputePass();
 
 		void BeginComputePass(Count<class RenderCommandBuffer> command);
@@ -62,6 +62,7 @@ namespace Proof
 		Buffer m_LocalStorage;
 		friend class VulkanRenderer;
 		friend class VulkanRendererAPI;
+		friend class VulkanTextureCube;
 	};
 
 }

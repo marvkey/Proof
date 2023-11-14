@@ -127,8 +127,10 @@ void main()
     }
     else if (u_Uniforms.Mode == MODE_DOWNSAMPLE)
     {
+        color.rgb = textureLod(u_SourceTexture, texCoords,0).rgb;
+
         // Downsample
-        color.rgb = DownsampleBox13(u_SourceTexture, u_Uniforms.LOD, texCoords, 1.0f / texSize);
+        //color.rgb = DownsampleBox13(u_SourceTexture, u_Uniforms.LOD, texCoords, 1.0f / texSize);
     }
 
     else if (u_Uniforms.Mode == MODE_UPSAMPLE_FIRST)
@@ -150,6 +152,6 @@ void main()
         color.rgb = existing + upsampledTexture;
     }
 	
-    imageStore(o_Image, ivec2(gl_GlobalInvocationID), color);
+    imageStore(o_Image, ivec2(gl_GlobalInvocationID), vec4(0.1,0.3,0.5,1.0));
 
 }

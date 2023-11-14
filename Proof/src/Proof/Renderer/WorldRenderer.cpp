@@ -1580,13 +1580,8 @@ namespace Proof
 			workGroupsX = m_BloomComputeTextures[0]->GetWidth() / m_BloomComputeWorkgroupSize;
 			workGroupsY = m_BloomComputeTextures[0]->GetHeight() / m_BloomComputeWorkgroupSize;
 
-			{
-				m_BloomComputePass.As<VulkanComputePass>()->PushData("u_Uniforms", &bloomComputePushConstants);
-
-			}
-			//m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+			m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
 			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
-
 			Renderer::Submit([image = m_BloomComputeTextures[0].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(),commandBuffer = m_CommandBuffer]
 				{
 					VkImageMemoryBarrier imageMemoryBarrier = {};
@@ -1607,8 +1602,6 @@ namespace Proof
 						1, &imageMemoryBarrier);
 				});
 		}
-		Renderer::EndComputePass(m_BloomComputePass);
-		Renderer::BeginComputePass(m_CommandBuffer, m_BloomComputePass);
 
 		uint32_t mips = m_BloomComputeTextures[0]->GetMipLevelCount() - 2;
 		{
@@ -1626,11 +1619,9 @@ namespace Proof
 				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
 				m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
 				bloomComputePushConstants.LOD = i - 1.0f;
-				m_BloomComputePass.As<VulkanComputePass>()->PushData("u_Uniforms", &bloomComputePushConstants);
 
-				//m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+				m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
 				m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
-
 				{
 					Renderer::Submit([image = m_BloomComputeTextures[1].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
 						{
@@ -1653,24 +1644,12 @@ namespace Proof
 						});
 				}
 
-				//Renderer::Submit([computePass = m_BloomComputePass, geometrypass = m_GeometryPass, uoutput = m_BloomComputeTextures[0]->GetImageMip(i), source = m_BloomComputeTextures[1]]() mutable
-				//	{
-				//		computePass->SetInput("o_Image", uoutput);
-				//		computePass->SetInput("u_SourceTexture", source);
-				//		computePass->SetInput("u_BloomTexture", geometrypass->GetOutput(0));
-				//	});
-				//bloomComputePushConstants.LOD = (float)i;
-				//{
-				//	Buffer push(&bloomComputePushConstants, sizeof(bloomComputePushConstants), true);
-				//	Renderer::Submit([bloomcomputePass = m_BloomComputePass, push]() mutable
-				//		{
-				//			bloomcomputePass.As<VulkanComputePass>()->RT_PushData("u_Uniforms", push.Data);
-				//			push.Release();
-				//
-				//		});
-				//}
-				////m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
-				//m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+				m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[0]->GetImageMip(i));
+				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[1]);
+				m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
+				bloomComputePushConstants.LOD = (float)i;
+				m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+				m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
 
 
 				{

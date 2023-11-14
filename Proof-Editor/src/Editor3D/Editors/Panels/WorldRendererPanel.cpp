@@ -135,7 +135,6 @@ namespace Proof
 					static uint32_t bloomDebuggerMip = 0;
 					UI::AttributeSlider("BloomImage", bloomDebuggerImage, 0, m_WorldRenderer->m_BloomComputeTextures.size() - 1);
 					UI::AttributeSlider("BloomMip", bloomDebuggerMip, 0, m_WorldRenderer->m_BloomComputeTextures[bloomDebuggerImage]->GetMipLevelCount() - 1);
-					UI::Image(m_WorldRenderer->m_BloomComputeTextures[0], {size, size * (0.9f / 1.6f)}, {0, 1}, {1, 0});
 					UI::Image(m_WorldRenderer->m_BloomComputeTextures[bloomDebuggerImage]->GetImageMip(bloomDebuggerMip).As<Image>(), { size, size * (0.9f / 1.6f) }, { 0, 1 }, { 1, 0 });
 
 
