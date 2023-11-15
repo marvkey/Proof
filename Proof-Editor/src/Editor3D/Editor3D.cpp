@@ -1,73 +1,45 @@
 #include "Editor3D.h"
-
-#include <ImGui/imgui.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include "Proof/ProofCore.h"
+#include "Proof/Core/Profile.h"
+#include "Proof/Core/Application.h"
+#include "Proof/Core/Timer.h"
+
+#include "Proof/Input/Input.h"
+#include "Proof/Input/InputManager.h"
+#include "Proof/Input/Mouse.h"
+#include "Proof/Asset/AssetManager.h"
+#include "Proof/Scripting/ScriptEngine.h"
+
+#include "Proof/Scripting/ScriptBuilder.h"
+#include "Proof/Project/ProjectSerilizer.h"
+#include "Proof/Project/Project.h"
 #include "Proof/Scene/SceneSerializer.h"
-#include "ImGuizmo.h"
-#include "Proof/Utils/PlatformUtils.h"
+#include "Proof/Scene/Prefab.h"
+#include "Proof/Scene/Mesh.h"
+
+#include "Proof/Renderer/Texture.h"
 #include "Proof/Renderer/WorldRenderer.h"
-#include "Proof/Renderer/Shader.h"
-#include "Proof/Math/Vector.h"
-#include "Proof/Math/MathResource.h"
-#include "EditorResources.h"
-#include "Proof/Scene/Script.h"
-#include <thread>
-#include <future>
-#include <algorithm>
-#include <iostream>
-#include <vector>
-#include <Windows.h>
-#include <stdio.h> 
+#include "Proof/Renderer/Renderer.h"
+
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Utils/StringUtils.h"
 
-#include "Proof/Renderer/Renderer.h"
-#include "Proof/Scene/Material.h"
-#include "Proof/Math/Random.h"
-#include <string>
-#include "Proof/Core/Core.h"
-#include<GLFW/glfw3.h>
-#include "Proof/Asset/AssetManager.h"
-#include <algorithm>
-#include "Proof/Input/InputManager.h"
-#include<thread>
-#include <chrono>
-#include "Proof/Core/SceneCoreClasses.h"
-#include <GLFW/glfw3.h>
-#include "Proof/Input/Mouse.h"
-
-#include "Proof/Scripting/ScriptEngine.h"
-#include "Proof/Renderer/Font.h"
-#include "Proof/Scene/Prefab.h"
-
-#include "Proof/Project/ProjectSerilizer.h"
-#include "Proof/Renderer/ParticleSystem.h"
-#include "Proof/Renderer/Renderer2D.h"
-
-#include "Proof/Core/Profile.h"
-
-
-#include "Proof/Core/Application.h"
-#include "Proof/Project/Project.h"
-#include "Proof/Input/Input.h"
-
+#include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UiUtilities.h"
+#include "ImGuizmo.h"
+#include "EditorResources.h"
 #include "Editors/Panels/PanelManager.h"
 #include "Editors/Panels/AssetManagerPanel.h"
 #include "Editors/Panels/InputPanel.h"
 #include "Editors/Panels/SceneHierachyPanel.h"
 #include "Editors/Panels/ContentBrowserPanel.h"
 #include "Editors/Panels/WorldRendererPanel.h"
-
 #include "Editors/AssetEditors/AssetEditor.h"
-#include "Proof/Scene/Mesh.h"
-#include "Proof/Core/Timer.h"
-#include "misc/cpp/imgui_stdlib.h"
-#include "Proof/ImGui/UI.h"
-#include "Proof/ImGui/UiUtilities.h"
-#include "Proof/Scripting/ScriptBuilder.h"
+
+#include <ImGui/imgui.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #define SCENE_HIERARCHY_PANEL_ID "SceneHierarchyPanel"
 #define ECS_DEBUG_PANEL_ID "ECSDebugPanel"
@@ -478,8 +450,6 @@ namespace Proof
 		AssetEditorPanel::RegisterDefaultEditors();
 		m_WorldRenderer = Count<WorldRenderer>::Create();
 
-		// cannot be setting it to window size and stuff innit
-		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		s_EditorData->PlayButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PlayButton.png");
 		s_EditorData->PauseButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PauseButton .png");
@@ -526,80 +496,6 @@ namespace Proof
 						Application::Get()->GetWindow()->SetWindowInputEvent(false);
 					}
 					m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
-					#if 0
-					int player = 1;
-					if (m_PlayersCount > 1 && s_DetachPlayer == false && m_ActiveWorld->GetNumComponents<PlayerInputComponent>() > 0)
-					{
-
-						m_ActiveWorld->ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
-							PlayerInputComponent& input = entity.GetComponent<PlayerInputComponent>();
-							if ((int)input.InputPlayer < m_PlayersCount && input.InputPlayer == Players::Player0)
-							{
-								Entity cameraEntity = entity.GetCamera();
-								if (cameraEntity)
-								{
-									auto& camera = cameraEntity.GetComponent<CameraComponent>();
-									uint32_t windowWIdth = m_ViewPortSize.x;
-									uint32_t windowHeight = m_ViewPortSize.y;
-									auto location = m_ActiveWorld->GetWorldLocation(cameraEntity);
-									Vector rotation;
-									if (camera.UseLocalRotation)
-										rotation = cameraEntity.GetComponent<TransformComponent>().Rotation;
-									else
-										rotation = m_ActiveWorld->GetWorldRotation(cameraEntity);
-									camera.Width = windowWIdth;
-									camera.Height = windowHeight;
-									camera.CalculateProjection(location, rotation);
-									m_WorldRenderer->Clear();
-									std::vector<std::future<void>> renders;
-									if (m_MultiplayerRender.contains(input.InputPlayer))
-									{
-										if (m_IsViewPortResize)
-											m_MultiplayerRender[input.InputPlayer]->Resize({ windowWIdth, windowHeight });
-										if (entity.HasComponent<PlayerHUDComponent>())
-										{
-											//renders.push_back(std::async(std::launch::async, [&]() {
-											m_MultiplayerRender[input.InputPlayer]->Render(camera, location, s_EditorData->RenderSettings, entity.GetComponent<PlayerHUDComponent>().HudTable);
-										//}));
-										}
-										else
-										{
-											//renders.push_back(std::async(std::launch::async, [&]() {
-											m_MultiplayerRender[input.InputPlayer]->Render(camera, location, s_EditorData->RenderSettings);
-										//}));
-
-										}
-										//if(renders)
-									}
-								}
-							}
-						});
-					}
-					else if (m_ActiveWorld->HasWorldCamera() && s_DetachPlayer == false)
-					{
-						auto entity = m_ActiveWorld->GetWorldCameraEntity();
-						auto location = m_ActiveWorld->GetWorldLocation(entity);
-						Vector rotation;
-						if (entity.GetComponent<CameraComponent>().UseLocalRotation)
-							rotation = entity.GetComponent<TransformComponent>().Rotation;
-						else
-							rotation = m_ActiveWorld->GetWorldRotation(entity);
-						entity.GetComponent<CameraComponent>().Width = m_ViewPortSize.x;
-						entity.GetComponent<CameraComponent>().Height = m_ViewPortSize.y;
-						entity.GetComponent<CameraComponent>().CalculateProjection(location, rotation);
-						if (!entity.HasComponent<PlayerHUDComponent>())
-							m_WorldRenderer->Render(entity.GetComponent<CameraComponent>(), location, s_EditorData->RenderSettings);
-						else
-							m_WorldRenderer->Render(entity.GetComponent<CameraComponent>(), location, s_EditorData->RenderSettings, entity.GetComponent<PlayerHUDComponent>().HudTable);
-					}
-					else
-					{
-						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-						m_WorldRenderer->Render(m_EditorCamera, s_EditorData->RenderSettings);
-					}
-					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
-					#endif
-
 					break;
 				}
 			case Proof::WorldState::Pause:
@@ -610,12 +506,6 @@ namespace Proof
 				}
 			case Proof::WorldState::Simulate:
 				{
-					#if 0
-					m_ActiveWorld->OnSimulatePhysics(DeltaTime);
-					if (m_ViewPortFocused)
-						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-					m_WorldRenderer->Render(m_EditorCamera, s_EditorData->RenderSettings);
-					#endif
 					break;
 				}
 			case Proof::WorldState::Edit:
@@ -756,56 +646,23 @@ namespace Proof
 
 			case KeyBoardKey::D:
 				{
-					//if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0)
-					//	s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(s_EditorData->WorldHierachy.m_SelectedEntity);
 					break;
 
 				}
 			case KeyBoardKey::Delete:
 			case KeyBoardKey::Backspace:
 				{
-					/*
-					if (s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus))
-					{
-
-						if (m_ActiveWorld->GetState() == WorldState::Edit) {
-							/*
-							//Basically makig sure that all entities that reference this entity that is deleted their data Get sets to null
-							m_ActiveWorld->ForEachEnitityWith<ScriptComponent>([&](Entity& entity) {
-								auto& scp = entity.GetComponent<ScriptComponent>();
-								for (auto& scripts : scp.m_Scripts) {
-									for (auto& field : scripts.Fields) {
-										if (field.Type == ProofMonoType::Enum) {
-											uint64_t* data = field.Data._Cast<uint64_t>();
-											if (data == nullptr)
-												return;
-											if (*data == s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID())
-												*data = 0;
-										}
-									}
-								}
-							});
-						}
-						m_ActiveWorld->DeleteEntity(s_EditorData->WorldHierachy.m_SelectedEntity);
-						s_EditorData->WorldHierachy.m_SelectedEntity = {};
-					}
-					*/
 					break;
 				}
 				// copy entity
 			case KeyBoardKey::C:
 				{
-					//if (control && s_EditorData->WorldHierachy.m_SelectedEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
-					//	m_CopyEntity = s_EditorData->WorldHierachy.m_SelectedEntity;
-					//}
 					break;
 				}
 				// paste entity 
 			case KeyBoardKey::V:
 				{
-					//if (control && m_CopyEntity.GetUUID() != 0 && (m_ViewPortFocused || s_EditorData->WorldHierachy.m_WindowHoveredorFocus)) {
-					//	s_EditorData->WorldHierachy.m_SelectedEntity = m_ActiveWorld->CreateEntity(m_CopyEntity);
-					//}
+					
 					break;
 				}
 
@@ -1207,67 +1064,13 @@ namespace Proof
 				m_ViewPortFocused = false;
 				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
-			#if 0
-			if (m_ActiveWorld->IsPlaying() && m_PlayersCount > 1 && s_DetachPlayer == false && m_ActiveWorld->GetNumComponents<PlayerInputComponent>() > 0)
-			{
-				//(input, entity ID)
-				std::map<int, uint64_t> inputs;
-				m_ActiveWorld->ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
-					PlayerInputComponent& input = entity.GetComponent<PlayerInputComponent>();
-					if (!m_MultiplayerRender.contains(input.InputPlayer))return;
-					inputs[(int)input.InputPlayer] = entity.GetUUID();
-				});
-				switch (m_PlayersCount)
-				{
-					case 4:
-						{
-							auto element = inputs.begin();
-							UI::Image(m_MultiplayerRender[(Players)inputs.begin()->first]->GetImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-							//element++;
-							//ImGui::SameLine();
-							//ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x/2,m_ViewPortSize.y/2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-							//
-							//element++;
-							//ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y / 2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-							//ImGui::SameLine();
-							//ImGui::Image((ImTextureID)m_MultiplayerRender[(Players)element->first]->GetImage().SourceImage, ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y / 2 }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-
-						}
-
-					case 2:
-						{
-							auto element = inputs.begin();
-							UI::Image(m_MultiplayerRender[(Players)element->first]->GetImage(), ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-
-							ImGui::SameLine();
-							element++;
-							UI::Image(m_MultiplayerRender[(Players)element->first]->GetImage(), ImVec2{ m_ViewPortSize.x / 2,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-						}
-				}
-			}
-			else
-			{
-
-			}
-			#endif
-			///UI::Image(m_WorldRenderer->m_ExternalCompositeFrameBuffer->GetColorAttachmentImage(swapchain, 0), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-			//UI::Image(m_WorldRenderer->GetRenderer2D()->GetTargetFrameBuffer()->GetColorAttachmentImage(swapchain,0), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-			//UI::Image(m_WorldRenderer->m_GeometryPass->GetTargetFrameBuffer()->GetColorAttachmentImage(swapchain,0), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
-
-			//UI::Image(Renderer::GetWhiteTexture(), ImVec2{m_ViewPortSize.x,m_ViewPortSize.y}, ImVec2{0,1}, ImVec2{1,0});
 			// GUIZMOS
 
 			// cherno game engein reveiw 22 minutes 48 seconds reference
 			Entity selectedEntity = s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity();
 			if (selectedEntity)
 			{
-
-//ImGuizmo::SetOrthographic(true);
-//ImGuizmo::SetDrawlist();
-//
-//ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y,
-//	ImGui::GetWindowHeight(), ImGui::GetWindowWidth());
 				ImGuizmo::SetOrthographic(true);
 				ImGuizmo::SetDrawlist();
 
@@ -1334,7 +1137,6 @@ namespace Proof
 					m_EditorWorld = Count<World>::Create();
 					m_ActiveWorld = m_EditorWorld;
 					s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
-					SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 					SceneSerializer ScerilizerNewWorld(m_ActiveWorld.Get());
 					ScerilizerNewWorld.DeSerilizeText(ID);
@@ -1456,21 +1258,6 @@ namespace Proof
 			if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 				PauseWorld();
 		}
-		//ImGui::SameLine();
-		//ImGui::SetCursorPosX(ImGui::GetWindowSize().x * 0.6f);
-		//ImGui::SetCursorPosY(ImGui::GetWindowSize().y * 0.2f);
-		//
-		//if (UI::ImageButton(s_EditorData->PauseButtonTexture->GetImage(), ImVec2{ ImGui::GetWindowSize().y * 0.7f,ImGui::GetWindowSize().y * 0.5f })) {
-		//	if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
-		//		SimulateWorld();
-		//}
-		//ImGui::SameLine();
-		//int playerCount = m_PlayersCount;
-		//if (ImGui::DragInt("PlayerCount", &playerCount, 1, 1, 4))
-		//{
-		//	m_PlayersCount = playerCount;
-		//}
-		// scene is playing
 		if (state == "Stop")
 		{
 			ImGui::SameLine();
@@ -1649,7 +1436,6 @@ namespace Proof
 		m_EditorWorld = Count<World>::Create();
 		m_ActiveWorld = m_EditorWorld;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
-		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 	}
 	void Editore3D::UI_StatisticsPanel()
 	{
@@ -1783,7 +1569,6 @@ namespace Proof
 		m_ActiveWorld = World::Copy(m_EditorWorld);
 		s_DetachPlayer = false;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
-		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
 		if (s_EditorData->ClearLogOnPlay)
@@ -1791,17 +1576,6 @@ namespace Proof
 
 		m_ActiveWorld->StartRuntime();
 
-		//{
-		//	
-		//	for (int i = 0; i < m_PlayersCount; i++)
-		//	{
-		//		if (m_MultiplayerRender[(Players)(i + 1)] == nullptr)
-		//			m_MultiplayerRender[(Players)(i + 1)] = Count<WorldRenderer>::Create(m_ActiveWorld, m_ViewPortSize.x, m_ViewPortSize.y);
-		//		else
-		//			m_MultiplayerRender[(Players)(i + 1)]->SetContext(m_ActiveWorld);
-		//	}
-		//}
-		//Mouse::CaptureMouse(true);
 	}
 	void Editore3D::SimulateWorld() {
 		s_DetachPlayer = false;
@@ -1813,7 +1587,6 @@ namespace Proof
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
-		SceneCoreClasses::s_CurrentWorld = m_ActiveWorld.Get();
 		s_DetachPlayer = false;
 	}
 	void Editore3D::PauseWorld() {
