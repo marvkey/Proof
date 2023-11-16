@@ -1567,7 +1567,6 @@ namespace Proof
 
 		uint32_t workGroupsX;
 		uint32_t workGroupsY;
-
 		//prefilter
 		{
 
@@ -1575,7 +1574,7 @@ namespace Proof
 
 			m_BloomComputePass->SetInput("u_SourceTexture", m_GeometryPass->GetOutput(0));
 			m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
-			m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[0]->GetImageMip(0));
+			m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[0]);
 
 			workGroupsX = m_BloomComputeTextures[0]->GetWidth() / m_BloomComputeWorkgroupSize;
 			workGroupsY = m_BloomComputeTextures[0]->GetHeight() / m_BloomComputeWorkgroupSize;
@@ -1602,7 +1601,6 @@ namespace Proof
 						1, &imageMemoryBarrier);
 				});
 		}
-
 		uint32_t mips = m_BloomComputeTextures[0]->GetMipLevelCount() - 2;
 		{
 			// downsample
@@ -1675,9 +1673,7 @@ namespace Proof
 				}
 			}
 		}
-		Renderer::EndComputePass(m_BloomComputePass);
 
-#if 0
 
 		//upsample first
 		{
@@ -1758,7 +1754,7 @@ namespace Proof
 				}
 			}
 		}
-#endif
+		Renderer::EndComputePass(m_BloomComputePass);
 
 	}
 

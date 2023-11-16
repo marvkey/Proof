@@ -3,7 +3,7 @@
 #include "VulkanGraphicsContext.h"
 namespace Proof
 {
-
+	
 	VulkanPhysicalDevice::VulkanPhysicalDevice()
 	{
 		VkInstance vkInstance  = VulkanGraphicsContext::GetInstance();

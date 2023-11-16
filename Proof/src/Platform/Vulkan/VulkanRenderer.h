@@ -39,6 +39,7 @@ namespace Proof
 
 		// dont use on rener thread
 		virtual void PushSetCubeMapImage(Count<class TextureCube>cubeTexture, Count<class Texture2D> texture);
+
 	private:
 		friend class VulkanRendererAPI;
 		friend class RendererBase;

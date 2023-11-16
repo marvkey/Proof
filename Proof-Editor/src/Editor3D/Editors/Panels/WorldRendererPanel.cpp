@@ -120,10 +120,10 @@ namespace Proof
 				UI::BeginPropertyGrid();
 				BloomSettings& bloomSettings = m_WorldRenderer->BloomSettings;
 				UI::AttributeBool("Enabled", bloomSettings.Enabled);
-				UI::AttributeDrag("Intensity", bloomSettings.Intensity);
-				UI::AttributeDrag("Threshold", bloomSettings.Threshold);
-				UI::AttributeDrag("UpsampleScale", bloomSettings.UpsampleScale);
-				UI::AttributeDrag("Knee", bloomSettings.Knee);
+				UI::AttributeDrag("Intensity", bloomSettings.Intensity,0.01);
+				UI::AttributeDrag("Threshold", bloomSettings.Threshold, 0.01);
+				UI::AttributeDrag("UpsampleScale", bloomSettings.UpsampleScale, 0.01);
+				UI::AttributeDrag("Knee", bloomSettings.Knee, 0.01);
 				UI::EndPropertyGrid();
 
 				if (UI::AttributeTreeNode("Debug Views", false))

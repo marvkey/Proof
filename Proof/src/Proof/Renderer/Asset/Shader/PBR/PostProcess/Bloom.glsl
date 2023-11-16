@@ -127,7 +127,6 @@ void main()
     }
     else if (u_Uniforms.Mode == MODE_DOWNSAMPLE)
     {
-
         // Downsample
         color.rgb = DownsampleBox13(u_SourceTexture, u_Uniforms.LOD, texCoords, 1.0f / texSize);
     }

@@ -514,11 +514,15 @@ namespace Proof
 
 		TextureConfiguration textureConfig;
 		textureConfig.DebugName = fmt::format("{} VulkanCubemap texture", m_Config.DebugName);
+		textureConfig.Format = ImageFormat::RGBA32F;
+		textureConfig.GenerateMips = false;
+		textureConfig.Height = m_Config.Height;
+		textureConfig.Width = m_Config.Width;
 		textureConfig.Storage = true;
 		m_Texture = Texture2D::Create(textureConfig, path).As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
-		imageConfig.DebugName = fmt::format("{} TextureCubeImage", m_Config.DebugName);
+		imageConfig.DebugName = fmt::format("{} TextureCubeImage", FileSystem::GetFileName(path));
 		imageConfig.Format = config.Format;
 		imageConfig.Height = config.Height;
 		imageConfig.Width = config.Width;
@@ -530,7 +534,6 @@ namespace Proof
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
-
 		Build();
 
 
@@ -625,18 +628,6 @@ namespace Proof
 				instance->RT_Build();
 				
 			});
-
-		//if (m_Texture)
-		//{
-		//	VulkanRenderer* renderer = (VulkanRenderer*)Renderer::GetRenderAPI();
-		//
-		//	renderer->PushSetCubeMapImage(instance, m_Texture);
-		//}
-		//Renderer::SubmitResourceFree([instance]()
-		//	{
-		//		instance->m_Texture = nullptr;
-		//
-		//	});
 	}
 	
 	void VulkanTextureCube::RT_Build()
@@ -789,7 +780,6 @@ namespace Proof
 				VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
 				vk_Image->UpdateDescriptor();
 			}
-#if 1
 			ComputePipelineConfig computePipelineConfig;
 			computePipelineConfig.DebugName = "EquirectangularToCubemap Pipeline";
 			computePipelineConfig.Shader = Renderer::GetShader("EquirectangularToCubemap");
@@ -828,95 +818,7 @@ namespace Proof
 			computePass->RT_Dispatch(m_Config.Width / 32, m_Config.Height / 32, 6);
 			
 			computePass->RT_EndComputePass();
-#endif
-#if 0
-			{
-				Buffer buffer;
-				vk_Image->CopyFromHostBuffer(buffer);
 
-				VkBufferCreateInfo bufferCreateInfo{};
-				bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				bufferCreateInfo.size = buffer.Size;
-				bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-				bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-				VulkanAllocator allocator(fmt::format("{}TextureCube copyImageTOBuffer",m_Config.DebugName));
-
-				VulkanBuffer stagingBuffer;
-				allocator.AllocateBuffer(bufferCreateInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
-
-				// Copy data to staging buffer
-				uint8_t* destData = allocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
-				memcpy(destData, buffer.Data, buffer.Size);
-				allocator.UnmapMemory(stagingBuffer.Allocation);
-
-				VkCommandBuffer copyCmd = graphicsContext->GetDevice()->GetCommandBuffer(true);
-
-				// Image memory barriers for the texture image
-
-				// The sub resource range describes the regions of the image that will be transitioned using the memory barriers below
-				VkImageSubresourceRange subresourceRange = {};
-				// Image only contains color data
-				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				// Start at first mip level
-				subresourceRange.baseMipLevel = 0;
-				subresourceRange.levelCount = 1;
-				subresourceRange.layerCount = 6;
-
-				// Transition the texture image layout to transfer target, so we can safely copy our buffer data to it.
-				VkImageMemoryBarrier imageMemoryBarrier{};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				imageMemoryBarrier.image = imageInfoRef.ImageAlloc.Image;
-				imageMemoryBarrier.subresourceRange = subresourceRange;
-				imageMemoryBarrier.srcAccessMask = 0;
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-
-				// Insert a memory dependency at the proper pipeline stages that will execute the image layout transition 
-				// Source pipeline stage is host write/read exection (VK_PIPELINE_STAGE_HOST_BIT)
-				// Destination pipeline stage is copy command exection (VK_PIPELINE_STAGE_TRANSFER_BIT)
-				vkCmdPipelineBarrier(
-					copyCmd,
-					VK_PIPELINE_STAGE_HOST_BIT,
-					VK_PIPELINE_STAGE_TRANSFER_BIT,
-					0,
-					0, nullptr,
-					0, nullptr,
-					1, &imageMemoryBarrier);
-
-				VkBufferImageCopy bufferCopyRegion = {};
-				bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				bufferCopyRegion.imageSubresource.mipLevel = 0;
-				bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
-				bufferCopyRegion.imageSubresource.layerCount = 6;
-				bufferCopyRegion.imageExtent.width = m_Config.Width;
-				bufferCopyRegion.imageExtent.height = m_Config.Height;
-				bufferCopyRegion.imageExtent.depth = 1;
-				bufferCopyRegion.bufferOffset = 0;
-
-				// Copy mip levels from staging buffer
-				vkCmdCopyBufferToImage(
-					copyCmd,
-					stagingBuffer.Buffer,
-					imageInfoRef.ImageAlloc.Image,
-					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-					1,
-					&bufferCopyRegion);
-
-				Utils::InsertImageMemoryBarrier(copyCmd, imageInfoRef.ImageAlloc.Image,
-					VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
-					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-					subresourceRange);
-
-				graphicsContext->GetDevice()->FlushCommandBuffer(copyCmd);
-
-				allocator.DestroyBuffer(stagingBuffer);
-			}
-#endif
 			if (m_Texture && m_Config.GenerateMips && mipCount > 1)
 				RT_GenerateMips();
 			m_Texture = nullptr;

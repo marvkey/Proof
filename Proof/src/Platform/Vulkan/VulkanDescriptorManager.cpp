@@ -9,6 +9,14 @@
 #include "VulkanImage.h"
 namespace Proof 
 {
+    /**
+    *
+    * very important 
+    * https://stackoverflow.com/questions/50005062/vulkan-descriptor-binding
+    * each objcet may need on descirptoer set for multiple 
+    */
+    
+
 	VulkanDescriptorManager::VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config, bool isRenderTrhead):
         m_Config(config)
 	{
@@ -300,7 +308,8 @@ namespace Proof
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
                 {
-                    instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageView);
+                    if(imageView)
+                        instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageView);
                 }
                 else
                 {
@@ -340,19 +349,32 @@ namespace Proof
         // a unique pos in the list for the image
         uint32_t imageUniquePos = 0;
         
-      
-        if (m_Build == true && m_LastFrameBinned == Renderer::RT_GetCurrentFrameInFlight())
-        {
+       // if (m_Build == true && m_LastFrameBinned == Renderer::RT_GetCurrentFrameInFlight())
+        //{
             //TODO IF a storage buffer is resized or unifrom buffer
             // will we not have to bind it all again 
             // 
-            goto updataDescriptor;
-        }
+          //  goto updataDescriptor;
+        //}
         //reset to 0 and recalcualte 
         for (auto& [set, data] : m_SizeInputsData)
             data = 0;
         for (auto& [set, SetInfo] : m_Inputs)
         {
+            {
+                VkDescriptorSet vkSet = nullptr;
+                VkDescriptorSetAllocateInfo allocInfo = {};
+                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                allocInfo.pNext = nullptr;
+                allocInfo.descriptorPool = m_DescriptorPool;
+                allocInfo.descriptorSetCount = 1;
+                allocInfo.pSetLayouts = &m_DescriptorSets[Renderer::RT_GetCurrentFrameInFlight()][set].Layout;
+
+                VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &vkSet));
+                VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_SET, fmt::format("{} descriptorSet frame: {}", m_Config.DebugName, Renderer::RT_GetCurrentFrameInFlight()), m_DescriptorSets[Renderer::RT_GetCurrentFrameInFlight()][set].Set);
+                m_DescriptorSets[Renderer::RT_GetCurrentFrameInFlight()][set].Set = vkSet;
+
+            }
             for (auto& [binding, resource] : SetInfo)
             {
                 VkWriteDescriptorSet& write = descriptorSets[set][binding];
@@ -495,7 +517,7 @@ namespace Proof
         }
         updataDescriptor:
 
-        if (m_LastFrameBinned != Renderer::RT_GetCurrentFrameInFlight())
+        //if (m_LastFrameBinned != Renderer::RT_GetCurrentFrameInFlight() && m_Build == false)
         {
 
             for (auto& [set, setData] : descriptorSets)
@@ -518,7 +540,7 @@ namespace Proof
                     writes[index] = writeData;
                     index++;
                 }
-                vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
+                vkUpdateDescriptorSets(device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
             }
         }
         m_Build = true;
@@ -604,7 +626,7 @@ namespace Proof
         VkDescriptorPoolCreateInfo pool_info = {};
         pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        pool_info.maxSets = 10 * Renderer::GetConfig().FramesFlight;
+        pool_info.maxSets = 100 * Renderer::GetConfig().FramesFlight;
         pool_info.poolSizeCount = 10;
         pool_info.pPoolSizes = pool_sizes;
 
@@ -830,7 +852,6 @@ namespace Proof
   
     void VulkanDescriptorManager::Release()
     {
-        
         Renderer::SubmitResourceFree([pool = m_DescriptorPool, descriptorSet=m_DescriptorSets ] {
             auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
             for (int frame = 0; frame < descriptorSet.size(); frame++)

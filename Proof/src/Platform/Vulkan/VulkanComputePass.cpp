@@ -118,8 +118,8 @@ namespace Proof
 	void VulkanComputePass::RT_Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
 		PF_CORE_ASSERT(m_RenderPassEnabled, "Cannot dispatch unless start a compute pass");
-		VkCommandBuffer buffer = m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
-		PF_CORE_ASSERT(buffer);
+		VkCommandBuffer cmdBuffer = m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
+		PF_CORE_ASSERT(cmdBuffer);
 		m_DescritptorSetManager->RT_Bind();
 
 
@@ -134,7 +134,7 @@ namespace Proof
 				// so we basically just seeing if thats teh case we dont bind it
 				if (set == 0 || setInfo.Set == nullptr)continue;
 				vkCmdBindDescriptorSets(
-					m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+					cmdBuffer,
 					VK_PIPELINE_BIND_POINT_COMPUTE,
 					m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 					(int)set,
@@ -155,17 +155,17 @@ namespace Proof
 				if (setInfo.Set == nullptr)
 					continue;
 				vkCmdBindDescriptorSets(
-					m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+					cmdBuffer,
 					VK_PIPELINE_BIND_POINT_COMPUTE,
 					m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
-					(int)set,
+					(uint32_t)set,
 					1,
 					&setInfo.Set,
 					0,
 					nullptr);
 			}
 		}
-		vkCmdDispatch(buffer, groupCountX, groupCountY, groupCountZ);
+		vkCmdDispatch(cmdBuffer, groupCountX, groupCountY, groupCountZ);
 	}
 	void VulkanComputePass::SetInput(std::string_view name, Count<class StorageBuffer> buffer)
 	{
