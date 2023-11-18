@@ -36,9 +36,10 @@ namespace Proof
 		std::unordered_map<uint32_t, RenderResourceData> SeperateSamplers;
 
 		std::unordered_map<std::string, VkWriteDescriptorSet> WriteDesriptorSet;
+		std::unordered_map<uint32_t, std::string> MapBindingToWrite;
 		operator bool() const {
 			return !(UniformBuffers.empty() && StorageBuffers.empty() && ImageSamplers.empty() && StorageImages.empty() && SeperateTextures.empty()
-				&& SeperateSamplers.empty() && StorageImages.empty());
+				&& SeperateSamplers.empty() && StorageImages.empty() && MapBindingToWrite.empty());
 		}
 	};
 }

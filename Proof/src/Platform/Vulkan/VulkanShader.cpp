@@ -756,6 +756,7 @@ namespace Proof
                 writeDescritporSet.descriptorType = layoutBinding.descriptorType;
                 writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
                 writeDescritporSet.dstBinding = layoutBinding.binding;
+                shaderDescriptorSet.MapBindingToWrite[layoutBinding.binding] = uniformBuffer.Name;
             }
 
             for (auto& [binding, storageBuffer] : shaderDescriptorSet.StorageBuffers)
@@ -774,6 +775,8 @@ namespace Proof
                 writeDescritporSet.descriptorType = layoutBinding.descriptorType;
                 writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
                 writeDescritporSet.dstBinding = layoutBinding.binding;
+                shaderDescriptorSet.MapBindingToWrite[layoutBinding.binding] = storageBuffer.Name;
+
             }
 
             for (auto& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
@@ -792,6 +795,7 @@ namespace Proof
                 writeDescritporSet.descriptorType = layoutBinding.descriptorType;
                 writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
                 writeDescritporSet.dstBinding = layoutBinding.binding;
+                shaderDescriptorSet.MapBindingToWrite[layoutBinding.binding] = imageSampler.Name;
             }
 
             for (auto& [binding, seperateTexture] : shaderDescriptorSet.SeperateTextures)
@@ -810,6 +814,7 @@ namespace Proof
                 writeDescritporSet.descriptorType = layoutBinding.descriptorType;
                 writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
                 writeDescritporSet.dstBinding = layoutBinding.binding;
+                shaderDescriptorSet.MapBindingToWrite[layoutBinding.binding] = seperateTexture.Name;
             }
 
             for (auto& [binding, seperateSampler] : shaderDescriptorSet.SeperateSamplers)
@@ -828,6 +833,7 @@ namespace Proof
                 writeDescritporSet.descriptorType = layoutBinding.descriptorType;
                 writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
                 writeDescritporSet.dstBinding = layoutBinding.binding;
+                shaderDescriptorSet.MapBindingToWrite[layoutBinding.binding] = seperateSampler.Name;
             }
 
             for (auto& [binding, storageImage] : shaderDescriptorSet.StorageImages)
@@ -846,6 +852,7 @@ namespace Proof
                 writeDescritporSet.descriptorType = layoutBinding.descriptorType;
                 writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
                 writeDescritporSet.dstBinding = layoutBinding.binding;
+                shaderDescriptorSet.MapBindingToWrite[layoutBinding.binding] = storageImage.Name;
             }
 
             VkDescriptorSetLayoutCreateInfo descriptorLayoutInfo{};
@@ -875,7 +882,7 @@ namespace Proof
                 descriptorLayoutInfo.bindingCount = 0;
                 descriptorLayoutInfo.pBindings = nullptr;
                 VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayoutInfo, nullptr, &m_DescriptorResource[set].Layout));
-
+                VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, fmt::format("{} descriptorLayout set: {}",m_Name,set), m_DescriptorResource[set].Layout);
             }
         }
     }

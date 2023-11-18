@@ -275,12 +275,12 @@ namespace Proof
 			lightCullingpipeline.Shader = Renderer::GetShader("LightCulling");
 			m_LightCullingPass = ComputePass::Create({ "LightCulling",ComputePipeline::Create(lightCullingpipeline) });
 			m_LightCullingPass->AddGlobalInput(m_GlobalInputs);
-			m_LightCullingPass->SetInput("u_DepthTexture", m_PreDepthPass->GetOutput(0).As<Image2D>());
 			m_LightCullingPass->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
 			m_LightCullingPass->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
 			m_LightCullingPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
 			m_LightCullingPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
 			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
+			m_LightCullingPass->SetInput("u_DepthTexture", m_PreDepthPass->GetOutput(0));
 
 		}
 
@@ -1347,7 +1347,6 @@ namespace Proof
 			Timer timer;
 
 
-			m_LightCullingPass->SetInput("u_DepthTexture", m_PreDepthPass->GetTargetFrameBuffer()->GetDepthOutput().As<Image2D>());
 			Renderer::BeginComputePass(m_CommandBuffer, m_LightCullingPass);
 			//m_LightCullingPass->PushData("u_PushData", &m_LightCullingNumThreads);
 			m_LightCullingPass->Dispatch(m_LightCullingWorkGroups);
@@ -1553,7 +1552,6 @@ namespace Proof
 	void WorldRenderer::BloomPass()
 	{
 		PF_PROFILE_FUNC();
-
 		if (!BloomSettings.Enabled)
 			return;
 		struct BloomComputePushConstants

@@ -251,6 +251,7 @@ namespace Proof {
             //FPS = 1000.0f / FrameMS;
 
             FrameTime::WorldDeltaTime = m_DeltaTime;
+            FrameTime::FrameCount+=1;
 
             if (time - PreviousTime >= 1.0) {
                 PreviousTime = time;

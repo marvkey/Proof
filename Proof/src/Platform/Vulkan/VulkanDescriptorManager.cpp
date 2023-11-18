@@ -15,7 +15,21 @@ namespace Proof
     * https://stackoverflow.com/questions/50005062/vulkan-descriptor-binding
     * each objcet may need on descirptoer set for multiple 
     */
-    
+    static VkDescriptorPoolSize* pool_sizes = new VkDescriptorPoolSize[11]
+    {
+        { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+    };
+
 
 	VulkanDescriptorManager::VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config, bool isRenderTrhead):
         m_Config(config)
@@ -55,7 +69,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, buffer]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -74,7 +88,7 @@ namespace Proof
     {
         if (isRenderThread)
         {
-            m_Build = false;
+            InvalidateDescriptors();
             auto shader = m_Config.Shader;
             const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
             if (decl)
@@ -91,7 +105,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, buffer]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -112,7 +126,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, buffer]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -132,7 +146,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, buffer]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -151,7 +165,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, buffer]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -170,7 +184,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, images]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -188,7 +202,7 @@ namespace Proof
     {
         if (isRenderThread)
         {
-            m_Build = false;
+            InvalidateDescriptors();
             auto shader = m_Config.Shader;
             const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
             if (decl)
@@ -205,7 +219,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, buffer]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -226,7 +240,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, image]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -245,7 +259,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, imageView]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -264,7 +278,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, images]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -284,7 +298,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, imageViews ]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -303,7 +317,7 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, imageView]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
@@ -323,11 +337,12 @@ namespace Proof
         Count<VulkanDescriptorManager> instance = this;
         Renderer::Submit([instance, name, imageViews]
             {
-                instance->m_Build = false;
+                instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
                 const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
                 if (decl)
                 {
+                    auto value = instance->m_Inputs[decl->Set][decl->Binding];
                     instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(imageViews);
                 }
                 else
@@ -341,44 +356,78 @@ namespace Proof
     {
         PF_PROFILE_FUNC();
         PF_PROFILE_TAG("",m_Config.DebugName.c_str());
+        const uint32_t currentFrame = Renderer::RT_GetCurrentFrameInFlight();
+
         auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
-        auto& descriptorSets = m_WriteDescriptorMap[Renderer::RT_GetCurrentFrameInFlight()];
-        // need this to hold images so taht when them in descriptor they dont loose data
-        //last 
+        {
+            if (m_LastFrameGrabPool != FrameTime::GetFrameCount())
+            {
+                //vkResetDescriptorPool(device, m_DescriptorPool, 0);
+
+                for (auto pool : m_UsedPools[Renderer::RT_GetCurrentFrameInFlight()])
+                {
+                    vkResetDescriptorPool(device, pool, 0);
+                    m_FreePools.push_back(pool);
+                }
+                m_UsedPools.clear();
+            }
+            m_LastFrameGrabPool = FrameTime::GetFrameCount();
+        }
+
+        //TODO faster way to do this using delegates to know when resources are updated
+
+        //if (!m_DirtyDescriptorSets[currentFrame])
+        //{
+        //    for (auto& [set, SetInfo] : m_Inputs)
+        //    {
+        //        for (auto& [binding, resource] : SetInfo)
+        //        {   
+        //            if (resource.Input.size() > 1)
+        //            {
+        //                InvalidateDescriptors();
+        //                break;
+        //            }
+        //        }
+        //        //to breka out of current loop
+        //        if (m_DirtyDescriptorSets[currentFrame])
+        //            break;
+        //    }
+        //}
+
+        bool newFrame = m_FrameCounter != FrameTime::GetFrameCount();
+
+        auto& descriptorSets = m_WriteDescriptorMap[currentFrame];
         std::unordered_map<uint32_t, std::vector<VkDescriptorImageInfo>> imageInfos;
         // a unique pos in the list for the image
         uint32_t imageUniquePos = 0;
         
-       // if (m_Build == true && m_LastFrameBinned == Renderer::RT_GetCurrentFrameInFlight())
-        //{
-            //TODO IF a storage buffer is resized or unifrom buffer
-            // will we not have to bind it all again 
-            // 
-          //  goto updataDescriptor;
-        //}
-        //reset to 0 and recalcualte 
-        for (auto& [set, data] : m_SizeInputsData)
-            data = 0;
         for (auto& [set, SetInfo] : m_Inputs)
         {
+            //only allocate when we are trying to bind agian in the same frame
+            
+            bool allocated = false;
+            if (!newFrame )
             {
-                VkDescriptorSet vkSet = nullptr;
-                VkDescriptorSetAllocateInfo allocInfo = {};
-                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                allocInfo.pNext = nullptr;
-                allocInfo.descriptorPool = m_DescriptorPool;
-                allocInfo.descriptorSetCount = 1;
-                allocInfo.pSetLayouts = &m_DescriptorSets[Renderer::RT_GetCurrentFrameInFlight()][set].Layout;
-
-                VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &vkSet));
-                VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_SET, fmt::format("{} descriptorSet frame: {}", m_Config.DebugName, Renderer::RT_GetCurrentFrameInFlight()), m_DescriptorSets[Renderer::RT_GetCurrentFrameInFlight()][set].Set);
-                m_DescriptorSets[Renderer::RT_GetCurrentFrameInFlight()][set].Set = vkSet;
-
+              allocated =true;
+              AllocateDescriptorSet(currentFrame, set);
             }
+
+            if (m_FreePools.size() > 0)
+            {
+                if(!allocated)
+                    AllocateDescriptorSet(currentFrame, set);
+            
+            }
+            descriptorSets[set].clear();
+
             for (auto& [binding, resource] : SetInfo)
             {
-                VkWriteDescriptorSet& write = descriptorSets[set][binding];
-                write.dstSet = m_DescriptorSets[Renderer::RT_GetCurrentFrameInFlight()][set].Set;
+                VkWriteDescriptorSet& write = descriptorSets[set].emplace_back();
+                const std::string& stringName = m_Config.Shader->GetShaderDescriptorSet().at(set).MapBindingToWrite.at(binding);
+                write = m_Config.Shader->GetShaderDescriptorSet().at(set).WriteDesriptorSet.at(stringName);
+                write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                write.dstSet = m_DescriptorSets[currentFrame][set].Set;
+
                 switch (resource.Type)
                 {
                     case Proof::RenderPassResourceType::None:
@@ -386,30 +435,27 @@ namespace Proof
                         break;
                     case Proof::RenderPassResourceType::UniformBuffer:
                         {
+                               
                             write.pBufferInfo = &resource.Input[0].As<VulkanUniformBuffer>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::UniformBufferSet:
                         {
-                            write.pBufferInfo = &resource.Input[0].As<VulkanUniformBufferSet>()->GetBuffer(Renderer::RT_GetCurrentFrameInFlight()).As< VulkanUniformBuffer>()->GetDescriptorInfoVulkan();
+                            write.pBufferInfo = &resource.Input[0].As<VulkanUniformBufferSet>()->GetBuffer(currentFrame).As< VulkanUniformBuffer>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::StorageBuffer:
                         {
                             write.pBufferInfo = &resource.Input[0].As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::StorageBufferSet:
                         {
-                            write.pBufferInfo = &resource.Input[0].As<VulkanStorageBufferSet>()->GetBuffer(Renderer::RT_GetCurrentFrameInFlight()).As< VulkanStorageBuffer>()->GetDescriptorInfoVulkan();
+                            write.pBufferInfo = &resource.Input[0].As<VulkanStorageBufferSet>()->GetBuffer(currentFrame).As< VulkanStorageBuffer>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::Texture2D:
@@ -417,7 +463,6 @@ namespace Proof
                             write.pImageInfo = &resource.Input[0].As<VulkanTexture2D>()->GetDescriptorInfoVulkan();
                             PF_CORE_ASSERT(write.pImageInfo);
                             write.descriptorCount = 1;
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::Texture2DSet:
@@ -433,7 +478,6 @@ namespace Proof
                             imageInfos[imageUniquePos] = info;
                             write.pImageInfo = imageInfos[imageUniquePos].data();
                             write.descriptorCount = resource.Input.size();
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::TextureCube:
@@ -441,14 +485,12 @@ namespace Proof
                             write.pImageInfo = &resource.Input[0].As<VulkanTextureCube>()->GetDescriptorInfoVulkan();
                             PF_CORE_ASSERT(write.pImageInfo);
                             write.descriptorCount = 1;
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::Image2D:
                         {
                             write.pImageInfo = &resource.Input[0].As<VulkanImage2D>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::Image2DSet:
@@ -463,14 +505,12 @@ namespace Proof
                             imageInfos[imageUniquePos] = info;
                             write.pImageInfo = imageInfos[imageUniquePos].data();
                             write.descriptorCount = resource.Input.size();
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::ImageView:
                         {
                             write.pImageInfo = &resource.Input[0].As<VulkanImageView>()->GetDescriptorInfoVulkan();
                             write.descriptorCount = 1;
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::ImageViewSet:
@@ -485,14 +525,12 @@ namespace Proof
                             imageInfos[imageUniquePos] = info;
                             write.pImageInfo = imageInfos[imageUniquePos].data();
                             write.descriptorCount = resource.Input.size();
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::Image:
                         {
                             write.pImageInfo = (VkDescriptorImageInfo*) resource.Input[0].As<RendererResource>()->GetResourceDescriptorInfo();
                             write.descriptorCount = 1;
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     case Proof::RenderPassResourceType::ImageSet:
@@ -507,7 +545,6 @@ namespace Proof
                             imageInfos[imageUniquePos] = info;
                             write.pImageInfo = imageInfos[imageUniquePos].data();
                             write.descriptorCount = resource.Input.size();
-                            m_SizeInputsData[set]++;
                         }
                         break;
                     default:
@@ -515,36 +552,20 @@ namespace Proof
                 }
             }
         }
-        updataDescriptor:
 
-        //if (m_LastFrameBinned != Renderer::RT_GetCurrentFrameInFlight() && m_Build == false)
+
+        for (auto& [set, setData] : descriptorSets)
         {
-
-            for (auto& [set, setData] : descriptorSets)
-            {
-                // if that set does not have data n ned to call update on it
-                // mainly for render material as they dont bind to sets they dont contain
-                // also for graphics pipline wiht a render material 
-                // as they should not have any data at set 0
-                // so we check if the input contians any data at set 0 if not no need to update
-                if (!m_Inputs.contains(set))continue;
-
-                std::vector< VkWriteDescriptorSet> writes;
-                writes.resize(m_SizeInputsData[set]);
-                uint32_t index = 0;
-                for (auto& [binding, write] : setData)
-                {
-                    auto writeData = descriptorSets[set][binding];
-                    if (writeData.pBufferInfo == VK_NULL_HANDLE && writeData.pImageInfo == VK_NULL_HANDLE && writeData.pTexelBufferView == VK_NULL_HANDLE)
-                        continue;
-                    writes[index] = writeData;
-                    index++;
-                }
-                vkUpdateDescriptorSets(device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
-            }
+            // if that set does not have data n ned to call update on it
+            // mainly for render material as they dont bind to sets they dont contain
+            // also for graphics pipline wiht a render material 
+            // as they should not have any data at set 0
+            // so we check if the input contians any data at set 0 if not no need to update
+            if (!m_Inputs.contains(set))continue;
+            if(!setData.empty())
+                vkUpdateDescriptorSets(device, (uint32_t)setData.size(), setData.data(), 0, nullptr);
         }
-        m_Build = true;
-        m_LastFrameBinned = Renderer::RT_GetCurrentFrameInFlight();
+        m_FrameCounter = FrameTime::GetFrameCount();
     }
     void VulkanDescriptorManager::SetGlobalInput(Count<GlobalBufferSet> globalInputs)
     {
@@ -590,6 +611,7 @@ namespace Proof
             }
         }
     }
+  
     void VulkanDescriptorManager::SetGoalballInputs(Count<GlobalBufferSet> uniformData)
     {
         for (auto set : m_GlobalSets)
@@ -608,268 +630,113 @@ namespace Proof
 
         auto shader = m_Config.Shader;
         auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
-        #if 1
-        VkDescriptorPoolSize pool_sizes[] =
-        {
-            { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-            { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-            { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-            { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-            { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-            { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
-        };
-        VkDescriptorPoolCreateInfo pool_info = {};
-        pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        pool_info.maxSets = 100 * Renderer::GetConfig().FramesFlight;
-        pool_info.poolSizeCount = 10;
-        pool_info.pPoolSizes = pool_sizes;
+                   
 
-        VK_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_info, nullptr, &m_DescriptorPool));
-        #else
-        std::vector< VkDescriptorPoolSize> largPool;
-        // settinf to first descriptor 
-        //largPool = shader->GetTypeCounts().at(m_Config.FirstSet);
-        // retunrs the index 
-        // -1 if not ocntian
-        auto poolContains = [](std::vector< VkDescriptorPoolSize>& pool, int type)->int {
-            for (int i = 0; i < pool.size(); i++)
-            {
-                if (pool[i].type == type)
-                    return i;
-            }
-            return -1;
-        };
-
-        for (auto& [binding, data] : shader->GetTypeCounts())
-        {
-            //if (binding == m_Config.FirstSet)
-            //    continue;
-            for (auto& poolInfo : data)
-            {
-                int pos = poolContains(largPool, poolInfo.type);
-                if (pos == -1)
-                {
-                    largPool.emplace_back(poolInfo);
-                    continue;
-                }
-                largPool[pos].descriptorCount += poolInfo.descriptorCount;
-            }
-        }
-        VkDescriptorPoolCreateInfo pool_info = {};
-        pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        pool_info.maxSets = largPool.size() * Renderer::GetConfig().FramesFlight;
-        pool_info.poolSizeCount = largPool.size();
-        pool_info.pNext = nullptr;
-        pool_info.pPoolSizes = largPool.data();
-        VK_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_info, nullptr, &m_DescriptorPool));
-        #endif
+        m_DescriptorPool = GrabPool();
         for (auto& [set, shaderDescriptorSet] : shader->GetShaderDescriptorSet())
         {
             if (set > m_Config.LastSet)
                 continue;
-            std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
-            for (auto& [binding, uniformBuffer] : shaderDescriptorSet.UniformBuffers)
-            {
-                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
-                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                layoutBinding.descriptorCount = 1;
-                layoutBinding.stageFlags = uniformBuffer.Stage;
-                layoutBinding.pImmutableSamplers = nullptr;
-                layoutBinding.binding = binding;
-                //PF_CORE_ASSERT()
-
-                const VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet.at(uniformBuffer.Name);
-                for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
-                {
-                     m_WriteDescriptorMap[frame][set][binding] =  writeDescritporSet;
-                }
-                //writeDescritporSet = {};
-                //writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                //writeDescritporSet.descriptorType = layoutBinding.descriptorType;
-                //writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
-                //writeDescritporSet.dstBinding = layoutBinding.binding;
-            }
-
-            for (auto& [binding, storageBuffer] : shaderDescriptorSet.StorageBuffers)
-            {
-                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
-                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                layoutBinding.descriptorCount = 1;
-                layoutBinding.stageFlags = storageBuffer.Stage;
-                layoutBinding.pImmutableSamplers = nullptr;
-                layoutBinding.binding = binding;
-                //PF_CORE_ASSERT()
-
-                //VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[storageBuffer.Name];
-                //writeDescritporSet = {};
-                //writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                //writeDescritporSet.descriptorType = layoutBinding.descriptorType;
-                //writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
-                //writeDescritporSet.dstBinding = layoutBinding.binding;
-
-                const VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet.at(storageBuffer.Name);
-                for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
-                {
-                    m_WriteDescriptorMap[frame][set][binding] = writeDescritporSet;
-                }
-            }
-
-            for (auto& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
-            {
-                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
-                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                layoutBinding.descriptorCount = imageSampler.DescriptorCount;
-                layoutBinding.stageFlags = imageSampler.Stage;
-                layoutBinding.pImmutableSamplers = nullptr;
-                layoutBinding.binding = binding;
-                //PF_CORE_ASSERT()
-
-                //VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[imageSampler.Name];
-                //writeDescritporSet = {};
-                //writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                //writeDescritporSet.descriptorType = layoutBinding.descriptorType;
-                //writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
-                //writeDescritporSet.dstBinding = layoutBinding.binding;
-
-                const VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet.at(imageSampler.Name);
-                for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
-                {
-                    m_WriteDescriptorMap[frame][set][binding] = writeDescritporSet;
-                }
-            }
-            for (auto& [binding, storageImage] : shaderDescriptorSet.StorageImages)
-            {
-                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
-                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                layoutBinding.descriptorCount = storageImage.DescriptorCount;
-                layoutBinding.stageFlags = storageImage.Stage;
-                layoutBinding.pImmutableSamplers = nullptr;
-                layoutBinding.binding = binding;
-                //PF_CORE_ASSERT()
-
-                //VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[imageSampler.Name];
-                //writeDescritporSet = {};
-                //writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                //writeDescritporSet.descriptorType = layoutBinding.descriptorType;
-                //writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
-                //writeDescritporSet.dstBinding = layoutBinding.binding;
-
-                const VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet.at(storageImage.Name);
-                for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
-                {
-                    m_WriteDescriptorMap[frame][set][binding] = writeDescritporSet;
-                }
-            }
-            for (auto& [binding, seperateTexture] : shaderDescriptorSet.SeperateTextures)
-            {
-                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
-                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-                layoutBinding.descriptorCount = seperateTexture.DescriptorCount;
-                layoutBinding.stageFlags = seperateTexture.Stage;
-                layoutBinding.pImmutableSamplers = nullptr;
-                layoutBinding.binding = binding;
-                //PF_CORE_ASSERT()
-
-                //VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[seperateTexture.Name];
-                //writeDescritporSet = {};
-                //writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                //writeDescritporSet.descriptorType = layoutBinding.descriptorType;
-                //writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
-                //writeDescritporSet.dstBinding = layoutBinding.binding;
-
-
-                const VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet.at(seperateTexture.Name);
-                for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
-                {
-                    m_WriteDescriptorMap[frame][set][binding] = writeDescritporSet;
-                }
-            }
-
-            for (auto& [binding, seperateSampler] : shaderDescriptorSet.SeperateSamplers)
-            {
-                VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
-                layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-                layoutBinding.descriptorCount = seperateSampler.DescriptorCount;
-                layoutBinding.stageFlags = seperateSampler.Stage;
-                layoutBinding.pImmutableSamplers = nullptr;
-                layoutBinding.binding = binding;
-                //PF_CORE_ASSERT()
-
-                //VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet[seperateSampler.Name];
-                //writeDescritporSet = {};
-                //writeDescritporSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                //writeDescritporSet.descriptorType = layoutBinding.descriptorType;
-                //writeDescritporSet.descriptorCount = layoutBinding.descriptorCount;
-                //writeDescritporSet.dstBinding = layoutBinding.binding;
-
-
-                const VkWriteDescriptorSet& writeDescritporSet = shaderDescriptorSet.WriteDesriptorSet.at(seperateSampler.Name);
-                for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
-                {
-                    m_WriteDescriptorMap[frame][set][binding] = writeDescritporSet;
-                }
-            }
-
-
-            VkDescriptorSetLayoutCreateInfo descriptorLayoutInfo{};
-            descriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            descriptorLayoutInfo.pNext = nullptr;
-            descriptorLayoutInfo.bindingCount = layoutBindings.size();
-            descriptorLayoutInfo.pBindings = layoutBindings.data();
-            if (layoutBindings.empty())
-                continue;
             for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
             {
-                VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayoutInfo, nullptr, &m_DescriptorSets[frame][set].Layout));
-                VulkanUtils::SetDebugUtilsObjectName(device,VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, fmt::format("{} descriptorLayout frame: {}", m_Config.DebugName, frame), m_DescriptorSets[frame][set].Layout);
-            }
-            VkDescriptorSetAllocateInfo allocInfo = {};
-            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-            allocInfo.pNext = nullptr;
-            allocInfo.descriptorPool = m_DescriptorPool;
-            allocInfo.descriptorSetCount = 1;
-            for (int frame = 0; frame < Renderer::GetConfig().FramesFlight; frame++)
-            {
-                allocInfo.pSetLayouts = &m_DescriptorSets[frame][set].Layout;
-
-                vkAllocateDescriptorSets(device, &allocInfo, &m_DescriptorSets[frame][set].Set);
-                VulkanUtils::SetDebugUtilsObjectName(device,VK_OBJECT_TYPE_DESCRIPTOR_SET, fmt::format("{} descriptorSet frame: {}", m_Config.DebugName, frame), m_DescriptorSets[frame][set].Set);
+                AllocateDescriptorSet(frame, set);
             }
         }
+        m_DirtyDescriptorSets.resize(Renderer::GetConfig().FramesFlight, true);
 
         for (auto globalInputs : m_GlobalSets)
         {
             SetGlobalInput(globalInputs);
         }
+        m_LastFrameGrabPool = FrameTime::GetFrameCount();
+        m_FrameCounter = FrameTime::GetFrameCount();
     }
-  
+    void VulkanDescriptorManager::AllocateDescriptorSet(uint32_t frame, uint32_t set)
+    {
+        auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+
+        VkDescriptorSet vkSet = nullptr;
+        VkDescriptorSetAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.pNext = nullptr;
+        allocInfo.descriptorPool = m_DescriptorPool;
+        allocInfo.descriptorSetCount = 1;
+        allocInfo.pSetLayouts = &m_Config.Shader->GetDescriptorResource().at(set).Layout;
+
+        VkResult allocResult = vkAllocateDescriptorSets(device, &allocInfo, &vkSet);
+        bool needReallocate = false;
+
+        switch (allocResult) 
+        {
+        case VK_ERROR_FRAGMENTED_POOL:
+        case VK_ERROR_OUT_OF_POOL_MEMORY:
+            needReallocate = true;
+        }
+        if (needReallocate) 
+        {
+            //allocate a new pool and retry
+            m_UsedPools[Renderer::RT_GetCurrentFrameInFlight()].emplace_back(m_DescriptorPool);
+            m_DescriptorPool = GrabPool();
+
+            allocInfo.descriptorPool = m_DescriptorPool;
+            vkSet = nullptr;
+            VK_CHECK_RESULT( vkAllocateDescriptorSets(device, &allocInfo, &vkSet));
+        }
+        VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_SET, fmt::format("{} descriptorSet frame: {}", m_Config.DebugName, frame), vkSet);
+        m_DescriptorSets[frame][set].Set = vkSet;
+    }
+    void VulkanDescriptorManager::InvalidateDescriptors()
+    {
+        const uint32_t framesInFlight = Renderer::GetConfig().FramesFlight;
+        for (uint32_t i = 0; i < framesInFlight; i++)
+            m_DirtyDescriptorSets[i] = true;
+    }
+    VkDescriptorPool VulkanDescriptorManager::GrabPool()
+    {
+        auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+
+        VkDescriptorPool pool = nullptr;
+
+        
+        if (m_FreePools.empty() )
+        {
+            
+            VkDescriptorPoolCreateInfo pool_info = {};
+            pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+            pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+            pool_info.maxSets = 10 * Renderer::GetConfig().FramesFlight;
+            pool_info.poolSizeCount = 11;
+            pool_info.pPoolSizes = pool_sizes;
+
+            VK_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_info, nullptr, &pool));
+        }
+        else
+        {
+            pool = m_FreePools.back();
+            m_FreePools.pop_back();
+        }   
+       
+        return pool;
+    }
     void VulkanDescriptorManager::Release()
     {
-        Renderer::SubmitResourceFree([pool = m_DescriptorPool, descriptorSet=m_DescriptorSets ] {
-            auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
-            for (int frame = 0; frame < descriptorSet.size(); frame++)
+        Renderer::SubmitResourceFree([pool = m_DescriptorPool, descriptorSet=m_DescriptorSets ] 
             {
-                for (auto [binding, resource] : descriptorSet[frame])
+                auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+                for (int frame = 0; frame < descriptorSet.size(); frame++)
                 {
-                    vkDestroyDescriptorSetLayout(device, resource.Layout, nullptr);
-                    if(resource.Set)
-                        VK_CHECK_RESULT(vkFreeDescriptorSets(device, pool, 1, &resource.Set));
+                    for (auto [binding, resource] : descriptorSet[frame])
+                    {
+                        if(resource.Set)
+                            VK_CHECK_RESULT(vkFreeDescriptorSets(device, pool, 1, &resource.Set));
+                    }
                 }
-            }
-            vkDestroyDescriptorPool(device, pool, nullptr);
+                vkDestroyDescriptorPool(device, pool, nullptr);
 
-        });
+            });
         m_WriteDescriptorMap.clear();
         m_DescriptorSets.clear();
         m_DescriptorPool = nullptr;
-        m_Build = false;
     }
 }
 

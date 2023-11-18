@@ -12,8 +12,13 @@ namespace Proof
         float Get()const { return DeltaTime; };
         operator float() const { return DeltaTime; }
         static float GetWorldDeltaTime();
+        static uint64_t GetFrameCount()
+        {
+            return FrameCount;
+        }
     private:
         float DeltaTime;
+        static uint64_t FrameCount;
         static float WorldDeltaTime; // same thing as delta time
         friend class Application;
     };
