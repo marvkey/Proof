@@ -362,14 +362,12 @@ namespace Proof
         {
             if (m_LastFrameGrabPool != FrameTime::GetFrameCount())
             {
-                //vkResetDescriptorPool(device, m_DescriptorPool, 0);
-
                 for (auto pool : m_UsedPools[Renderer::RT_GetCurrentFrameInFlight()])
                 {
                     vkResetDescriptorPool(device, pool, 0);
                     m_FreePools.push_back(pool);
                 }
-                m_UsedPools.clear();
+                m_UsedPools[Renderer::RT_GetCurrentFrameInFlight()].clear();
             }
             m_LastFrameGrabPool = FrameTime::GetFrameCount();
         }
