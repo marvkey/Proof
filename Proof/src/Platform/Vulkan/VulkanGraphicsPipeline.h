@@ -1,6 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include <vulkan/vulkan.h>
+#include "Proof/Core/Buffer.h"
 #include "Proof/Renderer/GraphicsPipeLine.h"
 namespace Proof
 {
@@ -131,7 +132,8 @@ namespace Proof
 		VulkanGraphicsPipeline(const GraphicsPipelineConfiguration& config);
 		virtual ~VulkanGraphicsPipeline();
 
-		void Bind(Count<class RenderCommandBuffer> commandBuffer);
+		//void Bind(Count<class RenderCommandBuffer> commandBuffer);
+		void RT_Bind(Count<class RenderCommandBuffer> commandBuffer);
 		Count<class Shader> GetShader()const { return m_Config.Shader; }
 		VkPipeline GetPipline() { return m_GraphicsPipeline; }
 
@@ -139,6 +141,7 @@ namespace Proof
 		VkPipelineLayout GetPipelineLayout() { return m_PipeLineLayout; }
 		VkPipeline GetPipeline() { return m_GraphicsPipeline; }
 
+		void RT_Build();
 		void Build();
 		void Release();
 
@@ -169,5 +172,6 @@ namespace Proof
 	private:
 		void CreatePipelineLayout();
 		friend class VulkanRenderPass;
+		Buffer m_LocalStorage;
 	};
 }

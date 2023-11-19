@@ -3,7 +3,7 @@
 #include "Proof/Core/Core.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanGraphicsContext.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 #include "VulkanAllocator.h"
 namespace Proof{
 
@@ -13,17 +13,33 @@ namespace Proof{
 	VulkanUniformBuffer::VulkanUniformBuffer(uint64_t size) :
 		m_Size(size), m_MemoryUsage(VulkanMemmoryUsage::CpuToGpU)
 	{
+		m_LocalBuffer.Allocate(size);
 		Build();
 	}
 	VulkanUniformBuffer::VulkanUniformBuffer(Buffer data)
 		:m_Size(data.GetSize()), m_MemoryUsage(VulkanMemmoryUsage::CpuToGpU)
 	{
-		Build();
-		PF_CORE_ASSERT(data, "cannot be nullptr");
-		SetData(data, 0);
+
+		m_LocalBuffer = Buffer::Copy(data);
+		Count<VulkanUniformBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				instance->RT_Build();
+				instance->RT_SetData(instance->m_LocalBuffer);
+				instance->m_LocalBuffer.Release();
+			});
 	}
 
 	void VulkanUniformBuffer::Build()
+	{
+		Count<VulkanUniformBuffer> instance = this;
+
+		Renderer::Submit([instance]
+		{
+				instance->RT_Build();
+		});
+	}
+	void VulkanUniformBuffer::RT_Build()
 	{
 
 		VulkanAllocator allocator("VulkanUniformBufferBuild");
@@ -40,72 +56,35 @@ namespace Proof{
 	{
 		Release();
 	}
-	void VulkanUniformBuffer::SetData(Buffer data, uint64_t offset) {
-		#if 0
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-		VulkanBuffer stagingBuffer;
+	void VulkanUniformBuffer::SetData(Buffer data, uint64_t offset) 
+	{
+		if (m_LocalBuffer.GetSize() != m_Size)
+		{
+			m_LocalBuffer.Allocate(m_Size);
+		}
+		PF_CORE_ASSERT(data.Size <= m_LocalBuffer.Size);
+		memcpy(m_LocalBuffer.Data, (uint8_t*)data.Data + offset, data.Size);
 
-		VkBufferCreateInfo stagingBufferInfo = {};
-		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		stagingBufferInfo.pNext = nullptr;
-
-		stagingBufferInfo.size = data.GetSize();
-		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-		//let the VMA library know that this data should be on CPU RAM
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-
-		graphicsContext->CreateVmaBuffer(stagingBufferInfo, vmaallocInfo, stagingBuffer);
-		void* stagingData;
-		vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
-
-		memcpy(stagingData, data.Get(), data.GetSize());
-
-		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
-
-		Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-			VkBufferCopy copy;
-			copy.dstOffset = offset;
-			copy.srcOffset = 0;
-			copy.size = data.GetSize();
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), stagingBuffer.Buffer, m_UniformBuffer.Buffer, 1, &copy);
+		Count<VulkanUniformBuffer> instance = this;
+		Renderer::Submit([instance, offset]() mutable
+		{
+			instance->RT_SetData(instance->m_LocalBuffer, offset);
+			instance->m_LocalBuffer.Release();
 		});
-		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
-		#endif
+	}
 
+	void VulkanUniformBuffer::RT_SetData(Buffer data, uint64_t offset)
+	{
 		// only becausse we use cpu to gpu
 		VulkanAllocator allocator("VulkanUniformBufferSetData");
 		uint8_t* pData = allocator.MapMemory<uint8_t>(m_UniformBuffer.Allocation);
 		memcpy(pData, data.Get() + offset, data.GetSize());
 		allocator.UnmapMemory(m_UniformBuffer.Allocation);
-
 	}
-
-	//void VulkanUniformBuffer::Resize(uint64_t size)
-	//{
-	//	Release();
-	//	m_Size = size;
-	//	Build();
-	//}
-	//
-	//void VulkanUniformBuffer::Resize(Buffer data)
-	//{
-	//	if (m_Size == data.GetSize())
-	//	{
-	//		SetData(data);
-	//		return;
-	//	}
-	//	Release();
-	//	m_Size = data.GetSize();
-	//
-	//	Build();
-	//	SetData(data, 0);
-	//}
 
 	void VulkanUniformBuffer::Release()
 	{
-		Renderer::SubmitDatafree([buffer = m_UniformBuffer]() {
+		Renderer::SubmitResourceFree([buffer = m_UniformBuffer]() {
 			VulkanAllocator allocator("VulkanUniformBufferRelease");
 			allocator.DestroyBuffer(buffer);
 		});
@@ -134,18 +113,6 @@ namespace Proof{
 		m_Buffers.clear();
 	}
 
-	//void VulkanUniformBufferSet::Resize(uint32_t index, uint64_t size)
-	//{
-	//	PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
-	//	m_Buffers[index]->Resize(size);
-	//}
-	//
-	//void VulkanUniformBufferSet::Resize(uint32_t index,Buffer data)
-	//{
-	//	PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
-	//	m_Buffers[index]->Resize(data);
-	//}
-
 	void VulkanUniformBufferSet::SetData(uint32_t index, Buffer data, uint64_t offset)
 	{
 		PF_CORE_ASSERT(m_Buffers.contains(index), "Uniform Buffer set does not contain index");
@@ -164,6 +131,7 @@ namespace Proof{
 		:m_Size(size), m_MemoryUsage(VulkanMemmoryUsage::CpuToGpU)
 
 	{
+		m_LocalBuffer.Allocate(size);
 		Build();
 	}
 
@@ -171,11 +139,26 @@ namespace Proof{
 		:m_Size(data.GetSize()), m_MemoryUsage(VulkanMemmoryUsage::CpuToGpU)
 
 	{
-		Build();
-		SetData(data, 0);
+		m_LocalBuffer = Buffer::Copy(data);
+		Count<VulkanStorageBuffer> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				instance->RT_Build();
+				instance->RT_SetData(instance->m_LocalBuffer);
+				//instance->m_LocalBuffer.Release();
+			});
 
 	}
 	void VulkanStorageBuffer::Build()
+	{
+		Count<VulkanStorageBuffer> instance = this;
+
+		Renderer::Submit([instance]
+		{
+			instance->RT_Build();
+		});
+	}
+	void VulkanStorageBuffer::RT_Build()
 	{
 		VulkanAllocator allocator("VulkanStorageBufferBuild");
 
@@ -193,15 +176,22 @@ namespace Proof{
 	}	
 	void VulkanStorageBuffer::Resize(uint64_t size)
 	{
+		Count<VulkanStorageBuffer> instance = this;
+
 		if (m_Size == size)
 		{
-			VulkanAllocator allocator("VulkanStorageBufferSetData");
-			uint8_t* pData = allocator.MapMemory<uint8_t>(m_StorageBuffer.Allocation);
-			memset(pData, 0, static_cast<size_t>(size));
-			allocator.UnmapMemory(m_StorageBuffer.Allocation);
+			Renderer::Submit([instance,size]() mutable
+			{
+				VulkanAllocator allocator("VulkanStorageBufferSetData");
+				uint8_t* pData = allocator.MapMemory<uint8_t>(instance->m_StorageBuffer.Allocation);
+				memset(pData, 0, static_cast<size_t>(size));
+				allocator.UnmapMemory(instance->m_StorageBuffer.Allocation);
+			});
+
 			return;
 		}
 		Release();
+
 		m_Size = size;
 		Build();
 	}
@@ -220,51 +210,35 @@ namespace Proof{
 	}
 	void VulkanStorageBuffer::SetData(Buffer data, uint64_t offset)
 	{
-		// not used casue w dotn have gpu only memory
-		#if 0
-		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
-		VulkanBuffer stagingBuffer;
+		if (m_LocalBuffer.GetSize() != m_Size)
+		{
+			m_LocalBuffer.Allocate(m_Size);
+		}
+		PF_CORE_ASSERT(data.Size <= m_LocalBuffer.Size);
+		memcpy(m_LocalBuffer.Data, (uint8_t*)data.Data + offset, data.Size);
 
-		VkBufferCreateInfo stagingBufferInfo = {};
-		stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		stagingBufferInfo.pNext = nullptr;
-
-		stagingBufferInfo.size = data.GetSize();
-		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-		//let the VMA library know that this data should be on CPU RAM
-		VmaAllocationCreateInfo vmaallocInfo = {};
-		vmaallocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-
-		graphicsContext->CreateVmaBuffer(stagingBufferInfo, vmaallocInfo, stagingBuffer);
-		void* stagingData;
-		vmaMapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation, &stagingData);
-
-		memcpy(stagingData, data.Get(), data.GetSize());
-
-		vmaUnmapMemory(graphicsContext->GetVMA_Allocator(), stagingBuffer.Allocation);
-
-		Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {
-			VkBufferCopy copy;
-			copy.dstOffset = offset;
-			copy.srcOffset = 0;
-			copy.size = data.GetSize();
-			vkCmdCopyBuffer(cmdBuffer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), stagingBuffer.Buffer, m_StorageBuffer.Buffer, 1, &copy);
+		Count<VulkanStorageBuffer> instance = this;
+		Renderer::Submit([instance, offset]() mutable
+		{
+			instance->RT_SetData(instance->m_LocalBuffer, offset);
+			//instance->m_LocalBuffer.Release();
 		});
-		vmaDestroyBuffer(graphicsContext->GetVMA_Allocator(), stagingBuffer.Buffer, stagingBuffer.Allocation);
-		#endif
+
+	}
+	void VulkanStorageBuffer::RT_SetData(Buffer data, uint64_t offset)
+	{
 		VulkanAllocator allocator("VulkanStorageBufferSetData");
 		uint8_t* pData = allocator.MapMemory<uint8_t>(m_StorageBuffer.Allocation);
-		memcpy(pData, data.Get() + offset, data.GetSize());
+		memcpy(pData, data.Data + offset, data.GetSize());
 		allocator.UnmapMemory(m_StorageBuffer.Allocation);
 	}
 	void VulkanStorageBuffer::Release()
 	{
-
-		Renderer::SubmitDatafree([buffer = m_StorageBuffer]() {
-			VulkanAllocator allocator("VulkanStorageBufferRelease");
-			allocator.DestroyBuffer(buffer);
-		});
+		Renderer::SubmitResourceFree([buffer = m_StorageBuffer]() 
+			{
+				VulkanAllocator allocator("VulkanStorageBufferRelease");
+				allocator.DestroyBuffer(buffer);
+			});
 		m_StorageBuffer.Allocation = nullptr;
 		m_StorageBuffer.Buffer = nullptr;
 	}

@@ -19,11 +19,17 @@
 #include <array>
 #include <iterator> 
 #define FMT_HEADER_ONLY
-#include <fmt/args.h>
-#include <fmt/chrono.h>
-#include <fmt/format.h>
-#include <fmt/format-inl.h>
 #include <fmt/core.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <fmt/chrono.h>
+#include <fmt/std.h>
+#include <fmt/ostream.h>
+#include <fmt/color.h>
+#include <fmt/ostream.h>
+#include <fmt/args.h>
+#include <fmt/xchar.h>
+#include <fmt/format-inl.h>
 
 
 #if defined(_WIN64)  // if platform is windows

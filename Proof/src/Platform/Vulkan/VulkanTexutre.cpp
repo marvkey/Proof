@@ -1,14 +1,13 @@
 #include "Proofprch.h"
 #include "VulkanTexutre.h"
 #include "VulkanGraphicsContext.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 #include "VulkanUtils/VulkanConvert.h"
 #include "VulkanVertexArray.h"
 #include "VulkanRenderPass.h"
 #include "Bitmap.h"
 #include "VulkanFrameBuffer.h"
 #include "Proof/Renderer/MeshWorkShop.h"
-#include "VulkanRenderer/VulkanRenderer.h"
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "VulkanGraphicsPipeline.h"
@@ -22,6 +21,8 @@
 #include "VulkanAllocator.h"
 #include "Vulkan.h"
 #include  "Proof/Utils/FileSystem.h"
+
+#include "VulkanDevice.h"
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include"../vendor/stb_image.h"
@@ -32,20 +33,20 @@ namespace Proof
 	{
 		switch (format)
 		{
-			case ImageFormat::R16F:
-			case ImageFormat::R32F:
-			case ImageFormat::R64F:
-			case ImageFormat::RG16F:
-			case ImageFormat::RG32F:
-			case ImageFormat::RG64F:
-			case ImageFormat::RGB16F:
-			case ImageFormat::RGB32F:
-			case ImageFormat::RGB64F:
-			case ImageFormat::RGBA16F:
-			case ImageFormat::RGBA32F:
-			case ImageFormat::RGBA64F:
-				return true;
-			default: return false;
+		case ImageFormat::R16F:
+		case ImageFormat::R32F:
+		case ImageFormat::R64F:
+		case ImageFormat::RG16F:
+		case ImageFormat::RG32F:
+		case ImageFormat::RG64F:
+		case ImageFormat::RGB16F:
+		case ImageFormat::RGB32F:
+		case ImageFormat::RGB64F:
+		case ImageFormat::RGBA16F:
+		case ImageFormat::RGBA32F:
+		case ImageFormat::RGBA64F:
+			return true;
+		default: return false;
 		}
 		PF_CORE_ASSERT(false);
 	}
@@ -58,7 +59,7 @@ namespace Proof
 
 			auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 			VkPhysicalDeviceProperties deviceProperties;
-			vkGetPhysicalDeviceProperties(graphicsContext->GetGPU(), &deviceProperties);
+			vkGetPhysicalDeviceProperties(graphicsContext->GetDevice()->GetPhysicalDevice()->GetVulkanPhysicalDevice(), &deviceProperties);
 
 			if (config.Width > deviceProperties.limits.maxImageDimension2D)
 			{
@@ -74,100 +75,6 @@ namespace Proof
 
 		}
 	}
-
-	void VulkanTexture2D::GenerateMips()
-	{
-		m_Config.GenerateMips = true;
-		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
-		VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
-		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-
-			VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
-			VkImageMemoryBarrier barrier{};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.image = image;
-			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
-			barrier.subresourceRange.levelCount = 1;
-
-			int32_t mipWidth = m_Config.Width;
-			int32_t mipHeight = m_Config.Height;
-
-			for (uint32_t i = 1; i < mipCount; i++)
-			{
-				barrier.subresourceRange.baseMipLevel = i - 1;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
-				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-					0, nullptr, 0, nullptr, 1, &barrier);
-
-				VkImageBlit blit{};
-				blit.srcOffsets[0] = { 0, 0, 0 };
-				blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-				blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				blit.srcSubresource.mipLevel = i - 1;
-				blit.srcSubresource.baseArrayLayer = 0;
-				blit.srcSubresource.layerCount = 1;
-				blit.dstOffsets[0] = { 0, 0, 0 };
-				blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				blit.dstSubresource.mipLevel = i;
-				blit.dstSubresource.baseArrayLayer = 0;
-				blit.dstSubresource.layerCount = 1;
-
-				vkCmdBlitImage(cmdBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-					1, &blit, VK_FILTER_LINEAR);
-
-				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-					0, nullptr, 0, nullptr, 1, &barrier);
-
-				if (mipWidth > 1) mipWidth /= 2;
-				if (mipHeight > 1) mipHeight /= 2;
-			}
-
-			barrier.subresourceRange.baseMipLevel = mipCount - 1;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-			vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-				0, nullptr, 0, nullptr, 1, &barrier);
-		});
-	}
-	void VulkanTexture2D::SetData(Buffer buffer)
-	{
-		Release();
-		Utils::ValidateConfiguration(m_Config);
-		m_ImageData = buffer;
-
-		if (!m_ImageData)
-		{
-			PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
-			m_ImageData = TextureImporter::ToBufferFromFile("Assets/Textures/NullTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
-		}
-		ImageConfiguration imageConfig;
-		imageConfig.Format = m_Config.Format;
-		imageConfig.Width = m_Config.Width;
-		imageConfig.Height = m_Config.Height;
-		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
-		imageConfig.DebugName = m_Config.DebugName + " Image";
-		m_Image = Image2D::Create(imageConfig);
-		// render thread
-		Build();
-	}
-
 
 	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, Buffer data)
 		:m_Config(config)
@@ -207,6 +114,7 @@ namespace Proof
 		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
 		m_Image = Image2D::Create(imageConfig);
 		// render thread
+
 		Build();
 	}
 	VulkanTexture2D::VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config)
@@ -243,6 +151,118 @@ namespace Proof
 		//render Thread
 		Build();
 	}
+	void VulkanTexture2D::SetData(Buffer buffer)
+	{
+		Release();
+		Utils::ValidateConfiguration(m_Config);
+		m_ImageData = buffer;
+
+		if (!m_ImageData)
+		{
+			PF_EC_ERROR("Texture: {} could not load Data", m_Config.DebugName);
+			m_ImageData = TextureImporter::ToBufferFromFile("Assets/Textures/NullTexture.png", m_Config.Format, m_Config.Width, m_Config.Height);
+		}
+		ImageConfiguration imageConfig;
+		imageConfig.Format = m_Config.Format;
+		imageConfig.Width = m_Config.Width;
+		imageConfig.Height = m_Config.Height;
+		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
+		imageConfig.DebugName = m_Config.DebugName + " Image";
+		m_Image = Image2D::Create(imageConfig);
+		// render thread
+		Build();
+	}
+	void VulkanTexture2D::Build()
+	{
+		Count<VulkanTexture2D> instance = this;
+		Renderer::Submit([instance]
+			{
+				instance->RT_Build();
+			});
+			
+	}
+	void VulkanTexture2D::GenerateMips()
+	{
+		Count<VulkanTexture2D> instance = this;
+		Renderer::Submit([instance]
+			{
+				instance->RT_GenerateMips();
+			});
+		
+	}
+
+	void VulkanTexture2D::RT_GenerateMips()
+	{
+		m_Config.GenerateMips = true;
+		
+		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+		VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+		VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.image = image;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.subresourceRange.levelCount = 1;
+
+		int32_t mipWidth = m_Config.Width;
+		int32_t mipHeight = m_Config.Height;
+
+		for (uint32_t i = 1; i < mipCount; i++)
+		{
+			barrier.subresourceRange.baseMipLevel = i - 1;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+			vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+				0, nullptr, 0, nullptr, 1, &barrier);
+
+			VkImageBlit blit{};
+			blit.srcOffsets[0] = { 0, 0, 0 };
+			blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.mipLevel = i - 1;
+			blit.srcSubresource.baseArrayLayer = 0;
+			blit.srcSubresource.layerCount = 1;
+			blit.dstOffsets[0] = { 0, 0, 0 };
+			blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.mipLevel = i;
+			blit.dstSubresource.baseArrayLayer = 0;
+			blit.dstSubresource.layerCount = 1;
+
+			vkCmdBlitImage(cmdBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1, &blit, VK_FILTER_LINEAR);
+
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+				0, nullptr, 0, nullptr, 1, &barrier);
+
+			if (mipWidth > 1) mipWidth /= 2;
+			if (mipHeight > 1) mipHeight /= 2;
+		}
+
+		barrier.subresourceRange.baseMipLevel = mipCount - 1;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+			0, nullptr, 0, nullptr, 1, &barrier);
+
+		VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
+	}
 	ResourceDescriptorInfo VulkanTexture2D::GetResourceDescriptorInfo() const
 	{
 		return m_Image.As<VulkanImage2D>()->GetResourceDescriptorInfo();
@@ -251,9 +271,10 @@ namespace Proof
 	{
 		return (uint64_t)m_Image.As<VulkanImage2D>()->GetDescriptorInfoVulkan().imageView;
 	}
-	void VulkanTexture2D::Build()
+
+	void VulkanTexture2D::RT_Build()
 	{
-		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
 		Count<VulkanImage2D> vk_Image = m_Image.As<VulkanImage2D>();
@@ -268,24 +289,23 @@ namespace Proof
 		imageConfig.Mips = mipCount;
 		if (!m_ImageData || m_Config.Storage)
 			imageConfig.Usage = ImageUsage::Storage;
-		vk_Image->Build();
+		vk_Image->RT_Build();
 		auto& imageInfo = vk_Image->GetinfoRef();
 
 		if (!m_ImageData)
 		{
-			Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
 
-				VkImageSubresourceRange subresourceRange = {};
-				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				subresourceRange.layerCount = mipCount;
-				subresourceRange.baseMipLevel = 0;
-				subresourceRange.levelCount = GetMipLevelCount();
-				subresourceRange.baseArrayLayer = 0;
 
-				Utils::SetImageLayout(cmdBuffer, imageInfo.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout, subresourceRange);
+			VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
+			VkImageSubresourceRange subresourceRange = {};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.layerCount = 1;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = GetMipLevelCount();
+			subresourceRange.baseArrayLayer = 0;
 
-			});
+			Utils::SetImageLayout(cmdBuffer, imageInfo.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout, subresourceRange);
+			VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
 		}
 		else
 		{
@@ -309,71 +329,72 @@ namespace Proof
 				statingBufferAllocator.UnmapMemory(stagingBuffer.Allocation);
 
 			}
-			Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
-				VkImageSubresourceRange subresourceRange = {};
-				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				subresourceRange.baseMipLevel = 0;
-				subresourceRange.levelCount = 1;
-				subresourceRange.layerCount = 1;
+			VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
+			VkImageSubresourceRange subresourceRange = {};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = 1;
+			subresourceRange.layerCount = 1;
 
-				VkImageMemoryBarrier imageMemoryBarrier{};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				imageMemoryBarrier.image = imageInfo.ImageAlloc.Image;
-				imageMemoryBarrier.subresourceRange = subresourceRange;
-				imageMemoryBarrier.srcAccessMask = 0;
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			VkImageMemoryBarrier imageMemoryBarrier{};
+			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			imageMemoryBarrier.image = imageInfo.ImageAlloc.Image;
+			imageMemoryBarrier.subresourceRange = subresourceRange;
+			imageMemoryBarrier.srcAccessMask = 0;
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-				vkCmdPipelineBarrier(
-					cmdBuffer,
-					VK_PIPELINE_STAGE_HOST_BIT,
-					VK_PIPELINE_STAGE_TRANSFER_BIT,
-					0,
-					0, nullptr,
-					0, nullptr,
-					1,
-					&imageMemoryBarrier
-				);
+			vkCmdPipelineBarrier(
+				cmdBuffer,
+				VK_PIPELINE_STAGE_HOST_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1,
+				&imageMemoryBarrier
+			);
 
-				VkBufferImageCopy bufferCopyRegion = {};
-				bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				bufferCopyRegion.imageSubresource.mipLevel = 0;
-				bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
-				bufferCopyRegion.imageSubresource.layerCount = 1;
-				bufferCopyRegion.imageExtent.width = m_Config.Width;
-				bufferCopyRegion.imageExtent.height = m_Config.Height;
-				bufferCopyRegion.imageExtent.depth = 1;
-				bufferCopyRegion.bufferOffset = 0;
+			VkBufferImageCopy bufferCopyRegion = {};
+			bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			bufferCopyRegion.imageSubresource.mipLevel = 0;
+			bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
+			bufferCopyRegion.imageSubresource.layerCount = 1;
+			bufferCopyRegion.imageExtent.width = m_Config.Width;
+			bufferCopyRegion.imageExtent.height = m_Config.Height;
+			bufferCopyRegion.imageExtent.depth = 1;
+			bufferCopyRegion.bufferOffset = 0;
 
-				vkCmdCopyBufferToImage(cmdBuffer,
-					stagingBuffer.Buffer,
-					imageInfo.ImageAlloc.Image,
-					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-					1,
-					&bufferCopyRegion);
+			vkCmdCopyBufferToImage(cmdBuffer,
+				stagingBuffer.Buffer,
+				imageInfo.ImageAlloc.Image,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1,
+				&bufferCopyRegion);
 
-				if (mipCount > 1)
-				{
+			if (mipCount > 1)
+			{
 
-					Utils::InsertImageMemoryBarrier(cmdBuffer, imageInfo.ImageAlloc.Image,
-						VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
-						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-						subresourceRange);
-				}
-				else
-				{
-					Utils::InsertImageMemoryBarrier(cmdBuffer, imageInfo.ImageAlloc.Image,
-						VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
-						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vk_Image->GetDescriptorInfoVulkan().imageLayout,
-						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-						subresourceRange);
-				}
-			});
+				Utils::InsertImageMemoryBarrier(cmdBuffer, imageInfo.ImageAlloc.Image,
+					VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+					subresourceRange);
+			}
+			else
+			{
+				Utils::InsertImageMemoryBarrier(cmdBuffer, imageInfo.ImageAlloc.Image,
+					VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
+					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vk_Image->GetDescriptorInfoVulkan().imageLayout,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+					subresourceRange);
+			}
+			Utils::SetImageLayout(cmdBuffer, imageInfo.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout, subresourceRange);
+			VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
+
 			statingBufferAllocator.DestroyBuffer(stagingBuffer);
 		}
 
@@ -388,8 +409,7 @@ namespace Proof
 			samplerCreateInfo.maxAnisotropy = 1.0f;
 			samplerCreateInfo.magFilter = Utils::VulkanSamplerFilter(m_Config.Filter);
 			samplerCreateInfo.minFilter = Utils::VulkanSamplerFilter(m_Config.Filter);
-			//samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+			samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 			samplerCreateInfo.addressModeU = Utils::VulkanSamplerWrap(m_Config.Wrap);
 			samplerCreateInfo.addressModeV = Utils::VulkanSamplerWrap(m_Config.Wrap);
 			samplerCreateInfo.addressModeW = Utils::VulkanSamplerWrap(m_Config.Wrap);
@@ -429,17 +449,17 @@ namespace Proof
 			if (imageInfo.ImageView)
 				vkDestroyImageView(device, imageInfo.ImageView, nullptr);
 
-			vkCreateImageView(graphicsContext->GetDevice(), &imageViewCreateInfo, nullptr, &vk_Image->GetinfoRef().ImageView);
+			vkCreateImageView(device, &imageViewCreateInfo, nullptr, &vk_Image->GetinfoRef().ImageView);
 
-			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
+			VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
 			vk_Image->UpdateDescriptor();
 		}
 		if (m_ImageData && m_Config.GenerateMips && mipCount > 1)
-			GenerateMips();
+			RT_GenerateMips();
 		m_ImageData.Release();
 	}
 
-	VulkanTexture2D::~VulkanTexture2D() 
+	VulkanTexture2D::~VulkanTexture2D()
 	{
 		Release();
 		PF_ENGINE_TRACE("Vulkan Texture Deleted {}", m_Config.DebugName);
@@ -447,26 +467,43 @@ namespace Proof
 
 	void VulkanTexture2D::Resize(uint32_t width, uint32_t height)
 	{
-		if (m_Config.Width != width && m_Config.Height != height)
+		if (m_Config.Width == width && m_Config.Height == height)
 			return;
 		m_Config.Width = width;
 		m_Config.Height = height;
 
 		Build();
+		m_Image.As<VulkanImage2D>()->CallOnResizeFunctions();
+
+		PF_ENGINE_TRACE("Resized {} Texture2D width:{} Height:{}", m_Config.DebugName, width, height);
 	}
 
 	void VulkanTexture2D::Resize(uint32_t width, uint32_t height, Buffer buffer)
 	{
-		Release();
-		m_Config.Width = width;
-		m_Config.Height = height;
+		Resize(width, height);
 		SetData(buffer);
-		//Utils::ValidateConfiguration(m_Config);
-		//m_ImageData = TextureImporter::ToBufferFromMemory(data, m_Config.Format, m_Config.Width, m_Config.Height);
-		//Build();
+	}
+	Count<ImageView> VulkanTexture2D::GetImageMip(uint32_t mip, uint32_t layer)
+	{
+		uint32_t mipLevelCount = GetMipLevelCount();
+		if (mip >= mipLevelCount)
+			return nullptr;
+
+		if(m_ImageViews[layer].contains(mip))
+			return m_ImageViews[layer][mip];
+
+		ImageViewConfiguration config;
+		config.DebugName = fmt::format("Texture: {} layer:{} mip: {}", m_Config.DebugName, layer, mip);
+		config.Mip = mip;
+		config.Layer = layer;
+		config.Image = m_Image;
+		Count<ImageView> view = ImageView::Create(config);
+			m_ImageViews[layer][mip] = view;
+		return view;
 	}
 
-	void VulkanTexture2D::Release() {
+	void VulkanTexture2D::Release()
+	{
 		m_ImageData.Release();
 	}
 
@@ -476,16 +513,13 @@ namespace Proof
 		uint32_t mipCount = m_Config.GenerateMips ? GetMipLevelCount() : 1;
 
 		TextureConfiguration textureConfig;
-		textureConfig.DebugName = "VulkanCubemap texture";
-		textureConfig.Format = ImageFormat::RGBA32F;
+		textureConfig.DebugName = fmt::format("{} VulkanCubemap texture", m_Config.DebugName);
 		textureConfig.GenerateMips = false;
-		textureConfig.Height = m_Config.Height;
-		textureConfig.Width = m_Config.Width;
 		textureConfig.Storage = true;
 		m_Texture = Texture2D::Create(textureConfig, path).As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
-		imageConfig.DebugName = fmt::format("{} TextureCubeImage",FileSystem::GetFileName(path));
+		imageConfig.DebugName = fmt::format("{} TextureCubeImage", FileSystem::GetFileName(path));
 		imageConfig.Format = config.Format;
 		imageConfig.Height = config.Height;
 		imageConfig.Width = config.Width;
@@ -498,6 +532,7 @@ namespace Proof
 		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
 		Build();
+
 
 	}
 	VulkanTextureCube::VulkanTextureCube(const void* data, const TextureConfiguration& config)
@@ -507,15 +542,15 @@ namespace Proof
 		uint32_t mipCount = m_Config.GenerateMips ? GetMipLevelCount() : 1;
 
 		TextureConfiguration textureConfig;
-		textureConfig.DebugName = "VulkanCubemap texture";
+		textureConfig.DebugName = fmt::format("{} VulkanCubemap texture", m_Config.DebugName);
 		textureConfig.Format = m_Config.Format;
 		textureConfig.GenerateMips = false;
 		textureConfig.Height = m_Config.Height;
 		textureConfig.Width = m_Config.Width;
 		textureConfig.Storage = true;
 
-		Buffer buffer(data, Utils::GetImageMemorySize(m_Config.Format, m_Config.Height, m_Config.Height));
-		m_Texture = Texture2D::Create(textureConfig).As<VulkanTexture2D>();
+		Buffer buffer(data, Utils::GetImageMemorySize(m_Config.Format, m_Config.Height, m_Config.Width));
+		m_Texture = Texture2D::Create(textureConfig,buffer).As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
 		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);
@@ -531,7 +566,9 @@ namespace Proof
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
+
 		Build();
+
 	}
 	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config)
 		:m_Config(config)
@@ -540,7 +577,6 @@ namespace Proof
 
 		ImageConfiguration imageConfig;
 		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);
-		imageConfig.DebugName = "TextureCubeImage";
 		imageConfig.Format = config.Format;
 		imageConfig.Height = config.Height;
 		imageConfig.Width = config.Width;
@@ -552,7 +588,9 @@ namespace Proof
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
+
 		Build();
+
 	}
 	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config, Count<Texture2D> texture)
 		:m_Config(config)
@@ -562,7 +600,6 @@ namespace Proof
 		m_Texture = texture.As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
-		imageConfig.DebugName = "TextureCubeImage";
 		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);
 		imageConfig.Format = config.Format;
 		imageConfig.Height = config.Height;
@@ -576,100 +613,23 @@ namespace Proof
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
 		m_Image = Image2D::Create(imageConfig);
+
 		Build();
-	}
-	void VulkanTextureCube::GenerateMips()
-	{
-		m_Config.GenerateMips = true;
 
-		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
-		m_Image.As<VulkanImage2D>()->GetSpecificationRef().Mips = mipCount;
-		const uint32_t faces = 6;
-
-		Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-			VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
-			VkDescriptorImageInfo  vk_ImageDescriporInfo =m_Image.As<VulkanImage2D>()->GetDescriptorInfoVulkan();
-			VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
-			
-			VkImageSubresourceRange subresourceRange{};
-			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			subresourceRange.layerCount = faces;
-			subresourceRange.baseArrayLayer = 0;
-			subresourceRange.levelCount = mipCount;
-			subresourceRange.baseMipLevel = 0;
-
-			Utils::SetImageLayout(cmdBuffer, image, vk_ImageDescriporInfo.imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, subresourceRange);
-			for (uint32_t face = 0; face < faces; face++)
-			{
-				VkImageMemoryBarrier barrier{};
-				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				barrier.image = image;
-				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				barrier.subresourceRange.baseArrayLayer = face;
-				barrier.subresourceRange.layerCount = 1;
-				barrier.subresourceRange.levelCount = 1;
-
-				int32_t mipWidth = m_Config.Width;
-				int32_t mipHeight = m_Config.Height;
-
-				for (uint32_t mip = 1; mip < mipCount; mip++)
-				{
-					barrier.subresourceRange.baseMipLevel = mip - 1;
-					barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-					barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-					barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-					barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
-					vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-						0, nullptr, 0, nullptr, 1, &barrier);
-
-					VkImageBlit blit{};
-					blit.srcOffsets[0] = { 0, 0, 0 };
-					blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-					blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-					blit.srcSubresource.mipLevel = mip - 1;
-					blit.srcSubresource.baseArrayLayer = face;
-					blit.srcSubresource.layerCount = 1;
-					blit.dstOffsets[0] = { 0, 0, 0 };
-					blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-					blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-					blit.dstSubresource.mipLevel = mip;
-					blit.dstSubresource.baseArrayLayer = face;
-					blit.dstSubresource.layerCount = 1;
-
-					vkCmdBlitImage(cmdBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-						1, &blit, VK_FILTER_LINEAR);
-
-					barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-					barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-					vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-						0, nullptr, 0, nullptr, 1, &barrier);
-
-					if (mipWidth > 1) mipWidth /= 2;
-					if (mipHeight > 1) mipHeight /= 2;
-				}
-
-				barrier.subresourceRange.baseMipLevel = mipCount - 1;
-				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-					0, nullptr, 0, nullptr, 1, &barrier);
-			}
-
-			Utils::SetImageLayout(cmdBuffer, image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vk_ImageDescriporInfo.imageLayout, subresourceRange);
-		});
 	}
 	void VulkanTextureCube::Build()
 	{
-		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+		Count<VulkanTextureCube> instance = this;
+		Renderer::Submit([instance]()
+			{
+				instance->RT_Build();
+				
+			});
+	}
+	
+	void VulkanTextureCube::RT_Build()
+	{
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 		auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
 		Count<VulkanImage2D> vk_Image = m_Image.As<VulkanImage2D>();
@@ -682,13 +642,13 @@ namespace Proof
 		imageConfig.Height = m_Config.Height;
 		imageConfig.Mips = mipCount;
 		imageConfig.Layers = 6;
-		//if (!m_Texture || m_Config.Storage)
-		//	imageConfig.Usage = ImageUsage::Storage;
+		if (!m_Texture || m_Config.Storage)
+			imageConfig.Usage = ImageUsage::Storage;
 
 		//need this to generate irradiance map
-		if(m_Config.Storage)
+		if (m_Config.Storage)
 			imageConfig.Usage = ImageUsage::Storage;
-		vk_Image->Build();
+		vk_Image->RT_Build();
 
 		VulkanImageInfo& imageInfoRef = vk_Image->GetinfoRef();
 		if (!m_Texture)
@@ -709,10 +669,10 @@ namespace Proof
 				vkDestroyImageView(device, imageInfoRef.ImageView, nullptr);
 
 			imageInfoRef.ImageView = nullptr;
-			vkCreateImageView(graphicsContext->GetDevice(), &imageViewCreateInfo, nullptr, &vk_Image->GetinfoRef().ImageView);
+			vkCreateImageView(device, &imageViewCreateInfo, nullptr, &vk_Image->GetinfoRef().ImageView);
 
-			graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
-			
+			VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
+
 			// sampler
 			{
 
@@ -738,7 +698,7 @@ namespace Proof
 				 *
 				 */
 				samplerCreateInfo.anisotropyEnable = false;
-				samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+				samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
 
 				auto [sampler, hash] = graphicsContext->GetOrCreateSampler(samplerCreateInfo);
 				vk_Image->GetinfoRef().Sampler = sampler;
@@ -747,25 +707,24 @@ namespace Proof
 
 			}
 
+			VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
 
-			Renderer::SubmitCommand([&](CommandBuffer* cmd) {
-				VkCommandBuffer cmdBuffer = cmd->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+			VkImageSubresourceRange subresourceRange = {};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseArrayLayer = 0;
+			subresourceRange.layerCount = 6;
+			subresourceRange.levelCount = mipCount;
+			subresourceRange.baseMipLevel = 0;
+			Utils::SetImageLayout(cmdBuffer, imageInfoRef.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout, subresourceRange);
 
-				VkImageSubresourceRange subresourceRange = {};
-				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				subresourceRange.baseArrayLayer = 0;
-				subresourceRange.layerCount = 6;
-				subresourceRange.levelCount = mipCount;
-				subresourceRange.baseMipLevel = 0;
-				Utils::SetImageLayout(cmdBuffer, imageInfoRef.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout, subresourceRange);
+			VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
 
-			});
 			vk_Image->UpdateDescriptor();
 		}
 		else
 		{
 
-		// sampler
+			// sampler
 			{
 
 				vk_Image->GetinfoRef().Sampler = nullptr;
@@ -783,13 +742,13 @@ namespace Proof
 				samplerCreateInfo.mipLodBias = 0.0f;
 				samplerCreateInfo.compareOp = VK_COMPARE_OP_NEVER;
 				samplerCreateInfo.minLod = 0.0f;
-				samplerCreateInfo.maxLod = mipCount;
+				samplerCreateInfo.maxLod =(float) mipCount;
 				/**
 				 *
 				 * anisotrotic filtering.
 				 *
 				 */
-				samplerCreateInfo.anisotropyEnable = false;
+				samplerCreateInfo.anisotropyEnable = VK_FALSE;
 				samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
 				auto [sampler, hash] = graphicsContext->GetOrCreateSampler(samplerCreateInfo);
@@ -813,28 +772,27 @@ namespace Proof
 				if (imageInfoRef.ImageView)
 					vkDestroyImageView(device, imageInfoRef.ImageView, nullptr);
 
-				vkCreateImageView(graphicsContext->GetDevice(), &imageViewCreateInfo, nullptr, &vk_Image->GetinfoRef().ImageView);
+				vkCreateImageView(device, &imageViewCreateInfo, nullptr, &vk_Image->GetinfoRef().ImageView);
 
-				graphicsContext->SetDebugUtilsObjectName(VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
+				VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Config.DebugName), vk_Image->GetinfoRef().ImageView);
 				vk_Image->UpdateDescriptor();
 			}
-
 			ComputePipelineConfig computePipelineConfig;
 			computePipelineConfig.DebugName = "EquirectangularToCubemap Pipeline";
 			computePipelineConfig.Shader = Renderer::GetShader("EquirectangularToCubemap");
 
-			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
+			Count<ComputePipeline> computePipeline = Count<VulkanComputePipeline>::Create(computePipelineConfig,true);
 
 
 			ComputePassConfiguration computePassConfig;
 			computePassConfig.DebugName = "EquirectangularToCubemap Pass";
 			computePassConfig.Pipeline = computePipeline;
 
-			auto computePass = ComputePass::Create(computePassConfig);
+			auto computePass = Count<VulkanComputePass>::Create(computePassConfig,true);
 
-			computePass->SetInput("u_EquirectangularMap", m_Texture);
+			computePass->m_DescritptorSetManager->SetInput("u_EquirectangularMap", m_Texture,true);
 			Count<TextureCube> cube = this;
-			computePass->SetInput("u_CubeMap", cube);
+			computePass->m_DescritptorSetManager->SetInput("u_CubeMap", cube, true);
 			struct pushData
 			{
 				Vector2U imageSize;
@@ -842,27 +800,231 @@ namespace Proof
 			};
 
 			// make sure cube does not delete this due to refercne cout
-			Renderer::SubmitDatafree([cube = cube]()
-			{
-				auto id = cube->GetHeight();
-			});
-			Renderer::SubmitCommand([&](CommandBuffer* buffer) {
+			Renderer::SubmitResourceFree([cube = cube]()
+				{
+					auto id = cube->GetHeight();
+				});
 
-				Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
-				Renderer::BeginComputePass(renderCommandBuffer, computePass);
+			Count<RenderCommandBuffer>renderCommandBuffer = Renderer::GetRendererCommandBuffer();
 
-				pushData pushData;
-				pushData.imageSize = { m_Texture->GetSize() };
-				pushData.cubeSize = GetSize();
-				computePass->PushData("pc", &pushData);
-				computePass->Dispatch(m_Config.Width / 32, m_Config.Height / 32, 6);
-				Renderer::EndComputePass(computePass);
+			computePass->RT_BeginComputePass(renderCommandBuffer);
+			pushData pushData;
+			pushData.imageSize = { m_Texture->GetSize() };
+			pushData.cubeSize = GetSize();
+			computePass->RT_PushData("pc", &pushData);
+			computePass->RT_Dispatch(m_Config.Width / 32, m_Config.Height / 32, 6);
+			
+			computePass->RT_EndComputePass();
 
-			});
 			if (m_Texture && m_Config.GenerateMips && mipCount > 1)
-				GenerateMips();
+				RT_GenerateMips();
 			m_Texture = nullptr;
 		}
+	}
+	void VulkanTextureCube::GenerateMips()
+	{
+		Count<VulkanTextureCube> instance = this;
+		Renderer::Submit([instance]()
+			{
+				instance->RT_GenerateMips();
+			});
+	}
+
+	void VulkanTextureCube::RT_GenerateMips()
+	{
+		m_Config.GenerateMips = true;
+#if 1
+		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+		m_Image.As<VulkanImage2D>()->GetSpecificationRef().Mips = mipCount;
+		const uint32_t faces = 6;
+
+		VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+		VkDescriptorImageInfo  vk_ImageDescriporInfo = m_Image.As<VulkanImage2D>()->GetDescriptorInfoVulkan();
+				
+		VkCommandBuffer cmdBuffer =  VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
+
+		VkImageSubresourceRange subresourceRange{};
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		subresourceRange.layerCount = faces;
+		subresourceRange.baseArrayLayer = 0;
+		subresourceRange.levelCount = mipCount;
+		subresourceRange.baseMipLevel = 0;
+
+		Utils::SetImageLayout(cmdBuffer, image, vk_ImageDescriporInfo.imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, subresourceRange);
+		for (uint32_t face = 0; face < faces; face++)
+		{
+			VkImageMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.image = image;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.baseArrayLayer = face;
+			barrier.subresourceRange.layerCount = 1;
+			barrier.subresourceRange.levelCount = 1;
+
+			int32_t mipWidth = m_Config.Width;
+			int32_t mipHeight = m_Config.Height;
+
+			for (uint32_t mip = 1; mip < mipCount; mip++)
+			{
+				barrier.subresourceRange.baseMipLevel = mip - 1;
+				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+					0, nullptr, 0, nullptr, 1, &barrier);
+
+				VkImageBlit blit{};
+				blit.srcOffsets[0] = { 0, 0, 0 };
+				blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+				blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				blit.srcSubresource.mipLevel = mip - 1;
+				blit.srcSubresource.baseArrayLayer = face;
+				blit.srcSubresource.layerCount = 1;
+				blit.dstOffsets[0] = { 0, 0, 0 };
+				blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				blit.dstSubresource.mipLevel = mip;
+				blit.dstSubresource.baseArrayLayer = face;
+				blit.dstSubresource.layerCount = 1;
+
+				vkCmdBlitImage(cmdBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+					1, &blit, VK_FILTER_LINEAR);
+
+				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+					0, nullptr, 0, nullptr, 1, &barrier);
+
+				if (mipWidth > 1) mipWidth /= 2;
+				if (mipHeight > 1) mipHeight /= 2;
+			}
+
+			barrier.subresourceRange.baseMipLevel = mipCount - 1;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+				0, nullptr, 0, nullptr, 1, &barrier);
+		}
+
+		Utils::SetImageLayout(cmdBuffer, image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vk_ImageDescriporInfo.imageLayout, subresourceRange);
+		VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
+
+#else
+		VkCommandBuffer blitCmd = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
+		VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+		VkDescriptorImageInfo  vk_ImageDescriporInfo = m_Image.As<VulkanImage2D>()->GetDescriptorInfoVulkan();
+
+		uint32_t mipLevels = GetMipLevelCount();
+		for (uint32_t face = 0; face < 6; face++)
+		{
+			VkImageSubresourceRange mipSubRange = {};
+			mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			mipSubRange.baseMipLevel = 0;
+			mipSubRange.baseArrayLayer = face;
+			mipSubRange.levelCount = 1;
+			mipSubRange.layerCount = 1;
+
+			// Prepare current mip level as image blit destination
+			Utils::InsertImageMemoryBarrier(blitCmd, image,
+				0, VK_ACCESS_TRANSFER_WRITE_BIT,
+				vk_ImageDescriporInfo.imageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				mipSubRange);
+		}
+		//VkImageSubresourceRange subresourceRange{};
+		//subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		//subresourceRange.layerCount = faces;
+		//subresourceRange.baseArrayLayer = 0;
+		//subresourceRange.levelCount = mipCount;
+		//subresourceRange.baseMipLevel = 0;
+		//
+		//Utils::SetImageLayout(cmdBuffer, image, vk_ImageDescriporInfo.imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, subresourceRange);
+
+		for (uint32_t i = 1; i < mipLevels; i++)
+		{
+			for (uint32_t face = 0; face < 6; face++)
+			{
+				VkImageBlit imageBlit{};
+
+				// Source
+				imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				imageBlit.srcSubresource.layerCount = 1;
+				imageBlit.srcSubresource.mipLevel = i - 1;
+				imageBlit.srcSubresource.baseArrayLayer = face;
+				imageBlit.srcOffsets[1].x = int32_t(GetWidth() >> (i - 1));
+				imageBlit.srcOffsets[1].y = int32_t(GetHeight() >> (i - 1));
+				imageBlit.srcOffsets[1].z = 1;
+
+				// Destination
+				imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				imageBlit.dstSubresource.layerCount = 1;
+				imageBlit.dstSubresource.mipLevel = i;
+				imageBlit.dstSubresource.baseArrayLayer = face;
+				imageBlit.dstOffsets[1].x = int32_t(GetWidth() >> i);
+				imageBlit.dstOffsets[1].y = int32_t(GetHeight() >> i);
+				imageBlit.dstOffsets[1].z = 1;
+
+				VkImageSubresourceRange mipSubRange = {};
+				mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				mipSubRange.baseMipLevel = i;
+				mipSubRange.baseArrayLayer = face;
+				mipSubRange.levelCount = 1;
+				mipSubRange.layerCount = 1;
+
+				// Prepare current mip level as image blit destination
+				Utils::InsertImageMemoryBarrier(blitCmd, image,
+					0, VK_ACCESS_TRANSFER_WRITE_BIT,
+					VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+					mipSubRange);
+
+				// Blit from previous level
+				vkCmdBlitImage(
+					blitCmd,
+					image,
+					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					image,
+					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+					1,
+					&imageBlit,
+					VK_FILTER_LINEAR);
+
+				// Prepare current mip level as image blit source for next level
+				Utils::InsertImageMemoryBarrier(blitCmd, image,
+					VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+					mipSubRange);
+			}
+		}
+
+		// After the loop, all mip layers are in TRANSFER_SRC layout, so transition all to SHADER_READ
+		VkImageSubresourceRange subresourceRange = {};
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		subresourceRange.layerCount = 6;
+		subresourceRange.levelCount = mipLevels;
+
+		Utils::InsertImageMemoryBarrier(blitCmd, image,
+			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vk_ImageDescriporInfo.imageLayout,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			subresourceRange);
+
+		VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(blitCmd);
+
+		//m_DescriptorImageInfo.imageLayout = readonly ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL;
+
+#endif
 	}
 	void VulkanTextureCube::Release()
 	{

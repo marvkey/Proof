@@ -1,9 +1,9 @@
 #pragma once
-#include"Proof/Renderer/GraphicsContext.h"
+#include "Proof/Renderer/GraphicsContext.h"
 #include <vulkan/vulkan.h>
 namespace Proof
 {
-
+	#if 0
 	struct SwapChainSupportDetails {
 		VkSurfaceCapabilitiesKHR capabilities;
 		std::vector<VkSurfaceFormatKHR> formats;
@@ -18,7 +18,33 @@ namespace Proof
 			return graphicsAndComputeFamily.has_value() && presentFamily.has_value();
 		}
 	};
+	#endif
 
+
+	class VulkanGraphicsContext : public GraphicsContext
+	{
+	public:
+		VulkanGraphicsContext();
+		virtual ~VulkanGraphicsContext();
+		Count<class VulkanDevice> GetDevice() { return m_Device; }
+		static VkInstance GetInstance() { return m_VulkanInstance; }
+		static Count<VulkanGraphicsContext> Get();
+		std::pair<VkSampler, uint64_t> GetOrCreateSampler(VkSamplerCreateInfo samplerInfo);
+		void DeleteSampler(uint64_t samplerHash);
+		uint32_t GetVulkanVersion() { return m_VulkanVersion; }
+	private:
+		std::unordered_map<uint64_t, std::pair<uint32_t, VkSampler>> m_Samplers;
+
+		static VkInstance m_VulkanInstance;
+		VkPipelineCache m_PipelineCache = nullptr;
+
+		Count<class VulkanPhysicalDevice > m_PhysicalDevice;
+		Count<VulkanDevice> m_Device;
+		VkDebugUtilsMessengerEXT m_DebugUtilsMessenger = VK_NULL_HANDLE;
+
+		uint32_t m_VulkanVersion;
+	};
+	#if 0
 
 	class VulkanGraphicsContext : public GraphicsContext {
 	public:
@@ -147,5 +173,5 @@ namespace Proof
 		// sampler has, sampler ref count, sampler
 		std::unordered_map<uint64_t, std::pair<uint32_t,VkSampler>> m_Samplers;
 	};
-
+	#endif
 }

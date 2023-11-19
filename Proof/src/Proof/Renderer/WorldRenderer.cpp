@@ -29,7 +29,9 @@
 #include "Platform/Vulkan/VulkanImage.h"
 #include "Proof/Math/MathConvert.h"	
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
+#include "Platform/Vulkan/VulkanTexutre.h"
 #include "Proof/Scene/Material.h"
+#include "Platform/Vulkan/VulkanComputePass.h"
 #include "Proof/Asset/AssetManager.h"
 
 #include "VertexArray.h"
@@ -134,6 +136,8 @@ namespace Proof
 		glm::vec3 rotationVec(x, 0.0f, z);
 		return rotationVec;
 	}
+
+	static const uint32_t DOF_NUM_THREADS =32;
 	WorldRenderer::~WorldRenderer() {
 		for (auto& transformBuffer : m_SubmeshTransformBuffers)
 			pdelete[] transformBuffer.Data;
@@ -141,7 +145,9 @@ namespace Proof
 	}
 	WorldRenderer::WorldRenderer()
 		:
-		m_Timers(m_Stats.Timers), m_LightScene(m_Stats.LightSene)
+		m_Timers(m_Stats.Timers), m_LightScene(m_Stats.LightSene),
+		GeneralOptions(PreProcessSettings.GeneralOptions), ShadowSetting(PreProcessSettings.ShadowSettings),
+		AmbientOcclusionSettings(PostProcessSettings.AmbientOcclusionSettings), BloomSettings(PostProcessSettings.BloomSettings), DOFSettings(PostProcessSettings.DOFSettings)
 	{
 		Init();
 	}
@@ -171,11 +177,12 @@ namespace Proof
 		m_SBDirectionalLightsBuffer = StorageBufferSet::Create(sizeof(DirectionalLight));
 		m_SBPointLightsBuffer = StorageBufferSet::Create(sizeof(PointLight)); // set to one light because we cant actaully set a buffer to size 0
 		m_SBSpotLightsBuffer = StorageBufferSet::Create(sizeof(SpotLight));// set to one light because we cant actaully set a buffer to size 0
-
 		SetViewportSize(100, 100);
+
+		const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
 		m_CommandBuffer = RenderCommandBuffer::Create("WorldRenderer");
 		m_Renderer2D = Count<Renderer2D>::Create();
-		m_BRDFLUT = Renderer::GenerateBRDFLut();
+		m_BRDFLUT = Renderer::GetBRDFLut();
 		m_Cube = MeshWorkShop::GenerateCube();
 		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
 
@@ -257,73 +264,23 @@ namespace Proof
 		//foward plus
 		{
 
-			//https://www.3dgep.com/forward-plus/#Forward
-			// look at the bottom for the zip to all code
-			//https://drive.google.com/uc?export=download&id=1zCU3ahVYXOoZ3PPdsE6mYtJbHZgLmKOh
-
-			constexpr uint32_t TILE_SIZE = 16u;
-			glm::uvec2 size = m_UBScreenData.FullResolution;
-			m_LightCullingWorkGroups = glm::ceil(glm::vec3(size.x / (float)TILE_SIZE, size.y / (float)TILE_SIZE, 1));
-			m_LightCullingNumThreads = m_LightCullingWorkGroups * glm::uvec3{ TILE_SIZE , TILE_SIZE ,1 };
-
-			// plane {vec3 normal, float distnace} = sizeof(float) *4
-			//Frustrum{ Plane[4]] (sizeof(float) *4 ) * 4
-			const float frusturmSize = (sizeof(float) * 4) * 4;
-			m_FrustrumsBuffer = StorageBufferSet::Create(frusturmSize * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * m_LightCullingNumThreads.z);
-
-			ComputePipelineConfig pipeline;
-			pipeline.DebugName = "FrustrumGrid";
-			pipeline.Shader = Renderer::GetShader("FrustrumGrid");
-			m_FrustrumPass = ComputePass::Create({ "frustrumPass",ComputePipeline::Create(pipeline) });
-			m_FrustrumPass->SetInput("OutFrustums", m_FrustrumsBuffer);
-			//m_FrustrumPass->SetInput("CameraData", m_UBCameraBuffer);
-			//m_FrustrumPass->SetInput("ScreenData", m_UBScreenBuffer);
-
-			ImageConfiguration imageConfig;
-			imageConfig.DebugName = "PointLightGrid";
-			imageConfig.Format = ImageFormat::RG32UI;
-			imageConfig.Transfer = true;
-			imageConfig.Usage = ImageUsage::Storage;
-			
-			imageConfig.Width = m_LightCullingNumThreads.x;
-			imageConfig.Height = m_LightCullingNumThreads.y;
-			imageConfig.Layers = m_LightCullingNumThreads.z;
-
-			m_PointLightGrid = Image2D::Create(imageConfig);
-			imageConfig.DebugName = "SpotLightGrid";
-			m_SpotLightGrid = Image2D::Create(imageConfig);
-
-			m_PointLightIndexCounterBuffer = StorageBufferSet::Create(sizeof(uint32_t));
-			m_SpotLightIndexCounterBuffer = StorageBufferSet::Create(sizeof(uint32_t));
-
-			// 
-			m_PointLightIndexListBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
-			m_SpotLightIndexListBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
+			glm::uvec2 size = viewportSize;
+			size += TILE_SIZE - viewportSize % TILE_SIZE;
+			m_LightCullingWorkGroups = glm::uvec3{ size / TILE_SIZE, 1u };
+			m_SBVisiblePointLightIndicesBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(int) * MAX_NUM_LIGHTS_PER_TILE);
+			m_SBVisibleSpotLightIndicesBuffer = StorageBufferSet::Create(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(int) * MAX_NUM_LIGHTS_PER_TILE);
 
 			ComputePipelineConfig lightCullingpipeline;
 			lightCullingpipeline.DebugName = "LightCulling";
 			lightCullingpipeline.Shader = Renderer::GetShader("LightCulling");
 			m_LightCullingPass = ComputePass::Create({ "LightCulling",ComputePipeline::Create(lightCullingpipeline) });
-
-			m_LightCullingPass->SetInput("Frustrums", m_FrustrumsBuffer);
-			m_LightCullingPass->SetInput("PointLightIndexCounterBuffer", m_PointLightIndexCounterBuffer);
-			m_LightCullingPass->SetInput("SpotLightIndexCounterBuffer", m_SpotLightIndexCounterBuffer);
-			m_LightCullingPass->SetInput("PointLightIndexListBuffer", m_PointLightIndexListBuffer);
-			m_LightCullingPass->SetInput("SpotLightIndexListBuffer", m_SpotLightIndexListBuffer);
-
-			m_LightCullingPass->SetInput("u_ImagePointLightGrid", m_PointLightGrid);
-			m_LightCullingPass->SetInput("u_ImageSpotLightGrid", m_SpotLightGrid);
-			m_LightCullingPass->SetInput("u_PointLightGrid", m_PointLightGrid);
-			m_LightCullingPass->SetInput("u_SpotLightGrid", m_SpotLightGrid);
-
 			m_LightCullingPass->AddGlobalInput(m_GlobalInputs);
-
-			//m_LightCullingPass->SetInput("CameraData", m_UBCameraBuffer);
-			//m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
+			m_LightCullingPass->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
+			m_LightCullingPass->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
 			m_LightCullingPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
 			m_LightCullingPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
 			m_LightCullingPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
-			//m_LightCullingPass->SetInput("ScreenData", m_UBScreenBuffer);
+			m_LightCullingPass->SetInput("u_DepthTexture", m_PreDepthPass->GetOutput(0));
 
 		}
 
@@ -449,17 +406,13 @@ namespace Proof
 			m_GeometryPass->SetInput("RendererData", m_UBRenderDataBuffer);
 			m_GeometryPass->SetInput("SceneData", m_UBSceneDataBuffer);
 			m_GeometryPass->SetInput("ShadowMapProjections", m_UBCascadeProjectionBuffer);
-			//m_GeometryPass->SetInput("CameraData", m_UBCameraBuffer);
-			//m_GeometryPass->SetInput("ScreenData", m_UBScreenBuffer);
 
 			m_GeometryPass->AddGlobalInput(m_GlobalInputs);
 
-			m_GeometryPass->SetInput("u_PointLightGrid", m_PointLightGrid);
-			m_GeometryPass->SetInput("u_SpotLightGrid", m_SpotLightGrid);
 			m_GeometryPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
 
-			m_GeometryPass->SetInput("PointLightIndexListBuffer", m_PointLightIndexListBuffer);
-			m_GeometryPass->SetInput("SpotLightIndexListBuffer", m_SpotLightIndexListBuffer);
+			m_GeometryPass->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
+			m_GeometryPass->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
 		}
 
 		// skybox
@@ -603,7 +556,7 @@ namespace Proof
 					//framebufferSpec.Blend = true;
 					framebufferSpec.ClearColorOnLoad = false;
 					//framebufferSpec.BlendMode = FramebufferBlendMode::Zero_SrcColor;
-					
+
 					auto aoframeBuffer = FrameBuffer::Create(framebufferSpec);
 
 					GraphicsPipelineConfiguration pipelineConfig;
@@ -624,9 +577,53 @@ namespace Proof
 					m_AmbientOcclusionCompositePass = RenderPass::Create(renderPassConfig);
 				}
 			}
-			#endif
-		}
+#endif
+			//bloom
+			{
+				m_BloomComputePass = ComputePass::Create({ "Bloom",ComputePipeline::Create({"Bloom",Renderer::GetShader("Bloom")}) });
 
+				TextureConfiguration spec;
+				spec.Format = ImageFormat::RGBA32F;
+				spec.Width = 1;
+				spec.Height = 1;
+				spec.Wrap = TextureWrap::ClampEdge;
+				spec.Storage = true;
+				spec.GenerateMips = true;
+				spec.DebugName = "BloomCompute-0";
+				m_BloomComputeTextures[0] = Texture2D::Create(spec);
+				spec.DebugName = "BloomCompute-1";
+				m_BloomComputeTextures[1] = Texture2D::Create(spec);
+				spec.DebugName = "BloomCompute-2";
+				m_BloomComputeTextures[2] = Texture2D::Create(spec);
+
+
+				glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
+				bloomSize += m_BloomComputeWorkgroupSize - bloomSize % m_BloomComputeWorkgroupSize;
+				m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
+				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
+				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
+			}
+
+			//DOF
+			{
+				m_DOFPass = ComputePass::Create({ "Depth of Field",ComputePipeline::Create({"Depth of Field",Renderer::GetShader("DOF")}) });
+
+				TextureConfiguration config;
+				config.DebugName = "DOF";
+				config.Format = ImageFormat::RGBA32F;
+				config.Width = 1;
+				config.Height = 1;
+				config.Storage = true;
+
+				m_DOFTexture = Texture2D::Create(config);
+
+				m_DOFPass->SetInput("u_DepthTexture", m_PreDepthPass->GetOutput(0));
+				m_DOFPass->SetInput("u_Texture", m_GeometryPass->GetOutput(0));
+				m_DOFPass->SetInput("o_Image", m_DOFTexture);
+				m_DOFPass->AddGlobalInput(m_GlobalInputs);
+			}
+
+		}
 		//External Composite 
 		{
 			/*
@@ -697,9 +694,9 @@ namespace Proof
 			m_GeometryWireFramePass->AddGlobalInput(m_GlobalInputs);
 			m_GeometryWireFrameOnTopPass->AddGlobalInput(m_GlobalInputs);
 
-
 		}
 
+		PF_ENGINE_TRACE("World Renderer Inititilized");
 	}
 
 	void WorldRenderer::SetContext(Count<class World> world)
@@ -708,7 +705,7 @@ namespace Proof
 		m_ActiveWorld = world;
 
 	}
-	void WorldRenderer::BeginScene(const Camera& camera, const Vector& location, float nearPlane, float farPlane)
+	void WorldRenderer::BeginScene(const Camera& camera, const glm::vec3& location, float nearPlane, float farPlane)
 	{
 		PF_PROFILE_FUNC();
 		PF_CORE_ASSERT(!m_InContext);
@@ -720,33 +717,41 @@ namespace Proof
 		//reset stats
 		m_Stats = {};
 
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
+		//uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
 		if (m_NeedResize)
 		{
 			m_NeedResize = false;
 			const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
-
-			
 			{
-				//foward plus
-				//constexpr uint32_t TILE_SIZE = 16u;
-				//m_LightCullingWorkGroups = glm::ceil(glm::vec3(viewportSize.x / (float)TILE_SIZE, viewportSize.y / (float)TILE_SIZE, 1));
-				//m_LightCullingNumThreads = m_LightCullingWorkGroups * glm::uvec3{ TILE_SIZE , TILE_SIZE ,1 };
-				//
-				//// plane {vec3 normal, float distnace} = sizeof(float) *4
-				////Frustrum{ Plane[4]] (sizeof(float) *4 ) * 4
-				//const uint32_t frusturmSize = (sizeof(float) * 4) * 4;
-				//for (uint32_t index = 0; index < Renderer::GetConfig().FramesFlight; index++)
-				//{
-				//	m_FrustrumsBuffer->Resize(index,frusturmSize * m_LightCullingNumThreads.x * m_LightCullingNumThreads.y * m_LightCullingNumThreads.z);
-				//	m_PointLightIndexListBuffer->Resize(index,m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
-				//	m_SpotLightIndexListBuffer->Resize(index,m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(uint32_t) * 1024);
-				//}
-				//m_PointLightGrid->Resize(m_LightCullingNumThreads.x, m_LightCullingNumThreads.y);
-				//m_SpotLightGrid->Resize(m_LightCullingNumThreads.x, m_LightCullingNumThreads.y);
-			}
 
+
+				glm::uvec2 size = viewportSize;
+				size += TILE_SIZE - viewportSize % TILE_SIZE;
+				m_LightCullingWorkGroups = { size / (uint32_t)TILE_SIZE, 1u };
+
+				for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
+				{
+					m_SBVisiblePointLightIndicesBuffer->Resize(i, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(int) * MAX_NUM_LIGHTS_PER_TILE);
+					m_SBVisibleSpotLightIndicesBuffer->Resize(i, m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * sizeof(int) * MAX_NUM_LIGHTS_PER_TILE);
+				}
+
+			}
+			//bloom
+			{
+				glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
+				bloomSize += m_BloomComputeWorkgroupSize - bloomSize % m_BloomComputeWorkgroupSize;
+				m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
+				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
+				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
+			}
+			//size
+			{
+
+				glm::uvec2 size = (viewportSize + 1u) / 2u;
+				size += DOF_NUM_THREADS - size % DOF_NUM_THREADS;
+				m_DOFTexture->Resize(size.x, size.y);
+			}
 			// predepth
 			m_PreDepthPass->GetTargetFrameBuffer()->Resize(viewportSize);
 
@@ -785,6 +790,8 @@ namespace Proof
 				m_ShadowMapResolution = 4096;
 				break;
 		}
+
+
 
 		if (m_ShadowMapPasses[0]->GetTargetFrameBuffer()->GetConfig().Width != m_ShadowMapResolution)
 		{
@@ -833,8 +840,8 @@ namespace Proof
 		// clear screen
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
 
-		//Renderer::BeginRenderPass(m_CommandBuffer,m_GeometryPass, true);
-		//Renderer::EndRenderPass(m_GeometryPass);
+//Renderer::BeginRenderPass(m_CommandBuffer,m_Dep, true);
+//		Renderer::EndRenderPass(m_GeometryPass);
 		
 		if (m_UBScreenData.FullResolution.x > 0 && m_UBScreenData.FullResolution.y > 0)
 		{
@@ -867,8 +874,6 @@ namespace Proof
 
 	}
 
-
-	
 	void WorldRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		if (m_UBScreenData.FullResolution == glm::vec2{ width,height })
@@ -880,8 +885,8 @@ namespace Proof
 		}
 		m_UBScreenData.FullResolution = { width, height };
 		m_UBScreenData.InverseFullResolution = {1/ width,  1/height };
-		m_UBScreenData.HalfResolution = glm::ivec2{ m_UBScreenData.FullResolution } / 2;
-		m_UBScreenData.InverseHalfResolution = glm::ivec2{ m_UBScreenData.InverseFullResolution } * 2;
+		m_UBScreenData.HalfResolution = glm::uvec2{ m_UBScreenData.FullResolution } / 2u;
+		m_UBScreenData.InverseHalfResolution = glm::uvec2{ m_UBScreenData.InverseFullResolution } * 2u;
 		m_UBScreenData.AspectRatio = m_UBScreenData.FullResolution.x / m_UBScreenData.FullResolution.y;
 
 		Buffer buffer(&m_UBScreenData, sizeof(m_UBScreenData));
@@ -897,7 +902,6 @@ namespace Proof
 		return m_ShadowDebugPass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>();
 	}
 
-
 	Count<Image2D> WorldRenderer::GetFinalPassImage()
 	{
 		return m_CompositePass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>(); 
@@ -908,10 +912,11 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Timer setPassesTimer;
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		//scene data
 		{
-			m_UBSceneData.CameraPosition =ProofToglmVec( m_UBCameraData.Position);
+			m_UBSceneData.CameraPosition =m_UBCameraData.Position;
+			m_UBSceneData.bShowLightGrid = GeneralOptions.ShowLightGrid;
 			m_UBSceneDataBuffer->SetData(frameIndex, Buffer(&m_UBSceneData, sizeof(m_UBSceneData)));
 		}
 		// set up shadow pass
@@ -961,6 +966,7 @@ namespace Proof
 				if (m_LightScene.SpotLightCount == 0)
 					m_SBSpotLightsBuffer->Resize(frameIndex, sizeof(SpotLight));
 			}
+			m_UBLightData.LightCullingWorkGroups = m_LightCullingWorkGroups;
 			m_UBLightSceneBuffer->SetData(frameIndex, Buffer(&m_UBLightData, sizeof(m_UBLightData)));
 		}
 		// set up mesh passes
@@ -1085,6 +1091,7 @@ namespace Proof
 			lastSplitDist = ShadowSetting.CascadeSplits[i];
 		}
 	}
+
 	void WorldRenderer::CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection)
 	{
 		//https://github.com/SaschaWillems/Vulkan/blob/master/examples/shadowmappingcascade/shadowmappingcascade.cpp
@@ -1206,12 +1213,12 @@ namespace Proof
 			lastSplitDist = cascadeSplits[i];
 		}
 	}
+
 	void WorldRenderer::ShadowPass()
 	{
 		PF_PROFILE_FUNC();
 		Timer shadowPassTimer;
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
 		if (m_MainDirectionllLight.Intensity == 0.f  || !m_MainDirectionllLight.bCastShadows)
 			return;
@@ -1294,8 +1301,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Timer preDepthTimer;
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
 		Renderer::BeginRenderPass(m_CommandBuffer, m_PreDepthPass, true);
 
@@ -1320,27 +1326,18 @@ namespace Proof
 	{
 		if (m_LightScene.SpotLightCount == 0 && m_LightScene.PointLightCount == 0)
 			return;
-		#if 0
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		#if 1
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
-		uint32_t screenWidth = m_UBScreenData.FullResolution.x;
-		uint32_t screenHeight = m_UBScreenData.FullResolution.y;
 		PF_PROFILE_FUNC();
 		{
 			PF_PROFILE_FUNC("CalcalateFrustrumGrid");
 			
 			Timer timer;
-
-			glm::uvec3 numThreads = glm::ceil(glm::vec3(screenWidth / (float)16, screenHeight / (float)16, 1));
-			glm::uvec3 numThreadGroups = glm::ceil(glm::vec3(numThreads.x / (float)16, numThreads.y / (float)16, 1));
-
-			m_FrustrumsBuffer->Resize(frameIndex,64 * (numThreads.x * numThreads.y * numThreads.z));
-			Renderer::BeginComputePass(m_CommandBuffer, m_FrustrumPass);	
-			m_FrustrumPass->PushData("u_PushData", &numThreads);
-			m_FrustrumPass->Dispatch(numThreadGroups);
-			Renderer::EndComputePass(m_FrustrumPass);
-
+			//Renderer::BeginComputePass(m_CommandBuffer, m_FrustrumPass);	
+			//m_FrustrumPass->PushData("u_PushData", &m_LightCullingNumThreads);
+			//m_FrustrumPass->Dispatch({ m_LightCullingNumThreadGroups,1 });
+			//Renderer::EndComputePass(m_FrustrumPass);
 			m_Timers.LightCalculateGridFrustum = timer.ElapsedMillis();
 		}
 
@@ -1349,32 +1346,28 @@ namespace Proof
 			PF_PROFILE_FUNC("LightCulling");
 			Timer timer;
 
-			glm::uvec3 numThreadGroups = glm::ceil(glm::vec3(screenWidth / (float)16, screenHeight / (float)16, 1));
-			glm::uvec3 numThreads = numThreadGroups * glm::uvec3(16, 16, 1);
 
-			m_PointLightIndexListBuffer->Resize(frameIndex, numThreadGroups.x * numThreadGroups.y * sizeof(uint32_t) * 1024);
-			m_SpotLightIndexListBuffer->Resize(frameIndex, numThreadGroups.x * numThreadGroups.y * sizeof(uint32_t) * 1024);
-
-			m_PointLightGrid->Resize(numThreadGroups.x, numThreadGroups.y);
-			m_SpotLightGrid->Resize(numThreadGroups.x, numThreadGroups.y);
-
-			m_LightCullingPass->SetInput("u_DpethTexture", m_PreDepthPass->GetTargetFrameBuffer()->GetDepthImage(imageIndex).As<Image2D>());
 			Renderer::BeginComputePass(m_CommandBuffer, m_LightCullingPass);
-			m_LightCullingPass->PushData("u_PushData", &numThreads);
 			//m_LightCullingPass->PushData("u_PushData", &m_LightCullingNumThreads);
-			m_LightCullingPass->Dispatch(numThreadGroups);
-			VkMemoryBarrier barrier = {};
-			barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-			barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			m_LightCullingPass->Dispatch(m_LightCullingWorkGroups);
 
-			vkCmdPipelineBarrier(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(frameIndex),
-				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				0,
-				1, &barrier,
-				0, nullptr,
-				0, nullptr);
+			Renderer::Submit([commandBuffer = m_CommandBuffer ]()
+				{
+
+					VkMemoryBarrier barrier = {};
+					barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+					barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+					vkCmdPipelineBarrier(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+						VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+						VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+						0,
+						1, &barrier,
+						0, nullptr,
+						0, nullptr);
+				});
+
 			Renderer::EndComputePass(m_LightCullingPass);
 
 			m_Timers.LightCulling = timer.ElapsedMillis();
@@ -1388,8 +1381,7 @@ namespace Proof
 
 		Timer geometryPassTimer;
 
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
 	
 
@@ -1450,37 +1442,52 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Timer compositeTimer;
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
-
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		
+		BloomPass();
 		//AmbientOcclusionPass();
+		DOFPass();
 
 		// this has to be the last thgn called
 		{
 			PF_PROFILE_FUNC("WorldRenderer::WorldComposite");
 
+			auto blackTexture = Renderer::GetBlackTexture();
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_CompositePass, true);
 			//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
 			auto inputImage = m_GeometryPass->GetOutput(0);
 			m_CompositeMaterial->Set("u_WorldTexture", inputImage);
+
+			m_CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
+
+			if (BloomSettings.Enabled)
+				m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", BloomSettings.Intensity);
+			else
+				m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", 0.0f);
+
+			if(DOFSettings.Enabled)
+				m_CompositeMaterial->Set("u_DOFTexture", m_DOFTexture);
+			else
+				m_CompositeMaterial->Set("u_DOFTexture", blackTexture);
+
+
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_CompositePass, m_CompositeMaterial);
 			Renderer::EndRenderPass(m_CompositePass);
 		}
 
-		if (Options.ShowPhysicsColliders != WorldRendererOptions::PhysicsColliderView::None)
+		if (GeneralOptions.ShowPhysicsColliders != WorldRendererOptions::PhysicsColliderView::None)
 		{
 			PF_PROFILE_FUNC("CompositePass::PhysicsDebugMeshes");
 			Timer physicsDebugMesh;
 
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").X = Options.PhysicsColliderColor.x;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Y = Options.PhysicsColliderColor.y;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Z = Options.PhysicsColliderColor.z;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").W = Options.PhysicsColliderColor.w;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").X = GeneralOptions.PhysicsColliderColor.x;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Y = GeneralOptions.PhysicsColliderColor.y;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Z = GeneralOptions.PhysicsColliderColor.z;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").W = GeneralOptions.PhysicsColliderColor.w;
 
 			auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
 
-			auto wireFramePass = Options.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::Normal ? m_GeometryWireFramePass : m_GeometryWireFrameOnTopPass;
+			auto wireFramePass = GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::Normal ? m_GeometryWireFramePass : m_GeometryWireFrameOnTopPass;
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, wireFramePass);
 			for (auto& [meshKey, dc] : m_ColliderDrawList)
 			{
@@ -1497,15 +1504,15 @@ namespace Proof
 	}
 	void WorldRenderer::AmbientOcclusionPass()
 	{
-		if (AmbientOcclusion.Enabled == false)
+		if (AmbientOcclusionSettings.Enabled == false)
 			return;
 
 		PF_PROFILE_FUNC();
 		
-		if (AmbientOcclusion.Type == AmbientOcclusion::AmbientOcclusionType::SSAO)
+		if (AmbientOcclusionSettings.Type == AmbientOcclusion::AmbientOcclusionType::SSAO)
 		{
 			
-			auto& ssao = AmbientOcclusion.SSAO;
+			auto& ssao = AmbientOcclusionSettings.SSAO;
 
 			if (m_SBSSAOSampleKernalBuffer->GetBuffer(0)->GetSize() != sizeof(glm::vec3) * ssao.KernelSize)
 			{
@@ -1539,9 +1546,251 @@ namespace Proof
 				Renderer::EndRenderPass(m_AmbientOcclusionCompositePass);
 			}
 		}
-
 		
 	}
+
+	void WorldRenderer::BloomPass()
+	{
+		PF_PROFILE_FUNC();
+		if (!BloomSettings.Enabled)
+			return;
+		struct BloomComputePushConstants
+		{
+			glm::vec4 Params;
+			float LOD = 0.0f;
+			int Mode = 0; // 0 = prefilter, 1 = downsample, 2 = firstUpsample, 3 = upsample
+		} bloomComputePushConstants;
+		bloomComputePushConstants.Params = { BloomSettings.Threshold, BloomSettings.Threshold - BloomSettings.Knee, BloomSettings.Knee * 2.0f, 0.25f / BloomSettings.Knee };
+		Renderer::BeginComputePass(m_CommandBuffer, m_BloomComputePass);
+
+		uint32_t workGroupsX;
+		uint32_t workGroupsY;
+		//prefilter
+		{
+
+			bloomComputePushConstants.Mode = 0;
+
+			m_BloomComputePass->SetInput("u_SourceTexture", m_GeometryPass->GetOutput(0));
+			m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
+			m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[0]);
+
+			workGroupsX = m_BloomComputeTextures[0]->GetWidth() / m_BloomComputeWorkgroupSize;
+			workGroupsY = m_BloomComputeTextures[0]->GetHeight() / m_BloomComputeWorkgroupSize;
+
+			m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+			Renderer::Submit([image = m_BloomComputeTextures[0].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(),commandBuffer = m_CommandBuffer]
+				{
+					VkImageMemoryBarrier imageMemoryBarrier = {};
+					imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+					imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+					imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+					imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+					imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1};
+					imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+					imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+					vkCmdPipelineBarrier(
+						commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+						VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+						VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+						0,
+						0, nullptr,
+						0, nullptr,
+						1, &imageMemoryBarrier);
+				});
+		}
+		uint32_t mips = m_BloomComputeTextures[0]->GetMipLevelCount() - 2;
+		{
+			// downsample
+			bloomComputePushConstants.Mode = 1;
+
+			for (uint32_t i = 1; i < mips; i++)
+			{
+				auto imageView = m_BloomComputeTextures[0]->GetImageMip(i);
+				auto mipDimension = imageView->GetMipSize();
+				workGroupsX = (uint32_t)glm::ceil((float)mipDimension.x / (float)m_BloomComputeWorkgroupSize);
+				workGroupsY = (uint32_t)glm::ceil((float)mipDimension.y / (float)m_BloomComputeWorkgroupSize);
+
+				m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[1]->GetImageMip(i));
+				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
+				m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
+				bloomComputePushConstants.LOD = i - 1.0f;
+
+				m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+				m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+				{
+					Renderer::Submit([image = m_BloomComputeTextures[1].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
+						{
+							VkImageMemoryBarrier imageMemoryBarrier = {};
+							imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+							imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+							imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+							imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+							imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+							vkCmdPipelineBarrier(
+								commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								0,
+								0, nullptr,
+								0, nullptr,
+								1, &imageMemoryBarrier);
+						});
+				}
+
+				m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[0]->GetImageMip(i));
+				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[1]);
+				m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
+				bloomComputePushConstants.LOD = (float)i;
+				m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+				m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+
+
+				{
+					Renderer::Submit([image = m_BloomComputeTextures[1].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
+						{
+							VkImageMemoryBarrier imageMemoryBarrier = {};
+							imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+							imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+							imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+							imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+							imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+							vkCmdPipelineBarrier(
+								commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								0,
+								0, nullptr,
+								0, nullptr,
+								1, &imageMemoryBarrier);
+						});
+				}
+			}
+		}
+
+
+		//upsample first
+		{
+			bloomComputePushConstants.Mode = 2;
+			workGroupsX *= 2;
+			workGroupsY *= 2;
+			m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[2]->GetImageMip(mips - 2));
+			m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
+			m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0).As<Image2D>());
+			bloomComputePushConstants.LOD--;
+			m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+			auto dimension = m_BloomComputeTextures[2]->GetImageMip(mips - 2)->GetMipSize();
+			workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)m_BloomComputeWorkgroupSize);
+			workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)m_BloomComputeWorkgroupSize);
+			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+
+			{
+				Renderer::Submit([image = m_BloomComputeTextures[2].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
+					{
+						VkImageMemoryBarrier imageMemoryBarrier = {};
+						imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+						imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+						imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+						imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+						imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+						imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+						imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+						vkCmdPipelineBarrier(
+							commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+							VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+							VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+							0,
+							0, nullptr,
+							0, nullptr,
+							1, &imageMemoryBarrier);
+					});
+			}
+		}
+
+		//upsample
+		{
+			bloomComputePushConstants.Mode = 3;
+			// Upsample
+			for (int32_t mip = mips - 3; mip >= 0; mip--)
+			{
+				auto dimension = m_BloomComputeTextures[2]->GetImageMip(mip)->GetMipSize();
+				workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)m_BloomComputeWorkgroupSize);
+				workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)m_BloomComputeWorkgroupSize);
+
+				m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[2]->GetImageMip(mip));
+				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
+				m_BloomComputePass->SetInput("u_BloomTexture", m_BloomComputeTextures[2]);
+
+				bloomComputePushConstants.LOD = (float)mip;
+				m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
+				m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
+
+				{
+					Renderer::Submit([image = m_BloomComputeTextures[2].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
+						{
+							VkImageMemoryBarrier imageMemoryBarrier = {};
+							imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+							imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+							imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+							imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+							imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+							imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+							vkCmdPipelineBarrier(
+								commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+								0,
+								0, nullptr,
+								0, nullptr,
+								1, &imageMemoryBarrier);
+						});
+				}
+			}
+		}
+		Renderer::EndComputePass(m_BloomComputePass);
+
+	}
+
+	void WorldRenderer::DOFPass()
+	{
+		PF_PROFILE_FUNC();
+
+		if (!DOFSettings.Enabled)
+			return;
+		glm::uvec2 workgroupCount = (glm::uvec2(m_UBScreenData.FullResolution) + glm::uvec2(DOF_NUM_THREADS) - 1u) / glm::uvec2(DOF_NUM_THREADS);
+
+		Renderer::BeginComputePass(m_CommandBuffer, m_DOFPass);
+		glm::vec2 data{ DOFSettings.FocusDistance,DOFSettings.BlurSize };
+		m_DOFPass->PushData("u_Uniforms", &data);
+		m_DOFPass->Dispatch(m_DOFTexture->GetWidth()/DOF_NUM_THREADS, m_DOFTexture->GetHeight() / DOF_NUM_THREADS, 1);
+
+		Renderer::Submit([image = m_DOFTexture.As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
+			{
+				VkImageMemoryBarrier imageMemoryBarrier = {};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+				imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
+				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				vkCmdPipelineBarrier(
+					commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+			});
+		Renderer::EndComputePass(m_DOFPass);
+	}
+
 	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws)
 	{
 		PF_PROFILE_FUNC();
@@ -1678,8 +1927,7 @@ namespace Proof
 		if (m_LightScene.SkyLightCount == 1)
 			PF_ENGINE_WARN("{} Submiting mulitple sky light only the last one will be used, submit 1 to save performance", m_ActiveWorld->GetName());
 
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
 
 		Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
@@ -1699,8 +1947,8 @@ namespace Proof
 			return;
 		}
 
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
+
 		m_MainDirectionllLight = directionaLights.DirectionalLights[0];
 
 		Buffer buffer{(void*) directionaLights.DirectionalLights.data(), directionaLights.DirectionalLights.size() * sizeof(DirectionalLight)};
@@ -1718,9 +1966,8 @@ namespace Proof
 			PF_ENGINE_WARN("{} Dont submit empty Point Lights", m_ActiveWorld->GetName());
 			return;
 		}
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
-
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
+		
 		Buffer buffer{ (void*)pointLights.PointLights.data(), pointLights.PointLights.size() * sizeof(PointLight) };
 		m_SBPointLightsBuffer->Resize(frameIndex, buffer);
 
@@ -1735,10 +1982,9 @@ namespace Proof
 			PF_ENGINE_WARN("{} Dont submit empty Spot Lights", m_ActiveWorld->GetName());
 			return;
 		}
-		uint32_t frameIndex = Renderer::GetCurrentFrame().FrameinFlight;
-		uint32_t imageIndex = Renderer::GetCurrentFrame().ImageIndex;
-
-		Buffer buffer{ (void*)spotLights.SpotLights.data(), spotLights.SpotLights.size() * sizeof(SpotLight) };
+		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
+		
+		Buffer buffer{ spotLights.SpotLights.data(), spotLights.SpotLights.size() * sizeof(SpotLight) };
 		m_SBSpotLightsBuffer->Resize(frameIndex, buffer);
 
 		m_LightScene.SpotLightCount = spotLights.SpotLights.size();

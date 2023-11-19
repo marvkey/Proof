@@ -13,7 +13,7 @@ namespace Proof {
 			return s_Instance;
 		}
 		virtual void OnUpdate(FrameTime DeltaTime) override;
-		virtual void OnImGuiDraw(FrameTime DeltaTime) override;
+		virtual void OnImGuiDraw() override;
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		// returns if assetEditorWasCreated

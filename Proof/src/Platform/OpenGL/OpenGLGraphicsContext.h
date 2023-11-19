@@ -1,6 +1,7 @@
 #include "Proof/Renderer/GraphicsContext.h"
 namespace Proof
 {
+#if 0
 	class Proof_API OpenGLGraphicsContext: public GraphicsContext {
 	public:
 		OpenGLGraphicsContext(Window* windowHandle);
@@ -18,4 +19,5 @@ namespace Proof
 		  const char* message,
 		  const void* userParam);
 	};
+#endif
 }

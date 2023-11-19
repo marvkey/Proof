@@ -3,6 +3,9 @@
 #include "Proof/Renderer/Texture.h"
 #include "FrameBuffer.h"
 namespace Proof{
+
+
+	
 	enum class DrawType 
 	{
 		None =0,

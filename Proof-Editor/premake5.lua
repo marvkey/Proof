@@ -33,6 +33,7 @@ project "Proof-Editor"
 		"%{IncludeDir.physX}",
 		"%{IncludeDir.physXfoundation}",
 		"%{IncludeDir.optick}",
+		"%{IncludeDir.tracey}",
 		"%{IncludeDir.magic_enum}",
 		"%{IncludeDir.mono}",
     }

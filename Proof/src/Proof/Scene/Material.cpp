@@ -50,6 +50,7 @@ namespace Proof {
         //emision
         SetMetalness(0.0f);
         SetRoughness(0.4f);
+        SetEmission(0.f);
 
         SetAlbedoTextureToggle(true);
         SetNormalTextureToggle(false);
@@ -149,6 +150,15 @@ namespace Proof {
     void Material::SetRoughnessMap(Count<class Texture2D> texture)
     {
         m_RenderMaterial->Set("u_RoughnessMap", texture);
+    }
+
+    float& Material::GetEmission()const
+    {
+        return m_RenderMaterial->GetFloat("u_MaterialUniform.Emission");
+    }
+    void Material::SetEmission(float emisive)
+    {
+        return m_RenderMaterial->Set("u_MaterialUniform.Emission", emisive);
     }
     Count<class Texture2D> Material::GetAlbedoMap()
     {

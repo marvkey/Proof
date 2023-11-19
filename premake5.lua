@@ -31,6 +31,7 @@ IncludeDir["physXfoundation"] = "%{wks.location}/Proof/vendor/PhysX/pxshared/inc
 IncludeDir["mono"] = "%{wks.location}/Proof/vendor/mono/include"
 IncludeDir["magic_enum"] = "%{wks.location}/Proof/vendor/magic_enum/include"
 IncludeDir["optick"] = "%{wks.location}/Proof/vendor/optick/src"
+IncludeDir["tracey"] = "%{wks.location}/Proof/vendor/tracy/public"
 IncludeDir["entt"] = "%{wks.location}/Proof/vendor/entt"
 IncludeDir["ktx"] = "%{wks.location}/Proof/vendor/ktx"
 IncludeDir["msdfgen"] = "%{wks.location}/Proof/vendor/msdf-atlas-gen/msdfgen"

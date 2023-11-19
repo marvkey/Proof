@@ -5,7 +5,6 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 #include "Proof/Scene/EntitiyComponentSystem/ECS.h"
-#include "Proof/Renderer/3DRenderer/Renderer3D.h" // TEMPORARY
 #include "Proofprch.h"
 #include "Proof/Asset/Asset.h"
 #include "ContentBrowserPanel.h"
@@ -37,6 +36,7 @@
 #include "Proof/ProofCore.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scripting/ScriptWorld.h"
+#include "Proof/ImGui/UiUtilities.h"
 
 namespace Proof
 {
@@ -492,7 +492,7 @@ namespace Proof
 		});
 		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp) 
 		{
-			UI::BeginPropertyGrid("MeshComponentGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeAssetTextBar("Mesh", meshComp.m_MeshID, AssetType::Mesh);
 			UI::AttributeBool("Visible", meshComp.Visible);
@@ -505,7 +505,7 @@ namespace Proof
 			bool open = ImGui::TreeNodeEx("MaterialTablerwrs", treeNodeFlags, "Material Table");
 			if (open)
 			{
-				UI::BeginPropertyGrid("MeshComponentMaterialTableGrid");
+				UI::BeginPropertyGrid();
 
 				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
 				{
@@ -520,7 +520,7 @@ namespace Proof
 
 		DrawComponents<DynamicMeshComponent>("Dynamic Mesh", entity, [](DynamicMeshComponent& meshComp)
 		{
-			UI::BeginPropertyGrid("DynamicMeshComponentGrid");
+			UI::BeginPropertyGrid();
 
 			const uint32_t currentIndexMaterial = meshComp.GetSubMeshMaterialIndex();
 			auto mesh = meshComp.GetMesh();
@@ -628,7 +628,7 @@ namespace Proof
 		});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
 
-			UI::BeginPropertyGrid("SpriteComponentGrid");
+			UI::BeginPropertyGrid();
 
 			if (spriteComp.Texture != nullptr)
 				UI::Image(spriteComp.Texture, {30,30});
@@ -666,7 +666,7 @@ namespace Proof
 		DrawComponents<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& skylight) 
 		{
 
-			UI::BeginPropertyGrid("SkyLightComponentGrid");
+			UI::BeginPropertyGrid();
 
 			if (skylight.DynamicSky == false)
 			{
@@ -701,7 +701,8 @@ namespace Proof
 						uint64_t Data = *(const uint64_t*)payload->Data;
 						if (AssetManager::HasAsset(Data))
 						{
-							skylight.LoadMap(Data);
+							skylight.Image = Data;
+							skylight.DynamicSky = false;
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -731,7 +732,7 @@ namespace Proof
 		});
 		DrawComponents<DirectionalLightComponent>("Directonal Light", entity, [](DirectionalLightComponent& drl) {
 
-			UI::BeginPropertyGrid("DirectionalLightGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeColor("Ambient", drl.Color);
 			UI::AttributeDrag("Intensity", drl.Intensity, 0.01, 0.0f, 500);
@@ -754,45 +755,55 @@ namespace Proof
 
 		DrawComponents<PointLightComponent>("Point Light", entity, [](PointLightComponent& pl) 
 		{
-			UI::BeginPropertyGrid("PointLightGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeColor("Color", pl.Color);
 			UI::AttributeDrag("Intensity", pl.Intensity, 0.01, 0.0f, Math::GetMaxType<float>());
 			UI::AttributeDrag("MinRadius", pl.MinRadius, 0.01, 0.0f, pl.Radius);
 			UI::AttributeDrag("Radius", pl.Radius, 0.01, 0.0f);
-			UI::AttributeDrag("Falloff", pl.Falloff, 0.005,0,1.0);
+			UI::AttributeDrag("Falloff", pl.Falloff, 0.005,0);
+			UI::AttributeBool("Cast Shadows", pl.CastsShadows);
 
+			if (pl.CastsShadows)
+			{
+				UI::AttributeSlider("ShadowStrength", pl.ShadowStrength, 0, 1);
+				UI::AttributeBool("CastSoftShadows", pl.SoftShadows);
+
+				if (pl.SoftShadows)
+				{
+					UI::AttributeSlider("ShadowSoftness", pl.ShadowSoftness, 0, 1);
+				}
+			}
 			UI::EndPropertyGrid();
 
 		});
 
 		DrawComponents<SpotLightComponent>("Spot Light", entity, [](SpotLightComponent& sl) {
-			UI::BeginPropertyGrid("SpotLightComponentGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeColor("Color", sl.Color);
 			UI::AttributeDrag("Intensity", sl.Intensity, 0.01, 0.0f);
-			UI::AttributeDrag("AngleAttenuation", sl.AngleAttenuation, 0.25, 0.0f);
-			UI::AttributeDrag("Falloff", sl.Falloff, 0.005, 0);
 			UI::AttributeDrag("Range", sl.Range, 0.25, 0);
 			UI::AttributeDrag("Angle", sl.Angle, 0.25, 0, 180);
-			//ImGui::ColorEdit3("Ambient", sl.Color.GetValue_Ptr());
-			//ImGui::DragFloat("Intensity", &sl.Intensity, 0.01, 0.0f, 100);
-			//
-			//ImGui::DragFloat("Radius", &sl.Radius, 0.01, 0.0f, 100);
-			//
-			//ImGui::NewLine();
-			//ImGui::DragFloat("Constant", &sl.Constant, 0.001);
-			//ImGui::DragFloat("Linear", &sl.Linear, 0.001);
-			//ImGui::DragFloat("Quadratic", &sl.Quadratic, 0.001);
-			//ImGui::DragFloat("CutOff", &sl.CutOff, 0.001);
-			//ImGui::DragFloat("Outer-Cutoff", &sl.OuterCutOff, 0.001);
+			UI::AttributeDrag("AngleAttenuation", sl.AngleAttenuation, 0.25, 0.0f);
+			UI::AttributeDrag("Falloff", sl.Falloff, 0.005, 0);
+			if (sl.CastsShadows)
+			{
+				UI::AttributeSlider("ShadowStrength", sl.ShadowStrength, 0, 1);
+				UI::AttributeBool("CastSoftShadows", sl.SoftShadows);
+
+				if (sl.SoftShadows)
+				{
+					UI::AttributeSlider("ShadowSoftness", sl.ShadowSoftness, 0, 1);
+				}
+			}
 
 			UI::EndPropertyGrid();
 
 		});
 
 		DrawComponents<CameraComponent>("Camera", entity, [](CameraComponent& cameraComp) {
-			UI::BeginPropertyGrid("CameraComponentGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeSlider("Field ov view", cameraComp.FovDeg, 0, 360);
 			UI::AttributeSlider("Near plane", cameraComp.NearPlane, -1, 1);
@@ -821,7 +832,7 @@ namespace Proof
 		}, "if nothing visible set roation of z axis to 1");
 
 		DrawComponents<BoxColliderComponent>("Box Collider", entity, [](BoxColliderComponent& cubeCollider) {
-			UI::BeginPropertyGrid("BoxColliderComponentGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeBool("IsTrigger", cubeCollider.IsTrigger);
 			UI::DrawVec3Control("Size", cubeCollider.Size, glm::vec3{1});
@@ -833,7 +844,7 @@ namespace Proof
 
 		});
 		DrawComponents<SphereColliderComponent>("Sphere Collider", entity, [](SphereColliderComponent& sphereCollider) {
-			UI::BeginPropertyGrid("SphereColliderComponentGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeBool("IsTrigger",sphereCollider.IsTrigger);
 			UI::AttributeDrag("Radius", sphereCollider.Radius, 0.5);
@@ -844,7 +855,7 @@ namespace Proof
 
 		});
 		DrawComponents<CapsuleColliderComponent>("Capsule Collider", entity, [](CapsuleColliderComponent& capsuleCollider) {
-			UI::BeginPropertyGrid("CapsuleColliderGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeBool("IsTrigger", capsuleCollider.IsTrigger);
 			UI::AttributeDrag("Radius", capsuleCollider.Radius, 0.5);
@@ -857,7 +868,7 @@ namespace Proof
 			UI::EndPropertyGrid();
 		});
 		DrawComponents<MeshColliderComponent>("Mesh Collider", entity, [](MeshColliderComponent& meshCollider) {
-			UI::BeginPropertyGrid("MeshColliderGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeBool("IsTrigger", meshCollider.IsTrigger);
 			//UI::AttributeAssetTextBar("Mesh", meshCollider.m_MeshAssetPointerID, AssetType::Mesh);
@@ -868,7 +879,7 @@ namespace Proof
 		
 		DrawComponents<RigidBodyComponent>("RigidBody", entity, [](RigidBodyComponent& rigidBody) {
 
-			UI::BeginPropertyGrid("RigidBodyGrid");
+			UI::BeginPropertyGrid();
 
 			UI::EnumCombo("RigidType", rigidBody.m_RigidBodyType);
 
@@ -891,7 +902,7 @@ namespace Proof
 
 		DrawComponents<CharacterControllerComponent>("CharacterController", entity, [](CharacterControllerComponent& controller) {
 
-			UI::BeginPropertyGrid("CharacterControllerComponentGrid");
+			UI::BeginPropertyGrid();
 
 			{
 				float slopdeg = glm::degrees(controller.SlopeLimitRadians);
@@ -1021,7 +1032,7 @@ namespace Proof
 					ImGui::TreePop();
 					continue;
 				}
-				UI::BeginPropertyGrid(fmt::format("ScriptComponent::Grid {}",classMetaData.className));
+				UI::BeginPropertyGrid();
 
 				//usign this becuase it stores the field in order form top to bottom
 				ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(classMetaData.className);
@@ -1477,7 +1488,7 @@ namespace Proof
 
 		DrawComponents<TextComponent>("Text Component", entity, [](TextComponent& textComponent) {
 			//ImGui::InputTextMultiline("Text", (char*)textComponent.Text.c_str(), textComponent.Text.capacity() + 1);
-			UI::BeginPropertyGrid("TextComponentGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeInputTextMultiline("ither", textComponent.Text,0);
 			UI::AttributeColor("Colour", textComponent.Colour);
@@ -1488,7 +1499,7 @@ namespace Proof
 		});
 
 		DrawComponents<PlayerInputComponent>("Player Input", entity, [](PlayerInputComponent& player) {
-			UI::BeginPropertyGrid("PlayerInputComponentGrid");
+			UI::BeginPropertyGrid();
 
 			UI::EnumCombo("Player", player.InputPlayer);
 			UI::AttributeAssetTextBar("Player", player.Player, AssetType::Prefab);
@@ -1535,7 +1546,7 @@ namespace Proof
 
 		DrawComponents<AudioComponent>("Audio", entity, [](AudioComponent& audio)
 		{
-			UI::BeginPropertyGrid("AudioComponentGrid");
+			UI::BeginPropertyGrid();
 
 			UI::AttributeAssetTextBar("Audio", audio.AudioAsset,AssetType::Audio);
 

@@ -21,7 +21,8 @@ namespace Proof
 	class World;
 }
 namespace Proof::UI {
-
+	void PushID();
+	void PopID();
 	inline void Image(Count<class Image> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0))
 	{
 		ImGui::Image(HeaderFileOnly::TextureUI::GetTexture(image), size, uv0, uv1, tint_col, border_col);
@@ -48,8 +49,7 @@ namespace Proof::UI {
 	{
 		return ImageButton(image->GetImage(), size, uv0, uv1, frame_padding, bg_col, tint_col);
 	}
-	//Grid Name needs to be unique
-	void BeginPropertyGrid(const std::string& gridName);
+	void BeginPropertyGrid(uint32_t columns =2);
 	void EndPropertyGrid();
 
 	bool DrawVec3Control(const std::string& label, glm::vec3& values, const glm::vec3 resetValues = glm::vec3{ 0.f }, float columnWidth = 100.f);
@@ -66,7 +66,9 @@ namespace Proof::UI {
 		if(changed)
 			value = EnumReflection::StringEnum< TEnum>(outSelectiongString);
 
+		return changed;
 	}
+
 
 	bool AttributeInputText(const std::string& label, std::string& value, const std::string& helpMessage = "");
 	bool AttributeBool(const std::string& label, bool& value, const std::string& helpMessage = "");
@@ -130,98 +132,22 @@ namespace Proof::UI {
 	bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName, Count<FieldStorage>& storage);
 	bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName,Count<EnumFieldStorage>& storage);
 
-	struct ScopedStyleColor 
+	void AttributeLabel(const std::string& label);
+	bool AttributeTreeNode(const std::string& label, bool openByDefault = true);
+	bool AttributeTreeNodeIcon(const std::string& label, const Count<Texture2D>& icon, const ImVec2& size, bool openByDefault = true);
+	static void EndTreeNode()
 	{
-		ScopedStyleColor() = default;
-		ScopedStyleColor(ImGuiCol idx, ImVec4 color, bool predicate = true)
-			: m_Set(predicate)
-		{
-			if (predicate)
-				ImGui::PushStyleColor(idx, color);
-		}
-
-		ScopedStyleColor(ImGuiCol idx, ImU32 color, bool predicate = true)
-			: m_Set(predicate)
-		{
-			if (predicate)
-				ImGui::PushStyleColor(idx, color);
-		}
-
-		~ScopedStyleColor()
-		{
-			if (m_Set)
-				ImGui::PopStyleColor();
-		}
-	private:
-		bool m_Set = false;
-	};
-
-	struct ScopedStyleVar 
+		ImGui::TreePop();
+	}
+	static void ShiftCursorX(float distance)
 	{
-		ScopedStyleVar() = default;
-		ScopedStyleVar(ImGuiStyleVar idx, float val, bool predicate = true)
-			: m_Set(predicate)
-		{
-			if (predicate)
-				ImGui::PushStyleVar(idx, val);
-		}
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + distance);
+	}
 
-		ScopedStyleVar(ImGuiStyleVar idx, const ImVec2& val, bool predicate = true)
-			: m_Set(predicate)
-		{
-			if (predicate)
-				ImGui::PushStyleVar(idx, val);
-		}
+	static void ShiftCursorY(float distance)
+	{
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + distance);
+	}
+	//bool AttributeTreeNodeWithDisabled(const std::string& label, bool& disabled, bool OpenDefault);
 
-		~ScopedStyleVar()
-		{
-			if (m_Set)
-				ImGui::PopStyleVar();
-		}
-	private:
-		bool m_Set = false;
-	};
-
-	struct ScopedID {
-		ScopedID() = default;
-		ScopedID(std::string str_id, bool predicate = true)
-			: m_Set(predicate)
-		{
-			if (predicate)
-				ImGui::PushID(str_id.c_str());
-		}
-		ScopedID(const char* str_id, bool predicate = true)
-			: m_Set(predicate)
-		{
-			if (predicate)
-				ImGui::PushID(str_id);
-		}
-
-		ScopedID(const char* str_id_begin, const char* str_id_end, bool predicate = true)
-			: m_Set(predicate)
-		{
-			if (predicate)
-				ImGui::PushID(str_id_begin, str_id_end);
-		}
-		ScopedID(int int_id, bool predicate = true)
-			: m_Set(predicate)
-		{
-			if (predicate)
-				ImGui::PushID(int_id);
-		}
-
-		ScopedID(const void* ptr_id,bool predicate = true)
-			: m_Set(predicate)
-		{
-			if (predicate)
-				ImGui::PushID(ptr_id);
-		}
-		~ScopedID()
-		{
-			if (m_Set)
-				ImGui::PopID();
-		}
-	private:
-		bool m_Set = false;
-	};
 }

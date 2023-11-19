@@ -172,4 +172,5 @@ void main()
     }
     prefillterColor /=weight;
     imageStore(u_PrefilterMap[PARAM_LEVEL], ivec3(gl_GlobalInvocationID), vec4(prefillterColor, 1.0));
+    //imageStore(u_PrefilterMap[PARAM_LEVEL], ivec3(gl_GlobalInvocationID), vec4(1.0));
 }

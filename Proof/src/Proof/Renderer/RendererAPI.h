@@ -24,16 +24,11 @@ namespace Proof {
 		virtual void ComputePassPushRenderMaterial(Count<class ComputePass> computePass, Count<class RenderMaterial> renderMaterial) = 0;
 
 		virtual void SubmitCommandBuffer(Count<class RenderCommandBuffer>commandBuffer) = 0;
-		virtual void Submit(std::function<void(class CommandBuffer*)> func ) = 0;
-		virtual void SubmitDatafree(std::function<void()> func) = 0;
-		virtual void OnWindowResize(WindowResizeEvent& e) = 0;
-		virtual CurrentFrame GetCurrentFrame() = 0;
-		virtual RendererConfig GetConfig() = 0;
 		inline static Renderer::API GetAPI() { return ActiveAPI; }
+
 	private:
 		virtual void Init() = 0;
-		virtual void SetGraphicsContext(Count<GraphicsContext> context) = 0;
-		virtual void Destroy() =0;
+		virtual void ShutDown() =0;
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 		friend class RendererBase;

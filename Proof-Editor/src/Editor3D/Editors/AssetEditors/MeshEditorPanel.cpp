@@ -5,6 +5,7 @@
 #include "Proof/Scene/World.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UiUtilities.h"
 #include "Proof/Core/Application.h"
 
 namespace Proof

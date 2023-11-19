@@ -112,7 +112,7 @@ namespace Proof
 		virtual float GetAspectRatio()const override { return (float)GetWidth() / (float)GetHeight(); };
 		uint32_t GetMipLevelCount() { 
 			if (m_Config.GenerateMips)
-				Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+				return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
 			else
 				return 1;
 		}
@@ -126,11 +126,17 @@ namespace Proof
 		//bool Loaded()const { return m_ImageData; }
 		virtual uint64_t GetHash();
 		void GenerateMips();
+		void RT_GenerateMips();
 		virtual void SetData(Buffer buffer);
+		Count<ImageView> GetImageMip(uint32_t mip, uint32_t layer = 0);
 
 	private:
 		void Build();
+		void RT_Build();
 		void Release();
+	private:
+		//layer, mip
+		std::map<uint32_t, std::map<uint32_t, Count<ImageView>>> m_ImageViews;
 		std::filesystem::path m_Path;
 		TextureConfiguration m_Config;
 		Count<Image2D> m_Image;
@@ -161,8 +167,12 @@ namespace Proof
 			else
 				return 1;
 		};
+		void RT_GenerateMips();
 		void GenerateMips();
+
 	private:
+
+	
 		TextureConfiguration m_Config;
 		std::filesystem::path m_Path;
 
@@ -170,6 +180,7 @@ namespace Proof
 		Count<VulkanTexture2D> m_Texture;
 		Count<Image2D> m_Image;
 		void Build();
+		void RT_Build();
 		void Release();
 
 	};

@@ -6,7 +6,7 @@
 #extension GL_EXT_multiview : enable
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
-layout(set = 0, binding = 0,rgba32f) uniform image2D u_EquirectangularMap;
+layout(set = 0, binding = 0) uniform sampler2D u_EquirectangularMap;
 layout(set = 0, binding = 1,rgba16f) uniform writeonly imageCube u_CubeMap;
 
 const float PI = 3.1415926535897932384626433832795f;
@@ -58,6 +58,8 @@ void main()
     float theta = acos(cubeTC.y);
     vec2 uv = vec2(phi/(2.0 * PI)+0.5,theta/PI);
 
-    vec3 color = imageLoad(u_EquirectangularMap, ivec2(uv * vec2(pc.equirectangularSize))).rgb;
-    imageStore(u_CubeMap, ivec3(gl_GlobalInvocationID), vec4(color, 1.0));
+    //vec3 color = imageLoad(u_EquirectangularMap, ivec2(uv * vec2(pc.equirectangularSize))).rgb;
+    vec4 color = texture(u_EquirectangularMap, uv);
+
+    imageStore(u_CubeMap, ivec3(gl_GlobalInvocationID), color);
 }

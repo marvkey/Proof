@@ -3,6 +3,11 @@
 #include "VulkanUtils/VulkanBufferBase.h"
 namespace Proof
 {
+	struct GPUMemoryStats
+	{
+		uint64_t Used = 0;
+		uint64_t Free = 0;
+	};
 	class VulkanAllocator
 	{
 	public:
@@ -24,10 +29,11 @@ namespace Proof
 			vmaMapMemory(VulkanAllocator::GetVmaAllocator(), allocation, (void**)&mappedMemory);
 			return mappedMemory;
 		}
-
+		static GPUMemoryStats GetStats();
+		static void DumpStats();
 		void UnmapMemory(VmaAllocation allocation);
 	private:
-		static void Init(class VulkanGraphicsContext* context);
+		static void Init(Count<class VulkanDevice> device);
 		static void ShutDown();
 		friend class VulkanGraphicsContext;
 		std::string m_DebugName ;

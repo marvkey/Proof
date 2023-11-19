@@ -190,7 +190,6 @@ namespace Proof
 		s_AssetManagerData->AssetPath.insert({ assetInfo.Path.string(),assetInfo.ID });
 		if (asset)
 		{
-			PF_CORE_ASSERT(!HasAsset(asset->m_ID), "Asset has alrady been added");
 			asset->m_ID = assetInfo.ID;
 		}
 		if (asset && assetInfo.RuntimeAsset == false && !assetInfo.IsAssetSource() && assetInfo.Type != AssetType::World)
@@ -234,7 +233,7 @@ namespace Proof
 		PF_CORE_ASSERT(asset);
 		asset->m_ID = AssetManager::CreateID();
 		AssetInfo assetInfo;
-		assetInfo.Path = std::filesystem::relative(savePath, AssetManager::GetDirectory());
+		assetInfo.Path = GetAssetFileSystemPathRelative(savePath);
 		assetInfo.State = AssetState::Ready;
 		assetInfo.ID = asset->GetID();
 		assetInfo.Type = asset->GetAssetType();
@@ -274,7 +273,7 @@ namespace Proof
 		if (type == AssetType::TextureSourceFile && Utils::TextureHasFormat(extension))
 		{
 			AssetInfo assetInfo;
-			assetInfo.Path = std::filesystem::relative(path, AssetManager::GetDirectory());
+			assetInfo.Path = AssetManager::GetAssetFileSystemPathRelative(path);
 			assetInfo.State = AssetState::Ready;
 			assetInfo.ID = AssetManager::CreateID();
 			assetInfo.Type = AssetType::TextureSourceFile;
@@ -306,17 +305,20 @@ namespace Proof
 	}
 
 	
-	void AssetManager::GenerateAllSourceAssets() {
-		for (auto& it : std::filesystem::recursive_directory_iterator(s_AssetManagerData->AssetDirectory)) {
+	void AssetManager::GenerateAllSourceAssets() 
+	{
+		for (auto& it : std::filesystem::recursive_directory_iterator(s_AssetManagerData->AssetDirectory)) 
+		{
 			if (AssetManager::HasAsset(it.path()))continue;
 			std::string extension = it.path().extension().string();
-			extension.erase(extension.begin());// remove the "."
-			if (Utils::MeshHasFormat(extension)) {
+			if (Utils::MeshHasFormat(extension)) 
+			{
 				NewAssetSource(it.path(),AssetType::MeshSourceFile);
 				continue;
 			}
 
-			if (Utils::TextureHasFormat(extension)) {
+			if (Utils::TextureHasFormat(extension)) 
+			{
 				NewAssetSource(it.path(), AssetType::TextureSourceFile);
 				std::string path = std::filesystem::relative(it.path().parent_path() /= FileSystem::GetFileName(it.path())).string();
 				path += ".Texture.ProofAsset";

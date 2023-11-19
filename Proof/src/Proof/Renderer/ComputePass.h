@@ -24,6 +24,7 @@ namespace Proof
 		void virtual SetInput(std::string_view name, Count<class ImageView> imageView) = 0;
 		void virtual SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews) = 0;
 		void virtual SetInput(std::string_view name, Count<class Image2D>image) = 0;
+		void virtual SetInput(std::string_view name, Count<class Image>image) = 0;
 		void virtual SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images) = 0;
 		virtual void PushData(std::string_view name, const void* data) = 0;
 		void virtual AddGlobalInput(Count<class GlobalBufferSet> globalInputs) = 0;

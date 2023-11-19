@@ -6,6 +6,8 @@
 #include "MaterialEditorPanel.h"
 #include "ParticleSystemEditorPanel.h"
 #include "MeshEditorPanel.h"
+#include "Proof/ImGui/UiUtilities.h"
+
 namespace Proof 
 {
 	AssetEditor::AssetEditor(const char* id)

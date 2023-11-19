@@ -18,7 +18,7 @@
 #include "Proof/Scene/Mesh.h"
 #include "Buffer.h"
 #include "SwapChain.h"
-#include "Platform/Vulkan/VulkanRendererAPI.h"
+#include "Platform/Vulkan/VulkanRenderer.h"
 #include "GraphicsContext.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Platform/Vulkan/VulkanImage.h"
@@ -26,11 +26,35 @@
 #include "vulkan/vulkan.h"
 #include "Proof/Core/Application.h"
 #include "Platform/Window/WindowsWindow.h"
+#include "Proof/Core/RenderThread.h"
 namespace Proof {
-	static std::vector<CommandQueue*> s_RenderCommandQueue;
-	static uint32_t s_CommandQueueIndex = 1; // so we start with 0 command qeue index
+
+	/*
+	*Adding `mutable` to the lambda capture list is necessary when you want to modify variables captured by value within a lambda function. 
+	In your code, you have a lambda function that captures the `instance` variable, among others. The `mutable` keyword allows you to modify these captured variables within the lambda, even if the lambda itself is declared as a `const` or if the lambda is called on a `const` instance.
+
+	In your case, by adding `mutable`, you've indicated that the lambda should be allowed to modify the `instance` variable, 
+	and this change has resolved the crash. Without `mutable`, the lambda captures variables by value, 
+	which means they are treated as const within the lambda unless explicitly marked as `mutable`. 
+	If you attempt to modify a captured variable without `mutable`, it would result in a compilation error or unexpected behavior, potentially leading to a crash.
+
+	Here's the modified lambda capture list:
+
+	```cpp
+	[instance, groupCountX, groupCountY, groupCountZ]() mutable {
+		// Lambda code...
+	}
+	```
+
+	The `mutable` keyword in this context ensures that the lambda can modify the captured variables as needed,
+	which appears to have resolved the issue in your case.
+	*/
+	constexpr static uint32_t s_RenderCommandQueueCount = 2;
+	static CommandQueue* s_CommandQueue[s_RenderCommandQueueCount];
+	static std::atomic<uint32_t> s_RenderCommandQueueSubmissionIndex = 0;
+	static CommandQueue* s_ResourceFreeQueue;
+
 	static class RendererAPI* s_RendererAPI;
-	static Count<class GraphicsContext> GraphicsContext;
 
 	static Count<class ShaderLibrary> ShaderLibrary;
 	static Count<ComputePass> PrethamSkyPass;
@@ -42,18 +66,31 @@ namespace Proof {
 	{
 		Count<VertexBuffer> QuadVertexBuffer;
 		Count<IndexBuffer> QuadIndexBuffer;
+		Count<RenderCommandBuffer> RenderCommandBuffer;
+		bool CommandBufferRecording = false;
 	};
+	static RendererAPI* InitRendererAPI()
+	{
+		switch (RendererAPI::GetAPI())
+		{
+			//case RendererAPIType::OpenGL: return anew OpenGLRenderer();
+			case Renderer::API::Vulkan: return pnew VulkanRenderer();
+		}
+		PF_CORE_ASSERT(false, "Unknown RendererAPI");
+		return nullptr;
+	}
 	RendererData* s_Data = nullptr;
-	void Renderer::Init(Window* window)
+	void Renderer::Init()
 	{
 		Timer time;
-		if (RendererAPI::ActiveAPI == Renderer::API::Vulkan)
-			s_RendererAPI = pnew VulkanRendererAPI();
+
+		s_RendererAPI = InitRendererAPI();
+
+		s_CommandQueue[0] = pnew CommandQueue();
+		s_CommandQueue[1] = pnew CommandQueue();
 
 		s_Data = pnew RendererData();
-		GraphicsContext = GraphicsContext::Create(window);
-		s_RendererAPI->SetGraphicsContext(GraphicsContext);
-		window->m_SwapChain = SwapChain::Create(ScreenSize{ Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight() }, window->IsVsync());
+		s_ResourceFreeQueue = pnew CommandQueue[GetConfig().FramesFlight];
 		s_RendererAPI->Init();
 
 		ShaderLibrary = Count<class ShaderLibrary>::Create();
@@ -85,6 +122,8 @@ namespace Proof {
 
 		ShaderLibrary->LoadShader("WorldComposite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/WorldComposite.glsl");
 		ShaderLibrary->LoadShader("Wireframe", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/Wireframe.glsl");
+		ShaderLibrary->LoadShader("Bloom", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/Bloom.glsl");
+		ShaderLibrary->LoadShader("DOF", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/DOF.glsl");
 		// ao
 		ShaderLibrary->LoadShader("AO-Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/AO-Composite.glsl");
 		ShaderLibrary->LoadShader("SSAO", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/SSAO.glsl");
@@ -96,11 +135,12 @@ namespace Proof {
 		ShaderLibrary->LoadShader("Text2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text2D.glsl");
 		ShaderLibrary->LoadShader("Line2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Line2D.glsl");
 
+		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
+		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 		s_BaseTextures = pnew BaseTextures();
-		s_RenderCommandQueue.resize(2);
-		s_RenderCommandQueue[0] = pnew CommandQueue();
-		s_RenderCommandQueue[1] = pnew CommandQueue();
-
+		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
+		// Compile shaders
+		Application::Get()->m_RenderThread.Pump();
 		{
 
 			/**
@@ -161,6 +201,7 @@ namespace Proof {
 			uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 			s_Data->QuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 		}
+		
 
 		PF_ENGINE_INFO("Renderer Initialized {}m/s",time.ElapsedMillis());
 	}
@@ -174,18 +215,68 @@ namespace Proof {
 			PrethamSkyPass = nullptr;
 		}
 
-		pdelete s_RenderCommandQueue[0];
-		pdelete s_RenderCommandQueue[1];
-		s_RenderCommandQueue.clear();
+		pdelete s_CommandQueue[0];
+		pdelete s_CommandQueue[1];
 
 		pdelete s_BaseTextures;
 		ShaderLibrary = nullptr;
-		GraphicsContext = nullptr;
 		pdelete s_Data;
-		s_RendererAPI->Destroy();
+		s_RendererAPI->ShutDown();
 		pdelete s_RendererAPI;
 
+		for (uint32_t i = 0; i < GetConfig().FramesFlight; i++)
+		{
+			auto& queue = Renderer::GetRenderResourceReleaseQueue(i);
+			queue.Execute();
+		}
+
 		PF_ENGINE_INFO("Renderer Shutdown {}m/s", time.ElapsedMillis());
+	}
+	void Renderer::RenderThreadFunc(RenderThread* renderThread)
+	{
+		PF_PROFILE_THREAD("Render Thread");
+
+		while (renderThread->IsRunning())
+		{
+			WaitAndRender(renderThread);
+		}
+	}
+	void Renderer::WaitAndRender(RenderThread* renderThread)
+	{
+		PF_PROFILE_FUNC();
+		//auto& performanceTimers = Application::Get().m_PerformanceTimers;
+
+		// Wait for kick, then set render thread to busy
+		{
+			PF_PROFILE_FUNC("Wait");
+			Timer waitTimer;
+			renderThread->WaitAndSet(RenderThread::State::Kick, RenderThread::State::Busy);
+			//performanceTimers.RenderThreadWaitTime = waitTimer.ElapsedMillis();
+		}
+		{
+			PF_PROFILE_FUNC("Execute RenderCommandQueue");
+			Timer workTimer;
+			s_CommandQueue[GetRenderQueueIndex()]->Execute();
+			// ExecuteRenderCommandQueue();
+
+			// Rendering has completed, set state to idle
+			renderThread->Set(RenderThread::State::Idle);
+		}
+
+		//performanceTimers.RenderThreadWorkTime = workTimer.ElapsedMillis();
+	}
+	void Renderer::SwapQueues()
+	{
+		s_RenderCommandQueueSubmissionIndex = (s_RenderCommandQueueSubmissionIndex + 1) % s_RenderCommandQueueCount;
+	}
+	uint32_t Renderer::GetRenderQueueIndex()
+	{
+		return (s_RenderCommandQueueSubmissionIndex + 1) % s_RenderCommandQueueCount;
+	}
+
+	uint32_t Renderer::GetRenderQueueSubmissionIndex()
+	{
+		return s_RenderCommandQueueSubmissionIndex;
 	}
 	const std::unordered_map<std::string, std::string>& Renderer::GetShaderDefines()
 	{
@@ -323,49 +414,41 @@ namespace Proof {
 		s_RendererAPI->SubmitCommandBuffer(commandBuffer);
 	}
 
-	CurrentFrame Renderer::GetCurrentFrame()
+	uint32_t Renderer::GetCurrentFrameInFlight()
 	{
-		return s_RendererAPI->GetCurrentFrame();
+		return Application::Get()->m_CurrentFrameIndex;
+	}
+
+	uint32_t Renderer::RT_GetCurrentFrameInFlight()
+	{
+		return Application::Get()->GetWindow()->GetSwapChain()->GetFrameIndex();
 	}
 
 	const RendererConfig Renderer::GetConfig()
 	{
-		return s_RendererAPI->GetConfig();
+		return Application::Get()->GetWindow()->GetSwapChain()->GetRenderConfig();
 	}
 
 	Count<class GraphicsContext> Renderer::GetGraphicsContext()
 	{
-		return GraphicsContext;
-	}
-
-	void Renderer::SubmitCommand(std::function<void(CommandBuffer*)> func)
-	{
-		s_RendererAPI->Submit(func);
-	}
-
-	void Renderer::SubmitDatafree(std::function<void()> func)
-	{
-		s_RendererAPI->SubmitDatafree(func);
+		return Application::Get()->GetGraphicsContext();
 	}
 
 	Renderer::API Renderer::GetAPI()
 	{ return RendererAPI::GetAPI(); }
 
-	void Renderer::OnWindowResize(WindowResizeEvent& e)
-	{
-		s_RendererAPI->OnWindowResize(e);
-	}
 
 	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination, uint32_t imageDimensionadfa)
 	{
 		PF_PROFILE_FUNC();
-		const uint32_t cubemapSize = 256;
+		const uint32_t cubemapSize = 512;
 		const uint32_t irradianceMap = 32;
 
-		ImageFormat format = ImageFormat::RGBA32F;
+		ImageFormat format = ImageFormat::RGBA16F;
 		TextureConfiguration baseCubeMapConfig;
 		baseCubeMapConfig.DebugName = "Pretham Cube";
-		baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
+		baseCubeMapConfig.Wrap = TextureWrap::Repeat;
+		baseCubeMapConfig.Filter = TextureFilter::Nearest;
 		baseCubeMapConfig.Height = cubemapSize;
 		baseCubeMapConfig.Width = cubemapSize;
 		baseCubeMapConfig.Storage = true;
@@ -375,24 +458,66 @@ namespace Proof {
 		uint32_t mipLevels = Utils::GetMipLevelCount(cubemapSize, cubemapSize);
 		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig);
 		PrethamSkyPass->SetInput("o_CubeMap", environmentMap);
-		Renderer::SubmitCommand([&](CommandBuffer* cmdBufer) {
-			glm::vec3 params = { turbidity, azimuth, inclination };
-			Count<RenderCommandBuffer> commandBuffer = RenderCommandBuffer::Create(cmdBufer);
-			Renderer::BeginComputePass(commandBuffer, PrethamSkyPass);
-			PrethamSkyPass->PushData("u_Uniforms", &params);
-			PrethamSkyPass->Dispatch(cubemapSize/irradianceMap, cubemapSize/irradianceMap, 12);
-			Renderer::EndComputePass(PrethamSkyPass);
-			//return;
-			// boit 
-			auto blitCmd = cmdBufer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
-			bool readonly = false;
-			auto image=environmentMap.As<VulkanTextureCube>()->GetImage().As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+	
+		glm::vec3 params = { turbidity, azimuth, inclination };
+		Count<RenderCommandBuffer> commandBuffer = s_Data->RenderCommandBuffer;
+		Renderer::BeginComputePass(commandBuffer, PrethamSkyPass);
+		PrethamSkyPass->PushData("u_Uniforms", &params);
+		PrethamSkyPass->Dispatch(cubemapSize/32, cubemapSize/32, 6);
+		Renderer::EndComputePass(PrethamSkyPass);
+		environmentMap->GenerateMips();
+
+		//return;
+		// boit 
+		#if 0
+		auto blitCmd = cmdBufer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+		bool readonly = false;
+		auto image=environmentMap.As<VulkanTextureCube>()->GetImage().As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+		{
+			for (uint32_t face = 0; face < 6; face++)
+			{
+				VkImageSubresourceRange mipSubRange = {};
+				mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				mipSubRange.baseMipLevel = 0;
+				mipSubRange.baseArrayLayer = face;
+				mipSubRange.levelCount = 1;
+				mipSubRange.layerCount = 1;
+
+				// Prepare current mip level as image blit destination
+				Utils::InsertImageMemoryBarrier(blitCmd, image,
+					0, VK_ACCESS_TRANSFER_WRITE_BIT,
+					VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+					mipSubRange);
+			}
+
+			for (uint32_t i = 1; i < mipLevels; i++)
 			{
 				for (uint32_t face = 0; face < 6; face++)
 				{
+					VkImageBlit imageBlit{};
+
+					// Source
+					imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					imageBlit.srcSubresource.layerCount = 1;
+					imageBlit.srcSubresource.mipLevel = i - 1;
+					imageBlit.srcSubresource.baseArrayLayer = face;
+					imageBlit.srcOffsets[1].x = int32_t(cubemapSize >> (i - 1));
+					imageBlit.srcOffsets[1].y = int32_t(cubemapSize >> (i - 1));
+					imageBlit.srcOffsets[1].z = 1;
+
+					// Destination
+					imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					imageBlit.dstSubresource.layerCount = 1;
+					imageBlit.dstSubresource.mipLevel = i;
+					imageBlit.dstSubresource.baseArrayLayer = face;
+					imageBlit.dstOffsets[1].x = int32_t(cubemapSize >> i);
+					imageBlit.dstOffsets[1].y = int32_t(cubemapSize >> i);
+					imageBlit.dstOffsets[1].z = 1;
+
 					VkImageSubresourceRange mipSubRange = {};
 					mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-					mipSubRange.baseMipLevel = 0;
+					mipSubRange.baseMipLevel = i;
 					mipSubRange.baseArrayLayer = face;
 					mipSubRange.levelCount = 1;
 					mipSubRange.layerCount = 1;
@@ -400,84 +525,45 @@ namespace Proof {
 					// Prepare current mip level as image blit destination
 					Utils::InsertImageMemoryBarrier(blitCmd, image,
 						0, VK_ACCESS_TRANSFER_WRITE_BIT,
-						VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+						VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+						mipSubRange);
+
+					// Blit from previous level
+					vkCmdBlitImage(
+						blitCmd,
+						image,
+						VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+						image,
+						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+						1,
+						&imageBlit,
+						VK_FILTER_LINEAR);
+
+					// Prepare current mip level as image blit source for next level
+					Utils::InsertImageMemoryBarrier(blitCmd, image,
+						VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
 						mipSubRange);
 				}
-
-				for (uint32_t i = 1; i < mipLevels; i++)
-				{
-					for (uint32_t face = 0; face < 6; face++)
-					{
-						VkImageBlit imageBlit{};
-
-						// Source
-						imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-						imageBlit.srcSubresource.layerCount = 1;
-						imageBlit.srcSubresource.mipLevel = i - 1;
-						imageBlit.srcSubresource.baseArrayLayer = face;
-						imageBlit.srcOffsets[1].x = int32_t(cubemapSize >> (i - 1));
-						imageBlit.srcOffsets[1].y = int32_t(cubemapSize >> (i - 1));
-						imageBlit.srcOffsets[1].z = 1;
-
-						// Destination
-						imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-						imageBlit.dstSubresource.layerCount = 1;
-						imageBlit.dstSubresource.mipLevel = i;
-						imageBlit.dstSubresource.baseArrayLayer = face;
-						imageBlit.dstOffsets[1].x = int32_t(cubemapSize >> i);
-						imageBlit.dstOffsets[1].y = int32_t(cubemapSize >> i);
-						imageBlit.dstOffsets[1].z = 1;
-
-						VkImageSubresourceRange mipSubRange = {};
-						mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-						mipSubRange.baseMipLevel = i;
-						mipSubRange.baseArrayLayer = face;
-						mipSubRange.levelCount = 1;
-						mipSubRange.layerCount = 1;
-
-						// Prepare current mip level as image blit destination
-						Utils::InsertImageMemoryBarrier(blitCmd, image,
-							0, VK_ACCESS_TRANSFER_WRITE_BIT,
-							VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-							VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-							mipSubRange);
-
-						// Blit from previous level
-						vkCmdBlitImage(
-							blitCmd,
-							image,
-							VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-							image,
-							VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-							1,
-							&imageBlit,
-							VK_FILTER_LINEAR);
-
-						// Prepare current mip level as image blit source for next level
-						Utils::InsertImageMemoryBarrier(blitCmd, image,
-							VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
-							VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-							VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-							mipSubRange);
-					}
-				}
-
-				// After the loop, all mip layers are in TRANSFER_SRC layout, so transition all to SHADER_READ
-				VkImageSubresourceRange subresourceRange = {};
-				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				subresourceRange.layerCount = 6;
-				subresourceRange.levelCount = mipLevels;
-
-				Utils::InsertImageMemoryBarrier(blitCmd, image ,
-					VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
-					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readonly ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL,
-					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-					subresourceRange);
-
 			}
-		});
-		//environmentMap->GenerateMips();
+
+			// After the loop, all mip layers are in TRANSFER_SRC layout, so transition all to SHADER_READ
+			VkImageSubresourceRange subresourceRange = {};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.layerCount = 6;
+			subresourceRange.levelCount = mipLevels;
+
+			Utils::InsertImageMemoryBarrier(blitCmd, image ,
+				VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readonly ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				subresourceRange);
+		}
+		#endif
+
+		
 
 		return environmentMap;
 	}
@@ -505,7 +591,10 @@ namespace Proof {
 	{
 		return ShaderLibrary->GetShader(name);
 	}
-
+	Count<class RenderCommandBuffer> Renderer::GetRendererCommandBuffer()
+	{
+		return s_Data->RenderCommandBuffer;
+	}
 	std::pair<Count<class TextureCube>, Count<class TextureCube>> Renderer::CreateEnvironmentMap(const std::filesystem::path& path)
 	{
 		//Refrecnce
@@ -517,7 +606,7 @@ namespace Proof {
 		{
 			const uint32_t imageSize = 1024;
 			TextureConfiguration baseCubeMapConfig;
-			baseCubeMapConfig.DebugName = FileSystem::GetFileName(path)+ " Base CubeMap";
+			baseCubeMapConfig.DebugName = FileSystem::GetFileName(path) + " Base CubeMap";
 			baseCubeMapConfig.Height = imageSize;
 			baseCubeMapConfig.Width = imageSize;
 			baseCubeMapConfig.Storage = true;
@@ -528,7 +617,7 @@ namespace Proof {
 			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig, path);
 		}
 		const uint32_t irradianceFilterRate = 32;
-		Count<TextureCube> irradianceMap; 
+		Count<TextureCube> irradianceMap;
 		{
 			TextureConfiguration irradianceTextureConfig;
 			irradianceTextureConfig.DebugName = "Irradiance map " + FileSystem::GetFileName(path);
@@ -540,103 +629,34 @@ namespace Proof {
 			irradianceTextureConfig.GenerateMips = true;
 			irradianceMap = TextureCube::Create(irradianceTextureConfig);
 		}
-		
+
 		{
 			/*
 			* The size of the irradiance map, usually a cubemap, is typically much smaller than the original environment map from which it is derived.
 			* Common sizes for irradiance maps are 32x32, 64x64, 128x128, or 256x256 pixels per face.
 			* Smaller sizes offer better performance but may result in lower quality, while larger sizes provide better quality but consume more memory and processing power.
 			*/
-			
+
 			ComputePipelineConfig computePipelineConfig;
 			computePipelineConfig.DebugName = "Irradiance Pipline";
 			computePipelineConfig.Shader = GetShader("EnvironmentIrradiance");
-			
+
 			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
 			ComputePassConfiguration computePassConfig;
 			computePassConfig.DebugName = "EnvironmentIrradiance Pass";
 			computePassConfig.Pipeline = computePipeline;
-			
+
 			auto computePass = ComputePass::Create(computePassConfig);
 			computePass->SetInput("inputTexture", environmentMapImageCube);
 			computePass->SetInput("outputTexture", irradianceMap);
-			Renderer::SubmitCommand([&](CommandBuffer* buffer) {
-			
-				Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
+
+				Count<RenderCommandBuffer>renderCommandBuffer = Renderer::GetRendererCommandBuffer() ;
 				Renderer::BeginComputePass(renderCommandBuffer, computePass);
 				computePass->Dispatch(irradianceFilterRate / 32, irradianceFilterRate / 32, 6);
 				Renderer::EndComputePass(computePass);
-			
-			});
+
 			irradianceMap->GenerateMips();
 
-		}
-
-		{
-			//FrameBufferConfig frameConfig;
-			//frameConfig.DebugName = "Texture-CubeIrradiance";
-			//frameConfig.Size.X = irradianceFilterRate;
-			//frameConfig.Size.Y = irradianceFilterRate;
-			//frameConfig.Attachments = { format};
-			//frameConfig.Attachments.Attachments[0].ExistingImage = irradianceMap->GetImage();
-			//
-			//Count<FrameBuffer> frameBuffer = FrameBuffer::Create(frameConfig);
-			//
-			//GraphicsPipelineConfig pipelineConfig;
-			//pipelineConfig.DebugName = "generate cubemap create";
-			//pipelineConfig.Shader = Shader::Get("EnvironmentIrradianceNonCompute");
-			//
-			//pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
-			//pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-			//pipelineConfig.TargetBuffer = frameBuffer;
-			//Count<GraphicsPipeline> renderPipeline = GraphicsPipeline::Create(pipelineConfig);
-			//
-			//RenderPassConfig renderPassConfig;
-			//renderPassConfig.DebugName = "Irradiance Map Non compute";
-			//renderPassConfig.MultiView = true;
-			//renderPassConfig.Pipeline = renderPipeline;
-			//renderPassConfig.Attachments = { format };
-			//Count<RenderPass> renderPass = RenderPass::Create(renderPassConfig);
-			//
-			//struct UboData {
-			//	/// Projection matrix common to each face of the cubemap.
-			//	alignas(16) glm::mat4 projection;
-			//
-			//	/// View matrix to look at the direction of each cubemap face.
-			//	alignas(16) glm::mat4 view[6];
-			//};
-			//UboData uboData = {
-			//glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f),
-			//	{
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f),  glm::vec3(0.0f, -1.0f,  0.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-			//	}
-			//};
-			//
-			//Count<UniformBuffer> ubuffer = UniformBuffer::Create(&uboData, sizeof(UboData));
-			//auto cube = MeshWorkShop::GenerateCube();
-			//
-			//renderPass->SetInput("ProjView", ubuffer);
-			//renderPass->SetInput("u_EnvironmentMap", environmentMapImageCube);
-			//Renderer::SubmitCommand([&](CommandBuffer* buffer) {
-			//	Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(buffer);
-			//
-			//	Renderer::BeginRenderPass(renderCmd, renderPass);
-			//	cube->GetMeshSource()->GetVertexBuffer()->Bind(renderCmd);
-			//	cube->GetMeshSource()->GetIndexBuffer()->Bind(renderCmd);
-			//
-			//	for (const auto& subMesh : cube->GetMeshSource()->GetSubMeshes())
-			//	{
-			//		Renderer::DrawElementIndexed(renderCmd, subMesh.IndexCount, 1, subMesh.BaseIndex, subMesh.BaseVertex);
-			//	}
-			//
-			//	Renderer::EndRenderPass(renderPass);
-			//});
-			//irradianceMap.As<VulkanTextureCube>()->GenerateMips();
 		}
 		const uint32_t prefilterFilterRate = 1024;
 
@@ -651,14 +671,14 @@ namespace Proof {
 			prefilterTextureConfig.Wrap = TextureWrap::ClampEdge;
 			prefilterTextureConfig.GenerateMips = true;
 
-			prefilterMap = TextureCube::Create(prefilterTextureConfig,path);
+			prefilterMap = TextureCube::Create(prefilterTextureConfig, path);
 
 		}
-	
+
 		{
 			//https://github.com/Nadrin/PBR/blob/master/src/vulkan.cpp
 			/*
-			
+
 			Prefiltered maps have higher resolution than irradiance maps to capture finer details of specular reflections.
 			Common sizes for prefiltered environment maps range from 128x128 to 1024x1024 pixels per face for cubemaps.
 			Larger sizes can be used for better quality, but it comes at the cost of increased memory usage and longer precomputing times
@@ -684,7 +704,7 @@ namespace Proof {
 			ComputePipelineConfig computePipelineConfig;
 			computePipelineConfig.DebugName = "Prefilter Pipline";
 			computePipelineConfig.Shader = GetShader("EnvironmentPrefilter");
-			
+
 			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
 			ComputePassConfiguration computePassConfig;
 			computePassConfig.DebugName = "EnvironmentPrefilter Pass";
@@ -695,100 +715,107 @@ namespace Proof {
 			prefilterMaterial->Set("u_PrefilterMap", prefilterImageViews);
 			auto computePass = ComputePass::Create(computePassConfig);
 
-			Renderer::SubmitCommand([&](CommandBuffer* buffer) {
-				Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
+			Count<RenderCommandBuffer>renderCommandBuffer = Renderer::GetRendererCommandBuffer();
 
-				Renderer::BeginRenderMaterialComputePass(renderCommandBuffer, computePass);
-				const float deltaRoughness = 1.f / glm::max((float)(maxMip-1), 1.0f);
+			Renderer::BeginRenderMaterialComputePass(renderCommandBuffer, computePass);
+			const float deltaRoughness = 1.f / glm::max((float)(maxMip - 1), 1.0f);
 
-				for (uint32_t mip = 1, mipsize = prefilterFilterRate/2; mip < maxMip; mip++, mipsize /=2)
-				{
-					uint32_t numGroups = glm::max(mipsize / 32, 1u); // Ensure numGroups is at least 1
-					float roughness = deltaRoughness * mip;
-					roughness = glm::max(roughness, 0.05f);
-					prefilterMaterial->Set("Input.Level", mip-1);
-					prefilterMaterial->Set("Input.Roughness", roughness);
+			for (uint32_t mip = 1, mipsize = prefilterFilterRate / 2; mip < maxMip; mip++, mipsize /= 2)
+			{
+				uint32_t numGroups = glm::max(mipsize / 32, 1u); // Ensure numGroups is at least 1
+				float roughness = deltaRoughness * mip;
+				roughness = glm::max(roughness, 0.05f);
+				Renderer::Submit([prefilterMaterial,mip,roughness]
+					{
+						prefilterMaterial->Set("Input.Level", mip - 1);
+						prefilterMaterial->Set("Input.Roughness", roughness);
+					});
 
-					Renderer::ComputePassPushRenderMaterial(computePass, prefilterMaterial);
-					computePass->Dispatch(numGroups, numGroups, 6);
-				}
-				Renderer::EndComputePass(computePass);
-			});
+				Renderer::ComputePassPushRenderMaterial(computePass, prefilterMaterial);
+				computePass->Dispatch(numGroups, numGroups, 6);
+			}
+			Renderer::EndComputePass(computePass);
 			prefilterImageViews.clear();
 		}
 		return std::make_pair(irradianceMap, prefilterMap);
 	}
-	Count<Texture2D> Renderer::GenerateBRDFLut()
+	Count<Texture2D> Renderer::GetBRDFLut()
 	{
-		const uint32_t imageSize = 512;
-		TextureConfiguration textureConfig;
-		textureConfig.DebugName = "BrdfLut";
-		textureConfig.Height = imageSize;
-		textureConfig.Width = imageSize;
-		textureConfig.Storage = true;
-		textureConfig.Format = ImageFormat::RG16F;
-		
-		// widht* height * bytes per pixel
-		uint8_t* data = pnew uint8_t[imageSize * imageSize * Utils::BytesPerPixel(ImageFormat::RG16F)];
-		//memset(data, 0xFF000000, imageSize * imageSize * 8);
-		Count<Texture2D> brdfLut = Texture2D::Create(textureConfig,Buffer(data, imageSize * imageSize * Utils::BytesPerPixel(ImageFormat::RG16F)));
-		
-		ComputePipelineConfig computePipelineConfig;
-		computePipelineConfig.DebugName = "BRDFLUT Pipeline";
-		computePipelineConfig.Shader = GetShader("BRDFLUT");
-		
-		Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
-
-		
-		ComputePassConfiguration computePassConfig;
-		computePassConfig.DebugName = "BRDFLUT Pass";
-		computePassConfig.Pipeline = computePipeline;
-
-		auto computePass = ComputePass::Create(computePassConfig);
-		
-		computePass->SetInput("brfdLUT", brdfLut);
-
-		Renderer::SubmitCommand([&](CommandBuffer* buffer) {
-
-			Count<RenderCommandBuffer>renderCommandBuffer = RenderCommandBuffer::Create(buffer);
-			Renderer::BeginComputePass(renderCommandBuffer, computePass);
-			computePass->Dispatch(imageSize/16 , imageSize/16 , 1);
-			Renderer::EndComputePass(computePass);
-
-		});
-		pdelete[] data;
-		return brdfLut;
+		return s_BaseTextures->BRDFLutTexture;
 	}
 
 	CommandQueue& Renderer::GetRenderCommandQueue()
 	{
-		return *s_RenderCommandQueue[s_CommandQueueIndex];
+		return *s_CommandQueue[s_RenderCommandQueueSubmissionIndex];
+	}
+
+	CommandQueue& Renderer::GetRenderResourceReleaseQueue(uint32_t index)
+	{
+		return s_ResourceFreeQueue[index];
 	}
 
 	void Renderer::BeginFrame()
 	{
-		if (s_CommandQueueIndex == 1)
-			s_CommandQueueIndex = 0;
-		else
-			s_CommandQueueIndex = 1;
 
 		s_RendererAPI->BeginFrame();
+		//if (s_Data->CommandBufferRecording) 
+		//{
+		//	Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
+		//	Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
+		//	s_Data->CommandBufferRecording = false;
+		//}
+		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 	}
 
 	void Renderer::EndFrame()
 	{
-		//GetRenderCommandQueue().Execute();
+		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
+		Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
 		s_RendererAPI->EndFrame();
 	}
 
 	BaseTextures::BaseTextures() {
 		uint32_t whiteTexturedata = 0xffffffff;
-		WhiteTexture = Texture2D::Create(TextureConfiguration("White Texture"), Buffer(&whiteTexturedata, sizeof(uint32_t)));
+		TextureConfiguration textureConfig("White Texture");
+		textureConfig.Storage = true;
+		WhiteTexture = Texture2D::Create(textureConfig, Buffer(&whiteTexturedata, sizeof(uint32_t)));
 
 
 		uint32_t blackTexturedata = 0xFF000000;
 		BlackTexture = Texture2D::Create(TextureConfiguration("Black Texture"), Buffer(&blackTexturedata, sizeof(uint32_t)));
+		//brdflut
+		{
+			const uint32_t imageSize = 512;
+			TextureConfiguration textureConfig;
+			textureConfig.DebugName = "BrdfLut";
+			textureConfig.Height = imageSize;
+			textureConfig.Width = imageSize;
+			textureConfig.Storage = true;
+			textureConfig.Format = ImageFormat::RG16F;
 
+			BRDFLutTexture = Texture2D::Create(textureConfig);
+
+			ComputePipelineConfig computePipelineConfig;
+			computePipelineConfig.DebugName = "BRDFLUT Pipeline";
+			computePipelineConfig.Shader = Renderer::GetShader("BRDFLUT");
+
+			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
+
+
+			ComputePassConfiguration computePassConfig;
+			computePassConfig.DebugName = "BRDFLUT Pass";
+			computePassConfig.Pipeline = computePipeline;
+
+			static auto computePass = ComputePass::Create(computePassConfig);
+
+			computePass->SetInput("brfdLUT", BRDFLutTexture);
+
+
+			Count<RenderCommandBuffer>renderCommandBuffer = s_Data->RenderCommandBuffer;
+			Renderer::BeginComputePass(renderCommandBuffer, computePass);
+			computePass->Dispatch(imageSize / 16, imageSize / 16, 1);
+			Renderer::EndComputePass(computePass);
+		}
 
 		TextureConfiguration cubeTextureConfig;
 		cubeTextureConfig.DebugName = "White Texture";
@@ -803,6 +830,10 @@ namespace Proof {
 
 		cubeTextureConfig.DebugName = "Black Texture";
 		BlackTextureCube = TextureCube::Create(Buffer(&blackTexturedata, sizeof(uint32_t)).Data, cubeTextureConfig);
+	}
+	const RendererAPI* Renderer::GetRenderAPI()
+	{
+		return s_RendererAPI;
 	}
 
 }

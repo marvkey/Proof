@@ -1,7 +1,6 @@
 #ifndef LIGHT_CULLING_FUNCTIONS
 #define LIGHT_CULLING_FUNCTIONS
-#define TILE_SIZE 16 
-#define MAX_LIGHT_COUNT 1024
+
 //https://www.3dgep.com/forward-plus/#Forward
 
 struct Plane
@@ -86,8 +85,6 @@ struct Cone
     float  Height;   // Height of the cone.
     vec3 Direction;   // Direction of the cone.
     float  Radius;   // bottom radius of the cone.
-
-    
 };
 bool PointInsidePlane( vec3 p, Plane plane )
 {

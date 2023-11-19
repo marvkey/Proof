@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "Proof/Core/Core.h"
 #include "VulkanRenderPass.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 #include "VulkanFrameBuffer.h"
 #include "VulkanFrameBuffer.h"
 #include "VulkanUtils/VulkanConvert.h"
@@ -396,52 +396,56 @@ namespace Proof
     }
     void VulkanRenderPass::BeginRenderPassBase(Count<class RenderCommandBuffer>command, Viewport vieport, ViewportScissor scisscor)
     {
-        PF_PROFILE_FUNC();
-        PF_PROFILE_TAG("", m_Config.DebugName.c_str());
-        PF_CORE_ASSERT(m_RenderPassEnabled == false, fmt::format("cannot start {} render pass when previous render pass is not closed", m_Config.DebugName).c_str());
-        m_CommandBuffer = command;
-        m_RenderPassEnabled = true;
-        const FrameBufferConfig config = GetTargetFrameBuffer()->GetConfig();
-        VkClearValue colorValue{ config.ClearColor.X, config.ClearColor.Y, config.ClearColor.Z, config.ClearColor.W };
-        std::vector< VkClearValue> clearValues;
-        VkViewport vk_viewport;
-        VkRect2D vk_scissor;
-        vk_viewport.x = vieport.X;
-        vk_viewport.y = vieport.Y;
-        vk_viewport.width = (float)vieport.Width;
-        vk_viewport.height = (float)vieport.Height;
-        vk_viewport.minDepth = vieport.MinDepth;
-        vk_viewport.maxDepth = vieport.MaxDepth;
-
-        vk_scissor.offset = { (int)scisscor.Offset.X, (int)scisscor.Offset.Y };
-        vk_scissor.extent = { (uint32_t)scisscor.Extent.X,(uint32_t)scisscor.Extent.Y };
-        // setting frameBuffer clear values
+        Count<VulkanRenderPass> instance = this;
+        Renderer::Submit([instance, command, vieport, scisscor]()
         {
-            clearValues.resize(config.Attachments.Attachments.size());
-            std::fill(clearValues.begin(), clearValues.end(), VkClearValue{ colorValue.color });//https://stackoverflow.com/questions/8848575/fastest-way-to-reset-every-value-of-stdvectorint-to-0
-            // depth image always he lst one bind
-            if (GetTargetFrameBuffer()->HasDepthImage())
+            PF_PROFILE_FUNC(fmt::format("VulkanRenderPass::BeginRenderPassBase ({})", instance->GetConfig().DebugName).c_str());
+            PF_CORE_ASSERT(instance->m_RenderPassEnabled == false, fmt::format("cannot start {} render pass when previous render pass is not closed", instance->m_Config.DebugName).c_str());
+            instance->m_CommandBuffer = command;
+            instance->m_RenderPassEnabled = true;
+            const FrameBufferConfig config = instance->GetTargetFrameBuffer()->GetConfig();
+            VkClearValue colorValue{ config.ClearColor.X, config.ClearColor.Y, config.ClearColor.Z, config.ClearColor.W };
+            std::vector< VkClearValue> clearValues;
+            VkViewport vk_viewport;
+            VkRect2D vk_scissor;
+            vk_viewport.x = vieport.X;
+            vk_viewport.y = vieport.Y;
+            vk_viewport.width = (float)vieport.Width;
+            vk_viewport.height = (float)vieport.Height;
+            vk_viewport.minDepth = vieport.MinDepth;
+            vk_viewport.maxDepth = vieport.MaxDepth;
+
+            vk_scissor.offset = { (int)scisscor.Offset.X, (int)scisscor.Offset.Y };
+            vk_scissor.extent = { (uint32_t)scisscor.Extent.X,(uint32_t)scisscor.Extent.Y };
+            // setting frameBuffer clear values
             {
-                auto& val = clearValues.back();
-                val = {};
-                val.depthStencil = { config.DepthClearValue,config.StencilClearValue };
+                clearValues.resize(config.Attachments.Attachments.size());
+                std::fill(clearValues.begin(), clearValues.end(), VkClearValue{ colorValue.color });//https://stackoverflow.com/questions/8848575/fastest-way-to-reset-every-value-of-stdvectorint-to-0
+                // depth image always he lst one bind
+                if (instance->GetTargetFrameBuffer()->HasDepthImage())
+                {
+                    auto& val = clearValues.back();
+                    val = {};
+                    val.depthStencil = { config.DepthClearValue,config.StencilClearValue };
+                }
             }
-        }
-        // starting the render pass
-        {
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = GetRenderPass();
-            // teh frameBuffer we are writing
-            renderPassInfo.framebuffer = GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetFrameBuffer();
+            // starting the render pass
+            {
+                VkRenderPassBeginInfo renderPassInfo{};
+                renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+                renderPassInfo.renderPass = instance->GetRenderPass();
+                // teh frameBuffer we are writing
+                renderPassInfo.framebuffer = instance->GetTargetFrameBuffer().As<VulkanFrameBuffer>()->GetFrameBuffer();
 
-            // the area shader loads and 
-            // for high displays swap chain extent could be higher than windows extent
-            renderPassInfo.renderArea = vk_scissor;
-            renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
-            renderPassInfo.pClearValues = clearValues.data();
-            vkCmdBeginRenderPass(command.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        }
+                // the area shader loads and 
+                // for high displays swap chain extent could be higher than windows extent
+                renderPassInfo.renderArea = vk_scissor;
+                renderPassInfo.clearValueCount = (uint32_t)clearValues.size();
+                renderPassInfo.pClearValues = clearValues.data();
+                vkCmdBeginRenderPass(command.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            }
+        });
+        
     }
     Count<Image> VulkanRenderPass::GetOutput(uint32_t imageIndex)
     {
@@ -450,34 +454,40 @@ namespace Proof
     void VulkanRenderPass::BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, Viewport vieport, ViewportScissor scisscor, bool explicitClear)
     {
         BeginRenderPassBase(command, vieport, scisscor);
-        PF_CORE_ASSERT(m_MaterialRenderPass == false, "cannot start material render pass if previous material render pass not disabled");
 
-        m_MaterialRenderPass = true;
-        const auto vulkanPipeline = GetPipeline().As<VulkanGraphicsPipeline>();
-        vulkanPipeline->Bind( m_CommandBuffer);
-        //Count<VulkanRenderPass> pass = this;
-        m_DescritptorSetManager->Bind();
-
-        auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
-        for (auto& [set, setInfo] : frameSet)
+        Count<VulkanRenderPass> instance = this;
+        Renderer::Submit([instance, command, vieport, scisscor,explicitClear]()
         {
-            // set0 is for te material to bind to 
-            // basically we have to define a set layout for each descriptor set 0-3
-            // but some set may not have data and we do note creata a descriptor set for it
-            // so we basically just seeing if thats teh case we dont bind it
-            if (set == 0 || setInfo.Set == nullptr)continue;
-            vkCmdBindDescriptorSets(
-                m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
-                (int)set,
-                1,
-                &setInfo.Set,
-                0,
-                nullptr);
-        }
-        SetDynamicStates(vieport, scisscor, explicitClear);
-        
+            const char* profileName = fmt::format("VulkanRenderPass::BeginMaterialRenderPass ({})", instance->GetConfig().DebugName).c_str();
+            PF_PROFILE_FUNC(profileName);
+            PF_CORE_ASSERT(instance->m_MaterialRenderPass == false, "cannot start material render pass if previous material render pass not disabled");
+
+            instance->m_MaterialRenderPass = true;
+            const auto vulkanPipeline = instance->GetPipeline().As<VulkanGraphicsPipeline>();
+            vulkanPipeline->RT_Bind(instance->m_CommandBuffer);
+            //Count<VulkanRenderPass> pass = this;
+            instance->m_DescritptorSetManager->RT_Bind();
+
+            auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
+            for (auto& [set, setInfo] : frameSet)
+            {
+                // set0 is for te material to bind to 
+                // basically we have to define a set layout for each descriptor set 0-3
+                // but some set may not have data and we do note creata a descriptor set for it
+                // so we basically just seeing if thats teh case we dont bind it
+                if (set == 0 || setInfo.Set == nullptr)continue;
+                vkCmdBindDescriptorSets(
+                    instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    instance->GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
+                    (int)set,
+                    1,
+                    &setInfo.Set,
+                    0,
+                    nullptr);
+            }
+            instance->SetDynamicStates(vieport, scisscor, explicitClear);
+        });
     }
     void VulkanRenderPass::BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear )
     {
@@ -500,29 +510,35 @@ namespace Proof
     {
         BeginRenderPassBase(command, vieport, scisscor);
 
-        auto vulkanPipeline = GetPipeline().As<VulkanGraphicsPipeline>();
-        vulkanPipeline->Bind(m_CommandBuffer);
-        m_DescritptorSetManager->Bind();
-
-        auto& frameSet = m_DescritptorSetManager->GetDescriptorSets()[Renderer::GetCurrentFrame().FrameinFlight];
-        for (auto& [set, setInfo] : frameSet)
+        Count<VulkanRenderPass> instance = this;
+        Renderer::Submit([instance, command, vieport, scisscor, explicitClear]()
         {
-            // set0 is for te material to bind to 
-            // basically we have to define a set layout for each descriptor set 0-3
-            // but some set may not have data and we do note creata a descriptor set for it
-            // so we basically just seeing if thats teh case we dont bind it
-            if (setInfo.Set == nullptr)continue;
-            vkCmdBindDescriptorSets(
-                m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
-                (int)set,
-                1,
-                &setInfo.Set,
-                0,
-                nullptr);
-        }
-        SetDynamicStates(vieport, scisscor, explicitClear);
+            PF_PROFILE_SCOPE_DYNAMIC(fmt::format("VulkanRenderPass::BeginRenderPass ({})", instance->GetConfig().DebugName).c_str());
+            auto vulkanPipeline = instance->GetPipeline().As<VulkanGraphicsPipeline>();
+            vulkanPipeline->RT_Bind(instance->m_CommandBuffer);
+            instance->m_DescritptorSetManager->RT_Bind();
+
+            auto& frameSet = instance->m_DescritptorSetManager->GetDescriptorSets()[Renderer::RT_GetCurrentFrameInFlight()];
+            for (auto& [set, setInfo] : frameSet)
+            {
+                // set0 is for te material to bind to 
+                // basically we have to define a set layout for each descriptor set 0-3
+                // but some set may not have data and we do note creata a descriptor set for it
+                // so we basically just seeing if thats teh case we dont bind it
+                if (setInfo.Set == nullptr)continue;
+                vkCmdBindDescriptorSets(
+                    instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    instance->GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
+                    (int)set,
+                    1,
+                    &setInfo.Set,
+                    0,
+                    nullptr);
+            }
+            instance->SetDynamicStates(vieport, scisscor, explicitClear);
+        });
+
     }
     void VulkanRenderPass::BeginRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear)
     {   
@@ -544,22 +560,28 @@ namespace Proof
     }
     void VulkanRenderPass::RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial)
     {
-        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot Push material fi render pass not enabled");
-        PF_CORE_ASSERT(m_MaterialRenderPass == true, "cannot Push if not a material Render Pass");
+        Count<VulkanRenderPass> instance = this;
+        Renderer::Submit([instance, renderMaterial]()
+        {
+            PF_CORE_ASSERT(instance->m_RenderPassEnabled == true, "cannot Push material fi render pass not enabled");
+            PF_CORE_ASSERT(instance->m_MaterialRenderPass == true, "cannot Push if not a material Render Pass");
 
-        Count< VulkanRenderPass> pass = this;
-        renderMaterial.As<VulkanRenderMaterial>()->Bind(m_CommandBuffer.As<VulkanRenderCommandBuffer>(), pass);
-
+            renderMaterial.As<VulkanRenderMaterial>()->RT_Bind(instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>(), instance);
+        });
     }
     
-    void VulkanRenderPass::EndRenderPass() {
-        PF_PROFILE_FUNC();
-        PF_PROFILE_TAG("", m_Config.DebugName.c_str());
-        PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
-        vkCmdEndRenderPass(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight));
-        m_CommandBuffer = nullptr;
-        m_RenderPassEnabled = false;
-        m_MaterialRenderPass = false;
+    void VulkanRenderPass::EndRenderPass() 
+    {
+        Count<VulkanRenderPass> instance = this;
+        Renderer::Submit([instance]()
+        {
+            PF_PROFILE_FUNC("VulkanRenderPass::EndRenderPass");
+            PF_CORE_ASSERT(instance->m_RenderPassEnabled == true, "cannot End render pass when render pass is not started");
+            vkCmdEndRenderPass(instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer());
+            instance->m_CommandBuffer = nullptr;
+            instance->m_RenderPassEnabled = false;
+            instance->m_MaterialRenderPass = false;
+        });
     }
     void VulkanRenderPass::SetDynamicStates(Viewport vieport, ViewportScissor scisscor, bool explicitClear)
     {
@@ -626,7 +648,7 @@ namespace Proof
                 iterate++;
             }
            
-            vkCmdClearAttachments(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight),
+            vkCmdClearAttachments(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
                 clears.size(),
                 clears.data(),
                 reactClear.size(),
@@ -634,7 +656,7 @@ namespace Proof
         }
 
 
-        VkCommandBuffer cmdBuffer = m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
+        VkCommandBuffer cmdBuffer = m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
         vkCmdSetViewport(cmdBuffer, 0, 1, &vk_viewport);
         vkCmdSetScissor(cmdBuffer, 0, 1, &vk_scissor);
 
@@ -708,8 +730,6 @@ namespace Proof
     {
         m_DescritptorSetManager->SetInput(name, images);
     }
-   
-   
     void VulkanRenderPass::SetInput(std::string_view name, Count<class UniformBuffer> buffer)
     {
         m_DescritptorSetManager->SetInput(name, buffer);
@@ -738,16 +758,34 @@ namespace Proof
     {
         m_DescritptorSetManager->SetGoalballInputs(globalInputs);
     }
-    void VulkanRenderPass::PushData(std::string_view name, const void* data)
+    void VulkanRenderPass::RT_PushData(std::string_view name, const void* data)
     {
         PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot push render pass if not render pass started");
-       // PF_CORE_ASSERT(m_MaterialRenderPass == false, "cannot push Data render pass if material render pass");
+     // PF_CORE_ASSERT(m_MaterialRenderPass == false, "cannot push Data render pass if material render pass");
 
         auto vkShader = GetPipeline()->GetShader().As<VulkanShader>();
         std::string str = std::string(name);
         PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
         const auto& pushRange = vkShader->GetPushConstants().at(str);
-        vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight), GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
+        vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
             pushRange.stageFlags, pushRange.offset, pushRange.size, data);
+    }
+    void VulkanRenderPass::PushData(std::string_view name, const void* data)
+    {
+        std::string str = std::string(name);
+        auto vkShader = m_Config.Pipeline->GetShader().As<VulkanShader>();
+        PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
+        const auto& pushRange = vkShader->GetPushConstants().at(str);
+
+        Buffer buffer;
+        buffer.Allocate(pushRange.size);
+        buffer.Copy(data, buffer.Size);
+
+        Count<VulkanRenderPass> instance = this;
+        Renderer::Submit([instance, str, buffer]() mutable
+        {
+            instance->RT_PushData(str, buffer.Data);
+            buffer.Release();
+        });
     }
 }

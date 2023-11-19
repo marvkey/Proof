@@ -32,6 +32,28 @@ layout (location = 0) in OutputBlock Input;
 
 //uniforms
 layout (binding = 5) uniform sampler2D u_WorldTexture;
+layout (binding = 6) uniform sampler2D u_BloomTexture;
+layout (binding =7) uniform sampler2D u_DOFTexture;
+vec3 UpsampleTent9(sampler2D tex, float lod, vec2 uv, vec2 texelSize, float radius)
+{
+	vec4 offset = texelSize.xyxy * vec4(1.0f, 1.0f, -1.0f, 0.0f) * radius;
+
+	// Center
+	vec3 result = textureLod(tex, uv, lod).rgb * 4.0f;
+
+	result += textureLod(tex, uv - offset.xy, lod).rgb;
+	result += textureLod(tex, uv - offset.wy, lod).rgb * 2.0;
+	result += textureLod(tex, uv - offset.zy, lod).rgb;
+
+	result += textureLod(tex, uv + offset.zw, lod).rgb * 2.0;
+	result += textureLod(tex, uv + offset.xw, lod).rgb * 2.0;
+
+	result += textureLod(tex, uv + offset.zy, lod).rgb;
+	result += textureLod(tex, uv + offset.wy, lod).rgb * 2.0;
+	result += textureLod(tex, uv + offset.xy, lod).rgb;
+
+	return result * (1.0f / 16.0f);
+}
 
 // Based on http://www.oscars.org/science-technology/sci-tech-projects/aces
 vec3 ACESTonemap(vec3 color)
@@ -56,11 +78,27 @@ vec3 GammaCorrect(vec3 color, float gamma)
 {
 	return pow(color, vec3(1.0f / gamma));
 }
+
+layout(push_constant) uniform Uniforms
+{
+	float BloomIntensity;
+} u_Uniforms;
+
 void main()
 {
 	const float gamma = 2.2;
 	vec3 color = texture(u_WorldTexture, Input.TexCoord).rgb;
-	
+	float sampleScale = 0.5;
+
+	ivec2 texSize = textureSize(u_BloomTexture, 0);
+	vec2 fTexSize = vec2(float(texSize.x), float(texSize.y));
+	vec3 bloom = UpsampleTent9(u_BloomTexture, 0, Input.TexCoord, 1.0f / fTexSize, sampleScale) * u_Uniforms.BloomIntensity;
+
+	vec3 dofTexture = texture(u_DOFTexture, Input.TexCoord).rgb;
+
+	color += dofTexture ;
+	color += bloom;
+	//color += bloom * dirtTexture;
 	color = ACESTonemap(color);
 	color = GammaCorrect(color.rgb, gamma);
 

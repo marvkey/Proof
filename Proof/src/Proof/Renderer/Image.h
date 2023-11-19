@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include <glm/glm.hpp>
 #include "RendererResouce.h"
 #include "Proof/Math/Vector.h"
 #include "Proof/Core/Assert.h"
@@ -212,6 +213,7 @@ namespace Proof
 		static Count<ImageView>Create(const ImageViewConfiguration& specification);
 		virtual const ImageViewConfiguration& GetSpecification()const = 0;
 		virtual Count<Image2D> GetImage()const = 0;
+		virtual glm::uvec2 GetMipSize() = 0;
 		RENDER_VIEW_RESOURCE_CLASS_TYPE(ImageView);
 
 	};

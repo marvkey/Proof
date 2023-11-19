@@ -66,6 +66,7 @@ namespace Proof {
 		out << YAML::Key << "AlbedoColour" << YAML::Value << material->GetAlbedoColor();
 		out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
 		out << YAML::Key << "Metallness" << YAML::Value << material->GetMetalness();
+		out << YAML::Key << "Emission" << YAML::Value << material->GetEmission();
 		out << YAML::Key << "Tiling" << YAML::Value << material->GetTiling();
 		out << YAML::Key << "Offset" << YAML::Value << material->GetOffset();
 
@@ -105,6 +106,7 @@ namespace Proof {
 
 		material->GetMetalness() = data["Metallness"].as<float>();
 		material->GetRoughness() = data["Roughness"].as<float>();
+		material->GetEmission() = data["Emission"].as<float>(material->GetEmission());
 
 		if (data["Tiling"])
 		{

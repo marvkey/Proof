@@ -92,6 +92,7 @@ namespace Proof {
 
 		static Count<Texture2D> Create(const TextureConfiguration& config);
 		virtual Count<Image2D> GetImage() = 0;
+		virtual Count<ImageView> GetImageMip(uint32_t mip, uint32_t layer=0) = 0;
 
 	};
 

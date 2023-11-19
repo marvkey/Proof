@@ -9,6 +9,8 @@
 #include "Proof/Asset/AssetManager.h"
 
 #include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UiUtilities.h"
+
 namespace Proof
 {
 	GuiEditorPanel::GuiEditorPanel()

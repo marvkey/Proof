@@ -1,36 +1,48 @@
 #include "Proofprch.h"
 #include "VulkanComputePipeline.h"
 #include "VulkanShader.h"
-#include "VulkanRenderer/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 #include "VulkanGraphicsContext.h"
+#include "VulkanDevice.h"
 
 namespace Proof {
-	VulkanComputePipeline::VulkanComputePipeline(const ComputePipelineConfig& config):m_Config(config)
+	VulkanComputePipeline::VulkanComputePipeline(const ComputePipelineConfig& config, bool isRenderThread) :m_Config(config)
 	{
+		if (isRenderThread)
+		{
+			Build();
+		}
+		else
+		{
+			Count<VulkanComputePipeline> instance = this;
+			Renderer::Submit([instance]
+				{
+					instance->Build();
+				});
+		}
 
-		Build();
-		
+
 		// not using count because we dont want this fucntion keeping a reference count therefore not letting this object being able to be deleted
 		WeakCount<VulkanComputePipeline> instanceWeakCount = this;
-		m_ShaderReloadCallbackIndex = GetShader()->AddShaderReloadCallback([instanceWeakCount] 
-		{
-			if (!instanceWeakCount.IsValid())
-				return;
-			auto computePipeline = instanceWeakCount.Lock();
+		m_ShaderReloadCallbackIndex = GetShader()->AddShaderReloadCallback([instanceWeakCount]
+			{
+				if (!instanceWeakCount.IsValid())
+					return;
+				auto computePipeline = instanceWeakCount.Lock();
 
-			computePipeline->Release();
-			computePipeline->Build();
-		});
+				computePipeline->Release();
+				computePipeline->Build();
+			});
 	}
 	VulkanComputePipeline::~VulkanComputePipeline()
 	{
 		Release();
 		GetShader()->RemoveShaderReloadCallback(m_ShaderReloadCallbackIndex);
 	}
-	
+
 	void VulkanComputePipeline::Build()
 	{
-		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 
 		BuildPipeline();
 		auto vulkanShader = m_Config.Shader.As<VulkanShader>();
@@ -40,7 +52,7 @@ namespace Proof {
 		pipelineCacheCreateinfo.flags = 0;
 		pipelineCacheCreateinfo.pInitialData = nullptr;
 		pipelineCacheCreateinfo.initialDataSize = 0;
-		VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateinfo, nullptr, &m_PipelineCache));
+		//VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateinfo, nullptr, &m_PipelineCache));
 
 		VkComputePipelineCreateInfo pipelineCreateInfo = {};
 		pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -48,12 +60,13 @@ namespace Proof {
 		pipelineCreateInfo.layout = m_PipeLineLayout;
 		pipelineCreateInfo.pNext = nullptr;
 
-		VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, & pipelineCreateInfo, nullptr, &m_ComputePipeline));
+		VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, &pipelineCreateInfo, nullptr, &m_ComputePipeline));
+		VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_PIPELINE, fmt::format("{} ComputePipeline", m_Config.DebugName), m_ComputePipeline);
 	}
 	void VulkanComputePipeline::BuildPipeline()
 	{
 
-		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice();
+		auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 
 		auto shader = m_Config.Shader.As<VulkanShader>();
 		std::vector< VkDescriptorSetLayout> descriptorLayout;
@@ -90,17 +103,22 @@ namespace Proof {
 			pipelineLayoutInfo.pPushConstantRanges = nullptr;
 		}
 		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipeLineLayout));
+		VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_PIPELINE_LAYOUT, fmt::format("{} ComputePipelineLayout", m_Config.DebugName), m_PipeLineLayout);
+
 	}
 	void VulkanComputePipeline::Release()
 	{
 		if (m_ComputePipeline == nullptr)
 			return;
 
-		Renderer::SubmitDatafree([pipline = m_ComputePipeline, piplinelayout = m_PipeLineLayout,piplineCache =m_PipelineCache]() {
-			vkDestroyPipeline(VulkanRenderer::GetGraphicsContext()->GetDevice(), pipline, nullptr);
-			vkDestroyPipelineLayout(VulkanRenderer::GetGraphicsContext()->GetDevice(), piplinelayout, nullptr);
-			vkDestroyPipelineCache(VulkanRenderer::GetGraphicsContext()->GetDevice(), piplineCache, nullptr);
-		});
+		Renderer::SubmitResourceFree([pipline = m_ComputePipeline, piplinelayout = m_PipeLineLayout, piplineCache = m_PipelineCache]()
+			{
+				auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+
+				vkDestroyPipeline(device, pipline, nullptr);
+				vkDestroyPipelineLayout(device, piplinelayout, nullptr);
+				vkDestroyPipelineCache(device, piplineCache, nullptr);
+			});
 		m_ComputePipeline = nullptr;
 		m_PipeLineLayout = nullptr;
 		m_PipelineCache = nullptr;

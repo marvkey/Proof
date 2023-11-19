@@ -46,6 +46,12 @@ namespace Proof
 	{
 		RenderPassResourceType Type = RenderPassResourceType::None;
 		std::vector<Count<RefCounted>> Input;
+
+		RenderPassInput(RenderPassResourceType Type, Count<RefCounted> resource):
+			Type(RenderPassResourceType::UniformBuffer), Input(std::vector<Count<RefCounted>>(1, resource))
+		{
+
+		}
 		RenderPassInput() = default;
 		RenderPassInput(Count<class UniformBuffer> resource):
 			Type(RenderPassResourceType::UniformBuffer), Input(std::vector<Count<RefCounted>>(1, resource))
@@ -155,19 +161,18 @@ namespace Proof
 		uint32_t LastSet = 3; //(set0,set1,set2,set3)  those are 3 sets
 	};
 
-
 	class VulkanDescriptorManager : public RefCounted
 	{
 	public:
-		VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config);
+		VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config,bool isRenderTrhead = false);
 		~VulkanDescriptorManager();
 		void SetInput(std::string_view name, Count<class UniformBuffer> buffer);
 		void SetInput(std::string_view name, Count<class StorageBuffer> buffer);
 		void SetInput(std::string_view name, Count<class UniformBufferSet> buffer);
 		void SetInput(std::string_view name, Count<class StorageBufferSet> buffer);
-		void SetInput(std::string_view name, Count<class TextureCube> buffer);
+		void SetInput(std::string_view name, Count<class TextureCube> buffer,bool isRenderThread = false);
 		void SetInput(std::string_view name, const std::vector< Count<class Texture2D>>& images);
-		void SetInput(std::string_view name, Count<class Texture2D> iamge);
+		void SetInput(std::string_view name, Count<class Texture2D> iamge, bool isRenderThread = false);
 
 		void SetInput(std::string_view name, Count<class ImageView> imageView);
 		void SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews);
@@ -179,42 +184,41 @@ namespace Proof
 		void SetInput(std::string_view name, const std::vector< Count<class Image>>& imageViews);
 
 		void SetGoalballInputs(Count< GlobalBufferSet> uniformData);
+		void RT_Build();
 		void Build();
 		// does not clear the m_Inputs
 		void Release();
 
-		void Bind();
+		void RT_Bind();
 		//void SetInput(std::string_view name, Count<class > buffer);
 		struct DescriptorResource {
 			VkDescriptorSet Set  = nullptr;
-			VkDescriptorSetLayout Layout = nullptr;
 		};
 		const std::vector<std::map<uint32_t, DescriptorResource>>& GetDescriptorSets()const { return m_DescriptorSets; }
 		const std::map<uint32_t, std::map<uint32_t, RenderPassInput>>& GetInputs() { return m_Inputs; }
 		//bool IsBuild() { return m_Build; }
+
+	private:
+		void SetGlobalInput(Count<GlobalBufferSet> set);
+		void AllocateDescriptorSet(uint32_t frame,uint32_t set);
+		void InvalidateDescriptors();
 	private:
 		VulkanDescriptorManagerConfig m_Config;
-		// frames in flight, descriptor set(set number), 
-		std::vector<std::map<uint32_t, std::map<uint32_t, VkWriteDescriptorSet>>> m_WriteDescriptorMap;
-		//std::vector<std::map<uint32_t, std::vector<VkDescriptorSet>>>m_DescriptorSets;
-
-		uint32_t m_ShaderReloadCallbackIndex;
-
+		std::vector<Count< GlobalBufferSet>> m_GlobalSets;
+		// frames in flight, descriptor set(bindings ), 
+		std::vector<std::map<uint32_t, std::vector<VkWriteDescriptorSet>>> m_WriteDescriptorMap;
 		std::vector<std::map<uint32_t, DescriptorResource>>m_DescriptorSets;
-
+		uint32_t m_ShaderReloadCallbackIndex;
 		//set,binding,
 		std::map<uint32_t, std::map<uint32_t, RenderPassInput>> m_Inputs ;
+		std::vector<bool> m_DirtyDescriptorSets;
 		VkDescriptorPool m_DescriptorPool;
 
-		bool m_Build = false;
-		//so we dont have to have every input in shader be bind if not needed 
-		//(set, number of valid inputs)
-		std::map<uint32_t,uint32_t> m_SizeInputsData ;
-		// hasnt bind to a frame yet
-		uint32_t m_LastFrameBinned = -1;
-
-		std::vector<Count< GlobalBufferSet>> m_GlobalSets;
-
-		void SetGlobalInput(Count<GlobalBufferSet> set);
+		uint64_t m_FrameCounter = 0;
+		uint64_t m_LastFrameGrabPool = 0;
+		std::vector< VkDescriptorPool> m_FreePools;
+		std::map<uint32_t,std::vector< VkDescriptorPool>> m_UsedPools;
+		VkDescriptorPool GrabPool();
+		//std::map<uint32_t, std::map<uint32_t, RenderPassInput>> m_PendingInputs;
 	};
 }

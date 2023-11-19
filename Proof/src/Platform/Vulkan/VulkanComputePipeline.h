@@ -7,7 +7,7 @@ namespace Proof
 	class VulkanComputePipeline : public ComputePipeline
 	{
 	public:
-		VulkanComputePipeline(const ComputePipelineConfig& config);
+		VulkanComputePipeline(const ComputePipelineConfig& config,bool isRenderThread = false);
 		~VulkanComputePipeline();
 
 		virtual Count<class Shader> GetShader()const {return m_Config.Shader;}

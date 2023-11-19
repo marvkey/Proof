@@ -77,8 +77,11 @@ namespace Proof
 		uint32_t GetSamplerHash() { return m_SamplerHash; }
 		//virtual RawImage GetRawImage() { return m_Info.ImageView; };
 		void Build();
+		void RT_Build();
 
-		void CopyToHostBuffer(Buffer& buffer);
+		void CopyFromHostBuffer(Buffer& buffer);
+
+		void CallOnResizeFunctions();
 	private:
 		std::vector<Image2DResizeCallback > m_ResizeCallbacks;
 
@@ -107,9 +110,12 @@ namespace Proof
 		virtual float GetAspectRatio() { return GetImage()->GetAspectRatio(); }
 		virtual uint32_t GetWidth() {return GetImage()->GetWidth();};
 		virtual uint32_t GetHeight() { return GetImage()->GetHeight(); };
+		virtual glm::uvec2 GetMipSize();
+
 	private:
 		VulkanImageInfo m_Info;
 		void Build();
+		void RT_Build();
 		void Release();
 		ImageViewConfiguration m_Specification;
 		VkImageView m_ImageView;

@@ -4,7 +4,7 @@
 
 const float PI = 3.141592;
 
-layout(binding = 0, rgba32f) restrict writeonly uniform imageCube o_CubeMap;
+layout(binding = 0, rgba16f) restrict writeonly uniform imageCube o_CubeMap;
 
 layout (push_constant) uniform Uniforms
 {
@@ -14,7 +14,9 @@ layout (push_constant) uniform Uniforms
 vec3 GetCubeMapTexCoord()
 {
     vec2 st = gl_GlobalInvocationID.xy / vec2(imageSize(o_CubeMap));
+    //vec2 st = gl_GlobalInvocationID.xy / vec2(imageSize(o_CubeMap))/2;
     vec2 uv = 2.0 * vec2(st.x, 1.0 - st.y) - vec2(1.0);
+    //vec2 uv = 2.0 * vec2(st.x, 1.0 - st.y) - vec2(1.0);
 
     vec3 ret;
     if (gl_GlobalInvocationID.z == 0)      ret = vec3(  1.0, uv.y, -uv.x);

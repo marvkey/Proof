@@ -1,7 +1,8 @@
 
 #ifndef LIGHT_FUNCTIONS
 #define LIGHT_FUNCTIONS
-
+#define TILE_SIZE 16 
+#define MAX_NUM_LIGHTS_PER_TILE 1024
 layout(std140, set = 2, binding = 2) uniform SkyBoxData
 {
     vec3 TintColor;
@@ -57,6 +58,7 @@ struct SpotLight
 	bool SoftShadows;
 	float ShadowStrength;
 	float ShadowSoftness;
+
 };
 
 layout(std140, set = 2, binding = 5) buffer SpotLightBuffer
@@ -71,20 +73,22 @@ layout(std140, set = 2, binding = 6) uniform LightInformationBuffer
 	uint DirectionalLightCount;
 	uint PointLightCount;
 	uint SpotLightCount;
+	uvec3 LightCullingWorkGroups; 
 } u_LightData;
 
 
-layout(set = 2, binding = 7) buffer PointLightIndexListBuffer
+layout(set = 2, binding = 7) buffer VisiblePointLightIndicesBuffer
 {
-    uint s_PointLightIndexList[];
-};
+    int Indices[];
+}s_PointLightIndexList;
 
-layout(set = 2, binding = 8) buffer SpotLightIndexListBuffer
+layout(set = 2, binding = 8) buffer VisibleSpotLightIndicesBuffer
 {
-    uint s_SpotLightIndexList[];
-};
+    int Indices[];
+}s_SpotLightIndexList;
 
-layout(set = 2, binding = 9,rg32ui) uniform uimage2D u_PointLightGrid;
-layout(set = 2, binding = 10,rg32ui) uniform uimage2D u_SpotLightGrid;
+//layout(set = 2,binding = 9) buffer PointLightGrid {
+//	uint s_PointLightGrid[];
+//};
 
 #endif //LIGHT_FUNCTIONS

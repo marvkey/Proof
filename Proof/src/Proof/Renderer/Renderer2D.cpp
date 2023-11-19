@@ -165,7 +165,7 @@ namespace Proof {
 		//CameraData camera = CameraData{ glm::mat4(1),glm::mat4(1)};
 
 		Buffer buffer(&camera, sizeof(CameraData));
-		m_UBCamera->SetData(Renderer::GetCurrentFrame().FrameinFlight, buffer);
+		m_UBCamera->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
 		m_Stats = {};
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
 
