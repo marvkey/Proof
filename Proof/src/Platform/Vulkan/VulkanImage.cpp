@@ -131,6 +131,7 @@ namespace Proof {
 
 		Build();
 		Count<VulkanImage2D> instance = this;
+#if 0 //causes some pixelatiaon when copying if resizing a lot oftimes
 		Renderer::Submit([instance,oldImageInfo,oldSamplerHash, oldWIdht, oldHeight, oldDescriptorInfo]()
 		{
 			VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
@@ -269,7 +270,7 @@ namespace Proof {
 			VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
 
 		});
-	
+#endif
 		Renderer::SubmitResourceFree([info = oldImageInfo]()
 		{
 			auto vulkanDevice = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();

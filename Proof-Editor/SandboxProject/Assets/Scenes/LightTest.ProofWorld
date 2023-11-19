@@ -98,7 +98,7 @@ World:
         Tag: Spot Light
         tags: []
       TransformComponent:
-        Location: [-1.10000002, 1.49399996, 0.717999995]
+        Location: [-1.10000002, 1.69400001, 0.717999995]
         Rotation: [0, -0, 1.5254178]
         Scale: [11.3999987, 0.99999994, 0.999999821]
       HierarchyComponent:
@@ -106,7 +106,7 @@ World:
         Children: []
       SpotLightComponent:
         Color: [0, 0.854838729, 0.296435922]
-        Intensity: 3.5
+        Intensity: 17.7999992
         Range: 5
         Angle: 53.25
         AngleAttenuation: 6.5
@@ -141,7 +141,7 @@ World:
         Tag: Spot Light
         tags: []
       TransformComponent:
-        Location: [0.017909646, 6.69440746, 3.1184895]
+        Location: [0.017909646, 5.99399996, 3.1184895]
         Rotation: [0, -0, 1.5254178]
         Scale: [11.3999987, 0.99999994, 0.999999821]
       HierarchyComponent:
@@ -149,7 +149,7 @@ World:
         Children: []
       SpotLightComponent:
         Color: [1, 0, 0]
-        Intensity: 1
+        Intensity: 9.31000042
         Range: 5
         Angle: 53.25
         AngleAttenuation: 6.5
@@ -171,7 +171,7 @@ World:
         Children: []
       SpotLightComponent:
         Color: [0, 0.275754362, 0.854838729]
-        Intensity: 3.5
+        Intensity: 12.0900002
         Range: 5
         Angle: 53.25
         AngleAttenuation: 6.5

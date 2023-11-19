@@ -43,7 +43,7 @@ namespace Proof {
 		static void EndComputePass(Count<class ComputePass> computPass);
 		static void ComputePassPushRenderMaterial(Count<class ComputePass> computePass, Count<class RenderMaterial> renderMaterial);
 
-		static Count<class Texture2D> GenerateBRDFLut();
+		static Count<class Texture2D> GetBRDFLut();
 		static uint32_t GetCurrentFrameInFlight();
 		static uint32_t RT_GetCurrentFrameInFlight();
 		static const RendererConfig GetConfig();
@@ -126,6 +126,7 @@ namespace Proof {
 		Count<class Texture2D> WhiteTexture;
 		Count<class Texture2D> BlackTexture;
 		Count<class Texture2D> NullTexture;
+		Count<class Texture2D> BRDFLutTexture;
 		Count<class TextureCube> WhiteTextureCube;
 		Count<class TextureCube> BlackTextureCube;
 		BaseTextures();

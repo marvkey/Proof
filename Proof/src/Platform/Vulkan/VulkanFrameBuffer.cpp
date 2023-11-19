@@ -504,7 +504,7 @@ namespace Proof
             }
             Build();
 
-    #elif 
+    #else
             Release();
 
             m_Config.Width = width;

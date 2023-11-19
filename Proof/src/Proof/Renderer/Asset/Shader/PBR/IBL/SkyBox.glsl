@@ -1,20 +1,13 @@
 #Vertex Shader
 
 #version 450
+#include <Common.glslh>
+
 //https://gist.github.com/keijiro/01dc44ad440623a5d30c
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec2 a_TexCoord;
 layout(location = 0) out vec3 outWorldPos;
-layout(set = 0, binding = 0) uniform CameraData
-{
-    mat4 Projection;
-    mat4 ViewProjection;
-    mat4 UnreversedProjectionMatrix;
-    vec3 Position;
-    float NearPlane;
-    float FarPlane;
-}CameraUBO;
-const float PI = 3.1415926535897932384626433832795f;
+
 
 layout(set = 0, binding = 2) uniform SkyBoxData
 {
@@ -41,14 +34,10 @@ vec4 remapSkyPositionZ(in vec4 position)
 }
 void main()
 {
-    //outWorldPos = aPos;
-    //mat4 rotView = mat4(mat3(CameraUBO.ViewProjection));
-    //vec4 clipPos = CameraUBO.Projection* rotView *vec4(outWorldPos,1.0);
-    //gl_Position = clipPos.xyww;
 
     vec4 position = vec4(a_Position.xy, 0.0, 1.0);
 	gl_Position = position;
-    outWorldPos = mat3(inverse(CameraUBO.ViewProjection )) * vec3(inverse(CameraUBO.Projection) * position);
+    outWorldPos = mat3(u_Camera.InverseView) * vec3(u_Camera.InverseProjection * position);
 }
 
 #Fragment Shader

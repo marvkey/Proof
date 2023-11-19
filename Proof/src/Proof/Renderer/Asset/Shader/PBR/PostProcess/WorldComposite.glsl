@@ -96,9 +96,9 @@ void main()
 
 	vec3 dofTexture = texture(u_DOFTexture, Input.TexCoord).rgb;
 
+	color += dofTexture ;
 	color += bloom;
-	//color += bloom;
-	color += dofTexture;
+	//color += bloom * dirtTexture;
 	color = ACESTonemap(color);
 	color = GammaCorrect(color.rgb, gamma);
 

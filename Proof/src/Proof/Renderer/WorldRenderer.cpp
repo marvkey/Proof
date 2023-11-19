@@ -182,7 +182,7 @@ namespace Proof
 		const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
 		m_CommandBuffer = RenderCommandBuffer::Create("WorldRenderer");
 		m_Renderer2D = Count<Renderer2D>::Create();
-		m_BRDFLUT = Renderer::GenerateBRDFLut();
+		m_BRDFLUT = Renderer::GetBRDFLut();
 		m_Cube = MeshWorkShop::GenerateCube();
 		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
 

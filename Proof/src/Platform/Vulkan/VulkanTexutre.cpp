@@ -514,10 +514,7 @@ namespace Proof
 
 		TextureConfiguration textureConfig;
 		textureConfig.DebugName = fmt::format("{} VulkanCubemap texture", m_Config.DebugName);
-		textureConfig.Format = ImageFormat::RGBA32F;
 		textureConfig.GenerateMips = false;
-		textureConfig.Height = m_Config.Height;
-		textureConfig.Width = m_Config.Width;
 		textureConfig.Storage = true;
 		m_Texture = Texture2D::Create(textureConfig, path).As<VulkanTexture2D>();
 
@@ -837,7 +834,6 @@ namespace Proof
 	{
 		m_Config.GenerateMips = true;
 #if 1
-		return;
 		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
 		m_Image.As<VulkanImage2D>()->GetSpecificationRef().Mips = mipCount;
 		const uint32_t faces = 6;

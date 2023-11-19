@@ -136,8 +136,9 @@ namespace Proof {
 		ShaderLibrary->LoadShader("Line2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Line2D.glsl");
 
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
-		//Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
-		//Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
+		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
+		s_BaseTextures = pnew BaseTextures();
+		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
 		// Compile shaders
 		Application::Get()->m_RenderThread.Pump();
 		{
@@ -200,9 +201,7 @@ namespace Proof {
 			uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 			s_Data->QuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 		}
-		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
-		s_Data->CommandBufferRecording = true;
-		s_BaseTextures = pnew BaseTextures();
+		
 
 		PF_ENGINE_INFO("Renderer Initialized {}m/s",time.ElapsedMillis());
 	}
@@ -659,73 +658,6 @@ namespace Proof {
 			irradianceMap->GenerateMips();
 
 		}
-
-		{
-			//FrameBufferConfig frameConfig;
-			//frameConfig.DebugName = "Texture-CubeIrradiance";
-			//frameConfig.Size.X = irradianceFilterRate;
-			//frameConfig.Size.Y = irradianceFilterRate;
-			//frameConfig.Attachments = { format};
-			//frameConfig.Attachments.Attachments[0].ExistingImage = irradianceMap->GetImage();
-			//
-			//Count<FrameBuffer> frameBuffer = FrameBuffer::Create(frameConfig);
-			//
-			//GraphicsPipelineConfig pipelineConfig;
-			//pipelineConfig.DebugName = "generate cubemap create";
-			//pipelineConfig.Shader = Shader::Get("EnvironmentIrradianceNonCompute");
-			//
-			//pipelineConfig.VertexArray = VertexArray::Create({ sizeof(Vertex) });
-			//pipelineConfig.VertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Vertices));
-			//pipelineConfig.TargetBuffer = frameBuffer;
-			//Count<GraphicsPipeline> renderPipeline = GraphicsPipeline::Create(pipelineConfig);
-			//
-			//RenderPassConfig renderPassConfig;
-			//renderPassConfig.DebugName = "Irradiance Map Non compute";
-			//renderPassConfig.MultiView = true;
-			//renderPassConfig.Pipeline = renderPipeline;
-			//renderPassConfig.Attachments = { format };
-			//Count<RenderPass> renderPass = RenderPass::Create(renderPassConfig);
-			//
-			//struct UboData {
-			//	/// Projection matrix common to each face of the cubemap.
-			//	alignas(16) glm::mat4 projection;
-			//
-			//	/// View matrix to look at the direction of each cubemap face.
-			//	alignas(16) glm::mat4 view[6];
-			//};
-			//UboData uboData = {
-			//glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f),
-			//	{
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f),  glm::vec3(0.0f, -1.0f,  0.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-			//		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-			//	}
-			//};
-			//
-			//Count<UniformBuffer> ubuffer = UniformBuffer::Create(&uboData, sizeof(UboData));
-			//auto cube = MeshWorkShop::GenerateCube();
-			//
-			//renderPass->SetInput("ProjView", ubuffer);
-			//renderPass->SetInput("u_EnvironmentMap", environmentMapImageCube);
-			//Renderer::SubmitCommand([&](CommandBuffer* buffer) {
-			//	Count<RenderCommandBuffer> renderCmd = RenderCommandBuffer::Create(buffer);
-			//
-			//	Renderer::BeginRenderPass(renderCmd, renderPass);
-			//	cube->GetMeshSource()->GetVertexBuffer()->Bind(renderCmd);
-			//	cube->GetMeshSource()->GetIndexBuffer()->Bind(renderCmd);
-			//
-			//	for (const auto& subMesh : cube->GetMeshSource()->GetSubMeshes())
-			//	{
-			//		Renderer::DrawElementIndexed(renderCmd, subMesh.IndexCount, 1, subMesh.BaseIndex, subMesh.BaseVertex);
-			//	}
-			//
-			//	Renderer::EndRenderPass(renderPass);
-			//});
-			//irradianceMap.As<VulkanTextureCube>()->GenerateMips();
-		}
 		const uint32_t prefilterFilterRate = 1024;
 
 		Count<TextureCube> prefilterMap;
@@ -793,8 +725,11 @@ namespace Proof {
 				uint32_t numGroups = glm::max(mipsize / 32, 1u); // Ensure numGroups is at least 1
 				float roughness = deltaRoughness * mip;
 				roughness = glm::max(roughness, 0.05f);
-				prefilterMaterial->Set("Input.Level", mip - 1);
-				prefilterMaterial->Set("Input.Roughness", roughness);
+				Renderer::Submit([prefilterMaterial,mip,roughness]
+					{
+						prefilterMaterial->Set("Input.Level", mip - 1);
+						prefilterMaterial->Set("Input.Roughness", roughness);
+					});
 
 				Renderer::ComputePassPushRenderMaterial(computePass, prefilterMaterial);
 				computePass->Dispatch(numGroups, numGroups, 6);
@@ -804,39 +739,9 @@ namespace Proof {
 		}
 		return std::make_pair(irradianceMap, prefilterMap);
 	}
-	Count<Texture2D> Renderer::GenerateBRDFLut()
+	Count<Texture2D> Renderer::GetBRDFLut()
 	{
-		const uint32_t imageSize = 512;
-		TextureConfiguration textureConfig;
-		textureConfig.DebugName = "BrdfLut";
-		textureConfig.Height = imageSize;
-		textureConfig.Width = imageSize;
-		textureConfig.Storage = true;
-		textureConfig.Format = ImageFormat::RG16F;
-		
-		static Count<Texture2D> brdfLut = Texture2D::Create(textureConfig);
-		
-		ComputePipelineConfig computePipelineConfig;
-		computePipelineConfig.DebugName = "BRDFLUT Pipeline";
-		computePipelineConfig.Shader = GetShader("BRDFLUT");
-		
-		static Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
-
-		
-		ComputePassConfiguration computePassConfig;
-		computePassConfig.DebugName = "BRDFLUT Pass";
-		computePassConfig.Pipeline = computePipeline;
-
-		static auto computePass = ComputePass::Create(computePassConfig);
-		
-		computePass->SetInput("brfdLUT", brdfLut);
-
-
-		Count<RenderCommandBuffer>renderCommandBuffer = s_Data->RenderCommandBuffer;
-		Renderer::BeginComputePass(renderCommandBuffer, computePass);
-		computePass->Dispatch(imageSize/16 , imageSize/16 , 1);
-		Renderer::EndComputePass(computePass);
-		return brdfLut;
+		return s_BaseTextures->BRDFLutTexture;
 	}
 
 	CommandQueue& Renderer::GetRenderCommandQueue()
@@ -853,12 +758,12 @@ namespace Proof {
 	{
 
 		s_RendererAPI->BeginFrame();
-		if (s_Data->CommandBufferRecording) 
-		{
-			Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
-			Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
-			s_Data->CommandBufferRecording = false;
-		}
+		//if (s_Data->CommandBufferRecording) 
+		//{
+		//	Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
+		//	Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
+		//	s_Data->CommandBufferRecording = false;
+		//}
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 	}
 
@@ -878,7 +783,39 @@ namespace Proof {
 
 		uint32_t blackTexturedata = 0xFF000000;
 		BlackTexture = Texture2D::Create(TextureConfiguration("Black Texture"), Buffer(&blackTexturedata, sizeof(uint32_t)));
+		//brdflut
+		{
+			const uint32_t imageSize = 512;
+			TextureConfiguration textureConfig;
+			textureConfig.DebugName = "BrdfLut";
+			textureConfig.Height = imageSize;
+			textureConfig.Width = imageSize;
+			textureConfig.Storage = true;
+			textureConfig.Format = ImageFormat::RG16F;
 
+			BRDFLutTexture = Texture2D::Create(textureConfig);
+
+			ComputePipelineConfig computePipelineConfig;
+			computePipelineConfig.DebugName = "BRDFLUT Pipeline";
+			computePipelineConfig.Shader = Renderer::GetShader("BRDFLUT");
+
+			Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
+
+
+			ComputePassConfiguration computePassConfig;
+			computePassConfig.DebugName = "BRDFLUT Pass";
+			computePassConfig.Pipeline = computePipeline;
+
+			static auto computePass = ComputePass::Create(computePassConfig);
+
+			computePass->SetInput("brfdLUT", BRDFLutTexture);
+
+
+			Count<RenderCommandBuffer>renderCommandBuffer = s_Data->RenderCommandBuffer;
+			Renderer::BeginComputePass(renderCommandBuffer, computePass);
+			computePass->Dispatch(imageSize / 16, imageSize / 16, 1);
+			Renderer::EndComputePass(computePass);
+		}
 
 		TextureConfiguration cubeTextureConfig;
 		cubeTextureConfig.DebugName = "White Texture";
