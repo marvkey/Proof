@@ -8,11 +8,14 @@
 #include "Proof/Input/InputManager.h"
 #include "Proof/Input/Mouse.h"
 #include "Proof/Asset/AssetManager.h"
-#include "Proof/Scripting/ScriptEngine.h"
 
-#include "Proof/Scripting/ScriptBuilder.h"
-#include "Proof/Project/ProjectSerilizer.h"
 #include "Proof/Project/Project.h"
+#include "Proof/Project/ProjectSerilizer.h"
+#include "Proof/Scripting/ScriptEngine.h"
+#include "Proof/Scripting/ScriptBuilder.h"
+#include "Proof/Physics/PhysicsDebugger.h"
+#include "Proof/Physics/PhysicsEngine.h"
+
 #include "Proof/Scene/SceneSerializer.h"
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Scene/Mesh.h"
@@ -26,7 +29,8 @@
 
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UiUtilities.h"
-#include "ImGuizmo.h"
+#include <ImGui/imgui.h>
+#include <ImGuizmo.h>
 #include "EditorResources.h"
 #include "Editors/Panels/PanelManager.h"
 #include "Editors/Panels/AssetManagerPanel.h"
@@ -36,7 +40,6 @@
 #include "Editors/Panels/WorldRendererPanel.h"
 #include "Editors/AssetEditors/AssetEditor.h"
 
-#include <ImGui/imgui.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -1390,6 +1393,25 @@ namespace Proof
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Debug"))
+			{
+			
+				if (PhysicsDebugger::IsDebugging())
+				{
+					if (ImGui::MenuItem("Stop PhysX Debugging"))
+						PhysicsDebugger::StopDebugging();
+				}
+				else
+				{
+
+					if (ImGui::MenuItem("Start PhysX Debugging"))
+					{
+						PhysicsDebugger::StartDebugging((Application::Get()->GetProject()->GetProjectDirectory() / "PhysXDebugInfo").string(), PhysicsEngine::GetSettings().DebugType == PhysicsDebugType::Live);
+					}
+					UI::EnumCombo("PhysicsDebugType", PhysicsEngine::GetSettings().DebugType);
+				}
+				ImGui::EndMenu();
+			}
 
 			ImGui::EndMenuBar();
 		}

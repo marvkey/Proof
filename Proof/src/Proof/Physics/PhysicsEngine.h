@@ -3,7 +3,7 @@
 #include "Proof/Math/Math.h"
 #include <glm/glm.hpp>
 
-#include <PxPhysicsAPI.h>
+#include <Physx/PxPhysicsAPI.h>
 #include "CollisonCallback.h"
 #include "PhysicsMeshCooker.h"
 #include "PhysicsTypes.h"

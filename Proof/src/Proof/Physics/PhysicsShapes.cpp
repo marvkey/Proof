@@ -18,8 +18,8 @@ namespace Proof {
 	}
 	void ColliderShape::Release()
 	{
-		if (m_Material)
-			m_Material->Release();
+		//if (m_Material)
+		//	m_Material->Release();
 	}
 	void ColliderShape::SetMaterial(Count<class PhysicsMaterial> material)
 	{

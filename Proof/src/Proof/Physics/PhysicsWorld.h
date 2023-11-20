@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "CollisonCallback.h"
-#include <PxPhysicsAPI.h>
+#include <Physx/PxPhysicsAPI.h>
 
 namespace Proof {
 	class PhysicsWorld : public RefCounted
@@ -11,6 +11,9 @@ namespace Proof {
 		PhysicsWorld(Count<class World> world);
 		virtual ~PhysicsWorld();
 		void Simulate(float deltaTime);
+
+		void StartWorld();
+		void EndWorld();
 		Count<World> GetWorld() 
 		{
 			return m_World;
@@ -31,8 +34,6 @@ namespace Proof {
 
 		physx::PxControllerManager* GetPhysXControllerManager() const { return m_PhysXControllerManager; }
 	private:
-		void StartWorld();
-		void EndWorld();
 
 		bool Advance(float deltaTime);
 		void CreateRegions();

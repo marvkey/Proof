@@ -539,7 +539,7 @@ namespace Proof {
 	void PhysicsActor::SyncTransform()
 	{
 		TransformComponent& transform = m_Entity.Transform();
-		glm::vec3 scale = transform.Scale;
+		//glm::vec3 scale = transform.Scale;
 		physx::PxTransform actorPose = m_RigidActor->getGlobalPose();
 		transform.Location = PhysXUtils::FromPhysXVector(actorPose.p);
 		if (!IsAllRotationLocked())
@@ -547,6 +547,6 @@ namespace Proof {
 
 		auto scene = m_Entity.GetCurrentWorld();
 		scene->ConvertToLocalSpace(m_Entity);
-		transform.Scale = scale;
+		//transform.Scale = scale;
 	}
 }

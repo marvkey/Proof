@@ -48,6 +48,11 @@ namespace Proof
 		None
 	};
 
+	enum class PhysicsDebugType
+	{
+		Live,
+		StreamFile
+	};
 	struct PhysicsSettings
 	{
 		glm::vec3 Gravity = { 0.0f, -9.81f, 0.0f };
@@ -61,5 +66,6 @@ namespace Proof
 		uint32_t WorldBoundsSubdivisions = 2;
 		glm::vec3 WorldBoundsMin = glm::vec3(-100.0f);
 		glm::vec3 WorldBoundsMax = glm::vec3(100.0f);
+		PhysicsDebugType DebugType = PhysicsDebugType::Live;
 	};
 }

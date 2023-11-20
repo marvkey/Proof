@@ -1,5 +1,5 @@
 #pragma once
-#include <PxPhysicsAPI.h>
+#include <Physx/PxPhysicsAPI.h>
 namespace Proof{
 	class CollisionCallback :public physx::PxSimulationEventCallback {
 		void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) {};

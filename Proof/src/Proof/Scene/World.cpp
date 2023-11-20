@@ -265,36 +265,41 @@ namespace Proof {
 
 		renderer2D->SetTargetFrameBuffer(worldRenderer->GetExternalCompositePassFrameBuffer());
 
-		auto view = m_Registry.view<TransformComponent, SpriteComponent>();
-		for (auto entity : view)
 		{
-			Entity e = Entity(entity, this);
-			auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteComponent>(entity);
-			if (spriteRendererComponent.Texture)
+			auto view = m_Registry.view<TransformComponent, SpriteComponent>();
+			for (auto entity : view)
 			{
+				Entity e = Entity(entity, this);
+				auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteComponent>(entity);
+				if (spriteRendererComponent.Texture)
+				{
 					//Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(spriteRendererComponent.Texture);
 					renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
-			}
-			else
-			{
-				renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
+				}
+				else
+				{
+					renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
+				}
 			}
 		}
-		auto group = m_Registry.group<TransformComponent>(entt::get<TextComponent>);
-		for (auto entity : group)
 		{
-			auto [transformComponent, textComponent] = group.get<TransformComponent, TextComponent>(entity);
-			Entity e = Entity(entity, this);
-			auto font = Font::GetDefault();
+			auto view = m_Registry.view<TransformComponent, TextComponent>();
 
-			TextParams params;
-			params.Color = textComponent.Colour;
-			params.Kerning = textComponent.Kerning;
-			params.LineSpacing = textComponent.LineSpacing;
-			if(textComponent.UseLocalRotation)
-				renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransformUsingLocalRotation(e));
-			else
-				renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
+			for (auto entity : view)
+			{
+				auto [transformComponent, textComponent] = view.get<TransformComponent, TextComponent>(entity);
+				Entity e = Entity(entity, this);
+				auto font = Font::GetDefault();
+
+				TextParams params;
+				params.Color = textComponent.Colour;
+				params.Kerning = textComponent.Kerning;
+				params.LineSpacing = textComponent.LineSpacing;
+				if (textComponent.UseLocalRotation)
+					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransformUsingLocalRotation(e));
+				else
+					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
+			}
 		}
 
 		// render AABB
@@ -1023,6 +1028,7 @@ namespace Proof {
 		//config.PvdClient = true;
 		//config.Gravity = { 0,-9.8f,0 };// for multiplayer scene
 		m_PhysicsWorld = Count<PhysicsWorld>::Create (this);
+		m_PhysicsWorld->StartWorld();
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
 		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
 		
@@ -1043,7 +1049,8 @@ namespace Proof {
 		
 		AudioEngine::EndContext();
 		ScriptEngine::EndRuntime();
-		m_PhysicsWorld =nullptr;
+		m_PhysicsWorld->EndWorld();
+		m_PhysicsWorld = nullptr;
 	}
 	void World::DeleteEntity(Entity ent, bool deleteChildren) {
 		if(!m_EntitiesMap.contains(ent.GetUUID()))

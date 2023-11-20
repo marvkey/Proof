@@ -1,5 +1,5 @@
 #pragma once
-#include <PxPhysicsAPI.h>
+#include "PhysicsUtils.h"
 namespace Proof
 {
 	class PhysicsDebugger

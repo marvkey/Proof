@@ -6,7 +6,6 @@
 #include "PhysicsActor.h"
 #include "PhysicsController.h"
 #include "PhysicsUtils.h"
-#include "PhysicsDebugger.h"
 namespace Proof {
 	physx::PxFilterFlags shaderControl(
 		physx::PxFilterObjectAttributes attributes0,
@@ -62,13 +61,10 @@ namespace Proof {
 
 		m_PhysXControllerManager = PxCreateControllerManager(*m_Scene);
 		CreateRegions();
-
-		StartWorld();
 	}
 
 	PhysicsWorld::~PhysicsWorld()
 	{
-		EndWorld();
 	}
 
 	void PhysicsWorld::Simulate(float deltaTime)
@@ -187,20 +183,12 @@ namespace Proof {
 			CreateController(entity);
 		});
 
-		//PhysicsDebugger::StartDebugging("worldScene",true);
 	}
 	void PhysicsWorld::EndWorld()
 	{
-		//PhysicsDebugger::StopDebugging();
 		// release all rigid bodies before we release teh scene
 		m_Actors.clear();
 		m_Controllers.clear();
-		//if (m_Config.PvdClient)
-		//{
-		//	PhysicsEngine::GetPVD()->disconnect();
-		//	m_Transport->disconnect();
-		//	m_Transport->release();
-		//}
 		m_PhysXControllerManager->release();
 		m_Scene->release();
 		m_Scene = nullptr;

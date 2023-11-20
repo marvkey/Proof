@@ -3,7 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "PhysicsTypes.h"
 
-#include <PxPhysicsAPI.h>
+#include <Physx/PxPhysicsAPI.h>
 namespace Proof {
 	struct TransformComponent;
 	namespace PhysXUtils
