@@ -449,6 +449,7 @@ namespace Proof::UI
     }
     bool AttributeAssetTextBar(const std::string& label, Count<class Asset> asset, AssetType type, bool includeRemove )
     {
+        UI::PushID();
         bool changeState = false;
 
         static char  searchCharacters[512];
@@ -483,7 +484,8 @@ namespace Proof::UI
         }
         if (ImGui::BeginDragDropTarget())
         {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(type).c_str()))
+            const std::string payLoadName = EnumReflection::EnumString(type);
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(payLoadName.c_str()))
             {
                 ImVec2 targetMin = ImGui::GetItemRectMin();
                 ImVec2 targetMax = ImGui::GetItemRectMax();
@@ -497,10 +499,7 @@ namespace Proof::UI
             }
             ImGui::EndDragDropTarget();
         }
-        
-
-
-        
+        UI::PopID();
         return changeState;
     }
     bool AttributeEntity(const std::string& label, Count<class World> worldContext, UUID& entityID)

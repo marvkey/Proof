@@ -493,10 +493,10 @@ namespace Proof {
 	
 	void PhysicsActor::AddRigidBody()
 	{
-		const auto& transformComponent = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
+		const TransformComponent transformComponent = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
 		auto& rigidBodyComponent = m_Entity.GetComponent<RigidBodyComponent>();
 
-		physx::PxTransform physxTransform = PhysXUtils::ToPhysXTransform( m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity));
+		physx::PxTransform physxTransform = PhysXUtils::ToPhysXTransform(transformComponent);
 
 		if (rigidBodyComponent.m_RigidBodyType == RigidBodyType::Dynamic)
 		{
@@ -539,14 +539,14 @@ namespace Proof {
 	void PhysicsActor::SyncTransform()
 	{
 		TransformComponent& transform = m_Entity.Transform();
-		//glm::vec3 scale = transform.Scale;
+		glm::vec3 scale = transform.Scale;
 		physx::PxTransform actorPose = m_RigidActor->getGlobalPose();
 		transform.Location = PhysXUtils::FromPhysXVector(actorPose.p);
 		if (!IsAllRotationLocked())
 			transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPose.q));
 
 		auto scene = m_Entity.GetCurrentWorld();
-		scene->ConvertToLocalSpace(m_Entity);
-		//transform.Scale = scale;
+		//scene->ConvertToLocalSpace(m_Entity);
+		transform.Scale = scale;
 	}
 }

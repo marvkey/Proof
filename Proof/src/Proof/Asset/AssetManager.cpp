@@ -119,7 +119,7 @@ namespace Proof
 					break;
 				case DefaultRuntimeAssets::Capsule:
 					{
-						Count<Mesh> mesh = MeshWorkShop::GenerateCapsule();
+						Count<Mesh> mesh = MeshWorkShop::GenerateCapsule(0.5,1);
 						Count<Asset> asset = mesh;
 						CreateRuntimeAsset(ID, asset, "Capsule");
 					}

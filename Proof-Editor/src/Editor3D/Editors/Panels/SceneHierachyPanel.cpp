@@ -500,21 +500,19 @@ namespace Proof
 			ImGui::Separator();
 			UI::EndPropertyGrid();
 
-			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
-			bool open = ImGui::TreeNodeEx("MaterialTablerwrs", treeNodeFlags, "Material Table");
-			if (open)
+			if (UI::AttributeTreeNode("MaterialTable"))
 			{
 				UI::BeginPropertyGrid();
 
 				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
 				{
 					std::string name = material != nullptr ? material->Name : "null";
+
 					UI::AttributeAssetTextBar(fmt::format("Index {}", index), material, AssetType::Material);
 				}
 				UI::EndPropertyGrid();
 
-				ImGui::TreePop();
+				UI::EndTreeNode();
 			}
 		});
 

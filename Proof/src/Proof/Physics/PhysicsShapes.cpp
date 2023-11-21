@@ -162,49 +162,7 @@ namespace Proof {
 		PF_CORE_ASSERT(m_Shape);
 		actor->detachShape(*m_Shape);
 	}
-	struct CapusleData
-	{
-		glm::vec3 offsetRotation;
-		float radiusScale;
-		float scaleDirection;
-	};
-	static CapusleData GetCapsuleData(CapsuleDirection direction, TransformComponent& worldTransform)
-	{
-		worldTransform.Scale = glm::abs(worldTransform.Scale);
-
-		float radiusScale = 0;
-
-		float scaleDirection;
-		glm::vec3 offsetRotation;
-		switch (direction)
-		{
-			case CapsuleDirection::X:
-				{
-					scaleDirection = worldTransform.Scale.x;
-					offsetRotation = glm::vec3{ 0,0,0 };
-					radiusScale = glm::max(worldTransform.Scale.y, worldTransform.Scale.z);
-				}
-				break;
-			case CapsuleDirection::Y:
-				{
-					offsetRotation = glm::vec3{ 0,0,physx::PxHalfPi };
-					scaleDirection = worldTransform.Scale.y;
-					radiusScale = glm::max(worldTransform.Scale.x, worldTransform.Scale.z);
-				}
-				break;
-			case CapsuleDirection::Z:
-				{
-					offsetRotation = glm::vec3{ 0,physx::PxHalfPi,0 };
-					scaleDirection = worldTransform.Scale.z;
-					radiusScale = glm::max(worldTransform.Scale.y, worldTransform.Scale.x);
-				}
-				break;
-			default:
-				break;
-		}
-
-		return { offsetRotation,radiusScale,scaleDirection };
-	}
+	
 	CapsuleColliderShape::CapsuleColliderShape(const CapsuleColliderComponent& component, const PhysicsActor& actor, Entity entity)
 		: ColliderShape(ColliderType::Capsule, entity)
 	{

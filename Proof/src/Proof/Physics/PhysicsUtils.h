@@ -12,8 +12,8 @@ namespace Proof {
 		physx::PxTransform ToPhysXTransform(const glm::mat4& transform);
 		physx::PxTransform ToPhysXTransform(const glm::vec3& translation, const glm::quat& rotation);
 		physx::PxMat44 ToPhysXMatrix(const glm::mat4& matrix);
-		const physx::PxVec3& ToPhysXVector(const glm::vec3& vector);
-		const physx::PxVec4& ToPhysXVector(const glm::vec4& vector);
+		physx::PxVec3 ToPhysXVector(const glm::vec3& vector);
+		physx::PxVec4 ToPhysXVector(const glm::vec4& vector);
 		physx::PxExtendedVec3 ToPhysXExtendedVector(const glm::vec3& vector);
 		physx::PxQuat ToPhysXQuat(const glm::quat& quat);
 

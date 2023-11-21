@@ -25,6 +25,7 @@
 #include "Proof/Physics/PhysicsActor.h"
 #include "Proof/Physics/PhysicsMeshCache.h"
 #include "Proof/Physics/MeshCollider.h"
+#include "Proof/Physics/PhysicsShapes.h"
 
 #include "Proof/Scripting/ScriptWorld.h"
 namespace Proof {
@@ -354,7 +355,7 @@ namespace Proof {
 				Entity e = { entity, this };
 				glm::mat4 transform = GetWorldSpaceTransform(e);
 				const auto& collider = e.GetComponent<BoxColliderComponent>();
-				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), collider.Center) * glm::scale(glm::mat4(1.0f), collider.Size *2.0f);
+				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), collider.Center) * glm::scale(glm::mat4(1.0f), collider.Size );
 				glm::mat4 finalTransform = transform * colliderTransform;
 				renderer->SubmitPhysicsDebugMesh(cubeMesh, finalTransform);
 			}
@@ -365,10 +366,12 @@ namespace Proof {
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
-				glm::mat4 transform = GetWorldSpaceTransform(e);
+				auto  transformComponent = GetWorldSpaceTransformComponent(e);
 				const auto& collider = e.GetComponent<SphereColliderComponent>();
-				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0), collider.Center) * glm::scale(glm::mat4(1.0f), glm::vec3(collider.Radius * 1.0f));
-				renderer->SubmitPhysicsDebugMesh(sphereDebugMesh, transform * colliderTransform);
+				float largestComponent = glm::max(transformComponent.Scale.x, glm::max(transformComponent.Scale.y, transformComponent.Scale.z));
+
+				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0), collider.Center + transformComponent.Location) * glm::scale(glm::mat4(1.0f), glm::vec3(collider.Radius *largestComponent ));
+				renderer->SubmitPhysicsDebugMesh(sphereDebugMesh, colliderTransform);
 			}
 		}
 		{
@@ -378,8 +381,9 @@ namespace Proof {
 				for (auto entity : view)
 				{
 					Entity e = { entity, this };
-					glm::mat4 transform = GetWorldSpaceTransform(e);
+					auto  worldtransformComponent = GetWorldSpaceTransformComponent(e);
 					const auto& collider = e.GetComponent<CapsuleColliderComponent>();
+					auto capsuleData = GetCapsuleData(collider.Direction, worldtransformComponent);
 					glm::mat4 colliderTransform = glm::mat4(1.0f); // Initialize with identity matrix
 
 					if (collider.Direction == CapsuleDirection::X)
@@ -391,16 +395,16 @@ namespace Proof {
 						colliderTransform = glm::rotate(colliderTransform, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate 90 degrees around Z-axis
 					}
 					// Apply translation
-					colliderTransform = glm::translate(colliderTransform, collider.Center);
-
+					colliderTransform = glm::translate(colliderTransform, collider.Center + worldtransformComponent.Location);
+					colliderTransform = colliderTransform * glm::mat4(worldtransformComponent.GetRotation());
 					// Adjust scaling based on capsule direction
-					float scale_x = (collider.Direction == CapsuleDirection::X) ? (collider.Height) : (collider.Radius * 2.0f);
-					float scale_y = (collider.Direction == CapsuleDirection::Y) ? (collider.Height) : (collider.Radius * 2.0f);
-					float scale_z = (collider.Direction == CapsuleDirection::Z) ? (collider.Height) : (collider.Radius * 2.0f);
+					float scale_x = (collider.Direction == CapsuleDirection::X) ? (collider.Height) * capsuleData.scaleDirection : (collider.Radius * 2.0f) * capsuleData.radiusScale;
+					float scale_y = (collider.Direction == CapsuleDirection::Y) ? (collider.Height) * capsuleData.scaleDirection : (collider.Radius * 2.0f) * capsuleData.radiusScale;
+					float scale_z = (collider.Direction == CapsuleDirection::Z) ? (collider.Height) * capsuleData.scaleDirection : (collider.Radius * 2.0f) * capsuleData.radiusScale;
 
 					colliderTransform = glm::scale(colliderTransform, glm::vec3(scale_x, scale_y, scale_z));
 					//glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0), ProofToglmVec(collider.OffsetLocation)) * glm::scale(glm::mat4(1.0f), glm::vec3(collider.Radius * 2.0f, collider.Height, collider.Radius * 2.0f));
-					renderer->SubmitPhysicsDebugMesh(capsuleDebugMesh, transform * colliderTransform);
+					renderer->SubmitPhysicsDebugMesh(capsuleDebugMesh, colliderTransform);
 				}
 			}
 		}

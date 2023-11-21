@@ -103,7 +103,49 @@ namespace Proof
 	private:
 		physx::PxShape* m_Shape;
 	};
+	struct CapusleData
+	{
+		glm::vec3 offsetRotation;
+		float radiusScale;
+		float scaleDirection;
+	};
+	static CapusleData GetCapsuleData(CapsuleDirection direction, const TransformComponent& worldTransform)
+	{
+		glm::vec3 scaleabs = glm::abs(worldTransform.Scale);
 
+		float radiusScale = 0;
+
+		float scaleDirection;
+		glm::vec3 offsetRotation;
+		switch (direction)
+		{
+		case CapsuleDirection::X:
+		{
+			scaleDirection = scaleabs.x;
+			offsetRotation = glm::vec3{ 0,0,0 };
+			radiusScale = glm::max(scaleabs.y, scaleabs.z);
+		}
+		break;
+		case CapsuleDirection::Y:
+		{
+			offsetRotation = glm::vec3{ 0,0,physx::PxHalfPi };
+			scaleDirection = scaleabs.y;
+			radiusScale = glm::max(scaleabs.x, scaleabs.z);
+		}
+		break;
+		case CapsuleDirection::Z:
+		{
+			offsetRotation = glm::vec3{ 0,physx::PxHalfPi,0 };
+			scaleDirection = scaleabs.z;
+			radiusScale = glm::max(scaleabs.y, scaleabs.x);
+		}
+		break;
+		default:
+			break;
+		}
+
+		return { offsetRotation,radiusScale,scaleDirection };
+	}
 	class CapsuleColliderShape : public ColliderShape
 	{
 	public:

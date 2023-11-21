@@ -187,11 +187,17 @@ namespace Proof {
         {
             for (uint32_t s = 0; s < numSegments - 1; s++)
             {
-                indices.insert(indices.end(), Index{ (uint32_t)(r * numSegments + s + 1) ,(uint32_t)(r * numSegments + s + 0),(uint32_t)((r + 1) * numSegments + s + 1) });
-                indices.insert(indices.end(), Index{ (uint32_t)((r + 1) * numSegments + s + 0) ,(uint32_t)((r + 1) * numSegments + s + 1),(uint32_t)(r * numSegments + s) });
+                Index& index1 = indices.emplace_back();
+                index1.V1 = (uint32_t)(r * numSegments + s + 1);
+                index1.V2 = (uint32_t)(r * numSegments + s + 0);
+                index1.V3 = (uint32_t)((r + 1) * numSegments + s + 1);
+
+                Index& index2 = indices.emplace_back();
+                index2.V1 = (uint32_t)((r + 1) * numSegments + s + 0);
+                index2.V2 = (uint32_t)((r + 1) * numSegments + s + 1);
+                index2.V3 = (uint32_t)(r * numSegments + s);
             }
         }
-
         return Count<Mesh>::Create("Capsule", vertices, indices);
     }
     //https://www.songho.ca/opengl/gl_cylinder.html (//for cone and cylinder) download the zip file
