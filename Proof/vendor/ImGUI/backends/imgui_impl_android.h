@@ -3,7 +3,6 @@
 
 // Implemented features:
 //  [X] Platform: Keyboard support. Since 1.87 we are using the io.AddKeyEvent() function. Pass ImGuiKey values to all key functions e.g. ImGui::IsKeyPressed(ImGuiKey_Space). [Legacy AKEYCODE_* values will also be supported unless IMGUI_DISABLE_OBSOLETE_KEYIO is set]
-//  [X] Platform: Mouse support. Can discriminate Mouse/TouchScreen/Pen.
 // Missing features:
 //  [ ] Platform: Clipboard support.
 //  [ ] Platform: Gamepad support. Enable with 'io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad'.
@@ -19,8 +18,6 @@
 // Read online: https://github.com/ocornut/imgui/tree/master/docs
 
 #pragma once
-#include "imgui.h"      // IMGUI_IMPL_API
-#ifndef IMGUI_DISABLE
 
 struct ANativeWindow;
 struct AInputEvent;
@@ -29,5 +26,3 @@ IMGUI_IMPL_API bool     ImGui_ImplAndroid_Init(ANativeWindow* window);
 IMGUI_IMPL_API int32_t  ImGui_ImplAndroid_HandleInputEvent(AInputEvent* input_event);
 IMGUI_IMPL_API void     ImGui_ImplAndroid_Shutdown();
 IMGUI_IMPL_API void     ImGui_ImplAndroid_NewFrame();
-
-#endif // #ifndef IMGUI_DISABLE

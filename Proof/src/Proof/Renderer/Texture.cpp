@@ -127,6 +127,11 @@ namespace Proof {
 	{
 		Buffer imageBuffer;
 		std::string pathString = path.string();
+		if (!FileSystem::Exists(pathString))
+		{
+			PF_ENGINE_ERROR("Texture File {} does not exist", pathString);
+			return {};
+		}
 
 		int width, height, channels;
 

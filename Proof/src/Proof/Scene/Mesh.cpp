@@ -116,6 +116,19 @@ namespace Proof{
 
         
 
+        m_BoundingBox.Min= { FLT_MAX, FLT_MAX, FLT_MAX };
+        m_BoundingBox.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+        for (size_t i = 0; i < vertices.size(); i++)
+        {
+            const Vertex& vertex = vertices[i];
+            m_BoundingBox.Min.x = glm::min(vertex.Position.x, m_BoundingBox.Min.x);
+            m_BoundingBox.Min.y = glm::min(vertex.Position.y, m_BoundingBox.Min.y);
+            m_BoundingBox.Min.z = glm::min(vertex.Position.z, m_BoundingBox.Min.z);
+            m_BoundingBox.Max.x = glm::max(vertex.Position.x, m_BoundingBox.Max.x);
+            m_BoundingBox.Max.y = glm::max(vertex.Position.y, m_BoundingBox.Max.y);
+            m_BoundingBox.Max.z = glm::max(vertex.Position.z, m_BoundingBox.Max.z);
+        }
         for (auto& [index, material] : m_Materials->GetMaterials())
         {
             if (AssetManager::HasAsset(material))

@@ -42,7 +42,7 @@ namespace Proof{
 		virtual ~Project() {};
 		static Count<Project> New(const ProjectConfig& project);
 		static Count<Project> Load(const std::filesystem::path& path);
-		
+		static Count<Project> GetActive();
 		const std::filesystem::path& GetProjectDirectory()const
 		{
 			return m_ProjectDirectory;

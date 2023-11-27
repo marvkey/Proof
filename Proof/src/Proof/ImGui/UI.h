@@ -1,10 +1,10 @@
 #pragma once
-#include <Imgui/imgui.h>
 #include "Proof/Core/SmartPointer.h"
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Resources/EnumReflection.h"
 #include "Proof/Math/Math.h"
 #include "Proof/Asset/AssetTypes.h"
+#include <imgui.h>
 #include <glm/glm.hpp>
 #include <unordered_set>
 #define EG_HOVER_THRESHOLD 0.5f
@@ -32,14 +32,14 @@ namespace Proof::UI {
 		ImGui::Image(HeaderFileOnly::TextureUI::GetTexture(image->GetImage()), size, uv0, uv1, tint_col, border_col);
 	}
 
-	inline bool ImageButton(const std::string& imageId, Count<Image2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
-	{
-		return ImGui::ImageButton(imageId.c_str(), HeaderFileOnly::TextureUI::GetTexture(image), size, uv0, uv1, bg_col, tint_col);
-	}
-	inline bool ImageButton(const std::string& imageId, Count<Texture2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
-	{
-		return ImGui::ImageButton(imageId.c_str(), HeaderFileOnly::TextureUI::GetTexture(image->GetImage()), size, uv0, uv1, bg_col, tint_col);
-	}
+	//inline bool ImageButton(const std::string& imageId, Count<Image2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
+	//{
+	//	return ImGui::ImageButton(imageId.c_str(), HeaderFileOnly::TextureUI::GetTexture(image), size, uv0, uv1, bg_col, tint_col);
+	//}
+	//inline bool ImageButton(const std::string& imageId, Count<Texture2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
+	//{
+	//	return ImGui::ImageButton(imageId.c_str(), HeaderFileOnly::TextureUI::GetTexture(image->GetImage()), size, uv0, uv1, bg_col, tint_col);
+	//}
 
 	inline bool ImageButton(Count<Image2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
 	{
@@ -134,7 +134,11 @@ namespace Proof::UI {
 
 	void AttributeLabel(const std::string& label);
 	bool AttributeTreeNode(const std::string& label, bool openByDefault = true);
-	bool AttributeTreeNodeIcon(const std::string& label, const Count<Texture2D>& icon, const ImVec2& size, bool openByDefault = true);
+	bool AttributeTreeNodeIcon(const std::string& label, const Count<Texture2D>& icon, const ImVec2& size, bool openByDefault = true, bool useUpercase = true);
+
+	bool TreeNodeWithIcon(Count<Texture2D> icon, ImGuiID id, ImGuiTreeNodeFlags flags, const char* label, const char* label_end, ImColor iconTint = IM_COL32_WHITE);
+	bool TreeNodeWithIcon(Count<Texture2D> icon, const void* ptr_id, ImGuiTreeNodeFlags flags, ImColor iconTint, const char* fmt, ...);
+	bool TreeNodeWithIcon(Count<Texture2D> icon, const char* label, ImGuiTreeNodeFlags flags, ImColor iconTint = IM_COL32_WHITE);
 	static void EndTreeNode()
 	{
 		ImGui::TreePop();
@@ -147,6 +151,12 @@ namespace Proof::UI {
 	static void ShiftCursorY(float distance)
 	{
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + distance);
+	}
+
+	static void ShiftCursor(float distanceX, float distanceY)
+	{
+		ShiftCursorX(distanceX);
+		ShiftCursorY(distanceY);
 	}
 	//bool AttributeTreeNodeWithDisabled(const std::string& label, bool& disabled, bool OpenDefault);
 

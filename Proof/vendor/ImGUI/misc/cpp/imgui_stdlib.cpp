@@ -3,14 +3,15 @@
 
 // Changelog:
 // - v0.10: Initial version. Added InputText() / InputTextMultiline() calls with std::string
-#include "../../imgui.h"
+
+#include "imgui.h"
 #include "imgui_stdlib.h"
 
 struct InputTextCallback_UserData
 {
-    std::string* Str;
+    std::string*            Str;
     ImGuiInputTextCallback  ChainCallback;
-    void* ChainCallbackUserData;
+    void*                   ChainCallbackUserData;
 };
 
 static int InputTextCallback(ImGuiInputTextCallbackData* data)

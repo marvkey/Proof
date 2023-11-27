@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Core/UUID.h"
-#include <Imgui/Imgui.h>
+#include <Imgui.h>
 namespace Proof{
 
 	class Panel : public RefCounted 

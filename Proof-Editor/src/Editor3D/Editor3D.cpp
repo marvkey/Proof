@@ -29,14 +29,14 @@
 
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UiUtilities.h"
-#include <ImGui/imgui.h>
+#include <imgui.h>
 #include <ImGuizmo.h>
 #include "EditorResources.h"
 #include "Editors/Panels/PanelManager.h"
 #include "Editors/Panels/AssetManagerPanel.h"
 #include "Editors/Panels/InputPanel.h"
 #include "Editors/Panels/SceneHierachyPanel.h"
-#include "Editors/Panels/ContentBrowserPanel.h"
+#include "Editors/Panels/ContentBrowser/ContentBrowserPanel.h"
 #include "Editors/Panels/WorldRendererPanel.h"
 #include "Editors/AssetEditors/AssetEditor.h"
 
@@ -444,11 +444,35 @@ namespace Proof
 		m_EditorWorld = m_ActiveWorld;
 
 		s_EditorData->PanelManager->AddPanel< SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID, "Scene Hierarchy", true);
-		s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 		s_EditorData->PanelManager->AddPanel<AssetManagerPanel>(ASSET_MANAGER_PANEL_ID, "Asset Manager", false);
 		s_EditorData->PanelManager->AddPanel<InputPanel>(INPUT_PANEL_ID, "Input Panel", false);
 		s_EditorData->PanelManager->AddPanel<WorldRendererPanel>(WORLD_RENDERER_PANEL_ID, "Renderer Panel", true);
+		Count< ContentBrowserPanel> contentBrowser = s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 		s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
+#if 0
+		contentBrowser->RegisterItemActivateCallbackForType(AssetType::World, [this](const AssetInfo& metadata)
+			{
+				OpenScene(metadata);
+			});
+#endif
+		contentBrowser->RegisterItemActivateCallbackForType(AssetType::ScriptFile, [this](const AssetInfo& metadata)
+			{
+				FileSystem::OpenExternally(AssetManager::GetAssetFileSystemPath(metadata.Path));
+			});
+
+		contentBrowser->RegisterAssetCreatedCallback([this](const AssetInfo& metadata)
+			{
+				if (metadata.Type == AssetType::ScriptFile)
+					ScriptBuilder::RegenerateProjectScriptSolution(Application::Get()->GetProject());
+			});
+
+		contentBrowser->RegisterAssetDeletedCallback([this](const AssetInfo& metadata)
+			{
+				if (metadata.Type == AssetType::ScriptFile)
+				ScriptBuilder::RegenerateProjectScriptSolution(Application::Get()->GetProject());
+
+			});
+
 
 		AssetEditorPanel::RegisterDefaultEditors();
 		m_WorldRenderer = Count<WorldRenderer>::Create();
@@ -464,6 +488,7 @@ namespace Proof
 
 		m_ViewPortSize = { 100,100 };
 
+		FileSystem::StartWatching();
 	}
 	void Editore3D::OnDetach() {
 		if (m_EditorWorld != nullptr) // using editor world in case active world is on play 
@@ -475,6 +500,8 @@ namespace Proof
 		AssetEditorPanel::UnregisterAllEditors();
 		AssetManager::SaveAllAssets();
 		EditorResources::Unizilize();
+		FileSystem::StopWatching();
+		FileSystem::ClearFileSystemChangedCallbacks();
 	}
 
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
@@ -1185,7 +1212,7 @@ namespace Proof
 			if (meshSourceAdded)
 			{
 				AssetID id;
-				std::tie(meshSourceAdded, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
+				//std::tie(meshSourceAdded, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
 				// basically add mesh is done with its operation and no longer renderng
 				if (meshSourceAdded == false)
 				{
@@ -1208,7 +1235,7 @@ namespace Proof
 			if (SaveSceneDialouge)
 			{
 				AssetID id;
-				std::tie(SaveSceneDialouge, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddWorld(m_ActiveWorld);
+				//std::tie(SaveSceneDialouge, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddWorld(m_ActiveWorld);
 				if (SaveSceneDialouge == false)
 				{
 					Save();

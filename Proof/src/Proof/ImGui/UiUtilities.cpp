@@ -1,16 +1,25 @@
 #include "Proofprch.h"
 #include "imgui_internal.h"
+#include "Proof/Renderer/Image.h"
+#include "Proof/Core/Application.h"
+#include "Platform/Vulkan/VulkanImguiLayer.h"
+#include "UIColors.h"
 //#include "UiUtilities.h"
 
 namespace Proof::UI
 {
+	ImTextureID GetTextureID(Count<Image> texture)
+	{
+		Count<VulkanImguiLayer> layer = Application::Get()->GetImguiLayer().As< VulkanImguiLayer>();
 
+		return layer->ToImguiImage(texture);
+	}
 	namespace Draw
 	{
 
 		void Underline(bool fullWidth, float offsetX, float offsetY)
 		{
-#if 0
+#if 1
 
 			if (fullWidth)
 			{
@@ -35,6 +44,8 @@ namespace Proof::UI
 			}
 #endif
 		}
+
+		
 	}
 
 }
