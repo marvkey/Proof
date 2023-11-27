@@ -11,7 +11,7 @@ namespace Proof
 	public:
 		PhysicsActor(Count<class PhysicsWorld> world, Entity entity);
 		virtual ~PhysicsActor();
-
+		float GetInverseMass() const;
 		bool IsDynamic()const;
 		void AddForce(glm::vec3 force, ForceMode mode = ForceMode::Force, bool autoWake = true);
 		void AddTorque(glm::vec3 force, ForceMode mode = ForceMode::Force, bool autoWake = true);

@@ -31,13 +31,17 @@ namespace Proof {
 		Count<class PhysicsController> CreateController(Entity entity);
 		Count<class PhysicsController> GetController(Entity entity);
 		void RemoveController(Entity entity);
+		const std::unordered_map<UUID, Count<PhysicsActor>>& GetActors() const { return m_Actors; }
 
 		physx::PxControllerManager* GetPhysXControllerManager() const { return m_PhysXControllerManager; }
+		const physx::PxSimulationStatistics& GetSimulationStats() const { return m_SimulationStats; }
 	private:
 
 		bool Advance(float deltaTime);
 		void CreateRegions();
 	private:
+		physx::PxSimulationStatistics m_SimulationStats;
+
 		float m_Accumulator = 0.0f;
 		// needs to be changed have a way to figure this out
 		float m_SubStepSize = 1.0f / 60.0f;

@@ -39,6 +39,7 @@ namespace Proof
 
 		virtual bool IsValid() const { return m_Material != nullptr; }
 
+		Count<PhysicsMaterial> GetMaterial() { return m_Material; }
 	protected:
 		ColliderType m_Type;
 		bool m_IsShared = false;

@@ -70,7 +70,12 @@ namespace Proof {
 		m_RigidActor->getScene()->removeActor(*m_RigidActor);
 		m_RigidActor->release();
 	}
+	float PhysicsActor::GetInverseMass() const
+	{
+		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
 
+		return !IsDynamic() ? -rigidBody.Mass : m_RigidActor->is<physx::PxRigidDynamic>()->getInvMass();
+	}
 	bool PhysicsActor::IsDynamic()const
 	{
 		

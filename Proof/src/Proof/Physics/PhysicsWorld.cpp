@@ -96,9 +96,11 @@ namespace Proof {
 					actor->SyncTransform();
 				}
 			}
-
-
 		}
+
+		// TODO disable in runtime
+		m_Scene->getSimulationStatistics(m_SimulationStats);
+
 	}
 	bool PhysicsWorld::HasActor(Entity entity)
 	{
