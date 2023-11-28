@@ -94,7 +94,22 @@ namespace Proof::UI
     static char s_IDBuffer[s_IDBufferSize];
     static int s_UIContextID = 0;
     static uint32_t s_Counter = 0;
+    static char s_LabelIDBuffer[1024];
+    bool IsItemDisabled()
+    {
+        return ImGui::GetItemFlags() & ImGuiItemFlags_Disabled;
+    }
+    const char* GenerateID()
+    {
+        _itoa_s(s_Counter++, s_IDBuffer + 2, sizeof(s_IDBuffer) - 2, 16);
+        return s_IDBuffer;
+    }
 
+    const char* GenerateLabelID(std::string_view label)
+    {
+        *fmt::format_to_n(s_LabelIDBuffer, std::size(s_LabelIDBuffer), "{}##{}", label, s_Counter++).out = 0;
+        return s_LabelIDBuffer;
+    }
     static void UpdateIDBuffer(const std::string& label)
     {
         s_IDBuffer[0] = '#';
@@ -339,7 +354,7 @@ namespace Proof::UI
         return bModified;
     }
     
-    static void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenInactive = false, ImColor colourWhenActive = (236, 158, 36, 255))
+    void DrawItemActivityOutline(float rounding, bool drawWhenInactive, ImColor colourWhenActive)
     {
         auto* drawList = ImGui::GetWindowDrawList();
         const ImRect rect = RectExpanded(GetItemRect(), 1.0f, 1.0f);
@@ -359,10 +374,7 @@ namespace Proof::UI
                 ImColor(50, 50, 50), rounding, 0, 1.0f);
         }
     };
-    static bool IsItemDisabled()
-    {
-        return ImGui::GetItemFlags() & ImGuiItemFlags_Disabled;
-    }
+    
     bool AttributeTextBar(const std::string& label, const std::string& text)
     {
         AttributeLabel(label.c_str());

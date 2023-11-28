@@ -243,5 +243,7 @@ namespace Proof::UI
 	{
 		return RectOffset(rect, xy.x, xy.y);
 	}
+	bool BeginPopup(const char* str_id, ImGuiWindowFlags flags = 0);
+	void EndPopup();
 
 }

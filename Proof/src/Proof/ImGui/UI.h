@@ -20,7 +20,11 @@ namespace Proof
 	class EnumFieldStorage;
 	class World;
 }
-namespace Proof::UI {
+namespace Proof::UI 
+{
+	const char* GenerateID();
+	const char* GenerateLabelID(std::string_view label);
+	bool IsItemDisabled();
 	void PushID();
 	void PopID();
 	inline void Image(Count<class Image> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0))
@@ -159,5 +163,5 @@ namespace Proof::UI {
 		ShiftCursorY(distanceY);
 	}
 	//bool AttributeTreeNodeWithDisabled(const std::string& label, bool& disabled, bool OpenDefault);
-
+	void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenInactive = false, ImColor colourWhenActive = (236, 158, 36, 255));
 }

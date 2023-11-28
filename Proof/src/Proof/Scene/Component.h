@@ -296,7 +296,7 @@ namespace Proof
 		{
 		}
 		Count<MaterialTable> MaterialTable = Count<class MaterialTable>::Create();
-		void SetMesh(UUID ID, bool takeMaterialTable = true);
+		void SetMesh(AssetID ID, bool takeMaterialTable = true);
 		void RemoveMesh();
 
 		Count<class DynamicMesh> GetMesh();
@@ -315,7 +315,7 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneRendererUI;
 		friend class Editore3D;
-		UUID m_MeshID;
+		AssetID m_MeshID;
 		uint32_t m_SubmeshIndex = 0;
 	};
 	struct Proof_API SpriteComponent{

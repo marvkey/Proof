@@ -22,6 +22,7 @@
 #include "Proof/Resources/EnumReflection.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Imgui/UI.h"
+#include "Proof/Imgui/UIHandlers.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Math/Random.h"
@@ -492,7 +493,9 @@ namespace Proof
 		{
 			UI::BeginPropertyGrid();
 
-			UI::AttributeAssetTextBar("Mesh", meshComp.m_MeshID, AssetType::Mesh);
+			UI::PropertyAssetReferenceSettings assetRefSettings;
+			assetRefSettings.AssetMemoryTypes = UI::UIMemoryAssetTypes::Default;
+			UI::AttributeAssetReference("Mesh", AssetType::Mesh, meshComp.m_MeshID, assetRefSettings);
 			UI::AttributeBool("Visible", meshComp.Visible);
 
 			ImGui::Separator();
@@ -504,9 +507,11 @@ namespace Proof
 
 				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
 				{
-					std::string name = material != nullptr ? material->Name : "null";
-
-					UI::AttributeAssetTextBar(fmt::format("Index {}", index), material, AssetType::Material);
+					AssetID materialID = material->GetID();
+					if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID))
+					{
+						meshComp.MaterialTable->SetMaterial(index, AssetManager::GetAsset<Material>(materialID));
+					}
 				}
 				UI::EndPropertyGrid();
 
@@ -520,7 +525,8 @@ namespace Proof
 
 			const uint32_t currentIndexMaterial = meshComp.GetSubMeshMaterialIndex();
 			auto mesh = meshComp.GetMesh();
-
+			
+			/*
 			if (AssetManager::HasAsset(meshComp.GetMesh()))
 			{
 				auto assetInfo = AssetManager::GetAssetInfo(meshComp.GetMesh());
@@ -552,7 +558,15 @@ namespace Proof
 
 				ImGui::EndPopup();
 			}
-
+			*/
+			AssetID id = meshComp.m_MeshID;
+			if (UI::AttributeAssetReference("Dynamic Mesh", AssetType::DynamicMesh, id))
+			{
+				if (id == 0)
+					meshComp.RemoveMesh();
+				else
+					meshComp.SetMesh(id);
+			}
 			if (mesh)
 			{
 				UI::AttributeBool("SubMeshIndexUseSlider", DynamicMeshUseSlider);
@@ -589,31 +603,21 @@ namespace Proof
 
 			ImGui::Separator();
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
+			UI::ScopedStyleVar style (ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
 			bool open = ImGui::TreeNodeEx("MaterialTablerwrs", treeNodeFlags, "Material Table");
 			if (!open)
 			{
 				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
 				{
-					std::string name = material != nullptr ? material->Name : "null";
 					{
 
 						UI::ScopedStyleColor addfs(ImGuiCol_Text, ImVec4(0.0f, .8f, 0.0f, 1.0f), index == currentIndexMaterial);
 
-						UI::AttributeTextBar(fmt::format("Index {}", index), name);
-					}
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Material).c_str()))
+						AssetID materialID = material->GetID();
+						if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID))
 						{
-							uint64_t Data = *(const uint64_t*)payload->Data;
-							if (AssetManager::HasAsset(Data))
-							{
-								auto material = AssetManager::GetAsset<Material>(Data);
-								meshComp.MaterialTable->SetMaterial(index, material);
-							}
+							meshComp.MaterialTable->SetMaterial(index, AssetManager::GetAsset<Material>(materialID));
 						}
-						ImGui::EndDragDropTarget();
 					}
 				}
 
@@ -834,7 +838,7 @@ namespace Proof
 			UI::DrawVec3Control("Size", cubeCollider.Size, glm::vec3{1});
 			UI::DrawVec3Control("Center", cubeCollider.Center);
 
-			UI::AttributeAssetTextBar("Material", cubeCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+			UI::AttributeAssetReference("Material",AssetType::PhysicsMaterial, cubeCollider.m_PhysicsMaterialPointerID);
 
 			UI::EndPropertyGrid();
 
@@ -846,7 +850,7 @@ namespace Proof
 			UI::AttributeDrag("Radius", sphereCollider.Radius, 0.5);
 			UI::DrawVec3Control("Center", sphereCollider.Center);
 
-			UI::AttributeAssetTextBar("Material", sphereCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, sphereCollider.m_PhysicsMaterialPointerID);
 			UI::EndPropertyGrid();
 
 		});
@@ -858,8 +862,7 @@ namespace Proof
 			UI::AttributeDrag("Height", capsuleCollider.Height, 0.5);
 			UI::EnumCombo("Direction", capsuleCollider.Direction);
 			UI::DrawVec3Control("Center", capsuleCollider.Center);
-
-			UI::AttributeAssetTextBar("Material", capsuleCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, capsuleCollider.m_PhysicsMaterialPointerID);
 
 			UI::EndPropertyGrid();
 		});
@@ -867,9 +870,8 @@ namespace Proof
 			UI::BeginPropertyGrid();
 
 			UI::AttributeBool("IsTrigger", meshCollider.IsTrigger);
-			//UI::AttributeAssetTextBar("Mesh", meshCollider.m_MeshAssetPointerID, AssetType::Mesh);
-			
-			UI::AttributeAssetTextBar("Material", meshCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, meshCollider.m_PhysicsMaterialPointerID);
+			UI::AttributeAssetReference("MeshCollider", AssetType::MeshCollider, meshCollider.ColliderID);
 			UI::EndPropertyGrid();
 		});
 		
@@ -911,7 +913,7 @@ namespace Proof
 			UI::AttributeDrag("GravityScale", controller.GravityScale);
 			UI::AttributeDrag("MinMoveDistance", controller.MinMoveDistance, 0);
 
-			UI::AttributeAssetTextBar("PhysicsMaterial", controller.PhysicsMaterialID, AssetType::PhysicsMaterial);
+			UI::AttributeAssetReference("PhysicsMaterial",AssetType::PhysicsMaterial, controller.PhysicsMaterialID);
 			UI::EnumCombo("WalkableMode", controller.WalkableMode, {}, {},"only valid if slopelimit is 0");
 			
 			ImGui::Separator();
@@ -1498,7 +1500,7 @@ namespace Proof
 			UI::BeginPropertyGrid();
 
 			UI::EnumCombo("Player", player.InputPlayer);
-			UI::AttributeAssetTextBar("Player", player.Player, AssetType::Prefab);
+			//UI::AttributeAssetReference("Player",AssetType::Prefab, player.Player);
 			UI::EndPropertyGrid();
 		});
 
@@ -1544,7 +1546,7 @@ namespace Proof
 		{
 			UI::BeginPropertyGrid();
 
-			UI::AttributeAssetTextBar("Audio", audio.AudioAsset,AssetType::Audio);
+			UI::AttributeAssetReference("Audio",AssetType::Audio, audio.AudioAsset);
 
 			UI::AttributeSlider("VolumeMultiplier", audio.VolumeMultiplier, 0, 1);
 			UI::AttributeSlider("PitchMultiplier", audio.PitchMultiplier, 0, 24);

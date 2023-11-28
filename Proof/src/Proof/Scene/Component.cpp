@@ -101,7 +101,7 @@ namespace Proof
 	
 
 
-	void DynamicMeshComponent::SetMesh(UUID ID, bool copyMaterialTable)
+	void DynamicMeshComponent::SetMesh(AssetID ID, bool copyMaterialTable)
 	{
 		//#ifdef PF_ENABLE_DEBUG
 		if (!AssetManager::HasAsset(ID))return;
