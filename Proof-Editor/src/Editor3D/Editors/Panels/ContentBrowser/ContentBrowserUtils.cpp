@@ -333,12 +333,9 @@ namespace Proof
 		if (ImGui::MenuItem("Reload"))
 			actionResult.Set(ContentBrowserAction::Reload, true);
 
+		
 		if (SelectionManager::GetSelectionCount(SelectionContext::ContentBrowser) == 1 && ImGui::MenuItem("Rename"))
 			actionResult.Set(ContentBrowserAction::StartRenaming, true);
-
-		if (ImGui::MenuItem("Rename"))
-			actionResult.Set(ContentBrowserAction::StartRenaming, true);
-
 
 		if (ImGui::MenuItem("Copy"))
 			actionResult.Set(ContentBrowserAction::Copy, true);
@@ -444,7 +441,7 @@ namespace Proof
 	}
 
 	ContentBrowserAsset::ContentBrowserAsset(const AssetInfo& assetInfo, const Count<Texture2D>& icon)
-		: ContentBrowserItem(ContentBrowserItem::ItemType::Asset, assetInfo.ID, assetInfo.Path.stem().string(), icon), m_AssetInfo(assetInfo)
+		: ContentBrowserItem(ContentBrowserItem::ItemType::Asset, assetInfo.ID, assetInfo.GetName(), icon), m_AssetInfo(assetInfo)
 	{
 	}
 
@@ -484,10 +481,10 @@ namespace Proof
 
 	void ContentBrowserAsset::OnRenamed(const std::string& newName)
 	{
-		FileSystem::SkipNextFileSystemChange();
+		//FileSystem::SkipNextFileSystemChange();
 
 		auto filepath = AssetManager::GetAssetFileSystemPath(m_AssetInfo.Path);
-		const std::string extension = filepath.extension().string();
+		const std::string extension = FileSystem::GetFullFileExtension(filepath);
 		std::filesystem::path newFilepath = fmt::format("{0}\\{1}{2}", filepath.parent_path().string(), newName, extension);
 
 		std::string targetName = fmt::format("{0}{1}", newName, extension);
@@ -497,9 +494,9 @@ namespace Proof
 			filepath = fmt::format("{0}\\temp-rename{1}", filepath.parent_path().string(), extension);
 		}
 
-		FileSystem::SkipNextFileSystemChange();
+		//FileSystem::SkipNextFileSystemChange();
 
-		if (FileSystem::RenameFilename(filepath, newName))
+		if (FileSystem::Rename(filepath, newFilepath))
 		{
 			// Update AssetManager with new name
 			//auto& metadata = Project::GetEditorAssetManager()->GetMetadata(m_AssetInfo.Handle);

@@ -486,6 +486,8 @@ namespace Proof
 		s_AssetManagerData->AssetPath.insert({ path.string(),it.Info.ID });
 		// new assetINfo
 		it.Info.Path = path;
+
+		SaveAssetManager();
 	}
 	std::filesystem::path AssetManager::GetAssetFileSystemPath(const std::filesystem::path& path) 
 	{

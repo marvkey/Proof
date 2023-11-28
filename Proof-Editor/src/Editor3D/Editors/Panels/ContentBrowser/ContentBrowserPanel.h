@@ -237,7 +237,7 @@ namespace Proof
 		Count<T> CreateAssetInDirectory(const std::string& filenameNoExtension, Count<DirectoryInfo>& directory, Args&&... args)
 		{
 			auto filepath = FileSystem::GenerateUniqueFileName(AssetManager::GetDirectory() / directory->FilePath / (filenameNoExtension + Utils::GetAssetExtensionString(T::GetStaticType())));
-			Count<T> asset = AssetManager::NewAsset<T>(directory->FilePath, std::forward<Args>(args)...);
+			Count<T> asset = AssetManager::NewAsset<T>(filepath, std::forward<Args>(args)...);
 			if (!asset)
 				return nullptr;
 

@@ -14,6 +14,10 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 3650405502933676885
+            Index: 0
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]

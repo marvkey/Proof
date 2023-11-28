@@ -461,3 +461,6 @@ Assets:
   - Asset: 6915908757921917454
     Type: World
     Path: Scenes\PhysicsTest.ProofWorld
+  - Asset: 3650405502933676885
+    Type: Material
+    Path: Materials\RED.Material.ProofAsset
