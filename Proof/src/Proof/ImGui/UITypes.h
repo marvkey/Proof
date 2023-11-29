@@ -1,7 +1,7 @@
 #pragma once
 namespace Proof::UI
 {
-	enum UIMemoryAssetTypes
+	enum class UIMemoryAssetTypes
 	{
 		None = 0,
 		All,

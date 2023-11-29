@@ -385,6 +385,7 @@ namespace Proof {
 					const auto& collider = e.GetComponent<CapsuleColliderComponent>();
 					auto capsuleData = GetCapsuleData(collider.Direction, worldtransformComponent);
 					glm::mat4 colliderTransform = glm::mat4(1.0f); // Initialize with identity matrix
+					colliderTransform = glm::translate(colliderTransform, collider.Center + worldtransformComponent.Location);
 
 					if (collider.Direction == CapsuleDirection::X)
 					{
@@ -395,7 +396,6 @@ namespace Proof {
 						colliderTransform = glm::rotate(colliderTransform, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate 90 degrees around Z-axis
 					}
 					// Apply translation
-					colliderTransform = glm::translate(colliderTransform, collider.Center + worldtransformComponent.Location);
 					colliderTransform = colliderTransform * glm::mat4(worldtransformComponent.GetRotation());
 					// Adjust scaling based on capsule direction
 					float scale_x = (collider.Direction == CapsuleDirection::X) ? (collider.Height) * capsuleData.scaleDirection : (collider.Radius * 2.0f) * capsuleData.radiusScale;

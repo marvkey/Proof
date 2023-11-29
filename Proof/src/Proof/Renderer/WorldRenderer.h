@@ -305,6 +305,9 @@ namespace Proof
 		// 
 		Count<ComputePass> m_DOFPass;
 		Count<Texture2D> m_DOFTexture;
+		bool m_IsReady = false;
+		bool m_ResourcesCreatedGPU = false;
+		bool m_ResourcesCreated = false;
 	private:
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);

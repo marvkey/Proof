@@ -17,6 +17,7 @@ namespace Proof {
 		static physx::PxPhysics* GetPhysics();
 		static physx::PxDefaultCpuDispatcher* GetCpuDispatcher();
 		static PhysicsSettings& GetSettings() { return s_Settings; }
+		static std::string GetLastErrorMessage(); 
 
 		static Count<class MeshCollider> GetOrCreateColliderAsset(class  Entity entity, struct MeshColliderComponent& component);
 	private:

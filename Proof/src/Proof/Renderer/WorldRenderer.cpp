@@ -695,7 +695,7 @@ namespace Proof
 			m_GeometryWireFrameOnTopPass->AddGlobalInput(m_GlobalInputs);
 
 		}
-
+		Renderer::Submit([instance = Count<WorldRenderer>(this)]() mutable { instance->m_ResourcesCreatedGPU = true; });
 		PF_ENGINE_TRACE("World Renderer Inititilized");
 	}
 
@@ -711,7 +711,12 @@ namespace Proof
 		PF_CORE_ASSERT(!m_InContext);
 		PF_CORE_ASSERT(m_ActiveWorld);
 		PF_PROFILE_TAG("Renderer", m_ActiveWorld->GetName().c_str());
-		
+		if (m_ResourcesCreatedGPU)
+			m_ResourcesCreated = true;
+
+		if (!m_ResourcesCreated)
+			return;
+
 		m_InContext = true;
 
 		//reset stats
@@ -838,13 +843,13 @@ namespace Proof
 
 		Timer drawSceneTimer;
 		// clear screen
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
 
 //Renderer::BeginRenderPass(m_CommandBuffer,m_Dep, true);
 //		Renderer::EndRenderPass(m_GeometryPass);
 		
-		if (m_UBScreenData.FullResolution.x > 0 && m_UBScreenData.FullResolution.y > 0)
+		if (m_ResourcesCreated && m_UBScreenData.FullResolution.x > 0 && m_UBScreenData.FullResolution.y > 0)
 		{
+			Renderer::BeginCommandBuffer(m_CommandBuffer);
 
 			SetPasses();
 			ShadowPass();
@@ -852,9 +857,24 @@ namespace Proof
 			LightFrustrumAndCullingPass();
 			GeometryPass();
 			CompositePass();
+
+			Renderer::EndCommandBuffer(m_CommandBuffer);
+			Renderer::SubmitCommandBuffer(m_CommandBuffer);
 		}
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		else
+		{
+			Renderer::BeginCommandBuffer(m_CommandBuffer);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_PreDepthPass, true);
+			Renderer::EndRenderPass(m_PreDepthPass);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePass, true);
+			Renderer::EndRenderPass(m_CompositePass);
+
+			Renderer::EndCommandBuffer(m_CommandBuffer);
+			Renderer::SubmitCommandBuffer(m_CommandBuffer);
+
+		}
 		// clear data
 		//mesh Pass
 		{
@@ -878,11 +898,13 @@ namespace Proof
 	{
 		if (m_UBScreenData.FullResolution == glm::vec2{ width,height })
 			return;
-		if (width <= 0 || height <= 0)
-		{
-			width = 1;
-			height = 1;
-		}
+		//can only have a minum of 100 as the size of viewpoart
+		if (width <= 100)
+			width = 100;
+
+		if (height <= 100)
+			height = 100;
+
 		m_UBScreenData.FullResolution = { width, height };
 		m_UBScreenData.InverseFullResolution = {1/ width,  1/height };
 		m_UBScreenData.HalfResolution = glm::uvec2{ m_UBScreenData.FullResolution } / 2u;
@@ -904,7 +926,11 @@ namespace Proof
 
 	Count<Image2D> WorldRenderer::GetFinalPassImage()
 	{
-		return m_CompositePass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>(); 
+		auto image = m_CompositePass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>();
+		if (image == nullptr)
+			return Renderer::GetBlackTexture()->GetImage();
+
+		return image;
 	}
 
 	void WorldRenderer::SetPasses()

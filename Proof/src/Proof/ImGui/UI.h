@@ -128,7 +128,7 @@ namespace Proof::UI
 	bool AttributeButton(const std::string& label, const std::string& buttonText, const ImVec2& size = ImVec2(0, 0));
 
 	bool AttributeInputTextMultiline(const std::string& label, std::string& value, ImGuiInputTextFlags flags);
-	void PushItemDisabled();
+	void PushItemDisabled(bool disabled = true);
 	void PopItemDisabled();
 
 	void Tooltip(const std::string& tooltip, float treshHold = EG_HOVER_THRESHOLD);

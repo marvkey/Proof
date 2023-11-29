@@ -122,7 +122,7 @@ namespace Proof
 		{
 		case CapsuleDirection::X:
 		{
-			scaleDirection = scaleabs.x;
+			scaleDirection = glm::max(glm::max(scaleabs.y, scaleabs.z) / 2, scaleabs.x);
 			offsetRotation = glm::vec3{ 0,0,0 };
 			radiusScale = glm::max(scaleabs.y, scaleabs.z);
 		}
@@ -130,20 +130,22 @@ namespace Proof
 		case CapsuleDirection::Y:
 		{
 			offsetRotation = glm::vec3{ 0,0,physx::PxHalfPi };
-			scaleDirection = scaleabs.y;
+			scaleDirection = glm::max(glm::max(scaleabs.x, scaleabs.z)/2, scaleabs.y);
 			radiusScale = glm::max(scaleabs.x, scaleabs.z);
 		}
 		break;
 		case CapsuleDirection::Z:
 		{
 			offsetRotation = glm::vec3{ 0,physx::PxHalfPi,0 };
-			scaleDirection = scaleabs.z;
+			scaleDirection = glm::max(glm::max(scaleabs.y, scaleabs.x) / 2, scaleabs.z);
 			radiusScale = glm::max(scaleabs.y, scaleabs.x);
 		}
 		break;
 		default:
 			break;
 		}
+
+		
 
 		return { offsetRotation,radiusScale,scaleDirection };
 	}

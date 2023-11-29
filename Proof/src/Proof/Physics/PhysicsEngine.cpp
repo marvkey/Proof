@@ -10,6 +10,12 @@ namespace Proof {
 	namespace Utils {
 		
 	}
+	struct PhysXData
+	{
+		std::string LastErrorMessage = "";
+	};
+	static PhysXData* s_PhysXData;
+
 	class PhysicsErrorCallback : public physx::PxDefaultErrorCallback {
 		virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line);
 	};
@@ -68,7 +74,7 @@ namespace Proof {
 	void PhysicsEngine::Init(PhysicsSettings settings)
 	{
 		Timer time;
-
+		s_PhysXData = new PhysXData();
 		s_Settings = settings;
 
 		s_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_DefaultAllocatorCallback, s_DefaultErrorCallback);
@@ -112,10 +118,34 @@ namespace Proof {
 		s_Dispatcher->release();
 		s_Pvd->release();
 		s_Foundation->release();
+		delete s_PhysXData;
 		PF_ENGINE_INFO("Physics Engine Shutdown {}m/s", time.ElapsedMillis());
 	}
+	std::string PhysicsEngine::GetLastErrorMessage()
+	{
+		return s_PhysXData->LastErrorMessage;
+	}
+
 	void PhysicsErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
 	{
+		const char* errorMessage = NULL;
+
+
+		switch (code)
+		{
+		case physx::PxErrorCode::eNO_ERROR:				errorMessage = ""; break;
+		case physx::PxErrorCode::eDEBUG_INFO:			errorMessage = "Info"; break;
+		case physx::PxErrorCode::eDEBUG_WARNING:		errorMessage = "Warning"; break;
+		case physx::PxErrorCode::eINVALID_PARAMETER:	errorMessage = "Invalid Parameter"; break;
+		case physx::PxErrorCode::eINVALID_OPERATION:	errorMessage = "Invalid Operation"; break;
+		case physx::PxErrorCode::eOUT_OF_MEMORY:		errorMessage = "Out Of Memory"; break;
+		case physx::PxErrorCode::eINTERNAL_ERROR:		errorMessage = "Internal Error"; break;
+		case physx::PxErrorCode::eABORT:				errorMessage = "Abort"; break;
+		case physx::PxErrorCode::ePERF_WARNING:			errorMessage = "Performance Warning"; break;
+		case physx::PxErrorCode::eMASK_ALL:				errorMessage = "Unknown Error"; break;
+		}
+
+		s_PhysXData->LastErrorMessage = fmt::format("{0}: {1}", errorMessage, message);
 		switch (code)
 		{
 			case physx::PxErrorCode::eDEBUG_INFO:

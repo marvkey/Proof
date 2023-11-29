@@ -172,8 +172,9 @@ namespace Proof {
 		physx::PxMaterial* physxMaterial = (physx::PxMaterial*)m_Material->GetPhysicsBody();
 
 		auto capsuleData = GetCapsuleData(component.Direction, worldTransform);
-
-		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * capsuleData.radiusScale, (component.Height / 2.0f) * capsuleData.scaleDirection);
+		if (capsuleData.scaleDirection <= 1.0f)
+			capsuleData.scaleDirection /= 2;
+		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * capsuleData.radiusScale, (component.Height ) * capsuleData.scaleDirection );
 	//	m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, *physxMaterial);
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);

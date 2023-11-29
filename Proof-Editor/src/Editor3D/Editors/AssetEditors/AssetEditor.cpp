@@ -6,6 +6,7 @@
 #include "MaterialEditorPanel.h"
 #include "ParticleSystemEditorPanel.h"
 #include "MeshEditorPanel.h"
+#include "MeshColliderEditorPanel.h"
 #include "Proof/ImGui/UiUtilities.h"
 
 namespace Proof 
@@ -53,7 +54,7 @@ namespace Proof
 		{
 			UI::ScopedID (m_PushID.Get());
 			OnWindowStylePush();
-			//ImGui::SetNextWindowSizeConstraints(m_MinSize, m_MaxSize);
+			ImGui::SetNextWindowSizeConstraints(m_MinSize, m_MaxSize);
 			ImGui::Begin(m_TitleAndId.c_str(), &m_IsOpen, GetWindowFlags());
 			m_CurrentSize = ImGui::GetWindowSize();
 			if (ImGui::IsWindowFocused())
@@ -82,9 +83,7 @@ namespace Proof
 		RegisterEditor(AssetType::PhysicsMaterial);
 		RegisterEditor(AssetType::ParticleSystem);
 		RegisterEditor(AssetType::Mesh);
-		//RegisterEditor<TextureViewer>(AssetType::Texture);
-		//RegisterEditor<MeshViewerPanel>(AssetType::MeshSource);
-		//RegisterEditor<PrefabEditor>(AssetType::Prefab);
+		RegisterEditor(AssetType::MeshCollider);
 	}
 
 	void AssetEditorPanel::UnregisterAllEditors()
@@ -177,6 +176,9 @@ namespace Proof
 					break;
 				case Proof::AssetType::ParticleSystem:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<ParticleSystemEditorPanel>::Create();
+					break;
+				case Proof::AssetType::MeshCollider:
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<MeshColliderEditorPanel>::Create();
 					break;
 				default:
 					break;

@@ -151,5 +151,6 @@ namespace Proof::UI
 		}
 
 		static bool AssetSearchPopup(const char* ID, AssetType assetType, AssetID& selected, UIMemoryAssetTypes types, bool allowClear = true, const char* hint = "Search Assets", ImVec2 size = ImVec2{ 250.0f, 350.0f });
+		static bool AssetSearchPopup(const char* ID, std::initializer_list<AssetType> assetTypes, AssetID& selected, UIMemoryAssetTypes types, bool allowClear = true, const char* hint = "Search Assets", ImVec2 size = ImVec2{ 250.0f, 350.0f });
 	};
 }

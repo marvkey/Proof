@@ -868,19 +868,16 @@ namespace Proof::UI
         return ImGui::InputTextMultiline(label.c_str(), (char*)value.c_str(), value.capacity() + 1, ImVec2(0,0),flags, InputTextCallback, &cb_user_data);
 
     }
-    static bool isDisabledSet = false;
-    void PushItemDisabled()
+    void PushItemDisabled(bool disabled )
     {
-        isDisabledSet = true;
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+        if (disabled)
+            ImGui::BeginDisabled(true);
     }
 
     void PopItemDisabled()
     {
-        isDisabledSet = false;
-        ImGui::PopItemFlag();
-        ImGui::PopStyleVar();
+        if (GImGui->DisabledStackSize > 0)
+            ImGui::EndDisabled();
     }
 
     void Tooltip(const std::string& tooltip, float treshHold)
@@ -897,7 +894,7 @@ namespace Proof::UI
 
     void HelpMarker(const std::string& text)
     {
-        bool localisDisabledSet = isDisabledSet;
+        bool localisDisabledSet = IsItemDisabled();
         if (localisDisabledSet)
             UI::PopItemDisabled();
         ImGui::TextDisabled("(?)");

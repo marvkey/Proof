@@ -33,6 +33,40 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 4847208646127276708
+      TagComponent:
+        Tag: Capsule
+        tags: []
+      TransformComponent:
+        Location: [0, 15.3000002, 0]
+        Rotation: [0, 0, 0]
+        Scale: [4, 4, 4]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 52
+        MaterialTable:
+          - Material: ""
+            AssetID: 14268173759466256543
+            Index: 0
+      CapsuleColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        Height: 1
+        Direction: Y
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 13016061378246951569
       TagComponent:
         Tag: Sky Light

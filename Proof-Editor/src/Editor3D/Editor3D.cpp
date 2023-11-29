@@ -1473,7 +1473,7 @@ namespace Proof
 
 		{
 			ScopeTimer scopeTime(fmt::format("AssetManager Saved"));
-
+			AssetManager::SaveAllAssets();
 			AssetManager::SaveAssetManager();
 		}
 
