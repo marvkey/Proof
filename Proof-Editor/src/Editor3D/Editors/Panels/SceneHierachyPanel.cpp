@@ -7,6 +7,8 @@
 #include "Proof/Scene/EntitiyComponentSystem/ECS.h"
 #include "Proofprch.h"
 #include "Proof/Asset/Asset.h"
+#include "Proof/Physics/MeshCollider.h"
+#include "Proof/Physics/PhysicsEngine.h"
 //#include "ContentBrowserPanel.h"
 #include <vector>
 #include "Proof/Scene/ExampleSccripts.h"
@@ -156,6 +158,16 @@ namespace Proof
 		if (ImGui::MenuItem(name.c_str()))
 		{
 			entity.AddComponent<T>();
+			ImGui::CloseCurrentPopup();
+		}
+	};
+
+	template<class T,class UIFunction>
+	static void AddComponentGuiButton(Entity entity, const std::string& name, UIFunction function) {
+		if (ImGui::MenuItem(name.c_str()))
+		{
+			entity.AddComponent<T>();
+			function(entity, entity.GetComponent<T>());
 			ImGui::CloseCurrentPopup();
 		}
 	};
@@ -441,7 +453,11 @@ namespace Proof
 			AddComponentGui<BoxColliderComponent>(entity, "Cube Collider");
 			AddComponentGui<SphereColliderComponent>(entity, "Sphere Collider");
 			AddComponentGui<CapsuleColliderComponent>(entity, "Capsule Collider");
-			AddComponentGui<MeshColliderComponent>(entity, "Mesh Collider");
+			AddComponentGuiButton<MeshColliderComponent>(entity, "Mesh Collider", [](Entity entity, MeshColliderComponent& meshColliderComp)
+				{
+					PhysicsEngine::GetOrCreateColliderAsset(entity, meshColliderComp);
+				});
+
 			AddComponentGui<RigidBodyComponent>(entity, "Rigid Body");
 			AddComponentGui<CharacterControllerComponent>(entity, "Character Controller");
 
@@ -495,7 +511,14 @@ namespace Proof
 
 			UI::PropertyAssetReferenceSettings assetRefSettings;
 			assetRefSettings.AssetMemoryTypes = UI::UIMemoryAssetTypes::Default;
-			UI::AttributeAssetReference("Mesh", AssetType::Mesh, meshComp.m_MeshID, assetRefSettings);
+			AssetID id = meshComp.m_MeshID;
+			if (UI::AttributeAssetReference("Mesh", AssetType::Mesh, id, assetRefSettings))
+			{
+				if (id == 0)
+					meshComp.RemoveMesh();
+				else
+					meshComp.SetMesh(id);
+			}
 			UI::AttributeBool("Visible", meshComp.Visible);
 
 			ImGui::Separator();
@@ -866,12 +889,39 @@ namespace Proof
 
 			UI::EndPropertyGrid();
 		});
-		DrawComponents<MeshColliderComponent>("Mesh Collider", entity, [](MeshColliderComponent& meshCollider) {
+		DrawComponents<MeshColliderComponent>("Mesh Collider", entity, [&](MeshColliderComponent& meshCollider) {
 			UI::BeginPropertyGrid();
 
+			if (UI::AttributeAssetReference("MeshCollider", AssetType::MeshCollider, meshCollider.ColliderID))
+			{
+				if (meshCollider.ColliderID == 0)
+				{
+					PhysicsEngine::GetOrCreateColliderAsset(entity, meshCollider);
+				}
+
+				if (entity.HasComponent<DynamicMeshComponent>())
+					meshCollider.SubMeshIndex = entity.GetComponent<DynamicMeshComponent>().GetSubMeshIndex();
+			}
 			UI::AttributeBool("IsTrigger", meshCollider.IsTrigger);
+
+			Count<MeshCollider> colliderAsset = nullptr;
+			bool isPhysicalAsset = false;
+
+			if (AssetManager::HasAsset(meshCollider.ColliderID))
+			{
+				isPhysicalAsset = !AssetManager::GetAssetInfo(meshCollider.ColliderID).RuntimeAsset;
+				colliderAsset = AssetManager::GetAsset<MeshCollider>(meshCollider.ColliderID);
+			}
+
+			UI::PushItemDisabled(colliderAsset && isPhysicalAsset);
+			UI::AttributeBool("Use Shared Shape", meshCollider.UseSharedShape);
+			UI::SetTooltip("Allows this collider to share its collider data. (Default: False)");
+			UI::PopItemDisabled();
+
 			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, meshCollider.m_PhysicsMaterialPointerID);
-			UI::AttributeAssetReference("MeshCollider", AssetType::MeshCollider, meshCollider.ColliderID);
+			UI::SetTooltip("Overrides the material provided by the collider asset if an explicit asset has been set");
+
+
 			UI::EndPropertyGrid();
 		});
 		

@@ -163,6 +163,7 @@ namespace Proof
 		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex,const glm::mat4& transform, bool CastShadowws = true);
 
 		void SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform);
+		void SubmitPhysicsDynamicDebugMesh(Count<DynamicMesh> mesh, uint32_t subMeshIndex,const glm::mat4& transform);
 		// if the same size is passed it will not resize
 		void SetViewportSize(uint32_t width, uint32_t height);
 

@@ -411,16 +411,7 @@ namespace Proof {
 		PF_PROFILE_FUNC();
 
 		Count<MeshCollider> colliderAsset;
-		if (collider.OverrideCollider == false)
-		{
-			colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(m_Entity, collider);
-		}
-		else
-		{
-
-			if(AssetManager::HasAsset(collider.ColliderID))
-				colliderAsset = AssetManager::GetAsset<MeshCollider>(collider.ColliderID);
-		}
+		colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(m_Entity, collider);
 		if (colliderAsset == nullptr)
 			return;
 

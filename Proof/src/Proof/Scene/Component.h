@@ -512,6 +512,10 @@ namespace Proof
 	{
 		MeshColliderComponent(const MeshColliderComponent&) = default;
 		MeshColliderComponent() = default;
+		MeshColliderComponent(AssetID colliderID, uint32_t submeshIndex = 0)
+			: ColliderID(colliderID), SubMeshIndex(submeshIndex)
+		{
+		}
 		void RemovePhysicsMaterial() {
 			m_PhysicsMaterialPointerID = 0;
 		}
@@ -520,12 +524,11 @@ namespace Proof
 		}
 		Count<class PhysicsMaterial> GetPhysicsMaterial();
 
-		bool UseSharedShape = false;
-		bool IsTrigger = false;
-
-		bool OverrideCollider = false;
 		AssetID ColliderID = 0; // even if its a memory asset it will be saved on disk by the physics system 
 		uint32_t SubMeshIndex = 0;//only if collider id is a dynamic mesh 
+
+		bool UseSharedShape = false;
+		bool IsTrigger = false;
 	private:
 		friend class World;
 		friend class SceneSerializer;

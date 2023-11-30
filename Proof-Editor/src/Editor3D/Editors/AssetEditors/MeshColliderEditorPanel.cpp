@@ -19,6 +19,8 @@ namespace Proof
 
 	{
 		m_WorldRenderer = Count<WorldRenderer>::Create();
+		m_WorldRenderer->GeneralOptions.ShowPhysicsColliders = WorldRendererOptions::PhysicsColliderView::Normal;
+		//m_WorldRenderer->BloomSettings.Enabled = false;
 	}
 	void MeshColliderEditorPanel::OnUpdate(FrameTime deltaTime)
 	{
@@ -97,7 +99,7 @@ namespace Proof
 			UI::BeginPropertyGrid();
 			UI::AttributeBool("Always Share Shape", m_MeshCollider->AlwaysShareShape, "Forces All entities that use this collider to share the collider data as opposed to making copies of it. (Default: False)");
 
-			m_NeedsCooking |= UI::EnumCombo("Collision Complexity", m_MeshCollider->CollisionComplexity);
+			m_NeedsCooking |= UI::EnumCombo("Collision Complexity", m_CollisionComplexity);
 			m_NeedsCooking |= UI::AttributeDrag("Scale", m_MeshCollider->ColliderScale, 0.1f, 0.0f, 0.0f, "The scale of the collider. This value is a scalar of the entity scale. (Default: [1, 1, 1])");
 
 			UI::EndPropertyGrid();
@@ -124,7 +126,7 @@ namespace Proof
 
 				UI::EndPropertyGrid();
 
-				if (m_MeshCollider->CollisionComplexity != ECollisionComplexity::UseComplexAsSimple && UI::AttributeTreeNode("Simple Collider Settings"))
+				if (m_CollisionComplexity != ECollisionComplexity::UseComplexAsSimple && UI::AttributeTreeNode("Simple Collider Settings"))
 				{
 					UI::BeginPropertyGrid();
 					m_NeedsCooking |= UI::AttributeBool("Check Zero-Area Triangles", m_MeshCollider->CheckZeroAreaTriangles,
@@ -142,7 +144,7 @@ namespace Proof
 					UI::EndTreeNode();
 				}
 
-				if (m_MeshCollider->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex && UI::AttributeTreeNode("Complex Collider Settings"))
+				if (m_CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex && UI::AttributeTreeNode("Complex Collider Settings"))
 				{
 					UI::BeginPropertyGrid();
 					m_NeedsCooking |= UI::AttributeBool("Flip Normals", m_MeshCollider->FlipNormals,
@@ -215,16 +217,21 @@ namespace Proof
 				entity.AddComponent<MeshComponent>().SetMesh(m_MeshCollider->ColliderMesh);
 			else
 				entity.AddComponent<DynamicMeshComponent>().SetMesh(m_MeshCollider->ColliderMesh);
-		}
-		entity.AddComponent<DirectionalLightComponent>();
-		entity.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3{ 80.0f, 10.0f, 0.0f }));
 
-		//entity.AddComponent<SkyLightComponent>().Turbidity = 2.0f;
-		//entity.GetComponent<SkyLightComponent>().Azimuth = 0.1;
-		entity.GetComponent<TransformComponent>().Location.z -= 20.0f;
+			entity.AddComponent<MeshColliderComponent>(m_MeshCollider->GetID());
+		}
+
+		{
+			Entity light = m_World->CreateEntity("Light");
+
+			light.AddComponent<DirectionalLightComponent>().Intensity = 2.5;
+			light.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3{ 0.400, 5.400, 0.100 }));
+		}
 	}
 	bool MeshColliderEditorPanel::CookMeshCollider()
 	{
+		m_MeshCollider->CollisionComplexity = m_CollisionComplexity;
+
 		std::tie(m_LastSimpleCookingResult, m_LastComplexCookingResult) = PhysicsMeshCooker::CookMesh(m_MeshCollider, true);
 		if(m_ShowCookingResults)
 			m_IsCookingResultsOpen = true;
@@ -339,6 +346,7 @@ namespace Proof
 			return;
 		}
 		m_MeshCollider = asset.As<MeshCollider>();
+		m_CollisionComplexity = m_MeshCollider->CollisionComplexity;
 		UpdatePreviewEntity();
 	}
 	

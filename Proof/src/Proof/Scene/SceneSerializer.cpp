@@ -733,11 +733,13 @@ namespace Proof
 		}
 		{
 			if (entity.HasComponent<MeshColliderComponent>()) {
-				MeshColliderComponent& meshCollider = entity.GetComponent<MeshColliderComponent>();
+				MeshColliderComponent& meshColliderComponent = entity.GetComponent<MeshColliderComponent>();
 				out << YAML::Key << "MeshColliderComponent";
 				out << YAML::BeginMap; // MeshColliderComponent
-				out << YAML::Key << "IsTrigger" << meshCollider.IsTrigger;
-				out << YAML::Key << "PhysicsMaterialPointerID" << meshCollider.m_PhysicsMaterialPointerID;
+				out << YAML::Key << "ColliderID" << YAML::Value << meshColliderComponent.ColliderID;
+				out << YAML::Key << "IsTrigger" << YAML::Value << meshColliderComponent.IsTrigger;
+				out << YAML::Key << "UseSharedShape" << YAML::Value << meshColliderComponent.UseSharedShape;
+				out << YAML::Key << "PhysicsMaterialPointerID" << YAML::Value << meshColliderComponent.m_PhysicsMaterialPointerID;
 				//out << YAML::Key << "MeshAssetPointerID" << meshCollider.m_MeshAssetPointerID;
 				out << YAML::EndMap; // MeshColliderComponent
 			}
@@ -1290,10 +1292,18 @@ namespace Proof
 				auto mehsCollider = entity["MeshColliderComponent"];
 				if (mehsCollider)
 				{
-					auto& src = NewEntity.AddComponent<MeshColliderComponent>();
-					src.IsTrigger = mehsCollider["IsTrigger"].as<bool>();
-					src.m_PhysicsMaterialPointerID = mehsCollider["PhysicsMaterialPointerID"].as<uint64_t>();
+					auto src = MeshColliderComponent();
+
+					src.ColliderID = mehsCollider["ColliderID"].as<uint64_t>(0);
+					src.IsTrigger = mehsCollider["IsTrigger"].as<bool>(false);
+					src.UseSharedShape = mehsCollider["UseSharedShape"].as<bool>(false);
+					src.m_PhysicsMaterialPointerID = mehsCollider["PhysicsMaterialPointerID"].as<uint64_t>(0);
+					
 					//src.m_MeshAssetPointerID = mehsCollider["MeshAssetPointerID"].as<uint64_t>();
+					// 
+					//doing this so we dont generate a default collider if collider is not 0
+					NewEntity.AddComponent<MeshColliderComponent>(src);
+
 				}
 			}
 			// RIGID BODY

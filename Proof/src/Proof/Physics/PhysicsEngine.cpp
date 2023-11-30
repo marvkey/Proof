@@ -47,12 +47,13 @@ namespace Proof {
 		if (colliderAsset)
 			return colliderAsset;
 
+
 		if (entity.HasComponent<DynamicMeshComponent>())
 		{
 			auto& mc = entity.GetComponent<DynamicMeshComponent>();
 			if (mc.GetMesh() != nullptr)
 			{
-				component.ColliderID = AssetManager::CreateRuntimeAsset<MeshCollider>(mc.GetMesh()->GetID())->GetID();
+				component.ColliderID = AssetManager::CreateRuntimeAssetWithName<MeshCollider>("Default" + AssetManager::GetAssetInfo(mc.GetMesh()).GetName() + "Dynamic Collider", mc.GetMesh()->GetID())->GetID();
 				component.SubMeshIndex = mc.GetSubMeshIndex();
 			}
 		}
@@ -60,7 +61,7 @@ namespace Proof {
 		{
 			auto& mc = entity.GetComponent<MeshComponent>();
 			if(mc.GetMesh()!= nullptr)
-				component.ColliderID = AssetManager::CreateRuntimeAsset<MeshCollider>(mc.GetMesh()->GetID())->GetID();
+				component.ColliderID = AssetManager::CreateRuntimeAssetWithName<MeshCollider>("Default" + AssetManager::GetAssetInfo(mc.GetMesh()).GetName() + "Collider", mc.GetMesh()->GetID())->GetID();
 		}
 
 		if(AssetManager::HasAsset(component.ColliderID))

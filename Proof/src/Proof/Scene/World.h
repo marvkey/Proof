@@ -140,11 +140,11 @@ namespace Proof {
 		
 		// this is nore for beforee we strt runtime so we cna have mesh collider 
 		// for debugging
-		void OnMeshColliderComponentCreate(MeshColliderComponent& component);
-		void OnMeshColliderComponentDelete(MeshColliderComponent& component);
 
 		void OnRigidBodyComponentCreate(entt::registry& component, entt::entity entityID);
 		void OnRigidBodyComponentDelete(entt::registry& component, entt::entity entityID);
+		void OnMeshColliderComponentConstruct(entt::registry& registry, entt::entity entity);
+		void OnMeshColliderComponentDestroy(entt::registry& registry, entt::entity entity);
 		void OnScriptAdded(entt::registry& component, entt::entity entityID);
 		void OnScriptDelete(entt::registry& component, entt::entity entityID);
 

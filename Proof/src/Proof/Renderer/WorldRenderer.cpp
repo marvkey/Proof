@@ -1487,9 +1487,15 @@ namespace Proof
 			m_CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
 
 			if (BloomSettings.Enabled)
+			{
 				m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", BloomSettings.Intensity);
+				m_CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
+			}
 			else
+			{
 				m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", 0.0f);
+				m_CompositeMaterial->Set("u_BloomTexture", blackTexture);
+			}
 
 			if(DOFSettings.Enabled)
 				m_CompositeMaterial->Set("u_DOFTexture", m_DOFTexture);
@@ -1520,6 +1526,15 @@ namespace Proof
 				const auto& transformData = m_MeshTransformMap.at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 				RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_GeometryWireFramePassMaterial,
+					wireFramePass,
+					transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+			}
+
+			for (auto& [meshKey, dc] : m_DynamicColliderDrawList)
+			{
+				const auto& transformData = m_MeshTransformMap.at(meshKey);
+				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				RenderDynamicMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_GeometryWireFramePassMaterial,
 					wireFramePass,
 					transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 			}
@@ -1938,6 +1953,39 @@ namespace Proof
 				dc.InstanceCount++;
 				dc.OverrideMaterial = nullptr;
 			}
+		}
+	}
+
+	void WorldRenderer::SubmitPhysicsDynamicDebugMesh(Count<DynamicMesh> mesh, uint32_t subMeshIndex, const glm::mat4& transform)
+	{
+
+		PF_PROFILE_FUNC();
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		//PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+
+		AssetID meshID = mesh->GetID();
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		const auto& submeshData = meshSource->GetSubMesh(subMeshIndex);
+		const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
+
+		glm::mat4 subMeshTransform = transform * subMesh.Transform;
+
+		uint32_t materialIndex = subMesh.MaterialIndex;
+
+		AssetID materialHandle = m_GeometryWireFramePassMaterialAsset->GetID();
+		PF_CORE_ASSERT(materialHandle, "Material ID cannot be zero");
+
+		MeshKey meshKey = { meshID, materialHandle, subMeshIndex, false };
+		auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
+		transformStorage.Transform = subMeshTransform;
+
+		// geo pass
+		{
+			auto& dc = m_DynamicColliderDrawList[meshKey];
+			dc.Mesh = mesh;
+			dc.SubMeshIndex = subMeshIndex;
+			dc.InstanceCount++;
+			dc.OverrideMaterial = nullptr;
 		}
 	}
 

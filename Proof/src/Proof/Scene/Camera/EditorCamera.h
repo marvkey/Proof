@@ -4,7 +4,7 @@ namespace Proof
 {
 	class EditorCamera : public Camera{
 	public:
-		EditorCamera(uint32_t width,uint32_t height,float fovDeg=45,float nearPlane = 0.1,float farplane = 2000,glm::vec3 position ={-5,-5,-5});
+		EditorCamera(uint32_t width,uint32_t height,float fovDeg=45,float nearPlane = 0.1,float farplane = 2000,glm::vec3 position ={-5,5,5});
 		void OnUpdate(float DeltaTime,uint32_t width,uint32_t height);
 		glm::mat4 GetTransform() const {
 			glm::mat4 rotation = glm::toMat4(glm::quat({0.0f,0.0f,0.0f}));

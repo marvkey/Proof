@@ -416,22 +416,30 @@ namespace Proof {
 			{
 				Entity e = { entity, this };
 				auto& collider = e.GetComponent<MeshColliderComponent>();
-				Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(e, collider);
+				Count<MeshCollider> colliderAsset = nullptr;
+
+				if (AssetManager::HasAsset(collider.ColliderID))
+					colliderAsset = AssetManager::GetAsset<MeshCollider>(collider.ColliderID);
 
 				if (colliderAsset)
 				{
-					Count<Mesh> simpleDebugMesh = PhysicsMeshCache::GetDebugMesh(colliderAsset);
-					if (simpleDebugMesh && colliderAsset->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex)
-					{
-						glm::mat4 transform = GetWorldSpaceTransform(e);
-						renderer->SubmitPhysicsDebugMesh(simpleDebugMesh, transform);
-					}
+					glm::mat4 transform = GetWorldSpaceTransform(e);
+
+					Count<Mesh> complexDebugMesh = PhysicsMeshCache::GetDebugMesh(colliderAsset);
+					if (complexDebugMesh && colliderAsset->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex)
+						renderer->SubmitPhysicsDebugMesh(complexDebugMesh, transform);
+
+					Count<DynamicMesh> simpleDebugMesh = PhysicsMeshCache::GetDebugDynamicMesh(colliderAsset);
+					if (simpleDebugMesh && colliderAsset->CollisionComplexity != ECollisionComplexity::UseComplexAsSimple)
+						renderer->SubmitPhysicsDynamicDebugMesh(simpleDebugMesh, collider.SubMeshIndex, transform);
 				}
 			}
 		}
 	}
 	void World::Init()
 	{
+		m_Registry.on_construct<MeshColliderComponent>().connect<&World::OnMeshColliderComponentConstruct>(this);
+		m_Registry.on_destroy<MeshColliderComponent>().connect<&World::OnMeshColliderComponentDestroy>(this);
 	}
 
 	void World::DeleteEntitiesfromQeue()
@@ -458,15 +466,6 @@ namespace Proof {
 		m_EntityDeleteQueue.clear();
 	}
 
-	void World::OnMeshColliderComponentCreate(MeshColliderComponent& component)
-	{
-		//PF_CORE_ASSERT(false);
-	}
-
-	void World::OnMeshColliderComponentDelete(MeshColliderComponent& component)
-	{
-
-	}
 
 	void World::OnRigidBodyComponentCreate(entt::registry& component, entt::entity entityID)
 	{
@@ -1218,4 +1217,23 @@ namespace Proof {
 		entity.GetComponent<HierarchyComponent>().ParentHandle = 0;
 	}
 
+	void World::OnMeshColliderComponentConstruct(entt::registry& registry, entt::entity entity)
+	{
+		PF_PROFILE_FUNC();
+
+		Entity e = { entity, this };
+		auto& component = e.GetComponent<MeshColliderComponent>();
+		PhysicsEngine::GetOrCreateColliderAsset(e, component);
+
+		if (AssetManager::HasAsset(component.ColliderID))
+		{
+			Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+			if (colliderAsset && !PhysicsMeshCache::Exists(colliderAsset))
+				PhysicsMeshCooker::CookMesh(colliderAsset);
+		}
+	}
+
+	void World::OnMeshColliderComponentDestroy(entt::registry& registry, entt::entity entity)
+	{
+	}
 }

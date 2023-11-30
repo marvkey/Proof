@@ -5,6 +5,7 @@
 
 namespace Proof
 {
+	enum class ECollisionComplexity : uint8_t;
 	class MeshColliderEditorPanel :public AssetEditor
 	{
 
@@ -35,6 +36,7 @@ namespace Proof
 		ImVec2 m_ViewPoartSize{ 0,0 };
 		CookingResult m_LastSimpleCookingResult = CookingResult::None;
 		CookingResult m_LastComplexCookingResult = CookingResult::None;
+		ECollisionComplexity m_CollisionComplexity;// so it does not change wihtout being cooked with using the value
 
 	};
 }

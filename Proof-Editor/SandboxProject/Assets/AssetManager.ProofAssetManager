@@ -22,7 +22,7 @@ Assets:
     Path: HdrMaps\Arches_E_PineTree_3k.hdr
   - Asset: 12902208667846413922
     Type: MeshCollider
-    Path: MeshCollider\NewMeshCollider.MeshCollider.ProofAsset
+    Path: MeshCollider\SponzaCollider.MeshCollider.ProofAsset
   - Asset: 9322883649519495229
     Type: Texture
     Path: HdrMaps\qwantani_puresky_4k.Texture.ProofAsset
@@ -467,3 +467,6 @@ Assets:
   - Asset: 3650405502933676885
     Type: Material
     Path: Materials\RED.Material.ProofAsset
+  - Asset: 16583584930006105417
+    Type: PhysicsMaterial
+    Path: PhysicsMaterial\SlipperyMaterial.PhysicsMaterial.ProofAsset
