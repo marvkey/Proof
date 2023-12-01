@@ -470,3 +470,6 @@ Assets:
   - Asset: 16583584930006105417
     Type: PhysicsMaterial
     Path: PhysicsMaterial\SlipperyMaterial.PhysicsMaterial.ProofAsset
+  - Asset: 5412365953404524970
+    Type: PhysicsMaterial
+    Path: PhysicsMaterial\BouncyMaterial.PhysicsMaterial.ProofAsset

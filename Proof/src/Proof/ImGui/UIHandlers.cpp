@@ -8,6 +8,7 @@ namespace Proof::UI
 {
     bool AttributeAssetReference(const std::string& label, AssetType assetType, AssetID& outHandle, const PropertyAssetReferenceSettings& settings)
     {
+#if 0
 		bool modified = false;
 
         UI::ShiftCursor(10.0f, 9.0f);
@@ -105,6 +106,10 @@ namespace Proof::UI
 		}
 
 		return modified;
+#endif
+
+		return AttributeMultiAssetReference(label, { assetType }, outHandle, settings);
+
     }
 	bool AttributeMultiAssetReference(const std::string& label, std::initializer_list<AssetType> assetTypesList, AssetID& outHandle, const PropertyAssetReferenceSettings& settings)
 	{
@@ -126,6 +131,11 @@ namespace Proof::UI
 			float itemHeight = 28.0f;
 
 			std::string buttonText = "Null";
+
+			for (auto& assetType : assetTypesSet)
+			{
+				buttonText += fmt::format(" ({})", EnumReflection::EnumString(assetType));
+			}
 			bool valid = true;
 			if (AssetManager::HasAsset(outHandle))
 			{
@@ -151,7 +161,20 @@ namespace Proof::UI
 				ImGui::Button(GenerateLabelID(buttonText), { width, itemHeight });
 
 				const bool isHovered = ImGui::IsItemHovered();
+				{
+					UI::ScopedStyleColor popupBG(ImGuiCol_PopupBg, UI::ColourWithMultipliedValue(Colours::Theme::Background, 1.6f).Value);
 
+					if (ImGui::BeginPopup((assetSearchPopupID + "RemovePopUp").c_str()))
+					{
+						if (ImGui::MenuItem("Remove"))
+						{
+							outHandle = 0;
+							modified = true;
+
+						}
+						ImGui::EndPopup();
+					}
+				}
 				if (isHovered)
 				{
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -162,6 +185,11 @@ namespace Proof::UI
 					{
 						ImGui::OpenPopup(assetSearchPopupID.c_str());
 					}
+					else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+					{
+						ImGui::OpenPopup((assetSearchPopupID + "RemovePopUp").c_str());
+					}
+					
 				}
 			}
 

@@ -1228,7 +1228,7 @@ namespace Proof {
 		if (AssetManager::HasAsset(component.ColliderID))
 		{
 			Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
-			if (colliderAsset && !PhysicsMeshCache::Exists(colliderAsset))
+			if (colliderAsset && AssetManager::HasAsset(colliderAsset->ColliderMesh) && !PhysicsMeshCache::Exists(colliderAsset))
 				PhysicsMeshCooker::CookMesh(colliderAsset);
 		}
 	}

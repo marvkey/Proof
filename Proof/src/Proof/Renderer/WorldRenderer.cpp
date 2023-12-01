@@ -138,6 +138,8 @@ namespace Proof
 	}
 
 	static const uint32_t DOF_NUM_THREADS =32;
+	static const uint32_t BLOOM_COMPUTE_WORK_GROUP_SIZE = 8;
+	
 	WorldRenderer::~WorldRenderer() {
 		for (auto& transformBuffer : m_SubmeshTransformBuffers)
 			pdelete[] transformBuffer.Data;
@@ -598,7 +600,7 @@ namespace Proof
 
 
 				glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
-				bloomSize += m_BloomComputeWorkgroupSize - bloomSize % m_BloomComputeWorkgroupSize;
+				bloomSize += BLOOM_COMPUTE_WORK_GROUP_SIZE - bloomSize % BLOOM_COMPUTE_WORK_GROUP_SIZE;
 				m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
@@ -745,7 +747,7 @@ namespace Proof
 			//bloom
 			{
 				glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
-				bloomSize += m_BloomComputeWorkgroupSize - bloomSize % m_BloomComputeWorkgroupSize;
+				bloomSize += BLOOM_COMPUTE_WORK_GROUP_SIZE - bloomSize % BLOOM_COMPUTE_WORK_GROUP_SIZE;
 				m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
@@ -1615,8 +1617,8 @@ namespace Proof
 			m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
 			m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[0]);
 
-			workGroupsX = m_BloomComputeTextures[0]->GetWidth() / m_BloomComputeWorkgroupSize;
-			workGroupsY = m_BloomComputeTextures[0]->GetHeight() / m_BloomComputeWorkgroupSize;
+			workGroupsX = m_BloomComputeTextures[0]->GetWidth() / BLOOM_COMPUTE_WORK_GROUP_SIZE;
+			workGroupsY = m_BloomComputeTextures[0]->GetHeight() / BLOOM_COMPUTE_WORK_GROUP_SIZE;
 
 			m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
 			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
@@ -1649,8 +1651,8 @@ namespace Proof
 			{
 				auto imageView = m_BloomComputeTextures[0]->GetImageMip(i);
 				auto mipDimension = imageView->GetMipSize();
-				workGroupsX = (uint32_t)glm::ceil((float)mipDimension.x / (float)m_BloomComputeWorkgroupSize);
-				workGroupsY = (uint32_t)glm::ceil((float)mipDimension.y / (float)m_BloomComputeWorkgroupSize);
+				workGroupsX = (uint32_t)glm::ceil((float)mipDimension.x / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
+				workGroupsY = (uint32_t)glm::ceil((float)mipDimension.y / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
 
 				m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[1]->GetImageMip(i));
 				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
@@ -1725,8 +1727,8 @@ namespace Proof
 			bloomComputePushConstants.LOD--;
 			m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
 			auto dimension = m_BloomComputeTextures[2]->GetImageMip(mips - 2)->GetMipSize();
-			workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)m_BloomComputeWorkgroupSize);
-			workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)m_BloomComputeWorkgroupSize);
+			workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
+			workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
 			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
 
 			{
@@ -1759,8 +1761,8 @@ namespace Proof
 			for (int32_t mip = mips - 3; mip >= 0; mip--)
 			{
 				auto dimension = m_BloomComputeTextures[2]->GetImageMip(mip)->GetMipSize();
-				workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)m_BloomComputeWorkgroupSize);
-				workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)m_BloomComputeWorkgroupSize);
+				workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
+				workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
 
 				m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[2]->GetImageMip(mip));
 				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);

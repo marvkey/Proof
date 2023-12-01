@@ -135,7 +135,15 @@ namespace Proof::UI
 				if (ImGui::IsMouseHoveringRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()))
 					ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 
-				ImGui::Button("Clear");
+				if (ImGui::Button("Clear"))
+				{
+					if constexpr (std::is_same<StringType, std::string>::value)
+						searchString.clear();
+					else
+						memset(searchString, 0, BuffSize);
+
+					modified = true;
+				}
 				//UI::DrawButtonImage(EditorResources::ClearIcon, IM_COL32(160, 160, 160, 200),
 				//	IM_COL32(170, 170, 170, 255),
 				//	IM_COL32(160, 160, 160, 150),

@@ -437,14 +437,15 @@ namespace Proof
 		glm::vec3 Size= { 1,1,1 };
 		bool IsTrigger = false;
 
-		void RemovePhysicsMaterial() {
+		void RemovePhysicsMaterial() const
+		{
 			m_PhysicsMaterialPointerID = 0;
 		}
 
-		bool HasPhysicsMaterial() {
+		bool HasPhysicsMaterial()const {
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
 
 	private:
 		mutable UUID m_PhysicsMaterialPointerID = 0;
@@ -462,15 +463,17 @@ namespace Proof
 		glm::vec3 Center = { 0,0,0 };
 		float Radius = 1.0f;
 		bool IsTrigger = false;
-		void RemovePhysicsMaterial() {
+		void RemovePhysicsMaterial()
+		{
 			m_PhysicsMaterialPointerID = 0;
 		}
-		bool HasPhysicsMaterial() {
+		bool HasPhysicsMaterial()const 
+		{
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
 	private:
-		UUID m_PhysicsMaterialPointerID = 0;
+		mutable UUID m_PhysicsMaterialPointerID = 0;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -494,10 +497,11 @@ namespace Proof
 		void RemovePhysicsMaterial() {
 			m_PhysicsMaterialPointerID = 0;
 		}
-		bool HasPhysicsMaterial(){
+		bool HasPhysicsMaterial()const
+		{
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
 	private:
 		friend class World;
 		friend class SceneSerializer;
@@ -519,10 +523,11 @@ namespace Proof
 		void RemovePhysicsMaterial() {
 			m_PhysicsMaterialPointerID = 0;
 		}
-		bool HasPhysicsMaterial() {
+		bool HasPhysicsMaterial() const
+		{
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
 
 		AssetID ColliderID = 0; // even if its a memory asset it will be saved on disk by the physics system 
 		uint32_t SubMeshIndex = 0;//only if collider id is a dynamic mesh 

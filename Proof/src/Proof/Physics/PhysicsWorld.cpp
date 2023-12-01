@@ -31,7 +31,7 @@ namespace Proof {
 		pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_CCD;
 
 		return physx::PxFilterFlags();
-	
+
 	}
 	PhysicsWorld::PhysicsWorld(Count<class World> world)
 		:
@@ -39,7 +39,7 @@ namespace Proof {
 	{
 		ScopeTimer copeTimer("Initialized physics world ");
 		physx::PxSceneDesc sceneDesc(PhysicsEngine::GetPhysics()->getTolerancesScale());
-		
+
 
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
@@ -53,6 +53,7 @@ namespace Proof {
 		sceneDesc.cpuDispatcher = PhysicsEngine::GetCpuDispatcher();
 		sceneDesc.simulationEventCallback = &m_CollisionCallback;
 		sceneDesc.filterShader = shaderControl;
+		sceneDesc.bounceThresholdVelocity = engineSettings.BounceThresholdVelocity;
 
 		PF_CORE_ASSERT(sceneDesc.isValid());
 
@@ -119,7 +120,7 @@ namespace Proof {
 			return nullptr;
 		}
 		Count<PhysicsWorld> instance = this;
-		Count<PhysicsActor> actor = Count<PhysicsActor>::Create(instance,entity);
+		Count<PhysicsActor> actor = Count<PhysicsActor>::Create(instance, entity);
 		m_Actors[entity.GetUUID()] = actor;
 		return actor;
 	}
@@ -131,7 +132,7 @@ namespace Proof {
 
 		return nullptr;
 	}
-	
+
 	void PhysicsWorld::RemoveActor(Entity entity)
 	{
 		PF_CORE_ASSERT(HasActor(entity), " Does not contain actor");
@@ -175,15 +176,15 @@ namespace Proof {
 	{
 		PF_PROFILE_FUNC();
 
-		m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity) 
-		{
-			CreateActor(entity);
-		});
+		m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity)
+			{
+				CreateActor(entity);
+			});
 
 		m_World->ForEachEnitityWith<CharacterControllerComponent>([&](Entity entity)
-		{
-			CreateController(entity);
-		});
+			{
+				CreateController(entity);
+			});
 
 	}
 	void PhysicsWorld::EndWorld()
@@ -219,7 +220,7 @@ namespace Proof {
 
 		if (settings.BroadPhaseType == BroadphaseType::AutomaticBoxPrune)
 			return;
-		if(m_RegionBounds)
+		if (m_RegionBounds)
 			pdelete[] m_RegionBounds;
 
 		m_RegionBounds = pnew physx::PxBounds3[settings.WorldBoundsSubdivisions * settings.WorldBoundsSubdivisions];

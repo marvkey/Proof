@@ -17,8 +17,6 @@ namespace Proof
 		{
 			Release();
 		}
-
-
 		void SetMaterial(Count<class PhysicsMaterial> material);
 
 		ColliderType GetType() const { return m_Type; }
@@ -40,6 +38,9 @@ namespace Proof
 		virtual bool IsValid() const { return m_Material != nullptr; }
 
 		Count<PhysicsMaterial> GetMaterial() { return m_Material; }
+
+		//shapes and counts
+		virtual std::pair< physx::PxShape*, size_t> GetShapes() = 0;
 	protected:
 		ColliderType m_Type;
 		bool m_IsShared = false;
@@ -73,9 +74,16 @@ namespace Proof
 		virtual bool IsValid() const override { return ColliderShape::IsValid() && m_Shape != nullptr; }
 
 		static ColliderType GetStaticType() { return ColliderType::Box; }
-
+		
 	private:
-		physx::PxShape* m_Shape;
+		physx::PxShape* m_Shape = nullptr;
+	private:
+		virtual std::pair< physx::PxShape*, size_t> GetShapes()
+		{
+			if (m_Shape)
+				return { m_Shape,1 };
+			return { nullptr, 0 };
+		}
 	};
 
 	class SphereColliderShape : public ColliderShape
@@ -102,7 +110,14 @@ namespace Proof
 		static ColliderType GetStaticType() { return ColliderType::Sphere; }
 
 	private:
-		physx::PxShape* m_Shape;
+		physx::PxShape* m_Shape = nullptr;
+	private:
+		virtual std::pair< physx::PxShape*, size_t> GetShapes()
+		{
+			if (m_Shape)
+				return { m_Shape,1 };
+			return { nullptr, 0 };
+		}
 	};
 	struct CapusleData
 	{
@@ -181,7 +196,15 @@ namespace Proof
 		static ColliderType GetStaticType() { return ColliderType::Capsule; }
 
 	private:
-		physx::PxShape* m_Shape;
+		physx::PxShape* m_Shape = nullptr;
+
+	private:
+		virtual std::pair< physx::PxShape*, size_t> GetShapes()
+		{
+			if (m_Shape)
+				return { m_Shape,1 };
+			return { nullptr, 0 };
+		}
 	};
 
 	class ConvexMeshShape : public ColliderShape
@@ -213,8 +236,18 @@ namespace Proof
 
 		const glm::vec3& GetCenter() const override { return glm::vec3{ 0 }; }
 		void SetCenter(const glm::vec3& offset) override {};
+		void SetMaterial(Count<class PhysicsMaterial> material);
+
 	private:
+		bool m_BlockSetMaterial = false;
 		std::vector<physx::PxShape*> m_Shapes;
+	private:
+		virtual std::pair< physx::PxShape*, size_t> GetShapes()
+		{
+			if (m_Shapes.size())
+				return { m_Shapes[0],m_Shapes.size()};
+			return { nullptr,0 };
+		}
 	};
 
 	class TriangleMeshShape : public ColliderShape
@@ -239,9 +272,18 @@ namespace Proof
 		virtual bool IsValid() const override { return ColliderShape::IsValid() && !m_Shapes.empty(); }
 
 		static ColliderType GetStaticType() { return ColliderType::TriangleMesh; }
+		void SetMaterial(Count<class PhysicsMaterial> material);
 
 	private:
+		bool m_BlockSetMaterial = false;
 		std::vector<physx::PxShape*> m_Shapes;
+	private:
+		virtual std::pair< physx::PxShape*, size_t> GetShapes()
+		{
+			if (m_Shapes.size())
+				return { m_Shapes[0],m_Shapes.size() };
+			return { nullptr,0 };
+		}
 	};
 
 	class SharedShapeManager

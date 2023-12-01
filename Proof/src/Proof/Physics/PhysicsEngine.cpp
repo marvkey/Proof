@@ -15,6 +15,7 @@ namespace Proof {
 		std::string LastErrorMessage = "";
 	};
 	static PhysXData* s_PhysXData;
+	PhysicsSettings s_PhysicsSettings = PhysicsSettings();
 
 	class PhysicsErrorCallback : public physx::PxDefaultErrorCallback {
 		virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line);
@@ -38,6 +39,11 @@ namespace Proof {
 	{
 		return s_Dispatcher;
 	}
+	PhysicsSettings& PhysicsEngine::GetSettings()
+	{
+		return s_PhysicsSettings;
+	}
+
 	Count<MeshCollider> PhysicsEngine::GetOrCreateColliderAsset(Entity entity, MeshColliderComponent& component)
 	{
 		Count<MeshCollider> colliderAsset =nullptr;
@@ -72,11 +78,10 @@ namespace Proof {
 
 		return colliderAsset;
 	}
-	void PhysicsEngine::Init(PhysicsSettings settings)
+	void PhysicsEngine::Init()
 	{
 		Timer time;
 		s_PhysXData = new PhysXData();
-		s_Settings = settings;
 
 		s_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_DefaultAllocatorCallback, s_DefaultErrorCallback);
 

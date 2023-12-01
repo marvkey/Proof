@@ -7,7 +7,8 @@
 #include "Proof/Project/Project.h"
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UIColors.h"
-#include "Proof/ImGui/UiUtilities.h"
+#include "Proof/ImGui/UIUtilities.h"
+#include "Proof/ImGui/UIWidgets.h"
 #include "Proof/Asset/AssetManager.h"
 
 #include "Proof/ImGui/SelectionManager.h"
@@ -756,7 +757,6 @@ namespace Proof
 				ImGui::Spring(-1.0f, edgeOffset * 2.0f);
 			}
 
-# if 0
 			// Search
 			{
 				UI::ShiftCursorY(2.0f);
@@ -799,10 +799,10 @@ namespace Proof
 
 			// Breadcrumbs
 			{
-				UI::ScopedFont boldFont(ImGui::GetIO().Fonts->Fonts[0]);
-				UI::ScopedColour textColour(ImGuiCol_Text, Colours::Theme::textDarker);
+				//UI::ScopedFont boldFont(ImGui::GetIO().Fonts->Fonts[0]);
+				UI::ScopedStyleColor textColour(ImGuiCol_Text, UI::Colours::Theme::TextDarker);
 
-				const std::string& assetsDirectoryName = m_Project->GetConfig().AssetDirectory;
+				const std::string& assetsDirectoryName = Project::GetActive()->GetAssetDirectory().filename().string();
 				ImVec2 textSize = ImGui::CalcTextSize(assetsDirectoryName.c_str());
 				const float textPadding = ImGui::GetStyle().FramePadding.y;
 				if (ImGui::Selectable(assetsDirectoryName.c_str(), false, 0, ImVec2(textSize.x, textSize.y + textPadding)))
@@ -827,7 +827,7 @@ namespace Proof
 					UpdateDropArea(directory);
 				}
 			}
-
+#if 0
 			// Settings button
 			ImGui::Spring();
 			if (UI::Widgets::OptionsButton())

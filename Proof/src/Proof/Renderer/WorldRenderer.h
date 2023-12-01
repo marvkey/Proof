@@ -299,7 +299,6 @@ namespace Proof
 		inline static const uint32_t MAX_NUM_LIGHTS_PER_TILE = 1024u;
 
 		//bloom
-		const uint32_t m_BloomComputeWorkgroupSize = 4;
 		Count<ComputePass> m_BloomComputePass;
 		Count<Texture2D> m_BloomDirtTexture;
 		std::vector<Count<Texture2D>> m_BloomComputeTextures{ 3 };

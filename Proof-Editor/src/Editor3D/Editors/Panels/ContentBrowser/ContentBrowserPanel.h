@@ -186,6 +186,7 @@ namespace Proof
 		ContentBrowserItemList m_CurrentItems;
 		std::map<std::string, Count<Texture2D>> m_AssetIconMap;
 		std::unordered_map<UUID, Count<DirectoryInfo>> m_Directories;
+		std::vector<Count<DirectoryInfo>> m_BreadCrumbData;
 
 		bool m_UpdateNavigationPath = false;
 		bool m_IsContentBrowserHovered = false;

@@ -56,7 +56,7 @@ namespace Proof
 		desc.slopeLimit = std::max(0.0f, cos(controller.SlopeLimitRadians));
 		desc.stepOffset = controller.StepOffset;
 		desc.contactOffset = controller.SkinOffset;                                                     // TODO: get from component
-		desc.material = (physx::PxMaterial*) m_Material->GetPhysicsBody();
+		desc.material = &m_Material->GetPhysxMaterial();
 		desc.upDirection = PhysXUtils::ToPhysXVector(Math::GetUpVector());
 
 		m_Controller = m_PhysicsWorld->GetPhysXControllerManager()->createController(desc);
@@ -77,7 +77,7 @@ namespace Proof
 		desc.slopeLimit = std::max(0.0f, cos(controller.SlopeLimitRadians));
 		desc.stepOffset = controller.StepOffset;
 		desc.contactOffset = controller.SkinOffset;                                                     // TODO: get from component
-		desc.material = (physx::PxMaterial*)m_Material->GetPhysicsBody();
+		desc.material = &m_Material->GetPhysxMaterial();
 		desc.upDirection = PhysXUtils::ToPhysXVector(Math::GetUpVector());
 
 		m_Controller = m_PhysicsWorld->GetPhysXControllerManager()->createController(desc);
