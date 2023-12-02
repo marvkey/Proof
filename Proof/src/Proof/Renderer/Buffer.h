@@ -54,6 +54,20 @@ namespace Proof {
 	protected:
 	};
 
+	class VertexBufferSet : RefCounted
+	{
+	public:
+		VertexBufferSet(uint64_t Size);
+		VertexBufferSet(const void* Data, uint64_t Size);
+
+		Count<VertexBuffer> GetVertexBufferIndex(uint32_t set);
+		//returns vertex buffer in main thread
+		Count<VertexBuffer> GetVertexBuffer();
+		// retuns vertex buffer in render thread
+		Count<VertexBuffer> RT_GetVertexBuffer();
+	private:
+		std::map<uint32_t, Count<VertexBuffer> > m_VertexBuffers;
+	};
 	class IndexBuffer : public RefCounted
 	{
 	public:

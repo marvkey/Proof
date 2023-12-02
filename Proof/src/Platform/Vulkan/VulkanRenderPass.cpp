@@ -659,7 +659,6 @@ namespace Proof
         VkCommandBuffer cmdBuffer = m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
         vkCmdSetViewport(cmdBuffer, 0, 1, &vk_viewport);
         vkCmdSetScissor(cmdBuffer, 0, 1, &vk_scissor);
-
         auto vk_pipeline = GetPipeline().As<VulkanGraphicsPipeline>();
 
         if (vk_pipeline->GetConfig().EditLineWidth)

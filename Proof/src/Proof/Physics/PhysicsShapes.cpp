@@ -35,23 +35,6 @@ namespace Proof {
 			//overrides all materials
 			shapes[i].setMaterials(&physxMat, 1); // Apply the material to the shape
 		}
-		
-#if 0
-		auto& physxActor = m_Entity.GetCurrentWorld()->GetPhysicsWorld()->GetActor(m_Entity)->GetPhysXActor();
-
-		const physx::PxU32 numShapes = physxActor.getNbShapes();
-		physx::PxShape** shapes = new physx::PxShape * [numShapes];
-		physxActor.getShapes(shapes, numShapes);
-		// Apply the material to each shape
-		for (physx::PxU32 i = 0; i < numShapes; ++i)
-		{
-
-			physx::PxMaterial* physxMat = (physx::PxMaterial*)m_Material->GetPhysicsBody();
-			//overrides all materials
-			shapes[i]->setMaterials(&physxMat, 1); // Apply the material to the shape
-		}
-		delete[] shapes;
-#endif
 	}
 	BoxColliderShape::BoxColliderShape(const BoxColliderComponent& component, const PhysicsActor& actor, Entity entity)
 		: ColliderShape(ColliderType::Box, entity)

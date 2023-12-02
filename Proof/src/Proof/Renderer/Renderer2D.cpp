@@ -40,7 +40,7 @@ namespace Proof {
 
 		m_WhiteTexture = Renderer::GetWhiteTexture();
 
-		for(int index = 0; index < c_MaxTextureSlots; index++)
+		for (int index = 0; index < c_MaxTextureSlots; index++)
 			m_QuadTextures[index] = m_WhiteTexture;
 		{
 			auto vertexArray = VertexArray::Create({ sizeof(Vertex2D) });
@@ -50,9 +50,9 @@ namespace Proof {
 			vertexArray->AddData(3, DataType::Float, offsetof(Vertex2D, Vertex2D::TexSlot));
 
 			m_QuadVertexBufferBase = pnew Vertex2D[c_MaxVertexCount];
-			m_QuadVertexBufferPtr = m_QuadVertexBufferBase;
+			m_QuadVertexBufferPtr = m_QuadVertexBufferBase.Get();
 
-			m_QuadVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(Vertex2D));
+			m_QuadVertexBuffer = Count<VertexBufferSet>::Create(c_MaxVertexCount * sizeof(Vertex2D));
 
 			uint32_t* quadIndices = pnew uint32_t[c_MaxIndexCount];
 
@@ -91,13 +91,13 @@ namespace Proof {
 			m_QuadPass->SetInput("CameraData", m_UBCamera);
 
 		}
-		
+
 
 		{
 
 			for (int index = 0; index < c_MaxTextureSlots; index++)
 				m_FontTextures[index] = Font::GetDefault();
-		
+
 			auto vertexArray = VertexArray::Create({ sizeof(TextVertex) });
 			vertexArray->AddData(0, DataType::Vec3, offsetof(TextVertex, TextVertex::Positon));
 			vertexArray->AddData(1, DataType::Vec4, offsetof(TextVertex, TextVertex::Color));
@@ -107,9 +107,9 @@ namespace Proof {
 
 
 			m_TextVertexBufferBase = pnew TextVertex[c_MaxVertexCount];
-			m_TextVertexBufferPtr = m_TextVertexBufferBase;
+			m_TextVertexBufferPtr = m_TextVertexBufferBase.Get();
 
-			m_TextVertexBuffer = VertexBuffer::Create(c_MaxVertexCount * sizeof(Vertex2D));
+			m_TextVertexBuffer = Count<VertexBufferSet>::Create(c_MaxVertexCount * sizeof(Vertex2D));
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
 			graphicsPipelineConfig.DebugName = "Text Pipeline";
@@ -137,7 +137,8 @@ namespace Proof {
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Line2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.DrawMode = DrawType::Line;
-			graphicsPipelineConfig.LineWidth = 2.0f;
+			//graphicsPipelineConfig.LineWidth = 2.0f; //TODO
+			graphicsPipelineConfig.LineWidth = 1.0f;
 			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 
 			RenderPassConfig renderPassConfig("Line");
@@ -153,15 +154,40 @@ namespace Proof {
 			pdelete[] lineIndices;
 
 			m_LineVertexBufferBase = pnew LineVertex[c_MaxLineVertices];
-			m_LineVertexBufferPtr = m_LineVertexBufferBase;
+			m_LineVertexBufferPtr = m_LineVertexBufferBase.Get();
 
-			m_LineVertexBuffer = VertexBuffer::Create(c_MaxLineVertices * sizeof(LineVertex));
+			m_LineVertexBuffer = Count<VertexBufferSet>::Create(c_MaxLineVertices * sizeof(LineVertex));
+		}
+
+		//cirlce
+		{
+
+			auto vertexArray = VertexArray::Create({ sizeof(CircleVertex) });
+			vertexArray->AddData(0, DataType::Vec3, offsetof(CircleVertex, CircleVertex::WorldPosition));
+			vertexArray->AddData(1, DataType::Float, offsetof(CircleVertex, CircleVertex::Thickness));
+			vertexArray->AddData(2, DataType::Vec2, offsetof(CircleVertex, CircleVertex::LocalPosition));
+			vertexArray->AddData(3, DataType::Vec4, offsetof(CircleVertex, CircleVertex::Color));
+
+
+			GraphicsPipelineConfiguration graphicsPipelineConfig;
+			graphicsPipelineConfig.DebugName = "Cirlce";
+			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+			graphicsPipelineConfig.Shader = Renderer::GetShader("Circle2D");
+			graphicsPipelineConfig.VertexArray = vertexArray;
+			graphicsPipelineConfig.CullMode = CullMode::None;
+			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+			RenderPassConfig renderPassConfig("Circle");
+			renderPassConfig.Pipeline = graphicsPipeline;
+			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
+			m_CircleRenderPass = RenderPass::Create(renderPassConfig);
+			m_CircleRenderPass->SetInput("CameraData", m_UBCamera);
 		}
 	}
-	
+
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position) {
 		PF_PROFILE_FUNC()
-		CameraData camera = CameraData{ projection,view,Position };
+			CameraData camera = CameraData{ projection,view,Position };
 		//CameraData camera = CameraData{ glm::mat4(1),glm::mat4(1)};
 
 		Buffer buffer(&camera, sizeof(CameraData));
@@ -177,40 +203,43 @@ namespace Proof {
 	}
 	Renderer2D::~Renderer2D()
 	{
-		pdelete[] m_QuadVertexBufferBase;
-		pdelete[] m_TextVertexBufferBase;
-		pdelete[] m_LineVertexBufferBase;
+		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
+		{
+			pdelete[] m_QuadVertexBufferBase.GetByIndex(i);
+			pdelete[] m_TextVertexBufferBase.GetByIndex(i);
+			pdelete[] m_LineVertexBufferBase.GetByIndex(i);
+		}
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
-		DrawQuad(Location,{0.0,0.0,0.0},{1,1,1},{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());
-	}
-	
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Size) {
-		DrawQuad(Location,{0.0,0.0,0.0},Size,{1.0f,1.0f,1.0f,1.0f}, Renderer::GetWhiteTexture());
+		DrawQuad(Location, { 0.0,0.0,0.0 }, { 1,1,1 }, { 1.0f,1.0f,1.0f,1.0f }, Renderer::GetWhiteTexture());
 	}
 
-	
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec4& Color) {
-		DrawQuad(Location,Rotation,{1.0f,1.0f,1.0f},Color, Renderer::GetWhiteTexture());
+	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec3& Size) {
+		DrawQuad(Location, { 0.0,0.0,0.0 }, Size, { 1.0f,1.0f,1.0f,1.0f }, Renderer::GetWhiteTexture());
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec4& Color) {
-		DrawQuad(Location,{0.0,0.0,0.0},{1.0f,1.0f,1.0f},Color, Renderer::GetWhiteTexture());
+
+	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec4& Color) {
+		DrawQuad(Location, Rotation, { 1.0f,1.0f,1.0f }, Color, Renderer::GetWhiteTexture());
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const Count<Texture2D> texture) {
-		DrawQuad(Location,{0.0,0.0,0.0},{1.f,1.f,1.f},{1.0f,1.0f,1.0f,1.0f},texture);
+	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec4& Color) {
+		DrawQuad(Location, { 0.0,0.0,0.0 }, { 1.0f,1.0f,1.0f }, Color, Renderer::GetWhiteTexture());
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Size,const glm::vec4& TintColor,Count<Texture2D>& texture) {
-		DrawQuad(Location,{0.0,0.0,0.0},Size,TintColor,texture);
+
+	void Renderer2D::DrawQuad(const glm::vec3& Location, const Count<Texture2D> texture) {
+		DrawQuad(Location, { 0.0,0.0,0.0 }, { 1.f,1.f,1.f }, { 1.0f,1.0f,1.0f,1.0f }, texture);
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec4& TintColor,Count<Texture2D> texture) {
-		DrawQuad(Location,{0.0,0.0,0.0},{1.0f,1.0f,1.0f},TintColor,texture);
+	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec3& Size, const glm::vec4& TintColor, Count<Texture2D>& texture) {
+		DrawQuad(Location, { 0.0,0.0,0.0 }, Size, TintColor, texture);
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation,const glm::vec3& Size,const glm::vec4& Color){
-		DrawQuad(Location,Rotation,Size,Color,Renderer::GetWhiteTexture());
+	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec4& TintColor, Count<Texture2D> texture) {
+		DrawQuad(Location, { 0.0,0.0,0.0 }, { 1.0f,1.0f,1.0f }, TintColor, texture);
 	}
-	void Renderer2D::DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform){
+	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec3& Size, const glm::vec4& Color) {
+		DrawQuad(Location, Rotation, Size, Color, Renderer::GetWhiteTexture());
+	}
+	void Renderer2D::DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform) {
 		if (Sprite.Texture != nullptr)
 		{
 			DrawQuad(transform.Location, transform.GetRotationEuler(), transform.Scale,
@@ -218,7 +247,7 @@ namespace Proof {
 		}
 		else
 		{
-			DrawQuad( transform.Location,transform.GetRotationEuler(), transform.Scale, glm::vec4{Sprite.Colour}, m_WhiteTexture);
+			DrawQuad(transform.Location, transform.GetRotationEuler(), transform.Scale, glm::vec4{ Sprite.Colour }, m_WhiteTexture);
 		}
 	}
 	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
@@ -266,13 +295,13 @@ namespace Proof {
 
 		for (uint32_t i = 0; i < 4; i++)
 			DrawLine(corners[i], corners[i + 4], color);
-	
+
 	}
 	void Renderer2D::DrawAABB(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
 		AABB box = mesh->GetMeshSource()->GetBoundingBox();
 
-		DrawAABB(box, transform,color);
+		DrawAABB(box, transform, color);
 	}
 
 	void Renderer2D::DrawAABBSubMeshes(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color)
@@ -285,17 +314,17 @@ namespace Proof {
 			auto& aabb = submesh.BoundingBox;
 			auto aabbTransform = transform * submesh.Transform;
 			//auto aabbTransform = transform;
-			DrawAABB(aabb, aabbTransform,color);
+			DrawAABB(aabb, aabbTransform, color);
 		}
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& Location,const glm::vec3& Rotation, const glm::vec3& Size,const glm::vec4& Color,const Count<Texture2D>& texture2D)
+	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D)
 	{
-		glm::mat4 transform =glm::translate(glm::mat4(1.0f), Location)
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), Location)
 			* glm::toMat4(glm::quat(Rotation))
 			* glm::scale(glm::mat4(1.0f), { Size.x,Size.y,1.0 });
 
-		DrawQuad(transform,Color,texture2D);
-		
+		DrawQuad(transform, Color, texture2D);
+
 	}
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& Color, const Count<Texture2D>& texture)
 	{
@@ -335,7 +364,7 @@ namespace Proof {
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
 			glm::vec3 pos = transform * m_QuadVertexPositions[i];
-			m_QuadVertexBufferPtr->Position = GlmVecToProof( pos);
+			m_QuadVertexBufferPtr->Position = GlmVecToProof(pos);
 			m_QuadVertexBufferPtr->Color = Color;
 			m_QuadVertexBufferPtr->TexCoords = textureCoords[i];
 			m_QuadVertexBufferPtr->TexSlot = textureIndex;
@@ -349,18 +378,18 @@ namespace Proof {
 	}
 	void Renderer2D::DrawString(const std::string& text, Count<class Font> font, const TextParams& textParam, const glm::mat4& transform)
 	{
-		if (m_TextIndexCount>= c_MaxIndexCount)
+		if (m_TextIndexCount >= c_MaxIndexCount)
 		{ // reached maxed index size
 			Render();
 			Reset();
 		}
 		//https://freetype.org/freetype2/docs/tutorial/step2.html
-		const auto& fontGeometry =  font->GetMSDFData()->FontGeometry;
+		const auto& fontGeometry = font->GetMSDFData()->FontGeometry;
 		const auto& metrics = fontGeometry.getMetrics();
 		Count<Texture2D> fontAtlas = font->GetAtlasTexture();
 
 		//m_Storage2DData->FontTexture = fontAtlas;
-		float fontIndex= -1.f;
+		float fontIndex = -1.f;
 		for (uint32_t i = 0; i < m_TextFontSlotIndex; i++)
 		{
 			if (m_FontTextures[i] == font)
@@ -453,7 +482,7 @@ namespace Proof {
 			texCoordMax *= glm::vec2(texelWidth, texelHeight);
 
 			m_TextVertexBufferPtr->Positon = transform * glm::vec4(quadMin, 0.0f, 1.0f);
-			m_TextVertexBufferPtr->Color = textParam.Color ;
+			m_TextVertexBufferPtr->Color = textParam.Color;
 			m_TextVertexBufferPtr->TexCoord = texCoordMin;
 			m_TextVertexBufferPtr->FontIndex = fontIndex;
 			m_TextVertexBufferPtr++;
@@ -488,6 +517,198 @@ namespace Proof {
 			}
 		}
 	}
+
+	void Renderer2D::DrawCircle(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color)
+	{
+		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::toMat4(glm::quat(rotation))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+
+		DrawCircle(transform, color);
+	}
+
+	void Renderer2D::DrawCircle(const glm::mat4& transform, const glm::vec4& color)
+	{
+		int segments = 32;
+		for (int i = 0; i < segments; i++)
+		{
+			float angle = 2.0f * glm::pi<float>() * (float)i / segments;
+			glm::vec4 startPosition = { glm::cos(angle), glm::sin(angle), 0.0f, 1.0f };
+			angle = 2.0f * glm::pi<float>() * (float)((i + 1) % segments) / segments;
+			glm::vec4 endPosition = { glm::cos(angle), glm::sin(angle), 0.0f, 1.0f };
+
+			glm::vec3 p0 = transform * startPosition;
+			glm::vec3 p1 = transform * endPosition;
+			DrawLine(p0, p1, color);
+		}
+	}
+	void Renderer2D::DrawHalfCircle(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color)
+	{
+		/*
+		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), rotation.x, { 1.0f, 0.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), rotation.y, { 0.0f, 1.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), rotation.z, { 0.0f, 0.0f, 1.0f })
+			* glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+		//DrawHalfCircle(transform, color);
+		*/
+
+		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::toMat4(glm::quat(rotation))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+
+		const int segments = 32; // Adjust the number of segments for smoother curve
+
+		float angleIncrement = glm::two_pi<float>() / segments;
+
+		for (int i = 0; i < segments / 2; ++i) {
+			float angle0 = i * angleIncrement;
+			float angle1 = (i + 1) * angleIncrement;
+
+			glm::vec4 startPosition = glm::vec4(radius * glm::cos(angle0), radius * glm::sin(angle0), 0.0f, 1.0f);
+			glm::vec4 endPosition = glm::vec4(radius * glm::cos(angle1), radius * glm::sin(angle1), 0.0f, 1.0f);
+
+			glm::vec3 p0 = transform * startPosition;
+			glm::vec3 p1 = transform * endPosition;
+			DrawLine(p0, p1, color);
+		}
+	}
+	void Renderer2D::DrawHalfCircle(const glm::mat4& transform, const glm::vec4& color)
+	{
+
+		const int segments = 32; // Adjust the number of segments for smoother curve
+
+		float angleIncrement = glm::two_pi<float>() / segments;
+
+		for (int i = 0; i < segments / 2; ++i) {
+			float angle0 = i * angleIncrement;
+			float angle1 = (i + 1) * angleIncrement;
+
+			glm::vec3 startPosition = glm::normalize(glm::vec3(glm::cos(angle0), glm::sin(angle0), 0.0f));
+			glm::vec3 endPosition = glm::normalize(glm::vec3(glm::cos(angle1), glm::sin(angle1), 0.0f));
+
+			glm::vec3 p0 = glm::vec3(transform * glm::vec4(startPosition, 1.0f));
+			glm::vec3 p1 = glm::vec3(transform * glm::vec4(endPosition, 1.0f));
+			DrawLine(p0, p1, color);
+		}
+	}
+	void Renderer2D::DrawSemiCircle(const glm::mat4& transform, const glm::vec4& color)
+	{
+		int segments = 32;
+		for (int i = 0; i < segments; i++)
+		{
+			float angle = glm::pi<float>() * (float)i / (segments - 1);  // Adjusted angle calculation
+			glm::vec4 startPosition = { glm::cos(angle), glm::sin(angle), 0.0f, 1.0f };
+			angle = glm::pi<float>() * (float)((i + 1) % segments) / (segments - 1);  // Adjusted angle calculation
+			glm::vec4 endPosition = { glm::cos(angle), glm::sin(angle), 0.0f, 1.0f };
+
+			glm::vec3 p0 = transform * startPosition;
+			glm::vec3 p1 = transform * endPosition;
+			DrawLine(p0, p1, color);
+		}
+	}
+	void Renderer2D::DrawSemiCircle(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color)
+	{
+		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			*glm::toMat4(glm::quat(rotation))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+
+		DrawSemiCircle(transform, color);
+	}
+	void Renderer2D::DrawDebugSphere(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color)
+	{
+		DrawCircle(position, rotation, radius, color);
+		DrawCircle(position, rotation + glm::radians(glm::vec3(0, 90, 0)), radius, color);
+		DrawCircle(position, rotation + glm::radians(glm::vec3(90, 0, 0)), radius, color);
+	}
+	void Renderer2D::DrawDebugCube(const glm::vec3& position, const glm::vec3& rotation, glm::vec3 size, const glm::vec4& color)
+	{
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::toMat4(glm::quat(rotation))
+			* glm::scale(glm::mat4(1.0f), size);
+
+		glm::vec3 extents = glm::vec3(1.0);
+
+		glm::vec3 corners[8] = {
+				transform * glm::vec4(glm::vec3(-extents.x, -extents.y, -extents.z), 1.0f),
+				transform * glm::vec4(glm::vec3(extents.x, -extents.y, -extents.z), 1.0f),
+				transform * glm::vec4(glm::vec3(extents.x, extents.y, -extents.z), 1.0f),
+				transform * glm::vec4(glm::vec3(-extents.x, extents.y, -extents.z), 1.0f),
+				transform * glm::vec4(glm::vec3(-extents.x, -extents.y, extents.z), 1.0f),
+				transform * glm::vec4(glm::vec3(extents.x, -extents.y, extents.z), 1.0f),
+				transform * glm::vec4(glm::vec3(extents.x, extents.y, extents.z), 1.0f),
+				transform * glm::vec4(glm::vec3(-extents.x, extents.y, extents.z), 1.0f)
+		};
+
+		// Draw the lines for the box
+		// Bottom face
+		DrawLine(corners[0], corners[1]);
+		DrawLine(corners[1], corners[2]);
+		DrawLine(corners[2], corners[3]);
+		DrawLine(corners[3], corners[0]);
+
+		// Top face
+		DrawLine(corners[4], corners[5]);
+		DrawLine(corners[5], corners[6]);
+		DrawLine(corners[6], corners[7]);
+		DrawLine(corners[7], corners[4]);
+
+		// Connecting lines
+		DrawLine(corners[0], corners[4]);
+		DrawLine(corners[1], corners[5]);
+		DrawLine(corners[2], corners[6]);
+		DrawLine(corners[3], corners[7]);
+	}
+	void Renderer2D::DrawDebugHemisphere(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color)
+	{
+#if 1
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), rotation.x, { 1.0f, 0.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), rotation.y, { 0.0f, 1.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), rotation.z, { 0.0f, 0.0f, 1.0f })
+			* glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+		DrawHalfCircle(transform, color);
+
+		transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::rotate(glm::mat4(1.0f), rotation.x + glm::radians(90.f), { 1.0f, 0.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), rotation.y, { 0.0f, 1.0f, 0.0f })
+			* glm::rotate(glm::mat4(1.0f), rotation.z , {0.0f, 0.0f, 1.0f})
+			* glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+		DrawHalfCircle(transform, color);
+		//base
+		//DrawCircle(position, rotation + glm::radians(glm::vec3(90, 0, 0)), radius, color);
+#endif
+	}
+	void Renderer2D::FillCircle(const glm::vec2& position, float radius, const glm::vec4& color, float thickness)
+	{
+		FillCircle({ position.x, position.y, 0.0f }, radius, color, thickness);
+	}
+
+	void Renderer2D::FillCircle(const glm::vec3& position, float radius, const glm::vec4& color, float thickness)
+	{
+		if (m_CircleIndexCount >= c_MaxIndexCount)
+		{
+			Render();
+			Reset();
+		}
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+			* glm::scale(glm::mat4(1.0f), { radius * 2.0f, radius * 2.0f, 1.0f });
+
+		for (int i = 0; i < 4; i++)
+		{
+			m_CircleVertexBufferPtr->WorldPosition = transform * m_QuadVertexPositions[i];
+			m_CircleVertexBufferPtr->Thickness = thickness;
+			m_CircleVertexBufferPtr->LocalPosition = m_QuadVertexPositions[i] * 2.0f;
+			m_CircleVertexBufferPtr->Color = color;
+			m_CircleVertexBufferPtr++;
+			m_CircleIndexCount += 6;
+		}
+
+	}
+
+	
+
 	void Renderer2D::EndContext() {
 		Render();
 		Reset();
@@ -501,7 +722,7 @@ namespace Proof {
 		{
 
 			m_QuadIndexCount = 0;
-			m_QuadVertexBufferPtr = m_QuadVertexBufferBase;
+			m_QuadVertexBufferPtr = m_QuadVertexBufferBase.Get();
 			// reseting every textures back to white that has been changed
 			for (uint32_t i = 1; i < m_QuadTextureSlotIndex; i++)
 				m_QuadTextures[i] = m_WhiteTexture;
@@ -511,7 +732,7 @@ namespace Proof {
 		// text
 		{
 			m_TextIndexCount = 0;
-			m_TextVertexBufferPtr = m_TextVertexBufferBase;
+			m_TextVertexBufferPtr = m_TextVertexBufferBase.Get();
 			for (uint32_t i = 1; i < m_TextFontSlotIndex; i++)
 			{
 				m_FontTextures[i] = Font::GetDefault();
@@ -522,8 +743,13 @@ namespace Proof {
 		//line
 		{
 			m_LineIndexCount = 0;
-			m_LineVertexBufferPtr = m_LineVertexBufferBase;
+			m_LineVertexBufferPtr = m_LineVertexBufferBase.Get();
 
+		}
+		//circle
+		{
+			m_CircleIndexCount = 0;
+			m_CircleVertexBufferPtr = m_CircleVertexBufferBase.Get();
 		}
 	}
 	
@@ -537,8 +763,8 @@ namespace Proof {
 			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
 			
 			Timer quadTime;
-			uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr - (uint8_t*)m_QuadVertexBufferBase);
-			m_QuadVertexBuffer->SetData(m_QuadVertexBufferBase, dataSize);
+			uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr - (uint8_t*)m_QuadVertexBufferBase.Get());
+			m_QuadVertexBuffer->GetVertexBuffer()->SetData(m_QuadVertexBufferBase.Get(), dataSize);
 
 			std::vector<Count<Texture2D>> textureVec;
 			textureVec.resize(m_QuadTextures.size());
@@ -553,7 +779,7 @@ namespace Proof {
 
 			Renderer::BeginRenderPass(m_CommandBuffer, m_QuadPass);
 			m_IndexBuffer->Bind(m_CommandBuffer);
-			m_QuadVertexBuffer->Bind(m_CommandBuffer);
+			m_QuadVertexBuffer->GetVertexBuffer()->Bind(m_CommandBuffer);
 			Renderer::DrawElementIndexed(m_CommandBuffer, m_QuadIndexCount);
 			Renderer::EndRenderPass(m_QuadPass);
 
@@ -563,8 +789,8 @@ namespace Proof {
 		{
 			PF_PROFILE_FUNC("Renderer2D::String Draw");
 			Timer textTime;
-			uint32_t dataSize = (uint32_t)((uint8_t*)m_TextVertexBufferPtr - (uint8_t*)m_TextVertexBufferBase);
-			m_TextVertexBuffer->SetData(m_TextVertexBufferBase, dataSize);
+			uint32_t dataSize = (uint32_t)((uint8_t*)m_TextVertexBufferPtr - (uint8_t*)m_TextVertexBufferBase.Get());
+			m_TextVertexBuffer->GetVertexBuffer()->SetData(m_TextVertexBufferBase.Get(), dataSize);
 
 			std::vector<Count<Texture2D>> textureVec;
 			textureVec.resize(m_FontTextures.size());
@@ -576,7 +802,7 @@ namespace Proof {
 
 			Renderer::BeginRenderPass(m_CommandBuffer, m_TextPass);
 			m_IndexBuffer->Bind(m_CommandBuffer);
-			m_TextVertexBuffer->Bind(m_CommandBuffer);
+			m_TextVertexBuffer->GetVertexBuffer()->Bind(m_CommandBuffer);
 
 			Renderer::DrawElementIndexed(m_CommandBuffer, m_TextIndexCount);
 			Renderer::EndRenderPass(m_TextPass);
@@ -589,16 +815,32 @@ namespace Proof {
 		{
 			PF_PROFILE_FUNC("Renderer2D::Line Draw");
 			Timer lineTime;
-			uint32_t dataSize = (uint32_t)((uint8_t*)m_LineVertexBufferPtr - (uint8_t*)m_LineVertexBufferBase);
+			uint32_t dataSize = (uint32_t)((uint8_t*)m_LineVertexBufferPtr - (uint8_t*)m_LineVertexBufferBase.Get());
 
-			m_LineVertexBuffer->SetData(m_LineVertexBufferBase, dataSize);
+			m_LineVertexBuffer->GetVertexBuffer()->SetData(m_LineVertexBufferBase.Get(), dataSize);
 
 			Renderer::BeginRenderPass(m_CommandBuffer, m_LinePass);
 			m_LineIndexBuffer->Bind(m_CommandBuffer);
-			m_LineVertexBuffer->Bind(m_CommandBuffer);
+			m_LineVertexBuffer->GetVertexBuffer()->Bind(m_CommandBuffer);
 			
 			Renderer::DrawElementIndexed(m_CommandBuffer, m_LineIndexCount);
 			Renderer::EndRenderPass(m_LinePass);
+		}
+
+		if (m_CircleIndexCount > 0)
+		{
+			PF_PROFILE_FUNC("Renderer2D::CircleDraw");
+
+			// Circles
+			uint32_t dataSize = (uint32_t)((uint8_t*)m_CircleVertexBufferPtr - (uint8_t*)m_CircleVertexBufferBase.Get());
+			m_CircleVertexBuffer->GetVertexBuffer()->SetData(m_CircleVertexBufferBase.Get(), dataSize);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_CircleRenderPass);
+			m_IndexBuffer->Bind(m_CommandBuffer);
+			m_CircleVertexBuffer->GetVertexBuffer()->Bind(m_CommandBuffer);
+
+			Renderer::DrawElementIndexed(m_CommandBuffer, m_CircleIndexCount);
+			Renderer::EndRenderPass(m_CircleRenderPass);
 		}
 
 		m_Stats.TotalRenderTime += renderTime.ElapsedMillis();

@@ -28,6 +28,7 @@
 #include "Proof/Physics/PhysicsShapes.h"
 
 #include "Proof/Scripting/ScriptWorld.h"
+#include <glm/gtx/euler_angles.hpp>
 namespace Proof {
 	World::World(const std::string& name, UUID ID):
 		Name(name)
@@ -255,7 +256,7 @@ namespace Proof {
 			}
 		}
 		#endif
-		RenderPhysicsDebug(worldRenderer, false);
+		//RenderPhysicsDebug(worldRenderer, false);
 
 		worldRenderer->EndScene();
 		#endif
@@ -302,40 +303,124 @@ namespace Proof {
 					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
 			}
 		}
-
-		// render AABB
-		/*
+		// box collider
 		{
-			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-			for (auto entity : group)
+
+			auto view = m_Registry.view<BoxColliderComponent>();
+
+			for (auto entity : view)
 			{
-				auto [transformComponent, staticMeshComponent] = group.get<TransformComponent, MeshComponent>(entity);
-				if (!staticMeshComponent.Visible)
-					continue;
+				Entity e = { entity, this };
+				//glm::mat4 transform = GetWorldSpaceTransform(e);
+				const auto& collider = e.GetComponent<BoxColliderComponent>();
+				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
+#if 0
+				glm::vec3 halfExtents = collider.Size;
 
-				auto mesh = staticMeshComponent.GetMesh();
-				if (mesh)
-				{
-					Entity e = Entity(entity, this);
-					glm::mat4 transform = GetWorldSpaceTransform(e);
+				glm::mat4 worldTransform = worldTransformComp.GetTransform();
+				// Calculate the corners of the box
+				glm::vec3 corners[8] = {
+					worldTransform * glm::vec4(collider.Center + glm::vec3(-halfExtents.x, -halfExtents.y, -halfExtents.z), 1.0f),
+					worldTransform * glm::vec4(collider.Center + glm::vec3(halfExtents.x, -halfExtents.y, -halfExtents.z), 1.0f),
+					worldTransform * glm::vec4(collider.Center + glm::vec3(halfExtents.x, halfExtents.y, -halfExtents.z), 1.0f),
+					worldTransform * glm::vec4(collider.Center + glm::vec3(-halfExtents.x, halfExtents.y, -halfExtents.z), 1.0f),
+					worldTransform * glm::vec4(collider.Center + glm::vec3(-halfExtents.x, -halfExtents.y, halfExtents.z), 1.0f),
+					worldTransform * glm::vec4(collider.Center + glm::vec3(halfExtents.x, -halfExtents.y, halfExtents.z), 1.0f),
+					worldTransform * glm::vec4(collider.Center + glm::vec3(halfExtents.x, halfExtents.y, halfExtents.z), 1.0f),
+					worldTransform * glm::vec4(collider.Center + glm::vec3(-halfExtents.x, halfExtents.y, halfExtents.z), 1.0f)
+				};
 
-					//if (SelectionManager::IsEntityOrAncestorSelected(e))
-					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
-					//else
-					//renderer2D->DrawAABB(mesh,  transform);
-					//renderer2D->DrawAABBSubMeshes(mesh, transform);
-					//renderer2D->DrawAABB(mesh, transform);
-					//AABB bouding = { { -1.0f, -1.0f, -1.0f} ,{1.0f, 1.0f, 1.0f} };
-					//renderer2D->DrawAABB(bouding, transform);
+				// Draw the lines for the box
+				// Bottom face
+				renderer2D->DrawLine(corners[0], corners[1]);
+				renderer2D->DrawLine(corners[1], corners[2]);
+				renderer2D->DrawLine(corners[2], corners[3]);
+				renderer2D->DrawLine(corners[3], corners[0]);
 
-				}
+				// Top face
+				renderer2D->DrawLine(corners[4], corners[5]);
+				renderer2D->DrawLine(corners[5], corners[6]);
+				renderer2D->DrawLine(corners[6], corners[7]);
+				renderer2D->DrawLine(corners[7], corners[4]);
+
+				// Connecting lines
+				renderer2D->DrawLine(corners[0], corners[4]);
+				renderer2D->DrawLine(corners[1], corners[5]);
+				renderer2D->DrawLine(corners[2], corners[6]);
+				renderer2D->DrawLine(corners[3], corners[7]);
+#endif
+				renderer2D->DrawDebugCube(collider.Center + worldTransformComp.Location, worldTransformComp.GetRotationEuler(), 
+					collider.Size* worldTransformComp.Scale);
 			}
 		}
-		*/
 
-		//renderer2D->DrawQuad(glm::vec3{0}, worldRenderer->m_BRDFLUT);
+		{
+			auto view = m_Registry.view<SphereColliderComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				const auto& collider = e.GetComponent<SphereColliderComponent>();
+				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
 
-		//renderer2D->DrawLine({ 0,0,0 }, { 0,0,10 });
+				auto location = worldTransformComp.Location;
+				glm::vec3 center = collider.Center;
+				float radius = collider.Radius * glm::max(worldTransformComp.Scale.x, glm::max(worldTransformComp.Scale.y, worldTransformComp.Scale.z));
+				glm::vec3 rotation = worldTransformComp.GetRotationEuler();
+				glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);  // Adjust color as needed
+				renderer2D->DrawDebugSphere(location + center, rotation, radius, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			}
+		}
+
+		{
+			auto view = m_Registry.view<CapsuleColliderComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				const auto& collider = e.GetComponent<CapsuleColliderComponent>();
+				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
+				auto location = worldTransformComp.Location;
+				glm::vec3 center = collider.Center;
+				auto rotation = worldTransformComp.GetRotationEuler();
+
+				auto capsuleData = GetCapsuleData(collider.Direction, worldTransformComp);
+				float height = collider.Height * capsuleData.scaleDirection * 2.0f;
+				float radius = collider.Height * capsuleData.radiusScale;
+
+				auto origin = location + center;
+#if 1
+				// Apply rotation to the original positions
+				glm::vec3 topCenterOriginal = origin + glm::vec3(0, height / 2.0f - radius, 0);
+				glm::vec3 bottomCenterOriginal = origin - glm::vec3(0, height / 2.0f - radius, 0);
+
+				glm::mat4 rotationLocationTransformMatrix = glm::translate(glm::mat4(1.0f), origin) * glm::toMat4(glm::quat(rotation));
+
+				glm::vec3 topCenter = glm::vec3(rotationLocationTransformMatrix * glm::vec4(topCenterOriginal - origin, 1.0f));
+				glm::vec3 bottomCenter = glm::vec3(rotationLocationTransformMatrix * glm::vec4(bottomCenterOriginal - origin, 1.0f));
+
+				// Draw the bottom hemisphere
+				renderer2D->DrawDebugHemisphere(bottomCenter, glm::radians(glm::vec3(0, 0, 180)), radius);
+
+				// Draw the top hemisphere
+				renderer2D->DrawDebugHemisphere(topCenterOriginal, rotation, radius);
+
+				// Draw the cylinder part (lines connecting the hemispheres)
+				renderer2D->DrawLine(topCenter + glm::vec3(radius, 0, 0), bottomCenter + glm::vec3(radius, 0, 0));
+				renderer2D->DrawLine(topCenter - glm::vec3(radius, 0, 0), bottomCenter - glm::vec3(radius, 0, 0));
+				renderer2D->DrawLine(topCenter + glm::vec3(0, 0, radius), bottomCenter + glm::vec3(0, 0, radius));
+				renderer2D->DrawLine(topCenter - glm::vec3(0, 0, radius), bottomCenter - glm::vec3(0, 0, radius));
+#else
+				radius = glm::max(0.f, radius);
+				//height -= radius;
+				//
+				//height = glm::max(0.f, height);
+				renderer2D->DrawDebugHemisphere(origin + glm::vec3(0,height,0) + rotation * glm::vec3(0, height / 2.0f - radius, 0), rotation, radius);
+				//bottom
+				renderer2D->DrawDebugHemisphere(origin - rotation * glm::vec3(0, height / 2.0f - radius, 0), rotation + glm::radians(glm::vec3(0, 0, 180)), radius);
+#endif
+			}
+			renderer2D->DrawDebugHemisphere({0,10,0}, glm::radians(glm::vec3(0,90,0)), 5);
+
+		}
 		renderer2D->EndContext();
 		#endif
 
@@ -401,7 +486,7 @@ namespace Proof {
 					float scale_x = (collider.Direction == CapsuleDirection::X) ? (collider.Height) * capsuleData.scaleDirection : (collider.Radius * 2.0f) * capsuleData.radiusScale;
 					float scale_y = (collider.Direction == CapsuleDirection::Y) ? (collider.Height) * capsuleData.scaleDirection : (collider.Radius * 2.0f) * capsuleData.radiusScale;
 					float scale_z = (collider.Direction == CapsuleDirection::Z) ? (collider.Height) * capsuleData.scaleDirection : (collider.Radius * 2.0f) * capsuleData.radiusScale;
-
+					
 					colliderTransform = glm::scale(colliderTransform, glm::vec3(scale_x, scale_y, scale_z));
 					//glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0), ProofToglmVec(collider.OffsetLocation)) * glm::scale(glm::mat4(1.0f), glm::vec3(collider.Radius * 2.0f, collider.Height, collider.Radius * 2.0f));
 					renderer->SubmitPhysicsDebugMesh(capsuleDebugMesh, colliderTransform);
@@ -1051,7 +1136,6 @@ namespace Proof {
 		m_Registry.on_destroy<ScriptComponent>().disconnect(this);
 		
 		AudioEngine::EndContext();
-		ScriptEngine::EndRuntime();
 		m_PhysicsWorld->EndWorld();
 		m_PhysicsWorld = nullptr;
 	}
