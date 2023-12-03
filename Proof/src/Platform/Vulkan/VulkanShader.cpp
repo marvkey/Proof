@@ -284,7 +284,8 @@ namespace Proof
             return sourceCode;
         }
     };
-    bool VulkanShader::Compile(const std::unordered_map<ShaderStage, std::string>& sourceCode) {
+    bool VulkanShader::Compile(const std::unordered_map<ShaderStage, std::string>& sourceCode)
+    {
 
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 

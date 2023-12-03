@@ -75,7 +75,7 @@ namespace Proof {
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
 			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
-			graphicsPipelineConfig.DebugName = "Sprite Pipeline";
+			graphicsPipelineConfig.DebugName = "Quad";
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Base2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.CullMode = CullMode::None;
@@ -84,12 +84,20 @@ namespace Proof {
 			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 
 			RenderPassConfig renderPassConfig;
-			renderPassConfig.DebugName = "Sprite RenderPass";
+			renderPassConfig.DebugName = "Quad";
 			renderPassConfig.Pipeline = graphicsPipeline;
 			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
 			m_QuadPass = RenderPass::Create(renderPassConfig);
 			m_QuadPass->SetInput("CameraData", m_UBCamera);
 
+			graphicsPipelineConfig.DebugName = "QuadOnTop";
+			graphicsPipelineConfig.DepthTest = false;
+			auto graphicsPipelineOnTop = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+			renderPassConfig.DebugName = "QuadOnTop";
+			renderPassConfig.Pipeline = graphicsPipelineOnTop;
+			m_QuadOnTopPass = RenderPass::Create(renderPassConfig);
+			m_QuadOnTopPass->SetInput("CameraData", m_UBCamera);
 		}
 
 
@@ -124,6 +132,15 @@ namespace Proof {
 			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
 			m_TextPass = RenderPass::Create(renderPassConfig);
 			m_TextPass->SetInput("CameraData", m_UBCamera);
+
+			graphicsPipelineConfig.DebugName = "TextOnTop";
+			graphicsPipelineConfig.DepthTest = false;
+			auto graphicsPipelineOnTop = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+			renderPassConfig.DebugName = "TextOnTop";
+			renderPassConfig.Pipeline = graphicsPipelineOnTop;
+			m_TextOnTopPass = RenderPass::Create(renderPassConfig);
+			m_TextOnTopPass->SetInput("CameraData", m_UBCamera);
 		}
 		//
 		{
@@ -137,8 +154,8 @@ namespace Proof {
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Line2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.DrawMode = DrawType::Line;
-			//graphicsPipelineConfig.LineWidth = 2.0f; //TODO
-			graphicsPipelineConfig.LineWidth = 1.0f;
+			graphicsPipelineConfig.LineWidth = 2.0f; //TODO
+			//graphicsPipelineConfig.LineWidth = 1.0f;
 			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 
 			RenderPassConfig renderPassConfig("Line");
@@ -146,6 +163,15 @@ namespace Proof {
 			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
 			m_LinePass = RenderPass::Create(renderPassConfig);
 			m_LinePass->SetInput("CameraData", m_UBCamera);
+
+			graphicsPipelineConfig.DebugName = "LineOnTop";
+			graphicsPipelineConfig.DepthTest = false;
+			auto graphicsPipelineOnTop = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+			renderPassConfig.DebugName = "LineOnTop";
+			renderPassConfig.Pipeline = graphicsPipelineOnTop;
+			m_LineOnTopPass = RenderPass::Create(renderPassConfig);
+			m_LineOnTopPass->SetInput("CameraData", m_UBCamera);
 
 			uint32_t* lineIndices = pnew uint32_t[c_MaxLineIndices];
 			for (uint32_t i = 0; i < c_MaxLineIndices; i++)
@@ -182,10 +208,21 @@ namespace Proof {
 			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
 			m_CircleRenderPass = RenderPass::Create(renderPassConfig);
 			m_CircleRenderPass->SetInput("CameraData", m_UBCamera);
+
+			graphicsPipelineConfig.DebugName = "CircleOnTop";
+			graphicsPipelineConfig.DepthTest = false;
+			auto graphicsPipelineOnTop = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+			renderPassConfig.DebugName = "CircleOnTop";
+			renderPassConfig.Pipeline = graphicsPipelineOnTop;
+			m_CircleOnTopRenderPass = RenderPass::Create(renderPassConfig);
+			m_CircleOnTopRenderPass->SetInput("CameraData", m_UBCamera);
+
 		}
 	}
 
-	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position) {
+	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Renderer2DContextSettings contextSettings)
+	{
 		PF_PROFILE_FUNC()
 			CameraData camera = CameraData{ projection,view,Position };
 		//CameraData camera = CameraData{ glm::mat4(1),glm::mat4(1)};
@@ -194,7 +231,7 @@ namespace Proof {
 		m_UBCamera->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
 		m_Stats = {};
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
-
+		m_ContextSettings = contextSettings;
 
 	}
 	Renderer2D::Renderer2D()
@@ -642,22 +679,22 @@ namespace Proof {
 
 		// Draw the lines for the box
 		// Bottom face
-		DrawLine(corners[0], corners[1]);
-		DrawLine(corners[1], corners[2]);
-		DrawLine(corners[2], corners[3]);
-		DrawLine(corners[3], corners[0]);
+		DrawLine(corners[0], corners[1],color);
+		DrawLine(corners[1], corners[2],color);
+		DrawLine(corners[2], corners[3],color);
+		DrawLine(corners[3], corners[0],color);
 
 		// Top face
-		DrawLine(corners[4], corners[5]);
-		DrawLine(corners[5], corners[6]);
-		DrawLine(corners[6], corners[7]);
-		DrawLine(corners[7], corners[4]);
+		DrawLine(corners[4], corners[5],color);
+		DrawLine(corners[5], corners[6],color);
+		DrawLine(corners[6], corners[7],color);
+		DrawLine(corners[7], corners[4],color);
 
 		// Connecting lines
-		DrawLine(corners[0], corners[4]);
-		DrawLine(corners[1], corners[5]);
-		DrawLine(corners[2], corners[6]);
-		DrawLine(corners[3], corners[7]);
+		DrawLine(corners[0], corners[4],color);
+		DrawLine(corners[1], corners[5],color);
+		DrawLine(corners[2], corners[6],color);
+		DrawLine(corners[3], corners[7],color);
 	}
 	void Renderer2D::DrawDebugHemisphere(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color)
 	{
@@ -715,6 +752,7 @@ namespace Proof {
 
 		Renderer::EndCommandBuffer(m_CommandBuffer);
 		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		m_ContextSettings = {};
 	}
 
 	void Renderer2D::Reset() {
@@ -763,6 +801,8 @@ namespace Proof {
 			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
 			
 			Timer quadTime;
+
+			Count<RenderPass> quadPass = m_ContextSettings.RenderOnTop == true ? m_QuadOnTopPass : m_QuadPass;
 			uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr - (uint8_t*)m_QuadVertexBufferBase.Get());
 			m_QuadVertexBuffer->GetVertexBuffer()->SetData(m_QuadVertexBufferBase.Get(), dataSize);
 
@@ -774,21 +814,24 @@ namespace Proof {
 			}
 			//std::vector<Count<Texture2D>> textureVec(m_QuadTextures.begin(), m_QuadTextures.end());
 
-			m_QuadPass->SetInput("u_Textures", textureVec);
+			quadPass->SetInput("u_Textures", textureVec);
 		
 
-			Renderer::BeginRenderPass(m_CommandBuffer, m_QuadPass);
+			Renderer::BeginRenderPass(m_CommandBuffer, quadPass);
 			m_IndexBuffer->Bind(m_CommandBuffer);
 			m_QuadVertexBuffer->GetVertexBuffer()->Bind(m_CommandBuffer);
 			Renderer::DrawElementIndexed(m_CommandBuffer, m_QuadIndexCount);
-			Renderer::EndRenderPass(m_QuadPass);
+			Renderer::EndRenderPass(quadPass);
 
 			m_Stats.QuadDrawTime += quadTime.ElapsedMillis();
 		}
 		if (m_TextIndexCount > 0)
 		{
 			PF_PROFILE_FUNC("Renderer2D::String Draw");
+
 			Timer textTime;
+
+			Count<RenderPass> textPass = m_ContextSettings.RenderOnTop == true ? m_TextOnTopPass: m_TextPass;
 			uint32_t dataSize = (uint32_t)((uint8_t*)m_TextVertexBufferPtr - (uint8_t*)m_TextVertexBufferBase.Get());
 			m_TextVertexBuffer->GetVertexBuffer()->SetData(m_TextVertexBufferBase.Get(), dataSize);
 
@@ -798,14 +841,14 @@ namespace Proof {
 			{
 				textureVec[i] = m_FontTextures[i]->GetAtlasTexture();
 			}
-			m_TextPass->SetInput("u_FontAtlas", textureVec);
+			textPass->SetInput("u_FontAtlas", textureVec);
 
-			Renderer::BeginRenderPass(m_CommandBuffer, m_TextPass);
+			Renderer::BeginRenderPass(m_CommandBuffer, textPass);
 			m_IndexBuffer->Bind(m_CommandBuffer);
 			m_TextVertexBuffer->GetVertexBuffer()->Bind(m_CommandBuffer);
 
 			Renderer::DrawElementIndexed(m_CommandBuffer, m_TextIndexCount);
-			Renderer::EndRenderPass(m_TextPass);
+			Renderer::EndRenderPass(textPass);
 
 			m_Stats.TextDrawTime += textTime.ElapsedMillis();
 
@@ -814,33 +857,38 @@ namespace Proof {
 		if (m_LineIndexCount > 0)
 		{
 			PF_PROFILE_FUNC("Renderer2D::Line Draw");
+
 			Timer lineTime;
+
+			Count<RenderPass> linePass = m_ContextSettings.RenderOnTop == true ? m_LineOnTopPass : m_LinePass;
 			uint32_t dataSize = (uint32_t)((uint8_t*)m_LineVertexBufferPtr - (uint8_t*)m_LineVertexBufferBase.Get());
 
 			m_LineVertexBuffer->GetVertexBuffer()->SetData(m_LineVertexBufferBase.Get(), dataSize);
 
-			Renderer::BeginRenderPass(m_CommandBuffer, m_LinePass);
+			Renderer::BeginRenderPass(m_CommandBuffer, linePass);
 			m_LineIndexBuffer->Bind(m_CommandBuffer);
 			m_LineVertexBuffer->GetVertexBuffer()->Bind(m_CommandBuffer);
 			
 			Renderer::DrawElementIndexed(m_CommandBuffer, m_LineIndexCount);
-			Renderer::EndRenderPass(m_LinePass);
+			Renderer::EndRenderPass(linePass);
 		}
 
 		if (m_CircleIndexCount > 0)
 		{
 			PF_PROFILE_FUNC("Renderer2D::CircleDraw");
 
+			Count<RenderPass> circlePass = m_ContextSettings.RenderOnTop == true ? m_CircleOnTopRenderPass : m_CircleRenderPass;
+
 			// Circles
 			uint32_t dataSize = (uint32_t)((uint8_t*)m_CircleVertexBufferPtr - (uint8_t*)m_CircleVertexBufferBase.Get());
 			m_CircleVertexBuffer->GetVertexBuffer()->SetData(m_CircleVertexBufferBase.Get(), dataSize);
 
-			Renderer::BeginRenderPass(m_CommandBuffer, m_CircleRenderPass);
+			Renderer::BeginRenderPass(m_CommandBuffer, circlePass);
 			m_IndexBuffer->Bind(m_CommandBuffer);
 			m_CircleVertexBuffer->GetVertexBuffer()->Bind(m_CommandBuffer);
 
 			Renderer::DrawElementIndexed(m_CommandBuffer, m_CircleIndexCount);
-			Renderer::EndRenderPass(m_CircleRenderPass);
+			Renderer::EndRenderPass(circlePass);
 		}
 
 		m_Stats.TotalRenderTime += renderTime.ElapsedMillis();
@@ -938,8 +986,13 @@ namespace Proof {
 		m_FrameBuffer = framebuffer;
 		{
 			m_QuadPass->SetTargetFrameBuffer(m_FrameBuffer);
+			m_QuadOnTopPass->SetTargetFrameBuffer(m_FrameBuffer);
 			m_TextPass->SetTargetFrameBuffer(m_FrameBuffer);
+			m_TextOnTopPass->SetTargetFrameBuffer(m_FrameBuffer);
 			m_LinePass->SetTargetFrameBuffer(m_FrameBuffer);
+			m_LineOnTopPass->SetTargetFrameBuffer(m_FrameBuffer);
+			m_CircleRenderPass->SetTargetFrameBuffer(m_FrameBuffer);
+			m_CircleOnTopRenderPass->SetTargetFrameBuffer(m_FrameBuffer);
 		}
 	}
 	Renderer2DStorage::Renderer2DStorage() {

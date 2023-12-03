@@ -135,6 +135,7 @@ namespace Proof {
 		void OnRender(Count<class WorldRenderer> renderer, FrameTime timestep,const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane);
 
 		void RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime);
+		void RenderPhysicsDebug2D(Count<WorldRenderer> renderer, bool runtime);
 		void Init();
 		void DeleteEntitiesfromQeue();
 		

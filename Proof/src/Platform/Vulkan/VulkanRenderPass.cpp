@@ -665,20 +665,19 @@ namespace Proof
         {
             float lineWidth;
             if (vk_pipeline->GetLineWidthStack().size())
-                lineWidth = vk_pipeline->GetLineWidthStack().back();
+                lineWidth = vk_pipeline->GetLineWidthStack().top();
             else
                 lineWidth = vk_pipeline->GetConfig().LineWidth;
 
-            PF_CORE_ASSERT(false, "not found ");
 
-            //vkCmdSetLineWidth(cmdBuffer, lineWidth);
+            vkCmdSetLineWidth(cmdBuffer, lineWidth);
         }
 
         if (vk_pipeline->GetConfig().EditDrawType)
         {
             DrawType drawType;
             if (vk_pipeline->GetDrawTypeStack().size())
-                drawType = vk_pipeline->GetDrawTypeStack().back();
+                drawType = vk_pipeline->GetDrawTypeStack().top();
             else
                 drawType = vk_pipeline->GetConfig().DrawMode;
 
@@ -691,12 +690,23 @@ namespace Proof
         {
             CullMode mode;
             if (vk_pipeline->GetCullModeStack().size())
-                mode = vk_pipeline->GetCullModeStack().back();
+                mode = vk_pipeline->GetCullModeStack().top();
             else
                 mode = vk_pipeline->GetConfig().CullMode;
 
             PF_CORE_ASSERT(false, "cull mode not found ");
-            //vkCmdSetCullMode(cmdBuffer, Utils::ProofFormatToVulkanFormat(mode));
+           // vkCmdSetCullMode(cmdBuffer, Utils::ProofFormatToVulkanFormat(mode));
+        }
+
+        if (vk_pipeline->GetConfig().EditDepthTest)
+        {
+            bool test;
+            if (vk_pipeline->GetDepthTestStack().size())
+                test = vk_pipeline->GetDepthTestStack().top();
+            else
+                test = vk_pipeline->GetConfig().DepthTest;
+
+            //vkCmdSetDepthTestEnable(cmdBuffer, test == true ? VK_TRUE : VK_FALSE);
         }
     }
     void VulkanRenderPass::SetTargetFrameBuffer(Count<FrameBuffer> frame)

@@ -1,5 +1,5 @@
 #pragma once
-#include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
+#include "VulkanUtils/vk_mem_alloc.h"
 #include "VulkanUtils/VulkanBufferBase.h"
 namespace Proof
 {

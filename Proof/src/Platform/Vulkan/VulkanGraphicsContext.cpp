@@ -136,13 +136,16 @@ namespace Proof
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		#define VK_KHR_WIN32_SURFACE_EXTENSION_NAME "VK_KHR_win32_surface"
 		std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME };
-		instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME); // Very little performance hit, can be used in Release.
+		instanceExtensions.insert(instanceExtensions.end(), {
+			VK_EXT_DEBUG_UTILS_EXTENSION_NAME, // Very little performance hit, can be used in Release.
+			//VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME
+			}); 
 		if (s_Validation)
 		{
 			instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 			instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 		}
-
+		
 		VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
 		VkValidationFeaturesEXT features = {};
 		features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;

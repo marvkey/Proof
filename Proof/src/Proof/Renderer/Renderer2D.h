@@ -70,12 +70,17 @@ namespace Proof {
 		float TextDrawTime = 0.0f;
 		float TotalRenderTime = 0.0f;
 	};
+
+	struct Renderer2DContextSettings
+	{
+		bool RenderOnTop = false;
+	};
 	class Renderer2D : RefCounted {
 		friend class Camera;
 	public:
 		Renderer2D();
 		~Renderer2D();
-		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position);
+		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Renderer2DContextSettings settigs = Renderer2DContextSettings());
 		void DrawQuad(const glm::vec3& Location);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& Size);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& RotationRadians,const glm::vec4& Color);
@@ -154,22 +159,23 @@ namespace Proof {
 		Count<class VertexBufferSet> m_QuadVertexBuffer;
 		float m_QuadTextureSlotIndex = 1; //0 white texture
 		Count<class RenderPass> m_QuadPass;
+		Count<class RenderPass> m_QuadOnTopPass;
 
 		uint32_t m_QuadIndexCount = 0;
 		RendererCustomTypeSet<Vertex2D*> m_QuadVertexBufferBase = nullptr;
 		Vertex2D* m_QuadVertexBufferPtr = nullptr;
 
-
 		uint32_t m_TextIndexCount = 0;
 		RendererCustomTypeSet<TextVertex*> m_TextVertexBufferBase = nullptr;
 		TextVertex* m_TextVertexBufferPtr = nullptr;
 		Count<class RenderPass> m_TextPass;
+		Count<class RenderPass> m_TextOnTopPass;
 		std::array<Count<Font>, c_MaxTextureSlots> m_FontTextures;
 		Count<VertexBufferSet> m_TextVertexBuffer;
 		float m_TextFontSlotIndex = 1; //0 default font
 
-
 		Count<RenderPass> m_LinePass;
+		Count<RenderPass> m_LineOnTopPass;
 		Count<VertexBufferSet> m_LineVertexBuffer;
 		Count<IndexBuffer> m_LineIndexBuffer;
 		uint32_t m_LineIndexCount = 0;
@@ -177,13 +183,14 @@ namespace Proof {
 		LineVertex* m_LineVertexBufferPtr;
 
 		Count<RenderPass> m_CircleRenderPass;
+		Count<RenderPass> m_CircleOnTopRenderPass;
 		Count<VertexBufferSet> m_CircleVertexBuffer;
 		uint32_t m_CircleIndexCount = 0;
 		RendererCustomTypeSet<CircleVertex*> m_CircleVertexBufferBase = nullptr;
 		CircleVertex* m_CircleVertexBufferPtr = nullptr;
 
 		Count<UniformBufferSet> m_UBCamera = nullptr;
-
+		Renderer2DContextSettings m_ContextSettings;
 	};
 }
 

@@ -105,6 +105,10 @@ namespace Proof{
 		// means we can update cull type even after creating a rednerPass
 		// if set to true we can do that
 		bool EditCullMode = false;
+
+		// means we can update depth test even after creating a rednerPass
+		bool EditDepthTest = false;
+
 		bool WriteDepth = true;
 		bool DepthTest = true;
 
@@ -119,7 +123,7 @@ namespace Proof{
 		DrawType DrawMode = DrawType::Triangle;
 		// default CullMode
 		CullMode CullMode = CullMode::Back;
-		//default LineWidth
+		//default LineWidth if greater tahn 1 edit lien widht automatically set to true
 		float LineWidth = 1.0f;
 
 		PolygonFillMode FillMode = PolygonFillMode::Fill;

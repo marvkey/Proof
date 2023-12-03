@@ -322,6 +322,7 @@ namespace Proof
 		pipelineConfig.ColorBlendInfo.flags = 0;
 
 		pipelineConfig.DepthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+
 		pipelineConfig.DepthStencilInfo.depthTestEnable = m_Config.DepthTest ? VK_TRUE : VK_FALSE;
 		pipelineConfig.DepthStencilInfo.depthWriteEnable = m_Config.WriteDepth ? VK_TRUE : VK_FALSE;
 		pipelineConfig.DepthStencilInfo.depthCompareOp = Utils::ProofCompareOpToVulkanCompareOp(m_Config.DepthCompareOperator);
@@ -340,8 +341,11 @@ namespace Proof
 			dynamicState.push_back(VK_DYNAMIC_STATE_CULL_MODE);
 		if (m_Config.EditDrawType )
 			dynamicState.push_back(VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY);
-		if (m_Config.EditLineWidth || m_Config.LineWidth >1)
+		if (m_Config.EditLineWidth || m_Config.LineWidth > 1)
+		{
+			m_Config.EditLineWidth = true;
 			dynamicState.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
+		}
 
 		pipelineConfig.DynamicSate.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		pipelineConfig.DynamicSate.dynamicStateCount = dynamicState.size();
@@ -435,69 +439,123 @@ namespace Proof
 
 	void VulkanGraphicsPipeline::PushlineWidth(float lineWidth)
 	{
-		if (m_Config.EditLineWidth == false)
-		{
-			PF_ENGINE_WARN("{} pipeline cannot push line because configuration linewidth is set to false remake pipeline", m_Config.DebugName);
-			return;
-		}
-		PF_CORE_ASSERT(m_LineWidthStack.size() < 0, "Cannot push to stack if pop stack is not called");
-		m_LineWidthStack.push_back(lineWidth);
+
+		Count<VulkanGraphicsPipeline> instance = this;
+		Renderer::Submit([instance,lineWidth]() mutable
+			{
+				if (instance->m_Config.EditLineWidth == false)
+				{
+					PF_ENGINE_ERROR("{} pipeline cannot push line because configuration linewidth is set to false remake pipeline", instance->m_Config.DebugName);
+					return;
+				}
+				PF_CORE_ASSERT(instance->m_LineWidthStack.size() < 0, "Cannot push to stack if pop stack is not called");
+				instance->m_LineWidthStack.push(lineWidth);
+			});
 	}
 
 	void VulkanGraphicsPipeline::PoplineWidth()
 	{
-
-		if (m_Config.EditLineWidth == false)
-		{
-			PF_ENGINE_WARN("{} pipeline cannot pop line because configuration linewidth is set to false remake pipeline", m_Config.DebugName);
-			return;
-		}
-		PF_CORE_ASSERT(m_LineWidthStack.size() == 1, "Cannot pop stack if stack is empty");
-		m_LineWidthStack.pop_back();
+		Count<VulkanGraphicsPipeline> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				if (instance->m_Config.EditLineWidth == false)
+				{
+					PF_ENGINE_WARN("{} pipeline cannot pop line because configuration linewidth is set to false remake pipeline", instance->m_Config.DebugName);
+					return;
+				}
+				PF_CORE_ASSERT(instance->m_LineWidthStack.size() == 1, "Cannot pop stack if stack is empty");
+				instance->m_LineWidthStack.pop();
+			});
 	}
 
 	void VulkanGraphicsPipeline::PushDrawType(DrawType draw)
 	{
-		if (m_Config.EditDrawType == false)
-		{
-			PF_ENGINE_WARN("{} pipeline cannot push line because configuration DrawType is set to false remake pipeline", m_Config.DebugName);
-			return;
-		}
-		PF_CORE_ASSERT(m_DrawTypeStack.size() < 0, "Cannot push to stack if pop stack is not called");
-		m_DrawTypeStack.push_back(draw);
+		Count<VulkanGraphicsPipeline> instance = this;
+		Renderer::Submit([instance, draw]() mutable
+			{
+				if (instance->m_Config.EditDrawType == false)
+				{
+					PF_ENGINE_ERROR("{} pipeline cannot push drawType because configuration DrawType is set to false remake pipeline", instance->m_Config.DebugName);
+					return;
+				}
+				PF_CORE_ASSERT(instance->m_DrawTypeStack.size() < 0, "Cannot push to stack if pop stack is not called");
+				instance->m_DrawTypeStack.push(draw);
+			});
 	}
 
 	void VulkanGraphicsPipeline::PopDrawType()
 	{
-		if (m_Config.EditDrawType == false)
-		{
-			PF_ENGINE_WARN("{} pipeline cannot pop line because configuration DrawType is set to false remake pipeline", m_Config.DebugName);
-			return;
-		}
-		PF_CORE_ASSERT(m_DrawTypeStack.size() == 1, "Cannot pop stack if stack is empty");
-		m_DrawTypeStack.pop_back();
+		Count<VulkanGraphicsPipeline> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				if (instance->m_Config.EditDrawType == false)
+				{
+					PF_ENGINE_ERROR("{} pipeline cannot pop drawType because configuration DrawType is set to false remake pipeline", instance->m_Config.DebugName);
+					return;
+				}
+				PF_CORE_ASSERT(instance->m_DrawTypeStack.size() == 1, "Cannot pop stack if stack is empty");
+				instance->m_DrawTypeStack.pop();
+			});
 	}
 
 	void VulkanGraphicsPipeline::PushCullMode(CullMode cull)
 	{
-		if (m_Config.EditCullMode == false)
-		{
-			PF_ENGINE_WARN("{} pipeline cannot push line because configuration CullMode is set to false remake pipeline", m_Config.DebugName);
-			return;
-		}
-		PF_CORE_ASSERT(m_CullModeStack.size() < 0, "Cannot push to stack if pop stack is not called");
-		m_CullModeStack.push_back(cull);
+		Count<VulkanGraphicsPipeline> instance = this;
+		Renderer::Submit([instance, cull]() mutable
+			{
+				if (instance->m_Config.EditCullMode == false)
+				{
+					PF_ENGINE_ERROR("{} pipeline cannot push cullMode because configuration CullMode is set to false remake pipeline", instance->m_Config.DebugName);
+					return;
+				}
+				PF_CORE_ASSERT(instance->m_CullModeStack.size() < 0, "Cannot push to stack if pop stack is not called");
+				instance->m_CullModeStack.push(cull);
+			});
 	}
 
 	void VulkanGraphicsPipeline::PopCullMode()
 	{
-		if (m_Config.EditCullMode == false)
-		{
-			PF_ENGINE_WARN("{} pipeline cannot pop line because configuration CullMode is set to false remake pipeline", m_Config.DebugName);
-			return;
-		}
-		PF_CORE_ASSERT(m_CullModeStack.size() == 1, "Cannot pop stack if stack is empty");
-		m_CullModeStack.pop_back();
+		Count<VulkanGraphicsPipeline> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				if (instance->m_Config.EditCullMode == false)
+				{
+					PF_ENGINE_ERROR("{} pipeline cannot pop cullMode because configuration CullMode is set to false remake pipeline", instance->m_Config.DebugName);
+					return;
+				}
+				PF_CORE_ASSERT(instance->m_CullModeStack.size() == 1, "Cannot pop stack if stack is empty");
+				instance->m_CullModeStack.pop();
+			});
+	}
+
+	void VulkanGraphicsPipeline::PushDepthTest(bool depthTest)
+	{
+		Count<VulkanGraphicsPipeline> instance = this;
+		Renderer::Submit([instance, depthTest]() mutable
+			{
+				if (instance->m_Config.EditLineWidth == false)
+				{
+					PF_ENGINE_ERROR("{} pipeline cannot push Depth because configuration EditDepthTest is set to false remake pipeline", instance->m_Config.DebugName);
+					return;
+				}
+				PF_CORE_ASSERT(instance->m_DepthTestStack.size() < 0, "Cannot push to stack if pop stack is not called");
+				instance->m_DepthTestStack.push(depthTest);
+			});
+	}
+
+	void VulkanGraphicsPipeline::PopDepthTest()
+	{
+		Count<VulkanGraphicsPipeline> instance = this;
+		Renderer::Submit([instance]() mutable
+			{
+				if (instance->m_Config.EditLineWidth == false)
+				{
+					PF_ENGINE_ERROR("{} pipeline cannot pop depthDetst because configuration EditDepthTest is set to false remake pipeline", instance->m_Config.DebugName);
+					return;
+				}
+				PF_CORE_ASSERT(instance->m_DepthTestStack.size() == 1, "Cannot pop stack if stack is empty");
+				instance->m_DepthTestStack.pop();
+			});
 	}
 
 	void VulkanGraphicsPipeline::RT_Bind(Count<class RenderCommandBuffer> commandBuffer)
