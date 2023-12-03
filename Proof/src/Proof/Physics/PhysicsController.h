@@ -47,7 +47,7 @@ namespace Proof
 	private:
 		physx::PxController* m_Controller = nullptr;
 		physx::PxControllerCollisionFlags m_CollisionFlags = {};
-		glm::vec3 m_Speed;        // speed of controller in down direction at last update
+		glm::vec3 m_Speed = {};        // speed of controller in down direction at last update
 		glm::vec3 m_Displacement = {};   // displacement (if any) for next update (comes from Move() calls)
 		Count<class PhysicsMaterial> m_Material;
 

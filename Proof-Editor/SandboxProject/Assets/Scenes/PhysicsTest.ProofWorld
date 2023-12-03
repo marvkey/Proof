@@ -54,61 +54,6 @@ World:
         Azimuth: 0
         Inclination: 0
         Image: 0
-    - Entity: 12162065592849149457
-      TagComponent:
-        Tag: Mesh
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 0
-    - Entity: 6676996882805657161
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 18, 0]
-        Rotation: [0.00698139984, 0.0942482129, 0.00174533308]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 2.5
-    - Entity: 14244710982221739113
-      TagComponent:
-        Tag: Sponza
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [5, 5, 5]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 18141853162402936448
-      MeshColliderComponent:
-        ColliderID: 12902208667846413922
-        IsTrigger: false
-        UseSharedShape: false
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
     - Entity: 10012576340053575611
       TagComponent:
         Tag: Cube
@@ -137,6 +82,61 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 14244710982221739113
+      TagComponent:
+        Tag: Sponza
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [5, 5, 5]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 18141853162402936448
+      MeshColliderComponent:
+        ColliderID: 12902208667846413922
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 6676996882805657161
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 18, 0]
+        Rotation: [0.00698139984, 0.0942482129, 0.00174533308]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 2.5
+    - Entity: 12162065592849149457
+      TagComponent:
+        Tag: Mesh
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 0
     - Entity: 14477920356967852010
       TagComponent:
         Tag: Cube
@@ -339,3 +339,31 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 3288421564215210819
+      TagComponent:
+        Tag: characterBox
+        tags: []
+      TransformComponent:
+        Location: [0, 5.5999999, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+      CharacterControllerComponent:
+        SlopeLimitRadians: 0.707000017
+        StepOffset: 0.300000012
+        SkinOffset: 0.100000001
+        GravityEnabled: true
+        GravityScale: 1
+        MinMoveDistance: 0
+        WalkableMode: PreventClimbing
+        PhysicsMaterialID: 0
+        ColliderType: Box
+        Center: [0, 0, 0]
+        Radius: 0.5
+        Height: 2
+        Direction: Y
+        Size: [1, 1, 1]

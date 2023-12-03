@@ -450,7 +450,7 @@ namespace Proof
 			AddComponentGui<SpotLightComponent>(entity, "Spot Light");
 			AddComponentGui<CameraComponent>(entity, "Camera");
 
-			AddComponentGui<BoxColliderComponent>(entity, "Cube Collider");
+			AddComponentGui<BoxColliderComponent>(entity, "Box Collider");
 			AddComponentGui<SphereColliderComponent>(entity, "Sphere Collider");
 			AddComponentGui<CapsuleColliderComponent>(entity, "Capsule Collider");
 			AddComponentGuiButton<MeshColliderComponent>(entity, "Mesh Collider", [](Entity entity, MeshColliderComponent& meshColliderComp)
@@ -954,18 +954,27 @@ namespace Proof
 
 			{
 				float slopdeg = glm::degrees(controller.SlopeLimitRadians);
-				if (UI::AttributeDrag("SlopeLimitDeg", slopdeg))
+				if (UI::AttributeDrag("SlopeLimitDeg", slopdeg,0.5,0))
 					controller.SlopeLimitRadians = glm::radians(slopdeg);
 			}
 
-			UI::AttributeDrag("SkinOffset", controller.SkinOffset, 0);
+			UI::AttributeDrag("SkinOffset", controller.SkinOffset, 0.1,0.001);
 			UI::AttributeBool("GravityEnabled", controller.GravityEnabled);
 			UI::AttributeDrag("GravityScale", controller.GravityScale);
-			UI::AttributeDrag("MinMoveDistance", controller.MinMoveDistance, 0);
+			UI::AttributeDrag("MinMoveDistance", controller.MinMoveDistance, 0.1,0);
+			{
+				bool disabled = std::cos(controller.SlopeLimitRadians) < 0.0f;
+				UI::PushItemDisabled(disabled);
+				UI::EnumCombo("WalkableMode", controller.WalkableMode, {}, 
+					{
+					"if character lands on a slope it cannot walk it would prevent climbing",
+					"if character lands on a slope it cannot walk it would prevent climbing, the character will slide down"
+					},
+					"only valid if cos(SlopeLimitDeg) is greater than 0");
+				UI::PopItemDisabled();
+			}
+			UI::AttributeAssetReference("PhysicsMaterial", AssetType::PhysicsMaterial, controller.PhysicsMaterialID);
 
-			UI::AttributeAssetReference("PhysicsMaterial",AssetType::PhysicsMaterial, controller.PhysicsMaterialID);
-			UI::EnumCombo("WalkableMode", controller.WalkableMode, {}, {},"only valid if slopelimit is 0");
-			
 			ImGui::Separator();
 
 			UI::EnumCombo("ColliderType", controller.ColliderType);

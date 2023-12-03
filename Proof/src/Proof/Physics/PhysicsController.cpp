@@ -8,6 +8,9 @@
 #include "Proof/Asset/AssetManager.h"
 namespace Proof
 {
+
+	//https://www.youtube.com/watch?v=UUJMGQTT5ts&list=PLwyUzJb_FNeQrIxCEjj5AMPwawsw5beAy&index=2&ab_channel=iHeartGameDev
+	//https://www.youtube.com/watch?v=e94KggaEAr4&t=9s&ab_channel=iHeartGameDev
 	PhysicsController::PhysicsController(Count<class PhysicsWorld> world, Entity entity)
 		:
 		PhysicsActorBase(world, PhysicsControllerType::Controller,entity)
@@ -59,6 +62,7 @@ namespace Proof
 		desc.material = &m_Material->GetPhysxMaterial();
 		desc.upDirection = PhysXUtils::ToPhysXVector(Math::GetUpVector());
 
+		PF_CORE_ASSERT(desc.isValid(), "Capsule Controller is not valid");
 		m_Controller = m_PhysicsWorld->GetPhysXControllerManager()->createController(desc);
 
 		m_Controller->getActor()->userData = this;
@@ -79,7 +83,8 @@ namespace Proof
 		desc.contactOffset = controller.SkinOffset;                                                     // TODO: get from component
 		desc.material = &m_Material->GetPhysxMaterial();
 		desc.upDirection = PhysXUtils::ToPhysXVector(Math::GetUpVector());
-
+		
+		PF_CORE_ASSERT(desc.isValid(), "Box Controller is not valid");
 		m_Controller = m_PhysicsWorld->GetPhysXControllerManager()->createController(desc);
 
 		m_Controller->getActor()->userData = this;
@@ -112,6 +117,7 @@ namespace Proof
 		m_Controller->setStepOffset(stepOffset);
 		m_Entity.GetComponent<CharacterControllerComponent>().StepOffset = stepOffset;
 	}
+	
 	glm::vec3 PhysicsController::GetLocation() const
 	{
 		const auto& pxPos = m_Controller->getPosition();
@@ -171,14 +177,16 @@ namespace Proof
 		physx::PxControllerFilters filters;
 
 		if(IsGravityEnabled())
-			m_Speed += PhysicsEngine::GetSettings().Gravity * dt *GetGravityScale() ;
+			m_Speed -= PhysicsEngine::GetSettings().Gravity * dt * GetGravityScale() ;
 
 		glm::vec3 displacement = m_Displacement - PhysXUtils::FromPhysXVector(m_Controller->getUpDirection()) * m_Speed * dt;
 
 		m_CollisionFlags = m_Controller->move(PhysXUtils::ToPhysXVector(displacement), 0.0, static_cast<physx::PxF32>(dt), filters);
 
 		if (IsGrounded())
+		{
 			m_Speed = PhysicsEngine::GetSettings().Gravity * 0.01f; // setting speed back to zero here would be more technically correct,
+		}
 		// but a small non-zero gives better results (e.g. lessens jerkyness when walking down a slope)
 		m_Displacement = {};
 	}
@@ -186,19 +194,6 @@ namespace Proof
 	{
 		TransformComponent& transform = m_Entity.Transform();
 		transform.Location = GetLocation();
-
-		/*
-		TransformComponent& transform = m_Entity.Transform();
-		glm::vec3 scale = transform.Scale;
-		physx::PxTransform actorPose = m_Controller->get;
-		transform.Location = PhysXUtils::FromPhysXVector(actorPose.p);
-		//if (!IsAllRotationLocked())
-			transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPose.q));
-
-		auto scene = m_Entity.GetCurrentWorld();
-		scene->ConvertToLocalSpace(m_Entity);
-		transform.Scale = scale;
-		*/
 	}
 }
 

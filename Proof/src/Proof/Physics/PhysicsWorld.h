@@ -19,8 +19,9 @@ namespace Proof {
 			return m_World;
 		}
 
-		physx::PxScene* GetPhysicsScene() {
-			return m_Scene;
+		physx::PxScene* GetPhysicsScene() 
+		{
+			return m_PhysXScene;
 		}
 		bool HasActor(class Entity entity);
 		Count<class PhysicsActor> CreateActor(class Entity entity);
@@ -38,6 +39,8 @@ namespace Proof {
 	private:
 
 		bool Advance(float deltaTime);
+		void SubStepStrategy(float deltaTime);
+
 		void CreateRegions();
 	private:
 		physx::PxSimulationStatistics m_SimulationStats;
@@ -45,8 +48,10 @@ namespace Proof {
 		float m_Accumulator = 0.0f;
 		// needs to be changed have a way to figure this out
 		float m_SubStepSize = 1.0f / 60.0f;
-		
-		class physx::PxScene* m_Scene = nullptr;
+		uint32_t m_NumSubSteps = 0;
+		const uint32_t c_MaxSubSteps = 8;
+
+		class physx::PxScene* m_PhysXScene = nullptr;
 		class CollisionCallback m_CollisionCallback;
 		// inserting an element with this technique makes 
 		// creates a copy nd uses desctrocture

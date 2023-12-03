@@ -388,7 +388,6 @@ namespace Proof {
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
-				//glm::mat4 transform = GetWorldSpaceTransform(e);
 				const auto& collider = e.GetComponent<BoxColliderComponent>();
 				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
 				renderer2D->DrawDebugCube(collider.Center + worldTransformComp.Location, worldTransformComp.GetRotationEuler(),
@@ -411,6 +410,40 @@ namespace Proof {
 				glm::vec3 rotation = worldTransformComp.GetRotationEuler();
 				glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);  // Adjust color as needed
 				renderer2D->DrawDebugSphere(location + center, rotation, radius, renderer->GeneralOptions.PhysicsColliderColor);
+			}
+		}
+
+		{
+			auto view = m_Registry.view<CharacterControllerComponent>();
+			for (auto entity : view)
+			{
+
+				Entity e = { entity, this };
+				const auto& collider = e.GetComponent<CharacterControllerComponent>();
+				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
+
+				if (collider.ColliderType == CharacterControllerType::Box)
+				{
+					//character controller always faces up
+					glm::vec3 localUp = glm::normalize(Math::GetUpVector());
+					glm::vec3 currentUp = glm::normalize(worldTransformComp.GetUpVector());
+					glm::quat rotation = glm::rotation(currentUp, localUp);
+
+					// skin width
+					renderer2D->DrawDebugCube(
+						collider.Center + worldTransformComp.Location,
+						glm::eulerAngles(rotation * worldTransformComp.GetRotation()),  // Apply the new rotation
+						collider.Size * worldTransformComp.Scale + (collider.SkinOffset),
+						glm::vec4(1,0,0,1)
+					);
+
+					renderer2D->DrawDebugCube(
+						collider.Center + worldTransformComp.Location,
+						glm::eulerAngles( rotation * worldTransformComp.GetRotation()),  // Apply the new rotation
+						collider.Size * worldTransformComp.Scale,
+						renderer->GeneralOptions.PhysicsColliderColor
+					);
+				}
 			}
 		}
 		renderer2D->EndContext();

@@ -541,8 +541,9 @@ namespace Proof {
 		if (!IsAllRotationLocked())
 			transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPose.q));
 
-		auto scene = m_Entity.GetCurrentWorld();
-		//scene->ConvertToLocalSpace(m_Entity);
+		auto world = m_PhysicsWorld->GetWorld();
+		world->ConvertToLocalSpace(m_Entity);
 		transform.Scale = scale;
+
 	}
 }

@@ -57,10 +57,10 @@ namespace Proof {
 
 		PF_CORE_ASSERT(sceneDesc.isValid());
 
-		m_Scene = PhysicsEngine::GetPhysics()->createScene(sceneDesc);
-		physx::PxPvdSceneClient* pvdClient = m_Scene->getScenePvdClient();
+		m_PhysXScene = PhysicsEngine::GetPhysics()->createScene(sceneDesc);
+		physx::PxPvdSceneClient* pvdClient = m_PhysXScene->getScenePvdClient();
 
-		m_PhysXControllerManager = PxCreateControllerManager(*m_Scene);
+		m_PhysXControllerManager = PxCreateControllerManager(*m_PhysXScene);
 		CreateRegions();
 	}
 
@@ -86,7 +86,7 @@ namespace Proof {
 		if (advance)
 		{
 			uint32_t numberActors = 0;
-			physx::PxActor** activeActors = m_Scene->getActiveActors(numberActors);
+			physx::PxActor** activeActors = m_PhysXScene->getActiveActors(numberActors);
 
 			for (uint32_t i = 0; i < numberActors; i++)
 			{
@@ -100,7 +100,7 @@ namespace Proof {
 		}
 
 		// TODO disable in runtime
-		m_Scene->getSimulationStatistics(m_SimulationStats);
+		m_PhysXScene->getSimulationStatistics(m_SimulationStats);
 
 	}
 	bool PhysicsWorld::HasActor(Entity entity)
@@ -193,8 +193,8 @@ namespace Proof {
 		m_Actors.clear();
 		m_Controllers.clear();
 		m_PhysXControllerManager->release();
-		m_Scene->release();
-		m_Scene = nullptr;
+		m_PhysXScene->release();
+		m_PhysXScene = nullptr;
 		m_World = nullptr;
 
 		if (m_RegionBounds)
@@ -202,17 +202,31 @@ namespace Proof {
 	}
 	bool PhysicsWorld::Advance(float deltaTime)
 	{
+		SubStepStrategy(deltaTime);
+
+		for (uint32_t i = 0; i < m_NumSubSteps; i++)
+		{
+			m_PhysXScene->simulate(m_SubStepSize);
+			m_PhysXScene->fetchResults(true);
+		}
+
+		return m_NumSubSteps != 0;
+
+	}
+	void PhysicsWorld::SubStepStrategy(float deltaTime)
+	{
+		if (m_Accumulator > m_SubStepSize)
+			m_Accumulator = 0.0f;
+
 		m_Accumulator += deltaTime;
 		if (m_Accumulator < m_SubStepSize)
-			return false;
-		m_Accumulator -= m_SubStepSize;
-		PF_PROFILE_FUNC("PhysicsWorld::Advance");
-		for (uint32_t i = 0; i < m_SubStepSize; i++)
 		{
-			m_Scene->simulate(m_SubStepSize);
-			m_Scene->fetchResults(true);
+			m_NumSubSteps = 0;
+			return;
 		}
-		return true;
+
+		m_NumSubSteps = glm::min(static_cast<uint32_t>(m_Accumulator / m_SubStepSize), c_MaxSubSteps);
+		m_Accumulator -= (float)m_NumSubSteps * m_SubStepSize;
 	}
 	void PhysicsWorld::CreateRegions()
 	{
@@ -231,7 +245,7 @@ namespace Proof {
 		{
 			physx::PxBroadPhaseRegion region;
 			region.bounds = m_RegionBounds[i];
-			m_Scene->addBroadPhaseRegion(region);
+			m_PhysXScene->addBroadPhaseRegion(region);
 		}
 
 	}

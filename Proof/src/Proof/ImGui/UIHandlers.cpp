@@ -115,7 +115,7 @@ namespace Proof::UI
 	{
 		bool modified = false;
 
-		UI::ShiftCursor(10.0f, 9.0f);
+		UI::ShiftCursor(0.f, 9.0f);
 		UI::AttributeLabel(label);
 		ImGui::NextColumn();
 		UI::ShiftCursorY(4.0f);
