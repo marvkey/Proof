@@ -6,7 +6,8 @@
 #include <yaml-cpp/yaml.h>
 #include "Proof/Input/InputManager.h"
 #include <fstream>
-
+#include "Proof/Physics/PhysicsEngine.h"
+#include "Proof/Resources/ExternalCreations.h"
 #ifdef CreateDirectory
 #undef CreateDirectory
 #undef DeleteFile
@@ -119,6 +120,48 @@ namespace Proof
 				}
 				out << YAML::EndMap;// input
 			}
+
+			//physics
+			{
+				out << YAML::Key << "Physics" << YAML::Value;
+				out << YAML::BeginMap;
+
+				const auto& physicsSettings = PhysicsEngine::GetSettings();
+				out << YAML::Key << "Gravity" << YAML::Value << physicsSettings.Gravity;
+				out << YAML::Key << "BroadPhaseType" << YAML::Value <<EnumReflection::EnumString(physicsSettings.BroadPhaseType);
+				if (physicsSettings.BroadPhaseType != BroadphaseType::AutomaticBoxPrune)
+				{
+					out << YAML::Key << "WorldBoundsMin" << YAML::Value << physicsSettings.WorldBoundsMin;
+					out << YAML::Key << "WorldBoundsMax" << YAML::Value << physicsSettings.WorldBoundsMax;
+					out << YAML::Key << "WorldBoundsSubdivisions" << YAML::Value << physicsSettings.WorldBoundsSubdivisions;
+				}
+				out << YAML::Key << "FrictionModel" << YAML::Value << (int)physicsSettings.FrictionModel;
+				out << YAML::Key << "SolverPositionIterations" << YAML::Value << physicsSettings.SolverIterations;
+				out << YAML::Key << "SolverVelocityIterations" << YAML::Value << physicsSettings.SolverVelocityIterations;
+
+				out << YAML::Key << "PhysicsLayers";
+				out << YAML::Value << YAML::BeginSeq;
+				for (const auto& layer : PhysicsLayerManager::GetLayers())
+				{
+					out << YAML::BeginMap;
+					out << YAML::Key << "Name" << YAML::Value << layer.Name;
+					out << YAML::Key << "CollidesWith" << YAML::Value;
+					out << YAML::BeginSeq;
+					for (const auto& collidingLayer : PhysicsLayerManager::GetLayerCollisions(layer.LayerID))
+					{
+						out << YAML::BeginMap;
+						out << YAML::Key << "Name" << YAML::Value << collidingLayer.Name;
+						out << YAML::EndMap;
+					}
+					out << YAML::EndSeq;
+
+					out << YAML::EndMap;
+				}
+				out << YAML::EndSeq;
+
+				out << YAML::EndMap;
+
+			}
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
@@ -212,6 +255,52 @@ namespace Proof
 					}
 				}
 
+			}
+		}
+
+		//physics
+		{
+			auto physicsNode = projectData["Physics"];
+
+			if (physicsNode)
+			{
+				auto& physicsSettings = PhysicsEngine::GetSettings();
+
+				physicsSettings.Gravity = physicsNode["Gravity"].as<glm::vec3>(physicsSettings.Gravity);
+				physicsSettings.BroadPhaseType = physicsNode["BroadPhaseType"] ? EnumReflection::StringEnum<BroadphaseType>( physicsNode["BroadPhaseType"].as<std::string>()) : physicsSettings.BroadPhaseType;
+
+				if (physicsSettings.BroadPhaseType != BroadphaseType::AutomaticBoxPrune)
+				{
+					physicsSettings.WorldBoundsMin = physicsNode["WorldBoundsMin"] ? physicsNode["WorldBoundsMin"].as<glm::vec3>() : physicsSettings.WorldBoundsMin;
+					physicsSettings.WorldBoundsMax = physicsNode["WorldBoundsMax"] ? physicsNode["WorldBoundsMax"].as<glm::vec3>() : physicsSettings.WorldBoundsMax;
+					physicsSettings.WorldBoundsSubdivisions = physicsNode["WorldBoundsSubdivisions"] ? physicsNode["WorldBoundsSubdivisions"].as<uint32_t>() : physicsSettings.WorldBoundsSubdivisions;
+				}
+
+				physicsSettings.FrictionModel = physicsNode["FrictionModel"] ? (FrictionType)physicsNode["FrictionModel"].as<int>() : physicsSettings.FrictionModel;
+				physicsSettings.SolverIterations = physicsNode["SolverPositionIterations"] ? physicsNode["SolverPositionIterations"].as<uint32_t>() : physicsSettings.SolverIterations;
+				physicsSettings.SolverVelocityIterations = physicsNode["SolverVelocityIterations"] ? physicsNode["SolverVelocityIterations"].as<uint32_t>() : physicsSettings.SolverVelocityIterations;
+
+				auto physicsLayers = physicsNode["PhysicsLayers"];
+
+				if (physicsLayers)
+				{
+					for (auto layer : physicsLayers)
+						PhysicsLayerManager::AddLayer(layer["Name"].as<std::string>(), false);
+
+					for (auto layer : physicsLayers)
+					{
+						PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayer(layer["Name"].as<std::string>());
+						auto collidesWith = layer["CollidesWith"];
+						if (collidesWith)
+						{
+							for (auto collisionLayer : collidesWith)
+							{
+								const auto& otherLayer = PhysicsLayerManager::GetLayer(collisionLayer["Name"].as<std::string>());
+								PhysicsLayerManager::SetLayerCollision(layerInfo.LayerID, otherLayer.LayerID, true);
+							}
+						}
+					}
+				}
 			}
 		}
 		return true;

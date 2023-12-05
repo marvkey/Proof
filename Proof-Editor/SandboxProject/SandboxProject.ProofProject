@@ -11,3 +11,13 @@ Project:
       []
     MotionMapping:
       []
+  Physics:
+    Gravity: [0, -9.81000042, 0]
+    BroadPhaseType: AutomaticBoxPrune
+    FrictionModel: 0
+    SolverPositionIterations: 8
+    SolverVelocityIterations: 2
+    PhysicsLayers:
+      - Name: Default
+        CollidesWith:
+          []
