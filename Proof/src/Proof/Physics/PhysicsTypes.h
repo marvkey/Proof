@@ -68,4 +68,17 @@ namespace Proof
 		glm::vec3 WorldBoundsMax = glm::vec3(100.0f);
 		PhysicsDebugType DebugType = PhysicsDebugType::Live;
 	};
+
+	enum class RigidBodyType
+	{
+		Static,
+		Dynamic
+	};
+	enum class ForceMode
+	{
+		Force,
+		Impule,
+		VelocityChange,
+		Acceleration
+	};
 }

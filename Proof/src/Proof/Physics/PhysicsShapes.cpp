@@ -56,7 +56,7 @@ namespace Proof {
 
 		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, m_Material->GetPhysxMaterial());
 
-		//m_Shape->setSimulationFilterData(actor.GetFilterData());
+		m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(component.Center, glm::vec3(0.0f)));
@@ -138,7 +138,7 @@ namespace Proof {
 		physx::PxSphereGeometry geometry = physx::PxSphereGeometry(largestComponent * component.Radius);
 
 		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, m_Material->GetPhysxMaterial());
-		//m_Shape->setSimulationFilterData(actor.GetFilterData());
+		m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(component.Center, glm::vec3(0.0f)));
@@ -207,8 +207,8 @@ namespace Proof {
 
 		
 		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * capsuleData.radiusScale, (component.Height ) * capsuleData.scaleDirection );
-	//	m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, m_Material->GetPhysxMaterial());
+		m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(component.Center, capsuleData.offsetRotation));
@@ -367,7 +367,7 @@ namespace Proof {
 				convexGeometry.meshFlags = physx::PxConvexMeshGeometryFlag::eTIGHT_BOUNDS;
 
 				physx::PxShape* shape = PhysicsEngine::GetPhysics()->createShape(convexGeometry, m_Material->GetPhysxMaterial(), !component.UseSharedShape);
-				//shape->setSimulationFilterData(actor.GetFilterData());
+				shape->setSimulationFilterData(actor.GetFilterData());
 				shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, colliderAsset->CollisionComplexity != ECollisionComplexity::UseComplexAsSimple && !component.IsTrigger);
 				if(component.UseSharedShape == false)
 					shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
@@ -528,7 +528,7 @@ namespace Proof {
 					shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, colliderAsset->CollisionComplexity == ECollisionComplexity::UseComplexAsSimple);
 					shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, false);
 					shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, colliderAsset->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex);
-					//shape->setSimulationFilterData(actor.GetFilterData());
+					shape->setSimulationFilterData(actor.GetFilterData());
 					shape->setLocalPose(PhysXUtils::ToPhysXTransform(submeshTranslation, submeshRotation));
 					shape->userData = this;
 

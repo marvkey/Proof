@@ -2,6 +2,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include "PhysicsTypes.h"
+#include "PhysicsLayerManager.h"
 
 #include <Physx/PxPhysicsAPI.h>
 namespace Proof {
@@ -30,6 +31,7 @@ namespace Proof {
 		physx::PxBroadPhaseType::Enum ProofToPhysXBroadphaseType(BroadphaseType type);
 		physx::PxFrictionType::Enum ProofToPhysXFrictionType(FrictionType type);
 		physx::PxControllerNonWalkableMode::Enum ToPhysXPxControllerNonWalkableMode(CharacterControllerNonWalkableMode mode);
+		physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection);
 
 		//
 		//physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection);

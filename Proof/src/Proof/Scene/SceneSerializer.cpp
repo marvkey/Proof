@@ -753,7 +753,7 @@ namespace Proof
 				out << YAML::Key << "LinearDrag" << rigidBody.LinearDrag;
 				out << YAML::Key << "AngularDrag" << rigidBody.AngularDrag;
 				out << YAML::Key << "Gravity" << rigidBody.Gravity;
-				out << YAML::Key << "Type" << EnumReflection::EnumString<RigidBodyType>(rigidBody.m_RigidBodyType);
+				out << YAML::Key << "Type" << EnumReflection::EnumString<RigidBodyType>(rigidBody.RigidBodyType);
 				out << YAML::Key << "FreezeLocation" <<  rigidBody.FreezeLocation;
 				out << YAML::Key << "FreezeRotation" <<  rigidBody.FreezeRotation;
 				out << YAML::Key << "Kinematic" << rigidBody.Kinematic;
@@ -1309,6 +1309,9 @@ namespace Proof
 			// RIGID BODY
 			{
 				auto rigidBodyComponent = entity["RigidBodyComponent"];
+				if (NewEntity.GetName() == "bouncyBall")
+					PF_CORE_ASSERT(false);
+
 				if (rigidBodyComponent)
 				{
 					auto& rgb = NewEntity.AddComponent<RigidBodyComponent>();
@@ -1319,9 +1322,11 @@ namespace Proof
 					rgb.FreezeLocation = rigidBodyComponent["FreezeLocation"].as<VectorTemplate<bool>>();
 					rgb.FreezeRotation = rigidBodyComponent["FreezeRotation"].as<VectorTemplate<bool>>();
 					rgb.Kinematic = rigidBodyComponent["Kinematic"].as<bool>(rgb.Kinematic);
-					rgb.m_RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
+					rgb.RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
 					rgb.CollisionDetection = EnumReflection::StringEnum<CollisionDetectionType>(rigidBodyComponent["CollisionDetection"].
 						as<std::string>(EnumReflection::EnumString(CollisionDetectionType::Discrete)));
+					if (NewEntity.GetName() == "bouncyBall")
+						PF_CORE_ASSERT(false);
 				}
 			}
 			//Character Controller

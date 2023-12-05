@@ -27,6 +27,7 @@ namespace Proof
 		void SetSlopeLimit(const float slopeLimitRadians);
 		void SetStepOffset(const float stepOffset);
 
+		virtual bool SetSimulationData(uint32_t layerId) override;
 		virtual glm::vec3 GetLocation() const override;
 		virtual void SetLocation(const glm::vec3& translation, const bool autowake = true) override;
 		virtual bool IsSleeping() { return false; };

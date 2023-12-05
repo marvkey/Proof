@@ -924,14 +924,18 @@ namespace Proof
 
 			UI::EndPropertyGrid();
 		});
-		
-		DrawComponents<RigidBodyComponent>("RigidBody", entity, [](RigidBodyComponent& rigidBody) {
-
+		DrawComponents<RigidBodyComponent>("RigidBody", entity, [&](RigidBodyComponent& rigidBody) {
+			static uint32_t checked = 0;
+			if (entity.GetName() == "bouncyBall" && checked == 0)
+			{
+				checked = 1;
+				PF_CORE_ASSERT(false);
+			}
 			UI::BeginPropertyGrid();
 
-			UI::EnumCombo("RigidType", rigidBody.m_RigidBodyType);
+			UI::EnumCombo("RigidType", rigidBody.RigidBodyType);
 
-			if (rigidBody.m_RigidBodyType == RigidBodyType::Dynamic)
+			if (rigidBody.RigidBodyType == RigidBodyType::Dynamic)
 			{
 				UI::EnumCombo("CollisionDetection", rigidBody.CollisionDetection);
 				UI::AttributeDrag("Mass", rigidBody.Mass, 0.5, 0);

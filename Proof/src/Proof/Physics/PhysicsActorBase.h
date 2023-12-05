@@ -10,7 +10,7 @@ namespace Proof
 	public:
 		Entity GetEntity() const { return m_Entity; }
 
-		//virtual bool SetSimulationData(uint32_t layerId) = 0;
+		virtual bool SetSimulationData(uint32_t layerId) = 0;
 		virtual glm::vec3 GetLocation() const = 0;
 		virtual void SetLocation(const glm::vec3& translation, const bool autowake = true) = 0;
 

@@ -543,37 +543,26 @@ namespace Proof
 		friend class PhysicsEngine;
 		mutable UUID m_PhysicsMaterialPointerID = 0;
 	};
-	enum class RigidBodyType {
-		Static,
-		Dynamic
-	};
-	enum class ForceMode {
-		Force,				
-		Impule,			
-		VelocityChange,	
-		Acceleration
-	};
 	
-	class Proof_API RigidBodyComponent {
+	class Proof_API RigidBodyComponent 
+	{
 	public:
 		RigidBodyComponent(const RigidBodyComponent&) = default;
 		RigidBodyComponent() = default;
 		
+		RigidBodyType RigidBodyType = RigidBodyType::Static;
+		uint32_t PhysicsLayerID = 0;
+
 		float Mass = 1.0f;
 		float AngularDrag = 0.05f;
-		float LinearDrag = 0.0f;
+		float LinearDrag = 0.01f;
 		bool Gravity = true;
 		bool Kinematic = false;
 		CollisionDetectionType CollisionDetection = CollisionDetectionType::Discrete;
 
 		VectorTemplate<bool>FreezeLocation = { false,false,false };
 		VectorTemplate<bool>FreezeRotation = { false,false,false };
-
-		RigidBodyType GetType() {
-			return m_RigidBodyType;
-		}
-	private:
-		RigidBodyType m_RigidBodyType = RigidBodyType::Static;
+		
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -585,6 +574,7 @@ namespace Proof
 	{
 		CharacterControllerComponent(const CharacterControllerComponent&) = default;
 		CharacterControllerComponent() = default;
+		uint32_t PhysicsLayerID = 0;
 		float SlopeLimitRadians = 0.707; //45 degree
 		float StepOffset = 0.3f; // min 0 max max float 
 		float SkinOffset = 0.1f; // min shoul dbe non zero positive and maximum should be max flaot

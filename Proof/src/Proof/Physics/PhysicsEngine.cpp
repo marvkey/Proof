@@ -6,6 +6,7 @@
 #include "MeshCollider.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Mesh.h"
+#include "PhysicsLayerManager.h"
 namespace Proof {
 	namespace Utils {
 		
@@ -111,11 +112,13 @@ namespace Proof {
 
 		PhysicsMeshCooker::Init();
 		
+		PhysicsLayerManager::AddLayer("Default");
 		PF_ENGINE_INFO("Physics Engine Initialized {}m/s", time.ElapsedMillis());
 	}
 	void PhysicsEngine::Release()
 	{
 		Timer time;
+		PhysicsLayerManager::ClearLayers();
 		PhysicsMeshCooker::ShutDown();
 		PhysicsMeshCache::ShutDown();
 		PhysicsDebugger::Shutdown();

@@ -77,7 +77,7 @@ World:
         LinearDrag: 0
         AngularDrag: 0.0500000007
         Gravity: true
-        Type: Dynamic
+        Type: Static
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
         Kinematic: false
@@ -106,8 +106,8 @@ World:
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
+        FreezeLocation: [false, false, true]
+        FreezeRotation: [true, true, true]
         Kinematic: false
         CollisionDetection: Discrete
     - Entity: 6676996882805657161
@@ -161,8 +161,8 @@ World:
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Dynamic
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
+        FreezeLocation: [false, false, true]
+        FreezeRotation: [true, true, true]
         Kinematic: false
         CollisionDetection: Discrete
     - Entity: 2279685831193862811
@@ -193,8 +193,8 @@ World:
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Dynamic
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
+        FreezeLocation: [true, true, true]
+        FreezeRotation: [true, false, false]
         Kinematic: false
         CollisionDetection: Discrete
     - Entity: 704439633171527343
@@ -219,10 +219,10 @@ World:
         Mass: 1
         LinearDrag: 0
         AngularDrag: 0.0500000007
-        Gravity: true
+        Gravity: false
         Type: Static
         FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
+        FreezeRotation: [false, true, false]
         Kinematic: false
         CollisionDetection: Discrete
     - Entity: 12753159789816389078
@@ -245,13 +245,13 @@ World:
         PhysicsMaterialPointerID: 16583584930006105417
       RigidBodyComponent:
         Mass: 1
-        LinearDrag: 0
+        LinearDrag: 1
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Dynamic
-        FreezeLocation: [false, false, false]
+        FreezeLocation: [true, false, false]
         FreezeRotation: [false, false, false]
-        Kinematic: false
+        Kinematic: true
         CollisionDetection: Discrete
     - Entity: 15045325054994147204
       TagComponent:
@@ -273,14 +273,14 @@ World:
         PhysicsMaterialPointerID: 16583584930006105417
       RigidBodyComponent:
         Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
+        LinearDrag: 0.0500000007
+        AngularDrag: 1
+        Gravity: false
         Type: Dynamic
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
         Kinematic: false
-        CollisionDetection: Discrete
+        CollisionDetection: Continuous
     - Entity: 16217232641523703801
       TagComponent:
         Tag: Cube

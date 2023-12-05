@@ -37,6 +37,11 @@ namespace Proof
 			GenerateCapsule();
 		else
 			GenerateCube();
+		if (!PhysicsLayerManager::IsLayerValid(m_Entity.GetComponent<CharacterControllerComponent>().PhysicsLayerID))
+		{
+			m_Entity.GetComponent<CharacterControllerComponent>().PhysicsLayerID = 0;
+		}
+		SetSimulationData(m_Entity.GetComponent<CharacterControllerComponent>().PhysicsLayerID);
 
 	}
 	void PhysicsController::Release()
@@ -118,6 +123,25 @@ namespace Proof
 		m_Entity.GetComponent<CharacterControllerComponent>().StepOffset = stepOffset;
 	}
 	
+	bool PhysicsController::SetSimulationData(uint32_t layerId)
+	{
+
+		const PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayer(layerId);
+
+		if (layerInfo.CollidesWith == 0)
+			return false;
+
+		//TODO ony support continuous detection
+		physx::PxFilterData filterData = PhysXUtils::BuildFilterData(layerInfo, CollisionDetectionType::Continuous);
+
+		const auto actor = m_Controller->getActor();
+		PF_CORE_ASSERT(actor && actor->getNbShapes() == 1);
+		physx::PxShape* shape;
+		actor->getShapes(&shape, 1);
+		shape->setSimulationFilterData(filterData);
+		return true;
+	}
+
 	glm::vec3 PhysicsController::GetLocation() const
 	{
 		const auto& pxPos = m_Controller->getPosition();

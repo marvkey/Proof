@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "CollisonCallback.h"
+#include "PhysicsSimulationCallback.h"
 #include <Physx/PxPhysicsAPI.h>
 
 namespace Proof {
@@ -52,7 +52,7 @@ namespace Proof {
 		const uint32_t c_MaxSubSteps = 8;
 
 		class physx::PxScene* m_PhysXScene = nullptr;
-		class CollisionCallback m_CollisionCallback;
+		class PhysicsSimulationCallback m_CollisionCallback;
 		// inserting an element with this technique makes 
 		// creates a copy nd uses desctrocture
 		// so we would use Count so it is created once instead of twice

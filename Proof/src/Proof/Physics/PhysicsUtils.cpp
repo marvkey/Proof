@@ -185,6 +185,17 @@ namespace Proof::PhysXUtils
 		}
 		PF_CORE_ASSERT(false);
 	}
+	physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection)
+	{
+		physx::PxFilterData filterData;
+
+		filterData.word0 = layerInfo.CollidesValue;
+		filterData.word1 = layerInfo.CollidesWith;
+		filterData.word2 = (uint32_t)collisionDetection;
+		filterData.word3 = layerInfo.LayerID;
+
+		return filterData;
+	}
 	/*
 	physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection)
 	{

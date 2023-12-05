@@ -6,6 +6,7 @@
 #include "PhysicsActor.h"
 #include "PhysicsController.h"
 #include "PhysicsUtils.h"
+#include "PhysicsLayerManager.h"
 namespace Proof {
 	physx::PxFilterFlags shaderControl(
 		physx::PxFilterObjectAttributes attributes0,
@@ -16,6 +17,40 @@ namespace Proof {
 		const void* constantBlock,
 		physx::PxU32 constantBlockSize)
 	{
+		/*
+		physx::PxFilterData filterData;
+		filterData.word0 = layerInfo.CollidesValue;
+		filterData.word1 = layerInfo.CollidesWith;
+		filterData.word2 = (uint32_t)collisionDetection;
+		filterData.word3 = layerInfo.LayerID;
+		*/
+#if 1
+		if (!PhysicsLayerManager::ShouldCollide(filterData0.word3, filterData1.word3))
+			return physx::PxFilterFlag::eSUPPRESS;
+
+		if (physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
+		{
+			pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
+			return physx::PxFilterFlag::eDEFAULT;
+		}
+
+		pairFlags = physx::PxPairFlag::eCONTACT_DEFAULT;
+
+		if (filterData0.word2 == (uint32_t)CollisionDetectionType::Continuous || filterData1.word2 == (uint32_t)CollisionDetectionType::Continuous)
+		{
+			pairFlags |= physx::PxPairFlag::eDETECT_DISCRETE_CONTACT;
+			pairFlags |= physx::PxPairFlag::eDETECT_CCD_CONTACT;
+		}
+
+		if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))
+		{
+			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
+			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_LOST;
+			return physx::PxFilterFlag::eDEFAULT;
+		}
+
+		return physx::PxFilterFlag::eSUPPRESS;
+#else
 		PX_UNUSED(constantBlock);
 		PX_UNUSED(constantBlockSize);
 		// let triggers through
@@ -31,6 +66,7 @@ namespace Proof {
 		pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_CCD;
 
 		return physx::PxFilterFlags();
+#endif
 
 	}
 	PhysicsWorld::PhysicsWorld(Count<class World> world)

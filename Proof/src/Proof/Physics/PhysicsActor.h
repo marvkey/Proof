@@ -18,6 +18,7 @@ namespace Proof
 		void PutToSleep();
 		void WakeUp();
 		void SetRigidType(RigidBodyType type);
+		virtual bool SetSimulationData(uint32_t layerId)override;
 
 		virtual glm::vec3 GetLocation() const { return PhysXUtils::FromPhysXVector(m_RigidActor->getGlobalPose().p); }
 		virtual void SetLocation(const glm::vec3& translation, const bool autowake = true);
@@ -102,15 +103,19 @@ namespace Proof
 		}
 		physx::PxRigidActor& GetPhysXActor() const { return *m_RigidActor; }
 		const std::vector<Count<class ColliderShape>>& GetCollisionShapes() const { return m_Colliders; }
+		
+		const physx::PxFilterData& GetFilterData() const { return m_FilterData; }
 	private:
-		physx::PxRigidActor* m_RigidActor = nullptr;
-		friend class PhysicsWorld;
-		friend class PhysxShapesInternal;
-		std::vector<Count<class ColliderShape>> m_Colliders;
-	private:
-
 		void AddRigidBody();
 		void Release();
 		void Build();
+	private:
+		physx::PxRigidActor* m_RigidActor = nullptr;
+		physx::PxFilterData m_FilterData;
+
+		friend class PhysicsWorld;
+		friend class PhysxShapesInternal;
+		std::vector<Count<class ColliderShape>> m_Colliders;
+
 	};
 }
