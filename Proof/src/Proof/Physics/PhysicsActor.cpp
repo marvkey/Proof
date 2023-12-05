@@ -514,7 +514,7 @@ namespace Proof {
 	void PhysicsActor::AddRigidBody()
 	{
 		const TransformComponent transformComponent = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
-		RigidBodyComponent& rigidBodyComponent = m_Entity.GetComponent<RigidBodyComponent>();
+		const RigidBodyComponent& rigidBodyComponent = m_Entity.GetComponent<RigidBodyComponent>();
 
 		physx::PxTransform physxTransform = PhysXUtils::ToPhysXTransform(transformComponent);
 

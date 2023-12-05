@@ -935,6 +935,21 @@ namespace Proof
 
 			UI::EnumCombo("RigidType", rigidBody.RigidBodyType);
 
+			{
+				if (!PhysicsLayerManager::IsLayerValid(rigidBody.PhysicsLayerID))
+					rigidBody.PhysicsLayerID = 0;
+
+				const PhysicsLayer& layer = PhysicsLayerManager::GetLayer(rigidBody.PhysicsLayerID);
+
+				auto [changed, outSelectionIndex, outSelectionString] = UI::Combo("Layer", PhysicsLayerManager::GetLayersNames(), layer.Name);
+				if(changed)
+				{
+					if (PhysicsLayerManager::IsLayerValid(outSelectionString))
+					{
+						rigidBody.PhysicsLayerID = PhysicsLayerManager::GetLayer(outSelectionString).LayerID;
+					}
+				}
+			}
 			if (rigidBody.RigidBodyType == RigidBodyType::Dynamic)
 			{
 				UI::EnumCombo("CollisionDetection", rigidBody.CollisionDetection);

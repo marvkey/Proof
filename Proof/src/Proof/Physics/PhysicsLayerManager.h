@@ -28,6 +28,7 @@ namespace Proof
 		static std::vector<PhysicsLayer> GetLayerCollisions(uint32_t layerId);
 
 		static const std::vector<PhysicsLayer>& GetLayers();
+		static const std::vector<std::string>& GetLayersNames();
 
 		static PhysicsLayer& GetLayer(uint32_t layerId);
 		static PhysicsLayer& GetLayer(const std::string& layerName);

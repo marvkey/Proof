@@ -1,115 +1,6 @@
 World:
   ID: 6915908757921917454
   Entities:
-    - Entity: 721484481503364591
-      TagComponent:
-        Tag: Plane
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 103.61824]
-        Rotation: [0, -0, 0]
-        Scale: [33.5, 1, 31.7999992]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        MaterialTable:
-          - Material: ""
-            AssetID: 3650405502933676885
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 13016061378246951569
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [13.1000004, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0.584999979
-        MapRotation: 0
-        Intensity: 1
-        DynamicSky: false
-        Turbidity: 2
-        Azimuth: 0
-        Inclination: 0
-        Image: 0
-    - Entity: 10012576340053575611
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [-0.338273495, 31.2479897, -0.363740236]
-        Rotation: [-1.9251318, -0.592203617, 2.9899404]
-        Scale: [1.630005, 3.08019257, 4.09010553]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 16583584930006105417
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 14244710982221739113
-      TagComponent:
-        Tag: Sponza
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [5, 5, 5]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 18141853162402936448
-      MeshColliderComponent:
-        ColliderID: 12902208667846413922
-        IsTrigger: false
-        UseSharedShape: false
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, true]
-        FreezeRotation: [true, true, true]
-        Kinematic: false
-        CollisionDetection: Discrete
     - Entity: 6676996882805657161
       TagComponent:
         Tag: Directional Light
@@ -124,9 +15,37 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 2.5
-    - Entity: 12162065592849149457
+    - Entity: 12455402995532175596
       TagComponent:
-        Tag: Mesh
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0, 4.69999981, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 16362547569400977961
+      TagComponent:
+        Tag: Cube
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
@@ -136,234 +55,19 @@ World:
         ParentHandle: 0
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 0
-    - Entity: 14477920356967852010
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [0.255170047, 56.3267784, -7.85921192]
-        Rotation: [0.630698323, -0.0499073975, 0.030226877]
-        Scale: [1, 3.04286051, 10.9566431]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
         MeshAssetPointerID: 50
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
         Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 16583584930006105417
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Dynamic
-        FreezeLocation: [false, false, true]
-        FreezeRotation: [true, true, true]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 2279685831193862811
-      TagComponent:
-        Tag: bouncyBall
-        tags: []
-      TransformComponent:
-        Location: [0, 35, 102.591019]
-        Rotation: [0, -0, 0]
-        Scale: [3.35460353, 3.35460353, 3.35460353]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 51
-        MaterialTable:
-          - Material: ""
-            AssetID: 14268173759466256543
-            Index: 0
-      SphereColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Radius: 1
-        PhysicsMaterialPointerID: 5412365953404524970
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Dynamic
-        FreezeLocation: [true, true, true]
-        FreezeRotation: [true, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 704439633171527343
-      TagComponent:
-        Tag: Slippery plain
-        tags: []
-      TransformComponent:
-        Location: [-28.5113945, 9.95738983, 0]
-        Rotation: [0, 0, -0.785398245]
-        Scale: [14.2999992, 0.100000001, 5.65810251]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 16583584930006105417
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: false
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, true, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 12753159789816389078
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [-36.5509377, 19.7269993, -0.312635005]
-        Rotation: [0, 1.60744822, -0.740019619]
-        Scale: [1, 0.999999881, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 16583584930006105417
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 1
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Dynamic
-        FreezeLocation: [true, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: true
-        CollisionDetection: Discrete
-    - Entity: 15045325054994147204
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [-36.5509377, 19.7269993, 2.48699999]
-        Rotation: [0, 1.60744822, -0.740019619]
-        Scale: [1, 0.999999881, 1.89999998]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 16583584930006105417
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.0500000007
-        AngularDrag: 1
-        Gravity: false
-        Type: Dynamic
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Continuous
-    - Entity: 16217232641523703801
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [-32.8167992, 16.4088306, -2.44515944]
-        Rotation: [3.14158773, 1.53413737, 2.4015553]
-        Scale: [1.54803681, 0.99999994, 1.22357929]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 16583584930006105417
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Dynamic
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 17724428434935131346
-      TagComponent:
-        Tag: Capsule
-        tags: []
-      TransformComponent:
-        Location: [-17.1709995, 18.2460003, 1.1920929e-07]
-        Rotation: [0, 0, 0]
-        Scale: [1, 2.9000001, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 52
-      CapsuleColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Radius: 0.5
-        Height: 1
-        Direction: Y
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
-        LinearDrag: 0
+        LinearDrag: 0.00999999978
         AngularDrag: 0.0500000007
         Gravity: true
-        Type: Dynamic
+        Type: Static
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 3288421564215210819
-      TagComponent:
-        Tag: characterBox
-        tags: []
-      TransformComponent:
-        Location: [0, 5.5999999, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-      CharacterControllerComponent:
-        SlopeLimitRadians: 0.707000017
-        StepOffset: 0.300000012
-        SkinOffset: 0.100000001
-        GravityEnabled: true
-        GravityScale: 1
-        MinMoveDistance: 0
-        WalkableMode: PreventClimbing
-        PhysicsMaterialID: 0
-        ColliderType: Box
-        Center: [0, 0, 0]
-        Radius: 0.5
-        Height: 2
-        Direction: Y
-        Size: [1, 1, 1]

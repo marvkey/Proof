@@ -3,7 +3,8 @@
 #include "Proof/Utils/ContainerUtils.h"
 namespace Proof
 {
-    static std::vector< PhysicsLayer> s_PhysicsLayer;
+	static std::vector<PhysicsLayer> s_PhysicsLayer;
+	static std::vector<std::string> s_PhysicsLayerNames;
 	static PhysicsLayer s_NullLayer = { (uint32_t)-1, "NULL", (uint32_t)-1, -1 };
 
     uint32_t PhysicsLayerManager::AddLayer(const std::string& name, bool setCollisions)
@@ -17,14 +18,10 @@ namespace Proof
         uint32_t layerId = GetNextLayerID();
         PhysicsLayer layer = { layerId, name, BIT(layerId), BIT(layerId) };
         s_PhysicsLayer.insert(s_PhysicsLayer.begin() + layerId, layer);
+		s_PhysicsLayerNames.insert(s_PhysicsLayerNames.begin() + layerId, name);
 
-        if (setCollisions)
-        {
-            for (const auto& layer2 : s_PhysicsLayer)
-            {
-                SetLayerCollision(layer.LayerID, layer2.LayerID, true);
-            }
-        }
+        for (const auto& layer2 : s_PhysicsLayer)
+            SetLayerCollision(layer.LayerID, layer2.LayerID, setCollisions);
 
         return layer.LayerID;
     }
@@ -44,6 +41,7 @@ namespace Proof
         }
 
         Utils::RemoveIf(s_PhysicsLayer, [&](const PhysicsLayer& layer) { return layer.LayerID == layerID; });
+		Utils::RemoveIf(s_PhysicsLayerNames, [&](const std::string& name) {return layerInfo.Name == name; });
     }
 	void PhysicsLayerManager::UpdateLayerName(uint32_t layerId, const std::string& newName)
 	{
@@ -53,7 +51,19 @@ namespace Proof
 				return;
 		}
 		PhysicsLayer& layer = GetLayer(layerId);
+		const auto oldName = layer.Name;
+
 		layer.Name = newName;
+
+		for (auto& layerName : s_PhysicsLayerNames)
+		{
+			if (layerName == oldName)
+			{
+				layerName = newName;
+				break;
+			}
+		}
+		
 	}
 
 	void PhysicsLayerManager::SetLayerCollision(uint32_t layerId, uint32_t otherLayer, bool shouldCollide)
@@ -96,6 +106,10 @@ namespace Proof
 	const std::vector<PhysicsLayer>& PhysicsLayerManager::GetLayers()
 	{
 		return s_PhysicsLayer;
+	}
+	const std::vector<std::string>& PhysicsLayerManager::GetLayersNames()
+	{
+		return s_PhysicsLayerNames;
 	}
 
 	PhysicsLayer& PhysicsLayerManager::GetLayer(uint32_t layerId)
