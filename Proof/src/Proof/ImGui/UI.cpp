@@ -269,7 +269,7 @@ namespace Proof::UI
 
         ImGui::Text(label.c_str());
     }
-    bool AttributeInputText(const std::string& label, std::string& value, const std::string& helpMessage)
+    bool AttributeInputText(const std::string& label, std::string& value, ImGuiInputTextFlags text_flags ,const std::string& helpMessage)
     {
         static char buffer[256];
         bool bModified = false;
@@ -277,6 +277,7 @@ namespace Proof::UI
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
         AttributeLabel(label.c_str());
+        ImGui::SameLine();
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -287,7 +288,7 @@ namespace Proof::UI
 
         strcpy_s(buffer, 256, value.c_str());
 
-        if (ImGui::InputText(s_IDBuffer, buffer, 256))
+        if (ImGui::InputText(s_IDBuffer, buffer, 256, text_flags))
         {
             value = buffer;
             bModified = true;
@@ -298,7 +299,33 @@ namespace Proof::UI
 
         return bModified;
     }
+    bool AttributeInputRawText(const std::string& label, char* buffer, uint32_t bufferSize, ImGuiInputTextFlags text_flags, const std::string& helpMessage)
+    {
 
+        bool bModified = false;
+
+        UpdateIDBuffer(label);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
+        AttributeLabel(label.c_str());
+        ImGui::SameLine();
+
+        if (helpMessage.size())
+        {
+            ImGui::SameLine();
+            UI::HelpMarker(helpMessage);
+        }
+        ImGui::NextColumn();
+        ImGui::PushItemWidth(-1);
+
+        if (ImGui::InputText(s_IDBuffer, buffer, bufferSize, text_flags))
+        {
+            bModified = true;
+        }
+        ImGui::PopItemWidth();
+        ImGui::NextColumn();
+
+        return bModified;
+    }
     bool AttributeBool(const std::string& label, bool& value, const std::string& helpMessage)
     {
         bool bModified = false;
@@ -380,11 +407,11 @@ namespace Proof::UI
         AttributeLabel(label.c_str());
         ImGui::NextColumn();
         ImGui::PushItemWidth(-1);
-        //UI::PushItemDisabled();
+        UI::PushItemDisabled();
        // ImGui::BeginDisabled(true);
         ImGui::InputText(fmt::format("##{0}", label).c_str(), (char*)text.c_str(), text.size(), ImGuiInputTextFlags_ReadOnly);
         //ImGui::EndDisabled();
-        //UI::PopItemDisabled();
+        UI::PopItemDisabled();
         
         if (IsItemDisabled())
            DrawItemActivityOutline(2.0f, true);
@@ -1043,7 +1070,7 @@ namespace Proof::UI
                     char buffer[256];
                     memset(buffer, 0, 256);
                     memcpy(buffer, value.c_str(), value.length());
-                    if (AttributeInputText(fieldName.c_str(), value, toolTip))
+                    if (AttributeInputText(fieldName.c_str(), value,0, toolTip))
                     {
                         storage->SetValue<std::string>(buffer);
                         result = true;

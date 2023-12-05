@@ -31,15 +31,22 @@ namespace Proof {
 		if (physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
 		{
 			pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
+			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
 			return physx::PxFilterFlag::eDEFAULT;
 		}
 
 		pairFlags = physx::PxPairFlag::eCONTACT_DEFAULT;
+		pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
+
+		if (filterData0.word2 == (uint32_t)CollisionDetectionType::Discrete || filterData1.word2 == (uint32_t)CollisionDetectionType::Discrete)
+		{
+			pairFlags |= physx::PxPairFlag::eDETECT_DISCRETE_CONTACT;
+		}
 
 		if (filterData0.word2 == (uint32_t)CollisionDetectionType::Continuous || filterData1.word2 == (uint32_t)CollisionDetectionType::Continuous)
 		{
-			pairFlags |= physx::PxPairFlag::eDETECT_DISCRETE_CONTACT;
 			pairFlags |= physx::PxPairFlag::eDETECT_CCD_CONTACT;
+			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_CCD;
 		}
 
 		if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))

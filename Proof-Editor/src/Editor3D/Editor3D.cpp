@@ -39,6 +39,7 @@
 #include "Editors/Panels/ContentBrowser/ContentBrowserPanel.h"
 #include "Editors/Panels/WorldRendererPanel.h"
 #include "Editors/Panels/PhysicsPanelStats.h"
+#include "Editors/Panels/ProjectSettingsPanel.h"
 #include "Editors/AssetEditors/AssetEditor.h"
 
 #include <glm/glm.hpp>
@@ -53,6 +54,7 @@
 #define ASSET_MANAGER_PANEL_ID "AssetManagerPanel"
 #define WORLD_RENDERER_PANEL_ID "WorldRendererPanel"
 #define PHYSICS_DEBUG_PANEL_ID "PhysicsDebugPanel"
+#define PROJECT_DEBUG_PANEL_ID "ProjectSettings"
 namespace Proof
 {
 	// you can do this
@@ -450,6 +452,8 @@ namespace Proof
 		s_EditorData->PanelManager->AddPanel<AssetManagerPanel>(ASSET_MANAGER_PANEL_ID, "Asset Manager", false);
 		s_EditorData->PanelManager->AddPanel<InputPanel>(INPUT_PANEL_ID, "Input Panel", false);
 		s_EditorData->PanelManager->AddPanel<WorldRendererPanel>(WORLD_RENDERER_PANEL_ID, "Renderer Panel", true);
+		s_EditorData->PanelManager->AddPanel<ProjectSettingsPanel>(PROJECT_DEBUG_PANEL_ID, "Project Settings", false);
+
 		Count< ContentBrowserPanel> contentBrowser = s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 		s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
 #if 0

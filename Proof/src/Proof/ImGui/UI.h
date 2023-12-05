@@ -74,7 +74,8 @@ namespace Proof::UI
 	}
 
 
-	bool AttributeInputText(const std::string& label, std::string& value, const std::string& helpMessage = "");
+	bool AttributeInputText(const std::string& label, std::string& value, ImGuiInputTextFlags text_flags = 0, const std::string& helpMessage = "");
+	bool AttributeInputRawText(const std::string& label, char* buffer, uint32_t bufferSize = 256, ImGuiInputTextFlags text_flags = 0, const std::string& helpMessage = "");
 	bool AttributeBool(const std::string& label, bool& value, const std::string& helpMessage = "");
 	bool AttributeLabels(const std::string& label, const std::vector<std::string>& customLabels, bool* values, const std::string& helpMessage = "");
 

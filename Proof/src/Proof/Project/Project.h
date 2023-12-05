@@ -91,6 +91,7 @@ namespace Proof{
 		friend class ProjectSerilizer;
 		friend class Application;
 		friend class Editore3D;
+		friend class ProjectSettingsPanel;
 	};
 
 }

@@ -57,7 +57,7 @@ namespace Proof
 	{
 		glm::vec3 Gravity = { 0.0f, -9.81f, 0.0f };
 		float BounceThresholdVelocity = 2; // minimum 0, maxim is max float
-		float SleepThreshold = 0.00005;//min 0
+		float SleepThreshold = 0.005;//min 0
 		uint32_t SolverIterations = 8;
 		uint32_t SolverVelocityIterations = 2;
 

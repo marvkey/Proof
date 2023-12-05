@@ -16,18 +16,23 @@ namespace Proof
 				continue;
 			PhysicsActor* triggerActor = (PhysicsActor*)pairs[actorIndex].triggerActor->userData;
 			PhysicsActor* overlappTrigger = (PhysicsActor*)pairs[actorIndex].otherActor->userData;
+
+			Entity triggerEntity = triggerActor->GetEntity();
+			Entity overlapTriggerEnttity = overlappTrigger->GetEntity();
 			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 			{
 				//triggerActor->OnTriggerEnter(overlappTrigger);
 				//overlappTrigger->OnOverlapTriggerEnter(triggerActor);
 			}
-			else if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
+			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
 				//triggerActor->OnTriggerLeave(overlappTrigger);
 				//overlappTrigger->OnOverlapTriggerLeave(triggerActor);
 			}
-			else if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
+			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
 			{
+				PF_TRACE("Persistent entity {} overLap {}", overlapTriggerEnttity.GetName(), triggerEntity.GetName());
+
 				//triggerActor->OnTriggerStay(overlappTrigger);
 				//overlappTrigger->OnOverlapTriggerStay(triggerActor);
 			}
