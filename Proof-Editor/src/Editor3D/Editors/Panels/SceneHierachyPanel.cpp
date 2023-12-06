@@ -533,6 +533,14 @@ namespace Proof
 					AssetID materialID = material->GetID();
 					if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID))
 					{
+						if (materialID == 0)
+						{
+							auto mesh = meshComp.GetMesh();
+							if (mesh)
+							{
+								materialID = mesh->GetMeshSource()->GetMaterials()->GetMaterial(index)->GetID();
+							}
+						}
 						meshComp.MaterialTable->SetMaterial(index, AssetManager::GetAsset<Material>(materialID));
 					}
 				}

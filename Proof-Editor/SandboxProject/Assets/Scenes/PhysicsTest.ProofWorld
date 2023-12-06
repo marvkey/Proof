@@ -28,11 +28,15 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 14268173759466256543
+            Index: 0
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
         Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
+        PhysicsMaterialPointerID: 5412365953404524970
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
@@ -45,17 +49,21 @@ World:
         CollisionDetection: Discrete
     - Entity: 16362547569400977961
       TagComponent:
-        Tag: Cube
+        Tag: Plane
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [0, -2.29999995, 0]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
+        Scale: [9, 1, 14.3999996]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 3650405502933676885
+            Index: 0
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -67,6 +75,34 @@ World:
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 12268580492062250528
+      TagComponent:
+        Tag: triggerCube
+        tags: []
+      TransformComponent:
+        Location: [1, 0.600000024, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: false
+        Type: Dynamic
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
         Kinematic: false

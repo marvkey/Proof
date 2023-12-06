@@ -1309,9 +1309,6 @@ namespace Proof
 			// RIGID BODY
 			{
 				auto rigidBodyComponent = entity["RigidBodyComponent"];
-				if (NewEntity.GetName() == "bouncyBall")
-					PF_CORE_ASSERT(false);
-
 				if (rigidBodyComponent)
 				{
 					auto& rgb = NewEntity.AddComponent<RigidBodyComponent>();
@@ -1325,8 +1322,6 @@ namespace Proof
 					rgb.RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
 					rgb.CollisionDetection = EnumReflection::StringEnum<CollisionDetectionType>(rigidBodyComponent["CollisionDetection"].
 						as<std::string>(EnumReflection::EnumString(CollisionDetectionType::Discrete)));
-					if (NewEntity.GetName() == "bouncyBall")
-						PF_CORE_ASSERT(false);
 				}
 			}
 			//Character Controller

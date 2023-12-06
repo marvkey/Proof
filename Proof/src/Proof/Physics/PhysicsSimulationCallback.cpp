@@ -14,27 +14,20 @@ namespace Proof
 		{
 			if (pairs[actorIndex].flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
 				continue;
-			PhysicsActor* triggerActor = (PhysicsActor*)pairs[actorIndex].triggerActor->userData;
-			PhysicsActor* overlappTrigger = (PhysicsActor*)pairs[actorIndex].otherActor->userData;
+			PhysicsActorBase* triggerActor = (PhysicsActorBase*)pairs[actorIndex].triggerActor->userData;
+			PhysicsActorBase* overlappTrigger = (PhysicsActorBase*)pairs[actorIndex].otherActor->userData;
 
 			Entity triggerEntity = triggerActor->GetEntity();
 			Entity overlapTriggerEnttity = overlappTrigger->GetEntity();
 			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 			{
-				//triggerActor->OnTriggerEnter(overlappTrigger);
-				//overlappTrigger->OnOverlapTriggerEnter(triggerActor);
+				TriggersActors[triggerEntity.GetUUID()][overlapTriggerEnttity.GetUUID()] = { triggerActor,overlappTrigger,false };
 			}
 			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
-				//triggerActor->OnTriggerLeave(overlappTrigger);
-				//overlappTrigger->OnOverlapTriggerLeave(triggerActor);
-			}
-			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
-			{
-				PF_TRACE("Persistent entity {} overLap {}", overlapTriggerEnttity.GetName(), triggerEntity.GetName());
-
-				//triggerActor->OnTriggerStay(overlappTrigger);
-				//overlappTrigger->OnOverlapTriggerStay(triggerActor);
+				TriggersActors.at(triggerEntity.GetUUID()).erase(overlapTriggerEnttity.GetUUID());
+				if (TriggersActors.at(triggerEntity.GetUUID()).size() == 0)
+					TriggersActors.erase(triggerEntity.GetUUID());
 			}
 		}
 	}
@@ -47,8 +40,8 @@ namespace Proof
 		if (removedActorA || removedActorB)
 			return;
 
-		PhysicsActor* actor0 = (PhysicsActor*)pairHeader.actors[0]->userData;
-		PhysicsActor* actor1 = (PhysicsActor*)pairHeader.actors[1]->userData;
+		PhysicsActorBase* actor0 = (PhysicsActorBase*)pairHeader.actors[0]->userData;
+		PhysicsActorBase* actor1 = (PhysicsActorBase*)pairHeader.actors[1]->userData;
 		if (!actor0 || !actor1)
 			return;
 
@@ -69,7 +62,6 @@ namespace Proof
 
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
 		{
-			PF_TRACE("PersistCollisionbetween {} and {}", entity0.GetName(), entity1.GetName());
 			//actor0->OnCollisonStay(actor1);
 			//actor1->OnCollisonStay(actor0);
 		}

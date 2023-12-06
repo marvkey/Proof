@@ -253,6 +253,21 @@ namespace Proof {
 			m_PhysXScene->fetchResults(true);
 		}
 
+		if (m_NumSubSteps > 0)
+		{
+			for (auto& [triggerActorID, triggerActorData] : m_CollisionCallback.TriggersActors) 
+			{
+				for (auto& [otherTriggerID, triggerData] : triggerActorData)
+				{
+					if (triggerData.ReadyToCallPersist == false)
+					{
+						triggerData.ReadyToCallPersist = true;
+						continue;
+					}
+					PF_INFO("trigger Actor {} on overlap by {}", triggerData.TriggerActor->GetEntity().GetName(), triggerData.OverlapTrigger->GetEntity().GetName());
+				}
+			}
+		}
 		return m_NumSubSteps != 0;
 
 	}

@@ -64,8 +64,8 @@ namespace Proof
 		{
 			UI::BeginPropertyGrid();
 			PhysicsSettings& physicsSettings = PhysicsEngine::GetSettings();
-			ImGui::Separator();
 
+			UI::AttributeDrag("Gravity", physicsSettings.Gravity);
 			UI::AttributeDrag("BounceThresholdVelocity", physicsSettings.BounceThresholdVelocity,0.25,0);
 			UI::AttributeDrag("SleepThreshold", physicsSettings.SleepThreshold, 0.1, 0);
 			UI::EnumCombo("BroadPhase Type", physicsSettings.BroadPhaseType);

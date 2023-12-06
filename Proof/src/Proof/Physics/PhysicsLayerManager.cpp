@@ -93,8 +93,8 @@ namespace Proof
 		std::vector<PhysicsLayer> layers;
 		for (const auto& otherLayer : s_PhysicsLayer)
 		{
-			if (otherLayer.LayerID == layerId)
-				continue;
+			//if (otherLayer.LayerID == layerId)
+			//	continue;
 
 			if (layer.CollidesWith & otherLayer.CollidesValue)
 				layers.push_back(otherLayer);
