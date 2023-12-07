@@ -47,6 +47,34 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 6245801549288932895
+      TagComponent:
+        Tag: CharacterController
+        tags: []
+      TransformComponent:
+        Location: [-4.9000001, 1.5, 0]
+        Rotation: [0, 0, 0.90931648]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 52
+      CharacterControllerComponent:
+        SlopeLimitRadians: 0.707000017
+        StepOffset: 0.300000012
+        SkinOffset: 0.100000001
+        GravityEnabled: true
+        GravityScale: 1
+        MinMoveDistance: 0
+        WalkableMode: PreventClimbing
+        PhysicsMaterialID: 0
+        ColliderType: Capsule
+        Center: [0, 0, 0]
+        Radius: 0.5
+        Height: 2
+        Direction: Y
+        Size: [1, 1, 1]
     - Entity: 16362547569400977961
       TagComponent:
         Tag: Plane
@@ -103,6 +131,36 @@ World:
         AngularDrag: 0.0500000007
         Gravity: false
         Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 15486503939479629376
+      TagComponent:
+        Tag: Capsule
+        tags: []
+      TransformComponent:
+        Location: [-1.29999995, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 52
+      CapsuleColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        Height: 1
+        Direction: Y
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
         Kinematic: false

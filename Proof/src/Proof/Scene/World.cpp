@@ -73,7 +73,13 @@ namespace Proof {
 		}
 	}
 	
-
+	glm::vec3 GetAnyPerpendicularUnitVector(const glm::vec3& vec)
+	{
+		if (vec.y != 0.0f || vec.z != 0.0f)
+			return glm::vec3(1, 0, 0);
+		else
+			return glm::vec3(0, 1, 0);
+	}
 	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane)
 	{
 		PF_PROFILE_FUNC();
@@ -300,6 +306,7 @@ namespace Proof {
 					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
 			}
 		}
+
 		renderer2D->EndContext();
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)
@@ -307,6 +314,7 @@ namespace Proof {
 		if (renderer->GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::None)
 			return;
 
+#if 0
 		{
 			auto view = m_Registry.view<CapsuleColliderComponent>();
 			Count<Mesh> capsuleDebugMesh = PhysicsMeshCache::GetCapsuleColliderMesh();
@@ -339,7 +347,7 @@ namespace Proof {
 				renderer->SubmitPhysicsDebugMesh(capsuleDebugMesh, colliderTransform);
 			}
 		}
-
+#endif
 		{
 
 			auto view = m_Registry.view<MeshColliderComponent>();
@@ -412,6 +420,31 @@ namespace Proof {
 				renderer2D->DrawDebugSphere(location + center, rotation, radius, renderer->GeneralOptions.PhysicsColliderColor);
 			}
 		}
+		//capsule COlliders
+		{
+			auto view = m_Registry.view<CapsuleColliderComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				const auto& collider = e.GetComponent<CapsuleColliderComponent>();
+				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
+
+				auto location = worldTransformComp.Location;
+				glm::vec3 center = collider.Center;
+				glm::quat rotation = worldTransformComp.GetRotation();
+
+				if (collider.Direction == CapsuleDirection::X)
+					rotation = rotation * glm::vec3(glm::radians(90.f), 0, 0);
+				else if (collider.Direction == CapsuleDirection::Z)
+					rotation = rotation * glm::vec3(0.f, 0, glm::radians(90.f));
+
+				auto capsuleData = GetCapsuleData(collider.Direction, worldTransformComp);
+				float radius = capsuleData.radiusScale * collider.Radius;
+				float height = capsuleData.scaleDirection * collider.Height ;
+				renderer2D->DrawCapsule(location + center, glm::eulerAngles(rotation), height*2,radius, renderer->GeneralOptions.PhysicsColliderColor);
+
+			}
+		}
 
 		{
 			auto view = m_Registry.view<CharacterControllerComponent>();
@@ -435,7 +468,7 @@ namespace Proof {
 						glm::eulerAngles(rotation * worldTransformComp.GetRotation()),  // Apply the new rotation
 						collider.Size * worldTransformComp.Scale + (collider.SkinOffset),
 						glm::vec4(1,0,0,1)
-					);
+					);  
 
 					renderer2D->DrawDebugCube(
 						collider.Center + worldTransformComp.Location,
@@ -443,6 +476,25 @@ namespace Proof {
 						collider.Size * worldTransformComp.Scale,
 						renderer->GeneralOptions.PhysicsColliderColor
 					);
+				}
+				else if (collider.ColliderType == CharacterControllerType::Capsule)
+				{
+
+					glm::vec3 localUp = glm::normalize(Math::GetUpVector());
+					glm::vec3 currentUp = glm::normalize(worldTransformComp.GetUpVector());
+					glm::quat rotation = glm::rotation(currentUp, localUp);
+
+					auto capsuleData = GetCapsuleData(CapsuleDirection::Y, worldTransformComp);
+
+					float radius = capsuleData.radiusScale * collider.Radius;
+					float height = capsuleData.scaleDirection * collider.Height;
+
+					// skin width
+					renderer2D->DrawCapsule(collider.Center + worldTransformComp.Location, 
+						glm::eulerAngles(rotation* worldTransformComp.GetRotation()), 
+						height+ collider.SkinOffset, radius + collider.SkinOffset, glm::vec4(1, 0, 0, 1));
+
+					renderer2D->DrawCapsule(collider.Center + worldTransformComp.Location, glm::eulerAngles(rotation * worldTransformComp.GetRotation()), height, radius, renderer->GeneralOptions.PhysicsColliderColor);
 				}
 			}
 		}

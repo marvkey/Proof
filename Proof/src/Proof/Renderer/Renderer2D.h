@@ -98,7 +98,14 @@ namespace Proof {
 		void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		void DrawAABB(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		void DrawAABBSubMeshes(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawCylinder(glm::vec3 position, glm::vec3 rotationRadians, float height, float radius, glm::vec4 color = glm::vec4(1.0f), bool drawFromBase = true);
+		void DrawCapsule(glm::vec3 position, glm::vec3 rotationRadian, float height, float radius, glm::vec4 color = glm::vec4(1.0f));
 
+		void DrawRay(const glm::vec3& origin, const glm::vec3& direction, float length, const glm::vec4& color = glm::vec4(1.0f));
+		//lenght is gottenform the direction
+		void DrawRay(const glm::vec3& origin, const glm::vec3& direction, const glm::vec4& color = glm::vec4(1.0f));
+
+		void DrawArc(float startAngleRadians, float endAngleRadians, glm::vec3 position, glm::vec3 rotationRadians, float radius, glm::vec4 color = glm::vec4(1.0f), bool drawChord = false, bool drawSector = false,uint32_t arcSegments = 32);
 		void DrawCircle(const glm::vec3& p0, const glm::vec3& rotation, float radius, const glm::vec4& color);
 		void DrawCircle(const glm::mat4& transform, const glm::vec4& color);
 

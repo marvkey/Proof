@@ -354,6 +354,150 @@ namespace Proof {
 			DrawAABB(aabb, aabbTransform, color);
 		}
 	}
+	void Renderer2D::DrawCylinder(glm::vec3 position, glm::vec3 rotationRadians, float height, float radius, glm::vec4 color, bool drawFromBase)
+	{
+		//https://dev-tut.com/2022/unity-draw-a-debug-cylinder-and-capsule/
+		glm::quat orientation = glm::quat(rotationRadians);
+
+		glm::vec3 localUp = orientation * Math::GetUpVector();
+		glm::vec3 localRight = orientation * Math::GetRightVector() ;
+		glm::vec3 localForward = orientation * Math::GetFowardVector();
+
+		glm::vec3 basePositionOffset = drawFromBase ? glm::vec3(0) : (localUp * height * 0.5f);
+		glm::vec3 basePosition = position - basePositionOffset;
+		glm::vec3 topPosition = basePosition + localUp * height;
+
+		glm::quat circleOrientation = orientation * glm::quat(glm::vec3{ glm::radians(90.f), 0.f, 0.f });
+
+		glm::vec3 pointA = basePosition + localRight * radius;
+		glm::vec3 pointB = basePosition + localForward * radius;
+		glm::vec3 pointC = basePosition - localRight * radius;
+		glm::vec3 pointD = basePosition - localForward * radius;
+
+		DrawRay(pointA, localUp * height, color);
+		DrawRay(pointB, localUp * height, color);
+		DrawRay(pointC, localUp * height, color);
+		DrawRay(pointD, localUp * height, color);
+
+		DrawCircle(basePosition, glm::eulerAngles( circleOrientation), radius, color);
+		DrawCircle(topPosition, glm::eulerAngles(circleOrientation), radius, color);
+	}
+	void Renderer2D::DrawCapsule(glm::vec3 position, glm::vec3 rotationRadian, float height, float radius, glm::vec4 color)
+	{
+
+		glm::quat orientation = glm::quat(rotationRadian);
+
+		radius = std::clamp(radius, 0.0f, height * 0.5f);
+		glm::vec3 localUp = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::quat arcOrientation = orientation * glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		glm::vec3 basePositionOffset = localUp * height * 0.5f;
+		glm::vec3 baseArcPosition = position + localUp * radius - basePositionOffset;
+
+		// Draw bottom hemispheres
+		DrawArc(glm::radians(180.0f), glm::radians(360.0f), baseArcPosition, glm::eulerAngles(orientation), radius, color);
+		DrawArc(glm::radians(180.0f), glm::radians(360.0f), baseArcPosition, glm::eulerAngles(arcOrientation), radius, color);
+
+		// Draw cylinder
+		float cylinderHeight = height - radius * 2.0f;
+		DrawCylinder(baseArcPosition, glm::eulerAngles(orientation), cylinderHeight, radius, color, true);
+
+		// Draw top hemispheres
+		glm::vec3 topArcPosition = baseArcPosition + localUp * cylinderHeight;
+		DrawArc(0.0f, glm::radians(180.0f), topArcPosition, glm::eulerAngles(orientation), radius, color);
+		DrawArc(0.0f, glm::radians(180.0f), topArcPosition, glm::eulerAngles(arcOrientation), radius, color);
+	}
+
+	void Renderer2D::DrawArc(float startAngleRadians, float endAngleRadians, glm::vec3 position, glm::vec3 rotationRadians, float radius, glm::vec4 color, bool drawChord, bool drawSector, uint32_t arcSegments)
+	{
+		glm::quat orientation = glm::quat(rotationRadians);
+		float arcSpan = endAngleRadians - startAngleRadians;
+
+		// Since arcSpan is in radians, we need to make sure it's positive
+		if (arcSpan <= 0) {
+			arcSpan += glm::two_pi<float>();
+		}
+
+		// angle step is calculated by dividing the arc span by the number of approximation segments
+		float angleStep = arcSpan / static_cast<float>(arcSegments);
+		float stepOffset = startAngleRadians;
+
+		// stepStart, stepEnd, lineStart, and lineEnd variables are declared outside of the following for loop
+		float stepStart = 0.0f;
+		float stepEnd = 0.0f;
+		glm::vec3 lineStart = glm::vec3(0.0f);
+		glm::vec3 lineEnd = glm::vec3(0.0f);
+
+		// arcStart and arcEnd need to be stored to be able to draw segment chord
+		glm::vec3 arcStart = glm::vec3(0.0f);
+		glm::vec3 arcEnd = glm::vec3(0.0f);
+
+		// arcOrigin represents an origin of a circle that defines the arc
+		glm::vec3 arcOrigin = position;
+
+		for (int i = 0; i < arcSegments; i++) {
+			// Calculate approximation segment start and end, and offset them by the start angle
+			stepStart = angleStep * i + stepOffset;
+			stepEnd = angleStep * (i + 1) + stepOffset;
+
+			lineStart.x = std::cos(stepStart);
+			lineStart.y = std::sin(stepStart);
+			lineStart.z = 0.0f;
+
+			lineEnd.x = std::cos(stepEnd);
+			lineEnd.y = std::sin(stepEnd);
+			lineEnd.z = 0.0f;
+
+			// Results are multiplied so they match the desired radius
+			lineStart *= radius;
+			lineEnd *= radius;
+
+			// Results are multiplied by the orientation quaternion to rotate them
+			lineStart = orientation * lineStart;
+			lineEnd = orientation * lineEnd;
+
+			// Results are offset by the desired position/origin
+			lineStart += position;
+			lineEnd += position;
+
+			// If this is the first iteration, set the chordStart
+			if (i == 0) {
+				arcStart = lineStart;
+			}
+
+			// If this is the last iteration, set the chordEnd
+			if (i == arcSegments - 1) {
+				arcEnd = lineEnd;
+			}
+
+			// Assuming you have a DrawLine function similar to the previous example
+			DrawLine(lineStart, lineEnd, color);
+		}
+
+		if (drawChord) {
+			DrawLine(arcStart, arcEnd, color);
+		}
+		if (drawSector) {
+			DrawLine(arcStart, arcOrigin, color);
+			DrawLine(arcEnd, arcOrigin, color);
+		}
+	}
+	void Renderer2D::DrawRay(const glm::vec3& origin, const glm::vec3& direction, float length, const glm::vec4& color)
+	{
+		// Calculate the end point of the ray based on the length
+		glm::vec3 endPoint = origin + length * glm::normalize(direction);
+
+		// Now, you can use your existing DrawLine function to draw the ray
+		DrawLine(origin, endPoint, color);
+	}
+	void Renderer2D::DrawRay(const glm::vec3& origin, const glm::vec3& direction, const glm::vec4& color)
+	{
+		// Calculate the end point of the ray based on the length
+		glm::vec3 endPoint = origin + glm::length(direction) * glm::normalize(direction);
+
+		// Now, you can use your existing DrawLine function to draw the ray
+		DrawLine(origin, endPoint, color);
+	}
 	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), Location)
@@ -554,6 +698,8 @@ namespace Proof {
 			}
 		}
 	}
+
+	
 
 	void Renderer2D::DrawCircle(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color)
 	{

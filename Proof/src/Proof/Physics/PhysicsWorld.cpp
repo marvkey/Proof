@@ -255,6 +255,7 @@ namespace Proof {
 
 		if (m_NumSubSteps > 0)
 		{
+			//trigger objects still give persistent event if they are sleeping
 			for (auto& [triggerActorID, triggerActorData] : m_CollisionCallback.TriggersActors) 
 			{
 				for (auto& [otherTriggerID, triggerData] : triggerActorData)
@@ -264,7 +265,7 @@ namespace Proof {
 						triggerData.ReadyToCallPersist = true;
 						continue;
 					}
-					PF_INFO("trigger Actor {} on overlap by {}", triggerData.TriggerActor->GetEntity().GetName(), triggerData.OverlapTrigger->GetEntity().GetName());
+					//PF_INFO("trigger Actor {} on overlap by {}", triggerData.TriggerActor->GetEntity().GetName(), triggerData.OverlapTrigger->GetEntity().GetName());
 				}
 			}
 		}

@@ -56,7 +56,7 @@ namespace Proof
 		float radiusScale = glm::max(transform.Scale.x, transform.Scale.z);
 		physx::PxCapsuleControllerDesc desc;
 		desc.position = PhysXUtils::ToPhysXExtendedVector(m_Entity.Transform().Location + controller.Center); // not convinced this is correct.  (e.g. it needs to be world space, not local)
-		desc.height = controller.Height * transform.Scale.y;
+		desc.height = controller.Height/2 * transform.Scale.y;
 		desc.radius = controller.Radius * radiusScale;
 		//desc.radius = controller.Radius;
 		desc.nonWalkableMode = PhysXUtils::ToPhysXPxControllerNonWalkableMode(controller.WalkableMode);  // TODO: get from component

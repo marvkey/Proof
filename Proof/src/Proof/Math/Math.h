@@ -294,5 +294,19 @@ namespace Proof
 
 			return { Math::Degrees(angles.X),Math::Degrees(angles.Y),Math::Degrees(angles.Z) };
 		};
+
+		static inline float Repeat(float t, float length)
+		{
+			return glm::modf(t, length);
+		}
+		static inline float DeltaAngle(float currentRadians, float targetRadians)
+		{
+			float num = Repeat(currentRadians - targetRadians, glm::radians(360.0f));
+			if (num > glm::radians((180.0f)))
+			{
+				num -= glm::radians(360.0f);
+			}
+			return num;
+		}
 	};
 }

@@ -59,7 +59,7 @@ namespace Proof
 			//actor0->OnCollisonLeave(actor1);
 			//actor1->OnCollisonLeave(actor0);
 		}
-
+		//if sleeping this is no longer called
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
 		{
 			//actor0->OnCollisonStay(actor1);
