@@ -287,7 +287,10 @@ namespace Proof
 								if (!filepath.empty())
 								{
 									FileSystem::CopyFile(filepath, Project::GetActive()->GetAssetDirectory() / m_CurrentDirectory->FilePath);
+									auto path = Project::GetActive()->GetAssetDirectory() / m_CurrentDirectory->FilePath / filepath.filename();
+									AssetManager::NewAssetSource(path, Utils::GetAssetTypeFromPath(path));
 									Refresh();
+									
 								}
 							}
 

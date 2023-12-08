@@ -399,7 +399,7 @@ namespace Proof {
 				const auto& collider = e.GetComponent<BoxColliderComponent>();
 				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
 				renderer2D->DrawDebugCube(collider.Center + worldTransformComp.Location, worldTransformComp.GetRotationEuler(),
-					collider.Size * worldTransformComp.Scale
+					(collider.Size/2.f) * worldTransformComp.Scale
 					, renderer->GeneralOptions.PhysicsColliderColor);
 			}
 		}
@@ -440,10 +440,11 @@ namespace Proof {
 
 				auto capsuleData = GetCapsuleData(collider.Direction, worldTransformComp);
 				float radius = capsuleData.radiusScale * collider.Radius;
-				float height = capsuleData.scaleDirection * collider.Height ;
-				renderer2D->DrawCapsule(location + center, glm::eulerAngles(rotation), height*2,radius, renderer->GeneralOptions.PhysicsColliderColor);
+				float height = capsuleData.scaleDirection * collider.Height;
+				renderer2D->DrawCapsule(location + center, glm::eulerAngles(rotation), height , radius, renderer->GeneralOptions.PhysicsColliderColor);
 
 			}
+
 		}
 
 		{
@@ -487,7 +488,7 @@ namespace Proof {
 					auto capsuleData = GetCapsuleData(CapsuleDirection::Y, worldTransformComp);
 
 					float radius = capsuleData.radiusScale * collider.Radius;
-					float height = capsuleData.scaleDirection * collider.Height;
+					float height = capsuleData.scaleDirection * collider.Height/2;
 
 					// skin width
 					renderer2D->DrawCapsule(collider.Center + worldTransformComp.Location, 

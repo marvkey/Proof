@@ -5,6 +5,7 @@
 #include "PhysicsWorld.h"
 #include "PhysicsMaterial.h"
 #include "PhysicsUtils.h"
+#include "PhysicsShapes.h"
 #include "Proof/Asset/AssetManager.h"
 namespace Proof
 {
@@ -52,13 +53,14 @@ namespace Proof
 	void PhysicsController::GenerateCapsule()
 	{
 		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
-		auto& transform = m_Entity.GetComponent<TransformComponent>();
-		float radiusScale = glm::max(transform.Scale.x, transform.Scale.z);
+		auto worldTransform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
+
+		auto capsuleData = GetCapsuleData(CapsuleDirection::Y, worldTransform);
+		float halfHeight = controller.Height / 2;
 		physx::PxCapsuleControllerDesc desc;
 		desc.position = PhysXUtils::ToPhysXExtendedVector(m_Entity.Transform().Location + controller.Center); // not convinced this is correct.  (e.g. it needs to be world space, not local)
-		desc.height = controller.Height/2 * transform.Scale.y;
-		desc.radius = controller.Radius * radiusScale;
-		//desc.radius = controller.Radius;
+		desc.height = halfHeight * capsuleData.scaleDirection;
+		desc.radius = controller.Radius * capsuleData.radiusScale;
 		desc.nonWalkableMode = PhysXUtils::ToPhysXPxControllerNonWalkableMode(controller.WalkableMode);  // TODO: get from component
 		desc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
 		desc.slopeLimit = std::max(0.0f, cos(controller.SlopeLimitRadians));
@@ -75,13 +77,15 @@ namespace Proof
 	void PhysicsController::GenerateCube()
 	{
 		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
-		auto& transform = m_Entity.GetComponent<TransformComponent>();
+		auto worldTransform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
 
 		physx::PxBoxControllerDesc desc;
 		desc.position = PhysXUtils::ToPhysXExtendedVector(m_Entity.Transform().Location + controller.Center); // not convinced this is correct.  (e.g. it needs to be world space, not local)
-		desc.halfHeight = (controller.Size.y * transform.Scale.y);
-		desc.halfSideExtent = (controller.Size.x * transform.Scale.x);
-		desc.halfForwardExtent = (controller.Size.z * transform.Scale.z);
+
+		glm::vec3 halfSize = controller.Size / 2.f;
+		desc.halfHeight = (halfSize.y * worldTransform.Scale.y);
+		desc.halfSideExtent = (halfSize.x * worldTransform.Scale.x);
+		desc.halfForwardExtent = (halfSize.z * worldTransform.Scale.z);
 		desc.nonWalkableMode = PhysXUtils::ToPhysXPxControllerNonWalkableMode(controller.WalkableMode);  // TODO: get from component
 		desc.slopeLimit = std::max(0.0f, cos(controller.SlopeLimitRadians));
 		desc.stepOffset = controller.StepOffset;

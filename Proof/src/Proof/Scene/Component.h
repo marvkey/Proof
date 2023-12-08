@@ -434,7 +434,7 @@ namespace Proof
 		BoxColliderComponent(const BoxColliderComponent&) = default;
 		BoxColliderComponent() = default;
 		glm::vec3 Center = { 0,0,0 };
-		glm::vec3 Size= { 1,1,1 };
+		glm::vec3 Size= { 1,1,1 }; // would be halfed to be half size in physx
 		bool IsTrigger = false;
 
 		void RemovePhysicsMaterial() const
@@ -461,7 +461,7 @@ namespace Proof
 		SphereColliderComponent(const SphereColliderComponent&) = default;
 		SphereColliderComponent() = default;
 		glm::vec3 Center = { 0,0,0 };
-		float Radius = 1.0f;
+		float Radius = 0.5f;
 		bool IsTrigger = false;
 		void RemovePhysicsMaterial()
 		{
@@ -481,17 +481,19 @@ namespace Proof
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 	};
-	enum class CapsuleDirection {
+	enum class CapsuleDirection 
+	{
 		X = 0,
 		Y = 1,
 		Z = 2
 	};
-	struct Proof_API CapsuleColliderComponent {
+	struct CapsuleColliderComponent 
+	{
 		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
 		CapsuleColliderComponent() = default;
 		glm::vec3 Center = { 0,0,0 };
 		float Radius = 0.5f;
-		float Height = 1.0f;
+		float Height = 2.0f; // The height will be hafled as it is passed into physx
 		CapsuleDirection Direction = CapsuleDirection::Y;
 		bool IsTrigger = false;
 		void RemovePhysicsMaterial() {
@@ -543,8 +545,31 @@ namespace Proof
 		friend class PhysicsEngine;
 		mutable UUID m_PhysicsMaterialPointerID = 0;
 	};
-	
-	class Proof_API RigidBodyComponent 
+	struct CharacterControllerComponent
+	{
+		CharacterControllerComponent(const CharacterControllerComponent&) = default;
+		CharacterControllerComponent() = default;
+		uint32_t PhysicsLayerID = 0;
+		float SlopeLimitRadians = 0.707; //45 degree
+		float StepOffset = 0.3f; // min 0 max max float 
+		float SkinOffset = 0.01f; // min shoul dbe non zero positive and maximum should be max flaot
+		bool GravityEnabled = true;
+		float GravityScale = 1.0f;
+		float MinMoveDistance = 0.0f; //min 0
+		// only valid if slopelimit is 0
+		CharacterControllerNonWalkableMode WalkableMode = CharacterControllerNonWalkableMode::PreventClimbing;
+		AssetID PhysicsMaterialID = 0;
+
+		CharacterControllerType ColliderType = CharacterControllerType::Capsule; // only supports box and capusle
+		glm::vec3 Center = { 0,0,0 };
+		// capsule info
+		float Radius = 0.5f;
+		float Height = 2.0f; // the height will be half as it is passe into physx
+		// Box Info
+		glm::vec3 Size = glm::vec3{ 1,1,1 }; // the size will be halfed as it is passed into Physx
+	};
+
+	class RigidBodyComponent 
 	{
 	public:
 		RigidBodyComponent(const RigidBodyComponent&) = default;
@@ -570,31 +595,7 @@ namespace Proof
 		friend class PhysicsActor;
 	};
 
-	struct CharacterControllerComponent
-	{
-		CharacterControllerComponent(const CharacterControllerComponent&) = default;
-		CharacterControllerComponent() = default;
-		uint32_t PhysicsLayerID = 0;
-		float SlopeLimitRadians = 0.707; //45 degree
-		float StepOffset = 0.3f; // min 0 max max float 
-		float SkinOffset = 0.1f; // min shoul dbe non zero positive and maximum should be max flaot
-		bool GravityEnabled = true;
-		float GravityScale = 1.0f;
-		float MinMoveDistance = 0.0f; //min 0
-		// only valid if slopelimit is 0
-		CharacterControllerNonWalkableMode WalkableMode = CharacterControllerNonWalkableMode::PreventClimbing;
-		AssetID PhysicsMaterialID = 0;
 
-		CharacterControllerType ColliderType = CharacterControllerType::Capsule; // only supports box and capusle
-		glm::vec3 Center = { 0,0,0 };
-		// capsule info
-		float Radius = 0.5f;
-		float Height = 2.0f;
-		CapsuleDirection Direction = CapsuleDirection::Y;
-
-		// Box Info
-		glm::vec3 Size = glm::vec3 { 1,1,1 };
-	};
 	struct ScriptComponentsClassesData
 	{
 		std::string ClassName;

@@ -50,7 +50,9 @@ namespace Proof {
 
 		SetMaterial(material);
 
-		glm::vec3 colliderSize = glm::abs(worldTransform.Scale * component.Size);
+		glm::vec3 halfSize = (component.Size / 2.f);
+		glm::vec3 colliderSize = glm::abs(worldTransform.Scale * halfSize);
+
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(colliderSize.x, colliderSize.y, colliderSize.z);
 		
 
@@ -77,8 +79,9 @@ namespace Proof {
 		World* world = entity.GetCurrentWorld();
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
 
+		glm::vec3 halfSize = (size / 2.f);
+
 		glm::vec3 colliderSize = worldTransform.Scale * size; // should be negative
-		//colliderSize /= 2;
 
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(colliderSize.x, colliderSize.y, colliderSize.z);
 		m_Shape->setGeometry(geometry);
@@ -202,11 +205,28 @@ namespace Proof {
 		SetMaterial(material);
 
 		auto capsuleData = GetCapsuleData(component.Direction, worldTransform);
-		if (capsuleData.scaleDirection <= 1.0f)
-			capsuleData.scaleDirection /= 2;
 
+		//if (capsuleData.scaleDirection == 1.0f)
+		//	capsuleData.scaleDirection /= 2;
+		//if (capsuleData.radiusScale != 1)
+		//	capsuleData.radiusScale /= 2;
+		//else if(capsuleData.radiusScale == 1)
+		//	capsuleData.scaleDirection -= 0.50;
+		//else if (capsuleData.radiusScale / 2 > capsuleData.scaleDirection)
+		//{
+		//	float greaterValue = capsuleData.radiusScale / capsuleData.scaleDirection*2;
+		//	capsuleData.scaleDirection -= greaterValue *1.5;
+		//}
+		//
+		//if (capsuleData.radiusScale > 1)
+		//{
+		//
+		//	capsuleData.radiusScale /= 4;
+		//	capsuleData.radiusScale -= 1;
+		//}
 		
-		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * capsuleData.radiusScale, (component.Height ) * capsuleData.scaleDirection );
+
+		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * capsuleData.radiusScale, (component.Height/4) * worldTransform.Scale.y);
 		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, m_Material->GetPhysxMaterial());
 		m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);

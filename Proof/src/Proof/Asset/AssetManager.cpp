@@ -105,14 +105,14 @@ namespace Proof
 			{
 				case DefaultRuntimeAssets::Cube:
 					{
-						Count<Mesh> mesh = MeshWorkShop::GenerateCube();
+						Count<Mesh> mesh = MeshWorkShop::GenerateCube({0.5,0.5,0.5});
 						Count<Asset> asset = mesh;
 						CreateRuntimeAsset(ID, asset, "Cube");
 					}
 					break;
 				case DefaultRuntimeAssets::Sphere:
 					{
-						Count<Mesh> mesh = MeshWorkShop::GenerateSphere();
+						Count<Mesh> mesh = MeshWorkShop::GenerateSphere(0.5f);
 						Count<Asset> asset = mesh;
 						CreateRuntimeAsset(ID, asset, "Sphere");
 					}
@@ -126,14 +126,14 @@ namespace Proof
 					break;
 				case DefaultRuntimeAssets::Cylinder:
 					{
-						Count<Mesh> mesh = MeshWorkShop::GenerateCylinder();
+						Count<Mesh> mesh = MeshWorkShop::GenerateCylinder(36,1,0.5,0.5,1);
 						Count<Asset> asset = mesh;
 						CreateRuntimeAsset(ID, asset, "Cylinder");
 					}
 					break;
 				case DefaultRuntimeAssets::Cone:
 					{
-						Count<Mesh> mesh = MeshWorkShop::GenerateCone();
+						Count<Mesh> mesh = MeshWorkShop::GenerateCone(36,15,0.5,1);
 						Count<Asset> asset = mesh;
 						CreateRuntimeAsset(ID, asset, "Cone");
 
@@ -149,7 +149,7 @@ namespace Proof
 				case DefaultRuntimeAssets::Plane:
 					{
 						
-						Count<Mesh> mesh = MeshWorkShop::GeneratePlane();
+						Count<Mesh> mesh = MeshWorkShop::GeneratePlane(10,1);
 						Count<Asset> asset = mesh;
 						CreateRuntimeAsset(ID, asset, "Plane");
 					}

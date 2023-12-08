@@ -15,6 +15,34 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 2.5
+    - Entity: 17866084973620081364
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 51
+      SphereColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 12455402995532175596
       TagComponent:
         Tag: Cube
@@ -47,42 +75,14 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 6245801549288932895
-      TagComponent:
-        Tag: CharacterController
-        tags: []
-      TransformComponent:
-        Location: [-4.9000001, 1.5, 0]
-        Rotation: [0, 0, 0.90931648]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 52
-      CharacterControllerComponent:
-        SlopeLimitRadians: 0.707000017
-        StepOffset: 0.300000012
-        SkinOffset: 0.100000001
-        GravityEnabled: true
-        GravityScale: 1
-        MinMoveDistance: 0
-        WalkableMode: PreventClimbing
-        PhysicsMaterialID: 0
-        ColliderType: Capsule
-        Center: [0, 0, 0]
-        Radius: 0.5
-        Height: 2
-        Direction: Y
-        Size: [1, 1, 1]
     - Entity: 16362547569400977961
       TagComponent:
         Tag: Plane
         tags: []
       TransformComponent:
-        Location: [0, -2.29999995, 0]
+        Location: [0.899999976, -2.29999995, 0]
         Rotation: [0, 0, 0]
-        Scale: [9, 1, 14.3999996]
+        Scale: [127.099998, 1, 14.3999996]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
@@ -107,6 +107,33 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 6245801549288932895
+      TagComponent:
+        Tag: CharacterController
+        tags: []
+      TransformComponent:
+        Location: [-0.100000001, 0, 4.9000001]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 52
+      CharacterControllerComponent:
+        SlopeLimitRadians: 0.707000017
+        StepOffset: 0.300000012
+        SkinOffset: 0.00999999978
+        GravityEnabled: true
+        GravityScale: 1
+        MinMoveDistance: 0
+        WalkableMode: PreventClimbing
+        PhysicsMaterialID: 0
+        ColliderType: Capsule
+        Center: [0, 0, 0]
+        Radius: 0.5
+        Height: 2
+        Size: [1, 1, 1]
     - Entity: 12268580492062250528
       TagComponent:
         Tag: triggerCube
@@ -140,7 +167,7 @@ World:
         Tag: Capsule
         tags: []
       TransformComponent:
-        Location: [-1.29999995, 0, 0]
+        Location: [-34.2999992, 14.8999996, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -148,11 +175,15 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 52
+        MaterialTable:
+          - Material: ""
+            AssetID: 14268173759466256543
+            Index: 0
       CapsuleColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
         Radius: 0.5
-        Height: 1
+        Height: 2
         Direction: Y
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
@@ -160,7 +191,7 @@ World:
         LinearDrag: 0.00999999978
         AngularDrag: 0.0500000007
         Gravity: true
-        Type: Static
+        Type: Dynamic
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
         Kinematic: false

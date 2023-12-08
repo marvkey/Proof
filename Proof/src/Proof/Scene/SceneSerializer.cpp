@@ -782,7 +782,6 @@ namespace Proof
 				out << YAML::Key << "Center" << characterController.Center;
 				out << YAML::Key << "Radius" << characterController.Radius;
 				out << YAML::Key << "Height" << characterController.Height;
-				out << YAML::Key << "Direction" <<EnumReflection::EnumString( characterController.Direction);
 
 				out << YAML::Key << "Size" << characterController.Size;
 				out << YAML::EndMap; // CharacterControllerComponent
@@ -1348,7 +1347,6 @@ namespace Proof
 					ccc.Center = characterControllerComponent["Center"].as<glm::vec3>();
 					ccc.Radius = characterControllerComponent["Radius"].as<float>();
 					ccc.Height = characterControllerComponent["Height"].as<float>();
-					ccc.Direction = EnumReflection::StringEnum<CapsuleDirection>(characterControllerComponent["Direction"].as<std::string>());
 
 					ccc.Size = characterControllerComponent["Size"].as<glm::vec3>();
 				}

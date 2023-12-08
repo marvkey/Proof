@@ -1011,7 +1011,6 @@ namespace Proof
 			{
 				UI::AttributeDrag("Radius", controller.Radius);
 				UI::AttributeDrag("Height", controller.Height);
-				UI::EnumCombo("Direction", controller.Direction);
 			}
 			else
 			{

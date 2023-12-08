@@ -360,7 +360,7 @@ namespace Proof {
 		glm::quat orientation = glm::quat(rotationRadians);
 
 		glm::vec3 localUp = orientation * Math::GetUpVector();
-		glm::vec3 localRight = orientation * Math::GetRightVector() ;
+		glm::vec3 localRight = orientation * Math::GetRightVector();
 		glm::vec3 localForward = orientation * Math::GetFowardVector();
 
 		glm::vec3 basePositionOffset = drawFromBase ? glm::vec3(0) : (localUp * height * 0.5f);
@@ -379,7 +379,7 @@ namespace Proof {
 		DrawRay(pointC, localUp * height, color);
 		DrawRay(pointD, localUp * height, color);
 
-		DrawCircle(basePosition, glm::eulerAngles( circleOrientation), radius, color);
+		DrawCircle(basePosition, glm::eulerAngles(circleOrientation), radius, color);
 		DrawCircle(topPosition, glm::eulerAngles(circleOrientation), radius, color);
 	}
 	void Renderer2D::DrawCapsule(glm::vec3 position, glm::vec3 rotationRadian, float height, float radius, glm::vec4 color)
@@ -407,6 +407,7 @@ namespace Proof {
 		DrawArc(0.0f, glm::radians(180.0f), topArcPosition, glm::eulerAngles(orientation), radius, color);
 		DrawArc(0.0f, glm::radians(180.0f), topArcPosition, glm::eulerAngles(arcOrientation), radius, color);
 	}
+
 
 	void Renderer2D::DrawArc(float startAngleRadians, float endAngleRadians, glm::vec3 position, glm::vec3 rotationRadians, float radius, glm::vec4 color, bool drawChord, bool drawSector, uint32_t arcSegments)
 	{
