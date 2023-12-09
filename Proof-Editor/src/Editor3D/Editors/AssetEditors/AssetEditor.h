@@ -3,7 +3,7 @@
 #include "Proof/COre/FrameTime.h"
 #include "Proof/Asset/AssetTypes.h"
 #include "Proof/Asset/Asset.h"
-#include <ImGui/imgui.h>
+#include <imgui.h>
 namespace Proof
 {
 	class AssetEditor : public RefCounted

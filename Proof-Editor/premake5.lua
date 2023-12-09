@@ -30,7 +30,7 @@ project "Proof-Editor"
         "%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.yaml_cpp}",
 		"%{IncludeDir.fmt}",
-		"%{IncludeDir.physX}",
+		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.physXfoundation}",
 		"%{IncludeDir.optick}",
 		"%{IncludeDir.tracey}",

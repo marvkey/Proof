@@ -17,8 +17,6 @@ namespace Proof
 		{
 			Release();
 		}
-
-
 		void SetMaterial(Count<class PhysicsMaterial> material);
 
 		ColliderType GetType() const { return m_Type; }
@@ -39,6 +37,10 @@ namespace Proof
 
 		virtual bool IsValid() const { return m_Material != nullptr; }
 
+		Count<PhysicsMaterial> GetMaterial() { return m_Material; }
+
+		//shapes and counts
+		virtual std::pair< physx::PxShape*, size_t> GetShapes() = 0;
 	protected:
 		ColliderType m_Type;
 		bool m_IsShared = false;
@@ -72,9 +74,16 @@ namespace Proof
 		virtual bool IsValid() const override { return ColliderShape::IsValid() && m_Shape != nullptr; }
 
 		static ColliderType GetStaticType() { return ColliderType::Box; }
-
+		
 	private:
-		physx::PxShape* m_Shape;
+		physx::PxShape* m_Shape = nullptr;
+	private:
+		virtual std::pair< physx::PxShape*, size_t> GetShapes()
+		{
+			if (m_Shape)
+				return { m_Shape,1 };
+			return { nullptr, 0 };
+		}
 	};
 
 	class SphereColliderShape : public ColliderShape
@@ -101,9 +110,60 @@ namespace Proof
 		static ColliderType GetStaticType() { return ColliderType::Sphere; }
 
 	private:
-		physx::PxShape* m_Shape;
+		physx::PxShape* m_Shape = nullptr;
+	private:
+		virtual std::pair< physx::PxShape*, size_t> GetShapes()
+		{
+			if (m_Shape)
+				return { m_Shape,1 };
+			return { nullptr, 0 };
+		}
 	};
+	struct CapusleData
+	{
+		glm::vec3 offsetRotation;
+		float radiusScale;
+		float scaleDirection;
+	};
+	static CapusleData GetCapsuleData(CapsuleDirection direction, const TransformComponent& worldTransform)
+	{
+		glm::vec3 scaleabs = glm::abs(worldTransform.Scale);
 
+		float radiusScale = 0;
+
+		float scaleDirection;
+		glm::vec3 offsetRotation;
+		switch (direction)
+		{
+		case CapsuleDirection::X:
+		{
+			scaleDirection = glm::max(glm::max(scaleabs.y, scaleabs.z) / 2, scaleabs.x);
+			offsetRotation = glm::vec3{ 0,0,0 };
+			radiusScale = glm::max(scaleabs.y, scaleabs.z);
+		}
+		break;
+		case CapsuleDirection::Y:
+		{
+			offsetRotation = glm::vec3{ 0,0,physx::PxHalfPi };
+			scaleDirection = glm::max(glm::max(scaleabs.x, scaleabs.z)/2, scaleabs.y);
+			radiusScale = glm::max(scaleabs.x, scaleabs.z);
+		}
+		break;
+		case CapsuleDirection::Z:
+		{
+			offsetRotation = glm::vec3{ 0,physx::PxHalfPi,0 };
+			scaleDirection = glm::max(glm::max(scaleabs.y, scaleabs.x) / 2, scaleabs.z);
+			radiusScale = glm::max(scaleabs.y, scaleabs.x);
+		}
+		break;
+		default:
+			break;
+		}
+
+		
+
+		return { offsetRotation,radiusScale,scaleDirection };
+	}
 	class CapsuleColliderShape : public ColliderShape
 	{
 	public:
@@ -136,7 +196,15 @@ namespace Proof
 		static ColliderType GetStaticType() { return ColliderType::Capsule; }
 
 	private:
-		physx::PxShape* m_Shape;
+		physx::PxShape* m_Shape = nullptr;
+
+	private:
+		virtual std::pair< physx::PxShape*, size_t> GetShapes()
+		{
+			if (m_Shape)
+				return { m_Shape,1 };
+			return { nullptr, 0 };
+		}
 	};
 
 	class ConvexMeshShape : public ColliderShape
@@ -168,8 +236,18 @@ namespace Proof
 
 		const glm::vec3& GetCenter() const override { return glm::vec3{ 0 }; }
 		void SetCenter(const glm::vec3& offset) override {};
+		void SetMaterial(Count<class PhysicsMaterial> material);
+
 	private:
+		bool m_BlockSetMaterial = false;
 		std::vector<physx::PxShape*> m_Shapes;
+	private:
+		virtual std::pair< physx::PxShape*, size_t> GetShapes()
+		{
+			if (m_Shapes.size())
+				return { m_Shapes[0],m_Shapes.size()};
+			return { nullptr,0 };
+		}
 	};
 
 	class TriangleMeshShape : public ColliderShape
@@ -194,9 +272,18 @@ namespace Proof
 		virtual bool IsValid() const override { return ColliderShape::IsValid() && !m_Shapes.empty(); }
 
 		static ColliderType GetStaticType() { return ColliderType::TriangleMesh; }
+		void SetMaterial(Count<class PhysicsMaterial> material);
 
 	private:
+		bool m_BlockSetMaterial = false;
 		std::vector<physx::PxShape*> m_Shapes;
+	private:
+		virtual std::pair< physx::PxShape*, size_t> GetShapes()
+		{
+			if (m_Shapes.size())
+				return { m_Shapes[0],m_Shapes.size() };
+			return { nullptr,0 };
+		}
 	};
 
 	class SharedShapeManager

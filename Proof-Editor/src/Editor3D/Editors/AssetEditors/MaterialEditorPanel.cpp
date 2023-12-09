@@ -1,6 +1,6 @@
 #include "MaterialEditorPanel.h"
-#include <imgui/imgui.h>
-#include <imgui/imgui_internal.h>
+#include <imgui.h>
+#include <imgui_internal.h>
 #include "../../EditorResources.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Scene/Material.h"

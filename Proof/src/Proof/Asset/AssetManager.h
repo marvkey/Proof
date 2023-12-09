@@ -95,7 +95,7 @@ namespace Proof
 		}
 		// cannot access this asset by path only by its id
 		template<class AssetType, typename ... Args, std::enable_if_t<Is_Compatible<AssetType, Asset>::value, int> = 0>
-		static Count<AssetType> CreateRuntimeAsset(const std::string& name ,Args&&... args)
+		static Count<AssetType> CreateRuntimeAssetWithName(const std::string& name ,Args&&... args)
 		{
 			static_assert(!std::is_same<AssetType, class World>::value, "Cannot craet  a world like this");
 			Count<Asset> asset = Count<AssetType>::Create(std::forward<Args>(args)...);

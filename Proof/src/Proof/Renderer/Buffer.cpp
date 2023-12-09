@@ -3,6 +3,7 @@
 #include "Platform/Vulkan/VulkanBuffer.h"
 #include "Platform/Vulkan/VulkanResourceBuffer.h"
 #include "Renderer.h"
+#include "Buffer.h"
 namespace Proof
 {
 	Count<VertexBuffer>VertexBuffer::Create(const void* Data, uint64_t size) {
@@ -38,5 +39,32 @@ namespace Proof
 			case Renderer::API::Vulkan: return Count<VulkanIndexBuffer>::Create(Size);
 		}
 		return nullptr;
+	}
+	VertexBufferSet::VertexBufferSet(uint64_t Size)
+	{
+		for (uint32_t index = 0; index < Renderer::GetConfig().FramesFlight; index++)
+		{
+			m_VertexBuffers[index] = VertexBuffer::Create(Size);
+		}
+	}
+	VertexBufferSet::VertexBufferSet(const void* Data, uint64_t Size)
+	{
+		for (uint32_t index = 0; index < Renderer::GetConfig().FramesFlight; index++)
+		{
+			m_VertexBuffers[index] = VertexBuffer::Create(Data,Size);
+		}
+	}
+	Count<VertexBuffer> VertexBufferSet::GetVertexBufferIndex(uint32_t set)
+	{
+		PF_CORE_ASSERT(m_VertexBuffers.contains(set), fmt::format("Vertex Buffer Set Does not contain set: {}", set));
+		return m_VertexBuffers.at(set);
+	}
+	Count<VertexBuffer> VertexBufferSet::GetVertexBuffer()
+	{
+		return GetVertexBufferIndex(Renderer::GetCurrentFrameInFlight());
+	}
+	Count<VertexBuffer> VertexBufferSet::RT_GetVertexBuffer()
+	{
+		return GetVertexBufferIndex(Renderer::RT_GetCurrentFrameInFlight());
 	}
 }

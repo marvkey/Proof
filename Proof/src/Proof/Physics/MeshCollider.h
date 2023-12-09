@@ -19,6 +19,7 @@ namespace Proof
 		AssetID PhysicsMaterial = 0;
 		ECollisionComplexity CollisionComplexity = ECollisionComplexity::Default;
 		glm::vec3 ColliderScale = glm::vec3(1.0f);
+		glm::vec3 PreviewScale = glm::vec3(1.0f); // just the preview for the editor 
 		bool AlwaysShareShape = false;
 
 		// collison 

@@ -8,11 +8,14 @@
 #include "Proof/Input/InputManager.h"
 #include "Proof/Input/Mouse.h"
 #include "Proof/Asset/AssetManager.h"
-#include "Proof/Scripting/ScriptEngine.h"
 
-#include "Proof/Scripting/ScriptBuilder.h"
-#include "Proof/Project/ProjectSerilizer.h"
 #include "Proof/Project/Project.h"
+#include "Proof/Project/ProjectSerilizer.h"
+#include "Proof/Scripting/ScriptEngine.h"
+#include "Proof/Scripting/ScriptBuilder.h"
+#include "Proof/Physics/PhysicsDebugger.h"
+#include "Proof/Physics/PhysicsEngine.h"
+
 #include "Proof/Scene/SceneSerializer.h"
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Scene/Mesh.h"
@@ -26,17 +29,19 @@
 
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UiUtilities.h"
-#include "ImGuizmo.h"
+#include <imgui.h>
+#include <ImGuizmo.h>
 #include "EditorResources.h"
 #include "Editors/Panels/PanelManager.h"
 #include "Editors/Panels/AssetManagerPanel.h"
 #include "Editors/Panels/InputPanel.h"
 #include "Editors/Panels/SceneHierachyPanel.h"
-#include "Editors/Panels/ContentBrowserPanel.h"
+#include "Editors/Panels/ContentBrowser/ContentBrowserPanel.h"
 #include "Editors/Panels/WorldRendererPanel.h"
+#include "Editors/Panels/PhysicsPanelStats.h"
+#include "Editors/Panels/ProjectSettingsPanel.h"
 #include "Editors/AssetEditors/AssetEditor.h"
 
-#include <ImGui/imgui.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -48,6 +53,8 @@
 #define INPUT_PANEL_ID "InputPanel"
 #define ASSET_MANAGER_PANEL_ID "AssetManagerPanel"
 #define WORLD_RENDERER_PANEL_ID "WorldRendererPanel"
+#define PHYSICS_DEBUG_PANEL_ID "PhysicsDebugPanel"
+#define PROJECT_DEBUG_PANEL_ID "ProjectSettings"
 namespace Proof
 {
 	// you can do this
@@ -441,11 +448,38 @@ namespace Proof
 		m_EditorWorld = m_ActiveWorld;
 
 		s_EditorData->PanelManager->AddPanel< SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID, "Scene Hierarchy", true);
-		s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
+		s_EditorData->PanelManager->AddPanel<PhysicsStatsPanel>(PHYSICS_DEBUG_PANEL_ID, "Physics Stats", false);
 		s_EditorData->PanelManager->AddPanel<AssetManagerPanel>(ASSET_MANAGER_PANEL_ID, "Asset Manager", false);
 		s_EditorData->PanelManager->AddPanel<InputPanel>(INPUT_PANEL_ID, "Input Panel", false);
 		s_EditorData->PanelManager->AddPanel<WorldRendererPanel>(WORLD_RENDERER_PANEL_ID, "Renderer Panel", true);
+		s_EditorData->PanelManager->AddPanel<ProjectSettingsPanel>(PROJECT_DEBUG_PANEL_ID, "Project Settings", false);
+
+		Count< ContentBrowserPanel> contentBrowser = s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 		s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
+#if 0
+		contentBrowser->RegisterItemActivateCallbackForType(AssetType::World, [this](const AssetInfo& metadata)
+			{
+				OpenScene(metadata);
+			});
+#endif
+		contentBrowser->RegisterItemActivateCallbackForType(AssetType::ScriptFile, [this](const AssetInfo& metadata)
+			{
+				FileSystem::OpenExternally(AssetManager::GetAssetFileSystemPath(metadata.Path));
+			});
+
+		contentBrowser->RegisterAssetCreatedCallback([this](const AssetInfo& metadata)
+			{
+				if (metadata.Type == AssetType::ScriptFile)
+					ScriptBuilder::RegenerateProjectScriptSolution(Application::Get()->GetProject());
+			});
+
+		contentBrowser->RegisterAssetDeletedCallback([this](const AssetInfo& metadata)
+			{
+				if (metadata.Type == AssetType::ScriptFile)
+				ScriptBuilder::RegenerateProjectScriptSolution(Application::Get()->GetProject());
+
+			});
+
 
 		AssetEditorPanel::RegisterDefaultEditors();
 		m_WorldRenderer = Count<WorldRenderer>::Create();
@@ -461,6 +495,7 @@ namespace Proof
 
 		m_ViewPortSize = { 100,100 };
 
+		FileSystem::StartWatching();
 	}
 	void Editore3D::OnDetach() {
 		if (m_EditorWorld != nullptr) // using editor world in case active world is on play 
@@ -472,6 +507,8 @@ namespace Proof
 		AssetEditorPanel::UnregisterAllEditors();
 		AssetManager::SaveAllAssets();
 		EditorResources::Unizilize();
+		FileSystem::StopWatching();
+		FileSystem::ClearFileSystemChangedCallbacks();
 	}
 
 	void Editore3D::OnUpdate(FrameTime DeltaTime) {
@@ -1182,7 +1219,7 @@ namespace Proof
 			if (meshSourceAdded)
 			{
 				AssetID id;
-				std::tie(meshSourceAdded, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
+				//std::tie(meshSourceAdded, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
 				// basically add mesh is done with its operation and no longer renderng
 				if (meshSourceAdded == false)
 				{
@@ -1205,7 +1242,7 @@ namespace Proof
 			if (SaveSceneDialouge)
 			{
 				AssetID id;
-				std::tie(SaveSceneDialouge, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddWorld(m_ActiveWorld);
+				//std::tie(SaveSceneDialouge, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddWorld(m_ActiveWorld);
 				if (SaveSceneDialouge == false)
 				{
 					Save();
@@ -1390,6 +1427,25 @@ namespace Proof
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Debug"))
+			{
+			
+				if (PhysicsDebugger::IsDebugging())
+				{
+					if (ImGui::MenuItem("Stop PhysX Debugging"))
+						PhysicsDebugger::StopDebugging();
+				}
+				else
+				{
+
+					if (ImGui::MenuItem("Start PhysX Debugging"))
+					{
+						PhysicsDebugger::StartDebugging((Application::Get()->GetProject()->GetProjectDirectory() / "PhysXDebugInfo").string(), PhysicsEngine::GetSettings().DebugType == PhysicsDebugType::Live);
+					}
+					UI::EnumCombo("PhysicsDebugType", PhysicsEngine::GetSettings().DebugType);
+				}
+				ImGui::EndMenu();
+			}
 
 			ImGui::EndMenuBar();
 		}
@@ -1421,7 +1477,7 @@ namespace Proof
 
 		{
 			ScopeTimer scopeTime(fmt::format("AssetManager Saved"));
-
+			AssetManager::SaveAllAssets();
 			AssetManager::SaveAssetManager();
 		}
 
@@ -1568,14 +1624,12 @@ namespace Proof
 	void Editore3D::PlayWorld() {
 		m_ActiveWorld = World::Copy(m_EditorWorld);
 		s_DetachPlayer = false;
-		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
 		if (s_EditorData->ClearLogOnPlay)
 			Log::Logs.clear();
-
 		m_ActiveWorld->StartRuntime();
-
+		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 	}
 	void Editore3D::SimulateWorld() {
 		s_DetachPlayer = false;

@@ -27,6 +27,7 @@ namespace Proof
 		void SetSlopeLimit(const float slopeLimitRadians);
 		void SetStepOffset(const float stepOffset);
 
+		virtual bool SetSimulationData(uint32_t layerId) override;
 		virtual glm::vec3 GetLocation() const override;
 		virtual void SetLocation(const glm::vec3& translation, const bool autowake = true) override;
 		virtual bool IsSleeping() { return false; };
@@ -47,7 +48,7 @@ namespace Proof
 	private:
 		physx::PxController* m_Controller = nullptr;
 		physx::PxControllerCollisionFlags m_CollisionFlags = {};
-		glm::vec3 m_Speed;        // speed of controller in down direction at last update
+		glm::vec3 m_Speed = {};        // speed of controller in down direction at last update
 		glm::vec3 m_Displacement = {};   // displacement (if any) for next update (comes from Move() calls)
 		Count<class PhysicsMaterial> m_Material;
 

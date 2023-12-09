@@ -1,6 +1,6 @@
 #include "AssetManagerPanel.h"
-#include <imgui/imgui.h>
-#include <imgui/imgui_internal.h>
+#include <imgui.h>
+#include <imgui_internal.h>
 #include "Proof/Imgui/ImguiLayer.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Math/Math.h"

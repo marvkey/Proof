@@ -15,7 +15,7 @@ namespace Proof
                 case Proof::CombineMode::Mutltiply:
                     return physx::PxCombineMode::Enum::eMULTIPLY;
                 case Proof::CombineMode::Max:
-                    physx::PxCombineMode::Enum::eMAX;
+                    return physx::PxCombineMode::Enum::eMAX;
                 default:
                     break;
             }
@@ -39,81 +39,67 @@ namespace Proof
     }
     PhysicsMaterial::PhysicsMaterial(float staticFriction, float dynamicFriction, float bounciness)
     {
-        m_RuntimeBody = PhysicsEngine::GetPhysics()->createMaterial(staticFriction, dynamicFriction, bounciness);
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        material->userData = this;
+        m_PhysxMaterial = PhysicsEngine::GetPhysics()->createMaterial(staticFriction, dynamicFriction, bounciness);
+        m_PhysxMaterial->userData = this;
     }
 
     PhysicsMaterial::~PhysicsMaterial()
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        material->release(); // make sure
+        m_PhysxMaterial->release(); // make sure
     }
 
     float PhysicsMaterial::GetStaticFriction()
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        return material->getStaticFriction();
+        return m_PhysxMaterial->getStaticFriction();
     }
     float PhysicsMaterial::GetDynamicFriction()
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        return material->getDynamicFriction();
+        return m_PhysxMaterial->getDynamicFriction();
     }
 
 
     float PhysicsMaterial::GetBounciness()
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        return material->getRestitution();
+        return m_PhysxMaterial->getRestitution();
     }
 
     void PhysicsMaterial::SetStaticFriction(float fricionon)
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        material->setStaticFriction(fricionon);
+        m_PhysxMaterial->setStaticFriction(fricionon);
     }
 
     void PhysicsMaterial::SetDynamicFriction(float friction)
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        material->setDynamicFriction(friction);
+        m_PhysxMaterial->setDynamicFriction(friction);
     }
 
     void PhysicsMaterial::SetBounciness(float bounciness)
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        material->setRestitution(bounciness);
+        m_PhysxMaterial->setRestitution(bounciness);
     }
     CombineMode PhysicsMaterial::GetFrictionCombineMode()
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        return Utils::ConvertProofCombineMode(material->getFrictionCombineMode());
+        return Utils::ConvertProofCombineMode(m_PhysxMaterial->getFrictionCombineMode());
     }
     CombineMode PhysicsMaterial::GetBouncinessCombineMode()
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        return Utils::ConvertProofCombineMode(material->getRestitutionCombineMode());
+        return Utils::ConvertProofCombineMode(m_PhysxMaterial->getRestitutionCombineMode());
     }
  
     void PhysicsMaterial::SetFrictionCombineMode(CombineMode mode)
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-
-        material->setFrictionCombineMode(Utils::ConvertPhysixCombineMode(mode));
+        m_PhysxMaterial->setFrictionCombineMode(Utils::ConvertPhysixCombineMode(mode));
     }
 
     void PhysicsMaterial::SetBouncinessCombineMode(CombineMode mode)
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
-        material->setRestitutionCombineMode(Utils::ConvertPhysixCombineMode(mode));
+        m_PhysxMaterial->setRestitutionCombineMode(Utils::ConvertPhysixCombineMode(mode));
     }
     void PhysicsMaterial::Release()
     {
-        physx::PxMaterial* material = (physx::PxMaterial*)m_RuntimeBody;
         // materails will always have by default always 1 thign pointing
-        if (material->getReferenceCount() == 1)return;
-        material->release(); // make sure
+        if (m_PhysxMaterial->getReferenceCount() == 1)return;
+        m_PhysxMaterial->release(); // make sure
         /*
         if (GetID() == (uint64_t)DefaultRuntimeAssets::PhysicsMaterial)
         {

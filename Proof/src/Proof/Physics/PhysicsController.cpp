@@ -5,9 +5,13 @@
 #include "PhysicsWorld.h"
 #include "PhysicsMaterial.h"
 #include "PhysicsUtils.h"
+#include "PhysicsShapes.h"
 #include "Proof/Asset/AssetManager.h"
 namespace Proof
 {
+
+	//https://www.youtube.com/watch?v=UUJMGQTT5ts&list=PLwyUzJb_FNeQrIxCEjj5AMPwawsw5beAy&index=2&ab_channel=iHeartGameDev
+	//https://www.youtube.com/watch?v=e94KggaEAr4&t=9s&ab_channel=iHeartGameDev
 	PhysicsController::PhysicsController(Count<class PhysicsWorld> world, Entity entity)
 		:
 		PhysicsActorBase(world, PhysicsControllerType::Controller,entity)
@@ -34,6 +38,11 @@ namespace Proof
 			GenerateCapsule();
 		else
 			GenerateCube();
+		if (!PhysicsLayerManager::IsLayerValid(m_Entity.GetComponent<CharacterControllerComponent>().PhysicsLayerID))
+		{
+			m_Entity.GetComponent<CharacterControllerComponent>().PhysicsLayerID = 0;
+		}
+		SetSimulationData(m_Entity.GetComponent<CharacterControllerComponent>().PhysicsLayerID);
 
 	}
 	void PhysicsController::Release()
@@ -44,21 +53,23 @@ namespace Proof
 	void PhysicsController::GenerateCapsule()
 	{
 		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
-		auto& transform = m_Entity.GetComponent<TransformComponent>();
-		float radiusScale = glm::max(transform.Scale.x, transform.Scale.z);
+		auto worldTransform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
+
+		auto capsuleData = GetCapsuleData(CapsuleDirection::Y, worldTransform);
+		float halfHeight = controller.Height / 2;
 		physx::PxCapsuleControllerDesc desc;
 		desc.position = PhysXUtils::ToPhysXExtendedVector(m_Entity.Transform().Location + controller.Center); // not convinced this is correct.  (e.g. it needs to be world space, not local)
-		desc.height = controller.Height * transform.Scale.y;
-		desc.radius = controller.Radius * radiusScale;
-		//desc.radius = controller.Radius;
+		desc.height = halfHeight * capsuleData.scaleDirection;
+		desc.radius = controller.Radius * capsuleData.radiusScale;
 		desc.nonWalkableMode = PhysXUtils::ToPhysXPxControllerNonWalkableMode(controller.WalkableMode);  // TODO: get from component
 		desc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
 		desc.slopeLimit = std::max(0.0f, cos(controller.SlopeLimitRadians));
 		desc.stepOffset = controller.StepOffset;
 		desc.contactOffset = controller.SkinOffset;                                                     // TODO: get from component
-		desc.material = (physx::PxMaterial*) m_Material->GetPhysicsBody();
+		desc.material = &m_Material->GetPhysxMaterial();
 		desc.upDirection = PhysXUtils::ToPhysXVector(Math::GetUpVector());
 
+		PF_CORE_ASSERT(desc.isValid(), "Capsule Controller is not valid");
 		m_Controller = m_PhysicsWorld->GetPhysXControllerManager()->createController(desc);
 
 		m_Controller->getActor()->userData = this;
@@ -66,20 +77,23 @@ namespace Proof
 	void PhysicsController::GenerateCube()
 	{
 		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
-		auto& transform = m_Entity.GetComponent<TransformComponent>();
+		auto worldTransform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
 
 		physx::PxBoxControllerDesc desc;
 		desc.position = PhysXUtils::ToPhysXExtendedVector(m_Entity.Transform().Location + controller.Center); // not convinced this is correct.  (e.g. it needs to be world space, not local)
-		desc.halfHeight = (controller.Size.y * transform.Scale.y);
-		desc.halfSideExtent = (controller.Size.x * transform.Scale.x);
-		desc.halfForwardExtent = (controller.Size.z * transform.Scale.z);
+
+		glm::vec3 halfSize = controller.Size / 2.f;
+		desc.halfHeight = (halfSize.y * worldTransform.Scale.y);
+		desc.halfSideExtent = (halfSize.x * worldTransform.Scale.x);
+		desc.halfForwardExtent = (halfSize.z * worldTransform.Scale.z);
 		desc.nonWalkableMode = PhysXUtils::ToPhysXPxControllerNonWalkableMode(controller.WalkableMode);  // TODO: get from component
 		desc.slopeLimit = std::max(0.0f, cos(controller.SlopeLimitRadians));
 		desc.stepOffset = controller.StepOffset;
 		desc.contactOffset = controller.SkinOffset;                                                     // TODO: get from component
-		desc.material = (physx::PxMaterial*)m_Material->GetPhysicsBody();
+		desc.material = &m_Material->GetPhysxMaterial();
 		desc.upDirection = PhysXUtils::ToPhysXVector(Math::GetUpVector());
-
+		
+		PF_CORE_ASSERT(desc.isValid(), "Box Controller is not valid");
 		m_Controller = m_PhysicsWorld->GetPhysXControllerManager()->createController(desc);
 
 		m_Controller->getActor()->userData = this;
@@ -112,6 +126,26 @@ namespace Proof
 		m_Controller->setStepOffset(stepOffset);
 		m_Entity.GetComponent<CharacterControllerComponent>().StepOffset = stepOffset;
 	}
+	
+	bool PhysicsController::SetSimulationData(uint32_t layerId)
+	{
+
+		const PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayer(layerId);
+
+		if (layerInfo.CollidesWith == 0)
+			return false;
+
+		//TODO ony support continuous detection
+		physx::PxFilterData filterData = PhysXUtils::BuildFilterData(layerInfo, CollisionDetectionType::Continuous);
+
+		const auto actor = m_Controller->getActor();
+		PF_CORE_ASSERT(actor && actor->getNbShapes() == 1);
+		physx::PxShape* shape;
+		actor->getShapes(&shape, 1);
+		shape->setSimulationFilterData(filterData);
+		return true;
+	}
+
 	glm::vec3 PhysicsController::GetLocation() const
 	{
 		const auto& pxPos = m_Controller->getPosition();
@@ -171,14 +205,16 @@ namespace Proof
 		physx::PxControllerFilters filters;
 
 		if(IsGravityEnabled())
-			m_Speed += PhysicsEngine::GetSettings().Gravity * dt *GetGravityScale() ;
+			m_Speed -= PhysicsEngine::GetSettings().Gravity * dt * GetGravityScale() ;
 
 		glm::vec3 displacement = m_Displacement - PhysXUtils::FromPhysXVector(m_Controller->getUpDirection()) * m_Speed * dt;
 
 		m_CollisionFlags = m_Controller->move(PhysXUtils::ToPhysXVector(displacement), 0.0, static_cast<physx::PxF32>(dt), filters);
 
 		if (IsGrounded())
+		{
 			m_Speed = PhysicsEngine::GetSettings().Gravity * 0.01f; // setting speed back to zero here would be more technically correct,
+		}
 		// but a small non-zero gives better results (e.g. lessens jerkyness when walking down a slope)
 		m_Displacement = {};
 	}
@@ -186,19 +222,6 @@ namespace Proof
 	{
 		TransformComponent& transform = m_Entity.Transform();
 		transform.Location = GetLocation();
-
-		/*
-		TransformComponent& transform = m_Entity.Transform();
-		glm::vec3 scale = transform.Scale;
-		physx::PxTransform actorPose = m_Controller->get;
-		transform.Location = PhysXUtils::FromPhysXVector(actorPose.p);
-		//if (!IsAllRotationLocked())
-			transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPose.q));
-
-		auto scene = m_Entity.GetCurrentWorld();
-		scene->ConvertToLocalSpace(m_Entity);
-		transform.Scale = scale;
-		*/
 	}
 }
 

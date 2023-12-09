@@ -1,5 +1,6 @@
 #pragma once
 #include "Proof/Asset/Asset.h"
+#include <Physx/PxPhysicsAPI.h>
 
 namespace Proof
 {
@@ -31,11 +32,11 @@ namespace Proof
 
 		ASSET_CLASS_TYPE(PhysicsMaterial);
 
-		void* GetPhysicsBody()const { return m_RuntimeBody; }
+		physx::PxMaterial& GetPhysxMaterial()const { return *m_PhysxMaterial; }
 	private:
 		void Release();
 	private:
-		void* m_RuntimeBody = nullptr;
+		physx::PxMaterial* m_PhysxMaterial = nullptr;
 		friend class PhysicsEngine;
 		friend class PhysicsActor;
 		friend class ColliderShape;

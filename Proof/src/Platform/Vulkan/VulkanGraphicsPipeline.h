@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 #include "Proof/Core/Buffer.h"
 #include "Proof/Renderer/GraphicsPipeLine.h"
+#include <stack>
 namespace Proof
 {
 	namespace Utils {
@@ -154,13 +155,19 @@ namespace Proof
 		void PushCullMode(CullMode cull);
 		void PopCullMode();
 
-		const std::vector<float>& GetLineWidthStack()const { return m_LineWidthStack; }
-		const std::vector<DrawType>& GetDrawTypeStack()const { return m_DrawTypeStack; }
-		const std::vector<CullMode>& GetCullModeStack()const { return m_CullModeStack; }
+		void PushDepthTest(bool depthTest);
+		void PopDepthTest();
+
+		const std::stack<float>& GetLineWidthStack()const { return m_LineWidthStack; }
+		const std::stack<DrawType>& GetDrawTypeStack()const { return m_DrawTypeStack; }
+		const std::stack<CullMode>& GetCullModeStack()const { return m_CullModeStack; }
+		const std::stack<bool>& GetDepthTestStack()const { return m_DepthTestStack; }
+
 	private:
-		std::vector<float> m_LineWidthStack;
-		std::vector<DrawType> m_DrawTypeStack;
-		std::vector<CullMode> m_CullModeStack;
+		std::stack<float> m_LineWidthStack;
+		std::stack<DrawType> m_DrawTypeStack;
+		std::stack<CullMode> m_CullModeStack;
+		std::stack<bool> m_DepthTestStack;
 
 		VkRenderPass m_CompatibilityRenderPass =nullptr;
 		VkPipelineLayout m_PipeLineLayout  = nullptr;

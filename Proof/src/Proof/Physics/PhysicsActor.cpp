@@ -56,7 +56,6 @@ namespace Proof {
 		if (m_Entity.HasComponent<CapsuleColliderComponent>()) AddCollider(m_Entity.GetComponent<CapsuleColliderComponent>());
 		if (m_Entity.HasComponent<SphereColliderComponent>()) AddCollider(m_Entity.GetComponent<SphereColliderComponent>());
 		if (m_Entity.HasComponent<MeshColliderComponent>()) AddCollider(m_Entity.GetComponent<MeshColliderComponent>());
-		//if (m_Entity.HasComponent<MeshColliderComponent>()) AddMeshCollider();
 	}
 	Entity PhysicsActor::GetEntity()
 	{
@@ -70,11 +69,16 @@ namespace Proof {
 		m_RigidActor->getScene()->removeActor(*m_RigidActor);
 		m_RigidActor->release();
 	}
+	float PhysicsActor::GetInverseMass() const
+	{
+		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
 
+		return !IsDynamic() ? -rigidBody.Mass : m_RigidActor->is<physx::PxRigidDynamic>()->getInvMass();
+	}
 	bool PhysicsActor::IsDynamic()const
 	{
 		
-		return m_Entity.GetComponent<RigidBodyComponent>().m_RigidBodyType == RigidBodyType::Dynamic;
+		return m_Entity.GetComponent<RigidBodyComponent>().RigidBodyType == RigidBodyType::Dynamic;
 	}
 
 	void PhysicsActor::AddForce(glm::vec3 force, ForceMode mode, bool autoWake)
@@ -107,11 +111,36 @@ namespace Proof {
 	void PhysicsActor::SetRigidType(RigidBodyType type)
 	{
 		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
-		if (rigidBody.m_RigidBodyType == type)
+		if (rigidBody.RigidBodyType == type)
 			return;
 		Release();
-		rigidBody.m_RigidBodyType = type;
+		rigidBody.RigidBodyType = type;
 		Build();
+	}
+	bool PhysicsActor::SetSimulationData(uint32_t layerId)
+	{
+		for (auto& collider : m_Colliders)
+		{
+			if (collider->IsShared())
+				return false;
+		}
+
+		const PhysicsLayer& layerInfo = PhysicsLayerManager::GetLayer(layerId);
+
+		if (layerInfo.CollidesWith == 0)
+			return false;
+
+		if (IsDynamic())
+			m_FilterData = PhysXUtils::BuildFilterData(layerInfo, m_Entity.GetComponent<RigidBodyComponent>().CollisionDetection);
+		else
+			m_FilterData = PhysXUtils::BuildFilterData(layerInfo, CollisionDetectionType::Discrete);
+
+
+		for (auto& collider : m_Colliders)
+			collider->SetFilterData(m_FilterData);
+
+		return true;
+
 	}
 	bool PhysicsActor::IsSleeping()
 	{
@@ -406,16 +435,7 @@ namespace Proof {
 		PF_PROFILE_FUNC();
 
 		Count<MeshCollider> colliderAsset;
-		if (collider.OverrideCollider == false)
-		{
-			colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(m_Entity, collider);
-		}
-		else
-		{
-
-			if(AssetManager::HasAsset(collider.ColliderID))
-				colliderAsset = AssetManager::GetAsset<MeshCollider>(collider.ColliderID);
-		}
+		colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(m_Entity, collider);
 		if (colliderAsset == nullptr)
 			return;
 
@@ -493,12 +513,12 @@ namespace Proof {
 	
 	void PhysicsActor::AddRigidBody()
 	{
-		const auto& transformComponent = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
-		auto& rigidBodyComponent = m_Entity.GetComponent<RigidBodyComponent>();
+		const TransformComponent transformComponent = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
+		const RigidBodyComponent& rigidBodyComponent = m_Entity.GetComponent<RigidBodyComponent>();
 
-		physx::PxTransform physxTransform = PhysXUtils::ToPhysXTransform( m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity));
+		physx::PxTransform physxTransform = PhysXUtils::ToPhysXTransform(transformComponent);
 
-		if (rigidBodyComponent.m_RigidBodyType == RigidBodyType::Dynamic)
+		if (rigidBodyComponent.RigidBodyType == RigidBodyType::Dynamic)
 		{
 
 			physx::PxRigidDynamic* body = PhysicsEngine::GetPhysics()->createRigidDynamic(physxTransform);
@@ -516,16 +536,14 @@ namespace Proof {
 			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.Y);
 			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.Z);
 
-
-			//body->setSleepThreshold();
 			m_RigidActor = body;
 
 			const PhysicsSettings& settings = PhysicsEngine::GetSettings();
 			//m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags((physx::PxRigidDynamicLockFlags)m_LockFlags);
-			m_RigidActor->is<physx::PxRigidDynamic>()->setSolverIterationCounts(settings.SolverIterations, settings.SolverVelocityIterations);
-			m_RigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::Continuous);
-			m_RigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::ContinuousSpeculative);
-			m_RigidActor->is<physx::PxRigidDynamic>()->setSleepThreshold(settings.SleepThreshold);
+			body->setSolverIterationCounts(settings.SolverIterations, settings.SolverVelocityIterations);
+			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::Continuous);
+			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::ContinuousSpeculative);
+			body->setSleepThreshold(settings.SleepThreshold);
 		}
 		else
 		{
@@ -533,7 +551,12 @@ namespace Proof {
 		}
 		m_RigidActor->userData = this;
 
+		if (!PhysicsLayerManager::IsLayerValid(m_Entity.GetComponent<RigidBodyComponent>().PhysicsLayerID))
+		{
+			m_Entity.GetComponent<RigidBodyComponent>().PhysicsLayerID = 0;
+		}
 		m_PhysicsWorld->GetPhysicsScene()->addActor(*m_RigidActor);
+		SetSimulationData(rigidBodyComponent.PhysicsLayerID);
 	}
 
 	void PhysicsActor::SyncTransform()
@@ -545,8 +568,9 @@ namespace Proof {
 		if (!IsAllRotationLocked())
 			transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPose.q));
 
-		auto scene = m_Entity.GetCurrentWorld();
-		scene->ConvertToLocalSpace(m_Entity);
+		auto world = m_PhysicsWorld->GetWorld();
+		world->ConvertToLocalSpace(m_Entity);
 		transform.Scale = scale;
+
 	}
 }

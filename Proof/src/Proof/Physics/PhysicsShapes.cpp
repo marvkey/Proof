@@ -8,6 +8,7 @@
 #include "PhysicsMeshCache.h"
 #include "PhysicsMeshCooker.h"
 #include "PhysicsEngine.h"
+#include "PhysicsWorld.h"
 namespace Proof {
 	ColliderShape::ColliderShape(ColliderType type, Entity entity, bool isShared)
 		: m_Type(type), m_IsShared(isShared) ,m_Entity(entity)
@@ -18,28 +19,46 @@ namespace Proof {
 	}
 	void ColliderShape::Release()
 	{
-		if (m_Material)
-			m_Material->Release();
 	}
 	void ColliderShape::SetMaterial(Count<class PhysicsMaterial> material)
 	{
 		Release();
 		m_Material = material;
+
+		auto [shapes, numShapes] = GetShapes();
+		if (shapes == nullptr)
+			return;
+		for (physx::PxU32 i = 0; i < numShapes; ++i)
+		{
+
+			physx::PxMaterial* physxMat = &m_Material->GetPhysxMaterial();
+			//overrides all materials
+			shapes[i].setMaterials(&physxMat, 1); // Apply the material to the shape
+		}
 	}
 	BoxColliderShape::BoxColliderShape(const BoxColliderComponent& component, const PhysicsActor& actor, Entity entity)
 		: ColliderShape(ColliderType::Box, entity)
 	{
 		World* world = entity.GetCurrentWorld();
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
+		Count<PhysicsMaterial> material;
+		if (component.HasPhysicsMaterial())
+			material = component.GetPhysicsMaterial();
 
-		glm::vec3 colliderSize = glm::abs(worldTransform.Scale * component.Size);
+		if (!material)
+			material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
+
+		SetMaterial(material);
+
+		glm::vec3 halfSize = (component.Size / 2.f);
+		glm::vec3 colliderSize = glm::abs(worldTransform.Scale * halfSize);
+
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(colliderSize.x, colliderSize.y, colliderSize.z);
 		
-		physx::PxMaterial* physxMaterial = (physx::PxMaterial*)m_Material->GetPhysicsBody();
 
-		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, *physxMaterial);
+		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, m_Material->GetPhysxMaterial());
 
-		//m_Shape->setSimulationFilterData(actor.GetFilterData());
+		m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(component.Center, glm::vec3(0.0f)));
@@ -60,8 +79,9 @@ namespace Proof {
 		World* world = entity.GetCurrentWorld();
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
 
+		glm::vec3 halfSize = (size / 2.f);
+
 		glm::vec3 colliderSize = worldTransform.Scale * size; // should be negative
-		//colliderSize /= 2;
 
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(colliderSize.x, colliderSize.y, colliderSize.z);
 		m_Shape->setGeometry(geometry);
@@ -100,21 +120,28 @@ namespace Proof {
 		PF_CORE_ASSERT(m_Shape);
 		actor->detachShape(*m_Shape);
 	}
+	
 	SphereColliderShape::SphereColliderShape(const SphereColliderComponent& component, const PhysicsActor& actor, Entity entity)
 		: ColliderShape(ColliderType::Sphere, entity)
 	{
 		World* world = entity.GetCurrentWorld();
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
+		Count<PhysicsMaterial> material;
+		if (component.HasPhysicsMaterial())
+			material = component.GetPhysicsMaterial();
+
+		if (!material)
+			material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
+
+		SetMaterial(material);
 
 		worldTransform.Scale = glm::abs(worldTransform.Scale);
-
-		physx::PxMaterial* physxMaterial = (physx::PxMaterial*)m_Material->GetPhysicsBody();
 
 		float largestComponent = glm::max(worldTransform.Scale.x, glm::max(worldTransform.Scale.y, worldTransform.Scale.z));
 		physx::PxSphereGeometry geometry = physx::PxSphereGeometry(largestComponent * component.Radius);
 
-		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, *physxMaterial);
-		//m_Shape->setSimulationFilterData(actor.GetFilterData());
+		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, m_Material->GetPhysxMaterial());
+		m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(component.Center, glm::vec3(0.0f)));
@@ -162,62 +189,46 @@ namespace Proof {
 		PF_CORE_ASSERT(m_Shape);
 		actor->detachShape(*m_Shape);
 	}
-	struct CapusleData
-	{
-		glm::vec3 offsetRotation;
-		float radiusScale;
-		float scaleDirection;
-	};
-	static CapusleData GetCapsuleData(CapsuleDirection direction, TransformComponent& worldTransform)
-	{
-		worldTransform.Scale = glm::abs(worldTransform.Scale);
-
-		float radiusScale = 0;
-
-		float scaleDirection;
-		glm::vec3 offsetRotation;
-		switch (direction)
-		{
-			case CapsuleDirection::X:
-				{
-					scaleDirection = worldTransform.Scale.x;
-					offsetRotation = glm::vec3{ 0,0,0 };
-					radiusScale = glm::max(worldTransform.Scale.y, worldTransform.Scale.z);
-				}
-				break;
-			case CapsuleDirection::Y:
-				{
-					offsetRotation = glm::vec3{ 0,0,physx::PxHalfPi };
-					scaleDirection = worldTransform.Scale.y;
-					radiusScale = glm::max(worldTransform.Scale.x, worldTransform.Scale.z);
-				}
-				break;
-			case CapsuleDirection::Z:
-				{
-					offsetRotation = glm::vec3{ 0,physx::PxHalfPi,0 };
-					scaleDirection = worldTransform.Scale.z;
-					radiusScale = glm::max(worldTransform.Scale.y, worldTransform.Scale.x);
-				}
-				break;
-			default:
-				break;
-		}
-
-		return { offsetRotation,radiusScale,scaleDirection };
-	}
+	
 	CapsuleColliderShape::CapsuleColliderShape(const CapsuleColliderComponent& component, const PhysicsActor& actor, Entity entity)
 		: ColliderShape(ColliderType::Capsule, entity)
 	{
 		World* world = entity.GetCurrentWorld();
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
+		Count<PhysicsMaterial> material;
+		if (component.HasPhysicsMaterial())
+			material = component.GetPhysicsMaterial();
 
-		physx::PxMaterial* physxMaterial = (physx::PxMaterial*)m_Material->GetPhysicsBody();
+		if (!material)
+			material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
+
+		SetMaterial(material);
 
 		auto capsuleData = GetCapsuleData(component.Direction, worldTransform);
 
-		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * capsuleData.radiusScale, (component.Height / 2.0f) * capsuleData.scaleDirection);
-	//	m_Shape->setSimulationFilterData(actor.GetFilterData());
-		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, *physxMaterial);
+		//if (capsuleData.scaleDirection == 1.0f)
+		//	capsuleData.scaleDirection /= 2;
+		//if (capsuleData.radiusScale != 1)
+		//	capsuleData.radiusScale /= 2;
+		//else if(capsuleData.radiusScale == 1)
+		//	capsuleData.scaleDirection -= 0.50;
+		//else if (capsuleData.radiusScale / 2 > capsuleData.scaleDirection)
+		//{
+		//	float greaterValue = capsuleData.radiusScale / capsuleData.scaleDirection*2;
+		//	capsuleData.scaleDirection -= greaterValue *1.5;
+		//}
+		//
+		//if (capsuleData.radiusScale > 1)
+		//{
+		//
+		//	capsuleData.radiusScale /= 4;
+		//	capsuleData.radiusScale -= 1;
+		//}
+		
+
+		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * capsuleData.radiusScale, (component.Height/4) * worldTransform.Scale.y);
+		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, m_Material->GetPhysxMaterial());
+		m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(component.Center, capsuleData.offsetRotation));
@@ -337,6 +348,7 @@ namespace Proof {
 				actor.GetPhysXActor().attachShape(*shape);
 				m_Shapes.push_back(shape);
 			}
+			m_BlockSetMaterial = true;
 		}
 		else
 		{
@@ -374,8 +386,8 @@ namespace Proof {
 				physx::PxConvexMeshGeometry convexGeometry = physx::PxConvexMeshGeometry(convexMesh, physx::PxMeshScale(PhysXUtils::ToPhysXVector(submeshScale * worldTransform.Scale)));
 				convexGeometry.meshFlags = physx::PxConvexMeshGeometryFlag::eTIGHT_BOUNDS;
 
-				physx::PxShape* shape = PhysicsEngine::GetPhysics()->createShape(convexGeometry, *(physx::PxMaterial*)m_Material->GetPhysicsBody(), !component.UseSharedShape);
-				//shape->setSimulationFilterData(actor.GetFilterData());
+				physx::PxShape* shape = PhysicsEngine::GetPhysics()->createShape(convexGeometry, m_Material->GetPhysxMaterial(), !component.UseSharedShape);
+				shape->setSimulationFilterData(actor.GetFilterData());
 				shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, colliderAsset->CollisionComplexity != ECollisionComplexity::UseComplexAsSimple && !component.IsTrigger);
 				if(component.UseSharedShape == false)
 					shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
@@ -471,6 +483,12 @@ namespace Proof {
 		m_Shapes.clear();
 	}
 
+	void ConvexMeshShape::SetMaterial(Count<class PhysicsMaterial> material)
+	{
+		if (!m_BlockSetMaterial)
+			ColliderShape::SetMaterial(material);
+	}
+
 	TriangleMeshShape::TriangleMeshShape(MeshColliderComponent& component, const PhysicsActor& actor, Entity entity)
 		: ColliderShape(ColliderType::TriangleMesh, entity, component.UseSharedShape)
 	{
@@ -487,6 +505,7 @@ namespace Proof {
 				actor.GetPhysXActor().attachShape(*shape);
 				m_Shapes.push_back(shape);
 			}
+			m_BlockSetMaterial = true;
 		}
 		else
 		{
@@ -525,11 +544,11 @@ namespace Proof {
 				{
 					physx::PxTriangleMeshGeometry triangleGeometry = physx::PxTriangleMeshGeometry(trimesh, physx::PxMeshScale(PhysXUtils::ToPhysXVector(submeshScale * worldTransform.Scale)));
 
-					physx::PxShape* shape = PhysicsEngine::GetPhysics()->createShape(triangleGeometry, *(physx::PxMaterial*)m_Material->GetPhysicsBody(), !component.UseSharedShape);
+					physx::PxShape* shape = PhysicsEngine::GetPhysics()->createShape(triangleGeometry, m_Material->GetPhysxMaterial(), !component.UseSharedShape);
 					shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, colliderAsset->CollisionComplexity == ECollisionComplexity::UseComplexAsSimple);
 					shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, false);
 					shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, colliderAsset->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex);
-					//shape->setSimulationFilterData(actor.GetFilterData());
+					shape->setSimulationFilterData(actor.GetFilterData());
 					shape->setLocalPose(PhysXUtils::ToPhysXTransform(submeshTranslation, submeshRotation));
 					shape->userData = this;
 
@@ -599,6 +618,12 @@ namespace Proof {
 		}
 
 		m_Shapes.clear();
+	}
+
+	void TriangleMeshShape::SetMaterial(Count<class PhysicsMaterial> material)
+	{
+		if (!m_BlockSetMaterial)
+			ColliderShape::SetMaterial(material);
 	}
 
 	SharedShapeManager::SharedShapeData* SharedShapeManager::CreateSharedShapeData(ColliderType colliderType, AssetID colliderHandle)

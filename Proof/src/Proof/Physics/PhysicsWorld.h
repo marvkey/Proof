@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "CollisonCallback.h"
-#include <PxPhysicsAPI.h>
+#include "PhysicsSimulationCallback.h"
+#include <Physx/PxPhysicsAPI.h>
 
 namespace Proof {
 	class PhysicsWorld : public RefCounted
@@ -11,13 +11,17 @@ namespace Proof {
 		PhysicsWorld(Count<class World> world);
 		virtual ~PhysicsWorld();
 		void Simulate(float deltaTime);
+
+		void StartWorld();
+		void EndWorld();
 		Count<World> GetWorld() 
 		{
 			return m_World;
 		}
 
-		physx::PxScene* GetPhysicsScene() {
-			return m_Scene;
+		physx::PxScene* GetPhysicsScene() 
+		{
+			return m_PhysXScene;
 		}
 		bool HasActor(class Entity entity);
 		Count<class PhysicsActor> CreateActor(class Entity entity);
@@ -28,21 +32,27 @@ namespace Proof {
 		Count<class PhysicsController> CreateController(Entity entity);
 		Count<class PhysicsController> GetController(Entity entity);
 		void RemoveController(Entity entity);
+		const std::unordered_map<UUID, Count<PhysicsActor>>& GetActors() const { return m_Actors; }
 
 		physx::PxControllerManager* GetPhysXControllerManager() const { return m_PhysXControllerManager; }
+		const physx::PxSimulationStatistics& GetSimulationStats() const { return m_SimulationStats; }
 	private:
-		void StartWorld();
-		void EndWorld();
 
 		bool Advance(float deltaTime);
+		void SubStepStrategy(float deltaTime);
+
 		void CreateRegions();
 	private:
+		physx::PxSimulationStatistics m_SimulationStats;
+
 		float m_Accumulator = 0.0f;
 		// needs to be changed have a way to figure this out
 		float m_SubStepSize = 1.0f / 60.0f;
-		
-		class physx::PxScene* m_Scene = nullptr;
-		class CollisionCallback m_CollisionCallback;
+		uint32_t m_NumSubSteps = 0;
+		const uint32_t c_MaxSubSteps = 8;
+
+		class physx::PxScene* m_PhysXScene = nullptr;
+		class PhysicsSimulationCallback m_CollisionCallback;
 		// inserting an element with this technique makes 
 		// creates a copy nd uses desctrocture
 		// so we would use Count so it is created once instead of twice

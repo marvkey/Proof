@@ -24,7 +24,8 @@
 namespace Proof
 {
 
-	Count<PhysicsMaterial> BoxColliderComponent::GetPhysicsMaterial(){
+	Count<PhysicsMaterial> BoxColliderComponent::GetPhysicsMaterial()const
+	{
 		if (m_PhysicsMaterialPointerID == 0)
 		{
 			return nullptr;
@@ -36,7 +37,8 @@ namespace Proof
 		m_PhysicsMaterialPointerID = 0;
 		return nullptr;
 	}
-	Count<PhysicsMaterial> SphereColliderComponent::GetPhysicsMaterial(){
+	Count<PhysicsMaterial> SphereColliderComponent::GetPhysicsMaterial()const 
+	{
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
@@ -48,7 +50,8 @@ namespace Proof
 		return a;
 	}
 
-	Count<PhysicsMaterial> CapsuleColliderComponent::GetPhysicsMaterial(){
+	Count<PhysicsMaterial> CapsuleColliderComponent::GetPhysicsMaterial()const 
+	{
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
@@ -60,7 +63,8 @@ namespace Proof
 		}
 		return a;
 	}
-	Count<PhysicsMaterial> MeshColliderComponent::GetPhysicsMaterial() {
+	Count<PhysicsMaterial> MeshColliderComponent::GetPhysicsMaterial() const
+	{
 		if (m_PhysicsMaterialPointerID == 0) {
 			return nullptr;
 		}
@@ -101,7 +105,7 @@ namespace Proof
 	
 
 
-	void DynamicMeshComponent::SetMesh(UUID ID, bool copyMaterialTable)
+	void DynamicMeshComponent::SetMesh(AssetID ID, bool copyMaterialTable)
 	{
 		//#ifdef PF_ENABLE_DEBUG
 		if (!AssetManager::HasAsset(ID))return;

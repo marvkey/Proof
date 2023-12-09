@@ -116,23 +116,26 @@ namespace Proof
 			Location = other.Location;
 			Rotation = other.Rotation;
 			Scale = other.Scale;
+			this->RotationEuler = other.RotationEuler;
 		}
 		TransformComponent operator+ (const TransformComponent& other)const {
 			TransformComponent temp;
 			temp.Location = this->Location + other.Location;
 			temp.Rotation = this->Rotation + other.Rotation;
 			temp.Scale = this->Scale + other.Scale;
+			temp.RotationEuler = this->RotationEuler *other.RotationEuler;
 			return temp;
 		}
 		// returns as radians
 		glm::vec3 GetRotationEuler() const
 		{
-			return glm::eulerAngles(Rotation);
+			return RotationEuler;
+			//return glm::eulerAngles(Rotation);
 		}
 		// pass as radians
 		void SetRotationEuler(const glm::vec3& euler)
 		{
-			///RotationEuler = euler;
+			RotationEuler = euler;
 			Rotation = glm::quat(euler);
 		}
 		glm::mat4 GetRotationMatrix() const
@@ -148,7 +151,7 @@ namespace Proof
 		void SetRotation(const glm::quat& quat)
 		{
 			Rotation = quat;
-			//RotationEuler = glm::eulerAngles(Rotation);
+			RotationEuler = glm::eulerAngles(Rotation);
 		}
 		glm::mat4 GetTransform() const {
 			return glm::translate(glm::mat4(1.0f), Location) 
@@ -188,7 +191,7 @@ namespace Proof
 		void SetTransform(const glm::mat4& transform)
 		{
 			MathResource::DecomposeTransform(transform, Location, Rotation, Scale);
-			//RotationEuler = glm::eulerAngles(Rotation);
+			RotationEuler = glm::eulerAngles(Rotation);
 		}
 	private:
 
@@ -210,7 +213,7 @@ namespace Proof
 		// Accordingly, we store Euler for "editor" stuff that humans work with, 
 		// and quats for everything else.  The two are maintained in-sync via the SetRotation()
 		// methods.
-	//	glm::vec3 RotationEuler = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 RotationEuler = { 0.0f, 0.0f, 0.0f };
 		glm::quat Rotation = { 1.0f, 0.0f, 0.0f, 0.0f };
 		//friend class World;
 		//friend class SceneSerializer;
@@ -293,7 +296,7 @@ namespace Proof
 		{
 		}
 		Count<MaterialTable> MaterialTable = Count<class MaterialTable>::Create();
-		void SetMesh(UUID ID, bool takeMaterialTable = true);
+		void SetMesh(AssetID ID, bool takeMaterialTable = true);
 		void RemoveMesh();
 
 		Count<class DynamicMesh> GetMesh();
@@ -312,7 +315,7 @@ namespace Proof
 		friend class SceneSerializer;
 		friend class SceneRendererUI;
 		friend class Editore3D;
-		UUID m_MeshID;
+		AssetID m_MeshID;
 		uint32_t m_SubmeshIndex = 0;
 	};
 	struct Proof_API SpriteComponent{
@@ -431,17 +434,18 @@ namespace Proof
 		BoxColliderComponent(const BoxColliderComponent&) = default;
 		BoxColliderComponent() = default;
 		glm::vec3 Center = { 0,0,0 };
-		glm::vec3 Size= { 1,1,1 };
+		glm::vec3 Size= { 1,1,1 }; // would be halfed to be half size in physx
 		bool IsTrigger = false;
 
-		void RemovePhysicsMaterial() {
+		void RemovePhysicsMaterial() const
+		{
 			m_PhysicsMaterialPointerID = 0;
 		}
 
-		bool HasPhysicsMaterial() {
+		bool HasPhysicsMaterial()const {
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
 
 	private:
 		mutable UUID m_PhysicsMaterialPointerID = 0;
@@ -457,17 +461,19 @@ namespace Proof
 		SphereColliderComponent(const SphereColliderComponent&) = default;
 		SphereColliderComponent() = default;
 		glm::vec3 Center = { 0,0,0 };
-		float Radius = 1.0f;
+		float Radius = 0.5f;
 		bool IsTrigger = false;
-		void RemovePhysicsMaterial() {
+		void RemovePhysicsMaterial()
+		{
 			m_PhysicsMaterialPointerID = 0;
 		}
-		bool HasPhysicsMaterial() {
+		bool HasPhysicsMaterial()const 
+		{
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
 	private:
-		UUID m_PhysicsMaterialPointerID = 0;
+		mutable UUID m_PhysicsMaterialPointerID = 0;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -475,26 +481,29 @@ namespace Proof
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
 	};
-	enum class CapsuleDirection {
+	enum class CapsuleDirection 
+	{
 		X = 0,
 		Y = 1,
 		Z = 2
 	};
-	struct Proof_API CapsuleColliderComponent {
+	struct CapsuleColliderComponent 
+	{
 		CapsuleColliderComponent(const CapsuleColliderComponent&) = default;
 		CapsuleColliderComponent() = default;
 		glm::vec3 Center = { 0,0,0 };
 		float Radius = 0.5f;
-		float Height = 2.0f;
+		float Height = 2.0f; // The height will be hafled as it is passed into physx
 		CapsuleDirection Direction = CapsuleDirection::Y;
 		bool IsTrigger = false;
 		void RemovePhysicsMaterial() {
 			m_PhysicsMaterialPointerID = 0;
 		}
-		bool HasPhysicsMaterial(){
+		bool HasPhysicsMaterial()const
+		{
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
 	private:
 		friend class World;
 		friend class SceneSerializer;
@@ -509,20 +518,24 @@ namespace Proof
 	{
 		MeshColliderComponent(const MeshColliderComponent&) = default;
 		MeshColliderComponent() = default;
+		MeshColliderComponent(AssetID colliderID, uint32_t submeshIndex = 0)
+			: ColliderID(colliderID), SubMeshIndex(submeshIndex)
+		{
+		}
 		void RemovePhysicsMaterial() {
 			m_PhysicsMaterialPointerID = 0;
 		}
-		bool HasPhysicsMaterial() {
+		bool HasPhysicsMaterial() const
+		{
 			return GetPhysicsMaterial() == nullptr ? false : true;
 		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial();
+		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
+
+		AssetID ColliderID = 0; // even if its a memory asset it will be saved on disk by the physics system 
+		uint32_t SubMeshIndex = 0;//only if collider id is a dynamic mesh 
 
 		bool UseSharedShape = false;
 		bool IsTrigger = false;
-
-		bool OverrideCollider = false;
-		AssetID ColliderID = 0; // even if its a memory asset it will be saved on disk by the physics system 
-		uint32_t SubMeshIndex = 0;//only if collider id is a dynamic mesh 
 	private:
 		friend class World;
 		friend class SceneSerializer;
@@ -532,51 +545,14 @@ namespace Proof
 		friend class PhysicsEngine;
 		mutable UUID m_PhysicsMaterialPointerID = 0;
 	};
-	enum class RigidBodyType {
-		Static,
-		Dynamic
-	};
-	enum class ForceMode {
-		Force,				
-		Impule,			
-		VelocityChange,	
-		Acceleration
-	};
-	
-	class Proof_API RigidBodyComponent {
-	public:
-		RigidBodyComponent(const RigidBodyComponent&) = default;
-		RigidBodyComponent() = default;
-		
-		float Mass = 1.0f;
-		float AngularDrag = 0.05f;
-		float LinearDrag = 0.0f;
-		bool Gravity = true;
-		bool Kinematic = false;
-		CollisionDetectionType CollisionDetection = CollisionDetectionType::Discrete;
-
-		VectorTemplate<bool>FreezeLocation = { false,false,false };
-		VectorTemplate<bool>FreezeRotation = { false,false,false };
-
-		RigidBodyType GetType() {
-			return m_RigidBodyType;
-		}
-	private:
-		RigidBodyType m_RigidBodyType = RigidBodyType::Static;
-		friend class World;
-		friend class SceneSerializer;
-		friend class SceneHierachyPanel;
-		friend class WorldRenderer;
-		friend class PhysicsActor;
-	};
-
 	struct CharacterControllerComponent
 	{
 		CharacterControllerComponent(const CharacterControllerComponent&) = default;
 		CharacterControllerComponent() = default;
+		uint32_t PhysicsLayerID = 0;
 		float SlopeLimitRadians = 0.707; //45 degree
 		float StepOffset = 0.3f; // min 0 max max float 
-		float SkinOffset = 0.1f; // min shoul dbe non zero positive and maximum should be max flaot
+		float SkinOffset = 0.01f; // min shoul dbe non zero positive and maximum should be max flaot
 		bool GravityEnabled = true;
 		float GravityScale = 1.0f;
 		float MinMoveDistance = 0.0f; //min 0
@@ -588,12 +564,38 @@ namespace Proof
 		glm::vec3 Center = { 0,0,0 };
 		// capsule info
 		float Radius = 0.5f;
-		float Height = 2.0f;
-		CapsuleDirection Direction = CapsuleDirection::Y;
-
+		float Height = 2.0f; // the height will be half as it is passe into physx
 		// Box Info
-		glm::vec3 Size = glm::vec3 { 1,1,1 };
+		glm::vec3 Size = glm::vec3{ 1,1,1 }; // the size will be halfed as it is passed into Physx
 	};
+
+	class RigidBodyComponent 
+	{
+	public:
+		RigidBodyComponent(const RigidBodyComponent&) = default;
+		RigidBodyComponent() = default;
+		
+		RigidBodyType RigidBodyType = RigidBodyType::Static;
+		uint32_t PhysicsLayerID = 0;
+
+		float Mass = 1.0f;
+		float AngularDrag = 0.05f;
+		float LinearDrag = 0.01f;
+		bool Gravity = true;
+		bool Kinematic = false;
+		CollisionDetectionType CollisionDetection = CollisionDetectionType::Discrete;
+
+		VectorTemplate<bool>FreezeLocation = { false,false,false };
+		VectorTemplate<bool>FreezeRotation = { false,false,false };
+		
+		friend class World;
+		friend class SceneSerializer;
+		friend class SceneHierachyPanel;
+		friend class WorldRenderer;
+		friend class PhysicsActor;
+	};
+
+
 	struct ScriptComponentsClassesData
 	{
 		std::string ClassName;

@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "vulkan/vulkan.h"
-#include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
+#include "VulkanUtils/vk_mem_alloc.h"
 
 namespace Proof{
 	enum class VulkanMemmoryUsage

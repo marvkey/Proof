@@ -11,7 +11,7 @@
 #include "Proof/Core/Window.h"
 #include "GLFW/glfw3.h"
 #define VMA_IMPLEMENTATION
-#include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
+#include "VulkanUtils/vk_mem_alloc.h"
 #include "VulkanAllocator.h"
 // images for vulkan swapchaing
 /*

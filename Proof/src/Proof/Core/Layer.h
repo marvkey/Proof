@@ -2,7 +2,7 @@
 #include "Proof/Core/Log.h"
 #include "FrameTime.h"
 #include "Proof/Events/Event.h"
-#include "Imgui/imgui.h"
+#include "imgui.h"
 #include <iostream>
 namespace Proof {
 	class Layer : public RefCounted {

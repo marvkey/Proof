@@ -7,6 +7,7 @@
 #include "Proof/Scene/Camera/EditorCamera.h"
 #include "Texture.h"
 #include "UniformBuffer.h"
+#include "RenderereCustomTypeSet.h"
 namespace Proof {
 
 	struct LineVertex
@@ -36,6 +37,7 @@ namespace Proof {
 	struct SpriteComponent;
 	struct TransformComponent;
 	struct AABB;
+	class VertexBufferSet;
 
 	struct Renderer2DStorage {
 		Count<UniformBufferSet> CameraBuffer = nullptr;
@@ -68,12 +70,17 @@ namespace Proof {
 		float TextDrawTime = 0.0f;
 		float TotalRenderTime = 0.0f;
 	};
+
+	struct Renderer2DContextSettings
+	{
+		bool RenderOnTop = false;
+	};
 	class Renderer2D : RefCounted {
 		friend class Camera;
 	public:
 		Renderer2D();
 		~Renderer2D();
-		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position);
+		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Renderer2DContextSettings settigs = Renderer2DContextSettings());
 		void DrawQuad(const glm::vec3& Location);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& Size);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& RotationRadians,const glm::vec4& Color);
@@ -91,6 +98,35 @@ namespace Proof {
 		void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		void DrawAABB(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		void DrawAABBSubMeshes(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawCylinder(glm::vec3 position, glm::vec3 rotationRadians, float height, float radius, glm::vec4 color = glm::vec4(1.0f), bool drawFromBase = true);
+		void DrawCapsule(glm::vec3 position, glm::vec3 rotationRadian, float height, float radius, glm::vec4 color = glm::vec4(1.0f));
+
+		void DrawRay(const glm::vec3& origin, const glm::vec3& direction, float length, const glm::vec4& color = glm::vec4(1.0f));
+		//lenght is gottenform the direction
+		void DrawRay(const glm::vec3& origin, const glm::vec3& direction, const glm::vec4& color = glm::vec4(1.0f));
+
+		void DrawArc(float startAngleRadians, float endAngleRadians, glm::vec3 position, glm::vec3 rotationRadians, float radius, glm::vec4 color = glm::vec4(1.0f), bool drawChord = false, bool drawSector = false,uint32_t arcSegments = 32);
+		void DrawCircle(const glm::vec3& p0, const glm::vec3& rotation, float radius, const glm::vec4& color);
+		void DrawCircle(const glm::mat4& transform, const glm::vec4& color);
+
+		//not working
+		void DrawHalfCircle(const glm::vec3& p0, const glm::vec3& rotation, float radius, const glm::vec4& color);
+		//not working
+		void DrawHalfCircle(const glm::mat4& transform, const glm::vec4& color);
+		//not working
+		void DrawSemiCircle(const glm::mat4& transform, const glm::vec4& color);
+		//not working
+		void DrawSemiCircle(const glm::vec3& p0, const glm::vec3& rotation, float radius, const glm::vec4& color);
+		//not working
+		void DrawDebugHemisphere(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color = glm::vec4(1.0f));
+
+		void DrawDebugSphere(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawDebugCube(const glm::vec3& position, const glm::vec3& rotation, glm::vec3 size = glm::vec3(1), const glm::vec4& color = glm::vec4(1.0f));
+		//void DrawDebugHemisphereFlatBase(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color = glm::vec4(1.0f));
+		
+		// Thickness is between 0 and 1
+		void FillCircle(const glm::vec2& p0, float radius, const glm::vec4& color, float thickness = 0.05f);
+		void FillCircle(const glm::vec3& p0, float radius, const glm::vec4& color, float thickness = 0.05f);
 
 		// chagne to u32stirng in the future
 		void DrawString(const std::string& text, Count<class Font> font,const TextParams& textparams, const glm::mat4& transform);
@@ -127,34 +163,41 @@ namespace Proof {
 		static inline const uint32_t c_MaxTextureSlots = 32; //1-31slots
 
 		std::array<Count<Texture2D>, c_MaxTextureSlots> m_QuadTextures;
-		Count<class VertexBuffer> m_QuadVertexBuffer;
+		Count<class VertexBufferSet> m_QuadVertexBuffer;
 		float m_QuadTextureSlotIndex = 1; //0 white texture
 		Count<class RenderPass> m_QuadPass;
+		Count<class RenderPass> m_QuadOnTopPass;
 
 		uint32_t m_QuadIndexCount = 0;
-		Vertex2D* m_QuadVertexBufferBase = nullptr;
+		RendererCustomTypeSet<Vertex2D*> m_QuadVertexBufferBase = nullptr;
 		Vertex2D* m_QuadVertexBufferPtr = nullptr;
 
-
 		uint32_t m_TextIndexCount = 0;
-		TextVertex* m_TextVertexBufferBase = nullptr;
+		RendererCustomTypeSet<TextVertex*> m_TextVertexBufferBase = nullptr;
 		TextVertex* m_TextVertexBufferPtr = nullptr;
 		Count<class RenderPass> m_TextPass;
+		Count<class RenderPass> m_TextOnTopPass;
 		std::array<Count<Font>, c_MaxTextureSlots> m_FontTextures;
-		Count<class VertexBuffer> m_TextVertexBuffer;
+		Count<VertexBufferSet> m_TextVertexBuffer;
 		float m_TextFontSlotIndex = 1; //0 default font
 
-
 		Count<RenderPass> m_LinePass;
-		Count<VertexBuffer> m_LineVertexBuffer;
+		Count<RenderPass> m_LineOnTopPass;
+		Count<VertexBufferSet> m_LineVertexBuffer;
 		Count<IndexBuffer> m_LineIndexBuffer;
 		uint32_t m_LineIndexCount = 0;
-		LineVertex* m_LineVertexBufferBase;
+		RendererCustomTypeSet<LineVertex*> m_LineVertexBufferBase;
 		LineVertex* m_LineVertexBufferPtr;
 
+		Count<RenderPass> m_CircleRenderPass;
+		Count<RenderPass> m_CircleOnTopRenderPass;
+		Count<VertexBufferSet> m_CircleVertexBuffer;
+		uint32_t m_CircleIndexCount = 0;
+		RendererCustomTypeSet<CircleVertex*> m_CircleVertexBufferBase = nullptr;
+		CircleVertex* m_CircleVertexBufferPtr = nullptr;
 
 		Count<UniformBufferSet> m_UBCamera = nullptr;
-
+		Renderer2DContextSettings m_ContextSettings;
 	};
 }
 

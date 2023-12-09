@@ -25,8 +25,10 @@
 #include "Proof/Physics/PhysicsActor.h"
 #include "Proof/Physics/PhysicsMeshCache.h"
 #include "Proof/Physics/MeshCollider.h"
+#include "Proof/Physics/PhysicsShapes.h"
 
 #include "Proof/Scripting/ScriptWorld.h"
+#include <glm/gtx/euler_angles.hpp>
 namespace Proof {
 	World::World(const std::string& name, UUID ID):
 		Name(name)
@@ -71,12 +73,18 @@ namespace Proof {
 		}
 	}
 	
-
+	glm::vec3 GetAnyPerpendicularUnitVector(const glm::vec3& vec)
+	{
+		if (vec.y != 0.0f || vec.z != 0.0f)
+			return glm::vec3(1, 0, 0);
+		else
+			return glm::vec3(0, 1, 0);
+	}
 	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane)
 	{
 		PF_PROFILE_FUNC();
 		m_Camera = camera;
-		#if 1
+		m_CameraPositon = cameraLocation;
 		worldRenderer->SetContext(this);
 		worldRenderer->BeginScene(camera, cameraLocation, nearPlane, farPlane);
 
@@ -210,7 +218,6 @@ namespace Proof {
 				}
 			}
 		}
-		#if 1
 		// render meshes
 		{
 			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
@@ -253,153 +260,94 @@ namespace Proof {
 				}
 			}
 		}
-		#endif
 		RenderPhysicsDebug(worldRenderer, false);
 
 		worldRenderer->EndScene();
-		#endif
 		// render 2d
-		#if 1
 		Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
+		RenderPhysicsDebug2D(worldRenderer, false);
 		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(),GlmVecToProof( cameraLocation));
 
 		renderer2D->SetTargetFrameBuffer(worldRenderer->GetExternalCompositePassFrameBuffer());
 
-		auto view = m_Registry.view<TransformComponent, SpriteComponent>();
-		for (auto entity : view)
 		{
-			Entity e = Entity(entity, this);
-			auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteComponent>(entity);
-			if (spriteRendererComponent.Texture)
+			auto view = m_Registry.view<TransformComponent, SpriteComponent>();
+			for (auto entity : view)
 			{
+				Entity e = Entity(entity, this);
+				auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteComponent>(entity);
+				if (spriteRendererComponent.Texture)
+				{
 					//Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(spriteRendererComponent.Texture);
 					renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
-			}
-			else
-			{
-				renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
-			}
-		}
-		auto group = m_Registry.group<TransformComponent>(entt::get<TextComponent>);
-		for (auto entity : group)
-		{
-			auto [transformComponent, textComponent] = group.get<TransformComponent, TextComponent>(entity);
-			Entity e = Entity(entity, this);
-			auto font = Font::GetDefault();
-
-			TextParams params;
-			params.Color = textComponent.Colour;
-			params.Kerning = textComponent.Kerning;
-			params.LineSpacing = textComponent.LineSpacing;
-			if(textComponent.UseLocalRotation)
-				renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransformUsingLocalRotation(e));
-			else
-				renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
-		}
-
-		// render AABB
-		/*
-		{
-			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-			for (auto entity : group)
-			{
-				auto [transformComponent, staticMeshComponent] = group.get<TransformComponent, MeshComponent>(entity);
-				if (!staticMeshComponent.Visible)
-					continue;
-
-				auto mesh = staticMeshComponent.GetMesh();
-				if (mesh)
+				}
+				else
 				{
-					Entity e = Entity(entity, this);
-					glm::mat4 transform = GetWorldSpaceTransform(e);
-
-					//if (SelectionManager::IsEntityOrAncestorSelected(e))
-					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
-					//else
-					//renderer2D->DrawAABB(mesh,  transform);
-					//renderer2D->DrawAABBSubMeshes(mesh, transform);
-					//renderer2D->DrawAABB(mesh, transform);
-					//AABB bouding = { { -1.0f, -1.0f, -1.0f} ,{1.0f, 1.0f, 1.0f} };
-					//renderer2D->DrawAABB(bouding, transform);
-
+					renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
 				}
 			}
 		}
-		*/
+		{
+			auto view = m_Registry.view<TransformComponent, TextComponent>();
 
-		//renderer2D->DrawQuad(glm::vec3{0}, worldRenderer->m_BRDFLUT);
+			for (auto entity : view)
+			{
+				auto [transformComponent, textComponent] = view.get<TransformComponent, TextComponent>(entity);
+				Entity e = Entity(entity, this);
+				auto font = Font::GetDefault();
 
-		//renderer2D->DrawLine({ 0,0,0 }, { 0,0,10 });
+				TextParams params;
+				params.Color = textComponent.Colour;
+				params.Kerning = textComponent.Kerning;
+				params.LineSpacing = textComponent.LineSpacing;
+				if (textComponent.UseLocalRotation)
+					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransformUsingLocalRotation(e));
+				else
+					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
+			}
+		}
+
 		renderer2D->EndContext();
-		#endif
-
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)
 	{
 		if (renderer->GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::None)
 			return;
 
+#if 0
 		{
-		
-			auto view = m_Registry.view<BoxColliderComponent>();
-			Count<Mesh> cubeMesh = PhysicsMeshCache::GetBoxColliderMesh();
+			auto view = m_Registry.view<CapsuleColliderComponent>();
+			Count<Mesh> capsuleDebugMesh = PhysicsMeshCache::GetCapsuleColliderMesh();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto  worldtransformComponent = GetWorldSpaceTransformComponent(e);
+				const auto& collider = e.GetComponent<CapsuleColliderComponent>();
+				auto capsuleData = GetCapsuleData(collider.Direction, worldtransformComponent);
+				glm::mat4 colliderTransform = glm::mat4(1.0f); // Initialize with identity matrix
+				colliderTransform = glm::translate(colliderTransform, collider.Center + worldtransformComponent.Location);
 
-			for (auto entity : view)
-			{
-				Entity e = { entity, this };
-				glm::mat4 transform = GetWorldSpaceTransform(e);
-				const auto& collider = e.GetComponent<BoxColliderComponent>();
-				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0f), collider.Center) * glm::scale(glm::mat4(1.0f), collider.Size *2.0f);
-				glm::mat4 finalTransform = transform * colliderTransform;
-				renderer->SubmitPhysicsDebugMesh(cubeMesh, finalTransform);
-			}
-		}
-		{
-			auto view = m_Registry.view<SphereColliderComponent>();
-			Count<Mesh> sphereDebugMesh = PhysicsMeshCache::GetSphereColliderMesh();
-			for (auto entity : view)
-			{
-				Entity e = { entity, this };
-				glm::mat4 transform = GetWorldSpaceTransform(e);
-				const auto& collider = e.GetComponent<SphereColliderComponent>();
-				glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0), collider.Center) * glm::scale(glm::mat4(1.0f), glm::vec3(collider.Radius * 1.0f));
-				renderer->SubmitPhysicsDebugMesh(sphereDebugMesh, transform * colliderTransform);
-			}
-		}
-		{
-			{
-				auto view = m_Registry.view<CapsuleColliderComponent>();
-				Count<Mesh> capsuleDebugMesh = PhysicsMeshCache::GetCapsuleColliderMesh();
-				for (auto entity : view)
+				if (collider.Direction == CapsuleDirection::X)
 				{
-					Entity e = { entity, this };
-					glm::mat4 transform = GetWorldSpaceTransform(e);
-					const auto& collider = e.GetComponent<CapsuleColliderComponent>();
-					glm::mat4 colliderTransform = glm::mat4(1.0f); // Initialize with identity matrix
-
-					if (collider.Direction == CapsuleDirection::X)
-					{
-						colliderTransform = glm::rotate(colliderTransform, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate 90 degrees around X-axis
-					}
-					else if (collider.Direction == CapsuleDirection::Z)
-					{
-						colliderTransform = glm::rotate(colliderTransform, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate 90 degrees around Z-axis
-					}
-					// Apply translation
-					colliderTransform = glm::translate(colliderTransform, collider.Center);
-
-					// Adjust scaling based on capsule direction
-					float scale_x = (collider.Direction == CapsuleDirection::X) ? (collider.Height) : (collider.Radius * 2.0f);
-					float scale_y = (collider.Direction == CapsuleDirection::Y) ? (collider.Height) : (collider.Radius * 2.0f);
-					float scale_z = (collider.Direction == CapsuleDirection::Z) ? (collider.Height) : (collider.Radius * 2.0f);
-
-					colliderTransform = glm::scale(colliderTransform, glm::vec3(scale_x, scale_y, scale_z));
-					//glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0), ProofToglmVec(collider.OffsetLocation)) * glm::scale(glm::mat4(1.0f), glm::vec3(collider.Radius * 2.0f, collider.Height, collider.Radius * 2.0f));
-					renderer->SubmitPhysicsDebugMesh(capsuleDebugMesh, transform * colliderTransform);
+					colliderTransform = glm::rotate(colliderTransform, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate 90 degrees around X-axis
 				}
+				else if (collider.Direction == CapsuleDirection::Z)
+				{
+					colliderTransform = glm::rotate(colliderTransform, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate 90 degrees around Z-axis
+				}
+				// Apply translation
+				colliderTransform = colliderTransform * glm::mat4(worldtransformComponent.GetRotation());
+				// Adjust scaling based on capsule direction
+				float scale_x = (collider.Direction == CapsuleDirection::X) ? (collider.Height) * capsuleData.scaleDirection : (collider.Radius * 2.0f) * capsuleData.radiusScale;
+				float scale_y = (collider.Direction == CapsuleDirection::Y) ? (collider.Height) * capsuleData.scaleDirection : (collider.Radius * 2.0f) * capsuleData.radiusScale;
+				float scale_z = (collider.Direction == CapsuleDirection::Z) ? (collider.Height) * capsuleData.scaleDirection : (collider.Radius * 2.0f) * capsuleData.radiusScale;
+					
+				colliderTransform = glm::scale(colliderTransform, glm::vec3(scale_x, scale_y, scale_z));
+				//glm::mat4 colliderTransform = glm::translate(glm::mat4(1.0), ProofToglmVec(collider.OffsetLocation)) * glm::scale(glm::mat4(1.0f), glm::vec3(collider.Radius * 2.0f, collider.Height, collider.Radius * 2.0f));
+				renderer->SubmitPhysicsDebugMesh(capsuleDebugMesh, colliderTransform);
 			}
 		}
-
+#endif
 		{
 
 			auto view = m_Registry.view<MeshColliderComponent>();
@@ -407,22 +355,156 @@ namespace Proof {
 			{
 				Entity e = { entity, this };
 				auto& collider = e.GetComponent<MeshColliderComponent>();
-				Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(e, collider);
+				Count<MeshCollider> colliderAsset = nullptr;
+
+				if (AssetManager::HasAsset(collider.ColliderID))
+					colliderAsset = AssetManager::GetAsset<MeshCollider>(collider.ColliderID);
 
 				if (colliderAsset)
 				{
-					Count<Mesh> simpleDebugMesh = PhysicsMeshCache::GetDebugMesh(colliderAsset);
-					if (simpleDebugMesh && colliderAsset->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex)
-					{
-						glm::mat4 transform = GetWorldSpaceTransform(e);
-						renderer->SubmitPhysicsDebugMesh(simpleDebugMesh, transform);
-					}
+					glm::mat4 transform = GetWorldSpaceTransform(e);
+
+					Count<Mesh> complexDebugMesh = PhysicsMeshCache::GetDebugMesh(colliderAsset);
+					if (complexDebugMesh && colliderAsset->CollisionComplexity != ECollisionComplexity::UseSimpleAsComplex)
+						renderer->SubmitPhysicsDebugMesh(complexDebugMesh, transform);
+
+					Count<DynamicMesh> simpleDebugMesh = PhysicsMeshCache::GetDebugDynamicMesh(colliderAsset);
+					if (simpleDebugMesh && colliderAsset->CollisionComplexity != ECollisionComplexity::UseComplexAsSimple)
+						renderer->SubmitPhysicsDynamicDebugMesh(simpleDebugMesh, collider.SubMeshIndex, transform);
 				}
 			}
 		}
 	}
+	void World::RenderPhysicsDebug2D(Count<WorldRenderer> renderer, bool runtime)
+	{
+		if (renderer->GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::None)
+			return;
+
+		Count<Renderer2D> renderer2D = renderer->GetRenderer2D();
+		Renderer2DContextSettings settings;
+		if (renderer->GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::OnTop)
+			settings.RenderOnTop = true;
+
+		renderer2D->BeginContext(m_Camera.GetProjectionMatrix(), m_Camera.GetViewMatrix(), GlmVecToProof(m_CameraPositon), settings);
+
+		renderer2D->SetTargetFrameBuffer(renderer->GetExternalCompositePassFrameBuffer());
+		//box colliders
+		{
+
+			auto view = m_Registry.view<BoxColliderComponent>();
+
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				const auto& collider = e.GetComponent<BoxColliderComponent>();
+				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
+				renderer2D->DrawDebugCube(collider.Center + worldTransformComp.Location, worldTransformComp.GetRotationEuler(),
+					(collider.Size/2.f) * worldTransformComp.Scale
+					, renderer->GeneralOptions.PhysicsColliderColor);
+			}
+		}
+		// sphere colliders
+		{
+			auto view = m_Registry.view<SphereColliderComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				const auto& collider = e.GetComponent<SphereColliderComponent>();
+				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
+
+				auto location = worldTransformComp.Location;
+				glm::vec3 center = collider.Center;
+				float radius = collider.Radius * glm::max(worldTransformComp.Scale.x, glm::max(worldTransformComp.Scale.y, worldTransformComp.Scale.z));
+				glm::vec3 rotation = worldTransformComp.GetRotationEuler();
+				glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);  // Adjust color as needed
+				renderer2D->DrawDebugSphere(location + center, rotation, radius, renderer->GeneralOptions.PhysicsColliderColor);
+			}
+		}
+		//capsule COlliders
+		{
+			auto view = m_Registry.view<CapsuleColliderComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				const auto& collider = e.GetComponent<CapsuleColliderComponent>();
+				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
+
+				auto location = worldTransformComp.Location;
+				glm::vec3 center = collider.Center;
+				glm::quat rotation = worldTransformComp.GetRotation();
+
+				if (collider.Direction == CapsuleDirection::X)
+					rotation = rotation * glm::vec3(glm::radians(90.f), 0, 0);
+				else if (collider.Direction == CapsuleDirection::Z)
+					rotation = rotation * glm::vec3(0.f, 0, glm::radians(90.f));
+
+				auto capsuleData = GetCapsuleData(collider.Direction, worldTransformComp);
+				float radius = capsuleData.radiusScale * collider.Radius;
+				float height = capsuleData.scaleDirection * collider.Height;
+				renderer2D->DrawCapsule(location + center, glm::eulerAngles(rotation), height , radius, renderer->GeneralOptions.PhysicsColliderColor);
+
+			}
+
+		}
+
+		{
+			auto view = m_Registry.view<CharacterControllerComponent>();
+			for (auto entity : view)
+			{
+
+				Entity e = { entity, this };
+				const auto& collider = e.GetComponent<CharacterControllerComponent>();
+				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
+
+				if (collider.ColliderType == CharacterControllerType::Box)
+				{
+					//character controller always faces up
+					glm::vec3 localUp = glm::normalize(Math::GetUpVector());
+					glm::vec3 currentUp = glm::normalize(worldTransformComp.GetUpVector());
+					glm::quat rotation = glm::rotation(currentUp, localUp);
+
+					// skin width
+					renderer2D->DrawDebugCube(
+						collider.Center + worldTransformComp.Location,
+						glm::eulerAngles(rotation * worldTransformComp.GetRotation()),  // Apply the new rotation
+						collider.Size * worldTransformComp.Scale + (collider.SkinOffset),
+						glm::vec4(1,0,0,1)
+					);  
+
+					renderer2D->DrawDebugCube(
+						collider.Center + worldTransformComp.Location,
+						glm::eulerAngles( rotation * worldTransformComp.GetRotation()),  // Apply the new rotation
+						collider.Size * worldTransformComp.Scale,
+						renderer->GeneralOptions.PhysicsColliderColor
+					);
+				}
+				else if (collider.ColliderType == CharacterControllerType::Capsule)
+				{
+
+					glm::vec3 localUp = glm::normalize(Math::GetUpVector());
+					glm::vec3 currentUp = glm::normalize(worldTransformComp.GetUpVector());
+					glm::quat rotation = glm::rotation(currentUp, localUp);
+
+					auto capsuleData = GetCapsuleData(CapsuleDirection::Y, worldTransformComp);
+
+					float radius = capsuleData.radiusScale * collider.Radius;
+					float height = capsuleData.scaleDirection * collider.Height/2;
+
+					// skin width
+					renderer2D->DrawCapsule(collider.Center + worldTransformComp.Location, 
+						glm::eulerAngles(rotation* worldTransformComp.GetRotation()), 
+						height+ collider.SkinOffset, radius + collider.SkinOffset, glm::vec4(1, 0, 0, 1));
+
+					renderer2D->DrawCapsule(collider.Center + worldTransformComp.Location, glm::eulerAngles(rotation * worldTransformComp.GetRotation()), height, radius, renderer->GeneralOptions.PhysicsColliderColor);
+				}
+			}
+		}
+		renderer2D->EndContext();
+	}
 	void World::Init()
 	{
+		m_Registry.on_construct<MeshColliderComponent>().connect<&World::OnMeshColliderComponentConstruct>(this);
+		m_Registry.on_destroy<MeshColliderComponent>().connect<&World::OnMeshColliderComponentDestroy>(this);
 	}
 
 	void World::DeleteEntitiesfromQeue()
@@ -449,15 +531,6 @@ namespace Proof {
 		m_EntityDeleteQueue.clear();
 	}
 
-	void World::OnMeshColliderComponentCreate(MeshColliderComponent& component)
-	{
-		//PF_CORE_ASSERT(false);
-	}
-
-	void World::OnMeshColliderComponentDelete(MeshColliderComponent& component)
-	{
-
-	}
 
 	void World::OnRigidBodyComponentCreate(entt::registry& component, entt::entity entityID)
 	{
@@ -1023,6 +1096,7 @@ namespace Proof {
 		//config.PvdClient = true;
 		//config.Gravity = { 0,-9.8f,0 };// for multiplayer scene
 		m_PhysicsWorld = Count<PhysicsWorld>::Create (this);
+		m_PhysicsWorld->StartWorld();
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
 		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
 		
@@ -1042,8 +1116,8 @@ namespace Proof {
 		m_Registry.on_destroy<ScriptComponent>().disconnect(this);
 		
 		AudioEngine::EndContext();
-		ScriptEngine::EndRuntime();
-		m_PhysicsWorld =nullptr;
+		m_PhysicsWorld->EndWorld();
+		m_PhysicsWorld = nullptr;
 	}
 	void World::DeleteEntity(Entity ent, bool deleteChildren) {
 		if(!m_EntitiesMap.contains(ent.GetUUID()))
@@ -1207,4 +1281,23 @@ namespace Proof {
 		entity.GetComponent<HierarchyComponent>().ParentHandle = 0;
 	}
 
+	void World::OnMeshColliderComponentConstruct(entt::registry& registry, entt::entity entity)
+	{
+		PF_PROFILE_FUNC();
+
+		Entity e = { entity, this };
+		auto& component = e.GetComponent<MeshColliderComponent>();
+		PhysicsEngine::GetOrCreateColliderAsset(e, component);
+
+		if (AssetManager::HasAsset(component.ColliderID))
+		{
+			Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+			if (colliderAsset && AssetManager::HasAsset(colliderAsset->ColliderMesh) && !PhysicsMeshCache::Exists(colliderAsset))
+				PhysicsMeshCooker::CookMesh(colliderAsset);
+		}
+	}
+
+	void World::OnMeshColliderComponentDestroy(entt::registry& registry, entt::entity entity)
+	{
+	}
 }

@@ -163,6 +163,7 @@ namespace Proof
 		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex,const glm::mat4& transform, bool CastShadowws = true);
 
 		void SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform);
+		void SubmitPhysicsDynamicDebugMesh(Count<DynamicMesh> mesh, uint32_t subMeshIndex,const glm::mat4& transform);
 		// if the same size is passed it will not resize
 		void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -298,13 +299,15 @@ namespace Proof
 		inline static const uint32_t MAX_NUM_LIGHTS_PER_TILE = 1024u;
 
 		//bloom
-		const uint32_t m_BloomComputeWorkgroupSize = 4;
 		Count<ComputePass> m_BloomComputePass;
 		Count<Texture2D> m_BloomDirtTexture;
 		std::vector<Count<Texture2D>> m_BloomComputeTextures{ 3 };
 		// 
 		Count<ComputePass> m_DOFPass;
 		Count<Texture2D> m_DOFTexture;
+		bool m_IsReady = false;
+		bool m_ResourcesCreatedGPU = false;
+		bool m_ResourcesCreated = false;
 	private:
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);

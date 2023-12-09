@@ -2,18 +2,20 @@
 #include "Proof/ImGui/ImGuiLayer.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Component.h"
-#include <imgui/imgui.h>
-#include <imgui/imgui_internal.h>
+#include <imgui.h>
+#include <imgui_internal.h>
 #include "Proof/Scene/EntitiyComponentSystem/ECS.h"
 #include "Proofprch.h"
 #include "Proof/Asset/Asset.h"
-#include "ContentBrowserPanel.h"
+#include "Proof/Physics/MeshCollider.h"
+#include "Proof/Physics/PhysicsEngine.h"
+//#include "ContentBrowserPanel.h"
 #include <vector>
 #include "Proof/Scene/ExampleSccripts.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Scene/Script.h"
 #include "Proof/Input/KeyCodes.h"
-#include "ImGui/imgui_internal.h"
+#include "imgui_internal.h"
 #include "Editor3D/Editor3D.h"
 #include "Proof/Scene/Component.h"
 #include "Proof/Asset/AssetManager.h"
@@ -22,9 +24,8 @@
 #include "Proof/Resources/EnumReflection.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Imgui/UI.h"
+#include "Proof/Imgui/UIHandlers.h"
 #include "Proof/Renderer/Renderer.h"
-#include <imgui/imgui.h>
-#include <imgui/imgui_internal.h>
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Math/Random.h"
 #include "Proof/Scripting/ScriptFile.h"
@@ -157,6 +158,16 @@ namespace Proof
 		if (ImGui::MenuItem(name.c_str()))
 		{
 			entity.AddComponent<T>();
+			ImGui::CloseCurrentPopup();
+		}
+	};
+
+	template<class T,class UIFunction>
+	static void AddComponentGuiButton(Entity entity, const std::string& name, UIFunction function) {
+		if (ImGui::MenuItem(name.c_str()))
+		{
+			entity.AddComponent<T>();
+			function(entity, entity.GetComponent<T>());
 			ImGui::CloseCurrentPopup();
 		}
 	};
@@ -439,10 +450,14 @@ namespace Proof
 			AddComponentGui<SpotLightComponent>(entity, "Spot Light");
 			AddComponentGui<CameraComponent>(entity, "Camera");
 
-			AddComponentGui<BoxColliderComponent>(entity, "Cube Collider");
+			AddComponentGui<BoxColliderComponent>(entity, "Box Collider");
 			AddComponentGui<SphereColliderComponent>(entity, "Sphere Collider");
 			AddComponentGui<CapsuleColliderComponent>(entity, "Capsule Collider");
-			AddComponentGui<MeshColliderComponent>(entity, "Mesh Collider");
+			AddComponentGuiButton<MeshColliderComponent>(entity, "Mesh Collider", [](Entity entity, MeshColliderComponent& meshColliderComp)
+				{
+					PhysicsEngine::GetOrCreateColliderAsset(entity, meshColliderComp);
+				});
+
 			AddComponentGui<RigidBodyComponent>(entity, "Rigid Body");
 			AddComponentGui<CharacterControllerComponent>(entity, "Character Controller");
 
@@ -494,27 +509,44 @@ namespace Proof
 		{
 			UI::BeginPropertyGrid();
 
-			UI::AttributeAssetTextBar("Mesh", meshComp.m_MeshID, AssetType::Mesh);
+			UI::PropertyAssetReferenceSettings assetRefSettings;
+			assetRefSettings.AssetMemoryTypes = UI::UIMemoryAssetTypes::Default;
+			AssetID id = meshComp.m_MeshID;
+			if (UI::AttributeAssetReference("Mesh", AssetType::Mesh, id, assetRefSettings))
+			{
+				if (id == 0)
+					meshComp.RemoveMesh();
+				else
+					meshComp.SetMesh(id);
+			}
 			UI::AttributeBool("Visible", meshComp.Visible);
 
 			ImGui::Separator();
 			UI::EndPropertyGrid();
 
-			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
-			bool open = ImGui::TreeNodeEx("MaterialTablerwrs", treeNodeFlags, "Material Table");
-			if (open)
+			if (UI::AttributeTreeNode("MaterialTable"))
 			{
 				UI::BeginPropertyGrid();
 
 				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
 				{
-					std::string name = material != nullptr ? material->Name : "null";
-					UI::AttributeAssetTextBar(fmt::format("Index {}", index), material, AssetType::Material);
+					AssetID materialID = material->GetID();
+					if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID))
+					{
+						if (materialID == 0)
+						{
+							auto mesh = meshComp.GetMesh();
+							if (mesh)
+							{
+								materialID = mesh->GetMeshSource()->GetMaterials()->GetMaterial(index)->GetID();
+							}
+						}
+						meshComp.MaterialTable->SetMaterial(index, AssetManager::GetAsset<Material>(materialID));
+					}
 				}
 				UI::EndPropertyGrid();
 
-				ImGui::TreePop();
+				UI::EndTreeNode();
 			}
 		});
 
@@ -524,7 +556,8 @@ namespace Proof
 
 			const uint32_t currentIndexMaterial = meshComp.GetSubMeshMaterialIndex();
 			auto mesh = meshComp.GetMesh();
-
+			
+			/*
 			if (AssetManager::HasAsset(meshComp.GetMesh()))
 			{
 				auto assetInfo = AssetManager::GetAssetInfo(meshComp.GetMesh());
@@ -556,7 +589,15 @@ namespace Proof
 
 				ImGui::EndPopup();
 			}
-
+			*/
+			AssetID id = meshComp.m_MeshID;
+			if (UI::AttributeAssetReference("Dynamic Mesh", AssetType::DynamicMesh, id))
+			{
+				if (id == 0)
+					meshComp.RemoveMesh();
+				else
+					meshComp.SetMesh(id);
+			}
 			if (mesh)
 			{
 				UI::AttributeBool("SubMeshIndexUseSlider", DynamicMeshUseSlider);
@@ -593,31 +634,21 @@ namespace Proof
 
 			ImGui::Separator();
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
+			UI::ScopedStyleVar style (ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
 			bool open = ImGui::TreeNodeEx("MaterialTablerwrs", treeNodeFlags, "Material Table");
 			if (!open)
 			{
 				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
 				{
-					std::string name = material != nullptr ? material->Name : "null";
 					{
 
 						UI::ScopedStyleColor addfs(ImGuiCol_Text, ImVec4(0.0f, .8f, 0.0f, 1.0f), index == currentIndexMaterial);
 
-						UI::AttributeTextBar(fmt::format("Index {}", index), name);
-					}
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::Material).c_str()))
+						AssetID materialID = material->GetID();
+						if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID))
 						{
-							uint64_t Data = *(const uint64_t*)payload->Data;
-							if (AssetManager::HasAsset(Data))
-							{
-								auto material = AssetManager::GetAsset<Material>(Data);
-								meshComp.MaterialTable->SetMaterial(index, material);
-							}
+							meshComp.MaterialTable->SetMaterial(index, AssetManager::GetAsset<Material>(materialID));
 						}
-						ImGui::EndDragDropTarget();
 					}
 				}
 
@@ -838,7 +869,7 @@ namespace Proof
 			UI::DrawVec3Control("Size", cubeCollider.Size, glm::vec3{1});
 			UI::DrawVec3Control("Center", cubeCollider.Center);
 
-			UI::AttributeAssetTextBar("Material", cubeCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+			UI::AttributeAssetReference("Material",AssetType::PhysicsMaterial, cubeCollider.m_PhysicsMaterialPointerID);
 
 			UI::EndPropertyGrid();
 
@@ -850,7 +881,7 @@ namespace Proof
 			UI::AttributeDrag("Radius", sphereCollider.Radius, 0.5);
 			UI::DrawVec3Control("Center", sphereCollider.Center);
 
-			UI::AttributeAssetTextBar("Material", sphereCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, sphereCollider.m_PhysicsMaterialPointerID);
 			UI::EndPropertyGrid();
 
 		});
@@ -862,28 +893,72 @@ namespace Proof
 			UI::AttributeDrag("Height", capsuleCollider.Height, 0.5);
 			UI::EnumCombo("Direction", capsuleCollider.Direction);
 			UI::DrawVec3Control("Center", capsuleCollider.Center);
-
-			UI::AttributeAssetTextBar("Material", capsuleCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, capsuleCollider.m_PhysicsMaterialPointerID);
 
 			UI::EndPropertyGrid();
 		});
-		DrawComponents<MeshColliderComponent>("Mesh Collider", entity, [](MeshColliderComponent& meshCollider) {
+		DrawComponents<MeshColliderComponent>("Mesh Collider", entity, [&](MeshColliderComponent& meshCollider) {
 			UI::BeginPropertyGrid();
 
+			if (UI::AttributeAssetReference("MeshCollider", AssetType::MeshCollider, meshCollider.ColliderID))
+			{
+				if (meshCollider.ColliderID == 0)
+				{
+					PhysicsEngine::GetOrCreateColliderAsset(entity, meshCollider);
+				}
+
+				if (entity.HasComponent<DynamicMeshComponent>())
+					meshCollider.SubMeshIndex = entity.GetComponent<DynamicMeshComponent>().GetSubMeshIndex();
+			}
 			UI::AttributeBool("IsTrigger", meshCollider.IsTrigger);
-			//UI::AttributeAssetTextBar("Mesh", meshCollider.m_MeshAssetPointerID, AssetType::Mesh);
-			
-			UI::AttributeAssetTextBar("Material", meshCollider.m_PhysicsMaterialPointerID, AssetType::PhysicsMaterial);
+
+			Count<MeshCollider> colliderAsset = nullptr;
+			bool isPhysicalAsset = false;
+
+			if (AssetManager::HasAsset(meshCollider.ColliderID))
+			{
+				isPhysicalAsset = !AssetManager::GetAssetInfo(meshCollider.ColliderID).RuntimeAsset;
+				colliderAsset = AssetManager::GetAsset<MeshCollider>(meshCollider.ColliderID);
+			}
+
+			UI::PushItemDisabled(colliderAsset && isPhysicalAsset);
+			UI::AttributeBool("Use Shared Shape", meshCollider.UseSharedShape);
+			UI::SetTooltip("Allows this collider to share its collider data. (Default: False)");
+			UI::PopItemDisabled();
+
+			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, meshCollider.m_PhysicsMaterialPointerID);
+			UI::SetTooltip("Overrides the material provided by the collider asset if an explicit asset has been set");
+
+
 			UI::EndPropertyGrid();
 		});
-		
-		DrawComponents<RigidBodyComponent>("RigidBody", entity, [](RigidBodyComponent& rigidBody) {
-
+		DrawComponents<RigidBodyComponent>("RigidBody", entity, [&](RigidBodyComponent& rigidBody) {
+			static uint32_t checked = 0;
+			if (entity.GetName() == "bouncyBall" && checked == 0)
+			{
+				checked = 1;
+				PF_CORE_ASSERT(false);
+			}
 			UI::BeginPropertyGrid();
 
-			UI::EnumCombo("RigidType", rigidBody.m_RigidBodyType);
+			UI::EnumCombo("RigidType", rigidBody.RigidBodyType);
 
-			if (rigidBody.m_RigidBodyType == RigidBodyType::Dynamic)
+			{
+				if (!PhysicsLayerManager::IsLayerValid(rigidBody.PhysicsLayerID))
+					rigidBody.PhysicsLayerID = 0;
+
+				const PhysicsLayer& layer = PhysicsLayerManager::GetLayer(rigidBody.PhysicsLayerID);
+
+				auto [changed, outSelectionIndex, outSelectionString] = UI::Combo("Layer", PhysicsLayerManager::GetLayersNames(), layer.Name);
+				if(changed)
+				{
+					if (PhysicsLayerManager::IsLayerValid(outSelectionString))
+					{
+						rigidBody.PhysicsLayerID = PhysicsLayerManager::GetLayer(outSelectionString).LayerID;
+					}
+				}
+			}
+			if (rigidBody.RigidBodyType == RigidBodyType::Dynamic)
 			{
 				UI::EnumCombo("CollisionDetection", rigidBody.CollisionDetection);
 				UI::AttributeDrag("Mass", rigidBody.Mass, 0.5, 0);
@@ -906,18 +981,27 @@ namespace Proof
 
 			{
 				float slopdeg = glm::degrees(controller.SlopeLimitRadians);
-				if (UI::AttributeDrag("SlopeLimitDeg", slopdeg))
+				if (UI::AttributeDrag("SlopeLimitDeg", slopdeg,0.5,0))
 					controller.SlopeLimitRadians = glm::radians(slopdeg);
 			}
 
-			UI::AttributeDrag("SkinOffset", controller.SkinOffset, 0);
+			UI::AttributeDrag("SkinOffset", controller.SkinOffset, 0.1,0.001);
 			UI::AttributeBool("GravityEnabled", controller.GravityEnabled);
 			UI::AttributeDrag("GravityScale", controller.GravityScale);
-			UI::AttributeDrag("MinMoveDistance", controller.MinMoveDistance, 0);
+			UI::AttributeDrag("MinMoveDistance", controller.MinMoveDistance, 0.1,0);
+			{
+				bool disabled = std::cos(controller.SlopeLimitRadians) < 0.0f;
+				UI::PushItemDisabled(disabled);
+				UI::EnumCombo("WalkableMode", controller.WalkableMode, {}, 
+					{
+					"if character lands on a slope it cannot walk it would prevent climbing",
+					"if character lands on a slope it cannot walk it would prevent climbing, the character will slide down"
+					},
+					"only valid if cos(SlopeLimitDeg) is greater than 0");
+				UI::PopItemDisabled();
+			}
+			UI::AttributeAssetReference("PhysicsMaterial", AssetType::PhysicsMaterial, controller.PhysicsMaterialID);
 
-			UI::AttributeAssetTextBar("PhysicsMaterial", controller.PhysicsMaterialID, AssetType::PhysicsMaterial);
-			UI::EnumCombo("WalkableMode", controller.WalkableMode, {}, {},"only valid if slopelimit is 0");
-			
 			ImGui::Separator();
 
 			UI::EnumCombo("ColliderType", controller.ColliderType);
@@ -927,7 +1011,6 @@ namespace Proof
 			{
 				UI::AttributeDrag("Radius", controller.Radius);
 				UI::AttributeDrag("Height", controller.Height);
-				UI::EnumCombo("Direction", controller.Direction);
 			}
 			else
 			{
@@ -1502,7 +1585,7 @@ namespace Proof
 			UI::BeginPropertyGrid();
 
 			UI::EnumCombo("Player", player.InputPlayer);
-			UI::AttributeAssetTextBar("Player", player.Player, AssetType::Prefab);
+			//UI::AttributeAssetReference("Player",AssetType::Prefab, player.Player);
 			UI::EndPropertyGrid();
 		});
 
@@ -1548,7 +1631,7 @@ namespace Proof
 		{
 			UI::BeginPropertyGrid();
 
-			UI::AttributeAssetTextBar("Audio", audio.AudioAsset,AssetType::Audio);
+			UI::AttributeAssetReference("Audio",AssetType::Audio, audio.AudioAsset);
 
 			UI::AttributeSlider("VolumeMultiplier", audio.VolumeMultiplier, 0, 1);
 			UI::AttributeSlider("PitchMultiplier", audio.PitchMultiplier, 0, 24);

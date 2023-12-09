@@ -38,7 +38,7 @@ namespace Proof
 		}
 		else
 		{
-			s_Data->Transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 1000);
+			s_Data->Transport = physx::PxDefaultPvdSocketTransportCreate("localhost", 5425, 1000);
 			s_Data->Debugger->connect(*s_Data->Transport, physx::PxPvdInstrumentationFlag::eALL);
 		}
 	}
@@ -54,7 +54,7 @@ namespace Proof
 			return;
 
 		s_Data->Debugger->disconnect();
-		s_Data->Debugger->release();
+		//s_Data->Debugger->release();
 		s_Data->Transport->release();
 	}
 

@@ -2,6 +2,7 @@
 #include "FileSystem.h"
 #include "Proof/Core/Application.h"
 #include "Proof/Core/Buffer.h"
+#include "Proof/Project/Project.h"
 
 #include <GLFW/glfw3.h> // needs to know hte parent
 #define GLFW_EXPOSE_NATIVE_WIN32 // lets us get win 32 stuff
@@ -22,6 +23,8 @@
 #endif
 namespace Proof
 {
+	std::vector<FileSystem::FileSystemChangedCallbackFn> FileSystem::s_Callbacks;
+
 	bool FileSystem::CreateDirectory(const std::filesystem::path& directory)
 	{
 		return std::filesystem::create_directories(directory);
@@ -361,6 +364,176 @@ namespace Proof
 		CloseClipboard();
 		GlobalFree(hg);
 	}
+	static bool s_Watching = false;
+	static bool s_IgnoreNextChange = false;
+	static HANDLE s_WatcherThread;
+	//static std::filesystem::path s_PersistentStoragePath;
+	void FileSystem::StartWatching()
+	{
+		s_Watching = true;
+		DWORD threadId;
+		s_WatcherThread = CreateThread(NULL, 0, Watch, 0, 0, &threadId);
+		PF_CORE_ASSERT(s_WatcherThread != NULL);
+		SetThreadDescription(s_WatcherThread, L"Ant FileSystemWatcher");
+	}
+
+	void FileSystem::StopWatching()
+	{
+		if (!s_Watching)
+			return;
+
+		s_Watching = false;
+		//DWORD result = WaitForSingleObject(s_WatcherThread, 5000);
+		//if (result == WAIT_TIMEOUT)
+		// NOTE: this is a little annoying, but it's a quick and dirty
+		//       way to shutdown the file watching ASAP.
+		TerminateThread(s_WatcherThread, 0);
+		CloseHandle(s_WatcherThread);
+	}
+	void FileSystem::SkipNextFileSystemChange()
+	{
+		s_IgnoreNextChange = true;
+	}
+
+	void FileSystem::AddFileSystemChangedCallback(const FileSystemChangedCallbackFn& callback)
+	{
+		s_Callbacks.push_back(callback);
+	}
+
+	void FileSystem::ClearFileSystemChangedCallbacks()
+	{
+		s_Callbacks.clear();
+	}
+
+	unsigned long FileSystem::Watch(void* param)
+	{
+		auto assetDirectory = Project::GetActive()->GetAssetDirectory();
+		std::wstring dirStr = assetDirectory.wstring();
+
+		char buf[2048];
+		DWORD bytesReturned;
+		std::filesystem::path filepath;
+		BOOL result = TRUE;
+
+		HANDLE directoryHandle = CreateFile(
+			dirStr.c_str(),
+			GENERIC_READ | FILE_LIST_DIRECTORY,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+			NULL,
+			OPEN_EXISTING,
+			FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+			NULL
+		);
+
+		if (directoryHandle == INVALID_HANDLE_VALUE)
+		{
+			PF_CORE_ASSERT(false, "Failed to open directory!");
+			return 0;
+		}
+
+		OVERLAPPED pollingOverlap;
+		pollingOverlap.OffsetHigh = 0;
+		pollingOverlap.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+		std::vector<FileSystemChangedEvent> eventBatch;
+		eventBatch.reserve(10);
+
+		while (s_Watching && result)
+		{
+			result = ReadDirectoryChangesW(
+				directoryHandle,
+				&buf,
+				sizeof(buf),
+				TRUE,
+				FILE_NOTIFY_CHANGE_FILE_NAME |
+				FILE_NOTIFY_CHANGE_DIR_NAME |
+				FILE_NOTIFY_CHANGE_SIZE,
+				&bytesReturned,
+				&pollingOverlap,
+				NULL
+			);
+
+			WaitForSingleObject(pollingOverlap.hEvent, INFINITE);
+
+			if (s_IgnoreNextChange)
+			{
+				s_IgnoreNextChange = false;
+				eventBatch.clear();
+				continue;
+			}
+
+			FILE_NOTIFY_INFORMATION* pNotify;
+			int offset = 0;
+			std::wstring oldName;
+
+			do
+			{
+				pNotify = (FILE_NOTIFY_INFORMATION*)((char*)buf + offset);
+				size_t filenameLength = pNotify->FileNameLength / sizeof(wchar_t);
+
+				FileSystemChangedEvent e;
+				e.FilePath = std::filesystem::path(std::wstring(pNotify->FileName, filenameLength));
+				e.IsDirectory = IsDirectory(e.FilePath);
+
+				switch (pNotify->Action)
+				{
+				case FILE_ACTION_ADDED:
+				{
+					e.Action = FileSystemAction::Added;
+					break;
+				}
+				case FILE_ACTION_REMOVED:
+				{
+					e.Action = FileSystemAction::Delete;
+					break;
+				}
+				case FILE_ACTION_MODIFIED:
+				{
+					e.Action = FileSystemAction::Modified;
+					break;
+				}
+				case FILE_ACTION_RENAMED_OLD_NAME:
+				{
+					oldName = e.FilePath.filename();
+					break;
+				}
+				case FILE_ACTION_RENAMED_NEW_NAME:
+				{
+					e.OldName = oldName;
+					e.Action = FileSystemAction::Rename;
+					break;
+				}
+				}
+
+				// NOTE: Fix for https://gitlab.com/chernoprojects/Ant-dev/-/issues/143
+				bool hasAddedEvent = false;
+				if (e.Action == FileSystemAction::Modified)
+				{
+					for (const auto& event : eventBatch)
+					{
+						if (event.FilePath == e.FilePath && event.Action == FileSystemAction::Added)
+							hasAddedEvent = true;
+					}
+				}
+
+				if (pNotify->Action != FILE_ACTION_RENAMED_OLD_NAME && !hasAddedEvent)
+					eventBatch.push_back(e);
+
+				offset += pNotify->NextEntryOffset;
+			} while (pNotify->NextEntryOffset);
+
+			if (eventBatch.size() > 0)
+			{
+				for (auto& callback : s_Callbacks)
+					callback(eventBatch);
+				eventBatch.clear();
+			}
+		}
+
+		CloseHandle(directoryHandle);
+		return 0;
+	}
+
 	#if 0
 	Buffer FileSystem::ReadFileBinary(const std::filesystem::path& filepath)
 	{

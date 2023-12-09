@@ -1,10 +1,10 @@
 #pragma once
-#include <Imgui/imgui.h>
 #include "Proof/Core/SmartPointer.h"
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Resources/EnumReflection.h"
 #include "Proof/Math/Math.h"
 #include "Proof/Asset/AssetTypes.h"
+#include <imgui.h>
 #include <glm/glm.hpp>
 #include <unordered_set>
 #define EG_HOVER_THRESHOLD 0.5f
@@ -20,7 +20,11 @@ namespace Proof
 	class EnumFieldStorage;
 	class World;
 }
-namespace Proof::UI {
+namespace Proof::UI 
+{
+	const char* GenerateID();
+	const char* GenerateLabelID(std::string_view label);
+	bool IsItemDisabled();
 	void PushID();
 	void PopID();
 	inline void Image(Count<class Image> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0))
@@ -32,14 +36,14 @@ namespace Proof::UI {
 		ImGui::Image(HeaderFileOnly::TextureUI::GetTexture(image->GetImage()), size, uv0, uv1, tint_col, border_col);
 	}
 
-	inline bool ImageButton(const std::string& imageId, Count<Image2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
-	{
-		return ImGui::ImageButton(imageId.c_str(), HeaderFileOnly::TextureUI::GetTexture(image), size, uv0, uv1, bg_col, tint_col);
-	}
-	inline bool ImageButton(const std::string& imageId, Count<Texture2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
-	{
-		return ImGui::ImageButton(imageId.c_str(), HeaderFileOnly::TextureUI::GetTexture(image->GetImage()), size, uv0, uv1, bg_col, tint_col);
-	}
+	//inline bool ImageButton(const std::string& imageId, Count<Image2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
+	//{
+	//	return ImGui::ImageButton(imageId.c_str(), HeaderFileOnly::TextureUI::GetTexture(image), size, uv0, uv1, bg_col, tint_col);
+	//}
+	//inline bool ImageButton(const std::string& imageId, Count<Texture2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
+	//{
+	//	return ImGui::ImageButton(imageId.c_str(), HeaderFileOnly::TextureUI::GetTexture(image->GetImage()), size, uv0, uv1, bg_col, tint_col);
+	//}
 
 	inline bool ImageButton(Count<Image2D> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1))
 	{
@@ -70,7 +74,8 @@ namespace Proof::UI {
 	}
 
 
-	bool AttributeInputText(const std::string& label, std::string& value, const std::string& helpMessage = "");
+	bool AttributeInputText(const std::string& label, std::string& value, ImGuiInputTextFlags text_flags = 0, const std::string& helpMessage = "");
+	bool AttributeInputRawText(const std::string& label, char* buffer, uint32_t bufferSize = 256, ImGuiInputTextFlags text_flags = 0, const std::string& helpMessage = "");
 	bool AttributeBool(const std::string& label, bool& value, const std::string& helpMessage = "");
 	bool AttributeLabels(const std::string& label, const std::vector<std::string>& customLabels, bool* values, const std::string& helpMessage = "");
 
@@ -124,7 +129,7 @@ namespace Proof::UI {
 	bool AttributeButton(const std::string& label, const std::string& buttonText, const ImVec2& size = ImVec2(0, 0));
 
 	bool AttributeInputTextMultiline(const std::string& label, std::string& value, ImGuiInputTextFlags flags);
-	void PushItemDisabled();
+	void PushItemDisabled(bool disabled = true);
 	void PopItemDisabled();
 
 	void Tooltip(const std::string& tooltip, float treshHold = EG_HOVER_THRESHOLD);
@@ -134,7 +139,11 @@ namespace Proof::UI {
 
 	void AttributeLabel(const std::string& label);
 	bool AttributeTreeNode(const std::string& label, bool openByDefault = true);
-	bool AttributeTreeNodeIcon(const std::string& label, const Count<Texture2D>& icon, const ImVec2& size, bool openByDefault = true);
+	bool AttributeTreeNodeIcon(const std::string& label, const Count<Texture2D>& icon, const ImVec2& size, bool openByDefault = true, bool useUpercase = true);
+
+	bool TreeNodeWithIcon(Count<Texture2D> icon, ImGuiID id, ImGuiTreeNodeFlags flags, const char* label, const char* label_end, ImColor iconTint = IM_COL32_WHITE);
+	bool TreeNodeWithIcon(Count<Texture2D> icon, const void* ptr_id, ImGuiTreeNodeFlags flags, ImColor iconTint, const char* fmt, ...);
+	bool TreeNodeWithIcon(Count<Texture2D> icon, const char* label, ImGuiTreeNodeFlags flags, ImColor iconTint = IM_COL32_WHITE);
 	static void EndTreeNode()
 	{
 		ImGui::TreePop();
@@ -148,6 +157,12 @@ namespace Proof::UI {
 	{
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + distance);
 	}
-	//bool AttributeTreeNodeWithDisabled(const std::string& label, bool& disabled, bool OpenDefault);
 
+	static void ShiftCursor(float distanceX, float distanceY)
+	{
+		ShiftCursorX(distanceX);
+		ShiftCursorY(distanceY);
+	}
+	//bool AttributeTreeNodeWithDisabled(const std::string& label, bool& disabled, bool OpenDefault);
+	void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenInactive = false, ImColor colourWhenActive = (236, 158, 36, 255));
 }

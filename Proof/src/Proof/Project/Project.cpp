@@ -2,6 +2,7 @@
 #include "Project.h"
 #include <fstream>
 #include "ProjectSerilizer.h" 
+#include "Proof/Core/Application.h"
 namespace Proof
 {
 		
@@ -45,7 +46,11 @@ namespace Proof
 		
 		return project;
 	}
-	
+	Count<Project> Project::GetActive()
+	{
+		return Application::Get()->GetProject();
+	}
+
 	ProjectConfig::ProjectConfig(const std::string& name, std::filesystem::path directory):
 		Name(name)
 	{

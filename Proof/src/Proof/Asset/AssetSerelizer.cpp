@@ -619,6 +619,7 @@ namespace Proof {
 		out << YAML::Key << "ColliderMesh" << YAML::Value << meshCollider->ColliderMesh;
 		out << YAML::Key << "EnableVertexWelding" << YAML::Value << meshCollider->EnableVertexWelding;
 		out << YAML::Key << "VertexWeldTolerance" << YAML::Value << meshCollider->VertexWeldTolerance;
+		out << YAML::Key << "PreviewScale" << YAML::Value << meshCollider->PreviewScale;
 		out << YAML::Key << "FlipNormals" << YAML::Value << meshCollider->FlipNormals;
 		out << YAML::Key << "CheckZeroAreaTriangles" << YAML::Value << meshCollider->CheckZeroAreaTriangles;
 		out << YAML::Key << "AreaTestEpsilon" << YAML::Value << meshCollider->AreaTestEpsilon;
@@ -648,6 +649,7 @@ namespace Proof {
 		meshCollider->AreaTestEpsilon = data["AreaTestEpsilon"].as<float>();
 		meshCollider->ShiftVerticesToOrigin = data["ShiftVerticesToOrigin"].as<bool>();
 		meshCollider->AlwaysShareShape = data["AlwaysShareShape"].as<bool>();
+		meshCollider->PreviewScale = data["PreviewScale"].as<glm::vec3>(glm::vec3{ 1 });
 		meshCollider->CollisionComplexity = EnumReflection::StringEnum<ECollisionComplexity>( data["CollisionComplexity"].as<std::string>());
 
 		SetID(assetData, meshCollider);

@@ -31,9 +31,39 @@ namespace Proof::PhysXUtils
 		return physx::PxTransform(ToPhysXVector(translation), ToPhysXQuat(rotation));
 	}
 
-	physx::PxMat44 ToPhysXMatrix(const glm::mat4& matrix) { return *(physx::PxMat44*)&matrix; }
-	const physx::PxVec3& ToPhysXVector(const glm::vec3& vector) { return *(physx::PxVec3*)&vector; }
-	const physx::PxVec4& ToPhysXVector(const glm::vec4& vector) { return *(physx::PxVec4*)&vector; }
+	//physx::PxMat44 ToPhysXMatrix(const glm::mat4& matrix) { return *(physx::PxMat44*)&matrix; }
+	//physx::PxVec3 ToPhysXVector(const glm::vec3& vector) { return *(physx::PxVec3*)&vector; }
+	//physx::PxVec4 ToPhysXVector(const glm::vec4& vector) { return *(physx::PxVec4*)&vector; }
+
+	physx::PxMat44 ToPhysXMatrix(const glm::mat4& mat4) 
+	{
+		physx::PxMat44 newMat;
+
+		newMat[0][0] = mat4[0][0];
+		newMat[0][1] = mat4[0][1];
+		newMat[0][2] = mat4[0][2];
+		newMat[0][3] = mat4[0][3];
+
+		newMat[1][0] = mat4[1][0];
+		newMat[1][1] = mat4[1][1];
+		newMat[1][2] = mat4[1][2];
+		newMat[1][3] = mat4[1][3];
+
+		newMat[2][0] = mat4[2][0];
+		newMat[2][1] = mat4[2][1];
+		newMat[2][2] = mat4[2][2];
+		newMat[2][3] = mat4[2][3];
+
+		newMat[3][0] = mat4[3][0];
+		newMat[3][1] = mat4[3][1];
+		newMat[3][2] = mat4[3][2];
+		newMat[3][3] = mat4[3][3];
+
+		return newMat;
+	}
+
+	physx::PxVec3 ToPhysXVector(const glm::vec3& vector) { return physx::PxVec3(vector.x, vector.y, vector.z); }
+	physx::PxVec4 ToPhysXVector(const glm::vec4& vector) { return physx::PxVec4(vector.x, vector.y, vector.z, vector.w); }
 	physx::PxExtendedVec3 ToPhysXExtendedVector(const glm::vec3& vector) { return physx::PxExtendedVec3(vector.x, vector.y, vector.z); }
 	physx::PxQuat ToPhysXQuat(const glm::quat& quat) { return physx::PxQuat(quat.x, quat.y, quat.z, quat.w); }
 
@@ -44,10 +74,39 @@ namespace Proof::PhysXUtils
 		return glm::translate(glm::mat4(1.0F), position) * glm::toMat4(rotation);
 	}
 
-	glm::mat4 FromPhysXMatrix(const physx::PxMat44& matrix) { return *(glm::mat4*)&matrix; }
-	glm::vec3 FromPhysXVector(const physx::PxVec3& vector) { return *(glm::vec3*)&vector; }
-	glm::vec4 FromPhysXVector(const physx::PxVec4& vector) { return *(glm::vec4*)&vector; }
-	glm::quat FromPhysXQuat(const physx::PxQuat& quat) { return *(glm::quat*)&quat; }
+	//glm::mat4 FromPhysXMatrix(const physx::PxMat44& matrix) { return *(glm::mat4*)&matrix; }
+	//glm::vec3 FromPhysXVector(const physx::PxVec3& vector) { return *(glm::vec3*)&vector; }
+	//glm::vec4 FromPhysXVector(const physx::PxVec4& vector) { return *(glm::vec4*)&vector; }
+
+	glm::mat4 FromPhysXMatrix(const physx::PxMat44& mat4) 
+	{
+		glm::mat4 newMat;
+		newMat[0][0] = mat4[0][0];
+		newMat[0][1] = mat4[0][1];
+		newMat[0][2] = mat4[0][2];
+		newMat[0][3] = mat4[0][3];
+
+		newMat[1][0] = mat4[1][0];
+		newMat[1][1] = mat4[1][1];
+		newMat[1][2] = mat4[1][2];
+		newMat[1][3] = mat4[1][3];
+
+		newMat[2][0] = mat4[2][0];
+		newMat[2][1] = mat4[2][1];
+		newMat[2][2] = mat4[2][2];
+		newMat[2][3] = mat4[2][3];
+
+		newMat[3][0] = mat4[3][0];
+		newMat[3][1] = mat4[3][1];
+		newMat[3][2] = mat4[3][2];
+		newMat[3][3] = mat4[3][3];
+
+		return newMat;
+	}
+
+	glm::vec3 FromPhysXVector(const physx::PxVec3& vector)  { return glm::vec3(vector.x, vector.y, vector.z); }
+	glm::vec4 FromPhysXVector(const physx::PxVec4& vector) { return glm::vec4(vector.x, vector.y, vector.z, vector.w); }
+	glm::quat FromPhysXQuat(const physx::PxQuat& quat) { return glm::quat(quat.w, quat.x, quat.y, quat.z); }
 
 	CookingResult FromPhysXCookingResult(physx::PxConvexMeshCookingResult::Enum cookingResult)
 	{
@@ -125,6 +184,17 @@ namespace Proof::PhysXUtils
 				break;
 		}
 		PF_CORE_ASSERT(false);
+	}
+	physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection)
+	{
+		physx::PxFilterData filterData;
+
+		filterData.word0 = layerInfo.CollidesValue;
+		filterData.word1 = layerInfo.CollidesWith;
+		filterData.word2 = (uint32_t)collisionDetection;
+		filterData.word3 = layerInfo.LayerID;
+
+		return filterData;
 	}
 	/*
 	physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection)

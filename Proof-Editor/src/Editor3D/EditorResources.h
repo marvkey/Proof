@@ -6,6 +6,10 @@ namespace Proof
 	{
 	public:
 		static inline Count<class Texture2D> CheckerBoardWhiteGrey;
+		static inline Count<class Texture2D> FolderIcon;
+		static inline Count<class Texture2D> FileIcon;
+		static inline Count<class Texture2D> BackArrowIcon;
+		static inline Count<class Texture2D> FowardArrowIcon;
 	private:
 		static void Init();
 		static void Unizilize();

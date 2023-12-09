@@ -48,7 +48,7 @@ namespace Proof
     {
         if (!s_PhysicsMeshCacheData->BoxCache)
         {
-            s_PhysicsMeshCacheData->BoxCache = MeshWorkShop::GenerateCube(glm::vec3{ 0.5 });
+            s_PhysicsMeshCacheData->BoxCache = MeshWorkShop::GenerateCube();
             AssetManager::CreateRuntimeAsset(s_PhysicsMeshCacheData->BoxCache, "PhysicsBoxCache");
         }
         return s_PhysicsMeshCacheData->BoxCache;
@@ -57,7 +57,7 @@ namespace Proof
     {
         if (!s_PhysicsMeshCacheData->CapsuleCache)
         {
-            s_PhysicsMeshCacheData->CapsuleCache = MeshWorkShop::GenerateCapsule();
+            s_PhysicsMeshCacheData->CapsuleCache = MeshWorkShop::GenerateCapsule(0.5,1.0f);
             AssetManager::CreateRuntimeAsset(s_PhysicsMeshCacheData->CapsuleCache, "PhysicsCapsuleCache");
         }
         return s_PhysicsMeshCacheData->CapsuleCache;
@@ -66,7 +66,7 @@ namespace Proof
     {
         if (!s_PhysicsMeshCacheData->SphereCache)
         {
-            s_PhysicsMeshCacheData->SphereCache = MeshWorkShop::GenerateSphere(0.5f);
+            s_PhysicsMeshCacheData->SphereCache = MeshWorkShop::GenerateSphere(1.0f);
             AssetManager::CreateRuntimeAsset(s_PhysicsMeshCacheData->SphereCache, "PhysicsSphereCache");
         }
         return s_PhysicsMeshCacheData->SphereCache;

@@ -19,10 +19,13 @@ Assets:
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\755318871556304029.jpg
   - Asset: 14268173759466256543
     Type: Material
-    Path: Materials\Green...Material.ProofAsset
+    Path: Materials\Blue...Material.ProofAsset
   - Asset: 2001942831744342266
     Type: TextureSourceFile
     Path: HdrMaps\MegaSun4k.hdr
+  - Asset: 12902208667846413922
+    Type: MeshCollider
+    Path: MeshCollider\SponzaCollider.MeshCollider.ProofAsset
   - Asset: 9322883649519495229
     Type: Texture
     Path: HdrMaps\qwantani_puresky_4k.Texture.ProofAsset
@@ -458,3 +461,21 @@ Assets:
   - Asset: 18141853162402936448
     Type: Mesh
     Path: Mesh\Sponza
+  - Asset: 6915908757921917454
+    Type: World
+    Path: Scenes\PhysicsTest.ProofWorld
+  - Asset: 3650405502933676885
+    Type: Material
+    Path: Materials\RED.Material.ProofAsset
+  - Asset: 16583584930006105417
+    Type: PhysicsMaterial
+    Path: PhysicsMaterial\SlipperyMaterial.PhysicsMaterial.ProofAsset
+  - Asset: 5412365953404524970
+    Type: PhysicsMaterial
+    Path: PhysicsMaterial\BouncyMaterial.PhysicsMaterial.ProofAsset
+  - Asset: 7356996664151384894
+    Type: MeshSourceFile
+    Path: Models\blenderCapsule.fbx
+  - Asset: 473827439279
+    Type: Mesh
+    Path: Mesh\BlenderCapsule.Mesh.ProofAsset

@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "ImGuiLayer.h"
-#include "ImGui/imgui.h"
+#include "imgui.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Platform/Vulkan/VulkanImguiLayer.h"
 namespace Proof

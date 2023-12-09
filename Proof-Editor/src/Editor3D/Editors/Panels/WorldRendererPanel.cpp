@@ -21,7 +21,7 @@ namespace Proof
 				return;
 			}
 
-			ImGui::Text("Viewport Size: %d, %d", m_WorldRenderer->m_UBScreenData.FullResolution.x, m_WorldRenderer->m_UBScreenData.FullResolution.y);
+			ImGui::Text("Viewport Size: %d, %d", (int)m_WorldRenderer->m_UBScreenData.FullResolution.x, (int)m_WorldRenderer->m_UBScreenData.FullResolution.y);
 			ImGui::Text("%f m/s", FrameTime::GetFrameMS());
 			ImGui::Text("%f FPS", FrameTime::GetFrameFPS());
 

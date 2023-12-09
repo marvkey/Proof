@@ -6,10 +6,18 @@
 #include "MeshCollider.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Mesh.h"
+#include "PhysicsLayerManager.h"
 namespace Proof {
 	namespace Utils {
 		
 	}
+	struct PhysXData
+	{
+		std::string LastErrorMessage = "";
+	};
+	static PhysXData* s_PhysXData;
+	PhysicsSettings s_PhysicsSettings = PhysicsSettings();
+
 	class PhysicsErrorCallback : public physx::PxDefaultErrorCallback {
 		virtual void reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line);
 	};
@@ -32,6 +40,11 @@ namespace Proof {
 	{
 		return s_Dispatcher;
 	}
+	PhysicsSettings& PhysicsEngine::GetSettings()
+	{
+		return s_PhysicsSettings;
+	}
+
 	Count<MeshCollider> PhysicsEngine::GetOrCreateColliderAsset(Entity entity, MeshColliderComponent& component)
 	{
 		Count<MeshCollider> colliderAsset =nullptr;
@@ -41,12 +54,13 @@ namespace Proof {
 		if (colliderAsset)
 			return colliderAsset;
 
+
 		if (entity.HasComponent<DynamicMeshComponent>())
 		{
 			auto& mc = entity.GetComponent<DynamicMeshComponent>();
 			if (mc.GetMesh() != nullptr)
 			{
-				component.ColliderID = AssetManager::CreateRuntimeAsset<MeshCollider>(mc.GetMesh()->GetID())->GetID();
+				component.ColliderID = AssetManager::CreateRuntimeAssetWithName<MeshCollider>("Default" + AssetManager::GetAssetInfo(mc.GetMesh()).GetName() + "Dynamic Collider", mc.GetMesh()->GetID())->GetID();
 				component.SubMeshIndex = mc.GetSubMeshIndex();
 			}
 		}
@@ -54,7 +68,7 @@ namespace Proof {
 		{
 			auto& mc = entity.GetComponent<MeshComponent>();
 			if(mc.GetMesh()!= nullptr)
-				component.ColliderID = AssetManager::CreateRuntimeAsset<MeshCollider>(mc.GetMesh()->GetID())->GetID();
+				component.ColliderID = AssetManager::CreateRuntimeAssetWithName<MeshCollider>("Default" + AssetManager::GetAssetInfo(mc.GetMesh()).GetName() + "Collider", mc.GetMesh()->GetID())->GetID();
 		}
 
 		if(AssetManager::HasAsset(component.ColliderID))
@@ -65,11 +79,10 @@ namespace Proof {
 
 		return colliderAsset;
 	}
-	void PhysicsEngine::Init(PhysicsSettings settings)
+	void PhysicsEngine::Init()
 	{
 		Timer time;
-
-		s_Settings = settings;
+		s_PhysXData = new PhysXData();
 
 		s_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION, s_DefaultAllocatorCallback, s_DefaultErrorCallback);
 
@@ -99,11 +112,13 @@ namespace Proof {
 
 		PhysicsMeshCooker::Init();
 		
+		PhysicsLayerManager::AddLayer("Default");
 		PF_ENGINE_INFO("Physics Engine Initialized {}m/s", time.ElapsedMillis());
 	}
 	void PhysicsEngine::Release()
 	{
 		Timer time;
+		PhysicsLayerManager::ClearLayers();
 		PhysicsMeshCooker::ShutDown();
 		PhysicsMeshCache::ShutDown();
 		PhysicsDebugger::Shutdown();
@@ -112,10 +127,34 @@ namespace Proof {
 		s_Dispatcher->release();
 		s_Pvd->release();
 		s_Foundation->release();
+		delete s_PhysXData;
 		PF_ENGINE_INFO("Physics Engine Shutdown {}m/s", time.ElapsedMillis());
 	}
+	std::string PhysicsEngine::GetLastErrorMessage()
+	{
+		return s_PhysXData->LastErrorMessage;
+	}
+
 	void PhysicsErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
 	{
+		const char* errorMessage = NULL;
+
+
+		switch (code)
+		{
+		case physx::PxErrorCode::eNO_ERROR:				errorMessage = ""; break;
+		case physx::PxErrorCode::eDEBUG_INFO:			errorMessage = "Info"; break;
+		case physx::PxErrorCode::eDEBUG_WARNING:		errorMessage = "Warning"; break;
+		case physx::PxErrorCode::eINVALID_PARAMETER:	errorMessage = "Invalid Parameter"; break;
+		case physx::PxErrorCode::eINVALID_OPERATION:	errorMessage = "Invalid Operation"; break;
+		case physx::PxErrorCode::eOUT_OF_MEMORY:		errorMessage = "Out Of Memory"; break;
+		case physx::PxErrorCode::eINTERNAL_ERROR:		errorMessage = "Internal Error"; break;
+		case physx::PxErrorCode::eABORT:				errorMessage = "Abort"; break;
+		case physx::PxErrorCode::ePERF_WARNING:			errorMessage = "Performance Warning"; break;
+		case physx::PxErrorCode::eMASK_ALL:				errorMessage = "Unknown Error"; break;
+		}
+
+		s_PhysXData->LastErrorMessage = fmt::format("{0}: {1}", errorMessage, message);
 		switch (code)
 		{
 			case physx::PxErrorCode::eDEBUG_INFO:

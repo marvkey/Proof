@@ -138,6 +138,8 @@ namespace Proof
 	}
 
 	static const uint32_t DOF_NUM_THREADS =32;
+	static const uint32_t BLOOM_COMPUTE_WORK_GROUP_SIZE = 8;
+	
 	WorldRenderer::~WorldRenderer() {
 		for (auto& transformBuffer : m_SubmeshTransformBuffers)
 			pdelete[] transformBuffer.Data;
@@ -598,7 +600,7 @@ namespace Proof
 
 
 				glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
-				bloomSize += m_BloomComputeWorkgroupSize - bloomSize % m_BloomComputeWorkgroupSize;
+				bloomSize += BLOOM_COMPUTE_WORK_GROUP_SIZE - bloomSize % BLOOM_COMPUTE_WORK_GROUP_SIZE;
 				m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
@@ -695,7 +697,7 @@ namespace Proof
 			m_GeometryWireFrameOnTopPass->AddGlobalInput(m_GlobalInputs);
 
 		}
-
+		Renderer::Submit([instance = Count<WorldRenderer>(this)]() mutable { instance->m_ResourcesCreatedGPU = true; });
 		PF_ENGINE_TRACE("World Renderer Inititilized");
 	}
 
@@ -711,7 +713,12 @@ namespace Proof
 		PF_CORE_ASSERT(!m_InContext);
 		PF_CORE_ASSERT(m_ActiveWorld);
 		PF_PROFILE_TAG("Renderer", m_ActiveWorld->GetName().c_str());
-		
+		if (m_ResourcesCreatedGPU)
+			m_ResourcesCreated = true;
+
+		if (!m_ResourcesCreated)
+			return;
+
 		m_InContext = true;
 
 		//reset stats
@@ -740,7 +747,7 @@ namespace Proof
 			//bloom
 			{
 				glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
-				bloomSize += m_BloomComputeWorkgroupSize - bloomSize % m_BloomComputeWorkgroupSize;
+				bloomSize += BLOOM_COMPUTE_WORK_GROUP_SIZE - bloomSize % BLOOM_COMPUTE_WORK_GROUP_SIZE;
 				m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
@@ -838,13 +845,13 @@ namespace Proof
 
 		Timer drawSceneTimer;
 		// clear screen
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
 
 //Renderer::BeginRenderPass(m_CommandBuffer,m_Dep, true);
 //		Renderer::EndRenderPass(m_GeometryPass);
 		
-		if (m_UBScreenData.FullResolution.x > 0 && m_UBScreenData.FullResolution.y > 0)
+		if (m_ResourcesCreated && m_UBScreenData.FullResolution.x > 0 && m_UBScreenData.FullResolution.y > 0)
 		{
+			Renderer::BeginCommandBuffer(m_CommandBuffer);
 
 			SetPasses();
 			ShadowPass();
@@ -852,9 +859,24 @@ namespace Proof
 			LightFrustrumAndCullingPass();
 			GeometryPass();
 			CompositePass();
+
+			Renderer::EndCommandBuffer(m_CommandBuffer);
+			Renderer::SubmitCommandBuffer(m_CommandBuffer);
 		}
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		else
+		{
+			Renderer::BeginCommandBuffer(m_CommandBuffer);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_PreDepthPass, true);
+			Renderer::EndRenderPass(m_PreDepthPass);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePass, true);
+			Renderer::EndRenderPass(m_CompositePass);
+
+			Renderer::EndCommandBuffer(m_CommandBuffer);
+			Renderer::SubmitCommandBuffer(m_CommandBuffer);
+
+		}
 		// clear data
 		//mesh Pass
 		{
@@ -878,11 +900,13 @@ namespace Proof
 	{
 		if (m_UBScreenData.FullResolution == glm::vec2{ width,height })
 			return;
-		if (width <= 0 || height <= 0)
-		{
-			width = 1;
-			height = 1;
-		}
+		//can only have a minum of 100 as the size of viewpoart
+		if (width <= 100)
+			width = 100;
+
+		if (height <= 100)
+			height = 100;
+
 		m_UBScreenData.FullResolution = { width, height };
 		m_UBScreenData.InverseFullResolution = {1/ width,  1/height };
 		m_UBScreenData.HalfResolution = glm::uvec2{ m_UBScreenData.FullResolution } / 2u;
@@ -904,7 +928,11 @@ namespace Proof
 
 	Count<Image2D> WorldRenderer::GetFinalPassImage()
 	{
-		return m_CompositePass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>(); 
+		auto image = m_CompositePass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>();
+		if (image == nullptr)
+			return Renderer::GetBlackTexture()->GetImage();
+
+		return image;
 	}
 
 	void WorldRenderer::SetPasses()
@@ -1461,9 +1489,15 @@ namespace Proof
 			m_CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
 
 			if (BloomSettings.Enabled)
+			{
 				m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", BloomSettings.Intensity);
+				m_CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
+			}
 			else
+			{
 				m_CompositeMaterial->Set("u_Uniforms.BloomIntensity", 0.0f);
+				m_CompositeMaterial->Set("u_BloomTexture", blackTexture);
+			}
 
 			if(DOFSettings.Enabled)
 				m_CompositeMaterial->Set("u_DOFTexture", m_DOFTexture);
@@ -1494,6 +1528,15 @@ namespace Proof
 				const auto& transformData = m_MeshTransformMap.at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 				RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_GeometryWireFramePassMaterial,
+					wireFramePass,
+					transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+			}
+
+			for (auto& [meshKey, dc] : m_DynamicColliderDrawList)
+			{
+				const auto& transformData = m_MeshTransformMap.at(meshKey);
+				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				RenderDynamicMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_GeometryWireFramePassMaterial,
 					wireFramePass,
 					transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 			}
@@ -1574,8 +1617,8 @@ namespace Proof
 			m_BloomComputePass->SetInput("u_BloomTexture", m_GeometryPass->GetOutput(0));
 			m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[0]);
 
-			workGroupsX = m_BloomComputeTextures[0]->GetWidth() / m_BloomComputeWorkgroupSize;
-			workGroupsY = m_BloomComputeTextures[0]->GetHeight() / m_BloomComputeWorkgroupSize;
+			workGroupsX = m_BloomComputeTextures[0]->GetWidth() / BLOOM_COMPUTE_WORK_GROUP_SIZE;
+			workGroupsY = m_BloomComputeTextures[0]->GetHeight() / BLOOM_COMPUTE_WORK_GROUP_SIZE;
 
 			m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
 			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
@@ -1608,8 +1651,8 @@ namespace Proof
 			{
 				auto imageView = m_BloomComputeTextures[0]->GetImageMip(i);
 				auto mipDimension = imageView->GetMipSize();
-				workGroupsX = (uint32_t)glm::ceil((float)mipDimension.x / (float)m_BloomComputeWorkgroupSize);
-				workGroupsY = (uint32_t)glm::ceil((float)mipDimension.y / (float)m_BloomComputeWorkgroupSize);
+				workGroupsX = (uint32_t)glm::ceil((float)mipDimension.x / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
+				workGroupsY = (uint32_t)glm::ceil((float)mipDimension.y / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
 
 				m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[1]->GetImageMip(i));
 				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
@@ -1684,8 +1727,8 @@ namespace Proof
 			bloomComputePushConstants.LOD--;
 			m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
 			auto dimension = m_BloomComputeTextures[2]->GetImageMip(mips - 2)->GetMipSize();
-			workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)m_BloomComputeWorkgroupSize);
-			workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)m_BloomComputeWorkgroupSize);
+			workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
+			workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
 			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
 
 			{
@@ -1718,8 +1761,8 @@ namespace Proof
 			for (int32_t mip = mips - 3; mip >= 0; mip--)
 			{
 				auto dimension = m_BloomComputeTextures[2]->GetImageMip(mip)->GetMipSize();
-				workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)m_BloomComputeWorkgroupSize);
-				workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)m_BloomComputeWorkgroupSize);
+				workGroupsX = (uint32_t)glm::ceil((float)dimension.x / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
+				workGroupsY = (uint32_t)glm::ceil((float)dimension.y / (float)BLOOM_COMPUTE_WORK_GROUP_SIZE);
 
 				m_BloomComputePass->SetInput("o_Image", m_BloomComputeTextures[2]->GetImageMip(mip));
 				m_BloomComputePass->SetInput("u_SourceTexture", m_BloomComputeTextures[0]);
@@ -1912,6 +1955,39 @@ namespace Proof
 				dc.InstanceCount++;
 				dc.OverrideMaterial = nullptr;
 			}
+		}
+	}
+
+	void WorldRenderer::SubmitPhysicsDynamicDebugMesh(Count<DynamicMesh> mesh, uint32_t subMeshIndex, const glm::mat4& transform)
+	{
+
+		PF_PROFILE_FUNC();
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		//PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+
+		AssetID meshID = mesh->GetID();
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		const auto& submeshData = meshSource->GetSubMesh(subMeshIndex);
+		const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
+
+		glm::mat4 subMeshTransform = transform * subMesh.Transform;
+
+		uint32_t materialIndex = subMesh.MaterialIndex;
+
+		AssetID materialHandle = m_GeometryWireFramePassMaterialAsset->GetID();
+		PF_CORE_ASSERT(materialHandle, "Material ID cannot be zero");
+
+		MeshKey meshKey = { meshID, materialHandle, subMeshIndex, false };
+		auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
+		transformStorage.Transform = subMeshTransform;
+
+		// geo pass
+		{
+			auto& dc = m_DynamicColliderDrawList[meshKey];
+			dc.Mesh = mesh;
+			dc.SubMeshIndex = subMeshIndex;
+			dc.InstanceCount++;
+			dc.OverrideMaterial = nullptr;
 		}
 	}
 

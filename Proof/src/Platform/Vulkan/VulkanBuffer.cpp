@@ -6,8 +6,8 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanAllocator.h"
 #include "VulkanDevice.h"
+#include "VulkanUtils/vk_mem_alloc.h"
 
-#include <vulkan/VulkanProofExternalLibs/vk_mem_alloc.h>
 namespace Proof
 {
 

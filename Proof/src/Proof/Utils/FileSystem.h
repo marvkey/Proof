@@ -12,6 +12,7 @@
 
 #include <string>
 #include <filesystem>
+#include <functional>
 namespace Proof
 {
 	namespace  Utils 
@@ -21,6 +22,22 @@ namespace Proof
 			return filename.substr(0, filename.find_first_of('.'));
 		}
 	}
+
+	enum class FileSystemAction
+	{
+		Added, Rename, Modified, Delete
+	};
+
+	struct FileSystemChangedEvent
+	{
+		FileSystemAction Action;
+		std::filesystem::path FilePath;
+		bool IsDirectory;
+
+		// If this is a rename event the new name will be in the FilePath
+		std::wstring OldName = L"";
+	};
+
 	class FileSystem
 	{
 	public:
@@ -101,6 +118,17 @@ namespace Proof
 
 		// extension is already added
 		static bool RenameFilename(const std::filesystem::path& oldFilepath, const std::string& newName);
+
+		using FileSystemChangedCallbackFn = std::function<void(const std::vector<FileSystemChangedEvent>&)>;
+		static void AddFileSystemChangedCallback(const FileSystemChangedCallbackFn& callback);
+		static void ClearFileSystemChangedCallbacks();
+		static void StartWatching();
+		static void StopWatching();
+		static void SkipNextFileSystemChange();
+	private:
+		static std::vector<FileSystemChangedCallbackFn> s_Callbacks;
+	private:
+		static unsigned long Watch(void* param);
 	};
 
 	class ShortCutDialogs 

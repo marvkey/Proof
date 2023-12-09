@@ -2,8 +2,9 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include "PhysicsTypes.h"
+#include "PhysicsLayerManager.h"
 
-#include <PxPhysicsAPI.h>
+#include <Physx/PxPhysicsAPI.h>
 namespace Proof {
 	struct TransformComponent;
 	namespace PhysXUtils
@@ -12,8 +13,8 @@ namespace Proof {
 		physx::PxTransform ToPhysXTransform(const glm::mat4& transform);
 		physx::PxTransform ToPhysXTransform(const glm::vec3& translation, const glm::quat& rotation);
 		physx::PxMat44 ToPhysXMatrix(const glm::mat4& matrix);
-		const physx::PxVec3& ToPhysXVector(const glm::vec3& vector);
-		const physx::PxVec4& ToPhysXVector(const glm::vec4& vector);
+		physx::PxVec3 ToPhysXVector(const glm::vec3& vector);
+		physx::PxVec4 ToPhysXVector(const glm::vec4& vector);
 		physx::PxExtendedVec3 ToPhysXExtendedVector(const glm::vec3& vector);
 		physx::PxQuat ToPhysXQuat(const glm::quat& quat);
 
@@ -30,6 +31,7 @@ namespace Proof {
 		physx::PxBroadPhaseType::Enum ProofToPhysXBroadphaseType(BroadphaseType type);
 		physx::PxFrictionType::Enum ProofToPhysXFrictionType(FrictionType type);
 		physx::PxControllerNonWalkableMode::Enum ToPhysXPxControllerNonWalkableMode(CharacterControllerNonWalkableMode mode);
+		physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection);
 
 		//
 		//physx::PxFilterData BuildFilterData(const PhysicsLayer& layerInfo, CollisionDetectionType collisionDetection);

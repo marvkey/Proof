@@ -733,11 +733,13 @@ namespace Proof
 		}
 		{
 			if (entity.HasComponent<MeshColliderComponent>()) {
-				MeshColliderComponent& meshCollider = entity.GetComponent<MeshColliderComponent>();
+				MeshColliderComponent& meshColliderComponent = entity.GetComponent<MeshColliderComponent>();
 				out << YAML::Key << "MeshColliderComponent";
 				out << YAML::BeginMap; // MeshColliderComponent
-				out << YAML::Key << "IsTrigger" << meshCollider.IsTrigger;
-				out << YAML::Key << "PhysicsMaterialPointerID" << meshCollider.m_PhysicsMaterialPointerID;
+				out << YAML::Key << "ColliderID" << YAML::Value << meshColliderComponent.ColliderID;
+				out << YAML::Key << "IsTrigger" << YAML::Value << meshColliderComponent.IsTrigger;
+				out << YAML::Key << "UseSharedShape" << YAML::Value << meshColliderComponent.UseSharedShape;
+				out << YAML::Key << "PhysicsMaterialPointerID" << YAML::Value << meshColliderComponent.m_PhysicsMaterialPointerID;
 				//out << YAML::Key << "MeshAssetPointerID" << meshCollider.m_MeshAssetPointerID;
 				out << YAML::EndMap; // MeshColliderComponent
 			}
@@ -751,7 +753,7 @@ namespace Proof
 				out << YAML::Key << "LinearDrag" << rigidBody.LinearDrag;
 				out << YAML::Key << "AngularDrag" << rigidBody.AngularDrag;
 				out << YAML::Key << "Gravity" << rigidBody.Gravity;
-				out << YAML::Key << "Type" << EnumReflection::EnumString<RigidBodyType>(rigidBody.m_RigidBodyType);
+				out << YAML::Key << "Type" << EnumReflection::EnumString<RigidBodyType>(rigidBody.RigidBodyType);
 				out << YAML::Key << "FreezeLocation" <<  rigidBody.FreezeLocation;
 				out << YAML::Key << "FreezeRotation" <<  rigidBody.FreezeRotation;
 				out << YAML::Key << "Kinematic" << rigidBody.Kinematic;
@@ -780,7 +782,6 @@ namespace Proof
 				out << YAML::Key << "Center" << characterController.Center;
 				out << YAML::Key << "Radius" << characterController.Radius;
 				out << YAML::Key << "Height" << characterController.Height;
-				out << YAML::Key << "Direction" <<EnumReflection::EnumString( characterController.Direction);
 
 				out << YAML::Key << "Size" << characterController.Size;
 				out << YAML::EndMap; // CharacterControllerComponent
@@ -955,7 +956,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		if (std::filesystem::exists(filePath) == false)
-			PF_CORE_ASSERT(false);
+			PF_CORE_ASSERT(false,fmt::format("Deerilize scenePath:{} not exist", filePath));
 		YAML::Node data = YAML::LoadFile(filePath);
 		if (!data["World"]) // if there is no scene no
 			return false;
@@ -1290,10 +1291,18 @@ namespace Proof
 				auto mehsCollider = entity["MeshColliderComponent"];
 				if (mehsCollider)
 				{
-					auto& src = NewEntity.AddComponent<MeshColliderComponent>();
-					src.IsTrigger = mehsCollider["IsTrigger"].as<bool>();
-					src.m_PhysicsMaterialPointerID = mehsCollider["PhysicsMaterialPointerID"].as<uint64_t>();
+					auto src = MeshColliderComponent();
+
+					src.ColliderID = mehsCollider["ColliderID"].as<uint64_t>(0);
+					src.IsTrigger = mehsCollider["IsTrigger"].as<bool>(false);
+					src.UseSharedShape = mehsCollider["UseSharedShape"].as<bool>(false);
+					src.m_PhysicsMaterialPointerID = mehsCollider["PhysicsMaterialPointerID"].as<uint64_t>(0);
+					
 					//src.m_MeshAssetPointerID = mehsCollider["MeshAssetPointerID"].as<uint64_t>();
+					// 
+					//doing this so we dont generate a default collider if collider is not 0
+					NewEntity.AddComponent<MeshColliderComponent>(src);
+
 				}
 			}
 			// RIGID BODY
@@ -1309,7 +1318,7 @@ namespace Proof
 					rgb.FreezeLocation = rigidBodyComponent["FreezeLocation"].as<VectorTemplate<bool>>();
 					rgb.FreezeRotation = rigidBodyComponent["FreezeRotation"].as<VectorTemplate<bool>>();
 					rgb.Kinematic = rigidBodyComponent["Kinematic"].as<bool>(rgb.Kinematic);
-					rgb.m_RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
+					rgb.RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
 					rgb.CollisionDetection = EnumReflection::StringEnum<CollisionDetectionType>(rigidBodyComponent["CollisionDetection"].
 						as<std::string>(EnumReflection::EnumString(CollisionDetectionType::Discrete)));
 				}
@@ -1338,7 +1347,6 @@ namespace Proof
 					ccc.Center = characterControllerComponent["Center"].as<glm::vec3>();
 					ccc.Radius = characterControllerComponent["Radius"].as<float>();
 					ccc.Height = characterControllerComponent["Height"].as<float>();
-					ccc.Direction = EnumReflection::StringEnum<CapsuleDirection>(characterControllerComponent["Direction"].as<std::string>());
 
 					ccc.Size = characterControllerComponent["Size"].as<glm::vec3>();
 				}

@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "Mouse.h"
-#include <Imgui/imgui.h>
+#include <imgui.h>
 #include <GLFW/glfw3.h>
 #include "Platform/Window/WindowsWindow.h"
 #include "Proof/Core/Application.h"
