@@ -269,6 +269,23 @@ namespace Proof::UI
 
         ImGui::Text(label.c_str());
     }
+    bool IsWindowFocused(const char* windowName, const bool checkRootWindow)
+    {
+        ImGuiWindow* currentNavWindow = GImGui->NavWindow;
+
+        if (checkRootWindow)
+        {
+            // Get the actual nav window (not e.g a table)
+            ImGuiWindow* lastWindow = NULL;
+            while (lastWindow != currentNavWindow)
+            {
+                lastWindow = currentNavWindow;
+                currentNavWindow = currentNavWindow->RootWindow;
+            }
+        }
+
+        return currentNavWindow == ImGui::FindWindowByName(windowName);
+    }
     bool AttributeInputText(const std::string& label, std::string& value, ImGuiInputTextFlags text_flags ,const std::string& helpMessage)
     {
         static char buffer[256];

@@ -31,6 +31,7 @@
 #include "Proof/Scripting/ScriptFile.h"
 #include "Proof/Utils/StringUtils.h"
 #include "Proof/Scripting/ScriptField.h"
+#include "Proof/ImGui/SelectionManager.h"
 //include those before stdlig.h
 
 #include "misc/cpp/imgui_stdlib.h"
@@ -190,7 +191,6 @@ namespace Proof
 
 			}
 			*/
-			if (!m_SelectedEntity)m_SelectedEntity = {};
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
 			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvail().x,ImGui::GetWindowHeight() / 2 });
 			if (ImGui::BeginPopupContextWindow(0)) { // right click adn open a new entitiy
@@ -208,7 +208,7 @@ namespace Proof
 				}
 
 				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
-					m_SelectedEntity = {};
+					SelectionManager::DeselectAll();
 				}
 			
 			}
@@ -225,8 +225,10 @@ namespace Proof
 			ImGui::BeginChild("Properties", ImGui::GetContentRegionAvail());
 			{
 				{
-					if (m_SelectedEntity) {
-						DrawComponent(m_SelectedEntity);
+					if (SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
+					{
+						auto entity = m_ActiveWorld->GetEntity( SelectionManager::GetSelections(SelectionContext::Scene).front());
+						DrawComponent(entity);
 					}
 				}
 				{
@@ -242,7 +244,6 @@ namespace Proof
 	}
 
 	bool  SceneHierachyPanel::CreateEntityMenu(Entity owner) {
-		uint64_t selectedPreviousEntityID = m_SelectedEntity.GetUUID();// we are doing this inncase we created a child entity
 		Entity newEntity;
 		if (ImGui::MenuItem("Entity"))
 			newEntity = m_ActiveWorld->CreateEntity();
@@ -300,7 +301,7 @@ namespace Proof
 		//	entity.GetComponent<TransformComponent>().GetRotationEuler().y, entity.GetComponent<TransformComponent>().GetRotationEuler().z);
 
 		ImGui::PushID(entity.GetUUID());
-		ImGuiTreeNodeFlags flags = ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		ImGuiTreeNodeFlags flags = ((SelectionManager::IsSelected(SelectionContext::Scene,entity.GetUUID()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
 
 		if (entity.GetComponent<HierarchyComponent>().Children.empty()) {
 			flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
@@ -323,15 +324,19 @@ namespace Proof
 			ImGui::EndDragDropSource();
 		}
 		if ( ImGui::IsItemClicked() && ImGui::IsKeyDown((ImGuiKey)KeyBoardKey::E) ==false) {
-			m_SelectedEntity = entity;
+			SelectionManager::DeselectAll();
+			SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
 		}
 		//if (ImGui::BeginPopupContextItem()) {
 		if(ImGui::BeginPopupContextItem("Entity Settings")) {
 			ImGui::EndPopup();
 		}
-		if (ImGui::BeginPopup("Entity Settings")) {
+		if (ImGui::BeginPopup("Entity Settings")) 
+		{
+			auto selectedEntity = m_ActiveWorld->GetEntity( SelectionManager::GetSelections(SelectionContext::Scene).front());
+
 			if (ImGui::BeginMenu("Child Entity")) {
-				bool temp = CreateEntityMenu(m_SelectedEntity);
+				bool temp = CreateEntityMenu(selectedEntity);
 				// not setting to opne because 
 				// if it is already opened what if we
 				// do not actually create and entity we are closing
@@ -340,10 +345,9 @@ namespace Proof
 				ImGui::EndMenu();
 			}
 			if (ImGui::MenuItem("Delete")) {
-				m_ActiveWorld->DeleteEntity(m_SelectedEntity, true);
+				m_ActiveWorld->DeleteEntity(selectedEntity, true);
 
-				m_SelectedEntity = {};
-
+				SelectionManager::DeselectAll();
 				if (opened) {
 					ImGui::EndPopup();
 					ImGui::TreePop();
@@ -352,21 +356,23 @@ namespace Proof
 				}
 			}
 
-			if (m_ActiveWorld->HasEntity(m_SelectedEntity.GetUUID()))
+			if (m_ActiveWorld->HasEntity(selectedEntity.GetUUID()))
 			{
 				if (ImGui::MenuItem("Duplicate"))
 				{
-					m_ActiveWorld->CreateEntity(m_SelectedEntity);
+					auto entity = m_ActiveWorld->CreateEntity(selectedEntity);
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
 				}
 			}
 			ImGui::EndPopup();
 		}
-		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
-			//Editore3D::Get()->m_EditorCamera.SetPosition( m_ActiveWorld->GetWorldSpaceLocation(m_SelectedEntity));
-		}
-		if (m_SelectedEntity && ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::F)) {
-			//Editore3D::Get()->m_EditorCamera.SetPosition (m_ActiveWorld->GetWorldSpaceLocation(m_SelectedEntity));
-		}
+		//if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0) && m_SelectedEntity) {
+		//	//Editore3D::Get()->m_EditorCamera.SetPosition( m_ActiveWorld->GetWorldSpaceLocation(m_SelectedEntity));
+		//}
+		//if (m_SelectedEntity && ImGui::IsKeyPressed((ImGuiKey)KeyBoardKey::F)) {
+		//	//Editore3D::Get()->m_EditorCamera.SetPosition (m_ActiveWorld->GetWorldSpaceLocation(m_SelectedEntity));
+		//}
 
 		if (opened) {
 			for (const UUID& I : entity.GetComponent<HierarchyComponent>().Children) {

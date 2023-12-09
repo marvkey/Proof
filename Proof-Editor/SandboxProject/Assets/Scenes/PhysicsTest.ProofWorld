@@ -15,34 +15,6 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 2.5
-    - Entity: 17866084973620081364
-      TagComponent:
-        Tag: Sphere
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 51
-      SphereColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Radius: 0.5
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Dynamic
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
     - Entity: 12455402995532175596
       TagComponent:
         Tag: Cube
@@ -75,6 +47,61 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 17866084973620081364
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 51
+      SphereColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 6245801549288932895
+      TagComponent:
+        Tag: CharacterController
+        tags: []
+      TransformComponent:
+        Location: [-0.100000001, 0, 4.9000001]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 52
+      CharacterControllerComponent:
+        SlopeLimitRadians: 0.707000017
+        StepOffset: 0.300000012
+        SkinOffset: 0.00999999978
+        GravityEnabled: true
+        GravityScale: 1
+        MinMoveDistance: 0
+        WalkableMode: PreventClimbing
+        PhysicsMaterialID: 0
+        ColliderType: Capsule
+        Center: [0, 0, 0]
+        Radius: 0.5
+        Height: 2
+        Size: [1, 1, 1]
     - Entity: 16362547569400977961
       TagComponent:
         Tag: Plane
@@ -107,33 +134,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 6245801549288932895
-      TagComponent:
-        Tag: CharacterController
-        tags: []
-      TransformComponent:
-        Location: [-0.100000001, 0, 4.9000001]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 52
-      CharacterControllerComponent:
-        SlopeLimitRadians: 0.707000017
-        StepOffset: 0.300000012
-        SkinOffset: 0.00999999978
-        GravityEnabled: true
-        GravityScale: 1
-        MinMoveDistance: 0
-        WalkableMode: PreventClimbing
-        PhysicsMaterialID: 0
-        ColliderType: Capsule
-        Center: [0, 0, 0]
-        Radius: 0.5
-        Height: 2
-        Size: [1, 1, 1]
     - Entity: 12268580492062250528
       TagComponent:
         Tag: triggerCube

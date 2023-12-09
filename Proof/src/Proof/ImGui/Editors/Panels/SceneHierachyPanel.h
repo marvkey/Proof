@@ -13,15 +13,15 @@ namespace Proof
 		static void DrawVector4Control(const std::string& UniqeLabel, glm::vec4& Vec, float ResetValue = 0.0f, float columnWidth = 100.0f);
 		static void DrawVector2Control(const std::string& UniqeLabel,glm::vec2& Vec,float ResetValue = 0.0f,float columnWidth = 100.0f);
 		static void DrawVectorControl(const std::string& UniqeLabel, VectorTemplate<bool>& Vec, bool resetValue = true,float columnWidth = 100.0f);
-		Entity GetSelectedEntity() { return m_SelectedEntity; };
-		void SetSelectedEntity(Entity entity){m_SelectedEntity = entity;};
-		virtual void SetWorldContext(const Count<class World>& world) { m_ActiveWorld = world;  m_SelectedEntity = {}; }
+		//Entity GetSelectedEntity() { return m_SelectedEntity; };
+		//void SetSelectedEntity(Entity entity){m_SelectedEntity = entity;};
+		virtual void SetWorldContext(const Count<class World>& world) { m_ActiveWorld = world; }
 	private:
 
 		bool m_WindowHoveredorFocus = false;
 		bool CreateEntityMenu(Entity owner = {});
 		Count<class World> m_ActiveWorld = nullptr;
-		Entity m_SelectedEntity = {};
+		//Entity m_SelectedEntity = {};
 		void DrawEntityNode(class Entity entity); 
 		void DrawComponent(class Entity& entity);
 

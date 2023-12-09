@@ -41,6 +41,7 @@
 #include "Proof/ImGui/Editors/Panels/PhysicsPanelStats.h"
 #include "Proof/ImGui/Editors/Panels/ProjectSettingsPanel.h"
 #include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
+#include "Proof/ImGui/SelectionManager.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -608,9 +609,14 @@ namespace Proof
 
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
 		bool shift = IsKeyPressedEditor(KeyBoardKey::LeftShift) || IsKeyPressedEditor(KeyBoardKey::RightShift);
+		bool isViewportOrHierieachyFocused = UI::IsWindowFocused("Scene Hierarchy") || UI::IsWindowFocused("Viewport");
 
+		for (auto panel : s_EditorData->PanelManager->GetPanels())
+		{
+		}
+		//UI::is
 		//basically means that m_editor camera is beign used 
-		if (m_ViewPortFocused == false || Input::IsMouseButtonPressed(MouseButton::ButtonRight) == true)
+		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight) == true)
 			return false;
 		switch (e.GetKey())
 		{
@@ -627,7 +633,7 @@ namespace Proof
 				}
 			case KeyBoardKey::F:
 				{
-					m_EditorCamera.SetPosition(	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity().Transform().Location);
+					//m_EditorCamera.SetPosition(	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity().Transform().Location);
 					return true;
 				}
 			case KeyBoardKey::P:
@@ -677,18 +683,42 @@ namespace Proof
 						Save();
 						return true;
 					}
-
 					break;
 				}
 
 			case KeyBoardKey::D:
 				{
+					if (isViewportOrHierieachyFocused && control)
+					{
+						auto selectedEntities = SelectionManager::GetSelections(SelectionContext::Scene);
+						for (const auto& entityID : selectedEntities)
+						{
+							Entity entity = m_ActiveWorld->GetEntity(entityID);
+							Entity duplicate = m_ActiveWorld->CreateEntity(entity);
+							SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());
+							SelectionManager::Select(SelectionContext::Scene, duplicate.GetUUID());
+						}
+						if(!selectedEntities.empty())
+							return true;
+					}
 					break;
 
 				}
 			case KeyBoardKey::Delete:
 			case KeyBoardKey::Backspace:
 				{
+					if (isViewportOrHierieachyFocused )
+					{
+						auto selectedEntities = SelectionManager::GetSelections(SelectionContext::Scene);
+						for (const auto& entityID : selectedEntities)
+						{
+							Entity entity = m_ActiveWorld->GetEntity(entityID);
+							SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());
+							m_ActiveWorld->DeleteEntity(entity);
+						}
+						if (!selectedEntities.empty())
+							return true;
+					}
 					break;
 				}
 				// copy entity
@@ -1105,7 +1135,9 @@ namespace Proof
 			// GUIZMOS
 
 			// cherno game engein reveiw 22 minutes 48 seconds reference
-			Entity selectedEntity = s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity();
+			Entity selectedEntity;
+			if (SelectionManager::GetSelections(SelectionContext::Scene).size() > 0)
+				selectedEntity = m_ActiveWorld->GetEntity( SelectionManager::GetSelections(SelectionContext::Scene).front());
 			if (selectedEntity)
 			{
 				ImGuizmo::SetOrthographic(true);
@@ -1179,7 +1211,7 @@ namespace Proof
 					ScerilizerNewWorld.DeSerilizeText(ID);
 
 				}
-
+				/*
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Mesh).c_str()))
 				{
 					UUID meshID = *(UUID*)payload->Data;
@@ -1195,7 +1227,6 @@ namespace Proof
 					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAsset<DynamicMesh>(meshID));
 					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
 				}
-
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::MeshSourceFile).c_str()))
 				{
 					UUID meshSourceId = *(UUID*)payload->Data;
@@ -1213,6 +1244,8 @@ namespace Proof
 					Entity newentt = m_ActiveWorld->CreateEntity(name, prefab, TransformComponent());
 					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
 				}
+				*/
+
 				ImGui::EndDragDropTarget();
 			}
 
@@ -1223,20 +1256,20 @@ namespace Proof
 				// basically add mesh is done with its operation and no longer renderng
 				if (meshSourceAdded == false)
 				{
-					if (AssetManager::GetAssetInfo(id).Type == AssetType::Mesh)
-					{
-
-						Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
-						newentt.AddComponent<MeshComponent>().SetMesh(id);
-						s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-					}
-					else if (AssetManager::GetAssetInfo(id).Type == AssetType::DynamicMesh)
-					{
-
-						Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
-						newentt.AddComponent<DynamicMeshComponent>().SetMesh(id);
-						s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-					}
+					//if (AssetManager::GetAssetInfo(id).Type == AssetType::Mesh)
+					//{
+					//
+					//	Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
+					//	newentt.AddComponent<MeshComponent>().SetMesh(id);
+					//	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
+					//}
+					//else if (AssetManager::GetAssetInfo(id).Type == AssetType::DynamicMesh)
+					//{
+					//
+					//	Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
+					//	newentt.AddComponent<DynamicMeshComponent>().SetMesh(id);
+					//	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
+					//}
 				}
 			}
 			if (SaveSceneDialouge)
@@ -1472,6 +1505,7 @@ namespace Proof
 			SceneSerializer scerelizer(m_ActiveWorld.Get());
 			auto assetInfo = AssetManager::GetAssetInfo(m_ActiveWorld->GetID());
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
+			PF_INFO("{} Saved", m_ActiveWorld->GetName());
 
 		}
 
@@ -1622,6 +1656,7 @@ namespace Proof
 	{
 	}
 	void Editore3D::PlayWorld() {
+		SelectionManager::DeselectAll();
 		m_ActiveWorld = World::Copy(m_EditorWorld);
 		s_DetachPlayer = false;
 
@@ -1632,10 +1667,12 @@ namespace Proof
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 	}
 	void Editore3D::SimulateWorld() {
+
 		s_DetachPlayer = false;
 		m_ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
 	void Editore3D::SetWorldEdit() {
+		SelectionManager::DeselectAll();
 
 		//s_EditorData->GuizmoType = 0;
 		m_ActiveWorld->EndRuntime();

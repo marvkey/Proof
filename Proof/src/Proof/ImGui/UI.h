@@ -73,6 +73,7 @@ namespace Proof::UI
 		return changed;
 	}
 
+	bool IsWindowFocused(const char* windowName, const bool checkRootWindow = true);
 
 	bool AttributeInputText(const std::string& label, std::string& value, ImGuiInputTextFlags text_flags = 0, const std::string& helpMessage = "");
 	bool AttributeInputRawText(const std::string& label, char* buffer, uint32_t bufferSize = 256, ImGuiInputTextFlags text_flags = 0, const std::string& helpMessage = "");
