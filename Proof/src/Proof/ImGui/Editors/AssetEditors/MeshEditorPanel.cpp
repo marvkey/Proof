@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "MeshEditorPanel.h"
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Scene/Mesh.h"

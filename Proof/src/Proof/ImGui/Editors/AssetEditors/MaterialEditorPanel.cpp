@@ -1,7 +1,8 @@
+#include "Proofprch.h"
 #include "MaterialEditorPanel.h"
 #include <imgui.h>
 #include <imgui_internal.h>
-#include "../../EditorResources.h"
+#include "../EditorResources.h"
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Scene/Material.h"
 #include "../Panels/SceneHierachyPanel.h"

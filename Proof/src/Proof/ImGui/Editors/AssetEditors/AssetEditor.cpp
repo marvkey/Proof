@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "AssetEditor.h"
 #include "Proof/Core/FrameTime.h"
 #include "ProoF/Asset/Asset.h"

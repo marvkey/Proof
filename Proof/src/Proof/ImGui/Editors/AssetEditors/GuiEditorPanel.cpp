@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "GuiEditorPanel.h"
 #include "Proof/Utils/PlatformUtils.h"
 

@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "ProjectSettingsPanel.h"
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UIUtilities.h"

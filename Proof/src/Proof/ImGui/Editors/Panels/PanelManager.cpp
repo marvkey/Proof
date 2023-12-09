@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "PanelManager.h"
 
 namespace Proof

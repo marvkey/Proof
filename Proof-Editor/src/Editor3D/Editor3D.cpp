@@ -31,16 +31,16 @@
 #include "Proof/ImGui/UiUtilities.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
-#include "EditorResources.h"
-#include "Editors/Panels/PanelManager.h"
-#include "Editors/Panels/AssetManagerPanel.h"
-#include "Editors/Panels/InputPanel.h"
-#include "Editors/Panels/SceneHierachyPanel.h"
-#include "Editors/Panels/ContentBrowser/ContentBrowserPanel.h"
-#include "Editors/Panels/WorldRendererPanel.h"
-#include "Editors/Panels/PhysicsPanelStats.h"
-#include "Editors/Panels/ProjectSettingsPanel.h"
-#include "Editors/AssetEditors/AssetEditor.h"
+#include "Proof/ImGui/Editors/EditorResources.h"
+#include "Proof/ImGui/Editors/Panels/PanelManager.h"
+#include "Proof/ImGui/Editors/Panels/AssetManagerPanel.h"
+#include "Proof/ImGui/Editors/Panels/InputPanel.h"
+#include "Proof/ImGui/Editors/Panels/SceneHierachyPanel.h"
+#include "Proof/ImGui/Editors/Panels/ContentBrowser/ContentBrowserPanel.h"
+#include "Proof/ImGui/Editors/Panels/WorldRendererPanel.h"
+#include "Proof/ImGui/Editors/Panels/PhysicsPanelStats.h"
+#include "Proof/ImGui/Editors/Panels/ProjectSettingsPanel.h"
+#include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

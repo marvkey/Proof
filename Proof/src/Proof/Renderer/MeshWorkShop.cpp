@@ -211,6 +211,7 @@ namespace Proof {
             }
         }
 #else
+        //https://behreajj.medium.com/making-a-capsule-mesh-via-script-in-five-3d-environments-c2214abf02db
         constexpr uint32_t longitudes = 8;
         constexpr uint32_t latitudes = 4;
         constexpr uint32_t rings = 1;

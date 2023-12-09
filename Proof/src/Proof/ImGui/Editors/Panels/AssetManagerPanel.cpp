@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "AssetManagerPanel.h"
 #include <imgui.h>
 #include <imgui_internal.h>

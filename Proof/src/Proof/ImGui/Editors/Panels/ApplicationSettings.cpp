@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "ApplicationSettings.h"
 #include <filesystem>
 namespace Proof {

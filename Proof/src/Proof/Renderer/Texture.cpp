@@ -1,9 +1,9 @@
 #include "Proofprch.h"
 #include "Texture.h"
 #include "Renderer.h"
-#include "Platform/OpenGL/OpenGLTexture.h"
-#include "Platform/Vulkan/VulkanTexutre.h"
-#include "Platform/Vulkan/VulkanImage.h"
+//#include "Platform/OpenGL/OpenGLTexture.h"
+#include "Proof/Platform/Vulkan/VulkanTexutre.h"
+#include "Proof/Platform/Vulkan/VulkanImage.h"
 //#define STB_IMAGE_IMPLEMENTATION
 //#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include"../vendor/stb_image.h"

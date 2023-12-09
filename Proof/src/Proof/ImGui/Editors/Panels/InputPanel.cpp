@@ -1,8 +1,8 @@
+#include "Proofprch.h"
 #include"InputPanel.h"
 #include <imgui.h>
 #include <imgui_internal.h>
 #include "Proof/Utils/PlatformUtils.h"
-#include "Editor3D/Editor3D.h"
 #include "Proof/Input/InputManager.h"
 #include "Proof/Core/Profile.h"
 #include "Proof/ImGui/UI.h"

@@ -2,7 +2,7 @@
 #include "GraphicsContext.h"
 #include "Renderer.h"
 //#include "Platform/OpenGL/OpenGLGraphicsContext.h"
-#include "Platform/Vulkan/VulkanGraphicsContext.h"
+#include "Proof/Platform/Vulkan/VulkanGraphicsContext.h"
 namespace Proof {
 	Count<GraphicsContext> GraphicsContext::Create() 
 	{

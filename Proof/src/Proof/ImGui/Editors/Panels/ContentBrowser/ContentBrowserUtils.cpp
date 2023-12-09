@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "ContentBrowserUtils.h"
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/Core/Application.h"
@@ -9,7 +10,7 @@
 #include "Proof/Utils/StringUtils.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Utils/StringUtils.h"
-#include "Editor3D/EditorResources.h"
+#include "Proof/ImGui/Editors/EditorResources.h"
 #include "ContentBrowserPanel.h"
 
 #include "Proof/Asset/AssetManager.h"

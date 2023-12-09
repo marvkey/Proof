@@ -1,5 +1,5 @@
 #pragma once
-#include "Editor3D/Editors/Panels/Panel.h"
+#include "../Panel.h"
 #include "Proof/Asset/Asset.h"
 #include "ContentBrowserUtils.h"
 #include  "Proof/Utils/FileSystem.h"

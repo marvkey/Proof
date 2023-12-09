@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "SceneHierachyPanel.h"
 #include "Proof/ImGui/ImGuiLayer.h"
 #include "Proof/Scene/Entity.h"
@@ -16,7 +17,6 @@
 #include "Proof/Scene/Script.h"
 #include "Proof/Input/KeyCodes.h"
 #include "imgui_internal.h"
-#include "Editor3D/Editor3D.h"
 #include "Proof/Scene/Component.h"
 #include "Proof/Asset/AssetManager.h"
 #include <string.h>

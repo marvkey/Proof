@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "ComputePipeline.h"
-#include "Platform/Vulkan/VulkanComputePipeline.h"
+#include "Proof/Platform/Vulkan/VulkanComputePipeline.h"
 #include "Renderer.h"
 
 namespace Proof 

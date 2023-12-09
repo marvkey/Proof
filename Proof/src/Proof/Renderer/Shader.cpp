@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "Shader.h"
-#include "Platform/OpenGL/OpenGLShader.h"
-#include "Platform/Vulkan/VulkanShader.h"
+//#include "Proof/Platform/OpenGL/OpenGLShader.h"
+#include "Proof/Platform/Vulkan/VulkanShader.h"
 #include "Renderer.h"
 #include "Renderer.h"
 namespace Proof

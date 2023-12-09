@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "ParticleSystemEditorPanel.h"
 #include "Proof/Renderer/Renderer.h"
 #include "../Panels/SceneHierachyPanel.h"

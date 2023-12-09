@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "ContentBrowserPanel.h"
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Physics/MeshCollider.h"
@@ -15,10 +16,10 @@
 #include "Proof/Input/Input.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/MouseEvent.h"
-#include "Editor3D/EditorResources.h"
+#include "../../EditorResources.h"
 
 #include "../ApplicationSettings.h"
-#include "Editor3D/Editors/AssetEditors/AssetEditor.h"
+#include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
 #include "Proof/Utils/StringUtils.h"
 
 //https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/AntPlay/src/Panels/ContentBrowserPanel.cpp

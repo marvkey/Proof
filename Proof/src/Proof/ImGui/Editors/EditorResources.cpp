@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "EditorResources.h"
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Core/Buffer.h"

@@ -1,3 +1,4 @@
+#include "Proofprch.h"
 #include "PhysicsPanelStats.h"
 #include "Proof/Core/Profile.h"
 #include "Proof/ImGui/UI.h"
