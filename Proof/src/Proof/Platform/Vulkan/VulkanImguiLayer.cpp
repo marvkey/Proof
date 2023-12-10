@@ -156,6 +156,7 @@ namespace Proof {
 	void VulkanImguiLayer::End()
 	{
 		PF_PROFILE_FUNC();
+		ImGuiLayer::End();
 
 		ImGui::Render();
 

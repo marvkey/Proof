@@ -417,7 +417,11 @@ namespace Proof::UI
             drawList->AddRect(rect.Min, rect.Max,
                 ImColor(50, 50, 50), rounding, 0, 1.0f);
         }
-    };
+    }
+    void ShowRawMessageBox(const std::string& title, UIMessageBoxData& data)
+    {
+        Application::Get()->GetImguiLayer()->ShowRawMessageBox(title, data);
+    }
     
     bool AttributeTextBar(const std::string& label, const std::string& text)
     {

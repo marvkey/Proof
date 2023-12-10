@@ -26,6 +26,8 @@
 
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Utils/StringUtils.h"
+#include "Proof/Physics/MeshCollider.h"
+#include "Proof/Physics/PhysicsMeshCooker.h"
 
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UiUtilities.h"
@@ -90,6 +92,22 @@ namespace Proof
 		Count<Texture2D> PauseButtonTexture;
 		Count<Texture2D> SimulateButtonTexture;
 		Count<Texture2D> StopButtonTexture;
+
+		struct CreateNewMeshPopupData
+		{
+			Count<MeshSource> MeshToCreate;
+			std::string CreateMeshFilenameBuffer = "Mesh/";
+			std::string CreateSkeletonFilenameBuffer;
+			std::string CreateAnimationFilenameBuffer;
+			Entity TargetEntity;
+
+			CreateNewMeshPopupData()
+			{
+				MeshToCreate = nullptr;
+				TargetEntity = {};
+			}
+
+		} CreateNewMeshPopupData;
 	};
 	enum class PopupState
 	{
@@ -609,7 +627,7 @@ namespace Proof
 
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
 		bool shift = IsKeyPressedEditor(KeyBoardKey::LeftShift) || IsKeyPressedEditor(KeyBoardKey::RightShift);
-		bool isViewportOrHierieachyFocused = UI::IsWindowFocused("Scene Hierarchy") || UI::IsWindowFocused("Viewport");
+		bool isViewportOrHierieachyFocused = UI::IsWindowFocused("Scene Hierarchy") || m_ViewPortFocused;
 
 		for (auto panel : s_EditorData->PanelManager->GetPanels())
 		{
@@ -695,7 +713,7 @@ namespace Proof
 						{
 							Entity entity = m_ActiveWorld->GetEntity(entityID);
 							Entity duplicate = m_ActiveWorld->CreateEntity(entity);
-							SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());
+							SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());  
 							SelectionManager::Select(SelectionContext::Scene, duplicate.GetUUID());
 						}
 						if(!selectedEntities.empty())
@@ -738,7 +756,10 @@ namespace Proof
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					{
 						s_EditorData->GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+						return true;
+					}
 					break;
 				}
 
@@ -766,7 +787,8 @@ namespace Proof
 		}
 		return false;
 	}
-	void Editore3D::Logger() {
+	void Editore3D::Logger() 
+	{
 		if (s_EditorData->ShowLogger == false)
 			return;
 		PF_PROFILE_FUNC();
@@ -1194,6 +1216,8 @@ namespace Proof
 
 				}
 			}
+			UI_HandleAssetDrop();
+#if 0
 			static bool meshSourceAdded = false;
 			static std::filesystem::path meshSourcePath;
 			/* putting this underneath image because a window only accpet drop tarGet to when item is bound so and image has been bound */
@@ -1209,6 +1233,9 @@ namespace Proof
 
 					SceneSerializer ScerilizerNewWorld(m_ActiveWorld.Get());
 					ScerilizerNewWorld.DeSerilizeText(ID);
+				}
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("asset_payload"))
+				{
 
 				}
 				/*
@@ -1281,6 +1308,7 @@ namespace Proof
 					Save();
 				}
 			}
+#endif
 			/*----------------------------------------------------------------------------------------------------------------------------*/
 		}
 		ImGui::End();
@@ -1651,6 +1679,142 @@ namespace Proof
 		}
 
 		ImGui::End();
+	}
+	void Editore3D::UI_HandleAssetDrop()
+	{
+		if (!ImGui::BeginDragDropTarget())
+			return;
+		auto data = ImGui::AcceptDragDropPayload("asset_payload");
+		if (data)
+		{
+			uint64_t count = data->DataSize / sizeof(AssetID);
+			if(count >0)
+				SelectionManager::DeselectAll(SelectionContext::Scene);
+
+			for (uint64_t i = 0; i < count; i++)
+			{
+				AssetID assetHandle = *(((AssetID*)data->Data) + i);
+				// We can't really support dragging and dropping worlds when we're dropping multiple assets
+				//if (count == 1 && assetData.Type == AssetType::Scene)
+				//{
+				//	OpenScene(assetData);
+				//	break;
+				//}
+
+				if (!AssetManager::HasAsset(assetHandle))
+					continue;
+				const AssetInfo& info = AssetManager::GetAssetInfo(assetHandle);
+				if (info.Type == AssetType::MeshSourceFile)
+				{
+					s_EditorData->CreateNewMeshPopupData.MeshToCreate = AssetManager::GetAsset<MeshSource>(info.ID);
+					UI_ShowCreateNewMeshPopup();
+				}
+				else if (info.Type == AssetType::Mesh)
+				{
+					Count<Mesh> mesh = AssetManager::GetAsset<Mesh>(info.ID);
+					Entity entity = m_ActiveWorld->CreateEntity(info.GetName());
+					entity.AddComponent<MeshComponent>().SetMesh(mesh->GetID());
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+				}
+				else if (info.Type == AssetType::DynamicMesh)
+				{
+					Count<DynamicMesh> mesh = AssetManager::GetAsset<DynamicMesh>(info.ID);
+					Entity rootEntity = m_ActiveWorld->CreateEntity(mesh);
+					SelectionManager::Select(SelectionContext::Scene, rootEntity.GetUUID());
+				}
+				else if (info.Type == AssetType::Prefab)
+				{
+					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(info.ID);
+					m_ActiveWorld->CreateEntity(info.GetName(), prefab, TransformComponent());
+				}
+			}
+		}
+		ImGui::EndDragDropTarget();
+
+	}
+	void Editore3D::UI_ShowCreateNewMeshPopup()
+	{
+		UI::ShowMessageBox("Create New Mesh", [this]()
+			{
+				static bool dynamicMesh = false;
+				static bool doGenerateColliders = true;
+
+				UI::AttributeBool("Dynamic", dynamicMesh);
+				UI::AttributeBool("Generate Colliders", doGenerateColliders, "Controls whether physics components (collider and rigid body) will be added to the newly created entity.");
+				ImGui::Separator();
+				ImGui::Text(Project::GetActive()->GetProjectDirectory().filename().string().c_str());
+				UI::AttributeInputText("MeshPath", s_EditorData->CreateNewMeshPopupData.CreateMeshFilenameBuffer);
+
+				
+
+				PF_CORE_ASSERT(s_EditorData->CreateNewMeshPopupData.MeshToCreate);
+				if (ImGui::Button("Create"))
+				{
+					std::filesystem::path savedPath = Project::GetActive()->GetAssetDirectory() / s_EditorData->CreateNewMeshPopupData.CreateMeshFilenameBuffer;
+					
+					if (!dynamicMesh)
+						savedPath += Utils::GetAssetExtensionString(AssetType::Mesh);
+					else
+						savedPath += Utils::GetAssetExtensionString(AssetType::DynamicMesh);
+
+					if (!FileSystem::Exists(savedPath.parent_path()))
+						FileSystem::CreateDirectory(savedPath.parent_path());
+
+					savedPath = FileSystem::GenerateUniqueFileName(savedPath);
+
+					if (!s_EditorData->CreateNewMeshPopupData.MeshToCreate->GetSubMeshes().empty())
+					{
+
+						SelectionManager::DeselectAll(SelectionContext::Scene);
+
+						if (!dynamicMesh)
+						{
+							Count<Mesh> mesh = AssetManager::NewAsset<Mesh>(savedPath, s_EditorData->CreateNewMeshPopupData.MeshToCreate);
+							auto entity = s_EditorData->CreateNewMeshPopupData.TargetEntity;
+
+							if (!entity)
+							{
+								entity = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(mesh).GetName());
+							}
+
+							entity.GetorCreateComponent<MeshComponent>().SetMesh(mesh->GetID());
+							SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+							if (doGenerateColliders && !entity.HasComponent<MeshColliderComponent>())
+							{
+								auto& colliderComponent = entity.GetorCreateComponent<MeshColliderComponent>();
+								Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(entity, colliderComponent);
+								colliderComponent.ColliderID = colliderAsset->GetID();
+								colliderComponent.SubMeshIndex = 0;
+								colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
+								entity.GetorCreateComponent<RigidBodyComponent>();
+
+							}
+
+						}
+						else
+						{
+							Count<DynamicMesh> mesh = AssetManager::NewAsset<DynamicMesh>(savedPath, s_EditorData->CreateNewMeshPopupData.MeshToCreate);
+							auto entity = s_EditorData->CreateNewMeshPopupData.TargetEntity;
+							if (!entity)
+							{
+								entity = m_ActiveWorld->CreateEntity(mesh, doGenerateColliders);
+								SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+							}
+						}
+					}
+
+					s_EditorData->CreateNewMeshPopupData = {};
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+
+				if (ImGui::Button("Cancel"))
+				{
+					s_EditorData->CreateNewMeshPopupData = {};
+					ImGui::CloseCurrentPopup();
+				}
+			});
 	}
 	void Editore3D::SetActiveWorld(Count<World> world)
 	{

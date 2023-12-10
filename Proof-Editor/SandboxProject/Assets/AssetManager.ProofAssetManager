@@ -236,6 +236,9 @@ Assets:
   - Asset: 1952111404058252245
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2374361008830720677.jpg
+  - Asset: 5183635011300566460
+    Type: DynamicMesh
+    Path: Mesh\DynamicSponza.DynamicMesh.ProofAsset
   - Asset: 15621592644097797435
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7441062115984513793.jpg

@@ -135,7 +135,11 @@ namespace Proof
 	{
 		if (m_MeshID == 0)return nullptr;
 //	#ifdef PF_ENABLE_DEBUG
-		if (!AssetManager::HasAsset(m_MeshID)) { m_MeshID = 0; return nullptr; };
+		if (!AssetManager::HasAsset(m_MeshID)) 
+		{ 
+			m_MeshID = 0; 
+			return nullptr;
+		};
 	//#endif 
 		return AssetManager::GetAsset<DynamicMesh>(m_MeshID);
 	}
@@ -146,10 +150,11 @@ namespace Proof
 	}
 	void DynamicMeshComponent::SetSubMeshIndex(uint32_t setSubMeshIndex)
 	{
+		PF_INFO("Set SUbmesh index called");
 		auto mesh = GetMesh();
 		if (mesh == nullptr)
 		{
-			m_SubmeshIndex = setSubMeshIndex;
+			m_SubmeshIndex = 0;
 			return;
 		}
 

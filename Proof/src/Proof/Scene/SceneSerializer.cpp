@@ -1090,10 +1090,11 @@ namespace Proof
 				if (dynamicMeshComponent)
 				{
 					auto& src = NewEntity.AddComponent<DynamicMeshComponent>();
-					src.m_MeshID = dynamicMeshComponent["DynamicMeshAssetPointerID"].as<uint64_t>();
+					
+					src.m_MeshID = dynamicMeshComponent["DynamicMeshAssetPointerID"].as<uint64_t>(0);
 					src.CastShadow = dynamicMeshComponent["CastShadow"].as<bool>();
 					src.Visible = dynamicMeshComponent["Visible"].as<bool>();
-					src.m_SubmeshIndex = dynamicMeshComponent["SubMeshIndex"].as<uint32_t>();
+					src.m_SubmeshIndex =dynamicMeshComponent["SubMeshIndex"].as<uint32_t>();
 
 					if (dynamicMeshComponent["MaterialTable"])
 					{
@@ -1125,6 +1126,8 @@ namespace Proof
 							src.MaterialTable = Count<MaterialTable>::Create();
 						}
 					}
+
+					PF_INFO("SubMesh Index: {}", src.m_SubmeshIndex);
 				}
 			}
 

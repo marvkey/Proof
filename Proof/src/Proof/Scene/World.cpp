@@ -220,43 +220,48 @@ namespace Proof {
 		}
 		// render meshes
 		{
-			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-			for (auto entity : group)
 			{
-				auto [transformComponent, staticMeshComponent] = group.get<TransformComponent, MeshComponent>(entity);
-				if (!staticMeshComponent.Visible)
-					continue;
-
-				auto mesh = staticMeshComponent.GetMesh();
-				if (mesh)
+				auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+				for (auto entity : group)
 				{
-					Entity e = Entity(entity, this);
-					glm::mat4 transform = GetWorldSpaceTransform(e);
+					auto [transformComponent, staticMeshComponent] = group.get<TransformComponent, MeshComponent>(entity);
+					if (!staticMeshComponent.Visible)
+						continue;
 
-					//if (SelectionManager::IsEntityOrAncestorSelected(e))
-					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
-					//else
-					worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
+					auto mesh = staticMeshComponent.GetMesh();
+					if (mesh)
+					{
+						Entity e = Entity(entity, this);
+						glm::mat4 transform = GetWorldSpaceTransform(e);
+
+						//if (SelectionManager::IsEntityOrAncestorSelected(e))
+						//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
+						//else
+						worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
+					}
 				}
 			}
-
-			auto dynamicGroup = m_Registry.group<DynamicMeshComponent>(entt::get<TransformComponent>);
-			for (auto entity : dynamicGroup)
 			{
-				auto [transformComponent, dynamicMeshComponent] = dynamicGroup.get<TransformComponent, DynamicMeshComponent>(entity);
-				if (!dynamicMeshComponent.Visible)
-					continue;
 
-				Count<DynamicMesh> mesh = dynamicMeshComponent.GetMesh();
-				if (mesh)
+				auto view = m_Registry.view<DynamicMeshComponent>();
+				for (auto entity : view)
 				{
-					Entity e = Entity(entity, this);
-					glm::mat4 transform = GetWorldSpaceTransform(e);
+					Entity e = { entity, this };
+					auto& dynamicMeshComponent = e.GetComponent<DynamicMeshComponent>();
+					if (!dynamicMeshComponent.Visible)
+						continue;
 
-					//if (SelectionManager::IsEntityOrAncestorSelected(e))
-					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
-					//else
-					worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform,dynamicMeshComponent.CastShadow);
+					Count<DynamicMesh> mesh = dynamicMeshComponent.GetMesh();
+					if (mesh)
+					{
+						Entity e = Entity(entity, this);
+						glm::mat4 transform = GetWorldSpaceTransform(e);
+					
+						//if (SelectionManager::IsEntityOrAncestorSelected(e))
+						//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
+						//else
+						worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform, dynamicMeshComponent.CastShadow);
+					}
 				}
 			}
 		}
