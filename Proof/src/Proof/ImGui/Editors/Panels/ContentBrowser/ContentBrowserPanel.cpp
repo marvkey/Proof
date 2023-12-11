@@ -235,29 +235,11 @@ namespace Proof
 						{
 							if (ImGui::BeginMenu("New"))
 							{
-								if (ImGui::MenuItem("Folder"))
+								if (ImGui::MenuItem("World"))
 								{
-									std::filesystem::path filepath = FileSystem::GenerateUniqueFileName(Project::GetActive()->GetAssetDirectory() / m_CurrentDirectory->FilePath / "New Folder");
+									CreateAsset<World>("New World");
 
-									// NOTE: For some reason creating new directories through code doesn't trigger a file system change?
-									bool created = FileSystem::CreateDirectory(filepath);
-
-									if (created)
-									{
-										Refresh();
-										const auto& directoryInfo = GetDirectory(m_CurrentDirectory->FilePath / filepath.filename());
-										size_t index = m_CurrentItems.FindItem(directoryInfo->Handle);
-										if (index != ContentBrowserItemList::InvalidItem)
-										{
-											SelectionManager::DeselectAll(SelectionContext::ContentBrowser);
-											SelectionManager::Select(SelectionContext::ContentBrowser, directoryInfo->Handle);
-											m_CurrentItems[index]->StartRenaming();
-										}
-									}
 								}
-
-								//if (ImGui::MenuItem("Scene"))
-								//	CreateAsset<Scene>("New Scene.ascene");
 
 								if (ImGui::BeginMenu("Physics"))
 								{
@@ -280,6 +262,26 @@ namespace Proof
 									m_OpenNewScriptPopup = true;
 
 								ImGui::EndMenu();
+							}
+							if (ImGui::MenuItem("Folder"))
+							{
+								std::filesystem::path filepath = FileSystem::GenerateUniqueFileName(Project::GetActive()->GetAssetDirectory() / m_CurrentDirectory->FilePath / "New Folder");
+
+								// NOTE: For some reason creating new directories through code doesn't trigger a file system change?
+								bool created = FileSystem::CreateDirectory(filepath);
+
+								if (created)
+								{
+									Refresh();
+									const auto& directoryInfo = GetDirectory(m_CurrentDirectory->FilePath / filepath.filename());
+									size_t index = m_CurrentItems.FindItem(directoryInfo->Handle);
+									if (index != ContentBrowserItemList::InvalidItem)
+									{
+										SelectionManager::DeselectAll(SelectionContext::ContentBrowser);
+										SelectionManager::Select(SelectionContext::ContentBrowser, directoryInfo->Handle);
+										m_CurrentItems[index]->StartRenaming();
+									}
+								}
 							}
 
 							if (ImGui::MenuItem("Import"))

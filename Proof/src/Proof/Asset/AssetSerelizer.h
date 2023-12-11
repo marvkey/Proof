@@ -82,4 +82,11 @@ namespace Proof {
 		virtual void Save(const AssetInfo& data, const Count<class Asset>& asset)const;
 		virtual Count<class Asset> TryLoadAsset(const AssetInfo& data)const;
 	};
+
+	class WorldAssetSerializer : public AssetSerializer
+	{
+	public:
+		virtual void Save(const AssetInfo& data, const Count<class Asset>& asset)const;
+		virtual Count<class Asset> TryLoadAsset(const AssetInfo& data)const;
+	};
 }

@@ -17,6 +17,7 @@
 #include "Proof/Physics/MeshCollider.h"
 #include "Proof/Scripting/ScriptFile.h"
 #include "Proof/Utils/StringUtils.h"
+#include "Proof/Scene/SceneSerializer.h"
 #include "MeshImpoter.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
@@ -702,6 +703,21 @@ namespace $NAMESPACE_NAME$
 
 		SetID(data, file);
 		return file;
+	}
+
+	void WorldAssetSerializer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+		auto fullPath = AssetManager::GetAssetFileSystemPath(assetData.Path);
+
+		Count<World> world = asset.As<World>();
+		SceneSerializer scerelizer(world);
+		scerelizer.SerilizeText(fullPath.string());
+	}
+
+	Count<class Asset> WorldAssetSerializer::TryLoadAsset(const AssetInfo& data) const
+	{
+		PF_CORE_ASSERT(false, "Cannot World Asset from asset Manager");
+		return Count<class Asset>();
 	}
 
 }

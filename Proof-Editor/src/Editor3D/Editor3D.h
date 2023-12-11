@@ -88,7 +88,7 @@ namespace Proof {
 
 		friend class Renderer3D;
 		friend class RendererBase;
-		void Save();
+		bool Save();
 		void PlayWorld();
 		void SimulateWorld();
 		void SetWorldEdit();
@@ -102,9 +102,11 @@ namespace Proof {
 		uint32_t m_PlayersCount = 1;
 		static Editore3D* s_Instance;
 	private:
+		void OpenWorld(AssetID ID);
 		void UI_StatisticsPanel();
 		void UI_HandleAssetDrop();
 		void UI_ShowCreateNewMeshPopup();
 		void UI_ShowInvalidAssetMetadataPopup();
+		void UI_SaveWorldAs();
 	};
 }

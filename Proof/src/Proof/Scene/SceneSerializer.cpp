@@ -1126,8 +1126,6 @@ namespace Proof
 							src.MaterialTable = Count<MaterialTable>::Create();
 						}
 					}
-
-					PF_INFO("SubMesh Index: {}", src.m_SubmeshIndex);
 				}
 			}
 

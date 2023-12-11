@@ -108,6 +108,13 @@ namespace Proof
 			}
 
 		} CreateNewMeshPopupData;
+
+		struct SaveAsNewWorldPopupData
+		{
+			Count<World> WorldToSaveAs;
+			bool SaveAssetManager = true;
+			std::string CreateWorldFile = "Scene/";
+		}CreateNewWorldPopupData;
 	};
 	enum class PopupState
 	{
@@ -182,7 +189,8 @@ namespace Proof
 	std::filesystem::path NewProjectDir;
 	std::string NewProjectName;
 	Editore3D::Editore3D() :
-		Layer("Editor3D Layer") {
+		Layer("Editor3D Layer") 
+	{
 		s_Instance = this;
 		s_EditorData = pnew EditorData();
 	//	s_EditorData->ContentBrowserPanel.m_ShowWindow = false;
@@ -448,7 +456,8 @@ namespace Proof
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 
 	}
-	void Editore3D::OnAttach() {
+	void Editore3D::OnAttach() 
+	{
 		EditorResources::Init();
 		m_ActiveWorld = Count<World>::Create();
 		auto startworld = Application::Get()->GetProject()->GetConfig().StartWorldEdit;
@@ -593,6 +602,8 @@ namespace Proof
 
 		UI_StatisticsPanel();
 
+		if (SaveSceneDialouge)
+			UI_SaveWorldAs();
 		ViewPort();
 		s_EditorData->PanelManager->OnImGuiRender();
 		AssetEditorPanel::OnImGuiRender();
@@ -1217,99 +1228,7 @@ namespace Proof
 				}
 			}
 			UI_HandleAssetDrop();
-#if 0
-			static bool meshSourceAdded = false;
-			static std::filesystem::path meshSourcePath;
-			/* putting this underneath image because a window only accpet drop tarGet to when item is bound so and image has been bound */
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::World).c_str()))
-				{
-					UUID ID = *(UUID*)payload->Data;
 
-					m_EditorWorld = Count<World>::Create();
-					m_ActiveWorld = m_EditorWorld;
-					s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
-
-					SceneSerializer ScerilizerNewWorld(m_ActiveWorld.Get());
-					ScerilizerNewWorld.DeSerilizeText(ID);
-				}
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("asset_payload"))
-				{
-
-				}
-				/*
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Mesh).c_str()))
-				{
-					UUID meshID = *(UUID*)payload->Data;
-
-					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
-					newentt.AddComponent<MeshComponent>().SetMesh(meshID);
-					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-				}
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::DynamicMesh).c_str()))
-				{
-					UUID meshID = *(UUID*)payload->Data;
-
-					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAsset<DynamicMesh>(meshID));
-					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-				}
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::MeshSourceFile).c_str()))
-				{
-					UUID meshSourceId = *(UUID*)payload->Data;
-					meshSourceAdded = true;
-					meshSourcePath = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(meshSourceId).Path);
-				}
-
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
-				{
-					UUID prefabId = *(UUID*)payload->Data;
-
-					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabId);
-					std::string name = AssetManager::GetAssetInfo(prefabId).GetName();
-
-					Entity newentt = m_ActiveWorld->CreateEntity(name, prefab, TransformComponent());
-					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-				}
-				*/
-
-				ImGui::EndDragDropTarget();
-			}
-
-			if (meshSourceAdded)
-			{
-				AssetID id;
-				//std::tie(meshSourceAdded, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
-				// basically add mesh is done with its operation and no longer renderng
-				if (meshSourceAdded == false)
-				{
-					//if (AssetManager::GetAssetInfo(id).Type == AssetType::Mesh)
-					//{
-					//
-					//	Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
-					//	newentt.AddComponent<MeshComponent>().SetMesh(id);
-					//	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-					//}
-					//else if (AssetManager::GetAssetInfo(id).Type == AssetType::DynamicMesh)
-					//{
-					//
-					//	Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
-					//	newentt.AddComponent<DynamicMeshComponent>().SetMesh(id);
-					//	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-					//}
-				}
-			}
-			if (SaveSceneDialouge)
-			{
-				AssetID id;
-				//std::tie(SaveSceneDialouge, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddWorld(m_ActiveWorld);
-				if (SaveSceneDialouge == false)
-				{
-					Save();
-				}
-			}
-#endif
-			/*----------------------------------------------------------------------------------------------------------------------------*/
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -1438,7 +1357,7 @@ namespace Proof
 						Application::Get()->OpenProject(file);
 					}
 				}
-				if (ImGui::MenuItem("New Scene"))
+				if (ImGui::MenuItem("New World"))
 				{
 					Save();
 					NewWorld();
@@ -1515,18 +1434,20 @@ namespace Proof
 
 
 
-	void Editore3D::Save() {
+	bool Editore3D::Save() 
+	{
 		if (m_ActiveWorld == nullptr)
-			return;
+			return false;
 		if (m_ActiveWorld->m_CurrentState != WorldState::Edit)
 		{
 			PF_ERROR("Cannot save when in runtime mode");
-			return;
+			return false;
 		}
-		if (!AssetManager::HasAsset(m_ActiveWorld->GetID()))
+
+		if (!AssetManager::HasAsset(m_ActiveWorld->GetID()) && !m_ActiveWorld->GetEntities().empty())
 		{
 			SaveSceneDialouge = true;
-			return;
+			return false;
 		}
 		{
 			ScopeTimer scopeTime(fmt::format("{} Saved", m_ActiveWorld->GetName()));
@@ -1540,7 +1461,7 @@ namespace Proof
 		{
 			ScopeTimer scopeTime(fmt::format("AssetManager Saved"));
 			AssetManager::SaveAllAssets();
-			AssetManager::SaveAssetManager();
+			//AssetManager::SaveAssetManager();
 		}
 
 		ProjectSerilizer serilizer(Application::Get()->GetProject().Get());
@@ -1548,12 +1469,53 @@ namespace Proof
 			Application::Get()->GetProject()->m_ProjectConfig.StartWorldEdit = m_ActiveWorld->GetID();
 		serilizer.SerilizeText(Application::Get()->GetProject()->GetConfig().Project.string());
 
+		return true;
+
 	}
 	void Editore3D::NewWorld()
 	{
+		if (m_ActiveWorld != nullptr)
+		{
+			if (m_ActiveWorld->GetState() != WorldState::Edit)
+				SetWorldEdit();
+
+			bool val = Save();
+			if (val == false)
+				return;
+		}
+
 		m_EditorWorld = Count<World>::Create();
 		m_ActiveWorld = m_EditorWorld;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+	}
+	void Editore3D::OpenWorld(AssetID ID)
+	{
+
+		if (m_ActiveWorld != nullptr)
+		{
+			if (m_ActiveWorld->GetState() != WorldState::Edit)
+				SetWorldEdit();
+
+			bool val =Save();
+			if (val == false)
+				return;
+		}
+		
+
+		AssetInfo assetInfo = AssetManager::GetAssetInfo(ID);
+
+		auto fullPath = AssetManager::GetAssetFileSystemPath(assetInfo.Path);
+		Count<World> world = Count<World>::Create();
+
+		SceneSerializer serializer(world);
+		serializer.DeSerilizeText(fullPath.string());
+
+		m_EditorWorld = world;
+		m_ActiveWorld = m_EditorWorld;
+
+		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+		SelectionManager::DeselectAll();
+
 	}
 	void Editore3D::UI_StatisticsPanel()
 	{
@@ -1694,16 +1656,18 @@ namespace Proof
 			for (uint64_t i = 0; i < count; i++)
 			{
 				AssetID assetHandle = *(((AssetID*)data->Data) + i);
-				// We can't really support dragging and dropping worlds when we're dropping multiple assets
-				//if (count == 1 && assetData.Type == AssetType::Scene)
-				//{
-				//	OpenScene(assetData);
-				//	break;
-				//}
+				
 
 				if (!AssetManager::HasAsset(assetHandle))
 					continue;
 				const AssetInfo& info = AssetManager::GetAssetInfo(assetHandle);
+
+				// We can't really support dragging and dropping worlds when we're dropping multiple assets
+				if (count == 1 && info.Type == AssetType::World)
+				{
+					OpenWorld(info.ID);
+					break;
+				}
 				if (info.Type == AssetType::MeshSourceFile)
 				{
 					s_EditorData->CreateNewMeshPopupData.MeshToCreate = AssetManager::GetAsset<MeshSource>(info.ID);
@@ -1731,6 +1695,37 @@ namespace Proof
 			}
 		}
 		ImGui::EndDragDropTarget();
+
+	}
+	void Editore3D::UI_SaveWorldAs()
+	{
+		UI::ShowMessageBox("Save As World", [this]()
+			{
+				ImGui::Text(Project::GetActive()->GetProjectDirectory().filename().string().c_str());
+				UI::AttributeInputText("WorldPath", s_EditorData->CreateNewWorldPopupData.CreateWorldFile);
+				PF_CORE_ASSERT(s_EditorData->CreateNewWorldPopupData.WorldToSaveAs);
+
+				ImGui::Separator();
+				if (ImGui::Button("Create"))
+				{
+					std::filesystem::path savedPath = Project::GetActive()->GetAssetDirectory() / s_EditorData->CreateNewWorldPopupData.CreateWorldFile += Utils::GetAssetExtensionString(AssetType::World);
+
+					savedPath = FileSystem::GenerateUniqueFileName(savedPath);
+
+					if (!FileSystem::Exists(savedPath.parent_path()))
+						FileSystem::CreateDirectory(savedPath.parent_path());
+
+					SceneSerializer sereilizer(s_EditorData->CreateNewWorldPopupData.WorldToSaveAs);
+					sereilizer.SerilizeText(savedPath.string());
+					if (s_EditorData->CreateNewWorldPopupData.SaveAssetManager && !AssetManager::HasAsset(s_EditorData->CreateNewWorldPopupData.WorldToSaveAs))
+					{
+						auto asset = s_EditorData->CreateNewWorldPopupData.WorldToSaveAs.As<Asset>();
+						AssetManager::NewAsset(asset, savedPath);
+					}
+					SaveSceneDialouge = false;
+					PF_INFO("World {} saved as");
+				}
+			});
 
 	}
 	void Editore3D::UI_ShowCreateNewMeshPopup()
@@ -1816,6 +1811,7 @@ namespace Proof
 				}
 			});
 	}
+	
 	void Editore3D::SetActiveWorld(Count<World> world)
 	{
 	}
@@ -1835,7 +1831,8 @@ namespace Proof
 		s_DetachPlayer = false;
 		m_ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
-	void Editore3D::SetWorldEdit() {
+	void Editore3D::SetWorldEdit() 
+	{
 		SelectionManager::DeselectAll();
 
 		//s_EditorData->GuizmoType = 0;
