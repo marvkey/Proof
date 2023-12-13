@@ -118,26 +118,102 @@ namespace Proof {
 		static Count<TextureCube> Create(const void* data,const TextureConfiguration& config);
 	};
 
-	namespace Utils {
+	namespace Utils 
+	{
 		inline uint32_t GetMipLevelCount(uint32_t width, uint32_t height)
 		{
 			return static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 		}
 	}
+
+	struct PreethamSkyData
+	{
+		float Turbidity = 2.0f; // min(1.8f)
+		float Azimuth = 0;
+		float Inclination = 0;
+
+		// Equality overload
+		bool operator==(const PreethamSkyData& other) const {
+			return Turbidity == other.Turbidity &&
+				Azimuth == other.Azimuth &&
+				Inclination == other.Inclination;
+		}
+
+		// Inequality overload
+		bool operator!=(const PreethamSkyData& other) const {
+			return !(*this == other);
+		}
+	};
+
+	struct HosekWilkieSkyData
+	{
+		glm::vec3 SunDirection = { 0, 0, 0 };
+		float Turbidity = 4.0f, GroundReflectance = 0.1f;
+
+		// Equality overload
+		bool operator==(const HosekWilkieSkyData& other) const {
+			return SunDirection == other.SunDirection &&
+				Turbidity == other.Turbidity &&
+				GroundReflectance == other.GroundReflectance;
+		}
+
+		// Inequality overload
+		bool operator!=(const HosekWilkieSkyData& other) const {
+			return !(*this == other);
+		}
+	};
+
+	struct EnvironmentTextureData
+	{
+		AssetID Image = 0;
+
+		// Equality overload
+		bool operator==(const EnvironmentTextureData& other) const {
+			return Image == other.Image;
+		}
+
+		// Inequality overload
+		bool operator!=(const EnvironmentTextureData& other) const {
+			return !(*this == other);
+		}
+	};
+	enum class EnvironmentState
+	{
+		HosekWilkie = 0,
+		PreethamSky,
+		EnvironmentTexture
+	};
 	class Environment : public RefCounted
 	{
 	public:
-		Environment()
-		{
+		Environment();
+		Environment(HosekWilkieSkyData data);
+		Environment(PreethamSkyData data);
+		Environment(EnvironmentTextureData data);
 
-		}
-		Environment(Count< TextureCube> irradianceMap, Count<TextureCube> prefilterMap):
-			IrradianceMap(irradianceMap), PrefilterMap(prefilterMap)
-		{
+		void Update(HosekWilkieSkyData data);
+		void Update(PreethamSkyData data);
+		void Update(EnvironmentTextureData data);
+		~Environment();
 
-		}
-		Count<TextureCube> IrradianceMap = nullptr;
-		Count<TextureCube> PrefilterMap = nullptr;
+		Count<TextureCube> GetIrradianceMap() { return m_IrradianceMap; }
+		Count<TextureCube> GetPrefilterMap() { return m_PrefilterMap; }
+		EnvironmentTextureData GetTextureData() { return m_EnvironmentTexture; }
+		PreethamSkyData GetPreethamSkyData() { return m_PreethamSky; }
+		HosekWilkieSkyData GetHosekWilkieDataSkyData() { return m_HosekWilkieSky; }
+		EnvironmentState GetEnvironmentState() { return m_EnvironmentState; }
+		bool IsDynamic() { return m_EnvironmentState != EnvironmentState::EnvironmentTexture; }
+	private:
+		Count<TextureCube> m_IrradianceMap = nullptr;
+		Count<TextureCube> m_PrefilterMap = nullptr;
+		EnvironmentState m_EnvironmentState = EnvironmentState::HosekWilkie;
+		PreethamSkyData m_PreethamSky;
+		HosekWilkieSkyData m_HosekWilkieSky;
+		EnvironmentTextureData m_EnvironmentTexture;
+		bool m_IsUpdated = false;
+		static inline std::vector<WeakCount<Environment>> s_Instances;
+
+		friend class Renderer;
 	};
 	struct Buffer;
 	class TextureImporter

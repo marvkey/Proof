@@ -264,6 +264,8 @@ namespace Proof
 			{
 				newEntity = m_ActiveWorld->CreateEntity("Sky Light");
 				newEntity.AddComponent<SkyLightComponent>();
+				//https://github.com/TKscoot/Ivy/blob/master/projects/Ivy/source/scene/renderpasses/skymodels/HosekWilkieSkyModel.cpp#L66
+				newEntity.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3(0, 57,82)));
 			}
 			ImGui::EndMenu();
 		}
@@ -678,64 +680,56 @@ namespace Proof
 
 			UI::BeginPropertyGrid();
 
-			if (skylight.DynamicSky == false)
+			Count<Environment> environment = skylight.Environment;
+
+			auto state = environment->GetEnvironmentState();
+			if (UI::EnumCombo("EnvironmentState", state))
 			{
-
-				bool hasImage = false;
-				if (AssetManager::HasAsset(skylight.Image) && skylight.Environment != nullptr)
-					hasImage = true;
-
-				if (hasImage)
+				switch (state)
 				{
-					UI::AttributeTextBar("HDR Map", AssetManager::GetAssetInfo(skylight.Image).GetName());
-				}
-				else
-					UI::AttributeTextBar("HDR Map","Null(EnvironmentMap)");
-				if (ImGui::BeginPopupContextItem("Remove HDR"))
-				{
-					ImGui::EndPopup();
-				}
-				if (ImGui::BeginPopup("Remove HDR"))
-				{
-					if (ImGui::MenuItem("Remove HDR"))
-					{
-						skylight.RemoveImage();
-					}
-					ImGui::EndPopup();
-				}
-
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-					{
-						uint64_t Data = *(const uint64_t*)payload->Data;
-						if (AssetManager::HasAsset(Data))
-						{
-							skylight.Image = Data;
-							skylight.DynamicSky = false;
-						}
-					}
-					ImGui::EndDragDropTarget();
+				case Proof::EnvironmentState::HosekWilkie:
+					environment->Update(environment->GetHosekWilkieDataSkyData());
+					break;
+				case Proof::EnvironmentState::PreethamSky:
+					environment->Update(environment->GetPreethamSkyData());
+					break;
+				case Proof::EnvironmentState::EnvironmentTexture:
+					environment->Update(environment->GetTextureData());
+					break;
+				default:
+					break;
 				}
 			}
-			if(skylight.Environment)
+			switch (environment->GetEnvironmentState())
+			{
+			case EnvironmentState::HosekWilkie:
+				{
+					auto hosek = environment->GetHosekWilkieDataSkyData();
+					UI::EndPropertyGrid();
+					UI::AttributeText("Edit Rotation of Transform to change sun Position");
+					UI::BeginPropertyGrid();
 
-				UI::AttributeSlider("SkyBoxLoad", skylight.SkyBoxLoad, 0, skylight.Environment->PrefilterMap->GetMipLevelCount());
-			else
-				UI::AttributeSlider("SkyBoxLoad", skylight.SkyBoxLoad, 0, 11);
+					UI::AttributeDrag("Turbidity", hosek.Turbidity, 0.5, 0, 10);
+					UI::AttributeDrag("GroundReflectance", hosek.GroundReflectance, 0.01, 0, 1);
+					environment->Update(hosek);
 
-			UI::AttributeDrag("Intensity", skylight.Intensity,0.25,0,1000);
+				}
+			break;
+			case EnvironmentState::EnvironmentTexture:
+				{
+					auto environmentTexture = environment->GetTextureData();
+					UI::AttributeAssetReference("HDR Map", AssetType::Texture, environmentTexture.Image);
+					UI::AttributeSlider("SkyBoxLoad", skylight.SkyBoxLoad, 0, skylight.Environment->GetPrefilterMap()->GetMipLevelCount());
+					environment->Update(environmentTexture);
+				}
+				break;
+			default:
+				break;
+			}
+			UI::AttributeDrag("Intensity", skylight.Intensity, 0.25, 0, 1000);
 			UI::AttributeDrag("Rotation", skylight.MapRotation, 0.25);
-			UI::AttributeBool("DynamicSky", skylight.DynamicSky);
-
-			if (skylight.DynamicSky)
-			{
-				UI::AttributeDrag("Turbidity", skylight.Turbidity, 0.01,1.8f,Math::GetMaxType<float>());
-				UI::AttributeDrag("Azimuth", skylight.Azimuth, 0.01);
-				UI::AttributeDrag("Inclination", skylight.Inclination, 0.01);
-			}
-			
 			UI::AttributeColor("TintColor", skylight.ColorTint);
+
 			UI::EndPropertyGrid();
 
 

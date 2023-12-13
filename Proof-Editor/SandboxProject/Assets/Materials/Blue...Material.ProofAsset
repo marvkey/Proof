@@ -3,7 +3,7 @@ ID: 14268173759466256543
 AlbedoColour: [0, 0.298387527, 1]
 Roughness: 1
 Metallness: 0
-Emission: 2
+Emission: 0
 Tiling: [0, 0]
 Offset: [0, 0]
 AlbedoTexture: 0

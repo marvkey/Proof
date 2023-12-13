@@ -27,6 +27,8 @@
 #include "Proof/Core/Application.h"
 #include "Proof/Platform/Window/WindowsWindow.h"
 #include "Proof/Core/RenderThread.h"
+#include "HosekDataRGB.h"
+#include "Proof/Asset/AssetManager.h"
 namespace Proof {
 
 	/*
@@ -68,6 +70,8 @@ namespace Proof {
 		Count<IndexBuffer> QuadIndexBuffer;
 		Count<RenderCommandBuffer> RenderCommandBuffer;
 		bool CommandBufferRecording = false;
+
+		Count<ComputePass> HosekWilkiePass;
 	};
 	static RendererAPI* InitRendererAPI()
 	{
@@ -80,6 +84,10 @@ namespace Proof {
 		return nullptr;
 	}
 	RendererData* s_Data = nullptr;
+	float RendererConfig::GetMaxMipCount()
+	{
+		return (float)Utils::GetMipLevelCount(EnvironmentMapResolution, EnvironmentMapResolution);
+	}
 	void Renderer::Init()
 	{
 		Timer time;
@@ -117,6 +125,7 @@ namespace Proof {
 		ShaderLibrary->LoadShader("EnvironmentIrradianceNonCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradianceNonCompute.glsl");
 		ShaderLibrary->LoadShader("EnvironmentPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentPrefilter.glsl");
 		ShaderLibrary->LoadShader("PreethamSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/PreethamSky.glsl");
+		ShaderLibrary->LoadShader("HosekWilkieSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/HosekWilkieSky.glsl");
 
 		// postprocess
 
@@ -183,7 +192,18 @@ namespace Proof {
 				computeePassConfig.Pipeline = prethamPipeline;
 				PrethamSkyPass = ComputePass::Create(computeePassConfig);
 			}
+			{
+				ComputePipelineConfig config;
+				config.DebugName = "Hosek Wilkie";
+				config.Shader = Renderer::GetShader("HosekWilkieSky");
+				auto hosekPipeline = ComputePipeline::Create(config);
 
+				ComputePassConfiguration computeePassConfig;
+				computeePassConfig.DebugName = "Hosek Wilkie";
+				computeePassConfig.Pipeline = hosekPipeline;
+				s_Data->HosekWilkiePass = ComputePass::Create(computeePassConfig);
+
+			}
 			QuadVertex data[4];
 
 			data[0].Position = glm::vec3(x, y, 0.0f);
@@ -439,7 +459,7 @@ namespace Proof {
 	{ return RendererAPI::GetAPI(); }
 
 
-	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination, uint32_t imageDimensionadfa)
+	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination)
 	{
 		PF_PROFILE_FUNC();
 		const uint32_t cubemapSize = 512;
@@ -453,7 +473,7 @@ namespace Proof {
 		baseCubeMapConfig.Height = cubemapSize;
 		baseCubeMapConfig.Width = cubemapSize;
 		baseCubeMapConfig.Storage = true;
-		baseCubeMapConfig.GenerateMips = true;
+		baseCubeMapConfig.GenerateMips = false;
 		baseCubeMapConfig.Format = format;
 
 		uint32_t mipLevels = Utils::GetMipLevelCount(cubemapSize, cubemapSize);
@@ -464,9 +484,9 @@ namespace Proof {
 		Count<RenderCommandBuffer> commandBuffer = s_Data->RenderCommandBuffer;
 		Renderer::BeginComputePass(commandBuffer, PrethamSkyPass);
 		PrethamSkyPass->PushData("u_Uniforms", &params);
-		PrethamSkyPass->Dispatch(cubemapSize/32, cubemapSize/32, 6);
+		PrethamSkyPass->Dispatch(cubemapSize/ irradianceMap, cubemapSize/ irradianceMap, 6);
 		Renderer::EndComputePass(PrethamSkyPass);
-		environmentMap->GenerateMips();
+		//environmentMap->GenerateMips();
 
 		//return;
 		// boit 
@@ -569,6 +589,123 @@ namespace Proof {
 		return environmentMap;
 	}
 
+
+	float EvaluateSpline(const double* spline, size_t stride, float value)
+	{
+		//https://github.com/TKscoot/Ivy/blob/3b0a09d719e28c260c8eb5d7fbeb52be876e2af8/projects/Ivy/source/scene/renderpasses/skymodels/HosekWilkieSkyModel.cpp#L46
+
+		return
+			1 * pow(1 - value, 5) * spline[0 * stride] +
+			5 * pow(1 - value, 4) * pow(value, 1) * spline[1 * stride] +
+			10 * pow(1 - value, 3) * pow(value, 2) * spline[2 * stride] +
+			10 * pow(1 - value, 2) * pow(value, 3) * spline[3 * stride] +
+			5 * pow(1 - value, 1) * pow(value, 4) * spline[4 * stride] +
+			1 * pow(value, 5) * spline[5 * stride];
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------------------------
+
+	float Evaluate(const double* dataset, size_t stride, float turbidity, float albedo, float sunTheta)
+	{
+		//https://github.com/TKscoot/Ivy/blob/3b0a09d719e28c260c8eb5d7fbeb52be876e2af8/projects/Ivy/source/scene/renderpasses/skymodels/HosekWilkieSkyModel.cpp#L46
+
+		// splines are functions of elevation^1/3
+		double elevationK = pow(std::max<float>(0.f, 1.f - sunTheta / (glm::pi<float>() / 2.f)), 1.f / 3.0f);
+
+		// table has values for turbidity 1..10
+		int turbidity0 = glm::clamp(static_cast<int>(turbidity), 1, 10);
+		int turbidity1 = std::min(turbidity0 + 1, 10);
+		double turbidityK = glm::clamp(turbidity - turbidity0, 0.f, 1.f);
+
+		const double* datasetA0 = dataset;
+		const double* datasetA1 = dataset + stride * 6 * 10;
+
+		double a0t0 = EvaluateSpline(datasetA0 + stride * 6 * (turbidity0 - 1), stride, elevationK);
+		double a1t0 = EvaluateSpline(datasetA1 + stride * 6 * (turbidity0 - 1), stride, elevationK);
+		double a0t1 = EvaluateSpline(datasetA0 + stride * 6 * (turbidity1 - 1), stride, elevationK);
+		double a1t1 = EvaluateSpline(datasetA1 + stride * 6 * (turbidity1 - 1), stride, elevationK);
+
+		return a0t0 * (1 - albedo) * (1 - turbidityK) + a1t0 * albedo * (1 - turbidityK) + a0t1 * (1 - albedo) * turbidityK + a1t1 * albedo * turbidityK;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------------------------
+
+	glm::vec3 HosekWilkie(float cos_theta, float gamma, float cos_gamma, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, glm::vec3 E, glm::vec3 F, glm::vec3 G, glm::vec3 H, glm::vec3 I)
+	{
+		//https://github.com/TKscoot/Ivy/blob/3b0a09d719e28c260c8eb5d7fbeb52be876e2af8/projects/Ivy/source/scene/renderpasses/skymodels/HosekWilkieSkyModel.cpp#L46
+		glm::vec3 chi = (1.f + cos_gamma * cos_gamma) / pow(1.f + H * H - 2.f * cos_gamma * H, glm::vec3(1.5f));
+		return (1.f + A * exp(B / (cos_theta + 0.01f))) * (C + D * exp(E * gamma) + F * (cos_gamma * cos_gamma) + G * chi + I * (float)sqrt(std::max(0.f, cos_theta)));
+	}
+	Count<TextureCube> Renderer::CreateHosekWilkieSky(float turbidity, float groundReflectance, glm::vec3 sunDirection)
+	{
+		//https://github.com/TKscoot/Ivy/blob/3b0a09d719e28c260c8eb5d7fbeb52be876e2af8/projects/Ivy/source/scene/renderpasses/skymodels/HosekWilkieSkyModel.cpp#L46
+		https://github.com/diharaw/sky-models/blob/master/src/hosek_wilkie_sky_model.cpp
+		struct alignas(16) PushData
+		{
+			glm::vec4 SunDirection;
+			glm::vec4 A, B, C, D, E, F, G, H, I,Z;
+
+		}PushInfo;
+		PushInfo.SunDirection = glm::vec4(glm::normalize(sunDirection),1);
+		
+		const float sunTheta = std::acos(glm::clamp(sunDirection.y, 0.f, 1.f));
+		for (int i = 0; i < 3; ++i)
+		{
+			PushInfo.A[i] = Evaluate(datasetsRGB[i] + 0, 9, turbidity, groundReflectance, sunTheta);
+			PushInfo.B[i] = Evaluate(datasetsRGB[i] + 1, 9, turbidity, groundReflectance, sunTheta);
+			PushInfo.C[i] = Evaluate(datasetsRGB[i] + 2, 9, turbidity, groundReflectance, sunTheta);
+			PushInfo.D[i] = Evaluate(datasetsRGB[i] + 3, 9, turbidity, groundReflectance, sunTheta);
+			PushInfo.E[i] = Evaluate(datasetsRGB[i] + 4, 9, turbidity, groundReflectance, sunTheta);
+			PushInfo.F[i] = Evaluate(datasetsRGB[i] + 5, 9, turbidity, groundReflectance, sunTheta);
+			PushInfo.G[i] = Evaluate(datasetsRGB[i] + 6, 9, turbidity, groundReflectance, sunTheta);
+
+			// Swapped in the dataset
+			PushInfo.H[i] = Evaluate(datasetsRGB[i] + 8, 9, turbidity, groundReflectance, sunTheta);
+			PushInfo.I[i] = Evaluate(datasetsRGB[i]+ 7, 9, turbidity, groundReflectance, sunTheta);
+
+			PushInfo.Z[i] = Evaluate(datasetsRGBRad[i], 1, turbidity, groundReflectance, sunTheta);
+		}
+
+		const float normalizeSunY = 1.15f;
+
+		if (normalizeSunY)
+		{
+			glm::vec3 S = HosekWilkie(std::cos(sunTheta), 0, 1.f, glm::vec3(PushInfo.A), glm::vec3(PushInfo.B), glm::vec3(PushInfo.C), 
+				glm::vec3(PushInfo.D), glm::vec3(PushInfo.E),
+				glm::vec3(PushInfo.F), glm::vec3(PushInfo.G), glm::vec3(PushInfo.H), glm::vec3(PushInfo.I)) * glm::vec3(PushInfo.Z);
+
+			glm::vec3 z = PushInfo.Z;
+			z /= glm::dot(S, glm::vec3(0.2126, 0.7152, 0.0722));
+			z *= normalizeSunY;
+			PushInfo.Z = glm::vec4(z,1);
+		}
+		PF_PROFILE_FUNC();
+		const uint32_t cubemapSize = 512;
+		const uint32_t irradianceMap = 32;
+
+		ImageFormat format = ImageFormat::RGBA16F;
+		TextureConfiguration baseCubeMapConfig;
+		baseCubeMapConfig.DebugName = "HosekWilkie";
+		baseCubeMapConfig.Wrap = TextureWrap::Repeat;
+		baseCubeMapConfig.Filter = TextureFilter::Nearest;
+		baseCubeMapConfig.Height = cubemapSize;
+		baseCubeMapConfig.Width = cubemapSize;
+		baseCubeMapConfig.Storage = true;
+		baseCubeMapConfig.GenerateMips = false;
+		baseCubeMapConfig.Format = format;
+
+		uint32_t mipLevels = Utils::GetMipLevelCount(cubemapSize, cubemapSize);
+		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig);
+		s_Data->HosekWilkiePass->SetInput("o_CubeMap", environmentMap);
+
+		Count<RenderCommandBuffer> commandBuffer = s_Data->RenderCommandBuffer;
+		Renderer::BeginComputePass(commandBuffer, s_Data->HosekWilkiePass);
+		s_Data->HosekWilkiePass->PushData("u_Uniforms", &PushInfo);
+		s_Data->HosekWilkiePass->Dispatch(cubemapSize / irradianceMap, cubemapSize / irradianceMap, 6);
+		Renderer::EndComputePass(s_Data->HosekWilkiePass);
+
+		return environmentMap;
+	}
 	Count<Texture2D>Renderer::GetWhiteTexture(){
 		return s_BaseTextures->WhiteTexture;
 	}
@@ -770,6 +907,44 @@ namespace Proof {
 
 	void Renderer::EndFrame()
 	{
+		for (auto e : Environment::s_Instances)
+		{
+			if (!e.IsValid())
+				continue;
+			auto environment = e.Lock();
+
+			if (!environment->m_IsUpdated)
+				continue;
+
+			switch (environment->m_EnvironmentState)
+			{
+			case Proof::EnvironmentState::HosekWilkie:
+				{
+					auto hosekData = environment->m_HosekWilkieSky;
+					auto texture = CreateHosekWilkieSky(hosekData.Turbidity, hosekData.GroundReflectance,hosekData.SunDirection);
+					environment->m_PrefilterMap = texture; 
+					environment->m_IrradianceMap = texture;
+				}
+				break;
+			case Proof::EnvironmentState::PreethamSky:
+				{
+
+					auto prethamSky = environment->m_PreethamSky;
+					auto texture = CreatePreethamSky(prethamSky.Turbidity, prethamSky.Azimuth, prethamSky.Inclination);
+					environment->m_PrefilterMap = texture; environment->m_IrradianceMap = texture;
+				}
+				break;
+			case Proof::EnvironmentState::EnvironmentTexture:
+				{
+					auto path = AssetManager::GetAssetFileSystemPath( AssetManager::GetAssetInfo(environment->m_EnvironmentTexture.Image).Path);
+					auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap(path);
+				}
+				break;
+			default:
+				break;
+			}
+			environment->m_IsUpdated = false;
+		}
 		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
 		Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
 		s_RendererAPI->EndFrame();

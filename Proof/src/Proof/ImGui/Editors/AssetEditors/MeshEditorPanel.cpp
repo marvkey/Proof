@@ -103,8 +103,8 @@ namespace Proof
 		m_World = Count<World>::Create();
 		Entity entity = m_World->CreateEntity("Mesh");
 		entity.AddComponent<MeshComponent>().SetMesh(m_Mesh->GetID());
-		entity.AddComponent<SkyLightComponent>().Turbidity = 2.0f;
-		entity.AddComponent<SkyLightComponent>().Azimuth = 0.1;
+		//entity.AddComponent<SkyLightComponent>().Turbidity = 2.0f;
+		//entity.AddComponent<SkyLightComponent>().Azimuth = 0.1;
 		entity.GetComponent<TransformComponent>().Location.z -= 20.0f;
 		m_WorldRenderer = Count<WorldRenderer>::Create();
 	}

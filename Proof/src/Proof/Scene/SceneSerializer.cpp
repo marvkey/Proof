@@ -556,11 +556,18 @@ namespace Proof
 					out << YAML::Key << "SkyBoxLod" << skylight.SkyBoxLoad;
 					out << YAML::Key << "MapRotation" << skylight.MapRotation;
 					out << YAML::Key << "Intensity" << skylight.Intensity;
-					out << YAML::Key << "DynamicSky" << skylight.DynamicSky;
-					out << YAML::Key << "Turbidity" << skylight.Turbidity;
-					out << YAML::Key << "Azimuth" << skylight.Azimuth;
-					out << YAML::Key << "Inclination" << skylight.Inclination;
-					out << YAML::Key << "Image" << skylight.Image;
+					out << YAML::Key << "EnvironmentState" << EnumReflection::EnumString(skylight.Environment->GetEnvironmentState());
+
+
+					{
+						auto texturData = skylight.Environment->GetTextureData();
+						out << YAML::Key << "TextureDataImage" << texturData.Image;
+					}
+					{
+						auto hosekData = skylight.Environment->GetHosekWilkieDataSkyData();
+						out << YAML::Key << "HosekWilkieTurbidity" << hosekData.Turbidity;
+						out << YAML::Key << "HosekWilkieGroundReflectance" << hosekData.GroundReflectance;
+					}
 					out << YAML::EndMap; // SkyLightComponentComponent
 				}
 			}
@@ -1155,20 +1162,34 @@ namespace Proof
 					if (skyLight)
 					{
 						auto& src = NewEntity.AddComponent<SkyLightComponent>();
-						src.Image = skyLight["Image"].as<uint64_t>();
-						src.ColorTint = skyLight["TintColor"].as<glm::vec3>();
-						src.SkyBoxLoad = skyLight["SkyBoxLod"].as<float>();
-						src.MapRotation = skyLight["MapRotation"].as<float>();
-						src.Intensity = skyLight["Intensity"].as<float>();
-
-						src.DynamicSky = skyLight["DynamicSky"].as<bool>();
-						src.Turbidity = skyLight["Turbidity"].as<float>();
-						src.Azimuth = skyLight["Azimuth"].as<float>();
-						src.Inclination = skyLight["Inclination"].as<float>();
-						if (AssetManager::HasAsset(src.Image))
+						src.ColorTint = skyLight["TintColor"].as<glm::vec3>(src.ColorTint);
+						src.SkyBoxLoad = skyLight["SkyBoxLod"].as<float>(0);
+						src.MapRotation = skyLight["MapRotation"].as<float>(0);
+						src.Intensity = skyLight["Intensity"].as<float>(1);
+						auto state = EnumReflection::StringEnum<EnvironmentState>( skyLight["EnvironmentState"].as<std::string>(EnumReflection::EnumString(EnvironmentState::HosekWilkie)));
+						switch (state)
 						{
-							src.LoadMap(src.Image);
+						case Proof::EnvironmentState::HosekWilkie:
+							{
+								HosekWilkieSkyData data;
+								data.Turbidity = skyLight["HosekWilkieTurbidity"].as<float>(data.Turbidity);
+								data.GroundReflectance = skyLight["HosekWilkieGroundReflectance"].as<float>(data.GroundReflectance);
+								src.Environment->Update(data);
+							}
+							break;
+						case Proof::EnvironmentState::PreethamSky:
+							break;
+						case Proof::EnvironmentState::EnvironmentTexture:
+							{
+								EnvironmentTextureData data;
+								data.Image = skyLight["TextureDataImage"].as<uint64_t>(0);
+								src.Environment->Update(data);
+							}
+							break;
+						default:
+							break;
 						}
+						
 					}
 				}
 

@@ -130,19 +130,20 @@ namespace Proof {
 					skyLightInfo.Intensity = skyLightComponent.Intensity;
 					skyLightInfo.Lod = skyLightComponent.SkyBoxLoad;
 
-					if (AssetManager::HasAsset(skyLightComponent.Image) && skyLightComponent.Environment == nullptr)
-						skyLightComponent.LoadMap(skyLightComponent.Image);
+					//if (AssetManager::HasAsset(skyLightComponent.Image) && skyLightComponent.Environment == nullptr)
+					//	skyLightComponent.LoadMap(skyLightComponent.Image);
 
-					if (skyLightComponent.DynamicSky)
+					Count<Environment> environment = skyLightComponent.Environment;
+
+					if (environment->GetEnvironmentState() == EnvironmentState::HosekWilkie)
 					{
-						skyLightComponent.RemoveImage();
-						auto environment = Renderer::CreatePreethamSky(skyLightComponent.Turbidity, skyLightComponent.Azimuth, skyLightComponent.Inclination);
-						skyLightComponent.Environment = Count<Environment>::Create(environment, environment);
+						auto data = environment->GetHosekWilkieDataSkyData();
+
+						data.SunDirection = normalize(GetWorldSpaceRotation(entity));
+
+						environment->Update(data);
 					}
-
-					if (skyLightComponent.Image == 0 && skyLightComponent.Environment != nullptr && skyLightComponent.DynamicSky == false)
-						skyLightComponent.Environment = nullptr;
-
+					
 					if (skyLightComponent.Environment != nullptr)
 					{
 						worldRenderer->SubmitSkyLight(skyLightInfo, skyLightComponent.Environment);

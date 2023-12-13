@@ -164,8 +164,8 @@ namespace Proof
 
 	void SkyLightComponent::RemoveImage()
 	{
-		Image = 0;
-		Environment = nullptr;
+		//Image = 0;
+		//Environment = nullptr;
 	}
 	void SkyLightComponent::LoadMap(AssetID asset)
 	{
@@ -174,7 +174,7 @@ namespace Proof
 
 		auto[irradiance, prefilter] = Renderer::CreateEnvironmentMap(AssetManager::GetAsset<Texture2D>(asset)->GetPath());
 
-		Environment = Count<class Environment>::Create(irradiance, prefilter);
+		//Environment = Count<class Environment>::Create(irradiance, prefilter);
 
 		Image = asset;
 	}

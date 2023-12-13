@@ -186,7 +186,7 @@ namespace Proof
 		m_Renderer2D = Count<Renderer2D>::Create();
 		m_BRDFLUT = Renderer::GetBRDFLut();
 		m_Cube = MeshWorkShop::GenerateCube();
-		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
+		m_Environment = Count<Environment>::Create(EnvironmentTextureData());
 
 		switch (ShadowSetting.ShadowResolution)
 		{
@@ -400,8 +400,8 @@ namespace Proof
 			m_GeometryPass->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
 			m_GeometryPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
 			m_GeometryPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
-			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
-			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
+			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
+			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
 			m_GeometryPass->SetInput("u_BRDFLUT", m_BRDFLUT);
 			m_GeometryPass->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
 			m_GeometryPass->SetInput("u_ShadowMap", m_ShadowPassImage);
@@ -967,7 +967,7 @@ namespace Proof
 					UBSkyLight skyLight;
 					Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
 					m_UBSKyBoxBuffer->SetData(frameIndex, buffer);
-					m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
+					m_Environment = Count<Environment>::Create(EnvironmentTextureData());
 					m_UBLightData.SkyLightCount = 1;
 				}
 			}
@@ -1418,7 +1418,7 @@ namespace Proof
 			PF_PROFILE_FUNC("GeometryPass::SkyBoxPass");
 
 			Timer timer;
-			m_SkyBoxPass->SetInput("u_EnvironmentMap", m_Environment->PrefilterMap);
+			m_SkyBoxPass->SetInput("u_EnvironmentMap", m_Environment->GetPrefilterMap());
 
 			Renderer::BeginRenderPass(m_CommandBuffer, m_SkyBoxPass);
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_SkyBoxPass);
@@ -1431,8 +1431,8 @@ namespace Proof
 			PF_PROFILE_FUNC("GeometryPass::MeshPass");
 
 			Timer timer;
-			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
-			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
+			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
+			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_GeometryPass);
 
 			{
@@ -2005,8 +2005,14 @@ namespace Proof
 
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
+		if (environment->GetPrefilterMap() == nullptr || environment->GetIrradianceMap() == nullptr)
+			return;
 
-		Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
+		UBSkyLight skyLightChanged = skyLight;
+		if (!environment->IsDynamic())
+			skyLightChanged.Lod = 0;
+
+		Buffer buffer{ (void*)&skyLightChanged, sizeof(UBSkyLight) };
 		m_UBSKyBoxBuffer->SetData(frameIndex, buffer);
 
 		m_Environment = environment;
