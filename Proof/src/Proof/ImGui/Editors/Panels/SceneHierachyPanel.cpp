@@ -265,7 +265,7 @@ namespace Proof
 				newEntity = m_ActiveWorld->CreateEntity("Sky Light");
 				newEntity.AddComponent<SkyLightComponent>();
 				//https://github.com/TKscoot/Ivy/blob/master/projects/Ivy/source/scene/renderpasses/skymodels/HosekWilkieSkyModel.cpp#L66
-				newEntity.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3(0, 57,82)));
+				newEntity.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3(2, 1,0)));
 			}
 			ImGui::EndMenu();
 		}
@@ -709,8 +709,8 @@ namespace Proof
 					UI::AttributeText("Edit Rotation of Transform to change sun Position");
 					UI::BeginPropertyGrid();
 
-					UI::AttributeDrag("Turbidity", hosek.Turbidity, 0.5, 0, 10);
-					UI::AttributeDrag("GroundReflectance", hosek.GroundReflectance, 0.01, 0, 1);
+					UI::AttributeSlider("Turbidity", hosek.Turbidity,2.f, 30.f);
+					UI::AttributeSlider("GroundReflectance", hosek.GroundReflectance,0, 1);
 					environment->Update(hosek);
 
 				}
@@ -721,6 +721,17 @@ namespace Proof
 					UI::AttributeAssetReference("HDR Map", AssetType::Texture, environmentTexture.Image);
 					UI::AttributeSlider("SkyBoxLoad", skylight.SkyBoxLoad, 0, skylight.Environment->GetPrefilterMap()->GetMipLevelCount());
 					environment->Update(environmentTexture);
+				}
+				break;
+			case EnvironmentState::PreethamSky:
+				{
+					UI::EndPropertyGrid();
+					UI::AttributeText("Edit Rotation of Transform to change sun Position");
+					UI::BeginPropertyGrid();
+
+					auto pretham = environment->GetPreethamSkyData();
+					UI::AttributeSlider("Turbidity", pretham.Turbidity,0, 30);
+					environment->Update(pretham);
 				}
 				break;
 			default:

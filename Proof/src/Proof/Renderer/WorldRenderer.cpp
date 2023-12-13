@@ -2008,11 +2008,8 @@ namespace Proof
 		if (environment->GetPrefilterMap() == nullptr || environment->GetIrradianceMap() == nullptr)
 			return;
 
-		UBSkyLight skyLightChanged = skyLight;
-		if (!environment->IsDynamic())
-			skyLightChanged.Lod = 0;
 
-		Buffer buffer{ (void*)&skyLightChanged, sizeof(UBSkyLight) };
+		Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
 		m_UBSKyBoxBuffer->SetData(frameIndex, buffer);
 
 		m_Environment = environment;

@@ -197,7 +197,7 @@ namespace Proof {
 	Environment::Environment()
 	{
 		s_Instances.push_back(this);
-		m_EnvironmentState = EnvironmentState::HosekWilkie;
+		m_EnvironmentState = EnvironmentState::PreethamSky;
 		m_IsUpdated = true;
 		m_IrradianceMap = Renderer::GetBlackTextureCube();
 		m_PrefilterMap = Renderer::GetBlackTextureCube();
@@ -282,6 +282,7 @@ namespace Proof {
 		{
 			if (m_EnvironmentTexture != data)
 			{
+				m_EnvironmentTexture = data;
 				if (AssetManager::HasAsset(m_EnvironmentTexture.Image))
 				{
 					m_EnvironmentTexture = data;

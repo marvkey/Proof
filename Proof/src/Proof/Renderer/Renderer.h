@@ -55,7 +55,7 @@ namespace Proof {
 		static Count<class GraphicsContext> GetGraphicsContext();
 		static Renderer::API GetAPI();
 
-		static Count<class TextureCube> CreatePreethamSky(float turbidity, float azimuth, float inclination);
+		static Count<class TextureCube> CreatePreethamSky(float turbidity, glm::vec3 sunDirection);
 		static Count<class TextureCube> CreateHosekWilkieSky(float turbidity, float GroundReflectance, glm::vec3 sunDirection);
 		static Count<class Texture2D> GetWhiteTexture();
 		static Count<class Texture2D> GetBlackTexture();
@@ -72,6 +72,8 @@ namespace Proof {
 		//environment and prefilter
 		static std::pair<Count<class TextureCube>, Count<class TextureCube>>CreateEnvironmentMap(const std::filesystem::path& path);
 
+		//gets called end of frame but if u dont want to wait to end of frame call it beefore u render then its fine
+		static void UpdateAllEnvironment();
 		template<typename FuncT>
 		static void Submit(FuncT&& func)
 		{

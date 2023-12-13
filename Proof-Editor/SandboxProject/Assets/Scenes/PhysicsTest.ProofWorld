@@ -202,7 +202,7 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [0, 0.994837642, 1.43116999]
+        Rotation: [0.0349065848, 0.0174532924, 0]
         Scale: [1, 1, 1.00000012]
       HierarchyComponent:
         ParentHandle: 0
@@ -211,8 +211,9 @@ World:
         TintColor: [1, 1, 1]
         SkyBoxLod: 0
         MapRotation: 0
-        Intensity: 0.5
-        EnvironmentState: HosekWilkie
+        Intensity: 1
+        EnvironmentState: PreethamSky
         TextureDataImage: 0
         HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.119999997
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4

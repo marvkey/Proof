@@ -128,15 +128,15 @@ namespace Proof {
 
 	struct PreethamSkyData
 	{
-		float Turbidity = 2.0f; // min(1.8f)
-		float Azimuth = 0;
-		float Inclination = 0;
+		//https://github.com/diharaw/sky-models/blob/c74ce88ccec91aeb9502fb24a7e51e0fb3bfc51a/src/main.cpp
+		glm::vec3 SunDirection = { 0, 0, 0 };
+		float Turbidity = 4.0f; // min(2.0f) max 30.0f
 
 		// Equality overload
-		bool operator==(const PreethamSkyData& other) const {
+		bool operator==(const PreethamSkyData& other) const 
+		{
 			return Turbidity == other.Turbidity &&
-				Azimuth == other.Azimuth &&
-				Inclination == other.Inclination;
+				SunDirection == other.SunDirection;
 		}
 
 		// Inequality overload
@@ -147,11 +147,14 @@ namespace Proof {
 
 	struct HosekWilkieSkyData
 	{
+		//https://github.com/diharaw/sky-models/blob/c74ce88ccec91aeb9502fb24a7e51e0fb3bfc51a/src/main.cpp
 		glm::vec3 SunDirection = { 0, 0, 0 };
-		float Turbidity = 4.0f, GroundReflectance = 0.1f;
+		float Turbidity = 4.0f; //min 2.0f max 30.f
+		float GroundReflectance = 0.1f; //min 0.f max 1.0f
 
 		// Equality overload
-		bool operator==(const HosekWilkieSkyData& other) const {
+		bool operator==(const HosekWilkieSkyData& other) const 
+		{
 			return SunDirection == other.SunDirection &&
 				Turbidity == other.Turbidity &&
 				GroundReflectance == other.GroundReflectance;

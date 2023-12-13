@@ -568,6 +568,10 @@ namespace Proof
 						out << YAML::Key << "HosekWilkieTurbidity" << hosekData.Turbidity;
 						out << YAML::Key << "HosekWilkieGroundReflectance" << hosekData.GroundReflectance;
 					}
+					{
+						PreethamSkyData data = skylight.Environment->GetPreethamSkyData();
+						out << YAML::Key << "PreethamTurbidity" << data.Turbidity;
+					}
 					out << YAML::EndMap; // SkyLightComponentComponent
 				}
 			}
@@ -1178,6 +1182,12 @@ namespace Proof
 							}
 							break;
 						case Proof::EnvironmentState::PreethamSky:
+						{
+
+							PreethamSkyData data;
+							data.Turbidity = skyLight["PreethamTurbidity"].as<float>(data.Turbidity);
+							src.Environment->Update(data);
+						}
 							break;
 						case Proof::EnvironmentState::EnvironmentTexture:
 							{

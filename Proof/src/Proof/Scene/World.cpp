@@ -124,20 +124,33 @@ namespace Proof {
 					auto entityID = skylights.front();
 					Entity entity(entityID, this);
 					auto& skyLightComponent = entity.GetComponent<SkyLightComponent>();
+
+					Count<Environment> environment = skyLightComponent.Environment;
+
 					UBSkyLight skyLightInfo;
 					skyLightInfo.TintColor = skyLightComponent.ColorTint;
 					skyLightInfo.Rotation = skyLightComponent.MapRotation;
 					skyLightInfo.Intensity = skyLightComponent.Intensity;
 					skyLightInfo.Lod = skyLightComponent.SkyBoxLoad;
 
+					if (environment->IsDynamic())
+						skyLightInfo.Lod = 0;
+
 					//if (AssetManager::HasAsset(skyLightComponent.Image) && skyLightComponent.Environment == nullptr)
 					//	skyLightComponent.LoadMap(skyLightComponent.Image);
 
-					Count<Environment> environment = skyLightComponent.Environment;
 
 					if (environment->GetEnvironmentState() == EnvironmentState::HosekWilkie)
 					{
 						auto data = environment->GetHosekWilkieDataSkyData();
+
+						data.SunDirection = normalize(GetWorldSpaceRotation(entity));
+
+						environment->Update(data);
+					}
+					else if (environment->GetEnvironmentState() == EnvironmentState::PreethamSky)
+					{
+						auto data = environment->GetPreethamSkyData();
 
 						data.SunDirection = normalize(GetWorldSpaceRotation(entity));
 
@@ -148,7 +161,9 @@ namespace Proof {
 					{
 						worldRenderer->SubmitSkyLight(skyLightInfo, skyLightComponent.Environment);
 					}
+					Renderer::UpdateAllEnvironment();
 				}
+
 			}
 			//point light
 			{

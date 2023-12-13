@@ -459,10 +459,12 @@ namespace Proof {
 	{ return RendererAPI::GetAPI(); }
 
 
-	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination)
+	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, glm::vec3 sunDirection)
 	{
 		PF_PROFILE_FUNC();
-		const uint32_t cubemapSize = 512;
+		sunDirection = glm::normalize(sunDirection);
+
+		const uint32_t cubemapSize = GetConfig().EnvironmentMapResolution;
 		const uint32_t irradianceMap = 32;
 
 		ImageFormat format = ImageFormat::RGBA16F;
@@ -480,112 +482,13 @@ namespace Proof {
 		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig);
 		PrethamSkyPass->SetInput("o_CubeMap", environmentMap);
 	
-		glm::vec3 params = { turbidity, azimuth, inclination };
+		glm::vec4 params = { sunDirection,turbidity};
+
 		Count<RenderCommandBuffer> commandBuffer = s_Data->RenderCommandBuffer;
 		Renderer::BeginComputePass(commandBuffer, PrethamSkyPass);
 		PrethamSkyPass->PushData("u_Uniforms", &params);
 		PrethamSkyPass->Dispatch(cubemapSize/ irradianceMap, cubemapSize/ irradianceMap, 6);
 		Renderer::EndComputePass(PrethamSkyPass);
-		//environmentMap->GenerateMips();
-
-		//return;
-		// boit 
-		#if 0
-		auto blitCmd = cmdBufer->As<VulkanCommandBuffer>()->GetCommandBuffer(Renderer::GetCurrentFrame().FrameinFlight);
-		bool readonly = false;
-		auto image=environmentMap.As<VulkanTextureCube>()->GetImage().As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
-		{
-			for (uint32_t face = 0; face < 6; face++)
-			{
-				VkImageSubresourceRange mipSubRange = {};
-				mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				mipSubRange.baseMipLevel = 0;
-				mipSubRange.baseArrayLayer = face;
-				mipSubRange.levelCount = 1;
-				mipSubRange.layerCount = 1;
-
-				// Prepare current mip level as image blit destination
-				Utils::InsertImageMemoryBarrier(blitCmd, image,
-					0, VK_ACCESS_TRANSFER_WRITE_BIT,
-					VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-					mipSubRange);
-			}
-
-			for (uint32_t i = 1; i < mipLevels; i++)
-			{
-				for (uint32_t face = 0; face < 6; face++)
-				{
-					VkImageBlit imageBlit{};
-
-					// Source
-					imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-					imageBlit.srcSubresource.layerCount = 1;
-					imageBlit.srcSubresource.mipLevel = i - 1;
-					imageBlit.srcSubresource.baseArrayLayer = face;
-					imageBlit.srcOffsets[1].x = int32_t(cubemapSize >> (i - 1));
-					imageBlit.srcOffsets[1].y = int32_t(cubemapSize >> (i - 1));
-					imageBlit.srcOffsets[1].z = 1;
-
-					// Destination
-					imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-					imageBlit.dstSubresource.layerCount = 1;
-					imageBlit.dstSubresource.mipLevel = i;
-					imageBlit.dstSubresource.baseArrayLayer = face;
-					imageBlit.dstOffsets[1].x = int32_t(cubemapSize >> i);
-					imageBlit.dstOffsets[1].y = int32_t(cubemapSize >> i);
-					imageBlit.dstOffsets[1].z = 1;
-
-					VkImageSubresourceRange mipSubRange = {};
-					mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-					mipSubRange.baseMipLevel = i;
-					mipSubRange.baseArrayLayer = face;
-					mipSubRange.levelCount = 1;
-					mipSubRange.layerCount = 1;
-
-					// Prepare current mip level as image blit destination
-					Utils::InsertImageMemoryBarrier(blitCmd, image,
-						0, VK_ACCESS_TRANSFER_WRITE_BIT,
-						VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-						mipSubRange);
-
-					// Blit from previous level
-					vkCmdBlitImage(
-						blitCmd,
-						image,
-						VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-						image,
-						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-						1,
-						&imageBlit,
-						VK_FILTER_LINEAR);
-
-					// Prepare current mip level as image blit source for next level
-					Utils::InsertImageMemoryBarrier(blitCmd, image,
-						VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
-						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-						VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-						mipSubRange);
-				}
-			}
-
-			// After the loop, all mip layers are in TRANSFER_SRC layout, so transition all to SHADER_READ
-			VkImageSubresourceRange subresourceRange = {};
-			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			subresourceRange.layerCount = 6;
-			subresourceRange.levelCount = mipLevels;
-
-			Utils::InsertImageMemoryBarrier(blitCmd, image ,
-				VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readonly ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				subresourceRange);
-		}
-		#endif
-
-		
-
 		return environmentMap;
 	}
 
@@ -680,7 +583,7 @@ namespace Proof {
 			PushInfo.Z = glm::vec4(z,1);
 		}
 		PF_PROFILE_FUNC();
-		const uint32_t cubemapSize = 512;
+		const uint32_t cubemapSize = GetConfig().EnvironmentMapResolution;
 		const uint32_t irradianceMap = 32;
 
 		ImageFormat format = ImageFormat::RGBA16F;
@@ -742,7 +645,7 @@ namespace Proof {
 
 		ImageFormat format = ImageFormat::RGBA16F;
 		{
-			const uint32_t imageSize = 1024;
+			const uint32_t imageSize = GetConfig().EnvironmentMapResolution;
 			TextureConfiguration baseCubeMapConfig;
 			baseCubeMapConfig.DebugName = FileSystem::GetFileName(path) + " Base CubeMap";
 			baseCubeMapConfig.Height = imageSize;
@@ -796,7 +699,7 @@ namespace Proof {
 			irradianceMap->GenerateMips();
 
 		}
-		const uint32_t prefilterFilterRate = 1024;
+		const uint32_t prefilterFilterRate = GetConfig().EnvironmentMapResolution;
 
 		Count<TextureCube> prefilterMap;
 		{
@@ -877,6 +780,54 @@ namespace Proof {
 		}
 		return std::make_pair(irradianceMap, prefilterMap);
 	}
+	void Renderer::UpdateAllEnvironment()
+	{
+		for (auto e : Environment::s_Instances)
+		{
+			if (!e.IsValid())
+				continue;
+			auto environment = e.Lock();
+
+			if (!environment->m_IsUpdated)
+				continue;
+
+			switch (environment->m_EnvironmentState)
+			{
+			case Proof::EnvironmentState::HosekWilkie:
+			{
+				auto hosekData = environment->m_HosekWilkieSky;
+				auto texture = CreateHosekWilkieSky(hosekData.Turbidity, hosekData.GroundReflectance, hosekData.SunDirection);
+				environment->m_PrefilterMap = texture;
+				environment->m_IrradianceMap = texture;
+			}
+			break;
+			case Proof::EnvironmentState::PreethamSky:
+			{
+
+				auto prethamSky = environment->m_PreethamSky;
+				auto texture = CreatePreethamSky(prethamSky.Turbidity, prethamSky.SunDirection);
+				environment->m_PrefilterMap = texture; environment->m_IrradianceMap = texture;
+			}
+			break;
+			case Proof::EnvironmentState::EnvironmentTexture:
+			{
+				if (!AssetManager::HasAsset(environment->m_EnvironmentTexture.Image))
+				{
+					environment->m_EnvironmentTexture.Image = 0;
+					continue;
+				}
+				auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(AssetManager::GetAsset<Texture2D>(environment->m_EnvironmentTexture.Image)->GetPath()).Path);
+				auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap(path);
+				environment->m_PrefilterMap = prefilter;
+				environment->m_IrradianceMap = irradiance;
+			}
+			break;
+			default:
+				break;
+			}
+			environment->m_IsUpdated = false;
+		}
+	}
 	Count<Texture2D> Renderer::GetBRDFLut()
 	{
 		return s_BaseTextures->BRDFLutTexture;
@@ -907,44 +858,7 @@ namespace Proof {
 
 	void Renderer::EndFrame()
 	{
-		for (auto e : Environment::s_Instances)
-		{
-			if (!e.IsValid())
-				continue;
-			auto environment = e.Lock();
-
-			if (!environment->m_IsUpdated)
-				continue;
-
-			switch (environment->m_EnvironmentState)
-			{
-			case Proof::EnvironmentState::HosekWilkie:
-				{
-					auto hosekData = environment->m_HosekWilkieSky;
-					auto texture = CreateHosekWilkieSky(hosekData.Turbidity, hosekData.GroundReflectance,hosekData.SunDirection);
-					environment->m_PrefilterMap = texture; 
-					environment->m_IrradianceMap = texture;
-				}
-				break;
-			case Proof::EnvironmentState::PreethamSky:
-				{
-
-					auto prethamSky = environment->m_PreethamSky;
-					auto texture = CreatePreethamSky(prethamSky.Turbidity, prethamSky.Azimuth, prethamSky.Inclination);
-					environment->m_PrefilterMap = texture; environment->m_IrradianceMap = texture;
-				}
-				break;
-			case Proof::EnvironmentState::EnvironmentTexture:
-				{
-					auto path = AssetManager::GetAssetFileSystemPath( AssetManager::GetAssetInfo(environment->m_EnvironmentTexture.Image).Path);
-					auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap(path);
-				}
-				break;
-			default:
-				break;
-			}
-			environment->m_IsUpdated = false;
-		}
+		UpdateAllEnvironment();
 		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
 		Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
 		s_RendererAPI->EndFrame();
