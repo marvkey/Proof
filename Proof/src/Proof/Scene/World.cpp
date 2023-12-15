@@ -136,10 +136,6 @@ namespace Proof {
 					if (environment->IsDynamic())
 						skyLightInfo.Lod = 0;
 
-					//if (AssetManager::HasAsset(skyLightComponent.Image) && skyLightComponent.Environment == nullptr)
-					//	skyLightComponent.LoadMap(skyLightComponent.Image);
-
-
 					if (environment->GetEnvironmentState() == EnvironmentState::HosekWilkie)
 					{
 						auto data = environment->GetHosekWilkieDataSkyData();

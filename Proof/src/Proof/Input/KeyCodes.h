@@ -153,6 +153,13 @@ namespace Proof
 		Button1 = ButtonRight,
 		Button2 = ButtonMiddle,
 	};
+
+	enum class CursorMode
+	{
+		Normal = 0,
+		Hidden = 1,
+		Locked = 2
+	};
 	enum class MouseAxis { // rname MouseAxis
 		None =0,
 		X =1,

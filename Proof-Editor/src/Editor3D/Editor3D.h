@@ -1,11 +1,13 @@
 #pragma once
 #include "Proof/Core/Layer.h"
 #include "Proof/Scene/Entity.h"
+#include "Proof/Scene/Camera/EditorCamera.h"
 #include "Proof/Input/KeyCodes.h"
 #include "Proof/Events/KeyEvent.h"
 namespace Proof {
 	
-	class Editore3D : public Layer {
+	class Editore3D : public Layer 
+	{
 	public:
 		Editore3D();
 		~Editore3D();
@@ -20,7 +22,7 @@ namespace Proof {
 		static bool IsKeyPressedEditor(KeyBoardKey Key);
 		static bool IsKeyClickedEditor(KeyBoardKey Key);
 		bool m_ViewPortFocused = false;
-		EditorCamera m_EditorCamera = { 200,200 };
+		class EditorCamera m_EditorCamera;
 	private:
 		struct KeyBoardShowEvent {
 			bool ShowAll = false;

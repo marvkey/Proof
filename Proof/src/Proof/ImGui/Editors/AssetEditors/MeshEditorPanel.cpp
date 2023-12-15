@@ -20,12 +20,10 @@ namespace Proof
 	void MeshEditorPanel::OnUpdate(FrameTime deltaTime)
 	{
 		if (!m_Mesh)return;
-		if (m_IsViewportFocused)
-		{
-			Application::Get()->GetWindow()->SetWindowInputEvent(true);
-			m_Camera.OnUpdate(deltaTime, GetWindowSize().x, GetWindowSize().y);
-			Application::Get()->GetWindow()->SetWindowInputEvent(false);
-		}
+		m_Camera.SetViewportSize(GetWindowSize().x, GetWindowSize().y);
+		m_Camera.SetActive(m_IsViewportFocused);
+		m_Camera.OnUpdate(deltaTime);
+
 		m_WorldRenderer->SetViewportSize(GetWindowSize().x, GetWindowSize().y);
 		m_World->OnUpdateEditor(deltaTime);
 		m_World->OnRenderEditor(m_WorldRenderer, deltaTime, m_Camera);

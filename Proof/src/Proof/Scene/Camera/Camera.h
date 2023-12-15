@@ -40,7 +40,6 @@ namespace Proof
 		float& GetExposure() { return m_Exposure; }
 	protected:
 		float m_Exposure = 0.8f;
-	private:
 		glm::vec3 m_Up{ 0,1,0 };
 		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
 		glm::mat4 m_ViewMatrix = glm::mat4(1.0f);

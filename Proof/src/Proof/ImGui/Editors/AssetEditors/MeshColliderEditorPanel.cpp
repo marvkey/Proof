@@ -27,14 +27,13 @@ namespace Proof
 	{
 
 		if (!m_MeshCollider)return;
-		if (m_IsViewportFocused)
+		m_Camera.SetActive(m_IsViewportFocused);
+		m_Camera.OnUpdate(deltaTime);
+		if (m_ViewPoartSize.x > 0 && m_ViewPoartSize.y > 0)
 		{
-			Application::Get()->GetWindow()->SetWindowInputEvent(true);
-			m_Camera.OnUpdate(deltaTime, m_ViewPoartSize.x, m_ViewPoartSize.y);
-			Application::Get()->GetWindow()->SetWindowInputEvent(false);
-		}
-		if(m_ViewPoartSize.x >0 && m_ViewPoartSize.y >0)
+			m_Camera.SetViewportSize(m_ViewPoartSize.x, m_ViewPoartSize.y);
 			m_WorldRenderer->SetViewportSize(m_ViewPoartSize.x, m_ViewPoartSize.y);
+		}
 		m_World->OnUpdateEditor(deltaTime);
 		m_World->OnRenderEditor(m_WorldRenderer, deltaTime, m_Camera);
 	}

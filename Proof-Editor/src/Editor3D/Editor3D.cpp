@@ -216,7 +216,7 @@ namespace Proof
 
 	void Editore3D::OnEvent(Event& e) {
 		EventDispatcher dispatcher(e);
-
+		m_EditorCamera.OnEvent(e);
 		dispatcher.Dispatch<ControllerConnectEvent>([](auto& e) {
 			PF_INFO(e.ToString());
 			return false;
@@ -543,6 +543,8 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
 		m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+		m_EditorCamera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+
 		if (m_IsViewPortResize && m_ViewPortSize.x > 0 && m_ViewPortSize.y > 0)
 		{
 			m_IsViewPortResize = false;
@@ -556,9 +558,8 @@ namespace Proof
 					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
 					if (m_ViewPortFocused)
 					{
-						Application::Get()->GetWindow()->SetWindowInputEvent(true);
-						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-						Application::Get()->GetWindow()->SetWindowInputEvent(false);
+						m_EditorCamera.SetActive(m_ViewPortFocused);
+						m_EditorCamera.OnUpdate(DeltaTime);
 					}
 					m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
 					break;
@@ -566,7 +567,8 @@ namespace Proof
 			case Proof::WorldState::Pause:
 				{
 					//m_ActiveWorld->OnUpdateRuntime(DeltaTime);
-					m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+					m_EditorCamera.SetActive(m_ViewPortFocused);
+					m_EditorCamera.OnUpdate(DeltaTime);
 					break;
 				}
 			case Proof::WorldState::Simulate:
@@ -578,9 +580,8 @@ namespace Proof
 					m_ActiveWorld->OnUpdateEditor(DeltaTime);
 					if (m_ViewPortFocused)
 					{
-						Application::Get()->GetWindow()->SetWindowInputEvent(true);
-						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-						Application::Get()->GetWindow()->SetWindowInputEvent(false);
+						m_EditorCamera.SetActive(m_ViewPortFocused);
+						m_EditorCamera.OnUpdate(DeltaTime);
 					}
 					m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
 					break;
@@ -636,13 +637,15 @@ namespace Proof
 	bool Editore3D::OnKeyClicked(KeyClickedEvent& e) {
 		// Shortcuts
 
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.WantCaptureKeyboard) // ths means that an imgui text field is being used
+			return false;
+
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
 		bool shift = IsKeyPressedEditor(KeyBoardKey::LeftShift) || IsKeyPressedEditor(KeyBoardKey::RightShift);
 		bool isViewportOrHierieachyFocused = UI::IsWindowFocused("Scene Hierarchy") || m_ViewPortFocused;
 
-		for (auto panel : s_EditorData->PanelManager->GetPanels())
-		{
-		}
+		
 		//UI::is
 		//basically means that m_editor camera is beign used 
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight) == true)
@@ -653,8 +656,8 @@ namespace Proof
 				{
 					if (m_ActiveWorld->IsPlaying())
 					{
-						Mouse::CaptureMouse(false);
-						s_DetachPlayer = true;
+						//Mouse::CaptureMouse(false);
+						//s_DetachPlayer = true;
 						return true;
 						break;
 					}
@@ -1284,7 +1287,8 @@ namespace Proof
 
 	}
 
-	void Editore3D::SetDocking(bool* p_open) {
+	void Editore3D::SetDocking(bool* p_open) 
+	{
 		// code taken form walnut https://github.com/TheCherno/Walnut/blob/master/Walnut/src/Walnut/Application.cpp
 		PF_PROFILE_FUNC();
 
