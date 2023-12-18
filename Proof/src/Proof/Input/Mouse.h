@@ -9,6 +9,7 @@ namespace Proof {
         static float GetPosX();
         static float GetPosY();
 
+        static glm::vec2 GetMousePos() { return { GetPosX(), GetPosY() }; }
         static float GetScrollX();
 
         static float GetScrollY();
@@ -23,8 +24,7 @@ namespace Proof {
         static bool IsScrollUp() {
             return {GetScrollY() > 0};
         }
-
-        static void GetScreenSpace(glm::vec2 windwoPos, glm::vec2 windowSize);
+        static glm::vec2 GetMouseViewportSpace(const glm::vec2& windowPos, const glm::vec2& windowSize);
         static bool IsMouseMoved();
         static bool IsMouseCaptured();
         static void SetCursorMode(CursorMode mode);

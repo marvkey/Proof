@@ -6,7 +6,7 @@ World:
         Tag: Sponza
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [0, -1.41932726, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -14,6 +14,21 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 18141853162402936448
+      MeshColliderComponent:
+        ColliderID: 14157755977100572730
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 11242873672866688860
       TagComponent:
         Tag: CubeSpanwer
@@ -50,17 +65,17 @@ World:
         SkyBoxLod: 0
         MapRotation: 0
         Intensity: 1
-        DynamicSky: false
-        Turbidity: 2
-        Azimuth: 0
-        Inclination: 0
-        Image: 0
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
     - Entity: 5042990045985491529
       TagComponent:
         Tag: Cube
         tags: []
       TransformComponent:
-        Location: [0, 5.0999999, 0]
+        Location: [0, 26.8556461, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:

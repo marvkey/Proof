@@ -43,17 +43,23 @@ namespace Proof
 	{
 		return Application::Get()->GetWindow()->GetMouseScrollWheel().Y;
 	}
-	void Mouse::GetScreenSpace(glm::vec2 windwoPos, glm::vec2 windowSize)
+	
+	glm::vec2 Mouse::GetMouseViewportSpace(const glm::vec2& windowPos, const glm::vec2& windowSize)
 	{
-		float posX = GetPosX();
-		float posY = GetPosY();
-		float scaleFactorX, scaleFactorY;
-		glfwGetWindowContentScale((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), &scaleFactorX, &scaleFactorY);  // Retrieve the DPI scaling factors
+			auto mousePos = GetMousePos();
 
-		// Calculate the screen space coordinates by applying the window position and DPI scaling
-		posX = (posX * scaleFactorX) + windwoPos.x;
-		posY = (posY * scaleFactorY) + windwoPos.y;
+		// Calculate the offset of the mouse position within the window
+		mousePos.x -= windowPos.x;
+		mousePos.y -= windowPos.y;
+
+		// Calculate the width and height of the viewport
+		auto viewportWidth = windowSize.x;
+		auto viewportHeight = windowSize.y;
+
+		// Calculate and return the mouse position in normalized device coordinates (NDC)
+		return { (mousePos.x / viewportWidth) * 2.0f - 1.0f, ((mousePos.y / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 	}
+
 	bool Mouse::IsMouseMoved() {
 		return Application::Get()->GetWindow()->IsMouseMoved();
 	}

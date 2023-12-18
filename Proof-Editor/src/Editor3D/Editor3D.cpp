@@ -15,6 +15,8 @@
 #include "Proof/Scripting/ScriptBuilder.h"
 #include "Proof/Physics/PhysicsDebugger.h"
 #include "Proof/Physics/PhysicsEngine.h"
+#include "Proof/Math/Ray.h"
+#include "Proof/Math/BasicCollision.h"
 
 #include "Proof/Scene/SceneSerializer.h"
 #include "Proof/Scene/Prefab.h"
@@ -44,7 +46,6 @@
 #include "Proof/ImGui/Editors/Panels/ProjectSettingsPanel.h"
 #include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
 #include "Proof/ImGui/SelectionManager.h"
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -188,6 +189,37 @@ namespace Proof
 	PopupState NewProjectState = PopupState::None;
 	std::filesystem::path NewProjectDir;
 	std::string NewProjectName;
+
+	struct SelectionData
+	{ 
+		Entity Entity;
+		//SubMesh* SubMesh = nullptr;
+		float Distance = 0.0f;
+	};
+	std::pair<float, float> GetMouseViewportSpace(glm::vec2 viewportBounds[2] )
+	{
+		auto [mx, my] = ImGui::GetMousePos();
+		mx -= viewportBounds[0].x;
+		my -= viewportBounds[0].y;
+		auto viewportWidth = viewportBounds[1].x - viewportBounds[0].x;
+		auto viewportHeight = viewportBounds[1].y - viewportBounds[0].y;
+
+		return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+	}
+
+	Ray CastRay(const EditorCamera& camera, float mx, float my)
+	{
+		glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+
+		auto inverseProj = glm::inverse(camera.GetProjectionMatrix());
+		auto inverseView = glm::inverse(glm::mat3(camera.GetViewMatrix()));
+
+		glm::vec4 ray = inverseProj * mouseClipPos;
+		glm::vec3 rayPos = camera.GetPosition();
+		glm::vec3 rayDir = inverseView * glm::vec3(ray);
+
+		return Ray{ rayPos, rayDir };
+	}
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") 
 	{
@@ -216,7 +248,6 @@ namespace Proof
 
 	void Editore3D::OnEvent(Event& e) {
 		EventDispatcher dispatcher(e);
-		m_EditorCamera.OnEvent(e);
 		dispatcher.Dispatch<ControllerConnectEvent>([](auto& e) {
 			PF_INFO(e.ToString());
 			return false;
@@ -446,6 +477,7 @@ namespace Proof
 		}
 
 
+		m_EditorCamera.OnEvent(e);
 
 		s_EditorData->PanelManager->OnEvent(e);
 		AssetEditorPanel::OnEvent(e);
@@ -454,6 +486,7 @@ namespace Proof
 			InputManager::OnEvent(e);
 
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
+		dispatcher.Dispatch<MouseButtonClickedEvent>(PF_BIND_FN(Editore3D::OnMouseButtonClicked));
 
 	}
 	void Editore3D::OnAttach() 
@@ -638,7 +671,7 @@ namespace Proof
 		// Shortcuts
 
 		ImGuiIO& io = ImGui::GetIO();
-		if (io.WantCaptureKeyboard) // ths means that an imgui text field is being used
+		if (!io.WantCaptureKeyboard) // ths means that an imgui text field is being used
 			return false;
 
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
@@ -799,6 +832,156 @@ namespace Proof
 				}
 
 		}
+		return false;
+	}
+
+
+	bool Editore3D::OnMouseButtonClicked(MouseButtonClickedEvent& e)
+	{
+		if (!m_EditorCamera.IsActive())
+			return false;
+
+		if (Input::IsKeyPressed(KeyBoardKey::LeftAlt) || Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+			return false;
+
+		if (ImGuizmo::IsOver())
+			return false;
+
+		if (e.GetButton() != MouseButton::ButtonLeft)
+			return false;
+
+		ImGui::ClearActiveID();
+
+		std::vector<SelectionData> selectionData;
+		//https://github.com/InCloudsBelly/X2_RenderingEngine/blob/e7c349b70bd95af3ab673556cdb56cb2cc40b48e/Engine/X2/EditorLayer.cpp#L3340
+		auto [mouseX, mouseY] = GetMouseViewportSpace(m_ViewportBounds);
+
+		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+		{
+			const auto& camera = m_EditorCamera;
+			auto [origin, direction] = CastRay(camera, mouseX, mouseY);
+
+			auto meshEntities = m_ActiveWorld->GetAllEntitiesWith<DynamicMeshComponent>();
+			for (auto e : meshEntities)
+			{
+				Entity entity = { e, m_ActiveWorld.Get() };
+				auto& mc = entity.GetComponent<DynamicMeshComponent>();
+				auto mesh = mc.GetMesh();
+				if (!mesh)
+					continue;
+
+				auto& submeshes = mesh->GetMeshSource()->GetSubMeshes();
+				float lastT = std::numeric_limits<float>::max();
+				const auto& subMesh = submeshes[mc.GetSubMeshIndex()];
+				glm::mat4 transform = m_ActiveWorld->GetWorldSpaceTransform(entity);
+				Ray ray = 
+				{
+					glm::inverse(transform) * glm::vec4(origin, 1.0f),
+					glm::inverse(glm::mat3(transform)) * direction
+				};
+
+				float t;
+				bool intersects = BasicCollision::RayInAABB(ray, subMesh.BoundingBox, 0.3, 50.0, t);
+				if (intersects)
+				{
+
+					selectionData.push_back(SelectionData{ entity,t });
+
+					/*
+					const auto& triangleCache = mesh->GetMeshSource()->GetTriangleCache(mc.SubmeshIndex);
+					for (const auto& triangle : triangleCache)
+					{
+						if (ray.Intersects(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+						{
+							selectionData.push_back({ entity, &submesh, t });
+							break;
+						}
+					}
+					*/
+				}
+			}
+
+			auto staticMeshEntities = m_ActiveWorld->GetAllEntitiesWith<MeshComponent>();
+			for (auto e : staticMeshEntities)
+			{
+				Entity entity = { e, m_ActiveWorld.Get() };
+				auto& smc = entity.GetComponent<MeshComponent>();
+				auto staticMesh = smc.GetMesh();
+				if (!staticMesh )
+					continue;
+
+				auto& submeshes = staticMesh->GetMeshSource()->GetSubMeshes();
+				glm::mat4 transform = m_ActiveWorld->GetWorldSpaceTransform(entity);
+				Ray ray =
+				{
+					glm::inverse(transform) * glm::vec4(origin, 1.0f),
+					glm::inverse(glm::mat3(transform)) * direction
+				};
+				float t;
+				bool intersects = BasicCollision::RayInAABB(ray, staticMesh->GetMeshSource()->GetBoundingBox(), 0.3, 50.0, t);
+
+				if (intersects)
+				{
+					selectionData.push_back(SelectionData{ entity, t });
+				}
+# if 0
+				float lastT = std::numeric_limits<float>::max();
+				for (uint32_t i = 0; i < submeshes.size(); i++)
+				{
+					auto& subMesh = submeshes[i];
+					glm::mat4 transform = m_ActiveWorld->GetWorldSpaceTransform(entity);
+					Ray ray =
+					{
+						glm::inverse(transform) * glm::vec4(origin, 1.0f),
+						glm::inverse(glm::mat3(transform)) * direction
+					};
+
+					float t;
+					bool intersects = BasicCollision::RayInAABB(ray, subMesh.BoundingBox, 0.3, 50.0, t);
+					if (intersects)
+					{
+						selectionData.push_back(SelectionData{ entity, (SubMesh*)&subMesh, t });
+
+						/*
+						const auto& triangleCache = staticMesh->GetMeshSource()->GetTriangleCache(i);
+						for (const auto& triangle : triangleCache)
+						{
+							if (ray.Intersects(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+							{
+								selectionData.push_back({ entity, &submesh, t });
+								break;
+							}
+						}
+						*/
+					}
+				}
+#endif
+			}
+
+			std::sort(selectionData.begin(), selectionData.end(), [](auto& a, auto& b) { return a.Distance > b.Distance; });
+
+			bool ctrlDown = Input::IsKeyPressed(KeyBoardKey::LeftControl) || Input::IsKeyPressed(KeyBoardKey::RightControl);
+			bool shiftDown = Input::IsKeyPressed(KeyBoardKey::LeftShift) || Input::IsKeyPressed(KeyBoardKey::RightShift);
+			if (!ctrlDown)
+				SelectionManager::DeselectAll();
+
+			if (!selectionData.empty())
+			{
+				Entity entity = selectionData.front().Entity;
+				if (shiftDown)
+				{
+					while (entity.GetParent())
+					{
+						entity = entity.GetParent();
+					}
+				}
+				if (SelectionManager::IsSelected(SelectionContext::Scene, entity.GetUUID()) && ctrlDown)
+					SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());
+				else
+					SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+			}
+		}
+
 		return false;
 	}
 	void Editore3D::Logger() 

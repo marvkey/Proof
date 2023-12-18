@@ -323,6 +323,26 @@ namespace Proof {
 					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
 			}
 		}
+		{
+#if 0
+			auto view = m_Registry.view<TransformComponent, MeshComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& staticMeshComponent = e.GetComponent<MeshComponent>();
+				if (!staticMeshComponent.Visible)
+					continue;
+
+
+				auto mesh = staticMeshComponent.GetMesh();
+				if (mesh)
+				{
+
+					renderer2D->DrawAABB(mesh, GetWorldSpaceTransform(e), { 1,0,0,1 });
+				}
+			}
+#endif
+		}
 
 		renderer2D->EndContext();
 	}
@@ -575,7 +595,7 @@ namespace Proof {
 	void World::BuildDynamicMeshEntityHierarchy(Entity parent, Count<DynamicMesh> mesh, const MeshNode& node, bool generateColliders)
 	{
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
-		const auto& nodes = meshSource->GetNodes();
+   		const auto& nodes = meshSource->GetNodes();
 
 		// Skip empty root node
 		if (node.IsRoot() && node.Submeshes.size() == 0)

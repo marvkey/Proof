@@ -462,6 +462,11 @@ namespace Proof {
 	Count<TextureCube> Renderer::CreatePreethamSky(float turbidity, glm::vec3 sunDirection)
 	{
 		PF_PROFILE_FUNC();
+		glm::vec3 zero{ 0 };
+		if (sunDirection == zero || glm::all(glm::isnan(sunDirection)))
+		{
+			sunDirection = { 0.001,0.001,0.001 };
+		}
 		sunDirection = glm::normalize(sunDirection);
 
 		const uint32_t cubemapSize = GetConfig().EnvironmentMapResolution;
@@ -543,6 +548,10 @@ namespace Proof {
 	{
 		//https://github.com/TKscoot/Ivy/blob/3b0a09d719e28c260c8eb5d7fbeb52be876e2af8/projects/Ivy/source/scene/renderpasses/skymodels/HosekWilkieSkyModel.cpp#L46
 		https://github.com/diharaw/sky-models/blob/master/src/hosek_wilkie_sky_model.cpp
+
+		glm::vec3 zero{ 0 };
+		if (sunDirection == zero || glm::all(glm::isnan(sunDirection)))
+			sunDirection = { 0.001,0.001,0.001 };
 		struct alignas(16) PushData
 		{
 			glm::vec4 SunDirection;

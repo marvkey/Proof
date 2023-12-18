@@ -482,16 +482,17 @@ namespace Proof
 	}
 	bool EditorCamera::UpdateMouseMovement(float deltaTime) // returns if active
 	{
-		if (!IsActive())
-		{
-			EnableMouse();
-			return false;
-		}
 		bool active = false;
 		if (Input::IsMouseButtonReleased(MouseButton::ButtonRight))
 		{
 			m_FirstClick = true;
 			EnableMouse();
+		}
+
+		if (!IsActive())
+		{
+			EnableMouse();
+			return false;
 		}
 
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))

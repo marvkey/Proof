@@ -210,12 +210,12 @@ namespace Proof::UI
 		if (enabled)
 		{
 			io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
-			io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
+			//io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
 		}
 		else
 		{
 			io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
-			io.ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;
+			//io.ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;
 		}
 	}
 }

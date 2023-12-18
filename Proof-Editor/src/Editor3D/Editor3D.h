@@ -75,6 +75,7 @@ namespace Proof {
 		ControllerEvent m_ShowAllControllerEvents;
 		virtual void OnEvent(Event& e);
 		bool OnKeyClicked(KeyClickedEvent& e);
+		bool OnMouseButtonClicked(class MouseButtonClickedEvent& e);
 		Entity m_CopyEntity;
 		void Logger();
 		void ViewPort();
