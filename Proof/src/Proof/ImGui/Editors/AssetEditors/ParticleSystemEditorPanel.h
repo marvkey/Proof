@@ -17,6 +17,6 @@ namespace Proof
 		Count<class ParticleSystem> m_ParticleSystem;
 		Count<class  WorldRenderer> m_WorldRenderer;
 		Count<class World> m_World;
-		EditorCamera m_Camera{ 45.f,200.f,200.f };
+		EditorCamera m_Camera;
 	};
 }

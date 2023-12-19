@@ -28,7 +28,7 @@ namespace Proof
 		Count<class MeshCollider> m_MeshCollider;
 		Count<class WorldRenderer> m_WorldRenderer;
 		Count<class World> m_World;
-		EditorCamera m_Camera{ 45.f};
+		EditorCamera m_Camera;
 		bool m_IsViewportFocused = false;
 		bool m_NeedsCooking = false;
 		bool m_ShowCookingResults = true;

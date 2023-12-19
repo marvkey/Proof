@@ -13,7 +13,7 @@ namespace Proof
 		virtual void SetAsset(const Count<class Asset>& asset);
 	private:
 		bool m_IsViewportFocused = false;
-		EditorCamera m_Camera{ 45.f,200.f,200.f };
+		EditorCamera m_Camera;
 		Count<class  WorldRenderer> m_WorldRenderer;
 		Count<class World> m_World;
 		Count<class Mesh> m_Mesh;

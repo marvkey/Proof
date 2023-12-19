@@ -52,7 +52,11 @@ namespace Proof
 		{
 			if (!panelData.IsOpen)
 				continue;
-			panelData.EditorWorkspace->OnImGuiRender();
+			if (panelData.EditorWorkspace->IsOpen() != panelData.IsOpen)
+				panelData.EditorWorkspace->SetOpen(panelData.IsOpen);
+
+			panelData.EditorWorkspace->Render();
+			panelData.IsOpen = panelData.EditorWorkspace->IsOpen();
 		}
 	}
 	void EditorWorkspaceManager::OnEvent(Event& e)
@@ -74,4 +78,12 @@ namespace Proof
 			panelData.EditorWorkspace->OnUpdate(ts);
 		}
 	}
+	void EditorWorkspaceManager::SetWorldContext(const Count<class World>& context)
+	{
+		for (auto& [id, panelData] : m_EditorWorkspaces)
+		{
+			panelData.EditorWorkspace->SetWorldContext(context);
+		}
+	}
+
 }

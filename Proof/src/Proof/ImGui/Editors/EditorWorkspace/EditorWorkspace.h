@@ -12,15 +12,16 @@ namespace Proof
 	{
 	public:
 		virtual ~EditorWorkspace() {};
-		EditorWorkspace(const std::string& titleAndID);
 		virtual void OnUpdate(FrameTime ts) {}
 		virtual void OnEvent(class Event& e) {}
 		bool IsOpen() const { return m_IsOpen; }
 		bool IsFocused() { return m_IsFocused; }
 		virtual void OnImGuiRender() {};
 		void SetOpen(bool isOpen);
+		virtual void SetWorldContext(const Count<class World>& context) {}
 
 	protected:
+		EditorWorkspace(const std::string& titleAndID);
 		virtual void OnWindowStylePush() {}
 		virtual void OnWindowStylePop() {}
 		virtual void OnOpen() {}
@@ -33,6 +34,7 @@ namespace Proof
 		virtual ImGuiWindowFlags GetWindowFlags() { return 0; }
 	private:
 		virtual void Render() final;
+		friend class EditorWorkspaceManager;
 	};
 	struct EditorWorkspaceManagerData
 	{
@@ -49,6 +51,7 @@ namespace Proof
 		virtual void OnImGuiRender();
 		virtual void OnEvent(class Event& e);
 		virtual void OnUpdate(FrameTime ts);
+		virtual void SetWorldContext(const Count<class World>& context);
 
 		template<typename TPanel, typename... TArgs>
 		Count<TPanel> AddWorkspace(const char* strID, bool isOpenByDefault, TArgs&&... args)

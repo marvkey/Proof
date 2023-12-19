@@ -46,6 +46,9 @@
 #include "Proof/ImGui/Editors/Panels/ProjectSettingsPanel.h"
 #include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
 #include "Proof/ImGui/SelectionManager.h"
+#include "Proof/ImGui/Editors/EditorWorkspace/EditorWorkspace.h"
+#include "Proof/ImGui/Editors/EditorWorkspace/ViewPortEditorWorkspace.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -89,6 +92,8 @@ namespace Proof
 		//InputPanel InputPanel;
 
 		Special<PanelManager> PanelManager = CreateSpecial<class PanelManager>();
+		Special<EditorWorkspaceManager> EditorWorkspaceManager = CreateSpecial<class EditorWorkspaceManager>();
+
 		Count<Texture2D> PlayButtonTexture;
 		Count<Texture2D> PauseButtonTexture;
 		Count<Texture2D> SimulateButtonTexture;
@@ -246,7 +251,8 @@ namespace Proof
 	}
 
 
-	void Editore3D::OnEvent(Event& e) {
+	void Editore3D::OnEvent(Event& e) 
+	{
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<ControllerConnectEvent>([](auto& e) {
 			PF_INFO(e.ToString());
@@ -299,7 +305,6 @@ namespace Proof
 						return false;
 					});
 				}
-				return;
 			}
 		}
 
@@ -358,7 +363,6 @@ namespace Proof
 						return false;
 					});
 				}
-				return;
 			}
 		}
 
@@ -409,7 +413,6 @@ namespace Proof
 						return false;
 					});
 				}
-				return;
 			}
 		}
 
@@ -472,22 +475,22 @@ namespace Proof
 						return false;
 					});
 				}
-				return;
 			}
 		}
 
 
-		m_EditorCamera.OnEvent(e);
-
-		s_EditorData->PanelManager->OnEvent(e);
-		AssetEditorPanel::OnEvent(e);
-
-		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
-			InputManager::OnEvent(e);
 
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 		dispatcher.Dispatch<MouseButtonClickedEvent>(PF_BIND_FN(Editore3D::OnMouseButtonClicked));
 
+		m_EditorCamera.OnEvent(e);
+
+		s_EditorData->PanelManager->OnEvent(e);
+		s_EditorData->EditorWorkspaceManager->OnEvent(e);
+		AssetEditorPanel::OnEvent(e);
+
+		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
+			InputManager::OnEvent(e);
 	}
 	void Editore3D::OnAttach() 
 	{
@@ -517,6 +520,11 @@ namespace Proof
 
 		Count< ContentBrowserPanel> contentBrowser = s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 		s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
+		{
+			//s_EditorData->EditorWorkspaceManager->AddWorkspace<("Viewport")
+			s_EditorData->EditorWorkspaceManager->AddWorkspace<ViewPortEditorWorkspace>("Viewport", true, "Viewport", ViewPortEditorData{ false,false,std::bind(&Editore3D::UI_HandleAssetDrop, this) });
+			s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
+		}
 #if 0
 		contentBrowser->RegisterItemActivateCallbackForType(AssetType::World, [this](const AssetInfo& metadata)
 			{
@@ -552,6 +560,7 @@ namespace Proof
 		s_EditorData->StopButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/StopButton.png");
 		s_EditorData->PanelManager->GetPanel< WorldRendererPanel>(WORLD_RENDERER_PANEL_ID)->SetContext(m_WorldRenderer);
 
+	
 		m_PlayersCount = 1;
 
 		m_ViewPortSize = { 100,100 };
@@ -572,7 +581,8 @@ namespace Proof
 		FileSystem::ClearFileSystemChangedCallbacks();
 	}
 
-	void Editore3D::OnUpdate(FrameTime DeltaTime) {
+	void Editore3D::OnUpdate(FrameTime DeltaTime) 
+	{
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
 		m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
@@ -583,7 +593,7 @@ namespace Proof
 			m_IsViewPortResize = false;
 		}
 		AssetEditorPanel::OnUpdate(DeltaTime);
-
+		s_EditorData->EditorWorkspaceManager->OnUpdate(DeltaTime);
 		switch (m_ActiveWorld->GetState())
 		{
 			case Proof::WorldState::Play:
@@ -594,7 +604,7 @@ namespace Proof
 						m_EditorCamera.SetActive(m_ViewPortFocused);
 						m_EditorCamera.OnUpdate(DeltaTime);
 					}
-					m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
+					//m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
 					break;
 				}
 			case Proof::WorldState::Pause:
@@ -610,13 +620,13 @@ namespace Proof
 				}
 			case Proof::WorldState::Edit:
 				{
-					m_ActiveWorld->OnUpdateEditor(DeltaTime);
+					//m_ActiveWorld->OnUpdateEditor(DeltaTime);
 					if (m_ViewPortFocused)
 					{
 						m_EditorCamera.SetActive(m_ViewPortFocused);
 						m_EditorCamera.OnUpdate(DeltaTime);
 					}
-					m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
+					//m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
 					break;
 				}
 			default:
@@ -638,8 +648,10 @@ namespace Proof
 
 		if (SaveSceneDialouge)
 			UI_SaveWorldAs();
-		ViewPort();
+		//ViewPort();
 		s_EditorData->PanelManager->OnImGuiRender();
+		s_EditorData->EditorWorkspaceManager->OnImGuiRender();
+
 		AssetEditorPanel::OnImGuiRender();
 		// handlepop
 		{
@@ -1316,7 +1328,8 @@ namespace Proof
 		}
 		ImGui::End();
 	}
-	void Editore3D::ViewPort() {
+	void Editore3D::ViewPort() 
+	{
 		PF_PROFILE_FUNC();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
@@ -1701,6 +1714,7 @@ namespace Proof
 		m_ActiveWorld = m_EditorWorld;
 
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 		SelectionManager::DeselectAll();
 
 	}
@@ -2012,6 +2026,7 @@ namespace Proof
 			Log::Logs.clear();
 		m_ActiveWorld->StartRuntime();
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 	}
 	void Editore3D::SimulateWorld() {
 
@@ -2026,6 +2041,7 @@ namespace Proof
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 		s_DetachPlayer = false;
 	}
 	void Editore3D::PauseWorld() {
