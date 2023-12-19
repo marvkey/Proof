@@ -560,7 +560,6 @@ namespace Proof
 	{
 		if (!IsActive())
 			return false;
-
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight))
 		{
 			m_Speed += e.GetScrollY() * 0.3f * m_Speed;

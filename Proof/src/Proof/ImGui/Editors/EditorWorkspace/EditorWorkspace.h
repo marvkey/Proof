@@ -16,6 +16,8 @@ namespace Proof
 		virtual void OnEvent(class Event& e) {}
 		bool IsOpen() const { return m_IsOpen; }
 		bool IsFocused() { return m_IsFocused; }
+		bool IsHovered() { return m_IsHovered; }
+		bool IsFocusedOrHovered() { return IsFocused() || IsHovered(); }
 		virtual void OnImGuiRender() {};
 		void SetOpen(bool isOpen);
 		virtual void SetWorldContext(const Count<class World>& context) {}
@@ -30,6 +32,7 @@ namespace Proof
 		std::string m_TitleAndID;
 		ImVec2 m_CurrentSize;
 		bool m_IsFocused = false;
+		bool m_IsHovered = false;
 		bool m_IsOpen = false;
 		virtual ImGuiWindowFlags GetWindowFlags() { return 0; }
 	private:

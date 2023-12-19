@@ -480,8 +480,7 @@ namespace Proof
 
 
 
-		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
-		dispatcher.Dispatch<MouseButtonClickedEvent>(PF_BIND_FN(Editore3D::OnMouseButtonClicked));
+		
 
 		m_EditorCamera.OnEvent(e);
 
@@ -491,6 +490,9 @@ namespace Proof
 
 		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 			InputManager::OnEvent(e);
+
+		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
+		dispatcher.Dispatch<MouseButtonClickedEvent>(PF_BIND_FN(Editore3D::OnMouseButtonClicked));
 	}
 	void Editore3D::OnAttach() 
 	{

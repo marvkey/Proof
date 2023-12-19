@@ -25,6 +25,8 @@ namespace Proof
 		virtual void OnWindowStylePush();
 		virtual void OnWindowStylePop();
 
+		void DrawGizmos();
+		bool OnKeyClicked(class KeyClickedEvent& e);
 	private:
 		Count<class WorldRenderer> m_WorldRenderer = nullptr;
 		Count<class World> m_WorldContext = nullptr;
@@ -35,7 +37,7 @@ namespace Proof
 		glm::vec2 m_ViewportBounds[2];
 		glm::vec2 m_ViewPortSize;
 		//GIZMO Tools
-		int m_GizmoType = -1; // -1 = no gizmo
+		int m_GizmoType; 
 		int m_GizmoMode = 0; // 0 = local
 		float m_SnapValue = 0.5f;
 		float m_RotationSnapValue = 45.0f;

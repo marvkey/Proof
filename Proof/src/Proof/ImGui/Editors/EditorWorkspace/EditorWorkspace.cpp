@@ -27,6 +27,8 @@ namespace Proof
 				m_IsFocused = true;
 			else
 				m_IsFocused = false;
+
+			m_IsHovered = ImGui::IsWindowHovered();
 			OnWindowStylePop();
 			{
 				OnImGuiRender();
@@ -65,7 +67,7 @@ namespace Proof
 		{
 			if (!panelData.IsOpen )
 				continue;
-			if(panelData.EditorWorkspace->IsFocused())
+			if(panelData.EditorWorkspace->IsFocusedOrHovered())
 				panelData.EditorWorkspace->OnEvent(e);
 		}
 	}
