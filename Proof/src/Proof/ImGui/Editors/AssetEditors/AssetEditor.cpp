@@ -13,7 +13,7 @@
 namespace Proof 
 {
 	AssetEditor::AssetEditor(const char* id)
-		: m_Id(id), m_MinSize(200, 400), m_MaxSize(2000, 2000)
+		: m_Id(id), m_MinSize(200, 400), m_MaxSize(FLT_MAX, FLT_MAX)
 	{
 	}
 	
