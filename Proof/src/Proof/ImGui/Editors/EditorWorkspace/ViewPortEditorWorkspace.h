@@ -24,9 +24,11 @@ namespace Proof
 	protected:
 		virtual void OnWindowStylePush();
 		virtual void OnWindowStylePop();
-
+	private:
+		float GetSnapValue();
 		void DrawGizmos();
 		bool OnKeyClicked(class KeyClickedEvent& e);
+		void OnRender2D();
 	private:
 		Count<class WorldRenderer> m_WorldRenderer = nullptr;
 		Count<class World> m_WorldContext = nullptr;

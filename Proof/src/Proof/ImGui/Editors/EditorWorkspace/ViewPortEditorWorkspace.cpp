@@ -3,6 +3,9 @@
 #include "Proof/Scene/World.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Renderer/WorldRenderer.h"
+#include "Proof/Renderer/Renderer2D.h"
+#include "Proof/ImGui/Editors/EditorResources.h"
+
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/Input/Input.h"
@@ -39,7 +42,7 @@ namespace Proof
 		m_Camera.OnUpdate(ts);
 		m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 		m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
-
+		OnRender2D();
 	}
 	void ViewPortEditorWorkspace::OnImGuiRender()
 	{
@@ -110,6 +113,61 @@ namespace Proof
 		}
 	}
 
+	void ViewPortEditorWorkspace::OnRender2D()
+	{
+		Count<Renderer2D> renderer2D =  m_WorldRenderer->GetRenderer2D();
+		renderer2D->SetTargetFrameBuffer(m_WorldRenderer->GetExternalCompositePassFrameBuffer());
+		
+		renderer2D->BeginContext(m_Camera.GetProjectionMatrix(), m_Camera.GetViewMatrix(), GlmVecToProof(m_Camera.GetPosition()));
+		{
+			auto entities = m_WorldContext->GetAllEntitiesWith<SkyLightComponent>();
+			for (auto e : entities)
+			{
+				Entity entity = { e, m_WorldContext.Get() };
+				renderer2D->DrawQuadBillboard(EditorResources::SkyLightIcon,m_WorldContext->GetWorldSpaceLocation(entity), { glm::radians(90.f),0,0 });
+			}
+		}
+
+		{
+			auto entities = m_WorldContext->GetAllEntitiesWith<DirectionalLightComponent>();
+			for (auto e : entities)
+			{
+				Entity entity = { e, m_WorldContext.Get() };
+				renderer2D->DrawQuadBillboard(EditorResources::DirectionalLightIcon,m_WorldContext->GetWorldSpaceLocation(entity));
+			}
+		}
+
+		{
+			auto entities = m_WorldContext->GetAllEntitiesWith<PointLightComponent>();
+			for (auto e : entities)
+			{
+				Entity entity = { e, m_WorldContext.Get() };
+				renderer2D->DrawQuadBillboard(EditorResources::PointLightIcon,m_WorldContext->GetWorldSpaceLocation(entity),{glm::radians(90.f),0,0});
+			}
+		}
+		{
+			auto entities = m_WorldContext->GetAllEntitiesWith<SpotLightComponent>();
+			for (auto e : entities)
+			{
+				Entity entity = { e, m_WorldContext.Get() };
+				renderer2D->DrawQuadBillboard(EditorResources::SpotLightIcon,m_WorldContext->GetWorldSpaceLocation(entity));
+			}
+		}
+		renderer2D->EndContext();
+
+	}
+
+	float ViewPortEditorWorkspace::GetSnapValue()
+	{
+		switch (m_GizmoType)
+		{
+			case  ImGuizmo::OPERATION::TRANSLATE: return 0.5f;
+			case  ImGuizmo::OPERATION::ROTATE: return 45.0f;
+			case  ImGuizmo::OPERATION::SCALE: return 0.5f;
+		}
+		return 0.0f;
+	}
+
 	void ViewPortEditorWorkspace::OnWindowStylePush()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
@@ -141,10 +199,7 @@ namespace Proof
 			glm::mat4 selectedEntitytransform = selectedentityTc.GetTransform();
 
 			bool snap = ImGui::IsKeyPressed(ImGuiKey_LeftCtrl);
-			float snapValue = 0.5f; // Snap to 0.5m for translation/scale
-			// Snap to 45 degrees for rotation
-			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 45.0f;
+			float snapValue = GetSnapValue(); // Snap to 0.5m for translation/scale
 
 			float snapValues[3] = { snapValue,snapValue,snapValue };
 

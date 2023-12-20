@@ -224,10 +224,10 @@ namespace Proof {
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Renderer2DContextSettings contextSettings)
 	{
 		PF_PROFILE_FUNC()
-			CameraData camera = CameraData{ projection,view,Position };
+		m_Camera = CameraData{ projection,view,Position };
 		//CameraData camera = CameraData{ glm::mat4(1),glm::mat4(1)};
 
-		Buffer buffer(&camera, sizeof(CameraData));
+		Buffer buffer(&m_Camera, sizeof(CameraData));
 		m_UBCamera->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
 		m_Stats = {};
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
@@ -558,6 +558,114 @@ namespace Proof {
 		m_QuadIndexCount += 6;
 
 	}
+	void Renderer2D::DrawQuadBillboard(const glm::vec3& position, const glm::vec3& rotation,const glm::vec2& size, const glm::vec4& tintColor)
+	{
+		if (m_QuadIndexCount >= c_MaxIndexCount)
+		{ // reached maxed index size
+			Render();
+			Reset();
+		}
+		glm::quat rotationQuat = glm::quat(rotation);
+		const float textureIndex = 0.0f; // White Texture
+		const float tilingFactor = 1.0f;
+
+		//glm::quat rotationQuat = glm::quat(rotation);
+
+		glm::vec3 camRightWS = { m_Camera.ProjectionView[0][0] , m_Camera.ProjectionView[1][0] , m_Camera.ProjectionView[2][0] };
+		glm::vec3 camUpWS = { m_Camera.ProjectionView[0][1]   , m_Camera.ProjectionView[1][1], m_Camera.ProjectionView[2][1] };
+
+		static constexpr std::array<glm::vec2, 4> m_QuadVertexTexCoords =
+		{
+			{glm::vec2(0.0f, 1.0f), glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f)}
+		};
+		for (int i = 0; i < 4; i++)
+		{
+			// Apply rotation to the vertex positions
+			glm::vec3 rotatedPosition = position +
+				camRightWS * (m_QuadVertexPositions[i].x * size.x) +
+				camUpWS * (m_QuadVertexPositions[i].y * size.y);
+
+			// Rotate the vertex position around the specified rotation
+			rotatedPosition = glm::rotate(rotationQuat, rotatedPosition);
+
+			// Calculate the transformed position using the rotated vertex and camera vectors
+			m_QuadVertexBufferPtr->Position = GlmVecToProof(rotatedPosition);
+			m_QuadVertexBufferPtr->Color = tintColor;
+			m_QuadVertexBufferPtr->TexCoords = { m_QuadVertexTexCoords[i].x, m_QuadVertexTexCoords[i].y };
+			m_QuadVertexBufferPtr->TexSlot = textureIndex;
+			//m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			m_QuadVertexBufferPtr++;
+		}
+		m_QuadIndexCount += 6;
+
+		//m_Stats.QuadCount++;
+
+	}
+
+	void Renderer2D::DrawQuadBillboard(const Count<Texture2D>& texture, glm::vec3 position, const glm::vec3& rotation, const glm::vec2& size, const glm::vec4& tintColor, float tilingFactor)
+	{
+		if (m_QuadIndexCount >= c_MaxIndexCount)
+		{ // reached maxed index size
+			Render();
+			Reset();
+		}
+
+		float textureIndex = -1.f;
+		for (uint32_t i = 0; i < m_QuadTextureSlotIndex; i++)
+		{
+			if (m_QuadTextures[i] == texture)
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+
+		if (textureIndex == -1.f)
+		{
+			if (m_QuadTextureSlotIndex >= c_MaxTextureSlots)
+			{
+				Render();
+				Reset();
+			}
+
+			textureIndex = (float)m_QuadTextureSlotIndex;
+			m_QuadTextures[m_QuadTextureSlotIndex] = texture;
+			m_QuadTextureSlotIndex++;
+		}
+		glm::quat rotationQuat = glm::quat(rotation);
+
+		glm::vec3 camRightWS = { m_Camera.ProjectionView[0][0] , m_Camera.ProjectionView[1][0] , m_Camera.ProjectionView[2][0] };
+		glm::vec3 camUpWS = { m_Camera.ProjectionView[0][1]   , m_Camera.ProjectionView[1][1], m_Camera.ProjectionView[2][1] };
+
+		static constexpr std::array<glm::vec2, 4> m_QuadVertexTexCoords =
+		{
+			{glm::vec2(0.0f, 1.0f), glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f)}
+		};
+		for (int i = 0; i < 4; i++)
+		{
+
+			// Apply rotation to the vertex positions
+			glm::vec3 localPosition = glm::vec3(m_QuadVertexPositions[i].x * size.x, m_QuadVertexPositions[i].y * size.y, 0.0f);
+			glm::vec3 rotatedPosition = position +
+				(camRightWS * localPosition.x) +
+				(camUpWS * localPosition.y);
+
+			// Rotate the vertex position around the specified rotation
+			rotatedPosition = position + (rotationQuat * (rotatedPosition - position));
+
+			// Calculate the transformed position using the rotated vertex and camera vectors
+			m_QuadVertexBufferPtr->Position = GlmVecToProof(rotatedPosition);
+			m_QuadVertexBufferPtr->Color = tintColor;
+			m_QuadVertexBufferPtr->TexCoords = { m_QuadVertexTexCoords[i].x, m_QuadVertexTexCoords[i].y };
+			m_QuadVertexBufferPtr->TexSlot = textureIndex;
+			//m_QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			m_QuadVertexBufferPtr++;
+		}
+		m_QuadIndexCount += 6;
+
+		//m_Stats.QuadCount++;
+	}
+
 	void Renderer2D::DrawString(const std::string& text, Count<class Font> font, const TextParams& textParam, const glm::mat4& transform)
 	{
 		if (m_TextIndexCount >= c_MaxIndexCount)
