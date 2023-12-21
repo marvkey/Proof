@@ -20,7 +20,7 @@ namespace Proof
 		// TODO SetNextWindowSizeConstraints requires a max constraint that's above 0. For now we're just setting it to a large value
 		{
 			OnWindowStylePush();
-			ImGui::SetNextWindowSizeConstraints({100,100}, {FLT_MAX,FLT_MAX });
+			ImGui::SetNextWindowSizeConstraints({200,400}, {FLT_MAX,FLT_MAX });
 			ImGui::Begin(m_TitleAndID.c_str(), &m_IsOpen, GetWindowFlags());
 			m_CurrentSize = ImGui::GetWindowSize();
 			if (ImGui::IsWindowFocused())

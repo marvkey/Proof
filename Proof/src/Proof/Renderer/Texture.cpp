@@ -149,7 +149,7 @@ namespace Proof {
 		}
 		else 
 		{
-			stbi_set_flip_vertically_on_load(1);
+			stbi_set_flip_vertically_on_load(0);
 
 			outFormat = ImageFormat::RGBA;
 			imageBuffer.Data = stbi_load(pathString.c_str(), &width, &height, &channels, 4);

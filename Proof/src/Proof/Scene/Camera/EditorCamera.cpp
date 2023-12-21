@@ -576,12 +576,26 @@ namespace Proof
 	void EditorCamera::MouseZoom(float zoom)
 	{
 		m_FovDeg -= (float)zoom;
-		if (m_FovDeg < 1.0f)
-			m_FovDeg = 1.0f;
-		if (m_FovDeg > 45.0f)
-			m_FovDeg = 45.0f;
+		if (m_FovDeg < MIN_FOV)
+			m_FovDeg = MIN_FOV;
+		if (m_FovDeg > MAX_FOV)
+			m_FovDeg = MAX_FOV;
 
 	}
+	void EditorCamera::SetSpeed(float speed)
+	{
+		m_Speed = speed;
+		m_Speed = std::clamp(m_Speed, MIN_SPEED, MAX_SPEED);
+	}
+	void EditorCamera::SetFOV(float fov)
+	{
+		m_FovDeg = fov;
+		if (m_FovDeg < MIN_FOV)
+			m_FovDeg = MIN_FOV;
+		if (m_FovDeg > MAX_FOV)
+			m_FovDeg = MAX_FOV;
+	}
+
 	void EditorCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		if (m_Width == width && m_Height == height)

@@ -131,6 +131,15 @@ namespace Proof
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void OnEvent(class Event& event);
 
+		float GetSpeed() { return m_Speed; };
+		void SetSpeed(float speed);
+
+		float GetFOV() { return m_FovDeg; }
+		void SetFOV(float fov); 
+
+		constexpr static float MIN_SPEED{ 2.f }, MAX_SPEED{ 100.0f };
+		constexpr static float MIN_FOV{ 5.f }, MAX_FOV{ 170.0f };
+		void Recalculate();
 	private:
 		float m_FovDeg = 45.f;
 		float m_NearPlane = 0.1;
@@ -150,10 +159,8 @@ namespace Proof
 		float m_Pitch = 0.f;
 		bool m_FirstClick = true;
 		uint32_t m_Width, m_Height;
-		constexpr static float MIN_SPEED{ 2.f }, MAX_SPEED{ 100.0f };
 		bool m_IsActive = false;
 	private:
-		void Recalculate();
 		bool OnMouseScroll(class MouseScrollEvent& e);
 		void MouseZoom(float zoom);
 		void UpdateKeyBoardMovement(float deltaTime);

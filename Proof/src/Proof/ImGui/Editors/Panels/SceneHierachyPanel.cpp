@@ -335,10 +335,9 @@ namespace Proof
 		}
 		if (ImGui::BeginPopup("Entity Settings")) 
 		{
-			auto selectedEntity = m_ActiveWorld->GetEntity( SelectionManager::GetSelections(SelectionContext::Scene).front());
 
 			if (ImGui::BeginMenu("Child Entity")) {
-				bool temp = CreateEntityMenu(selectedEntity);
+				bool temp = CreateEntityMenu(entity);
 				// not setting to opne because 
 				// if it is already opened what if we
 				// do not actually create and entity we are closing
@@ -346,8 +345,9 @@ namespace Proof
 
 				ImGui::EndMenu();
 			}
-			if (ImGui::MenuItem("Delete")) {
-				m_ActiveWorld->DeleteEntity(selectedEntity, true);
+			if (ImGui::MenuItem("Delete")) 
+			{
+				m_ActiveWorld->DeleteEntity(entity, true);
 
 				SelectionManager::DeselectAll();
 				if (opened) {
@@ -358,13 +358,13 @@ namespace Proof
 				}
 			}
 
-			if (m_ActiveWorld->HasEntity(selectedEntity.GetUUID()))
+			if (m_ActiveWorld->HasEntity(entity.GetUUID()))
 			{
 				if (ImGui::MenuItem("Duplicate"))
 				{
-					auto entity = m_ActiveWorld->CreateEntity(selectedEntity);
+					auto newEntity = m_ActiveWorld->CreateEntity(entity);
 					SelectionManager::DeselectAll();
-					SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+					SelectionManager::Select(SelectionContext::Scene, newEntity.GetUUID());
 				}
 			}
 			ImGui::EndPopup();

@@ -18,6 +18,17 @@ namespace Proof {
 		PointLightIcon = Texture2D::Create(TextureConfiguration("PointLight"), "Resources/Icons/Pointlight.png");
 		SpotLightIcon = Texture2D::Create(TextureConfiguration("SpotLight"), "Resources/Icons/Spotlight.png");
 
+		//viewport
+		CameraIcon = Texture2D::Create(TextureConfiguration("CameraIcon"), "Resources/Icons/Viewport/Camera.png");
+		DropdownIcon = Texture2D::Create(TextureConfiguration("DropdownIcon"), "Resources/Icons/Viewport/Dropdown.png");
+		LocalSpaceIcon = Texture2D::Create(TextureConfiguration("LocalSpaceIcon"), "Resources/Icons/Viewport/LocalSpace.png");
+		WorldSpaceIcon = Texture2D::Create(TextureConfiguration("WorldSpaceIcon"), "Resources/Icons/Viewport/WorldSpace.png");
+		TranslationIcon = Texture2D::Create(TextureConfiguration("TranslationIcon"), "Resources/Icons/Viewport/Translation.png");
+		RotationIcon = Texture2D::Create(TextureConfiguration("RotationIcon"), "Resources/Icons/Viewport/Rotation.png");
+		ScaleIcon = Texture2D::Create(TextureConfiguration("ScaleIcon"), "Resources/Icons/Viewport/Scale.png");
+		UniversalTransformIcon = Texture2D::Create(TextureConfiguration("UniversalTransformIcon"), "Resources/Icons/Viewport/UniversalTransform.png");
+		PointerIcon = Texture2D::Create(TextureConfiguration("PointerIcon"), "Resources/Icons/Viewport/Pointer.png");
+
 	}
 	void EditorResources::Unizilize()
 	{

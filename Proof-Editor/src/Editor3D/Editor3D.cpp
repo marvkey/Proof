@@ -622,7 +622,7 @@ namespace Proof
 				}
 			case Proof::WorldState::Edit:
 				{
-					//m_ActiveWorld->OnUpdateEditor(DeltaTime);
+					m_ActiveWorld->OnUpdateEditor(DeltaTime);
 					if (m_ViewPortFocused)
 					{
 						m_EditorCamera.SetActive(m_ViewPortFocused);

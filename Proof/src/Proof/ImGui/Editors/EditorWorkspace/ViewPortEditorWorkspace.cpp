@@ -7,18 +7,142 @@
 #include "Proof/ImGui/Editors/EditorResources.h"
 
 #include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UiUtilities.h"
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/Input/Input.h"
 #include "Proof/Events/KeyEvent.h"
 #include <ImGuizmo.h>
 namespace Proof
 {
+
+	static bool TollbarButton(Count<Texture2D> icon, const ImColor& borderTint = ImColor(0.0f, 0.0f, 0.0f, 0.0f), float paddingY = 0.0f)
+	{
+#if 0
+		const float edgeOffset = 4.0f;
+
+		UI::ScopedStyleVar enableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(edgeOffset * 2.0f, 0));
+		const float buttonSize = 18.0f;
+		const float height = std::min((float)icon->GetHeight(), buttonSize) - paddingY * 2.0f;
+		const float width = (float)icon->GetWidth() / (float)icon->GetHeight() * height;
+		const bool clicked = ImGui::InvisibleButton(UI::GenerateID(), ImVec2(width, height));
+		UI::DrawButtonImage(icon,
+			tint,
+			tint,
+			tint,
+			UI::RectOffset(UI::GetItemRect(), 0.0f, paddingY));
+
+		return clicked;
+#endif
+		const float edgeOffset = 4.0f;
+
+		UI::ScopedStyleVar enableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(edgeOffset , 0));
+		const float buttonSize = 18.0f;
+		const float height = std::min((float)icon->GetHeight(), buttonSize) - paddingY * 2.0f;
+		const float width = (float)icon->GetWidth() / (float)icon->GetHeight() * height;
+
+		//static ImColor borderColor(15, 15, 15, 127);
+		static ImColor borderColor(0,0,0,0);
+
+		// Use ImGui::ImageButton instead of ImGui::InvisibleButton
+
+		/*
+		ImGui::Image (
+			(ImTextureID)UI::GetTextureID(icon->GetImage()),  // Assuming icon is an instance of an image class with a texture ID
+			ImVec2(width, height),
+			ImVec2(0, 0),  // UV min
+			ImVec2(1, 1),  // UV max
+			tint,
+			borderColor.Value
+		);
+		*/
+		ImGui::Image(
+			(ImTextureID)UI::GetTextureID(icon->GetImage()),  // Assuming icon is an instance of an image class with a texture ID
+			ImVec2(width, height),
+			ImVec2(0, 0),  // UV min
+			ImVec2(1, 1),  // UV max
+			ImVec4(1,1,1,1),
+			borderTint
+		);
+		if (ImGui::IsItemClicked())
+			return true;
+		return false;
+	}
+	enum class UIToolbarAlign
+	{
+		Left =0,
+		Center,
+		Right
+	};
+
+	struct ToolBarWindowSettings
+	{
+		float Width;
+		float xOffset;
+	};
+	static ToolBarWindowSettings BeginTollBarWindow(const std::string& windowName,uint32_t nButtons, UIToolbarAlign align = UIToolbarAlign::Center,float xOffset = 0)
+	{
+		UI::PushID();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		ImVec2 windowPos = ImGui::GetWindowPos();
+
+		const float buttonSize = 18.0f;
+		const float edgeOffset = 4.0f;
+		const float windowHeight = 32.0f;
+		const float numberOfButtons = static_cast<float>(nButtons);
+		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+
+		float xPosition = windowPos.x + edgeOffset;
+
+		if (align == UIToolbarAlign::Center)
+		{
+			xPosition += (ImGui::GetContentRegionAvail().x - backgroundWidth) / 2.0f;
+		}
+		else if (align == UIToolbarAlign::Right)
+		{
+			xPosition += ImGui::GetContentRegionAvail().x - backgroundWidth - edgeOffset;
+		}
+
+		xPosition += xOffset;
+
+		ImGui::SetNextWindowPos(ImVec2(xPosition, windowPos.y + edgeOffset));
+		ImGui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
+		ImGui::SetNextWindowBgAlpha(0.0f);
+		ImGui::Begin(windowName.c_str(), 0,ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+
+		// Background
+		const float desiredHeight = 26.0f;
+		ImRect background = UI::RectExpanded(ImGui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
+		ImGui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
+
+		ImGui::BeginVertical(UI::GenerateID(), { backgroundWidth, ImGui::GetContentRegionAvail().y });
+		ImGui::Spring();
+		ImGui::BeginHorizontal(UI::GenerateID(), { backgroundWidth, ImGui::GetContentRegionAvail().y });
+		ImGui::Spring();
+
+		return { backgroundWidth,xOffset };
+	}
+	static void EndToolbarWindow()
+	{
+		ImGui::Spring();
+		ImGui::EndHorizontal();
+		ImGui::Spring();
+		ImGui::EndVertical();
+
+		ImGui::End();
+		ImGui::PopStyleVar(4);
+		UI::PopID();
+	}
 	ViewPortEditorWorkspace::ViewPortEditorWorkspace(const std::string& viewPortname, ViewPortEditorData viewPortData) :
 		EditorWorkspace(viewPortname), 
 		m_ViewPortEditorData(viewPortData)
 	{
 		m_WorldRenderer = Count<WorldRenderer>::Create();
 		m_GizmoType = ImGuizmo::TRANSLATE;
+		m_GizmoMode = ImGuizmo::WORLD;
 	}
 	ViewPortEditorWorkspace::~ViewPortEditorWorkspace()
 	{
@@ -51,15 +175,105 @@ namespace Proof
 		auto viewportOffset = ImGui::GetWindowPos();
 		m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x,viewportMinRegion.y + viewportOffset.y };
 		m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x,viewportMaxRegion.y + viewportOffset.y };
+		auto windowPos = ImGui::GetWindowPos();
+
 		ImVec2 currentviewPortPanelSize = ImGui::GetContentRegionAvail();
 		if (m_ViewPortSize != *((glm::vec2*)&currentviewPortPanelSize))
 		{
 			m_ViewPortSize = { currentviewPortPanelSize.x,currentviewPortPanelSize.y };
 		}
-		UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 }); 
+		
+		UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+
 		DrawGizmos();
 		if (m_ViewPortEditorData.HandleOnImGuiDrop)
 			m_ViewPortEditorData.HandleOnImGuiDrop();
+
+		//left toolbar
+		{
+			auto data = BeginTollBarWindow("##DropwDown", 1, UIToolbarAlign::Left, 14.0f);
+			TollbarButton(EditorResources::DropdownIcon);
+			EndToolbarWindow();
+
+			//BeginTollBarWindow("##DropwDown2", 1, UIToolbarAlign::Left, data.xOffset + data.Width + 14);
+			//TollbarButton(EditorResources::DropdownIcon);
+			//EndToolbarWindow();
+		}
+
+		// right toolbar
+		{
+			auto data = BeginTollBarWindow("##Gizmo", 5, UIToolbarAlign::Right, -250.0f);
+			const ImColor c_SelectedGizmoButtonColor = UI::Colours::Theme::Accent;
+			const ImColor c_UnselectedGizmoButtonColor = ImColor(0,0,0,0);
+
+			ImColor buttonTint = m_GizmoType == -1 ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+			if (TollbarButton(EditorResources::PointerIcon, buttonTint))
+				m_GizmoType = -1;
+			UI::SetTooltip("NoTransformation");
+
+			buttonTint = m_GizmoType == ImGuizmo::OPERATION::TRANSLATE ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+			if (TollbarButton(EditorResources::TranslationIcon, buttonTint))
+				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+			UI::SetTooltip("Translate");
+
+			buttonTint = m_GizmoType == ImGuizmo::OPERATION::ROTATE ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+			if (TollbarButton(EditorResources::RotationIcon, buttonTint))
+				m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+			UI::SetTooltip("Rotate");
+
+			buttonTint = m_GizmoType == ImGuizmo::OPERATION::SCALE ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+			if (TollbarButton(EditorResources::ScaleIcon, buttonTint))
+				m_GizmoType = ImGuizmo::OPERATION::SCALE;
+			UI::SetTooltip("Scale");
+			
+			buttonTint = m_GizmoType == ImGuizmo::OPERATION::UNIVERSALV2 ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+			if (TollbarButton(EditorResources::UniversalTransformIcon, buttonTint))
+				m_GizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
+			UI::SetTooltip("Universal Transform");
+
+			EndToolbarWindow();
+
+			BeginTollBarWindow("##GizmoSpace", 2, UIToolbarAlign::Right, -175);
+
+			buttonTint = m_GizmoMode == ImGuizmo::MODE::WORLD ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+			if (TollbarButton(EditorResources::WorldSpaceIcon, buttonTint))
+				m_GizmoMode = ImGuizmo::MODE::WORLD;
+			UI::SetTooltip("World Space");
+
+			buttonTint = m_GizmoMode == ImGuizmo::MODE::LOCAL ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+			if (TollbarButton(EditorResources::LocalSpaceIcon, buttonTint))
+				m_GizmoMode = ImGuizmo::MODE::LOCAL;
+			UI::SetTooltip("Local Space");
+
+			EndToolbarWindow();
+
+			BeginTollBarWindow("##Camera", 1, UIToolbarAlign::Right, -125);
+			if (TollbarButton(EditorResources::CameraIcon))
+			{
+				ImGui::OpenPopup(("##" + m_TitleAndID + "CameraSettings").c_str());
+			}
+			{
+				//UI::ScopedStyleColor popupBG(ImGuiCol_PopupBg, UI::ColourWithMultipliedValue(UI::Colours::Theme::Background, 1.6f).Value);
+				ImGui::SetNextWindowSize({ 200, 60.0f });
+
+				if (UI::BeginPopup(("##" + m_TitleAndID+"CameraSettings").c_str(), ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
+				{
+					UI::BeginPropertyGrid();
+					float cameraSpeed = m_Camera.GetSpeed();
+					UI::AttributeDrag("Speed", cameraSpeed, m_Camera.MIN_SPEED, m_Camera.MAX_SPEED);
+					m_Camera.SetSpeed(cameraSpeed);
+
+					float cameraFov = m_Camera.GetFOV();
+					UI::AttributeDrag("FieldOfView", cameraFov, m_Camera.MIN_FOV, m_Camera.MIN_FOV);
+					m_Camera.SetFOV(cameraFov);
+
+					m_Camera.Recalculate();
+					UI::EndPropertyGrid();
+					UI::EndPopup();
+				}
+			}
+			EndToolbarWindow();
+		}
 
 	}
 	bool ViewPortEditorWorkspace::OnKeyClicked(class KeyClickedEvent& e)
@@ -72,7 +286,7 @@ namespace Proof
 			return false;
 		switch (e.GetKey())
 		{
-			case KeyBoardKey::Q:
+			case KeyBoardKey::W:
 			{
 				if (IsFocused() && SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
 				{
@@ -82,7 +296,7 @@ namespace Proof
 				break;
 			}
 
-			case KeyBoardKey::W:
+			case KeyBoardKey::E:
 			{
 				if (IsFocused() && SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
 				{
@@ -91,21 +305,11 @@ namespace Proof
 				}
 				break;
 			}
-			case KeyBoardKey::E:
-			{
-				if (IsFocused() && SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
-				{
-					m_GizmoType = ImGuizmo::OPERATION::SCALE;
-					return true;
-				}
-				break;
-			}
-
 			case KeyBoardKey::R:
 			{
 				if (IsFocused() && SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
 				{
-					m_GizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
+					m_GizmoType = ImGuizmo::OPERATION::SCALE;
 					return true;
 				}
 				break;
@@ -124,7 +328,7 @@ namespace Proof
 			for (auto e : entities)
 			{
 				Entity entity = { e, m_WorldContext.Get() };
-				renderer2D->DrawQuadBillboard(EditorResources::SkyLightIcon,m_WorldContext->GetWorldSpaceLocation(entity), { glm::radians(90.f),0,0 });
+				renderer2D->DrawQuadBillboard(EditorResources::SkyLightIcon,m_WorldContext->GetWorldSpaceLocation(entity));
 			}
 		}
 
@@ -142,7 +346,7 @@ namespace Proof
 			for (auto e : entities)
 			{
 				Entity entity = { e, m_WorldContext.Get() };
-				renderer2D->DrawQuadBillboard(EditorResources::PointLightIcon,m_WorldContext->GetWorldSpaceLocation(entity),{glm::radians(90.f),0,0});
+				renderer2D->DrawQuadBillboard(EditorResources::PointLightIcon,m_WorldContext->GetWorldSpaceLocation(entity));
 			}
 		}
 		{
@@ -186,7 +390,7 @@ namespace Proof
 		if (SelectionManager::GetSelections(SelectionContext::Scene).size() > 0)
 			selectedEntity = m_WorldContext->GetEntity(SelectionManager::GetSelections(SelectionContext::Scene).front());
 
-		if (selectedEntity)
+		if (selectedEntity && m_GizmoType != -1)
 		{
 			ImGuizmo::SetOrthographic(true);
 			ImGuizmo::SetDrawlist();
@@ -204,7 +408,7 @@ namespace Proof
 			float snapValues[3] = { snapValue,snapValue,snapValue };
 
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(selectedEntitytransform),
+				(ImGuizmo::OPERATION)m_GizmoType, (ImGuizmo::MODE)m_GizmoMode, glm::value_ptr(selectedEntitytransform),
 				nullptr, snap ? snapValues : nullptr);
 			if (ImGuizmo::IsUsing())
 			{

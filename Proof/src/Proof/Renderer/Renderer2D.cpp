@@ -633,7 +633,6 @@ namespace Proof {
 			m_QuadTextureSlotIndex++;
 		}
 		glm::quat rotationQuat = glm::quat(rotation);
-
 		glm::vec3 camRightWS = { m_Camera.ProjectionView[0][0] , m_Camera.ProjectionView[1][0] , m_Camera.ProjectionView[2][0] };
 		glm::vec3 camUpWS = { m_Camera.ProjectionView[0][1]   , m_Camera.ProjectionView[1][1], m_Camera.ProjectionView[2][1] };
 
@@ -643,15 +642,13 @@ namespace Proof {
 		};
 		for (int i = 0; i < 4; i++)
 		{
-
 			// Apply rotation to the vertex positions
-			glm::vec3 localPosition = glm::vec3(m_QuadVertexPositions[i].x * size.x, m_QuadVertexPositions[i].y * size.y, 0.0f);
 			glm::vec3 rotatedPosition = position +
-				(camRightWS * localPosition.x) +
-				(camUpWS * localPosition.y);
+				camRightWS * (m_QuadVertexPositions[i].x * size.x) +
+				camUpWS * (m_QuadVertexPositions[i].y * size.y);
 
 			// Rotate the vertex position around the specified rotation
-			rotatedPosition = position + (rotationQuat * (rotatedPosition - position));
+			//rotatedPosition = glm::rotate(rotationQuat, rotatedPosition);
 
 			// Calculate the transformed position using the rotated vertex and camera vectors
 			m_QuadVertexBufferPtr->Position = GlmVecToProof(rotatedPosition);

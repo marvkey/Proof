@@ -28,8 +28,8 @@ namespace Proof
 		virtual void OnWindowStylePop() {}
 		virtual void OnOpen() {}
 		virtual void OnClose() {}
-	private:
 		std::string m_TitleAndID;
+	private:
 		ImVec2 m_CurrentSize;
 		bool m_IsFocused = false;
 		bool m_IsHovered = false;
