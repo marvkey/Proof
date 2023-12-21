@@ -334,14 +334,19 @@ namespace Proof {
 			DrawLine(corners[i], corners[i + 4], color);
 
 	}
-	void Renderer2D::DrawAABB(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color)
+	void Renderer2D::DrawAABB(Count<class MeshBase> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
 		AABB box = mesh->GetMeshSource()->GetBoundingBox();
 
 		DrawAABB(box, transform, color);
 	}
 
-	void Renderer2D::DrawAABBSubMeshes(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color)
+	void Renderer2D::DrawAABB(const SubMesh& subMesh, const glm::mat4& transform, const glm::vec4& color)
+	{
+		DrawAABB(subMesh.BoundingBox, transform, color);
+	}
+
+	void Renderer2D::DrawAABBSubMeshes(Count<class MeshBase> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
 		const auto& meshAssetSubmeshes = mesh->GetMeshSource()->GetSubMeshes();
 		auto& submeshes = mesh->GetSubMeshes();

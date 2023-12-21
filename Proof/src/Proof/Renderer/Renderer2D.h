@@ -96,8 +96,10 @@ namespace Proof {
 
 		void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
 		void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
-		void DrawAABB(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
-		void DrawAABBSubMeshes(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawAABB(Count<class MeshBase> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawAABB(const class SubMesh& subMesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawAABBSubMeshes(Count<class MeshBase> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+
 		void DrawCylinder(glm::vec3 position, glm::vec3 rotationRadians, float height, float radius, glm::vec4 color = glm::vec4(1.0f), bool drawFromBase = true);
 		void DrawCapsule(glm::vec3 position, glm::vec3 rotationRadian, float height, float radius, glm::vec4 color = glm::vec4(1.0f));
 

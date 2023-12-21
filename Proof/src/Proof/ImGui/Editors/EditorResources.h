@@ -29,6 +29,7 @@ namespace Proof
 		static inline Count<Texture2D> ScaleIcon;
 		static inline Count<Texture2D> UniversalTransformIcon;
 		static inline Count<Texture2D> PointerIcon;
+		static inline Count<Texture2D> ViewIcon;
 
 	private:
 		static void Init();

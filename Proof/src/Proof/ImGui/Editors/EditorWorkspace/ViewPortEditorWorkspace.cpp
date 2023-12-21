@@ -233,9 +233,26 @@ namespace Proof
 			TollbarButton(EditorResources::DropdownIcon);
 			EndToolbarWindow();
 
-			//BeginTollBarWindow("##DropwDown2", 1, UIToolbarAlign::Left, data.xOffset + data.Width + 14);
-			//TollbarButton(EditorResources::DropdownIcon);
-			//EndToolbarWindow();
+			BeginTollBarWindow("##View", 1, UIToolbarAlign::Left, data.xOffset + data.Width + 14);
+			if (TollbarButton(EditorResources::ViewIcon))
+				ImGui::OpenPopup(("##" + m_TitleAndID + "ViewSettings").c_str());
+			{
+				// 30 for each attributes
+				ImGui::SetNextWindowSize({ 200, 60.0f });
+
+				if (UI::BeginPopup(("##" + m_TitleAndID + "ViewSettings").c_str()))
+				{
+					UI::BeginPropertyGrid();
+					
+					UI::AttributeBool("Icons", m_ShowComponentsIcon);
+					UI::AttributeBool("BoundingBox", m_ShowBoundingBoxes);
+
+					UI::EndPropertyGrid();
+					UI::EndPopup();
+				}
+
+			}
+			EndToolbarWindow();
 		}
 
 		// right toolbar
@@ -292,10 +309,11 @@ namespace Proof
 			}
 			{
 				//UI::ScopedStyleColor popupBG(ImGuiCol_PopupBg, UI::ColourWithMultipliedValue(UI::Colours::Theme::Background, 1.6f).Value);
-				ImGui::SetNextWindowSize({ 200, 60.0f });
 
+				ImGui::SetNextWindowSize({ 200, 60.0f });
 				if (UI::BeginPopup(("##" + m_TitleAndID+"CameraSettings").c_str(), ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
 				{
+
 					UI::BeginPropertyGrid();
 					float cameraSpeed = m_Camera.GetSpeed();
 					UI::AttributeDrag("Speed", cameraSpeed, m_Camera.MIN_SPEED, m_Camera.MAX_SPEED);
@@ -429,8 +447,8 @@ namespace Proof
 		{
 			const auto& camera = m_Camera;
 			auto [origin, direction] = CastRay(camera, mouseX, mouseY);
-
-			CheckBoudningBox(IconComponents{}, selectionData, m_WorldContext, origin, direction);
+			if(m_ShowComponentsIcon)
+				CheckBoudningBox(IconComponents{}, selectionData, m_WorldContext, origin, direction);
 
 			auto meshEntities = m_WorldContext->GetAllEntitiesWith<DynamicMeshComponent>();
 			for (auto e : meshEntities)
@@ -561,12 +579,24 @@ namespace Proof
 		renderer2D->SetTargetFrameBuffer(m_WorldRenderer->GetExternalCompositePassFrameBuffer());
 		
 		renderer2D->BeginContext(m_Camera.GetProjectionMatrix(), m_Camera.GetViewMatrix(), GlmVecToProof(m_Camera.GetPosition()));
+		DrawIcons();
+		DrawBoundingBoxes();
+		renderer2D->EndContext();
+
+	}
+
+	void ViewPortEditorWorkspace::DrawIcons()
+	{
+		Count<Renderer2D> renderer2D = m_WorldRenderer->GetRenderer2D();
+		if (!m_ShowComponentsIcon)
+			return;
+
 		{
 			auto entities = m_WorldContext->GetAllEntitiesWith<SkyLightComponent>();
 			for (auto e : entities)
 			{
 				Entity entity = { e, m_WorldContext.Get() };
-				renderer2D->DrawQuadBillboard(EditorResources::SkyLightIcon,m_WorldContext->GetWorldSpaceLocation(entity));
+				renderer2D->DrawQuadBillboard(EditorResources::SkyLightIcon, m_WorldContext->GetWorldSpaceLocation(entity));
 			}
 		}
 
@@ -575,7 +605,7 @@ namespace Proof
 			for (auto e : entities)
 			{
 				Entity entity = { e, m_WorldContext.Get() };
-				renderer2D->DrawQuadBillboard(EditorResources::DirectionalLightIcon,m_WorldContext->GetWorldSpaceLocation(entity));
+				renderer2D->DrawQuadBillboard(EditorResources::DirectionalLightIcon, m_WorldContext->GetWorldSpaceLocation(entity));
 			}
 		}
 
@@ -584,7 +614,7 @@ namespace Proof
 			for (auto e : entities)
 			{
 				Entity entity = { e, m_WorldContext.Get() };
-				renderer2D->DrawQuadBillboard(EditorResources::PointLightIcon,m_WorldContext->GetWorldSpaceLocation(entity));
+				renderer2D->DrawQuadBillboard(EditorResources::PointLightIcon, m_WorldContext->GetWorldSpaceLocation(entity));
 			}
 		}
 		{
@@ -592,11 +622,45 @@ namespace Proof
 			for (auto e : entities)
 			{
 				Entity entity = { e, m_WorldContext.Get() };
-				renderer2D->DrawQuadBillboard(EditorResources::SpotLightIcon,m_WorldContext->GetWorldSpaceLocation(entity));
+				renderer2D->DrawQuadBillboard(EditorResources::SpotLightIcon, m_WorldContext->GetWorldSpaceLocation(entity));
 			}
 		}
-		renderer2D->EndContext();
+	}
 
+	void ViewPortEditorWorkspace::DrawBoundingBoxes()
+	{
+		if (!m_ShowBoundingBoxes)
+			return;
+
+		Count<Renderer2D> renderer2D = m_WorldRenderer->GetRenderer2D();
+
+		auto meshEntities = m_WorldContext->GetAllEntitiesWith<MeshComponent>();
+		for (auto e : meshEntities)
+		{
+			Entity entity = { e, m_WorldContext.Get() };
+			auto& mc = entity.GetComponent<MeshComponent>();
+			auto mesh = mc.GetMesh();
+			if (!mesh)
+				continue;
+
+			renderer2D->DrawAABB(mesh, m_WorldContext->GetWorldSpaceTransform(entity), m_BoundingBoxColor);
+		}
+
+		auto dynamicMeshEntities = m_WorldContext->GetAllEntitiesWith<DynamicMeshComponent>();
+		for (auto e : dynamicMeshEntities)
+		{
+			Entity entity = { e, m_WorldContext.Get() };
+			auto& mc = entity.GetComponent<DynamicMeshComponent>();
+			auto mesh = mc.GetMesh();
+			if (!mesh)
+				continue;
+
+			auto& submeshes = mesh->GetMeshSource()->GetSubMeshes();
+			const auto& subMesh = submeshes[mc.GetSubMeshIndex()];
+			glm::mat4 transform = m_WorldContext->GetWorldSpaceTransform(entity);
+
+			renderer2D->DrawAABB(subMesh, transform, m_BoundingBoxColor);
+		}
 	}
 
 	float ViewPortEditorWorkspace::GetSnapValue()
@@ -621,8 +685,8 @@ namespace Proof
 
 	void ViewPortEditorWorkspace::DrawGizmos()
 	{
-		//if (!IsHovered())
-		//	return;
+		if (!IsHovered() || !IsFocused())
+			return;
 
 		Entity selectedEntity;
 		if (SelectionManager::GetSelections(SelectionContext::Scene).size() > 0)

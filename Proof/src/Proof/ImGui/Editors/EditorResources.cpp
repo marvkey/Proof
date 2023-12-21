@@ -28,6 +28,7 @@ namespace Proof {
 		ScaleIcon = Texture2D::Create(TextureConfiguration("ScaleIcon"), "Resources/Icons/Viewport/Scale.png");
 		UniversalTransformIcon = Texture2D::Create(TextureConfiguration("UniversalTransformIcon"), "Resources/Icons/Viewport/UniversalTransform.png");
 		PointerIcon = Texture2D::Create(TextureConfiguration("PointerIcon"), "Resources/Icons/Viewport/Pointer.png");
+		ViewIcon = Texture2D::Create(TextureConfiguration("ViewIcon"), "Resources/Icons/Viewport/View.png");
 
 	}
 	void EditorResources::Unizilize()

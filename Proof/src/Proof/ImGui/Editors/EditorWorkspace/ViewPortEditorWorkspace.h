@@ -30,6 +30,8 @@ namespace Proof
 		bool OnKeyClicked(class KeyClickedEvent& e);
 		bool OnMouseClicked(class MouseButtonClickedEvent& e);
 		void OnRender2D();
+		void DrawIcons();
+		void DrawBoundingBoxes();
 	private:
 		Count<class WorldRenderer> m_WorldRenderer = nullptr;
 		Count<class World> m_WorldContext = nullptr;
@@ -47,7 +49,10 @@ namespace Proof
 		ViewPortEditorData m_ViewPortEditorData;
 
 		// icons
-		bool m_ShowIcon = true;
+		bool m_ShowComponentsIcon = true;
 		float m_IconSize = 1;
+		//
+		bool m_ShowBoundingBoxes = false;
+		glm::vec4 m_BoundingBoxColor = { 1.0f, 0.9f, 0.2f, 1.0f };
 	};
 }
