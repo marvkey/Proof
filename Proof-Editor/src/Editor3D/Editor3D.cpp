@@ -194,7 +194,7 @@ namespace Proof
 	PopupState NewProjectState = PopupState::None;
 	std::filesystem::path NewProjectDir;
 	std::string NewProjectName;
-
+#if 0
 	struct SelectionData
 	{ 
 		Entity Entity;
@@ -225,6 +225,7 @@ namespace Proof
 
 		return Ray{ rayPos, rayDir };
 	}
+#endif
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") 
 	{
@@ -852,6 +853,7 @@ namespace Proof
 
 	bool Editore3D::OnMouseButtonClicked(MouseButtonClickedEvent& e)
 	{
+#if 0
 		if (!m_EditorCamera.IsActive())
 			return false;
 
@@ -995,7 +997,7 @@ namespace Proof
 					SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
 			}
 		}
-
+#endif
 		return false;
 	}
 	void Editore3D::Logger() 

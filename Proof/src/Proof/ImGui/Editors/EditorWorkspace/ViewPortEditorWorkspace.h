@@ -28,6 +28,7 @@ namespace Proof
 		float GetSnapValue();
 		void DrawGizmos();
 		bool OnKeyClicked(class KeyClickedEvent& e);
+		bool OnMouseClicked(class MouseButtonClickedEvent& e);
 		void OnRender2D();
 	private:
 		Count<class WorldRenderer> m_WorldRenderer = nullptr;
@@ -44,5 +45,9 @@ namespace Proof
 		float m_SnapValue = 0.5f;
 		float m_RotationSnapValue = 45.0f;
 		ViewPortEditorData m_ViewPortEditorData;
+
+		// icons
+		bool m_ShowIcon = true;
+		float m_IconSize = 1;
 	};
 }
