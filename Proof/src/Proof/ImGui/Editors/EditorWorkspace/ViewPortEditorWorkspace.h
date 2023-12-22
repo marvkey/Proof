@@ -2,6 +2,7 @@
 #include "EditorWorkspace.h"
 #include <glm/glm.hpp>
 #include "Proof/Scene/Camera/EditorCamera.h"
+#include "Proof/ImGui/SelectionManager.h"
 #include <functional>
 namespace Proof
 {
@@ -10,6 +11,10 @@ namespace Proof
 		bool CanClose = false;
 		bool CanMove = false;
 		std::function<void()> HandleOnImGuiDrop = nullptr;
+		bool IsWorld = true;
+		//only if world is set to false
+		AssetSelectionContext SelectionContext = AssetSelectionContext::Prefab;
+		UUID SelectionContextID = 0;
 	};
 	class ViewPortEditorWorkspace : public EditorWorkspace
 	{
@@ -20,7 +25,6 @@ namespace Proof
 		virtual void OnImGuiRender();
 		virtual void OnUpdate(FrameTime ts);
 		virtual void OnEvent(class Event& e);
-
 	protected:
 		virtual void OnWindowStylePush();
 		virtual void OnWindowStylePop();

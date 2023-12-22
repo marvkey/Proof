@@ -1,0 +1,15 @@
+AssetType: Prefab
+ID: 11340105975814252189
+EntityOwner: 15947436935283431044
+Entities:
+  - Entity: 15947436935283431044
+    TagComponent:
+      Tag: Base Prefab
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []

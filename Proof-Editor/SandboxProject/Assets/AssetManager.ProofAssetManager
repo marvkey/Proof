@@ -374,6 +374,9 @@ Assets:
   - Asset: 8899875548143611039
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8783994986360286082.Texture.ProofAsset
+  - Asset: 5922639451233021731
+    Type: Material
+    Path: Materials\Yellow.Material.ProofAsset
   - Asset: 5014215151378541218
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6772804448157695701.Texture.ProofAsset
@@ -488,3 +491,6 @@ Assets:
   - Asset: 473827439279
     Type: Mesh
     Path: Mesh\BlenderCapsule.Mesh.ProofAsset
+  - Asset: 11340105975814252189
+    Type: Prefab
+    Path: Prefab\New Prefab.Prefab.ProofAsset

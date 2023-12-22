@@ -46,6 +46,7 @@ namespace Proof
 		virtual void OnWindowStylePop() {}
 		virtual void OnOpen() {}
 		virtual void OnClose() {}
+		virtual void MenuBar();
 	protected:
 		std::string m_TitleAndId;  // Caches title###asetType+id to avoid computing it every frame
 		ImVec2 m_MinSize, m_MaxSize;

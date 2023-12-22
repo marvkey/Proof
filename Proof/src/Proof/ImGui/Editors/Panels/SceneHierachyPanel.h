@@ -6,7 +6,7 @@ namespace Proof
 	class SceneHierachyPanel: public Panel
 	{
 	public:
-		SceneHierachyPanel();
+		SceneHierachyPanel(bool IsWorld =true, UUID prefabID = 0);
 		void OnImGuiRender(const char* dsiplayName, bool& isOpen);
 		static void DrawVectorControl(const std::string& UniqeLabel, Vector& Vec, float ResetValue = 0.0f, float columnWidth = 100.0f, float Speed = 0.1f);
 		static void DrawVectorControl(const std::string& UniqeLabel, glm::vec3& Vec,float ResetValue =0.0f,float columnWidth =100.0f,float Speed=0.1f);
@@ -17,7 +17,8 @@ namespace Proof
 		//void SetSelectedEntity(Entity entity){m_SelectedEntity = entity;};
 		virtual void SetWorldContext(const Count<class World>& world) { m_ActiveWorld = world; }
 	private:
-
+		bool m_IsWorld = true;
+		UUID m_PrefabID = 0;
 		bool m_WindowHoveredorFocus = false;
 		bool CreateEntityMenu(Entity owner = {});
 		Count<class World> m_ActiveWorld = nullptr;

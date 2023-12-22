@@ -12,6 +12,7 @@
 #include "Proof/Events/Event.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Input/Input.h"
+#include "Proof/ImGui/Editors/AssetEditors/PrefabEditor.h"
 namespace Proof 
 {
 	AssetEditor::AssetEditor(const char* id)
@@ -86,26 +87,63 @@ namespace Proof
 		m_MaxSize = ImVec2(float(width), float(height));
 	}
 
+	void AssetEditor::MenuBar()
+	{
+		ImGui::BeginMenuBar();
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("Save", "ctrl+s"))
+				{
+					m_SaveCountDown = SavedPresetSeconds;
+					Save();
+				}
+				ImGui::EndMenu();
+			}
+		}
+		ImGui::EndMenuBar();
+	}
+
 	void AssetEditor::Render()
 	{
 		if (!m_IsOpen)
 			return;
 
 		bool was_open = m_IsOpen;
+		ImGuiWindowFlags window_flags  = 0;
+		window_flags |= ImGuiWindowFlags_MenuBar;
+
+		if (IsSaved())
+			window_flags |= ImGuiWindowFlags_UnsavedDocument;
+
 		// TODO SetNextWindowSizeConstraints requires a max constraint that's above 0. For now we're just setting it to a large value
 		{
 			UI::ScopedID (m_PushID.Get());
 			OnWindowStylePush();
 			ImGui::SetNextWindowSizeConstraints(m_MinSize, m_MaxSize);
-			if(IsSaved())
-				ImGui::Begin(m_TitleAndId.c_str(), &m_IsOpen, GetWindowFlags());
-			else
-				ImGui::Begin(m_TitleAndId.c_str(), &m_IsOpen, GetWindowFlags()| ImGuiWindowFlags_UnsavedDocument);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+			ImGui::Begin(m_TitleAndId.c_str(), &m_IsOpen, GetWindowFlags() | window_flags);
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				auto window = ImGui::GetCurrentWindow();
+				if (window->TitleBarRect().Contains(ImGui::GetMousePos()))
+				{
+					auto monitor = ImGui::GetPlatformIO().Monitors[window->Viewport->PlatformMonitor];
+					ImGui::SetWindowPos(m_TitleAndId.c_str(), {monitor.WorkPos});
+					ImGui::SetWindowSize(m_TitleAndId.c_str(), { monitor.WorkSize });
+				}
+			}
+			ImGuiID dockspace_id = ImGui::GetID((m_TitleAndId + "Dockspace").c_str());
+			ImGui::PopStyleVar();
+			ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_NoDockingOverMe | ImGuiDockNodeFlags_PassthruCentralNode, &ImGui::GetCurrentWindow()->WindowClass);
 
 			m_CurrentSize = ImGui::GetWindowSize();
 			m_IsFocused = ImGui::IsWindowFocused();
 			m_IsHovered = ImGui::IsWindowHovered();
 			OnWindowStylePop();
+			MenuBar();
+
 			{
 				OnImGuiRender();
 			}
@@ -129,6 +167,7 @@ namespace Proof
 		RegisterEditor(AssetType::ParticleSystem);
 		RegisterEditor(AssetType::Mesh);
 		RegisterEditor(AssetType::MeshCollider);
+		RegisterEditor(AssetType::Prefab);
 	}
 
 	void AssetEditorPanel::UnregisterAllEditors()
@@ -218,6 +257,7 @@ namespace Proof
 				case Proof::AssetType::FontSourceFile:
 					break;
 				case Proof::AssetType::Prefab:
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<PrefabEditorPanel>::Create();
 					break;
 				case Proof::AssetType::UIPanel:
 					break;

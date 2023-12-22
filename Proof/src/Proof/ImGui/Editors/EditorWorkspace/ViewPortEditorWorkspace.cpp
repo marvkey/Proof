@@ -344,7 +344,14 @@ namespace Proof
 		{
 			case KeyBoardKey::W:
 			{
-				if (IsFocused() && SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
+				bool hasSelections;
+
+				if (m_ViewPortEditorData.IsWorld)
+					hasSelections = SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0;
+				else
+					hasSelections = AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID);
+
+				if (IsFocused() && hasSelections)
 				{
 					m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 					return true;
@@ -354,7 +361,14 @@ namespace Proof
 
 			case KeyBoardKey::E:
 			{
-				if (IsFocused() && SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
+				bool hasSelections;
+
+				if (m_ViewPortEditorData.IsWorld)
+					hasSelections = SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0;
+				else
+					hasSelections = AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID);
+
+				if (IsFocused() && hasSelections)
 				{
 					m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 					return true;
@@ -363,7 +377,14 @@ namespace Proof
 			}
 			case KeyBoardKey::R:
 			{
-				if (IsFocused() && SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
+				bool hasSelections;
+
+				if (m_ViewPortEditorData.IsWorld)
+					hasSelections = SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0;
+				else
+					hasSelections = AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID);
+
+				if (IsFocused() && hasSelections)
 				{
 					m_GizmoType = ImGuizmo::OPERATION::SCALE;
 					return true;
@@ -550,7 +571,13 @@ namespace Proof
 			bool ctrlDown = Input::IsKeyPressed(KeyBoardKey::LeftControl) || Input::IsKeyPressed(KeyBoardKey::RightControl);
 			bool shiftDown = Input::IsKeyPressed(KeyBoardKey::LeftShift) || Input::IsKeyPressed(KeyBoardKey::RightShift);
 			if (!ctrlDown)
-				SelectionManager::DeselectAll();
+			{
+				if(m_ViewPortEditorData.IsWorld)
+					SelectionManager::DeselectAll();
+				else
+					AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID);
+
+			}
 
 			if (!selectionData.empty())
 			{
@@ -562,10 +589,23 @@ namespace Proof
 						entity = entity.GetParent();
 					}
 				}
-				if (SelectionManager::IsSelected(SelectionContext::Scene, entity.GetUUID()) && ctrlDown)
-					SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());
+				
+				if (m_ViewPortEditorData.IsWorld)
+				{
+					if (SelectionManager::IsSelected(SelectionContext::Scene, entity.GetUUID()) && ctrlDown)
+						SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());
+					else
+						SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+				}
 				else
-					SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+				{
+
+					if (AssetSelectionManager::IsSelected(AssetSelectionContext::Prefab,m_ViewPortEditorData.SelectionContextID, entity.GetUUID()) && ctrlDown)
+						AssetSelectionManager::Deselect(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID, entity.GetUUID());
+					else
+						AssetSelectionManager::Select(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID, entity.GetUUID());
+				}
+
 
 				state = true;
 			}
@@ -689,8 +729,17 @@ namespace Proof
 			return;
 
 		Entity selectedEntity;
-		if (SelectionManager::GetSelections(SelectionContext::Scene).size() > 0)
-			selectedEntity = m_WorldContext->GetEntity(SelectionManager::GetSelections(SelectionContext::Scene).front());
+		if (m_ViewPortEditorData.IsWorld)
+		{
+
+			if (SelectionManager::GetSelections(SelectionContext::Scene).size() > 0)
+				selectedEntity = m_WorldContext->GetEntity(SelectionManager::GetSelections(SelectionContext::Scene).front());
+		}
+		else
+		{
+			if(AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab,m_ViewPortEditorData.SelectionContextID))
+				selectedEntity = m_WorldContext->GetEntity(AssetSelectionManager::GetSelections(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID).front());
+		}
 
 		if (selectedEntity && m_GizmoType != -1)
 		{

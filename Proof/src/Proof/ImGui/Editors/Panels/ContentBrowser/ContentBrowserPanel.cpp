@@ -256,7 +256,8 @@ namespace Proof
 								if (ImGui::MenuItem("Material"))
 									CreateAsset<Material>("New Material");
 
-								
+								if (ImGui::MenuItem("Prefab"))
+									CreateAsset<Prefab>("New Prefab");
 
 								if (ImGui::MenuItem("Script"))
 									m_OpenNewScriptPopup = true;

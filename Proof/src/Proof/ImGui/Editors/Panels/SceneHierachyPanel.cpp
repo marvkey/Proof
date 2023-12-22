@@ -172,7 +172,9 @@ namespace Proof
 			ImGui::CloseCurrentPopup();
 		}
 	};
-	SceneHierachyPanel::SceneHierachyPanel()
+	SceneHierachyPanel::SceneHierachyPanel(bool IsWorld , UUID prefabID)
+		:
+		m_IsWorld(IsWorld), m_PrefabID(prefabID)
 	{
 		
 	}
@@ -207,8 +209,12 @@ namespace Proof
 						DrawEntityNode(entity);
 				}
 
-				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) {
-					SelectionManager::DeselectAll();
+				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) 
+				{
+					if (m_IsWorld)
+						SelectionManager::DeselectAll();
+					else
+						AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
 				}
 			
 			}
@@ -225,10 +231,23 @@ namespace Proof
 			ImGui::BeginChild("Properties", ImGui::GetContentRegionAvail());
 			{
 				{
-					if (SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
+					if (m_IsWorld)
 					{
-						auto entity = m_ActiveWorld->GetEntity( SelectionManager::GetSelections(SelectionContext::Scene).front());
-						DrawComponent(entity);
+
+						if (SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
+						{
+							auto entity = m_ActiveWorld->GetEntity(SelectionManager::GetSelections(SelectionContext::Scene).front());
+							DrawComponent(entity);
+						}
+					}
+					else
+					{
+						if (AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_PrefabID))
+						{
+							auto entity = m_ActiveWorld->GetEntity(AssetSelectionManager::GetSelections(AssetSelectionContext::Prefab, m_PrefabID).front());
+							DrawComponent(entity);
+						}
+
 					}
 				}
 				{
@@ -303,8 +322,11 @@ namespace Proof
 		//	entity.GetComponent<TransformComponent>().GetRotationEuler().y, entity.GetComponent<TransformComponent>().GetRotationEuler().z);
 
 		ImGui::PushID(entity.GetUUID());
-		ImGuiTreeNodeFlags flags = ((SelectionManager::IsSelected(SelectionContext::Scene,entity.GetUUID()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
-
+		ImGuiTreeNodeFlags flags;
+		if(m_IsWorld)
+			flags= ((SelectionManager::IsSelected(SelectionContext::Scene, entity.GetUUID()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
+		else
+			flags = ((AssetSelectionManager::IsSelected(AssetSelectionContext::Prefab,m_PrefabID, entity.GetUUID()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
 		if (entity.GetComponent<HierarchyComponent>().Children.empty()) {
 			flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
 		}
@@ -325,9 +347,19 @@ namespace Proof
 			ImGui::TreeNodeEx((void*)&(entity), ImGuiTreeNodeFlags_SpanFullWidth, tc.c_str());
 			ImGui::EndDragDropSource();
 		}
-		if ( ImGui::IsItemClicked() && ImGui::IsKeyDown((ImGuiKey)KeyBoardKey::E) ==false) {
-			SelectionManager::DeselectAll();
-			SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+		if ( ImGui::IsItemClicked() && ImGui::IsKeyDown((ImGuiKey)KeyBoardKey::E) ==false) 
+		{
+			if (m_IsWorld)
+			{
+
+				SelectionManager::DeselectAll();
+				SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+			}
+			else
+			{
+				AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
+				AssetSelectionManager::Select(AssetSelectionContext::Prefab, m_PrefabID, entity.GetUUID());
+			}
 		}
 		//if (ImGui::BeginPopupContextItem()) {
 		if(ImGui::BeginPopupContextItem("Entity Settings")) {
@@ -349,7 +381,14 @@ namespace Proof
 			{
 				m_ActiveWorld->DeleteEntity(entity, true);
 
-				SelectionManager::DeselectAll();
+				if (m_IsWorld)
+				{
+					SelectionManager::DeselectAll();
+				}
+				else
+				{
+					AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
+				}
 				if (opened) {
 					ImGui::EndPopup();
 					ImGui::TreePop();
@@ -363,8 +402,16 @@ namespace Proof
 				if (ImGui::MenuItem("Duplicate"))
 				{
 					auto newEntity = m_ActiveWorld->CreateEntity(entity);
-					SelectionManager::DeselectAll();
-					SelectionManager::Select(SelectionContext::Scene, newEntity.GetUUID());
+					if (m_IsWorld)
+					{
+						SelectionManager::DeselectAll();
+						SelectionManager::Select(SelectionContext::Scene, newEntity.GetUUID());
+					}
+					else
+					{
+						AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
+						AssetSelectionManager::Select(AssetSelectionContext::Prefab, m_PrefabID,newEntity.GetUUID());
+					}
 				}
 			}
 			ImGui::EndPopup();
