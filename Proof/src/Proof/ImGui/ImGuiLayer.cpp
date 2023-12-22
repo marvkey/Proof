@@ -63,9 +63,9 @@ namespace Proof
 		}
 
 	}
-	void ImGuiLayer::PopModified(bool& value)
+	void ImGuiLayer::PopModified()
 	{
-		PF_CORE_ASSERT(m_ModifiedTypes.empty(), "Modified types are empty");
+		PF_CORE_ASSERT(!m_ModifiedTypes.empty(), "Modified types are empty");
 		m_ModifiedTypes.pop();
 	}
 	void ImGuiLayer::UpdateCurrentModifiedType(bool value)

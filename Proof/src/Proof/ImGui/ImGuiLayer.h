@@ -27,7 +27,7 @@ namespace Proof
         {
             m_ModifiedTypes.push(&value);
         }
-        void PopModified(bool& value);
+        void PopModified();
         void UpdateCurrentModifiedType(bool value);
 
 

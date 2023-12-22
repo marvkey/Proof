@@ -3,5 +3,5 @@ ID: 5412365953404524970
 StaticFriction: 0
 DynamicFriction: 0
 Bounciness: 1
-FrictionCombineMode: Min
+FrictionCombineMode: Mutltiply
 BouncinessCombineMode: Max

@@ -15,6 +15,11 @@ namespace Proof
 		virtual void OnImGuiRender()override;
 		virtual void OnUpdate(FrameTime ts);
 		virtual void SetAsset(const Count<class Asset>& asset);
+
+	protected:
+
+		virtual bool IsSaved() { return !m_NeedsSaving; }
+		virtual void Save();
 	private:
 		void RenderSettingsPanel();
 		void RenderViewPortPanel();
@@ -24,7 +29,6 @@ namespace Proof
 		void RenderCookingOutput();
 
 	private:
-		float m_SaveCountDown = 100;
 		Count<class MeshCollider> m_MeshCollider;
 		Count<class WorldRenderer> m_WorldRenderer;
 		Count<class World> m_World;
@@ -33,6 +37,7 @@ namespace Proof
 		bool m_NeedsCooking = false;
 		bool m_ShowCookingResults = true;
 		bool m_IsCookingResultsOpen = false;
+		bool m_NeedsSaving = true;
 		ImVec2 m_ViewPoartSize{ 0,0 };
 		CookingResult m_LastSimpleCookingResult = CookingResult::None;
 		CookingResult m_LastComplexCookingResult = CookingResult::None;

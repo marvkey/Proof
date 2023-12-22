@@ -8,6 +8,10 @@
 
 namespace Proof::UI
 {
+	void HandleModified(bool value)
+	{
+		Application::Get()->GetImguiLayer()->UpdateCurrentModifiedType(value);
+	}
 	ImTextureID GetTextureID(Count<Image> texture)
 	{
 		Count<VulkanImguiLayer> layer = Application::Get()->GetImguiLayer().As< VulkanImguiLayer>();

@@ -39,6 +39,7 @@ namespace Proof
 	}
 	void MeshColliderEditorPanel::OnImGuiRender()
 	{
+		UI::PushModified(m_NeedsSaving);
 
 		ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable
 			| ImGuiTableFlags_SizingFixedFit
@@ -55,6 +56,15 @@ namespace Proof
 		RenderViewPortPanel();
 
 		ImGui::EndTable();
+		UI::PopModified();
+	}
+	void MeshColliderEditorPanel::Save()
+	{
+		if (!m_MeshCollider)
+			return;
+
+		m_NeedsSaving = false;
+		AssetManager::SaveAsset(m_MeshCollider->GetID());
 	}
 	void MeshColliderEditorPanel::RenderSettingsPanel()
 	{

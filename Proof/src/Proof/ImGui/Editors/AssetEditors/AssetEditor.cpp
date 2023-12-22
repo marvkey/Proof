@@ -9,7 +9,9 @@
 #include "MeshEditorPanel.h"
 #include "MeshColliderEditorPanel.h"
 #include "Proof/ImGui/UiUtilities.h"
-
+#include "Proof/Events/Event.h"
+#include "Proof/Events/KeyEvent.h"
+#include "Proof/Input/Input.h"
 namespace Proof 
 {
 	AssetEditor::AssetEditor(const char* id)
@@ -17,6 +19,45 @@ namespace Proof
 	{
 	}
 	
+
+	void AssetEditor::OnUpdate(FrameTime ts)
+	{
+		m_SaveCountDown -= ts;
+		if (m_SaveCountDown <= 0)
+		{
+			Save();
+			m_SaveCountDown = SavedPresetSeconds;
+		}
+	}
+
+	void AssetEditor::OnEvent(Event& e)
+	{
+		if (!IsFocused())
+			return;
+
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<KeyClickedEvent>([&](auto& e) 
+		{
+			bool control = Input::IsKeyPressed(KeyBoardKey::LeftControl) || Input::IsKeyPressed(KeyBoardKey::RightControl);
+			
+			switch (e.GetKey())
+			{
+				case KeyBoardKey::S:
+				{
+					if (control) 
+					{
+						Save();
+						m_SaveCountDown = SavedPresetSeconds;
+						return true;
+					}
+				}
+				break;
+			default:
+				break;
+			}
+			return false;
+		});
+	}
 
 	void AssetEditor::SetOpen(bool isOpen)
 	{
@@ -56,18 +97,21 @@ namespace Proof
 			UI::ScopedID (m_PushID.Get());
 			OnWindowStylePush();
 			ImGui::SetNextWindowSizeConstraints(m_MinSize, m_MaxSize);
-			ImGui::Begin(m_TitleAndId.c_str(), &m_IsOpen, GetWindowFlags());
-			m_CurrentSize = ImGui::GetWindowSize();
-			if (ImGui::IsWindowFocused())
-				m_IsFocused = true;
+			if(IsSaved())
+				ImGui::Begin(m_TitleAndId.c_str(), &m_IsOpen, GetWindowFlags());
 			else
-				m_IsFocused = false;
+				ImGui::Begin(m_TitleAndId.c_str(), &m_IsOpen, GetWindowFlags()| ImGuiWindowFlags_UnsavedDocument);
+
+			m_CurrentSize = ImGui::GetWindowSize();
+			m_IsFocused = ImGui::IsWindowFocused();
+			m_IsHovered = ImGui::IsWindowHovered();
 			OnWindowStylePop();
 			{
 				OnImGuiRender();
 			}
 			ImGui::End();
 		}
+
 		if (was_open && !m_IsOpen)
 			OnClose();
 	}
@@ -111,8 +155,10 @@ namespace Proof
 		{
 			for (auto& [id, panel] : kv.second)
 			{
-				if (panel->m_IsOpen == true && panel->IsFocused())
+				if (panel->m_IsOpen == true && panel->IsHoveredOrFocused())
+				{
 					panel->OnEvent(e);
+				}
 			}
 		}
 	}
@@ -144,7 +190,7 @@ namespace Proof
 
 		if (s_Editors.find(asset->GetAssetType()) == s_Editors.end())
 		{
-			PF_EC_ERROR("Asset Editore panel does not support {}", EnumReflection::EnumString( asset->GetAssetType()))
+			PF_EC_ERROR("Asset Editor panel does not support {}", EnumReflection::EnumString( asset->GetAssetType()))
 			return;
 		}
 
@@ -153,7 +199,7 @@ namespace Proof
 			switch (asset->GetAssetType())
 			{
 				case Proof::AssetType::Mesh:
-					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<MeshEditorPanel>::Create();
+					//s_Editors[asset->GetAssetType()][asset->GetID()] = Count<MeshEditorPanel>::Create();
 					break;
 				case Proof::AssetType::Texture:
 					break;
@@ -176,7 +222,7 @@ namespace Proof
 				case Proof::AssetType::UIPanel:
 					break;
 				case Proof::AssetType::ParticleSystem:
-					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<ParticleSystemEditorPanel>::Create();
+					//s_Editors[asset->GetAssetType()][asset->GetID()] = Count<ParticleSystemEditorPanel>::Create();
 					break;
 				case Proof::AssetType::MeshCollider:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<MeshColliderEditorPanel>::Create();

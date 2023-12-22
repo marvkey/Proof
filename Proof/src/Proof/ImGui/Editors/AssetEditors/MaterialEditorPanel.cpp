@@ -31,7 +31,6 @@ namespace Proof
 	void MaterialEditorPanel::OnImGuiRender()
 	{
 		// save if any data is changed
-		bool shouldSave = false;
 
 		PF_PROFILE_FUNC();
 		if (!m_Material)return;
@@ -40,6 +39,8 @@ namespace Proof
 		Count<RenderMaterial> renderMaterial = m_Material->GetRenderMaterial().As<RenderMaterial>();
 		auto shaderName = fmt::format("Shader: {}", renderMaterial->GetConfig().Shader->GetName());
 		ImGui::Text(shaderName.c_str());
+
+		UI::PushModified(m_NeedsSaving);
 		//Albedo
 		{
 			bool renderToggle = true;
@@ -76,7 +77,7 @@ namespace Proof
 					uint64_t Data = *(const uint64_t*)payload->Data;
 					if (AssetManager::HasAsset(Data))
 					{
-						shouldSave = true;
+						m_NeedsSaving = true;
 						m_Material->SetAlbedoMap(AssetManager::GetAsset<Texture2D>(Data));
 					}
 				}
@@ -90,7 +91,7 @@ namespace Proof
 			}
 			ImGui::SameLine();
 			if (ImGui::ColorEdit3("Albedo", m_Material->GetAlbedoColor().GetValue_Ptr()))
-				shouldSave = true;
+				m_NeedsSaving = true;
 		}
 
 		ImGui::NewLine();
@@ -131,7 +132,7 @@ namespace Proof
 					uint64_t Data = *(const uint64_t*)payload->Data;
 					if (AssetManager::HasAsset(Data))
 					{
-						shouldSave = true;
+						m_NeedsSaving = true;
 						m_Material->SetNormalMap(AssetManager::GetAsset<Texture2D>(Data));
 					}
 				}
@@ -180,7 +181,7 @@ namespace Proof
 					uint64_t Data = *(const uint64_t*)payload->Data;
 					if (AssetManager::HasAsset(Data))
 					{
-						shouldSave = true;
+						m_NeedsSaving = true;
 						m_Material->SetMetalnessMap(AssetManager::GetAsset<Texture2D>(Data));
 					}
 				}
@@ -193,8 +194,8 @@ namespace Proof
 				ImGui::Checkbox("Use", &m_Material->GetMetalnessTextureToggle());
 			}
 			ImGui::SameLine();
-			if (ImGui::SliderFloat("Metallness", &m_Material->GetMetalness(), 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp));
-			shouldSave = true;
+			if(UI::AttributeSlider("Metallness", m_Material->GetMetalness(),0,1))
+				m_NeedsSaving = true;
 		}
 
 		ImGui::NewLine();
@@ -235,7 +236,7 @@ namespace Proof
 					uint64_t Data = *(const uint64_t*)payload->Data;
 					if (AssetManager::HasAsset(Data))
 					{
-						shouldSave = true;
+						m_NeedsSaving = true;
 						m_Material->SetRoughnessMap(AssetManager::GetAsset<Texture2D>(Data));
 					}
 				}
@@ -246,29 +247,27 @@ namespace Proof
 			{
 				ImGui::SameLine();
 				ImGui::Checkbox("Use", &m_Material->GetRoughnessTextureToggle());
+				m_NeedsSaving = true;
+
 			}
 			ImGui::SameLine();
-			if (ImGui::SliderFloat("Roughness", &m_Material->GetRoughness(), 0, 1, "%.3f", ImGuiSliderFlags_AlwaysClamp));
-			shouldSave = true;
+			if(UI::AttributeSlider("Roughness", m_Material->GetRoughness(), 0, 1))
+				m_NeedsSaving = true;
+
 		}
 		ImGui::NewLine();
 		//
 		{
-			UI::AttributeDrag("Emission", m_Material->GetEmission(), 0.25f);
-		}
-		//SceneHierachyPanel::DrawVector2Control("Tiling", m_Material->GetTiling());
-		//SceneHierachyPanel::DrawVector2Control("Offset", m_Material->Offset);
+			if(UI::AttributeDrag("Emission", m_Material->GetEmission(), 0.25f))
+				m_NeedsSaving = true;
 
-		if (shouldSave || m_SaveCountDown <= 0)
-		{
-
-			m_SaveCountDown = 100;
-			AssetManager::SaveAsset(m_Material->GetID());
 		}
+		UI::PopItemDisabled();
+
 	}
 	void MaterialEditorPanel::OnUpdate(FrameTime ts)
 	{
-		m_SaveCountDown -= ts;
+		AssetEditor::OnUpdate(ts);
 	}
 	void MaterialEditorPanel::SetAsset(const Count<class Asset>& asset)
 	{
@@ -278,6 +277,12 @@ namespace Proof
 			return;
 		}
 		m_Material = asset.As<Material>(); 
+	}
+	void MaterialEditorPanel::Save()
+	{
+		if (!m_Material)return;
+		m_NeedsSaving = false;
+		AssetManager::SaveAsset(m_Material->GetID());
 	}
 	PhysicsMaterialEditorPanel::PhysicsMaterialEditorPanel()
 		:
@@ -290,47 +295,45 @@ namespace Proof
 		if (!m_Material)return;
 
 		// if any data is changed
-		bool shouldSave = false;
 		float staticFriction = m_Material->GetStaticFriction();
 		float dynamicFrction = m_Material->GetDynamicFriction();
 		float bounciness = m_Material->GetBounciness();
 
 		UI::BeginPropertyGrid();
+		UI::PushModified(m_NeedsSaving);
 		if (UI::AttributeDrag("StaticFriction", staticFriction))
 		{
 
 			m_Material->SetStaticFriction(staticFriction);
-			shouldSave = true;
 		}
 		if (UI::AttributeDrag("DynamicFriction", dynamicFrction))
 		{
-			shouldSave = true;
 			m_Material->SetDynamicFriction(dynamicFrction);
 		}
 		if (UI::AttributeDrag("Bounciness", bounciness, 1,0, 1))
 		{
-			shouldSave = true;
 			m_Material->SetBounciness(bounciness);
 		}
 		CombineMode frictionMode = m_Material->GetFrictionCombineMode();
 		CombineMode	bounceMode = m_Material->GetBouncinessCombineMode();
 		if (UI::EnumCombo("FrictionCombine", frictionMode))
 		{
-			shouldSave = true;
 			m_Material->SetFrictionCombineMode(frictionMode);
 		}
 		if (UI::EnumCombo("BouncinessCombine", bounceMode))
 		{
-			shouldSave = true;
 			m_Material->SetBouncinessCombineMode(bounceMode);
 		}
-
+		UI::PopModified();
 		UI::EndPropertyGrid();
 
-		if (shouldSave)
-		{
-			AssetManager::SaveAsset(m_Material->GetID());
-		}
+	}
+	void PhysicsMaterialEditorPanel::Save()
+	{
+		if (!m_Material)return;
+
+		m_NeedsSaving = false;
+		AssetManager::SaveAsset(m_Material->GetID());
 	}
 	void PhysicsMaterialEditorPanel::SetAsset(const Count<class Asset>& asset)
 	{

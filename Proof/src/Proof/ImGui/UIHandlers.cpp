@@ -236,7 +236,7 @@ namespace Proof::UI
 			ImGui::NextColumn();
 			Draw::Underline();
 		}
-
+		HandleModified(modified);
 		return modified;
 	}
 }

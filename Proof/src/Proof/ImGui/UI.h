@@ -28,6 +28,9 @@ namespace Proof::UI
 	bool IsItemDisabled();
 	void PushID();
 	void PopID();
+
+	void PushModified(bool& modified);
+	void PopModified();
 	inline void Image(Count<class Image> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0))
 	{
 		ImGui::Image(HeaderFileOnly::TextureUI::GetTexture(image), size, uv0, uv1, tint_col, border_col);

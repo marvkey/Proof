@@ -141,6 +141,16 @@ namespace Proof::UI
         s_UIContextID--;
     }
 
+    void PushModified(bool& modified)
+    {
+        Application::Get()->GetImguiLayer()->PushModified(modified);
+    }
+
+    void PopModified()
+    {
+        Application::Get()->GetImguiLayer()->PopModified();
+    }
+
     static int InputTextCallback(ImGuiInputTextCallbackData* data)
     {
         InputTextCallbackData& user_data = (InputTextCallbackData&)data->UserData;
@@ -260,6 +270,7 @@ namespace Proof::UI
 
         ImGui::PopID();
 
+        HandleModified(bValueChanged);
         return bValueChanged;
     }
     void AttributeLabel(const std::string& label)
@@ -314,6 +325,7 @@ namespace Proof::UI
         ImGui::PopItemWidth();
         ImGui::NextColumn();
 
+        HandleModified(bModified);
         return bModified;
     }
     bool AttributeInputRawText(const std::string& label, char* buffer, uint32_t bufferSize, ImGuiInputTextFlags text_flags, const std::string& helpMessage)
@@ -363,6 +375,7 @@ namespace Proof::UI
         ImGui::PopItemWidth();
         ImGui::NextColumn();
 
+        HandleModified(bModified);
         return bModified;
     }
 
@@ -395,6 +408,7 @@ namespace Proof::UI
         ImGui::PopItemWidth();
         ImGui::NextColumn();
 
+        HandleModified(bModified);
         return bModified;
     }
     
@@ -439,6 +453,7 @@ namespace Proof::UI
 
         ImGui::PopItemWidth();
         ImGui::NextColumn();
+
         return false;
     }
 
@@ -493,6 +508,7 @@ namespace Proof::UI
             ImGui::EndDragDropTarget();
         }
 
+        HandleModified(changeState);
         return changeState;
     }
     bool AttributeAssetTextBar(const std::string& label, Count<class Asset> asset, AssetType type, bool includeRemove )
@@ -548,6 +564,7 @@ namespace Proof::UI
             ImGui::EndDragDropTarget();
         }
         UI::PopID();
+        HandleModified(changeState);
         return changeState;
     }
     bool AttributeEntity(const std::string& label, Count<class World> worldContext, UUID& entityID)
@@ -611,6 +628,7 @@ namespace Proof::UI
         ImGui::PopItemWidth();
         ImGui::NextColumn();
 
+        HandleModified(bModified);
         return { bModified,currentSelection,returnValue };
     }
     template<class ValueType>
@@ -635,6 +653,8 @@ namespace Proof::UI
         bModified = ImGui::SliderScalar(s_IDBuffer, type, &value, &min, &max, format, flags);
         ImGui::PopItemWidth();
         ImGui::NextColumn();
+
+        HandleModified(bModified);
         return bModified;
     }
 
@@ -710,6 +730,7 @@ namespace Proof::UI
         bModified = ImGui::SliderScalarN(s_IDBuffer, dataType, &value,(int)count,&min, &max, format, flags);
         ImGui::PopItemWidth();
         ImGui::NextColumn();
+        HandleModified(bModified);
         return bModified;
     }
 
@@ -749,6 +770,7 @@ namespace Proof::UI
 
         ImGui::PopItemWidth();
         ImGui::NextColumn();
+        HandleModified(bModified);
         return bModified;
     }
 
@@ -824,6 +846,7 @@ namespace Proof::UI
         bModified = ImGui::DragScalarN(s_IDBuffer, dataType, &value,(int)count, speed, &min, &max, format, flags);
         ImGui::PopItemWidth();
         ImGui::NextColumn();
+        HandleModified(bModified);
         return bModified;
     }
     bool AttributeDrag(const std::string& label, glm::vec2& value, float speed, float min, float max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format)
@@ -859,6 +882,7 @@ namespace Proof::UI
         bModified = ImGui::ColorEdit3(s_IDBuffer, &value.x);
         ImGui::PopItemWidth();
         ImGui::NextColumn();
+        HandleModified(bModified);
         return bModified;
     }
 
@@ -880,6 +904,7 @@ namespace Proof::UI
         bModified = ImGui::ColorEdit4(s_IDBuffer, &value.x);
         ImGui::PopItemWidth();
         ImGui::NextColumn();
+        HandleModified(bModified);
         return bModified;
     }
 
@@ -903,7 +928,7 @@ namespace Proof::UI
         flags |= ImGuiInputTextFlags_CallbackResize;
 
 
-        bool modfified = false;
+        bool bModified = false;
         std::string id = fmt::format("##{}", label);
         AttributeLabel(label.c_str());
         ImGui::SameLine();
@@ -912,9 +937,10 @@ namespace Proof::UI
         InputTextCallbackData cb_user_data(value);
         cb_user_data.ChainCallback = nullptr;
         cb_user_data.ChainCallbackUserData = nullptr;
+        bModified = ImGui::InputTextMultiline(label.c_str(), (char*)value.c_str(), value.capacity() + 1, ImVec2(0,0),flags, InputTextCallback, &cb_user_data);
+        HandleModified(bModified);
 
-        return ImGui::InputTextMultiline(label.c_str(), (char*)value.c_str(), value.capacity() + 1, ImVec2(0,0),flags, InputTextCallback, &cb_user_data);
-
+        return bModified;
     }
     void PushItemDisabled(bool disabled )
     {
@@ -1261,6 +1287,7 @@ namespace Proof::UI
             }
         }
         UI::PopID();
+        HandleModified(result);
         return result;
     }
 

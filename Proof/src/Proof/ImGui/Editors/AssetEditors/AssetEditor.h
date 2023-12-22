@@ -6,6 +6,7 @@
 #include <imgui.h>
 namespace Proof
 {
+	
 	class AssetEditor : public RefCounted
 	{
 	protected:
@@ -13,8 +14,8 @@ namespace Proof
 	public:
 		virtual ~AssetEditor() {}
 
-		virtual void OnUpdate(FrameTime ts) {}
-		virtual void OnEvent(class Event& e) {}
+		virtual void OnUpdate(FrameTime ts);
+		virtual void OnEvent(class Event& e);
 		// of the editore 3d
 		virtual void SetWorldContext(const Count<class World>& context) {}
 		virtual void OnImGuiRender() {};
@@ -25,9 +26,16 @@ namespace Proof
 		bool IsOpen() const { return m_IsOpen; }
 		//if the current window is focused
 		bool IsFocused() { return m_IsFocused; }
+		bool IsHovered() { return m_IsHovered; }
 
+		bool IsHoveredOrFocused() { return IsFocused() || IsHovered(); }
 		ImVec2 GetWindowSize(){ return m_CurrentSize;}
+
+		virtual bool IsSaved() = 0;
+		virtual void Save() = 0;
 	protected:
+		static inline float SavedPresetSeconds = 300.f; // 5 minutes per save
+
 		void SetMinSize(uint32_t width, uint32_t height);
 		void SetMaxSize(uint32_t width, uint32_t height);
 
@@ -44,11 +52,14 @@ namespace Proof
 
 		bool m_IsOpen = false;
 	private:
-		
 		virtual void Render()final;
 	private:
+		float m_SaveCountDown = SavedPresetSeconds;
+
 		ImVec2 m_CurrentSize;
 		bool m_IsFocused = false;
+		bool m_IsHovered = false;
+
 		friend class AssetEditorPanel;
 		UUID32 m_PushID = UUID32();
 		std::string m_Id;          // Uniquely identifies the window independently of its title (e.g. for imgui.ini settings
