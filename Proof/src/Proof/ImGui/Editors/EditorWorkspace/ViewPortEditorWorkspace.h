@@ -8,9 +8,10 @@ namespace Proof
 {
 	struct ViewPortEditorData
 	{
-		bool CanClose = false;
+		bool CanClose = true;
 		bool CanMove = false;
 		std::function<void()> HandleOnImGuiDrop = nullptr;
+		bool EnableSelection = true;
 		bool IsWorld = true;
 		//only if world is set to false
 		AssetSelectionContext SelectionContext = AssetSelectionContext::Prefab;
@@ -25,6 +26,7 @@ namespace Proof
 		virtual void OnImGuiRender();
 		virtual void OnUpdate(FrameTime ts);
 		virtual void OnEvent(class Event& e);
+		Count<WorldRenderer> GetWorldRenderer() { return m_WorldRenderer;}
 	protected:
 		virtual void OnWindowStylePush();
 		virtual void OnWindowStylePop();

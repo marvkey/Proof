@@ -13,7 +13,14 @@ namespace Proof
 		virtual bool IsSaved() { return !m_NeedsSaving; };
 		virtual void Save();
 	private:
+		void RenderDetailSettings();
+		virtual void SetDefaultLayout();
+
+	private:
 		bool m_NeedsSaving = true;
+		bool m_IsDetailsPanelOpen = true;
+		std::string m_DetailsPanelName;
+		Count< class DetailsPanel> m_DetailsPanel;
 		Count<class Material> m_Material;
 	};
 	class PhysicsMaterialEditorPanel :public AssetEditor 
@@ -25,8 +32,14 @@ namespace Proof
 		virtual void Save();
 		virtual void SetAsset(const Count<class Asset>& asset);
 	private:
+		void RenderDetailSettings();
+		virtual void SetDefaultLayout();
+	private:
 		Count<class PhysicsMaterial> m_Material;
 		bool m_NeedsSaving = true;
+		bool m_IsDetailsPanelOpen = true;
+		std::string m_DetailsPanelName;
+		Count< class DetailsPanel> m_DetailsPanel;
 	};
 
 	

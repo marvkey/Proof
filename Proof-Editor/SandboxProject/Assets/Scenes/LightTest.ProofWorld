@@ -35,7 +35,7 @@ World:
       MeshComponent:
         MeshAssetPointerID: 18141853162402936448
       MeshColliderComponent:
-        ColliderID: 8898448835873651530
+        ColliderID: 6813556435628463018
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -106,7 +106,7 @@ World:
         MeshAssetPointerID: 50
         MaterialTable:
           - Material: ""
-            AssetID: 14268173759466256543
+            AssetID: 14983098330679523653
             Index: 0
     - Entity: 10634113294251223143
       TagComponent:

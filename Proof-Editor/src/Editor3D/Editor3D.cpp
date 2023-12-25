@@ -642,7 +642,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		Layer::OnImGuiDraw();
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 		static bool EnableDocking = true;
 		SetDocking(&EnableDocking);
 		MainToolBar();
@@ -692,7 +692,7 @@ namespace Proof
 
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
 		bool shift = IsKeyPressedEditor(KeyBoardKey::LeftShift) || IsKeyPressedEditor(KeyBoardKey::RightShift);
-		bool isViewportOrHierieachyFocused = UI::IsWindowFocused("Scene Hierarchy") || s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>("Viewport")->IsHovered();
+		bool isViewportOrHierieachyFocused = UI::IsWindowFocused("Scene Hierarchy") || s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>("Viewport")->IsFocusedOrHovered();
 
 		
 		//UI::is

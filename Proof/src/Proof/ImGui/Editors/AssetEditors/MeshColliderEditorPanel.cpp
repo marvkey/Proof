@@ -12,35 +12,32 @@
 #include "Proof/Physics/PhysicsMeshCache.h"
 #include "Proof/Physics/PhysicsEngine.h"
 #include "Proof/Core/Application.h"
-
+#include "Proof/ImGui/Editors/EditorWorkspace/ViewPortEditorWorkspace.h"
+#include "Proof/ImGui/Editors/Panels/DetailsPanel.h"
+#include "imgui_internal.h"
 namespace Proof
 {
 	MeshColliderEditorPanel::MeshColliderEditorPanel()
 		:AssetEditor("MeshColliderEditorPanel")
 
 	{
-		m_WorldRenderer = Count<WorldRenderer>::Create();
-		m_WorldRenderer->GeneralOptions.ShowPhysicsColliders = WorldRendererOptions::PhysicsColliderView::Normal;
+		//m_WorldRenderer = Count<WorldRenderer>::Create();
+		//m_WorldRenderer->GeneralOptions.ShowPhysicsColliders = WorldRendererOptions::PhysicsColliderView::Normal;
 		//m_WorldRenderer->BloomSettings.Enabled = false;
 	}
-	void MeshColliderEditorPanel::OnUpdate(FrameTime deltaTime)
+	void MeshColliderEditorPanel::OnUpdate(FrameTime ts)
 	{
 
 		if (!m_MeshCollider)return;
-		m_Camera.SetActive(m_IsViewportFocused);
-		m_Camera.OnUpdate(deltaTime);
-		if (m_ViewPoartSize.x > 0 && m_ViewPoartSize.y > 0)
-		{
-			m_Camera.SetViewportSize(m_ViewPoartSize.x, m_ViewPoartSize.y);
-			m_WorldRenderer->SetViewportSize(m_ViewPoartSize.x, m_ViewPoartSize.y);
-		}
-		m_World->OnUpdateEditor(deltaTime);
-		m_World->OnRenderEditor(m_WorldRenderer, deltaTime, m_Camera);
+
+		AssetEditor::OnUpdate(ts);
+		m_WorkSpaceManager->OnUpdate(ts);
 	}
 	void MeshColliderEditorPanel::OnImGuiRender()
 	{
-		UI::PushModified(m_NeedsSaving);
 
+		UI::PushModified(m_NeedsSaving);
+#if 0
 		ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable
 			| ImGuiTableFlags_SizingFixedFit
 			| ImGuiTableFlags_BordersInnerV;
@@ -56,7 +53,18 @@ namespace Proof
 		RenderViewPortPanel();
 
 		ImGui::EndTable();
+#endif
+
+		static bool detailsOpen = true;
+		m_DetailsPanel->OnImGuiRender(m_DetailsPanelName.c_str(), detailsOpen);
+		m_WorkSpaceManager->OnImGuiRender();
 		UI::PopModified();
+	}
+	void MeshColliderEditorPanel::OnEvent(Event& e)
+	{
+
+		m_DetailsPanel->OnEvent(e);
+		m_WorkSpaceManager->OnEvent(e);
 	}
 	void MeshColliderEditorPanel::Save()
 	{
@@ -68,9 +76,9 @@ namespace Proof
 	}
 	void MeshColliderEditorPanel::RenderSettingsPanel()
 	{
-		UI::ScopedStyleVar windowPadding(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		//UI::ScopedStyleVar windowPadding(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-		ImGui::BeginChild((m_TitleAndId + "Settings").c_str());
+		//ImGui::BeginChild((m_TitleAndId + "Settings").c_str());
 			
 
 		bool hasValidMesh = AssetManager::HasAsset(m_MeshCollider->ColliderMesh);
@@ -197,11 +205,12 @@ namespace Proof
 				//UI::EndDisabled();
 			}
 		}
-		ImGui::EndChild();
+	//	ImGui::EndChild();
 		RenderCookingOutput();
 	}
 	void MeshColliderEditorPanel::RenderViewPortPanel()
 	{
+#if 0
 		UI::ScopedStyleVar windowPadding(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::BeginChild((m_TitleAndId + "ViewPort").c_str());
 		m_ViewPoartSize = ImGui::GetContentRegionAvail();
@@ -213,6 +222,7 @@ namespace Proof
 				UI::Image(finalImage, m_ViewPoartSize, { 0, 1 }, { 1, 0 });
 		}
 		ImGui::EndChild();
+#endif
 	}
 	void MeshColliderEditorPanel::UpdatePreviewEntity()
 	{
@@ -237,6 +247,17 @@ namespace Proof
 			light.AddComponent<DirectionalLightComponent>().Intensity = 2.5;
 			light.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3{ 0.400, 5.400, 0.100 }));
 		}
+
+		m_WorkSpaceManager = CreateSpecial<EditorWorkspaceManager>();
+		m_DetailsPanelName = fmt::format("Details##MeshCollider: {}", m_MeshCollider->GetID());
+		m_ViewportPanelName = fmt::format("Viewport##MeshCollider: {}", m_MeshCollider->GetID());
+		ViewPortEditorData editorData;
+		editorData.EnableSelection = false;
+		auto viewport = m_WorkSpaceManager->AddWorkspace<ViewPortEditorWorkspace>(m_ViewportPanelName.c_str(), true, m_ViewportPanelName, editorData);
+		m_WorkSpaceManager->SetWorldContext(m_World);
+
+		viewport->GetWorldRenderer()->GeneralOptions.ShowPhysicsColliders = WorldRendererOptions::PhysicsColliderView::Normal;
+		m_DetailsPanel = Count<DetailsPanel>::Create(std::bind(&MeshColliderEditorPanel::RenderSettingsPanel,this));
 	}
 	bool MeshColliderEditorPanel::CookMeshCollider()
 	{
@@ -347,6 +368,33 @@ namespace Proof
 
 			ImGui::EndPopup();
 		}
+	}
+	void MeshColliderEditorPanel::SetDefaultLayout()
+	{
+#if 1
+		ImGuiID dockspace_id = ImGui::GetID(GetBaseDockspace().c_str());
+
+		ImGui::DockBuilderRemoveNode(dockspace_id);
+		ImGui::DockBuilderAddNode(dockspace_id);
+		ImGui::DockBuilderSetNodeSize(dockspace_id, GetWindowSize());
+
+		auto dock_id_up = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.5f, nullptr, &dockspace_id);
+		auto dock_id_down = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.5f, nullptr, &dockspace_id);
+		ImGui::DockBuilderDockWindow(m_DetailsPanelName.c_str(), dock_id_up);
+		ImGui::DockBuilderDockWindow(m_ViewportPanelName.c_str(), dock_id_down);
+
+		ImGui::DockBuilderFinish(dockspace_id);
+#endif
+
+		//ImGuiID dockspace_id = ImGui::GetID(GetBaseDockspace().c_str());
+		//ImGuiWindow* window = ImGui::FindWindowByName(m_DetailsPanelName.c_str());
+		//if (m_DetailsPanel->GetImGuiWindow())
+		//{
+		//	ImGui::SetWindowDock(m_DetailsPanel->GetImGuiWindow(), dockspace_id, 0);
+		//}
+		//auto viewport = m_WorkSpaceManager->GetWorkspace<ViewPortEditorWorkspace>(m_ViewportPanelName.c_str());
+		//if(viewport->GetImGuiWindow())
+		//	ImGui::SetWindowDock(viewport->GetImGuiWindow(), dockspace_id, 0);
 	}
 	void MeshColliderEditorPanel::SetAsset(const Count<class Asset>& asset)
 	{

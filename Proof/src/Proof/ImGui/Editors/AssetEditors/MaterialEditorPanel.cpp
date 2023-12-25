@@ -18,6 +18,7 @@
 #include "Proof/ImGui/UI.h"
 
 #include "Proof/Core/Profile.h"
+#include "Proof/ImGui/Editors/Panels/DetailsPanel.h"
 namespace Proof
 {
 
@@ -31,9 +32,33 @@ namespace Proof
 	void MaterialEditorPanel::OnImGuiRender()
 	{
 		// save if any data is changed
-
 		PF_PROFILE_FUNC();
 		if (!m_Material)return;
+		m_DetailsPanel->OnImGuiRender(m_DetailsPanelName.c_str(), m_IsDetailsPanelOpen);
+	}
+	void MaterialEditorPanel::OnUpdate(FrameTime ts)
+	{
+		AssetEditor::OnUpdate(ts);
+	}
+	void MaterialEditorPanel::SetAsset(const Count<class Asset>& asset)
+	{
+		if (asset->GetAssetType() != AssetType::Material)
+		{
+			PF_ENGINE_ERROR("Cannot pass {} Asset to MaterialEditorPanel {}", EnumReflection::EnumString(asset->GetAssetType()), m_TitleAndId);
+			return;
+		}
+		m_Material = asset.As<Material>();
+		m_DetailsPanel = Count<DetailsPanel>::Create(std::bind(&MaterialEditorPanel::RenderDetailSettings,this));
+		m_DetailsPanelName = fmt::format("Details##Material: {}", m_Material->GetID());
+	}
+	void MaterialEditorPanel::Save()
+	{
+		if (!m_Material)return;
+		m_NeedsSaving = false;
+		AssetManager::SaveAsset(m_Material->GetID());
+	}
+	void Proof::MaterialEditorPanel::RenderDetailSettings()
+	{
 		std::string name = m_Material->Name;
 
 		Count<RenderMaterial> renderMaterial = m_Material->GetRenderMaterial().As<RenderMaterial>();
@@ -194,7 +219,7 @@ namespace Proof
 				ImGui::Checkbox("Use", &m_Material->GetMetalnessTextureToggle());
 			}
 			ImGui::SameLine();
-			if(UI::AttributeSlider("Metallness", m_Material->GetMetalness(),0,1))
+			if (UI::AttributeSlider("Metallness", m_Material->GetMetalness(), 0, 1))
 				m_NeedsSaving = true;
 		}
 
@@ -251,39 +276,30 @@ namespace Proof
 
 			}
 			ImGui::SameLine();
-			if(UI::AttributeSlider("Roughness", m_Material->GetRoughness(), 0, 1))
+			if (UI::AttributeSlider("Roughness", m_Material->GetRoughness(), 0, 1))
 				m_NeedsSaving = true;
 
 		}
 		ImGui::NewLine();
 		//
 		{
-			if(UI::AttributeDrag("Emission", m_Material->GetEmission(), 0.25f))
+			if (UI::AttributeDrag("Emission", m_Material->GetEmission(), 0.25f))
 				m_NeedsSaving = true;
 
 		}
 		UI::PopItemDisabled();
-
 	}
-	void MaterialEditorPanel::OnUpdate(FrameTime ts)
+	
+	void MaterialEditorPanel::SetDefaultLayout()
 	{
-		AssetEditor::OnUpdate(ts);
-	}
-	void MaterialEditorPanel::SetAsset(const Count<class Asset>& asset)
-	{
-		if (asset->GetAssetType() != AssetType::Material)
+		ImGuiID dockspace_id = ImGui::GetID(GetBaseDockspace().c_str());
+		ImGuiWindow* window = ImGui::FindWindowByName(m_DetailsPanelName.c_str());
+		if (m_DetailsPanel->GetImGuiWindow())
 		{
-			PF_ENGINE_ERROR("Cannot pass {} Asset to MaterialEditorPanel {}", EnumReflection::EnumString(asset->GetAssetType()), m_TitleAndId);
-			return;
+			ImGui::SetWindowDock(m_DetailsPanel->GetImGuiWindow(), dockspace_id, 0);
 		}
-		m_Material = asset.As<Material>(); 
 	}
-	void MaterialEditorPanel::Save()
-	{
-		if (!m_Material)return;
-		m_NeedsSaving = false;
-		AssetManager::SaveAsset(m_Material->GetID());
-	}
+
 	PhysicsMaterialEditorPanel::PhysicsMaterialEditorPanel()
 		:
 		AssetEditor("PhysicsMaterialEditorPanel")
@@ -293,7 +309,29 @@ namespace Proof
 	{
 		PF_PROFILE_FUNC();
 		if (!m_Material)return;
+		m_DetailsPanel->OnImGuiRender(m_DetailsPanelName.c_str(), m_IsDetailsPanelOpen);
+	}
+	void PhysicsMaterialEditorPanel::Save()
+	{
+		if (!m_Material)return;
 
+		m_NeedsSaving = false;
+		AssetManager::SaveAsset(m_Material->GetID());
+	}
+	void PhysicsMaterialEditorPanel::SetAsset(const Count<class Asset>& asset)
+	{
+		if (asset->GetAssetType() != AssetType::PhysicsMaterial)
+		{
+			PF_ENGINE_ERROR("Cannot pass {} Asset to PhysicsMaterialEditorPanel {}", EnumReflection::EnumString(asset->GetAssetType()), m_TitleAndId);
+			return;
+		}
+		m_Material = asset.As<PhysicsMaterial>();
+		m_DetailsPanelName = fmt::format("Details##PhysicsMaterial: {}", m_Material->GetID());
+		m_DetailsPanel = Count<DetailsPanel>::Create(std::bind(&PhysicsMaterialEditorPanel::RenderDetailSettings, this));
+	}
+
+	void PhysicsMaterialEditorPanel::RenderDetailSettings()
+	{
 		// if any data is changed
 		float staticFriction = m_Material->GetStaticFriction();
 		float dynamicFrction = m_Material->GetDynamicFriction();
@@ -310,7 +348,7 @@ namespace Proof
 		{
 			m_Material->SetDynamicFriction(dynamicFrction);
 		}
-		if (UI::AttributeDrag("Bounciness", bounciness, 1,0, 1))
+		if (UI::AttributeDrag("Bounciness", bounciness, 1, 0, 1))
 		{
 			m_Material->SetBounciness(bounciness);
 		}
@@ -328,22 +366,15 @@ namespace Proof
 		UI::EndPropertyGrid();
 
 	}
-	void PhysicsMaterialEditorPanel::Save()
-	{
-		if (!m_Material)return;
 
-		m_NeedsSaving = false;
-		AssetManager::SaveAsset(m_Material->GetID());
-	}
-	void PhysicsMaterialEditorPanel::SetAsset(const Count<class Asset>& asset)
+	void PhysicsMaterialEditorPanel::SetDefaultLayout()
 	{
-		if (asset->GetAssetType() != AssetType::PhysicsMaterial)
+		ImGuiID dockspace_id = ImGui::GetID(GetBaseDockspace().c_str());
+		ImGuiWindow* window = ImGui::FindWindowByName(m_DetailsPanelName.c_str());
+		if (m_DetailsPanel->GetImGuiWindow())
 		{
-			PF_ENGINE_ERROR("Cannot pass {} Asset to PhysicsMaterialEditorPanel {}", EnumReflection::EnumString(asset->GetAssetType()), m_TitleAndId);
-			return;
+			ImGui::SetWindowDock(m_DetailsPanel->GetImGuiWindow(), dockspace_id, 0);
 		}
-		m_Material = asset.As<PhysicsMaterial>();
 	}
-
 	
 }

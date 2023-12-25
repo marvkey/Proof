@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "EditorWorkspace.h"
-
+#include <imgui_internal.h>
 namespace Proof
 {
 	EditorWorkspace::EditorWorkspace(const std::string& titleAndID)
@@ -27,7 +27,7 @@ namespace Proof
 				m_IsFocused = true;
 			else
 				m_IsFocused = false;
-
+			m_ImGuiWindow = ImGui::GetCurrentWindow();
 			m_IsHovered = ImGui::IsWindowHovered();
 			OnWindowStylePop();
 			{
@@ -46,6 +46,11 @@ namespace Proof
 			OnClose();
 		else
 			OnOpen();
+	}
+
+	ImGuiWindow* EditorWorkspace::GetImGuiWindow()
+	{
+		return m_ImGuiWindow;
 	}
 	
 	void EditorWorkspaceManager::OnImGuiRender()

@@ -182,7 +182,10 @@ namespace Proof
 		m_ViewPortEditorData(viewPortData)
 	{
 		m_WorldRenderer = Count<WorldRenderer>::Create();
-		m_GizmoType = ImGuizmo::TRANSLATE;
+		if (!m_ViewPortEditorData.EnableSelection)
+			m_GizmoType = -1;
+		else
+			m_GizmoType = ImGuizmo::TRANSLATE;
 		m_GizmoMode = ImGuizmo::WORLD;
 	}
 	ViewPortEditorWorkspace::~ViewPortEditorWorkspace()
@@ -229,11 +232,11 @@ namespace Proof
 
 		//left toolbar
 		{
-			auto data = BeginTollBarWindow("##DropwDown", 1, UIToolbarAlign::Left, 14.0f);
+			auto data = BeginTollBarWindow(("##DropwDown" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Left, 14.0f);
 			TollbarButton(EditorResources::DropdownIcon);
 			EndToolbarWindow();
 
-			BeginTollBarWindow("##View", 1, UIToolbarAlign::Left, data.xOffset + data.Width + 14);
+			BeginTollBarWindow(("##View" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Left, data.xOffset + data.Width + 14);
 			if (TollbarButton(EditorResources::ViewIcon))
 				ImGui::OpenPopup(("##" + m_TitleAndID + "ViewSettings").c_str());
 			{
@@ -257,7 +260,7 @@ namespace Proof
 
 		// right toolbar
 		{
-			auto data = BeginTollBarWindow("##Gizmo", 5, UIToolbarAlign::Right, -250.0f);
+			auto data = BeginTollBarWindow(("##Gizmo" + m_TitleAndID).c_str(), 5, UIToolbarAlign::Right, -250.0f);
 			const ImColor c_SelectedGizmoButtonColor = UI::Colours::Theme::Accent;
 			const ImColor c_UnselectedGizmoButtonColor = ImColor(0,0,0,0);
 
@@ -288,7 +291,7 @@ namespace Proof
 
 			EndToolbarWindow();
 
-			BeginTollBarWindow("##GizmoSpace", 2, UIToolbarAlign::Right, -175);
+			BeginTollBarWindow(("##GizmoSpace" + m_TitleAndID).c_str(), 2, UIToolbarAlign::Right, -175);
 
 			buttonTint = m_GizmoMode == ImGuizmo::MODE::WORLD ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
 			if (TollbarButton(EditorResources::WorldSpaceIcon, buttonTint))
@@ -302,7 +305,7 @@ namespace Proof
 
 			EndToolbarWindow();
 
-			BeginTollBarWindow("##Camera", 1, UIToolbarAlign::Right, -125);
+			BeginTollBarWindow(("##Camera" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Right, -125);
 			if (TollbarButton(EditorResources::CameraIcon))
 			{
 				ImGui::OpenPopup(("##" + m_TitleAndID + "CameraSettings").c_str());
@@ -340,56 +343,59 @@ namespace Proof
 		//basically means that m_editor camera is beign used 
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight) == true)
 			return false;
-		switch (e.GetKey())
+		if (m_ViewPortEditorData.EnableSelection)
 		{
-			case KeyBoardKey::W:
+			switch (e.GetKey())
 			{
-				bool hasSelections;
-
-				if (m_ViewPortEditorData.IsWorld)
-					hasSelections = SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0;
-				else
-					hasSelections = AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID);
-
-				if (IsFocused() && hasSelections)
+				case KeyBoardKey::W:
 				{
-					m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-					return true;
+					bool hasSelections;
+
+					if (m_ViewPortEditorData.IsWorld)
+						hasSelections = SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0;
+					else
+						hasSelections = AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID);
+
+					if (IsFocused() && hasSelections)
+					{
+						m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+						return true;
+					}
+					break;
 				}
-				break;
-			}
 
-			case KeyBoardKey::E:
-			{
-				bool hasSelections;
-
-				if (m_ViewPortEditorData.IsWorld)
-					hasSelections = SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0;
-				else
-					hasSelections = AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID);
-
-				if (IsFocused() && hasSelections)
+				case KeyBoardKey::E:
 				{
-					m_GizmoType = ImGuizmo::OPERATION::ROTATE;
-					return true;
+					bool hasSelections;
+
+					if (m_ViewPortEditorData.IsWorld)
+						hasSelections = SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0;
+					else
+						hasSelections = AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID);
+
+					if (IsFocused() && hasSelections)
+					{
+						m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+						return true;
+					}
+					break;
 				}
-				break;
-			}
-			case KeyBoardKey::R:
-			{
-				bool hasSelections;
-
-				if (m_ViewPortEditorData.IsWorld)
-					hasSelections = SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0;
-				else
-					hasSelections = AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID);
-
-				if (IsFocused() && hasSelections)
+				case KeyBoardKey::R:
 				{
-					m_GizmoType = ImGuizmo::OPERATION::SCALE;
-					return true;
+					bool hasSelections;
+
+					if (m_ViewPortEditorData.IsWorld)
+						hasSelections = SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0;
+					else
+						hasSelections = AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_ViewPortEditorData.SelectionContextID);
+
+					if (IsFocused() && hasSelections)
+					{
+						m_GizmoType = ImGuizmo::OPERATION::SCALE;
+						return true;
+					}
+					break;
 				}
-				break;
 			}
 		}
 	}
@@ -456,7 +462,8 @@ namespace Proof
 
 		if (e.GetButton() != MouseButton::ButtonLeft)
 			return false;
-
+		if (!m_ViewPortEditorData.EnableSelection)
+			return false;
 		ImGui::ClearActiveID();
 
 		bool state = false;

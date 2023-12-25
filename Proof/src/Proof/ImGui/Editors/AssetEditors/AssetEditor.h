@@ -4,9 +4,10 @@
 #include "Proof/Asset/AssetTypes.h"
 #include "Proof/Asset/Asset.h"
 #include <imgui.h>
+class ImGuiWindow;
 namespace Proof
 {
-	
+
 	class AssetEditor : public RefCounted
 	{
 	protected:
@@ -33,6 +34,8 @@ namespace Proof
 
 		virtual bool IsSaved() = 0;
 		virtual void Save() = 0;
+		ImGuiWindow* GetImGuiWindow();
+
 	protected:
 		static inline float SavedPresetSeconds = 300.f; // 5 minutes per save
 
@@ -40,13 +43,15 @@ namespace Proof
 		void SetMaxSize(uint32_t width, uint32_t height);
 
 		virtual ImGuiWindowFlags GetWindowFlags() { return 0; }
-
+		std::string GetBaseDockspace();
 		// Subclass can optionally override these to customize window styling, e.g. window padding
 		virtual void OnWindowStylePush() {}
 		virtual void OnWindowStylePop() {}
 		virtual void OnOpen() {}
 		virtual void OnClose() {}
 		virtual void MenuBar();
+		virtual void SetDefaultLayout() {};
+
 	protected:
 		std::string m_TitleAndId;  // Caches title###asetType+id to avoid computing it every frame
 		ImVec2 m_MinSize, m_MaxSize;
@@ -55,12 +60,15 @@ namespace Proof
 	private:
 		virtual void Render()final;
 	private:
+		ImGuiWindow* m_ImGuiWindow = nullptr;
+
 		float m_SaveCountDown = SavedPresetSeconds;
+		bool m_FirstRunImGui = true;
 
 		ImVec2 m_CurrentSize;
 		bool m_IsFocused = false;
 		bool m_IsHovered = false;
-
+		bool m_InitialRun = true;
 		friend class AssetEditorPanel;
 		UUID32 m_PushID = UUID32();
 		std::string m_Id;          // Uniquely identifies the window independently of its title (e.g. for imgui.ini settings

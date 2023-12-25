@@ -1,6 +1,6 @@
 AssetType: PhysicsMaterial
 ID: 5412365953404524970
-StaticFriction: 0
+StaticFriction: 16
 DynamicFriction: 0
 Bounciness: 1
 FrictionCombineMode: Mutltiply

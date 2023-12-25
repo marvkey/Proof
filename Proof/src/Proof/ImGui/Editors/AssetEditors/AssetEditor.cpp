@@ -69,6 +69,11 @@ namespace Proof
 			OnOpen();
 	}
 
+	ImGuiWindow* AssetEditor::GetImGuiWindow()
+	{
+		return m_ImGuiWindow;
+	}
+
 	void AssetEditor::SetMinSize(uint32_t width, uint32_t height)
 	{
 		if (width <= 0) width = 200;
@@ -87,6 +92,11 @@ namespace Proof
 		m_MaxSize = ImVec2(float(width), float(height));
 	}
 
+	std::string AssetEditor::GetBaseDockspace()
+	{
+		return m_TitleAndId + "Dockspace";
+	}
+
 	void AssetEditor::MenuBar()
 	{
 		ImGui::BeginMenuBar();
@@ -100,6 +110,13 @@ namespace Proof
 				}
 				ImGui::EndMenu();
 			}
+			if (ImGui::BeginMenu("Edit"))
+			{
+				if (ImGui::MenuItem("SetDefaultLayout"))
+					SetDefaultLayout();
+				ImGui::EndMenu();
+
+			}
 		}
 		ImGui::EndMenuBar();
 	}
@@ -111,19 +128,20 @@ namespace Proof
 
 		bool was_open = m_IsOpen;
 		ImGuiWindowFlags window_flags  = 0;
-		window_flags |= ImGuiWindowFlags_MenuBar;
-
-		if (IsSaved())
+		window_flags |= ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse;
+		if (!IsSaved())
 			window_flags |= ImGuiWindowFlags_UnsavedDocument;
 
 		// TODO SetNextWindowSizeConstraints requires a max constraint that's above 0. For now we're just setting it to a large value
 		{
-			UI::ScopedID (m_PushID.Get());
+			UI::ScopedID(m_PushID.Get());
 			OnWindowStylePush();
 			ImGui::SetNextWindowSizeConstraints(m_MinSize, m_MaxSize);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
+			ImGuiWindowClass window_class2;
+			window_class2.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoDockingSplitOther | ImGuiDockNodeFlags_NoDockingSplitMe;
+			window_class2.DockingAllowUnclassed = false;
 			ImGui::Begin(m_TitleAndId.c_str(), &m_IsOpen, GetWindowFlags() | window_flags);
+
 			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
 				auto window = ImGui::GetCurrentWindow();
@@ -134,20 +152,27 @@ namespace Proof
 					ImGui::SetWindowSize(m_TitleAndId.c_str(), { monitor.WorkSize });
 				}
 			}
-			ImGuiID dockspace_id = ImGui::GetID((m_TitleAndId + "Dockspace").c_str());
-			ImGui::PopStyleVar();
-			ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_NoDockingOverMe | ImGuiDockNodeFlags_PassthruCentralNode, &ImGui::GetCurrentWindow()->WindowClass);
-
 			m_CurrentSize = ImGui::GetWindowSize();
 			m_IsFocused = ImGui::IsWindowFocused();
 			m_IsHovered = ImGui::IsWindowHovered();
 			OnWindowStylePop();
 			MenuBar();
+			m_ImGuiWindow = ImGui::GetCurrentWindow();
 
+			ImGuiID dockspace_id = ImGui::GetID(GetBaseDockspace().c_str());
+			ImGui::DockSpace(dockspace_id);
+			//ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_NoDockingOverMe | ImGuiDockNodeFlags_PassthruCentralNode , &ImGui::GetCurrentWindow()->WindowClass);
+			
 			{
 				OnImGuiRender();
 			}
+			if (m_FirstRunImGui)
+			{
+				SetDefaultLayout();
+				m_FirstRunImGui = false;
+			}
 			ImGui::End();
+
 		}
 
 		if (was_open && !m_IsOpen)

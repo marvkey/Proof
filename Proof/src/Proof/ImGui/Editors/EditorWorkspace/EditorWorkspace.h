@@ -4,7 +4,7 @@
 #include "Proof/Core/Hash.h"
 
 #include <Imgui.h>
-
+class ImGuiWindow;
 namespace Proof
 {
 	
@@ -21,6 +21,7 @@ namespace Proof
 		virtual void OnImGuiRender() {};
 		void SetOpen(bool isOpen);
 		virtual void SetWorldContext(const Count<class World>& context) {}
+		ImGuiWindow* GetImGuiWindow();
 
 	protected:
 		EditorWorkspace(const std::string& titleAndID);
@@ -34,6 +35,8 @@ namespace Proof
 		bool m_IsFocused = false;
 		bool m_IsHovered = false;
 		bool m_IsOpen = false;
+		ImGuiWindow* m_ImGuiWindow = nullptr;
+
 		virtual ImGuiWindowFlags GetWindowFlags() { return 0; }
 	private:
 		virtual void Render() final;
