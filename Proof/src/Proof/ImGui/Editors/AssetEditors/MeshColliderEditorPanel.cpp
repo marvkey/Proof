@@ -256,7 +256,7 @@ namespace Proof
 		auto viewport = m_WorkSpaceManager->AddWorkspace<ViewPortEditorWorkspace>(m_ViewportPanelName.c_str(), true, m_ViewportPanelName, editorData);
 		m_WorkSpaceManager->SetWorldContext(m_World);
 
-		viewport->GetWorldRenderer()->GeneralOptions.ShowPhysicsColliders = WorldRendererOptions::PhysicsColliderView::Normal;
+		viewport->GetWorldRenderer()->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders = WorldRendererDebugOptions::PhysicsColliderView::Normal;
 		m_DetailsPanel = Count<DetailsPanel>::Create(std::bind(&MeshColliderEditorPanel::RenderSettingsPanel,this));
 	}
 	bool MeshColliderEditorPanel::CookMeshCollider()
@@ -395,6 +395,33 @@ namespace Proof
 		//auto viewport = m_WorkSpaceManager->GetWorkspace<ViewPortEditorWorkspace>(m_ViewportPanelName.c_str());
 		//if(viewport->GetImGuiWindow())
 		//	ImGui::SetWindowDock(viewport->GetImGuiWindow(), dockspace_id, 0);
+	}
+	bool MeshColliderEditorPanel::IsSubWindowsHovered()
+	{
+		for (auto workspaceData : m_WorkSpaceManager->GetWorkspaceData())
+		{
+			if (workspaceData.second.EditorWorkspace->IsHovered())
+				return true;
+		}
+
+		if (m_DetailsPanel->IsHovered())
+			return true;
+
+		return false;
+	}
+	bool MeshColliderEditorPanel::IsSubWindowsFocused()
+	{
+
+		for (auto workspaceData : m_WorkSpaceManager->GetWorkspaceData())
+		{
+			if (workspaceData.second.EditorWorkspace->IsFocused())
+				return true;
+		}
+
+		if (m_DetailsPanel->IsFocused())
+			return true;
+
+		return false;
 	}
 	void MeshColliderEditorPanel::SetAsset(const Count<class Asset>& asset)
 	{

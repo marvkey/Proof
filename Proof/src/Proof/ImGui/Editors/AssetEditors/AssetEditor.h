@@ -26,8 +26,8 @@ namespace Proof
 
 		bool IsOpen() const { return m_IsOpen; }
 		//if the current window is focused
-		bool IsFocused() { return m_IsFocused; }
-		bool IsHovered() { return m_IsHovered; }
+		bool IsFocused() { return m_IsFocused || IsSubWindowsFocused(); }
+		bool IsHovered() { return m_IsHovered || IsSubWindowsHovered(); }
 
 		bool IsHoveredOrFocused() { return IsFocused() || IsHovered(); }
 		ImVec2 GetWindowSize(){ return m_CurrentSize;}
@@ -35,7 +35,6 @@ namespace Proof
 		virtual bool IsSaved() = 0;
 		virtual void Save() = 0;
 		ImGuiWindow* GetImGuiWindow();
-
 	protected:
 		static inline float SavedPresetSeconds = 300.f; // 5 minutes per save
 
@@ -51,6 +50,8 @@ namespace Proof
 		virtual void OnClose() {}
 		virtual void MenuBar();
 		virtual void SetDefaultLayout() {};
+		virtual bool IsSubWindowsHovered() = 0;
+		virtual bool IsSubWindowsFocused() = 0;
 
 	protected:
 		std::string m_TitleAndId;  // Caches title###asetType+id to avoid computing it every frame

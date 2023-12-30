@@ -2,15 +2,29 @@
 #include <glm/glm.hpp>
 namespace Proof
 {
-	struct WorldRendererOptions
+	struct WorldRendererDebugOptions
 	{
 		enum class PhysicsColliderView
 		{
 			None = 0, Normal = 1, OnTop = 2
 		};
-		PhysicsColliderView ShowPhysicsColliders = PhysicsColliderView::None;
-		glm::vec4 PhysicsColliderColor = glm::vec4{ 0.2f, 1.0f, 0.2f, 1.0f };
-		bool ShowLightGrid = false;
+		struct PhysicsDebugOptions
+		{
+			PhysicsColliderView ShowPhysicsColliders = PhysicsColliderView::None;
+			glm::vec4 PhysicsColliderColor = glm::vec4{ 0.2f, 1.0f, 0.2f, 1.0f };
+
+		} PhysicsDebugOptions;
+
+		struct LightDebugOptions
+		{
+			bool ShowLightGrid = false;
+		} LightDebugOptions;
+
+		struct ShadowDebugOptions
+		{
+			bool ShowCascades = false;
+		} ShadowDebugOptions;
+
 	};
 	enum class ShadowResolution
 	{
@@ -37,17 +51,14 @@ namespace Proof
 		bool UseManualCascadeSplits = false;
 		float CascadeSplits[4] = { 0.1,0.2,0.3,1.0 }; // min 0, max Flt max
 
-		bool ShowCascades = false;
 		bool SoftShadows = false; // temporarily set to false for performance reasons
-		ShadowResolution  ShadowResolution = ShadowResolution::Mediuim;
-
+		ShadowResolution ShadowResolution = ShadowResolution::Mediuim;
 		bool RenderDebugPass = false;
 		int DebugCascade = 0; // min 0 max 3
 	};
 
 	struct PreProcessSettings
 	{
-		WorldRendererOptions GeneralOptions;
 		ShadowSetting ShadowSettings;
 	};
 	struct AmbientOcclusion

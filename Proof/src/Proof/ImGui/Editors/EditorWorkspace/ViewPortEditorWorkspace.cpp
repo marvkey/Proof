@@ -241,19 +241,28 @@ namespace Proof
 				ImGui::OpenPopup(("##" + m_TitleAndID + "ViewSettings").c_str());
 			{
 				// 30 for each attributes
-				ImGui::SetNextWindowSize({ 200, 60.0f });
-
-				if (UI::BeginPopup(("##" + m_TitleAndID + "ViewSettings").c_str()))
+			//	ImGui::SetNextWindowSize({ 200, 120.0f });
+#if 1
+				ImGui::SetNextWindowSizeConstraints({ 200, 30 }, { FLT_MAX, FLT_MAX });
+				std::string name = ("##" + m_TitleAndID + "ViewSettings").c_str();
+				if (UI::BeginPopup(name.c_str(), ImGuiWindowFlags_AlwaysAutoResize))
 				{
 					UI::BeginPropertyGrid();
 					
+
+					UI::AttributeBool("LightGrid", m_WorldRenderer->DebugOptions.LightDebugOptions.ShowLightGrid,
+						"Shows How much point and spot light is affecting a certain area");
+
+					UI::EnumCombo("PhysicsColliders", m_WorldRenderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders);
+
+					UI::AttributeBool("ShadowCascades", m_WorldRenderer->DebugOptions.ShadowDebugOptions.ShowCascades);
 					UI::AttributeBool("Icons", m_ShowComponentsIcon);
-					UI::AttributeBool("BoundingBox", m_ShowBoundingBoxes);
 
 					UI::EndPropertyGrid();
+
 					UI::EndPopup();
 				}
-
+#endif
 			}
 			EndToolbarWindow();
 		}

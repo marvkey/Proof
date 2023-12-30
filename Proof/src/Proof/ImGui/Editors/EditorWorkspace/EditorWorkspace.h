@@ -78,6 +78,8 @@ namespace Proof
 			PF_EC_ERROR("PanelManager", "Couldn't find panel with id '{0}'", strID);
 			return nullptr;
 		}
+		const std::unordered_map<uint32_t, EditorWorkspaceManagerData>& GetWorkspaceData() {return m_EditorWorkspaces;}
+
 	private:
 		template<typename TPanel>
 		Count<TPanel> AddWorkspace(const EditorWorkspaceManagerData& panelData)

@@ -16,9 +16,15 @@ namespace Proof
 		//Entity GetSelectedEntity() { return m_SelectedEntity; };
 		//void SetSelectedEntity(Entity entity){m_SelectedEntity = entity;};
 		virtual void SetWorldContext(const Count<class World>& world) { m_ActiveWorld = world; }
+		bool IsFocused() { return m_IsFocused; }
+		bool IsHovered() { return m_IsHovered; }
+
+		bool IsHoveredOrFocused() { return IsFocused() || IsHovered(); }
 	private:
 		bool m_IsWorld = true;
 		UUID m_PrefabID = 0;
+		bool m_IsHovered = false;
+		bool m_IsFocused = false;
 		bool m_WindowHoveredorFocus = false;
 		bool CreateEntityMenu(Entity owner = {});
 		Count<class World> m_ActiveWorld = nullptr;

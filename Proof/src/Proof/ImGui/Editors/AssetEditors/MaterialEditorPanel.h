@@ -15,7 +15,8 @@ namespace Proof
 	private:
 		void RenderDetailSettings();
 		virtual void SetDefaultLayout();
-
+		virtual bool IsSubWindowsHovered();
+		virtual bool IsSubWindowsFocused();
 	private:
 		bool m_NeedsSaving = true;
 		bool m_IsDetailsPanelOpen = true;
@@ -34,6 +35,8 @@ namespace Proof
 	private:
 		void RenderDetailSettings();
 		virtual void SetDefaultLayout();
+		virtual bool IsSubWindowsHovered();
+		virtual bool IsSubWindowsFocused();
 	private:
 		Count<class PhysicsMaterial> m_Material;
 		bool m_NeedsSaving = true;

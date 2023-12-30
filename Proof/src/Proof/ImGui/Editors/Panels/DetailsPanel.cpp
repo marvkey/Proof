@@ -16,6 +16,8 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		UI::ScopedID customID(GetCustomPushID().Get());
 		ImGui::Begin("Details", &isOpen);
+		m_IsFocused = ImGui::IsWindowFocused();
+		m_IsHovered = ImGui::IsWindowHovered();
 		m_ImGuiWindow = ImGui::GetCurrentWindow();
 		if (m_RenderDetails)
 			m_RenderDetails();

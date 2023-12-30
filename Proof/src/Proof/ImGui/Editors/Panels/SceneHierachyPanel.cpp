@@ -187,6 +187,9 @@ namespace Proof
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		if (ImGui::Begin(dsiplayName, &isOpen));
 		{
+
+			m_IsFocused = ImGui::IsWindowFocused();
+			m_IsHovered = ImGui::IsWindowHovered();
 			/*
 			auto &a =m_ActiveWorld->m_Registry.view<>();
 			for (auto& g : a) {
@@ -377,23 +380,53 @@ namespace Proof
 
 				ImGui::EndMenu();
 			}
-			if (ImGui::MenuItem("Delete")) 
+			if (!m_IsWorld)
 			{
-				m_ActiveWorld->DeleteEntity(entity, true);
+				Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(m_PrefabID);
+				if (prefab->GetBaseEntity() != entity)
+				{
+					if (ImGui::MenuItem("Delete"))
+					{
+						m_ActiveWorld->DeleteEntity(entity, true);
 
-				if (m_IsWorld)
-				{
-					SelectionManager::DeselectAll();
+						if (m_IsWorld)
+						{
+							SelectionManager::DeselectAll();
+						}
+						else
+						{
+							AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
+						}
+						if (opened) {
+							ImGui::EndPopup();
+							ImGui::TreePop();
+							ImGui::PopID();
+							return;
+						}
+					}
 				}
-				else
+			}
+			else
+			{
+
+				if (ImGui::MenuItem("Delete"))
 				{
-					AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
-				}
-				if (opened) {
-					ImGui::EndPopup();
-					ImGui::TreePop();
-					ImGui::PopID();
-					return;
+					m_ActiveWorld->DeleteEntity(entity, true);
+
+					if (m_IsWorld)
+					{
+						SelectionManager::DeselectAll();
+					}
+					else
+					{
+						AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
+					}
+					if (opened) {
+						ImGui::EndPopup();
+						ImGui::TreePop();
+						ImGui::PopID();
+						return;
+					}
 				}
 			}
 

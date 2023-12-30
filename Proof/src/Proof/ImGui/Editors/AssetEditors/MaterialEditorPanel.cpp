@@ -299,7 +299,20 @@ namespace Proof
 			ImGui::SetWindowDock(m_DetailsPanel->GetImGuiWindow(), dockspace_id, 0);
 		}
 	}
+	bool MaterialEditorPanel::IsSubWindowsHovered()
+	{
+		if (m_DetailsPanel->IsHovered())
+			return true;
 
+		return false;
+	}
+	bool MaterialEditorPanel::IsSubWindowsFocused()
+	{
+		if (m_DetailsPanel->IsHovered())
+			return true;
+
+		return false;
+	}
 	PhysicsMaterialEditorPanel::PhysicsMaterialEditorPanel()
 		:
 		AssetEditor("PhysicsMaterialEditorPanel")
@@ -376,5 +389,19 @@ namespace Proof
 			ImGui::SetWindowDock(m_DetailsPanel->GetImGuiWindow(), dockspace_id, 0);
 		}
 	}
-	
+	bool PhysicsMaterialEditorPanel::IsSubWindowsHovered()
+	{
+		if (m_DetailsPanel->IsHovered())
+			return true;
+
+		return false;
+	}
+	bool PhysicsMaterialEditorPanel::IsSubWindowsFocused()
+	{
+
+		if (m_DetailsPanel->IsHovered())
+			return true;
+
+		return false;
+	}
 }

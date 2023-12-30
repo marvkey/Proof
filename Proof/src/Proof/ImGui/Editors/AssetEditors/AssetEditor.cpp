@@ -33,12 +33,13 @@ namespace Proof
 
 	void AssetEditor::OnEvent(Event& e)
 	{
-		if (!IsFocused())
+		if (!IsHoveredOrFocused())
 			return;
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyClickedEvent>([&](auto& e) 
 		{
+				PF_CORE_ASSERT(false);
 			bool control = Input::IsKeyPressed(KeyBoardKey::LeftControl) || Input::IsKeyPressed(KeyBoardKey::RightControl);
 			
 			switch (e.GetKey())
@@ -153,8 +154,8 @@ namespace Proof
 				}
 			}
 			m_CurrentSize = ImGui::GetWindowSize();
-			m_IsFocused = ImGui::IsWindowFocused();
-			m_IsHovered = ImGui::IsWindowHovered();
+			m_IsFocused = ImGui::IsWindowFocused(ImGuiHoveredFlags_RootAndChildWindows);
+			m_IsHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 			OnWindowStylePop();
 			MenuBar();
 			m_ImGuiWindow = ImGui::GetCurrentWindow();

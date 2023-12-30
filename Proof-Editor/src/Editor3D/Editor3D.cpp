@@ -478,19 +478,16 @@ namespace Proof
 				}
 			}
 		}
+	
+		AssetEditorPanel::OnEvent(e);
 
-
-
-		
+		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
+			InputManager::OnEvent(e);
 
 		m_EditorCamera.OnEvent(e);
 
 		s_EditorData->PanelManager->OnEvent(e);
 		s_EditorData->EditorWorkspaceManager->OnEvent(e);
-		AssetEditorPanel::OnEvent(e);
-
-		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
-			InputManager::OnEvent(e);
 
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 		dispatcher.Dispatch<MouseButtonClickedEvent>(PF_BIND_FN(Editore3D::OnMouseButtonClicked));

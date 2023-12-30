@@ -179,8 +179,8 @@ namespace Proof
 		}
 	public:
 		// preProcess
+		WorldRendererDebugOptions DebugOptions;
 		PreProcessSettings PreProcessSettings;
-		WorldRendererOptions& GeneralOptions;
 		ShadowSetting& ShadowSetting;
 		//postprocess
 		PostProcessSettings PostProcessSettings;

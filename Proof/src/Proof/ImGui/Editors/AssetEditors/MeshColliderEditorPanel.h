@@ -29,6 +29,8 @@ namespace Proof
 		void RenderCookingOutput();
 
 		virtual void SetDefaultLayout();
+		virtual bool IsSubWindowsHovered();
+		virtual bool IsSubWindowsFocused();
 	private:
 		Count<class MeshCollider> m_MeshCollider;
 		Count<class World> m_World;

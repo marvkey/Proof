@@ -17,6 +17,8 @@ namespace Proof
 		virtual void OnWindowStylePush();
 		virtual void OnWindowStylePop();
 		virtual void SetDefaultLayout();
+		virtual bool IsSubWindowsHovered();
+		virtual bool IsSubWindowsFocused();
 	private:
 		bool m_NeedsSaving = true;
 		Count<class Prefab> m_Prefab;

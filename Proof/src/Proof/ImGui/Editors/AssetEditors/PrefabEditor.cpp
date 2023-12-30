@@ -3,6 +3,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Scene/Prefab.h"
 #include "Proof/ImGui/Editors/Panels/SceneHierachyPanel.h"
+#include "Proof/ImGui/UI.h"
 #include <imgui_internal.h>
 namespace Proof
 {
@@ -18,16 +19,19 @@ namespace Proof
 
 		AssetEditor::OnUpdate(ts);
 		m_WorkSpaceManager->OnUpdate(ts);
+		m_Prefab->ReCheckHierachy();
+		m_Prefab->GetWorld()->OnUpdateEditor(ts);
 	}
 	void PrefabEditorPanel::OnImGuiRender()
 	{
 		if (!m_Prefab)
 			return;
-
+		
+		UI::PushModified(m_NeedsSaving);
 		static bool hierachyOpen = true;
 		m_WorldHierarchyPanel->OnImGuiRender(m_WorldHierarchyPanelName.c_str(), hierachyOpen);
 		m_WorkSpaceManager->OnImGuiRender();
-
+		UI::PopModified();
 	}
 	void PrefabEditorPanel::OnEvent(Event& e)
 	{
@@ -56,6 +60,33 @@ namespace Proof
 		ImGui::DockBuilderDockWindow(m_ViewportPanelName.c_str(), dock_id_down);
 
 		ImGui::DockBuilderFinish(dockspace_id);
+	}
+	bool PrefabEditorPanel::IsSubWindowsHovered()
+	{
+		for (auto workspaceData : m_WorkSpaceManager->GetWorkspaceData())
+		{
+			if (workspaceData.second.EditorWorkspace->IsHovered())
+				return true;
+		}
+
+		if (m_WorldHierarchyPanel->IsHovered())
+			return true;
+
+		return false;
+	}
+	bool PrefabEditorPanel::IsSubWindowsFocused()
+	{
+
+		for (auto workspaceData : m_WorkSpaceManager->GetWorkspaceData())
+		{
+			if (workspaceData.second.EditorWorkspace->IsFocused())
+				return true;
+		}
+
+		if (m_WorldHierarchyPanel->IsFocused())
+			return true;
+
+		return false;
 	}
 	void PrefabEditorPanel::SetAsset(const Count<class Asset>& asset)
 	{

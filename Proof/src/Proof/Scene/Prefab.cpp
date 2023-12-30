@@ -53,57 +53,29 @@ namespace Proof {
 		m_BaseEntity = m_World->CreateEntity();
 
 		srcEntity.GetCurrentWorld()->PrefabCopyEntity(this, srcEntity, m_BaseEntity);
-		#if 0
-		if (!srcEntity)return;	
-		//m_Registry.clear();
-		std::unordered_map<UUID, uint64_t> enttMap;
+	}
+	void Prefab::ReCheckHierachy()
+	{
+		if (!m_World->HasEntity(m_BaseEntity.GetUUID()))
 		{
-			UUID newID = UUID();
+			for (auto& [entityID, entity] : m_World->GetEntities())
+				m_World->DeleteEntity(entity);
 
-			m_Registry.entities.emplace_back(newID);
-			uint64_t copyID = srcEntity.GetEntityID();
-
-			enttMap[copyID] = newID;
-			CopyComponent(AllComponents{}, m_Registry, srcEntity, enttMap);
-			m_BaseEntityID = newID;
-			// for easier user interface reasons
-			m_Registry.get<TransformComponent>(newID).Location = { 0,0,0 };
+			m_World->DeleteEntitiesfromQeue();
+			m_BaseEntity = m_World->CreateEntity("Base Prefab");
 		}
-		std::function<void(UUID)> createEntity = [&](UUID srcID)
+		if (m_World->GetEntities().size() == 0)
 		{
-			World* entityWorld = srcEntity.GetCurrentWorld();
-			Entity srcChildEntity = srcEntity.GetCurrentWorld()->GetEntity(srcID);
-
-			if (srcChildEntity.HasOwner())
+			m_BaseEntity = m_World->CreateEntity("Base Prefab");
+		}
+		for (auto& [entityID,entity] : m_World->GetEntities())
+		{
+			if (entity != m_BaseEntity)
 			{
-				Entity owner = srcChildEntity.GetOwner();
-
-				if (!enttMap.contains(owner.GetEntityID()))
-				{
-					createEntity(owner.GetEntityID());
-				}
-				UUID newChildID = UUID();
-				m_Registry.entities.emplace_back(newChildID);
-				enttMap.insert({ srcID,newChildID });
-
-				CopyComponent(AllComponents{}, m_Registry, srcChildEntity, enttMap);
-
-				UUID ownerPrefabId = enttMap[owner.GetEntityID()];
-
-				m_Registry.get<ChildComponent>(ownerPrefabId).RemoveChild(srcID);
-				m_Registry.get<ChildComponent>(ownerPrefabId).AddChild(newChildID);
-
-				m_Registry.get<ChildComponent>(newChildID).SetOwner(ownerPrefabId);
+				if (!entity.IsDescendantOf(m_BaseEntity))
+					m_World->ParentEntity(entity, m_BaseEntity);
 			}
-		};
+		}
 
-		if (!srcEntity.HasChildren())
-			return;
-
-		srcEntity.EachChild([&](Entity childEntity) {
-			if (!enttMap.contains(childEntity.GetEntityID()))
-				createEntity(childEntity.GetEntityID());
-		});
-		#endif
 	}
 }

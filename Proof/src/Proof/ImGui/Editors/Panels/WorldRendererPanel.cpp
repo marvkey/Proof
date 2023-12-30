@@ -26,19 +26,6 @@ namespace Proof
 			ImGui::Text("%f m/s", FrameTime::GetFrameMS());
 			ImGui::Text("%f FPS", FrameTime::GetFrameFPS());
 
-			if (UI::AttributeTreeNode("Renderer Settings"))
-			{
-				UI::BeginPropertyGrid();
-				WorldRendererOptions& options = m_WorldRenderer->GeneralOptions;
-				UI::EnumCombo("Collider View", options.ShowPhysicsColliders);
-				UI::AttributeBool("View LightGrid", options.ShowLightGrid);
-
-				UI::EndPropertyGrid();
-
-				UI::EndTreeNode();
-			}
-
-
 			if (UI::AttributeTreeNode("Shaders", false))
 			{
 				if (UI::AttributeButton("", "ReloadAll"))
@@ -95,8 +82,8 @@ namespace Proof
 						UI::AttributeDrag("Cascade 2", shadowSetting.CascadeSplits[2], 0.025);
 						UI::AttributeDrag("Cascade 3", shadowSetting.CascadeSplits[3], 0.025);
 					}
-					UI::AttributeBool("DebugPass", shadowSetting.RenderDebugPass);
-					if (shadowSetting.RenderDebugPass)
+					UI::AttributeBool("DebugPass", m_WorldRenderer->ShadowSetting.RenderDebugPass);
+					if (m_WorldRenderer->ShadowSetting.RenderDebugPass)
 					{
 
 						UI::Image(m_WorldRenderer->GetShadowPassDebugImage(),

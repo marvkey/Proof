@@ -16,6 +16,7 @@ namespace Proof{
 
 		Count<class World> GetWorld() { return m_World;}
 		Entity GetBaseEntity() { return m_BaseEntity; }
+		void ReCheckHierachy();
 	private:
 		Entity m_BaseEntity;
 		Count<class World> m_World;

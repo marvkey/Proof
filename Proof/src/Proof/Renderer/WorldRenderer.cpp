@@ -148,7 +148,7 @@ namespace Proof
 	WorldRenderer::WorldRenderer()
 		:
 		m_Timers(m_Stats.Timers), m_LightScene(m_Stats.LightSene),
-		GeneralOptions(PreProcessSettings.GeneralOptions), ShadowSetting(PreProcessSettings.ShadowSettings),
+		DebugOptions(), ShadowSetting(PreProcessSettings.ShadowSettings),
 		AmbientOcclusionSettings(PostProcessSettings.AmbientOcclusionSettings), BloomSettings(PostProcessSettings.BloomSettings), DOFSettings(PostProcessSettings.DOFSettings)
 	{
 		Init();
@@ -944,13 +944,13 @@ namespace Proof
 		//scene data
 		{
 			m_UBSceneData.CameraPosition =m_UBCameraData.Position;
-			m_UBSceneData.bShowLightGrid = GeneralOptions.ShowLightGrid;
+			m_UBSceneData.bShowLightGrid = DebugOptions.LightDebugOptions.ShowLightGrid;
 			m_UBSceneDataBuffer->SetData(frameIndex, Buffer(&m_UBSceneData, sizeof(m_UBSceneData)));
 		}
 		// set up shadow pass
 		{
 			// NOTE not everyting is set here because we are not sure yet about if they are ture
-			m_UBRenderData.bShowCascades = ShadowSetting.ShowCascades;
+			m_UBRenderData.bShowCascades = DebugOptions.ShadowDebugOptions.ShowCascades;
 			m_UBRenderData.bSoftShadows = ShadowSetting.SoftShadows;
 			m_UBRenderData.MaxShadowDistance = ShadowSetting.MaxShadowDistance;
 			m_UBRenderData.ShadowFade = ShadowSetting.ShadowFade;
@@ -1509,19 +1509,19 @@ namespace Proof
 			Renderer::EndRenderPass(m_CompositePass);
 		}
 
-		if (GeneralOptions.ShowPhysicsColliders != WorldRendererOptions::PhysicsColliderView::None)
+		if (DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders != WorldRendererDebugOptions::PhysicsColliderView::None)
 		{
 			PF_PROFILE_FUNC("CompositePass::PhysicsDebugMeshes");
 			Timer physicsDebugMesh;
 
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").X = GeneralOptions.PhysicsColliderColor.x;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Y = GeneralOptions.PhysicsColliderColor.y;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Z = GeneralOptions.PhysicsColliderColor.z;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").W = GeneralOptions.PhysicsColliderColor.w;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").X = DebugOptions.PhysicsDebugOptions.PhysicsColliderColor.x;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Y = DebugOptions.PhysicsDebugOptions.PhysicsColliderColor.y;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Z = DebugOptions.PhysicsDebugOptions.PhysicsColliderColor.z;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").W = DebugOptions.PhysicsDebugOptions.PhysicsColliderColor.w;
 
 			auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
 
-			auto wireFramePass = GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::Normal ? m_GeometryWireFramePass : m_GeometryWireFrameOnTopPass;
+			auto wireFramePass = DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders == WorldRendererDebugOptions::PhysicsColliderView::Normal ? m_GeometryWireFramePass : m_GeometryWireFrameOnTopPass;
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, wireFramePass);
 			for (auto& [meshKey, dc] : m_ColliderDrawList)
 			{

@@ -348,7 +348,7 @@ namespace Proof {
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)
 	{
-		if (renderer->GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::None)
+		if (renderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders == WorldRendererDebugOptions::PhysicsColliderView::None)
 			return;
 
 #if 0
@@ -414,12 +414,12 @@ namespace Proof {
 	}
 	void World::RenderPhysicsDebug2D(Count<WorldRenderer> renderer, bool runtime)
 	{
-		if (renderer->GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::None)
+		if (renderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders == WorldRendererDebugOptions::PhysicsColliderView::None)
 			return;
 
 		Count<Renderer2D> renderer2D = renderer->GetRenderer2D();
 		Renderer2DContextSettings settings;
-		if (renderer->GeneralOptions.ShowPhysicsColliders == WorldRendererOptions::PhysicsColliderView::OnTop)
+		if (renderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders == WorldRendererDebugOptions::PhysicsColliderView::OnTop)
 			settings.RenderOnTop = true;
 
 		renderer2D->BeginContext(m_Camera.GetProjectionMatrix(), m_Camera.GetViewMatrix(), GlmVecToProof(m_CameraPositon), settings);
@@ -437,7 +437,7 @@ namespace Proof {
 				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
 				renderer2D->DrawDebugCube(collider.Center + worldTransformComp.Location, worldTransformComp.GetRotationEuler(),
 					(collider.Size/2.f) * worldTransformComp.Scale
-					, renderer->GeneralOptions.PhysicsColliderColor);
+					, renderer->DebugOptions.PhysicsDebugOptions.PhysicsColliderColor);
 			}
 		}
 		// sphere colliders
@@ -454,7 +454,7 @@ namespace Proof {
 				float radius = collider.Radius * glm::max(worldTransformComp.Scale.x, glm::max(worldTransformComp.Scale.y, worldTransformComp.Scale.z));
 				glm::vec3 rotation = worldTransformComp.GetRotationEuler();
 				glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);  // Adjust color as needed
-				renderer2D->DrawDebugSphere(location + center, rotation, radius, renderer->GeneralOptions.PhysicsColliderColor);
+				renderer2D->DrawDebugSphere(location + center, rotation, radius, renderer->DebugOptions.PhysicsDebugOptions.PhysicsColliderColor);
 			}
 		}
 		//capsule COlliders
@@ -478,7 +478,7 @@ namespace Proof {
 				auto capsuleData = GetCapsuleData(collider.Direction, worldTransformComp);
 				float radius = capsuleData.radiusScale * collider.Radius;
 				float height = capsuleData.scaleDirection * collider.Height;
-				renderer2D->DrawCapsule(location + center, glm::eulerAngles(rotation), height , radius, renderer->GeneralOptions.PhysicsColliderColor);
+				renderer2D->DrawCapsule(location + center, glm::eulerAngles(rotation), height , radius, renderer->DebugOptions.PhysicsDebugOptions.PhysicsColliderColor);
 
 			}
 
@@ -512,7 +512,7 @@ namespace Proof {
 						collider.Center + worldTransformComp.Location,
 						glm::eulerAngles( rotation * worldTransformComp.GetRotation()),  // Apply the new rotation
 						collider.Size * worldTransformComp.Scale,
-						renderer->GeneralOptions.PhysicsColliderColor
+						renderer->DebugOptions.PhysicsDebugOptions.PhysicsColliderColor
 					);
 				}
 				else if (collider.ColliderType == CharacterControllerType::Capsule)
@@ -532,7 +532,8 @@ namespace Proof {
 						glm::eulerAngles(rotation* worldTransformComp.GetRotation()), 
 						height+ collider.SkinOffset, radius + collider.SkinOffset, glm::vec4(1, 0, 0, 1));
 
-					renderer2D->DrawCapsule(collider.Center + worldTransformComp.Location, glm::eulerAngles(rotation * worldTransformComp.GetRotation()), height, radius, renderer->GeneralOptions.PhysicsColliderColor);
+					renderer2D->DrawCapsule(collider.Center + worldTransformComp.Location, glm::eulerAngles(rotation * worldTransformComp.GetRotation()), height, radius, 
+						renderer->DebugOptions.PhysicsDebugOptions.PhysicsColliderColor);
 				}
 			}
 		}

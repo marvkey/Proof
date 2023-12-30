@@ -55,6 +55,9 @@ namespace Proof {
 		/* for fonts got to cherno video from 8 mINute on making editor look GOOd*/
 		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Bold.ttf", 18.0f);
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Regular.ttf", 17.0f);
+
+		io.WantCaptureKeyboard = true;
+		io.WantCaptureMouse = true;
 		SetDarkTheme();
 
 		Count<VulkanImguiLayer> instance = this;
@@ -237,10 +240,16 @@ namespace Proof {
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		// Update and Render additional Platform Windows
+		Application& app = *Application::Get();
+		io.DisplaySize = ImVec2(app.GetWindow()->GetWidth(), app.GetWindow()->GetHeight());
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+
 		}
 		
 		std::vector<uint64_t> removeIndexes;
