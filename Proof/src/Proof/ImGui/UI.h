@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <glm/glm.hpp>
 #include <unordered_set>
+#include "UITypes.h"
 #define EG_HOVER_THRESHOLD 0.5f
 namespace Proof::HeaderFileOnly {
 	struct TextureUI {
@@ -27,6 +28,9 @@ namespace Proof::UI
 	bool IsItemDisabled();
 	void PushID();
 	void PopID();
+
+	void PushModified(bool& modified);
+	void PopModified();
 	inline void Image(Count<class Image> image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0))
 	{
 		ImGui::Image(HeaderFileOnly::TextureUI::GetTexture(image), size, uv0, uv1, tint_col, border_col);
@@ -73,6 +77,7 @@ namespace Proof::UI
 		return changed;
 	}
 
+	bool IsWindowFocused(const char* windowName, const bool checkRootWindow = true);
 
 	bool AttributeInputText(const std::string& label, std::string& value, ImGuiInputTextFlags text_flags = 0, const std::string& helpMessage = "");
 	bool AttributeInputRawText(const std::string& label, char* buffer, uint32_t bufferSize = 256, ImGuiInputTextFlags text_flags = 0, const std::string& helpMessage = "");
@@ -165,4 +170,55 @@ namespace Proof::UI
 	}
 	//bool AttributeTreeNodeWithDisabled(const std::string& label, bool& disabled, bool OpenDefault);
 	void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenInactive = false, ImColor colourWhenActive = (236, 158, 36, 255));
+	void ShowRawMessageBox(const std::string& title, UIMessageBoxData& data);
+
+	template<UIMessageBoxBit flags = UIMessageBoxBit::OkButton, typename... TArgs>
+	static void ShowSimpleMessageBox(const std::string& title, const std::string& content, TArgs&&... contentArgs)
+	{
+		auto messageBoxData = UIMessageBoxData();
+		messageBoxData.Title = fmt::format("{0}##MessageBox", title);
+		if constexpr (sizeof...(contentArgs) > 0)
+			messageBoxData.Body = fmt::format(content, std::forward<TArgs>(contentArgs)...);
+		else
+			messageBoxData.Body = content;
+		messageBoxData.Flags = flags;
+		messageBoxData.Width = 600;
+		messageBoxData.Height = 0;
+		messageBoxData.ShouldOpen = true;
+		ShowRawMessageBox(title, messageBoxData);
+	}
+	static void ShowMessageBox(const std::string& title, const std::function<void()>& renderFunction, uint32_t width = 600, uint32_t height = 0)
+	{
+		auto messageBoxData = UIMessageBoxData();
+
+		messageBoxData.Title = fmt::format("{0}##MessageBox", title);
+		messageBoxData.UserRenderFunction = renderFunction;
+		messageBoxData.Flags = UIMessageBoxBit::UserFunc;
+		messageBoxData.Width = width;
+		messageBoxData.Height = height;
+		messageBoxData.ShouldOpen = true;
+		ShowRawMessageBox(title, messageBoxData);
+	}
+
+	static bool IsInputEnabled()
+	{
+		const auto& io = ImGui::GetIO();
+		return (io.ConfigFlags & ImGuiConfigFlags_NoMouse) == 0 && (io.ConfigFlags & ImGuiConfigFlags_NavNoCaptureKeyboard) == 0;
+	}
+
+	static void SetInputEnabled(bool enabled)
+	{
+		auto& io = ImGui::GetIO();
+
+		if (enabled)
+		{
+			io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+			//io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
+		}
+		else
+		{
+			io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+			//io.ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;
+		}
+	}
 }

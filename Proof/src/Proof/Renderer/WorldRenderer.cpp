@@ -11,7 +11,7 @@
 #include <variant>
 #include "MeshWorkShop.h"
 #include "Renderer.h"
-#include "Platform/Vulkan/VulkanSwapChain.h"
+#include "Proof/Platform/Vulkan/VulkanSwapChain.h"
 #include "GraphicsPipeLine.h"
 #include "Proof/Scene/Mesh.h"
 #include "Shader.h"
@@ -25,13 +25,13 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Math/Random.h"
 #include"Vertex.h"
-#include "Platform/Vulkan/VulkanFrameBuffer.h"
-#include "Platform/Vulkan/VulkanImage.h"
+#include "Proof/Platform/Vulkan/VulkanFrameBuffer.h"
+#include "Proof/Platform/Vulkan/VulkanImage.h"
 #include "Proof/Math/MathConvert.h"	
-#include "Platform/Vulkan/VulkanCommandBuffer.h"
-#include "Platform/Vulkan/VulkanTexutre.h"
+#include "Proof/Platform/Vulkan/VulkanCommandBuffer.h"
+#include "Proof/Platform/Vulkan/VulkanTexutre.h"
 #include "Proof/Scene/Material.h"
-#include "Platform/Vulkan/VulkanComputePass.h"
+#include "Proof/Platform/Vulkan/VulkanComputePass.h"
 #include "Proof/Asset/AssetManager.h"
 
 #include "VertexArray.h"
@@ -186,7 +186,7 @@ namespace Proof
 		m_Renderer2D = Count<Renderer2D>::Create();
 		m_BRDFLUT = Renderer::GetBRDFLut();
 		m_Cube = MeshWorkShop::GenerateCube();
-		m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
+		m_Environment = Count<Environment>::Create(EnvironmentTextureData());
 
 		switch (ShadowSetting.ShadowResolution)
 		{
@@ -400,8 +400,8 @@ namespace Proof
 			m_GeometryPass->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
 			m_GeometryPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
 			m_GeometryPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
-			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
-			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
+			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
+			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
 			m_GeometryPass->SetInput("u_BRDFLUT", m_BRDFLUT);
 			m_GeometryPass->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
 			m_GeometryPass->SetInput("u_ShadowMap", m_ShadowPassImage);
@@ -967,7 +967,7 @@ namespace Proof
 					UBSkyLight skyLight;
 					Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };
 					m_UBSKyBoxBuffer->SetData(frameIndex, buffer);
-					m_Environment = Count<Environment>::Create(Renderer::GetBlackTextureCube(), Renderer::GetBlackTextureCube());
+					m_Environment = Count<Environment>::Create(EnvironmentTextureData());
 					m_UBLightData.SkyLightCount = 1;
 				}
 			}
@@ -1418,7 +1418,7 @@ namespace Proof
 			PF_PROFILE_FUNC("GeometryPass::SkyBoxPass");
 
 			Timer timer;
-			m_SkyBoxPass->SetInput("u_EnvironmentMap", m_Environment->PrefilterMap);
+			m_SkyBoxPass->SetInput("u_EnvironmentMap", m_Environment->GetPrefilterMap());
 
 			Renderer::BeginRenderPass(m_CommandBuffer, m_SkyBoxPass);
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_SkyBoxPass);
@@ -1431,8 +1431,8 @@ namespace Proof
 			PF_PROFILE_FUNC("GeometryPass::MeshPass");
 
 			Timer timer;
-			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->IrradianceMap);
-			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->PrefilterMap);
+			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
+			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_GeometryPass);
 
 			{
@@ -2004,6 +2004,9 @@ namespace Proof
 			PF_ENGINE_WARN("{} Submiting mulitple sky light only the last one will be used, submit 1 to save performance", m_ActiveWorld->GetName());
 
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
+
+		if (environment->GetPrefilterMap() == nullptr || environment->GetIrradianceMap() == nullptr)
+			return;
 
 
 		Buffer buffer{ (void*)&skyLight, sizeof(UBSkyLight) };

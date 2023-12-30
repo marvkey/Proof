@@ -124,30 +124,42 @@ namespace Proof {
 					auto entityID = skylights.front();
 					Entity entity(entityID, this);
 					auto& skyLightComponent = entity.GetComponent<SkyLightComponent>();
+
+					Count<Environment> environment = skyLightComponent.Environment;
+
 					UBSkyLight skyLightInfo;
 					skyLightInfo.TintColor = skyLightComponent.ColorTint;
 					skyLightInfo.Rotation = skyLightComponent.MapRotation;
 					skyLightInfo.Intensity = skyLightComponent.Intensity;
 					skyLightInfo.Lod = skyLightComponent.SkyBoxLoad;
 
-					if (AssetManager::HasAsset(skyLightComponent.Image) && skyLightComponent.Environment == nullptr)
-						skyLightComponent.LoadMap(skyLightComponent.Image);
+					if (environment->IsDynamic())
+						skyLightInfo.Lod = 0;
 
-					if (skyLightComponent.DynamicSky)
+					if (environment->GetEnvironmentState() == EnvironmentState::HosekWilkie)
 					{
-						skyLightComponent.RemoveImage();
-						auto environment = Renderer::CreatePreethamSky(skyLightComponent.Turbidity, skyLightComponent.Azimuth, skyLightComponent.Inclination);
-						skyLightComponent.Environment = Count<Environment>::Create(environment, environment);
+						auto data = environment->GetHosekWilkieDataSkyData();
+
+						data.SunDirection = normalize(GetWorldSpaceRotation(entity));
+
+						environment->Update(data);
 					}
+					else if (environment->GetEnvironmentState() == EnvironmentState::PreethamSky)
+					{
+						auto data = environment->GetPreethamSkyData();
 
-					if (skyLightComponent.Image == 0 && skyLightComponent.Environment != nullptr && skyLightComponent.DynamicSky == false)
-						skyLightComponent.Environment = nullptr;
+						data.SunDirection = normalize(GetWorldSpaceRotation(entity));
 
+						environment->Update(data);
+					}
+					
 					if (skyLightComponent.Environment != nullptr)
 					{
 						worldRenderer->SubmitSkyLight(skyLightInfo, skyLightComponent.Environment);
 					}
+					Renderer::UpdateAllEnvironment();
 				}
+
 			}
 			//point light
 			{
@@ -220,43 +232,48 @@ namespace Proof {
 		}
 		// render meshes
 		{
-			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-			for (auto entity : group)
 			{
-				auto [transformComponent, staticMeshComponent] = group.get<TransformComponent, MeshComponent>(entity);
-				if (!staticMeshComponent.Visible)
-					continue;
-
-				auto mesh = staticMeshComponent.GetMesh();
-				if (mesh)
+				auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+				for (auto entity : group)
 				{
-					Entity e = Entity(entity, this);
-					glm::mat4 transform = GetWorldSpaceTransform(e);
+					auto [transformComponent, staticMeshComponent] = group.get<TransformComponent, MeshComponent>(entity);
+					if (!staticMeshComponent.Visible)
+						continue;
 
-					//if (SelectionManager::IsEntityOrAncestorSelected(e))
-					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
-					//else
-					worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
+					auto mesh = staticMeshComponent.GetMesh();
+					if (mesh)
+					{
+						Entity e = Entity(entity, this);
+						glm::mat4 transform = GetWorldSpaceTransform(e);
+
+						//if (SelectionManager::IsEntityOrAncestorSelected(e))
+						//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
+						//else
+						worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
+					}
 				}
 			}
-
-			auto dynamicGroup = m_Registry.group<DynamicMeshComponent>(entt::get<TransformComponent>);
-			for (auto entity : dynamicGroup)
 			{
-				auto [transformComponent, dynamicMeshComponent] = dynamicGroup.get<TransformComponent, DynamicMeshComponent>(entity);
-				if (!dynamicMeshComponent.Visible)
-					continue;
 
-				Count<DynamicMesh> mesh = dynamicMeshComponent.GetMesh();
-				if (mesh)
+				auto view = m_Registry.view<DynamicMeshComponent>();
+				for (auto entity : view)
 				{
-					Entity e = Entity(entity, this);
-					glm::mat4 transform = GetWorldSpaceTransform(e);
+					Entity e = { entity, this };
+					auto& dynamicMeshComponent = e.GetComponent<DynamicMeshComponent>();
+					if (!dynamicMeshComponent.Visible)
+						continue;
 
-					//if (SelectionManager::IsEntityOrAncestorSelected(e))
-					//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
-					//else
-					worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform,dynamicMeshComponent.CastShadow);
+					Count<DynamicMesh> mesh = dynamicMeshComponent.GetMesh();
+					if (mesh)
+					{
+						Entity e = Entity(entity, this);
+						glm::mat4 transform = GetWorldSpaceTransform(e);
+					
+						//if (SelectionManager::IsEntityOrAncestorSelected(e))
+						//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
+						//else
+						worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform, dynamicMeshComponent.CastShadow);
+					}
 				}
 			}
 		}
@@ -305,6 +322,26 @@ namespace Proof {
 				else
 					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
 			}
+		}
+		{
+#if 0
+			auto view = m_Registry.view<TransformComponent, MeshComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& staticMeshComponent = e.GetComponent<MeshComponent>();
+				if (!staticMeshComponent.Visible)
+					continue;
+
+
+				auto mesh = staticMeshComponent.GetMesh();
+				if (mesh)
+				{
+
+					renderer2D->DrawAABB(mesh, GetWorldSpaceTransform(e), { 1,0,0,1 });
+				}
+			}
+#endif
 		}
 
 		renderer2D->EndContext();
@@ -558,7 +595,7 @@ namespace Proof {
 	void World::BuildDynamicMeshEntityHierarchy(Entity parent, Count<DynamicMesh> mesh, const MeshNode& node, bool generateColliders)
 	{
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
-		const auto& nodes = meshSource->GetNodes();
+   		const auto& nodes = meshSource->GetNodes();
 
 		// Skip empty root node
 		if (node.IsRoot() && node.Submeshes.size() == 0)

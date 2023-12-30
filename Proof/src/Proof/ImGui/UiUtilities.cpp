@@ -2,12 +2,16 @@
 #include "imgui_internal.h"
 #include "Proof/Renderer/Image.h"
 #include "Proof/Core/Application.h"
-#include "Platform/Vulkan/VulkanImguiLayer.h"
+#include "Proof/Platform/Vulkan/VulkanImguiLayer.h"
 #include "UIColors.h"
 #include "UiUtilities.h"
 
 namespace Proof::UI
 {
+	void HandleModified(bool value)
+	{
+		Application::Get()->GetImguiLayer()->UpdateCurrentModifiedType(value);
+	}
 	ImTextureID GetTextureID(Count<Image> texture)
 	{
 		Count<VulkanImguiLayer> layer = Application::Get()->GetImguiLayer().As< VulkanImguiLayer>();

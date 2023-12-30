@@ -17,9 +17,6 @@ Assets:
   - Asset: 1165648952014580025
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\755318871556304029.jpg
-  - Asset: 14268173759466256543
-    Type: Material
-    Path: Materials\Blue...Material.ProofAsset
   - Asset: 2001942831744342266
     Type: TextureSourceFile
     Path: HdrMaps\MegaSun4k.hdr
@@ -83,6 +80,9 @@ Assets:
   - Asset: 16683417263941019590
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\10388182081421875623.Texture.ProofAsset
+  - Asset: 13511578038632716699
+    Type: World
+    Path: Scenes\New World.ProofWorld
   - Asset: 3762551570911030480
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14170708867020035030.jpg
@@ -233,6 +233,9 @@ Assets:
   - Asset: 3928859883735084305
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7645212358685992005.Texture.ProofAsset
+  - Asset: 5183635011300566460
+    Type: DynamicMesh
+    Path: Mesh\DynamicSponza.DynamicMesh.ProofAsset
   - Asset: 1952111404058252245
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2374361008830720677.jpg
@@ -419,6 +422,12 @@ Assets:
   - Asset: 10543059324507882372
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8503262930880235456.jpg
+  - Asset: 10500649306643266467
+    Type: Material
+    Path: Materials\sgfsgsg.Material.ProofAsset
+  - Asset: 6165302481739050080
+    Type: Prefab
+    Path: Prefab\New Prefab (01).ProofAsset
   - Asset: 13661687636362452162
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8503262930880235456.Texture.ProofAsset
@@ -461,9 +470,6 @@ Assets:
   - Asset: 18141853162402936448
     Type: Mesh
     Path: Mesh\Sponza
-  - Asset: 6915908757921917454
-    Type: World
-    Path: Scenes\PhysicsTest.ProofWorld
   - Asset: 3650405502933676885
     Type: Material
     Path: Materials\RED.Material.ProofAsset
@@ -479,3 +485,30 @@ Assets:
   - Asset: 473827439279
     Type: Mesh
     Path: Mesh\BlenderCapsule.Mesh.ProofAsset
+  - Asset: 11340105975814252189
+    Type: Prefab
+    Path: Prefab\New Prefab.Prefab.ProofAsset
+  - Asset: 17754158434779396922
+    Type: Prefab
+    Path: Prefab\New Prefab.Prefab.ProofAsset
+  - Asset: 5638709666475119266
+    Type: Prefab
+    Path: Prefab\New Prefab (02).ProofAsset
+  - Asset: 10106029549440181290
+    Type: Material
+    Path: Materials\Orange.Material.ProofAsset
+  - Asset: 11867217133559738789
+    Type: Material
+    Path: Materials\knj;asdnad.Material.ProofAsset
+  - Asset: 14983098330679523653
+    Type: Material
+    Path: Materials\Red.Material.ProofAsset
+  - Asset: 9906847331754832331
+    Type: Material
+    Path: Materials\New Material.Material.ProofAsset
+  - Asset: 14433286973648011011
+    Type: Material
+    Path: Materials\New Material.Material.ProofAsset
+  - Asset: 3690041465818170459
+    Type: Prefab
+    Path: MeshCollider\New Prefab.Prefab.ProofAsset

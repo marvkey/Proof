@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Camera/EditorCamera.h"
+#include "Camera/Camera.h"
 #include "Proof/Asset/Asset.h"
 #include "Proof/Core/UUID.h"
 #include "entt/entt.hpp"	
@@ -57,7 +57,7 @@ namespace Proof {
 		bool HasWorldCamera();
 		class Entity GetWorldCameraEntity();
 
-		virtual void OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const EditorCamera& camera);
+		virtual void OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const class EditorCamera& camera);
 		
 		// using scripts
 		virtual void StartRuntime();

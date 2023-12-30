@@ -104,7 +104,7 @@ namespace Proof
 	#pragma region Mouse
 	static void Mouse_CaptureMouse(bool caputre) 
 	{
-		Mouse::CaptureMouse(caputre);
+		//Mouse::CaptureMouse(caputre);
 	}
 
 	static void Mouse_GetPosition(Vector2* pos) {

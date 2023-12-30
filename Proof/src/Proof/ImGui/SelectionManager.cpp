@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "SelectionManager.h"
 #include "Proof/Core/Application.h"
+#include "Proof/Utils/ContainerUtils.h"
 namespace Proof
 {
 	void SelectionManager::Select(SelectionContext contextID, UUID selectionID)
@@ -117,4 +118,64 @@ namespace Proof
 	{
 		return s_Contexts[contextID].size();
 	}
+
+	void AssetSelectionManager::Select(AssetSelectionContext context, AssetID assetID, UUID selectionID)
+	{
+		if(!Utils::Contains(s_Contexts[context][assetID],selectionID))
+			s_Contexts[context][assetID].push_back(selectionID);
+	}
+
+	bool AssetSelectionManager::IsSelected(AssetSelectionContext context, AssetID assetID, UUID selectionID)
+	{
+		return Utils::Contains(s_Contexts[context][assetID], selectionID);
+	}
+
+	void AssetSelectionManager::Deselect(AssetSelectionContext context, AssetID assetID, UUID selectionID)
+	{
+		Utils::Remove(s_Contexts[context][assetID], selectionID);
+	}
+
+	bool AssetSelectionManager::IsEntityOrAncestorSelected(AssetSelectionContext context, AssetID assetID, const Entity entity)
+	{
+		Entity e = entity;
+		while (e)
+		{
+			if (IsSelected(context, assetID,e.GetUUID()))
+			{
+				return true;
+			}
+			e = e.GetParent();
+		}
+		return false;
+	}
+
+	void AssetSelectionManager::DeselectAll(AssetSelectionContext context, AssetID assetID)
+	{
+		s_Contexts[context][assetID].clear();
+
+	}
+
+	void AssetSelectionManager::DeselectAll(AssetSelectionContext context)
+	{
+		for (auto& [assetId, data] : s_Contexts[context])
+			data.clear();
+	}
+
+	UUID AssetSelectionManager::GetSelection(AssetSelectionContext context, AssetID assetID, size_t index)
+	{
+		auto& contextSelections = s_Contexts[context][assetID];
+		PF_CORE_ASSERT(index >= 0 && index < contextSelections.size());
+		return contextSelections[index];
+	}
+
+	bool AssetSelectionManager::HasSelections(AssetSelectionContext contextID, AssetID assetID)
+	{
+		return !s_Contexts[contextID][assetID].empty();
+	}
+
+	size_t AssetSelectionManager::GetSelectionCount(AssetSelectionContext contextID, AssetID assetID)
+	{
+		return s_Contexts[contextID][assetID].size();
+	}
+
 }

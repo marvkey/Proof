@@ -15,6 +15,8 @@
 #include "Proof/Scripting/ScriptBuilder.h"
 #include "Proof/Physics/PhysicsDebugger.h"
 #include "Proof/Physics/PhysicsEngine.h"
+#include "Proof/Math/Ray.h"
+#include "Proof/Math/BasicCollision.h"
 
 #include "Proof/Scene/SceneSerializer.h"
 #include "Proof/Scene/Prefab.h"
@@ -26,21 +28,26 @@
 
 #include "Proof/Utils/PlatformUtils.h"
 #include "Proof/Utils/StringUtils.h"
+#include "Proof/Physics/MeshCollider.h"
+#include "Proof/Physics/PhysicsMeshCooker.h"
 
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UiUtilities.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
-#include "EditorResources.h"
-#include "Editors/Panels/PanelManager.h"
-#include "Editors/Panels/AssetManagerPanel.h"
-#include "Editors/Panels/InputPanel.h"
-#include "Editors/Panels/SceneHierachyPanel.h"
-#include "Editors/Panels/ContentBrowser/ContentBrowserPanel.h"
-#include "Editors/Panels/WorldRendererPanel.h"
-#include "Editors/Panels/PhysicsPanelStats.h"
-#include "Editors/Panels/ProjectSettingsPanel.h"
-#include "Editors/AssetEditors/AssetEditor.h"
+#include "Proof/ImGui/Editors/EditorResources.h"
+#include "Proof/ImGui/Editors/Panels/PanelManager.h"
+#include "Proof/ImGui/Editors/Panels/AssetManagerPanel.h"
+#include "Proof/ImGui/Editors/Panels/InputPanel.h"
+#include "Proof/ImGui/Editors/Panels/SceneHierachyPanel.h"
+#include "Proof/ImGui/Editors/Panels/ContentBrowser/ContentBrowserPanel.h"
+#include "Proof/ImGui/Editors/Panels/WorldRendererPanel.h"
+#include "Proof/ImGui/Editors/Panels/PhysicsPanelStats.h"
+#include "Proof/ImGui/Editors/Panels/ProjectSettingsPanel.h"
+#include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
+#include "Proof/ImGui/SelectionManager.h"
+#include "Proof/ImGui/Editors/EditorWorkspace/EditorWorkspace.h"
+#include "Proof/ImGui/Editors/EditorWorkspace/ViewPortEditorWorkspace.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -85,10 +92,35 @@ namespace Proof
 		//InputPanel InputPanel;
 
 		Special<PanelManager> PanelManager = CreateSpecial<class PanelManager>();
+		Special<EditorWorkspaceManager> EditorWorkspaceManager = CreateSpecial<class EditorWorkspaceManager>();
+
 		Count<Texture2D> PlayButtonTexture;
 		Count<Texture2D> PauseButtonTexture;
 		Count<Texture2D> SimulateButtonTexture;
 		Count<Texture2D> StopButtonTexture;
+
+		struct CreateNewMeshPopupData
+		{
+			Count<MeshSource> MeshToCreate;
+			std::string CreateMeshFilenameBuffer = "Mesh/";
+			std::string CreateSkeletonFilenameBuffer;
+			std::string CreateAnimationFilenameBuffer;
+			Entity TargetEntity;
+
+			CreateNewMeshPopupData()
+			{
+				MeshToCreate = nullptr;
+				TargetEntity = {};
+			}
+
+		} CreateNewMeshPopupData;
+
+		struct SaveAsNewWorldPopupData
+		{
+			Count<World> WorldToSaveAs;
+			bool SaveAssetManager = true;
+			std::string CreateWorldFile = "Scene/";
+		}CreateNewWorldPopupData;
 	};
 	enum class PopupState
 	{
@@ -162,8 +194,41 @@ namespace Proof
 	PopupState NewProjectState = PopupState::None;
 	std::filesystem::path NewProjectDir;
 	std::string NewProjectName;
+#if 0
+	struct SelectionData
+	{ 
+		Entity Entity;
+		//SubMesh* SubMesh = nullptr;
+		float Distance = 0.0f;
+	};
+	std::pair<float, float> GetMouseViewportSpace(glm::vec2 viewportBounds[2] )
+	{
+		auto [mx, my] = ImGui::GetMousePos();
+		mx -= viewportBounds[0].x;
+		my -= viewportBounds[0].y;
+		auto viewportWidth = viewportBounds[1].x - viewportBounds[0].x;
+		auto viewportHeight = viewportBounds[1].y - viewportBounds[0].y;
+
+		return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+	}
+
+	Ray CastRay(const EditorCamera& camera, float mx, float my)
+	{
+		glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+
+		auto inverseProj = glm::inverse(camera.GetProjectionMatrix());
+		auto inverseView = glm::inverse(glm::mat3(camera.GetViewMatrix()));
+
+		glm::vec4 ray = inverseProj * mouseClipPos;
+		glm::vec3 rayPos = camera.GetPosition();
+		glm::vec3 rayDir = inverseView * glm::vec3(ray);
+
+		return Ray{ rayPos, rayDir };
+	}
+#endif
 	Editore3D::Editore3D() :
-		Layer("Editor3D Layer") {
+		Layer("Editor3D Layer") 
+	{
 		s_Instance = this;
 		s_EditorData = pnew EditorData();
 	//	s_EditorData->ContentBrowserPanel.m_ShowWindow = false;
@@ -187,9 +252,9 @@ namespace Proof
 	}
 
 
-	void Editore3D::OnEvent(Event& e) {
+	void Editore3D::OnEvent(Event& e) 
+	{
 		EventDispatcher dispatcher(e);
-
 		dispatcher.Dispatch<ControllerConnectEvent>([](auto& e) {
 			PF_INFO(e.ToString());
 			return false;
@@ -241,7 +306,6 @@ namespace Proof
 						return false;
 					});
 				}
-				return;
 			}
 		}
 
@@ -300,7 +364,6 @@ namespace Proof
 						return false;
 					});
 				}
-				return;
 			}
 		}
 
@@ -351,7 +414,6 @@ namespace Proof
 						return false;
 					});
 				}
-				return;
 			}
 		}
 
@@ -414,22 +476,27 @@ namespace Proof
 						return false;
 					});
 				}
-				return;
 			}
 		}
 
 
 
+		
+
+		m_EditorCamera.OnEvent(e);
+
 		s_EditorData->PanelManager->OnEvent(e);
+		s_EditorData->EditorWorkspaceManager->OnEvent(e);
 		AssetEditorPanel::OnEvent(e);
 
 		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 			InputManager::OnEvent(e);
 
 		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
-
+		dispatcher.Dispatch<MouseButtonClickedEvent>(PF_BIND_FN(Editore3D::OnMouseButtonClicked));
 	}
-	void Editore3D::OnAttach() {
+	void Editore3D::OnAttach() 
+	{
 		EditorResources::Init();
 		m_ActiveWorld = Count<World>::Create();
 		auto startworld = Application::Get()->GetProject()->GetConfig().StartWorldEdit;
@@ -456,6 +523,11 @@ namespace Proof
 
 		Count< ContentBrowserPanel> contentBrowser = s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 		s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
+		{
+			//s_EditorData->EditorWorkspaceManager->AddWorkspace<("Viewport")
+			s_EditorData->EditorWorkspaceManager->AddWorkspace<ViewPortEditorWorkspace>("Viewport", true, "Viewport", ViewPortEditorData{ false,false,std::bind(&Editore3D::UI_HandleAssetDrop, this) });
+			s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
+		}
 #if 0
 		contentBrowser->RegisterItemActivateCallbackForType(AssetType::World, [this](const AssetInfo& metadata)
 			{
@@ -491,6 +563,7 @@ namespace Proof
 		s_EditorData->StopButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/StopButton.png");
 		s_EditorData->PanelManager->GetPanel< WorldRendererPanel>(WORLD_RENDERER_PANEL_ID)->SetContext(m_WorldRenderer);
 
+	
 		m_PlayersCount = 1;
 
 		m_ViewPortSize = { 100,100 };
@@ -504,6 +577,7 @@ namespace Proof
 			auto assetInfo = AssetManager::GetAssetInfo(m_EditorWorld->GetID());
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 		}
+		Save();
 		AssetEditorPanel::UnregisterAllEditors();
 		AssetManager::SaveAllAssets();
 		EditorResources::Unizilize();
@@ -511,16 +585,19 @@ namespace Proof
 		FileSystem::ClearFileSystemChangedCallbacks();
 	}
 
-	void Editore3D::OnUpdate(FrameTime DeltaTime) {
+	void Editore3D::OnUpdate(FrameTime DeltaTime) 
+	{
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
 		m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+		m_EditorCamera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+
 		if (m_IsViewPortResize && m_ViewPortSize.x > 0 && m_ViewPortSize.y > 0)
 		{
 			m_IsViewPortResize = false;
 		}
 		AssetEditorPanel::OnUpdate(DeltaTime);
-
+		s_EditorData->EditorWorkspaceManager->OnUpdate(DeltaTime);
 		switch (m_ActiveWorld->GetState())
 		{
 			case Proof::WorldState::Play:
@@ -528,17 +605,17 @@ namespace Proof
 					m_ActiveWorld->OnUpdateRuntime(DeltaTime);
 					if (m_ViewPortFocused)
 					{
-						Application::Get()->GetWindow()->SetWindowInputEvent(true);
-						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-						Application::Get()->GetWindow()->SetWindowInputEvent(false);
+						m_EditorCamera.SetActive(m_ViewPortFocused);
+						m_EditorCamera.OnUpdate(DeltaTime);
 					}
-					m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
+					//m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
 					break;
 				}
 			case Proof::WorldState::Pause:
 				{
 					//m_ActiveWorld->OnUpdateRuntime(DeltaTime);
-					m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+					m_EditorCamera.SetActive(m_ViewPortFocused);
+					m_EditorCamera.OnUpdate(DeltaTime);
 					break;
 				}
 			case Proof::WorldState::Simulate:
@@ -550,11 +627,10 @@ namespace Proof
 					m_ActiveWorld->OnUpdateEditor(DeltaTime);
 					if (m_ViewPortFocused)
 					{
-						Application::Get()->GetWindow()->SetWindowInputEvent(true);
-						m_EditorCamera.OnUpdate(DeltaTime, (uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-						Application::Get()->GetWindow()->SetWindowInputEvent(false);
+						m_EditorCamera.SetActive(m_ViewPortFocused);
+						m_EditorCamera.OnUpdate(DeltaTime);
 					}
-					m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
+					//m_ActiveWorld->OnRenderEditor(m_WorldRenderer, DeltaTime, m_EditorCamera);
 					break;
 				}
 			default:
@@ -574,8 +650,12 @@ namespace Proof
 
 		UI_StatisticsPanel();
 
-		ViewPort();
+		if (SaveSceneDialouge)
+			UI_SaveWorldAs();
+		//ViewPort();
 		s_EditorData->PanelManager->OnImGuiRender();
+		s_EditorData->EditorWorkspaceManager->OnImGuiRender();
+
 		AssetEditorPanel::OnImGuiRender();
 		// handlepop
 		{
@@ -606,11 +686,18 @@ namespace Proof
 	bool Editore3D::OnKeyClicked(KeyClickedEvent& e) {
 		// Shortcuts
 
+		ImGuiIO& io = ImGui::GetIO();
+		if (!io.WantCaptureKeyboard) // ths means that an imgui text field is being used
+			return false;
+
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
 		bool shift = IsKeyPressedEditor(KeyBoardKey::LeftShift) || IsKeyPressedEditor(KeyBoardKey::RightShift);
+		bool isViewportOrHierieachyFocused = UI::IsWindowFocused("Scene Hierarchy") || s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>("Viewport")->IsFocusedOrHovered();
 
+		
+		//UI::is
 		//basically means that m_editor camera is beign used 
-		if (m_ViewPortFocused == false || Input::IsMouseButtonPressed(MouseButton::ButtonRight) == true)
+		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight) == true)
 			return false;
 		switch (e.GetKey())
 		{
@@ -618,8 +705,8 @@ namespace Proof
 				{
 					if (m_ActiveWorld->IsPlaying())
 					{
-						Mouse::CaptureMouse(false);
-						s_DetachPlayer = true;
+						//Mouse::CaptureMouse(false);
+						//s_DetachPlayer = true;
 						return true;
 						break;
 					}
@@ -627,7 +714,7 @@ namespace Proof
 				}
 			case KeyBoardKey::F:
 				{
-					m_EditorCamera.SetPosition(	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity().Transform().Location);
+					//m_EditorCamera.SetPosition(	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity().Transform().Location);
 					return true;
 				}
 			case KeyBoardKey::P:
@@ -677,18 +764,42 @@ namespace Proof
 						Save();
 						return true;
 					}
-
 					break;
 				}
 
 			case KeyBoardKey::D:
 				{
+					if (isViewportOrHierieachyFocused && control)
+					{
+						auto selectedEntities = SelectionManager::GetSelections(SelectionContext::Scene);
+						for (const auto& entityID : selectedEntities)
+						{
+							Entity entity = m_ActiveWorld->GetEntity(entityID);
+							Entity duplicate = m_ActiveWorld->CreateEntity(entity);
+							SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());  
+							SelectionManager::Select(SelectionContext::Scene, duplicate.GetUUID());
+						}
+						if(!selectedEntities.empty())
+							return true;
+					}
 					break;
 
 				}
 			case KeyBoardKey::Delete:
 			case KeyBoardKey::Backspace:
 				{
+					if (isViewportOrHierieachyFocused )
+					{
+						auto selectedEntities = SelectionManager::GetSelections(SelectionContext::Scene);
+						for (const auto& entityID : selectedEntities)
+						{
+							Entity entity = m_ActiveWorld->GetEntity(entityID);
+							SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());
+							m_ActiveWorld->DeleteEntity(entity);
+						}
+						if (!selectedEntities.empty())
+							return true;
+					}
 					break;
 				}
 				// copy entity
@@ -708,7 +819,10 @@ namespace Proof
 				{
 					// no right button pressed that means that we are using the editor camera
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					{
 						s_EditorData->GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+						return true;
+					}
 					break;
 				}
 
@@ -736,7 +850,159 @@ namespace Proof
 		}
 		return false;
 	}
-	void Editore3D::Logger() {
+
+
+	bool Editore3D::OnMouseButtonClicked(MouseButtonClickedEvent& e)
+	{
+#if 0
+		if (!m_EditorCamera.IsActive())
+			return false;
+
+		if (Input::IsKeyPressed(KeyBoardKey::LeftAlt) || Input::IsMouseButtonPressed(MouseButton::ButtonRight))
+			return false;
+
+		if (ImGuizmo::IsOver())
+			return false;
+
+		if (e.GetButton() != MouseButton::ButtonLeft)
+			return false;
+
+		ImGui::ClearActiveID();
+
+		std::vector<SelectionData> selectionData;
+		//https://github.com/InCloudsBelly/X2_RenderingEngine/blob/e7c349b70bd95af3ab673556cdb56cb2cc40b48e/Engine/X2/EditorLayer.cpp#L3340
+		auto [mouseX, mouseY] = GetMouseViewportSpace(m_ViewportBounds);
+
+		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+		{
+			const auto& camera = m_EditorCamera;
+			auto [origin, direction] = CastRay(camera, mouseX, mouseY);
+
+			auto meshEntities = m_ActiveWorld->GetAllEntitiesWith<DynamicMeshComponent>();
+			for (auto e : meshEntities)
+			{
+				Entity entity = { e, m_ActiveWorld.Get() };
+				auto& mc = entity.GetComponent<DynamicMeshComponent>();
+				auto mesh = mc.GetMesh();
+				if (!mesh)
+					continue;
+
+				auto& submeshes = mesh->GetMeshSource()->GetSubMeshes();
+				float lastT = std::numeric_limits<float>::max();
+				const auto& subMesh = submeshes[mc.GetSubMeshIndex()];
+				glm::mat4 transform = m_ActiveWorld->GetWorldSpaceTransform(entity);
+				Ray ray = 
+				{
+					glm::inverse(transform) * glm::vec4(origin, 1.0f),
+					glm::inverse(glm::mat3(transform)) * direction
+				};
+
+				float t;
+				bool intersects = BasicCollision::RayInAABB(ray, subMesh.BoundingBox, 0.3, 50.0, t);
+				if (intersects)
+				{
+
+					selectionData.push_back(SelectionData{ entity,t });
+
+					/*
+					const auto& triangleCache = mesh->GetMeshSource()->GetTriangleCache(mc.SubmeshIndex);
+					for (const auto& triangle : triangleCache)
+					{
+						if (ray.Intersects(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+						{
+							selectionData.push_back({ entity, &submesh, t });
+							break;
+						}
+					}
+					*/
+				}
+			}
+
+			auto staticMeshEntities = m_ActiveWorld->GetAllEntitiesWith<MeshComponent>();
+			for (auto e : staticMeshEntities)
+			{
+				Entity entity = { e, m_ActiveWorld.Get() };
+				auto& smc = entity.GetComponent<MeshComponent>();
+				auto staticMesh = smc.GetMesh();
+				if (!staticMesh )
+					continue;
+
+				auto& submeshes = staticMesh->GetMeshSource()->GetSubMeshes();
+				glm::mat4 transform = m_ActiveWorld->GetWorldSpaceTransform(entity);
+				Ray ray =
+				{
+					glm::inverse(transform) * glm::vec4(origin, 1.0f),
+					glm::inverse(glm::mat3(transform)) * direction
+				};
+				float t;
+				bool intersects = BasicCollision::RayInAABB(ray, staticMesh->GetMeshSource()->GetBoundingBox(), 0.3, 50.0, t);
+
+				if (intersects)
+				{
+					selectionData.push_back(SelectionData{ entity, t });
+				}
+# if 0
+				float lastT = std::numeric_limits<float>::max();
+				for (uint32_t i = 0; i < submeshes.size(); i++)
+				{
+					auto& subMesh = submeshes[i];
+					glm::mat4 transform = m_ActiveWorld->GetWorldSpaceTransform(entity);
+					Ray ray =
+					{
+						glm::inverse(transform) * glm::vec4(origin, 1.0f),
+						glm::inverse(glm::mat3(transform)) * direction
+					};
+
+					float t;
+					bool intersects = BasicCollision::RayInAABB(ray, subMesh.BoundingBox, 0.3, 50.0, t);
+					if (intersects)
+					{
+						selectionData.push_back(SelectionData{ entity, (SubMesh*)&subMesh, t });
+
+						/*
+						const auto& triangleCache = staticMesh->GetMeshSource()->GetTriangleCache(i);
+						for (const auto& triangle : triangleCache)
+						{
+							if (ray.Intersects(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+							{
+								selectionData.push_back({ entity, &submesh, t });
+								break;
+							}
+						}
+						*/
+					}
+				}
+#endif
+			}
+
+			std::sort(selectionData.begin(), selectionData.end(), [](auto& a, auto& b) { return a.Distance > b.Distance; });
+
+			bool ctrlDown = Input::IsKeyPressed(KeyBoardKey::LeftControl) || Input::IsKeyPressed(KeyBoardKey::RightControl);
+			bool shiftDown = Input::IsKeyPressed(KeyBoardKey::LeftShift) || Input::IsKeyPressed(KeyBoardKey::RightShift);
+			if (!ctrlDown)
+				SelectionManager::DeselectAll();
+
+			if (!selectionData.empty())
+			{
+				Entity entity = selectionData.front().Entity;
+				if (shiftDown)
+				{
+					while (entity.GetParent())
+					{
+						entity = entity.GetParent();
+					}
+				}
+				if (SelectionManager::IsSelected(SelectionContext::Scene, entity.GetUUID()) && ctrlDown)
+					SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());
+				else
+					SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+			}
+		}
+#endif
+		return false;
+	}
+	void Editore3D::Logger() 
+	{
 		if (s_EditorData->ShowLogger == false)
 			return;
 		PF_PROFILE_FUNC();
@@ -1067,7 +1333,8 @@ namespace Proof
 		}
 		ImGui::End();
 	}
-	void Editore3D::ViewPort() {
+	void Editore3D::ViewPort() 
+	{
 		PF_PROFILE_FUNC();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
@@ -1105,7 +1372,9 @@ namespace Proof
 			// GUIZMOS
 
 			// cherno game engein reveiw 22 minutes 48 seconds reference
-			Entity selectedEntity = s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity();
+			Entity selectedEntity;
+			if (SelectionManager::GetSelections(SelectionContext::Scene).size() > 0)
+				selectedEntity = m_ActiveWorld->GetEntity( SelectionManager::GetSelections(SelectionContext::Scene).front());
 			if (selectedEntity)
 			{
 				ImGuizmo::SetOrthographic(true);
@@ -1162,93 +1431,8 @@ namespace Proof
 
 				}
 			}
-			static bool meshSourceAdded = false;
-			static std::filesystem::path meshSourcePath;
-			/* putting this underneath image because a window only accpet drop tarGet to when item is bound so and image has been bound */
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::World).c_str()))
-				{
-					UUID ID = *(UUID*)payload->Data;
+			UI_HandleAssetDrop();
 
-					m_EditorWorld = Count<World>::Create();
-					m_ActiveWorld = m_EditorWorld;
-					s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
-
-					SceneSerializer ScerilizerNewWorld(m_ActiveWorld.Get());
-					ScerilizerNewWorld.DeSerilizeText(ID);
-
-				}
-
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Mesh).c_str()))
-				{
-					UUID meshID = *(UUID*)payload->Data;
-
-					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(meshID).GetName());
-					newentt.AddComponent<MeshComponent>().SetMesh(meshID);
-					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-				}
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::DynamicMesh).c_str()))
-				{
-					UUID meshID = *(UUID*)payload->Data;
-
-					Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAsset<DynamicMesh>(meshID));
-					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-				}
-
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::MeshSourceFile).c_str()))
-				{
-					UUID meshSourceId = *(UUID*)payload->Data;
-					meshSourceAdded = true;
-					meshSourcePath = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(meshSourceId).Path);
-				}
-
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
-				{
-					UUID prefabId = *(UUID*)payload->Data;
-
-					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabId);
-					std::string name = AssetManager::GetAssetInfo(prefabId).GetName();
-
-					Entity newentt = m_ActiveWorld->CreateEntity(name, prefab, TransformComponent());
-					s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-				}
-				ImGui::EndDragDropTarget();
-			}
-
-			if (meshSourceAdded)
-			{
-				AssetID id;
-				//std::tie(meshSourceAdded, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddMesh(AssetManager::GetAsset<MeshSource>(meshSourcePath));
-				// basically add mesh is done with its operation and no longer renderng
-				if (meshSourceAdded == false)
-				{
-					if (AssetManager::GetAssetInfo(id).Type == AssetType::Mesh)
-					{
-
-						Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
-						newentt.AddComponent<MeshComponent>().SetMesh(id);
-						s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-					}
-					else if (AssetManager::GetAssetInfo(id).Type == AssetType::DynamicMesh)
-					{
-
-						Entity newentt = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(id).GetName());
-						newentt.AddComponent<DynamicMeshComponent>().SetMesh(id);
-						s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->SetSelectedEntity(newentt);
-					}
-				}
-			}
-			if (SaveSceneDialouge)
-			{
-				AssetID id;
-				//std::tie(SaveSceneDialouge, id) = s_EditorData->PanelManager->GetPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID)->AddWorld(m_ActiveWorld);
-				if (SaveSceneDialouge == false)
-				{
-					Save();
-				}
-			}
-			/*----------------------------------------------------------------------------------------------------------------------------*/
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -1304,7 +1488,8 @@ namespace Proof
 
 	}
 
-	void Editore3D::SetDocking(bool* p_open) {
+	void Editore3D::SetDocking(bool* p_open) 
+	{
 		// code taken form walnut https://github.com/TheCherno/Walnut/blob/master/Walnut/src/Walnut/Application.cpp
 		PF_PROFILE_FUNC();
 
@@ -1377,7 +1562,7 @@ namespace Proof
 						Application::Get()->OpenProject(file);
 					}
 				}
-				if (ImGui::MenuItem("New Scene"))
+				if (ImGui::MenuItem("New World"))
 				{
 					Save();
 					NewWorld();
@@ -1454,31 +1639,34 @@ namespace Proof
 
 
 
-	void Editore3D::Save() {
+	bool Editore3D::Save() 
+	{
 		if (m_ActiveWorld == nullptr)
-			return;
+			return false;
 		if (m_ActiveWorld->m_CurrentState != WorldState::Edit)
 		{
 			PF_ERROR("Cannot save when in runtime mode");
-			return;
+			return false;
 		}
-		if (!AssetManager::HasAsset(m_ActiveWorld->GetID()))
+
+		if (!AssetManager::HasAsset(m_ActiveWorld->GetID()) && !m_ActiveWorld->GetEntities().empty())
 		{
 			SaveSceneDialouge = true;
-			return;
+			return false;
 		}
 		{
 			ScopeTimer scopeTime(fmt::format("{} Saved", m_ActiveWorld->GetName()));
 			SceneSerializer scerelizer(m_ActiveWorld.Get());
 			auto assetInfo = AssetManager::GetAssetInfo(m_ActiveWorld->GetID());
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
+			PF_INFO("{} Saved", m_ActiveWorld->GetName());
 
 		}
 
 		{
 			ScopeTimer scopeTime(fmt::format("AssetManager Saved"));
 			AssetManager::SaveAllAssets();
-			AssetManager::SaveAssetManager();
+			//AssetManager::SaveAssetManager();
 		}
 
 		ProjectSerilizer serilizer(Application::Get()->GetProject().Get());
@@ -1486,12 +1674,54 @@ namespace Proof
 			Application::Get()->GetProject()->m_ProjectConfig.StartWorldEdit = m_ActiveWorld->GetID();
 		serilizer.SerilizeText(Application::Get()->GetProject()->GetConfig().Project.string());
 
+		return true;
+
 	}
 	void Editore3D::NewWorld()
 	{
+		if (m_ActiveWorld != nullptr)
+		{
+			if (m_ActiveWorld->GetState() != WorldState::Edit)
+				SetWorldEdit();
+
+			bool val = Save();
+			if (val == false)
+				return;
+		}
+
 		m_EditorWorld = Count<World>::Create();
 		m_ActiveWorld = m_EditorWorld;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+	}
+	void Editore3D::OpenWorld(AssetID ID)
+	{
+
+		if (m_ActiveWorld != nullptr)
+		{
+			if (m_ActiveWorld->GetState() != WorldState::Edit)
+				SetWorldEdit();
+
+			bool val =Save();
+			if (val == false)
+				return;
+		}
+		
+
+		AssetInfo assetInfo = AssetManager::GetAssetInfo(ID);
+
+		auto fullPath = AssetManager::GetAssetFileSystemPath(assetInfo.Path);
+		Count<World> world = Count<World>::Create();
+
+		SceneSerializer serializer(world);
+		serializer.DeSerilizeText(fullPath.string());
+
+		m_EditorWorld = world;
+		m_ActiveWorld = m_EditorWorld;
+
+		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
+		SelectionManager::DeselectAll();
+
 	}
 	void Editore3D::UI_StatisticsPanel()
 	{
@@ -1618,10 +1848,181 @@ namespace Proof
 
 		ImGui::End();
 	}
+	void Editore3D::UI_HandleAssetDrop()
+	{
+		if (!ImGui::BeginDragDropTarget())
+			return;
+		auto data = ImGui::AcceptDragDropPayload("asset_payload");
+		if (data)
+		{
+			uint64_t count = data->DataSize / sizeof(AssetID);
+			if(count >0)
+				SelectionManager::DeselectAll(SelectionContext::Scene);
+
+			for (uint64_t i = 0; i < count; i++)
+			{
+				AssetID assetHandle = *(((AssetID*)data->Data) + i);
+				
+
+				if (!AssetManager::HasAsset(assetHandle))
+					continue;
+				const AssetInfo& info = AssetManager::GetAssetInfo(assetHandle);
+
+				// We can't really support dragging and dropping worlds when we're dropping multiple assets
+				if (count == 1 && info.Type == AssetType::World)
+				{
+					OpenWorld(info.ID);
+					break;
+				}
+				if (info.Type == AssetType::MeshSourceFile)
+				{
+					s_EditorData->CreateNewMeshPopupData.MeshToCreate = AssetManager::GetAsset<MeshSource>(info.ID);
+					UI_ShowCreateNewMeshPopup();
+				}
+				else if (info.Type == AssetType::Mesh)
+				{
+					Count<Mesh> mesh = AssetManager::GetAsset<Mesh>(info.ID);
+					Entity entity = m_ActiveWorld->CreateEntity(info.GetName());
+					entity.AddComponent<MeshComponent>().SetMesh(mesh->GetID());
+					SelectionManager::DeselectAll();
+					SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+				}
+				else if (info.Type == AssetType::DynamicMesh)
+				{
+					Count<DynamicMesh> mesh = AssetManager::GetAsset<DynamicMesh>(info.ID);
+					Entity rootEntity = m_ActiveWorld->CreateEntity(mesh);
+					SelectionManager::Select(SelectionContext::Scene, rootEntity.GetUUID());
+				}
+				else if (info.Type == AssetType::Prefab)
+				{
+					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(info.ID);
+					m_ActiveWorld->CreateEntity(info.GetName(), prefab, TransformComponent());
+				}
+			}
+		}
+		ImGui::EndDragDropTarget();
+
+	}
+	void Editore3D::UI_SaveWorldAs()
+	{
+		UI::ShowMessageBox("Save As World", [this]()
+			{
+				ImGui::Text(Project::GetActive()->GetProjectDirectory().filename().string().c_str());
+				UI::AttributeInputText("WorldPath", s_EditorData->CreateNewWorldPopupData.CreateWorldFile);
+				PF_CORE_ASSERT(s_EditorData->CreateNewWorldPopupData.WorldToSaveAs);
+
+				ImGui::Separator();
+				if (ImGui::Button("Create"))
+				{
+					std::filesystem::path savedPath = Project::GetActive()->GetAssetDirectory() / s_EditorData->CreateNewWorldPopupData.CreateWorldFile += Utils::GetAssetExtensionString(AssetType::World);
+
+					savedPath = FileSystem::GenerateUniqueFileName(savedPath);
+
+					if (!FileSystem::Exists(savedPath.parent_path()))
+						FileSystem::CreateDirectory(savedPath.parent_path());
+
+					SceneSerializer sereilizer(s_EditorData->CreateNewWorldPopupData.WorldToSaveAs);
+					sereilizer.SerilizeText(savedPath.string());
+					if (s_EditorData->CreateNewWorldPopupData.SaveAssetManager && !AssetManager::HasAsset(s_EditorData->CreateNewWorldPopupData.WorldToSaveAs))
+					{
+						auto asset = s_EditorData->CreateNewWorldPopupData.WorldToSaveAs.As<Asset>();
+						AssetManager::NewAsset(asset, savedPath);
+					}
+					SaveSceneDialouge = false;
+					PF_INFO("World {} saved as");
+				}
+			});
+
+	}
+	void Editore3D::UI_ShowCreateNewMeshPopup()
+	{
+		UI::ShowMessageBox("Create New Mesh", [this]()
+			{
+				static bool dynamicMesh = false;
+				static bool doGenerateColliders = true;
+
+				UI::AttributeBool("Dynamic", dynamicMesh);
+				UI::AttributeBool("Generate Colliders", doGenerateColliders, "Controls whether physics components (collider and rigid body) will be added to the newly created entity.");
+				ImGui::Separator();
+				ImGui::Text(Project::GetActive()->GetProjectDirectory().filename().string().c_str());
+				UI::AttributeInputText("MeshPath", s_EditorData->CreateNewMeshPopupData.CreateMeshFilenameBuffer);
+
+				
+
+				PF_CORE_ASSERT(s_EditorData->CreateNewMeshPopupData.MeshToCreate);
+				if (ImGui::Button("Create"))
+				{
+					std::filesystem::path savedPath = Project::GetActive()->GetAssetDirectory() / s_EditorData->CreateNewMeshPopupData.CreateMeshFilenameBuffer;
+					
+					if (!dynamicMesh)
+						savedPath += Utils::GetAssetExtensionString(AssetType::Mesh);
+					else
+						savedPath += Utils::GetAssetExtensionString(AssetType::DynamicMesh);
+
+					if (!FileSystem::Exists(savedPath.parent_path()))
+						FileSystem::CreateDirectory(savedPath.parent_path());
+
+					savedPath = FileSystem::GenerateUniqueFileName(savedPath);
+
+					if (!s_EditorData->CreateNewMeshPopupData.MeshToCreate->GetSubMeshes().empty())
+					{
+
+						SelectionManager::DeselectAll(SelectionContext::Scene);
+
+						if (!dynamicMesh)
+						{
+							Count<Mesh> mesh = AssetManager::NewAsset<Mesh>(savedPath, s_EditorData->CreateNewMeshPopupData.MeshToCreate);
+							auto entity = s_EditorData->CreateNewMeshPopupData.TargetEntity;
+
+							if (!entity)
+							{
+								entity = m_ActiveWorld->CreateEntity(AssetManager::GetAssetInfo(mesh).GetName());
+							}
+
+							entity.GetorCreateComponent<MeshComponent>().SetMesh(mesh->GetID());
+							SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+							if (doGenerateColliders && !entity.HasComponent<MeshColliderComponent>())
+							{
+								auto& colliderComponent = entity.GetorCreateComponent<MeshColliderComponent>();
+								Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(entity, colliderComponent);
+								colliderComponent.ColliderID = colliderAsset->GetID();
+								colliderComponent.SubMeshIndex = 0;
+								colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
+								entity.GetorCreateComponent<RigidBodyComponent>();
+
+							}
+
+						}
+						else
+						{
+							Count<DynamicMesh> mesh = AssetManager::NewAsset<DynamicMesh>(savedPath, s_EditorData->CreateNewMeshPopupData.MeshToCreate);
+							auto entity = s_EditorData->CreateNewMeshPopupData.TargetEntity;
+							if (!entity)
+							{
+								entity = m_ActiveWorld->CreateEntity(mesh, doGenerateColliders);
+								SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
+							}
+						}
+					}
+
+					s_EditorData->CreateNewMeshPopupData = {};
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::SameLine();
+
+				if (ImGui::Button("Cancel"))
+				{
+					s_EditorData->CreateNewMeshPopupData = {};
+					ImGui::CloseCurrentPopup();
+				}
+			});
+	}
+	
 	void Editore3D::SetActiveWorld(Count<World> world)
 	{
 	}
 	void Editore3D::PlayWorld() {
+		SelectionManager::DeselectAll();
 		m_ActiveWorld = World::Copy(m_EditorWorld);
 		s_DetachPlayer = false;
 
@@ -1630,17 +2031,22 @@ namespace Proof
 			Log::Logs.clear();
 		m_ActiveWorld->StartRuntime();
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 	}
 	void Editore3D::SimulateWorld() {
+
 		s_DetachPlayer = false;
 		m_ActiveWorld->m_CurrentState = WorldState::Simulate;
 	}
-	void Editore3D::SetWorldEdit() {
+	void Editore3D::SetWorldEdit() 
+	{
+		SelectionManager::DeselectAll();
 
 		//s_EditorData->GuizmoType = 0;
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 		s_DetachPlayer = false;
 	}
 	void Editore3D::PauseWorld() {

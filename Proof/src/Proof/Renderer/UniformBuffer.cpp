@@ -1,8 +1,8 @@
 #include "Proofprch.h"
 #include "UniformBuffer.h"
-#include "Platform/Vulkan/VulkanResourceBuffer.h"
-#include "Platform/Vulkan/VulkanCommandBuffer.h"
-#include "Platform/Vulkan/VulkanTexutre.h"
+#include "Proof/Platform/Vulkan/VulkanResourceBuffer.h"
+#include "Proof/Platform/Vulkan/VulkanCommandBuffer.h"
+#include "Proof/Platform/Vulkan/VulkanTexutre.h"
 #include "Renderer.h"
 namespace Proof
 {

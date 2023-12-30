@@ -96,8 +96,10 @@ namespace Proof {
 
 		void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
 		void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
-		void DrawAABB(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
-		void DrawAABBSubMeshes(Count<class Mesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawAABB(Count<class MeshBase> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawAABB(const class SubMesh& subMesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawAABBSubMeshes(Count<class MeshBase> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+
 		void DrawCylinder(glm::vec3 position, glm::vec3 rotationRadians, float height, float radius, glm::vec4 color = glm::vec4(1.0f), bool drawFromBase = true);
 		void DrawCapsule(glm::vec3 position, glm::vec3 rotationRadian, float height, float radius, glm::vec4 color = glm::vec4(1.0f));
 
@@ -128,6 +130,9 @@ namespace Proof {
 		void FillCircle(const glm::vec2& p0, float radius, const glm::vec4& color, float thickness = 0.05f);
 		void FillCircle(const glm::vec3& p0, float radius, const glm::vec4& color, float thickness = 0.05f);
 
+		void DrawQuadBillboard(const glm::vec3& position, const glm::vec3& rotation = glm::vec3(0,0,0),const glm::vec2& size = glm::vec2(1), const glm::vec4& color = glm::vec4(1));
+		void DrawQuadBillboard(const Count<class Texture2D>& texture, glm::vec3 position,const glm::vec3& rotation = glm::vec3(0, 0, 0), const glm::vec2& size = glm::vec2(1), const glm::vec4& tintColor = glm::vec4(1), float tilingFactor = 1.0f);
+
 		// chagne to u32stirng in the future
 		void DrawString(const std::string& text, Count<class Font> font,const TextParams& textparams, const glm::mat4& transform);
 		void EndContext();
@@ -141,6 +146,7 @@ namespace Proof {
 		};
 		Rendered2DStatistics GetStats() { return m_Stats; }
 	private:
+		CameraData m_Camera;
 		Count<class RenderCommandBuffer> m_CommandBuffer;
 		Count<FrameBuffer> m_FrameBuffer;
 		Rendered2DStatistics m_Stats;

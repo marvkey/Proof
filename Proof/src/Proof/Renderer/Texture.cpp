@@ -1,12 +1,14 @@
 #include "Proofprch.h"
 #include "Texture.h"
 #include "Renderer.h"
-#include "Platform/OpenGL/OpenGLTexture.h"
-#include "Platform/Vulkan/VulkanTexutre.h"
-#include "Platform/Vulkan/VulkanImage.h"
+//#include "Platform/OpenGL/OpenGLTexture.h"
+#include "Proof/Platform/Vulkan/VulkanTexutre.h"
+#include "Proof/Platform/Vulkan/VulkanImage.h"
+#include "Proof/Asset/AssetManager.h"
 //#define STB_IMAGE_IMPLEMENTATION
 //#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include"../vendor/stb_image.h"
+#include "Proof/Utils/ContainerUtils.h"
 namespace Proof {
 	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, const std::filesystem::path& path)
 	{
@@ -147,7 +149,7 @@ namespace Proof {
 		}
 		else 
 		{
-			stbi_set_flip_vertically_on_load(1);
+			stbi_set_flip_vertically_on_load(0);
 
 			outFormat = ImageFormat::RGBA;
 			imageBuffer.Data = stbi_load(pathString.c_str(), &width, &height, &channels, 4);
@@ -192,5 +194,110 @@ namespace Proof {
 		return imageBuffer;
 	}
 
+	Environment::Environment()
+	{
+		s_Instances.push_back(this);
+		m_EnvironmentState = EnvironmentState::PreethamSky;
+		m_IsUpdated = true;
+		m_IrradianceMap = Renderer::GetBlackTextureCube();
+		m_PrefilterMap = Renderer::GetBlackTextureCube();
+	}
+
+	Environment::Environment(HosekWilkieSkyData data)
+	{
+		s_Instances.push_back(this);
+		m_EnvironmentState = EnvironmentState::HosekWilkie;
+		m_IsUpdated = true;
+		m_HosekWilkieSky = data;
+		m_IrradianceMap = Renderer::GetBlackTextureCube();
+		m_PrefilterMap = Renderer::GetBlackTextureCube();
+	}
+
+	Environment::Environment(PreethamSkyData data)
+	{
+		s_Instances.push_back(this);
+		m_EnvironmentState = EnvironmentState::PreethamSky;
+		m_IsUpdated = true;
+		m_PreethamSky = data;
+		m_IrradianceMap = Renderer::GetBlackTextureCube();
+		m_PrefilterMap = Renderer::GetBlackTextureCube();
+	}
+
+	Environment::Environment(EnvironmentTextureData data)
+	{
+		s_Instances.push_back(this);
+		m_EnvironmentState = EnvironmentState::EnvironmentTexture;
+		m_EnvironmentTexture = data;
+
+		if (AssetManager::HasAsset(m_EnvironmentTexture.Image))
+		{
+			m_IsUpdated = true;
+		}
+		else
+		{
+			m_EnvironmentTexture.Image = 0;
+		}
+		m_IrradianceMap = Renderer::GetBlackTextureCube();
+		m_PrefilterMap = Renderer::GetBlackTextureCube();
+	}
+
+	Environment::~Environment()
+	{
+		PF_CORE_ASSERT(Utils::Remove(s_Instances, WeakCount<Environment>(this)),"This should exist");
+	}
+
+	void Environment::Update(HosekWilkieSkyData data)
+	{
+		if (m_EnvironmentState == EnvironmentState::HosekWilkie)
+		{
+			if (m_HosekWilkieSky != data)
+			{
+				m_HosekWilkieSky = data;
+				m_IsUpdated = true;
+			}
+			return;
+		}
+		m_IsUpdated = true;
+		m_EnvironmentState = EnvironmentState::HosekWilkie;
+		m_HosekWilkieSky = data;
+	}
+	void Environment::Update(PreethamSkyData data) 
+	{
+		if (m_EnvironmentState == EnvironmentState::PreethamSky)
+		{
+			if (m_PreethamSky != data)
+			{
+				m_PreethamSky = data;
+				m_IsUpdated = true;
+			}
+			return;
+		}
+		m_IsUpdated = true;
+		m_EnvironmentState = EnvironmentState::PreethamSky;
+		m_PreethamSky = data;
+	}
+	void Environment::Update(EnvironmentTextureData data)
+	{
+		if (m_EnvironmentState == EnvironmentState::EnvironmentTexture)
+		{
+			if (m_EnvironmentTexture != data)
+			{
+				m_EnvironmentTexture = data;
+				if (AssetManager::HasAsset(m_EnvironmentTexture.Image))
+				{
+					m_EnvironmentTexture = data;
+					m_IsUpdated = true;
+				}
+				else
+				{
+					m_EnvironmentTexture.Image = 0;
+				}
+			}
+			return;
+		}
+		m_IsUpdated = true;
+		m_EnvironmentState = EnvironmentState::EnvironmentTexture;
+		m_EnvironmentTexture = data;
+	}
 
 }

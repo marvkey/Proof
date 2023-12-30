@@ -7,10 +7,15 @@
 #include "Proof/Core/Buffer.h"
 #include "CommandQueue.h"
 namespace Proof {
-	struct  RendererConfig {
+	struct  RendererConfig 
+	{
 		uint32_t FramesFlight = 2;
 		// set by swapchain not 
 		uint32_t MaxImageCount = 2;
+		// EnvironmentSettings
+		uint32_t EnvironmentMapResolution = 1024;
+		//uint32_t IrradianceMapComputeSamples = 512;
+		float GetMaxMipCount();
 	};
 
 	struct CurrentFrame {
@@ -50,7 +55,8 @@ namespace Proof {
 		static Count<class GraphicsContext> GetGraphicsContext();
 		static Renderer::API GetAPI();
 
-		static Count<class TextureCube> CreatePreethamSky(float turbidity, float azimuth, float inclination, uint32_t imageDimension = 1048);
+		static Count<class TextureCube> CreatePreethamSky(float turbidity, glm::vec3 sunDirection);
+		static Count<class TextureCube> CreateHosekWilkieSky(float turbidity, float GroundReflectance, glm::vec3 sunDirection);
 		static Count<class Texture2D> GetWhiteTexture();
 		static Count<class Texture2D> GetBlackTexture();
 		static Count<class TextureCube> GetWhiteTextureCube();
@@ -66,6 +72,8 @@ namespace Proof {
 		//environment and prefilter
 		static std::pair<Count<class TextureCube>, Count<class TextureCube>>CreateEnvironmentMap(const std::filesystem::path& path);
 
+		//gets called end of frame but if u dont want to wait to end of frame call it beefore u render then its fine
+		static void UpdateAllEnvironment();
 		template<typename FuncT>
 		static void Submit(FuncT&& func)
 		{

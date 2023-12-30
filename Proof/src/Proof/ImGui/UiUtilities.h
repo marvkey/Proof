@@ -11,6 +11,7 @@ namespace Proof::UI
 		/// Lines
 		void Underline(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f);
 	}
+	void HandleModified(bool value);
 	static void Separator()
 	{
 		ImGui::Separator();

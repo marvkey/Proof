@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "VertexArray.h"
-#include "Platform/OpenGL/OpenGLVertexArray.h"
-#include "Platform/Vulkan/VulkanVertexArray.h"
+//#include "Platform/OpenGL/OpenGLVertexArray.h"
+#include "Proof/Platform/Vulkan/VulkanVertexArray.h"
 #include "Renderer.h"
 namespace Proof {
 	

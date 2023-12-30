@@ -223,4 +223,19 @@ namespace Proof {
         t = tmin;
         return true;
     }
+    bool BasicCollision::RayInAABB(const Ray& ray, const AABB& aabb, float tmin, float tmax, float& t)
+    {
+        auto t0 = (aabb.Min - ray.Origin) * (1.f/ray.Direction);
+        auto t1 = (aabb.Max - ray.Origin) * (1.f / ray.Direction);
+
+        auto tsmall = glm::min(t0, t1);
+        auto tbig = glm::max(t0, t1);
+
+        auto tminf = glm::max(tmin, glm::max(tsmall.x, glm::max(tsmall.y, tsmall.z)));
+        auto tmaxf = glm::min(tmax, glm::min(tbig.x, glm::min(tbig.y, tbig.z)));
+
+        t = tminf;
+
+        return (tminf <= tmaxf);
+    }
 }

@@ -65,7 +65,7 @@ namespace Proof
 			std::enable_if_t<std::is_constructible<AssetType, Args...>::value&& Is_Compatible<AssetType, Asset>::value, int> = 0>
 		static Count<AssetType> NewAsset(const std::filesystem::path& savePath, Args&&... args)
 		{
-			static_assert(!std::is_same<AssetType, class World>::value, "Cannot craet  a world like this");
+			//static_assert(!std::is_same<AssetType, class World>::value, "Cannot craet  a world like this");
 			Count<Asset> asset = Count<AssetType>::Create(std::forward<Args>(args)...);
 			AssetInfo assetInfo;
 			assetInfo.Path = std::filesystem::relative(savePath, AssetManager::GetDirectory());

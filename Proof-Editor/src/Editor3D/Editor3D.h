@@ -1,11 +1,13 @@
 #pragma once
 #include "Proof/Core/Layer.h"
 #include "Proof/Scene/Entity.h"
+#include "Proof/Scene/Camera/EditorCamera.h"
 #include "Proof/Input/KeyCodes.h"
 #include "Proof/Events/KeyEvent.h"
 namespace Proof {
 	
-	class Editore3D : public Layer {
+	class Editore3D : public Layer 
+	{
 	public:
 		Editore3D();
 		~Editore3D();
@@ -20,7 +22,7 @@ namespace Proof {
 		static bool IsKeyPressedEditor(KeyBoardKey Key);
 		static bool IsKeyClickedEditor(KeyBoardKey Key);
 		bool m_ViewPortFocused = false;
-		EditorCamera m_EditorCamera = { 200,200 };
+		class EditorCamera m_EditorCamera;
 	private:
 		struct KeyBoardShowEvent {
 			bool ShowAll = false;
@@ -73,6 +75,7 @@ namespace Proof {
 		ControllerEvent m_ShowAllControllerEvents;
 		virtual void OnEvent(Event& e);
 		bool OnKeyClicked(KeyClickedEvent& e);
+		bool OnMouseButtonClicked(class MouseButtonClickedEvent& e);
 		Entity m_CopyEntity;
 		void Logger();
 		void ViewPort();
@@ -88,7 +91,7 @@ namespace Proof {
 
 		friend class Renderer3D;
 		friend class RendererBase;
-		void Save();
+		bool Save();
 		void PlayWorld();
 		void SimulateWorld();
 		void SetWorldEdit();
@@ -102,6 +105,11 @@ namespace Proof {
 		uint32_t m_PlayersCount = 1;
 		static Editore3D* s_Instance;
 	private:
+		void OpenWorld(AssetID ID);
 		void UI_StatisticsPanel();
+		void UI_HandleAssetDrop();
+		void UI_ShowCreateNewMeshPopup();
+		void UI_ShowInvalidAssetMetadataPopup();
+		void UI_SaveWorldAs();
 	};
 }

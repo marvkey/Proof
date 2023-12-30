@@ -203,30 +203,9 @@ namespace Proof {
 			material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
 
 		SetMaterial(material);
-
 		auto capsuleData = GetCapsuleData(component.Direction, worldTransform);
 
-		//if (capsuleData.scaleDirection == 1.0f)
-		//	capsuleData.scaleDirection /= 2;
-		//if (capsuleData.radiusScale != 1)
-		//	capsuleData.radiusScale /= 2;
-		//else if(capsuleData.radiusScale == 1)
-		//	capsuleData.scaleDirection -= 0.50;
-		//else if (capsuleData.radiusScale / 2 > capsuleData.scaleDirection)
-		//{
-		//	float greaterValue = capsuleData.radiusScale / capsuleData.scaleDirection*2;
-		//	capsuleData.scaleDirection -= greaterValue *1.5;
-		//}
-		//
-		//if (capsuleData.radiusScale > 1)
-		//{
-		//
-		//	capsuleData.radiusScale /= 4;
-		//	capsuleData.radiusScale -= 1;
-		//}
-		
-
-		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * capsuleData.radiusScale, (component.Height/4) * worldTransform.Scale.y);
+		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * glm::max(worldTransform.Scale.x, worldTransform.Scale.z), 0.5f * component.Height * worldTransform.Scale.y);
 		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, m_Material->GetPhysxMaterial());
 		m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);

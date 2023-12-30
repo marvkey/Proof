@@ -56,7 +56,7 @@ namespace Proof
 	}
 
 	bool Input::IsMouseButtonPressed(MouseButton Button) {
-		if (Application::Get()->GetWindow()->IsInputEventEnabled() == false)return false;
+		//if (Application::Get()->GetWindow()->IsInputEventEnabled() == false)return false;
 		if (glfwGetMouseButton((GLFWwindow*)Application::Get()->GetWindow()->GetWindow(), (int)Button)) {
 			return true;
 		}

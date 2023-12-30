@@ -7,9 +7,13 @@ namespace Proof
 	struct Ray;
 	class BasicCollision
 	{
+	public:
+
 		static bool PointInAABB(const AABB& aabb, const glm::vec3& point);
 		static bool AABBInAABB(const AABB& aabb0, const AABB& aabb1);
 		static bool RayInAABB(const Ray& Ray,const AABB& aabb0, float& tmin, float& tmax);
 		static bool RayInAABB(const Ray& Ray, const AABB& aabb, float& t);
+		static bool RayInAABB(const Ray& Ray, const AABB& aabb, float tmin, float tmax, float& t);
+
 	};
 }

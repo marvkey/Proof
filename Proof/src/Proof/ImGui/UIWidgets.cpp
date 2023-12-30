@@ -172,6 +172,7 @@ namespace Proof::UI
 
 			UI::EndPopup();
 		}
+		HandleModified(modified);
 
 		return modified;
 	}
@@ -297,7 +298,7 @@ namespace Proof::UI
 
 			UI::EndPopup();
 		}
-
+		HandleModified(modified);
 		return modified;
 	}
 	

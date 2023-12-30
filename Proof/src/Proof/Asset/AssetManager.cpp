@@ -56,6 +56,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::Audio] = CreateSpecial<AudioAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::MeshCollider] = CreateSpecial<MeshColliderAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::ScriptFile] = CreateSpecial<ScriptFileAssetSerilizer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::World] = CreateSpecial<WorldAssetSerializer>();
 		}
 
 		{
@@ -192,8 +193,19 @@ namespace Proof
 		{
 			asset->m_ID = assetInfo.ID;
 		}
-		if (asset && assetInfo.RuntimeAsset == false && !assetInfo.IsAssetSource() && assetInfo.Type != AssetType::World)
+		if (asset && assetInfo.RuntimeAsset == false && !assetInfo.IsAssetSource())
 			SaveAsset(asset->GetID());
+
+		// AssetManager does not hold reference to any world
+		if (asset && assetInfo.Type == AssetType::World)
+		{
+			s_AssetManagerData->Assets[assetInfo.ID].Asset = nullptr;
+			s_AssetManagerData->Assets[assetInfo.ID].Info.State = AssetState::Unloaded;
+		}
+
+		if (assetInfo.RuntimeAsset == false)
+			SaveAssetManager();
+
 	}
 	Count<Asset> AssetManager::InternalGetAsset(AssetID ID)
 	{
@@ -201,7 +213,7 @@ namespace Proof
 		auto& it = s_AssetManagerData->Assets[ID];
 		if (Utils::IsAssetSource( it.Info.Type) && it.Info.Type != AssetType::MeshSourceFile)
 			return nullptr;
-		if (it.Info.Type == AssetType::World)
+		if (it.Info.Type == AssetType::World && it.Info.State != AssetState::Ready)
 			return nullptr;
 		if (it.Info.State == AssetState::Unloaded)
 			LoadAsset(ID);

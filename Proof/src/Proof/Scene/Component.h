@@ -332,7 +332,9 @@ namespace Proof
 		uint32_t StartIndexSlot = 0;
 	};
 
-	struct SkyLightComponent{
+	
+	struct SkyLightComponent
+	{
 	public:
 		SkyLightComponent(const SkyLightComponent&) = default;
 		SkyLightComponent() = default;
@@ -342,14 +344,8 @@ namespace Proof
 	public:
 		// Hdr Maps
 		float SkyBoxLoad = 0.0f;
-		Count<Environment> Environment;
+		Count<Environment> Environment = Count<class Environment>::Create();
 
-		//dynamic sky
-		bool DynamicSky = true;
-		float Turbidity = 2.0f;//min(1.8f)
-		float Azimuth = 0;
-		float Inclination = 0;
-		
 		//for all 
 		glm::vec3 ColorTint{1};
 		float MapRotation = 0.0f;
