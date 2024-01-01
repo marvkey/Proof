@@ -7,7 +7,8 @@ namespace Proof{
 		Count< class GraphicsPipeline> Pipeline;
 		Count<class FrameBuffer> TargetFrameBuffer;
 	};
-	class RenderPass : public RefCounted {
+	class RenderPass : public RefCounted 
+	{
 	public:
 		virtual void SetInput(std::string_view name, Count<class UniformBuffer> buffer) = 0;
 		virtual void SetInput(std::string_view name, Count<class Texture2D> iamge) = 0;
@@ -19,6 +20,7 @@ namespace Proof{
 		void virtual SetInput(std::string_view name, Count<class ImageView> imageView) = 0;
 		void virtual SetInput(std::string_view name, const std::vector< Count<class ImageView>>& imageViews) = 0;
 		void virtual SetInput(std::string_view name, Count<class Image2D>image) = 0;
+		void virtual SetInput(std::string_view name, Count<class Image>image) = 0;
 		void virtual SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images) = 0;
 
 		virtual Count<class Image> GetOutput(uint32_t imageIndex) = 0;

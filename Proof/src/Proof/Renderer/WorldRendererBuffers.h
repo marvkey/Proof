@@ -70,7 +70,7 @@ namespace Proof
 		std::vector<SpotLight> SpotLights;
 	};
 
-	struct UBCameraData
+	struct alignas(16) UBCameraData
 	{
 		glm::mat4 Projection;
 		glm::mat4 InverseProjection;
@@ -83,6 +83,7 @@ namespace Proof
 		glm::vec3 Position;
 		float NearPlane;
 		float FarPlane;
+		float Fov;
 	};
 	struct UBRenderData
 	{
@@ -124,5 +125,26 @@ namespace Proof
 		uint32_t PointLightCount = 0;
 		uint32_t SpotLightCount = 0;
 		glm::uvec3 LightCullingWorkGroups;
+	};
+
+	struct alignas(16) UBHBAOData
+	{
+		glm::vec4 PerspectiveInfo;
+
+		glm::vec2 InvQuarterResolution;
+		float RadiusToScreen;
+		float NegInvR2;
+
+		float NDotVBias;
+		float AOMultiplier;
+		float PowExponent;
+		int bIsOrtho;
+
+		glm::vec4 Float2Offsets[16];
+		glm::vec4 Jitters[16];
+
+		glm::vec3 Padding;
+		float ShadowTolerance;
+
 	};
 }

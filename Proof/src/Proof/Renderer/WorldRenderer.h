@@ -142,6 +142,14 @@ namespace Proof
 
 	class RenderPass;
 	class ComputePass;
+
+	struct WorldRendererCamera
+	{
+		Camera Camera;
+		float NearPlane;
+		float FarPlane;
+		float Fov;
+	};
 	class WorldRenderer : public RefCounted {
 	public:
 
@@ -152,7 +160,7 @@ namespace Proof
 		void SetContext(Count<class World> world);
 		// make sure all settings for the renderer are set before callign this fucntion
 		// like make sure shadows are set to teh write shadow quality
-		void BeginScene(const Camera& camera, const glm::vec3& location, float nearPlane, float farPlane);
+		void BeginScene(const WorldRendererCamera& camera, const glm::vec3& location);
 		void EndScene();
 
 		void SubmitSkyLight(const UBSkyLight& skyLight, Count<class Environment> environment);
@@ -196,15 +204,17 @@ namespace Proof
 		UBScreenData m_UBScreenData;
 		UBCameraData m_UBCameraData;
 		UBLightScene m_UBLightData;
+		UBHBAOData m_HBAOData;
 
 		//buffer sts
 		Count<UniformBufferSet> m_UBRenderDataBuffer;
 		Count<UniformBufferSet> m_UBSceneDataBuffer;
 		Count<UniformBufferSet> m_UBCameraBuffer;
 		Count<UniformBufferSet> m_UBSKyBoxBuffer;
-		Count<UniformBufferSet>m_UBCascadeProjectionBuffer;
+		Count<UniformBufferSet> m_UBCascadeProjectionBuffer;
 		Count<UniformBufferSet> m_UBScreenBuffer;
 		Count<UniformBufferSet> m_UBLightSceneBuffer;
+		Count<UniformBufferSet> m_UBHBAOBuffer;
 
 		//storagebuffer
 		Count<StorageBufferSet> m_SBDirectionalLightsBuffer;
@@ -224,8 +234,6 @@ namespace Proof
 		Count<UniformBufferSet> m_ShadowPassBuffer;
 		Count<class Image2D> m_ShadowPassImage;
 
-		
-
 		//meshes
 		Count<Mesh> m_Cube;
 		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
@@ -233,7 +241,6 @@ namespace Proof
 		Special<class Renderer2D>  m_UIRenderer;
 		Special<class Renderer2D>  m_ParticleSystemRenderer;
 		Count<class RenderCommandBuffer> m_CommandBuffer;
-
 
 		Count<class StorageBufferSet> m_SBDirectionalLights;
 
@@ -298,6 +305,20 @@ namespace Proof
 		inline static const uint32_t TILE_SIZE = 16u;
 		inline static const uint32_t MAX_NUM_LIGHTS_PER_TILE = 1024u;
 
+		// HBAO
+
+		struct AmbientOcclusionRenderer
+		{
+			struct HBAO
+			{
+				Count<ComputePass> HBAOPass;
+				Count<RenderPass> ReinterleavePass;
+				Count<RenderPass> DeinterleavePass[2];
+				Count<RenderPass> BlurPass[2];
+				Count<class Image2D> HBAOOutputImage;
+				glm::uvec3 WorkGroups{ 1 };
+			} HBAO;
+		} m_AmbientOcclusion;
 		//bloom
 		Count<ComputePass> m_BloomComputePass;
 		Count<Texture2D> m_BloomDirtTexture;
@@ -322,10 +343,14 @@ namespace Proof
 		void CompositePass();
 
 		//post processing passes
+
 		void AmbientOcclusionPass();
+		void HBAOPass();
+
 		void BloomPass();
 		void DOFPass();
 		void DrawScene();
+		void ClearPass(Count<RenderPass> renderPass, bool explicitClear);
 		// tehse are static so basically when wer are writng code we avoid errors of 
 		// writing code to a speicif world rendere class
 

@@ -100,6 +100,37 @@ namespace Proof {
 			callback(this);
 	}
 
+	Count<ImageView> VulkanImage2D::CreateOrGetImageMip(uint32_t mip, uint32_t layer)
+	{
+		if (m_ImageViews[layer].contains(mip))
+			return m_ImageViews[layer][mip];
+
+		uint32_t mipLevelCount = m_Specification.Mips;
+		if (mip >= mipLevelCount)
+		{
+			return nullptr;
+		}
+
+		ImageViewConfiguration config;
+		config.DebugName = fmt::format("Image: {} layer:{} mip: {}", m_Specification.DebugName, layer, mip);
+		config.Mip = mip;
+		config.Layer = layer;
+		config.View = m_Specification.ImageLayerViewsBaseType;
+		config.Image = Count<Image2D>(this);
+		Count<ImageView> view = ImageView::Create(config);
+		m_ImageViews[layer][mip] = view;
+		return view;
+	}
+
+	void VulkanImage2D::CreateMipAndLayerViews()
+	{
+		for (uint32_t layer = 0; layer < m_Specification.Layers; layer++)
+		{
+			for (uint32_t mip = 0; mip < m_Specification.Mips; mip++)
+				CreateOrGetImageMip(mip, layer);
+		}
+	}
+
 	void VulkanImage2D::AddResizeCallback(const Image2DResizeCallback& func)
 	{
 		m_ResizeCallbacks.push_back(func);

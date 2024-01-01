@@ -16,15 +16,15 @@
 #include "Proof/Scene/Mesh.h"
 #include "Shader.h"
 #include "Proof/Physics/PhysicsMeshCooker.h"
-#include"DebugMeshRenderer.h"
-#include"Font.h"
+#include "DebugMeshRenderer.h"
+#include "Font.h"
 #include "ParticleSystem.h"
 #include "ComputePipeline.h"
 #include "RenderMaterial.h"
 #include "ComputePass.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Math/Random.h"
-#include"Vertex.h"
+#include "Vertex.h"
 #include "Proof/Platform/Vulkan/VulkanFrameBuffer.h"
 #include "Proof/Platform/Vulkan/VulkanImage.h"
 #include "Proof/Math/MathConvert.h"	
@@ -35,12 +35,12 @@
 #include "Proof/Asset/AssetManager.h"
 
 #include "VertexArray.h"
-#include<glm/glm.hpp>
-#include<glm/gtc/matrix_transform.hpp>
-#include<glm/gtc/type_ptr.hpp>
-#include<glm/gtx/rotate_vector.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/quaternion.hpp>
-#include<glm/gtx/compatibility.hpp>
+#include <glm/gtx/compatibility.hpp>
 #include <glm/gtc/matrix_inverse.hpp> 
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -118,6 +118,28 @@ namespace Proof
 
 		}
 	}
+	static std::array<glm::vec4, 16> HBAOJitter()
+	{
+		static std::uniform_real_distribution<float> s_Jitters(0.f, 1.f);
+		static std::default_random_engine s_JitterGenerator(1337u);
+		constexpr float PI = 3.14159265358979323846264338f;
+		const float numDir = 8.f;  // keep in sync to glsl
+
+		std::array<glm::vec4, 16> result{};
+
+		for (int i = 0; i < 16; i++)
+		{
+			float Rand1 = s_Jitters(s_JitterGenerator);
+			float Rand2 = s_Jitters(s_JitterGenerator);
+			// Use random rotation angles in [0,2PI/NUM_DIRECTIONS)
+			const float Angle = 2.f * PI * Rand1 / numDir;
+			result[i].x = cosf(Angle);
+			result[i].y = sinf(Angle);
+			result[i].z = Rand2;
+			result[i].w = 0;
+		}
+		return result;
+	}
 	struct MeshInstanceVertex {
 
 		glm::mat4 Transform;
@@ -137,9 +159,13 @@ namespace Proof
 		return rotationVec;
 	}
 
-	static const uint32_t DOF_NUM_THREADS =32;
+	static const uint32_t DOF_NUM_THREADS = 32;
 	static const uint32_t BLOOM_COMPUTE_WORK_GROUP_SIZE = 8;
-	
+	static const uint32_t HBAO_WORK_GROUP_SIZE = 16u;
+	#define AO_RANDOMTEX_SIZE 4
+	static constexpr int HBAO_RANDOM_SIZE = AO_RANDOMTEX_SIZE;
+	static constexpr int HBAO_RANDOM_ELEMENTS = HBAO_RANDOM_SIZE * HBAO_RANDOM_SIZE;
+	static constexpr int NUM_MRT = 8;
 	WorldRenderer::~WorldRenderer() {
 		for (auto& transformBuffer : m_SubmeshTransformBuffers)
 			pdelete[] transformBuffer.Data;
@@ -174,6 +200,7 @@ namespace Proof
 		m_UBSKyBoxBuffer = UniformBufferSet::Create(sizeof(UBSkyLight));
 		m_UBCascadeProjectionBuffer = UniformBufferSet::Create(sizeof(glm::mat4) * 4);
 		m_UBLightSceneBuffer = UniformBufferSet::Create(sizeof(UBLightScene) * 4);
+		m_UBHBAOBuffer = UniformBufferSet::Create(sizeof(UBHBAOData));
 
 		//storage images
 		m_SBDirectionalLightsBuffer = StorageBufferSet::Create(sizeof(DirectionalLight));
@@ -472,6 +499,192 @@ namespace Proof
 				m_CompositePass = RenderPass::Create(renderPassSpec);
 				m_CompositeMaterial = RenderMaterial::Create({ "Composite", Renderer::GetShader("WorldComposite") });
 			}
+			//AmbientOcclusion
+			{
+				//AO-compoiste
+				{
+					FrameBufferConfig framebufferSpec;
+					framebufferSpec.DebugName = "AO-Composite";
+					framebufferSpec.Attachments = { ImageFormat::RGBA32F };
+					framebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+					framebufferSpec.ClearColorOnLoad = false;
+
+					auto aoframeBuffer = FrameBuffer::Create(framebufferSpec);
+
+					GraphicsPipelineConfiguration pipelineConfig;
+					pipelineConfig.DebugName = "AO-Composite";
+					pipelineConfig.VertexArray = quadVertexArray;
+					pipelineConfig.Attachments = { ImageFormat::RGBA32F };
+					pipelineConfig.BlendMode = BlendMode::Zero_SrcColor ;
+					pipelineConfig.Blend = true;
+					pipelineConfig.DepthTest = false;
+					pipelineConfig.Shader = Renderer::GetShader("AO-Composite");
+					pipelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
+
+					auto aoPipeline = GraphicsPipeline::Create(pipelineConfig);
+
+					RenderPassConfig renderPassConfig;
+					renderPassConfig.DebugName = "AO-Composite";
+					renderPassConfig.Pipeline = aoPipeline;
+					renderPassConfig.TargetFrameBuffer = aoframeBuffer;
+					m_AmbientOcclusionCompositePass = RenderPass::Create(renderPassConfig);
+				}
+
+				//HBAO
+				{
+					//Deinterleaving
+					{
+						ImageConfiguration imageSpec;
+						imageSpec.Format = ImageFormat::R32F;
+						imageSpec.Layers = 16;
+						imageSpec.Usage = ImageUsage::Attachment;
+						imageSpec.DebugName = "Deinterleaved";
+						Count<Image2D> image = Image2D::Create(imageSpec);
+						image->CreateMipAndLayerViews();
+
+						FrameBufferConfig deinterleavingFramebufferSpec;
+						deinterleavingFramebufferSpec.Width = 1;
+						deinterleavingFramebufferSpec.Height = 1;
+						deinterleavingFramebufferSpec.Attachments.Attachments = { 8,ImageFormat::R32F  }; // 8 images, with RED32F
+						deinterleavingFramebufferSpec.ClearColor = { 1.0f, 0.0f, 0.0f, 1.0f };
+						deinterleavingFramebufferSpec.DebugName = "Deinterleaving";
+
+						for (auto& attachment : deinterleavingFramebufferSpec.Attachments.Attachments)
+							attachment.ExistingImage = image;
+
+						deinterleavingFramebufferSpec.Attachments.Attachments[0].ExistingImage = image;
+
+						Count<Shader> shader = Renderer::GetShader("Deinterleaving");
+
+						GraphicsPipelineConfiguration pipelineConfig;
+						pipelineConfig.DebugName = "Deinterleaving";
+						pipelineConfig.WriteDepth = false;
+						pipelineConfig.DepthTest = false;
+						pipelineConfig.Shader = shader;
+						pipelineConfig.VertexArray = quadVertexArray;
+						pipelineConfig.Attachments.Attachments = { 8,ImageFormat::R32F }; // 8 images, with RED32F
+
+						Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineConfig);
+						
+
+						// 2 frame buffers, 2 render passes .. 8 attachments each
+						//for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i += NUM_MRT)
+						for (int i = 0; i < 2; i ++)
+						{
+							deinterleavingFramebufferSpec.ExistingImageLayers.clear();
+							for (int layer = 0; layer < NUM_MRT; layer++)
+								deinterleavingFramebufferSpec.ExistingImageLayers.emplace_back( i * 8 + layer);
+
+							Count<FrameBuffer> frameBuffer = FrameBuffer::Create(deinterleavingFramebufferSpec);
+
+							RenderPassConfig renderPassConfig;
+							renderPassConfig.TargetFrameBuffer = frameBuffer;
+							renderPassConfig.DebugName = fmt::format("Deinterleaving {}",i);
+							renderPassConfig.Pipeline = pipeline;
+
+							m_AmbientOcclusion.HBAO.DeinterleavePass[i] = RenderPass::Create(renderPassConfig);
+							m_AmbientOcclusion.HBAO.DeinterleavePass[i]->SetInput("u_DepthMap", m_PreDepthPass->GetOutput(0).As<Image2D>());
+							m_AmbientOcclusion.HBAO.DeinterleavePass[i]->AddGlobalInput(m_GlobalInputs);
+						}
+					}
+
+					//Reinterleaving
+					{
+						FrameBufferConfig reinterleavingFramebufferSpec;
+						reinterleavingFramebufferSpec.Attachments = { ImageFormat::RG16F };
+						reinterleavingFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+						reinterleavingFramebufferSpec.DebugName = "Reinterleaving";
+
+						Count<FrameBuffer> framebuffer = FrameBuffer::Create(reinterleavingFramebufferSpec);
+
+						GraphicsPipelineConfiguration pipelineConfig;
+						pipelineConfig.CullMode = CullMode::None;
+						pipelineConfig.Shader = Renderer::GetShader("Reinterleaving");
+						pipelineConfig.DepthTest = false;
+						pipelineConfig.WriteDepth = false;
+						pipelineConfig.VertexArray = quadVertexArray;
+						pipelineConfig.Attachments = { ImageFormat::RG16F };
+
+						Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineConfig);
+
+						RenderPassConfig renderPassConfig;
+						renderPassConfig.DebugName = "Reinterleaving";
+						renderPassConfig.TargetFrameBuffer = framebuffer;
+						renderPassConfig.Pipeline = pipeline;
+
+						m_AmbientOcclusion.HBAO.ReinterleavePass = RenderPass::Create(renderPassConfig);
+
+
+
+					}
+
+					//Blur
+					{
+						auto shader = Renderer::GetShader("HBAOBlur");
+
+						GraphicsPipelineConfiguration pipelineSpecification;
+						pipelineSpecification.VertexArray = quadVertexArray;
+						pipelineSpecification.CullMode = CullMode::None;
+						pipelineSpecification.DepthTest = false;
+						pipelineSpecification.WriteDepth = false;
+						pipelineSpecification.Shader = shader;
+						pipelineSpecification.DebugName = "HBAOBlur";
+						pipelineSpecification.Attachments = { ImageFormat::RG16F };
+
+						Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineSpecification);
+
+						FrameBufferConfig hbaoBlurFramebufferSpec;
+						hbaoBlurFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+						hbaoBlurFramebufferSpec.Attachments = { ImageFormat::RG16F };
+
+						RenderPassConfig renderPassSpec;
+						renderPassSpec.Pipeline = pipeline;
+						
+						{
+							hbaoBlurFramebufferSpec.DebugName = "HBAOBlur0";
+							auto frameBuffer = FrameBuffer::Create(hbaoBlurFramebufferSpec);
+
+							renderPassSpec.DebugName = "HBAOBlur0";
+							renderPassSpec.TargetFrameBuffer = frameBuffer;
+
+							m_AmbientOcclusion.HBAO.BlurPass[0] = RenderPass::Create(renderPassSpec);
+						}
+
+						{
+							hbaoBlurFramebufferSpec.DebugName = "HBAOBlur1";
+							auto frameBuffer = FrameBuffer::Create(hbaoBlurFramebufferSpec);
+
+							renderPassSpec.DebugName = "HBAOBlur1";
+							renderPassSpec.TargetFrameBuffer = frameBuffer;
+
+							m_AmbientOcclusion.HBAO.BlurPass[1] = RenderPass::Create(renderPassSpec);
+						}
+
+					}
+					//HBAO Pass
+					{
+						ImageConfiguration imageSpec;
+						imageSpec.Format = ImageFormat::RG16F;
+						imageSpec.Usage = ImageUsage::Storage;
+						imageSpec.ImageLayerViewsBaseType = ImageViewType::View2DArray;
+						imageSpec.Layers = 16;
+						imageSpec.DebugName = "HBAO-Output";
+						Count<Image2D> image = Image2D::Create(imageSpec);
+
+						m_AmbientOcclusion.HBAO.HBAOOutputImage = image;
+
+						for (int i = 0; i < 16; i++)
+							m_HBAOData.Float2Offsets[i] = glm::vec4((float)(i % 4) + 0.5f, (float)(i / 4) + 0.5f, 0.0f, 1.f);
+
+						std::memcpy(m_HBAOData.Jitters, HBAOJitter().data(), sizeof glm::vec4 * 16);
+
+						m_AmbientOcclusion.HBAO.HBAOPass = ComputePass::Create(ComputePassConfiguration{ "HBAO",
+							ComputePipeline::Create({"HBAO",Renderer::GetShader("HBAO")}) });
+
+						m_AmbientOcclusion.HBAO.HBAOPass->SetInput("HBAOData", m_UBHBAOBuffer);
+					}
+				}
+			}
 			#if 0
 			// Ambient occlusion
 			{
@@ -549,35 +762,7 @@ namespace Proof
 					m_SSAOBlurPass->SetInput("u_SSAOTexture", m_SSAOImage);
 					m_SSAOBlurPass->AddGlobalInput(m_GlobalInputs);
 				}
-				//AO-compoiste
-				{
-					FrameBufferConfig framebufferSpec;
-					framebufferSpec.DebugName = "AO-Composite";
-					framebufferSpec.Attachments = { ImageFormat::RGBA32F };
-					framebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
-					//framebufferSpec.Blend = true;
-					framebufferSpec.ClearColorOnLoad = false;
-					//framebufferSpec.BlendMode = FramebufferBlendMode::Zero_SrcColor;
-
-					auto aoframeBuffer = FrameBuffer::Create(framebufferSpec);
-
-					GraphicsPipelineConfiguration pipelineConfig;
-					pipelineConfig.DebugName = "AO-Composite";
-					pipelineConfig.VertexArray = quadVertexArray;
-					pipelineConfig.Attachments = { ImageFormat::RGBA32F };
-					//pipelineConfig.BlendMode = BlendMode::Zero_SrcColor ;
-					pipelineConfig.Blend = true;
-					pipelineConfig.DepthTest = false;
-					pipelineConfig.Shader = Renderer::GetShader("AO-Composite");
-
-					auto aoPipeline = GraphicsPipeline::Create(pipelineConfig);
-
-					RenderPassConfig renderPassConfig;
-					renderPassConfig.DebugName = "AO-Composite";
-					renderPassConfig.Pipeline = aoPipeline;
-					renderPassConfig.TargetFrameBuffer = aoframeBuffer;
-					m_AmbientOcclusionCompositePass = RenderPass::Create(renderPassConfig);
-				}
+				
 			}
 #endif
 			//bloom
@@ -599,11 +784,11 @@ namespace Proof
 				m_BloomComputeTextures[2] = Texture2D::Create(spec);
 
 
-				glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
-				bloomSize += BLOOM_COMPUTE_WORK_GROUP_SIZE - bloomSize % BLOOM_COMPUTE_WORK_GROUP_SIZE;
-				m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
-				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
-				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
+				//glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
+				//bloomSize += BLOOM_COMPUTE_WORK_GROUP_SIZE - bloomSize % BLOOM_COMPUTE_WORK_GROUP_SIZE;
+				//m_BloomComputeTextures[0]->Resize(bloomSize.x, bloomSize.y);
+				//m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
+				//m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
 			}
 
 			//DOF
@@ -707,7 +892,7 @@ namespace Proof
 		m_ActiveWorld = world;
 
 	}
-	void WorldRenderer::BeginScene(const Camera& camera, const glm::vec3& location, float nearPlane, float farPlane)
+	void WorldRenderer::BeginScene(const WorldRendererCamera& camera, const glm::vec3& location)
 	{
 		PF_PROFILE_FUNC();
 		PF_CORE_ASSERT(!m_InContext);
@@ -759,6 +944,20 @@ namespace Proof
 				size += DOF_NUM_THREADS - size % DOF_NUM_THREADS;
 				m_DOFTexture->Resize(size.x, size.y);
 			}
+
+			//HBAO
+			{
+				glm::uvec2 quarterSize = (viewportSize + 3u) / 4u;
+
+				m_AmbientOcclusion.HBAO.DeinterleavePass[0]->GetTargetFrameBuffer()->Resize(quarterSize);
+				m_AmbientOcclusion.HBAO.DeinterleavePass[1]->GetTargetFrameBuffer()->Resize(quarterSize);
+				m_AmbientOcclusion.HBAO.HBAOOutputImage->Resize(quarterSize.x, quarterSize.y);
+
+				quarterSize += HBAO_WORK_GROUP_SIZE - quarterSize % HBAO_WORK_GROUP_SIZE;
+				m_AmbientOcclusion.HBAO.WorkGroups.x = quarterSize.x / 16u;
+				m_AmbientOcclusion.HBAO.WorkGroups.y = quarterSize.y / 16u;
+				m_AmbientOcclusion.HBAO.WorkGroups.z = 16;
+			}
 			// predepth
 			m_PreDepthPass->GetTargetFrameBuffer()->Resize(viewportSize);
 
@@ -767,7 +966,7 @@ namespace Proof
 
 			// compoiste 
 			m_CompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
-
+			m_AmbientOcclusionCompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
 			#if 0
 			//AO
 			{
@@ -814,16 +1013,17 @@ namespace Proof
 
 		// camera buffer
 		{
-			m_UBCameraData.Projection = camera.GetProjectionMatrix();
+			m_UBCameraData.Projection = camera.Camera.GetProjectionMatrix();
 			m_UBCameraData.InverseProjection = glm::inverse(m_UBCameraData.Projection);
-			m_UBCameraData.UnreversedProjectionMatrix = camera.GetUnReversedProjectionMatrix();
-			m_UBCameraData.View = camera.GetViewMatrix();
+			m_UBCameraData.UnreversedProjectionMatrix = camera.Camera.GetUnReversedProjectionMatrix();
+			m_UBCameraData.View = camera.Camera.GetViewMatrix();
 			m_UBCameraData.InverseView = glm::inverse(m_UBCameraData.View);
 			m_UBCameraData.ViewProjection = m_UBCameraData.Projection * m_UBCameraData.View;
 			m_UBCameraData.InverseViewProjection = m_UBCameraData.InverseProjection * m_UBCameraData.InverseView;
 			m_UBCameraData.Position = location;
-			m_UBCameraData.NearPlane = nearPlane;
-			m_UBCameraData.FarPlane = farPlane;
+			m_UBCameraData.NearPlane = camera.NearPlane;
+			m_UBCameraData.FarPlane = camera.FarPlane;
+			m_UBCameraData.Fov = camera.Fov;
 			m_UBCameraBuffer->SetData(frameIndex, Buffer(&m_UBCameraData, sizeof(UBCameraData)));
 		}
 	}
@@ -1472,8 +1672,8 @@ namespace Proof
 		Timer compositeTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		
+		AmbientOcclusionPass();
 		BloomPass();
-		//AmbientOcclusionPass();
 		DOFPass();
 
 		// this has to be the last thgn called
@@ -1547,11 +1747,18 @@ namespace Proof
 	}
 	void WorldRenderer::AmbientOcclusionPass()
 	{
-		if (AmbientOcclusionSettings.Enabled == false)
+		if (!AmbientOcclusionSettings.Enabled)
 			return;
 
 		PF_PROFILE_FUNC();
-		
+
+		if (AmbientOcclusionSettings.Type == AmbientOcclusion::AmbientOcclusionType::HBAO)
+		{
+			HBAOPass();
+			m_AmbientOcclusionCompositePass->SetInput("u_InputAOTexture", m_AmbientOcclusion.HBAO.BlurPass[1]->GetOutput(0));
+		}
+
+#if 0
 		if (AmbientOcclusionSettings.Type == AmbientOcclusion::AmbientOcclusionType::SSAO)
 		{
 			
@@ -1581,12 +1788,135 @@ namespace Proof
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_SSAOBlurPass);
 			Renderer::EndRenderPass(m_SSAOBlurPass);
 
+			
+		}
+#endif
+		{
+			PF_PROFILE_FUNC("AOComposite");
+			Renderer::BeginRenderPass(m_CommandBuffer, m_AmbientOcclusionCompositePass);
+
+			if (AmbientOcclusionSettings.Type == AmbientOcclusion::AmbientOcclusionType::HBAO)
 			{
-				PF_PROFILE_FUNC("AOComposite");
-				m_AmbientOcclusionCompositePass->SetInput("u_InputAOTexture", m_SSAOBlurPass->GetOutput(0).As<Image2D>());
-				Renderer::BeginRenderPass(m_CommandBuffer, m_AmbientOcclusionCompositePass);
-				Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_AmbientOcclusionCompositePass);
-				Renderer::EndRenderPass(m_AmbientOcclusionCompositePass);
+				int data = 0;
+				m_AmbientOcclusionCompositePass->PushData("u_PushData", &data);
+			}
+			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_AmbientOcclusionCompositePass);
+			Renderer::EndRenderPass(m_AmbientOcclusionCompositePass);
+		}
+		
+	}
+
+	void WorldRenderer::HBAOPass()
+	{
+		if (!AmbientOcclusionSettings.Enabled)
+			return;
+
+		PF_PROFILE_FUNC();
+
+		{
+			PF_PROFILE_FUNC("SetHBAOPass");
+
+			//UPDATA HBAODATA
+			// radius
+			const float meters2viewSpace = 1.0f;
+			const float R = AmbientOcclusionSettings.HBAO.Radius * meters2viewSpace;
+			const float R2 = R * R;
+			m_HBAOData.NegInvR2 = -1.0f / R2;
+			m_HBAOData.InvQuarterResolution = 1.f / glm::vec2{ (float)m_UBScreenData.FullResolution.x / 4, (float)m_UBScreenData.FullResolution.y / 4 };
+			m_HBAOData.RadiusToScreen = R * 0.5f * (float)m_UBScreenData.FullResolution.y / (tanf(m_UBCameraData.Fov * 0.5f) * 2.0f);
+
+			const float* P = glm::value_ptr(m_UBCameraData.Projection);
+			const glm::vec4 projInfoPerspective = {
+					2.0f / (P[4 * 0 + 0]),                  // (x) * (R - L)/N
+					2.0f / (P[4 * 1 + 1]),                  // (y) * (T - B)/N
+					-(1.0f - P[4 * 2 + 0]) / P[4 * 0 + 0],  // L/N
+					-(1.0f + P[4 * 2 + 1]) / P[4 * 1 + 1],  // B/N
+			};
+			m_HBAOData.PerspectiveInfo = projInfoPerspective;
+			m_HBAOData.bIsOrtho = false; //TODO: change depending on camera
+			m_HBAOData.PowExponent = glm::max(AmbientOcclusionSettings.HBAO.Intensity, 0.f);
+			m_HBAOData.NDotVBias = glm::min(std::max(0.f, AmbientOcclusionSettings.HBAO.Bias), 1.f);
+			m_HBAOData.AOMultiplier = 1.f / (1.f - m_HBAOData.NDotVBias);
+			m_HBAOData.ShadowTolerance = AmbientOcclusionSettings.ShadowTolerance;
+
+			m_UBHBAOBuffer->SetData(Renderer::GetCurrentFrameInFlight(), Buffer{ &m_HBAOData,sizeof(m_HBAOData) });
+		}
+		//deinter leave
+		{
+			PF_PROFILE_FUNC("Deinterleave");
+
+			//https://github.com/nvpro-samples/gl_ssao/blob/master/ssao.cpp @ line 914
+
+			for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i += NUM_MRT)
+			{
+
+				Count<RenderPass> deinterleavePass = i == 0 ? m_AmbientOcclusion.HBAO.DeinterleavePass[0] : m_AmbientOcclusion.HBAO.DeinterleavePass[1];
+
+				glm::vec2 pushData = { (i % 4) + 0.5f, float(i / 4) + 0.5f };
+				Renderer::BeginRenderPass(m_CommandBuffer, deinterleavePass);
+				deinterleavePass->PushData("u_PushData", &pushData);
+				Renderer::SubmitFullScreenQuad(m_CommandBuffer, deinterleavePass);
+				Renderer::EndRenderPass(deinterleavePass);
+			}
+		}
+		//HBAO Main Pass
+		{
+			PF_PROFILE_FUNC("HBAOMainPass");
+			auto hbaoPass = m_AmbientOcclusion.HBAO.HBAOPass;
+
+			hbaoPass->SetInput("u_LinearDepthTexArray", m_AmbientOcclusion.HBAO.DeinterleavePass[0]->GetTargetFrameBuffer()->GetOutput(0));
+			hbaoPass->SetInput("u_ViewNormalsMaskTex", m_GeometryPass->GetOutput(1));
+			hbaoPass->SetInput("o_Color", m_AmbientOcclusion.HBAO.HBAOOutputImage);
+
+			Renderer::BeginComputePass(m_CommandBuffer, hbaoPass);
+			hbaoPass->Dispatch(m_AmbientOcclusion.HBAO.WorkGroups);
+			Renderer::EndComputePass(hbaoPass);
+		}
+
+		//Reinterleave
+		{
+			PF_PROFILE_FUNC("Reinterleave");
+
+			auto reinterleavePass = m_AmbientOcclusion.HBAO.ReinterleavePass;
+			reinterleavePass->SetInput("u_TexResultsArray", m_AmbientOcclusion.HBAO.HBAOOutputImage);
+			Renderer::BeginRenderPass(m_CommandBuffer, reinterleavePass);
+			Renderer::SubmitFullScreenQuad(m_CommandBuffer, reinterleavePass);
+			Renderer::EndRenderPass(reinterleavePass);
+		}
+
+		//Blur pass
+		{
+			PF_PROFILE_FUNC("BlurPass");
+
+			{
+				PF_PROFILE_FUNC("BlurPass0");
+
+				auto blurPass0 = m_AmbientOcclusion.HBAO.BlurPass[0];
+				blurPass0->SetInput("u_InputTex", m_AmbientOcclusion.HBAO.ReinterleavePass->GetOutput(0));
+
+				Renderer::BeginRenderPass(m_CommandBuffer, blurPass0);
+				glm::vec3 pushData; //xy =InvResDirection, z = Sharpness;
+				pushData.x = m_UBScreenData.InverseFullResolution.x;
+				pushData.y = 0;
+				pushData.z = PostProcessSettings.AmbientOcclusionSettings.HBAO.BlurSharpness;
+				blurPass0->PushData("u_PushData", &pushData);
+				Renderer::SubmitFullScreenQuad(m_CommandBuffer, blurPass0);
+				Renderer::EndRenderPass(blurPass0);
+			}
+
+			{
+				PF_PROFILE_FUNC("BlurPass1");
+				auto blurPass1 = m_AmbientOcclusion.HBAO.BlurPass[1];
+				blurPass1->SetInput("u_InputTex", m_AmbientOcclusion.HBAO.BlurPass[0]->GetOutput(0));
+
+				Renderer::BeginRenderPass(m_CommandBuffer, blurPass1);
+				glm::vec3 pushData; //xy =InvResDirection, z = Sharpness;
+				pushData.x = 0;
+				pushData.y = m_UBScreenData.InverseFullResolution.y;
+				pushData.z = PostProcessSettings.AmbientOcclusionSettings.HBAO.BlurSharpness;
+				blurPass1->PushData("u_PushData", &pushData);
+				Renderer::SubmitFullScreenQuad(m_CommandBuffer, blurPass1);
+				Renderer::EndRenderPass(blurPass1);
 			}
 		}
 		
@@ -1798,6 +2128,8 @@ namespace Proof
 		Renderer::EndComputePass(m_BloomComputePass);
 
 	}
+
+	
 
 	void WorldRenderer::DOFPass()
 	{
@@ -2190,5 +2522,11 @@ namespace Proof
 
 		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
 		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+	}
+	void WorldRenderer::ClearPass(Count<RenderPass> renderPass, bool explicitClear)
+	{
+		PF_PROFILE_FUNC();
+		Renderer::BeginRenderPass(m_CommandBuffer, renderPass, explicitClear);
+		Renderer::EndRenderPass(renderPass);
 	}
 }

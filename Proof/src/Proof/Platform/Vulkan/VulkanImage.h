@@ -16,7 +16,8 @@ namespace Proof
 		std::filesystem::path m_Path;
 	};
 	*/
-	struct VulkanImageInfo {
+	struct VulkanImageInfo 
+	{
 		VulkanImageAlloc ImageAlloc;
 		VkImageView ImageView = nullptr;
 		VkSampler Sampler = nullptr;
@@ -82,6 +83,14 @@ namespace Proof
 		void CopyFromHostBuffer(Buffer& buffer);
 
 		void CallOnResizeFunctions();
+
+		void ClearImageViews()
+		{
+			m_ImageViews.clear();
+		}
+		Count<ImageView> CreateOrGetImageMip(uint32_t mip, uint32_t layer = 0);
+		virtual void CreateMipAndLayerViews();
+
 	private:
 		std::vector<Image2DResizeCallback > m_ResizeCallbacks;
 
@@ -94,9 +103,12 @@ namespace Proof
 		uint64_t m_SamplerHash;
 		bool m_SwapchainImage = false;
 
+		//layer, mip
+		std::map<uint32_t, std::map<uint32_t, Count<ImageView>>> m_ImageViews;
 	};
 
-	class VulkanImageView : public ImageView {
+	class VulkanImageView : public ImageView 
+	{
 	public:
 		VulkanImageView(const ImageViewConfiguration& spec);
 		~VulkanImageView();
@@ -112,6 +124,9 @@ namespace Proof
 		virtual uint32_t GetHeight() { return GetImage()->GetHeight(); };
 		virtual glm::uvec2 GetMipSize();
 
+		const VulkanImageInfo& GetVulkanImageInfo() const { return m_Info; }
+		const VulkanImageInfo& GetVulkanImageInfo() { return m_Info; }
+		VulkanImageInfo& GetVulkanImageInfoRef() { return m_Info; }
 	private:
 		VulkanImageInfo m_Info;
 		void Build();

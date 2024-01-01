@@ -47,7 +47,7 @@ namespace Proof
 
 		//only one depth buffer allowed
 		ImageFormat m_DepthFormat = ImageFormat::None;
-		Count<Image> m_DepthImage =nullptr;
+		Count<Image> m_DepthImage = nullptr;
 		std::vector<Count<Image>> m_Images;
 
 		VkFramebuffer m_FrameBuffer;

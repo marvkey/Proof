@@ -767,6 +767,11 @@ namespace Proof
     {
         m_DescritptorSetManager->SetGoalballInputs(globalInputs);
     }
+    void VulkanRenderPass::SetInput(std::string_view name, Count<class Image>image)
+    {
+        m_DescritptorSetManager->SetInput(name, image);
+    }
+
     void VulkanRenderPass::RT_PushData(std::string_view name, const void* data)
     {
         PF_CORE_ASSERT(m_RenderPassEnabled == true, "cannot push render pass if not render pass started");

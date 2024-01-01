@@ -80,13 +80,13 @@ namespace Proof {
 		else
 			return glm::vec3(0, 1, 0);
 	}
-	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane)
+	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane, float fov)
 	{
 		PF_PROFILE_FUNC();
 		m_Camera = camera;
 		m_CameraPositon = cameraLocation;
 		worldRenderer->SetContext(this);
-		worldRenderer->BeginScene(camera, cameraLocation, nearPlane, farPlane);
+		worldRenderer->BeginScene({ camera,nearPlane,farPlane,fov }, cameraLocation);
 
 		// lighting
 		{
@@ -838,7 +838,7 @@ namespace Proof {
 	void World::OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const EditorCamera& camera)
 	{
 		
-		OnRender(renderer, time, camera,camera.GetPosition(), camera.GetNearPlane(), camera.GetFarPlane());
+		OnRender(renderer, time, camera,camera.GetPosition(), camera.GetNearPlane(), camera.GetFarPlane(),camera.GetFOV());
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {

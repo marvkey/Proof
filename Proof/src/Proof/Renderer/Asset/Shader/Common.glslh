@@ -17,7 +17,8 @@ layout(set = 3, binding = 0) uniform CameraData
 	vec3 Position;
 	float NearPlane;
 	float FarPlane;
-}u_Camera;
+	float Fov;
+} u_Camera;
 
 layout (set = 3, binding = 1) uniform ScreenData
 {

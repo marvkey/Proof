@@ -91,7 +91,8 @@ namespace Proof
 			return (VkSamplerAddressMode)0;
 		}
 	}
-	class VulkanTexture2D : public Texture2D{
+	class VulkanTexture2D : public Texture2D
+	{
 	public:
 
 		VulkanTexture2D(const TextureConfiguration& config, Buffer buffer);
@@ -110,9 +111,12 @@ namespace Proof
 		virtual Vector2U GetSize()const override { return {m_Config.Width, m_Config.Height }; }
 		
 		virtual float GetAspectRatio()const override { return (float)GetWidth() / (float)GetHeight(); };
-		uint32_t GetMipLevelCount() { 
+		uint32_t GetMipLevelCount() 
+		{ 
 			if (m_Config.GenerateMips)
+			{
 				return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+			}
 			else
 				return 1;
 		}
@@ -135,8 +139,6 @@ namespace Proof
 		void RT_Build();
 		void Release();
 	private:
-		//layer, mip
-		std::map<uint32_t, std::map<uint32_t, Count<ImageView>>> m_ImageViews;
 		std::filesystem::path m_Path;
 		TextureConfiguration m_Config;
 		Count<Image2D> m_Image;

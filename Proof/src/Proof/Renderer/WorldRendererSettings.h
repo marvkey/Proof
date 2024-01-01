@@ -64,16 +64,16 @@ namespace Proof
 	struct AmbientOcclusion
 	{
 		bool Enabled = true;
+		float ShadowTolerance = 0.15f;
 		enum class AmbientOcclusionType
 		{
-			None = 0,
-			SSAO, // Scren space Ambient Occlusion
-			HBAO, // High 
-			GTAO //Ground Truth Ambient Occlusion
+			//SSAO, // Scren space Ambient Occlusion
+			HBAO = 1, // High 
+			//GTAO //Ground Truth Ambient Occlusion
 		};
 
-		AmbientOcclusionType Type = AmbientOcclusionType::SSAO;
-
+		AmbientOcclusionType Type = AmbientOcclusionType::HBAO;
+		/*
 		struct SSAOSettings
 		{
 			float Radius = 0.5f;
@@ -81,8 +81,18 @@ namespace Proof
 			int KernelSize = 64;
 			int NoiseSize = 4;
 		};
+		*/
 
-		SSAOSettings SSAO;
+		struct HBAOSettings
+		{
+			float Intensity = 1.5f;
+			float Radius = 0.275f;
+			float Bias = 0.6f;
+			float BlurSharpness = 1.0f;
+		};
+
+		//SSAOSettings SSAO;
+		HBAOSettings HBAO;
 	};
 
 	struct BloomSettings

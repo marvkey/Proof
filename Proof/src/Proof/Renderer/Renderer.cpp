@@ -138,6 +138,10 @@ namespace Proof {
 		ShaderLibrary->LoadShader("SSAO", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/SSAO.glsl");
 		ShaderLibrary->LoadShader("SSAOBlur", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/SSAOBlur.glsl");
 
+		ShaderLibrary->LoadShader("Deinterleaving", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO_Deinterleave.glsl");
+		ShaderLibrary->LoadShader("Reinterleaving", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO_Reinterleave.glsl");
+		ShaderLibrary->LoadShader("HBAOBlur", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO_Blur.glsl");
+		ShaderLibrary->LoadShader("HBAO", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO.glsl");
 
 		//2D
 		ShaderLibrary->LoadShader("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.glsl");

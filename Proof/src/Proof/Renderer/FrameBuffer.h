@@ -37,6 +37,8 @@ namespace Proof {
 
 		mutable Vector4 ClearColor = { 0,0,0,1.0f };
 		FrameBufferAttachments Attachments;
+		std::vector<uint32_t> ExistingImageLayers;
+
 		float DepthClearValue = 0.0f;
 		uint32_t StencilClearValue = 0;
 

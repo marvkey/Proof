@@ -471,7 +471,10 @@ namespace Proof
 			return;
 		m_Config.Width = width;
 		m_Config.Height = height;
-
+		auto& spec = m_Image.As<VulkanImage2D>()->GetSpecificationRef();
+		spec.Width = width;
+		spec.Height = height;
+		spec.Mips = GetMipLevelCount();
 		Build();
 		m_Image.As<VulkanImage2D>()->CallOnResizeFunctions();
 
@@ -485,21 +488,7 @@ namespace Proof
 	}
 	Count<ImageView> VulkanTexture2D::GetImageMip(uint32_t mip, uint32_t layer)
 	{
-		uint32_t mipLevelCount = GetMipLevelCount();
-		if (mip >= mipLevelCount)
-			return nullptr;
-
-		if(m_ImageViews[layer].contains(mip))
-			return m_ImageViews[layer][mip];
-
-		ImageViewConfiguration config;
-		config.DebugName = fmt::format("Texture: {} layer:{} mip: {}", m_Config.DebugName, layer, mip);
-		config.Mip = mip;
-		config.Layer = layer;
-		config.Image = m_Image;
-		Count<ImageView> view = ImageView::Create(config);
-			m_ImageViews[layer][mip] = view;
-		return view;
+		return m_Image->CreateOrGetImageMip(mip,layer);
 	}
 
 	void VulkanTexture2D::Release()

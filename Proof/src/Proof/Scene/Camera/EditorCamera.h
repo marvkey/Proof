@@ -131,10 +131,10 @@ namespace Proof
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void OnEvent(class Event& event);
 
-		float GetSpeed() { return m_Speed; };
+		float GetSpeed() const { return m_Speed; };
 		void SetSpeed(float speed);
 
-		float GetFOV() { return m_FovDeg; }
+		float GetFOV() const { return m_FovDeg; }
 		void SetFOV(float fov); 
 
 		constexpr static float MIN_SPEED{ 2.f }, MAX_SPEED{ 100.0f };

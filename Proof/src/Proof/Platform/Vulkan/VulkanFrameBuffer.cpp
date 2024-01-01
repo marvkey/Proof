@@ -247,12 +247,9 @@ namespace Proof
     }
     void VulkanFrameBuffer::CreateFramebuffer()
     {
-
-       
         const auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
-       
         {
             uint32_t attachmentIndex = 0;
             std::vector<VkAttachmentReference> colorAttachmentReferences;
@@ -402,12 +399,27 @@ namespace Proof
         }
 
         std::vector<VkImageView> attachments;
-        for (auto& coloredImage : m_Images )
         {
-            VkDescriptorImageInfo* infoRef = (VkDescriptorImageInfo* )coloredImage->GetResourceDescriptorInfo();
-            attachments.emplace_back(infoRef->imageView);
+            uint32_t index = 0;
+            for (auto& coloredImage : m_Images )
+            {
+                VkDescriptorImageInfo* infoRef = nullptr;
+
+                if (coloredImage->GetRendererResourceType() == RendererResourceType::Image2D)
+                {
+                    Count<Image2D> image2D = coloredImage.As<Image2D>();
+                    if(image2D->GetSpecification().Layers > 1)
+                        infoRef = (VkDescriptorImageInfo*)image2D->CreateOrGetImageMip(0,m_Config.ExistingImageLayers[index]).As<VulkanImageView>()->GetResourceDescriptorInfo();
+
+                }
+                if(infoRef == nullptr)
+                    infoRef = (VkDescriptorImageInfo*)coloredImage->GetResourceDescriptorInfo();
+
+                index++;
+                attachments.emplace_back(infoRef->imageView);
+            }
         }
-            
+
         VkFramebufferCreateInfo framebufferInfo = {};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         // this is just to check if compatible wit renderPass
