@@ -111,6 +111,8 @@ namespace Proof {
 			return nullptr;
 		}
 
+		if (layer >= m_Specification.Layers)
+			return nullptr;
 		ImageViewConfiguration config;
 		config.DebugName = fmt::format("Image: {} layer:{} mip: {}", m_Specification.DebugName, layer, mip);
 		config.Mip = mip;

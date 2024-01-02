@@ -77,15 +77,6 @@ if (ImGui::BeginCombo("Items", selected_item.c_str()))
 }
 
 */
-namespace Proof::HeaderFileOnly {
-
-    ImTextureID TextureUI::GetTexture(Count<Image> image)
-    {
-        return Application::Get()->GetImguiLayer()->ToImguiImage(image);
-    }
-
-
-}
 
 namespace Proof::UI
 {
@@ -1639,5 +1630,63 @@ namespace Proof::UI
 
         return TreeNodeWithIcon(icon, window->GetID(label), flags, label, NULL, iconTint);
     }
+
+    void Image(const Count<Proof::Image>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+    {
+        ImGui::Image(UI::GetTextureID(image), size, uv0, uv1, tint_col, border_col);
+    }
+
+    void ImageLayer(const Count<Image2D>& image, uint32_t layer, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+    {
+        auto imageView = image->CreateOrGetImageMip(0, layer);
+        PF_CORE_ASSERT(imageView);
+        ImGui::Image(UI::GetTextureID(imageView), size, uv0, uv1, tint_col, border_col);
+    }
+
+    void ImageMip(const Count<Image2D>& image, uint32_t mip, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+    {
+        auto imageView = image->CreateOrGetImageMip(mip);
+        PF_CORE_ASSERT(imageView);
+        ImGui::Image(UI::GetTextureID(imageView), size, uv0, uv1, tint_col, border_col);
+    }
+
+    void ImageLayerMip(const Count<Image2D>& image, uint32_t layer, uint32_t mip, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+    {
+        auto imageView = image->CreateOrGetImageMip(mip, layer);
+        PF_CORE_ASSERT(imageView);
+        ImGui::Image(UI::GetTextureID(imageView), size, uv0, uv1, tint_col, border_col);
+    }
+
+    void Image(const Count<Texture2D>& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+    {
+        Image(texture->GetImage(), size, uv0, uv1, tint_col, border_col);
+    }
+
+    bool ImageButton(const Count<Proof::Image>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+    {
+        return ImageButton(nullptr, image, size, uv0, uv1, frame_padding, bg_col, tint_col);
+    }
+
+    bool ImageButton(const char* stringID, const Count<Proof::Image>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+    {
+        PF_CORE_ASSERT(image);
+        if (!image)
+            return false;
+        ImTextureID textureID = UI::GetTextureID(image);
+        ImGuiID id = (ImGuiID)((((uint64_t)image.Get()) >> 32) ^ (uint32_t)(uint64_t)image.Get());
+        if (stringID)
+        {
+            const ImGuiID strID = ImGui::GetID(stringID);
+            id = id ^ strID;
+        }
+        return ImGui::ImageButtonEx(id, textureID, size, uv0, uv1, ImVec2{ (float)frame_padding, (float)frame_padding }, bg_col, tint_col);
+    }
+
+    bool ImageButton(const Count<Texture2D>& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+    {
+        return ImageButton(nullptr, texture->GetImage(), size, uv0, uv1, frame_padding, bg_col, tint_col);
+    }
+
+    
 }
 

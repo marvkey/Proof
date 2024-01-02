@@ -520,9 +520,10 @@ namespace Proof
 
 		Count< ContentBrowserPanel> contentBrowser = s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 		s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
+		Count<WorldRenderer> renderer;
 		{
 			//s_EditorData->EditorWorkspaceManager->AddWorkspace<("Viewport")
-			s_EditorData->EditorWorkspaceManager->AddWorkspace<ViewPortEditorWorkspace>("Viewport", true, "Viewport", ViewPortEditorData{ false,false,std::bind(&Editore3D::UI_HandleAssetDrop, this) });
+			renderer = s_EditorData->EditorWorkspaceManager->AddWorkspace<ViewPortEditorWorkspace>("Viewport", true, "Viewport", ViewPortEditorData{ false,false,std::bind(&Editore3D::UI_HandleAssetDrop, this) })->GetWorldRenderer();
 			s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 		}
 #if 0
@@ -551,14 +552,13 @@ namespace Proof
 
 
 		AssetEditorPanel::RegisterDefaultEditors();
-		m_WorldRenderer = Count<WorldRenderer>::Create();
 
 
 		s_EditorData->PlayButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PlayButton.png");
 		s_EditorData->PauseButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PauseButton .png");
 		s_EditorData->SimulateButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/SimulateButton.png");
 		s_EditorData->StopButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/StopButton.png");
-		s_EditorData->PanelManager->GetPanel< WorldRendererPanel>(WORLD_RENDERER_PANEL_ID)->SetContext(m_WorldRenderer);
+		s_EditorData->PanelManager->GetPanel< WorldRendererPanel>(WORLD_RENDERER_PANEL_ID)->SetContext(renderer);
 
 	
 		m_PlayersCount = 1;
@@ -586,7 +586,6 @@ namespace Proof
 	{
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
-		m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 		m_EditorCamera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 
 		if (m_IsViewPortResize && m_ViewPortSize.x > 0 && m_ViewPortSize.y > 0)
@@ -1365,7 +1364,7 @@ namespace Proof
 				m_ViewPortFocused = false;
 				Application::Get()->GetWindow()->SetWindowInputEvent(false);
 			}
-			UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			//UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			// GUIZMOS
 
 			// cherno game engein reveiw 22 minutes 48 seconds reference

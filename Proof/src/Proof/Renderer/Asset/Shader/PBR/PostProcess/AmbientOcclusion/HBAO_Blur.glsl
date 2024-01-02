@@ -38,37 +38,26 @@ layout(set = 0, binding = 0) uniform sampler2D u_InputTex;
 layout(location = 0) out vec4 outColor;
 layout(location = 0) in vec2 vs_TexCoords;
 
-/*
-    In easy terms, the AO_BLUR_PRESENT in this shader is like a switch that can change how the final result looks. 
-    If it's defined (turned on), the shader will give you a smooth and blurred ambient occlusion effect. 
-    If it's not defined (turned off), you'll get a result that includes not only the smoothed ambient occlusion but also some additional information like depth values. 
-    It's like having two different options for what you want to see in the output, 
-    and this switch lets you choose between them. 
-    It provides a way to control the level of detail in the final image based on whether you want a simple, 
-    smooth look or a more detailed one with extra information.
-*/
-#ifndef AO_BLUR_PRESENT
-#define AO_BLUR_PRESENT 1
-#endif
-float BlurFunction(vec2 uv, float r, float center_c, float center_d, inout float w_total)
-{
-  vec2  aoz = texture( u_InputTex, uv ).xy;
-  float c = aoz.x;
-  float d = aoz.y;
-  
-  const float BlurSigma = float(KERNEL_RADIUS) * 0.5;
-  const float BlurFalloff = 1.0 / (2.0*BlurSigma*BlurSigma);
-  
-  float ddiff = (d - center_d) * u_PushData.Sharpness;
-  float w = exp2(-r*r*BlurFalloff - ddiff*ddiff);
-  w_total += w;
 
-  return c*w;
+float BlurFunction(vec2 uv, float r, float centerC, float centerD, inout float wTotal)
+{
+    vec2  aoz = texture(u_InputTex, uv).xy;
+    float c = aoz.x;
+    float d = aoz.y;
+
+    const float blurSigma = float(KERNEL_RADIUS) * 0.5;
+    const float blurFalloff = 1.0 / (2.0 * blurSigma * blurSigma);
+
+    float ddiff = (d - centerD) * u_PushData.Sharpness;
+    float w = exp2(-r * r * blurFalloff - ddiff * ddiff);
+    wTotal += w;
+
+    return c * w;
 }
 
 void main()
 {
-     vec2 aoz = texture(u_InputTex, vs_TexCoords).xy;
+    vec2 aoz = texture(u_InputTex, vs_TexCoords).xy;
     float centerC = aoz.x;
     float centerD = aoz.y;
 
@@ -87,9 +76,5 @@ void main()
         cTotal += BlurFunction(uv, r, centerC, centerD, wTotal);
     }
 
-    #if AO_BLUR_PRESENT
-      outColor = vec4(cTotal/wTotal);
-    #else
       outColor = vec4(cTotal/wTotal, centerD, 0, 0);
-    #endif
 }

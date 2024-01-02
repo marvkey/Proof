@@ -16,7 +16,10 @@ layout(push_constant) uniform Uniforms
 const float GOLDEN_ANGLE = 2.39996323;
 const float MAX_BLUR_SIZE = 20.0;
 const float RAD_SCALE = 1.0; // Smaller = nicer blur, larger = faster
-
+float LinearizeDepth(const float screenDepth)
+{
+	return -u_Camera.Projection[3][2] / (screenDepth+ u_Camera.Projection[2][2] );
+}
 float ScreenSpaceToViewSpaceDepth(const float screenDepth)
 {
 	float depthLinearizeMul = -u_Camera.Projection[3][2];

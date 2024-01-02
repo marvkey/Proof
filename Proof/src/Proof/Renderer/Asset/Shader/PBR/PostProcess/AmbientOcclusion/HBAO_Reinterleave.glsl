@@ -19,7 +19,7 @@ layout(location = 1) in vec2 a_TexCoord;
 
 void main()
 {
-    gl_Position = vec4(a_Position.xy, 0.0, 1.0);
+    gl_Position = vec4(a_Position, 1.0);
 }
 
 #Fragment Shader
@@ -44,12 +44,5 @@ void main()
     int sliceId = offset.y * 4 + offset.x;
     ivec2 quarterResPos = fullResPos >> 2;
 
-    if(AO_BLUR == 1)
-    {
-        out_Color = vec4(texelFetch( u_TexResultsArray, ivec3(quarterResPos, sliceId), 0).xy,0,0);
-    }
-    else
-    {
-        out_Color = vec4(texelFetch( u_TexResultsArray, ivec3(quarterResPos, sliceId), 0).x);
-    }
+    out_Color = vec4(texelFetch(u_TexResultsArray, ivec3(quarterResPos, sliceId), 0).xy, 0, 1.0);
 }

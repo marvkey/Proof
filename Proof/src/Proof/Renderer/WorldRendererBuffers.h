@@ -127,7 +127,7 @@ namespace Proof
 		glm::uvec3 LightCullingWorkGroups;
 	};
 
-	struct alignas(16) UBHBAOData
+	struct UBHBAOData
 	{
 		glm::vec4 PerspectiveInfo;
 

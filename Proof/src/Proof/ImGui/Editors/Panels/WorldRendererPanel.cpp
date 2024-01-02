@@ -4,6 +4,7 @@
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Shader.h"
+#include "Proof/Renderer/RenderPass.h"
 #include "Proof/Core/FrameTime.h"
 namespace Proof
 {
@@ -123,7 +124,7 @@ namespace Proof
 					static uint32_t bloomDebuggerMip = 0;
 					UI::AttributeSlider("BloomImage", bloomDebuggerImage, 0, m_WorldRenderer->m_BloomComputeTextures.size() - 1);
 					UI::AttributeSlider("BloomMip", bloomDebuggerMip, 0, m_WorldRenderer->m_BloomComputeTextures[bloomDebuggerImage]->GetMipLevelCount() - 1);
-					UI::Image(m_WorldRenderer->m_BloomComputeTextures[bloomDebuggerImage]->GetImageMip(bloomDebuggerMip).As<Image>(), { size, size * (0.9f / 1.6f) }, { 0, 1 }, { 1, 0 });
+					UI::Image(m_WorldRenderer->m_BloomComputeTextures[bloomDebuggerImage]->GetImageMip(bloomDebuggerMip), { size, size * (0.9f / 1.6f) }, { 0, 1 }, { 1, 0 });
 
 
 					UI::EndTreeNode();
@@ -147,6 +148,58 @@ namespace Proof
 					UI::Image(m_WorldRenderer->m_DOFTexture, { size, size * (0.9f / 1.6f) }, { 0, 1 }, { 1, 0 });
 					UI::EndTreeNode();
 				}
+				UI::EndTreeNode();
+			}
+
+			if (UI::AttributeTreeNode("Ambient Occlusion"))
+			{
+				UI::BeginPropertyGrid();
+				UI::AttributeBool("Enabled", m_WorldRenderer->AmbientOcclusionSettings.Enabled);
+
+				UI::PushItemDisabled(!m_WorldRenderer->AmbientOcclusionSettings.Enabled);
+				UI::EnumCombo("OcclusionType", m_WorldRenderer->AmbientOcclusionSettings.Type, {},
+					{"Horizon-Based Ambient Occlusion"});
+
+				UI::AttributeDrag("ShadowTolerance", m_WorldRenderer->AmbientOcclusionSettings.ShadowTolerance, 0.001f, 0.0f, 1.0f);
+				UI::EndPropertyGrid();
+
+				switch (m_WorldRenderer->AmbientOcclusionSettings.Type)
+				{
+					case AmbientOcclusion::AmbientOcclusionType::HBAO:
+					{
+						auto& hbao = m_WorldRenderer->AmbientOcclusionSettings.HBAO;
+						UI::BeginPropertyGrid();
+
+						UI::AttributeDrag("Intensity", hbao.Intensity, 0.05f, 0.1f, 6.0f);
+						UI::AttributeDrag("Radius", hbao.Radius, 0.05f, 0.0f, 8.0f);
+						UI::AttributeDrag("Bias", hbao.Bias, 0.02f, 0.0f, 0.95f);
+						UI::AttributeDrag("Blur Sharpness", hbao.BlurSharpness, 0.5f, 0.0f, 100.f);
+
+						UI::EndPropertyGrid();
+						if (UI::AttributeTreeNode("Debug Views", false))
+						{
+							auto image = m_WorldRenderer->m_AmbientOcclusion.HBAO.HBAOOutputImage;
+							if (image)
+							{
+								float size = ImGui::GetContentRegionAvail().x;
+								static int32_t layer = 0;
+								UI::AttributeSlider("Layer", layer, 0, image->GetSpecification().Layers-1);
+								UI::ImageLayer(image, layer, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+							}
+
+							{
+
+								UI::AttributeLabel("AO-Composite");
+								float size = ImGui::GetContentRegionAvail().x;
+								UI::Image(m_WorldRenderer->m_AmbientOcclusionCompositePass->GetOutput(0), {size, size * (1.0f / m_WorldRenderer->m_AmbientOcclusionCompositePass->GetOutput(0)->GetAspectRatio())}, {0, 1}, {1, 0});
+							}
+							UI::EndTreeNode();
+						}
+						break;
+					}
+				}
+				UI::PopItemDisabled();
+
 				UI::EndTreeNode();
 			}
 			ImGui::End();

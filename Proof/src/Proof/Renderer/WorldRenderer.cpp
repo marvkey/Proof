@@ -666,7 +666,7 @@ namespace Proof
 						ImageConfiguration imageSpec;
 						imageSpec.Format = ImageFormat::RG16F;
 						imageSpec.Usage = ImageUsage::Storage;
-						imageSpec.ImageLayerViewsBaseType = ImageViewType::View2DArray;
+						//imageSpec.ImageLayerViewsBaseType = ImageViewType::View2DArray;
 						imageSpec.Layers = 16;
 						imageSpec.DebugName = "HBAO-Output";
 						Count<Image2D> image = Image2D::Create(imageSpec);
@@ -1847,14 +1847,13 @@ namespace Proof
 
 			//https://github.com/nvpro-samples/gl_ssao/blob/master/ssao.cpp @ line 914
 
-			for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i += NUM_MRT)
+			for (int i = 0; i < 2; i++)
 			{
 
-				Count<RenderPass> deinterleavePass = i == 0 ? m_AmbientOcclusion.HBAO.DeinterleavePass[0] : m_AmbientOcclusion.HBAO.DeinterleavePass[1];
+				Count<RenderPass> deinterleavePass = m_AmbientOcclusion.HBAO.DeinterleavePass[i];
 
-				glm::vec2 pushData = { (i % 4) + 0.5f, float(i / 4) + 0.5f };
 				Renderer::BeginRenderPass(m_CommandBuffer, deinterleavePass);
-				deinterleavePass->PushData("u_PushData", &pushData);
+				deinterleavePass->PushData("u_PushData", &i);
 				Renderer::SubmitFullScreenQuad(m_CommandBuffer, deinterleavePass);
 				Renderer::EndRenderPass(deinterleavePass);
 			}
@@ -1864,7 +1863,7 @@ namespace Proof
 			PF_PROFILE_FUNC("HBAOMainPass");
 			auto hbaoPass = m_AmbientOcclusion.HBAO.HBAOPass;
 
-			hbaoPass->SetInput("u_LinearDepthTexArray", m_AmbientOcclusion.HBAO.DeinterleavePass[0]->GetTargetFrameBuffer()->GetOutput(0));
+			hbaoPass->SetInput("u_LinearDepthTexArray", m_AmbientOcclusion.HBAO.DeinterleavePass[0]->GetOutput(0));
 			hbaoPass->SetInput("u_ViewNormalsMaskTex", m_GeometryPass->GetOutput(1));
 			hbaoPass->SetInput("o_Color", m_AmbientOcclusion.HBAO.HBAOOutputImage);
 
@@ -1876,8 +1875,8 @@ namespace Proof
 		//Reinterleave
 		{
 			PF_PROFILE_FUNC("Reinterleave");
-
 			auto reinterleavePass = m_AmbientOcclusion.HBAO.ReinterleavePass;
+			ClearPass(reinterleavePass,true);
 			reinterleavePass->SetInput("u_TexResultsArray", m_AmbientOcclusion.HBAO.HBAOOutputImage);
 			Renderer::BeginRenderPass(m_CommandBuffer, reinterleavePass);
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, reinterleavePass);
@@ -1887,7 +1886,10 @@ namespace Proof
 		//Blur pass
 		{
 			PF_PROFILE_FUNC("BlurPass");
-
+			struct PushData {
+				glm::vec2 invesDirection;
+				float sharpness;
+			}pushData;
 			{
 				PF_PROFILE_FUNC("BlurPass0");
 
@@ -1895,10 +1897,7 @@ namespace Proof
 				blurPass0->SetInput("u_InputTex", m_AmbientOcclusion.HBAO.ReinterleavePass->GetOutput(0));
 
 				Renderer::BeginRenderPass(m_CommandBuffer, blurPass0);
-				glm::vec3 pushData; //xy =InvResDirection, z = Sharpness;
-				pushData.x = m_UBScreenData.InverseFullResolution.x;
-				pushData.y = 0;
-				pushData.z = PostProcessSettings.AmbientOcclusionSettings.HBAO.BlurSharpness;
+				pushData = { {m_UBScreenData.InverseFullResolution.x,0},PostProcessSettings.AmbientOcclusionSettings.HBAO.BlurSharpness };
 				blurPass0->PushData("u_PushData", &pushData);
 				Renderer::SubmitFullScreenQuad(m_CommandBuffer, blurPass0);
 				Renderer::EndRenderPass(blurPass0);
@@ -1910,10 +1909,8 @@ namespace Proof
 				blurPass1->SetInput("u_InputTex", m_AmbientOcclusion.HBAO.BlurPass[0]->GetOutput(0));
 
 				Renderer::BeginRenderPass(m_CommandBuffer, blurPass1);
-				glm::vec3 pushData; //xy =InvResDirection, z = Sharpness;
-				pushData.x = 0;
-				pushData.y = m_UBScreenData.InverseFullResolution.y;
-				pushData.z = PostProcessSettings.AmbientOcclusionSettings.HBAO.BlurSharpness;
+				pushData = { {0,m_UBScreenData.InverseFullResolution.y},PostProcessSettings.AmbientOcclusionSettings.HBAO.BlurSharpness };
+
 				blurPass1->PushData("u_PushData", &pushData);
 				Renderer::SubmitFullScreenQuad(m_CommandBuffer, blurPass1);
 				Renderer::EndRenderPass(blurPass1);
@@ -2128,8 +2125,6 @@ namespace Proof
 		Renderer::EndComputePass(m_BloomComputePass);
 
 	}
-
-	
 
 	void WorldRenderer::DOFPass()
 	{

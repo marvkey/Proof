@@ -70,10 +70,10 @@ vec4 ScreenToView(vec4 screen)
     return ClipToView(clip);
 }
 
-float LinearizeDepth(float z)
-{
-	return u_Camera.FarPlane / (u_Camera.FarPlane + z * (u_Camera.NearPlane - u_Camera.FarPlane));
-}
+//float LinearizeDepth(float z)
+//{
+//	return u_Camera.FarPlane / (u_Camera.FarPlane + z * (u_Camera.NearPlane - u_Camera.FarPlane));
+//}
 vec3 GetViewPosition(vec2 texcoord, float depth)
 {
 	vec4 clipSpaceLocation;

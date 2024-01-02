@@ -1,4 +1,64 @@
 World:
   ID: 13511578038632716699
   Entities:
-    []
+    - Entity: 14645712128092624267
+      TagComponent:
+        Tag: Sponza
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 18141853162402936448
+    - Entity: 8653500929971714399
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 0.5
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 17419211597430694452
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0.052359879, 0.00349065848]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+    - Entity: 15655579723025469437
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [-0.300000012, 1.39999998, -1]
+        Rotation: [-0.562434077, -0.151792943, -0.0447002798]
+        Scale: [0.999998331, 0.999999285, 0.999998987]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
