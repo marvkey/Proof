@@ -3,7 +3,7 @@
 #include "Proof/Events/WindowEvent.h"
 #include "Proof/Renderer/Renderer.h"
 namespace Proof {
-	class Proof_API RendererAPI {
+	class RendererAPI {
 	public:
 		
 		virtual ~RendererAPI();;
@@ -25,6 +25,9 @@ namespace Proof {
 
 		virtual void SubmitCommandBuffer(Count<class RenderCommandBuffer>commandBuffer) = 0;
 		inline static Renderer::API GetAPI() { return ActiveAPI; }
+		virtual void ClearImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> image) = 0 ;
+		virtual void CopyImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage) = 0;
+
 
 	private:
 		virtual void Init() = 0;

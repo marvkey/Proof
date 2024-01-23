@@ -150,7 +150,55 @@ namespace Proof
 				}
 				UI::EndTreeNode();
 			}
+			if (UI::AttributeTreeNode("SSR"))
+			{
+				auto& ssrOptions = m_WorldRenderer->SSRSettings;
 
+				UI::BeginPropertyGrid();
+				UI::AttributeBool("Enable SSR", ssrOptions.Enabled);
+				UI::AttributeBool("Enable Cone Tracing", ssrOptions.EnableConeTracing, "Enable rough reflections.");
+
+
+				UI::AttributeDrag("Brightness", ssrOptions.Brightness, 0.001f, 0.0f, 1.0f);
+				UI::AttributeDrag("Depth Tolerance", ssrOptions.DepthTolerance, 0.01f, 0.0f, std::numeric_limits<float>::max());
+				UI::AttributeDrag("Roughness Depth Tolerance", ssrOptions.RoughnessDepthTolerance, 0.33f, 0.0f, std::numeric_limits<float>::max(),
+					"The higher the roughness the higher the depth tolerance.\nWorks best with cone tracing enabled.\nReduce as much as possible.");
+				UI::AttributeDrag("Horizontal Fade In", ssrOptions.FadeIn.x, 0.005f, 0.0f, 10.0f);
+				UI::AttributeDrag("Vertical Fade In", ssrOptions.FadeIn.y, 0.005f, 0.0f, 10.0f);
+				UI::AttributeDrag("Facing Reflections Fading", ssrOptions.FacingReflectionsFading, 0.01f, 0.0f, 2.0f);
+				UI::AttributeDrag("Luminance Factor", ssrOptions.LuminanceFactor, 0.001f, 0.0f, 2.0f, "Can break energy conservation law!");
+				UI::AttributeSlider("Maximum Steps", ssrOptions.MaxSteps, 1, 200);
+				UI::AttributeBool("Half Resolution", ssrOptions.HalfRes);
+				UI::EndPropertyGrid();
+
+				if (UI::AttributeTreeNode("Debug Views", false))
+				{
+					if (m_WorldRenderer->m_ResourcesCreatedGPU)
+					{
+						const float size = ImGui::GetContentRegionAvail().x;
+						static int32_t Hzbmip = 0;
+						UI::AttributeLabel("HZB DepthTexture");
+						UI::AttributeSlider("HZB DepthTexture Mip", Hzbmip, 0, (int)m_WorldRenderer->m_SSR.HierarchicalDepthTexture->GetMipLevelCount() - 1);
+						UI::ImageMip(m_WorldRenderer->m_SSR.HierarchicalDepthTexture->GetImage(), Hzbmip, { size, size * (0.9f / 1.6f) }, { 0, 1 }, { 1, 0 });
+
+						static int32_t visibilitymip = 0;
+						UI::AttributeSlider("Visibility Texture(Pre-integration) Mip", visibilitymip, 0, (int)m_WorldRenderer->m_SSR.VisibilityTexture->GetMipLevelCount() - 1);
+						UI::AttributeLabel("Visibility Texture(Pre-integration)");
+						UI::ImageMip(m_WorldRenderer->m_SSR.VisibilityTexture->GetImage(), visibilitymip, {size, size * (0.9f / 1.6f)}, {0, 1}, {1, 0});
+
+						
+						static int32_t mip = 0;
+						UI::AttributeSlider("Pre-convoluted Mip", mip, 0, (int)m_WorldRenderer->m_SSR.PreConvolutedTexture->GetMipLevelCount() - 1);
+						UI::ImageMip(m_WorldRenderer->m_SSR.PreConvolutedTexture->GetImage(), mip, { size, size * (0.9f / 1.6f) }, { 0, 1 }, { 1, 0 });
+
+						UI::AttributeLabel("SSRTexture");
+						UI::Image(m_WorldRenderer->m_SSR.SSRImage, { size, size * (0.9f / 1.6f) }, { 0, 1 }, { 1, 0 });
+
+					}
+					UI::EndTreeNode();
+				}
+				UI::EndTreeNode();
+			}
 			if (UI::AttributeTreeNode("Ambient Occlusion"))
 			{
 				UI::BeginPropertyGrid();

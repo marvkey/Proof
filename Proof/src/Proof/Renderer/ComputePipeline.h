@@ -16,3 +16,4 @@ namespace Proof
 		virtual Count<class Shader> GetShader()const = 0;
 	};
 }
+	

@@ -143,6 +143,14 @@ namespace Proof {
 		ShaderLibrary->LoadShader("HBAOBlur", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO_Blur.glsl");
 		ShaderLibrary->LoadShader("HBAO", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO.glsl");
 
+		//SSR
+		ShaderLibrary->LoadShader("HZB", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/HZB.glsl");
+		ShaderLibrary->LoadShader("PreConvoulution", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/PreConvoulution.glsl");
+		ShaderLibrary->LoadShader("PreIntegration", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/PreIntegration.glsl");
+		ShaderLibrary->LoadShader("SSRComposite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/SSRComposite.glsl");
+		ShaderLibrary->LoadShader("SSR", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/SSR.glsl");
+
+
 		//2D
 		ShaderLibrary->LoadShader("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.glsl");
 		ShaderLibrary->LoadShader("Text2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text2D.glsl");
@@ -844,6 +852,16 @@ namespace Proof {
 	Count<Texture2D> Renderer::GetBRDFLut()
 	{
 		return s_BaseTextures->BRDFLutTexture;
+	}
+
+	void Renderer::ClearImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> image)
+	{
+		s_RendererAPI->ClearImage(renderCommandBuffer, image);
+	}
+
+	void Renderer::CopyImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage)
+	{
+		s_RendererAPI->CopyImage(renderCommandBuffer, sourceImage,destinationImage);
 	}
 
 	CommandQueue& Renderer::GetRenderCommandQueue()

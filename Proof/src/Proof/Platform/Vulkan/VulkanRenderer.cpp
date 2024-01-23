@@ -14,6 +14,7 @@
 #include "Proof/Core/Application.h"
 #include "VulkanTexutre.h"
 #include "VulkanComputePass.h"
+#include "VulkanImage.h"
 #include "VulkanComputePipeline.h"
 namespace Proof
 {
@@ -50,6 +51,139 @@ namespace Proof
 	void VulkanRenderer::EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)
 	{
 		commandBuffer.As<VulkanRenderCommandBuffer>()->EndRecord();
+	}
+
+	void VulkanRenderer::ClearImage(Count<RenderCommandBuffer> commandBuffer, Count<class Image2D> image)
+	{
+		Renderer::Submit([commandBuffer, image = image.As<VulkanImage2D>()]
+		{
+			const auto vulkanCommandBuffer = commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
+			VkImageSubresourceRange subresourceRange{};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = image->GetSpecification().Mips;
+			subresourceRange.layerCount = image->GetSpecification().Layers;
+
+			VkClearColorValue clearColor{ 0.f, 0.f, 0.f, 0.f };
+			vkCmdClearColorImage(vulkanCommandBuffer, image->GetinfoRef().ImageAlloc.Image, image->GetDescriptorInfoVulkan().imageLayout , &clearColor, 1, &subresourceRange);
+		});
+	}
+
+	void VulkanRenderer::CopyImage(Count<RenderCommandBuffer> commandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage)
+	{
+		Renderer::Submit([commandBuffer, src = sourceImage.As<VulkanImage2D>(), dst = destinationImage.As<VulkanImage2D>()]
+			{
+				const auto vulkanCommandBuffer = commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
+
+				VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+
+				VkImage srcImage = src->GetinfoRef().ImageAlloc.Image;
+				VkImage dstImage = dst->GetinfoRef().ImageAlloc.Image;
+				glm::uvec2 srcSize = { src->GetSize().X,src->GetSize().Y };
+				glm::uvec2 dstSize = { dst->GetSize().X,dst->GetSize().Y };
+
+				VkImageCopy region;
+				region.srcOffset = { 0, 0, 0 };
+				region.dstOffset = { 0, 0, 0 };
+				region.extent = { srcSize.x, srcSize.y, 1 };
+				region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				region.srcSubresource.baseArrayLayer = 0;
+				region.srcSubresource.mipLevel = 0;
+				region.srcSubresource.layerCount = 1;
+				region.dstSubresource = region.srcSubresource;
+
+				VkImageLayout srcImageLayout = src->GetDescriptorInfoVulkan().imageLayout;
+				VkImageLayout dstImageLayout = dst->GetDescriptorInfoVulkan().imageLayout;
+
+				{
+					VkImageMemoryBarrier imageMemoryBarrier{};
+					imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+					imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+					imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+					imageMemoryBarrier.oldLayout = srcImageLayout;
+					imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+					imageMemoryBarrier.image = srcImage;
+
+					imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+					imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+					imageMemoryBarrier.subresourceRange.layerCount = 1;
+					imageMemoryBarrier.subresourceRange.levelCount = 1;
+
+					vkCmdPipelineBarrier(vulkanCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+						0, nullptr,
+						0, nullptr,
+						1, &imageMemoryBarrier);
+				}
+
+				{
+					VkImageMemoryBarrier imageMemoryBarrier{};
+					imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+					imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+					imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+					imageMemoryBarrier.oldLayout = dstImageLayout;
+					imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+					imageMemoryBarrier.image = dstImage;
+
+					imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+					imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+					imageMemoryBarrier.subresourceRange.layerCount = 1;
+					imageMemoryBarrier.subresourceRange.levelCount = 1;
+
+					vkCmdPipelineBarrier(vulkanCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+						0, nullptr,
+						0, nullptr,
+						1, &imageMemoryBarrier);
+				}
+
+				vkCmdCopyImage(vulkanCommandBuffer, srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+					dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+
+				{
+					VkImageMemoryBarrier imageMemoryBarrier{};
+					imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+					imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+					imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+					imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+					imageMemoryBarrier.newLayout = srcImageLayout;
+					imageMemoryBarrier.image = srcImage;
+
+					imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+					imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+					imageMemoryBarrier.subresourceRange.layerCount = 1;
+					imageMemoryBarrier.subresourceRange.levelCount = 1;
+
+					vkCmdPipelineBarrier(vulkanCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+						0, nullptr,
+						0, nullptr,
+						1, &imageMemoryBarrier);
+				}
+
+				{
+					VkImageMemoryBarrier imageMemoryBarrier{};
+					imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+					imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+					imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+					imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+					imageMemoryBarrier.newLayout = dstImageLayout;
+					imageMemoryBarrier.image = dstImage;
+
+					imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+					imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+					imageMemoryBarrier.subresourceRange.layerCount = 1;
+					imageMemoryBarrier.subresourceRange.levelCount = 1;
+
+					vkCmdPipelineBarrier(vulkanCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0,
+						0, nullptr,
+						0, nullptr,
+						1, &imageMemoryBarrier);
+				}
+			});
+
 	}
 
 	void VulkanRenderer::PushSetCubeMapImage(Count<class TextureCube> cube, Count<class Texture2D> texture)

@@ -14,27 +14,23 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 18141853162402936448
-    - Entity: 8653500929971714399
+    - Entity: 13351935947672091411
       TagComponent:
-        Tag: Sky Light
+        Tag: Plane
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0.0349065848, 0.0174532924, 0]
-        Scale: [1, 1, 1]
+        Location: [0, 0.356652379, 1.49011612e-08]
+        Rotation: [0, -0, 0]
+        Scale: [18.9055862, 1, 6.63003778]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 0.5
-        EnvironmentState: PreethamSky
-        TextureDataImage: 0
-        HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 4
+      MeshComponent:
+        MeshAssetPointerID: 56
+        MaterialTable:
+          - Material: ""
+            AssetID: 9906847331754832331
+            Index: 0
     - Entity: 17419211597430694452
       TagComponent:
         Tag: Directional Light
@@ -49,6 +45,44 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 1
+    - Entity: 8653500929971714399
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349064618, 0.0174532924, -1.89203697e-09]
+        Scale: [4.89095736, 1, 6.39274311]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 2
+        EnvironmentState: HosekWilkie
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 13037840155052305891
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [-1.94874477, 1.00484455, -0.906231165]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 51
+        MaterialTable:
+          - Material: ""
+            AssetID: 14983098330679523653
+            Index: 0
     - Entity: 15655579723025469437
       TagComponent:
         Tag: Cube

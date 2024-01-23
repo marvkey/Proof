@@ -49,6 +49,9 @@ namespace Proof {
 		static void ComputePassPushRenderMaterial(Count<class ComputePass> computePass, Count<class RenderMaterial> renderMaterial);
 
 		static Count<class Texture2D> GetBRDFLut();
+		static void ClearImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<class Image2D> image);
+		static void CopyImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage);
+
 		static uint32_t GetCurrentFrameInFlight();
 		static uint32_t RT_GetCurrentFrameInFlight();
 		static const RendererConfig GetConfig();

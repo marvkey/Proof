@@ -82,8 +82,13 @@ namespace Proof
 
 		glm::vec3 Position;
 		float NearPlane;
+
 		float FarPlane;
 		float Fov;
+		glm::vec2 NDCToViewMul;
+
+		glm::vec2 NDCToViewAdd;
+		glm::vec2 DepthUnpackConsts;
 	};
 	struct UBRenderData
 	{
@@ -146,5 +151,20 @@ namespace Proof
 		glm::vec3 Padding;
 		float ShadowTolerance;
 
+	};
+
+	struct alignas(16) UBSSR
+	{
+		glm::vec2 HZBUvFactor;
+		glm::vec2 FadeIn = { 0.1f, 0.15f };
+		float Brightness = 0.7f;
+		float DepthTolerance = 0.8f;
+		float FacingReflectionsFading = 0.1f;
+		int MaxSteps = 70;
+		uint32_t NumDepthMips;
+		float RoughnessDepthTolerance = 1.0f;
+		int bHalfRes = true;
+		int bEnableConeTracing = true;
+		float LuminanceFactor = 1.0f;
 	};
 }

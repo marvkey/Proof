@@ -702,6 +702,20 @@ namespace Proof {
 		}
 		*/
 	}
+
+	std::pair<uint32_t, uint32_t> VulkanImage2D::GetMipSize(uint32_t mip) const
+	{
+		uint32_t width = m_Specification.Width;
+		uint32_t height = m_Specification.Height;
+		while (mip != 0)
+		{
+			width /= 2;
+			height /= 2;
+			mip--;
+		}
+
+		return { width, height };
+	}
 	
 	VulkanImageView::VulkanImageView(const ImageViewConfiguration& spec)
 		:m_Specification(spec)

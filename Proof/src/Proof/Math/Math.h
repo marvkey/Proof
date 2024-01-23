@@ -10,10 +10,8 @@
 #include "Vector.h"
 namespace Proof
 {
-	struct Math {
-
-
-		
+	struct Math 
+	{
 		Math(const Math&) = delete;
 
 		inline static glm::vec3 GetFowardVector()
@@ -307,6 +305,20 @@ namespace Proof
 				num -= glm::radians(360.0f);
 			}
 			return num;
+		}
+
+		//TODO: Replace with a C++20 concept?
+		template<typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+		inline static T DivideAndRoundUp(T dividend, T divisor)
+		{
+			return (dividend + divisor - 1) / divisor;
+		}
+
+		// Only integers are allowed
+		template<typename T, typename DivisorT, std::enable_if_t<std::is_same_v<T, glm::uvec2>&& std::is_integral_v<DivisorT>, bool> = true>
+		inline static T DivideAndRoundUp(T dividend, DivisorT divisor)
+		{
+			return { DivideAndRoundUp(dividend.x, divisor), DivideAndRoundUp(dividend.y, divisor) };
 		}
 	};
 }

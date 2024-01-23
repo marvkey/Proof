@@ -1,8 +1,8 @@
 AssetType: Material
 ID: 14983098330679523653
-AlbedoColour: [0.806451619, 0.0195109081, 0.0195109081]
-Roughness: 0.400000006
-Metallness: 0
+AlbedoColour: [1, 0, 0]
+Roughness: 0
+Metallness: 1
 Emission: 1
 Tiling: [0, 0]
 Offset: [0, 0]

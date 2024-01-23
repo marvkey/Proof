@@ -195,6 +195,7 @@ namespace Proof
 		AmbientOcclusion& AmbientOcclusionSettings;
 		BloomSettings& BloomSettings;
 		DepthOfFieldSettings& DOFSettings;
+		SSRSettings& SSRSettings;
 	private:
 		Count<class Texture2D> m_BRDFLUT;
 		Count<class World> m_ActiveWorld;
@@ -205,6 +206,7 @@ namespace Proof
 		UBCameraData m_UBCameraData;
 		UBLightScene m_UBLightData;
 		UBHBAOData m_HBAOData;
+		UBSSR m_UBSSR;
 
 		//buffer sts
 		Count<UniformBufferSet> m_UBRenderDataBuffer;
@@ -319,6 +321,20 @@ namespace Proof
 				glm::uvec3 WorkGroups{ 1 };
 			} HBAO;
 		} m_AmbientOcclusion;
+
+		struct SSR
+		{
+			Count<RenderPass> SSRCompositePass;
+			Count<ComputePass> SSRPass;
+			Count<ComputePass> HierarchicalDepthPass;
+			Count<ComputePass> PreIntegrationPass;
+			Count<ComputePass> PreConvolutePass;
+			Count<Image2D> SSRImage;
+			Count<Texture2D> HierarchicalDepthTexture;
+			Count<Texture2D> PreConvolutedTexture;
+			Count<Texture2D> VisibilityTexture;//Pre-integration texture
+			glm::uvec3 WorkGroups{ 1u };
+		} m_SSR;
 		//bloom
 		Count<ComputePass> m_BloomComputePass;
 		Count<Texture2D> m_BloomDirtTexture;
@@ -342,6 +358,9 @@ namespace Proof
 		void LightFrustrumAndCullingPass();
 		void CompositePass();
 
+		void HZBPass();
+		void PreIntegrationPass();
+		void PreConvolutePass();
 		//post processing passes
 
 		void AmbientOcclusionPass();
@@ -349,6 +368,8 @@ namespace Proof
 
 		void BloomPass();
 		void DOFPass();
+
+		void SSRPass();
 		void DrawScene();
 		void ClearPass(Count<RenderPass> renderPass, bool explicitClear);
 		// tehse are static so basically when wer are writng code we avoid errors of 

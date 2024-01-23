@@ -112,10 +112,28 @@ namespace Proof
 		float BlurSize = 1.0f;
 	};
 
+	struct SSRSettings
+	{
+		bool Enabled = true;
+		glm::vec2 HZBUvFactor;
+		glm::vec2 FadeIn = { 0.1f, 0.15f };
+		float Brightness = 0.7f;
+		float DepthTolerance = 0.8f;
+		float FacingReflectionsFading = 0.1f;
+		int MaxSteps = 70;
+		uint32_t NumDepthMips;
+		float RoughnessDepthTolerance = 1.0f;
+		bool HalfRes = true;
+		bool EnableConeTracing = true;
+		float LuminanceFactor = 1.0f;
+	};
 	struct PostProcessSettings
 	{
 		AmbientOcclusion AmbientOcclusionSettings;
 		BloomSettings BloomSettings;
 		DepthOfFieldSettings DOFSettings;
+		SSRSettings SSRSettings;
 	};
+
+
 }

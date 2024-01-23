@@ -188,7 +188,6 @@ namespace Proof
 		virtual float GetAspectRatio() = 0;;
 		virtual uint32_t GetWidth() = 0;
 		virtual uint32_t GetHeight() = 0;
-
 	};
 	class Image2D : public Image 
 	{
@@ -201,6 +200,8 @@ namespace Proof
 		virtual void ClearImageViews() = 0;
 		virtual Count<class ImageView> CreateOrGetImageMip(uint32_t mip, uint32_t layer = 0) = 0;
 		virtual void CreateMipAndLayerViews() = 0;
+		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const = 0;
+
 		RENDER_VIEW_RESOURCE_CLASS_TYPE(Image2D);
 	};
 	

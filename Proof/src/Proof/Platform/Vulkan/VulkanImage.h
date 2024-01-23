@@ -48,6 +48,7 @@ namespace Proof
 
 		// subnit to render thread when use
 		void CopyToHost(Buffer& data);
+		std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const;
 
 		const Buffer& GetBuffer()const { return m_ImageData; }
 

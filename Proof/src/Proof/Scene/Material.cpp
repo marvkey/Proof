@@ -1,7 +1,7 @@
 #include "Proofprch.h"
 #include "Material.h"
 #include "Proof/Renderer/RenderMaterial.h"
-#include "Platform/Vulkan/VulkanRenderMaterial.h"
+#include "Proof/Platform/Vulkan/VulkanRenderMaterial.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Shader.h"
 namespace Proof {

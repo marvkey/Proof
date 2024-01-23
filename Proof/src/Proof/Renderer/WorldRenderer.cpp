@@ -33,6 +33,7 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Platform/Vulkan/VulkanComputePass.h"
 #include "Proof/Asset/AssetManager.h"
+#include "Proof/Core/Core.h"
 
 #include "VertexArray.h"
 #include <glm/glm.hpp>
@@ -175,7 +176,8 @@ namespace Proof
 		:
 		m_Timers(m_Stats.Timers), m_LightScene(m_Stats.LightSene),
 		DebugOptions(), ShadowSetting(PreProcessSettings.ShadowSettings),
-		AmbientOcclusionSettings(PostProcessSettings.AmbientOcclusionSettings), BloomSettings(PostProcessSettings.BloomSettings), DOFSettings(PostProcessSettings.DOFSettings)
+		AmbientOcclusionSettings(PostProcessSettings.AmbientOcclusionSettings), BloomSettings(PostProcessSettings.BloomSettings), DOFSettings(PostProcessSettings.DOFSettings), 
+		SSRSettings(PostProcessSettings.SSRSettings)
 	{
 		Init();
 	}
@@ -685,6 +687,102 @@ namespace Proof
 					}
 				}
 			}
+
+			//ssr
+			{
+				//ssr			
+				{
+					ImageConfiguration imageSpec;
+					imageSpec.Format = ImageFormat::RGBA16F;
+					imageSpec.Usage = ImageUsage::Storage;
+					imageSpec.DebugName = "SSR";
+					Count<Image2D> image = Image2D::Create(imageSpec);
+					m_SSR.SSRImage = image;
+
+					auto ssrPipeline = ComputePipeline::Create({ "SSR",Renderer::GetShader("SSR") });
+					m_SSR.SSRPass = ComputePass::Create({ "SSR",ssrPipeline });
+					m_SSR.SSRPass->AddGlobalInput(m_GlobalInputs);
+					//ssr Composite
+					{
+						GraphicsPipelineConfiguration pipelineConfig;
+						pipelineConfig.Attachments.Attachments.emplace_back(ImageFormat::RGBA32F);
+						pipelineConfig.DebugName = "SSRComposite";
+						pipelineConfig.VertexArray = quadVertexArray;
+						pipelineConfig.CullMode = CullMode::None;
+						pipelineConfig.DepthTest = false;
+						pipelineConfig.WriteDepth = false;
+						pipelineConfig.BlendMode = BlendMode::SrcAlphaOneMinusSrcAlpha;
+						pipelineConfig.Shader = Renderer::GetShader("SSRComposite");
+
+						auto compositePipeline = GraphicsPipeline::Create(pipelineConfig);
+
+						FrameBufferConfig framebufferSpec;
+						framebufferSpec.DebugName = "SSRComposite";
+						framebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+						framebufferSpec.Attachments.Attachments.emplace_back(ImageFormat::RGBA32F);
+						framebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetTargetFrameBuffer()->GetOutput(0);
+						framebufferSpec.ClearColorOnLoad = false;
+
+						RenderPassConfig renderPassConfig;
+						renderPassConfig.DebugName = "SSRComposite";
+						renderPassConfig.Pipeline = compositePipeline;
+						renderPassConfig.TargetFrameBuffer = FrameBuffer::Create(framebufferSpec);
+
+						m_SSR.SSRCompositePass = RenderPass::Create(renderPassConfig);
+					}
+				}
+
+				//HZB
+				{
+					
+					TextureConfiguration config;
+					config.DebugName = "HierarchicalZ";
+					config.Format = ImageFormat::R32F;
+					config.Width = 1;
+					config.Height = 1;
+					config.Wrap = TextureWrap::ClampEdge;
+					config.Filter = TextureFilter::Nearest;
+					config.GenerateMips = true;
+
+					m_SSR.HierarchicalDepthTexture = Texture2D::Create(config);
+
+					auto computePipeline = ComputePipeline::Create({ "HierarchicalZ",Renderer::GetShader("HZB") });
+					m_SSR.HierarchicalDepthPass = ComputePass::Create({ "HierarchicalZ",computePipeline });
+				}
+
+				// Pre-Integration
+				{
+					TextureConfiguration config;
+					config.Format = ImageFormat::R;
+					config.Width = 1;
+					config.Height = 1;
+					config.DebugName = "PreIntegration";
+					config.GenerateMips = true;
+
+					m_SSR.VisibilityTexture = Texture2D::Create(config);
+					
+					auto computePipeline = ComputePipeline::Create({ "PreIntegration",Renderer::GetShader("PreIntegration") });
+					m_SSR.PreIntegrationPass = ComputePass::Create({ "PreIntegration",computePipeline });
+				}
+
+				//PreConvolution
+				{
+					TextureConfiguration spec;
+					spec.Format = ImageFormat::RGBA32F;
+					spec.Width = 1;
+					spec.Height = 1;
+					spec.Wrap = TextureWrap::ClampEdge;
+					spec.DebugName = "Pre-Convoluted";
+					spec.GenerateMips = true;
+
+					m_SSR.PreConvolutedTexture = Texture2D::Create(spec);
+
+					auto computePipeline = ComputePipeline::Create({ "PreConvoulution",Renderer::GetShader("PreConvoulution") });
+					m_SSR.PreConvolutePass = ComputePass::Create({ "PreConvoulution",computePipeline });
+
+				}
+
+			}
 			#if 0
 			// Ambient occlusion
 			{
@@ -937,12 +1035,45 @@ namespace Proof
 				m_BloomComputeTextures[1]->Resize(bloomSize.x, bloomSize.y);
 				m_BloomComputeTextures[2]->Resize(bloomSize.x, bloomSize.y);
 			}
-			//size
+			//DOF 
 			{
 
 				glm::uvec2 size = (viewportSize + 1u) / 2u;
 				size += DOF_NUM_THREADS - size % DOF_NUM_THREADS;
 				m_DOFTexture->Resize(size.x, size.y);
+			}
+
+			//ssr
+			{
+
+				//ssr
+				{
+					constexpr uint32_t WORK_GROUP_SIZE = 8u;
+					glm::uvec2 ssrSize = SSRSettings.HalfRes ? (viewportSize + 1u) / 2u : viewportSize;
+					m_SSR.SSRImage->Resize(ssrSize.x, ssrSize.y);
+					m_SSR.PreConvolutedTexture->Resize(ssrSize.x, ssrSize.y);
+					ssrSize += WORK_GROUP_SIZE - ssrSize % WORK_GROUP_SIZE;
+					m_SSR.WorkGroups.x = ssrSize.x / WORK_GROUP_SIZE;
+					m_SSR.WorkGroups.y = ssrSize.y / WORK_GROUP_SIZE;
+
+					m_SSR.VisibilityTexture->Resize(viewportSize.x, viewportSize.y);
+					m_SSR.SSRCompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
+
+				}
+
+				//HZB
+				{
+
+					const glm::uvec2 numMips = glm::ceil(glm::log2(glm::vec2(viewportSize)));
+					m_UBSSR.NumDepthMips = glm::max(numMips.x, numMips.y);
+
+					const glm::uvec2 hzbSize = 1u << numMips;
+					m_SSR.HierarchicalDepthTexture->Resize(hzbSize.x, hzbSize.y);
+
+					const glm::vec2 hzbUVFactor = { (glm::vec2)viewportSize / (glm::vec2)hzbSize };
+					m_UBSSR.HZBUvFactor = hzbUVFactor;
+				}
+			
 			}
 
 			//HBAO
@@ -1024,6 +1155,21 @@ namespace Proof
 			m_UBCameraData.NearPlane = camera.NearPlane;
 			m_UBCameraData.FarPlane = camera.FarPlane;
 			m_UBCameraData.Fov = camera.Fov;
+
+			float depthLinearizeMul = -(camera.FarPlane * camera.NearPlane) / (camera.FarPlane - camera.NearPlane);
+			float depthLinearizeAdd = camera.FarPlane / (camera.FarPlane - camera.NearPlane);
+			m_UBCameraData.DepthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
+			const float* P = glm::value_ptr(camera.Camera.GetProjectionMatrix());
+			const glm::vec4 projInfoPerspective = {
+					 2.0f / (P[4 * 0 + 0]),                  // (x) * (R - L)/N
+					 2.0f / (P[4 * 1 + 1]),                  // (y) * (T - B)/N
+					-(1.0f - P[4 * 2 + 0]) / P[4 * 0 + 0],  // L/N
+					-(1.0f + P[4 * 2 + 1]) / P[4 * 1 + 1],  // B/N
+			};
+
+
+			m_UBCameraData.NDCToViewMul = { projInfoPerspective[0], projInfoPerspective[1] };
+			m_UBCameraData.NDCToViewAdd = { projInfoPerspective[2], projInfoPerspective[3] };
 			m_UBCameraBuffer->SetData(frameIndex, Buffer(&m_UBCameraData, sizeof(UBCameraData)));
 		}
 	}
@@ -1056,6 +1202,8 @@ namespace Proof
 			SetPasses();
 			ShadowPass();
 			PreDepthPass();
+			HZBPass();
+			PreIntegrationPass();
 			LightFrustrumAndCullingPass();
 			GeometryPass();
 			CompositePass();
@@ -1672,9 +1820,14 @@ namespace Proof
 		Timer compositeTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		
-		AmbientOcclusionPass();
+		//AmbientOcclusionPass();
+		{
+
+			PreConvolutePass();
+			SSRPass();
+		}
 		BloomPass();
-		DOFPass();
+		//DOFPass();
 
 		// this has to be the last thgn called
 		{
@@ -2160,7 +2313,270 @@ namespace Proof
 			});
 		Renderer::EndComputePass(m_DOFPass);
 	}
+	void WorldRenderer::SSRPass()
+	{
+		if (!SSRSettings.Enabled)
+			return;
+		PF_PROFILE_FUNC();
 
+		//set up
+		{
+			PF_PROFILE_FUNC("Set Up");
+
+			m_UBSSR.HZBUvFactor = SSRSettings.HZBUvFactor;
+			m_UBSSR.FadeIn = SSRSettings.FadeIn;
+			m_UBSSR.Brightness = SSRSettings.Brightness;
+			m_UBSSR.DepthTolerance = SSRSettings.DepthTolerance;
+			m_UBSSR.FacingReflectionsFading = SSRSettings.FacingReflectionsFading;
+			m_UBSSR.MaxSteps = SSRSettings.MaxSteps;
+			m_UBSSR.NumDepthMips = SSRSettings.NumDepthMips;
+			m_UBSSR.RoughnessDepthTolerance = SSRSettings.RoughnessDepthTolerance;
+			m_UBSSR.bHalfRes = SSRSettings.HalfRes;
+			m_UBSSR.bEnableConeTracing = SSRSettings.EnableConeTracing;
+			m_UBSSR.LuminanceFactor = SSRSettings.LuminanceFactor;
+			// it does not resize every frame because images only resize when the size is different
+			//constexpr uint32_t WORK_GROUP_SIZE = 8u;
+			//glm::uvec2 ssrSize = SSRSettings.HalfRes ? (m_UBScreenData.FullResolution + 1.f) / 2.f : m_UBScreenData.FullResolution;
+			//m_SSR.SSRImage->Resize(ssrSize.x, ssrSize.y);
+			//m_SSR.PreConvolutedTexture->Resize(ssrSize.x, ssrSize.y);
+			//ssrSize += WORK_GROUP_SIZE - ssrSize % WORK_GROUP_SIZE;
+			//m_SSR.WorkGroups.x = ssrSize.x / WORK_GROUP_SIZE;
+			//m_SSR.WorkGroups.y = ssrSize.y / WORK_GROUP_SIZE;
+		}
+		//ssr
+		{
+			PF_PROFILE_FUNC("ssr");
+
+			auto renderPass = m_SSR.SSRPass;
+			renderPass->SetInput("o_Color", m_SSR.SSRImage);
+			renderPass->SetInput("u_PreConvultedMap", m_SSR.PreConvolutedTexture);
+			renderPass->SetInput("u_VisibilityMap", m_SSR.VisibilityTexture);
+			renderPass->SetInput("u_HIZMap", m_SSR.HierarchicalDepthTexture);
+			renderPass->SetInput("u_NormalMap", m_GeometryPass->GetOutput(1));
+			renderPass->SetInput("u_MetalnessRoughnessMap", m_GeometryPass->GetOutput(2));
+
+			if (AmbientOcclusionSettings.Enabled)
+			{
+				if (AmbientOcclusionSettings.Type == AmbientOcclusion::AmbientOcclusionType::HBAO)
+				{
+					//renderPass->SetInput("u_HBAOMap", m_GeometryPass->GetOutput(2));
+
+				}
+			}
+
+			Renderer::BeginComputePass(m_CommandBuffer, renderPass);
+
+			renderPass->PushData("u_PushData", &m_UBSSR);
+			renderPass->Dispatch(m_SSR.WorkGroups);
+			Renderer::EndComputePass(renderPass);
+
+		}
+		//ssr composite
+		{
+			auto renderPass = m_SSR.SSRCompositePass;
+
+			renderPass->SetInput("u_SSR", m_SSR.SSRImage);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, renderPass);
+
+			Renderer::SubmitFullScreenQuad(m_CommandBuffer, renderPass);
+
+			Renderer::EndRenderPass(renderPass);
+		}
+	}
+
+	void WorldRenderer::HZBPass()
+	{
+		//HZB
+		{
+			PF_PROFILE_FUNC("HZB");
+
+			auto hierarchicalDepthPass = m_SSR.HierarchicalDepthPass;
+			auto hierarchicalZTexture = m_SSR.HierarchicalDepthTexture;
+			constexpr uint32_t maxMipBatchSize = 4;
+			const uint32_t hzbMipCount = hierarchicalZTexture->GetMipLevelCount();
+
+			Renderer::BeginComputePass(m_CommandBuffer, hierarchicalDepthPass);
+
+			auto ReduceHZB = [hzbMipCount, maxMipBatchSize, &hierarchicalZTexture, hierarchicalDepthPass]
+			(const uint32_t startDestMip, const uint32_t parentMip, Count<Image2D> parentImage, const glm::vec2& DispatchThreadIdToBufferUV, const glm::vec2& InputViewportMaxBound, const bool isFirstPass)
+			{
+				struct HierarchicalZComputePushConstants
+				{
+					glm::vec2 DispatchThreadIdToBufferUV;
+					glm::vec2 InputViewportMaxBound;
+					glm::vec2 InvSize;
+					int FirstLod;
+					int bIsFirstPass;
+				} hierarchicalZComputePushConstants;
+
+				hierarchicalZComputePushConstants.bIsFirstPass = isFirstPass;
+				hierarchicalZComputePushConstants.FirstLod = (int)startDestMip;
+				hierarchicalZComputePushConstants.DispatchThreadIdToBufferUV = DispatchThreadIdToBufferUV;
+				hierarchicalZComputePushConstants.InputViewportMaxBound = InputViewportMaxBound;
+
+				std::array<Count<ImageView>, 5> hbImageViews{};
+
+				const uint32_t endDestMip = glm::min(startDestMip + maxMipBatchSize, hzbMipCount);
+				uint32_t destMip;
+				for (destMip = startDestMip; destMip < endDestMip; ++destMip)
+				{
+					uint32_t idx = destMip - startDestMip;
+					hbImageViews[idx] = hierarchicalZTexture->GetImageMip(destMip);
+				}
+				destMip -= startDestMip;
+				for (; destMip < maxMipBatchSize; ++destMip)
+				{
+					hbImageViews[destMip] = hierarchicalZTexture->GetImageMip(hzbMipCount - 1);
+				}
+
+				std::vector<Count<ImageView>> imageViews;
+				for (uint32_t i = 0; i < maxMipBatchSize; ++i)
+				{
+					imageViews.emplace_back(hbImageViews[i]);
+				}
+				//hbImageViews[4] = parentImage
+				hierarchicalDepthPass->SetInput("o_HZB", imageViews);
+				hierarchicalDepthPass->SetInput("u_InputDepth", parentImage);
+
+				const glm::ivec2 srcSize{ Math::DivideAndRoundUp(glm::uvec2(parentImage->GetSize().X,parentImage->GetSize().Y), 1u << parentMip) };
+				const glm::ivec2 dstSize = Math::DivideAndRoundUp(glm::uvec2(hierarchicalZTexture->GetSize().X, hierarchicalZTexture->GetSize().Y), 1u << startDestMip);
+				hierarchicalZComputePushConstants.InvSize = glm::vec2{ 1.0f / (float)srcSize.x, 1.0f / (float)srcSize.y };
+				hierarchicalDepthPass->PushData("u_PushData", &hierarchicalZComputePushConstants);
+
+				hierarchicalDepthPass->Dispatch(Math::DivideAndRoundUp(dstSize.x, 8), Math::DivideAndRoundUp(dstSize.y, 8), 1);
+
+			};
+
+			auto srcDepthImage = m_PreDepthPass->GetOutput(0).As<Image2D>();
+
+			auto srcSize = srcDepthImage->GetSize();
+
+
+			ReduceHZB(0, 0, srcDepthImage, { 1.0f / glm::vec2{ srcSize.X,srcSize.Y } }, { (glm::vec2{ srcSize.X,srcSize.Y } - 0.5f) / glm::vec2{ srcSize.X,srcSize.Y } }, true);
+
+			for (uint32_t startDestMip = maxMipBatchSize; startDestMip < hzbMipCount; startDestMip += maxMipBatchSize)
+			{
+				auto newSize = Math::DivideAndRoundUp(glm::uvec2{ hierarchicalZTexture->GetSize().X,hierarchicalZTexture->GetSize().Y }, 1u << uint32_t(startDestMip - 1));
+
+				srcSize = { newSize.x, newSize.y };
+
+				ReduceHZB(startDestMip, startDestMip - 1, hierarchicalZTexture->GetImage(), { 2.0f / glm::vec2{srcSize.X,srcSize.Y} }, glm::vec2{ 1.0f }, false);
+
+			}
+			Renderer::EndComputePass(hierarchicalDepthPass);
+		}
+	}
+	void WorldRenderer::PreIntegrationPass()
+	{
+		//preIntegration
+		{
+			PF_PROFILE_FUNC("preIntegration");
+
+			auto visibilityTexture = m_SSR.VisibilityTexture;
+
+			struct PreIntegrationComputePushConstants
+			{
+				glm::vec2 HZBResFactor;
+				glm::vec2 ResFactor;
+				glm::vec2 ProjectionParams; //(x) = Near plane, (y) = Far plane
+				int PrevLod = 0;
+			} preIntegrationComputePushConstants;
+
+			Renderer::ClearImage(m_CommandBuffer, visibilityTexture->GetImage());
+
+			glm::vec2 projectionParams = { m_UBCameraData.FarPlane, m_UBCameraData.NearPlane }; // Reversed 
+
+			auto preIntegration = m_SSR.PreIntegrationPass;
+			Renderer::BeginComputePass(m_CommandBuffer, preIntegration);
+
+			const uint32_t mipLevelCount = visibilityTexture->GetMipLevelCount();
+			for (uint32_t i = 0; i < mipLevelCount; i++)
+			{
+				auto [mipWidth, mipHeight] = visibilityTexture->GetImage()->GetMipSize(i);
+				const auto workGroupsX = (uint32_t)glm::ceil((float)mipWidth / 8.0f);
+				const auto workGroupsY = (uint32_t)glm::ceil((float)mipHeight / 8.0f);
+
+				auto imageView = visibilityTexture->GetImage()->CreateOrGetImageMip(i);
+
+
+				auto [width, height] = visibilityTexture->GetImage()->GetMipSize(i);
+				glm::vec2 resFactor = 1.0f / glm::vec2{ width, height };
+				preIntegrationComputePushConstants.HZBResFactor = resFactor * SSRSettings.HZBUvFactor;
+				preIntegrationComputePushConstants.ResFactor = resFactor;
+				preIntegrationComputePushConstants.ProjectionParams = projectionParams;
+				preIntegrationComputePushConstants.PrevLod = (int)i - 1;
+
+				preIntegration->SetInput("o_VisibilityImage", imageView);
+				preIntegration->SetInput("u_HZB", m_SSR.HierarchicalDepthTexture);
+				preIntegration->SetInput("u_VisibilityTex", m_SSR.VisibilityTexture);
+				preIntegration->PushData("u_Info", &preIntegrationComputePushConstants);
+				preIntegration->Dispatch(workGroupsX, workGroupsY, 1);
+
+			}
+			Renderer::EndComputePass(preIntegration);
+		}
+	}
+	void WorldRenderer::PreConvolutePass()
+	{
+		//preConvulution
+		{
+			PF_PROFILE_FUNC("PreConvulute");
+
+			struct PreConvolutionComputePushConstants
+			{
+				int PrevLod = 0;
+				int Mode = 0; // 0 = Copy, 1 = GaussianHorizontal, 2 = GaussianVertical
+			} preConvolutionComputePushConstants;
+
+			//Might change to be maximum res used by other techniques other than SSR.
+			int halfRes = int(SSRSettings.HalfRes);
+			auto preConvolutePass = m_SSR.PreConvolutePass;
+			Renderer::BeginComputePass(m_CommandBuffer, preConvolutePass);
+
+
+			Count<Image2D> preConvolutedImage = m_SSR.PreConvolutedTexture->GetImage();
+
+			auto inputColorImage = m_GeometryPass->GetOutput(0);
+			uint32_t workGroupsX = (uint32_t)glm::ceil((float)inputColorImage->GetWidth() / 16.0f);
+			uint32_t workGroupsY = (uint32_t)glm::ceil((float)inputColorImage->GetHeight() / 16.0f);
+
+			preConvolutePass->PushData("u_Info", &preConvolutionComputePushConstants);
+			preConvolutePass->SetInput("u_Input", inputColorImage);
+			preConvolutePass->SetInput("o_Image", preConvolutedImage->CreateOrGetImageMip(0));
+			preConvolutePass->Dispatch(workGroupsX, workGroupsY, 1);
+
+
+			const uint32_t mipCount = m_SSR.PreConvolutedTexture->GetMipLevelCount();
+
+			for (uint32_t mip = 1; mip < mipCount; mip++)
+			{
+				auto [mipWidth, mipHeight] = preConvolutedImage->GetMipSize(mip);
+				workGroupsX = (uint32_t)glm::ceil((float)mipWidth / 16.0f);
+				workGroupsY = (uint32_t)glm::ceil((float)mipHeight / 16.0f);
+
+				auto imageView = preConvolutedImage->CreateOrGetImageMip(mip);
+
+				preConvolutePass->SetInput("u_Input", preConvolutedImage);
+				preConvolutePass->SetInput("o_Image", imageView);
+				preConvolutionComputePushConstants.PrevLod = (int)mip - 1;
+
+				auto blur = [&](const int mode)
+				{
+					preConvolutionComputePushConstants.Mode = (int)mode;
+					preConvolutePass->PushData("u_Info", &preConvolutionComputePushConstants);
+					preConvolutePass->Dispatch(workGroupsX, workGroupsY, 1);
+				};
+
+
+
+				blur(1); // Horizontal blur
+				blur(2); // Vertical Blur
+			}
+			Renderer::EndComputePass(preConvolutePass);
+
+		}
+	}
 	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws)
 	{
 		PF_PROFILE_FUNC();
@@ -2518,6 +2934,7 @@ namespace Proof
 		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
 		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 	}
+	
 	void WorldRenderer::ClearPass(Count<RenderPass> renderPass, bool explicitClear)
 	{
 		PF_PROFILE_FUNC();

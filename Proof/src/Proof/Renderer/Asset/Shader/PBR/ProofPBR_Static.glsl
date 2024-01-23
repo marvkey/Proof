@@ -91,7 +91,7 @@ layout(location = 0) out vec4 out_FragColor;
 // such as tone mapping or color grading. The exact role of this variable depends
 // on the specific rendering pipeline and shader's purpose within it.
 layout(location = 1) out vec4 out_ViewNormalsLuminance;
-layout(location = 2) out vec4 out_MetalnessRoughness;
+layout(location = 2) out vec4 out_MetalnessRoughness; //RGBA //R= metallnes, G = Roughness
 // pbr map
 layout(set = 0, binding = 5) uniform sampler2D u_AlbedoMap;
 layout(set = 0, binding = 6) uniform sampler2D u_NormalMap;

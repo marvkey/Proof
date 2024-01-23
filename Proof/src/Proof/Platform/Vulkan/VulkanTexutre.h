@@ -113,12 +113,15 @@ namespace Proof
 		virtual float GetAspectRatio()const override { return (float)GetWidth() / (float)GetHeight(); };
 		uint32_t GetMipLevelCount() 
 		{ 
+			/*
 			if (m_Config.GenerateMips)
 			{
 				return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
 			}
 			else
 				return 1;
+				*/
+			return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
 		}
 
 		const std::filesystem::path& GetPath()const override { return m_Path; };
