@@ -821,6 +821,7 @@ namespace Proof
 
 	void VulkanTextureCube::RT_GenerateMips()
 	{
+
 		m_Config.GenerateMips = true;
 #if 1
 		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);

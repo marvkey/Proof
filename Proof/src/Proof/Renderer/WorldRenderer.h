@@ -62,6 +62,8 @@ namespace Proof
 	class VertexBuffer;
 	class DynamicMesh;
 	class StorageBufferSet;
+	class Texture2D;
+	class Image2D;
 	struct MeshDrawInfo
 	{
 		Count<Mesh> Mesh = nullptr;
@@ -197,7 +199,6 @@ namespace Proof
 		DepthOfFieldSettings& DOFSettings;
 		SSRSettings& SSRSettings;
 	private:
-		Count<class Texture2D> m_BRDFLUT;
 		Count<class World> m_ActiveWorld;
 		//buffer data
 		UBRenderData m_UBRenderData;
@@ -329,8 +330,8 @@ namespace Proof
 			Count<ComputePass> HierarchicalDepthPass;
 			Count<ComputePass> PreIntegrationPass;
 			Count<ComputePass> PreConvolutePass;
-			Count<Image2D> SSRImage;
-			Count<Texture2D> HierarchicalDepthTexture;
+			Count<class Image2D> SSRImage;
+			Count<class Texture2D> HierarchicalDepthTexture;
 			Count<Texture2D> PreConvolutedTexture;
 			Count<Texture2D> VisibilityTexture;//Pre-integration texture
 			glm::uvec3 WorkGroups{ 1u };

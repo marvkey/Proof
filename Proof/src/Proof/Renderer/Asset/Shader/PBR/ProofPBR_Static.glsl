@@ -211,6 +211,26 @@ void main()
     {
         //https://github.com/Angelo1211/HybridRenderingEngine/blob/master/assets/shaders/PBRClusteredShader.frag
         DirectionalLight currentLight= u_DirectionalLightData.Lights[i];
+        vec3 Li = -normalize(currentLight.Direction);
+        vec3 Lradiance = currentLight.Color * currentLight.Intensity;
+        vec3 Lh = normalize(Li + m_Params.View);
+
+        // Calculate angles between surface normal and various light vectors.
+		float cosLi = max(0.0, dot(m_Params.Normal, Li));
+		float cosLh = max(0.0, dot(m_Params.Normal, Lh));
+
+        vec3 F = FresnelSchlickRoughness(max(0.0, dot(Lh, m_Params.View)),F0,m_Params.Roughness);
+		float D = NdfGGX(cosLh, m_Params.Roughness);
+		float G = GaSchlickGGX(cosLi, m_Params.NdotV, m_Params.Roughness);
+
+        vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+		vec3 diffuseBRDF = kd * m_Params.AlbedoColor;
+
+        // Cook-Torrance
+		vec3 specularBRDF = (F * D * G) / max(0.00001, 4.0 * cosLi * m_Params.NdotV);
+		specularBRDF = clamp(specularBRDF, vec3(0.0f), vec3(10.0f));
+		directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+        /*
         vec3 lightDirection = -normalize(currentLight.Direction);
         vec3 halfway = normalize(m_Params.View  + lightDirection);
         float nDotL = max(dot(m_Params.Normal, lightDirection), 0.0);
@@ -229,33 +249,36 @@ void main()
 
         vec3 lightEffect = (kD * m_Params.AlbedoColor / PI + specular )  * radiance * nDotL;
         directLighting +=lightEffect;
+        */
     }
     
     vec3 iblEfeect = vec3(0);
     //IBL
     {
-        vec3 Lr = 2.0 *dot(m_Params.View ,m_Params.Normal) * m_Params.Normal - m_Params.View ;
+        vec3 Lr = 2.0 * m_Params.NdotV * m_Params.Normal - m_Params.View ;
         //https://github.com/kidrigger/Blaze/blob/canon/Blaze/shaders/forward/fPBR.frag
         //https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
 
         // fresnel reflectance
-        vec3 F= FresnelSchlickRoughness(m_Params.NdotV, F0, m_Params.Roughness);
+        vec3 F = FresnelSchlickRoughness(m_Params.NdotV, F0, m_Params.Roughness);
+	    vec3 R = 2.0 * dot(m_Params.View, m_Params.Normal) * m_Params.Normal - m_Params.View;
+
         vec3 irradiance = texture(u_IrradianceMap, m_Params.Normal).rgb ;
         vec3 kd = (1 - F) * (1.0 - m_Params.Metalness);
 
-        vec3 diffuseIBL = kd * m_Params.AlbedoColor * irradiance;
+        vec3 diffuseIBL = m_Params.AlbedoColor * irradiance;
 
         int specularTextureLevels = textureQueryLevels(u_PrefilterMap);
 		vec3 specularIrradiance = textureLod(u_PrefilterMap, Lr,specularTextureLevels * m_Params.Roughness).rgb;
 
-        vec2 specularBRDF  = texture(u_BRDFLUT, vec2(m_Params.NdotV,m_Params.Roughness)).rg;
+        vec2 specularBRDF  = texture(u_BRDFLUT, vec2(m_Params.NdotV,1.0 - m_Params.Roughness)).rg;
 
         //TODO Fix why brdf is causing shader bug
         //of a grey dot
 		vec3 specularIBL = specularIrradiance * (F0 * specularBRDF.x + specularBRDF.y) ; 
-		//vec3 specularIBL = specularIrradiance * (F0) ; 
+		//vec3 specularIBL = specularIrradiance * (F0 ) ; 
 
-        iblEfeect += (specularIBL + diffuseIBL) ;
+        iblEfeect += kd * diffuseIBL + specularIBL;
         iblEfeect = iblEfeect * (u_SkyBoxInfo.Intensity) * (u_SkyBoxInfo.TintColor);  
     }
 

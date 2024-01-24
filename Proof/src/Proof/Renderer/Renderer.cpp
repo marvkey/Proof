@@ -60,6 +60,7 @@ namespace Proof {
 
 	static Count<class ShaderLibrary> ShaderLibrary;
 	static Count<ComputePass> PrethamSkyPass;
+	static Count<ComputePass> BRDFPass;
 	static BaseTextures* s_BaseTextures;
 
 	static std::unordered_map<std::string, std::string> s_ShaderDefines;
@@ -161,6 +162,7 @@ namespace Proof {
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 		s_BaseTextures = pnew BaseTextures();
 		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
+		Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
 		// Compile shaders
 		Application::Get()->m_RenderThread.Pump();
 		{
@@ -246,6 +248,7 @@ namespace Proof {
 		// shut down piplines
 		{
 			PrethamSkyPass = nullptr;
+			BRDFPass = nullptr;
 		}
 
 		pdelete s_CommandQueue[0];
@@ -487,7 +490,7 @@ namespace Proof {
 		ImageFormat format = ImageFormat::RGBA16F;
 		TextureConfiguration baseCubeMapConfig;
 		baseCubeMapConfig.DebugName = "Pretham Cube";
-		baseCubeMapConfig.Wrap = TextureWrap::Repeat;
+		baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
 		baseCubeMapConfig.Filter = TextureFilter::Nearest;
 		baseCubeMapConfig.Height = cubemapSize;
 		baseCubeMapConfig.Width = cubemapSize;
@@ -506,6 +509,8 @@ namespace Proof {
 		PrethamSkyPass->PushData("u_Uniforms", &params);
 		PrethamSkyPass->Dispatch(cubemapSize/ irradianceMap, cubemapSize/ irradianceMap, 6);
 		Renderer::EndComputePass(PrethamSkyPass);
+
+		//environmentMap->GenerateMips();
 		return environmentMap;
 	}
 
@@ -628,6 +633,7 @@ namespace Proof {
 		s_Data->HosekWilkiePass->Dispatch(cubemapSize / irradianceMap, cubemapSize / irradianceMap, 6);
 		Renderer::EndComputePass(s_Data->HosekWilkiePass);
 
+		//environmentMap->GenerateMips();
 		return environmentMap;
 	}
 	Count<Texture2D>Renderer::GetWhiteTexture(){
@@ -672,7 +678,7 @@ namespace Proof {
 			baseCubeMapConfig.Height = imageSize;
 			baseCubeMapConfig.Width = imageSize;
 			baseCubeMapConfig.Storage = true;
-			baseCubeMapConfig.GenerateMips = true;
+			baseCubeMapConfig.GenerateMips = false;
 			baseCubeMapConfig.Format = format;
 			baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
 
@@ -797,6 +803,7 @@ namespace Proof {
 				computePass->Dispatch(numGroups, numGroups, 6);
 			}
 			Renderer::EndComputePass(computePass);
+			prefilterMap->GenerateMips();
 			prefilterImageViews.clear();
 		}
 		return std::make_pair(irradianceMap, prefilterMap);
@@ -849,9 +856,9 @@ namespace Proof {
 			environment->m_IsUpdated = false;
 		}
 	}
-	Count<Texture2D> Renderer::GetBRDFLut()
+	Count<Image2D> Renderer::GetBRDFLut()
 	{
-		return s_BaseTextures->BRDFLutTexture;
+		return s_BaseTextures->BRDFLutImage;
 	}
 
 	void Renderer::ClearImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> image)
@@ -885,6 +892,7 @@ namespace Proof {
 		//	s_Data->CommandBufferRecording = false;
 		//}
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
+
 	}
 
 	void Renderer::EndFrame()
@@ -907,15 +915,14 @@ namespace Proof {
 		//brdflut
 		{
 			const uint32_t imageSize = 512;
-			TextureConfiguration textureConfig;
+			ImageConfiguration textureConfig;
 			textureConfig.DebugName = "BrdfLut";
 			textureConfig.Height = imageSize;
 			textureConfig.Width = imageSize;
-			textureConfig.Storage = true;
+			textureConfig.Usage = ImageUsage::Storage;
 			textureConfig.Format = ImageFormat::RG16F;
 
-			BRDFLutTexture = Texture2D::Create(textureConfig);
-
+			BRDFLutImage = Image2D::Create(textureConfig);
 			ComputePipelineConfig computePipelineConfig;
 			computePipelineConfig.DebugName = "BRDFLUT Pipeline";
 			computePipelineConfig.Shader = Renderer::GetShader("BRDFLUT");
@@ -927,15 +934,15 @@ namespace Proof {
 			computePassConfig.DebugName = "BRDFLUT Pass";
 			computePassConfig.Pipeline = computePipeline;
 
-			static auto computePass = ComputePass::Create(computePassConfig);
+			BRDFPass = ComputePass::Create(computePassConfig);
 
-			computePass->SetInput("brfdLUT", BRDFLutTexture);
+			BRDFPass->SetInput("brfdLUT", BRDFLutImage);
 
 
 			Count<RenderCommandBuffer>renderCommandBuffer = s_Data->RenderCommandBuffer;
-			Renderer::BeginComputePass(renderCommandBuffer, computePass);
-			computePass->Dispatch(imageSize / 16, imageSize / 16, 1);
-			Renderer::EndComputePass(computePass);
+			Renderer::BeginComputePass(renderCommandBuffer, BRDFPass);
+			BRDFPass->Dispatch(imageSize / 16, imageSize / 16, 1);
+			Renderer::EndComputePass(BRDFPass);
 		}
 
 		TextureConfiguration cubeTextureConfig;
@@ -947,10 +954,10 @@ namespace Proof {
 		cubeTextureConfig.Format = ImageFormat::RGBA;
 		cubeTextureConfig.Wrap = TextureWrap::ClampEdge;
 
-		WhiteTextureCube = TextureCube::Create(Buffer(&whiteTexturedata, sizeof(uint32_t)).Data, cubeTextureConfig);
+		WhiteTextureCube = TextureCube::Create(cubeTextureConfig, WhiteTexture);
 
 		cubeTextureConfig.DebugName = "Black Texture";
-		BlackTextureCube = TextureCube::Create(Buffer(&blackTexturedata, sizeof(uint32_t)).Data, cubeTextureConfig);
+		BlackTextureCube = TextureCube::Create(cubeTextureConfig, BlackTexture);
 	}
 	const RendererAPI* Renderer::GetRenderAPI()
 	{

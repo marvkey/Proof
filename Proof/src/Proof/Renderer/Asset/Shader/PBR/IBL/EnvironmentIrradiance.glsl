@@ -108,5 +108,6 @@ void main()
 	}
 	irradiance /= vec3(NumSamples);
 
-	imageStore(outputTexture, ivec3(gl_GlobalInvocationID), vec4(irradiance, 1.0));
+	//imageStore(outputTexture, ivec3(gl_GlobalInvocationID), vec4(irradiance, 1.0));
+	imageStore(outputTexture, ivec3(gl_GlobalInvocationID), vec4(1.0));
 }

@@ -48,7 +48,7 @@ namespace Proof {
 		static void EndComputePass(Count<class ComputePass> computPass);
 		static void ComputePassPushRenderMaterial(Count<class ComputePass> computePass, Count<class RenderMaterial> renderMaterial);
 
-		static Count<class Texture2D> GetBRDFLut();
+		static Count<class Image2D> GetBRDFLut();
 		static void ClearImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<class Image2D> image);
 		static void CopyImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage);
 
@@ -137,7 +137,7 @@ namespace Proof {
 		Count<class Texture2D> WhiteTexture;
 		Count<class Texture2D> BlackTexture;
 		Count<class Texture2D> NullTexture;
-		Count<class Texture2D> BRDFLutTexture;
+		Count<class Image2D> BRDFLutImage;
 		Count<class TextureCube> WhiteTextureCube;
 		Count<class TextureCube> BlackTextureCube;
 		BaseTextures();

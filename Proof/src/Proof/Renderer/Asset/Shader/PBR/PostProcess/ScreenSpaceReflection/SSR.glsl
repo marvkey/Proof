@@ -372,5 +372,6 @@ void main()
 	float roughnessFactor = mix(clamp(0.0, 1.0, metalnessRoughness.r + ao), 0.0625f, pow(metalnessRoughness.g, 4));
 
 	// Confidence can be negtive. If it is, it will leave unwanted reflections.
-	imageStore(o_Color, ivec2(base), vec4(roughnessFactor * totalColor.rgb, max(confidence, 0)));
+	//imageStore(o_Color, ivec2(base), vec4(roughnessFactor * totalColor.rgb, max(confidence, 0)));
+	imageStore(o_Color, ivec2(base), vec4(1.0,0,0,0));
 }

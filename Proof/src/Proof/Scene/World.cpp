@@ -100,7 +100,7 @@ namespace Proof {
 				{
 					Entity entity(entityID, this);
 					const auto& dirLightComponent = dirLights.get<DirectionalLightComponent>(entityID);
-					glm::vec3 direction =GetWorldSpaceRotation(entity);
+					glm::vec3 direction = GetWorldSpaceRotation(entity);
 					direction = glm::normalize(direction);
 					directionaLightScene.DirectionalLights[index].Color = dirLightComponent.Color;
 					directionaLightScene.DirectionalLights[index].Intensity = dirLightComponent.Intensity;
@@ -112,7 +112,7 @@ namespace Proof {
 
 					index++;
 				}
-				if(!dirLights.empty())
+				if (!dirLights.empty())
 					worldRenderer->SubmitDirectionalLight(directionaLightScene);
 			}
 
@@ -152,7 +152,7 @@ namespace Proof {
 
 						environment->Update(data);
 					}
-					
+
 					if (skyLightComponent.Environment != nullptr)
 					{
 						worldRenderer->SubmitSkyLight(skyLightInfo, skyLightComponent.Environment);
@@ -207,7 +207,7 @@ namespace Proof {
 					auto transform = GetWorldSpaceTransformComponent(entity);
 					glm::vec3 direction = glm::normalize(glm::rotate(transform.GetRotation(), glm::vec3(1.0f, 0.0f, 0.0f)));
 
-					spotLightSceneData.SpotLights[spotLightIndex] = 
+					spotLightSceneData.SpotLights[spotLightIndex] =
 					{
 						transform.Location,
 						spotLight.Intensity,
@@ -268,7 +268,7 @@ namespace Proof {
 					{
 						Entity e = Entity(entity, this);
 						glm::mat4 transform = GetWorldSpaceTransform(e);
-					
+
 						//if (SelectionManager::IsEntityOrAncestorSelected(e))
 						//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
 						//else
@@ -283,7 +283,7 @@ namespace Proof {
 		// render 2d
 		Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
 		RenderPhysicsDebug2D(worldRenderer, false);
-		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(),GlmVecToProof( cameraLocation));
+		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), GlmVecToProof(cameraLocation));
 
 		renderer2D->SetTargetFrameBuffer(worldRenderer->GetExternalCompositePassFrameBuffer());
 

@@ -8,6 +8,7 @@
 #include "Proof/ImGui/Editors/EditorResources.h"
 #include "Proof/Math/Ray.h"
 #include "Proof/Math/BasicCollision.h"
+#include "Proof/Renderer/Renderer.h"
 
 #include "Proof/Scene/Mesh.h"
 

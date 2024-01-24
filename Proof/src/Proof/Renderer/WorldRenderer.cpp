@@ -213,7 +213,6 @@ namespace Proof
 		const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
 		m_CommandBuffer = RenderCommandBuffer::Create("WorldRenderer");
 		m_Renderer2D = Count<Renderer2D>::Create();
-		m_BRDFLUT = Renderer::GetBRDFLut();
 		m_Cube = MeshWorkShop::GenerateCube();
 		m_Environment = Count<Environment>::Create(EnvironmentTextureData());
 
@@ -431,7 +430,7 @@ namespace Proof
 			m_GeometryPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
 			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
 			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
-			m_GeometryPass->SetInput("u_BRDFLUT", m_BRDFLUT);
+			m_GeometryPass->SetInput("u_BRDFLUT", Renderer::GetBRDFLut());
 			m_GeometryPass->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
 			m_GeometryPass->SetInput("u_ShadowMap", m_ShadowPassImage);
 			m_GeometryPass->SetInput("RendererData", m_UBRenderDataBuffer);
@@ -1779,7 +1778,7 @@ namespace Proof
 			PF_PROFILE_FUNC("GeometryPass::MeshPass");
 
 			Timer timer;
-			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
+			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
 			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_GeometryPass);
 

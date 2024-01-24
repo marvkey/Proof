@@ -60,6 +60,7 @@ void main()
 
     //vec3 color = imageLoad(u_EquirectangularMap, ivec2(uv * vec2(pc.equirectangularSize))).rgb;
     vec4 color = texture(u_EquirectangularMap, uv);
+    color = min(color,vec4(500.0f));//https://www.youtube.com/watch?v=A-5F7-mA3pE&ab_channel=TheCherno min 20:10
 
     imageStore(u_CubeMap, ivec3(gl_GlobalInvocationID), color);
 }

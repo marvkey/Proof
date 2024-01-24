@@ -17,12 +17,12 @@ Assets:
   - Asset: 11824846558633893989
     Type: TextureSourceFile
     Path: HdrMaps\Arches_E_PineTree_3k.hdr
-  - Asset: 12902208667846413922
-    Type: MeshCollider
-    Path: MeshCollider\SponzaCollider.MeshCollider.ProofAsset
   - Asset: 9322883649519495229
     Type: Texture
     Path: HdrMaps\qwantani_puresky_4k.Texture.ProofAsset
+  - Asset: 12902208667846413922
+    Type: MeshCollider
+    Path: MeshCollider\SponzaCollider.MeshCollider.ProofAsset
   - Asset: 2001942831744342266
     Type: TextureSourceFile
     Path: HdrMaps\MegaSun4k.hdr
@@ -374,6 +374,9 @@ Assets:
   - Asset: 10475341968659612113
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7056944414013900257.jpg
+  - Asset: 1778683820784680447
+    Type: World
+    Path: Scenes\New World (01).ProofWorld
   - Asset: 6505109868170990179
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7056944414013900257.Texture.ProofAsset
@@ -505,7 +508,7 @@ Assets:
     Path: Materials\Red.Material.ProofAsset
   - Asset: 9906847331754832331
     Type: Material
-    Path: Materials\New Material.Material.ProofAsset
+    Path: Materials\Metallic.Material.ProofAsset
   - Asset: 14433286973648011011
     Type: Material
     Path: Materials\New Material.Material.ProofAsset
