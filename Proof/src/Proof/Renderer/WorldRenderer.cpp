@@ -401,7 +401,6 @@ namespace Proof
 			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA, ImageFormat::DEPTH32F }; // color, view limuncance, metallnessroughness
 			geoFramebufferConfig.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 			geoFramebufferConfig.Attachments.Attachments[3].ExistingImage = m_PreDepthPass->GetOutput(0);
-
 			auto frameBuffer = FrameBuffer::Create(geoFramebufferConfig);
 
 			GraphicsPipelineConfiguration pipelinelineConfig;
@@ -553,7 +552,6 @@ namespace Proof
 						for (auto& attachment : deinterleavingFramebufferSpec.Attachments.Attachments)
 							attachment.ExistingImage = image;
 
-						deinterleavingFramebufferSpec.Attachments.Attachments[0].ExistingImage = image;
 
 						Count<Shader> shader = Renderer::GetShader("Deinterleaving");
 
@@ -584,7 +582,6 @@ namespace Proof
 							renderPassConfig.Pipeline = pipeline;
 
 							m_AmbientOcclusion.HBAO.DeinterleavePass[i] = RenderPass::Create(renderPassConfig);
-							m_AmbientOcclusion.HBAO.DeinterleavePass[i]->SetInput("u_DepthMap", m_PreDepthPass->GetOutput(0).As<Image2D>());
 							m_AmbientOcclusion.HBAO.DeinterleavePass[i]->AddGlobalInput(m_GlobalInputs);
 						}
 					}
@@ -667,7 +664,7 @@ namespace Proof
 						ImageConfiguration imageSpec;
 						imageSpec.Format = ImageFormat::RG16F;
 						imageSpec.Usage = ImageUsage::Storage;
-						//imageSpec.ImageLayerViewsBaseType = ImageViewType::View2DArray;
+						imageSpec.ImageLayerViewsBaseType = ImageViewType::View2D;
 						imageSpec.Layers = 16;
 						imageSpec.DebugName = "HBAO-Output";
 						Count<Image2D> image = Image2D::Create(imageSpec);
@@ -677,7 +674,7 @@ namespace Proof
 						for (int i = 0; i < 16; i++)
 							m_HBAOData.Float2Offsets[i] = glm::vec4((float)(i % 4) + 0.5f, (float)(i / 4) + 0.5f, 0.0f, 1.f);
 
-						std::memcpy(m_HBAOData.Jitters, HBAOJitter().data(), sizeof glm::vec4 * 16);
+						std::memcpy(m_HBAOData.Jitters, HBAOJitter().data(), sizeof( glm::vec4) * 16);
 
 						m_AmbientOcclusion.HBAO.HBAOPass = ComputePass::Create(ComputePassConfiguration{ "HBAO",
 							ComputePipeline::Create({"HBAO",Renderer::GetShader("HBAO")}) });
@@ -742,6 +739,7 @@ namespace Proof
 					config.Wrap = TextureWrap::ClampEdge;
 					config.Filter = TextureFilter::Nearest;
 					config.GenerateMips = true;
+					config.Storage = true;
 
 					m_SSR.HierarchicalDepthTexture = Texture2D::Create(config);
 
@@ -752,11 +750,12 @@ namespace Proof
 				// Pre-Integration
 				{
 					TextureConfiguration config;
-					config.Format = ImageFormat::R;
+					config.Format = ImageFormat::R32F;
 					config.Width = 1;
 					config.Height = 1;
 					config.DebugName = "PreIntegration";
 					config.GenerateMips = true;
+					config.Storage = true;
 
 					m_SSR.VisibilityTexture = Texture2D::Create(config);
 					
@@ -773,6 +772,7 @@ namespace Proof
 					spec.Wrap = TextureWrap::ClampEdge;
 					spec.DebugName = "Pre-Convoluted";
 					spec.GenerateMips = true;
+					spec.Storage = true;
 
 					m_SSR.PreConvolutedTexture = Texture2D::Create(spec);
 
@@ -1077,11 +1077,18 @@ namespace Proof
 
 			//HBAO
 			{
+				m_AmbientOcclusion.HBAO.ReinterleavePass->GetTargetFrameBuffer()->Resize(viewportSize);
+				m_AmbientOcclusion.HBAO.BlurPass[0]->GetTargetFrameBuffer()->Resize(viewportSize);
+				m_AmbientOcclusion.HBAO.BlurPass[1]->GetTargetFrameBuffer()->Resize(viewportSize);
+				m_AmbientOcclusionCompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
+
 				glm::uvec2 quarterSize = (viewportSize + 3u) / 4u;
 
 				m_AmbientOcclusion.HBAO.DeinterleavePass[0]->GetTargetFrameBuffer()->Resize(quarterSize);
 				m_AmbientOcclusion.HBAO.DeinterleavePass[1]->GetTargetFrameBuffer()->Resize(quarterSize);
+
 				m_AmbientOcclusion.HBAO.HBAOOutputImage->Resize(quarterSize.x, quarterSize.y);
+				m_AmbientOcclusion.HBAO.HBAOOutputImage->CreateMipAndLayerViews();
 
 				quarterSize += HBAO_WORK_GROUP_SIZE - quarterSize % HBAO_WORK_GROUP_SIZE;
 				m_AmbientOcclusion.HBAO.WorkGroups.x = quarterSize.x / 16u;
@@ -1096,7 +1103,6 @@ namespace Proof
 
 			// compoiste 
 			m_CompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
-			m_AmbientOcclusionCompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
 			#if 0
 			//AO
 			{
@@ -1363,6 +1369,9 @@ namespace Proof
 			m_SubmeshTransformBuffers[frameIndex].Buffer->SetData(m_SubmeshTransformBuffers[frameIndex].Data, offset * sizeof(TransformVertexData));
 		}
 
+		//very important because its not cleared and images are recreating for the limunance
+		// it affects the HBAO so much
+		Renderer::ClearImage(m_CommandBuffer, m_GeometryPass->GetOutput(1).As<Image2D>());
 		m_Timers.SetPasses = setPassesTimer.ElapsedMillis();
 	}
 	void WorldRenderer::CalculateCascadesManualSplit(CascadeData* cascades, const glm::vec3& lightDirection)
@@ -1819,7 +1828,7 @@ namespace Proof
 		Timer compositeTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		
-		//AmbientOcclusionPass();
+		AmbientOcclusionPass();
 		{
 
 			PreConvolutePass();
@@ -1967,7 +1976,7 @@ namespace Proof
 
 		{
 			PF_PROFILE_FUNC("SetHBAOPass");
-
+			//https://github.com/nvpro-samples/gl_ssao/blob/f6b010dc7a05346518cd13d3368d8d830a382ed9/ssao.cpp#L705
 			//UPDATA HBAODATA
 			// radius
 			const float meters2viewSpace = 1.0f;
@@ -2003,9 +2012,10 @@ namespace Proof
 			{
 
 				Count<RenderPass> deinterleavePass = m_AmbientOcclusion.HBAO.DeinterleavePass[i];
+				deinterleavePass->SetInput("u_Depth", m_PreDepthPass->GetOutput(0));
 
 				Renderer::BeginRenderPass(m_CommandBuffer, deinterleavePass);
-				deinterleavePass->PushData("u_PushData", &i);
+				deinterleavePass->PushData("u_Info", &i);
 				Renderer::SubmitFullScreenQuad(m_CommandBuffer, deinterleavePass);
 				Renderer::EndRenderPass(deinterleavePass);
 			}
@@ -2038,10 +2048,13 @@ namespace Proof
 		//Blur pass
 		{
 			PF_PROFILE_FUNC("BlurPass");
-			struct PushData {
+			struct PushData
+			{
 				glm::vec2 invesDirection;
 				float sharpness;
 			}pushData;
+
+			//auto inafdadas = sizeof(pushData);
 			{
 				PF_PROFILE_FUNC("BlurPass0");
 
@@ -2414,7 +2427,7 @@ namespace Proof
 				hierarchicalZComputePushConstants.DispatchThreadIdToBufferUV = DispatchThreadIdToBufferUV;
 				hierarchicalZComputePushConstants.InputViewportMaxBound = InputViewportMaxBound;
 
-				std::array<Count<ImageView>, 5> hbImageViews{};
+				std::array<Count<ImageView>, 4> hbImageViews{};
 
 				const uint32_t endDestMip = glm::min(startDestMip + maxMipBatchSize, hzbMipCount);
 				uint32_t destMip;
@@ -2487,10 +2500,13 @@ namespace Proof
 			glm::vec2 projectionParams = { m_UBCameraData.FarPlane, m_UBCameraData.NearPlane }; // Reversed 
 
 			auto preIntegration = m_SSR.PreIntegrationPass;
+			preIntegration->SetInput("u_HZB", m_SSR.HierarchicalDepthTexture);
+			preIntegration->SetInput("u_VisibilityTex", m_SSR.VisibilityTexture->GetImage());
+
 			Renderer::BeginComputePass(m_CommandBuffer, preIntegration);
 
 			const uint32_t mipLevelCount = visibilityTexture->GetMipLevelCount();
-			for (uint32_t i = 0; i < mipLevelCount; i++)
+			for (uint32_t i = 1; i < mipLevelCount; i++)
 			{
 				auto [mipWidth, mipHeight] = visibilityTexture->GetImage()->GetMipSize(i);
 				const auto workGroupsX = (uint32_t)glm::ceil((float)mipWidth / 8.0f);
@@ -2507,8 +2523,7 @@ namespace Proof
 				preIntegrationComputePushConstants.PrevLod = (int)i - 1;
 
 				preIntegration->SetInput("o_VisibilityImage", imageView);
-				preIntegration->SetInput("u_HZB", m_SSR.HierarchicalDepthTexture);
-				preIntegration->SetInput("u_VisibilityTex", m_SSR.VisibilityTexture);
+				
 				preIntegration->PushData("u_Info", &preIntegrationComputePushConstants);
 				preIntegration->Dispatch(workGroupsX, workGroupsY, 1);
 

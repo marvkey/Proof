@@ -1,6 +1,34 @@
 World:
   ID: 13511578038632716699
   Entities:
+    - Entity: 14645712128092624267
+      TagComponent:
+        Tag: Sponza
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 18141853162402936448
+      MeshColliderComponent:
+        ColliderID: 12902208667846413922
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 4119770921961056104
       TagComponent:
         Tag: Sphere
@@ -18,54 +46,21 @@ World:
           - Material: ""
             AssetID: 9906847331754832331
             Index: 0
-    - Entity: 14645712128092624267
-      TagComponent:
-        Tag: Sponza
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 18141853162402936448
-    - Entity: 8653500929971714399
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 2.25845432, 0.367415309]
-        Rotation: [1.59174025, 1.38579142, 0.101229101]
-        Scale: [4.89095736, 1, 6.39274216]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 2
-        EnvironmentState: EnvironmentTexture
-        TextureDataImage: 4048020241950879645
-        HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 4
-    - Entity: 17419211597430694452
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 2.43531799, 0]
-        Rotation: [0, 0.052359879, 0.00349065848]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 1
+      SphereColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 13351935947672091411
       TagComponent:
         Tag: Plane
@@ -83,19 +78,41 @@ World:
           - Material: ""
             AssetID: 9906847331754832331
             Index: 0
-    - Entity: 15655579723025469437
+    - Entity: 17419211597430694452
       TagComponent:
-        Tag: Cube
+        Tag: Directional Light
         tags: []
       TransformComponent:
-        Location: [-0.300000012, 2.46479583, -1]
-        Rotation: [-0.562434077, -0.151792958, -0.0447002985]
-        Scale: [0.999997556, 0.999998927, 0.999998987]
+        Location: [0, 2.43531799, 0]
+        Rotation: [0.157079637, 0.502654791, 0.17976892]
+        Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
+      DirectionalLightComponent:
+        Color: [0.75555557, 0.635226369, 0.635226369]
+        Intensity: 1.77999997
+    - Entity: 8653500929971714399
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 2.25845432, 0.367415309]
+        Rotation: [1.59174025, 1.38579142, 0.101229101]
+        Scale: [4.89095736, 1, 6.39274216]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 0.200000003
+        EnvironmentState: EnvironmentTexture
+        TextureDataImage: 4048020241950879645
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
     - Entity: 13037840155052305891
       TagComponent:
         Tag: Sphere
@@ -113,3 +130,16 @@ World:
           - Material: ""
             AssetID: 14983098330679523653
             Index: 0
+    - Entity: 15655579723025469437
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [-0.300000012, 2.46479583, -1]
+        Rotation: [-0.562434077, -0.151792958, -0.0447002985]
+        Scale: [0.999997556, 0.999998927, 0.999998987]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50

@@ -218,22 +218,84 @@ namespace Proof
 						auto& hbao = m_WorldRenderer->AmbientOcclusionSettings.HBAO;
 						UI::BeginPropertyGrid();
 
-						UI::AttributeDrag("Intensity", hbao.Intensity, 0.05f, 0.1f, 6.0f);
-						UI::AttributeDrag("Radius", hbao.Radius, 0.05f, 0.0f, 8.0f);
-						UI::AttributeDrag("Bias", hbao.Bias, 0.02f, 0.0f, 0.95f);
+						UI::AttributeDrag("Intensity", hbao.Intensity, 0.05f, 0.01,15.f);
+						UI::AttributeDrag("Radius", hbao.Radius, 0.05f, 0.01f,10.0f);
+						UI::AttributeDrag("Bias", hbao.Bias, 0.02f, 0.01f,0.95f);
 						UI::AttributeDrag("Blur Sharpness", hbao.BlurSharpness, 0.5f, 0.0f, 100.f);
 
 						UI::EndPropertyGrid();
 						if (UI::AttributeTreeNode("Debug Views", false))
 						{
-							auto image = m_WorldRenderer->m_AmbientOcclusion.HBAO.HBAOOutputImage;
-							if (image)
+							
+
+
 							{
+								static int32_t imageOuput = 0;
+								UI::AttributeSlider("imageOutput", imageOuput, 0, 7);
+								static int32_t imageLayer = 0;
+								UI::AttributeSlider("ImageLayer", imageLayer, 0,
+									m_WorldRenderer->m_AmbientOcclusion.HBAO.DeinterleavePass[0]->GetOutput(0).As<Image2D>()->GetSpecification().Layers-1
+								);
+
+								auto deinterLeaveImage = m_WorldRenderer->m_AmbientOcclusion.HBAO.DeinterleavePass[0]->GetOutput(imageOuput).As<Image2D>();
 								float size = ImGui::GetContentRegionAvail().x;
-								static int32_t layer = 0;
-								UI::AttributeSlider("Layer", layer, 0, image->GetSpecification().Layers-1);
-								UI::ImageLayer(image, layer, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+
+								
+								UI::AttributeLabel("DeinterLeavePass(0)");
+								UI::ImageLayer(deinterLeaveImage, imageLayer,{ size, size * (1.0f / deinterLeaveImage->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+								deinterLeaveImage = m_WorldRenderer->m_AmbientOcclusion.HBAO.DeinterleavePass[1]->GetOutput(imageOuput).As<Image2D>();
+
+								UI::AttributeLabel("DeinterLeavePass(1)");
+								UI::ImageLayer(deinterLeaveImage, imageLayer,{ size, size * (1.0f / deinterLeaveImage->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
 							}
+							ImGui::Separator();
+							{
+								auto hbaoOutputImage = m_WorldRenderer->m_AmbientOcclusion.HBAO.HBAOOutputImage;
+								float size = ImGui::GetContentRegionAvail().x;
+								UI::AttributeLabel("HBAOoutputImage");
+								static int32_t hbaoLayer = 0;
+								UI::AttributeSlider("hbaoLayer", hbaoLayer, 0, hbaoOutputImage->GetSpecification().Layers - 1);
+								UI::ImageLayer(hbaoOutputImage, hbaoLayer,{size, size * (1.0f / hbaoOutputImage->GetAspectRatio())}, {0, 1}, {1, 0});
+							}
+							ImGui::Separator();
+
+							{
+								auto reinterLeaveImage = m_WorldRenderer->m_AmbientOcclusion.HBAO.ReinterleavePass->GetOutput(0);
+								float size = ImGui::GetContentRegionAvail().x;
+								UI::AttributeLabel("ReinterLeavePass");
+								UI::Image(reinterLeaveImage, { size, size * (1.0f / reinterLeaveImage->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+							}
+							ImGui::Separator();
+
+							{
+								auto blurImage = m_WorldRenderer->m_AmbientOcclusion.HBAO.BlurPass[0]->GetOutput(0);
+								float size = ImGui::GetContentRegionAvail().x;
+								UI::AttributeLabel("BlurImage(0)");
+								UI::Image(blurImage , { size, size * (1.0f / blurImage->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+								blurImage = m_WorldRenderer->m_AmbientOcclusion.HBAO.BlurPass[1]->GetOutput(0);
+
+								UI::AttributeLabel("BlurImage(1)");
+								UI::Image(blurImage, { size, size * (1.0f / blurImage->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+							}
+
+							{
+								UI::AttributeLabel("Normal Texture");
+
+								auto viewNormalImage = m_WorldRenderer->m_GeometryPass->GetOutput(1);
+								float size = ImGui::GetContentRegionAvail().x;
+								UI::Image(viewNormalImage, { size, size * (1.0f / viewNormalImage->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+
+							}
+
+							{
+								UI::AttributeLabel("Depth Texture");
+
+								auto depthTexture = m_WorldRenderer->m_PreDepthPass->GetOutput(0);
+								float size = ImGui::GetContentRegionAvail().x;
+								UI::Image(depthTexture, { size, size * (1.0f / depthTexture->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+
+							}
+							ImGui::Separator();
 
 							{
 

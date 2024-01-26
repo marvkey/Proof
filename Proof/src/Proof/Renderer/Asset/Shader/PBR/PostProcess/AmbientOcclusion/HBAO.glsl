@@ -9,17 +9,10 @@
 // fully optimize the maths and batch the texture fetches
 // optimally
 
-#pragma optionNV(unroll all)
 layout(binding = 0, rg16f) restrict writeonly uniform image2DArray o_Color;
 layout(binding = 1) uniform sampler2DArray u_LinearDepthTexArray;
 layout(binding = 2) uniform sampler2D u_ViewNormalsMaskTex;
 
-#define M_PI 3.14159265f
-
-// tweakables
-const float  NUM_STEPS = 4;
-const float  NUM_DIRECTIONS = 8; // texRandom/g_Jitter initialization depends on this
-#define M_PI 3.14159265f
 
 //https://github.com/nvpro-samples/gl_ssao/blob/master/common.h
 layout(std140, binding = 3) uniform HBAOData
@@ -41,17 +34,15 @@ layout(std140, binding = 3) uniform HBAOData
 	float	ShadowTolerance;
 } u_HBAO;
 
-#ifndef AO_DEINTERLEAVED
-#define AO_DEINTERLEAVED 1
-#endif
+// Unroll all loops for performance - this is important
+#pragma optionNV(unroll all)
 
-#ifndef AO_BLUR
-#define AO_BLUR 1
-#endif
+#define M_PI 3.14159265f
+#define AO_RANDOMTEX_SIZE 4
 
-#ifndef AO_LAYERED
-#define AO_LAYERED 1
-#endif
+const float  NUM_STEPS = 4;
+const float  NUM_DIRECTIONS = 8; // texRandom/g_Jitter initialization depends on this
+
 vec3 GetQuarterCoord(vec2 UV) 
 {
 	return vec3(UV, float(gl_GlobalInvocationID.z));
@@ -94,6 +85,7 @@ vec4 GetJitter()
 	// Get the current jitter vector from the per-pass constant buffer
 	return u_HBAO.Jitters[gl_GlobalInvocationID.z];
 }
+
 float ComputeCoarseAO(vec2 fullResUV, float radiusPixels, vec4 rand, vec3 viewPosition, vec3 viewNormal)
 {
 	radiusPixels /= 4.0;
@@ -136,7 +128,7 @@ float ComputeCoarseAO(vec2 fullResUV, float radiusPixels, vec4 rand, vec3 viewPo
 		}
 		ao += wao;
 	}
-	ao *= u_HBAO.AOMultiplier / (NUM_DIRECTIONS);
+	ao *= u_HBAO.AOMultiplier / (NUM_DIRECTIONS );
 	return clamp(1.0 - ao, 0, 1);
 }
 
@@ -146,10 +138,14 @@ void main()
 	vec2 float2Offset = u_HBAO.Float2Offsets[gl_GlobalInvocationID.z].xy;
 	vec2 base = gl_GlobalInvocationID.xy * 4 + float2Offset;
 	vec2 uv = base * u_HBAO.InvQuarterResolution * 0.25;
+
 	vec3 viewPosition = FetchQuarterResViewPos(uv);
 	vec4 viewNormalLuminance = texelFetch(u_ViewNormalsMaskTex, ivec2(base), 0);
 
 	vec3 viewNormal = viewNormalLuminance.xyz;
+	//viewNormal.z = -viewNormal.z;
+
+	// Compute projection of disk of radius control.R into screen space
 	float radiusPixels = u_HBAO.RadiusToScreen / (u_HBAO.IsOrtho ? 1.0 : abs(viewPosition.z));
 
 	// Get jitter vector for the current full-res pixel

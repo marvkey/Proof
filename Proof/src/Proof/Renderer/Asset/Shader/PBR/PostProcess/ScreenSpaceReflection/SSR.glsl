@@ -373,5 +373,6 @@ void main()
 
 	// Confidence can be negtive. If it is, it will leave unwanted reflections.
 	//imageStore(o_Color, ivec2(base), vec4(roughnessFactor * totalColor.rgb, max(confidence, 0)));
-	imageStore(o_Color, ivec2(base), vec4(1.0,0,0,0));
+	imageStore(o_Color, ivec2(base), totalColor);
+	//imageStore(o_Color, ivec2(base), vec4(1.0,0,0,0));
 }

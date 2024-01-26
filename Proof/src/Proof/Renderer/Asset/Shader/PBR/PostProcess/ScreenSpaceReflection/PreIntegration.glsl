@@ -12,7 +12,7 @@ layout(push_constant) uniform Info
     int PrevMip;
 } u_Info;
 
-layout(binding = 0, r8) restrict uniform writeonly image2D o_VisibilityImage;
+layout(binding = 0, r8)  writeonly uniform image2D o_VisibilityImage;
 layout(binding = 1) uniform sampler2D u_VisibilityTex;
 layout(binding = 2) uniform sampler2D u_HZB;
 

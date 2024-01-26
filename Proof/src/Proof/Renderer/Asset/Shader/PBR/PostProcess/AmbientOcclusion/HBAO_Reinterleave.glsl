@@ -15,34 +15,28 @@
 #version 450 core
 
 layout(location = 0) in vec3 a_Position;
-layout(location = 1) in vec2 a_TexCoord;
+layout(location = 1) in vec3 a_TexCoord;
+
 
 void main()
 {
-    gl_Position = vec4(a_Position, 1.0);
+	gl_Position = vec4(a_Position, 1.0);
 }
+
 
 #Fragment Shader
 #version 450 core
 
-layout(binding = 0) uniform sampler2DArray u_TexResultsArray;
+layout(binding = 0)  uniform sampler2DArray u_TexResultsArray;
 layout(location = 0) out vec4 out_Color;
 
-//layout(push_constant) uniform Info
-//{
-//    bool AOBlur;
-//} u_PushData;
-
-#ifndef AO_BLUR
-#define AO_BLUR 1
-#endif
-
-void main()
+void main() 
 {
-    ivec2 fullResPos = ivec2(gl_FragCoord.xy);
-    ivec2 offset = fullResPos & 3;
-    int sliceId = offset.y * 4 + offset.x;
-    ivec2 quarterResPos = fullResPos >> 2;
+	ivec2 fullResPos = ivec2(gl_FragCoord.xy);
+	ivec2 offset = fullResPos & 3;
+	int sliceId = offset.y * 4 + offset.x;
+	ivec2 quarterResPos = fullResPos >> 2;
 
-    out_Color = vec4(texelFetch(u_TexResultsArray, ivec3(quarterResPos, sliceId), 0).xy, 0, 1.0);
+	out_Color = vec4(texelFetch(u_TexResultsArray, ivec3(quarterResPos, sliceId), 0).xy, 0, 1.0);
+
 }

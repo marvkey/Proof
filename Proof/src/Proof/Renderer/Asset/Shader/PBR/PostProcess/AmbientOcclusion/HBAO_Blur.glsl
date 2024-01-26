@@ -21,23 +21,25 @@ layout(location = 0) out vec2 vs_TexCoords;
 
 void main()
 {
+    vs_TexCoords = a_TexCoord;
     gl_Position = vec4(a_Position.xy, 0.0, 1.0);
 }
 
 #Fragment Shader
 #version 450 core
 
-const float KERNEL_RADIUS = 3;
 layout(push_constant) uniform Info
 {
     vec2 InvResDirection;
     float Sharpness;
 } u_PushData;
 
-layout(set = 0, binding = 0) uniform sampler2D u_InputTex;
+const float KERNEL_RADIUS = 3.0;
+
+layout(binding = 0) uniform sampler2D u_InputTex;
+
 layout(location = 0) out vec4 outColor;
 layout(location = 0) in vec2 vs_TexCoords;
-
 
 float BlurFunction(vec2 uv, float r, float centerC, float centerD, inout float wTotal)
 {
@@ -76,5 +78,6 @@ void main()
         cTotal += BlurFunction(uv, r, centerC, centerD, wTotal);
     }
 
-      outColor = vec4(cTotal/wTotal, centerD, 0, 0);
+      //outColor = vec4(cTotal/wTotal, centerD, 0, 1.0);
+      outColor = vec4(cTotal/wTotal);
 }

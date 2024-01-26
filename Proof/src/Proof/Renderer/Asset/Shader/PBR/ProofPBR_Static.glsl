@@ -17,13 +17,13 @@ struct VertexOutput
 {
    vec3 WorldPosition;
     vec3 Normal;
+    mat3 WorldNormals;
     vec2 TexCoords;
     vec3 Tangent;
     vec3 Bitangent;
     vec3 CameraPosition;
 
     mat3 CameraView; 
-
     vec3 ShadowMapCoords[4];
 
     vec3 ViewPosition;
@@ -42,8 +42,8 @@ void main() {
 
     Output.Tangent = aTangent;
     Output.Bitangent = aBitangent;
-    Output.TexCoords = aTexCoords;
-    //Output.TexCoords = vec2(aTexCoords.x,1 - aTexCoords.y);
+    //Output.TexCoords = aTexCoords;
+    Output.TexCoords = vec2(aTexCoords.x,1 - aTexCoords.y);
     vec4 worldPos = aTransform * vec4(aPosition, 1.0);
     Output.WorldPosition = worldPos.xyz;
 
@@ -59,7 +59,10 @@ void main() {
 	Output.ShadowMapCoords[3] = vec3(shadowCoords[3].xyz / shadowCoords[3].w);
 
     mat3 normalMatrix = transpose(inverse(mat3(aTransform)));
-    Output.Normal = normalMatrix * aNormal;
+    //Output.Normal = normalMatrix * aNormal;
+    Output.Normal = mat3(aTransform) * aNormal;
+    Output.WorldNormals = mat3(aTransform) * mat3(aTangent, aBitangent, aNormal);
+
     Output.CameraPosition = u_Camera.Position;
 
     Output.ViewPosition = vec3(u_Camera.View * vec4(Output.WorldPosition, 1.0));
@@ -111,6 +114,7 @@ struct VertexOutput
 {
     vec3 WorldPosition;
     vec3 Normal;
+    mat3 WorldNormals;
     vec2 TexCoords;
     vec3 Tangent;
     vec3 Bitangent;
@@ -194,7 +198,14 @@ void main()
     m_Params.AlbedoColor = u_MaterialUniform.AlbedoTexToggle == true ? texture(u_AlbedoMap, Input.TexCoords).rgb * u_MaterialUniform.Albedo : u_MaterialUniform.Albedo;
     m_Params.Metalness = u_MaterialUniform.MetallnesTexToggle == true ? texture(u_MetallicMap, Input.TexCoords).r * u_MaterialUniform.Metalness : u_MaterialUniform.Metalness;
     m_Params.Roughness = u_MaterialUniform.RoghnessTexToggle == true ? texture(u_RoughnessMap, Input.TexCoords).r * max(u_MaterialUniform.Roughness,0.00) : max(u_MaterialUniform.Roughness,0.00); // max to keep specular
-    m_Params.Normal = CalculateNormal();
+   // m_Params.Normal = CalculateNormal();
+
+   	m_Params.Normal = normalize(Input.Normal);
+	if (u_MaterialUniform.NormalTexToggle)
+	{
+		m_Params.Normal = normalize(texture(u_NormalMap, Input.TexCoords).rgb * 2.0f - 1.0f);
+		m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);
+	}
     out_MetalnessRoughness = vec4(m_Params.Metalness, m_Params.Roughness, 0.f, 1.f);
 
     m_Params.View = normalize(Input.CameraPosition - Input.WorldPosition);
