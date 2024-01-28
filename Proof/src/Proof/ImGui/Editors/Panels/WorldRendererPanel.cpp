@@ -182,8 +182,8 @@ namespace Proof
 						UI::ImageMip(m_WorldRenderer->m_SSR.HierarchicalDepthTexture->GetImage(), Hzbmip, { size, size * (0.9f / 1.6f) }, { 0, 1 }, { 1, 0 });
 
 						static int32_t visibilitymip = 0;
-						UI::AttributeSlider("Visibility Texture(Pre-integration) Mip", visibilitymip, 0, (int)m_WorldRenderer->m_SSR.VisibilityTexture->GetMipLevelCount() - 1);
 						UI::AttributeLabel("Visibility Texture(Pre-integration)");
+						UI::AttributeSlider("Visibility Texture(Pre-integration) Mip", visibilitymip, 0, (int)m_WorldRenderer->m_SSR.VisibilityTexture->GetMipLevelCount() - 1);
 						UI::ImageMip(m_WorldRenderer->m_SSR.VisibilityTexture->GetImage(), visibilitymip, {size, size * (0.9f / 1.6f)}, {0, 1}, {1, 0});
 
 						

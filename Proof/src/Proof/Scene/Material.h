@@ -17,8 +17,8 @@ namespace Proof{
 		ASSET_CLASS_TYPE(Material);
 		std::string Name;
 
-		Vector& GetAlbedoColor()const;
-		void SetAlbedo(const Vector& vec);
+		glm::vec3& GetAlbedoColor()const;
+		void SetAlbedo(const glm::vec3& vec);
 
 		float& GetMetalness()const;
 		void SetMetalness(float metallness);
@@ -26,27 +26,23 @@ namespace Proof{
 		float& GetRoughness()const;
 		void SetRoughness(float roghness);
 
-		bool& GetAlbedoTextureToggle();
-		void SetAlbedoTextureToggle(bool value);
-
 		bool& GetNormalTextureToggle();
 		void SetNormalTextureToggle(bool value);
 
-		bool& GetRoughnessTextureToggle();
-		void SetRoughnessTextureToggle(bool value);
-
-		bool& GetMetalnessTextureToggle();
-		void SetMetalnessTextureToggle(bool value);
-
+		bool& GetEmissionOverrideColorToggle();
+		void SetEmissionOverrideColorToggle(bool value);
 
 		float& GetEmission()const;
 		void SetEmission(float roghness);
 
-		Vector2& GetTiling()const;
-		void SetTiling(const Vector2& vec);
+		glm::vec3& GetEmissionOverrideColor()const;
+		void SetEmissionOverrideColor(const glm::vec3& vec);
 
-		Vector2& GetOffset()const;
-		void SetOffset(const Vector2&)const;
+		glm::vec2& GetTiling()const;
+		void SetTiling(const glm::vec2& vec);
+
+		glm::vec2& GetOffset()const;
+		void SetOffset(const glm::vec2&)const;
 
 		void SetAlbedoMap(Count<class Texture2D> texture);
 		void SetNormalMap(Count<class Texture2D> texture);

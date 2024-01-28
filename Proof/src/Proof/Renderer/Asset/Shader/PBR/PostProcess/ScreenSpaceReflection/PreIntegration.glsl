@@ -3,6 +3,7 @@
 //https://github.com/InCloudsBelly/X2_RenderingEngine/blob/e7c349b70bd95af3ab673556cdb56cb2cc40b48e/Resources/Shaders/Pre-Integration.glsl
 #Compute Shader
 #version 450 core
+#include <Common.glslh>
 
 layout(push_constant) uniform Info
 {
@@ -16,8 +17,21 @@ layout(binding = 0, r8)  writeonly uniform image2D o_VisibilityImage;
 layout(binding = 1) uniform sampler2D u_VisibilityTex;
 layout(binding = 2) uniform sampler2D u_HZB;
 
+//float LinearizeDepth(const float screenDepth)
+//{
+//	return -u_Camera.Projection[3][2] / (screenDepth + u_Camera.Projection[2][2] );
+//}
+//float LinearizeDepth(const float screenDepth)
+//{
+//	float depthLinearizeMul = u_Camera.Projection[3][2];
+//	float depthLinearizeAdd = u_Camera.Projection[2][2];
+//	// Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
+//	return depthLinearizeMul / (depthLinearizeAdd - screenDepth);
+//}
+
 float LinearizeDepth(float d)
 {
+	return d;
 	return u_Info.ProjectionParams.x * u_Info.ProjectionParams.y / (u_Info.ProjectionParams.y + d * (u_Info.ProjectionParams.x - u_Info.ProjectionParams.y));
 }
 
@@ -34,6 +48,10 @@ void main()
 	fineZ.z = LinearizeDepth(textureLod(u_HZB, hzbUV + u_Info.HZBInvRes * vec2( 0.0, -0.5), u_Info.PrevMip).x);
 	fineZ.w = LinearizeDepth(textureLod(u_HZB, hzbUV + u_Info.HZBInvRes * vec2( 0.5,  0.5), u_Info.PrevMip).x);
 
+	//fineZ.x = LinearizeDepth(textureLod(u_HZB, hzbUV + u_Info.HZBInvRes * vec2(0,0),  u_Info.PrevMip).x);
+	//fineZ.y = LinearizeDepth(textureLod(u_HZB, hzbUV + u_Info.HZBInvRes * vec2(0,-1), u_Info.PrevMip).x);
+	//fineZ.z = LinearizeDepth(textureLod(u_HZB, hzbUV + u_Info.HZBInvRes * vec2(-1,0), u_Info.PrevMip).x);
+	//fineZ.w = LinearizeDepth(textureLod(u_HZB, hzbUV + u_Info.HZBInvRes * vec2(-1,-1), u_Info.PrevMip).x);
 	/* Fetch fine visibility from previous visibility map LOD */
 	vec4 visibility;
 	visibility.x = textureLod(u_VisibilityTex, uv + u_Info.InvRes * vec2(-0.5, -0.5), u_Info.PrevMip).r;
@@ -41,6 +59,10 @@ void main()
     visibility.z = textureLod(u_VisibilityTex, uv + u_Info.InvRes * vec2( 0.0, -0.5), u_Info.PrevMip).r;
     visibility.w = textureLod(u_VisibilityTex, uv + u_Info.InvRes * vec2( 0.5,  0.5), u_Info.PrevMip).r;
 
+	//visibility.x = textureLod(u_VisibilityTex, uv + u_Info.InvRes * vec2(0,0), u_Info.PrevMip).r;
+    //visibility.y = textureLod(u_VisibilityTex, uv + u_Info.InvRes * vec2(0,-1), u_Info.PrevMip).r;
+    //visibility.z = textureLod(u_VisibilityTex, uv + u_Info.InvRes * vec2(-1,0), u_Info.PrevMip).r;
+    //visibility.w = textureLod(u_VisibilityTex, uv + u_Info.InvRes * vec2(-1,-1), u_Info.PrevMip).r;
 	/* Integrate visibility */
 	float maxZ = max(max(fineZ.x, fineZ.y), max(fineZ.z, fineZ.w));
 	vec4 integration = (fineZ / maxZ) * visibility;

@@ -39,7 +39,6 @@ namespace Proof
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyClickedEvent>([&](auto& e) 
 		{
-				PF_CORE_ASSERT(false);
 			bool control = Input::IsKeyPressed(KeyBoardKey::LeftControl) || Input::IsKeyPressed(KeyBoardKey::RightControl);
 			
 			switch (e.GetKey())

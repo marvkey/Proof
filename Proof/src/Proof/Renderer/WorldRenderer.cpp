@@ -686,6 +686,18 @@ namespace Proof
 
 			//ssr
 			{
+				//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/include/FidelityFX/host/ffx_sssr.h
+				/*
+					typedef enum FfxSssrPass
+				{
+					FFX_SSSR_PASS_DEPTH_DOWNSAMPLE = 0,             ///< A pass which performs the hierarchical depth buffer generation
+					FFX_SSSR_PASS_CLASSIFY_TILES = 1,               ///< A pass which classifies which pixels require screen space ray marching
+					FFX_SSSR_PASS_PREPARE_BLUE_NOISE_TEXTURE = 2,   ///< A pass which generates an optimized blue noise texture
+					FFX_SSSR_PASS_PREPARE_INDIRECT_ARGS = 3,        ///< A pass which generates the indirect arguments for the intersection pass.
+					FFX_SSSR_PASS_INTERSECTION = 4,                 ///< A pass which performs the actual hierarchical depth ray marching.
+					FFX_SSSR_PASS_COUNT
+				} FfxSssrPass;
+				*/
 				//ssr			
 				{
 					ImageConfiguration imageSpec;
@@ -750,7 +762,7 @@ namespace Proof
 				// Pre-Integration
 				{
 					TextureConfiguration config;
-					config.Format = ImageFormat::R32F;
+					config.Format = ImageFormat::R;
 					config.Width = 1;
 					config.Height = 1;
 					config.DebugName = "PreIntegration";
@@ -761,6 +773,7 @@ namespace Proof
 					
 					auto computePipeline = ComputePipeline::Create({ "PreIntegration",Renderer::GetShader("PreIntegration") });
 					m_SSR.PreIntegrationPass = ComputePass::Create({ "PreIntegration",computePipeline });
+					m_SSR.PreIntegrationPass->AddGlobalInput(m_GlobalInputs);
 				}
 
 				//PreConvolution
@@ -1832,7 +1845,7 @@ namespace Proof
 		{
 
 			PreConvolutePass();
-			SSRPass();
+			//SSRPass();
 		}
 		BloomPass();
 		//DOFPass();
@@ -1875,10 +1888,7 @@ namespace Proof
 			PF_PROFILE_FUNC("CompositePass::PhysicsDebugMeshes");
 			Timer physicsDebugMesh;
 
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").X = DebugOptions.PhysicsDebugOptions.PhysicsColliderColor.x;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Y = DebugOptions.PhysicsDebugOptions.PhysicsColliderColor.y;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").Z = DebugOptions.PhysicsDebugOptions.PhysicsColliderColor.z;
-			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color").W = DebugOptions.PhysicsDebugOptions.PhysicsColliderColor.w;
+			m_GeometryWireFramePassMaterial->GetVector4("u_MaterialUniform.Color") = DebugOptions.PhysicsDebugOptions.PhysicsColliderColor;
 
 			auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
 
@@ -2346,6 +2356,8 @@ namespace Proof
 			m_UBSSR.bHalfRes = SSRSettings.HalfRes;
 			m_UBSSR.bEnableConeTracing = SSRSettings.EnableConeTracing;
 			m_UBSSR.LuminanceFactor = SSRSettings.LuminanceFactor;
+
+			m_UBSSR.AmbientOcclusionType = !AmbientOcclusionSettings.Enabled ? 0 : (uint32_t)AmbientOcclusionSettings.Type;
 			// it does not resize every frame because images only resize when the size is different
 			//constexpr uint32_t WORK_GROUP_SIZE = 8u;
 			//glm::uvec2 ssrSize = SSRSettings.HalfRes ? (m_UBScreenData.FullResolution + 1.f) / 2.f : m_UBScreenData.FullResolution;
@@ -2369,10 +2381,12 @@ namespace Proof
 
 			if (AmbientOcclusionSettings.Enabled)
 			{
-				if (AmbientOcclusionSettings.Type == AmbientOcclusion::AmbientOcclusionType::HBAO)
-				{
-					//renderPass->SetInput("u_HBAOMap", m_GeometryPass->GetOutput(2));
 
+				switch (AmbientOcclusionSettings.Type)
+				{
+					case AmbientOcclusion::AmbientOcclusionType::HBAO:
+						renderPass->SetInput("u_AmbientOcclusionMap", m_AmbientOcclusion.HBAO.BlurPass[1]->GetOutput(0));
+					break;
 				}
 			}
 
@@ -2493,20 +2507,19 @@ namespace Proof
 				glm::vec2 ResFactor;
 				glm::vec2 ProjectionParams; //(x) = Near plane, (y) = Far plane
 				int PrevLod = 0;
-			} preIntegrationComputePushConstants;
-
-			Renderer::ClearImage(m_CommandBuffer, visibilityTexture->GetImage());
+			};
+			PreIntegrationComputePushConstants preIntegrationComputePushConstants;
+			//Renderer::ClearImage(m_CommandBuffer, visibilityTexture->GetImage());
 
 			glm::vec2 projectionParams = { m_UBCameraData.FarPlane, m_UBCameraData.NearPlane }; // Reversed 
 
 			auto preIntegration = m_SSR.PreIntegrationPass;
-			preIntegration->SetInput("u_HZB", m_SSR.HierarchicalDepthTexture);
-			preIntegration->SetInput("u_VisibilityTex", m_SSR.VisibilityTexture->GetImage());
+		
 
 			Renderer::BeginComputePass(m_CommandBuffer, preIntegration);
 
 			const uint32_t mipLevelCount = visibilityTexture->GetMipLevelCount();
-			for (uint32_t i = 1; i < mipLevelCount; i++)
+			for (uint32_t i = 0; i < mipLevelCount; i++)
 			{
 				auto [mipWidth, mipHeight] = visibilityTexture->GetImage()->GetMipSize(i);
 				const auto workGroupsX = (uint32_t)glm::ceil((float)mipWidth / 8.0f);
@@ -2514,13 +2527,17 @@ namespace Proof
 
 				auto imageView = visibilityTexture->GetImage()->CreateOrGetImageMip(i);
 
-
+				preIntegration->SetInput("u_HZB", m_SSR.HierarchicalDepthTexture);
+				preIntegration->SetInput("u_VisibilityTex", m_SSR.VisibilityTexture->GetImage());
 				auto [width, height] = visibilityTexture->GetImage()->GetMipSize(i);
 				glm::vec2 resFactor = 1.0f / glm::vec2{ width, height };
 				preIntegrationComputePushConstants.HZBResFactor = resFactor * SSRSettings.HZBUvFactor;
 				preIntegrationComputePushConstants.ResFactor = resFactor;
 				preIntegrationComputePushConstants.ProjectionParams = projectionParams;
-				preIntegrationComputePushConstants.PrevLod = (int)i - 1;
+				if(i == 0)
+					preIntegrationComputePushConstants.PrevLod = (int)i;
+				else
+					preIntegrationComputePushConstants.PrevLod = (int)i - 1;
 
 				preIntegration->SetInput("o_VisibilityImage", imageView);
 				

@@ -743,8 +743,8 @@ namespace Proof::UI
     template<class ValueType>
     bool AttributeDragBase(const std::string& label, ValueType& value, float speed, ValueType min, ValueType max, const std::string& helpMessage, ImGuiSliderFlags flags, const char* format, ImGuiDataType_ dataType)
     {
-        if (min == 0 && max == 0)
-            flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
+        //if (min == 0 && max == 0)
+        //    flags = flags & ~ImGuiSliderFlags_AlwaysClamp;
         bool bModified = false;
 
         UpdateIDBuffer(label);

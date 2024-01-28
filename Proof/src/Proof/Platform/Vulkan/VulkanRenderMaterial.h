@@ -35,13 +35,13 @@ namespace Proof
 		virtual void Set(const std::string& name, int value);
 		virtual void Set(const std::string& name, uint32_t value);
 
-		virtual void Set(const std::string& name, const Vector2I& value);
-		virtual void Set(const std::string& name, const VectorI& value);
-		virtual void Set(const std::string& name, const Vector4I& value);
+		virtual void Set(const std::string& name, const glm::ivec2& value);
+		virtual void Set(const std::string& name, const glm::ivec3& value);
+		virtual void Set(const std::string& name, const glm::ivec4& value);
 		
-		virtual void Set(const std::string& name, const Vector2& value);
-		virtual void Set(const std::string& name, const Vector& value);
-		virtual void Set(const std::string& name, const Vector4& value);
+		virtual void Set(const std::string& name, const glm::vec2& value);
+		virtual void Set(const std::string& name, const glm::vec3& value);
+		virtual void Set(const std::string& name, const glm::vec4& value);
 
 		virtual void Set(const std::string& name, const glm::mat3& value);
 		virtual void Set(const std::string& name, const glm::mat4& value);
@@ -50,12 +50,12 @@ namespace Proof
 		bool& GetBool(const std::string& name);
 		int& GetInt(const std::string& name);
 		uint32_t& GetUint32(const std::string& name);
-		Vector2I& GetVector2I(const std::string& name) ;
-		VectorI& GetVectorI(const std::string& name);
-		Vector4I& GetVector4I(const std::string& name) ;
-		Vector2& GetVector2(const std::string& name) ;
-		Vector& GetVector(const std::string& name) ;
-		Vector4& GetVector4(const std::string& name) ;
+		glm::ivec2& GetVector2I(const std::string& name) ;
+		glm::ivec3& GetVectorI(const std::string& name);
+		glm::ivec4& GetVector4I(const std::string& name) ;
+		glm::vec2& GetVector2(const std::string& name) ;
+		glm::vec3& GetVector(const std::string& name) ;
+		glm::vec4& GetVector4(const std::string& name) ;
 		glm::mat3& GetMatrix3(const std::string& name) ;
 		glm::mat4& GetMatrix4(const std::string& name) ;
 
@@ -71,7 +71,7 @@ namespace Proof
 		void SetInternal(const std::string& name, T& value)
 		{
 			const ShaderResourceBufferInfo* decl = FindUniformDeclaration(name);
-			PF_CORE_ASSERT(decl, "Could not Find Storage!");
+			PF_CORE_ASSERT(decl, fmt::format("Could not Find Storage! {}",name));
 
 			if (!decl)return;
 

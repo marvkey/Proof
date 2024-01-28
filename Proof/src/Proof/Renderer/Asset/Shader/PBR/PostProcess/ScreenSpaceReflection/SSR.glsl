@@ -13,21 +13,25 @@ layout(binding = 3) uniform sampler2D u_NormalMap;
 layout(binding = 4) uniform sampler2D u_HIZMap;
 layout(binding = 5) uniform sampler2D u_MetalnessRoughnessMap;
 layout(binding = 6) uniform sampler2D u_VisibilityMap;
-layout(binding = 7) uniform sampler2D u_HBAOMap;
+layout(binding = 7) uniform sampler2D u_AmbientOcclusionMap;
 
 layout(push_constant) uniform SSRInfo
 {
 	vec2 HZBUVFactor;
 	vec2 FadeIn;
+
 	float Brightness;
 	float DepthTolerance;
 	float FacingReflectionsFading;
 	int MaxSteps;
+
 	uint NumDepthMips;
 	float RoughnessDepthTolerance; // The higher the roughness the more we have depth tolerance
 	bool HalfRes;
 	bool EnableConeTracing;
+
 	float LuminanceFactor;
+	uint AmbientOcclusionType;
 } u_PushData;
 #define INVERTED_DEPTH_RANGE
 const float M_PI = 3.14159265359f;
@@ -140,12 +144,17 @@ vec3 ComputeViewspacePosition(const vec2 screenPos, const float viewspaceDepth)
 	return ret;
 }
 
+//float ScreenSpaceToViewSpaceDepth(const float screenDepth)
+//{
+//	float depthLinearizeMul = u_Camera.DepthUnpackConsts.x;
+//	float depthLinearizeAdd = u_Camera.DepthUnpackConsts.y;
+//	// Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
+//	return depthLinearizeMul / (depthLinearizeAdd - screenDepth);
+//}
+
 float ScreenSpaceToViewSpaceDepth(const float screenDepth)
 {
-	float depthLinearizeMul = u_Camera.Projection[3][2];
-	float depthLinearizeAdd = u_Camera.Projection[2][2];
-	// Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
-	return depthLinearizeMul / (depthLinearizeAdd - screenDepth);
+	return -u_Camera.Projection[3][2] / (screenDepth + u_Camera.Projection[2][2] );
 }
 
 void InitialAdvanceRay(vec3 origin, vec3 direction, vec3 invDirection, vec2 currentMipResolution, vec2 currentMipResolutionInv, vec2 floorOffset, vec2 uvOffset, out vec3 position, out float currentT)
@@ -314,6 +323,7 @@ vec3 FresnelSchlickRoughness(vec3 F0, float cosTheta, float roughness)
 	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
+
 layout(local_size_x = 8, local_size_y = 8) in;
 void main()
 {
@@ -356,7 +366,7 @@ void main()
 
 	// Reflection occlusion
 	float ao = 1.0f;
-
+	/*
 #if GTAO_REFLECTION_OCCLUSION
 	#if __ANT_GTAO_COMPUTE_BENT_NORMALS
 		ao = (texture(u_GTAOTex, positionSS.xy).x >> 24) / 255.f;
@@ -365,14 +375,13 @@ void main()
 	#endif
 		ao = min(ao * XE_GTAO_OCCLUSION_TERM_SCALE, 1.0f);
 #endif
-
-#if HBAO_REFLECTION_OCCLUSION
-		ao *= texture(u_HBAOTex, positionSS.xy).x;
-#endif
+	*/
+	//if(u_PushData.AmbientOcclusionType == 1)// HABO
+	//{
+	//	ao *= texture(u_AmbientOcclusionMap, positionSS.xy).x;
+	//}
 	float roughnessFactor = mix(clamp(0.0, 1.0, metalnessRoughness.r + ao), 0.0625f, pow(metalnessRoughness.g, 4));
 
 	// Confidence can be negtive. If it is, it will leave unwanted reflections.
-	//imageStore(o_Color, ivec2(base), vec4(roughnessFactor * totalColor.rgb, max(confidence, 0)));
-	imageStore(o_Color, ivec2(base), totalColor);
-	//imageStore(o_Color, ivec2(base), vec4(1.0,0,0,0));
+	imageStore(o_Color, ivec2(base), vec4(roughnessFactor * totalColor.rgb, max(confidence, 0.0)));
 }

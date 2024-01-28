@@ -166,5 +166,6 @@ namespace Proof
 		int bHalfRes = true;
 		int bEnableConeTracing = true;
 		float LuminanceFactor = 1.0f;
+		uint32_t AmbientOcclusionType = 0; // 0 none, 1 is HBAO , 2 GTAO
 	};
 }

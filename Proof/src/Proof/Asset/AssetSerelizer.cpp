@@ -103,7 +103,7 @@ namespace Proof {
 		if (!data["AssetType"])
 			return nullptr;
 		Count<Material> material = Count<Material>::Create(assetData.GetName());
-		material->GetAlbedoColor() = data["AlbedoColour"].as<Vector>();
+		material->GetAlbedoColor() = data["AlbedoColour"].as<glm::vec3>();
 
 		material->GetMetalness() = data["Metallness"].as<float>();
 		material->GetRoughness() = data["Roughness"].as<float>();
@@ -111,8 +111,8 @@ namespace Proof {
 
 		if (data["Tiling"])
 		{
-			material->GetTiling() = data["Tiling"].as<Vector2>();
-			material->GetOffset() = data["Offset"].as<Vector2>();
+			material->GetTiling() = data["Tiling"].as<glm::vec2>();
+			material->GetOffset() = data["Offset"].as<glm::vec2>();
 		}
 
 		if (data["AlbedoTexture"])

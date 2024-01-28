@@ -134,16 +134,15 @@ layout(push_constant) uniform Material
     float Metalness;
 
     float Roughness;
-    bool AlbedoTexToggle;
-    bool NormalTexToggle;
-    bool RoghnessTexToggle;
-    bool MetallnesTexToggle;
-
-    vec2 Tiling;
-    vec2 Offset;
-
     float Emission;
-}u_MaterialUniform;
+    bool EmissionOverrideColorToggle;
+    bool NormalTexToggle;
+
+    vec2 TextureTiling;
+    vec2 TextureOffset;
+
+    vec3 EmissionOverrideColor; // if EmissionOverrideColorToggle is equal to true then we will override the emission color
+} u_MaterialUniform;
 
 vec3 CalculateNormal()
 {
@@ -195,15 +194,17 @@ vec3 GetGradient(float value)
 const vec3  Fidelectric = vec3(0.04);
 void main()
 {
-    m_Params.AlbedoColor = u_MaterialUniform.AlbedoTexToggle == true ? texture(u_AlbedoMap, Input.TexCoords).rgb * u_MaterialUniform.Albedo : u_MaterialUniform.Albedo;
-    m_Params.Metalness = u_MaterialUniform.MetallnesTexToggle == true ? texture(u_MetallicMap, Input.TexCoords).r * u_MaterialUniform.Metalness : u_MaterialUniform.Metalness;
-    m_Params.Roughness = u_MaterialUniform.RoghnessTexToggle == true ? texture(u_RoughnessMap, Input.TexCoords).r * max(u_MaterialUniform.Roughness,0.00) : max(u_MaterialUniform.Roughness,0.00); // max to keep specular
+    vec2 texCoords = Input.TexCoords * u_MaterialUniform.TextureTiling + u_MaterialUniform.TextureOffset;
+
+    m_Params.AlbedoColor = texture(u_AlbedoMap, texCoords).rgb * u_MaterialUniform.Albedo;
+    m_Params.Metalness = texture(u_MetallicMap, texCoords).r * u_MaterialUniform.Metalness ;
+    m_Params.Roughness = texture(u_RoughnessMap, texCoords).r * max(u_MaterialUniform.Roughness,0.00); // max to keep specular
    // m_Params.Normal = CalculateNormal();
 
    	m_Params.Normal = normalize(Input.Normal);
 	if (u_MaterialUniform.NormalTexToggle)
 	{
-		m_Params.Normal = normalize(texture(u_NormalMap, Input.TexCoords).rgb * 2.0f - 1.0f);
+		m_Params.Normal = normalize(texture(u_NormalMap, texCoords).rgb * 2.0f - 1.0f);
 		m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);
 	}
     out_MetalnessRoughness = vec4(m_Params.Metalness, m_Params.Roughness, 0.f, 1.f);
@@ -383,7 +384,15 @@ void main()
     vec3 finalColor = directLighting * shadowScale ;
     finalColor += CalculatePointLights(F0, Input.WorldPosition);
     finalColor += CalculateSpotLights(F0, Input.WorldPosition); //* sahdow
-    finalColor += m_Params.AlbedoColor * u_MaterialUniform.Emission;//emision
+
+    if(u_MaterialUniform.EmissionOverrideColorToggle == false)
+    {
+        finalColor += m_Params.AlbedoColor * u_MaterialUniform.Emission;//emision
+    }
+    else
+    {
+        finalColor += u_MaterialUniform.EmissionOverrideColor * u_MaterialUniform.Emission;//emision
+    }
 
     if(u_Scene.ShowLightGrid)
     {

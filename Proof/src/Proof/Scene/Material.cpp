@@ -46,28 +46,29 @@ namespace Proof {
     {
         if (!m_DefaultShader)
             return;
-        SetAlbedo(Vector(0.8f));
-        //emision
+        SetAlbedo(glm::vec3(0.8f));
+
         SetMetalness(0.0f);
         SetRoughness(0.4f);
         SetEmission(0.f);
-
-        SetAlbedoTextureToggle(true);
         SetNormalTextureToggle(false);
-        SetRoughnessTextureToggle(false);
-        SetMetalnessTextureToggle(false);
+
+        SetTiling({ 1,1 });
+        SetOffset({ 0,0 });
 
         SetAlbedoMap(Renderer::GetWhiteTexture());
         SetNormalMap(Renderer::GetWhiteTexture());
         SetMetalnessMap(Renderer::GetWhiteTexture());
         SetRoughnessMap(Renderer::GetWhiteTexture());
+
+        SetEmissionOverrideColor(glm::vec3{ 0 });
     }
 
-    Vector& Material::GetAlbedoColor() const
+    glm::vec3& Material::GetAlbedoColor() const
     {
         return m_RenderMaterial->GetVector("u_MaterialUniform.Albedo");
     }
-    void Material::SetAlbedo(const Vector& vec)
+    void Material::SetAlbedo(const glm::vec3& vec)
     {
         m_RenderMaterial->Set("u_MaterialUniform.Albedo", vec);
     }
@@ -87,14 +88,6 @@ namespace Proof {
     {
         m_RenderMaterial->Set("u_MaterialUniform.Roughness", roghness);
     }
-    bool& Material::GetAlbedoTextureToggle()
-    {
-        return m_RenderMaterial->GetBool("u_MaterialUniform.AlbedoTexToggle");
-    }
-    void Material::SetAlbedoTextureToggle(bool value)
-    {
-        m_RenderMaterial->Set("u_MaterialUniform.AlbedoTexToggle",value);
-    }
     bool& Material::GetNormalTextureToggle()
     {
         return m_RenderMaterial->GetBool("u_MaterialUniform.NormalTexToggle");
@@ -103,37 +96,37 @@ namespace Proof {
     {
         m_RenderMaterial->Set("u_MaterialUniform.NormalTexToggle",value);
     }
-    bool& Material::GetRoughnessTextureToggle()
+    bool& Material::GetEmissionOverrideColorToggle()
     {
-        return m_RenderMaterial->GetBool("u_MaterialUniform.RoghnessTexToggle");
+        return m_RenderMaterial->GetBool("u_MaterialUniform.EmissionOverrideColorToggle");
     }
-    void Material::SetRoughnessTextureToggle(bool value)
+    void Material::SetEmissionOverrideColorToggle(bool value)
     {
-        m_RenderMaterial->Set("u_MaterialUniform.RoghnessTexToggle",value);
+        m_RenderMaterial->Set("u_MaterialUniform.EmissionOverrideColorToggle", value);
     }
-    bool& Material::GetMetalnessTextureToggle()
+    glm::vec3& Material::GetEmissionOverrideColor()const
     {
-        return m_RenderMaterial->GetBool("u_MaterialUniform.MetallnesTexToggle");
+        return m_RenderMaterial->GetVector("u_MaterialUniform.EmissionOverrideColor");
     }
-    void Material::SetMetalnessTextureToggle(bool value)
+    void Material::SetEmissionOverrideColor(const glm::vec3& vec)
     {
-        m_RenderMaterial->Set("u_MaterialUniform.MetallnesTexToggle", value);
+        m_RenderMaterial->Set("u_MaterialUniform.EmissionOverrideColor", vec);
     }
-    Vector2& Material::GetTiling()const
+    glm::vec2& Material::GetTiling()const
     {
-        return m_RenderMaterial->GetVector2("u_MaterialUniform.Tiling");
+        return m_RenderMaterial->GetVector2("u_MaterialUniform.TextureTiling");
     }
-    void Material::SetTiling(const Vector2& vec)
+    void Material::SetTiling(const glm::vec2& vec)
     {
-        m_RenderMaterial->Set("u_MaterialUniform.Tiling",vec);
+        m_RenderMaterial->Set("u_MaterialUniform.TextureTiling",vec);
     }
-    Vector2& Material::GetOffset()const
+    glm::vec2& Material::GetOffset()const
     {
-        return m_RenderMaterial->GetVector2("u_MaterialUniform.Offset");
+        return m_RenderMaterial->GetVector2("u_MaterialUniform.TextureOffset");
     }
-    void Material::SetOffset(const Vector2& value)const
+    void Material::SetOffset(const glm::vec2& value)const
     {
-        return m_RenderMaterial->Set("u_MaterialUniform.Offset", value);
+        return m_RenderMaterial->Set("u_MaterialUniform.TextureOffset", value);
     }
     void Material::SetAlbedoMap(Count<class Texture2D> texture)
     {

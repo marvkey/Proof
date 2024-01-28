@@ -310,8 +310,7 @@ namespace Proof
 					if (texture /* && texture->Loaded()*/)
 					{
 						mi->SetAlbedoMap(texture);
-						mi->SetAlbedoTextureToggle(true);
-						mi->SetAlbedo(Vector(1.0f));
+						mi->SetAlbedo(glm::vec3(1.0f));
 					}
 					else
 					{
@@ -324,7 +323,6 @@ namespace Proof
 				{
 					PF_ENGINE_INFO("    No albedo map");
 					mi->SetAlbedoMap(whiteTexture);
-					mi->SetAlbedoTextureToggle(false);
 				}
 
 				// Normal maps
@@ -402,9 +400,8 @@ namespace Proof
 					Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
 					if (texture /*&& texture->Loaded()*/)
 					{
-						mi->SetRoughnessMap (texture);
+						mi->SetRoughnessMap(texture);
 						mi->SetRoughness(1.0f);
-						mi->SetRoughnessTextureToggle(true);
 					}
 					else
 					{
@@ -418,7 +415,6 @@ namespace Proof
 					PF_ENGINE_TRACE("    No roughness map");
 					mi->SetRoughnessMap(whiteTexture);
 					mi->SetRoughness(roughness);
-					mi->SetRoughnessTextureToggle(false);
 				}
 				bool metalnessTextureFound = false;
 				for (uint32_t p = 0; p < aiMaterial->mNumProperties; p++)
@@ -474,7 +470,6 @@ namespace Proof
 					PF_ENGINE_TRACE("    No metalness map");
 					mi->SetMetalnessMap(whiteTexture);
 					mi->SetMetalness(metalness);
-					mi->SetMetalnessTextureToggle(false);
 
 				}
 			}

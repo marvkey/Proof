@@ -16,6 +16,7 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UIHandlers.h"
 
 #include "Proof/Core/Profile.h"
 #include "Proof/ImGui/Editors/Panels/DetailsPanel.h"
@@ -67,227 +68,92 @@ namespace Proof
 
 		UI::PushModified(m_NeedsSaving);
 		//Albedo
+		if(UI::AttributeTreeNode("Albedo"))
 		{
-			bool renderToggle = true;
-			Count<Texture2D> albedoMap = m_Material->GetAlbedoMap();
-			if (albedoMap != nullptr && albedoMap != Renderer::GetWhiteTexture())
+			auto outHandle = m_Material->GetAlbedoMap()->GetID();
+			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
-				UI::Image(albedoMap, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
-				if (ImGui::BeginPopupContextItem("Albedo Texture Settings"))
-				{
-					ImGui::EndPopup();
-				}
-
-				if (ImGui::BeginPopup("Albedo Texture Settings"))
-				{
-					if (ImGui::MenuItem("Remove"))
-					{
-						m_Material->SetAlbedoMap(Renderer::GetWhiteTexture());
-					}
-					ImGui::EndPopup();
-				}
+				if (AssetManager::HasAsset(outHandle))
+					m_Material->SetAlbedoMap(AssetManager::GetAsset<Texture2D>(outHandle));
+				else
+					m_Material->SetAlbedoMap(Renderer::GetWhiteTexture());
 			}
-			else
-			{
-				UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
-
-				renderToggle = false;
-
-			}
-
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-				{
-					uint64_t Data = *(const uint64_t*)payload->Data;
-					if (AssetManager::HasAsset(Data))
-					{
-						m_NeedsSaving = true;
-						m_Material->SetAlbedoMap(AssetManager::GetAsset<Texture2D>(Data));
-					}
-				}
-				ImGui::EndDragDropTarget();
-			}
-
-			if (renderToggle)
-			{
-				ImGui::SameLine();
-				ImGui::Checkbox("Use", &m_Material->GetAlbedoTextureToggle());
-			}
+			
 			ImGui::SameLine();
-			if (ImGui::ColorEdit3("Albedo", m_Material->GetAlbedoColor().GetValue_Ptr()))
-				m_NeedsSaving = true;
+			UI::AttributeColor("", m_Material->GetAlbedoColor());
+			UI::EndTreeNode();
 		}
 
-		ImGui::NewLine();
 		//Normal
+		if (UI::AttributeTreeNode("Normal"))
 		{
-			bool renderToggle = true;
-			Count<Texture2D> normalMap = m_Material->GetNormalMap();
-
-			if (normalMap != nullptr && normalMap != Renderer::GetWhiteTexture())
+			auto outHandle = m_Material->GetNormalMap()->GetID();
+			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
-
-				UI::Image(normalMap, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
-				if (ImGui::BeginPopupContextItem("Normal Texture Settings"))
-				{
-					ImGui::EndPopup();
-				}
-
-				if (ImGui::BeginPopup("Normal Texture Settings"))
-				{
-					if (ImGui::MenuItem("Remove"))
-					{
-						m_Material->SetNormalMap(Renderer::GetWhiteTexture());
-					}
-					ImGui::EndPopup();
-				}
-			}
-			else
-			{
-				UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
-
-				renderToggle = false;
+				if (AssetManager::HasAsset(outHandle))
+					m_Material->SetNormalMap(AssetManager::GetAsset<Texture2D>(outHandle));
+				else
+					m_Material->SetNormalMap(Renderer::GetWhiteTexture());
 			}
 
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-				{
-					uint64_t Data = *(const uint64_t*)payload->Data;
-					if (AssetManager::HasAsset(Data))
-					{
-						m_NeedsSaving = true;
-						m_Material->SetNormalMap(AssetManager::GetAsset<Texture2D>(Data));
-					}
-				}
-				ImGui::EndDragDropTarget();
-			}
-
-			if (renderToggle)
-			{
-				ImGui::SameLine();
-				ImGui::Checkbox("Use", &m_Material->GetNormalTextureToggle());
-			}
+			ImGui::SameLine();
+			UI::AttributeBool("", m_Material->GetNormalTextureToggle());
+			UI::EndTreeNode();
 		}
-		ImGui::NewLine();
-		//Metallic
+		
+		//Metalness
+		if (UI::AttributeTreeNode("Metalness"))
 		{
-			bool renderToggle = true;
-			Count<Texture2D> metallnesMap = m_Material->GetMetalnessMap();
-
-			if (metallnesMap != nullptr && metallnesMap != Renderer::GetWhiteTexture())
+			auto outHandle = m_Material->GetMetalnessMap()->GetID();
+			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
-				UI::Image(metallnesMap, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
-				if (ImGui::BeginPopupContextItem("Metallness Texture Settings"))
-				{
-					ImGui::EndPopup();
-				}
-
-				if (ImGui::BeginPopup("Metallness Texture Settings"))
-				{
-					if (ImGui::MenuItem("Remove"))
-					{
-						m_Material->SetMetalnessMap(Renderer::GetWhiteTexture());
-					}
-					ImGui::EndPopup();
-				}
-			}
-			else
-			{
-				UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
-				renderToggle = false;
-			}
-
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-				{
-					uint64_t Data = *(const uint64_t*)payload->Data;
-					if (AssetManager::HasAsset(Data))
-					{
-						m_NeedsSaving = true;
-						m_Material->SetMetalnessMap(AssetManager::GetAsset<Texture2D>(Data));
-					}
-				}
-				ImGui::EndDragDropTarget();
-			}
-
-			if (renderToggle)
-			{
-				ImGui::SameLine();
-				ImGui::Checkbox("Use", &m_Material->GetMetalnessTextureToggle());
+				if (AssetManager::HasAsset(outHandle))
+					m_Material->SetMetalnessMap(AssetManager::GetAsset<Texture2D>(outHandle));
+				else
+					m_Material->SetMetalnessMap(Renderer::GetWhiteTexture());
 			}
 			ImGui::SameLine();
-			if (UI::AttributeSlider("Metallness", m_Material->GetMetalness(), 0, 1))
-				m_NeedsSaving = true;
+			UI::AttributeSlider("", m_Material->GetMetalness(),0,1);
+			UI::EndTreeNode();
 		}
 
-		ImGui::NewLine();
-		//Roughness
+		//roughness
+		if (UI::AttributeTreeNode("Roughness"))
 		{
-			bool renderToggle = true;
-			Count<Texture2D> roughnessMap = m_Material->GetRoughnessMap();
-
-			if (roughnessMap != nullptr && roughnessMap != Renderer::GetWhiteTexture())
+			auto outHandle = m_Material->GetRoughnessMap()->GetID();
+			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
-				UI::Image(roughnessMap, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
-
-				if (ImGui::BeginPopupContextItem("Roughness Texture Settings"))
-				{
-					ImGui::EndPopup();
-				}
-
-				if (ImGui::BeginPopup("Roughness Texture Settings"))
-				{
-					if (ImGui::MenuItem("Remove"))
-					{
-						m_Material->SetRoughnessMap(Renderer::GetWhiteTexture());
-					}
-					ImGui::EndPopup();
-				}
-
-			}
-			else
-			{
-				UI::Image(EditorResources::CheckerBoardWhiteGrey, { ImGui::GetWindowWidth() / 4,ImGui::GetWindowHeight() / 6 });
-				renderToggle = false;
+				if (AssetManager::HasAsset(outHandle))
+					m_Material->SetRoughnessMap(AssetManager::GetAsset<Texture2D>(outHandle));
+				else
+					m_Material->SetRoughnessMap(Renderer::GetWhiteTexture());
 			}
 
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-				{
-					uint64_t Data = *(const uint64_t*)payload->Data;
-					if (AssetManager::HasAsset(Data))
-					{
-						m_NeedsSaving = true;
-						m_Material->SetRoughnessMap(AssetManager::GetAsset<Texture2D>(Data));
-					}
-				}
-				ImGui::EndDragDropTarget();
-			}
-
-			if (renderToggle)
-			{
-				ImGui::SameLine();
-				ImGui::Checkbox("Use", &m_Material->GetRoughnessTextureToggle());
-				m_NeedsSaving = true;
-
-			}
 			ImGui::SameLine();
-			if (UI::AttributeSlider("Roughness", m_Material->GetRoughness(), 0, 1))
-				m_NeedsSaving = true;
-
+			UI::AttributeSlider("", m_Material->GetRoughness(), 0, 1);
+			UI::EndTreeNode();
 		}
-		ImGui::NewLine();
-		//
+
+		if (UI::AttributeTreeNode("Emission"))
 		{
-			if (UI::AttributeDrag("Emission", m_Material->GetEmission(), 0.25f))
-				m_NeedsSaving = true;
+			UI::AttributeDrag("Emission", m_Material->GetEmission(), 0.15, 0);
 
+			bool& ovverideToggle = m_Material->GetEmissionOverrideColorToggle();
+
+			UI::AttributeBool("OverrideEmissionColor", ovverideToggle);
+
+
+			UI::PushItemDisabled(!ovverideToggle);
+			UI::AttributeColor("EmissionColor", m_Material->GetEmissionOverrideColor());
+			UI::PopItemDisabled();
+
+			UI::EndTreeNode();
 		}
-		UI::PopItemDisabled();
+		
+		UI::AttributeDrag("Tiling", m_Material->GetTiling());
+		UI::AttributeDrag("Offset", m_Material->GetOffset());
+
+		UI::PopModified();
 	}
 	
 	void MaterialEditorPanel::SetDefaultLayout()

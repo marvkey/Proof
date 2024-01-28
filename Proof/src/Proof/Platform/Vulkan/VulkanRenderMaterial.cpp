@@ -149,32 +149,32 @@ namespace Proof {
 		SetInternal(name, value);
 	}
 
-	void VulkanRenderMaterial::Set(const std::string& name, const Vector2I& value)
+	void VulkanRenderMaterial::Set(const std::string& name, const glm::ivec2& value)
 	{
 		SetInternal(name, value);
 	}
 
-	void VulkanRenderMaterial::Set(const std::string& name, const VectorI& value)
+	void VulkanRenderMaterial::Set(const std::string& name, const glm::ivec3& value)
 	{
 		SetInternal(name, value);
 	}
 
-	void VulkanRenderMaterial::Set(const std::string& name, const Vector4I& value)
+	void VulkanRenderMaterial::Set(const std::string& name, const glm::ivec4& value)
 	{
 		SetInternal(name, value);
 	}
 
-	void VulkanRenderMaterial::Set(const std::string& name, const Vector2& value)
+	void VulkanRenderMaterial::Set(const std::string& name, const glm::vec2& value)
 	{
 		SetInternal(name, value);
 	}
 
-	void VulkanRenderMaterial::Set(const std::string& name, const Vector& value)
+	void VulkanRenderMaterial::Set(const std::string& name, const glm::vec3& value)
 	{
 		SetInternal(name, value);
 	}
 
-	void VulkanRenderMaterial::Set(const std::string& name, const Vector4& value)
+	void VulkanRenderMaterial::Set(const std::string& name, const glm::vec4& value)
 	{
 		SetInternal(name, value);
 	}
@@ -207,34 +207,34 @@ namespace Proof {
 		return GetInternal<uint32_t>(name);
 	}
 
-	Vector2I& VulkanRenderMaterial::GetVector2I(const std::string& name) 
+	glm::ivec2& VulkanRenderMaterial::GetVector2I(const std::string& name) 
 	{
-		return GetInternal< Vector2I>(name);
+		return GetInternal<glm::ivec2>(name);
 	}
 
-	VectorI& VulkanRenderMaterial::GetVectorI(const std::string& name) 
+	glm::ivec3& VulkanRenderMaterial::GetVectorI(const std::string& name)
 	{
-		return GetInternal<VectorI>(name);
+		return GetInternal<glm::ivec3>(name);
 	}
 
-	Vector4I& VulkanRenderMaterial::GetVector4I(const std::string& name) 
+	glm::ivec4& VulkanRenderMaterial::GetVector4I(const std::string& name)
 	{
-		return GetInternal<Vector4I>(name);
+		return GetInternal<glm::ivec4>(name);
 	}
 
-	Vector2& VulkanRenderMaterial::GetVector2(const std::string& name) 
+	glm::vec2& VulkanRenderMaterial::GetVector2(const std::string& name)
 	{
-		return GetInternal<Vector2>(name);
+		return GetInternal<glm::vec2>(name);
 	}
 
-	Vector& VulkanRenderMaterial::GetVector(const std::string& name) 
+	glm::vec3& VulkanRenderMaterial::GetVector(const std::string& name)
 	{
-		return GetInternal<Vector>(name);
+		return GetInternal<glm::vec3>(name);
 	}
 
-	Vector4& VulkanRenderMaterial::GetVector4(const std::string& name) 
+	glm::vec4& VulkanRenderMaterial::GetVector4(const std::string& name)
 	{
-		return GetInternal<Vector4>(name);
+		return GetInternal<glm::vec4>(name);
 	}
 
 	glm::mat3& VulkanRenderMaterial::GetMatrix3(const std::string& name) 
