@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include "Proof/Core/Assert.h"
 #include "Proof/Core/UUID.h"
-
+#include "Proof/Utils/StringUtils.h"
 namespace Proof
 {
 	enum class AssetType 
@@ -85,8 +85,9 @@ namespace Proof
 			".blend",
 		};
 
-		inline bool MeshHasFormat(const std::string& format) {
-			return MeshSourceFormats.contains(format);
+		inline bool MeshHasFormat(const std::string& format) 
+		{
+			return MeshSourceFormats.contains(Utils::String::ToLower(format));
 
 		}
 		// more formats to come in the future
@@ -101,14 +102,14 @@ namespace Proof
 		};
 
 		inline bool TextureHasFormat(const std::string& format) {
-			return TextureSourceFormats.contains(format);
+			return TextureSourceFormats.contains(Utils::String::ToLower(format));
 		}
 		static const std::unordered_set< std::string> FontSourceFormats =
 		{
 			".ttf",
 		};
 		inline bool FontHasFormat(const std::string& format) {
-			return FontSourceFormats.contains(format);
+			return FontSourceFormats.contains(Utils::String::ToLower(format));
 		}
 
 		static const std::unordered_set< std::string> AudioSourceFormat =
@@ -119,7 +120,7 @@ namespace Proof
 		};
 		inline bool AudioHasFormat(const std::string& format) 
 		{
-			return AudioSourceFormat.contains(format);
+			return AudioSourceFormat.contains(Utils::String::ToLower(format));
 		}
 		inline AssetType GetAssetTypeFromPath(const std::filesystem::path& path)
 		{

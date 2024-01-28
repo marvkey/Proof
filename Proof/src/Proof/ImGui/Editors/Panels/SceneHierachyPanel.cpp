@@ -10,6 +10,7 @@
 #include "Proof/Asset/Asset.h"
 #include "Proof/Physics/MeshCollider.h"
 #include "Proof/Physics/PhysicsEngine.h"
+#include "Proof/Project/Project.h"
 //#include "ContentBrowserPanel.h"
 #include <vector>
 #include "Proof/Scene/ExampleSccripts.h"
@@ -510,6 +511,60 @@ namespace Proof
 		}
 		ImGui::PopID();
 	}
+	struct ConvertRuntimeMaterialToDiskMaterial
+	{
+		std::string SavePath = "Materials/";
+
+	}ConvertDiskMaterial;
+	static void ConvertDiskMaterialFunc(AssetID id)
+	{
+		if (!AssetManager::HasAsset(id))
+			return;
+		if (AssetManager::IsDefaultAsset(id))
+			return;
+
+		const auto assetInfo = AssetManager::GetAssetInfo(id);
+
+		if (assetInfo.RuntimeAsset == false)
+			return;
+
+		if(ImGui::MenuItem("ConvertToDiskMaterial"))
+		{
+			UI::ShowMessageBox("ConvertMaterialToDisk", [id, assetInfo]()
+				{
+
+
+					ImGui::Text(Project::GetActive()->GetProjectDirectory().filename().string().c_str());
+
+					if (ConvertDiskMaterial.SavePath == "Materials/")
+						ConvertDiskMaterial.SavePath += assetInfo.GetName();
+
+					UI::AttributeInputText("MaterialName", ConvertDiskMaterial.SavePath);
+					if (ImGui::Button("Create"))
+					{
+						std::filesystem::path savedPath = Project::GetActive()->GetAssetDirectory() / ConvertDiskMaterial.SavePath;
+						savedPath += Utils::GetAssetExtensionString(AssetType::Material);
+						if (!FileSystem::Exists(savedPath.parent_path()))
+							FileSystem::CreateDirectory(savedPath.parent_path());
+
+						savedPath = FileSystem::GenerateUniqueFileName(savedPath);
+						AssetManager::ConvertRuntimeToDiskAsset(id, savedPath);
+
+						ConvertDiskMaterial = {};
+						ImGui::CloseCurrentPopup();
+
+					}
+					ImGui::SameLine();
+
+					if (ImGui::Button("Cancel"))
+					{
+						ConvertDiskMaterial = {};
+						ImGui::CloseCurrentPopup();
+					}
+				});
+		}
+
+	}
 	void SceneHierachyPanel::DrawComponent(Entity& entity) {
 		auto& Tag = entity.GetComponent<TagComponent>();
 		char buffer[256];
@@ -619,7 +674,9 @@ namespace Proof
 				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
 				{
 					AssetID materialID = material->GetID();
-					if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID))
+					UI::PropertyAssetReferenceSettings assetSettings;
+					assetSettings.OnRightClick = ConvertDiskMaterialFunc;
+					if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID, assetSettings))
 					{
 						if (materialID == 0)
 						{
@@ -699,7 +756,10 @@ namespace Proof
 				{
 					AssetID materialID = material->GetID();
 					UI::ScopedStyleColor addfs(ImGuiCol_Text, ImVec4(0.0f, .8f, 0.0f, 1.0f), index == currentIndexMaterial);
-					if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID))
+
+					UI::PropertyAssetReferenceSettings assetSettings;
+					assetSettings.OnRightClick = ConvertDiskMaterialFunc;
+					if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID, assetSettings))
 					{
 						if (materialID == 0)
 						{

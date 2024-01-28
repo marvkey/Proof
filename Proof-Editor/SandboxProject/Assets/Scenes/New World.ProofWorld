@@ -38,8 +38,8 @@ World:
         Tag: Sponza
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
+        Location: [0, 0.0143343359, 0]
+        Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
@@ -160,3 +160,31 @@ World:
           - Material: ""
             AssetID: 9906847331754832331
             Index: 0
+    - Entity: 10426555000439789092
+      TagComponent:
+        Tag: PBRGun
+        tags: []
+      TransformComponent:
+        Location: [0, 0.917771935, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 18348114341737718825
+      MeshColliderComponent:
+        ColliderID: 13970559319545821454
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete

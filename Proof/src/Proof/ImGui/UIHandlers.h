@@ -18,6 +18,7 @@ namespace Proof::UI
 		ImVec4 ButtonLabelColor = ImGui::ColorConvertU32ToFloat4(Colours::Theme::Text);
 		ImVec4 ButtonLabelColorError = ImGui::ColorConvertU32ToFloat4(Colours::Theme::TextError);
 		bool ShowFullFilePath = false;
+		std::function<void(AssetID& id)> OnRightClick = nullptr;
 	};
 
 	bool AttributeAssetReference(const std::string& label, AssetType type, AssetID& id, const PropertyAssetReferenceSettings& settings = {});

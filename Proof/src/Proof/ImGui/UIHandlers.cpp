@@ -173,6 +173,9 @@ namespace Proof::UI
 							modified = true;
 
 						}
+
+						if (settings.OnRightClick)
+							settings.OnRightClick(outHandle);
 						ImGui::EndPopup();
 					}
 				}

@@ -70,7 +70,15 @@ namespace Proof
 		//Albedo
 		if(UI::AttributeTreeNode("Albedo"))
 		{
-			auto outHandle = m_Material->GetAlbedoMap()->GetID();
+			AssetID outHandle ;
+			if (m_Material->GetAlbedoMap() == nullptr)
+			{
+				m_Material->SetAlbedoMap(Renderer::GetWhiteTexture());
+				outHandle = 0;
+			}
+			else
+				outHandle = m_Material->GetAlbedoMap()->GetID();
+
 			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
 				if (AssetManager::HasAsset(outHandle))
@@ -87,7 +95,14 @@ namespace Proof
 		//Normal
 		if (UI::AttributeTreeNode("Normal"))
 		{
-			auto outHandle = m_Material->GetNormalMap()->GetID();
+			AssetID outHandle;
+			if (m_Material->GetNormalMap() == nullptr)
+			{
+				m_Material->SetNormalMap(Renderer::GetWhiteTexture());
+				outHandle = 0;
+			}
+			else
+				outHandle = m_Material->GetNormalMap()->GetID();
 			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
 				if (AssetManager::HasAsset(outHandle))
@@ -104,7 +119,15 @@ namespace Proof
 		//Metalness
 		if (UI::AttributeTreeNode("Metalness"))
 		{
-			auto outHandle = m_Material->GetMetalnessMap()->GetID();
+			AssetID outHandle;
+			if (m_Material->GetMetalnessMap() == nullptr)
+			{
+				m_Material->SetMetalnessMap(Renderer::GetWhiteTexture());
+				outHandle = 0;
+			}
+			else
+				outHandle = m_Material->GetMetalnessMap()->GetID();
+
 			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
 				if (AssetManager::HasAsset(outHandle))
@@ -120,7 +143,15 @@ namespace Proof
 		//roughness
 		if (UI::AttributeTreeNode("Roughness"))
 		{
-			auto outHandle = m_Material->GetRoughnessMap()->GetID();
+			AssetID outHandle;
+			if (m_Material->GetRoughnessMap() == nullptr)
+			{
+				m_Material->SetRoughnessMap(Renderer::GetWhiteTexture());
+				outHandle = 0;
+			}
+			else
+				outHandle = m_Material->GetRoughnessMap()->GetID();
+
 			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
 				if (AssetManager::HasAsset(outHandle))

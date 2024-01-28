@@ -55,6 +55,7 @@ namespace Proof
 
 	AssetID ContentBrowserPanel::ProcessDirectory(const std::filesystem::path& directoryPath, const Count<DirectoryInfo>& parent)
 	{
+		bool saveAssetManager = false;
 		const auto& directory = GetDirectory(directoryPath);
 		if (directory)
 			return directory->Handle;
@@ -88,6 +89,16 @@ namespace Proof
 
 				//metadata.Handle = Project::GetEditorAssetManager()->ImportAsset(entry.path());
 			}
+			else if (Utils::IsAssetSource( Utils::GetAssetTypeFromPath(entry.path())))
+			{ 
+				AssetManager::NewAssetSource(entry.path(), Utils::GetAssetTypeFromPath(entry.path()));
+
+				if (AssetManager::HasAsset(entry.path()))
+				{
+					directoryInfo->Assets.push_back(AssetManager::GetAssetInfo(entry.path()).ID);
+					saveAssetManager = true;
+				}
+			}
 			//if (AssetManager::HasAsset(entry.path()))
 			//{
 			//
@@ -96,6 +107,8 @@ namespace Proof
 		//	directoryInfo->Assets.push_back(metadata.Handle);
 		}
 
+		if (saveAssetManager)
+			AssetManager::SaveAssetManager();
 		m_Directories[directoryInfo->Handle] = directoryInfo;
 		return directoryInfo->Handle;
 	}

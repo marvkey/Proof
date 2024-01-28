@@ -265,6 +265,31 @@ namespace Proof
 		return s_AssetManagerData->DefaultRuntimeAssets.contains(ID);
 	}
 
+	bool AssetManager::ConvertRuntimeToDiskAsset(AssetID Id, const std::filesystem::path& savePath)
+	{
+		if (!AssetManager::HasAsset(Id))
+			return false;
+
+		if (AssetManager::IsDefaultAsset(Id))
+			return false;
+
+		if (!AssetManager::GetAssetInfo(Id).RuntimeAsset)
+			return false;
+
+		if (Utils::IsAssetSource(AssetManager::GetAssetInfo(Id).Type))
+			return false;
+
+		 auto asset = AssetManager::GetAsset<Asset>(Id);
+
+		 AssetInfo& assetInfo = s_AssetManagerData->Assets[Id].Info;
+		 assetInfo.Path = GetAssetFileSystemPathRelative(savePath);
+		 assetInfo.RuntimeAsset = false;
+		 assetInfo.State = AssetState::Ready;
+
+		AssetManager::SaveAsset(asset->GetID());
+		return true;
+	}
+
 	void AssetManager::NewAssetSource(const std::filesystem::path& path, AssetType type)
 	{
 		const std::string extension = FileSystem::GetFileExtension(path);

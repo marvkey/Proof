@@ -147,6 +147,8 @@ namespace Proof
 		static Count<Asset> GetDefaultAsset(DefaultRuntimeAssets asset);
 
 		static bool IsDefaultAsset(AssetID ID);
+
+		static bool ConvertRuntimeToDiskAsset(AssetID Id, const std::filesystem::path& savePath);
 		/*
 		*path Pass the full path
 		*/
