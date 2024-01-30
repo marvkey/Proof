@@ -427,3 +427,9 @@
 [180541] perform  operation: Delete
 [180541] 	- arguments: C:\Users\marvn\OneDrive\Documents\Proof\Proof\vendor\VulkanSDK/Helpers/vc_redist.x64.exe
 [180548] Done
+************************************* Invoked: Tue Jan 30 11:41:48 2024
+[0] Arguments: C:\Users\marvn\OneDrive\Documents\Proof\Proof\vendor\VulkanSDK\maintenancetool.exe
+[81] Operations sanity check succeeded.
+[81] Language: en-US
+[1325] Loaded control script ":/metadata/installer-config/installscript_qs.qs"
+[1325] Using control script: ":/metadata/installer-config/installscript_qs.qs"

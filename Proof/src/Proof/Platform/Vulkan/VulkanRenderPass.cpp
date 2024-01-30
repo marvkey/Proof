@@ -683,7 +683,7 @@ namespace Proof
 
             PF_CORE_ASSERT(false, "not found ");
 
-            //vkCmdSetPrimitiveTopology(cmdBuffer, Utils::ProofTopologyToVulkanTopology(drawType));
+            vkCmdSetPrimitiveTopology(cmdBuffer, Utils::ProofTopologyToVulkanTopology(drawType));
         }
 
         if (vk_pipeline->GetConfig().EditCullMode)
@@ -695,7 +695,7 @@ namespace Proof
                 mode = vk_pipeline->GetConfig().CullMode;
 
             PF_CORE_ASSERT(false, "cull mode not found ");
-           // vkCmdSetCullMode(cmdBuffer, Utils::ProofFormatToVulkanFormat(mode));
+            vkCmdSetCullMode(cmdBuffer, Utils::ProofFormatToVulkanFormat(mode));
         }
 
         if (vk_pipeline->GetConfig().EditDepthTest)
@@ -706,7 +706,7 @@ namespace Proof
             else
                 test = vk_pipeline->GetConfig().DepthTest;
 
-            //vkCmdSetDepthTestEnable(cmdBuffer, test == true ? VK_TRUE : VK_FALSE);
+            vkCmdSetDepthTestEnable(cmdBuffer, test == true ? VK_TRUE : VK_FALSE);
         }
     }
     void VulkanRenderPass::SetTargetFrameBuffer(Count<FrameBuffer> frame)

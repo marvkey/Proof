@@ -278,10 +278,13 @@ namespace Proof
 			if (ImGui::MenuItem("Spot")) {
 				newEntity = m_ActiveWorld->CreateEntity("Spot Light");
 				newEntity.AddComponent<SpotLightComponent>();
+				newEntity.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3{ 90.0f, 0.0f, 0.0f }));
 			}
 			if (ImGui::MenuItem("Directional")) {
 				newEntity = m_ActiveWorld->CreateEntity("Directional Light");
 				newEntity.AddComponent<DirectionalLightComponent>();
+				newEntity.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3{ 80.0f, 10.0f, 0.0f }));
+
 			}
 			if (ImGui::MenuItem("SkyLight"))
 			{

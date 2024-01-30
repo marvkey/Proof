@@ -15,6 +15,8 @@ namespace Proof
 	const bool s_Validation = false;
 	#endif
 	static bool s_Initialized = false;
+	uint32_t VulkanGraphicsContext::s_VulkanVersion = VK_API_VERSION_1_3;
+
 	constexpr const char* VkDebugUtilsMessageType(const VkDebugUtilsMessageTypeFlagsEXT type)
 	{
 		switch (type)
@@ -114,9 +116,7 @@ namespace Proof
 
 		//PF_CORE_ASSERT(glfwVulkanSupported(), "GLFW must support Vulkan!");
 
-		m_VulkanVersion = VK_API_VERSION_1_2;
-
-		if (!CheckDriverAPIVersionSupport(m_VulkanVersion))
+		if (!CheckDriverAPIVersionSupport(s_VulkanVersion))
 		{
 			MessageBox(nullptr, L"Incompatible Vulkan driver version.\nUpdate your GPU drivers!", L"Proof Error", MB_OK | MB_ICONERROR);
 			PF_CORE_ASSERT(false);
@@ -129,7 +129,7 @@ namespace Proof
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pApplicationName = "Proof";
 		appInfo.pEngineName = "Proof";
-		appInfo.apiVersion = m_VulkanVersion;
+		appInfo.apiVersion = s_VulkanVersion;
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Extensions and Validation

@@ -34,6 +34,7 @@ namespace Proof
 		std::unordered_map<AssetType, Special<class AssetSerializer>> AssetSerilizer;// path
 		std::filesystem::path AssetDirectory;
 		std::filesystem::path AssetRegistry;
+		bool AssetManagerIntit = false;
 	};
 	static Special< AssetManagerData> s_AssetManagerData;
 
@@ -176,6 +177,7 @@ namespace Proof
 		});
 
 		AssetCustomDataManager::Init();
+		s_AssetManagerData->AssetManagerIntit = true;
 	}
 	void AssetManager::ShutDown() {
 		Timer time;
@@ -207,7 +209,7 @@ namespace Proof
 			s_AssetManagerData->Assets[assetInfo.ID].Info.State = AssetState::Unloaded;
 		}
 
-		if (assetInfo.RuntimeAsset == false)
+		if (assetInfo.RuntimeAsset == false && s_AssetManagerData->AssetManagerIntit == true)
 			SaveAssetManager();
 
 	}
@@ -442,12 +444,14 @@ namespace Proof
 	{
 		return s_AssetManagerData->Assets;
 	}
-	void AssetManager::SaveAllAssets() {
+	void AssetManager::SaveAllAssets() 
+	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Assets" << YAML::Value << YAML::BeginSeq;
 
-		for (auto& [id,assetManager] : s_AssetManagerData->Assets) {
+		for (auto& [id,assetManager] : s_AssetManagerData->Assets) 
+		{
 			
 			const auto& assetInfo = assetManager.Info;
 			const auto& asset = assetManager.Asset;

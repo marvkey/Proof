@@ -7,7 +7,7 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 1.12306035, -0.000125527382]
-        Rotation: [0.0349065848, 0.0174532924, -9.89680893e-10]
+        Rotation: [0.0558505356, 0.647517145, 0.20071286]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
@@ -35,3 +35,17 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 18348114341737718825
+    - Entity: 17936688062110553851
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 1.36833811, 0.541052043]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1

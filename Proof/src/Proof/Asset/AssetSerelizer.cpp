@@ -70,6 +70,7 @@ namespace Proof {
 		out << YAML::Key << "Metallness" << YAML::Value << material->GetMetalness();
 		out << YAML::Key << "Emission" << YAML::Value << material->GetEmission();
 		out << YAML::Key << "Tiling" << YAML::Value << material->GetTiling();
+		out << YAML::Key << "NormalTextureToggle" << YAML::Value << material->GetNormalTextureToggle();
 		out << YAML::Key << "Offset" << YAML::Value << material->GetOffset();
 
 		if (material->GetAlbedoMap() && material->GetAlbedoMap() != Renderer::GetWhiteTexture())
@@ -109,7 +110,7 @@ namespace Proof {
 		material->GetMetalness() = data["Metallness"].as<float>();
 		material->GetRoughness() = data["Roughness"].as<float>();
 		material->GetEmission() = data["Emission"].as<float>(material->GetEmission());
-
+		material->GetNormalTextureToggle() = data["NormalTextureToggle"].as<bool>(false);
 		if (data["Tiling"])
 		{
 			material->GetTiling() = data["Tiling"].as<glm::vec2>();
@@ -130,6 +131,7 @@ namespace Proof {
 			if (AssetManager::HasAsset(id))
 			{
 				material->SetNormalMap(AssetManager::GetAsset<Texture2D>(id));
+				material->GetNormalTextureToggle() = data["NormalTextureToggle"].as<bool>(true);
 			}
 		}
 

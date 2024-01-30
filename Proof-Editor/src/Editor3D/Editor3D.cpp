@@ -1645,10 +1645,14 @@ namespace Proof
 			return false;
 		}
 
-		if (!AssetManager::HasAsset(m_ActiveWorld->GetID()) && !m_ActiveWorld->GetEntities().empty())
+		if (!AssetManager::HasAsset(m_ActiveWorld->GetID()))
 		{
-			SaveSceneDialouge = true;
-			return false;
+			if (!m_ActiveWorld->GetEntities().empty())
+			{
+				SaveSceneDialouge = true;
+				return false;
+			}
+			return true;
 		}
 		{
 			ScopeTimer scopeTime(fmt::format("{} Saved", m_ActiveWorld->GetName()));

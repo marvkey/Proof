@@ -98,7 +98,7 @@ namespace Proof
         s_Data = pnew VulkanAllocatorData();
 
         VmaAllocatorCreateInfo allocatorInfo = {};
-        allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+        allocatorInfo.vulkanApiVersion = VulkanGraphicsContext::GetVulkanVersion();
         allocatorInfo.physicalDevice = device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
         allocatorInfo.device = device->GetVulkanDevice();
         allocatorInfo.instance = VulkanGraphicsContext::GetInstance();
